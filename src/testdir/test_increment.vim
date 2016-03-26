@@ -727,4 +727,13 @@ func Test_normal_increment_01()
   call assert_equal("002", getline(1))
 endfunc
 
+" Test a regression of patch 7.4.1087 fixed.
+func Test_normal_increment_02()
+  call setline(1, ["hello 10", "world"])
+  exec "norm! ggl\<C-A>jx"
+  call assert_equal(["hello 11", "worl"], getline(1, '$'))
+  call assert_equal([0, 2, 4, 0], getpos('.'))
+endfunc
+
+
 " vim: tabstop=2 shiftwidth=2 expandtab

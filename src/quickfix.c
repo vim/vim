@@ -1027,6 +1027,8 @@ qf_add_entry(
 				/* first element in the list */
     {
 	qi->qf_lists[qi->qf_curlist].qf_start = qfp;
+	qi->qf_lists[qi->qf_curlist].qf_ptr = qfp;
+	qi->qf_lists[qi->qf_curlist].qf_index = 0;
 	qfp->qf_prev = qfp;	/* first element points to itself */
     }
     else
@@ -1413,6 +1415,33 @@ qf_guess_filepath(char_u *filename)
 }
 
 /*
+ * When loading a file from the quickfix, the auto commands may modify it.
+ * This may invalidate the current quickfix entry.  This function checks
+ * whether a entry is still present in the quickfix.
+ * Similar to location list.
+ */
+    static int
+is_qf_entry_present(qf_info_T *qi, qfline_T *qf_ptr)
+{
+    qf_list_T	*qfl;
+    qfline_T	*qfp;
+    int		i;
+
+    qfl = &qi->qf_lists[qi->qf_curlist];
+
+    /* Search for the entry in the current list */
+    for (i = 0, qfp = qfl->qf_start; i < qfl->qf_count;
+	    ++i, qfp = qfp->qf_next)
+	if (qfp == qf_ptr)
+	    break;
+
+    if (i == qfl->qf_count) /* Entry is not found */
+	return FALSE;
+
+    return TRUE;
+}
+
+/*
  * jump to a quickfix line
  * if dir == FORWARD go "errornr" valid entries forward
  * if dir == BACKWARD go "errornr" valid entries backward
@@ -1794,18 +1823,34 @@ win_found:
 	}
 	else
 	{
+	    int old_qf_curlist = qi->qf_curlist;
+	    int is_abort = FALSE;
+
 	    ok = buflist_getfile(qf_ptr->qf_fnum,
 			    (linenr_T)1, GETF_SETMARK | GETF_SWITCH, forceit);
 	    if (qi != &ql_info && !win_valid(oldwin))
 	    {
 		EMSG(_("E924: Current window was closed"));
+		is_abort = TRUE;
+		opened_window = FALSE;
+	    }
+	    else if (old_qf_curlist != qi->qf_curlist
+		    || !is_qf_entry_present(qi, qf_ptr))
+	    {
+		if (qi == &ql_info)
+		    EMSG(_("E925: Current quickfix was changed"));
+		else
+		    EMSG(_("E926: Current location list was changed"));
+		is_abort = TRUE;
+	    }
+
+	    if (is_abort)
+	    {
 		ok = FALSE;
 		qi = NULL;
 		qf_ptr = NULL;
-		opened_window = FALSE;
 	    }
 	}
-
     }
 
     if (ok == OK)
@@ -4070,7 +4115,8 @@ set_errorlist(
     else
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
     qi->qf_lists[qi->qf_curlist].qf_ptr = qi->qf_lists[qi->qf_curlist].qf_start;
-    qi->qf_lists[qi->qf_curlist].qf_index = 1;
+    if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+	qi->qf_lists[qi->qf_curlist].qf_index = 1;
 
 #ifdef FEAT_WINDOWS
     qf_update_buffer(qi);

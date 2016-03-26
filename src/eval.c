@@ -209,7 +209,9 @@ static hashtab_T	func_hashtab;
 /* The names of packages that once were loaded are remembered. */
 static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
 
-/* list heads for garbage collection */
+/* List heads for garbage collection. Although there can be a reference loop
+ * from partial to dict to partial, we don't need to keep track of the partial,
+ * since it will get freed when the dict is unused and gets freed. */
 static dict_T		*first_dict = NULL;	/* list of all dicts */
 static list_T		*first_list = NULL;	/* list of all lists */
 
@@ -290,13 +292,12 @@ typedef struct
 #define VV_RO		2	/* read-only */
 #define VV_RO_SBX	4	/* read-only in the sandbox */
 
-#define VV_NAME(s, t)	s, {{t, 0, {0}}, 0, {0}}, {0}
+#define VV_NAME(s, t)	s, {{t, 0, {0}}, 0, {0}}
 
 static struct vimvar
 {
     char	*vv_name;	/* name of variable, without v: */
-    dictitem_T	vv_di;		/* value and name for key */
-    char	vv_filler[16];	/* space for LONGEST name below!!! */
+    dictitem16_T vv_di;		/* value and name for key (max 16 chars!) */
     char	vv_flags;	/* VV_COMPAT, VV_RO, VV_RO_SBX */
 } vimvars[VV_LEN] =
 {
@@ -7130,9 +7131,14 @@ set_ref_in_item(
     list_T	*ll;
     int		abort = FALSE;
 
-    if (tv->v_type == VAR_DICT)
+    if (tv->v_type == VAR_DICT || tv->v_type == VAR_PARTIAL)
     {
-	dd = tv->vval.v_dict;
+	if (tv->v_type == VAR_DICT)
+	    dd = tv->vval.v_dict;
+	else if (tv->vval.v_partial != NULL)
+	    dd = tv->vval.v_partial->pt_dict;
+	else
+	    dd = NULL;
 	if (dd != NULL && dd->dv_copyID != copyID)
 	{
 	    /* Didn't see this dict yet. */
@@ -7182,6 +7188,32 @@ set_ref_in_item(
 	}
     }
     return abort;
+}
+
+    static void
+partial_free(partial_T *pt, int free_dict)
+{
+    int i;
+
+    for (i = 0; i < pt->pt_argc; ++i)
+	clear_tv(&pt->pt_argv[i]);
+    vim_free(pt->pt_argv);
+    if (free_dict)
+	dict_unref(pt->pt_dict);
+    func_unref(pt->pt_name);
+    vim_free(pt->pt_name);
+    vim_free(pt);
+}
+
+/*
+ * Unreference a closure: decrement the reference count and free it when it
+ * becomes zero.
+ */
+    void
+partial_unref(partial_T *pt)
+{
+    if (pt != NULL && --pt->pt_refcount <= 0)
+	partial_free(pt, TRUE);
 }
 
 /*
@@ -7275,7 +7307,18 @@ dict_free(
 	    hash_remove(&d->dv_hashtab, hi);
 	    if (recurse || (di->di_tv.v_type != VAR_LIST
 					     && di->di_tv.v_type != VAR_DICT))
-		clear_tv(&di->di_tv);
+	    {
+		if (!recurse && di->di_tv.v_type == VAR_PARTIAL)
+		{
+		    partial_T *pt = di->di_tv.vval.v_partial;
+
+		    /* We unref the partial but not the dict it refers to. */
+		    if (pt != NULL && --pt->pt_refcount == 0)
+			partial_free(pt, FALSE);
+		}
+		else
+		    clear_tv(&di->di_tv);
+	    }
 	    vim_free(di);
 	    --todo;
 	}
@@ -7807,10 +7850,50 @@ echo_string(
 	    break;
 
 	case VAR_PARTIAL:
-	    *tofree = NULL;
-	    /* TODO: arguments */
-	    r = tv->vval.v_partial == NULL ? NULL : tv->vval.v_partial->pt_name;
-	    break;
+	    {
+		partial_T   *pt = tv->vval.v_partial;
+		char_u	    *fname = string_quote(pt == NULL ? NULL
+							: pt->pt_name, FALSE);
+		garray_T    ga;
+		int	    i;
+		char_u	    *tf;
+
+		ga_init2(&ga, 1, 100);
+		ga_concat(&ga, (char_u *)"function(");
+		if (fname != NULL)
+		{
+		    ga_concat(&ga, fname);
+		    vim_free(fname);
+		}
+		if (pt != NULL && pt->pt_argc > 0)
+		{
+		    ga_concat(&ga, (char_u *)", [");
+		    for (i = 0; i < pt->pt_argc; ++i)
+		    {
+			if (i > 0)
+			    ga_concat(&ga, (char_u *)", ");
+			ga_concat(&ga,
+			     tv2string(&pt->pt_argv[i], &tf, numbuf, copyID));
+			vim_free(tf);
+		    }
+		    ga_concat(&ga, (char_u *)"]");
+		}
+		if (pt != NULL && pt->pt_dict != NULL)
+		{
+		    typval_T dtv;
+
+		    ga_concat(&ga, (char_u *)", ");
+		    dtv.v_type = VAR_DICT;
+		    dtv.vval.v_dict = pt->pt_dict;
+		    ga_concat(&ga, tv2string(&dtv, &tf, numbuf, copyID));
+		    vim_free(tf);
+		}
+		ga_concat(&ga, (char_u *)")");
+
+		*tofree = ga.ga_data;
+		r = *tofree;
+		break;
+	    }
 
 	case VAR_LIST:
 	    if (tv->vval.v_list == NULL)
@@ -7897,50 +7980,6 @@ tv2string(
 	case VAR_FUNC:
 	    *tofree = string_quote(tv->vval.v_string, TRUE);
 	    return *tofree;
-	case VAR_PARTIAL:
-	    {
-		partial_T   *pt = tv->vval.v_partial;
-		char_u	    *fname = string_quote(pt == NULL ? NULL
-							: pt->pt_name, FALSE);
-		garray_T    ga;
-		int	    i;
-		char_u	    *tf;
-
-		ga_init2(&ga, 1, 100);
-		ga_concat(&ga, (char_u *)"function(");
-		if (fname != NULL)
-		{
-		    ga_concat(&ga, fname);
-		    vim_free(fname);
-		}
-		if (pt != NULL && pt->pt_argc > 0)
-		{
-		    ga_concat(&ga, (char_u *)", [");
-		    for (i = 0; i < pt->pt_argc; ++i)
-		    {
-			if (i > 0)
-			    ga_concat(&ga, (char_u *)", ");
-			ga_concat(&ga,
-			     tv2string(&pt->pt_argv[i], &tf, numbuf, copyID));
-			vim_free(tf);
-		    }
-		    ga_concat(&ga, (char_u *)"]");
-		}
-		if (pt != NULL && pt->pt_dict != NULL)
-		{
-		    typval_T dtv;
-
-		    ga_concat(&ga, (char_u *)", ");
-		    dtv.v_type = VAR_DICT;
-		    dtv.vval.v_dict = pt->pt_dict;
-		    ga_concat(&ga, tv2string(&dtv, &tf, numbuf, copyID));
-		    vim_free(tf);
-		}
-		ga_concat(&ga, (char_u *)")");
-
-		*tofree = ga.ga_data;
-		return *tofree;
-	    }
 	case VAR_STRING:
 	    *tofree = string_quote(tv->vval.v_string, FALSE);
 	    return *tofree;
@@ -7953,6 +7992,7 @@ tv2string(
 	case VAR_NUMBER:
 	case VAR_LIST:
 	case VAR_DICT:
+	case VAR_PARTIAL:
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
@@ -12009,30 +12049,6 @@ f_function(typval_T *argvars, typval_T *rettv)
 	    func_ref(name);
 	}
     }
-}
-
-    static void
-partial_free(partial_T *pt)
-{
-    int i;
-
-    for (i = 0; i < pt->pt_argc; ++i)
-	clear_tv(&pt->pt_argv[i]);
-    vim_free(pt->pt_argv);
-    func_unref(pt->pt_name);
-    vim_free(pt->pt_name);
-    vim_free(pt);
-}
-
-/*
- * Unreference a closure: decrement the reference count and free it when it
- * becomes zero.
- */
-    void
-partial_unref(partial_T *pt)
-{
-    if (pt != NULL && --pt->pt_refcount <= 0)
-	partial_free(pt);
 }
 
 /*
@@ -19238,7 +19254,8 @@ f_string(typval_T *argvars, typval_T *rettv)
     char_u	numbuf[NUMBUFLEN];
 
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = tv2string(&argvars[0], &tofree, numbuf, 0);
+    rettv->vval.v_string = tv2string(&argvars[0], &tofree, numbuf,
+								get_copyID());
     /* Make a copy if we have a value but it's not in allocated memory. */
     if (rettv->vval.v_string != NULL && tofree == NULL)
 	rettv->vval.v_string = vim_strsave(rettv->vval.v_string);
@@ -21797,7 +21814,8 @@ handle_subscript(
 		selfdict = NULL;
 		if (rettv->v_type == VAR_FUNC)
 		{
-		    /* just a function: use selfdict */
+		    /* Just a function: Take over the function name and use
+		     * selfdict. */
 		    pt->pt_name = rettv->vval.v_string;
 		}
 		else
@@ -21805,8 +21823,11 @@ handle_subscript(
 		    partial_T	*ret_pt = rettv->vval.v_partial;
 		    int		i;
 
-		    /* partial: use selfdict and copy args */
+		    /* Partial: copy the function name, use selfdict and copy
+		     * args.  Can't take over name or args, the partial might
+		     * be referenced elsewhere. */
 		    pt->pt_name = vim_strsave(ret_pt->pt_name);
+		    func_ref(pt->pt_name);
 		    if (ret_pt->pt_argc > 0)
 		    {
 			pt->pt_argv = (typval_T *)alloc(
@@ -21823,7 +21844,6 @@ handle_subscript(
 		    }
 		    partial_unref(ret_pt);
 		}
-		func_ref(pt->pt_name);
 		rettv->v_type = VAR_PARTIAL;
 		rettv->vval.v_partial = pt;
 	    }
@@ -23434,7 +23454,8 @@ ex_function(exarg_T *eap)
 	else
 	    arg = fudi.fd_newkey;
 	if (arg != NULL && (fudi.fd_di == NULL
-				     || fudi.fd_di->di_tv.v_type != VAR_FUNC))
+				     || (fudi.fd_di->di_tv.v_type != VAR_FUNC
+				 && fudi.fd_di->di_tv.v_type != VAR_PARTIAL)))
 	{
 	    if (*arg == K_SPECIAL)
 		j = 3;
@@ -26416,7 +26437,13 @@ repeat:
 
     if (src[*usedlen] == ':' && src[*usedlen + 1] == 'S')
     {
+	/* vim_strsave_shellescape() needs a NUL terminated string. */
+	c = (*fnamep)[*fnamelen];
+	if (c != NUL)
+	    (*fnamep)[*fnamelen] = NUL;
 	p = vim_strsave_shellescape(*fnamep, FALSE, FALSE);
+	if (c != NUL)
+	    (*fnamep)[*fnamelen] = c;
 	if (p == NULL)
 	    return -1;
 	vim_free(*bufp);

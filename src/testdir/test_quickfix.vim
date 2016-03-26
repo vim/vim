@@ -504,7 +504,7 @@ function Test_locationlist_curwin_was_closed()
       autocmd BufReadCmd t call R(expand("<amatch>"))
     augroup END
 
-    function R(n)
+    function! R(n)
       quit
     endfunc
 
@@ -637,3 +637,58 @@ function! Test_efm1()
     call delete('Xerrorfile2')
     call delete('Xtestfile')
 endfunction
+
+function XquickfixChangedByAutocmd(cchar)
+  let Xolder = a:cchar . 'older'
+  let Xgetexpr = a:cchar . 'getexpr'
+  let Xrewind = a:cchar . 'rewind'
+  if a:cchar == 'c'
+    let Xsetlist = 'setqflist('
+    let ErrorNr = 'E925'
+    function! ReadFunc()
+      colder
+      cgetexpr []
+    endfunc
+  else
+    let Xsetlist = 'setloclist(0,'
+    let ErrorNr = 'E926'
+    function! ReadFunc()
+      lolder
+      lgetexpr []
+    endfunc
+  endif
+
+  augroup testgroup
+    au!
+    autocmd BufReadCmd t call ReadFunc()
+  augroup END
+
+  bwipe!
+  let words = [ "a", "b" ]
+  let qflist = []
+  for word in words
+    call add(qflist, {'filename': 't'})
+    exec "call " . Xsetlist . "qflist, '')"
+  endfor
+  exec "call assert_fails('" . Xrewind . "', '" . ErrorNr . ":')"
+
+  augroup! testgroup
+endfunc
+
+function Test_quickfix_was_changed_by_autocmd()
+  call XquickfixChangedByAutocmd('c')
+  call XquickfixChangedByAutocmd('l')
+endfunction
+
+func Test_caddbuffer_to_empty()
+  helpgr quickfix
+  call setqflist([], 'r')
+  cad
+  try
+    cn
+  catch
+    " number of matches is unknown
+    call assert_true(v:exception =~ 'E553:')
+  endtry
+  quit!
+endfunc

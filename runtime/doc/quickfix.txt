@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.4.  Last change: 2016 Mar 19
+*quickfix.txt*  For Vim version 7.4.  Last change: 2016 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -59,6 +59,10 @@ command with 'l'.
 							*E924*
 If the current window was closed by an |autocommand| while processing a
 location list command, it will be aborted.
+
+							*E925* *E926*
+If the current quickfix or location list was changed by an |autocommand| while
+processing a quickfix or location list command, it will be aborted.
 
 							*:cc*
 :cc[!] [nr]		Display error [nr].  If [nr] is omitted, the same

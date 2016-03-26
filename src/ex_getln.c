@@ -1989,6 +1989,7 @@ getcmdline_prompt(
     char_u		*s;
     struct cmdline_info	save_ccline;
     int			msg_col_save = msg_col;
+    int			msg_silent_save = msg_silent;
 
     save_cmdline(&save_ccline);
     ccline.cmdprompt = prompt;
@@ -1998,8 +1999,10 @@ getcmdline_prompt(
     ccline.xp_arg = xp_arg;
     ccline.input_fn = (firstc == '@');
 # endif
+    msg_silent = 0;
     s = getcmdline(firstc, 1L, 0);
     restore_cmdline(&save_ccline);
+    msg_silent = msg_silent_save;
     /* Restore msg_col, the prompt from input() may have changed it.
      * But only if called recursively and the commandline is therefore being
      * restored to an old one; if not, the input() prompt stays on the screen,

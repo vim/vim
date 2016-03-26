@@ -606,6 +606,7 @@ ServerWait(
     {
 	while (XCheckWindowEvent(dpy, commWindow, PropertyChangeMask, &event))
 	    serverEventProc(dpy, &event, 1);
+	server_parse_messages();
 
 	if (endCond(endData) != 0)
 	    break;

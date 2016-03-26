@@ -1,7 +1,7 @@
 " An example for a vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2015 Mar 24
+" Last change:	2016 Mar 25
 "
 " To use it, copy it to
 "     for Unix and OS/2:  ~/.vimrc
@@ -100,3 +100,10 @@ if has('langmap') && exists('+langnoremap')
   " compatible).
   set langnoremap
 endif
+
+
+" Add optional packages.
+"
+" The matchit plugin makes the % command work better, but it is not backwards
+" compatible.
+packadd matchit

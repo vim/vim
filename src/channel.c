@@ -2099,8 +2099,8 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, int part)
 {
     chanpart_T *chanpart = &channel->ch_part[part];
     char	namebuf[20];
-    int		tail;
-    char	*s;
+    size_t	tail;
+    char	*s = "";
 
     STRCPY(namebuf, name);
     STRCAT(namebuf, "_");

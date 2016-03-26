@@ -495,7 +495,6 @@ RT_ALL =	\
 		runtime/macros/life/click.me \
 		runtime/macros/life/life.vim \
 		runtime/macros/matchit.vim \
-		runtime/macros/matchit.txt \
 		runtime/macros/maze/README.txt \
 		runtime/macros/maze/[mM]akefile \
 		runtime/macros/maze/main.aap \
@@ -525,6 +524,9 @@ RT_ALL =	\
 		runtime/tutor/tutor \
 		runtime/tutor/tutor.vim \
 		runtime/vimrc_example.vim \
+		runtime/pack/dist/opt/matchit/plugin/matchit.vim \
+		runtime/pack/dist/opt/matchit/doc/matchit.txt \
+		runtime/pack/dist/opt/matchit/doc/tags \
 
 # runtime files for all distributions without CR-NL translation
 RT_ALL_BIN =	\
