@@ -73,6 +73,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
+                    elif decoded[1] == 'bad command':
+                        cmd = '["ex","foo bar"]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
                     elif decoded[1] == 'do normal':
                         # Send a normal command.
                         cmd = '["normal","G$s more\u001b"]'
