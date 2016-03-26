@@ -818,6 +818,7 @@ static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit
 #define SWB_SPLIT		0x004
 #define SWB_NEWTAB		0x008
 #define SWB_VSPLIT		0x010
+EXTERN int	p_vtlc;		/* 'vtablinecolumns' */
 EXTERN int	p_tbs;		/* 'tagbsearch' */
 EXTERN char_u	*p_tc;		/* 'tagcase' */
 EXTERN unsigned tc_flags;       /* flags from 'tagcase' */

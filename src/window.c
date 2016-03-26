@@ -4977,7 +4977,7 @@ win_setheight_win(int height, win_T *win)
      * line, clear it.
      */
     if (full_screen && msg_scrolled == 0 && row < cmdline_row)
-	screen_fill(row, cmdline_row, vertical_tabline_width() + 0, GetColumns(), ' ', ' ', 0);
+	screen_fill(row, cmdline_row, 0 + p_vtlc, (int)Columns + p_vtlc, ' ', ' ', 0);
     cmdline_row = row;
     msg_row = row;
     msg_col = 0;
@@ -5486,7 +5486,7 @@ win_drag_status_line(win_T *dragwin, int offset)
 	    fr = fr->fr_next;
     }
     row = win_comp_pos();
-    screen_fill(row, cmdline_row, vertical_tabline_width() + 0, GetColumns(), ' ', ' ', 0);
+    screen_fill(row, cmdline_row, 0 + p_vtlc, (int)Columns + p_vtlc, ' ', ' ', 0);
     cmdline_row = row;
     p_ch = Rows - cmdline_row;
     if (p_ch < 1)
@@ -5852,8 +5852,8 @@ command_height(void)
 
 	    /* clear the lines added to cmdline */
 	    if (full_screen)
-		screen_fill((int)(cmdline_row), (int)Rows, vertical_tabline_width() + 0,
-						   GetColumns(), ' ', ' ', 0);
+		screen_fill((int)(cmdline_row), (int)Rows, 0 + p_vtlc,
+						   (int)Columns + p_vtlc, ' ', ' ', 0);
 	    msg_row = cmdline_row;
 	    redraw_cmdline = TRUE;
 	    return;

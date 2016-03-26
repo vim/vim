@@ -543,8 +543,8 @@ prt_header(
     static void
 prt_message(char_u *s)
 {
-    screen_fill((int)Rows - 1, (int)Rows, vertical_tabline_width() + 0, GetColumns(), ' ', ' ', 0);
-    screen_puts(s, (int)Rows - 1, vertical_tabline_width() + 0, hl_attr(HLF_R));
+    screen_fill((int)Rows - 1, (int)Rows, 0 + p_vtlc, (int)Columns + p_vtlc, ' ', ' ', 0);
+    screen_puts(s, (int)Rows - 1, 0 + p_vtlc, hl_attr(HLF_R));
     out_flush();
 }
 
