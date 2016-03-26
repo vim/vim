@@ -969,6 +969,9 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
     if (p_im)
 	need_start_insertmode = TRUE;
 
+#ifdef FEAT_EVAL
+    set_vim_var_nr(VV_VIM_DID_ENTER, 1L);
+#endif
 #ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_VIMENTER, NULL, NULL, FALSE, curbuf);
     TIME_MSG("VimEnter autocommands");

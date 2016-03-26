@@ -372,6 +372,7 @@ static struct vimvar
     {VV_NAME("true",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
 };
 
 /* shorthand */
@@ -13837,7 +13838,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	if (STRNICMP(name, "patch", 5) == 0)
 	{
 	    if (name[5] == '-'
-		    && STRLEN(name) > 11
+		    && STRLEN(name) >= 11
 		    && vim_isdigit(name[6])
 		    && vim_isdigit(name[8])
 		    && vim_isdigit(name[10]))
@@ -20190,6 +20191,7 @@ get_callback(typval_T *arg, partial_T **pp)
     if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
     {
 	*pp = arg->vval.v_partial;
+	++(*pp)->pt_refcount;
 	return (*pp)->pt_name;
     }
     *pp = NULL;
