@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 20
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2716,13 +2716,6 @@ ch_close({handle})						*ch_close()*
 		Close {handle}.  See |channel-close|.
 		{handle} can be Channel or a Job that has a Channel.
 
-		Note that a channel is closed in three stages:
-		  - The I/O ends, log message: "Closing channel". There can
-		    still be queued messages to read or callbacks to invoke.
-		  - The readahead is cleared, log message: "Clearing channel".
-		    Some variables may still reference the channel.
-		  - The channel is freed, log message: "Freeing channel".
-
 		{only available when compiled with the |+channel| feature}
 
 ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
@@ -2732,7 +2725,8 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 		{handle} can be Channel or a Job that has a Channel.
 								*E917*
 		{options} must be a Dictionary.  It must not have a "callback"
-		entry.  It can have a "timeout" entry.
+		entry.  It can have a "timeout" entry to specify the timeout
+		for this specific request.
 
 		ch_evalexpr() waits for a response and returns the decoded
 		expression.  When there is an error or timeout it returns an
@@ -2816,64 +2810,33 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 
 ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
-		Returns a Channel.  Use |ch_status()| to check for
-		failure.
+		Returns a Channel.  Use |ch_status()| to check for failure.
 
 		{address} has the form "hostname:port", e.g.,
 		"localhost:8765".
 
-		If {options} is given it must be a |Dictionary|.  The optional
-		items are:
-			mode        "raw", "js" or "json".
-				    Default "json".
-			callback    function to call for requests with a zero
-				    sequence number.  See |channel-callback|.
-				    Default: none.
-			waittime    Specify connect timeout as milliseconds.
-				    Negative means forever.
-				    Default: 0 (don't wait)
-			timeout	    Specify response read timeout value in
-				    milliseconds. 
-				    Default: 2000.
+		If {options} is given it must be a |Dictionary|.
+		See |channel-open-options|.
+
 		{only available when compiled with the |+channel| feature}
 
 ch_read({handle} [, {options}])					*ch_read()*
 		Read from {handle} and return the received message.
 		{handle} can be Channel or a Job that has a Channel.
-
-		This uses the channel timeout.  When there is nothing to read
-		within that time an empty string is returned.  To specify a
-		different timeout in msec use the "timeout" option:
-			{"timeout": 123} ~
-		To read from the error output use the "part" option:
-			{"part": "err"} ~
-		To read a message with a specific ID, on a JS or JSON channel:
-			{"id": 99} ~
-		When no ID is specified or the ID is -1, the first message is
-		returned. This overrules any callback waiting for this
-		message.
-
-		For a RAW channel this returns whatever is available, since
-		Vim does not know where a message ends.
-		For a NL channel this returns one message.
-		For a JS or JSON channel this returns one decoded message.
-		This includes any sequence number.
+		See |channel-more|.
+		{only available when compiled with the |+channel| feature}
 
 ch_readraw({handle} [, {options}])			*ch_readraw()*
 		Like ch_read() but for a JS and JSON channel does not decode
-		the message.
+		the message.  See |channel-more|.
+		{only available when compiled with the |+channel| feature}
 
 ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		Send {expr} over {handle}.  The {expr} is encoded
 		according to the type of channel.  The function cannot be used
-		with a raw channel.  See |channel-use|. *E912*
+		with a raw channel.
+		See |channel-use|.				*E912*
 		{handle} can be Channel or a Job that has a Channel.
-
-		{options} must be a Dictionary.  The "callback" item is a
-		Funcref or the name of a function it is invoked when the
-		response is received.  See |channel-callback|.
-		Without "callback" the channel handler is invoked, otherwise
-		any received message is dropped.
 
 		{only available when compiled with the |+channel| feature}
 
@@ -6675,13 +6638,17 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 		Float, String or a composition of them, then the result can be
 		parsed back with |eval()|.
 			{expr} type	result ~
-			String		'string'
+			String		'string' (single quotes are doubled)
 			Number		123
 			Float		123.123456 or 1.123456e8
 			Funcref		function('name')
 			List		[item, item]
 			Dictionary	{key: value, key: value}
-		Note that in String values the ' character is doubled.
+
+		When a List or Dictionary has a recursive reference it is
+		replaced by "[...]" or "{...}".  Using eval() on the result
+		will then fail.
+
 		Also see |strtrans()|.
 
 							*strlen()*
@@ -7665,6 +7632,7 @@ unix			Unix version of Vim.
 user_commands		User-defined commands.
 vertsplit		Compiled with vertically split windows |:vsplit|.
 vim_starting		True while initial source'ing takes place. |startup|
+			*vim_starting*
 viminfo			Compiled with viminfo support.
 virtualedit		Compiled with 'virtualedit' option.
 visual			Compiled with Visual mode.
