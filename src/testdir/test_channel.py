@@ -85,16 +85,28 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
+                    elif decoded[1] == 'eval-special':
+                        # Send an eval request.  We ignore the response.
+                        cmd = '["expr","\\"foo\x7f\x10\x01bar\\"", -2]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'eval-getline':
+                        # Send an eval request.  We ignore the response.
+                        cmd = '["expr","getline(3)", -3]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
                     elif decoded[1] == 'eval-fails':
                         # Send an eval request that will fail.
-                        cmd = '["expr","xxx", -2]'
+                        cmd = '["expr","xxx", -4]'
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-error':
                         # Send an eval request that works but the result can't
                         # be encoded.
-                        cmd = '["expr","function(\\"tr\\")", -3]'
+                        cmd = '["expr","function(\\"tr\\")", -5]'
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"

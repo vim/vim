@@ -192,20 +192,31 @@ func s:communicate(port)
   sleep 10m
   call assert_equal([-1, 'foo123'], ch_evalexpr(handle, 'eval-result'))
 
+  " Send an eval request with special characters.
+  call assert_equal('ok', ch_evalexpr(handle, 'eval-special'))
+  sleep 10m
+  call assert_equal([-2, "foo\x7f\x10\x01bar"], ch_evalexpr(handle, 'eval-result'))
+
+  " Send an eval request to get a line with special characters.
+  call setline(3, "a\nb\<CR>c\x01d\x7fe")
+  call assert_equal('ok', ch_evalexpr(handle, 'eval-getline'))
+  sleep 10m
+  call assert_equal([-3, "a\nb\<CR>c\x01d\x7fe"], ch_evalexpr(handle, 'eval-result'))
+
   " Send an eval request that fails.
   call assert_equal('ok', ch_evalexpr(handle, 'eval-fails'))
   sleep 10m
-  call assert_equal([-2, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
+  call assert_equal([-4, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
 
   " Send an eval request that works but can't be encoded.
   call assert_equal('ok', ch_evalexpr(handle, 'eval-error'))
   sleep 10m
-  call assert_equal([-3, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
+  call assert_equal([-5, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
 
   " Send a bad eval request. There will be no response.
   call assert_equal('ok', ch_evalexpr(handle, 'eval-bad'))
   sleep 10m
-  call assert_equal([-3, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
+  call assert_equal([-5, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
 
   " Send an expr request
   call assert_equal('ok', ch_evalexpr(handle, 'an expr'))
