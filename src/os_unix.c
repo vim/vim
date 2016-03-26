@@ -5467,7 +5467,7 @@ WaitForCharOrMouse(long msec, int *break_loop)
 	;
 
 #else
-    avail = RealWaitForChar(read_cmd_fd, msec, NULL, &break_loop);
+    avail = RealWaitForChar(read_cmd_fd, msec, NULL, break_loop);
 #endif
     return avail;
 }
