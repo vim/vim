@@ -3812,6 +3812,11 @@ job_start(typval_T *argvars)
     {
 	/* Command is a string. */
 	cmd = argvars[0].vval.v_string;
+	if (cmd == NULL || *cmd == NUL)
+	{
+	    EMSG(_(e_invarg));
+	    return job;
+	}
 #ifdef USE_ARGV
 	if (mch_parse_cmd(cmd, FALSE, &argv, &argc) == FAIL)
 	    return job;

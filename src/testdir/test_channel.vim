@@ -1201,5 +1201,10 @@ func Test_close_callback()
   call s:run_server('s:test_close_callback')
 endfunc
 
+func Test_job_start_invalid()
+  call assert_fails('call job_start($x)', 'E474:')
+  call assert_fails('call job_start("")', 'E474:')
+endfunc
+
 " Uncomment this to see what happens, output is in src/testdir/channellog.
 " call ch_logfile('channellog', 'w')
