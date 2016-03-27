@@ -154,7 +154,7 @@ func s:communicate(port)
   " Request command "foo bar", which fails silently.
   call assert_equal('ok', ch_evalexpr(handle, 'bad command'))
   call s:waitFor('v:errmsg =~ "E492"')
-  call assert_true(v:errmsg =~ 'E492:.*foo bar')
+  call assert_match('E492:.*foo bar', v:errmsg)
 
   call assert_equal('ok', ch_evalexpr(handle, 'do normal', {'timeout': 100}))
   call s:waitFor('"added more" == getline("$")')
