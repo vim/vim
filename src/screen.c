@@ -10224,45 +10224,100 @@ draw_vertical_tabline(void)
     int		attr_fill = hl_attr(HLF_TPF);
     win_T	*wp;
     win_T	*cwp;
+    char_u	*p;
+    int		room;
     int		attr;
     int		i;
     int		col = 0;
     int		row = 0;
     tabpage_T	*tp;
-    char_u	*p;
+    int		wincount;
+    int		modified;
 
     tp = first_tabpage;
-    for (row = 0; row < screen_Rows; ++row)
+    for (row = 0; row < Rows; ++row)
     {
-        if (tp != NULL)
+        col = 0;
+        attr = attr_nosel;
+        if(tp != NULL)
         {
+            if (tp->tp_topframe == topframe)
+                attr = attr_sel;
+
+            if (p_vtlc > col + 1)
+                screen_putchar(' ', row, col++, attr);
+
             if (tp == curtab)
             {
                 cwp = curwin;
                 wp = firstwin;
-                attr = attr_sel;
             }
             else
             {
                 cwp = tp->tp_curwin;
                 wp = tp->tp_firstwin;
-                attr = attr_nosel;
             }
-            get_trans_bufname(cwp->w_buffer);
-            shorten_dir(NameBuff);
-            len = vim_strsize(NameBuff);
-            p = NameBuff;
-            screen_puts_len(p, len, row, col, attr);
-            for (i = len; i < p_vtlc; ++i)
-                screen_putchar(' ', row, col + i, attr);
+
+            modified = FALSE;
+            for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
+                if (bufIsChanged(wp->w_buffer))
+                    modified = TRUE;
+            if (modified || wincount > 1)
+            {
+                if (wincount > 1)
+                {
+                    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
+                    len = (int)STRLEN(NameBuff);
+                    if (p_vtlc > col + len)
+                        screen_puts_len(NameBuff, len, row, col,
+#if defined(FEAT_SYN_HL)
+                                     hl_combine_attr(attr, hl_attr(HLF_T))
+#else
+                                     attr
+#endif
+                                     );
+                    col += len;
+                }
+                if (modified)
+                {
+                    if (p_vtlc > col + 1)
+                        screen_puts_len((char_u *)"+", 1, row, col++, attr);
+                }
+                if (p_vtlc > col + 1)
+                    screen_putchar(' ', row, col++, attr);
+            }
+
+	    room = p_vtlc - col - 1;
+	    if (room > 0)
+	    {
+		get_trans_bufname(cwp->w_buffer);
+		shorten_dir(NameBuff);
+		len = vim_strsize(NameBuff);
+		p = NameBuff;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    while (len > room)
+		    {
+			len -= ptr2cells(p);
+			mb_ptr_adv(p);
+		    }
+		else
+#endif
+                if (len > room)
+		{
+		    p += len - room;
+		    len = room;
+		}
+		if (len > Columns - col - 1)
+		    len = Columns - col - 1;
+
+		screen_puts_len(p, (int)STRLEN(p), row, col, attr);
+		col += len;
+	    }
             tp = tp->tp_next;
         }
-        else
-        {
-            attr = attr_fill;
-            for (i = 0; i < p_vtlc; ++i)
-                screen_putchar(' ', row, col + i, attr);
-        }
+        while (col < p_vtlc)
+            screen_putchar(' ', row, col++, attr);
     }
 
 }
