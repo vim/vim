@@ -1073,7 +1073,7 @@ load_base_module(void *data)
 }
 
     static Scheme_Object *
-load_base_module_on_error(void *data)
+load_base_module_on_error(void *data UNUSED)
 {
     load_base_module_failed = TRUE;
     return scheme_null;
