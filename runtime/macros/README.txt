@@ -13,8 +13,6 @@ how to use Vi and Vim functionality.
 
 less.sh + less.vim	make Vim work like less (or more)
 
-shellmenu.vim		menus for editing shell scripts in the GUI version
-
 
 This one is only for Unix.
 file_select.vim		macros that make a handy file selector
@@ -31,5 +29,7 @@ packadd! editexisting	when editing a file that is already edited with
 packadd! justify	justifying text.
 
 packadd! matchit	makes the % command work better
+
+packadd! shellmenu	menus for editing shell scripts in the GUI version
 
 packadd! swapmouse	swap left and right mouse buttons
