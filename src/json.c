@@ -350,8 +350,10 @@ json_skip_white(js_read_T *reader)
 	if (reader->js_fill != NULL && c == NUL)
 	{
 	    if (reader->js_fill(reader))
+	    {
 		reader->js_end = reader->js_buf + STRLEN(reader->js_buf);
-	    continue;
+		continue;
+	    }
 	}
 	if (c == NUL || c > ' ')
 	    break;

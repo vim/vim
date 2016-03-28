@@ -2971,6 +2971,7 @@ struct js_reader
 				/* function to fill the buffer or NULL;
                                  * return TRUE when the buffer was filled */
     void	*js_cookie;	/* can be used by js_fill */
+    int		js_cookie_arg;	/* can be used by js_fill */
 };
 typedef struct js_reader js_read_T;
 
