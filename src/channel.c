@@ -2371,8 +2371,9 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
     if (fd != channel->CH_SOCK_FD)
     {
 	DWORD	nread;
-	int	diff;
+	int	sleep_time;
 	DWORD	deadline = GetTickCount() + timeout;
+	int	delay = 1;
 
 	/* reading from a pipe, not a socket */
 	while (TRUE)
@@ -2380,12 +2381,17 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    if (PeekNamedPipe((HANDLE)fd, NULL, 0, NULL, &nread, NULL)
 								 && nread > 0)
 		return OK;
-	    diff = deadline - GetTickCount();
-	    if (diff <= 0)
+	    sleep_time = deadline - GetTickCount();
+	    if (sleep_time <= 0)
 		break;
-	    /* Wait for 5 msec.
-	     * TODO: increase the sleep time when looping more often */
-	    Sleep(5);
+	    /* Wait for a little while.  Very short at first, up to 10 msec
+	     * after looping a few times. */
+	    if (sleep_time > delay)
+		sleep_time = delay;
+	    Sleep(sleep_time);
+	    delay = delay * 2;
+	    if (delay > 10)
+		delay = 10;
 	}
     }
     else
