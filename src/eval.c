@@ -6027,6 +6027,7 @@ rettv_list_alloc(typval_T *rettv)
 
     rettv->vval.v_list = l;
     rettv->v_type = VAR_LIST;
+    rettv->v_lock = 0;
     ++l->lv_refcount;
     return OK;
 }
@@ -7277,6 +7278,7 @@ rettv_dict_alloc(typval_T *rettv)
 
     rettv->vval.v_dict = d;
     rettv->v_type = VAR_DICT;
+    rettv->v_lock = 0;
     ++d->dv_refcount;
     return OK;
 }
