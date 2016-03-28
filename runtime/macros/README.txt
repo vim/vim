@@ -17,20 +17,20 @@ shellmenu.vim		menus for editing shell scripts in the GUI version
 
 swapmous.vim		swap left and right mouse buttons
 
-editexisting.vim	when editing a file that is already edited with
-			another Vim instance
+editexisting.vim	
 
 This one is only for Unix.
 file_select.vim		macros that make a handy file selector
 
-The Dvorak support has been moved to an optional package.  To load it put this
-line in your vimrc file:
-	packadd! dvorak
 
-The support for justifying test has been moved to an optional package.  To
-load it put this line in your vimrc file:
-	packadd! justify
+The following have been moved to an optional package.  Add the command to your
+vimrc file to use the package:
 
-The matchit plugin has been moved to an optional package.  To load it put this
-line in your vimrc file:
-	packadd! matchit
+packadd! dvorak		Dvorak keyboard support; adds mappings
+
+packadd! editexisting	when editing a file that is already edited with
+			another Vim instance, go to that Vim instance
+
+packadd! justify	justifying text.
+
+packadd! matchit	makes the % command work better
