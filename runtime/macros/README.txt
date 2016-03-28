@@ -11,8 +11,6 @@ urm	Macros that simulate a simple computer: "Universal Register Machine"
 The other files contain some handy utilities.  They also serve as examples for
 how to use Vi and Vim functionality.
 
-dvorak			for when you use a Dvorak keyboard
-
 justify.vim		user function for justifying text
 
 less.sh + less.vim	make Vim work like less (or more)
@@ -29,4 +27,8 @@ file_select.vim		macros that make a handy file selector
 
 The matchit plugin has been moved to an optional package.  To load it put this
 line in your vimrc file:
-	:packadd matchit
+	packadd! matchit
+
+The Dvorak supported has been moved to an optional package.  To load it put
+this line in your vimrc file:
+	packadd! dvorak
