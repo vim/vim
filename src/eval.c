@@ -3399,6 +3399,12 @@ set_context_for_expression(
 	    got_eq = TRUE;
 	    xp->xp_context = EXPAND_EXPRESSION;
 	}
+	else if (c == '#'
+		&& xp->xp_context == EXPAND_EXPRESSION)
+	{
+	    /* Autoload function/variable contains '#'. */
+	    break;
+	}
 	else if ((c == '<' || c == '#')
 		&& xp->xp_context == EXPAND_FUNCTIONS
 		&& vim_strchr(xp->xp_pattern, '(') == NULL)
