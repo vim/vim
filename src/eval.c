@@ -933,6 +933,11 @@ eval_init(void)
     for (i = 0; i < VV_LEN; ++i)
     {
 	p = &vimvars[i];
+	if (STRLEN(p->vv_name) > 16)
+	{
+	    EMSG("INTERNAL: name too long, increase size of dictitem16_T");
+	    getout(1);
+	}
 	STRCPY(p->vv_di.di_key, p->vv_name);
 	if (p->vv_flags & VV_RO)
 	    p->vv_di.di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
