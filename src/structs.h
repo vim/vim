@@ -1383,12 +1383,15 @@ typedef struct {
 #else
     struct timeval ch_deadline;
 #endif
+    int		ch_block_write;	/* for testing: 0 when not used, -1 when write
+				 * does not block, 1 simulate blocking */
 
     cbq_T	ch_cb_head;	/* dummy node for per-request callbacks */
     char_u	*ch_callback;	/* call when a msg is not handled */
     partial_T	*ch_partial;
 
     buf_T	*ch_buffer;	/* buffer to read from or write to */
+    int		ch_buf_append;	/* write appended lines instead top-bot */
     linenr_T	ch_buf_top;	/* next line to send */
     linenr_T	ch_buf_bot;	/* last line to send */
 } chanpart_T;
@@ -1457,7 +1460,8 @@ struct channel_S {
 #define JO_ERR_BUF	    0x2000000	/* "err_buf" (JO_OUT_BUF << 1) */
 #define JO_IN_BUF	    0x4000000	/* "in_buf" (JO_OUT_BUF << 2) */
 #define JO_CHANNEL	    0x8000000	/* "channel" */
-#define JO_ALL		    0xfffffff
+#define JO_BLOCK_WRITE	    0x10000000	/* "block_write" */
+#define JO_ALL		    0x7fffffff
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1499,6 +1503,7 @@ typedef struct
     int		jo_timeout;
     int		jo_out_timeout;
     int		jo_err_timeout;
+    int		jo_block_write;	/* for testing only */
     int		jo_part;
     int		jo_id;
     char_u	jo_soe_buf[NUMBUFLEN];

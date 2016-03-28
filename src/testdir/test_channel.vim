@@ -791,7 +791,7 @@ func Run_test_pipe_from_buffer(use_name)
 
   sp pipe-input
   call setline(1, ['echo one', 'echo two', 'echo three'])
-  let options = {'in_io': 'buffer'}
+  let options = {'in_io': 'buffer', 'block_write': 1}
   if a:use_name
     let options['in_name'] = 'pipe-input'
   else
@@ -885,7 +885,8 @@ func Test_pipe_io_two_buffers()
 
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'in_io': 'buffer', 'in_name': 'pipe-input', 'in_top': 0,
-	\  'out_io': 'buffer', 'out_name': 'pipe-output'})
+	\  'out_io': 'buffer', 'out_name': 'pipe-output',
+	\  'block_write': 1})
   call assert_equal("run", job_status(job))
   try
     exe "normal Gaecho hello\<CR>"
@@ -920,7 +921,8 @@ func Test_pipe_io_one_buffer()
 
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'in_io': 'buffer', 'in_name': 'pipe-io', 'in_top': 0,
-	\  'out_io': 'buffer', 'out_name': 'pipe-io'})
+	\  'out_io': 'buffer', 'out_name': 'pipe-io',
+	\  'block_write': 1})
   call assert_equal("run", job_status(job))
   try
     exe "normal Goecho hello\<CR>"
