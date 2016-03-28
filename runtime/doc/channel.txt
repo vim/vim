@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 15
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,24 +120,13 @@ Use |ch_status()| to see if the channel could be opened.
 
 {address} has the form "hostname:port".  E.g., "localhost:8765".
 
-{options} is a dictionary with optional entries:
+{options} is a dictionary with optional entries:	*channel-open-options*
 
 "mode" can be:						*channel-mode*
 	"json" - Use JSON, see below; most convenient way. Default.
 	"js"   - Use JS (JavaScript) encoding, more efficient than JSON.
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
-						*in_mode* *out_mode* *err_mode*
-"in_mode"	mode specifically for stdin, only when using pipes
-"out_mode"	mode specifically for stdout, only when using pipes
-"err_mode"	mode specifically for stderr, only when using pipes
-		Note: when setting "mode" the part specific mode is
-		overwritten.  Therefore set "mode" first and the part specific
-		mode later.
-
-		Note: when writing to a file or buffer and when reading from a
-		buffer NL mode is used by default.
-
 						*channel-callback* *E921*
 "callback"	A function that is called when a message is received that is
 		not handled otherwise.  It gets two arguments: the channel
@@ -155,16 +144,8 @@ Use |ch_status()| to see if the channel could be opened.
 		as a string.
 
 		For all callbacks: Use |function()| to bind it to arguments
-		and/or a dictionary.
-							*out_cb*
-"out_cb"	A function like "callback" but used for stdout.  Only for when
-		the channel uses pipes.  When "out_cb" wasn't set the channel
-		callback is used.
-							*err_cb*
-"err_cb"	A function like "callback" but used for stderr.  Only for when
-		the channel uses pipes.  When "err_cb" wasn't set the channel
-		callback is used.
-
+		and/or a Dictionary.  Or use the form "dict.function" to bind
+		the Dictionary.
 							*close_cb*
 "close_cb"	A function that is called when the channel gets closed, other
 		than by calling ch_close().  It should be defined like this: >
@@ -178,16 +159,10 @@ Use |ch_status()| to see if the channel could be opened.
 		actually uses a 1 msec timeout, that is required on many
 		systems.  Use a larger value for a remote server, e.g.  10
 		msec at least.
-
+							*channel-timeout*
 "timeout"	The time to wait for a request when blocking, E.g. when using
 		ch_evalexpr().  In milliseconds.  The default is 2000 (2
 		seconds).
-						*out_timeout* *err_timeout*
-"out_timeout"	Timeout for stdout.  Only when using pipes.
-"err_timeout"	Timeout for stderr.  Only when using pipes.
-		Note: when setting "timeout" the part specific mode is
-		overwritten.  Therefore set "timeout" first and the part
-		specific mode later.
 
 When "mode" is "json" or "js" the "callback" is optional.  When omitted it is
 only possible to receive a message after sending one.
@@ -214,6 +189,13 @@ When a socket is used this will close the socket for both directions.  When
 pipes are used (stdin/stdout/stderr) they are all closed.  This might not be
 what you want!  Stopping the job with job_stop() might be better.
 All readahead is discarded, callbacks will no longer be invoked.
+
+Note that a channel is closed in three stages:
+  - The I/O ends, log message: "Closing channel". There can still be queued
+    messages to read or callbacks to invoke.
+  - The readahead is cleared, log message: "Clearing channel".  Some variables
+    may still reference the channel.
+  - The channel is freed, log message: "Freeing channel".
 
 When the channel can't be opened you will get an error message.  There is a
 difference between MS-Windows and Unix: On Unix when the port doesn't exist
@@ -326,6 +308,9 @@ completion or error.  You could use functions in an |autoload| script:
 
 You can also use "call |feedkeys()|" to insert any key sequence.
 
+When there is an error a message is written to the channel log, if it exists,
+and v:errmsg is set to the error.
+
 
 Command "normal" ~
 
@@ -428,6 +413,23 @@ To read all output from a RAW channel that is available: >
 To read the error output: >
 	let output = ch_readraw(channel, {"part": "err"})
 
+ch_read() and ch_readraw() use the channel timeout.  When there is nothing to
+read within that time an empty string is returned.  To specify a different
+timeout in msec use the "timeout" option:
+	{"timeout": 123} ~
+To read from the error output use the "part" option:
+	{"part": "err"} ~
+To read a message with a specific ID, on a JS or JSON channel:
+	{"id": 99} ~
+When no ID is specified or the ID is -1, the first message is returned. This
+overrules any callback waiting for this message.
+
+For a RAW channel this returns whatever is available, since Vim does not know
+where a message ends.
+For a NL channel this returns one message.
+For a JS or JSON channel this returns one decoded message.
+This includes any sequence number.
+
 ==============================================================================
 8. Starting a job with a channel			*job-start* *job*
 
@@ -524,15 +526,31 @@ job_setoptions(job, {options}).  Many options can be used with the channel
 related to the job, using ch_setoptions(channel, {options}).
 See |job_setoptions()| and |ch_setoptions()|.
 
+						*in_mode* *out_mode* *err_mode*
+"in_mode"		mode specifically for stdin, only when using pipes
+"out_mode"		mode specifically for stdout, only when using pipes
+"err_mode"		mode specifically for stderr, only when using pipes
+			See |channel-mode| for the values.
+
+			Note: when setting "mode" the part specific mode is
+			overwritten.  Therefore set "mode" first and the part
+			specific mode later.
+
+			Note: when writing to a file or buffer and when
+			reading from a buffer NL mode is used by default.
+
 						*job-callback*
 "callback": handler	Callback for something to read on any part of the
 			channel.
-						*job-out_cb*
+						*job-out_cb* *out_cb*
 "out_cb": handler	Callback for when there is something to read on
-			stdout.
-						*job-err_cb*
+			stdout.  Only for when the channel uses pipes.  When
+			"out_cb" wasn't set the channel callback is used.
+
+						*job-err_cb* *err_cb*
 "err_cb": handler	Callback for when there is something to read on
-			stderr.
+			stderr.  Only for when the channel uses pipes.  When
+			"err_cb" wasn't set the channel callback is used.
 						*job-close_cb*
 "close_cb": handler	Callback for when the channel is closed.  Same as
 			"close_cb" on ch_open().
@@ -542,6 +560,17 @@ See |job_setoptions()| and |ch_setoptions()|.
 			Vim checks about every 10 seconds for jobs that ended.
 			The callback can also be triggered by calling
 			|job_status()|.
+							*job-timeout*
+"timeout"		The time to wait for a request when blocking, E.g.
+			when using ch_evalexpr().  In milliseconds.  The
+			default is 2000 (2 seconds).
+						*out_timeout* *err_timeout*
+"out_timeout"		Timeout for stdout.  Only when using pipes.
+"err_timeout"		Timeout for stderr.  Only when using pipes.
+			Note: when setting "timeout" the part specific mode is
+			overwritten.  Therefore set "timeout" first and the
+			part specific mode later.
+
 						*job-stoponexit*
 "stoponexit": {signal}	Send {signal} to the job when Vim exits.  See
 			|job_stop()| for possible values.

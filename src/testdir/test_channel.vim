@@ -151,6 +151,11 @@ func s:communicate(port)
   call assert_equal('added1', getline(line('$') - 1))
   call assert_equal('added2', getline('$'))
 
+  " Request command "foo bar", which fails silently.
+  call assert_equal('ok', ch_evalexpr(handle, 'bad command'))
+  call s:waitFor('v:errmsg =~ "E492"')
+  call assert_match('E492:.*foo bar', v:errmsg)
+
   call assert_equal('ok', ch_evalexpr(handle, 'do normal', {'timeout': 100}))
   call s:waitFor('"added more" == getline("$")')
   call assert_equal('added more', getline('$'))
@@ -192,20 +197,31 @@ func s:communicate(port)
   sleep 10m
   call assert_equal([-1, 'foo123'], ch_evalexpr(handle, 'eval-result'))
 
+  " Send an eval request with special characters.
+  call assert_equal('ok', ch_evalexpr(handle, 'eval-special'))
+  sleep 10m
+  call assert_equal([-2, "foo\x7f\x10\x01bar"], ch_evalexpr(handle, 'eval-result'))
+
+  " Send an eval request to get a line with special characters.
+  call setline(3, "a\nb\<CR>c\x01d\x7fe")
+  call assert_equal('ok', ch_evalexpr(handle, 'eval-getline'))
+  sleep 10m
+  call assert_equal([-3, "a\nb\<CR>c\x01d\x7fe"], ch_evalexpr(handle, 'eval-result'))
+
   " Send an eval request that fails.
   call assert_equal('ok', ch_evalexpr(handle, 'eval-fails'))
   sleep 10m
-  call assert_equal([-2, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
+  call assert_equal([-4, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
 
   " Send an eval request that works but can't be encoded.
   call assert_equal('ok', ch_evalexpr(handle, 'eval-error'))
   sleep 10m
-  call assert_equal([-3, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
+  call assert_equal([-5, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
 
   " Send a bad eval request. There will be no response.
   call assert_equal('ok', ch_evalexpr(handle, 'eval-bad'))
   sleep 10m
-  call assert_equal([-3, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
+  call assert_equal([-5, 'ERROR'], ch_evalexpr(handle, 'eval-result'))
 
   " Send an expr request
   call assert_equal('ok', ch_evalexpr(handle, 'an expr'))
@@ -1183,6 +1199,11 @@ endfunc
 func Test_close_callback()
   call ch_log('Test_close_callback()')
   call s:run_server('s:test_close_callback')
+endfunc
+
+func Test_job_start_invalid()
+  call assert_fails('call job_start($x)', 'E474:')
+  call assert_fails('call job_start("")', 'E474:')
 endfunc
 
 " Uncomment this to see what happens, output is in src/testdir/channellog.

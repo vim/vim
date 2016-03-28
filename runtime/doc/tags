@@ -1637,6 +1637,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 05.5	usr_05.txt	/*05.5*
 05.6	usr_05.txt	/*05.6*
 05.7	usr_05.txt	/*05.7*
+05.8	usr_05.txt	/*05.8*
 06.1	usr_06.txt	/*06.1*
 06.2	usr_06.txt	/*06.2*
 06.3	usr_06.txt	/*06.3*
@@ -4453,6 +4454,8 @@ E921	channel.txt	/*E921*
 E922	eval.txt	/*E922*
 E923	eval.txt	/*E923*
 E924	quickfix.txt	/*E924*
+E925	quickfix.txt	/*E925*
+E926	quickfix.txt	/*E926*
 E93	windows.txt	/*E93*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
@@ -4886,6 +4889,7 @@ add-filetype-plugin	usr_05.txt	/*add-filetype-plugin*
 add-global-plugin	usr_05.txt	/*add-global-plugin*
 add-local-help	usr_05.txt	/*add-local-help*
 add-option-flags	options.txt	/*add-option-flags*
+add-package	usr_05.txt	/*add-package*
 add-plugin	usr_05.txt	/*add-plugin*
 added-5.1	version5.txt	/*added-5.1*
 added-5.2	version5.txt	/*added-5.2*
@@ -5222,7 +5226,9 @@ channel-demo	channel.txt	/*channel-demo*
 channel-mode	channel.txt	/*channel-mode*
 channel-more	channel.txt	/*channel-more*
 channel-open	channel.txt	/*channel-open*
+channel-open-options	channel.txt	/*channel-open-options*
 channel-raw	channel.txt	/*channel-raw*
+channel-timeout	channel.txt	/*channel-timeout*
 channel-use	channel.txt	/*channel-use*
 channel.txt	channel.txt	/*channel.txt*
 char-variable	eval.txt	/*char-variable*
@@ -6872,6 +6878,7 @@ job-start-if-needed	channel.txt	/*job-start-if-needed*
 job-start-nochannel	channel.txt	/*job-start-nochannel*
 job-stoponexit	channel.txt	/*job-stoponexit*
 job-term	channel.txt	/*job-term*
+job-timeout	channel.txt	/*job-timeout*
 job_getchannel()	eval.txt	/*job_getchannel()*
 job_info()	eval.txt	/*job_info()*
 job_setoptions()	eval.txt	/*job_setoptions()*
@@ -7600,6 +7607,7 @@ out_name	channel.txt	/*out_name*
 out_timeout	channel.txt	/*out_timeout*
 p	change.txt	/*p*
 pack-add	repeat.txt	/*pack-add*
+package-create	repeat.txt	/*package-create*
 packages	repeat.txt	/*packages*
 page-down	intro.txt	/*page-down*
 page-up	intro.txt	/*page-up*
@@ -8767,6 +8775,7 @@ v:true	eval.txt	/*v:true*
 v:val	eval.txt	/*v:val*
 v:var	eval.txt	/*v:var*
 v:version	eval.txt	/*v:version*
+v:vim_did_enter	eval.txt	/*v:vim_did_enter*
 v:warningmsg	eval.txt	/*v:warningmsg*
 v:windowid	eval.txt	/*v:windowid*
 v_!	change.txt	/*v_!*
@@ -8940,6 +8949,8 @@ vim-variable	eval.txt	/*vim-variable*
 vim.vim	syntax.txt	/*vim.vim*
 vim7	version7.txt	/*vim7*
 vim:	options.txt	/*vim:*
+vim_did_enter-variable	eval.txt	/*vim_did_enter-variable*
+vim_starting	eval.txt	/*vim_starting*
 vimball	pi_vimball.txt	/*vimball*
 vimball-contents	pi_vimball.txt	/*vimball-contents*
 vimball-extract	pi_vimball.txt	/*vimball-extract*

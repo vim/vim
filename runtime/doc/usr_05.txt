@@ -275,10 +275,9 @@ matching HTML tags, if/else/endif in Vim scripts, etc.  Very useful, although
 it's not backwards compatible (that's why it is not enabled by default).
 
 To start using the matchit plugin, add one line to your vimrc file: >
-	packadd matchit
+	packadd! matchit
 
-That's all!  You can also type the command to try it out.  Now you can find
-help about this plugin: >
+That's all!  After restarting Vim you can find help about this plugin: >
 	:help matchit
 
 This works, because when `:packadd` loaded the plugin it also added the

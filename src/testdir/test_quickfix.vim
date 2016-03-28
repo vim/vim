@@ -692,3 +692,8 @@ func Test_caddbuffer_to_empty()
   endtry
   quit!
 endfunc
+
+func Test_cgetexpr_works()
+  " this must not crash Vim
+  cgetexpr [$x]
+endfunc

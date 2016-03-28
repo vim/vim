@@ -434,7 +434,6 @@ channel_read_fd(int fd)
 
 /*
  * Read a command from netbeans.
- * TODO: instead of channel ID use the FD.
  */
 #ifdef FEAT_GUI_X11
     static void
@@ -1184,7 +1183,6 @@ write_buf_line(buf_T *buf, linenr_T lnum, channel_T *channel)
     int	    len = (int)STRLEN(line);
     char_u  *p;
 
-    /* TODO: check if channel can be written to, do not block on write */
     if ((p = alloc(len + 2)) == NULL)
 	return;
     STRCPY(p, line);
@@ -1213,13 +1211,14 @@ channel_write_in(channel_T *channel)
 	in_part->ch_buffer = NULL;
 	return;
     }
-    if (in_part->ch_fd == INVALID_FD)
-	/* pipe was closed */
-	return;
 
     for (lnum = in_part->ch_buf_top; lnum <= in_part->ch_buf_bot
 				   && lnum <= buf->b_ml.ml_line_count; ++lnum)
     {
+	if (in_part->ch_fd == INVALID_FD)
+	    /* pipe was closed */
+	    return;
+	/* TODO: check if channel can be written to, do not block on write */
 	write_buf_line(buf, lnum, channel);
 	++written;
     }
@@ -1325,11 +1324,34 @@ channel_get(channel_T *channel, int part)
     static char_u *
 channel_get_all(channel_T *channel, int part)
 {
-    /* Concatenate everything into one buffer.
-     * TODO: avoid multiple allocations. */
-    while (channel_collapse(channel, part) == OK)
-	;
-    return channel_get(channel, part);
+    readq_T *head = &channel->ch_part[part].ch_head;
+    readq_T *node = head->rq_next;
+    long_u  len = 1;
+    char_u  *res;
+    char_u  *p;
+
+    /* If there is only one buffer just get that one. */
+    if (head->rq_next == NULL || head->rq_next->rq_next == NULL)
+	return channel_get(channel, part);
+
+    /* Concatenate everything into one buffer. */
+    for (node = head->rq_next; node != NULL; node = node->rq_next)
+	len += (long_u)STRLEN(node->rq_buffer);
+    res = lalloc(len, TRUE);
+    if (res == NULL)
+	return NULL;
+    *res = NUL;
+    for (node = head->rq_next; node != NULL; node = node->rq_next)
+	STRCAT(res, node->rq_buffer);
+
+    /* Free all buffers */
+    do
+    {
+	p = channel_get(channel, part);
+	vim_free(p);
+    } while (p != NULL);
+
+    return res;
 }
 
 /*
@@ -1365,10 +1387,12 @@ channel_collapse(channel_T *channel, int part)
 
 /*
  * Store "buf[len]" on "channel"/"part".
+ * When "prepend" is TRUE put in front, otherwise append at the end.
  * Returns OK or FAIL.
  */
     static int
-channel_save(channel_T *channel, int part, char_u *buf, int len, char *lead)
+channel_save(channel_T *channel, int part, char_u *buf, int len,
+						      int prepend, char *lead)
 {
     readq_T *node;
     readq_T *head = &channel->ch_part[part].ch_head;
@@ -1400,14 +1424,28 @@ channel_save(channel_T *channel, int part, char_u *buf, int len, char *lead)
 	node->rq_buffer[len] = NUL;
     }
 
-    /* append node to the tail of the queue */
-    node->rq_next = NULL;
-    node->rq_prev = head->rq_prev;
-    if (head->rq_prev == NULL)
+    if (prepend)
+    {
+	/* preend node to the head of the queue */
+	node->rq_next = head->rq_next;
+	node->rq_prev = NULL;
+	if (head->rq_next == NULL)
+	    head->rq_prev = node;
+	else
+	    head->rq_next->rq_prev = node;
 	head->rq_next = node;
+    }
     else
-	head->rq_prev->rq_next = node;
-    head->rq_prev = node;
+    {
+	/* append node to the tail of the queue */
+	node->rq_next = NULL;
+	node->rq_prev = head->rq_prev;
+	if (head->rq_prev == NULL)
+	    head->rq_next = node;
+	else
+	    head->rq_prev->rq_next = node;
+	head->rq_prev = node;
+    }
 
     if (log_fd != NULL && lead != NULL)
     {
@@ -1418,6 +1456,42 @@ channel_save(channel_T *channel, int part, char_u *buf, int len, char *lead)
 	fprintf(log_fd, "'\n");
     }
     return OK;
+}
+
+    static int
+channel_fill(js_read_T *reader)
+{
+    channel_T	*channel = (channel_T *)reader->js_cookie;
+    int		part = reader->js_cookie_arg;
+    char_u	*next = channel_get(channel, part);
+    int		unused;
+    int		len;
+    char_u	*p;
+
+    if (next == NULL)
+	return FALSE;
+
+    unused = reader->js_end - reader->js_buf - reader->js_used;
+    if (unused > 0)
+    {
+	/* Prepend unused text. */
+	len = (int)STRLEN(next);
+	p = alloc(unused + len + 1);
+	if (p == NULL)
+	{
+	    vim_free(next);
+	    return FALSE;
+	}
+	mch_memmove(p, reader->js_buf + reader->js_used, unused);
+	mch_memmove(p + unused, next, len + 1);
+	vim_free(next);
+	next = p;
+    }
+
+    vim_free(reader->js_buf);
+    reader->js_buf = next;
+    reader->js_used = 0;
+    return TRUE;
 }
 
 /*
@@ -1439,19 +1513,17 @@ channel_parse_json(channel_T *channel, int part)
     if (channel_peek(channel, part) == NULL)
 	return FALSE;
 
-    /* TODO: make reader work properly */
-    /* reader.js_buf = channel_peek(channel, part); */
-    reader.js_buf = channel_get_all(channel, part);
+    reader.js_buf = channel_get(channel, part);
     reader.js_used = 0;
-    reader.js_fill = NULL;
-    /* reader.js_fill = channel_fill; */
+    reader.js_fill = channel_fill;
     reader.js_cookie = channel;
+    reader.js_cookie_arg = part;
 
     /* When a message is incomplete we wait for a short while for more to
      * arrive.  After the delay drop the input, otherwise a truncated string
      * or list will make us hang.  */
     status = json_decode(&reader, &listtv,
-		     chanpart->ch_mode == MODE_JS ? JSON_JS : 0);
+				  chanpart->ch_mode == MODE_JS ? JSON_JS : 0);
     if (status == OK)
     {
 	/* Only accept the response when it is a list with at least two
@@ -1552,10 +1624,10 @@ channel_parse_json(channel_T *channel, int part)
     }
     else if (reader.js_buf[reader.js_used] != NUL)
     {
-	/* Put the unread part back into the channel.
-	 * TODO: insert in front */
+	/* Put the unread part back into the channel. */
 	channel_save(channel, part, reader.js_buf + reader.js_used,
-		(int)(reader.js_end - reader.js_buf) - reader.js_used, NULL);
+			(int)(reader.js_end - reader.js_buf) - reader.js_used,
+								  TRUE, NULL);
 	ret = status == MAYBE ? FALSE: TRUE;
     }
     else
@@ -1661,8 +1733,17 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 
     if (STRCMP(cmd, "ex") == 0)
     {
+	int save_called_emsg = called_emsg;
+
+	called_emsg = FALSE;
 	ch_logs(channel, "Executing ex command '%s'", (char *)arg);
+	++emsg_silent;
 	do_cmdline_cmd(arg);
+	--emsg_silent;
+	if (called_emsg)
+	    ch_logs(channel, "Ex command error: '%s'",
+					  (char *)get_vim_var_str(VV_ERRMSG));
+	called_emsg = save_called_emsg;
     }
     else if (STRCMP(cmd, "normal") == 0)
     {
@@ -2312,8 +2393,9 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
     if (fd != channel->CH_SOCK_FD)
     {
 	DWORD	nread;
-	int	diff;
+	int	sleep_time;
 	DWORD	deadline = GetTickCount() + timeout;
+	int	delay = 1;
 
 	/* reading from a pipe, not a socket */
 	while (TRUE)
@@ -2321,12 +2403,17 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    if (PeekNamedPipe((HANDLE)fd, NULL, 0, NULL, &nread, NULL)
 								 && nread > 0)
 		return OK;
-	    diff = deadline - GetTickCount();
-	    if (diff <= 0)
+	    sleep_time = deadline - GetTickCount();
+	    if (sleep_time <= 0)
 		break;
-	    /* Wait for 5 msec.
-	     * TODO: increase the sleep time when looping more often */
-	    Sleep(5);
+	    /* Wait for a little while.  Very short at first, up to 10 msec
+	     * after looping a few times. */
+	    if (sleep_time > delay)
+		sleep_time = delay;
+	    Sleep(sleep_time);
+	    delay = delay * 2;
+	    if (delay > 10)
+		delay = 10;
 	}
     }
     else
@@ -2410,7 +2497,7 @@ channel_read(channel_T *channel, int part, char *func)
 	    break;	/* error or nothing more to read */
 
 	/* Store the read message in the queue. */
-	channel_save(channel, part, buf, len, "RECV ");
+	channel_save(channel, part, buf, len, FALSE, "RECV ");
 	readlen += len;
 	if (len < MAXMSGSIZE)
 	    break;	/* did read everything that's available */
@@ -2437,11 +2524,10 @@ channel_read(channel_T *channel, int part, char *func)
 	if (channel->ch_part[part].ch_mode == MODE_RAW
 				 || channel->ch_part[part].ch_mode == MODE_NL)
 	    channel_save(channel, part, (char_u *)DETACH_MSG_RAW,
-					 (int)STRLEN(DETACH_MSG_RAW), "PUT ");
+				  (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
 
-	/* TODO: When reading from stdout is not possible, should we try to
-	 * keep stdin and stderr open?  Probably not, assume the other side
-	 * has died. */
+	/* When reading from stdout is not possible, assume the other side has
+	 * died. */
 	channel_close(channel, TRUE);
 	if (channel->ch_nb_close_cb != NULL)
 	    (*channel->ch_nb_close_cb)();
@@ -3803,6 +3889,11 @@ job_start(typval_T *argvars)
     {
 	/* Command is a string. */
 	cmd = argvars[0].vval.v_string;
+	if (cmd == NULL || *cmd == NUL)
+	{
+	    EMSG(_(e_invarg));
+	    return job;
+	}
 #ifdef USE_ARGV
 	if (mch_parse_cmd(cmd, FALSE, &argv, &argc) == FAIL)
 	    return job;

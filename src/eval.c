@@ -475,6 +475,7 @@ static void f_assert_equal(typval_T *argvars, typval_T *rettv);
 static void f_assert_exception(typval_T *argvars, typval_T *rettv);
 static void f_assert_fails(typval_T *argvars, typval_T *rettv);
 static void f_assert_false(typval_T *argvars, typval_T *rettv);
+static void f_assert_match(typval_T *argvars, typval_T *rettv);
 static void f_assert_true(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_asin(typval_T *argvars, typval_T *rettv);
@@ -4106,6 +4107,31 @@ get_user_var_name(expand_T *xp, int idx)
 #endif /* FEAT_CMDL_COMPL */
 
 /*
+ * Return TRUE if "pat" matches "text".
+ * Does not use 'cpo' and always uses 'magic'.
+ */
+    static int
+pattern_match(char_u *pat, char_u *text, int ic)
+{
+    int		matches = FALSE;
+    char_u	*save_cpo;
+    regmatch_T	regmatch;
+
+    /* avoid 'l' flag in 'cpoptions' */
+    save_cpo = p_cpo;
+    p_cpo = (char_u *)"";
+    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    if (regmatch.regprog != NULL)
+    {
+	regmatch.rm_ic = ic;
+	matches = vim_regexec_nl(&regmatch, text, (colnr_T)0);
+	vim_regfree(regmatch.regprog);
+    }
+    p_cpo = save_cpo;
+    return matches;
+}
+
+/*
  * types for expressions.
  */
 typedef enum
@@ -4403,9 +4429,7 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
     long	n1, n2;
     char_u	*s1, *s2;
     char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
-    regmatch_T	regmatch;
     int		ic;
-    char_u	*save_cpo;
 
     /*
      * Get the first variable.
@@ -4646,20 +4670,9 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
 
 		    case TYPE_MATCH:
 		    case TYPE_NOMATCH:
-			    /* avoid 'l' flag in 'cpoptions' */
-			    save_cpo = p_cpo;
-			    p_cpo = (char_u *)"";
-			    regmatch.regprog = vim_regcomp(s2,
-							RE_MAGIC + RE_STRING);
-			    regmatch.rm_ic = ic;
-			    if (regmatch.regprog != NULL)
-			    {
-				n1 = vim_regexec_nl(&regmatch, s1, (colnr_T)0);
-				vim_regfree(regmatch.regprog);
-				if (type == TYPE_NOMATCH)
-				    n1 = !n1;
-			    }
-			    p_cpo = save_cpo;
+			    n1 = pattern_match(s2, s1, ic);
+			    if (type == TYPE_NOMATCH)
+				n1 = !n1;
 			    break;
 
 		    case TYPE_UNKNOWN:  break;  /* avoid gcc warning */
@@ -8154,6 +8167,7 @@ static struct fst
     {"assert_exception", 1, 2, f_assert_exception},
     {"assert_fails",	1, 2, f_assert_fails},
     {"assert_false",	1, 2, f_assert_false},
+    {"assert_match",	2, 3, f_assert_match},
     {"assert_true",	1, 2, f_assert_true},
 #ifdef FEAT_FLOAT
     {"atan",		1, 1, f_atan},
@@ -9295,7 +9309,7 @@ f_argv(typval_T *argvars, typval_T *rettv)
 }
 
 static void prepare_assert_error(garray_T*gap);
-static void fill_assert_error(garray_T *gap, typval_T *opt_msg_tv, char_u *exp_str, typval_T *exp_tv, typval_T *got_tv);
+static void fill_assert_error(garray_T *gap, typval_T *opt_msg_tv, char_u *exp_str, typval_T *exp_tv, typval_T *got_tv, int is_match);
 static void assert_error(garray_T *gap);
 static void assert_bool(typval_T *argvars, int isTrue);
 
@@ -9370,7 +9384,8 @@ fill_assert_error(
     typval_T	*opt_msg_tv,
     char_u      *exp_str,
     typval_T	*exp_tv,
-    typval_T	*got_tv)
+    typval_T	*got_tv,
+    int		is_match)
 {
     char_u	numbuf[NUMBUFLEN];
     char_u	*tofree;
@@ -9382,7 +9397,10 @@ fill_assert_error(
     }
     else
     {
-	ga_concat(gap, (char_u *)"Expected ");
+	if (is_match)
+	    ga_concat(gap, (char_u *)"Pattern ");
+	else
+	    ga_concat(gap, (char_u *)"Expected ");
 	if (exp_str == NULL)
 	{
 	    ga_concat_esc(gap, tv2string(exp_tv, &tofree, numbuf, 0));
@@ -9390,7 +9408,10 @@ fill_assert_error(
 	}
 	else
 	    ga_concat_esc(gap, exp_str);
-	ga_concat(gap, (char_u *)" but got ");
+	if (is_match)
+	    ga_concat(gap, (char_u *)" does not match ");
+	else
+	    ga_concat(gap, (char_u *)" but got ");
 	ga_concat_esc(gap, tv2string(got_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
     }
@@ -9421,7 +9442,8 @@ f_assert_equal(typval_T *argvars, typval_T *rettv UNUSED)
     if (!tv_equal(&argvars[0], &argvars[1], FALSE, FALSE))
     {
 	prepare_assert_error(&ga);
-	fill_assert_error(&ga, &argvars[2], NULL, &argvars[0], &argvars[1]);
+	fill_assert_error(&ga, &argvars[2], NULL, &argvars[0], &argvars[1],
+								       FALSE);
 	assert_error(&ga);
 	ga_clear(&ga);
     }
@@ -9449,7 +9471,7 @@ f_assert_exception(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	prepare_assert_error(&ga);
 	fill_assert_error(&ga, &argvars[1], NULL, &argvars[0],
-						&vimvars[VV_EXCEPTION].vv_tv);
+					 &vimvars[VV_EXCEPTION].vv_tv, FALSE);
 	assert_error(&ga);
 	ga_clear(&ga);
     }
@@ -9486,7 +9508,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 	    prepare_assert_error(&ga);
 	    fill_assert_error(&ga, &argvars[2], NULL, &argvars[1],
-						&vimvars[VV_ERRMSG].vv_tv);
+					    &vimvars[VV_ERRMSG].vv_tv, FALSE);
 	    assert_error(&ga);
 	    ga_clear(&ga);
 	}
@@ -9518,7 +9540,7 @@ assert_bool(typval_T *argvars, int isTrue)
 	prepare_assert_error(&ga);
 	fill_assert_error(&ga, &argvars[1],
 		(char_u *)(isTrue ? "True" : "False"),
-		NULL, &argvars[0]);
+		NULL, &argvars[0], FALSE);
 	assert_error(&ga);
 	ga_clear(&ga);
     }
@@ -9531,6 +9553,28 @@ assert_bool(typval_T *argvars, int isTrue)
 f_assert_false(typval_T *argvars, typval_T *rettv UNUSED)
 {
     assert_bool(argvars, FALSE);
+}
+
+/*
+ * "assert_match(pattern, actual[, msg])" function
+ */
+    static void
+f_assert_match(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    garray_T	ga;
+    char_u	buf1[NUMBUFLEN];
+    char_u	buf2[NUMBUFLEN];
+    char_u	*pat = get_tv_string_buf_chk(&argvars[0], buf1);
+    char_u	*text = get_tv_string_buf_chk(&argvars[1], buf2);
+
+    if (!pattern_match(pat, text, FALSE))
+    {
+	prepare_assert_error(&ga);
+	fill_assert_error(&ga, &argvars[2], NULL, &argvars[0], &argvars[1],
+									TRUE);
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
 }
 
 /*

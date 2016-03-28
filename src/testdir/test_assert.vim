@@ -57,14 +57,26 @@ func Test_compare_fail()
     call assert_equal(s:w, '')
   catch
     call assert_exception('E724:')
-    call assert_true(v:errors[0] =~ "Expected NULL but got ''")
+    call assert_match("Expected NULL but got ''", v:errors[0])
     call remove(v:errors, 0)
   endtry
 endfunc
 
+func Test_match()
+  call assert_match('^f.*b.*r$', 'foobar')
+
+  call assert_match('bar.*foo', 'foobar')
+  call assert_match("Pattern 'bar.*foo' does not match 'foobar'", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_match('bar.*foo', 'foobar', 'wrong')
+  call assert_match('wrong', v:errors[0])
+  call remove(v:errors, 0)
+endfunc
+
 func Test_assert_fail_fails()
   call assert_fails('xxx', {})
-  call assert_true(v:errors[0] =~ "Expected {} but got 'E731:")
+  call assert_match("Expected {} but got 'E731:", v:errors[0])
   call remove(v:errors, 0)
 endfunc
 
