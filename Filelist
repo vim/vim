@@ -483,7 +483,6 @@ RT_ALL =	\
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/macros/README.txt \
-		runtime/macros/dvorak \
 		runtime/macros/editexisting.vim \
 		runtime/macros/hanoi/click.me \
 		runtime/macros/hanoi/hanoi.vim \
@@ -524,6 +523,10 @@ RT_ALL =	\
 		runtime/tutor/tutor \
 		runtime/tutor/tutor.vim \
 		runtime/vimrc_example.vim \
+		runtime/pack/dist/opt/dvorak/plugin/dvorak.vim \
+		runtime/pack/dist/opt/dvorak/dvorak/enable.vim \
+		runtime/pack/dist/opt/dvorak/dvorak/disable.vim \
+		runtime/pack/dist/opt/justify/plugin/justify.vim \
 		runtime/pack/dist/opt/matchit/plugin/matchit.vim \
 		runtime/pack/dist/opt/matchit/doc/matchit.txt \
 		runtime/pack/dist/opt/matchit/doc/tags \

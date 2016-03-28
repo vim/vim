@@ -11,8 +11,6 @@ urm	Macros that simulate a simple computer: "Universal Register Machine"
 The other files contain some handy utilities.  They also serve as examples for
 how to use Vi and Vim functionality.
 
-justify.vim		user function for justifying text
-
 less.sh + less.vim	make Vim work like less (or more)
 
 shellmenu.vim		menus for editing shell scripts in the GUI version
@@ -25,10 +23,14 @@ editexisting.vim	when editing a file that is already edited with
 This one is only for Unix.
 file_select.vim		macros that make a handy file selector
 
+The Dvorak support has been moved to an optional package.  To load it put this
+line in your vimrc file:
+	packadd! dvorak
+
+The support for justifying test has been moved to an optional package.  To
+load it put this line in your vimrc file:
+	packadd! justify
+
 The matchit plugin has been moved to an optional package.  To load it put this
 line in your vimrc file:
 	packadd! matchit
-
-The Dvorak supported has been moved to an optional package.  To load it put
-this line in your vimrc file:
-	packadd! dvorak
