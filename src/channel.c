@@ -434,7 +434,6 @@ channel_read_fd(int fd)
 
 /*
  * Read a command from netbeans.
- * TODO: instead of channel ID use the FD.
  */
 #ifdef FEAT_GUI_X11
     static void
@@ -1325,11 +1324,34 @@ channel_get(channel_T *channel, int part)
     static char_u *
 channel_get_all(channel_T *channel, int part)
 {
-    /* Concatenate everything into one buffer.
-     * TODO: avoid multiple allocations. */
-    while (channel_collapse(channel, part) == OK)
-	;
-    return channel_get(channel, part);
+    readq_T *head = &channel->ch_part[part].ch_head;
+    readq_T *node = head->rq_next;
+    long_u  len = 1;
+    char_u  *res;
+    char_u  *p;
+
+    /* If there is only one buffer just get that one. */
+    if (head->rq_next == NULL || head->rq_next->rq_next == NULL)
+	return channel_get(channel, part);
+
+    /* Concatenate everything into one buffer. */
+    for (node = head->rq_next; node != NULL; node = node->rq_next)
+	len += (long_u)STRLEN(node->rq_buffer);
+    res = lalloc(len, TRUE);
+    if (res == NULL)
+	return NULL;
+    *res = NUL;
+    for (node = head->rq_next; node != NULL; node = node->rq_next)
+	STRCAT(res, node->rq_buffer);
+
+    /* Free all buffers */
+    do
+    {
+	p = channel_get(channel, part);
+	vim_free(p);
+    } while (p != NULL);
+
+    return res;
 }
 
 /*
@@ -2504,9 +2526,8 @@ channel_read(channel_T *channel, int part, char *func)
 	    channel_save(channel, part, (char_u *)DETACH_MSG_RAW,
 				  (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
 
-	/* TODO: When reading from stdout is not possible, should we try to
-	 * keep stdin and stderr open?  Probably not, assume the other side
-	 * has died. */
+	/* When reading from stdout is not possible, assume the other side has
+	 * died. */
 	channel_close(channel, TRUE);
 	if (channel->ch_nb_close_cb != NULL)
 	    (*channel->ch_nb_close_cb)();
