@@ -4951,6 +4951,7 @@ assert_equal()	eval.txt	/*assert_equal()*
 assert_exception()	eval.txt	/*assert_exception()*
 assert_fails()	eval.txt	/*assert_fails()*
 assert_false()	eval.txt	/*assert_false()*
+assert_match()	eval.txt	/*assert_match()*
 assert_true()	eval.txt	/*assert_true()*
 at	motion.txt	/*at*
 atan()	eval.txt	/*atan()*
@@ -7104,6 +7105,7 @@ matchit-install	usr_05.txt	/*matchit-install*
 matchlist()	eval.txt	/*matchlist()*
 matchparen	pi_paren.txt	/*matchparen*
 matchstr()	eval.txt	/*matchstr()*
+matchstrpos()	eval.txt	/*matchstrpos()*
 max()	eval.txt	/*max()*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
 mbyte-XIM	mbyte.txt	/*mbyte-XIM*

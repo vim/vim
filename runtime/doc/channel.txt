@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 26
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -615,6 +615,9 @@ See |job_setoptions()| and |ch_setoptions()|.
 "err_io": "buffer" 	stderr appends to a buffer
 "err_name": "/path/file" the name of the file or buffer to write to
 "err_buf": number	the number of the buffer to write to
+
+"block_write": number	only for testing: pretend every other write to stdin
+			will block
 
 
 Writing to a buffer ~
