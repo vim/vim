@@ -6779,7 +6779,6 @@ win_redr_status(win_T *wp)
 redraw_custom_statusline(win_T *wp)
 {
     static int	    entered = FALSE;
-    int		    save_called_emsg = called_emsg;
 
     /* When called recursively return.  This can happen when the statusline
      * contains an expression that triggers a redraw. */
@@ -6787,9 +6786,8 @@ redraw_custom_statusline(win_T *wp)
 	return;
     entered = TRUE;
 
-    called_emsg = FALSE;
     win_redr_custom(wp, FALSE);
-    if (called_emsg)
+    if (did_emsg)
     {
 	/* When there is an error disable the statusline, otherwise the
 	 * display is messed up with errors and a redraw triggers the problem
@@ -6798,7 +6796,6 @@ redraw_custom_statusline(win_T *wp)
 		(char_u *)"", OPT_FREE | (*wp->w_p_stl != NUL
 					? OPT_LOCAL : OPT_GLOBAL), SID_ERROR);
     }
-    called_emsg |= save_called_emsg;
     entered = FALSE;
 }
 #endif
