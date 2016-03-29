@@ -673,6 +673,7 @@ static void f_matchdelete(typval_T *argvars, typval_T *rettv);
 static void f_matchend(typval_T *argvars, typval_T *rettv);
 static void f_matchlist(typval_T *argvars, typval_T *rettv);
 static void f_matchstr(typval_T *argvars, typval_T *rettv);
+static void f_matchstrpos(typval_T *argvars, typval_T *rettv);
 static void f_max(typval_T *argvars, typval_T *rettv);
 static void f_min(typval_T *argvars, typval_T *rettv);
 #ifdef vim_mkdir
@@ -8383,6 +8384,7 @@ static struct fst
     {"matchend",	2, 4, f_matchend},
     {"matchlist",	2, 4, f_matchlist},
     {"matchstr",	2, 4, f_matchstr},
+    {"matchstrpos",	2, 4, f_matchstrpos},
     {"max",		1, 1, f_max},
     {"min",		1, 1, f_min},
 #ifdef vim_mkdir
@@ -15302,11 +15304,26 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
     p_cpo = (char_u *)"";
 
     rettv->vval.v_number = -1;
-    if (type == 3)
+    if (type == 3 || type == 4)
     {
-	/* return empty list when there are no matches */
+	/* type 3: return empty list when there are no matches.
+	 * type 4: return ["", -1, -1, -1] */
 	if (rettv_list_alloc(rettv) == FAIL)
 	    goto theend;
+	if (type == 4
+		&& (list_append_string(rettv->vval.v_list,
+					    (char_u *)"", 0) == FAIL
+		    || list_append_number(rettv->vval.v_list,
+					    (varnumber_T)-1) == FAIL
+		    || list_append_number(rettv->vval.v_list,
+					    (varnumber_T)-1) == FAIL
+		    || list_append_number(rettv->vval.v_list,
+					    (varnumber_T)-1) == FAIL))
+	{
+		list_free(rettv->vval.v_list, TRUE);
+		rettv->vval.v_list = NULL;
+		goto theend;
+	}
     }
     else if (type == 2)
     {
@@ -15383,7 +15400,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 		    break;
 		}
 		vim_free(tofree);
-		str = echo_string(&li->li_tv, &tofree, strbuf, 0);
+		expr = str = echo_string(&li->li_tv, &tofree, strbuf, 0);
 		if (str == NULL)
 		    break;
 	    }
@@ -15420,7 +15437,23 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 
 	if (match)
 	{
-	    if (type == 3)
+	    if (type == 4)
+	    {
+		listitem_T *li1 = rettv->vval.v_list->lv_first;
+		listitem_T *li2 = li1->li_next;
+		listitem_T *li3 = li2->li_next;
+		listitem_T *li4 = li3->li_next;
+
+		li1->li_tv.vval.v_string = vim_strnsave(regmatch.startp[0],
+				(int)(regmatch.endp[0] - regmatch.startp[0]));
+		li3->li_tv.vval.v_number =
+				      (varnumber_T)(regmatch.startp[0] - expr);
+		li4->li_tv.vval.v_number =
+					(varnumber_T)(regmatch.endp[0] - expr);
+		if (l != NULL)
+		    li2->li_tv.vval.v_number = (varnumber_T)idx;
+	    }
+	    else if (type == 3)
 	    {
 		int i;
 
@@ -15464,6 +15497,11 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 	}
 	vim_regfree(regmatch.regprog);
     }
+
+    if (type == 4 && l == NULL)
+	/* matchstrpos() without a list: drop the second item. */
+	listitem_remove(rettv->vval.v_list,
+				       rettv->vval.v_list->lv_first->li_next);
 
 theend:
     vim_free(tofree);
@@ -15663,6 +15701,15 @@ f_matchlist(typval_T *argvars, typval_T *rettv)
 f_matchstr(typval_T *argvars, typval_T *rettv)
 {
     find_some_match(argvars, rettv, 2);
+}
+
+/*
+ * "matchstrpos()" function
+ */
+    static void
+f_matchstrpos(typval_T *argvars, typval_T *rettv)
+{
+    find_some_match(argvars, rettv, 4);
 }
 
 static void max_min(typval_T *argvars, typval_T *rettv, int domax);
