@@ -36,7 +36,7 @@ func Test_global_vars()
   " store a really long list, so line wrapping will occur in viminfo file
   let test_list = range(1,100)
   let g:MY_GLOBAL_LIST = test_list
-  set viminfo='100,<50,s10,h,!
+  set viminfo='100,<50,s10,h,!,nviminfo
   wv! Xviminfo
   unlet g:MY_GLOBAL_DICT
   unlet g:MY_GLOBAL_LIST

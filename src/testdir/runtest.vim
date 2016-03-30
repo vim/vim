@@ -55,6 +55,9 @@ lang mess C
 " Always use forward slashes.
 set shellslash
 
+" Make sure $HOME does not get read or written.
+let $HOME = '/does/not/exist'
+
 let s:srcdir = expand('%:p:h:h')
 
 " Support function: get the alloc ID by name.
@@ -141,7 +144,6 @@ for s:test in sort(s:tests)
     call extend(s:errors, v:errors)
     let v:errors = []
   endif
-
 endfor
 
 if s:fail == 0
