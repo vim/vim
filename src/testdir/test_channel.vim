@@ -1203,6 +1203,29 @@ func Test_close_callback()
   call s:run_server('s:test_close_callback')
 endfunc
 
+function s:test_close_partial(port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
+  if ch_status(handle) == "fail"
+    call assert_false(1, "Can't open channel")
+    return
+  endif
+  let s:d = {}
+  func s:d.closeCb(ch) dict
+    let self.close_ret = 'closed'
+  endfunc
+  call ch_setoptions(handle, {'close_cb': s:d.closeCb})
+
+  call assert_equal('', ch_evalexpr(handle, 'close me'))
+  call s:waitFor('"closed" == s:d.close_ret')
+  call assert_equal('closed', s:d.close_ret)
+  unlet s:d
+endfunc
+
+func Test_close_partial()
+  call ch_log('Test_close_partial()')
+  call s:run_server('s:test_close_partial')
+endfunc
+
 func Test_job_start_invalid()
   call assert_fails('call job_start($x)', 'E474:')
   call assert_fails('call job_start("")', 'E474:')

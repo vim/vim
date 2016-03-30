@@ -1103,7 +1103,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	    *cbp = vim_strsave(opt->jo_close_cb);
 	else
 	    *cbp = NULL;
-	*pp = opt->jo_err_partial;
+	*pp = opt->jo_close_partial;
 	if (*pp != NULL)
 	    ++(*pp)->pt_refcount;
     }
