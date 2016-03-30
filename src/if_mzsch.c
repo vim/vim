@@ -3109,6 +3109,7 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	MZ_GC_VAR_IN_REG(0, funcname);
 	MZ_GC_REG();
 
+	/* FIXME: func_ref() and func_unref() are needed. */
 	funcname = scheme_make_byte_string((char *)vim_value->vval.v_string);
 	MZ_GC_CHECK();
 	result = scheme_make_closed_prim_w_arity(vim_funcref, funcname,
@@ -3116,6 +3117,30 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	MZ_GC_CHECK();
 
 	MZ_GC_UNREG();
+    }
+    else if (vim_value->v_type == VAR_PARTIAL)
+    {
+	if (vim_value->vval.v_partial == NULL)
+	    result = scheme_null;
+	else
+	{
+	    Scheme_Object *funcname = NULL;
+
+	    MZ_GC_DECL_REG(1);
+	    MZ_GC_VAR_IN_REG(0, funcname);
+	    MZ_GC_REG();
+
+	    /* FIXME: func_ref() and func_unref() are needed. */
+	    /* TODO: Support pt_dict and pt_argv. */
+	    funcname = scheme_make_byte_string(
+		    (char *)vim_value->vval.v_partial->pt_name);
+	    MZ_GC_CHECK();
+	    result = scheme_make_closed_prim_w_arity(vim_funcref, funcname,
+		    (const char *)BYTE_STRING_VALUE(funcname), 0, -1);
+	    MZ_GC_CHECK();
+
+	    MZ_GC_UNREG();
+	}
     }
     else if (vim_value->v_type == VAR_SPECIAL)
     {
