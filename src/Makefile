@@ -2033,6 +2033,7 @@ test_arglist \
 	test_searchpos \
 	test_set \
 	test_sort \
+	test_statusline \
 	test_syn_attr \
 	test_syntax \
 	test_timers \
