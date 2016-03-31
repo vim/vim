@@ -1,7 +1,7 @@
 function! StatuslineWithCatchedError()
   let s:func_in_statusline_called = 1
   try
-    call eval('')
+    call eval('unknown expression')
   catch
   endtry
   return ''
@@ -9,7 +9,7 @@ endfunction
 
 function! StatuslineWithError()
   let s:func_in_statusline_called = 1
-  call eval('')
+  call eval('unknown expression')
   return ''
 endfunction
 
