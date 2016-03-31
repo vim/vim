@@ -12786,7 +12786,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    dict_add_nr_str(dict, "group", 0L, syn_id2name(cur->hlg_id));
 	    dict_add_nr_str(dict, "priority", (long)cur->priority, NULL);
 	    dict_add_nr_str(dict, "id", (long)cur->id, NULL);
-# ifdef FEAT_CONCEAL
+# if defined(FEAT_CONCEAL) && defined(FEAT_MBYTE)
 	    if (cur->conceal_char)
 	    {
 		char_u buf[MB_MAXBYTES + 1];
