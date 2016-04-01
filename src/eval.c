@@ -11368,7 +11368,10 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 
 		/* Avoid a 1 second delay when the keys start Insert mode. */
 		msg_scroll = FALSE;
+
+		++ex_normal_busy;
 		exec_normal(TRUE);
+		--ex_normal_busy;
 		msg_scroll |= save_msg_scroll;
 	    }
 	}
