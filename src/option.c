@@ -8659,8 +8659,9 @@ set_num_option(
 	if (p_vtlc < 0)
 	{
 	    errmsg = e_positive;
-	    p_titlelen = 0;
+	    p_vtlc = 0;
 	}
+        do_cmdline_cmd((char_u *)"wincmd =");
     }
 
     /* if p_ch changed value, change the command line height */

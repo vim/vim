@@ -631,8 +631,7 @@ update_screen(int type)
     /* Redraw the tab pages line if needed. */
     if (redraw_tabline || type >= NOT_VALID)
 	draw_tabline();
-    if (true)
-        draw_vertical_tabline();
+    draw_vertical_tabline();
 #endif
 
 #ifdef FEAT_SYN_HL
@@ -990,7 +989,7 @@ updateWindow(win_T *wp)
     if (redraw_tabline)
 	draw_tabline();
     if (true)
-        draw_vertical_tabline();
+	draw_vertical_tabline();
 
     if (wp->w_redr_status
 # ifdef FEAT_CMDL_INFO
@@ -1500,8 +1499,7 @@ win_update(win_T *wp)
 		/* The screen was cleared, redraw the tab pages line. */
 		if (redraw_tabline)
 		    draw_tabline();
-                if (true)
-	            draw_vertical_tabline();
+                draw_vertical_tabline();
 #endif
 	    }
 	}
@@ -10216,7 +10214,6 @@ recording_mode(int attr)
     static void
 draw_vertical_tabline(void)
 {
-    /* int		vertical_tabwidth_without_bar; */
     int		tabcount = 0;
     int		len;
     int		attr_sel = hl_attr(HLF_TPS);
@@ -10237,55 +10234,55 @@ draw_vertical_tabline(void)
     tp = first_tabpage;
     for (row = 0; row < Rows; ++row)
     {
-        col = 0;
-        attr = attr_nosel;
-        if(tp != NULL)
-        {
-            if (tp->tp_topframe == topframe)
-                attr = attr_sel;
+	col = 0;
+	attr = attr_nosel;
+	if(tp != NULL)
+	{
+	    if (tp->tp_topframe == topframe)
+		attr = attr_sel;
 
-            if (p_vtlc > col + 1)
-                screen_putchar(' ', row, col++, attr);
+	    if (p_vtlc > col + 1)
+		screen_putchar(' ', row, col++, attr);
 
-            if (tp == curtab)
-            {
-                cwp = curwin;
-                wp = firstwin;
-            }
-            else
-            {
-                cwp = tp->tp_curwin;
-                wp = tp->tp_firstwin;
-            }
+	    if (tp == curtab)
+	    {
+		cwp = curwin;
+		wp = firstwin;
+	    }
+	    else
+	    {
+		cwp = tp->tp_curwin;
+		wp = tp->tp_firstwin;
+	    }
 
-            modified = FALSE;
-            for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
-                if (bufIsChanged(wp->w_buffer))
-                    modified = TRUE;
-            if (modified || wincount > 1)
-            {
-                if (wincount > 1)
-                {
-                    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
-                    len = (int)STRLEN(NameBuff);
-                    if (p_vtlc > col + len)
-                        screen_puts_len(NameBuff, len, row, col,
+	    modified = FALSE;
+	    for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
+		if (bufIsChanged(wp->w_buffer))
+		    modified = TRUE;
+	    if (modified || wincount > 1)
+	    {
+		if (wincount > 1)
+		{
+		    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
+		    len = (int)STRLEN(NameBuff);
+		    if (p_vtlc > col + len)
+			screen_puts_len(NameBuff, len, row, col,
 #if defined(FEAT_SYN_HL)
-                                     hl_combine_attr(attr, hl_attr(HLF_T))
+				     hl_combine_attr(attr, hl_attr(HLF_T))
 #else
-                                     attr
+				     attr
 #endif
-                                     );
-                    col += len;
-                }
-                if (modified)
-                {
-                    if (p_vtlc > col + 1)
-                        screen_puts_len((char_u *)"+", 1, row, col++, attr);
-                }
-                if (p_vtlc > col + 1)
-                    screen_putchar(' ', row, col++, attr);
-            }
+				     );
+		    col += len;
+		}
+		if (modified)
+		{
+		    if (p_vtlc > col + 1)
+			screen_puts_len((char_u *)"+", 1, row, col++, attr);
+		}
+		if (p_vtlc > col + 1)
+		    screen_putchar(' ', row, col++, attr);
+	    }
 
 	    room = p_vtlc - col - 1;
 	    if (room > 0)
@@ -10303,7 +10300,7 @@ draw_vertical_tabline(void)
 		    }
 		else
 #endif
-                if (len > room)
+		if (len > room)
 		{
 		    p += len - room;
 		    len = room;
@@ -10314,12 +10311,12 @@ draw_vertical_tabline(void)
 		screen_puts_len(p, (int)STRLEN(p), row, col, attr);
 		col += len;
 	    }
-            tp = tp->tp_next;
-        }
-        while (col < p_vtlc)
+	    tp = tp->tp_next;
+	}
+
+	while (col < p_vtlc)
             screen_putchar(' ', row, col++, attr);
     }
-
 }
 
 /*
@@ -10630,8 +10627,7 @@ showruler(int always)
     /* Redraw the tab pages line if needed. */
     if (redraw_tabline)
 	draw_tabline();
-    if (true)
-	draw_vertical_tabline();
+    draw_vertical_tabline();
 #endif
 }
 
