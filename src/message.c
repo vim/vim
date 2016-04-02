@@ -1707,7 +1707,7 @@ screen_puts_mbyte(char_u *s, int l, int attr)
 	return s;
     }
 
-    screen_puts_len(s, l, msg_row, msg_col, attr);
+    screen_puts_len(s, l, msg_row, msg_col + p_vtlc, attr);
 #ifdef FEAT_RIGHTLEFT
     if (cmdmsg_rl)
     {
@@ -2322,7 +2322,7 @@ t_puts(
 {
     /* output postponed text */
     msg_didout = TRUE;		/* remember that line is not empty */
-    screen_puts_len(t_s, (int)(s - t_s), msg_row, msg_col, attr);
+    screen_puts_len(t_s, (int)(s - t_s), msg_row, msg_col + p_vtlc, attr);
     msg_col += *t_col;
     *t_col = 0;
 #ifdef FEAT_MBYTE
@@ -2646,8 +2646,8 @@ do_more_prompt(int typed_char)
 		    /* scroll up, display line at bottom */
 		    msg_scroll_up();
 		    inc_msg_scrolled();
-		    screen_fill((int)Rows - 2, (int)Rows - 1, 0,
-						   (int)Columns, ' ', ' ', 0);
+		    screen_fill((int)Rows - 2, (int)Rows - 1, 0 + p_vtlc,
+						   (int)Columns + p_vtlc, ' ', ' ', 0);
 		    mp_last = disp_sb_line((int)Rows - 2, mp_last);
 		    --toscroll;
 		}
@@ -2656,8 +2656,8 @@ do_more_prompt(int typed_char)
 	    if (toscroll <= 0)
 	    {
 		/* displayed the requested text, more prompt again */
-		screen_fill((int)Rows - 1, (int)Rows, 0,
-						   (int)Columns, ' ', ' ', 0);
+		screen_fill((int)Rows - 1, (int)Rows, 0 + p_vtlc,
+						   (int)Columns + p_vtlc, ' ', ' ', 0);
 		msg_moremsg(FALSE);
 		continue;
 	    }
@@ -2942,15 +2942,15 @@ msg_clr_eos_force(void)
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl)
 	{
-	    screen_fill(msg_row, msg_row + 1, 0, msg_col + 1, ' ', ' ', 0);
-	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+	    screen_fill(msg_row, msg_row + 1, 0 + p_vtlc, msg_col + 1 + p_vtlc, ' ', ' ', 0);
+	    screen_fill(msg_row + 1, (int)Rows, 0 + p_vtlc, (int)Columns + p_vtlc, ' ', ' ', 0);
 	}
 	else
 #endif
 	{
-	    screen_fill(msg_row, msg_row + 1, msg_col, (int)Columns,
+	    screen_fill(msg_row, msg_row + 1, msg_col + p_vtlc, (int)Columns + p_vtlc,
 								 ' ', ' ', 0);
-	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+	    screen_fill(msg_row + 1, (int)Rows, 0 + p_vtlc, (int)Columns + p_vtlc, ' ', ' ', 0);
 	}
     }
 }
