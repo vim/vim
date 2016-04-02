@@ -3815,6 +3815,7 @@ syn_cmd_enable(exarg_T *eap, int syncing UNUSED)
 
 /*
  * Handle ":syntax reset" command.
+ * It actually resets highlighting, not syntax.
  */
     static void
 syn_cmd_reset(exarg_T *eap, int syncing UNUSED)
@@ -3822,7 +3823,6 @@ syn_cmd_reset(exarg_T *eap, int syncing UNUSED)
     eap->nextcmd = check_nextcmd(eap->arg);
     if (!eap->skip)
     {
-	clear_string_option(&curwin->w_s->b_syn_isk);
 	set_internal_string_var((char_u *)"syntax_cmd", (char_u *)"reset");
 	do_cmdline_cmd((char_u *)"runtime! syntax/syncolor.vim");
 	do_unlet((char_u *)"g:syntax_cmd", TRUE);
