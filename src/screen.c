@@ -10184,12 +10184,19 @@ unshowmode(int force)
     if (!redrawing() || (!force && char_avail() && !KeyTyped))
 	redraw_cmdline = TRUE;		/* delete mode later */
     else
-    {
-	msg_pos_mode();
-	if (Recording)
-	    recording_mode(hl_attr(HLF_CM));
-	msg_clr_eos();
-    }
+	clearmode();
+}
+
+/*
+ * Clear the mode message.
+ */
+    void
+clearmode()
+{
+    msg_pos_mode();
+    if (Recording)
+	recording_mode(hl_attr(HLF_CM));
+    msg_clr_eos();
 }
 
     static void

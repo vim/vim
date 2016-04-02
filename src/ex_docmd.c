@@ -10040,6 +10040,7 @@ ex_stopinsert(exarg_T *eap UNUSED)
 {
     restart_edit = 0;
     stop_insert_mode = TRUE;
+    clearmode();
 }
 
 /*
