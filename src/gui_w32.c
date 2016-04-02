@@ -2218,7 +2218,7 @@ gui_mch_wait_for_chars(int wtime)
 	    parse_queued_messages();
 
 	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)
-		|| MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLEVENTS)
+		|| MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
 								!= WAIT_TIMEOUT)
 		break;
 	}
