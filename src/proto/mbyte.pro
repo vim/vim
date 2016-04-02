@@ -10,6 +10,7 @@ int latin_char2len(int c);
 int latin_char2bytes(int c, char_u *buf);
 int latin_ptr2len(char_u *p);
 int latin_ptr2len_len(char_u *p, int size);
+int utf_ambiguous_width(int c);
 int utf_char2cells(int c);
 int latin_ptr2cells(char_u *p);
 int utf_ptr2cells(char_u *p);
