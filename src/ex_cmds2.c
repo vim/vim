@@ -3376,7 +3376,7 @@ add_pack_plugin(char_u *fname, void *cookie)
 
     if (load_files)
     {
-	static char *plugpat = "%s/plugin/*.vim";
+	static char *plugpat = "%s/plugin/**/*.vim";
 	static char *ftpat = "%s/ftdetect/*.vim";
 	int	    len;
 	char_u	    *pat;

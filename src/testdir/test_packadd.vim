@@ -11,7 +11,7 @@ func TearDown()
 endfunc
 
 func Test_packadd()
-  call mkdir(s:plugdir . '/plugin', 'p')
+  call mkdir(s:plugdir . '/plugin/also', 'p')
   call mkdir(s:plugdir . '/ftdetect', 'p')
   set rtp&
   let rtp = &rtp
@@ -21,6 +21,10 @@ func Test_packadd()
   call setline(1, 'let g:plugin_works = 42')
   wq
 
+  exe 'split ' . s:plugdir . '/plugin/also/loaded.vim'
+  call setline(1, 'let g:plugin_also_works = 77')
+  wq
+
   exe 'split ' . s:plugdir . '/ftdetect/test.vim'
   call setline(1, 'let g:ftdetect_works = 17')
   wq
@@ -28,6 +32,7 @@ func Test_packadd()
   packadd mytest
 
   call assert_equal(42, g:plugin_works)
+  call assert_equal(77, g:plugin_also_works)
   call assert_equal(17, g:ftdetect_works)
   call assert_true(len(&rtp) > len(rtp))
   call assert_true(&rtp =~ 'testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
