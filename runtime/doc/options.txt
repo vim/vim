@@ -8002,6 +8002,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	written to disk (see |crash-recovery|).  Also used for the
 	|CursorHold| autocommand event.
 
+						*'vtablinecolumns'* *'vtlc'*
+'vtablinecolumns' 'vtlc'		number	(default 0)
+			global
+			{not in Vi, although some versions have a boolean
+			verbose option}
+	When bigger than zero, this option determines the content of the
+	vertical tab pages line at the left of the Vim window.
+	The column size of vertical tab pages line is |vtablinecolumns|.
+
 						*'verbose'* *'vbs'*
 'verbose' 'vbs'		number	(default 0)
 			global
