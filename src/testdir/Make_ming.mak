@@ -65,9 +65,11 @@ win32:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32)
 	echo ALL DONE
 
 fixff:
+	# TODO: find a way to avoid changing the distributed files.
 	-$(VIMPROG) -u dos.vim $(NO_PLUGIN) "+argdo set ff=dos|upd" +q *.in *.ok
 	-$(VIMPROG) -u dos.vim $(NO_PLUGIN) "+argdo set ff=unix|upd" +q \
-		dotest.in test60.ok test71.ok test74.ok test_listchars.ok
+		dotest.in test60.ok test71.ok test74.ok test_listchars.ok \
+		test_getcwd.ok test_wordcount.ok
 
 clean:
 	-$(DEL) *.out
