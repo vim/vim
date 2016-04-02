@@ -52,7 +52,6 @@
 #ifdef __GNUC__
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-variable"
-# pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
 #include <EXTERN.h>
@@ -307,16 +306,18 @@ static void (*perl_free)(PerlInterpreter*);
 static int (*perl_run)(PerlInterpreter*);
 static int (*perl_parse)(PerlInterpreter*, XSINIT_t, int, char**, char**);
 static void* (*Perl_get_context)(void);
-static void (*Perl_croak)(pTHX_ const char*, ...);
+static void (*Perl_croak)(pTHX_ const char*, ...) __attribute__noreturn__;
 #ifdef PERL5101_OR_LATER
 /* Perl-5.18 has a different Perl_croak_xs_usage signature. */
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
-static void (*Perl_croak_xs_usage)(const CV *const, const char *const params);
+static void (*Perl_croak_xs_usage)(const CV *const, const char *const params)
+						    __attribute__noreturn__;
 # else
-static void (*Perl_croak_xs_usage)(pTHX_ const CV *const, const char *const params);
+static void (*Perl_croak_xs_usage)(pTHX_ const CV *const, const char *const params)
+						    __attribute__noreturn__;
 # endif
 #endif
-static void (*Perl_croak_nocontext)(const char*, ...);
+static void (*Perl_croak_nocontext)(const char*, ...) __attribute__noreturn__;
 static I32 (*Perl_dowantarray)(pTHX);
 static void (*Perl_free_tmps)(pTHX);
 static HV* (*Perl_gv_stashpv)(pTHX_ const char*, I32);
@@ -591,7 +592,9 @@ static struct {
  * "perl\lib\CORE\inline.h", after Perl_sv_free2 is defined.
  * The linker won't complain about undefined __impl_Perl_sv_free2. */
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
+# define PL_memory_wrap "panic: memory wrap" /* Dummy */
 # include <inline.h>
+# undef PL_memory_wrap
 #endif
 
 /*
@@ -1516,7 +1519,8 @@ SetHeight(win, height)
     curwin = savewin;
 
 void
-Cursor(VIWIN win, ...)
+Cursor(win, ...)
+    VIWIN win
 
     PPCODE:
     if (items == 1)
