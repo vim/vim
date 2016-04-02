@@ -988,8 +988,7 @@ updateWindow(win_T *wp)
     /* When the screen was cleared redraw the tab pages line. */
     if (redraw_tabline)
 	draw_tabline();
-    if (true)
-	draw_vertical_tabline();
+    draw_vertical_tabline();
 
     if (wp->w_redr_status
 # ifdef FEAT_CMDL_INFO
@@ -6291,8 +6290,7 @@ redraw_statuslines(void)
 	    win_redr_status(wp);
     if (redraw_tabline)
 	draw_tabline();
-    if (true)
-	draw_vertical_tabline();
+    draw_vertical_tabline();
 }
 #endif
 
@@ -10214,17 +10212,14 @@ recording_mode(int attr)
     static void
 draw_vertical_tabline(void)
 {
-    int		tabcount = 0;
     int		len;
     int		attr_sel = hl_attr(HLF_TPS);
     int		attr_nosel = hl_attr(HLF_TP);
-    int		attr_fill = hl_attr(HLF_TPF);
     win_T	*wp;
     win_T	*cwp;
     char_u	*p;
     int		room;
     int		attr;
-    int		i;
     int		col = 0;
     int		row = 0;
     tabpage_T	*tp;
