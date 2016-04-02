@@ -4491,7 +4491,9 @@ expand_cmdline(
 
 #ifdef FEAT_MULTI_LANG
 /*
- * Cleanup matches for help tags: remove "@en" if "en" is the only language.
+ * Cleanup matches for help tags:
+ * Remove "@ab" if the top of 'helplang' is "ab" and the language of the first
+ * tag matches it.  Otherwise remove "@en" if "en" is the only language.
  */
 static void	cleanup_help_tags(int num_file, char_u **file);
 
@@ -4500,11 +4502,28 @@ cleanup_help_tags(int num_file, char_u **file)
 {
     int		i, j;
     int		len;
+    char_u	buf[4];
+    char_u	*p = buf;
+
+    if (p_hlg[0] != NUL)
+    {
+	*p++ = '@';
+	*p++ = p_hlg[0];
+	*p++ = p_hlg[1];
+    }
+    *p = NUL;
 
     for (i = 0; i < num_file; ++i)
     {
 	len = (int)STRLEN(file[i]) - 3;
-	if (len > 0 && STRCMP(file[i] + len, "@en") == 0)
+	if (len <= 0)
+	    continue;
+	if (i == 0 && STRCMP(file[i] + len, buf) == 0)
+	{
+	    file[i][len] = NUL;
+	    break;
+	}
+	else if (STRCMP(file[i] + len, "@en") == 0)
 	{
 	    /* Sorting on priority means the same item in another language may
 	     * be anywhere.  Search all items for a match up to the "@en". */
@@ -4514,7 +4533,10 @@ cleanup_help_tags(int num_file, char_u **file)
 			&& STRNCMP(file[i], file[j], len + 1) == 0)
 		    break;
 	    if (j == num_file)
+	    {
 		file[i][len] = NUL;
+		break;
+	    }
 	}
     }
 }

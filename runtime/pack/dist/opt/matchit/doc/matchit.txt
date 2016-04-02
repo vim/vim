@@ -4,7 +4,7 @@ For instructions on installing this file, type
 	:help matchit-install
 inside Vim.
 
-For Vim version 6.3.  Last change:  2007 Aug 29
+For Vim version 6.3.  Last change:  2016 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Benji Fisher
@@ -152,13 +152,10 @@ setting |b:match_skip|.
 ==============================================================================
 2. Activation						*matchit-activate*
 
-You can use this script as a plugin, by copying it to your plugin directory.
-See |add-global-plugin| for instructions.  You can also add a line to your
-|vimrc| file, such as >
-	:source $VIMRUNTIME/macros/matchit.vim
-or >
-	:runtime macros/matchit.vim
-Either way, the script should start working the next time you start up Vim.
+To use the matchit plugin add this line to your |vimrc|: >
+	packadd! matchit
+
+The script should start working the next time you start Vim.
 
 (Earlier versions of the script did nothing unless a |buffer-variable| named
 |b:match_words| was defined.  Even earlier versions contained autocommands

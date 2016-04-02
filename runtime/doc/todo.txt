@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 26
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,11 +34,9 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-assert_matches('pattern', value)
+Using free memory. (Dominique, 2016 Mar 27)
 
 +channel:
-- When decoding json, don't read all the typeahead at once, use the reader
-  properly.
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
   minute.  Option to set the droptime.
@@ -46,7 +44,6 @@ assert_matches('pattern', value)
 - When starting a job, have an option to open the server socket, so we know
   the port, and pass it to the command with --socket-fd {nr}. (Olaf Dabrunz,
   Feb 9)  How to do this on MS-Windows?
-- Make sure errors lead to a useful error msg. ["ex","foobar"]
 - For connection to server, a "keep open" flag would be useful.  Retry
   connecting in the main loop with zero timeout.
 Later
@@ -56,19 +53,10 @@ Later
 Partial:
 - Maybe we also need VAR_PARTIAL support in if_mzsch.
 
-Packages:
-- make package for editexisting, others?
-
 Make it so that the window ID can be used where currently a window nr is used
 
-Fix to support --nofork for Windows batch files. (Kevin Cantú, 2016 Feb 23,
-#658, #659)  Also add "setlocal" at top of batch file?
-
-Patch to add matchstrpos(). (Ozaki Kiichi, 2016 Feb 28)
-
-Why does this: 	echo "a" . 1.1
-result in:	a11
-Should recognize float (so long as it's not ".1.1").
+Patch to add "q" item to guifont. #720, Kim Brouer, 2016 Mar 29
+Better patch from Yasuhiro Matsumoto, 2016 Jan 4.
 
 Patch to make tag jump work on function({expr}). (Hirohito Higashi, 2016 Mar
 25)
@@ -170,10 +158,13 @@ Reject the value? #710.
 Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
 More tests May 14. Update May 29.  Update Aug 10.
 Now part of large file patches. (Ken Takata, 2016 Feb 1)
-Two patches now?  New update Feb 24.
+Win64: Seek error in swap file for a very big file (3 Gbyte).  Check storing
+pointer in long and seek offset in 64 bit var.
+Patches from Ken Takata might help (2014 Apr 17)
+Update 2016 Mar 28.  Can include all parts into one dist patch.
 
 Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
-Also in update of Feb 24?
+Update 2016 Mar 28.
 
 After 7.5 is released:
 - Drop support for older MS-Windows systems, before XP.
@@ -267,7 +258,7 @@ https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
 Patch to make the behavior of "w" more straightforward, but not Vi compatible.
 With a 'cpo' flag.  (Christian Brabandt, 2016 Feb 8)
 
-Patch to add optionproperties(). (Anton Lindqvist, 2016 Mar 26)
+Patch to add optionproperties(). (Anton Lindqvist, 2016 Mar 27)
 
 Patch to add TagNotFound autocommand. (Anton Lindqvist, 2016 Feb 3)
 
@@ -1925,10 +1916,6 @@ label.  (Tsakiridis, 2007 Feb 18)  Patch from Ian Kelling, 2008 Aug 6.
 Win32: using "gvim --remote-tab-silent fname" sometimes gives an empty screen
 with the more prompt.  Caused by setting the guitablabel?  (Thomas Michael
 Engelke, 2007 Dec 20 - 2008 Jan 17)
-
-Win64: Seek error in swap file for a very big file (3 Gbyte).  Check storing
-pointer in long and seek offset in 64 bit var.
-Patches from Ken Takata might help (2014 Apr 17)
 
 Win32: patch for fullscreen mode. (Liushaolin, 2008 April 17)
 
@@ -4863,7 +4850,7 @@ Searching:
     lines 23 to 45?  Or does this conflict with Ex range syntax?
 8   Allow identical pairs in 'matchpairs'.  Restrict the search to the current
     line.
-7   Allow longer pairs in 'matchpairs'.  Use ~/vim/macros/matchit.vim as an
+7   Allow longer pairs in 'matchpairs'.  Use matchit.vim as an
     example.
 8   Make it possible to define the character that "%" checks for in
     #if/#endif.  For nmake it's !if/!endif.

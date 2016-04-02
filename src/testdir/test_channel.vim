@@ -791,7 +791,7 @@ func Run_test_pipe_from_buffer(use_name)
 
   sp pipe-input
   call setline(1, ['echo one', 'echo two', 'echo three'])
-  let options = {'in_io': 'buffer'}
+  let options = {'in_io': 'buffer', 'block_write': 1}
   if a:use_name
     let options['in_name'] = 'pipe-input'
   else
@@ -885,7 +885,8 @@ func Test_pipe_io_two_buffers()
 
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'in_io': 'buffer', 'in_name': 'pipe-input', 'in_top': 0,
-	\  'out_io': 'buffer', 'out_name': 'pipe-output'})
+	\  'out_io': 'buffer', 'out_name': 'pipe-output',
+	\  'block_write': 1})
   call assert_equal("run", job_status(job))
   try
     exe "normal Gaecho hello\<CR>"
@@ -920,7 +921,8 @@ func Test_pipe_io_one_buffer()
 
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'in_io': 'buffer', 'in_name': 'pipe-io', 'in_top': 0,
-	\  'out_io': 'buffer', 'out_name': 'pipe-io'})
+	\  'out_io': 'buffer', 'out_name': 'pipe-io',
+	\  'block_write': 1})
   call assert_equal("run", job_status(job))
   try
     exe "normal Goecho hello\<CR>"
@@ -1199,6 +1201,29 @@ endfunc
 func Test_close_callback()
   call ch_log('Test_close_callback()')
   call s:run_server('s:test_close_callback')
+endfunc
+
+function s:test_close_partial(port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
+  if ch_status(handle) == "fail"
+    call assert_false(1, "Can't open channel")
+    return
+  endif
+  let s:d = {}
+  func s:d.closeCb(ch) dict
+    let self.close_ret = 'closed'
+  endfunc
+  call ch_setoptions(handle, {'close_cb': s:d.closeCb})
+
+  call assert_equal('', ch_evalexpr(handle, 'close me'))
+  call s:waitFor('"closed" == s:d.close_ret')
+  call assert_equal('closed', s:d.close_ret)
+  unlet s:d
+endfunc
+
+func Test_close_partial()
+  call ch_log('Test_close_partial()')
+  call s:run_server('s:test_close_partial')
 endfunc
 
 func Test_job_start_invalid()

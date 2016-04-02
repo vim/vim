@@ -6230,6 +6230,9 @@ parse_queued_messages(void)
     netbeans_parse_messages();
 # endif
 # ifdef FEAT_JOB_CHANNEL
+    /* Write any buffer lines still to be written. */
+    channel_write_any_lines();
+
     /* Process the messages queued on channels. */
     channel_parse_messages();
 # endif
