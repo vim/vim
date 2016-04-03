@@ -18,6 +18,22 @@ func Test_assert_equal()
   call assert_equal(4, n)
   let l = [1, 2, 3]
   call assert_equal([1, 2, 3], l)
+
+  let s = 'foo'
+  call assert_equal('bar', s)
+  call assert_match("Expected 'bar' but got 'foo'", v:errors[0])
+  call remove(v:errors, 0)
+endfunc
+
+func Test_assert_notequal()
+  let n = 4
+  call assert_notequal('foo', n)
+  let s = 'foo'
+  call assert_notequal([1, 2, 3], s)
+
+  call assert_notequal('foo', s)
+  call assert_match("Expected 'foo' differs from 'foo'", v:errors[0])
+  call remove(v:errors, 0)
 endfunc
 
 func Test_assert_exception()
@@ -71,6 +87,15 @@ func Test_match()
 
   call assert_match('bar.*foo', 'foobar', 'wrong')
   call assert_match('wrong', v:errors[0])
+  call remove(v:errors, 0)
+endfunc
+
+func Test_notmatch()
+  call assert_notmatch('foo', 'bar')
+  call assert_notmatch('^foobar$', 'foobars')
+
+  call assert_notmatch('foo', 'foobar')
+  call assert_match("Pattern 'foo' does match 'foobar'", v:errors[0])
   call remove(v:errors, 0)
 endfunc
 
