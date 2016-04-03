@@ -2985,6 +2985,16 @@ get_logfont(
 		    }
 		    break;
 		}
+	    case 'q':
+		{
+		    int q = 0;
+		    while (*p >= '0' && *p <= '9')
+		    {
+			q = q * 10 + *p++ - '0';
+		    }
+		    lf->lfQuality = q;
+		    break;
+		}
 	    default:
 		if (verbose)
 		{
