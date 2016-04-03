@@ -189,6 +189,8 @@ parse_list_options(
     option_table_T	*table,
     int			table_size)
 {
+    option_table_T *old_opts;
+    char_u	*ret = NULL;
     char_u	*stringp;
     char_u	*colonp;
     char_u	*commap;
@@ -196,8 +198,16 @@ parse_list_options(
     int		idx = 0;		/* init for GCC */
     int		len;
 
+    /* Save the old values, so that they can be restored in case of an error. */
+    old_opts = (option_table_T *)alloc(sizeof(option_table_T) * table_size);
+    if (old_opts == NULL)
+	return NULL;
+
     for (idx = 0; idx < table_size; ++idx)
+    {
+	old_opts[idx] = table[idx];
 	table[idx].present = FALSE;
+    }
 
     /*
      * Repeat for all comma separated parts.
@@ -207,7 +217,10 @@ parse_list_options(
     {
 	colonp = vim_strchr(stringp, ':');
 	if (colonp == NULL)
-	    return (char_u *)N_("E550: Missing colon");
+	{
+	    ret = (char_u *)N_("E550: Missing colon");
+	    break;
+	}
 	commap = vim_strchr(stringp, ',');
 	if (commap == NULL)
 	    commap = option_str + STRLEN(option_str);
@@ -219,15 +232,20 @@ parse_list_options(
 		break;
 
 	if (idx == table_size)
-	    return (char_u *)N_("E551: Illegal component");
-
+	{
+	    ret = (char_u *)N_("E551: Illegal component");
+	    break;
+	}
 	p = colonp + 1;
 	table[idx].present = TRUE;
 
 	if (table[idx].hasnum)
 	{
 	    if (!VIM_ISDIGIT(*p))
-		return (char_u *)N_("E552: digit expected");
+	    {
+		ret = (char_u *)N_("E552: digit expected");
+		break;
+	    }
 
 	    table[idx].number = getdigits(&p); /*advances p*/
 	}
@@ -240,7 +258,14 @@ parse_list_options(
 	    ++stringp;
     }
 
-    return NULL;
+    if (ret != NULL)
+    {
+	/* Restore old options in case of error */
+	for (idx = 0; idx < table_size; ++idx)
+	    table[idx] = old_opts[idx];
+    }
+    vim_free(old_opts);
+    return ret;
 }
 
 
