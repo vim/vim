@@ -468,8 +468,7 @@ hash_hash(char_u *key)
     char_u	*p;
 
     if ((hash = *key) == 0)
-	return (hash_T)0;	/* Empty keys are not allowed, but we don't
-				   want to crash if we get one. */
+	return (hash_T)0;
     p = key + 1;
 
     /* A simplistic algorithm that appears to do very well.
