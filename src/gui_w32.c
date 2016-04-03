@@ -3291,6 +3291,7 @@ logfont2name(LOGFONT lf)
     char	*p;
     char	*res;
     char	*charset_name;
+    char	*quality_name;
     char	*font_name = lf.lfFaceName;
 
     charset_name = charset_id2name((int)lf.lfCharSet);
@@ -3304,6 +3305,8 @@ logfont2name(LOGFONT lf)
 						(char_u **)&font_name, &len);
     }
 #endif
+    quality_name = quality_id2name((int)lf.lfQuality);
+
     res = (char *)alloc((unsigned)(strlen(font_name) + 20
 		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)));
     if (res != NULL)
@@ -3330,6 +3333,11 @@ logfont2name(LOGFONT lf)
 	{
 	    STRCAT(p, ":c");
 	    STRCAT(p, charset_name);
+	}
+	if (quality_name != NULL)
+	{
+	    STRCAT(p, ":q");
+	    STRCAT(p, quality_name);
 	}
     }
 

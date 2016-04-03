@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Mar 24
+*options.txt*	For Vim version 7.4.  Last change: 2016 Apr 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1070,7 +1070,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	Note that environment variables are not expanded.  If you want to use
 	$HOME you must expand it explicitly, e.g.: >
-		:let backupskip = escape(expand('$HOME'), '\') . '/tmp/*'
+		:let &backupskip = escape(expand('$HOME'), '\') . '/tmp/*'
 
 <	Note that the default also makes sure that "crontab -e" works (when a
 	backup would be made by renaming the original file crontab won't see
@@ -1245,7 +1245,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	break if 'linebreak' is on.  Only works for ASCII and also for 8-bit
 	characters when 'encoding' is an 8-bit encoding.
 
-				*'breakindent'* *'bri'* *'nobreakindent'* *'nobri'*
+			*'breakindent'* *'bri'* *'nobreakindent'* *'nobri'*
 'breakindent' 'bri'	boolean (default off)
 			local to window
 			{not in Vi}
@@ -3634,6 +3634,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		      HANGEUL, HEBREW, JOHAB, MAC, OEM, RUSSIAN, SHIFTJIS,
 		      SYMBOL, THAI, TURKISH, VIETNAMESE ANSI and BALTIC.
 		      Normally you would use "cDEFAULT".
+		qXX - quality XX.  Valid charsets are: PROOF, DRAFT,
+		      ANTIALIASED, UNANTIALIASED, CLEARTYPE, DEFAULT.
+		      Normally you would use "qDEFAULT".
+		      Some quality values isn't supported in legacy OSs.
 
 	  Use a ':' to separate the options.
 	- A '_' can be used in the place of a space, so you don't need to use

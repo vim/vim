@@ -2689,6 +2689,33 @@ charset_pairs[] =
     {NULL,		0}
 };
 
+struct quality_pair
+{
+    char	*name;
+    DWORD	quality;
+};
+
+static struct quality_pair
+quality_pairs[] = {
+#ifdef CLEARTYPE_QUALITY
+    {"CLEARTYPE",	CLEARTYPE_QUALITY},
+#endif
+#ifdef ANTIALIASED_QUALITY
+    {"ANTIALIASED",	ANTIALIASED_QUALITY},
+#endif
+#ifdef NOANTIALIASED_QUALITY
+    {"NOANTIALIASED",	NOANTIALIASED_QUALITY},
+#endif
+#ifdef PROOF_QUALITY
+    {"PROOF",		PROOF_QUALITY},
+#endif
+#ifdef PROOF_QUALITY
+    {"DRAFT",		DRAFT_QUALITY},
+#endif
+    {"DEFAULT",		DEFAULT_QUALITY},
+    {NULL,		0}
+};
+
 /*
  * Convert a charset ID to a name.
  * Return NULL when not recognized.
@@ -2702,6 +2729,21 @@ charset_id2name(int id)
 	if ((BYTE)id == cp->charset)
 	    break;
     return cp->name;
+}
+
+/*
+ * Convert a quality ID to a name.
+ * Return NULL when not recognized.
+ */
+    char *
+quality_id2name(DWORD id)
+{
+    struct quality_pair *qp;
+
+    for (qp = quality_pairs; qp->name != NULL; ++qp)
+	if (id == qp->quality)
+	    break;
+    return qp->name;
 }
 
 static const LOGFONT s_lfDefault =
@@ -2980,6 +3022,26 @@ get_logfont(
 		    {
 			vim_snprintf((char *)IObuff, IOSIZE,
 				_("E244: Illegal charset name \"%s\" in font name \"%s\""), p, name);
+			EMSG(IObuff);
+			break;
+		    }
+		    break;
+		}
+	    case 'q':
+		{
+		    struct quality_pair *qp;
+
+		    for (qp = quality_pairs; qp->name != NULL; ++qp)
+			if (STRNCMP(p, qp->name, strlen(qp->name)) == 0)
+			{
+			    lf->lfQuality = qp->quality;
+			    p += strlen(qp->name);
+			    break;
+			}
+		    if (qp->name == NULL && verbose)
+		    {
+			vim_snprintf((char *)IObuff, IOSIZE,
+				_("E244: Illegal quality name \"%s\" in font name \"%s\""), p, name);
 			EMSG(IObuff);
 			break;
 		    }
