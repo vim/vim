@@ -4845,6 +4845,7 @@ mch_call_shell(
 			    break;
 
 # if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+			if (wait_pid == 0)
 			{
 			    struct timeval  now_tv;
 			    long	    msec;
@@ -4854,7 +4855,7 @@ mch_call_shell(
 			     * break out too often to avoid losing typeahead. */
 			    gettimeofday(&now_tv, NULL);
 			    msec = (now_tv.tv_sec - start_tv.tv_sec) * 1000L
-				+ (now_tv.tv_usec - start_tv.tv_usec) / 1000L;
+				 + (now_tv.tv_usec - start_tv.tv_usec) / 1000L;
 			    if (msec > 2000)
 			    {
 				noread_cnt = 5;
@@ -4864,10 +4865,15 @@ mch_call_shell(
 # endif
 		    }
 
-		    /* If we already detected the child has finished break the
-		     * loop now. */
+		    /* If we already detected the child has finished, continue
+		     * reading output for a short while.  Some text may be
+		     * buffered. */
 		    if (wait_pid == pid)
+		    {
+			if (noread_cnt < 5)
+			    continue;
 			break;
+		    }
 
 		    /*
 		     * Check if the child still exists, before checking for
