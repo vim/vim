@@ -1,4 +1,4 @@
-function! StatuslineWithCatchedError()
+function! StatuslineWithCaughtError()
   let s:func_in_statusline_called = 1
   try
     call eval('unknown expression')
@@ -13,10 +13,10 @@ function! StatuslineWithError()
   return ''
 endfunction
 
-function! Test_cached_error_in_statusline()
+function! Test_caught_error_in_statusline()
   let s:func_in_statusline_called = 0
   set laststatus=2
-  let statusline = '%{StatuslineWithCatchedError()}'
+  let statusline = '%{StatuslineWithCaughtError()}'
   let &statusline = statusline
   redrawstatus
   call assert_true(s:func_in_statusline_called)
