@@ -43,6 +43,15 @@
 # undef _DEBUG
 #endif
 
+#ifdef HAVE_STRFTIME
+# undef HAVE_STRFTIME
+#endif
+#ifdef HAVE_STRING_H
+# undef HAVE_STRING_H
+#endif
+#ifdef HAVE_PUTENV
+# undef HAVE_PUTENV
+#endif
 #ifdef HAVE_STDARG_H
 # undef HAVE_STDARG_H	/* Python's config.h defines it as well. */
 #endif
@@ -861,7 +870,7 @@ Python_RestoreThread(void)
 #endif
 
     void
-python_end()
+python_end(void)
 {
     static int recurse = 0;
 
@@ -899,7 +908,7 @@ python_end()
 
 #if (defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
     int
-python_loaded()
+python_loaded(void)
 {
     return (hinstPython != 0);
 }
@@ -1552,9 +1561,17 @@ do_pyeval (char_u *str, typval_T *rettv)
 	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
 	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;
 	case VAR_FUNC: func_ref(rettv->vval.v_string);    break;
+	case VAR_PARTIAL: ++rettv->vval.v_partial->pt_refcount; break;
 	case VAR_UNKNOWN:
 	    rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = 0;
+	    break;
+	case VAR_NUMBER:
+	case VAR_STRING:
+	case VAR_FLOAT:
+	case VAR_SPECIAL:
+	case VAR_JOB:
+	case VAR_CHANNEL:
 	    break;
     }
 }

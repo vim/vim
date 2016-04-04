@@ -25,6 +25,9 @@ What you can use (see test_assert.vim for an example):
   to check memory allocation failures are handled gracefully.  You need to
   change the source code to add an ID to the allocation.  Update LAST_ID_USED
   above alloc_id() to the highest ID used.
+- Use disable_char_avail_for_testing(1) if char_avail() must return FALSE for
+  a while.  E.g. to trigger the CursorMovedI autocommand event.
+  See test_cursor_func.vim for an example
 
 
 TO ADD AN OLD STYLE TEST:

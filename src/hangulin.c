@@ -35,10 +35,10 @@ static char_u stack[20] = {0};
 static int last_l = -1, last_ll = -1;
 static int hangul_keyboard_type = HANGUL_DEFAULT_KEYBOARD;
 
-static void convert_ks_to_3 __ARGS((const char_u *src, int *fp, int *mp, int *lp));
-static int convert_3_to_ks __ARGS((int fv, int mv, int lv, char_u *des));
-static int hangul_automata2 __ARGS((char_u *buf, unsigned int *c));
-static int hangul_automata3 __ARGS((char_u *buf, unsigned int *c));
+static void convert_ks_to_3(const char_u *src, int *fp, int *mp, int *lp);
+static int convert_3_to_ks(int fv, int mv, int lv, char_u *des);
+static int hangul_automata2(char_u *buf, unsigned int *c);
+static int hangul_automata3(char_u *buf, unsigned int *c);
 
 #define push(x)	 {stack[ sp++ ] = *(x); stack[sp++] = *((x)+1);}
 #define pop(x)	 {*((x) + 1) = stack[--sp]; *(x) = stack[--sp];}
@@ -96,9 +96,7 @@ static short_u kind_table_for_3[] =
  */
 
     static int
-comfcon3(v, c)
-    int	v;
-    int c;
+comfcon3(int v, int c)
 {
     if (v == 2 && c == 2)
 	return 3;
@@ -118,9 +116,7 @@ comfcon3(v, c)
  */
 
     static int
-comvow3(v, c)
-    int v;
-    int c;
+comvow3(int v, int c)
 {
     switch (v)
     {
@@ -159,9 +155,7 @@ comvow3(v, c)
  */
 
     static int
-comcon3(k, c)
-    int k;
-    int c;
+comcon3(int k, int c)
 {
     switch (k)
     {
@@ -217,8 +211,7 @@ comcon3(k, c)
 /**********************************************************************/
 
     static int
-kind_table_for_2(c)
-    int c;
+kind_table_for_2(int c)
 {
     static char_u table[] =
     {
@@ -241,8 +234,7 @@ kind_table_for_2(c)
  * 결과: 초성이 아니면 0 (If it is not initial sound, return 0).
  */
     static int
-fcon(c)
-    int c;
+fcon(int c)
 {
     static char_u table[] =
     {
@@ -266,8 +258,7 @@ fcon(c)
  * 결과: 중성이 아니면 0 (If it is not medial vowel, return 0).
  */
     static int
-vow(c)
-    int c;
+vow(int c)
 {
     static char_u table[] =
     {
@@ -289,8 +280,7 @@ vow(c)
  * 결과: 받침이 아니면 0 (If not prop, return 0)
  */
     static int
-lcon(c)
-    int c;
+lcon(int c)
 {
     static char_u table[] =
     {
@@ -312,9 +302,7 @@ lcon(c)
  */
 
     static int
-comcon2(k, c)
-    int k;
-    int c;
+comcon2(int k, int c)
 {
     switch (k)
     {
@@ -369,9 +357,7 @@ comcon2(k, c)
  */
 
     static int
-comvow2(v, c)
-    int v;
-    int c;
+comvow2(int v, int c)
 {
     switch (v)
     {
@@ -408,27 +394,26 @@ comvow2(v, c)
 }
 
     int
-hangul_input_state_get()
+hangul_input_state_get(void)
 {
     return hangul_input_state;
 }
 
     void
-hangul_input_state_set(state)
-    int state;
+hangul_input_state_set(int state)
 {
     hangul_input_state = state;
     hangul_input_clear();
 }
 
     int
-im_get_status()
+im_get_status(void)
 {
     return hangul_input_state_get();
 }
 
     void
-hangul_input_state_toggle()
+hangul_input_state_toggle(void)
 {
     if (hangul_input_state_get())
     {
@@ -452,9 +437,7 @@ hangul_input_state_toggle()
 }
 
     static int
-hangul_automata2(buf, c)
-    char_u  *buf;
-    int_u   *c;
+hangul_automata2(char_u *buf, int_u *c)
 {
     int t,t2;
 
@@ -614,9 +597,7 @@ hangul_automata2(buf, c)
 }
 
     static int
-hangul_automata3(buf, c)
-    char_u  *buf;
-    int_u   *c;
+hangul_automata3(char_u *buf, int_u *c)
 {
     int t, t2;
 
@@ -725,7 +706,7 @@ hangul_automata3(buf, c)
 }
 
     void
-hangul_keyboard_set()
+hangul_keyboard_set(void)
 {
     int	    keyboard;
     char    *s;
@@ -746,9 +727,7 @@ hangul_keyboard_set()
 }
 
     int
-hangul_input_process(s, len)
-    char_u  *s;
-    int	    len;
+hangul_input_process(char_u *s, int len)
 {
     int n;
     unsigned int c;
@@ -831,7 +810,7 @@ hangul_input_process(s, len)
 }
 
     void
-hangul_input_clear()
+hangul_input_clear(void)
 {
     sp = 0;
     f = F_NULL;
@@ -1503,11 +1482,11 @@ static const char_u johab_lcon_to_wan[] =
 };
 
     static void
-convert_ks_to_3(src, fp, mp, lp)
-    const char_u    *src;
-    int		    *fp;
-    int		    *mp;
-    int		    *lp;
+convert_ks_to_3(
+    const char_u    *src,
+    int		    *fp,
+    int		    *mp,
+    int		    *lp)
 {
     int h = *src;
     int low = *(src + 1);
@@ -1539,11 +1518,11 @@ convert_ks_to_3(src, fp, mp, lp)
 }
 
     static int
-convert_3_to_ks(fv, mv, lv, des)
-    int	    fv;
-    int	    mv;
-    int	    lv;
-    char_u  *des;
+convert_3_to_ks(
+    int	    fv,
+    int	    mv,
+    int	    lv,
+    char_u  *des)
 {
     char_u key[3];
     register int hi, lo, mi = 0, result, found;
@@ -1621,9 +1600,7 @@ convert_3_to_ks(fv, mv, lv, des)
 }
 
     char_u *
-hangul_string_convert(buf, p_len)
-    char_u  *buf;
-    int	    *p_len;
+hangul_string_convert(char_u *buf, int *p_len)
 {
     char_u *tmpbuf = NULL;
     vimconv_T vc;
@@ -1642,8 +1619,7 @@ hangul_string_convert(buf, p_len)
 }
 
     char_u *
-hangul_composing_buffer_get(p_len)
-    int	    *p_len;
+hangul_composing_buffer_get(int *p_len)
 {
     char_u *tmpbuf = NULL;
 

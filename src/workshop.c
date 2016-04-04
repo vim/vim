@@ -98,7 +98,7 @@ static char	*initialFileCmd;	/* save command but defer doing it */
 
 
     void
-workshop_init()
+workshop_init(void)
 {
     char_u	 buf[64];
     int		 is_dirty = FALSE;
@@ -148,7 +148,7 @@ workshop_init()
 }
 
     void
-workshop_postinit()
+workshop_postinit(void)
 {
     do_cmdline_cmd((char_u *)initialFileCmd);
     ALT_INPUT_LOCK_OFF;
@@ -170,7 +170,7 @@ ex_wsverb(exarg_T *eap)
  * of NEdit, for example, when the connection is initiated from the editor.
  */
     char *
-workshop_get_editor_name()
+workshop_get_editor_name(void)
 {
     return "gvim";
 }
@@ -181,7 +181,7 @@ workshop_get_editor_name()
  * version to the application.
  */
     char *
-workshop_get_editor_version()
+workshop_get_editor_version(void)
 {
     return Version;
 }
@@ -288,7 +288,7 @@ workshop_save_file(
 }
 
     void
-workshop_save_files()
+workshop_save_files(void)
 {
     /* Save the given file */
 #ifdef WSDEBUG_TRACE
@@ -300,7 +300,7 @@ workshop_save_files()
 }
 
     void
-workshop_quit()
+workshop_quit(void)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -311,7 +311,7 @@ workshop_quit()
 }
 
     void
-workshop_minimize()
+workshop_minimize(void)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -320,7 +320,7 @@ workshop_minimize()
     workshop_minimize_shell(vimShell);
 }
     void
-workshop_maximize()
+workshop_maximize(void)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -510,7 +510,7 @@ workshop_moved_marks(char *filename UNUSED)
 }
 
     int
-workshop_get_font_height()
+workshop_get_font_height(void)
 {
     XmFontList	 fontList;	/* fontList made from gui.norm_font */
     XmString	 str;
@@ -623,7 +623,7 @@ workshop_submenu_begin(
  */
 
     void
-workshop_submenu_end()
+workshop_submenu_end(void)
 {
     char		*p;
 
@@ -720,7 +720,7 @@ workshop_menu_item(
  */
 
     void
-workshop_menu_end()
+workshop_menu_end(void)
 {
     Boolean		 using_tearoff;	/* set per current option setting */
 
@@ -734,7 +734,7 @@ workshop_menu_end()
 }
 
     void
-workshop_toolbar_begin()
+workshop_toolbar_begin(void)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -746,7 +746,7 @@ workshop_toolbar_begin()
 }
 
     void
-workshop_toolbar_end()
+workshop_toolbar_end(void)
 {
     char_u	buf[64];
 
@@ -1405,7 +1405,7 @@ fixup(
 /* For the NoHands test suite */
 
     char *
-workshop_test_getcurrentfile()
+workshop_test_getcurrentfile(void)
 {
     char	*filename, *selection;
     int		curLine, curCol, selStartLine, selStartCol, selEndLine;
@@ -1421,13 +1421,13 @@ workshop_test_getcurrentfile()
 }
 
     int
-workshop_test_getcursorrow()
+workshop_test_getcursorrow(void)
 {
     return 0;
 }
 
     int
-workshop_test_getcursorcol()
+workshop_test_getcursorcol(void)
 {
     char	*filename, *selection;
     int		curLine, curCol, selStartLine, selStartCol, selEndLine;
@@ -1443,13 +1443,13 @@ workshop_test_getcursorcol()
 }
 
     char *
-workshop_test_getcursorrowtext()
+workshop_test_getcursorrowtext(void)
 {
     return NULL;
 }
 
     char *
-workshop_test_getselectedtext()
+workshop_test_getselectedtext(void)
 {
     char	*filename, *selection;
     int		curLine, curCol, selStartLine, selStartCol, selEndLine;

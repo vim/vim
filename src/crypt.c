@@ -130,8 +130,7 @@ static char	crypt_magic_head[] = "VimCrypt~";
  * 2 for "blowfish2".
  */
     int
-crypt_method_nr_from_name(name)
-    char_u  *name;
+crypt_method_nr_from_name(char_u *name)
 {
     int i;
 
@@ -147,9 +146,7 @@ crypt_method_nr_from_name(name)
  * Returns -1 when no encryption used.
  */
     int
-crypt_method_nr_from_magic(ptr, len)
-    char  *ptr;
-    int   len;
+crypt_method_nr_from_magic(char *ptr, int len)
 {
     int i;
 
@@ -171,8 +168,7 @@ crypt_method_nr_from_magic(ptr, len)
  * Return TRUE if the crypt method for "method_nr" can be done in-place.
  */
     int
-crypt_works_inplace(state)
-    cryptstate_T *state;
+crypt_works_inplace(cryptstate_T *state)
 {
     return cryptmethods[state->method_nr].works_inplace;
 }
@@ -181,8 +177,7 @@ crypt_works_inplace(state)
  * Get the crypt method for buffer "buf" as a number.
  */
     int
-crypt_get_method_nr(buf)
-    buf_T *buf;
+crypt_get_method_nr(buf_T *buf)
 {
     return crypt_method_nr_from_name(*buf->b_p_cm == NUL ? p_cm : buf->b_p_cm);
 }
@@ -192,8 +187,7 @@ crypt_get_method_nr(buf)
  * whole undo file, not only the text.
  */
     int
-crypt_whole_undofile(method_nr)
-    int method_nr;
+crypt_whole_undofile(int method_nr)
 {
     return cryptmethods[method_nr].whole_undofile;
 }
@@ -202,8 +196,7 @@ crypt_whole_undofile(method_nr)
  * Get crypt method specifc length of the file header in bytes.
  */
     int
-crypt_get_header_len(method_nr)
-    int method_nr;
+crypt_get_header_len(int method_nr)
 {
     return CRYPT_MAGIC_LEN
 	+ cryptmethods[method_nr].salt_len
@@ -215,9 +208,7 @@ crypt_get_header_len(method_nr)
  * returned by crypt_method_nr_from_name().
  */
     void
-crypt_set_cm_option(buf, method_nr)
-    buf_T   *buf;
-    int	    method_nr;
+crypt_set_cm_option(buf_T *buf, int method_nr)
 {
     free_string_option(buf->b_p_cm);
     buf->b_p_cm = vim_strsave((char_u *)cryptmethods[method_nr].name);
@@ -228,7 +219,7 @@ crypt_set_cm_option(buf, method_nr)
  * return OK/FAIL.
  */
     int
-crypt_self_test()
+crypt_self_test(void)
 {
     int method_nr = crypt_get_method_nr(curbuf);
 
@@ -241,13 +232,13 @@ crypt_self_test()
  * Allocate a crypt state and initialize it.
  */
     cryptstate_T *
-crypt_create(method_nr, key, salt, salt_len, seed, seed_len)
-    int		method_nr;
-    char_u	*key;
-    char_u	*salt;
-    int		salt_len;
-    char_u	*seed;
-    int		seed_len;
+crypt_create(
+    int		method_nr,
+    char_u	*key,
+    char_u	*salt,
+    int		salt_len,
+    char_u	*seed,
+    int		seed_len)
 {
     cryptstate_T *state = (cryptstate_T *)alloc((int)sizeof(cryptstate_T));
 
@@ -262,10 +253,10 @@ crypt_create(method_nr, key, salt, salt_len, seed, seed_len)
  * crypt_get_header_len() returns for "method_nr".
  */
     cryptstate_T *
-crypt_create_from_header(method_nr, key, header)
-    int		method_nr;
-    char_u	*key;
-    char_u	*header;
+crypt_create_from_header(
+    int		method_nr,
+    char_u	*key,
+    char_u	*header)
 {
     char_u	*salt = NULL;
     char_u	*seed = NULL;
@@ -285,9 +276,7 @@ crypt_create_from_header(method_nr, key, header)
  * Return an allocated cryptstate_T or NULL on error.
  */
     cryptstate_T *
-crypt_create_from_file(fp, key)
-    FILE    *fp;
-    char_u  *key;
+crypt_create_from_file(FILE *fp, char_u *key)
 {
     int		method_nr;
     int		header_len;
@@ -326,11 +315,11 @@ crypt_create_from_file(fp, key)
  * Returns the state or NULL on failure.
  */
     cryptstate_T *
-crypt_create_for_writing(method_nr, key, header, header_len)
-    int	    method_nr;
-    char_u  *key;
-    char_u  **header;
-    int	    *header_len;
+crypt_create_for_writing(
+    int	    method_nr,
+    char_u  *key,
+    char_u  **header,
+    int	    *header_len)
 {
     int	    len = crypt_get_header_len(method_nr);
     char_u  *salt = NULL;
@@ -371,8 +360,7 @@ crypt_create_for_writing(method_nr, key, header, header_len)
  * Free the crypt state.
  */
     void
-crypt_free_state(state)
-    cryptstate_T	*state;
+crypt_free_state(cryptstate_T *state)
 {
     vim_free(state->method_state);
     vim_free(state);
@@ -384,11 +372,11 @@ crypt_free_state(state)
  * Return number of bytes in "newptr", 0 for need more or -1 on error.
  */
     long
-crypt_encode_alloc(state, from, len, newptr)
-    cryptstate_T *state;
-    char_u	*from;
-    size_t	len;
-    char_u	**newptr;
+crypt_encode_alloc(
+    cryptstate_T *state,
+    char_u	*from,
+    size_t	len,
+    char_u	**newptr)
 {
     cryptmethod_T *method = &cryptmethods[state->method_nr];
 
@@ -412,11 +400,11 @@ crypt_encode_alloc(state, from, len, newptr)
  * Return number of bytes in "newptr", 0 for need more or -1 on error.
  */
     long
-crypt_decode_alloc(state, ptr, len, newptr)
-    cryptstate_T *state;
-    char_u	*ptr;
-    long	len;
-    char_u      **newptr;
+crypt_decode_alloc(
+    cryptstate_T *state,
+    char_u	*ptr,
+    long	len,
+    char_u      **newptr)
 {
     cryptmethod_T *method = &cryptmethods[state->method_nr];
 
@@ -439,11 +427,11 @@ crypt_decode_alloc(state, ptr, len, newptr)
  * Encrypting "from[len]" into "to[len]".
  */
     void
-crypt_encode(state, from, len, to)
-    cryptstate_T *state;
-    char_u	*from;
-    size_t	len;
-    char_u	*to;
+crypt_encode(
+    cryptstate_T *state,
+    char_u	*from,
+    size_t	len,
+    char_u	*to)
 {
     cryptmethods[state->method_nr].encode_fn(state, from, len, to);
 }
@@ -452,11 +440,11 @@ crypt_encode(state, from, len, to)
  * decrypting "from[len]" into "to[len]".
  */
     void
-crypt_decode(state, from, len, to)
-    cryptstate_T *state;
-    char_u	*from;
-    size_t	len;
-    char_u	*to;
+crypt_decode(
+    cryptstate_T *state,
+    char_u	*from,
+    size_t	len,
+    char_u	*to)
 {
     cryptmethods[state->method_nr].decode_fn(state, from, len, to);
 }
@@ -465,10 +453,10 @@ crypt_decode(state, from, len, to)
  * Simple inplace encryption, modifies "buf[len]" in place.
  */
     void
-crypt_encode_inplace(state, buf, len)
-    cryptstate_T *state;
-    char_u	*buf;
-    size_t	len;
+crypt_encode_inplace(
+    cryptstate_T *state,
+    char_u	*buf,
+    size_t	len)
 {
     cryptmethods[state->method_nr].encode_inplace_fn(state, buf, len, buf);
 }
@@ -477,10 +465,10 @@ crypt_encode_inplace(state, buf, len)
  * Simple inplace decryption, modifies "buf[len]" in place.
  */
     void
-crypt_decode_inplace(state, buf, len)
-    cryptstate_T *state;
-    char_u	*buf;
-    size_t	len;
+crypt_decode_inplace(
+    cryptstate_T *state,
+    char_u	*buf,
+    size_t	len)
 {
     cryptmethods[state->method_nr].decode_inplace_fn(state, buf, len, buf);
 }
@@ -490,8 +478,7 @@ crypt_decode_inplace(state, buf, len)
  * in memory anywhere.
  */
     void
-crypt_free_key(key)
-    char_u *key;
+crypt_free_key(char_u *key)
 {
     char_u *p;
 
@@ -507,8 +494,7 @@ crypt_free_key(key)
  * Check the crypt method and give a warning if it's outdated.
  */
     void
-crypt_check_method(method)
-    int method;
+crypt_check_method(int method)
 {
     if (method < CRYPT_M_BF2)
     {
@@ -518,7 +504,7 @@ crypt_check_method(method)
 }
 
     void
-crypt_check_current_method()
+crypt_check_current_method(void)
 {
     crypt_check_method(crypt_get_method_nr(curbuf));
 }
@@ -531,9 +517,9 @@ crypt_check_current_method()
  * Returns NULL on failure.
  */
     char_u *
-crypt_get_key(store, twice)
-    int		store;
-    int		twice;	    /* Ask for the key twice. */
+crypt_get_key(
+    int		store,
+    int		twice)	    /* Ask for the key twice. */
 {
     char_u	*p1, *p2 = NULL;
     int		round;
@@ -589,8 +575,8 @@ crypt_get_key(store, twice)
  * Append a message to IObuff for the encryption/decryption method being used.
  */
     void
-crypt_append_msg(buf)
-    buf_T *buf;
+crypt_append_msg(
+    buf_T *buf)
 {
     if (crypt_get_method_nr(buf) == 0)
 	STRCAT(IObuff, _("[crypted]"));

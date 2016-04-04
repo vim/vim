@@ -17,5 +17,5 @@ typedef enum {
 	aid_qf_namebuf,
 	aid_qf_errmsg,
 	aid_qf_pattern,
-	aid_last,
+	aid_last
 } alloc_id_T;

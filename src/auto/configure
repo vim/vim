@@ -638,7 +638,6 @@ NARROW_PROTO
 MOTIF_LIBNAME
 GRESOURCE_OBJ
 GRESOURCE_SRC
-GRESOURCE_HDR
 GLIB_COMPILE_RESOURCES
 GNOME_INCLUDEDIR
 GNOME_LIBDIR
@@ -654,8 +653,8 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
-SNIFF_OBJ
-SNIFF_SRC
+CHANNEL_OBJ
+CHANNEL_SRC
 NETBEANS_OBJ
 NETBEANS_SRC
 WORKSHOP_OBJ
@@ -810,7 +809,7 @@ with_ruby_command
 enable_cscope
 enable_workshop
 enable_netbeans
-enable_sniff
+enable_channel
 enable_multibyte
 enable_hangulinput
 enable_xim
@@ -819,6 +818,7 @@ with_x
 enable_gui
 enable_gtk2_check
 enable_gnome_check
+enable_gtk3_check
 enable_motif_check
 enable_athena_check
 enable_nextaw_check
@@ -1473,14 +1473,15 @@ Optional Features:
   --enable-cscope         Include cscope interface.
   --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
-  --enable-sniff          Include Sniff interface.
+  --disable-channel      Disable process communication support.
   --enable-multibyte      Include multibyte editing support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
-  --enable-gui=OPTS     X11 GUI default=auto OPTS=auto/no/gtk2/gnome2/motif/athena/neXtaw/photon/carbon
+  --enable-gui=OPTS     X11 GUI default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
+  --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 default=yes
   --enable-motif-check    If auto-select GUI, check for Motif default=yes
   --enable-athena-check   If auto-select GUI, check for Athena default=yes
   --enable-nextaw-check   If auto-select GUI, check for neXtaw default=yes
@@ -4352,7 +4353,7 @@ fi
 
 
     if test "x$CARBON" = "xyes"; then
-      if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk2; then
+      if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
 	with_x=no
       fi
     fi
@@ -4854,6 +4855,10 @@ fi
 $as_echo "$enable_luainterp" >&6; }
 
 if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    as_fn_error $? "cannot use Lua with tiny or small features" "$LINENO" 5
+  fi
+
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-lua-prefix argument" >&5
@@ -5594,6 +5599,9 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_perlinterp" >&5
 $as_echo "$enable_perlinterp" >&6; }
 if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    as_fn_error $? "cannot use Perl with tiny or small features" "$LINENO" 5
+  fi
 
   # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
@@ -5987,7 +5995,9 @@ eof
 
 fi
 
-	if ${vi_cv_dll_name_python+:} false; then :
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Python's dll name" >&5
+$as_echo_n "checking Python's dll name... " >&6; }
+if ${vi_cv_dll_name_python+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -5998,7 +6008,8 @@ else
 	  fi
 
 fi
-
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_dll_name_python" >&5
+$as_echo "$vi_cv_dll_name_python" >&6; }
 
 	PYTHON_LIBS="${vi_cv_path_python_plibs}"
 	if test "${vi_cv_path_python_pfx}" = "${vi_cv_path_python_epfx}"; then
@@ -6316,7 +6327,9 @@ eof
 
 fi
 
-	if ${vi_cv_dll_name_python3+:} false; then :
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Python3's dll name" >&5
+$as_echo_n "checking Python3's dll name... " >&6; }
+if ${vi_cv_dll_name_python3+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -6327,7 +6340,8 @@ else
 	  fi
 
 fi
-
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_dll_name_python3" >&5
+$as_echo "$vi_cv_dll_name_python3" >&6; }
 
         PYTHON3_LIBS="${vi_cv_path_python3_plibs}"
         if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
@@ -6469,7 +6483,7 @@ else
     int no_rtl_global_needed_for(char *python_instsoname, char *prefix)
     {
       int needed = 0;
-      void* pylib = dlopen(python_instsoname, RTLD_LAZY);
+      void* pylib = dlopen(python_instsoname, RTLD_LAZY|RTLD_LOCAL);
       if (pylib != 0)
       {
           void (*pfx)(char *home) = dlsym(pylib, "Py_SetPythonHome");
@@ -6535,7 +6549,7 @@ else
     int no_rtl_global_needed_for(char *python_instsoname, wchar_t *prefix)
     {
       int needed = 0;
-      void* pylib = dlopen(python_instsoname, RTLD_LAZY);
+      void* pylib = dlopen(python_instsoname, RTLD_LAZY|RTLD_LOCAL);
       if (pylib != 0)
       {
           void (*pfx)(wchar_t *home) = dlsym(pylib, "Py_SetPythonHome");
@@ -7225,8 +7239,49 @@ else
 fi
 
 if test "$enable_netbeans" = "yes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use NetBeans with tiny or small features" >&5
+$as_echo "cannot use NetBeans with tiny or small features" >&6; }
+    enable_netbeans="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
+  fi
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-channel argument" >&5
+$as_echo_n "checking --disable-channel argument... " >&6; }
+# Check whether --enable-channel was given.
+if test "${enable_channel+set}" = set; then :
+  enableval=$enable_channel;
+else
+  enable_channel="yes"
+fi
+
+if test "$enable_channel" = "yes"; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use channels with tiny or small features" >&5
+$as_echo "cannot use channels with tiny or small features" >&6; }
+    enable_channel="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+else
+  if test "$enable_netbeans" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, netbeans also disabled" >&5
+$as_echo "yes, netbeans also disabled" >&6; }
+    enable_netbeans="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  fi
+fi
+
+if test "$enable_channel" = "yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lsocket" >&5
 $as_echo_n "checking for socket in -lsocket... " >&6; }
 if ${ac_cv_lib_socket_socket+:} false; then :
@@ -7317,8 +7372,8 @@ _ACEOF
 
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling netbeans integration is possible" >&5
-$as_echo_n "checking whether compiling netbeans integration is possible... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling with process communication is possible" >&5
+$as_echo_n "checking whether compiling with process communication is possible... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7358,13 +7413,10 @@ if ac_fn_c_try_link "$LINENO"; then :
 $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }; enable_netbeans="no"
+$as_echo "no" >&6; }; enable_netbeans="no"; enable_channel="no"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
 fi
 if test "$enable_netbeans" = "yes"; then
   $as_echo "#define FEAT_NETBEANS_INTG 1" >>confdefs.h
@@ -7374,24 +7426,12 @@ if test "$enable_netbeans" = "yes"; then
   NETBEANS_OBJ="objects/netbeans.o"
 
 fi
+if test "$enable_channel" = "yes"; then
+  $as_echo "#define FEAT_JOB_CHANNEL 1" >>confdefs.h
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-sniff argument" >&5
-$as_echo_n "checking --enable-sniff argument... " >&6; }
-# Check whether --enable-sniff was given.
-if test "${enable_sniff+set}" = set; then :
-  enableval=$enable_sniff;
-else
-  enable_sniff="no"
-fi
+  CHANNEL_SRC="channel.c"
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_sniff" >&5
-$as_echo "$enable_sniff" >&6; }
-if test "$enable_sniff" = "yes"; then
-  $as_echo "#define FEAT_SNIFF 1" >>confdefs.h
-
-  SNIFF_SRC="if_sniff.c"
-
-  SNIFF_OBJ="objects/if_sniff.o"
+  CHANNEL_OBJ="objects/channel.o"
 
 fi
 
@@ -8481,6 +8521,7 @@ enable_gui_canon=`echo "_$enable_gui" | \
 	sed 's/[ _+-]//g;y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/'`
 
 SKIP_GTK2=YES
+SKIP_GTK3=YES
 SKIP_GNOME=YES
 SKIP_MOTIF=YES
 SKIP_ATHENA=YES
@@ -8544,6 +8585,9 @@ $as_echo "GTK+ 2.x GUI support" >&6; }
 $as_echo "GNOME 2.x GUI support" >&6; }
 		SKIP_GNOME=
 		SKIP_GTK2=;;
+    gtk3)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: GTK+ 3.x GUI support" >&5
+$as_echo "GTK+ 3.x GUI support" >&6; }
+		SKIP_GTK3=;;
     motif)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Motif GUI support" >&5
 $as_echo "Motif GUI support" >&6; }
 		SKIP_MOTIF=;;
@@ -8592,6 +8636,23 @@ fi
 $as_echo "$enable_gnome_check" >&6; }
   if test "x$enable_gnome_check" = "xno"; then
     SKIP_GNOME=YES
+  fi
+fi
+
+if test "x$SKIP_GTK3" != "xYES" -a "$enable_gui_canon" != "gtk3"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether or not to look for GTK+ 3" >&5
+$as_echo_n "checking whether or not to look for GTK+ 3... " >&6; }
+  # Check whether --enable-gtk3-check was given.
+if test "${enable_gtk3_check+set}" = set; then :
+  enableval=$enable_gtk3_check;
+else
+  enable_gtk3_check="yes"
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_gtk3_check" >&5
+$as_echo "$enable_gtk3_check" >&6; }
+  if test "x$enable_gtk3_check" = "xno"; then
+    SKIP_GTK3=YES
   fi
 fi
 
@@ -8769,13 +8830,13 @@ fi
 
   if test "X$GTK_CONFIG" != "Xno" -o "X$PKG_CONFIG" != "Xno"; then
   {
-    min_gtk_version=2.2.0
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
-$as_echo_n "checking for GTK - version >= $min_gtk_version... " >&6; }
     no_gtk=""
     if (test "X$SKIP_GTK2" != "XYES" -a "X$PKG_CONFIG" != "Xno") \
 	  && $PKG_CONFIG --exists gtk+-2.0; then
     {
+      min_gtk_version=2.2.0
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
+$as_echo_n "checking for GTK - version >= $min_gtk_version... " >&6; }
                         GTK_CFLAGS=`$PKG_CONFIG --cflags gtk+-2.0`
       GTK_LIBDIR=`$PKG_CONFIG --libs-only-L gtk+-2.0`
       GTK_LIBS=`$PKG_CONFIG --libs gtk+-2.0`
@@ -8784,6 +8845,23 @@ $as_echo_n "checking for GTK - version >= $min_gtk_version... " >&6; }
       gtk_minor_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
 	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
       gtk_micro_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
+	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/'`
+    }
+    elif (test "X$SKIP_GTK3" != "XYES" -a "X$PKG_CONFIG" != "Xno") \
+	  && $PKG_CONFIG --exists gtk+-3.0; then
+    {
+      min_gtk_version=2.2.0
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
+$as_echo_n "checking for GTK - version >= $min_gtk_version... " >&6; }
+
+      GTK_CFLAGS=`$PKG_CONFIG --cflags gtk+-3.0`
+      GTK_LIBDIR=`$PKG_CONFIG --libs-only-L gtk+-3.0`
+      GTK_LIBS=`$PKG_CONFIG --libs gtk+-3.0`
+      gtk_major_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
+	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
+      gtk_minor_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
+	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
+      gtk_micro_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
 	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/'`
     }
     else
@@ -8881,6 +8959,7 @@ $as_echo "no" >&6; }
   rm -f conf.gtktest
 
     if test "x$GTK_CFLAGS" != "x"; then
+      SKIP_GTK3=YES
       SKIP_ATHENA=YES
       SKIP_NEXTAW=YES
       SKIP_MOTIF=YES
@@ -8982,6 +9061,218 @@ $as_echo "not found" >&6; }
   fi
 fi
 
+
+if test -z "$SKIP_GTK3"; then
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-gtktest argument" >&5
+$as_echo_n "checking --disable-gtktest argument... " >&6; }
+  # Check whether --enable-gtktest was given.
+if test "${enable_gtktest+set}" = set; then :
+  enableval=$enable_gtktest;
+else
+  enable_gtktest=yes
+fi
+
+  if test "x$enable_gtktest" = "xyes" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: gtk test enabled" >&5
+$as_echo "gtk test enabled" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: gtk test disabled" >&5
+$as_echo "gtk test disabled" >&6; }
+  fi
+
+  if test "X$PKG_CONFIG" = "X"; then
+    # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  fi
+
+  if test "x$PKG_CONFIG" != "xno"; then
+
+  if test "X$GTK_CONFIG" != "Xno" -o "X$PKG_CONFIG" != "Xno"; then
+  {
+    no_gtk=""
+    if (test "X$SKIP_GTK2" != "XYES" -a "X$PKG_CONFIG" != "Xno") \
+	  && $PKG_CONFIG --exists gtk+-2.0; then
+    {
+      min_gtk_version=3.0.0
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
+$as_echo_n "checking for GTK - version >= $min_gtk_version... " >&6; }
+                        GTK_CFLAGS=`$PKG_CONFIG --cflags gtk+-2.0`
+      GTK_LIBDIR=`$PKG_CONFIG --libs-only-L gtk+-2.0`
+      GTK_LIBS=`$PKG_CONFIG --libs gtk+-2.0`
+      gtk_major_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
+	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
+      gtk_minor_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
+	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
+      gtk_micro_version=`$PKG_CONFIG --modversion gtk+-2.0 | \
+	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/'`
+    }
+    elif (test "X$SKIP_GTK3" != "XYES" -a "X$PKG_CONFIG" != "Xno") \
+	  && $PKG_CONFIG --exists gtk+-3.0; then
+    {
+      min_gtk_version=3.0.0
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK - version >= $min_gtk_version" >&5
+$as_echo_n "checking for GTK - version >= $min_gtk_version... " >&6; }
+
+      GTK_CFLAGS=`$PKG_CONFIG --cflags gtk+-3.0`
+      GTK_LIBDIR=`$PKG_CONFIG --libs-only-L gtk+-3.0`
+      GTK_LIBS=`$PKG_CONFIG --libs gtk+-3.0`
+      gtk_major_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
+	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/'`
+      gtk_minor_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
+	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/'`
+      gtk_micro_version=`$PKG_CONFIG --modversion gtk+-3.0 | \
+	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/'`
+    }
+    else
+      no_gtk=yes
+    fi
+
+    if test "x$enable_gtktest" = "xyes" -a "x$no_gtk" = "x"; then
+    {
+      ac_save_CFLAGS="$CFLAGS"
+      ac_save_LIBS="$LIBS"
+      CFLAGS="$CFLAGS $GTK_CFLAGS"
+      LIBS="$LIBS $GTK_LIBS"
+
+                        rm -f conf.gtktest
+      if test "$cross_compiling" = yes; then :
+  echo $ac_n "cross compiling; assumed OK... $ac_c"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <gtk/gtk.h>
+#include <stdio.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+
+int
+main ()
+{
+int major, minor, micro;
+char *tmp_version;
+
+system ("touch conf.gtktest");
+
+/* HP/UX 9 (%@#!) writes to sscanf strings */
+tmp_version = g_strdup("$min_gtk_version");
+if (sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) != 3) {
+   printf("%s, bad version string\n", "$min_gtk_version");
+   exit(1);
+ }
+
+if ((gtk_major_version > major) ||
+    ((gtk_major_version == major) && (gtk_minor_version > minor)) ||
+    ((gtk_major_version == major) && (gtk_minor_version == minor) &&
+				     (gtk_micro_version >= micro)))
+{
+    return 0;
+}
+return 1;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+else
+  no_gtk=yes
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+      CFLAGS="$ac_save_CFLAGS"
+      LIBS="$ac_save_LIBS"
+    }
+    fi
+    if test "x$no_gtk" = x ; then
+      if test "x$enable_gtktest" = "xyes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version" >&5
+$as_echo "yes; found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version" >&6; }
+      else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version" >&5
+$as_echo "found version $gtk_major_version.$gtk_minor_version.$gtk_micro_version" >&6; }
+      fi
+      GUI_LIB_LOC="$GTK_LIBDIR"
+		 GTK_LIBNAME="$GTK_LIBS"
+		GUI_INC_LOC="$GTK_CFLAGS"
+    else
+    {
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      GTK_CFLAGS=""
+      GTK_LIBS=""
+      :
+    }
+    fi
+  }
+  else
+    GTK_CFLAGS=""
+    GTK_LIBS=""
+    :
+  fi
+
+
+  rm -f conf.gtktest
+
+    if test "x$GTK_CFLAGS" != "x"; then
+      SKIP_GTK2=YES
+      SKIP_GNOME=YES
+      SKIP_ATHENA=YES
+      SKIP_NEXTAW=YES
+      SKIP_MOTIF=YES
+      GUITYPE=GTK
+
+      $as_echo "#define HAVE_GTK_MULTIHEAD 1" >>confdefs.h
+
+      $as_echo "#define USE_GTK3 1" >>confdefs.h
+
+    fi
+  fi
+fi
+
 if test "x$GUITYPE" = "xGTK"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of Gdk-Pixbuf" >&5
 $as_echo_n "checking version of Gdk-Pixbuf... " >&6; }
@@ -8990,7 +9281,7 @@ $as_echo_n "checking version of Gdk-Pixbuf... " >&6; }
     gdk_pixbuf_version_minor=`echo $gdk_pixbuf_version | \
       sed -e 's/[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*/\1/'`
     if test "x$gdk_pixbuf_version_minor" != x -a \
-      $gdk_pixbuf_version_minor -ge 31 ; then
+	$gdk_pixbuf_version_minor -ge 31 ; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: OK." >&5
 $as_echo "OK." >&6; }
       # Extract the first word of "glib-compile-resources", so it can be a program name with args.
@@ -9037,16 +9328,16 @@ fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking glib-compile-resources" >&5
 $as_echo_n "checking glib-compile-resources... " >&6; }
       if test "x$GLIB_COMPILE_RESOURCES" = xno ; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot be found in PATH." >&5
+	GLIB_COMPILE_RESOURCES=""
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot be found in PATH." >&5
 $as_echo "cannot be found in PATH." >&6; }
       else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: usable." >&5
 $as_echo "usable." >&6; }
-        $as_echo "#define USE_GRESOURCE 1" >>confdefs.h
+	$as_echo "#define USE_GRESOURCE 1" >>confdefs.h
 
-        GRESOURCE_HDR="auto/gui_gtk_gresources.h"
-        GRESOURCE_SRC="auto/gui_gtk_gresources.c"
-        GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
+	GRESOURCE_SRC="auto/gui_gtk_gresources.c"
+	GRESOURCE_OBJ="objects/gui_gtk_gresources.o"
       fi
     else
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: not usable." >&5
@@ -9057,7 +9348,6 @@ $as_echo "not usable." >&6; }
 $as_echo "cannot obtain from pkg_config." >&6; }
   fi
 fi
-
 
 
 
@@ -9485,7 +9775,7 @@ done
 fi
 
 
-if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2"; then
+if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2" -o -z "$SKIP_GTK3"; then
     cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   for ac_header in X11/xpm.h X11/Sunkeysym.h
@@ -10020,7 +10310,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-for ac_header in stdarg.h stdint.h stdlib.h string.h \
+for ac_header in stdint.h stdlib.h string.h \
 	sys/select.h sys/utsname.h termcap.h fcntl.h \
 	sgtty.h sys/ioctl.h sys/time.h sys/types.h \
 	termio.h iconv.h inttypes.h langinfo.h math.h \
@@ -10687,6 +10977,48 @@ $as_echo "#define AC_APPLE_UNIVERSAL_BUILD 1" >>confdefs.h
      as_fn_error $? "unknown endianness
  presetting ac_cv_c_bigendian=no (or yes) will help" "$LINENO" 5 ;;
  esac
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for inline" >&5
+$as_echo_n "checking for inline... " >&6; }
+if ${ac_cv_c_inline+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_cv_c_inline=no
+for ac_kw in inline __inline__ __inline; do
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#ifndef __cplusplus
+typedef int foo_t;
+static $ac_kw foo_t static_foo () {return 0; }
+$ac_kw foo_t foo () {return 0; }
+#endif
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_c_inline=$ac_kw
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  test "$ac_cv_c_inline" != no && break
+done
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_inline" >&5
+$as_echo "$ac_cv_c_inline" >&6; }
+
+case $ac_cv_c_inline in
+  inline | yes) ;;
+  *)
+    case $ac_cv_c_inline in
+      no) ac_val=;;
+      *) ac_val=$ac_cv_c_inline;;
+    esac
+    cat >>confdefs.h <<_ACEOF
+#ifndef __cplusplus
+#define inline $ac_val
+#endif
+_ACEOF
+    ;;
+esac
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for rlim_t" >&5
@@ -12046,6 +12378,70 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }; $as_echo "#define HAVE_FLOAT_FUNCS 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for isinf()" >&5
+$as_echo_n "checking for isinf()... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_MATH_H
+# include <math.h>
+#endif
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+
+int
+main ()
+{
+int r = isinf(1.11);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; $as_echo "#define HAVE_ISINF 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for isnan()" >&5
+$as_echo_n "checking for isnan()... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_MATH_H
+# include <math.h>
+#endif
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+
+int
+main ()
+{
+int r = isnan(1.11);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; $as_echo "#define HAVE_ISNAN 1" >>confdefs.h
 
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5

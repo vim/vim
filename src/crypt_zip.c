@@ -36,7 +36,7 @@ typedef struct {
 } zip_state_T;
 
 
-static void make_crc_tab __ARGS((void));
+static void make_crc_tab(void);
 
 static u32_T crc_32_table[256];
 
@@ -44,7 +44,7 @@ static u32_T crc_32_table[256];
  * Fill the CRC table, if not done already.
  */
     static void
-make_crc_tab()
+make_crc_tab(void)
 {
     u32_T	s, t, v;
     static int	done = FALSE;
@@ -85,13 +85,13 @@ make_crc_tab()
  * Initialize for encryption/decryption.
  */
     void
-crypt_zip_init(state, key, salt, salt_len, seed, seed_len)
-    cryptstate_T    *state;
-    char_u	    *key;
-    char_u	    *salt UNUSED;
-    int		    salt_len UNUSED;
-    char_u	    *seed UNUSED;
-    int		    seed_len UNUSED;
+crypt_zip_init(
+    cryptstate_T    *state,
+    char_u	    *key,
+    char_u	    *salt UNUSED,
+    int		    salt_len UNUSED,
+    char_u	    *seed UNUSED,
+    int		    seed_len UNUSED)
 {
     char_u	*p;
     zip_state_T	*zs;
@@ -114,11 +114,11 @@ crypt_zip_init(state, key, salt, salt_len, seed, seed_len)
  * "from" and "to" can be equal to encrypt in place.
  */
     void
-crypt_zip_encode(state, from, len, to)
-    cryptstate_T *state;
-    char_u	*from;
-    size_t	len;
-    char_u	*to;
+crypt_zip_encode(
+    cryptstate_T *state,
+    char_u	*from,
+    size_t	len,
+    char_u	*to)
 {
     zip_state_T *zs = state->method_state;
     size_t	i;
@@ -137,11 +137,11 @@ crypt_zip_encode(state, from, len, to)
  * Decrypt "from[len]" into "to[len]".
  */
     void
-crypt_zip_decode(state, from, len, to)
-    cryptstate_T *state;
-    char_u	*from;
-    size_t	len;
-    char_u	*to;
+crypt_zip_decode(
+    cryptstate_T *state,
+    char_u	*from,
+    size_t	len,
+    char_u	*to)
 {
     zip_state_T *zs = state->method_state;
     size_t	i;

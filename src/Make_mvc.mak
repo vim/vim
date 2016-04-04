@@ -82,8 +82,6 @@
 #	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.3)
 #	    You must set TCL_VER_LONG when you set TCL_VER.
 #
-#	SNiFF+ interface: SNIFF=yes
-#
 #	Cscope support: CSCOPE=yes
 #
 #	Iconv library support (always dynamically loaded):
@@ -96,6 +94,13 @@
 #	PostScript printing: POSTSCRIPT=yes (default is no)
 #
 #	Netbeans Support: NETBEANS=[yes or no] (default is yes if GUI is yes)
+#	Requires CHANNEL.
+#
+#	Netbeans Debugging Support: NBDEBUG=[yes or no] (should be no, yes
+#	doesn't work)
+#
+#	Inter process communication: CHANNEL=[yes or no] (default is yes if GUI
+#	is yes)
 #
 #	XPM Image Support: XPM=[path to XPM directory]
 #	Default is "xpm", using the files included in the distribution.
@@ -106,16 +111,13 @@
 #	Processor Version: CPUNR=[i386, i486, i586, i686, pentium4] (default is
 #	i386)
 #
-#	Version Support: WINVER=[0x0400, 0x0500] (default is 0x0400)
+#	Version Support: WINVER=[0x0501, 0x0600] (default is 0x0501)
 #
 #	Debug version: DEBUG=yes
 #	Mapfile: MAP=[no, yes or lines] (default is yes)
 #	  no:    Don't write a mapfile.
 #	  yes:   Write a normal mapfile.
 #	  lines: Write a mapfile with line numbers (only for VC6 and later)
-#
-#	Netbeans Debugging Support: NBDEBUG=[yes or no] (should be no, yes
-#	doesn't work)
 #
 #	Static Code Analysis: ANALYZE=yes (works with VS2012 only)
 #
@@ -265,16 +267,6 @@ WP64CHECK = /Wp64
 CTAGS = ctags
 !endif
 
-!if "$(SNIFF)" == "yes"
-# SNIFF - Include support for SNiFF+.
-SNIFF_INCL  = if_sniff.h
-SNIFF_OBJ   = $(OBJDIR)/if_sniff.obj
-SNIFF_LIB   = shell32.lib
-SNIFF_DEFS  = -DFEAT_SNIFF
-# The SNiFF integration needs multithreaded libraries!
-MULTITHREADED = yes
-!endif
-
 !ifndef CSCOPE
 CSCOPE = yes
 !endif
@@ -290,9 +282,13 @@ CSCOPE_DEFS  = -DFEAT_CSCOPE
 NETBEANS = $(GUI)
 !endif
 
-# Only allow NETBEANS and XPM for a GUI build.
+!ifndef CHANNEL
+CHANNEL = $(GUI)
+!endif
+
+# Only allow NETBEANS and XPM for a GUI build and CHANNEL.
 !if "$(GUI)" == "yes"
-!if "$(NETBEANS)" == "yes"
+!if "$(NETBEANS)" == "yes" && "$(CHANNEL)" == "yes"
 # NETBEANS - Include support for Netbeans integration
 NETBEANS_PRO	= proto/netbeans.pro
 NETBEANS_OBJ	= $(OBJDIR)/netbeans.obj
@@ -333,6 +329,14 @@ XPM_INC	  = -I $(XPM)\include -I $(XPM)\..\include
 !endif
 !endif
 
+!if "$(CHANNEL)" == "yes"
+CHANNEL_PRO	= proto/channel.pro
+CHANNEL_OBJ	= $(OBJDIR)/channel.obj
+CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL
+
+NETBEANS_LIB	= WSock32.lib
+!endif
+
 # Set which version of the CRT to use
 !if defined(USE_MSVCRT)
 # CVARS = $(cvarsdll)
@@ -354,9 +358,8 @@ CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 !endif
 
 ### Set the default $(WINVER) to make it work with VC++7.0 (VS.NET)
-#  When set to 0x0500 ":browse" stops working.
 !ifndef WINVER
-WINVER = 0x0400
+WINVER = 0x0501
 !endif
 
 # If you have a fixed directory for $VIM or $VIMRUNTIME, other than the normal
@@ -365,7 +368,7 @@ WINVER = 0x0400
 #VIMRUNTIMEDIR = somewhere
 
 CFLAGS = -c /W3 /nologo $(CVARS) -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
-		$(SNIFF_DEFS) $(CSCOPE_DEFS) $(NETBEANS_DEFS) \
+		$(CSCOPE_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
 		$(NBDEBUG_DEFS) $(XPM_DEFS) \
 		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 		/Fo$(OUTDIR)/ 
@@ -513,7 +516,7 @@ CFLAGS = $(CFLAGS) /Zl /MTd
 !endif # DEBUG
 
 INCL =	vim.h os_win32.h ascii.h feature.h globals.h keymap.h macros.h \
-	proto.h option.h structs.h term.h $(SNIFF_INCL) $(CSCOPE_INCL) \
+	proto.h option.h structs.h term.h $(CSCOPE_INCL) \
 	$(NBDEBUG_INCL)
 
 OBJ = \
@@ -982,7 +985,7 @@ conflags = $(conflags) /map /mapinfo:lines
 !ENDIF
 
 LINKARGS1 = $(linkdebug) $(conflags)
-LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib $(SNIFF_LIB) \
+LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
 		$(TCL_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
 
@@ -1005,12 +1008,12 @@ all:	$(VIM).exe \
 
 $(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
-		$(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) \
+		$(CSCOPE_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS) version.c
 	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(GUI_OBJ) $(OLE_OBJ) \
 		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
-		$(TCL_OBJ) $(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) \
+		$(TCL_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
 		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
 
@@ -1160,7 +1163,7 @@ $(OUTDIR)/gui.obj:	$(OUTDIR) gui.c  $(INCL) $(GUI_INCL)
 
 $(OUTDIR)/gui_beval.obj:	$(OUTDIR) gui_beval.c $(INCL) $(GUI_INCL)
 
-$(OUTDIR)/gui_w32.obj:	$(OUTDIR) gui_w32.c gui_w48.c $(INCL) $(GUI_INCL)
+$(OUTDIR)/gui_w32.obj:	$(OUTDIR) gui_w32.c $(INCL) $(GUI_INCL)
 
 $(OUTDIR)/gui_dwrite.obj:	$(OUTDIR) gui_dwrite.cpp $(INCL) $(GUI_INCL)
 
@@ -1197,9 +1200,6 @@ $(OUTDIR)/if_ole.obj: $(OUTDIR) if_ole.cpp  $(INCL) if_ole.h
 $(OUTDIR)/if_ruby.obj: $(OUTDIR) if_ruby.c  $(INCL)
 	$(CC) $(CFLAGS) $(RUBY_INC) if_ruby.c
 
-$(OUTDIR)/if_sniff.obj:	$(OUTDIR) if_sniff.c  $(INCL)
-	$(CC) $(CFLAGS) if_sniff.c
-
 $(OUTDIR)/if_tcl.obj: $(OUTDIR) if_tcl.c  $(INCL)
 	$(CC) $(CFLAGS) $(TCL_INC) if_tcl.c
 
@@ -1226,6 +1226,8 @@ $(OUTDIR)/move.obj:	$(OUTDIR) move.c  $(INCL)
 $(OUTDIR)/mbyte.obj: $(OUTDIR) mbyte.c  $(INCL)
 
 $(OUTDIR)/netbeans.obj: $(OUTDIR) netbeans.c $(NBDEBUG_SRC) $(INCL)
+
+$(OUTDIR)/channel.obj: $(OUTDIR) channel.c $(INCL)
 
 $(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL)
 
@@ -1276,7 +1278,7 @@ $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
 $(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h tools.bmp \
 				tearoff.bmp vim.ico vim_error.ico \
 				vim_alert.ico vim_info.ico vim_quest.ico
-	$(RC) /l 0x409 /Fo$(OUTDIR)/vim.res $(RCFLAGS) vim.rc
+	$(RC) /nologo /l 0x409 /Fo$(OUTDIR)/vim.res $(RCFLAGS) vim.rc
 
 iid_ole.c if_ole.h vim.tlb: if_ole.idl
 	midl /nologo /error none /proxy nul /iid iid_ole.c /tlb vim.tlb \
@@ -1362,7 +1364,8 @@ proto.h: \
 	proto/ui.pro \
 	proto/undo.pro \
 	proto/window.pro \
-	$(NETBEANS_PRO)
+	$(NETBEANS_PRO) \
+	$(CHANNEL_PRO)
 
 .SUFFIXES: .cod .i
 

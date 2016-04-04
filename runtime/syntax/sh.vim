@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Charles E. Campbell  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Dec 11, 2015
-" Version:		143
+" Last Change:		Mar 12, 2016
+" Version:		146
 " URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_SH
 " For options and settings, please use:      :help ft-sh-syntax
 " This file includes many ideas from Eric Brunet (eric.brunet@ens.fr)
@@ -83,6 +83,11 @@ if g:sh_fold_enabled && &fdm == "manual"
  " 	AND	g:sh_fold_enabled is manual (usual default)
  " 	implies	a desire for syntax-based folding
  setl fdm=syntax
+endif
+
+" set up the syntax-highlighting iskeyword
+if has("patch-7.4.1141")
+ exe "syn iskeyword ".&iskeyword.",-"
 endif
 
 " Set up folding commands for shell {{{1
@@ -180,7 +185,7 @@ endif
 
 " Options: {{{1
 " ====================
-syn match   shOption	"\s\zs[-+][-_a-zA-Z0-9#]\+"
+syn match   shOption	"\s\zs[-+][-_a-zA-Z#@]\+"
 syn match   shOption	"\s\zs--[^ \t$`'"|);]\+"
 
 " File Redirection Highlighted As Operators: {{{1
@@ -312,7 +317,8 @@ syn match   shColon	'^\s*\zs:'
 
 " String And Character Constants: {{{1
 "================================
-syn match   shNumber	"-\=\<\d\+\>#\="
+syn match   shNumber	"\<\d\+\>#\="
+syn match   shNumber	"-\=\.\=\d\+\>#\="
 syn match   shCtrlSeq	"\\\d\d\d\|\\[abcfnrtv0]"		contained
 if exists("b:is_bash")
  syn match   shSpecial	"\\\o\o\o\|\\x\x\x\|\\c[^"]\|\\[abefnrtv]"	contained

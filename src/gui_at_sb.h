@@ -94,7 +94,7 @@ typedef struct _ScrollbarClassRec *ScrollbarWidgetClass;
 
 extern WidgetClass vim_scrollbarWidgetClass;
 
-extern void vim_XawScrollbarSetThumb __ARGS((Widget, double, double, double));
+extern void vim_XawScrollbarSetThumb(Widget, double, double, double);
 
 typedef struct
 {

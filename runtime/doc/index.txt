@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.4.  Last change: 2016 Jan 19
+*index.txt*     For Vim version 7.4.  Last change: 2016 Mar 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1394,6 +1394,8 @@ tag	      command	      action ~
 |:ounmap|	:ou[nmap]	like ":unmap" but for Operator-pending mode
 |:ounmenu|	:ounme[nu]	remove menu for Operator-pending mode
 |:ownsyntax|	:ow[nsyntax]	set new local syntax highlight for this window
+|:packadd|	:pa[ckadd]	add a plugin from 'packpath'
+|:packloadall|	:packl[oadall]	load all packages under 'packpath'
 |:pclose|	:pc[lose]	close preview window
 |:pedit|	:ped[it]	edit file in the preview window
 |:perl|		:pe[rl]		execute Perl command
@@ -1498,7 +1500,6 @@ tag	      command	      action ~
 |:smile|	:smi[le]	make the user happy
 |:snext|	:sn[ext]	split window and go to next file in the
 				argument list
-|:sniff|	:sni[ff]	send request to sniff
 |:snomagic|	:sno[magic]	:substitute with 'nomagic'
 |:snoremap|	:snor[emap]	like ":noremap" but for Select mode
 |:snoremenu|	:snoreme[nu]	like ":noremenu" but for Select mode

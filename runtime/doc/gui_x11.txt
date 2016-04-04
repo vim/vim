@@ -369,6 +369,16 @@ Write this in the file ~/.gtkrc and it will be used by GTK+.  For GTK+ 2
 you might have to use the file ~/.gtkrc-2.0 instead, depending on your
 distribution.
 
+For GTK+ 3, an effect similar to the above can be obtained by adding the
+following snippet of CSS code to $XDG_HOME_DIR/gtk-3.0/gtk.css (usually,
+$HOME/.config/gtk-3.0/gtk.css):
+ >
+	.tooltip {
+		background-color: #ffffcc;
+		color: #000000;
+	}
+<
+
 Using Vim as a GTK+ plugin				*gui-gtk-socketid*
 
 When the GTK+ version of Vim starts up normally, it creates its own top level

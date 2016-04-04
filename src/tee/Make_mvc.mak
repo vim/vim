@@ -1,7 +1,7 @@
 # A very (if not the most) simplistic Makefile for MSVC
 
 CC=cl
-CFLAGS=/O2
+CFLAGS=/O2 /nologo
 
 tee.exe: tee.obj
 	$(CC) $(CFLAGS) /Fo$@ $**

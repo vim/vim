@@ -55,15 +55,25 @@ endfunction
 " ExecAsScript - Source a temporary script made from a function.	    {{{2
 "
 " Make a temporary script file from the function a:funcname, ":source" it, and
-" delete it afterwards.
+" delete it afterwards.  However, if an exception is thrown the file may remain,
+" the caller should call DeleteTheScript() afterwards.
+let s:script_name = ''
 function! ExecAsScript(funcname)
     " Make a script from the function passed as argument.
-    let script = MakeScript(a:funcname)
+    let s:script_name = MakeScript(a:funcname)
 
     " Source and delete the script.
-    exec "source" script
-    call delete(script)
+    exec "source" s:script_name
+    call delete(s:script_name)
+    let s:script_name = ''
 endfunction
+
+function! DeleteTheScript()
+    if s:script_name
+	call delete(s:script_name)
+	let s:script_name = ''
+    endif
+endfunc
 
 com! -nargs=1 -bar ExecAsScript call ExecAsScript(<f-args>)
 
@@ -143,6 +153,7 @@ func Test_endwhile_script()
   XpathINIT
   ExecAsScript T1_F
   Xpath 'F'
+  call DeleteTheScript()
 
   try
     ExecAsScript T1_G
@@ -152,6 +163,7 @@ func Test_endwhile_script()
     Xpath 'x'
   endtry
   Xpath 'G'
+  call DeleteTheScript()
 
   call assert_equal('abcFhijxG', g:Xpath)
 endfunc
@@ -260,6 +272,7 @@ function Test_finish()
     XpathINIT
     ExecAsScript T4_F
     Xpath '5'
+    call DeleteTheScript()
 
     call assert_equal('ab3e3b2c25', g:Xpath)
 endfunction
@@ -929,6 +942,7 @@ func Test_type()
     call assert_equal(0, type(0))
     call assert_equal(1, type(""))
     call assert_equal(2, type(function("tr")))
+    call assert_equal(2, type(function("tr", [8])))
     call assert_equal(3, type([]))
     call assert_equal(4, type({}))
     call assert_equal(5, type(0.0))
@@ -936,6 +950,106 @@ func Test_type()
     call assert_equal(6, type(v:true))
     call assert_equal(7, type(v:none))
     call assert_equal(7, type(v:null))
+
+    call assert_equal(0, 0 + v:false)
+    call assert_equal(1, 0 + v:true)
+    call assert_equal(0, 0 + v:none)
+    call assert_equal(0, 0 + v:null)
+
+    call assert_equal('v:false', '' . v:false)
+    call assert_equal('v:true', '' . v:true)
+    call assert_equal('v:none', '' . v:none)
+    call assert_equal('v:null', '' . v:null)
+
+    call assert_true(v:false == 0)
+    call assert_false(v:false != 0)
+    call assert_true(v:true == 1)
+    call assert_false(v:true != 1)
+    call assert_false(v:true == v:false)
+    call assert_true(v:true != v:false)
+
+    call assert_true(v:null == 0)
+    call assert_false(v:null != 0)
+    call assert_true(v:none == 0)
+    call assert_false(v:none != 0)
+
+    call assert_true(v:false is v:false)
+    call assert_true(v:true is v:true)
+    call assert_true(v:none is v:none)
+    call assert_true(v:null is v:null)
+
+    call assert_false(v:false isnot v:false)
+    call assert_false(v:true isnot v:true)
+    call assert_false(v:none isnot v:none)
+    call assert_false(v:null isnot v:null)
+
+    call assert_false(v:false is 0)
+    call assert_false(v:true is 1)
+    call assert_false(v:true is v:false)
+    call assert_false(v:none is 0)
+    call assert_false(v:null is 0)
+    call assert_false(v:null is v:none)
+
+    call assert_true(v:false isnot 0)
+    call assert_true(v:true isnot 1)
+    call assert_true(v:true isnot v:false)
+    call assert_true(v:none isnot 0)
+    call assert_true(v:null isnot 0)
+    call assert_true(v:null isnot v:none)
+
+    call assert_equal(v:false, eval(string(v:false)))
+    call assert_equal(v:true, eval(string(v:true)))
+    call assert_equal(v:none, eval(string(v:none)))
+    call assert_equal(v:null, eval(string(v:null)))
+
+    call assert_equal(v:false, copy(v:false))
+    call assert_equal(v:true, copy(v:true))
+    call assert_equal(v:none, copy(v:none))
+    call assert_equal(v:null, copy(v:null))
+
+    call assert_equal([v:false], deepcopy([v:false]))
+    call assert_equal([v:true], deepcopy([v:true]))
+    call assert_equal([v:none], deepcopy([v:none]))
+    call assert_equal([v:null], deepcopy([v:null]))
+
+    call assert_true(empty(v:false))
+    call assert_false(empty(v:true))
+    call assert_true(empty(v:null))
+    call assert_true(empty(v:none))
+
+    func ChangeYourMind()
+      try
+	return v:true
+      finally
+        return 'something else'
+      endtry
+    endfunc
+
+    call ChangeYourMind()
+endfunc
+
+"-------------------------------------------------------------------------------
+" Test 92:  skipping code					    {{{1
+"-------------------------------------------------------------------------------
+
+func Test_skip()
+    let Fn = function('Test_type')
+    call assert_false(0 && Fn[1])
+    call assert_false(0 && string(Fn))
+    call assert_false(0 && len(Fn))
+    let l = []
+    call assert_false(0 && l[1])
+    call assert_false(0 && string(l))
+    call assert_false(0 && len(l))
+    let f = 1.0
+    call assert_false(0 && f[1])
+    call assert_false(0 && string(f))
+    call assert_false(0 && len(f))
+    let sp = v:null
+    call assert_false(0 && sp[1])
+    call assert_false(0 && string(sp))
+    call assert_false(0 && len(sp))
+
 endfunc
 
 "-------------------------------------------------------------------------------

@@ -158,6 +158,7 @@ HBITMAP IconToBitmap(HICON hIcon, HBRUSH hBackground, int width, int height)
 # define VIMPACKAGE "vim"
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
+#  define GETTEXT_DLL_ALT "libintl-8.dll"
 # endif
 
 // Dummy functions
@@ -194,21 +195,36 @@ dyn_libintl_init(char *dir)
 	{(char *)"bindtextdomain",	(FARPROC*)&dyn_libintl_bindtextdomain},
 	{NULL, NULL}
     };
+    DWORD	len, len2;
+    LPWSTR	buf = NULL;
+    LPWSTR	buf2 = NULL;
 
     // No need to initialize twice.
     if (hLibintlDLL)
 	return 1;
 
-    // Load gettext library, first try the Vim runtime directory, then search
-    // the path.
-    strcat(dir, GETTEXT_DLL);
-    hLibintlDLL = LoadLibrary(dir);
-    if (!hLibintlDLL)
+    // Load gettext library from the Vim runtime directory.
+    // Add the directory to $PATH temporarily.
+    len = GetEnvironmentVariableW(L"PATH", NULL, 0);
+    len2 = MAX_PATH + 1 + len;
+    buf = (LPWSTR)malloc(len * sizeof(WCHAR));
+    buf2 = (LPWSTR)malloc(len2 * sizeof(WCHAR));
+    if (buf != NULL && buf2 != NULL)
     {
+	GetEnvironmentVariableW(L"PATH", buf, len);
+	_snwprintf(buf2, len2, L"%S;%s", dir, buf);
+	SetEnvironmentVariableW(L"PATH", buf2);
 	hLibintlDLL = LoadLibrary(GETTEXT_DLL);
+#ifdef GETTEXT_DLL_ALT
 	if (!hLibintlDLL)
-	    return 0;
+	    hLibintlDLL = LoadLibrary(GETTEXT_DLL_ALT);
+#endif
+	SetEnvironmentVariableW(L"PATH", buf);
     }
+    free(buf);
+    free(buf2);
+    if (!hLibintlDLL)
+	return 0;
 
     // Get the addresses of the functions we need.
     for (i = 0; libintl_entry[i].name != NULL

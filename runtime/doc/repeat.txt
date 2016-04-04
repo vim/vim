@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.4.  Last change: 2016 Jan 16
+*repeat.txt*    For Vim version 7.4.  Last change: 2016 Mar 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -8,12 +8,14 @@ Repeating commands, Vim scripts and debugging			*repeating*
 
 Chapter 26 of the user manual introduces repeating |usr_26.txt|.
 
-1. Single repeats	|single-repeat|
-2. Multiple repeats	|multi-repeat|
-3. Complex repeats	|complex-repeat|
-4. Using Vim scripts	|using-scripts|
-5. Debugging scripts	|debug-scripts|
-6. Profiling		|profiling|
+1. Single repeats		|single-repeat|
+2. Multiple repeats		|multi-repeat|
+3. Complex repeats		|complex-repeat|
+4. Using Vim scripts		|using-scripts|
+5. Using Vim packages		|packages|
+6. Creating Vim packages	|package-create|
+7. Debugging scripts		|debug-scripts|
+8. Profiling			|profiling|
 
 ==============================================================================
 1. Single repeats					*single-repeat*
@@ -181,10 +183,12 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			{not in Vi}
 
 							*:ru* *:runtime*
-:ru[ntime][!] {file} ..
+:ru[ntime][!] [where] {file} ..
 			Read Ex commands from {file} in each directory given
-			by 'runtimepath'.  There is no error for non-existing
-			files.  Example: >
+			by 'runtimepath' and/or 'packpath'.  There is no error
+			for non-existing files.
+			
+			Example: >
 				:runtime syntax/c.vim
 
 <			There can be multiple {file} arguments, separated by
@@ -197,6 +201,15 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			When [!] is included, all found files are sourced.
 			When it is not included only the first found file is
 			sourced.
+
+			When [where] is omitted only 'runtimepath' is used.
+			Other values:
+				START	search under "start" in 'packpath'
+				OPT 	search under "opt" in 'packpath'
+				PACK	search under "start" and "opt" in
+					'packpath'
+				ALL	first use 'runtimepath', then search
+					under "start" and "opt" in 'packpath'
 
 			When {file} contains wildcards it is expanded to all
 			matching files.  Example: >
@@ -211,6 +224,45 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			When 'verbose' is two or higher, there is a message
 			about each searched file.
 			{not in Vi}
+
+							*:pa* *:packadd* *E919*
+:pa[ckadd][!] {name}	Search for an optional plugin directory in 'packpath'
+			and source any plugin files found.  The directory must
+			match:
+				pack/*/opt/{name} ~
+			The directory is added to 'runtimepath' if it wasn't
+			there yet.
+
+			Note that {name} is the directory name, not the name
+			of the .vim file.  If the "{name}/plugin" directory
+			contains more than one file they are all sourced.
+
+			If the filetype detection was not enabled yet (this
+			is usually done with a "syntax enable" or "filetype
+			on" command in your .vimrc file), this will also look
+			for "{name}/ftdetect/*.vim" files.
+
+			When the optional ! is added no plugin files or
+			ftdetect scripts are loaded, only the matching
+			directories are added to 'runtimepath'.  This is
+			useful in your .vimrc.  The plugins will then be
+			loaded during initialization, see |load-plugins|.
+
+			Also see |pack-add|.
+
+						*:packl* *:packloadall*
+:packloadall[!]		Load all packages in the "start" directories under
+			'packpath'.  The directories found are added to
+			'runtimepath'.
+			This is normally done automatically during startup,
+			after loading your .vimrc file.  With this command it
+			can be done earlier.
+			Packages will be loaded only once.  After this command
+			it won't happen again.  When the optional ! is added
+			this command will load packages even when done before.
+			An error only causes sourcing the script where it
+			happens to be aborted, further plugins will be loaded.
+			See |packages|.
 
 :scripte[ncoding] [encoding]		*:scripte* *:scriptencoding* *E167*
 			Specify the character encoding used in the script.
@@ -388,7 +440,167 @@ Rationale:
 <	Therefore the unusual leading backslash is used.
 
 ==============================================================================
-5. Debugging scripts					*debug-scripts*
+5. Using Vim packages					*packages*
+
+A Vim package is a directory that contains one or more plugins.  The
+advantages over normal plugins:
+- A package can be downloaded as an archive and unpacked in its own directory.
+  Thus the files are not mixed with files of other plugins.  That makes it
+  easy to update and remove.
+- A package can be a git, mercurial, etc. repository.  That makes it really
+  easy to update.
+- A package can contain multiple plugins that depend on each other.
+- A package can contain plugins that are automatically loaded on startup and
+  ones that are only loaded when needed with `:packadd`.
+
+
+Using a package and loading automatically ~
+
+Let's assume your Vim files are in the "~/.vim" directory and you want to add a
+package from a zip archive "/tmp/foopack.zip":
+	% mkdir -p ~/.vim/pack/foo
+	% cd ~/.vim/pack/foo
+	% unzip /tmp/foopack.zip
+
+The directory name "foo" is arbitrary, you can pick anything you like.
+
+You would now have these files under ~/.vim:
+	pack/foo/README.txt
+	pack/foo/start/foobar/plugin/foo.vim
+	pack/foo/start/foobar/syntax/some.vim
+	pack/foo/opt/foodebug/plugin/debugger.vim
+
+When Vim starts up, after processing your .vimrc, it scans all directories in
+'packpath' for plugins under the "pack/*/start" directory and loads them.  The
+directory is added to 'runtimepath'.
+
+In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds 
+"~/.vim/pack/foo/start/foobar" to 'runtimepath'.
+
+If the "foobar" plugin kicks in and sets the 'filetype' to "some", Vim will
+find the syntax/some.vim file, because its directory is in 'runtimepath'.
+
+Vim will also load ftdetect files, if there are any.
+
+Note that the files under "pack/foo/opt" are not loaded automatically, only the
+ones under "pack/foo/start".  See |pack-add| below for how the "opt" directory
+is used.
+
+Loading packages automatically will not happen if loading plugins is disabled,
+see |load-plugins|.
+
+To load packages earlier, so that 'runtimepath' gets updated: >
+	:packloadall
+This also works when loading plugins is disabled.  The automatic loading will
+only happen once.
+
+
+Using a single plugin and loading it automatically ~
+
+If you don't have a package but a single plugin, you need to create the extra
+directory level:
+	% mkdir -p ~/.vim/pack/foo/start/foobar
+	% cd ~/.vim/pack/foo/start/foobar
+	% unzip /tmp/someplugin.zip
+
+You would now have these files:
+	pack/foo/start/foobar/plugin/foo.vim
+	pack/foo/start/foobar/syntax/some.vim
+
+From here it works like above.
+
+
+Optional plugins ~
+							*pack-add*
+To load an optional plugin from a pack use the `:packadd` command: >
+	:packadd foodebug
+This searches for "pack/*/opt/foodebug" in 'packpath' and will find
+~/.vim/pack/foo/opt/foodebug/plugin/debugger.vim and source it.
+
+This could be done if some conditions are met.  For example, depending on
+whether Vim supports a feature or a dependency is missing.
+
+You can also load an optional plugin at startup, by putting this command in
+your |.vimrc|: >
+	:packadd! foodebug
+The extra "!" is so that the plugin isn't loaded with Vim was started with
+|--noplugin|.
+
+It is perfectly normal for a package to only have files in the "opt"
+directory.  You then need to load each plugin when you want to use it.
+
+
+Where to put what ~
+
+Since color schemes, loaded with `:colorscheme`, are found below
+"pack/*/start" and "pack/*/opt", you could put them anywhere.  We recommend
+you put them below "pack/*/opt", for example
+".vim/pack/mycolors/opt/dark/colors/very_dark.vim".
+
+Filetype plugins should go under "pack/*/start", so that they are always
+found.  Unless you have more than one plugin for a file type and want to
+select which one to load with `:packadd`.  E.g. depending on the compiler
+version: >
+	if foo_compiler_version > 34
+	  packadd foo_new
+	else
+	  packadd foo_old
+	endif
+
+The "after" directory is most likely not useful in a package.  It's not
+disallowed though.
+
+==============================================================================
+6. Creating Vim packages				*package-create*
+
+This assumes you write one or more plugins that you distribute as a package.
+
+If you have two unrelated plugins you would use two packages, so that Vim
+users can chose what they include or not.  Or you can decide to use one
+package with optional plugins, and tell the user to add the ones he wants with
+`:packadd`.
+
+Decide how you want to distribute the package.  You can create an archive or
+you could use a repository.  An archive can be used by more users, but is a
+bit harder to update to a new version.  A repository can usually be kept
+up-to-date easily, but it requires a program like "git" to be available.
+You can do both, github can automatically create an archive for a release.
+
+Your directory layout would be like this:
+   start/foobar/plugin/foo.vim    	" always loaded, defines commands
+   start/foobar/plugin/bar.vim    	" always loaded, defines commands
+   start/foobar/autoload/foo.vim  	" loaded when foo command used
+   start/foobar/doc/foo.txt       	" help for foo.vim
+   start/foobar/doc/tags          	" help tags
+   opt/fooextra/plugin/extra.vim  	" optional plugin, defines commands
+   opt/fooextra/autoload/extra.vim  	" loaded when extra command used
+   opt/fooextra/doc/extra.txt  	        " help for extra.vim
+   opt/fooextra/doc/tags  	        " help tags
+
+This allows for the user to do: >
+	mkdir ~/.vim/pack/myfoobar
+	cd ~/.vim/pack/myfoobar
+	git clone https://github.com/you/foobar.git
+
+Here "myfoobar" is a name that the user can choose, the only condition is that
+it differs from other packages.
+
+In your documentation you explain what the plugins do, and tell the user how
+to load the optional plugin: >
+	:packadd! fooextra
+
+You could add this packadd command in one of your plugins, to be executed when
+the optional plugin is needed.
+
+Run the `:helptags` command to generate the doc/tags file.  Including this
+generated file in the package means that the user can drop the package in his
+pack directory and the help command works right away.  Don't forget to re-run
+the command after changing the plugin help: >
+	:helptags path/start/foobar/doc
+	:helptags path/opt/fooextra/doc
+
+==============================================================================
+7. Debugging scripts					*debug-scripts*
 
 Besides the obvious messages that you can add to your scripts to find out what
 they are doing, Vim offers a debug mode.  This allows you to step through a
@@ -490,7 +702,7 @@ Additionally, these commands can be used:
 	bt
 	where
 							*>frame*
-	frame N		Goes to N bactrace level. + and - signs make movement
+	frame N		Goes to N backtrace level. + and - signs make movement
 			relative.  E.g., ":frame +3" goes three frames up.
 							*>up*
 	up		Goes one level up from call stacktrace.
@@ -500,7 +712,7 @@ Additionally, these commands can be used:
 About the additional commands in debug mode:
 - There is no command-line completion for them, you get the completion for the
   normal Ex commands only.
-- You can shorten them, up to a single character, unless more then one command
+- You can shorten them, up to a single character, unless more than one command
   starts with the same letter.  "f" stands for "finish", use "fr" for "frame".
 - Hitting <CR> will repeat the previous one.  When doing another command, this
   is reset (because it's not clear what you want to repeat).
@@ -613,7 +825,7 @@ OBSCURE
 		user, don't use typeahead for debug commands.
 
 ==============================================================================
-6. Profiling						*profile* *profiling*
+8. Profiling						*profile* *profiling*
 
 Profiling means that Vim measures the time that is spent on executing
 functions and/or scripts.  The |+profile| feature is required for this.

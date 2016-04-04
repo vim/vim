@@ -1061,7 +1061,7 @@ VimForeachRTP(PyObject *self UNUSED, PyObject *callable)
     data.callable = callable;
     data.result = NULL;
 
-    do_in_runtimepath(NULL, FALSE, &map_rtp_callback, &data);
+    do_in_runtimepath(NULL, 0, &map_rtp_callback, &data);
 
     if (data.result == NULL)
     {
@@ -1150,7 +1150,7 @@ Vim_GetPaths(PyObject *self UNUSED)
     if (!(ret = PyList_New(0)))
 	return NULL;
 
-    do_in_runtimepath(NULL, FALSE, &map_finder_callback, ret);
+    do_in_runtimepath(NULL, 0, &map_finder_callback, ret);
 
     if (PyErr_Occurred())
     {
@@ -2944,7 +2944,7 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
     Python_Lock_Vim();
 
     VimTryStart();
-    error = func_call(name, &args, selfdict, &rettv);
+    error = func_call(name, &args, NULL, selfdict, &rettv);
 
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
@@ -3673,8 +3673,6 @@ WindowAttr(WindowObject *self, char *name)
 #ifdef FEAT_WINDOWS
     else if (strcmp(name, "row") == 0)
 	return PyLong_FromLong((long)(self->win->w_winrow));
-#endif
-#ifdef FEAT_VERTSPLIT
     else if (strcmp(name, "width") == 0)
 	return PyLong_FromLong((long)(W_WIDTH(self->win)));
     else if (strcmp(name, "col") == 0)
@@ -3765,7 +3763,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 
 	return 0;
     }
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     else if (strcmp(name, "width") == 0)
     {
 	long	width;
@@ -5831,11 +5829,10 @@ convert_dl(PyObject *obj, typval_T *tv,
 	}
 	/* As we are not using copy_tv which increments reference count we must
 	 * do it ourself. */
-	switch(tv->v_type)
-	{
-	    case VAR_DICT: ++tv->vval.v_dict->dv_refcount; break;
-	    case VAR_LIST: ++tv->vval.v_list->lv_refcount; break;
-	}
+	if (tv->v_type == VAR_DICT)
+	    ++tv->vval.v_dict->dv_refcount;
+	else if (tv->v_type == VAR_LIST)
+	    ++tv->vval.v_list->lv_refcount;
     }
     else
     {
@@ -6035,13 +6032,26 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_FUNC:
 	    return NEW_FUNCTION(tv->vval.v_string == NULL
 					  ? (char_u *)"" : tv->vval.v_string);
+	case VAR_PARTIAL:
+	    return NEW_FUNCTION(tv->vval.v_partial == NULL
+				? (char_u *)"" : tv->vval.v_partial->pt_name);
 	case VAR_UNKNOWN:
+	case VAR_CHANNEL:
+	case VAR_JOB:
 	    Py_INCREF(Py_None);
 	    return Py_None;
-	default:
+	case VAR_SPECIAL:
+	    switch (tv->vval.v_number)
+	    {
+		case VVAL_FALSE: return AlwaysFalse(NULL);
+		case VVAL_TRUE:  return AlwaysTrue(NULL);
+		case VVAL_NONE:
+		case VVAL_NULL:  return AlwaysNone(NULL);
+	    }
 	    PyErr_SET_VIM(N_("internal error: invalid value type"));
 	    return NULL;
     }
+    return NULL;
 }
 
 typedef struct

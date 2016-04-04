@@ -172,36 +172,36 @@ static int	SFstatus = SEL_FILE_NULL;
 
 /***************** static functions */
 
-static void SFsetText __ARGS((char *path));
-static void SFtextChanged __ARGS((void));
-static char *SFgetText __ARGS((void));
-static void SFupdatePath __ARGS((void));
-static int SFgetDir __ARGS((SFDir *dir));
-static void SFdrawLists __ARGS((int doScroll));
-static void SFdrawList __ARGS((int n, int doScroll));
-static void SFclearList __ARGS((int n, int doScroll));
-static void SFbuttonPressList __ARGS((Widget w, int n, XButtonPressedEvent *event));
-static void SFbuttonReleaseList __ARGS((Widget w, int n, XButtonReleasedEvent *event));
-static void SFdirModTimer __ARGS((XtPointer cl, XtIntervalId *id));
-static char SFstatChar __ARGS((struct stat *statBuf));
-static void SFdrawStrings __ARGS((Window w, SFDir *dir, int from, int to));
-static int SFnewInvertEntry __ARGS((int n, XMotionEvent *event));
-static void SFinvertEntry __ARGS((int n));
-static void SFenterList __ARGS((Widget w, int n, XEnterWindowEvent *event));
-static void SFleaveList __ARGS((Widget w, int n, XEvent *event));
-static void SFmotionList __ARGS((Widget w, int n, XMotionEvent *event));
-static void SFvFloatSliderMovedCallback __ARGS((Widget w, XtPointer n, XtPointer fnew));
-static void SFvSliderMovedCallback __ARGS((Widget w, int n, int nw));
-static void SFvAreaSelectedCallback __ARGS((Widget w, XtPointer n, XtPointer pnew));
-static void SFhSliderMovedCallback __ARGS((Widget w, XtPointer n, XtPointer nw));
-static void SFhAreaSelectedCallback __ARGS((Widget w, XtPointer n, XtPointer pnew));
-static void SFpathSliderMovedCallback __ARGS((Widget w, XtPointer client_data, XtPointer nw));
-static void SFpathAreaSelectedCallback __ARGS((Widget w, XtPointer client_data, XtPointer pnew));
-static Boolean SFworkProc __ARGS((void));
-static int SFcompareEntries __ARGS((const void *p, const void *q));
-static void SFprepareToReturn __ARGS((void));
-static void SFcreateWidgets __ARGS((Widget toplevel, char *prompt, char *ok, char *cancel));
-static void SFsetColors __ARGS((guicolor_T bg, guicolor_T fg, guicolor_T scroll_bg, guicolor_T scrollfg));
+static void SFsetText(char *path);
+static void SFtextChanged(void);
+static char *SFgetText(void);
+static void SFupdatePath(void);
+static int SFgetDir(SFDir *dir);
+static void SFdrawLists(int doScroll);
+static void SFdrawList(int n, int doScroll);
+static void SFclearList(int n, int doScroll);
+static void SFbuttonPressList(Widget w, int n, XButtonPressedEvent *event);
+static void SFbuttonReleaseList(Widget w, int n, XButtonReleasedEvent *event);
+static void SFdirModTimer(XtPointer cl, XtIntervalId *id);
+static char SFstatChar(struct stat *statBuf);
+static void SFdrawStrings(Window w, SFDir *dir, int from, int to);
+static int SFnewInvertEntry(int n, XMotionEvent *event);
+static void SFinvertEntry(int n);
+static void SFenterList(Widget w, int n, XEnterWindowEvent *event);
+static void SFleaveList(Widget w, int n, XEvent *event);
+static void SFmotionList(Widget w, int n, XMotionEvent *event);
+static void SFvFloatSliderMovedCallback(Widget w, XtPointer n, XtPointer fnew);
+static void SFvSliderMovedCallback(Widget w, int n, int nw);
+static void SFvAreaSelectedCallback(Widget w, XtPointer n, XtPointer pnew);
+static void SFhSliderMovedCallback(Widget w, XtPointer n, XtPointer nw);
+static void SFhAreaSelectedCallback(Widget w, XtPointer n, XtPointer pnew);
+static void SFpathSliderMovedCallback(Widget w, XtPointer client_data, XtPointer nw);
+static void SFpathAreaSelectedCallback(Widget w, XtPointer client_data, XtPointer pnew);
+static Boolean SFworkProc(void);
+static int SFcompareEntries(const void *p, const void *q);
+static void SFprepareToReturn(void);
+static void SFcreateWidgets(Widget toplevel, char *prompt, char *ok, char *cancel);
+static void SFsetColors(guicolor_T bg, guicolor_T fg, guicolor_T scroll_bg, guicolor_T scrollfg);
 
 /***************** xstat.h */
 
@@ -237,11 +237,10 @@ static SFLogin	*SFlogins;
 
 static int	SFtwiddle = 0;
 
-static int SFchdir __ARGS((char *path));
+static int SFchdir(char *path);
 
     static int
-SFchdir(path)
-    char	*path;
+SFchdir(char *path)
 {
     int		result;
 
@@ -257,11 +256,10 @@ SFchdir(path)
     return result;
 }
 
-static void SFfree __ARGS((int i));
+static void SFfree(int i);
 
     static void
-SFfree(i)
-    int	i;
+SFfree(int i)
 {
     SFDir	*dir;
     int		j;
@@ -281,21 +279,18 @@ SFfree(i)
     dir->dir = NULL;
 }
 
-static void SFstrdup __ARGS((char **s1, char *s2));
+static void SFstrdup(char **s1, char *s2);
 
     static void
-SFstrdup(s1, s2)
-    char	**s1;
-    char	*s2;
+SFstrdup(char **s1, char *s2)
 {
     *s1 = strcpy(XtMalloc((unsigned)(strlen(s2) + 1)), s2);
 }
 
-static void SFunreadableDir __ARGS((SFDir *dir));
+static void SFunreadableDir(SFDir *dir);
 
     static void
-SFunreadableDir(dir)
-    SFDir	*dir;
+SFunreadableDir(SFDir *dir)
 {
     char	*cannotOpen = _("<cannot open> ");
 
@@ -307,12 +302,10 @@ SFunreadableDir(dir)
     dir->nChars = strlen(cannotOpen);
 }
 
-static void SFreplaceText __ARGS((SFDir *dir, char *str));
+static void SFreplaceText(SFDir *dir, char *str);
 
     static void
-SFreplaceText(dir, str)
-    SFDir	*dir;
-    char	*str;
+SFreplaceText(SFDir *dir, char *str)
 {
     int	len;
 
@@ -330,11 +323,10 @@ SFreplaceText(dir, str)
     SFtextChanged();
 }
 
-static void SFexpand __ARGS((char *str));
+static void SFexpand(char *str);
 
     static void
-SFexpand(str)
-    char	*str;
+SFexpand(char *str)
 {
     int		len;
     int		cmp;
@@ -387,12 +379,10 @@ SFexpand(str)
     XtFree(growing);
 }
 
-static int SFfindFile __ARGS((SFDir *dir, char *str));
+static int SFfindFile(SFDir *dir, char *str);
 
     static int
-SFfindFile(dir, str)
-    SFDir	*dir;
-    char	*str;
+SFfindFile(SFDir *dir, char *str)
 {
     int		i, last, max;
     char	*name, save;
@@ -488,10 +478,10 @@ SFfindFile(dir, str)
     return 0;
 }
 
-static void SFunselect __ARGS((void));
+static void SFunselect(void);
 
     static void
-SFunselect()
+SFunselect(void)
 {
     SFDir	*dir;
 
@@ -502,19 +492,18 @@ SFunselect()
     dir->endSelection = -1;
 }
 
-static int SFcompareLogins __ARGS((const void *p, const void *q));
+static int SFcompareLogins(const void *p, const void *q);
 
     static int
-SFcompareLogins(p, q)
-    const void *p, *q;
+SFcompareLogins(const void *p, const void *q)
 {
     return strcmp(((SFLogin *)p)->name, ((SFLogin *)q)->name);
 }
 
-static void SFgetHomeDirs __ARGS((void));
+static void SFgetHomeDirs(void);
 
     static void
-SFgetHomeDirs()
+SFgetHomeDirs(void)
 {
     struct	passwd	*pw;
     int		Alloc;
@@ -579,11 +568,10 @@ SFgetHomeDirs()
 	(void)strcat(entries[i].real, "/");
 }
 
-static int SFfindHomeDir __ARGS((char *begin, char *end));
+static int SFfindHomeDir(char *begin, char *end);
 
     static int
-SFfindHomeDir(begin, end)
-    char	*begin, *end;
+SFfindHomeDir(char *begin, char *end)
 {
     char	save;
     char	*theRest;
@@ -613,7 +601,7 @@ SFfindHomeDir(begin, end)
 }
 
     static void
-SFupdatePath()
+SFupdatePath(void)
 {
     static int	Alloc;
     static int	wasTwiddle = 0;
@@ -807,8 +795,7 @@ SFupdatePath()
 
 #ifdef XtNinternational
     static int
-WcsLen(p)
-    wchar_t *p;
+WcsLen(wchar_t *p)
 {
     int i = 0;
     while (*p++ != 0)
@@ -818,8 +805,7 @@ WcsLen(p)
 #endif
 
     static void
-SFsetText(path)
-    char	*path;
+SFsetText(char *path)
 {
     XawTextBlock	text;
 
@@ -852,19 +838,19 @@ SFsetText(path)
 }
 
     static void
-SFbuttonPressList(w, n, event)
-    Widget		w UNUSED;
-    int			n UNUSED;
-    XButtonPressedEvent	*event UNUSED;
+SFbuttonPressList(
+    Widget		w UNUSED,
+    int			n UNUSED,
+    XButtonPressedEvent	*event UNUSED)
 {
     SFbuttonPressed = 1;
 }
 
     static void
-SFbuttonReleaseList(w, n, event)
-    Widget		 w;
-    int			 n;
-    XButtonReleasedEvent *event;
+SFbuttonReleaseList(
+    Widget		 w,
+    int			 n,
+    XButtonReleasedEvent *event)
 {
     SFDir	*dir;
 
@@ -882,12 +868,10 @@ SFbuttonReleaseList(w, n, event)
     }
 }
 
-static int SFcheckDir __ARGS((int n, SFDir *dir));
+static int SFcheckDir(int n, SFDir *dir);
 
     static int
-SFcheckDir(n, dir)
-    int		n;
-    SFDir		*dir;
+SFcheckDir(int n, SFDir *dir)
 {
     struct stat	statBuf;
     int		i;
@@ -948,11 +932,10 @@ SFcheckDir(n, dir)
     return 0;
 }
 
-static int SFcheckFiles __ARGS((SFDir *dir));
+static int SFcheckFiles(SFDir *dir);
 
     static int
-SFcheckFiles(dir)
-	SFDir	*dir;
+SFcheckFiles(SFDir *dir)
 {
     int		from, to;
     int		result;
@@ -988,9 +971,7 @@ SFcheckFiles(dir)
 }
 
     static void
-SFdirModTimer(cl, id)
-    XtPointer		cl UNUSED;
-    XtIntervalId	*id UNUSED;
+SFdirModTimer(XtPointer cl UNUSED, XtIntervalId *id UNUSED)
 {
     static int		n = -1;
     static int		f = 0;
@@ -1036,8 +1017,7 @@ SFdirModTimer(cl, id)
 /* Return a single character describing what kind of file STATBUF is.  */
 
     static char
-SFstatChar(statBuf)
-    struct stat *statBuf;
+SFstatChar(struct stat *statBuf)
 {
     if (S_ISDIR (statBuf->st_mode))
 	return '/';
@@ -1097,10 +1077,10 @@ static int SFcurrentListY;
 
 static XtIntervalId SFscrollTimerId;
 
-static void SFinitFont __ARGS((void));
+static void SFinitFont(void);
 
     static void
-SFinitFont()
+SFinitFont(void)
 {
     TextData	*data;
 #ifdef FEAT_XFONTSET
@@ -1148,10 +1128,10 @@ SFinitFont()
 #endif
 }
 
-static void SFcreateGC __ARGS((void));
+static void SFcreateGC(void);
 
     static void
-SFcreateGC()
+SFcreateGC(void)
 {
     XGCValues	gcValues;
     XRectangle	rectangles[1];
@@ -1209,9 +1189,7 @@ SFcreateGC()
 }
 
     static void
-SFclearList(n, doScroll)
-    int	n;
-    int	doScroll;
+SFclearList(int n, int doScroll)
 {
     SFDir	*dir;
 
@@ -1283,12 +1261,10 @@ SFclearList(n, doScroll)
     }
 }
 
-static void SFdeleteEntry __ARGS((SFDir *dir, SFEntry *entry));
+static void SFdeleteEntry(SFDir *dir, SFEntry *entry);
 
     static void
-SFdeleteEntry(dir, entry)
-    SFDir	*dir;
-    SFEntry	*entry;
+SFdeleteEntry(SFDir *dir, SFEntry *entry)
 {
     SFEntry	*e;
     SFEntry	*end;
@@ -1337,23 +1313,21 @@ SFdeleteEntry(dir, entry)
 #endif
 }
 
-static void SFwriteStatChar __ARGS((char *name, int last, struct stat *statBuf));
+static void SFwriteStatChar(char *name, int last, struct stat *statBuf);
 
     static void
-SFwriteStatChar(name, last, statBuf)
-    char	*name;
-    int		last;
-    struct stat	*statBuf;
+SFwriteStatChar(
+    char	*name,
+    int		last,
+    struct stat	*statBuf)
 {
     name[last] = SFstatChar(statBuf);
 }
 
-static int SFstatAndCheck __ARGS((SFDir *dir, SFEntry *entry));
+static int SFstatAndCheck(SFDir *dir, SFEntry *entry);
 
     static int
-SFstatAndCheck(dir, entry)
-    SFDir	*dir;
-    SFEntry	*entry;
+SFstatAndCheck(SFDir *dir, SFEntry *entry)
 {
     struct stat	statBuf;
     char	save;
@@ -1414,11 +1388,11 @@ SFstatAndCheck(dir, entry)
 
 
     static void
-SFdrawStrings(w, dir, from, to)
-    Window	w;
-    SFDir	*dir;
-    int		from;
-    int		to;
+SFdrawStrings(
+    Window	w,
+    SFDir	*dir,
+    int		from,
+    int		to)
 {
     int		i;
     SFEntry	*entry;
@@ -1501,9 +1475,7 @@ SFdrawStrings(w, dir, from, to)
 }
 
     static void
-SFdrawList(n, doScroll)
-    int	n;
-    int	doScroll;
+SFdrawList(int n, int doScroll)
 {
     SFDir	*dir;
     Window	w;
@@ -1539,8 +1511,7 @@ SFdrawList(n, doScroll)
 }
 
     static void
-SFdrawLists(doScroll)
-    int	doScroll;
+SFdrawLists(int doScroll)
 {
     int	i;
 
@@ -1549,8 +1520,7 @@ SFdrawLists(doScroll)
 }
 
     static void
-SFinvertEntry(n)
-    int		n;
+SFinvertEntry(int n)
 {
     XFillRectangle(
 	    SFdisplay,
@@ -1562,10 +1532,10 @@ SFinvertEntry(n)
 	    SFentryHeight);
 }
 
-static unsigned long SFscrollTimerInterval __ARGS((void));
+static unsigned long SFscrollTimerInterval(void);
 
     static unsigned long
-SFscrollTimerInterval()
+SFscrollTimerInterval(void)
 {
     static int	maxVal = 200;
     static int	varyDist = 50;
@@ -1591,12 +1561,10 @@ SFscrollTimerInterval()
     return (unsigned long)t;
 }
 
-static void SFscrollTimer __ARGS((XtPointer p, XtIntervalId *id));
+static void SFscrollTimer(XtPointer p, XtIntervalId *id);
 
     static void
-SFscrollTimer(p, id)
-    XtPointer		p;
-    XtIntervalId	*id UNUSED;
+SFscrollTimer(XtPointer p, XtIntervalId *id UNUSED)
 {
     SFDir	*dir;
     int		save;
@@ -1646,9 +1614,7 @@ SFscrollTimer(p, id)
 }
 
     static int
-SFnewInvertEntry(n, event)
-    int			n;
-    XMotionEvent	*event;
+SFnewInvertEntry(int n, XMotionEvent *event)
 {
     int			x, y;
     int			nw;
@@ -1693,10 +1659,7 @@ SFnewInvertEntry(n, event)
 }
 
     static void
-SFenterList(w, n, event)
-    Widget		w UNUSED;
-    int			n;
-    XEnterWindowEvent	*event;
+SFenterList(Widget w UNUSED, int n, XEnterWindowEvent *event)
 {
     int			nw;
 
@@ -1716,10 +1679,7 @@ SFenterList(w, n, event)
 }
 
     static void
-SFleaveList(w, n, event)
-    Widget	w UNUSED;
-    int		n;
-    XEvent	*event UNUSED;
+SFleaveList(Widget w UNUSED, int n, XEvent *event UNUSED)
 {
     if (SFcurrentInvert[n] != -1)
     {
@@ -1729,10 +1689,7 @@ SFleaveList(w, n, event)
 }
 
     static void
-SFmotionList(w, n, event)
-    Widget		w UNUSED;
-    int			n;
-    XMotionEvent	*event;
+SFmotionList(Widget w UNUSED, int n, XMotionEvent *event)
 {
     int		nw;
 
@@ -1749,10 +1706,7 @@ SFmotionList(w, n, event)
 }
 
     static void
-SFvFloatSliderMovedCallback(w, n, fnew)
-    Widget	w;
-    XtPointer	n;
-    XtPointer	fnew;
+SFvFloatSliderMovedCallback(Widget w, XtPointer n, XtPointer fnew)
 {
     int		nw;
 
@@ -1761,10 +1715,7 @@ SFvFloatSliderMovedCallback(w, n, fnew)
 }
 
     static void
-SFvSliderMovedCallback(w, n, nw)
-    Widget	w UNUSED;
-    int		n;
-    int		nw;
+SFvSliderMovedCallback(Widget w UNUSED, int n, int nw)
 {
     int		old;
     Window	win;
@@ -1846,10 +1797,7 @@ SFvSliderMovedCallback(w, n, nw)
 }
 
     static void
-SFvAreaSelectedCallback(w, n, pnew)
-    Widget	w;
-    XtPointer	n;
-    XtPointer	pnew;
+SFvAreaSelectedCallback(Widget w, XtPointer n, XtPointer pnew)
 {
     SFDir	*dir;
     int		nw = (int)(long)pnew;
@@ -1906,10 +1854,7 @@ SFvAreaSelectedCallback(w, n, pnew)
 }
 
     static void
-SFhSliderMovedCallback(w, n, nw)
-    Widget	w UNUSED;
-    XtPointer	n;
-    XtPointer	nw;
+SFhSliderMovedCallback(Widget w UNUSED, XtPointer n, XtPointer nw)
 {
     SFDir	*dir;
     int	save;
@@ -1924,10 +1869,7 @@ SFhSliderMovedCallback(w, n, nw)
 }
 
     static void
-SFhAreaSelectedCallback(w, n, pnew)
-    Widget	w;
-    XtPointer	n;
-    XtPointer	pnew;
+SFhAreaSelectedCallback(Widget w, XtPointer n, XtPointer pnew)
 {
     SFDir	*dir;
     int		nw = (int)(long)pnew;
@@ -1984,10 +1926,10 @@ SFhAreaSelectedCallback(w, n, pnew)
 }
 
     static void
-SFpathSliderMovedCallback(w, client_data, nw)
-    Widget	w UNUSED;
-    XtPointer	client_data UNUSED;
-    XtPointer	nw;
+SFpathSliderMovedCallback(
+    Widget	w UNUSED,
+    XtPointer	client_data UNUSED,
+    XtPointer	nw)
 {
     SFDir		*dir;
     int			n;
@@ -2020,10 +1962,10 @@ SFpathSliderMovedCallback(w, client_data, nw)
 }
 
     static void
-SFpathAreaSelectedCallback(w, client_data, pnew)
-    Widget	w;
-    XtPointer	client_data UNUSED;
-    XtPointer	pnew;
+SFpathAreaSelectedCallback(
+    Widget	w,
+    XtPointer	client_data UNUSED,
+    XtPointer	pnew)
 {
     int		nw = (int)(long)pnew;
     float	f;
@@ -2071,7 +2013,7 @@ SFpathAreaSelectedCallback(w, client_data, pnew)
 }
 
     static Boolean
-SFworkProc()
+SFworkProc(void)
 {
     SFDir	*dir;
     SFEntry	*entry;
@@ -2100,16 +2042,14 @@ SFworkProc()
 /***************** Dir.c */
 
     static int
-SFcompareEntries(p, q)
-    const void	*p;
-    const void	*q;
+SFcompareEntries(const void *p, const void *q)
 {
-    return strcmp(((SFEntry *)p)->real, ((SFEntry *)q)->real);
+ return strcmp(((SFEntry *)p)->real, ((SFEntry *)q)->real);
 }
 
     static int
-SFgetDir(dir)
-    SFDir	*dir;
+SFgetDir(
+    SFDir	*dir)
 {
     SFEntry		*result = NULL;
     int			Alloc = 0;
@@ -2191,14 +2131,14 @@ static char *oneLineTextEditTranslations = "\
 	Ctrl<Key>M:	redraw-display()\n\
 ";
 
-static void SFexposeList __ARGS((Widget w, XtPointer n, XEvent *event, Boolean *cont));
+static void SFexposeList(Widget w, XtPointer n, XEvent *event, Boolean *cont);
 
     static void
-SFexposeList(w, n, event, cont)
-    Widget	w UNUSED;
-    XtPointer	n;
-    XEvent	*event;
-    Boolean	*cont UNUSED;
+SFexposeList(
+    Widget	w UNUSED,
+    XtPointer	n,
+    XEvent	*event,
+    Boolean	*cont UNUSED)
 {
     if ((event->type == NoExpose) || event->xexpose.count)
 	return;
@@ -2206,14 +2146,14 @@ SFexposeList(w, n, event, cont)
     SFdrawList((int)(long)n, SF_DO_NOT_SCROLL);
 }
 
-static void SFmodVerifyCallback __ARGS((Widget w, XtPointer client_data, XEvent *event, Boolean *cont));
+static void SFmodVerifyCallback(Widget w, XtPointer client_data, XEvent *event, Boolean *cont);
 
     static void
-SFmodVerifyCallback(w, client_data, event, cont)
-    Widget		w UNUSED;
-    XtPointer		client_data UNUSED;
-    XEvent		*event;
-    Boolean		*cont UNUSED;
+SFmodVerifyCallback(
+    Widget		w UNUSED,
+    XtPointer		client_data UNUSED,
+    XEvent		*event,
+    Boolean		*cont UNUSED)
 {
     char	buf[2];
 
@@ -2224,13 +2164,10 @@ SFmodVerifyCallback(w, client_data, event, cont)
 	SFstatus = SEL_FILE_TEXT;
 }
 
-static void SFokCallback __ARGS((Widget w, XtPointer cl, XtPointer cd));
+static void SFokCallback(Widget w, XtPointer cl, XtPointer cd);
 
     static void
-SFokCallback(w, cl, cd)
-    Widget	w UNUSED;
-    XtPointer	cl UNUSED;
-    XtPointer	cd UNUSED;
+SFokCallback(Widget w UNUSED, XtPointer cl UNUSED, XtPointer cd UNUSED)
 {
     SFstatus = SEL_FILE_OK;
 }
@@ -2241,13 +2178,10 @@ static XtCallbackRec SFokSelect[] =
     { NULL, (XtPointer) NULL },
 };
 
-static void SFcancelCallback __ARGS((Widget w, XtPointer cl, XtPointer cd));
+static void SFcancelCallback(Widget w, XtPointer cl, XtPointer cd);
 
     static void
-SFcancelCallback(w, cl, cd)
-    Widget	w UNUSED;
-    XtPointer	cl UNUSED;
-    XtPointer	cd UNUSED;
+SFcancelCallback(Widget w UNUSED, XtPointer cl UNUSED, XtPointer cd UNUSED)
 {
     SFstatus = SEL_FILE_CANCEL;
 }
@@ -2258,14 +2192,14 @@ static XtCallbackRec SFcancelSelect[] =
     { NULL, (XtPointer) NULL },
 };
 
-static void SFdismissAction __ARGS((Widget w, XEvent *event, String *params, Cardinal *num_params));
+static void SFdismissAction(Widget w, XEvent *event, String *params, Cardinal *num_params);
 
     static void
-SFdismissAction(w, event, params, num_params)
-    Widget	w UNUSED;
-    XEvent	*event;
-    String	*params UNUSED;
-    Cardinal	*num_params UNUSED;
+SFdismissAction(
+    Widget	w UNUSED,
+    XEvent	*event,
+    String	*params UNUSED,
+    Cardinal	*num_params UNUSED)
 {
     if (event->type == ClientMessage
 	    && (Atom)event->xclient.data.l[0] != SFwmDeleteWindow)
@@ -2284,11 +2218,11 @@ static XtActionsRec actions[] =
 };
 
     static void
-SFsetColors(bg, fg, scroll_bg, scroll_fg)
-    guicolor_T	bg;
-    guicolor_T	fg;
-    guicolor_T	scroll_bg;
-    guicolor_T	scroll_fg;
+SFsetColors(
+    guicolor_T	bg,
+    guicolor_T	fg,
+    guicolor_T	scroll_bg,
+    guicolor_T	scroll_fg)
 {
     if (selFileForm)
     {
@@ -2366,11 +2300,11 @@ SFsetColors(bg, fg, scroll_bg, scroll_fg)
 }
 
     static void
-SFcreateWidgets(toplevel, prompt, ok, cancel)
-    Widget	toplevel;
-    char	*prompt;
-    char	*ok;
-    char	*cancel;
+SFcreateWidgets(
+    Widget	toplevel,
+    char	*prompt,
+    char	*ok,
+    char	*cancel)
 {
     Cardinal	n;
     int		listWidth, listHeight;
@@ -2686,7 +2620,7 @@ SFcreateWidgets(toplevel, prompt, ok, cancel)
 }
 
     static void
-SFtextChanged()
+SFtextChanged(void)
 {
 #if defined(FEAT_XFONTSET) && defined(XtNinternational)
     if ((unsigned long)_XawTextFormat((TextWidget)selFileField) == XawFmtWide)
@@ -2730,7 +2664,7 @@ SFtextChanged()
 }
 
     static char *
-SFgetText()
+SFgetText(void)
 {
 #if defined(FEAT_XFONTSET) && defined(XtNinternational)
     char *buf;
@@ -2756,7 +2690,7 @@ SFgetText()
 }
 
     static void
-SFprepareToReturn()
+SFprepareToReturn(void)
 {
     SFstatus = SEL_FILE_NULL;
     XtRemoveGrab(selFile);
@@ -2770,14 +2704,17 @@ SFprepareToReturn()
 }
 
     char *
-vim_SelFile(toplevel, prompt, init_path, show_entry, x, y, fg, bg, scroll_fg, scroll_bg)
-    Widget	toplevel;
-    char	*prompt;
-    char	*init_path;
-    int		(*show_entry)();
-    int		x, y;
-    guicolor_T	fg, bg;
-    guicolor_T	scroll_fg, scroll_bg; /* The "Scrollbar" group colors */
+vim_SelFile(
+    Widget	toplevel,
+    char	*prompt,
+    char	*init_path,
+    int		(*show_entry)(),
+    int		x,
+    int		y,
+    guicolor_T	fg,
+    guicolor_T	bg,
+    guicolor_T	scroll_fg,
+    guicolor_T	scroll_bg) /* The "Scrollbar" group colors */
 {
     static int	firstTime = 1;
     XEvent	event;

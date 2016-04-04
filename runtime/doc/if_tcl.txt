@@ -526,7 +526,8 @@ can use Vim without this file.
 MS-Windows ~
 
 To use the Tcl interface the Tcl DLL must be in your search path.  In a
-console window type "path" to see what directories are used.
+console window type "path" to see what directories are used.  The 'tcldll'
+option can be also used to specify the Tcl DLL.
 
 The name of the DLL must match the Tcl version Vim was compiled with.
 Currently the name is "tcl86.dll".  That is for Tcl 8.6.  To know for sure

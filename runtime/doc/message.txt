@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.4.  Last change: 2013 Feb 23
+*message.txt*   For Vim version 7.4.  Last change: 2016 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -475,8 +475,6 @@ in memory, you can reduce that with these options:
 - 'undolevels'  Set to a low value, or to -1 to disable undo completely.  This
   helps for a change that affects all lines.
 - 'undoreload' Set to zero to disable.
-
-Also see |msdos-limitations|.
 
 							*E339*  >
   Pattern too long

@@ -71,12 +71,12 @@
 #ifdef __amigaos4__
 # define	dos_packet(a, b, c)   DoPkt(a, b, c, 0, 0, 0, 0)
 #elif !defined(AZTEC_C) && !defined(__AROS__)
-static long dos_packet __ARGS((struct MsgPort *, long, long));
+static long dos_packet(struct MsgPort *, long, long);
 #endif
-static int lock2name __ARGS((BPTR lock, char_u *buf, long   len));
-static void out_num __ARGS((long n));
-static struct FileInfoBlock *get_fib __ARGS((char_u *));
-static int sortcmp __ARGS((const void *a, const void *b));
+static int lock2name(BPTR lock, char_u *buf, long   len);
+static void out_num(long n);
+static struct FileInfoBlock *get_fib(char_u *);
+static int sortcmp(const void *a, const void *b);
 
 static BPTR		raw_in = (BPTR)NULL;
 static BPTR		raw_out = (BPTR)NULL;
@@ -98,21 +98,19 @@ int			dos2 = FALSE;	    /* Amiga DOS 2.0x or higher */
 int			size_set = FALSE;   /* set to TRUE if window size was set */
 
     void
-win_resize_on()
+win_resize_on(void)
 {
     OUT_STR_NF("\033[12{");
 }
 
     void
-win_resize_off()
+win_resize_off(void)
 {
     OUT_STR_NF("\033[12}");
 }
 
     void
-mch_write(p, len)
-    char_u	*p;
-    int		len;
+mch_write(char_u *p, int len)
 {
     Write(raw_out, (char *)p, (long)len);
 }
@@ -127,11 +125,11 @@ mch_write(p, len)
  * Return number of characters read.
  */
     int
-mch_inchar(buf, maxlen, time, tb_change_cnt)
-    char_u  *buf;
-    int	    maxlen;
-    long    time;		/* milli seconds */
-    int	    tb_change_cnt;
+mch_inchar(
+    char_u  *buf,
+    int	    maxlen,
+    long    time,		/* milli seconds */
+    int	    tb_change_cnt)
 {
     int	    len;
     long    utime;
@@ -190,7 +188,7 @@ mch_inchar(buf, maxlen, time, tb_change_cnt)
  * return non-zero if a character is available
  */
     int
-mch_char_avail()
+mch_char_avail(void)
 {
     return (WaitForChar(raw_in, 100L) != 0);
 }
@@ -199,8 +197,7 @@ mch_char_avail()
  * Return amount of memory still available in Kbyte.
  */
     long_u
-mch_avail_mem(special)
-    int	    special;
+mch_avail_mem(int special)
 {
 #ifdef __amigaos4__
     return (long_u)AvailMem(MEMF_ANY) >> 10;
@@ -214,12 +211,10 @@ mch_avail_mem(special)
  * ignoreinput is FALSE.
  */
     void
-mch_delay(msec, ignoreinput)
-    long    msec;
-    int	    ignoreinput;
+mch_delay(long msec, int ignoreinput)
 {
 #ifndef LATTICE		/* SAS declares void Delay(ULONG) */
-    void	    Delay __ARGS((long));
+    void	    Delay(long);
 #endif
 
     if (msec > 0)
@@ -235,7 +230,7 @@ mch_delay(msec, ignoreinput)
  * We have no job control, fake it by starting a new shell.
  */
     void
-mch_suspend()
+mch_suspend(void)
 {
     suspend_shell();
 }
@@ -245,7 +240,7 @@ mch_suspend()
 #endif
 
     void
-mch_init()
+mch_init(void)
 {
     static char	    intlibname[] = "intuition.library";
 
@@ -306,9 +301,7 @@ mch_init()
 #define BUF2SIZE 320	    /* length of buffer for argument with complete path */
 
     int
-mch_check_win(argc, argv)
-    int argc;
-    char **argv;
+mch_check_win(int argc, char **argv)
 {
     int		    i;
     BPTR	    nilfh, fh;
@@ -545,7 +538,7 @@ exit:
  * We fake there is a window, because we can always open one!
  */
     int
-mch_input_isatty()
+mch_input_isatty(void)
 {
     return TRUE;
 }
@@ -557,9 +550,9 @@ mch_input_isatty()
  */
 /*ARGSUSED*/
     void
-fname_case(name, len)
-    char_u	*name;
-    int		len;		/* buffer size, ignored here */
+fname_case(
+    char_u	*name,
+    int		len)		/* buffer size, ignored here */
 {
     struct FileInfoBlock    *fib;
     size_t		    flen;
@@ -585,8 +578,7 @@ fname_case(name, len)
  * Returns NULL on error.
  */
     static struct FileInfoBlock *
-get_fib(fname)
-    char_u *fname;
+get_fib(char_u *fname)
 {
     BPTR		    flock;
     struct FileInfoBlock    *fib;
@@ -618,9 +610,7 @@ get_fib(fname)
  * icon name is not set
  */
     void
-mch_settitle(title, icon)
-    char_u  *title;
-    char_u  *icon;
+mch_settitle(char_u *title, char_u *icon)
 {
     if (wb_window != NULL && title != NULL)
 	SetWindowTitles(wb_window, (UBYTE *)title, (UBYTE *)-1L);
@@ -634,21 +624,20 @@ mch_settitle(title, icon)
  *  3  Restore title and icon (which we don't have)
  */
     void
-mch_restore_title(which)
-    int which;
+mch_restore_title(int which)
 {
     if (which & 1)
 	mch_settitle(oldwindowtitle, NULL);
 }
 
     int
-mch_can_restore_title()
+mch_can_restore_title(void)
 {
     return (wb_window != NULL);
 }
 
     int
-mch_can_restore_icon()
+mch_can_restore_icon(void)
 {
     return FALSE;
 }
@@ -658,9 +647,7 @@ mch_can_restore_icon()
  * Insert user name in s[len].
  */
     int
-mch_get_user_name(s, len)
-    char_u  *s;
-    int	    len;
+mch_get_user_name(char_u *s, int len)
 {
     /* TODO: Implement this. */
     *s = NUL;
@@ -671,9 +658,7 @@ mch_get_user_name(s, len)
  * Insert host name is s[len].
  */
     void
-mch_get_host_name(s, len)
-    char_u  *s;
-    int	    len;
+mch_get_host_name(char_u *s, int len)
 {
 #if defined(__amigaos4__) && defined(__CLIB2__)
     gethostname(s, len);
@@ -686,7 +671,7 @@ mch_get_host_name(s, len)
  * return process ID
  */
     long
-mch_get_pid()
+mch_get_pid(void)
 {
 #ifdef __amigaos4__
     /* This is as close to a pid as we can come. We could use CLI numbers also,
@@ -703,9 +688,7 @@ mch_get_pid()
  * Return OK for success, FAIL for failure.
  */
     int
-mch_dirname(buf, len)
-    char_u	*buf;
-    int		len;
+mch_dirname(char_u *buf, int len)
 {
     return mch_FullName((char_u *)"", buf, len, FALSE);
 }
@@ -716,10 +699,11 @@ mch_dirname(buf, len)
  * return FAIL for failure, OK otherwise
  */
     int
-mch_FullName(fname, buf, len, force)
-    char_u	*fname, *buf;
-    int		len;
-    int		force;
+mch_FullName(
+    char_u	*fname,
+    char_u	*buf,
+    int		len,
+    int		force)
 {
     BPTR	l;
     int		retval = FAIL;
@@ -764,8 +748,7 @@ mch_FullName(fname, buf, len, force)
  * Return TRUE if "fname" does not depend on the current directory.
  */
     int
-mch_isFullName(fname)
-    char_u	*fname;
+mch_isFullName(char_u *fname)
 {
     return (vim_strchr(fname, ':') != NULL && *fname != ':');
 }
@@ -777,10 +760,7 @@ mch_isFullName(fname)
  * return FAIL for failure, OK otherwise
  */
     static int
-lock2name(lock, buf, len)
-    BPTR    lock;
-    char_u  *buf;
-    long    len;
+lock2name(BPTR lock, char_u *buf, long len)
 {
 #ifdef FEAT_ARP
     if (dos2)		    /* use 2.0 function */
@@ -797,8 +777,7 @@ lock2name(lock, buf, len)
  * Returns -1 when it doesn't exist.
  */
     long
-mch_getperm(name)
-    char_u	*name;
+mch_getperm(char_u *name)
 {
     struct FileInfoBlock    *fib;
     long		    retval = -1;
@@ -818,9 +797,7 @@ mch_getperm(name)
  * return FAIL for failure, OK otherwise
  */
     int
-mch_setperm(name, perm)
-    char_u	*name;
-    long	perm;
+mch_setperm(char_u *name, long perm)
 {
     perm &= ~FIBF_ARCHIVE;		/* reset archived bit */
     return (SetProtection((UBYTE *)name, (long)perm) ? OK : FAIL);
@@ -830,8 +807,7 @@ mch_setperm(name, perm)
  * Set hidden flag for "name".
  */
     void
-mch_hide(name)
-    char_u	*name;
+mch_hide(char_u *name)
 {
     /* can't hide a file */
 }
@@ -842,8 +818,7 @@ mch_hide(name)
  * return FALSE for error.
  */
     int
-mch_isdir(name)
-    char_u	*name;
+mch_isdir(char_u *name)
 {
     struct FileInfoBlock    *fib;
     int			    retval = FALSE;
@@ -865,8 +840,7 @@ mch_isdir(name)
  * Create directory "name".
  */
     int
-mch_mkdir(name)
-    char_u	*name;
+mch_mkdir(char_u *name)
 {
     BPTR	lock;
 
@@ -885,10 +859,7 @@ mch_mkdir(name)
  * Return -1 if unknown.
  */
     int
-mch_can_exe(name, path, use_path)
-    char_u	*name;
-    char_u	**path;
-    int		use_path;
+mch_can_exe(char_u *name, char_u **path, int use_path)
 {
     /* TODO */
     return -1;
@@ -901,15 +872,14 @@ mch_can_exe(name, path, use_path)
  * NODE_OTHER: non-writable things
  */
     int
-mch_nodetype(name)
-    char_u	*name;
+mch_nodetype(char_u *name)
 {
     /* TODO */
     return NODE_NORMAL;
 }
 
     void
-mch_early_init()
+mch_early_init(void)
 {
 }
 
@@ -917,8 +887,7 @@ mch_early_init()
  * Careful: mch_exit() may be called before mch_init()!
  */
     void
-mch_exit(r)
-    int		    r;
+mch_exit(int r)
 {
     if (raw_in)			    /* put terminal in 'normal' mode */
     {
@@ -977,8 +946,7 @@ mch_exit(r)
  *	it sends a 0 to the console to make it back into a CON: from a RAW:
  */
     void
-mch_settmode(tmode)
-    int		tmode;
+mch_settmode(int tmode)
 {
 #if defined(__AROS__) || defined(__amigaos4__)
     if (!SetMode(raw_in, tmode == TMODE_RAW ? 1 : 0))
@@ -993,8 +961,7 @@ mch_settmode(tmode)
  * set screen mode, always fails.
  */
     int
-mch_screenmode(arg)
-    char_u	*arg;
+mch_screenmode(char_u *arg)
 {
     EMSG(_(e_screenmode));
     return FAIL;
@@ -1021,7 +988,7 @@ mch_screenmode(arg)
  * return FAIL for failure, OK otherwise
  */
     int
-mch_get_shellsize()
+mch_get_shellsize(void)
 {
     struct ConUnit  *conUnit;
 #ifndef __amigaos4__
@@ -1095,7 +1062,7 @@ out:
  * Try to set the real window size to Rows and Columns.
  */
     void
-mch_set_shellsize()
+mch_set_shellsize(void)
 {
     if (term_console)
     {
@@ -1114,7 +1081,7 @@ mch_set_shellsize()
  * Rows and/or Columns has changed.
  */
     void
-mch_new_shellsize()
+mch_new_shellsize(void)
 {
     /* Nothing to do. */
 }
@@ -1123,8 +1090,7 @@ mch_new_shellsize()
  * out_num - output a (big) number fast
  */
     static void
-out_num(n)
-    long	n;
+out_num(long n)
 {
     OUT_STR_NF(tltoa((unsigned long)n));
 }
@@ -1154,10 +1120,10 @@ out_num(n)
  */
 
     static long
-dos_packet(pid, action, arg)
-    struct MsgPort *pid;    /* process identifier ... (handlers message port) */
+dos_packet(
+    struct MsgPort *pid,    /* process identifier ... (handlers message port) */
     long	    action, /* packet type ... (what you want handler to do)   */
-		    arg;    /* single argument */
+		    arg)    /* single argument */
 {
 # ifdef FEAT_ARP
     struct MsgPort	    *replyport;
@@ -1206,9 +1172,9 @@ dos_packet(pid, action, arg)
  * Return error number for failure, 0 otherwise
  */
     int
-mch_call_shell(cmd, options)
-    char_u	*cmd;
-    int		options;	/* SHELL_*, see vim.h */
+mch_call_shell(
+    char_u	*cmd,
+    int		options)	/* SHELL_*, see vim.h */
 {
     BPTR	mydir;
     int		x;
@@ -1415,7 +1381,7 @@ mch_call_shell(cmd, options)
  * trouble with lattice-c programs.
  */
     void
-mch_breakcheck()
+mch_breakcheck(void)
 {
    if (SetSignal(0L, (long)(SIGBREAKF_CTRL_C|SIGBREAKF_CTRL_D|SIGBREAKF_CTRL_E|SIGBREAKF_CTRL_F)) & SIGBREAKF_CTRL_C)
 	got_int = TRUE;
@@ -1464,10 +1430,10 @@ Chk_Abort(void)
 #endif
 
     int
-mch_expandpath(gap, pat, flags)
-    garray_T	*gap;
-    char_u	*pat;
-    int		flags;		/* EW_* flags */
+mch_expandpath(
+    garray_T	*gap,
+    char_u	*pat,
+    int		flags)		/* EW_* flags */
 {
     struct AnchorPath	*Anchor;
     LONG		Result;
@@ -1585,8 +1551,7 @@ Return:
 }
 
     static int
-sortcmp(a, b)
-    const void *a, *b;
+sortcmp(const void *a, const void *b)
 {
     char *s = *(char **)a;
     char *t = *(char **)b;
@@ -1598,8 +1563,7 @@ sortcmp(a, b)
  * Return TRUE if "p" has wildcards that can be expanded by mch_expandpath().
  */
     int
-mch_has_exp_wildcard(p)
-    char_u *p;
+mch_has_exp_wildcard(char_u *p)
 {
     for ( ; *p; mb_ptr_adv(p))
     {
@@ -1612,8 +1576,7 @@ mch_has_exp_wildcard(p)
 }
 
     int
-mch_has_wildcard(p)
-    char_u *p;
+mch_has_wildcard(char_u *p)
 {
     for ( ; *p; mb_ptr_adv(p))
     {
@@ -1641,8 +1604,7 @@ mch_has_wildcard(p)
  * - A small one to hold the return value.  It is kept until the next call.
  */
     char_u *
-mch_getenv(var)
-    char_u *var;
+mch_getenv(char_u *var)
 {
     int		    len;
     UBYTE	    *buf;		/* buffer to expand in */
@@ -1685,10 +1647,7 @@ mch_getenv(var)
  */
 /* ARGSUSED */
     int
-mch_setenv(var, value, x)
-    char *var;
-    char *value;
-    int	 x;
+mch_setenv(char *var, char *value, int x)
 {
 #ifdef FEAT_ARP
     if (!dos2)

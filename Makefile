@@ -213,24 +213,13 @@ MINOR = 4
 #   > bigvim64.bat
 #
 #
-# OBSOLETE systems: You can build this if you have an appropriate system.
+# OBSOLETE systems: You can build these if you have an appropriate system.
 #
-# 16 bit DOS version: (doesn't build anywhere)
-# - Set environment for compiling with Borland C++ 3.1.
-# - "bmake -f Make_bc3.mak BOR=E:\borlandc" (compiling xxd might fail, in that
-#   case set environment for compiling with Borland C++ 4.0 and do
-#   "make -f make_bc3.mak BOR=E:\BC4 xxd/xxd.exe").
-#   NOTE: this currently fails because Vim is too big.
-# - "make test" and check the output.
-# - Rename the executables to "vimd16.exe", "xxdd16.exe", "installd16.exe" and
-#   "uninstald16.exe".
+# 16 bit DOS version: You need to get a very old version of Vim, for several
+# years even the tiny build is too big to fit in DOS memory.
 #
-# 32 bit DOS version: (requires Windows XP or earlier)
-# - Set environment for compiling with DJGPP; "gmake -f Make_djg.mak".
-# - "rm testdir/*.out", "gmake -f Make_djg.mak test" and check the output for
-#   "ALL DONE".
-# - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
-#   "uninstald32.exe".
+# 32 bit DOS version: Support was removed in 7.4.1399.  When syncing to before
+# that it probably won't build.
 #
 # Win32s GUI version: (requires a very old compiler)
 # - Set environment for Visual C++ 4.1 (requires a new console window):
@@ -242,12 +231,9 @@ MINOR = 4
 # - Rename "uninstal.exe" to "uninstalw32.exe"
 # - The produced uninstalw32.exe and vimrun.exe are used.
 #
-# OS/2: (requires an OS/2 system)
-# - Unpack the Unix archive.
-# - "make -f Make_os2.mak".
-# - Rename the executables to vimos2.exe, xxdos2.exe and teeos2.exe and copy
-#   them to here.
-# - "make os2bin".
+# OS/2 support was removed in patch 7.4.1008.  If you want to give it a try
+# sync to before that and check the old version of this Makefile for
+# instructions.
 
 VIMVER	= vim-$(MAJOR).$(MINOR)
 VERSION = $(MAJOR)$(MINOR)
@@ -269,9 +255,13 @@ dist:
 	mkdir dist
 
 # Clean up some files to avoid they are included.
+# Copy README files to the top directory.
 prepare:
 	if test -f runtime/doc/uganda.nsis.txt; then \
 		rm runtime/doc/uganda.nsis.txt; fi
+	for name in $(IN_README_DIR); do \
+	  cp READMEdir/"$$name" .; \
+	  done
 
 # For the zip files we need to create a file with the comment line
 dist/comment:
@@ -336,6 +326,7 @@ unixall: dist prepare
 		$(EXTRA) \
 		$(LANG_SRC) \
 		| (cd dist/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 # Need to use a "distclean" config.mk file
 # Note: this file is not included in the repository to avoid problems, but it's
 # OK to put it in the archive.
@@ -372,6 +363,7 @@ amirt: dist prepare
 		$(RT_NO_UNIX) \
 		$(RT_AMI_DOS) \
 		| (cd dist/Vim/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 	mv dist/Vim/$(VIMRTDIR)/vimdir.info dist/Vim.info
 	mv dist/Vim/$(VIMRTDIR)/runtime.info dist/Vim/$(VIMRTDIR).info
 	mv dist/Vim/$(VIMRTDIR)/runtime/* dist/Vim/$(VIMRTDIR)
@@ -392,6 +384,7 @@ amibin: dist prepare
 		Vim \
 		Xxd \
 		| (cd dist/Vim/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 	mv dist/Vim/$(VIMRTDIR)/vimdir.info dist/Vim.info
 	mv dist/Vim/$(VIMRTDIR)/runtime.info dist/Vim/$(VIMRTDIR).info
 	cd dist && tar cf vim$(VERSION)bin.tar Vim Vim.info
@@ -410,6 +403,7 @@ amisrc: dist prepare
 		$(SRC_AMI) \
 		$(SRC_AMI_DOS) \
 		| (cd dist/Vim/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 	mv dist/Vim/$(VIMRTDIR)/vimdir.info dist/Vim.info
 	mv dist/Vim/$(VIMRTDIR)/runtime.info dist/Vim/$(VIMRTDIR).info
 	cd dist && tar cf vim$(VERSION)src.tar Vim Vim.info
@@ -483,6 +477,7 @@ dosrt_files: dist prepare no_title.vim
 		$(RT_DOS_BIN) \
 		$(LANG_GEN_BIN) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
 # Add the message translations.  Trick: skip ja.mo and use ja.sjis.mo instead.
@@ -517,6 +512,7 @@ dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
 	tar cf - \
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 	cp gvim.exe dist/vim/$(VIMRTDIR)/gvim.exe
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp vimrun.exe dist/vim/$(VIMRTDIR)/vimrun.exe

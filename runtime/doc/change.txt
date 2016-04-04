@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.4.  Last change: 2016 Jan 19
+*change.txt*    For Vim version 7.4.  Last change: 2016 Mar 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -98,10 +98,10 @@ These commands delete text.  You can repeat them with the `.` command
 
 An exception for the d{motion} command: If the motion is not linewise, the
 start and end of the motion are not in the same line, and there are only
-blanks before the start and after the end of the motion, the delete becomes
-linewise.  This means that the delete also removes the line of blanks that you
-might expect to remain. Use the |o_v| operator to force the motion to be
-characterwise.
+blanks before the start and there are no non-blanks after the end of the
+motion, the delete becomes linewise.  This means that the delete also removes
+the line of blanks that you might expect to remain. Use the |o_v| operator to
+force the motion to be characterwise.
 
 Trying to delete an empty region of text (e.g., "d0" in the first column)
 is an error when 'cpoptions' includes the 'E' flag.
@@ -109,7 +109,9 @@ is an error when 'cpoptions' includes the 'E' flag.
 							*J*
 J			Join [count] lines, with a minimum of two lines.
 			Remove the indent and insert up to two spaces (see
-			below).
+			below).  Fails when on the last line of the buffer.
+			If [count] is too big it is reduce to the number of
+			lines available.
 
 							*v_J*
 {Visual}J		Join the highlighted lines, with a minimum of two
@@ -409,6 +411,11 @@ CTRL-X			Subtract [count] from the number or alphabetic
 {Visual}CTRL-X		Subtract [count] from the number or alphabetic
 			character in the highlighted text.  {not in Vi}
 
+			On MS-Windows, this is mapped to cut Visual text
+			|dos-standard-mappings|.  If you want to disable the
+			mapping, use this: >
+				silent! vunmap <C-X>
+<
 							*v_g_CTRL-X*
 {Visual}g CTRL-X	Subtract [count] from the number or alphabetic
 			character in the highlighted text. If several lines
@@ -977,8 +984,6 @@ This replaces each 'E' character with a euro sign.  Read more in |<Char->|.
 			`:retab!` may also change a sequence of spaces by
 			<Tab> characters, which can mess up a printf().
 			{not in Vi}
-			Not available when |+ex_extra| feature was disabled at
-			compile time.
 
 							*retab-example*
 Example for using autocommands and ":retab" to edit a file which is stored
@@ -1354,22 +1359,16 @@ The next three commands always work on whole lines.
 			Center lines in [range] between [width] columns
 			(default 'textwidth' or 80 when 'textwidth' is 0).
 			{not in Vi}
-			Not available when |+ex_extra| feature was disabled at
-			compile time.
 
 :[range]ri[ght] [width]					*:ri* *:right*
 			Right-align lines in [range] at [width] columns
 			(default 'textwidth' or 80 when 'textwidth' is 0).
 			{not in Vi}
-			Not available when |+ex_extra| feature was disabled at
-			compile time.
 
 							*:le* *:left*
 :[range]le[ft] [indent]
 			Left-align lines in [range].  Sets the indent in the
 			lines to [indent] (default 0).  {not in Vi}
-			Not available when |+ex_extra| feature was disabled at
-			compile time.
 
 							*gq*
 gq{motion}		Format the lines that {motion} moves over.

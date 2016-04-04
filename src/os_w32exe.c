@@ -27,7 +27,7 @@ VimMain
 #else
     main
 #endif
-	__ARGS((int argc, char **argv));
+	(int argc, char **argv);
 static int (_cdecl *pmain)(int, char **);
 
 #ifndef PROTO

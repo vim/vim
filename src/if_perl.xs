@@ -49,6 +49,11 @@
 # define __inline__ __inline
 #endif
 
+#ifdef __GNUC__
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
@@ -125,9 +130,9 @@
 /* Compatibility hacks over */
 
 static PerlInterpreter *perl_interp = NULL;
-static void xs_init __ARGS((pTHX));
-static void VIM_init __ARGS((void));
-EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
+static void xs_init(pTHX);
+static void VIM_init(void);
+EXTERN_C void boot_DynaLoader(pTHX_ CV*);
 
 /*
  * For dynamic linked perl.
@@ -301,16 +306,18 @@ static void (*perl_free)(PerlInterpreter*);
 static int (*perl_run)(PerlInterpreter*);
 static int (*perl_parse)(PerlInterpreter*, XSINIT_t, int, char**, char**);
 static void* (*Perl_get_context)(void);
-static void (*Perl_croak)(pTHX_ const char*, ...);
+static void (*Perl_croak)(pTHX_ const char*, ...) __attribute__noreturn__;
 #ifdef PERL5101_OR_LATER
 /* Perl-5.18 has a different Perl_croak_xs_usage signature. */
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
-static void (*Perl_croak_xs_usage)(const CV *const, const char *const params);
+static void (*Perl_croak_xs_usage)(const CV *const, const char *const params)
+						    __attribute__noreturn__;
 # else
-static void (*Perl_croak_xs_usage)(pTHX_ const CV *const, const char *const params);
+static void (*Perl_croak_xs_usage)(pTHX_ const CV *const, const char *const params)
+						    __attribute__noreturn__;
 # endif
 #endif
-static void (*Perl_croak_nocontext)(const char*, ...);
+static void (*Perl_croak_nocontext)(const char*, ...) __attribute__noreturn__;
 static I32 (*Perl_dowantarray)(pTHX);
 static void (*Perl_free_tmps)(pTHX);
 static HV* (*Perl_gv_stashpv)(pTHX_ const char*, I32);
@@ -585,7 +592,9 @@ static struct {
  * "perl\lib\CORE\inline.h", after Perl_sv_free2 is defined.
  * The linker won't complain about undefined __impl_Perl_sv_free2. */
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
+# define PL_memory_wrap "panic: memory wrap" /* Dummy */
 # include <inline.h>
+# undef PL_memory_wrap
 #endif
 
 /*
@@ -631,8 +640,7 @@ perl_runtime_link_init(char *libname, int verbose)
  * There were no DLL loaded, return FALSE.
  */
     int
-perl_enabled(verbose)
-    int		verbose;
+perl_enabled(int verbose)
 {
     return perl_runtime_link_init((char *)p_perldll, verbose) == OK;
 }
@@ -644,7 +652,7 @@ perl_enabled(verbose)
  * there's nothing to actually parse.
  */
     static void
-perl_init()
+perl_init(void)
 {
     char *bootargs[] = { "VI", NULL };
     int argc = 3;
@@ -670,7 +678,7 @@ perl_init()
  * perl_end(): clean up after ourselves
  */
     void
-perl_end()
+perl_end(void)
 {
     if (perl_interp)
     {
@@ -696,9 +704,9 @@ perl_end()
  * split at '\n' first though.
  */
     void
-msg_split(s, attr)
-    char_u	*s;
-    int		attr;	/* highlighting attributes */
+msg_split(
+    char_u	*s,
+    int		attr)	/* highlighting attributes */
 {
     char *next;
     char *token = (char *)s;
@@ -719,10 +727,10 @@ msg_split(s, attr)
  * work properly.
  */
     char_u *
-eval_to_string(arg, nextcmd, dolist)
-    char_u	*arg UNUSED;
-    char_u	**nextcmd UNUSED;
-    int		dolist UNUSED;
+eval_to_string(
+    char_u	*arg UNUSED,
+    char_u	**nextcmd UNUSED,
+    int		dolist UNUSED)
 {
     return NULL;
 }
@@ -740,9 +748,7 @@ eval_to_string(arg, nextcmd, dolist)
  */
 
     static SV *
-newWINrv(rv, ptr)
-    SV	    *rv;
-    win_T   *ptr;
+newWINrv(SV *rv, win_T *ptr)
 {
     sv_upgrade(rv, SVt_RV);
     if (ptr->w_perl_private == NULL)
@@ -758,9 +764,7 @@ newWINrv(rv, ptr)
 }
 
     static SV *
-newBUFrv(rv, ptr)
-    SV	    *rv;
-    buf_T   *ptr;
+newBUFrv(SV *rv, buf_T *ptr)
 {
     sv_upgrade(rv, SVt_RV);
     if (ptr->b_perl_private == NULL)
@@ -780,8 +784,7 @@ newBUFrv(rv, ptr)
  *	Remove all references to the window to be destroyed
  */
     void
-perl_win_free(wp)
-    win_T *wp;
+perl_win_free(win_T *wp)
 {
     if (wp->w_perl_private)
 	sv_setiv((SV *)wp->w_perl_private, 0);
@@ -789,8 +792,7 @@ perl_win_free(wp)
 }
 
     void
-perl_buf_free(bp)
-    buf_T *bp;
+perl_buf_free(buf_T *bp)
 {
     if (bp->b_perl_private)
 	sv_setiv((SV *)bp->b_perl_private, 0);
@@ -834,7 +836,7 @@ struct ufuncs cb_funcs = { cur_val, 0, 1 };
  * Make the magical main::curwin and main::curbuf variables
  */
     static void
-VIM_init()
+VIM_init(void)
 {
     static char cw[] = "main::curwin";
     static char cb[] = "main::curbuf";
@@ -866,8 +868,7 @@ static char *e_noperl = N_("Sorry, this command is disabled: the Perl library co
  * ":perl"
  */
     void
-ex_perl(eap)
-    exarg_T	*eap;
+ex_perl(exarg_T *eap)
 {
     char	*err;
     char	*script;
@@ -947,8 +948,7 @@ ex_perl(eap)
 }
 
     static int
-replace_line(line, end)
-    linenr_T	*line, *end;
+replace_line(linenr_T *line, linenr_T *end)
 {
     char *str;
 
@@ -989,8 +989,7 @@ ref_map_free(void)
 }
 
     static struct ref_map_S *
-ref_map_find_SV(sv)
-    SV	*const sv;
+ref_map_find_SV(SV *const sv)
 {
     struct ref_map_S *refs = ref_map;
     int count = 350;
@@ -1016,9 +1015,7 @@ ref_map_find_SV(sv)
 }
 
     static int
-perl_to_vim(sv, rettv)
-    SV		*sv;
-    typval_T	*rettv;
+perl_to_vim(SV *sv, typval_T *rettv)
 {
     if (SvROK(sv))
 	sv = SvRV(sv);
@@ -1090,7 +1087,7 @@ perl_to_vim(sv, rettv)
 		    item2 = av_fetch((AV *)sv, size, 0);
 
 		    if (item2 == NULL || *item2 == NULL ||
-					perl_to_vim(*item2, &item->li_tv) == FAIL)
+				    perl_to_vim(*item2, &item->li_tv) == FAIL)
 			break;
 		}
 	    }
@@ -1103,7 +1100,7 @@ perl_to_vim(sv, rettv)
 	case SVt_PVHV:	/* dictionary */
 	{
 	    HE *		entry;
-	    size_t		key_len;
+	    I32			key_len;
 	    char *		key;
 	    dictitem_T *	item;
 	    SV *		item2;
@@ -1127,9 +1124,9 @@ perl_to_vim(sv, rettv)
 		for (entry = hv_iternext((HV *)sv); entry; entry = hv_iternext((HV *)sv))
 		{
 		    key_len = 0;
-		    key = hv_iterkey(entry, (I32 *)&key_len);
+		    key = hv_iterkey(entry, &key_len);
 
-		    if (!key || !key_len || strlen(key) < key_len) {
+		    if (!key || !key_len || strlen(key) < (size_t)key_len) {
 			EMSG2("Malformed key Dictionary '%s'", key && *key ? key : "(empty)");
 			break;
 		    }
@@ -1171,9 +1168,7 @@ perl_to_vim(sv, rettv)
  * "perleval()"
  */
     void
-do_perleval(str, rettv)
-    char_u	*str;
-    typval_T	*rettv;
+do_perleval(char_u *str, typval_T *rettv)
 {
     char	*err = NULL;
     STRLEN	err_len = 0;
@@ -1241,8 +1236,7 @@ do_perleval(str, rettv)
  * ":perldo".
  */
     void
-ex_perldo(eap)
-    exarg_T	*eap;
+ex_perldo(exarg_T *eap)
 {
     STRLEN	length;
     SV		*sv;
@@ -1314,9 +1308,21 @@ err:
 }
 
 #ifndef FEAT_WINDOWS
-int win_valid(win_T *w) { return TRUE; }
-int win_count() { return 1; }
-win_T *win_find_nr(int n) { return curwin; }
+    int
+win_valid(win_T *w)
+{
+    return TRUE;
+}
+    int
+win_count(void)
+{
+    return 1;
+}
+    win_T *
+win_find_nr(int n)
+{
+    return curwin;
+}
 #endif
 
 XS(boot_VIM);
@@ -1734,3 +1740,6 @@ Append(vimbuf, ...)
 	}
     }
 
+#ifdef __GNUC__
+# pragma GCC diagnostic pop
+#endif

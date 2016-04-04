@@ -1,5 +1,5 @@
 /* if_ole.cpp */
-void InitOLE __ARGS((int* pbDoRestart));
-void UninitOLE __ARGS((void));
-void RegisterMe __ARGS((int silent));
-void UnregisterMe __ARGS((int bNotifyUser));
+void InitOLE(int* pbDoRestart);
+void UninitOLE(void);
+void RegisterMe(int silent);
+void UnregisterMe(int bNotifyUser);

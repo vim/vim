@@ -85,7 +85,8 @@ const char USAGE[] =
 
 
 int ShowUsage( char *szError )
-{ int i;
+{
+  int i;
 
   fprintf( stderr, USAGE );
 
@@ -101,7 +102,8 @@ int ShowUsage( char *szError )
   return 0;
 }
 
-char *echogets(char *s, int echo) {
+char *echogets(char *s, int echo)
+{
  char * const retval=fgets(s, LINELENGTH, stdin);
  if (echo!=0 && retval!=NULL) {
   fputs(retval, stderr);
