@@ -2709,7 +2709,7 @@ quality_pairs[] = {
 #ifdef PROOF_QUALITY
     {"PROOF",		PROOF_QUALITY},
 #endif
-#ifdef PROOF_QUALITY
+#ifdef DRAFT_QUALITY
     {"DRAFT",		DRAFT_QUALITY},
 #endif
     {"DEFAULT",		DEFAULT_QUALITY},
