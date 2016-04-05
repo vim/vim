@@ -1,7 +1,7 @@
 " An example for a vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2016 Mar 25
+" Last change:	2016 Apr 05
 "
 " To use it, copy it to
 "     for Unix and OS/2:  ~/.vimrc
@@ -47,11 +47,16 @@ if has('mouse')
   set mouse=a
 endif
 
-" Switch syntax highlighting on, when the terminal has colors
-" Also switch on highlighting the last used search pattern.
+" Switch syntax highlighting on when the terminal has colors or when using the
+" GUI (which always has colors).
 if &t_Co > 2 || has("gui_running")
   syntax on
+
+  " Also switch on highlighting the last used search pattern.
   set hlsearch
+
+  " I like highlighting strings inside C comments.
+  let c_comment_strings=1
 endif
 
 " Only do this part when compiled with support for autocommands.
