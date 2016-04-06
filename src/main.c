@@ -959,6 +959,9 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
     no_wait_return = FALSE;
     starting = 0;
 
+    /* 'autochdir' has been postponed */
+    DO_AUTOCHDIR
+
 #ifdef FEAT_TERMRESPONSE
     /* Requesting the termresponse is postponed until here, so that a "-c q"
      * argument doesn't make it appear in the shell Vim was started from. */
