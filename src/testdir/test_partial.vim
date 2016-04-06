@@ -220,3 +220,21 @@ func Test_bind_in_python()
     endtry
   endif
 endfunc
+
+" This causes double free on exit if EXITFREE is defined.
+func Test_cyclic_list_arg()
+  let l = []
+  let Pt = function('string', [l])
+  call add(l, Pt)
+  unlet l
+  unlet Pt
+endfunc
+
+" This causes double free on exit if EXITFREE is defined.
+func Test_cyclic_dict_arg()
+  let d = {}
+  let Pt = function('string', [d])
+  let d.Pt = Pt
+  unlet d
+  unlet Pt
+endfunc

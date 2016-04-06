@@ -5929,6 +5929,57 @@ get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     return OK;
 }
 
+    static void
+partial_free(partial_T *pt, int recursive)
+{
+    int i;
+
+    for (i = 0; i < pt->pt_argc; ++i)
+    {
+	typval_T *tv = &pt->pt_argv[i];
+
+	if (recursive || (tv->v_type != VAR_DICT && tv->v_type != VAR_LIST))
+	    clear_tv(tv);
+    }
+    vim_free(pt->pt_argv);
+    if (recursive)
+	dict_unref(pt->pt_dict);
+    func_unref(pt->pt_name);
+    vim_free(pt->pt_name);
+    vim_free(pt);
+}
+
+/*
+ * Unreference a closure: decrement the reference count and free it when it
+ * becomes zero.
+ */
+    void
+partial_unref(partial_T *pt)
+{
+    if (pt != NULL && --pt->pt_refcount <= 0)
+	partial_free(pt, TRUE);
+}
+
+/*
+ * Like clear_tv(), but do not free lists or dictionaries.
+ * This is when called via free_unref_items().
+ */
+    static void
+clear_tv_no_recurse(typval_T *tv)
+{
+    if (tv->v_type == VAR_PARTIAL)
+    {
+	partial_T *pt = tv->vval.v_partial;
+
+	/* We unref the partial but not the dict or any list it
+	 * refers to. */
+	if (pt != NULL && --pt->pt_refcount == 0)
+	    partial_free(pt, FALSE);
+    }
+    else if (tv->v_type != VAR_LIST && tv->v_type != VAR_DICT)
+	clear_tv(tv);
+}
+
 /*
  * Allocate a variable for a List and fill it from "*arg".
  * Return OK or FAIL.
@@ -6070,9 +6121,10 @@ list_free(
     {
 	/* Remove the item before deleting it. */
 	l->lv_first = item->li_next;
-	if (recurse || (item->li_tv.v_type != VAR_LIST
-					   && item->li_tv.v_type != VAR_DICT))
+	if (recurse)
 	    clear_tv(&item->li_tv);
+	else
+	    clear_tv_no_recurse(&item->li_tv);
 	vim_free(item);
     }
     vim_free(l);
@@ -7185,6 +7237,16 @@ set_ref_in_item(
 		}
 	    }
 	}
+	if (tv->v_type == VAR_PARTIAL)
+	{
+	    partial_T	*pt = tv->vval.v_partial;
+	    int		i;
+
+	    if (pt != NULL)
+		for (i = 0; i < pt->pt_argc; ++i)
+		    set_ref_in_item(&pt->pt_argv[i], copyID,
+							ht_stack, list_stack);
+	}
     }
     else if (tv->v_type == VAR_LIST)
     {
@@ -7213,32 +7275,6 @@ set_ref_in_item(
 	}
     }
     return abort;
-}
-
-    static void
-partial_free(partial_T *pt, int free_dict)
-{
-    int i;
-
-    for (i = 0; i < pt->pt_argc; ++i)
-	clear_tv(&pt->pt_argv[i]);
-    vim_free(pt->pt_argv);
-    if (free_dict)
-	dict_unref(pt->pt_dict);
-    func_unref(pt->pt_name);
-    vim_free(pt->pt_name);
-    vim_free(pt);
-}
-
-/*
- * Unreference a closure: decrement the reference count and free it when it
- * becomes zero.
- */
-    void
-partial_unref(partial_T *pt)
-{
-    if (pt != NULL && --pt->pt_refcount <= 0)
-	partial_free(pt, TRUE);
 }
 
 /*
@@ -7331,20 +7367,10 @@ dict_free(
 	     * something recursive causing trouble. */
 	    di = HI2DI(hi);
 	    hash_remove(&d->dv_hashtab, hi);
-	    if (recurse || (di->di_tv.v_type != VAR_LIST
-					     && di->di_tv.v_type != VAR_DICT))
-	    {
-		if (!recurse && di->di_tv.v_type == VAR_PARTIAL)
-		{
-		    partial_T *pt = di->di_tv.vval.v_partial;
-
-		    /* We unref the partial but not the dict it refers to. */
-		    if (pt != NULL && --pt->pt_refcount == 0)
-			partial_free(pt, FALSE);
-		}
-		else
-		    clear_tv(&di->di_tv);
-	    }
+	    if (recurse)
+		clear_tv(&di->di_tv);
+	    else
+		clear_tv_no_recurse(&di->di_tv);
 	    vim_free(di);
 	    --todo;
 	}
