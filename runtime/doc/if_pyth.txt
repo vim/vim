@@ -653,10 +653,24 @@ vim.List object					*python-List*
         class List(vim.List):		# Subclassing
 
 vim.Function object				*python-Function*
-    Function-like object, acting like vim |Funcref| object. Supports `.name` 
-    attribute and is callable. Accepts special keyword argument `self`, see 
-    |Dictionary-function|. You can also use `vim.Function(name)` constructor, 
-    it is the same as `vim.bindeval('function(%s)'%json.dumps(name))`.
+    Function-like object, acting like vim |Funcref| object. Accepts special 
+    keyword arguments `self`, see |Dictionary-function|. You can also use 
+    `vim.Function(name)` constructor, it is the same as 
+    `vim.bindeval('function(%s)'%json.dumps(name))`.
+
+    Attributes (read-only):
+        Attribute  Description ~
+        name       Function name.
+        args       `None` or a |python-List| object with arguments.  Note that 
+                   this is a copy of the arguments list, constructed each time 
+                   you request this attribute. Modifications made to the list 
+                   will be ignored.
+        self       `None` or a |python-Dictionary| object with self 
+                   dictionary. Note that explicit `self` keyword used when 
+                   calling resulting object overrides this attribute.
+
+    Constructor additionally accepts `args` and `self` keywords.  If any of 
+    them is given then it constructs a partial, see |function()|.
 
     Examples: >
         f = vim.Function('tr')			# Constructor
@@ -669,6 +683,11 @@ vim.Function object				*python-Function*
         f = vim.bindeval('function("DictFun")')
         print f(self={})			# Like call('DictFun', [], {})
         print isinstance(f, vim.Function)	# True
+
+        p = vim.Function('DictFun', self={})
+        print f()
+        p = vim.Function('tr', args=['abc', 'a'])
+        print f('b')
 
 ==============================================================================
 8. pyeval() and py3eval() Vim functions			*python-pyeval*

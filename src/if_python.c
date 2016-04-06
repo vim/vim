@@ -1539,12 +1539,12 @@ ListGetattr(PyObject *self, char *name)
     static PyObject *
 FunctionGetattr(PyObject *self, char *name)
 {
-    FunctionObject	*this = (FunctionObject *)(self);
+    PyObject	*r;
 
-    if (strcmp(name, "name") == 0)
-	return PyString_FromString((char *)(this->name));
-    else if (strcmp(name, "__members__") == 0)
-	return ObjectDir(NULL, FunctionAttrs);
+    r = FunctionAttr((FunctionObject *)(self), name);
+
+    if (r || PyErr_Occurred())
+	return r;
     else
 	return Py_FindMethod(FunctionMethods, self, name);
 }
