@@ -1231,5 +1231,17 @@ func Test_job_start_invalid()
   call assert_fails('call job_start("")', 'E474:')
 endfunc
 
+" This leaking memory.
+func Test_partial_in_channel_cycle()
+  let d = {}
+  let d.a = function('string', [d])
+  try
+    let d.b = ch_open('nowhere:123', {'close_cb': d.a})
+  catch
+    call assert_exception('E901:')
+  endtry
+  unlet d
+endfunc
+
 " Uncomment this to see what happens, output is in src/testdir/channellog.
 " call ch_logfile('channellog', 'w')

@@ -10321,9 +10321,9 @@ f_ch_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     clear_job_options(&opt);
     if (get_job_options(&argvars[1], &opt,
-		JO_CB_ALL + JO_TIMEOUT_ALL + JO_MODE_ALL) == FAIL)
-	return;
-    channel_set_options(channel, &opt);
+			      JO_CB_ALL + JO_TIMEOUT_ALL + JO_MODE_ALL) == OK)
+	channel_set_options(channel, &opt);
+    free_job_options(&opt);
 }
 
 /*
@@ -14889,9 +14889,9 @@ f_job_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     if (job == NULL)
 	return;
     clear_job_options(&opt);
-    if (get_job_options(&argvars[1], &opt, JO_STOPONEXIT + JO_EXIT_CB) == FAIL)
-	return;
-    job_set_options(job, &opt);
+    if (get_job_options(&argvars[1], &opt, JO_STOPONEXIT + JO_EXIT_CB) == OK)
+	job_set_options(job, &opt);
+    free_job_options(&opt);
 }
 
 /*

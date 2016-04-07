@@ -46,6 +46,7 @@ int channel_part_read(channel_T *channel);
 ch_mode_T channel_get_mode(channel_T *channel, int part);
 int channel_get_timeout(channel_T *channel, int part);
 void clear_job_options(jobopt_T *opt);
+void free_job_options(jobopt_T *opt);
 int get_job_options(typval_T *tv, jobopt_T *opt, int supported);
 channel_T *get_channel_arg(typval_T *tv, int check_open);
 void job_unref(job_T *job);
