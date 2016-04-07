@@ -7244,7 +7244,7 @@ set_ref_in_item(
 
 	    if (pt != NULL)
 		for (i = 0; i < pt->pt_argc; ++i)
-		    set_ref_in_item(&pt->pt_argv[i], copyID,
+		    abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
 							ht_stack, list_stack);
 	}
     }
