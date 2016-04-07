@@ -654,7 +654,7 @@ vim.List object					*python-List*
 
 vim.Function object				*python-Function*
     Function-like object, acting like vim |Funcref| object. Accepts special 
-    keyword arguments `self`, see |Dictionary-function|. You can also use 
+    keyword argument `self`, see |Dictionary-function|. You can also use 
     `vim.Function(name)` constructor, it is the same as 
     `vim.bindeval('function(%s)'%json.dumps(name))`.
 
@@ -664,7 +664,8 @@ vim.Function object				*python-Function*
         args       `None` or a |python-List| object with arguments.  Note that 
                    this is a copy of the arguments list, constructed each time 
                    you request this attribute. Modifications made to the list 
-                   will be ignored.
+                   will be ignored (but not to the containers inside argument 
+                   list: this is like |copy()| and not |deepcopy()|).
         self       `None` or a |python-Dictionary| object with self 
                    dictionary. Note that explicit `self` keyword used when 
                    calling resulting object overrides this attribute.
