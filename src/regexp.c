@@ -7910,7 +7910,7 @@ reg_submatch_list(int no)
 
     if (error)
     {
-	list_free(list, TRUE);
+	list_free(list);
 	return NULL;
     }
     return list;

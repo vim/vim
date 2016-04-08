@@ -430,6 +430,8 @@ static int get_option_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_list_tv(char_u **arg, typval_T *rettv, int evaluate);
+static void list_free_contents(list_T  *l);
+static void list_free_list(list_T  *l);
 static long list_len(list_T *l);
 static int list_equal(list_T *l1, list_T *l2, int ic, int recursive);
 static int dict_equal(dict_T *d1, dict_T *d2, int ic, int recursive);
@@ -458,6 +460,9 @@ static char_u *deref_func_name(char_u *name, int *lenp, partial_T **partial, int
 static int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, partial_T *partial, dict_T *selfdict);
 static void emsg_funcname(char *ermsg, char_u *name);
 static int non_zero_arg(typval_T *argvars);
+
+static void dict_free_contents(dict_T *d);
+static void dict_free_dict(dict_T *d);
 
 #ifdef FEAT_FLOAT
 static void f_abs(typval_T *argvars, typval_T *rettv);
@@ -5589,7 +5594,7 @@ eval_index(
 		    {
 			if (list_append_tv(l, &item->li_tv) == FAIL)
 			{
-			    list_free(l, TRUE);
+			    list_free(l);
 			    return FAIL;
 			}
 			item = item->li_next;
@@ -5930,20 +5935,14 @@ get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 }
 
     static void
-partial_free(partial_T *pt, int recursive)
+partial_free(partial_T *pt)
 {
     int i;
 
     for (i = 0; i < pt->pt_argc; ++i)
-    {
-	typval_T *tv = &pt->pt_argv[i];
-
-	if (recursive || (tv->v_type != VAR_DICT && tv->v_type != VAR_LIST))
-	    clear_tv(tv);
-    }
+	clear_tv(&pt->pt_argv[i]);
     vim_free(pt->pt_argv);
-    if (recursive)
-	dict_unref(pt->pt_dict);
+    dict_unref(pt->pt_dict);
     func_unref(pt->pt_name);
     vim_free(pt->pt_name);
     vim_free(pt);
@@ -5957,27 +5956,7 @@ partial_free(partial_T *pt, int recursive)
 partial_unref(partial_T *pt)
 {
     if (pt != NULL && --pt->pt_refcount <= 0)
-	partial_free(pt, TRUE);
-}
-
-/*
- * Like clear_tv(), but do not free lists or dictionaries.
- * This is when called via free_unref_items().
- */
-    static void
-clear_tv_no_recurse(typval_T *tv)
-{
-    if (tv->v_type == VAR_PARTIAL)
-    {
-	partial_T *pt = tv->vval.v_partial;
-
-	/* We unref the partial but not the dict or any list it
-	 * refers to. */
-	if (pt != NULL && --pt->pt_refcount == 0)
-	    partial_free(pt, FALSE);
-    }
-    else if (tv->v_type != VAR_LIST && tv->v_type != VAR_DICT)
-	clear_tv(tv);
+	partial_free(pt);
 }
 
 /*
@@ -6031,7 +6010,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
 	EMSG2(_("E697: Missing end of List ']': %s"), *arg);
 failret:
 	if (evaluate)
-	    list_free(l, TRUE);
+	    list_free(l);
 	return FAIL;
     }
 
@@ -6095,20 +6074,30 @@ rettv_list_alloc(typval_T *rettv)
 list_unref(list_T *l)
 {
     if (l != NULL && --l->lv_refcount <= 0)
-	list_free(l, TRUE);
+	list_free(l);
 }
 
 /*
  * Free a list, including all non-container items it points to.
  * Ignores the reference count.
  */
-    void
-list_free(
-    list_T  *l,
-    int	    recurse)	/* Free Lists and Dictionaries recursively. */
+    static void
+list_free_contents(list_T  *l)
 {
     listitem_T *item;
 
+    for (item = l->lv_first; item != NULL; item = l->lv_first)
+    {
+	/* Remove the item before deleting it. */
+	l->lv_first = item->li_next;
+	clear_tv(&item->li_tv);
+	vim_free(item);
+    }
+}
+
+    static void
+list_free_list(list_T  *l)
+{
     /* Remove the list from the list of lists for garbage collection. */
     if (l->lv_used_prev == NULL)
 	first_list = l->lv_used_next;
@@ -6117,17 +6106,17 @@ list_free(
     if (l->lv_used_next != NULL)
 	l->lv_used_next->lv_used_prev = l->lv_used_prev;
 
-    for (item = l->lv_first; item != NULL; item = l->lv_first)
-    {
-	/* Remove the item before deleting it. */
-	l->lv_first = item->li_next;
-	if (recurse)
-	    clear_tv(&item->li_tv);
-	else
-	    clear_tv_no_recurse(&item->li_tv);
-	vim_free(item);
-    }
     vim_free(l);
+}
+
+    void
+list_free(list_T *l)
+{
+    if (!in_free_unref_items)
+    {
+	list_free_contents(l);
+	list_free_list(l);
+    }
 }
 
 /*
@@ -7016,7 +7005,7 @@ garbage_collect(void)
 #endif
 
 #ifdef FEAT_JOB_CHANNEL
-    abort = abort || set_ref_in_channel(copyID);
+//    abort = abort || set_ref_in_channel(copyID);
 #endif
 
     if (!abort)
@@ -7056,7 +7045,7 @@ garbage_collect(void)
 }
 
 /*
- * Free lists, dictionaries and jobs that are no longer referenced.
+ * Free lists, dictionaries, channels and jobs that are no longer referenced.
  */
     static int
 free_unref_items(int copyID)
@@ -7065,29 +7054,66 @@ free_unref_items(int copyID)
     list_T	*ll, *ll_next;
     int		did_free = FALSE;
 
+    /* Let all "free" functions know that we are here.  This means no
+     * dictionaries, lists, channels or jobs are to be freed, because we will
+     * do that here. */
+    in_free_unref_items = TRUE;
+
+    /*
+     * PASS 1: free the contents of the items.  We don't free the items
+     * themselves yet, so that it is possible to decrement refcount counters
+     */
+
     /*
      * Go through the list of dicts and free items without the copyID.
      */
-    for (dd = first_dict; dd != NULL; )
-    {
-	dd_next = dd->dv_used_next;
+    for (dd = first_dict; dd != NULL; dd = dd->dv_used_next)
 	if ((dd->dv_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
 	{
 	    /* Free the Dictionary and ordinary items it contains, but don't
 	     * recurse into Lists and Dictionaries, they will be in the list
 	     * of dicts or list of lists. */
-	    dict_free(dd, FALSE);
+	    dict_free_contents(dd);
 	    did_free = TRUE;
 	}
-	dd = dd_next;
-    }
 
     /*
      * Go through the list of lists and free items without the copyID.
      * But don't free a list that has a watcher (used in a for loop), these
      * are not referenced anywhere.
      */
-    for (ll = first_list; ll != NULL; )
+    for (ll = first_list; ll != NULL; ll = ll->lv_used_next)
+	if ((ll->lv_copyID & COPYID_MASK) != (copyID & COPYID_MASK)
+						      && ll->lv_watch == NULL)
+	{
+	    /* Free the List and ordinary items it contains, but don't recurse
+	     * into Lists and Dictionaries, they will be in the list of dicts
+	     * or list of lists. */
+	    list_free_contents(ll);
+	    did_free = TRUE;
+	}
+
+#ifdef FEAT_JOB_CHANNEL
+    /* Go through the list of jobs and free items without the copyID. This
+     * must happen before doing channels, because jobs refer to channels, but
+     * the reference from the channel to the job isn't tracked. */
+    did_free |= free_unused_jobs_contents(copyID, COPYID_MASK);
+
+    /* Go through the list of channels and free items without the copyID.  */
+    did_free |= free_unused_channels_contents(copyID, COPYID_MASK);
+#endif
+
+    /*
+     * PASS 2: free the items themselves.
+     */
+    for (dd = first_dict; dd != NULL; dd = dd_next)
+    {
+	dd_next = dd->dv_used_next;
+	if ((dd->dv_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
+	    dict_free_dict(dd);
+    }
+
+    for (ll = first_list; ll != NULL; ll = ll_next)
     {
 	ll_next = ll->lv_used_next;
 	if ((ll->lv_copyID & COPYID_MASK) != (copyID & COPYID_MASK)
@@ -7096,11 +7122,21 @@ free_unref_items(int copyID)
 	    /* Free the List and ordinary items it contains, but don't recurse
 	     * into Lists and Dictionaries, they will be in the list of dicts
 	     * or list of lists. */
-	    list_free(ll, FALSE);
-	    did_free = TRUE;
+	    list_free_list(ll);
 	}
-	ll = ll_next;
     }
+
+#ifdef FEAT_JOB_CHANNEL
+    /* Go through the list of jobs and free items without the copyID. This
+     * must happen before doing channels, because jobs refer to channels, but
+     * the reference from the channel to the job isn't tracked. */
+    free_unused_jobs(copyID, COPYID_MASK);
+
+    /* Go through the list of channels and free items without the copyID.  */
+    free_unused_channels(copyID, COPYID_MASK);
+#endif
+
+    in_free_unref_items = FALSE;
 
     return did_free;
 }
@@ -7204,18 +7240,12 @@ set_ref_in_item(
     ht_stack_T	    **ht_stack,
     list_stack_T    **list_stack)
 {
-    dict_T	*dd;
-    list_T	*ll;
     int		abort = FALSE;
 
-    if (tv->v_type == VAR_DICT || tv->v_type == VAR_PARTIAL)
+    if (tv->v_type == VAR_DICT)
     {
-	if (tv->v_type == VAR_DICT)
-	    dd = tv->vval.v_dict;
-	else if (tv->vval.v_partial != NULL)
-	    dd = tv->vval.v_partial->pt_dict;
-	else
-	    dd = NULL;
+	dict_T	*dd = tv->vval.v_dict;
+
 	if (dd != NULL && dd->dv_copyID != copyID)
 	{
 	    /* Didn't see this dict yet. */
@@ -7237,20 +7267,11 @@ set_ref_in_item(
 		}
 	    }
 	}
-	if (tv->v_type == VAR_PARTIAL)
-	{
-	    partial_T	*pt = tv->vval.v_partial;
-	    int		i;
-
-	    if (pt != NULL)
-		for (i = 0; i < pt->pt_argc; ++i)
-		    abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
-							ht_stack, list_stack);
-	}
     }
     else if (tv->v_type == VAR_LIST)
     {
-	ll = tv->vval.v_list;
+	list_T	*ll = tv->vval.v_list;
+
 	if (ll != NULL && ll->lv_copyID != copyID)
 	{
 	    /* Didn't see this list yet. */
@@ -7274,6 +7295,96 @@ set_ref_in_item(
 	    }
 	}
     }
+    else if (tv->v_type == VAR_PARTIAL)
+    {
+	partial_T	*pt = tv->vval.v_partial;
+	int		i;
+
+	/* A partial does not have a copyID, because it cannot contain itself.
+	 */
+	if (pt != NULL)
+	{
+	    if (pt->pt_dict != NULL)
+	    {
+		typval_T dtv;
+
+		dtv.v_type = VAR_DICT;
+		dtv.vval.v_dict = pt->pt_dict;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+
+	    for (i = 0; i < pt->pt_argc; ++i)
+		abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
+							ht_stack, list_stack);
+	}
+    }
+#ifdef FEAT_JOB_CHANNEL
+    else if (tv->v_type == VAR_JOB)
+    {
+	job_T	    *job = tv->vval.v_job;
+	typval_T    dtv;
+
+	if (job != NULL && job->jv_copyID != copyID)
+	{
+	    if (job->jv_channel != NULL)
+	    {
+		dtv.v_type = VAR_CHANNEL;
+		dtv.vval.v_channel = job->jv_channel;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+	    if (job->jv_exit_partial != NULL)
+	    {
+		dtv.v_type = VAR_PARTIAL;
+		dtv.vval.v_partial = job->jv_exit_partial;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+	}
+    }
+    else if (tv->v_type == VAR_CHANNEL)
+    {
+	channel_T   *ch =tv->vval.v_channel;
+	int	    part;
+	typval_T    dtv;
+	jsonq_T	    *jq;
+	cbq_T	    *cq;
+
+	if (ch != NULL && ch->ch_copyID != copyID)
+	{
+	    for (part = PART_SOCK; part <= PART_IN; ++part)
+	    {
+		for (jq = ch->ch_part[part].ch_json_head.jq_next; jq != NULL;
+							     jq = jq->jq_next)
+		    set_ref_in_item(jq->jq_value, copyID, ht_stack, list_stack);
+		for (cq = ch->ch_part[part].ch_cb_head.cq_next; cq != NULL;
+							     cq = cq->cq_next)
+		    if (cq->cq_partial != NULL)
+		    {
+			dtv.v_type = VAR_PARTIAL;
+			dtv.vval.v_partial = cq->cq_partial;
+			set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		    }
+		if (ch->ch_part[part].ch_partial != NULL)
+		{
+		    dtv.v_type = VAR_PARTIAL;
+		    dtv.vval.v_partial = ch->ch_part[part].ch_partial;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+	    }
+	    if (ch->ch_partial != NULL)
+	    {
+		dtv.v_type = VAR_PARTIAL;
+		dtv.vval.v_partial = ch->ch_partial;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+	    if (ch->ch_close_partial != NULL)
+	    {
+		dtv.v_type = VAR_PARTIAL;
+		dtv.vval.v_partial = ch->ch_close_partial;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+	}
+    }
+#endif
     return abort;
 }
 
@@ -7332,29 +7443,19 @@ rettv_dict_alloc(typval_T *rettv)
 dict_unref(dict_T *d)
 {
     if (d != NULL && --d->dv_refcount <= 0)
-	dict_free(d, TRUE);
+	dict_free(d);
 }
 
 /*
  * Free a Dictionary, including all non-container items it contains.
  * Ignores the reference count.
  */
-    void
-dict_free(
-    dict_T  *d,
-    int	    recurse)	/* Free Lists and Dictionaries recursively. */
+    static void
+dict_free_contents(dict_T *d)
 {
     int		todo;
     hashitem_T	*hi;
     dictitem_T	*di;
-
-    /* Remove the dict from the list of dicts for garbage collection. */
-    if (d->dv_used_prev == NULL)
-	first_dict = d->dv_used_next;
-    else
-	d->dv_used_prev->dv_used_next = d->dv_used_next;
-    if (d->dv_used_next != NULL)
-	d->dv_used_next->dv_used_prev = d->dv_used_prev;
 
     /* Lock the hashtab, we don't want it to resize while freeing items. */
     hash_lock(&d->dv_hashtab);
@@ -7367,16 +7468,35 @@ dict_free(
 	     * something recursive causing trouble. */
 	    di = HI2DI(hi);
 	    hash_remove(&d->dv_hashtab, hi);
-	    if (recurse)
-		clear_tv(&di->di_tv);
-	    else
-		clear_tv_no_recurse(&di->di_tv);
+	    clear_tv(&di->di_tv);
 	    vim_free(di);
 	    --todo;
 	}
     }
     hash_clear(&d->dv_hashtab);
+}
+
+    static void
+dict_free_dict(dict_T *d)
+{
+    /* Remove the dict from the list of dicts for garbage collection. */
+    if (d->dv_used_prev == NULL)
+	first_dict = d->dv_used_next;
+    else
+	d->dv_used_prev->dv_used_next = d->dv_used_next;
+    if (d->dv_used_next != NULL)
+	d->dv_used_next->dv_used_prev = d->dv_used_prev;
     vim_free(d);
+}
+
+    void
+dict_free(dict_T *d)
+{
+    if (!in_free_unref_items)
+    {
+	dict_free_contents(d);
+	dict_free_dict(d);
+    }
 }
 
 /*
@@ -7827,7 +7947,7 @@ get_dict_tv(char_u **arg, typval_T *rettv, int evaluate)
 	EMSG2(_("E723: Missing end of Dictionary '}': %s"), *arg);
 failret:
 	if (evaluate)
-	    dict_free(d, TRUE);
+	    dict_free(d);
 	return FAIL;
     }
 
@@ -7841,9 +7961,6 @@ failret:
 
     return OK;
 }
-
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
-#endif
 
     static char *
 get_var_special_name(int nr)
@@ -15391,7 +15508,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 		    || list_append_number(rettv->vval.v_list,
 					    (varnumber_T)-1) == FAIL))
 	{
-		list_free(rettv->vval.v_list, TRUE);
+		list_free(rettv->vval.v_list);
 		rettv->vval.v_list = NULL;
 		goto theend;
 	}
@@ -16488,7 +16605,7 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 
     if (failed)
     {
-	list_free(rettv->vval.v_list, TRUE);
+	list_free(rettv->vval.v_list);
 	/* readfile doc says an empty list is returned on error */
 	rettv->vval.v_list = list_alloc();
     }
@@ -20070,7 +20187,7 @@ errret:
     if (res != NULL)
 	vim_free(res);
     if (list != NULL)
-	list_free(list, TRUE);
+	list_free(list);
 }
 
 /*

@@ -1619,6 +1619,8 @@ EXTERN int  alloc_fail_countdown INIT(= -1);
 EXTERN int  alloc_fail_repeat INIT(= 0);
 
 EXTERN int  disable_char_avail_for_testing INIT(= 0);
+
+EXTERN int  in_free_unref_items INIT(= FALSE);
 #endif
 
 /*

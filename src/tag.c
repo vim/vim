@@ -792,7 +792,7 @@ do_tag(
 		    vim_free(cmd);
 		    vim_free(fname);
 		    if (list != NULL)
-			list_free(list, TRUE);
+			list_free(list);
 		    goto end_do_tag;
 		}
 
@@ -919,7 +919,7 @@ do_tag(
 		vim_snprintf((char *)IObuff, IOSIZE, "ltag %s", tag);
 		set_errorlist(curwin, list, ' ', IObuff);
 
-		list_free(list, TRUE);
+		list_free(list);
 		vim_free(fname);
 		vim_free(cmd);
 

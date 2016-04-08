@@ -368,6 +368,39 @@ channel_still_useful(channel_T *channel)
 }
 
 /*
+ * Close a channel and free all its resources.
+ */
+    static void
+channel_free_contents(channel_T *channel)
+{
+    channel_close(channel, TRUE);
+    channel_clear(channel);
+    ch_log(channel, "Freeing channel");
+}
+
+    static void
+channel_free_channel(channel_T *channel)
+{
+    if (channel->ch_next != NULL)
+	channel->ch_next->ch_prev = channel->ch_prev;
+    if (channel->ch_prev == NULL)
+	first_channel = channel->ch_next;
+    else
+	channel->ch_prev->ch_next = channel->ch_next;
+    vim_free(channel);
+}
+
+    static void
+channel_free(channel_T *channel)
+{
+    if (!in_free_unref_items)
+    {
+	channel_free_contents(channel);
+	channel_free_channel(channel);
+    }
+}
+
+/*
  * Close a channel and free all its resources if there is no further action
  * possible, there is no callback to be invoked or the associated job was
  * killed.
@@ -397,22 +430,39 @@ channel_unref(channel_T *channel)
     return FALSE;
 }
 
-/*
- * Close a channel and free all its resources.
- */
-    void
-channel_free(channel_T *channel)
+    int
+free_unused_channels_contents(int copyID, int mask)
 {
-    channel_close(channel, TRUE);
-    channel_clear(channel);
-    ch_log(channel, "Freeing channel");
-    if (channel->ch_next != NULL)
-	channel->ch_next->ch_prev = channel->ch_prev;
-    if (channel->ch_prev == NULL)
-	first_channel = channel->ch_next;
-    else
-	channel->ch_prev->ch_next = channel->ch_next;
-    vim_free(channel);
+    int		did_free = FALSE;
+    channel_T	*ch;
+
+    for (ch = first_channel; ch != NULL; ch = ch->ch_next)
+	if ((ch->ch_copyID & mask) != (copyID & mask))
+	{
+	    /* Free the channel and ordinary items it contains, but don't
+	     * recurse into Lists, Dictionaries etc. */
+	    channel_free_contents(ch);
+	    did_free = TRUE;
+	}
+    return did_free;
+}
+
+    void
+free_unused_channels(int copyID, int mask)
+{
+    channel_T	*ch;
+    channel_T	*ch_next;
+
+    for (ch = first_channel; ch != NULL; ch = ch_next)
+    {
+	ch_next = ch->ch_next;
+	if ((ch->ch_copyID & mask) != (copyID & mask))
+	{
+	    /* Free the channel and ordinary items it contains, but don't
+	     * recurse into Lists, Dictionaries etc. */
+	    channel_free_channel(ch);
+	}
+    }
 }
 
 #if defined(FEAT_GUI) || defined(PROTO)
@@ -2457,6 +2507,7 @@ channel_clear(channel_T *channel)
     channel_clear_one(channel, PART_SOCK);
     channel_clear_one(channel, PART_OUT);
     channel_clear_one(channel, PART_ERR);
+    /* there is no callback or queue for PART_IN */
     vim_free(channel->ch_callback);
     channel->ch_callback = NULL;
     partial_unref(channel->ch_partial);
@@ -3913,7 +3964,7 @@ get_channel_arg(typval_T *tv, int check_open)
 static job_T *first_job = NULL;
 
     static void
-job_free(job_T *job)
+job_free_contents(job_T *job)
 {
     ch_log(job->jv_channel, "Freeing job");
     if (job->jv_channel != NULL)
@@ -3928,17 +3979,31 @@ job_free(job_T *job)
     }
     mch_clear_job(job);
 
+    vim_free(job->jv_stoponexit);
+    vim_free(job->jv_exit_cb);
+    partial_unref(job->jv_exit_partial);
+}
+
+    static void
+job_free_job(job_T *job)
+{
     if (job->jv_next != NULL)
 	job->jv_next->jv_prev = job->jv_prev;
     if (job->jv_prev == NULL)
 	first_job = job->jv_next;
     else
 	job->jv_prev->jv_next = job->jv_next;
-
-    vim_free(job->jv_stoponexit);
-    vim_free(job->jv_exit_cb);
-    partial_unref(job->jv_exit_partial);
     vim_free(job);
+}
+
+    static void
+job_free(job_T *job)
+{
+    if (!in_free_unref_items)
+    {
+	job_free_contents(job);
+	job_free_job(job);
+    }
 }
 
     void
@@ -3960,6 +4025,41 @@ job_unref(job_T *job)
 	    job->jv_channel->ch_job = NULL;
 	    channel_unref(job->jv_channel);
 	    job->jv_channel = NULL;
+	}
+    }
+}
+
+    int
+free_unused_jobs_contents(int copyID, int mask)
+{
+    int		did_free = FALSE;
+    job_T	*job;
+
+    for (job = first_job; job != NULL; job = job->jv_next)
+	if ((job->jv_copyID & mask) != (copyID & mask))
+	{
+	    /* Free the channel and ordinary items it contains, but don't
+	     * recurse into Lists, Dictionaries etc. */
+	    job_free_contents(job);
+	    did_free = TRUE;
+    }
+    return did_free;
+}
+
+    void
+free_unused_jobs(int copyID, int mask)
+{
+    job_T	*job;
+    job_T	*job_next;
+
+    for (job = first_job; job != NULL; job = job_next)
+    {
+	job_next = job->jv_next;
+	if ((job->jv_copyID & mask) != (copyID & mask))
+	{
+	    /* Free the channel and ordinary items it contains, but don't
+	     * recurse into Lists, Dictionaries etc. */
+	    job_free_job(job);
 	}
     }
 }
