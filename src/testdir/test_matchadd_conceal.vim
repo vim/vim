@@ -1,3 +1,7 @@
+if !has('conceal')
+  finish
+endif
+
 function! s:screenline(lnum) abort
   let line = []
   for c in range(1, winwidth(0))
@@ -11,10 +15,6 @@ function! s:trim(str) abort
 endfunction
 
 function! Test_matchadd_conceal()
-  if !has('conceal')
-    return
-  endif
-
   " quit! all other windows
   silent! only!
   new
