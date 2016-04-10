@@ -3,7 +3,9 @@ if !has('conceal')
   finish
 endif
 
-set term=ansi
+if !has('gui_running')
+  set term=ansi
+endif
 
 function! s:screenline(lnum) abort
   let line = []
