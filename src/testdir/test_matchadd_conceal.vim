@@ -3,6 +3,8 @@ if !has('conceal')
   finish
 endif
 
+set term=ansi
+
 function! s:screenline(lnum) abort
   let line = []
   for c in range(1, winwidth(0))

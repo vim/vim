@@ -2025,6 +2025,7 @@ test_arglist \
 	test_json \
 	test_langmap \
 	test_lispwords \
+	test_matchadd_conceal \
 	test_matchstrpos \
 	test_menu \
 	test_packadd \
