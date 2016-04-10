@@ -4910,18 +4910,7 @@ win_line(
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		char_attr = conceal_attr;
-		/* PROBLEM: When trying to show cchar by matchadd(),
-		 * prev_syntax_id and syntax_seqnr might be 0 with :syntax off.
-		 * When trying to show cchar by :syntax match, it's no problem because
-		 * syntax_seqnr is not 0.
-		 * To support showing cchar by matchadd(), change syntax_seqnr
-		 * value to non-zero.
-		 * XXX: better solution?
-		 **/
-		if (has_match_conc && syntax_seqnr == 0)
-		    syntax_seqnr = -1;
-
-		if ((prev_syntax_id != syntax_seqnr)
+		if (prev_syntax_id != syntax_seqnr
 			&& (syn_get_sub_char() != NUL || match_conc
 							 || wp->w_p_cole == 1)
 			&& wp->w_p_cole != 3)
