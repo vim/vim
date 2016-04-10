@@ -31,11 +31,12 @@ function! Test_simple_matchadd()
   redraw!
   let lnum = 2
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) !=# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   quit!
 endfunction
@@ -53,11 +54,11 @@ function! Test_simple_matchadd_and_conceal()
   redraw!
   let lnum = 2
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) !=# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   quit!
 endfunction
@@ -79,11 +80,11 @@ function! Test_matchadd_and_conceallevel_3()
   redraw!
   let lnum = 2
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) !=# screenattr(lnum, 16))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   " more matchadd()
   "             1234567890123456
@@ -92,12 +93,12 @@ function! Test_matchadd_and_conceallevel_3()
   call matchadd('ErrorMsg', '\%2l Test', 20, -1, {'conceal': 'X'})
   redraw!
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1)  ==# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2)  ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 1)  !=# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 10) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1)  !=# screenattr(lnum, 16))
-  call assert_true(screenattr(lnum, 10) !=# screenattr(lnum, 16))
+  call assert_equal(screenattr(lnum, 1) , screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2) , screenattr(lnum, 7))
+  call assert_notequal(screenattr(lnum, 1) , screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 10), screenattr(lnum, 12))
+  call assert_notequal(screenattr(lnum, 1) , screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 10), screenattr(lnum, 16))
 
   syntax off
   quit!
@@ -116,11 +117,11 @@ function! Test_default_conceal_char()
   redraw!
   let lnum = 2
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) !=# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   "             1234567890123456
   let expect = '#+This+is+a+Test'
@@ -129,11 +130,11 @@ function! Test_default_conceal_char()
   redraw!
 
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) !=# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   let &listchars = listchars_save
   quit!
@@ -153,11 +154,11 @@ function! Test_syn_and_match_conceal()
   redraw!
   let lnum = 2
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) !=# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   "             1234567890123456
   let expect = '#*This*is*a*Test'
@@ -165,11 +166,11 @@ function! Test_syn_and_match_conceal()
   redraw!
 
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) !=# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   syntax off
   quit!
@@ -191,11 +192,11 @@ function! Test_clearmatches()
 
   let lnum = 2
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 16))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   " reset match using setmatches()
   "             1234567890123456
@@ -204,11 +205,11 @@ function! Test_clearmatches()
   redraw!
 
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) !=# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
   call assert_equal({'group': 'Conceal', 'pattern': '\%2l ', 'priority': 10, 'id': a[0].id, 'conceal': 'Z'}, a[0])
 
   quit!
@@ -232,13 +233,13 @@ function! Test_using_matchaddpos()
 
   let lnum = 2
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1)  !=# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2)  !=# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 1)  ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 1)  ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 1)  !=# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1)  !=# screenattr(lnum, 16))
-  call assert_true(screenattr(lnum, 12) ==# screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 1) , screenattr(lnum, 2))
+  call assert_notequal(screenattr(lnum, 2) , screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 1) , screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 1) , screenattr(lnum, 10))
+  call assert_notequal(screenattr(lnum, 1) , screenattr(lnum, 12))
+  call assert_notequal(screenattr(lnum, 1) , screenattr(lnum, 16))
+  call assert_equal(screenattr(lnum, 12), screenattr(lnum, 16))
   call assert_equal({'group': 'Conceal', 'id': a[0].id, 'priority': 10, 'pos1': [2, 2, 6], 'conceal': 'P'}, a[0])
 
   syntax off
@@ -264,11 +265,11 @@ function! Test_match_using_multibyte_conceal_char()
 
   let lnum = 2
   call assert_equal(expect, s:screenline(lnum))
-  call assert_true(screenattr(lnum, 1) !=# screenattr(lnum, 2))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 7))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 10))
-  call assert_true(screenattr(lnum, 2) ==# screenattr(lnum, 12))
-  call assert_true(screenattr(lnum, 1) ==# screenattr(lnum, 16))
+  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
+  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
+  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   quit!
 endfunction
