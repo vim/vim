@@ -2796,12 +2796,12 @@ set_completion(colnr_T startcol, list_T *list)
     compl_cont_status = 0;
 
     compl_curr_match = compl_first_match;
-    if (compl_no_insert)
+    if (compl_no_insert || compl_no_select) {
 	ins_complete(K_DOWN, FALSE);
-    else
+	if (compl_no_select)
+	    ins_complete(K_UP, FALSE);
+    } else
 	ins_complete(Ctrl_N, FALSE);
-    if (compl_no_select)
-	ins_complete(Ctrl_P, FALSE);
 
     /* Lazily show the popup menu, unless we got interrupted. */
     if (!compl_interrupted)
@@ -4959,8 +4959,7 @@ ins_compl_check_keys(int frequency)
 ins_compl_key2dir(int c)
 {
     if (c == Ctrl_P || c == Ctrl_L
-	    || (pum_visible() && (c == K_PAGEUP || c == K_KPAGEUP
-						|| c == K_S_UP || c == K_UP)))
+	    || c == K_PAGEUP || c == K_KPAGEUP || c == K_S_UP || c == K_UP)
 	return BACKWARD;
     return FORWARD;
 }
