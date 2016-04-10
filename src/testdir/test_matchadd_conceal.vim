@@ -3,7 +3,7 @@ if !has('conceal')
   finish
 endif
 
-if !has('gui_running')
+if !has('gui_running') && has('unix')
   set term=ansi
 endif
 
