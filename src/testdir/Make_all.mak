@@ -104,7 +104,6 @@ SCRIPTS_ALL = \
 	test_listlbr.out \
 	test_mapping.out \
 	test_marks.out \
-	test_match_conceal.out \
 	test_nested_function.out \
 	test_options.out \
 	test_ruby.out \
