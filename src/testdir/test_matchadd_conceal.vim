@@ -247,10 +247,8 @@ function! Test_using_matchaddpos()
 endfunction
 
 function! Test_match_using_multibyte_conceal_char()
-  so mbyte.vim
-  if &enc !=? 'utf-8'
-    return
-  endif
+  let encoding_save = &encoding
+  set encoding=utf-8
 
   new
   setlocal concealcursor=n conceallevel=1
@@ -271,6 +269,7 @@ function! Test_match_using_multibyte_conceal_char()
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
   call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
+  let &encoding = encoding_save
   quit!
 endfunction
 
