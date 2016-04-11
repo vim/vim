@@ -12,7 +12,7 @@ if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
 endif
 
-CompilerSet makeprg=tidy\ -quiet\ -errors\ --gnu-emacs\ yes\ %
+CompilerSet makeprg=tidy\ -quiet\ -errors\ --gnu-emacs\ yes\ %:S
 
 " sample warning: foo.html:8:1: Warning: inserting missing 'foobar' element
 " sample error:   foo.html:9:2: Error: <foobar> is not recognized!
