@@ -7326,6 +7326,7 @@ set_ref_in_item(
 
 	if (job != NULL && job->jv_copyID != copyID)
 	{
+	    job->jv_copyID = copyID;
 	    if (job->jv_channel != NULL)
 	    {
 		dtv.v_type = VAR_CHANNEL;
@@ -7350,6 +7351,7 @@ set_ref_in_item(
 
 	if (ch != NULL && ch->ch_copyID != copyID)
 	{
+	    ch->ch_copyID = copyID;
 	    for (part = PART_SOCK; part <= PART_IN; ++part)
 	    {
 		for (jq = ch->ch_part[part].ch_json_head.jq_next; jq != NULL;
