@@ -14,6 +14,9 @@ function! TablineWithError()
 endfunction
 
 function! Test_caught_error_in_tabline()
+  if has('gui')
+    set guioptions-=e
+  endif
   let showtabline_save = &showtabline
   set showtabline=2
   let s:func_in_tabline_called = 0
@@ -27,6 +30,9 @@ function! Test_caught_error_in_tabline()
 endfunction
 
 function! Test_tabline_will_be_disabled_with_error()
+  if has('gui')
+    set guioptions-=e
+  endif
   let showtabline_save = &showtabline
   set showtabline=2
   let s:func_in_tabline_called = 0
