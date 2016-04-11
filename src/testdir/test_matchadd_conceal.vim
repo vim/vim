@@ -247,6 +247,9 @@ function! Test_using_matchaddpos()
 endfunction
 
 function! Test_match_using_multibyte_conceal_char()
+  if !has('multi_byte')
+    return
+  endif
   let encoding_save = &encoding
   set encoding=utf-8
 
