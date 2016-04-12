@@ -87,7 +87,7 @@ UninstPage instfiles
 Function .onInit
   MessageBox MB_YESNO|MB_ICONQUESTION \
 	"This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer.$\n Continue?" \
-	IDYES NoAbort
+	/SD IDYES NoAbort
 	    Abort ; causes installer to quit.
 	NoAbort:
 
@@ -130,9 +130,9 @@ Function .onInit
 FunctionEnd
 
 Function .onUserAbort
-  MessageBox MB_YESNO|MB_ICONQUESTION "Abort install?" IDYES NoCancelAbort
+  MessageBox MB_YESNO|MB_ICONQUESTION "Abort install?" IDYES CancelAbort
     Abort ; causes installer to not quit.
-  NoCancelAbort:
+  CancelAbort:
 FunctionEnd
 
 # We only accept the directory if it ends in "vim".  Using .onVerifyInstDir has
@@ -144,18 +144,20 @@ Function .onInstSuccess
   WriteUninstaller vim${VER_MAJOR}${VER_MINOR}\uninstall-gui.exe
   MessageBox MB_YESNO|MB_ICONQUESTION \
 	"The installation process has been successful. Happy Vimming! \
-	$\n$\n Do you want to see the README file now?" IDNO NoReadme
+	$\n$\n Do you want to see the README file now?" /SD IDNO NoReadme
       Exec '$0\gvim.exe -R "$0\README.txt"'
   NoReadme:
 FunctionEnd
 
 Function .onInstFailed
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Installation failed. Better luck next time."
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Installation failed. Better luck next \
+  time." /SD IDOK
 FunctionEnd
 
 Function un.onUnInstSuccess
   MessageBox MB_OK|MB_ICONINFORMATION \
-  "Vim ${VER_MAJOR}.${VER_MINOR} has been (partly) removed from your system"
+    "Vim ${VER_MAJOR}.${VER_MINOR} has been (partly) removed from your system" \
+     /SD IDOK
 FunctionEnd
 
 Function un.GetParent
@@ -398,7 +400,8 @@ Section Uninstall
 	# ask the user if the Vim version dir must be removed
 	MessageBox MB_YESNO|MB_ICONQUESTION \
 	  "Would you like to delete $0?$\n \
-	   $\nIt contains the Vim executables and runtime files." IDNO NoRemoveExes
+	   $\nIt contains the Vim executables and runtime files." \
+       /SD IDYES IDNO NoRemoveExes
 
 	Delete /REBOOTOK $0\*.dll
 	ClearErrors
@@ -427,7 +430,8 @@ Section Uninstall
 	IfErrors ErrorMess NoErrorMess
 	  ErrorMess:
 	    MessageBox MB_OK|MB_ICONEXCLAMATION \
-	      "Some files in $0 have not been deleted!$\nYou must do it manually."
+	      "Some files in $0 have not been deleted!$\nYou must do it manually."\
+          /SD IDOK
 	  NoErrorMess:
 
 	# No error message if the "vim62" directory can't be removed, the
@@ -452,14 +456,15 @@ Section Uninstall
 	  AskRemove:
 	    MessageBox MB_YESNO|MB_ICONQUESTION \
 	      "Remove all files in your $1\vimfiles directory?$\n \
-	      $\nCAREFUL: If you have created something there that you want to keep, click No" IDNO Fin
+	      $\nCAREFUL: If you have created something there that you want to \
+          keep, click No" /SD IDYES IDNO Fin
 	    RMDir /r $1\vimfiles
 	  NoRemove:
 
 	# ask the user if the Vim root dir must be removed
 	MessageBox MB_YESNO|MB_ICONQUESTION \
 	  "Would you like to remove $0?$\n \
-	   $\nIt contains your Vim configuration files!" IDNO NoDelete
+	   $\nIt contains your Vim configuration files!" /SD IDYES IDNO NoDelete
 	   RMDir /r $0 ; skipped if no
 	NoDelete:
 
