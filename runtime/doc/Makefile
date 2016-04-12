@@ -142,6 +142,7 @@ DOCS = \
 	version5.txt \
 	version6.txt \
 	version7.txt \
+	version8.txt \
 	vi_diff.txt \
 	visual.txt \
 	windows.txt \
@@ -275,6 +276,7 @@ HTMLS = \
 	version5.html \
 	version6.html \
 	version7.html \
+	version8.html \
 	vi_diff.html \
 	vimindex.html \
 	visual.html \

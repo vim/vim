@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.4.  Last change: 2016 Feb 24
+*quickref.txt*  For Vim version 7.4.  Last change: 2016 Mar 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -679,6 +679,7 @@ Short explanation of each option:		*option-list*
 'display'	  'dy'	    list of flags for how to display text
 'eadirection'	  'ead'     in which direction 'equalalways' works
 'edcompatible'	  'ed'	    toggle flags of ":substitute" command
+'emoji'		  'emo'	    emoji characters are considered full width
 'encoding'	  'enc'     encoding used internally
 'endofline'	  'eol'     write <EOL> for last line in file
 'equalalways'	  'ea'	    windows are automatically made the same size

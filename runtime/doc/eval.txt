@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Mar 29
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Apr 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -411,7 +411,8 @@ only appear once.  Examples: >
 A key is always a String.  You can use a Number, it will be converted to a
 String automatically.  Thus the String '4' and the number 4 will find the same
 entry.	Note that the String '04' and the Number 04 are different, since the
-Number will be converted to the String '4'.
+Number will be converted to the String '4'.  The empty string can be used as a
+key.
 
 A value can be any expression.	Using a Dictionary for a value creates a
 nested Dictionary: >
@@ -874,11 +875,11 @@ These three can be repeated and mixed.	Examples:
 expr8							*expr8*
 -----
 expr8[expr1]		item of String or |List|	*expr-[]* *E111*
-							*E909*
+							*E909* *subscript*
 If expr8 is a Number or String this results in a String that contains the
 expr1'th single byte from expr8.  expr8 is used as a String, expr1 as a
 Number.  This doesn't recognize multi-byte encodings, see |byteidx()| for
-an alternative.
+an alternative, or use `split()` to turn the string into a list of characters.
 
 Index zero gives the first byte.  This is like it works in C.  Careful:
 text column numbers start with one!  Example, to get the byte under the
@@ -2046,6 +2047,7 @@ range( {expr} [, {max} [, {stride}]])
 readfile( {fname} [, {binary} [, {max}]])
 				List	get list of lines from file {fname}
 reltime( [{start} [, {end}]])	List	get time value
+reltimefloat( {time})		Float	turn the time value into a Float
 reltimestr( {time})		String	turn time value into a String
 remote_expr( {server}, {string} [, {idvar}])
 				String	send expression
@@ -2182,6 +2184,7 @@ wordcount()			Dict	get byte/char/word statistics
 writefile( {list}, {fname} [, {flags}])
 				Number	write list of lines to file {fname}
 xor( {expr}, {expr})		Number  bitwise XOR
+
 
 abs({expr})							*abs()*
 		Return the absolute value of {expr}.  When {expr} evaluates to
@@ -2996,6 +2999,7 @@ cursor({list})
 
 		When there is one argument {list} this is used as a |List|
 		with two, three or four item:
+			[{lnum}, {col}]
 			[{lnum}, {col}, {off}]
 			[{lnum}, {col}, {off}, {curswant}]
 		This is like the return value of |getpos()| or |getcurpos()|,
@@ -3400,7 +3404,10 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 			similar to using ":normal!".  You can call feedkeys()
 			several times without 'x' and then one time with 'x'
 			(possibly with an empty {string}) to execute all the
-			typeahead.
+			typeahead.  Note that when Vim ends in Insert mode it
+			will behave as if <Esc> is typed, to avoid getting
+			stuck, waiting for a character to be typed before the
+			script continues.
 		Return value is always 0.
 
 filereadable({file})					*filereadable()*
@@ -4633,7 +4640,7 @@ job_status({job})					*job_status()* *E916*
 			"fail"	job failed to start
 			"dead"	job died or was stopped after running
 		
-		If an exit callback was set with the "exit-cb" option and the
+		If an exit callback was set with the "exit_cb" option and the
 		job is now detected to be "dead" the callback will be invoked.
 
 		For more information see |job_info()|.
@@ -5642,7 +5649,8 @@ readfile({fname} [, {binary} [, {max}]])
 reltime([{start} [, {end}]])				*reltime()*
 		Return an item that represents a time value.  The format of
 		the item depends on the system.  It can be passed to
-		|reltimestr()| to convert it to a string.
+		|reltimestr()| to convert it to a string  or |reltimefloat()|
+		to convert to a Float.
 		Without an argument it returns the current time.
 		With one argument is returns the time passed since the time
 		specified in the argument.
@@ -5650,6 +5658,16 @@ reltime([{start} [, {end}]])				*reltime()*
 		and {end}.
 		The {start} and {end} arguments must be values returned by
 		reltime().
+		{only available when compiled with the |+reltime| feature}
+
+reltimefloat({time})				*reltimefloat()*
+		Return a Float that represents the time value of {time}.
+		Example: >
+			let start = reltime()
+			call MyFunction()
+			let seconds = reltimefloat(reltime(start))
+<		See the note of reltimestr() about overhead.
+		Also see |profiling|.
 		{only available when compiled with the |+reltime| feature}
 
 reltimestr({time})				*reltimestr()*
@@ -7340,7 +7358,7 @@ win_gotoid({expr})					*win_gotoid()*
 		tabpage.
 		Return 1 if successful, 0 if the window cannot be found.
 
-win_id2tabwin({expr}					*win_id2tabwin()*
+win_id2tabwin({expr})					*win_id2tabwin()*
 		Return a list with the tab number and window number of window
 		with ID {expr}: [tabnr, winnr].
 		Return [0, 0] if the window cannot be found.
