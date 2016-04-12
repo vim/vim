@@ -7005,7 +7005,7 @@ garbage_collect(void)
 #endif
 
 #ifdef FEAT_JOB_CHANNEL
-//    abort = abort || set_ref_in_channel(copyID);
+    abort = abort || set_ref_in_channel(copyID);
 #endif
 
     if (!abort)
@@ -9472,7 +9472,7 @@ typedef enum
     ASSERT_NOTEQUAL,
     ASSERT_MATCH,
     ASSERT_NOTMATCH,
-    ASSERT_OTHER,
+    ASSERT_OTHER
 } assert_type_T;
 
 static void prepare_assert_error(garray_T*gap);
