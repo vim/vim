@@ -91,7 +91,7 @@ This will make call 4 seconds later, like: >
 
 Packages ~
 
-Plugins keep growing and more of them are available then ever before.  To keep
+Plugins keep growing and more of them are available than ever before.  To keep
 the collection of plugins manageable package support has been added.  This is
 a convenient way to get one or more plugins, drop them in a directory and
 possibly keep them updated.  Vim will load them automatically, or only when
