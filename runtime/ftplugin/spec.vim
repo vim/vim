@@ -114,9 +114,9 @@ if !exists("*s:SpecChangelog")
 		endif
 		if (chgline != -1)
 			let tmptime = v:lc_time
-			execute "language time C"
+			language time C
 			let parsed_format = "* ".strftime(format)." - ".ver."-".rel
-			execute "language time " . tmptime
+			execute "language time" tmptime
 			let release_info = "+ ".name."-".ver."-".rel
 			let wrong_format = 0
 			let wrong_release = 0
