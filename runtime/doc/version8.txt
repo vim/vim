@@ -47,13 +47,13 @@ For filetype detection: ...
 ==============================================================================
 NEW FEATURES						*new-8*
 
-First a list to the bigger new features.  A comprehensive list is below.
+First a list of the bigger new features.  A comprehensive list is below.
 
 
 Asynchronous I/O support, channels ~
 
-Vim can now exchange messages with another process in the background. The
-message are received and handled while Vim is waiting for a character.  See
+Vim can now exchange messages with another process in the background.  The
+messages are received and handled while Vim is waiting for a character.  See
 |channel-demo| for an example, communicating with a Python server.
 
 Closely related to channels is JSON support.  JSON is widely supported and can
@@ -74,7 +74,7 @@ Timers ~
 Also asynchronous are timers.  They can fire once or repeatedly and invoke a
 function to do any work.  For example: >
 	let tempTimer = timer_start(4000, 'CheckTemp')
-This will make call 4 seconds later, like: >
+This will make call four seconds later, like: >
 	call CheckTemp()
 
 
@@ -85,13 +85,13 @@ to a function, and additionally binds arguments and/or a dictionary.  This is
 especially useful for callbacks on channels and timers.  E.g., for the timer
 example above, to pass an argument to the function: >
 	let tempTimer = timer_start(4000, function('CheckTemp', ['out']))
-This will make call 4 seconds later, like: >
+This will make call four seconds later, like: >
 	call CheckTemp('out')
 
 
 Packages ~
 
-Plugins keep growing and more of them are available then ever before.  To keep
+Plugins keep growing and more of them are available than ever before.  To keep
 the collection of plugins manageable package support has been added.  This is
 a convenient way to get one or more plugins, drop them in a directory and
 possibly keep them updated.  Vim will load them automatically, or only when
@@ -145,7 +145,7 @@ works quite well, mostly just like GTK+ 2.
 Vim script enhancements					*new-vim-script-8*
 -----------------------
 
-In Vim scripts the following types have been added:
+In Vim script the following types have been added:
 
 	|Special|	|v:false|, |v:true|, |v:none| and |v:null|
 	|Channel|	connection to another process for asynchronous I/O
