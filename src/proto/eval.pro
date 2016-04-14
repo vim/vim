@@ -150,4 +150,5 @@ void ex_oldfiles(exarg_T *eap);
 void reset_v_option_vars(void);
 int modify_fname(char_u *src, int *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen);
 char_u *do_string_sub(char_u *str, char_u *pat, char_u *sub, char_u *flags);
+char_u *tv2string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
 /* vim: set ft=c : */
