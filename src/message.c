@@ -770,6 +770,22 @@ ex_messages(exarg_T *eap UNUSED)
 {
     struct msg_hist *p;
     char_u	    *s;
+    int		    c = 0;
+
+    if (STRCMP(eap->arg, "clear") == 0)
+    {
+	int keep = eap->addr_count == 0 ? 0 : eap->line2;
+
+	while (msg_hist_len > keep)
+	    (void)delete_first_msg();
+	return;
+    }
+
+    if (*eap->arg != NUL)
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
 
     msg_hist_off = TRUE;
 
@@ -779,7 +795,23 @@ ex_messages(exarg_T *eap UNUSED)
 		_("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
 		hl_attr(HLF_T));
 
-    for (p = first_msg_hist; p != NULL && !got_int; p = p->next)
+    p = first_msg_hist;
+
+    if (eap->addr_count != 0)
+    {
+	/* Count total messages */
+	for (; p != NULL && !got_int; p = p->next)
+	    c++;
+
+	c -= eap->line2;
+
+	/* Skip without number of messages specified */
+	for (p = first_msg_hist; p != NULL && !got_int && c > 0;
+						    p = p->next, c--);
+    }
+
+    /* Display what was not skipped. */
+    for (; p != NULL && !got_int; p = p->next)
 	if (p->msg != NULL)
 	    msg_attr(p->msg, p->attr);
 
