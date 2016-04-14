@@ -789,14 +789,7 @@ ex_messages(exarg_T *eap)
 
     msg_hist_off = TRUE;
 
-    s = mch_getenv((char_u *)"LANG");
-    if (s != NULL && *s != NUL)
-	msg_attr((char_u *)
-		_("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
-		hl_attr(HLF_T));
-
     p = first_msg_hist;
-
     if (eap->addr_count != 0)
     {
 	/* Count total messages */
@@ -808,6 +801,15 @@ ex_messages(exarg_T *eap)
 	/* Skip without number of messages specified */
 	for (p = first_msg_hist; p != NULL && !got_int && c > 0;
 						    p = p->next, c--);
+    }
+
+    if (p == first_msg_hist)
+    {
+	s = mch_getenv((char_u *)"LANG");
+	if (s != NULL && *s != NUL)
+	    msg_attr((char_u *)
+		    _("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
+		    hl_attr(HLF_T));
     }
 
     /* Display what was not skipped. */
