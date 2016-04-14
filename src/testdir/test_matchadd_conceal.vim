@@ -246,36 +246,6 @@ function! Test_using_matchaddpos()
   quit!
 endfunction
 
-function! Test_match_using_multibyte_conceal_char()
-  if !has('multi_byte_encoding')
-    return
-  endif
-  let encoding_save = &encoding
-  set encoding=utf-8
-
-  new
-  setlocal concealcursor=n conceallevel=1
-
-  1put='# This is a Test'
-  "             1234567890123456
-  let expect = '#ˑThisˑisˑaˑTest'
-
-  call cursor(1, 1)
-  call matchadd('Conceal', '\%2l ', 20, -1, {'conceal': "\u02d1"})
-  redraw!
-
-  let lnum = 2
-  call assert_equal(expect, s:screenline(lnum))
-  call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
-  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
-  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
-  call assert_equal(screenattr(lnum, 2), screenattr(lnum, 12))
-  call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
-
-  let &encoding = encoding_save
-  quit!
-endfunction
-
 function! Test_matchadd_repeat_conceal_with_syntax_off()
   new
 
