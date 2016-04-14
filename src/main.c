@@ -1531,7 +1531,7 @@ getout(int exitval)
 #endif
 #ifdef FEAT_EVAL
     if (garbage_collect_at_exit)
-	garbage_collect();
+	garbage_collect(FALSE);
 #endif
 #if defined(WIN32) && defined(FEAT_MBYTE)
     free_cmd_argsW();

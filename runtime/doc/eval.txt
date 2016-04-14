@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Apr 12
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Apr 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -61,9 +61,9 @@ Funcref		A reference to a function |Funcref|.
 
 Special		|v:false|, |v:true|, |v:none| and |v:null|.  *Special*
 
-Job		Used for a job, see |job_start()|. *Job*
+Job		Used for a job, see |job_start()|. *Job* *Jobs*
 
-Channel		Used for a channel, see |ch_open()|. *Channel*
+Channel		Used for a channel, see |ch_open()|. *Channel* *Channels*
 
 The Number and String types are converted automatically, depending on how they
 are used.
@@ -1723,6 +1723,9 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		always 95 or bigger).  Pc is always zero.
 		{only when compiled with |+termresponse| feature}
 
+					*v:testing* *testing-variable*
+v:testing	Must be set before using `garbagecollect_for_testing()`.
+
 				*v:this_session* *this_session-variable*
 v:this_session	Full filename of the last loaded or saved session file.  See
 		|:mksession|.  It is allowed to set this variable.  When no
@@ -1905,9 +1908,10 @@ foldlevel( {lnum})		Number	fold level at {lnum}
 foldtext()			String	line displayed for closed fold
 foldtextresult( {lnum})		String	text for closed fold at {lnum}
 foreground()			Number	bring the Vim window to the foreground
-function({name} [, {arglist}] [, {dict}])
+function( {name} [, {arglist}] [, {dict}])
 				Funcref reference to function {name}
 garbagecollect( [{atexit}])	none	free memory, breaking cyclic references
+garbagecollect_for_testing()	none	free memory right now
 get( {list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get( {dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 getbufline( {expr}, {lnum} [, {end}])
@@ -3674,18 +3678,26 @@ function({name} [, {arglist}] [, {dict}])
 
 
 garbagecollect([{atexit}])				*garbagecollect()*
-		Cleanup unused |Lists| and |Dictionaries| that have circular
-		references.  There is hardly ever a need to invoke this
-		function, as it is automatically done when Vim runs out of
-		memory or is waiting for the user to press a key after
-		'updatetime'.  Items without circular references are always
-		freed when they become unused.
+		Cleanup unused |Lists|, |Dictionaries|, |Channels| and |Jobs|
+		that have circular references.
+		
+		There is hardly ever a need to invoke this function, as it is
+		automatically done when Vim runs out of memory or is waiting
+		for the user to press a key after 'updatetime'.  Items without
+		circular references are always freed when they become unused.
 		This is useful if you have deleted a very big |List| and/or
 		|Dictionary| with circular references in a script that runs
 		for a long time.
+
 		When the optional {atexit} argument is one, garbage
 		collection will also be done when exiting Vim, if it wasn't
 		done before.  This is useful when checking for memory leaks.
+
+garbagecollect_for_testing()			 *garbagecollect_for_testing()*
+		Like garbagecollect(), but executed right away.  This must
+		only be called directly to avoid any structure to exist
+		internally, and |v:testing| must have been set before calling
+		any function.
 
 get({list}, {idx} [, {default}])			*get()*
 		Get item {idx} from |List| {list}.  When this item is not

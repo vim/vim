@@ -183,7 +183,7 @@ func s:communicate(port)
   call assert_equal('got it', s:responseMsg)
 
   " Collect garbage, tests that our handle isn't collected.
-  call garbagecollect()
+  call garbagecollect_for_testing()
 
   " check setting options (without testing the effect)
   call ch_setoptions(handle, {'callback': 's:NotUsed'})
@@ -1231,7 +1231,7 @@ func Test_job_start_invalid()
   call assert_fails('call job_start("")', 'E474:')
 endfunc
 
-" This leaking memory.
+" This was leaking memory.
 func Test_partial_in_channel_cycle()
   let d = {}
   let d.a = function('string', [d])
@@ -1242,6 +1242,14 @@ func Test_partial_in_channel_cycle()
   endtry
   unlet d
 endfunc
+
+func Test_using_freed_memory()
+  let g:a = job_start(['ls'])
+  sleep 10m
+  call garbagecollect_for_testing()
+endfunc
+
+
 
 " Uncomment this to see what happens, output is in src/testdir/channellog.
 " call ch_logfile('channellog', 'w')

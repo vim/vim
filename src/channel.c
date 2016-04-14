@@ -458,8 +458,7 @@ free_unused_channels(int copyID, int mask)
 	ch_next = ch->ch_next;
 	if ((ch->ch_copyID & mask) != (copyID & mask))
 	{
-	    /* Free the channel and ordinary items it contains, but don't
-	     * recurse into Lists, Dictionaries etc. */
+	    /* Free the channel struct itself. */
 	    channel_free_channel(ch);
 	}
     }
@@ -4006,6 +4005,17 @@ job_free(job_T *job)
     }
 }
 
+/*
+ * Return TRUE if the job should not be freed yet.  Do not free the job when
+ * it has not ended yet and there is a "stoponexit" flag or an exit callback.
+ */
+    static int
+job_still_useful(job_T *job)
+{
+    return job->jv_status == JOB_STARTED
+		   && (job->jv_stoponexit != NULL || job->jv_exit_cb != NULL);
+}
+
     void
 job_unref(job_T *job)
 {
@@ -4013,8 +4023,7 @@ job_unref(job_T *job)
     {
 	/* Do not free the job when it has not ended yet and there is a
 	 * "stoponexit" flag or an exit callback. */
-	if (job->jv_status != JOB_STARTED
-		|| (job->jv_stoponexit == NULL && job->jv_exit_cb == NULL))
+	if (!job_still_useful(job))
 	{
 	    job_free(job);
 	}
@@ -4036,7 +4045,8 @@ free_unused_jobs_contents(int copyID, int mask)
     job_T	*job;
 
     for (job = first_job; job != NULL; job = job->jv_next)
-	if ((job->jv_copyID & mask) != (copyID & mask))
+	if ((job->jv_copyID & mask) != (copyID & mask)
+						    && !job_still_useful(job))
 	{
 	    /* Free the channel and ordinary items it contains, but don't
 	     * recurse into Lists, Dictionaries etc. */
@@ -4055,10 +4065,10 @@ free_unused_jobs(int copyID, int mask)
     for (job = first_job; job != NULL; job = job_next)
     {
 	job_next = job->jv_next;
-	if ((job->jv_copyID & mask) != (copyID & mask))
+	if ((job->jv_copyID & mask) != (copyID & mask)
+						    && !job_still_useful(job))
 	{
-	    /* Free the channel and ordinary items it contains, but don't
-	     * recurse into Lists, Dictionaries etc. */
+	    /* Free the job struct itself. */
 	    job_free_job(job);
 	}
     }

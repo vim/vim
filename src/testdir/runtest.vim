@@ -60,6 +60,9 @@ let $HOME = '/does/not/exist'
 
 let s:srcdir = expand('%:p:h:h')
 
+" Prepare for calling garbagecollect_for_testing().
+let v:testing = 1
+
 " Support function: get the alloc ID by name.
 function GetAllocId(name)
   exe 'split ' . s:srcdir . '/alloc.h'

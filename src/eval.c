@@ -373,6 +373,7 @@ static struct vimvar
     {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("testing",		 VAR_NUMBER), 0},
 };
 
 /* shorthand */
@@ -580,6 +581,7 @@ static void f_foldtextresult(typval_T *argvars, typval_T *rettv);
 static void f_foreground(typval_T *argvars, typval_T *rettv);
 static void f_function(typval_T *argvars, typval_T *rettv);
 static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
+static void f_garbagecollect_for_testing(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
 static void f_getbufline(typval_T *argvars, typval_T *rettv);
 static void f_getbufvar(typval_T *argvars, typval_T *rettv);
@@ -1029,7 +1031,7 @@ eval_clear(void)
     ga_clear(&ga_scripts);
 
     /* unreferenced lists and dicts */
-    (void)garbage_collect();
+    (void)garbage_collect(FALSE);
 
     /* functions */
     free_all_functions();
@@ -6889,6 +6891,9 @@ get_copyID(void)
     return current_copyID;
 }
 
+/* Used by get_func_tv() */
+static garray_T funcargs = GA_EMPTY;
+
 /*
  * Garbage collection for lists and dictionaries.
  *
@@ -6911,10 +6916,11 @@ get_copyID(void)
 
 /*
  * Do garbage collection for lists and dicts.
+ * When "testing" is TRUE this is called from garbagecollect_for_testing().
  * Return TRUE if some memory was freed.
  */
     int
-garbage_collect(void)
+garbage_collect(int testing)
 {
     int		copyID;
     int		abort = FALSE;
@@ -6928,10 +6934,13 @@ garbage_collect(void)
     tabpage_T	*tp;
 #endif
 
-    /* Only do this once. */
-    want_garbage_collect = FALSE;
-    may_garbage_collect = FALSE;
-    garbage_collect_at_exit = FALSE;
+    if (!testing)
+    {
+	/* Only do this once. */
+	want_garbage_collect = FALSE;
+	may_garbage_collect = FALSE;
+	garbage_collect_at_exit = FALSE;
+    }
 
     /* We advance by two because we add one for items referenced through
      * previous_funccal. */
@@ -6989,6 +6998,11 @@ garbage_collect(void)
 	abort = abort || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL);
     }
 
+    /* function call arguments, if v:testing is set. */
+    for (i = 0; i < funcargs.ga_len; ++i)
+	abort = abort || set_ref_in_item(((typval_T **)funcargs.ga_data)[i],
+							  copyID, NULL, NULL);
+
     /* v: vars */
     abort = abort || set_ref_in_ht(&vimvarht, copyID, NULL);
 
@@ -7034,7 +7048,7 @@ garbage_collect(void)
 	if (did_free_funccal)
 	    /* When a funccal was freed some more items might be garbage
 	     * collected, so run again. */
-	    (void)garbage_collect();
+	    (void)garbage_collect(testing);
     }
     else if (p_verbose > 0)
     {
@@ -8424,6 +8438,7 @@ static struct fst
     {"foreground",	0, 0, f_foreground},
     {"function",	1, 3, f_function},
     {"garbagecollect",	0, 1, f_garbagecollect},
+    {"garbagecollect_for_testing",	0, 0, f_garbagecollect_for_testing},
     {"get",		2, 3, f_get},
     {"getbufline",	2, 3, f_getbufline},
     {"getbufvar",	2, 3, f_getbufvar},
@@ -8896,8 +8911,26 @@ get_func_tv(
 	ret = FAIL;
 
     if (ret == OK)
+    {
+	int		i = 0;
+
+	if (get_vim_var_nr(VV_TESTING))
+	{
+	    /* Prepare for calling garbagecollect_for_testing(), need to know
+	     * what variables are used on the call stack. */
+	    if (funcargs.ga_itemsize == 0)
+		ga_init2(&funcargs, (int)sizeof(typval_T *), 50);
+	    for (i = 0; i < argcount; ++i)
+		if (ga_grow(&funcargs, 1) == OK)
+		    ((typval_T **)funcargs.ga_data)[funcargs.ga_len++] =
+								  &argvars[i];
+	}
+
 	ret = call_func(name, len, rettv, argcount, argvars,
 		 firstline, lastline, doesrange, evaluate, partial, selfdict);
+
+	funcargs.ga_len -= i;
+    }
     else if (!aborting())
     {
 	if (argcount == MAX_FUNC_ARGS)
@@ -12315,6 +12348,17 @@ f_garbagecollect(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_UNKNOWN && get_tv_number(&argvars[0]) == 1)
 	garbage_collect_at_exit = TRUE;
+}
+
+/*
+ * "garbagecollect_for_testing()" function
+ */
+    static void
+f_garbagecollect_for_testing(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    /* This is dangerous, any Lists and Dicts used internally may be freed
+     * while still in use. */
+    garbage_collect(TRUE);
 }
 
 /*
