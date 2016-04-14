@@ -66,6 +66,7 @@
 #define ADDR_BUFFERS		4
 #define ADDR_TABS		5
 #define ADDR_QUICKFIX		6
+#define ADDR_OTHER		99
 
 #ifndef DO_DECLARE_EXCMD
 typedef struct exarg exarg_T;
@@ -887,7 +888,7 @@ EX(CMD_menutranslate,	"menutranslate", ex_menutranslate,
 			ADDR_LINES),
 EX(CMD_messages,	"messages",	ex_messages,
 			EXTRA|TRLBAR|RANGE|CMDWIN,
-			ADDR_LINES),
+			ADDR_OTHER),
 EX(CMD_mkexrc,		"mkexrc",	ex_mkrc,
 			BANG|FILE1|TRLBAR|CMDWIN,
 			ADDR_LINES),
