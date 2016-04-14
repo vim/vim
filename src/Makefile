@@ -1977,7 +1977,6 @@ test1 \
 	test_listlbr_utf8 \
 	test_mapping \
 	test_marks \
-	test_match_conceal \
 	test_nested_function \
 	test_options \
 	test_ruby \
@@ -2026,6 +2025,7 @@ test_arglist \
 	test_json \
 	test_langmap \
 	test_lispwords \
+	test_matchadd_conceal \
 	test_matchstrpos \
 	test_menu \
 	test_packadd \

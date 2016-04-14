@@ -104,7 +104,6 @@ SCRIPTS_ALL = \
 	test_listlbr.out \
 	test_mapping.out \
 	test_marks.out \
-	test_match_conceal.out \
 	test_nested_function.out \
 	test_options.out \
 	test_ruby.out \
@@ -175,6 +174,7 @@ NEW_TESTS = test_arglist.res \
 	    test_increment.res \
 	    test_json.res \
 	    test_langmap.res \
+	    test_matchadd_conceal.res \
 	    test_packadd.res \
 	    test_perl.res \
 	    test_quickfix.res \
