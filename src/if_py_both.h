@@ -3006,7 +3006,6 @@ FunctionAttr(FunctionObject *self, char *name)
     static void
 set_partial(FunctionObject *self, partial_T *pt, int exported)
 {
-    typval_T *curtv;
     int i;
 
     pt->pt_name = self->name;
