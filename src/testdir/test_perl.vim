@@ -92,3 +92,14 @@ function Test_VIM_package()
   perl VIM::SetOption('et')
   call assert_true(&et)
 endf
+
+function Test_stdio()
+  redir =>l:out
+  perl <<EOF
+    VIM::Msg("&VIM::Msg");
+    print "STDOUT";
+    print STDERR "STDERR";
+EOF
+  redir END
+  call assert_equal(['&VIM::Msg', 'STDOUT', 'STDERR'], split(l:out, "\n"))
+endf
