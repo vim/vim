@@ -779,9 +779,11 @@ static void f_strchars(typval_T *argvars, typval_T *rettv);
 #ifdef HAVE_STRFTIME
 static void f_strftime(typval_T *argvars, typval_T *rettv);
 #endif
+static void f_strgetchar(typval_T *argvars, typval_T *rettv);
 static void f_stridx(typval_T *argvars, typval_T *rettv);
 static void f_string(typval_T *argvars, typval_T *rettv);
 static void f_strlen(typval_T *argvars, typval_T *rettv);
+static void f_strcharpart(typval_T *argvars, typval_T *rettv);
 static void f_strpart(typval_T *argvars, typval_T *rettv);
 static void f_strridx(typval_T *argvars, typval_T *rettv);
 static void f_strtrans(typval_T *argvars, typval_T *rettv);
@@ -8635,11 +8637,13 @@ static struct fst
     {"str2float",	1, 1, f_str2float},
 #endif
     {"str2nr",		1, 2, f_str2nr},
+    {"strcharpart",	2, 3, f_strcharpart},
     {"strchars",	1, 2, f_strchars},
     {"strdisplaywidth",	1, 2, f_strdisplaywidth},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
 #endif
+    {"strgetchar",	2, 2, f_strgetchar},
     {"stridx",		2, 3, f_stridx},
     {"string",		1, 1, f_string},
     {"strlen",		1, 1, f_strlen},
@@ -19551,6 +19555,46 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
+ * "strgetchar()" function
+ */
+    static void
+f_strgetchar(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*str;
+    int		len;
+    int		error = FALSE;
+    int		charidx;
+
+    rettv->vval.v_number = -1;
+    str = get_tv_string_chk(&argvars[0]);
+    if (str == NULL)
+	return;
+    len = (int)STRLEN(str);
+    charidx = get_tv_number_chk(&argvars[1], &error);
+    if (error)
+	return;
+#ifdef FEAT_MBYTE
+    {
+	int		byteidx = 0;
+
+	while (charidx >= 0 && byteidx < len)
+	{
+	    if (charidx == 0)
+	    {
+		rettv->vval.v_number = mb_ptr2char(str + byteidx);
+		break;
+	    }
+	    --charidx;
+	    byteidx += mb_char2len(str[byteidx]);
+	}
+    }
+#else
+    if (charidx < len)
+	rettv->vval.v_number = str[charidx];
+#endif
+}
+
+/*
  * "stridx()" function
  */
     static void
@@ -19675,6 +19719,71 @@ f_strwidth(typval_T *argvars, typval_T *rettv)
 	    STRLEN(s)
 #endif
 	    );
+}
+
+/*
+ * "strcharpart()" function
+ */
+    static void
+f_strcharpart(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_MBYTE
+    char_u	*p;
+    int		nchar;
+    int		nbyte = 0;
+    int		charlen;
+    int		len = 0;
+    int		slen;
+    int		error = FALSE;
+
+    p = get_tv_string(&argvars[0]);
+    slen = (int)STRLEN(p);
+
+    nchar = get_tv_number_chk(&argvars[1], &error);
+    if (!error)
+    {
+	if (nchar > 0)
+	    while (nchar > 0 && nbyte < slen)
+	    {
+		nbyte += mb_char2len(p[nbyte]);
+		--nchar;
+	    }
+	else
+	    nbyte = nchar;
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    charlen = get_tv_number(&argvars[2]);
+	    while (charlen > 0 && nbyte + len < slen)
+	    {
+		len += mb_char2len(p[nbyte + len]);
+		--charlen;
+	    }
+	}
+	else
+	    len = slen - nbyte;    /* default: all bytes that are available. */
+    }
+
+    /*
+     * Only return the overlap between the specified part and the actual
+     * string.
+     */
+    if (nbyte < 0)
+    {
+	len += nbyte;
+	nbyte = 0;
+    }
+    else if (nbyte > slen)
+	nbyte = slen;
+    if (len < 0)
+	len = 0;
+    else if (nbyte + len > slen)
+	len = slen - nbyte;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = vim_strnsave(p + nbyte, len);
+#else
+    f_strpart(argvars, rettv);
+#endif
 }
 
 /*
