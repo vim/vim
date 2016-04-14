@@ -15,4 +15,14 @@ func Test_help_tagjump()
   call assert_equal("help", &filetype)
   call assert_true(getline('.') =~ "\\*'buflisted'\\*")
   helpclose
+
+  exec "help! abs({expr})"
+  call assert_equal("help", &filetype)
+  call assert_true(getline('.') =~ '\*abs()\*')
+  helpclose
+
+  exec "help! arglistid([{winnr}"
+  call assert_equal("help", &filetype)
+  call assert_true(getline('.') =~ '\*arglistid()\*')
+  helpclose
 endfunc
