@@ -766,7 +766,7 @@ delete_first_msg(void)
  * ":messages" command.
  */
     void
-ex_messages(exarg_T *eap UNUSED)
+ex_messages(exarg_T *eap)
 {
     struct msg_hist *p;
     char_u	    *s;
