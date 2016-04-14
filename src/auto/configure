@@ -721,6 +721,7 @@ OS_EXTRA_OBJ
 OS_EXTRA_SRC
 XCODE_SELECT
 CPP_MM
+CROSS_COMPILING
 STRIP
 AWK
 FGREP
@@ -4113,10 +4114,13 @@ else
 $as_echo "no" >&6; }
 fi
 
+CROSS_COMPILING=
 if test "$cross_compiling" = yes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot compile a simple program; if not cross compiling check CC and CFLAGS" >&5
 $as_echo "cannot compile a simple program; if not cross compiling check CC and CFLAGS" >&6; }
+  CROSS_COMPILING=1
 fi
+
 
 test "$GCC" = yes && CPP_MM=M;
 
