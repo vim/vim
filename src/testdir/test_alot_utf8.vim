@@ -5,4 +5,5 @@
 " files, so that they can be run by themselves.
 
 source test_expr_utf8.vim
+source test_matchadd_conceal_utf8.vim
 source test_regexp_utf8.vim

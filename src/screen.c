@@ -3057,8 +3057,8 @@ win_line(
 					   wrapping */
     int		vcol_off	= 0;	/* offset for concealed characters */
     int		did_wcol	= FALSE;
-    int		match_conc	= FALSE; /* cchar for match functions */
-    int		has_match_conc  = FALSE; /* match wants to conceal */
+    int		match_conc	= 0;	/* cchar for match functions */
+    int		has_match_conc  = 0;	/* match wants to conceal */
     int		old_boguscols   = 0;
 # define VCOL_HLC (vcol - vcol_off)
 # define FIX_FOR_BOGUSCOLS \
@@ -3595,7 +3595,7 @@ win_line(
     for (;;)
     {
 #ifdef FEAT_CONCEAL
-	has_match_conc = FALSE;
+	has_match_conc = 0;
 #endif
 	/* Skip this quickly when working on the text. */
 	if (draw_state != WL_LINE)
@@ -3944,11 +3944,12 @@ win_line(
 			    if (cur != NULL && syn_name2id((char_u *)"Conceal")
 							       == cur->hlg_id)
 			    {
-				has_match_conc = TRUE;
+				has_match_conc =
+					     v == (long)shl->startcol ? 2 : 1;
 				match_conc = cur->conceal_char;
 			    }
 			    else
-				has_match_conc = match_conc = FALSE;
+				has_match_conc = match_conc = 0;
 #endif
 			}
 			else if (v == (long)shl->endcol)
@@ -4905,12 +4906,12 @@ win_line(
 	    if (   wp->w_p_cole > 0
 		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
 							conceal_cursor_line(wp) )
-		&& ( (syntax_flags & HL_CONCEAL) != 0 || has_match_conc)
+		&& ( (syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		char_attr = conceal_attr;
-		if (prev_syntax_id != syntax_seqnr
+		if ((prev_syntax_id != syntax_seqnr || has_match_conc > 1)
 			&& (syn_get_sub_char() != NUL || match_conc
 							 || wp->w_p_cole == 1)
 			&& wp->w_p_cole != 3)
