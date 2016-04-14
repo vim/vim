@@ -1100,6 +1100,10 @@ OutputGetattro(PyObject *self, PyObject *nameobj)
 
     if (strcmp(name, "softspace") == 0)
 	return PyLong_FromLong(((OutputObject *)(self))->softspace);
+    else if (strcmp(name, "errors") == 0)
+	return PyString_FromString("strict");
+    else if (strcmp(name, "encoding") == 0)
+	return PyString_FromString(ENC_OPT);
 
     return PyObject_GenericGetAttr(self, nameobj);
 }

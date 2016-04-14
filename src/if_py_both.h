@@ -502,6 +502,7 @@ static struct PyMethodDef OutputMethods[] = {
     {"readable",    (PyCFunction)AlwaysFalse,		METH_NOARGS,	""},
     {"seekable",    (PyCFunction)AlwaysFalse,		METH_NOARGS,	""},
     {"writable",    (PyCFunction)AlwaysTrue,		METH_NOARGS,	""},
+    {"closed",      (PyCFunction)AlwaysFalse,		METH_NOARGS,	""},
     {"__dir__",	    (PyCFunction)OutputDir,		METH_NOARGS,	""},
     { NULL,	    NULL,				0,		NULL}
 };

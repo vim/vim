@@ -448,7 +448,7 @@ range:__dir__,append,end,start
 dictionary:__dir__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
 list:__dir__,extend,locked
 function:__dir__,softspace
-output:__dir__,close,flush,isatty,readable,seekable,softspace,writable,write,writelines
+output:__dir__,close,closed,flush,isatty,readable,seekable,softspace,writable,write,writelines
 {}
 {'a': 1}
 {'a': 1}
@@ -503,6 +503,11 @@ assert sys.stdout.writable()==True:NOT FAILED
 assert sys.stdout.readable()==False:NOT FAILED
 assert sys.stderr.writable()==True:NOT FAILED
 assert sys.stderr.readable()==False:NOT FAILED
+assert sys.stdout.closed()==False:NOT FAILED
+assert sys.stderr.closed()==False:NOT FAILED
+assert sys.stdout.errors=="strict":NOT FAILED
+assert sys.stderr.errors=="strict":NOT FAILED
+assert sys.stdout.encoding==sys.stderr.encoding:NOT FAILED
 sys.stdout.write(None):(<class 'TypeError'>, TypeError("Can't convert 'NoneType' object to str implicitly",))
 >> OutputWriteLines
 sys.stdout.writelines(None):(<class 'TypeError'>, TypeError("'NoneType' object is not iterable",))
