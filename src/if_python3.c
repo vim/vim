@@ -1528,14 +1528,16 @@ ListSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
     static PyObject *
 FunctionGetattro(PyObject *self, PyObject *nameobj)
 {
+    PyObject		*r;
     FunctionObject	*this = (FunctionObject *)(self);
 
     GET_ATTR_STRING(name, nameobj);
 
-    if (strcmp(name, "name") == 0)
-	return PyUnicode_FromString((char *)(this->name));
-
-    return PyObject_GenericGetAttr(self, nameobj);
+    r = FunctionAttr(this, name);
+    if (r || PyErr_Occurred())
+	return r;
+    else
+	return PyObject_GenericGetAttr(self, nameobj);
 }
 
 /* External interface

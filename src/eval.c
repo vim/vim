@@ -453,7 +453,6 @@ static long dict_len(dict_T *d);
 static char_u *dict2string(typval_T *tv, int copyID);
 static int get_dict_tv(char_u **arg, typval_T *rettv, int evaluate);
 static char_u *echo_string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
-static char_u *tv2string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
 static char_u *string_quote(char_u *str, int function);
 static int get_env_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int find_internal_func(char_u *name);
@@ -8153,7 +8152,7 @@ echo_string(
  * Puts quotes around strings, so that they can be parsed back by eval().
  * May return NULL.
  */
-    static char_u *
+    char_u *
 tv2string(
     typval_T	*tv,
     char_u	**tofree,
