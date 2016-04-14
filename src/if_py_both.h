@@ -6070,7 +6070,7 @@ ConvertFromPyMapping(PyObject *obj, typval_T *tv)
 ConvertFromPySequence(PyObject *obj, typval_T *tv)
 {
     PyObject	*lookup_dict;
-    int		ret;
+    int		ret = 0;
 
     if (!(lookup_dict = PyDict_New()))
 	return -1;
