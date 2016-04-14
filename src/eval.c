@@ -13048,26 +13048,6 @@ f_getpid(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = mch_get_pid();
 }
 
-static void getpos_both(typval_T *argvars, typval_T *rettv, int getcurpos);
-
-/*
- * "getcurpos()" function
- */
-    static void
-f_getcurpos(typval_T *argvars, typval_T *rettv)
-{
-    getpos_both(argvars, rettv, TRUE);
-}
-
-/*
- * "getpos(string)" function
- */
-    static void
-f_getpos(typval_T *argvars, typval_T *rettv)
-{
-    getpos_both(argvars, rettv, FALSE);
-}
-
     static void
 getpos_both(
     typval_T	*argvars,
@@ -13108,6 +13088,25 @@ getpos_both(
     }
     else
 	rettv->vval.v_number = FALSE;
+}
+
+
+/*
+ * "getcurpos()" function
+ */
+    static void
+f_getcurpos(typval_T *argvars, typval_T *rettv)
+{
+    getpos_both(argvars, rettv, TRUE);
+}
+
+/*
+ * "getpos(string)" function
+ */
+    static void
+f_getpos(typval_T *argvars, typval_T *rettv)
+{
+    getpos_both(argvars, rettv, FALSE);
 }
 
 /*
@@ -19574,7 +19573,7 @@ f_strgetchar(typval_T *argvars, typval_T *rettv)
 	return;
 #ifdef FEAT_MBYTE
     {
-	int		byteidx = 0;
+	int	byteidx = 0;
 
 	while (charidx >= 0 && byteidx < len)
 	{
@@ -19584,7 +19583,7 @@ f_strgetchar(typval_T *argvars, typval_T *rettv)
 		break;
 	    }
 	    --charidx;
-	    byteidx += mb_char2len(str[byteidx]);
+	    byteidx += mb_cptr2len(str + byteidx);
 	}
     }
 #else

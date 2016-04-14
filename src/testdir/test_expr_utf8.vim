@@ -12,6 +12,10 @@ func Test_strgetchar()
   call assert_equal(char2nr('a'), strgetchar('àxb', 0))
   call assert_equal(char2nr('̀'), strgetchar('àxb', 1))
   call assert_equal(char2nr('x'), strgetchar('àxb', 2))
+
+  call assert_equal(char2nr('あ'), strgetchar('あaい', 0))
+  call assert_equal(char2nr('a'), strgetchar('あaい', 1))
+  call assert_equal(char2nr('い'), strgetchar('あaい', 2))
 endfunc
 
 func Test_strcharpart()
