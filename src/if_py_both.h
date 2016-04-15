@@ -6070,7 +6070,7 @@ ConvertFromPyMapping(PyObject *obj, typval_T *tv)
 ConvertFromPySequence(PyObject *obj, typval_T *tv)
 {
     PyObject	*lookup_dict;
-    int		ret = 0;
+    int		ret;
 
     if (!(lookup_dict = PyDict_New()))
 	return -1;
@@ -6080,9 +6080,10 @@ ConvertFromPySequence(PyObject *obj, typval_T *tv)
 	tv->v_type = VAR_LIST;
 	tv->vval.v_list = (((ListObject *)(obj))->list);
 	++tv->vval.v_list->lv_refcount;
+	ret = 0;
     }
     else if (PyIter_Check(obj) || PySequence_Check(obj))
-	return convert_dl(obj, tv, pyseq_to_tv, lookup_dict);
+	ret = convert_dl(obj, tv, pyseq_to_tv, lookup_dict);
     else
     {
 	PyErr_FORMAT(PyExc_TypeError,
