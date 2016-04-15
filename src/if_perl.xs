@@ -844,6 +844,7 @@ I32 cur_val(IV iv, SV *sv)
     else
 	rv = newBUFrv(newSV(0), curbuf);
     sv_setsv(sv, rv);
+    SvREFCNT_dec(SvRV(rv));
     return 0;
 }
 #endif /* !PROTO */

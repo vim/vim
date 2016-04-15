@@ -34,7 +34,7 @@ fu <SID>catch_peval(expr)
   endtry
   call assert_true(0, 'no exception for `perleval("'.a:expr.'")`')
   return ''
-endf
+endfunc
 
 function Test_perleval()
   call assert_false(perleval('undef'))
@@ -73,7 +73,7 @@ function Test_perleval()
 
   call assert_equal('*VIM', perleval('"*VIM"'))
   call assert_true(perleval('\\0') =~ 'SCALAR(0x\x\+)')
-endf
+endfunc
 
 function Test_perldo()
   sp __TEST__
@@ -82,7 +82,7 @@ function Test_perldo()
   1
   call assert_false(search('\Cperl'))
   bw!
-endf
+endfunc
 
 function Test_VIM_package()
   perl VIM::DoCommand('let l:var = "foo"')
@@ -91,7 +91,7 @@ function Test_VIM_package()
   set noet
   perl VIM::SetOption('et')
   call assert_true(&et)
-endf
+endfunc
 
 function Test_stdio()
   redir =>l:out
@@ -102,4 +102,22 @@ function Test_stdio()
 EOF
   redir END
   call assert_equal(['&VIM::Msg', 'STDOUT', 'STDERR'], split(l:out, "\n"))
-endf
+endfunc
+
+function Test_SvREFCNT()
+  new t
+  perl <<--perl
+  my ($b, $w);
+  $b = $curbuf for 0 .. 10;
+  $w = $curwin for 0 .. 10;
+  VIM::DoCommand('bw! t');
+  if (exists &Internals::SvREFCNT) {
+      my $cb = Internals::SvREFCNT($$b);
+      my $cw = Internals::SvREFCNT($$w);
+      VIM::Eval("assert_equal(2, $cb)");
+      VIM::Eval("assert_equal(2, $cw)");
+  }
+  VIM::Eval("assert_false($$b)");
+  VIM::Eval("assert_false($$w)");
+--perl
+endfunc
