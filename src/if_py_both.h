@@ -2922,6 +2922,13 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 	    if (argc != 0)
 	    {
 		argv = PyMem_New(typval_T, (size_t) argc);
+		if (argv == NULL)
+		{
+		    PyErr_NoMemory();
+		    dict_unref(selfdict);
+		    list_unref(argslist);
+		    return NULL;
+		}
 		curtv = argv;
 		for (li = argslist->lv_first; li != NULL; li = li->li_next)
 		    copy_tv(&li->li_tv, curtv++);
