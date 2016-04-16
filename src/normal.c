@@ -4228,7 +4228,8 @@ nv_gd(
     char_u	*ptr;
 
     if ((len = find_ident_under_cursor(&ptr, FIND_IDENT)) == 0
-	    || find_decl(ptr, len, nchar == 'd', thisblock, 0) == FAIL)
+	    || find_decl(ptr, len, nchar == 'd', thisblock, SEARCH_START)
+								      == FAIL)
 	clearopbeep(oap);
 #ifdef FEAT_FOLDING
     else if ((fdo_flags & FDO_SEARCH) && KeyTyped && oap->op_type == OP_NOP)

@@ -12,6 +12,7 @@ source test_feedkeys.vim
 source test_fnamemodify.vim
 source test_file_perm.vim
 source test_glob2regpat.vim
+source test_goto.vim
 source test_help_tagjump.vim
 source test_join.vim
 source test_lispwords.vim
