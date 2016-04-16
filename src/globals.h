@@ -19,7 +19,7 @@
  */
 EXTERN long	Rows			/* nr of rows in the screen */
 #ifdef DO_INIT
-# if defined(MSDOS) || defined(WIN3264) || defined(OS2)
+# if defined(WIN3264)
 			    = 25L
 # else
 			    = 24L
@@ -231,6 +231,7 @@ EXTERN int	ex_nesting_level INIT(= 0);	/* nesting level */
 EXTERN int	debug_break_level INIT(= -1);	/* break below this level */
 EXTERN int	debug_did_msg INIT(= FALSE);	/* did "debug mode" message */
 EXTERN int	debug_tick INIT(= 0);		/* breakpoint change count */
+EXTERN int	debug_backtrace_level INIT(= 0); /* breakpoint backtrace level */
 # ifdef FEAT_PROFILE
 EXTERN int	do_profiling INIT(= PROF_NONE);	/* PROF_ values */
 # endif
@@ -426,7 +427,7 @@ EXTERN int	gui_prev_topfill INIT(= 0);
 EXTERN int	drag_status_line INIT(= FALSE);	/* dragging the status line */
 EXTERN int	postponed_mouseshape INIT(= FALSE); /* postponed updating the
 						       mouse pointer shape */
-#  ifdef FEAT_VERTSPLIT
+#  ifdef FEAT_WINDOWS
 EXTERN int	drag_sep_line INIT(= FALSE);	/* dragging vert separator */
 #  endif
 # endif
@@ -844,19 +845,19 @@ EXTERN vimconv_T output_conv;			/* type of output conversion */
  * The value is set in mb_init();
  */
 /* length of char in bytes, including following composing chars */
-EXTERN int (*mb_ptr2len) __ARGS((char_u *p)) INIT(= latin_ptr2len);
+EXTERN int (*mb_ptr2len)(char_u *p) INIT(= latin_ptr2len);
 /* idem, with limit on string length */
-EXTERN int (*mb_ptr2len_len) __ARGS((char_u *p, int size)) INIT(= latin_ptr2len_len);
+EXTERN int (*mb_ptr2len_len)(char_u *p, int size) INIT(= latin_ptr2len_len);
 /* byte length of char */
-EXTERN int (*mb_char2len) __ARGS((int c)) INIT(= latin_char2len);
+EXTERN int (*mb_char2len)(int c) INIT(= latin_char2len);
 /* convert char to bytes, return the length */
-EXTERN int (*mb_char2bytes) __ARGS((int c, char_u *buf)) INIT(= latin_char2bytes);
-EXTERN int (*mb_ptr2cells) __ARGS((char_u *p)) INIT(= latin_ptr2cells);
-EXTERN int (*mb_ptr2cells_len) __ARGS((char_u *p, int size)) INIT(= latin_ptr2cells_len);
-EXTERN int (*mb_char2cells) __ARGS((int c)) INIT(= latin_char2cells);
-EXTERN int (*mb_off2cells) __ARGS((unsigned off, unsigned max_off)) INIT(= latin_off2cells);
-EXTERN int (*mb_ptr2char) __ARGS((char_u *p)) INIT(= latin_ptr2char);
-EXTERN int (*mb_head_off) __ARGS((char_u *base, char_u *p)) INIT(= latin_head_off);
+EXTERN int (*mb_char2bytes)(int c, char_u *buf) INIT(= latin_char2bytes);
+EXTERN int (*mb_ptr2cells)(char_u *p) INIT(= latin_ptr2cells);
+EXTERN int (*mb_ptr2cells_len)(char_u *p, int size) INIT(= latin_ptr2cells_len);
+EXTERN int (*mb_char2cells)(int c) INIT(= latin_char2cells);
+EXTERN int (*mb_off2cells)(unsigned off, unsigned max_off) INIT(= latin_off2cells);
+EXTERN int (*mb_ptr2char)(char_u *p) INIT(= latin_ptr2char);
+EXTERN int (*mb_head_off)(char_u *base, char_u *p) INIT(= latin_head_off);
 
 # if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
 /* Pointers to functions and variables to be loaded at runtime */
@@ -947,9 +948,6 @@ EXTERN int	ctrl_x_mode INIT(= 0);	/* Which Ctrl-X mode are we in? */
 #endif
 
 EXTERN int	no_abbr INIT(= TRUE);	/* TRUE when no abbreviations loaded */
-#ifdef MSDOS
-EXTERN int	beep_count INIT(= 0);	/* nr of beeps since last char typed */
-#endif
 
 #ifdef USE_EXE_NAME
 EXTERN char_u	*exe_name;		/* the name of the executable */
@@ -994,10 +992,8 @@ EXTERN typebuf_T typebuf		/* typeahead buffer */
 		    = {NULL, NULL, 0, 0, 0, 0, 0, 0, 0}
 #endif
 		    ;
-#ifdef FEAT_EX_EXTRA
 EXTERN int	ex_normal_busy INIT(= 0); /* recursiveness of ex_normal() */
 EXTERN int	ex_normal_lock INIT(= 0); /* forbid use of ex_normal() */
-#endif
 #ifdef FEAT_EVAL
 EXTERN int	ignore_script INIT(= FALSE);  /* ignore script input */
 #endif
@@ -1010,9 +1006,6 @@ EXTERN int	vgetc_im_active;	/* Input Method was active for last
 					   character obtained from vgetc() */
 #endif
 EXTERN int	maptick INIT(= 0);	/* tick for each non-mapped char */
-
-EXTERN char_u	chartab[256];		/* table used in charset.c; See
-					   init_chartab() for explanation */
 
 EXTERN int	must_redraw INIT(= 0);	    /* type of redraw necessary */
 EXTERN int	skip_redraw INIT(= FALSE);  /* skip redraw once */
@@ -1181,6 +1174,10 @@ EXTERN int	fill_stlnc INIT(= ' ');
 EXTERN int	fill_vert INIT(= ' ');
 EXTERN int	fill_fold INIT(= '-');
 EXTERN int	fill_diff INIT(= '-');
+#endif
+
+#ifdef FEAT_FOLDING
+EXTERN int	disable_fold_update INIT(= 0);
 #endif
 
 /* Whether 'keymodel' contains "stopsel" and "startsel". */
@@ -1525,6 +1522,7 @@ EXTERN char_u e_readonly[]	INIT(= N_("E45: 'readonly' option is set (add ! to ov
 #ifdef FEAT_EVAL
 EXTERN char_u e_readonlyvar[]	INIT(= N_("E46: Cannot change read-only variable \"%s\""));
 EXTERN char_u e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
+EXTERN char_u e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char_u e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
@@ -1534,7 +1532,7 @@ EXTERN char_u e_sandbox[]	INIT(= N_("E48: Not allowed in sandbox"));
 #endif
 EXTERN char_u e_secure[]	INIT(= N_("E523: Not allowed here"));
 #if defined(AMIGA) || defined(MACOS) || defined(MSWIN)  \
-	|| defined(UNIX) || defined(VMS) || defined(OS2)
+	|| defined(UNIX) || defined(VMS)
 EXTERN char_u e_screenmode[]	INIT(= N_("E359: Screen mode setting not supported"));
 #endif
 EXTERN char_u e_scroll[]	INIT(= N_("E49: Invalid scroll size"));
@@ -1553,9 +1551,7 @@ EXTERN char_u e_umark[]		INIT(= N_("E78: Unknown mark"));
 EXTERN char_u e_wildexpand[]	INIT(= N_("E79: Cannot expand wildcards"));
 #ifdef FEAT_WINDOWS
 EXTERN char_u e_winheight[]	INIT(= N_("E591: 'winheight' cannot be smaller than 'winminheight'"));
-# ifdef FEAT_VERTSPLIT
 EXTERN char_u e_winwidth[]	INIT(= N_("E592: 'winwidth' cannot be smaller than 'winminwidth'"));
-# endif
 #endif
 EXTERN char_u e_write[]		INIT(= N_("E80: Error while writing"));
 EXTERN char_u e_zerocount[]	INIT(= N_("Zero count"));
@@ -1574,9 +1570,7 @@ EXTERN char_u e_maxmempat[]	INIT(= N_("E363: pattern uses more memory than 'maxm
 EXTERN char_u e_emptybuf[]	INIT(= N_("E749: empty buffer"));
 EXTERN char_u e_nobufnr[]	INIT(= N_("E86: Buffer %ld does not exist"));
 
-#ifdef FEAT_EX_EXTRA
 EXTERN char_u e_invalpat[]	INIT(= N_("E682: Invalid search pattern or delimiter"));
-#endif
 EXTERN char_u e_bufloaded[]	INIT(= N_("E139: File is loaded in another buffer"));
 #if defined(FEAT_SYN_HL) || \
 	(defined(FEAT_INS_EXPAND) && defined(FEAT_COMPL_FUNC))
@@ -1585,6 +1579,7 @@ EXTERN char_u e_notset[]	INIT(= N_("E764: Option '%s' is not set"));
 #ifndef FEAT_CLIPBOARD
 EXTERN char_u e_invalidreg[]    INIT(= N_("E850: Invalid register name"));
 #endif
+EXTERN char_u e_dirnotf[]	INIT(= N_("E919: Directory not found in '%s': \"%s\""));
 
 #ifdef MACOS_X_UNIX
 EXTERN short disallow_gui	INIT(= FALSE);
@@ -1618,6 +1613,19 @@ EXTERN FILE *time_fd INIT(= NULL);  /* where to write startup timing */
  */
 EXTERN int ignored;
 EXTERN char *ignoredp;
+
+#ifdef FEAT_EVAL
+/* set by alloc_fail(): ID */
+EXTERN alloc_id_T  alloc_fail_id INIT(= aid_none);
+/* set by alloc_fail(), when zero alloc() returns NULL */
+EXTERN int  alloc_fail_countdown INIT(= -1);
+/* set by alloc_fail(), number of times alloc() returns NULL */
+EXTERN int  alloc_fail_repeat INIT(= 0);
+
+EXTERN int  disable_char_avail_for_testing INIT(= 0);
+
+EXTERN int  in_free_unref_items INIT(= FALSE);
+#endif
 
 /*
  * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.

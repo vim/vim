@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.4.  Last change: 2012 Dec 17
+*if_mzsch.txt*  For Vim version 7.4.  Last change: 2016 Jan 24
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -13,6 +13,7 @@ The MzScheme Interface to Vim				*mzscheme* *MzScheme*
 5. mzeval() Vim function		|mzscheme-mzeval|
 6. Using Function references		|mzscheme-funcref|
 7. Dynamic loading			|mzscheme-dynamic|
+8. MzScheme setup			|mzscheme-setup|
 
 {Vi does not have any of these commands}
 
@@ -264,7 +265,7 @@ directly from Scheme. For instance: >
 <
 
 ==============================================================================
-7. Dynamic loading				    *mzscheme-dynamic* *E815*
+7. Dynamic loading				*mzscheme-dynamic* *E815*
 
 On MS-Windows the MzScheme libraries can be loaded dynamically. The |:version|
 output then includes |+mzscheme/dyn|.
@@ -272,6 +273,9 @@ output then includes |+mzscheme/dyn|.
 This means that Vim will search for the MzScheme DLL files only when needed.
 When you don't use the MzScheme interface you don't need them, thus you can
 use Vim without these DLL files.
+NOTE: Newer version of MzScheme (Racket) require earlier (trampolined)
+initialisation via scheme_main_setup.  So Vim always loads the MzScheme DLL at
+startup if possible.
 
 To use the MzScheme interface the MzScheme DLLs must be in your search path.
 In a console window type "path" to see what directories are used.
@@ -282,5 +286,24 @@ For MzScheme version 209 they will be "libmzsch209_000.dll" and
 command, look for -DDYNAMIC_MZSCH_DLL="something" and
 -DDYNAMIC_MZGC_DLL="something" in the "Compilation" info.
 
+For example, if MzScheme (Racket) is installed at C:\Racket63, you may need
+to set the environment variable as the following: >
+
+  PATH=%PATH%;C:\Racket63\lib
+  PLTCOLLECTS=C:\Racket63\collects
+  PLTCONFIGDIR=C:\Racket63\etc
+<
+==============================================================================
+8. MzScheme setup				    *mzscheme-setup* *E895*
+
+Vim requires "racket/base" module for if_mzsch core (fallback to "scheme/base"
+if it doesn't exist), "r5rs" module for test and "raco ctool" command for
+building Vim.  If MzScheme did not have them, you can install them with
+MzScheme's raco command:
+>
+  raco pkg install scheme-lib       # scheme/base module
+  raco pkg install r5rs-lib         # r5rs module
+  raco pkg install cext-lib         # raco ctool command
+<
 ======================================================================
   vim:tw=78:ts=8:sts=4:ft=help:norl:

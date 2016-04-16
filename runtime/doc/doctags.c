@@ -14,9 +14,7 @@
 #define LINELEN 200
 
 	int
-main(argc, argv)
-	int		argc;
-	char	**argv;
+main(int argc, char **argv)
 {
 	char	line[LINELEN];
 	char	*p1, *p2;

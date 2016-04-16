@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Charles E. Campbell  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Nov 09, 2015
-" Version:		142
+" Last Change:		Apr 11, 2016
+" Version:		147
 " URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_SH
 " For options and settings, please use:      :help ft-sh-syntax
 " This file includes many ideas from Eric Brunet (eric.brunet@ens.fr)
@@ -85,6 +85,11 @@ if g:sh_fold_enabled && &fdm == "manual"
  setl fdm=syntax
 endif
 
+" set up the syntax-highlighting iskeyword
+if has("patch-7.4.1141")
+ exe "syn iskeyword ".&iskeyword.",-"
+endif
+
 " Set up folding commands for shell {{{1
 " =================================
 if s:sh_fold_functions
@@ -119,7 +124,7 @@ syn cluster shCaseList	contains=@shCommandSubList,shCaseEsac,shColon,shCommandSu
 syn cluster shCommandSubList	contains=shAlias,shArithmetic,shComment,shCmdParenRegion,shCtrlSeq,shDeref,shDerefSimple,shDoubleQuote,shEcho,shEscape,shExDoubleQuote,shExpr,shExSingleQuote,shNumber,shOperator,shOption,shPosnParm,shSingleQuote,shSpecial,shStatement,shSubSh,shTest,shVariable
 syn cluster shCurlyList	contains=shNumber,shComma,shDeref,shDerefSimple,shDerefSpecial
 syn cluster shDblQuoteList	contains=shCommandSub,shDeref,shDerefSimple,shEscape,shPosnParm,shCtrlSeq,shSpecial
-syn cluster shDerefList	contains=shDeref,shDerefSimple,shDerefVar,shDerefSpecial,shDerefWordError,shDerefPPS
+syn cluster shDerefList	contains=shDeref,shDerefSimple,shDerefVar,shDerefSpecial,shDerefWordError,shDerefPSR,shDerefPPS
 syn cluster shDerefVarList	contains=shDerefOp,shDerefVarArray,shDerefOpError
 syn cluster shEchoList	contains=shArithmetic,shCommandSub,shDeref,shDerefSimple,shEscape,shExpr,shExSingleQuote,shExDoubleQuote,shSingleQuote,shDoubleQuote,shCtrlSeq,shEchoQuote
 syn cluster shExprList1	contains=shCharClass,shNumber,shOperator,shExSingleQuote,shExDoubleQuote,shSingleQuote,shDoubleQuote,shExpr,shDblBrace,shDeref,shDerefSimple,shCtrlSeq
@@ -180,7 +185,7 @@ endif
 
 " Options: {{{1
 " ====================
-syn match   shOption	"\s\zs[-+][-_a-zA-Z0-9#]\+"
+syn match   shOption	"\s\zs[-+][-_a-zA-Z#@]\+"
 syn match   shOption	"\s\zs--[^ \t$`'"|);]\+"
 
 " File Redirection Highlighted As Operators: {{{1
@@ -312,7 +317,8 @@ syn match   shColon	'^\s*\zs:'
 
 " String And Character Constants: {{{1
 "================================
-syn match   shNumber	"-\=\<\d\+\>#\="
+syn match   shNumber	"\<\d\+\>#\="
+syn match   shNumber	"-\=\.\=\d\+\>#\="
 syn match   shCtrlSeq	"\\\d\d\d\|\\[abcfnrtv0]"		contained
 if exists("b:is_bash")
  syn match   shSpecial	"\\\o\o\o\|\\x\x\x\|\\c[^"]\|\\[abefnrtv]"	contained
@@ -493,6 +499,11 @@ if exists("b:is_bash")
  syn match  shDerefPPS	contained	'/\{1,2}'	nextgroup=shDerefPPSleft
  syn region shDerefPPSleft	contained	start='.'	skip=@\%(\\\\\)*\\/@ matchgroup=shDerefOp	end='/' end='\ze}' nextgroup=shDerefPPSright contains=@shCommandSubList
  syn region shDerefPPSright	contained	start='.'	skip=@\%(\\\\\)\+@		end='\ze}'	contains=@shCommandSubList
+
+ " bash : ${parameter/#substring/replacement}
+ syn match  shDerefPSR	contained	'/#'	nextgroup=shDerefPSRleft
+ syn region shDerefPSRleft	contained	start='.'	skip=@\%(\\\\\)*\\/@ matchgroup=shDerefOp	end='/' end='\ze}' nextgroup=shDerefPSRright
+ syn region shDerefPSRright	contained	start='.'	skip=@\%(\\\\\)\+@		end='\ze}'
 endif
 
 " Arithmetic Parenthesized Expressions: {{{1
@@ -528,13 +539,20 @@ endif
 
 " Synchronization: {{{1
 " ================
-if !exists("sh_minlines")
-  let sh_minlines = 200
+if !exists("g:sh_minlines")
+ let s:sh_minlines = 200
+else
+ let s:sh_minlines= g:sh_minlines
 endif
-if !exists("sh_maxlines")
-  let sh_maxlines = 2 * sh_minlines
+if !exists("g:sh_maxlines")
+ let s:sh_maxlines = 2*s:sh_minlines
+ if s:sh_maxlines < 25
+  let s:sh_maxlines= 25
+ endif
+else
+ let s:sh_maxlines= g:sh_maxlines
 endif
-exec "syn sync minlines=" . sh_minlines . " maxlines=" . sh_maxlines
+exec "syn sync minlines=" . s:sh_minlines . " maxlines=" . s:sh_maxlines
 syn sync match shCaseEsacSync	grouphere	shCaseEsac	"\<case\>"
 syn sync match shCaseEsacSync	groupthere	shCaseEsac	"\<esac\>"
 syn sync match shDoSync	grouphere	shDo	"\<do\>"
@@ -563,6 +581,7 @@ hi def link shColon	shComment
 hi def link shDerefOp	shOperator
 hi def link shDerefPOL	shDerefOp
 hi def link shDerefPPS	shDerefOp
+hi def link shDerefPSR	shDerefOp
 hi def link shDeref	shShellVariables
 hi def link shDerefDelim	shOperator
 hi def link shDerefSimple	shDeref

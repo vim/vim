@@ -1,3 +1,4 @@
 /* pty.c */
-int OpenPTY __ARGS((char **ttyn));
-int SetupSlavePTY __ARGS((int fd));
+int SetupSlavePTY(int fd);
+int OpenPTY(char **ttyn);
+/* vim: set ft=c : */

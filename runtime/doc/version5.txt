@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 7.4.  Last change: 2012 Aug 08
+*version5.txt*  For Vim version 7.4.  Last change: 2016 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -848,7 +848,7 @@ putting a backslash before it.  |+cmd|
 
 After recovery, BufReadPost autocommands are applied.  |:recover|
 
-Added color support for "os2ansi", OS/2 console. (Slootman) |os2ansi|
+Added color support for "os2ansi", OS/2 console. (Slootman)
 
 Allow "%:p:h" when % is empty.  |:_%|
 
@@ -934,7 +934,7 @@ Don't add "-L/usr/lib" to the link line, causes problems on a few systems.
 When compiling, allow a choice for minimal, normal or maximal features in an
 easy way, by changing a single line in src/feature.h.
 The DOS16 version has been compiled with minimal features to avoid running
-out of memory too quickly. |dos16|
+out of memory too quickly.
 The Win32, DJGPP, and OS/2 versions use maximal features, because they have
 enough memory.
 The Amiga version is available with normal and maximal features.

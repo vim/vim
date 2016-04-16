@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.4.  Last change: 2012 Aug 02
+*if_tcl.txt*    For Vim version 7.4.  Last change: 2016 Jan 01
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -515,19 +515,30 @@ startup file (usually "~/.vimrc" on Unix):
 ==============================================================================
 9. Dynamic loading					*tcl-dynamic*
 
-On MS-Windows the Tcl library can be loaded dynamically.  The |:version|
-output then includes |+tcl/dyn|.
+On MS-Windows and Unix the Tcl library can be loaded dynamically.  The
+|:version| output then includes |+tcl/dyn|.
 
-This means that Vim will search for the Tcl DLL file only when needed.  When
-you don't use the Tcl interface you don't need it, thus you can use Vim
-without this DLL file.
+This means that Vim will search for the Tcl DLL or shared library file only
+when needed.  When you don't use the Tcl interface you don't need it, thus you
+can use Vim without this file.
+
+
+MS-Windows ~
 
 To use the Tcl interface the Tcl DLL must be in your search path.  In a
-console window type "path" to see what directories are used.
+console window type "path" to see what directories are used.  The 'tcldll'
+option can be also used to specify the Tcl DLL.
 
 The name of the DLL must match the Tcl version Vim was compiled with.
-Currently the name is "tcl83.dll".  That is for Tcl 8.3.  To know for sure
+Currently the name is "tcl86.dll".  That is for Tcl 8.6.  To know for sure
 edit "gvim.exe" and search for "tcl\d*.dll\c".
+
+
+Unix ~
+
+The 'tcldll' option can be used to specify the Tcl shared library file instead
+of DYNAMIC_TCL_DLL file what was specified at compile time.  The version of
+the shared library must match the Tcl version Vim was compiled with.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

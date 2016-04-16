@@ -1,10 +1,10 @@
 /* if_ruby.c */
-int ruby_enabled __ARGS((int verbose));
-void ruby_end __ARGS((void));
-void ex_ruby __ARGS((exarg_T *eap));
-void ex_rubydo __ARGS((exarg_T *eap));
-void ex_rubyfile __ARGS((exarg_T *eap));
-void ruby_buffer_free __ARGS((buf_T *buf));
-void ruby_window_free __ARGS((win_T *win));
-void vim_ruby_init __ARGS((void *stack_start));
+int ruby_enabled(int verbose);
+void ruby_end(void);
+void ex_ruby(exarg_T *eap);
+void ex_rubydo(exarg_T *eap);
+void ex_rubyfile(exarg_T *eap);
+void ruby_buffer_free(buf_T *buf);
+void ruby_window_free(win_T *win);
+void vim_ruby_init(void *stack_start);
 /* vim: set ft=c : */

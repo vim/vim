@@ -3,6 +3,8 @@
 src/vim
 src/xxd/xxd
 src/auto/if_perl.c
+src/auto/gui_gtk_gresources.c
+src/auto/gui_gtk_gresources.h
 src/tags
 
 # We do need src/auto/configure.
@@ -35,6 +37,7 @@ src/pathdef.c
 src/Obj*/pathdef.c
 gvimext.dll
 gvimext.lib
+runtime/doc/uganda.nsis.txt
 
 # Borland C++
 bcc.cfg
@@ -72,4 +75,7 @@ src/testdir/test*.out
 src/testdir/test*.failed
 src/testdir/test.log
 src/testdir/dostmp/*
+src/testdir/messages
+src/testdir/viminfo
 src/memfile_test
+src/json_test

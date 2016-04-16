@@ -1,4 +1,4 @@
-*os_beos.txt*	For Vim version 7.4.  Last change: 2010 Aug 14
+*os_beos.txt*	For Vim version 7.4.  Last change: 2016 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -248,8 +248,9 @@ reality.  Vim uses this mapping:
     Button 3 -> MiddleMouse.
 
 If your mouse has fewer than 3 buttons you can provide your own mapping from
-mouse clicks with modifier(s) to other mouse buttons.  See the file
-vim-5.x/macros/swapmous.vim for an example.		|gui-mouse-mapping|
+mouse clicks with modifier(s) to other mouse buttons.  See the swapmouse
+package for an example:					 |gui-mouse-mapping|
+$VIMRUNTIME/pack/dist/opt/swapmouse/plugin/swapmouse.vim
 
 
 12. Color names						*beos-colors*

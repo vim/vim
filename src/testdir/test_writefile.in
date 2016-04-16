@@ -13,6 +13,7 @@ STARTTEST
 :$put =readfile(f)
 :1 delete _
 :w! test.out
+:call delete(f)
 :qa!
 ENDTEST
 

@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.4.  Last change: 2015 Sep 08
+*index.txt*     For Vim version 7.4.  Last change: 2016 Mar 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1055,7 +1055,7 @@ tag		command	      action in Command-line editing mode	~
 |c_<Insert>|	<Insert>	toggle insert/overstrike mode
 |c_<LeftMouse>|	<LeftMouse>	cursor at mouse click
 
-You found it, Arthur!				*holy-grail*
+You found it, Arthur!				*holy-grail* *:smile*
 
 ==============================================================================
 5. EX commands					*ex-cmd-index* *:index*
@@ -1176,7 +1176,7 @@ tag	      command	      action ~
 |:cpfile|	:cpf[ile]	go to last error in previous file
 |:cquit|	:cq[uit]	quit Vim with an error code
 |:crewind|	:cr[ewind]	go to the specified error, default first one
-|:cscope|	:cs[cope]       execute cscope command
+|:cscope|	:cs[cope]	execute cscope command
 |:cstag|	:cst[ag]	use cscope to jump to a tag
 |:cunmap|	:cu[nmap]	like ":unmap" but for Command-line mode
 |:cunabbrev|	:cuna[bbrev]	like ":unabbrev" but for Command-line mode
@@ -1297,7 +1297,7 @@ tag	      command	      action ~
 |:lcd|		:lc[d]		change directory locally
 |:lchdir|	:lch[dir]	change directory locally
 |:lclose|	:lcl[ose]	close location window
-|:lcscope|	:lcs[cope]      like ":cscope" but uses location list
+|:lcscope|	:lcs[cope]	like ":cscope" but uses location list
 |:ldo|		:ld[o]		execute command in valid location list entries
 |:lfdo|		:lfd[o]		execute command in each file in location list
 |:left|		:le[ft]		left align lines
@@ -1351,7 +1351,7 @@ tag	      command	      action ~
 |:marks|	:marks		list all marks
 |:match|	:mat[ch]	define a match to highlight
 |:menu|		:me[nu]		enter a new menu item
-|:menutranslate| :menut[ranslate] add a menu translation item
+|:menutranslate|  :menut[ranslate] add a menu translation item
 |:messages|	:mes[sages]	view previously displayed messages
 |:mkexrc|	:mk[exrc]	write current mappings and settings to a file
 |:mksession|	:mks[ession]	write session info to a file
@@ -1394,6 +1394,8 @@ tag	      command	      action ~
 |:ounmap|	:ou[nmap]	like ":unmap" but for Operator-pending mode
 |:ounmenu|	:ounme[nu]	remove menu for Operator-pending mode
 |:ownsyntax|	:ow[nsyntax]	set new local syntax highlight for this window
+|:packadd|	:pa[ckadd]	add a plugin from 'packpath'
+|:packloadall|	:packl[oadall]	load all packages under 'packpath'
 |:pclose|	:pc[lose]	close preview window
 |:pedit|	:ped[it]	edit file in the preview window
 |:perl|		:pe[rl]		execute Perl command
@@ -1495,9 +1497,9 @@ tag	      command	      action ~
 |:smap|		:smap		like ":map" but for Select mode
 |:smapclear|	:smapc[lear]	remove all mappings for Select mode
 |:smenu|	:sme[nu]	add menu for Select mode
+|:smile|	:smi[le]	make the user happy
 |:snext|	:sn[ext]	split window and go to next file in the
 				argument list
-|:sniff|	:sni[ff]	send request to sniff
 |:snomagic|	:sno[magic]	:substitute with 'nomagic'
 |:snoremap|	:snor[emap]	like ":noremap" but for Select mode
 |:snoremenu|	:snoreme[nu]	like ":noremenu" but for Select mode
@@ -1517,7 +1519,7 @@ tag	      command	      action ~
 |:stop|		:st[op]		suspend the editor or escape to a shell
 |:stag|		:sta[g]		split window and jump to a tag
 |:startinsert|	:star[tinsert]	start Insert mode
-|:startgreplace| :startg[replace] start Virtual Replace mode
+|:startgreplace|  :startg[replace] start Virtual Replace mode
 |:startreplace|	:startr[eplace]	start Replace mode
 |:stopinsert|	:stopi[nsert]	stop Insert mode
 |:stjump|	:stj[ump]	do ":tjump" and split window
@@ -1538,14 +1540,14 @@ tag	      command	      action ~
 |:tabdo|	:tabdo		execute command in each tab page
 |:tabedit|	:tabe[dit]	edit a file in a new tab page
 |:tabfind|	:tabf[ind]	find file in 'path', edit it in a new tab page
-|:tabfirst|	:tabfir[st]	got to first tab page
-|:tablast|	:tabl[ast]	got to last tab page
+|:tabfirst|	:tabfir[st]	go to first tab page
+|:tablast|	:tabl[ast]	go to last tab page
 |:tabmove|	:tabm[ove]	move tab page to other position
 |:tabnew|	:tabnew		edit a file in a new tab page
 |:tabnext|	:tabn[ext]	go to next tab page
 |:tabonly|	:tabo[nly]	close all tab pages except the current one
 |:tabprevious|	:tabp[revious]	go to previous tab page
-|:tabrewind|	:tabr[ewind]	got to first tab page
+|:tabrewind|	:tabr[ewind]	go to first tab page
 |:tabs|		:tabs		list the tab pages and what they contain
 |:tab|		:tab		create new tab when opening new window
 |:tag|		:ta[g]		jump to tag

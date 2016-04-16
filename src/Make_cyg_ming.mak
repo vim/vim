@@ -39,10 +39,10 @@ GUI=yes
 DIRECTX=no
 # FEATURES=[TINY | SMALL | NORMAL | BIG | HUGE]
 # Set to TINY to make minimal version (few features).
-FEATURES=BIG
+FEATURES=HUGE
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
-ARCH=i386
+ARCH=i686
 # Set to yes to cross-compile from unix; no=native Windows (and Cygwin).
 CROSS=no
 # Set to path to iconv.h and libiconv.a to enable using 'iconv.dll'.
@@ -58,14 +58,16 @@ DYNAMIC_IME=yes
 POSTSCRIPT=no
 # Set to yes to enable OLE support.
 OLE=no
-# Set the default $(WINVER) to make it work with pre-Win2k.
+# Set the default $(WINVER) to make it work with WinXP.
 ifndef WINVER
-WINVER = 0x0500
+WINVER = 0x0501
 endif
 # Set to yes to enable Cscope support.
 CSCOPE=yes
-# Set to yes to enable Netbeans support.
+# Set to yes to enable Netbeans support (requires CHANNEL).
 NETBEANS=$(GUI)
+# Set to yes to enable inter process communication.
+CHANNEL=$(GUI)
 
 
 # Link against the shared version of libstdc++ by default.  Set
@@ -171,26 +173,37 @@ ifndef MZSCHEME_VER
 MZSCHEME_VER=205_000
 endif
 
-ifndef MZSCHEME_PRECISE_GC
-MZSCHEME_PRECISE_GC=no
-endif
-
 # for version 4.x we need to generate byte-code for Scheme base
 ifndef MZSCHEME_GENERATE_BASE
 MZSCHEME_GENERATE_BASE=no
 endif
 
-ifndef MZSCHEME_USE_RACKET
+ifneq ($(wildcard $(MZSCHEME)/lib/msvc/libmzsch$(MZSCHEME_VER).lib),)
 MZSCHEME_MAIN_LIB=mzsch
 else
 MZSCHEME_MAIN_LIB=racket
+endif
+
+ifndef MZSCHEME_PRECISE_GC
+MZSCHEME_PRECISE_GC=no
+ifneq ($(wildcard $(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll),)
+ifeq ($(wildcard $(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll),)
+MZSCHEME_PRECISE_GC=yes
+endif
+else
+ifneq ($(wildcard $(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib),)
+ifeq ($(wildcard $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib),)
+MZSCHEME_PRECISE_GC=yes
+endif
+endif
+endif
 endif
 
 ifeq (no,$(DYNAMIC_MZSCHEME))
 ifeq (yes,$(MZSCHEME_PRECISE_GC))
 MZSCHEME_LIB=-l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER)
 else
-MZSCHEME_LIB = -l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
+MZSCHEME_LIB=-l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
 endif
 # the modern MinGW can dynamically link to dlls directly.
 # point MZSCHEME_DLLS to where you put libmzschXXXXXXX.dll and libgcXXXXXXX.dll
@@ -212,7 +225,13 @@ DYNAMIC_PYTHON=yes
 endif
 
 ifndef PYTHON_VER
-PYTHON_VER=22
+PYTHON_VER=27
+endif
+ifndef DYNAMIC_PYTHON_DLL
+DYNAMIC_PYTHON_DLL=python$(PYTHON_VER).dll
+endif
+ifdef PYTHON_HOME
+PYTHON_HOME_DEF=-DPYTHON_HOME=\"$(PYTHON_HOME)\"
 endif
 
 ifeq (no,$(DYNAMIC_PYTHON))
@@ -220,10 +239,12 @@ PYTHONLIB=-L$(PYTHON)/libs -lpython$(PYTHON_VER)
 endif
 # my include files are in 'win32inc' on Linux, and 'include' in the standard
 # NT distro (ActiveState)
+ifndef PYTHONINC
 ifeq ($(CROSS),no)
 PYTHONINC=-I $(PYTHON)/include
 else
 PYTHONINC=-I $(PYTHON)/win32inc
+endif
 endif
 endif
 
@@ -239,15 +260,23 @@ endif
 ifndef PYTHON3_VER
 PYTHON3_VER=31
 endif
-
-ifeq (no,$(DYNAMIC_PYTHON3))
-PYTHON3LIB=-L$(PYTHON3)/libs -lPYTHON$(PYTHON3_VER)
+ifndef DYNAMIC_PYTHON3_DLL
+DYNAMIC_PYTHON3_DLL=python$(PYTHON3_VER).dll
+endif
+ifdef PYTHON3_HOME
+PYTHON3_HOME_DEF=-DPYTHON3_HOME=L\"$(PYTHON3_HOME)\"
 endif
 
+ifeq (no,$(DYNAMIC_PYTHON3))
+PYTHON3LIB=-L$(PYTHON3)/libs -lpython$(PYTHON3_VER)
+endif
+
+ifndef PYTHON3INC
 ifeq ($(CROSS),no)
 PYTHON3INC=-I $(PYTHON3)/include
 else
 PYTHON3INC=-I $(PYTHON3)/win32inc
+endif
 endif
 endif
 
@@ -255,12 +284,17 @@ endif
 #	  TCL=[Path to TCL directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_TCL=yes (to load the TCL DLL dynamically)
 #	  TCL_VER=[TCL version, eg 83, 84] (default is 83)
+#	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.3)
+#	    You must set TCL_VER_LONG when you set TCL_VER.
 ifdef TCL
 ifndef DYNAMIC_TCL
 DYNAMIC_TCL=yes
 endif
 ifndef TCL_VER
 TCL_VER = 83
+endif
+ifndef TCL_VER_LONG
+TCL_VER_LONG = 8.3
 endif
 TCLINC += -I$(TCL)/include
 endif
@@ -311,10 +345,14 @@ ifndef RUBY_INSTALL_NAME
 ifeq ($(RUBY_VER), 16)
 RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 else
+ifndef RUBY_MSVCRT_NAME
+# Base name of msvcrXX.dll which is used by ruby's dll.
+RUBY_MSVCRT_NAME = msvcrt
+endif
 ifeq ($(ARCH),x86-64)
-RUBY_INSTALL_NAME = x64-msvcrt-ruby$(RUBY_API_VER)
+RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
 else
-RUBY_INSTALL_NAME = msvcrt-ruby$(RUBY_API_VER)
+RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
 endif
 endif
 endif
@@ -376,7 +414,8 @@ WINDRES_CC = $(CC)
 #>>>>> end of choices
 ###########################################################################
 
-CFLAGS = -Iproto $(DEFINES) -pipe -w -march=$(ARCH) -Wall
+CFLAGS = -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
+CXXFLAGS = -std=gnu++11
 WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
 EXTRA_LIBS =
 
@@ -412,9 +451,20 @@ endif
 endif
 
 ifdef MZSCHEME
-CFLAGS += -I$(MZSCHEME)/include -DFEAT_MZSCHEME -DMZSCHEME_COLLECTS=\"$(MZSCHEME)/collects\"
+ifndef MZSCHEME_COLLECTS
+MZSCHEME_COLLECTS=$(MZSCHEME)/collects
+ifeq (yes, $(UNDER_CYGWIN))
+MZSCHEME_COLLECTS:=$(shell cygpath -m $(MZSCHEME_COLLECTS) | sed -e 's/ /\\ /g')
+endif
+endif
+CFLAGS += -I$(MZSCHEME)/include -DFEAT_MZSCHEME -DMZSCHEME_COLLECTS=\"$(MZSCHEME_COLLECTS)\"
 ifeq (yes, $(DYNAMIC_MZSCHEME))
+ifeq (yes, $(MZSCHEME_PRECISE_GC))
+# Precise GC does not use separate dll
+CFLAGS += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\"
+else
 CFLAGS += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
+endif
 endif
 ifeq (yes, "$(MZSCHEME_DEBUG)")
 CFLAGS += -DMZSCHEME_FORCE_GC
@@ -434,23 +484,23 @@ endif
 endif
 
 ifdef PYTHON
-CFLAGS += -DFEAT_PYTHON 
+CFLAGS += -DFEAT_PYTHON
 ifeq (yes, $(DYNAMIC_PYTHON))
-CFLAGS += -DDYNAMIC_PYTHON
+CFLAGS += -DDYNAMIC_PYTHON -DDYNAMIC_PYTHON_DLL=\"$(DYNAMIC_PYTHON_DLL)\"
 endif
 endif
 
-ifdef PYTHON3 
-CFLAGS += -DFEAT_PYTHON3 
+ifdef PYTHON3
+CFLAGS += -DFEAT_PYTHON3
 ifeq (yes, $(DYNAMIC_PYTHON3))
-CFLAGS += -DDYNAMIC_PYTHON3 
+CFLAGS += -DDYNAMIC_PYTHON3 -DDYNAMIC_PYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
 endif
 endif
 
 ifdef TCL
 CFLAGS += -DFEAT_TCL $(TCLINC)
 ifeq (yes, $(DYNAMIC_TCL))
-CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"tcl$(TCL_VER).dll\"
+CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"tcl$(TCL_VER).dll\" -DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
 endif
 endif
 
@@ -477,6 +527,10 @@ NBDEBUG_INCL = nbdebug.h
 NBDEBUG_SRC = nbdebug.c
 endif
 endif
+endif
+
+ifeq ($(CHANNEL),yes)
+DEFINES += -DFEAT_JOB_CHANNEL
 endif
 
 # DirectWrite (DirectX)
@@ -554,6 +608,7 @@ OBJ = \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
+	$(OUTDIR)/json.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \
@@ -619,13 +674,26 @@ endif
 ifeq ($(CSCOPE),yes)
 OBJ += $(OUTDIR)/if_cscope.o
 endif
+
 ifeq ($(NETBEANS),yes)
-# Only allow NETBEANS for a GUI build.
-ifeq (yes, $(GUI))
+ifneq ($(CHANNEL),yes)
+# Cannot use Netbeans without CHANNEL
+NETBEANS=no
+else
+ifneq (yes, $(GUI))
+# Cannot use Netbeans without GUI.
+NETBEANS=no
+else
 OBJ += $(OUTDIR)/netbeans.o
+endif
+endif
+endif
+
+ifeq ($(CHANNEL),yes)
+OBJ += $(OUTDIR)/channel.o
 LIB += -lwsock32
 endif
-endif
+
 ifeq ($(DIRECTX),yes)
 # Only allow DIRECTX for a GUI build.
 ifeq (yes, $(GUI))
@@ -772,10 +840,10 @@ INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
 	gui.h
 
 $(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
-	$(CC) -c $(CFLAGS) $(PYTHONINC) -DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\" $< -o $@
+	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
 
 $(OUTDIR)/if_python3.o : if_python3.c if_py_both.h $(INCL)
-	$(CC) -c $(CFLAGS) $(PYTHON3INC) -DDYNAMIC_PYTHON3_DLL=\"PYTHON$(PYTHON3_VER).dll\" $< -o $@
+	$(CC) -c $(CFLAGS) $(PYTHON3INC) $(PYTHON3_HOME_DEF) $< -o $@
 
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
@@ -793,18 +861,18 @@ $(OUTDIR)/ex_docmd.o:	ex_docmd.c $(INCL) ex_cmds.h
 $(OUTDIR)/ex_eval.o:	ex_eval.c $(INCL) ex_cmds.h
 	$(CC) -c $(CFLAGS) ex_eval.c -o $(OUTDIR)/ex_eval.o
 
-$(OUTDIR)/gui_w32.o:	gui_w32.c gui_w48.c $(INCL)
+$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL)
 	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
 
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
-	$(CC) -c $(CFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
+	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
 
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
 	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
 
 # Remove -D__IID_DEFINED__ for newer versions of the w32api
 $(OUTDIR)/if_ole.o: if_ole.cpp $(INCL)
-	$(CC) $(CFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
+	$(CC) $(CFLAGS) $(CXXFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
 
 $(OUTDIR)/if_ruby.o: if_ruby.c $(INCL)
 ifeq (16, $(RUBY))
@@ -817,6 +885,9 @@ if_perl.c: if_perl.xs typemap
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
+
+$(OUTDIR)/channel.o:	channel.c $(INCL)
+	$(CC) -c $(CFLAGS) channel.c -o $(OUTDIR)/channel.o
 
 $(OUTDIR)/regexp.o:		regexp.c regexp_nfa.c $(INCL)
 	$(CC) -c $(CFLAGS) regexp.c -o $(OUTDIR)/regexp.o

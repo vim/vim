@@ -160,6 +160,20 @@ static struct ref refsdeleted;	/* dummy object for deleted ref list */
 typedef int HANDLE;
 # endif
 
+# ifndef WIN3264
+#  include <dlfcn.h>
+#  define HANDLE void*
+#  define TCL_PROC void*
+#  define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
+#  define symbol_from_dll dlsym
+#  define close_dll dlclose
+# else
+#  define TCL_PROC FARPROC
+#  define load_dll vimLoadLib
+#  define symbol_from_dll GetProcAddress
+#  define close_dll FreeLibrary
+# endif
+
 /*
  * Declare HANDLE for tcl.dll and function pointers.
  */
@@ -170,7 +184,6 @@ void (*dll_Tcl_FindExecutable)(const void *);
 /*
  * Table of name to function pointer of tcl.
  */
-#define TCL_PROC FARPROC
 static struct {
     char* name;
     TCL_PROC* ptr;
@@ -197,7 +210,7 @@ tcl_runtime_link_init(char *libname, int verbose)
 
     if (hTclLib)
 	return OK;
-    if (!(hTclLib = vimLoadLib(libname)))
+    if (!(hTclLib = load_dll(libname)))
     {
 	if (verbose)
 	    EMSG2(_(e_loadlib), libname);
@@ -205,10 +218,10 @@ tcl_runtime_link_init(char *libname, int verbose)
     }
     for (i = 0; tcl_funcname_table[i].ptr; ++i)
     {
-	if (!(*tcl_funcname_table[i].ptr = GetProcAddress(hTclLib,
+	if (!(*tcl_funcname_table[i].ptr = symbol_from_dll(hTclLib,
 			tcl_funcname_table[i].name)))
 	{
-	    FreeLibrary(hTclLib);
+	    close_dll(hTclLib);
 	    hTclLib = NULL;
 	    if (verbose)
 		EMSG2(_(e_loadfunc), tcl_funcname_table[i].name);
@@ -224,8 +237,7 @@ static char *find_executable_arg = NULL;
 #endif
 
     void
-vim_tcl_init(arg)
-    char	*arg;
+vim_tcl_init(char *arg)
 {
 #ifndef DYNAMIC_TCL
     Tcl_FindExecutable(arg);
@@ -242,17 +254,16 @@ static int stubs_initialized = FALSE;
  * Return TRUE if the TCL interface can be used.
  */
     int
-tcl_enabled(verbose)
-    int		verbose;
+tcl_enabled(int verbose)
 {
     if (!stubs_initialized && find_executable_arg != NULL
-	    && tcl_runtime_link_init(DYNAMIC_TCL_DLL, verbose) == OK)
+	    && tcl_runtime_link_init((char *)p_tcldll, verbose) == OK)
     {
 	Tcl_Interp *interp;
 
 	dll_Tcl_FindExecutable(find_executable_arg);
 
-	if (interp = dll_Tcl_CreateInterp())
+	if ((interp = dll_Tcl_CreateInterp()) != NULL)
 	{
 	    if (Tcl_InitStubs(interp, DYNAMIC_TCL_VER, 0))
 	    {
@@ -267,12 +278,12 @@ tcl_enabled(verbose)
 #endif
 
     void
-tcl_end()
+tcl_end(void)
 {
 #ifdef DYNAMIC_TCL
     if (hTclLib)
     {
-	FreeLibrary(hTclLib);
+	close_dll(hTclLib);
 	hTclLib = NULL;
     }
 #endif
@@ -297,11 +308,11 @@ tcl_end()
  * useless for this routine to return the exit code via Tcl_SetResult().
  */
     static int
-exitcmd(dummy, interp, objc, objv)
-    ClientData dummy UNUSED;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *CONST objv[];
+exitcmd(
+    ClientData dummy UNUSED,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *CONST objv[])
 {
     int value = 0;
 
@@ -326,11 +337,11 @@ exitcmd(dummy, interp, objc, objv)
  *  "::vim::beep" - what Vi[m] does best :-)
  */
     static int
-beepcmd(dummy, interp, objc, objv)
-    ClientData dummy UNUSED;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *CONST objv[];
+beepcmd(
+    ClientData dummy UNUSED,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *CONST objv[])
 {
     if (objc != 1)
     {
@@ -348,11 +359,11 @@ beepcmd(dummy, interp, objc, objv)
  *  "::vim::buffer new" - create a new buffer (not implemented)
  */
     static int
-buffercmd(dummy, interp, objc, objv)
-    ClientData dummy UNUSED;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *CONST objv[];
+buffercmd(
+    ClientData dummy UNUSED,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *CONST objv[])
 {
     char	*name;
     buf_T	*buf;
@@ -444,11 +455,11 @@ buffercmd(dummy, interp, objc, objv)
  * "::vim::window list" - create list of window commands.
  */
     static int
-windowcmd(dummy, interp, objc, objv)
-    ClientData	dummy UNUSED;
-    Tcl_Interp	*interp;
-    int		objc;
-    Tcl_Obj	*CONST objv[];
+windowcmd(
+    ClientData	dummy UNUSED,
+    Tcl_Interp	*interp,
+    int		objc,
+    Tcl_Obj	*CONST objv[])
 {
     char	*what, *string;
     win_T	*win;
@@ -485,11 +496,11 @@ windowcmd(dummy, interp, objc, objv)
  * This function implements the buffer commands.
  */
     static int
-bufselfcmd(ref, interp, objc, objv)
-    ClientData	ref;
-    Tcl_Interp	*interp;
-    int		objc;
-    Tcl_Obj	*CONST objv[];
+bufselfcmd(
+    ClientData	ref,
+    Tcl_Interp	*interp,
+    int		objc,
+    Tcl_Obj	*CONST objv[])
 {
     int		opt, err, idx, flags;
     int		val1, val2, n, i;
@@ -924,11 +935,11 @@ bufselfcmd(ref, interp, objc, objv)
  * This function implements the window commands.
  */
     static int
-winselfcmd(ref, interp, objc, objv)
-    ClientData	ref;
-    Tcl_Interp	*interp;
-    int		objc;
-    Tcl_Obj	*CONST objv[];
+winselfcmd(
+    ClientData	ref,
+    Tcl_Interp	*interp,
+    int		objc,
+    Tcl_Obj	*CONST objv[])
 {
     int		err, idx, flags;
     int		val1, val2;
@@ -1098,11 +1109,11 @@ winselfcmd(ref, interp, objc, objv)
 
 
     static int
-commandcmd(dummy, interp, objc, objv)
-    ClientData	dummy UNUSED;
-    Tcl_Interp	*interp;
-    int		objc;
-    Tcl_Obj	*CONST objv[];
+commandcmd(
+    ClientData	dummy UNUSED,
+    Tcl_Interp	*interp,
+    int		objc,
+    Tcl_Obj	*CONST objv[])
 {
     int		err;
 
@@ -1112,11 +1123,11 @@ commandcmd(dummy, interp, objc, objv)
 }
 
     static int
-optioncmd(dummy, interp, objc, objv)
-    ClientData	dummy UNUSED;
-    Tcl_Interp	*interp;
-    int		objc;
-    Tcl_Obj	*CONST objv[];
+optioncmd(
+    ClientData	dummy UNUSED,
+    Tcl_Interp	*interp,
+    int		objc,
+    Tcl_Obj	*CONST objv[])
 {
     int		err;
 
@@ -1126,11 +1137,11 @@ optioncmd(dummy, interp, objc, objv)
 }
 
     static int
-exprcmd(dummy, interp, objc, objv)
-    ClientData	dummy UNUSED;
-    Tcl_Interp	*interp;
-    int		objc;
-    Tcl_Obj	*CONST objv[];
+exprcmd(
+    ClientData	dummy UNUSED,
+    Tcl_Interp	*interp,
+    int		objc,
+    Tcl_Obj	*CONST objv[])
 {
     return tclvimexpr(interp, objc, objv, 1);
 }
@@ -1143,11 +1154,11 @@ exprcmd(dummy, interp, objc, objv)
  * Get a line number from 'obj' and convert it to vim's range.
  */
     static int
-tclgetlinenum(interp, obj, valueP, buf)
-    Tcl_Interp	*interp;
-    Tcl_Obj	*obj;
-    int		*valueP;
-    buf_T	*buf;
+tclgetlinenum(
+    Tcl_Interp	*interp,
+    Tcl_Obj	*obj,
+    int		*valueP,
+    buf_T	*buf)
 {
     int err, i;
 
@@ -1196,8 +1207,7 @@ tclgetlinenum(interp, obj, valueP, buf)
  * Find the first window in the window list that displays the buffer.
  */
     static win_T *
-tclfindwin(buf)
-    buf_T *buf;
+tclfindwin(buf_T *buf)
 {
     win_T *win;
 
@@ -1213,11 +1223,11 @@ tclfindwin(buf)
  * Do-it-all function for "::vim::command", "$buf command" and "$win command".
  */
     static int
-tcldoexcommand(interp, objc, objv, objn)
-    Tcl_Interp	*interp;
-    int		objc;
-    Tcl_Obj	*CONST objv[];
-    int		objn;
+tcldoexcommand(
+    Tcl_Interp	*interp,
+    int		objc,
+    Tcl_Obj	*CONST objv[],
+    int		objn)
 {
     tcl_info	saveinfo;
     int		err, flag, nobjs;
@@ -1271,11 +1281,11 @@ tcldoexcommand(interp, objc, objv, objn)
  * Do-it-all function for "::vim::option", "$buf option" and "$win option".
  */
     static int
-tclsetoption(interp, objc, objv, objn)
-    Tcl_Interp	*interp;
-    int		objc;
-    Tcl_Obj	*CONST objv[];
-    int		objn;
+tclsetoption(
+    Tcl_Interp	*interp,
+    int		objc,
+    Tcl_Obj	*CONST objv[],
+    int		objn)
 {
     int		err, nobjs, idx;
     char_u	*option;
@@ -1352,11 +1362,11 @@ tclsetoption(interp, objc, objv, objn)
  * Do-it-all function for "::vim::expr", "$buf expr" and "$win expr".
  */
     static int
-tclvimexpr(interp, objc, objv, objn)
-    Tcl_Interp	*interp;
-    int		objc;
-    Tcl_Obj	*CONST objv[];
-    int		objn;
+tclvimexpr(
+    Tcl_Interp	*interp,
+    int		objc,
+    Tcl_Obj	*CONST objv[],
+    int		objn)
 {
 #ifdef FEAT_EVAL
     char	*expr, *str;
@@ -1389,8 +1399,7 @@ tclvimexpr(interp, objc, objv, objn)
  * Check for internal vim errors.
  */
     static int
-vimerror(interp)
-    Tcl_Interp *interp;
+vimerror(Tcl_Interp *interp)
 {
     if (got_int)
     {
@@ -1414,8 +1423,7 @@ vimerror(interp)
  *   tclsetdelcmd() - add Tcl callback command to a vim object
  */
     static void
-delref(cref)
-    ClientData cref;
+delref(ClientData cref)
 {
     struct ref *ref = (struct ref *)cref;
 
@@ -1428,13 +1436,13 @@ delref(cref)
 }
 
     static char *
-tclgetref(interp, refstartP, prefix, vimobj, proc)
-    Tcl_Interp	*interp;
-    void	**refstartP;	/* ptr to w_tcl_ref/b_tcl-ref member of
+tclgetref(
+    Tcl_Interp	*interp,
+    void	**refstartP,	/* ptr to w_tcl_ref/b_tcl-ref member of
 				   win_T/buf_T struct */
-    char	*prefix;	/* "win" or "buf" */
-    void	*vimobj;	/* win_T* or buf_T* */
-    Tcl_ObjCmdProc *proc;	/* winselfcmd or bufselfcmd */
+    char	*prefix,	/* "win" or "buf" */
+    void	*vimobj,	/* win_T* or buf_T* */
+    Tcl_ObjCmdProc *proc)	/* winselfcmd or bufselfcmd */
 {
     struct ref *ref, *unused = NULL;
     static char name[VARNAME_SIZE];
@@ -1488,27 +1496,23 @@ tclgetref(interp, refstartP, prefix, vimobj, proc)
 }
 
     static char *
-tclgetwindow(interp, win)
-    Tcl_Interp	*interp;
-    win_T	*win;
+tclgetwindow(Tcl_Interp *interp, win_T *win)
 {
     return tclgetref(interp, &(win->w_tcl_ref), "win", (void *)win, winselfcmd);
 }
 
     static char *
-tclgetbuffer(interp, buf)
-    Tcl_Interp	*interp;
-    buf_T	*buf;
+tclgetbuffer(Tcl_Interp *interp, buf_T *buf)
 {
     return tclgetref(interp, &(buf->b_tcl_ref), "buf", (void *)buf, bufselfcmd);
 }
 
     static int
-tclsetdelcmd(interp, reflist, vimobj, delcmd)
-    Tcl_Interp	*interp;
-    struct ref	*reflist;
-    void	*vimobj;
-    Tcl_Obj	*delcmd;
+tclsetdelcmd(
+    Tcl_Interp	*interp,
+    struct ref	*reflist,
+    void	*vimobj,
+    Tcl_Obj	*delcmd)
 {
     if (reflist == &refsdeleted)
     {
@@ -1542,9 +1546,7 @@ tclsetdelcmd(interp, reflist, vimobj, delcmd)
 ********************************************/
 
     static int
-channel_close(instance, interp)
-    ClientData	instance;
-    Tcl_Interp	*interp UNUSED;
+tcl_channel_close(ClientData instance, Tcl_Interp *interp UNUSED)
 {
     int		err = 0;
 
@@ -1559,11 +1561,11 @@ channel_close(instance, interp)
 }
 
     static int
-channel_input(instance, buf, bufsiz, errptr)
-    ClientData	instance UNUSED;
-    char	*buf UNUSED;
-    int		bufsiz UNUSED;
-    int		*errptr;
+tcl_channel_input(
+    ClientData	instance UNUSED,
+    char	*buf UNUSED,
+    int		bufsiz UNUSED,
+    int		*errptr)
 {
 
     /* input is currently not supported */
@@ -1575,11 +1577,11 @@ channel_input(instance, buf, bufsiz, errptr)
 }
 
     static int
-channel_output(instance, buf, bufsiz, errptr)
-    ClientData	instance;
-    char	*buf;
-    int		bufsiz;
-    int		*errptr;
+tcl_channel_output(
+    ClientData	instance,
+    const char	*buf,
+    int		bufsiz,
+    int		*errptr)
 {
     char_u	*str;
     int		result;
@@ -1615,36 +1617,34 @@ channel_output(instance, buf, bufsiz, errptr)
 }
 
     static void
-channel_watch(instance, mask)
-    ClientData	instance UNUSED;
-    int		mask UNUSED;
+tcl_channel_watch(ClientData instance UNUSED, int mask UNUSED)
 {
     Tcl_SetErrno(EINVAL);
 }
 
     static int
-channel_gethandle(instance, direction, handleptr)
-    ClientData	instance UNUSED;
-    int		direction UNUSED;
-    ClientData	*handleptr UNUSED;
+tcl_channel_gethandle(
+    ClientData	instance UNUSED,
+    int		direction UNUSED,
+    ClientData	*handleptr UNUSED)
 {
     Tcl_SetErrno(EINVAL);
     return EINVAL;
 }
 
 
-static Tcl_ChannelType channel_type =
+static Tcl_ChannelType tcl_channel_type =
 {
     "vimmessage",	/* typeName */
     TCL_CHANNEL_VERSION_2, /* version */
-    channel_close,	/* closeProc */
-    channel_input,	/* inputProc */
-    channel_output,	/* outputProc */
+    tcl_channel_close,	/* closeProc */
+    tcl_channel_input,	/* inputProc */
+    tcl_channel_output,	/* outputProc */
     NULL,		/* seekProc */
     NULL,		/* setOptionProc */
     NULL,		/* getOptionProc */
-    channel_watch,	/* watchProc */
-    channel_gethandle,	/* getHandleProc */
+    tcl_channel_watch,	/* watchProc */
+    tcl_channel_gethandle, /* getHandleProc */
     NULL,		/* close2Proc */
     NULL,		/* blockModeProc */
 #ifdef TCL_CHANNEL_VERSION_2
@@ -1669,7 +1669,7 @@ static Tcl_ChannelType channel_type =
  **********************************/
 
     static void
-tclupdatevars()
+tclupdatevars(void)
 {
     char varname[VARNAME_SIZE];	/* must be writeable */
     char *name;
@@ -1697,8 +1697,7 @@ tclupdatevars()
 
 
     static int
-tclinit(eap)
-    exarg_T *eap;
+tclinit(exarg_T *eap)
 {
     char varname[VARNAME_SIZE];	/* Tcl_LinkVar requires writeable varname */
     char *name;
@@ -1719,8 +1718,8 @@ tclinit(eap)
 	/* Create replacement channels for stdout and stderr; this has to be
 	 * done each time an interpreter is created since the channels are closed
 	 * when the interpreter is deleted */
-	ch1 = Tcl_CreateChannel(&channel_type, "vimout", VIMOUT, TCL_WRITABLE);
-	ch2 = Tcl_CreateChannel(&channel_type, "vimerr", VIMERR, TCL_WRITABLE);
+	ch1 = Tcl_CreateChannel(&tcl_channel_type, "vimout", VIMOUT, TCL_WRITABLE);
+	ch2 = Tcl_CreateChannel(&tcl_channel_type, "vimerr", VIMERR, TCL_WRITABLE);
 	Tcl_SetStdChannel(ch1, TCL_STDOUT);
 	Tcl_SetStdChannel(ch2, TCL_STDERR);
 
@@ -1807,8 +1806,7 @@ tclinit(eap)
 }
 
     static void
-tclerrmsg(text)
-    char *text;
+tclerrmsg(char *text)
 {
     char *next;
 
@@ -1823,8 +1821,7 @@ tclerrmsg(text)
 }
 
     static void
-tclmsg(text)
-    char *text;
+tclmsg(char *text)
 {
     char *next;
 
@@ -1839,7 +1836,7 @@ tclmsg(text)
 }
 
     static void
-tcldelthisinterp()
+tcldelthisinterp(void)
 {
     if (!Tcl_InterpDeleted(tclinfo.interp))
 	Tcl_DeleteInterp(tclinfo.interp);
@@ -1861,8 +1858,7 @@ tcldelthisinterp()
 }
 
     static int
-tclexit(error)
-    int error;
+tclexit(int error)
 {
     int newerr = OK;
 
@@ -1910,8 +1906,7 @@ tclexit(error)
  * ":tcl"
  */
     void
-ex_tcl(eap)
-    exarg_T *eap;
+ex_tcl(exarg_T *eap)
 {
     char_u	*script;
     int		err;
@@ -1937,8 +1932,7 @@ ex_tcl(eap)
  * ":tclfile"
  */
     void
-ex_tclfile(eap)
-    exarg_T *eap;
+ex_tclfile(exarg_T *eap)
 {
     char *file = (char *)eap->arg;
     int err;
@@ -1956,8 +1950,7 @@ ex_tclfile(eap)
  * ":tcldo"
  */
     void
-ex_tcldo(eap)
-    exarg_T *eap;
+ex_tcldo(exarg_T *eap)
 {
     char	*script, *line;
     int		err, rs, re, lnum;
@@ -2032,12 +2025,17 @@ ex_tcldo(eap)
 }
 
     static void
-tcldelallrefs(ref)
-    struct ref *ref;
+tcldelallrefs(struct ref *ref)
 {
     struct ref	*next;
     int		err;
     char	*result;
+
+#ifdef DYNAMIC_TCL
+    /* TODO: this code currently crashes Vim on exit */
+    if (exiting)
+	return;
+#endif
 
     while (ref != NULL)
     {
@@ -2064,8 +2062,7 @@ tcldelallrefs(ref)
 }
 
     void
-tcl_buffer_free(buf)
-    buf_T *buf;
+tcl_buffer_free(buf_T *buf)
 {
     struct ref *reflist;
 
@@ -2085,8 +2082,7 @@ tcl_buffer_free(buf)
 
 #if defined(FEAT_WINDOWS) || defined(PROTO)
     void
-tcl_window_free(win)
-    win_T *win;
+tcl_window_free(win_T *win)
 {
     struct ref *reflist;
 

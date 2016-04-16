@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4.  Last change: 2014 Aug 29
+*version7.txt*  For Vim version 7.4.  Last change: 2016 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -931,7 +931,7 @@ New and extended functions: ~
 |spellbadword()|	get a badly spelled word
 |spellsuggest()|	get suggestions for correct spelling
 |split()|		split a String into a List
-|str2nr()|		convert a string to a number, base 8, 10 or 16
+|str2nr()|		convert a string to a number, base 2, 8, 10 or 16
 |stridx()|		extra argument: start position
 |strridx()|		extra argument: start position
 |string()|		string representation of a List or Dictionary
@@ -1681,7 +1681,7 @@ work.  Use "LPT1" then.
 The GTK font dialog uses a font size zero when the font name doesn't include a
 size.  Use a default size of 10.
 
-This example in the documentation didn't work:
+This example in the documentation didn't work: >
     :e `=foo . ".c"`
 Skip over the expression in `=expr` when looking for comments, |, % and #.
 
@@ -10158,7 +10158,7 @@ an error.  Was caused by patch 7.2.132.
 Make the references to features in the help more consistent. (Sylvain Hitier)
 
 ==============================================================================
-VERSION 7.4					*version-7.4* *version7.4*
+VERSION 7.4				*version-7.4* *version7.4* *vim-7.4*
 
 This section is about improvements made between version 7.3 and 7.4.
 

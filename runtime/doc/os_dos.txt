@@ -94,6 +94,7 @@ Shift-Insert	paste text (from clipboard)			*<S-Insert>*
 CTRL-Insert	copy Visual text (to clipboard)			*<C-Insert>*
 CTRL-Del	cut Visual text (to clipboard)			*<C-Del>*
 Shift-Del	cut Visual text (to clipboard)			*<S-Del>*
+CTRL-X		cut Visual text (to clipboard)
 
 These mappings accomplish this (Win32 and DJGPP versions of Vim):
 
@@ -102,6 +103,7 @@ Shift-Insert	<M-N><M-T>   "*P	"-d"*P      <C-R><C-O>*
 CTRL-Insert	<M-N><M-U>		"*y
 Shift-Del	<M-N><M-W>		"*d
 CTRL-Del	<M-N><M-X>		"*d
+CTRL-X		<C-X>			"*d
 
 Or these mappings (non-Win32 version of Vim):
 

@@ -33,6 +33,12 @@
 # define __out		SAL__out
 #endif
 
+#if (defined(_MSC_VER) && (_MSC_VER >= 1700)) || (__cplusplus >= 201103L)
+# define FINAL final
+#else
+# define FINAL
+#endif
+
 #ifdef DYNAMIC_DIRECTX
 extern "C" HINSTANCE vimLoadLib(char *name);
 
@@ -222,7 +228,7 @@ public:
     }
 };
 
-class GdiTextRenderer : public IDWriteTextRenderer
+class GdiTextRenderer FINAL : public IDWriteTextRenderer
 {
 public:
     GdiTextRenderer(
@@ -237,7 +243,8 @@ public:
 	AddRef();
     }
 
-    ~GdiTextRenderer()
+    // add "virtual" to avoid a compiler warning
+    virtual ~GdiTextRenderer()
     {
 	SafeRelease(&pRenderTarget_);
 	SafeRelease(&pRenderingParams_);
@@ -255,7 +262,7 @@ public:
 	__maybenull void* clientDrawingContext,
 	__out DWRITE_MATRIX* transform)
     {
-	//forward the render target's transform
+	// forward the render target's transform
 	pRenderTarget_->GetCurrentTransform(transform);
 	return S_OK;
     }
@@ -686,7 +693,7 @@ DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
 
 	if (SUCCEEDED(hr))
 	{
-	    DWRITE_TEXT_RANGE textRange = { 0, len };
+	    DWRITE_TEXT_RANGE textRange = { 0, (UINT32)len };
 	    textLayout->SetFontWeight(mFontWeight, textRange);
 	    textLayout->SetFontStyle(mFontStyle, textRange);
 	}

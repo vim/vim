@@ -281,3 +281,9 @@ foobar
 ['faabar', 'foo bar', 'bar']
 barfoo
 ['bar foo', 'bar', 'foo']
+
+test 9-9
+# file: Xtest.latin1.spl
+bar
+foo
+-------

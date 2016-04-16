@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2015 Nov 23
+*options.txt*	For Vim version 7.4.  Last change: 2016 Apr 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -69,7 +69,7 @@ achieve special effects.  These options come in three forms:
 :se[t] {option}:{value}
 			Set string or number option to {value}.
 			For numeric options the value can be given in decimal,
- 			hex (preceded with 0x) or octal (preceded with '0').
+			hex (preceded with 0x) or octal (preceded with '0').
 			The old value can be inserted by typing 'wildchar' (by
 			default this is a <Tab> or CTRL-E if 'compatible' is
 			set).  See |cmdline-completion|.
@@ -1002,7 +1002,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- The backup file will be created in the first directory in the list
 	  where this is possible.  The directory must exist, Vim will not
 	  create it for you.
-	- Empty means that no backup file will be created ( 'patchmode' is
+	- Empty means that no backup file will be created ('patchmode' is
 	  impossible!).  Writing may fail because of this.
 	- A directory "." means to put the backup file in the same directory
 	  as the edited file.
@@ -1070,7 +1070,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	Note that environment variables are not expanded.  If you want to use
 	$HOME you must expand it explicitly, e.g.: >
-		:let backupskip = escape(expand('$HOME'), '\') . '/tmp/*'
+		:let &backupskip = escape(expand('$HOME'), '\') . '/tmp/*'
 
 <	Note that the default also makes sure that "crontab -e" works (when a
 	backup would be made by renaming the original file crontab won't see
@@ -1211,10 +1211,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'bioskey' 'biosk'	boolean	(default on)
 			global
 			{not in Vi}  {only for MS-DOS}
-	When on the BIOS is called to obtain a keyboard character.  This works
-	better to detect CTRL-C, but only works for the console.  When using a
-	terminal over a serial port reset this option.
-	Also see |'conskey'|.
+	This was for MS-DOS and is no longer supported.
 
 							*'bomb'* *'nobomb'*
 'bomb'			boolean	(default off)
@@ -1248,7 +1245,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	break if 'linebreak' is on.  Only works for ASCII and also for 8-bit
 	characters when 'encoding' is an 8-bit encoding.
 
-				*'breakindent'* *'bri'* *'nobreakindent'* *'nobri'*
+			*'breakindent'* *'bri'* *'nobreakindent'* *'nobri'*
 'breakindent' 'bri'	boolean (default off)
 			local to window
 			{not in Vi}
@@ -1795,7 +1792,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	when CTRL-P or CTRL-N are used.  It is also used for whole-line
 	completion |i_CTRL-X_CTRL-L|.  It indicates the type of completion
 	and the places to scan.  It is a comma separated list of flags:
-	.	scan the current buffer ( 'wrapscan' is ignored)
+	.	scan the current buffer ('wrapscan' is ignored)
 	w	scan buffers from other windows
 	b	scan other loaded buffers that are in the buffer list
 	u	scan the unloaded buffers that are in the buffer list
@@ -1946,13 +1943,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'conskey' 'consk'	boolean	(default off)
 			global
 			{not in Vi}  {only for MS-DOS}
-	When on direct console I/O is used to obtain a keyboard character.
-	This should work in most cases.  Also see |'bioskey'|.  Together,
-	three methods of console input are available:
-	'conskey'   'bioskey'	    action ~
-	   on	     on or off	    direct console input
-	   off		on	    BIOS
-	   off		off	    STDIN
+	This was for MS-DOS and is no longer supported.
 
 			*'copyindent'* *'ci'* *'nocopyindent'* *'noci'*
 'copyindent' 'ci'	boolean	(default off)
@@ -1969,7 +1960,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: 'copyindent' is reset when 'compatible' is set.
 	Also see 'preserveindent'.
 
-						*'cpoptions'* *'cpo'*
+						*'cpoptions'* *'cpo'* *cpo*
 'cpoptions' 'cpo'	string	(Vim default: "aABceFs",
 				 Vi default:  all flags)
 			global
@@ -2295,11 +2286,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			the encrypted bytes will be different.
 							*blowfish2*
 	   blowfish2	Blowfish method.  Medium strong encryption.  Requires
-			Vim 7.4.399 or later, files can NOT be read by Vim 7.3
+			Vim 7.4.401 or later, files can NOT be read by Vim 7.3
 			and older.  This adds a "seed" to the file, every time
 			you write the file the encrypted bytes will be
 			different.  The whole undo file is encrypted, not just
 			the pieces of text.
+
+	You should use "blowfish2", also to re-encrypt older files.
 
 	When reading an encrypted file 'cryptmethod' will be set automatically
 	to the detected method of the file being read.  Thus if you write it
@@ -2652,6 +2645,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	toggled each time the flag is given.  See |complex-change|.  See
 	also 'gdefault' option.
 	Switching this option on is discouraged!
+
+					*'emoji'* *'emo'* *'noemoji'* *'noemo'*
+'emoji' 'emo'	boolean (default: on)
+			global
+			{not in Vi}
+			{only available when compiled with the |+multi_byte|
+			feature}
+	When on all Unicode emoji characters are considered to be full width.
+
 
 					*'encoding'* *'enc'* *E543*
 'encoding' 'enc'	string (default: "latin1" or value from $LANG)
@@ -3030,8 +3032,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  file only, the option is not changed.
 	When 'binary' is set, the value of 'fileformats' is not used.
 
-	Note that when Vim starts up with an empty buffer this option is not
-	used.  Set 'fileformat' in your .vimrc instead.
+	When Vim starts up with an empty buffer the first item is used.  You
+	can overrule this by setting 'fileformat' in your .vimrc.
 
 	For systems with a Dos-like <EOL> (<CR><NL>), when reading files that
 	are ":source"ed and for vimrc files, automatic <EOL> detection may be
@@ -3096,17 +3098,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	  item		default		Used for ~
 	  stl:c		' ' or '^'	statusline of the current window
-	  stlnc:c	' ' or '-'	statusline of the non-current windows
+	  stlnc:c	' ' or '='	statusline of the non-current windows
 	  vert:c	'|'		vertical separators |:vsplit|
 	  fold:c	'-'		filling 'foldtext'
 	  diff:c	'-'		deleted lines of the 'diff' option
 
 	Any one that is omitted will fall back to the default.  For "stl" and
-	"stlnc" the space will be used when there is highlighting, '^' or '-'
+	"stlnc" the space will be used when there is highlighting, '^' or '='
 	otherwise.
 
 	Example: >
-	    :set fillchars=stl:^,stlnc:-,vert:\|,fold:-,diff:-
+	    :set fillchars=stl:^,stlnc:=,vert:\|,fold:-,diff:-
 <	This is similar to the default, except that these characters will also
 	be used when there is highlighting.
 
@@ -3632,6 +3634,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		      HANGEUL, HEBREW, JOHAB, MAC, OEM, RUSSIAN, SHIFTJIS,
 		      SYMBOL, THAI, TURKISH, VIETNAMESE ANSI and BALTIC.
 		      Normally you would use "cDEFAULT".
+		qXX - quality XX.  Valid quality names are: PROOF, DRAFT,
+		      ANTIALIASED, UNANTIALIASED, CLEARTYPE, DEFAULT.
+		      Normally you would use "qDEFAULT".
+		      Some quality values isn't supported in legacy OSs.
 
 	  Use a ':' to separate the options.
 	- A '_' can be used in the place of a space, so you don't need to use
@@ -3741,7 +3747,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		The same applies to the modeless selection.
 								*'go-P'*
 	  'P'	Like autoselect but using the "+ register instead of the "*
-	  	register.
+		register.
 								*'go-A'*
 	  'A'	Autoselect for the modeless selection.  Like 'a', but only
 		applies to the modeless selection.
@@ -4489,6 +4495,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'*', '"' and '|' (so that CTRL-] on a command finds the help for that
 	command).
 	When the 'lisp' option is on the '-' character is always included.
+	This option also influences syntax highlighting, unless the syntax
+	uses |:syn-iskeyword|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
@@ -4603,7 +4611,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	This option allows switching your keyboard into a special language
 	mode.  When you are typing text in Insert mode the characters are
-	inserted directly.  When in command mode the 'langmap' option takes
+	inserted directly.  When in Normal mode the 'langmap' option takes
 	care of translating these special characters to the original meaning
 	of the key.  This means you don't have to change the keyboard mode to
 	be able to execute Normal mode commands.
@@ -4848,13 +4856,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	reset this option. |-u| |--noplugin|
 
 						*'luadll'*
-'luadll' 		string	(default empty)
+'luadll'		string	(default depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+lua/dyn|
 			feature}
-	Specifies the path of the Lua shared library instead of DYNAMIC_LUA_DLL
-	what was specified at compile time.
+	Specifies the name of the Lua shared library. The default is
+	DYNAMIC_LUA_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5019,8 +5027,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Maximum amount of memory in Kbyte to use for all buffers together.
 	The maximum usable value is about 2000000 (2 Gbyte).  Use this to work
-	without a limit.  On 64 bit machines higher values might work.  But
-	hey, do you really need more than 2 Gbyte for text editing?
+	without a limit.
+	On 64 bit machines higher values might work.  But hey, do you really
+	need more than 2 Gbyte for text editing?  Keep in mind that text is
+	stored in the swap file, one can edit files > 2 Gbyte anyay.  We do
+	need the memory to store undo info.
 	Also see 'maxmem'.
 
 						*'menuitems'* *'mis'*
@@ -5110,6 +5121,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   written.  A ":set nomodified" command also resets the original
 	   values to the current values and the 'modified' option will be
 	   reset.
+	   Similarly for 'eol' and 'bomb'.
 	This option is not set when a change is made to the buffer as the
 	result of a BufNewFile, BufRead/BufReadPost, BufWritePost,
 	FileAppendPost or VimLeave autocommand event.  See |gzip-example| for
@@ -5294,7 +5306,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Negative or zero value means no thread scheduling.
 
 							*'nrformats'* *'nf'*
-'nrformats' 'nf'	string	(default "octal,hex")
+'nrformats' 'nf'	string	(default "bin,octal,hex")
 			local to buffer
 			{not in Vi}
 	This defines what bases Vim will consider for numbers when using the
@@ -5302,12 +5314,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	respectively; see |CTRL-A| for more info on these commands.
 	alpha	If included, single alphabetical characters will be
 		incremented or decremented.  This is useful for a list with a
-		letter index a), b), etc.	  	*octal-nrformats*
+		letter index a), b), etc.		*octal-nrformats*
 	octal	If included, numbers that start with a zero will be considered
 		to be octal.  Example: Using CTRL-A on "007" results in "010".
 	hex	If included, numbers starting with "0x" or "0X" will be
 		considered to be hexadecimal.  Example: Using CTRL-X on
 		"0x100" results in "0x0ff".
+	bin	If included, numbers starting with "0b" or "0B" will be
+		considered to be binary.  Example: Using CTRL-X on
+		"0b1000" subtracts one, resulting in "0b0111".
 	Numbers which simply begin with a digit in the range 1-9 are always
 	considered decimal.  This also happens for numbers that are not
 	recognized as octal or hex.
@@ -5329,7 +5344,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	relative to the cursor.  Together with 'number' there are these
 	four combinations (cursor in line 3):
 
-              	'nonu'          'nu'            'nonu'          'nu'
+		'nonu'          'nu'            'nonu'          'nu'
 		'nornu'         'nornu'         'rnu'           'rnu'
 
 	    |apple          |  1 apple      |  2 apple      |  2 apple
@@ -5399,6 +5414,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 			{not in Vi}
 	This option was supported on RISC OS, which has been removed.
+
+
+				*'packpath'* *'pp'*
+'packpath' 'pp'		string	(default: see 'runtimepath')
+			{not in Vi}
+	Directories used to find packages.  See |packages|.
 
 
 						*'paragraphs'* *'para'*
@@ -5562,13 +5583,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	this doesn't work when $INCL contains a comma or white space.
 
 						*'perldll'*
-'perldll' 		string	(default empty)
+'perldll'		string	(default depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+perl/dyn|
 			feature}
-	Specifies the path of the Perl shared library instead of
-	DYNAMIC_PERL_DLL what was specified at compile time.
+	Specifies the name of the Perl shared library. The default is
+	DYNAMIC_PERL_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5699,24 +5720,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|ins-completion-menu|.
 
 						*'pythondll'*
-'pythondll' 		string	(default empty)
+'pythondll'		string	(default depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+python/dyn|
 			feature}
-	Specifies the path of the Python 2.x shared library instead of
-	DYNAMIC_PYTHON_DLL what was specified at compile time.
+	Specifies the name of the Python 2.x shared library. The default is
+	DYNAMIC_PYTHON_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
 						*'pythonthreedll'*
-'pythonthreedll'	string	(default empty)
+'pythonthreedll'	string	(default depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+python3/dyn|
 			feature}
-	Specifies the path of the Python 3 shared library instead of
-	DYNAMIC_PYTHON3_DLL what was specified at compile time.
+	Specifies the name of the Python 3 shared library. The default is
+	DYNAMIC_PYTHON3_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5940,13 +5961,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The 'rightleft' option must be set for 'rightleftcmd' to take effect.
 
 						*'rubydll'*
-'rubydll' 		string	(default empty)
+'rubydll'		string	(default: depends on the build)
 			global
-			{not in Vi} {only for Unix}
+			{not in Vi}
 			{only available when compiled with the |+ruby/dyn|
 			feature}
-	Specifies the path of the Ruby shared library instead of
-	DYNAMIC_RUBY_DLL what was specified at compile time.
+	Specifies the name of the Ruby shared library. The default is
+	DYNAMIC_RUBY_DLL, which was specified at compile time.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -6528,7 +6549,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  c	don't give |ins-completion-menu| messages.  For example,
 		"-- XXX completion (YYY)", "match 1 of 2", "The only match",
 		"Pattern not found", "Back at original", etc.
-	  q     use "recording" instead of "recording @a"
+	  q	use "recording" instead of "recording @a"
+	  F	don't give the file info when editing a file, like `:silent`
+		was used for the command
 
 	This gives you the opportunity to avoid that a change between buffers
 	requires you to hit <Enter>, but still gives as useful a message as
@@ -6838,7 +6861,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the two-letter, lower case region name.  You can use more than one
 	region by listing them: "en_us,en_ca" supports both US and Canadian
 	English, but not words specific for Australia, New Zealand or Great
-	Britain.
+	Britain. (Note: currently en_au and en_nz dictionaries are older than
+	en_ca, en_gb and en_us).
 	If the name "cjk" is included East Asian characters are excluded from
 	spell checking.  This is useful when editing text that also has Asian
 	words.
@@ -6974,7 +6998,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The option consists of printf style '%' items interspersed with
 	normal text.  Each status line item is of the form:
 	  %-0{minwid}.{maxwid}{item}
-	All fields except the {item} is optional.  A single percent sign can
+	All fields except the {item} are optional.  A single percent sign can
 	be given as "%%".  Up to 80 items can be specified.  *E541*
 
 	When the option starts with "%!" then it is used as an expression,
@@ -7430,6 +7454,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Resetting this option is useful when using a ":tag" command in a
 	mapping which should not change the tagstack.
 
+						*'tcldll'*
+'tcldll'		string	(default depends on the build)
+			global
+			{not in Vi}
+			{only available when compiled with the |+tcl/dyn|
+			feature}
+	Specifies the name of the Tcl shared library. The default is
+	DYNAMIC_TCL_DLL, which was specified at compile time.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
 						*'term'* *E529* *E530* *E531*
 'term'			string	(default is $TERM, if that fails:
 				      in the GUI: "builtin_gui"
@@ -7475,7 +7510,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Encoding used for the terminal.  This specifies what character
 	encoding the keyboard produces and the display will understand.  For
-	the GUI it only applies to the keyboard ( 'encoding' is used for the
+	the GUI it only applies to the keyboard ('encoding' is used for the
 	display).  Except for the Mac when 'macatsui' is off, then
 	'termencoding' should be "macroman".
 								*E617*
@@ -7551,6 +7586,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	non-keyword characters (white space is preferred).  Maximum line
 	length is 510 bytes.
 	To obtain a file to be used here, check out this ftp site:
+	[Sorry this link doesn't work anymore, do you know the right one?] 
 	ftp://ftp.ox.ac.uk/pub/wordlists/  First get the README file.
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
@@ -7751,13 +7787,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 				{not in Vi}
 				{only in the GTK+ 2 GUI}
 	Controls the size of toolbar icons.  The possible values are:
-		tiny		Use tiny toolbar icons.
-		small		Use small toolbar icons (default).
-		medium		Use medium-sized toolbar icons.
-		large		Use large toolbar icons.
+		tiny		Use tiny icons.
+		small		Use small icons (default).
+		medium		Use medium-sized icons.
+		large		Use large icons.
+		huge		Use even larger icons.
+		giant		Use very big icons.
 	The exact dimensions in pixels of the various icon sizes depend on
-	the current theme.  Common dimensions are large=32x32, medium=24x24,
-	small=20x20 and tiny=16x16.
+	the current theme.  Common dimensions are giant=48x48, huge=32x32,
+	large=24x24, medium=24x24, small=20x20 and tiny=16x16.
 
 	If 'toolbariconsize' is empty, the global default size as determined
 	by user preferences or the current theme is used.

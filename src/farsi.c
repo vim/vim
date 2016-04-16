@@ -13,33 +13,32 @@
  * Included by main.c, when FEAT_FKMAP is defined.
  */
 
-static int toF_Xor_X_ __ARGS((int c));
-static int F_is_TyE __ARGS((int c));
-static int F_is_TyC_TyD __ARGS((int c));
-static int F_is_TyB_TyC_TyD __ARGS((int src, int offset));
-static int toF_TyB __ARGS((int c));
-static void put_curr_and_l_to_X __ARGS((int c));
-static void put_and_redo __ARGS((int c));
-static void chg_c_toX_orX __ARGS((void));
-static void chg_c_to_X_orX_ __ARGS((void));
-static void chg_c_to_X_or_X __ARGS((void));
-static void chg_l_to_X_orX_ __ARGS((void));
-static void chg_l_toXor_X __ARGS((void));
-static void chg_r_to_Xor_X_ __ARGS((void));
-static int toF_leading __ARGS((int c));
-static int toF_Rjoin __ARGS((int c));
-static int canF_Ljoin __ARGS((int c));
-static int canF_Rjoin __ARGS((int c));
-static int F_isterm __ARGS((int c));
-static int toF_ending __ARGS((int c));
-static void lrswapbuf __ARGS((char_u *buf, int len));
+static int toF_Xor_X_(int c);
+static int F_is_TyE(int c);
+static int F_is_TyC_TyD(int c);
+static int F_is_TyB_TyC_TyD(int src, int offset);
+static int toF_TyB(int c);
+static void put_curr_and_l_to_X(int c);
+static void put_and_redo(int c);
+static void chg_c_toX_orX(void);
+static void chg_c_to_X_orX_(void);
+static void chg_c_to_X_or_X(void);
+static void chg_l_to_X_orX_(void);
+static void chg_l_toXor_X(void);
+static void chg_r_to_Xor_X_(void);
+static int toF_leading(int c);
+static int toF_Rjoin(int c);
+static int canF_Ljoin(int c);
+static int canF_Rjoin(int c);
+static int F_isterm(int c);
+static int toF_ending(int c);
+static void lrswapbuf(char_u *buf, int len);
 
 /*
 ** Convert the given Farsi character into a _X or _X_ type
 */
     static int
-toF_Xor_X_(c)
-    int	c;
+toF_Xor_X_(int c)
 {
     int tempc;
 
@@ -132,8 +131,7 @@ toF_Xor_X_(c)
 ** Convert the given Farsi character into Farsi capital character .
 */
     int
-toF_TyA(c)
-    int	c ;
+toF_TyA(int c )
 {
     switch (c)
     {
@@ -212,8 +210,7 @@ toF_TyA(c)
 ** Note: the offset is used only for command line buffer.
 */
     static int
-F_is_TyB_TyC_TyD(src, offset)
-    int		src, offset;
+F_is_TyB_TyC_TyD(int src, int offset)
 {
     int		c;
 
@@ -264,8 +261,7 @@ F_is_TyB_TyC_TyD(src, offset)
 ** Is the Farsi character one of the terminating only type.
 */
     static int
-F_is_TyE(c)
-    int	    c;
+F_is_TyE(int c)
 {
     switch (c)
     {
@@ -288,8 +284,7 @@ F_is_TyE(c)
 ** Is the Farsi character one of the none leading type.
 */
     static int
-F_is_TyC_TyD(c)
-    int	    c;
+F_is_TyC_TyD(int c)
 {
     switch (c)
     {
@@ -313,8 +308,7 @@ F_is_TyC_TyD(c)
 ** Convert a none leading Farsi char into a leading type.
 */
     static int
-toF_TyB(c)
-    int	    c;
+toF_TyB(int c)
 {
     switch (c)
     {
@@ -337,8 +331,7 @@ toF_TyB(c)
 ** Overwrite the current redo and cursor characters + left adjust
 */
     static void
-put_curr_and_l_to_X(c)
-    int		  c;
+put_curr_and_l_to_X(int c)
 {
     int	tempc;
 
@@ -372,8 +365,7 @@ put_curr_and_l_to_X(c)
 }
 
     static void
-put_and_redo(c)
-    int c;
+put_and_redo(int c)
 {
     pchar_cursor(c);
     AppendCharToRedobuff(K_BS);
@@ -384,7 +376,7 @@ put_and_redo(c)
 ** Change the char. under the cursor to a X_ or X type
 */
     static void
-chg_c_toX_orX()
+chg_c_toX_orX(void)
 {
     int	tempc, curc;
 
@@ -509,7 +501,7 @@ chg_c_toX_orX()
 */
 
     static void
-chg_c_to_X_orX_()
+chg_c_to_X_orX_(void)
 {
     int	tempc;
 
@@ -560,7 +552,7 @@ chg_c_to_X_orX_()
 ** Change the char. under the cursor to a _X_ or _X type
 */
     static void
-chg_c_to_X_or_X ()
+chg_c_to_X_or_X (void)
 {
     int	tempc;
 
@@ -591,7 +583,7 @@ chg_c_to_X_or_X ()
 ** Change the character left to the cursor to a _X_ or X_ type
 */
     static void
-chg_l_to_X_orX_ ()
+chg_l_to_X_orX_ (void)
 {
     int	tempc;
 
@@ -660,7 +652,7 @@ chg_l_to_X_orX_ ()
 */
 
     static void
-chg_l_toXor_X ()
+chg_l_toXor_X (void)
 {
     int	tempc;
 
@@ -729,7 +721,7 @@ chg_l_toXor_X ()
 */
 
     static void
-chg_r_to_Xor_X_()
+chg_r_to_Xor_X_(void)
 {
     int tempc, c;
 
@@ -754,8 +746,7 @@ chg_r_to_Xor_X_()
 */
 
     int
-fkmap(c)
-    int c;
+fkmap(int c)
 {
     int		tempc;
     static int	revins;
@@ -773,8 +764,8 @@ fkmap(c)
 		if (!p_ri)
 		    dec_cursor();
 
-		    chg_c_toX_orX ();
-		    chg_l_toXor_X ();
+		chg_c_toX_orX ();
+		chg_l_toXor_X ();
 
 		if (!p_ri)
 		    inc_cursor();
@@ -1252,7 +1243,7 @@ fkmap(c)
 		if (!p_ri)
 		    dec_cursor();
 
-		    tempc = LA;
+		tempc = LA;
 	    }
 	    else
 	    {
@@ -1473,8 +1464,7 @@ fkmap(c)
 ** Convert a none leading Farsi char into a leading type.
 */
     static int
-toF_leading(c)
-    int	    c;
+toF_leading(int c)
 {
     switch (c)
     {
@@ -1528,8 +1518,7 @@ toF_leading(c)
 ** Convert a given Farsi char into right joining type.
 */
     static int
-toF_Rjoin(c)
-    int	    c;
+toF_Rjoin(int c)
 {
     switch (c)
     {
@@ -1585,8 +1574,7 @@ toF_Rjoin(c)
 ** Can a given Farsi character join via its left edj.
 */
     static int
-canF_Ljoin(c)
-    int	c;
+canF_Ljoin(int c)
 {
     switch (c)
     {
@@ -1660,8 +1648,7 @@ canF_Ljoin(c)
 ** Can a given Farsi character join via its right edj.
 */
     static int
-canF_Rjoin(c)
-    int	    c;
+canF_Rjoin(int c)
 {
     switch (c)
     {
@@ -1689,8 +1676,7 @@ canF_Rjoin(c)
 ** is a given Farsi character a terminating type.
 */
     static int
-F_isterm(c)
-    int	    c;
+F_isterm(int c)
 {
     switch (c)
     {
@@ -1717,8 +1703,7 @@ F_isterm(c)
 ** Convert the given Farsi character into a ending type .
 */
     static int
-toF_ending(c)
-    int	    c;
+toF_ending(int c)
 {
 
     switch (c)
@@ -1795,7 +1780,7 @@ toF_ending(c)
 ** Convert the Farsi 3342 standard into Farsi VIM.
 */
     void
-conv_to_pvim()
+conv_to_pvim(void)
 {
     char_u	*ptr;
     int		lnum, llen, i;
@@ -1844,7 +1829,7 @@ conv_to_pvim()
  * Convert the Farsi VIM into Farsi 3342 standard.
  */
     void
-conv_to_pstd()
+conv_to_pstd(void)
 {
     char_u	*ptr;
     int		lnum, llen, i;
@@ -1877,9 +1862,7 @@ conv_to_pstd()
  * left-right swap the characters in buf[len].
  */
     static void
-lrswapbuf(buf, len)
-    char_u	*buf;
-    int		len;
+lrswapbuf(char_u *buf, int len)
 {
     char_u	*s, *e;
     int		c;
@@ -1901,8 +1884,7 @@ lrswapbuf(buf, len)
  * swap all the characters in reverse direction
  */
     char_u *
-lrswap(ibuf)
-    char_u	*ibuf;
+lrswap(char_u *ibuf)
 {
     if (ibuf != NULL && *ibuf != NUL)
 	lrswapbuf(ibuf, (int)STRLEN(ibuf));
@@ -1913,9 +1895,7 @@ lrswap(ibuf)
  * swap all the Farsi characters in reverse direction
  */
     char_u *
-lrFswap(cmdbuf, len)
-    char_u	*cmdbuf;
-    int		len;
+lrFswap(char_u *cmdbuf, int len)
 {
     int		i, cnt;
 
@@ -1945,8 +1925,7 @@ lrFswap(cmdbuf, len)
  * TODO: handle different separator characters.  Use skip_regexp().
  */
     char_u *
-lrF_sub(ibuf)
-    char_u	*ibuf;
+lrF_sub(char_u *ibuf)
 {
     char_u	*p, *ep;
     int		i, cnt;
@@ -1986,8 +1965,7 @@ lrF_sub(ibuf)
  * Map Farsi keyboard when in cmd_fkmap mode.
  */
     int
-cmdl_fkmap(c)
-    int c;
+cmdl_fkmap(int c)
 {
     int	    tempc;
 
@@ -2246,8 +2224,7 @@ cmdl_fkmap(c)
  * F_isalpha returns TRUE if 'c' is a Farsi alphabet
  */
     int
-F_isalpha(c)
-    int	c;
+F_isalpha(int c)
 {
     return (( c >= TEE_ && c <= _YE)
 	    || (c >= ALEF_A && c <= YE)
@@ -2258,8 +2235,7 @@ F_isalpha(c)
  * F_isdigit returns TRUE if 'c' is a Farsi digit
  */
     int
-F_isdigit(c)
-    int	c;
+F_isdigit(int c)
 {
     return (c >= FARSI_0 && c <= FARSI_9);
 }
@@ -2268,15 +2244,14 @@ F_isdigit(c)
  * F_ischar returns TRUE if 'c' is a Farsi character.
  */
     int
-F_ischar(c)
-    int	c;
+F_ischar(int c)
 {
-    return (c >= TEE_ && c <= YE_);
+ return (c >= TEE_ && c <= YE_);
 }
 
     void
-farsi_fkey(cap)
-    cmdarg_T	*cap;
+farsi_fkey(
+    cmdarg_T	*cap)
 {
     int		c = cap->cmdchar;
 

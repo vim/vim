@@ -28,26 +28,26 @@
 #include "vim.h"
 
 #if defined(FEAT_CMDL_COMPL) || defined(FEAT_LISTCMDS) || defined(FEAT_EVAL) || defined(FEAT_PERL)
-static char_u	*buflist_match __ARGS((regmatch_T *rmp, buf_T *buf, int ignore_case));
+static char_u	*buflist_match(regmatch_T *rmp, buf_T *buf, int ignore_case);
 # define HAVE_BUFLIST_MATCH
-static char_u	*fname_match __ARGS((regmatch_T *rmp, char_u *name, int ignore_case));
+static char_u	*fname_match(regmatch_T *rmp, char_u *name, int ignore_case);
 #endif
-static void	buflist_setfpos __ARGS((buf_T *buf, win_T *win, linenr_T lnum, colnr_T col, int copy_options));
-static wininfo_T *find_wininfo __ARGS((buf_T *buf, int skip_diff_buffer));
+static void	buflist_setfpos(buf_T *buf, win_T *win, linenr_T lnum, colnr_T col, int copy_options);
+static wininfo_T *find_wininfo(buf_T *buf, int skip_diff_buffer);
 #ifdef UNIX
-static buf_T	*buflist_findname_stat __ARGS((char_u *ffname, struct stat *st));
-static int	otherfile_buf __ARGS((buf_T *buf, char_u *ffname, struct stat *stp));
-static int	buf_same_ino __ARGS((buf_T *buf, struct stat *stp));
+static buf_T	*buflist_findname_stat(char_u *ffname, struct stat *st);
+static int	otherfile_buf(buf_T *buf, char_u *ffname, struct stat *stp);
+static int	buf_same_ino(buf_T *buf, struct stat *stp);
 #else
-static int	otherfile_buf __ARGS((buf_T *buf, char_u *ffname));
+static int	otherfile_buf(buf_T *buf, char_u *ffname);
 #endif
 #ifdef FEAT_TITLE
-static int	ti_change __ARGS((char_u *str, char_u **last));
+static int	ti_change(char_u *str, char_u **last);
 #endif
-static int	append_arg_number __ARGS((win_T *wp, char_u *buf, int buflen, int add_file));
-static void	free_buffer __ARGS((buf_T *));
-static void	free_buffer_stuff __ARGS((buf_T *buf, int free_options));
-static void	clear_wininfo __ARGS((buf_T *buf));
+static int	append_arg_number(win_T *wp, char_u *buf, int buflen, int add_file);
+static void	free_buffer(buf_T *);
+static void	free_buffer_stuff(buf_T *buf, int free_options);
+static void	clear_wininfo(buf_T *buf);
 
 #ifdef UNIX
 # define dev_T dev_t
@@ -56,7 +56,7 @@ static void	clear_wininfo __ARGS((buf_T *buf));
 #endif
 
 #if defined(FEAT_SIGNS)
-static void insert_sign __ARGS((buf_T *buf, signlist_T *prev, signlist_T *next, int id, linenr_T lnum, int typenr));
+static void insert_sign(buf_T *buf, signlist_T *prev, signlist_T *next, int id, linenr_T lnum, int typenr);
 #endif
 
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
@@ -73,10 +73,10 @@ static char *e_auabort = N_("E855: Autocommands caused command to abort");
  * Return FAIL for failure, OK otherwise.
  */
     int
-open_buffer(read_stdin, eap, flags)
-    int		read_stdin;	    /* read file from stdin */
-    exarg_T	*eap;		    /* for forced 'ff' and 'fenc' or NULL */
-    int		flags;		    /* extra flags for readfile() */
+open_buffer(
+    int		read_stdin,	    /* read file from stdin */
+    exarg_T	*eap,		    /* for forced 'ff' and 'fenc' or NULL */
+    int		flags)		    /* extra flags for readfile() */
 {
     int		retval = OK;
 #ifdef FEAT_AUTOCMD
@@ -139,14 +139,19 @@ open_buffer(read_stdin, eap, flags)
 #endif
        )
     {
+	int old_msg_silent = msg_silent;
+
 #ifdef FEAT_NETBEANS_INTG
 	int oldFire = netbeansFireChanges;
 
 	netbeansFireChanges = 0;
 #endif
+	if (shortmess(SHM_FILEINFO))
+	    msg_silent = 1;
 	retval = readfile(curbuf->b_ffname, curbuf->b_fname,
 		  (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM, eap,
 		  flags | READ_NEW);
+	msg_silent = old_msg_silent;
 #ifdef FEAT_NETBEANS_INTG
 	netbeansFireChanges = oldFire;
 #endif
@@ -307,8 +312,7 @@ open_buffer(read_stdin, eap, flags)
  * Return TRUE if "buf" points to a valid buffer (in the buffer list).
  */
     int
-buf_valid(buf)
-    buf_T	*buf;
+buf_valid(buf_T *buf)
 {
     buf_T	*bp;
 
@@ -336,11 +340,11 @@ buf_valid(buf)
  * supposed to close the window but autocommands close all other windows.
  */
     void
-close_buffer(win, buf, action, abort_if_last)
-    win_T	*win;		/* if not NULL, set b_last_cursor */
-    buf_T	*buf;
-    int		action;
-    int		abort_if_last UNUSED;
+close_buffer(
+    win_T	*win,		/* if not NULL, set b_last_cursor */
+    buf_T	*buf,
+    int		action,
+    int		abort_if_last UNUSED)
 {
 #ifdef FEAT_AUTOCMD
     int		is_curbuf;
@@ -538,14 +542,11 @@ aucmd_abort:
  * Make buffer not contain a file.
  */
     void
-buf_clear_file(buf)
-    buf_T	*buf;
+buf_clear_file(buf_T *buf)
 {
     buf->b_ml.ml_line_count = 1;
     unchanged(buf, TRUE);
-#ifndef SHORT_FNAME
     buf->b_shortname = FALSE;
-#endif
     buf->b_p_eol = TRUE;
     buf->b_start_eol = TRUE;
 #ifdef FEAT_MBYTE
@@ -567,9 +568,7 @@ buf_clear_file(buf)
  * BFA_KEEP_UNDO  do not free undo information
  */
     void
-buf_freeall(buf, flags)
-    buf_T	*buf;
-    int		flags;
+buf_freeall(buf_T *buf, int flags)
 {
 #ifdef FEAT_AUTOCMD
     int		is_curbuf = (buf == curbuf);
@@ -653,8 +652,7 @@ buf_freeall(buf, flags)
  * itself (not the file, that must have been done already).
  */
     static void
-free_buffer(buf)
-    buf_T	*buf;
+free_buffer(buf_T *buf)
 {
     free_buffer_stuff(buf, TRUE);
 #ifdef FEAT_EVAL
@@ -696,9 +694,9 @@ free_buffer(buf)
  * Free stuff in the buffer for ":bdel" and when wiping out the buffer.
  */
     static void
-free_buffer_stuff(buf, free_options)
-    buf_T	*buf;
-    int		free_options;		/* free options as well */
+free_buffer_stuff(
+    buf_T	*buf,
+    int		free_options)		/* free options as well */
 {
     if (free_options)
     {
@@ -735,8 +733,7 @@ free_buffer_stuff(buf, free_options)
  * Free the b_wininfo list for buffer "buf".
  */
     static void
-clear_wininfo(buf)
-    buf_T	*buf;
+clear_wininfo(buf_T *buf)
 {
     wininfo_T	*wip;
 
@@ -760,11 +757,11 @@ clear_wininfo(buf)
  * Go to another buffer.  Handles the result of the ATTENTION dialog.
  */
     void
-goto_buffer(eap, start, dir, count)
-    exarg_T	*eap;
-    int		start;
-    int		dir;
-    int		count;
+goto_buffer(
+    exarg_T	*eap,
+    int		start,
+    int		dir,
+    int		count)
 {
 # if defined(FEAT_WINDOWS) && defined(HAS_SWAP_EXISTS_ACTION)
     buf_T	*old_curbuf = curbuf;
@@ -807,8 +804,7 @@ goto_buffer(eap, start, dir, count)
  * It is allowed for "old_curbuf" to be NULL or invalid.
  */
     void
-handle_swap_exists(old_curbuf)
-    buf_T	*old_curbuf;
+handle_swap_exists(buf_T *old_curbuf)
 {
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
     cleanup_T	cs;
@@ -889,13 +885,13 @@ handle_swap_exists(old_curbuf)
  * Returns error message or NULL
  */
     char_u *
-do_bufdel(command, arg, addr_count, start_bnr, end_bnr, forceit)
-    int		command;
-    char_u	*arg;		/* pointer to extra arguments */
-    int		addr_count;
-    int		start_bnr;	/* first buffer number in a range */
-    int		end_bnr;	/* buffer nr or last buffer nr in a range */
-    int		forceit;
+do_bufdel(
+    int		command,
+    char_u	*arg,		/* pointer to extra arguments */
+    int		addr_count,
+    int		start_bnr,	/* first buffer number in a range */
+    int		end_bnr,	/* buffer nr or last buffer nr in a range */
+    int		forceit)
 {
     int		do_current = 0;	/* delete current buffer? */
     int		deleted = 0;	/* number of buffers deleted */
@@ -1006,17 +1002,17 @@ do_bufdel(command, arg, addr_count, start_bnr, end_bnr, forceit)
 #if defined(FEAT_LISTCMDS) || defined(FEAT_PYTHON) \
 	|| defined(FEAT_PYTHON3) || defined(PROTO)
 
-static int	empty_curbuf __ARGS((int close_others, int forceit, int action));
+static int	empty_curbuf(int close_others, int forceit, int action);
 
 /*
  * Make the current buffer empty.
  * Used when it is wiped out and it's the last buffer.
  */
     static int
-empty_curbuf(close_others, forceit, action)
-    int close_others;
-    int forceit;
-    int action;
+empty_curbuf(
+    int close_others,
+    int forceit,
+    int action)
 {
     int	    retval;
     buf_T   *buf = curbuf;
@@ -1067,12 +1063,12 @@ empty_curbuf(close_others, forceit, action)
  * Return FAIL or OK.
  */
     int
-do_buffer(action, start, dir, count, forceit)
-    int		action;
-    int		start;
-    int		dir;		/* FORWARD or BACKWARD */
-    int		count;		/* buffer number or number of buffers */
-    int		forceit;	/* TRUE for :...! */
+do_buffer(
+    int		action,
+    int		start,
+    int		dir,		/* FORWARD or BACKWARD */
+    int		count,		/* buffer number or number of buffers */
+    int		forceit)	/* TRUE for :...! */
 {
     buf_T	*buf;
     buf_T	*bp;
@@ -1428,9 +1424,7 @@ do_buffer(action, start, dir, count, forceit)
  * DOBUF_WIPE	    wipe it out
  */
     void
-set_curbuf(buf, action)
-    buf_T	*buf;
-    int		action;
+set_curbuf(buf_T *buf, int action)
 {
     buf_T	*prevbuf;
     int		unload = (action == DOBUF_UNLOAD || action == DOBUF_DEL
@@ -1517,8 +1511,7 @@ set_curbuf(buf, action)
  * be pointing to freed memory.
  */
     void
-enter_buffer(buf)
-    buf_T	*buf;
+enter_buffer(buf_T *buf)
 {
     /* Copy buffer and window local option values.  Not for a help buffer. */
     buf_copy_options(buf, BCO_ENTER | BCO_NOHELP);
@@ -1627,11 +1620,14 @@ enter_buffer(buf)
 #if defined(FEAT_AUTOCHDIR) || defined(PROTO)
 /*
  * Change to the directory of the current buffer.
+ * Don't do this while still starting up.
  */
     void
-do_autochdir()
+do_autochdir(void)
 {
-    if (curbuf->b_ffname != NULL && vim_chdirfile(curbuf->b_ffname) == OK)
+    if (starting == 0
+	    && curbuf->b_ffname != NULL
+	    && vim_chdirfile(curbuf->b_ffname) == OK)
 	shorten_fnames(TRUE);
 }
 #endif
@@ -1652,11 +1648,11 @@ do_autochdir()
 static int  top_file_num = 1;		/* highest file number */
 
     buf_T *
-buflist_new(ffname, sfname, lnum, flags)
-    char_u	*ffname;	/* full path of fname or relative */
-    char_u	*sfname;	/* short fname or NULL */
-    linenr_T	lnum;		/* preferred cursor line */
-    int		flags;		/* BLN_ defines */
+buflist_new(
+    char_u	*ffname,	/* full path of fname or relative */
+    char_u	*sfname,	/* short fname or NULL */
+    linenr_T	lnum,		/* preferred cursor line */
+    int		flags)		/* BLN_ defines */
 {
     buf_T	*buf;
 #ifdef UNIX
@@ -1899,9 +1895,9 @@ buflist_new(ffname, sfname, lnum, flags)
  * 'fileencoding'.
  */
     void
-free_buf_options(buf, free_p_ff)
-    buf_T	*buf;
-    int		free_p_ff;
+free_buf_options(
+    buf_T	*buf,
+    int		free_p_ff)
 {
     if (free_p_ff)
     {
@@ -1955,6 +1951,7 @@ free_buf_options(buf, free_p_ff)
     clear_string_option(&buf->b_p_nf);
 #ifdef FEAT_SYN_HL
     clear_string_option(&buf->b_p_syn);
+    clear_string_option(&buf->b_s.b_syn_isk);
 #endif
 #ifdef FEAT_SPELL
     clear_string_option(&buf->b_s.b_p_spc);
@@ -2018,11 +2015,11 @@ free_buf_options(buf, free_p_ff)
  * return FAIL for failure, OK for success
  */
     int
-buflist_getfile(n, lnum, options, forceit)
-    int		n;
-    linenr_T	lnum;
-    int		options;
-    int		forceit;
+buflist_getfile(
+    int		n,
+    linenr_T	lnum,
+    int		options,
+    int		forceit)
 {
     buf_T	*buf;
 #ifdef FEAT_WINDOWS
@@ -2119,7 +2116,7 @@ buflist_getfile(n, lnum, options, forceit)
  * go to the last know line number for the current buffer
  */
     void
-buflist_getfpos()
+buflist_getfpos(void)
 {
     pos_T	*fpos;
 
@@ -2147,8 +2144,7 @@ buflist_getfpos()
  * Returns NULL if not found.
  */
     buf_T *
-buflist_findname_exp(fname)
-    char_u *fname;
+buflist_findname_exp(char_u *fname)
 {
     char_u	*ffname;
     buf_T	*buf = NULL;
@@ -2177,8 +2173,7 @@ buflist_findname_exp(fname)
  * Returns NULL if not found.
  */
     buf_T *
-buflist_findname(ffname)
-    char_u	*ffname;
+buflist_findname(char_u *ffname)
 {
 #ifdef UNIX
     struct stat st;
@@ -2194,9 +2189,9 @@ buflist_findname(ffname)
  * Returns NULL if not found.
  */
     static buf_T *
-buflist_findname_stat(ffname, stp)
-    char_u	*ffname;
-    struct stat	*stp;
+buflist_findname_stat(
+    char_u	*ffname,
+    struct stat	*stp)
 {
 #endif
     buf_T	*buf;
@@ -2219,12 +2214,12 @@ buflist_findname_stat(ffname, stp)
  * Return < 0 for error.
  */
     int
-buflist_findpat(pattern, pattern_end, unlisted, diffmode, curtab_only)
-    char_u	*pattern;
-    char_u	*pattern_end;	/* pointer to first char after pattern */
-    int		unlisted;	/* find unlisted buffers */
-    int		diffmode UNUSED; /* find diff-mode buffers only */
-    int		curtab_only;	/* find buffers in current tab only */
+buflist_findpat(
+    char_u	*pattern,
+    char_u	*pattern_end,	/* pointer to first char after pattern */
+    int		unlisted,	/* find unlisted buffers */
+    int		diffmode UNUSED, /* find diff-mode buffers only */
+    int		curtab_only)	/* find buffers in current tab only */
 {
     buf_T	*buf;
     int		match = -1;
@@ -2349,11 +2344,11 @@ buflist_findpat(pattern, pattern_end, unlisted, diffmode, curtab_only)
  * Return OK if matches found, FAIL otherwise.
  */
     int
-ExpandBufnames(pat, num_file, file, options)
-    char_u	*pat;
-    int		*num_file;
-    char_u	***file;
-    int		options;
+ExpandBufnames(
+    char_u	*pat,
+    int		*num_file,
+    char_u	***file,
+    int		options)
 {
     int		count = 0;
     buf_T	*buf;
@@ -2454,10 +2449,10 @@ ExpandBufnames(pat, num_file, file, options)
  * Check for a match on the file name for buffer "buf" with regprog "prog".
  */
     static char_u *
-buflist_match(rmp, buf, ignore_case)
-    regmatch_T	*rmp;
-    buf_T	*buf;
-    int		ignore_case;  /* when TRUE ignore case, when FALSE use 'fic' */
+buflist_match(
+    regmatch_T	*rmp,
+    buf_T	*buf,
+    int		ignore_case)  /* when TRUE ignore case, when FALSE use 'fic' */
 {
     char_u	*match;
 
@@ -2474,10 +2469,10 @@ buflist_match(rmp, buf, ignore_case)
  * Return "name" when there is a match, NULL when not.
  */
     static char_u *
-fname_match(rmp, name, ignore_case)
-    regmatch_T	*rmp;
-    char_u	*name;
-    int		ignore_case;  /* when TRUE ignore case, when FALSE use 'fic' */
+fname_match(
+    regmatch_T	*rmp,
+    char_u	*name,
+    int		ignore_case)  /* when TRUE ignore case, when FALSE use 'fic' */
 {
     char_u	*match = NULL;
     char_u	*p;
@@ -2506,8 +2501,7 @@ fname_match(rmp, name, ignore_case)
  * find file in buffer list by number
  */
     buf_T *
-buflist_findnr(nr)
-    int		nr;
+buflist_findnr(int nr)
 {
     buf_T	*buf;
 
@@ -2526,10 +2520,10 @@ buflist_findnr(nr)
  * Returns a pointer to allocated memory, of NULL when failed.
  */
     char_u *
-buflist_nr2name(n, fullname, helptail)
-    int		n;
-    int		fullname;
-    int		helptail;	/* for help buffers return tail only */
+buflist_nr2name(
+    int		n,
+    int		fullname,
+    int		helptail)	/* for help buffers return tail only */
 {
     buf_T	*buf;
 
@@ -2546,12 +2540,12 @@ buflist_nr2name(n, fullname, helptail)
  * When "lnum" is 0 only do the options.
  */
     static void
-buflist_setfpos(buf, win, lnum, col, copy_options)
-    buf_T	*buf;
-    win_T	*win;
-    linenr_T	lnum;
-    colnr_T	col;
-    int		copy_options;
+buflist_setfpos(
+    buf_T	*buf,
+    win_T	*win,
+    linenr_T	lnum,
+    colnr_T	col,
+    int		copy_options)
 {
     wininfo_T	*wip;
 
@@ -2612,15 +2606,14 @@ buflist_setfpos(buf, win, lnum, col, copy_options)
 }
 
 #ifdef FEAT_DIFF
-static int wininfo_other_tab_diff __ARGS((wininfo_T *wip));
+static int wininfo_other_tab_diff(wininfo_T *wip);
 
 /*
  * Return TRUE when "wip" has 'diff' set and the diff is only for another tab
  * page.  That's because a diff is local to a tab page.
  */
     static int
-wininfo_other_tab_diff(wip)
-    wininfo_T	*wip;
+wininfo_other_tab_diff(wininfo_T *wip)
 {
     win_T	*wp;
 
@@ -2645,9 +2638,9 @@ wininfo_other_tab_diff(wip)
  * Returns NULL when there isn't any info.
  */
     static wininfo_T *
-find_wininfo(buf, skip_diff_buffer)
-    buf_T	*buf;
-    int		skip_diff_buffer UNUSED;
+find_wininfo(
+    buf_T	*buf,
+    int		skip_diff_buffer UNUSED)
 {
     wininfo_T	*wip;
 
@@ -2684,8 +2677,7 @@ find_wininfo(buf, skip_diff_buffer)
  * global values for the window.
  */
     void
-get_winopts(buf)
-    buf_T	*buf;
+get_winopts(buf_T *buf)
 {
     wininfo_T	*wip;
 
@@ -2723,8 +2715,7 @@ get_winopts(buf)
  * Returns a pointer to no_position if no position is found.
  */
     pos_T *
-buflist_findfpos(buf)
-    buf_T	*buf;
+buflist_findfpos(buf_T *buf)
 {
     wininfo_T	*wip;
     static pos_T no_position = INIT_POS_T(1, 0, 0);
@@ -2740,8 +2731,7 @@ buflist_findfpos(buf)
  * Find the lnum for the buffer 'buf' for the current window.
  */
     linenr_T
-buflist_findlnum(buf)
-    buf_T	*buf;
+buflist_findlnum(buf_T *buf)
 {
     return buflist_findfpos(buf)->lnum;
 }
@@ -2751,8 +2741,7 @@ buflist_findlnum(buf)
  * List all know file names (for :files and :buffers command).
  */
     void
-buflist_list(eap)
-    exarg_T	*eap;
+buflist_list(exarg_T *eap)
 {
     buf_T	*buf;
     int		len;
@@ -2793,6 +2782,8 @@ buflist_list(eap)
 		(buf->b_flags & BF_READERR) ? 'x'
 					    : (bufIsChanged(buf) ? '+' : ' '),
 		NameBuff);
+	if (len > IOSIZE - 20)
+	    len = IOSIZE - 20;
 
 	/* put "line 999" in column 40 or after the file name */
 	i = 40 - vim_strsize(IObuff);
@@ -2817,10 +2808,10 @@ buflist_list(eap)
  * Return FAIL if not found, OK for success.
  */
     int
-buflist_name_nr(fnum, fname, lnum)
-    int		fnum;
-    char_u	**fname;
-    linenr_T	*lnum;
+buflist_name_nr(
+    int		fnum,
+    char_u	**fname,
+    linenr_T	*lnum)
 {
     buf_T	*buf;
 
@@ -2841,10 +2832,11 @@ buflist_name_nr(fnum, fname, lnum)
  *	OK otherwise.
  */
     int
-setfname(buf, ffname, sfname, message)
-    buf_T	*buf;
-    char_u	*ffname, *sfname;
-    int		message;	/* give message when buffer already exists */
+setfname(
+    buf_T	*buf,
+    char_u	*ffname,
+    char_u	*sfname,
+    int		message)	/* give message when buffer already exists */
 {
     buf_T	*obuf = NULL;
 #ifdef UNIX
@@ -2925,9 +2917,7 @@ setfname(buf, ffname, sfname, message)
     }
 #endif
 
-#ifndef SHORT_FNAME
     buf->b_shortname = FALSE;
-#endif
 
     buf_name_changed(buf);
     return OK;
@@ -2938,9 +2928,7 @@ setfname(buf, ffname, sfname, message)
  * The name should be relative to the current directory.
  */
     void
-buf_set_name(fnum, name)
-    int		fnum;
-    char_u	*name;
+buf_set_name(int fnum, char_u *name)
 {
     buf_T	*buf;
 
@@ -2963,8 +2951,7 @@ buf_set_name(fnum, name)
  * changed.
  */
     void
-buf_name_changed(buf)
-    buf_T	*buf;
+buf_name_changed(buf_T *buf)
 {
     /*
      * If the file name changed, also change the name of the swapfile
@@ -2991,10 +2978,10 @@ buf_name_changed(buf)
  * Return the buffer.
  */
     buf_T *
-setaltfname(ffname, sfname, lnum)
-    char_u	*ffname;
-    char_u	*sfname;
-    linenr_T	lnum;
+setaltfname(
+    char_u	*ffname,
+    char_u	*sfname,
+    linenr_T	lnum)
 {
     buf_T	*buf;
 
@@ -3010,8 +2997,8 @@ setaltfname(ffname, sfname, lnum)
  * Return NULL if there isn't any, and give error message if requested.
  */
     char_u  *
-getaltfname(errmsg)
-    int		errmsg;		/* give error message */
+getaltfname(
+    int		errmsg)		/* give error message */
 {
     char_u	*fname;
     linenr_T	dummy;
@@ -3032,9 +3019,7 @@ getaltfname(errmsg)
  * used by qf_init(), main() and doarglist()
  */
     int
-buflist_add(fname, flags)
-    char_u	*fname;
-    int		flags;
+buflist_add(char_u *fname, int flags)
 {
     buf_T	*buf;
 
@@ -3049,7 +3034,7 @@ buflist_add(fname, flags)
  * Adjust slashes in file names.  Called after 'shellslash' was set.
  */
     void
-buflist_slash_adjust()
+buflist_slash_adjust(void)
 {
     buf_T	*bp;
 
@@ -3068,8 +3053,7 @@ buflist_slash_adjust()
  * Also save the local window option values.
  */
     void
-buflist_altfpos(win)
-    win_T *win;
+buflist_altfpos(win_T *win)
 {
     buflist_setfpos(curbuf, win, win->w_cursor.lnum, win->w_cursor.col, TRUE);
 }
@@ -3079,8 +3063,7 @@ buflist_altfpos(win)
  * Fname must have a full path (expanded by mch_FullName()).
  */
     int
-otherfile(ffname)
-    char_u	*ffname;
+otherfile(char_u *ffname)
 {
     return otherfile_buf(curbuf, ffname
 #ifdef UNIX
@@ -3090,16 +3073,13 @@ otherfile(ffname)
 }
 
     static int
-otherfile_buf(buf, ffname
+otherfile_buf(
+    buf_T		*buf,
+    char_u		*ffname
 #ifdef UNIX
-	, stp
+    , struct stat	*stp
 #endif
-	)
-    buf_T	*buf;
-    char_u	*ffname;
-#ifdef UNIX
-    struct stat	*stp;
-#endif
+    )
 {
     /* no name is different */
     if (ffname == NULL || *ffname == NUL || buf->b_ffname == NULL)
@@ -3143,8 +3123,7 @@ otherfile_buf(buf, ffname
  * Must always be called when b_fname is changed!.
  */
     void
-buf_setino(buf)
-    buf_T	*buf;
+buf_setino(buf_T *buf)
 {
     struct stat	st;
 
@@ -3162,9 +3141,9 @@ buf_setino(buf)
  * Return TRUE if dev/ino in buffer "buf" matches with "stp".
  */
     static int
-buf_same_ino(buf, stp)
-    buf_T	*buf;
-    struct stat *stp;
+buf_same_ino(
+    buf_T	*buf,
+    struct stat *stp)
 {
     return (buf->b_dev_valid
 	    && stp->st_dev == buf->b_dev
@@ -3176,10 +3155,10 @@ buf_same_ino(buf, stp)
  * Print info about the current buffer.
  */
     void
-fileinfo(fullname, shorthelp, dont_truncate)
-    int fullname;	    /* when non-zero print full path */
-    int shorthelp;
-    int	dont_truncate;
+fileinfo(
+    int fullname,	    /* when non-zero print full path */
+    int shorthelp,
+    int	dont_truncate)
 {
     char_u	*name;
     int		n;
@@ -3295,11 +3274,11 @@ fileinfo(fullname, shorthelp, dont_truncate)
 }
 
     void
-col_print(buf, buflen, col, vcol)
-    char_u  *buf;
-    size_t  buflen;
-    int	    col;
-    int	    vcol;
+col_print(
+    char_u  *buf,
+    size_t  buflen,
+    int	    col,
+    int	    vcol)
 {
     if (col == vcol)
 	vim_snprintf((char *)buf, buflen, "%d", col);
@@ -3316,7 +3295,7 @@ static char_u *lasttitle = NULL;
 static char_u *lasticon = NULL;
 
     void
-maketitle()
+maketitle(void)
 {
     char_u	*p;
     char_u	*t_str = NULL;
@@ -3525,9 +3504,7 @@ maketitle()
  * Return TRUE when "*last" changed.
  */
     static int
-ti_change(str, last)
-    char_u	*str;
-    char_u	**last;
+ti_change(char_u *str, char_u **last)
 {
     if ((str == NULL) != (*last == NULL)
 	    || (str != NULL && *last != NULL && STRCMP(str, *last) != 0))
@@ -3546,14 +3523,14 @@ ti_change(str, last)
  * Put current window title back (used after calling a shell)
  */
     void
-resettitle()
+resettitle(void)
 {
     mch_settitle(lasttitle, lasticon);
 }
 
 # if defined(EXITFREE) || defined(PROTO)
     void
-free_titles()
+free_titles(void)
 {
     vim_free(lasttitle);
     vim_free(lasticon);
@@ -3578,17 +3555,16 @@ free_titles()
  * or truncated if too long, fillchar is used for all whitespace.
  */
     int
-build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar,
-						      maxwidth, hltab, tabtab)
-    win_T	*wp;
-    char_u	*out;		/* buffer to write into != NameBuff */
-    size_t	outlen;		/* length of out[] */
-    char_u	*fmt;
-    int		use_sandbox UNUSED; /* "fmt" was set insecurely, use sandbox */
-    int		fillchar;
-    int		maxwidth;
-    struct stl_hlrec *hltab;	/* return: HL attributes (can be NULL) */
-    struct stl_hlrec *tabtab;	/* return: tab page nrs (can be NULL) */
+build_stl_str_hl(
+    win_T	*wp,
+    char_u	*out,		/* buffer to write into != NameBuff */
+    size_t	outlen,		/* length of out[] */
+    char_u	*fmt,
+    int		use_sandbox UNUSED, /* "fmt" was set insecurely, use sandbox */
+    int		fillchar,
+    int		maxwidth,
+    struct stl_hlrec *hltab,	/* return: HL attributes (can be NULL) */
+    struct stl_hlrec *tabtab)	/* return: tab page nrs (can be NULL) */
 {
     char_u	*p;
     char_u	*s;
@@ -3751,7 +3727,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar,
 	    {
 		/* remove group if all items are empty */
 		for (n = groupitem[groupdepth] + 1; n < curitem; n++)
-		    if (item[n].type == Normal)
+		    if (item[n].type == Normal || item[n].type == Highlight)
 			break;
 		if (n == curitem)
 		{
@@ -4421,10 +4397,10 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar,
  * using "Top", "Bot" or "All" when appropriate.
  */
     void
-get_rel_pos(wp, buf, buflen)
-    win_T	*wp;
-    char_u	*buf;
-    int		buflen;
+get_rel_pos(
+    win_T	*wp,
+    char_u	*buf,
+    int		buflen)
 {
     long	above; /* number of lines above window */
     long	below; /* number of lines below window */
@@ -4457,11 +4433,11 @@ get_rel_pos(wp, buf, buflen)
  * Return TRUE if it was appended.
  */
     static int
-append_arg_number(wp, buf, buflen, add_file)
-    win_T	*wp;
-    char_u	*buf;
-    int		buflen;
-    int		add_file;	/* Add "file" before the arg number */
+append_arg_number(
+    win_T	*wp,
+    char_u	*buf,
+    int		buflen,
+    int		add_file)	/* Add "file" before the arg number */
 {
     char_u	*p;
 
@@ -4489,8 +4465,7 @@ append_arg_number(wp, buf, buflen, add_file)
  * Returns pointer to allocated memory (NULL for failure).
  */
     char_u  *
-fix_fname(fname)
-    char_u  *fname;
+fix_fname(char_u  *fname)
 {
     /*
      * Force expanding the path always for Unix, because symbolic links may
@@ -4509,7 +4484,7 @@ fix_fname(fname)
 # ifdef BACKSLASH_IN_FILENAME
 	    || strstr((char *)fname, "\\\\") != NULL
 # endif
-# if defined(MSWIN) || defined(DJGPP)
+# if defined(MSWIN)
 	    || vim_strchr(fname, '~') != NULL
 # endif
 	    )
@@ -4536,10 +4511,10 @@ fix_fname(fname)
  * "ffname" becomes a pointer to allocated memory (or NULL).
  */
     void
-fname_expand(buf, ffname, sfname)
-    buf_T	*buf UNUSED;
-    char_u	**ffname;
-    char_u	**sfname;
+fname_expand(
+    buf_T	*buf UNUSED,
+    char_u	**ffname,
+    char_u	**sfname)
 {
     if (*ffname == NULL)	/* if no file name given, nothing to do */
 	return;
@@ -4568,8 +4543,7 @@ fname_expand(buf, ffname, sfname)
  * Get the file name for an argument list entry.
  */
     char_u *
-alist_name(aep)
-    aentry_T	*aep;
+alist_name(aentry_T *aep)
 {
     buf_T	*bp;
 
@@ -4585,10 +4559,10 @@ alist_name(aep)
  * do_arg_all(): Open up to 'count' windows, one for each argument.
  */
     void
-do_arg_all(count, forceit, keep_tabs)
-    int	count;
-    int	forceit;		/* hide buffers in current windows */
-    int keep_tabs;		/* keep current tabs, for ":tab drop file" */
+do_arg_all(
+    int	count,
+    int	forceit,		/* hide buffers in current windows */
+    int keep_tabs)		/* keep current tabs, for ":tab drop file" */
 {
     int		i;
     win_T	*wp, *wpnext;
@@ -4633,9 +4607,9 @@ do_arg_all(count, forceit, keep_tabs)
     old_curwin = curwin;
     old_curtab = curtab;
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-#endif
+# endif
 
     /*
      * Try closing all windows that are not in the argument list.
@@ -4655,10 +4629,7 @@ do_arg_all(count, forceit, keep_tabs)
 	    buf = wp->w_buffer;
 	    if (buf->b_ffname == NULL
 		    || (!keep_tabs && buf->b_nwindows > 1)
-#ifdef FEAT_VERTSPLIT
-		    || wp->w_width != Columns
-#endif
-		    )
+		    || wp->w_width != Columns)
 		i = opened_len;
 	    else
 	    {
@@ -4882,8 +4853,7 @@ do_arg_all(count, forceit, keep_tabs)
  * Open a window for a number of buffers.
  */
     void
-ex_buffer_all(eap)
-    exarg_T	*eap;
+ex_buffer_all(exarg_T *eap)
 {
     buf_T	*buf;
     win_T	*wp, *wpnext;
@@ -4928,13 +4898,11 @@ ex_buffer_all(eap)
 	{
 	    wpnext = wp->w_next;
 	    if ((wp->w_buffer->b_nwindows > 1
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		    || ((cmdmod.split & WSP_VERT)
 			? wp->w_height + wp->w_status_height < Rows - p_ch
 							    - tabline_height()
 			: wp->w_width != Columns)
-#endif
-#ifdef FEAT_WINDOWS
 		    || (had_tab > 0 && wp != firstwin)
 #endif
 		    ) && firstwin != lastwin
@@ -5115,7 +5083,7 @@ ex_buffer_all(eap)
 
 #endif /* FEAT_WINDOWS */
 
-static int  chk_modeline __ARGS((linenr_T, int));
+static int  chk_modeline(linenr_T, int);
 
 /*
  * do_modelines() - process mode lines for the current file
@@ -5127,8 +5095,7 @@ static int  chk_modeline __ARGS((linenr_T, int));
  * Returns immediately if the "ml" option isn't set.
  */
     void
-do_modelines(flags)
-    int		flags;
+do_modelines(int flags)
 {
     linenr_T	lnum;
     int		nmlines;
@@ -5162,9 +5129,9 @@ do_modelines(flags)
  * Return FAIL if an error encountered.
  */
     static int
-chk_modeline(lnum, flags)
-    linenr_T	lnum;
-    int		flags;		/* Same as for do_modelines(). */
+chk_modeline(
+    linenr_T	lnum,
+    int		flags)		/* Same as for do_modelines(). */
 {
     char_u	*s;
     char_u	*e;
@@ -5284,9 +5251,9 @@ chk_modeline(lnum, flags)
 
 #if defined(FEAT_VIMINFO) || defined(PROTO)
     int
-read_viminfo_bufferlist(virp, writing)
-    vir_T	*virp;
-    int		writing;
+read_viminfo_bufferlist(
+    vir_T	*virp,
+    int		writing)
 {
     char_u	*tab;
     linenr_T	lnum;
@@ -5338,8 +5305,7 @@ read_viminfo_bufferlist(virp, writing)
 }
 
     void
-write_viminfo_bufferlist(fp)
-    FILE    *fp;
+write_viminfo_bufferlist(FILE *fp)
 {
     buf_T	*buf;
 #ifdef FEAT_WINDOWS
@@ -5398,8 +5364,7 @@ write_viminfo_bufferlist(fp)
  * Returns NULL when the buffer has a normal file name.
  */
     char_u *
-buf_spname(buf)
-    buf_T	*buf;
+buf_spname(buf_T *buf)
 {
 #if defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)
     if (bt_quickfix(buf))
@@ -5441,10 +5406,10 @@ buf_spname(buf)
  * If not found FAIL is returned.
  */
     int
-find_win_for_buf(buf, wp, tp)
-    buf_T     *buf;
-    win_T     **wp;
-    tabpage_T **tp;
+find_win_for_buf(
+    buf_T     *buf,
+    win_T     **wp,
+    tabpage_T **tp)
 {
     FOR_ALL_TAB_WINDOWS(*tp, *wp)
 	if ((*wp)->w_buffer == buf)
@@ -5460,13 +5425,13 @@ win_found:
  * Insert the sign into the signlist.
  */
     static void
-insert_sign(buf, prev, next, id, lnum, typenr)
-    buf_T	*buf;		/* buffer to store sign in */
-    signlist_T	*prev;		/* previous sign entry */
-    signlist_T	*next;		/* next sign entry */
-    int		id;		/* sign ID */
-    linenr_T	lnum;		/* line number which gets the mark */
-    int		typenr;		/* typenr of sign we are adding */
+insert_sign(
+    buf_T	*buf,		/* buffer to store sign in */
+    signlist_T	*prev,		/* previous sign entry */
+    signlist_T	*next,		/* next sign entry */
+    int		id,		/* sign ID */
+    linenr_T	lnum,		/* line number which gets the mark */
+    int		typenr)		/* typenr of sign we are adding */
 {
     signlist_T	*newsign;
 
@@ -5509,11 +5474,11 @@ insert_sign(buf, prev, next, id, lnum, typenr)
  * Add the sign into the signlist. Find the right spot to do it though.
  */
     void
-buf_addsign(buf, id, lnum, typenr)
-    buf_T	*buf;		/* buffer to store sign in */
-    int		id;		/* sign ID */
-    linenr_T	lnum;		/* line number which gets the mark */
-    int		typenr;		/* typenr of sign we are adding */
+buf_addsign(
+    buf_T	*buf,		/* buffer to store sign in */
+    int		id,		/* sign ID */
+    linenr_T	lnum,		/* line number which gets the mark */
+    int		typenr)		/* typenr of sign we are adding */
 {
     signlist_T	*sign;		/* a sign in the signlist */
     signlist_T	*prev;		/* the previous sign */
@@ -5568,10 +5533,10 @@ buf_addsign(buf, id, lnum, typenr)
  * Returns the line number of the sign, or zero if the sign is not found.
  */
     linenr_T
-buf_change_sign_type(buf, markId, typenr)
-    buf_T	*buf;		/* buffer to store sign in */
-    int		markId;		/* sign ID */
-    int		typenr;		/* typenr of sign we are adding */
+buf_change_sign_type(
+    buf_T	*buf,		/* buffer to store sign in */
+    int		markId,		/* sign ID */
+    int		typenr)		/* typenr of sign we are adding */
 {
     signlist_T	*sign;		/* a sign in the signlist */
 
@@ -5588,10 +5553,10 @@ buf_change_sign_type(buf, markId, typenr)
 }
 
     int
-buf_getsigntype(buf, lnum, type)
-    buf_T	*buf;
-    linenr_T	lnum;
-    int		type;	/* SIGN_ICON, SIGN_TEXT, SIGN_ANY, SIGN_LINEHL */
+buf_getsigntype(
+    buf_T	*buf,
+    linenr_T	lnum,
+    int		type)	/* SIGN_ICON, SIGN_TEXT, SIGN_ANY, SIGN_LINEHL */
 {
     signlist_T	*sign;		/* a sign in a b_signlist */
 
@@ -5612,9 +5577,9 @@ buf_getsigntype(buf, lnum, type)
 
 
     linenr_T
-buf_delsign(buf, id)
-    buf_T	*buf;		/* buffer sign is stored in */
-    int		id;		/* sign id */
+buf_delsign(
+    buf_T	*buf,		/* buffer sign is stored in */
+    int		id)		/* sign id */
 {
     signlist_T	**lastp;	/* pointer to pointer to current sign */
     signlist_T	*sign;		/* a sign in a b_signlist */
@@ -5659,9 +5624,9 @@ buf_delsign(buf, id)
  * get loaded.
  */
     int
-buf_findsign(buf, id)
-    buf_T	*buf;		/* buffer to store sign in */
-    int		id;		/* sign ID */
+buf_findsign(
+    buf_T	*buf,		/* buffer to store sign in */
+    int		id)		/* sign ID */
 {
     signlist_T	*sign;		/* a sign in the signlist */
 
@@ -5673,9 +5638,9 @@ buf_findsign(buf, id)
 }
 
     int
-buf_findsign_id(buf, lnum)
-    buf_T	*buf;		/* buffer whose sign we are searching for */
-    linenr_T	lnum;		/* line number of sign */
+buf_findsign_id(
+    buf_T	*buf,		/* buffer whose sign we are searching for */
+    linenr_T	lnum)		/* line number of sign */
 {
     signlist_T	*sign;		/* a sign in the signlist */
 
@@ -5690,10 +5655,10 @@ buf_findsign_id(buf, lnum)
 # if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 /* see if a given type of sign exists on a specific line */
     int
-buf_findsigntype_id(buf, lnum, typenr)
-    buf_T	*buf;		/* buffer whose sign we are searching for */
-    linenr_T	lnum;		/* line number of sign */
-    int		typenr;		/* sign type number */
+buf_findsigntype_id(
+    buf_T	*buf,		/* buffer whose sign we are searching for */
+    linenr_T	lnum,		/* line number of sign */
+    int		typenr)		/* sign type number */
 {
     signlist_T	*sign;		/* a sign in the signlist */
 
@@ -5708,9 +5673,7 @@ buf_findsigntype_id(buf, lnum, typenr)
 #  if defined(FEAT_SIGN_ICONS) || defined(PROTO)
 /* return the number of icons on the given line */
     int
-buf_signcount(buf, lnum)
-    buf_T	*buf;
-    linenr_T	lnum;
+buf_signcount(buf_T *buf, linenr_T lnum)
 {
     signlist_T	*sign;		/* a sign in the signlist */
     int		count = 0;
@@ -5730,8 +5693,7 @@ buf_signcount(buf, lnum)
  * Delete signs in buffer "buf".
  */
     void
-buf_delete_signs(buf)
-    buf_T	*buf;
+buf_delete_signs(buf_T *buf)
 {
     signlist_T	*next;
 
@@ -5755,7 +5717,7 @@ buf_delete_signs(buf)
  * Delete all signs in all buffers.
  */
     void
-buf_delete_all_signs()
+buf_delete_all_signs(void)
 {
     buf_T	*buf;		/* buffer we are checking for signs */
 
@@ -5768,8 +5730,7 @@ buf_delete_all_signs()
  * List placed signs for "rbuf".  If "rbuf" is NULL do it for all buffers.
  */
     void
-sign_list_placed(rbuf)
-    buf_T	*rbuf;
+sign_list_placed(buf_T *rbuf)
 {
     buf_T	*buf;
     signlist_T	*p;
@@ -5806,11 +5767,11 @@ sign_list_placed(rbuf)
  * Adjust a placed sign for inserted/deleted lines.
  */
     void
-sign_mark_adjust(line1, line2, amount, amount_after)
-    linenr_T	line1;
-    linenr_T	line2;
-    long	amount;
-    long	amount_after;
+sign_mark_adjust(
+    linenr_T	line1,
+    linenr_T	line2,
+    long	amount,
+    long	amount_after)
 {
     signlist_T	*sign;		/* a sign in a b_signlist */
 
@@ -5833,8 +5794,7 @@ sign_mark_adjust(line1, line2, amount, amount_after)
  * Set 'buflisted' for curbuf to "on" and trigger autocommands if it changed.
  */
     void
-set_buflisted(on)
-    int		on;
+set_buflisted(int on)
 {
     if (on != curbuf->b_p_bl)
     {
@@ -5853,8 +5813,7 @@ set_buflisted(on)
  * Return TRUE if it changed or this could not be checked.
  */
     int
-buf_contents_changed(buf)
-    buf_T	*buf;
+buf_contents_changed(buf_T *buf)
 {
     buf_T	*newbuf;
     int		differ = TRUE;
@@ -5911,9 +5870,9 @@ buf_contents_changed(buf)
  * marks.
  */
     void
-wipe_buffer(buf, aucmd)
-    buf_T	*buf;
-    int		aucmd UNUSED;	    /* When TRUE trigger autocommands. */
+wipe_buffer(
+    buf_T	*buf,
+    int		aucmd UNUSED)	    /* When TRUE trigger autocommands. */
 {
     if (buf->b_fnum == top_file_num - 1)
 	--top_file_num;

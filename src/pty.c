@@ -124,7 +124,7 @@
 # undef HAVE_SVR4_PTYS
 #endif
 
-static void initmaster __ARGS((int));
+static void initmaster(int);
 
 /*
  *  Open all ptys with O_NOCTTY, just to be on the safe side.
@@ -134,8 +134,7 @@ static void initmaster __ARGS((int));
 #endif
 
     static void
-initmaster(f)
-    int f UNUSED;
+initmaster(int f UNUSED)
 {
 #ifndef VMS
 # ifdef POSIX
@@ -156,8 +155,7 @@ initmaster(f)
  * pty on others.  Needs to be tuned...
  */
     int
-SetupSlavePTY(fd)
-    int fd;
+SetupSlavePTY(int fd)
 {
     if (fd < 0)
 	return 0;
@@ -180,8 +178,7 @@ SetupSlavePTY(fd)
 #if defined(OSX) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     static char TtyName[32];
@@ -198,8 +195,7 @@ OpenPTY(ttyn)
 	&& !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     char	*m, *s;
     int		f;
@@ -223,12 +219,11 @@ OpenPTY(ttyn)
 #if defined(__sgi) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int f;
     char *name;
-    RETSIGTYPE (*sigcld)__ARGS(SIGPROTOARG);
+    RETSIGTYPE (*sigcld) SIGPROTOARG;
 
     /*
      * SIGCHLD set to SIG_DFL for _getpty() because it may fork() and
@@ -249,8 +244,7 @@ OpenPTY(ttyn)
 #if defined(MIPS) && defined(HAVE_DEV_PTC) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     struct stat buf;
@@ -277,15 +271,14 @@ OpenPTY(ttyn)
  * Same for Mac OS X Leopard. */
 #define PTY_DONE
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     char	*m;
-    char	*(ptsname __ARGS((int)));
-    int		unlockpt __ARGS((int));
-    int		grantpt __ARGS((int));
-    RETSIGTYPE (*sigcld)__ARGS(SIGPROTOARG);
+    char	*(ptsname(int));
+    int		unlockpt(int);
+    int		grantpt(int);
+    RETSIGTYPE (*sigcld) SIGPROTOARG;
     /* used for opening a new pty-pair: */
     static char TtyName[32];
 
@@ -319,8 +312,7 @@ int aixhack = -1;
 #endif
 
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     int		f;
     /* used for opening a new pty-pair: */
@@ -366,8 +358,7 @@ static char TtyProto[] = "/dev/ttyXY";
 # endif
 
     int
-OpenPTY(ttyn)
-    char **ttyn;
+OpenPTY(char **ttyn)
 {
     char	*p, *q, *l, *d;
     int		f;

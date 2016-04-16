@@ -1111,9 +1111,7 @@ gui_ph_encoding_changed(int new_encoding)
 /****************************************************************************/
 
     void
-gui_mch_prepare(argc, argv)
-    int	    *argc;
-    char    **argv;
+gui_mch_prepare(int *argc, char **argv)
 {
     PtInit(NULL);
 }
@@ -1720,7 +1718,7 @@ gui_mch_iconify(void)
  * Bring the Vim window to the foreground.
  */
     void
-gui_mch_set_foreground()
+gui_mch_set_foreground(void)
 {
     PhWindowEvent_t event;
 
@@ -1860,8 +1858,7 @@ static int mshape_ids[] =
 };
 
     void
-mch_set_mouse_shape(shape)
-    int	shape;
+mch_set_mouse_shape(int shape)
 {
     int	    id;
 
@@ -2184,7 +2181,7 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
 }
 
     void
-gui_mch_clear_all()
+gui_mch_clear_all(void)
 {
     PhRect_t text_rect = {
 	{ gui.border_width, gui.border_width },
@@ -3078,9 +3075,7 @@ gui_mch_get_font(char_u *vim_font_name, int report_error)
  * Don't know how to get the actual name, thus use the provided name.
  */
     char_u *
-gui_mch_get_fontname(font, name)
-    GuiFont font;
-    char_u  *name;
+gui_mch_get_fontname(GuiFont font, char_u *name)
 {
     if (name == NULL)
 	return NULL;

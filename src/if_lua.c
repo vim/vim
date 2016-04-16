@@ -402,12 +402,7 @@ lua_link_init(char *libname, int verbose)
     int
 lua_enabled(int verbose)
 {
-#ifdef WIN3264
-    char *dll = DYNAMIC_LUA_DLL;
-#else
-    char *dll = *p_luadll ? (char *)p_luadll : DYNAMIC_LUA_DLL;
-#endif
-    return lua_link_init(dll, verbose) == OK;
+    return lua_link_init((char *)p_luadll, verbose) == OK;
 }
 
 #endif /* DYNAMIC_LUA */
@@ -504,6 +499,12 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	case VAR_DICT:
 	    luaV_pushdict(L, tv->vval.v_dict);
 	    break;
+	case VAR_SPECIAL:
+	    if (tv->vval.v_number <= VVAL_TRUE)
+		lua_pushinteger(L, (int) tv->vval.v_number);
+	    else
+		lua_pushnil(L);
+	    break;
 	default:
 	    lua_pushnil(L);
     }
@@ -515,7 +516,7 @@ luaV_totypval (lua_State *L, int pos, typval_T *tv)
 {
     switch(lua_type(L, pos)) {
 	case LUA_TBOOLEAN:
-	    tv->v_type = VAR_NUMBER;
+	    tv->v_type = VAR_SPECIAL;
 	    tv->vval.v_number = (varnumber_T) lua_toboolean(L, pos);
 	    break;
 	case LUA_TSTRING:
@@ -1176,7 +1177,7 @@ luaV_window_index(lua_State *L)
 	lua_pushinteger(L, w->w_cursor.lnum);
     else if (strncmp(s, "col", 3) == 0)
 	lua_pushinteger(L, w->w_cursor.col + 1);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     else if (strncmp(s, "width", 5) == 0)
 	lua_pushinteger(L, W_WIDTH(w));
 #endif
@@ -1219,7 +1220,7 @@ luaV_window_newindex (lua_State *L)
 	w->w_cursor.col = v - 1;
 	update_screen(VALID);
     }
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     else if (strncmp(s, "width", 5) == 0)
     {
 	win_T *win = curwin;

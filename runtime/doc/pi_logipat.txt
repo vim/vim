@@ -1,25 +1,25 @@
-*pi_logipat.txt*	Logical Patterns				Mar 13, 2013
+*logiPat.txt*	Logical Patterns				Jun 22, 2015
 
 Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
-Copyright: (c) 2004-2013 by Charles E. Campbell	*logipat-copyright*
+Copyright: (c) 2004-2015 by Charles E. Campbell	*logiPat-copyright*
            The VIM LICENSE applies to LogiPat.vim and LogiPat.txt
            (see |copyright|) except use "LogiPat" instead of "Vim"
 	   No warranty, express or implied.  Use At-Your-Own-Risk.
 
 ==============================================================================
-1. Contents					*logipat* *logipat-contents*
+1. Contents					*logiPat* *logiPat-contents*
 
-	1. Contents.................: |logipat-contents|
-	2. LogiPat Manual...........: |logipat-manual|
-	3. LogiPat Examples.........: |logipat-examples|
-	4. Caveat...................: |logipat-caveat|
-	5. LogiPat History..........: |logipat-history|
+	1. Contents.................: |logiPat-contents|
+	2. LogiPat Manual...........: |logiPat-manual|
+	3. LogiPat Examples.........: |logiPat-examples|
+	4. Caveat...................: |logiPat-caveat|
+	5. LogiPat History..........: |logiPat-history|
+
 
 ==============================================================================
-2. LogiPat Manual			*logipat-manual* *logipat-man*
+2. LogiPat Manual			*logiPat-manual* *logiPat-man*
 
-
-	*logipat-arg* *logipat-input* *logipat-pattern* *logipat-operators*
+	*logiPat-arg* *logiPat-input* *logiPat-pattern* *logiPat-operators*
 	Boolean logic patterns are composed of
 
 			operators  ! = not
@@ -30,13 +30,12 @@ Copyright: (c) 2004-2013 by Charles E. Campbell	*logipat-copyright*
 
 	:LogiPat {boolean-logic pattern}		*:LogiPat*
 		:LogiPat is a command which takes a boolean-logic
-		argument (|logipat-arg|).
+		argument (|logiPat-arg|).
 
 	:LP {boolean-logic pattern}			*:LP*
 		:LP is a shorthand command version of :LogiPat
-		(|:LogiPat|).
 
-	:ELP {boolean-logic pattern}			*:ELP*
+	:LPE {boolean-logic pattern}			*:LPE*
 		No search is done, but the conversion from the
 		boolean logic pattern to the regular expression
 		is performed and echoed onto the display.
@@ -59,8 +58,9 @@ Copyright: (c) 2004-2013 by Charles E. Campbell	*logipat-copyright*
 	To get a " inside a pattern, as opposed to having it delimit
 	the pattern, double it.
 
+
 ==============================================================================
-3. LogiPat Examples					*logipat-examples*
+3. LogiPat Examples					*logiPat-examples*
 
 	LogiPat takes Boolean logic arguments and produces a regular
 	expression which implements the choices.  A series of examples
@@ -96,22 +96,26 @@ Copyright: (c) 2004-2013 by Charles E. Campbell	*logipat-copyright*
 
 
 ==============================================================================
-4. Caveat						*logipat-caveat*
+4. Caveat						*logiPat-caveat*
 
 	The "not" operator may be fragile; ie. it may not always play well
 	with the & (logical-and) and | (logical-or) operators.  Please try out
 	your patterns, possibly with :set hls, to insure that what is matching
 	is what you want.
 
-==============================================================================
-3. LogiPat History					*logipat-history*
 
+==============================================================================
+3. LogiPat History					*logiPat-history*
+
+	v4 Jun 22, 2015 * LogiPat has been picked up by Bram M for standard
+			  plugin distribution; hence the name change
 	v3 Sep 25, 2006 * LP_Or() fixed; it now encapsulates its output
 	                  in \%(...\) parentheses
-	   Dec 12, 2011 * |:ELP| added
+	   Dec 12, 2011 * |:LPE| added
 			* "" is mapped to a single " and left inside patterns
 	v2 May 31, 2005	* LPF and LogiPatFlags commands weren't working
 	v1 May 23, 2005	* initial release
+
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help

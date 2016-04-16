@@ -74,16 +74,6 @@
 # define USE_GETCWD
 #endif
 
-#ifndef __ARGS
-    /* The AIX VisualAge cc compiler defines __EXTENDED__ instead of __STDC__
-     * because it includes pre-ansi features. */
-# if defined(__STDC__) || defined(__GNUC__) || defined(__EXTENDED__)
-#  define __ARGS(x) x
-# else
-#  define __ARGS(x) ()
-# endif
-#endif
-
 /* always use unlink() to remove files */
 #ifndef PROTO
 # ifdef VMS
@@ -181,10 +171,6 @@
 # include <pwd.h>
 #endif
 
-#ifdef __COHERENT__
-# undef __ARGS
-#endif
-
 #if (defined(HAVE_SYS_RESOURCE_H) && defined(HAVE_GETRLIMIT)) \
 	|| (defined(HAVE_SYS_SYSINFO_H) && defined(HAVE_SYSINFO)) \
 	|| defined(HAVE_SYSCTL) || defined(HAVE_SYSCONF)
@@ -274,9 +260,6 @@ typedef struct dsc$descriptor   DESC;
 # endif
 #endif
 
-#if !defined(USR_EXRC_FILE2) && defined(OS2)
-# define USR_EXRC_FILE2 "$VIM/.exrc"
-#endif
 #if !defined(USR_EXRC_FILE2) && defined(VMS)
 # define USR_EXRC_FILE2 "sys$login:_exrc"
 #endif
@@ -291,20 +274,13 @@ typedef struct dsc$descriptor   DESC;
 
 
 #if !defined(USR_VIMRC_FILE2)
-# ifdef OS2
-#  define USR_VIMRC_FILE2	"$HOME/vimfiles/vimrc"
+# ifdef VMS
+#  define USR_VIMRC_FILE2	"sys$login:vimfiles/vimrc"
 # else
-#  ifdef VMS
-#   define USR_VIMRC_FILE2	"sys$login:vimfiles/vimrc"
-#  else
-#    define USR_VIMRC_FILE2	"~/.vim/vimrc"
-#  endif
+#   define USR_VIMRC_FILE2	"~/.vim/vimrc"
 # endif
 #endif
 
-#if !defined(USR_VIMRC_FILE3) && defined(OS2)
-# define USR_VIMRC_FILE3 "$VIM/.vimrc"
-#endif
 #if !defined(USR_VIMRC_FILE3) && defined(VMS)
 # define USR_VIMRC_FILE3 "sys$login:_vimrc"
 #endif
@@ -318,14 +294,10 @@ typedef struct dsc$descriptor   DESC;
 #endif
 
 #ifndef USR_GVIMRC_FILE2
-# ifdef OS2
-#  define USR_GVIMRC_FILE2	"$HOME/vimfiles/gvimrc"
+# ifdef VMS
+#  define USR_GVIMRC_FILE2	"sys$login:vimfiles/gvimrc"
 # else
-#  ifdef VMS
-#   define USR_GVIMRC_FILE2	"sys$login:vimfiles/gvimrc"
-#  else
-#   define USR_GVIMRC_FILE2	"~/.vim/gvimrc"
-#  endif
+#  define USR_GVIMRC_FILE2	"~/.vim/gvimrc"
 # endif
 #endif
 
@@ -346,9 +318,6 @@ typedef struct dsc$descriptor   DESC;
 #  else
 #   define VIMINFO_FILE "$HOME/.viminfo"
 #  endif
-# endif
-# if !defined(VIMINFO_FILE2) && defined(OS2)
-#  define VIMINFO_FILE2 "$VIM/.viminfo"
 # endif
 # if !defined(VIMINFO_FILE2) && defined(VMS)
 #  define VIMINFO_FILE2 "sys$login:_viminfo"
@@ -374,74 +343,51 @@ typedef struct dsc$descriptor   DESC;
 #endif
 
 #ifndef DFLT_BDIR
-# ifdef OS2
-#  define DFLT_BDIR     ".,c:/tmp,~/tmp,~/"
+# ifdef VMS
+#  define DFLT_BDIR    "./,sys$login:,tmp:"
 # else
-#  ifdef VMS
-#   define DFLT_BDIR    "./,sys$login:,tmp:"
-#  else
-#   define DFLT_BDIR    ".,~/tmp,~/"    /* default for 'backupdir' */
-#  endif
+#  define DFLT_BDIR    ".,~/tmp,~/"    /* default for 'backupdir' */
 # endif
 #endif
 
 #ifndef DFLT_DIR
-# ifdef OS2
-#  define DFLT_DIR      ".,~/tmp,c:/tmp,/tmp"
+# ifdef VMS
+#  define DFLT_DIR     "./,sys$login:,tmp:"
 # else
-#  ifdef VMS
-#   define DFLT_DIR     "./,sys$login:,tmp:"
-#  else
-#   define DFLT_DIR     ".,~/tmp,/var/tmp,/tmp" /* default for 'directory' */
-#  endif
+#  define DFLT_DIR     ".,~/tmp,/var/tmp,/tmp" /* default for 'directory' */
 # endif
 #endif
 
 #ifndef DFLT_VDIR
-# ifdef OS2
-#  define DFLT_VDIR     "$VIM/vimfiles/view"
+# ifdef VMS
+#  define DFLT_VDIR    "sys$login:vimfiles/view"
 # else
-#  ifdef VMS
-#   define DFLT_VDIR    "sys$login:vimfiles/view"
-#  else
-#   define DFLT_VDIR    "$HOME/.vim/view"       /* default for 'viewdir' */
-#  endif
+#  define DFLT_VDIR    "$HOME/.vim/view"       /* default for 'viewdir' */
 # endif
 #endif
 
 #define DFLT_ERRORFILE		"errors.err"
 
-#ifdef OS2
-# define DFLT_RUNTIMEPATH	"$HOME/vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,$HOME/vimfiles/after"
+#ifdef VMS
+# define DFLT_RUNTIMEPATH      "sys$login:vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,sys$login:vimfiles/after"
 #else
-# ifdef VMS
-#  define DFLT_RUNTIMEPATH      "sys$login:vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,sys$login:vimfiles/after"
+# ifdef RUNTIME_GLOBAL
+#  define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,~/.vim/after"
 # else
-#  ifdef RUNTIME_GLOBAL
-#   define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,~/.vim/after"
-#  else
-#   define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
-#  endif
+#  define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
 # endif
 #endif
 
-#ifdef OS2
-/*
- * Try several directories to put the temp files.
- */
-# define TEMPDIRNAMES	"$TMP", "$TEMP", "c:\\TMP", "c:\\TEMP", ""
-# define TEMPNAMELEN	128
-#else
-# ifdef VMS
-#  ifndef VAX
-#   define VMS_TEMPNAM    /* to fix default .LIS extension */
-#  endif
-#  define TEMPNAME       "TMP:v?XXXXXX.txt"
-#  define TEMPNAMELEN    28
-# else
-#  define TEMPDIRNAMES  "$TMPDIR", "/tmp", ".", "$HOME"
-#  define TEMPNAMELEN    256
+#ifdef VMS
+# ifndef VAX
+#  define VMS_TEMPNAM    /* to fix default .LIS extension */
 # endif
+# define TEMPNAME       "TMP:v?XXXXXX.txt"
+# define TEMPNAMELEN    28
+#else
+/* Try several directories to put the temp files. */
+# define TEMPDIRNAMES  "$TMPDIR", "/tmp", ".", "$HOME"
+# define TEMPNAMELEN    256
 #endif
 
 /* Special wildcards that need to be handled by the shell */
@@ -503,7 +449,7 @@ typedef struct dsc$descriptor   DESC;
 # ifdef HAVE_RENAME
 #  define mch_rename(src, dst) rename(src, dst)
 # else
-int mch_rename __ARGS((const char *src, const char *dest));
+int mch_rename(const char *src, const char *dest);
 # endif
 # ifndef VMS
 #  ifdef __MVS__

@@ -81,6 +81,11 @@
 # define RUBY19_OR_LATER 1
 #endif
 
+#if (defined(RUBY_VERSION) && RUBY_VERSION >= 20) \
+    || (defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20)
+# define RUBY20_OR_LATER 1
+#endif
+
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
 /* Ruby 1.9 defines a number of static functions which use rb_num2long and
  * rb_int2big */
@@ -103,7 +108,6 @@
 #endif
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 22
 # define rb_gc_writebarrier_unprotect rb_gc_writebarrier_unprotect_stub
-# define rb_check_type rb_check_type_stub
 #endif
 
 #include <ruby.h>
@@ -120,6 +124,16 @@
 # define __OPENTRANSPORT__
 # define __OPENTRANSPORTPROTOCOL__
 # define __OPENTRANSPORTPROVIDERS__
+#endif
+
+/*
+ * The TypedData_XXX macro family can be used since Ruby 1.9.2 but
+ * rb_data_type_t changed in 1.9.3, therefore require at least 2.0.
+ * The old Data_XXX macro family was deprecated on Ruby 2.2.
+ * Use TypedData_XXX if available.
+ */
+#if defined(TypedData_Wrap_Struct) && defined(RUBY20_OR_LATER)
+# define USE_TYPEDDATA	1
 #endif
 
 /*
@@ -142,6 +156,10 @@
 #endif
 #ifndef RSTRING_PTR
 # define RSTRING_PTR(s) RSTRING(s)->ptr
+#endif
+
+#ifdef HAVE_DUP
+# undef HAVE_DUP
 #endif
 
 #include "vim.h"
@@ -175,7 +193,7 @@ static void ruby_vim_init(void);
 #endif
 
 #if defined(DYNAMIC_RUBY) || defined(PROTO)
-# ifdef PROTO
+# if defined(PROTO) && !defined(HINSTANCE)
 #  define HINSTANCE int		/* for generating prototypes */
 # endif
 
@@ -184,11 +202,20 @@ static void ruby_vim_init(void);
  */
 # define rb_assoc_new			dll_rb_assoc_new
 # define rb_cObject			(*dll_rb_cObject)
-# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER < 22
-#  define rb_check_type			dll_rb_check_type
+# define rb_check_type			dll_rb_check_type
+# ifdef USE_TYPEDDATA
+#  define rb_check_typeddata		dll_rb_check_typeddata
 # endif
 # define rb_class_path			dll_rb_class_path
-# define rb_data_object_alloc		dll_rb_data_object_alloc
+# ifdef USE_TYPEDDATA
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 23
+#   define rb_data_typed_object_wrap	dll_rb_data_typed_object_wrap
+#  else
+#   define rb_data_typed_object_alloc	dll_rb_data_typed_object_alloc
+#  endif
+# else
+#  define rb_data_object_alloc		dll_rb_data_object_alloc
+# endif
 # define rb_define_class_under		dll_rb_define_class_under
 # define rb_define_const			dll_rb_define_const
 # define rb_define_global_function	dll_rb_define_global_function
@@ -230,6 +257,7 @@ static void ruby_vim_init(void);
 # define rb_raise			dll_rb_raise
 # define rb_str_cat			dll_rb_str_cat
 # define rb_str_concat			dll_rb_str_concat
+# undef rb_str_new
 # define rb_str_new			dll_rb_str_new
 # ifdef rb_str_new2
 /* Ruby may #define rb_str_new2 to use rb_str_new_cstr. */
@@ -277,7 +305,8 @@ static void ruby_vim_init(void);
 #  define ruby_script			dll_ruby_script
 #  define rb_enc_find_index		dll_rb_enc_find_index
 #  define rb_enc_find			dll_rb_enc_find
-#  define rb_enc_str_new			dll_rb_enc_str_new
+#  undef rb_enc_str_new
+#  define rb_enc_str_new		dll_rb_enc_str_new
 #  define rb_sprintf			dll_rb_sprintf
 #  define rb_require			dll_rb_require
 #  define ruby_options			dll_ruby_options
@@ -297,8 +326,19 @@ static VALUE *dll_rb_cObject;
 VALUE *dll_rb_cSymbol;
 VALUE *dll_rb_cTrueClass;
 static void (*dll_rb_check_type) (VALUE,int);
+# ifdef USE_TYPEDDATA
+static void *(*dll_rb_check_typeddata) (VALUE,const rb_data_type_t *);
+# endif
 static VALUE (*dll_rb_class_path) (VALUE);
+# ifdef USE_TYPEDDATA
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 23
+static VALUE (*dll_rb_data_typed_object_wrap) (VALUE, void*, const rb_data_type_t *);
+#  else
+static VALUE (*dll_rb_data_typed_object_alloc) (VALUE, void*, const rb_data_type_t *);
+#  endif
+# else
 static VALUE (*dll_rb_data_object_alloc) (VALUE, void*, RUBY_DATA_FUNC, RUBY_DATA_FUNC);
+# endif
 static VALUE (*dll_rb_define_class_under) (VALUE, const char*, VALUE);
 static void (*dll_rb_define_const) (VALUE,const char*,VALUE);
 static void (*dll_rb_define_global_function) (const char*,VALUE(*)(),int);
@@ -451,13 +491,6 @@ void rb_gc_writebarrier_unprotect_stub(VALUE obj)
 #  endif
 # endif
 
-# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 22
-void rb_check_type_stub(VALUE v, int i)
-{
-    dll_rb_check_type(v, i);
-}
-# endif
-
 static HINSTANCE hinstRuby = NULL; /* Instance of ruby.dll */
 
 /*
@@ -480,8 +513,19 @@ static struct
     {"rb_cSymbol", (RUBY_PROC*)&dll_rb_cSymbol},
     {"rb_cTrueClass", (RUBY_PROC*)&dll_rb_cTrueClass},
     {"rb_check_type", (RUBY_PROC*)&dll_rb_check_type},
+# ifdef USE_TYPEDDATA
+    {"rb_check_typeddata", (RUBY_PROC*)&dll_rb_check_typeddata},
+# endif
     {"rb_class_path", (RUBY_PROC*)&dll_rb_class_path},
+# ifdef USE_TYPEDDATA
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 23
+    {"rb_data_typed_object_wrap", (RUBY_PROC*)&dll_rb_data_typed_object_wrap},
+#  else
+    {"rb_data_typed_object_alloc", (RUBY_PROC*)&dll_rb_data_typed_object_alloc},
+#  endif
+# else
     {"rb_data_object_alloc", (RUBY_PROC*)&dll_rb_data_object_alloc},
+# endif
     {"rb_define_class_under", (RUBY_PROC*)&dll_rb_define_class_under},
     {"rb_define_const", (RUBY_PROC*)&dll_rb_define_const},
     {"rb_define_global_function", (RUBY_PROC*)&dll_rb_define_global_function},
@@ -587,7 +631,7 @@ static struct
  * Free ruby.dll
  */
     static void
-end_dynamic_ruby()
+end_dynamic_ruby(void)
 {
     if (hinstRuby)
     {
@@ -636,20 +680,14 @@ ruby_runtime_link_init(char *libname, int verbose)
  * else FALSE.
  */
     int
-ruby_enabled(verbose)
-    int		verbose;
+ruby_enabled(int verbose)
 {
-#ifdef WIN3264
-    char *dll = DYNAMIC_RUBY_DLL;
-#else
-    char *dll = *p_rubydll ? (char *)p_rubydll : DYNAMIC_RUBY_DLL;
-#endif
-    return ruby_runtime_link_init(dll, verbose) == OK;
+    return ruby_runtime_link_init((char *)p_rubydll, verbose) == OK;
 }
 #endif /* defined(DYNAMIC_RUBY) || defined(PROTO) */
 
     void
-ruby_end()
+ruby_end(void)
 {
 #ifdef DYNAMIC_RUBY
     end_dynamic_ruby();
@@ -693,7 +731,8 @@ vim_str2rb_enc_str(const char *s)
     {
 	enc = rb_enc_find((char *)sval);
 	vim_free(sval);
-	if (enc) {
+	if (enc)
+	{
 	    return rb_enc_str_new(s, strlen(s), enc);
 	}
     }
@@ -735,19 +774,23 @@ void ex_rubydo(exarg_T *eap)
     {
 	if (u_save(eap->line1 - 1, eap->line2 + 1) != OK)
 	    return;
-	for (i = eap->line1; i <= eap->line2; i++) {
+	for (i = eap->line1; i <= eap->line2; i++)
+	{
 	    VALUE line;
 
 	    line = vim_str2rb_enc_str((char *)ml_get(i));
 	    rb_lastline_set(line);
 	    eval_enc_string_protect((char *) eap->arg, &state);
-	    if (state) {
+	    if (state)
+	    {
 		error_print(state);
 		break;
 	    }
 	    line = rb_lastline_get();
-	    if (!NIL_P(line)) {
-		if (TYPE(line) != T_STRING) {
+	    if (!NIL_P(line))
+	    {
+		if (TYPE(line) != T_STRING)
+		{
 		    EMSG(_("E265: $_ must be an instance of String"));
 		    return;
 		}
@@ -860,7 +903,8 @@ static void error_print(int state)
 #define TAG_FATAL	0x8
 #define TAG_MASK	0xf
 
-    switch (state) {
+    switch (state)
+    {
     case TAG_RETURN:
 	EMSG(_("E267: unexpected return"));
 	break;
@@ -885,10 +929,12 @@ static void error_print(int state)
 	eclass = CLASS_OF(ruby_errinfo);
 	einfo = rb_obj_as_string(ruby_errinfo);
 #endif
-	if (eclass == rb_eRuntimeError && RSTRING_LEN(einfo) == 0) {
+	if (eclass == rb_eRuntimeError && RSTRING_LEN(einfo) == 0)
+	{
 	    EMSG(_("E272: unhandled exception"));
 	}
-	else {
+	else
+	{
 	    VALUE epath;
 	    char *p;
 
@@ -999,6 +1045,11 @@ static VALUE vim_to_ruby(typval_T *tv)
 		}
 	    }
 	}
+    }
+    else if (tv->v_type == VAR_SPECIAL)
+    {
+	if (tv->vval.v_number <= VVAL_TRUE)
+	    result = INT2NUM(tv->vval.v_number);
     } /* else return Qnil; */
 
     return result;
@@ -1026,6 +1077,24 @@ static VALUE vim_evaluate(VALUE self UNUSED, VALUE str)
 #endif
 }
 
+#ifdef USE_TYPEDDATA
+static size_t buffer_dsize(const void *buf);
+
+static const rb_data_type_t buffer_type = {
+    "vim_buffer",
+    {0, 0, buffer_dsize, {0, 0}},
+    0, 0,
+# ifdef RUBY_TYPED_FREE_IMMEDIATELY
+    0,
+# endif
+};
+
+static size_t buffer_dsize(const void *buf UNUSED)
+{
+    return sizeof(buf_T);
+}
+#endif
+
 static VALUE buffer_new(buf_T *buf)
 {
     if (buf->b_ruby_ref)
@@ -1034,7 +1103,11 @@ static VALUE buffer_new(buf_T *buf)
     }
     else
     {
+#ifdef USE_TYPEDDATA
+	VALUE obj = TypedData_Wrap_Struct(cBuffer, &buffer_type, buf);
+#else
 	VALUE obj = Data_Wrap_Struct(cBuffer, 0, 0, buf);
+#endif
 	buf->b_ruby_ref = (void *) obj;
 	rb_hash_aset(objtbl, rb_obj_id(obj), obj);
 	return obj;
@@ -1045,18 +1118,22 @@ static buf_T *get_buf(VALUE obj)
 {
     buf_T *buf;
 
+#ifdef USE_TYPEDDATA
+    TypedData_Get_Struct(obj, buf_T, &buffer_type, buf);
+#else
     Data_Get_Struct(obj, buf_T, buf);
+#endif
     if (buf == NULL)
 	rb_raise(eDeletedBufferError, "attempt to refer to deleted buffer");
     return buf;
 }
 
-static VALUE buffer_s_current()
+static VALUE buffer_s_current(void)
 {
     return buffer_new(curbuf);
 }
 
-static VALUE buffer_s_count()
+static VALUE buffer_s_count(void)
 {
     buf_T *b;
     int n = 0;
@@ -1139,7 +1216,8 @@ static VALUE set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
 	/* set curwin/curbuf for "buf" and save some things */
 	aucmd_prepbuf(&aco, buf);
 
-	if (u_savesub(n) == OK) {
+	if (u_savesub(n) == OK)
+	{
 	    ml_replace(n, (char_u *)line, TRUE);
 	    changed();
 #ifdef SYNTAX_HL
@@ -1180,7 +1258,8 @@ static VALUE buffer_delete(VALUE self, VALUE num)
 	/* set curwin/curbuf for "buf" and save some things */
 	aucmd_prepbuf(&aco, buf);
 
-	if (u_savedel(n, 1) == OK) {
+	if (u_savedel(n, 1) == OK)
+	{
 	    ml_delete(n, 0);
 
 	    /* Changes to non-active buffers should properly refresh
@@ -1219,7 +1298,8 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
 	/* set curwin/curbuf for "buf" and save some things */
 	aucmd_prepbuf(&aco, buf);
 
-	if (u_inssub(n + 1) == OK) {
+	if (u_inssub(n + 1) == OK)
+	{
 	    ml_append(n, (char_u *) line, (colnr_T) 0, FALSE);
 
 	    /*  Changes to non-active buffers should properly refresh screen
@@ -1242,6 +1322,24 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
     return str;
 }
 
+#ifdef USE_TYPEDDATA
+static size_t window_dsize(const void *buf);
+
+static const rb_data_type_t window_type = {
+    "vim_window",
+    {0, 0, window_dsize, {0, 0}},
+    0, 0,
+# ifdef RUBY_TYPED_FREE_IMMEDIATELY
+    0,
+# endif
+};
+
+static size_t window_dsize(const void *win UNUSED)
+{
+    return sizeof(win_T);
+}
+#endif
+
 static VALUE window_new(win_T *win)
 {
     if (win->w_ruby_ref)
@@ -1250,7 +1348,11 @@ static VALUE window_new(win_T *win)
     }
     else
     {
+#ifdef USE_TYPEDDATA
+	VALUE obj = TypedData_Wrap_Struct(cVimWindow, &window_type, win);
+#else
 	VALUE obj = Data_Wrap_Struct(cVimWindow, 0, 0, win);
+#endif
 	win->w_ruby_ref = (void *) obj;
 	rb_hash_aset(objtbl, rb_obj_id(obj), obj);
 	return obj;
@@ -1261,13 +1363,17 @@ static win_T *get_win(VALUE obj)
 {
     win_T *win;
 
+#ifdef USE_TYPEDDATA
+    TypedData_Get_Struct(obj, win_T, &window_type, win);
+#else
     Data_Get_Struct(obj, win_T, win);
+#endif
     if (win == NULL)
 	rb_raise(eDeletedWindowError, "attempt to refer to deleted window");
     return win;
 }
 
-static VALUE window_s_current()
+static VALUE window_s_current(void)
 {
     return window_new(curwin);
 }
@@ -1276,7 +1382,7 @@ static VALUE window_s_current()
  * Added line manipulation functions
  *    SegPhault - 03/07/05
  */
-static VALUE line_s_current()
+static VALUE line_s_current(void)
 {
     return get_buffer_line(curbuf, curwin->w_cursor.lnum);
 }
@@ -1286,14 +1392,14 @@ static VALUE set_current_line(VALUE self UNUSED, VALUE str)
     return set_buffer_line(curbuf, curwin->w_cursor.lnum, str);
 }
 
-static VALUE current_line_number()
+static VALUE current_line_number(void)
 {
     return INT2FIX((int)curwin->w_cursor.lnum);
 }
 
 
 
-static VALUE window_s_count()
+static VALUE window_s_count(void)
 {
 #ifdef FEAT_WINDOWS
     win_T	*w;
@@ -1354,7 +1460,7 @@ static VALUE window_width(VALUE self UNUSED)
 
 static VALUE window_set_width(VALUE self UNUSED, VALUE width)
 {
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     win_T *win = get_win(self);
     win_T *savewin = curwin;
 
@@ -1399,7 +1505,8 @@ static VALUE f_p(int argc, VALUE *argv, VALUE self UNUSED)
     int i;
     VALUE str = rb_str_new("", 0);
 
-    for (i = 0; i < argc; i++) {
+    for (i = 0; i < argc; i++)
+    {
 	if (i > 0) rb_str_cat(str, ", ", 2);
 	rb_str_concat(str, rb_inspect(argv[i]));
     }

@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2015 Nov 10
+" Last Change:	2016 Mar 19
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -228,6 +228,8 @@ else
 endif
 call append("$", "runtimepath\tlist of directories used for runtime files and plugins")
 call <SID>OptionG("rtp", &rtp)
+call append("$", "packpath\tlist of directories used for plugin packages")
+call <SID>OptionG("pp", &pp)
 call append("$", "helpfile\tname of the main help file")
 call <SID>OptionG("hf", &hf)
 
@@ -794,7 +796,7 @@ call append("$", "infercase\tadjust case of a keyword completion match")
 call append("$", "\t(local to buffer)")
 call <SID>BinOptionL("inf")
 if has("digraphs")
-  call append("$", "digraph\tenable entering digraps with c1 <BS> c2")
+  call append("$", "digraph\tenable entering digraphs with c1 <BS> c2")
   call <SID>BinOptionG("dg", &dg)
 endif
 call append("$", "tildeop\tthe \"~\" command behaves like an operator")
@@ -1199,7 +1201,7 @@ if has("arabic")
   call <SID>BinOptionG("tbidi", &tbidi)
 endif
 if has("keymap")
-  call append("$", "keymap\tname of a keyboard mappping")
+  call append("$", "keymap\tname of a keyboard mapping")
   call <SID>OptionL("kmp")
 endif
 if has("langmap")
@@ -1252,6 +1254,8 @@ if has("multi_byte")
   endif
   call append("$", "ambiwidth\twidth of ambiguous width characters")
   call <SID>OptionG("ambw", &ambw)
+  call append("$", "emoji\temoji characters are full width")
+  call <SID>BinOptionG("emo", &emo)
 endif
 
 
@@ -1330,6 +1334,10 @@ endif
 if exists("&rubydll")
   call append("$", "rubydll\tname of the Ruby dynamic library")
   call <SID>OptionG("rubydll", &rubydll)
+endif
+if exists("&tcldll")
+  call append("$", "tcldll\tname of the Tcl dynamic library")
+  call <SID>OptionG("tcldll", &tcldll)
 endif
 
 set cpo&vim

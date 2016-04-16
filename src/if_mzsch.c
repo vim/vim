@@ -29,6 +29,40 @@
  * depend". */
 #if defined(FEAT_MZSCHEME) || defined(PROTO)
 
+#ifdef PROTO
+typedef int Scheme_Object;
+typedef int Scheme_Closed_Prim;
+typedef int Scheme_Env;
+typedef int Scheme_Hash_Table;
+typedef int Scheme_Type;
+typedef int Scheme_Thread;
+typedef int Scheme_Closed_Prim;
+typedef int mzshort;
+typedef int Scheme_Prim;
+typedef int HINSTANCE;
+#endif
+
+/*
+ * scheme_register_tls_space is only available on 32-bit Windows until
+ * racket-6.3.  See
+ * http://docs.racket-lang.org/inside/im_memoryalloc.html?q=scheme_register_tls_space
+ */
+#if MZSCHEME_VERSION_MAJOR >= 500 && defined(WIN32) \
+	&& defined(USE_THREAD_LOCAL) \
+	&& (!defined(_WIN64) || MZSCHEME_VERSION_MAJOR >= 603)
+# define HAVE_TLS_SPACE 1
+#endif
+
+/*
+ * Since version 4.x precise GC requires trampolined startup.
+ * Futures and places in version 5.x need it too.
+ */
+#if defined(MZ_PRECISE_GC) && MZSCHEME_VERSION_MAJOR >= 400 \
+    || MZSCHEME_VERSION_MAJOR >= 500 \
+	&& (defined(MZ_USE_FUTURES) || defined(MZ_USE_PLACES))
+# define TRAMPOLINED_MZVIM_STARTUP
+#endif
+
 /* Base data structures */
 #define SCHEME_VIMBUFFERP(obj)  SAME_TYPE(SCHEME_TYPE(obj), mz_buffer_type)
 #define SCHEME_VIMWINDOWP(obj)  SAME_TYPE(SCHEME_TYPE(obj), mz_window_type)
@@ -111,7 +145,7 @@ static Scheme_Object *get_window_num(void *, int, Scheme_Object **);
 static Scheme_Object *get_window_buffer(void *, int, Scheme_Object **);
 static Scheme_Object *get_window_height(void *, int, Scheme_Object **);
 static Scheme_Object *set_window_height(void *, int, Scheme_Object **);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 static Scheme_Object *get_window_width(void *, int, Scheme_Object **);
 static Scheme_Object *set_window_width(void *, int, Scheme_Object **);
 #endif
@@ -138,9 +172,9 @@ static Scheme_Object *vim_window_validp(void *data, int, Scheme_Object **);
  */
 static int vim_error_check(void);
 static int do_mzscheme_command(exarg_T *, void *, Scheme_Closed_Prim *what);
-static void startup_mzscheme(void);
+static int startup_mzscheme(void);
 static char *string_to_line(Scheme_Object *obj);
-#if MZSCHEME_VERSION_MAJOR >= 500
+#if MZSCHEME_VERSION_MAJOR >= 501
 # define OUTPUT_LEN_TYPE intptr_t
 #else
 # define OUTPUT_LEN_TYPE long
@@ -227,7 +261,7 @@ static int window_fixup_proc(void *obj)
 # define BUFFER_REF(buf) (vim_mz_buffer *)((buf)->b_mzscheme_ref)
 #endif
 
-#ifdef DYNAMIC_MZSCHEME
+#if defined(DYNAMIC_MZSCHEME) || defined(PROTO)
 static Scheme_Object *dll_scheme_eof;
 static Scheme_Object *dll_scheme_false;
 static Scheme_Object *dll_scheme_void;
@@ -237,7 +271,7 @@ static Scheme_Object *dll_scheme_true;
 static Scheme_Thread **dll_scheme_current_thread_ptr;
 
 static void (**dll_scheme_console_printf_ptr)(char *str, ...);
-static void (**dll_scheme_console_output_ptr)(char *str, long len);
+static void (**dll_scheme_console_output_ptr)(char *str, OUTPUT_LEN_TYPE len);
 static void (**dll_scheme_notify_multithread_ptr)(int on);
 
 static void *(*dll_GC_malloc)(size_t size_in_bytes);
@@ -255,6 +289,7 @@ static Scheme_Object *(*dll_scheme_apply)(Scheme_Object *rator, int num_rands,
 static Scheme_Object *(*dll_scheme_builtin_value)(const char *name);
 # if MZSCHEME_VERSION_MAJOR >= 299
 static Scheme_Object *(*dll_scheme_byte_string_to_char_string)(Scheme_Object *s);
+static Scheme_Object *(*dll_scheme_make_path)(const char *chars);
 # endif
 static void (*dll_scheme_close_input_port)(Scheme_Object *port);
 static void (*dll_scheme_count_lines)(Scheme_Object *port);
@@ -264,7 +299,7 @@ static Scheme_Object *(*dll_scheme_current_continuation_marks)(void);
 static Scheme_Object *(*dll_scheme_current_continuation_marks)(Scheme_Object *prompt_tag);
 #endif
 static void (*dll_scheme_display)(Scheme_Object *obj, Scheme_Object *port);
-static char *(*dll_scheme_display_to_string)(Scheme_Object *obj, long *len);
+static char *(*dll_scheme_display_to_string)(Scheme_Object *obj, OUTPUT_LEN_TYPE *len);
 static int (*dll_scheme_eq)(Scheme_Object *obj1, Scheme_Object *obj2);
 static Scheme_Object *(*dll_scheme_do_eval)(Scheme_Object *obj,
 	int _num_rands, Scheme_Object **rands, int val);
@@ -280,7 +315,7 @@ static char *(*dll_scheme_format)(char *format, int flen, int argc,
 	Scheme_Object **argv, long *rlen);
 # else
 static char *(*dll_scheme_format_utf8)(char *format, int flen, int argc,
-	Scheme_Object **argv, long *rlen);
+	Scheme_Object **argv, OUTPUT_LEN_TYPE *rlen);
 static Scheme_Object *(*dll_scheme_get_param)(Scheme_Config *c, int pos);
 # endif
 static void (*dll_scheme_gc_ptr_ok)(void *p);
@@ -289,7 +324,7 @@ static char *(*dll_scheme_get_sized_string_output)(Scheme_Object *,
 	long *len);
 # else
 static char *(*dll_scheme_get_sized_byte_string_output)(Scheme_Object *,
-	long *len);
+	OUTPUT_LEN_TYPE *len);
 # endif
 static Scheme_Object *(*dll_scheme_intern_symbol)(const char *name);
 static Scheme_Object *(*dll_scheme_lookup_global)(Scheme_Object *symbol,
@@ -354,11 +389,37 @@ static void (*dll_scheme_hash_set)(Scheme_Hash_Table *table,
 static Scheme_Object *(*dll_scheme_hash_get)(Scheme_Hash_Table *table,
 	Scheme_Object *key);
 static Scheme_Object *(*dll_scheme_make_double)(double d);
-# ifdef INCLUDE_MZSCHEME_BASE
 static Scheme_Object *(*dll_scheme_make_sized_byte_string)(char *chars,
 	long len, int copy);
 static Scheme_Object *(*dll_scheme_namespace_require)(Scheme_Object *req);
+static Scheme_Object *(*dll_scheme_dynamic_wind)(void (*pre)(void *), Scheme_Object *(* volatile act)(void *), void (* volatile post)(void *), Scheme_Object *(*jmp_handler)(void *), void * volatile data);
+# ifdef MZ_PRECISE_GC
+static void *(*dll_GC_malloc_one_tagged)(size_t size_in_bytes);
+static void (*dll_GC_register_traversers)(short tag, Size_Proc size, Mark_Proc mark, Fixup_Proc fixup, int is_constant_size, int is_atomic);
 # endif
+# if MZSCHEME_VERSION_MAJOR >= 400
+static void (*dll_scheme_init_collection_paths)(Scheme_Env *global_env, Scheme_Object *extra_dirs);
+static void **(*dll_scheme_malloc_immobile_box)(void *p);
+static void (*dll_scheme_free_immobile_box)(void **b);
+# endif
+# if MZSCHEME_VERSION_MAJOR >= 500
+#  ifdef TRAMPOLINED_MZVIM_STARTUP
+static int (*dll_scheme_main_setup)(int no_auto_statics, Scheme_Env_Main _main, int argc, char **argv);
+#   if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || MZSCHEME_VERSION_MAJOR >= 603
+static void (*dll_scheme_register_tls_space)(void *tls_space, int _tls_index);
+#   endif
+#  endif
+#  if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || defined(IMPLEMENT_THREAD_LOCAL_EXTERNALLY_VIA_PROC)
+static Thread_Local_Variables *(*dll_scheme_external_get_thread_local_variables)(void);
+#  endif
+# endif
+# if MZSCHEME_VERSION_MAJOR >= 600
+static void (*dll_scheme_embedded_load)(intptr_t len, const char *s, int predefined);
+static void (*dll_scheme_register_embedded_load)(intptr_t len, const char *s);
+static void (*dll_scheme_set_config_path)(Scheme_Object *p);
+# endif
+
+#if defined(DYNAMIC_MZSCHEME) /* not when defined(PROTO) */
 
 /* arrays are imported directly */
 # define scheme_eof dll_scheme_eof
@@ -368,7 +429,9 @@ static Scheme_Object *(*dll_scheme_namespace_require)(Scheme_Object *req);
 # define scheme_true dll_scheme_true
 
 /* pointers are GetProceAddress'ed as pointers to pointer */
-# define scheme_current_thread (*dll_scheme_current_thread_ptr)
+#if !defined(USE_THREAD_LOCAL) && !defined(LINK_EXTENSIONS_BY_TABLE)
+#  define scheme_current_thread (*dll_scheme_current_thread_ptr)
+# endif
 # define scheme_console_printf (*dll_scheme_console_printf_ptr)
 # define scheme_console_output (*dll_scheme_console_output_ptr)
 # define scheme_notify_multithread (*dll_scheme_notify_multithread_ptr)
@@ -384,6 +447,7 @@ static Scheme_Object *(*dll_scheme_namespace_require)(Scheme_Object *req);
 # define scheme_builtin_value dll_scheme_builtin_value
 # if MZSCHEME_VERSION_MAJOR >= 299
 #  define scheme_byte_string_to_char_string dll_scheme_byte_string_to_char_string
+#  define scheme_make_path dll_scheme_make_path
 # endif
 # define scheme_check_threads dll_scheme_check_threads
 # define scheme_close_input_port dll_scheme_close_input_port
@@ -455,10 +519,42 @@ static Scheme_Object *(*dll_scheme_namespace_require)(Scheme_Object *req);
 # define scheme_hash_set dll_scheme_hash_set
 # define scheme_hash_get dll_scheme_hash_get
 # define scheme_make_double dll_scheme_make_double
-# ifdef INCLUDE_MZSCHEME_BASE
-#  define scheme_make_sized_byte_string dll_scheme_make_sized_byte_string
-#  define scheme_namespace_require dll_scheme_namespace_require
+# define scheme_make_sized_byte_string dll_scheme_make_sized_byte_string
+# define scheme_namespace_require dll_scheme_namespace_require
+# define scheme_dynamic_wind dll_scheme_dynamic_wind
+# ifdef MZ_PRECISE_GC
+#  define GC_malloc_one_tagged dll_GC_malloc_one_tagged
+#  define GC_register_traversers dll_GC_register_traversers
 # endif
+# if MZSCHEME_VERSION_MAJOR >= 400
+#  ifdef TRAMPOLINED_MZVIM_STARTUP
+#   define scheme_main_setup dll_scheme_main_setup
+#   if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || MZSCHEME_VERSION_MAJOR >= 603
+#    define scheme_register_tls_space dll_scheme_register_tls_space
+#   endif
+#  endif
+#  define scheme_init_collection_paths dll_scheme_init_collection_paths
+#  define scheme_malloc_immobile_box dll_scheme_malloc_immobile_box
+#  define scheme_free_immobile_box dll_scheme_free_immobile_box
+# endif
+# if MZSCHEME_VERSION_MAJOR >= 600
+#  define scheme_embedded_load dll_scheme_embedded_load
+#  define scheme_register_embedded_load dll_scheme_register_embedded_load
+#  define scheme_set_config_path dll_scheme_set_config_path
+# endif
+
+# if MZSCHEME_VERSION_MAJOR >= 500
+#  if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || defined(IMPLEMENT_THREAD_LOCAL_EXTERNALLY_VIA_PROC)
+/* define as function for macro in schshread.h */
+Thread_Local_Variables *
+scheme_external_get_thread_local_variables(void)
+{
+    return dll_scheme_external_get_thread_local_variables();
+}
+#  endif
+# endif
+
+#endif
 
 typedef struct
 {
@@ -477,7 +573,9 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_void", (void **)&dll_scheme_void},
     {"scheme_null", (void **)&dll_scheme_null},
     {"scheme_true", (void **)&dll_scheme_true},
+#if !defined(USE_THREAD_LOCAL) && !defined(LINK_EXTENSIONS_BY_TABLE)
     {"scheme_current_thread", (void **)&dll_scheme_current_thread_ptr},
+#endif
     {"scheme_console_printf", (void **)&dll_scheme_console_printf_ptr},
     {"scheme_console_output", (void **)&dll_scheme_console_output_ptr},
     {"scheme_notify_multithread",
@@ -488,6 +586,7 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_basic_env", (void **)&dll_scheme_basic_env},
 # if MZSCHEME_VERSION_MAJOR >= 299
     {"scheme_byte_string_to_char_string", (void **)&dll_scheme_byte_string_to_char_string},
+    {"scheme_make_path", (void **)&dll_scheme_make_path},
 # endif
     {"scheme_builtin_value", (void **)&dll_scheme_builtin_value},
     {"scheme_check_threads", (void **)&dll_scheme_check_threads},
@@ -564,10 +663,34 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_hash_set", (void **)&dll_scheme_hash_set},
     {"scheme_hash_get", (void **)&dll_scheme_hash_get},
     {"scheme_make_double", (void **)&dll_scheme_make_double},
-# ifdef INCLUDE_MZSCHEME_BASE
     {"scheme_make_sized_byte_string", (void **)&dll_scheme_make_sized_byte_string},
     {"scheme_namespace_require", (void **)&dll_scheme_namespace_require},
-#endif
+    {"scheme_dynamic_wind", (void **)&dll_scheme_dynamic_wind},
+# ifdef MZ_PRECISE_GC
+    {"GC_malloc_one_tagged", (void **)&dll_GC_malloc_one_tagged},
+    {"GC_register_traversers", (void **)&dll_GC_register_traversers},
+# endif
+# if MZSCHEME_VERSION_MAJOR >= 400
+#  ifdef TRAMPOLINED_MZVIM_STARTUP
+    {"scheme_main_setup", (void **)&dll_scheme_main_setup},
+#   if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || MZSCHEME_VERSION_MAJOR >= 603
+    {"scheme_register_tls_space", (void **)&dll_scheme_register_tls_space},
+#   endif
+#  endif
+    {"scheme_init_collection_paths", (void **)&dll_scheme_init_collection_paths},
+    {"scheme_malloc_immobile_box", (void **)&dll_scheme_malloc_immobile_box},
+    {"scheme_free_immobile_box", (void **)&dll_scheme_free_immobile_box},
+# endif
+# if MZSCHEME_VERSION_MAJOR >= 500
+#  if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || defined(IMPLEMENT_THREAD_LOCAL_EXTERNALLY_VIA_PROC)
+    {"scheme_external_get_thread_local_variables", (void **)&dll_scheme_external_get_thread_local_variables},
+#  endif
+# endif
+# if MZSCHEME_VERSION_MAJOR >= 600
+    {"scheme_embedded_load", (void **)&dll_scheme_embedded_load},
+    {"scheme_register_embedded_load", (void **)&dll_scheme_register_embedded_load},
+    {"scheme_set_config_path", (void **)&dll_scheme_set_config_path},
+# endif
     {NULL, NULL}};
 
 static HINSTANCE hMzGC = 0;
@@ -687,8 +810,6 @@ guaranteed_byte_string_arg(char *proc, int num, int argc, Scheme_Object **argv)
 /* need to put it here for dynamic stuff to work */
 #if defined(INCLUDE_MZSCHEME_BASE)
 # include "mzscheme_base.c"
-#elif MZSCHEME_VERSION_MAJOR >= 400
-# error MzScheme >=4 must include mzscheme_base.c, for MinGW32 you need to define MZSCHEME_GENERATE_BASE=yes
 #endif
 
 /*
@@ -701,6 +822,10 @@ static Scheme_Type mz_buffer_type;
 static Scheme_Type mz_window_type;
 
 static int initialized = FALSE;
+#ifdef DYNAMIC_MZSCHEME
+static int disabled = FALSE;
+#endif
+static int load_base_module_failed = FALSE;
 
 /* global environment */
 static Scheme_Env    *environment = NULL;
@@ -727,7 +852,11 @@ static int mz_threads_allow = 0;
 static void CALLBACK timer_proc(HWND, UINT, UINT, DWORD);
 static UINT timer_id = 0;
 #elif defined(FEAT_GUI_GTK)
+# if GTK_CHECK_VERSION(3,0,0)
+static gboolean timer_proc(gpointer);
+# else
 static gint timer_proc(gpointer);
+# endif
 static guint timer_id = 0;
 #elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
 static void timer_proc(XtPointer, XtIntervalId *);
@@ -758,7 +887,7 @@ mzvim_check_threads(void)
 }
 #endif
 
-#ifdef MZSCHEME_GUI_THREADS
+#if defined(MZSCHEME_GUI_THREADS) || defined(PROTO)
 static void setup_timer(void);
 static void remove_timer(void);
 
@@ -767,7 +896,11 @@ static void remove_timer(void);
     static void CALLBACK
 timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT idEvent UNUSED, DWORD dwTime UNUSED)
 # elif defined(FEAT_GUI_GTK)
+#  if GTK_CHECK_VERSION(3,0,0)
+    static gboolean
+#  else
     static gint
+#  endif
 timer_proc(gpointer data UNUSED)
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     static void
@@ -794,7 +927,11 @@ setup_timer(void)
 # if defined(FEAT_GUI_W32)
     timer_id = SetTimer(NULL, 0, p_mzq, timer_proc);
 # elif defined(FEAT_GUI_GTK)
+#  if GTK_CHECK_VERSION(3,0,0)
+    timer_id = g_timeout_add((guint)p_mzq, (GSourceFunc)timer_proc, NULL);
+#  else
     timer_id = gtk_timeout_add((guint32)p_mzq, (GtkFunction)timer_proc, NULL);
+#  endif
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     timer_id = XtAppAddTimeOut(app_context, p_mzq, timer_proc, NULL);
 # elif defined(FEAT_GUI_MAC)
@@ -810,7 +947,11 @@ remove_timer(void)
 # if defined(FEAT_GUI_W32)
     KillTimer(NULL, timer_id);
 # elif defined(FEAT_GUI_GTK)
+#  if GTK_CHECK_VERSION(3,0,0)
+    g_source_remove(timer_id);
+#  else
     gtk_timeout_remove(timer_id);
+#  endif
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     XtRemoveTimeOut(timer_id);
 # elif defined(FEAT_GUI_MAC)
@@ -846,38 +987,43 @@ notify_multithread(int on)
     void
 mzscheme_end(void)
 {
+    /* We can not unload the DLL.  Racket's thread might be still alive. */
+#if 0
 #ifdef DYNAMIC_MZSCHEME
     dynamic_mzscheme_end();
 #endif
+#endif
 }
 
-/*
- * scheme_register_tls_space is only available on 32-bit Windows.
- * See http://docs.racket-lang.org/inside/im_memoryalloc.html?q=scheme_register_tls_space
- */
-#if MZSCHEME_VERSION_MAJOR >= 500 && defined(WIN32) \
-	&& defined(USE_THREAD_LOCAL) && !defined(_WIN64)
-# define HAVE_TLS_SPACE 1
+#if HAVE_TLS_SPACE
+# if defined(_MSC_VER)
 static __declspec(thread) void *tls_space;
-#endif
-
-/*
- * Since version 4.x precise GC requires trampolined startup.
- * Futures and places in version 5.x need it too.
- */
-#if defined(MZ_PRECISE_GC) && MZSCHEME_VERSION_MAJOR >= 400 \
-    || MZSCHEME_VERSION_MAJOR >= 500 && (defined(MZ_USE_FUTURES) || defined(MZ_USE_PLACES))
-# ifdef DYNAMIC_MZSCHEME
-#  error Precise GC v.4+ or Racket with futures/places do not support dynamic MzScheme
+extern intptr_t _tls_index;
+# elif defined(__MINGW32__)
+static __thread void *tls_space;
+extern intptr_t _tls_index;
+# else
+static THREAD_LOCAL void *tls_space;
+static intptr_t _tls_index = 0;
 # endif
-# define TRAMPOLINED_MZVIM_STARTUP
 #endif
 
     int
 mzscheme_main(int argc, char** argv)
 {
+#ifdef DYNAMIC_MZSCHEME
+    /*
+     * Racket requires trampolined startup.  We can not load it later.
+     * If dynamic dll loading is failed, disable it.
+     */
+    if (!mzscheme_enabled(FALSE))
+    {
+	disabled = TRUE;
+	return vim_main2(argc, argv);
+    }
+#endif
 #ifdef HAVE_TLS_SPACE
-    scheme_register_tls_space(&tls_space, 0);
+    scheme_register_tls_space(&tls_space, _tls_index);
 #endif
 #ifdef TRAMPOLINED_MZVIM_STARTUP
     return scheme_main_setup(TRUE, mzscheme_env_main, argc, argv);
@@ -919,7 +1065,21 @@ mzscheme_env_main(Scheme_Env *env, int argc, char **argv)
     return vim_main_result;
 }
 
-    static void
+    static Scheme_Object*
+load_base_module(void *data)
+{
+    scheme_namespace_require(scheme_intern_symbol((char *)data));
+    return scheme_null;
+}
+
+    static Scheme_Object *
+load_base_module_on_error(void *data UNUSED)
+{
+    load_base_module_failed = TRUE;
+    return scheme_null;
+}
+
+    static int
 startup_mzscheme(void)
 {
 #ifndef TRAMPOLINED_MZVIM_STARTUP
@@ -942,87 +1102,45 @@ startup_mzscheme(void)
     MZ_GC_CHECK();
 
 #ifdef INCLUDE_MZSCHEME_BASE
-    {
-	/*
-	 * versions 4.x do not provide Scheme bindings by default
-	 * we need to add them explicitly
-	 */
-	Scheme_Object *scheme_base_symbol = NULL;
-	MZ_GC_DECL_REG(1);
-	MZ_GC_VAR_IN_REG(0, scheme_base_symbol);
-	MZ_GC_REG();
-	/* invoke function from generated and included mzscheme_base.c */
-	declare_modules(environment);
-	scheme_base_symbol = scheme_intern_symbol("scheme/base");
-	MZ_GC_CHECK();
-	scheme_namespace_require(scheme_base_symbol);
-	MZ_GC_CHECK();
-	MZ_GC_UNREG();
-    }
+    /* invoke function from generated and included mzscheme_base.c */
+    declare_modules(environment);
 #endif
-    register_vim_exn();
-    /* use new environment to initialise exception handling */
-    init_exn_catching_apply();
 
-    /* redirect output */
-    scheme_console_output = do_output;
-    scheme_console_printf = do_printf;
-
-#ifdef MZSCHEME_COLLECTS
     /* setup 'current-library-collection-paths' parameter */
 # if MZSCHEME_VERSION_MAJOR >= 299
-#  ifdef MACOS
     {
-	Scheme_Object	*coll_byte_string = NULL;
-	Scheme_Object	*coll_char_string = NULL;
-	Scheme_Object	*coll_path = NULL;
+	Scheme_Object *coll_path = NULL;
+	int mustfree = FALSE;
+	char_u *s;
 
-	MZ_GC_DECL_REG(3);
-	MZ_GC_VAR_IN_REG(0, coll_byte_string);
-	MZ_GC_VAR_IN_REG(1, coll_char_string);
-	MZ_GC_VAR_IN_REG(2, coll_path);
+	MZ_GC_DECL_REG(1);
+	MZ_GC_VAR_IN_REG(0, coll_path);
 	MZ_GC_REG();
-	coll_byte_string = scheme_make_byte_string(MZSCHEME_COLLECTS);
-	MZ_GC_CHECK();
-	coll_char_string = scheme_byte_string_to_char_string(coll_byte_string);
-	MZ_GC_CHECK();
-	coll_path = scheme_char_string_to_path(coll_char_string);
-	MZ_GC_CHECK();
-	scheme_set_collects_path(coll_path);
-	MZ_GC_CHECK();
-	MZ_GC_UNREG();
-    }
-#  else
-   {
-	Scheme_Object	*coll_byte_string = NULL;
-	Scheme_Object	*coll_char_string = NULL;
-	Scheme_Object	*coll_path = NULL;
-	Scheme_Object	*coll_pair = NULL;
-	Scheme_Config	*config = NULL;
-
-	MZ_GC_DECL_REG(5);
-	MZ_GC_VAR_IN_REG(0, coll_byte_string);
-	MZ_GC_VAR_IN_REG(1, coll_char_string);
-	MZ_GC_VAR_IN_REG(2, coll_path);
-	MZ_GC_VAR_IN_REG(3, coll_pair);
-	MZ_GC_VAR_IN_REG(4, config);
-	MZ_GC_REG();
-	coll_byte_string = scheme_make_byte_string(MZSCHEME_COLLECTS);
-	MZ_GC_CHECK();
-	coll_char_string = scheme_byte_string_to_char_string(coll_byte_string);
-	MZ_GC_CHECK();
-	coll_path = scheme_char_string_to_path(coll_char_string);
-	MZ_GC_CHECK();
-	coll_pair = scheme_make_pair(coll_path, scheme_null);
-	MZ_GC_CHECK();
-	config = scheme_current_config();
-	MZ_GC_CHECK();
-	scheme_set_param(config, MZCONFIG_COLLECTION_PATHS, coll_pair);
-	MZ_GC_CHECK();
-	MZ_GC_UNREG();
-    }
+	/* workaround for dynamic loading on windows */
+	s = vim_getenv((char_u *)"PLTCOLLECTS", &mustfree);
+	if (s != NULL)
+	{
+	    coll_path = scheme_make_path((char *)s);
+	    MZ_GC_CHECK();
+	    if (mustfree)
+		vim_free(s);
+	}
+#  ifdef MZSCHEME_COLLECTS
+	if (coll_path == NULL)
+	{
+	    coll_path = scheme_make_path(MZSCHEME_COLLECTS);
+	    MZ_GC_CHECK();
+	}
 #  endif
+	if (coll_path != NULL)
+	{
+	    scheme_set_collects_path(coll_path);
+	    MZ_GC_CHECK();
+	}
+	MZ_GC_UNREG();
+    }
 # else
+#  ifdef MZSCHEME_COLLECTS
     {
 	Scheme_Object	*coll_string = NULL;
 	Scheme_Object	*coll_pair = NULL;
@@ -1045,6 +1163,71 @@ startup_mzscheme(void)
     }
 # endif
 #endif
+
+# if MZSCHEME_VERSION_MAJOR >= 600
+    {
+	Scheme_Object *config_path = NULL;
+	int mustfree = FALSE;
+	char_u *s;
+
+	MZ_GC_DECL_REG(1);
+	MZ_GC_VAR_IN_REG(0, config_path);
+	MZ_GC_REG();
+	/* workaround for dynamic loading on windows */
+	s = vim_getenv("PLTCONFIGDIR", &mustfree);
+	if (s != NULL)
+	{
+	    config_path = scheme_make_path(s);
+	    MZ_GC_CHECK();
+	    if (mustfree)
+		vim_free(s);
+	}
+#ifdef MZSCHEME_CONFIGDIR
+	if (config_path == NULL)
+	{
+	    config_path = scheme_make_path(MZSCHEME_CONFIGDIR);
+	    MZ_GC_CHECK();
+	}
+#endif
+	if (config_path != NULL)
+	{
+	    scheme_set_config_path(config_path);
+	    MZ_GC_CHECK();
+	}
+	MZ_GC_UNREG();
+    }
+# endif
+
+#if MZSCHEME_VERSION_MAJOR >= 400
+    scheme_init_collection_paths(environment, scheme_null);
+#endif
+
+    /*
+     * versions 4.x do not provide Scheme bindings by default
+     * we need to add them explicitly
+     */
+    {
+	/* use error handler to avoid abort */
+	scheme_dynamic_wind(NULL, load_base_module, NULL,
+				    load_base_module_on_error, "racket/base");
+	if (load_base_module_failed)
+	{
+	    load_base_module_failed = FALSE;
+	    scheme_dynamic_wind(NULL, load_base_module, NULL,
+				    load_base_module_on_error, "scheme/base");
+	    if (load_base_module_failed)
+		return -1;
+	}
+    }
+
+    register_vim_exn();
+    /* use new environment to initialise exception handling */
+    init_exn_catching_apply();
+
+    /* redirect output */
+    scheme_console_output = do_output;
+    scheme_console_printf = do_printf;
+
 #ifdef HAVE_SANDBOX
     {
 	Scheme_Object	*make_security_guard = NULL;
@@ -1118,6 +1301,8 @@ startup_mzscheme(void)
      * whether thread scheduling is (or not) required
      */
     scheme_notify_multithread = notify_multithread;
+
+    return 0;
 }
 
 /*
@@ -1130,13 +1315,17 @@ mzscheme_init(void)
     if (!initialized)
     {
 #ifdef DYNAMIC_MZSCHEME
-	if (!mzscheme_enabled(TRUE))
+	if (disabled || !mzscheme_enabled(TRUE))
 	{
 	    EMSG(_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
 	    return -1;
 	}
 #endif
-	startup_mzscheme();
+	if (load_base_module_failed || startup_mzscheme())
+	{
+	    EMSG(_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
+	    return -1;
+	}
 	initialized = TRUE;
     }
     {
@@ -1877,7 +2066,7 @@ set_window_height(void *data, int argc, Scheme_Object **argv)
     return scheme_void;
 }
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 /* (get-win-width [window]) */
     static Scheme_Object *
 get_window_width(void *data, int argc, Scheme_Object **argv)
@@ -2920,6 +3109,7 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	MZ_GC_VAR_IN_REG(0, funcname);
 	MZ_GC_REG();
 
+	/* FIXME: func_ref() and func_unref() are needed. */
 	funcname = scheme_make_byte_string((char *)vim_value->vval.v_string);
 	MZ_GC_CHECK();
 	result = scheme_make_closed_prim_w_arity(vim_funcref, funcname,
@@ -2927,6 +3117,38 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	MZ_GC_CHECK();
 
 	MZ_GC_UNREG();
+    }
+    else if (vim_value->v_type == VAR_PARTIAL)
+    {
+	if (vim_value->vval.v_partial == NULL)
+	    result = scheme_null;
+	else
+	{
+	    Scheme_Object *funcname = NULL;
+
+	    MZ_GC_DECL_REG(1);
+	    MZ_GC_VAR_IN_REG(0, funcname);
+	    MZ_GC_REG();
+
+	    /* FIXME: func_ref() and func_unref() are needed. */
+	    /* TODO: Support pt_dict and pt_argv. */
+	    funcname = scheme_make_byte_string(
+		    (char *)vim_value->vval.v_partial->pt_name);
+	    MZ_GC_CHECK();
+	    result = scheme_make_closed_prim_w_arity(vim_funcref, funcname,
+		    (const char *)BYTE_STRING_VALUE(funcname), 0, -1);
+	    MZ_GC_CHECK();
+
+	    MZ_GC_UNREG();
+	}
+    }
+    else if (vim_value->v_type == VAR_SPECIAL)
+    {
+	if (vim_value->vval.v_number <= VVAL_TRUE)
+	    result = scheme_make_integer((long)vim_value->vval.v_number);
+	else
+	    result = scheme_null;
+	MZ_GC_CHECK();
     }
     else
     {
@@ -2992,8 +3214,8 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 	copy_tv(found, tv);
     else if (SCHEME_VOIDP(obj))
     {
-	tv->v_type = VAR_NUMBER;
-	tv->vval.v_number = 0;
+	tv->v_type = VAR_SPECIAL;
+	tv->vval.v_number = VVAL_NULL;
     }
     else if (SCHEME_INTP(obj))
     {
@@ -3002,7 +3224,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
     }
     else if (SCHEME_BOOLP(obj))
     {
-	tv->v_type = VAR_NUMBER;
+	tv->v_type = VAR_SPECIAL;
 	tv->vval.v_number = SCHEME_TRUEP(obj);
     }
 # ifdef FEAT_FLOAT
@@ -3521,7 +3743,7 @@ static Vim_Prim prims[]=
     {get_window_buffer, "get-win-buffer", 0, 1},
     {get_window_height, "get-win-height", 0, 1},
     {set_window_height, "set-win-height", 1, 2},
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     {get_window_width, "get-win-width", 0, 1},
     {set_window_width, "set-win-width", 1, 2},
 #endif
@@ -3568,7 +3790,7 @@ get_vim_curr_window(void)
 }
 
     static void
-make_modules()
+make_modules(void)
 {
     int		    i;
     Scheme_Env	    *mod = NULL;

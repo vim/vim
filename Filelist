@@ -6,12 +6,15 @@ SRC_ALL =	\
 		.hgignore \
 		.travis.yml \
 		appveyor.yml \
+		src/appveyor.bat \
 		src/README.txt \
+		src/alloc.h \
 		src/arabic.c \
 		src/arabic.h \
 		src/ascii.h \
 		src/blowfish.c \
 		src/buffer.c \
+		src/channel.c \
 		src/charset.c \
 		src/crypt.c \
 		src/crypt_zip.c \
@@ -38,6 +41,8 @@ SRC_ALL =	\
 		src/gui_beval.h \
 		src/hardcopy.c \
 		src/hashtab.c \
+		src/json.c \
+		src/json_test.c \
 		src/keymap.h \
 		src/macros.h \
 		src/main.c \
@@ -85,7 +90,9 @@ SRC_ALL =	\
 		src/main.aap \
 		src/testdir/main.aap \
 		src/testdir/README.txt \
+		src/testdir/Make_all.mak \
 		src/testdir/*.in \
+		src/testdir/*.py \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/runtest.vim \
 		src/testdir/test[0-9]*.ok \
@@ -111,6 +118,7 @@ SRC_ALL =	\
 		src/proto.h \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
+		src/proto/channel.pro \
 		src/proto/charset.pro \
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
@@ -130,6 +138,7 @@ SRC_ALL =	\
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
+		src/proto/json.pro \
 		src/proto/main.pro \
 		src/proto/mark.pro \
 		src/proto/mbyte.pro \
@@ -169,6 +178,7 @@ SRC_UNIX =	\
 		README_src.txt \
 		configure \
 		pixmaps/*.xpm \
+		pixmaps/*.png \
 		pixmaps/gen-inline-pixbufs.sh \
 		pixmaps/stock_icons.h \
 		src/INSTALL \
@@ -189,6 +199,7 @@ SRC_UNIX =	\
 		src/gui_gtk_f.c \
 		src/gui_gtk_f.h \
 		src/gui_gtk_x11.c \
+		src/gui_gtk_res.xml \
 		src/gui_motif.c \
 		src/gui_xmdlg.c \
 		src/gui_xmebw.c \
@@ -214,6 +225,7 @@ SRC_UNIX =	\
 		src/proto/gui_athena.pro \
 		src/proto/gui_gtk.pro \
 		src/proto/gui_gtk_x11.pro \
+		src/proto/gui_gtk_gresources.pro \
 		src/proto/gui_motif.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
@@ -250,7 +262,6 @@ SRC_DOS_UNIX =	\
 		src/if_python3.c \
 		src/if_py_both.h \
 		src/if_ruby.c \
-		src/if_sniff.h \
 		src/if_tcl.c \
 		src/proto/if_cscope.pro \
 		src/proto/if_lua.pro \
@@ -280,16 +291,13 @@ SRC_DOS =	\
 		src/GvimExt/uninst.bat \
 		README_srcdos.txt \
 		src/INSTALLpc.txt \
-		src/Make_bc3.mak \
 		src/Make_bc5.mak \
 		src/Make_cyg.mak \
 		src/Make_cyg_ming.mak \
-		src/Make_djg.mak \
 		src/Make_ivc.mak \
 		src/Make_dvc.mak \
 		src/Make_ming.mak \
 		src/Make_mvc.mak \
-		src/Make_w16.mak \
 		src/bigvim.bat \
 		src/bigvim64.bat \
 		src/msvcsetup.bat \
@@ -303,30 +311,21 @@ SRC_DOS =	\
 		src/glbl_ime.h \
 		src/gui_dwrite.cpp \
 		src/gui_dwrite.h \
-		src/gui_w16.c \
 		src/gui_w32.c \
-		src/gui_w48.c \
-		src/guiw16rc.h \
 		src/gui_w32_rc.h \
 		src/if_ole.cpp \
 		src/if_ole.h \
 		src/if_ole.idl \
+		src/if_perl_msvc/stdbool.h \
 		src/iid_ole.c \
 		src/os_dos.h \
-		src/os_msdos.c \
-		src/os_msdos.h \
 		src/os_w32dll.c \
 		src/os_w32exe.c \
-		src/os_win16.c \
 		src/os_win32.c \
 		src/os_mswin.c \
-		src/os_win16.h \
 		src/os_win32.h \
-		src/proto/gui_w16.pro \
 		src/proto/gui_w32.pro \
 		src/proto/if_ole.pro \
-		src/proto/os_msdos.pro \
-		src/proto/os_win16.pro \
 		src/proto/os_win32.pro \
 		src/proto/os_mswin.pro \
 		src/testdir/Make_dos.mak \
@@ -337,19 +336,14 @@ SRC_DOS =	\
 		src/vim.rc \
 		src/vimio.h \
 		src/gvim.exe.mnf \
-		src/vim16.def \
-		src/vim16.rc \
 		src/vimrun.c \
-		src/vimtbar.h \
 		src/xpm_w32.c \
 		src/xpm_w32.h \
-		src/xxd/Make_bc3.mak \
 		src/xxd/Make_bc5.mak \
-		src/xxd/Make_cyg.mak \
-		src/xxd/Make_djg.mak \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \
+		nsis/gvim_version.nsh \
 		nsis/README.txt \
 		uninstal.txt \
 		src/VisVim/Commands.cpp \
@@ -378,10 +372,8 @@ SRC_DOS_BIN =	\
 		src/VisVim/Res/*.bmp \
 		src/tearoff.bmp \
 		src/tools.bmp \
-		src/tools16.bmp \
 		src/vim*.ico \
 		src/vim.tlb \
-		src/vimtbar.lib \
 		src/xpm/COPYRIGHT \
 		src/xpm/README.txt \
 		src/xpm/include/*.h \
@@ -389,7 +381,6 @@ SRC_DOS_BIN =	\
 		src/xpm/x64/lib/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
-		src/vimtbar.dll \
 		nsis/icons/*.bmp \
 		nsis/icons/*.ico \
 
@@ -440,15 +431,6 @@ SRC_VMS =	\
 		src/xxd/Make_vms.mms \
 		vimtutor.com \
 
-# source files for OS/2 (in the extra archive)
-SRC_OS2 =	\
-		src/Make_os2.mak \
-		src/os_os2_cfg.h \
-		src/testdir/Make_os2.mak \
-		src/testdir/todos.vim \
-		src/testdir/os2.vim \
-		src/xxd/Make_os2.mak \
-
 # source files for QNX (in the extra archive)
 SRC_QNX =	\
 		src/os_qnx.c \
@@ -465,12 +447,10 @@ SRC_EXTRA =	\
 		$(SRC_DOS) \
 		$(SRC_DOS_BIN) \
 		$(SRC_MAC) \
-		$(SRC_OS2) \
 		$(SRC_QNX) \
 		$(SRC_VMS) \
 		README_os390.txt \
 		src/Make_mint.mak \
-		src/if_sniff.c \
 		src/infplist.xml \
 		src/link.390 \
 		src/os_beos.c \
@@ -500,7 +480,6 @@ RT_ALL =	\
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/macros/README.txt \
-		runtime/macros/dvorak \
 		runtime/macros/editexisting.vim \
 		runtime/macros/hanoi/click.me \
 		runtime/macros/hanoi/hanoi.vim \
@@ -512,7 +491,6 @@ RT_ALL =	\
 		runtime/macros/life/click.me \
 		runtime/macros/life/life.vim \
 		runtime/macros/matchit.vim \
-		runtime/macros/matchit.txt \
 		runtime/macros/maze/README.txt \
 		runtime/macros/maze/[mM]akefile \
 		runtime/macros/maze/main.aap \
@@ -542,6 +520,16 @@ RT_ALL =	\
 		runtime/tutor/tutor \
 		runtime/tutor/tutor.vim \
 		runtime/vimrc_example.vim \
+		runtime/pack/dist/opt/dvorak/plugin/dvorak.vim \
+		runtime/pack/dist/opt/dvorak/dvorak/enable.vim \
+		runtime/pack/dist/opt/dvorak/dvorak/disable.vim \
+		runtime/pack/dist/opt/editexisting/plugin/editexisting.vim \
+		runtime/pack/dist/opt/justify/plugin/justify.vim \
+		runtime/pack/dist/opt/matchit/plugin/matchit.vim \
+		runtime/pack/dist/opt/matchit/doc/matchit.txt \
+		runtime/pack/dist/opt/matchit/doc/tags \
+		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
+		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
 
 # runtime files for all distributions without CR-NL translation
 RT_ALL_BIN =	\
@@ -622,7 +610,6 @@ RT_AMI =	\
 		README.txt.info \
 		README_ami.txt \
 		README_ami.txt.info \
-		libs/arp.library \
 		runtime/doc.info \
 		runtime/doc/*.info \
 		runtime/icons/README.txt \
@@ -707,8 +694,37 @@ EXTRA =		\
 		runtime/vimlogo.xpm \
 		src/swis.s \
 		src/tee/Makefile \
+		src/tee/Make_mvc.mak \
 		src/tee/tee.c \
-		csdpmi4b.zip \
+
+# files in READMEdir that are included from the top dir
+IN_README_DIR = \
+		README.txt.info \
+		README_ami.txt \
+		README_ami.txt.info \
+		README_amibin.txt \
+		README_amibin.txt.info \
+		README_amisrc.txt \
+		README_amisrc.txt.info \
+		README_bindos.txt \
+		README_dos.txt \
+		README_extra.txt \
+		README_mac.txt \
+		README_ole.txt \
+		README_os2.txt \
+		README_os390.txt \
+		README_src.txt \
+		README_srcdos.txt \
+		README_unix.txt \
+		README_vms.txt \
+		README_w32s.txt \
+		Contents \
+		Contents.info \
+		Vim.info \
+		Xxd.info \
+		runtime.info \
+		src.info \
+		vimdir.info \
 
 # generic language files
 LANG_GEN = \

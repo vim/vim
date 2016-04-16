@@ -1,13 +1,13 @@
 /* if_xcmdsrv.c */
-int serverRegisterName __ARGS((Display *dpy, char_u *name));
-void serverChangeRegisteredWindow __ARGS((Display *dpy, Window newwin));
-int serverSendToVim __ARGS((Display *dpy, char_u *name, char_u *cmd, char_u **result, Window *server, int asExpr, int localLoop, int silent));
-char_u *serverGetVimNames __ARGS((Display *dpy));
-Window serverStrToWin __ARGS((char_u *str));
-int serverSendReply __ARGS((char_u *name, char_u *str));
-int serverReadReply __ARGS((Display *dpy, Window win, char_u **str, int localLoop));
-int serverPeekReply __ARGS((Display *dpy, Window win, char_u **str));
-void serverEventProc __ARGS((Display *dpy, XEvent *eventPtr, int immediate));
-void server_parse_messages __ARGS((void));
-int server_waiting __ARGS((void));
+int serverRegisterName(Display *dpy, char_u *name);
+void serverChangeRegisteredWindow(Display *dpy, Window newwin);
+int serverSendToVim(Display *dpy, char_u *name, char_u *cmd, char_u **result, Window *server, int asExpr, int localLoop, int silent);
+char_u *serverGetVimNames(Display *dpy);
+Window serverStrToWin(char_u *str);
+int serverSendReply(char_u *name, char_u *str);
+int serverReadReply(Display *dpy, Window win, char_u **str, int localLoop);
+int serverPeekReply(Display *dpy, Window win, char_u **str);
+void serverEventProc(Display *dpy, XEvent *eventPtr, int immediate);
+void server_parse_messages(void);
+int server_waiting(void);
 /* vim: set ft=c : */

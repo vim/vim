@@ -109,7 +109,11 @@
 #endif
 
 #if defined(FEAT_GUI_GTK) && defined(FEAT_XIM)
-# include <gdk/gdkkeysyms.h>
+# if GTK_CHECK_VERSION(3,0,0)
+#  include <gdk/gdkkeysyms-compat.h>
+# else
+#  include <gdk/gdkkeysyms.h>
+# endif
 # ifdef WIN3264
 #  include <gdk/gdkwin32.h>
 # else
@@ -131,16 +135,16 @@
 
 #if defined(FEAT_MBYTE) || defined(PROTO)
 
-static int enc_canon_search __ARGS((char_u *name));
-static int dbcs_char2len __ARGS((int c));
-static int dbcs_char2bytes __ARGS((int c, char_u *buf));
-static int dbcs_ptr2len __ARGS((char_u *p));
-static int dbcs_ptr2len_len __ARGS((char_u *p, int size));
-static int utf_ptr2cells_len __ARGS((char_u *p, int size));
-static int dbcs_char2cells __ARGS((int c));
-static int dbcs_ptr2cells_len __ARGS((char_u *p, int size));
-static int dbcs_ptr2char __ARGS((char_u *p));
-static int utf_safe_read_char_adv __ARGS((char_u **s, size_t *n));
+static int enc_canon_search(char_u *name);
+static int dbcs_char2len(int c);
+static int dbcs_char2bytes(int c, char_u *buf);
+static int dbcs_ptr2len(char_u *p);
+static int dbcs_ptr2len_len(char_u *p, int size);
+static int utf_ptr2cells_len(char_u *p, int size);
+static int dbcs_char2cells(int c);
+static int dbcs_ptr2cells_len(char_u *p, int size);
+static int dbcs_ptr2char(char_u *p);
+static int utf_safe_read_char_adv(char_u **s, size_t *n);
 
 /*
  * Lookup table to quickly get the length in bytes of a UTF-8 character from
@@ -441,8 +445,7 @@ enc_alias_table[] =
  * Returns -1 if not found.
  */
     static int
-enc_canon_search(name)
-    char_u	*name;
+enc_canon_search(char_u *name)
 {
     int		i;
 
@@ -461,8 +464,7 @@ enc_canon_search(name)
  * Returns 0 if not found.
  */
     int
-enc_canon_props(name)
-    char_u	*name;
+enc_canon_props(char_u *name)
 {
     int		i;
 
@@ -475,7 +477,7 @@ enc_canon_props(name)
 	CPINFO	cpinfo;
 
 	/* Get info on this codepage to find out what it is. */
-	if (GetCPInfo(atoi(name + 2), &cpinfo) != 0)
+	if (GetCPInfo(atoi((char *)name + 2), &cpinfo) != 0)
 	{
 	    if (cpinfo.MaxCharSize == 1) /* some single-byte encoding */
 		return ENC_8BIT;
@@ -507,7 +509,7 @@ enc_canon_props(name)
  * anything.
  */
     char_u *
-mb_init()
+mb_init(void)
 {
     int		i;
     int		idx;
@@ -537,7 +539,7 @@ mb_init()
 	CPINFO	cpinfo;
 
 	/* Get info on this codepage to find out what it is. */
-	if (GetCPInfo(atoi(p_enc + 2), &cpinfo) != 0)
+	if (GetCPInfo(atoi((char *)p_enc + 2), &cpinfo) != 0)
 	{
 	    if (cpinfo.MaxCharSize == 1)
 	    {
@@ -549,7 +551,7 @@ mb_init()
 		    && (cpinfo.LeadByte[0] != 0 || cpinfo.LeadByte[1] != 0))
 	    {
 		/* must be a DBCS encoding, check below */
-		enc_dbcs_new = atoi(p_enc + 2);
+		enc_dbcs_new = atoi((char *)p_enc + 2);
 	    }
 	    else
 		goto codepage_invalid;
@@ -573,7 +575,7 @@ codepage_invalid:
 #ifdef WIN3264
 	/* Windows: accept only valid codepage numbers, check below. */
 	if (p_enc[6] != 'c' || p_enc[7] != 'p'
-				      || (enc_dbcs_new = atoi(p_enc + 8)) == 0)
+			      || (enc_dbcs_new = atoi((char *)p_enc + 8)) == 0)
 	    return e_invarg;
 #else
 	/* Unix: accept any "2byte-" name, assume current locale. */
@@ -819,7 +821,7 @@ codepage_invalid:
  * 3 - UTF-8 BOM
  */
     int
-bomb_size()
+bomb_size(void)
 {
     int n = 0;
 
@@ -850,8 +852,7 @@ bomb_size()
  * Remove all BOM from "s" by moving remaining text.
  */
     void
-remove_bom(s)
-    char_u *s;
+remove_bom(char_u *s)
 {
     if (enc_utf8)
     {
@@ -875,16 +876,13 @@ remove_bom(s)
  * >2 for other word characters
  */
     int
-mb_get_class(p)
-    char_u	*p;
+mb_get_class(char_u *p)
 {
     return mb_get_class_buf(p, curbuf);
 }
 
     int
-mb_get_class_buf(p, buf)
-    char_u	*p;
-    buf_T	*buf;
+mb_get_class_buf(char_u *p, buf_T *buf)
 {
     if (MB_BYTE2LEN(p[0]) == 1)
     {
@@ -906,9 +904,7 @@ mb_get_class_buf(p, buf)
  * TODO: Should return 1 for punctuation.
  */
     int
-dbcs_class(lead, trail)
-    unsigned	lead;
-    unsigned	trail;
+dbcs_class(unsigned lead, unsigned trail)
 {
     switch (enc_dbcs)
     {
@@ -1082,15 +1078,14 @@ dbcs_class(lead, trail)
  * Returns 1 for a single-byte character.
  */
     int
-latin_char2len(c)
-    int		c UNUSED;
+latin_char2len(int c UNUSED)
 {
     return 1;
 }
 
     static int
-dbcs_char2len(c)
-    int		c;
+dbcs_char2len(
+    int		c)
 {
     if (c >= 0x100)
 	return 2;
@@ -1103,18 +1098,14 @@ dbcs_char2len(c)
  * Returns the length in bytes.
  */
     int
-latin_char2bytes(c, buf)
-    int		c;
-    char_u	*buf;
+latin_char2bytes(int c, char_u *buf)
 {
     buf[0] = c;
     return 1;
 }
 
     static int
-dbcs_char2bytes(c, buf)
-    int		c;
-    char_u	*buf;
+dbcs_char2bytes(int c, char_u *buf)
 {
     if (c >= 0x100)
     {
@@ -1137,15 +1128,14 @@ dbcs_char2bytes(c, buf)
  * Returns 0 when *p is NUL.
  */
     int
-latin_ptr2len(p)
-    char_u	*p;
+latin_ptr2len(char_u *p)
 {
-    return MB_BYTE2LEN(*p);
+ return MB_BYTE2LEN(*p);
 }
 
     static int
-dbcs_ptr2len(p)
-    char_u	*p;
+dbcs_ptr2len(
+    char_u	*p)
 {
     int		len;
 
@@ -1163,9 +1153,7 @@ dbcs_ptr2len(p)
  * Returns 1 for an illegal char or an incomplete byte sequence.
  */
     int
-latin_ptr2len_len(p, size)
-    char_u	*p;
-    int		size;
+latin_ptr2len_len(char_u *p, int size)
 {
     if (size < 1 || *p == NUL)
 	return 0;
@@ -1173,9 +1161,7 @@ latin_ptr2len_len(p, size)
 }
 
     static int
-dbcs_ptr2len_len(p, size)
-    char_u	*p;
-    int		size;
+dbcs_ptr2len_len(char_u *p, int size)
 {
     int		len;
 
@@ -1195,16 +1181,12 @@ struct interval
     long first;
     long last;
 };
-static int intable __ARGS((struct interval *table, size_t size, int c));
 
 /*
  * Return TRUE if "c" is in "table[size / sizeof(struct interval)]".
  */
     static int
-intable(table, size, c)
-    struct interval	*table;
-    size_t		size;
-    int			c;
+intable(struct interval *table, size_t size, int c)
 {
     int mid, bot, top;
 
@@ -1228,6 +1210,185 @@ intable(table, size, c)
     return FALSE;
 }
 
+/* Sorted list of non-overlapping intervals of East Asian Ambiguous
+ * characters, generated with ../runtime/tools/unicode.vim. */
+static struct interval ambiguous[] =
+{
+    {0x00a1, 0x00a1},
+    {0x00a4, 0x00a4},
+    {0x00a7, 0x00a8},
+    {0x00aa, 0x00aa},
+    {0x00ad, 0x00ae},
+    {0x00b0, 0x00b4},
+    {0x00b6, 0x00ba},
+    {0x00bc, 0x00bf},
+    {0x00c6, 0x00c6},
+    {0x00d0, 0x00d0},
+    {0x00d7, 0x00d8},
+    {0x00de, 0x00e1},
+    {0x00e6, 0x00e6},
+    {0x00e8, 0x00ea},
+    {0x00ec, 0x00ed},
+    {0x00f0, 0x00f0},
+    {0x00f2, 0x00f3},
+    {0x00f7, 0x00fa},
+    {0x00fc, 0x00fc},
+    {0x00fe, 0x00fe},
+    {0x0101, 0x0101},
+    {0x0111, 0x0111},
+    {0x0113, 0x0113},
+    {0x011b, 0x011b},
+    {0x0126, 0x0127},
+    {0x012b, 0x012b},
+    {0x0131, 0x0133},
+    {0x0138, 0x0138},
+    {0x013f, 0x0142},
+    {0x0144, 0x0144},
+    {0x0148, 0x014b},
+    {0x014d, 0x014d},
+    {0x0152, 0x0153},
+    {0x0166, 0x0167},
+    {0x016b, 0x016b},
+    {0x01ce, 0x01ce},
+    {0x01d0, 0x01d0},
+    {0x01d2, 0x01d2},
+    {0x01d4, 0x01d4},
+    {0x01d6, 0x01d6},
+    {0x01d8, 0x01d8},
+    {0x01da, 0x01da},
+    {0x01dc, 0x01dc},
+    {0x0251, 0x0251},
+    {0x0261, 0x0261},
+    {0x02c4, 0x02c4},
+    {0x02c7, 0x02c7},
+    {0x02c9, 0x02cb},
+    {0x02cd, 0x02cd},
+    {0x02d0, 0x02d0},
+    {0x02d8, 0x02db},
+    {0x02dd, 0x02dd},
+    {0x02df, 0x02df},
+    {0x0300, 0x036f},
+    {0x0391, 0x03a1},
+    {0x03a3, 0x03a9},
+    {0x03b1, 0x03c1},
+    {0x03c3, 0x03c9},
+    {0x0401, 0x0401},
+    {0x0410, 0x044f},
+    {0x0451, 0x0451},
+    {0x2010, 0x2010},
+    {0x2013, 0x2016},
+    {0x2018, 0x2019},
+    {0x201c, 0x201d},
+    {0x2020, 0x2022},
+    {0x2024, 0x2027},
+    {0x2030, 0x2030},
+    {0x2032, 0x2033},
+    {0x2035, 0x2035},
+    {0x203b, 0x203b},
+    {0x203e, 0x203e},
+    {0x2074, 0x2074},
+    {0x207f, 0x207f},
+    {0x2081, 0x2084},
+    {0x20ac, 0x20ac},
+    {0x2103, 0x2103},
+    {0x2105, 0x2105},
+    {0x2109, 0x2109},
+    {0x2113, 0x2113},
+    {0x2116, 0x2116},
+    {0x2121, 0x2122},
+    {0x2126, 0x2126},
+    {0x212b, 0x212b},
+    {0x2153, 0x2154},
+    {0x215b, 0x215e},
+    {0x2160, 0x216b},
+    {0x2170, 0x2179},
+    {0x2189, 0x2189},
+    {0x2190, 0x2199},
+    {0x21b8, 0x21b9},
+    {0x21d2, 0x21d2},
+    {0x21d4, 0x21d4},
+    {0x21e7, 0x21e7},
+    {0x2200, 0x2200},
+    {0x2202, 0x2203},
+    {0x2207, 0x2208},
+    {0x220b, 0x220b},
+    {0x220f, 0x220f},
+    {0x2211, 0x2211},
+    {0x2215, 0x2215},
+    {0x221a, 0x221a},
+    {0x221d, 0x2220},
+    {0x2223, 0x2223},
+    {0x2225, 0x2225},
+    {0x2227, 0x222c},
+    {0x222e, 0x222e},
+    {0x2234, 0x2237},
+    {0x223c, 0x223d},
+    {0x2248, 0x2248},
+    {0x224c, 0x224c},
+    {0x2252, 0x2252},
+    {0x2260, 0x2261},
+    {0x2264, 0x2267},
+    {0x226a, 0x226b},
+    {0x226e, 0x226f},
+    {0x2282, 0x2283},
+    {0x2286, 0x2287},
+    {0x2295, 0x2295},
+    {0x2299, 0x2299},
+    {0x22a5, 0x22a5},
+    {0x22bf, 0x22bf},
+    {0x2312, 0x2312},
+    {0x2460, 0x24e9},
+    {0x24eb, 0x254b},
+    {0x2550, 0x2573},
+    {0x2580, 0x258f},
+    {0x2592, 0x2595},
+    {0x25a0, 0x25a1},
+    {0x25a3, 0x25a9},
+    {0x25b2, 0x25b3},
+    {0x25b6, 0x25b7},
+    {0x25bc, 0x25bd},
+    {0x25c0, 0x25c1},
+    {0x25c6, 0x25c8},
+    {0x25cb, 0x25cb},
+    {0x25ce, 0x25d1},
+    {0x25e2, 0x25e5},
+    {0x25ef, 0x25ef},
+    {0x2605, 0x2606},
+    {0x2609, 0x2609},
+    {0x260e, 0x260f},
+    {0x2614, 0x2615},
+    {0x261c, 0x261c},
+    {0x261e, 0x261e},
+    {0x2640, 0x2640},
+    {0x2642, 0x2642},
+    {0x2660, 0x2661},
+    {0x2663, 0x2665},
+    {0x2667, 0x266a},
+    {0x266c, 0x266d},
+    {0x266f, 0x266f},
+    {0x269e, 0x269f},
+    {0x26be, 0x26bf},
+    {0x26c4, 0x26cd},
+    {0x26cf, 0x26e1},
+    {0x26e3, 0x26e3},
+    {0x26e8, 0x26ff},
+    {0x273d, 0x273d},
+    {0x2757, 0x2757},
+    {0x2776, 0x277f},
+    {0x2b55, 0x2b59},
+    {0x3248, 0x324f},
+    {0xe000, 0xf8ff},
+    {0xfe00, 0xfe0f},
+    {0xfffd, 0xfffd},
+    {0x1f100, 0x1f10a},
+    {0x1f110, 0x1f12d},
+    {0x1f130, 0x1f169},
+    {0x1f170, 0x1f19a},
+    {0xe0100, 0xe01ef},
+    {0xf0000, 0xffffd},
+    {0x100000, 0x10fffd}
+};
+
 /*
  * For UTF-8 character "c" return 2 for a double-width character, 1 for others.
  * Returns 4 or 6 for an unprintable character.
@@ -1236,8 +1397,7 @@ intable(table, size, c)
  * class 'A'(mbiguous).
  */
     int
-utf_char2cells(c)
-    int		c;
+utf_char2cells(int c)
 {
     /* Sorted list of non-overlapping intervals of East Asian double width
      * characters, generated with ../runtime/tools/unicode.vim. */
@@ -1280,183 +1440,30 @@ utf_char2cells(c)
 	{0x30000, 0x3fffd}
     };
 
-    /* Sorted list of non-overlapping intervals of East Asian Ambiguous
-     * characters, generated with ../runtime/tools/unicode.vim. */
-    static struct interval ambiguous[] =
+    /* Sorted list of non-overlapping intervals of Emoji characters that don't
+     * have ambiguous or double width,
+     * based on http://unicode.org/emoji/charts/emoji-list.html */
+    static struct interval emoji_width[] =
     {
-	{0x00a1, 0x00a1},
-	{0x00a4, 0x00a4},
-	{0x00a7, 0x00a8},
-	{0x00aa, 0x00aa},
-	{0x00ad, 0x00ae},
-	{0x00b0, 0x00b4},
-	{0x00b6, 0x00ba},
-	{0x00bc, 0x00bf},
-	{0x00c6, 0x00c6},
-	{0x00d0, 0x00d0},
-	{0x00d7, 0x00d8},
-	{0x00de, 0x00e1},
-	{0x00e6, 0x00e6},
-	{0x00e8, 0x00ea},
-	{0x00ec, 0x00ed},
-	{0x00f0, 0x00f0},
-	{0x00f2, 0x00f3},
-	{0x00f7, 0x00fa},
-	{0x00fc, 0x00fc},
-	{0x00fe, 0x00fe},
-	{0x0101, 0x0101},
-	{0x0111, 0x0111},
-	{0x0113, 0x0113},
-	{0x011b, 0x011b},
-	{0x0126, 0x0127},
-	{0x012b, 0x012b},
-	{0x0131, 0x0133},
-	{0x0138, 0x0138},
-	{0x013f, 0x0142},
-	{0x0144, 0x0144},
-	{0x0148, 0x014b},
-	{0x014d, 0x014d},
-	{0x0152, 0x0153},
-	{0x0166, 0x0167},
-	{0x016b, 0x016b},
-	{0x01ce, 0x01ce},
-	{0x01d0, 0x01d0},
-	{0x01d2, 0x01d2},
-	{0x01d4, 0x01d4},
-	{0x01d6, 0x01d6},
-	{0x01d8, 0x01d8},
-	{0x01da, 0x01da},
-	{0x01dc, 0x01dc},
-	{0x0251, 0x0251},
-	{0x0261, 0x0261},
-	{0x02c4, 0x02c4},
-	{0x02c7, 0x02c7},
-	{0x02c9, 0x02cb},
-	{0x02cd, 0x02cd},
-	{0x02d0, 0x02d0},
-	{0x02d8, 0x02db},
-	{0x02dd, 0x02dd},
-	{0x02df, 0x02df},
-	{0x0300, 0x036f},
-	{0x0391, 0x03a1},
-	{0x03a3, 0x03a9},
-	{0x03b1, 0x03c1},
-	{0x03c3, 0x03c9},
-	{0x0401, 0x0401},
-	{0x0410, 0x044f},
-	{0x0451, 0x0451},
-	{0x2010, 0x2010},
-	{0x2013, 0x2016},
-	{0x2018, 0x2019},
-	{0x201c, 0x201d},
-	{0x2020, 0x2022},
-	{0x2024, 0x2027},
-	{0x2030, 0x2030},
-	{0x2032, 0x2033},
-	{0x2035, 0x2035},
-	{0x203b, 0x203b},
-	{0x203e, 0x203e},
-	{0x2074, 0x2074},
-	{0x207f, 0x207f},
-	{0x2081, 0x2084},
-	{0x20ac, 0x20ac},
-	{0x2103, 0x2103},
-	{0x2105, 0x2105},
-	{0x2109, 0x2109},
-	{0x2113, 0x2113},
-	{0x2116, 0x2116},
-	{0x2121, 0x2122},
-	{0x2126, 0x2126},
-	{0x212b, 0x212b},
-	{0x2153, 0x2154},
-	{0x215b, 0x215e},
-	{0x2160, 0x216b},
-	{0x2170, 0x2179},
-	{0x2189, 0x2189},
-	{0x2190, 0x2199},
-	{0x21b8, 0x21b9},
-	{0x21d2, 0x21d2},
-	{0x21d4, 0x21d4},
-	{0x21e7, 0x21e7},
-	{0x2200, 0x2200},
-	{0x2202, 0x2203},
-	{0x2207, 0x2208},
-	{0x220b, 0x220b},
-	{0x220f, 0x220f},
-	{0x2211, 0x2211},
-	{0x2215, 0x2215},
-	{0x221a, 0x221a},
-	{0x221d, 0x2220},
-	{0x2223, 0x2223},
-	{0x2225, 0x2225},
-	{0x2227, 0x222c},
-	{0x222e, 0x222e},
-	{0x2234, 0x2237},
-	{0x223c, 0x223d},
-	{0x2248, 0x2248},
-	{0x224c, 0x224c},
-	{0x2252, 0x2252},
-	{0x2260, 0x2261},
-	{0x2264, 0x2267},
-	{0x226a, 0x226b},
-	{0x226e, 0x226f},
-	{0x2282, 0x2283},
-	{0x2286, 0x2287},
-	{0x2295, 0x2295},
-	{0x2299, 0x2299},
-	{0x22a5, 0x22a5},
-	{0x22bf, 0x22bf},
-	{0x2312, 0x2312},
-	{0x2460, 0x24e9},
-	{0x24eb, 0x254b},
-	{0x2550, 0x2573},
-	{0x2580, 0x258f},
-	{0x2592, 0x2595},
-	{0x25a0, 0x25a1},
-	{0x25a3, 0x25a9},
-	{0x25b2, 0x25b3},
-	{0x25b6, 0x25b7},
-	{0x25bc, 0x25bd},
-	{0x25c0, 0x25c1},
-	{0x25c6, 0x25c8},
-	{0x25cb, 0x25cb},
-	{0x25ce, 0x25d1},
-	{0x25e2, 0x25e5},
-	{0x25ef, 0x25ef},
-	{0x2605, 0x2606},
-	{0x2609, 0x2609},
-	{0x260e, 0x260f},
-	{0x2614, 0x2615},
-	{0x261c, 0x261c},
-	{0x261e, 0x261e},
-	{0x2640, 0x2640},
-	{0x2642, 0x2642},
-	{0x2660, 0x2661},
-	{0x2663, 0x2665},
-	{0x2667, 0x266a},
-	{0x266c, 0x266d},
-	{0x266f, 0x266f},
-	{0x269e, 0x269f},
-	{0x26be, 0x26bf},
-	{0x26c4, 0x26cd},
-	{0x26cf, 0x26e1},
-	{0x26e3, 0x26e3},
-	{0x26e8, 0x26ff},
-	{0x273d, 0x273d},
-	{0x2757, 0x2757},
-	{0x2776, 0x277f},
-	{0x2b55, 0x2b59},
-	{0x3248, 0x324f},
-	{0xe000, 0xf8ff},
-	{0xfe00, 0xfe0f},
-	{0xfffd, 0xfffd},
-	{0x1f100, 0x1f10a},
-	{0x1f110, 0x1f12d},
-	{0x1f130, 0x1f169},
-	{0x1f170, 0x1f19a},
-	{0xe0100, 0xe01ef},
-	{0xf0000, 0xffffd},
-	{0x100000, 0x10fffd}
+	{0x1f004, 0x1f004},
+	{0x1f0cf, 0x1f0cf},
+	{0x1f1e6, 0x1f1ff},
+	{0x1f300, 0x1f320},
+	{0x1f330, 0x1f335},
+	{0x1f337, 0x1f37c},
+	{0x1f380, 0x1f393},
+	{0x1f3a0, 0x1f3c4},
+	{0x1f3c6, 0x1f3ca},
+	{0x1f3e0, 0x1f3f0},
+	{0x1f400, 0x1f43e},
+	{0x1f440, 0x1f440},
+	{0x1f442, 0x1f4f7},
+	{0x1f4f9, 0x1f4fc},
+	{0x1f500, 0x1f53d},
+	{0x1f550, 0x1f567},
+	{0x1f5fb, 0x1f640},
+	{0x1f645, 0x1f64f},
+	{0x1f680, 0x1f6c5}
     };
 
     if (c >= 0x100)
@@ -1478,6 +1485,8 @@ utf_char2cells(c)
 	if (intable(doublewidth, sizeof(doublewidth), c))
 	    return 2;
 #endif
+	if (p_emoji && intable(emoji_width, sizeof(emoji_width), c))
+	    return 2;
     }
 
     /* Characters below 0x100 are influenced by 'isprint' option */
@@ -1496,15 +1505,14 @@ utf_char2cells(c)
  * This doesn't take care of unprintable characters, use ptr2cells() for that.
  */
     int
-latin_ptr2cells(p)
-    char_u	*p UNUSED;
+latin_ptr2cells(char_u *p UNUSED)
 {
     return 1;
 }
 
     int
-utf_ptr2cells(p)
-    char_u	*p;
+utf_ptr2cells(
+    char_u	*p)
 {
     int		c;
 
@@ -1524,8 +1532,7 @@ utf_ptr2cells(p)
 }
 
     int
-dbcs_ptr2cells(p)
-    char_u	*p;
+dbcs_ptr2cells(char_u *p)
 {
     /* Number of cells is equal to number of bytes, except for euc-jp when
      * the first byte is 0x8e. */
@@ -1540,17 +1547,13 @@ dbcs_ptr2cells(p)
  * For an empty string or truncated character returns 1.
  */
     int
-latin_ptr2cells_len(p, size)
-    char_u	*p UNUSED;
-    int		size UNUSED;
+latin_ptr2cells_len(char_u *p UNUSED, int size UNUSED)
 {
     return 1;
 }
 
     static int
-utf_ptr2cells_len(p, size)
-    char_u	*p;
-    int		size;
+utf_ptr2cells_len(char_u *p, int size)
 {
     int		c;
 
@@ -1572,9 +1575,7 @@ utf_ptr2cells_len(p, size)
 }
 
     static int
-dbcs_ptr2cells_len(p, size)
-    char_u	*p;
-    int		size;
+dbcs_ptr2cells_len(char_u *p, int size)
 {
     /* Number of cells is equal to number of bytes, except for euc-jp when
      * the first byte is 0x8e. */
@@ -1589,15 +1590,13 @@ dbcs_ptr2cells_len(p, size)
  * Only takes care of multi-byte chars, not "^C" and such.
  */
     int
-latin_char2cells(c)
-    int		c UNUSED;
+latin_char2cells(int c UNUSED)
 {
     return 1;
 }
 
     static int
-dbcs_char2cells(c)
-    int		c;
+dbcs_char2cells(int c)
 {
     /* Number of cells is equal to number of bytes, except for euc-jp when
      * the first byte is 0x8e. */
@@ -1612,9 +1611,7 @@ dbcs_char2cells(c)
  * Stop at a NUL character.  When "len" >= 0 stop at character "p[len]".
  */
     int
-mb_string2cells(p, len)
-    char_u  *p;
-    int	    len;
+mb_string2cells(char_u *p, int len)
 {
     int i;
     int clen = 0;
@@ -1630,17 +1627,13 @@ mb_string2cells(p, len)
  * We make sure that the offset used is less than "max_off".
  */
     int
-latin_off2cells(off, max_off)
-    unsigned	off UNUSED;
-    unsigned	max_off UNUSED;
+latin_off2cells(unsigned off UNUSED, unsigned max_off UNUSED)
 {
     return 1;
 }
 
     int
-dbcs_off2cells(off, max_off)
-    unsigned	off;
-    unsigned	max_off;
+dbcs_off2cells(unsigned off, unsigned max_off)
 {
     /* never check beyond end of the line */
     if (off >= max_off)
@@ -1654,9 +1647,7 @@ dbcs_off2cells(off, max_off)
 }
 
     int
-utf_off2cells(off, max_off)
-    unsigned	off;
-    unsigned	max_off;
+utf_off2cells(unsigned off, unsigned max_off)
 {
     return (off + 1 < max_off && ScreenLines[off + 1] == 0) ? 2 : 1;
 }
@@ -1666,15 +1657,13 @@ utf_off2cells(off, max_off)
  * Convert a byte sequence into a character.
  */
     int
-latin_ptr2char(p)
-    char_u	*p;
+latin_ptr2char(char_u *p)
 {
     return *p;
 }
 
     static int
-dbcs_ptr2char(p)
-    char_u	*p;
+dbcs_ptr2char(char_u *p)
 {
     if (MB_BYTE2LEN(*p) > 1 && p[1] != NUL)
 	return (p[0] << 8) + p[1];
@@ -1688,8 +1677,7 @@ dbcs_ptr2char(p)
  * Does not include composing characters, of course.
  */
     int
-utf_ptr2char(p)
-    char_u	*p;
+utf_ptr2char(char_u *p)
 {
     int		len;
 
@@ -1746,9 +1734,7 @@ utf_ptr2char(p)
  * "s".
  */
     static int
-utf_safe_read_char_adv(s, n)
-    char_u      **s;
-    size_t      *n;
+utf_safe_read_char_adv(char_u **s, size_t *n)
 {
     int		c, k;
 
@@ -1794,8 +1780,7 @@ utf_safe_read_char_adv(s, n)
  * Note: composing characters are skipped!
  */
     int
-mb_ptr2char_adv(pp)
-    char_u	**pp;
+mb_ptr2char_adv(char_u **pp)
 {
     int		c;
 
@@ -1809,8 +1794,7 @@ mb_ptr2char_adv(pp)
  * Note: composing characters are returned as separate characters.
  */
     int
-mb_cptr2char_adv(pp)
-    char_u	**pp;
+mb_cptr2char_adv(char_u **pp)
 {
     int		c;
 
@@ -1828,9 +1812,9 @@ mb_cptr2char_adv(pp)
  * Note: these are NOT really composing characters!
  */
     int
-arabic_combine(one, two)
-    int		one;	    /* first character */
-    int		two;	    /* character just after "one" */
+arabic_combine(
+    int		one,	    /* first character */
+    int		two)	    /* character just after "one" */
 {
     if (one == a_LAM)
 	return arabic_maycombine(two);
@@ -1842,8 +1826,7 @@ arabic_combine(one, two)
  * Arabic combining character, need to check the character before this.
  */
     int
-arabic_maycombine(two)
-    int		two;
+arabic_maycombine(int two)
 {
     if (p_arshape && !p_tbidi)
 	return (two == a_ALEF_MADDA
@@ -1859,9 +1842,7 @@ arabic_maycombine(two)
  * behaves like a composing character.
  */
     int
-utf_composinglike(p1, p2)
-    char_u	*p1;
-    char_u	*p2;
+utf_composinglike(char_u *p1, char_u *p2)
 {
     int		c2;
 
@@ -1879,9 +1860,9 @@ utf_composinglike(p1, p2)
  * composing characters.
  */
     int
-utfc_ptr2char(p, pcc)
-    char_u	*p;
-    int		*pcc;	/* return: composing chars, last one is 0 */
+utfc_ptr2char(
+    char_u	*p,
+    int		*pcc)	/* return: composing chars, last one is 0 */
 {
     int		len;
     int		c;
@@ -1919,10 +1900,10 @@ utfc_ptr2char(p, pcc)
  * composing characters.  Use no more than p[maxlen].
  */
     int
-utfc_ptr2char_len(p, pcc, maxlen)
-    char_u	*p;
-    int		*pcc;	/* return: composing chars, last one is 0 */
-    int		maxlen;
+utfc_ptr2char_len(
+    char_u	*p,
+    int		*pcc,	/* return: composing chars, last one is 0 */
+    int		maxlen)
 {
     int		len;
     int		c;
@@ -1965,9 +1946,7 @@ utfc_ptr2char_len(p, pcc, maxlen)
  * Returns the produced number of bytes.
  */
     int
-utfc_char2bytes(off, buf)
-    int		off;
-    char_u	*buf;
+utfc_char2bytes(int off, char_u *buf)
 {
     int		len;
     int		i;
@@ -1989,8 +1968,7 @@ utfc_char2bytes(off, buf)
  * Returns 1 for an illegal byte sequence.
  */
     int
-utf_ptr2len(p)
-    char_u	*p;
+utf_ptr2len(char_u *p)
 {
     int		len;
     int		i;
@@ -2010,8 +1988,7 @@ utf_ptr2len(p)
  * Returns 1 for an invalid first byte value.
  */
     int
-utf_byte2len(b)
-    int		b;
+utf_byte2len(int b)
 {
     return utf8len_tab[b];
 }
@@ -2025,9 +2002,7 @@ utf_byte2len(b)
  * Never returns zero.
  */
     int
-utf_ptr2len_len(p, size)
-    char_u	*p;
-    int		size;
+utf_ptr2len_len(char_u *p, int size)
 {
     int		len;
     int		i;
@@ -2051,8 +2026,7 @@ utf_ptr2len_len(p, size)
  * This includes following composing characters.
  */
     int
-utfc_ptr2len(p)
-    char_u	*p;
+utfc_ptr2len(char_u *p)
 {
     int		len;
     int		b0 = *p;
@@ -2099,9 +2073,7 @@ utfc_ptr2len(p)
  * Returns 1 for an illegal char or an incomplete byte sequence.
  */
     int
-utfc_ptr2len_len(p, size)
-    char_u	*p;
-    int		size;
+utfc_ptr2len_len(char_u *p, int size)
 {
     int		len;
 #ifdef FEAT_ARABIC
@@ -2159,8 +2131,7 @@ utfc_ptr2len_len(p, size)
  * This does not include composing characters.
  */
     int
-utf_char2len(c)
-    int		c;
+utf_char2len(int c)
 {
     if (c < 0x80)
 	return 1;
@@ -2181,9 +2152,7 @@ utf_char2len(c)
  * This does not include composing characters.
  */
     int
-utf_char2bytes(c, buf)
-    int		c;
-    char_u	*buf;
+utf_char2bytes(int c, char_u *buf)
 {
     if (c < 0x80)		/* 7 bits */
     {
@@ -2236,8 +2205,7 @@ utf_char2bytes(c, buf)
  * Based on code from Markus Kuhn.
  */
     int
-utf_iscomposing(c)
-    int		c;
+utf_iscomposing(int c)
 {
     /* Sorted list of non-overlapping intervals.
      * Generated by ../runtime/tools/unicode.vim. */
@@ -2489,8 +2457,7 @@ utf_iscomposing(c)
  * Only for characters of 0x100 and above!
  */
     int
-utf_printable(c)
-    int		c;
+utf_printable(int c)
 {
 #ifdef USE_WCHAR_FUNCTIONS
     /*
@@ -2511,6 +2478,122 @@ utf_printable(c)
 #endif
 }
 
+/* Sorted list of non-overlapping intervals of all Emoji characters,
+ * based on http://unicode.org/emoji/charts/emoji-list.html */
+static struct interval emoji_all[] =
+{
+    {0x203c, 0x203c},
+    {0x2049, 0x2049},
+    {0x2122, 0x2122},
+    {0x2139, 0x2139},
+    {0x2194, 0x2199},
+    {0x21a9, 0x21aa},
+    {0x231a, 0x231b},
+    {0x2328, 0x2328},
+    {0x23cf, 0x23cf},
+    {0x23e9, 0x23f3},
+    {0x24c2, 0x24c2},
+    {0x25aa, 0x25ab},
+    {0x25b6, 0x25b6},
+    {0x25c0, 0x25c0},
+    {0x25fb, 0x25fe},
+    {0x2600, 0x2604},
+    {0x260e, 0x260e},
+    {0x2611, 0x2611},
+    {0x2614, 0x2615},
+    {0x2618, 0x2618},
+    {0x261d, 0x261d},
+    {0x2620, 0x2620},
+    {0x2622, 0x2623},
+    {0x2626, 0x2626},
+    {0x262a, 0x262a},
+    {0x262e, 0x262f},
+    {0x2638, 0x263a},
+    {0x2648, 0x2653},
+    {0x2660, 0x2660},
+    {0x2663, 0x2663},
+    {0x2665, 0x2666},
+    {0x2668, 0x2668},
+    {0x267b, 0x267b},
+    {0x267f, 0x267f},
+    {0x2692, 0x2694},
+    {0x2696, 0x2697},
+    {0x2699, 0x2699},
+    {0x269b, 0x269c},
+    {0x26a0, 0x26a1},
+    {0x26aa, 0x26ab},
+    {0x26b0, 0x26b1},
+    {0x26bd, 0x26be},
+    {0x26c4, 0x26c5},
+    {0x26c8, 0x26c8},
+    {0x26ce, 0x26cf},
+    {0x26d1, 0x26d1},
+    {0x26d3, 0x26d4},
+    {0x26e9, 0x26ea},
+    {0x26f0, 0x26f5},
+    {0x26f7, 0x26fa},
+    {0x26fd, 0x26fd},
+    {0x2702, 0x2702},
+    {0x2705, 0x2705},
+    {0x2708, 0x270d},
+    {0x270f, 0x270f},
+    {0x2712, 0x2712},
+    {0x2714, 0x2714},
+    {0x2716, 0x2716},
+    {0x271d, 0x271d},
+    {0x2721, 0x2721},
+    {0x2728, 0x2728},
+    {0x2733, 0x2734},
+    {0x2744, 0x2744},
+    {0x2747, 0x2747},
+    {0x274c, 0x274c},
+    {0x274e, 0x274e},
+    {0x2753, 0x2755},
+    {0x2757, 0x2757},
+    {0x2763, 0x2764},
+    {0x2795, 0x2797},
+    {0x27a1, 0x27a1},
+    {0x27b0, 0x27b0},
+    {0x27bf, 0x27bf},
+    {0x2934, 0x2935},
+    {0x2b05, 0x2b07},
+    {0x2b1b, 0x2b1c},
+    {0x2b50, 0x2b50},
+    {0x2b55, 0x2b55},
+    {0x3030, 0x3030},
+    {0x303d, 0x303d},
+    {0x3297, 0x3297},
+    {0x3299, 0x3299},
+    {0x1f004, 0x1f004},
+    {0x1f0cf, 0x1f0cf},
+    {0x1f170, 0x1f171},
+    {0x1f17e, 0x1f17f},
+    {0x1f18e, 0x1f18e},
+    {0x1f191, 0x1f19a},
+    {0x1f1e6, 0x1f1ff},
+    {0x1f201, 0x1f202},
+    {0x1f21a, 0x1f21a},
+    {0x1f22f, 0x1f22f},
+    {0x1f232, 0x1f23a},
+    {0x1f250, 0x1f251},
+    {0x1f300, 0x1f320},
+    {0x1f330, 0x1f335},
+    {0x1f337, 0x1f37c},
+    {0x1f380, 0x1f393},
+    {0x1f3a0, 0x1f3c4},
+    {0x1f3c6, 0x1f3ca},
+    {0x1f3e0, 0x1f3f0},
+    {0x1f400, 0x1f43e},
+    {0x1f440, 0x1f440},
+    {0x1f442, 0x1f4f7},
+    {0x1f4f9, 0x1f4fc},
+    {0x1f500, 0x1f53d},
+    {0x1f550, 0x1f567},
+    {0x1f5fb, 0x1f640},
+    {0x1f645, 0x1f64f},
+    {0x1f680, 0x1f6c5}
+};
+
 /*
  * Get class of a Unicode character.
  * 0: white space
@@ -2518,8 +2601,7 @@ utf_printable(c)
  * 2 or bigger: some class of word character.
  */
     int
-utf_class(c)
-    int		c;
+utf_class(int c)
 {
     /* sorted list of non-overlapping intervals */
     static struct clinterval
@@ -2597,6 +2679,7 @@ utf_class(c)
 	{0x2b740, 0x2b81f, 0x4e00},	/* CJK Ideographs */
 	{0x2f800, 0x2fa1f, 0x4e00},	/* CJK Ideographs */
     };
+
     int bot = 0;
     int top = sizeof(classes) / sizeof(struct clinterval) - 1;
     int mid;
@@ -2623,8 +2706,19 @@ utf_class(c)
 	    return (int)classes[mid].class;
     }
 
+    /* emoji */
+    if (intable(emoji_all, sizeof(emoji_all), c))
+	return 3;
+
     /* most other characters are "word" characters */
     return 2;
+}
+
+    int
+utf_ambiguous_width(int c)
+{
+    return c >= 0x80 && (intable(ambiguous, sizeof(ambiguous), c)
+	    || intable(emoji_all, sizeof(emoji_all), c));
 }
 
 /*
@@ -2827,8 +2921,8 @@ static convertStruct foldCase[] =
 	{0x118a0,0x118bf,1,32}
 };
 
-static int utf_convert __ARGS((int a, convertStruct table[], int tableSize));
-static int utf_strnicmp __ARGS((char_u *s1, char_u *s2, size_t n1, size_t n2));
+static int utf_convert(int a, convertStruct table[], int tableSize);
+static int utf_strnicmp(char_u *s1, char_u *s2, size_t n1, size_t n2);
 
 /*
  * Generic conversion function for case operations.
@@ -2836,10 +2930,10 @@ static int utf_strnicmp __ARGS((char_u *s1, char_u *s2, size_t n1, size_t n2));
  * the given conversion "table".  Uses binary search on "table".
  */
     static int
-utf_convert(a, table, tableSize)
-    int			a;
-    convertStruct	table[];
-    int			tableSize;
+utf_convert(
+    int			a,
+    convertStruct	table[],
+    int			tableSize)
 {
     int start, mid, end; /* indices into table */
     int entries = tableSize / sizeof(convertStruct);
@@ -2869,8 +2963,7 @@ utf_convert(a, table, tableSize)
  * simple case folding.
  */
     int
-utf_fold(a)
-    int		a;
+utf_fold(int a)
 {
     return utf_convert(a, foldCase, (int)sizeof(foldCase));
 }
@@ -3212,13 +3305,13 @@ static convertStruct toUpper[] =
 	{0x10cc0,0x10cf2,1,-64},
 	{0x118c0,0x118df,1,-32}
 };
+
 /*
  * Return the upper-case equivalent of "a", which is a UCS-4 character.  Use
  * simple case folding.
  */
     int
-utf_toupper(a)
-    int		a;
+utf_toupper(int a)
 {
     /* If 'casemap' contains "keepascii" use ASCII style toupper(). */
     if (a < 128 && (cmp_flags & CMP_KEEPASCII))
@@ -3239,8 +3332,7 @@ utf_toupper(a)
 }
 
     int
-utf_islower(a)
-    int		a;
+utf_islower(int a)
 {
     /* German sharp s is lower case but has no upper case equivalent. */
     return (utf_toupper(a) != a) || a == 0xdf;
@@ -3251,8 +3343,7 @@ utf_islower(a)
  * simple case folding.
  */
     int
-utf_tolower(a)
-    int		a;
+utf_tolower(int a)
 {
     /* If 'casemap' contains "keepascii" use ASCII style tolower(). */
     if (a < 128 && (cmp_flags & CMP_KEEPASCII))
@@ -3273,16 +3364,17 @@ utf_tolower(a)
 }
 
     int
-utf_isupper(a)
-    int		a;
+utf_isupper(int a)
 {
     return (utf_tolower(a) != a);
 }
 
     static int
-utf_strnicmp(s1, s2, n1, n2)
-    char_u      *s1, *s2;
-    size_t      n1, n2;
+utf_strnicmp(
+    char_u      *s1,
+    char_u      *s2,
+    size_t      n1,
+    size_t      n2)
 {
     int		c1, c2, cdiff;
     char_u	buffer[6];
@@ -3362,9 +3454,7 @@ utf_strnicmp(s1, s2, n1, n2)
  * two characters otherwise.
  */
     int
-mb_strnicmp(s1, s2, nn)
-    char_u	*s1, *s2;
-    size_t	nn;
+mb_strnicmp(char_u *s1, char_u *s2, size_t nn)
 {
     int		i, l;
     int		cdiff;
@@ -3411,7 +3501,7 @@ mb_strnicmp(s1, s2, nn)
  * 'encoding' has been set to.
  */
     void
-show_utf8()
+show_utf8(void)
 {
     int		len;
     int		rlen = 0;
@@ -3460,17 +3550,13 @@ show_utf8()
  * Returns 0 when already at the first byte of a character.
  */
     int
-latin_head_off(base, p)
-    char_u	*base UNUSED;
-    char_u	*p UNUSED;
+latin_head_off(char_u *base UNUSED, char_u *p UNUSED)
 {
     return 0;
 }
 
     int
-dbcs_head_off(base, p)
-    char_u	*base;
-    char_u	*p;
+dbcs_head_off(char_u *base, char_u *p)
 {
     char_u	*q;
 
@@ -3492,9 +3578,7 @@ dbcs_head_off(base, p)
  * single-width DBCS_JPNU characters are stored separately.
  */
     int
-dbcs_screen_head_off(base, p)
-    char_u	*base;
-    char_u	*p;
+dbcs_screen_head_off(char_u *base, char_u *p)
 {
     char_u	*q;
 
@@ -3524,9 +3608,7 @@ dbcs_screen_head_off(base, p)
 }
 
     int
-utf_head_off(base, p)
-    char_u	*base;
-    char_u	*p;
+utf_head_off(char_u *base, char_u *p)
 {
     char_u	*q;
     char_u	*s;
@@ -3585,9 +3667,7 @@ utf_head_off(base, p)
  * Copy a character from "*fp" to "*tp" and advance the pointers.
  */
     void
-mb_copy_char(fp, tp)
-    char_u	**fp;
-    char_u	**tp;
+mb_copy_char(char_u **fp, char_u **tp)
 {
     int	    l = (*mb_ptr2len)(*fp);
 
@@ -3602,9 +3682,7 @@ mb_copy_char(fp, tp)
  * character.  Can start anywhere in a stream of bytes.
  */
     int
-mb_off_next(base, p)
-    char_u	*base;
-    char_u	*p;
+mb_off_next(char_u *base, char_u *p)
 {
     int		i;
     int		j;
@@ -3639,9 +3717,7 @@ mb_off_next(base, p)
  * into.  Can start anywhere in a stream of bytes.
  */
     int
-mb_tail_off(base, p)
-    char_u	*base;
-    char_u	*p;
+mb_tail_off(char_u *base, char_u *p)
 {
     int		i;
     int		j;
@@ -3676,7 +3752,7 @@ mb_tail_off(base, p)
  * Find the next illegal byte sequence.
  */
     void
-utf_find_illegal()
+utf_find_illegal(void)
 {
     pos_T	pos = curwin->w_cursor;
     char_u	*p;
@@ -3755,9 +3831,7 @@ theend:
  * When "end" is positive stop there.
  */
     int
-utf_valid_string(s, end)
-    char_u	*s;
-    char_u	*end;
+utf_valid_string(char_u *s, char_u *end)
 {
     int		l;
     char_u	*p = s;
@@ -3783,9 +3857,7 @@ utf_valid_string(s, end)
  * Special version of mb_tail_off() for use in ScreenLines[].
  */
     int
-dbcs_screen_tail_off(base, p)
-    char_u	*base;
-    char_u	*p;
+dbcs_screen_tail_off(char_u *base, char_u *p)
 {
     /* It can't be the first byte if a double-byte when not using DBCS, at the
      * end of the string or the byte can't start a double-byte.
@@ -3807,7 +3879,7 @@ dbcs_screen_tail_off(base, p)
  * Return TRUE when the cursor was adjusted.
  */
     void
-mb_adjust_cursor()
+mb_adjust_cursor(void)
 {
     mb_adjustpos(curbuf, &curwin->w_cursor);
 }
@@ -3817,9 +3889,7 @@ mb_adjust_cursor()
  * If it points to a tail byte it's moved backwards to the head byte.
  */
     void
-mb_adjustpos(buf, lp)
-    buf_T	*buf;
-    pos_T	*lp;
+mb_adjustpos(buf_T *buf, pos_T *lp)
 {
     char_u	*p;
 
@@ -3847,9 +3917,9 @@ mb_adjustpos(buf, lp)
  * Return a pointer to the character before "*p", if there is one.
  */
     char_u *
-mb_prevptr(line, p)
-    char_u *line;	/* start of the string */
-    char_u *p;
+mb_prevptr(
+    char_u *line,	/* start of the string */
+    char_u *p)
 {
     if (p > line)
 	mb_ptr_back(line, p);
@@ -3861,8 +3931,7 @@ mb_prevptr(line, p)
  * following composing characters) counts as one.
  */
     int
-mb_charlen(str)
-    char_u	*str;
+mb_charlen(char_u *str)
 {
     char_u	*p = str;
     int		count;
@@ -3881,9 +3950,7 @@ mb_charlen(str)
  * Like mb_charlen() but for a string with specified length.
  */
     int
-mb_charlen_len(str, len)
-    char_u	*str;
-    int		len;
+mb_charlen_len(char_u *str, int len)
 {
     char_u	*p = str;
     int		count;
@@ -3903,8 +3970,7 @@ mb_charlen_len(str, len)
  * Return NULL if no multi-byte char was found.
  */
     char_u *
-mb_unescape(pp)
-    char_u **pp;
+mb_unescape(char_u **pp)
 {
     static char_u	buf[6];
     int			n;
@@ -3965,9 +4031,7 @@ mb_unescape(pp)
  * Caller must make sure "row" and "col" are not invalid!
  */
     int
-mb_lefthalve(row, col)
-    int	    row;
-    int	    col;
+mb_lefthalve(int row, int col)
 {
 #ifdef FEAT_HANGULIN
     if (composing_hangul)
@@ -3982,9 +4046,7 @@ mb_lefthalve(row, col)
  * char move it to the left half.  Returns the corrected column.
  */
     int
-mb_fix_col(col, row)
-    int		col;
-    int		row;
+mb_fix_col(int col, int row)
 {
     col = check_col(col);
     row = check_row(row);
@@ -4000,14 +4062,13 @@ mb_fix_col(col, row)
 #endif
 
 #if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT) || defined(PROTO)
-static int enc_alias_search __ARGS((char_u *name));
+static int enc_alias_search(char_u *name);
 
 /*
  * Skip the Vim specific head of a 'encoding' name.
  */
     char_u *
-enc_skip(p)
-    char_u	*p;
+enc_skip(char_u *p)
 {
     if (STRNCMP(p, "2byte-", 6) == 0)
 	return p + 6;
@@ -4023,8 +4084,7 @@ enc_skip(p)
  * Returns an allocated string.  NULL for out-of-memory.
  */
     char_u *
-enc_canonize(enc)
-    char_u	*enc;
+enc_canonize(char_u *enc)
 {
     char_u	*r;
     char_u	*p, *s;
@@ -4102,8 +4162,7 @@ enc_canonize(enc)
  * Returns -1 when not found.
  */
     static int
-enc_alias_search(name)
-    char_u	*name;
+enc_alias_search(char_u *name)
 {
     int		i;
 
@@ -4125,7 +4184,7 @@ enc_alias_search(name)
  * Returns an allocated string when successful, NULL when not.
  */
     char_u *
-enc_locale()
+enc_locale(void)
 {
 #ifndef WIN3264
     char	*s;
@@ -4200,8 +4259,7 @@ enc_locale()
  * Returns zero if no codepage can be figured out.
  */
     int
-encname2codepage(name)
-    char_u	*name;
+encname2codepage(char_u *name)
 {
     int		cp;
     char_u	*p = name;
@@ -4226,7 +4284,7 @@ encname2codepage(name)
 
 # if defined(USE_ICONV) || defined(PROTO)
 
-static char_u *iconv_string __ARGS((vimconv_T *vcp, char_u *str, int slen, int *unconvlenp, int *resultlenp));
+static char_u *iconv_string(vimconv_T *vcp, char_u *str, int slen, int *unconvlenp, int *resultlenp);
 
 /*
  * Call iconv_open() with a check if iconv() works properly (there are broken
@@ -4235,9 +4293,7 @@ static char_u *iconv_string __ARGS((vimconv_T *vcp, char_u *str, int slen, int *
  * (should return iconv_t, but that causes problems with prototypes).
  */
     void *
-my_iconv_open(to, from)
-    char_u	*to;
-    char_u	*from;
+my_iconv_open(char_u *to, char_u *from)
 {
     iconv_t	fd;
 #define ICONV_TESTLEN 400
@@ -4290,12 +4346,12 @@ my_iconv_open(to, from)
  * If resultlenp is not NULL, sets it to the result length in bytes.
  */
     static char_u *
-iconv_string(vcp, str, slen, unconvlenp, resultlenp)
-    vimconv_T	*vcp;
-    char_u	*str;
-    int		slen;
-    int		*unconvlenp;
-    int		*resultlenp;
+iconv_string(
+    vimconv_T	*vcp,
+    char_u	*str,
+    int		slen,
+    int		*unconvlenp,
+    int		*resultlenp)
 {
     const char	*from;
     size_t	fromlen;
@@ -4392,21 +4448,21 @@ iconv_string(vcp, str, slen, unconvlenp, resultlenp)
  * Dynamically load the "iconv.dll" on Win32.
  */
 
-#ifndef DYNAMIC_ICONV	    /* just generating prototypes */
-# define HINSTANCE int
-#endif
+#   ifndef DYNAMIC_ICONV	    /* must be generating prototypes */
+#    define HINSTANCE int
+#   endif
 static HINSTANCE hIconvDLL = 0;
 static HINSTANCE hMsvcrtDLL = 0;
 
-#  ifndef DYNAMIC_ICONV_DLL
-#   define DYNAMIC_ICONV_DLL "iconv.dll"
-#   define DYNAMIC_ICONV_DLL_ALT1 "libiconv.dll"
-#   define DYNAMIC_ICONV_DLL_ALT2 "libiconv2.dll"
-#   define DYNAMIC_ICONV_DLL_ALT3 "libiconv-2.dll"
-#  endif
-#  ifndef DYNAMIC_MSVCRT_DLL
-#   define DYNAMIC_MSVCRT_DLL "msvcrt.dll"
-#  endif
+#   ifndef DYNAMIC_ICONV_DLL
+#    define DYNAMIC_ICONV_DLL "iconv.dll"
+#    define DYNAMIC_ICONV_DLL_ALT1 "libiconv.dll"
+#    define DYNAMIC_ICONV_DLL_ALT2 "libiconv2.dll"
+#    define DYNAMIC_ICONV_DLL_ALT3 "libiconv-2.dll"
+#   endif
+#   ifndef DYNAMIC_MSVCRT_DLL
+#    define DYNAMIC_MSVCRT_DLL "msvcrt.dll"
+#   endif
 
 /*
  * Get the address of 'funcname' which is imported by 'hInst' DLL.
@@ -4442,7 +4498,7 @@ get_iconv_import_func(HINSTANCE hInst, const char *funcname)
 		continue;
 	    pImpName = (PIMAGE_IMPORT_BY_NAME)(pImage
 					+ (UINT_PTR)(pINT->u1.AddressOfData));
-	    if (strcmp(pImpName->Name, funcname) == 0)
+	    if (strcmp((char *)pImpName->Name, funcname) == 0)
 		return (void *)pIAT->u1.Function;
 	}
     }
@@ -4453,20 +4509,27 @@ get_iconv_import_func(HINSTANCE hInst, const char *funcname)
  * Try opening the iconv.dll and return TRUE if iconv() can be used.
  */
     int
-iconv_enabled(verbose)
-    int		verbose;
+iconv_enabled(int verbose)
 {
     if (hIconvDLL != 0 && hMsvcrtDLL != 0)
 	return TRUE;
 
-    /* The iconv DLL file goes under different names, try them all. */
-    hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL);
-    if (hIconvDLL == 0)
-	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT1);
+    /* The iconv DLL file goes under different names, try them all.
+     * Do the "2" version first, it's newer. */
+#ifdef DYNAMIC_ICONV_DLL_ALT2
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT2);
+#endif
+#ifdef DYNAMIC_ICONV_DLL_ALT3
     if (hIconvDLL == 0)
 	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT3);
+#endif
+    if (hIconvDLL == 0)
+	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL);
+#ifdef DYNAMIC_ICONV_DLL_ALT1
+    if (hIconvDLL == 0)
+	hIconvDLL = vimLoadLib(DYNAMIC_ICONV_DLL_ALT1);
+#endif
 
     if (hIconvDLL != 0)
 	hMsvcrtDLL = vimLoadLib(DYNAMIC_MSVCRT_DLL);
@@ -4508,7 +4571,7 @@ iconv_enabled(verbose)
 }
 
     void
-iconv_end()
+iconv_end(void)
 {
     /* Don't use iconv() when inputting or outputting characters. */
     if (input_conv.vc_type == CONV_ICONV)
@@ -5038,7 +5101,11 @@ xim_init(void)
 #endif
 
     g_return_if_fail(gui.drawarea != NULL);
+#if GTK_CHECK_VERSION(3,0,0)
+    g_return_if_fail(gtk_widget_get_window(gui.drawarea) != NULL);
+#else
     g_return_if_fail(gui.drawarea->window != NULL);
+#endif
 
     xic = gtk_im_multicontext_new();
     g_object_ref(xic);
@@ -5052,7 +5119,11 @@ xim_init(void)
     g_signal_connect(G_OBJECT(xic), "preedit_end",
 		     G_CALLBACK(&im_preedit_end_cb), NULL);
 
+#if GTK_CHECK_VERSION(3,0,0)
+    gtk_im_context_set_client_window(xic, gtk_widget_get_window(gui.drawarea));
+#else
     gtk_im_context_set_client_window(xic, gui.drawarea->window);
+#endif
 }
 
     void
@@ -5151,12 +5222,21 @@ im_synthesize_keypress(unsigned int keyval, unsigned int state)
 
 #  ifdef HAVE_GTK_MULTIHEAD
     event = (GdkEventKey *)gdk_event_new(GDK_KEY_PRESS);
+#   if GTK_CHECK_VERSION(3,0,0)
+    g_object_ref(gtk_widget_get_window(gui.drawarea));
+					/* unreffed by gdk_event_free() */
+#   else
     g_object_ref(gui.drawarea->window); /* unreffed by gdk_event_free() */
+#   endif
 #  else
     event = (GdkEventKey *)g_malloc0((gulong)sizeof(GdkEvent));
     event->type = GDK_KEY_PRESS;
 #  endif
+#  if GTK_CHECK_VERSION(3,0,0)
+    event->window = gtk_widget_get_window(gui.drawarea);
+#  else
     event->window = gui.drawarea->window;
+#  endif
     event->send_event = TRUE;
     event->time = GDK_CURRENT_TIME;
     event->state  = state;
@@ -5396,7 +5476,7 @@ preedit_get_status(void)
 }
 
     int
-im_is_preediting()
+im_is_preediting(void)
 {
     return xim_has_preediting;
 }
@@ -5415,8 +5495,7 @@ static int	status_area_enabled = TRUE;
  * Switch using XIM on/off.  This is used by the code that changes "State".
  */
     void
-im_set_active(active)
-    int		active;
+im_set_active(int active)
 {
     if (xic == NULL)
 	return;
@@ -5442,8 +5521,7 @@ im_set_active(active)
  * "xim_is_active" changes.
  */
     void
-xim_set_focus(focus)
-    int		focus;
+xim_set_focus(int focus)
 {
     if (xic == NULL)
 	return;
@@ -5471,9 +5549,7 @@ xim_set_focus(focus)
 }
 
     void
-im_set_position(row, col)
-    int		row UNUSED;
-    int		col UNUSED;
+im_set_position(int row UNUSED, int col UNUSED)
 {
     xim_set_preedit();
 }
@@ -5482,7 +5558,7 @@ im_set_position(row, col)
  * Set the XIM to the current cursor position.
  */
     void
-xim_set_preedit()
+xim_set_preedit(void)
 {
     XVaNestedList attr_list;
     XRectangle spot_area;
@@ -5544,18 +5620,18 @@ static char e_xim[] = N_("E285: Failed to create input context");
 #  define USE_X11R6_XIM
 # endif
 
-static int xim_real_init __ARGS((Window x11_window, Display *x11_display));
+static int xim_real_init(Window x11_window, Display *x11_display);
 
 
 #ifdef USE_X11R6_XIM
-static void xim_instantiate_cb __ARGS((Display *display, XPointer client_data, XPointer	call_data));
-static void xim_destroy_cb __ARGS((XIM im, XPointer client_data, XPointer call_data));
+static void xim_instantiate_cb(Display *display, XPointer client_data, XPointer	call_data);
+static void xim_destroy_cb(XIM im, XPointer client_data, XPointer call_data);
 
     static void
-xim_instantiate_cb(display, client_data, call_data)
-    Display	*display;
-    XPointer	client_data UNUSED;
-    XPointer	call_data UNUSED;
+xim_instantiate_cb(
+    Display	*display,
+    XPointer	client_data UNUSED,
+    XPointer	call_data UNUSED)
 {
     Window	x11_window;
     Display	*x11_display;
@@ -5576,10 +5652,10 @@ xim_instantiate_cb(display, client_data, call_data)
 }
 
     static void
-xim_destroy_cb(im, client_data, call_data)
-    XIM		im UNUSED;
-    XPointer	client_data UNUSED;
-    XPointer	call_data UNUSED;
+xim_destroy_cb(
+    XIM		im UNUSED,
+    XPointer	client_data UNUSED,
+    XPointer	call_data UNUSED)
 {
     Window	x11_window;
     Display	*x11_display;
@@ -5600,7 +5676,7 @@ xim_destroy_cb(im, client_data, call_data)
 #endif
 
     void
-xim_init()
+xim_init(void)
 {
     Window	x11_window;
     Display	*x11_display;
@@ -5625,9 +5701,7 @@ xim_init()
 }
 
     static int
-xim_real_init(x11_window, x11_display)
-    Window	x11_window;
-    Display	*x11_display;
+xim_real_init(Window x11_window, Display *x11_display)
 {
     int		i;
     char	*p,
@@ -5852,7 +5926,7 @@ xim_real_init(x11_window, x11_display)
  * tear-off menu item).
  */
     int
-im_get_status()
+im_get_status(void)
 {
     return xim_has_focus;
 }
@@ -5869,7 +5943,7 @@ im_get_status()
  * window...
  */
     void
-xim_set_status_area()
+xim_set_status_area(void)
 {
     XVaNestedList preedit_list = 0, status_list = 0, list = 0;
     XRectangle pre_area, status_area;
@@ -5966,7 +6040,7 @@ xim_set_status_area()
 }
 
     int
-xim_get_status_area_height()
+xim_get_status_area_height(void)
 {
     if (status_area_enabled)
 	return gui.char_height;
@@ -5988,10 +6062,7 @@ xim_get_status_area_height()
  * Return FAIL when conversion is not supported, OK otherwise.
  */
     int
-convert_setup(vcp, from, to)
-    vimconv_T	*vcp;
-    char_u	*from;
-    char_u	*to;
+convert_setup(vimconv_T *vcp, char_u *from, char_u *to)
 {
     return convert_setup_ext(vcp, from, TRUE, to, TRUE);
 }
@@ -6001,12 +6072,12 @@ convert_setup(vcp, from, to)
  * "from" unicode charsets be considered utf-8.  Same for "to".
  */
     int
-convert_setup_ext(vcp, from, from_unicode_is_utf8, to, to_unicode_is_utf8)
-    vimconv_T	*vcp;
-    char_u	*from;
-    int		from_unicode_is_utf8;
-    char_u	*to;
-    int		to_unicode_is_utf8;
+convert_setup_ext(
+    vimconv_T	*vcp,
+    char_u	*from,
+    int		from_unicode_is_utf8,
+    char_u	*to,
+    int		to_unicode_is_utf8)
 {
     int		from_prop;
     int		to_prop;
@@ -6111,17 +6182,14 @@ convert_setup_ext(vcp, from, from_unicode_is_utf8, to, to_unicode_is_utf8)
 }
 
 #if defined(FEAT_GUI) || defined(AMIGA) || defined(WIN3264) \
-	|| defined(MSDOS) || defined(PROTO)
+	|| defined(PROTO)
 /*
  * Do conversion on typed input characters in-place.
  * The input and output are not NUL terminated!
  * Returns the length after conversion.
  */
     int
-convert_input(ptr, len, maxlen)
-    char_u	*ptr;
-    int		len;
-    int		maxlen;
+convert_input(char_u *ptr, int len, int maxlen)
 {
     return convert_input_safe(ptr, len, maxlen, NULL, NULL);
 }
@@ -6133,12 +6201,12 @@ convert_input(ptr, len, maxlen)
  * the length.  If "restp" is NULL it is not used.
  */
     int
-convert_input_safe(ptr, len, maxlen, restp, restlenp)
-    char_u	*ptr;
-    int		len;
-    int		maxlen;
-    char_u	**restp;
-    int		*restlenp;
+convert_input_safe(
+    char_u	*ptr,
+    int		len,
+    int		maxlen,
+    char_u	**restp,
+    int		*restlenp)
 {
     char_u	*d;
     int		dlen = len;
@@ -6177,10 +6245,10 @@ convert_input_safe(ptr, len, maxlen, restp, restlenp)
  * When something goes wrong, NULL is returned and "*lenp" is unchanged.
  */
     char_u *
-string_convert(vcp, ptr, lenp)
-    vimconv_T	*vcp;
-    char_u	*ptr;
-    int		*lenp;
+string_convert(
+    vimconv_T	*vcp,
+    char_u	*ptr,
+    int		*lenp)
 {
     return string_convert_ext(vcp, ptr, lenp, NULL);
 }
@@ -6191,11 +6259,11 @@ string_convert(vcp, ptr, lenp)
  * set to the number of remaining bytes.
  */
     char_u *
-string_convert_ext(vcp, ptr, lenp, unconvlenp)
-    vimconv_T	*vcp;
-    char_u	*ptr;
-    int		*lenp;
-    int		*unconvlenp;
+string_convert_ext(
+    vimconv_T	*vcp,
+    char_u	*ptr,
+    int		*lenp,
+    int		*unconvlenp)
 {
     char_u	*retval = NULL;
     char_u	*d;
@@ -6377,7 +6445,7 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 	    {
 		tmp_len = MultiByteToWideChar(vcp->vc_cpfrom,
 					unconvlenp ? MB_ERR_INVALID_CHARS : 0,
-					ptr, len, 0, 0);
+					(char *)ptr, len, 0, 0);
 		if (tmp_len == 0
 			&& GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
 		{
@@ -6397,7 +6465,8 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 	    if (vcp->vc_cpfrom == 0)
 		utf8_to_utf16(ptr, len, tmp, unconvlenp);
 	    else
-		MultiByteToWideChar(vcp->vc_cpfrom, 0, ptr, len, tmp, tmp_len);
+		MultiByteToWideChar(vcp->vc_cpfrom, 0,
+			(char *)ptr, len, tmp, tmp_len);
 
 	    /* 2. ucs-2  ->  codepage/UTF-8. */
 	    if (vcp->vc_cpto == 0)
@@ -6412,7 +6481,8 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 		    utf16_to_utf8(tmp, tmp_len, retval);
 		else
 		    WideCharToMultiByte(vcp->vc_cpto, 0,
-					  tmp, tmp_len, retval, retlen, 0, 0);
+					  tmp, tmp_len,
+					  (char *)retval, retlen, 0, 0);
 		retval[retlen] = NUL;
 		if (lenp != NULL)
 		    *lenp = retlen;

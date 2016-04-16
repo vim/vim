@@ -37,13 +37,13 @@
 NSString *VimPboardType = @"VimPboardType";
 
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(VimClipboard *cbd UNUSED)
 {
 }
 
 
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(VimClipboard *cbd UNUSED)
 {
     /* This is called whenever there is a new selection and 'guioptions'
      * contains the "a" flag (automatically copy selection).  Return TRUE, else

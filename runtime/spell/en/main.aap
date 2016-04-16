@@ -30,7 +30,7 @@ $SPELLDIR/en.ascii.spl : $FILES
         :sys $VIM -u NONE -e -c "mkspell! -ascii $SPELLDIR/en
                         en_US en_AU en_CA en_GB en_NZ" -c q
  
-../README_en.txt: README_en_US.txt README_en_AU.txt
+../README_en.txt: README_en_US.txt README_en_AU.txt README_en_CA.txt README_en_GB.txt README_en_NZ.txt
         :print en_US >!$target
         :cat README_en_US.txt | :eval re.sub('\r', '', stdin) >>$target
         :print =================================================== >>$target
@@ -48,6 +48,14 @@ $SPELLDIR/en.ascii.spl : $FILES
 
 #
 # Fetching the files from OpenOffice.org.
+# THIS URL NO LONGER WORKS.
+#
+# Files for en_US, en_CA and en_GB can be obtained from:
+# github.com/marcoagpinto/aoo-mozilla-en-dict
+# Unfortunately, giving suggestions becomes terribly slow with these.
+# TODO: find out why suggestions are slow and fix that.
+#
+# For now we use the older libraries.
 #
 OODIR = http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
 :attr {fetch = $OODIR/%file%} en_US.zip en_CA.zip en_NZ.zip
@@ -117,7 +125,7 @@ en_NZ.aff en_NZ.dic: {buildcheck=}
             :sys patch <en_NZ.diff
 
 
-# Generate diff files, so that others can get the OpenOffice files and apply
+# Generate diff files, so that others can get the original files and apply
 # the diffs to get the Vim versions.
 
 diff:

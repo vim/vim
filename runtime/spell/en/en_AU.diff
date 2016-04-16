@@ -1,5 +1,5 @@
-*** en_AU.orig.aff	Fri Apr 15 13:20:36 2005
---- en_AU.aff	Wed Jan 11 11:10:45 2006
+*** en_AU.orig.aff	2010-05-15 13:03:47.000000000 +0200
+--- en_AU.aff	2016-01-09 13:15:38.426627871 +0100
 ***************
 *** 7,9 ****
   SET ISO8859-1
@@ -16,7 +16,7 @@
 ! MIDWORD	'
 ! 
 ! RARE ?
-! BAD !
+! BAD %
 ! 
 ! MAP 9
 ! MAP aאבגדהו
@@ -148,7 +148,8 @@
 ! 
   REP 24
 ***************
-*** 34,53 ****
+*** 33,53 ****
+  REP ght t
   PFX A Y 2
 ! PFX A 0 re [^e] 
 ! PFX A 0 re- e 
@@ -169,7 +170,25 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 172,191 ----
+--- 171,208 ----
+  REP ght t
++ 
++ # This is disabled, because if Vim does not support NOCOMPOUNDSUGS giving
++ # suggestions is extremely slow.
++ ## ordinal numbers
++ #COMPOUNDMIN 1
++ ## only in compounds: 1th, 2th, 3th
++ #ONLYINCOMPOUND ,
++ ## compound rules:
++ ## 1. [0-9]*1[0-9]th (10th, 11th, 12th, 56714th, etc.)
++ ## 2. [0-9]*[02-9](1st|2nd|3rd|[4-9]th) (21st, 22nd, 123rd, 1234th, etc.)
++ #COMPOUNDRULE 2
++ #COMPOUNDRULE (*:)
++ #COMPOUNDRULE (*{}
++ #NOCOMPOUNDSUGS
++ 
++ # WORDCHARS 0123456789
++ 
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -587,7 +606,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 195,589 ----
+--- 212,606 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -1671,7 +1690,7 @@
 ! SFX 3 0 ist's [aeioubp]y 
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
---- 596,1305 ----
+--- 613,1322 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -2382,21 +2401,31 @@
 ! 
 ! # a few more for consistency
 ! COMMON five six seven eight nine ten hundred thousand
-*** en_AU.orig.dic	Fri Apr 15 13:20:36 2005
---- en_AU.dic	Wed Mar  8 13:14:30 2006
+*** en_AU.orig.dic	2010-05-15 13:03:48.000000000 +0200
+--- en_AU.dic	2016-01-08 23:03:18.342461841 +0100
 ***************
 *** 1,2 ****
 ! 45654
   AA
---- 1,2 ----
+--- 1,12 ----
 ! 45653
+! 0th
+! 1st
+! 2nd
+! 3rd
+! 4th
+! 5th
+! 6th
+! 7th
+! 8th
+! 9th
   AA
 ***************
 *** 912,914 ****
   Alaska/M
 ! al/AY
   albacore/MS
---- 912,914 ----
+--- 922,924 ----
   Alaska/M
 ! really
   albacore/MS
@@ -2405,10 +2434,10 @@
   bozo/SM
 - b/pb
   bpi
---- 4885,4886 ----
+--- 4895,4896 ----
 ***************
 *** 4921,4922 ****
---- 4920,4922 ----
+--- 4930,4932 ----
   Brahms
 + Bram/M
   braid/DGS
@@ -2417,22 +2446,22 @@
   cad/ZSM
 - c/aE
   CAE
---- 5753,5754 ----
+--- 5763,5764 ----
 ***************
 *** 8535,8537 ****
   coniferous
 - conj
   conjectural
---- 8534,8535 ----
+--- 8544,8545 ----
 ***************
 *** 8544,8545 ****
---- 8542,8544 ----
+--- 8552,8554 ----
   conjunctiva/MS
 + conj.
   conjunctive/S
 ***************
 *** 10288,10289 ****
---- 10287,10291 ----
+--- 10297,10301 ----
   dB/M
 + dBi
 + dBm
@@ -2443,10 +2472,10 @@
   DNA
 - d/o
   DOB
---- 11783,11784 ----
+--- 11793,11794 ----
 ***************
 *** 12468,12469 ****
---- 12469,12471 ----
+--- 12479,12481 ----
   Dutch/5m
 + Farsi
   Dutchwomen/M
@@ -2455,19 +2484,19 @@
   dystrophy/M
 - e
   ea
---- 12518,12519 ----
+--- 12528,12529 ----
 ***************
 *** 12792,12794 ****
   e.g.
 - e.g..
   egad
---- 12793,12794 ----
+--- 12803,12804 ----
 ***************
 *** 13779,13781 ****
   estuary/MS
 ! et
   ETA
---- 13779,13782 ----
+--- 13789,13792 ----
   estuary/MS
 ! et cetera
 ! et al.
@@ -2477,7 +2506,7 @@
   fjord/SM
 ! f/K
   flab/2zZM
---- 15297,15299 ----
+--- 15307,15309 ----
   fjord/SM
 ! pref
   flab/2zZM
@@ -2486,19 +2515,19 @@
   FYI
 - g/7
   gabardine/SM
---- 16481,16482 ----
+--- 16491,16492 ----
 ***************
 *** 18599,18601 ****
   HDTV
 - h/E
   headache/SM
---- 18599,18600 ----
+--- 18609,18610 ----
 ***************
 *** 19214,19216 ****
   Hobbes
 ! hobbit
   hobble/RGSD
---- 19213,19215 ----
+--- 19223,19225 ----
   Hobbes
 ! hobbit/MS
   hobble/RGSD
@@ -2507,34 +2536,34 @@
   jive/DSMG
 - j/k
   jnr.
---- 21790,21791 ----
+--- 21800,21801 ----
 ***************
 *** 22125,22127 ****
   kcal
 - k/E
   Keane
---- 22123,22124 ----
+--- 22133,22134 ----
 ***************
 *** 22606,22608 ****
   Kyushu/M
 - l/3
   label/AGaSD
---- 22603,22604 ----
+--- 22613,22614 ----
 ***************
 *** 22885,22887 ****
   lass/SM
 - last-ditch
   lasted/e
---- 22881,22882 ----
+--- 22891,22892 ----
 ***************
 *** 22890,22892 ****
   last/kJYDSG
 - last-minute
   lasts/e
---- 22885,22886 ----
+--- 22895,22896 ----
 ***************
 *** 26417,26418 ****
---- 26411,26413 ----
+--- 26421,26423 ----
   Moolawatana
 + Moolenaar/M
   Moomba
@@ -2545,7 +2574,7 @@
   nationhood/M
 ! nation/M
   nationwide
---- 27183,27187 ----
+--- 27193,27197 ----
   nationals/4
 ! national/sQq3SZ
   nationhood/M
@@ -2553,7 +2582,7 @@
   nationwide
 ***************
 *** 27194,27195 ****
---- 27189,27192 ----
+--- 27199,27202 ----
   nativity/MS
 + natively
 + nativeness
@@ -2563,28 +2592,28 @@
   nuzzle/SDG
 - n/xvuNVn
   Nyah
---- 28362,28363 ----
+--- 28372,28373 ----
 ***************
 *** 29464,29466 ****
   oz
 - o/z
   Ozark/MS
---- 29460,29461 ----
+--- 29470,29471 ----
 ***************
 *** 31035,31037 ****
   Pk
 - p/KF
   pl.
---- 31030,31031 ----
+--- 31040,31041 ----
 ***************
 *** 31288,31289 ****
---- 31282,31284 ----
+--- 31292,31294 ----
   pneumonia/MS
 + pneumonic
   PO
 ***************
 *** 31460,31461 ****
---- 31455,31457 ----
+--- 31465,31467 ----
   pompom/MS
 + pompon/M
   pomposity/MS
@@ -2593,25 +2622,25 @@
   pyx/S
 - q
   Qatar
---- 32861,32862 ----
+--- 32871,32872 ----
 ***************
 *** 33378,33380 ****
   razzmatazz
 - r/d
   Rd/M
---- 33373,33374 ----
+--- 33383,33384 ----
 ***************
 *** 34979,34981 ****
   RSPCA
 - rte
   rub-a-dub
---- 34973,34974 ----
+--- 34983,34984 ----
 ***************
 *** 36012,36014 ****
   sec.
 ! s/eca
   secant/MS
---- 36005,36007 ----
+--- 36015,36017 ----
   sec.
 ! outs
   secant/MS
@@ -2620,7 +2649,7 @@
   Szechwan/M
 ! t/7k
   Ta
---- 40235,40237 ----
+--- 40245,40247 ----
   Szechwan/M
 ! tingly
   Ta
@@ -2629,10 +2658,10 @@
   Tyson/M
 - u
   ubiquitousness
---- 42609,42610 ----
+--- 42619,42620 ----
 ***************
 *** 42990,42991 ****
---- 42982,42984 ----
+--- 42992,42994 ----
   unscrupulous
 + searchable
   unsearchable
@@ -2641,13 +2670,13 @@
   Uzi/M
 - v
   vacancy/MS
---- 43245,43246 ----
+--- 43255,43256 ----
 ***************
 *** 43749,43751 ****
   Vilnius/M
 ! vim/M
   vinaigrette/MS
---- 43741,43744 ----
+--- 43751,43754 ----
   Vilnius/M
 ! Vim/M
 ! vim/?
@@ -2657,24 +2686,28 @@
   yippee
 - y/K
   YMCA
---- 45487,45488 ----
+--- 45497,45498 ----
 ***************
 *** 45586,45588 ****
   zap/SGRD
 - z/d
   Zealanders
---- 45578,45579 ----
+--- 45588,45589 ----
 ***************
 *** 45655 ****
---- 45646,45656 ----
+--- 45656,45670 ----
   zymurgy/S
 + nd
-+ the the/!
-+ and and/!
-+ a a/!
-+ a an/!
-+ an a/!
-+ an an/!
 + PayPal
 + Google
 + TCP\/IP
++ a a/%
++ a an/%
++ a the/%
++ an a/%
++ an an/%
++ an the/%
++ and and/%
++ the a/%
++ the an/%
++ the the/%

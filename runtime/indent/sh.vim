@@ -3,7 +3,7 @@
 " Maintainer:          Christian Brabandt <cb@256bit.org>
 " Previous Maintainer: Peter Aronoff <telemachus@arpinum.org>
 " Original Author:     Nikolai Weibull <now@bitwi.se>
-" Latest Revision:     2015-07-28
+" Latest Revision:     2016-02-15
 " License:             Vim (see :h license)
 " Repository:          https://github.com/chrisbra/vim-sh-indent
 
@@ -18,6 +18,8 @@ setlocal indentkeys+=0=fin,0=fil,0=fip,0=fir,0=fix
 setlocal indentkeys-=:,0#
 setlocal nosmartindent
 
+let b:undo_indent = 'setlocal indentexpr< indentkeys< smartindent<'
+
 if exists("*GetShIndent")
   finish
 endif
@@ -26,7 +28,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 function s:buffer_shiftwidth()
-  return &shiftwidth
+  return shiftwidth()
 endfunction
 
 let s:sh_indent_defaults = {
@@ -65,7 +67,7 @@ function! GetShIndent()
     if !s:is_case_ended(line)
       let ind += s:indent_value('case-statements')
     endif
-  elseif line =~ '^\s*\<\k\+\>\s*()\s*{' || line =~ '^\s*{'
+  elseif line =~ '^\s*\<\k\+\>\s*()\s*{' || line =~ '^\s*{' || line =~ '^\s*function\s*\w\S\+\s*\%(()\)\?\s*{'
     if line !~ '}\s*\%(#.*\)\=$'
       let ind += s:indent_value('default')
     endif

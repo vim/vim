@@ -1,3 +1,3 @@
 /* if_perlsfio.c */
-int *sfdcnewvim __ARGS((void));
+int *sfdcnewvim(void);
 /* vim: set ft=c : */

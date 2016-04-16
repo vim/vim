@@ -14,15 +14,6 @@
 #endif
 #include <windows.h>
 
-/* reduced def from Vim.h */
-#ifndef __ARGS
-# if defined(__STDC__) || defined(__GNUC__) || defined(WIN3264)
-#  define __ARGS(x) x
-# else
-#  define __ARGS(x) ()
-# endif
-#endif
-
 #include "xpm_w32.h"
 
 /* Engage Windows support in libXpm */
@@ -37,10 +28,10 @@
  * "hShape".
  */
     int
-LoadXpmImage(filename, hImage, hShape)
-    char    *filename;
-    HBITMAP *hImage;
-    HBITMAP *hShape;
+LoadXpmImage(
+    char    *filename,
+    HBITMAP *hImage,
+    HBITMAP *hShape)
 {
     XImage	    *img;  /* loaded image */
     XImage	    *shp;  /* shapeimage */

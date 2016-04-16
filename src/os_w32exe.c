@@ -27,7 +27,7 @@ VimMain
 #else
     main
 #endif
-	__ARGS((int argc, char **argv));
+	(int argc, char **argv);
 static int (_cdecl *pmain)(int, char **);
 
 #ifndef PROTO
@@ -69,7 +69,7 @@ WinMain(
 
 #ifdef DYNAMIC_GETTEXT
     /* Initialize gettext library */
-    dyn_libintl_init(NULL);
+    dyn_libintl_init();
 #endif
 
 #ifdef VIMDLL

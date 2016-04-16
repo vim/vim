@@ -11,7 +11,11 @@
 #define GUI_BEVAL_H
 
 #ifdef FEAT_GUI_GTK
-# include <gtk/gtkwidget.h>
+# ifdef USE_GTK3
+#  include <gtk/gtk.h>
+# else
+#  include <gtk/gtkwidget.h>
+# endif
 #else
 # if defined(FEAT_GUI_X11)
 #  include <X11/Intrinsic.h>
@@ -60,7 +64,7 @@ typedef struct BalloonEvalStruct
 #endif
     int			ts;		/* tabstop setting for this buffer */
     char_u		*msg;
-    void		(*msgCB)__ARGS((struct BalloonEvalStruct *, int));
+    void		(*msgCB)(struct BalloonEvalStruct *, int);
     void		*clientData;	/* For callback */
 #if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)
     Dimension		screen_width;	/* screen width in pixels */

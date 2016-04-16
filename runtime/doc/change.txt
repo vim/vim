@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.4.  Last change: 2015 Oct 17
+*change.txt*    For Vim version 7.4.  Last change: 2016 Mar 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -98,10 +98,10 @@ These commands delete text.  You can repeat them with the `.` command
 
 An exception for the d{motion} command: If the motion is not linewise, the
 start and end of the motion are not in the same line, and there are only
-blanks before the start and after the end of the motion, the delete becomes
-linewise.  This means that the delete also removes the line of blanks that you
-might expect to remain. Use the |o_v| operator to force the motion to be
-characterwise.
+blanks before the start and there are no non-blanks after the end of the
+motion, the delete becomes linewise.  This means that the delete also removes
+the line of blanks that you might expect to remain. Use the |o_v| operator to
+force the motion to be characterwise.
 
 Trying to delete an empty region of text (e.g., "d0" in the first column)
 is an error when 'cpoptions' includes the 'E' flag.
@@ -109,7 +109,9 @@ is an error when 'cpoptions' includes the 'E' flag.
 							*J*
 J			Join [count] lines, with a minimum of two lines.
 			Remove the indent and insert up to two spaces (see
-			below).
+			below).  Fails when on the last line of the buffer.
+			If [count] is too big it is reduce to the number of
+			lines available.
 
 							*v_J*
 {Visual}J		Join the highlighted lines, with a minimum of two
@@ -409,6 +411,11 @@ CTRL-X			Subtract [count] from the number or alphabetic
 {Visual}CTRL-X		Subtract [count] from the number or alphabetic
 			character in the highlighted text.  {not in Vi}
 
+			On MS-Windows, this is mapped to cut Visual text
+			|dos-standard-mappings|.  If you want to disable the
+			mapping, use this: >
+				silent! vunmap <C-X>
+<
 							*v_g_CTRL-X*
 {Visual}g CTRL-X	Subtract [count] from the number or alphabetic
 			character in the highlighted text. If several lines
@@ -416,9 +423,14 @@ CTRL-X			Subtract [count] from the number or alphabetic
 			additional [count] (so effectively creating a [count]
 			decrementing sequence).  {not in Vi}
 
-The CTRL-A and CTRL-X commands work for (signed) decimal numbers, unsigned
-octal and hexadecimal numbers and alphabetic characters.  This depends on the
-'nrformats' option.
+The CTRL-A and CTRL-X commands can work for:
+- signed and unsigned decimal numbers
+- unsigned binary, octal and hexadecimal numbers
+- alphabetic characters
+
+This depends on the 'nrformats' option:
+- When 'nrformats' includes "bin", Vim assumes numbers starting with '0b' or
+  '0B' are binary.
 - When 'nrformats' includes "octal", Vim considers numbers starting with a '0'
   to be octal, unless the number includes a '8' or '9'.  Other numbers are
   decimal and may have a preceding minus sign.
@@ -433,8 +445,8 @@ octal and hexadecimal numbers and alphabetic characters.  This depends on the
   index.
 
 For decimals a leading negative sign is considered for incrementing/
-decrementing, for octal and hex values, it won't be considered.
-To ignore the sign Visually select the number before using CTRL-A or CTRL-X. 
+decrementing, for binary, octal and hex values, it won't be considered.  To
+ignore the sign Visually select the number before using CTRL-A or CTRL-X. 
 
 For numbers with leading zeros (including all octal and hexadecimal numbers),
 Vim preserves the number of characters in the number when possible.  CTRL-A on
@@ -446,6 +458,10 @@ octal number.
 
 Note that when 'nrformats' includes "octal", decimal numbers with leading
 zeros cause mistakes, because they can be confused with octal numbers.
+
+Note similarly, when 'nrformats' includes "bin", binary numbers with a leading
+'0x' or '0X' can be interpreted as hexadecimal rather than binary since '0b'
+are valid hexadecimal digits.
 
 The CTRL-A command is very useful in a macro.  Example: Use the following
 steps to make a numbered list.
@@ -968,8 +984,6 @@ This replaces each 'E' character with a euro sign.  Read more in |<Char->|.
 			`:retab!` may also change a sequence of spaces by
 			<Tab> characters, which can mess up a printf().
 			{not in Vi}
-			Not available when |+ex_extra| feature was disabled at
-			compile time.
 
 							*retab-example*
 Example for using autocommands and ":retab" to edit a file which is stored
@@ -998,7 +1012,7 @@ inside of strings can change!  Also see 'softtabstop' option. >
 
 :reg[isters] {arg}	Display the contents of the numbered and named
 			registers that are mentioned in {arg}.  For example: >
-				:dis 1a
+				:reg 1a
 <			to display registers '1' and 'a'.  Spaces are allowed
 			in {arg}.  {not in Vi}
 
@@ -1345,22 +1359,16 @@ The next three commands always work on whole lines.
 			Center lines in [range] between [width] columns
 			(default 'textwidth' or 80 when 'textwidth' is 0).
 			{not in Vi}
-			Not available when |+ex_extra| feature was disabled at
-			compile time.
 
 :[range]ri[ght] [width]					*:ri* *:right*
 			Right-align lines in [range] at [width] columns
 			(default 'textwidth' or 80 when 'textwidth' is 0).
 			{not in Vi}
-			Not available when |+ex_extra| feature was disabled at
-			compile time.
 
 							*:le* *:left*
 :[range]le[ft] [indent]
 			Left-align lines in [range].  Sets the indent in the
 			lines to [indent] (default 0).  {not in Vi}
-			Not available when |+ex_extra| feature was disabled at
-			compile time.
 
 							*gq*
 gq{motion}		Format the lines that {motion} moves over.
@@ -1736,7 +1744,7 @@ Vim has a sorting function and a sorting command.  The sorting function can be
 found here: |sort()|, |uniq()|.
 
 							*:sor* *:sort*
-:[range]sor[t][!] [i][u][r][n][x][o] [/{pattern}/]
+:[range]sor[t][!] [b][f][i][n][o][r][u][x] [/{pattern}/]
 			Sort lines in [range].  When no range is given all
 			lines are sorted.
 
@@ -1744,9 +1752,17 @@ found here: |sort()|, |uniq()|.
 
 			With [i] case is ignored.
 
+			Options [n][f][x][o][b] are mutually exclusive.
+
 			With [n] sorting is done on the first decimal number
 			in the line (after or inside a {pattern} match).
 			One leading '-' is included in the number.
+
+			With [f] sorting is done on the Float in the line.
+			The value of Float is determined similar to passing
+			the text (after or inside a {pattern} match) to
+			str2float() function. This option is available only
+			if Vim was compiled with Floating point support.
 
 			With [x] sorting is done on the first hexadecimal
 			number in the line (after or inside a {pattern}
@@ -1756,10 +1772,13 @@ found here: |sort()|, |uniq()|.
 			With [o] sorting is done on the first octal number in
 			the line (after or inside a {pattern} match).
 
-			With [u] only keep the first of a sequence of
-			identical lines (ignoring case when [i] is used).
-			Without this flag, a sequence of identical lines
-			will be kept in their original order.
+			With [b] sorting is done on the first binary number in
+			the line (after or inside a {pattern} match).
+
+			With [u] (u stands for unique) only keep the first of
+			a sequence of identical lines (ignoring case when [i]
+			is used).  Without this flag, a sequence of identical
+			lines will be kept in their original order.
 			Note that leading and trailing white space may cause
 			lines to be different.
 

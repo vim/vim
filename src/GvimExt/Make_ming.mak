@@ -1,6 +1,6 @@
 # Project: gvimext
 # Generates gvimext.dll with gcc.
-# To be used with MingW.
+# To be used with MingW and Cygwin.
 #
 # Originally, the DLL base address was fixed: -Wl,--image-base=0x1C000000
 # Now it is allocated dymanically by the linker by evaluating all DLLs
@@ -43,6 +43,10 @@ else
 DEL = del
 endif
 endif
+# Set the default $(WINVER) to make it work with WinXP.
+ifndef WINVER
+WINVER = 0x0501
+endif
 CXX := $(CROSS_COMPILE)g++
 WINDRES := $(CROSS_COMPILE)windres
 WINDRES_CXX = $(CXX)
@@ -68,7 +72,7 @@ $(DLL): $(OBJ) $(RES) $(DEFFILE)
 			$(LIBS)
 
 gvimext.o: gvimext.cpp
-	$(CXX) $(CXXFLAGS) -DFEAT_GETTEXT -c $? -o $@
+	$(CXX) $(CXXFLAGS) -DFEAT_GETTEXT -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) -c $? -o $@
 
 $(RES): gvimext_ming.rc
 	$(WINDRES) $(WINDRES_FLAGS) --input-format=rc --output-format=coff -DMING $? -o $@

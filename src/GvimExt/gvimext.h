@@ -42,6 +42,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <shlobj.h>
+#include <wchar.h>
 
 /* Accommodate old versions of VC that don't have a modern Platform SDK */
 #if (defined(_MSC_VER) && _MSC_VER < 1300) || !defined(MAXULONG_PTR)

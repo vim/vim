@@ -289,41 +289,7 @@ remove_start_menu(void)
     static void
 delete_uninstall_key(void)
 {
-#ifdef WIN3264
     reg_delete_key(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT);
-#else
-    FILE	*fd;
-    char	buf[BUFSIZE];
-
-    /*
-     * On DJGPP we delete registry entries by creating a .inf file and
-     * installing it.
-     */
-    fd = fopen("vim.inf", "w");
-    if (fd != NULL)
-    {
-	fprintf(fd, "[version]\n");
-	fprintf(fd, "signature=\"$CHICAGO$\"\n\n");
-	fprintf(fd, "[DefaultInstall]\n");
-	fprintf(fd, "DelReg=DeleteMe\n\n");
-	fprintf(fd, "[DeleteMe]\n");
-	fprintf(fd, "HKLM,\"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT "\"\n");
-	fclose(fd);
-
-	/* Don't know how to detect Win NT with DJGPP.  Hack: Just try the Win
-	 * 95/98/ME method, since the DJGPP version can't use long filenames
-	 * on Win NT anyway. */
-	sprintf(buf, "rundll setupx.dll,InstallHinfSection DefaultInstall 132 %s\\vim.inf", installdir);
-	run_command(buf);
-#if 0
-	/* Windows NT method (untested). */
-	sprintf(buf, "rundll32 syssetup,SetupInfObjectInstallAction DefaultInstall 128 %s\\vim.inf", installdir);
-	run_command(buf);
-#endif
-
-	remove("vim.inf");
-    }
-#endif
 }
 
     int

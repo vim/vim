@@ -57,6 +57,7 @@ None
 [0, 1, 2, 3, 4, 5, 6, 7]
 [0, 1, 2, 3, 4, 5, 6, 7]
 [0, 1, 2, 3, 4, 5, 6, 7]
+l[2] threw vim.error: error:('list is locked',)
 [0, 1, 2, 3]
 [function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd']
 [function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd', 'DictNewStart', 1, 2, 3, 'DictNewEnd', {'a': 'b'}]
@@ -86,6 +87,7 @@ ll:[1]
 ['a', 'b']
 ['c', 1]
 ['d', ['e']]
+pyeval("None") = 0
 0.0
 "\0":	Vim(let):E859:
 {"\0": 1}:	Vim(let):E859:
@@ -446,7 +448,7 @@ tabpage:__dir__,__members__,number,valid,vars,window,windows
 range:__dir__,__members__,append,end,start
 dictionary:__dir__,__members__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
 list:__dir__,__members__,extend,locked
-function:__dir__,__members__,softspace
+function:__dir__,__members__,args,self,softspace
 output:__dir__,__members__,close,flush,isatty,readable,seekable,softspace,writable,write,writelines
 {}
 {'a': 1}
@@ -454,12 +456,108 @@ output:__dir__,__members__,close,flush,isatty,readable,seekable,softspace,writab
 []
 ['a', 'b', 'c', '7']
 function('tr')
+function('tr', [123, 3, 4])
+function('tr')
+function('tr', {})
+function('tr', [123, 3, 4], {})
+a: <vim.Function 'Args'>
+pa1: <vim.Function 'Args', args=['abcArgsPA1']>
+pa2: <vim.Function 'Args'>
+pa3: <vim.Function 'Args', args=['abcArgsPA3'], self={'abcSelfPA3': 'abcSelfPA3Val'}>
+pa4: <vim.Function 'Args', self={'abcSelfPA4': 'abcSelfPA4Val'}>
+sa: <vim.Function 'SelfArgs'>
+psa1: <vim.Function 'SelfArgs', args=['abcArgsPSA1']>
+psa2: <vim.Function 'SelfArgs'>
+psa3: <vim.Function 'SelfArgs', args=['abcArgsPSA3'], self={'abcSelfPSA3': 'abcSelfPSA3Val'}>
+psa4: <vim.Function 'SelfArgs', self={'abcSelfPSA4': 'abcSelfPSA4Val'}>
+psar: <vim.Function 'SelfArgs', args=[{'abcArgsPSAr2': [{'rec': function('SelfArgs', [{...}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{...}]}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], self={'rec': function('SelfArgs', [{'abcArgsPSAr2': [{...}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{...}]}>
+s(a): function('Args')
+s(pa1): function('Args', ['abcArgsPA1'])
+s(pa2): function('Args')
+s(pa3): function('Args', ['abcArgsPA3'], {'abcSelfPA3': 'abcSelfPA3Val'})
+s(pa4): function('Args', {'abcSelfPA4': 'abcSelfPA4Val'})
+s(sa): function('SelfArgs')
+s(psa1): function('SelfArgs', ['abcArgsPSA1'])
+s(psa2): function('SelfArgs')
+s(psa3): function('SelfArgs', ['abcArgsPSA3'], {'abcSelfPSA3': 'abcSelfPSA3Val'})
+s(psa4): function('SelfArgs', {'abcSelfPSA4': 'abcSelfPSA4Val'})
+a(): !result: []
+pa1(): !result: ['abcArgsPA1']
+pa2(): !result: []
+pa3(): !result: ['abcArgsPA3']
+pa4(): !result: []
+sa(): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa1(): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa2(): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa3(): !result: [['abcArgsPSA3'], {'abcSelfPSA3': 'abcSelfPSA3Val'}]
+psa4(): !result: [[], {'abcSelfPSA4': 'abcSelfPSA4Val'}]
+a(42, 43): !result: [42, 43]
+pa1(42, 43): !result: ['abcArgsPA1', 42, 43]
+pa2(42, 43): !result: [42, 43]
+pa3(42, 43): !result: ['abcArgsPA3', 42, 43]
+pa4(42, 43): !result: [42, 43]
+sa(42, 43): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa1(42, 43): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa2(42, 43): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa3(42, 43): !result: [['abcArgsPSA3', 42, 43], {'abcSelfPSA3': 'abcSelfPSA3Val'}]
+psa4(42, 43): !result: [[42, 43], {'abcSelfPSA4': 'abcSelfPSA4Val'}]
+a(42, self={"20": 1}): !result: [42]
+pa1(42, self={"20": 1}): !result: ['abcArgsPA1', 42]
+pa2(42, self={"20": 1}): !result: [42]
+pa3(42, self={"20": 1}): !result: ['abcArgsPA3', 42]
+pa4(42, self={"20": 1}): !result: [42]
+sa(42, self={"20": 1}): !result: [[42], {'20': 1}]
+psa1(42, self={"20": 1}): !result: [['abcArgsPSA1', 42], {'20': 1}]
+psa2(42, self={"20": 1}): !result: [[42], {'20': 1}]
+psa3(42, self={"20": 1}): !result: [['abcArgsPSA3', 42], {'20': 1}]
+psa4(42, self={"20": 1}): !result: [[42], {'20': 1}]
+a(self={"20": 1}): !result: []
+pa1(self={"20": 1}): !result: ['abcArgsPA1']
+pa2(self={"20": 1}): !result: []
+pa3(self={"20": 1}): !result: ['abcArgsPA3']
+pa4(self={"20": 1}): !result: []
+sa(self={"20": 1}): !result: [[], {'20': 1}]
+psa1(self={"20": 1}): !result: [['abcArgsPSA1'], {'20': 1}]
+psa2(self={"20": 1}): !result: [[], {'20': 1}]
+psa3(self={"20": 1}): !result: [['abcArgsPSA3'], {'20': 1}]
+psa4(self={"20": 1}): !result: [[], {'20': 1}]
+a.args: None
+pa1.args: ['abcArgsPA1']
+pa2.args: None
+pa3.args: ['abcArgsPA3']
+pa4.args: None
+sa.args: None
+psa1.args: ['abcArgsPSA1']
+psa2.args: None
+psa3.args: ['abcArgsPSA3']
+psa4.args: None
+a.self: None
+pa1.self: None
+pa2.self: None
+pa3.self: {'abcSelfPA3': 'abcSelfPA3Val'}
+pa4.self: {'abcSelfPA4': 'abcSelfPA4Val'}
+sa.self: None
+psa1.self: None
+psa2.self: None
+psa3.self: {'abcSelfPSA3': 'abcSelfPSA3Val'}
+psa4.self: {'abcSelfPSA4': 'abcSelfPSA4Val'}
+a.name: 'Args'
+pa1.name: 'Args'
+pa2.name: 'Args'
+pa3.name: 'Args'
+pa4.name: 'Args'
+sa.name: 'SelfArgs'
+psa1.name: 'SelfArgs'
+psa2.name: 'SelfArgs'
+psa3.name: 'SelfArgs'
+psa4.name: 'SelfArgs'
 '
 abcdef
-line  :
+Error detected while processing function RunTest[]..Test:
+line :
 abcdef
 abcA
-line  :
+line :
 abcB'
 ['a', 'dup_a']
 ['a', 'a']
@@ -1045,9 +1143,20 @@ l.locked = FailingTrue():NotImplementedError:('bool',)
 l.xxx = True:AttributeError:('cannot set attribute xxx',)
 > Function
 >> FunctionConstructor
+>>> FunctionConstructor
 vim.Function("123"):ValueError:('unnamed function 123 does not exist',)
 vim.Function("xxx_non_existent_function_xxx"):ValueError:('function xxx_non_existent_function_xxx does not exist',)
 vim.Function("xxx#non#existent#function#xxx"):NOT FAILED
+vim.Function("xxx_non_existent_function_xxx2", args=[]):ValueError:('function xxx_non_existent_function_xxx2 does not exist',)
+vim.Function("xxx_non_existent_function_xxx3", self={}):ValueError:('function xxx_non_existent_function_xxx3 does not exist',)
+vim.Function("xxx_non_existent_function_xxx4", args=[], self={}):ValueError:('function xxx_non_existent_function_xxx4 does not exist',)
+>>> FunctionNew
+vim.Function("tr", self="abcFuncSelf"):TypeError:('unable to convert str to vim dictionary',)
+vim.Function("tr", args=427423):TypeError:('unable to convert int to vim list',)
+vim.Function("tr", self="abcFuncSelf2", args="abcFuncArgs2"):TypeError:('unable to convert str to vim dictionary',)
+vim.Function(self="abcFuncSelf2", args="abcFuncArgs2"):TypeError:('unable to convert str to vim dictionary',)
+vim.Function("tr", "", self="abcFuncSelf2", args="abcFuncArgs2"):TypeError:('unable to convert str to vim dictionary',)
+vim.Function("tr", ""):TypeError:('function takes exactly 1 argument (2 given)',)
 >> FunctionCall
 >>> Testing StringToChars using f({%s : 1})
 f({1 : 1}):TypeError:('expected str() or unicode() instance, but got int',)

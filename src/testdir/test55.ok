@@ -19,8 +19,6 @@ Vim(call):E737: 3
 {'c': 'ccc', '1': 99, 'b': [1, 2, function('strlen')], '3': 33, '-1': {'a': 1}}
 {'c': 'ccc', '1': 99, '3': 33, '-1': {'a': 1}}
 101101
-Vim(let):E706: d
-Vim(let):E706: l
 [1, 'as''d', {'a': 1}]
 [4]
 {'1': 99, '3': 33}
@@ -46,7 +44,7 @@ NONE 2999
 {'33': 999}
 len: 3
 again: 3
-Vim(call):E725: 
+xxx3
 g:dict.func-4
 a:function('3')
 Vim(let):E698: 

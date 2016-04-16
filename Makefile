@@ -63,9 +63,6 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 # amirt		vim##rt.tgz		runtime for Amiga
 # amibin	vim##bin.tgz		binary for Amiga
 #
-# os2bin	vim##os2.zip		binary for OS/2
-#					(use RT from dosrt)
-#
 # farsi		farsi##.zip		Farsi fonts
 #
 #    All output files are created in the "dist" directory.  Existing files are
@@ -89,9 +86,9 @@ MINOR = 4
 #
 # - Update Vim version number.  For a test version in: src/version.h, Contents,
 #   MAJOR/MINOR above, VIMMAJOR and VIMMINOR in src/Makefile, README*.txt,
-#   runtime/doc/*.txt and nsis/gvim.nsi. Other things in README_os2.txt.  For a
-#   minor/major version: src/GvimExt/GvimExt.reg, src/vim.def, src/vim16.def,
-#   src/gvim.exe.mnf.
+#   runtime/doc/*.txt and nsis/gvim.nsi.
+#   For a minor/major version: src/GvimExt/GvimExt.reg, src/vim.def,
+#   src/vim16.def, src/gvim.exe.mnf.
 # - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, MZscheme, Lua (if
 #   you can make it all work), Cscope and "huge" features.  Exclude workshop
 #   and SNiFF.
@@ -132,36 +129,61 @@ MINOR = 4
 #   flag).
 # - "make amirt", "make amibin".
 #
-# PC:
+# MS-Windows:
 # - Run make on Unix to update the ".mo" files.
-# - "make dossrc" and "make dosrt".  Unpack the archives on a PC.
-# Win32 console version:
-# - Set environment for Visual C++ 2008, e.g.: "msvc2008.bat"  Or:
-#   "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat".
+# - Get libintl-8.dll and libiconv-2.dll. E.g. from
+#   https://mlocati.github.io/gettext-iconv-windows/ .
+#   Put them in the top directory, "make dosrt" uses them.
+# - > make dossrc
+#   > make dosrt
+#   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
+# Win32 console version build:
+# - Set environment for Visual C++ 2008, e.g.:
+#   > src/msvc2008.bat
+#   Or: 
+#   > C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat
 #   Or, when using the Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the
 #   paths when necessary).
 #   For Windows 98/ME the 2003 version is required, but then the executable
 #   won't work on Windows 7 and 64 bit systems.
-# - "nmake -f Make_mvc.mak"  (use the same path as for vcvars32.bat)
-# - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
+# - > cd src
+#   > nmake -f Make_mvc.mak
+# - Run the tests:
+#   > rm testdir/*.out testdir/*.res
+#   > nmake -f Make_mvc.mak test
+#   - check the output.
 # - Rename vim.exe to vimw32.exe, xxd/xxd.exe to xxdw32.exe.
 # - Rename vim.pdb to vimw32.pdb.
 # - Rename install.exe to installw32.exe and uninstal.exe to uninstalw32.exe.
-# Win32 GUI version:
-# - "nmake -f Make_mvc.mak GUI=yes"
+# Win32 GUI version build:
+# - > cd src
+#   > nmake -f Make_mvc.mak GUI=yes
+# - Run the tests:
+#   > rm testdir/*.out testdir/*.res
+#   > nmake -f Make_mvc.mak testgvim
+#   - check the output.
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
 # - Move gvim.pdb to here.
-# - Delete vimrun.exe, install.exe and uninstal.exe.
 # - Copy "GvimExt/gvimext.dll" to here.
+# - Delete vimrun.exe, install.exe and uninstal.exe.
 # Win32 GUI version with OLE, PERL, TCL, PYTHON and dynamic IME:
-# - Run src/bigvim.bat ("nmake -f Make_mvc.mak GUI=yes OLE=yes IME=yes ...)
+# - Install the interfaces you want, see src/INSTALLpc.txt
+# - Build:
+#   > cd src
+#   Adjust bigvim.bat to match the version of each interface you want.
+#   > bigvim.bat
+# - Run the tests:
+#   > rm testdir/*.out testdir/*.res
+#   > nmake -f Make_mvc.mak testgvim
+#   - check the output.
 # - Rename "gvim.exe" to "gvim_ole.exe".
 # - Rename gvim.pdb to "gvim_ole.pdb".
 # - Delete install.exe and uninstal.exe.
 # Create the archives:
 # - Copy all the "*.exe" files to where this Makefile is.
 # - Copy all the "*.pdb" files to where this Makefile is.
-# - "make dosbin".
+# - in this directory:
+#   > make dosbin
 # NSIS self installing exe:
 # - To get NSIS see http://nsis.sourceforge.net
 # - Make sure gvim_ole.exe, vimw32.exe, installw32.exe,
@@ -173,38 +195,33 @@ MINOR = 4
 #   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
 #   gvimext64.dll can be obtained from http://code.google.com/p/vim-win3264/
 #	It is part of vim72.zip as vim72/gvimext.dll.
-# - make sure there is a diff.exe two levels up
-# - go to ../nsis and do "makensis gvim.nsi" (takes a few minutes).
+# - Make sure there is a diff.exe two levels up (get it from a previous Vim
+#   version).
+# - go to ../nsis and do:
+#   > makensis gvim.nsi  (takes a few minutes).
 # - Copy gvim##.exe to the dist directory.
 #
 # 64 bit builds (these are not in the normal distribution, the 32 bit build
 # works just fine on 64 bit systems).
 # Like the console and GUI version, but first run vcvars64.bat or
 #   "..\VC\vcvarsall.bat x86_amd64".
-# - "nmake -f Make_mvc.mak"
-# - "nmake -f Make_mvc.mak GUI=yes"
-# Or run src/bigvim64.bat for an OLE version.
+# - Build the console version:
+#   > nmake -f Make_mvc.mak
+# - Build the GUI version:
+#   > nmake -f Make_mvc.mak GUI=yes
+# - Build the OLE version with interfaces:
+#   > bigvim64.bat
 #
-# OBSOLETE systems: You can build this if you have an appropriate system.
 #
-# 16 bit DOS version: (doesn't build anywhere)
-# - Set environment for compiling with Borland C++ 3.1.
-# - "bmake -f Make_bc3.mak BOR=E:\borlandc" (compiling xxd might fail, in that
-#   case set environment for compiling with Borland C++ 4.0 and do
-#   "make -f make_bc3.mak BOR=E:\BC4 xxd/xxd.exe").
-#   NOTE: this currently fails because Vim is too big.
-# - "make test" and check the output.
-# - Rename the executables to "vimd16.exe", "xxdd16.exe", "installd16.exe" and
-#   "uninstald16.exe".
+# OBSOLETE systems: You can build these if you have an appropriate system.
 #
-# 32 bit DOS version: (requires Windows XP or earlier)
-# - Set environment for compiling with DJGPP; "gmake -f Make_djg.mak".
-# - "rm testdir/*.out", "gmake -f Make_djg.mak test" and check the output for
-#   "ALL DONE".
-# - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
-#   "uninstald32.exe".
+# 16 bit DOS version: You need to get a very old version of Vim, for several
+# years even the tiny build is too big to fit in DOS memory.
 #
-# Win32s GUI version: (requires very old compiler)
+# 32 bit DOS version: Support was removed in 7.4.1399.  When syncing to before
+# that it probably won't build.
+#
+# Win32s GUI version: (requires a very old compiler)
 # - Set environment for Visual C++ 4.1 (requires a new console window):
 #   "vcvars32.bat" (use the path for VC 4.1 e:\msdev\bin)
 # - "nmake -f Make_mvc.mak GUI=yes INTL=no clean" (use the path for VC 4.1)
@@ -214,12 +231,9 @@ MINOR = 4
 # - Rename "uninstal.exe" to "uninstalw32.exe"
 # - The produced uninstalw32.exe and vimrun.exe are used.
 #
-# OS/2: (requires an OS/2 system)
-# - Unpack the Unix archive.
-# - "make -f Make_os2.mak".
-# - Rename the executables to vimos2.exe, xxdos2.exe and teeos2.exe and copy
-#   them to here.
-# - "make os2bin".
+# OS/2 support was removed in patch 7.4.1008.  If you want to give it a try
+# sync to before that and check the old version of this Makefile for
+# instructions.
 
 VIMVER	= vim-$(MAJOR).$(MINOR)
 VERSION = $(MAJOR)$(MINOR)
@@ -241,9 +255,13 @@ dist:
 	mkdir dist
 
 # Clean up some files to avoid they are included.
+# Copy README files to the top directory.
 prepare:
 	if test -f runtime/doc/uganda.nsis.txt; then \
 		rm runtime/doc/uganda.nsis.txt; fi
+	for name in $(IN_README_DIR); do \
+	  cp READMEdir/"$$name" .; \
+	  done
 
 # For the zip files we need to create a file with the comment line
 dist/comment:
@@ -257,7 +275,6 @@ COMMENT_GVIM = comment/$(VERSION)-bin-gvim
 COMMENT_OLE = comment/$(VERSION)-bin-ole
 COMMENT_W32S = comment/$(VERSION)-bin-w32s
 COMMENT_SRC = comment/$(VERSION)-src
-COMMENT_OS2 = comment/$(VERSION)-bin-os2
 COMMENT_HTML = comment/$(VERSION)-html
 COMMENT_FARSI = comment/$(VERSION)-farsi
 
@@ -285,9 +302,6 @@ dist/$(COMMENT_W32S): dist/comment
 dist/$(COMMENT_SRC): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) sources for MS-DOS and MS-Windows" > dist/$(COMMENT_SRC)
 
-dist/$(COMMENT_OS2): dist/comment
-	echo "Vim - Vi IMproved - v$(VDOT) binaries + runtime files for OS/2" > dist/$(COMMENT_OS2)
-
 dist/$(COMMENT_HTML): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) documentation in HTML" > dist/$(COMMENT_HTML)
 
@@ -312,6 +326,7 @@ unixall: dist prepare
 		$(EXTRA) \
 		$(LANG_SRC) \
 		| (cd dist/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 # Need to use a "distclean" config.mk file
 # Note: this file is not included in the repository to avoid problems, but it's
 # OK to put it in the archive.
@@ -348,6 +363,7 @@ amirt: dist prepare
 		$(RT_NO_UNIX) \
 		$(RT_AMI_DOS) \
 		| (cd dist/Vim/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 	mv dist/Vim/$(VIMRTDIR)/vimdir.info dist/Vim.info
 	mv dist/Vim/$(VIMRTDIR)/runtime.info dist/Vim/$(VIMRTDIR).info
 	mv dist/Vim/$(VIMRTDIR)/runtime/* dist/Vim/$(VIMRTDIR)
@@ -368,6 +384,7 @@ amibin: dist prepare
 		Vim \
 		Xxd \
 		| (cd dist/Vim/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 	mv dist/Vim/$(VIMRTDIR)/vimdir.info dist/Vim.info
 	mv dist/Vim/$(VIMRTDIR)/runtime.info dist/Vim/$(VIMRTDIR).info
 	cd dist && tar cf vim$(VERSION)bin.tar Vim Vim.info
@@ -386,6 +403,7 @@ amisrc: dist prepare
 		$(SRC_AMI) \
 		$(SRC_AMI_DOS) \
 		| (cd dist/Vim/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 	mv dist/Vim/$(VIMRTDIR)/vimdir.info dist/Vim.info
 	mv dist/Vim/$(VIMRTDIR)/runtime.info dist/Vim/$(VIMRTDIR).info
 	cd dist && tar cf vim$(VERSION)src.tar Vim Vim.info
@@ -396,7 +414,9 @@ no_title.vim: Makefile
 	echo "set notitle noicon nocp nomodeline viminfo=" >no_title.vim
 
 # MS-DOS sources
-dossrc: dist no_title.vim dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt
+dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
+	runtime/doc/uganda.nsis.txt \
+	nsis/gvim_version.nsh
 	-rm -rf dist/vim$(VERSION)src.zip
 	-rm -rf dist/vim
 	mkdir dist/vim
@@ -407,10 +427,12 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS_UNIX) \
 		runtime/doc/uganda.nsis.txt \
+		nsis/gvim_version.nsh \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
+	# This file needs to be in dos fileformat for NSIS.
+	$(VIM) -e -X -u no_title.vim -c ":set tx|wq" dist/vim/$(VIMRTDIR)/doc/uganda.nsis.txt
 	tar cf - \
 		$(SRC_DOS_BIN) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
@@ -419,12 +441,21 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt
 runtime/doc/uganda.nsis.txt: runtime/doc/uganda.txt
 	cd runtime/doc && $(MAKE) uganda.nsis.txt
 
-dosrt: dist dist/$(COMMENT_RT) dosrt_unix2dos
+nsis/gvim_version.nsh: Makefile
+	echo "# Generated from Makefile: define the version numbers" > $@
+	echo "!ifndef __GVIM_VER__NSH__"  >> $@
+	echo "!define __GVIM_VER__NSH__"  >> $@
+	echo "!define VER_MAJOR $(MAJOR)" >> $@
+	echo "!define VER_MINOR $(MINOR)" >> $@
+	echo "!endif" >> $@
+
+dosrt: dist dist/$(COMMENT_RT) dosrt_files
 	-rm -rf dist/vim$(VERSION)rt.zip
 	cd dist && zip -9 -rD -z vim$(VERSION)rt.zip vim <$(COMMENT_RT)
 
 # Split in two parts to avoid an "argument list too long" error.
-dosrt_unix2dos: dist prepare no_title.vim
+# We no longer convert the files from unix to dos fileformat.
+dosrt_files: dist prepare no_title.vim
 	-rm -rf dist/vim
 	mkdir dist/vim
 	mkdir dist/vim/$(VIMRTDIR)
@@ -440,13 +471,13 @@ dosrt_unix2dos: dist prepare no_title.vim
 		$(RT_AMI_DOS) \
 		$(LANG_GEN) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
 	tar cf - \
 		$(RT_UNIX_DOS_BIN) \
 		$(RT_ALL_BIN) \
 		$(RT_DOS_BIN) \
 		$(LANG_GEN_BIN) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
+	-rm $(IN_README_DIR)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
 # Add the message translations.  Trick: skip ja.mo and use ja.sjis.mo instead.
@@ -460,12 +491,12 @@ dosrt_unix2dos: dist prepare no_title.vim
 		cp $$i dist/vim/$(VIMRTDIR)/lang/$$n/LC_MESSAGES/vim.mo; \
 	      fi \
 	    done
-	cp libintl.dll dist/vim/$(VIMRTDIR)/
+	cp libintl-8.dll dist/vim/$(VIMRTDIR)/
+	cp libiconv-2.dll dist/vim/$(VIMRTDIR)/
 
 
-# Convert runtime files from Unix fileformat to dos fileformat.
 # Used before uploading.  Don't delete the AAPDIR/sign files!
-runtime_unix2dos: dosrt_unix2dos
+runtime_unix2dos: dosrt_files
 	-rm -rf `find runtime/dos -type f -print | sed -e /AAPDIR/d`
 	cd dist/vim/$(VIMRTDIR); tar cf - * \
 		| (cd ../../../runtime/dos; tar xf -)
@@ -481,7 +512,7 @@ dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
 	tar cf - \
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
+	-rm $(IN_README_DIR)
 	cp gvim.exe dist/vim/$(VIMRTDIR)/gvim.exe
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp vimrun.exe dist/vim/$(VIMRTDIR)/vimrun.exe
@@ -500,7 +531,6 @@ dosbin_w32: dist no_title.vim dist/$(COMMENT_W32)
 	tar cf - \
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
 	cp vimw32.exe dist/vim/$(VIMRTDIR)/vim.exe
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
@@ -517,7 +547,6 @@ dosbin_d32: dist no_title.vim dist/$(COMMENT_D32)
 	tar cf - \
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
 	cp vimd32.exe dist/vim/$(VIMRTDIR)/vim.exe
 	cp xxdd32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp installd32.exe dist/vim/$(VIMRTDIR)/install.exe
@@ -534,7 +563,6 @@ dosbin_d16: dist no_title.vim dist/$(COMMENT_D16)
 	tar cf - \
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
 	cp vimd16.exe dist/vim/$(VIMRTDIR)/vim.exe
 	cp xxdd16.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp installd16.exe dist/vim/$(VIMRTDIR)/install.exe
@@ -550,7 +578,6 @@ dosbin_ole: dist no_title.vim dist/$(COMMENT_OLE)
 	tar cf - \
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
 	cp gvim_ole.exe dist/vim/$(VIMRTDIR)/gvim.exe
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp vimrun.exe dist/vim/$(VIMRTDIR)/vimrun.exe
@@ -572,28 +599,12 @@ dosbin_s: dist no_title.vim dist/$(COMMENT_W32S)
 	tar cf - \
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
 	cp gvim_w32s.exe dist/vim/$(VIMRTDIR)/gvim.exe
 	cp xxdd32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp README_w32s.txt dist/vim/$(VIMRTDIR)
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
 	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
 	cd dist && zip -9 -rD -z gvim$(VERSION)_s.zip vim <$(COMMENT_W32S)
-
-os2bin: dist no_title.vim dist/$(COMMENT_OS2)
-	-rm -rf dist/vim$(VERSION)os2.zip
-	-rm -rf dist/vim
-	mkdir dist/vim
-	mkdir dist/vim/$(VIMRTDIR)
-	tar cf - \
-		$(BIN_OS2) \
-		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
-	cp vimos2.exe dist/vim/$(VIMRTDIR)/vim.exe
-	cp xxdos2.exe dist/vim/$(VIMRTDIR)/xxd.exe
-	cp teeos2.exe dist/vim/$(VIMRTDIR)/tee.exe
-	cp emx.dll emxlibcs.dll dist/vim/$(VIMRTDIR)
-	cd dist && zip -9 -rD -z vim$(VERSION)os2.zip vim <$(COMMENT_OS2)
 
 html: dist dist/$(COMMENT_HTML)
 	-rm -rf dist/vim$(VERSION)html.zip
