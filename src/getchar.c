@@ -3058,8 +3058,6 @@ inchar(
     if (typebuf_changed(tb_change_cnt))
 	return 0;
 
-    len = fix_input_buffer(buf, len, script_char >= 0);
-
 #ifdef FEAT_LANGMAP
     if (*p_langmap && len &&
 	((((State & (CMDLINE | INSERT)) == 0) 
@@ -3069,6 +3067,8 @@ inchar(
 	len = langmap_adjust(buf, len, maxlen);
     }
 #endif
+
+    len = fix_input_buffer(buf, len, script_char >= 0);
 
     return len;
 		    
