@@ -200,6 +200,14 @@ do_tag(
     {
 	use_tagstack = FALSE;
 	new_tag = TRUE;
+#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+	if (g_do_tagpreview != 0)
+	{
+	    vim_free(ptag_entry.tagname);
+	    if ((ptag_entry.tagname = vim_strsave(tag)) == NULL)
+		goto end_do_tag;
+	}
+#endif
     }
     else
     {
