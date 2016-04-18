@@ -538,6 +538,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'noed'	options.txt	/*'noed'*
 'noedcompatible'	options.txt	/*'noedcompatible'*
 'noek'	options.txt	/*'noek'*
+'noemo'	options.txt	/*'noemo'*
+'noemoji'	options.txt	/*'noemoji'*
 'noendofline'	options.txt	/*'noendofline'*
 'noeol'	options.txt	/*'noeol'*
 'noequalalways'	options.txt	/*'noequalalways'*
@@ -1867,7 +1869,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :CompilerSet	usr_41.txt	/*:CompilerSet*
 :DiffOrig	diff.txt	/*:DiffOrig*
 :DoMatchParen	pi_paren.txt	/*:DoMatchParen*
-:ELP	pi_logipat.txt	/*:ELP*
 :Explore	pi_netrw.txt	/*:Explore*
 :GLVS	pi_getscript.txt	/*:GLVS*
 :GetLatestVimScripts_dat	pi_getscript.txt	/*:GetLatestVimScripts_dat*
@@ -1876,6 +1877,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :GnatTags	ft_ada.txt	/*:GnatTags*
 :Hexplore	pi_netrw.txt	/*:Hexplore*
 :LP	pi_logipat.txt	/*:LP*
+:LPE	pi_logipat.txt	/*:LPE*
 :LPF	pi_logipat.txt	/*:LPF*
 :Lexplore	pi_netrw.txt	/*:Lexplore*
 :LogiPat	pi_logipat.txt	/*:LogiPat*
@@ -4502,6 +4504,7 @@ G	motion.txt	/*G*
 GNOME	gui_x11.txt	/*GNOME*
 GTK	gui_x11.txt	/*GTK*
 GTK+	gui_x11.txt	/*GTK+*
+GTK3	gui_x11.txt	/*GTK3*
 GUI	gui.txt	/*GUI*
 GUI-X11	gui_x11.txt	/*GUI-X11*
 GUIEnter	autocmd.txt	/*GUIEnter*
@@ -4952,6 +4955,8 @@ assert_exception()	eval.txt	/*assert_exception()*
 assert_fails()	eval.txt	/*assert_fails()*
 assert_false()	eval.txt	/*assert_false()*
 assert_match()	eval.txt	/*assert_match()*
+assert_notequal()	eval.txt	/*assert_notequal()*
+assert_notmatch()	eval.txt	/*assert_notmatch()*
 assert_true()	eval.txt	/*assert_true()*
 at	motion.txt	/*at*
 atan()	eval.txt	/*atan()*
@@ -5073,6 +5078,7 @@ bufwinnr()	eval.txt	/*bufwinnr()*
 bug-fixes-5	version5.txt	/*bug-fixes-5*
 bug-fixes-6	version6.txt	/*bug-fixes-6*
 bug-fixes-7	version7.txt	/*bug-fixes-7*
+bug-fixes-8	version8.txt	/*bug-fixes-8*
 bug-reports	intro.txt	/*bug-reports*
 bugreport.vim	intro.txt	/*bugreport.vim*
 bugs	intro.txt	/*bugs*
@@ -5166,7 +5172,25 @@ c_Insert	cmdline.txt	/*c_Insert*
 c_Left	cmdline.txt	/*c_Left*
 c_Right	cmdline.txt	/*c_Right*
 c_Up	cmdline.txt	/*c_Up*
+c_ansi_constants	syntax.txt	/*c_ansi_constants*
+c_ansi_typedefs	syntax.txt	/*c_ansi_typedefs*
+c_comment_strings	syntax.txt	/*c_comment_strings*
+c_curly_error	syntax.txt	/*c_curly_error*
 c_digraph	cmdline.txt	/*c_digraph*
+c_gnu	syntax.txt	/*c_gnu*
+c_no_ansi	syntax.txt	/*c_no_ansi*
+c_no_bracket_error	syntax.txt	/*c_no_bracket_error*
+c_no_bsd	syntax.txt	/*c_no_bsd*
+c_no_c11	syntax.txt	/*c_no_c11*
+c_no_c99	syntax.txt	/*c_no_c99*
+c_no_cformat	syntax.txt	/*c_no_cformat*
+c_no_curly_error	syntax.txt	/*c_no_curly_error*
+c_no_if0	syntax.txt	/*c_no_if0*
+c_no_tab_space_error	syntax.txt	/*c_no_tab_space_error*
+c_no_trail_space_error	syntax.txt	/*c_no_trail_space_error*
+c_no_utf	syntax.txt	/*c_no_utf*
+c_space_errors	syntax.txt	/*c_space_errors*
+c_syntax_for_h	syntax.txt	/*c_syntax_for_h*
 c_wildchar	cmdline.txt	/*c_wildchar*
 call()	eval.txt	/*call()*
 carriage-return	intro.txt	/*carriage-return*
@@ -5327,6 +5351,7 @@ compatible-default	starting.txt	/*compatible-default*
 compile-changes-5	version5.txt	/*compile-changes-5*
 compile-changes-6	version6.txt	/*compile-changes-6*
 compile-changes-7	version7.txt	/*compile-changes-7*
+compile-changes-8	version8.txt	/*compile-changes-8*
 compiler-compaqada	ft_ada.txt	/*compiler-compaqada*
 compiler-decada	ft_ada.txt	/*compiler-decada*
 compiler-gcc	quickfix.txt	/*compiler-gcc*
@@ -6783,6 +6808,7 @@ improved-viminfo	version5.txt	/*improved-viminfo*
 improvements-5	version5.txt	/*improvements-5*
 improvements-6	version6.txt	/*improvements-6*
 improvements-7	version7.txt	/*improvements-7*
+improvements-8	version8.txt	/*improvements-8*
 in_bot	channel.txt	/*in_bot*
 in_buf	channel.txt	/*in_buf*
 in_mode	channel.txt	/*in_mode*
@@ -6795,6 +6821,7 @@ incomp-small-6	version6.txt	/*incomp-small-6*
 incompatible-5	version5.txt	/*incompatible-5*
 incompatible-6	version6.txt	/*incompatible-6*
 incompatible-7	version7.txt	/*incompatible-7*
+incompatible-8	version8.txt	/*incompatible-8*
 indent()	eval.txt	/*indent()*
 indent-expression	indent.txt	/*indent-expression*
 indent.txt	indent.txt	/*indent.txt*
@@ -6988,18 +7015,19 @@ location-list	quickfix.txt	/*location-list*
 location-list-window	quickfix.txt	/*location-list-window*
 log()	eval.txt	/*log()*
 log10()	eval.txt	/*log10()*
-logipat	pi_logipat.txt	/*logipat*
-logipat-arg	pi_logipat.txt	/*logipat-arg*
-logipat-caveat	pi_logipat.txt	/*logipat-caveat*
-logipat-contents	pi_logipat.txt	/*logipat-contents*
-logipat-copyright	pi_logipat.txt	/*logipat-copyright*
-logipat-examples	pi_logipat.txt	/*logipat-examples*
-logipat-history	pi_logipat.txt	/*logipat-history*
-logipat-input	pi_logipat.txt	/*logipat-input*
-logipat-man	pi_logipat.txt	/*logipat-man*
-logipat-manual	pi_logipat.txt	/*logipat-manual*
-logipat-operators	pi_logipat.txt	/*logipat-operators*
-logipat-pattern	pi_logipat.txt	/*logipat-pattern*
+logiPat	pi_logipat.txt	/*logiPat*
+logiPat-arg	pi_logipat.txt	/*logiPat-arg*
+logiPat-caveat	pi_logipat.txt	/*logiPat-caveat*
+logiPat-contents	pi_logipat.txt	/*logiPat-contents*
+logiPat-copyright	pi_logipat.txt	/*logiPat-copyright*
+logiPat-examples	pi_logipat.txt	/*logiPat-examples*
+logiPat-history	pi_logipat.txt	/*logiPat-history*
+logiPat-input	pi_logipat.txt	/*logiPat-input*
+logiPat-man	pi_logipat.txt	/*logiPat-man*
+logiPat-manual	pi_logipat.txt	/*logiPat-manual*
+logiPat-operators	pi_logipat.txt	/*logiPat-operators*
+logiPat-pattern	pi_logipat.txt	/*logiPat-pattern*
+logiPat.txt	pi_logipat.txt	/*logiPat.txt*
 long-lines	version5.txt	/*long-lines*
 love	intro.txt	/*love*
 lowercase	change.txt	/*lowercase*
@@ -7452,6 +7480,7 @@ network	pi_netrw.txt	/*network*
 new-5	version5.txt	/*new-5*
 new-6	version6.txt	/*new-6*
 new-7	version7.txt	/*new-7*
+new-8	version8.txt	/*new-8*
 new-GTK-GUI	version5.txt	/*new-GTK-GUI*
 new-MzScheme	version7.txt	/*new-MzScheme*
 new-Select-mode	version5.txt	/*new-Select-mode*
@@ -7484,6 +7513,7 @@ new-highlighting	version5.txt	/*new-highlighting*
 new-indent-flex	version6.txt	/*new-indent-flex*
 new-items-6	version6.txt	/*new-items-6*
 new-items-7	version7.txt	/*new-items-7*
+new-items-8	version8.txt	/*new-items-8*
 new-line-continuation	version5.txt	/*new-line-continuation*
 new-location-list	version7.txt	/*new-location-list*
 new-lua	version7.txt	/*new-lua*
@@ -7526,6 +7556,7 @@ new-user-manual	version6.txt	/*new-user-manual*
 new-utf-8	version6.txt	/*new-utf-8*
 new-vertsplit	version6.txt	/*new-vertsplit*
 new-vim-script	version7.txt	/*new-vim-script*
+new-vim-script-8	version8.txt	/*new-vim-script-8*
 new-vim-server	version6.txt	/*new-vim-server*
 new-vimgrep	version7.txt	/*new-vimgrep*
 new-virtedit	version6.txt	/*new-virtedit*
@@ -7611,6 +7642,7 @@ p	change.txt	/*p*
 pack-add	repeat.txt	/*pack-add*
 package-create	repeat.txt	/*package-create*
 packages	repeat.txt	/*packages*
+packload-two-steps	repeat.txt	/*packload-two-steps*
 page-down	intro.txt	/*page-down*
 page-up	intro.txt	/*page-up*
 page_down	intro.txt	/*page_down*
@@ -7619,6 +7651,7 @@ pager	message.txt	/*pager*
 papp.vim	syntax.txt	/*papp.vim*
 paragraph	motion.txt	/*paragraph*
 pascal.vim	syntax.txt	/*pascal.vim*
+patches-8	version8.txt	/*patches-8*
 pathshorten()	eval.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
 pattern-atoms	pattern.txt	/*pattern-atoms*
@@ -7670,7 +7703,6 @@ php3.vim	syntax.txt	/*php3.vim*
 phtml.vim	syntax.txt	/*phtml.vim*
 pi_getscript.txt	pi_getscript.txt	/*pi_getscript.txt*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
-pi_logipat.txt	pi_logipat.txt	/*pi_logipat.txt*
 pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
@@ -7871,6 +7903,7 @@ registers	change.txt	/*registers*
 regular-expression	pattern.txt	/*regular-expression*
 reload	editing.txt	/*reload*
 reltime()	eval.txt	/*reltime()*
+reltimefloat()	eval.txt	/*reltimefloat()*
 reltimestr()	eval.txt	/*reltimestr()*
 remote.txt	remote.txt	/*remote.txt*
 remote_expr()	eval.txt	/*remote_expr()*
@@ -8260,6 +8293,7 @@ sub-replace-special	change.txt	/*sub-replace-special*
 sublist	eval.txt	/*sublist*
 submatch()	eval.txt	/*submatch()*
 subscribe-maillist	intro.txt	/*subscribe-maillist*
+subscript	eval.txt	/*subscript*
 substitute()	eval.txt	/*substitute()*
 substitute-CR	version6.txt	/*substitute-CR*
 suffixes	cmdline.txt	/*suffixes*
@@ -8919,6 +8953,7 @@ version-7.1	version7.txt	/*version-7.1*
 version-7.2	version7.txt	/*version-7.2*
 version-7.3	version7.txt	/*version-7.3*
 version-7.4	version7.txt	/*version-7.4*
+version-8.0	version8.txt	/*version-8.0*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
@@ -8929,6 +8964,8 @@ version7.2	version7.txt	/*version7.2*
 version7.3	version7.txt	/*version7.3*
 version7.4	version7.txt	/*version7.4*
 version7.txt	version7.txt	/*version7.txt*
+version8.0	version8.txt	/*version8.0*
+version8.txt	version8.txt	/*version8.txt*
 vi	intro.txt	/*vi*
 vi-differences	vi_diff.txt	/*vi-differences*
 vi:	options.txt	/*vi:*
@@ -8937,6 +8974,8 @@ view	starting.txt	/*view*
 view-diffs	diff.txt	/*view-diffs*
 view-file	starting.txt	/*view-file*
 views-sessions	starting.txt	/*views-sessions*
+vim-7.4	version7.txt	/*vim-7.4*
+vim-8	version8.txt	/*vim-8*
 vim-additions	vi_diff.txt	/*vim-additions*
 vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*
@@ -8950,6 +8989,7 @@ vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-variable	eval.txt	/*vim-variable*
 vim.vim	syntax.txt	/*vim.vim*
 vim7	version7.txt	/*vim7*
+vim8	version8.txt	/*vim8*
 vim:	options.txt	/*vim:*
 vim_did_enter-variable	eval.txt	/*vim_did_enter-variable*
 vim_starting	eval.txt	/*vim_starting*

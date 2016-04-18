@@ -811,6 +811,9 @@ foldUpdate(win_T *wp, linenr_T top, linenr_T bot)
 {
     fold_T	*fp;
 
+    if (disable_fold_update > 0)
+	return;
+
     /* Mark all folds from top to bot as maybe-small. */
     (void)foldFind(&wp->w_folds, top, &fp);
     while (fp < (fold_T *)wp->w_folds.ga_data + wp->w_folds.ga_len

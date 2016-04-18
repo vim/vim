@@ -1176,6 +1176,10 @@ EXTERN int	fill_fold INIT(= '-');
 EXTERN int	fill_diff INIT(= '-');
 #endif
 
+#ifdef FEAT_FOLDING
+EXTERN int	disable_fold_update INIT(= 0);
+#endif
+
 /* Whether 'keymodel' contains "stopsel" and "startsel". */
 EXTERN int	km_stopsel INIT(= FALSE);
 EXTERN int	km_startsel INIT(= FALSE);
@@ -1619,6 +1623,8 @@ EXTERN int  alloc_fail_countdown INIT(= -1);
 EXTERN int  alloc_fail_repeat INIT(= 0);
 
 EXTERN int  disable_char_avail_for_testing INIT(= 0);
+
+EXTERN int  in_free_unref_items INIT(= FALSE);
 #endif
 
 /*

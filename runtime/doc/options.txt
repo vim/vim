@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Apr 03
+*options.txt*	For Vim version 7.4.  Last change: 2016 Apr 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2646,7 +2646,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	also 'gdefault' option.
 	Switching this option on is discouraged!
 
-						*'emoji'* *'emo'*
+					*'emoji'* *'emo'* *'noemoji'* *'noemo'*
 'emoji' 'emo'	boolean (default: on)
 			global
 			{not in Vi}
@@ -3634,7 +3634,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		      HANGEUL, HEBREW, JOHAB, MAC, OEM, RUSSIAN, SHIFTJIS,
 		      SYMBOL, THAI, TURKISH, VIETNAMESE ANSI and BALTIC.
 		      Normally you would use "cDEFAULT".
-		qXX - quality XX.  Valid charsets are: PROOF, DRAFT,
+		qXX - quality XX.  Valid quality names are: PROOF, DRAFT,
 		      ANTIALIASED, UNANTIALIASED, CLEARTYPE, DEFAULT.
 		      Normally you would use "qDEFAULT".
 		      Some quality values isn't supported in legacy OSs.

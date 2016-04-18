@@ -373,6 +373,7 @@ static struct vimvar
     {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("testing",		 VAR_NUMBER), 0},
 };
 
 /* shorthand */
@@ -430,6 +431,8 @@ static int get_option_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_list_tv(char_u **arg, typval_T *rettv, int evaluate);
+static void list_free_contents(list_T  *l);
+static void list_free_list(list_T  *l);
 static long list_len(list_T *l);
 static int list_equal(list_T *l1, list_T *l2, int ic, int recursive);
 static int dict_equal(dict_T *d1, dict_T *d2, int ic, int recursive);
@@ -450,7 +453,6 @@ static long dict_len(dict_T *d);
 static char_u *dict2string(typval_T *tv, int copyID);
 static int get_dict_tv(char_u **arg, typval_T *rettv, int evaluate);
 static char_u *echo_string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
-static char_u *tv2string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
 static char_u *string_quote(char_u *str, int function);
 static int get_env_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int find_internal_func(char_u *name);
@@ -458,6 +460,9 @@ static char_u *deref_func_name(char_u *name, int *lenp, partial_T **partial, int
 static int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, partial_T *partial, dict_T *selfdict);
 static void emsg_funcname(char *ermsg, char_u *name);
 static int non_zero_arg(typval_T *argvars);
+
+static void dict_free_contents(dict_T *d);
+static void dict_free_dict(dict_T *d);
 
 #ifdef FEAT_FLOAT
 static void f_abs(typval_T *argvars, typval_T *rettv);
@@ -575,6 +580,7 @@ static void f_foldtextresult(typval_T *argvars, typval_T *rettv);
 static void f_foreground(typval_T *argvars, typval_T *rettv);
 static void f_function(typval_T *argvars, typval_T *rettv);
 static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
+static void f_garbagecollect_for_testing(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
 static void f_getbufline(typval_T *argvars, typval_T *rettv);
 static void f_getbufvar(typval_T *argvars, typval_T *rettv);
@@ -772,9 +778,11 @@ static void f_strchars(typval_T *argvars, typval_T *rettv);
 #ifdef HAVE_STRFTIME
 static void f_strftime(typval_T *argvars, typval_T *rettv);
 #endif
+static void f_strgetchar(typval_T *argvars, typval_T *rettv);
 static void f_stridx(typval_T *argvars, typval_T *rettv);
 static void f_string(typval_T *argvars, typval_T *rettv);
 static void f_strlen(typval_T *argvars, typval_T *rettv);
+static void f_strcharpart(typval_T *argvars, typval_T *rettv);
 static void f_strpart(typval_T *argvars, typval_T *rettv);
 static void f_strridx(typval_T *argvars, typval_T *rettv);
 static void f_strtrans(typval_T *argvars, typval_T *rettv);
@@ -1024,7 +1032,7 @@ eval_clear(void)
     ga_clear(&ga_scripts);
 
     /* unreferenced lists and dicts */
-    (void)garbage_collect();
+    (void)garbage_collect(FALSE);
 
     /* functions */
     free_all_functions();
@@ -5589,7 +5597,7 @@ eval_index(
 		    {
 			if (list_append_tv(l, &item->li_tv) == FAIL)
 			{
-			    list_free(l, TRUE);
+			    list_free(l);
 			    return FAIL;
 			}
 			item = item->li_next;
@@ -5929,6 +5937,31 @@ get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     return OK;
 }
 
+    static void
+partial_free(partial_T *pt)
+{
+    int i;
+
+    for (i = 0; i < pt->pt_argc; ++i)
+	clear_tv(&pt->pt_argv[i]);
+    vim_free(pt->pt_argv);
+    dict_unref(pt->pt_dict);
+    func_unref(pt->pt_name);
+    vim_free(pt->pt_name);
+    vim_free(pt);
+}
+
+/*
+ * Unreference a closure: decrement the reference count and free it when it
+ * becomes zero.
+ */
+    void
+partial_unref(partial_T *pt)
+{
+    if (pt != NULL && --pt->pt_refcount <= 0)
+	partial_free(pt);
+}
+
 /*
  * Allocate a variable for a List and fill it from "*arg".
  * Return OK or FAIL.
@@ -5980,7 +6013,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
 	EMSG2(_("E697: Missing end of List ']': %s"), *arg);
 failret:
 	if (evaluate)
-	    list_free(l, TRUE);
+	    list_free(l);
 	return FAIL;
     }
 
@@ -6044,20 +6077,30 @@ rettv_list_alloc(typval_T *rettv)
 list_unref(list_T *l)
 {
     if (l != NULL && --l->lv_refcount <= 0)
-	list_free(l, TRUE);
+	list_free(l);
 }
 
 /*
  * Free a list, including all non-container items it points to.
  * Ignores the reference count.
  */
-    void
-list_free(
-    list_T  *l,
-    int	    recurse)	/* Free Lists and Dictionaries recursively. */
+    static void
+list_free_contents(list_T  *l)
 {
     listitem_T *item;
 
+    for (item = l->lv_first; item != NULL; item = l->lv_first)
+    {
+	/* Remove the item before deleting it. */
+	l->lv_first = item->li_next;
+	clear_tv(&item->li_tv);
+	vim_free(item);
+    }
+}
+
+    static void
+list_free_list(list_T  *l)
+{
     /* Remove the list from the list of lists for garbage collection. */
     if (l->lv_used_prev == NULL)
 	first_list = l->lv_used_next;
@@ -6066,16 +6109,17 @@ list_free(
     if (l->lv_used_next != NULL)
 	l->lv_used_next->lv_used_prev = l->lv_used_prev;
 
-    for (item = l->lv_first; item != NULL; item = l->lv_first)
-    {
-	/* Remove the item before deleting it. */
-	l->lv_first = item->li_next;
-	if (recurse || (item->li_tv.v_type != VAR_LIST
-					   && item->li_tv.v_type != VAR_DICT))
-	    clear_tv(&item->li_tv);
-	vim_free(item);
-    }
     vim_free(l);
+}
+
+    void
+list_free(list_T *l)
+{
+    if (!in_free_unref_items)
+    {
+	list_free_contents(l);
+	list_free_list(l);
+    }
 }
 
 /*
@@ -6848,6 +6892,9 @@ get_copyID(void)
     return current_copyID;
 }
 
+/* Used by get_func_tv() */
+static garray_T funcargs = GA_EMPTY;
+
 /*
  * Garbage collection for lists and dictionaries.
  *
@@ -6870,10 +6917,11 @@ get_copyID(void)
 
 /*
  * Do garbage collection for lists and dicts.
+ * When "testing" is TRUE this is called from garbagecollect_for_testing().
  * Return TRUE if some memory was freed.
  */
     int
-garbage_collect(void)
+garbage_collect(int testing)
 {
     int		copyID;
     int		abort = FALSE;
@@ -6887,10 +6935,13 @@ garbage_collect(void)
     tabpage_T	*tp;
 #endif
 
-    /* Only do this once. */
-    want_garbage_collect = FALSE;
-    may_garbage_collect = FALSE;
-    garbage_collect_at_exit = FALSE;
+    if (!testing)
+    {
+	/* Only do this once. */
+	want_garbage_collect = FALSE;
+	may_garbage_collect = FALSE;
+	garbage_collect_at_exit = FALSE;
+    }
 
     /* We advance by two because we add one for items referenced through
      * previous_funccal. */
@@ -6948,6 +6999,11 @@ garbage_collect(void)
 	abort = abort || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL);
     }
 
+    /* function call arguments, if v:testing is set. */
+    for (i = 0; i < funcargs.ga_len; ++i)
+	abort = abort || set_ref_in_item(((typval_T **)funcargs.ga_data)[i],
+							  copyID, NULL, NULL);
+
     /* v: vars */
     abort = abort || set_ref_in_ht(&vimvarht, copyID, NULL);
 
@@ -6993,7 +7049,7 @@ garbage_collect(void)
 	if (did_free_funccal)
 	    /* When a funccal was freed some more items might be garbage
 	     * collected, so run again. */
-	    (void)garbage_collect();
+	    (void)garbage_collect(testing);
     }
     else if (p_verbose > 0)
     {
@@ -7004,7 +7060,7 @@ garbage_collect(void)
 }
 
 /*
- * Free lists, dictionaries and jobs that are no longer referenced.
+ * Free lists, dictionaries, channels and jobs that are no longer referenced.
  */
     static int
 free_unref_items(int copyID)
@@ -7013,29 +7069,66 @@ free_unref_items(int copyID)
     list_T	*ll, *ll_next;
     int		did_free = FALSE;
 
+    /* Let all "free" functions know that we are here.  This means no
+     * dictionaries, lists, channels or jobs are to be freed, because we will
+     * do that here. */
+    in_free_unref_items = TRUE;
+
+    /*
+     * PASS 1: free the contents of the items.  We don't free the items
+     * themselves yet, so that it is possible to decrement refcount counters
+     */
+
     /*
      * Go through the list of dicts and free items without the copyID.
      */
-    for (dd = first_dict; dd != NULL; )
-    {
-	dd_next = dd->dv_used_next;
+    for (dd = first_dict; dd != NULL; dd = dd->dv_used_next)
 	if ((dd->dv_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
 	{
 	    /* Free the Dictionary and ordinary items it contains, but don't
 	     * recurse into Lists and Dictionaries, they will be in the list
 	     * of dicts or list of lists. */
-	    dict_free(dd, FALSE);
+	    dict_free_contents(dd);
 	    did_free = TRUE;
 	}
-	dd = dd_next;
-    }
 
     /*
      * Go through the list of lists and free items without the copyID.
      * But don't free a list that has a watcher (used in a for loop), these
      * are not referenced anywhere.
      */
-    for (ll = first_list; ll != NULL; )
+    for (ll = first_list; ll != NULL; ll = ll->lv_used_next)
+	if ((ll->lv_copyID & COPYID_MASK) != (copyID & COPYID_MASK)
+						      && ll->lv_watch == NULL)
+	{
+	    /* Free the List and ordinary items it contains, but don't recurse
+	     * into Lists and Dictionaries, they will be in the list of dicts
+	     * or list of lists. */
+	    list_free_contents(ll);
+	    did_free = TRUE;
+	}
+
+#ifdef FEAT_JOB_CHANNEL
+    /* Go through the list of jobs and free items without the copyID. This
+     * must happen before doing channels, because jobs refer to channels, but
+     * the reference from the channel to the job isn't tracked. */
+    did_free |= free_unused_jobs_contents(copyID, COPYID_MASK);
+
+    /* Go through the list of channels and free items without the copyID.  */
+    did_free |= free_unused_channels_contents(copyID, COPYID_MASK);
+#endif
+
+    /*
+     * PASS 2: free the items themselves.
+     */
+    for (dd = first_dict; dd != NULL; dd = dd_next)
+    {
+	dd_next = dd->dv_used_next;
+	if ((dd->dv_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
+	    dict_free_dict(dd);
+    }
+
+    for (ll = first_list; ll != NULL; ll = ll_next)
     {
 	ll_next = ll->lv_used_next;
 	if ((ll->lv_copyID & COPYID_MASK) != (copyID & COPYID_MASK)
@@ -7044,11 +7137,21 @@ free_unref_items(int copyID)
 	    /* Free the List and ordinary items it contains, but don't recurse
 	     * into Lists and Dictionaries, they will be in the list of dicts
 	     * or list of lists. */
-	    list_free(ll, FALSE);
-	    did_free = TRUE;
+	    list_free_list(ll);
 	}
-	ll = ll_next;
     }
+
+#ifdef FEAT_JOB_CHANNEL
+    /* Go through the list of jobs and free items without the copyID. This
+     * must happen before doing channels, because jobs refer to channels, but
+     * the reference from the channel to the job isn't tracked. */
+    free_unused_jobs(copyID, COPYID_MASK);
+
+    /* Go through the list of channels and free items without the copyID.  */
+    free_unused_channels(copyID, COPYID_MASK);
+#endif
+
+    in_free_unref_items = FALSE;
 
     return did_free;
 }
@@ -7152,18 +7255,12 @@ set_ref_in_item(
     ht_stack_T	    **ht_stack,
     list_stack_T    **list_stack)
 {
-    dict_T	*dd;
-    list_T	*ll;
     int		abort = FALSE;
 
-    if (tv->v_type == VAR_DICT || tv->v_type == VAR_PARTIAL)
+    if (tv->v_type == VAR_DICT)
     {
-	if (tv->v_type == VAR_DICT)
-	    dd = tv->vval.v_dict;
-	else if (tv->vval.v_partial != NULL)
-	    dd = tv->vval.v_partial->pt_dict;
-	else
-	    dd = NULL;
+	dict_T	*dd = tv->vval.v_dict;
+
 	if (dd != NULL && dd->dv_copyID != copyID)
 	{
 	    /* Didn't see this dict yet. */
@@ -7188,7 +7285,8 @@ set_ref_in_item(
     }
     else if (tv->v_type == VAR_LIST)
     {
-	ll = tv->vval.v_list;
+	list_T	*ll = tv->vval.v_list;
+
 	if (ll != NULL && ll->lv_copyID != copyID)
 	{
 	    /* Didn't see this list yet. */
@@ -7212,33 +7310,99 @@ set_ref_in_item(
 	    }
 	}
     }
+    else if (tv->v_type == VAR_PARTIAL)
+    {
+	partial_T	*pt = tv->vval.v_partial;
+	int		i;
+
+	/* A partial does not have a copyID, because it cannot contain itself.
+	 */
+	if (pt != NULL)
+	{
+	    if (pt->pt_dict != NULL)
+	    {
+		typval_T dtv;
+
+		dtv.v_type = VAR_DICT;
+		dtv.vval.v_dict = pt->pt_dict;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+
+	    for (i = 0; i < pt->pt_argc; ++i)
+		abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
+							ht_stack, list_stack);
+	}
+    }
+#ifdef FEAT_JOB_CHANNEL
+    else if (tv->v_type == VAR_JOB)
+    {
+	job_T	    *job = tv->vval.v_job;
+	typval_T    dtv;
+
+	if (job != NULL && job->jv_copyID != copyID)
+	{
+	    job->jv_copyID = copyID;
+	    if (job->jv_channel != NULL)
+	    {
+		dtv.v_type = VAR_CHANNEL;
+		dtv.vval.v_channel = job->jv_channel;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+	    if (job->jv_exit_partial != NULL)
+	    {
+		dtv.v_type = VAR_PARTIAL;
+		dtv.vval.v_partial = job->jv_exit_partial;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+	}
+    }
+    else if (tv->v_type == VAR_CHANNEL)
+    {
+	channel_T   *ch =tv->vval.v_channel;
+	int	    part;
+	typval_T    dtv;
+	jsonq_T	    *jq;
+	cbq_T	    *cq;
+
+	if (ch != NULL && ch->ch_copyID != copyID)
+	{
+	    ch->ch_copyID = copyID;
+	    for (part = PART_SOCK; part <= PART_IN; ++part)
+	    {
+		for (jq = ch->ch_part[part].ch_json_head.jq_next; jq != NULL;
+							     jq = jq->jq_next)
+		    set_ref_in_item(jq->jq_value, copyID, ht_stack, list_stack);
+		for (cq = ch->ch_part[part].ch_cb_head.cq_next; cq != NULL;
+							     cq = cq->cq_next)
+		    if (cq->cq_partial != NULL)
+		    {
+			dtv.v_type = VAR_PARTIAL;
+			dtv.vval.v_partial = cq->cq_partial;
+			set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		    }
+		if (ch->ch_part[part].ch_partial != NULL)
+		{
+		    dtv.v_type = VAR_PARTIAL;
+		    dtv.vval.v_partial = ch->ch_part[part].ch_partial;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+	    }
+	    if (ch->ch_partial != NULL)
+	    {
+		dtv.v_type = VAR_PARTIAL;
+		dtv.vval.v_partial = ch->ch_partial;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+	    if (ch->ch_close_partial != NULL)
+	    {
+		dtv.v_type = VAR_PARTIAL;
+		dtv.vval.v_partial = ch->ch_close_partial;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+	}
+    }
+#endif
     return abort;
-}
-
-    static void
-partial_free(partial_T *pt, int free_dict)
-{
-    int i;
-
-    for (i = 0; i < pt->pt_argc; ++i)
-	clear_tv(&pt->pt_argv[i]);
-    vim_free(pt->pt_argv);
-    if (free_dict)
-	dict_unref(pt->pt_dict);
-    func_unref(pt->pt_name);
-    vim_free(pt->pt_name);
-    vim_free(pt);
-}
-
-/*
- * Unreference a closure: decrement the reference count and free it when it
- * becomes zero.
- */
-    void
-partial_unref(partial_T *pt)
-{
-    if (pt != NULL && --pt->pt_refcount <= 0)
-	partial_free(pt, TRUE);
 }
 
 /*
@@ -7296,29 +7460,19 @@ rettv_dict_alloc(typval_T *rettv)
 dict_unref(dict_T *d)
 {
     if (d != NULL && --d->dv_refcount <= 0)
-	dict_free(d, TRUE);
+	dict_free(d);
 }
 
 /*
  * Free a Dictionary, including all non-container items it contains.
  * Ignores the reference count.
  */
-    void
-dict_free(
-    dict_T  *d,
-    int	    recurse)	/* Free Lists and Dictionaries recursively. */
+    static void
+dict_free_contents(dict_T *d)
 {
     int		todo;
     hashitem_T	*hi;
     dictitem_T	*di;
-
-    /* Remove the dict from the list of dicts for garbage collection. */
-    if (d->dv_used_prev == NULL)
-	first_dict = d->dv_used_next;
-    else
-	d->dv_used_prev->dv_used_next = d->dv_used_next;
-    if (d->dv_used_next != NULL)
-	d->dv_used_next->dv_used_prev = d->dv_used_prev;
 
     /* Lock the hashtab, we don't want it to resize while freeing items. */
     hash_lock(&d->dv_hashtab);
@@ -7331,26 +7485,35 @@ dict_free(
 	     * something recursive causing trouble. */
 	    di = HI2DI(hi);
 	    hash_remove(&d->dv_hashtab, hi);
-	    if (recurse || (di->di_tv.v_type != VAR_LIST
-					     && di->di_tv.v_type != VAR_DICT))
-	    {
-		if (!recurse && di->di_tv.v_type == VAR_PARTIAL)
-		{
-		    partial_T *pt = di->di_tv.vval.v_partial;
-
-		    /* We unref the partial but not the dict it refers to. */
-		    if (pt != NULL && --pt->pt_refcount == 0)
-			partial_free(pt, FALSE);
-		}
-		else
-		    clear_tv(&di->di_tv);
-	    }
+	    clear_tv(&di->di_tv);
 	    vim_free(di);
 	    --todo;
 	}
     }
     hash_clear(&d->dv_hashtab);
+}
+
+    static void
+dict_free_dict(dict_T *d)
+{
+    /* Remove the dict from the list of dicts for garbage collection. */
+    if (d->dv_used_prev == NULL)
+	first_dict = d->dv_used_next;
+    else
+	d->dv_used_prev->dv_used_next = d->dv_used_next;
+    if (d->dv_used_next != NULL)
+	d->dv_used_next->dv_used_prev = d->dv_used_prev;
     vim_free(d);
+}
+
+    void
+dict_free(dict_T *d)
+{
+    if (!in_free_unref_items)
+    {
+	dict_free_contents(d);
+	dict_free_dict(d);
+    }
 }
 
 /*
@@ -7801,7 +7964,7 @@ get_dict_tv(char_u **arg, typval_T *rettv, int evaluate)
 	EMSG2(_("E723: Missing end of Dictionary '}': %s"), *arg);
 failret:
 	if (evaluate)
-	    dict_free(d, TRUE);
+	    dict_free(d);
 	return FAIL;
     }
 
@@ -7815,9 +7978,6 @@ failret:
 
     return OK;
 }
-
-#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
-#endif
 
     static char *
 get_var_special_name(int nr)
@@ -7992,7 +8152,7 @@ echo_string(
  * Puts quotes around strings, so that they can be parsed back by eval().
  * May return NULL.
  */
-    static char_u *
+    char_u *
 tv2string(
     typval_T	*tv,
     char_u	**tofree,
@@ -8279,6 +8439,7 @@ static struct fst
     {"foreground",	0, 0, f_foreground},
     {"function",	1, 3, f_function},
     {"garbagecollect",	0, 1, f_garbagecollect},
+    {"garbagecollect_for_testing",	0, 0, f_garbagecollect_for_testing},
     {"get",		2, 3, f_get},
     {"getbufline",	2, 3, f_getbufline},
     {"getbufvar",	2, 3, f_getbufvar},
@@ -8475,11 +8636,13 @@ static struct fst
     {"str2float",	1, 1, f_str2float},
 #endif
     {"str2nr",		1, 2, f_str2nr},
+    {"strcharpart",	2, 3, f_strcharpart},
     {"strchars",	1, 2, f_strchars},
     {"strdisplaywidth",	1, 2, f_strdisplaywidth},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
 #endif
+    {"strgetchar",	2, 2, f_strgetchar},
     {"stridx",		2, 3, f_stridx},
     {"string",		1, 1, f_string},
     {"strlen",		1, 1, f_strlen},
@@ -8751,8 +8914,26 @@ get_func_tv(
 	ret = FAIL;
 
     if (ret == OK)
+    {
+	int		i = 0;
+
+	if (get_vim_var_nr(VV_TESTING))
+	{
+	    /* Prepare for calling garbagecollect_for_testing(), need to know
+	     * what variables are used on the call stack. */
+	    if (funcargs.ga_itemsize == 0)
+		ga_init2(&funcargs, (int)sizeof(typval_T *), 50);
+	    for (i = 0; i < argcount; ++i)
+		if (ga_grow(&funcargs, 1) == OK)
+		    ((typval_T **)funcargs.ga_data)[funcargs.ga_len++] =
+								  &argvars[i];
+	}
+
 	ret = call_func(name, len, rettv, argcount, argvars,
 		 firstline, lastline, doesrange, evaluate, partial, selfdict);
+
+	funcargs.ga_len -= i;
+    }
     else if (!aborting())
     {
 	if (argcount == MAX_FUNC_ARGS)
@@ -9327,7 +9508,7 @@ typedef enum
     ASSERT_NOTEQUAL,
     ASSERT_MATCH,
     ASSERT_NOTMATCH,
-    ASSERT_OTHER,
+    ASSERT_OTHER
 } assert_type_T;
 
 static void prepare_assert_error(garray_T*gap);
@@ -10295,9 +10476,9 @@ f_ch_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     clear_job_options(&opt);
     if (get_job_options(&argvars[1], &opt,
-		JO_CB_ALL + JO_TIMEOUT_ALL + JO_MODE_ALL) == FAIL)
-	return;
-    channel_set_options(channel, &opt);
+			      JO_CB_ALL + JO_TIMEOUT_ALL + JO_MODE_ALL) == OK)
+	channel_set_options(channel, &opt);
+    free_job_options(&opt);
 }
 
 /*
@@ -12173,6 +12354,17 @@ f_garbagecollect(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
+ * "garbagecollect_for_testing()" function
+ */
+    static void
+f_garbagecollect_for_testing(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    /* This is dangerous, any Lists and Dicts used internally may be freed
+     * while still in use. */
+    garbage_collect(TRUE);
+}
+
+/*
  * "get()" function
  */
     static void
@@ -12856,26 +13048,6 @@ f_getpid(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = mch_get_pid();
 }
 
-static void getpos_both(typval_T *argvars, typval_T *rettv, int getcurpos);
-
-/*
- * "getcurpos()" function
- */
-    static void
-f_getcurpos(typval_T *argvars, typval_T *rettv)
-{
-    getpos_both(argvars, rettv, TRUE);
-}
-
-/*
- * "getpos(string)" function
- */
-    static void
-f_getpos(typval_T *argvars, typval_T *rettv)
-{
-    getpos_both(argvars, rettv, FALSE);
-}
-
     static void
 getpos_both(
     typval_T	*argvars,
@@ -12916,6 +13088,25 @@ getpos_both(
     }
     else
 	rettv->vval.v_number = FALSE;
+}
+
+
+/*
+ * "getcurpos()" function
+ */
+    static void
+f_getcurpos(typval_T *argvars, typval_T *rettv)
+{
+    getpos_both(argvars, rettv, TRUE);
+}
+
+/*
+ * "getpos(string)" function
+ */
+    static void
+f_getpos(typval_T *argvars, typval_T *rettv)
+{
+    getpos_both(argvars, rettv, FALSE);
 }
 
 /*
@@ -14863,9 +15054,9 @@ f_job_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     if (job == NULL)
 	return;
     clear_job_options(&opt);
-    if (get_job_options(&argvars[1], &opt, JO_STOPONEXIT + JO_EXIT_CB) == FAIL)
-	return;
-    job_set_options(job, &opt);
+    if (get_job_options(&argvars[1], &opt, JO_STOPONEXIT + JO_EXIT_CB) == OK)
+	job_set_options(job, &opt);
+    free_job_options(&opt);
 }
 
 /*
@@ -15365,7 +15556,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 		    || list_append_number(rettv->vval.v_list,
 					    (varnumber_T)-1) == FAIL))
 	{
-		list_free(rettv->vval.v_list, TRUE);
+		list_free(rettv->vval.v_list);
 		rettv->vval.v_list = NULL;
 		goto theend;
 	}
@@ -16462,7 +16653,7 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 
     if (failed)
     {
-	list_free(rettv->vval.v_list, TRUE);
+	list_free(rettv->vval.v_list);
 	/* readfile doc says an empty list is returned on error */
 	rettv->vval.v_list = list_alloc();
     }
@@ -19362,6 +19553,46 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
+ * "strgetchar()" function
+ */
+    static void
+f_strgetchar(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*str;
+    int		len;
+    int		error = FALSE;
+    int		charidx;
+
+    rettv->vval.v_number = -1;
+    str = get_tv_string_chk(&argvars[0]);
+    if (str == NULL)
+	return;
+    len = (int)STRLEN(str);
+    charidx = get_tv_number_chk(&argvars[1], &error);
+    if (error)
+	return;
+#ifdef FEAT_MBYTE
+    {
+	int	byteidx = 0;
+
+	while (charidx >= 0 && byteidx < len)
+	{
+	    if (charidx == 0)
+	    {
+		rettv->vval.v_number = mb_ptr2char(str + byteidx);
+		break;
+	    }
+	    --charidx;
+	    byteidx += mb_cptr2len(str + byteidx);
+	}
+    }
+#else
+    if (charidx < len)
+	rettv->vval.v_number = str[charidx];
+#endif
+}
+
+/*
  * "stridx()" function
  */
     static void
@@ -19486,6 +19717,71 @@ f_strwidth(typval_T *argvars, typval_T *rettv)
 	    STRLEN(s)
 #endif
 	    );
+}
+
+/*
+ * "strcharpart()" function
+ */
+    static void
+f_strcharpart(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_MBYTE
+    char_u	*p;
+    int		nchar;
+    int		nbyte = 0;
+    int		charlen;
+    int		len = 0;
+    int		slen;
+    int		error = FALSE;
+
+    p = get_tv_string(&argvars[0]);
+    slen = (int)STRLEN(p);
+
+    nchar = get_tv_number_chk(&argvars[1], &error);
+    if (!error)
+    {
+	if (nchar > 0)
+	    while (nchar > 0 && nbyte < slen)
+	    {
+		nbyte += mb_char2len(p[nbyte]);
+		--nchar;
+	    }
+	else
+	    nbyte = nchar;
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    charlen = get_tv_number(&argvars[2]);
+	    while (charlen > 0 && nbyte + len < slen)
+	    {
+		len += mb_char2len(p[nbyte + len]);
+		--charlen;
+	    }
+	}
+	else
+	    len = slen - nbyte;    /* default: all bytes that are available. */
+    }
+
+    /*
+     * Only return the overlap between the specified part and the actual
+     * string.
+     */
+    if (nbyte < 0)
+    {
+	len += nbyte;
+	nbyte = 0;
+    }
+    else if (nbyte > slen)
+	nbyte = slen;
+    if (len < 0)
+	len = 0;
+    else if (nbyte + len > slen)
+	len = slen - nbyte;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = vim_strnsave(p + nbyte, len);
+#else
+    f_strpart(argvars, rettv);
+#endif
 }
 
 /*
@@ -20044,7 +20340,7 @@ errret:
     if (res != NULL)
 	vim_free(res);
     if (list != NULL)
-	list_free(list, TRUE);
+	list_free(list);
 }
 
 /*

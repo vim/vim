@@ -1290,6 +1290,8 @@ struct jobvar_S
     buf_T	*jv_in_buf;	/* buffer from "in-name" */
 
     int		jv_refcount;	/* reference count */
+    int		jv_copyID;
+
     channel_T	*jv_channel;	/* channel for I/O, reference counted */
 };
 
@@ -1425,11 +1427,12 @@ struct channel_S {
 
     job_T	*ch_job;	/* Job that uses this channel; this does not
 				 * count as a reference to avoid a circular
-				 * reference. */
+				 * reference, the job refers to the channel. */
     int		ch_job_killed;	/* TRUE when there was a job and it was killed
 				 * or we know it died. */
 
     int		ch_refcount;	/* reference count */
+    int		ch_copyID;
 };
 
 #define JO_MODE		    0x0001	/* channel mode */

@@ -337,7 +337,6 @@ SRC_DOS =	\
 		src/vimio.h \
 		src/gvim.exe.mnf \
 		src/vimrun.c \
-		src/vimtbar.h \
 		src/xpm_w32.c \
 		src/xpm_w32.h \
 		src/xxd/Make_bc5.mak \
@@ -375,7 +374,6 @@ SRC_DOS_BIN =	\
 		src/tools.bmp \
 		src/vim*.ico \
 		src/vim.tlb \
-		src/vimtbar.lib \
 		src/xpm/COPYRIGHT \
 		src/xpm/README.txt \
 		src/xpm/include/*.h \
@@ -383,7 +381,6 @@ SRC_DOS_BIN =	\
 		src/xpm/x64/lib/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
-		src/vimtbar.dll \
 		nsis/icons/*.bmp \
 		nsis/icons/*.ico \
 

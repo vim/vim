@@ -959,6 +959,9 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
     no_wait_return = FALSE;
     starting = 0;
 
+    /* 'autochdir' has been postponed */
+    DO_AUTOCHDIR
+
 #ifdef FEAT_TERMRESPONSE
     /* Requesting the termresponse is postponed until here, so that a "-c q"
      * argument doesn't make it appear in the shell Vim was started from. */
@@ -1528,7 +1531,7 @@ getout(int exitval)
 #endif
 #ifdef FEAT_EVAL
     if (garbage_collect_at_exit)
-	garbage_collect();
+	garbage_collect(FALSE);
 #endif
 #if defined(WIN32) && defined(FEAT_MBYTE)
     free_cmd_argsW();

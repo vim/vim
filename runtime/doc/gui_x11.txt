@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.4.  Last change: 2014 Mar 08
+*gui_x11.txt*   For Vim version 7.4.  Last change: 2016 Apr 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -305,7 +305,7 @@ If a name is used that exists on other systems, but not in X11, the default
 "arrow" pointer is used.
 
 ==============================================================================
-5. GTK version						*gui-gtk* *GTK+* *GTK*
+5. GTK version					*gui-gtk* *GTK+* *GTK* *GTK3*
 
 The GTK version of the GUI works a little bit different.
 

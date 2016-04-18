@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Mar 29
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Apr 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -27,14 +27,31 @@ Priority classification:
 See |develop.txt| for development plans.  You can vote for which items should
 be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
-Issues can also be entered online: http://code.google.com/p/vim/issues/list
+Issues can also be entered online: https://github.com/vim/vim/issues
 Updates will be forwarded to the vim_dev maillist.  Issues entered there will
 not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Using free memory. (Dominique, 2016 Mar 27)
+Crash in garbagecollect() after starting a job. (Yasuhiro Matsumoto)
+  :let g:a = job_start(['ls'])
+  :call garbagecollect()
+-> Need to find a way to call garbagecollect() in a test.
+
+Channel closes unexpectedly. (Christian Robinson, 2016 Apr 10)
+Log file later.
+Remarks from Kazunobu Kuriyama.  Fix from Hirohito, suggested by Ozaki Kiichi.
+
+When test_partial start_job() has a non-existing command memory leaks.
+
+Vim 8 features to mention:
+* TabNew, TabNewEntered and TabClosed autocommand events.
+
+Also keep a list of loaded plugins, skip when encountered again?
+
+Memory leak in test49
+Memory leak in test_alot, with matchstrpos()
 
 +channel:
 - When a message in the queue but there is no callback, drop it after a while?
@@ -50,23 +67,17 @@ Later
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
 
-Partial:
-- Maybe we also need VAR_PARTIAL support in if_mzsch.
+Test for try/catch in 'tabline'. #746, Haya, 2016 Apr 10.
 
 Make it so that the window ID can be used where currently a window nr is used
-
-Patch to add "q" item to guifont. #720, Kim Brouer, 2016 Mar 29
-Better patch from Yasuhiro Matsumoto, 2016 Jan 4.
 
 Patch to make tag jump work on function({expr}). (Hirohito Higashi, 2016 Mar
 25)
 
-Allow for an empty dictionary key?
-
 Patch to improve I/O for Perl. (Damien, 2016 Jan 9, update Jan 22 2nd one)
 
-Patch to fix ml_get error. (Alexander Freiherr von Buddenbrock, 2016 Mar 4,
-#676)
+Add strgetchar(): get a character by index from a string.
+    using [] is a byte index.
 
 Regexp problems:
 - The regexp engines are not reentrant, causing havoc when interrupted by a
@@ -89,6 +100,7 @@ Regexp problems:
 - NFA regexp doesn't handle \%<v correctly. (Ingo Karkat, 2014 May 12)
 - Does not work with NFA regexp engine:
   \%u, \%x, \%o, \%d followed by a composing character
+- \%'[ does not work.  '%'] does work.  (Masaaki Nakamura, 2016 Apr 4)
 - Bug relating to back references. (Ingo Karkat, 2014 Jul 24)
 - New RE does not give an error for empty group: "\(\)\{2}" (Dominique Pelle,
   2015 Feb 7)
@@ -114,11 +126,16 @@ Using freed memory in quickfix code. (Dominique, 2016 Mar 21)
 
 Patch 7.4.1401 caused autochdir not to work on startup. (Rob Hoelz, #704)
 
+Patch to support partions for Python, #734.  Nikolai Pavlov, 2017 Apr 6
+
 Patch to fix that folds close with autocomplete.  #643
 Christian Brabandt, 2016 Feb 18.
 
 Also include update_curswant() fix for getcurpos(). (Christian Brabandt, 2016
 Feb 9)
+
+When cross-compiling skip generating the tags file (and moving it out of the
+way). (Christian Neukirchen, 2016 Apr 7)  #740
 
 Patch to list some messages and clear messages. (Yasuhiro Matsumoto, 2016 Mar
 12)
@@ -126,8 +143,13 @@ Patch to list some messages and clear messages. (Yasuhiro Matsumoto, 2016 Mar
 Patch to fix escaping special characters for delete(). (tc-0, 2016 Mar 20,
 #700) Test fails on MS-Windows.
 
+Patch to have complete() not set 'modified'. (Shougo, 2016 Apr 9, #745)
+
 Patch to put undo options together in undo window.
 (Gary Johnson, 2016 Jan 28)
+
+Still problems with 'emoji'.  See issue #721.  Patch 7.4.1697 half-fixes it.
+Avoid PLAN_WRITE in windgoto() ?
 
 Patch to have better check for {action} argument of setqflist().
 Nikolai Pavlov, Feb 25, #661.  Can be even more strict.
@@ -140,6 +162,11 @@ Feb 3)
 Patch for test86 and test87. (Roland Puntaier, #622)
 
 Cannot delete a file with square brackets with delete(). (#696)
+
+Patch on issue #728 by Christian Brabandt, 2016 Apr 7.  Update with test: Apr 8.
+Might be related to:
+Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
+handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
 
 Patch to add 'topbot' to 'belloff' option. (Coot, 2016 Mar 18, #695)
 
@@ -164,7 +191,13 @@ Patches from Ken Takata might help (2014 Apr 17)
 Update 2016 Mar 28.  Can include all parts into one dist patch.
 
 Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
-Update 2016 Mar 28.
+Update 2016 Apr 4.
+
+Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
+Updated 2016 Feb 10
+
+Patch to improve indenting for C++ constructor with initializer list.
+(Hirohito Higashi, 2016 Mar 31)
 
 After 7.5 is released:
 - Drop support for older MS-Windows systems, before XP.
@@ -192,6 +225,8 @@ Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
 
 Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
+
+Patch to make tests pass with EBCDIC. (Owen Leibman, 2016 Apr 10)
 
 jsonencode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
@@ -224,18 +259,22 @@ Access to uninitialized memory in match_backref() regexp_nda.c:4882
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
+7   Add a watchpoint in the debug mode: An expression that breaks execution
+    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
+    the value of the expression changes.  ":watchdel" deletes an item,
+    ":watchlist" lists the items. (Charles Campbell)
+Patch by Christian Brabandt, 2016 Feb 1.
+
+Patch to discard remainder of long error messages in quickfix, avoid using
+them as separate messages. (Anton Lindqvist, 2016 Apr 9)
+
 Patch to avoid redrawing tabline when the popup menu is visible.
 (Christian Brabandt, 2016 Jan 28)
 
 Patch to add {skip} argument to search(). (Christian Brabandt, 2016 Feb 24)
 
 Add value "smart" to 'tagcase': ignore case when tag is all lower case.
-
-7   Add a watchpoint in the debug mode: An expression that breaks execution
-    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
-    the value of the expression changes.  ":watchdel" deletes an item,
-    ":watchlist" lists the items. (Charles Campbell)
-Patch by Christian Brabandt, 2016 Feb 1.
+Patch from Christian Brabandt, 2016 Mar 30, #712.
 
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
@@ -311,7 +350,7 @@ Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
-13, last version)  Update Mar 21.
+13, last version)  Update Mar 21., Apr 2.
 
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?
@@ -324,16 +363,13 @@ Use v:none.  var == v:none
 
 Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
 24)  Also need a way to get the global arg list?  Update later on Jan 24
-Update Mar 5.
+Update Mar 5. Update Apr 7.
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
 
 When complete() first argument is before where insert started and 'backspace'
 is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
-
-Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
-handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
 
 Patch to use two highlight groups for relative numbers. (Shaun Brady, 2016 Jan
 30)
@@ -369,8 +405,8 @@ Crash in :cnext on MS-Windows. (Ben Fritz, 2015 Oct 27)
 When using --remote-tab on MS-Windows 'encoding' hasn't been initialized yet,
 the file name ends up encoded wrong. (Raul Coronado, 2015 Dec 21)
 
-Patch to add GUI colors to the terminal, when it supports it. (ZyX, 2013 Jan
-26, update 2013 Dec 14, another 2014 Nov 22)
+Patch to add GUI colors to the terminal, when 'guicolors' is set. (ZyX, 2013
+Jan 26, update 2013 Dec 14, another 2014 Nov 22)
 
 Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
 Sep 10)
@@ -379,7 +415,7 @@ Patch to set antialiasing style on Windows. (Ondrej Balaz, 2013 Mar 14)
 Needs a different check for CLEARTYPE_QUALITY.
 Problem mentioned by Christian Brabandt, 2016 Jan 4.
 
-Example in editing.txt uses $HOME with the expectating that it ends in a
+Example in editing.txt uses $HOME with the expectation that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
 inserts a slash when needed?  pathconcat(dir, path) (Thilo Six, 2015 Aug 12)
 
@@ -404,6 +440,7 @@ Is this the right solution?  Need to cleanup langmap behavior:
   covered by the above change.
 So that replaying the register doesn't use keymap/langmap and still does the
 same thing.  Remarks on issue 543 (Roland Puntaier).
+Also see #737: langmap not applied to replaying recording.
 
 Patch to add grepfile(). (Scott Prager, 2015 May 26)
 Work in progress.
@@ -538,9 +575,6 @@ Jun 8)
 
 Bug: Autocompleting ":tag/pat" replaces "/pat" with a match but does not
 insert a space. (Micha Mos, 2014 Nov 7)
-
-Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
-Updated 2016 Feb 10
 
 Patch to add argument to :cquit. (Thinca, 2014 Oct 12)
 
@@ -780,6 +814,9 @@ Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
 May 17: with winlist() and tabpagelist().
 May 19: with local variables.
 May 28: with options
+
+Patch to add getbufinfo(), gettabinfo() and getwininfo(). (Yegappan
+Lakshmanan, 2016 Apr 2016)
 
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.

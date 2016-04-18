@@ -3057,8 +3057,8 @@ win_line(
 					   wrapping */
     int		vcol_off	= 0;	/* offset for concealed characters */
     int		did_wcol	= FALSE;
-    int		match_conc	= FALSE; /* cchar for match functions */
-    int		has_match_conc  = FALSE; /* match wants to conceal */
+    int		match_conc	= 0;	/* cchar for match functions */
+    int		has_match_conc  = 0;	/* match wants to conceal */
     int		old_boguscols   = 0;
 # define VCOL_HLC (vcol - vcol_off)
 # define FIX_FOR_BOGUSCOLS \
@@ -3595,7 +3595,7 @@ win_line(
     for (;;)
     {
 #ifdef FEAT_CONCEAL
-	has_match_conc = FALSE;
+	has_match_conc = 0;
 #endif
 	/* Skip this quickly when working on the text. */
 	if (draw_state != WL_LINE)
@@ -3944,11 +3944,12 @@ win_line(
 			    if (cur != NULL && syn_name2id((char_u *)"Conceal")
 							       == cur->hlg_id)
 			    {
-				has_match_conc = TRUE;
+				has_match_conc =
+					     v == (long)shl->startcol ? 2 : 1;
 				match_conc = cur->conceal_char;
 			    }
 			    else
-				has_match_conc = match_conc = FALSE;
+				has_match_conc = match_conc = 0;
 #endif
 			}
 			else if (v == (long)shl->endcol)
@@ -4905,12 +4906,12 @@ win_line(
 	    if (   wp->w_p_cole > 0
 		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
 							conceal_cursor_line(wp) )
-		&& ( (syntax_flags & HL_CONCEAL) != 0 || has_match_conc)
+		&& ( (syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		char_attr = conceal_attr;
-		if (prev_syntax_id != syntax_seqnr
+		if ((prev_syntax_id != syntax_seqnr || has_match_conc > 1)
 			&& (syn_get_sub_char() != NUL || match_conc
 							 || wp->w_p_cole == 1)
 			&& wp->w_p_cole != 3)
@@ -6779,7 +6780,7 @@ win_redr_status(win_T *wp)
 redraw_custom_statusline(win_T *wp)
 {
     static int	    entered = FALSE;
-    int		    save_called_emsg = called_emsg;
+    int		    saved_did_emsg = did_emsg;
 
     /* When called recursively return.  This can happen when the statusline
      * contains an expression that triggers a redraw. */
@@ -6787,9 +6788,9 @@ redraw_custom_statusline(win_T *wp)
 	return;
     entered = TRUE;
 
-    called_emsg = FALSE;
+    did_emsg = FALSE;
     win_redr_custom(wp, FALSE);
-    if (called_emsg)
+    if (did_emsg)
     {
 	/* When there is an error disable the statusline, otherwise the
 	 * display is messed up with errors and a redraw triggers the problem
@@ -6798,7 +6799,7 @@ redraw_custom_statusline(win_T *wp)
 		(char_u *)"", OPT_FREE | (*wp->w_p_stl != NUL
 					? OPT_LOCAL : OPT_GLOBAL), SID_ERROR);
     }
-    called_emsg |= save_called_emsg;
+    did_emsg |= saved_did_emsg;
     entered = FALSE;
 }
 #endif
@@ -10266,16 +10267,16 @@ draw_tabline(void)
     /* Use the 'tabline' option if it's set. */
     if (*p_tal != NUL)
     {
-	int	save_called_emsg = called_emsg;
+	int	saved_did_emsg = did_emsg;
 
 	/* Check for an error.  If there is one we would loop in redrawing the
 	 * screen.  Avoid that by making 'tabline' empty. */
-	called_emsg = FALSE;
+	did_emsg = FALSE;
 	win_redr_custom(NULL, FALSE);
-	if (called_emsg)
+	if (did_emsg)
 	    set_string_option_direct((char_u *)"tabline", -1,
 					   (char_u *)"", OPT_FREE, SID_ERROR);
-	called_emsg |= save_called_emsg;
+	did_emsg |= saved_did_emsg;
     }
     else
 #endif

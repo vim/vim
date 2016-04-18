@@ -557,8 +557,13 @@ target_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
 		{
 		    GdkWindow * const win = gtk_widget_get_window(widget);
 		    GdkDisplay * const dpy = gdk_window_get_display(win);
+#  if GTK_CHECK_VERSION(3,20,0)
+		    GdkSeat * const seat = gdk_display_get_default_seat(dpy);
+		    GdkDevice * const dev = gdk_seat_get_pointer(seat);
+#  else
 		    GdkDeviceManager * const mngr = gdk_display_get_device_manager(dpy);
 		    GdkDevice * const dev = gdk_device_manager_get_client_pointer(mngr);
+#  endif
 		    gdk_window_get_device_position(win, dev , &x, &y, &state);
 		}
 # else

@@ -1868,7 +1868,8 @@ typedef int sock_T;
 #define VV_NULL		65
 #define VV_NONE		66
 #define VV_VIM_DID_ENTER 67
-#define VV_LEN		68	/* number of v: vars */
+#define VV_TESTING	68
+#define VV_LEN		69	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L

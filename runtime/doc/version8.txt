@@ -1,0 +1,233 @@
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Apr 12
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+NOTE: THIS FILE IS STILL BEING WORKED ON
+
+				*vim8* *vim-8* *version-8.0* *version8.0*
+Welcome to Vim 8!  A large number of bugs have been fixed and several
+features have been added.  This file mentions all the new items and changes to
+existing features since Vim 7.4. Bug fixes, the patches for Vim 7.4, can be
+found below |vim-7.4|.  Use this command to see the version you are using: >
+	:version
+
+See |vi_diff.txt| for an overview of differences between Vi and Vim 7.0.
+See |version4.txt| for differences between Vim 3.x and Vim 4.x.
+See |version5.txt| for differences between Vim 4.x and Vim 5.x.
+See |version6.txt| for differences between Vim 5.x and Vim 6.x.
+See |version7.txt| for differences between Vim 6.x and Vim 7.x.
+
+INCOMPATIBLE CHANGES			|incompatible-8|
+
+NEW FEATURES				|new-8|
+
+Vim script enhancements			|new-vim-script-8|
+
+IMPROVEMENTS				|improvements-8|
+
+COMPILE TIME CHANGES			|compile-changes-8|
+
+PATCHES					|patches-8|
+
+
+==============================================================================
+INCOMPATIBLE CHANGES				*incompatible-8*
+
+These changes are incompatible with previous releases.  Check this list if you
+run into a problem when upgrading from Vim 7.4 to 8.0.
+
+The support for MS-DOS has been removed.
+
+
+Minor incompatibilities:
+
+For filetype detection: ...
+
+==============================================================================
+NEW FEATURES						*new-8*
+
+First a list to the bigger new features.  A comprehensive list is below.
+
+
+Asynchronous I/O support, channels ~
+
+Vim can now exchange messages with another process in the background. The
+message are received and handled while Vim is waiting for a character.  See
+|channel-demo| for an example, communicating with a Python server.
+
+Closely related to channels is JSON support.  JSON is widely supported and can
+easily be used for inter-process communication, allowing for writing a server
+in any language.  The functions to use are |json_encode()| and |json_decode()|.
+
+
+Jobs ~
+
+Vim can now start a job, communicate with it and stop it.  This is very useful
+to run a process for completion, syntax checking, etc.  Channels are used to
+communicate with the job.  Jobs can also read from or write to a buffer or a
+file.  See |job_start()|.
+
+
+Timers ~
+
+Also asynchronous are timers.  They can fire once or repeatedly and invoke a
+function to do any work.  For example: >
+	let tempTimer = timer_start(4000, 'CheckTemp')
+This will make call 4 seconds later, like: >
+	call CheckTemp()
+
+
+Partials ~
+
+Vim already had a Funcref, a reference to a function.  A partial also refers
+to a function, and additionally binds arguments and/or a dictionary.  This is
+especially useful for callbacks on channels and timers.  E.g., for the timer
+example above, to pass an argument to the function: >
+	let tempTimer = timer_start(4000, function('CheckTemp', ['out']))
+This will make call 4 seconds later, like: >
+	call CheckTemp('out')
+
+
+Packages ~
+
+Plugins keep growing and more of them are available then ever before.  To keep
+the collection of plugins manageable package support has been added.  This is
+a convenient way to get one or more plugins, drop them in a directory and
+possibly keep them updated.  Vim will load them automatically, or only when
+desired.  See |packages|.
+
+
+New style tests ~
+
+This is for Vim developers.  So far writing tests for Vim has not been easy.
+Vim 8 adds assert functions and a framework to run tests.  This makes it a lot
+simpler to write tests and keep them updated.
+
+These functions have been added:
+	|assert_equal()|
+	|assert_notequal()|
+	|assert_exception()|
+	|assert_fails()|
+	|assert_false()|
+	|assert_match()|
+	|assert_notmatch()|
+	|assert_true()|
+	|alloc_fail()|
+	|disable_char_avail_for_testing()|
+
+
+Window IDs ~
+
+Previously windows could only be accessed by their number. And every time a
+window would open, close or move that number changes.  Each window now has a
+unique ID, so that they are easy to find.
+
+
+Wrapping lines with indent ~
+
+The 'breakindent' option has been added to be able to wrap lines without
+changing the amount of indent.
+
+
+Windows: Direct-X support ~
+
+This adds the 'renderoptions' option to allow for switching on Direct-X
+(DirectWrite) support on MS-Windows.
+
+
+GTK+ 3 support ~
+
+GTK+ 2 is getting old, GTK+ 3 is here.  Support has been added and it already
+works quite well, mostly just like GTK+ 2.
+
+
+Vim script enhancements					*new-vim-script-8*
+-----------------------
+
+In Vim scripts the following types have been added:
+
+	|Special|	|v:false|, |v:true|, |v:none| and |v:null|
+	|Channel|	connection to another process for asynchronous I/O
+	|Job|		process control
+
+Many functions and commands have been added to support the new types.
+
+
+
+Various new items					*new-items-8*
+-----------------
+
+Normal mode commands: ~
+
+
+Insert mode commands: ~
+
+
+Options: ~
+
+
+Ex commands: ~
+
+
+Ex command modifiers: ~
+
+
+Ex command arguments: ~
+
+
+New and extended functions: ~
+
+
+
+New Vim variables: ~
+
+|v:vim_did_enter|	Set when VimEnter autocommands are triggered
+
+
+New autocommand events: ~
+
+
+
+New highlight groups: ~
+
+
+New items in search patterns: ~
+
+
+New Syntax/Indent/FTplugin files: ~
+
+
+New Keymaps: ~
+
+
+New message translations: ~
+
+
+Others: ~
+
+
+==============================================================================
+IMPROVEMENTS						*improvements-8*
+
+The existing blowfish encryption turned out to be much weaker than it was
+supposed to be.  The blowfish2 method has been added to fix that.  Note that
+this still isn't a state-of-the-art encryption, but good enough for most
+usage.  See 'cryptmethod'.
+
+==============================================================================
+COMPILE TIME CHANGES					*compile-changes-8*
+
+Dropped the support for MS-DOS.  It was too big to fit in memory.
+
+
+==============================================================================
+PATCHES						*patches-8* *bug-fixes-8*
+
+The list of patches that got included since 7.4.0.  This includes all the new
+features, but does not include runtime file changes (syntax, indent, help,
+etc.)
+
+TODO: INCLUDE PATCH LIST.
+
+ vim:tw=78:ts=8:ft=help:norl:

@@ -6391,7 +6391,7 @@ getreg_wrap_one_line(char_u *s, int flags)
 	{
 	    if (list_append_string(list, NULL, -1) == FAIL)
 	    {
-		list_free(list, TRUE);
+		list_free(list);
 		return NULL;
 	    }
 	    list->lv_first->li_tv.vval.v_string = s;
@@ -6465,7 +6465,7 @@ get_reg_contents(int regname, int flags)
 		error = TRUE;
 	if (error)
 	{
-	    list_free(list, TRUE);
+	    list_free(list);
 	    return NULL;
 	}
 	return (char_u *)list;

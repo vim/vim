@@ -88,9 +88,12 @@ fi
 
 dnl If configure thinks we are cross compiling, there might be something
 dnl wrong with the CC or CFLAGS settings, give a useful warning message
+CROSS_COMPILING=
 if test "$cross_compiling" = yes; then
   AC_MSG_RESULT([cannot compile a simple program; if not cross compiling check CC and CFLAGS])
+  CROSS_COMPILING=1
 fi
+AC_SUBST(CROSS_COMPILING)
 
 dnl gcc-cpp has the wonderful -MM option to produce nicer dependencies.
 dnl But gcc 3.1 changed the meaning!  See near the end.

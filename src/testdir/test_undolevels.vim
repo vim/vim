@@ -41,4 +41,8 @@ func Test_global_local_undolevels()
   call assert_equal(50, &g:undolevels)
   call assert_equal(-123456, &l:undolevels)
 
+  " Drop created windows
+  set ul&
+  new
+  only!
 endfunc

@@ -368,6 +368,39 @@ channel_still_useful(channel_T *channel)
 }
 
 /*
+ * Close a channel and free all its resources.
+ */
+    static void
+channel_free_contents(channel_T *channel)
+{
+    channel_close(channel, TRUE);
+    channel_clear(channel);
+    ch_log(channel, "Freeing channel");
+}
+
+    static void
+channel_free_channel(channel_T *channel)
+{
+    if (channel->ch_next != NULL)
+	channel->ch_next->ch_prev = channel->ch_prev;
+    if (channel->ch_prev == NULL)
+	first_channel = channel->ch_next;
+    else
+	channel->ch_prev->ch_next = channel->ch_next;
+    vim_free(channel);
+}
+
+    static void
+channel_free(channel_T *channel)
+{
+    if (!in_free_unref_items)
+    {
+	channel_free_contents(channel);
+	channel_free_channel(channel);
+    }
+}
+
+/*
  * Close a channel and free all its resources if there is no further action
  * possible, there is no callback to be invoked or the associated job was
  * killed.
@@ -397,22 +430,38 @@ channel_unref(channel_T *channel)
     return FALSE;
 }
 
-/*
- * Close a channel and free all its resources.
- */
-    void
-channel_free(channel_T *channel)
+    int
+free_unused_channels_contents(int copyID, int mask)
 {
-    channel_close(channel, TRUE);
-    channel_clear(channel);
-    ch_log(channel, "Freeing channel");
-    if (channel->ch_next != NULL)
-	channel->ch_next->ch_prev = channel->ch_prev;
-    if (channel->ch_prev == NULL)
-	first_channel = channel->ch_next;
-    else
-	channel->ch_prev->ch_next = channel->ch_next;
-    vim_free(channel);
+    int		did_free = FALSE;
+    channel_T	*ch;
+
+    for (ch = first_channel; ch != NULL; ch = ch->ch_next)
+	if ((ch->ch_copyID & mask) != (copyID & mask))
+	{
+	    /* Free the channel and ordinary items it contains, but don't
+	     * recurse into Lists, Dictionaries etc. */
+	    channel_free_contents(ch);
+	    did_free = TRUE;
+	}
+    return did_free;
+}
+
+    void
+free_unused_channels(int copyID, int mask)
+{
+    channel_T	*ch;
+    channel_T	*ch_next;
+
+    for (ch = first_channel; ch != NULL; ch = ch_next)
+    {
+	ch_next = ch->ch_next;
+	if ((ch->ch_copyID & mask) != (copyID & mask))
+	{
+	    /* Free the channel struct itself. */
+	    channel_free_channel(ch);
+	}
+    }
 }
 
 #if defined(FEAT_GUI) || defined(PROTO)
@@ -858,7 +907,7 @@ channel_open_func(typval_T *argvars)
     char	*rest;
     int		port;
     jobopt_T    opt;
-    channel_T	*channel;
+    channel_T	*channel = NULL;
 
     address = get_tv_string(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN
@@ -890,11 +939,11 @@ channel_open_func(typval_T *argvars)
     opt.jo_timeout = 2000;
     if (get_job_options(&argvars[1], &opt,
 	      JO_MODE_ALL + JO_CB_ALL + JO_WAITTIME + JO_TIMEOUT_ALL) == FAIL)
-	return NULL;
+	goto theend;
     if (opt.jo_timeout < 0)
     {
 	EMSG(_(e_invarg));
-	return NULL;
+	goto theend;
     }
 
     channel = channel_open((char *)address, port, opt.jo_waittime, NULL);
@@ -903,6 +952,8 @@ channel_open_func(typval_T *argvars)
 	opt.jo_set = JO_ALL;
 	channel_set_options(channel, &opt);
     }
+theend:
+    free_job_options(&opt);
     return channel;
 }
 
@@ -2455,6 +2506,7 @@ channel_clear(channel_T *channel)
     channel_clear_one(channel, PART_SOCK);
     channel_clear_one(channel, PART_OUT);
     channel_clear_one(channel, PART_ERR);
+    /* there is no callback or queue for PART_IN */
     vim_free(channel->ch_callback);
     channel->ch_callback = NULL;
     partial_unref(channel->ch_partial);
@@ -2897,7 +2949,7 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw)
     clear_job_options(&opt);
     if (get_job_options(&argvars[1], &opt, JO_TIMEOUT + JO_PART + JO_ID)
 								      == FAIL)
-	return;
+	goto theend;
 
     channel = get_channel_arg(&argvars[0], TRUE);
     if (channel != NULL)
@@ -2930,6 +2982,9 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw)
 	    }
 	}
     }
+
+theend:
+    free_job_options(&opt);
 }
 
 # if defined(WIN32) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
@@ -3056,13 +3111,13 @@ send_common(
     channel_T	*channel;
     int		part_send;
 
+    clear_job_options(opt);
     channel = get_channel_arg(&argvars[0], TRUE);
     if (channel == NULL)
 	return NULL;
     part_send = channel_part_send(channel);
     *part_read = channel_part_read(channel);
 
-    clear_job_options(opt);
     if (get_job_options(&argvars[2], opt, JO_CALLBACK + JO_TIMEOUT) == FAIL)
 	return NULL;
 
@@ -3145,6 +3200,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	    free_tv(listtv);
 	}
     }
+    free_job_options(&opt);
 }
 
 /*
@@ -3175,6 +3231,7 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
 	    timeout = channel_get_timeout(channel, part_read);
 	rettv->vval.v_string = channel_read_block(channel, part_read, timeout);
     }
+    free_job_options(&opt);
 }
 
 # if (defined(UNIX) && !defined(HAVE_SELECT)) || defined(PROTO)
@@ -3545,10 +3602,29 @@ handle_io(typval_T *item, int part, jobopt_T *opt)
     return OK;
 }
 
+/*
+ * Clear a jobopt_T before using it.
+ */
     void
 clear_job_options(jobopt_T *opt)
 {
     vim_memset(opt, 0, sizeof(jobopt_T));
+}
+
+/*
+ * Free any members of a jobopt_T.
+ */
+    void
+free_job_options(jobopt_T *opt)
+{
+    if (opt->jo_partial != NULL)
+	partial_unref(opt->jo_partial);
+    if (opt->jo_out_partial != NULL)
+	partial_unref(opt->jo_out_partial);
+    if (opt->jo_err_partial != NULL)
+	partial_unref(opt->jo_err_partial);
+    if (opt->jo_close_partial != NULL)
+	partial_unref(opt->jo_close_partial);
 }
 
 /*
@@ -3887,7 +3963,7 @@ get_channel_arg(typval_T *tv, int check_open)
 static job_T *first_job = NULL;
 
     static void
-job_free(job_T *job)
+job_free_contents(job_T *job)
 {
     ch_log(job->jv_channel, "Freeing job");
     if (job->jv_channel != NULL)
@@ -3902,17 +3978,42 @@ job_free(job_T *job)
     }
     mch_clear_job(job);
 
+    vim_free(job->jv_stoponexit);
+    vim_free(job->jv_exit_cb);
+    partial_unref(job->jv_exit_partial);
+}
+
+    static void
+job_free_job(job_T *job)
+{
     if (job->jv_next != NULL)
 	job->jv_next->jv_prev = job->jv_prev;
     if (job->jv_prev == NULL)
 	first_job = job->jv_next;
     else
 	job->jv_prev->jv_next = job->jv_next;
-
-    vim_free(job->jv_stoponexit);
-    vim_free(job->jv_exit_cb);
-    partial_unref(job->jv_exit_partial);
     vim_free(job);
+}
+
+    static void
+job_free(job_T *job)
+{
+    if (!in_free_unref_items)
+    {
+	job_free_contents(job);
+	job_free_job(job);
+    }
+}
+
+/*
+ * Return TRUE if the job should not be freed yet.  Do not free the job when
+ * it has not ended yet and there is a "stoponexit" flag or an exit callback.
+ */
+    static int
+job_still_useful(job_T *job)
+{
+    return job->jv_status == JOB_STARTED
+		   && (job->jv_stoponexit != NULL || job->jv_exit_cb != NULL);
 }
 
     void
@@ -3922,8 +4023,7 @@ job_unref(job_T *job)
     {
 	/* Do not free the job when it has not ended yet and there is a
 	 * "stoponexit" flag or an exit callback. */
-	if (job->jv_status != JOB_STARTED
-		|| (job->jv_stoponexit == NULL && job->jv_exit_cb == NULL))
+	if (!job_still_useful(job))
 	{
 	    job_free(job);
 	}
@@ -3934,6 +4034,42 @@ job_unref(job_T *job)
 	    job->jv_channel->ch_job = NULL;
 	    channel_unref(job->jv_channel);
 	    job->jv_channel = NULL;
+	}
+    }
+}
+
+    int
+free_unused_jobs_contents(int copyID, int mask)
+{
+    int		did_free = FALSE;
+    job_T	*job;
+
+    for (job = first_job; job != NULL; job = job->jv_next)
+	if ((job->jv_copyID & mask) != (copyID & mask)
+						    && !job_still_useful(job))
+	{
+	    /* Free the channel and ordinary items it contains, but don't
+	     * recurse into Lists, Dictionaries etc. */
+	    job_free_contents(job);
+	    did_free = TRUE;
+    }
+    return did_free;
+}
+
+    void
+free_unused_jobs(int copyID, int mask)
+{
+    job_T	*job;
+    job_T	*job_next;
+
+    for (job = first_job; job != NULL; job = job_next)
+    {
+	job_next = job->jv_next;
+	if ((job->jv_copyID & mask) != (copyID & mask)
+						    && !job_still_useful(job))
+	{
+	    /* Free the job struct itself. */
+	    job_free_job(job);
 	}
     }
 }
@@ -4053,6 +4189,9 @@ job_start(typval_T *argvars)
 	return NULL;
 
     job->jv_status = JOB_FAILED;
+#ifndef USE_ARGV
+    ga_init2(&ga, (int)sizeof(char*), 20);
+#endif
 
     /* Default mode is NL. */
     clear_job_options(&opt);
@@ -4060,7 +4199,7 @@ job_start(typval_T *argvars)
     if (get_job_options(&argvars[1], &opt,
 	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL + JO_STOPONEXIT
 			   + JO_EXIT_CB + JO_OUT_IO + JO_BLOCK_WRITE) == FAIL)
-	return job;
+	goto theend;
 
     /* Check that when io is "file" that there is a file name. */
     for (part = PART_OUT; part <= PART_IN; ++part)
@@ -4070,7 +4209,7 @@ job_start(typval_T *argvars)
 		    || *opt.jo_io_name[part] == NUL))
 	{
 	    EMSG(_("E920: _io file requires _name to be set"));
-	    return job;
+	    goto theend;
 	}
 
     if ((opt.jo_set & JO_IN_IO) && opt.jo_io[PART_IN] == JIO_BUFFER)
@@ -4091,7 +4230,7 @@ job_start(typval_T *argvars)
 	else
 	    buf = buflist_find_by_name(opt.jo_io_name[PART_IN], FALSE);
 	if (buf == NULL)
-	    return job;
+	    goto theend;
 	if (buf->b_ml.ml_mfp == NULL)
 	{
 	    char_u	numbuf[NUMBUFLEN];
@@ -4105,16 +4244,12 @@ job_start(typval_T *argvars)
 	    else
 		s = opt.jo_io_name[PART_IN];
 	    EMSG2(_("E918: buffer must be loaded: %s"), s);
-	    return job;
+	    goto theend;
 	}
 	job->jv_in_buf = buf;
     }
 
     job_set_options(job, &opt);
-
-#ifndef USE_ARGV
-    ga_init2(&ga, (int)sizeof(char*), 20);
-#endif
 
     if (argvars[0].v_type == VAR_STRING)
     {
@@ -4123,11 +4258,11 @@ job_start(typval_T *argvars)
 	if (cmd == NULL || *cmd == NUL)
 	{
 	    EMSG(_(e_invarg));
-	    return job;
+	    goto theend;
 	}
 #ifdef USE_ARGV
 	if (mch_parse_cmd(cmd, FALSE, &argv, &argc) == FAIL)
-	    return job;
+	    goto theend;
 	argv[argc] = NULL;
 #endif
     }
@@ -4136,7 +4271,7 @@ job_start(typval_T *argvars)
 	    || argvars[0].vval.v_list->lv_len < 1)
     {
 	EMSG(_(e_invarg));
-	return job;
+	goto theend;
     }
     else
     {
@@ -4148,7 +4283,7 @@ job_start(typval_T *argvars)
 	/* Pass argv[] to mch_call_shell(). */
 	argv = (char **)alloc(sizeof(char *) * (l->lv_len + 1));
 	if (argv == NULL)
-	    return job;
+	    goto theend;
 #endif
 	for (li = l->lv_first; li != NULL; li = li->li_next)
 	{
@@ -4222,6 +4357,7 @@ theend:
 #else
     vim_free(ga.ga_data);
 #endif
+    free_job_options(&opt);
     return job;
 }
 

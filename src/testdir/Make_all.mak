@@ -104,7 +104,6 @@ SCRIPTS_ALL = \
 	test_listlbr.out \
 	test_mapping.out \
 	test_marks.out \
-	test_match_conceal.out \
 	test_nested_function.out \
 	test_options.out \
 	test_ruby.out \
@@ -164,7 +163,7 @@ SCRIPTS_GUI = test16.out
 
 
 # Tests using runtest.vim.vim.
-# Keep test_alot.res as the last one, sort the others.
+# Keep test_alot*.res as the last one, sort the others.
 NEW_TESTS = test_arglist.res \
 	    test_assert.res \
 	    test_backspace_opt.res \
@@ -174,6 +173,7 @@ NEW_TESTS = test_arglist.res \
 	    test_history.res \
 	    test_increment.res \
 	    test_json.res \
+	    test_matchadd_conceal.res \
 	    test_packadd.res \
 	    test_perl.res \
 	    test_quickfix.res \

@@ -1679,6 +1679,12 @@ gui_mch_init_check(void)
     }
 #endif
 
+#if GTK_CHECK_VERSION(3,10,0)
+    /* Vim currently assumes that Gtk means X11, so it cannot use native Gtk
+     * support for other backends such as Wayland. */
+    gdk_set_allowed_backends ("x11");
+#endif
+
 #ifdef FEAT_GUI_GNOME
     if (gtk_socket_id == 0)
 	using_gnome = 1;
@@ -1836,8 +1842,13 @@ gui_gtk_get_pointer_device(GtkWidget *widget)
 {
     GdkWindow * const win = gtk_widget_get_window(widget);
     GdkDisplay * const dpy = gdk_window_get_display(win);
+# if GTK_CHECK_VERSION(3,20,0)
+    GdkSeat * const seat = gdk_display_get_default_seat(dpy);
+    return gdk_seat_get_pointer(seat);
+# else
     GdkDeviceManager * const mngr = gdk_display_get_device_manager(dpy);
     return gdk_device_manager_get_client_pointer(mngr);
+# endif
 }
 
     static GdkWindow *
