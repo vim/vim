@@ -126,7 +126,7 @@ static int	qf_win_pos_update(qf_info_T *qi, int old_qf_index);
 static int	is_qf_win(win_T *win, qf_info_T *qi);
 static win_T	*qf_find_win(qf_info_T *qi);
 static buf_T	*qf_find_buf(qf_info_T *qi);
-static void	qf_update_buffer(qf_info_T *qi);
+static void	qf_update_buffer(qf_info_T *qi, int update_cursor);
 static void	qf_set_title_var(qf_info_T *qi);
 static void	qf_fill_buffer(qf_info_T *qi);
 #endif
@@ -880,7 +880,7 @@ qf_init_end:
     vim_free(fmtstr);
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    qf_update_buffer(qi, TRUE);
 #endif
 
     return retval;
@@ -2176,7 +2176,7 @@ qf_msg(qf_info_T *qi)
 	    qi->qf_curlist + 1, qi->qf_listcount,
 	    qi->qf_lists[qi->qf_curlist].qf_count);
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    qf_update_buffer(qi, TRUE);
 #endif
 }
 
@@ -2606,7 +2606,7 @@ qf_find_buf(qf_info_T *qi)
  * Find the quickfix buffer.  If it exists, update the contents.
  */
     static void
-qf_update_buffer(qf_info_T *qi)
+qf_update_buffer(qf_info_T *qi, int update_cursor)
 {
     buf_T	*buf;
     win_T	*win;
@@ -2633,7 +2633,8 @@ qf_update_buffer(qf_info_T *qi)
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
 
-	(void)qf_win_pos_update(qi, 0);
+	if (update_cursor)
+	    (void)qf_win_pos_update(qi, 0);
     }
 }
 
@@ -3675,7 +3676,7 @@ ex_vimgrep(exarg_T *eap)
     qi->qf_lists[qi->qf_curlist].qf_index = 1;
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    qf_update_buffer(qi, TRUE);
 #endif
 
 #ifdef FEAT_AUTOCMD
@@ -4115,12 +4116,16 @@ set_errorlist(
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = TRUE;
     else
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
-    qi->qf_lists[qi->qf_curlist].qf_ptr = qi->qf_lists[qi->qf_curlist].qf_start;
-    if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
-	qi->qf_lists[qi->qf_curlist].qf_index = 1;
+    if (action != 'a') {
+	qi->qf_lists[qi->qf_curlist].qf_ptr =
+	    qi->qf_lists[qi->qf_curlist].qf_start;
+	if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+	    qi->qf_lists[qi->qf_curlist].qf_index = 1;
+    }
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    /* Don't update the cursor in quickfix window when appending entries */
+    qf_update_buffer(qi, (action != 'a'));
 #endif
 
     return retval;
@@ -4427,7 +4432,7 @@ ex_helpgrep(exarg_T *eap)
 	free_string_option(save_cpo);
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    qf_update_buffer(qi, TRUE);
 #endif
 
 #ifdef FEAT_AUTOCMD
