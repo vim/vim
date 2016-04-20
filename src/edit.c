@@ -1526,7 +1526,12 @@ normalchar:
 
 #ifdef FEAT_AUTOCMD
 	/* If typed something may trigger CursorHoldI again. */
-	if (c != K_CURSORHOLD)
+	if (c != K_CURSORHOLD
+# ifdef FEAT_COMPL_FUNC
+	    /* but not in CTRL-X mode, a script can't restore the state */
+	    && ctrl_x_mode == 0
+# endif
+	       )
 	    did_cursorhold = FALSE;
 #endif
 

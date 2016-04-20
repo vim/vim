@@ -11547,6 +11547,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
     char_u	nbuf[NUMBUFLEN];
     int		typed = FALSE;
     int		execute = FALSE;
+    int		dangerous = FALSE;
     char_u	*keys_esc;
 
     /* This is not allowed in the sandbox.  If the commands would still be
@@ -11569,6 +11570,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		case 't': typed = TRUE; break;
 		case 'i': insert = TRUE; break;
 		case 'x': execute = TRUE; break;
+		case '!': dangerous = TRUE; break;
 	    }
 	}
     }
@@ -11592,9 +11594,11 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		/* Avoid a 1 second delay when the keys start Insert mode. */
 		msg_scroll = FALSE;
 
-		++ex_normal_busy;
+		if (!dangerous)
+		    ++ex_normal_busy;
 		exec_normal(TRUE);
-		--ex_normal_busy;
+		if (!dangerous)
+		    --ex_normal_busy;
 		msg_scroll |= save_msg_scroll;
 	    }
 	}
