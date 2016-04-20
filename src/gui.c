@@ -2855,6 +2855,7 @@ gui_wait_for_chars_or_timer(long wtime)
 #ifdef FEAT_TIMERS
     int	    due_time;
     long    remaining = wtime;
+    int	    tb_change_cnt = typebuf.tb_change_cnt;
 
     /* When waiting very briefly don't trigger timers. */
     if (wtime >= 0 && wtime < 10L)
@@ -2865,6 +2866,11 @@ gui_wait_for_chars_or_timer(long wtime)
 	/* Trigger timers and then get the time in wtime until the next one is
 	 * due.  Wait up to that time. */
 	due_time = check_due_timer();
+	if (typebuf.tb_change_cnt != tb_change_cnt)
+	{
+	    /* timer may have used feedkeys() */
+	    return FALSE;
+	}
 	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
 	    due_time = remaining;
 	if (gui_mch_wait_for_chars(due_time))
