@@ -1446,7 +1446,9 @@ WaitForChar(long msec)
     INPUT_RECORD    ir;
     DWORD	    cRecords;
     WCHAR	    ch, ch2;
+#ifdef FEAT_TIMERS
     int		    tb_change_cnt = typebuf.tb_change_cnt;
+#endif
 
     if (msec > 0)
 	/* Wait until the specified time has elapsed. */
