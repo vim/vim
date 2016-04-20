@@ -53,7 +53,7 @@ First a list to the bigger new features.  A comprehensive list is below.
 Asynchronous I/O support, channels ~
 
 Vim can now exchange messages with another process in the background. The
-message are received and handled while Vim is waiting for a character.  See
+messages are received and handled while Vim is waiting for a character.  See
 |channel-demo| for an example, communicating with a Python server.
 
 Closely related to channels is JSON support.  JSON is widely supported and can
