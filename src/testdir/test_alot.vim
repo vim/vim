@@ -8,6 +8,7 @@ source test_delete.vim
 source test_ex_undo.vim
 source test_expr.vim
 source test_expand.vim
+source test_expand_dllpath.vim
 source test_feedkeys.vim
 source test_fnamemodify.vim
 source test_file_perm.vim

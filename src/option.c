@@ -1766,7 +1766,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_lpl, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
 #if defined(DYNAMIC_LUA)
-    {"luadll",      NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"luadll",      NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_luadll, PV_NONE,
 			    {(char_u *)DYNAMIC_LUA_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
@@ -2012,7 +2012,7 @@ static struct vimoption options[] =
 #endif
 				(char_u *)0L} SCRIPTID_INIT},
 #if defined(DYNAMIC_PERL)
-    {"perldll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"perldll",     NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_perldll, PV_NONE,
 			    {(char_u *)DYNAMIC_PERL_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
@@ -2123,13 +2123,13 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
 #if defined(DYNAMIC_PYTHON3)
-    {"pythonthreedll",  NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"pythonthreedll",  NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_py3dll, PV_NONE,
 			    {(char_u *)DYNAMIC_PYTHON3_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
 #endif
 #if defined(DYNAMIC_PYTHON)
-    {"pythondll",   NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"pythondll",   NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_pydll, PV_NONE,
 			    {(char_u *)DYNAMIC_PYTHON_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
@@ -2208,7 +2208,7 @@ static struct vimoption options[] =
 #endif
 			    SCRIPTID_INIT},
 #if defined(DYNAMIC_RUBY)
-    {"rubydll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"rubydll",     NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_rubydll, PV_NONE,
 			    {(char_u *)DYNAMIC_RUBY_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
@@ -2592,7 +2592,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_tgst, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
 #if defined(DYNAMIC_TCL)
-    {"tcldll",      NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"tcldll",      NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_tcldll, PV_NONE,
 			    {(char_u *)DYNAMIC_TCL_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
