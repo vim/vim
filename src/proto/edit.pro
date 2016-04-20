@@ -8,6 +8,7 @@ void truncate_spaces(char_u *line);
 void backspace_until_column(int col);
 int vim_is_ctrl_x_key(int c);
 int ins_compl_add_infercase(char_u *str, int len, int icase, char_u *fname, int dir, int flags);
+void completeopt_was_set(void);
 void set_completion(colnr_T startcol, list_T *list);
 void ins_compl_show_pum(void);
 char_u *find_word_start(char_u *ptr);

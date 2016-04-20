@@ -2761,6 +2761,21 @@ ins_compl_make_cyclic(void)
 }
 
 /*
+ * Set variables that store noselect and noinsert behavior from the
+ * 'completeopt' value.
+ */
+    void
+completeopt_was_set()
+{
+    compl_no_insert = FALSE;
+    compl_no_select = FALSE;
+    if (strstr((char *)p_cot, "noselect") != NULL)
+	compl_no_select = TRUE;
+    if (strstr((char *)p_cot, "noinsert") != NULL)
+	compl_no_insert = TRUE;
+}
+
+/*
  * Start completion for the complete() function.
  * "startcol" is where the matched text starts (1 is first column).
  * "list" is the list of matches.
@@ -3674,13 +3689,6 @@ ins_compl_prep(int c)
 	compl_used_match = TRUE;
 
     }
-
-    compl_no_insert = FALSE;
-    compl_no_select = FALSE;
-    if (strstr((char *)p_cot, "noselect") != NULL)
-	compl_no_select = TRUE;
-    if (strstr((char *)p_cot, "noinsert") != NULL)
-	compl_no_insert = TRUE;
 
     if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET)
     {
