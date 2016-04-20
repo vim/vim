@@ -74,3 +74,12 @@ func Test_strcharpart()
 
   call assert_equal('a', strcharpart('axb', -1, 2))
 endfunc
+
+func Test_getreg_empty_list()
+  call assert_equal('', getreg('x'))
+  call assert_equal([], getreg('x', 1, 1))
+  let x = getreg('x', 1, 1)
+  let y = x
+  call add(x, 'foo')
+  call assert_equal(['foo'], y)
+endfunc
