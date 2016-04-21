@@ -4594,7 +4594,6 @@ current_search(
 	orig_pos = curwin->w_cursor;
 
 	pos = curwin->w_cursor;
-	start_pos = VIsual;
 
 	/* make sure, searching further will extend the match */
 	if (VIsual_active)
@@ -4606,7 +4605,7 @@ current_search(
 	}
     }
     else
-	orig_pos = pos = start_pos = curwin->w_cursor;
+	orig_pos = pos = curwin->w_cursor;
 
     /* Is the pattern is zero-width? */
     one_char = is_one_char(spats[last_idx].pat, TRUE);
