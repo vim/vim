@@ -5138,7 +5138,8 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
     if (pid == 0)
     {
-	int		null_fd = -1;
+	int	null_fd = -1;
+	int	stderr_works = TRUE;
 
 	/* child */
 	reset_signals();		/* handle signals normally */
@@ -5175,6 +5176,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	{
 	    close(2);
 	    ignored = dup(null_fd);
+	    stderr_works = FALSE;
 	}
 	else if (use_out_for_err)
 	{
@@ -5210,7 +5212,8 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	/* See above for type of argv. */
 	execvp(argv[0], argv);
 
-	// perror("executing job failed");
+	if (stderr_works)
+	    perror("executing job failed");
 	_exit(EXEC_FAILED);	    /* exec failed, return failure code */
     }
 
