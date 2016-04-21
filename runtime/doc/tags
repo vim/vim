@@ -3551,6 +3551,7 @@ CTRL-]	tagsrch.txt	/*CTRL-]*
 CTRL-^	editing.txt	/*CTRL-^*
 CTRL-{char}	intro.txt	/*CTRL-{char}*
 Channel	eval.txt	/*Channel*
+Channels	eval.txt	/*Channels*
 Chinese	mbyte.txt	/*Chinese*
 Cmd-event	autocmd.txt	/*Cmd-event*
 CmdUndefined	autocmd.txt	/*CmdUndefined*
@@ -3769,7 +3770,6 @@ E273	if_ruby.txt	/*E273*
 E277	remote.txt	/*E277*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
-E281	if_tcl.txt	/*E281*
 E282	starting.txt	/*E282*
 E283	motion.txt	/*E283*
 E284	mbyte.txt	/*E284*
@@ -3854,7 +3854,6 @@ E358	options.txt	/*E358*
 E359	term.txt	/*E359*
 E36	windows.txt	/*E36*
 E360	various.txt	/*E360*
-E362	term.txt	/*E362*
 E363	options.txt	/*E363*
 E364	eval.txt	/*E364*
 E365	print.txt	/*E365*
@@ -4062,7 +4061,6 @@ E556	tagsrch.txt	/*E556*
 E557	term.txt	/*E557*
 E558	term.txt	/*E558*
 E559	term.txt	/*E559*
-E56	pattern.txt	/*E56*
 E560	if_cscop.txt	/*E560*
 E561	if_cscop.txt	/*E561*
 E562	if_cscop.txt	/*E562*
@@ -4071,8 +4069,6 @@ E564	if_cscop.txt	/*E564*
 E566	if_cscop.txt	/*E566*
 E567	if_cscop.txt	/*E567*
 E568	if_cscop.txt	/*E568*
-E569	if_cscop.txt	/*E569*
-E57	pattern.txt	/*E57*
 E570	message.txt	/*E570*
 E571	if_tcl.txt	/*E571*
 E572	if_tcl.txt	/*E572*
@@ -4081,9 +4077,7 @@ E574	starting.txt	/*E574*
 E575	starting.txt	/*E575*
 E576	starting.txt	/*E576*
 E577	starting.txt	/*E577*
-E578	editing.txt	/*E578*
 E579	eval.txt	/*E579*
-E58	pattern.txt	/*E58*
 E580	eval.txt	/*E580*
 E581	eval.txt	/*E581*
 E582	eval.txt	/*E582*
@@ -4162,8 +4156,6 @@ E65	pattern.txt	/*E65*
 E650	netbeans.txt	/*E650*
 E651	netbeans.txt	/*E651*
 E652	netbeans.txt	/*E652*
-E653	netbeans.txt	/*E653*
-E654	netbeans.txt	/*E654*
 E655	eval.txt	/*E655*
 E656	netbeans.txt	/*E656*
 E657	netbeans.txt	/*E657*
@@ -4206,7 +4198,6 @@ E69	pattern.txt	/*E69*
 E690	eval.txt	/*E690*
 E691	eval.txt	/*E691*
 E692	eval.txt	/*E692*
-E693	eval.txt	/*E693*
 E694	eval.txt	/*E694*
 E695	eval.txt	/*E695*
 E696	eval.txt	/*E696*
@@ -4387,9 +4378,7 @@ E855	autocmd.txt	/*E855*
 E858	eval.txt	/*E858*
 E859	eval.txt	/*E859*
 E86	windows.txt	/*E86*
-E860	eval.txt	/*E860*
 E862	eval.txt	/*E862*
-E863	if_pyth.txt	/*E863*
 E864	pattern.txt	/*E864*
 E865	pattern.txt	/*E865*
 E866	pattern.txt	/*E866*
@@ -4417,7 +4406,6 @@ E885	sign.txt	/*E885*
 E886	starting.txt	/*E886*
 E887	if_pyth.txt	/*E887*
 E888	pattern.txt	/*E888*
-E889	map.txt	/*E889*
 E89	message.txt	/*E89*
 E890	syntax.txt	/*E890*
 E891	eval.txt	/*E891*
@@ -4425,11 +4413,8 @@ E892	eval.txt	/*E892*
 E893	eval.txt	/*E893*
 E894	eval.txt	/*E894*
 E895	if_mzsch.txt	/*E895*
-E896	channel.txt	/*E896*
 E898	channel.txt	/*E898*
-E899	channel.txt	/*E899*
 E90	message.txt	/*E90*
-E900	channel.txt	/*E900*
 E901	channel.txt	/*E901*
 E902	channel.txt	/*E902*
 E903	channel.txt	/*E903*
@@ -4527,6 +4512,7 @@ InsertLeave	autocmd.txt	/*InsertLeave*
 J	change.txt	/*J*
 Japanese	mbyte.txt	/*Japanese*
 Job	eval.txt	/*Job*
+Jobs	eval.txt	/*Jobs*
 K	various.txt	/*K*
 KDE	gui_x11.txt	/*KDE*
 KVim	gui_x11.txt	/*KVim*
@@ -6356,6 +6342,7 @@ g`	motion.txt	/*g`*
 g`a	motion.txt	/*g`a*
 ga	various.txt	/*ga*
 garbagecollect()	eval.txt	/*garbagecollect()*
+garbagecollect_for_testing()	eval.txt	/*garbagecollect_for_testing()*
 gd	pattern.txt	/*gd*
 gdb	debug.txt	/*gdb*
 ge	motion.txt	/*ge*
@@ -8260,11 +8247,13 @@ statusmsg-variable	eval.txt	/*statusmsg-variable*
 str2float()	eval.txt	/*str2float()*
 str2nr()	eval.txt	/*str2nr()*
 strcasestr()	eval.txt	/*strcasestr()*
+strcharpart()	eval.txt	/*strcharpart()*
 strchars()	eval.txt	/*strchars()*
 strchr()	eval.txt	/*strchr()*
 strcspn()	eval.txt	/*strcspn()*
 strdisplaywidth()	eval.txt	/*strdisplaywidth()*
 strftime()	eval.txt	/*strftime()*
+strgetchar()	eval.txt	/*strgetchar()*
 stridx()	eval.txt	/*stridx()*
 string	eval.txt	/*string*
 string()	eval.txt	/*string()*
@@ -8609,6 +8598,7 @@ terminal-options	term.txt	/*terminal-options*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*
+testing-variable	eval.txt	/*testing-variable*
 tex-cchar	syntax.txt	/*tex-cchar*
 tex-cole	syntax.txt	/*tex-cole*
 tex-conceal	syntax.txt	/*tex-conceal*
@@ -8805,6 +8795,7 @@ v:swapchoice	eval.txt	/*v:swapchoice*
 v:swapcommand	eval.txt	/*v:swapcommand*
 v:swapname	eval.txt	/*v:swapname*
 v:termresponse	eval.txt	/*v:termresponse*
+v:testing	eval.txt	/*v:testing*
 v:this_session	eval.txt	/*v:this_session*
 v:throwpoint	eval.txt	/*v:throwpoint*
 v:true	eval.txt	/*v:true*

@@ -200,10 +200,10 @@ Note that a channel is closed in three stages:
 When the channel can't be opened you will get an error message.  There is a
 difference between MS-Windows and Unix: On Unix when the port doesn't exist
 ch_open() fails quickly.  On MS-Windows "waittime" applies.
-*E898* *E899* *E900* *E901* *E902*
+*E898* *E901* *E902*
 
 If there is an error reading or writing a channel it will be closed.
-*E896* *E630* *E631* 
+*E630* *E631* 
 
 ==============================================================================
 4. Using a JSON or JS channel					*channel-use*

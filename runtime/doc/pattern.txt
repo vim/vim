@@ -576,7 +576,7 @@ An atom can be followed by an indication of how many times the atom can be
 matched and in what way.  This is called a multi.  See |/multi| for an
 overview.
 
-						*/star* */\star* *E56*
+							*/star* */\star*
 *	(use \* when 'magic' is not set)
 	Matches 0 or more of the preceding atom, as many as possible.
 	Example  'nomagic'	matches ~
@@ -596,7 +596,7 @@ overview.
 	the end of the file and then tries matching "END", backing up one
 	character at a time.
 
-							*/\+* *E57*
+							*/\+*
 \+	Matches 1 or more of the preceding atom, as many as possible. {not in
 	Vi}
 	Example		matches ~
@@ -612,7 +612,7 @@ overview.
 \?	Just like \=.  Cannot be used when searching backwards with the "?"
 	command. {not in Vi}
 
-					*/\{* *E58* *E60* *E554* *E870*
+					*/\{* *E60* *E554* *E870*
 \{n,m}	Matches n to m of the preceding atom, as many as possible
 \{n}	Matches n of the preceding atom
 \{n,}	Matches at least n of the preceding atom, as many as possible

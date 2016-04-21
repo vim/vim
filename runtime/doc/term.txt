@@ -542,7 +542,7 @@ correct values.
 
 One command can be used to set the screen size:
 
-						*:mod* *:mode* *E359* *E362*
+						*:mod* *:mode* *E359*
 :mod[e] [mode]
 
 Without argument this only detects the screen size and redraws the screen.
