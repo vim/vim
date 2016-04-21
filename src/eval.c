@@ -13178,7 +13178,7 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_list = (list_T *)get_reg_contents(regname,
 				      (arg2 ? GREG_EXPR_SRC : 0) | GREG_LIST);
 	if (rettv->vval.v_list == NULL)
-	    rettv_list_alloc(rettv);
+	    (void)rettv_list_alloc(rettv);
 	else
 	    ++rettv->vval.v_list->lv_refcount;
     }
