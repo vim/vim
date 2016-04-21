@@ -1926,6 +1926,15 @@ if test "$enable_cscope" = "yes"; then
   AC_DEFINE(FEAT_CSCOPE)
 fi
 
+AC_MSG_CHECKING(--enable-termtruecolor argument)
+AC_ARG_ENABLE(termtruecolor,
+	[  --enable-termtruecolor      Include support for 24-bit colors in ISO-8613-3 compatible terminals], ,
+	[enable_termtruecolor="no"])
+AC_MSG_RESULT($enable_termtruecolor)
+if test "$enable_termtruecolor" = "yes"; then
+  AC_DEFINE(FEAT_TERMTRUECOLOR)
+fi
+
 AC_MSG_CHECKING(--enable-workshop argument)
 AC_ARG_ENABLE(workshop,
 	[  --enable-workshop       Include Sun Visual Workshop support.], ,

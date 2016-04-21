@@ -164,7 +164,7 @@ parse_printoptions(void)
 
 #if (defined(FEAT_MBYTE) && defined(FEAT_POSTSCRIPT)) || defined(PROTO)
 /*
- * Parse 'printoptions' and set the flags in "printer_opts".
+ * Parse 'printmbfont' and set the flags in "mbfont_opts".
  * Returns an error message or NULL;
  */
     char_u *
@@ -307,8 +307,8 @@ prt_get_attr(
     pattr->underline = (highlight_has_attr(hl_id, HL_UNDERLINE, modec) != NULL);
     pattr->undercurl = (highlight_has_attr(hl_id, HL_UNDERCURL, modec) != NULL);
 
-# ifdef FEAT_GUI
-    if (gui.in_use)
+# if defined(FEAT_GUI) || defined(FEAT_TERMTRUECOLOR)
+    if (USE_24BIT)
     {
 	bg_color = highlight_gui_color_rgb(hl_id, FALSE);
 	if (bg_color == PRCOLOR_BLACK)

@@ -362,6 +362,9 @@
 /* Define for linking via dlopen() or LoadLibrary() */
 #undef DYNAMIC_TCL
 
+/* Define if you want 24-bit colors in ISO-8613-3 compatible terminals. */
+#undef FEAT_TERMTRUECOLOR
+
 /* Define if you want to add support for ACL */
 #undef HAVE_POSIX_ACL
 #undef HAVE_SOLARIS_ZFS_ACL

@@ -424,6 +424,7 @@ m  *+tcl*		Tcl interface |tcl|
 m  *+tcl/dyn*		Tcl interface |tcl-dynamic| |/dyn|
    *+terminfo*		uses |terminfo| instead of termcap
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
+m  *+termtruecolor*	24-bit color in xterm-compatible terminals support
 N  *+textobjects*	|text-objects| selection
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+timers*		the |timer_start()| function

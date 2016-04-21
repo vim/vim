@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.4.  Last change: 2015 Nov 24
+*term.txt*      For Vim version 7.4.  Last change: 2016 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -303,6 +303,10 @@ Added by Vim (there are no standard codes for these):
 		see |'ambiwidth'|
 	t_RB	request terminal background color		*t_RB* *'t_RB'*
 		see |'ambiwidth'|
+	t_8f	set foreground color (R, G, B)			*t_8f* *'t_8f'*
+		|xterm-true-color|
+	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
+		|xterm-true-color|
 
 KEY CODES
 Note: Use the <> form if possible
@@ -418,6 +422,22 @@ produce different codes, depending on the mode it is in (8-bit, VT102,
 VT220, etc.).  The result is that codes like <xF1> are no longer needed.
 Note: This is only done on startup.  If the xterm options are changed after
 Vim has started, the escape sequences may not be recognized anymore.
+
+							*xterm-true-color*
+Vim supports using true colors in the terminal (taken from |highlight-guifg|
+and |highlight-guibg|), given that terminal supports this. To make this 
+work, 'guicolors' option needs to be set.
+
+Sometimes setting 'guicolors' is not enough and one has to set the |t_8f| and
+|t_8b| options explicitly. Default values of these options are
+`^[[38;2;%lu;%lu;%lum` and `^[[48;2;%lu;%lu;%lum` (replace `^[` with real
+escape) respectively, but it is only set when `$TERM` is `xterm`. Some
+terminals accept the same sequences, but with all semicolons replaced by
+colons (this is actually more compatible, but less widely supported). These
+options contain printf strings, with |printf()| (actually, its C equivalent
+hence `l` modifier) invoked with the t_ option value and three unsigned long
+integers that may have any value between 0 and 255 (inclusive) representing
+red, green and blue colors respectively.
 
 							*xterm-resize*
 Window resizing with xterm only works if the allowWindowOps resource is

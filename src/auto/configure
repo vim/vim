@@ -810,6 +810,7 @@ with_tclsh
 enable_rubyinterp
 with_ruby_command
 enable_cscope
+enable_termtruecolor
 enable_workshop
 enable_netbeans
 enable_channel
@@ -1476,6 +1477,7 @@ Optional Features:
   --enable-tclinterp=OPTS      Include Tcl interpreter. default=no OPTS=no/yes/dynamic
   --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
   --enable-cscope         Include cscope interface.
+  --enable-termtruecolor      Include support for 24-bit colors in ISO-8613-3 compatible terminals
   --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
   --disable-channel      Disable process communication support.
@@ -7213,6 +7215,22 @@ fi
 $as_echo "$enable_cscope" >&6; }
 if test "$enable_cscope" = "yes"; then
   $as_echo "#define FEAT_CSCOPE 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-termtruecolor argument" >&5
+$as_echo_n "checking --enable-termtruecolor argument... " >&6; }
+# Check whether --enable-termtruecolor was given.
+if test "${enable_termtruecolor+set}" = set; then :
+  enableval=$enable_termtruecolor;
+else
+  enable_termtruecolor="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_termtruecolor" >&5
+$as_echo "$enable_termtruecolor" >&6; }
+if test "$enable_termtruecolor" = "yes"; then
+  $as_echo "#define FEAT_TERMTRUECOLOR 1" >>confdefs.h
 
 fi
 

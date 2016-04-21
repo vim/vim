@@ -77,6 +77,9 @@ struct builtin_term
 static struct builtin_term *find_builtin_term(char_u *name);
 static void parse_builtin_tcap(char_u *s);
 static void term_color(char_u *s, int n);
+#ifdef FEAT_TERMTRUECOLOR
+static void term_rgb_color(char_u *s, long_u rgb);
+#endif
 static void gather_termleader(void);
 #ifdef FEAT_TERMRESPONSE
 static void req_codes_from_term(void);
@@ -382,9 +385,9 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CRI,	"\033[%dC"},
 #  endif
-#if defined(BEOS_DR8)
+#  if defined(BEOS_DR8)
     {(int)KS_DB,	""},		/* hack! see screen.c */
-#endif
+#  endif
 
     {K_UP,		"\033[A"},
     {K_DOWN,		"\033[B"},
@@ -790,8 +793,10 @@ static struct builtin_term builtin_termcaps[] =
 #  endif
 # endif
 
-# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS) || defined(__EMX__)
+# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS) || defined(__EMX__) || defined(FEAT_TERMTRUECOLOR)
     {(int)KS_NAME,	"xterm"},
+# endif
+# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS) || defined(__EMX__)
     {(int)KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
     {(int)KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
 #  ifdef TERMINFO
@@ -938,6 +943,10 @@ static struct builtin_term builtin_termcaps[] =
     {TERMCAP2KEY('F', 'P'), IF_EB("\033[56;*~", ESC_STR "[56;*~")}, /* F35 */
     {TERMCAP2KEY('F', 'Q'), IF_EB("\033[57;*~", ESC_STR "[57;*~")}, /* F36 */
     {TERMCAP2KEY('F', 'R'), IF_EB("\033[58;*~", ESC_STR "[58;*~")}, /* F37 */
+# endif
+# ifdef FEAT_TERMTRUECOLOR
+    {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
+    {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
 # endif
 
 # if defined(UNIX) || defined(ALL_BUILTIN_TCAPS)
@@ -1257,6 +1266,171 @@ static struct builtin_term builtin_termcaps[] =
 
 };	/* end of builtin_termcaps */
 
+#if defined(FEAT_TERMTRUECOLOR) || defined(PROTO)
+# define RGB(r, g, b) ((r<<16) | (g<<8) | (b))
+struct rgbcolor_table_S {
+    char_u	*color_name;
+    guicolor_T	 color;
+};
+static struct rgbcolor_table_S rgb_table[] = {
+	{(char_u *)"black",	RGB(0x00, 0x00, 0x00)},
+	{(char_u *)"blue",	RGB(0x00, 0x00, 0xD4)},
+	{(char_u *)"brown",	RGB(0x80, 0x40, 0x40)},
+	{(char_u *)"cyan",	RGB(0x02, 0xAB, 0xEA)},
+	{(char_u *)"darkblue",	RGB(0x00, 0x00, 0x80)},
+	{(char_u *)"darkcyan",	RGB(0x00, 0x80, 0x80)},
+	{(char_u *)"darkgray",	RGB(0x80, 0x80, 0x80)},
+	{(char_u *)"darkgreen",	RGB(0x00, 0x80, 0x00)},
+	{(char_u *)"darkgrey",	RGB(0x80, 0x80, 0x80)},
+	{(char_u *)"darkmagenta",	RGB(0x80, 0x00, 0x80)},
+	{(char_u *)"darkred",	RGB(0x80, 0x00, 0x00)},
+	{(char_u *)"darkyellow",	RGB(0xBB, 0xBB, 0x00)},
+	{(char_u *)"gray",	RGB(0xC0, 0xC0, 0xC0)},
+	{(char_u *)"gray10",	RGB(0x1A, 0x1A, 0x1A)},
+	{(char_u *)"gray20",	RGB(0x33, 0x33, 0x33)},
+	{(char_u *)"gray30",	RGB(0x4D, 0x4D, 0x4D)},
+	{(char_u *)"gray40",	RGB(0x66, 0x66, 0x66)},
+	{(char_u *)"gray50",	RGB(0x7F, 0x7F, 0x7F)},
+	{(char_u *)"gray60",	RGB(0x99, 0x99, 0x99)},
+	{(char_u *)"gray70",	RGB(0xB3, 0xB3, 0xB3)},
+	{(char_u *)"gray80",	RGB(0xCC, 0xCC, 0xCC)},
+	{(char_u *)"gray90",	RGB(0xE5, 0xE5, 0xE5)},
+	{(char_u *)"green",	RGB(0x00, 0x64, 0x11)},
+	{(char_u *)"grey",	RGB(0xC0, 0xC0, 0xC0)},
+	{(char_u *)"grey10",	RGB(0x1A, 0x1A, 0x1A)},
+	{(char_u *)"grey20",	RGB(0x33, 0x33, 0x33)},
+	{(char_u *)"grey30",	RGB(0x4D, 0x4D, 0x4D)},
+	{(char_u *)"grey40",	RGB(0x66, 0x66, 0x66)},
+	{(char_u *)"grey50",	RGB(0x7F, 0x7F, 0x7F)},
+	{(char_u *)"grey60",	RGB(0x99, 0x99, 0x99)},
+	{(char_u *)"grey70",	RGB(0xB3, 0xB3, 0xB3)},
+	{(char_u *)"grey80",	RGB(0xCC, 0xCC, 0xCC)},
+	{(char_u *)"grey90",	RGB(0xE5, 0xE5, 0xE5)},
+	{(char_u *)"lightblue",	RGB(0xA0, 0xA0, 0xFF)},
+	{(char_u *)"lightcyan",	RGB(0xA0, 0xFF, 0xFF)},
+	{(char_u *)"lightgray",	RGB(0xE0, 0xE0, 0xE0)},
+	{(char_u *)"lightgreen",	RGB(0xA0, 0xFF, 0xA0)},
+	{(char_u *)"lightgrey",	RGB(0xE0, 0xE0, 0xE0)},
+	{(char_u *)"lightmagenta",RGB(0xF0, 0xA0, 0xF0)},
+	{(char_u *)"lightred",	RGB(0xFF, 0xA0, 0xA0)},
+	{(char_u *)"lightyellow",	RGB(0xFF, 0xFF, 0xA0)},
+	{(char_u *)"magenta",	RGB(0xF2, 0x08, 0x84)},
+	{(char_u *)"orange",	RGB(0xFC, 0x80, 0x00)},
+	{(char_u *)"purple",	RGB(0xA0, 0x20, 0xF0)},
+	{(char_u *)"red",		RGB(0xDD, 0x08, 0x06)},
+	{(char_u *)"seagreen",	RGB(0x2E, 0x8B, 0x57)},
+	{(char_u *)"slateblue",	RGB(0x6A, 0x5A, 0xCD)},
+	{(char_u *)"violet",	RGB(0x8D, 0x38, 0xC9)},
+	{(char_u *)"white",	RGB(0xFF, 0xFF, 0xFF)},
+	{(char_u *)"yellow",	RGB(0xFC, 0xF3, 0x05)},
+};
+
+    static int
+hex_digit(int c)
+{
+    if (isdigit(c))
+	return c - '0';
+    c = TOLOWER_ASC(c);
+    if (c >= 'a' && c <= 'f')
+	return c - 'a' + 10;
+    return 0x1ffffff;
+}
+
+    guicolor_T
+termtrue_mch_get_color(char_u *name)
+{
+    guicolor_T	color;
+    int		i;
+
+    if (*name == '#' && strlen((char *) name) == 7)
+    {
+	color = RGB(((hex_digit(name[1])<<4) + hex_digit(name[2])),
+	            ((hex_digit(name[3])<<4) + hex_digit(name[4])),
+	            ((hex_digit(name[5])<<4) + hex_digit(name[6])));
+	if (color > 0xffffff)
+	    return INVALCOLOR;
+	return color;
+    }
+    else
+    {
+	/* Check if the name is one of the colors we know */
+	for (i = 0; i < sizeof(rgb_table) / sizeof(rgb_table[0]); i++)
+	    if (STRICMP(name, rgb_table[i].color_name) == 0)
+		return rgb_table[i].color;
+    }
+
+    /*
+     * Last attempt. Look in the file "$VIM/rgb.txt".
+     */
+    {
+#define LINE_LEN 100
+	FILE	*fd;
+	char	line[LINE_LEN];
+	char_u	*fname;
+	int	r, g, b;
+
+	fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
+	if (fname == NULL)
+	    return INVALCOLOR;
+
+	fd = fopen((char *)fname, "rt");
+	vim_free(fname);
+	if (fd == NULL)
+	    return INVALCOLOR;
+
+	while (!feof(fd))
+	{
+	    int		len;
+	    int		pos;
+	    char	*color;
+
+	    fgets(line, LINE_LEN, fd);
+	    len = strlen(line);
+
+	    if (len <= 1 || line[len-1] != '\n')
+		continue;
+
+	    line[len-1] = '\0';
+
+	    i = sscanf(line, "%d %d %d %n", &r, &g, &b, &pos);
+	    if (i != 3)
+		continue;
+
+	    color = line + pos;
+
+	    if (STRICMP(color, name) == 0)
+	    {
+		fclose(fd);
+		return (guicolor_T) RGB(r, g, b);
+	    }
+	}
+	fclose(fd);
+    }
+
+    return INVALCOLOR;
+}
+
+    guicolor_T
+termtrue_get_color(char_u *name)
+{
+    guicolor_T	t;
+
+    if (*name == NUL)
+	return INVALCOLOR;
+    t = termtrue_mch_get_color(name);
+
+    if (t == INVALCOLOR)
+	EMSG2(_("E254: Cannot allocate color %s"), name);
+    return t;
+}
+
+    long_u
+termtrue_mch_get_rgb(guicolor_T color)
+{
+    return (long_u) color;
+}
+#endif
+
 /*
  * DEFAULT_TERM is used, when no terminal is specified with -T option or $TERM.
  */
@@ -1512,6 +1686,7 @@ set_termname(char_u *term)
 				{KS_CWP, "WP"}, {KS_CWS, "WS"},
 				{KS_CSI, "SI"}, {KS_CEI, "EI"},
 				{KS_U7, "u7"}, {KS_RBG, "RB"},
+				{KS_8F, "8f"}, {KS_8B, "8b"},
 				{(enum SpecialKey)0, NULL}
 			    };
 
@@ -2607,6 +2782,33 @@ term_color(char_u *s, int n)
     else
 	OUT_STR(tgoto((char *)s, 0, n));
 }
+
+#if defined(FEAT_TERMTRUECOLOR) || defined(PROTO)
+    void
+term_fg_rgb_color(long_u rgb)
+{
+    term_rgb_color(T_8F, rgb);
+}
+
+    void
+term_bg_rgb_color(long_u rgb)
+{
+    term_rgb_color(T_8B, rgb);
+}
+
+#define RED(rgb)   ((rgb>>16)&0xFF)
+#define GREEN(rgb) ((rgb>> 8)&0xFF)
+#define BLUE(rgb)  ((rgb    )&0xFF)
+
+    static void
+term_rgb_color(char_u *s, long_u rgb)
+{
+    char	buf[7+3*3+2+1+1];
+
+    sprintf(buf, (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
+    OUT_STR(buf);
+}
+#endif
 
 #if (defined(FEAT_TITLE) && (defined(UNIX) || defined(VMS) \
 	|| defined(MACOS_X))) || defined(PROTO)
