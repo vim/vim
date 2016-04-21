@@ -182,6 +182,12 @@ This includes the IDE and the debugger.
 To set the environment execute the msvc2008.bat script.  You can then build
 Vim with Make_mvc.mak.
 
+You may find that you have to set the variable SDK_INCLUDE_DIR in order for
+Make_mvc.mak to work. For example, on Windows 10, installation of mscv puts  
+include files in the following directory:
+
+C:\Program Files\Microsoft SDKs\Windows\v6.0A\Include
+
 For building 64 bit binaries you also need to install the SDK:
 "Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1"
 You don't need the examples and documentation.
