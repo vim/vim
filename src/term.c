@@ -1272,6 +1272,7 @@ struct rgbcolor_table_S {
     char_u	*color_name;
     guicolor_T	 color;
 };
+
 static struct rgbcolor_table_S rgb_table[] = {
 	{(char_u *)"black",	RGB(0x00, 0x00, 0x00)},
 	{(char_u *)"blue",	RGB(0x00, 0x00, 0xD4)},
@@ -1354,7 +1355,7 @@ termtrue_mch_get_color(char_u *name)
     else
     {
 	/* Check if the name is one of the colors we know */
-	for (i = 0; i < sizeof(rgb_table) / sizeof(rgb_table[0]); i++)
+	for (i = 0; i < (int)(sizeof(rgb_table) / sizeof(rgb_table[0])); i++)
 	    if (STRICMP(name, rgb_table[i].color_name) == 0)
 		return rgb_table[i].color;
     }
@@ -1384,7 +1385,7 @@ termtrue_mch_get_color(char_u *name)
 	    int		pos;
 	    char	*color;
 
-	    fgets(line, LINE_LEN, fd);
+	    ignored = fgets(line, LINE_LEN, fd);
 	    len = strlen(line);
 
 	    if (len <= 1 || line[len-1] != '\n')
@@ -2803,9 +2804,11 @@ term_bg_rgb_color(long_u rgb)
     static void
 term_rgb_color(char_u *s, long_u rgb)
 {
-    char	buf[7+3*3+2+1+1];
+#define MAX_COLOR_STR_LEN 100
+    char	buf[MAX_COLOR_STR_LEN];
 
-    sprintf(buf, (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
+    vim_snprintf(buf, MAX_KEY_CODE_LEN,
+				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
     OUT_STR(buf);
 }
 #endif

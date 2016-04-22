@@ -9545,8 +9545,8 @@ highlight_gui_started(void)
     static void
 gui_do_one_color(
     int		idx,
-    int		do_menu,	/* TRUE: might set the menu font */
-    int		do_tooltip)	/* TRUE: might set the tooltip font */
+    int		do_menu UNUSED,	   /* TRUE: might set the menu font */
+    int		do_tooltip UNUSED) /* TRUE: might set the tooltip font */
 {
     int		didit = FALSE;
 
