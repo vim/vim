@@ -793,10 +793,8 @@ static struct builtin_term builtin_termcaps[] =
 #  endif
 # endif
 
-# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS) || defined(__EMX__) || defined(FEAT_TERMTRUECOLOR)
-    {(int)KS_NAME,	"xterm"},
-# endif
 # if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS) || defined(__EMX__)
+    {(int)KS_NAME,	"xterm"},
     {(int)KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
     {(int)KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
 #  ifdef TERMINFO
@@ -861,6 +859,11 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CRV,	IF_EB("\033[>c", ESC_STR "[>c")},
     {(int)KS_RBG,	IF_EB("\033]11;?\007", ESC_STR "]11;?\007")},
     {(int)KS_U7,	IF_EB("\033[6n", ESC_STR "[6n")},
+#  ifdef FEAT_TERMTRUECOLOR
+    /* These are printf strings, not terminal codes. */
+    {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
+    {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
+#  endif
 
     {K_UP,		IF_EB("\033O*A", ESC_STR "O*A")},
     {K_DOWN,		IF_EB("\033O*B", ESC_STR "O*B")},
@@ -943,10 +946,6 @@ static struct builtin_term builtin_termcaps[] =
     {TERMCAP2KEY('F', 'P'), IF_EB("\033[56;*~", ESC_STR "[56;*~")}, /* F35 */
     {TERMCAP2KEY('F', 'Q'), IF_EB("\033[57;*~", ESC_STR "[57;*~")}, /* F36 */
     {TERMCAP2KEY('F', 'R'), IF_EB("\033[58;*~", ESC_STR "[58;*~")}, /* F37 */
-# endif
-# ifdef FEAT_TERMTRUECOLOR
-    {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
-    {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
 # endif
 
 # if defined(UNIX) || defined(ALL_BUILTIN_TCAPS)
