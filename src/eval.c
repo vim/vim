@@ -98,7 +98,9 @@ static char *e_listarg = N_("E686: Argument of %s must be a List");
 static char *e_listdictarg = N_("E712: Argument of %s must be a List or Dictionary");
 static char *e_listreq = N_("E714: List required");
 static char *e_dictreq = N_("E715: Dictionary required");
+#ifdef FEAT_QUICKFIX
 static char *e_stringreq = N_("E928: String required");
+#endif
 static char *e_toomanyarg = N_("E118: Too many arguments for function: %s");
 static char *e_dictkey = N_("E716: Key not present in Dictionary: %s");
 static char *e_funcexts = N_("E122: Function %s already exists, add ! to replace it");
