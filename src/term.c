@@ -1383,9 +1383,8 @@ termtrue_mch_get_color(char_u *name)
 	{
 	    int		len;
 	    int		pos;
-	    char	*color;
 
-	    ignored = fgets(line, LINE_LEN, fd);
+	    (void)fgets(line, LINE_LEN, fd);
 	    len = strlen(line);
 
 	    if (len <= 1 || line[len-1] != '\n')
@@ -1397,9 +1396,7 @@ termtrue_mch_get_color(char_u *name)
 	    if (i != 3)
 		continue;
 
-	    color = line + pos;
-
-	    if (STRICMP(color, name) == 0)
+	    if (STRICMP(line + pos, name) == 0)
 	    {
 		fclose(fd);
 		return (guicolor_T) RGB(r, g, b);
