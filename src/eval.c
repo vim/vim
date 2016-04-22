@@ -10408,6 +10408,8 @@ f_ch_logfile(typval_T *argvars, typval_T *rettv UNUSED)
 f_ch_open(typval_T *argvars, typval_T *rettv)
 {
     rettv->v_type = VAR_CHANNEL;
+    if (check_restricted() || check_secure())
+	return;
     rettv->vval.v_channel = channel_open_func(argvars);
 }
 
@@ -15078,6 +15080,8 @@ f_job_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 f_job_start(typval_T *argvars, typval_T *rettv)
 {
     rettv->v_type = VAR_JOB;
+    if (check_restricted() || check_secure())
+	return;
     rettv->vval.v_job = job_start(argvars);
 }
 
@@ -16821,8 +16825,6 @@ check_connection(void)
 #endif
 
 #ifdef FEAT_CLIENTSERVER
-static void remote_common(typval_T *argvars, typval_T *rettv, int expr);
-
     static void
 remote_common(typval_T *argvars, typval_T *rettv, int expr)
 {
@@ -20683,6 +20685,8 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
     char_u  *callback;
     dict_T  *dict;
 
+    if (check_secure())
+	return;
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	if (argvars[2].v_type != VAR_DICT
