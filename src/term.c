@@ -2804,7 +2804,7 @@ term_rgb_color(char_u *s, long_u rgb)
 #define MAX_COLOR_STR_LEN 100
     char	buf[MAX_COLOR_STR_LEN];
 
-    vim_snprintf(buf, MAX_KEY_CODE_LEN,
+    vim_snprintf(buf, MAX_COLOR_STR_LEN,
 				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
     OUT_STR(buf);
 }
