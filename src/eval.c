@@ -20019,8 +20019,8 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
     }
     else
     {
-#ifdef FEAT_GUI
-	if (gui.in_use)
+#if defined(FEAT_GUI) || defined(FEAT_TERMTRUECOLOR)
+	if (USE_24BIT)
 	    modec = 'g';
 	else
 #endif
