@@ -19764,7 +19764,7 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 	if (nchar > 0)
 	    while (nchar > 0 && nbyte < slen)
 	    {
-		nbyte += mb_char2len(p[nbyte]);
+		nbyte += mb_cptr2len(p + nbyte);
 		--nchar;
 	    }
 	else
@@ -19779,7 +19779,7 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 		if (off < 0)
 		    len += 1;
 		else
-		    len += mb_char2len(p[off]);
+		    len += mb_cptr2len(p + off);
 		--charlen;
 	    }
 	}
