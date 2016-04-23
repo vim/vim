@@ -335,9 +335,8 @@ do_debug(char_u *cmd)
 get_maxbacktrace_level(void)
 {
     char	*p, *q;
-    int		maxbacktrace = 1;
+    int		maxbacktrace = 0;
 
-    maxbacktrace = 0;
     if (sourcing_name != NULL)
     {
 	p = (char *)sourcing_name;

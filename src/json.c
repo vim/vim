@@ -539,7 +539,6 @@ json_decode_string(js_read_T *reader, typval_T *res)
     char_u	*p;
     int		c;
     long	nr;
-    char_u	buf[NUMBUFLEN];
 
     if (res != NULL)
 	ga_init2(&ga, 1, 200);
@@ -617,6 +616,7 @@ json_decode_string(js_read_T *reader, typval_T *res)
 		    if (res != NULL)
 		    {
 #ifdef FEAT_MBYTE
+			char_u	buf[NUMBUFLEN];
 			buf[utf_char2bytes((int)nr, buf)] = NUL;
 			ga_concat(&ga, buf);
 #else

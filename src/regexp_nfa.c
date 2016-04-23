@@ -5515,14 +5515,9 @@ nfa_regmatch(
     int		add_off = 0;
     int		toplevel = start->c == NFA_MOPEN;
 #ifdef NFA_REGEXP_DEBUG_LOG
-    FILE	*debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
-
-    if (debug == NULL)
-    {
-	EMSG2(_("(NFA) COULD NOT OPEN %s !"), NFA_REGEXP_DEBUG_LOG);
-	return FALSE;
-    }
+    FILE	*debug;
 #endif
+
     /* Some patterns may take a long time to match, especially when using
      * recursive_regmatch(). Allow interrupting them with CTRL-C. */
     fast_breakcheck();
@@ -5533,6 +5528,14 @@ nfa_regmatch(
 	return FALSE;
 #endif
 
+#ifdef NFA_REGEXP_DEBUG_LOG
+    debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
+    if (debug == NULL)
+    {
+	EMSG2(_("(NFA) COULD NOT OPEN %s !"), NFA_REGEXP_DEBUG_LOG);
+	return FALSE;
+    }
+#endif
     nfa_match = FALSE;
 
     /* Allocate memory for the lists of nodes. */
