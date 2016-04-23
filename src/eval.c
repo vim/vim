@@ -19774,7 +19774,12 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 	    charlen = get_tv_number(&argvars[2]);
 	    while (charlen > 0 && nbyte + len < slen)
 	    {
-		len += mb_char2len(p[nbyte + len]);
+		int off = nbyte + len;
+
+		if (off < 0)
+		    len += 1;
+		else
+		    len += mb_char2len(p[off]);
 		--charlen;
 	    }
 	}
