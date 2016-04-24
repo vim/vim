@@ -35,6 +35,7 @@ func Test_equivalence_re2()
 endfunc
 
 func s:classes_test()
+  set isprint=@,161-255
   call assert_equal('Motörhead', matchstr('Motörhead', '[[:print:]]\+'))
 
   let alphachars = ''
