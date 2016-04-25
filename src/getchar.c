@@ -3058,6 +3058,8 @@ inchar(
     if (typebuf_changed(tb_change_cnt))
 	return 0;
 
+    len = fix_input_buffer(buf, len, script_char >= 0);
+
 #ifdef FEAT_LANGMAP
     if (*p_langmap && len &&
 	((((State & (CMDLINE | INSERT)) == 0) 
@@ -3067,8 +3069,6 @@ inchar(
 	len = langmap_adjust(buf, len, maxlen);
     }
 #endif
-
-    len = fix_input_buffer(buf, len, script_char >= 0);
 
     return len;
 		    
@@ -3087,6 +3087,7 @@ fix_input_buffer(
 {
     int		i;
     char_u	*p = buf;
+    int		mblen;
 
     /*
      * Two characters are special: NUL and K_SPECIAL.
@@ -3118,6 +3119,9 @@ fix_input_buffer(
 	else
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL && !script
+#ifdef FEAT_MBYTE
+                    && (i >= 1) /*take only non-last K_SPECIAL*/
+#endif
 #ifdef FEAT_AUTOCMD
 		    /* timeout may generate K_CURSORHOLD */
 		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
