@@ -1562,6 +1562,7 @@ gui_mch_free_font(GuiFont font)
     guicolor_T
 gui_mch_get_color(char_u *name)
 {
+    int i;
 
     typedef struct SysColorTable
     {
@@ -1617,6 +1618,7 @@ gui_mch_get_color(char_u *name)
 
     return gui_get_color_cmn(name);
 }
+
 /*
  * Return OK if the key with the termcap name "name" is supported.
  */
