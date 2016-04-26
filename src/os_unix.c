@@ -3940,7 +3940,7 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
      */
     for (i = 0; i < 2; ++i)
     {
-	p = cmd;
+	p = skipwhite(cmd);
 	inquote = FALSE;
 	*argc = 0;
 	for (;;)
