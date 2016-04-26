@@ -439,7 +439,8 @@ free_unused_channels_contents(int copyID, int mask)
     channel_T	*ch;
 
     for (ch = first_channel; ch != NULL; ch = ch->ch_next)
-	if ((ch->ch_copyID & mask) != (copyID & mask))
+	if (!channel_still_useful(ch)
+				 && (ch->ch_copyID & mask) != (copyID & mask))
 	{
 	    /* Free the channel and ordinary items it contains, but don't
 	     * recurse into Lists, Dictionaries etc. */
@@ -458,7 +459,8 @@ free_unused_channels(int copyID, int mask)
     for (ch = first_channel; ch != NULL; ch = ch_next)
     {
 	ch_next = ch->ch_next;
-	if ((ch->ch_copyID & mask) != (copyID & mask))
+	if (!channel_still_useful(ch)
+				 && (ch->ch_copyID & mask) != (copyID & mask))
 	{
 	    /* Free the channel struct itself. */
 	    channel_free_channel(ch);
@@ -4079,13 +4081,16 @@ job_free(job_T *job)
 
 /*
  * Return TRUE if the job should not be freed yet.  Do not free the job when
- * it has not ended yet and there is a "stoponexit" flag or an exit callback.
+ * it has not ended yet and there is a "stoponexit" flag, an exit callback
+ * or when the associated channel will do something with the job output.
  */
     static int
 job_still_useful(job_T *job)
 {
     return job->jv_status == JOB_STARTED
-		   && (job->jv_stoponexit != NULL || job->jv_exit_cb != NULL);
+	       && (job->jv_stoponexit != NULL || job->jv_exit_cb != NULL
+		   || (job->jv_channel != NULL
+		       && channel_still_useful(job->jv_channel)));
 }
 
     void
@@ -4099,10 +4104,12 @@ job_unref(job_T *job)
 	{
 	    job_free(job);
 	}
-	else if (job->jv_channel != NULL)
+	else if (job->jv_channel != NULL
+				    && !channel_still_useful(job->jv_channel))
 	{
 	    /* Do remove the link to the channel, otherwise it hangs
 	     * around until Vim exits. See job_free() for refcount. */
+	    ch_log(job->jv_channel, "detaching channel from job");
 	    job->jv_channel->ch_job = NULL;
 	    channel_unref(job->jv_channel);
 	    job->jv_channel = NULL;
