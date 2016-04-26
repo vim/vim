@@ -65,4 +65,5 @@ void show_termcodes(void);
 int show_one_termcode(char_u *name, char_u *code, int printit);
 char_u *translate_mapping(char_u *str, int expmap);
 void update_tcap(int attr);
+guicolor_T gui_get_color_cmn(char_u *name);
 /* vim: set ft=c : */

@@ -3705,17 +3705,6 @@ gui_mch_free_font(GuiFont font)
      */
 }
 
-    static int
-hex_digit(int c)
-{
-    if (isdigit(c))
-	return c - '0';
-    c = TOLOWER_ASC(c);
-    if (c >= 'a' && c <= 'f')
-	return c - 'a' + 10;
-    return -1000;
-}
-
 /*
  * Return the Pixel value (color) for the given color name.  This routine was
  * pretty much taken from example code in the Silicon Graphics OSF/Motif
@@ -3728,146 +3717,13 @@ gui_mch_get_color(char_u *name)
     /* TODO: Add support for the new named color of MacOS 8
      */
     RGBColor	MacColor;
-//    guicolor_T	color = 0;
 
-    typedef struct guicolor_tTable
+    if (STRICMP(name, "hilite") == 0)
     {
-	char	    *name;
-	guicolor_T  color;
-    } guicolor_tTable;
-
-    /*
-     * The comment at the end of each line is the source
-     * (Mac, Window, Unix) and the number is the unix rgb.txt value
-     */
-    static guicolor_tTable table[] =
-    {
-	{"Black",	RGB(0x00, 0x00, 0x00)},
-	{"darkgray",	RGB(0x80, 0x80, 0x80)}, /*W*/
-	{"darkgrey",	RGB(0x80, 0x80, 0x80)}, /*W*/
-	{"Gray",	RGB(0xC0, 0xC0, 0xC0)}, /*W*/
-	{"Grey",	RGB(0xC0, 0xC0, 0xC0)}, /*W*/
-	{"lightgray",	RGB(0xE0, 0xE0, 0xE0)}, /*W*/
-	{"lightgrey",	RGB(0xE0, 0xE0, 0xE0)}, /*W*/
-	{"gray10",	RGB(0x1A, 0x1A, 0x1A)}, /*W*/
-	{"grey10",	RGB(0x1A, 0x1A, 0x1A)}, /*W*/
-	{"gray20",	RGB(0x33, 0x33, 0x33)}, /*W*/
-	{"grey20",	RGB(0x33, 0x33, 0x33)}, /*W*/
-	{"gray30",	RGB(0x4D, 0x4D, 0x4D)}, /*W*/
-	{"grey30",	RGB(0x4D, 0x4D, 0x4D)}, /*W*/
-	{"gray40",	RGB(0x66, 0x66, 0x66)}, /*W*/
-	{"grey40",	RGB(0x66, 0x66, 0x66)}, /*W*/
-	{"gray50",	RGB(0x7F, 0x7F, 0x7F)}, /*W*/
-	{"grey50",	RGB(0x7F, 0x7F, 0x7F)}, /*W*/
-	{"gray60",	RGB(0x99, 0x99, 0x99)}, /*W*/
-	{"grey60",	RGB(0x99, 0x99, 0x99)}, /*W*/
-	{"gray70",	RGB(0xB3, 0xB3, 0xB3)}, /*W*/
-	{"grey70",	RGB(0xB3, 0xB3, 0xB3)}, /*W*/
-	{"gray80",	RGB(0xCC, 0xCC, 0xCC)}, /*W*/
-	{"grey80",	RGB(0xCC, 0xCC, 0xCC)}, /*W*/
-	{"gray90",	RGB(0xE5, 0xE5, 0xE5)}, /*W*/
-	{"grey90",	RGB(0xE5, 0xE5, 0xE5)}, /*W*/
-	{"white",	RGB(0xFF, 0xFF, 0xFF)},
-	{"darkred",	RGB(0x80, 0x00, 0x00)}, /*W*/
-	{"red",		RGB(0xDD, 0x08, 0x06)}, /*M*/
-	{"lightred",	RGB(0xFF, 0xA0, 0xA0)}, /*W*/
-	{"DarkBlue",	RGB(0x00, 0x00, 0x80)}, /*W*/
-	{"Blue",	RGB(0x00, 0x00, 0xD4)}, /*M*/
-	{"lightblue",	RGB(0xA0, 0xA0, 0xFF)}, /*W*/
-	{"DarkGreen",	RGB(0x00, 0x80, 0x00)}, /*W*/
-	{"Green",	RGB(0x00, 0x64, 0x11)}, /*M*/
-	{"lightgreen",	RGB(0xA0, 0xFF, 0xA0)}, /*W*/
-	{"DarkCyan",	RGB(0x00, 0x80, 0x80)}, /*W ?0x307D7E */
-	{"cyan",	RGB(0x02, 0xAB, 0xEA)}, /*M*/
-	{"lightcyan",	RGB(0xA0, 0xFF, 0xFF)}, /*W*/
-	{"darkmagenta",	RGB(0x80, 0x00, 0x80)}, /*W*/
-	{"magenta",	RGB(0xF2, 0x08, 0x84)}, /*M*/
-	{"lightmagenta",RGB(0xF0, 0xA0, 0xF0)}, /*W*/
-	{"brown",	RGB(0x80, 0x40, 0x40)}, /*W*/
-	{"yellow",	RGB(0xFC, 0xF3, 0x05)}, /*M*/
-	{"lightyellow",	RGB(0xFF, 0xFF, 0xA0)}, /*M*/
-	{"darkyellow",	RGB(0xBB, 0xBB, 0x00)}, /*U*/
-	{"SeaGreen",	RGB(0x2E, 0x8B, 0x57)}, /*W 0x4E8975 */
-	{"orange",	RGB(0xFC, 0x80, 0x00)}, /*W 0xF87A17 */
-	{"Purple",	RGB(0xA0, 0x20, 0xF0)}, /*W 0x8e35e5 */
-	{"SlateBlue",	RGB(0x6A, 0x5A, 0xCD)}, /*W 0x737CA1 */
-	{"Violet",	RGB(0x8D, 0x38, 0xC9)}, /*U*/
-    };
-
-    int		r, g, b;
-    int		i;
-
-    if (name[0] == '#' && strlen((char *) name) == 7)
-    {
-	/* Name is in "#rrggbb" format */
-	r = hex_digit(name[1]) * 16 + hex_digit(name[2]);
-	g = hex_digit(name[3]) * 16 + hex_digit(name[4]);
-	b = hex_digit(name[5]) * 16 + hex_digit(name[6]);
-	if (r < 0 || g < 0 || b < 0)
-	    return INVALCOLOR;
-	return RGB(r, g, b);
+	LMGetHiliteRGB(&MacColor);
+	return (RGB(MacColor.red >> 8, MacColor.green >> 8, MacColor.blue >> 8));
     }
-    else
-    {
-	if (STRICMP(name, "hilite") == 0)
-	{
-	    LMGetHiliteRGB(&MacColor);
-	    return (RGB(MacColor.red >> 8, MacColor.green >> 8, MacColor.blue >> 8));
-	}
-	/* Check if the name is one of the colors we know */
-	for (i = 0; i < sizeof(table) / sizeof(table[0]); i++)
-	    if (STRICMP(name, table[i].name) == 0)
-		return table[i].color;
-    }
-
-    /*
-     * Last attempt. Look in the file "$VIM/rgb.txt".
-     */
-    {
-#define LINE_LEN 100
-	FILE	*fd;
-	char	line[LINE_LEN];
-	char_u	*fname;
-
-	fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
-	if (fname == NULL)
-	    return INVALCOLOR;
-
-	fd = fopen((char *)fname, "rt");
-	vim_free(fname);
-	if (fd == NULL)
-	    return INVALCOLOR;
-
-	while (!feof(fd))
-	{
-	    int		len;
-	    int		pos;
-	    char	*color;
-
-	    fgets(line, LINE_LEN, fd);
-	    len = strlen(line);
-
-	    if (len <= 1 || line[len-1] != '\n')
-		continue;
-
-	    line[len-1] = '\0';
-
-	    i = sscanf(line, "%d %d %d %n", &r, &g, &b, &pos);
-	    if (i != 3)
-		continue;
-
-	    color = line + pos;
-
-	    if (STRICMP(color, name) == 0)
-	    {
-		fclose(fd);
-		return (guicolor_T) RGB(r, g, b);
-	    }
-	}
-	fclose(fd);
-    }
-
-    return INVALCOLOR;
+    return gui_get_color_cmn(name);
 }
 
 /*
