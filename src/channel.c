@@ -54,6 +54,8 @@
 # define fd_close(sd) close(sd)
 #endif
 
+static void channel_read(channel_T *channel, int part, char *func);
+
 /* Whether a redraw is needed for appending a line to a buffer. */
 static int channel_need_redraw = FALSE;
 
@@ -2427,18 +2429,28 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	  typval_T	argv[1];
 	  typval_T	rettv;
 	  int		dummy;
+	  int		part;
 
-	  /* invoke the close callback; increment the refcount to avoid it
-	   * being freed halfway */
-	  ch_logs(channel, "Invoking close callback %s",
-						(char *)channel->ch_close_cb);
-	  argv[0].v_type = VAR_CHANNEL;
-	  argv[0].vval.v_channel = channel;
+	  /* Invoke callbacks before the close callback, since it's weird to
+	   * first invoke the close callback.  Increment the refcount to avoid
+	   * the channel being freed halfway. */
 	  ++channel->ch_refcount;
-	  call_func(channel->ch_close_cb, (int)STRLEN(channel->ch_close_cb),
+	  for (part = PART_SOCK; part <= PART_ERR; ++part)
+	      while (may_invoke_callback(channel, part))
+		  ;
+
+	  /* Invoke the close callback, if still set. */
+	  if (channel->ch_close_cb != NULL)
+	  {
+	      ch_logs(channel, "Invoking close callback %s",
+						(char *)channel->ch_close_cb);
+	      argv[0].v_type = VAR_CHANNEL;
+	      argv[0].vval.v_channel = channel;
+	      call_func(channel->ch_close_cb, (int)STRLEN(channel->ch_close_cb),
 			   &rettv, 1, argv, 0L, 0L, &dummy, TRUE,
 			   channel->ch_close_partial, NULL);
-	  clear_tv(&rettv);
+	      clear_tv(&rettv);
+	  }
 	  --channel->ch_refcount;
 
 	  /* the callback is only called once */
@@ -2592,11 +2604,19 @@ channel_fill_poll_write(int nfd_in, struct pollfd *fds)
 }
 #endif
 
+typedef enum {
+    CW_READY,
+    CW_NOT_READY,
+    CW_ERROR
+} channel_wait_result;
+
 /*
  * Check for reading from "fd" with "timeout" msec.
- * Return FAIL when there is nothing to read.
+ * Return CW_READY when there is something to read.
+ * Return CW_NOT_READY when there is nothing to read.
+ * Return CW_ERROR when there is an error.
  */
-    static int
+    static channel_wait_result
 channel_wait(channel_T *channel, sock_T fd, int timeout)
 {
     if (timeout > 0)
@@ -2613,9 +2633,12 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	/* reading from a pipe, not a socket */
 	while (TRUE)
 	{
-	    if (PeekNamedPipe((HANDLE)fd, NULL, 0, NULL, &nread, NULL)
-								 && nread > 0)
-		return OK;
+	    int r = PeekNamedPipe((HANDLE)fd, NULL, 0, NULL, &nread, NULL);
+
+	    if (r && nread > 0)
+		return CW_READY;
+	    if (r == 0)
+		return CW_ERROR;
 
 	    /* perhaps write some buffer lines */
 	    channel_write_any_lines();
@@ -2665,7 +2688,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    if (ret > 0)
 	    {
 		if (FD_ISSET(fd, &rfds))
-		    return OK;
+		    return CW_READY;
 		channel_write_any_lines();
 		continue;
 	    }
@@ -2683,7 +2706,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    if (poll(fds, nfd, timeout) > 0)
 	    {
 		if (fds[0].revents & POLLIN)
-		    return OK;
+		    return CW_READY;
 		channel_write_any_lines();
 		continue;
 	    }
@@ -2691,7 +2714,36 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	}
 #endif
     }
-    return FAIL;
+    return CW_NOT_READY;
+}
+
+    static void
+channel_close_on_error(channel_T *channel, int part, char *func)
+{
+    /* Do not call emsg(), most likely the other end just exited. */
+    ch_errors(channel, "%s(): Cannot read from channel", func);
+
+    /* Queue a "DETACH" netbeans message in the command queue in order to
+     * terminate the netbeans session later. Do not end the session here
+     * directly as we may be running in the context of a call to
+     * netbeans_parse_messages():
+     *	netbeans_parse_messages
+     *	    -> autocmd triggered while processing the netbeans cmd
+     *		-> ui_breakcheck
+     *		    -> gui event loop or select loop
+     *			-> channel_read()
+     * Don't send "DETACH" for a JS or JSON channel.
+     */
+    if (channel->ch_part[part].ch_mode == MODE_RAW
+			     || channel->ch_part[part].ch_mode == MODE_NL)
+	channel_save(channel, part, (char_u *)DETACH_MSG_RAW,
+			      (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
+
+    /* When reading from stdout is not possible, assume the other side has
+     * died. */
+    channel_close(channel, TRUE);
+    if (channel->ch_nb_close_cb != NULL)
+	(*channel->ch_nb_close_cb)();
 }
 
 /*
@@ -2699,7 +2751,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
  * "part" is PART_SOCK, PART_OUT or PART_ERR.
  * The data is put in the read queue.
  */
-    void
+    static void
 channel_read(channel_T *channel, int part, char *func)
 {
     static char_u	*buf = NULL;
@@ -2729,7 +2781,7 @@ channel_read(channel_T *channel, int part, char *func)
      * MAXMSGSIZE long. */
     for (;;)
     {
-	if (channel_wait(channel, fd, 0) == FAIL)
+	if (channel_wait(channel, fd, 0) != CW_READY)
 	    break;
 	if (use_socket)
 	    len = sock_read(fd, (char *)buf, MAXMSGSIZE);
@@ -2747,33 +2799,7 @@ channel_read(channel_T *channel, int part, char *func)
 
     /* Reading a disconnection (readlen == 0), or an error. */
     if (readlen <= 0)
-    {
-	/* Do not give an error message, most likely the other end just
-	 * exited. */
-	ch_errors(channel, "%s(): Cannot read from channel", func);
-
-	/* Queue a "DETACH" netbeans message in the command queue in order to
-	 * terminate the netbeans session later. Do not end the session here
-	 * directly as we may be running in the context of a call to
-	 * netbeans_parse_messages():
-	 *	netbeans_parse_messages
-	 *	    -> autocmd triggered while processing the netbeans cmd
-	 *		-> ui_breakcheck
-	 *		    -> gui event loop or select loop
-	 *			-> channel_read()
-	 * Don't send "DETACH" for a JS or JSON channel.
-	 */
-	if (channel->ch_part[part].ch_mode == MODE_RAW
-				 || channel->ch_part[part].ch_mode == MODE_NL)
-	    channel_save(channel, part, (char_u *)DETACH_MSG_RAW,
-				  (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
-
-	/* When reading from stdout is not possible, assume the other side has
-	 * died. */
-	channel_close(channel, TRUE);
-	if (channel->ch_nb_close_cb != NULL)
-	    (*channel->ch_nb_close_cb)();
-    }
+	channel_close_on_error(channel, part, func);
 
 #if defined(CH_HAS_GUI) && defined(FEAT_GUI_GTK)
     /* signal the main loop that there is something to read */
@@ -2812,7 +2838,7 @@ channel_read_block(channel_T *channel, int part, int timeout)
 	/* Wait for up to the channel timeout. */
 	if (fd == INVALID_FD)
 	    return NULL;
-	if (channel_wait(channel, fd, timeout) == FAIL)
+	if (channel_wait(channel, fd, timeout) != CW_READY)
 	{
 	    ch_log(channel, "Timed out");
 	    return NULL;
@@ -2916,7 +2942,8 @@ channel_read_json_block(
 		    timeout = timeout_arg;
 	    }
 	    fd = chanpart->ch_fd;
-	    if (fd == INVALID_FD || channel_wait(channel, fd, timeout) == FAIL)
+	    if (fd == INVALID_FD
+			    || channel_wait(channel, fd, timeout) != CW_READY)
 	    {
 		if (timeout == timeout_arg)
 		{
@@ -3037,8 +3064,16 @@ channel_handle_events(void)
 	for (part = PART_SOCK; part <= PART_ERR; ++part)
 	{
 	    fd = channel->ch_part[part].ch_fd;
-	    if (fd != INVALID_FD && channel_wait(channel, fd, 0) == OK)
-		channel_read(channel, part, "channel_handle_events");
+	    if (fd != INVALID_FD)
+	    {
+		int r = channel_wait(channel, fd, 0);
+
+		if (r == CW_READY)
+		    channel_read(channel, part, "channel_handle_events");
+		else if (r == CW_ERROR)
+		    channel_close_on_error(channel, part,
+						   "channel_handle_events()");
+	    }
 	}
     }
 }

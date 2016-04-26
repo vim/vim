@@ -16,6 +16,8 @@ if __name__ == "__main__":
         else:
             print(sys.argv[1])
             sys.stdout.flush()
+            if sys.argv[1].startswith("quit"):
+                sys.exit(0)
 
     while True:
         typed = sys.stdin.readline()

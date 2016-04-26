@@ -1048,6 +1048,38 @@ func Test_out_cb()
   endtry
 endfunc
 
+func Test_out_close_cb()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_out_close_cb()')
+
+  let s:counter = 1
+  let s:outmsg = 0
+  let s:closemsg = 0
+  func! OutHandler(chan, msg)
+    let s:outmsg = s:counter
+    let s:counter += 1
+  endfunc
+  func! CloseHandler(chan)
+    let s:closemsg = s:counter
+    let s:counter += 1
+  endfunc
+  let job = job_start(s:python . " test_channel_pipe.py quit now",
+	\ {'out_cb': 'OutHandler',
+	\ 'close_cb': 'CloseHandler'})
+  call assert_equal("run", job_status(job))
+  try
+    call s:waitFor('s:closemsg != 0 && s:outmsg != 0')
+    call assert_equal(1, s:outmsg)
+    call assert_equal(2, s:closemsg)
+  finally
+    call job_stop(job)
+    delfunc OutHandler
+    delfunc CloseHandler
+  endtry
+endfunc
+
 """"""""""
 
 let s:unletResponse = ''

@@ -26,7 +26,6 @@ void channel_close(channel_T *channel, int invoke_close_cb);
 char_u *channel_peek(channel_T *channel, int part);
 void channel_clear(channel_T *channel);
 void channel_free_all(void);
-void channel_read(channel_T *channel, int part, char *func);
 char_u *channel_read_block(channel_T *channel, int part, int timeout);
 int channel_read_json_block(channel_T *channel, int part, int timeout_arg, int id, typval_T **rettv);
 void common_channel_read(typval_T *argvars, typval_T *rettv, int raw);
