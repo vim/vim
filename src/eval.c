@@ -10305,7 +10305,7 @@ f_ceil(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    channel_T *channel = get_channel_arg(&argvars[0], TRUE);
+    channel_T *channel = get_channel_arg(&argvars[0], TRUE, FALSE, 0);
 
     if (channel != NULL)
     {
@@ -10320,7 +10320,7 @@ f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 f_ch_getbufnr(typval_T *argvars, typval_T *rettv)
 {
-    channel_T *channel = get_channel_arg(&argvars[0], TRUE);
+    channel_T *channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
 
     rettv->vval.v_number = -1;
     if (channel != NULL)
@@ -10347,7 +10347,7 @@ f_ch_getbufnr(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_getjob(typval_T *argvars, typval_T *rettv)
 {
-    channel_T *channel = get_channel_arg(&argvars[0], TRUE);
+    channel_T *channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
 
     if (channel != NULL)
     {
@@ -10364,7 +10364,7 @@ f_ch_getjob(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_info(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    channel_T *channel = get_channel_arg(&argvars[0], TRUE);
+    channel_T *channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
 
     if (channel != NULL && rettv_dict_alloc(rettv) != FAIL)
 	channel_info(channel, rettv->vval.v_dict);
@@ -10380,7 +10380,7 @@ f_ch_log(typval_T *argvars, typval_T *rettv UNUSED)
     channel_T	*channel = NULL;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	channel = get_channel_arg(&argvars[1], TRUE);
+	channel = get_channel_arg(&argvars[1], FALSE, FALSE, 0);
 
     ch_log(channel, (char *)msg);
 }
@@ -10476,7 +10476,7 @@ f_ch_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     channel_T	*channel;
     jobopt_T	opt;
 
-    channel = get_channel_arg(&argvars[0], TRUE);
+    channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
     if (channel == NULL)
 	return;
     clear_job_options(&opt);
@@ -10498,7 +10498,7 @@ f_ch_status(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    channel = get_channel_arg(&argvars[0], FALSE);
+    channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
     rettv->vval.v_string = vim_strsave((char_u *)channel_status(channel));
 }
 #endif

@@ -2103,6 +2103,18 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel)
     }
 }
 
+    static void
+drop_messages(channel_T *channel, int part)
+{
+    char_u *msg;
+
+    while ((msg = channel_get(channel, part)) != NULL)
+    {
+	ch_logs(channel, "Dropping message '%s'", (char *)msg);
+	vim_free(msg);
+    }
+}
+
 /*
  * Invoke a callback for "channel"/"part" if needed.
  * This does not redraw but sets channel_need_redraw when redraw is needed.
@@ -2202,11 +2214,10 @@ may_invoke_callback(channel_T *channel, int part)
 	/* If there is no callback or buffer drop the message. */
 	if (callback == NULL && buffer == NULL)
 	{
-	    while ((msg = channel_get(channel, part)) != NULL)
-	    {
-		ch_logs(channel, "Dropping message '%s'", (char *)msg);
-		vim_free(msg);
-	    }
+	    /* If there is a close callback it may use ch_read() to get the
+	     * messages. */
+	    if (channel->ch_close_cb == NULL)
+		drop_messages(channel, part);
 	    return FALSE;
 	}
 
@@ -2326,15 +2337,45 @@ channel_is_open(channel_T *channel)
 }
 
 /*
+ * Return TRUE if "channel" has JSON or other typeahead.
+ */
+    static int
+channel_has_readahead(channel_T *channel, int part)
+{
+    ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
+
+    if (ch_mode == MODE_JSON || ch_mode == MODE_JS)
+    {
+	jsonq_T   *head = &channel->ch_part[part].ch_json_head;
+	jsonq_T   *item = head->jq_next;
+
+	return item != NULL;
+    }
+    return channel_peek(channel, part) != NULL;
+}
+
+/*
  * Return a string indicating the status of the channel.
  */
     char *
 channel_status(channel_T *channel)
 {
+    int part;
+    int has_readahead = FALSE;
+
     if (channel == NULL)
 	 return "fail";
     if (channel_is_open(channel))
 	 return "open";
+    for (part = PART_SOCK; part <= PART_ERR; ++part)
+	if (channel_has_readahead(channel, part))
+	{
+	    has_readahead = TRUE;
+	    break;
+	}
+
+    if (has_readahead)
+	return "buffered";
     return "closed";
 }
 
@@ -2458,6 +2499,10 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	  channel->ch_close_cb = NULL;
 	  partial_unref(channel->ch_close_partial);
 	  channel->ch_close_partial = NULL;
+
+	  /* any remaining messages are useless now */
+	  for (part = PART_SOCK; part <= PART_ERR; ++part)
+	      drop_messages(channel, part);
     }
 
     channel->ch_nb_close_cb = NULL;
@@ -2967,7 +3012,7 @@ channel_read_json_block(
 common_channel_read(typval_T *argvars, typval_T *rettv, int raw)
 {
     channel_T	*channel;
-    int		part;
+    int		part = -1;
     jobopt_T	opt;
     int		mode;
     int		timeout;
@@ -2983,12 +3028,12 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw)
 								      == FAIL)
 	goto theend;
 
-    channel = get_channel_arg(&argvars[0], TRUE);
+    if (opt.jo_set & JO_PART)
+	part = opt.jo_part;
+    channel = get_channel_arg(&argvars[0], TRUE, TRUE, part);
     if (channel != NULL)
     {
-	if (opt.jo_set & JO_PART)
-	    part = opt.jo_part;
-	else
+	if (part < 0)
 	    part = channel_part_read(channel);
 	mode = channel_get_mode(channel, part);
 	timeout = channel_get_timeout(channel, part);
@@ -3152,7 +3197,7 @@ send_common(
     int		part_send;
 
     clear_job_options(opt);
-    channel = get_channel_arg(&argvars[0], TRUE);
+    channel = get_channel_arg(&argvars[0], TRUE, FALSE, 0);
     if (channel == NULL)
 	return NULL;
     part_send = channel_part_send(channel);
@@ -3201,7 +3246,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    channel = get_channel_arg(&argvars[0], TRUE);
+    channel = get_channel_arg(&argvars[0], TRUE, FALSE, 0);
     if (channel == NULL)
 	return;
     part_send = channel_part_send(channel);
@@ -3433,24 +3478,6 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
     return ret;
 }
 # endif /* !WIN32 && HAVE_SELECT */
-
-/*
- * Return TRUE if "channel" has JSON or other typeahead.
- */
-    static int
-channel_has_readahead(channel_T *channel, int part)
-{
-    ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
-
-    if (ch_mode == MODE_JSON || ch_mode == MODE_JS)
-    {
-	jsonq_T   *head = &channel->ch_part[part].ch_json_head;
-	jsonq_T   *item = head->jq_next;
-
-	return item != NULL;
-    }
-    return channel_peek(channel, part) != NULL;
-}
 
 /*
  * Execute queued up commands.
@@ -3968,11 +3995,15 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 /*
  * Get the channel from the argument.
  * Returns NULL if the handle is invalid.
+ * When "check_open" is TRUE check that the channel can be used.
+ * When "reading" is TRUE "check_open" considers typeahead useful.
+ * "part" is used to check typeahead, when -1 use the default part.
  */
     channel_T *
-get_channel_arg(typval_T *tv, int check_open)
+get_channel_arg(typval_T *tv, int check_open, int reading, int part)
 {
-    channel_T *channel = NULL;
+    channel_T	*channel = NULL;
+    int		has_readahead = FALSE;
 
     if (tv->v_type == VAR_JOB)
     {
@@ -3988,8 +4019,12 @@ get_channel_arg(typval_T *tv, int check_open)
 	EMSG2(_(e_invarg2), get_tv_string(tv));
 	return NULL;
     }
+    if (channel != NULL && reading)
+	has_readahead = channel_has_readahead(channel,
+			       part >= 0 ? part : channel_part_read(channel));
 
-    if (check_open && (channel == NULL || !channel_is_open(channel)))
+    if (check_open && (channel == NULL || (!channel_is_open(channel)
+					     && !(reading && has_readahead))))
     {
 	EMSG(_("E906: not an open channel"));
 	return NULL;
