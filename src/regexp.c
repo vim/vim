@@ -2542,12 +2542,12 @@ collection:
 				}
 				break;
 			    case CLASS_ALNUM:
-				for (cu = 1; cu <= 255; cu++)
+				for (cu = 1; cu < 128; cu++)
 				    if (isalnum(cu))
 					regmbc(cu);
 				break;
 			    case CLASS_ALPHA:
-				for (cu = 1; cu <= 255; cu++)
+				for (cu = 1; cu < 128; cu++)
 				    if (isalpha(cu))
 					regmbc(cu);
 				break;
@@ -2572,7 +2572,8 @@ collection:
 				break;
 			    case CLASS_LOWER:
 				for (cu = 1; cu <= 255; cu++)
-				    if (MB_ISLOWER(cu))
+				    if (MB_ISLOWER(cu) && cu != 170
+								 && cu != 186)
 					regmbc(cu);
 				break;
 			    case CLASS_PRINT:
@@ -2581,7 +2582,7 @@ collection:
 					regmbc(cu);
 				break;
 			    case CLASS_PUNCT:
-				for (cu = 1; cu <= 255; cu++)
+				for (cu = 1; cu < 128; cu++)
 				    if (ispunct(cu))
 					regmbc(cu);
 				break;
