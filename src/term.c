@@ -6174,7 +6174,7 @@ gui_get_color_cmn(char_u *name)
 
     while (!feof(fd))
     {
-	int		len;
+	size_t		len;
 	int		pos;
 
 	(void)fgets(line, LINE_LEN, fd);
