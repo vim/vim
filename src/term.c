@@ -77,7 +77,7 @@ struct builtin_term
 static struct builtin_term *find_builtin_term(char_u *name);
 static void parse_builtin_tcap(char_u *s);
 static void term_color(char_u *s, int n);
-#ifdef FEAT_TERMTRUECOLOR
+#ifdef FEAT_TERMGUICOLORS
 static void term_rgb_color(char_u *s, long_u rgb);
 #endif
 static void gather_termleader(void);
@@ -859,7 +859,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CRV,	IF_EB("\033[>c", ESC_STR "[>c")},
     {(int)KS_RBG,	IF_EB("\033]11;?\007", ESC_STR "]11;?\007")},
     {(int)KS_U7,	IF_EB("\033[6n", ESC_STR "[6n")},
-#  ifdef FEAT_TERMTRUECOLOR
+#  ifdef FEAT_TERMGUICOLORS
     /* These are printf strings, not terminal codes. */
     {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
     {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
@@ -1265,21 +1265,21 @@ static struct builtin_term builtin_termcaps[] =
 
 };	/* end of builtin_termcaps */
 
-#if defined(FEAT_TERMTRUECOLOR) || defined(PROTO)
+#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
     guicolor_T
-termtrue_mch_get_color(char_u *name)
+termgui_mch_get_color(char_u *name)
 {
     return gui_get_color_cmn(name);
 }
 
     guicolor_T
-termtrue_get_color(char_u *name)
+termgui_get_color(char_u *name)
 {
     guicolor_T	t;
 
     if (*name == NUL)
 	return INVALCOLOR;
-    t = termtrue_mch_get_color(name);
+    t = termgui_mch_get_color(name);
 
     if (t == INVALCOLOR)
 	EMSG2(_("E254: Cannot allocate color %s"), name);
@@ -1287,9 +1287,9 @@ termtrue_get_color(char_u *name)
 }
 
     long_u
-termtrue_mch_get_rgb(guicolor_T color)
+termgui_mch_get_rgb(guicolor_T color)
 {
-    return (long_u) color;
+    return (long_u)color;
 }
 #endif
 
@@ -2645,7 +2645,7 @@ term_color(char_u *s, int n)
 	OUT_STR(tgoto((char *)s, 0, n));
 }
 
-#if defined(FEAT_TERMTRUECOLOR) || defined(PROTO)
+#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
     void
 term_fg_rgb_color(long_u rgb)
 {
@@ -6053,7 +6053,7 @@ update_tcap(int attr)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMTRUECOLOR) || defined(PROTO)
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS) || defined(PROTO)
     static int
 hex_digit(int c)
 {

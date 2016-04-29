@@ -602,6 +602,11 @@ static char *(features[]) =
 #else
 	"-tcl",
 #endif
+#ifdef FEAT_TERMGUICOLORS
+	"+termguicolors",
+#else
+	"-termguicolors",
+#endif
 #if defined(UNIX) || defined(__EMX__)
 /* only Unix (or OS/2 with EMX!) can have terminfo instead of termcap */
 # ifdef TERMINFO
@@ -620,11 +625,6 @@ static char *(features[]) =
 	"+termresponse",
 #else
 	"-termresponse",
-#endif
-#ifdef FEAT_TERMTRUECOLOR
-	"+termtruecolor",
-#else
-	"-termtruecolor",
 #endif
 #ifdef FEAT_TEXTOBJ
 	"+textobjects",
@@ -753,6 +753,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1799,
 /**/
     1798,
 /**/

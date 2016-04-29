@@ -307,7 +307,7 @@ prt_get_attr(
     pattr->underline = (highlight_has_attr(hl_id, HL_UNDERLINE, modec) != NULL);
     pattr->undercurl = (highlight_has_attr(hl_id, HL_UNDERCURL, modec) != NULL);
 
-# if defined(FEAT_GUI) || defined(FEAT_TERMTRUECOLOR)
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (USE_24BIT)
     {
 	bg_color = highlight_gui_color_rgb(hl_id, FALSE);

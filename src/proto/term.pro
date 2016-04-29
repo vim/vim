@@ -1,7 +1,7 @@
 /* term.c */
-guicolor_T termtrue_mch_get_color(char_u *name);
-guicolor_T termtrue_get_color(char_u *name);
-long_u termtrue_mch_get_rgb(guicolor_T color);
+guicolor_T termgui_mch_get_color(char_u *name);
+guicolor_T termgui_get_color(char_u *name);
+long_u termgui_mch_get_rgb(guicolor_T color);
 int set_termname(char_u *term);
 void set_mouse_termcode(int n, char_u *s);
 void del_mouse_termcode(int n);

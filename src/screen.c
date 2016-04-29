@@ -7840,12 +7840,12 @@ screen_start_highlight(int attr)
 	    if ((attr & HL_BOLD) && T_MD != NULL)	/* bold */
 		out_str(T_MD);
 	    else if (aep != NULL && cterm_normal_fg_bold &&
-#ifdef FEAT_TERMTRUECOLOR
-			(p_guicolors ?
+#ifdef FEAT_TERMGUICOLORS
+			(p_tgc ?
 			    (aep->ae_u.cterm.fg_rgb != (long_u)INVALCOLOR):
 #endif
 			    (t_colors > 1 && aep->ae_u.cterm.fg_color)
-#ifdef FEAT_TERMTRUECOLOR
+#ifdef FEAT_TERMGUICOLORS
 			)
 #endif
 		    )
@@ -7868,8 +7868,8 @@ screen_start_highlight(int attr)
 	     */
 	    if (aep != NULL)
 	    {
-#ifdef FEAT_TERMTRUECOLOR
-		if (p_guicolors)
+#ifdef FEAT_TERMGUICOLORS
+		if (p_tgc)
 		{
 		    if (aep->ae_u.cterm.fg_rgb != (long_u)INVALCOLOR)
 			term_fg_rgb_color(aep->ae_u.cterm.fg_rgb);
@@ -7931,13 +7931,13 @@ screen_stop_highlight(void)
 		     */
 		    aep = syn_cterm_attr2entry(screen_attr);
 		    if (aep != NULL &&
-#ifdef FEAT_TERMTRUECOLOR
-			    (p_guicolors ?
+#ifdef FEAT_TERMGUICOLORS
+			    (p_tgc ?
 				(aep->ae_u.cterm.fg_rgb != (long_u)INVALCOLOR ||
 				 aep->ae_u.cterm.bg_rgb != (long_u)INVALCOLOR):
 #endif
 				(aep->ae_u.cterm.fg_color || aep->ae_u.cterm.bg_color)
-#ifdef FEAT_TERMTRUECOLOR
+#ifdef FEAT_TERMGUICOLORS
 			    )
 #endif
 			)
@@ -7988,8 +7988,8 @@ screen_stop_highlight(void)
 	    if (do_ME || (screen_attr & (HL_BOLD | HL_INVERSE)))
 		out_str(T_ME);
 
-#ifdef FEAT_TERMTRUECOLOR
-	    if (p_guicolors)
+#ifdef FEAT_TERMGUICOLORS
+	    if (p_tgc)
 	    {
 		if (cterm_normal_fg_gui_color != (long_u)INVALCOLOR)
 		    term_fg_rgb_color(cterm_normal_fg_gui_color);
@@ -8025,8 +8025,8 @@ reset_cterm_colors(void)
     if (IS_CTERM)
     {
 	/* set Normal cterm colors */
-#ifdef FEAT_TERMTRUECOLOR
-	if (p_guicolors ?
+#ifdef FEAT_TERMGUICOLORS
+	if (p_tgc ?
 		(cterm_normal_fg_gui_color != (long_u)INVALCOLOR
 		 || cterm_normal_bg_gui_color != (long_u)INVALCOLOR):
 		(cterm_normal_fg_color > 0 || cterm_normal_bg_color > 0))
@@ -8959,8 +8959,8 @@ can_clear(char_u *p)
 #ifdef FEAT_GUI
 		|| gui.in_use
 #endif
-#ifdef FEAT_TERMTRUECOLOR
-		|| (p_guicolors && cterm_normal_bg_gui_color != (long_u)INVALCOLOR)
+#ifdef FEAT_TERMGUICOLORS
+		|| (p_tgc && cterm_normal_bg_gui_color != (long_u)INVALCOLOR)
 #endif
 		|| cterm_normal_bg_color == 0 || *T_UT != NUL));
 }
@@ -10293,8 +10293,8 @@ draw_tabline(void)
 #ifdef FEAT_GUI
 					    && !gui.in_use
 #endif
-#ifdef FEAT_TERMTRUECOLOR
-					    && !p_guicolors
+#ifdef FEAT_TERMGUICOLORS
+					    && !p_tgc
 #endif
 					    );
 

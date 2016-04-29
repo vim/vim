@@ -1559,21 +1559,21 @@ typedef UINT32_TYPEDEF UINT32_T;
 #define MSG_PUTS_LONG_ATTR(s, a)    msg_puts_long_attr((char_u *)(s), (a))
 
 #ifdef FEAT_GUI
-# ifdef FEAT_TERMTRUECOLOR
-#  define GUI_FUNCTION(f)	    (gui.in_use ? gui_##f : termtrue_##f)
-#  define USE_24BIT		    (gui.in_use || p_guicolors)
+# ifdef FEAT_TERMGUICOLORS
+#  define GUI_FUNCTION(f)	    (gui.in_use ? gui_##f : termgui_##f)
+#  define USE_24BIT		    (gui.in_use || p_tgc)
 # else
 #  define GUI_FUNCTION(f)	    gui_##f
 #  define USE_24BIT		    gui.in_use
 # endif
 #else
-# ifdef FEAT_TERMTRUECOLOR
-#  define GUI_FUNCTION(f)	    termtrue_##f
-#  define USE_24BIT		    p_guicolors
+# ifdef FEAT_TERMGUICOLORS
+#  define GUI_FUNCTION(f)	    termgui_##f
+#  define USE_24BIT		    p_tgc
 # endif
 #endif
-#ifdef FEAT_TERMTRUECOLOR
-# define IS_CTERM		    (t_colors > 1 || p_guicolors)
+#ifdef FEAT_TERMGUICOLORS
+# define IS_CTERM		    (t_colors > 1 || p_tgc)
 #else
 # define IS_CTERM		    (t_colors > 1)
 #endif

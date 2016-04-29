@@ -3477,18 +3477,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
-						*'guicolors'* *'gcol'*
-'guicolors' 'gcol'	boolean (default off)
-			global
-			{not in Vi}
-			{not available when compiled without the 
-			|+termtruecolor| feature}
-	When on, uses |highlight-guifg| and |highlight-guibg| attributes in 
-	the terminal (thus using 24-bit color). Requires a ISO-8613-3
-	compatible terminal.
-	If setting this option does not work (produces a colorless UI) 
-	reading |xterm-true-color| might help.
-
 			*'guicursor'* *'gcr'* *E545* *E546* *E548* *E549*
 'guicursor' 'gcr'	string	(default "n-v-c:block-Cursor/lCursor,
 					ve:ver35-Cursor,
@@ -7550,6 +7538,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:let &termencoding = &encoding
 		:set encoding=utf-8
 <	You need to do this when your system has no locale support for UTF-8.
+
+						*'termguicolors'* *'tgc'*
+'termguicolors' 'tgc'	boolean (default off)
+			global
+			{not in Vi}
+			{not available when compiled without the
+			|+termguicolors| feature}
+	When on, uses |highlight-guifg| and |highlight-guibg| attributes in
+	the terminal (thus using 24-bit color). Requires a ISO-8613-3
+	compatible terminal.
+	If setting this option does not work (produces a colorless UI)
+	reading |xterm-true-color| might help.
 
 						*'terse'* *'noterse'*
 'terse'			boolean	(default off)

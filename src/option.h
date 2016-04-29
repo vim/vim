@@ -527,9 +527,6 @@ EXTERN char_u	*p_popt;	/* 'printoptions' */
 EXTERN char_u	*p_header;	/* 'printheader' */
 #endif
 EXTERN int	p_prompt;	/* 'prompt' */
-#ifdef FEAT_TERMTRUECOLOR
-EXTERN int	p_guicolors;	/* 'guicolors' */
-#endif
 #ifdef FEAT_GUI
 EXTERN char_u	*p_guifont;	/* 'guifont' */
 # ifdef FEAT_XFONTSET
@@ -842,6 +839,9 @@ EXTERN int	p_tbidi;	/* 'termbidi' */
 #endif
 #ifdef FEAT_MBYTE
 EXTERN char_u	*p_tenc;	/* 'termencoding' */
+#endif
+#ifdef FEAT_TERMGUICOLORS
+EXTERN int	p_tgc;		/* 'termguicolors' */
 #endif
 EXTERN int	p_terse;	/* 'terse' */
 EXTERN int	p_ta;		/* 'textauto' */

@@ -85,7 +85,7 @@ typedef struct file_buffer	buf_T;  /* forward declaration */
 #  include <X11/Intrinsic.h>
 # endif
 # define guicolor_T long_u		/* avoid error in prototypes and 
-					 * make FEAT_TERMTRUECOLOR work */
+					 * make FEAT_TERMGUICOLORS work */
 # define INVALCOLOR ((guicolor_T)0x1ffffff)
 #endif
 
@@ -913,7 +913,7 @@ typedef struct attr_entry
 	    /* These colors need to be > 8 bits to hold 256. */
 	    short_u	    fg_color;	/* foreground color number */
 	    short_u	    bg_color;	/* background color number */
-# ifdef FEAT_TERMTRUECOLOR
+# ifdef FEAT_TERMGUICOLORS
 	    long_u	    fg_rgb;	/* foreground color RGB */
 	    long_u	    bg_rgb;	/* background color RGB */
 # endif
