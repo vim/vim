@@ -6177,7 +6177,7 @@ gui_get_color_cmn(char_u *name)
 	size_t		len;
 	int		pos;
 
-	(void)fgets(line, LINE_LEN, fd);
+	ignoredp = fgets(line, LINE_LEN, fd);
 	len = strlen(line);
 
 	if (len <= 1 || line[len - 1] != '\n')
