@@ -585,6 +585,40 @@ If you do not like the default folding, use an autocommand to add your desired
 folding style instead.  For example: >
         autocmd FileType man setlocal foldmethod=indent foldenable
 
+MANPAGER				      *manpager.vim*
+
+The :Man command allows you to turn Vim into a manpager (that syntax highlights
+manpages and follows linked manpages on hitting CTRL-]).
+
+Works on:
+
+  - Linux
+  - Mac OS
+  - FreeBSD
+  - Cygwin
+  - Win 10 under Bash
+
+Untested:
+
+  - Amiga OS
+  - BeOS
+  - OS/2
+
+For bash,zsh,ksh or dash by adding to the config file (.bashrc,.zshrc, ...)
+
+	export MANPAGER="env MAN_PN=1 vim -M +MANPAGER -"
+
+For (t)csh by adding to the config file
+
+	setenv MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
+
+For fish by adding to the config file
+
+	set -x MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
+
+If man sets the $MAN_PN environment variable, like man-db, the most common
+implementation on Linux and Mac OS, then the "env MAN_PN=1 " part above is
+superfluous.
 
 PDF							*ft-pdf-plugin*
 
