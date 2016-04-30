@@ -1055,10 +1055,15 @@ func Test_out_close_cb()
   call ch_log('Test_out_close_cb()')
 
   let s:counter = 1
-  let s:outmsg = 0
+  let s:msg1 = ''
+  let s:msg2 = ''
   let s:closemsg = 0
   func! OutHandler(chan, msg)
-    let s:outmsg = s:counter
+    if s:counter == 1
+      let s:msg1 = a:msg
+    else
+      let s:msg2 = a:msg
+    endif
     let s:counter += 1
   endfunc
   func! CloseHandler(chan)
@@ -1070,9 +1075,10 @@ func Test_out_close_cb()
 	\ 'close_cb': 'CloseHandler'})
   call assert_equal("run", job_status(job))
   try
-    call s:waitFor('s:closemsg != 0 && s:outmsg != 0')
-    call assert_equal(1, s:outmsg)
-    call assert_equal(2, s:closemsg)
+    call s:waitFor('s:closemsg != 0 && s:msg2 != ""')
+    call assert_equal('quit', s:msg1)
+    call assert_equal('DETACH', s:msg2)
+    call assert_equal(3, s:closemsg)
   finally
     call job_stop(job)
     delfunc OutHandler

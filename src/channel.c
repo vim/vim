@@ -2478,6 +2478,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	   * first invoke the close callback.  Increment the refcount to avoid
 	   * the channel being freed halfway. */
 	  ++channel->ch_refcount;
+	  ch_log(channel, "Invoking callbacks before closing");
 	  for (part = PART_SOCK; part <= PART_ERR; ++part)
 	      while (may_invoke_callback(channel, part))
 		  ;
@@ -2783,7 +2784,7 @@ channel_close_on_error(channel_T *channel, int part, char *func)
      */
     if (channel->ch_part[part].ch_mode == MODE_RAW
 			     || channel->ch_part[part].ch_mode == MODE_NL)
-	channel_save(channel, part, (char_u *)DETACH_MSG_RAW,
+	channel_save(channel, PART_OUT, (char_u *)DETACH_MSG_RAW,
 			      (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
 
     /* When reading from stdout is not possible, assume the other side has
