@@ -175,6 +175,11 @@ qf_init(
 }
 
 /*
+ * Maximum number of bytes allowed per line while reading a errorfile.
+ */
+#define LINE_MAXLEN 4096
+
+/*
  * Read the errorfile "efile" into memory, line by line, building the error
  * list.
  * Alternative: when "efile" is null read errors from buffer "buf".
@@ -197,8 +202,15 @@ qf_init_ext(
 {
     char_u	    *namebuf;
     char_u	    *errmsg;
+    int		    errmsglen;
     char_u	    *pattern;
     char_u	    *fmtstr = NULL;
+    char_u	    *growbuf = NULL;
+    int		    growbuflen;
+    int		    growbufsiz;
+    char_u	    *linebuf;
+    int		    linelen;
+    int		    discard;
     int		    col = 0;
     char_u	    use_viscol = FALSE;
     int		    type = 0;
@@ -227,6 +239,7 @@ qf_init_ext(
     char_u	    *directory = NULL;
     char_u	    *currfile = NULL;
     char_u	    *tail = NULL;
+    char_u	    *p_buf = NULL;
     char_u	    *p_str = NULL;
     listitem_T	    *p_li = NULL;
     struct dir_stack_T  *file_stack = NULL;
@@ -250,7 +263,8 @@ qf_init_ext(
 		    };
 
     namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
-    errmsg = alloc_id(CMDBUFFSIZE + 1, aid_qf_errmsg);
+    errmsglen = CMDBUFFSIZE + 1;
+    errmsg = alloc_id(errmsglen, aid_qf_errmsg);
     pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
     if (namebuf == NULL || errmsg == NULL || pattern == NULL)
 	goto qf_init_end;
@@ -513,37 +527,87 @@ qf_init_ext(
 		    /* Get the next line from the supplied string */
 		    char_u *p;
 
-		    if (!*p_str) /* Reached the end of the string */
+		    if (*p_str == NUL) /* Reached the end of the string */
 			break;
 
 		    p = vim_strchr(p_str, '\n');
-		    if (p)
-			len = (int)(p - p_str + 1);
+		    if (p != NULL)
+			len = (int)(p - p_str) + 1;
 		    else
 			len = (int)STRLEN(p_str);
 
-		    if (len > CMDBUFFSIZE - 2)
-			vim_strncpy(IObuff, p_str, CMDBUFFSIZE - 2);
+		    if (len > IOSIZE - 2)
+		    {
+			/*
+			 * If the line exceeds LINE_MAXLEN exclude the last
+			 * byte since it's not a NL character.
+			 */
+			linelen = len > LINE_MAXLEN ? LINE_MAXLEN - 1 : len;
+			if (growbuf == NULL)
+			{
+			    growbuf = alloc(linelen);
+			    growbufsiz = linelen;
+			}
+			else if (linelen > growbufsiz)
+			{
+			    growbuf = vim_realloc(growbuf, linelen);
+			    if (growbuf == NULL)
+				goto qf_init_end;
+			    growbufsiz = linelen;
+			}
+			linebuf = growbuf;
+		    }
 		    else
-			vim_strncpy(IObuff, p_str, len);
+		    {
+			linebuf = IObuff;
+			linelen = len;
+		    }
+		    vim_strncpy(linebuf, p_str, linelen);
 
+		    /*
+		     * Increment using len in order to discard the rest of the
+		     * line if it exceeds LINE_MAXLEN.
+		     */
 		    p_str += len;
 		}
 		else if (tv->v_type == VAR_LIST)
 		{
 		    /* Get the next line from the supplied list */
-		    while (p_li && (p_li->li_tv.v_type != VAR_STRING
-				|| p_li->li_tv.vval.v_string == NULL))
+		    while (p_li != NULL
+			    && (p_li->li_tv.v_type != VAR_STRING
+					|| p_li->li_tv.vval.v_string == NULL))
 			p_li = p_li->li_next;	/* Skip non-string items */
 
-		    if (!p_li)			/* End of the list */
+		    if (p_li == NULL)		/* End of the list */
 			break;
 
 		    len = (int)STRLEN(p_li->li_tv.vval.v_string);
-		    if (len > CMDBUFFSIZE - 2)
-			len = CMDBUFFSIZE - 2;
+		    if (len > IOSIZE - 2)
+		    {
+			linelen = len;
+			if (linelen > LINE_MAXLEN)
+			    linelen = LINE_MAXLEN - 1;
+			if (growbuf == NULL)
+			{
+			    growbuf = alloc(linelen);
+			    growbufsiz = linelen;
+			}
+			else if (linelen > growbufsiz)
+			{
+			    if ((growbuf = vim_realloc(growbuf,
+					linelen)) == NULL)
+				goto qf_init_end;
+			    growbufsiz = linelen;
+			}
+			linebuf = growbuf;
+		    }
+		    else
+		    {
+			linebuf = IObuff;
+			linelen = len;
+		    }
 
-		    vim_strncpy(IObuff, p_li->li_tv.vval.v_string, len);
+		    vim_strncpy(linebuf, p_li->li_tv.vval.v_string, linelen);
 
 		    p_li = p_li->li_next;	/* next item */
 		}
@@ -553,23 +617,118 @@ qf_init_ext(
 		/* Get the next line from the supplied buffer */
 		if (buflnum > lnumlast)
 		    break;
-		vim_strncpy(IObuff, ml_get_buf(buf, buflnum++, FALSE),
-			    CMDBUFFSIZE - 2);
+		p_buf = ml_get_buf(buf, buflnum++, FALSE);
+		linelen = (int)STRLEN(p_buf);
+		if (linelen > IOSIZE - 2)
+		{
+		    if (growbuf == NULL)
+		    {
+			growbuf = alloc(linelen);
+			growbufsiz = linelen;
+		    }
+		    else if (linelen > growbufsiz)
+		    {
+			if (linelen > LINE_MAXLEN)
+			    linelen = LINE_MAXLEN - 1;
+			if ((growbuf = vim_realloc(growbuf, linelen)) == NULL)
+			    goto qf_init_end;
+			growbufsiz = linelen;
+		    }
+		    linebuf = growbuf;
+		}
+		else
+		    linebuf = IObuff;
+		vim_strncpy(linebuf, p_buf, linelen);
 	    }
 	}
-	else if (fgets((char *)IObuff, CMDBUFFSIZE - 2, fd) == NULL)
-	    break;
+	else
+	{
+	    if (fgets((char *)IObuff, IOSIZE, fd) == NULL)
+		break;
 
-	IObuff[CMDBUFFSIZE - 2] = NUL;  /* for very long lines */
-#ifdef FEAT_MBYTE
-	remove_bom(IObuff);
+	    discard = FALSE;
+	    linelen = (int)STRLEN(IObuff);
+	    if (linelen == IOSIZE - 1 && (IObuff[linelen - 1] != '\n'
+#ifdef USE_CRNL
+			|| IObuff[linelen - 1] != '\r'
+#endif
+			))
+	    {
+		/*
+		 * The current line exceeds IObuff, continue reading using
+		 * growbuf until EOL or LINE_MAXLEN bytes is read.
+		 */
+		if (growbuf == NULL)
+		{
+		    growbufsiz = 2 * (IOSIZE - 1);
+		    growbuf = alloc(growbufsiz);
+		    if (growbuf == NULL)
+			goto qf_init_end;
+		}
+
+		/* Copy the read part of the line, excluding null-terminator */
+		memcpy(growbuf, IObuff, IOSIZE - 1);
+		growbuflen = linelen;
+
+		for (;;)
+		{
+		    if (fgets((char *)growbuf + growbuflen,
+					 growbufsiz - growbuflen, fd) == NULL)
+			break;
+		    linelen = STRLEN(growbuf + growbuflen);
+		    growbuflen += linelen;
+		    if (growbuf[growbuflen - 1] == '\n'
+#ifdef USE_CRNL
+			    || growbuf[growbuflen - 1] == '\r'
+#endif
+				)
+			break;
+		    if (growbufsiz == LINE_MAXLEN)
+		    {
+			discard = TRUE;
+			break;
+		    }
+
+		    growbufsiz = 2 * growbufsiz < LINE_MAXLEN
+					       ? 2 * growbufsiz : LINE_MAXLEN;
+		    growbuf = vim_realloc(growbuf, 2 * growbufsiz);
+		    if (growbuf == NULL)
+			goto qf_init_end;
+		}
+
+		while (discard)
+		{
+		    /*
+		     * The current line is longer than LINE_MAXLEN, continue
+		     * reading but discard everything until EOL or EOF is
+		     * reached.
+		     */
+		    if (fgets((char *)IObuff, IOSIZE, fd) == NULL
+			    || (int)STRLEN(IObuff) < IOSIZE - 1
+			    || IObuff[IOSIZE - 1] == '\n'
+#ifdef USE_CRNL
+			    || IObuff[IOSIZE - 1] == '\r'
+#endif
+		       )
+			break;
+		}
+
+		linebuf = growbuf;
+		linelen = growbuflen;
+	    }
+	    else
+		linebuf = IObuff;
+	}
+
+	if (linelen > 0 && linebuf[linelen - 1] == '\n')
+	    linebuf[linelen - 1] = NUL;
+#ifdef USE_CRNL
+	if (linelen > 0 && linebuf[linelen - 1] == '\r')
+	    linebuf[linelen - 1] = NUL;
 #endif
 
-	if ((efmp = vim_strrchr(IObuff, '\n')) != NULL)
-	    *efmp = NUL;
-#ifdef USE_CRNL
-	if ((efmp = vim_strrchr(IObuff, '\r')) != NULL)
-	    *efmp = NUL;
+#ifdef FEAT_MBYTE
+	remove_bom(linebuf);
 #endif
 
 	/* If there was no %> item start at the first pattern */
@@ -606,7 +765,7 @@ restofline:
 	    tail = NULL;
 
 	    regmatch.regprog = fmt_ptr->prog;
-	    r = vim_regexec(&regmatch, IObuff, (colnr_T)0);
+	    r = vim_regexec(&regmatch, linebuf, (colnr_T)0);
 	    fmt_ptr->prog = regmatch.regprog;
 	    if (r)
 	    {
@@ -663,12 +822,27 @@ restofline:
 		    type = *regmatch.startp[i];
 		}
 		if (fmt_ptr->flags == '+' && !multiscan)	/* %+ */
-		    STRCPY(errmsg, IObuff);
+		{
+		    if (linelen > errmsglen) {
+			/* linelen + null terminator */
+			if ((errmsg = vim_realloc(errmsg, linelen + 1)) == NULL)
+			    goto qf_init_end;
+			errmsglen = linelen + 1;
+		    }
+		    vim_strncpy(errmsg, linebuf, linelen);
+		}
 		else if ((i = (int)fmt_ptr->addr[5]) > 0)	/* %m */
 		{
 		    if (regmatch.startp[i] == NULL || regmatch.endp[i] == NULL)
 			continue;
 		    len = (int)(regmatch.endp[i] - regmatch.startp[i]);
+		    if (len > errmsglen) {
+			/* len + null terminator */
+			if ((errmsg = vim_realloc(errmsg, len + 1))
+				== NULL)
+			    goto qf_init_end;
+			errmsglen = len + 1;
+		    }
 		    vim_strncpy(errmsg, regmatch.startp[i], len);
 		}
 		if ((i = (int)fmt_ptr->addr[6]) > 0)		/* %r */
@@ -742,7 +916,14 @@ restofline:
 	    namebuf[0] = NUL;		/* no match found, remove file name */
 	    lnum = 0;			/* don't jump to this line */
 	    valid = FALSE;
-	    STRCPY(errmsg, IObuff);	/* copy whole line to error message */
+	    if (linelen > errmsglen) {
+		/* linelen + null terminator */
+		if ((errmsg = vim_realloc(errmsg, linelen + 1)) == NULL)
+		    goto qf_init_end;
+		errmsglen = linelen + 1;
+	    }
+	    /* copy whole line to error message */
+	    vim_strncpy(errmsg, linebuf, linelen);
 	    if (fmt_ptr == NULL)
 		multiline = multiignore = FALSE;
 	}
@@ -878,6 +1059,7 @@ qf_init_end:
     vim_free(errmsg);
     vim_free(pattern);
     vim_free(fmtstr);
+    vim_free(growbuf);
 
 #ifdef FEAT_WINDOWS
     qf_update_buffer(qi, TRUE);
