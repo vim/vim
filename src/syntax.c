@@ -7795,13 +7795,7 @@ do_highlight(
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 		/* In GUI guifg colors are only used when recognized */
 		i = color_name2handle(arg);
-		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0
-#  ifdef FEAT_GUI
-			|| !(USE_24BIT)
-#  else
-			|| !p_tgc
-#  endif
-		   )
+		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
 		{
 		    HL_TABLE()[idx].sg_gui_fg = i;
 # endif
