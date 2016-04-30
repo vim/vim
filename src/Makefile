@@ -2608,6 +2608,7 @@ shadow:	runtime pixmaps
 				 ../../testdir/*.py \
 				 ../../testdir/python* \
 				 ../../testdir/sautest \
+				 ../../testdir/samples \
 				 ../../testdir/test83-tags? \
 				 ../../testdir/*.ok .
 
