@@ -414,7 +414,7 @@ call append("$", "hlsearch\thighlight all matches for the last used search patte
 call <SID>BinOptionG("hls", &hls)
 if has("termguicolors")
   call append("$", "termguicolors\tuse GUI colors for the terminal")
-  call <SID>BinOptionG("tgc", &gcol)
+  call <SID>BinOptionG("tgc", &tgc)
 endif
 if has("syntax")
   call append("$", "cursorcolumn\thighlight the screen column of the cursor")
