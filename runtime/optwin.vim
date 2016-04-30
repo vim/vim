@@ -412,7 +412,7 @@ call append("$", "highlight\twhich highlighting to use for various occasions")
 call <SID>OptionG("hl", &hl)
 call append("$", "hlsearch\thighlight all matches for the last used search pattern")
 call <SID>BinOptionG("hls", &hls)
-if has("termtruecolor")
+if has("termguicolors")
   call append("$", "termguicolors\tuse GUI colors for the terminal")
   call <SID>BinOptionG("tgc", &gcol)
 endif
