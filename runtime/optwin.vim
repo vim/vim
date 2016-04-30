@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2016 Apr 21
+" Last Change:	2016 Apr 30
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -412,6 +412,10 @@ call append("$", "highlight\twhich highlighting to use for various occasions")
 call <SID>OptionG("hl", &hl)
 call append("$", "hlsearch\thighlight all matches for the last used search pattern")
 call <SID>BinOptionG("hls", &hls)
+if has("termtruecolor")
+  call append("$", "termguicolors\tuse GUI colors for the terminal")
+  call <SID>BinOptionG("tgc", &gcol)
+endif
 if has("syntax")
   call append("$", "cursorcolumn\thighlight the screen column of the cursor")
   call append("$", "\t(local to window)")
