@@ -2595,7 +2595,7 @@ channel_free_all(void)
 #endif
 
 
-/* Sent when the channel is found closed when reading. */
+/* Sent when the netbeans channel is found closed when reading. */
 #define DETACH_MSG_RAW "DETACH\n"
 
 /* Buffer size for reading incoming messages. */
@@ -2766,7 +2766,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 }
 
     static void
-channel_close_on_error(channel_T *channel, int part, char *func)
+channel_close_on_error(channel_T *channel, char *func)
 {
     /* Do not call emsg(), most likely the other end just exited. */
     ch_errors(channel, "%s(): Cannot read from channel", func);
@@ -2780,10 +2780,9 @@ channel_close_on_error(channel_T *channel, int part, char *func)
      *		-> ui_breakcheck
      *		    -> gui event loop or select loop
      *			-> channel_read()
-     * Don't send "DETACH" for a JS or JSON channel.
+     * Only send "DETACH" for a netbeans channel.
      */
-    if (channel->ch_part[part].ch_mode == MODE_RAW
-			     || channel->ch_part[part].ch_mode == MODE_NL)
+    if (channel->ch_nb_close_cb != NULL)
 	channel_save(channel, PART_OUT, (char_u *)DETACH_MSG_RAW,
 			      (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
 
@@ -2847,7 +2846,7 @@ channel_read(channel_T *channel, int part, char *func)
 
     /* Reading a disconnection (readlen == 0), or an error. */
     if (readlen <= 0)
-	channel_close_on_error(channel, part, func);
+	channel_close_on_error(channel, func);
 
 #if defined(CH_HAS_GUI) && defined(FEAT_GUI_GTK)
     /* signal the main loop that there is something to read */
@@ -3119,8 +3118,7 @@ channel_handle_events(void)
 		if (r == CW_READY)
 		    channel_read(channel, part, "channel_handle_events");
 		else if (r == CW_ERROR)
-		    channel_close_on_error(channel, part,
-						   "channel_handle_events()");
+		    channel_close_on_error(channel, "channel_handle_events()");
 	    }
 	}
     }
