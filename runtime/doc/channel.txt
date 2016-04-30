@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 28
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Apr 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -396,6 +396,7 @@ To obtain the status of a channel: ch_status(channel).  The possible results
 are:
 	"fail"		Failed to open the channel.
 	"open"		The channel can be used.
+	"buffered"	The channel was closed but there is data to read.
 	"closed"	The channel was closed.
 
 To obtain the job associated with a channel: ch_getjob(channel)
@@ -451,7 +452,7 @@ it like this: >
     func MyHandler(channel, msg)
 
 Without the handler you need to read the output with |ch_read()| or
-|ch_readraw()|.
+|ch_readraw()|. You can do this in the close callback, see |read-in-close-cb|.
 
 The handler defined for "out_cb" will not receive stderr.  If you want to
 handle that separately, add an "err_cb" handler: >
@@ -489,6 +490,21 @@ A special mode is when "in_top" is set to zero and "in_bot" is not set: Every
 time a line is added to the buffer, the last-but-one line will be send to the
 job stdin.  This allows for editing the last line and sending it when pressing
 Enter.
+
+
+Reading job output in the close callback ~
+							*read-in-close-cb*
+If the job can take some time and you don't need intermediate results, you can
+add a close callback and read the output there: >
+
+	func! CloseHandler(channel)
+	  while ch_status(a:channel) == 'buffered'
+	    echomsg ch_read(a:channel)
+	  endwhile
+	endfunc
+	let job = job_start(command, {'close_cb': 'CloseHandler'})
+
+You will want to do something more useful than "echomsg".
 
 ==============================================================================
 9. Starting a job without a channel			*job-start-nochannel*

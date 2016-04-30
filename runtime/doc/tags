@@ -911,6 +911,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_%1'	term.txt	/*'t_%1'*
 't_%i'	term.txt	/*'t_%i'*
 't_&8'	term.txt	/*'t_&8'*
+'t_8b'	term.txt	/*'t_8b'*
+'t_8f'	term.txt	/*'t_8f'*
 't_@7'	term.txt	/*'t_@7'*
 't_AB'	term.txt	/*'t_AB'*
 't_AF'	term.txt	/*'t_AF'*
@@ -1046,11 +1048,13 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'term'	options.txt	/*'term'*
 'termbidi'	options.txt	/*'termbidi'*
 'termencoding'	options.txt	/*'termencoding'*
+'termguicolors'	options.txt	/*'termguicolors'*
 'terse'	options.txt	/*'terse'*
 'textauto'	options.txt	/*'textauto'*
 'textmode'	options.txt	/*'textmode'*
 'textwidth'	options.txt	/*'textwidth'*
 'tf'	options.txt	/*'tf'*
+'tgc'	options.txt	/*'tgc'*
 'tgst'	options.txt	/*'tgst'*
 'thesaurus'	options.txt	/*'thesaurus'*
 'tildeop'	options.txt	/*'tildeop'*
@@ -1286,6 +1290,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +tag_old_static	various.txt	/*+tag_old_static*
 +tcl	various.txt	/*+tcl*
 +tcl/dyn	various.txt	/*+tcl\/dyn*
++termguicolors	various.txt	/*+termguicolors*
 +terminfo	various.txt	/*+terminfo*
 +termresponse	various.txt	/*+termresponse*
 +textobjects	various.txt	/*+textobjects*
@@ -4443,6 +4448,8 @@ E923	eval.txt	/*E923*
 E924	quickfix.txt	/*E924*
 E925	quickfix.txt	/*E925*
 E926	quickfix.txt	/*E926*
+E927	eval.txt	/*E927*
+E928	eval.txt	/*E928*
 E93	windows.txt	/*E93*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
@@ -6257,6 +6264,7 @@ g:netrw_special_syntax	pi_netrw.txt	/*g:netrw_special_syntax*
 g:netrw_ssh_browse_reject	pi_netrw.txt	/*g:netrw_ssh_browse_reject*
 g:netrw_ssh_cmd	pi_netrw.txt	/*g:netrw_ssh_cmd*
 g:netrw_sshport	pi_netrw.txt	/*g:netrw_sshport*
+g:netrw_suppress_gx_mesg	pi_netrw.txt	/*g:netrw_suppress_gx_mesg*
 g:netrw_timefmt	pi_netrw.txt	/*g:netrw_timefmt*
 g:netrw_tmpfile_escape	pi_netrw.txt	/*g:netrw_tmpfile_escape*
 g:netrw_uid	pi_netrw.txt	/*g:netrw_uid*
@@ -7054,6 +7062,7 @@ maillist	intro.txt	/*maillist*
 maillist-archive	intro.txt	/*maillist-archive*
 make.vim	syntax.txt	/*make.vim*
 man.vim	filetype.txt	/*man.vim*
+manpager.vim	filetype.txt	/*manpager.vim*
 manual-copyright	usr_01.txt	/*manual-copyright*
 map()	eval.txt	/*map()*
 map-<SID>	map.txt	/*map-<SID>*
@@ -7867,6 +7876,7 @@ r	change.txt	/*r*
 range()	eval.txt	/*range()*
 raw-terminal-mode	term.txt	/*raw-terminal-mode*
 rcp	pi_netrw.txt	/*rcp*
+read-in-close-cb	channel.txt	/*read-in-close-cb*
 read-messages	insert.txt	/*read-messages*
 read-only-share	editing.txt	/*read-only-share*
 read-stdin	version5.txt	/*read-stdin*
@@ -8332,6 +8342,8 @@ t_#4	term.txt	/*t_#4*
 t_%1	term.txt	/*t_%1*
 t_%i	term.txt	/*t_%i*
 t_&8	term.txt	/*t_&8*
+t_8b	term.txt	/*t_8b*
+t_8f	term.txt	/*t_8f*
 t_@7	term.txt	/*t_@7*
 t_AB	term.txt	/*t_AB*
 t_AF	term.txt	/*t_AF*
@@ -9186,6 +9198,7 @@ xterm-save-screen	tips.txt	/*xterm-save-screen*
 xterm-screens	tips.txt	/*xterm-screens*
 xterm-scroll-region	term.txt	/*xterm-scroll-region*
 xterm-shifted-keys	term.txt	/*xterm-shifted-keys*
+xterm-true-color	term.txt	/*xterm-true-color*
 y	change.txt	/*y*
 yaml.vim	syntax.txt	/*yaml.vim*
 yank	change.txt	/*yank*

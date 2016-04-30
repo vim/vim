@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Apr 21
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,17 +34,36 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Athena version doesn't start up.  Related to termguicolors change. (Kelvin
+Lee)
+
+Test_out_close_cb sometimes fails.
+    Why is DETACH not send to OutHandler()?
+
+Vim reliably crashes when freeing the job and operator-pending mode is active.
+(James McCoy, 2016 Apr 26)
+
+Using close callback to read output doesn't work reliably.
+(Andrew Stewart, 2016 Apr 27)
+
+problem with "Ignore" after adding 'guicolors'. (Charles Campbell, 2016 Apr
+27)
+
 In test_partial when start_job() has a non-existing command memory leaks.
 
 Memory leak in test49
 Memory leak in test_alot, with matchstrpos()
 
+Packages:
 Also keep a list of loaded plugins, skip when encountered again?
 
 Vim.org: when a user already has a homepage, do show the field so that it can
 be deleted.
 
+Running gvim from Agide causes a crash.
+
 +channel:
+- Only add DETACH message for netbeans.
 - GUI:cursor blinking is irregular when invoking callbacks. (Ramel Eshed, 2016
   Apr 16) somehow remember the previous state?
 - When a message in the queue but there is no callback, drop it after a while?
@@ -66,6 +85,10 @@ Patch to fix invalid behavior with NULL list. (Nikolai Pavlov, #768)
 Also check :for.
 
 Regexp problems:
+- Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
+  (Manuel Ortega, 2016 Apr 24)
+  Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
+  LC_CTYPE
 - The regexp engines are not reentrant, causing havoc when interrupted by a
   remote expression or something else.  Move global variables onto the stack
   or into an allocated struct.
@@ -118,6 +141,10 @@ about /S and /D options (Ken Takata, 2016 Apr 13)
 
 Patch to make cursor blinking work better with GTK3. (Kazunobu Kuriyama, 2016
 Apr 19)  Need to check this works on Linux.
+Alternative:
+- add gui_restart_blink flag, set when key typed.
+- in gui_mch_start_blink(): continue if possible.
+- in gui_mch_stop_blink(): remember last state.
 
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
@@ -125,31 +152,19 @@ Add tests for using number larger than number of lines in buffer.
 Patch to fix escaping special characters for delete(). (tc-0, 2016 Mar 20,
 #700) Test fails on MS-Windows.
 
+When 'autochdir' is set, writing  new file does not change the current dir.
+(Dan Church, issue #777)
+
 ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
 Also with latest version.
 
-Patch to put undo options together in undo window.
-(Gary Johnson, 2016 Jan 28)
+Patch to load rgb.txt once. (Christian Brabandt, 2016 Apr 29)
 
 Still problems with 'emoji'.  See issue #721.  Patch 7.4.1697 half-fixes it.
 Avoid PLAN_WRITE in windgoto() ?
-
-AVR assembler syntax file. (Marius Ghita, #439)
-
-Patch to have better check for {action} argument of setqflist().
-Nikolai Pavlov, Feb 25, #661.  Can be even more strict.
-Also see patch from Hirohito Higashi, Feb 25.
-Updated patch, 2016 Mar 25.
-
-Patch to update the GTK icon cache when installing. (Kazunobu Kuriyama, 2016
-Feb 3)
-
-Patch for test86 and test87. (Roland Puntaier, #622)
+Should already never use utf-8 chars to position the cursor.
 
 Cannot delete a file with square brackets with delete(). (#696)
-
-Patch to add GUI colors to the terminal, when 'guicolors' is set. (ZyX, 2013
-Jan 26, update 2013 Dec 14, another 2014 Nov 22)
 
 Patch to add TabNew, TabNewEntered and TabClosed autocommand events.
 (Felipe Morales, 2015 Feb 1)
@@ -176,6 +191,11 @@ What does it change?
 It's possible to add ",," to 'wildignore', an empty entry.  Causes problems.
 Reject the value? #710.
 
+Patch to support strikethrough next to bold and italic. (Christian Brabandt,
+2013 Jul 30)  Update from Ken Takata, 2013 Oct 12.
+Update mentioned by Christian, 2016 Apr 25.
+Update from Ken Takata, 2016 Apr 26.
+
 Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
 More tests May 14. Update May 29.  Update Aug 10.
 Now part of large file patches. (Ken Takata, 2016 Feb 1)
@@ -185,7 +205,7 @@ Patches from Ken Takata might help (2014 Apr 17)
 Update 2016 Mar 28.  Can include all parts into one dist patch.
 
 Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
-Update 2016 Apr 4.
+Update 2016 Apr 24.
 
 Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
 Updated 2016 Feb 10
@@ -267,8 +287,8 @@ directory exists. (Sergio Gallelli, 2013 Dec 29)
     ":watchlist" lists the items. (Charles Campbell)
 Patch by Christian Brabandt, 2016 Feb 1.
 
-Patch to discard remainder of long error messages in quickfix, avoid using
-them as separate messages. (Anton Lindqvist, 2016 Apr 9, update Apr 13)
+If ":bd" also closes a Tab page then the " mark is not set.  (Harm te Hennepe,
+2016 Apr 25, #780)
 
 Patch to avoid redrawing tabline when the popup menu is visible.
 (Christian Brabandt, 2016 Jan 28)
@@ -1593,9 +1613,6 @@ probably causes this.
 
 'scrollbind' is not respected when deleting lines or undo. (Milan Vancura,
 2009 Jan 16)
-
-Patch to support strikethrough next to bold and italic. (Christian Brabandt,
-2013 Jul 30)  Update from Ken Takata, 2013 Oct 12.
 
 Document that default font in Athena can be set with resources:
    XtDefaultFont: "9x15"

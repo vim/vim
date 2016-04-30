@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.4.  Last change: 2016 Mar 30
+*quickref.txt*  For Vim version 7.4.  Last change: 2016 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -915,6 +915,7 @@ Short explanation of each option:		*option-list*
 'term'			    name of the terminal
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
+'termguicolors'	  'tgc'     use GUI colors for the terminal
 'terse'			    shorten some messages
 'textauto'	  'ta'	    obsolete, use 'fileformats'
 'textmode'	  'tx'	    obsolete, use 'fileformat'
