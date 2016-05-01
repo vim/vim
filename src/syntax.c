@@ -9261,8 +9261,8 @@ set_hl_attr(
 	at_en.ae_u.cterm.fg_color = sgp->sg_cterm_fg;
 	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
 # ifdef FEAT_TERMGUICOLORS
-	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB(sgp->sg_gui_fg);
-	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB(sgp->sg_gui_bg);
+	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
+	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
 # endif
 	sgp->sg_cterm_attr = get_attr_entry(&cterm_attr_table, &at_en);
     }
