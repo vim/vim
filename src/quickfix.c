@@ -545,12 +545,12 @@ qf_init_ext(
 			linelen = len > LINE_MAXLEN ? LINE_MAXLEN - 1 : len;
 			if (growbuf == NULL)
 			{
-			    growbuf = alloc(linelen);
+			    growbuf = alloc(linelen + 1);
 			    growbufsiz = linelen;
 			}
 			else if (linelen > growbufsiz)
 			{
-			    growbuf = vim_realloc(growbuf, linelen);
+			    growbuf = vim_realloc(growbuf, linelen + 1);
 			    if (growbuf == NULL)
 				goto qf_init_end;
 			    growbufsiz = linelen;
@@ -589,13 +589,13 @@ qf_init_ext(
 			    linelen = LINE_MAXLEN - 1;
 			if (growbuf == NULL)
 			{
-			    growbuf = alloc(linelen);
+			    growbuf = alloc(linelen + 1);
 			    growbufsiz = linelen;
 			}
 			else if (linelen > growbufsiz)
 			{
 			    if ((growbuf = vim_realloc(growbuf,
-					linelen)) == NULL)
+					linelen + 1)) == NULL)
 				goto qf_init_end;
 			    growbufsiz = linelen;
 			}
@@ -623,14 +623,14 @@ qf_init_ext(
 		{
 		    if (growbuf == NULL)
 		    {
-			growbuf = alloc(linelen);
+			growbuf = alloc(linelen + 1);
 			growbufsiz = linelen;
 		    }
 		    else if (linelen > growbufsiz)
 		    {
 			if (linelen > LINE_MAXLEN)
 			    linelen = LINE_MAXLEN - 1;
-			if ((growbuf = vim_realloc(growbuf, linelen)) == NULL)
+			if ((growbuf = vim_realloc(growbuf, linelen + 1)) == NULL)
 			    goto qf_init_end;
 			growbufsiz = linelen;
 		    }
