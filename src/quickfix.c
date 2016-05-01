@@ -207,9 +207,9 @@ qf_init_ext(
     char_u	    *fmtstr = NULL;
     char_u	    *growbuf = NULL;
     int		    growbuflen;
-    int		    growbufsiz;
-    char_u	    *linebuf;
-    int		    linelen;
+    int		    growbufsiz = 0;
+    char_u	    *linebuf = NULL;
+    int		    linelen = 0;
     int		    discard;
     int		    col = 0;
     char_u	    use_viscol = FALSE;
