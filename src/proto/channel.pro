@@ -49,6 +49,7 @@ void clear_job_options(jobopt_T *opt);
 void free_job_options(jobopt_T *opt);
 int get_job_options(typval_T *tv, jobopt_T *opt, int supported);
 channel_T *get_channel_arg(typval_T *tv, int check_open, int reading, int part);
+int set_ref_in_job(int copyID);
 void job_unref(job_T *job);
 int free_unused_jobs_contents(int copyID, int mask);
 void free_unused_jobs(int copyID, int mask);

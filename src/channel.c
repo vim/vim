@@ -3553,28 +3553,15 @@ set_ref_in_channel(int copyID)
 {
     int		abort = FALSE;
     channel_T	*channel;
-    int		part;
+    typval_T	tv;
 
     for (channel = first_channel; channel != NULL; channel = channel->ch_next)
-    {
-	for (part = PART_SOCK; part < PART_IN; ++part)
+	if (channel_still_useful(channel))
 	{
-	    jsonq_T *head = &channel->ch_part[part].ch_json_head;
-	    jsonq_T *item = head->jq_next;
-
-	    while (item != NULL)
-	    {
-		list_T	*l = item->jq_value->vval.v_list;
-
-		if (l->lv_copyID != copyID)
-		{
-		    l->lv_copyID = copyID;
-		    abort = abort || set_ref_in_list(l, copyID, NULL);
-		}
-		item = item->jq_next;
-	    }
+	    tv.v_type = VAR_CHANNEL;
+	    tv.vval.v_channel = channel;
+	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
 	}
-    }
     return abort;
 }
 
@@ -4090,6 +4077,26 @@ job_still_useful(job_T *job)
 	       && (job->jv_stoponexit != NULL || job->jv_exit_cb != NULL
 		   || (job->jv_channel != NULL
 		       && channel_still_useful(job->jv_channel)));
+}
+
+/*
+ * Mark references in jobs that are still useful.
+ */
+    int
+set_ref_in_job(int copyID)
+{
+    int		abort = FALSE;
+    job_T	*job;
+    typval_T	tv;
+
+    for (job = first_job; job != NULL; job = job->jv_next)
+	if (job_still_useful(job))
+	{
+	    tv.v_type = VAR_JOB;
+	    tv.vval.v_job = job;
+	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+	}
+    return abort;
 }
 
     void
