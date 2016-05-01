@@ -3292,9 +3292,14 @@ eval_for_line(
 	if (!skip)
 	{
 	    l = tv.vval.v_list;
-	    if (tv.v_type != VAR_LIST || l == NULL)
+	    if (tv.v_type != VAR_LIST)
 	    {
 		EMSG(_(e_listreq));
+		clear_tv(&tv);
+	    }
+	    else if (l == NULL)
+	    {
+		/* a null list is like an empty list: do nothing */
 		clear_tv(&tv);
 	    }
 	    else
