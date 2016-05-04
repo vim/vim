@@ -2,6 +2,11 @@ Test for mappings and abbreviations
 
 STARTTEST
 :so small.vim
+:if !(has('langmap')&&has('keymap'))
+   e! test.ok
+   w! test.out
+   qa!
+:endif
 :so mbyte.vim
 :set encoding=utf-8
 : " abbreviations with р (0x80) should work
@@ -145,10 +150,6 @@ Test2: text wit a (here some more text [und undo]uk.u
 :set whichwrap=<,>,[,]
 G3o2k
 :exe ":norm! iTest3: text with a (parenthesis here\<C-G>U\<Right>new line here\<esc>\<up>\<up>."
-
-
-
-:call feedkeys(has('langmap')&&has('keymap')?"G":"ggVGd:r test_mapping.ok")
 
 :/^test/,$w! test.out
 :qa!
