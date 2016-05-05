@@ -2630,15 +2630,19 @@ term_color(char_u *s, int n)
 		  || STRCMP(s + i + 1, "%dm") == 0)
 	      && (s[i] == '3' || s[i] == '4'))
     {
-	sprintf(buf,
 #ifdef TERMINFO
+	sprintf(buf,
 		"%s%s%%p1%%dm",
-#else
-		"%s%s%%dm",
-#endif
 		i == 2 ? IF_EB("\033[", ESC_STR "[") : "\233",
 		s[i] == '3' ? (n >= 16 ? "38;5;" : "9")
 			    : (n >= 16 ? "48;5;" : "10"));
+#else
+	sprintf(buf,
+		"%s%s%%dm",
+		i == 2 ? IF_EB("\033[", ESC_STR "[") : "\233",
+		s[i] == '3' ? (n >= 16 ? "38;5;" : "9")
+			    : (n >= 16 ? "48;5;" : "10"));
+#endif
 	OUT_STR(tgoto(buf, 0, n >= 16 ? n : n - 8));
     }
     else

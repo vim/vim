@@ -2293,13 +2293,20 @@ parse_line:
 			    p[len] = '@';
 			    STRCPY(p + len + 1, help_lang);
 #endif
+
+
+#ifdef FEAT_MULTI_LANG
 			    sprintf((char *)p + len + 1 + ML_EXTRA, "%06d",
 				    help_heuristic(tagp.tagname,
 					match_re ? matchoff : 0, !match_no_ic)
-#ifdef FEAT_MULTI_LANG
 				    + help_pri
-#endif
 				    );
+#else
+			    sprintf((char *)p + len + 1 + ML_EXTRA, "%06d",
+				    help_heuristic(tagp.tagname,
+					match_re ? matchoff : 0, !match_no_ic)
+				    );
+#endif
 			}
 			*tagp.tagname_end = TAB;
 		    }
