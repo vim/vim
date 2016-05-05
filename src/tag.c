@@ -2264,6 +2264,7 @@ parse_line:
 		if (ga_grow(&ga_match[mtt], 1) == OK)
 		{
 		    int len;
+		    int heuristic;
 
 		    if (help_only)
 		    {
@@ -2293,13 +2294,14 @@ parse_line:
 			    p[len] = '@';
 			    STRCPY(p + len + 1, help_lang);
 #endif
-			    sprintf((char *)p + len + 1 + ML_EXTRA, "%06d",
-				    help_heuristic(tagp.tagname,
-					match_re ? matchoff : 0, !match_no_ic)
+
+			    heuristic = help_heuristic(tagp.tagname,
+					match_re ? matchoff : 0, !match_no_ic);
 #ifdef FEAT_MULTI_LANG
-				    + help_pri
+			    heuristic += help_pri;
 #endif
-				    );
+			    sprintf((char *)p + len + 1 + ML_EXTRA, "%06d",
+								   heuristic);
 			}
 			*tagp.tagname_end = TAB;
 		    }

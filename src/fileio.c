@@ -5230,14 +5230,14 @@ msg_add_lines(
     if (insert_space)
 	*p++ = ' ';
     if (shortmess(SHM_LINES))
-	sprintf((char *)p,
 #ifdef LONG_LONG_OFF_T
-		"%ldL, %lldC", lnum, (long long)nchars
+	sprintf((char *)p,
+		"%ldL, %lldC", lnum, (long long)nchars);
 #else
+	sprintf((char *)p,
 		/* Explicit typecast avoids warning on Mac OS X 10.6 */
-		"%ldL, %ldC", lnum, (long)nchars
+		"%ldL, %ldC", lnum, (long)nchars);
 #endif
-		);
     else
     {
 	if (lnum == 1)
@@ -5248,14 +5248,14 @@ msg_add_lines(
 	if (nchars == 1)
 	    STRCPY(p, _("1 character"));
 	else
-	    sprintf((char *)p,
 #ifdef LONG_LONG_OFF_T
-		    _("%lld characters"), (long long)nchars
+	    sprintf((char *)p,
+		    _("%lld characters"), (long long)nchars);
 #else
+	    sprintf((char *)p,
 		    /* Explicit typecast avoids warning on Mac OS X 10.6 */
-		    _("%ld characters"), (long)nchars
+		    _("%ld characters"), (long)nchars);
 #endif
-		    );
     }
 }
 
