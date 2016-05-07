@@ -7709,6 +7709,7 @@ netbeans_enabled	Compiled with support for |netbeans| and connected.
 netbeans_intg		Compiled with support for |netbeans|.
 ole			Compiled with OLE automation support for Win32.
 os2			OS/2 version of Vim.
+packages		Compiled with support for |packages|
 path_extra		Compiled with up/downwards search in 'path' and 'tags'
 perl			Compiled with Perl interface.
 persistent_undo		Compiled with support for persistent undo history.
