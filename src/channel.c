@@ -4144,7 +4144,7 @@ free_unused_jobs_contents(int copyID, int mask)
 	     * recurse into Lists, Dictionaries etc. */
 	    job_free_contents(job);
 	    did_free = TRUE;
-    }
+	}
     return did_free;
 }
 
@@ -4234,7 +4234,7 @@ job_stop_on_exit()
 }
 
 /*
- * Called once in a while: check if any jobs with an "exit_cb" have ended.
+ * Called once in a while: check if any jobs that seem useful have ended.
  */
     void
 job_check_ended(void)
@@ -4252,7 +4252,7 @@ job_check_ended(void)
 	for (job = first_job; job != NULL; job = next)
 	{
 	    next = job->jv_next;
-	    if (job->jv_status == JOB_STARTED && job->jv_exit_cb != NULL)
+	    if (job->jv_status == JOB_STARTED && job_still_useful(job))
 		job_status(job); /* may free "job" */
 	}
     }
