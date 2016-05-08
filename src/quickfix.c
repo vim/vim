@@ -675,7 +675,7 @@ qf_init_ext(
 		    if (fgets((char *)growbuf + growbuflen,
 					 growbufsiz - growbuflen, fd) == NULL)
 			break;
-		    linelen = STRLEN(growbuf + growbuflen);
+		    linelen = (int)STRLEN(growbuf + growbuflen);
 		    growbuflen += linelen;
 		    if (growbuf[growbuflen - 1] == '\n'
 #ifdef USE_CRNL
