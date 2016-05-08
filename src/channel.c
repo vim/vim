@@ -352,6 +352,10 @@ channel_still_useful(channel_T *channel)
     if (channel->ch_close_cb != NULL)
 	return TRUE;
 
+    /* If reading from or a buffer it's still useful. */
+    if (channel->ch_part[PART_IN].ch_buffer != NULL)
+	return TRUE;
+
     /* If there is no callback then nobody can get readahead.  If the fd is
      * closed and there is no readahead then the callback won't be called. */
     has_sock_msg = channel->ch_part[PART_SOCK].ch_fd != INVALID_FD
@@ -365,8 +369,10 @@ channel_still_useful(channel_T *channel)
 		  || channel->ch_part[PART_ERR].ch_json_head.jq_next != NULL;
     return (channel->ch_callback != NULL && (has_sock_msg
 		|| has_out_msg || has_err_msg))
-	    || (channel->ch_part[PART_OUT].ch_callback != NULL && has_out_msg)
-	    || (channel->ch_part[PART_ERR].ch_callback != NULL && has_err_msg);
+	    || ((channel->ch_part[PART_OUT].ch_callback != NULL
+		      || channel->ch_part[PART_OUT].ch_buffer) && has_out_msg)
+	    || ((channel->ch_part[PART_ERR].ch_callback != NULL
+		     || channel->ch_part[PART_ERR].ch_buffer) && has_err_msg);
 }
 
 /*
