@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Apr 26
+*eval.txt*	For Vim version 7.4.  Last change: 2016 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7709,6 +7709,7 @@ netbeans_enabled	Compiled with support for |netbeans| and connected.
 netbeans_intg		Compiled with support for |netbeans|.
 ole			Compiled with OLE automation support for Win32.
 os2			OS/2 version of Vim.
+packages		Compiled with |packages| support.
 path_extra		Compiled with up/downwards search in 'path' and 'tags'
 perl			Compiled with Perl interface.
 persistent_undo		Compiled with support for persistent undo history.
@@ -7742,9 +7743,9 @@ tag_old_static		Compiled with support for old static tags
 tag_any_white		Compiled with support for any white characters in tags
 			files |tag-any-white|.
 tcl			Compiled with Tcl interface.
+termguicolors		Compiled with true color in terminal support.
 terminfo		Compiled with terminfo instead of termcap.
 termresponse		Compiled with support for |t_RV| and |v:termresponse|.
-termtruecolor		Compiled with true color in terminal support.
 textobjects		Compiled with support for |text-objects|.
 tgetent			Compiled with tgetent support, able to use a termcap
 			or terminfo file.

@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Apr 26
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -253,10 +253,6 @@ message, it must use the number zero:
 
 Then channel handler will then get {response} converted to Vim types.  If the
 channel does not have a handler the message is dropped.
-
-On read error or ch_close(), when using a socket with RAW or NL mode, the
-string "DETACH\n" is sent, if still possible.  The channel will then be
-inactive.
 
 It is also possible to use ch_sendraw() and ch_evalraw() on a JSON or JS
 channel.  The caller is then completely responsible for correct encoding and

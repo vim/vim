@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Apr 30
+*todo.txt*      For Vim version 7.4.  Last change: 2016 May 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,36 +34,30 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Athena version doesn't start up.  Related to termguicolors change. (Kelvin
-Lee)
-
-Test_out_close_cb sometimes fails.
-    Why is DETACH not send to OutHandler()?
-
-Vim reliably crashes when freeing the job and operator-pending mode is active.
-(James McCoy, 2016 Apr 26)
-
-Using close callback to read output doesn't work reliably.
-(Andrew Stewart, 2016 Apr 27)
+Crash when running a job a second time. (stewart, May 4)
 
 problem with "Ignore" after adding 'guicolors'. (Charles Campbell, 2016 Apr
 27)
 
 In test_partial when start_job() has a non-existing command memory leaks.
 
+Rename garbagecollect_for_testing() to test_garbagecollect_now().
+Add test_get_null_list(), use in test_expr.
+
 Memory leak in test49
 Memory leak in test_alot, with matchstrpos()
 
 Packages:
-Also keep a list of loaded plugins, skip when encountered again?
+- Add the "after" directory to 'runtimepath' only if it exists.
+  (Greg Hurrell, May 1)
+- Also keep a list of loaded plugins, skip when encountered again?
 
 Vim.org: when a user already has a homepage, do show the field so that it can
 be deleted.
 
-Running gvim from Agide causes a crash.
-
 +channel:
-- Only add DETACH message for netbeans.
+- When running "echo hello" the job remains defunc. (Nicola, May 7)
+- Feedback from Ramel Eshed, May 7.  Occasional crashes.
 - GUI:cursor blinking is irregular when invoking callbacks. (Ramel Eshed, 2016
   Apr 16) somehow remember the previous state?
 - When a message in the queue but there is no callback, drop it after a while?
@@ -80,9 +74,6 @@ Later
     With xterm could use -S{pty}.
 
 Make it so that the window ID can be used where currently a window nr is used
-
-Patch to fix invalid behavior with NULL list. (Nikolai Pavlov, #768)
-Also check :for.
 
 Regexp problems:
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
@@ -139,6 +130,9 @@ What if there is an invalid character?
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 
+Patch to avoid reallocating buffer for quickfix lines three times.
+(Yegappan Lakshmanan, 2016 May 7)
+
 Patch to make cursor blinking work better with GTK3. (Kazunobu Kuriyama, 2016
 Apr 19)  Need to check this works on Linux.
 Alternative:
@@ -151,6 +145,11 @@ Add tests for using number larger than number of lines in buffer.
 
 Patch to fix escaping special characters for delete(). (tc-0, 2016 Mar 20,
 #700) Test fails on MS-Windows.
+
+Invalid behavior with NULL list. (Nikolai Pavlov, #768)
+
+After patch 7.4.1818 the language is removed too often. (Ken Takata, 2016 May
+5)
 
 When 'autochdir' is set, writing  new file does not change the current dir.
 (Dan Church, issue #777)
@@ -834,6 +833,7 @@ optional. (2013 Jul 12)
 Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
 
 Improve the installer for MS-Windows.  There are a few alternatives:
+- Add silent install option. (Shane Lee, #751)
 - Installer from Cream (Steve Hall).
 - Modern UI 2.0 for the Nsis installer. (Guopeng Wen)
     https://github.com/gpwen/vim-installer-mui2

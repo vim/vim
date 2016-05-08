@@ -1,6 +1,6 @@
 " Vim plugin for using Vim as manpager.
 " Maintainer: Enno Nagel <ennonagel+vim@gmail.com>
-" Last Change: 2016 Apr 30
+" Last Change: 2016 May 07
 
 " $MAN_PN is supposed to be set by MANPAGER, see ":help manpager.vim".
 if empty($MAN_PN)
@@ -20,10 +20,10 @@ function! s:MANPAGER()
     let manpage = expand('$MAN_PN')
   endif
 
-  let page_sec = matchlist( manpage, '^' . pagesec_pattern  . '$')
+  let page_sec = matchlist(tolower(manpage), '^' . pagesec_pattern  . '$')
 
   bwipe!
 
   setlocal filetype=man
-  exe 'Man' page_sec[3] page_sec[1]
+  exe 'Man' page_sec[1] page_sec[0]
 endfunction

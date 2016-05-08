@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2016 Apr 29
+*various.txt*   For Vim version 7.4.  Last change: 2016 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -391,6 +391,7 @@ m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
 m  *+ole*		Win32 GUI only: |ole-interface|
+N  *+packages*		Loading |packages|
 N  *+path_extra*	Up/downwards search in 'path' and 'tags'
 m  *+perl*		Perl interface |perl|
 m  *+perl/dyn*		Perl interface |perl-dynamic| |/dyn|
