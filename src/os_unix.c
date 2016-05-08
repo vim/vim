@@ -5195,7 +5195,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	/* set up stdout for the child */
 	if (use_null_for_out && null_fd >= 0)
 	{
-	    close(0);
+	    close(1);
 	    ignored = dup(null_fd);
 	}
 	else
@@ -5206,6 +5206,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	    ignored = dup(fd_out[1]);
 	    close(fd_out[1]);
 	}
+
 	if (null_fd >= 0)
 	    close(null_fd);
 
