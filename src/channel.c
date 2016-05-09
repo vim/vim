@@ -59,6 +59,9 @@ static void channel_read(channel_T *channel, int part, char *func);
 /* Whether a redraw is needed for appending a line to a buffer. */
 static int channel_need_redraw = FALSE;
 
+/* Whether we are inside channel_parse_messages() or another situation where it
+ * is safe to invoke callbacks. */
+static int safe_to_invoke_callback = 0;
 
 #ifdef WIN32
     static int
@@ -403,8 +406,15 @@ channel_free(channel_T *channel)
 {
     if (!in_free_unref_items)
     {
-	channel_free_contents(channel);
-	channel_free_channel(channel);
+	if (safe_to_invoke_callback == 0)
+	{
+	    channel->ch_to_be_freed = TRUE;
+	}
+	else
+	{
+	    channel_free_contents(channel);
+	    channel_free_channel(channel);
+	}
     }
 }
 
@@ -444,6 +454,10 @@ free_unused_channels_contents(int copyID, int mask)
     int		did_free = FALSE;
     channel_T	*ch;
 
+    /* This is invoked from the garbage collector, which only runs at a safe
+     * point. */
+    ++safe_to_invoke_callback;
+
     for (ch = first_channel; ch != NULL; ch = ch->ch_next)
 	if (!channel_still_useful(ch)
 				 && (ch->ch_copyID & mask) != (copyID & mask))
@@ -453,6 +467,8 @@ free_unused_channels_contents(int copyID, int mask)
 	    channel_free_contents(ch);
 	    did_free = TRUE;
 	}
+
+    --safe_to_invoke_callback;
     return did_free;
 }
 
@@ -1449,6 +1465,9 @@ invoke_callback(channel_T *channel, char_u *callback, partial_T *partial,
 {
     typval_T	rettv;
     int		dummy;
+
+    if (safe_to_invoke_callback == 0)
+	EMSG("INTERNAL: Invoking callback when it is not safe");
 
     argv[0].v_type = VAR_CHANNEL;
     argv[0].vval.v_channel = channel;
@@ -3515,6 +3534,8 @@ channel_parse_messages(void)
     int		r;
     int		part = PART_SOCK;
 
+    ++safe_to_invoke_callback;
+
     /* Only do this message when another message was given, otherwise we get
      * lots of them. */
     if (did_log_msg)
@@ -3529,6 +3550,13 @@ channel_parse_messages(void)
 	    channel->ch_to_be_closed = FALSE;
 	    channel_close_now(channel);
 	    /* channel may have been freed, start over */
+	    channel = first_channel;
+	    continue;
+	}
+	if (channel->ch_to_be_freed)
+	{
+	    channel_free(channel);
+	    /* channel has been freed, start over */
 	    channel = first_channel;
 	    continue;
 	}
@@ -3571,6 +3599,8 @@ channel_parse_messages(void)
 	channel_need_redraw = FALSE;
 	redraw_after_callback();
     }
+
+    --safe_to_invoke_callback;
 
     return ret;
 }
