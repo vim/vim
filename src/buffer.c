@@ -676,6 +676,9 @@ free_buffer(buf_T *buf)
 #ifdef FEAT_RUBY
     ruby_buffer_free(buf);
 #endif
+#ifdef FEAT_JOB_CHANNEL
+    channel_buffer_free(buf);
+#endif
 #ifdef FEAT_AUTOCMD
     aubuflocal_remove(buf);
     if (autocmd_busy)

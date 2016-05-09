@@ -1068,6 +1068,7 @@ channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
 
 /*
  * Find a buffer matching "name" or create a new one.
+ * Returns NULL if there is something very wrong (error already reported).
  */
     static buf_T *
 find_buffer(char_u *name, int err)
@@ -1081,6 +1082,8 @@ find_buffer(char_u *name, int err)
     {
 	buf = buflist_new(name == NULL || *name == NUL ? NULL : name,
 					       NULL, (linenr_T)0, BLN_LISTED);
+	if (buf == NULL)
+	    return NULL;
 	buf_copy_options(buf, BCO_ENTER);
 	curbuf = buf;
 #ifdef FEAT_QUICKFIX
@@ -1187,37 +1190,54 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 
     if ((opt->jo_set & JO_OUT_IO) && opt->jo_io[PART_OUT] == JIO_BUFFER)
     {
+	buf_T *buf;
+
 	/* writing output to a buffer. Default mode is NL. */
 	if (!(opt->jo_set & JO_OUT_MODE))
 	    channel->ch_part[PART_OUT].ch_mode = MODE_NL;
 	if (opt->jo_set & JO_OUT_BUF)
-	    channel->ch_part[PART_OUT].ch_buffer =
-				     buflist_findnr(opt->jo_io_buf[PART_OUT]);
+	{
+	    buf = buflist_findnr(opt->jo_io_buf[PART_OUT]);
+	    if (buf == NULL)
+		EMSGN(_(e_nobufnr), (long)opt->jo_io_buf[PART_OUT]);
+	}
 	else
-	    channel->ch_part[PART_OUT].ch_buffer =
-				find_buffer(opt->jo_io_name[PART_OUT], FALSE);
-	ch_logs(channel, "writing out to buffer '%s'",
-		      (char *)channel->ch_part[PART_OUT].ch_buffer->b_ffname);
+	{
+	    buf = find_buffer(opt->jo_io_name[PART_OUT], FALSE);
+	}
+	if (buf != NULL)
+	{
+	    ch_logs(channel, "writing out to buffer '%s'",
+						       (char *)buf->b_ffname);
+	    channel->ch_part[PART_OUT].ch_buffer = buf;
+	}
     }
 
     if ((opt->jo_set & JO_ERR_IO) && (opt->jo_io[PART_ERR] == JIO_BUFFER
 	 || (opt->jo_io[PART_ERR] == JIO_OUT && (opt->jo_set & JO_OUT_IO)
 				       && opt->jo_io[PART_OUT] == JIO_BUFFER)))
     {
+	buf_T *buf;
+
 	/* writing err to a buffer. Default mode is NL. */
 	if (!(opt->jo_set & JO_ERR_MODE))
 	    channel->ch_part[PART_ERR].ch_mode = MODE_NL;
 	if (opt->jo_io[PART_ERR] == JIO_OUT)
-	    channel->ch_part[PART_ERR].ch_buffer =
-					 channel->ch_part[PART_OUT].ch_buffer;
+	    buf = channel->ch_part[PART_OUT].ch_buffer;
 	else if (opt->jo_set & JO_ERR_BUF)
-	    channel->ch_part[PART_ERR].ch_buffer =
-				     buflist_findnr(opt->jo_io_buf[PART_ERR]);
+	{
+	    buf = buflist_findnr(opt->jo_io_buf[PART_ERR]);
+	    if (buf == NULL)
+		EMSGN(_(e_nobufnr), (long)opt->jo_io_buf[PART_ERR]);
+	}
 	else
-	    channel->ch_part[PART_ERR].ch_buffer =
-				 find_buffer(opt->jo_io_name[PART_ERR], TRUE);
-	ch_logs(channel, "writing err to buffer '%s'",
-		      (char *)channel->ch_part[PART_ERR].ch_buffer->b_ffname);
+	    buf = find_buffer(opt->jo_io_name[PART_ERR], TRUE);
+	if (buf != NULL)
+	{
+	    ch_logs(channel, "writing err to buffer '%s'",
+						       (char *)buf->b_ffname);
+	    channel->ch_part[PART_ERR].ch_buffer = buf;
+	}
     }
 
     channel->ch_part[PART_OUT].ch_io = opt->jo_io[PART_OUT];
@@ -1385,6 +1405,25 @@ channel_write_in(channel_T *channel)
     else
 	ch_logn(channel, "Still %d more lines to write",
 					  buf->b_ml.ml_line_count - lnum + 1);
+}
+
+/*
+ * Handle buffer "buf" beeing freed, remove it from any channels.
+ */
+    void
+channel_buffer_free(buf_T *buf)
+{
+    channel_T	*channel;
+    int		part;
+
+    for (channel = first_channel; channel != NULL; channel = channel->ch_next)
+	for (part = PART_SOCK; part <= PART_IN; ++part)
+	{
+	    chanpart_T  *ch_part = &channel->ch_part[part];
+
+	    if (ch_part->ch_buffer == buf)
+		ch_part->ch_buffer = NULL;
+	}
 }
 
 /*
