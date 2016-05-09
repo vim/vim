@@ -2782,7 +2782,8 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 channel_close_on_error(channel_T *channel, char *func)
 {
     /* Do not call emsg(), most likely the other end just exited. */
-    ch_errors(channel, "%s(): Cannot read from channel", func);
+    ch_errors(channel, "%s(): Cannot read from channel, will close it soon",
+									func);
 
     /* Queue a "DETACH" netbeans message in the command queue in order to
      * terminate the netbeans session later. Do not end the session here
@@ -2800,7 +2801,15 @@ channel_close_on_error(channel_T *channel, char *func)
 			      (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
 
     /* When reading from stdout is not possible, assume the other side has
-     * died. */
+     * died.  Don't close the channel right away, it may be the wrong moment
+     * to invoke callbacks. */
+    channel->ch_to_be_closed = TRUE;
+}
+
+    static void
+channel_close_now(channel_T *channel)
+{
+    ch_log(channel, "Closing channel because of previous read error");
     channel_close(channel, TRUE);
     if (channel->ch_nb_close_cb != NULL)
 	(*channel->ch_nb_close_cb)();
@@ -3515,6 +3524,14 @@ channel_parse_messages(void)
     }
     while (channel != NULL)
     {
+	if (channel->ch_to_be_closed)
+	{
+	    channel->ch_to_be_closed = FALSE;
+	    channel_close_now(channel);
+	    /* channel may have been freed, start over */
+	    channel = first_channel;
+	    continue;
+	}
 	if (channel->ch_refcount == 0 && !channel_still_useful(channel))
 	{
 	    /* channel is no longer useful, free it */

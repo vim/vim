@@ -1416,6 +1416,9 @@ struct channel_S {
     char	*ch_hostname;	/* only for socket, allocated */
     int		ch_port;	/* only for socket */
 
+    int		ch_to_be_closed; /* When TRUE reading or writing failed and
+				  * the channel must be closed when it's safe
+				  * to invoke callbacks. */
     int		ch_error;	/* When TRUE an error was reported.  Avoids
 				 * giving pages full of error messages when
 				 * the other side has exited, only mention the
