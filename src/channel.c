@@ -63,6 +63,8 @@ static int channel_need_redraw = FALSE;
  * is safe to invoke callbacks. */
 static int safe_to_invoke_callback = 0;
 
+static char *part_names[] = {"sock", "out", "err", "in"};
+
 #ifdef WIN32
     static int
 fd_read(sock_T fd, char *buf, size_t len)
@@ -1422,7 +1424,11 @@ channel_buffer_free(buf_T *buf)
 	    chanpart_T  *ch_part = &channel->ch_part[part];
 
 	    if (ch_part->ch_buffer == buf)
+	    {
+		ch_logs(channel, "%s buffer has been wiped out",
+							    part_names[part]);
 		ch_part->ch_buffer = NULL;
+	    }
 	}
 }
 
