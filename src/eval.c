@@ -20733,8 +20733,14 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
     static void
 f_timer_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    timer_T *timer = find_timer(get_tv_number(&argvars[0]));
+    timer_T *timer;
 
+    if (argvars[0].v_type != VAR_NUMBER)
+    {
+         EMSG(_(e_number_exp));
+         return;
+    }
+    timer = find_timer(get_tv_number(&argvars[0]));
     if (timer != NULL)
 	stop_timer(timer);
 }
