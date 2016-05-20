@@ -256,7 +256,7 @@ syn region  groovyString          start=+'+ end=+'+ end=+$+ contains=groovySpeci
 syn region  groovyString          start=+"""+ end=+"""+ contains=groovySpecialChar,groovySpecialError,@Spell,groovyELExpr
 syn region  groovyString          start=+'''+ end=+'''+ contains=groovySpecialChar,groovySpecialError,@Spell
 " regex string
-syn region groovyString           start='/[^/]'  end='/' contains=groovySpecialChar,groovyRegexChar,groovyELExpr
+syn region groovyString           start='/[^*/]'  end='/' contains=groovySpecialChar,groovyRegexChar,groovyELExpr
 " syn region groovyELExpr start=+${+ end=+}+ keepend contained
 syn match groovyELExpr /\${.\{-}}/ contained
 syn match groovyELExpr /\$[a-zA-Z_][a-zA-Z0-9_.]*/ contained
