@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Apr 14
+*version8.txt*  For Vim version 8.0.  Last change: 2016 May 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13,10 +13,8 @@ found below |vim-7.4|.  Use this command to see the version you are using: >
 	:version
 
 See |vi_diff.txt| for an overview of differences between Vi and Vim 7.0.
-See |version4.txt| for differences between Vim 3.x and Vim 4.x.
-See |version5.txt| for differences between Vim 4.x and Vim 5.x.
-See |version6.txt| for differences between Vim 5.x and Vim 6.x.
-See |version7.txt| for differences between Vim 6.x and Vim 7.x.
+See |version4.txt|, |version5.txt|, |version6.txt| and |version7.txt| for
+differences between other versions.
 
 INCOMPATIBLE CHANGES			|incompatible-8|
 

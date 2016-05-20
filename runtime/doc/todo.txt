@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 May 08
+*todo.txt*      For Vim version 7.4.  Last change: 2016 May 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,7 +34,13 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Crash when running a job a second time. (stewart, May 4)
+Close_cb crash. (Luc Hermitte, 2016 May 10)
+Stack trace by Dominique, May 10.
+Reference count in partial dict wrong?
+
+Any other callbacks that could be invoked at the wrong moment?
+
+If removing buffer that's being read from, close channel?
 
 problem with "Ignore" after adding 'guicolors'. (Charles Campbell, 2016 Apr
 27)
@@ -55,14 +61,37 @@ Packages:
 Vim.org: when a user already has a homepage, do show the field so that it can
 be deleted.
 
+Patch to fix memory leak (Justin Keyes, 2016 May 16, #811)
+Instead free before assigning, set to NULL after free.
+
+Comparing partials doesn't work well. (Nikolai Pavlov, 2016 May 17, #813)
+Examples in the form of a test (May 19)
+
+Documentation for partials is lacking.
+- Add "partial" and "partials" tag.
+- Assigning to a dict member creates a partial.
+    How to store a partial associated with dictA in dictB? Add help for this.
+    See comments on #812.
+- using dict.Func for function() is broken: not true (Nikolai Pavlov, May 20)
+
+Patch to fix that BufUnload is triggered twice. (Hirohito Higashi, 2016 May
+14)
+
 +channel:
-- When running "echo hello" the job remains defunc. (Nicola, May 7)
 - Feedback from Ramel Eshed, May 7.  Occasional crashes.
+- Close_cb isn't invoked when output goes to a buffer. (Luc Hermitte)
+- close_cb and exit_cb not invoked when using jo_stop() on Windows.
+  (Linwei, 2016 May 18, #817)
+  Similar problem, related to keeping reference to job. (Skywind, May 18)
+- Recursive callback call?  (Luc Hermitte, 2016 May 17)
 - GUI:cursor blinking is irregular when invoking callbacks. (Ramel Eshed, 2016
   Apr 16) somehow remember the previous state?
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
   minute.  Option to set the droptime.
+- Inefficiency in ch_read() with very long lines.  Reallocating buffer with
+  small increments in channel_collapse().  Avoid calling strlen() too often.
+  Add an option to drop text of very long lines?  Default to 1 Mbyte.
 - Add remark about undo sync, is there a way to force it?
 - When starting a job, have an option to open the server socket, so we know
   the port, and pass it to the command with --socket-fd {nr}. (Olaf Dabrunz,
@@ -148,7 +177,13 @@ Patch to fix escaping special characters for delete(). (tc-0, 2016 Mar 20,
 
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 
-After patch 7.4.1818 the language is removed too often. (Ken Takata, 2016 May
+Patch to fix using CTRL-] on "{address}." in help. (Hirohito Higashi, 2016 May
+18, #814)
+
+&t_ut not used with 'termguicolors' is set. (Jacob Niehus, 2016 May 14, #804)
+Patch to fix this, Jacob Niehus, 2016 May 14, #805)
+
+For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
 5)
 
 When 'autochdir' is set, writing  new file does not change the current dir.
@@ -181,6 +216,10 @@ Patch for C syntax HL. (Bradley Garagan, 2016 Apr 17) #763
 Patch to make matchit work better, respect 'matchpairs'. (Ken Takata, 2016 Mar
 25)
 
+Possibly wrong value for seq_cur. (Florent Fayolle, 2016 May 15, #806)
+
+Patch to improve map documentation. Issue #799.
+
 We can use '. to go to the last change in the current buffer, but how about
 the last change in any buffer?  Can we use ', (, is next to .)?
 
@@ -205,6 +244,12 @@ Update 2016 Mar 28.  Can include all parts into one dist patch.
 
 Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
 Update 2016 Apr 24.
+
+Patch for groovy multi-line comment highlighting. (Justin M. Keyes, 2016 May
+20 #644)
+
+When doing "vi buf.md" a BufNew autocommand for *.md is not triggered.
+Because of using the initial buffer? (Dun Peal, 2016 May 12)
 
 Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
 Updated 2016 Feb 10

@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Apr 30
+*channel.txt*      For Vim version 7.4.  Last change: 2016 May 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -146,11 +146,19 @@ Use |ch_status()| to see if the channel could be opened.
 		For all callbacks: Use |function()| to bind it to arguments
 		and/or a Dictionary.  Or use the form "dict.function" to bind
 		the Dictionary.
+
+		Callbacks are only called at a "safe" moment, usually when Vim
+		is waiting for the user to type a character.  Vim does not use
+		multi-threading.
+
 							*close_cb*
 "close_cb"	A function that is called when the channel gets closed, other
 		than by calling ch_close().  It should be defined like this: >
 	func MyCloseHandler(channel)
-<							*waittime*
+<		Vim will invoke callbacks that handle data before invoking
+		close_cb, thus when this function is called no more data will
+		be received.
+							*waittime*
 "waittime"	The time to wait for the connection to be made in
 		milliseconds.  A negative number waits forever.
 
@@ -572,6 +580,8 @@ See |job_setoptions()| and |ch_setoptions()|.
 			Vim checks about every 10 seconds for jobs that ended.
 			The callback can also be triggered by calling
 			|job_status()|.
+			Note that data can be buffered, callbacks may still be
+			called after the process ends.
 							*job-timeout*
 "timeout"		The time to wait for a request when blocking, E.g.
 			when using ch_evalexpr().  In milliseconds.  The

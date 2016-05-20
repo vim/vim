@@ -1261,6 +1261,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +mzscheme/dyn	various.txt	/*+mzscheme\/dyn*
 +netbeans_intg	various.txt	/*+netbeans_intg*
 +ole	various.txt	/*+ole*
++packages	various.txt	/*+packages*
 +path_extra	various.txt	/*+path_extra*
 +perl	various.txt	/*+perl*
 +perl/dyn	various.txt	/*+perl\/dyn*

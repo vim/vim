@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Apr 21
+*options.txt*	For Vim version 7.4.  Last change: 2016 May 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3635,7 +3635,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		      SYMBOL, THAI, TURKISH, VIETNAMESE ANSI and BALTIC.
 		      Normally you would use "cDEFAULT".
 		qXX - quality XX.  Valid quality names are: PROOF, DRAFT,
-		      ANTIALIASED, UNANTIALIASED, CLEARTYPE, DEFAULT.
+		      ANTIALIASED, NONANTIALIASED, CLEARTYPE, DEFAULT.
 		      Normally you would use "qDEFAULT".
 		      Some quality values isn't supported in legacy OSs.
 
