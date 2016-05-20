@@ -2,7 +2,8 @@
 " Compiler:         GNU C Compiler
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
 " Latest Revision:  2010-10-14
-" 			added line suggested by Anton Lindqvist 2016 Mar 31
+"           added line suggested by Anton Lindqvist 2016 Mar 31
+"           CMake support by Fernando Castillo      2016 May 19
 
 if exists("current_compiler")
   finish
@@ -32,6 +33,15 @@ CompilerSet errorformat=
       \%D%*\\a:\ Entering\ directory\ [`']%f',
       \%X%*\\a:\ Leaving\ directory\ [`']%f',
       \%DMaking\ %*\\a\ in\ %f
+
+" CMake
+CompilerSet errorformat+=%E%.%#CMake\ Error\ at\ %f:%l%.%#
+CompilerSet errorformat+=%E%.%#CMake\ Error\ in\ %f:%.%#
+CompilerSet errorformat+=%Z%.%#CMake\ Error:%.%#
+CompilerSet errorformat+=%Z--\ Configuring\ incomplete%.%#
+CompilerSet errorformat+=%C%.%#:%l%.%#
+CompilerSet errorformat+=%C%m
+CompilerSet errorformat+=%C%.%#
 
 if exists('g:compiler_gcc_ignore_unmatched_lines')
   CompilerSet errorformat+=%-G%.%#
