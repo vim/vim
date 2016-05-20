@@ -416,7 +416,7 @@ if !exists("g:netrw_localmovecmd")
   let g:netrw_localmovecmd= ""
  endif
 endif
-if v:version < 704 || !has("patch1109")
+if v:version < 704 || !has("patch1109")  || g:netrw_localrmdir != "rmdir"
  if exists("g:netrw_local_rmdir")
   let g:netrw_localrmdir= g:netrw_local_rmdir
   call netrw#ErrorMsg(s:NOTE,"g:netrw_local_rmdir is deprecated in favor of g:netrw_localrmdir",86)
