@@ -263,6 +263,27 @@ processing a quickfix or location list command, it will be aborted.
 :lad[dexpr] {expr}	Same as ":caddexpr", except the location list for the
 			current window is used instead of the quickfix list.
 
+							*:cfilt* *:cfilter*
+:cfilt[er][!] {pattern}	Create a new quickfix list with entries in the current
+			quickfix list matching {pattern}. Only the text or
+			error message of the valid entries and the full path of
+			their filenames are used for the match. See |vimgrep|
+			for an explanation of {pattern}.  Both 'ignorecase' and
+			'smartcase' are used.
+			With [!], entries not matching {pattern} are used. When
+			no matches are found, an empty quickfix list is
+			created.  The new quickfix list is added after the
+			current list and the following lists (if any) are
+			freed.  Examples: >
+				:cfilter Line\d\+
+				:cfilter /will allocate/
+				:cfilter //
+				:cfilter! /fname_expand/
+<
+							*:lfilt* *:lfilter*
+:lfilt[er][!] {pattern}	Same as ":cfilter", except the location list for the
+			current window is used instead of the quickfix list.
+
 							*:cl* *:clist*
 :cl[ist] [from] [, [to]]
 			List all errors that are valid |quickfix-valid|.

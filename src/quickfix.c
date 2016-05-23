@@ -4827,6 +4827,144 @@ ex_cexpr(exarg_T *eap)
 #endif
 
 /*
+ * ":cfilter {pattern}"
+ * ":lfilter {pattern}"
+ */
+    void
+ex_cfilter(exarg_T *eap)
+{
+    qf_info_T	*qi = &ql_info;
+    regmatch_T	regmatch;
+    char_u	*save_cmd;
+    char_u	*p;
+    char_u	*s;
+    int		i;
+    int		qf_count;
+    qfline_T	*qfp;
+    int		add_entry;
+    int		matched;
+    qfline_T	*prevp = NULL;
+    buf_T	*buf = NULL;
+
+    if (eap->cmdidx == CMD_lfilter)
+    {
+	qi = GET_LOC_LIST(curwin);
+	if (qi == NULL)
+	{
+	    EMSG(_(e_loclist));
+	    return;
+	}
+    }
+
+    if (qi->qf_curlist >= qi->qf_listcount
+	    || qi->qf_lists[qi->qf_curlist].qf_count == 0)
+    {
+	EMSG(_(e_quickfix));
+	return;
+    }
+
+    if (qi->qf_lists[qi->qf_curlist].qf_nonevalid)
+	return;
+
+    /* skip_vimgrep_pat changes the command line, so save it */
+    save_cmd = vim_strsave(*eap->cmdlinep);
+
+    /* Get the search pattern: either white-separated or enclosed in // */
+    regmatch.regprog = NULL;
+    p = skip_vimgrep_pat(eap->arg, &s, NULL);
+    if (p == NULL)
+    {
+	EMSG(_(e_invalpat));
+	goto theend;
+    }
+
+    if (s != NULL && *s == NUL)
+    {
+	/* Pattern is empty, use last search pattern. */
+	if (last_search_pat() == NULL)
+	{
+	    EMSG(_(e_noprevre));
+	    goto theend;
+	}
+	s = last_search_pat();
+    }
+
+    regmatch.regprog = vim_regcomp(s, RE_MAGIC + RE_STRING);
+    regmatch.rm_ic = ignorecase(s);
+
+    if (regmatch.regprog == NULL)
+	goto theend;
+
+    qfp = qi->qf_lists[qi->qf_curlist].qf_start;
+    qf_count = qi->qf_lists[qi->qf_curlist].qf_count;
+
+    /* create a new quickfix list */
+    qf_new_list(qi, save_cmd);
+
+    for (i = 0; !got_int && i < qf_count; i++, qfp = qfp->qf_next)
+    {
+	if (!qfp->qf_valid)
+	    continue;	/* search in only valid entries */
+
+	matched = FALSE;
+	if (vim_regexec(&regmatch, qfp->qf_text, (colnr_T)0))
+	    matched = TRUE;
+	else if (qfp->qf_fnum != 0)
+	{
+	    /* Try matching the file name */
+	    buf = buflist_findnr(qfp->qf_fnum);
+	    if (buf != NULL && buf->b_ffname != NULL)
+		if (vim_regexec(&regmatch, buf->b_ffname, (colnr_T)0))
+		    matched = TRUE;
+	}
+
+	add_entry = FALSE;
+	if (matched)
+	{
+	    if (!eap->forceit)
+		add_entry = TRUE;
+	} else if (eap->forceit)
+	    add_entry = TRUE;
+
+	if (add_entry)
+	{
+	    if (qf_add_entry(qi, &prevp,
+			NULL,	/* dir */
+			NULL,	/* file name */
+			qfp->qf_fnum,
+			qfp->qf_text,
+			qfp->qf_lnum,
+			qfp->qf_col,
+			qfp->qf_viscol,
+			qfp->qf_pattern,
+			qfp->qf_nr,
+			qfp->qf_type,
+			qfp->qf_valid
+			) == FAIL)
+		break;
+	}
+    }
+
+    if (qi->qf_lists[qi->qf_curlist].qf_index == 0)
+	/* no valid entry */
+	qi->qf_lists[qi->qf_curlist].qf_nonevalid = TRUE;
+    else
+	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
+    qi->qf_lists[qi->qf_curlist].qf_ptr =
+	qi->qf_lists[qi->qf_curlist].qf_start;
+    qi->qf_lists[qi->qf_curlist].qf_index = 1;
+
+    vim_regfree(regmatch.regprog);
+
+#ifdef FEAT_WINDOWS
+    qf_update_buffer(qi, TRUE);
+#endif
+
+theend:
+    vim_free(save_cmd);
+}
+
+/*
  * ":helpgrep {pattern}"
  */
     void
