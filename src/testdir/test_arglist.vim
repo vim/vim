@@ -278,14 +278,53 @@ func Test_arglistid()
   call assert_equal(0, arglistid())
 endfunc
 
-" Test for argv()
+" Tests for argv() and argc()
 func Test_argv()
   call Reset_arglist()
   call assert_equal([], argv())
   call assert_equal("", argv(2))
+  call assert_equal(0, argc())
   argadd a b c d
   call assert_equal('c', argv(2))
-endfunc
+  call assert_equal(4, argc())
+
+  split
+  arglocal
+  args e f g
+  tabnew | split
+  argglobal
+  tabfirst
+  call assert_equal(3, argc(1))
+  call assert_equal('f', argv(1, 1))
+  call assert_equal(['e', 'f', 'g'], argv(-1, 1))
+  call assert_equal(4, argc(2))
+  call assert_equal('b', argv(1, 2))
+  call assert_equal(['a', 'b', 'c', 'd'], argv(-1, 2))
+  call assert_equal(4, argc(1, 2))
+  call assert_equal('c', argv(2, 1, 2))
+  call assert_equal(['a', 'b', 'c', 'd'], argv(-1, 1, 2))
+  call assert_equal(3, argc(2, 2))
+  call assert_equal('e', argv(0, 2, 2))
+  call assert_equal(['e', 'f', 'g'], argv(-1, 2, 2))
+  call assert_equal(4, argc(-1))
+  call assert_equal(4, argc(-1, -1))
+  call assert_equal(3, argc())
+  call assert_equal('d', argv(3, -1))
+  call assert_equal('d', argv(3, -1, -1))
+  call assert_equal(['a', 'b', 'c', 'd'], argv(-1, -1))
+  call assert_equal(['a', 'b', 'c', 'd'], argv(-1, -1, -1))
+  tabonly | only | enew!
+  " Negative test cases
+  call assert_equal(-1, argc(10))
+  call assert_equal(-1, argc(1, 10))
+  call assert_equal('', argv(1, 10))
+  call assert_equal('', argv(1, 1, 10))
+  call assert_equal('', argv(10, 1, 1))
+  call assert_equal([], argv(-1, 10))
+  call assert_equal([], argv(-1, 1, 10))
+  call assert_equal('', argv(10, -1))
+  call assert_equal('', argv(10, -1, -1))
+endfunction
 
 " Test for the :argedit command
 func Test_argedit()
