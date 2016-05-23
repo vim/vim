@@ -7001,10 +7001,8 @@ gui_mch_menu_grey(
     }
     else
 #endif
-    if (grey)
-	EnableMenuItem(s_menuBar, menu->id, MF_BYCOMMAND | MF_GRAYED);
-    else
-	EnableMenuItem(s_menuBar, menu->id, MF_BYCOMMAND | MF_ENABLED);
+    (void)EnableMenuItem(menu->parent ? menu->parent->submenu_id : s_menuBar,
+	    menu->id, MF_BYCOMMAND | (grey ? MF_GRAYED : MF_ENABLED));
 
 #ifdef FEAT_TEAROFF
     if ((menu->parent != NULL) && (IsWindow(menu->parent->tearoff_handle)))
