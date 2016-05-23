@@ -24,6 +24,7 @@ endif
 
 setlocal suffixesadd=.m
 setlocal suffixes+=.asv
+setlocal commentstring=#%s
 
 let b:undo_ftplugin = "setlocal suffixesadd< suffixes< "
 	\ . "| unlet! b:match_words"
