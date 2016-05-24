@@ -574,9 +574,12 @@ buf_freeall(buf_T *buf, int flags)
     int		is_curbuf = (buf == curbuf);
 
     buf->b_closing = TRUE;
-    apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname, FALSE, buf);
-    if (!buf_valid(buf))	    /* autocommands may delete the buffer */
-	return;
+    if (buf->b_ml.ml_mfp != NULL)
+    {
+	apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname, FALSE, buf);
+	if (!buf_valid(buf))	    /* autocommands may delete the buffer */
+	    return;
+    }
     if ((flags & BFA_DEL) && buf->b_p_bl)
     {
 	apply_autocmds(EVENT_BUFDELETE, buf->b_fname, buf->b_fname, FALSE, buf);
