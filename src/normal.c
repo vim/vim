@@ -5485,10 +5485,12 @@ nv_ident(cmdarg_T *cap)
 {
     char_u	*ptr = NULL;
     char_u	*buf;
+    unsigned	buflen;
     char_u	*newbuf;
     char_u	*p;
     char_u	*kp;		/* value of 'keywordprg' */
-    int		kp_help;	/* 'keywordprg' is ":help" */
+    int		kp_help;	/* 'keywordprg' is ":he" */
+    int		kp_ex;		/* 'keywordprg' starts with ":" */
     int		n = 0;		/* init for GCC */
     int		cmdchar;
     int		g_cmd;		/* "g" command */
@@ -5536,7 +5538,9 @@ nv_ident(cmdarg_T *cap)
     kp = (*curbuf->b_p_kp == NUL ? p_kp : curbuf->b_p_kp);
     kp_help = (*kp == NUL || STRCMP(kp, ":he") == 0
 						 || STRCMP(kp, ":help") == 0);
-    buf = alloc((unsigned)(n * 2 + 30 + STRLEN(kp)));
+    kp_ex = (*kp == ':');
+    buflen = (unsigned)(n * 2 + 30 + STRLEN(kp));
+    buf = alloc(buflen);
     if (buf == NULL)
 	return;
     buf[0] = NUL;
@@ -5562,6 +5566,15 @@ nv_ident(cmdarg_T *cap)
 	case 'K':
 	    if (kp_help)
 		STRCPY(buf, "he! ");
+	    else if (kp_ex)
+	    {
+		if (cap->count0 != 0)
+		    vim_snprintf((char *)buf, buflen, "%s %ld",
+							     kp, cap->count0);
+		else
+		    STRCPY(buf, kp);
+		STRCAT(buf, " ");
+	    }
 	    else
 	    {
 		/* An external command will probably use an argument starting
