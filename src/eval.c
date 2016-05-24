@@ -9069,14 +9069,12 @@ call_func(
 
     if (partial != NULL)
     {
-	if (partial->pt_dict != NULL)
-	{
-	    /* When the function has a partial with a dict and there is a dict
-	     * argument, use the dict argument.  That is backwards compatible.
-	     */
-	    if (selfdict_in == NULL)
-		selfdict = partial->pt_dict;
-	}
+	/* When the function has a partial with a dict and there is a dict
+	 * argument, use the dict argument.  That is backwards compatible.
+	 * When the dict was bound explicitly use the one from the partial. */
+	if (partial->pt_dict != NULL
+		&& (selfdict_in == NULL || !partial->pt_auto))
+	    selfdict = partial->pt_dict;
 	if (error == ERROR_NONE && partial->pt_argc > 0)
 	{
 	    for (argv_clear = 0; argv_clear < partial->pt_argc; ++argv_clear)
@@ -12330,12 +12328,16 @@ f_function(typval_T *argvars, typval_T *rettv)
 		 * use "dict".  That is backwards compatible. */
 		if (dict_idx > 0)
 		{
+		    /* The dict is bound explicitly, pt_auto is FALSE. */
 		    pt->pt_dict = argvars[dict_idx].vval.v_dict;
 		    ++pt->pt_dict->dv_refcount;
 		}
 		else if (arg_pt != NULL)
 		{
+		    /* If the dict was bound automatically the result is also
+		     * bound automatically. */
 		    pt->pt_dict = arg_pt->pt_dict;
+		    pt->pt_auto = arg_pt->pt_auto;
 		    if (pt->pt_dict != NULL)
 			++pt->pt_dict->dv_refcount;
 		}
@@ -22279,8 +22281,14 @@ handle_subscript(
 	}
     }
 
-    if ((rettv->v_type == VAR_FUNC || rettv->v_type == VAR_PARTIAL)
-							  && selfdict != NULL)
+    /* Turn "dict.Func" into a partial for "Func" bound to "dict".
+     * Don't do this when "Func" is already a partial that was bound
+     * explicitly (pt_auto is FALSE). */
+    if (selfdict != NULL
+	    && (rettv->v_type == VAR_FUNC
+		|| (rettv->v_type == VAR_PARTIAL
+		    && (rettv->vval.v_partial->pt_auto
+			|| rettv->vval.v_partial->pt_dict == NULL))))
     {
 	char_u	    *fname = rettv->v_type == VAR_FUNC ? rettv->vval.v_string
 					     : rettv->vval.v_partial->pt_name;
@@ -22294,7 +22302,6 @@ handle_subscript(
 	fp = find_func(fname);
 	vim_free(tofree);
 
-	/* Turn "dict.Func" into a partial for "Func" with "dict". */
 	if (fp != NULL && (fp->uf_flags & FC_DICT))
 	{
 	    partial_T	*pt = (partial_T *)alloc_clear(sizeof(partial_T));
@@ -22303,6 +22310,7 @@ handle_subscript(
 	    {
 		pt->pt_refcount = 1;
 		pt->pt_dict = selfdict;
+		pt->pt_auto = TRUE;
 		selfdict = NULL;
 		if (rettv->v_type == VAR_FUNC)
 		{

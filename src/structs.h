@@ -1261,6 +1261,8 @@ struct partial_S
 {
     int		pt_refcount;	/* reference count */
     char_u	*pt_name;	/* function name */
+    int		pt_auto;	/* when TRUE the partial was created for using
+				   dict.member in handle_subscript() */
     int		pt_argc;	/* number of arguments */
     typval_T	*pt_argv;	/* arguments in allocated array */
     dict_T	*pt_dict;	/* dict for "self" */

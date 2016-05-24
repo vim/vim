@@ -257,3 +257,25 @@ func Test_ref_job_partial_dict()
     call job_setoptions(g:ref_job, {'exit_cb': function('string', [], d)})
   endif
 endfunc
+
+func Test_auto_partial_rebind()
+  let dict1 = {'name': 'dict1'}
+  func! dict1.f1()
+    return self.name
+  endfunc
+  let dict1.f2 = function(dict1.f1, dict1)
+
+  call assert_equal('dict1', dict1.f1())
+  call assert_equal('dict1', dict1['f1']())
+  call assert_equal('dict1', dict1.f2())
+  call assert_equal('dict1', dict1['f2']())
+
+  let dict2 = {'name': 'dict2'}
+  let dict2.f1 = dict1.f1
+  let dict2.f2 = dict1.f2
+
+  call assert_equal('dict2', dict2.f1())
+  call assert_equal('dict2', dict2['f1']())
+  call assert_equal('dict1', dict2.f2())
+  call assert_equal('dict1', dict2['f2']())
+endfunc
