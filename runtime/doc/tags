@@ -4589,6 +4589,7 @@ PHP_outdentSLComments	indent.txt	/*PHP_outdentSLComments*
 PHP_outdentphpescape	indent.txt	/*PHP_outdentphpescape*
 PHP_removeCRwhenUnix	indent.txt	/*PHP_removeCRwhenUnix*
 PHP_vintage_case_default_indent	indent.txt	/*PHP_vintage_case_default_indent*
+Partial	eval.txt	/*Partial*
 Pattern	pattern.txt	/*Pattern*
 Perl	if_perl.txt	/*Perl*
 Posix	intro.txt	/*Posix*
@@ -5562,6 +5563,7 @@ delete()	eval.txt	/*delete()*
 delete-insert	change.txt	/*delete-insert*
 delete-menus	gui.txt	/*delete-menus*
 deleting	change.txt	/*deleting*
+demoserver.py	channel.txt	/*demoserver.py*
 design-assumptions	develop.txt	/*design-assumptions*
 design-compatible	develop.txt	/*design-compatible*
 design-decisions	develop.txt	/*design-decisions*
@@ -6351,7 +6353,6 @@ g`	motion.txt	/*g`*
 g`a	motion.txt	/*g`a*
 ga	various.txt	/*ga*
 garbagecollect()	eval.txt	/*garbagecollect()*
-garbagecollect_for_testing()	eval.txt	/*garbagecollect_for_testing()*
 gd	pattern.txt	/*gd*
 gdb	debug.txt	/*gdb*
 ge	motion.txt	/*ge*
@@ -8611,6 +8612,13 @@ terminal-options	term.txt	/*terminal-options*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*
+test_garbagecollect_now()	eval.txt	/*test_garbagecollect_now()*
+test_null_channel()	eval.txt	/*test_null_channel()*
+test_null_dict()	eval.txt	/*test_null_dict()*
+test_null_job()	eval.txt	/*test_null_job()*
+test_null_list()	eval.txt	/*test_null_list()*
+test_null_partial()	eval.txt	/*test_null_partial()*
+test_null_string()	eval.txt	/*test_null_string()*
 testing-variable	eval.txt	/*testing-variable*
 tex-cchar	syntax.txt	/*tex-cchar*
 tex-cole	syntax.txt	/*tex-cole*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 May 20
+*todo.txt*      For Vim version 7.4.  Last change: 2016 May 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -42,40 +42,25 @@ Any other callbacks that could be invoked at the wrong moment?
 
 If removing buffer that's being read from, close channel?
 
-problem with "Ignore" after adding 'guicolors'. (Charles Campbell, 2016 Apr
+Problem with "Ignore" after adding 'guicolors'. (Charles Campbell, 2016 Apr
 27)
 
-In test_partial when start_job() has a non-existing command memory leaks.
-
-Rename garbagecollect_for_testing() to test_garbagecollect_now().
-Add test_get_null_list(), use in test_expr.
+In test_partial when start_job() has a non-existing command memory (a dict
+item) leaks.
 
 Memory leak in test49
 Memory leak in test_alot, with matchstrpos()
 
 Packages:
-- Add the "after" directory to 'runtimepath' only if it exists.
+- Add the "after" directory to 'runtimepath', only if it exists.
   (Greg Hurrell, May 1)
 - Also keep a list of loaded plugins, skip when encountered again?
 
 Vim.org: when a user already has a homepage, do show the field so that it can
 be deleted.
 
-Patch to fix memory leak (Justin Keyes, 2016 May 16, #811)
-Instead free before assigning, set to NULL after free.
-
 Comparing partials doesn't work well. (Nikolai Pavlov, 2016 May 17, #813)
 Examples in the form of a test (May 19)
-
-Documentation for partials is lacking.
-- Add "partial" and "partials" tag.
-- Assigning to a dict member creates a partial.
-    How to store a partial associated with dictA in dictB? Add help for this.
-    See comments on #812.
-- using dict.Func for function() is broken: not true (Nikolai Pavlov, May 20)
-
-Patch to fix that BufUnload is triggered twice. (Hirohito Higashi, 2016 May
-14)
 
 +channel:
 - Feedback from Ramel Eshed, May 7.  Occasional crashes.
@@ -153,14 +138,13 @@ Regexp problems:
 
 Using freed memory in quickfix code. (Dominique, 2016 Mar 21)
 
+User commands: add a <> item to pass on command modifiers, such as ":tab".
+
 jsonencode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
-
-Patch to avoid reallocating buffer for quickfix lines three times.
-(Yegappan Lakshmanan, 2016 May 7)
 
 Patch to make cursor blinking work better with GTK3. (Kazunobu Kuriyama, 2016
 Apr 19)  Need to check this works on Linux.
@@ -180,14 +164,22 @@ Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 Patch to fix using CTRL-] on "{address}." in help. (Hirohito Higashi, 2016 May
 18, #814)
 
+Patch to reduce number of memory allocations for quickfix lines.
+(Yegappan Lakshmanan, 2016 May 22, #831)
+
+Patch to fix greying popup menu items. (Shane Harper, 2016 May 23, #834)
+
 &t_ut not used with 'termguicolors' is set. (Jacob Niehus, 2016 May 14, #804)
 Patch to fix this, Jacob Niehus, 2016 May 14, #805)
 
 For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
 5)
 
+Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
+
 When 'autochdir' is set, writing  new file does not change the current dir.
 (Dan Church, issue #777)
+Patch to fix this. (mister fish (Allen Haim), 2016 May 14, #803)
 
 ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
 Also with latest version.
@@ -420,7 +412,7 @@ Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
-13, last version)  Update Mar 21., Apr 2.
+13, last version)  Update May 22, #830.
 
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?

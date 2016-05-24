@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.4.  Last change: 2016 Apr 30
+*filetype.txt*  For Vim version 7.4.  Last change: 2016 May 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -584,6 +584,10 @@ To enable folding use this: >
 If you do not like the default folding, use an autocommand to add your desired
 folding style instead.  For example: >
         autocmd FileType man setlocal foldmethod=indent foldenable
+
+You may also want to set 'keywordprg' to make the |K| command open a manual
+page in a Vim window: >
+	set keywordprg=:Man
 
 
 MANPAGER				      *manpager.vim*

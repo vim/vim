@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 May 19
+*channel.txt*      For Vim version 7.4.  Last change: 2016 May 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -61,7 +61,7 @@ Common combination are:
   crosss-refrences in a database.
 
 ==============================================================================
-2. Channel demo						*channel-demo*
+2. Channel demo				*channel-demo* *demoserver.py*
 
 This requires Python.  The demo program can be found in
 $VIMRUNTIME/tools/demoserver.py
