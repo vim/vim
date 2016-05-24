@@ -12423,17 +12423,27 @@ f_get(typval_T *argvars, typval_T *rettv)
 		tv = &di->di_tv;
 	}
     }
-    else if (argvars[0].v_type == VAR_PARTIAL)
+    else if (argvars[0].v_type == VAR_PARTIAL || argvars[0].v_type == VAR_FUNC)
     {
-	partial_T	*pt = argvars[0].vval.v_partial;
+	partial_T	*pt;
+	partial_T	fref_pt;
+
+	if (argvars[0].v_type == VAR_PARTIAL)
+	    pt = argvars[0].vval.v_partial;
+	else
+	{
+	    vim_memset(&fref_pt, 0, sizeof(fref_pt));
+	    fref_pt.pt_name = argvars[0].vval.v_string;
+	    pt = &fref_pt;
+	}
 
 	if (pt != NULL)
 	{
 	    char_u *what = get_tv_string(&argvars[1]);
 
-	    if (STRCMP(what, "func") == 0)
+	    if (STRCMP(what, "func") == 0 || STRCMP(what, "name") == 0)
 	    {
-		rettv->v_type = VAR_STRING;
+		rettv->v_type = (*what == 'f' ? VAR_FUNC : VAR_STRING);
 		if (pt->pt_name == NULL)
 		    rettv->vval.v_string = NULL;
 		else
