@@ -801,6 +801,10 @@ update_single_line(win_T *wp, linenr_T lnum)
     int		row;
     int		j;
 
+    /* Don't do anything if the screen structures are (not yet) valid. */
+    if (!screen_valid(TRUE))
+	return;
+
     if (lnum >= wp->w_topline && lnum < wp->w_botline
 				 && foldedCount(wp, lnum, &win_foldinfo) == 0)
     {
