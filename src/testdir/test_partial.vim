@@ -279,3 +279,12 @@ func Test_auto_partial_rebind()
   call assert_equal('dict1', dict2.f2())
   call assert_equal('dict1', dict2['f2']())
 endfunc
+
+func Test_get_partial_items()
+  let dict = {'name': 'hello'}
+  let Cb = function('MyDictFunc', ["foo", "bar"], dict)
+  call assert_equal('MyDictFunc', get(Cb, 'func'))
+  call assert_equal(["foo", "bar"], get(Cb, 'args'))
+  call assert_equal(dict, get(Cb, 'dict'))
+  call assert_fails('call get(Cb, "xxx")', 'E475:')
+endfunc
