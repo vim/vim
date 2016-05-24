@@ -183,7 +183,7 @@ func s:communicate(port)
   call assert_equal('got it', s:responseMsg)
 
   " Collect garbage, tests that our handle isn't collected.
-  call garbagecollect_for_testing()
+  call test_garbagecollect_now()
 
   " check setting options (without testing the effect)
   call ch_setoptions(handle, {'callback': 's:NotUsed'})
@@ -1302,7 +1302,7 @@ endfunc
 func Test_using_freed_memory()
   let g:a = job_start(['ls'])
   sleep 10m
-  call garbagecollect_for_testing()
+  call test_garbagecollect_now()
 endfunc
 
 
