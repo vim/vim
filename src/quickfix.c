@@ -179,6 +179,31 @@ qf_init(
  */
 #define LINE_MAXLEN 4096
 
+    static char_u *
+qf_grow_linebuf(char_u **growbuf, int *growbufsiz, int newsz, int *allocsz)
+{
+    /*
+     * If the line exceeds LINE_MAXLEN exclude the last
+     * byte since it's not a NL character.
+     */
+    *allocsz = newsz > LINE_MAXLEN ? LINE_MAXLEN - 1 : newsz;
+    if (*growbuf == NULL)
+    {
+	*growbuf = alloc(*allocsz + 1);
+	if (*growbuf == NULL)
+	    return NULL;
+	*growbufsiz = *allocsz;
+    }
+    else if (*allocsz > *growbufsiz)
+    {
+	*growbuf = vim_realloc(*growbuf, *allocsz + 1);
+	if (*growbuf == NULL)
+	    return NULL;
+	*growbufsiz = *allocsz;
+    }
+    return *growbuf;
+}
+
 /*
  * Read the errorfile "efile" into memory, line by line, building the error
  * list.
@@ -538,24 +563,10 @@ qf_init_ext(
 
 		    if (len > IOSIZE - 2)
 		    {
-			/*
-			 * If the line exceeds LINE_MAXLEN exclude the last
-			 * byte since it's not a NL character.
-			 */
-			linelen = len > LINE_MAXLEN ? LINE_MAXLEN - 1 : len;
-			if (growbuf == NULL)
-			{
-			    growbuf = alloc(linelen + 1);
-			    growbufsiz = linelen;
-			}
-			else if (linelen > growbufsiz)
-			{
-			    growbuf = vim_realloc(growbuf, linelen + 1);
-			    if (growbuf == NULL)
-				goto qf_init_end;
-			    growbufsiz = linelen;
-			}
-			linebuf = growbuf;
+			linebuf = qf_grow_linebuf(&growbuf, &growbufsiz, len,
+								    &linelen);
+			if (linebuf == NULL)
+			    goto qf_init_end;
 		    }
 		    else
 		    {
@@ -584,22 +595,10 @@ qf_init_ext(
 		    len = (int)STRLEN(p_li->li_tv.vval.v_string);
 		    if (len > IOSIZE - 2)
 		    {
-			linelen = len;
-			if (linelen > LINE_MAXLEN)
-			    linelen = LINE_MAXLEN - 1;
-			if (growbuf == NULL)
-			{
-			    growbuf = alloc(linelen + 1);
-			    growbufsiz = linelen;
-			}
-			else if (linelen > growbufsiz)
-			{
-			    if ((growbuf = vim_realloc(growbuf,
-					linelen + 1)) == NULL)
-				goto qf_init_end;
-			    growbufsiz = linelen;
-			}
-			linebuf = growbuf;
+			linebuf = qf_grow_linebuf(&growbuf, &growbufsiz, len,
+								    &linelen);
+			if (linebuf == NULL)
+			    goto qf_init_end;
 		    }
 		    else
 		    {
@@ -621,20 +620,10 @@ qf_init_ext(
 		linelen = (int)STRLEN(p_buf);
 		if (linelen > IOSIZE - 2)
 		{
-		    if (growbuf == NULL)
-		    {
-			growbuf = alloc(linelen + 1);
-			growbufsiz = linelen;
-		    }
-		    else if (linelen > growbufsiz)
-		    {
-			if (linelen > LINE_MAXLEN)
-			    linelen = LINE_MAXLEN - 1;
-			if ((growbuf = vim_realloc(growbuf, linelen + 1)) == NULL)
-			    goto qf_init_end;
-			growbufsiz = linelen;
-		    }
-		    linebuf = growbuf;
+		    linebuf = qf_grow_linebuf(&growbuf, &growbufsiz, len,
+								    &linelen);
+		    if (linebuf == NULL)
+			goto qf_init_end;
 		}
 		else
 		    linebuf = IObuff;
