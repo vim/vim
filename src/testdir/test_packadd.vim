@@ -13,6 +13,7 @@ endfunc
 func Test_packadd()
   call mkdir(s:plugdir . '/plugin/also', 'p')
   call mkdir(s:plugdir . '/ftdetect', 'p')
+  call mkdir(s:plugdir . '/after', 'p')
   set rtp&
   let rtp = &rtp
   filetype on
@@ -35,7 +36,8 @@ func Test_packadd()
   call assert_equal(77, g:plugin_also_works)
   call assert_equal(17, g:ftdetect_works)
   call assert_true(len(&rtp) > len(rtp))
-  call assert_true(&rtp =~ 'testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
+  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
+  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/opt/mytest/after$')
 
   " Check exception
   call assert_fails("packadd directorynotfound", 'E919:')

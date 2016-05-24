@@ -3326,13 +3326,15 @@ add_pack_plugin(char_u *fname, void *cookie)
     int	    keep;
     int	    oldlen;
     int	    addlen;
+    char_u  *afterdir;
+    int	    afterlen = 0;
     char_u  *ffname = fix_fname(fname);
 
     if (ffname == NULL)
 	return;
     if (cookie != &APP_LOAD && strstr((char *)p_rtp, (char *)ffname) == NULL)
     {
-	/* directory not in 'runtimepath', add it */
+	/* directory is not yet in 'runtimepath', add it */
 	p4 = p3 = p2 = p1 = get_past_head(ffname);
 	for (p = p1; *p; mb_ptr_adv(p))
 	    if (vim_ispathsep_nocolon(*p))
@@ -3360,20 +3362,31 @@ add_pack_plugin(char_u *fname, void *cookie)
 	}
 	*p4 = c;
 
+	/* check if rtp/pack/name/start/name/after exists */
+	afterdir = concat_fnames(ffname, (char_u *)"after", TRUE);
+	if (afterdir != NULL && mch_isdir(afterdir))
+	    afterlen = STRLEN(afterdir) + 1; /* add one for comma */
+
 	oldlen = (int)STRLEN(p_rtp);
-	addlen = (int)STRLEN(ffname);
-	new_rtp = alloc(oldlen + addlen + 2);
+	addlen = (int)STRLEN(ffname) + 1; /* add one for comma */
+	new_rtp = alloc(oldlen + addlen + afterlen + 1); /* add one for NUL */
 	if (new_rtp == NULL)
 	    goto theend;
 	keep = (int)(insp - p_rtp);
 	mch_memmove(new_rtp, p_rtp, keep);
 	new_rtp[keep] = ',';
-	mch_memmove(new_rtp + keep + 1, ffname, addlen + 1);
+	mch_memmove(new_rtp + keep + 1, ffname, addlen);
 	if (p_rtp[keep] != NUL)
-	    mch_memmove(new_rtp + keep + 1 + addlen, p_rtp + keep,
+	    mch_memmove(new_rtp + keep + addlen, p_rtp + keep,
 							   oldlen - keep + 1);
+	if (afterlen > 0)
+	{
+	    STRCAT(new_rtp, ",");
+	    STRCAT(new_rtp, afterdir);
+	}
 	set_option_value((char_u *)"rtp", 0L, new_rtp, 0);
 	vim_free(new_rtp);
+	vim_free(afterdir);
     }
 
     if (cookie != &APP_ADD_DIR)
