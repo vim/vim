@@ -659,19 +659,31 @@ vim.Function object				*python-Function*
     `vim.bindeval('function(%s)'%json.dumps(name))`.
 
     Attributes (read-only):
-        Attribute  Description ~
-        name       Function name.
-        args       `None` or a |python-List| object with arguments.  Note that 
-                   this is a copy of the arguments list, constructed each time 
-                   you request this attribute. Modifications made to the list 
-                   will be ignored (but not to the containers inside argument 
-                   list: this is like |copy()| and not |deepcopy()|).
-        self       `None` or a |python-Dictionary| object with self 
-                   dictionary. Note that explicit `self` keyword used when 
-                   calling resulting object overrides this attribute.
+        Attribute    Description ~
+        name         Function name.
+        args         `None` or a |python-List| object with arguments.  Note 
+                     that this is a copy of the arguments list, constructed 
+                     each time you request this attribute. Modifications made 
+                     to the list will be ignored (but not to the containers 
+                     inside argument list: this is like |copy()| and not 
+                     |deepcopy()|).
+        self         `None` or a |python-Dictionary| object with self 
+                     dictionary. Note that explicit `self` keyword used when 
+                     calling resulting object overrides this attribute.
+        auto_rebind  Boolean. True if partial created from this Python object 
+                     and stored in the VimL dictionary should be automatically 
+                     rebound to the dictionary it is stored in when this 
+                     dictionary is indexed. Exposes Vim internal difference 
+                     between `dict.func` (auto_rebind=True) and 
+                     `function(dict.func,dict)` (auto_rebind=False). This 
+                     attribute makes no sense if `self` attribute is `None`.
 
-    Constructor additionally accepts `args` and `self` keywords.  If any of 
-    them is given then it constructs a partial, see |function()|.
+    Constructor additionally accepts `args`, `self` and `auto_rebind` 
+    keywords.  If `args` and/or `self` argument is given then it constructs 
+    a partial, see |function()|.  `auto_rebind` is only used when `self` 
+    argument is given, otherwise it is assumed to be `True` regardless of 
+    whether it was given or not.  If `self` is given then it defaults to 
+    `False`.
 
     Examples: >
         f = vim.Function('tr')			# Constructor

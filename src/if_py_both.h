@@ -2835,16 +2835,17 @@ typedef struct
     typval_T	*argv;
     dict_T	*self;
     pylinkedlist_T	ref;
+    int		auto_rebind;
 } FunctionObject;
 
 static PyTypeObject FunctionType;
 
-#define NEW_FUNCTION(name, argc, argv, self) \
-    FunctionNew(&FunctionType, name, argc, argv, self)
+#define NEW_FUNCTION(name, argc, argv, self, pt_auto) \
+    FunctionNew(&FunctionType, (name), (argc), (argv), (self), (pt_auto))
 
     static PyObject *
 FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
-	dict_T *selfdict)
+	dict_T *selfdict, int auto_rebind)
 {
     FunctionObject	*self;
 
@@ -2877,6 +2878,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
     self->argc = argc;
     self->argv = argv;
     self->self = selfdict;
+    self->auto_rebind = selfdict == NULL ? TRUE : auto_rebind;
 
     if (self->argv || self->self)
 	pyll_add((PyObject *)(self), &self->ref, &lastfunc);
@@ -2889,6 +2891,7 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 {
     PyObject	*self;
     PyObject	*selfdictObject;
+    PyObject	*autoRebindObject;
     PyObject	*argsObject = NULL;
     char_u	*name;
     typval_T	selfdicttv;
@@ -2896,6 +2899,7 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
     list_T	*argslist = NULL;
     dict_T	*selfdict = NULL;
     int		argc = 0;
+    int		auto_rebind = TRUE;
     typval_T	*argv = NULL;
     typval_T	*curtv;
     listitem_T	*li;
@@ -2936,6 +2940,21 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 	    }
 	    list_unref(argslist);
 	}
+	if (selfdict != NULL)
+	{
+	    auto_rebind = FALSE;
+	    autoRebindObject = PyDict_GetItemString(kwargs, "auto_rebind");
+	    if (autoRebindObject != NULL)
+	    {
+		auto_rebind = PyObject_IsTrue(autoRebindObject);
+		if (auto_rebind == -1)
+		{
+		    dict_unref(selfdict);
+		    list_unref(argslist);
+		    return NULL;
+		}
+	    }
+	}
     }
 
     if (!PyArg_ParseTuple(args, "et", "ascii", &name))
@@ -2947,7 +2966,7 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 	return NULL;
     }
 
-    self = FunctionNew(subtype, name, argc, argv, selfdict);
+    self = FunctionNew(subtype, name, argc, argv, selfdict, auto_rebind);
 
     PyMem_Free(name);
 
@@ -2971,7 +2990,7 @@ FunctionDestructor(FunctionObject *self)
 }
 
 static char *FunctionAttrs[] = {
-    "softspace", "args", "self",
+    "softspace", "args", "self", "auto_rebind",
     NULL
 };
 
@@ -3001,6 +3020,10 @@ FunctionAttr(FunctionObject *self, char *name)
 	return self->self == NULL
 	    ? AlwaysNone(NULL)
 	    : NEW_DICTIONARY(self->self);
+    else if (strcmp(name, "auto_rebind") == 0)
+	return self->auto_rebind
+	    ? AlwaysTrue(NULL)
+	    : AlwaysFalse(NULL);
     else if (strcmp(name, "__members__") == 0)
 	return ObjectDir(NULL, FunctionAttrs);
     return NULL;
@@ -3035,6 +3058,7 @@ set_partial(FunctionObject *self, partial_T *pt, int exported)
 	pt->pt_argc = 0;
 	pt->pt_argv = NULL;
     }
+    pt->pt_auto = self->auto_rebind || !exported;
     pt->pt_dict = self->self;
     if (exported && self->self)
 	++pt->pt_dict->dv_refcount;
@@ -3076,6 +3100,7 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
 
     if (self->argv || self->self)
     {
+	vim_memset(&pt, 0, sizeof(partial_T));
 	set_partial(self, &pt, FALSE);
 	pt_ptr = &pt;
     }
@@ -3148,6 +3173,8 @@ FunctionRepr(FunctionObject *self)
 	ga_concat(&repr_ga, tv2string(&tv, &tofree, numbuf, get_copyID()));
 	--emsg_silent;
 	vim_free(tofree);
+	if (self->auto_rebind)
+	    ga_concat(&repr_ga, (char_u *)", auto_rebind=True");
     }
     ga_append(&repr_ga, '>');
     ret = PyString_FromString((char *)repr_ga.ga_data);
@@ -6269,7 +6296,7 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_FUNC:
 	    return NEW_FUNCTION(tv->vval.v_string == NULL
 					  ? (char_u *)"" : tv->vval.v_string,
-					  0, NULL, NULL);
+					  0, NULL, NULL, TRUE);
 	case VAR_PARTIAL:
 	    if (tv->vval.v_partial->pt_argc)
 	    {
@@ -6284,7 +6311,8 @@ ConvertToPyObject(typval_T *tv)
 	    return NEW_FUNCTION(tv->vval.v_partial == NULL
 				? (char_u *)"" : tv->vval.v_partial->pt_name,
 				tv->vval.v_partial->pt_argc, argv,
-				tv->vval.v_partial->pt_dict);
+				tv->vval.v_partial->pt_dict,
+				tv->vval.v_partial->pt_auto);
 	case VAR_UNKNOWN:
 	case VAR_CHANNEL:
 	case VAR_JOB:

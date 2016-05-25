@@ -448,13 +448,19 @@ tabpage:__dir__,__members__,number,valid,vars,window,windows
 range:__dir__,__members__,append,end,start
 dictionary:__dir__,__members__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
 list:__dir__,__members__,extend,locked
-function:__dir__,__members__,args,self,softspace
+function:__dir__,__members__,args,auto_rebind,self,softspace
 output:__dir__,__members__,close,closed,flush,isatty,readable,seekable,softspace,writable,write,writelines
 {}
 {'a': 1}
 {'a': 1}
 []
 ['a', 'b', 'c', '7']
+function('tr')
+function('tr', [123, 3, 4])
+function('tr')
+function('tr', {})
+function('tr', [123, 3, 4], {})
+auto_rebind
 function('tr')
 function('tr', [123, 3, 4])
 function('tr')
@@ -470,6 +476,14 @@ psa1: <vim.Function 'SelfArgs', args=['abcArgsPSA1']>
 psa2: <vim.Function 'SelfArgs'>
 psa3: <vim.Function 'SelfArgs', args=['abcArgsPSA3'], self={'abcSelfPSA3': 'abcSelfPSA3Val'}>
 psa4: <vim.Function 'SelfArgs', self={'abcSelfPSA4': 'abcSelfPSA4Val'}>
+psa5: <vim.Function 'SelfArgs', self={'abcSelfPSA5': 'abcSelfPSA5Val'}>
+psa6: <vim.Function 'SelfArgs', args=['abcArgsPSA6'], self={'abcSelfPSA6': 'abcSelfPSA6Val'}>
+psa7: <vim.Function 'SelfArgs', args=['abcArgsPSA7']>
+psa8: <vim.Function 'SelfArgs'>
+psa9: <vim.Function 'SelfArgs', self={'abcSelfPSA9': 'abcSelfPSA9Val'}, auto_rebind=True>
+psaA: <vim.Function 'SelfArgs', args=['abcArgsPSAA'], self={'abcSelfPSAA': 'abcSelfPSAAVal'}, auto_rebind=True>
+psaB: <vim.Function 'SelfArgs', args=['abcArgsPSAB']>
+psaC: <vim.Function 'SelfArgs'>
 psar: <vim.Function 'SelfArgs', args=[{'abcArgsPSAr2': [{'rec': function('SelfArgs', [{...}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{...}]}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], self={'rec': function('SelfArgs', [{'abcArgsPSAr2': [{...}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{...}]}>
 s(a): function('Args')
 s(pa1): function('Args', ['abcArgsPA1'])
@@ -481,6 +495,27 @@ s(psa1): function('SelfArgs', ['abcArgsPSA1'])
 s(psa2): function('SelfArgs')
 s(psa3): function('SelfArgs', ['abcArgsPSA3'], {'abcSelfPSA3': 'abcSelfPSA3Val'})
 s(psa4): function('SelfArgs', {'abcSelfPSA4': 'abcSelfPSA4Val'})
+s(psa5): function('SelfArgs', {'abcSelfPSA5': 'abcSelfPSA5Val'})
+s(psa6): function('SelfArgs', ['abcArgsPSA6'], {'abcSelfPSA6': 'abcSelfPSA6Val'})
+s(psa7): function('SelfArgs', ['abcArgsPSA7'])
+s(psa8): function('SelfArgs')
+s(psa9): function('SelfArgs', {'abcSelfPSA9': 'abcSelfPSA9Val'})
+s(psaA): function('SelfArgs', ['abcArgsPSAA'], {'abcSelfPSAA': 'abcSelfPSAAVal'})
+s(psaB): function('SelfArgs', ['abcArgsPSAB'])
+s(psaC): function('SelfArgs')
+d.sa(): [[], {'f': function('SelfArgs')}]
+d.psa1(): [['abcArgsPSA1'], {'f': function('SelfArgs', ['abcArgsPSA1'])}]
+d.psa2(): [[], {'f': function('SelfArgs')}]
+d.psa3(): [['abcArgsPSA3'], {'abcSelfPSA3': 'abcSelfPSA3Val'}]
+d.psa4(): [[], {'abcSelfPSA4': 'abcSelfPSA4Val'}]
+d.psa5(): [[], {'abcSelfPSA5': 'abcSelfPSA5Val'}]
+d.psa6(): [['abcArgsPSA6'], {'abcSelfPSA6': 'abcSelfPSA6Val'}]
+d.psa7(): [['abcArgsPSA7'], {'f': function('SelfArgs', ['abcArgsPSA7'])}]
+d.psa8(): [[], {'f': function('SelfArgs')}]
+d.psa9(): [[], {'f': function('SelfArgs', {'abcSelfPSA9': 'abcSelfPSA9Val'})}]
+d.psaA(): [['abcArgsPSAA'], {'f': function('SelfArgs', ['abcArgsPSAA'], {'abcSelfPSAA': 'abcSelfPSAAVal'})}]
+d.psaB(): [['abcArgsPSAB'], {'f': function('SelfArgs', ['abcArgsPSAB'])}]
+d.psaC(): [[], {'f': function('SelfArgs')}]
 a(): !result: []
 pa1(): !result: ['abcArgsPA1']
 pa2(): !result: []
@@ -551,6 +586,24 @@ psa1.name: 'SelfArgs'
 psa2.name: 'SelfArgs'
 psa3.name: 'SelfArgs'
 psa4.name: 'SelfArgs'
+a.auto_rebind: 1
+pa1.auto_rebind: 1
+pa2.auto_rebind: 1
+pa3.auto_rebind: 0
+pa4.auto_rebind: 0
+sa.auto_rebind: 1
+psa1.auto_rebind: 1
+psa2.auto_rebind: 1
+psa3.auto_rebind: 0
+psa4.auto_rebind: 0
+psa5.auto_rebind: 0
+psa6.auto_rebind: 0
+psa7.auto_rebind: 1
+psa8.auto_rebind: 1
+psa9.auto_rebind: 1
+psaA.auto_rebind: 1
+psaB.auto_rebind: 1
+psaC.auto_rebind: 1
 '
 abcdef
 Error detected while processing function RunTest[]..Test:
