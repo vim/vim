@@ -472,7 +472,6 @@ static void f_abs(typval_T *argvars, typval_T *rettv);
 static void f_acos(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_add(typval_T *argvars, typval_T *rettv);
-static void f_alloc_fail(typval_T *argvars, typval_T *rettv);
 static void f_and(typval_T *argvars, typval_T *rettv);
 static void f_append(typval_T *argvars, typval_T *rettv);
 static void f_argc(typval_T *argvars, typval_T *rettv);
@@ -549,7 +548,6 @@ static void f_delete(typval_T *argvars, typval_T *rettv);
 static void f_did_filetype(typval_T *argvars, typval_T *rettv);
 static void f_diff_filler(typval_T *argvars, typval_T *rettv);
 static void f_diff_hlID(typval_T *argvars, typval_T *rettv);
-static void f_disable_char_avail_for_testing(typval_T *argvars, typval_T *rettv);
 static void f_empty(typval_T *argvars, typval_T *rettv);
 static void f_escape(typval_T *argvars, typval_T *rettv);
 static void f_eval(typval_T *argvars, typval_T *rettv);
@@ -805,6 +803,8 @@ static void f_tabpagewinnr(typval_T *argvars, typval_T *rettv);
 static void f_taglist(typval_T *argvars, typval_T *rettv);
 static void f_tagfiles(typval_T *argvars, typval_T *rettv);
 static void f_tempname(typval_T *argvars, typval_T *rettv);
+static void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
+static void f_test_disable_char_avail(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
 static void f_test_null_channel(typval_T *argvars, typval_T *rettv);
@@ -8344,7 +8344,6 @@ static struct fst
     {"acos",		1, 1, f_acos},	/* WJMc */
 #endif
     {"add",		2, 2, f_add},
-    {"alloc_fail",	3, 3, f_alloc_fail},
     {"and",		2, 2, f_and},
     {"append",		2, 2, f_append},
     {"argc",		0, 0, f_argc},
@@ -8425,7 +8424,6 @@ static struct fst
     {"did_filetype",	0, 0, f_did_filetype},
     {"diff_filler",	1, 1, f_diff_filler},
     {"diff_hlID",	2, 2, f_diff_hlID},
-    {"disable_char_avail_for_testing", 1, 1, f_disable_char_avail_for_testing},
     {"empty",		1, 1, f_empty},
     {"escape",		2, 2, f_escape},
     {"eval",		1, 1, f_eval},
@@ -8689,6 +8687,8 @@ static struct fst
     {"tanh",		1, 1, f_tanh},
 #endif
     {"tempname",	0, 0, f_tempname},
+    {"test_alloc_fail",	3, 3, f_test_alloc_fail},
+    {"test_disable_char_avail", 1, 1, f_test_disable_char_avail},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
 #ifdef FEAT_JOB_CHANNEL
     {"test_null_channel", 0, 0, f_test_null_channel},
@@ -8949,7 +8949,7 @@ get_func_tv(
 
 	if (get_vim_var_nr(VV_TESTING))
 	{
-	    /* Prepare for calling garbagecollect_for_testing(), need to know
+	    /* Prepare for calling test_garbagecollect_now(), need to know
 	     * what variables are used on the call stack. */
 	    if (funcargs.ga_itemsize == 0)
 		ga_init2(&funcargs, (int)sizeof(typval_T *), 50);
@@ -9378,29 +9378,6 @@ f_add(typval_T *argvars, typval_T *rettv)
     }
     else
 	EMSG(_(e_listreq));
-}
-
-/*
- * "alloc_fail(id, countdown, repeat)" function
- */
-    static void
-f_alloc_fail(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    if (argvars[0].v_type != VAR_NUMBER
-	    || argvars[0].vval.v_number <= 0
-	    || argvars[1].v_type != VAR_NUMBER
-	    || argvars[1].vval.v_number < 0
-	    || argvars[2].v_type != VAR_NUMBER)
-	EMSG(_(e_invarg));
-    else
-    {
-	alloc_fail_id = argvars[0].vval.v_number;
-	if (alloc_fail_id >= aid_last)
-	    EMSG(_(e_invarg));
-	alloc_fail_countdown = argvars[1].vval.v_number;
-	alloc_fail_repeat = argvars[2].vval.v_number;
-	did_outofmem_msg = FALSE;
-    }
 }
 
 /*
@@ -11112,15 +11089,6 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     }
     rettv->vval.v_number = hlID == (hlf_T)0 ? 0 : (int)hlID;
 #endif
-}
-
-/*
- * "disable_char_avail_for_testing({expr})" function
- */
-    static void
-f_disable_char_avail_for_testing(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    disable_char_avail_for_testing = get_tv_number(&argvars[0]);
 }
 
 /*
@@ -20689,6 +20657,38 @@ f_tanh(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_float = 0.0;
 }
 #endif
+
+/*
+ * "test_alloc_fail(id, countdown, repeat)" function
+ */
+    static void
+f_test_alloc_fail(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    if (argvars[0].v_type != VAR_NUMBER
+	    || argvars[0].vval.v_number <= 0
+	    || argvars[1].v_type != VAR_NUMBER
+	    || argvars[1].vval.v_number < 0
+	    || argvars[2].v_type != VAR_NUMBER)
+	EMSG(_(e_invarg));
+    else
+    {
+	alloc_fail_id = argvars[0].vval.v_number;
+	if (alloc_fail_id >= aid_last)
+	    EMSG(_(e_invarg));
+	alloc_fail_countdown = argvars[1].vval.v_number;
+	alloc_fail_repeat = argvars[2].vval.v_number;
+	did_outofmem_msg = FALSE;
+    }
+}
+
+/*
+ * "test_disable_char_avail({expr})" function
+ */
+    static void
+f_test_disable_char_avail(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    disable_char_avail_for_testing = get_tv_number(&argvars[0]);
+}
 
 /*
  * "test_garbagecollect_now()" function

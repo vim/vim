@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 May 24
+*eval.txt*	For Vim version 7.4.  Last change: 2016 May 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1765,7 +1765,7 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		{only when compiled with |+termresponse| feature}
 
 					*v:testing* *testing-variable*
-v:testing	Must be set before using `garbagecollect_for_testing()`.
+v:testing	Must be set before using `test_garbagecollect_now()`.
 
 				*v:this_session* *this_session-variable*
 v:this_session	Full filename of the last loaded or saved session file.  See
@@ -1835,8 +1835,6 @@ USAGE				RESULT	DESCRIPTION	~
 abs({expr})			Float or Number  absolute value of {expr}
 acos({expr})			Float	arc cosine of {expr}
 add({list}, {item})		List	append {item} to |List| {list}
-alloc_fail({id}, {countdown}, {repeat})
-				none	make memory allocation fail
 and({expr}, {expr})		Number  bitwise AND
 append({lnum}, {string})	Number	append {string} below line {lnum}
 append({lnum}, {list})		Number	append lines {list} below line {lnum}
@@ -1918,8 +1916,6 @@ delete({fname} [, {flags}])	Number	delete the file or directory {fname}
 did_filetype()			Number	TRUE if FileType autocommand event used
 diff_filler({lnum})		Number	diff filler lines about {lnum}
 diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
-disable_char_avail_for_testing({expr})
-				none	test without typeahead
 empty({expr})			Number	TRUE if {expr} is empty
 escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
@@ -2203,6 +2199,9 @@ tagfiles()			List	tags files used
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
+test_alloc_fail({id}, {countdown}, {repeat})
+				none	make memory allocation fail
+test_disable_char_avail({expr}) none	test without typeahead
 test_garbagecollect_now()	none	free memory right now for testing
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
@@ -2283,13 +2282,6 @@ add({list}, {expr})					*add()*
 <		Note that when {expr} is a |List| it is appended as a single
 		item.  Use |extend()| to concatenate |Lists|.
 		Use |insert()| to add an item at another position.
-
-
-alloc_fail({id}, {countdown}, {repeat})			*alloc_fail()*
-		This is for testing: If the memory allocation with {id} is
-		called, then decrement {countdown}, and when it reaches zero
-		let memory allocation fail {repeat} times.  When {repeat} is
-		smaller than one it fails one time.
 
 
 and({expr}, {expr})					*and()*
@@ -3157,14 +3149,6 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		line.
 		The highlight ID can be used with |synIDattr()| to obtain
 		syntax information about the highlighting.
-
-					*disable_char_avail_for_testing()*
-disable_char_avail_for_testing({expr})
-		When {expr} is 1 the internal char_avail() function will
-		return FALSE.  When {expr} is 0 the char_avail() function will
-		function normally.
-		Only use this for a test where typeahead causes the test not
-		to work.  E.g., to trigger the CursorMovedI autocommand event.
 
 empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
@@ -7212,6 +7196,21 @@ tempname()					*tempname()* *temp-file-name*
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
 
+
+test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
+		This is for testing: If the memory allocation with {id} is
+		called, then decrement {countdown}, and when it reaches zero
+		let memory allocation fail {repeat} times.  When {repeat} is
+		smaller than one it fails one time.
+
+
+					*test_disable_char_avail()*
+test_disable_char_avail({expr})
+		When {expr} is 1 the internal char_avail() function will
+		return FALSE.  When {expr} is 0 the char_avail() function will
+		function normally.
+		Only use this for a test where typeahead causes the test not
+		to work.  E.g., to trigger the CursorMovedI autocommand event.
 
 test_garbagecollect_now()			 *test_garbagecollect_now()*
 		Like garbagecollect(), but executed right away.  This must

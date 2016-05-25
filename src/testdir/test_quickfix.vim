@@ -280,19 +280,19 @@ function Test_cbuffer()
 endfunction
 
 function Test_nomem()
-  call alloc_fail(GetAllocId('qf_dirname_start'), 0, 0)
+  call test_alloc_fail(GetAllocId('qf_dirname_start'), 0, 0)
   call assert_fails('vimgrep vim runtest.vim', 'E342:')
 
-  call alloc_fail(GetAllocId('qf_dirname_now'), 0, 0)
+  call test_alloc_fail(GetAllocId('qf_dirname_now'), 0, 0)
   call assert_fails('vimgrep vim runtest.vim', 'E342:')
 
-  call alloc_fail(GetAllocId('qf_namebuf'), 0, 0)
+  call test_alloc_fail(GetAllocId('qf_namebuf'), 0, 0)
   call assert_fails('cfile runtest.vim', 'E342:')
 
-  call alloc_fail(GetAllocId('qf_errmsg'), 0, 0)
+  call test_alloc_fail(GetAllocId('qf_errmsg'), 0, 0)
   call assert_fails('cfile runtest.vim', 'E342:')
 
-  call alloc_fail(GetAllocId('qf_pattern'), 0, 0)
+  call test_alloc_fail(GetAllocId('qf_pattern'), 0, 0)
   call assert_fails('cfile runtest.vim', 'E342:')
 
 endfunc

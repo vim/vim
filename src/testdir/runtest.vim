@@ -60,7 +60,7 @@ let $HOME = '/does/not/exist'
 
 let s:srcdir = expand('%:p:h:h')
 
-" Prepare for calling garbagecollect_for_testing().
+" Prepare for calling test_garbagecollect_now().
 let v:testing = 1
 
 " Support function: get the alloc ID by name.
