@@ -5031,12 +5031,25 @@ check_termcode(
 		     * Compute the time elapsed since the previous mouse click.
 		     */
 		    gettimeofday(&mouse_time, NULL);
-		    timediff = (mouse_time.tv_usec
-					    - orig_mouse_time.tv_usec) / 1000;
-		    if (timediff < 0)
-			--orig_mouse_time.tv_sec;
-		    timediff += (mouse_time.tv_sec
-					     - orig_mouse_time.tv_sec) * 1000;
+		    if (orig_mouse_time.tv_sec == 0)
+		    {
+			/*
+			 * Avoid computing the difference between mouse_time
+			 * and orig_mouse_time for the first click, as the
+			 * difference would be huge and would cause multiplication
+			 * overflow.
+			 */
+			timediff = p_mouset;
+		    }
+		    else
+		    {
+			timediff = (mouse_time.tv_usec
+						- orig_mouse_time.tv_usec) / 1000;
+			if (timediff < 0)
+			    --orig_mouse_time.tv_sec;
+			timediff += (mouse_time.tv_sec
+						 - orig_mouse_time.tv_sec) * 1000;
+		    }
 		    orig_mouse_time = mouse_time;
 		    if (mouse_code == orig_mouse_code
 			    && timediff < p_mouset
