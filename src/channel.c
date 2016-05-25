@@ -505,7 +505,7 @@ channel_read_fd(int fd)
     if (channel == NULL)
 	ch_errorn(NULL, "Channel for fd %d not found", fd);
     else
-	channel_read(channel, part, "messageFromNetbeans");
+	channel_read(channel, part, "channel_read_fd");
 }
 #endif
 
@@ -514,9 +514,9 @@ channel_read_fd(int fd)
  */
 #ifdef FEAT_GUI_X11
     static void
-messageFromNetbeans(XtPointer clientData,
-		    int *unused1 UNUSED,
-		    XtInputId *unused2 UNUSED)
+messageFromServer(XtPointer clientData,
+		  int *unused1 UNUSED,
+		  XtInputId *unused2 UNUSED)
 {
     channel_read_fd((int)(long)clientData);
 }
@@ -525,9 +525,9 @@ messageFromNetbeans(XtPointer clientData,
 #ifdef FEAT_GUI_GTK
 # if GTK_CHECK_VERSION(3,0,0)
     static gboolean
-messageFromNetbeans(GIOChannel *unused1 UNUSED,
-		    GIOCondition unused2 UNUSED,
-		    gpointer clientData)
+messageFromServer(GIOChannel *unused1 UNUSED,
+		  GIOCondition unused2 UNUSED,
+		  gpointer clientData)
 {
     channel_read_fd(GPOINTER_TO_INT(clientData));
     return TRUE; /* Return FALSE instead in case the event source is to
@@ -535,9 +535,9 @@ messageFromNetbeans(GIOChannel *unused1 UNUSED,
 }
 # else
     static void
-messageFromNetbeans(gpointer clientData,
-		    gint unused1 UNUSED,
-		    GdkInputCondition unused2 UNUSED)
+messageFromServer(gpointer clientData,
+		  gint unused1 UNUSED,
+		  GdkInputCondition unused2 UNUSED)
 {
     channel_read_fd((int)(long)clientData);
 }
@@ -558,7 +558,7 @@ channel_gui_register_one(channel_T *channel, int part)
 		(XtAppContext)app_context,
 		channel->ch_part[part].ch_fd,
 		(XtPointer)(XtInputReadMask + XtInputExceptMask),
-		messageFromNetbeans,
+		messageFromServer,
 		(XtPointer)(long)channel->ch_part[part].ch_fd);
 # else
 #  ifdef FEAT_GUI_GTK
@@ -573,7 +573,7 @@ channel_gui_register_one(channel_T *channel, int part)
 	channel->ch_part[part].ch_inputHandler = g_io_add_watch(
 		chnnl,
 		G_IO_IN|G_IO_HUP|G_IO_ERR|G_IO_PRI,
-		messageFromNetbeans,
+		messageFromServer,
 		GINT_TO_POINTER(channel->ch_part[part].ch_fd));
 
 	g_io_channel_unref(chnnl);
@@ -583,7 +583,7 @@ channel_gui_register_one(channel_T *channel, int part)
 		(gint)channel->ch_part[part].ch_fd,
 		(GdkInputCondition)
 			     ((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
-		messageFromNetbeans,
+		messageFromServer,
 		(gpointer)(long)channel->ch_part[part].ch_fd);
 #   endif
 #  endif
