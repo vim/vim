@@ -78,7 +78,7 @@ function! s:set_guicolors() abort
 
     for i in range(24)
         let g = i * 0xa + 8
-        let s:termguicolors[i + 232] = '#' . g . g . g
+        let s:termguicolors[i + 232] = '#' . r . g . b
     endfor
 endfunction
 
