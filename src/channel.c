@@ -2893,6 +2893,10 @@ channel_read(channel_T *channel, int part, char *func)
     sock_T		fd;
     int			use_socket = FALSE;
 
+    /* If we detected a read error don't try reading again. */
+    if (channel->ch_to_be_closed)
+	return;
+
     fd = channel->ch_part[part].ch_fd;
     if (fd == INVALID_FD)
     {
@@ -3193,6 +3197,10 @@ channel_handle_events(void)
 
     for (channel = first_channel; channel != NULL; channel = channel->ch_next)
     {
+	/* If we detected a read error don't try reading again. */
+	if (channel->ch_to_be_closed)
+	    continue;
+
 	/* check the socket and pipes */
 	for (part = PART_SOCK; part <= PART_ERR; ++part)
 	{
