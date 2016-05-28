@@ -254,12 +254,17 @@ func Test_job_start_fails()
   if has('job')
     let job = job_start('axdfxsdf')
     for i in range(100)
-      if job_status(job) == 'dead'
+      let status = job_status(job)
+      if status == 'dead' || status == 'fail'
 	break
       endif
       sleep 10m
     endfor
-    call assert_equal('dead', job_status(job))
+    if has('unix')
+      call assert_equal('dead', job_status(job))
+    else
+      call assert_equal('fail', job_status(job))
+    endif
     unlet job
   endif
 endfunc
