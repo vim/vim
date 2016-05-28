@@ -8486,11 +8486,11 @@ color_name2handle(char_u *name)
 #ifdef FEAT_GUI
 	    return gui.norm_pixel;
 #endif
-#if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
-	else
-#endif
 #ifdef FEAT_TERMGUICOLORS
+	if (cterm_normal_fg_gui_color != (long_u)INVALCOLOR)
 	    return cterm_normal_fg_gui_color;
+	/* Guess that the foreground is black or white. */
+	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "black" : "white"));
 #endif
     }
     if (STRICMP(name, "bg") == 0 || STRICMP(name, "background") == 0)
@@ -8501,11 +8501,11 @@ color_name2handle(char_u *name)
 #ifdef FEAT_GUI
 	    return gui.back_pixel;
 #endif
-#if defined(FEAT_TERMGUICOLORS) && defined(FEAT_GUI)
-	else
-#endif
 #ifdef FEAT_TERMGUICOLORS
+	if (cterm_normal_bg_gui_color != (long_u)INVALCOLOR)
 	    return cterm_normal_bg_gui_color;
+	/* Guess that the background is white or black. */
+	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "white" : "black"));
 #endif
     }
 
@@ -8595,7 +8595,6 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 			    && aep->ae_u.cterm.bg_rgb
 						    == taep->ae_u.cterm.bg_rgb
 #endif
-						
 		       )))
 
 	return i + ATTR_OFF;
