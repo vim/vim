@@ -2868,6 +2868,11 @@ channel_close_on_error(channel_T *channel, char *func)
      * died.  Don't close the channel right away, it may be the wrong moment
      * to invoke callbacks. */
     channel->ch_to_be_closed = TRUE;
+
+#ifdef FEAT_GUI
+    /* Stop listening to GUI events right away. */
+    channel_gui_unregister(channel);
+#endif
 }
 
     static void
