@@ -2566,13 +2566,14 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	      clear_tv(&rettv);
 	      channel_need_redraw = TRUE;
 	  }
-	  --channel->ch_refcount;
 
 	  /* the callback is only called once */
 	  vim_free(channel->ch_close_cb);
 	  channel->ch_close_cb = NULL;
 	  partial_unref(channel->ch_close_partial);
 	  channel->ch_close_partial = NULL;
+
+	  --channel->ch_refcount;
 
 	  if (channel_need_redraw)
 	  {
