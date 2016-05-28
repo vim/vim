@@ -12,7 +12,7 @@ SCRIPTSOURCE = ../../runtime
 #   The output goes into a file "valgrind.testN"
 #   Vim should be compiled with EXITFREE to avoid false warnings.
 #   This will make testing about 10 times as slow.
-# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=15 --log-file=valgrind.$*
+# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind.$*
 
 default: nongui
 
@@ -52,7 +52,7 @@ $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(SCRIPTS_FIRST)
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmark.out
-RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f -u unix.vim $(NO_PLUGIN) -s dotest.in
+RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_PLUGIN) -s dotest.in
 
 clean:
 	-rm -rf *.out *.failed *.res *.rej *.orig test.log messages $(RM_ON_RUN) $(RM_ON_START) valgrind.*
@@ -118,7 +118,7 @@ nolog:
 # New style of tests uses Vim script with assert calls.  These are easier
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
-RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f -u unix.vim $(NO_PLUGIN)
+RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_PLUGIN)
 
 newtests: newtestssilent
 	@/bin/sh -c "if test -f messages && grep -q 'FAILED' messages; then cat messages && cat test.log; fi"

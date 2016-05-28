@@ -582,7 +582,7 @@ CClink = $(CC)
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
-#CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 #CFLAGS = -g -O2 -Wall -Wextra -Wmissing-prototypes -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1 -DU_DEBUG
 #PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
 #MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
@@ -1943,6 +1943,10 @@ test check:
 	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 	$(MAKE) -f Makefile unittest
 
+# Run the tests with the GUI.  Assumes vim/gvim was already built
+testgui:
+	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) GUI_FLAG=-g $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+
 benchmark:
 	cd testdir; $(MAKE) -f Makefile benchmark VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
@@ -2057,6 +2061,7 @@ test_arglist \
 	test_viminfo \
 	test_viml \
 	test_visual \
+	test_window_cmd \
 	test_window_id \
 	test_alot_latin \
 	test_alot_utf8 \
