@@ -1285,6 +1285,7 @@ write_buf_line(buf_T *buf, linenr_T lnum, channel_T *channel)
     int	    len = (int)STRLEN(line);
     char_u  *p;
 
+    /* Need to make a copy to be able to append a NL. */
     if ((p = alloc(len + 2)) == NULL)
 	return;
     STRCPY(p, line);
@@ -2888,7 +2889,7 @@ channel_close_now(channel_T *channel)
 /*
  * Read from channel "channel" for as long as there is something to read.
  * "part" is PART_SOCK, PART_OUT or PART_ERR.
- * The data is put in the read queue.
+ * The data is put in the read queue.  No callbacks are invoked here.
  */
     static void
 channel_read(channel_T *channel, int part, char *func)
@@ -4183,6 +4184,15 @@ job_free(job_T *job)
 	job_free_job(job);
     }
 }
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+job_free_all(void)
+{
+    while (first_job != NULL)
+	job_free(first_job);
+}
+#endif
 
 /*
  * Return TRUE if the job should not be freed yet.  Do not free the job when

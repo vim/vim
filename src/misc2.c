@@ -1127,9 +1127,6 @@ free_all_mem(void)
 # ifdef FEAT_DIFF
     diff_clear(curtab);
 # endif
-# ifdef FEAT_JOB_CHANNEL
-    channel_free_all();
-# endif
     clear_sb_text();	      /* free any scrollback text */
 
     /* Free some global vars. */
@@ -1220,6 +1217,10 @@ free_all_mem(void)
 
 # ifdef FEAT_EVAL
     eval_clear();
+# endif
+# ifdef FEAT_JOB_CHANNEL
+    channel_free_all();
+    job_free_all();
 # endif
 
     free_termoptions();

@@ -250,6 +250,20 @@ func Test_cycle_partial_job()
   endif
 endfunc
 
+func Test_job_start_fails()
+  if has('job')
+    let job = job_start('axdfxsdf')
+    for i in range(100)
+      if job_status(job) == 'dead'
+	break
+      endif
+      sleep 10m
+    endfor
+    call assert_equal('dead', job_status(job))
+    unlet job
+  endif
+endfunc
+
 func Test_ref_job_partial_dict()
   if has('job')
     let g:ref_job = job_start('echo')
