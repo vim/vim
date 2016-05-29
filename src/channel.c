@@ -1209,9 +1209,20 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	}
 	if (buf != NULL)
 	{
-	    ch_logs(channel, "writing out to buffer '%s'",
+	    if (opt->jo_set & JO_OUT_MODIFIABLE)
+		channel->ch_part[PART_OUT].ch_nomodifiable =
+						!opt->jo_modifiable[PART_OUT];
+
+	    if (!buf->b_p_ma && !channel->ch_part[PART_OUT].ch_nomodifiable)
+	    {
+		EMSG(_(e_modifiable));
+	    }
+	    else
+	    {
+		ch_logs(channel, "writing out to buffer '%s'",
 						       (char *)buf->b_ffname);
-	    channel->ch_part[PART_OUT].ch_buffer = buf;
+		channel->ch_part[PART_OUT].ch_buffer = buf;
+	    }
 	}
     }
 
@@ -1236,9 +1247,19 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	    buf = find_buffer(opt->jo_io_name[PART_ERR], TRUE);
 	if (buf != NULL)
 	{
-	    ch_logs(channel, "writing err to buffer '%s'",
+	    if (opt->jo_set & JO_ERR_MODIFIABLE)
+		channel->ch_part[PART_ERR].ch_nomodifiable =
+						!opt->jo_modifiable[PART_ERR];
+	    if (!buf->b_p_ma && !channel->ch_part[PART_ERR].ch_nomodifiable)
+	    {
+		EMSG(_(e_modifiable));
+	    }
+	    else
+	    {
+		ch_logs(channel, "writing err to buffer '%s'",
 						       (char *)buf->b_ffname);
-	    channel->ch_part[PART_ERR].ch_buffer = buf;
+		channel->ch_part[PART_ERR].ch_buffer = buf;
+	    }
 	}
     }
 
@@ -2107,11 +2128,23 @@ invoke_one_time_callback(
 }
 
     static void
-append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel)
+append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, int part)
 {
     buf_T	*save_curbuf = curbuf;
     linenr_T    lnum = buffer->b_ml.ml_line_count;
     int		save_write_to = buffer->b_write_to_channel;
+    chanpart_T  *ch_part = &channel->ch_part[part];
+    int		save_p_ma = buffer->b_p_ma;
+
+    if (!buffer->b_p_ma && !ch_part->ch_nomodifiable)
+    {
+	if (!ch_part->ch_nomod_error)
+	{
+	    ch_error(channel, "Buffer is not modifiable, cannot append");
+	    ch_part->ch_nomod_error = TRUE;
+	}
+	return;
+    }
 
     /* If the buffer is also used as input insert above the last
      * line. Don't write these lines. */
@@ -2124,6 +2157,7 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel)
     /* Append to the buffer */
     ch_logn(channel, "appending line %d to buffer", (int)lnum + 1);
 
+    buffer->b_p_ma = TRUE;
     curbuf = buffer;
     u_sync(TRUE);
     /* ignore undo failure, undo is not very useful here */
@@ -2132,6 +2166,10 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel)
     ml_append(lnum, msg, 0, FALSE);
     appended_lines_mark(lnum, 1L);
     curbuf = save_curbuf;
+    if (ch_part->ch_nomodifiable)
+	buffer->b_p_ma = FALSE;
+    else
+	buffer->b_p_ma = save_p_ma;
 
     if (buffer->b_nwindows > 0)
     {
@@ -2359,7 +2397,7 @@ may_invoke_callback(channel_T *channel, int part)
 		/* JSON or JS mode: re-encode the message. */
 		msg = json_encode(listtv, ch_mode);
 	    if (msg != NULL)
-		append_to_buffer(buffer, msg, channel);
+		append_to_buffer(buffer, msg, channel, part);
 	}
 
 	if (callback != NULL)
@@ -3914,6 +3952,16 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    EMSGN(_(e_nobufnr), (long)opt->jo_io_buf[part]);
 		    return FAIL;
 		}
+	    }
+	    else if (STRCMP(hi->hi_key, "out_modifiable") == 0
+		    || STRCMP(hi->hi_key, "err_modifiable") == 0)
+	    {
+		part = part_from_char(*hi->hi_key);
+
+		if (!(supported & JO_OUT_IO))
+		    break;
+		opt->jo_set |= JO_OUT_MODIFIABLE << (part - PART_OUT);
+		opt->jo_modifiable[part] = get_tv_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "in_top") == 0
 		    || STRCMP(hi->hi_key, "in_bot") == 0)

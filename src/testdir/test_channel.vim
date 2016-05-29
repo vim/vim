@@ -676,7 +676,7 @@ func Test_nl_write_both_file()
   endtry
 endfunc
 
-func Run_test_pipe_to_buffer(use_name)
+func Run_test_pipe_to_buffer(use_name, nomod)
   if !has('job')
     return
   endif
@@ -690,6 +690,9 @@ func Run_test_pipe_to_buffer(use_name)
     let options['out_buf'] = bufnr('%')
     quit
     let firstline = ''
+  endif
+  if a:nomod
+    let options['out_modifiable'] = 0
   endif
   let job = job_start(s:python . " test_channel_pipe.py", options)
   call assert_equal("run", job_status(job))
@@ -705,6 +708,11 @@ func Run_test_pipe_to_buffer(use_name)
       $del
     endif
     call assert_equal([firstline, 'line one', 'line two', 'this', 'AND this', 'Goodbye!'], getline(1, '$'))
+    if a:nomod
+      call assert_equal(0, &modifiable)
+    else
+      call assert_equal(1, &modifiable)
+    endif
     bwipe!
   finally
     call job_stop(job)
@@ -712,14 +720,18 @@ func Run_test_pipe_to_buffer(use_name)
 endfunc
 
 func Test_pipe_to_buffer_name()
-  call Run_test_pipe_to_buffer(1)
+  call Run_test_pipe_to_buffer(1, 0)
 endfunc
 
 func Test_pipe_to_buffer_nr()
-  call Run_test_pipe_to_buffer(0)
+  call Run_test_pipe_to_buffer(0, 0)
 endfunc
 
-func Run_test_pipe_err_to_buffer(use_name)
+func Test_pipe_to_buffer_name_nomod()
+  call Run_test_pipe_to_buffer(1, 1)
+endfunc
+
+func Run_test_pipe_err_to_buffer(use_name, nomod)
   if !has('job')
     return
   endif
@@ -734,6 +746,9 @@ func Run_test_pipe_err_to_buffer(use_name)
     quit
     let firstline = ''
   endif
+  if a:nomod
+    let options['err_modifiable'] = 0
+  endif
   let job = job_start(s:python . " test_channel_pipe.py", options)
   call assert_equal("run", job_status(job))
   try
@@ -745,6 +760,11 @@ func Run_test_pipe_err_to_buffer(use_name)
     sp pipe-err
     call s:waitFor('line("$") >= 5')
     call assert_equal([firstline, 'line one', 'line two', 'this', 'AND this'], getline(1, '$'))
+    if a:nomod
+      call assert_equal(0, &modifiable)
+    else
+      call assert_equal(1, &modifiable)
+    endif
     bwipe!
   finally
     call job_stop(job)
@@ -752,11 +772,15 @@ func Run_test_pipe_err_to_buffer(use_name)
 endfunc
 
 func Test_pipe_err_to_buffer_name()
-  call Run_test_pipe_err_to_buffer(1)
+  call Run_test_pipe_err_to_buffer(1, 0)
 endfunc
   
 func Test_pipe_err_to_buffer_nr()
-  call Run_test_pipe_err_to_buffer(0)
+  call Run_test_pipe_err_to_buffer(0, 0)
+endfunc
+  
+func Test_pipe_err_to_buffer_name_nomod()
+  call Run_test_pipe_err_to_buffer(1, 1)
 endfunc
   
 func Test_pipe_both_to_buffer()

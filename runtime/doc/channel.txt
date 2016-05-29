@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 May 24
+*channel.txt*      For Vim version 7.4.  Last change: 2016 May 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -578,8 +578,8 @@ See |job_setoptions()| and |ch_setoptions()|.
 "exit_cb": handler	Callback for when the job ends.  The arguments are the
 			job and the exit status.
 			Vim checks about every 10 seconds for jobs that ended.
-			The callback can also be triggered by calling
-			|job_status()|.
+			The check also be triggered by calling |job_status()|,
+			which may then invoke the exit_cb handler.
 			Note that data can be buffered, callbacks may still be
 			called after the process ends.
 							*job-timeout*
@@ -625,18 +625,22 @@ See |job_setoptions()| and |ch_setoptions()|.
 "out_io": "null"	disconnect stdout (goes to /dev/null)
 "out_io": "pipe"	stdout is connected to the channel (default)
 "out_io": "file"	stdout writes to a file
-"out_io": "buffer" 	stdout appends to a buffer
+"out_io": "buffer" 	stdout appends to a buffer (see below)
 "out_name": "/path/file" the name of the file or buffer to write to
 "out_buf": number	the number of the buffer to write to
+"out_modifiable": 0	when writing to a buffer, 'modifiable' will be off
+			(see below)
 
 				*job-err_io* *err_name* *err_buf*
 "err_io": "out"		stderr messages to go to stdout
 "err_io": "null"	disconnect stderr  (goes to /dev/null)
 "err_io": "pipe"	stderr is connected to the channel (default)
 "err_io": "file"	stderr writes to a file
-"err_io": "buffer" 	stderr appends to a buffer
+"err_io": "buffer" 	stderr appends to a buffer (see below)
 "err_name": "/path/file" the name of the file or buffer to write to
 "err_buf": number	the number of the buffer to write to
+"err_modifiable": 0	when writing to a buffer, 'modifiable' will be off
+			(see below)
 
 "block_write": number	only for testing: pretend every other write to stdin
 			will block
@@ -662,6 +666,15 @@ used to get the buffer number.
 
 For a new buffer 'buftype' is set to "nofile" and 'bufhidden' to "hide".  If
 you prefer other settings, create the buffer first and pass the buffer number.
+
+The "out_modifiable" and "err_modifiable" options can be used to set the
+'modifiable' option off, or write to a buffer that has 'modifiable' off.  That
+means that lines will be appended to the buffer, but the user can't easily
+change the buffer.
+
+When an existing buffer is to be written where 'modifiable' is off and the
+"out_modifiable" or "err_modifiable" options is not zero, an error is given
+and the buffer will not be written to.
 
 When the buffer written to is displayed in a window and the cursor is in the
 first column of the last line, the cursor will be moved to the newly added

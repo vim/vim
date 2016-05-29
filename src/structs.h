@@ -1401,6 +1401,8 @@ typedef struct {
     partial_T	*ch_partial;
 
     buf_T	*ch_buffer;	/* buffer to read from or write to */
+    int		ch_nomodifiable; /* TRUE when buffer can be 'nomodifiable' */
+    int		ch_nomod_error;	/* TRUE when e_modifiable was given */
     int		ch_buf_append;	/* write appended lines instead top-bot */
     linenr_T	ch_buf_top;	/* next line to send */
     linenr_T	ch_buf_bot;	/* last line to send */
@@ -1477,6 +1479,8 @@ struct channel_S {
 #define JO_IN_BUF	    0x4000000	/* "in_buf" (JO_OUT_BUF << 2) */
 #define JO_CHANNEL	    0x8000000	/* "channel" */
 #define JO_BLOCK_WRITE	    0x10000000	/* "block_write" */
+#define JO_OUT_MODIFIABLE   0x20000000	/* "out_modifiable" */
+#define JO_ERR_MODIFIABLE   0x40000000	/* "err_modifiable" (JO_OUT_ << 1) */
 #define JO_ALL		    0x7fffffff
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
@@ -1500,6 +1504,7 @@ typedef struct
     char_u	jo_io_name_buf[4][NUMBUFLEN];
     char_u	*jo_io_name[4];	/* not allocated! */
     int		jo_io_buf[4];
+    int		jo_modifiable[4];
     channel_T	*jo_channel;
 
     linenr_T	jo_in_top;
