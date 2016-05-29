@@ -3839,6 +3839,8 @@ free_job_options(jobopt_T *opt)
 	partial_unref(opt->jo_err_partial);
     if (opt->jo_close_partial != NULL)
 	partial_unref(opt->jo_close_partial);
+    if (opt->jo_exit_partial != NULL)
+	partial_unref(opt->jo_exit_partial);
 }
 
 /*
@@ -4051,6 +4053,18 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
+	    else if (STRCMP(hi->hi_key, "exit_cb") == 0)
+	    {
+		if (!(supported & JO_EXIT_CB))
+		    break;
+		opt->jo_set |= JO_EXIT_CB;
+		opt->jo_exit_cb = get_callback(item, &opt->jo_exit_partial);
+		if (opt->jo_exit_cb == NULL)
+		{
+		    EMSG2(_(e_invarg2), "exit_cb");
+		    return FAIL;
+		}
+	    }
 	    else if (STRCMP(hi->hi_key, "waittime") == 0)
 	    {
 		if (!(supported & JO_WAITTIME))
@@ -4110,25 +4124,6 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		if (opt->jo_stoponexit == NULL)
 		{
 		    EMSG2(_(e_invarg2), "stoponexit");
-		    return FAIL;
-		}
-	    }
-	    else if (STRCMP(hi->hi_key, "exit_cb") == 0)
-	    {
-		if (!(supported & JO_EXIT_CB))
-		    break;
-		opt->jo_set |= JO_EXIT_CB;
-		if (item->v_type == VAR_PARTIAL && item->vval.v_partial != NULL)
-		{
-		    opt->jo_exit_partial = item->vval.v_partial;
-		    opt->jo_exit_cb = item->vval.v_partial->pt_name;
-		}
-		else
-		    opt->jo_exit_cb = get_tv_string_buf_chk(
-						       item, opt->jo_ecb_buf);
-		if (opt->jo_exit_cb == NULL)
-		{
-		    EMSG2(_(e_invarg2), "exit_cb");
 		    return FAIL;
 		}
 	    }

@@ -1529,7 +1529,6 @@ typedef struct
     int		jo_id;
     char_u	jo_soe_buf[NUMBUFLEN];
     char_u	*jo_stoponexit;
-    char_u	jo_ecb_buf[NUMBUFLEN];
 } jobopt_T;
 
 
