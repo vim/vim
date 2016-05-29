@@ -907,9 +907,10 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define GETF_SWITCH	0x04	/* respect 'switchbuf' settings when jumping */
 
 /* Values for buflist_new() flags */
-#define BLN_CURBUF	1	/* May re-use curbuf for new buffer */
-#define BLN_LISTED	2	/* Put new buffer in buffer list */
-#define BLN_DUMMY	4	/* Allocating dummy buffer */
+#define BLN_CURBUF	1	/* may re-use curbuf for new buffer */
+#define BLN_LISTED	2	/* put new buffer in buffer list */
+#define BLN_DUMMY	4	/* allocating dummy buffer */
+#define BLN_NEW		8	/* create a new buffer */
 
 /* Values for in_cinkeys() */
 #define KEY_OPEN_FORW	0x101

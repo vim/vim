@@ -1079,11 +1079,15 @@ find_buffer(char_u *name, int err)
     buf_T *save_curbuf = curbuf;
 
     if (name != NULL && *name != NUL)
+    {
 	buf = buflist_findname(name);
+	if (buf == NULL)
+	    buf = buflist_findname_exp(name);
+    }
     if (buf == NULL)
     {
 	buf = buflist_new(name == NULL || *name == NUL ? NULL : name,
-					       NULL, (linenr_T)0, BLN_LISTED);
+				     NULL, (linenr_T)0, BLN_LISTED | BLN_NEW);
 	if (buf == NULL)
 	    return NULL;
 	buf_copy_options(buf, BCO_ENTER);
