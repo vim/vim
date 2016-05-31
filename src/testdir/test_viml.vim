@@ -1053,6 +1053,150 @@ func Test_skip()
 endfunc
 
 "-------------------------------------------------------------------------------
+" Test 93:  :echo and string()					    {{{1
+"-------------------------------------------------------------------------------
+
+func Test_echo_and_string()
+    " String
+    let a = 'foo bar'
+    redir => result
+    echo a
+    echo string(a)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["foo bar",
+		     \ "'foo bar'"], l)
+
+    " Float
+    if has('float')
+	let a = -1.2e0
+	redir => result
+	echo a
+	echo string(a)
+	redir END
+	let l = split(result, "\n")
+	call assert_equal(["-1.2",
+			 \ "-1.2"], l)
+    endif
+
+    " Funcref
+    redir => result
+    echo function('string')
+    echo string(function('string'))
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["string",
+		     \ "function('string')"], l)
+
+    " Recursive dictionary
+    let a = {}
+    let a["a"] = a
+    redir => result
+    echo a
+    echo string(a)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': {...}}",
+		     \ "{'a': {...}}"], l)
+
+    " Recursive list
+    let a = [0]
+    let a[0] = a
+    redir => result
+    echo a
+    echo string(a)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[[...]]",
+		     \ "[[...]]"], l)
+
+    " Empty dictionaries in a list
+    let a = {}
+    redir => result
+    echo [a, a, a]
+    echo string([a, a, a])
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[{}, {}, {}]",
+		     \ "[{}, {}, {}]"], l)
+
+    " Empty dictionaries in a dictionary
+    let a = {}
+    let b = {"a": a, "b": a}
+    redir => result
+    echo b
+    echo string(b)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': {}, 'b': {}}",
+		     \ "{'a': {}, 'b': {}}"], l)
+
+    " Empty lists in a list
+    let a = []
+    redir => result
+    echo [a, a, a]
+    echo string([a, a, a])
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[[], [], []]",
+		     \ "[[], [], []]"], l)
+
+    " Empty lists in a dictionary
+    let a = []
+    let b = {"a": a, "b": a}
+    redir => result
+    echo b
+    echo string(b)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': [], 'b': []}",
+		     \ "{'a': [], 'b': []}"], l)
+
+    " Dictionaries in a list
+    let a = {"one": "yes", "two": "yes", "three": "yes"}
+    redir => result
+    echo [a, a, a]
+    echo string([a, a, a])
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[{'one': 'yes', 'two': 'yes', 'three': 'yes'}, {...}, {...}]",
+		     \ "[{'one': 'yes', 'two': 'yes', 'three': 'yes'}, {'one': 'yes', 'two': 'yes', 'three': 'yes'}, {'one': 'yes', 'two': 'yes', 'three': 'yes'}]"], l)
+
+    " Dictionaries in a dictionary
+    let a = {"one": "yes", "two": "yes", "three": "yes"}
+    let b = {"a": a, "b": a}
+    redir => result
+    echo b
+    echo string(b)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': {'one': 'yes', 'two': 'yes', 'three': 'yes'}, 'b': {...}}",
+		     \ "{'a': {'one': 'yes', 'two': 'yes', 'three': 'yes'}, 'b': {'one': 'yes', 'two': 'yes', 'three': 'yes'}}"], l)
+
+    " Lists in a list
+    let a = [1, 2, 3]
+    redir => result
+    echo [a, a, a]
+    echo string([a, a, a])
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[[1, 2, 3], [...], [...]]",
+		     \ "[[1, 2, 3], [1, 2, 3], [1, 2, 3]]"], l)
+
+    " Lists in a dictionary
+    let a = [1, 2, 3]
+    let b = {"a": a, "b": a}
+    redir => result
+    echo b
+    echo string(b)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': [1, 2, 3], 'b': [...]}",
+		     \ "{'a': [1, 2, 3], 'b': [1, 2, 3]}"], l)
+
+endfunc
+
+"-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
 " vim: fdt=substitute(substitute(foldtext(),\ '\\%(^+--\\)\\@<=\\(\\s*\\)\\(.\\{-}\\)\:\ \\%(\"\ \\)\\=\\(Test\ \\d*\\)\:\\s*',\ '\\3\ (\\2)\:\ \\1',\ \"\"),\ '\\(Test\\s*\\)\\(\\d\\)\\D\\@=',\ '\\1\ \\2',\ "")

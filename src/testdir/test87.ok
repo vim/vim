@@ -484,7 +484,7 @@ psa9: <vim.Function 'SelfArgs', self={'abcSelfPSA9': 'abcSelfPSA9Val'}, auto_reb
 psaA: <vim.Function 'SelfArgs', args=['abcArgsPSAA'], self={'abcSelfPSAA': 'abcSelfPSAAVal'}, auto_rebind=True>
 psaB: <vim.Function 'SelfArgs', args=['abcArgsPSAB']>
 psaC: <vim.Function 'SelfArgs'>
-psar: <vim.Function 'SelfArgs', args=[{'abcArgsPSAr2': [{'rec': function('SelfArgs', [{...}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{...}]}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], self={'rec': function('SelfArgs', [{'abcArgsPSAr2': [{...}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{...}]}>
+psar: <vim.Function 'SelfArgs', args=[{'abcArgsPSAr2': [{'rec': function('SelfArgs', [{...}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{...}]}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], self={'rec': function('SelfArgs', [{'abcArgsPSAr2': [{...}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{'abcArgsPSAr2': [{...}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}]}>
 s(a): function('Args')
 s(pa1): function('Args', ['abcArgsPA1'])
 s(pa2): function('Args')

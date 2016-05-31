@@ -445,16 +445,17 @@ static long list_idx_of_item(list_T *l, listitem_T *item);
 static int list_extend(list_T	*l1, list_T *l2, listitem_T *bef);
 static int list_concat(list_T *l1, list_T *l2, typval_T *tv);
 static list_T *list_copy(list_T *orig, int deep, int copyID);
-static char_u *list2string(typval_T *tv, int copyID);
-static int list_join_inner(garray_T *gap, list_T *l, char_u *sep, int echo_style, int copyID, garray_T *join_gap);
-static int list_join(garray_T *gap, list_T *l, char_u *sep, int echo, int copyID);
+static char_u *list2string(typval_T *tv, int copyID, int restore_copyID);
+static int list_join_inner(garray_T *gap, list_T *l, char_u *sep, int echo_style, int restore_copyID, int copyID, garray_T *join_gap);
+static int list_join(garray_T *gap, list_T *l, char_u *sep, int echo_style, int restore_copyID, int copyID);
 static int free_unref_items(int copyID);
 static dictitem_T *dictitem_copy(dictitem_T *org);
 static void dictitem_remove(dict_T *dict, dictitem_T *item);
 static dict_T *dict_copy(dict_T *orig, int deep, int copyID);
 static long dict_len(dict_T *d);
-static char_u *dict2string(typval_T *tv, int copyID);
+static char_u *dict2string(typval_T *tv, int copyID, int restore_copyID);
 static int get_dict_tv(char_u **arg, typval_T *rettv, int evaluate);
+static char_u *echo_string_core(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID, int echo_style, int restore_copyID, int dict_val);
 static char_u *echo_string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
 static char_u *string_quote(char_u *str, int function);
 static int get_env_tv(char_u **arg, typval_T *rettv, int evaluate);
@@ -1462,7 +1463,7 @@ eval_to_string(
 	    ga_init2(&ga, (int)sizeof(char), 80);
 	    if (tv.vval.v_list != NULL)
 	    {
-		list_join(&ga, tv.vval.v_list, (char_u *)"\n", TRUE, 0);
+		list_join(&ga, tv.vval.v_list, (char_u *)"\n", TRUE, FALSE, 0);
 		if (tv.vval.v_list->lv_len > 0)
 		    ga_append(&ga, NL);
 	    }
@@ -6766,7 +6767,7 @@ vimlist_remove(list_T *l, listitem_T *item, listitem_T *item2)
  * May return NULL.
  */
     static char_u *
-list2string(typval_T *tv, int copyID)
+list2string(typval_T *tv, int copyID, int restore_copyID)
 {
     garray_T	ga;
 
@@ -6774,7 +6775,8 @@ list2string(typval_T *tv, int copyID)
 	return NULL;
     ga_init2(&ga, (int)sizeof(char), 80);
     ga_append(&ga, '[');
-    if (list_join(&ga, tv->vval.v_list, (char_u *)", ", FALSE, copyID) == FAIL)
+    if (list_join(&ga, tv->vval.v_list, (char_u *)", ",
+				       FALSE, restore_copyID, copyID) == FAIL)
     {
 	vim_free(ga.ga_data);
 	return NULL;
@@ -6795,6 +6797,7 @@ list_join_inner(
     list_T	*l,
     char_u	*sep,
     int		echo_style,
+    int		restore_copyID,
     int		copyID,
     garray_T	*join_gap)	/* to keep each list item string */
 {
@@ -6811,10 +6814,8 @@ list_join_inner(
     /* Stringify each item in the list. */
     for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
-	if (echo_style)
-	    s = echo_string(&item->li_tv, &tofree, numbuf, copyID);
-	else
-	    s = tv2string(&item->li_tv, &tofree, numbuf, copyID);
+	s = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
+					   echo_style, restore_copyID, FALSE);
 	if (s == NULL)
 	    return FAIL;
 
@@ -6873,6 +6874,7 @@ list_join(
     list_T	*l,
     char_u	*sep,
     int		echo_style,
+    int		restore_copyID,
     int		copyID)
 {
     garray_T	join_ga;
@@ -6883,7 +6885,8 @@ list_join(
     if (l->lv_len < 1)
 	return OK; /* nothing to do */
     ga_init2(&join_ga, (int)sizeof(join_T), l->lv_len);
-    retval = list_join_inner(gap, l, sep, echo_style, copyID, &join_ga);
+    retval = list_join_inner(gap, l, sep, echo_style, restore_copyID,
+							    copyID, &join_ga);
 
     /* Dispose each item in join_ga. */
     if (join_ga.ga_data != NULL)
@@ -7833,7 +7836,7 @@ get_dict_number(dict_T *d, char_u *key)
  * May return NULL.
  */
     static char_u *
-dict2string(typval_T *tv, int copyID)
+dict2string(typval_T *tv, int copyID, int restore_copyID)
 {
     garray_T	ga;
     int		first = TRUE;
@@ -7868,7 +7871,8 @@ dict2string(typval_T *tv, int copyID)
 		vim_free(tofree);
 	    }
 	    ga_concat(&ga, (char_u *)": ");
-	    s = tv2string(&HI2DI(hi)->di_tv, &tofree, numbuf, copyID);
+	    s = echo_string_core(&HI2DI(hi)->di_tv, &tofree, numbuf, copyID,
+						 FALSE, restore_copyID, TRUE);
 	    if (s != NULL)
 		ga_concat(&ga, s);
 	    vim_free(tofree);
@@ -8026,16 +8030,23 @@ get_var_special_name(int nr)
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
- * Does not put quotes around strings, as ":echo" displays values.
  * When "copyID" is not NULL replace recursive lists and dicts with "...".
+ * When both "echo_style" and "dict_val" are FALSE, put quotes around stings as
+ * "string()", otherwise does not put quotes around strings, as ":echo"
+ * displays values.
+ * When "restore_copyID" is FALSE, repeated items in dictionaries and lists
+ * are replaced with "...".
  * May return NULL.
  */
     static char_u *
-echo_string(
+echo_string_core(
     typval_T	*tv,
     char_u	**tofree,
     char_u	*numbuf,
-    int		copyID)
+    int		copyID,
+    int		echo_style,
+    int		restore_copyID,
+    int		dict_val)
 {
     static int	recurse = 0;
     char_u	*r = NULL;
@@ -8057,9 +8068,30 @@ echo_string(
 
     switch (tv->v_type)
     {
+	case VAR_STRING:
+	    if (echo_style && !dict_val)
+	    {
+		*tofree = NULL;
+		r = get_tv_string_buf(tv, numbuf);
+	    }
+	    else
+	    {
+		*tofree = string_quote(tv->vval.v_string, FALSE);
+		r = *tofree;
+	    }
+	    break;
+
 	case VAR_FUNC:
-	    *tofree = NULL;
-	    r = tv->vval.v_string;
+	    if (echo_style)
+	    {
+		*tofree = NULL;
+		r = tv->vval.v_string;
+	    }
+	    else
+	    {
+		*tofree = string_quote(tv->vval.v_string, TRUE);
+		r = *tofree;
+	    }
 	    break;
 
 	case VAR_PARTIAL:
@@ -8114,15 +8146,20 @@ echo_string(
 		*tofree = NULL;
 		r = NULL;
 	    }
-	    else if (copyID != 0 && tv->vval.v_list->lv_copyID == copyID)
+	    else if (copyID != 0 && tv->vval.v_list->lv_copyID == copyID
+		    && tv->vval.v_list->lv_len > 0)
 	    {
 		*tofree = NULL;
 		r = (char_u *)"[...]";
 	    }
 	    else
 	    {
+		int old_copyID = tv->vval.v_list->lv_copyID;
+
 		tv->vval.v_list->lv_copyID = copyID;
-		*tofree = list2string(tv, copyID);
+		*tofree = list2string(tv, copyID, restore_copyID);
+		if (restore_copyID)
+		    tv->vval.v_list->lv_copyID = old_copyID;
 		r = *tofree;
 	    }
 	    break;
@@ -8133,20 +8170,23 @@ echo_string(
 		*tofree = NULL;
 		r = NULL;
 	    }
-	    else if (copyID != 0 && tv->vval.v_dict->dv_copyID == copyID)
+	    else if (copyID != 0 && tv->vval.v_dict->dv_copyID == copyID
+		    && tv->vval.v_dict->dv_hashtab.ht_used != 0)
 	    {
 		*tofree = NULL;
 		r = (char_u *)"{...}";
 	    }
 	    else
 	    {
+		int old_copyID = tv->vval.v_dict->dv_copyID;
 		tv->vval.v_dict->dv_copyID = copyID;
-		*tofree = dict2string(tv, copyID);
+		*tofree = dict2string(tv, copyID, restore_copyID);
+		if (restore_copyID)
+		    tv->vval.v_dict->dv_copyID = old_copyID;
 		r = *tofree;
 	    }
 	    break;
 
-	case VAR_STRING:
 	case VAR_NUMBER:
 	case VAR_UNKNOWN:
 	case VAR_JOB:
@@ -8178,6 +8218,24 @@ echo_string(
  * Return a string with the string representation of a variable.
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
+ * Does not put quotes around strings, as ":echo" displays values.
+ * When "copyID" is not NULL replace recursive lists and dicts with "...".
+ * May return NULL.
+ */
+    static char_u *
+echo_string(
+    typval_T	*tv,
+    char_u	**tofree,
+    char_u	*numbuf,
+    int		copyID)
+{
+    return echo_string_core(tv, tofree, numbuf, copyID, TRUE, FALSE, FALSE);
+}
+
+/*
+ * Return a string with the string representation of a variable.
+ * If the memory is allocated "tofree" is set to it, otherwise NULL.
+ * "numbuf" is used for a number.
  * Puts quotes around strings, so that they can be parsed back by eval().
  * May return NULL.
  */
@@ -8188,31 +8246,7 @@ tv2string(
     char_u	*numbuf,
     int		copyID)
 {
-    switch (tv->v_type)
-    {
-	case VAR_FUNC:
-	    *tofree = string_quote(tv->vval.v_string, TRUE);
-	    return *tofree;
-	case VAR_STRING:
-	    *tofree = string_quote(tv->vval.v_string, FALSE);
-	    return *tofree;
-	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
-	    *tofree = NULL;
-	    vim_snprintf((char *)numbuf, NUMBUFLEN - 1, "%g", tv->vval.v_float);
-	    return numbuf;
-#endif
-	case VAR_NUMBER:
-	case VAR_LIST:
-	case VAR_DICT:
-	case VAR_PARTIAL:
-	case VAR_SPECIAL:
-	case VAR_JOB:
-	case VAR_CHANNEL:
-	case VAR_UNKNOWN:
-	    break;
-    }
-    return echo_string(tv, tofree, numbuf, copyID);
+    return echo_string_core(tv, tofree, numbuf, copyID, FALSE, TRUE, FALSE);
 }
 
 /*
@@ -15182,7 +15216,7 @@ f_join(typval_T *argvars, typval_T *rettv)
     if (sep != NULL)
     {
 	ga_init2(&ga, (int)sizeof(char), 80);
-	list_join(&ga, argvars[0].vval.v_list, sep, TRUE, 0);
+	list_join(&ga, argvars[0].vval.v_list, sep, TRUE, FALSE, 0);
 	ga_append(&ga, NUL);
 	rettv->vval.v_string = (char_u *)ga.ga_data;
     }
