@@ -429,7 +429,7 @@ EXTERN char_u	*p_csprg;	/* 'cscopeprg' */
 EXTERN int	p_csre;		/* 'cscoperelative' */
 # ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_csqf;	/* 'cscopequickfix' */
-#  define	CSQF_CMDS   "sgdctefi"
+#  define	CSQF_CMDS   "sgdctefia"
 #  define	CSQF_FLAGS  "+-0"
 # endif
 EXTERN int	p_cst;		/* 'cscopetag' */
