@@ -3343,10 +3343,10 @@ add_pack_plugin(char_u *fname, void *cookie)
     int	    c;
     char_u  *new_rtp;
     int	    keep;
-    int	    oldlen;
-    int	    addlen;
+    size_t  oldlen;
+    size_t  addlen;
     char_u  *afterdir;
-    int	    afterlen = 0;
+    size_t  afterlen = 0;
     char_u  *ffname = fix_fname(fname);
 
     if (ffname == NULL)
@@ -3386,9 +3386,9 @@ add_pack_plugin(char_u *fname, void *cookie)
 	if (afterdir != NULL && mch_isdir(afterdir))
 	    afterlen = STRLEN(afterdir) + 1; /* add one for comma */
 
-	oldlen = (int)STRLEN(p_rtp);
-	addlen = (int)STRLEN(ffname) + 1; /* add one for comma */
-	new_rtp = alloc(oldlen + addlen + afterlen + 1); /* add one for NUL */
+	oldlen = STRLEN(p_rtp);
+	addlen = STRLEN(ffname) + 1; /* add one for comma */
+	new_rtp = alloc((int)(oldlen + addlen + afterlen + 1)); /* add one for NUL */
 	if (new_rtp == NULL)
 	    goto theend;
 	keep = (int)(insp - p_rtp);
