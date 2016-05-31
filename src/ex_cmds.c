@@ -7835,9 +7835,23 @@ ex_smile(exarg_T *eap UNUSED)
     msg_clr_eos();
 }
 
+static int display_alloced = 0;
+
     void
-ex_xrestore(exarg_T *eap UNUSED)
+ex_xrestore(exarg_T *eap)
 {
+   char *old_xterm_display = NULL;
+
+   if (eap->arg != NUL)
+   {
+       old_xterm_display = xterm_display;
+       xterm_display = vim_strsave(eap->arg);
+       if (display_alloced == 1)
+       {
+           vim_free(old_xterm_display);
+       }
+       display_alloced = 1;
+   }
    xterm_dpy_was_reset = TRUE;
 }
 
