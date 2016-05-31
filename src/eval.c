@@ -7046,6 +7046,10 @@ garbage_collect(int testing)
     abort = abort || set_ref_in_nb_channel(copyID);
 #endif
 
+#ifdef FEAT_TIMERS
+    abort = abort || set_ref_in_timer(copyID);
+#endif
+
     if (!abort)
     {
 	/*

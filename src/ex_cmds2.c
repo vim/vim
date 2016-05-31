@@ -1252,6 +1252,25 @@ stop_timer(timer_T *timer)
     remove_timer(timer);
     free_timer(timer);
 }
+
+/*
+ * Mark references in partials of timers.
+ */
+    int
+set_ref_in_timer(int copyID)
+{
+    int		abort = FALSE;
+    timer_T	*timer;
+    typval_T	tv;
+
+    for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+    {
+	tv.v_type = VAR_PARTIAL;
+	tv.vval.v_partial = timer->tr_partial;
+	abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+    }
+    return abort;
+}
 # endif
 
 #if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT)

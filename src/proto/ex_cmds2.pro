@@ -22,6 +22,7 @@ timer_T *create_timer(long msec, int repeats);
 long check_due_timer(void);
 timer_T *find_timer(int id);
 void stop_timer(timer_T *timer);
+int set_ref_in_timer(int copyID);
 void profile_divide(proftime_T *tm, int count, proftime_T *tm2);
 void profile_add(proftime_T *tm, proftime_T *tm2);
 void profile_self(proftime_T *self, proftime_T *total, proftime_T *children);
