@@ -1234,6 +1234,13 @@ cs_find_common(
 	/* send cmd to cscope */
 	(void)fprintf(csinfo[i].to_fp, "%s\n", cmd);
 	(void)fflush(csinfo[i].to_fp);
+    }
+    vim_free(cmd);
+
+    for (i = 0; i < csinfo_size; i++)
+    {
+	if (csinfo[i].fname == NULL || csinfo[i].to_fp == NULL)
+	    continue;
 
 	nummatches[i] = cs_cnt_matches(i);
 
@@ -1243,7 +1250,6 @@ cs_find_common(
 	if (nummatches[i] == 0)
 	    (void)cs_read_prompt(i);
     }
-    vim_free(cmd);
 
     if (totmatches == 0)
     {
