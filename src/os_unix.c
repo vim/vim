@@ -1560,7 +1560,6 @@ x_IOerror_check(Display *dpy UNUSED)
  */
 static int x_IOerror_handler(Display *dpy);
 static void may_restore_clipboard(void);
-static int xterm_dpy_was_reset = FALSE;
 
     static int
 x_IOerror_handler(Display *dpy UNUSED)
@@ -1599,6 +1598,8 @@ may_restore_clipboard(void)
 	    x11_display = NULL; /* freed by XtDestroyApplicationContext() */
 	}
 # endif
+	x11_window = 0;
+	xterm_Shell = (Widget)0;
 
 	setup_term_clip();
 	get_x11_title(FALSE);

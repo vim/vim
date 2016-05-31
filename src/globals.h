@@ -1295,6 +1295,8 @@ EXTERN linenr_T printer_page_num;
 EXTERN char	*xterm_display INIT(= NULL);	/* xterm display name; points
 						   into argv[] */
 EXTERN Display	*xterm_dpy INIT(= NULL);	/* xterm display pointer */
+EXTERN int	xterm_dpy_was_reset INIT(= FALSE);
+
 #endif
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11)
 EXTERN XtAppContext app_context INIT(= (XtAppContext)NULL);
