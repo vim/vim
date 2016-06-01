@@ -15773,6 +15773,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 		listitem_T *li3 = li2->li_next;
 		listitem_T *li4 = li3->li_next;
 
+		vim_free(li1->li_tv.vval.v_string);
 		li1->li_tv.vval.v_string = vim_strnsave(regmatch.startp[0],
 				(int)(regmatch.endp[0] - regmatch.startp[0]));
 		li3->li_tv.vval.v_number =
