@@ -545,7 +545,7 @@ static void (*dll_scheme_set_config_path)(Scheme_Object *p);
 
 # if MZSCHEME_VERSION_MAJOR >= 500
 #  if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || defined(IMPLEMENT_THREAD_LOCAL_EXTERNALLY_VIA_PROC)
-/* define as function for macro in schshread.h */
+/* define as function for macro in schthread.h */
 Thread_Local_Variables *
 scheme_external_get_thread_local_variables(void)
 {
@@ -894,7 +894,7 @@ static void remove_timer(void);
 /* timers are presented in GUI only */
 # if defined(FEAT_GUI_W32)
     static void CALLBACK
-timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT idEvent UNUSED, DWORD dwTime UNUSED)
+timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT_PTR idEvent UNUSED, DWORD dwTime UNUSED)
 # elif defined(FEAT_GUI_GTK)
 #  if GTK_CHECK_VERSION(3,0,0)
     static gboolean
@@ -3571,7 +3571,7 @@ raise_vim_exn(const char *add_info)
 
 	info = scheme_make_byte_string(add_info);
 	MZ_GC_CHECK();
-	c_string = scheme_format_utf8(fmt, STRLEN(fmt), 1, &info, NULL);
+	c_string = scheme_format_utf8(fmt, (int)STRLEN(fmt), 1, &info, NULL);
 	MZ_GC_CHECK();
 	byte_string = scheme_make_byte_string(c_string);
 	MZ_GC_CHECK();

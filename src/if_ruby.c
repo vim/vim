@@ -733,7 +733,7 @@ vim_str2rb_enc_str(const char *s)
 	vim_free(sval);
 	if (enc)
 	{
-	    return rb_enc_str_new(s, strlen(s), enc);
+	    return rb_enc_str_new(s, (long)strlen(s), enc);
 	}
     }
 #endif
