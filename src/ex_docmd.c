@@ -213,6 +213,9 @@ static void	ex_wrongmodifier(exarg_T *eap);
 static void	ex_find(exarg_T *eap);
 static void	ex_open(exarg_T *eap);
 static void	ex_edit(exarg_T *eap);
+#if !defined(FEAT_XCLIPBOARD)
+# define ex_xrestore		ex_ni
+#endif
 #if !defined(FEAT_GUI) && !defined(FEAT_CLIENTSERVER)
 # define ex_drop		ex_ni
 #endif

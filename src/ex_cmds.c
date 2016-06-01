@@ -7835,25 +7835,36 @@ ex_smile(exarg_T *eap UNUSED)
     msg_clr_eos();
 }
 
+#if defined(FEAT_XCLIPBOARD)
 static int display_alloced = 0;
 
     void
 ex_xrestore(exarg_T *eap)
 {
-   char *old_xterm_display = NULL;
+    char *old_xterm_display = NULL;
+    char buf[BUFSIZ];
 
-   if (eap->arg != NUL)
-   {
-       old_xterm_display = xterm_display;
-       xterm_display = vim_strsave(eap->arg);
-       if (display_alloced == 1)
-       {
-           vim_free(old_xterm_display);
-       }
-       display_alloced = 1;
-   }
-   xterm_dpy_was_reset = TRUE;
+    if (eap->arg != NULL && strlen(eap->arg) > 0)
+    {
+        vim_snprintf(buf, sizeof(buf), "xrestore: changing xterm_display %s -> %s", xterm_display, eap->arg);
+        old_xterm_display = xterm_display;
+        xterm_display = vim_strsave(eap->arg);
+        if (display_alloced == 1)
+        {
+            vim_free(old_xterm_display);
+        }
+        display_alloced = 1;
+    }
+    else
+    {
+        vim_snprintf(buf, sizeof(buf), "xrestore: keeping xterm_display = %s", xterm_display);
+    }
+
+    MSG(buf);
+
+    xterm_dpy_was_reset = TRUE;
 }
+#endif
 
 #if defined(FEAT_GUI) || defined(FEAT_CLIENTSERVER) || defined(PROTO)
 /*
