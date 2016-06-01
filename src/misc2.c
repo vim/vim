@@ -1036,16 +1036,12 @@ static void free_findfile(void);
 free_all_mem(void)
 {
     buf_T	*buf, *nextbuf;
-    static int	entered = FALSE;
 
     /* When we cause a crash here it is caught and Vim tries to exit cleanly.
      * Don't try freeing everything again. */
-    if (entered)
+    if (entered_free_all_mem)
 	return;
-    entered = TRUE;
-
-    /* Set this flag to indicate some errors can be ignored. */
-    really_exiting = TRUE;
+    entered_free_all_mem = TRUE;
 
 # ifdef FEAT_AUTOCMD
     /* Don't want to trigger autocommands from here on. */

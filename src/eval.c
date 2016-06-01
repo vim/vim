@@ -25350,8 +25350,9 @@ func_unref(char_u *name)
 	fp = find_func(name);
 	if (fp == NULL)
 	{
-	    /* Ignore when invoked through free_all_mem(). */
-	    if (!really_exiting)
+#ifdef EXITFREE
+	    if (!entered_free_all_mem)
+#endif
 		EMSG2(_(e_intern2), "func_unref()");
 	}
 	else if (--fp->uf_refcount <= 0)
