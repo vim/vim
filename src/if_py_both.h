@@ -6770,8 +6770,13 @@ populate_module(PyObject *m)
 	return -1;
     ADD_OBJECT(m, "os", other_module);
 
+#if PY_MAJOR_VERSION >= 3
     if (!(py_getcwd = PyObject_GetAttrString(other_module, "getcwd")))
 	return -1;
+#else
+    if (!(py_getcwd = PyObject_GetAttrString(other_module, "getcwdu")))
+	return -1;
+#endif
     ADD_OBJECT(m, "_getcwd", py_getcwd)
 
     if (!(py_chdir = PyObject_GetAttrString(other_module, "chdir")))
