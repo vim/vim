@@ -5298,7 +5298,7 @@ eval7(
 		 * what follows. So set it here. */
 		if (rettv->v_type == VAR_UNKNOWN && !evaluate && **arg == '(')
 		{
-		    rettv->vval.v_string = vim_strsave((char_u *)"");
+		    rettv->vval.v_string = NULL;
 		    rettv->v_type = VAR_FUNC;
 		}
 
