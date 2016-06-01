@@ -25348,7 +25348,11 @@ func_unref(char_u *name)
     {
 	fp = find_func(name);
 	if (fp == NULL)
-	    EMSG2(_(e_intern2), "func_unref()");
+	{
+	    /* Ignore when invoked through free_all_mem(). */
+	    if (!really_exiting)
+		EMSG2(_(e_intern2), "func_unref()");
+	}
 	else if (--fp->uf_refcount <= 0)
 	{
 	    /* Only delete it when it's not being used.  Otherwise it's done

@@ -1044,6 +1044,9 @@ free_all_mem(void)
 	return;
     entered = TRUE;
 
+    /* Set this flag to indicate some errors can be ignored. */
+    really_exiting = TRUE;
+
 # ifdef FEAT_AUTOCMD
     /* Don't want to trigger autocommands from here on. */
     block_autocmds();
