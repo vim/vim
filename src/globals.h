@@ -1635,6 +1635,10 @@ EXTERN int  disable_char_avail_for_testing INIT(= 0);
 EXTERN int  in_free_unref_items INIT(= FALSE);
 #endif
 
+#ifdef FEAT_TIMERS
+EXTERN int  did_add_timer INIT(= FALSE);
+#endif
+
 /*
  * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.
  */

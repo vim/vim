@@ -6535,15 +6535,15 @@ input_timer_cb(gpointer data)
     int
 gui_mch_wait_for_chars(long wtime)
 {
-    int focus;
-    guint timer;
-    static int timed_out;
+    int		focus;
+    guint	timer;
+    static int	timed_out;
+    int		retval = FAIL;
 
     timed_out = FALSE;
 
     /* this timeout makes sure that we will return if no characters arrived in
      * time */
-
     if (wtime > 0)
 #if GTK_CHECK_VERSION(3,0,0)
 	timer = g_timeout_add((guint)wtime, input_timer_cb, &timed_out);
@@ -6568,7 +6568,15 @@ gui_mch_wait_for_chars(long wtime)
 	}
 
 #ifdef MESSAGE_QUEUE
+# ifdef FEAT_TIMERS
+	did_add_timer = FALSE;
+# endif
 	parse_queued_messages();
+# ifdef FEAT_TIMERS
+	if (did_add_timer)
+	    /* Need to recompute the waiting time. */
+	    goto theend;
+# endif
 #endif
 
 	/*
@@ -6582,13 +6590,8 @@ gui_mch_wait_for_chars(long wtime)
 	/* Got char, return immediately */
 	if (input_available())
 	{
-	    if (timer != 0 && !timed_out)
-#if GTK_CHECK_VERSION(3,0,0)
-		g_source_remove(timer);
-#else
-		gtk_timeout_remove(timer);
-#endif
-	    return OK;
+	    retval = OK;
+	    goto theend;
 	}
     } while (wtime < 0 || !timed_out);
 
@@ -6597,7 +6600,15 @@ gui_mch_wait_for_chars(long wtime)
      */
     gui_mch_update();
 
-    return FAIL;
+theend:
+    if (timer != 0 && !timed_out)
+#if GTK_CHECK_VERSION(3,0,0)
+	g_source_remove(timer);
+#else
+	gtk_timeout_remove(timer);
+#endif
+
+    return retval;
 }
 
 

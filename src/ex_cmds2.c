@@ -1101,6 +1101,7 @@ insert_timer(timer_T *timer)
     if (first_timer != NULL)
 	first_timer->tr_prev = timer;
     first_timer = timer;
+    did_add_timer = TRUE;
 }
 
 /*
