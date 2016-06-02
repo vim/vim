@@ -646,16 +646,19 @@ K			Run a program to lookup the keyword under the
 
 :xr[estore] [display]	Reinitializes connection to X11 server. Useful after X
 			server restarts (e.g. when running Vim for long time 
-			inside screen/tmux andconnecting from different 
+			inside screen/tmux and connecting from different 
 			machines).
-			[display] should be in the format of $DISPLAY variable
-			(e.g. localhost:10.0)
+			[display] should be in the format of DISPLAY 
+			environment variable (e.g. localhost:10.0)
 			If [display] is	omitted, then it reinitializes 
-			connection to X11 server using the same $DISPLAY 
-			specification as was used for the last connection.
+			connection to X11 server using the same value as was 
+			used for the previous execution of this command (if 
+			the value was never specified, then it uses the value 
+			of DISPLAY environment variable as it was, when	Vim 
+			was started).
 			{not in Vi}
 			{only available when compiled with the |+clipboard| 
-			    feature}
+			feature}
 
 							*g_CTRL-A*
 g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
