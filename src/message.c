@@ -2475,9 +2475,9 @@ do_more_prompt(int typed_char)
     int		i;
 
     /* We get called recursively when a timer callback outputs a message. In
-     * that case don't show another prompt. Also when at the hit-Enter prompt.
-     */
-    if (entered || State == HITRETURN)
+     * that case don't show another prompt. Also when at the hit-Enter prompt
+     * and nothing was typed. */
+    if (entered || (State == HITRETURN && typed_char == 0))
 	return FALSE;
     entered = TRUE;
 
