@@ -2050,7 +2050,6 @@ remove_any_timer(void)
     int
 gui_mch_wait_for_chars(int wtime)
 {
-    MSG		msg;
     int		focus;
 
     s_timed_out = FALSE;
