@@ -5040,7 +5040,7 @@ gui_mch_set_scrollbar_thumb(
     SetControl32BitValue   (sb->id, val);
     SetControlViewSize     (sb->id, size);
 #ifdef DEBUG_MAC_SB
-    printf("thumb_sb (%x) %x, %x,%x\n",sb->id, val, size, max);
+    printf("thumb_sb (%x) %lx, %lx,%lx\n",sb->id, val, size, max);
 #endif
 }
 
