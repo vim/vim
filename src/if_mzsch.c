@@ -849,7 +849,7 @@ static long range_end;
 static int mz_threads_allow = 0;
 
 #if defined(FEAT_GUI_W32)
-static void CALLBACK timer_proc(HWND, UINT, UINT, DWORD);
+static void CALLBACK timer_proc(HWND, UINT, UINT_PTR, DWORD);
 static UINT timer_id = 0;
 #elif defined(FEAT_GUI_GTK)
 # if GTK_CHECK_VERSION(3,0,0)
