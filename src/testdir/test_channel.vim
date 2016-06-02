@@ -676,12 +676,17 @@ func Test_nl_write_both_file()
   endtry
 endfunc
 
+func BufCloseCb(ch)
+  let s:bufClosed = 'yes'
+endfunc
+
 func Run_test_pipe_to_buffer(use_name, nomod)
   if !has('job')
     return
   endif
   call ch_log('Test_pipe_to_buffer()')
-  let options = {'out_io': 'buffer'}
+  let s:bufClosed = 'no'
+  let options = {'out_io': 'buffer', 'close_cb': 'BufCloseCb'}
   if a:use_name
     let options['out_name'] = 'pipe-output'
     let firstline = 'Reading from channel output...'
@@ -704,15 +709,13 @@ func Run_test_pipe_to_buffer(use_name, nomod)
     call ch_sendraw(handle, "quit\n")
     sp pipe-output
     call s:waitFor('line("$") >= 6')
-    if getline('$') == 'DETACH'
-      $del
-    endif
     call assert_equal([firstline, 'line one', 'line two', 'this', 'AND this', 'Goodbye!'], getline(1, '$'))
     if a:nomod
       call assert_equal(0, &modifiable)
     else
       call assert_equal(1, &modifiable)
     endif
+    call assert_equal('yes', s:bufClosed)
     bwipe!
   finally
     call job_stop(job)
