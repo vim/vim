@@ -4403,6 +4403,21 @@ job_stop_on_exit()
 }
 
 /*
+ * Return TRUE when there is any job that might exit, which means
+ * job_check_ended() should be called once in a while.
+ */
+    int
+has_pending_job()
+{
+    job_T	    *job;
+
+    for (job = first_job; job != NULL; job = job->jv_next)
+	if (job->jv_status == JOB_STARTED && job_still_useful(job))
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * Called once in a while: check if any jobs that seem useful have ended.
  */
     void
@@ -4424,6 +4439,11 @@ job_check_ended(void)
 	    if (job->jv_status == JOB_STARTED && job_still_useful(job))
 		job_status(job); /* may free "job" */
 	}
+    }
+    if (channel_need_redraw)
+    {
+	channel_need_redraw = FALSE;
+	redraw_after_callback();
     }
 }
 
@@ -4658,6 +4678,7 @@ job_status(job_T *job)
 			   job->jv_exit_partial, NULL);
 	    clear_tv(&rettv);
 	    --job->jv_refcount;
+	    channel_need_redraw = TRUE;
 	}
 	if (job->jv_status == JOB_ENDED && job->jv_refcount == 0)
 	{

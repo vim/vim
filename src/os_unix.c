@@ -438,17 +438,31 @@ mch_inchar(
 
     for (;;)	/* repeat until we got a character */
     {
+	long	wtime_now = -1L;
+
 	while (do_resize)    /* window changed size */
 	    handle_resize();
 
 #ifdef MESSAGE_QUEUE
 	parse_queued_messages();
+
+# ifdef FEAT_JOB_CHANNEL
+	if (has_pending_job())
+	{
+	    /* Don't wait longer than a few seconds, checking for a finished
+	     * job requires polling. */
+	    if (p_ut > 9000L)
+		wtime_now = 1000L;
+	    else
+		wtime_now = 10000L - p_ut;
+	}
+# endif
 #endif
 	/*
 	 * We want to be interrupted by the winch signal
 	 * or by an event on the monitored file descriptors.
 	 */
-	if (!WaitForChar(-1L))
+	if (!WaitForChar(wtime_now))
 	{
 	    if (do_resize)	    /* interrupted by SIGWINCH signal */
 		handle_resize();

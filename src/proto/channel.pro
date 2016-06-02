@@ -57,6 +57,7 @@ int free_unused_jobs_contents(int copyID, int mask);
 void free_unused_jobs(int copyID, int mask);
 void job_set_options(job_T *job, jobopt_T *opt);
 void job_stop_on_exit(void);
+int has_pending_job(void);
 void job_check_ended(void);
 job_T *job_start(typval_T *argvars);
 char *job_status(job_T *job);
