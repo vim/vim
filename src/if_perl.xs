@@ -61,6 +61,17 @@
 # include <perliol.h>
 #endif
 
+/* Workaround for perl < 5.8.7 */
+#ifndef PERLIO_FUNCS_DECL
+# ifdef PERLIO_FUNCS_CONST
+#  define PERLIO_FUNCS_DECL(funcs) const PerlIO_funcs funcs
+#  define PERLIO_FUNCS_CAST(funcs) (PerlIO_funcs*)(funcs)
+# else
+#  define PERLIO_FUNCS_DECL(funcs) PerlIO_funcs funcs
+#  define PERLIO_FUNCS_CAST(funcs) (funcs)
+# endif
+#endif
+
 /*
  * Work around clashes between Perl and Vim namespace.	proto.h doesn't
  * include if_perl.pro and perlsfio.pro when IN_PERL_FILE is defined, because
