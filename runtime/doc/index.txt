@@ -1629,6 +1629,8 @@ tag	      command	      action ~
 |:xmenu|	:xme[nu]	add menu for Visual mode
 |:xnoremap|	:xn[oremap]	like ":noremap" but for Visual mode
 |:xnoremenu|	:xnoreme[nu]	like ":noremenu" but for Visual mode
+|:xrestore|	:xr[estore]	restores X connection (useful after X server 
+				reset)
 |:xunmap|	:xu[nmap]	like ":unmap" but for Visual mode
 |:xunmenu|	:xunme[nu]	remove menu for Visual mode
 |:yank|		:y[ank]		yank lines into a register

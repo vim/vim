@@ -644,6 +644,18 @@ K			Run a program to lookup the keyword under the
 			available when compiled with the |+netbeans_intg|
 			feature}
 
+:xr[estore] [display]	Reinitializes connection to X11 server. Useful after X
+			server restarts (e.g. when running Vim for long time 
+			inside screen/tmux andconnecting from different 
+			machines).
+			[display] should be in the format of $DISPLAY variable
+			(e.g. localhost:10.0)
+			If [display] is	omitted, then it reinitializes 
+			connection to X11 server using the same $DISPLAY 
+			specification as was used for the last connection.
+			{not in Vi}
+			{only available when compiled with the |+clipboard| 
+			    feature}
 
 							*g_CTRL-A*
 g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
