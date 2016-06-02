@@ -71,6 +71,9 @@
 #  define PERLIO_FUNCS_CAST(funcs) (funcs)
 # endif
 #endif
+#ifndef SvREFCNT_inc_void_NN
+# define SvREFCNT_inc_void_NN SvREFCNT_inc
+#endif
 
 /*
  * Work around clashes between Perl and Vim namespace.	proto.h doesn't
