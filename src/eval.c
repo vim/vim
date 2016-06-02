@@ -4627,7 +4627,26 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
 		    clear_tv(&var2);
 		    return FAIL;
 		}
-		n1 = tv_equal(rettv, &var2, FALSE, FALSE);
+		if ((rettv->v_type == VAR_PARTIAL
+					     && rettv->vval.v_partial == NULL)
+			|| (var2.v_type == VAR_PARTIAL
+					      && var2.vval.v_partial == NULL))
+		    /* when a partial is NULL assume not equal */
+		    n1 = FALSE;
+		else if (type_is)
+		{
+		    if (rettv->v_type == VAR_FUNC && var2.v_type == VAR_FUNC)
+			/* strings are considered the same if their value is
+			 * the same */
+			n1 = tv_equal(rettv, &var2, ic, FALSE);
+		    else if (rettv->v_type == VAR_PARTIAL
+						&& var2.v_type == VAR_PARTIAL)
+			n1 = (rettv->vval.v_partial == var2.vval.v_partial);
+		    else
+			n1 = FALSE;
+		}
+		else
+		    n1 = tv_equal(rettv, &var2, ic, FALSE);
 		if (type == TYPE_NEQUAL)
 		    n1 = !n1;
 	    }
@@ -6258,6 +6277,58 @@ dict_equal(
 
 static int tv_equal_recurse_limit;
 
+    static int
+func_equal(
+    typval_T *tv1,
+    typval_T *tv2,
+    int	     ic)	    /* ignore case */
+{
+    char_u	*s1, *s2;
+    dict_T	*d1, *d2;
+    int		a1, a2;
+    int		i;
+
+    /* empty and NULL function name considered the same */
+    s1 = tv1->v_type == VAR_FUNC ? tv1->vval.v_string
+					   : tv1->vval.v_partial->pt_name;
+    if (s1 != NULL && *s1 == NUL)
+	s1 = NULL;
+    s2 = tv2->v_type == VAR_FUNC ? tv2->vval.v_string
+					   : tv2->vval.v_partial->pt_name;
+    if (s2 != NULL && *s2 == NUL)
+	s2 = NULL;
+    if (s1 == NULL || s2 == NULL)
+    {
+	if (s1 != s2)
+	    return FALSE;
+    }
+    else if (STRCMP(s1, s2) != 0)
+	return FALSE;
+
+    /* empty dict and NULL dict is different */
+    d1 = tv1->v_type == VAR_FUNC ? NULL : tv1->vval.v_partial->pt_dict;
+    d2 = tv2->v_type == VAR_FUNC ? NULL : tv2->vval.v_partial->pt_dict;
+    if (d1 == NULL || d2 == NULL)
+    {
+	if (d1 != d2)
+	    return FALSE;
+    }
+    else if (!dict_equal(d1, d2, ic, TRUE))
+	return FALSE;
+
+    /* empty list and no list considered the same */
+    a1 = tv1->v_type == VAR_FUNC ? 0 : tv1->vval.v_partial->pt_argc;
+    a2 = tv2->v_type == VAR_FUNC ? 0 : tv2->vval.v_partial->pt_argc;
+    if (a1 != a2)
+	return FALSE;
+    for (i = 0; i < a1; ++i)
+	if (!tv_equal(tv1->vval.v_partial->pt_argv + i,
+		      tv2->vval.v_partial->pt_argv + i, ic, TRUE))
+	    return FALSE;
+
+    return TRUE;
+}
+
 /*
  * Return TRUE if "tv1" and "tv2" have the same value.
  * Compares the items just like "==" would compare them, but strings and
@@ -6275,22 +6346,6 @@ tv_equal(
     static int  recursive_cnt = 0;	    /* catch recursive loops */
     int		r;
 
-    /* For VAR_FUNC and VAR_PARTIAL only compare the function name. */
-    if ((tv1->v_type == VAR_FUNC
-		|| (tv1->v_type == VAR_PARTIAL && tv1->vval.v_partial != NULL))
-	    && (tv2->v_type == VAR_FUNC
-		|| (tv2->v_type == VAR_PARTIAL && tv2->vval.v_partial != NULL)))
-    {
-	s1 = tv1->v_type == VAR_FUNC ? tv1->vval.v_string
-					       : tv1->vval.v_partial->pt_name;
-	s2 = tv2->v_type == VAR_FUNC ? tv2->vval.v_string
-					       : tv2->vval.v_partial->pt_name;
-	return (s1 != NULL && s2 != NULL && STRCMP(s1, s2) == 0);
-    }
-
-    if (tv1->v_type != tv2->v_type)
-	return FALSE;
-
     /* Catch lists and dicts that have an endless loop by limiting
      * recursiveness to a limit.  We guess they are equal then.
      * A fixed limit has the problem of still taking an awful long time.
@@ -6304,6 +6359,21 @@ tv_equal(
 	--tv_equal_recurse_limit;
 	return TRUE;
     }
+
+    /* For VAR_FUNC and VAR_PARTIAL only compare the function name. */
+    if ((tv1->v_type == VAR_FUNC
+		|| (tv1->v_type == VAR_PARTIAL && tv1->vval.v_partial != NULL))
+	    && (tv2->v_type == VAR_FUNC
+		|| (tv2->v_type == VAR_PARTIAL && tv2->vval.v_partial != NULL)))
+    {
+	++recursive_cnt;
+	r = func_equal(tv1, tv2, ic);
+	--recursive_cnt;
+	return r;
+    }
+
+    if (tv1->v_type != tv2->v_type)
+	return FALSE;
 
     switch (tv1->v_type)
     {
