@@ -263,6 +263,10 @@ WP64CHECK = /Wp64
 # INCLUDE = c:\msvc20\include
 # LIB = c:\msvc20\lib
 
+!if "$(FEATURES)"==""
+FEATURES = HUGE
+!endif
+
 !ifndef CTAGS
 CTAGS = ctags
 !endif
@@ -283,7 +287,11 @@ NETBEANS = $(GUI)
 !endif
 
 !ifndef CHANNEL
+!if "$(FEATURES)"=="HUGE"
+CHANNEL = yes
+!else
 CHANNEL = $(GUI)
+!endif
 !endif
 
 # Only allow NETBEANS and XPM for a GUI build and CHANNEL.
@@ -953,9 +961,6 @@ CFLAGS = $(CFLAGS) -DMSWINPS
 #
 # FEATURES: TINY, SMALL, NORMAL, BIG or HUGE
 #
-!if "$(FEATURES)"==""
-FEATURES = HUGE
-!endif
 CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 
 #
