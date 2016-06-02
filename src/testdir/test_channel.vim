@@ -708,7 +708,7 @@ func Run_test_pipe_to_buffer(use_name, nomod)
     call ch_sendraw(handle, "double this\n")
     call ch_sendraw(handle, "quit\n")
     sp pipe-output
-    call s:waitFor('line("$") >= 6')
+    call s:waitFor('line("$") >= 6 && s:bufClosed == "yes"')
     call assert_equal([firstline, 'line one', 'line two', 'this', 'AND this', 'Goodbye!'], getline(1, '$'))
     if a:nomod
       call assert_equal(0, &modifiable)
