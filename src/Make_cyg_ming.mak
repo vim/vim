@@ -67,7 +67,11 @@ CSCOPE=yes
 # Set to yes to enable Netbeans support (requires CHANNEL).
 NETBEANS=$(GUI)
 # Set to yes to enable inter process communication.
+ifeq (HUGE, $(FEATURES))
+CHANNEL=yes
+else
 CHANNEL=$(GUI)
+endif
 
 
 # Link against the shared version of libstdc++ by default.  Set
