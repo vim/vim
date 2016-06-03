@@ -4928,7 +4928,7 @@ ex_cfilter(exarg_T *eap)
 
 	if (add_entry)
 	{
-	    if (qf_add_entry(qi, &prevp,
+	    if (qf_add_entry(qi,
 			NULL,	/* dir */
 			NULL,	/* file name */
 			qfp->qf_fnum,
@@ -4957,7 +4957,7 @@ ex_cfilter(exarg_T *eap)
     vim_regfree(regmatch.regprog);
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi, TRUE);
+    qf_update_buffer(qi, NULL);
 #endif
 
 theend:
