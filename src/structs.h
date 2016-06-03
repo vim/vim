@@ -1865,9 +1865,10 @@ struct file_buffer
 #ifdef FEAT_MBYTE
     int		b_p_bomb;	/* 'bomb' */
 #endif
-#if defined(FEAT_QUICKFIX)
+#ifdef FEAT_QUICKFIX
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
+    int		b_has_qf_entry;
 #endif
     int		b_p_bl;		/* 'buflisted' */
 #ifdef FEAT_CINDENT
@@ -2465,7 +2466,7 @@ struct window_S
     int		w_wrow, w_wcol;	    /* cursor position in window */
 
     linenr_T	w_botline;	    /* number of the line below the bottom of
-				       the screen */
+				       the window */
     int		w_empty_rows;	    /* number of ~ rows in window */
 #ifdef FEAT_DIFF
     int		w_filler_rows;	    /* number of filler rows at the end of the
