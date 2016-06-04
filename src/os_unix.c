@@ -369,6 +369,21 @@ mch_write(char_u *s, int len)
 	RealWaitForChar(read_cmd_fd, p_wd, NULL, NULL);
 }
 
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+/*
+ * Return time in msec since "start_tv".
+ */
+    static long
+elapsed(struct timeval *start_tv)
+{
+    struct timeval  now_tv;
+
+    gettimeofday(&now_tv, NULL);
+    return (now_tv.tv_sec - start_tv->tv_sec) * 1000L
+	 + (now_tv.tv_usec - start_tv->tv_usec) / 1000L;
+}
+#endif
+
 /*
  * mch_inchar(): low level input function.
  * Get a characters from the keyboard.
@@ -386,6 +401,12 @@ mch_inchar(
 {
     int		len;
     int		interrupted = FALSE;
+    long	wait_time;
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+    struct timeval  start_tv;
+
+    gettimeofday(&start_tv, NULL);
+#endif
 
 #ifdef MESSAGE_QUEUE
     parse_queued_messages();
@@ -396,11 +417,20 @@ mch_inchar(
     while (do_resize)
 	handle_resize();
 
-    if (wtime >= 0)
+    for (;;)
     {
-	/* TODO: when looping reduce wtime by the elapsed time. */
-	while (!WaitForChar(wtime, &interrupted))
+	if (wtime >= 0)
+	    wait_time = wtime;
+	else
+	    wait_time = p_ut;
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+	wait_time -= elapsed(&start_tv);
+	if (wait_time >= 0)
 	{
+#endif
+	    if (WaitForChar(wait_time, &interrupted))
+		break;
+
 	    /* no character available */
 	    if (do_resize)
 	    {
@@ -421,32 +451,31 @@ mch_inchar(
 		continue;
 	    }
 #endif
-	    /* return if not interrupted by resize or server */
-	    return 0;
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 	}
-    }
-    else	/* wtime == -1 */
-    {
+#endif
+	if (wtime >= 0)
+	    /* no character available within "wtime" */
+	    return 0;
+
+	/* wtime == -1: no character available within 'updatetime' */
+#ifdef FEAT_AUTOCMD
+	if (trigger_cursorhold() && maxlen >= 3
+					   && !typebuf_changed(tb_change_cnt))
+	{
+	    buf[0] = K_SPECIAL;
+	    buf[1] = KS_EXTRA;
+	    buf[2] = (int)KE_CURSORHOLD;
+	    return 3;
+	}
+#endif
 	/*
 	 * If there is no character available within 'updatetime' seconds
 	 * flush all the swap files to disk.
 	 * Also done when interrupted by SIGWINCH.
 	 */
-	if (!WaitForChar(p_ut, &interrupted))
-	{
-	    /* TODO: if interrupted is set loop to wait the remaining time. */
-#ifdef FEAT_AUTOCMD
-	    if (trigger_cursorhold() && maxlen >= 3
-					   && !typebuf_changed(tb_change_cnt))
-	    {
-		buf[0] = K_SPECIAL;
-		buf[1] = KS_EXTRA;
-		buf[2] = (int)KE_CURSORHOLD;
-		return 3;
-	    }
-#endif
-	    before_blocking();
-	}
+	before_blocking();
+	break;
     }
 
     /* repeat until we got a character */
@@ -1512,22 +1541,15 @@ mch_input_isatty(void)
 # if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H) \
 	&& (defined(FEAT_XCLIPBOARD) || defined(FEAT_TITLE))
 
-static void xopen_message(struct timeval *tvp);
+static void xopen_message(struct timeval *start_tv);
 
 /*
  * Give a message about the elapsed time for opening the X window.
  */
     static void
-xopen_message(
-    struct timeval *tvp)	/* must contain start time */
+xopen_message(struct timeval *start_tv)
 {
-    struct timeval  end_tv;
-
-    /* Compute elapsed time. */
-    gettimeofday(&end_tv, NULL);
-    smsg((char_u *)_("Opening the X display took %ld msec"),
-	    (end_tv.tv_sec - tvp->tv_sec) * 1000L
-				   + (end_tv.tv_usec - tvp->tv_usec) / 1000L);
+    smsg((char_u *)_("Opening the X display took %ld msec"), elapsed(start_tv));
 }
 # endif
 #endif
@@ -4880,15 +4902,11 @@ mch_call_shell(
 # if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 			if (wait_pid == 0)
 			{
-			    struct timeval  now_tv;
-			    long	    msec;
+			    long	    msec = elapsed(&start_tv);
 
 			    /* Avoid that we keep looping here without
 			     * checking for a CTRL-C for a long time.  Don't
 			     * break out too often to avoid losing typeahead. */
-			    gettimeofday(&now_tv, NULL);
-			    msec = (now_tv.tv_sec - start_tv.tv_sec) * 1000L
-				 + (now_tv.tv_usec - start_tv.tv_usec) / 1000L;
 			    if (msec > 2000)
 			    {
 				noread_cnt = 5;
@@ -5892,12 +5910,8 @@ select_eintr:
 	if (msec > 0)
 	{
 # ifdef USE_START_TV
-	    struct timeval  mtv;
-
 	    /* Compute remaining wait time. */
-	    gettimeofday(&mtv, NULL);
-	    msec -= (mtv.tv_sec - start_tv.tv_sec) * 1000L
-				   + (mtv.tv_usec - start_tv.tv_usec) / 1000L;
+	    msec -= elapsed(&start_tv);
 # else
 	    /* Guess we got interrupted halfway. */
 	    msec = msec / 2;
