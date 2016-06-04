@@ -1665,7 +1665,7 @@ static struct vimoption options[] =
     {"keywordprg",  "kp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_kp, PV_KP,
 			    {
-#if defined(MSWIN)
+#ifdef MSWIN
 			    (char_u *)":help",
 #else
 # ifdef VMS

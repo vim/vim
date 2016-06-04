@@ -2516,7 +2516,7 @@ buflist_findnr(int nr)
 	nr = curwin->w_alt_fnum;
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 	if (buf->b_fnum == nr)
-	    return (buf);
+	    return buf;
     return NULL;
 }
 
