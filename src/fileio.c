@@ -7389,10 +7389,20 @@ vim_tempname(
 		    add_pathsep(itmp);
 
 # ifdef HAVE_MKDTEMP
-		/* Leave room for filename */
-		STRCAT(itmp, "vXXXXXX");
-		if (mkdtemp((char *)itmp) != NULL)
-		    vim_settempdir(itmp);
+		{
+#  if defined(UNIX) || defined(VMS)
+		    /* Make sure the umask doesn't remove the executable bit.
+		     * "repl" has been reported to use "177". */
+		    mode_t	umask_save = umask(077);
+#  endif
+		    /* Leave room for filename */
+		    STRCAT(itmp, "vXXXXXX");
+		    if (mkdtemp((char *)itmp) != NULL)
+			vim_settempdir(itmp);
+#  if defined(UNIX) || defined(VMS)
+		    (void)umask(umask_save);
+#  endif
+		}
 # else
 		/* Get an arbitrary number of up to 6 digits.  When it's
 		 * unlikely that it already exists it will be faster,
