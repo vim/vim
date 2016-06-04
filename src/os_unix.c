@@ -5577,25 +5577,10 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
     /* Remember at what time we started, so that we know how much longer we
      * should wait after being interrupted. */
 #  define USE_START_TV
+    long	    start_msec = msec;
     struct timeval  start_tv;
 
-    if (msec > 0 && (
-#  ifdef FEAT_XCLIPBOARD
-	    xterm_Shell != (Widget)0
-#   if defined(USE_XSMP) || defined(FEAT_MZSCHEME)
-	    ||
-#   endif
-#  endif
-#  ifdef USE_XSMP
-	    xsmp_icefd != -1
-#   ifdef FEAT_MZSCHEME
-	    ||
-#   endif
-#  endif
-#  ifdef FEAT_MZSCHEME
-	(mzthreads_allowed() && p_mzq > 0)
-#  endif
-	    ))
+    if (msec > 0)
 	gettimeofday(&start_tv, NULL);
 # endif
 
@@ -5911,7 +5896,7 @@ select_eintr:
 	{
 # ifdef USE_START_TV
 	    /* Compute remaining wait time. */
-	    msec -= elapsed(&start_tv);
+	    msec = start_msec - elapsed(&start_tv);
 # else
 	    /* Guess we got interrupted halfway. */
 	    msec = msec / 2;
