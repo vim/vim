@@ -18,7 +18,7 @@ void channel_buffer_free(buf_T *buf);
 void channel_write_any_lines(void);
 void channel_write_new_lines(buf_T *buf);
 char_u *channel_get(channel_T *channel, int part);
-int channel_collapse(channel_T *channel, int part);
+int channel_collapse(channel_T *channel, int part, int want_nl);
 int channel_can_write_to(channel_T *channel);
 int channel_is_open(channel_T *channel);
 char *channel_status(channel_T *channel);

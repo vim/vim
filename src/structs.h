@@ -1309,6 +1309,7 @@ struct jobvar_S
 struct readq_S
 {
     char_u	*rq_buffer;
+    long_u	rq_buflen;
     readq_T	*rq_next;
     readq_T	*rq_prev;
 };

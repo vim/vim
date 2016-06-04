@@ -1592,13 +1592,17 @@ channel_get_all(channel_T *channel, int part)
 
     /* Concatenate everything into one buffer. */
     for (node = head->rq_next; node != NULL; node = node->rq_next)
-	len += (long_u)STRLEN(node->rq_buffer);
+	len += node->rq_buflen;
     res = lalloc(len, TRUE);
     if (res == NULL)
 	return NULL;
-    *res = NUL;
+    p = res;
     for (node = head->rq_next; node != NULL; node = node->rq_next)
-	STRCAT(res, node->rq_buffer);
+    {
+	STRCPY(p, node->rq_buffer);
+	p += node->rq_buflen;
+    }
+    *p = NUL;
 
     /* Free all buffers */
     do
@@ -1613,31 +1617,59 @@ channel_get_all(channel_T *channel, int part)
 /*
  * Collapses the first and second buffer for "channel"/"part".
  * Returns FAIL if that is not possible.
+ * When "want_nl" is TRUE collapse more buffers until a NL is found.
  */
     int
-channel_collapse(channel_T *channel, int part)
+channel_collapse(channel_T *channel, int part, int want_nl)
 {
     readq_T *head = &channel->ch_part[part].ch_head;
     readq_T *node = head->rq_next;
+    readq_T *last_node;
+    readq_T *n;
+    char_u  *newbuf;
     char_u  *p;
+    long_u len;
 
     if (node == NULL || node->rq_next == NULL)
 	return FAIL;
 
-    p = alloc((unsigned)(STRLEN(node->rq_buffer)
-				     + STRLEN(node->rq_next->rq_buffer) + 1));
-    if (p == NULL)
+    last_node = node->rq_next;
+    len = node->rq_buflen + last_node->rq_buflen + 1;
+    if (want_nl)
+	while (last_node->rq_next != NULL
+		&& vim_strchr(last_node->rq_buffer, NL) == NULL)
+	{
+	    last_node = last_node->rq_next;
+	    len += last_node->rq_buflen;
+	}
+
+    p = newbuf = alloc(len);
+    if (newbuf == NULL)
 	return FAIL;	    /* out of memory */
     STRCPY(p, node->rq_buffer);
-    STRCAT(p, node->rq_next->rq_buffer);
-    vim_free(node->rq_next->rq_buffer);
-    node->rq_next->rq_buffer = p;
-
-    /* dispose of the node and its buffer */
-    head->rq_next = node->rq_next;
-    head->rq_next->rq_prev = NULL;
+    p += node->rq_buflen;
     vim_free(node->rq_buffer);
-    vim_free(node);
+    node->rq_buffer = newbuf;
+    for (n = node; n != last_node; )
+    {
+	n = n->rq_next;
+	STRCPY(p, n->rq_buffer);
+	p += n->rq_buflen;
+	vim_free(n->rq_buffer);
+    }
+
+    /* dispose of the collapsed nodes and their buffers */
+    for (n = node->rq_next; n != last_node; )
+    {
+	n = n->rq_next;
+	vim_free(n->rq_prev);
+    }
+    node->rq_next = last_node->rq_next;
+    if (last_node->rq_next == NULL)
+	head->rq_prev = node;
+    else
+	last_node->rq_next->rq_prev = node;
+    vim_free(last_node);
     return OK;
 }
 
@@ -1673,11 +1705,13 @@ channel_save(channel_T *channel, int part, char_u *buf, int len,
 	    if (buf[i] != CAR || i + 1 >= len || buf[i + 1] != NL)
 		*p++ = buf[i];
 	*p = NUL;
+	node->rq_buflen = (long_u)(p - node->rq_buffer);
     }
     else
     {
 	mch_memmove(node->rq_buffer, buf, len);
 	node->rq_buffer[len] = NUL;
+	node->rq_buflen = (long_u)len;
     }
 
     if (prepend)
@@ -2024,7 +2058,7 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 #ifdef FEAT_GUI
 	if (gui.in_use)
 	{
-	    gui_update_cursor(FALSE, FALSE);
+	    gui_update_cursor(TRUE, FALSE);
 	    gui_mch_flush();
 	}
 #endif
@@ -2349,7 +2383,7 @@ may_invoke_callback(channel_T *channel, int part)
 		nl = vim_strchr(buf, NL);
 		if (nl != NULL)
 		    break;
-		if (channel_collapse(channel, part) == FAIL)
+		if (channel_collapse(channel, part, TRUE) == FAIL)
 		    return FALSE; /* incomplete message */
 	    }
 	    if (nl[1] == NUL)
@@ -3018,7 +3052,8 @@ channel_read_block(channel_T *channel, int part, int timeout)
 	if (buf != NULL && (mode == MODE_RAW
 			 || (mode == MODE_NL && vim_strchr(buf, NL) != NULL)))
 	    break;
-	if (buf != NULL && channel_collapse(channel, part) == OK)
+	if (buf != NULL && channel_collapse(channel, part, mode == MODE_NL)
+									== OK)
 	    continue;
 
 	/* Wait for up to the channel timeout. */
