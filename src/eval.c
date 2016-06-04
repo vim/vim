@@ -500,6 +500,7 @@ static void f_buflisted(typval_T *argvars, typval_T *rettv);
 static void f_bufloaded(typval_T *argvars, typval_T *rettv);
 static void f_bufname(typval_T *argvars, typval_T *rettv);
 static void f_bufnr(typval_T *argvars, typval_T *rettv);
+static void f_bufwinid(typval_T *argvars, typval_T *rettv);
 static void f_bufwinnr(typval_T *argvars, typval_T *rettv);
 static void f_byte2line(typval_T *argvars, typval_T *rettv);
 static void byteidx(typval_T *argvars, typval_T *rettv, int comp);
@@ -8488,6 +8489,7 @@ static struct fst
     {"bufloaded",	1, 1, f_bufloaded},
     {"bufname",		1, 1, f_bufname},
     {"bufnr",		1, 2, f_bufnr},
+    {"bufwinid",	1, 1, f_bufwinid},
     {"bufwinnr",	1, 1, f_bufwinnr},
     {"byte2line",	1, 1, f_byte2line},
     {"byteidx",		2, 2, f_byteidx},
@@ -10213,11 +10215,8 @@ f_bufnr(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = -1;
 }
 
-/*
- * "bufwinnr(nr)" function
- */
     static void
-f_bufwinnr(typval_T *argvars, typval_T *rettv)
+buf_win_common(typval_T *argvars, typval_T *rettv, int get_nr)
 {
 #ifdef FEAT_WINDOWS
     win_T	*wp;
@@ -10235,11 +10234,30 @@ f_bufwinnr(typval_T *argvars, typval_T *rettv)
 	if (wp->w_buffer == buf)
 	    break;
     }
-    rettv->vval.v_number = (wp != NULL ? winnr : -1);
+    rettv->vval.v_number = (wp != NULL ? (get_nr ? winnr : wp->w_id) : -1);
 #else
-    rettv->vval.v_number = (curwin->w_buffer == buf ? 1 : -1);
+    rettv->vval.v_number = (curwin->w_buffer == buf
+					  ? (get_nr ? 1 : curwin->w_id) : -1);
 #endif
     --emsg_off;
+}
+
+/*
+ * "bufwinid(nr)" function
+ */
+    static void
+f_bufwinid(typval_T *argvars, typval_T *rettv)
+{
+    buf_win_common(argvars, rettv, FALSE);
+}
+
+/*
+ * "bufwinnr(nr)" function
+ */
+    static void
+f_bufwinnr(typval_T *argvars, typval_T *rettv)
+{
+    buf_win_common(argvars, rettv, TRUE);
 }
 
 /*
