@@ -359,6 +359,7 @@ static struct vimvar
     {VV_NAME("swapcommand",	 VAR_STRING), VV_RO},
     {VV_NAME("char",		 VAR_STRING), 0},
     {VV_NAME("mouse_win",	 VAR_NUMBER), 0},
+    {VV_NAME("mouse_winid",	 VAR_NUMBER), 0},
     {VV_NAME("mouse_lnum",	 VAR_NUMBER), 0},
     {VV_NAME("mouse_col",	 VAR_NUMBER), 0},
     {VV_NAME("operator",	 VAR_STRING), VV_RO},
@@ -12755,6 +12756,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
     --allow_keys;
 
     vimvars[VV_MOUSE_WIN].vv_nr = 0;
+    vimvars[VV_MOUSE_WINID].vv_nr = 0;
     vimvars[VV_MOUSE_LNUM].vv_nr = 0;
     vimvars[VV_MOUSE_COL].vv_nr = 0;
 
@@ -12810,6 +12812,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		    ++winnr;
 # endif
 		vimvars[VV_MOUSE_WIN].vv_nr = winnr;
+		vimvars[VV_MOUSE_WINID].vv_nr = win->w_id;
 		vimvars[VV_MOUSE_LNUM].vv_nr = lnum;
 		vimvars[VV_MOUSE_COL].vv_nr = col + 1;
 	    }

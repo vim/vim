@@ -1887,26 +1887,27 @@ typedef int sock_T;
 #define VV_SWAPCOMMAND	48
 #define VV_CHAR		49
 #define VV_MOUSE_WIN	50
-#define VV_MOUSE_LNUM   51
-#define VV_MOUSE_COL	52
-#define VV_OP		53
-#define VV_SEARCHFORWARD 54
-#define VV_HLSEARCH	55
-#define VV_OLDFILES	56
-#define VV_WINDOWID	57
-#define VV_PROGPATH	58
-#define VV_COMPLETED_ITEM 59
-#define VV_OPTION_NEW   60
-#define VV_OPTION_OLD   61
-#define VV_OPTION_TYPE  62
-#define VV_ERRORS	63
-#define VV_FALSE	64
-#define VV_TRUE		65
-#define VV_NULL		66
-#define VV_NONE		67
-#define VV_VIM_DID_ENTER 68
-#define VV_TESTING	69
-#define VV_LEN		70	/* number of v: vars */
+#define VV_MOUSE_WINID	51
+#define VV_MOUSE_LNUM   52
+#define VV_MOUSE_COL	53
+#define VV_OP		54
+#define VV_SEARCHFORWARD 55
+#define VV_HLSEARCH	56
+#define VV_OLDFILES	57
+#define VV_WINDOWID	58
+#define VV_PROGPATH	59
+#define VV_COMPLETED_ITEM 60
+#define VV_OPTION_NEW   61
+#define VV_OPTION_OLD   62
+#define VV_OPTION_TYPE  63
+#define VV_ERRORS	64
+#define VV_FALSE	65
+#define VV_TRUE		66
+#define VV_NULL		67
+#define VV_NONE		68
+#define VV_VIM_DID_ENTER 69
+#define VV_TESTING	70
+#define VV_LEN		71	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L
