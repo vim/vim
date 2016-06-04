@@ -175,12 +175,12 @@ typedef int waitstatus;
 #endif
 static pid_t wait4pid(pid_t, waitstatus *);
 
-static int  WaitForChar(long);
-static int  WaitForCharOrMouse(long, int *break_loop);
+static int  WaitForChar(long msec, int *interrupted);
+static int  WaitForCharOrMouse(long msec, int *interrupted);
 #if defined(__BEOS__) || defined(VMS)
-int  RealWaitForChar(int, long, int *, int *break_loop);
+int  RealWaitForChar(int, long, int *, int *interrupted);
 #else
-static int  RealWaitForChar(int, long, int *, int *break_loop);
+static int  RealWaitForChar(int, long, int *, int *interrupted);
 #endif
 
 #ifdef FEAT_XCLIPBOARD
@@ -385,6 +385,7 @@ mch_inchar(
     int		tb_change_cnt)
 {
     int		len;
+    int		interrupted = FALSE;
 
 #ifdef MESSAGE_QUEUE
     parse_queued_messages();
@@ -397,20 +398,31 @@ mch_inchar(
 
     if (wtime >= 0)
     {
-	while (!WaitForChar(wtime))		/* no character available */
+	/* TODO: when looping reduce wtime by the elapsed time. */
+	while (!WaitForChar(wtime, &interrupted))
 	{
+	    /* no character available */
 	    if (do_resize)
+	    {
 		handle_resize();
+		continue;
+	    }
 #ifdef FEAT_CLIENTSERVER
-	    else if (!server_waiting())
-#else
-	    else
+	    if (server_waiting())
+	    {
+		parse_queued_messages();
+		continue;
+	    }
 #endif
-		/* return if not interrupted by resize or server */
-		return 0;
 #ifdef MESSAGE_QUEUE
-	    parse_queued_messages();
+	    if (interrupted)
+	    {
+		parse_queued_messages();
+		continue;
+	    }
 #endif
+	    /* return if not interrupted by resize or server */
+	    return 0;
 	}
     }
     else	/* wtime == -1 */
@@ -420,8 +432,9 @@ mch_inchar(
 	 * flush all the swap files to disk.
 	 * Also done when interrupted by SIGWINCH.
 	 */
-	if (!WaitForChar(p_ut))
+	if (!WaitForChar(p_ut, &interrupted))
 	{
+	    /* TODO: if interrupted is set loop to wait the remaining time. */
 #ifdef FEAT_AUTOCMD
 	    if (trigger_cursorhold() && maxlen >= 3
 					   && !typebuf_changed(tb_change_cnt))
@@ -436,7 +449,8 @@ mch_inchar(
 	}
     }
 
-    for (;;)	/* repeat until we got a character */
+    /* repeat until we got a character */
+    for (;;)
     {
 	long	wtime_now = -1L;
 
@@ -462,10 +476,17 @@ mch_inchar(
 	 * We want to be interrupted by the winch signal
 	 * or by an event on the monitored file descriptors.
 	 */
-	if (!WaitForChar(wtime_now))
+	if (!WaitForChar(wtime_now, &interrupted))
 	{
 	    if (do_resize)	    /* interrupted by SIGWINCH signal */
-		handle_resize();
+		continue;
+#ifdef MESSAGE_QUEUE
+	    if (interrupted || wtime_now > 0)
+	    {
+		parse_queued_messages();
+		continue;
+	    }
+#endif
 	    return 0;
 	}
 
@@ -482,9 +503,7 @@ mch_inchar(
 	 */
 	len = read_from_input_buf(buf, (long)maxlen);
 	if (len > 0)
-	{
 	    return len;
-	}
     }
 }
 
@@ -501,7 +520,7 @@ handle_resize(void)
     int
 mch_char_avail(void)
 {
-    return WaitForChar(0L);
+    return WaitForChar(0L, NULL);
 }
 
 #if defined(HAVE_TOTAL_MEM) || defined(PROTO)
@@ -691,7 +710,7 @@ mch_delay(long msec, int ignoreinput)
 	in_mch_delay = FALSE;
     }
     else
-	WaitForChar(msec);
+	WaitForChar(msec, NULL);
 }
 
 #if defined(HAVE_STACK_LIMIT) \
@@ -5229,6 +5248,10 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
 	if (stderr_works)
 	    perror("executing job failed");
+#ifdef EXITFREE
+	/* calling free_all_mem() here causes problems. Ignore valgrind
+	 * reporting possibly leaked memory. */
+#endif
 	_exit(EXEC_FAILED);	    /* exec failed, return failure code */
     }
 
@@ -5376,16 +5399,17 @@ mch_breakcheck(void)
  * from inbuf[].
  * "msec" == -1 will block forever.
  * Invokes timer callbacks when needed.
- * When a GUI is being used, this will never get called -- webb
+ * "interrupted" (if not NULL) is set to TRUE when no character is available
+ * but something else needs to be done.
  * Returns TRUE when a character is available.
+ * When a GUI is being used, this will never get called -- webb
  */
     static int
-WaitForChar(long msec)
+WaitForChar(long msec, int *interrupted)
 {
 #ifdef FEAT_TIMERS
     long    due_time;
     long    remaining = msec;
-    int	    break_loop = FALSE;
     int	    tb_change_cnt = typebuf.tb_change_cnt;
 
     /* When waiting very briefly don't trigger timers. */
@@ -5404,9 +5428,9 @@ WaitForChar(long msec)
 	}
 	if (due_time <= 0 || (msec > 0 && due_time > remaining))
 	    due_time = remaining;
-	if (WaitForCharOrMouse(due_time, &break_loop))
+	if (WaitForCharOrMouse(due_time, interrupted))
 	    return TRUE;
-	if (break_loop)
+	if (interrupted != NULL && *interrupted)
 	    /* Nothing available, but need to return so that side effects get
 	     * handled, such as handling a message on a channel. */
 	    return FALSE;
@@ -5415,7 +5439,7 @@ WaitForChar(long msec)
     }
     return FALSE;
 #else
-    return WaitForCharOrMouse(msec, NULL);
+    return WaitForCharOrMouse(msec, interrupted);
 #endif
 }
 
@@ -5423,10 +5447,12 @@ WaitForChar(long msec)
  * Wait "msec" msec until a character is available from the mouse or keyboard
  * or from inbuf[].
  * "msec" == -1 will block forever.
+ * "interrupted" (if not NULL) is set to TRUE when no character is available
+ * but something else needs to be done.
  * When a GUI is being used, this will never get called -- webb
  */
     static int
-WaitForCharOrMouse(long msec, int *break_loop)
+WaitForCharOrMouse(long msec, int *interrupted)
 {
 #ifdef FEAT_MOUSE_GPM
     int		gpm_process_wanted;
@@ -5473,9 +5499,9 @@ WaitForCharOrMouse(long msec, int *break_loop)
 # ifdef FEAT_MOUSE_GPM
 	gpm_process_wanted = 0;
 	avail = RealWaitForChar(read_cmd_fd, msec,
-					     &gpm_process_wanted, break_loop);
+					     &gpm_process_wanted, interrupted);
 # else
-	avail = RealWaitForChar(read_cmd_fd, msec, NULL, break_loop);
+	avail = RealWaitForChar(read_cmd_fd, msec, NULL, interrupted);
 # endif
 	if (!avail)
 	{
@@ -5498,7 +5524,7 @@ WaitForCharOrMouse(long msec, int *break_loop)
 	;
 
 #else
-    avail = RealWaitForChar(read_cmd_fd, msec, NULL, break_loop);
+    avail = RealWaitForChar(read_cmd_fd, msec, NULL, interrupted);
 #endif
     return avail;
 }
@@ -5511,13 +5537,15 @@ WaitForCharOrMouse(long msec, int *break_loop)
  * When a GUI is being used, this will not be used for input -- webb
  * Or when a Linux GPM mouse event is waiting.
  * Or when a clientserver message is on the queue.
+ * "interrupted" (if not NULL) is set to TRUE when no character is available
+ * but something else needs to be done.
  */
 #if defined(__BEOS__)
     int
 #else
     static int
 #endif
-RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *break_loop)
+RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 {
     int		ret;
     int		result;
@@ -5627,12 +5655,14 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *break_loop)
 #ifdef FEAT_JOB_CHANNEL
 	nfd = channel_poll_setup(nfd, &fds);
 #endif
+	if (interrupted != NULL)
+	    *interrupted = FALSE;
 
 	ret = poll(fds, nfd, towait);
 
 	result = ret > 0 && (fds[0].revents & POLLIN);
-	if (break_loop != NULL && ret > 0)
-	    *break_loop = TRUE;
+	if (result == 0 && interrupted != NULL && ret > 0)
+	    *interrupted = TRUE;
 
 # ifdef FEAT_MZSCHEME
 	if (ret == 0 && mzquantum_used)
@@ -5678,7 +5708,6 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *break_loop)
 	if (ret > 0)
 	    ret = channel_poll_check(ret, &fds);
 #endif
-
 
 #else /* HAVE_SELECT */
 
@@ -5760,13 +5789,15 @@ select_eintr:
 # ifdef FEAT_JOB_CHANNEL
 	maxfd = channel_select_setup(maxfd, &rfds, &wfds);
 # endif
+	if (interrupted != NULL)
+	    *interrupted = FALSE;
 
 	ret = select(maxfd + 1, &rfds, &wfds, &efds, tvp);
 	result = ret > 0 && FD_ISSET(fd, &rfds);
 	if (result)
 	    --ret;
-	if (break_loop != NULL && ret > 0)
-	    *break_loop = TRUE;
+	else if (interrupted != NULL && ret > 0)
+	    *interrupted = TRUE;
 
 # ifdef EINTR
 	if (ret == -1 && errno == EINTR)
