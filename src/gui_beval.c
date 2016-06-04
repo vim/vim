@@ -61,6 +61,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 
 	    set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
 	    set_vim_var_nr(VV_BEVAL_WINNR, winnr);
+	    set_vim_var_nr(VV_BEVAL_WINID, wp->w_id);
 	    set_vim_var_nr(VV_BEVAL_LNUM, (long)lnum);
 	    set_vim_var_nr(VV_BEVAL_COL, (long)(col + 1));
 	    set_vim_var_string(VV_BEVAL_TEXT, text, -1);
