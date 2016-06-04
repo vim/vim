@@ -6413,6 +6413,26 @@ uc_split_args(char_u *arg, size_t *lenp)
     return buf;
 }
 
+    static size_t
+add_cmd_modifier(char_u *buf, char *mod_str, int *multi_mods)
+{
+    size_t result;
+
+    result = STRLEN(mod_str);
+    if (*multi_mods)
+	result += 1;
+    if (buf != NULL)
+    {
+	if (*multi_mods)
+	    STRCAT(buf, " ");
+	STRCAT(buf, mod_str);
+    }
+
+    *multi_mods = 1;
+
+    return result;
+}
+
 /*
  * Check for a <> code in a user command.
  * "code" points to the '<'.  "len" the length of the <> (inclusive).
@@ -6436,8 +6456,8 @@ uc_check_code(
     char_u	*p = code + 1;
     size_t	l = len - 2;
     int		quote = 0;
-    enum { ct_ARGS, ct_BANG, ct_COUNT, ct_LINE1, ct_LINE2, ct_REGISTER,
-	ct_LT, ct_NONE } type = ct_NONE;
+    enum { ct_ARGS, ct_BANG, ct_COUNT, ct_LINE1, ct_LINE2, ct_MODS,
+	ct_REGISTER, ct_LT, ct_NONE } type = ct_NONE;
 
     if ((vim_strchr((char_u *)"qQfF", *p) != NULL) && p[1] == '-')
     {
@@ -6463,6 +6483,8 @@ uc_check_code(
 	type = ct_LT;
     else if (STRNICMP(p, "reg>", l) == 0 || STRNICMP(p, "register>", l) == 0)
 	type = ct_REGISTER;
+    else if (STRNICMP(p, "mods>", l) == 0)
+	type = ct_MODS;
 
     switch (type)
     {
@@ -6583,6 +6605,90 @@ uc_check_code(
 		*buf = '"';
 	}
 
+	break;
+    }
+
+    case ct_MODS:
+    {
+	int multi_mods = 0;
+	typedef struct {
+	    int *varp;
+	    char *name;
+	} mod_entry_T;
+	static mod_entry_T mod_entries[] = {
+#ifdef FEAT_BROWSE_CMD
+	    {&cmdmod.browse, "browse"},
+#endif
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+	    {&cmdmod.confirm, "confirm"},
+#endif
+	    {&cmdmod.hide, "hide"},
+	    {&cmdmod.keepalt, "keepalt"},
+	    {&cmdmod.keepjumps, "keepjumps"},
+	    {&cmdmod.keepmarks, "keepmarks"},
+	    {&cmdmod.keeppatterns, "keeppatterns"},
+	    {&cmdmod.lockmarks, "lockmarks"},
+	    {&cmdmod.noswapfile, "noswapfile"},
+	    {NULL, NULL}
+	};
+	int i;
+
+	result = quote ? 2 : 0;
+	if (buf != NULL)
+	{
+	    if (quote)
+		*buf++ = '"';
+	    *buf = '\0';
+	}
+
+#ifdef FEAT_WINDOWS
+	/* :aboveleft and :leftabove */
+	if (cmdmod.split & WSP_ABOVE)
+	    result += add_cmd_modifier(buf, "aboveleft", &multi_mods);
+	/* :belowright and :rightbelow */
+	if (cmdmod.split & WSP_BELOW)
+	    result += add_cmd_modifier(buf, "belowright", &multi_mods);
+	/* :botright */
+	if (cmdmod.split & WSP_BOT)
+	    result += add_cmd_modifier(buf, "botright", &multi_mods);
+#endif
+
+	/* the modifiers that are simple flags */
+	for (i = 0; mod_entries[i].varp != NULL; ++i)
+	    if (*mod_entries[i].varp)
+		result += add_cmd_modifier(buf, mod_entries[i].name,
+								 &multi_mods);
+
+	/* TODO: How to support :noautocmd? */
+#ifdef HAVE_SANDBOX
+	/* TODO: How to support :sandbox?*/
+#endif
+	/* :silent */
+	if (msg_silent > 0)
+	    result += add_cmd_modifier(buf,
+		    emsg_silent > 0 ? "silent!" : "silent", &multi_mods);
+#ifdef FEAT_WINDOWS
+	/* :tab */
+	if (cmdmod.tab > 0)
+	    result += add_cmd_modifier(buf, "tab", &multi_mods);
+	/* :topleft */
+	if (cmdmod.split & WSP_TOP)
+	    result += add_cmd_modifier(buf, "topleft", &multi_mods);
+#endif
+	/* TODO: How to support :unsilent?*/
+	/* :verbose */
+	if (p_verbose > 0)
+	    result += add_cmd_modifier(buf, "verbose", &multi_mods);
+#ifdef FEAT_WINDOWS
+	/* :vertical */
+	if (cmdmod.split & WSP_VERT)
+	    result += add_cmd_modifier(buf, "vertical", &multi_mods);
+#endif
+	if (quote && buf != NULL)
+	{
+	    buf += result - 2;
+	    *buf = '"';
+	}
 	break;
     }
 
