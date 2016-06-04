@@ -657,7 +657,7 @@ gui_gtk3_should_draw_cursor(void)
 }
 
     static gboolean
-draw_event(GtkWidget *widget,
+draw_event(GtkWidget *widget UNUSED,
 	   cairo_t   *cr,
 	   gpointer   user_data UNUSED)
 {
@@ -675,8 +675,6 @@ draw_event(GtkWidget *widget,
     {
 	cairo_rectangle_list_t *list = NULL;
 
-	gui_gtk_window_clear(gtk_widget_get_window(widget));
-
 	list = cairo_copy_clip_rectangle_list(cr);
 	if (list->status != CAIRO_STATUS_CLIP_NOT_REPRESENTABLE)
 	{
@@ -684,6 +682,10 @@ draw_event(GtkWidget *widget,
 	    for (i = 0; i < list->num_rectangles; i++)
 	    {
 		const cairo_rectangle_t rect = list->rectangles[i];
+
+		gui_mch_clear_block(Y_2_ROW(rect.y), 1,
+			Y_2_ROW(rect.y + rect.height - 1), Columns);
+
 		if (blink_mode)
 		    gui_gtk3_redraw(rect.x, rect.y, rect.width, rect.height);
 		else
