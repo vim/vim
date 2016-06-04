@@ -14,6 +14,7 @@ void gui_mac_handle_menu(long menuChoice);
 void gui_mac_focus_change(EventRecord *event);
 void gui_mac_update(EventRecord *event);
 short gui_mch_get_mac_menu_item_index(vimmenu_T *menu, vimmenu_T *parent);
+int gui_mch_is_blinking(void);
 void gui_mch_set_blinking(long wait, long on, long off);
 void gui_mch_stop_blink(void);
 void gui_mch_start_blink(void);

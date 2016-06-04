@@ -39,6 +39,7 @@ void gui_mch_insert_lines(int row, int num_lines);
 void gui_mch_draw_string(int row, int col, char_u *s, int len, int flags);
 void gui_mch_draw_hollow_cursor(guicolor_T color);
 void gui_mch_draw_part_cursor(int w, int h, guicolor_T color);
+int gui_mch_is_blinking(void);
 void gui_mch_set_blinking(long wait, long on, long off);
 void gui_mch_start_blink(void);
 void gui_mch_stop_blink(void);

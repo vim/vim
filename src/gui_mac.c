@@ -5114,6 +5114,11 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 #endif
 }
 
+    int
+gui_mch_is_blinking(void)
+{
+    return FALSE;
+}
 
 /*
  * Cursor blink functions.

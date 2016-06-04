@@ -540,6 +540,12 @@ static long_u		blink_ontime = 400;
 static long_u		blink_offtime = 250;
 static UINT		blink_timer = 0;
 
+    int
+gui_mch_is_blinking(void)
+{
+    return blink_state != BLINK_NONE;
+}
+
     void
 gui_mch_set_blinking(long wait, long on, long off)
 {

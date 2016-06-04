@@ -1,6 +1,7 @@
 /* gui_gtk_x11.c */
 void gui_mch_prepare(int *argc, char **argv);
 void gui_mch_free_all(void);
+int gui_mch_is_blinking(void);
 void gui_mch_set_blinking(long waittime, long on, long off);
 void gui_mch_stop_blink(void);
 void gui_mch_start_blink(void);

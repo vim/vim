@@ -432,7 +432,10 @@ redraw_after_callback()
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
-	gui_update_cursor(TRUE, FALSE);
+	/* Don't update the cursor while it is blinking, it will get
+	 * updated soon and this avoids interrupting the blinking. */
+	if (!gui_mch_is_blinking())
+	    gui_update_cursor(FALSE, FALSE);
 	gui_mch_flush();
     }
 #endif

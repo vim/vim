@@ -810,6 +810,12 @@ gui_gtk_is_blink_on(void)
 }
 #endif
 
+    int
+gui_mch_is_blinking(void)
+{
+    return blink_state != BLINK_NONE;
+}
+
     void
 gui_mch_set_blinking(long waittime, long on, long off)
 {
