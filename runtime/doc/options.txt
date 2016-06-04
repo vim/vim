@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 May 24
+*options.txt*	For Vim version 7.4.  Last change: 2016 Jun 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1103,6 +1103,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	v:beval_bufnr	number of the buffer in which balloon is going to show
 	v:beval_winnr	number of the window
+	v:beval_winid	ID of the window
 	v:beval_lnum	line number
 	v:beval_col	column number (byte index)
 	v:beval_text	word under or after the mouse pointer

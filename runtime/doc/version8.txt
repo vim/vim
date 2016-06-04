@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 May 20
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Jun 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -102,7 +102,8 @@ New style tests ~
 
 This is for Vim developers.  So far writing tests for Vim has not been easy.
 Vim 8 adds assert functions and a framework to run tests.  This makes it a lot
-simpler to write tests and keep them updated.
+simpler to write tests and keep them updated.  Also new are several functions
+that are added specifically for testing.
 
 These functions have been added:
 	|assert_equal()|
@@ -113,15 +114,22 @@ These functions have been added:
 	|assert_match()|
 	|assert_notmatch()|
 	|assert_true()|
-	|alloc_fail()|
-	|disable_char_avail_for_testing()|
+	|test_alloc_fail()|
+	|test_disable_char_avail()|
+	|test_garbagecollect_now()|
+	|test_null_channel()|
+	|test_null_dict()|
+	|test_null_job()|
+	|test_null_list()|
+	|test_null_partial()|
+	|test_null_string()|
 
 
 Window IDs ~
 
 Previously windows could only be accessed by their number. And every time a
 window would open, close or move that number changes.  Each window now has a
-unique ID, so that they are easy to find.
+unique ID, so that they are easy to find.  See |win_getid()| and |win_id2win()|.
 
 
 Wrapping lines with indent ~

@@ -4916,7 +4916,6 @@ added-win32-GUI	version5.txt	/*added-win32-GUI*
 aff-dic-format	spell.txt	/*aff-dic-format*
 after-directory	options.txt	/*after-directory*
 aleph	options.txt	/*aleph*
-alloc_fail()	eval.txt	/*alloc_fail()*
 alt	intro.txt	/*alt*
 alt-input	debugger.txt	/*alt-input*
 alternate-file	editing.txt	/*alternate-file*
@@ -5037,6 +5036,7 @@ beval_bufnr-variable	eval.txt	/*beval_bufnr-variable*
 beval_col-variable	eval.txt	/*beval_col-variable*
 beval_lnum-variable	eval.txt	/*beval_lnum-variable*
 beval_text-variable	eval.txt	/*beval_text-variable*
+beval_winid-variable	eval.txt	/*beval_winid-variable*
 beval_winnr-variable	eval.txt	/*beval_winnr-variable*
 bitwise-function	usr_41.txt	/*bitwise-function*
 blockwise-examples	visual.txt	/*blockwise-examples*
@@ -5069,6 +5069,7 @@ buflisted()	eval.txt	/*buflisted()*
 bufloaded()	eval.txt	/*bufloaded()*
 bufname()	eval.txt	/*bufname()*
 bufnr()	eval.txt	/*bufnr()*
+bufwinid()	eval.txt	/*bufwinid()*
 bufwinnr()	eval.txt	/*bufwinnr()*
 bug-fixes-5	version5.txt	/*bug-fixes-5*
 bug-fixes-6	version6.txt	/*bug-fixes-6*
@@ -5619,7 +5620,6 @@ dip	motion.txt	/*dip*
 dircolors.vim	syntax.txt	/*dircolors.vim*
 dis	motion.txt	/*dis*
 disable-menus	gui.txt	/*disable-menus*
-disable_char_avail_for_testing()	eval.txt	/*disable_char_avail_for_testing()*
 discard	editing.txt	/*discard*
 distribute-script	usr_41.txt	/*distribute-script*
 distribution	intro.txt	/*distribution*
@@ -7187,6 +7187,7 @@ mouse-using	term.txt	/*mouse-using*
 mouse_col-variable	eval.txt	/*mouse_col-variable*
 mouse_lnum-variable	eval.txt	/*mouse_lnum-variable*
 mouse_win-variable	eval.txt	/*mouse_win-variable*
+mouse_winid-variable	eval.txt	/*mouse_winid-variable*
 movement	intro.txt	/*movement*
 ms-dos	os_msdos.txt	/*ms-dos*
 msdos	os_msdos.txt	/*msdos*
@@ -8612,6 +8613,8 @@ terminal-options	term.txt	/*terminal-options*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*
+test_alloc_fail()	eval.txt	/*test_alloc_fail()*
+test_disable_char_avail()	eval.txt	/*test_disable_char_avail()*
 test_garbagecollect_now()	eval.txt	/*test_garbagecollect_now()*
 test_null_channel()	eval.txt	/*test_null_channel()*
 test_null_dict()	eval.txt	/*test_null_dict()*
@@ -8761,6 +8764,7 @@ v:beval_bufnr	eval.txt	/*v:beval_bufnr*
 v:beval_col	eval.txt	/*v:beval_col*
 v:beval_lnum	eval.txt	/*v:beval_lnum*
 v:beval_text	eval.txt	/*v:beval_text*
+v:beval_winid	eval.txt	/*v:beval_winid*
 v:beval_winnr	eval.txt	/*v:beval_winnr*
 v:char	eval.txt	/*v:char*
 v:charconvert_from	eval.txt	/*v:charconvert_from*
@@ -8795,6 +8799,7 @@ v:lnum	eval.txt	/*v:lnum*
 v:mouse_col	eval.txt	/*v:mouse_col*
 v:mouse_lnum	eval.txt	/*v:mouse_lnum*
 v:mouse_win	eval.txt	/*v:mouse_win*
+v:mouse_winid	eval.txt	/*v:mouse_winid*
 v:none	eval.txt	/*v:none*
 v:null	eval.txt	/*v:null*
 v:oldfiles	eval.txt	/*v:oldfiles*

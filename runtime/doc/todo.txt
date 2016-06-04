@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 May 24
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jun 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,49 +34,11 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Close_cb crash. (Luc Hermitte, 2016 May 10)
-Stack trace by Dominique, May 10.
-Reference count in partial dict wrong?
-
-Any other callbacks that could be invoked at the wrong moment?
-
-If removing buffer that's being read from, close channel?
-
-Problem with "Ignore" after adding 'guicolors'. (Charles Campbell, 2016 Apr
-27)
-
-In test_partial when start_job() has a non-existing command memory (a dict
-item) leaks.
-
-Memory leak in test49
-Memory leak in test_alot, with matchstrpos()
-
-Packages:
-- Add the "after" directory to 'runtimepath', only if it exists.
-  (Greg Hurrell, May 1)
-- Also keep a list of loaded plugins, skip when encountered again?
-
-Vim.org: when a user already has a homepage, do show the field so that it can
-be deleted.
-
-Comparing partials doesn't work well. (Nikolai Pavlov, 2016 May 17, #813)
-Examples in the form of a test (May 19)
-
 +channel:
-- Feedback from Ramel Eshed, May 7.  Occasional crashes.
-- Close_cb isn't invoked when output goes to a buffer. (Luc Hermitte)
-- close_cb and exit_cb not invoked when using jo_stop() on Windows.
-  (Linwei, 2016 May 18, #817)
-  Similar problem, related to keeping reference to job. (Skywind, May 18)
-- Recursive callback call?  (Luc Hermitte, 2016 May 17)
-- GUI:cursor blinking is irregular when invoking callbacks. (Ramel Eshed, 2016
-  Apr 16) somehow remember the previous state?
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
   minute.  Option to set the droptime.
-- Inefficiency in ch_read() with very long lines.  Reallocating buffer with
-  small increments in channel_collapse().  Avoid calling strlen() too often.
-  Add an option to drop text of very long lines?  Default to 1 Mbyte.
+- Add an option to drop text of very long lines?  Default to 1 Mbyte.
 - Add remark about undo sync, is there a way to force it?
 - When starting a job, have an option to open the server socket, so we know
   the port, and pass it to the command with --socket-fd {nr}. (Olaf Dabrunz,
@@ -86,8 +48,6 @@ Examples in the form of a test (May 19)
 Later
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
-
-Make it so that the window ID can be used where currently a window nr is used
 
 Regexp problems:
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
@@ -136,15 +96,24 @@ Regexp problems:
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
 
-Using freed memory in quickfix code. (Dominique, 2016 Mar 21)
+Patch to reduce number of memory allocations for quickfix lines.
+(Yegappan Lakshmanan, 2016 May 22, #831)
 
 User commands: add a <> item to pass on command modifiers, such as ":tab".
+Patch by Yegappan Lakshmanan, 2016 May 22, #829.
 
 jsonencode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
+
+Cursor positioned in the wrong place when editing src/testdir/test_viml.vim.
+
+When using "k" at the hit-enter prompt only get the hit-enter prompt, not
+scrolling up. (Ramel Eshed, 2016 May 25)
+Related patches: Patch 7.4.1603, Patch 7.4.1594 
+Patch by Hirohito Higashi, 2016 May 26.
 
 Patch to make cursor blinking work better with GTK3. (Kazunobu Kuriyama, 2016
 Apr 19)  Need to check this works on Linux.
@@ -164,8 +133,8 @@ Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 Patch to fix using CTRL-] on "{address}." in help. (Hirohito Higashi, 2016 May
 18, #814)
 
-Patch to reduce number of memory allocations for quickfix lines.
-(Yegappan Lakshmanan, 2016 May 22, #831)
+Can we add a function to parse one line for 'errorformat'?  Like ":caddexpr"
+for one line.
 
 Patch to fix greying popup menu items. (Shane Harper, 2016 May 23, #834)
 
@@ -175,7 +144,16 @@ Patch to fix this, Jacob Niehus, 2016 May 14, #805)
 For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
 5)
 
+Patch to support expression argument to sort() instead of a function name.
+Yasuhiro Matsumoto, 2013 May 31.
+Or should we add a more general mechanism, like a lambda() function?
+Patch by Yasuhiro Matsumoto, 2014 Sep 16, update 2016 Apr 17.
+Correction for test, Ken Takata, 2016 May 27.
+
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
+
+Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
+13, last version)  Update May 22, #830.
 
 When 'autochdir' is set, writing  new file does not change the current dir.
 (Dan Church, issue #777)
@@ -237,6 +215,8 @@ Update 2016 Mar 28.  Can include all parts into one dist patch.
 Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
 Update 2016 Apr 24.
 
+Patch to improve cscope. (Adrian Kocis, #843)
+
 Patch for groovy multi-line comment highlighting. (Justin M. Keyes, 2016 May
 20 #644)
 
@@ -283,11 +263,6 @@ Patch to make tests pass with EBCDIC. (Owen Leibman, 2016 Apr 10)
 
 When repeating the 'confirm' dialog one needs to press Enter. (ds26gte, 2016
 Apr 17)  #762
-
-Patch to support expression argument to sort() instead of a function name.
-Yasuhiro Matsumoto, 2013 May 31.
-Or should we add a more general mechanism, like a lambda() function?
-Patch by Yasuhiro Matsumoto, 2014 Sep 16, update 2016 Apr 17.
 
 Should jsonencode()/jsondecode() restrict recursiveness?
 Or avoid recursiveness.
@@ -411,9 +386,6 @@ Patch to add :mapgroup, put mappings in a group like augroup.
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
-Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
-13, last version)  Update May 22, #830.
-
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?
 
@@ -458,8 +430,6 @@ wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
 Update Aug 14.
-
-Crash in :cnext on MS-Windows. (Ben Fritz, 2015 Oct 27)
 
 When using --remote-tab on MS-Windows 'encoding' hasn't been initialized yet,
 the file name ends up encoded wrong. (Raul Coronado, 2015 Dec 21)

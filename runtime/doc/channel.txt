@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 May 29
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Jun 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -573,7 +573,7 @@ See |job_setoptions()| and |ch_setoptions()|.
 			"err_cb" wasn't set the channel callback is used.
 						*job-close_cb*
 "close_cb": handler	Callback for when the channel is closed.  Same as
-			"close_cb" on ch_open().
+			"close_cb" on |ch_open()|, see |close_cb|.
 						*job-exit_cb*
 "exit_cb": handler	Callback for when the job ends.  The arguments are the
 			job and the exit status.
@@ -659,10 +659,14 @@ When using JS or JSON mode with "buffer", only messages with zero or negative
 ID will be added to the buffer, after decoding + encoding.  Messages with a
 positive number will be handled by a callback, commands are handled as usual.
 
-The name of the buffer is compared the full name of existing buffers.  If
-there is a match that buffer is used.  Otherwise a new buffer is created.
-Use an empty name to always create a new buffer.  |ch_getbufnr()| can then be
-used to get the buffer number.
+The name of the buffer from "out_name" or "err_name" is compared the full name
+of existing buffers, also after expanding the name for the current directory.
+E.g., when a buffer was created with ":edit somename" and the buffer name is
+"somename" it will use that buffer.
+
+If there is no matching buffer a new buffer is created.  Use an empty name to
+always create a new buffer.  |ch_getbufnr()| can then be used to get the
+buffer number.
 
 For a new buffer 'buftype' is set to "nofile" and 'bufhidden' to "hide".  If
 you prefer other settings, create the buffer first and pass the buffer number.
