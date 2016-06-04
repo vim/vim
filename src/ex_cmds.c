@@ -6216,6 +6216,9 @@ find_help_tags(
 	     */
 	    if (*s == '\'' && s > arg && *arg == '\'')
 		break;
+	    /* Also '{' and '}'. */
+	    if (*s == '}' && s > arg && *arg == '{')
+		break;
 	  }
 	  *d = NUL;
 
