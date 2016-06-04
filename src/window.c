@@ -4422,7 +4422,7 @@ buf_jump_open_tab(buf_T *buf)
 }
 #endif
 
-static int last_win_id = 0;
+static int last_win_id = LOWEST_WIN_ID - 1;
 
 /*
  * Allocate a window structure and link it in the window list when "hidden" is

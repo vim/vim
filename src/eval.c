@@ -13566,11 +13566,18 @@ find_win_by_nr(
 
     for (wp = (tp == NULL || tp == curtab) ? firstwin : tp->tp_firstwin;
 						  wp != NULL; wp = wp->w_next)
-	if (--nr <= 0)
+	if (nr >= LOWEST_WIN_ID)
+	{
+	    if (wp->w_id == nr)
+		return wp;
+	}
+	else if (--nr <= 0)
 	    break;
+    if (nr >= LOWEST_WIN_ID)
+	return NULL;
     return wp;
 #else
-    if (nr == 0 || nr == 1)
+    if (nr == 0 || nr == 1 || nr == curwin->w_id)
 	return curwin;
     return NULL;
 #endif

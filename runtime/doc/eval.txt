@@ -2330,6 +2330,7 @@ arglistid([{winnr} [, {tabnr}]])
 		With {winnr} only use this window in the current tab page.
 		With {winnr} and {tabnr} use the window in the specified tab
 		page.
+		{winnr} can be the window number or the window ID.
 
 							*argv()*
 argv([{nr}])	The result is the {nr}th file in the argument list of the
@@ -3987,6 +3988,7 @@ getcwd([{winnr} [, {tabnr}]])
 		in the current tab page.
 		With {winnr} and {tabnr} return the local current directory of
 		the window in the specified tab page.
+		{winnr} can be the window number or the window ID.
 		Return an empty string if the arguments are invalid.
 
 getfsize({fname})					*getfsize()*
@@ -4083,7 +4085,9 @@ getline({lnum} [, {end}])
 
 getloclist({nr})					*getloclist()*
 		Returns a list with all the entries in the location list for
-		window {nr}. When {nr} is zero the current window is used.
+		window {nr}.  {nr} can be the window number or the window ID.
+		When {nr} is zero the current window is used.
+
 		For a location list window, the displayed location list is
 		returned.  For an invalid window number {nr}, an empty list is
 		returned. Otherwise, same as |getqflist()|.
@@ -4217,6 +4221,7 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 		Note that {varname} must be the name without "w:".
 		Tabs are numbered starting with one.  For the current tabpage
 		use |getwinvar()|.
+		{winnr} can be the window number or the window ID.
 		When {winnr} is zero the current window is used.
 		This also works for a global option, buffer-local option and
 		window-local option, but it doesn't work for a global variable
@@ -4341,6 +4346,7 @@ haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
 		With {winnr} use this window in the current tab page.
 		With {winnr} and {tabnr} use the window in the specified tab
 		page.
+		{winnr} can be the window number or the window ID.
 		Return 0 if the arguments are invalid.
 
 hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
@@ -6287,9 +6293,11 @@ setline({lnum}, {text})					*setline()*
 
 setloclist({nr}, {list} [, {action}])			*setloclist()*
 		Create or replace or add to the location list for window {nr}.
-		When {nr} is zero the current window is used. For a location
-		list window, the displayed location list is modified.  For an
-		invalid window number {nr}, -1 is returned.
+		{nr} can be the window number or the window ID.
+		When {nr} is zero the current window is used.
+
+		For a location list window, the displayed location list is
+		modified.  For an invalid window number {nr}, -1 is returned.
 		Otherwise, same as |setqflist()|.
 		Also see |location-list|.
 
@@ -6456,6 +6464,7 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		{val}.
 		Tabs are numbered starting with one.  For the current tabpage
 		use |setwinvar()|.
+		{winnr} can be the window number or the window ID.
 		When {winnr} is zero the current window is used.
 		This also works for a global or local buffer option, but it
 		doesn't work for a global or local buffer variable.
@@ -7528,9 +7537,11 @@ win_id2win({expr})					*win_id2win()*
 
 							*winbufnr()*
 winbufnr({nr})	The result is a Number, which is the number of the buffer
-		associated with window {nr}.  When {nr} is zero, the number of
-		the buffer in the current window is returned.  When window
-		{nr} doesn't exist, -1 is returned.
+		associated with window {nr}.  {nr} can be the window number or
+		the window ID.
+		When {nr} is zero, the number of the buffer in the current
+		window is returned.
+		When window {nr} doesn't exist, -1 is returned.
 		Example: >
   :echo "The file in the current window is " . bufname(winbufnr(0))
 <
@@ -7541,6 +7552,7 @@ wincol()	The result is a Number, which is the virtual column of the
 
 winheight({nr})						*winheight()*
 		The result is a Number, which is the height of window {nr}.
+		{nr} can be the window number or the window ID.
 		When {nr} is zero, the height of the current window is
 		returned.  When window {nr} doesn't exist, -1 is returned.
 		An existing window always has a height of zero or more.
@@ -7620,6 +7632,7 @@ winsaveview()	Returns a |Dictionary| that contains information to restore
 
 winwidth({nr})						*winwidth()*
 		The result is a Number, which is the width of window {nr}.
+		{nr} can be the window number or the window ID.
 		When {nr} is zero, the width of the current window is
 		returned.  When window {nr} doesn't exist, -1 is returned.
 		An existing window always has a width of zero or more.
