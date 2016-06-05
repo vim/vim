@@ -2024,11 +2024,10 @@ add({list}, {item})		List	append {item} to |List| {list}
 and({expr}, {expr})		Number	bitwise AND
 append({lnum}, {string})	Number	append {string} below line {lnum}
 append({lnum}, {list})		Number	append lines {list} below line {lnum}
-argc( [{winnr} [, {tabnr}]])	Number	number of files in the argument list
+argc( [{expr}])			Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
-argv( {nr} [, {winnr} [, {tabnr}]])
-				String	{nr} entry of the argument list
+argv({nr} [, {expr}])		String	{nr} entry of the argument list
 argv( [-1, {winnr} [, {tabnr}]])
 				List	the argument list
 assert_beeps({cmd})		none	assert {cmd} causes a beep
@@ -2596,15 +2595,15 @@ appendbufline({expr}, {lnum}, {text})			*appendbufline()*
 			:let failed = appendbufline(13, 0, "# THE START")
 <
 							*argc()*
-argc([{winnr}, [ {tabnr} ]])
+argc([{expr}])
 		The result is the number of files in the argument list of the
 		current window.  See |arglist|.
 		Returns -1 if the arguments are invalid.
 
-		Without arguments use the current window.
-		With {winnr} only use this window in the current tab page.
-		With {winnr} and {tabnr} use the window in the specified tab
-		page. With {winnr} set to -1, uses the global argument list.
+		Without any arguments, the argument list of the current window
+		is used. The {expr} argument specifies the window ID. If
+		supplied, the specified window is used. If {expr} is -1, the
+		global argument list is used.
 
 							*argidx()*
 argidx()	The result is the current index in the argument list.  0 is
@@ -2624,7 +2623,7 @@ arglistid([{winnr} [, {tabnr}]])
 		{winnr} can be the window number or the |window-ID|.
 
 							*argv()*
-argv([{nr} [, {winnr} [, {tabnr} ]]])
+argv([{nr} [, {expr}])
 		The result is the {nr}th file in the argument list of the
 		current window.  See |arglist|.  "argv(0)" is the first one.
 		Example: >
@@ -2637,12 +2636,11 @@ argv([{nr} [, {winnr} [, {tabnr} ]]])
 <		Without the {nr} argument a |List| with the whole |arglist| is
 		returned.
 
-		Without arguments use the current window.
-		With {winnr} only use this window in the current tab page.
-		With {winnr} and {tabnr} use the window in the specified tab
-		page. With {nr} set to -1, returns the entire argument list
-		of {winnr} in {tabnr}. With {winnr} set to -1, uses the global
-		argument list.
+		Without arguments the current window is used. The {expr}
+		argument specifies the window ID. If supplied, the argument
+		list of the specified window is used.  With {nr} set to -1,
+		returns the entire argument list of the specified window. If
+		{expr} is -1, the global argument list is used.
 
 assert_beeps({cmd})					*assert_beeps()*
 		Run {cmd} and add an error message to |v:errors| if it does

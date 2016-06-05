@@ -288,42 +288,39 @@ func Test_argv()
   call assert_equal('c', argv(2))
   call assert_equal(4, argc())
 
+  let w1_id = win_getid()
   split
+  let w2_id = win_getid()
   arglocal
   args e f g
-  tabnew | split
+  tabnew
+  let w3_id = win_getid()
+  split
+  let w4_id = win_getid()
   argglobal
   tabfirst
-  call assert_equal(3, argc(1))
-  call assert_equal('f', argv(1, 1))
-  call assert_equal(['e', 'f', 'g'], argv(-1, 1))
-  call assert_equal(4, argc(2))
-  call assert_equal('b', argv(1, 2))
-  call assert_equal(['a', 'b', 'c', 'd'], argv(-1, 2))
-  call assert_equal(4, argc(1, 2))
-  call assert_equal('c', argv(2, 1, 2))
-  call assert_equal(['a', 'b', 'c', 'd'], argv(-1, 1, 2))
-  call assert_equal(3, argc(2, 2))
-  call assert_equal('e', argv(0, 2, 2))
-  call assert_equal(['e', 'f', 'g'], argv(-1, 2, 2))
+  call assert_equal(3, argc(w2_id))
+  call assert_equal('f', argv(1, w2_id))
+  call assert_equal(['e', 'f', 'g'], argv(-1, w2_id))
+  call assert_equal(4, argc(w1_id))
+  call assert_equal('b', argv(1, w1_id))
+  call assert_equal(['a', 'b', 'c', 'd'], argv(-1, w1_id))
+  call assert_equal(4, argc(w4_id))
+  call assert_equal('c', argv(2, w4_id))
+  call assert_equal(['a', 'b', 'c', 'd'], argv(-1, w4_id))
+  call assert_equal(3, argc(w3_id))
+  call assert_equal('e', argv(0, w3_id))
+  call assert_equal(['e', 'f', 'g'], argv(-1, w3_id))
   call assert_equal(4, argc(-1))
-  call assert_equal(4, argc(-1, -1))
   call assert_equal(3, argc())
   call assert_equal('d', argv(3, -1))
-  call assert_equal('d', argv(3, -1, -1))
   call assert_equal(['a', 'b', 'c', 'd'], argv(-1, -1))
-  call assert_equal(['a', 'b', 'c', 'd'], argv(-1, -1, -1))
   tabonly | only | enew!
   " Negative test cases
-  call assert_equal(-1, argc(10))
-  call assert_equal(-1, argc(1, 10))
-  call assert_equal('', argv(1, 10))
-  call assert_equal('', argv(1, 1, 10))
-  call assert_equal('', argv(10, 1, 1))
-  call assert_equal([], argv(-1, 10))
-  call assert_equal([], argv(-1, 1, 10))
+  call assert_equal(-1, argc(100))
+  call assert_equal('', argv(1, 100))
+  call assert_equal([], argv(-1, 100))
   call assert_equal('', argv(10, -1))
-  call assert_equal('', argv(10, -1, -1))
 endfunction
 
 " Test for the :argedit command
