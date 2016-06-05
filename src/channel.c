@@ -1657,6 +1657,7 @@ channel_collapse(channel_T *channel, int part, int want_nl)
 	p += n->rq_buflen;
 	vim_free(n->rq_buffer);
     }
+    node->rq_buflen = (long_u)(p - newbuf);
 
     /* dispose of the collapsed nodes and their buffers */
     for (n = node->rq_next; n != last_node; )

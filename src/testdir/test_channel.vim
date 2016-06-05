@@ -538,6 +538,9 @@ func Test_nl_pipe()
     call assert_equal("this", ch_readraw(handle))
     call assert_equal("AND this", ch_readraw(handle))
 
+    call ch_sendraw(handle, "split this line\n")
+    call assert_equal("this linethis linethis line", ch_readraw(handle))
+
     let reply = ch_evalraw(handle, "quit\n")
     call assert_equal("Goodbye!", reply)
   finally
