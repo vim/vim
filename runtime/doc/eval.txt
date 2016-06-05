@@ -2024,12 +2024,11 @@ add({list}, {item})		List	append {item} to |List| {list}
 and({expr}, {expr})		Number	bitwise AND
 append({lnum}, {string})	Number	append {string} below line {lnum}
 append({lnum}, {list})		Number	append lines {list} below line {lnum}
-argc( [{expr}])			Number	number of files in the argument list
+argc( [{winid}])		Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
-argv({nr} [, {expr}])		String	{nr} entry of the argument list
-argv( [-1, {winnr} [, {tabnr}]])
-				List	the argument list
+argv({nr} [, {winid}])		String	{nr} entry of the argument list
+argv( [-1, [{winid}]])		List	the argument list
 assert_beeps({cmd})		none	assert {cmd} causes a beep
 assert_equal({exp}, {act} [, {msg}])
 				Number	assert {exp} is equal to {act}
@@ -2595,15 +2594,15 @@ appendbufline({expr}, {lnum}, {text})			*appendbufline()*
 			:let failed = appendbufline(13, 0, "# THE START")
 <
 							*argc()*
-argc([{expr}])
+argc([{winid}])
 		The result is the number of files in the argument list of the
 		current window.  See |arglist|.
 		Returns -1 if the arguments are invalid.
 
-		Without any arguments, the argument list of the current window
-		is used. The {expr} argument specifies the window ID. If
-		supplied, the specified window is used. If {expr} is -1, the
-		global argument list is used.
+		The {winid} argument specifies the window ID. If supplied, the
+		argument list of the specified window is used. If {winid} is
+		-1, the global argument list is used. If {winid} is not
+		supplied, the argument list of the current window is used.
 
 							*argidx()*
 argidx()	The result is the current index in the argument list.  0 is
@@ -2623,7 +2622,7 @@ arglistid([{winnr} [, {tabnr}]])
 		{winnr} can be the window number or the |window-ID|.
 
 							*argv()*
-argv([{nr} [, {expr}])
+argv([{nr} [, {winid}])
 		The result is the {nr}th file in the argument list of the
 		current window.  See |arglist|.  "argv(0)" is the first one.
 		Example: >
@@ -2636,11 +2635,12 @@ argv([{nr} [, {expr}])
 <		Without the {nr} argument a |List| with the whole |arglist| is
 		returned.
 
-		Without arguments the current window is used. The {expr}
-		argument specifies the window ID. If supplied, the argument
-		list of the specified window is used.  With {nr} set to -1,
-		returns the entire argument list of the specified window. If
-		{expr} is -1, the global argument list is used.
+		The {winid} argument specifies the window ID. If supplied, the
+		|arglist| of the specified window is used.  With {nr} set to
+		-1, returns a |List| with the whole |arglist| of the specified
+		window. With {winid} set to -1, the global |arglist| is used.
+		If {winid} is not supplied, the argument list of the current
+		window is used.
 
 assert_beeps({cmd})					*assert_beeps()*
 		Run {cmd} and add an error message to |v:errors| if it does
