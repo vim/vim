@@ -2542,7 +2542,7 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 {
     char_u  *p = text;
     char_u  *nextp = NULL;
-    char_u  *buf = NULL;;
+    char_u  *buf = NULL;
     int	    count = 0;
     int	    i;
     int	    allocated = FALSE;
