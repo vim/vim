@@ -1639,6 +1639,10 @@ EXTERN int  in_free_unref_items INIT(= FALSE);
 EXTERN int  did_add_timer INIT(= FALSE);
 #endif
 
+#ifdef FEAT_EVAL
+EXTERN time_t time_for_testing INIT(= 0);
+#endif
+
 /*
  * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.
  */

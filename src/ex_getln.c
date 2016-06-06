@@ -58,6 +58,7 @@ typedef struct hist_entry
     int		hisnum;		/* identifying number */
     int		viminfo;	/* when TRUE hisstr comes from viminfo */
     char_u	*hisstr;	/* actual entry, separator char after the NUL */
+    time_t	time_set;	/* when it was typed, zero if unknown */
 } histentry_T;
 
 static histentry_T *(history[HIST_COUNT]) = {NULL, NULL, NULL, NULL, NULL};
@@ -5407,6 +5408,20 @@ static char *(history_names[]) =
     NULL
 };
 
+/*
+ * Return the current time in seconds.  Calls time(), unless test_settime()
+ * was used.
+ */
+    static time_t
+vim_time(void)
+{
+#ifdef FEAT_EVAL
+    return time_for_testing == 0 ? time(NULL) : time_for_testing;
+#else
+    return time(NULL);
+#endif
+}
+
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the possible first
@@ -5576,6 +5591,7 @@ in_history(
 	history[type][i].hisnum = ++hisnum[type];
 	history[type][i].viminfo = FALSE;
 	history[type][i].hisstr = str;
+	history[type][i].time_set = vim_time();
 	return TRUE;
     }
     return FALSE;
@@ -5663,6 +5679,7 @@ add_to_history(
 
 	hisptr->hisnum = ++hisnum[histype];
 	hisptr->viminfo = FALSE;
+	hisptr->time_set = vim_time();
 	if (histype == HIST_SEARCH && in_map)
 	    last_maptick = maptick;
     }
@@ -6131,9 +6148,10 @@ ex_history(exarg_T *eap)
 /*
  * Buffers for history read from a viminfo file.  Only valid while reading.
  */
-static char_u **viminfo_history[HIST_COUNT] = {NULL, NULL, NULL, NULL};
-static int	viminfo_hisidx[HIST_COUNT] = {0, 0, 0, 0};
-static int	viminfo_hislen[HIST_COUNT] = {0, 0, 0, 0};
+static histentry_T *viminfo_history[HIST_COUNT] =
+					       {NULL, NULL, NULL, NULL, NULL};
+static int	viminfo_hisidx[HIST_COUNT] = {0, 0, 0, 0, 0};
+static int	viminfo_hislen[HIST_COUNT] = {0, 0, 0, 0, 0};
 static int	viminfo_add_at_front = FALSE;
 
 static int	hist_type2char(int type, int use_question);
@@ -6191,8 +6209,8 @@ prepare_viminfo_history(int asklen, int writing)
 	if (len <= 0)
 	    viminfo_history[type] = NULL;
 	else
-	    viminfo_history[type] =
-		   (char_u **)lalloc((long_u)(len * sizeof(char_u *)), FALSE);
+	    viminfo_history[type] = (histentry_T *)lalloc(
+				  (long_u)(len * sizeof(histentry_T)), FALSE);
 	if (viminfo_history[type] == NULL)
 	    len = 0;
 	viminfo_hislen[type] = len;
@@ -6242,13 +6260,90 @@ read_viminfo_history(vir_T *virp, int writing)
 			mch_memmove(p, val, (size_t)len + 1);
 			p[len + 1] = NUL;
 		    }
-		    viminfo_history[type][viminfo_hisidx[type]++] = p;
+		    viminfo_history[type][viminfo_hisidx[type]].hisstr = p;
+		    viminfo_history[type][viminfo_hisidx[type]].time_set = 0;
+		    viminfo_hisidx[type]++;
 		}
 	    }
 	}
 	vim_free(val);
     }
     return viminfo_readline(virp);
+}
+
+/*
+ * Accept a new style history line from the viminfo, store it in the history
+ * array when it's new.
+ */
+    void
+handle_viminfo_history(
+	bval_T	*values,
+	int	count,
+	int	writing)
+{
+    int		type;
+    long_u	len;
+    char_u	*val;
+    char_u	*p;
+
+    /* Check the format:
+     * |{bartype},{histtype},{timestamp},{separator},"text" */
+    if (count < 4
+	    || values[0].bv_type != BVAL_NR
+	    || values[1].bv_type != BVAL_NR
+	    || (values[2].bv_type != BVAL_NR && values[2].bv_type != BVAL_EMPTY)
+	    || values[3].bv_type != BVAL_STRING)
+	return;
+
+    type = values[0].bv_nr;
+    if (type >= HIST_COUNT)
+	return;
+    if (viminfo_hisidx[type] < viminfo_hislen[type])
+    {
+	val = values[3].bv_string;
+	if (val != NULL && *val != NUL)
+	{
+	    int sep = type == HIST_SEARCH && values[2].bv_type == BVAL_NR
+						      ? values[2].bv_nr : NUL;
+	    int idx;
+	    int overwrite = FALSE;
+
+	    if (!in_history(type, val, viminfo_add_at_front, sep, writing))
+	    {
+		/* If lines were written by an older Vim we need to avoid
+		 * getting duplicates. See if the entry already exists. */
+		for (idx = 0; idx < viminfo_hisidx[type]; ++idx)
+		{
+		    p = viminfo_history[type][idx].hisstr;
+		    if (STRCMP(val, p) == 0
+			  && (type != HIST_SEARCH || sep == p[STRLEN(p) + 1]))
+		    {
+			overwrite = TRUE;
+			break;
+		    }
+		}
+
+		if (!overwrite)
+		{
+		    /* Need to re-allocate to append the separator byte. */
+		    len = values[3].bv_len;
+		    p = lalloc(len + 2, TRUE);
+		}
+		if (p != NULL)
+		{
+		    viminfo_history[type][idx].time_set = values[1].bv_nr;
+		    if (!overwrite)
+		    {
+			mch_memmove(p, val, (size_t)len + 1);
+			/* Put the separator after the NUL. */
+			p[len + 1] = sep;
+			viminfo_history[type][idx].hisstr = p;
+			viminfo_hisidx[type]++;
+		    }
+		}
+	    }
+	}
+    }
 }
 
 /*
@@ -6290,8 +6385,9 @@ finish_viminfo_history(void)
 	for (i = 0; i < viminfo_hisidx[type]; i++)
 	{
 	    vim_free(history[type][idx].hisstr);
-	    history[type][idx].hisstr = viminfo_history[type][i];
+	    history[type][idx].hisstr = viminfo_history[type][i].hisstr;
 	    history[type][idx].viminfo = TRUE;
+	    history[type][idx].time_set = viminfo_history[type][i].time_set;
 	    if (--idx < 0)
 		idx = hislen - 1;
 	}
@@ -6315,15 +6411,11 @@ finish_viminfo_history(void)
  * When "merge" is FALSE just write all history lines.  Used for ":wviminfo!".
  */
     void
-write_viminfo_history(
-    FILE    *fp,
-    int	    merge)
+write_viminfo_history(FILE *fp, int merge)
 {
     int	    i;
     int	    type;
     int	    num_saved;
-    char_u  *p;
-    int	    c;
     int     round;
 
     init_history();
@@ -6339,8 +6431,9 @@ write_viminfo_history(
 	fprintf(fp, _("\n# %s History (newest to oldest):\n"),
 			    type == HIST_CMD ? _("Command Line") :
 			    type == HIST_SEARCH ? _("Search String") :
-			    type == HIST_EXPR ?  _("Expression") :
-					_("Input Line"));
+			    type == HIST_EXPR ? _("Expression") :
+			    type == HIST_INPUT ? _("Input Line") :
+					_("Debug Line"));
 	if (num_saved > hislen)
 	    num_saved = hislen;
 
@@ -6364,9 +6457,23 @@ write_viminfo_history(
 		while (num_saved > 0
 			&& !(round == 2 && i >= viminfo_hisidx[type]))
 		{
-		    p = round == 1 ? history[type][i].hisstr
-				   : viminfo_history[type] == NULL ? NULL
-						   : viminfo_history[type][i];
+		    char_u  *p;
+		    time_t  timestamp;
+		    int	    c = NUL;
+
+		    if (round == 1)
+		    {
+			p = history[type][i].hisstr;
+			timestamp = history[type][i].time_set;
+		    }
+		    else
+		    {
+			p = viminfo_history[type] == NULL ? NULL
+					    : viminfo_history[type][i].hisstr;
+			timestamp = viminfo_history[type] == NULL ? 0
+					  : viminfo_history[type][i].time_set;
+		    }
+
 		    if (p != NULL && (round == 2
 				       || !merge
 				       || !history[type][i].viminfo))
@@ -6381,6 +6488,21 @@ write_viminfo_history(
 			    putc(c == NUL ? ' ' : c, fp);
 			}
 			viminfo_writestring(fp, p);
+
+			{
+			    char    cbuf[NUMBUFLEN];
+
+			    /* New style history with a bar line. Format:
+			     * |{bartype},{histtype},{timestamp},{separator},"text" */
+			    if (c == NUL)
+				cbuf[0] = NUL;
+			    else
+				sprintf(cbuf, "%d", c);
+			    fprintf(fp, "|%d,%d,%ld,%s,", BARTYPE_HISTORY,
+						 type, (long)timestamp, cbuf);
+			    barline_writestring(fp, p, LSIZE - 20);
+			    putc('\n', fp);
+			}
 		    }
 		    if (round == 1)
 		    {
@@ -6400,7 +6522,7 @@ write_viminfo_history(
 	}
 	for (i = 0; i < viminfo_hisidx[type]; ++i)
 	    if (viminfo_history[type] != NULL)
-		vim_free(viminfo_history[type][i]);
+		vim_free(viminfo_history[type][i].hisstr);
 	vim_free(viminfo_history[type]);
 	viminfo_history[type] = NULL;
 	viminfo_hisidx[type] = 0;

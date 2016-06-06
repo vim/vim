@@ -820,6 +820,7 @@ static void f_test_null_job(typval_T *argvars, typval_T *rettv);
 static void f_test_null_list(typval_T *argvars, typval_T *rettv);
 static void f_test_null_partial(typval_T *argvars, typval_T *rettv);
 static void f_test_null_string(typval_T *argvars, typval_T *rettv);
+static void f_test_settime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_tan(typval_T *argvars, typval_T *rettv);
 static void f_tanh(typval_T *argvars, typval_T *rettv);
@@ -8809,13 +8810,14 @@ static struct fst
 #ifdef FEAT_JOB_CHANNEL
     {"test_null_channel", 0, 0, f_test_null_channel},
 #endif
-    {"test_null_dict", 0, 0, f_test_null_dict},
+    {"test_null_dict",	0, 0, f_test_null_dict},
 #ifdef FEAT_JOB_CHANNEL
-    {"test_null_job", 0, 0, f_test_null_job},
+    {"test_null_job",	0, 0, f_test_null_job},
 #endif
-    {"test_null_list", 0, 0, f_test_null_list},
+    {"test_null_list",	0, 0, f_test_null_list},
     {"test_null_partial", 0, 0, f_test_null_partial},
     {"test_null_string", 0, 0, f_test_null_string},
+    {"test_settime",	1, 1, f_test_settime},
 #ifdef FEAT_TIMERS
     {"timer_start",	2, 3, f_timer_start},
     {"timer_stop",	1, 1, f_timer_stop},
@@ -20849,7 +20851,7 @@ f_test_garbagecollect_now(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
 #ifdef FEAT_JOB_CHANNEL
     static void
-f_test_null_channel(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_test_null_channel(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_CHANNEL;
     rettv->vval.v_channel = NULL;
@@ -20857,7 +20859,7 @@ f_test_null_channel(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #endif
 
     static void
-f_test_null_dict(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_test_null_dict(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_DICT;
     rettv->vval.v_dict = NULL;
@@ -20865,7 +20867,7 @@ f_test_null_dict(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
 #ifdef FEAT_JOB_CHANNEL
     static void
-f_test_null_job(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_test_null_job(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_JOB;
     rettv->vval.v_job = NULL;
@@ -20873,24 +20875,30 @@ f_test_null_job(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #endif
 
     static void
-f_test_null_list(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_test_null_list(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_LIST;
     rettv->vval.v_list = NULL;
 }
 
     static void
-f_test_null_partial(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_test_null_partial(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_PARTIAL;
     rettv->vval.v_partial = NULL;
 }
 
     static void
-f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+}
+
+    static void
+f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    time_for_testing = (time_t)get_tv_number(&argvars[0]);
 }
 
 #if defined(FEAT_JOB_CHANNEL) || defined(FEAT_TIMERS) || defined(PROTO)
