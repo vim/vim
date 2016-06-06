@@ -1063,7 +1063,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define OPENLINE_COM_LIST  16	/* format comments with list/2nd line indent */
 
 /*
- * There are four history tables:
+ * There are five history tables:
  */
 #define HIST_CMD	0	/* colon commands */
 #define HIST_SEARCH	1	/* search commands */
@@ -1071,6 +1071,26 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define HIST_INPUT	3	/* input() lines */
 #define HIST_DEBUG	4	/* debug commands */
 #define HIST_COUNT	5	/* number of history tables */
+
+/* The type numbers are fixed for backwards compatibility. */
+#define BARTYPE_VERSION 1
+#define BARTYPE_HISTORY 2
+
+typedef enum {
+    BVAL_NR,
+    BVAL_STRING,
+    BVAL_EMPTY
+} btype_T;
+
+#define BVAL_MAX 4	/* Maximum number of fields in a barline. */
+
+typedef struct {
+    btype_T	bv_type;
+    long	bv_nr;
+    char_u	*bv_string;
+    int		bv_len;		/* length of bv_string */
+    int		bv_allocated;	/* bv_string was allocated */
+} bval_T;
 
 /*
  * Values for do_tag().
