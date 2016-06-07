@@ -382,18 +382,19 @@ handle_key_queue(void)
     void
 netbeans_parse_messages(void)
 {
+    readq_T	*node;
     char_u	*buffer;
     char_u	*p;
     int		own_node;
 
     while (nb_channel != NULL)
     {
-	buffer = channel_peek(nb_channel, PART_SOCK);
-	if (buffer == NULL)
+	node = channel_peek(nb_channel, PART_SOCK);
+	if (node == NULL)
 	    break;	/* nothing to read */
 
 	/* Locate the first line in the first buffer. */
-	p = vim_strchr(buffer, '\n');
+	p = channel_first_nl(node);
 	if (p == NULL)
 	{
 	    /* Command isn't complete.  If there is no following buffer,
@@ -418,14 +419,14 @@ netbeans_parse_messages(void)
 		own_node = FALSE;
 
 	    /* now, parse and execute the commands */
-	    nb_parse_cmd(buffer);
+	    nb_parse_cmd(node->rq_buffer);
 
 	    if (own_node)
 		/* buffer finished, dispose of it */
-		vim_free(buffer);
+		vim_free(node->rq_buffer);
 	    else
 		/* more follows, move it to the start */
-		STRMOVE(buffer, p);
+		channel_consume(nb_channel, PART_SOCK, (int)(p - buffer));
 	}
     }
 }

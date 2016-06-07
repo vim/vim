@@ -17,14 +17,16 @@ void channel_set_req_callback(channel_T *channel, int part, char_u *callback, pa
 void channel_buffer_free(buf_T *buf);
 void channel_write_any_lines(void);
 void channel_write_new_lines(buf_T *buf);
+readq_T *channel_peek(channel_T *channel, int part);
+char_u *channel_first_nl(readq_T *node);
 char_u *channel_get(channel_T *channel, int part);
+void channel_consume(channel_T *channel, int part, int len);
 int channel_collapse(channel_T *channel, int part, int want_nl);
 int channel_can_write_to(channel_T *channel);
 int channel_is_open(channel_T *channel);
 char *channel_status(channel_T *channel);
 void channel_info(channel_T *channel, dict_T *dict);
 void channel_close(channel_T *channel, int invoke_close_cb);
-char_u *channel_peek(channel_T *channel, int part);
 void channel_clear(channel_T *channel);
 void channel_free_all(void);
 char_u *channel_read_block(channel_T *channel, int part, int timeout);
