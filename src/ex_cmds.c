@@ -2574,9 +2574,9 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 
 	    if (vim_isdigit(p[1]))
 	    {
-		int len;
-		int todo;
-		int n;
+		size_t len;
+		size_t todo;
+		size_t n;
 
 		/* String value was split into lines that are each shorter
 		 * than LSIZE:
@@ -2586,7 +2586,7 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 		 */
 		++p;
 		len = getdigits(&p);
-		buf = alloc(len + 1);
+		buf = alloc((int)(len + 1));
 		p = buf;
 		for (todo = len; todo > 0; todo -= n)
 		{
