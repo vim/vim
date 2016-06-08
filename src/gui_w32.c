@@ -685,7 +685,7 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
     int		i;
 #ifdef FEAT_MBYTE
     WCHAR	wstring[2];
-    char_u	*ws = NULL;;
+    char_u	*ws = NULL;
 
     if (os_version.dwPlatformId != VER_PLATFORM_WIN32_NT)
     {
@@ -1873,7 +1873,7 @@ process_message(void)
 		    && (vk != VK_SPACE || !(GetKeyState(VK_MENU) & 0x8000)))
 	    {
 		/*
-		 * Behave as exected if we have a dead key and the special key
+		 * Behave as expected if we have a dead key and the special key
 		 * is a key that would normally trigger the dead key nominal
 		 * character output (such as a NUMPAD printable character or
 		 * the TAB key, etc...).

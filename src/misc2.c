@@ -5152,7 +5152,7 @@ ff_create_stack_element(
     new->ffs_filearray_cur  = 0;
     new->ffs_stage	   = 0;
     new->ffs_level	   = level;
-    new->ffs_star_star_empty = star_star_empty;;
+    new->ffs_star_star_empty = star_star_empty;
 
     /* the following saves NULL pointer checks in vim_findfile */
     if (fix_part == NULL)

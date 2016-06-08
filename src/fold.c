@@ -153,7 +153,7 @@ hasFoldingWin(
     int		use_level = FALSE;
     int		maybe_small = FALSE;
     garray_T	*gap;
-    int		low_level = 0;;
+    int		low_level = 0;
 
     checkupdate(win);
     /*

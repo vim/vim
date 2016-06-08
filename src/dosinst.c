@@ -1313,14 +1313,14 @@ init_vimrc_choices(void)
     /* Whether to remap keys */
     alloc_text(choice_count, remap_text , remap_choices[remap_choice]);
     choices[choice_count].changefunc = change_remap_choice;
-    choices[choice_count].installfunc = NULL;;
+    choices[choice_count].installfunc = NULL;
     choices[choice_count].active = (*oldvimrc == NUL);
     ++choice_count;
 
     /* default way to use the mouse */
     alloc_text(choice_count, mouse_text, mouse_choices[mouse_choice]);
     choices[choice_count].changefunc = change_mouse_choice;
-    choices[choice_count].installfunc = NULL;;
+    choices[choice_count].installfunc = NULL;
     choices[choice_count].active = (*oldvimrc == NUL);
     ++choice_count;
 }

@@ -2205,7 +2205,7 @@ parse_uri_list(int *count, char_u *data, int len)
 {
     int	    n	    = 0;
     char_u  *tmp    = NULL;
-    char_u  **array = NULL;;
+    char_u  **array = NULL;
 
     if (data != NULL && len > 0 && (tmp = (char_u *)alloc(len + 1)) != NULL)
     {
