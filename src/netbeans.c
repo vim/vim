@@ -393,7 +393,7 @@ netbeans_parse_messages(void)
 	if (node == NULL)
 	    break;	/* nothing to read */
 
-	/* Locate the first line in the first buffer. */
+	/* Locate the end of the first line in the first buffer. */
 	p = channel_first_nl(node);
 	if (p == NULL)
 	{
@@ -402,32 +402,35 @@ netbeans_parse_messages(void)
 	     * prepend the text to that buffer and delete this one.  */
 	    if (channel_collapse(nb_channel, PART_SOCK, TRUE) == FAIL)
 		return;
+	    continue;
+	}
+
+	/* There is a complete command at the start of the buffer.
+	 * Terminate it with a NUL.  When no more text is following unlink
+	 * the buffer.  Do this before executing, because new buffers can
+	 * be added while busy handling the command. */
+	*p++ = NUL;
+	if (*p == NUL)
+	{
+	    own_node = TRUE;
+	    buffer = channel_get(nb_channel, PART_SOCK);
+	    /* "node" is now invalid! */
 	}
 	else
 	{
-	    /* There is a complete command at the start of the buffer.
-	     * Terminate it with a NUL.  When no more text is following unlink
-	     * the buffer.  Do this before executing, because new buffers can
-	     * be added while busy handling the command. */
-	    *p++ = NUL;
-	    if (*p == NUL)
-	    {
-		own_node = TRUE;
-		channel_get(nb_channel, PART_SOCK);
-	    }
-	    else
-		own_node = FALSE;
-
-	    /* now, parse and execute the commands */
-	    nb_parse_cmd(node->rq_buffer);
-
-	    if (own_node)
-		/* buffer finished, dispose of it */
-		vim_free(node->rq_buffer);
-	    else
-		/* more follows, move it to the start */
-		channel_consume(nb_channel, PART_SOCK, (int)(p - buffer));
+	    own_node = FALSE;
+	    buffer = node->rq_buffer;
 	}
+
+	/* now, parse and execute the commands */
+	nb_parse_cmd(buffer);
+
+	if (own_node)
+	    /* buffer finished, dispose of it */
+	    vim_free(buffer);
+	else
+	    /* more follows, move it to the start */
+	    channel_consume(nb_channel, PART_SOCK, (int)(p - buffer));
     }
 }
 
