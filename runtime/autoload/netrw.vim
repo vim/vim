@@ -8596,13 +8596,13 @@ fun! s:NetrwSetSort()
     call histdel("/",-1)
     " sometimes multiple sorting patterns will match the same file or directory.
     " The following substitute is intended to remove the excess matches.
-    exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g/^\d\{3}'.g:netrw_sepchr.'\d\{3}\//s/^\d\{3}'.g:netrw_sepchr.'\(\d\{3}\/\).\@=/\1/e'
+    exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g/^\d\{3}'.escape(g:netrw_sepchr,'\/').'\d\{3}\//s/^\d\{3}'.escape(g:netrw_sepchr,'\/').'\(\d\{3}\/\).\@=/\1/e'
     NetrwKeepj call histdel("/",-1)
    endif
    let priority = priority + 1
   endwhile
   if exists("starpriority")
-   exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$v/^\d\{3}'.g:netrw_sepchr.'/s/^/'.starpriority.'/e'
+   exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$v/^\d\{3}'.escape(g:netrw_sepchr,'\/').'/s/^/'.starpriority.'/e'
    NetrwKeepj call histdel("/",-1)
   endif
 
@@ -8612,7 +8612,7 @@ fun! s:NetrwSetSort()
   " priority pattern needs to be retained.  So, at this point, these excess
   " priority prefixes need to be removed, but not directories that happen to
   " be just digits themselves.
-  exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$s/^\(\d\{3}'.g:netrw_sepchr.'\)\%(\d\{3}'.g:netrw_sepchr.'\)\+\ze./\1/e'
+  exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$s/^\(\d\{3}'.escape(g:netrw_sepchr,'\/').'\)\%(\d\{3}'.escape(g:netrw_sepchr,'\/').'\)\+\ze./\1/e'
   NetrwKeepj call histdel("/",-1)
   let @@= ykeep
 
@@ -9380,38 +9380,43 @@ fun! s:PerformListing(islocal)
 
      if !g:netrw_banner || w:netrw_bannercnt < line("$")
 "      call Decho("g:netrw_sort_direction=".g:netrw_sort_direction." (bannercnt=".w:netrw_bannercnt.")",'~'.expand("<slnum>"))
-      if g:netrw_sort_direction =~# 'n'
-       " normal direction sorting
+      " normal direction sorting
+      if g:netrw_sort_options != ""
        exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort'.' '.g:netrw_sort_options
-      else
+      endif
+      exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort'.' r/^\d\{3}'.escape(g:netrw_sepchr,'\/').'/'
+      if g:netrw_sort_direction !~# 'n'
        " reverse direction sorting
-       exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort!'.' '.g:netrw_sort_options
+"       call Decho("reverse the sorted listing")
+       exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g/^/m'.(w:netrw_bannercnt-1)
       endif
      endif
      " remove priority pattern prefix
 "     call Decho("remove priority pattern prefix",'~'.expand("<slnum>"))
-     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^\d\{3}'.g:netrw_sepchr.'//e'
+     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^\d\{3}'.escape(g:netrw_sepchr,'\/').'//e'
      NetrwKeepj call histdel("/",-1)
 
     elseif g:netrw_sort_by =~# "^ext"
      " sort by extension
-     exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g+/+s/^/001'.g:netrw_sepchr.'/'
+     exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g+/+s/^/001'.escape(g:netrw_sepchr,'\/').'/'
      NetrwKeepj call histdel("/",-1)
-     exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$v+[./]+s/^/002'.g:netrw_sepchr.'/'
+     exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$v+[./]+s/^/002'.escape(g:netrw_sepchr,'\/').'/'
      NetrwKeepj call histdel("/",-1)
-     exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$v+['.g:netrw_sepchr.'/]+s/^\(.*\.\)\(.\{-\}\)$/\2'.g:netrw_sepchr.'&/e'
+     exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$v+['.escape(g:netrw_sepchr,'\/').'/]+s/^\(.*\.\)\(.\{-\}\)$/\2'.escape(g:netrw_sepchr,'\/').'&/e'
      NetrwKeepj call histdel("/",-1)
      if !g:netrw_banner || w:netrw_bannercnt < line("$")
 "      call Decho("g:netrw_sort_direction=".g:netrw_sort_direction." (bannercnt=".w:netrw_bannercnt.")",'~'.expand("<slnum>"))
-      if g:netrw_sort_direction =~# 'n'
+      if g:netrw_sort_direction != ""
        " normal direction sorting
        exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort'.' '.g:netrw_sort_options
-      else
-       " reverse direction sorting
-       exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort!'.' '.g:netrw_sort_options
+      endif
+      exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort'.' r/^.\{-}\//'
+      if g:netrw_sort_direction !~# 'n'
+"       call Decho('reverse the sorted listing')
+       exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g/^/m'.(w:netrw_bannercnt-1)
       endif
      endif
-     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^.\{-}'.g:netrw_sepchr.'//e'
+     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^.\{-}'.escape(g:netrw_sepchr,'\/').'//e'
      NetrwKeepj call histdel("/",-1)
 
     elseif a:islocal
