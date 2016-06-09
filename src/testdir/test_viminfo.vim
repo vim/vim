@@ -116,3 +116,66 @@ func Test_cmdline_history()
 
   call delete('Xviminfo')
 endfunc
+
+func Test_cmdline_history_order()
+  call histdel(':')
+  call test_settime(11)
+  call histadd(':', "echo '11'")
+  call test_settime(22)
+  call histadd(':', "echo '22'")
+  call test_settime(33)
+  call histadd(':', "echo '33'")
+  wviminfo Xviminfo
+
+  call histdel(':')
+  " items go in between
+  call test_settime(15)
+  call histadd(':', "echo '15'")
+  call test_settime(27)
+  call histadd(':', "echo '27'")
+
+  rviminfo Xviminfo
+  call assert_equal("echo '33'", histget(':', -1))
+  call assert_equal("echo '27'", histget(':', -2))
+  call assert_equal("echo '22'", histget(':', -3))
+  call assert_equal("echo '15'", histget(':', -4))
+  call assert_equal("echo '11'", histget(':', -5))
+
+  call histdel(':')
+  " items go before and after
+  call test_settime(8)
+  call histadd(':', "echo '8'")
+  call test_settime(39)
+  call histadd(':', "echo '39'")
+
+  rviminfo Xviminfo
+  call assert_equal("echo '39'", histget(':', -1))
+  call assert_equal("echo '33'", histget(':', -2))
+  call assert_equal("echo '22'", histget(':', -3))
+  call assert_equal("echo '11'", histget(':', -4))
+  call assert_equal("echo '8'", histget(':', -5))
+
+  " Check sorting works when writing with merge.
+  call histdel(':')
+  call test_settime(8)
+  call histadd(':', "echo '8'")
+  call test_settime(15)
+  call histadd(':', "echo '15'")
+  call test_settime(27)
+  call histadd(':', "echo '27'")
+  call test_settime(39)
+  call histadd(':', "echo '39'")
+  wviminfo Xviminfo
+  
+  call histdel(':')
+  rviminfo Xviminfo
+  call assert_equal("echo '39'", histget(':', -1))
+  call assert_equal("echo '33'", histget(':', -2))
+  call assert_equal("echo '27'", histget(':', -3))
+  call assert_equal("echo '22'", histget(':', -4))
+  call assert_equal("echo '15'", histget(':', -5))
+  call assert_equal("echo '11'", histget(':', -6))
+  call assert_equal("echo '8'", histget(':', -7))
+
+  call delete('Xviminfo')
+endfunc

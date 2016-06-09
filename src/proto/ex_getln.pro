@@ -51,7 +51,7 @@ void ex_history(exarg_T *eap);
 void prepare_viminfo_history(int asklen, int writing);
 int read_viminfo_history(vir_T *virp, int writing);
 void handle_viminfo_history(bval_T *values, int count, int writing);
-void finish_viminfo_history(void);
+void finish_viminfo_history(vir_T *virp);
 void write_viminfo_history(FILE *fp, int merge);
 void cmd_pchar(int c, int offset);
 int cmd_gchar(int offset);
