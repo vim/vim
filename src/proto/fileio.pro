@@ -34,7 +34,7 @@ int check_ei(void);
 char_u *au_event_disable(char *what);
 void au_event_restore(char_u *old_ei);
 void do_autocmd(char_u *arg, int forceit);
-int do_doautocmd(char_u *arg, int do_msg);
+int do_doautocmd(char_u *arg, int do_msg, int *did_something);
 void ex_doautoall(exarg_T *eap);
 int check_nomodeline(char_u **argp);
 void aucmd_prepbuf(aco_save_T *aco, buf_T *buf);

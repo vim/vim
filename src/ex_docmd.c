@@ -5449,9 +5449,11 @@ ex_doautocmd(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
     int		call_do_modelines = check_nomodeline(&arg);
+    int		did_aucmd;
 
-    (void)do_doautocmd(arg, TRUE);
-    if (call_do_modelines)  /* Only when there is no <nomodeline>. */
+    (void)do_doautocmd(arg, TRUE, &did_aucmd);
+    /* Only when there is no <nomodeline>. */
+    if (call_do_modelines && did_aucmd)
 	do_modelines(0);
 }
 #endif
@@ -11896,7 +11898,7 @@ ex_filetype(exarg_T *eap)
 	}
 	if (*arg == 'd')
 	{
-	    (void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE);
+	    (void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE, NULL);
 	    do_modelines(0);
 	}
     }
