@@ -1,4 +1,5 @@
 /* ex_cmds2.c */
+int has_watchexpr (void);
 void do_debug(char_u *cmd);
 void ex_debug(exarg_T *eap);
 void dbg_check_breakpoint(exarg_T *eap);
