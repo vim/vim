@@ -1335,6 +1335,20 @@ func Test_using_freed_memory()
   call test_garbagecollect_now()
 endfunc
 
+func Test_collapse_buffers()
+  if !executable('cat')
+    return
+  endif
+  sp test_channel.vim
+  let g:linecount = line('$')
+  close
+  split testout
+  1,$delete
+  call job_start('cat test_channel.vim', {'out_io': 'buffer', 'out_name': 'testout'})
+  call s:waitFor('line("$") > g:linecount')
+  call assert_true(line('$') > g:linecount)
+  bwipe!
+endfunc
 
 
 " Uncomment this to see what happens, output is in src/testdir/channellog.
