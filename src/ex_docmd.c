@@ -1745,6 +1745,7 @@ do_one_cmd(
     int			ni;			/* set when Not Implemented */
     char_u		*cmd;
     int			address_count = 1;
+    int			is_vimgrep_like = FALSE;
 
     vim_memset(&ea, 0, sizeof(ea));
     ea.line1 = 1;
@@ -2439,6 +2440,15 @@ do_one_cmd(
 	}
     }
 
+#ifdef FEAT_LISTCMDS
+    if (ea.cmdidx == CMD_vimgrep || ea.cmdidx == CMD_vimgrepadd ||
+	    ea.cmdidx == CMD_lvimgrep || ea.cmdidx == CMD_lvimgrepadd)
+	is_vimgrep_like = TRUE;
+    /* :vimgrep command depends on the <buffer> argument. */
+    if (is_vimgrep_like && p != NULL)
+	p = get_vimgrep_type(p, &ea);
+#endif
+
     if (!ni && !(ea.argt & BANG) && ea.forceit)	/* no <!> allowed */
     {
 	errormsg = (char_u *)_(e_nobang);
@@ -2853,7 +2863,7 @@ do_one_cmd(
      * number.  Don't do this for a user command.
      */
     if ((ea.argt & BUFNAME) && *ea.arg != NUL && ea.addr_count == 0
-	    && !IS_USER_CMDIDX(ea.cmdidx))
+	    && !IS_USER_CMDIDX(ea.cmdidx) && !is_vimgrep_like)
     {
 	/*
 	 * :bdelete, :bwipeout and :bunload take several arguments, separated
@@ -4113,6 +4123,10 @@ set_one_cmd_context(
 	case CMD_bdelete:
 	case CMD_bwipeout:
 	case CMD_bunload:
+	case CMD_vimgrep:
+	case CMD_vimgrepadd:
+	case CMD_lvimgrep:
+	case CMD_lvimgrepadd:
 	    while ((xp->xp_pattern = vim_strchr(arg, ' ')) != NULL)
 		arg = xp->xp_pattern + 1;
 	    /*FALLTHROUGH*/

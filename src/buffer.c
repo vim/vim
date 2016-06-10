@@ -2700,6 +2700,91 @@ ExpandBufnames(
 #endif /* FEAT_CMDL_COMPL */
 
 #ifdef HAVE_BUFLIST_MATCH
+
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
+/*
+ * Parse a list of arguments (buffer names), expand them and return in
+ * a growarray. Return FAIL or OK.
+ */
+    int
+get_buflist_exp(char_u *str, int *fcountp, garray_T *garray)
+{
+    garray_T	ga;
+    int		i = FAIL;
+    int		j;
+    int		save_magic;
+    char_u	*save_cpo;
+    regmatch_T	regmatch;
+    buf_T	*buf;
+    char_u	*pat;
+    char_u	*pattern = NULL;
+
+    ga_init2(garray, (int)sizeof(int), 1);
+    if ((*str == NUL || str == NULL) && ga_grow(garray, 1) == OK)
+    {
+	((int *)(garray->ga_data))
+	    [garray->ga_len++] = curbuf->b_fnum;
+	*fcountp = 1;
+	return OK;
+    }
+    else if (get_arglist(&ga, str, TRUE) == FAIL)
+	return FAIL;
+
+    /* Ignore 'magic' and 'cpoptions' here to make scripts portable */
+    save_magic = p_magic;
+    p_magic = TRUE;
+    save_cpo = p_cpo;
+    p_cpo = (char_u *)"";
+
+    for (j = 0; j < ga.ga_len; j++)
+    {
+	pattern = ((char_u **)ga.ga_data)[j];
+	if (*pattern == '%' || *pattern == '#')
+	{
+	    if (ga_grow(garray, 1) == OK)
+		((int *)(garray->ga_data))
+		    [garray->ga_len++] = *pattern == '*' ? curbuf->b_fnum : curwin->w_alt_fnum;
+	    else
+		goto buflistend;
+	}
+	else
+	{
+	    /* buffer number given */
+	    if (VIM_ISDIGIT(*pattern))
+	    {
+		if (ga_grow(garray, 1) == OK)
+		    ((int *)(garray->ga_data))[garray->ga_len++] = getdigits(&pattern);
+	    }
+	    else
+	    {
+		/* buffer pattern given */
+		pat = file_pat_to_reg_pat(pattern, pattern + STRLEN(pattern), NULL, FALSE);
+		regmatch.regprog = vim_regcomp(pat, RE_MAGIC);
+		if (regmatch.regprog == NULL)
+		    goto buflistend;
+		for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+		{
+		    if (buflist_match(&regmatch, buf, FALSE) != NULL && ga_grow(garray, 1) == OK)
+			((int *)(garray->ga_data))[garray->ga_len++] = buf->b_fnum;
+
+		}
+		vim_regfree(regmatch.regprog);
+		vim_free(pat);
+	    }
+	}
+    }
+    *fcountp = garray->ga_len;
+    i = OK;
+
+buflistend:
+    p_magic = save_magic;
+    p_cpo = save_cpo;
+
+    ga_clear(&ga);
+    return i;
+}
+#endif
+
 /*
  * Check for a match on the file name for buffer "buf" with regprog "prog".
  */

@@ -23,6 +23,7 @@ buf_T *buflist_findname_exp(char_u *fname);
 buf_T *buflist_findname(char_u *ffname);
 int buflist_findpat(char_u *pattern, char_u *pattern_end, int unlisted, int diffmode, int curtab_only);
 int ExpandBufnames(char_u *pat, int *num_file, char_u ***file, int options);
+int get_buflist_exp(char_u *str, int *count, garray_T *ga);
 buf_T *buflist_findnr(int nr);
 char_u *buflist_nr2name(int n, int fullname, int helptail);
 void get_winopts(buf_T *buf);

@@ -780,6 +780,28 @@ commands can be combined to create a NewGrep command: >
 			the current window is used instead of the quickfix
 			list.
 
+						*:vimgrep-<buffer>*
+:vimgrep[!] <buffer> /{pattern}/[g][j] [{buffer} ...]
+:vimgrep[!] <buffer> {pattern} [{buffer} ...]
+			Same as ":vimgrep", except that it searches the given
+			buffers. If no buffer is given, searches the current
+			buffer. Buffer can be given as buffer name (including
+			file-patterns) or number.
+
+                        The difference to the standard vimgrep command is, it
+                        that when using the <buffer> argument, vimgrep will
+                        search all files that are loaded in the current Vim
+                        session and not whatever is written on the disk. This
+                        matters, if the loaded buffer has been modified and
+                        is different from the on disk version.
+
+						*:vimgrepadd-<buffer>*
+:vimgrepa[dd][!] <buffer> /{pattern}/[g][j] [{buffer} ...]
+:vimgrepa[dd][!] <buffer> {pattern} [{buffer} ...]
+			Just like ":vimgrep", but instead of making a new
+			list of errors thep matches are appended to the
+			current list.
+
 5.2 External grep
 
 Vim can interface with "grep" and grep-like programs (such as the GNU

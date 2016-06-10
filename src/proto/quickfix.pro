@@ -28,4 +28,5 @@ int set_ref_in_quickfix(int copyID);
 void ex_cbuffer(exarg_T *eap);
 void ex_cexpr(exarg_T *eap);
 void ex_helpgrep(exarg_T *eap);
+char_u *get_vimgrep_type(char_u *q, exarg_T *eap);
 /* vim: set ft=c : */

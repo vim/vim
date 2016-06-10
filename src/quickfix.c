@@ -3521,6 +3521,22 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
     KeyTyped = old_KeyTyped;
 }
 
+    char_u*
+get_vimgrep_type(char_u *q, exarg_T *eap)
+{
+    char_u *p;
+    p = skipwhite(q);
+    if (STRNCMP(p, "<buffer>", 8) == 0)
+    {
+	eap->argt =  BANG|RANGE|NOTADR|BUFNAME|BUFUNL|COUNT|NEEDARG|EXTRA|NOTRLCOM|TRLBAR ;
+	eap->addr_type = ADDR_BUFFERS;
+	eap->line1 = 1;
+	eap->line2 = curbuf->b_fnum;
+	return p += 8;
+    }
+    return q;
+}
+
 /*
  * Return TRUE when using ":vimgrep" for ":grep".
  */
@@ -4067,7 +4083,7 @@ ex_vimgrep(exarg_T *eap)
     long	lnum;
     buf_T	*buf;
     int		duplicate_name = FALSE;
-    int		using_dummy;
+    int		using_dummy = FALSE;
     int		redraw_for_dummy = FALSE;
     int		found_match;
     buf_T	*first_match_buf = NULL;
@@ -4083,8 +4099,11 @@ ex_vimgrep(exarg_T *eap)
     char_u	*dirname_start = NULL;
     char_u	*dirname_now = NULL;
     char_u	*target_dir = NULL;
+    garray_T	gap;
 #ifdef FEAT_AUTOCMD
     char_u	*au_name =  NULL;
+    int		bufnr = curbuf->b_fnum;
+    int		do_not_switch_back = FALSE;
 
     switch (eap->cmdidx)
     {
@@ -4152,7 +4171,7 @@ ex_vimgrep(exarg_T *eap)
     regmatch.rmm_maxcol = 0;
 
     p = skipwhite(p);
-    if (*p == NUL)
+    if (*p == NUL && eap->argt & XFILE)
     {
 	EMSG(_("E683: File name missing or invalid pattern"));
 	goto theend;
@@ -4164,8 +4183,19 @@ ex_vimgrep(exarg_T *eap)
 	/* make place for a new list */
 	qf_new_list(qi, title != NULL ? title : *eap->cmdlinep);
 
+    if (eap->argt & BUFNAME)
+    {
+	SkipRedraw(TRUE); /* do not redraw, when switching buffers */
+	if (curbuf->b_p_bh[0] == 'w' || curbuf->b_p_bh[0] == 'd' || curbuf->b_p_bh[0] == 'u')
+	    do_not_switch_back = TRUE;
+	if (get_buflist_exp(p, &fcount, &gap) == FAIL)
+	{
+	    ga_clear(&gap);
+	    goto theend;
+	}
+    }
     /* parse the list of arguments */
-    if (get_arglist_exp(p, &fcount, &fnames, TRUE) == FAIL)
+    else if (get_arglist_exp(p, &fcount, &fnames, TRUE) == FAIL)
 	goto theend;
     if (fcount == 0)
     {
@@ -4194,29 +4224,55 @@ ex_vimgrep(exarg_T *eap)
     seconds = (time_t)0;
     for (fi = 0; fi < fcount && !got_int && tomatch > 0; ++fi)
     {
-	fname = shorten_fname1(fnames[fi]);
-	if (time(NULL) > seconds)
+	if (eap->argt & BUFNAME)
 	{
-	    /* Display the file name every second or so, show the user we are
-	     * working on it. */
-	    seconds = time(NULL);
-	    msg_start();
-	    p = msg_strtrunc(fname, TRUE);
-	    if (p == NULL)
-		msg_outtrans(fname);
-	    else
+	    int	    result = OK;
+	    bufref_T   old_curbuf;
+
+	    set_bufref(&old_curbuf, curbuf);
+	    fname = NULL;
+	    if (gap.ga_len > 0 && curbuf->b_fnum != ((int *)gap.ga_data)[fi])
 	    {
-		msg_outtrans(p);
-		vim_free(p);
+# if defined(FEAT_WINDOWS) && defined(HAS_SWAP_EXISTS_ACTION)
+		swap_exists_action = SEA_DIALOG;
+#endif
+		result = do_buffer(DOBUF_GOTO, DOBUF_FIRST, FORWARD,
+			((int *)gap.ga_data)[fi], eap->forceit);
+# if defined(FEAT_WINDOWS) && defined(HAS_SWAP_EXISTS_ACTION)
+		handle_swap_exists(&old_curbuf);
+# endif
+		if (result == FAIL)
+		    break;
 	    }
-	    msg_clr_eos();
-	    msg_didout = FALSE;	    /* overwrite this message */
-	    msg_nowait = TRUE;	    /* don't wait for this message */
-	    msg_col = 0;
-	    out_flush();
+	    buf = curbuf;
+	}
+	else
+	{
+	    fname = shorten_fname1(fnames[fi]);
+	    if (time(NULL) > seconds)
+	    {
+		/* Display the file name every second or so, show the user we are
+		* working on it. */
+		seconds = time(NULL);
+		msg_start();
+		p = msg_strtrunc(fname, TRUE);
+		if (p == NULL)
+		    msg_outtrans(fname);
+		else
+		{
+		    msg_outtrans(p);
+		    vim_free(p);
+		}
+		msg_clr_eos();
+		msg_didout = FALSE;	    /* overwrite this message */
+		msg_nowait = TRUE;	    /* don't wait for this message */
+		msg_col = 0;
+		out_flush();
+	    }
+
+	    buf = buflist_findname_exp(fnames[fi]);
 	}
 
-	buf = buflist_findname_exp(fnames[fi]);
 	if (buf == NULL || buf->b_ml.ml_mfp == NULL)
 	{
 	    /* Remember that a buffer with this name already exists. */
@@ -4390,7 +4446,15 @@ ex_vimgrep(exarg_T *eap)
 	}
     }
 
-    FreeWild(fcount, fnames);
+    /* switch back to original buffer, if it still exists (might have become invalid because of 'bufhidden' setting or some autocommand */
+    if (eap->argt & BUFNAME &&
+	    curbuf->b_fnum != bufnr && buflist_findnr(bufnr) != NULL && !do_not_switch_back)
+	(void)do_buffer(DOBUF_GOTO, DOBUF_FIRST, FORWARD, bufnr, FALSE);
+
+    if (eap->argt & XFILE)
+	FreeWild(fcount, fnames);
+    else
+	ga_clear(&gap);
 
     qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
     qi->qf_lists[qi->qf_curlist].qf_ptr = qi->qf_lists[qi->qf_curlist].qf_start;
@@ -4442,6 +4506,8 @@ ex_vimgrep(exarg_T *eap)
     }
 
 theend:
+    if (eap->argt & BUFNAME)
+	SkipRedraw(FALSE);
     vim_free(title);
     vim_free(dirname_now);
     vim_free(dirname_start);

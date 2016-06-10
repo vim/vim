@@ -1024,6 +1024,25 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 }
 #endif
 
+    void
+SkipRedraw(int doit)
+{
+    if (doit)
+    {
+	/* return if already busy updating */
+	if (updating_screen)
+	    return;
+#if defined(FEAT_GUI) || defined(PROTO)
+	update_prepare();
+#endif
+    }
+#if defined(FEAT_GUI) || defined(PROTO)
+    else
+	update_finish();
+#endif
+}
+
+
 
 #if defined(FEAT_GUI) || defined(PROTO)
 /*

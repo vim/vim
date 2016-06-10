@@ -2335,7 +2335,7 @@ do_one_arg(char_u *str)
  * Separate the arguments in "str" and return a list of pointers in the
  * growarray "gap".
  */
-    static int
+    int
 get_arglist(garray_T *gap, char_u *str, int escaped)
 {
     ga_init2(gap, (int)sizeof(char_u *), 20);
