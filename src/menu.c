@@ -1970,7 +1970,12 @@ gui_show_popupmenu(void)
 
     /* Only show a popup when it is defined and has entries */
     if (menu != NULL && menu->children != NULL)
+    {
+	/* Update the menus now, in case the MenuPopup autocommand did
+	 * anything. */
+	gui_update_menus(0);
 	gui_mch_show_popupmenu(menu);
+    }
 }
 #endif /* FEAT_GUI */
 
