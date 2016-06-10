@@ -1970,7 +1970,10 @@ gui_show_popupmenu(void)
 
     /* Only show a popup when it is defined and has entries */
     if (menu != NULL && menu->children != NULL)
+    {
+	gui_update_menus(0);
 	gui_mch_show_popupmenu(menu);
+    }
 }
 #endif /* FEAT_GUI */
 
