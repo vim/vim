@@ -179,3 +179,25 @@ func Test_cmdline_history_order()
 
   call delete('Xviminfo')
 endfunc
+
+func Test_viminfo_encoding()
+  if !has('multi_byte')
+    return
+  endif
+  set enc=latin1
+  call histdel(':')
+  call histadd(':', "echo '\xe9'")
+  wviminfo Xviminfo
+
+  set fencs=utf-8,latin1
+  set enc=utf-8
+  sp Xviminfo
+  call assert_equal('latin1', &fenc)
+  close
+  
+  call histdel(':')
+  rviminfo Xviminfo
+  call assert_equal("echo 'é'", histget(':', -1))
+
+  call delete('Xviminfo')
+endfunc

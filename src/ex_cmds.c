@@ -2543,6 +2543,10 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
     int	    count = 0;
     int	    i;
     int	    allocated = FALSE;
+#ifdef FEAT_MBYTE
+    char_u  *sconv;
+    int	    converted;
+#endif
 
     while (*p == ',')
     {
@@ -2560,7 +2564,8 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 	    if (!allocated)
 	    {
 		for (i = 0; i < count; ++i)
-		    if (values[i].bv_type == BVAL_STRING)
+		    if (values[i].bv_type == BVAL_STRING
+						   && !values[i].bv_allocated)
 		    {
 			values[i].bv_string = vim_strnsave(
 				       values[i].bv_string, values[i].bv_len);
@@ -2654,12 +2659,33 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 	    }
 	    s[len] = NUL;
 
+#ifdef FEAT_MBYTE
+	    converted = FALSE;
+	    if (virp->vir_conv.vc_type != CONV_NONE && *s != NUL)
+	    {
+		sconv = string_convert(&virp->vir_conv, s, NULL);
+		if (sconv != NULL)
+		{
+		    if (s == buf)
+			vim_free(s);
+		    s = sconv;
+		    buf = s;
+		    converted = TRUE;
+		}
+	    }
+#endif
+	    /* Need to copy in allocated memory if the string wasn't allocated
+	     * above and we did allocate before, thus vir_line may change. */
 	    if (s != buf && allocated)
 		s = vim_strsave(s);
 	    values[count].bv_string = s;
 	    values[count].bv_type = BVAL_STRING;
 	    values[count].bv_len = len;
-	    values[count].bv_allocated = allocated;
+	    values[count].bv_allocated = allocated
+#ifdef FEAT_MBYTE
+					    || converted
+#endif
+						;
 	    ++count;
 	    if (nextp != NULL)
 	    {
