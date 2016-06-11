@@ -6471,6 +6471,7 @@ merge_history(int type)
 	vim_free(history[type][i].hisstr);
     vim_free(history[type]);
     history[type] = new_hist;
+    vim_free(tot_hist);
 }
 
 /*

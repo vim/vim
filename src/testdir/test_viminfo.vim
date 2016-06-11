@@ -201,3 +201,22 @@ func Test_viminfo_encoding()
 
   call delete('Xviminfo')
 endfunc
+
+func Test_viminfo_bad_syntax()
+  let lines = []
+  call add(lines, '|<')  " empty continuation line
+  call add(lines, '|234234234234234324,nothing')
+  call add(lines, '|1+"no comma"')
+  call add(lines, '|1,2,3,4,5,6,7')  " too many items
+  call add(lines, '|1,"string version"')
+  call add(lines, '|1,>x') " bad continuation line
+  call add(lines, '|1,"x') " missing quote
+  call add(lines, '|1,"x\') " trailing backslash
+  call add(lines, '|1,,,,') "trailing comma
+  call add(lines, '|1,>234') " trailing continuation line
+  call writefile(lines, 'Xviminfo')
+  call assert_fails('rviminfo Xviminfo', 'E685:')
+
+  call delete('Xviminfo')
+endfunc
+

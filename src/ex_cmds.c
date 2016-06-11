@@ -2589,13 +2589,18 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 		++p;
 		len = getdigits(&p);
 		buf = alloc((int)(len + 1));
+		if (buf == NULL)
+		    return count;
 		p = buf;
 		for (todo = len; todo > 0; todo -= n)
 		{
 		    if (viminfo_readline(virp) || virp->vir_line[0] != '|'
 						  || virp->vir_line[1] != '<')
+		    {
 			/* file was truncated or garbled */
-			return 0;
+			vim_free(buf);
+			return count;
+		    }
 		    /* Get length of text, excluding |< and NL chars. */
 		    n = STRLEN(virp->vir_line);
 		    while (n > 0 && (virp->vir_line[n - 1] == NL
@@ -2623,7 +2628,7 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 		if (viminfo_readline(virp) || virp->vir_line[0] != '|'
 					      || virp->vir_line[1] != '<')
 		    /* file was truncated or garbled */
-		    return 0;
+		    return count;
 		p = virp->vir_line + 2;
 	    }
 	}
