@@ -5408,20 +5408,6 @@ static char *(history_names[]) =
     NULL
 };
 
-/*
- * Return the current time in seconds.  Calls time(), unless test_settime()
- * was used.
- */
-    static time_t
-vim_time(void)
-{
-#ifdef FEAT_EVAL
-    return time_for_testing == 0 ? time(NULL) : time_for_testing;
-#else
-    return time(NULL);
-#endif
-}
-
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the possible first
@@ -6280,34 +6266,34 @@ read_viminfo_history(vir_T *virp, int writing)
  */
     void
 handle_viminfo_history(
-	bval_T	*values,
-	int	count,
-	int	writing)
+	garray_T    *values,
+	int	    writing)
 {
     int		type;
     long_u	len;
     char_u	*val;
     char_u	*p;
+    bval_T	*vp = (bval_T *)values->ga_data;
 
     /* Check the format:
      * |{bartype},{histtype},{timestamp},{separator},"text" */
-    if (count < 4
-	    || values[0].bv_type != BVAL_NR
-	    || values[1].bv_type != BVAL_NR
-	    || (values[2].bv_type != BVAL_NR && values[2].bv_type != BVAL_EMPTY)
-	    || values[3].bv_type != BVAL_STRING)
+    if (values->ga_len < 4
+	    || vp[0].bv_type != BVAL_NR
+	    || vp[1].bv_type != BVAL_NR
+	    || (vp[2].bv_type != BVAL_NR && vp[2].bv_type != BVAL_EMPTY)
+	    || vp[3].bv_type != BVAL_STRING)
 	return;
 
-    type = values[0].bv_nr;
+    type = vp[0].bv_nr;
     if (type >= HIST_COUNT)
 	return;
     if (viminfo_hisidx[type] < viminfo_hislen[type])
     {
-	val = values[3].bv_string;
+	val = vp[3].bv_string;
 	if (val != NULL && *val != NUL)
 	{
-	    int sep = type == HIST_SEARCH && values[2].bv_type == BVAL_NR
-						      ? values[2].bv_nr : NUL;
+	    int sep = type == HIST_SEARCH && vp[2].bv_type == BVAL_NR
+						      ? vp[2].bv_nr : NUL;
 	    int idx;
 	    int overwrite = FALSE;
 
@@ -6329,12 +6315,12 @@ handle_viminfo_history(
 		if (!overwrite)
 		{
 		    /* Need to re-allocate to append the separator byte. */
-		    len = values[3].bv_len;
+		    len = vp[3].bv_len;
 		    p = lalloc(len + 2, TRUE);
 		}
 		if (p != NULL)
 		{
-		    viminfo_history[type][idx].time_set = values[1].bv_nr;
+		    viminfo_history[type][idx].time_set = vp[1].bv_nr;
 		    if (!overwrite)
 		    {
 			mch_memmove(p, val, (size_t)len + 1);

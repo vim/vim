@@ -1750,7 +1750,7 @@ append_redir(
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
 static int no_viminfo(void);
-static int read_viminfo_barline(vir_T *virp, int got_encoding, int writing);
+static int read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing);
 static void write_viminfo_version(FILE *fp_out);
 static void write_viminfo_barlines(vir_T *virp, FILE *fp_out);
 static int  viminfo_errcnt;
@@ -2164,6 +2164,10 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
     {
 	if (flags & VIF_WANT_INFO)
 	{
+	    /* Registers are read and newer ones are used when writing. */
+	    if (fp_out != NULL)
+		prepare_viminfo_registers();
+
 	    eof = read_viminfo_up_to_marks(&vir,
 					 flags & VIF_FORCEIT, fp_out != NULL);
 	    merge = TRUE;
@@ -2191,6 +2195,7 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 	write_viminfo_history(fp_out, merge);
 #endif
 	write_viminfo_registers(fp_out);
+	finish_viminfo_registers();
 #ifdef FEAT_EVAL
 	write_viminfo_varlist(fp_out);
 #endif
@@ -2229,6 +2234,7 @@ read_viminfo_up_to_marks(
 #ifdef FEAT_CMDHIST
     prepare_viminfo_history(forceit ? 9999 : 0, writing);
 #endif
+
     eof = viminfo_readline(virp);
     while (!eof && virp->vir_line[0] != '>')
     {
@@ -2246,7 +2252,8 @@ read_viminfo_up_to_marks(
 		eof = viminfo_readline(virp);
 		break;
 	    case '|':
-		eof = read_viminfo_barline(virp, got_encoding, writing);
+		eof = read_viminfo_barline(virp, got_encoding,
+							    forceit, writing);
 		break;
 	    case '*': /* "*encoding=value" */
 		got_encoding = TRUE;
@@ -2263,7 +2270,15 @@ read_viminfo_up_to_marks(
 		eof = read_viminfo_bufferlist(virp, writing);
 		break;
 	    case '"':
-		eof = read_viminfo_register(virp, forceit);
+		/* When registers are in bar lines skip the old style register
+		 * lines. */
+		if (virp->vir_version < VIMINFO_VERSION_WITH_REGISTERS)
+		    eof = read_viminfo_register(virp, forceit);
+		else
+		    do {
+			eof = viminfo_readline(virp);
+		    } while (!eof && (virp->vir_line[0] == TAB
+						|| virp->vir_line[0] == '<'));
 		break;
 	    case '/':	    /* Search string */
 	    case '&':	    /* Substitute search string */
@@ -2527,20 +2542,20 @@ barline_writestring(FILE *fd, char_u *s, int remaining_start)
 	}
     }
     putc('"', fd);
-    return remaining;
+    return remaining - 2;
 }
 
 /*
  * Parse a viminfo line starting with '|'.
- * Put each decoded value in "values" and return the number of values found.
+ * Add each decoded value to "values".
  */
-    static int
-barline_parse(vir_T *virp, char_u *text, bval_T *values)
+    static void
+barline_parse(vir_T *virp, char_u *text, garray_T *values)
 {
     char_u  *p = text;
     char_u  *nextp = NULL;
     char_u  *buf = NULL;
-    int	    count = 0;
+    bval_T  *value;
     int	    i;
     int	    allocated = FALSE;
 #ifdef FEAT_MBYTE
@@ -2550,27 +2565,27 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 
     while (*p == ',')
     {
-	if (count == BVAL_MAX)
-	{
-	    EMSG2(e_intern2, "barline_parse()");
-	    break;
-	}
 	++p;
+	if (ga_grow(values, 1) == FAIL)
+	    break;
+	value = (bval_T *)(values->ga_data) + values->ga_len;
 
 	if (*p == '>')
 	{
-	    /* Need to read a continuation line.  Need to put strings in
-	     * allocated memory, because virp->vir_line is overwritten. */
+	    /* Need to read a continuation line.  Put strings in allocated
+	     * memory, because virp->vir_line is overwritten. */
 	    if (!allocated)
 	    {
-		for (i = 0; i < count; ++i)
-		    if (values[i].bv_type == BVAL_STRING
-						   && !values[i].bv_allocated)
+		for (i = 0; i < values->ga_len; ++i)
+		{
+		    bval_T  *vp = (bval_T *)(values->ga_data) + i;
+
+		    if (vp->bv_type == BVAL_STRING && !vp->bv_allocated)
 		    {
-			values[i].bv_string = vim_strnsave(
-				       values[i].bv_string, values[i].bv_len);
-			values[i].bv_allocated = TRUE;
+			vp->bv_string = vim_strnsave(vp->bv_string, vp->bv_len);
+			vp->bv_allocated = TRUE;
 		    }
+		}
 		allocated = TRUE;
 	    }
 
@@ -2590,7 +2605,7 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 		len = getdigits(&p);
 		buf = alloc((int)(len + 1));
 		if (buf == NULL)
-		    return count;
+		    return;
 		p = buf;
 		for (todo = len; todo > 0; todo -= n)
 		{
@@ -2599,7 +2614,7 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 		    {
 			/* file was truncated or garbled */
 			vim_free(buf);
-			return count;
+			return;
 		    }
 		    /* Get length of text, excluding |< and NL chars. */
 		    n = STRLEN(virp->vir_line);
@@ -2628,16 +2643,16 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 		if (viminfo_readline(virp) || virp->vir_line[0] != '|'
 					      || virp->vir_line[1] != '<')
 		    /* file was truncated or garbled */
-		    return count;
+		    return;
 		p = virp->vir_line + 2;
 	    }
 	}
 
 	if (isdigit(*p))
 	{
-	    values[count].bv_type = BVAL_NR;
-	    values[count].bv_nr = getdigits(&p);
-	    ++count;
+	    value->bv_type = BVAL_NR;
+	    value->bv_nr = getdigits(&p);
+	    ++values->ga_len;
 	}
 	else if (*p == '"')
 	{
@@ -2649,7 +2664,7 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 	    while (*p != '"')
 	    {
 		if (*p == NL || *p == NUL)
-		    return count;  /* syntax error, drop the value */
+		    return;  /* syntax error, drop the value */
 		if (*p == '\\')
 		{
 		    ++p;
@@ -2662,6 +2677,7 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 		else
 		    s[len++] = *p++;
 	    }
+	    ++p;
 	    s[len] = NUL;
 
 #ifdef FEAT_MBYTE
@@ -2683,15 +2699,15 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 	     * above and we did allocate before, thus vir_line may change. */
 	    if (s != buf && allocated)
 		s = vim_strsave(s);
-	    values[count].bv_string = s;
-	    values[count].bv_type = BVAL_STRING;
-	    values[count].bv_len = len;
-	    values[count].bv_allocated = allocated
+	    value->bv_string = s;
+	    value->bv_type = BVAL_STRING;
+	    value->bv_len = len;
+	    value->bv_allocated = allocated
 #ifdef FEAT_MBYTE
 					    || converted
 #endif
 						;
-	    ++count;
+	    ++values->ga_len;
 	    if (nextp != NULL)
 	    {
 		/* values following a long string */
@@ -2701,23 +2717,21 @@ barline_parse(vir_T *virp, char_u *text, bval_T *values)
 	}
 	else if (*p == ',')
 	{
-	    values[count].bv_type = BVAL_EMPTY;
-	    ++count;
+	    value->bv_type = BVAL_EMPTY;
+	    ++values->ga_len;
 	}
 	else
 	    break;
     }
-
-    return count;
 }
 
     static int
-read_viminfo_barline(vir_T *virp, int got_encoding, int writing)
+read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
 {
     char_u	*p = virp->vir_line + 1;
     int		bartype;
-    bval_T	values[BVAL_MAX];
-    int		count = 0;
+    garray_T	values;
+    bval_T	*vp;
     int		i;
 
     /* The format is: |{bartype},{value},...
@@ -2737,6 +2751,7 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int writing)
     }
     else
     {
+	ga_init2(&values, sizeof(bval_T), 20);
 	bartype = getdigits(&p);
 	switch (bartype)
 	{
@@ -2746,15 +2761,21 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int writing)
 		 * doesn't understand the version. */
 		if (!got_encoding)
 		{
-		    count = barline_parse(virp, p, values);
-		    if (count > 0 && values[0].bv_type == BVAL_NR)
-			virp->vir_version = values[0].bv_nr;
+		    barline_parse(virp, p, &values);
+		    vp = (bval_T *)values.ga_data;
+		    if (values.ga_len > 0 && vp->bv_type == BVAL_NR)
+			virp->vir_version = vp->bv_nr;
 		}
 		break;
 
 	    case BARTYPE_HISTORY:
-		count = barline_parse(virp, p, values);
-		handle_viminfo_history(values, count, writing);
+		barline_parse(virp, p, &values);
+		handle_viminfo_history(&values, writing);
+		break;
+
+	    case BARTYPE_REGISTER:
+		barline_parse(virp, p, &values);
+		handle_viminfo_register(&values, force);
 		break;
 
 	    default:
@@ -2762,11 +2783,14 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int writing)
 		if (writing)
 		    ga_add_string(&virp->vir_barlines, virp->vir_line);
 	}
+	for (i = 0; i < values.ga_len; ++i)
+	{
+	    vp = (bval_T *)values.ga_data + i;
+	    if (vp->bv_type == BVAL_STRING && vp->bv_allocated)
+		vim_free(vp->bv_string);
+	}
+	ga_clear(&values);
     }
-
-    for (i = 0; i < count; ++i)
-	if (values[i].bv_type == BVAL_STRING && values[i].bv_allocated)
-	    vim_free(values[i].bv_string);
 
     return viminfo_readline(virp);
 }
@@ -2793,6 +2817,22 @@ write_viminfo_barlines(vir_T *virp, FILE *fp_out)
     }
 }
 #endif /* FEAT_VIMINFO */
+
+#if defined(FEAT_VIMINFO) || defined(PROTO)
+/*
+ * Return the current time in seconds.  Calls time(), unless test_settime()
+ * was used.
+ */
+    time_t
+vim_time(void)
+{
+# ifdef FEAT_EVAL
+    return time_for_testing == 0 ? time(NULL) : time_for_testing;
+# else
+    return time(NULL);
+# endif
+}
+#endif
 
 /*
  * Implementation of ":fixdel", also used by get_stty().

@@ -50,19 +50,24 @@
 #endif
 
 /*
- * Each yank register is an array of pointers to lines.
+ * Each yank register has an array of pointers to lines.
  */
-static struct yankreg
+typedef struct
 {
     char_u	**y_array;	/* pointer to array of line pointers */
     linenr_T	y_size;		/* number of lines in y_array */
     char_u	y_type;		/* MLINE, MCHAR or MBLOCK */
     colnr_T	y_width;	/* only set if y_type == MBLOCK */
-} y_regs[NUM_REGISTERS];
+#ifdef FEAT_VIMINFO
+    time_t	y_time_set;
+#endif
+} yankreg_T;
 
-static struct yankreg	*y_current;	    /* ptr to current yankreg */
+static yankreg_T	y_regs[NUM_REGISTERS];
+
+static yankreg_T	*y_current;	    /* ptr to current yankreg */
 static int		y_append;	    /* TRUE when appending */
-static struct yankreg	*y_previous = NULL; /* ptr to last written yankreg */
+static yankreg_T	*y_previous = NULL; /* ptr to last written yankreg */
 
 /*
  * structure used by block_prep, op_delete and op_yank for blockwise operators
@@ -104,7 +109,7 @@ static void	free_yank(long);
 static void	free_yank_all(void);
 static int	yank_copy_line(struct block_def *bd, long y_idx);
 #ifdef FEAT_CLIPBOARD
-static void	copy_yank_reg(struct yankreg *reg);
+static void	copy_yank_reg(yankreg_T *reg);
 static void	may_set_selection(void);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
@@ -114,7 +119,7 @@ static char_u	*skip_comment(char_u *line, int process, int include_space, int *i
 static void	block_prep(oparg_T *oap, struct block_def *, linenr_T, int);
 static int	do_addsub(int op_type, pos_T *pos, int length, linenr_T Prenum1);
 #if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
-static void	str_to_reg(struct yankreg *y_ptr, int yank_type, char_u *str, long len, long blocklen, int str_list);
+static void	str_to_reg(yankreg_T *y_ptr, int yank_type, char_u *str, long len, long blocklen, int str_list);
 #endif
 static int	ends_in_white(linenr_T lnum);
 #ifdef FEAT_COMMENTS
@@ -964,8 +969,8 @@ get_register(
     int		name,
     int		copy)	/* make a copy, if FALSE make register empty. */
 {
-    struct yankreg	*reg;
-    int			i;
+    yankreg_T	*reg;
+    int		i;
 
 #ifdef FEAT_CLIPBOARD
     /* When Visual area changed, may have to update selection.  Obtain the
@@ -985,7 +990,7 @@ get_register(
 #endif
 
     get_yank_register(name, 0);
-    reg = (struct yankreg *)alloc((unsigned)sizeof(struct yankreg));
+    reg = (yankreg_T *)alloc((unsigned)sizeof(yankreg_T));
     if (reg != NULL)
     {
 	*reg = *y_current;
@@ -1017,7 +1022,7 @@ put_register(int name, void *reg)
 {
     get_yank_register(name, 0);
     free_yank_all();
-    *y_current = *(struct yankreg *)reg;
+    *y_current = *(yankreg_T *)reg;
     vim_free(reg);
 
 #ifdef FEAT_CLIPBOARD
@@ -1029,10 +1034,10 @@ put_register(int name, void *reg)
     void
 free_register(void *reg)
 {
-    struct yankreg tmp;
+    yankreg_T tmp;
 
     tmp = *y_current;
-    *y_current = *(struct yankreg *)reg;
+    *y_current = *(yankreg_T *)reg;
     free_yank_all();
     vim_free(reg);
     *y_current = tmp;
@@ -1064,7 +1069,7 @@ do_record(int c)
 {
     char_u	    *p;
     static int	    regname;
-    struct yankreg  *old_y_previous, *old_y_current;
+    yankreg_T	    *old_y_previous, *old_y_current;
     int		    retval;
 
     if (Recording == FALSE)	    /* start recording */
@@ -1164,6 +1169,9 @@ stuff_yank(int regname, char_u *p)
 	y_current->y_array[0] = p;
 	y_current->y_size = 1;
 	y_current->y_type = MCHAR;  /* used to be MLINE, why? */
+#ifdef FEAT_VIMINFO
+	y_current->y_time_set = vim_time();
+#endif
     }
     return OK;
 }
@@ -2907,8 +2915,8 @@ free_yank_all(void)
 op_yank(oparg_T *oap, int deleting, int mess)
 {
     long		y_idx;		/* index in y_array[] */
-    struct yankreg	*curr;		/* copy of y_current */
-    struct yankreg	newreg;		/* new yank register when appending */
+    yankreg_T		*curr;		/* copy of y_current */
+    yankreg_T		newreg;		/* new yank register when appending */
     char_u		**new_ptr;
     linenr_T		lnum;		/* current line number */
     long		j;
@@ -2970,12 +2978,14 @@ op_yank(oparg_T *oap, int deleting, int mess)
     y_current->y_width = 0;
     y_current->y_array = (char_u **)lalloc_clear((long_u)(sizeof(char_u *) *
 							    yanklines), TRUE);
-
     if (y_current->y_array == NULL)
     {
 	y_current = curr;
 	return FAIL;
     }
+#ifdef FEAT_VIMINFO
+    y_current->y_time_set = vim_time();
+#endif
 
     y_idx = 0;
     lnum = oap->start.lnum;
@@ -3102,6 +3112,9 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    new_ptr[j] = curr->y_array[j];
 	vim_free(curr->y_array);
 	curr->y_array = new_ptr;
+#ifdef FEAT_VIMINFO
+	curr->y_time_set = vim_time();
+#endif
 
 	if (yanktype == MLINE)	/* MLINE overrides MCHAR and MBLOCK */
 	    curr->y_type = MLINE;
@@ -3252,10 +3265,10 @@ yank_copy_line(struct block_def *bd, long y_idx)
  * Make a copy of the y_current register to register "reg".
  */
     static void
-copy_yank_reg(struct yankreg *reg)
+copy_yank_reg(yankreg_T *reg)
 {
-    struct yankreg	*curr = y_current;
-    long		j;
+    yankreg_T	*curr = y_current;
+    long	j;
 
     y_current = reg;
     free_yank_all();
@@ -4013,7 +4026,9 @@ preprocs_left(void)
 }
 #endif
 
-/* Return the character name of the register with the given number */
+/*
+ * Return the character name of the register with the given number.
+ */
     int
 get_register_name(int num)
 {
@@ -4053,15 +4068,15 @@ get_register_name(int num)
     void
 ex_display(exarg_T *eap)
 {
-    int			i, n;
-    long		j;
-    char_u		*p;
-    struct yankreg	*yb;
-    int			name;
-    int			attr;
-    char_u		*arg = eap->arg;
+    int		i, n;
+    long	j;
+    char_u	*p;
+    yankreg_T	*yb;
+    int		name;
+    int		attr;
+    char_u	*arg = eap->arg;
 #ifdef FEAT_MBYTE
-    int			clen;
+    int		clen;
 #else
 # define clen 1
 #endif
@@ -5794,6 +5809,42 @@ theend:
 }
 
 #ifdef FEAT_VIMINFO
+
+static yankreg_T *y_read_regs = NULL;
+
+#define REG_PREVIOUS 1
+#define REG_EXEC 2
+
+/*
+ * Prepare for reading viminfo registers when writing viminfo later.
+ */
+    void
+prepare_viminfo_registers()
+{
+     y_read_regs = (yankreg_T *)alloc_clear(NUM_REGISTERS
+						    * (int)sizeof(yankreg_T));
+}
+
+    void
+finish_viminfo_registers()
+{
+    int		i;
+    int		j;
+
+    if (y_read_regs != NULL)
+    {
+	for (i = 0; i < NUM_REGISTERS; ++i)
+	    if (y_read_regs[i].y_array != NULL)
+	    {
+		for (j = 0; j < y_read_regs[i].y_size; j++)
+		    vim_free(y_read_regs[i].y_array[j]);
+		vim_free(y_read_regs[i].y_array);
+	    }
+	vim_free(y_read_regs);
+	y_read_regs = NULL;
+    }
+}
+
     int
 read_viminfo_register(vir_T *virp, int force)
 {
@@ -5900,6 +5951,7 @@ read_viminfo_register(vir_T *virp, int force)
 	y_current->y_type = new_type;
 	y_current->y_width = new_width;
 	y_current->y_size = size;
+	y_current->y_time_set = 0;
 	if (size == 0)
 	{
 	    y_current->y_array = NULL;
@@ -5929,16 +5981,106 @@ read_viminfo_register(vir_T *virp, int force)
     return eof;
 }
 
+/*
+ * Accept a new style register line from the viminfo, store it when it's new.
+ */
+    void
+handle_viminfo_register(garray_T *values, int force)
+{
+    bval_T	*vp = (bval_T *)values->ga_data;
+    int		flags;
+    int		name;
+    int		type;
+    int		linecount;
+    int		width;
+    time_t	timestamp;
+    yankreg_T	*y_ptr;
+    int		i;
+
+    /* Check the format:
+     * |{bartype},{flags},{name},{type},
+     *      {linecount},{width},{timestamp},"line1","line2"
+     */
+    if (values->ga_len < 6
+	    || vp[0].bv_type != BVAL_NR
+	    || vp[1].bv_type != BVAL_NR
+	    || vp[2].bv_type != BVAL_NR
+	    || vp[3].bv_type != BVAL_NR
+	    || vp[4].bv_type != BVAL_NR
+	    || vp[5].bv_type != BVAL_NR)
+	return;
+    flags = vp[0].bv_nr;
+    name = vp[1].bv_nr;
+    if (name < 0 || name > NUM_REGISTERS)
+	return;
+    type = vp[2].bv_nr;
+    if (type != MCHAR && type != MLINE && type != MBLOCK)
+	return;
+    linecount = vp[3].bv_nr;
+    if (values->ga_len < 6 + linecount)
+	return;
+    width = vp[4].bv_nr;
+    if (width < 0)
+	return;
+
+    if (y_read_regs != NULL)
+	/* Reading viminfo for merging and writing.  Store the register
+	 * content, don't update the current registers. */
+	y_ptr = &y_read_regs[name];
+    else
+	y_ptr = &y_regs[name];
+
+    /* Do not overwrite unless forced or the timestamp is newer. */
+    timestamp = (time_t)vp[5].bv_nr;
+    if (y_ptr->y_array != NULL && !force
+			 && (timestamp == 0 || y_ptr->y_time_set > timestamp))
+	return;
+
+    for (i = 0; i < y_ptr->y_size; i++)
+	vim_free(y_ptr->y_array[i]);
+    vim_free(y_ptr->y_array);
+
+    if (y_read_regs == NULL)
+    {
+	if (flags & REG_PREVIOUS)
+	    y_previous = y_ptr;
+	if ((flags & REG_EXEC) && (force || execreg_lastc == NUL))
+	    execreg_lastc = get_register_name(name);
+    }
+    y_ptr->y_type = type;
+    y_ptr->y_width = width;
+    y_ptr->y_size = linecount;
+    y_ptr->y_time_set = timestamp;
+    if (linecount == 0)
+	y_ptr->y_array = NULL;
+    else
+    {
+	y_ptr->y_array =
+		   (char_u **)alloc((unsigned)(linecount * sizeof(char_u *)));
+	for (i = 0; i < linecount; i++)
+	{
+	    if (vp[i + 6].bv_allocated)
+	    {
+		y_ptr->y_array[i] = vp[i + 6].bv_string;
+		vp[i + 6].bv_string = NULL;
+	    }
+	    else
+		y_ptr->y_array[i] = vim_strsave(vp[i + 6].bv_string);
+	}
+    }
+}
+
     void
 write_viminfo_registers(FILE *fp)
 {
-    int	    i, j;
-    char_u  *type;
-    char_u  c;
-    int	    num_lines;
-    int	    max_num_lines;
-    int	    max_kbyte;
-    long    len;
+    int		i, j;
+    char_u	*type;
+    char_u	c;
+    int		num_lines;
+    int		max_num_lines;
+    int		max_kbyte;
+    long	len;
+    yankreg_T	*y_ptr;
 
     fputs(_("\n# Registers:\n"), fp);
 
@@ -5954,8 +6096,6 @@ write_viminfo_registers(FILE *fp)
 
     for (i = 0; i < NUM_REGISTERS; i++)
     {
-	if (y_regs[i].y_array == NULL)
-	    continue;
 #ifdef FEAT_CLIPBOARD
 	/* Skip '*'/'+' register, we don't want them back next time */
 	if (i == STAR_REGISTER || i == PLUS_REGISTER)
@@ -5966,11 +6106,23 @@ write_viminfo_registers(FILE *fp)
 	if (i == TILDE_REGISTER)
 	    continue;
 #endif
+	/* When reading viminfo for merging and writing: Use the register from
+	 * viminfo if it's newer. */
+	if (y_read_regs != NULL
+		&& y_read_regs[i].y_array != NULL
+		&& (y_regs[i].y_array == NULL ||
+			    y_read_regs[i].y_time_set > y_regs[i].y_time_set))
+	    y_ptr = &y_read_regs[i];
+	else if (y_regs[i].y_array == NULL)
+	    continue;
+	else
+	    y_ptr = &y_regs[i];
+
 	/* Skip empty registers. */
-	num_lines = y_regs[i].y_size;
+	num_lines = y_ptr->y_size;
 	if (num_lines == 0
-		|| (num_lines == 1 && y_regs[i].y_type == MCHAR
-					&& *y_regs[i].y_array[0] == NUL))
+		|| (num_lines == 1 && y_ptr->y_type == MCHAR
+					&& *y_ptr->y_array[0] == NUL))
 	    continue;
 
 	if (max_kbyte > 0)
@@ -5978,12 +6130,12 @@ write_viminfo_registers(FILE *fp)
 	    /* Skip register if there is more text than the maximum size. */
 	    len = 0;
 	    for (j = 0; j < num_lines; j++)
-		len += (long)STRLEN(y_regs[i].y_array[j]) + 1L;
+		len += (long)STRLEN(y_ptr->y_array[j]) + 1L;
 	    if (len > (long)max_kbyte * 1024L)
 		continue;
 	}
 
-	switch (y_regs[i].y_type)
+	switch (y_ptr->y_type)
 	{
 	    case MLINE:
 		type = (char_u *)"LINE";
@@ -5996,7 +6148,7 @@ write_viminfo_registers(FILE *fp)
 		break;
 	    default:
 		sprintf((char *)IObuff, _("E574: Unknown register type %d"),
-							    y_regs[i].y_type);
+							    y_ptr->y_type);
 		emsg(IObuff);
 		type = (char_u *)"LINE";
 		break;
@@ -6007,7 +6159,7 @@ write_viminfo_registers(FILE *fp)
 	fprintf(fp, "\"%c", c);
 	if (c == execreg_lastc)
 	    fprintf(fp, "@");
-	fprintf(fp, "\t%s\t%d\n", type, (int)y_regs[i].y_width);
+	fprintf(fp, "\t%s\t%d\n", type, (int)y_ptr->y_width);
 
 	/* If max_num_lines < 0, then we save ALL the lines in the register */
 	if (max_num_lines > 0 && num_lines > max_num_lines)
@@ -6015,7 +6167,36 @@ write_viminfo_registers(FILE *fp)
 	for (j = 0; j < num_lines; j++)
 	{
 	    putc('\t', fp);
-	    viminfo_writestring(fp, y_regs[i].y_array[j]);
+	    viminfo_writestring(fp, y_ptr->y_array[j]);
+	}
+
+	{
+	    int	    flags = 0;
+	    int	    remaining;
+
+	    /* New style with a bar line. Format:
+	     * |{bartype},{flags},{name},{type},
+	     *      {linecount},{width},{timestamp},"line1","line2"
+	     * flags: REG_PREVIOUS - register is y_previous
+	     *        REG_EXEC - used for @@
+	     */
+	    if (y_previous == &y_regs[i])
+		flags |= REG_PREVIOUS;
+	    if (c == execreg_lastc)
+		flags |= REG_EXEC;
+	    fprintf(fp, "|%d,%d,%d,%d,%d,%d,%ld", BARTYPE_REGISTER, flags,
+		    i, y_ptr->y_type, num_lines, (int)y_ptr->y_width,
+		    (long)y_ptr->y_time_set);
+	    /* 11 chars for type/flags/name/type, 3 * 20 for numbers */
+	    remaining = LSIZE - 71;
+	    for (j = 0; j < num_lines; j++)
+	    {
+		putc(',', fp);
+		--remaining;
+		remaining = barline_writestring(fp, y_ptr->y_array[j],
+								   remaining);
+	    }
+	    putc('\n', fp);
 	}
     }
 }
@@ -6133,7 +6314,7 @@ x11_export_final_selection(void)
     void
 clip_free_selection(VimClipboard *cbd)
 {
-    struct yankreg *y_ptr = y_current;
+    yankreg_T *y_ptr = y_current;
 
     if (cbd == &clip_plus)
 	y_current = &y_regs[PLUS_REGISTER];
@@ -6150,7 +6331,7 @@ clip_free_selection(VimClipboard *cbd)
     void
 clip_get_selection(VimClipboard *cbd)
 {
-    struct yankreg *old_y_previous, *old_y_current;
+    yankreg_T	*old_y_previous, *old_y_current;
     pos_T	old_cursor;
     pos_T	old_visual;
     int		old_visual_mode;
@@ -6215,7 +6396,7 @@ clip_yank_selection(
     long	len,
     VimClipboard *cbd)
 {
-    struct yankreg *y_ptr;
+    yankreg_T *y_ptr;
 
     if (cbd == &clip_plus)
 	y_ptr = &y_regs[PLUS_REGISTER];
@@ -6239,7 +6420,7 @@ clip_convert_selection(char_u **str, long_u *len, VimClipboard *cbd)
     int		lnum;
     int		i, j;
     int_u	eolsize;
-    struct yankreg *y_ptr;
+    yankreg_T	*y_ptr;
 
     if (cbd == &clip_plus)
 	y_ptr = &y_regs[PLUS_REGISTER];
@@ -6322,7 +6503,7 @@ may_set_selection(void)
     void
 dnd_yank_drag_data(char_u *str, long len)
 {
-    struct yankreg *curr;
+    yankreg_T *curr;
 
     curr = y_current;
     y_current = &y_regs[TILDE_REGISTER];
@@ -6518,11 +6699,11 @@ get_reg_contents(int regname, int flags)
 
     static int
 init_write_reg(
-    int		    name,
-    struct yankreg  **old_y_previous,
-    struct yankreg  **old_y_current,
-    int		    must_append,
-    int		    *yank_type UNUSED)
+    int		name,
+    yankreg_T	**old_y_previous,
+    yankreg_T	**old_y_current,
+    int		must_append,
+    int		*yank_type UNUSED)
 {
     if (!valid_yank_reg(name, TRUE))	    /* check for valid reg name */
     {
@@ -6542,9 +6723,9 @@ init_write_reg(
 
     static void
 finish_write_reg(
-    int		    name,
-    struct yankreg  *old_y_previous,
-    struct yankreg  *old_y_current)
+    int		name,
+    yankreg_T	*old_y_previous,
+    yankreg_T	*old_y_current)
 {
 # ifdef FEAT_CLIPBOARD
     /* Send text of clipboard register to the clipboard. */
@@ -6585,7 +6766,7 @@ write_reg_contents_lst(
     int		yank_type,
     long	block_len)
 {
-    struct yankreg  *old_y_previous, *old_y_current;
+    yankreg_T  *old_y_previous, *old_y_current;
 
     if (name == '/'
 #ifdef FEAT_EVAL
@@ -6630,8 +6811,8 @@ write_reg_contents_ex(
     int		yank_type,
     long	block_len)
 {
-    struct yankreg  *old_y_previous, *old_y_current;
-    long	    len;
+    yankreg_T	*old_y_previous, *old_y_current;
+    long	len;
 
     if (maxlen >= 0)
 	len = maxlen;
@@ -6705,12 +6886,12 @@ write_reg_contents_ex(
  */
     static void
 str_to_reg(
-    struct yankreg	*y_ptr,		/* pointer to yank register */
-    int			yank_type,	/* MCHAR, MLINE, MBLOCK, MAUTO */
-    char_u		*str,		/* string to put in register */
-    long		len,		/* length of string */
-    long		blocklen,	/* width of Visual block */
-    int			str_list)	/* TRUE if str is char_u ** */
+    yankreg_T	*y_ptr,		/* pointer to yank register */
+    int		yank_type,	/* MCHAR, MLINE, MBLOCK, MAUTO */
+    char_u	*str,		/* string to put in register */
+    long	len,		/* length of string */
+    long	blocklen,	/* width of Visual block */
+    int		str_list)	/* TRUE if str is char_u ** */
 {
     int		type;			/* MCHAR, MLINE or MBLOCK */
     int		lnum;
@@ -6840,6 +7021,9 @@ str_to_reg(
 	y_ptr->y_width = (blocklen < 0 ? maxlen - 1 : blocklen);
     else
 	y_ptr->y_width = 0;
+#ifdef FEAT_VIMINFO
+    y_ptr->y_time_set = vim_time();
+#endif
 }
 #endif /* FEAT_CLIPBOARD || FEAT_EVAL || PROTO */
 
