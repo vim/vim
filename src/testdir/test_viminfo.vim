@@ -17,9 +17,9 @@ function Test_read_and_write()
   let lines = readfile('Xviminfo')
   let done = 0
   for line in lines
-    if line[0] == '|'
+    if line[0] == '|' && line !~ '^|3,'
       if done == 0
-	call assert_equal('|1,2', line)
+	call assert_equal('|1,3', line)
       elseif done == 1
 	call assert_equal('|copied as-is', line)
       elseif done == 2
@@ -180,6 +180,43 @@ func Test_cmdline_history_order()
   call delete('Xviminfo')
 endfunc
 
+func Test_viminfo_registers()
+  call test_settime(8)
+  call setreg('a', "eight", 'c')
+  call test_settime(20)
+  call setreg('b', ["twenty", "again"], 'l')
+  call test_settime(40)
+  call setreg('c', ["four", "agai"], 'b4')
+  let l = []
+  set viminfo='100,<600,s10,h,!,nviminfo
+  for i in range(500)
+    call add(l, 'something')
+  endfor
+  call setreg('d', l, 'l')
+  wviminfo Xviminfo
+
+  call test_settime(10)
+  call setreg('a', '', 'b10')
+  call test_settime(15)
+  call setreg('b', 'drop')
+  call test_settime(50)
+  call setreg('c', 'keep', 'l')
+  call test_settime(30)
+  call setreg('d', 'drop', 'l')
+  rviminfo Xviminfo
+
+  call assert_equal("", getreg('a'))
+  call assert_equal("\<C-V>10", getregtype('a'))
+  call assert_equal("twenty\nagain\n", getreg('b'))
+  call assert_equal("V", getregtype('b'))
+  call assert_equal("keep\n", getreg('c'))
+  call assert_equal("V", getregtype('c'))
+  call assert_equal(l, getreg('d', 1, 1))
+  call assert_equal("V", getregtype('d'))
+
+  call delete('Xviminfo')
+endfunc
+
 func Test_viminfo_encoding()
   if !has('multi_byte')
     return
@@ -215,7 +252,7 @@ func Test_viminfo_bad_syntax()
   call add(lines, '|1,,,,') "trailing comma
   call add(lines, '|1,>234') " trailing continuation line
   call writefile(lines, 'Xviminfo')
-  call assert_fails('rviminfo Xviminfo', 'E685:')
+  rviminfo Xviminfo
 
   call delete('Xviminfo')
 endfunc
