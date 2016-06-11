@@ -1408,9 +1408,9 @@ Now we can instantiate a Dutch translation object: >
 And a German translator: >
 
 	:let uk2de = copy(transdict)
-	:let uk2de.words = {'one': 'ein', 'two': 'zwei', 'three': 'drei'}
+	:let uk2de.words = {'one': 'eins', 'two': 'zwei', 'three': 'drei'}
 	:echo uk2de.translate('three one')
-<	drei ein ~
+<	drei eins ~
 
 You see that the copy() function is used to make a copy of the "transdict"
 Dictionary and then the copy is changed to add the words.  The original
