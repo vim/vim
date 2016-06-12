@@ -2074,6 +2074,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :cl	quickfix.txt	/*:cl*
 :cla	quickfix.txt	/*:cla*
 :clast	quickfix.txt	/*:clast*
+:cle	motion.txt	/*:cle*
+:clearjumps	motion.txt	/*:clearjumps*
 :clist	quickfix.txt	/*:clist*
 :clo	windows.txt	/*:clo*
 :close	windows.txt	/*:close*
@@ -3360,6 +3362,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <line1>	map.txt	/*<line1>*
 <line2>	map.txt	/*<line2>*
 <lt>	intro.txt	/*<lt>*
+<mods>	map.txt	/*<mods>*
 <nomodeline>	autocmd.txt	/*<nomodeline>*
 <q-args>	map.txt	/*<q-args>*
 <reg>	map.txt	/*<reg>*
@@ -4451,6 +4454,7 @@ E925	quickfix.txt	/*E925*
 E926	quickfix.txt	/*E926*
 E927	eval.txt	/*E927*
 E928	eval.txt	/*E928*
+E929	starting.txt	/*E929*
 E93	windows.txt	/*E93*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
@@ -5244,6 +5248,7 @@ channel-callback	channel.txt	/*channel-callback*
 channel-close	channel.txt	/*channel-close*
 channel-commands	channel.txt	/*channel-commands*
 channel-demo	channel.txt	/*channel-demo*
+channel-functions	usr_41.txt	/*channel-functions*
 channel-mode	channel.txt	/*channel-mode*
 channel-more	channel.txt	/*channel-more*
 channel-open	channel.txt	/*channel-open*
@@ -6894,6 +6899,7 @@ job-control	channel.txt	/*job-control*
 job-err_cb	channel.txt	/*job-err_cb*
 job-err_io	channel.txt	/*job-err_io*
 job-exit_cb	channel.txt	/*job-exit_cb*
+job-functions	usr_41.txt	/*job-functions*
 job-in_io	channel.txt	/*job-in_io*
 job-options	channel.txt	/*job-options*
 job-out_cb	channel.txt	/*job-out_cb*
@@ -8622,6 +8628,7 @@ test_null_job()	eval.txt	/*test_null_job()*
 test_null_list()	eval.txt	/*test_null_list()*
 test_null_partial()	eval.txt	/*test_null_partial()*
 test_null_string()	eval.txt	/*test_null_string()*
+test_settime()	eval.txt	/*test_settime()*
 testing-variable	eval.txt	/*testing-variable*
 tex-cchar	syntax.txt	/*tex-cchar*
 tex-cole	syntax.txt	/*tex-cole*
@@ -8652,6 +8659,7 @@ throw-from-catch	eval.txt	/*throw-from-catch*
 throw-variables	eval.txt	/*throw-variables*
 throwpoint-variable	eval.txt	/*throwpoint-variable*
 time-functions	usr_41.txt	/*time-functions*
+timer-functions	usr_41.txt	/*timer-functions*
 timer_start()	eval.txt	/*timer_start()*
 timer_stop()	eval.txt	/*timer_stop()*
 timestamp	editing.txt	/*timestamp*

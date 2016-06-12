@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2016 Apr 22
+*starting.txt*  For Vim version 7.4.  Last change: 2016 Jun 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1413,6 +1413,29 @@ file (it's actually merged with the existing one, if one exists).  The
 'viminfo' option is a string containing information about what info should be
 stored, and contains limits on how much should be stored (see 'viminfo').
 
+Merging happens in two ways.  Most items that have been changed or set in the
+current Vim session are stored, and what was not changed is filled from what
+is currently in the viminfo file.  For example:
+- Vim session A reads the viminfo, which contains variable START.
+- Vim session B does the same
+- Vim session A sets the variables AAA and BOTH and exits
+- Vim session B sets the variables BBB and BOTH and exits
+Now the viminfo will have:
+   START - it was in the viminfo and wasn't changed in session A or B
+   AAA   - value from session A, session B kept it
+   BBB   - value from session B
+   BOTH  - value from session B, value from session A is lost
+
+For some items a timestamp is used to keep the last changed version.  Here it
+doesn't matter in which sequence Vim sessions exit, the newest item(s) are
+always kept.  This is used for:
+- The command line history.
+- The search string history.
+- The input-line history.
+- Contents of non-empty registers.
+- The jump list
+- File marks
+
 Notes for Unix:
 - The file protection for the viminfo file will be set to prevent other users
   from being able to read it, because it may contain any text or commands that
@@ -1535,14 +1558,14 @@ most of the information will be restored).
 			already set (registers, marks, |v:oldfiles|, etc.)
 			will be overwritten   {not in Vi}
 
-				*:wv* *:wviminfo* *E137* *E138* *E574* *E886*
+			*:wv* *:wviminfo* *E137* *E138* *E574* *E886* *E929*
 :wv[iminfo][!] [file]	Write to viminfo file [file] (default: see above).
 			The information in the file is first read in to make
 			a merge between old and new info.  When [!] is used,
 			the old information is not read first, only the
 			internal info is written.  If 'viminfo' is empty, marks
 			for up to 100 files will be written.
-			When you get error "E138: Can't write viminfo file"
+			When you get error "E929: Too many viminfo temp files"
 			check that no old temp files were left behind (e.g.
 			~/.viminf*) and that you can write in the directory of
 			the .viminfo file.

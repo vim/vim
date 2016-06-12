@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jun 04
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1468,9 +1468,11 @@ v:exception	The value of the exception most recently caught and not
 					*v:false* *false-variable*
 v:false		A Number with value zero. Used to put "false" in JSON.  See
 		|json_encode()|.
-		When used as a string this evaluates to "false". >
+		When used as a string this evaluates to "v:false". >
 			echo v:false
-<			false ~
+<			v:false ~
+		That is so that eval() can parse the string back to the same
+		value.
 
 					*v:fcs_reason* *fcs_reason-variable*
 v:fcs_reason	The reason why the |FileChangedShell| event was triggered.
@@ -1613,17 +1615,21 @@ v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 v:none		An empty String. Used to put an empty item in JSON.  See
 		|json_encode()|.
 		When used as a number this evaluates to zero.
-		When used as a string this evaluates to "none". >
+		When used as a string this evaluates to "v:none". >
 			echo v:none
-<			none ~
+<			v:none ~
+		That is so that eval() can parse the string back to the same
+		value.
 
 					*v:null* *null-variable*
 v:null		An empty String. Used to put "null" in JSON.  See
 		|json_encode()|.
 		When used as a number this evaluates to zero.
-		When used as a string this evaluates to "null". >
+		When used as a string this evaluates to "v:null". >
 			echo v:null
-<			null ~
+<			v:null ~
+		That is so that eval() can parse the string back to the same
+		value.
 
 					*v:oldfiles* *oldfiles-variable*
 v:oldfiles	List of file names that is loaded from the |viminfo| file on
@@ -1796,9 +1802,11 @@ v:throwpoint	The point where the exception most recently caught and not
 						*v:true* *true-variable*
 v:true		A Number with value one. Used to put "true" in JSON.  See
 		|json_encode()|.
-		When used as a string this evaluates to "true". >
+		When used as a string this evaluates to "v:true". >
 			echo v:true
-<			true ~
+<			v:true ~
+		That is so that eval() can parse the string back to the same
+		value.
 						*v:val* *val-variable*
 v:val		Value of the current item of a |List| or |Dictionary|.	Only
 		valid while evaluating the expression used with |map()| and
@@ -2218,6 +2226,7 @@ test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
+test_settime({expr})		none	set current time for testing
 timer_start({time}, {callback} [, {options}])
 				Number	create a timer
 timer_stop({timer})		none	stop a timer
@@ -7275,6 +7284,11 @@ test_null_partial()					*test_null_partial()*
 test_null_string()					*test_null_string()*
 		Return a String that is null. Only useful for testing.
 
+test_settime({expr})					*test_settime()*
+		Set the time Vim uses internally.  Currently only used for
+		timestamps in the history, as they are used in viminfo.
+		{expr} must evaluate to a number.  When the value is zero the
+		normal behavior is restored.
 
 							*timer_start()*
 timer_start({time}, {callback} [, {options}])

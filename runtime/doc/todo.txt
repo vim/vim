@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jun 04
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jun 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,7 +34,22 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Further implement 'barline' in viminfo:
+- jumplist: merge with vi_jumplist.
+- Use timestamp for more items: locations, marks.
+- Docs: lines are copied by Vim since 7.4.1131
+- Check if debug history works.
+
+Problem with setqflist([]): grep 4 times, ":colder 3", setqflist([]) will
+clear the next list, not the current one.  Ramel Eshed, Jun 8.
+
+Patch: Fix drawing background with &termguicolors #805 (Jacob Niehus)
+
 +channel:
+- GUI cursor blinking interrupted when the job output goes to a buffer that is
+  in a window. (Ramel Eshed, 2016 Jun 9)
+- GUI cursor blinking interrupted when there is a status line.  (Ramel Eshed,
+  2016 Jun 9)
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
   minute.  Option to set the droptime.
@@ -48,6 +63,18 @@ not be repeated below, unless there is extra information.
 Later
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
+
+Quickfix improvements for backgroupd building and grepping:
+- Move 'efm' parsing to a separate function.  If 'efm' is the same as last
+  time re-use the fmt_first list.
+- Do not clear "dir_stack", "directory" and "file_stack", "currfile" when
+  using ":addexpr".
+  Move multiline, multiignore, multiscan outside of the function.
+- Add :cbottom, if quickfix window is visible scroll to make the last line
+  visible. Use scroll_cursor_bot(0, FALSE);
+- Add a flag/property/option to quickfix commands and functions to keep a file
+  name as a string and not create a buffer for it? To avoid creating lots of
+  buffers. (Ramel Eshed)
 
 Regexp problems:
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
@@ -95,12 +122,8 @@ Regexp problems:
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
-
-Patch to reduce number of memory allocations for quickfix lines.
-(Yegappan Lakshmanan, 2016 May 22, #831)
-
-User commands: add a <> item to pass on command modifiers, such as ":tab".
-Patch by Yegappan Lakshmanan, 2016 May 22, #829.
+- Search for /\%d0\+  causes error E363 in a file with consecutive NUL
+  characters. (Christian Brabandt, 2016 Jun 7)
 
 jsonencode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
@@ -110,33 +133,10 @@ about /S and /D options (Ken Takata, 2016 Apr 13)
 
 Cursor positioned in the wrong place when editing src/testdir/test_viml.vim.
 
-When using "k" at the hit-enter prompt only get the hit-enter prompt, not
-scrolling up. (Ramel Eshed, 2016 May 25)
-Related patches: Patch 7.4.1603, Patch 7.4.1594 
-Patch by Hirohito Higashi, 2016 May 26.
-
-Patch to make cursor blinking work better with GTK3. (Kazunobu Kuriyama, 2016
-Apr 19)  Need to check this works on Linux.
-Alternative:
-- add gui_restart_blink flag, set when key typed.
-- in gui_mch_start_blink(): continue if possible.
-- in gui_mch_stop_blink(): remember last state.
-
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
 
-Patch to fix escaping special characters for delete(). (tc-0, 2016 Mar 20,
-#700) Test fails on MS-Windows.
-
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
-
-Patch to fix using CTRL-] on "{address}." in help. (Hirohito Higashi, 2016 May
-18, #814)
-
-Can we add a function to parse one line for 'errorformat'?  Like ":caddexpr"
-for one line.
-
-Patch to fix greying popup menu items. (Shane Harper, 2016 May 23, #834)
 
 &t_ut not used with 'termguicolors' is set. (Jacob Niehus, 2016 May 14, #804)
 Patch to fix this, Jacob Niehus, 2016 May 14, #805)
@@ -151,6 +151,11 @@ Patch by Yasuhiro Matsumoto, 2014 Sep 16, update 2016 Apr 17.
 Correction for test, Ken Takata, 2016 May 27.
 
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
+
+":caddexpr" should keep state, so that directory changes can be respected.
+(Luc Hermitte, 2016 Jun 6)
+Don't clear dir_stack and file_stack when returning, do it on entry when not
+adding iterms.  And keep them in qf_list_T.
 
 Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
 13, last version)  Update May 22, #830.
@@ -190,6 +195,9 @@ Possibly wrong value for seq_cur. (Florent Fayolle, 2016 May 15, #806)
 
 Patch to improve map documentation. Issue #799.
 
+Patch for restoring wide characters in the console buffer.
+(Ken Takata, 2016 Jun 7)
+
 We can use '. to go to the last change in the current buffer, but how about
 the last change in any buffer?  Can we use ', (, is next to .)?
 
@@ -224,7 +232,9 @@ When doing "vi buf.md" a BufNew autocommand for *.md is not triggered.
 Because of using the initial buffer? (Dun Peal, 2016 May 12)
 
 Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
-Updated 2016 Feb 10
+Updated 2016 Jun 10, #858
+
+Add redrawtabline command. (Naruhiko Nishino, 2016 Jun 11)
 
 Neovim patch for utfc_ptr2char_len() https://github.com/neovim/neovim/pull/4574
 No test, needs some work to include.
@@ -286,6 +296,9 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
+Patch to add getbufinfo(), gettabinfo() and getwininfo(). (Yegappan
+Lakshmanan, 2016 Apr 2016)  Update Jun 8.
+
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
 
@@ -296,7 +309,7 @@ directory exists. (Sergio Gallelli, 2013 Dec 29)
     when evaluating to non-zero.  Add the "watchadd expr" command, stop when
     the value of the expression changes.  ":watchdel" deletes an item,
     ":watchlist" lists the items. (Charles Campbell)
-Patch by Christian Brabandt, 2016 Feb 1.
+Patch by Christian Brabandt, 2016 Jun 10, #859
 
 If ":bd" also closes a Tab page then the " mark is not set.  (Harm te Hennepe,
 2016 Apr 25, #780)
@@ -305,6 +318,7 @@ Patch to avoid redrawing tabline when the popup menu is visible.
 (Christian Brabandt, 2016 Jan 28)
 
 Patch to add {skip} argument to search(). (Christian Brabandt, 2016 Feb 24)
+Update 2016 Jun 10, #861
 
 Add value "smart" to 'tagcase': ignore case when tag is all lower case.
 Patch from Christian Brabandt, 2016 Mar 30, #712.
@@ -397,7 +411,7 @@ Use v:none.  var == v:none
 
 Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
 24)  Also need a way to get the global arg list?  Update later on Jan 24
-Update Mar 5. Update Apr 7.
+Update Mar 5. Update Apr 7.  Update Jun 5.
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
@@ -577,7 +591,7 @@ Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)
 
 Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
-Update 2016 Jan 31 (email).
+Update 2016 Jun 10, # 857
 
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list
@@ -827,9 +841,6 @@ Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
 May 17: with winlist() and tabpagelist().
 May 19: with local variables.
 May 28: with options
-
-Patch to add getbufinfo(), gettabinfo() and getwininfo(). (Yegappan
-Lakshmanan, 2016 Apr 2016)
 
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
@@ -1315,12 +1326,6 @@ instead of one. (Constantin Pan, 2010 Sep 10)
 Gui menu edit/paste in block mode insert only inserts in one line (Bjorn
 Winckler, 2011 May 11)
 Requires a map mode for Insert mode started from blockwise Visual mode.
-
-Use json format for new items in .viminfo:
-    |["info","any info"]
-    |["text","text text text"
-    |"continuation line"]
-    |["hist",242342342,{"arg":"value"}]
 
 Writing nested List and Dict in viminfo gives error message and can't be read
 back. (Yukihiro Nakadaira, 2010 Nov 13)
