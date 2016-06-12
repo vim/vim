@@ -6448,7 +6448,7 @@ merge_history(int type)
 	else
 	    clear_hist_entry(&new_hist[i]);
     }
-    hisidx[type] = len - 1;
+    hisidx[type] = (i < len ? i : len) - 1;
 
     /* Free what is not kept. */
     for (i = 0; i < viminfo_hisidx[type]; i++)
