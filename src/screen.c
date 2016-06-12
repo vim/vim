@@ -416,7 +416,7 @@ redraw_asap(int type)
  * it belongs. If highlighting was changed a redraw is needed.
  */
     void
-redraw_after_callback()
+redraw_after_callback(void)
 {
     if (State == HITRETURN || State == ASKMORE)
 	; /* do nothing */
@@ -10252,7 +10252,7 @@ unshowmode(int force)
  * Clear the mode message.
  */
     void
-clearmode()
+clearmode(void)
 {
     msg_pos_mode();
     if (Recording)

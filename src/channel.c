@@ -132,7 +132,7 @@ ch_logfile(char_u *fname, char_u *opt)
 }
 
     int
-ch_log_active()
+ch_log_active(void)
 {
     return log_fd != NULL;
 }
@@ -1462,7 +1462,7 @@ channel_buffer_free(buf_T *buf)
  * Write any lines waiting to be written to a channel.
  */
     void
-channel_write_any_lines()
+channel_write_any_lines(void)
 {
     channel_T	*channel;
 
@@ -1653,7 +1653,7 @@ channel_get_all(channel_T *channel, int part)
 }
 
 /*
- * Consume "len" bytes from the head of "channel"/"part".
+ * Consume "len" bytes from the head of "node".
  * Caller must check these bytes are available.
  */
     void
@@ -4495,7 +4495,7 @@ job_set_options(job_T *job, jobopt_T *opt)
  * Called when Vim is exiting: kill all jobs that have the "stoponexit" flag.
  */
     void
-job_stop_on_exit()
+job_stop_on_exit(void)
 {
     job_T	*job;
 
@@ -4509,7 +4509,7 @@ job_stop_on_exit()
  * job_check_ended() should be called once in a while.
  */
     int
-has_pending_job()
+has_pending_job(void)
 {
     job_T	    *job;
 

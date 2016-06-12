@@ -1174,7 +1174,7 @@ timer_callback(timer_T *timer)
  * Return the time in msec until the next timer is due.
  */
     long
-check_due_timer()
+check_due_timer(void)
 {
     timer_T	*timer;
     long	this_due;
