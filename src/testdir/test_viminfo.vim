@@ -17,9 +17,9 @@ function Test_read_and_write()
   let lines = readfile('Xviminfo')
   let done = 0
   for line in lines
-    if line[0] == '|' && line !~ '^|3,'
+    if line[0] == '|' && line !~ '^|[234],'
       if done == 0
-	call assert_equal('|1,3', line)
+	call assert_equal('|1,4', line)
       elseif done == 1
 	call assert_equal('|copied as-is', line)
       elseif done == 2
@@ -214,6 +214,102 @@ func Test_viminfo_registers()
   call assert_equal(l, getreg('d', 1, 1))
   call assert_equal("V", getregtype('d'))
 
+  call delete('Xviminfo')
+endfunc
+
+func Test_viminfo_marks()
+  sp bufa
+  let bufa = bufnr('%')
+  sp bufb
+  let bufb = bufnr('%')
+
+  call test_settime(8)
+  call setpos("'A", [bufa, 1, 1, 0])
+  call test_settime(20)
+  call setpos("'B", [bufb, 9, 1, 0])
+  call setpos("'C", [bufa, 7, 1, 0])
+
+  delmark 0-9
+  call test_settime(25)
+  call setpos("'1", [bufb, 12, 1, 0])
+  call test_settime(35)
+  call setpos("'0", [bufa, 11, 1, 0])
+
+  call test_settime(45)
+  wviminfo Xviminfo
+
+  " Writing viminfo inserts the '0 mark.
+  call assert_equal([bufb, 1, 1, 0], getpos("'0"))
+  call assert_equal([bufa, 11, 1, 0], getpos("'1"))
+  call assert_equal([bufb, 12, 1, 0], getpos("'2"))
+
+  call test_settime(4)
+  call setpos("'A", [bufa, 9, 1, 0])
+  call test_settime(30)
+  call setpos("'B", [bufb, 2, 3, 0])
+  delmark C
+
+  delmark 0-9
+  call test_settime(30)
+  call setpos("'1", [bufb, 22, 1, 0])
+  call test_settime(55)
+  call setpos("'0", [bufa, 21, 1, 0])
+
+  rviminfo Xviminfo
+
+  call assert_equal([bufa, 1, 1, 0], getpos("'A"))
+  call assert_equal([bufb, 2, 3, 0], getpos("'B"))
+  call assert_equal([bufa, 7, 1, 0], getpos("'C"))
+
+  " numbered marks are merged
+  call assert_equal([bufa, 21, 1, 0], getpos("'0"))  " time 55
+  call assert_equal([bufb, 1, 1, 0], getpos("'1"))  " time 45
+  call assert_equal([bufa, 11, 1, 0], getpos("'2")) " time 35
+  call assert_equal([bufb, 22, 1, 0], getpos("'3")) " time 30
+  call assert_equal([bufb, 12, 1, 0], getpos("'4")) " time 25
+
+  call delete('Xviminfo')
+  exe 'bwipe ' . bufa
+  exe 'bwipe ' . bufb
+endfunc
+
+func Test_viminfo_jumplist()
+  split testbuf
+  clearjumps
+  call setline(1, ['time 05', 'time 10', 'time 15', 'time 20', 'time 30', 'last pos'])
+  call cursor(2, 1)
+  call test_settime(10)
+  exe "normal /20\r"
+  call test_settime(20)
+  exe "normal /30\r"
+  call test_settime(30)
+  exe "normal /last pos\r"
+  wviminfo Xviminfo
+
+  clearjumps
+  call cursor(1, 1)
+  call test_settime(5)
+  exe "normal /15\r"
+  call test_settime(15)
+  exe "normal /last pos\r"
+  call test_settime(40)
+  exe "normal ?30\r"
+  rviminfo Xviminfo
+
+  call assert_equal('time 30', getline('.'))
+  exe "normal \<C-O>"
+  call assert_equal('last pos', getline('.'))
+  exe "normal \<C-O>"
+  " duplicate for 'time 30' was removed
+  call assert_equal('time 20', getline('.'))
+  exe "normal \<C-O>"
+  call assert_equal('time 15', getline('.'))
+  exe "normal \<C-O>"
+  call assert_equal('time 10', getline('.'))
+  exe "normal \<C-O>"
+  call assert_equal('time 05', getline('.'))
+
+  bwipe!
   call delete('Xviminfo')
 endfunc
 

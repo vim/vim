@@ -84,7 +84,7 @@ typedef struct file_buffer	buf_T;  /* forward declaration */
 # ifdef FEAT_XCLIPBOARD
 #  include <X11/Intrinsic.h>
 # endif
-# define guicolor_T long_u		/* avoid error in prototypes and 
+# define guicolor_T long_u		/* avoid error in prototypes and
 					 * make FEAT_TERMGUICOLORS work */
 # define INVALCOLOR ((guicolor_T)0x1ffffff)
 #endif
@@ -112,6 +112,9 @@ typedef struct xfilemark
 {
     fmark_T	fmark;
     char_u	*fname;		/* file name, used when fnum == 0 */
+#ifdef FEAT_VIMINFO
+    time_t	time_set;
+#endif
 } xfmark_T;
 
 /*

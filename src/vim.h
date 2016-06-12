@@ -1076,10 +1076,12 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define BARTYPE_VERSION 1
 #define BARTYPE_HISTORY 2
 #define BARTYPE_REGISTER 3
+#define BARTYPE_MARK 4
 
-#define VIMINFO_VERSION 3
+#define VIMINFO_VERSION 4
 #define VIMINFO_VERSION_WITH_HISTORY 2
 #define VIMINFO_VERSION_WITH_REGISTERS 3
+#define VIMINFO_VERSION_WITH_MARKS 4
 
 typedef enum {
     BVAL_NR,
