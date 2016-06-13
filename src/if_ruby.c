@@ -31,8 +31,8 @@
 # define RUBYEXTERN extern
 #endif
 
-# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 24
- # define USE_RUBY_Integer
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 24
+# define USE_RUBY_INTEGER
 #endif
 
 #ifdef DYNAMIC_RUBY
@@ -43,8 +43,8 @@
  */
 # define rb_cFalseClass		(*dll_rb_cFalseClass)
 # define rb_cFixnum		(*dll_rb_cFixnum)
-# if defined(USE_RUBY_Integer)
-# define rb_cInteger    (*dll_rb_cInteger)
+# if defined(USE_RUBY_INTEGER)
+#  define rb_cInteger		(*dll_rb_cInteger)
 # endif
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
 #  define rb_cFloat		(*dll_rb_cFloat)
@@ -325,7 +325,7 @@ static void ruby_vim_init(void);
 static VALUE (*dll_rb_assoc_new) (VALUE, VALUE);
 VALUE *dll_rb_cFalseClass;
 VALUE *dll_rb_cFixnum;
-# if defined(USE_RUBY_Integer)
+# if defined(USE_RUBY_INTEGER)
 VALUE *dll_rb_cInteger;
 # endif
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
@@ -515,7 +515,7 @@ static struct
     {"rb_assoc_new", (RUBY_PROC*)&dll_rb_assoc_new},
     {"rb_cFalseClass", (RUBY_PROC*)&dll_rb_cFalseClass},
     {"rb_cFixnum", (RUBY_PROC*)&dll_rb_cFixnum},
-# if defined(USE_RUBY_Integer)
+# if defined(USE_RUBY_INTEGER)
     {"rb_cInteger", (RUBY_PROC*)&dll_rb_cInteger},
 # endif
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
