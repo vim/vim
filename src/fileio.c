@@ -7328,8 +7328,8 @@ vim_settempdir(char_u *tempdir)
 /*
  * vim_tempname(): Return a unique name that can be used for a temp file.
  *
- * The temp file is NOT garanteed to be created.  If "keep" is FALSE it is
- * garanteed to NOT be created.
+ * The temp file is NOT guaranteed to be created.  If "keep" is FALSE it is
+ * guaranteed to NOT be created.
  *
  * The returned pointer is to allocated memory.
  * The returned pointer is NULL if no valid name was found.
@@ -8696,7 +8696,7 @@ do_doautocmd(
     int		group;
 
     if (did_something != NULL)
-	did_something = FALSE;
+	*did_something = FALSE;
 
     /*
      * Check for a legal group name.  If not, use AUGROUP_ALL.
