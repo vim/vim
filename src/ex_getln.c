@@ -6318,6 +6318,8 @@ handle_viminfo_history(
 		    len = vp[3].bv_len;
 		    p = lalloc(len + 2, TRUE);
 		}
+		else
+		    len = 0; /* for picky compilers */
 		if (p != NULL)
 		{
 		    viminfo_history[type][idx].time_set = vp[1].bv_nr;
