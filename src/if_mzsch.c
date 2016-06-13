@@ -1174,10 +1174,10 @@ startup_mzscheme(void)
 	MZ_GC_VAR_IN_REG(0, config_path);
 	MZ_GC_REG();
 	/* workaround for dynamic loading on windows */
-	s = vim_getenv("PLTCONFIGDIR", &mustfree);
+	s = vim_getenv((char_u *)"PLTCONFIGDIR", &mustfree);
 	if (s != NULL)
 	{
-	    config_path = scheme_make_path(s);
+	    config_path = scheme_make_path((char *)s);
 	    MZ_GC_CHECK();
 	    if (mustfree)
 		vim_free(s);
