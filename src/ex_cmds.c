@@ -2310,7 +2310,11 @@ read_viminfo_up_to_marks(
 		break;
 	    case '-':
 	    case '\'':
-		eof = read_viminfo_filemark(virp, forceit);
+		/* When file marks are in bar lines skip the old style lines. */
+		if (virp->vir_version < VIMINFO_VERSION_WITH_MARKS)
+		    eof = read_viminfo_filemark(virp, forceit);
+		else
+		    eof = viminfo_readline(virp);
 		break;
 	    default:
 		if (viminfo_error("E575: ", _("Illegal starting char"),
