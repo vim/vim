@@ -4290,6 +4290,15 @@ getqflist()						*getqflist()*
 			:endfor
 
 
+getqfwinid([{winnr}])					*getqfwinid()*
+		Returns the window ID of the quickfix window if active or -1
+		if it's not shown.
+		If {winnr} is supplied the window ID of the location list
+		associated to the window is returned instead, if the argument
+		is invalid -1 is returned.
+		{winnr} can be the window number or the window ID.
+
+
 getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		The result is a String, which is the contents of register
 		{regname}.  Example: >
