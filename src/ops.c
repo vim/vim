@@ -6011,7 +6011,7 @@ handle_viminfo_register(garray_T *values, int force)
 	return;
     flags = vp[0].bv_nr;
     name = vp[1].bv_nr;
-    if (name < 0 || name > NUM_REGISTERS)
+    if (name < 0 || name >= NUM_REGISTERS)
 	return;
     type = vp[2].bv_nr;
     if (type != MCHAR && type != MLINE && type != MBLOCK)
