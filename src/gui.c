@@ -5348,10 +5348,15 @@ gui_do_findrepl(
     }
     else
     {
-	/* Search for the next match. */
+	int searchflags = SEARCH_MSG + SEARCH_MARK;
+
+	/* Search for the next match.
+	 * Don't skip text under cursor for single replace. */
+	if (type == FRD_REPLACE)
+	    searchflags += SEARCH_START;
 	i = msg_scroll;
 	(void)do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
-					      SEARCH_MSG + SEARCH_MARK, NULL);
+							   searchflags, NULL);
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */
     }
 
