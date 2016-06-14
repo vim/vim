@@ -1674,13 +1674,29 @@ write_viminfo_filemarks(FILE *fp)
     idx = NMARKS;
     for (i = NMARKS; i < NMARKS + EXTRA_MARKS; i++)
     {
-	if (vi_namedfm != NULL
-		&& vi_namedfm[vi_idx].fmark.mark.lnum != 0
-		&& (vi_namedfm[vi_idx].time_set > namedfm[idx].time_set
+	xfmark_T *vi_fm = vi_namedfm != NULL ? &vi_namedfm[vi_idx] : NULL;
+
+	if (vi_fm != NULL
+		&& vi_fm->fmark.mark.lnum != 0
+		&& (vi_fm->time_set > namedfm[idx].time_set
 		    || namedfm[idx].fmark.mark.lnum == 0))
-	    fm = &vi_namedfm[vi_idx++];
+	{
+	    fm = vi_fm;
+	    ++vi_idx;
+	}
 	else
+	{
 	    fm = &namedfm[idx++];
+	    if (vi_fm != NULL
+		  && vi_fm->fmark.mark.lnum == fm->fmark.mark.lnum
+		  && vi_fm->time_set == fm->time_set
+		  && ((vi_fm->fmark.fnum != 0
+			  && vi_fm->fmark.fnum == fm->fmark.fnum)
+		      || (vi_fm->fname != NULL
+			  && fm->fname != NULL
+			  && STRCMP(vi_fm->fname, fm->fname) == 0)))
+		++vi_idx;  /* skip duplicate */
+	}
 	write_one_filemark(fp, fm, '\'', i - NMARKS + '0');
     }
 
