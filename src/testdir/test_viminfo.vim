@@ -322,6 +322,7 @@ func Test_viminfo_jumplist()
   clearjumps
   rviminfo Xviminfo
 
+  let last_line = line('.')
   exe "normal \<C-O>"
   call assert_equal('time 30', getline('.'))
   exe "normal \<C-O>"
@@ -335,6 +336,20 @@ func Test_viminfo_jumplist()
   call assert_equal('time 10', getline('.'))
   exe "normal \<C-O>"
   call assert_equal('time 05', getline('.'))
+
+  " Test with jumplist full.
+  clearjumps
+  call setline(1, repeat(['match here'], 101))
+  call cursor(1, 1)
+  call test_settime(10)
+  for i in range(100)
+    exe "normal /here\r"
+  endfor
+  rviminfo Xviminfo
+
+  " must be newest mark that comes from viminfo.
+  exe "normal \<C-O>"
+  call assert_equal(last_line, line('.'))
 
   bwipe!
   call delete('Xviminfo')
