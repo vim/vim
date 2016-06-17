@@ -2126,7 +2126,7 @@ msgid "E490: No fold found"
 msgstr "E490: Non trovo alcuna piegatura"
 
 msgid "E350: Cannot create fold with current 'foldmethod'"
-msgstr "E350: Non posso create piegatura con il 'foldmethod' in uso"
+msgstr "E350: Non posso creare piegatura con il 'foldmethod' in uso"
 
 msgid "E351: Cannot delete fold with current 'foldmethod'"
 msgstr "E351: Non posso cancellare piegatura con il 'foldmethod' in uso"

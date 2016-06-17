@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Jun 11
+*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Jun 13
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -938,8 +938,8 @@ Inter-process communication:		    *channel-functions*
 	ch_log()		write a message in the channel log file
 	ch_logfile()		set the channel log file
 	ch_setoptions()		set the options for a channel
-	jsonencode()		encode an expression to a JSON string
-	jsondecode()		decode a JSON string to Vim types
+	json_encode()		encode an expression to a JSON string
+	json_decode()		decode a JSON string to Vim types
 	js_encode()		encode an expression to a JSON string
 	js_decode()		decode a JSON string to Vim types
 

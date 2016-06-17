@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2016 Jun 12
+*starting.txt*  For Vim version 7.4.  Last change: 2016 Jun 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1435,6 +1435,10 @@ always kept.  This is used for:
 - Contents of non-empty registers.
 - The jump list
 - File marks
+The timestamp feature was added before Vim 8.0.  Older versions of Vim,
+starting with 7.4.1131, will keep the items with timestamp, but not use them.
+Thus when using both an older and a newer version of Vim the most recent data
+will be kept.
 
 Notes for Unix:
 - The file protection for the viminfo file will be set to prevent other users

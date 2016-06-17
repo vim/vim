@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jun 12
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jun 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,10 +35,7 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Further implement 'barline' in viminfo:
-- jumplist: merge with vi_jumplist.
 - Use timestamp for more items: locations, marks.
-- Docs: lines are copied by Vim since 7.4.1131
-- Check if debug history works.
 
 Problem with setqflist([]): grep 4 times, ":colder 3", setqflist([]) will
 clear the next list, not the current one.  Ramel Eshed, Jun 8.
@@ -64,7 +61,8 @@ Later
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
 
-Quickfix improvements for backgroupd building and grepping:
+Quickfix improvements for background building and grepping:
+  (Yegappan might do some of this)
 - Move 'efm' parsing to a separate function.  If 'efm' is the same as last
   time re-use the fmt_first list.
 - Do not clear "dir_stack", "directory" and "file_stack", "currfile" when
@@ -77,6 +75,8 @@ Quickfix improvements for backgroupd building and grepping:
   buffers. (Ramel Eshed)
 
 Regexp problems:
+- When using automatic engine selection there is a false match.  Forcing
+  either engine works OK. (fritzophrenic, 2016 Jun 15, #867)
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
   (Manuel Ortega, 2016 Apr 24)
   Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
@@ -125,8 +125,13 @@ Regexp problems:
 - Search for /\%d0\+  causes error E363 in a file with consecutive NUL
   characters. (Christian Brabandt, 2016 Jun 7)
 
-jsonencode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
+Patch to fix problem with GUI termcode. (Kazunobu Kuriyama, 2016 Jun 15)
+
+json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
+
+Should json_encode()/json_decode() restrict recursiveness?
+Or avoid recursiveness.
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
@@ -149,6 +154,7 @@ Yasuhiro Matsumoto, 2013 May 31.
 Or should we add a more general mechanism, like a lambda() function?
 Patch by Yasuhiro Matsumoto, 2014 Sep 16, update 2016 Apr 17.
 Correction for test, Ken Takata, 2016 May 27.
+Merged patch: Ken Takata, 2016 Jun 15.
 
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 
@@ -222,6 +228,7 @@ Update 2016 Mar 28.  Can include all parts into one dist patch.
 
 Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
 Update 2016 Apr 24.
+Update 2016 Jun 14, includes some tests.
 
 Patch to improve cscope. (Adrian Kocis, #843)
 
@@ -274,9 +281,6 @@ Patch to make tests pass with EBCDIC. (Owen Leibman, 2016 Apr 10)
 When repeating the 'confirm' dialog one needs to press Enter. (ds26gte, 2016
 Apr 17)  #762
 
-Should jsonencode()/jsondecode() restrict recursiveness?
-Or avoid recursiveness.
-
 Use vim.vim syntax highlighting for help file examples, but without ":" in
 'iskeyword' for syntax.
 
@@ -284,6 +288,9 @@ Patch to make "%:h:h" return "." instead of the full path.
 (Coot, 2016 Jan 24, #592)
 
 Remove SPACE_IN_FILENAME ? What could possibly go wrong?
+
+When command names are very long :command output is difficult to read.  Use a
+maximum for the column width?  (#871)
 
 Patch to change GUI behavior: instead of changing the window size change the
 lines/columns when menu/toolbar/etc. is added/removed. (Ychin, 2016 Mar 20,
@@ -495,9 +502,6 @@ Breaks test_eval.  Inefficient, can we only compute y_width when needed?
 
 Patch to use different terminal mode settings for system(). (Hayaki Saito)
 Does this work for everybody?
-
-Patch to fix that wide characters do not work properly after exiting.
-(Yasuhiro Matsumoto, 2015 May 24) Better patch to come.
 
 Patch to add wordcount().  Same info as g CTRL-G. (Christian Brabandt, 2015
 Nov 17)
