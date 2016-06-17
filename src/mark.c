@@ -1522,12 +1522,10 @@ handle_viminfo_mark(garray_T *values, int force)
 			++idx;
 			break;
 		    }
+		/* idx cannot be zero now */
 		if (idx < 0 && curwin->w_jumplistlen < JUMPLISTSIZE)
 		    /* insert as the oldest entry */
 		    idx = 0;
-		else if (idx == 0 && curwin->w_jumplistlen == JUMPLISTSIZE)
-		    /* no space to insert as the oldest entry */
-		    idx = -1;
 	    }
 	    else if (curwin->w_jumplistlen < JUMPLISTSIZE)
 		/* insert as oldest entry */
