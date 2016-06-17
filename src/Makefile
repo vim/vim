@@ -2035,6 +2035,7 @@ test_arglist \
 	test_json \
 	test_langmap \
 	test_lispwords \
+	test_man \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
 	test_matchstrpos \
