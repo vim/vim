@@ -2827,6 +2827,7 @@ set_completion(colnr_T startcol, list_T *list)
     }
     else
 	ins_complete(Ctrl_N, FALSE);
+    compl_enter_selects = compl_no_insert;
 
     /* Lazily show the popup menu, unless we got interrupted. */
     if (!compl_interrupted)
