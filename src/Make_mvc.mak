@@ -255,6 +255,45 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 !endif
 
 
+# Check VC version.
+!if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
+!message *** ERROR
+!message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
+!message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
+!error Make aborted.
+!else
+!include msvcver.~
+!if [del msvcver.c msvcver.~]
+!endif
+!endif
+
+!if $(MSVCVER) < 1900
+MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
+MSVCRT_VER = ($(MSVCVER) / 10 - 60)
+!else
+MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
+MSVCRT_VER = ($(MSVCVER) / 10 - 50)
+!endif
+
+# Calculate MSVCRT_VER
+!if [(set /a MSVCRT_VER="$(MSVCRT_VER)" > nul) && set MSVCRT_VER > msvcrtver.~] == 0
+!include msvcrtver.~
+!if [del msvcrtver.~]
+!endif
+!endif
+
+# Base name of the msvcrXX.dll
+!if $(MSVCRT_VER) <= 60
+MSVCRT_NAME = msvcrt
+!else
+MSVCRT_NAME = msvcr$(MSVCRT_VER)
+!endif
+
+!if $(MSVC_MAJOR) == 6
+CPU = ix86
+!endif
+
+
 # Flag to turn on Win64 compatibility warnings for VC7.x and VC8.
 WP64CHECK = /Wp64
 
@@ -294,8 +333,9 @@ CHANNEL = $(GUI)
 !endif
 !endif
 
-# Only allow NETBEANS and XPM for a GUI build and CHANNEL.
+# GUI sepcific features.
 !if "$(GUI)" == "yes"
+# Only allow NETBEANS for a GUI build and CHANNEL.
 !if "$(NETBEANS)" == "yes" && "$(CHANNEL)" == "yes"
 # NETBEANS - Include support for Netbeans integration
 NETBEANS_PRO	= proto/netbeans.pro
@@ -317,8 +357,11 @@ DIRECTX_INCL	= gui_dwrite.h
 DIRECTX_OBJ	= $(OUTDIR)\gui_dwrite.obj
 !endif
 
+# Only allow XPM for a GUI build.
 !ifndef XPM
-# XPM is not set, use the included xpm files, depending on the architecture.
+!ifndef USE_MSVCRT
+# Both XPM and USE_MSVCRT are not set, use the included xpm files, depending
+# on the architecture.
 !if "$(CPU)" == "AMD64"
 XPM = xpm\x64
 !elseif "$(CPU)" == "i386"
@@ -326,13 +369,22 @@ XPM = xpm\x86
 !else
 XPM = no
 !endif
-!endif
+!else # USE_MSVCRT
+XPM = no
+!endif # USE_MSVCRT
+!endif # XPM
 !if "$(XPM)" != "no"
 # XPM - Include support for XPM signs
 # See the xpm directory for more information.
 XPM_OBJ   = $(OBJDIR)/xpm_w32.obj
 XPM_DEFS  = -DFEAT_XPM_W32
+!if $(MSVC_MAJOR) >= 14
+# VC14 cannot use a library built by VC12 or eariler, because VC14 uses
+# Universal CRT.
+XPM_LIB   = $(XPM)\lib-vc14\libXpm.lib
+!else
 XPM_LIB   = $(XPM)\lib\libXpm.lib
+!endif
 XPM_INC	  = -I $(XPM)\include -I $(XPM)\..\include
 !endif
 !endif
@@ -394,43 +446,6 @@ DEL_TREE = deltree /y
 
 INTDIR=$(OBJDIR)
 OUTDIR=$(OBJDIR)
-
-!if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
-!message *** ERROR
-!message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
-!message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
-!error Make aborted.
-!else
-!include msvcver.~
-!if [del msvcver.c msvcver.~]
-!endif
-!endif
-
-!if $(MSVCVER) < 1900
-MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
-MSVCRT_VER = ($(MSVCVER) / 10 - 60)
-!else
-MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
-MSVCRT_VER = ($(MSVCVER) / 10 - 50)
-!endif
-
-# Calculate MSVCRT_VER
-!if [(set /a MSVCRT_VER="$(MSVCRT_VER)" > nul) && set MSVCRT_VER > msvcrtver.~] == 0
-!include msvcrtver.~
-!if [del msvcrtver.~]
-!endif
-!endif
-
-# Base name of the msvcrXX.dll
-!if $(MSVCRT_VER) <= 60
-MSVCRT_NAME = msvcrt
-!else
-MSVCRT_NAME = msvcr$(MSVCRT_VER)
-!endif
-
-!if $(MSVC_MAJOR) == 6
-CPU = ix86
-!endif
 
 # Convert processor ID to MVC-compatible number
 !if $(MSVC_MAJOR) < 8
