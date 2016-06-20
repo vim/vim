@@ -30,11 +30,11 @@
  * d 2name	Find functions called by this function
  * c 3name	Find functions calling this function
  * t 4string	find text string (cscope 12.9)
- * t 4name	Find assignments to (cscope 13.3)
  *   5pattern	change pattern -- NOT USED
  * e 6pattern	Find this egrep pattern
  * f 7name	Find this file
  * i 8name	Find files #including this file
+ * a 9name	Find assignments to (cscope 15.8)
  */
 
 typedef struct {
@@ -65,6 +65,7 @@ typedef struct csi {
 
     FILE *	    fr_fp;	/* from cscope: FILE. */
     FILE *	    to_fp;	/* to cscope: FILE. */
+    int             switched_case;  /* switched case sensitivity */
 } csinfo_T;
 
 typedef enum { Add, Find, Help, Kill, Reset, Show } csid_e;

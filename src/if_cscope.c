@@ -70,7 +70,7 @@ static cscmd_T	    cs_cmds[] =
     { "add",	cs_add,
 		N_("Add a new database"),     "add file|dir [pre-path] [flags]", 0 },
     { "find",	cs_find,
-		N_("Query for a pattern"),    "find c|d|e|f|g|i|s|t name", 1 },
+		N_("Query for a pattern"),    "find a|c|d|e|f|g|i|s|t name (also uppercase letters)", 1 },
     { "help",	cs_help,
 		N_("Show this message"),      "help", 0 },
     { "kill",	cs_kill,
@@ -126,7 +126,8 @@ get_cscope_name(expand_T *xp UNUSED, int idx)
 	{
 	    const char *query_type[] =
 	    {
-		"c", "d", "e", "f", "g", "i", "s", "t", NULL
+		"A", "C", "D", "E", "F", "G", "I", "S", "T",
+		"a", "c", "d", "e", "f", "g", "i", "s", "t", NULL
 	    };
 
 	    /* Complete with query type of ":cscope find {query_type}".
@@ -767,30 +768,33 @@ cs_create_cmd(char *csoption, char *pattern)
 
     switch (csoption[0])
     {
-    case '0' : case 's' :
+    case '0' : case 's' : case 'S' :
 	search = 0;
 	break;
-    case '1' : case 'g' :
+    case '1' : case 'g' : case 'G' :
 	search = 1;
 	break;
-    case '2' : case 'd' :
+    case '2' : case 'd' : case 'D' :
 	search = 2;
 	break;
-    case '3' : case 'c' :
+    case '3' : case 'c' : case 'C' :
 	search = 3;
 	break;
-    case '4' : case 't' :
+    case '4' : case 't' : case 'T' :
 	search = 4;
 	break;
-    case '6' : case 'e' :
+    case '6' : case 'e' : case 'E' :
 	search = 6;
 	break;
-    case '7' : case 'f' :
+    case '7' : case 'f' : case 'F' :
 	search = 7;
 	break;
-    case '8' : case 'i' :
+    case '8' : case 'i' : case 'I' :
 	search = 8;
 	break;
+    case '9' : case 'a' : case 'A' :
+        search = 9;
+        break;
     default :
 	(void)EMSG(_("E561: unknown cscope search type"));
 	cs_usage_msg(Find);
@@ -1127,29 +1131,32 @@ cs_find_common(
     /* get cmd letter */
     switch (opt[0])
     {
-    case '0' :
+    case '0' : case 'S':
 	cmdletter = 's';
 	break;
-    case '1' :
+    case '1' : case 'G':
 	cmdletter = 'g';
 	break;
-    case '2' :
+    case '2' : case 'D':
 	cmdletter = 'd';
 	break;
-    case '3' :
+    case '3' : case 'C':
 	cmdletter = 'c';
 	break;
-    case '4' :
+    case '4' : case 'T':
 	cmdletter = 't';
 	break;
-    case '6' :
+    case '6' : case 'E':
 	cmdletter = 'e';
 	break;
-    case '7' :
+    case '7' : case 'F':
 	cmdletter = 'f';
 	break;
-    case '8' :
+    case '8' : case 'I':
 	cmdletter = 'i';
+	break;
+    case '9' : case 'A':
+	cmdletter = 'a';
 	break;
     default :
 	cmdletter = opt[0];
@@ -1210,10 +1217,30 @@ cs_find_common(
     {
 	if (csinfo[i].fname == NULL || csinfo[i].to_fp == NULL)
 	    continue;
+   
+        if ((opt[0] >= 'A' && opt[0] <= 'Z') && csinfo[i].switched_case == 0 ||
+            (opt[0] < 'A' || opt[0] > 'Z') && csinfo[i].switched_case == 1) 
+        {
+            /* swap case sensitivity for this search */
+            (void)fprintf(csinfo[i].to_fp, "c\n");
+            (void)fflush(csinfo[i].to_fp);
+            (void)cs_read_prompt(i);
+            if (csinfo[i].switched_case == 0)
+                csinfo[i].switched_case = 1;
+            else
+                csinfo[i].switched_case = 0;
+        }
 
 	/* send cmd to cscope */
 	(void)fprintf(csinfo[i].to_fp, "%s\n", cmd);
 	(void)fflush(csinfo[i].to_fp);
+    }
+    vim_free(cmd);
+
+    for (i = 0; i < csinfo_size; i++)
+    {
+	if (csinfo[i].fname == NULL || csinfo[i].to_fp == NULL)
+	    continue;
 
 	nummatches[i] = cs_cnt_matches(i);
 
@@ -1223,7 +1250,6 @@ cs_find_common(
 	if (nummatches[i] == 0)
 	    (void)cs_read_prompt(i);
     }
-    vim_free(cmd);
 
     if (totmatches == 0)
     {
@@ -1345,6 +1371,7 @@ cs_help(exarg_T *eap UNUSED)
 				      cmdp->usage);
 	if (strcmp(cmdp->name, "find") == 0)
 	    MSG_PUTS(_("\n"
+		       "       a: Find assignments to this symbol\n"
 		       "       c: Find functions calling this function\n"
 		       "       d: Find functions called by this function\n"
 		       "       e: Find this egrep pattern\n"
@@ -1352,7 +1379,9 @@ cs_help(exarg_T *eap UNUSED)
 		       "       g: Find this definition\n"
 		       "       i: Find files #including this file\n"
 		       "       s: Find this C symbol\n"
-		       "       t: Find this text string\n"));
+		       "       t: Find this text string\n"
+		       "(uppercase letters): Same as lowercase with switched"
+                       " case sensitivity\n"));
 
 	cmdp++;
     }
@@ -1379,6 +1408,7 @@ clear_csinfo(int i)
     csinfo[i].pid    = 0;
     csinfo[i].fr_fp  = NULL;
     csinfo[i].to_fp  = NULL;
+    csinfo[i].switched_case = 0;
 #if defined(WIN32)
     csinfo[i].hProc = NULL;
 #endif
