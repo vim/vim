@@ -623,8 +623,8 @@ qf_init_ext(
 		if (buflnum > lnumlast)
 		    break;
 		p_buf = ml_get_buf(buf, buflnum++, FALSE);
-		linelen = (int)STRLEN(p_buf);
-		if (linelen > IOSIZE - 2)
+		len = (int)STRLEN(p_buf);
+		if (len > IOSIZE - 2)
 		{
 		    linebuf = qf_grow_linebuf(&growbuf, &growbufsiz, len,
 								    &linelen);
@@ -632,7 +632,10 @@ qf_init_ext(
 			goto qf_init_end;
 		}
 		else
+		{
 		    linebuf = IObuff;
+		    linelen = len;
+		}
 		vim_strncpy(linebuf, p_buf, linelen);
 	    }
 	}
@@ -1435,8 +1438,8 @@ qf_get_fnum(char_u *directory, char_u *fname)
 }
 
 /*
- * push dirbuf onto the directory stack and return pointer to actual dir or
- * NULL on error
+ * Push dirbuf onto the directory stack and return pointer to actual dir or
+ * NULL on error.
  */
     static char_u *
 qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr)
