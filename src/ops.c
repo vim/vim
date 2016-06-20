@@ -5488,11 +5488,23 @@ do_addsub(
     {
 	if (dobin)
 	    while (col > 0 && vim_isbdigit(ptr[col]))
+	    {
 		--col;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    col -= (*mb_head_off)(ptr, ptr + col);
+#endif
+	    }
 
 	if (dohex)
 	    while (col > 0 && vim_isxdigit(ptr[col]))
+	    {
 		--col;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    col -= (*mb_head_off)(ptr, ptr + col);
+#endif
+	    }
 
 	if (       dobin
 		&& dohex
@@ -5500,6 +5512,10 @@ do_addsub(
 		    && (ptr[col] == 'X'
 			|| ptr[col] == 'x')
 		    && ptr[col - 1] == '0'
+#ifdef FEAT_MBYTE
+		    && (!has_mbyte ||
+			!(*mb_head_off)(ptr, ptr + col - 1))
+#endif
 		    && vim_isxdigit(ptr[col + 1]))))
 	{
 
@@ -5508,7 +5524,13 @@ do_addsub(
 	    col = pos->col;
 
 	    while (col > 0 && vim_isdigit(ptr[col]))
+	    {
 		col--;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    col -= (*mb_head_off)(ptr, ptr + col);
+#endif
+	    }
 	}
 
 	if ((       dohex
@@ -5516,16 +5538,28 @@ do_addsub(
 		&& (ptr[col] == 'X'
 		    || ptr[col] == 'x')
 		&& ptr[col - 1] == '0'
+#ifdef FEAT_MBYTE
+		&& (!has_mbyte ||
+		    !(*mb_head_off)(ptr, ptr + col - 1))
+#endif
 		&& vim_isxdigit(ptr[col + 1])) ||
 	    (       dobin
 		&& col > 0
 		&& (ptr[col] == 'B'
 		    || ptr[col] == 'b')
 		&& ptr[col - 1] == '0'
+#ifdef FEAT_MBYTE
+		&& (!has_mbyte ||
+		    !(*mb_head_off)(ptr, ptr + col - 1))
+#endif
 		&& vim_isbdigit(ptr[col + 1])))
 	{
 	    /* Found hexadecimal or binary number, move to its start. */
 	    --col;
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		col -= (*mb_head_off)(ptr, ptr + col);
+#endif
 	}
 	else
 	{
@@ -5537,12 +5571,18 @@ do_addsub(
 	    while (ptr[col] != NUL
 		    && !vim_isdigit(ptr[col])
 		    && !(doalp && ASCII_ISALPHA(ptr[col])))
-		++col;
+		col += MB_PTR2LEN(ptr + col);
 
 	    while (col > 0
 		    && vim_isdigit(ptr[col - 1])
 		    && !(doalp && ASCII_ISALPHA(ptr[col])))
+	    {
 		--col;
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    col -= (*mb_head_off)(ptr, ptr + col);
+#endif
+	    }
 	}
     }
 
@@ -5552,14 +5592,21 @@ do_addsub(
 		&& !vim_isdigit(ptr[col])
 		&& !(doalp && ASCII_ISALPHA(ptr[col])))
 	{
-	    ++col;
-	    --length;
+	    int mb_len = MB_PTR2LEN(ptr + col);
+
+	    col += mb_len;
+	    length -= mb_len;
 	}
 
 	if (length == 0)
 	    goto theend;
 
-	if (col > pos->col && ptr[col - 1] == '-')
+	if (col > pos->col && ptr[col - 1] == '-'
+#ifdef FEAT_MBYTE
+		&& (!has_mbyte ||
+		    !(*mb_head_off)(ptr, ptr + col - 1))
+#endif
+	   )
 	{
 	    negative = TRUE;
 	    was_positive = FALSE;
@@ -5622,7 +5669,12 @@ do_addsub(
     }
     else
     {
-	if (col > 0 && ptr[col - 1] == '-' && !visual)
+	if (col > 0 && ptr[col - 1] == '-'
+#ifdef FEAT_MBYTE
+		&& (!has_mbyte ||
+		    !(*mb_head_off)(ptr, ptr + col - 1))
+#endif
+		&& !visual)
 	{
 	    /* negative number */
 	    --col;
@@ -6036,8 +6088,9 @@ handle_viminfo_register(garray_T *values, int force)
 			 && (timestamp == 0 || y_ptr->y_time_set > timestamp))
 	return;
 
-    for (i = 0; i < y_ptr->y_size; i++)
-	vim_free(y_ptr->y_array[i]);
+    if (y_ptr->y_array != NULL)
+	for (i = 0; i < y_ptr->y_size; i++)
+	    vim_free(y_ptr->y_array[i]);
     vim_free(y_ptr->y_array);
 
     if (y_read_regs == NULL)
