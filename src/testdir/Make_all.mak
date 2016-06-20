@@ -175,6 +175,7 @@ NEW_TESTS = test_arglist.res \
 	    test_increment.res \
 	    test_json.res \
 	    test_langmap.res \
+	    test_man.res \
 	    test_matchadd_conceal.res \
 	    test_packadd.res \
 	    test_perl.res \
