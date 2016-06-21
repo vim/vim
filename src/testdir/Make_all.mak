@@ -106,7 +106,6 @@ SCRIPTS_ALL = \
 	test_marks.out \
 	test_nested_function.out \
 	test_options.out \
-	test_ruby.out \
 	test_search_mbyte.out \
 	test_signs.out \
 	test_tagcase.out \
@@ -180,6 +179,7 @@ NEW_TESTS = test_arglist.res \
 	    test_packadd.res \
 	    test_perl.res \
 	    test_quickfix.res \
+	    test_ruby.res \
 	    test_syntax.res \
 	    test_usercommands.res \
 	    test_viminfo.res \
