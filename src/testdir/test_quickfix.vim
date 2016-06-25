@@ -1110,6 +1110,7 @@ endfunction
 function Test_setqflist_empty_older()
   call Xlist_empty_older('c')
   call Xlist_empty_older('l')
+endfunction
 
 " Tests for the :cfilter and :lfilter commands.
 function XfilterTests(cchar)
