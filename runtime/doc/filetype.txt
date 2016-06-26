@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.4.  Last change: 2016 May 24
+*filetype.txt*  For Vim version 7.4.  Last change: 2016 Jun 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -578,6 +578,11 @@ Local mappings:
 CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
 q		Same as ":quit"
+
+To use a vertical split instead of horizontal: >
+	let g:ft_man_open_mode = 'vert'
+To use a new tab: >
+	let g:ft_man_open_mode = 'tab'
 
 To enable folding use this: >
   	let g:ft_man_folding_enable = 1

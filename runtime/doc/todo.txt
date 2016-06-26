@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jun 16
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,13 +34,13 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+:clist! +10  list next 10 errors
+
 Further implement 'barline' in viminfo:
 - Use timestamp for more items: locations, marks.
 
 Problem with setqflist([]): grep 4 times, ":colder 3", setqflist([]) will
 clear the next list, not the current one.  Ramel Eshed, Jun 8.
-
-Patch: Fix drawing background with &termguicolors #805 (Jacob Niehus)
 
 +channel:
 - GUI cursor blinking interrupted when the job output goes to a buffer that is
@@ -62,7 +62,8 @@ Later
     With xterm could use -S{pty}.
 
 Quickfix improvements for background building and grepping:
-  (Yegappan might do some of this)
+  Patch from Yegappan, 2016 Jun 17.
+  Need to reset values when starting a new list.
 - Move 'efm' parsing to a separate function.  If 'efm' is the same as last
   time re-use the fmt_first list.
 - Do not clear "dir_stack", "directory" and "file_stack", "currfile" when
@@ -143,11 +144,11 @@ Add tests for using number larger than number of lines in buffer.
 
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 
-&t_ut not used with 'termguicolors' is set. (Jacob Niehus, 2016 May 14, #804)
-Patch to fix this, Jacob Niehus, 2016 May 14, #805)
-
 For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
 5)
+
+'completeopt' noinsert breaks redo register (Shougo, 2016 Jun 18, #874)
+Patch to fix this: #875
 
 Patch to support expression argument to sort() instead of a function name.
 Yasuhiro Matsumoto, 2013 May 31.
@@ -291,6 +292,7 @@ Remove SPACE_IN_FILENAME ? What could possibly go wrong?
 
 When command names are very long :command output is difficult to read.  Use a
 maximum for the column width?  (#871)
+Patcy by varmanishant, 2016 Jun 18, #876
 
 Patch to change GUI behavior: instead of changing the window size change the
 lines/columns when menu/toolbar/etc. is added/removed. (Ychin, 2016 Mar 20,
