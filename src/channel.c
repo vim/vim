@@ -261,7 +261,10 @@ strerror_win32(int eno)
     char_u *ptr;
 
     if (msgbuf)
+    {
 	LocalFree(msgbuf);
+	msgbuf = NULL;
+    }
     FormatMessage(
 	FORMAT_MESSAGE_ALLOCATE_BUFFER |
 	FORMAT_MESSAGE_FROM_SYSTEM |
@@ -272,21 +275,22 @@ strerror_win32(int eno)
 	(LPTSTR) &msgbuf,
 	0,
 	NULL);
-    /* chomp \r or \n */
-    for (ptr = (char_u *)msgbuf; *ptr; ptr++)
-	switch (*ptr)
-	{
-	    case '\r':
-		STRMOVE(ptr, ptr + 1);
-		ptr--;
-		break;
-	    case '\n':
-		if (*(ptr + 1) == '\0')
-		    *ptr = '\0';
-		else
-		    *ptr = ' ';
-		break;
-	}
+    if (msgbuf != NULL)
+	/* chomp \r or \n */
+	for (ptr = (char_u *)msgbuf; *ptr; ptr++)
+	    switch (*ptr)
+	    {
+		case '\r':
+		    STRMOVE(ptr, ptr + 1);
+		    ptr--;
+		    break;
+		case '\n':
+		    if (*(ptr + 1) == '\0')
+			*ptr = '\0';
+		    else
+			*ptr = ' ';
+		    break;
+	    }
     return msgbuf;
 }
 #endif
@@ -1436,7 +1440,7 @@ channel_write_in(channel_T *channel)
 }
 
 /*
- * Handle buffer "buf" beeing freed, remove it from any channels.
+ * Handle buffer "buf" being freed, remove it from any channels.
  */
     void
 channel_buffer_free(buf_T *buf)
@@ -2194,7 +2198,7 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
     }
     else if (p_verbose > 2)
     {
-	ch_errors(channel, "Receved unknown command: %s", (char *)cmd);
+	ch_errors(channel, "Received unknown command: %s", (char *)cmd);
 	EMSG2("E905: received unknown command: %s", cmd);
     }
 }
@@ -3186,7 +3190,7 @@ channel_read_json_block(
     {
 	more = channel_parse_json(channel, part);
 
-	/* search for messsage "id" */
+	/* search for message "id" */
 	if (channel_get_json(channel, part, id, rettv) == OK)
 	{
 	    chanpart->ch_block_id = 0;
@@ -3426,7 +3430,7 @@ channel_send(channel_T *channel, int part, char_u *buf, char *fun)
 /*
  * Common for "ch_sendexpr()" and "ch_sendraw()".
  * Returns the channel if the caller should read the response.
- * Sets "part_read" to the the read fd.
+ * Sets "part_read" to the read fd.
  * Otherwise returns NULL.
  */
     channel_T *
@@ -4299,7 +4303,7 @@ job_free_contents(job_T *job)
     {
 	/* The link from the channel to the job doesn't count as a reference,
 	 * thus don't decrement the refcount of the job.  The reference from
-	 * the job to the channel does count the refrence, decrement it and
+	 * the job to the channel does count the reference, decrement it and
 	 * NULL the reference.  We don't set ch_job_killed, unreferencing the
 	 * job doesn't mean it stops running. */
 	job->jv_channel->ch_job = NULL;
