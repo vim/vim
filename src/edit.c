@@ -649,7 +649,11 @@ edit(
 	if (update_Insstart_orig)
 	    Insstart_orig = Insstart;
 
-	if (stop_insert_mode)
+	if (stop_insert_mode
+#ifdef FEAT_INS_EXPAND
+		&& !pum_visible()
+#endif
+		)
 	{
 	    /* ":stopinsert" used or 'insertmode' reset */
 	    count = 0;
