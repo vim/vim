@@ -19,6 +19,10 @@
 # include <limits.h>
 #endif
 
+#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+# include "iscygpty.h"
+#endif
+
 /* Maximum number of commands from + or -c arguments. */
 #define MAX_ARG_CMDS 10
 
@@ -2551,6 +2555,13 @@ check_tty(mparm_T *parmp)
 	if (netbeans_active() && (!parmp->stdout_isatty || !input_isatty))
 	{
 	    mch_errmsg(_("Vim: Error: Failure to start gvim from NetBeans\n"));
+	    exit(1);
+	}
+#endif
+#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+	if (is_cygpty_used())
+	{
+	    mch_errmsg(_("Vim: Error: This version of Vim does not run in a Cygwin terminal\n"));
 	    exit(1);
 	}
 #endif
