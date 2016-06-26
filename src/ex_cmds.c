@@ -2850,7 +2850,7 @@ write_viminfo_barlines(vir_T *virp, FILE *fp_out)
  * Return the current time in seconds.  Calls time(), unless test_settime()
  * was used.
  */
-    time_t
+    time_T
 vim_time(void)
 {
 # ifdef FEAT_EVAL

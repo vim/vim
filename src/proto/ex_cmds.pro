@@ -17,7 +17,7 @@ int viminfo_readline(vir_T *virp);
 char_u *viminfo_readstring(vir_T *virp, int off, int convert);
 void viminfo_writestring(FILE *fd, char_u *p);
 int barline_writestring(FILE *fd, char_u *s, int remaining_start);
-time_t vim_time(void);
+time_T vim_time(void);
 void do_fixdel(exarg_T *eap);
 void print_line_no_prefix(linenr_T lnum, int use_number, int list);
 void print_line(linenr_T lnum, int use_number, int list);

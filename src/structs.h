@@ -113,7 +113,7 @@ typedef struct xfilemark
     fmark_T	fmark;
     char_u	*fname;		/* file name, used when fnum == 0 */
 #ifdef FEAT_VIMINFO
-    time_t	time_set;
+    time_T	time_set;
 #endif
 } xfmark_T;
 
@@ -358,7 +358,7 @@ struct u_header
     int		uh_flags;	/* see below */
     pos_T	uh_namedm[NMARKS];	/* marks before undo/after redo */
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
-    time_t	uh_time;	/* timestamp when the change was made */
+    time_T	uh_time;	/* timestamp when the change was made */
     long	uh_save_nr;	/* set when the file was saved after the
 				   changes in this block */
 #ifdef U_DEBUG
@@ -1816,7 +1816,7 @@ struct file_buffer
     long	b_u_seq_last;	/* last used undo sequence number */
     long	b_u_save_nr_last; /* counter for last file write */
     long	b_u_seq_cur;	/* hu_seq of header below which we are now */
-    time_t	b_u_time_cur;	/* uh_time of header below which we are now */
+    time_T	b_u_time_cur;	/* uh_time of header below which we are now */
     long	b_u_save_nr_cur; /* file write nr after which we are now */
 
     /*

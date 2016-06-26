@@ -1761,6 +1761,17 @@ typedef struct timeval proftime_T;
 typedef int proftime_T;	    /* dummy for function prototypes */
 #endif
 
+/*
+ * When compiling with 32 bit Perl time_t is 32 bits in the Perl code but 64
+ * bits elsewhere.  That causes memory corruption.  Define time_T and use it
+ * for global variables to avoid that.
+ */
+#ifdef WIN3264
+typedef __time64_t  time_T;
+#else
+typedef time_t	    time_T;
+#endif
+
 #ifdef _WIN64
 typedef __int64 sock_T;
 #else
