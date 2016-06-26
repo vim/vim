@@ -2031,6 +2031,7 @@ test_arglist \
 	test_help_tagjump \
 	test_history \
 	test_increment \
+	test_increment_dbcs \
 	test_join \
 	test_json \
 	test_langmap \
