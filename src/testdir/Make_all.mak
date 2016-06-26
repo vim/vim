@@ -32,7 +32,6 @@ SCRIPTS_ALL = \
 	test31.out \
 	test33.out \
 	test34.out \
-	test35.out \
 	test36.out \
 	test37.out \
 	test38.out \
