@@ -1317,7 +1317,7 @@ write_buf_line(buf_T *buf, linenr_T lnum, channel_T *channel)
     /* Need to make a copy to be able to append a NL. */
     if ((p = alloc(len + 2)) == NULL)
 	return;
-    STRCPY(p, line);
+    memcpy((char *)p, (char *)line, len);
     p[len] = NL;
     p[len + 1] = NUL;
     channel_send(channel, PART_IN, p, "write_buf_line()");
@@ -1616,7 +1616,7 @@ channel_get_all(channel_T *channel, int part)
 {
     readq_T *head = &channel->ch_part[part].ch_head;
     readq_T *node = head->rq_next;
-    long_u  len = 1;
+    long_u  len = 0;
     char_u  *res;
     char_u  *p;
 
@@ -1627,7 +1627,7 @@ channel_get_all(channel_T *channel, int part)
     /* Concatenate everything into one buffer. */
     for (node = head->rq_next; node != NULL; node = node->rq_next)
 	len += node->rq_buflen;
-    res = lalloc(len, TRUE);
+    res = lalloc(len + 1, TRUE);
     if (res == NULL)
 	return NULL;
     p = res;

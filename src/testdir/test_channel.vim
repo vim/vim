@@ -1018,6 +1018,28 @@ func Test_pipe_null()
   call job_stop(job)
 endfunc
 
+func Test_pipe_to_buffer_raw()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_raw_pipe_to_buffer()')
+  let options = {'out_mode': 'raw', 'out_io': 'buffer', 'out_name': 'testout'}
+  split testout
+  let job = job_start([s:python, '-c', 
+        \ 'import sys; [sys.stdout.write(".") and sys.stdout.flush() for _ in range(10000)]'], options)
+  call assert_equal("run", job_status(job))
+  call s:waitFor('len(join(getline(2,line("$")),"") >= 10000')
+  try
+    for line in getline(2, '$')
+      let line = substitute(line, '^\.*', '', '')
+      call assert_equal('', line)
+    endfor
+  finally
+    call job_stop(job)
+    bwipe!
+  endtry
+endfunc
+
 func Test_reuse_channel()
   if !has('job')
     return
