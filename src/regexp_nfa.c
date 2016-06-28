@@ -5209,9 +5209,12 @@ recursive_regmatch(
     if (REG_MULTI)
 	regline = reg_getline(reglnum);
     reginput = regline + save_reginput_col;
-    nfa_match = save_nfa_match;
+    if (result != NFA_TOO_EXPENSIVE)
+    {
+	nfa_match = save_nfa_match;
+	nfa_listid = save_nfa_listid;
+    }
     nfa_endp = save_nfa_endp;
-    nfa_listid = save_nfa_listid;
 
 #ifdef ENABLE_LOG
     log_fd = fopen(NFA_REGEXP_RUN_LOG, "a");
