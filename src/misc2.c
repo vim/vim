@@ -2741,8 +2741,10 @@ find_special_key(
 		else
 #endif
 		    l = 1;
-		if (bp[l + 1] == '>')
-		    bp += l;	/* anything accepted, like <C-?> */
+		/* Anything accepted, like <C-?>, except <C-">, because the "
+		 * ends the string. */
+		if (bp[l] != '"' && bp[l + 1] == '>')
+		    bp += l;
 	    }
 	}
 	if (bp[0] == 't' && bp[1] == '_' && bp[2] && bp[3])
