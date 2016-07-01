@@ -106,3 +106,26 @@ func Test_special_char()
   " The failure is only visible using valgrind.
   call assert_fails('echo "\<C-">')
 endfunc
+
+func Test_option_value()
+  " boolean
+  set bri
+  call assert_equal(1, &bri)
+  set nobri
+  call assert_equal(0, &bri)
+
+  " number
+  set ts=1
+  call assert_equal(1, &ts)
+  set ts=8
+  call assert_equal(8, &ts)
+
+  " string
+  exe "set cedit=\<Esc>"
+  call assert_equal("\<Esc>", &cedit)
+  set cpo=
+  call assert_equal("", &cpo)
+  set cpo=abcdefgi
+  call assert_equal("abcdefgi", &cpo)
+  set cpo&vim
+endfunc
