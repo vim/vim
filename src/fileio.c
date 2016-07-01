@@ -5231,17 +5231,8 @@ msg_add_lines(
     if (insert_space)
 	*p++ = ' ';
     if (shortmess(SHM_LINES))
-#ifdef LONG_LONG_OFF_T
-	sprintf((char *)p,
-		"%ldL, %lldC", lnum, (long long)nchars);
-#elif defined(WIN3264)
-	sprintf((char *)p,
-		"%ldL, %I64dC", lnum, (__int64)nchars);
-#else
-	sprintf((char *)p,
-		/* Explicit typecast avoids warning on Mac OS X 10.6 */
-		"%ldL, %ldC", lnum, (long)nchars);
-#endif
+	vim_snprintf((char *)p, IOSIZE - (p - IObuff),
+		"%ldL, %lldC", lnum, (varnumber_T)nchars);
     else
     {
 	if (lnum == 1)
@@ -5252,17 +5243,8 @@ msg_add_lines(
 	if (nchars == 1)
 	    STRCPY(p, _("1 character"));
 	else
-#ifdef LONG_LONG_OFF_T
-	    sprintf((char *)p,
-		    _("%lld characters"), (long long)nchars);
-#elif defined(WIN3264)
-	    sprintf((char *)p,
-		    _("%I64d characters"), (__int64)nchars);
-#else
-	    sprintf((char *)p,
-		    /* Explicit typecast avoids warning on Mac OS X 10.6 */
-		    _("%ld characters"), (long)nchars);
-#endif
+	    vim_snprintf((char *)p, IOSIZE - (p - IObuff),
+		    _("%lld characters"), (varnumber_T)nchars);
     }
 }
 
