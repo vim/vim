@@ -16,6 +16,7 @@ source test_glob2regpat.vim
 source test_goto.vim
 source test_help_tagjump.vim
 source test_join.vim
+source test_jumps.vim
 source test_lispwords.vim
 source test_matchstrpos.vim
 source test_menu.vim
