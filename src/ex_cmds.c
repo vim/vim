@@ -1840,14 +1840,14 @@ write_viminfo(char_u *file, int forceit)
     FILE	*fp_in = NULL;	/* input viminfo file, if any */
     FILE	*fp_out = NULL;	/* output viminfo file */
     char_u	*tempname = NULL;	/* name of temp viminfo file */
-    struct stat	st_new;		/* mch_stat() of potential new file */
+    stat_T	st_new;		/* mch_stat() of potential new file */
     char_u	*wp;
 #if defined(UNIX) || defined(VMS)
     mode_t	umask_save;
 #endif
 #ifdef UNIX
     int		shortname = FALSE;	/* use 8.3 file name */
-    struct stat	st_old;		/* mch_stat() of existing viminfo file */
+    stat_T	st_old;		/* mch_stat() of existing viminfo file */
 #endif
 #ifdef WIN3264
     int		hidden = FALSE;
@@ -3457,7 +3457,7 @@ not_writing(void)
     static int
 check_readonly(int *forceit, buf_T *buf)
 {
-    struct stat	st;
+    stat_T	st;
 
     /* Handle a file being readonly when the 'readonly' option is set or when
      * the file exists and permissions are read-only.

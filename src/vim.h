@@ -396,6 +396,36 @@ typedef		 long __w64     long_i;
 #endif
 
 /*
+ * We use 64-bit file functions here, if available.  E.g. ftello() returns
+ * off_t instead of long, which helps if long is 32 bit and off_t is 64 bit.
+ * We assume that when fseeko() is available then ftello() is too.
+ * Note that Windows has different function names.
+ */
+#if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+typedef __int64 off_T;
+# ifdef __MINGW32__
+#  define vim_lseek lseek64
+#  define vim_fseek fseeko64
+#  define vim_ftell ftello64
+# else
+#  define vim_lseek _lseeki64
+#  define vim_fseek _fseeki64
+#  define vim_ftell _ftelli64
+# endif
+#else
+typedef off_t off_T;
+# ifdef HAVE_FSEEKO
+#  define vim_lseek lseek
+#  define vim_ftell ftello
+#  define vim_fseek fseeko
+# else
+#  define vim_lseek lseek
+#  define vim_ftell ftell
+#  define vim_fseek(a, b, c)	fseek(a, (long)b, c)
+# endif
+#endif
+
+/*
  * The characters and attributes cached for the screen.
  */
 typedef char_u schar_T;
@@ -2016,6 +2046,14 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # include <io.h>	    /* for access() */
 
 # define stat(a,b) (access(a,0) ? -1 : stat(a,b))
+#endif
+
+/* Use 64-bit stat structure if available. */
+#if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+# define HAVE_STAT64
+typedef struct _stat64 stat_T;
+#else
+typedef struct stat stat_T;
 #endif
 
 #include "ex_cmds.h"	    /* Ex command defines */

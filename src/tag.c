@@ -83,15 +83,6 @@ static char_u *topmsg = (char_u *)N_("E556: at top of tag stack");
 
 static char_u	*tagmatchname = NULL;	/* name of last used tag */
 
-/*
- * We use ftello() here, if available.  It returns off_t instead of long,
- * which helps if long is 32 bit and off_t is 64 bit.
- * We assume that when fseeko() is available then ftello() is too.
- */
-#ifdef HAVE_FSEEKO
-# define ftell ftello
-#endif
-
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
 /*
  * Tag for preview window is remembered separately, to avoid messing up the
@@ -1297,19 +1288,19 @@ find_tags(
     int		tag_file_sorted = NUL;	/* !_TAG_FILE_SORTED value */
     struct tag_search_info	/* Binary search file offsets */
     {
-	off_t	low_offset;	/* offset for first char of first line that
+	off_T	low_offset;	/* offset for first char of first line that
 				   could match */
-	off_t	high_offset;	/* offset of char after last line that could
+	off_T	high_offset;	/* offset of char after last line that could
 				   match */
-	off_t	curr_offset;	/* Current file offset in search range */
-	off_t	curr_offset_used; /* curr_offset used when skipping back */
-	off_t	match_offset;	/* Where the binary search found a tag */
+	off_T	curr_offset;	/* Current file offset in search range */
+	off_T	curr_offset_used; /* curr_offset used when skipping back */
+	off_T	match_offset;	/* Where the binary search found a tag */
 	int	low_char;	/* first char at low_offset */
 	int	high_char;	/* first char at high_offset */
     } search_info;
-    off_t	filesize;
+    off_T	filesize;
     int		tagcmp;
-    off_t	offset;
+    off_T	offset;
     int		round;
 #endif
     enum
@@ -1640,25 +1631,17 @@ find_tags(
 	    {
 		/* Adjust the search file offset to the correct position */
 		search_info.curr_offset_used = search_info.curr_offset;
-#ifdef HAVE_FSEEKO
-		fseeko(fp, search_info.curr_offset, SEEK_SET);
-#else
-		fseek(fp, (long)search_info.curr_offset, SEEK_SET);
-#endif
+		vim_fseek(fp, search_info.curr_offset, SEEK_SET);
 		eof = tag_fgets(lbuf, LSIZE, fp);
 		if (!eof && search_info.curr_offset != 0)
 		{
 		    /* The explicit cast is to work around a bug in gcc 3.4.2
 		     * (repeated below). */
-		    search_info.curr_offset = ftell(fp);
+		    search_info.curr_offset = vim_ftell(fp);
 		    if (search_info.curr_offset == search_info.high_offset)
 		    {
 			/* oops, gone a bit too far; try from low offset */
-#ifdef HAVE_FSEEKO
-			fseeko(fp, search_info.low_offset, SEEK_SET);
-#else
-			fseek(fp, (long)search_info.low_offset, SEEK_SET);
-#endif
+			vim_fseek(fp, search_info.low_offset, SEEK_SET);
 			search_info.curr_offset = search_info.low_offset;
 		    }
 		    eof = tag_fgets(lbuf, LSIZE, fp);
@@ -1666,14 +1649,14 @@ find_tags(
 		/* skip empty and blank lines */
 		while (!eof && vim_isblankline(lbuf))
 		{
-		    search_info.curr_offset = ftell(fp);
+		    search_info.curr_offset = vim_ftell(fp);
 		    eof = tag_fgets(lbuf, LSIZE, fp);
 		}
 		if (eof)
 		{
 		    /* Hit end of file.  Skip backwards. */
 		    state = TS_SKIP_BACK;
-		    search_info.match_offset = ftell(fp);
+		    search_info.match_offset = vim_ftell(fp);
 		    search_info.curr_offset = search_info.curr_offset_used;
 		    continue;
 		}
@@ -1899,12 +1882,12 @@ line_read_in:
 		{
 		    /* Get the tag file size (don't use mch_fstat(), it's not
 		     * portable). */
-		    if ((filesize = lseek(fileno(fp),
-						   (off_t)0L, SEEK_END)) <= 0)
+		    if ((filesize = vim_lseek(fileno(fp),
+						   (off_T)0L, SEEK_END)) <= 0)
 			state = TS_LINEAR;
 		    else
 		    {
-			lseek(fileno(fp), (off_t)0L, SEEK_SET);
+			vim_lseek(fileno(fp), (off_T)0L, SEEK_SET);
 
 			/* Calculate the first read offset in the file.  Start
 			 * the search in the middle of the file. */
@@ -1956,11 +1939,7 @@ parse_line:
 			    /* Avoid getting stuck. */
 			    linear = TRUE;
 			    state = TS_LINEAR;
-# ifdef HAVE_FSEEKO
-			    fseeko(fp, search_info.low_offset, SEEK_SET);
-# else
-			    fseek(fp, (long)search_info.low_offset, SEEK_SET);
-# endif
+			    vim_fseek(fp, search_info.low_offset, SEEK_SET);
 			}
 #endif
 			continue;
@@ -2058,7 +2037,7 @@ parse_line:
 		    }
 		    if (tagcmp < 0)
 		    {
-			search_info.curr_offset = ftell(fp);
+			search_info.curr_offset = vim_ftell(fp);
 			if (search_info.curr_offset < search_info.high_offset)
 			{
 			    search_info.low_offset = search_info.curr_offset;
@@ -2099,7 +2078,7 @@ parse_line:
 		{
 		    if (MB_STRNICMP(tagp.tagname, orgpat.head, cmplen) != 0)
 		    {
-			if ((off_t)ftell(fp) > search_info.match_offset)
+			if ((off_T)vim_ftell(fp) > search_info.match_offset)
 			    break;	/* past last match */
 			else
 			    continue;	/* before first match */
@@ -2444,7 +2423,7 @@ parse_line:
 #ifdef FEAT_CSCOPE
 	    if (!use_cscope)
 #endif
-		EMSGN(_("Before byte %ld"), (long)ftell(fp));
+		EMSGN(_("Before byte %ld"), (long)vim_ftell(fp));
 	    stop_searching = TRUE;
 	    line_error = FALSE;
 	}
@@ -3539,7 +3518,7 @@ simplify_filename(char_u *filename)
 	    {
 		int		do_strip = FALSE;
 		char_u		saved_char;
-		struct stat	st;
+		stat_T		st;
 
 		/* Don't strip for an erroneous file name. */
 		if (!stripping_disabled)
@@ -3584,7 +3563,7 @@ simplify_filename(char_u *filename)
 #ifdef UNIX
 			if (do_strip)
 			{
-			    struct stat	new_st;
+			    stat_T	new_st;
 
 			    /* On Unix, the check for the unstripped file name
 			     * above works also for a symbolic link pointing to

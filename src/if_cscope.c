@@ -42,7 +42,7 @@ static int	    cs_find_common(char *opt, char *pat, int, int, int, char_u *cmdli
 static int	    cs_help(exarg_T *eap);
 static void	    clear_csinfo(int i);
 static int	    cs_insert_filelist(char *, char *, char *,
-			struct stat *);
+			stat_T *);
 static int	    cs_kill(exarg_T *eap);
 static void	    cs_kill_execute(int, char *);
 static cscmd_T *    cs_lookup_cmd(exarg_T *eap);
@@ -520,7 +520,7 @@ cs_add_common(
     char *arg2,	    /* prepend path - may contain environment variables */
     char *flags)
 {
-    struct stat statbuf;
+    stat_T	statbuf;
     int		ret;
     char	*fname = NULL;
     char	*fname2 = NULL;
@@ -547,7 +547,7 @@ cs_add_common(
     fname = (char *)vim_strnsave((char_u *)fname, len);
     vim_free(fbuf);
 #endif
-    ret = stat(fname, &statbuf);
+    ret = mch_stat(fname, &statbuf);
     if (ret < 0)
     {
 staterr:
@@ -559,13 +559,13 @@ staterr:
     /* get the prepend path (arg2), expand it, and try to stat it */
     if (arg2 != NULL)
     {
-	struct stat statbuf2;
+	stat_T	    statbuf2;
 
 	if ((ppath = (char *)alloc(MAXPATHL + 1)) == NULL)
 	    goto add_err;
 
 	expand_env((char_u *)arg2, (char_u *)ppath, MAXPATHL);
-	ret = stat(ppath, &statbuf2);
+	ret = mch_stat(ppath, &statbuf2);
 	if (ret < 0)
 	    goto staterr;
     }
@@ -592,7 +592,7 @@ staterr:
 	else
 	    (void)sprintf(fname2, "%s/%s", fname, CSCOPE_DBFILE);
 
-	ret = stat(fname2, &statbuf);
+	ret = mch_stat(fname2, &statbuf);
 	if (ret < 0)
 	{
 	    if (p_csverbose)
@@ -1421,7 +1421,7 @@ cs_insert_filelist(
     char *fname,
     char *ppath,
     char *flags,
-    struct stat *sb UNUSED)
+    stat_T *sb UNUSED)
 {
     short	i, j;
 #ifndef UNIX

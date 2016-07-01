@@ -3058,7 +3058,7 @@ mch_dirname(
     long
 mch_getperm(char_u *name)
 {
-    struct stat st;
+    stat_T	st;
     int		n;
 
     n = mch_stat((char *)name, &st);

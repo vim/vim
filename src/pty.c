@@ -247,7 +247,7 @@ OpenPTY(char **ttyn)
 OpenPTY(char **ttyn)
 {
     int		f;
-    struct stat buf;
+    stat_T	buf;
     /* used for opening a new pty-pair: */
     static char TtyName[32];
 

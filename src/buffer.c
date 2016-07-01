@@ -35,9 +35,9 @@ static char_u	*fname_match(regmatch_T *rmp, char_u *name, int ignore_case);
 static void	buflist_setfpos(buf_T *buf, win_T *win, linenr_T lnum, colnr_T col, int copy_options);
 static wininfo_T *find_wininfo(buf_T *buf, int skip_diff_buffer);
 #ifdef UNIX
-static buf_T	*buflist_findname_stat(char_u *ffname, struct stat *st);
-static int	otherfile_buf(buf_T *buf, char_u *ffname, struct stat *stp);
-static int	buf_same_ino(buf_T *buf, struct stat *stp);
+static buf_T	*buflist_findname_stat(char_u *ffname, stat_T *st);
+static int	otherfile_buf(buf_T *buf, char_u *ffname, stat_T *stp);
+static int	buf_same_ino(buf_T *buf, stat_T *stp);
 #else
 static int	otherfile_buf(buf_T *buf, char_u *ffname);
 #endif
@@ -1663,7 +1663,7 @@ buflist_new(
 {
     buf_T	*buf;
 #ifdef UNIX
-    struct stat	st;
+    stat_T	st;
 #endif
 
     fname_expand(curbuf, &ffname, &sfname);	/* will allocate ffname */
@@ -2183,7 +2183,7 @@ buflist_findname_exp(char_u *fname)
 buflist_findname(char_u *ffname)
 {
 #ifdef UNIX
-    struct stat st;
+    stat_T	st;
 
     if (mch_stat((char *)ffname, &st) < 0)
 	st.st_dev = (dev_T)-1;
@@ -2198,7 +2198,7 @@ buflist_findname(char_u *ffname)
     static buf_T *
 buflist_findname_stat(
     char_u	*ffname,
-    struct stat	*stp)
+    stat_T	*stp)
 {
 #endif
     buf_T	*buf;
@@ -2847,7 +2847,7 @@ setfname(
 {
     buf_T	*obuf = NULL;
 #ifdef UNIX
-    struct stat st;
+    stat_T	st;
 #endif
 
     if (ffname == NULL || *ffname == NUL)
@@ -3084,7 +3084,7 @@ otherfile_buf(
     buf_T		*buf,
     char_u		*ffname
 #ifdef UNIX
-    , struct stat	*stp
+    , stat_T		*stp
 #endif
     )
 {
@@ -3095,9 +3095,9 @@ otherfile_buf(
 	return FALSE;
 #ifdef UNIX
     {
-	struct stat	st;
+	stat_T	    st;
 
-	/* If no struct stat given, get it now */
+	/* If no stat_T given, get it now */
 	if (stp == NULL)
 	{
 	    if (!buf->b_dev_valid || mch_stat((char *)ffname, &st) < 0)
@@ -3132,7 +3132,7 @@ otherfile_buf(
     void
 buf_setino(buf_T *buf)
 {
-    struct stat	st;
+    stat_T	st;
 
     if (buf->b_fname != NULL && mch_stat((char *)buf->b_fname, &st) >= 0)
     {
@@ -3150,7 +3150,7 @@ buf_setino(buf_T *buf)
     static int
 buf_same_ino(
     buf_T	*buf,
-    struct stat *stp)
+    stat_T	*stp)
 {
     return (buf->b_dev_valid
 	    && stp->st_dev == buf->b_dev

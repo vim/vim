@@ -2034,7 +2034,9 @@ test_arglist \
 	test_increment_dbcs \
 	test_join \
 	test_json \
+	test_jumps \
 	test_langmap \
+	test_largefile \
 	test_lispwords \
 	test_man \
 	test_matchadd_conceal \
@@ -2054,6 +2056,7 @@ test_arglist \
 	test_searchpos \
 	test_set \
 	test_sort \
+	test_stat \
 	test_statusline \
 	test_syn_attr \
 	test_syntax \

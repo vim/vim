@@ -3186,7 +3186,7 @@ process_env(
     static int
 file_owned(char *fname)
 {
-    struct stat s;
+    stat_T	s;
 # ifdef UNIX
     uid_t	uid = getuid();
 # else	 /* VMS */

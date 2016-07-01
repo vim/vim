@@ -4056,7 +4056,7 @@ expand_env_esc(
 		{
 		    char_u	test[MAXPATHL], paths[MAXPATHL];
 		    char_u	*path, *next_path, *ptr;
-		    struct stat	st;
+		    stat_T	st;
 
 		    STRCPY(paths, USER_HOME);
 		    next_path = paths;
@@ -4752,7 +4752,7 @@ fullpathcmp(
     char_u	    exp1[MAXPATHL];
     char_u	    full1[MAXPATHL];
     char_u	    full2[MAXPATHL];
-    struct stat	    st1, st2;
+    stat_T	    st1, st2;
     int		    r1, r2;
 
     expand_env(s1, exp1, MAXPATHL);
@@ -9500,7 +9500,7 @@ preserve_exit(void)
     int
 vim_fexists(char_u *fname)
 {
-    struct stat st;
+    stat_T st;
 
     if (mch_stat((char *)fname, &st))
 	return FALSE;
@@ -10217,7 +10217,7 @@ unix_expandpath(
 		}
 		else
 		{
-		    struct stat sb;
+		    stat_T  sb;
 
 		    /* no more wildcards, check if there is a match */
 		    /* remove backslashes for the remaining components only */
@@ -10972,7 +10972,7 @@ addfile(
 {
     char_u	*p;
     int		isdir;
-    struct stat sb;
+    stat_T	sb;
 
     /* if the file/dir/link doesn't exist, may not add it */
     if (!(flags & EW_NOTFOUND) && ((flags & EW_ALLLINKS)

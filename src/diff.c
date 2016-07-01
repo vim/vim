@@ -888,7 +888,7 @@ ex_diffpatch(exarg_T *eap)
     char_u	*browseFile = NULL;
     int		browse_flag = cmdmod.browse;
 #endif
-    struct stat st;
+    stat_T	st;
 
 #ifdef FEAT_BROWSE
     if (cmdmod.browse)

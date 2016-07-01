@@ -9037,7 +9037,7 @@ mkspell(
     afffile_T	*(afile[8]);
     int		i;
     int		len;
-    struct stat	st;
+    stat_T	st;
     int		error = FALSE;
     spellinfo_T spin;
 

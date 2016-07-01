@@ -12980,7 +12980,7 @@ f_getfontname(typval_T *argvars UNUSED, typval_T *rettv)
 f_getfperm(typval_T *argvars, typval_T *rettv)
 {
     char_u	*fname;
-    struct stat st;
+    stat_T	st;
     char_u	*perm = NULL;
     char_u	flags[] = "rwx";
     int		i;
@@ -13010,7 +13010,7 @@ f_getfperm(typval_T *argvars, typval_T *rettv)
 f_getfsize(typval_T *argvars, typval_T *rettv)
 {
     char_u	*fname;
-    struct stat	st;
+    stat_T	st;
 
     fname = get_tv_string(&argvars[0]);
 
@@ -13025,7 +13025,7 @@ f_getfsize(typval_T *argvars, typval_T *rettv)
 	    rettv->vval.v_number = (varnumber_T)st.st_size;
 
 	    /* non-perfect check for overflow */
-	    if ((off_t)rettv->vval.v_number != (off_t)st.st_size)
+	    if ((off_T)rettv->vval.v_number != (off_T)st.st_size)
 		rettv->vval.v_number = -2;
 	}
     }
@@ -13040,7 +13040,7 @@ f_getfsize(typval_T *argvars, typval_T *rettv)
 f_getftime(typval_T *argvars, typval_T *rettv)
 {
     char_u	*fname;
-    struct stat	st;
+    stat_T	st;
 
     fname = get_tv_string(&argvars[0]);
 
@@ -13057,7 +13057,7 @@ f_getftime(typval_T *argvars, typval_T *rettv)
 f_getftype(typval_T *argvars, typval_T *rettv)
 {
     char_u	*fname;
-    struct stat st;
+    stat_T	st;
     char_u	*type = NULL;
     char	*t;
 
