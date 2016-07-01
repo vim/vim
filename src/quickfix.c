@@ -2258,6 +2258,7 @@ qf_list(exarg_T *eap)
     int		idx1 = 1;
     int		idx2 = -1;
     char_u	*arg = eap->arg;
+    int		plus = FALSE;
     int		all = eap->forceit;	/* if not :cl!, only show
 						   recognised errors */
     qf_info_T	*qi = &ql_info;
@@ -2278,16 +2279,30 @@ qf_list(exarg_T *eap)
 	EMSG(_(e_quickfix));
 	return;
     }
+    if (*arg == '+')
+    {
+	++arg;
+	plus = TRUE;
+    }
     if (!get_list_range(&arg, &idx1, &idx2) || *arg != NUL)
     {
 	EMSG(_(e_trailing));
 	return;
     }
-    i = qi->qf_lists[qi->qf_curlist].qf_count;
-    if (idx1 < 0)
-	idx1 = (-idx1 > i) ? 0 : idx1 + i + 1;
-    if (idx2 < 0)
-	idx2 = (-idx2 > i) ? 0 : idx2 + i + 1;
+    if (plus)
+    {
+	i = qi->qf_lists[qi->qf_curlist].qf_index;
+	idx2 = i + idx1;
+	idx1 = i;
+    }
+    else
+    {
+	i = qi->qf_lists[qi->qf_curlist].qf_count;
+	if (idx1 < 0)
+	    idx1 = (-idx1 > i) ? 0 : idx1 + i + 1;
+	if (idx2 < 0)
+	    idx2 = (-idx2 > i) ? 0 : idx2 + i + 1;
+    }
 
     if (qi->qf_lists[qi->qf_curlist].qf_nonevalid)
 	all = TRUE;
