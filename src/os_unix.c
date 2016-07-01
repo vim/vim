@@ -3411,7 +3411,13 @@ mch_settmode(int tmode)
 	tnew.c_cc[VTIME] = 0;		/* don't wait */
     }
     else if (tmode == TMODE_SLEEP)
-	tnew.c_lflag &= ~(ECHO);
+    {
+	/* Also reset ICANON here, otherwise on Solaris select() won't see
+	 * typeahead characters. */
+	tnew.c_lflag &= ~(ICANON | ECHO);
+	tnew.c_cc[VMIN] = 1;		/* return after 1 char */
+	tnew.c_cc[VTIME] = 0;		/* don't wait */
+    }
 
 # if defined(HAVE_TERMIOS_H)
     {
