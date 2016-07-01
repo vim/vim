@@ -422,13 +422,14 @@ netbeans_parse_messages(void)
 	    buffer = node->rq_buffer;
 	}
 
-	/* now, parse and execute the commands */
+	/* Now, parse and execute the commands.  This may set nb_channel to
+	 * NULL if the channel is closed. */
 	nb_parse_cmd(buffer);
 
 	if (own_node)
 	    /* buffer finished, dispose of it */
 	    vim_free(buffer);
-	else
+	else if (nb_channel != NULL)
 	    /* more follows, move it to the start */
 	    channel_consume(nb_channel, PART_SOCK, (int)(p - buffer));
     }
