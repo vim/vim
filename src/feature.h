@@ -362,11 +362,15 @@
  * +eval		Built-in script language and expression evaluation,
  *			":let", ":if", etc.
  * +float		Floating point variables.
+ * +num64		64-bit Number.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_EVAL
 # if defined(HAVE_FLOAT_FUNCS) || defined(WIN3264) || defined(MACOS)
 #  define FEAT_FLOAT
+# endif
+# if defined(HAVE_STDINT_H) || defined(WIN3264) || (VIM_SIZEOF_LONG >= 8)
+#  define FEAT_NUM64
 # endif
 #endif
 

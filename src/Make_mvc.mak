@@ -501,6 +501,11 @@ OPTFLAG = $(OPTFLAG) /GL
 CFLAGS=$(CFLAGS) $(WP64CHECK)
 !endif
 
+# VC10 or later has stdint.h.
+!if $(MSVC_MAJOR) >= 10
+CFLAGS = $(CFLAGS) -DHAVE_STDINT_H
+!endif
+
 # Static code analysis generally available starting with VS2012 (VC11) or
 # Windows SDK 7.1 (VC10)
 !if ("$(ANALYZE)" == "yes") && ($(MSVC_MAJOR) >= 10)

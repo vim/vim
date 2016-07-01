@@ -289,10 +289,10 @@ typedef struct
     union {
 	struct
 	{
-	    long	start_col_nr;		/* starting column number */
-	    long	end_col_nr;		/* ending column number */
+	    varnumber_T	start_col_nr;		/* starting column number */
+	    varnumber_T	end_col_nr;		/* ending column number */
 	} line;
-	long	value;		/* value if sorting by integer */
+	varnumber_T	value;		/* value if sorting by integer */
 #ifdef FEAT_FLOAT
 	float_T value_flt;	/* value if sorting by float */
 #endif

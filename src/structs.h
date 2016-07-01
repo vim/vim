@@ -1111,11 +1111,29 @@ typedef struct hashtable_S
 typedef long_u hash_T;		/* Type for hi_hash */
 
 
-#if VIM_SIZEOF_INT <= 3		/* use long if int is smaller than 32 bits */
-typedef long	varnumber_T;
+#ifdef FEAT_NUM64
+/* Use 64-bit Number. */
+# ifdef WIN3264
+typedef __int64		    varnumber_T;
+typedef unsigned __int64    uvarnumber_T;
+# elif defined(HAVE_STDINT_H)
+typedef int64_t		    varnumber_T;
+typedef uint64_t	    uvarnumber_T;
+# else
+typedef long		    varnumber_T;
+typedef unsigned long	    uvarnumber_T;
+# endif
 #else
-typedef int	varnumber_T;
+/* Use 32-bit Number. */
+# if VIM_SIZEOF_INT <= 3	/* use long if int is smaller than 32 bits */
+typedef long		    varnumber_T;
+typedef unsigned long	    uvarnumber_T;
+# else
+typedef int		    varnumber_T;
+typedef unsigned int	    uvarnumber_T;
+# endif
 #endif
+
 typedef double	float_T;
 
 typedef struct listvar_S list_T;

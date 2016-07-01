@@ -9481,7 +9481,7 @@ apply_autocmds_group(
 
 #ifdef FEAT_EVAL
 	/* set v:cmdarg (only when there is a matching pattern) */
-	save_cmdbang = get_vim_var_nr(VV_CMDBANG);
+	save_cmdbang = (long)get_vim_var_nr(VV_CMDBANG);
 	if (eap != NULL)
 	{
 	    save_cmdarg = set_cmdarg(eap, NULL);

@@ -2719,7 +2719,7 @@ find_special_key(
     int		modifiers;
     int		bit;
     int		key;
-    unsigned long n;
+    uvarnumber_T	n;
     int		l;
 
     src = *srcp;

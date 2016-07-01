@@ -6005,7 +6005,7 @@ get_list_range(char_u **str, int *num1, int *num2)
 {
     int		len;
     int		first = FALSE;
-    long	num;
+    varnumber_T	num;
 
     *str = skipwhite(*str);
     if (**str == '-' || vim_isdigit(**str))  /* parse "from" part of range */

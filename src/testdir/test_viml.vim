@@ -1197,6 +1197,34 @@ func Test_echo_and_string()
 endfunc
 
 "-------------------------------------------------------------------------------
+" Test 94:  64-bit Numbers					    {{{1
+"-------------------------------------------------------------------------------
+
+func Test_num64()
+    if !has('num64')
+	return
+    endif
+
+    call assert_notequal( 4294967296, 0)
+    call assert_notequal(-4294967296, 0)
+    call assert_equal( 4294967296,  0xFFFFffff + 1)
+    call assert_equal(-4294967296, -0xFFFFffff - 1)
+
+    call assert_equal( 9223372036854775807,  1 / 0)
+    call assert_equal(-9223372036854775807, -1 / 0)
+    call assert_equal(-9223372036854775808,  0 / 0)
+
+    call assert_equal( 0x7FFFffffFFFFffff, float2nr( 1.0e150))
+    call assert_equal(-0x7FFFffffFFFFffff, float2nr(-1.0e150))
+
+    let rng = range(0xFFFFffff, 0x100000001)
+    call assert_equal([0xFFFFffff, 0x100000000, 0x100000001], rng)
+    call assert_equal(0x100000001, max(rng))
+    call assert_equal(0xFFFFffff, min(rng))
+    call assert_equal(rng, sort(range(0x100000001, 0xFFFFffff, -1), 'N'))
+endfunc
+
+"-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
 " vim: fdt=substitute(substitute(foldtext(),\ '\\%(^+--\\)\\@<=\\(\\s*\\)\\(.\\{-}\\)\:\ \\%(\"\ \\)\\=\\(Test\ \\d*\\)\:\\s*',\ '\\3\ (\\2)\:\ \\1',\ \"\"),\ '\\(Test\\s*\\)\\(\\d\\)\\D\\@=',\ '\\1\ \\2',\ "")

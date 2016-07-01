@@ -1179,9 +1179,9 @@ stuff_yank(int regname, char_u *p)
 static int execreg_lastc = NUL;
 
 /*
- * execute a yank register: copy it into the stuff buffer
+ * Execute a yank register: copy it into the stuff buffer.
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 do_execreg(
@@ -4755,7 +4755,7 @@ fex_format(
      */
     if (use_sandbox)
 	++sandbox;
-    r = eval_to_number(curbuf->b_p_fex);
+    r = (int)eval_to_number(curbuf->b_p_fex);
     if (use_sandbox)
 	--sandbox;
 
@@ -5449,8 +5449,8 @@ do_addsub(
     char_u	buf2[NUMBUFLEN];
     int		pre;		/* 'X'/'x': hex; '0': octal; 'B'/'b': bin */
     static int	hexupper = FALSE;	/* 0xABC */
-    unsigned long n;
-    long_u	oldn;
+    uvarnumber_T	n;
+    uvarnumber_T	oldn;
     char_u	*ptr;
     int		c;
     int		todel;
@@ -5708,9 +5708,9 @@ do_addsub(
 
 	oldn = n;
 	if (subtract)
-	    n -= (unsigned long)Prenum1;
+	    n -= (uvarnumber_T)Prenum1;
 	else
-	    n += (unsigned long)Prenum1;
+	    n += (uvarnumber_T)Prenum1;
 	/* handle wraparound for decimal numbers */
 	if (!pre)
 	{
@@ -5718,7 +5718,7 @@ do_addsub(
 	    {
 		if (n > oldn)
 		{
-		    n = 1 + (n ^ (unsigned long)-1);
+		    n = 1 + (n ^ (uvarnumber_T)-1);
 		    negative ^= TRUE;
 		}
 	    }
@@ -5727,7 +5727,7 @@ do_addsub(
 		/* add */
 		if (n < oldn)
 		{
-		    n = (n ^ (unsigned long)-1);
+		    n = (n ^ (uvarnumber_T)-1);
 		    negative ^= TRUE;
 		}
 	    }
@@ -5803,7 +5803,7 @@ do_addsub(
 	{
 	    int i;
 	    int bit = 0;
-	    int bits = sizeof(unsigned long) * 8;
+	    int bits = sizeof(uvarnumber_T) * 8;
 
 	    /* leading zeros */
 	    for (bit = bits; bit > 0; bit--)
@@ -5815,13 +5815,13 @@ do_addsub(
 	    buf2[i] = '\0';
 	}
 	else if (pre == 0)
-	    sprintf((char *)buf2, "%lu", n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llu", n);
 	else if (pre == '0')
-	    sprintf((char *)buf2, "%lo", n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llo", n);
 	else if (pre && hexupper)
-	    sprintf((char *)buf2, "%lX", n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llX", n);
 	else
-	    sprintf((char *)buf2, "%lx", n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llx", n);
 	length -= (int)STRLEN(buf2);
 
 	/*
@@ -7086,7 +7086,7 @@ clear_oparg(oparg_T *oap)
     vim_memset(oap, 0, sizeof(oparg_T));
 }
 
-static long	line_count_info(char_u *line, long *wc, long *cc, long limit, int eol_size);
+static varnumber_T line_count_info(char_u *line, varnumber_T *wc, varnumber_T *cc, varnumber_T limit, int eol_size);
 
 /*
  *  Count the number of bytes, characters and "words" in a line.
@@ -7102,17 +7102,17 @@ static long	line_count_info(char_u *line, long *wc, long *cc, long limit, int eo
  *  case, eol_size will be added to the character count to account for
  *  the size of the EOL character.
  */
-    static long
+    static varnumber_T
 line_count_info(
     char_u	*line,
-    long	*wc,
-    long	*cc,
-    long	limit,
+    varnumber_T	*wc,
+    varnumber_T	*cc,
+    varnumber_T	limit,
     int		eol_size)
 {
-    long	i;
-    long	words = 0;
-    long	chars = 0;
+    varnumber_T	i;
+    varnumber_T	words = 0;
+    varnumber_T	chars = 0;
     int		is_word = 0;
 
     for (i = 0; i < limit && line[i] != NUL; )
@@ -7162,17 +7162,17 @@ cursor_pos_info(dict_T *dict)
     char_u	buf1[50];
     char_u	buf2[40];
     linenr_T	lnum;
-    long	byte_count = 0;
+    varnumber_T	byte_count = 0;
 #ifdef FEAT_MBYTE
-    long	bom_count  = 0;
+    varnumber_T	bom_count  = 0;
 #endif
-    long	byte_count_cursor = 0;
-    long	char_count = 0;
-    long	char_count_cursor = 0;
-    long	word_count = 0;
-    long	word_count_cursor = 0;
+    varnumber_T	byte_count_cursor = 0;
+    varnumber_T	char_count = 0;
+    varnumber_T	char_count_cursor = 0;
+    varnumber_T	word_count = 0;
+    varnumber_T	word_count_cursor = 0;
     int		eol_size;
-    long	last_check = 100000L;
+    varnumber_T	last_check = 100000L;
     long	line_count_selected = 0;
     pos_T	min_pos, max_pos;
     oparg_T	oparg;
@@ -7308,12 +7308,14 @@ cursor_pos_info(dict_T *dict)
 		    byte_count_cursor = byte_count +
 			line_count_info(ml_get(lnum),
 				&word_count_cursor, &char_count_cursor,
-				  (long)(curwin->w_cursor.col + 1), eol_size);
+				(varnumber_T)(curwin->w_cursor.col + 1),
+				eol_size);
 		}
 	    }
 	    /* Add to the running totals */
 	    byte_count += line_count_info(ml_get(lnum), &word_count,
-					 &char_count, (long)MAXCOL, eol_size);
+					 &char_count, (varnumber_T)MAXCOL,
+					 eol_size);
 	}
 
 	/* Correction for when last line doesn't have an EOL. */
@@ -7337,14 +7339,14 @@ cursor_pos_info(dict_T *dict)
 		if (char_count_cursor == byte_count_cursor
 						    && char_count == byte_count)
 		    vim_snprintf((char *)IObuff, IOSIZE,
-			    _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"),
+			    _("Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Bytes"),
 			    buf1, line_count_selected,
 			    (long)curbuf->b_ml.ml_line_count,
 			    word_count_cursor, word_count,
 			    byte_count_cursor, byte_count);
 		else
 		    vim_snprintf((char *)IObuff, IOSIZE,
-			    _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld Bytes"),
+			    _("Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of %lld Bytes"),
 			    buf1, line_count_selected,
 			    (long)curbuf->b_ml.ml_line_count,
 			    word_count_cursor, word_count,
@@ -7363,7 +7365,7 @@ cursor_pos_info(dict_T *dict)
 		if (char_count_cursor == byte_count_cursor
 			&& char_count == byte_count)
 		    vim_snprintf((char *)IObuff, IOSIZE,
-			_("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"),
+			_("Col %s of %s; Line %ld of %ld; Word %lld of %lld; Byte %lld of %lld"),
 			(char *)buf1, (char *)buf2,
 			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
@@ -7371,7 +7373,7 @@ cursor_pos_info(dict_T *dict)
 			byte_count_cursor, byte_count);
 		else
 		    vim_snprintf((char *)IObuff, IOSIZE,
-			_("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of %ld"),
+			_("Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte %lld of %lld"),
 			(char *)buf1, (char *)buf2,
 			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
@@ -7399,19 +7401,19 @@ cursor_pos_info(dict_T *dict)
 #if defined(FEAT_EVAL)
     if (dict != NULL)
     {
-	dict_add_nr_str(dict, "words", (long)word_count, NULL);
-	dict_add_nr_str(dict, "chars", (long)char_count, NULL);
-	dict_add_nr_str(dict, "bytes", (long)byte_count
+	dict_add_nr_str(dict, "words", word_count, NULL);
+	dict_add_nr_str(dict, "chars", char_count, NULL);
+	dict_add_nr_str(dict, "bytes", byte_count
 # ifdef FEAT_MBYTE
 		+ bom_count
 # endif
 		, NULL);
 	dict_add_nr_str(dict, VIsual_active ? "visual_bytes" : "cursor_bytes",
-		(long)byte_count_cursor, NULL);
+		byte_count_cursor, NULL);
 	dict_add_nr_str(dict, VIsual_active ? "visual_chars" : "cursor_chars",
-		(long)char_count_cursor, NULL);
+		char_count_cursor, NULL);
 	dict_add_nr_str(dict, VIsual_active ? "visual_words" : "cursor_words",
-		(long)word_count_cursor, NULL);
+		word_count_cursor, NULL);
     }
 #endif
 }

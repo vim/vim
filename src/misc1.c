@@ -9169,7 +9169,7 @@ get_expr_indent(void)
     if (use_sandbox)
 	++sandbox;
     ++textlock;
-    indent = eval_to_number(curbuf->b_p_inde);
+    indent = (int)eval_to_number(curbuf->b_p_inde);
     if (use_sandbox)
 	--sandbox;
     --textlock;
