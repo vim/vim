@@ -3349,7 +3349,7 @@ add_pack_plugin(char_u *fname, void *cookie)
     char_u  *afterdir;
     size_t  afterlen = 0;
     char_u  *ffname = fix_fname(fname);
-    int	    fname_len;
+    size_t  fname_len;
 
     if (ffname == NULL)
 	return;
