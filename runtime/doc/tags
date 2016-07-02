@@ -1260,6 +1260,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +mzscheme	various.txt	/*+mzscheme*
 +mzscheme/dyn	various.txt	/*+mzscheme\/dyn*
 +netbeans_intg	various.txt	/*+netbeans_intg*
++num64	various.txt	/*+num64*
 +ole	various.txt	/*+ole*
 +packages	various.txt	/*+packages*
 +path_extra	various.txt	/*+path_extra*

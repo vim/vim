@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Jun 19
+*options.txt*	For Vim version 7.4.  Last change: 2016 Jul 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1427,8 +1427,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only non-printable keys are allowed.
 	The key can be specified as a single character, but it is difficult to
 	type.  The preferred way is to use the <> notation.  Examples: >
-		:set cedit=<C-Y>
-		:set cedit=<Esc>
+		:exe "set cedit=\<C-Y>"
+		:exe "set cedit=\<Esc>"
 <	|Nvi| also has this option, but it only uses the first character.
 	See |cmdwin|.
 
