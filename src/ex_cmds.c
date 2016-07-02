@@ -2834,13 +2834,23 @@ write_viminfo_barlines(vir_T *virp, FILE *fp_out)
 {
     int		i;
     garray_T	*gap = &virp->vir_barlines;
+    int		seen_useful = FALSE;
+    char	*line;
 
     if (gap->ga_len > 0)
     {
 	fputs(_("\n# Bar lines, copied verbatim:\n"), fp_out);
 
+	/* Skip over continuation lines until seeing a useful line. */
 	for (i = 0; i < gap->ga_len; ++i)
-	    fputs(((char **)(gap->ga_data))[i], fp_out);
+	{
+	    line = ((char **)(gap->ga_data))[i];
+	    if (seen_useful || line[1] != '<')
+	    {
+		fputs(line, fp_out);
+		seen_useful = TRUE;
+	    }
+	}
     }
 }
 #endif /* FEAT_VIMINFO */
