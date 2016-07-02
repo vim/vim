@@ -1859,7 +1859,12 @@ write_viminfo_marks(FILE *fp_out)
 #ifdef FEAT_JUMPLIST
 		/* changelist positions are stored oldest first */
 		for (i = 0; i < buf->b_changelistlen; ++i)
-		    write_one_mark(fp_out, '+', &buf->b_changelist[i]);
+		{
+		    /* skip duplicates */
+		    if (i == 0 || !equalpos(buf->b_changelist[i - 1],
+							buf->b_changelist[i]))
+			write_one_mark(fp_out, '+', &buf->b_changelist[i]);
+		}
 #endif
 		for (i = 0; i < NMARKS; i++)
 		    write_one_mark(fp_out, 'a' + i, &buf->b_namedm[i]);
