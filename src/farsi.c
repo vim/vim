@@ -9,9 +9,11 @@
 
 /*
  * farsi.c: functions for Farsi language
- *
- * Included by main.c, when FEAT_FKMAP is defined.
  */
+
+#include "vim.h"
+
+#if defined(FEAT_FKMAP) || defined(PROTO)
 
 static int toF_Xor_X_(int c);
 static int F_is_TyE(int c);
@@ -2189,3 +2191,5 @@ farsi_f9(cmdarg_T *cap UNUSED)
 	    conv_to_pstd();
     }
 }
+
+#endif /* FEAT_FKMAP */

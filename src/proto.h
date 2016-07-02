@@ -92,6 +92,12 @@ extern int _stricoll(char *a, char *b);
 # ifdef FEAT_MENU
 #  include "menu.pro"
 # endif
+# ifdef FEAT_FKMAP
+#  include "farsi.pro"
+# endif
+# ifdef FEAT_ARABIC
+#  include "arabic.pro"
+# endif
 
 /* These prototypes cannot be produced automatically. */
 int

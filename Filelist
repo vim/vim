@@ -116,6 +116,7 @@ SRC_ALL =	\
 		src/testdir/bench*.vim \
 		src/testdir/samples/*.txt \
 		src/proto.h \
+		src/proto/arabic.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/channel.pro \
@@ -131,6 +132,7 @@ SRC_ALL =	\
 		src/proto/ex_docmd.pro \
 		src/proto/ex_eval.pro \
 		src/proto/ex_getln.pro \
+		src/proto/farsi.pro \
 		src/proto/fileio.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \

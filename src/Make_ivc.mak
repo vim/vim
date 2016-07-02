@@ -210,6 +210,7 @@ ALL : .\$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvime
 
 LINK32_OBJS= \
 	$(EXTRAS) \
+	"$(INTDIR)/arabic.obj" \
 	"$(INTDIR)/blowfish.obj" \
 	"$(INTDIR)/buffer.obj" \
 	"$(INTDIR)/charset.obj" \
@@ -224,6 +225,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/ex_docmd.obj" \
 	"$(INTDIR)/ex_eval.obj" \
 	"$(INTDIR)/ex_getln.obj" \
+	"$(INTDIR)/farsi.obj" \
 	"$(INTDIR)/fileio.obj" \
 	"$(INTDIR)/fold.obj" \
 	"$(INTDIR)/getchar.obj" \
@@ -330,6 +332,10 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 
 # Begin Source File
 
+SOURCE=.\arabic.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\blowfish.c
 # End Source File
 # Begin Source File
@@ -383,6 +389,10 @@ SOURCE=.\ex_eval.c
 # Begin Source File
 
 SOURCE=.\ex_getln.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\farsi.c
 # End Source File
 # Begin Source File
 

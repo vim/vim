@@ -4186,17 +4186,3 @@ serverConvert(
     return res;
 }
 #endif
-
-/*
- * When FEAT_FKMAP is defined, also compile the Farsi source code.
- */
-#if defined(FEAT_FKMAP) || defined(PROTO)
-# include "farsi.c"
-#endif
-
-/*
- * When FEAT_ARABIC is defined, also compile the Arabic source code.
- */
-#if defined(FEAT_ARABIC) || defined(PROTO)
-# include "arabic.c"
-#endif
