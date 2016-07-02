@@ -571,7 +571,7 @@ transchar(int c)
 		    (c >= ' ' && c <= '~')
 #endif
 #ifdef FEAT_FKMAP
-			|| F_ischar(c)
+			|| (p_altkeymap && F_ischar(c))
 #endif
 		)) || (c < 256 && vim_isprintc_strict(c)))
     {

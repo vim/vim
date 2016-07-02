@@ -414,8 +414,8 @@ static const struct nv_cmd
     {K_TABMENU, nv_tabmenu,	0,			0},
 #endif
 #ifdef FEAT_FKMAP
-    {K_F8,	farsi_fkey,	0,			0},
-    {K_F9,	farsi_fkey,	0,			0},
+    {K_F8,	farsi_f8,	0,			0},
+    {K_F9,	farsi_f9,	0,			0},
 #endif
 #ifdef FEAT_NETBEANS_INTG
     {K_F21,	nv_nbcmd,	NV_NCH_ALW,		0},
