@@ -1273,6 +1273,9 @@ main_loop(
 	    if (need_maketitle)
 		maketitle();
 #endif
+#ifdef FEAT_VIMINFO
+	    curbuf->b_last_used = vim_time();
+#endif
 	    /* display message after redraw */
 	    if (keep_msg != NULL)
 	    {

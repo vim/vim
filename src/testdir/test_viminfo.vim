@@ -395,3 +395,33 @@ func Test_viminfo_bad_syntax()
   call delete('Xviminfo')
 endfunc
 
+func Test_viminfo_file_marks()
+  silent! bwipe test_viminfo.vim
+  silent! bwipe Xviminfo
+
+  call test_settime(10)
+  edit ten
+  call test_settime(25)
+  edit again
+  call test_settime(30)
+  edit thirty
+  wviminfo Xviminfo
+
+  call test_settime(20)
+  edit twenty
+  call test_settime(35)
+  edit again
+  call test_settime(40)
+  edit fourty
+  wviminfo Xviminfo
+
+  sp Xviminfo
+  1
+  for name in ['fourty', 'again', 'thirty', 'twenty', 'ten']
+    /^>
+    call assert_equal(name, substitute(getline('.'), '.*/', '', ''))
+  endfor
+  close
+
+  call delete('Xviminfo')
+endfunc

@@ -1619,6 +1619,9 @@ enter_buffer(buf_T *buf)
     if (!curbuf->b_help && curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
 	(void)did_set_spelllang(curwin);
 #endif
+#ifdef FEAT_VIMINFO
+    curbuf->b_last_used = vim_time();
+#endif
 
     redraw_later(NOT_VALID);
 }

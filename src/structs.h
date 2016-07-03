@@ -1771,6 +1771,10 @@ struct file_buffer
     long	b_mtime_read;	/* last change time when reading */
     off_T	b_orig_size;	/* size of original file in bytes */
     int		b_orig_mode;	/* mode of original file */
+#ifdef FEAT_VIMINFO
+    time_T	b_last_used;	/* time when the buffer was last used; used
+				 * for viminfo */
+#endif
 
     pos_T	b_namedm[NMARKS]; /* current named marks (mark.c) */
 

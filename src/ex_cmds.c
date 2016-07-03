@@ -2148,10 +2148,11 @@ viminfo_filename(char_u *file)
     static void
 do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 {
-    int		count = 0;
     int		eof = FALSE;
     vir_T	vir;
     int		merge = FALSE;
+    int		do_copy_marks = FALSE;
+    garray_T	buflist;
 
     if ((vir.vir_line = alloc(LSIZE)) == NULL)
 	return;
@@ -2183,7 +2184,11 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 	    while (!(eof = viminfo_readline(&vir))
 		    && vir.vir_line[0] != '>')
 		;
+
+	do_copy_marks = (flags &
+			   (VIF_WANT_MARKS | VIF_GET_OLDFILES | VIF_FORCEIT));
     }
+
     if (fp_out != NULL)
     {
 	/* Write the info: */
@@ -2209,11 +2214,18 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 	finish_viminfo_marks();
 	write_viminfo_bufferlist(fp_out);
 	write_viminfo_barlines(&vir, fp_out);
-	count = write_viminfo_marks(fp_out);
+
+	if (do_copy_marks)
+	    ga_init2(&buflist, sizeof(buf_T *), 50);
+	write_viminfo_marks(fp_out, do_copy_marks ? &buflist : NULL);
     }
-    if (fp_in != NULL
-	    && (flags & (VIF_WANT_MARKS | VIF_GET_OLDFILES | VIF_FORCEIT)))
-	copy_viminfo_marks(&vir, fp_out, count, eof, flags);
+
+    if (do_copy_marks)
+    {
+	copy_viminfo_marks(&vir, fp_out, &buflist, eof, flags);
+	if (fp_out != NULL)
+	    ga_clear(&buflist);
+    }
 
     vim_free(vir.vir_line);
 #ifdef FEAT_MBYTE
@@ -4286,6 +4298,10 @@ do_ecmd(
 
 	msg_scrolled_ign = FALSE;
     }
+
+#ifdef FEAT_VIMINFO
+    curbuf->b_last_used = vim_time();
+#endif
 
     if (command != NULL)
 	do_cmdline(command, NULL, NULL, DOCMD_VERBOSE);
