@@ -2031,6 +2031,7 @@ test_arglist \
 	test_farsi \
 	test_feedkeys \
 	test_file_perm \
+	test_filter_map \
 	test_fnamemodify \
 	test_glob2regpat \
 	test_goto \

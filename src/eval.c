@@ -6375,7 +6375,8 @@ tv_equal(
 	return TRUE;
     }
 
-    /* For VAR_FUNC and VAR_PARTIAL only compare the function name. */
+    /* For VAR_FUNC and VAR_PARTIAL compare the function name, bound dict and
+     * arguments. */
     if ((tv1->v_type == VAR_FUNC
 		|| (tv1->v_type == VAR_PARTIAL && tv1->vval.v_partial != NULL))
 	    && (tv2->v_type == VAR_FUNC
@@ -11852,7 +11853,7 @@ findfilendir(
 }
 
 static void filter_map(typval_T *argvars, typval_T *rettv, int map);
-static int filter_map_one(typval_T *tv, char_u *expr, int map, int *remp);
+static int filter_map_one(typval_T *tv, typval_T *expr, int map, int *remp);
 
 /*
  * Implementation of map() and filter().
@@ -11860,8 +11861,7 @@ static int filter_map_one(typval_T *tv, char_u *expr, int map, int *remp);
     static void
 filter_map(typval_T *argvars, typval_T *rettv, int map)
 {
-    char_u	buf[NUMBUFLEN];
-    char_u	*expr;
+    typval_T	*expr;
     listitem_T	*li, *nli;
     list_T	*l = NULL;
     dictitem_T	*di;
@@ -11896,14 +11896,13 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	return;
     }
 
-    expr = get_tv_string_buf_chk(&argvars[1], buf);
+    expr = &argvars[1];
     /* On type errors, the preceding call has already displayed an error
      * message.  Avoid a misleading error message for an empty string that
      * was not passed as argument. */
-    if (expr != NULL)
+    if (expr->v_type != VAR_UNKNOWN)
     {
 	prepare_vimvar(VV_VAL, &save_val);
-	expr = skipwhite(expr);
 
 	/* We reset "did_emsg" to be able to detect whether an error
 	 * occurred during evaluation of the expression. */
@@ -11975,21 +11974,44 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 }
 
     static int
-filter_map_one(typval_T *tv, char_u *expr, int map, int *remp)
+filter_map_one(typval_T *tv, typval_T *expr, int map, int *remp)
 {
     typval_T	rettv;
+    typval_T	argv[3];
     char_u	*s;
     int		retval = FAIL;
+    int		dummy;
 
     copy_tv(tv, &vimvars[VV_VAL].vv_tv);
-    s = expr;
-    if (eval1(&s, &rettv, TRUE) == FAIL)
-	goto theend;
-    if (*s != NUL)  /* check for trailing chars after expr */
+    argv[0] = vimvars[VV_KEY].vv_tv;
+    argv[1] = vimvars[VV_VAL].vv_tv;
+    s = expr->vval.v_string;
+    if (expr->v_type == VAR_FUNC)
     {
-	EMSG2(_(e_invexpr2), s);
-	clear_tv(&rettv);
-	goto theend;
+	if (call_func(s, (int)STRLEN(s),
+		    &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
+	    goto theend;
+    }
+    else if (expr->v_type == VAR_PARTIAL)
+    {
+	partial_T   *partial = expr->vval.v_partial;
+
+	s = partial->pt_name;
+	if (call_func(s, (int)STRLEN(s),
+		    &rettv, 2, argv, 0L, 0L, &dummy, TRUE, partial, NULL)
+								      == FAIL)
+	    goto theend;
+    }
+    else
+    {
+	s = skipwhite(s);
+	if (eval1(&s, &rettv, TRUE) == FAIL)
+	    goto theend;
+	if (*s != NUL)  /* check for trailing chars after expr */
+	{
+	    EMSG2(_(e_invexpr2), s);
+	    goto theend;
+	}
     }
     if (map)
     {
