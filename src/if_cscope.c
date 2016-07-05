@@ -70,7 +70,7 @@ static cscmd_T	    cs_cmds[] =
     { "add",	cs_add,
 		N_("Add a new database"),     "add file|dir [pre-path] [flags]", 0 },
     { "find",	cs_find,
-		N_("Query for a pattern"),    "find c|d|e|f|g|i|s|t|a name", 1 },
+		N_("Query for a pattern"),    "find a|c|d|e|f|g|i|s|t name", 1 },
     { "help",	cs_help,
 		N_("Show this message"),      "help", 0 },
     { "kill",	cs_kill,
@@ -126,7 +126,7 @@ get_cscope_name(expand_T *xp UNUSED, int idx)
 	{
 	    const char *query_type[] =
 	    {
-		"c", "d", "e", "f", "g", "i", "s", "t", "a", NULL
+		"a", "c", "d", "e", "f", "g", "i", "s", "t", NULL
 	    };
 
 	    /* Complete with query type of ":cscope find {query_type}".
@@ -1351,6 +1351,7 @@ cs_help(exarg_T *eap UNUSED)
 				      cmdp->usage);
 	if (strcmp(cmdp->name, "find") == 0)
 	    MSG_PUTS(_("\n"
+		       "       a: Find assignments to this symbol\n"
 		       "       c: Find functions calling this function\n"
 		       "       d: Find functions called by this function\n"
 		       "       e: Find this egrep pattern\n"
@@ -1358,8 +1359,7 @@ cs_help(exarg_T *eap UNUSED)
 		       "       g: Find this definition\n"
 		       "       i: Find files #including this file\n"
 		       "       s: Find this C symbol\n"
-		       "       t: Find this text string\n"
-		       "       a: Find assignments to this symbol\n"));
+		       "       t: Find this text string\n"));
 
 	cmdp++;
     }
