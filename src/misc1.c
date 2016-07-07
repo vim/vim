@@ -10864,7 +10864,7 @@ gen_expand_wildcards(
 	     * "vim c:/" work. */
 	    if (flags & EW_NOTFOUND)
 		addfile(&ga, t, flags | EW_DIR | EW_FILE);
-	    else if (mch_getperm(t) >= 0)
+	    else
 		addfile(&ga, t, flags);
 	    vim_free(t);
 	}
