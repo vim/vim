@@ -3161,6 +3161,12 @@ gui_mch_is_blinking(void)
     return blink_state != BLINK_NONE;
 }
 
+    int
+gui_mch_is_blink_off(void)
+{
+    return blink_state == BLINK_OFF;
+}
+
     void
 gui_mch_set_blinking(long waittime, long on, long off)
 {

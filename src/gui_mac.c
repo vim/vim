@@ -5120,6 +5120,12 @@ gui_mch_is_blinking(void)
     return FALSE;
 }
 
+    int
+gui_mch_is_blink_off(void)
+{
+    return FALSE;
+}
+
 /*
  * Cursor blink functions.
  *
