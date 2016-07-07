@@ -34,7 +34,7 @@ int channel_read_json_block(channel_T *channel, int part, int timeout_arg, int i
 void common_channel_read(typval_T *argvars, typval_T *rettv, int raw);
 channel_T *channel_fd2channel(sock_T fd, int *partp);
 void channel_handle_events(void);
-int channel_send(channel_T *channel, int part, char_u *buf, char *fun);
+int channel_send(channel_T *channel, int part, char_u *buf, int len, char *fun);
 channel_T *send_common(typval_T *argvars, char_u *text, int id, int eval, jobopt_T *opt, char *fun, int *part_read);
 void ch_expr_common(typval_T *argvars, typval_T *rettv, int eval);
 void ch_raw_common(typval_T *argvars, typval_T *rettv, int eval);

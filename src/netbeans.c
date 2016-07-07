@@ -765,7 +765,8 @@ netbeans_end(void)
 nb_send(char *buf, char *fun)
 {
     if (nb_channel != NULL)
-	channel_send(nb_channel, PART_SOCK, (char_u *)buf, fun);
+	channel_send(nb_channel, PART_SOCK, (char_u *)buf,
+						       (int)STRLEN(buf), fun);
 }
 
 /*

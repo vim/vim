@@ -1313,14 +1313,20 @@ write_buf_line(buf_T *buf, linenr_T lnum, channel_T *channel)
     char_u  *line = ml_get_buf(buf, lnum, FALSE);
     int	    len = (int)STRLEN(line);
     char_u  *p;
+    int	    i;
 
     /* Need to make a copy to be able to append a NL. */
     if ((p = alloc(len + 2)) == NULL)
 	return;
     memcpy((char *)p, (char *)line, len);
+
+    for (i = 0; i < len; ++i)
+	if (p[i] == NL)
+	    p[i] = NUL;
+
     p[len] = NL;
     p[len + 1] = NUL;
-    channel_send(channel, PART_IN, p, "write_buf_line()");
+    channel_send(channel, PART_IN, p, len + 1, "write_buf_line()");
     vim_free(p);
 }
 
@@ -2185,7 +2191,7 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 		{
 		    channel_send(channel,
 				 part == PART_SOCK ? PART_SOCK : PART_IN,
-				 json, (char *)cmd);
+				 json, (int)STRLEN(json), (char *)cmd);
 		    vim_free(json);
 		}
 	    }
@@ -3380,9 +3386,8 @@ channel_handle_events(void)
  * Return FAIL or OK.
  */
     int
-channel_send(channel_T *channel, int part, char_u *buf, char *fun)
+channel_send(channel_T *channel, int part, char_u *buf, int len, char *fun)
 {
-    int		len = (int)STRLEN(buf);
     int		res;
     sock_T	fd;
 
@@ -3470,7 +3475,7 @@ send_common(
 				       opt->jo_callback, opt->jo_partial, id);
     }
 
-    if (channel_send(channel, part_send, text, fun) == OK
+    if (channel_send(channel, part_send, text, (int)STRLEN(text), fun) == OK
 						  && opt->jo_callback == NULL)
 	return channel;
     return NULL;
