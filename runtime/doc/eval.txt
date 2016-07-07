@@ -1961,6 +1961,7 @@ diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 empty({expr})			Number	|TRUE| if {expr} is empty
 escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
+evalcmd({command})		String	execute {command} and get the output
 eventhandler()			Number	|TRUE| if inside an event handler
 executable({expr})		Number	1 if executable {expr} exists
 exepath({expr})			String  full path of the command {expr}
@@ -3230,6 +3231,15 @@ eval({string})	Evaluate {string} and return the result.  Especially useful to
 		This works for Numbers, Floats, Strings and composites of
 		them.  Also works for |Funcref|s that refer to existing
 		functions.
+
+evalcmd({command})					*evalcmd()*
+		Execute Ex {command} and return the output as a string.  This
+		is equivalent to: >
+			redir => var
+			{command}
+			redir END
+<		To get a list of lines use: >
+			split(evalcmd(cmd), "\n")
 
 eventhandler()						*eventhandler()*
 		Returns 1 when inside an event handler.  That is that Vim got

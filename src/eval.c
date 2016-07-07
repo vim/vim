@@ -555,6 +555,7 @@ static void f_diff_hlID(typval_T *argvars, typval_T *rettv);
 static void f_empty(typval_T *argvars, typval_T *rettv);
 static void f_escape(typval_T *argvars, typval_T *rettv);
 static void f_eval(typval_T *argvars, typval_T *rettv);
+static void f_evalcmd(typval_T *argvars, typval_T *rettv);
 static void f_eventhandler(typval_T *argvars, typval_T *rettv);
 static void f_executable(typval_T *argvars, typval_T *rettv);
 static void f_exepath(typval_T *argvars, typval_T *rettv);
@@ -1133,6 +1134,7 @@ set_internal_string_var(char_u *name, char_u *value)
 }
 
 static lval_T	*redir_lval = NULL;
+#define EVALCMD_BUSY (redir_lval == (lval_T *)&redir_lval)
 static garray_T redir_ga;	/* only valid when redir_lval is not NULL */
 static char_u	*redir_endp = NULL;
 static char_u	*redir_varname = NULL;
@@ -1249,6 +1251,12 @@ var_redir_str(char_u *value, int value_len)
 var_redir_stop(void)
 {
     typval_T	tv;
+
+    if (EVALCMD_BUSY)
+    {
+	redir_lval = NULL;
+	return;
+    }
 
     if (redir_lval != NULL)
     {
@@ -8556,6 +8564,7 @@ static struct fst
     {"empty",		1, 1, f_empty},
     {"escape",		2, 2, f_escape},
     {"eval",		1, 1, f_eval},
+    {"evalcmd",		1, 1, f_evalcmd},
     {"eventhandler",	0, 0, f_eventhandler},
     {"executable",	1, 1, f_executable},
     {"exepath",		1, 1, f_exepath},
@@ -11334,6 +11343,36 @@ f_eval(typval_T *argvars, typval_T *rettv)
     }
     else if (*s != NUL)
 	EMSG(_(e_trailing));
+}
+
+/*
+ * "evalcmd()" function
+ */
+    static void
+f_evalcmd(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*s;
+
+    rettv->vval.v_string = NULL;
+    rettv->v_type = VAR_STRING;
+
+    s = get_tv_string_chk(&argvars[0]);
+    if (s != NULL)
+    {
+	redir_vname = TRUE;
+	redir_lval = (lval_T *)&redir_lval;
+	ga_init2(&redir_ga, (int)sizeof(char), 500);
+
+	if (do_cmdline_cmd(s) == OK)
+	    rettv->vval.v_string = redir_ga.ga_data;
+	else
+	    vim_free(redir_ga.ga_data);
+
+	redir_ga.ga_data = NULL;
+	redir_vname = FALSE;
+	redir_lval = NULL;
+    }
+
 }
 
 /*
