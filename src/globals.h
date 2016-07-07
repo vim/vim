@@ -1106,6 +1106,7 @@ EXTERN FILE *redir_fd INIT(= NULL);	/* message redirection file */
 #ifdef FEAT_EVAL
 EXTERN int  redir_reg INIT(= 0);	/* message redirection register */
 EXTERN int  redir_vname INIT(= 0);	/* message redirection variable */
+EXTERN int  redir_evalcmd INIT(= 0);	/* evalcmd() redirection */
 #endif
 
 #ifdef FEAT_LANGMAP

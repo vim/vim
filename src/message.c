@@ -3063,7 +3063,9 @@ redir_write(char_u *str, int maxlen)
 	    while (cur_col < msg_col)
 	    {
 #ifdef FEAT_EVAL
-		if (redir_reg)
+		if (redir_evalcmd)
+		    evalcmd_redir_str((char_u *)" ", -1);
+		else if (redir_reg)
 		    write_reg_contents(redir_reg, (char_u *)" ", -1, TRUE);
 		else if (redir_vname)
 		    var_redir_str((char_u *)" ", -1);
@@ -3078,9 +3080,11 @@ redir_write(char_u *str, int maxlen)
 	}
 
 #ifdef FEAT_EVAL
-	if (redir_reg)
+	if (redir_evalcmd)
+	    evalcmd_redir_str(s, maxlen);
+	else if (redir_reg)
 	    write_reg_contents(redir_reg, s, maxlen, TRUE);
-	if (redir_vname)
+	else if (redir_vname)
 	    var_redir_str(s, maxlen);
 #endif
 
@@ -3088,7 +3092,7 @@ redir_write(char_u *str, int maxlen)
 	while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
 	{
 #ifdef FEAT_EVAL
-	    if (!redir_reg && !redir_vname)
+	    if (!redir_reg && !redir_vname && !redir_evalcmd)
 #endif
 		if (redir_fd != NULL)
 		    putc(*s, redir_fd);
@@ -3113,7 +3117,7 @@ redirecting(void)
 {
     return redir_fd != NULL || *p_vfile != NUL
 #ifdef FEAT_EVAL
-			  || redir_reg || redir_vname
+			  || redir_reg || redir_vname || redir_evalcmd
 #endif
 				       ;
 }

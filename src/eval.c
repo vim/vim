@@ -11345,6 +11345,28 @@ f_eval(typval_T *argvars, typval_T *rettv)
 	EMSG(_(e_trailing));
 }
 
+static garray_T	redir_evalcmd_ga;
+
+/*
+ * Append "value[value_len]" to the evalcmd() output.
+ */
+    void
+evalcmd_redir_str(char_u *value, int value_len)
+{
+    int		len;
+
+    if (value_len == -1)
+	len = (int)STRLEN(value);	/* Append the entire string */
+    else
+	len = value_len;		/* Append only "value_len" characters */
+    if (ga_grow(&redir_evalcmd_ga, len) == OK)
+    {
+	mch_memmove((char *)redir_evalcmd_ga.ga_data
+				       + redir_evalcmd_ga.ga_len, value, len);
+	redir_evalcmd_ga.ga_len += len;
+    }
+}
+
 /*
  * "evalcmd()" function
  */
@@ -11352,6 +11374,9 @@ f_eval(typval_T *argvars, typval_T *rettv)
 f_evalcmd(typval_T *argvars, typval_T *rettv)
 {
     char_u	*s;
+    int		save_msg_silent = msg_silent;
+    int		save_redir_evalcmd = redir_evalcmd;
+    garray_T	save_ga;
 
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
@@ -11359,20 +11384,20 @@ f_evalcmd(typval_T *argvars, typval_T *rettv)
     s = get_tv_string_chk(&argvars[0]);
     if (s != NULL)
     {
-	redir_vname = TRUE;
-	redir_lval = (lval_T *)&redir_lval;
-	ga_init2(&redir_ga, (int)sizeof(char), 500);
+	if (redir_evalcmd)
+	    save_ga = redir_evalcmd_ga;
+	ga_init2(&redir_evalcmd_ga, (int)sizeof(char), 500);
+	redir_evalcmd = TRUE;
 
-	if (do_cmdline_cmd(s) == OK)
-	    rettv->vval.v_string = redir_ga.ga_data;
-	else
-	    vim_free(redir_ga.ga_data);
+	++msg_silent;
+	do_cmdline_cmd(s);
+	rettv->vval.v_string = redir_evalcmd_ga.ga_data;
+	msg_silent = save_msg_silent;
 
-	redir_ga.ga_data = NULL;
-	redir_vname = FALSE;
-	redir_lval = NULL;
+	redir_evalcmd = save_redir_evalcmd;
+	if (redir_evalcmd)
+	    redir_evalcmd_ga = save_ga;
     }
-
 }
 
 /*
