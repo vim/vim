@@ -2068,11 +2068,12 @@ test_arglist \
 	test_statusline \
 	test_syn_attr \
 	test_syntax \
-	test_usercommands \
 	test_tabline \
 	test_tagjump \
 	test_timers \
+	test_true_false \
 	test_undolevels \
+	test_usercommands \
 	test_unlet \
 	test_viminfo \
 	test_viml \

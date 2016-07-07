@@ -9414,6 +9414,8 @@ non_zero_arg(typval_T *argvars)
 {
     return ((argvars[0].v_type == VAR_NUMBER
 		&& argvars[0].vval.v_number != 0)
+	    || (argvars[0].v_type == VAR_SPECIAL
+		&& argvars[0].vval.v_number == VVAL_TRUE)
 	    || (argvars[0].v_type == VAR_STRING
 		&& argvars[0].vval.v_string != NULL
 		&& *argvars[0].vval.v_string != NUL));
@@ -16350,7 +16352,13 @@ f_mode(typval_T *argvars, typval_T *rettv)
     buf[1] = NUL;
     buf[2] = NUL;
 
-    if (VIsual_active)
+    if (time_for_testing == 93784)
+    {
+	/* Testing the two-character code. */
+	buf[0] = 'x';
+	buf[1] = '!';
+    }
+    else if (VIsual_active)
     {
 	if (VIsual_select)
 	    buf[0] = VIsual_mode + 's' - 'v';
