@@ -422,7 +422,7 @@ redraw_after_callback(void)
 	; /* do nothing */
     else if (State & CMDLINE)
 	redrawcmdline();
-    else if ((State & NORMAL) || (State & INSERT))
+    else if (State & (NORMAL | INSERT))
     {
 	update_screen(0);
 	setcursor();
@@ -486,8 +486,6 @@ update_curbuf(int type)
 }
 
 /*
- * update_screen()
- *
  * Based on the current value of curwin->w_topline, transfer a screenfull
  * of stuff from Filemem to ScreenLines[], and update curwin->w_botline.
  */
@@ -498,6 +496,10 @@ update_screen(int type)
     static int	did_intro = FALSE;
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
     int		did_one;
+#endif
+#ifdef FEAT_GUI
+    int		gui_cursor_col;
+    int		gui_cursor_row;
 #endif
 
     /* Don't do anything if the screen structures are (not yet) valid. */
@@ -696,7 +698,11 @@ update_screen(int type)
 		 * scrolling may make it difficult to redraw the text under
 		 * it. */
 		if (gui.in_use)
+		{
+		    gui_cursor_col = gui.cursor_col;
+		    gui_cursor_row = gui.cursor_row;
 		    gui_undraw_cursor();
+		}
 #endif
 	    }
 #endif
@@ -752,7 +758,13 @@ update_screen(int type)
     {
 	out_flush();	/* required before updating the cursor */
 	if (did_one)
+	{
+	    /* Put the GUI position where the cursor was, gui_update_cursor()
+	     * uses that. */
+	    gui.col = gui_cursor_col;
+	    gui.row = gui_cursor_row;
 	    gui_update_cursor(FALSE, FALSE);
+	}
 	gui_update_scrollbars(FALSE);
     }
 #endif
