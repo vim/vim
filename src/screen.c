@@ -764,6 +764,8 @@ update_screen(int type)
 	    gui.col = gui_cursor_col;
 	    gui.row = gui_cursor_row;
 	    gui_update_cursor(FALSE, FALSE);
+	    screen_cur_col = gui.col;
+	    screen_cur_row = gui.row;
 	}
 	gui_update_scrollbars(FALSE);
     }
