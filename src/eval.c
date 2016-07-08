@@ -11397,6 +11397,10 @@ f_evalcmd(typval_T *argvars, typval_T *rettv)
 	redir_evalcmd = save_redir_evalcmd;
 	if (redir_evalcmd)
 	    redir_evalcmd_ga = save_ga;
+
+	/* "silent reg" or "silent echo x" leaves msg_col somewhere in the
+	 * line.  Put it back in the first column. */
+	msg_col = 0;
     }
 }
 
