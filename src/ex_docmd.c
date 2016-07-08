@@ -9455,6 +9455,12 @@ ex_redir(exarg_T *eap)
     char_u	*fname;
     char_u	*arg = eap->arg;
 
+    if (redir_evalcmd)
+    {
+	EMSG(_("E930: Cannot use :redir inside evalcmd()"));
+	return;
+    }
+
     if (STRICMP(eap->arg, "END") == 0)
 	close_redir();
     else
