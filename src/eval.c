@@ -555,9 +555,9 @@ static void f_diff_hlID(typval_T *argvars, typval_T *rettv);
 static void f_empty(typval_T *argvars, typval_T *rettv);
 static void f_escape(typval_T *argvars, typval_T *rettv);
 static void f_eval(typval_T *argvars, typval_T *rettv);
-static void f_evalcmd(typval_T *argvars, typval_T *rettv);
 static void f_eventhandler(typval_T *argvars, typval_T *rettv);
 static void f_executable(typval_T *argvars, typval_T *rettv);
+static void f_execute(typval_T *argvars, typval_T *rettv);
 static void f_exepath(typval_T *argvars, typval_T *rettv);
 static void f_exists(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
@@ -8564,9 +8564,9 @@ static struct fst
     {"empty",		1, 1, f_empty},
     {"escape",		2, 2, f_escape},
     {"eval",		1, 1, f_eval},
-    {"evalcmd",		1, 1, f_evalcmd},
     {"eventhandler",	0, 0, f_eventhandler},
     {"executable",	1, 1, f_executable},
+    {"execute",		1, 2, f_execute},
     {"exepath",		1, 1, f_exepath},
     {"exists",		1, 1, f_exists},
 #ifdef FEAT_FLOAT
@@ -11345,65 +11345,6 @@ f_eval(typval_T *argvars, typval_T *rettv)
 	EMSG(_(e_trailing));
 }
 
-static garray_T	redir_evalcmd_ga;
-
-/*
- * Append "value[value_len]" to the evalcmd() output.
- */
-    void
-evalcmd_redir_str(char_u *value, int value_len)
-{
-    int		len;
-
-    if (value_len == -1)
-	len = (int)STRLEN(value);	/* Append the entire string */
-    else
-	len = value_len;		/* Append only "value_len" characters */
-    if (ga_grow(&redir_evalcmd_ga, len) == OK)
-    {
-	mch_memmove((char *)redir_evalcmd_ga.ga_data
-				       + redir_evalcmd_ga.ga_len, value, len);
-	redir_evalcmd_ga.ga_len += len;
-    }
-}
-
-/*
- * "evalcmd()" function
- */
-    static void
-f_evalcmd(typval_T *argvars, typval_T *rettv)
-{
-    char_u	*s;
-    int		save_msg_silent = msg_silent;
-    int		save_redir_evalcmd = redir_evalcmd;
-    garray_T	save_ga;
-
-    rettv->vval.v_string = NULL;
-    rettv->v_type = VAR_STRING;
-
-    s = get_tv_string_chk(&argvars[0]);
-    if (s != NULL)
-    {
-	if (redir_evalcmd)
-	    save_ga = redir_evalcmd_ga;
-	ga_init2(&redir_evalcmd_ga, (int)sizeof(char), 500);
-	redir_evalcmd = TRUE;
-
-	++msg_silent;
-	do_cmdline_cmd(s);
-	rettv->vval.v_string = redir_evalcmd_ga.ga_data;
-	msg_silent = save_msg_silent;
-
-	redir_evalcmd = save_redir_evalcmd;
-	if (redir_evalcmd)
-	    redir_evalcmd_ga = save_ga;
-
-	/* "silent reg" or "silent echo x" leaves msg_col somewhere in the
-	 * line.  Put it back in the first column. */
-	msg_col = 0;
-    }
-}
-
 /*
  * "eventhandler()" function
  */
@@ -11424,6 +11365,132 @@ f_executable(typval_T *argvars, typval_T *rettv)
     /* Check in $PATH and also check directly if there is a directory name. */
     rettv->vval.v_number = mch_can_exe(name, NULL, TRUE)
 		 || (gettail(name) != name && mch_can_exe(name, NULL, FALSE));
+}
+
+static garray_T	redir_execute_ga;
+
+/*
+ * Append "value[value_len]" to the execute() output.
+ */
+    void
+execute_redir_str(char_u *value, int value_len)
+{
+    int		len;
+
+    if (value_len == -1)
+	len = (int)STRLEN(value);	/* Append the entire string */
+    else
+	len = value_len;		/* Append only "value_len" characters */
+    if (ga_grow(&redir_execute_ga, len) == OK)
+    {
+	mch_memmove((char *)redir_execute_ga.ga_data
+				       + redir_execute_ga.ga_len, value, len);
+	redir_execute_ga.ga_len += len;
+    }
+}
+
+/*
+ * Get next line from a list.
+ * Called by do_cmdline() to get the next line.
+ * Returns allocated string, or NULL for end of function.
+ */
+
+    static char_u *
+get_list_line(
+    int	    c UNUSED,
+    void    *cookie,
+    int	    indent UNUSED)
+{
+    listitem_T **p = (listitem_T **)cookie;
+    listitem_T *item = *p;
+    char_u	buf[NUMBUFLEN];
+    char_u	*s;
+
+    if (item == NULL)
+	return NULL;
+    s = get_tv_string_buf_chk(&item->li_tv, buf);
+    *p = item->li_next;
+    return s == NULL ? NULL : vim_strsave(s);
+}
+
+/*
+ * "execute()" function
+ */
+    static void
+f_execute(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*cmd = NULL;
+    list_T	*list = NULL;
+    int		save_msg_silent = msg_silent;
+    int		save_emsg_silent = emsg_silent;
+    int		save_emsg_noredir = emsg_noredir;
+    int		save_redir_execute = redir_execute;
+    garray_T	save_ga;
+
+    rettv->vval.v_string = NULL;
+    rettv->v_type = VAR_STRING;
+
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	list = argvars[0].vval.v_list;
+	if (list == NULL || list->lv_first == NULL)
+	    /* empty list, no commands, empty output */
+	    return;
+	++list->lv_refcount;
+    }
+    else
+    {
+	cmd = get_tv_string_chk(&argvars[0]);
+	if (cmd == NULL)
+	    return;
+    }
+
+    if (redir_execute)
+	save_ga = redir_execute_ga;
+    ga_init2(&redir_execute_ga, (int)sizeof(char), 500);
+    redir_execute = TRUE;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	char_u	buf[NUMBUFLEN];
+	char_u  *s = get_tv_string_buf_chk(&argvars[1], buf);
+
+	if (s == NULL)
+	    return;
+	if (STRNCMP(s, "silent", 6) == 0)
+	    ++msg_silent;
+	if (STRCMP(s, "silent!") == 0)
+	{
+	    emsg_silent = TRUE;
+	    emsg_noredir = TRUE;
+	}
+    }
+    else
+	++msg_silent;
+
+    if (cmd != NULL)
+	do_cmdline_cmd(cmd);
+    else
+    {
+	listitem_T	*item = list->lv_first;
+
+	do_cmdline(NULL, get_list_line, (void *)&item,
+		      DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT|DOCMD_KEYTYPED);
+	--list->lv_refcount;
+    }
+
+    rettv->vval.v_string = redir_execute_ga.ga_data;
+    msg_silent = save_msg_silent;
+    emsg_silent = save_emsg_silent;
+    emsg_noredir = save_emsg_noredir;
+
+    redir_execute = save_redir_execute;
+    if (redir_execute)
+	redir_execute_ga = save_ga;
+
+    /* "silent reg" or "silent echo x" leaves msg_col somewhere in the
+     * line.  Put it back in the first column. */
+    msg_col = 0;
 }
 
 /*

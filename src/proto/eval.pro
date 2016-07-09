@@ -88,7 +88,7 @@ char_u *get_expr_name(expand_T *xp, int idx);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, partial_T *partial, dict_T *selfdict_in);
 buf_T *buflist_find_by_name(char_u *name, int curtab_only);
 int func_call(char_u *name, typval_T *args, partial_T *partial, dict_T *selfdict, typval_T *rettv);
-void evalcmd_redir_str(char_u *value, int value_len);
+void execute_redir_str(char_u *value, int value_len);
 void dict_extend(dict_T *d1, dict_T *d2, char_u *action);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
 float_T vim_round(float_T f);

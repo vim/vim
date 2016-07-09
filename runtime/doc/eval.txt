@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 06
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1961,9 +1961,9 @@ diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 empty({expr})			Number	|TRUE| if {expr} is empty
 escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
-evalcmd({command})		String	execute {command} and get the output
 eventhandler()			Number	|TRUE| if inside an event handler
 executable({expr})		Number	1 if executable {expr} exists
+execute({command})		String	execute {command} and get the output
 exepath({expr})			String  full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
 extend({expr1}, {expr2} [, {expr3}])
@@ -3232,15 +3232,6 @@ eval({string})	Evaluate {string} and return the result.  Especially useful to
 		them.  Also works for |Funcref|s that refer to existing
 		functions.
 
-evalcmd({command})					*evalcmd()*
-		Execute Ex {command} and return the output as a string.  This
-		is equivalent to: >
-			redir => var
-			{command}
-			redir END
-<		To get a list of lines use: >
-			split(evalcmd(cmd), "\n")
-
 eventhandler()						*eventhandler()*
 		Returns 1 when inside an event handler.  That is that Vim got
 		interrupted while waiting for the user to type a character,
@@ -3270,6 +3261,31 @@ executable({expr})					*executable()*
 			1	exists
 			0	does not exist
 			-1	not implemented on this system
+
+execute({command} [, {silent}])					*execute()*
+		Execute an Ex command or commands and return the output as a
+		string.
+		{command} can be a string or a List.  In case of a List the
+		lines are executed one by one.
+		This is equivalent to: >
+			redir => var
+			{command}
+			redir END
+<
+		The optional {silent} argument can have these values:
+			""		no `:silent` used
+			"silent"	`:silent` used
+			"silent!"	`:silent!` used
+		The default is 'silent'.  Note that with "silent!", unlike
+		`:redir`, error messages are dropped.
+							*E930*
+		It is not possible to use `:redir` anywhere in {command}.
+
+		To get a list of lines use |split()| on the result: >
+			split(evalcmd('args'), "\n")
+
+<		When used recursively the output of the recursive call is not
+		included in the output of the higher level call.
 
 exepath({expr})						*exepath()*
 		If {expr} is an executable and is either an absolute path, a
@@ -7046,9 +7062,9 @@ synID({lnum}, {col}, {trans})				*synID()*
 		that's where the cursor can be in Insert mode, synID() returns
 		zero.
 
-		When {trans} is non-zero, transparent items are reduced to the
+		When {trans} is |TRUE|, transparent items are reduced to the
 		item that they reveal.	This is useful when wanting to know
-		the effective color.  When {trans} is zero, the transparent
+		the effective color.  When {trans} is |FALSE|, the transparent
 		item is returned.  This is useful when wanting to know which
 		syntax item is effective (e.g. inside parens).
 		Warning: This function can be very slow.  Best speed is
