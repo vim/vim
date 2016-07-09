@@ -11445,11 +11445,6 @@ f_execute(typval_T *argvars, typval_T *rettv)
 	    return;
     }
 
-    if (redir_execute)
-	save_ga = redir_execute_ga;
-    ga_init2(&redir_execute_ga, (int)sizeof(char), 500);
-    redir_execute = TRUE;
-
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	char_u	buf[NUMBUFLEN];
@@ -11467,6 +11462,11 @@ f_execute(typval_T *argvars, typval_T *rettv)
     }
     else
 	++msg_silent;
+
+    if (redir_execute)
+	save_ga = redir_execute_ga;
+    ga_init2(&redir_execute_ga, (int)sizeof(char), 500);
+    redir_execute = TRUE;
 
     if (cmd != NULL)
 	do_cmdline_cmd(cmd);
@@ -21169,8 +21169,8 @@ f_timer_stop(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[0].v_type != VAR_NUMBER)
     {
-         EMSG(_(e_number_exp));
-         return;
+	EMSG(_(e_number_exp));
+	return;
     }
     timer = find_timer((int)get_tv_number(&argvars[0]));
     if (timer != NULL)
