@@ -4680,6 +4680,7 @@ ins_compl_insert(void)
 		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_INFO]));
     }
     set_vim_var_dict(VV_COMPLETED_ITEM, dict);
+    compl_curr_match = compl_shown_match;
 }
 
 /*
