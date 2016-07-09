@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jul 02
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jul 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,14 +34,10 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Further implement 'barline' in viminfo:
-- Use timestamp for more items: locations, marks.
-
 Problem with setqflist([]): grep 4 times, ":colder 3", setqflist([]) will
 clear the next list, not the current one.  Ramel Eshed, Jun 8.
 
 +channel:
-- Should write_buf_line() change NL to NUL characters?
 - GUI cursor blinking interrupted when the job output goes to a buffer that is
   in a window. (Ramel Eshed, 2016 Jun 9)
 - GUI cursor blinking interrupted when there is a status line.  (Ramel Eshed,
@@ -61,17 +57,11 @@ Later
     With xterm could use -S{pty}.
 
 Quickfix improvements for background building and grepping:
-  Patch from Yegappan, 2016 Jun 17.
-  Need to reset values when starting a new list.
-- If 'efm' is the same as last time re-use the fmt_first list.
-- Do not clear "dir_stack", "directory" and "file_stack", "currfile" when
-  using ":addexpr".
-  Move multiline, multiignore, multiscan outside of the function.
-- Add :cbottom, if quickfix window is visible scroll to make the last line
-  visible. Use scroll_cursor_bot(0, FALSE);
-- Add a flag/property/option to quickfix commands and functions to keep a file
-  name as a string and not create a buffer for it? To avoid creating lots of
-  buffers. (Ramel Eshed)
+- Add a command modifier ":usefname" to quickfix commands and functions to
+  keep a file name as a string and not create a buffer for it? To avoid
+  creating lots of buffers. (Ramel Eshed)
+  Store the relative file name and set a flag "qf_relative".  Before changing
+  directory turn them into full paths.
 
 Regexp problems:
 - When using automatic engine selection there is a false match.  Forcing
@@ -130,16 +120,18 @@ What if there is an invalid character?
 Should json_encode()/json_decode() restrict recursiveness?
 Or avoid recursiveness.
 
-Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
-Update 2016 Apr 24.
-Update 2016 Jun 14, includes some tests.
-
-Patch to support expression argument to sort() instead of a function name.
-Yasuhiro Matsumoto, 2013 May 31.
-Or should we add a more general mechanism, like a lambda() function?
+Add a lambda() function.
 Patch by Yasuhiro Matsumoto, 2014 Sep 16, update 2016 Apr 17.
 Correction for test, Ken Takata, 2016 May 27.
 Merged patch: Ken Takata, 2016 Jun 15.
+Need to separate-out closure and lambda somehow.
+Define lambda directly, not as a string: {v -> v * 8}
+Lambda implementation by Ken Takata, 2016 Jul 7.
+
+Python: Extended funcrefs: use func_T* structure in place of char_u* function
+names.
+(ZyX, 2013 Jul 15, update Sep 22, 24, 28; Update 2013 Dec 15, 2014 Jan 6)
+Also fixes Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
@@ -161,7 +153,8 @@ For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
 5)
 
 'completeopt' noinsert breaks redo register (Shougo, 2016 Jun 18, #874)
-Patch to fix this: #875
+Patch to fix this: #905.
+There also is #875 to fix another problem?
 
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 
@@ -768,11 +761,6 @@ Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
 Patch by Thomas Tuegel, also for GTK, 2013 Nov 24
 
 :help gives example for z?, but it does not work.  m? and t? do work.
-
-Python: Extended funcrefs: use func_T* structure in place of char_u* function
-names.
-(ZyX, 2013 Jul 15, update Sep 22, 24, 28; Update 2013 Dec 15, 2014 Jan 6)
-Also fixes Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
 With tests: Sep 5.

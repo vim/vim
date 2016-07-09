@@ -3283,7 +3283,7 @@ execute({command} [, {silent}])					*execute()*
 		It is not possible to use `:redir` anywhere in {command}.
 
 		To get a list of lines use |split()| on the result: >
-			split(evalcmd('args'), "\n")
+			split(execute('args'), "\n")
 
 <		When used recursively the output of the recursive call is not
 		included in the output of the higher level call.

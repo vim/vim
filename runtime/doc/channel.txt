@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Jun 02
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Jul 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -495,6 +495,9 @@ time a line is added to the buffer, the last-but-one line will be send to the
 job stdin.  This allows for editing the last line and sending it when pressing
 Enter.
 
+NUL bytes in the text will be passed to the job (internally Vim stores these
+as NL bytes).
+
 
 Reading job output in the close callback ~
 							*read-in-close-cb*
@@ -684,7 +687,8 @@ When the buffer written to is displayed in a window and the cursor is in the
 first column of the last line, the cursor will be moved to the newly added
 line and the window is scrolled up to show the cursor if needed.
 
-Undo is synced for every added line.
+Undo is synced for every added line.  NUL bytes are accepted (internally Vim
+stores these as NL bytes).
 
 
 Writing to a file ~

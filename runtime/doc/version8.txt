@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Jun 04
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Jul 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -16,11 +16,11 @@ See |vi_diff.txt| for an overview of differences between Vi and Vim 7.0.
 See |version4.txt|, |version5.txt|, |version6.txt| and |version7.txt| for
 differences between other versions.
 
-INCOMPATIBLE CHANGES			|incompatible-8|
-
 NEW FEATURES				|new-8|
 
 Vim script enhancements			|new-vim-script-8|
+
+INCOMPATIBLE CHANGES			|incompatible-8|
 
 IMPROVEMENTS				|improvements-8|
 
@@ -30,21 +30,6 @@ PATCHES					|patches-8|
 
 
 ==============================================================================
-INCOMPATIBLE CHANGES				*incompatible-8*
-
-These changes are incompatible with previous releases.  Check this list if you
-run into a problem when upgrading from Vim 7.4 to 8.0.
-
-The support for MS-DOS has been removed.  It hasn't been working for a while
-and removing it cleans up the code quite a bit.
-
-The support for Windows 16 bit (Windows 95 and older) has been removed.
-
-Minor incompatibilities:
-
-For filetype detection: ...
-
-==============================================================================
 NEW FEATURES						*new-8*
 
 First a list of the bigger new features.  A comprehensive list is below.
@@ -52,13 +37,17 @@ First a list of the bigger new features.  A comprehensive list is below.
 
 Asynchronous I/O support, channels ~
 
-Vim can now exchange messages with another process in the background.  The
-messages are received and handled while Vim is waiting for a character.  See
-|channel-demo| for an example, communicating with a Python server.
+Vim can now exchange messages with other processes in the background.  This
+makes it possible to have servers do work and send back the results to Vim.
+See |channel-demo| for an example, this shows communicating with a Python
+server.
 
 Closely related to channels is JSON support.  JSON is widely supported and can
 easily be used for inter-process communication, allowing for writing a server
 in any language.  The functions to use are |json_encode()| and |json_decode()|.
+
+This makes it possible to build very complex plugins, written in any language
+and running in a separate process.
 
 
 Jobs ~
@@ -74,8 +63,8 @@ Timers ~
 Also asynchronous are timers.  They can fire once or repeatedly and invoke a
 function to do any work.  For example: >
 	let tempTimer = timer_start(4000, 'CheckTemp')
-This will make a call four seconds (4000 milli seconds) later, like: >
-	call CheckTemp()
+This will call the CheckTemp() function four seconds (4000 milli seconds)
+later.
 
 
 Partials ~
@@ -85,8 +74,7 @@ to a function, and additionally binds arguments and/or a dictionary.  This is
 especially useful for callbacks on channels and timers.  E.g., for the timer
 example above, to pass an argument to the function: >
 	let tempTimer = timer_start(4000, function('CheckTemp', ['out']))
-This will a make call four seconds later, like: >
-	call CheckTemp('out')
+This will call CheckTemp('out') four seconds later.
 
 
 Packages ~
@@ -103,26 +91,7 @@ New style tests ~
 This is for Vim developers.  So far writing tests for Vim has not been easy.
 Vim 8 adds assert functions and a framework to run tests.  This makes it a lot
 simpler to write tests and keep them updated.  Also new are several functions
-that are added specifically for testing.
-
-These functions have been added:
-	|assert_equal()|
-	|assert_notequal()|
-	|assert_exception()|
-	|assert_fails()|
-	|assert_false()|
-	|assert_match()|
-	|assert_notmatch()|
-	|assert_true()|
-	|test_alloc_fail()|
-	|test_disable_char_avail()|
-	|test_garbagecollect_now()|
-	|test_null_channel()|
-	|test_null_dict()|
-	|test_null_job()|
-	|test_null_list()|
-	|test_null_partial()|
-	|test_null_string()|
+that are added specifically for testing. See |test-functions|.
 
 
 Window IDs ~
@@ -130,6 +99,13 @@ Window IDs ~
 Previously windows could only be accessed by their number. And every time a
 window would open, close or move that number changes.  Each window now has a
 unique ID, so that they are easy to find.  See |win_getid()| and |win_id2win()|.
+
+
+Viminfo uses timestamps ~
+
+Previously the information stored in viminfo was whatever the last Vim wrote
+there.  Now timestamps are used to always keep the most recent items.
+See |viminfo-timestamp|.
 
 
 Wrapping lines with indent ~
@@ -214,6 +190,21 @@ New message translations: ~
 
 Others: ~
 
+
+==============================================================================
+INCOMPATIBLE CHANGES				*incompatible-8*
+
+These changes are incompatible with previous releases.  Check this list if you
+run into a problem when upgrading from Vim 7.4 to 8.0.
+
+The support for MS-DOS has been removed.  It hasn't been working for a while
+and removing it cleans up the code quite a bit.
+
+The support for Windows 16 bit (Windows 95 and older) has been removed.
+
+Minor incompatibilities:
+
+For filetype detection: ...
 
 ==============================================================================
 IMPROVEMENTS						*improvements-8*

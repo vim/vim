@@ -2041,6 +2041,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :cat	eval.txt	/*:cat*
 :catch	eval.txt	/*:catch*
 :cb	quickfix.txt	/*:cb*
+:cbo	quickfix.txt	/*:cbo*
+:cbottom	quickfix.txt	/*:cbottom*
 :cbuffer	quickfix.txt	/*:cbuffer*
 :cc	quickfix.txt	/*:cc*
 :ccl	quickfix.txt	/*:ccl*
@@ -2393,6 +2395,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lat	undo.txt	/*:lat*
 :later	undo.txt	/*:later*
 :lb	quickfix.txt	/*:lb*
+:lbo	quickfix.txt	/*:lbo*
+:lbottom	quickfix.txt	/*:lbottom*
 :lbuffer	quickfix.txt	/*:lbuffer*
 :lc	editing.txt	/*:lc*
 :lcd	editing.txt	/*:lcd*
@@ -4457,6 +4461,7 @@ E927	eval.txt	/*E927*
 E928	eval.txt	/*E928*
 E929	starting.txt	/*E929*
 E93	windows.txt	/*E93*
+E930	eval.txt	/*E930*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
@@ -4472,6 +4477,7 @@ Ex	intro.txt	/*Ex*
 Ex-mode	intro.txt	/*Ex-mode*
 Exuberant_ctags	tagsrch.txt	/*Exuberant_ctags*
 F	motion.txt	/*F*
+FALSE	eval.txt	/*FALSE*
 FAQ	intro.txt	/*FAQ*
 Farsi	farsi.txt	/*Farsi*
 FileAppendCmd	autocmd.txt	/*FileAppendCmd*
@@ -4686,6 +4692,7 @@ TOhtml-encoding-detect	syntax.txt	/*TOhtml-encoding-detect*
 TOhtml-performance	syntax.txt	/*TOhtml-performance*
 TOhtml-uncopyable-text	syntax.txt	/*TOhtml-uncopyable-text*
 TOhtml-wrap-text	syntax.txt	/*TOhtml-wrap-text*
+TRUE	eval.txt	/*TRUE*
 TSQL	ft_sql.txt	/*TSQL*
 TTpro-telnet	syntax.txt	/*TTpro-telnet*
 Tab	intro.txt	/*Tab*
@@ -5746,6 +5753,7 @@ exception-variable	eval.txt	/*exception-variable*
 exclusive	motion.txt	/*exclusive*
 exclusive-linewise	motion.txt	/*exclusive-linewise*
 executable()	eval.txt	/*executable()*
+execute()	eval.txt	/*execute()*
 execute-menus	gui.txt	/*execute-menus*
 exepath()	eval.txt	/*exepath()*
 exim	starting.txt	/*exim*
@@ -6373,6 +6381,7 @@ getcmdline()	eval.txt	/*getcmdline()*
 getcmdpos()	eval.txt	/*getcmdpos()*
 getcmdtype()	eval.txt	/*getcmdtype()*
 getcmdwintype()	eval.txt	/*getcmdwintype()*
+getcompletion()	eval.txt	/*getcompletion()*
 getcurpos()	eval.txt	/*getcurpos()*
 getcwd()	eval.txt	/*getcwd()*
 getfontname()	eval.txt	/*getfontname()*
@@ -9051,6 +9060,7 @@ viminfo-r	options.txt	/*viminfo-r*
 viminfo-read	starting.txt	/*viminfo-read*
 viminfo-read-write	starting.txt	/*viminfo-read-write*
 viminfo-s	options.txt	/*viminfo-s*
+viminfo-timestamp	starting.txt	/*viminfo-timestamp*
 viminfo-write	starting.txt	/*viminfo-write*
 vimrc	starting.txt	/*vimrc*
 vimrc-filetype	usr_05.txt	/*vimrc-filetype*
