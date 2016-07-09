@@ -459,14 +459,6 @@ aucmd_abort:
 #endif
 
     buf_freeall(buf, (del_buf ? BFA_DEL : 0) + (wipe_buf ? BFA_WIPE : 0));
-    if (
-#ifdef FEAT_WINDOWS
-	win_valid(win) &&
-#else
-	win != NULL &&
-#endif
-			  win->w_buffer == buf)
-	win->w_buffer = NULL;  /* make sure we don't use the buffer now */
 
 #ifdef FEAT_AUTOCMD
     /* Autocommands may have deleted the buffer. */
@@ -477,11 +469,6 @@ aucmd_abort:
 	return;
 # endif
 
-    /* Autocommands may have opened or closed windows for this buffer.
-     * Decrement the count for the close we do here. */
-    if (buf->b_nwindows > 0)
-	--buf->b_nwindows;
-
     /*
      * It's possible that autocommands change curbuf to the one being deleted.
      * This might cause the previous curbuf to be deleted unexpectedly.  But
@@ -491,6 +478,20 @@ aucmd_abort:
      */
     if (buf == curbuf && !is_curbuf)
 	return;
+
+    if (
+#ifdef FEAT_WINDOWS
+	win_valid(win) &&
+#else
+	win != NULL &&
+#endif
+			  win->w_buffer == buf)
+	win->w_buffer = NULL;  /* make sure we don't use the buffer now */
+
+    /* Autocommands may have opened or closed windows for this buffer.
+     * Decrement the count for the close we do here. */
+    if (buf->b_nwindows > 0)
+	--buf->b_nwindows;
 #endif
 
     /* Change directories when the 'acd' option is set. */
