@@ -26,17 +26,24 @@ func Test_complete_wildmenu()
 endfunc
 
 func Test_getcompletion()
+  if !has('cmdline_compl')
+    return
+  endif
   let groupcount = len(getcompletion('', 'event'))
   call assert_true(groupcount > 0)
   let matchcount = len(getcompletion('File', 'event'))
   call assert_true(matchcount > 0)
   call assert_true(groupcount > matchcount)
 
-  source $VIMRUNTIME/menu.vim
-  let matchcount = len(getcompletion('', 'menu'))
-  call assert_true(matchcount > 0)
-  let matchcount = len(getcompletion('ToolBar.', 'menu'))
-  call assert_true(matchcount > 0)
+  if has('menu')
+    source $VIMRUNTIME/menu.vim
+    let matchcount = len(getcompletion('', 'menu'))
+    call assert_true(matchcount > 0)
+    call assert_equal(['File.'], getcompletion('File', 'menu'))
+    call assert_true(matchcount > 0)
+    let matchcount = len(getcompletion('File.', 'menu'))
+    call assert_true(matchcount > 0)
+  endif
 
   call assert_fails('call getcompletion("", "burp")', 'E475:')
 endfunc
