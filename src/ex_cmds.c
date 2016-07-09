@@ -3059,6 +3059,7 @@ do_write(exarg_T *eap)
     char_u	*browse_file = NULL;
 #endif
     buf_T	*alt_buf = NULL;
+    int		name_was_missing;
 
     if (not_writing())		/* check 'write' option */
 	return FAIL;
@@ -3226,6 +3227,8 @@ do_write(exarg_T *eap)
 #endif
 	}
 
+	name_was_missing = curbuf->b_ffname == NULL;
+
 	retval = buf_write(curbuf, ffname, fname, eap->line1, eap->line2,
 				 eap, eap->append, eap->forceit, TRUE, FALSE);
 
@@ -3239,7 +3242,12 @@ do_write(exarg_T *eap)
 		redraw_tabline = TRUE;
 #endif
 	    }
-	    /* Change directories when the 'acd' option is set. */
+	}
+
+	/* Change directories when the 'acd' option is set and the file name
+	 * got changed or set. */
+	if (eap->cmdidx == CMD_saveas || name_was_missing)
+	{
 	    DO_AUTOCHDIR
 	}
     }

@@ -2016,6 +2016,7 @@ test1 \
 test_arglist \
 	test_assert \
 	test_assign \
+	test_autochdir \
 	test_autocmd \
 	test_backspace_opt \
 	test_cdo \

@@ -812,6 +812,7 @@ static void f_taglist(typval_T *argvars, typval_T *rettv);
 static void f_tagfiles(typval_T *argvars, typval_T *rettv);
 static void f_tempname(typval_T *argvars, typval_T *rettv);
 static void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
+static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
 static void f_test_disable_char_avail(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
@@ -8832,6 +8833,7 @@ static struct fst
 #endif
     {"tempname",	0, 0, f_tempname},
     {"test_alloc_fail",	3, 3, f_test_alloc_fail},
+    {"test_autochdir",	0, 0, f_test_autochdir},
     {"test_disable_char_avail", 1, 1, f_test_disable_char_avail},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
 #ifdef FEAT_JOB_CHANNEL
@@ -13155,7 +13157,7 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
     {
 	if (wp->w_localdir != NULL)
 	    rettv->vval.v_string = vim_strsave(wp->w_localdir);
-	else if(globaldir != NULL)
+	else if (globaldir != NULL)
 	    rettv->vval.v_string = vim_strsave(globaldir);
 	else
 	{
@@ -21074,6 +21076,17 @@ f_test_alloc_fail(typval_T *argvars, typval_T *rettv UNUSED)
 	alloc_fail_repeat = argvars[2].vval.v_number;
 	did_outofmem_msg = FALSE;
     }
+}
+
+/*
+ * "test_autochdir()"
+ */
+    static void
+f_test_autochdir(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#if defined(FEAT_AUTOCHDIR)
+    test_autochdir = TRUE;
+#endif
 }
 
 /*
