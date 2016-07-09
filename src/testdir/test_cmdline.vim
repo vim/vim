@@ -24,3 +24,19 @@ func Test_complete_wildmenu()
   call delete('Xtestfile2')
   set nowildmenu
 endfunc
+
+func Test_getcompletion()
+  let groupcount = len(getcompletion('', 'event'))
+  call assert_true(groupcount > 0)
+  let matchcount = len(getcompletion('File', 'event'))
+  call assert_true(matchcount > 0)
+  call assert_true(groupcount > matchcount)
+
+  source $VIMRUNTIME/menu.vim
+  let matchcount = len(getcompletion('', 'menu'))
+  call assert_true(matchcount > 0)
+  let matchcount = len(getcompletion('ToolBar.', 'menu'))
+  call assert_true(matchcount > 0)
+
+  call assert_fails('call getcompletion("", "burp")', 'E475:')
+endfunc
