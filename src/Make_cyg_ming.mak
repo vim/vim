@@ -893,7 +893,7 @@ if_perl.c: if_perl.xs typemap
 	     $(PERLTYPEMAP) if_perl.xs > $@
 
 $(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
-	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
+	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
 
 $(OUTDIR)/main.o:		main.c $(INCL) $(CUI_INCL)
 	$(CC) -c $(CFLAGS) main.c -o $(OUTDIR)/main.o
