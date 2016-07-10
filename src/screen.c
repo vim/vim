@@ -757,7 +757,7 @@ update_screen(int type)
     if (gui.in_use)
     {
 	out_flush();	/* required before updating the cursor */
-	if (did_one)
+	if (did_one && !gui_mch_is_blink_off())
 	{
 	    /* Put the GUI position where the cursor was, gui_update_cursor()
 	     * uses that. */
