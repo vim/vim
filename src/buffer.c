@@ -316,7 +316,9 @@ buf_valid(buf_T *buf)
 {
     buf_T	*bp;
 
-    for (bp = firstbuf; bp != NULL; bp = bp->b_next)
+    /* Assume that we more often have a recent buffer, start with the last
+     * one. */
+    for (bp = lastbuf; bp != NULL; bp = bp->b_prev)
 	if (bp == buf)
 	    return TRUE;
     return FALSE;
@@ -397,9 +399,9 @@ close_buffer(
     if (buf->b_nwindows == 1)
     {
 	buf->b_closing = TRUE;
-	apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
-								  FALSE, buf);
-	if (!buf_valid(buf))
+	if (apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
+								  FALSE, buf)
+		&& !buf_valid(buf))
 	{
 	    /* Autocommands deleted the buffer. */
 aucmd_abort:
@@ -416,9 +418,9 @@ aucmd_abort:
 	if (!unload_buf)
 	{
 	    buf->b_closing = TRUE;
-	    apply_autocmds(EVENT_BUFHIDDEN, buf->b_fname, buf->b_fname,
-								  FALSE, buf);
-	    if (!buf_valid(buf))
+	    if (apply_autocmds(EVENT_BUFHIDDEN, buf->b_fname, buf->b_fname,
+								  FALSE, buf)
+		    && !buf_valid(buf))
 		/* Autocommands deleted the buffer. */
 		goto aucmd_abort;
 	    buf->b_closing = FALSE;
@@ -577,21 +579,23 @@ buf_freeall(buf_T *buf, int flags)
     buf->b_closing = TRUE;
     if (buf->b_ml.ml_mfp != NULL)
     {
-	apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname, FALSE, buf);
-	if (!buf_valid(buf))	    /* autocommands may delete the buffer */
+	if (apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname,
+								  FALSE, buf)
+		&& !buf_valid(buf))	/* autocommands may delete the buffer */
 	    return;
     }
     if ((flags & BFA_DEL) && buf->b_p_bl)
     {
-	apply_autocmds(EVENT_BUFDELETE, buf->b_fname, buf->b_fname, FALSE, buf);
-	if (!buf_valid(buf))	    /* autocommands may delete the buffer */
+	if (apply_autocmds(EVENT_BUFDELETE, buf->b_fname, buf->b_fname,
+								   FALSE, buf)
+		&& !buf_valid(buf))	/* autocommands may delete the buffer */
 	    return;
     }
     if (flags & BFA_WIPE)
     {
-	apply_autocmds(EVENT_BUFWIPEOUT, buf->b_fname, buf->b_fname,
-								  FALSE, buf);
-	if (!buf_valid(buf))	    /* autocommands may delete the buffer */
+	if (apply_autocmds(EVENT_BUFWIPEOUT, buf->b_fname, buf->b_fname,
+								  FALSE, buf)
+		&& !buf_valid(buf))	/* autocommands may delete the buffer */
 	    return;
     }
     buf->b_closing = FALSE;
@@ -1452,11 +1456,11 @@ set_curbuf(buf_T *buf, int action)
     prevbuf = curbuf;
 
 #ifdef FEAT_AUTOCMD
-    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
+    if (!apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf)
 # ifdef FEAT_EVAL
-    if (buf_valid(prevbuf) && !aborting())
+	    || (buf_valid(prevbuf) && !aborting()))
 # else
-    if (buf_valid(prevbuf))
+	    || buf_valid(prevbuf))
 # endif
 #endif
     {
@@ -1654,6 +1658,8 @@ do_autochdir(void)
  * If (flags & BLN_LISTED) is TRUE, add new buffer to buffer list.
  * If (flags & BLN_DUMMY) is TRUE, don't count it as a real buffer.
  * If (flags & BLN_NEW) is TRUE, don't use an existing buffer.
+ * If (flags & BLN_NOOPT) is TRUE, don't copy options from the current buffer
+ *				    if the buffer already exists.
  * This is the ONLY way to create a new buffer.
  */
 static int  top_file_num = 1;		/* highest file number */
@@ -1692,17 +1698,20 @@ buflist_new(
 	vim_free(ffname);
 	if (lnum != 0)
 	    buflist_setfpos(buf, curwin, lnum, (colnr_T)0, FALSE);
-	/* copy the options now, if 'cpo' doesn't have 's' and not done
-	 * already */
-	buf_copy_options(buf, 0);
+
+	if ((flags & BLN_NOOPT) == 0)
+	    /* copy the options now, if 'cpo' doesn't have 's' and not done
+	     * already */
+	    buf_copy_options(buf, 0);
+
 	if ((flags & BLN_LISTED) && !buf->b_p_bl)
 	{
 	    buf->b_p_bl = TRUE;
 #ifdef FEAT_AUTOCMD
 	    if (!(flags & BLN_DUMMY))
 	    {
-		apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf);
-		if (!buf_valid(buf))
+		if (apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf)
+			&& !buf_valid(buf))
 		    return NULL;
 	    }
 #endif
@@ -1881,13 +1890,13 @@ buflist_new(
 	/* Tricky: these autocommands may change the buffer list.  They could
 	 * also split the window with re-using the one empty buffer. This may
 	 * result in unexpectedly losing the empty buffer. */
-	apply_autocmds(EVENT_BUFNEW, NULL, NULL, FALSE, buf);
-	if (!buf_valid(buf))
+	if (apply_autocmds(EVENT_BUFNEW, NULL, NULL, FALSE, buf)
+		&& !buf_valid(buf))
 	    return NULL;
 	if (flags & BLN_LISTED)
 	{
-	    apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf);
-	    if (!buf_valid(buf))
+	    if (apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf)
+		    && !buf_valid(buf))
 		return NULL;
 	}
 # ifdef FEAT_EVAL

@@ -1483,14 +1483,22 @@ copy_loclist(win_T *from, win_T *to)
 }
 
 /*
+ * Looking up a buffer can be slow if there are many.  Remember the last one
+ * to make this a lot faster if there are multiple matches in the same file.
+ */
+static char_u *qf_last_bufname = NULL;
+static buf_T  *qf_last_buf = NULL;
+
+/*
  * Get buffer number for file "dir.name".
  * Also sets the b_has_qf_entry flag.
  */
     static int
 qf_get_fnum(qf_info_T *qi, char_u *directory, char_u *fname)
 {
-    char_u	*ptr;
+    char_u	*ptr = NULL;
     buf_T	*buf;
+    char_u	*bufname;
 
     if (fname == NULL || *fname == NUL)		/* no file name */
 	return 0;
@@ -1522,13 +1530,30 @@ qf_get_fnum(qf_info_T *qi, char_u *directory, char_u *fname)
 		ptr = vim_strsave(fname);
 	}
 	/* Use concatenated directory name and file name */
-	buf = buflist_new(ptr, NULL, (linenr_T)0, 0);
+	bufname = ptr;
+    }
+    else
+	bufname = fname;
+
+    if (qf_last_bufname != NULL && STRCMP(bufname, qf_last_bufname) == 0
+	    && buf_valid(qf_last_buf))
+    {
+	buf = qf_last_buf;
 	vim_free(ptr);
     }
     else
-	buf = buflist_new(fname, NULL, (linenr_T)0, 0);
+    {
+	vim_free(qf_last_bufname);
+	buf = buflist_new(bufname, NULL, (linenr_T)0, BLN_NOOPT);
+	if (bufname == ptr)
+	    qf_last_bufname = bufname;
+	else
+	    qf_last_bufname = vim_strsave(bufname);
+	qf_last_buf = buf;
+    }
     if (buf == NULL)
 	return 0;
+
     buf->b_has_qf_entry = TRUE;
     return buf->b_fnum;
 }

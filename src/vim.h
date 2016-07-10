@@ -941,6 +941,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define BLN_LISTED	2	/* put new buffer in buffer list */
 #define BLN_DUMMY	4	/* allocating dummy buffer */
 #define BLN_NEW		8	/* create a new buffer */
+#define BLN_NOOPT	16	/* don't copy options to existing buffer */
 
 /* Values for in_cinkeys() */
 #define KEY_OPEN_FORW	0x101
