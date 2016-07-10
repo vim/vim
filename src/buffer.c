@@ -1488,9 +1488,7 @@ set_curbuf(buf_T *buf, int action)
 #ifdef FEAT_SYN_HL
     long	old_tw = curbuf->b_p_tw;
 #endif
-#ifdef FEAT_AUTOCMD
     bufref_T	bufref;
-#endif
 
     setpcmark();
     if (!cmdmod.keepalt)
@@ -1502,9 +1500,9 @@ set_curbuf(buf_T *buf, int action)
 
     /* close_windows() or apply_autocmds() may change curbuf */
     prevbuf = curbuf;
+    set_bufref(&bufref, prevbuf);
 
 #ifdef FEAT_AUTOCMD
-    set_bufref(&bufref, prevbuf);
     if (!apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf)
 # ifdef FEAT_EVAL
 	    || (bufref_valid(&bufref) && !aborting()))
