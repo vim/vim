@@ -2270,7 +2270,8 @@ buflist_findname_stat(
 #endif
     buf_T	*buf;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    /* Start at the last buffer, expect to find a match sooner. */
+    for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
 	if ((buf->b_flags & BF_DUMMY) == 0 && !otherfile_buf(buf, ffname
 #ifdef UNIX
 		    , stp
@@ -2355,7 +2356,7 @@ buflist_findpat(
 		    return -1;
 		}
 
-		for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+		for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
 		    if (buf->b_p_bl == find_listed
 #ifdef FEAT_DIFF
 			    && (!diffmode || diff_mode_buf(buf))
@@ -2581,7 +2582,8 @@ buflist_findnr(int nr)
 
     if (nr == 0)
 	nr = curwin->w_alt_fnum;
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    /* Assume newer buffers are used more often, start from the end. */
+    for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
 	if (buf->b_fnum == nr)
 	    return buf;
     return NULL;

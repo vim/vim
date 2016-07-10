@@ -4292,6 +4292,10 @@ load_dummy_buffer(
 	aucmd_restbuf(&aco);
 	if (newbuf_to_wipe != NULL && buf_valid(newbuf_to_wipe))
 	    wipe_buffer(newbuf_to_wipe, FALSE);
+
+	/* Add back the "dummy" flag, otherwise buflist_findname_stat() won't
+	 * skip it. */
+	newbuf->b_flags |= BF_DUMMY;
     }
 
     /*
