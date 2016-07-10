@@ -1487,7 +1487,7 @@ copy_loclist(win_T *from, win_T *to)
  * to make this a lot faster if there are multiple matches in the same file.
  */
 static char_u *qf_last_bufname = NULL;
-static buf_T  *qf_last_buf = NULL;
+static bufref_T  qf_last_bufref = {NULL, 0};
 
 /*
  * Get buffer number for file "dir.name".
@@ -1536,9 +1536,9 @@ qf_get_fnum(qf_info_T *qi, char_u *directory, char_u *fname)
 	bufname = fname;
 
     if (qf_last_bufname != NULL && STRCMP(bufname, qf_last_bufname) == 0
-	    && buf_valid(qf_last_buf))
+	    && bufref_valid(&qf_last_bufref))
     {
-	buf = qf_last_buf;
+	buf = qf_last_bufref.br_buf;
 	vim_free(ptr);
     }
     else
@@ -1549,7 +1549,7 @@ qf_get_fnum(qf_info_T *qi, char_u *directory, char_u *fname)
 	    qf_last_bufname = bufname;
 	else
 	    qf_last_bufname = vim_strsave(bufname);
-	qf_last_buf = buf;
+	set_bufref(&qf_last_bufref, buf);
     }
     if (buf == NULL)
 	return 0;
