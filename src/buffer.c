@@ -83,7 +83,7 @@ open_buffer(
 {
     int		retval = OK;
 #ifdef FEAT_AUTOCMD
-    buf_T	*old_curbuf;
+    bufref_T	old_curbuf;
 #endif
 #ifdef FEAT_SYN_HL
     long	old_tw = curbuf->b_p_tw;
@@ -129,7 +129,7 @@ open_buffer(
 #ifdef FEAT_AUTOCMD
     /* The autocommands in readfile() may change the buffer, but only AFTER
      * reading the file. */
-    old_curbuf = curbuf;
+    set_bufref(&old_curbuf, curbuf);
     modified_was_set = FALSE;
 #endif
 
@@ -284,12 +284,12 @@ open_buffer(
 	 * The autocommands may have changed the current buffer.  Apply the
 	 * modelines to the correct buffer, if it still exists and is loaded.
 	 */
-	if (buf_valid(old_curbuf) && old_curbuf->b_ml.ml_mfp != NULL)
+	if (bufref_valid(&old_curbuf) && old_curbuf.br_buf->b_ml.ml_mfp != NULL)
 	{
 	    aco_save_T	aco;
 
 	    /* Go to the buffer that was opened. */
-	    aucmd_prepbuf(&aco, old_curbuf);
+	    aucmd_prepbuf(&aco, old_curbuf.br_buf);
 #endif
 	    do_modelines(0);
 	    curbuf->b_flags &= ~(BF_CHECK_RO | BF_NEVERLOADED);
@@ -809,7 +809,9 @@ goto_buffer(
     int		count)
 {
 # if defined(FEAT_WINDOWS) && defined(HAS_SWAP_EXISTS_ACTION)
-    buf_T	*old_curbuf = curbuf;
+    bufref_T	old_curbuf;
+
+    set_bufref(&old_curbuf, curbuf);
 
     swap_exists_action = SEA_DIALOG;
 # endif
@@ -838,7 +840,7 @@ goto_buffer(
 #  endif
     }
     else
-	handle_swap_exists(old_curbuf);
+	handle_swap_exists(&old_curbuf);
 # endif
 }
 #endif
@@ -849,7 +851,7 @@ goto_buffer(
  * It is allowed for "old_curbuf" to be NULL or invalid.
  */
     void
-handle_swap_exists(buf_T *old_curbuf)
+handle_swap_exists(bufref_T *old_curbuf)
 {
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
     cleanup_T	cs;
@@ -857,6 +859,7 @@ handle_swap_exists(buf_T *old_curbuf)
 #ifdef FEAT_SYN_HL
     long	old_tw = curbuf->b_p_tw;
 #endif
+    buf_T	*buf;
 
     if (swap_exists_action == SEA_QUIT)
     {
@@ -872,11 +875,14 @@ handle_swap_exists(buf_T *old_curbuf)
 	swap_exists_action = SEA_NONE;	/* don't want it again */
 	swap_exists_did_quit = TRUE;
 	close_buffer(curwin, curbuf, DOBUF_UNLOAD, FALSE);
-	if (!buf_valid(old_curbuf) || old_curbuf == curbuf)
-	    old_curbuf = buflist_new(NULL, NULL, 1L, BLN_CURBUF | BLN_LISTED);
-	if (old_curbuf != NULL)
+	if (old_curbuf == NULL || !bufref_valid(old_curbuf)
+					      || old_curbuf->br_buf == curbuf)
+	    buf = buflist_new(NULL, NULL, 1L, BLN_CURBUF | BLN_LISTED);
+	else
+	    buf = old_curbuf->br_buf;
+	if (buf != NULL)
 	{
-	    enter_buffer(old_curbuf);
+	    enter_buffer(buf);
 #ifdef FEAT_SYN_HL
 	    if (old_tw != curbuf->b_p_tw)
 		check_colorcolumn(curwin);

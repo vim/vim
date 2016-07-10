@@ -3287,6 +3287,7 @@ buf_write(
 	int		did_cmd = FALSE;
 	int		nofile_err = FALSE;
 	int		empty_memline = (buf->b_ml.ml_mfp == NULL);
+	bufref_T	bufref;
 
 	/*
 	 * Apply PRE autocommands.
@@ -3304,6 +3305,7 @@ buf_write(
 
 	/* set curwin/curbuf to buf and save a few things */
 	aucmd_prepbuf(&aco, buf);
+	set_bufref(&bufref, buf);
 
 	if (append)
 	{
@@ -3376,7 +3378,7 @@ buf_write(
 	 * 2. The autocommands abort script processing.
 	 * 3. If one of the "Cmd" autocommands was executed.
 	 */
-	if (!buf_valid(buf))
+	if (!bufref_valid(&bufref))
 	    buf = NULL;
 	if (buf == NULL || (buf->b_ml.ml_mfp == NULL && !empty_memline)
 				       || did_cmd || nofile_err
@@ -6675,10 +6677,13 @@ check_timestamps(
 	    /* Only check buffers in a window. */
 	    if (buf->b_nwindows > 0)
 	    {
+		bufref_T bufref;
+
+		set_bufref(&bufref, buf);
 		n = buf_check_timestamp(buf, focus);
 		if (didit < n)
 		    didit = n;
-		if (n > 0 && !buf_valid(buf))
+		if (n > 0 && !bufref_valid(&bufref))
 		{
 		    /* Autocommands have removed the buffer, start at the
 		     * first one again. */
@@ -6766,6 +6771,7 @@ buf_check_timestamp(
     char	*mesg2 = "";
     int		helpmesg = FALSE;
     int		reload = FALSE;
+    char	*reason;
 #if defined(FEAT_CON_DIALOG) || defined(FEAT_GUI_DIALOG)
     int		can_reload = FALSE;
 #endif
@@ -6778,8 +6784,10 @@ buf_check_timestamp(
     static int	busy = FALSE;
     int		n;
     char_u	*s;
+    bufref_T	bufref;
+
+    set_bufref(&bufref, buf);
 #endif
-    char	*reason;
 
     /* If there is no file name, the buffer is not loaded, 'buftype' is
      * set, we are in the middle of a save or being called recursively: ignore
@@ -6868,7 +6876,7 @@ buf_check_timestamp(
 	    busy = FALSE;
 	    if (n)
 	    {
-		if (!buf_valid(buf))
+		if (!bufref_valid(&bufref))
 		    EMSG(_("E246: FileChangedShell autocommand deleted buffer"));
 # ifdef FEAT_EVAL
 		s = get_vim_var_str(VV_FCS_CHOICE);
@@ -7026,7 +7034,7 @@ buf_check_timestamp(
 
 #ifdef FEAT_AUTOCMD
     /* Trigger FileChangedShell when the file was changed in any way. */
-    if (buf_valid(buf) && retval != 0)
+    if (bufref_valid(&bufref) && retval != 0)
 	(void)apply_autocmds(EVENT_FILECHANGEDSHELLPOST,
 				      buf->b_fname, buf->b_fname, FALSE, buf);
 #endif
@@ -7053,6 +7061,7 @@ buf_reload(buf_T *buf, int orig_mode)
     linenr_T	old_topline;
     int		old_ro = buf->b_p_ro;
     buf_T	*savebuf;
+    bufref_T	bufref;
     int		saved = OK;
     aco_save_T	aco;
     int		flags = READ_NEW;
@@ -7090,6 +7099,7 @@ buf_reload(buf_T *buf, int orig_mode)
 	{
 	    /* Allocate a buffer without putting it in the buffer list. */
 	    savebuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
+	    set_bufref(&bufref, savebuf);
 	    if (savebuf != NULL && buf == curbuf)
 	    {
 		/* Open the memline. */
@@ -7122,7 +7132,7 @@ buf_reload(buf_T *buf, int orig_mode)
 		if (!aborting())
 #endif
 		    EMSG2(_("E321: Could not reload \"%s\""), buf->b_fname);
-		if (savebuf != NULL && buf_valid(savebuf) && buf == curbuf)
+		if (savebuf != NULL && bufref_valid(&bufref) && buf == curbuf)
 		{
 		    /* Put the text back from the save buffer.  First
 		     * delete any lines that readfile() added. */
@@ -7150,7 +7160,7 @@ buf_reload(buf_T *buf, int orig_mode)
 	}
 	vim_free(ea.cmd);
 
-	if (savebuf != NULL && buf_valid(savebuf))
+	if (savebuf != NULL && bufref_valid(&bufref))
 	    wipe_buffer(savebuf, FALSE);
 
 #ifdef FEAT_DIFF
@@ -8739,6 +8749,7 @@ ex_doautoall(exarg_T *eap)
     int		retval;
     aco_save_T	aco;
     buf_T	*buf;
+    bufref_T	bufref;
     char_u	*arg = eap->arg;
     int		call_do_modelines = check_nomodeline(&arg);
     int		did_aucmd;
@@ -8756,6 +8767,7 @@ ex_doautoall(exarg_T *eap)
 	{
 	    /* find a window for this buffer and save some values */
 	    aucmd_prepbuf(&aco, buf);
+	    set_bufref(&bufref, buf);
 
 	    /* execute the autocommands for this buffer */
 	    retval = do_doautocmd(arg, FALSE, &did_aucmd);
@@ -8772,7 +8784,7 @@ ex_doautoall(exarg_T *eap)
 	    aucmd_restbuf(&aco);
 
 	    /* stop if there is some error or buffer was deleted */
-	    if (retval == FAIL || !buf_valid(buf))
+	    if (retval == FAIL || !bufref_valid(&bufref))
 		break;
 	}
     }
@@ -8898,7 +8910,7 @@ aucmd_prepbuf(
     }
     curbuf = buf;
     aco->new_curwin = curwin;
-    aco->new_curbuf = curbuf;
+    set_bufref(&aco->new_curbuf, curbuf);
 }
 
 /*
@@ -8992,16 +9004,16 @@ win_found:
 	     * it was changed, we are still the same window and the buffer is
 	     * valid. */
 	    if (curwin == aco->new_curwin
-		    && curbuf != aco->new_curbuf
-		    && buf_valid(aco->new_curbuf)
-		    && aco->new_curbuf->b_ml.ml_mfp != NULL)
+		    && curbuf != aco->new_curbuf.br_buf
+		    && bufref_valid(&aco->new_curbuf)
+		    && aco->new_curbuf.br_buf->b_ml.ml_mfp != NULL)
 	    {
 # if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
 		if (curwin->w_s == &curbuf->b_s)
-		    curwin->w_s = &aco->new_curbuf->b_s;
+		    curwin->w_s = &aco->new_curbuf.br_buf->b_s;
 # endif
 		--curbuf->b_nwindows;
-		curbuf = aco->new_curbuf;
+		curbuf = aco->new_curbuf.br_buf;
 		curwin->w_buffer = curbuf;
 		++curbuf->b_nwindows;
 	    }
@@ -9180,6 +9192,10 @@ has_funcundefined(void)
     return (first_autopat[(int)EVENT_FUNCUNDEFINED] != NULL);
 }
 
+/*
+ * Execute autocommands for "event" and file name "fname".
+ * Return TRUE if some commands were executed.
+ */
     static int
 apply_autocmds_group(
     event_T	event,

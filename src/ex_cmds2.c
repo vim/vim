@@ -1693,6 +1693,7 @@ prof_def_func(void)
 autowrite(buf_T *buf, int forceit)
 {
     int		r;
+    bufref_T	bufref;
 
     if (!(p_aw || p_awa) || !p_write
 #ifdef FEAT_QUICKFIX
@@ -1701,11 +1702,12 @@ autowrite(buf_T *buf, int forceit)
 #endif
 	    || (!forceit && buf->b_p_ro) || buf->b_ffname == NULL)
 	return FAIL;
+    set_bufref(&bufref, buf);
     r = buf_write_all(buf, forceit);
 
     /* Writing may succeed but the buffer still changed, e.g., when there is a
      * conversion error.  We do want to return FAIL then. */
-    if (buf_valid(buf) && bufIsChanged(buf))
+    if (bufref_valid(&bufref) && bufIsChanged(buf))
 	r = FAIL;
     return r;
 }
@@ -1723,10 +1725,15 @@ autowrite_all(void)
     for (buf = firstbuf; buf; buf = buf->b_next)
 	if (bufIsChanged(buf) && !buf->b_p_ro)
 	{
+#ifdef FEAT_AUTOCMD
+	    bufref_T	bufref;
+
+	    set_bufref(&bufref, buf);
+#endif
 	    (void)buf_write_all(buf, FALSE);
 #ifdef FEAT_AUTOCMD
 	    /* an autocommand may have deleted the buffer */
-	    if (!buf_valid(buf))
+	    if (!bufref_valid(&bufref))
 		buf = firstbuf;
 #endif
 	}
@@ -1739,7 +1746,12 @@ autowrite_all(void)
     int
 check_changed(buf_T *buf, int flags)
 {
-    int forceit = (flags & CCGD_FORCEIT);
+    int		forceit = (flags & CCGD_FORCEIT);
+#ifdef FEAT_AUTOCMD
+    bufref_T	bufref;
+
+    set_bufref(&bufref, buf);
+#endif
 
     if (       !forceit
 	    && bufIsChanged(buf)
@@ -1762,13 +1774,13 @@ check_changed(buf_T *buf, int flags)
 					))
 			++count;
 # ifdef FEAT_AUTOCMD
-	    if (!buf_valid(buf))
+	    if (!bufref_valid(&bufref))
 		/* Autocommand deleted buffer, oops!  It's not changed now. */
 		return FALSE;
 # endif
 	    dialog_changed(buf, count > 1);
 # ifdef FEAT_AUTOCMD
-	    if (!buf_valid(buf))
+	    if (!bufref_valid(&bufref))
 		/* Autocommand deleted buffer, oops!  It's not changed now. */
 		return FALSE;
 # endif
@@ -1867,6 +1879,11 @@ dialog_changed(
 			)
 		    && !buf2->b_p_ro)
 	    {
+#ifdef FEAT_AUTOCMD
+		bufref_T bufref;
+
+		set_bufref(&bufref, buf2);
+#endif
 #ifdef FEAT_BROWSE
 		/* May get file name, when there is none */
 		browse_save_fname(buf2);
@@ -1877,7 +1894,7 @@ dialog_changed(
 		    (void)buf_write_all(buf2, FALSE);
 #ifdef FEAT_AUTOCMD
 		/* an autocommand may have deleted the buffer */
-		if (!buf_valid(buf2))
+		if (!bufref_valid(&bufref))
 		    buf2 = firstbuf;
 #endif
 	    }
@@ -1983,11 +2000,14 @@ check_changed_any(
 	    continue;
 	if ((!hidden || buf->b_nwindows == 0) && bufIsChanged(buf))
 	{
+	    bufref_T bufref;
+
+	    set_bufref(&bufref, buf);
 	    /* Try auto-writing the buffer.  If this fails but the buffer no
 	    * longer exists it's not changed, that's OK. */
 	    if (check_changed(buf, (p_awa ? CCGD_AW : 0)
 				 | CCGD_MULTWIN
-				 | CCGD_ALLBUF) && buf_valid(buf))
+				 | CCGD_ALLBUF) && bufref_valid(&bufref))
 		break;	    /* didn't save - still changes */
 	}
     }
@@ -2030,10 +2050,15 @@ check_changed_any(
 	FOR_ALL_TAB_WINDOWS(tp, wp)
 	    if (wp->w_buffer == buf)
 	    {
+# ifdef FEAT_AUTOCMD
+		bufref_T bufref;
+
+		set_bufref(&bufref, buf);
+# endif
 		goto_tabpage_win(tp, wp);
 # ifdef FEAT_AUTOCMD
 		/* Paranoia: did autocms wipe out the buffer with changes? */
-		if (!buf_valid(buf))
+		if (!bufref_valid(&bufref))
 		{
 		    goto theend;
 		}

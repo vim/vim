@@ -1069,8 +1069,9 @@ theend:
 ex_diffsplit(exarg_T *eap)
 {
     win_T	*old_curwin = curwin;
-    buf_T	*old_curbuf = curbuf;
+    bufref_T	old_curbuf;
 
+    set_bufref(&old_curbuf, curbuf);
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
@@ -1092,10 +1093,10 @@ ex_diffsplit(exarg_T *eap)
 	    {
 		diff_win_options(old_curwin, TRUE);
 
-		if (buf_valid(old_curbuf))
+		if (bufref_valid(&old_curbuf))
 		    /* Move the cursor position to that of the old window. */
 		    curwin->w_cursor.lnum = diff_get_corresponding_line(
-			    old_curbuf,
+			    old_curbuf.br_buf,
 			    old_curwin->w_cursor.lnum,
 			    curbuf,
 			    curwin->w_cursor.lnum);
@@ -1557,7 +1558,8 @@ diff_check(win_T *wp, linenr_T lnum)
 	    /* Compare all lines.  If they are equal the lines were inserted
 	     * in some buffers, deleted in others, but not changed. */
 	    for (i = 0; i < DB_COUNT; ++i)
-		if (i != idx && curtab->tp_diffbuf[i] != NULL && dp->df_count[i] != 0)
+		if (i != idx && curtab->tp_diffbuf[i] != NULL
+						      && dp->df_count[i] != 0)
 		    if (!diff_equal_entry(dp, idx, i))
 			return -1;
 	}

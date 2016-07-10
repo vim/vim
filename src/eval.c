@@ -10503,8 +10503,9 @@ f_ch_getbufnr(typval_T *argvars, typval_T *rettv)
 	    part = PART_IN;
 	else
 	    part = PART_SOCK;
-	if (channel->ch_part[part].ch_buffer != NULL)
-	    rettv->vval.v_number = channel->ch_part[part].ch_buffer->b_fnum;
+	if (channel->ch_part[part].ch_bufref.br_buf != NULL)
+	    rettv->vval.v_number =
+			      channel->ch_part[part].ch_bufref.br_buf->b_fnum;
     }
 }
 

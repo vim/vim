@@ -4178,6 +4178,11 @@ did_set_spelllang(win_T *wp)
     static int	recursive = FALSE;
     char_u	*ret_msg = NULL;
     char_u	*spl_copy;
+#ifdef FEAT_AUTOCMD
+    bufref_T	bufref;
+
+    set_bufref(&bufref, wp->w_buffer);
+#endif
 
     /* We don't want to do this recursively.  May happen when a language is
      * not available and the SpellFileMissing autocommand opens a new buffer
@@ -4278,7 +4283,7 @@ did_set_spelllang(win_T *wp)
 #ifdef FEAT_AUTOCMD
 		/* SpellFileMissing autocommands may do anything, including
 		 * destroying the buffer we are using... */
-		if (!buf_valid(wp->w_buffer))
+		if (!bufref_valid(&bufref))
 		{
 		    ret_msg = (char_u *)"E797: SpellFileMissing autocommand deleted buffer";
 		    goto theend;
@@ -15561,7 +15566,7 @@ ex_spelldump(exarg_T *eap)
     set_option_value((char_u*)"spl",  dummy, spl, OPT_LOCAL);
     vim_free(spl);
 
-    if (!bufempty() || !buf_valid(curbuf))
+    if (!bufempty())
 	return;
 
     spell_dump_compl(NULL, 0, NULL, eap->forceit ? DUMPFLAG_COUNT : 0);

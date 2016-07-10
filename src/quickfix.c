@@ -4242,7 +4242,8 @@ load_dummy_buffer(
     char_u	*resulting_dir)  /* out: new directory */
 {
     buf_T	*newbuf;
-    buf_T	*newbuf_to_wipe = NULL;
+    bufref_T	newbufref;
+    bufref_T	newbuf_to_wipe;
     int		failed = TRUE;
     aco_save_T	aco;
 
@@ -4250,6 +4251,7 @@ load_dummy_buffer(
     newbuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
     if (newbuf == NULL)
 	return NULL;
+    set_bufref(&newbufref, newbuf);
 
     /* Init the options. */
     buf_copy_options(newbuf, BCO_ENTER | BCO_NOHELP);
@@ -4270,6 +4272,7 @@ load_dummy_buffer(
 	 * work. */
 	curbuf->b_flags &= ~BF_DUMMY;
 
+	newbuf_to_wipe.br_buf = NULL;
 	if (readfile(fname, NULL,
 		    (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM,
 		    NULL, READ_NEW | READ_DUMMY) == OK
@@ -4283,15 +4286,15 @@ load_dummy_buffer(
 		 * using netrw and editing a remote file.  Use the current
 		 * buffer instead, delete the dummy one after restoring the
 		 * window stuff. */
-		newbuf_to_wipe = newbuf;
+		set_bufref(&newbuf_to_wipe, newbuf);
 		newbuf = curbuf;
 	    }
 	}
 
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
-	if (newbuf_to_wipe != NULL && buf_valid(newbuf_to_wipe))
-	    wipe_buffer(newbuf_to_wipe, FALSE);
+	if (newbuf_to_wipe.br_buf != NULL && bufref_valid(&newbuf_to_wipe))
+	    wipe_buffer(newbuf_to_wipe.br_buf, FALSE);
 
 	/* Add back the "dummy" flag, otherwise buflist_findname_stat() won't
 	 * skip it. */
@@ -4306,7 +4309,7 @@ load_dummy_buffer(
     mch_dirname(resulting_dir, MAXPATHL);
     restore_start_dir(dirname_start);
 
-    if (!buf_valid(newbuf))
+    if (!bufref_valid(&newbufref))
 	return NULL;
     if (failed)
     {

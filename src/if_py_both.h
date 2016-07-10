@@ -3409,7 +3409,7 @@ set_option_value_for(
 {
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
-    buf_T	*save_curbuf = NULL;
+    bufref_T	save_curbuf;
     int		set_ret = 0;
 
     VimTryStart();
@@ -3431,7 +3431,7 @@ set_option_value_for(
 	case SREQ_BUF:
 	    switch_buffer(&save_curbuf, (buf_T *)from);
 	    set_ret = set_option_value_err(key, numval, stringval, opt_flags);
-	    restore_buffer(save_curbuf);
+	    restore_buffer(&save_curbuf);
 	    break;
 	case SREQ_GLOBAL:
 	    set_ret = set_option_value_err(key, numval, stringval, opt_flags);
@@ -4273,17 +4273,17 @@ switch_to_win_for_buf(
     buf_T	*buf,
     win_T	**save_curwinp,
     tabpage_T	**save_curtabp,
-    buf_T	**save_curbufp)
+    bufref_T	*save_curbuf)
 {
     win_T	*wp;
     tabpage_T	*tp;
 
     if (find_win_for_buf(buf, &wp, &tp) == FAIL)
-	switch_buffer(save_curbufp, buf);
+	switch_buffer(save_curbuf, buf);
     else if (switch_win(save_curwinp, save_curtabp, wp, tp, TRUE) == FAIL)
     {
 	restore_win(*save_curwinp, *save_curtabp, TRUE);
-	switch_buffer(save_curbufp, buf);
+	switch_buffer(save_curbuf, buf);
     }
 }
 
@@ -4291,9 +4291,9 @@ switch_to_win_for_buf(
 restore_win_for_buf(
     win_T	*save_curwin,
     tabpage_T	*save_curtab,
-    buf_T	*save_curbuf)
+    bufref_T	*save_curbuf)
 {
-    if (save_curbuf == NULL)
+    if (save_curbuf->br_buf == NULL)
 	restore_win(save_curwin, save_curtab, TRUE);
     else
 	restore_buffer(save_curbuf);
@@ -4311,7 +4311,7 @@ restore_win_for_buf(
     static int
 SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 {
-    buf_T	*save_curbuf = NULL;
+    bufref_T	save_curbuf = {NULL, 0};
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
 
@@ -4336,13 +4336,13 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	{
 	    if (buf == curbuf)
 		py_fix_cursor((linenr_T)n, (linenr_T)n + 1, (linenr_T)-1);
-	    if (save_curbuf == NULL)
+	    if (save_curbuf.br_buf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
 		 * holds the buffer, otherwise line numbers will be invalid. */
 		deleted_lines_mark((linenr_T)n, 1L);
 	}
 
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4378,7 +4378,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	else
 	    changed_bytes((linenr_T)n, 0);
 
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	/* Check that the cursor is not beyond the end of the line now. */
 	if (buf == curbuf)
@@ -4415,7 +4415,7 @@ SetBufferLineList(
 	PyObject *list,
 	PyInt *len_change)
 {
-    buf_T	*save_curbuf = NULL;
+    bufref_T	save_curbuf = {NULL, 0};
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
 
@@ -4446,17 +4446,18 @@ SetBufferLineList(
 		    break;
 		}
 	    }
-	    if (buf == curbuf && (save_curwin != NULL || save_curbuf == NULL))
+	    if (buf == curbuf && (save_curwin != NULL
+					       || save_curbuf.br_buf == NULL))
 		/* Using an existing window for the buffer, adjust the cursor
 		 * position. */
 		py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)-n);
-	    if (save_curbuf == NULL)
+	    if (save_curbuf.br_buf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
 		 * holds the buffer, otherwise line numbers will be invalid. */
 		deleted_lines_mark((linenr_T)lo, (long)i);
 	}
 
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4578,7 +4579,7 @@ SetBufferLineList(
 	 * changed range, and move any in the remainder of the buffer.
 	 * Only adjust marks if we managed to switch to a window that holds
 	 * the buffer, otherwise line numbers will be invalid. */
-	if (save_curbuf == NULL)
+	if (save_curbuf.br_buf == NULL)
 	    mark_adjust((linenr_T)lo, (linenr_T)(hi - 1),
 						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
@@ -4587,7 +4588,7 @@ SetBufferLineList(
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
 	/* END of region without "return". */
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4615,7 +4616,7 @@ SetBufferLineList(
     static int
 InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 {
-    buf_T	*save_curbuf = NULL;
+    bufref_T	save_curbuf = {NULL, 0};
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
 
@@ -4637,13 +4638,13 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	    RAISE_UNDO_FAIL;
 	else if (ml_append((linenr_T)n, (char_u *)str, 0, FALSE) == FAIL)
 	    RAISE_INSERT_LINE_FAIL;
-	else if (save_curbuf == NULL)
+	else if (save_curbuf.br_buf == NULL)
 	    /* Only adjust marks if we managed to switch to a window that
 	     * holds the buffer, otherwise line numbers will be invalid. */
 	    appended_lines_mark((linenr_T)n, 1L);
 
 	vim_free(str);
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 	update_screen(VALID);
 
 	if (VimTryEnd())
@@ -4704,7 +4705,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 		}
 		vim_free(array[i]);
 	    }
-	    if (i > 0 && save_curbuf == NULL)
+	    if (i > 0 && save_curbuf.br_buf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
 		 * holds the buffer, otherwise line numbers will be invalid. */
 		appended_lines_mark((linenr_T)n, (long)i);
@@ -4713,7 +4714,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	/* Free the array of lines. All of its contents have now
 	 * been freed. */
 	PyMem_Free(array);
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	update_screen(VALID);
 
@@ -5216,7 +5217,7 @@ BufferMark(BufferObject *self, PyObject *pmarkObject)
     pos_T	*posp;
     char_u	*pmark;
     char_u	mark;
-    buf_T	*savebuf;
+    bufref_T	savebuf;
     PyObject	*todecref;
 
     if (CheckBuffer(self))
@@ -5240,7 +5241,7 @@ BufferMark(BufferObject *self, PyObject *pmarkObject)
     VimTryStart();
     switch_buffer(&savebuf, self->buf);
     posp = getmark(mark, FALSE);
-    restore_buffer(savebuf);
+    restore_buffer(&savebuf);
     if (VimTryEnd())
 	return NULL;
 

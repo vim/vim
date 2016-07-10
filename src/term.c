@@ -1908,21 +1908,21 @@ set_termname(char_u *term)
 
 #ifdef FEAT_AUTOCMD
 	{
-	    buf_T	*old_curbuf;
+	    bufref_T	old_curbuf;
 
 	    /*
 	     * Execute the TermChanged autocommands for each buffer that is
 	     * loaded.
 	     */
-	    old_curbuf = curbuf;
+	    set_bufref(&old_curbuf, curbuf);
 	    for (curbuf = firstbuf; curbuf != NULL; curbuf = curbuf->b_next)
 	    {
 		if (curbuf->b_ml.ml_mfp != NULL)
 		    apply_autocmds(EVENT_TERMCHANGED, NULL, NULL, FALSE,
 								      curbuf);
 	    }
-	    if (buf_valid(old_curbuf))
-		curbuf = old_curbuf;
+	    if (bufref_valid(&old_curbuf))
+		curbuf = old_curbuf.br_buf;
 	}
 #endif
     }

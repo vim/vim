@@ -3666,7 +3666,7 @@ do_ecmd(
     buf_T	*buf;
     bufref_T	bufref;
 #if defined(FEAT_AUTOCMD) || defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-    buf_T	*old_curbuf = curbuf;
+    bufref_T	old_curbuf;
 #endif
     char_u	*free_fname = NULL;
 #ifdef FEAT_BROWSE
@@ -3691,6 +3691,9 @@ do_ecmd(
 
     if (eap != NULL)
 	command = eap->do_ecmd_cmd;
+#if defined(FEAT_AUTOCMD) || defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+    set_bufref(&old_curbuf, curbuf);
+#endif
 
     if (fnum != 0)
     {
@@ -3857,7 +3860,7 @@ do_ecmd(
 	    /* autocommands may change curwin and curbuf */
 	    if (oldwin != NULL)
 		oldwin = curwin;
-	    old_curbuf = curbuf;
+	    set_bufref(&old_curbuf, curbuf);
 #endif
 	}
 	if (buf == NULL)
@@ -3875,7 +3878,7 @@ do_ecmd(
 	     * buffer. */
 	    if (!bufref_valid(&bufref)
 #ifdef FEAT_AUTOCMD
-		    || curbuf != old_curbuf
+		    || curbuf != old_curbuf.br_buf
 #endif
 		    )
 		goto theend;
@@ -3934,7 +3937,7 @@ do_ecmd(
 		auto_buf = TRUE;
 	    else
 	    {
-		if (curbuf == old_curbuf)
+		if (curbuf == old_curbuf.br_buf)
 #endif
 		    buf_copy_options(buf, BCO_ENTER);
 
@@ -4196,7 +4199,7 @@ do_ecmd(
 #if defined(HAS_SWAP_EXISTS_ACTION)
 	    if (swap_exists_action == SEA_QUIT)
 		retval = FAIL;
-	    handle_swap_exists(old_curbuf);
+	    handle_swap_exists(&old_curbuf);
 #endif
 	}
 #ifdef FEAT_AUTOCMD
