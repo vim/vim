@@ -13108,7 +13108,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 
     ExpandInit(&xpc);
     xpc.xp_pattern = get_tv_string(&argvars[0]);
-    xpc.xp_pattern_len = STRLEN(xpc.xp_pattern);
+    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
     xpc.xp_context = cmdcomplete_str_to_type(get_tv_string(&argvars[1]));
     if (xpc.xp_context == EXPAND_NOTHING)
     {
@@ -13122,7 +13122,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     if (xpc.xp_context == EXPAND_MENUS)
     {
 	set_context_in_menu_cmd(&xpc, (char_u *)"menu", xpc.xp_pattern, FALSE);
-	xpc.xp_pattern_len = STRLEN(xpc.xp_pattern);
+	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
     }
 
     pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
