@@ -183,7 +183,7 @@ main
 
 #if defined(WIN32) && defined(FEAT_MBYTE)
     /*
-     * MingW expands command line arguments, which confuses our code to
+     * MinGW expands command line arguments, which confuses our code to
      * convert when 'encoding' changes.  Get the unexpanded arguments.
      */
     argc = get_cmd_argsW(&argv);
