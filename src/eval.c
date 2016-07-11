@@ -21178,12 +21178,32 @@ get_callback(typval_T *arg, partial_T **pp)
 	return (*pp)->pt_name;
     }
     *pp = NULL;
-    if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
+    if (arg->v_type == VAR_FUNC)
+    {
+	func_ref(arg->vval.v_string);
+	return arg->vval.v_string;
+    }
+    if (arg->v_type == VAR_STRING)
 	return arg->vval.v_string;
     if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
 	return (char_u *)"";
     EMSG(_("E921: Invalid callback argument"));
     return NULL;
+}
+
+/*
+ * Unref/free "callback" and "partial" retured by get_callback().
+ */
+    void
+free_callback(char_u *callback, partial_T *partial)
+{
+    if (partial != NULL)
+	partial_unref(partial);
+    else if (callback != NULL)
+    {
+	func_unref(callback);
+	vim_free(callback);
+    }
 }
 #endif
 

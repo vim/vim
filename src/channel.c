@@ -1113,6 +1113,23 @@ find_buffer(char_u *name, int err)
     return buf;
 }
 
+    static void
+set_callback(
+	char_u **cbp,
+	partial_T **pp,
+	char_u *callback,
+	partial_T *partial)
+{
+    free_callback(*cbp, *pp);
+    if (callback != NULL && *callback != NUL)
+	*cbp = vim_strsave(callback);
+    else
+	*cbp = NULL;
+    *pp = partial;
+    if (*pp != NULL)
+	++(*pp)->pt_refcount;
+}
+
 /*
  * Set various properties from an "opt" argument.
  */
@@ -1120,8 +1137,6 @@ find_buffer(char_u *name, int err)
 channel_set_options(channel_T *channel, jobopt_T *opt)
 {
     int		part;
-    char_u	**cbp;
-    partial_T	**pp;
 
     if (opt->jo_set & JO_MODE)
 	for (part = PART_SOCK; part <= PART_IN; ++part)
@@ -1144,61 +1159,19 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	channel->ch_part[PART_IN].ch_block_write = 1;
 
     if (opt->jo_set & JO_CALLBACK)
-    {
-	cbp = &channel->ch_callback;
-	pp = &channel->ch_partial;
-	vim_free(*cbp);
-	partial_unref(*pp);
-	if (opt->jo_callback != NULL && *opt->jo_callback != NUL)
-	    *cbp = vim_strsave(opt->jo_callback);
-	else
-	    *cbp = NULL;
-	*pp = opt->jo_partial;
-	if (*pp != NULL)
-	    ++(*pp)->pt_refcount;
-    }
+	set_callback(&channel->ch_callback, &channel->ch_partial,
+					   opt->jo_callback, opt->jo_partial);
     if (opt->jo_set & JO_OUT_CALLBACK)
-    {
-	cbp = &channel->ch_part[PART_OUT].ch_callback;
-	pp = &channel->ch_part[PART_OUT].ch_partial;
-	vim_free(*cbp);
-	partial_unref(*pp);
-	if (opt->jo_out_cb != NULL && *opt->jo_out_cb != NUL)
-	    *cbp = vim_strsave(opt->jo_out_cb);
-	else
-	    *cbp = NULL;
-	*pp = opt->jo_out_partial;
-	if (*pp != NULL)
-	    ++(*pp)->pt_refcount;
-    }
+	set_callback(&channel->ch_part[PART_OUT].ch_callback,
+		&channel->ch_part[PART_OUT].ch_partial,
+		opt->jo_out_cb, opt->jo_out_partial);
     if (opt->jo_set & JO_ERR_CALLBACK)
-    {
-	cbp = &channel->ch_part[PART_ERR].ch_callback;
-	pp = &channel->ch_part[PART_ERR].ch_partial;
-	vim_free(*cbp);
-	partial_unref(*pp);
-	if (opt->jo_err_cb != NULL && *opt->jo_err_cb != NUL)
-	    *cbp = vim_strsave(opt->jo_err_cb);
-	else
-	    *cbp = NULL;
-	*pp = opt->jo_err_partial;
-	if (*pp != NULL)
-	    ++(*pp)->pt_refcount;
-    }
+	set_callback(&channel->ch_part[PART_ERR].ch_callback,
+		&channel->ch_part[PART_ERR].ch_partial,
+		opt->jo_err_cb, opt->jo_err_partial);
     if (opt->jo_set & JO_CLOSE_CALLBACK)
-    {
-	cbp = &channel->ch_close_cb;
-	pp = &channel->ch_close_partial;
-	vim_free(*cbp);
-	partial_unref(*pp);
-	if (opt->jo_close_cb != NULL && *opt->jo_close_cb != NUL)
-	    *cbp = vim_strsave(opt->jo_close_cb);
-	else
-	    *cbp = NULL;
-	*pp = opt->jo_close_partial;
-	if (*pp != NULL)
-	    ++(*pp)->pt_refcount;
-    }
+	set_callback(&channel->ch_close_cb, &channel->ch_close_partial,
+		opt->jo_close_cb, opt->jo_close_partial);
 
     if ((opt->jo_set & JO_OUT_IO) && opt->jo_io[PART_OUT] == JIO_BUFFER)
     {
@@ -2228,8 +2201,7 @@ invoke_one_time_callback(
      * invokes ch_close() the list will be cleared. */
     remove_cb_node(cbhead, item);
     invoke_callback(channel, item->cq_callback, item->cq_partial, argv);
-    vim_free(item->cq_callback);
-    partial_unref(item->cq_partial);
+    free_callback(item->cq_callback, item->cq_partial);
     vim_free(item);
 }
 
@@ -2725,9 +2697,8 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	  }
 
 	  /* the callback is only called once */
-	  vim_free(channel->ch_close_cb);
+	  free_callback(channel->ch_close_cb, channel->ch_close_partial);
 	  channel->ch_close_cb = NULL;
-	  partial_unref(channel->ch_close_partial);
 	  channel->ch_close_partial = NULL;
 
 	  --channel->ch_refcount;
@@ -2763,8 +2734,7 @@ channel_clear_one(channel_T *channel, int part)
 	cbq_T *node = cb_head->cq_next;
 
 	remove_cb_node(cb_head, node);
-	vim_free(node->cq_callback);
-	partial_unref(node->cq_partial);
+	free_callback(node->cq_callback, node->cq_partial);
 	vim_free(node);
     }
 
@@ -2774,9 +2744,9 @@ channel_clear_one(channel_T *channel, int part)
 	remove_json_node(json_head, json_head->jq_next);
     }
 
-    vim_free(channel->ch_part[part].ch_callback);
+    free_callback(channel->ch_part[part].ch_callback,
+					channel->ch_part[part].ch_partial);
     channel->ch_part[part].ch_callback = NULL;
-    partial_unref(channel->ch_part[part].ch_partial);
     channel->ch_part[part].ch_partial = NULL;
 }
 
@@ -2793,13 +2763,11 @@ channel_clear(channel_T *channel)
     channel_clear_one(channel, PART_OUT);
     channel_clear_one(channel, PART_ERR);
     /* there is no callback or queue for PART_IN */
-    vim_free(channel->ch_callback);
+    free_callback(channel->ch_callback, channel->ch_partial);
     channel->ch_callback = NULL;
-    partial_unref(channel->ch_partial);
     channel->ch_partial = NULL;
-    vim_free(channel->ch_close_cb);
+    free_callback(channel->ch_close_cb, channel->ch_close_partial);
     channel->ch_close_cb = NULL;
-    partial_unref(channel->ch_close_partial);
     channel->ch_close_partial = NULL;
 }
 
@@ -4319,8 +4287,7 @@ job_free_contents(job_T *job)
     mch_clear_job(job);
 
     vim_free(job->jv_stoponexit);
-    vim_free(job->jv_exit_cb);
-    partial_unref(job->jv_exit_partial);
+    free_callback(job->jv_exit_cb, job->jv_exit_partial);
 }
 
     static void
@@ -4485,8 +4452,7 @@ job_set_options(job_T *job, jobopt_T *opt)
     }
     if (opt->jo_set & JO_EXIT_CB)
     {
-	vim_free(job->jv_exit_cb);
-	partial_unref(job->jv_exit_partial);
+	free_callback(job->jv_exit_cb, job->jv_exit_partial);
 	if (opt->jo_exit_cb == NULL || *opt->jo_exit_cb == NUL)
 	{
 	    job->jv_exit_cb = NULL;
