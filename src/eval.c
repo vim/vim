@@ -13120,11 +13120,13 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
+# if defined(FEAT_MENU)
     if (xpc.xp_context == EXPAND_MENUS)
     {
 	set_context_in_menu_cmd(&xpc, (char_u *)"menu", xpc.xp_pattern, FALSE);
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
     }
+# endif
 
     pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
     if ((rettv_list_alloc(rettv) != FAIL) && (pat != NULL))
