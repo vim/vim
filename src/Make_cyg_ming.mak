@@ -67,7 +67,11 @@ CSCOPE=yes
 # Set to yes to enable Netbeans support (requires CHANNEL).
 NETBEANS=$(GUI)
 # Set to yes to enable inter process communication.
+ifeq (HUGE, $(FEATURES))
+CHANNEL=yes
+else
 CHANNEL=$(GUI)
+endif
 
 
 # Link against the shared version of libstdc++ by default.  Set
@@ -375,7 +379,7 @@ endif # RUBY
 # Any other defines can be included here.
 DEF_GUI=-DFEAT_GUI_W32 -DFEAT_CLIPBOARD
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
-	-DHAVE_PATHDEF -DFEAT_$(FEATURES)
+	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H
 ifeq ($(ARCH),x86-64)
 DEFINES+=-DMS_WIN64
 endif
@@ -588,7 +592,9 @@ endif
 
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lversion
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os_w32exe.o
+CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
+	$(OUTDIR)/arabic.o \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
@@ -603,6 +609,7 @@ OBJ = \
 	$(OUTDIR)/ex_docmd.o \
 	$(OUTDIR)/ex_eval.o \
 	$(OUTDIR)/ex_getln.o \
+	$(OUTDIR)/farsi.o \
 	$(OUTDIR)/fileio.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
@@ -723,6 +730,7 @@ OBJ += $(GUIOBJ)
 LFLAGS += -mwindows
 OUTDIR = gobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
 else
+OBJ += $(CUIOBJ)
 TARGET := vim$(DEBUG_SUFFIX).exe
 OUTDIR = obj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
 endif
@@ -838,6 +846,7 @@ endif
 INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
 	structs.h regexp.h option.h ex_cmds.h proto.h globals.h farsi.h \
 	gui.h
+CUI_INCL = iscygpty.h
 
 $(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
@@ -882,6 +891,12 @@ endif
 if_perl.c: if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap \
 	     $(PERLTYPEMAP) if_perl.xs > $@
+
+$(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
+	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
+
+$(OUTDIR)/main.o:		main.c $(INCL) $(CUI_INCL)
+	$(CC) -c $(CFLAGS) main.c -o $(OUTDIR)/main.o
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o

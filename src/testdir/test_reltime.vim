@@ -23,5 +23,4 @@ func Test_reltime()
   call assert_true(reltimestr(differs) != '0.0')
   call assert_true(reltimefloat(differs) < 0.1)
   call assert_true(reltimefloat(differs) > 0.0)
-
 endfunc

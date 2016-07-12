@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2015 Dec 03
+" Last Change:	2016 Jun 26
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -17,7 +17,7 @@ augroup filetypedetect
 
 " Ignored extensions
 if exists("*fnameescape")
-au BufNewFile,BufRead ?\+.orig,?\+.bak,?\+.old,?\+.new,?\+.dpkg-dist,?\+.dpkg-old,?\+.dpkg-new,?\+.dpkg-bak,?\+.rpmsave,?\+.rpmnew
+au BufNewFile,BufRead ?\+.orig,?\+.bak,?\+.old,?\+.new,?\+.dpkg-dist,?\+.dpkg-old,?\+.dpkg-new,?\+.dpkg-bak,?\+.rpmsave,?\+.rpmnew,?\+.pacsave,?\+.pacnew
 	\ exe "doau filetypedetect BufRead " . fnameescape(expand("<afile>:r"))
 au BufNewFile,BufRead *~
 	\ let s:name = expand("<afile>") |
@@ -1019,7 +1019,7 @@ au BufNewFile,BufRead *.jgr			setf jgraph
 au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
 
 " JSON
-au BufNewFile,BufRead *.json,*.jsonp		setf json
+au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
 
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix
@@ -1861,10 +1861,18 @@ au BufNewFile,BufRead catalog			setf catalog
 au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 
 " Shell scripts (sh, ksh, bash, bash2, csh); Allow .profile_foo etc.
-" Gentoo ebuilds are actually bash scripts
-au BufNewFile,BufRead .bashrc*,bashrc,bash.bashrc,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,*.bash,*/{,.}bash[_-]completion{,.d,.sh}{,/*},*.ebuild,*.eclass call SetFileTypeSH("bash")
+" Gentoo ebuilds and Arch Linux PKGBUILDs are actually bash scripts
+au BufNewFile,BufRead .bashrc*,bashrc,bash.bashrc,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,*.bash,*/{,.}bash[_-]completion{,.d,.sh}{,/*},*.ebuild,*.eclass,PKGBUILD* call SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc*,*.ksh call SetFileTypeSH("ksh")
 au BufNewFile,BufRead */etc/profile,.profile*,*.sh,*.env call SetFileTypeSH(getline(1))
+
+" Shell script (Arch Linux) or PHP file (Drupal)
+au BufNewFile,BufRead *.install
+	\ if getline(1) =~ '<?php' |
+	\   setf php |
+	\ else |
+	\   call SetFileTypeSH("bash") |
+	\ endif
 
 " Also called from scripts.vim.
 func! SetFileTypeSH(name)

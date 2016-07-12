@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Apr 11
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jul 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,29 +34,18 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Crash in garbagecollect() after starting a job. (Yasuhiro Matsumoto)
-  :let g:a = job_start(['ls'])
-  :call garbagecollect()
--> Need to find a way to call garbagecollect() in a test.
-
-Channel closes unexpectedly. (Christian Robinson, 2016 Apr 10)
-Log file later.
-Remarks from Kazunobu Kuriyama.  Fix from Hirohito, suggested by Ozaki Kiichi.
-
-When test_partial start_job() has a non-existing command memory leaks.
-
-Vim 8 features to mention:
-* TabNew, TabNewEntered and TabClosed autocommand events.
-
-Also keep a list of loaded plugins, skip when encountered again?
-
-Memory leak in test49
-Memory leak in test_alot, with matchstrpos()
+Problem with setqflist([]): grep 4 times, ":colder 3", setqflist([]) will
+clear the next list, not the current one.  Ramel Eshed, Jun 8.
 
 +channel:
+- GUI cursor blinking interrupted when the job output goes to a buffer that is
+  in a window. (Ramel Eshed, 2016 Jun 9)
+- GUI cursor blinking interrupted when there is a status line.  (Ramel Eshed,
+  2016 Jun 9)
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
   minute.  Option to set the droptime.
+- Add an option to drop text of very long lines?  Default to 1 Mbyte.
 - Add remark about undo sync, is there a way to force it?
 - When starting a job, have an option to open the server socket, so we know
   the port, and pass it to the command with --socket-fd {nr}. (Olaf Dabrunz,
@@ -67,19 +56,20 @@ Later
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
 
-Test for try/catch in 'tabline'. #746, Haya, 2016 Apr 10.
-
-Make it so that the window ID can be used where currently a window nr is used
-
-Patch to make tag jump work on function({expr}). (Hirohito Higashi, 2016 Mar
-25)
-
-Patch to improve I/O for Perl. (Damien, 2016 Jan 9, update Jan 22 2nd one)
-
-Add strgetchar(): get a character by index from a string.
-    using [] is a byte index.
+Quickfix improvements for background building and grepping:
+- Add a command modifier ":usefname" to quickfix commands and functions to
+  keep a file name as a string and not create a buffer for it? To avoid
+  creating lots of buffers. (Ramel Eshed)
+  Store the relative file name and set a flag "qf_relative".  Before changing
+  directory turn them into full paths.
 
 Regexp problems:
+- When using automatic engine selection there is a false match.  Forcing
+  either engine works OK. (fritzophrenic, 2016 Jun 15, #867)
+- Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
+  (Manuel Ortega, 2016 Apr 24)
+  Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
+  LC_CTYPE
 - The regexp engines are not reentrant, causing havoc when interrupted by a
   remote expression or something else.  Move global variables onto the stack
   or into an allocated struct.
@@ -121,57 +111,104 @@ Regexp problems:
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
 - Search for \\~ causes error E874.
+- Search for /\%d0\+  causes error E363 in a file with consecutive NUL
+  characters. (Christian Brabandt, 2016 Jun 7)
 
-Using freed memory in quickfix code. (Dominique, 2016 Mar 21)
+json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
+What if there is an invalid character?
 
-Patch 7.4.1401 caused autochdir not to work on startup. (Rob Hoelz, #704)
+Should json_encode()/json_decode() restrict recursiveness?
+Or avoid recursiveness.
 
-Patch to support partions for Python, #734.  Nikolai Pavlov, 2017 Apr 6
+Add a lambda() function.
+Patch by Yasuhiro Matsumoto, 2014 Sep 16, update 2016 Apr 17.
+Correction for test, Ken Takata, 2016 May 27.
+Merged patch: Ken Takata, 2016 Jun 15.
+Need to separate-out closure and lambda somehow.
+Define lambda directly, not as a string: {v -> v * 8}
+Lambda implementation by Ken Takata, 2016 Jul 7.
 
-Patch to fix that folds close with autocomplete.  #643
-Christian Brabandt, 2016 Feb 18.
+Python: Extended funcrefs: use func_T* structure in place of char_u* function
+names.
+(ZyX, 2013 Jul 15, update Sep 22, 24, 28; Update 2013 Dec 15, 2014 Jan 6)
+Also fixes Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
-Also include update_curswant() fix for getcurpos(). (Christian Brabandt, 2016
-Feb 9)
+Once .exe with updated installer is available: Add remark to download page
+about /S and /D options (Ken Takata, 2016 Apr 13)
 
-When cross-compiling skip generating the tags file (and moving it out of the
-way). (Christian Neukirchen, 2016 Apr 7)  #740
+Cursor positioned in the wrong place when editing src/testdir/test_viml.vim.
 
-Patch to list some messages and clear messages. (Yasuhiro Matsumoto, 2016 Mar
-12)
+Javascript indent wrong after /* in single quoted string:
+    var SRC = 'src/*.js';
+    function log(tag) {
+	a = b;
+    }
 
-Patch to fix escaping special characters for delete(). (tc-0, 2016 Mar 20,
-#700) Test fails on MS-Windows.
+Use ADDR_OTHER instead of ADDR_LINES for many more commands.
+Add tests for using number larger than number of lines in buffer.
 
-Patch to have complete() not set 'modified'. (Shougo, 2016 Apr 9, #745)
+Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 
-Patch to put undo options together in undo window.
-(Gary Johnson, 2016 Jan 28)
+For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
+5)
+
+'completeopt' noinsert breaks redo register (Shougo, 2016 Jun 18, #874)
+Patch to fix this: #905.
+There also is #875 to fix another problem?
+
+Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
+
+":caddexpr" should keep state, so that directory changes can be respected.
+(Luc Hermitte, 2016 Jun 6)
+Don't clear dir_stack and file_stack when returning, do it on entry when not
+adding iterms.  And keep them in qf_list_T.
+
+Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
+13, last version)  Update June 26, #830.
+
+When 'autochdir' is set, writing  new file does not change the current dir.
+(Dan Church, issue #777)
+Patch to fix this. (mister fish (Allen Haim), 2016 May 14, #803)
+
+ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
+Also with latest version.
+
+Patch to load rgb.txt once. (Christian Brabandt, 2016 Apr 29)
 
 Still problems with 'emoji'.  See issue #721.  Patch 7.4.1697 half-fixes it.
 Avoid PLAN_WRITE in windgoto() ?
-
-Patch to have better check for {action} argument of setqflist().
-Nikolai Pavlov, Feb 25, #661.  Can be even more strict.
-Also see patch from Hirohito Higash, Feb 25.
-Updated patch, 2016 Mar 25.
-
-Patch to update the GTK icon cache when installing. (Kazunobu Kuriyama, 2016
-Feb 3)
-
-Patch for test86 and test87. (Roland Puntaier, #622)
+Should already never use utf-8 chars to position the cursor.
 
 Cannot delete a file with square brackets with delete(). (#696)
 
+No autocommand for when changing directory.  Patch from allen haim, 2016 Jun
+27, #888
+
+Should make ":@r" handle line continuation. (Cesar Romani, 2016 Jun 26)
+Also for ":@.".
+
+Patch to add TabNew, TabNewEntered and TabClosed autocommand events.
+(Felipe Morales, 2015 Feb 1)
+
 Patch on issue #728 by Christian Brabandt, 2016 Apr 7.  Update with test: Apr 8.
+Explanation Apr 12.
 Might be related to:
 Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
 handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
 
 Patch to add 'topbot' to 'belloff' option. (Coot, 2016 Mar 18, #695)
 
+Patch for C syntax HL. (Bradley Garagan, 2016 Apr 17) #763
+
 Patch to make matchit work better, respect 'matchpairs'. (Ken Takata, 2016 Mar
 25)
+
+Possibly wrong value for seq_cur. (Florent Fayolle, 2016 May 15, #806)
+
+Patch to improve map documentation. Issue #799.
+
+Patch for restoring wide characters in the console buffer.
+(Ken Takata, 2016 Jun 7)
 
 We can use '. to go to the last change in the current buffer, but how about
 the last change in any buffer?  Can we use ', (, is next to .)?
@@ -179,23 +216,33 @@ the last change in any buffer?  Can we use ', (, is next to .)?
 Patch for Python: #622. (Roland Puntaier, 2016 Feb 2)
 What does it change?
 
+When generating the Unicode tables with runtime/tools/unicode.vim the
+emoji_width table has only one entry.
+
 It's possible to add ",," to 'wildignore', an empty entry.  Causes problems.
 Reject the value? #710.
 
-Win32: patch to use 64 bit stat() if possible. (Ken Takata, 2014 May 12)
-More tests May 14. Update May 29.  Update Aug 10.
-Now part of large file patches. (Ken Takata, 2016 Feb 1)
-Win64: Seek error in swap file for a very big file (3 Gbyte).  Check storing
-pointer in long and seek offset in 64 bit var.
-Patches from Ken Takata might help (2014 Apr 17)
-Update 2016 Mar 28.  Can include all parts into one dist patch.
+Patch to support strikethrough next to bold and italic. (Christian Brabandt,
+2013 Jul 30)  Update from Ken Takata, 2013 Oct 12.
+Update mentioned by Christian, 2016 Apr 25.
+Update from Ken Takata, 2016 Apr 26.
 
-Patch to support 64 bit ints for Number. (Ken Takata, 2016 Jan 21)
-Update 2016 Apr 4.
+Patch to improve cscope. (Adrian Kocis, #843)
+
+Patch for groovy multi-line comment highlighting. (Justin M. Keyes, 2016 May
+20 #644)
+
+When doing "vi buf.md" a BufNew autocommand for *.md is not triggered.
+Because of using the initial buffer? (Dun Peal, 2016 May 12)
 
 Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
-Updated 2016 Feb 10
+Updated 2016 Jun 10, #858
 
+Add redrawtabline command. (Naruhiko Nishino, 2016 Jun 11)
+
+Neovim patch for utfc_ptr2char_len() https://github.com/neovim/neovim/pull/4574
+No test, needs some work to include.
+>
 Patch to improve indenting for C++ constructor with initializer list.
 (Hirohito Higashi, 2016 Mar 31)
 
@@ -228,11 +275,8 @@ Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Patch to make tests pass with EBCDIC. (Owen Leibman, 2016 Apr 10)
 
-jsonencode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
-What if there is an invalid character?
-
-Should jsonencode()/jsondecode() restrict recursiveness?
-Or avoid recursiveness.
+When repeating the 'confirm' dialog one needs to press Enter. (ds26gte, 2016
+Apr 17)  #762
 
 Use vim.vim syntax highlighting for help file examples, but without ":" in
 'iskeyword' for syntax.
@@ -241,6 +285,10 @@ Patch to make "%:h:h" return "." instead of the full path.
 (Coot, 2016 Jan 24, #592)
 
 Remove SPACE_IN_FILENAME ? What could possibly go wrong?
+
+When command names are very long :command output is difficult to read.  Use a
+maximum for the column width?  (#871)
+Patcy by varmanishant, 2016 Jun 18, #876
 
 Patch to change GUI behavior: instead of changing the window size change the
 lines/columns when menu/toolbar/etc. is added/removed. (Ychin, 2016 Mar 20,
@@ -253,6 +301,9 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
+Patch to add getbufinfo(), gettabinfo() and getwininfo(). (Yegappan
+Lakshmanan, 2016 Apr 2016)  Update Jun 8.
+
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
 
@@ -263,21 +314,26 @@ directory exists. (Sergio Gallelli, 2013 Dec 29)
     when evaluating to non-zero.  Add the "watchadd expr" command, stop when
     the value of the expression changes.  ":watchdel" deletes an item,
     ":watchlist" lists the items. (Charles Campbell)
-Patch by Christian Brabandt, 2016 Feb 1.
+Patch by Christian Brabandt, 2016 Jun 10, #859
 
-Patch to discard remainder of long error messages in quickfix, avoid using
-them as separate messages. (Anton Lindqvist, 2016 Apr 9)
+If ":bd" also closes a Tab page then the " mark is not set.  (Harm te Hennepe,
+2016 Apr 25, #780)
 
 Patch to avoid redrawing tabline when the popup menu is visible.
 (Christian Brabandt, 2016 Jan 28)
 
 Patch to add {skip} argument to search(). (Christian Brabandt, 2016 Feb 24)
+Update 2016 Jun 10, #861
 
 Add value "smart" to 'tagcase': ignore case when tag is all lower case.
 Patch from Christian Brabandt, 2016 Mar 30, #712.
 
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
+
+When the CursorMovedI event triggers, and CTRL-X was typed, a script cannot
+restore the mode properly. (Andrew Stewart, 2016 Apr 20)
+Do not trigger the event?
 
 Using ":windo" to set options in all windows has the side effect that it
 changes the window layout and the current window.  Make a variant that saves
@@ -297,7 +353,7 @@ https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
 Patch to make the behavior of "w" more straightforward, but not Vi compatible.
 With a 'cpo' flag.  (Christian Brabandt, 2016 Feb 8)
 
-Patch to add optionproperties(). (Anton Lindqvist, 2016 Mar 27)
+Patch to add optionproperties(). (Anton Lindqvist, 2016 Mar 27, update Apr 13)
 
 Patch to add TagNotFound autocommand. (Anton Lindqvist, 2016 Feb 3)
 
@@ -349,9 +405,6 @@ Patch to add :mapgroup, put mappings in a group like augroup.
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
-Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
-13, last version)  Update Mar 21., Apr 2.
-
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?
 
@@ -363,7 +416,7 @@ Use v:none.  var == v:none
 
 Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
 24)  Also need a way to get the global arg list?  Update later on Jan 24
-Update Mar 5. Update Apr 7.
+Update Mar 5. Update Apr 7.  Update Jun 5.
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
@@ -373,9 +426,6 @@ is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
 
 Patch to use two highlight groups for relative numbers. (Shaun Brady, 2016 Jan
 30)
-
-Weird encryption problems on Windows. (Ben Fritz, 2015 Feb 13)
-Goes away when disabling the swap file. (might1, Feb 16)
 
 MS-Windows: Crash opening very long file name starting with "\\".
 (Christian Brock, 2012 Jun 29)
@@ -400,13 +450,8 @@ wildcards.  Add a ":nowild" command modifier?  (ZyX, 2015 March 4)
 Proposal to make options.txt easier to read. (Arnaud Decara, 2015 Aug 5)
 Update Aug 14.
 
-Crash in :cnext on MS-Windows. (Ben Fritz, 2015 Oct 27)
-
 When using --remote-tab on MS-Windows 'encoding' hasn't been initialized yet,
 the file name ends up encoded wrong. (Raul Coronado, 2015 Dec 21)
-
-Patch to add GUI colors to the terminal, when 'guicolors' is set. (ZyX, 2013
-Jan 26, update 2013 Dec 14, another 2014 Nov 22)
 
 Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
 Sep 10)
@@ -427,8 +472,6 @@ Patch to fix checking global option value when not using it.
 
 When 'showbreak' is set repeating a Visual operation counts the size of the
 'showbreak' text as part of the operation. (Axel Bender, 2015 Jul 20)
-
-Patch for matchit plugin related to multibyte chars. (Ken Takata, 2015 Jul 22)
 
 Patch for multi-byte characters in langmap and applying a mapping on them.
 (Christian Brabandt, 2015 Jun 12, update July 25)
@@ -457,9 +500,6 @@ Breaks test_eval.  Inefficient, can we only compute y_width when needed?
 
 Patch to use different terminal mode settings for system(). (Hayaki Saito)
 Does this work for everybody?
-
-Patch to fix that wide characters do not work properly after exiting.
-(Yasuhiro Matsumoto, 2015 May 24) Better patch to come.
 
 Patch to add wordcount().  Same info as g CTRL-G. (Christian Brabandt, 2015
 Nov 17)
@@ -540,7 +580,7 @@ Patch for ordered dict. (Ozaki Kiichi, 2015 May 7)
 Patch to make closed folds line up. (Charles Campbell, 2014 Sep 12)
 Remark from Roland Eggner: does it cause crashes? (2014 Dec 12)
 Updated patch by Roland Eggner, Dec 16
-Updated patch from Charles, 2016 Jan 4.
+Updated patch from Charles, 2016 Jul 2
 
 Patch to open folds for 'incsearch'. (Christian Brabandt, 2015 Jan 6)
 
@@ -553,7 +593,7 @@ Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)
 
 Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
-Update 2016 Jan 31 (email).
+Update 2016 Jun 10, # 857
 
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list
@@ -608,9 +648,6 @@ Can we make ":unlet $VAR" use unsetenv() to delete the env var?
 What for systems that don't have unsetenv()?
 
 Patch to add a :domodeline command. (Christian Brabandt, 2014 Oct 21)
-
-Patch to add TabNew, TabNewEntered and TabClosed autocommand events.
-(Felipe Morales, 2015 Feb 1)
 
 This does not give an error: (Andre Sihera, 2014 Mar 21)
     vim -u NONE 1 2 3 -c 'bufdo if 1 | echo 1'
@@ -678,14 +715,6 @@ various other commands.  (ZyX, 2014 Mar 30)
 Patch to skip sort if no line matches the expression.
 (Christian Brabandt, 2014 Jun 25)
 
-Patch to add sortuniq(). (Cade Forester, 2014 Mar 19)
-Or add uniq() instead?  Patch by lcd47, but it has problems.
-
-Patch to support expression argument to sort() instead of a function name.
-Yasuhiro Matsumoto, 2013 May 31.
-Or should we add a more general mechanism, like a lambda() function?
-Patch by Yasuhiro Matsumoto, 2014 Sep 16.
-
 VMS: Select() doesn't work properly, typing ESC may hang Vim.  Use sys$qiow
 instead. (Samuel Ferencik, 2013 Sep 28)
 
@@ -732,11 +761,6 @@ Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
 Patch by Thomas Tuegel, also for GTK, 2013 Nov 24
 
 :help gives example for z?, but it does not work.  m? and t? do work.
-
-Python: Extended funcrefs: use func_T* structure in place of char_u* function
-names.
-(ZyX, 2013 Jul 15, update Sep 22, 24, 28; Update 2013 Dec 15, 2014 Jan 6)
-Also fixes Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
 With tests: Sep 5.
@@ -815,9 +839,6 @@ May 17: with winlist() and tabpagelist().
 May 19: with local variables.
 May 28: with options
 
-Patch to add getbufinfo(), gettabinfo() and getwininfo(). (Yegappan
-Lakshmanan, 2016 Apr 2016)
-
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
 
@@ -827,6 +848,7 @@ optional. (2013 Jul 12)
 Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
 
 Improve the installer for MS-Windows.  There are a few alternatives:
+- Add silent install option. (Shane Lee, #751)
 - Installer from Cream (Steve Hall).
 - Modern UI 2.0 for the Nsis installer. (Guopeng Wen)
     https://github.com/gpwen/vim-installer-mui2
@@ -1130,7 +1152,7 @@ Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
 
 "0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
 
-Patch to addd TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
+Patch to add TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
 May 24)  Update May 26.
 
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
@@ -1301,12 +1323,6 @@ instead of one. (Constantin Pan, 2010 Sep 10)
 Gui menu edit/paste in block mode insert only inserts in one line (Bjorn
 Winckler, 2011 May 11)
 Requires a map mode for Insert mode started from blockwise Visual mode.
-
-Use json format for new items in .viminfo:
-    |["info","any info"]
-    |["text","text text text"
-    |"continuation line"]
-    |["hist",242342342,{"arg":"value"}]
 
 Writing nested List and Dict in viminfo gives error message and can't be read
 back. (Yukihiro Nakadaira, 2010 Nov 13)
@@ -1606,9 +1622,6 @@ probably causes this.
 
 'scrollbind' is not respected when deleting lines or undo. (Milan Vancura,
 2009 Jan 16)
-
-Patch to support strikethrough next to bold and italic. (Christian Brabandt,
-2013 Jul 30)  Update from Ken Takata, 2013 Oct 12.
 
 Document that default font in Athena can be set with resources:
    XtDefaultFont: "9x15"

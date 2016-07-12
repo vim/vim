@@ -6,9 +6,10 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
 
 	int
-main()
+main(void)
 {
 	while (1)
 	{

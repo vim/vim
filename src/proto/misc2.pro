@@ -103,11 +103,11 @@ int emsgn(char_u *s, long n);
 int get2c(FILE *fd);
 int get3c(FILE *fd);
 int get4c(FILE *fd);
-time_t get8ctime(FILE *fd);
+time_T get8ctime(FILE *fd);
 char_u *read_string(FILE *fd, int cnt);
 int put_bytes(FILE *fd, long_u nr, int len);
-int put_time(FILE *fd, time_t the_time);
-void time_to_bytes(time_t the_time, char_u *buf);
+int put_time(FILE *fd, time_T the_time);
+void time_to_bytes(time_T the_time, char_u *buf);
 int has_non_ascii(char_u *s);
 void parse_queued_messages(void);
 /* vim: set ft=c : */

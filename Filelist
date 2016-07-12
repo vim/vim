@@ -116,6 +116,7 @@ SRC_ALL =	\
 		src/testdir/bench*.vim \
 		src/testdir/samples/*.txt \
 		src/proto.h \
+		src/proto/arabic.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/channel.pro \
@@ -131,6 +132,7 @@ SRC_ALL =	\
 		src/proto/ex_docmd.pro \
 		src/proto/ex_eval.pro \
 		src/proto/ex_getln.pro \
+		src/proto/farsi.pro \
 		src/proto/fileio.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \
@@ -317,6 +319,8 @@ SRC_DOS =	\
 		src/if_ole.h \
 		src/if_ole.idl \
 		src/if_perl_msvc/stdbool.h \
+		src/iscygpty.c \
+		src/iscygpty.h \
 		src/iid_ole.c \
 		src/os_dos.h \
 		src/os_w32dll.c \
@@ -379,8 +383,10 @@ SRC_DOS_BIN =	\
 		src/xpm/include/*.h \
 		src/xpm/x64/lib/libXpm.a \
 		src/xpm/x64/lib/libXpm.lib \
+		src/xpm/x64/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
+		src/xpm/x86/lib-vc14/libXpm.lib \
 		nsis/icons/*.bmp \
 		nsis/icons/*.ico \
 

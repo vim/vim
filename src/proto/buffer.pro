@@ -1,11 +1,13 @@
 /* buffer.c */
 int open_buffer(int read_stdin, exarg_T *eap, int flags);
+void set_bufref(bufref_T *bufref, buf_T *buf);
+int bufref_valid(bufref_T *bufref);
 int buf_valid(buf_T *buf);
 void close_buffer(win_T *win, buf_T *buf, int action, int abort_if_last);
 void buf_clear_file(buf_T *buf);
 void buf_freeall(buf_T *buf, int flags);
 void goto_buffer(exarg_T *eap, int start, int dir, int count);
-void handle_swap_exists(buf_T *old_curbuf);
+void handle_swap_exists(bufref_T *old_curbuf);
 char_u *do_bufdel(int command, char_u *arg, int addr_count, int start_bnr, int end_bnr, int forceit);
 int do_buffer(int action, int start, int dir, int count, int forceit);
 void set_curbuf(buf_T *buf, int action);

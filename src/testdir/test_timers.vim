@@ -8,6 +8,10 @@ func MyHandler(timer)
   let s:val += 1
 endfunc
 
+func MyHandlerWithLists(lists, timer)
+  let x = string(a:lists)
+endfunc
+
 func Test_oneshot()
   let s:val = 0
   let timer = timer_start(50, 'MyHandler')
@@ -41,5 +45,11 @@ func Test_with_partial_callback()
   call timer_start(50, s:meow.bite)
   sleep 200m
   call assert_equal(1, s:val)
+endfunc
+
+func Test_retain_partial()
+  call timer_start(100, function('MyHandlerWithLists', [['a']]))
+  call test_garbagecollect_now()
+  sleep 200m
 endfunc
 " vim: ts=2 sw=0 et

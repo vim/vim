@@ -9,6 +9,7 @@ void qf_mark_adjust(win_T *wp, linenr_T line1, linenr_T line2, long amount, long
 void ex_cwindow(exarg_T *eap);
 void ex_cclose(exarg_T *eap);
 void ex_copen(exarg_T *eap);
+void ex_cbottom(exarg_T *eap);
 linenr_T qf_current_entry(win_T *wp);
 int bt_quickfix(buf_T *buf);
 int bt_nofile(buf_T *buf);

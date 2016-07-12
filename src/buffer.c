@@ -35,9 +35,9 @@ static char_u	*fname_match(regmatch_T *rmp, char_u *name, int ignore_case);
 static void	buflist_setfpos(buf_T *buf, win_T *win, linenr_T lnum, colnr_T col, int copy_options);
 static wininfo_T *find_wininfo(buf_T *buf, int skip_diff_buffer);
 #ifdef UNIX
-static buf_T	*buflist_findname_stat(char_u *ffname, struct stat *st);
-static int	otherfile_buf(buf_T *buf, char_u *ffname, struct stat *stp);
-static int	buf_same_ino(buf_T *buf, struct stat *stp);
+static buf_T	*buflist_findname_stat(char_u *ffname, stat_T *st);
+static int	otherfile_buf(buf_T *buf, char_u *ffname, stat_T *stp);
+static int	buf_same_ino(buf_T *buf, stat_T *stp);
 #else
 static int	otherfile_buf(buf_T *buf, char_u *ffname);
 #endif
@@ -67,6 +67,9 @@ static char *msg_qflist = N_("[Quickfix List]");
 static char *e_auabort = N_("E855: Autocommands caused command to abort");
 #endif
 
+/* Number of times free_buffer() was called. */
+static int	buf_free_count = 0;
+
 /*
  * Open current buffer, that is: open the memfile and read the file into
  * memory.
@@ -80,7 +83,7 @@ open_buffer(
 {
     int		retval = OK;
 #ifdef FEAT_AUTOCMD
-    buf_T	*old_curbuf;
+    bufref_T	old_curbuf;
 #endif
 #ifdef FEAT_SYN_HL
     long	old_tw = curbuf->b_p_tw;
@@ -126,7 +129,7 @@ open_buffer(
 #ifdef FEAT_AUTOCMD
     /* The autocommands in readfile() may change the buffer, but only AFTER
      * reading the file. */
-    old_curbuf = curbuf;
+    set_bufref(&old_curbuf, curbuf);
     modified_was_set = FALSE;
 #endif
 
@@ -281,12 +284,12 @@ open_buffer(
 	 * The autocommands may have changed the current buffer.  Apply the
 	 * modelines to the correct buffer, if it still exists and is loaded.
 	 */
-	if (buf_valid(old_curbuf) && old_curbuf->b_ml.ml_mfp != NULL)
+	if (bufref_valid(&old_curbuf) && old_curbuf.br_buf->b_ml.ml_mfp != NULL)
 	{
 	    aco_save_T	aco;
 
 	    /* Go to the buffer that was opened. */
-	    aucmd_prepbuf(&aco, old_curbuf);
+	    aucmd_prepbuf(&aco, old_curbuf.br_buf);
 #endif
 	    do_modelines(0);
 	    curbuf->b_flags &= ~(BF_CHECK_RO | BF_NEVERLOADED);
@@ -309,14 +312,38 @@ open_buffer(
 }
 
 /*
+ * Store "buf" in "bufref" and set the free count.
+ */
+    void
+set_bufref(bufref_T *bufref, buf_T *buf)
+{
+    bufref->br_buf = buf;
+    bufref->br_buf_free_count = buf_free_count;
+}
+
+/*
+ * Return TRUE if "bufref->br_buf" points to a valid buffer.
+ * Only goes through the buffer list if buf_free_count changed.
+ */
+    int
+bufref_valid(bufref_T *bufref)
+{
+    return bufref->br_buf_free_count == buf_free_count
+					   ? TRUE : buf_valid(bufref->br_buf);
+}
+
+/*
  * Return TRUE if "buf" points to a valid buffer (in the buffer list).
+ * This can be slow if there are many buffers, prefer using bufref_valid().
  */
     int
 buf_valid(buf_T *buf)
 {
     buf_T	*bp;
 
-    for (bp = firstbuf; bp != NULL; bp = bp->b_next)
+    /* Assume that we more often have a recent buffer, start with the last
+     * one. */
+    for (bp = lastbuf; bp != NULL; bp = bp->b_prev)
 	if (bp == buf)
 	    return TRUE;
     return FALSE;
@@ -349,6 +376,7 @@ close_buffer(
 #ifdef FEAT_AUTOCMD
     int		is_curbuf;
     int		nwindows;
+    bufref_T	bufref;
 #endif
     int		unload_buf = (action != 0);
     int		del_buf = (action == DOBUF_DEL || action == DOBUF_WIPE);
@@ -393,13 +421,15 @@ close_buffer(
     }
 
 #ifdef FEAT_AUTOCMD
+    set_bufref(&bufref, buf);
+
     /* When the buffer is no longer in a window, trigger BufWinLeave */
     if (buf->b_nwindows == 1)
     {
 	buf->b_closing = TRUE;
-	apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
-								  FALSE, buf);
-	if (!buf_valid(buf))
+	if (apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
+								  FALSE, buf)
+		&& !bufref_valid(&bufref))
 	{
 	    /* Autocommands deleted the buffer. */
 aucmd_abort:
@@ -416,9 +446,9 @@ aucmd_abort:
 	if (!unload_buf)
 	{
 	    buf->b_closing = TRUE;
-	    apply_autocmds(EVENT_BUFHIDDEN, buf->b_fname, buf->b_fname,
-								  FALSE, buf);
-	    if (!buf_valid(buf))
+	    if (apply_autocmds(EVENT_BUFHIDDEN, buf->b_fname, buf->b_fname,
+								  FALSE, buf)
+		    && !bufref_valid(&bufref))
 		/* Autocommands deleted the buffer. */
 		goto aucmd_abort;
 	    buf->b_closing = FALSE;
@@ -459,28 +489,15 @@ aucmd_abort:
 #endif
 
     buf_freeall(buf, (del_buf ? BFA_DEL : 0) + (wipe_buf ? BFA_WIPE : 0));
-    if (
-#ifdef FEAT_WINDOWS
-	win_valid(win) &&
-#else
-	win != NULL &&
-#endif
-			  win->w_buffer == buf)
-	win->w_buffer = NULL;  /* make sure we don't use the buffer now */
 
 #ifdef FEAT_AUTOCMD
     /* Autocommands may have deleted the buffer. */
-    if (!buf_valid(buf))
+    if (!bufref_valid(&bufref))
 	return;
 # ifdef FEAT_EVAL
     if (aborting())	    /* autocmds may abort script processing */
 	return;
 # endif
-
-    /* Autocommands may have opened or closed windows for this buffer.
-     * Decrement the count for the close we do here. */
-    if (buf->b_nwindows > 0)
-	--buf->b_nwindows;
 
     /*
      * It's possible that autocommands change curbuf to the one being deleted.
@@ -491,6 +508,20 @@ aucmd_abort:
      */
     if (buf == curbuf && !is_curbuf)
 	return;
+
+    if (
+#ifdef FEAT_WINDOWS
+	win_valid(win) &&
+#else
+	win != NULL &&
+#endif
+			  win->w_buffer == buf)
+	win->w_buffer = NULL;  /* make sure we don't use the buffer now */
+
+    /* Autocommands may have opened or closed windows for this buffer.
+     * Decrement the count for the close we do here. */
+    if (buf->b_nwindows > 0)
+	--buf->b_nwindows;
 #endif
 
     /* Change directories when the 'acd' option is set. */
@@ -572,22 +603,32 @@ buf_freeall(buf_T *buf, int flags)
 {
 #ifdef FEAT_AUTOCMD
     int		is_curbuf = (buf == curbuf);
+    bufref_T	bufref;
 
     buf->b_closing = TRUE;
-    apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname, FALSE, buf);
-    if (!buf_valid(buf))	    /* autocommands may delete the buffer */
-	return;
+    set_bufref(&bufref, buf);
+    if (buf->b_ml.ml_mfp != NULL)
+    {
+	if (apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname,
+								  FALSE, buf)
+		&& !bufref_valid(&bufref))
+	    /* autocommands deleted the buffer */
+	    return;
+    }
     if ((flags & BFA_DEL) && buf->b_p_bl)
     {
-	apply_autocmds(EVENT_BUFDELETE, buf->b_fname, buf->b_fname, FALSE, buf);
-	if (!buf_valid(buf))	    /* autocommands may delete the buffer */
+	if (apply_autocmds(EVENT_BUFDELETE, buf->b_fname, buf->b_fname,
+								   FALSE, buf)
+		&& !bufref_valid(&bufref))
+	    /* autocommands deleted the buffer */
 	    return;
     }
     if (flags & BFA_WIPE)
     {
-	apply_autocmds(EVENT_BUFWIPEOUT, buf->b_fname, buf->b_fname,
-								  FALSE, buf);
-	if (!buf_valid(buf))	    /* autocommands may delete the buffer */
+	if (apply_autocmds(EVENT_BUFWIPEOUT, buf->b_fname, buf->b_fname,
+								  FALSE, buf)
+		&& !bufref_valid(&bufref))
+	    /* autocommands deleted the buffer */
 	    return;
     }
     buf->b_closing = FALSE;
@@ -654,6 +695,7 @@ buf_freeall(buf_T *buf, int flags)
     static void
 free_buffer(buf_T *buf)
 {
+    ++buf_free_count;
     free_buffer_stuff(buf, TRUE);
 #ifdef FEAT_EVAL
     unref_var_dict(buf->b_vars);
@@ -675,6 +717,9 @@ free_buffer(buf_T *buf)
 #endif
 #ifdef FEAT_RUBY
     ruby_buffer_free(buf);
+#endif
+#ifdef FEAT_JOB_CHANNEL
+    channel_buffer_free(buf);
 #endif
 #ifdef FEAT_AUTOCMD
     aubuflocal_remove(buf);
@@ -764,7 +809,9 @@ goto_buffer(
     int		count)
 {
 # if defined(FEAT_WINDOWS) && defined(HAS_SWAP_EXISTS_ACTION)
-    buf_T	*old_curbuf = curbuf;
+    bufref_T	old_curbuf;
+
+    set_bufref(&old_curbuf, curbuf);
 
     swap_exists_action = SEA_DIALOG;
 # endif
@@ -793,7 +840,7 @@ goto_buffer(
 #  endif
     }
     else
-	handle_swap_exists(old_curbuf);
+	handle_swap_exists(&old_curbuf);
 # endif
 }
 #endif
@@ -804,7 +851,7 @@ goto_buffer(
  * It is allowed for "old_curbuf" to be NULL or invalid.
  */
     void
-handle_swap_exists(buf_T *old_curbuf)
+handle_swap_exists(bufref_T *old_curbuf)
 {
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
     cleanup_T	cs;
@@ -812,6 +859,7 @@ handle_swap_exists(buf_T *old_curbuf)
 #ifdef FEAT_SYN_HL
     long	old_tw = curbuf->b_p_tw;
 #endif
+    buf_T	*buf;
 
     if (swap_exists_action == SEA_QUIT)
     {
@@ -827,11 +875,14 @@ handle_swap_exists(buf_T *old_curbuf)
 	swap_exists_action = SEA_NONE;	/* don't want it again */
 	swap_exists_did_quit = TRUE;
 	close_buffer(curwin, curbuf, DOBUF_UNLOAD, FALSE);
-	if (!buf_valid(old_curbuf) || old_curbuf == curbuf)
-	    old_curbuf = buflist_new(NULL, NULL, 1L, BLN_CURBUF | BLN_LISTED);
-	if (old_curbuf != NULL)
+	if (old_curbuf == NULL || !bufref_valid(old_curbuf)
+					      || old_curbuf->br_buf == curbuf)
+	    buf = buflist_new(NULL, NULL, 1L, BLN_CURBUF | BLN_LISTED);
+	else
+	    buf = old_curbuf->br_buf;
+	if (buf != NULL)
 	{
-	    enter_buffer(old_curbuf);
+	    enter_buffer(buf);
 #ifdef FEAT_SYN_HL
 	    if (old_tw != curbuf->b_p_tw)
 		check_colorcolumn(curwin);
@@ -1016,6 +1067,7 @@ empty_curbuf(
 {
     int	    retval;
     buf_T   *buf = curbuf;
+    bufref_T bufref;
 
     if (action == DOBUF_UNLOAD)
     {
@@ -1023,13 +1075,12 @@ empty_curbuf(
 	return FAIL;
     }
 
-    if (close_others)
-    {
-	/* Close any other windows on this buffer, then make it empty. */
+    set_bufref(&bufref, buf);
 #ifdef FEAT_WINDOWS
+    if (close_others)
+	/* Close any other windows on this buffer, then make it empty. */
 	close_windows(buf, TRUE);
 #endif
-    }
 
     setpcmark();
     retval = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE,
@@ -1040,7 +1091,7 @@ empty_curbuf(
      * the old one.  But do_ecmd() may have done that already, check
      * if the buffer still exists.
      */
-    if (buf != curbuf && buf_valid(buf) && buf->b_nwindows == 0)
+    if (buf != curbuf && bufref_valid(&bufref) && buf->b_nwindows == 0)
 	close_buffer(NULL, buf, action, FALSE);
     if (!close_others)
 	need_fileinfo = FALSE;
@@ -1166,6 +1217,11 @@ do_buffer(
     if (unload)
     {
 	int	forward;
+# if defined(FEAT_AUTOCMD) || defined(FEAT_WINDOWS)
+	bufref_T bufref;
+
+	set_bufref(&bufref, buf);
+# endif
 
 	/* When unloading or deleting a buffer that's already unloaded and
 	 * unlisted: fail silently. */
@@ -1179,7 +1235,7 @@ do_buffer(
 	    {
 		dialog_changed(buf, FALSE);
 # ifdef FEAT_AUTOCMD
-		if (!buf_valid(buf))
+		if (!bufref_valid(&bufref))
 		    /* Autocommand deleted buffer, oops!  It's not changed
 		     * now. */
 		    return FAIL;
@@ -1232,9 +1288,10 @@ do_buffer(
 	{
 #ifdef FEAT_WINDOWS
 	    close_windows(buf, FALSE);
+	    if (buf != curbuf && bufref_valid(&bufref))
 #endif
-	    if (buf != curbuf && buf_valid(buf) && buf->b_nwindows <= 0)
-		close_buffer(NULL, buf, action, FALSE);
+		if (buf->b_nwindows <= 0)
+		    close_buffer(NULL, buf, action, FALSE);
 	    return OK;
 	}
 
@@ -1242,7 +1299,7 @@ do_buffer(
 	 * Deleting the current buffer: Need to find another buffer to go to.
 	 * There should be another, otherwise it would have been handled
 	 * above.  However, autocommands may have deleted all buffers.
-	 * First use au_new_curbuf, if it is valid.
+	 * First use au_new_curbuf.br_buf, if it is valid.
 	 * Then prefer the buffer we most recently visited.
 	 * Else try to find one that is loaded, after the current buffer,
 	 * then before the current buffer.
@@ -1251,8 +1308,8 @@ do_buffer(
 	buf = NULL;	/* selected buffer */
 	bp = NULL;	/* used when no loaded buffer found */
 #ifdef FEAT_AUTOCMD
-	if (au_new_curbuf != NULL && buf_valid(au_new_curbuf))
-	    buf = au_new_curbuf;
+	if (au_new_curbuf.br_buf != NULL && bufref_valid(&au_new_curbuf))
+	    buf = au_new_curbuf.br_buf;
 # ifdef FEAT_JUMPLIST
 	else
 # endif
@@ -1379,9 +1436,14 @@ do_buffer(
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || cmdmod.confirm) && p_write)
 	{
+# ifdef FEAT_AUTOCMD
+	    bufref_T bufref;
+
+	    set_bufref(&bufref, buf);
+# endif
 	    dialog_changed(curbuf, FALSE);
 # ifdef FEAT_AUTOCMD
-	    if (!buf_valid(buf))
+	    if (!bufref_valid(&bufref))
 		/* Autocommand deleted buffer, oops! */
 		return FAIL;
 # endif
@@ -1432,6 +1494,7 @@ set_curbuf(buf_T *buf, int action)
 #ifdef FEAT_SYN_HL
     long	old_tw = curbuf->b_p_tw;
 #endif
+    bufref_T	bufref;
 
     setpcmark();
     if (!cmdmod.keepalt)
@@ -1443,13 +1506,14 @@ set_curbuf(buf_T *buf, int action)
 
     /* close_windows() or apply_autocmds() may change curbuf */
     prevbuf = curbuf;
+    set_bufref(&bufref, prevbuf);
 
 #ifdef FEAT_AUTOCMD
-    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
+    if (!apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf)
 # ifdef FEAT_EVAL
-    if (buf_valid(prevbuf) && !aborting())
+	    || (bufref_valid(&bufref) && !aborting()))
 # else
-    if (buf_valid(prevbuf))
+	    || bufref_valid(&bufref))
 # endif
 #endif
     {
@@ -1462,9 +1526,9 @@ set_curbuf(buf_T *buf, int action)
 	    close_windows(prevbuf, FALSE);
 #endif
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-	if (buf_valid(prevbuf) && !aborting())
+	if (bufref_valid(&bufref) && !aborting())
 #else
-	if (buf_valid(prevbuf))
+	if (bufref_valid(&bufref))
 #endif
 	{
 #ifdef FEAT_WINDOWS
@@ -1485,7 +1549,7 @@ set_curbuf(buf_T *buf, int action)
     }
 #ifdef FEAT_AUTOCMD
     /* An autocommand may have deleted "buf", already entered it (e.g., when
-     * it did ":bunload") or aborted the script processing!
+     * it did ":bunload") or aborted the script processing.
      * If curwin->w_buffer is null, enter_buffer() will make it valid again */
     if ((buf_valid(buf) && buf != curbuf
 # ifdef FEAT_EVAL
@@ -1613,6 +1677,9 @@ enter_buffer(buf_T *buf)
     if (!curbuf->b_help && curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
 	(void)did_set_spelllang(curwin);
 #endif
+#ifdef FEAT_VIMINFO
+    curbuf->b_last_used = vim_time();
+#endif
 
     redraw_later(NOT_VALID);
 }
@@ -1625,7 +1692,7 @@ enter_buffer(buf_T *buf)
     void
 do_autochdir(void)
 {
-    if (starting == 0
+    if ((starting == 0 || test_autochdir)
 	    && curbuf->b_ffname != NULL
 	    && vim_chdirfile(curbuf->b_ffname) == OK)
 	shorten_fnames(TRUE);
@@ -1643,6 +1710,9 @@ do_autochdir(void)
  * If (flags & BLN_CURBUF) is TRUE, may use current buffer.
  * If (flags & BLN_LISTED) is TRUE, add new buffer to buffer list.
  * If (flags & BLN_DUMMY) is TRUE, don't count it as a real buffer.
+ * If (flags & BLN_NEW) is TRUE, don't use an existing buffer.
+ * If (flags & BLN_NOOPT) is TRUE, don't copy options from the current buffer
+ *				    if the buffer already exists.
  * This is the ONLY way to create a new buffer.
  */
 static int  top_file_num = 1;		/* highest file number */
@@ -1656,7 +1726,7 @@ buflist_new(
 {
     buf_T	*buf;
 #ifdef UNIX
-    struct stat	st;
+    stat_T	st;
 #endif
 
     fname_expand(curbuf, &ffname, &sfname);	/* will allocate ffname */
@@ -1670,7 +1740,7 @@ buflist_new(
     if (sfname == NULL || mch_stat((char *)sfname, &st) < 0)
 	st.st_dev = (dev_T)-1;
 #endif
-    if (ffname != NULL && !(flags & BLN_DUMMY) && (buf =
+    if (ffname != NULL && !(flags & (BLN_DUMMY | BLN_NEW)) && (buf =
 #ifdef UNIX
 		buflist_findname_stat(ffname, &st)
 #else
@@ -1681,17 +1751,24 @@ buflist_new(
 	vim_free(ffname);
 	if (lnum != 0)
 	    buflist_setfpos(buf, curwin, lnum, (colnr_T)0, FALSE);
-	/* copy the options now, if 'cpo' doesn't have 's' and not done
-	 * already */
-	buf_copy_options(buf, 0);
+
+	if ((flags & BLN_NOOPT) == 0)
+	    /* copy the options now, if 'cpo' doesn't have 's' and not done
+	     * already */
+	    buf_copy_options(buf, 0);
+
 	if ((flags & BLN_LISTED) && !buf->b_p_bl)
 	{
+#ifdef FEAT_AUTOCMD
+	    bufref_T bufref;
+#endif
 	    buf->b_p_bl = TRUE;
 #ifdef FEAT_AUTOCMD
+	    set_bufref(&bufref, buf);
 	    if (!(flags & BLN_DUMMY))
 	    {
-		apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf);
-		if (!buf_valid(buf))
+		if (apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf)
+			&& !bufref_valid(&bufref))
 		    return NULL;
 	    }
 #endif
@@ -1867,16 +1944,19 @@ buflist_new(
 #ifdef FEAT_AUTOCMD
     if (!(flags & BLN_DUMMY))
     {
+	bufref_T bufref;
+
 	/* Tricky: these autocommands may change the buffer list.  They could
 	 * also split the window with re-using the one empty buffer. This may
 	 * result in unexpectedly losing the empty buffer. */
-	apply_autocmds(EVENT_BUFNEW, NULL, NULL, FALSE, buf);
-	if (!buf_valid(buf))
+	set_bufref(&bufref, buf);
+	if (apply_autocmds(EVENT_BUFNEW, NULL, NULL, FALSE, buf)
+		&& !bufref_valid(&bufref))
 	    return NULL;
 	if (flags & BLN_LISTED)
 	{
-	    apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf);
-	    if (!buf_valid(buf))
+	    if (apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, buf)
+		    && !bufref_valid(&bufref))
 		return NULL;
 	}
 # ifdef FEAT_EVAL
@@ -2176,7 +2256,7 @@ buflist_findname_exp(char_u *fname)
 buflist_findname(char_u *ffname)
 {
 #ifdef UNIX
-    struct stat st;
+    stat_T	st;
 
     if (mch_stat((char *)ffname, &st) < 0)
 	st.st_dev = (dev_T)-1;
@@ -2191,12 +2271,13 @@ buflist_findname(char_u *ffname)
     static buf_T *
 buflist_findname_stat(
     char_u	*ffname,
-    struct stat	*stp)
+    stat_T	*stp)
 {
 #endif
     buf_T	*buf;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    /* Start at the last buffer, expect to find a match sooner. */
+    for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
 	if ((buf->b_flags & BF_DUMMY) == 0 && !otherfile_buf(buf, ffname
 #ifdef UNIX
 		    , stp
@@ -2281,7 +2362,7 @@ buflist_findpat(
 		    return -1;
 		}
 
-		for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+		for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
 		    if (buf->b_p_bl == find_listed
 #ifdef FEAT_DIFF
 			    && (!diffmode || diff_mode_buf(buf))
@@ -2507,9 +2588,10 @@ buflist_findnr(int nr)
 
     if (nr == 0)
 	nr = curwin->w_alt_fnum;
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    /* Assume newer buffers are used more often, start from the end. */
+    for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
 	if (buf->b_fnum == nr)
-	    return (buf);
+	    return buf;
     return NULL;
 }
 
@@ -2840,7 +2922,7 @@ setfname(
 {
     buf_T	*obuf = NULL;
 #ifdef UNIX
-    struct stat st;
+    stat_T	st;
 #endif
 
     if (ffname == NULL || *ffname == NUL)
@@ -3077,7 +3159,7 @@ otherfile_buf(
     buf_T		*buf,
     char_u		*ffname
 #ifdef UNIX
-    , struct stat	*stp
+    , stat_T		*stp
 #endif
     )
 {
@@ -3088,9 +3170,9 @@ otherfile_buf(
 	return FALSE;
 #ifdef UNIX
     {
-	struct stat	st;
+	stat_T	    st;
 
-	/* If no struct stat given, get it now */
+	/* If no stat_T given, get it now */
 	if (stp == NULL)
 	{
 	    if (!buf->b_dev_valid || mch_stat((char *)ffname, &st) < 0)
@@ -3125,7 +3207,7 @@ otherfile_buf(
     void
 buf_setino(buf_T *buf)
 {
-    struct stat	st;
+    stat_T	st;
 
     if (buf->b_fname != NULL && mch_stat((char *)buf->b_fname, &st) >= 0)
     {
@@ -3143,7 +3225,7 @@ buf_setino(buf_T *buf)
     static int
 buf_same_ino(
     buf_T	*buf,
-    struct stat *stp)
+    stat_T	*stp)
 {
     return (buf->b_dev_valid
 	    && stp->st_dev == buf->b_dev
@@ -4688,10 +4770,15 @@ do_arg_all(
 		    if (!P_HID(buf) && buf->b_nwindows <= 1
 							 && bufIsChanged(buf))
 		    {
+#ifdef FEAT_AUTOCMD
+			bufref_T    bufref;
+
+			set_bufref(&bufref, buf);
+#endif
 			(void)autowrite(buf, FALSE);
 #ifdef FEAT_AUTOCMD
 			/* check if autocommands removed the window */
-			if (!win_valid(wp) || !buf_valid(buf))
+			if (!win_valid(wp) || !bufref_valid(&bufref))
 			{
 			    wpnext = firstwin;	/* start all over... */
 			    continue;
@@ -4973,6 +5060,11 @@ ex_buffer_all(exarg_T *eap)
 
 	if (wp == NULL && split_ret == OK)
 	{
+#ifdef FEAT_AUTOCMD
+	    bufref_T	bufref;
+
+	    set_bufref(&bufref, buf);
+#endif
 	    /* Split the window and put the buffer in it */
 	    p_ea_save = p_ea;
 	    p_ea = TRUE;		/* use space from all windows */
@@ -4988,8 +5080,9 @@ ex_buffer_all(exarg_T *eap)
 #endif
 	    set_curbuf(buf, DOBUF_GOTO);
 #ifdef FEAT_AUTOCMD
-	    if (!buf_valid(buf))	/* autocommands deleted the buffer!!! */
+	    if (!bufref_valid(&bufref))
 	    {
+		/* autocommands deleted the buffer!!! */
 #if defined(HAS_SWAP_EXISTS_ACTION)
 		swap_exists_action = SEA_NONE;
 # endif

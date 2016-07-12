@@ -2542,14 +2542,14 @@ collection:
 				}
 				break;
 			    case CLASS_ALNUM:
-				for (cu = 1; cu <= 255; cu++)
+				for (cu = 1; cu < 128; cu++)
 				    if (isalnum(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_ALPHA:
-				for (cu = 1; cu <= 255; cu++)
+				for (cu = 1; cu < 128; cu++)
 				    if (isalpha(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_BLANK:
 				regc(' ');
@@ -2558,32 +2558,33 @@ collection:
 			    case CLASS_CNTRL:
 				for (cu = 1; cu <= 255; cu++)
 				    if (iscntrl(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_DIGIT:
 				for (cu = 1; cu <= 255; cu++)
 				    if (VIM_ISDIGIT(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_GRAPH:
 				for (cu = 1; cu <= 255; cu++)
 				    if (isgraph(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_LOWER:
 				for (cu = 1; cu <= 255; cu++)
-				    if (MB_ISLOWER(cu))
-					regc(cu);
+				    if (MB_ISLOWER(cu) && cu != 170
+								 && cu != 186)
+					regmbc(cu);
 				break;
 			    case CLASS_PRINT:
 				for (cu = 1; cu <= 255; cu++)
 				    if (vim_isprintc(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_PUNCT:
-				for (cu = 1; cu <= 255; cu++)
+				for (cu = 1; cu < 128; cu++)
 				    if (ispunct(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_SPACE:
 				for (cu = 9; cu <= 13; cu++)
@@ -2593,12 +2594,12 @@ collection:
 			    case CLASS_UPPER:
 				for (cu = 1; cu <= 255; cu++)
 				    if (MB_ISUPPER(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_XDIGIT:
 				for (cu = 1; cu <= 255; cu++)
 				    if (vim_isxdigit(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_TAB:
 				regc('\t');

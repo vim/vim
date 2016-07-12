@@ -481,6 +481,18 @@ slash_adjust(char_u *p)
     }
 }
 
+/* Use 64-bit stat functions if available. */
+#ifdef HAVE_STAT64
+# undef stat
+# undef _stat
+# undef _wstat
+# undef _fstat
+# define stat _stat64
+# define _stat _stat64
+# define _wstat _wstat64
+# define _fstat _fstat64
+#endif
+
 #if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
 # define OPEN_OH_ARGTYPE intptr_t
 #else
@@ -488,7 +500,7 @@ slash_adjust(char_u *p)
 #endif
 
     static int
-stat_symlink_aware(const char *name, struct stat *stp)
+stat_symlink_aware(const char *name, stat_T *stp)
 {
 #if (defined(_MSC_VER) && (_MSC_VER < 1900)) || defined(__MINGW32__)
     /* Work around for VC12 or earlier (and MinGW). stat() can't handle
@@ -527,7 +539,7 @@ stat_symlink_aware(const char *name, struct stat *stp)
 	    int	    fd, n;
 
 	    fd = _open_osfhandle((OPEN_OH_ARGTYPE)h, _O_RDONLY);
-	    n = _fstat(fd, (struct _stat*)stp);
+	    n = _fstat(fd, (struct _stat *)stp);
 	    if ((n == 0) && (attr & FILE_ATTRIBUTE_DIRECTORY))
 		stp->st_mode = (stp->st_mode & ~S_IFREG) | S_IFDIR;
 	    _close(fd);
@@ -540,7 +552,7 @@ stat_symlink_aware(const char *name, struct stat *stp)
 
 #ifdef FEAT_MBYTE
     static int
-wstat_symlink_aware(const WCHAR *name, struct _stat *stp)
+wstat_symlink_aware(const WCHAR *name, stat_T *stp)
 {
 # if (defined(_MSC_VER) && (_MSC_VER < 1900)) || defined(__MINGW32__)
     /* Work around for VC12 or earlier (and MinGW). _wstat() can't handle
@@ -580,7 +592,7 @@ wstat_symlink_aware(const WCHAR *name, struct _stat *stp)
 	    int	    fd;
 
 	    fd = _open_osfhandle((OPEN_OH_ARGTYPE)h, _O_RDONLY);
-	    n = _fstat(fd, stp);
+	    n = _fstat(fd, (struct _stat *)stp);
 	    if ((n == 0) && (attr & FILE_ATTRIBUTE_DIRECTORY))
 		stp->st_mode = (stp->st_mode & ~S_IFREG) | S_IFDIR;
 	    _close(fd);
@@ -588,7 +600,7 @@ wstat_symlink_aware(const WCHAR *name, struct _stat *stp)
 	}
     }
 # endif
-    return _wstat(name, stp);
+    return _wstat(name, (struct _stat *)stp);
 }
 #endif
 
@@ -596,7 +608,7 @@ wstat_symlink_aware(const WCHAR *name, struct _stat *stp)
  * stat() can't handle a trailing '/' or '\', remove it first.
  */
     int
-vim_stat(const char *name, struct stat *stp)
+vim_stat(const char *name, stat_T *stp)
 {
 #ifdef FEAT_MBYTE
     /* WinNT and later can use _MAX_PATH wide characters for a pathname, which
@@ -641,7 +653,7 @@ vim_stat(const char *name, struct stat *stp)
 
 	if (wp != NULL)
 	{
-	    n = wstat_symlink_aware(wp, (struct _stat *)stp);
+	    n = wstat_symlink_aware(wp, stp);
 	    vim_free(wp);
 	    if (n >= 0 || g_PlatformId == VER_PLATFORM_WIN32_NT)
 		return n;
@@ -2703,8 +2715,8 @@ quality_pairs[] = {
 #ifdef ANTIALIASED_QUALITY
     {"ANTIALIASED",	ANTIALIASED_QUALITY},
 #endif
-#ifdef NOANTIALIASED_QUALITY
-    {"NOANTIALIASED",	NOANTIALIASED_QUALITY},
+#ifdef NONANTIALIASED_QUALITY
+    {"NONANTIALIASED",	NONANTIALIASED_QUALITY},
 #endif
 #ifdef PROOF_QUALITY
     {"PROOF",		PROOF_QUALITY},

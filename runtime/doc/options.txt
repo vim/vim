@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Apr 12
+*options.txt*	For Vim version 7.4.  Last change: 2016 Jul 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1103,6 +1103,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	v:beval_bufnr	number of the buffer in which balloon is going to show
 	v:beval_winnr	number of the window
+	v:beval_winid	ID of the window
 	v:beval_lnum	line number
 	v:beval_col	column number (byte index)
 	v:beval_text	word under or after the mouse pointer
@@ -1426,8 +1427,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only non-printable keys are allowed.
 	The key can be specified as a single character, but it is difficult to
 	type.  The preferred way is to use the <> notation.  Examples: >
-		:set cedit=<C-Y>
-		:set cedit=<Esc>
+		:exe "set cedit=\<C-Y>"
+		:exe "set cedit=\<Esc>"
 <	|Nvi| also has this option, but it only uses the first character.
 	See |cmdwin|.
 
@@ -3336,6 +3337,41 @@ A jump table for the options with a short description can be found at |Q_op|.
 	It is not allowed to change text or jump to another window while
 	evaluating 'foldtext' |textlock|.
 
+						*'formatexpr'* *'fex'*
+'formatexpr' 'fex'	string (default "")
+			local to buffer
+			{not in Vi}
+			{not available when compiled without the |+eval|
+			feature}
+	Expression which is evaluated to format a range of lines for the |gq|
+	operator or automatic formatting (see 'formatoptions').  When this
+	option is empty 'formatprg' is used.
+
+	The |v:lnum|  variable holds the first line to be formatted.
+	The |v:count| variable holds the number of lines to be formatted.
+	The |v:char|  variable holds the character that is going to be
+		      inserted if the expression is being evaluated due to
+		      automatic formatting.  This can be empty.  Don't insert
+		      it yet!
+
+	Example: >
+		:set formatexpr=mylang#Format()
+<	This will invoke the mylang#Format() function in the
+	autoload/mylang.vim file in 'runtimepath'. |autoload|
+
+	The expression is also evaluated when 'textwidth' is set and adding
+	text beyond that limit.  This happens under the same conditions as
+	when internal formatting is used.  Make sure the cursor is kept in the
+	same spot relative to the text then!  The |mode()| function will
+	return "i" or "R" in this situation.
+	
+	When the expression evaluates to non-zero Vim will fall back to using
+	the internal format mechanism.
+
+	The expression will be evaluated in the |sandbox| when set from a
+	modeline, see |sandbox-option|.  That stops the option from working,
+	since changing the buffer text is not allowed.
+
 					*'formatoptions'* *'fo'*
 'formatoptions' 'fo'	string (Vim default: "tcq", Vi default: "vt")
 			local to buffer
@@ -3378,41 +3414,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	about including spaces and backslashes.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
-
-						*'formatexpr'* *'fex'*
-'formatexpr' 'fex'	string (default "")
-			local to buffer
-			{not in Vi}
-			{not available when compiled without the |+eval|
-			feature}
-	Expression which is evaluated to format a range of lines for the |gq|
-	operator or automatic formatting (see 'formatoptions').  When this
-	option is empty 'formatprg' is used.
-
-	The |v:lnum|  variable holds the first line to be formatted.
-	The |v:count| variable holds the number of lines to be formatted.
-	The |v:char|  variable holds the character that is going to be
-		      inserted if the expression is being evaluated due to
-		      automatic formatting.  This can be empty.  Don't insert
-		      it yet!
-
-	Example: >
-		:set formatexpr=mylang#Format()
-<	This will invoke the mylang#Format() function in the
-	autoload/mylang.vim file in 'runtimepath'. |autoload|
-
-	The expression is also evaluated when 'textwidth' is set and adding
-	text beyond that limit.  This happens under the same conditions as
-	when internal formatting is used.  Make sure the cursor is kept in the
-	same spot relative to the text then!  The |mode()| function will
-	return "i" or "R" in this situation.
-	
-	When the expression evaluates to non-zero Vim will fall back to using
-	the internal format mechanism.
-
-	The expression will be evaluated in the |sandbox| when set from a
-	modeline, see |sandbox-option|.  That stops the option from working,
-	since changing the buffer text is not allowed.
 
 					*'fsync'* *'fs'* *'nofsync'* *'nofs'*
 'fsync' 'fs'		boolean	(default on)
@@ -3635,7 +3636,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		      SYMBOL, THAI, TURKISH, VIETNAMESE ANSI and BALTIC.
 		      Normally you would use "cDEFAULT".
 		qXX - quality XX.  Valid quality names are: PROOF, DRAFT,
-		      ANTIALIASED, UNANTIALIASED, CLEARTYPE, DEFAULT.
+		      ANTIALIASED, NONANTIALIASED, CLEARTYPE, DEFAULT.
 		      Normally you would use "qDEFAULT".
 		      Some quality values isn't supported in legacy OSs.
 
@@ -4588,16 +4589,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 					*'keywordprg'* *'kp'*
 'keywordprg' 'kp'	string	(default "man" or "man -s",  DOS: ":help",
-						OS/2: "view /", VMS: "help")
+								  VMS: "help")
 			global or local to buffer |global-local|
 			{not in Vi}
 	Program to use for the |K| command.  Environment variables are
 	expanded |:set_env|.  ":help" may be used to access the Vim internal
 	help.  (Note that previously setting the global option to the empty
 	value did this, which is now deprecated.)
-	When "man" is used, Vim will automatically translate a count for the
-	"K" command to a section number.  Also for "man -s", in which case the
-	"-s" is removed when there is no count.
+	When the first character is ":", the command is invoked as a Vim
+	Ex command prefixed with [count].
+	When "man", "man -s" or an Ex command is used, Vim will automatically
+	translate a count for the "K" command and pass it as the first
+	argument.  For "man -s" the "-s" is removed when there is no count.
 	See |option-backslash| about including spaces and backslashes.
 	Example: >
 		:set keywordprg=man\ -s
@@ -4859,6 +4862,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Specifies the name of the Lua shared library. The default is
 	DYNAMIC_LUA_DLL, which was specified at compile time.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5026,7 +5030,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	without a limit.
 	On 64 bit machines higher values might work.  But hey, do you really
 	need more than 2 Gbyte for text editing?  Keep in mind that text is
-	stored in the swap file, one can edit files > 2 Gbyte anyay.  We do
+	stored in the swap file, one can edit files > 2 Gbyte anyway.  We do
 	need the memory to store undo info.
 	Also see 'maxmem'.
 
@@ -5586,6 +5590,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Specifies the name of the Perl shared library. The default is
 	DYNAMIC_PERL_DLL, which was specified at compile time.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5723,6 +5728,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Specifies the name of the Python 2.x shared library. The default is
 	DYNAMIC_PYTHON_DLL, which was specified at compile time.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5734,6 +5740,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Specifies the name of the Python 3 shared library. The default is
 	DYNAMIC_PYTHON3_DLL, which was specified at compile time.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -5964,6 +5971,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Specifies the name of the Ruby shared library. The default is
 	DYNAMIC_RUBY_DLL, which was specified at compile time.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -6054,6 +6062,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  keymap/	key mapping files |mbyte-keymap|
 	  lang/		menu translations |:menutrans|
 	  menu.vim	GUI menus |menu.vim|
+	  pack/		packages |:packadd|
 	  plugin/	plugin scripts |write-plugin|
 	  print/	files for printing |postscript-print-encoding|
 	  spell/	spell checking files |spell|
@@ -6074,6 +6083,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	5. In the "after" directory in your home directory.  This is for
 	   personal preferences to overrule or add to the distributed defaults
 	   or system-wide settings (rarely needed).
+
+	More entries are added when using |packages|.
 
 	Note that, unlike 'path', no wildcards like "**" are allowed.  Normal
 	wildcards are allowed, but can significantly slow down searching for
@@ -7458,6 +7469,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Specifies the name of the Tcl shared library. The default is
 	DYNAMIC_TCL_DLL, which was specified at compile time.
+	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -7528,6 +7540,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:let &termencoding = &encoding
 		:set encoding=utf-8
 <	You need to do this when your system has no locale support for UTF-8.
+
+						*'termguicolors'* *'tgc'*
+'termguicolors' 'tgc'	boolean (default off)
+			global
+			{not in Vi}
+			{not available when compiled without the
+			|+termguicolors| feature}
+	When on, uses |highlight-guifg| and |highlight-guibg| attributes in
+	the terminal (thus using 24-bit color). Requires a ISO-8613-3
+	compatible terminal.
+	If setting this option does not work (produces a colorless UI)
+	reading |xterm-true-color| might help.
 
 						*'terse'* *'noterse'*
 'terse'			boolean	(default off)
@@ -8152,10 +8176,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		has been used since the last search command.
 							*viminfo-n*
 	n	Name of the viminfo file.  The name must immediately follow
-		the 'n'.  Must be the last one!  If the "-i" argument was
-		given when starting Vim, that file name overrides the one
-		given here with 'viminfo'.  Environment variables are expanded
-		when opening the file, not when setting the option.
+		the 'n'.  Must be at the end of the option!  If the "-i"
+		argument was given when starting Vim, that file name overrides
+		the one given here with 'viminfo'.  Environment variables are
+		expanded when opening the file, not when setting the option.
 							*viminfo-r*
 	r	Removable media.  The argument is a string (up to the next
 		',').  This parameter can be given several times.  Each
@@ -8640,7 +8664,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'writedelay' 'wd'	number	(default 0)
 			global
 			{not in Vi}
-	The number of microseconds to wait for each character sent to the
+	The number of milliseconds to wait for each character sent to the
 	screen.  When non-zero, characters are sent to the terminal one by
 	one.  For MS-DOS pcterm this does not work.  For debugging purposes.
 

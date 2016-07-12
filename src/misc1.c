@@ -1197,7 +1197,7 @@ open_line(
 			    int	    i;
 			    int	    l;
 
-			    for (i = 0; p[i] != NUL && i < lead_len; i += l)
+			    for (i = 0; i < lead_len && p[i] != NUL; i += l)
 			    {
 				l = (*mb_ptr2len)(p + i);
 				if (vim_strnsize(p, i + l) > repl_size)
@@ -1425,8 +1425,11 @@ open_line(
 								      == FAIL)
 	    goto theend;
 	/* Postpone calling changed_lines(), because it would mess up folding
-	 * with markers. */
-	mark_adjust(curwin->w_cursor.lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
+	 * with markers.
+	 * Skip mark_adjust when adding a line after the last one, there can't
+	 * be marks there. */
+	if (curwin->w_cursor.lnum + 1 < curbuf->b_ml.ml_line_count)
+	    mark_adjust(curwin->w_cursor.lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
 	did_append = TRUE;
     }
 #ifdef FEAT_VREPLACE
@@ -2861,7 +2864,10 @@ appended_lines(linenr_T lnum, long count)
     void
 appended_lines_mark(linenr_T lnum, long count)
 {
-    mark_adjust(lnum + 1, (linenr_T)MAXLNUM, count, 0L);
+    /* Skip mark_adjust when adding a line after the last one, there can't
+     * be marks there. */
+    if (lnum + count < curbuf->b_ml.ml_line_count)
+	mark_adjust(lnum + 1, (linenr_T)MAXLNUM, count, 0L);
     changed_lines(lnum + 1, 0, lnum + 1, count);
 }
 
@@ -4050,7 +4056,7 @@ expand_env_esc(
 		{
 		    char_u	test[MAXPATHL], paths[MAXPATHL];
 		    char_u	*path, *next_path, *ptr;
-		    struct stat	st;
+		    stat_T	st;
 
 		    STRCPY(paths, USER_HOME);
 		    next_path = paths;
@@ -4746,7 +4752,7 @@ fullpathcmp(
     char_u	    exp1[MAXPATHL];
     char_u	    full1[MAXPATHL];
     char_u	    full2[MAXPATHL];
-    struct stat	    st1, st2;
+    stat_T	    st1, st2;
     int		    r1, r2;
 
     expand_env(s1, exp1, MAXPATHL);
@@ -9163,7 +9169,7 @@ get_expr_indent(void)
     if (use_sandbox)
 	++sandbox;
     ++textlock;
-    indent = eval_to_number(curbuf->b_p_inde);
+    indent = (int)eval_to_number(curbuf->b_p_inde);
     if (use_sandbox)
 	--sandbox;
     --textlock;
@@ -9494,7 +9500,7 @@ preserve_exit(void)
     int
 vim_fexists(char_u *fname)
 {
-    struct stat st;
+    stat_T st;
 
     if (mch_stat((char *)fname, &st))
 	return FALSE;
@@ -10211,7 +10217,7 @@ unix_expandpath(
 		}
 		else
 		{
-		    struct stat sb;
+		    stat_T  sb;
 
 		    /* no more wildcards, check if there is a match */
 		    /* remove backslashes for the remaining components only */
@@ -10858,7 +10864,7 @@ gen_expand_wildcards(
 	     * "vim c:/" work. */
 	    if (flags & EW_NOTFOUND)
 		addfile(&ga, t, flags | EW_DIR | EW_FILE);
-	    else if (mch_getperm(t) >= 0)
+	    else
 		addfile(&ga, t, flags);
 	    vim_free(t);
 	}
@@ -10966,7 +10972,7 @@ addfile(
 {
     char_u	*p;
     int		isdir;
-    struct stat sb;
+    stat_T	sb;
 
     /* if the file/dir/link doesn't exist, may not add it */
     if (!(flags & EW_NOTFOUND) && ((flags & EW_ALLLINKS)

@@ -871,6 +871,12 @@ EOF
 :$put =string(py3eval('vim.Function(''tr'', args=[])'))
 :$put =string(py3eval('vim.Function(''tr'', self={})'))
 :$put =string(py3eval('vim.Function(''tr'', args=[123, 3, 4], self={})'))
+:$put ='auto_rebind'
+:$put =string(py3eval('vim.Function(''tr'', auto_rebind=False)'))
+:$put =string(py3eval('vim.Function(''tr'', args=[123, 3, 4], auto_rebind=False)'))
+:$put =string(py3eval('vim.Function(''tr'', args=[], auto_rebind=False)'))
+:$put =string(py3eval('vim.Function(''tr'', self={}, auto_rebind=False)'))
+:$put =string(py3eval('vim.Function(''tr'', args=[123, 3, 4], self={}, auto_rebind=False)'))
 :"
 :" Test vim.Function
 :function Args(...)
@@ -909,11 +915,27 @@ psa1 = vim.Function('SelfArgs', args=['abcArgsPSA1'])
 psa2 = vim.Function('SelfArgs', args=[])
 psa3 = vim.Function('SelfArgs', args=['abcArgsPSA3'], self={'abcSelfPSA3': 'abcSelfPSA3Val'})
 psa4 = vim.Function('SelfArgs', self={'abcSelfPSA4': 'abcSelfPSA4Val'})
+psa5 = vim.Function('SelfArgs', self={'abcSelfPSA5': 'abcSelfPSA5Val'}, auto_rebind=0)
+psa6 = vim.Function('SelfArgs', args=['abcArgsPSA6'], self={'abcSelfPSA6': 'abcSelfPSA6Val'}, auto_rebind=())
+psa7 = vim.Function('SelfArgs', args=['abcArgsPSA7'], auto_rebind=[])
+psa8 = vim.Function('SelfArgs', auto_rebind=False)
+psa9 = vim.Function('SelfArgs', self={'abcSelfPSA9': 'abcSelfPSA9Val'}, auto_rebind=True)
+psaA = vim.Function('SelfArgs', args=['abcArgsPSAA'], self={'abcSelfPSAA': 'abcSelfPSAAVal'}, auto_rebind=1)
+psaB = vim.Function('SelfArgs', args=['abcArgsPSAB'], auto_rebind={'abcARPSAB': 'abcARPSABVal'})
+psaC = vim.Function('SelfArgs', auto_rebind=['abcARPSAC'])
 cb.append('sa: ' + repr(sa))
 cb.append('psa1: ' + repr(psa1))
 cb.append('psa2: ' + repr(psa2))
 cb.append('psa3: ' + repr(psa3))
 cb.append('psa4: ' + repr(psa4))
+cb.append('psa5: ' + repr(psa5))
+cb.append('psa6: ' + repr(psa6))
+cb.append('psa7: ' + repr(psa7))
+cb.append('psa8: ' + repr(psa8))
+cb.append('psa9: ' + repr(psa9))
+cb.append('psaA: ' + repr(psaA))
+cb.append('psaB: ' + repr(psaB))
+cb.append('psaC: ' + repr(psaC))
 
 psar = vim.Function('SelfArgs', args=[{'abcArgsPSAr': 'abcArgsPSArVal'}], self={'abcSelfPSAr': 'abcSelfPSArVal'})
 psar.args[0]['abcArgsPSAr2'] = [psar.self, psar.args[0]]
@@ -936,6 +958,19 @@ EOF
 :$put ='s(psa2): '.string(py3eval('psa2'))
 :$put ='s(psa3): '.string(py3eval('psa3'))
 :$put ='s(psa4): '.string(py3eval('psa4'))
+:$put ='s(psa5): '.string(py3eval('psa5'))
+:$put ='s(psa6): '.string(py3eval('psa6'))
+:$put ='s(psa7): '.string(py3eval('psa7'))
+:$put ='s(psa8): '.string(py3eval('psa8'))
+:$put ='s(psa9): '.string(py3eval('psa9'))
+:$put ='s(psaA): '.string(py3eval('psaA'))
+:$put ='s(psaB): '.string(py3eval('psaB'))
+:$put ='s(psaC): '.string(py3eval('psaC'))
+:
+:for v in ['sa', 'psa1', 'psa2', 'psa3', 'psa4', 'psa5', 'psa6', 'psa7', 'psa8', 'psa9', 'psaA', 'psaB', 'psaC']
+:   let d = {'f': py3eval(v)}
+:   $put ='d.'.v.'(): '.string(d.f())
+:endfor
 :
 :py3 ecall('a()', a, )
 :py3 ecall('pa1()', pa1, )
@@ -1020,6 +1055,25 @@ cb.append('psa2.name: ' + s(psa2.name))
 cb.append('psa3.name: ' + s(psa3.name))
 cb.append('psa4.name: ' + s(psa4.name))
 
+cb.append('a.auto_rebind: ' + s(a.auto_rebind))
+cb.append('pa1.auto_rebind: ' + s(pa1.auto_rebind))
+cb.append('pa2.auto_rebind: ' + s(pa2.auto_rebind))
+cb.append('pa3.auto_rebind: ' + s(pa3.auto_rebind))
+cb.append('pa4.auto_rebind: ' + s(pa4.auto_rebind))
+cb.append('sa.auto_rebind: ' + s(sa.auto_rebind))
+cb.append('psa1.auto_rebind: ' + s(psa1.auto_rebind))
+cb.append('psa2.auto_rebind: ' + s(psa2.auto_rebind))
+cb.append('psa3.auto_rebind: ' + s(psa3.auto_rebind))
+cb.append('psa4.auto_rebind: ' + s(psa4.auto_rebind))
+cb.append('psa5.auto_rebind: ' + s(psa5.auto_rebind))
+cb.append('psa6.auto_rebind: ' + s(psa6.auto_rebind))
+cb.append('psa7.auto_rebind: ' + s(psa7.auto_rebind))
+cb.append('psa8.auto_rebind: ' + s(psa8.auto_rebind))
+cb.append('psa9.auto_rebind: ' + s(psa9.auto_rebind))
+cb.append('psaA.auto_rebind: ' + s(psaA.auto_rebind))
+cb.append('psaB.auto_rebind: ' + s(psaB.auto_rebind))
+cb.append('psaC.auto_rebind: ' + s(psaC.auto_rebind))
+
 del s
 
 del a
@@ -1032,6 +1086,14 @@ del psa1
 del psa2
 del psa3
 del psa4
+del psa5
+del psa6
+del psa7
+del psa8
+del psa9
+del psaA
+del psaB
+del psaC
 del psar
 
 del ecall
@@ -1283,6 +1345,11 @@ ee('assert sys.stdout.writable()==True')
 ee('assert sys.stdout.readable()==False')
 ee('assert sys.stderr.writable()==True')
 ee('assert sys.stderr.readable()==False')
+ee('assert sys.stdout.closed()==False')
+ee('assert sys.stderr.closed()==False')
+ee('assert sys.stdout.errors=="strict"')
+ee('assert sys.stderr.errors=="strict"')
+ee('assert sys.stdout.encoding==sys.stderr.encoding')
 ee('sys.stdout.write(None)')
 cb.append(">> OutputWriteLines")
 ee('sys.stdout.writelines(None)')

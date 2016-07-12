@@ -545,7 +545,7 @@ static void (*dll_scheme_set_config_path)(Scheme_Object *p);
 
 # if MZSCHEME_VERSION_MAJOR >= 500
 #  if defined(IMPLEMENT_THREAD_LOCAL_VIA_WIN_TLS) || defined(IMPLEMENT_THREAD_LOCAL_EXTERNALLY_VIA_PROC)
-/* define as function for macro in schshread.h */
+/* define as function for macro in schthread.h */
 Thread_Local_Variables *
 scheme_external_get_thread_local_variables(void)
 {
@@ -849,7 +849,7 @@ static long range_end;
 static int mz_threads_allow = 0;
 
 #if defined(FEAT_GUI_W32)
-static void CALLBACK timer_proc(HWND, UINT, UINT, DWORD);
+static void CALLBACK timer_proc(HWND, UINT, UINT_PTR, DWORD);
 static UINT timer_id = 0;
 #elif defined(FEAT_GUI_GTK)
 # if GTK_CHECK_VERSION(3,0,0)
@@ -894,7 +894,7 @@ static void remove_timer(void);
 /* timers are presented in GUI only */
 # if defined(FEAT_GUI_W32)
     static void CALLBACK
-timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT idEvent UNUSED, DWORD dwTime UNUSED)
+timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT_PTR idEvent UNUSED, DWORD dwTime UNUSED)
 # elif defined(FEAT_GUI_GTK)
 #  if GTK_CHECK_VERSION(3,0,0)
     static gboolean
@@ -1174,10 +1174,10 @@ startup_mzscheme(void)
 	MZ_GC_VAR_IN_REG(0, config_path);
 	MZ_GC_REG();
 	/* workaround for dynamic loading on windows */
-	s = vim_getenv("PLTCONFIGDIR", &mustfree);
+	s = vim_getenv((char_u *)"PLTCONFIGDIR", &mustfree);
 	if (s != NULL)
 	{
-	    config_path = scheme_make_path(s);
+	    config_path = scheme_make_path((char *)s);
 	    MZ_GC_CHECK();
 	    if (mustfree)
 		vim_free(s);
@@ -2725,7 +2725,8 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	 * Adjust marks. Invalidate any which lie in the
 	 * changed range, and move any in the remainder of the buffer.
 	 */
-	mark_adjust((linenr_T)lo, (linenr_T)(hi - 1), (long)MAXLNUM, (long)extra);
+	mark_adjust((linenr_T)lo, (linenr_T)(hi - 1),
+						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
 
 	if (buf->buf == curwin->w_buffer)
@@ -3571,7 +3572,7 @@ raise_vim_exn(const char *add_info)
 
 	info = scheme_make_byte_string(add_info);
 	MZ_GC_CHECK();
-	c_string = scheme_format_utf8(fmt, STRLEN(fmt), 1, &info, NULL);
+	c_string = scheme_format_utf8(fmt, (int)STRLEN(fmt), 1, &info, NULL);
 	MZ_GC_CHECK();
 	byte_string = scheme_make_byte_string(c_string);
 	MZ_GC_CHECK();

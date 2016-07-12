@@ -77,6 +77,9 @@ struct builtin_term
 static struct builtin_term *find_builtin_term(char_u *name);
 static void parse_builtin_tcap(char_u *s);
 static void term_color(char_u *s, int n);
+#ifdef FEAT_TERMGUICOLORS
+static void term_rgb_color(char_u *s, long_u rgb);
+#endif
 static void gather_termleader(void);
 #ifdef FEAT_TERMRESPONSE
 static void req_codes_from_term(void);
@@ -382,9 +385,9 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CRI,	"\033[%dC"},
 #  endif
-#if defined(BEOS_DR8)
+#  if defined(BEOS_DR8)
     {(int)KS_DB,	""},		/* hack! see screen.c */
-#endif
+#  endif
 
     {K_UP,		"\033[A"},
     {K_DOWN,		"\033[B"},
@@ -856,6 +859,11 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CRV,	IF_EB("\033[>c", ESC_STR "[>c")},
     {(int)KS_RBG,	IF_EB("\033]11;?\007", ESC_STR "]11;?\007")},
     {(int)KS_U7,	IF_EB("\033[6n", ESC_STR "[6n")},
+#  ifdef FEAT_TERMGUICOLORS
+    /* These are printf strings, not terminal codes. */
+    {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
+    {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
+#  endif
 
     {K_UP,		IF_EB("\033O*A", ESC_STR "O*A")},
     {K_DOWN,		IF_EB("\033O*B", ESC_STR "O*B")},
@@ -1257,6 +1265,34 @@ static struct builtin_term builtin_termcaps[] =
 
 };	/* end of builtin_termcaps */
 
+#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+    guicolor_T
+termgui_mch_get_color(char_u *name)
+{
+    return gui_get_color_cmn(name);
+}
+
+    guicolor_T
+termgui_get_color(char_u *name)
+{
+    guicolor_T	t;
+
+    if (*name == NUL)
+	return INVALCOLOR;
+    t = termgui_mch_get_color(name);
+
+    if (t == INVALCOLOR)
+	EMSG2(_("E254: Cannot allocate color %s"), name);
+    return t;
+}
+
+    long_u
+termgui_mch_get_rgb(guicolor_T color)
+{
+    return (long_u)color;
+}
+#endif
+
 /*
  * DEFAULT_TERM is used, when no terminal is specified with -T option or $TERM.
  */
@@ -1512,6 +1548,7 @@ set_termname(char_u *term)
 				{KS_CWP, "WP"}, {KS_CWS, "WS"},
 				{KS_CSI, "SI"}, {KS_CEI, "EI"},
 				{KS_U7, "u7"}, {KS_RBG, "RB"},
+				{KS_8F, "8f"}, {KS_8B, "8b"},
 				{(enum SpecialKey)0, NULL}
 			    };
 
@@ -1871,21 +1908,21 @@ set_termname(char_u *term)
 
 #ifdef FEAT_AUTOCMD
 	{
-	    buf_T	*old_curbuf;
+	    bufref_T	old_curbuf;
 
 	    /*
 	     * Execute the TermChanged autocommands for each buffer that is
 	     * loaded.
 	     */
-	    old_curbuf = curbuf;
+	    set_bufref(&old_curbuf, curbuf);
 	    for (curbuf = firstbuf; curbuf != NULL; curbuf = curbuf->b_next)
 	    {
 		if (curbuf->b_ml.ml_mfp != NULL)
 		    apply_autocmds(EVENT_TERMCHANGED, NULL, NULL, FALSE,
 								      curbuf);
 	    }
-	    if (buf_valid(old_curbuf))
-		curbuf = old_curbuf;
+	    if (bufref_valid(&old_curbuf))
+		curbuf = old_curbuf.br_buf;
 	}
 #endif
     }
@@ -2593,12 +2630,12 @@ term_color(char_u *s, int n)
 		  || STRCMP(s + i + 1, "%dm") == 0)
 	      && (s[i] == '3' || s[i] == '4'))
     {
-	sprintf(buf,
 #ifdef TERMINFO
-		"%s%s%%p1%%dm",
+	char *format = "%s%s%%p1%%dm";
 #else
-		"%s%s%%dm",
+	char *format = "%s%s%%dm";
 #endif
+	sprintf(buf, format,
 		i == 2 ? IF_EB("\033[", ESC_STR "[") : "\233",
 		s[i] == '3' ? (n >= 16 ? "38;5;" : "9")
 			    : (n >= 16 ? "48;5;" : "10"));
@@ -2607,6 +2644,35 @@ term_color(char_u *s, int n)
     else
 	OUT_STR(tgoto((char *)s, 0, n));
 }
+
+#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+    void
+term_fg_rgb_color(long_u rgb)
+{
+    term_rgb_color(T_8F, rgb);
+}
+
+    void
+term_bg_rgb_color(long_u rgb)
+{
+    term_rgb_color(T_8B, rgb);
+}
+
+#define RED(rgb)   ((rgb>>16)&0xFF)
+#define GREEN(rgb) ((rgb>> 8)&0xFF)
+#define BLUE(rgb)  ((rgb    )&0xFF)
+
+    static void
+term_rgb_color(char_u *s, long_u rgb)
+{
+#define MAX_COLOR_STR_LEN 100
+    char	buf[MAX_COLOR_STR_LEN];
+
+    vim_snprintf(buf, MAX_COLOR_STR_LEN,
+				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
+    OUT_STR(buf);
+}
+#endif
 
 #if (defined(FEAT_TITLE) && (defined(UNIX) || defined(VMS) \
 	|| defined(MACOS_X))) || defined(PROTO)
@@ -4965,12 +5031,25 @@ check_termcode(
 		     * Compute the time elapsed since the previous mouse click.
 		     */
 		    gettimeofday(&mouse_time, NULL);
-		    timediff = (mouse_time.tv_usec
-					    - orig_mouse_time.tv_usec) / 1000;
-		    if (timediff < 0)
-			--orig_mouse_time.tv_sec;
-		    timediff += (mouse_time.tv_sec
-					     - orig_mouse_time.tv_sec) * 1000;
+		    if (orig_mouse_time.tv_sec == 0)
+		    {
+			/*
+			 * Avoid computing the difference between mouse_time
+			 * and orig_mouse_time for the first click, as the
+			 * difference would be huge and would cause multiplication
+			 * overflow.
+			 */
+			timediff = p_mouset;
+		    }
+		    else
+		    {
+			timediff = (mouse_time.tv_usec
+						- orig_mouse_time.tv_usec) / 1000;
+			if (timediff < 0)
+			    --orig_mouse_time.tv_sec;
+			timediff += (mouse_time.tv_sec
+						 - orig_mouse_time.tv_sec) * 1000;
+		    }
 		    orig_mouse_time = mouse_time;
 		    if (mouse_code == orig_mouse_code
 			    && timediff < p_mouset
@@ -5984,5 +6063,152 @@ update_tcap(int attr)
 	  p->bt_string = &ksmd_str[0];
       ++p;
     }
+}
+#endif
+
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+    static int
+hex_digit(int c)
+{
+    if (isdigit(c))
+	return c - '0';
+    c = TOLOWER_ASC(c);
+    if (c >= 'a' && c <= 'f')
+	return c - 'a' + 10;
+    return 0x1ffffff;
+}
+
+    guicolor_T
+gui_get_color_cmn(char_u *name)
+{
+    /* On MS-Windows an RGB macro is available and it's different from ours,
+     * but does what is needed. */
+# ifndef RGB
+#  define RGB(r, g, b)	((r<<16) | (g<<8) | (b))
+# endif
+# define LINE_LEN 100
+    FILE	*fd;
+    char	line[LINE_LEN];
+    char_u	*fname;
+    int		r, g, b, i;
+    guicolor_T  color;
+
+    struct rgbcolor_table_S {
+	char_u	    *color_name;
+	guicolor_T  color;
+    };
+
+    static struct rgbcolor_table_S rgb_table[] = {
+	    {(char_u *)"black",		RGB(0x00, 0x00, 0x00)},
+	    {(char_u *)"blue",		RGB(0x00, 0x00, 0xFF)},
+	    {(char_u *)"brown",		RGB(0xA5, 0x2A, 0x2A)},
+	    {(char_u *)"cyan",		RGB(0x00, 0xFF, 0xFF)},
+	    {(char_u *)"darkblue",	RGB(0x00, 0x00, 0x8B)},
+	    {(char_u *)"darkcyan",	RGB(0x00, 0x8B, 0x8B)},
+	    {(char_u *)"darkgray",	RGB(0xA9, 0xA9, 0xA9)},
+	    {(char_u *)"darkgreen",	RGB(0x00, 0x64, 0x00)},
+	    {(char_u *)"darkgrey",	RGB(0xA9, 0xA9, 0xA9)},
+	    {(char_u *)"darkmagenta",	RGB(0x8B, 0x00, 0x8B)},
+	    {(char_u *)"darkred",	RGB(0x8B, 0x00, 0x00)},
+	    {(char_u *)"darkyellow",	RGB(0x8B, 0x8B, 0x00)}, /* No X11 */
+	    {(char_u *)"gray",		RGB(0xBE, 0xBE, 0xBE)},
+	    {(char_u *)"gray10",	RGB(0x1A, 0x1A, 0x1A)},
+	    {(char_u *)"gray20",	RGB(0x33, 0x33, 0x33)},
+	    {(char_u *)"gray30",	RGB(0x4D, 0x4D, 0x4D)},
+	    {(char_u *)"gray40",	RGB(0x66, 0x66, 0x66)},
+	    {(char_u *)"gray50",	RGB(0x7F, 0x7F, 0x7F)},
+	    {(char_u *)"gray60",	RGB(0x99, 0x99, 0x99)},
+	    {(char_u *)"gray70",	RGB(0xB3, 0xB3, 0xB3)},
+	    {(char_u *)"gray80",	RGB(0xCC, 0xCC, 0xCC)},
+	    {(char_u *)"gray90",	RGB(0xE5, 0xE5, 0xE5)},
+	    {(char_u *)"green",		RGB(0x00, 0xFF, 0x00)},
+	    {(char_u *)"grey",		RGB(0xBE, 0xBE, 0xBE)},
+	    {(char_u *)"grey10",	RGB(0x1A, 0x1A, 0x1A)},
+	    {(char_u *)"grey20",	RGB(0x33, 0x33, 0x33)},
+	    {(char_u *)"grey30",	RGB(0x4D, 0x4D, 0x4D)},
+	    {(char_u *)"grey40",	RGB(0x66, 0x66, 0x66)},
+	    {(char_u *)"grey50",	RGB(0x7F, 0x7F, 0x7F)},
+	    {(char_u *)"grey60",	RGB(0x99, 0x99, 0x99)},
+	    {(char_u *)"grey70",	RGB(0xB3, 0xB3, 0xB3)},
+	    {(char_u *)"grey80",	RGB(0xCC, 0xCC, 0xCC)},
+	    {(char_u *)"grey90",	RGB(0xE5, 0xE5, 0xE5)},
+	    {(char_u *)"lightblue",	RGB(0xAD, 0xD8, 0xE6)},
+	    {(char_u *)"lightcyan",	RGB(0xE0, 0xFF, 0xFF)},
+	    {(char_u *)"lightgray",	RGB(0xD3, 0xD3, 0xD3)},
+	    {(char_u *)"lightgreen",	RGB(0x90, 0xEE, 0x90)},
+	    {(char_u *)"lightgrey",	RGB(0xD3, 0xD3, 0xD3)},
+	    {(char_u *)"lightmagenta",	RGB(0xFF, 0x8B, 0xFF)}, /* No X11 */
+	    {(char_u *)"lightred",	RGB(0xFF, 0x8B, 0x8B)}, /* No X11 */
+	    {(char_u *)"lightyellow",	RGB(0xFF, 0xFF, 0xE0)},
+	    {(char_u *)"magenta",	RGB(0xFF, 0x00, 0xFF)},
+	    {(char_u *)"orange",	RGB(0xFF, 0xA5, 0x00)},
+	    {(char_u *)"purple",	RGB(0xA0, 0x20, 0xF0)},
+	    {(char_u *)"red",		RGB(0xFF, 0x00, 0x00)},
+	    {(char_u *)"seagreen",	RGB(0x2E, 0x8B, 0x57)},
+	    {(char_u *)"slateblue",	RGB(0x6A, 0x5A, 0xCD)},
+	    {(char_u *)"violet",	RGB(0xEE, 0x82, 0xEE)},
+	    {(char_u *)"white",		RGB(0xFF, 0xFF, 0xFF)},
+	    {(char_u *)"yellow",	RGB(0xFF, 0xFF, 0x00)},
+    };
+
+
+    if (name[0] == '#' && STRLEN(name) == 7)
+    {
+	/* Name is in "#rrggbb" format */
+	color = RGB(((hex_digit(name[1]) << 4) + hex_digit(name[2])),
+		    ((hex_digit(name[3]) << 4) + hex_digit(name[4])),
+		    ((hex_digit(name[5]) << 4) + hex_digit(name[6])));
+	if (color > 0xffffff)
+	    return INVALCOLOR;
+	return color;
+    }
+
+    /* Check if the name is one of the colors we know */
+    for (i = 0; i < (int)(sizeof(rgb_table) / sizeof(rgb_table[0])); i++)
+	if (STRICMP(name, rgb_table[i].color_name) == 0)
+	    return rgb_table[i].color;
+
+    /*
+     * Last attempt. Look in the file "$VIM/rgb.txt".
+     */
+
+    fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
+    if (fname == NULL)
+	return INVALCOLOR;
+
+    fd = fopen((char *)fname, "rt");
+    vim_free(fname);
+    if (fd == NULL)
+    {
+	if (p_verbose > 1)
+	    verb_msg((char_u *)_("Cannot open $VIMRUNTIME/rgb.txt"));
+	return INVALCOLOR;
+    }
+
+    while (!feof(fd))
+    {
+	size_t		len;
+	int		pos;
+
+	ignoredp = fgets(line, LINE_LEN, fd);
+	len = strlen(line);
+
+	if (len <= 1 || line[len - 1] != '\n')
+	    continue;
+
+	line[len - 1] = '\0';
+
+	i = sscanf(line, "%d %d %d %n", &r, &g, &b, &pos);
+	if (i != 3)
+	    continue;
+
+	if (STRICMP(line + pos, name) == 0)
+	{
+	    fclose(fd);
+	    return (guicolor_T)RGB(r, g, b);
+	}
+    }
+    fclose(fd);
+    return INVALCOLOR;
 }
 #endif

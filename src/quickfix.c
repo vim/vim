@@ -21,8 +21,6 @@ struct dir_stack_T
     char_u		*dirname;
 };
 
-static struct dir_stack_T   *dir_stack = NULL;
-
 /*
  * For each error the next struct is allocated and linked in a list.
  */
@@ -52,6 +50,7 @@ struct qfline_S
 typedef struct qf_list_S
 {
     qfline_T	*qf_start;	/* pointer to the first error */
+    qfline_T	*qf_last;	/* pointer to the last error */
     qfline_T	*qf_ptr;	/* pointer to the current error */
     int		qf_count;	/* number of errors (0 means no error list) */
     int		qf_index;	/* current index in the error list */
@@ -72,6 +71,15 @@ struct qf_info_S
     int		qf_listcount;	    /* current number of lists */
     int		qf_curlist;	    /* current error list */
     qf_list_T	qf_lists[LISTCOUNT];
+
+    int			  qf_dir_curlist;    /* error list for qf_dir_stack */
+    struct dir_stack_T   *qf_dir_stack;
+    char_u		 *qf_directory;
+    struct dir_stack_T   *qf_file_stack;
+    char_u		 *qf_currfile;
+    int			  qf_multiline;
+    int			  qf_multiignore;
+    int			  qf_multiscan;
 };
 
 static qf_info_T ql_info;	/* global quickfix list */
@@ -110,15 +118,15 @@ static int	qf_init_ext(qf_info_T *qi, char_u *efile, buf_T *buf, typval_T *tv, c
 static void	qf_store_title(qf_info_T *qi, char_u *title);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static void	ll_free_all(qf_info_T **pqi);
-static int	qf_add_entry(qf_info_T *qi, qfline_T **prevp, char_u *dir, char_u *fname, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid);
+static int	qf_add_entry(qf_info_T *qi, char_u *dir, char_u *fname, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid);
 static qf_info_T *ll_new_list(void);
 static void	qf_msg(qf_info_T *qi);
 static void	qf_free(qf_info_T *qi, int idx);
 static char_u	*qf_types(int, int);
-static int	qf_get_fnum(char_u *, char_u *);
-static char_u	*qf_push_dir(char_u *, struct dir_stack_T **);
+static int	qf_get_fnum(qf_info_T *qi, char_u *, char_u *);
+static char_u	*qf_push_dir(char_u *, struct dir_stack_T **, int is_file_stack);
 static char_u	*qf_pop_dir(struct dir_stack_T **);
-static char_u	*qf_guess_filepath(char_u *);
+static char_u	*qf_guess_filepath(qf_info_T *qi, char_u *);
 static void	qf_fmt_text(char_u *text, char_u *buf, int bufsize);
 static void	qf_clean_dir_stack(struct dir_stack_T **);
 #ifdef FEAT_WINDOWS
@@ -126,9 +134,9 @@ static int	qf_win_pos_update(qf_info_T *qi, int old_qf_index);
 static int	is_qf_win(win_T *win, qf_info_T *qi);
 static win_T	*qf_find_win(qf_info_T *qi);
 static buf_T	*qf_find_buf(qf_info_T *qi);
-static void	qf_update_buffer(qf_info_T *qi);
+static void	qf_update_buffer(qf_info_T *qi, qfline_T *old_last);
 static void	qf_set_title_var(qf_info_T *qi);
-static void	qf_fill_buffer(qf_info_T *qi);
+static void	qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last);
 #endif
 static char_u	*get_mef_name(void);
 static void	restore_start_dir(char_u *dirname_start);
@@ -175,9 +183,324 @@ qf_init(
 }
 
 /*
+ * Maximum number of bytes allowed per line while reading a errorfile.
+ */
+#define LINE_MAXLEN 4096
+
+    static char_u *
+qf_grow_linebuf(char_u **growbuf, int *growbufsiz, int newsz, int *allocsz)
+{
+    /*
+     * If the line exceeds LINE_MAXLEN exclude the last
+     * byte since it's not a NL character.
+     */
+    *allocsz = newsz > LINE_MAXLEN ? LINE_MAXLEN - 1 : newsz;
+    if (*growbuf == NULL)
+    {
+	*growbuf = alloc(*allocsz + 1);
+	if (*growbuf == NULL)
+	    return NULL;
+	*growbufsiz = *allocsz;
+    }
+    else if (*allocsz > *growbufsiz)
+    {
+	*growbuf = vim_realloc(*growbuf, *allocsz + 1);
+	if (*growbuf == NULL)
+	    return NULL;
+	*growbufsiz = *allocsz;
+    }
+    return *growbuf;
+}
+
+static struct fmtpattern
+{
+    char_u	convchar;
+    char	*pattern;
+} fmt_pat[FMT_PATTERNS] =
+		{
+		    {'f', ".\\+"},	    /* only used when at end */
+		    {'n', "\\d\\+"},
+		    {'l', "\\d\\+"},
+		    {'c', "\\d\\+"},
+		    {'t', "."},
+		    {'m', ".\\+"},
+		    {'r', ".*"},
+		    {'p', "[- 	.]*"},
+		    {'v', "\\d\\+"},
+		    {'s', ".\\+"}
+		};
+
+/*
+ * Converts a 'errorformat' string to regular expression pattern
+ */
+    static int
+efm_to_regpat(
+    char_u	*efm,
+    int		len,
+    efm_T	*fmt_ptr,
+    char_u	*regpat,
+    char_u	*errmsg)
+{
+    char_u	*ptr;
+    char_u	*efmp;
+    char_u	*srcptr;
+    int		round;
+    int		idx = 0;
+
+    /*
+     * Build regexp pattern from current 'errorformat' option
+     */
+    ptr = regpat;
+    *ptr++ = '^';
+    round = 0;
+    for (efmp = efm; efmp < efm + len; ++efmp)
+    {
+	if (*efmp == '%')
+	{
+	    ++efmp;
+	    for (idx = 0; idx < FMT_PATTERNS; ++idx)
+		if (fmt_pat[idx].convchar == *efmp)
+		    break;
+	    if (idx < FMT_PATTERNS)
+	    {
+		if (fmt_ptr->addr[idx])
+		{
+		    sprintf((char *)errmsg,
+			    _("E372: Too many %%%c in format string"), *efmp);
+		    EMSG(errmsg);
+		    return -1;
+		}
+		if ((idx
+			    && idx < 6
+			    && vim_strchr((char_u *)"DXOPQ",
+				fmt_ptr->prefix) != NULL)
+			|| (idx == 6
+			    && vim_strchr((char_u *)"OPQ",
+				fmt_ptr->prefix) == NULL))
+		{
+		    sprintf((char *)errmsg,
+			    _("E373: Unexpected %%%c in format string"), *efmp);
+		    EMSG(errmsg);
+		    return -1;
+		}
+		fmt_ptr->addr[idx] = (char_u)++round;
+		*ptr++ = '\\';
+		*ptr++ = '(';
+#ifdef BACKSLASH_IN_FILENAME
+		if (*efmp == 'f')
+		{
+		    /* Also match "c:" in the file name, even when
+		     * checking for a colon next: "%f:".
+		     * "\%(\a:\)\=" */
+		    STRCPY(ptr, "\\%(\\a:\\)\\=");
+		    ptr += 10;
+		}
+#endif
+		if (*efmp == 'f' && efmp[1] != NUL)
+		{
+		    if (efmp[1] != '\\' && efmp[1] != '%')
+		    {
+			/* A file name may contain spaces, but this isn't
+			 * in "\f".  For "%f:%l:%m" there may be a ":" in
+			 * the file name.  Use ".\{-1,}x" instead (x is
+			 * the next character), the requirement that :999:
+			 * follows should work. */
+			STRCPY(ptr, ".\\{-1,}");
+			ptr += 7;
+		    }
+		    else
+		    {
+			/* File name followed by '\\' or '%': include as
+			 * many file name chars as possible. */
+			STRCPY(ptr, "\\f\\+");
+			ptr += 4;
+		    }
+		}
+		else
+		{
+		    srcptr = (char_u *)fmt_pat[idx].pattern;
+		    while ((*ptr = *srcptr++) != NUL)
+			++ptr;
+		}
+		*ptr++ = '\\';
+		*ptr++ = ')';
+	    }
+	    else if (*efmp == '*')
+	    {
+		if (*++efmp == '[' || *efmp == '\\')
+		{
+		    if ((*ptr++ = *efmp) == '[')	/* %*[^a-z0-9] etc. */
+		    {
+			if (efmp[1] == '^')
+			    *ptr++ = *++efmp;
+			if (efmp < efm + len)
+			{
+			    *ptr++ = *++efmp;	    /* could be ']' */
+			    while (efmp < efm + len
+				    && (*ptr++ = *++efmp) != ']')
+				/* skip */;
+			    if (efmp == efm + len)
+			    {
+				EMSG(_("E374: Missing ] in format string"));
+				return -1;
+			    }
+			}
+		    }
+		    else if (efmp < efm + len)	/* %*\D, %*\s etc. */
+			*ptr++ = *++efmp;
+		    *ptr++ = '\\';
+		    *ptr++ = '+';
+		}
+		else
+		{
+		    /* TODO: scanf()-like: %*ud, %*3c, %*f, ... ? */
+		    sprintf((char *)errmsg,
+			    _("E375: Unsupported %%%c in format string"), *efmp);
+		    EMSG(errmsg);
+		    return -1;
+		}
+	    }
+	    else if (vim_strchr((char_u *)"%\\.^$~[", *efmp) != NULL)
+		*ptr++ = *efmp;		/* regexp magic characters */
+	    else if (*efmp == '#')
+		*ptr++ = '*';
+	    else if (*efmp == '>')
+		fmt_ptr->conthere = TRUE;
+	    else if (efmp == efm + 1)		/* analyse prefix */
+	    {
+		if (vim_strchr((char_u *)"+-", *efmp) != NULL)
+		    fmt_ptr->flags = *efmp++;
+		if (vim_strchr((char_u *)"DXAEWICZGOPQ", *efmp) != NULL)
+		    fmt_ptr->prefix = *efmp;
+		else
+		{
+		    sprintf((char *)errmsg,
+			    _("E376: Invalid %%%c in format string prefix"), *efmp);
+		    EMSG(errmsg);
+		    return -1;
+		}
+	    }
+	    else
+	    {
+		sprintf((char *)errmsg,
+			_("E377: Invalid %%%c in format string"), *efmp);
+		EMSG(errmsg);
+		return -1;
+	    }
+	}
+	else			/* copy normal character */
+	{
+	    if (*efmp == '\\' && efmp + 1 < efm + len)
+		++efmp;
+	    else if (vim_strchr((char_u *)".*^$~[", *efmp) != NULL)
+		*ptr++ = '\\';	/* escape regexp atoms */
+	    if (*efmp)
+		*ptr++ = *efmp;
+	}
+    }
+    *ptr++ = '$';
+    *ptr = NUL;
+
+    return 0;
+}
+
+    static void
+free_efm_list(efm_T **efm_first)
+{
+    efm_T *efm_ptr;
+
+    for (efm_ptr = *efm_first; efm_ptr != NULL; efm_ptr = *efm_first)
+    {
+	*efm_first = efm_ptr->next;
+	vim_regfree(efm_ptr->prog);
+	vim_free(efm_ptr);
+    }
+}
+
+/* Parse 'errorformat' option */
+    static efm_T *
+parse_efm_option(char_u *efm)
+{
+    char_u	*errmsg = NULL;
+    int		errmsglen;
+    efm_T	*fmt_ptr = NULL;
+    efm_T	*fmt_first = NULL;
+    efm_T	*fmt_last = NULL;
+    char_u	*fmtstr = NULL;
+    int		len;
+    int		i;
+    int		round;
+
+    errmsglen = CMDBUFFSIZE + 1;
+    errmsg = alloc_id(errmsglen, aid_qf_errmsg);
+    if (errmsg == NULL)
+	goto parse_efm_end;
+
+    /*
+     * Get some space to modify the format string into.
+     */
+    i = (FMT_PATTERNS * 3) + ((int)STRLEN(efm) << 2);
+    for (round = FMT_PATTERNS; round > 0; )
+	i += (int)STRLEN(fmt_pat[--round].pattern);
+#ifdef COLON_IN_FILENAME
+    i += 12; /* "%f" can become twelve chars longer */
+#else
+    i += 2; /* "%f" can become two chars longer */
+#endif
+    if ((fmtstr = alloc(i)) == NULL)
+	goto parse_efm_error;
+
+    while (efm[0] != NUL)
+    {
+	/*
+	 * Allocate a new eformat structure and put it at the end of the list
+	 */
+	fmt_ptr = (efm_T *)alloc_clear((unsigned)sizeof(efm_T));
+	if (fmt_ptr == NULL)
+	    goto parse_efm_error;
+	if (fmt_first == NULL)	    /* first one */
+	    fmt_first = fmt_ptr;
+	else
+	    fmt_last->next = fmt_ptr;
+	fmt_last = fmt_ptr;
+
+	/*
+	 * Isolate one part in the 'errorformat' option
+	 */
+	for (len = 0; efm[len] != NUL && efm[len] != ','; ++len)
+	    if (efm[len] == '\\' && efm[len + 1] != NUL)
+		++len;
+
+	if (efm_to_regpat(efm, len, fmt_ptr, fmtstr, errmsg) == -1)
+	    goto parse_efm_error;
+	if ((fmt_ptr->prog = vim_regcomp(fmtstr, RE_MAGIC + RE_STRING)) == NULL)
+	    goto parse_efm_error;
+	/*
+	 * Advance to next part
+	 */
+	efm = skip_to_option_part(efm + len);	/* skip comma and spaces */
+    }
+
+    if (fmt_first == NULL)	/* nothing found */
+	EMSG(_("E378: 'errorformat' contains no pattern"));
+
+    goto parse_efm_end;
+
+parse_efm_error:
+    free_efm_list(&fmt_first);
+
+parse_efm_end:
+    vim_free(fmtstr);
+    vim_free(errmsg);
+
+    return fmt_first;
+}
+
+/*
  * Read the errorfile "efile" into memory, line by line, building the error
  * list.
- * Alternative: when "efile" is null read errors from buffer "buf".
+ * Alternative: when "efile" is NULL read errors from buffer "buf".
+ * Alternative: when "tv" is not NULL get errors from the string or list.
  * Always use 'errorformat' from "buf" if there is a local value.
  * Then "lnumfirst" and "lnumlast" specify the range of lines to use.
  * Set the title of the list to "qf_title".
@@ -197,8 +520,14 @@ qf_init_ext(
 {
     char_u	    *namebuf;
     char_u	    *errmsg;
+    int		    errmsglen;
     char_u	    *pattern;
-    char_u	    *fmtstr = NULL;
+    char_u	    *growbuf = NULL;
+    int		    growbuflen;
+    int		    growbufsiz = 0;
+    char_u	    *linebuf = NULL;
+    int		    linelen = 0;
+    int		    discard;
     int		    col = 0;
     char_u	    use_viscol = FALSE;
     int		    type = 0;
@@ -207,50 +536,28 @@ qf_init_ext(
     long	    lnum = 0L;
     int		    enr = 0;
     FILE	    *fd = NULL;
-    qfline_T	    *qfprev = NULL;	/* init to make SASC shut up */
-    char_u	    *efmp;
-    efm_T	    *fmt_first = NULL;
-    efm_T	    *fmt_last = NULL;
+#ifdef FEAT_WINDOWS
+    qfline_T	    *old_last = NULL;
+#endif
+    static efm_T    *fmt_first = NULL;
     efm_T	    *fmt_ptr;
     efm_T	    *fmt_start = NULL;
     char_u	    *efm;
+    static char_u   *last_efm = NULL;
     char_u	    *ptr;
-    char_u	    *srcptr;
     int		    len;
     int		    i;
-    int		    round;
     int		    idx = 0;
-    int		    multiline = FALSE;
-    int		    multiignore = FALSE;
-    int		    multiscan = FALSE;
     int		    retval = -1;	/* default: return error flag */
-    char_u	    *directory = NULL;
-    char_u	    *currfile = NULL;
     char_u	    *tail = NULL;
+    char_u	    *p_buf = NULL;
     char_u	    *p_str = NULL;
     listitem_T	    *p_li = NULL;
-    struct dir_stack_T  *file_stack = NULL;
     regmatch_T	    regmatch;
-    static struct fmtpattern
-    {
-	char_u	convchar;
-	char	*pattern;
-    }		    fmt_pat[FMT_PATTERNS] =
-		    {
-			{'f', ".\\+"},	    /* only used when at end */
-			{'n', "\\d\\+"},
-			{'l', "\\d\\+"},
-			{'c', "\\d\\+"},
-			{'t', "."},
-			{'m', ".\\+"},
-			{'r', ".*"},
-			{'p', "[- 	.]*"},
-			{'v', "\\d\\+"},
-			{'s', ".\\+"}
-		    };
 
     namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
-    errmsg = alloc_id(CMDBUFFSIZE + 1, aid_qf_errmsg);
+    errmsglen = CMDBUFFSIZE + 1;
+    errmsg = alloc_id(errmsglen, aid_qf_errmsg);
     pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
     if (namebuf == NULL || errmsg == NULL || pattern == NULL)
 	goto qf_init_end;
@@ -264,11 +571,13 @@ qf_init_ext(
     if (newlist || qi->qf_curlist == qi->qf_listcount)
 	/* make place for a new list */
 	qf_new_list(qi, qf_title);
+#ifdef FEAT_WINDOWS
     else if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
-	/* Adding to existing list, find last entry. */
-	for (qfprev = qi->qf_lists[qi->qf_curlist].qf_start;
-			  qfprev->qf_next != qfprev; qfprev = qfprev->qf_next)
-	    ;
+    {
+	/* Adding to existing list, use last entry. */
+	old_last = qi->qf_lists[qi->qf_curlist].qf_last;
+    }
+#endif
 
 /*
  * Each part of the format string is copied and modified from errorformat to
@@ -279,206 +588,41 @@ qf_init_ext(
 	efm = buf->b_p_efm;
     else
 	efm = errorformat;
+
     /*
-     * Get some space to modify the format string into.
+     * If we are not adding or adding to another list: clear the state.
      */
-    i = (FMT_PATTERNS * 3) + ((int)STRLEN(efm) << 2);
-    for (round = FMT_PATTERNS; round > 0; )
-	i += (int)STRLEN(fmt_pat[--round].pattern);
-#ifdef COLON_IN_FILENAME
-    i += 12; /* "%f" can become twelve chars longer */
-#else
-    i += 2; /* "%f" can become two chars longer */
-#endif
-    if ((fmtstr = alloc(i)) == NULL)
-	goto error2;
-
-    while (efm[0] != NUL)
+    if (newlist || qi->qf_curlist != qi->qf_dir_curlist)
     {
-	/*
-	 * Allocate a new eformat structure and put it at the end of the list
-	 */
-	fmt_ptr = (efm_T *)alloc_clear((unsigned)sizeof(efm_T));
-	if (fmt_ptr == NULL)
-	    goto error2;
-	if (fmt_first == NULL)	    /* first one */
-	    fmt_first = fmt_ptr;
-	else
-	    fmt_last->next = fmt_ptr;
-	fmt_last = fmt_ptr;
-
-	/*
-	 * Isolate one part in the 'errorformat' option
-	 */
-	for (len = 0; efm[len] != NUL && efm[len] != ','; ++len)
-	    if (efm[len] == '\\' && efm[len + 1] != NUL)
-		++len;
-
-	/*
-	 * Build regexp pattern from current 'errorformat' option
-	 */
-	ptr = fmtstr;
-	*ptr++ = '^';
-	round = 0;
-	for (efmp = efm; efmp < efm + len; ++efmp)
-	{
-	    if (*efmp == '%')
-	    {
-		++efmp;
-		for (idx = 0; idx < FMT_PATTERNS; ++idx)
-		    if (fmt_pat[idx].convchar == *efmp)
-			break;
-		if (idx < FMT_PATTERNS)
-		{
-		    if (fmt_ptr->addr[idx])
-		    {
-			sprintf((char *)errmsg,
-				_("E372: Too many %%%c in format string"), *efmp);
-			EMSG(errmsg);
-			goto error2;
-		    }
-		    if ((idx
-				&& idx < 6
-				&& vim_strchr((char_u *)"DXOPQ",
-						     fmt_ptr->prefix) != NULL)
-			    || (idx == 6
-				&& vim_strchr((char_u *)"OPQ",
-						    fmt_ptr->prefix) == NULL))
-		    {
-			sprintf((char *)errmsg,
-				_("E373: Unexpected %%%c in format string"), *efmp);
-			EMSG(errmsg);
-			goto error2;
-		    }
-		    fmt_ptr->addr[idx] = (char_u)++round;
-		    *ptr++ = '\\';
-		    *ptr++ = '(';
-#ifdef BACKSLASH_IN_FILENAME
-		    if (*efmp == 'f')
-		    {
-			/* Also match "c:" in the file name, even when
-			 * checking for a colon next: "%f:".
-			 * "\%(\a:\)\=" */
-			STRCPY(ptr, "\\%(\\a:\\)\\=");
-			ptr += 10;
-		    }
-#endif
-		    if (*efmp == 'f' && efmp[1] != NUL)
-		    {
-			if (efmp[1] != '\\' && efmp[1] != '%')
-			{
-			    /* A file name may contain spaces, but this isn't
-			     * in "\f".  For "%f:%l:%m" there may be a ":" in
-			     * the file name.  Use ".\{-1,}x" instead (x is
-			     * the next character), the requirement that :999:
-			     * follows should work. */
-			    STRCPY(ptr, ".\\{-1,}");
-			    ptr += 7;
-			}
-			else
-			{
-			    /* File name followed by '\\' or '%': include as
-			     * many file name chars as possible. */
-			    STRCPY(ptr, "\\f\\+");
-			    ptr += 4;
-			}
-		    }
-		    else
-		    {
-			srcptr = (char_u *)fmt_pat[idx].pattern;
-			while ((*ptr = *srcptr++) != NUL)
-			    ++ptr;
-		    }
-		    *ptr++ = '\\';
-		    *ptr++ = ')';
-		}
-		else if (*efmp == '*')
-		{
-		    if (*++efmp == '[' || *efmp == '\\')
-		    {
-			if ((*ptr++ = *efmp) == '[')	/* %*[^a-z0-9] etc. */
-			{
-			    if (efmp[1] == '^')
-				*ptr++ = *++efmp;
-			    if (efmp < efm + len)
-			    {
-				*ptr++ = *++efmp;	    /* could be ']' */
-				while (efmp < efm + len
-					&& (*ptr++ = *++efmp) != ']')
-				    /* skip */;
-				if (efmp == efm + len)
-				{
-				    EMSG(_("E374: Missing ] in format string"));
-				    goto error2;
-				}
-			    }
-			}
-			else if (efmp < efm + len)	/* %*\D, %*\s etc. */
-			    *ptr++ = *++efmp;
-			*ptr++ = '\\';
-			*ptr++ = '+';
-		    }
-		    else
-		    {
-			/* TODO: scanf()-like: %*ud, %*3c, %*f, ... ? */
-			sprintf((char *)errmsg,
-				_("E375: Unsupported %%%c in format string"), *efmp);
-			EMSG(errmsg);
-			goto error2;
-		    }
-		}
-		else if (vim_strchr((char_u *)"%\\.^$~[", *efmp) != NULL)
-		    *ptr++ = *efmp;		/* regexp magic characters */
-		else if (*efmp == '#')
-		    *ptr++ = '*';
-		else if (*efmp == '>')
-		    fmt_ptr->conthere = TRUE;
-		else if (efmp == efm + 1)		/* analyse prefix */
-		{
-		    if (vim_strchr((char_u *)"+-", *efmp) != NULL)
-			fmt_ptr->flags = *efmp++;
-		    if (vim_strchr((char_u *)"DXAEWICZGOPQ", *efmp) != NULL)
-			fmt_ptr->prefix = *efmp;
-		    else
-		    {
-			sprintf((char *)errmsg,
-				_("E376: Invalid %%%c in format string prefix"), *efmp);
-			EMSG(errmsg);
-			goto error2;
-		    }
-		}
-		else
-		{
-		    sprintf((char *)errmsg,
-			    _("E377: Invalid %%%c in format string"), *efmp);
-		    EMSG(errmsg);
-		    goto error2;
-		}
-	    }
-	    else			/* copy normal character */
-	    {
-		if (*efmp == '\\' && efmp + 1 < efm + len)
-		    ++efmp;
-		else if (vim_strchr((char_u *)".*^$~[", *efmp) != NULL)
-		    *ptr++ = '\\';	/* escape regexp atoms */
-		if (*efmp)
-		    *ptr++ = *efmp;
-	    }
-	}
-	*ptr++ = '$';
-	*ptr = NUL;
-	if ((fmt_ptr->prog = vim_regcomp(fmtstr, RE_MAGIC + RE_STRING)) == NULL)
-	    goto error2;
-	/*
-	 * Advance to next part
-	 */
-	efm = skip_to_option_part(efm + len);	/* skip comma and spaces */
+	qi->qf_dir_curlist = qi->qf_curlist;
+	qf_clean_dir_stack(&qi->qf_dir_stack);
+	qi->qf_directory = NULL;
+	qf_clean_dir_stack(&qi->qf_file_stack);
+	qi->qf_currfile = NULL;
+	qi->qf_multiline = FALSE;
+	qi->qf_multiignore = FALSE;
+	qi->qf_multiscan = FALSE;
     }
+
+    /*
+     * If the errorformat didn't change between calls, then reuse the
+     * previously parsed values.
+     */
+    if (last_efm == NULL || (STRCMP(last_efm, efm) != 0))
+    {
+	/* free the previously parsed data */
+	vim_free(last_efm);
+	last_efm = NULL;
+	free_efm_list(&fmt_first);
+
+	/* parse the current 'efm' */
+	fmt_first = parse_efm_option(efm);
+	if (fmt_first != NULL)
+	    last_efm = vim_strsave(efm);
+    }
+
     if (fmt_first == NULL)	/* nothing found */
-    {
-	EMSG(_("E378: 'errorformat' contains no pattern"));
 	goto error2;
-    }
 
     /*
      * got_int is reset here, because it was probably set when killing the
@@ -513,37 +657,61 @@ qf_init_ext(
 		    /* Get the next line from the supplied string */
 		    char_u *p;
 
-		    if (!*p_str) /* Reached the end of the string */
+		    if (*p_str == NUL) /* Reached the end of the string */
 			break;
 
 		    p = vim_strchr(p_str, '\n');
-		    if (p)
-			len = (int)(p - p_str + 1);
+		    if (p != NULL)
+			len = (int)(p - p_str) + 1;
 		    else
 			len = (int)STRLEN(p_str);
 
-		    if (len > CMDBUFFSIZE - 2)
-			vim_strncpy(IObuff, p_str, CMDBUFFSIZE - 2);
+		    if (len > IOSIZE - 2)
+		    {
+			linebuf = qf_grow_linebuf(&growbuf, &growbufsiz, len,
+								    &linelen);
+			if (linebuf == NULL)
+			    goto qf_init_end;
+		    }
 		    else
-			vim_strncpy(IObuff, p_str, len);
+		    {
+			linebuf = IObuff;
+			linelen = len;
+		    }
+		    vim_strncpy(linebuf, p_str, linelen);
 
+		    /*
+		     * Increment using len in order to discard the rest of the
+		     * line if it exceeds LINE_MAXLEN.
+		     */
 		    p_str += len;
 		}
 		else if (tv->v_type == VAR_LIST)
 		{
 		    /* Get the next line from the supplied list */
-		    while (p_li && (p_li->li_tv.v_type != VAR_STRING
-				|| p_li->li_tv.vval.v_string == NULL))
+		    while (p_li != NULL
+			    && (p_li->li_tv.v_type != VAR_STRING
+					|| p_li->li_tv.vval.v_string == NULL))
 			p_li = p_li->li_next;	/* Skip non-string items */
 
-		    if (!p_li)			/* End of the list */
+		    if (p_li == NULL)		/* End of the list */
 			break;
 
 		    len = (int)STRLEN(p_li->li_tv.vval.v_string);
-		    if (len > CMDBUFFSIZE - 2)
-			len = CMDBUFFSIZE - 2;
+		    if (len > IOSIZE - 2)
+		    {
+			linebuf = qf_grow_linebuf(&growbuf, &growbufsiz, len,
+								    &linelen);
+			if (linebuf == NULL)
+			    goto qf_init_end;
+		    }
+		    else
+		    {
+			linebuf = IObuff;
+			linelen = len;
+		    }
 
-		    vim_strncpy(IObuff, p_li->li_tv.vval.v_string, len);
+		    vim_strncpy(linebuf, p_li->li_tv.vval.v_string, linelen);
 
 		    p_li = p_li->li_next;	/* next item */
 		}
@@ -553,23 +721,111 @@ qf_init_ext(
 		/* Get the next line from the supplied buffer */
 		if (buflnum > lnumlast)
 		    break;
-		vim_strncpy(IObuff, ml_get_buf(buf, buflnum++, FALSE),
-			    CMDBUFFSIZE - 2);
+		p_buf = ml_get_buf(buf, buflnum++, FALSE);
+		len = (int)STRLEN(p_buf);
+		if (len > IOSIZE - 2)
+		{
+		    linebuf = qf_grow_linebuf(&growbuf, &growbufsiz, len,
+								    &linelen);
+		    if (linebuf == NULL)
+			goto qf_init_end;
+		}
+		else
+		{
+		    linebuf = IObuff;
+		    linelen = len;
+		}
+		vim_strncpy(linebuf, p_buf, linelen);
 	    }
 	}
-	else if (fgets((char *)IObuff, CMDBUFFSIZE - 2, fd) == NULL)
-	    break;
+	else
+	{
+	    if (fgets((char *)IObuff, IOSIZE, fd) == NULL)
+		break;
 
-	IObuff[CMDBUFFSIZE - 2] = NUL;  /* for very long lines */
-#ifdef FEAT_MBYTE
-	remove_bom(IObuff);
+	    discard = FALSE;
+	    linelen = (int)STRLEN(IObuff);
+	    if (linelen == IOSIZE - 1 && !(IObuff[linelen - 1] == '\n'
+#ifdef USE_CRNL
+			|| IObuff[linelen - 1] == '\r'
+#endif
+			))
+	    {
+		/*
+		 * The current line exceeds IObuff, continue reading using
+		 * growbuf until EOL or LINE_MAXLEN bytes is read.
+		 */
+		if (growbuf == NULL)
+		{
+		    growbufsiz = 2 * (IOSIZE - 1);
+		    growbuf = alloc(growbufsiz);
+		    if (growbuf == NULL)
+			goto qf_init_end;
+		}
+
+		/* Copy the read part of the line, excluding null-terminator */
+		memcpy(growbuf, IObuff, IOSIZE - 1);
+		growbuflen = linelen;
+
+		for (;;)
+		{
+		    if (fgets((char *)growbuf + growbuflen,
+					 growbufsiz - growbuflen, fd) == NULL)
+			break;
+		    linelen = (int)STRLEN(growbuf + growbuflen);
+		    growbuflen += linelen;
+		    if (growbuf[growbuflen - 1] == '\n'
+#ifdef USE_CRNL
+			    || growbuf[growbuflen - 1] == '\r'
+#endif
+				)
+			break;
+		    if (growbufsiz == LINE_MAXLEN)
+		    {
+			discard = TRUE;
+			break;
+		    }
+
+		    growbufsiz = 2 * growbufsiz < LINE_MAXLEN
+					       ? 2 * growbufsiz : LINE_MAXLEN;
+		    growbuf = vim_realloc(growbuf, 2 * growbufsiz);
+		    if (growbuf == NULL)
+			goto qf_init_end;
+		}
+
+		while (discard)
+		{
+		    /*
+		     * The current line is longer than LINE_MAXLEN, continue
+		     * reading but discard everything until EOL or EOF is
+		     * reached.
+		     */
+		    if (fgets((char *)IObuff, IOSIZE, fd) == NULL
+			    || (int)STRLEN(IObuff) < IOSIZE - 1
+			    || IObuff[IOSIZE - 1] == '\n'
+#ifdef USE_CRNL
+			    || IObuff[IOSIZE - 1] == '\r'
+#endif
+		       )
+			break;
+		}
+
+		linebuf = growbuf;
+		linelen = growbuflen;
+	    }
+	    else
+		linebuf = IObuff;
+	}
+
+	if (linelen > 0 && linebuf[linelen - 1] == '\n')
+	    linebuf[linelen - 1] = NUL;
+#ifdef USE_CRNL
+	if (linelen > 0 && linebuf[linelen - 1] == '\r')
+	    linebuf[linelen - 1] = NUL;
 #endif
 
-	if ((efmp = vim_strrchr(IObuff, '\n')) != NULL)
-	    *efmp = NUL;
-#ifdef USE_CRNL
-	if ((efmp = vim_strrchr(IObuff, '\r')) != NULL)
-	    *efmp = NUL;
+#ifdef FEAT_MBYTE
+	remove_bom(linebuf);
 #endif
 
 	/* If there was no %> item start at the first pattern */
@@ -592,11 +848,11 @@ restofline:
 	    int r;
 
 	    idx = fmt_ptr->prefix;
-	    if (multiscan && vim_strchr((char_u *)"OPQ", idx) == NULL)
+	    if (qi->qf_multiscan && vim_strchr((char_u *)"OPQ", idx) == NULL)
 		continue;
 	    namebuf[0] = NUL;
 	    pattern[0] = NUL;
-	    if (!multiscan)
+	    if (!qi->qf_multiscan)
 		errmsg[0] = NUL;
 	    lnum = 0;
 	    col = 0;
@@ -606,11 +862,11 @@ restofline:
 	    tail = NULL;
 
 	    regmatch.regprog = fmt_ptr->prog;
-	    r = vim_regexec(&regmatch, IObuff, (colnr_T)0);
+	    r = vim_regexec(&regmatch, linebuf, (colnr_T)0);
 	    fmt_ptr->prog = regmatch.regprog;
 	    if (r)
 	    {
-		if ((idx == 'C' || idx == 'Z') && !multiline)
+		if ((idx == 'C' || idx == 'Z') && !qi->qf_multiline)
 		    continue;
 		if (vim_strchr((char_u *)"EWI", idx) != NULL)
 		    type = idx;
@@ -662,13 +918,28 @@ restofline:
 			continue;
 		    type = *regmatch.startp[i];
 		}
-		if (fmt_ptr->flags == '+' && !multiscan)	/* %+ */
-		    STRCPY(errmsg, IObuff);
+		if (fmt_ptr->flags == '+' && !qi->qf_multiscan)	/* %+ */
+		{
+		    if (linelen > errmsglen) {
+			/* linelen + null terminator */
+			if ((errmsg = vim_realloc(errmsg, linelen + 1)) == NULL)
+			    goto qf_init_end;
+			errmsglen = linelen + 1;
+		    }
+		    vim_strncpy(errmsg, linebuf, linelen);
+		}
 		else if ((i = (int)fmt_ptr->addr[5]) > 0)	/* %m */
 		{
 		    if (regmatch.startp[i] == NULL || regmatch.endp[i] == NULL)
 			continue;
 		    len = (int)(regmatch.endp[i] - regmatch.startp[i]);
+		    if (len > errmsglen) {
+			/* len + null terminator */
+			if ((errmsg = vim_realloc(errmsg, len + 1))
+				== NULL)
+			    goto qf_init_end;
+			errmsglen = len + 1;
+		    }
 		    vim_strncpy(errmsg, regmatch.startp[i], len);
 		}
 		if ((i = (int)fmt_ptr->addr[6]) > 0)		/* %r */
@@ -720,7 +991,7 @@ restofline:
 		break;
 	    }
 	}
-	multiscan = FALSE;
+	qi->qf_multiscan = FALSE;
 
 	if (fmt_ptr == NULL || idx == 'D' || idx == 'X')
 	{
@@ -733,18 +1004,27 @@ restofline:
 			EMSG(_("E379: Missing or empty directory name"));
 			goto error2;
 		    }
-		    if ((directory = qf_push_dir(namebuf, &dir_stack)) == NULL)
+		    qi->qf_directory =
+			       qf_push_dir(namebuf, &qi->qf_dir_stack, FALSE);
+		    if (qi->qf_directory == NULL)
 			goto error2;
 		}
 		else if (idx == 'X')			/* leave directory */
-		    directory = qf_pop_dir(&dir_stack);
+		    qi->qf_directory = qf_pop_dir(&qi->qf_dir_stack);
 	    }
 	    namebuf[0] = NUL;		/* no match found, remove file name */
 	    lnum = 0;			/* don't jump to this line */
 	    valid = FALSE;
-	    STRCPY(errmsg, IObuff);	/* copy whole line to error message */
+	    if (linelen > errmsglen) {
+		/* linelen + null terminator */
+		if ((errmsg = vim_realloc(errmsg, linelen + 1)) == NULL)
+		    goto qf_init_end;
+		errmsglen = linelen + 1;
+	    }
+	    /* copy whole line to error message */
+	    vim_strncpy(errmsg, linebuf, linelen);
 	    if (fmt_ptr == NULL)
-		multiline = multiignore = FALSE;
+		qi->qf_multiline = qi->qf_multiignore = FALSE;
 	}
 	else if (fmt_ptr != NULL)
 	{
@@ -754,14 +1034,16 @@ restofline:
 
 	    if (vim_strchr((char_u *)"AEWI", idx) != NULL)
 	    {
-		multiline = TRUE;	/* start of a multi-line message */
-		multiignore = FALSE;	/* reset continuation */
+		qi->qf_multiline = TRUE;	/* start of a multi-line message */
+		qi->qf_multiignore = FALSE;	/* reset continuation */
 	    }
 	    else if (vim_strchr((char_u *)"CZ", idx) != NULL)
 	    {				/* continuation of multi-line msg */
+		qfline_T *qfprev = qi->qf_lists[qi->qf_curlist].qf_last;
+
 		if (qfprev == NULL)
 		    goto error2;
-		if (*errmsg && !multiignore)
+		if (*errmsg && !qi->qf_multiignore)
 		{
 		    len = (int)STRLEN(qfprev->qf_text);
 		    if ((ptr = alloc((unsigned)(len + STRLEN(errmsg) + 2)))
@@ -783,11 +1065,13 @@ restofline:
 		    qfprev->qf_col = col;
 		qfprev->qf_viscol = use_viscol;
 		if (!qfprev->qf_fnum)
-		    qfprev->qf_fnum = qf_get_fnum(directory,
-					*namebuf || directory ? namebuf
-					  : currfile && valid ? currfile : 0);
+		    qfprev->qf_fnum = qf_get_fnum(qi, qi->qf_directory,
+			*namebuf || qi->qf_directory != NULL
+			    ? namebuf
+			    : qi->qf_currfile != NULL && valid
+						       ? qi->qf_currfile : 0);
 		if (idx == 'Z')
-		    multiline = multiignore = FALSE;
+		    qi->qf_multiline = qi->qf_multiignore = FALSE;
 		line_breakcheck();
 		continue;
 	    }
@@ -798,31 +1082,34 @@ restofline:
 		if (*namebuf == NUL || mch_getperm(namebuf) >= 0)
 		{
 		    if (*namebuf && idx == 'P')
-			currfile = qf_push_dir(namebuf, &file_stack);
+			qi->qf_currfile =
+			       qf_push_dir(namebuf, &qi->qf_file_stack, TRUE);
 		    else if (idx == 'Q')
-			currfile = qf_pop_dir(&file_stack);
+			qi->qf_currfile = qf_pop_dir(&qi->qf_file_stack);
 		    *namebuf = NUL;
 		    if (tail && *tail)
 		    {
 			STRMOVE(IObuff, skipwhite(tail));
-			multiscan = TRUE;
+			qi->qf_multiscan = TRUE;
 			goto restofline;
 		    }
 		}
 	    }
 	    if (fmt_ptr->flags == '-')	/* generally exclude this line */
 	    {
-		if (multiline)
-		    multiignore = TRUE;	/* also exclude continuation lines */
+		if (qi->qf_multiline)
+		    /* also exclude continuation lines */
+		    qi->qf_multiignore = TRUE;
 		continue;
 	    }
 	}
 
-	if (qf_add_entry(qi, &qfprev,
-			directory,
-			(*namebuf || directory)
+	if (qf_add_entry(qi,
+			qi->qf_directory,
+			(*namebuf || qi->qf_directory != NULL)
 			    ? namebuf
-			    : ((currfile && valid) ? currfile : (char_u *)NULL),
+			    : ((qi->qf_currfile != NULL && valid)
+				? qi->qf_currfile : (char_u *)NULL),
 			0,
 			errmsg,
 			lnum,
@@ -854,7 +1141,7 @@ restofline:
 	}
 	/* return number of matches */
 	retval = qi->qf_lists[qi->qf_curlist].qf_count;
-	goto qf_init_ok;
+	goto qf_init_end;
     }
     EMSG(_(e_readerrf));
 error2:
@@ -862,25 +1149,16 @@ error2:
     qi->qf_listcount--;
     if (qi->qf_curlist > 0)
 	--qi->qf_curlist;
-qf_init_ok:
+qf_init_end:
     if (fd != NULL)
 	fclose(fd);
-    for (fmt_ptr = fmt_first; fmt_ptr != NULL; fmt_ptr = fmt_first)
-    {
-	fmt_first = fmt_ptr->next;
-	vim_regfree(fmt_ptr->prog);
-	vim_free(fmt_ptr);
-    }
-    qf_clean_dir_stack(&dir_stack);
-    qf_clean_dir_stack(&file_stack);
-qf_init_end:
     vim_free(namebuf);
     vim_free(errmsg);
     vim_free(pattern);
-    vim_free(fmtstr);
+    vim_free(growbuf);
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    qf_update_buffer(qi, old_last);
 #endif
 
     return retval;
@@ -981,7 +1259,6 @@ qf_free_all(win_T *wp)
     static int
 qf_add_entry(
     qf_info_T	*qi,		/* quickfix list */
-    qfline_T	**prevp,	/* pointer to previously added entry or NULL */
     char_u	*dir,		/* optional directory name */
     char_u	*fname,		/* file name or NULL */
     int		bufnum,		/* buffer number or zero */
@@ -995,13 +1272,20 @@ qf_add_entry(
     int		valid)		/* valid entry */
 {
     qfline_T	*qfp;
+    qfline_T	**lastp;	/* pointer to qf_last or NULL */
 
     if ((qfp = (qfline_T *)alloc((unsigned)sizeof(qfline_T))) == NULL)
 	return FAIL;
     if (bufnum != 0)
+    {
+	buf_T *buf = buflist_findnr(bufnum);
+
 	qfp->qf_fnum = bufnum;
+	if (buf != NULL)
+	    buf->b_has_qf_entry = TRUE;
+    }
     else
-	qfp->qf_fnum = qf_get_fnum(dir, fname);
+	qfp->qf_fnum = qf_get_fnum(qi, dir, fname);
     if ((qfp->qf_text = vim_strsave(mesg)) == NULL)
     {
 	vim_free(qfp);
@@ -1024,22 +1308,23 @@ qf_add_entry(
     qfp->qf_type = type;
     qfp->qf_valid = valid;
 
+    lastp = &qi->qf_lists[qi->qf_curlist].qf_last;
     if (qi->qf_lists[qi->qf_curlist].qf_count == 0)
 				/* first element in the list */
     {
 	qi->qf_lists[qi->qf_curlist].qf_start = qfp;
 	qi->qf_lists[qi->qf_curlist].qf_ptr = qfp;
 	qi->qf_lists[qi->qf_curlist].qf_index = 0;
-	qfp->qf_prev = qfp;	/* first element points to itself */
+	qfp->qf_prev = NULL;
     }
     else
     {
-	qfp->qf_prev = *prevp;
-	(*prevp)->qf_next = qfp;
+	qfp->qf_prev = *lastp;
+	(*lastp)->qf_next = qfp;
     }
-    qfp->qf_next = qfp;	/* last element points to itself */
+    qfp->qf_next = NULL;
     qfp->qf_cleared = FALSE;
-    *prevp = qfp;
+    *lastp = qfp;
     ++qi->qf_lists[qi->qf_curlist].qf_count;
     if (qi->qf_lists[qi->qf_curlist].qf_index == 0 && qfp->qf_valid)
 				/* first valid entry */
@@ -1137,6 +1422,7 @@ copy_loclist(win_T *from, win_T *to)
 	to_qfl->qf_count = 0;
 	to_qfl->qf_index = 0;
 	to_qfl->qf_start = NULL;
+	to_qfl->qf_last = NULL;
 	to_qfl->qf_ptr = NULL;
 	if (from_qfl->qf_title != NULL)
 	    to_qfl->qf_title = vim_strsave(from_qfl->qf_title);
@@ -1146,13 +1432,14 @@ copy_loclist(win_T *from, win_T *to)
 	if (from_qfl->qf_count)
 	{
 	    qfline_T    *from_qfp;
-	    qfline_T    *prevp = NULL;
+	    qfline_T    *prevp;
 
 	    /* copy all the location entries in this list */
-	    for (i = 0, from_qfp = from_qfl->qf_start; i < from_qfl->qf_count;
-		 ++i, from_qfp = from_qfp->qf_next)
+	    for (i = 0, from_qfp = from_qfl->qf_start;
+		    i < from_qfl->qf_count && from_qfp != NULL;
+		    ++i, from_qfp = from_qfp->qf_next)
 	    {
-		if (qf_add_entry(to->w_llist, &prevp,
+		if (qf_add_entry(to->w_llist,
 				 NULL,
 				 NULL,
 				 0,
@@ -1173,6 +1460,7 @@ copy_loclist(win_T *from, win_T *to)
 		 * directory and file names are not supplied. So the qf_fnum
 		 * field is copied here.
 		 */
+		prevp = to->w_llist->qf_lists[to->w_llist->qf_curlist].qf_last;
 		prevp->qf_fnum = from_qfp->qf_fnum; /* file number */
 		prevp->qf_type = from_qfp->qf_type; /* error type */
 		if (from_qfl->qf_ptr == from_qfp)
@@ -1195,58 +1483,87 @@ copy_loclist(win_T *from, win_T *to)
 }
 
 /*
- * get buffer number for file "dir.name"
+ * Looking up a buffer can be slow if there are many.  Remember the last one
+ * to make this a lot faster if there are multiple matches in the same file.
+ */
+static char_u *qf_last_bufname = NULL;
+static bufref_T  qf_last_bufref = {NULL, 0};
+
+/*
+ * Get buffer number for file "dir.name".
+ * Also sets the b_has_qf_entry flag.
  */
     static int
-qf_get_fnum(char_u *directory, char_u *fname)
+qf_get_fnum(qf_info_T *qi, char_u *directory, char_u *fname)
 {
+    char_u	*ptr = NULL;
+    buf_T	*buf;
+    char_u	*bufname;
+
     if (fname == NULL || *fname == NUL)		/* no file name */
 	return 0;
-    {
-	char_u	    *ptr;
-	int	    fnum;
 
 #ifdef VMS
-	vms_remove_version(fname);
+    vms_remove_version(fname);
 #endif
 #ifdef BACKSLASH_IN_FILENAME
-	if (directory != NULL)
-	    slash_adjust(directory);
-	slash_adjust(fname);
+    if (directory != NULL)
+	slash_adjust(directory);
+    slash_adjust(fname);
 #endif
-	if (directory != NULL && !vim_isAbsName(fname)
-		&& (ptr = concat_fnames(directory, fname, TRUE)) != NULL)
+    if (directory != NULL && !vim_isAbsName(fname)
+	    && (ptr = concat_fnames(directory, fname, TRUE)) != NULL)
+    {
+	/*
+	 * Here we check if the file really exists.
+	 * This should normally be true, but if make works without
+	 * "leaving directory"-messages we might have missed a
+	 * directory change.
+	 */
+	if (mch_getperm(ptr) < 0)
 	{
-	    /*
-	     * Here we check if the file really exists.
-	     * This should normally be true, but if make works without
-	     * "leaving directory"-messages we might have missed a
-	     * directory change.
-	     */
-	    if (mch_getperm(ptr) < 0)
-	    {
-		vim_free(ptr);
-		directory = qf_guess_filepath(fname);
-		if (directory)
-		    ptr = concat_fnames(directory, fname, TRUE);
-		else
-		    ptr = vim_strsave(fname);
-	    }
-	    /* Use concatenated directory name and file name */
-	    fnum = buflist_add(ptr, 0);
 	    vim_free(ptr);
-	    return fnum;
+	    directory = qf_guess_filepath(qi, fname);
+	    if (directory)
+		ptr = concat_fnames(directory, fname, TRUE);
+	    else
+		ptr = vim_strsave(fname);
 	}
-	return buflist_add(fname, 0);
+	/* Use concatenated directory name and file name */
+	bufname = ptr;
     }
+    else
+	bufname = fname;
+
+    if (qf_last_bufname != NULL && STRCMP(bufname, qf_last_bufname) == 0
+	    && bufref_valid(&qf_last_bufref))
+    {
+	buf = qf_last_bufref.br_buf;
+	vim_free(ptr);
+    }
+    else
+    {
+	vim_free(qf_last_bufname);
+	buf = buflist_new(bufname, NULL, (linenr_T)0, BLN_NOOPT);
+	if (bufname == ptr)
+	    qf_last_bufname = bufname;
+	else
+	    qf_last_bufname = vim_strsave(bufname);
+	set_bufref(&qf_last_bufref, buf);
+    }
+    if (buf == NULL)
+	return 0;
+
+    buf->b_has_qf_entry = TRUE;
+    return buf->b_fnum;
 }
 
 /*
- * push dirbuf onto the directory stack and return pointer to actual dir or
- * NULL on error
+ * Push dirbuf onto the directory stack and return pointer to actual dir or
+ * NULL on error.
  */
     static char_u *
-qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr)
+qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
 {
     struct dir_stack_T  *ds_new;
     struct dir_stack_T  *ds_ptr;
@@ -1262,7 +1579,7 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr)
     /* store directory on the stack */
     if (vim_isAbsName(dirbuf)
 	    || (*stackptr)->next == NULL
-	    || (*stackptr && dir_stack != *stackptr))
+	    || (*stackptr && is_file_stack))
 	(*stackptr)->dirname = vim_strsave(dirbuf);
     else
     {
@@ -1374,17 +1691,17 @@ qf_clean_dir_stack(struct dir_stack_T **stackptr)
  * qf_guess_filepath will return NULL.
  */
     static char_u *
-qf_guess_filepath(char_u *filename)
+qf_guess_filepath(qf_info_T *qi, char_u *filename)
 {
     struct dir_stack_T     *ds_ptr;
     struct dir_stack_T     *ds_tmp;
     char_u		   *fullname;
 
     /* no dirs on the stack - there's nothing we can do */
-    if (dir_stack == NULL)
+    if (qi->qf_dir_stack == NULL)
 	return NULL;
 
-    ds_ptr = dir_stack->next;
+    ds_ptr = qi->qf_dir_stack->next;
     fullname = NULL;
     while (ds_ptr)
     {
@@ -1403,16 +1720,15 @@ qf_guess_filepath(char_u *filename)
     vim_free(fullname);
 
     /* clean up all dirs we already left */
-    while (dir_stack->next != ds_ptr)
+    while (qi->qf_dir_stack->next != ds_ptr)
     {
-	ds_tmp = dir_stack->next;
-	dir_stack->next = dir_stack->next->next;
+	ds_tmp = qi->qf_dir_stack->next;
+	qi->qf_dir_stack->next = qi->qf_dir_stack->next->next;
 	vim_free(ds_tmp->dirname);
 	vim_free(ds_tmp);
     }
 
     return ds_ptr==NULL? NULL: ds_ptr->dirname;
-
 }
 
 /*
@@ -1433,7 +1749,7 @@ is_qf_entry_present(qf_info_T *qi, qfline_T *qf_ptr)
     /* Search for the entry in the current list */
     for (i = 0, qfp = qfl->qf_start; i < qfl->qf_count;
 	    ++i, qfp = qfp->qf_next)
-	if (qfp == qf_ptr)
+	if (qfp == NULL || qfp == qf_ptr)
 	    break;
 
     if (i == qfl->qf_count) /* Entry is not found */
@@ -2003,6 +2319,7 @@ qf_list(exarg_T *eap)
     int		idx1 = 1;
     int		idx2 = -1;
     char_u	*arg = eap->arg;
+    int		plus = FALSE;
     int		all = eap->forceit;	/* if not :cl!, only show
 						   recognised errors */
     qf_info_T	*qi = &ql_info;
@@ -2023,16 +2340,30 @@ qf_list(exarg_T *eap)
 	EMSG(_(e_quickfix));
 	return;
     }
+    if (*arg == '+')
+    {
+	++arg;
+	plus = TRUE;
+    }
     if (!get_list_range(&arg, &idx1, &idx2) || *arg != NUL)
     {
 	EMSG(_(e_trailing));
 	return;
     }
-    i = qi->qf_lists[qi->qf_curlist].qf_count;
-    if (idx1 < 0)
-	idx1 = (-idx1 > i) ? 0 : idx1 + i + 1;
-    if (idx2 < 0)
-	idx2 = (-idx2 > i) ? 0 : idx2 + i + 1;
+    if (plus)
+    {
+	i = qi->qf_lists[qi->qf_curlist].qf_index;
+	idx2 = i + idx1;
+	idx1 = i;
+    }
+    else
+    {
+	i = qi->qf_lists[qi->qf_curlist].qf_count;
+	if (idx1 < 0)
+	    idx1 = (-idx1 > i) ? 0 : idx1 + i + 1;
+	if (idx2 < 0)
+	    idx2 = (-idx2 > i) ? 0 : idx2 + i + 1;
+    }
 
     if (qi->qf_lists[qi->qf_curlist].qf_nonevalid)
 	all = TRUE;
@@ -2089,6 +2420,8 @@ qf_list(exarg_T *eap)
 	}
 
 	qfp = qfp->qf_next;
+	if (qfp == NULL)
+	    break;
 	++i;
 	ui_breakcheck();
     }
@@ -2176,7 +2509,7 @@ qf_msg(qf_info_T *qi)
 	    qi->qf_curlist + 1, qi->qf_listcount,
 	    qi->qf_lists[qi->qf_curlist].qf_count);
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    qf_update_buffer(qi, NULL);
 #endif
 }
 
@@ -2187,29 +2520,34 @@ qf_msg(qf_info_T *qi)
 qf_free(qf_info_T *qi, int idx)
 {
     qfline_T	*qfp;
+    qfline_T	*qfpnext;
     int		stop = FALSE;
 
-    while (qi->qf_lists[idx].qf_count)
+    while (qi->qf_lists[idx].qf_count && qi->qf_lists[idx].qf_start != NULL)
     {
-	qfp = qi->qf_lists[idx].qf_start->qf_next;
+	qfp = qi->qf_lists[idx].qf_start;
+	qfpnext = qfp->qf_next;
 	if (qi->qf_lists[idx].qf_title != NULL && !stop)
 	{
-	    vim_free(qi->qf_lists[idx].qf_start->qf_text);
-	    stop = (qi->qf_lists[idx].qf_start == qfp);
-	    vim_free(qi->qf_lists[idx].qf_start->qf_pattern);
-	    vim_free(qi->qf_lists[idx].qf_start);
+	    vim_free(qfp->qf_text);
+	    stop = (qfp == qfpnext);
+	    vim_free(qfp->qf_pattern);
+	    vim_free(qfp);
 	    if (stop)
 		/* Somehow qf_count may have an incorrect value, set it to 1
 		 * to avoid crashing when it's wrong.
 		 * TODO: Avoid qf_count being incorrect. */
 		qi->qf_lists[idx].qf_count = 1;
 	}
-	qi->qf_lists[idx].qf_start = qfp;
+	qi->qf_lists[idx].qf_start = qfpnext;
 	--qi->qf_lists[idx].qf_count;
     }
     vim_free(qi->qf_lists[idx].qf_title);
     qi->qf_lists[idx].qf_title = NULL;
     qi->qf_lists[idx].qf_index = 0;
+
+    qf_clean_dir_stack(&qi->qf_dir_stack);
+    qf_clean_dir_stack(&qi->qf_file_stack);
 }
 
 /*
@@ -2227,7 +2565,10 @@ qf_mark_adjust(
     qfline_T	*qfp;
     int		idx;
     qf_info_T	*qi = &ql_info;
+    int		found_one = FALSE;
 
+    if (!curbuf->b_has_qf_entry)
+	return;
     if (wp != NULL)
     {
 	if (wp->w_llist == NULL)
@@ -2238,9 +2579,11 @@ qf_mark_adjust(
     for (idx = 0; idx < qi->qf_listcount; ++idx)
 	if (qi->qf_lists[idx].qf_count)
 	    for (i = 0, qfp = qi->qf_lists[idx].qf_start;
-		       i < qi->qf_lists[idx].qf_count; ++i, qfp = qfp->qf_next)
+		       i < qi->qf_lists[idx].qf_count && qfp != NULL;
+		       ++i, qfp = qfp->qf_next)
 		if (qfp->qf_fnum == curbuf->b_fnum)
 		{
+		    found_one = TRUE;
 		    if (qfp->qf_lnum >= line1 && qfp->qf_lnum <= line2)
 		    {
 			if (amount == MAXLNUM)
@@ -2251,6 +2594,9 @@ qf_mark_adjust(
 		    else if (amount_after && qfp->qf_lnum > line2)
 			qfp->qf_lnum += amount_after;
 		}
+
+    if (!found_one)
+	curbuf->b_has_qf_entry = FALSE;
 }
 
 /*
@@ -2478,12 +2824,59 @@ ex_copen(exarg_T *eap)
     /*
      * Fill the buffer with the quickfix list.
      */
-    qf_fill_buffer(qi);
+    qf_fill_buffer(qi, curbuf, NULL);
 
     curwin->w_cursor.lnum = qi->qf_lists[qi->qf_curlist].qf_index;
     curwin->w_cursor.col = 0;
     check_cursor();
     update_topline();		/* scroll to show the line */
+}
+
+/*
+ * Move the cursor in the quickfix window to "lnum".
+ */
+    static void
+qf_win_goto(win_T *win, linenr_T lnum)
+{
+    win_T	*old_curwin = curwin;
+
+    curwin = win;
+    curbuf = win->w_buffer;
+    curwin->w_cursor.lnum = lnum;
+    curwin->w_cursor.col = 0;
+#ifdef FEAT_VIRTUALEDIT
+    curwin->w_cursor.coladd = 0;
+#endif
+    curwin->w_curswant = 0;
+    update_topline();		/* scroll to show the line */
+    redraw_later(VALID);
+    curwin->w_redr_status = TRUE;	/* update ruler */
+    curwin = old_curwin;
+    curbuf = curwin->w_buffer;
+}
+
+/*
+ * :cbottom/:lbottom commands.
+ */
+    void
+ex_cbottom(exarg_T *eap UNUSED)
+{
+    qf_info_T	*qi = &ql_info;
+    win_T	*win;
+
+    if (eap->cmdidx == CMD_lbottom)
+    {
+	qi = GET_LOC_LIST(curwin);
+	if (qi == NULL)
+	{
+	    EMSG(_(e_loclist));
+	    return;
+	}
+    }
+
+    win = qf_find_win(qi);
+    if (win != NULL && win->w_cursor.lnum != win->w_buffer->b_ml.ml_line_count)
+	qf_win_goto(win, win->w_buffer->b_ml.ml_line_count);
 }
 
 /*
@@ -2523,27 +2916,17 @@ qf_win_pos_update(
 	    && qf_index <= win->w_buffer->b_ml.ml_line_count
 	    && old_qf_index != qf_index)
     {
-	win_T	*old_curwin = curwin;
-
-	curwin = win;
-	curbuf = win->w_buffer;
 	if (qf_index > old_qf_index)
 	{
-	    curwin->w_redraw_top = old_qf_index;
-	    curwin->w_redraw_bot = qf_index;
+	    win->w_redraw_top = old_qf_index;
+	    win->w_redraw_bot = qf_index;
 	}
 	else
 	{
-	    curwin->w_redraw_top = qf_index;
-	    curwin->w_redraw_bot = old_qf_index;
+	    win->w_redraw_top = qf_index;
+	    win->w_redraw_bot = old_qf_index;
 	}
-	curwin->w_cursor.lnum = qf_index;
-	curwin->w_cursor.col = 0;
-	update_topline();		/* scroll to show the line */
-	redraw_later(VALID);
-	curwin->w_redr_status = TRUE;	/* update ruler */
-	curwin = old_curwin;
-	curbuf = curwin->w_buffer;
+	qf_win_goto(win, qf_index);
     }
     return win != NULL;
 }
@@ -2606,7 +2989,7 @@ qf_find_buf(qf_info_T *qi)
  * Find the quickfix buffer.  If it exists, update the contents.
  */
     static void
-qf_update_buffer(qf_info_T *qi)
+qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
 {
     buf_T	*buf;
     win_T	*win;
@@ -2617,8 +3000,11 @@ qf_update_buffer(qf_info_T *qi)
     buf = qf_find_buf(qi);
     if (buf != NULL)
     {
-	/* set curwin/curbuf to buf and save a few things */
-	aucmd_prepbuf(&aco, buf);
+	linenr_T	old_line_count = buf->b_ml.ml_line_count;
+
+	if (old_last == NULL)
+	    /* set curwin/curbuf to buf and save a few things */
+	    aucmd_prepbuf(&aco, buf);
 
 	if ((win = qf_find_win(qi)) != NULL)
 	{
@@ -2628,12 +3014,20 @@ qf_update_buffer(qf_info_T *qi)
 	    curwin = curwin_save;
 	}
 
-	qf_fill_buffer(qi);
+	qf_fill_buffer(qi, buf, old_last);
 
-	/* restore curwin/curbuf and a few other things */
-	aucmd_restbuf(&aco);
+	if (old_last == NULL)
+	{
+	    (void)qf_win_pos_update(qi, 0);
 
-	(void)qf_win_pos_update(qi, 0);
+	    /* restore curwin/curbuf and a few other things */
+	    aucmd_restbuf(&aco);
+	}
+
+	/* Only redraw when added lines are visible.  This avoids flickering
+	 * when the added lines are not visible. */
+	if ((win = qf_find_win(qi)) != NULL && old_line_count < win->w_botline)
+	    redraw_buf_later(buf, NOT_VALID);
     }
 }
 
@@ -2651,9 +3045,12 @@ qf_set_title_var(qf_info_T *qi)
 /*
  * Fill current buffer with quickfix errors, replacing any previous contents.
  * curbuf must be the quickfix buffer!
+ * If "old_last" is not NULL append the items after this one.
+ * When "old_last" is NULL then "buf" must equal "curbuf"!  Because
+ * ml_delete() is used and autocommands will be triggered.
  */
     static void
-qf_fill_buffer(qf_info_T *qi)
+qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 {
     linenr_T	lnum;
     qfline_T	*qfp;
@@ -2661,16 +3058,34 @@ qf_fill_buffer(qf_info_T *qi)
     int		len;
     int		old_KeyTyped = KeyTyped;
 
-    /* delete all existing lines */
-    while ((curbuf->b_ml.ml_flags & ML_EMPTY) == 0)
-	(void)ml_delete((linenr_T)1, FALSE);
+    if (old_last == NULL)
+    {
+	if (buf != curbuf)
+	{
+	    EMSG2(_(e_intern2), "qf_fill_buffer()");
+	    return;
+	}
+
+	/* delete all existing lines */
+	while ((curbuf->b_ml.ml_flags & ML_EMPTY) == 0)
+	    (void)ml_delete((linenr_T)1, FALSE);
+    }
 
     /* Check if there is anything to display */
     if (qi->qf_curlist < qi->qf_listcount)
     {
 	/* Add one line for each error */
-	qfp = qi->qf_lists[qi->qf_curlist].qf_start;
-	for (lnum = 0; lnum < qi->qf_lists[qi->qf_curlist].qf_count; ++lnum)
+	if (old_last == NULL)
+	{
+	    qfp = qi->qf_lists[qi->qf_curlist].qf_start;
+	    lnum = 0;
+	}
+	else
+	{
+	    qfp = old_last->qf_next;
+	    lnum = buf->b_ml.ml_line_count;
+	}
+	while (lnum < qi->qf_lists[qi->qf_curlist].qf_count)
 	{
 	    if (qfp->qf_fnum != 0
 		    && (errbuf = buflist_findnr(qfp->qf_fnum)) != NULL
@@ -2715,35 +3130,42 @@ qf_fill_buffer(qf_info_T *qi)
 	    qf_fmt_text(len > 3 ? skipwhite(qfp->qf_text) : qfp->qf_text,
 						  IObuff + len, IOSIZE - len);
 
-	    if (ml_append(lnum, IObuff, (colnr_T)STRLEN(IObuff) + 1, FALSE)
-								      == FAIL)
+	    if (ml_append_buf(buf, lnum, IObuff,
+				  (colnr_T)STRLEN(IObuff) + 1, FALSE) == FAIL)
 		break;
+	    ++lnum;
 	    qfp = qfp->qf_next;
+	    if (qfp == NULL)
+		break;
 	}
-	/* Delete the empty line which is now at the end */
-	(void)ml_delete(lnum + 1, FALSE);
+
+	if (old_last == NULL)
+	    /* Delete the empty line which is now at the end */
+	    (void)ml_delete(lnum + 1, FALSE);
     }
 
     /* correct cursor position */
     check_lnums(TRUE);
 
-    /* Set the 'filetype' to "qf" each time after filling the buffer.  This
-     * resembles reading a file into a buffer, it's more logical when using
-     * autocommands. */
-    set_option_value((char_u *)"ft", 0L, (char_u *)"qf", OPT_LOCAL);
-    curbuf->b_p_ma = FALSE;
+    if (old_last == NULL)
+    {
+	/* Set the 'filetype' to "qf" each time after filling the buffer.
+	 * This resembles reading a file into a buffer, it's more logical when
+	 * using autocommands. */
+	set_option_value((char_u *)"ft", 0L, (char_u *)"qf", OPT_LOCAL);
+	curbuf->b_p_ma = FALSE;
 
 #ifdef FEAT_AUTOCMD
-    keep_filetype = TRUE;		/* don't detect 'filetype' */
-    apply_autocmds(EVENT_BUFREADPOST, (char_u *)"quickfix", NULL,
+	keep_filetype = TRUE;		/* don't detect 'filetype' */
+	apply_autocmds(EVENT_BUFREADPOST, (char_u *)"quickfix", NULL,
 							       FALSE, curbuf);
-    apply_autocmds(EVENT_BUFWINENTER, (char_u *)"quickfix", NULL,
+	apply_autocmds(EVENT_BUFWINENTER, (char_u *)"quickfix", NULL,
 							       FALSE, curbuf);
-    keep_filetype = FALSE;
+	keep_filetype = FALSE;
 #endif
-
-    /* make sure it will be redrawn */
-    redraw_curbuf_later(NOT_VALID);
+	/* make sure it will be redrawn */
+	redraw_curbuf_later(NOT_VALID);
+    }
 
     /* Restore KeyTyped, setting 'filetype' may reset it. */
     KeyTyped = old_KeyTyped;
@@ -2947,7 +3369,7 @@ get_mef_name(void)
     static int	start = -1;
     static int	off = 0;
 #ifdef HAVE_LSTAT
-    struct stat	sb;
+    stat_T	sb;
 #endif
 
     if (*p_mef == NUL)
@@ -3011,7 +3433,7 @@ qf_get_size(exarg_T *eap)
     }
 
     for (i = 0, qfp = qi->qf_lists[qi->qf_curlist].qf_start;
-	    (i < qi->qf_lists[qi->qf_curlist].qf_count) && (qfp != NULL);
+	    i < qi->qf_lists[qi->qf_curlist].qf_count && qfp != NULL;
 	    ++i, qfp = qfp->qf_next)
     {
 	if (qfp->qf_valid)
@@ -3117,7 +3539,7 @@ qf_get_nth_valid_entry(qf_info_T *qi, int n, int fdo)
     if (qfl->qf_count <= 0 || qfl->qf_nonevalid)
 	return 1;
 
-    for (i = 1, eidx = 0; i <= qfl->qf_count && qfp!= NULL;
+    for (i = 1, eidx = 0; i <= qfl->qf_count && qfp != NULL;
 	    i++, qfp = qfp->qf_next)
     {
 	if (qfp->qf_valid)
@@ -3345,7 +3767,6 @@ ex_vimgrep(exarg_T *eap)
 #ifdef FEAT_AUTOCMD
     qfline_T	*cur_qf_start;
 #endif
-    qfline_T	*prevp = NULL;
     long	lnum;
     buf_T	*buf;
     int		duplicate_name = FALSE;
@@ -3444,11 +3865,6 @@ ex_vimgrep(exarg_T *eap)
 					|| qi->qf_curlist == qi->qf_listcount)
 	/* make place for a new list */
 	qf_new_list(qi, title != NULL ? title : *eap->cmdlinep);
-    else if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
-	/* Adding to existing list, find last entry. */
-	for (prevp = qi->qf_lists[qi->qf_curlist].qf_start;
-			    prevp->qf_next != prevp; prevp = prevp->qf_next)
-	    ;
 
     /* parse the list of arguments */
     if (get_arglist_exp(p, &fcount, &fnames, TRUE) == FAIL)
@@ -3572,7 +3988,7 @@ ex_vimgrep(exarg_T *eap)
 							       col, NULL) > 0)
 		{
 		    ;
-		    if (qf_add_entry(qi, &prevp,
+		    if (qf_add_entry(qi,
 				NULL,       /* dir */
 				fname,
 				0,
@@ -3675,7 +4091,7 @@ ex_vimgrep(exarg_T *eap)
     qi->qf_lists[qi->qf_curlist].qf_index = 1;
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    qf_update_buffer(qi, NULL);
 #endif
 
 #ifdef FEAT_AUTOCMD
@@ -3826,7 +4242,8 @@ load_dummy_buffer(
     char_u	*resulting_dir)  /* out: new directory */
 {
     buf_T	*newbuf;
-    buf_T	*newbuf_to_wipe = NULL;
+    bufref_T	newbufref;
+    bufref_T	newbuf_to_wipe;
     int		failed = TRUE;
     aco_save_T	aco;
 
@@ -3834,6 +4251,7 @@ load_dummy_buffer(
     newbuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
     if (newbuf == NULL)
 	return NULL;
+    set_bufref(&newbufref, newbuf);
 
     /* Init the options. */
     buf_copy_options(newbuf, BCO_ENTER | BCO_NOHELP);
@@ -3854,6 +4272,7 @@ load_dummy_buffer(
 	 * work. */
 	curbuf->b_flags &= ~BF_DUMMY;
 
+	newbuf_to_wipe.br_buf = NULL;
 	if (readfile(fname, NULL,
 		    (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM,
 		    NULL, READ_NEW | READ_DUMMY) == OK
@@ -3867,15 +4286,19 @@ load_dummy_buffer(
 		 * using netrw and editing a remote file.  Use the current
 		 * buffer instead, delete the dummy one after restoring the
 		 * window stuff. */
-		newbuf_to_wipe = newbuf;
+		set_bufref(&newbuf_to_wipe, newbuf);
 		newbuf = curbuf;
 	    }
 	}
 
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
-	if (newbuf_to_wipe != NULL && buf_valid(newbuf_to_wipe))
-	    wipe_buffer(newbuf_to_wipe, FALSE);
+	if (newbuf_to_wipe.br_buf != NULL && bufref_valid(&newbuf_to_wipe))
+	    wipe_buffer(newbuf_to_wipe.br_buf, FALSE);
+
+	/* Add back the "dummy" flag, otherwise buflist_findname_stat() won't
+	 * skip it. */
+	newbuf->b_flags |= BF_DUMMY;
     }
 
     /*
@@ -3886,7 +4309,7 @@ load_dummy_buffer(
     mch_dirname(resulting_dir, MAXPATHL);
     restore_start_dir(dirname_start);
 
-    if (!buf_valid(newbuf))
+    if (!bufref_valid(&newbufref))
 	return NULL;
     if (failed)
     {
@@ -3998,13 +4421,16 @@ get_errorlist(win_T *wp, list_T *list)
 	    return FAIL;
 
 	qfp = qfp->qf_next;
+	if (qfp == NULL)
+	    break;
     }
     return OK;
 }
 
 /*
  * Populate the quickfix list with the items supplied in the list
- * of dictionaries. "title" will be copied to w:quickfix_title
+ * of dictionaries. "title" will be copied to w:quickfix_title.
+ * "action" is 'a' for add, 'r' for replace.  Otherwise create a new list.
  */
     int
 set_errorlist(
@@ -4020,7 +4446,9 @@ set_errorlist(
     long	lnum;
     int		col, nr;
     int		vcol;
-    qfline_T	*prevp = NULL;
+#ifdef FEAT_WINDOWS
+    qfline_T	*old_last = NULL;
+#endif
     int		valid, status;
     int		retval = OK;
     qf_info_T	*qi = &ql_info;
@@ -4036,11 +4464,11 @@ set_errorlist(
     if (action == ' ' || qi->qf_curlist == qi->qf_listcount)
 	/* make place for a new list */
 	qf_new_list(qi, title);
+#ifdef FEAT_WINDOWS
     else if (action == 'a' && qi->qf_lists[qi->qf_curlist].qf_count > 0)
-	/* Adding to existing list, find last entry. */
-	for (prevp = qi->qf_lists[qi->qf_curlist].qf_start;
-	     prevp->qf_next != prevp; prevp = prevp->qf_next)
-	    ;
+	/* Adding to existing list, use last entry. */
+	old_last = qi->qf_lists[qi->qf_curlist].qf_last;
+#endif
     else if (action == 'r')
     {
 	qf_free(qi, qi->qf_curlist);
@@ -4057,11 +4485,11 @@ set_errorlist(
 	    continue;
 
 	filename = get_dict_string(d, (char_u *)"filename", TRUE);
-	bufnum = get_dict_number(d, (char_u *)"bufnr");
-	lnum = get_dict_number(d, (char_u *)"lnum");
-	col = get_dict_number(d, (char_u *)"col");
-	vcol = get_dict_number(d, (char_u *)"vcol");
-	nr = get_dict_number(d, (char_u *)"nr");
+	bufnum = (int)get_dict_number(d, (char_u *)"bufnr");
+	lnum = (int)get_dict_number(d, (char_u *)"lnum");
+	col = (int)get_dict_number(d, (char_u *)"col");
+	vcol = (int)get_dict_number(d, (char_u *)"vcol");
+	nr = (int)get_dict_number(d, (char_u *)"nr");
 	type = get_dict_string(d, (char_u *)"type", TRUE);
 	pattern = get_dict_string(d, (char_u *)"pattern", TRUE);
 	text = get_dict_string(d, (char_u *)"text", TRUE);
@@ -4085,7 +4513,7 @@ set_errorlist(
 	    bufnum = 0;
 	}
 
-	status =  qf_add_entry(qi, &prevp,
+	status =  qf_add_entry(qi,
 			       NULL,	    /* dir */
 			       filename,
 			       bufnum,
@@ -4115,12 +4543,16 @@ set_errorlist(
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = TRUE;
     else
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
-    qi->qf_lists[qi->qf_curlist].qf_ptr = qi->qf_lists[qi->qf_curlist].qf_start;
-    if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
-	qi->qf_lists[qi->qf_curlist].qf_index = 1;
+    if (action != 'a') {
+	qi->qf_lists[qi->qf_curlist].qf_ptr =
+	    qi->qf_lists[qi->qf_curlist].qf_start;
+	if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+	    qi->qf_lists[qi->qf_curlist].qf_index = 1;
+    }
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    /* Don't update the cursor in quickfix window when appending entries */
+    qf_update_buffer(qi, old_last);
 #endif
 
     return retval;
@@ -4245,7 +4677,6 @@ ex_helpgrep(exarg_T *eap)
     char_u	**fnames;
     FILE	*fd;
     int		fi;
-    qfline_T	*prevp = NULL;
     long	lnum;
 #ifdef FEAT_MULTI_LANG
     char_u	*lang;
@@ -4371,7 +4802,7 @@ ex_helpgrep(exarg_T *eap)
 				while (l > 0 && line[l - 1] <= ' ')
 				     line[--l] = NUL;
 
-				if (qf_add_entry(qi, &prevp,
+				if (qf_add_entry(qi,
 					    NULL,	/* dir */
 					    fnames[fi],
 					    0,
@@ -4427,7 +4858,7 @@ ex_helpgrep(exarg_T *eap)
 	free_string_option(save_cpo);
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi);
+    qf_update_buffer(qi, NULL);
 #endif
 
 #ifdef FEAT_AUTOCMD

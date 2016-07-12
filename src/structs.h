@@ -69,6 +69,14 @@ typedef struct frame_S		frame_T;
 typedef int			scid_T;		/* script ID */
 typedef struct file_buffer	buf_T;  /* forward declaration */
 
+/* Reference to a buffer that stores the value of buf_free_count.
+ * bufref_valid() only needs to check "buf" when the count differs.
+ */
+typedef struct {
+    buf_T   *br_buf;
+    int	    br_buf_free_count;
+} bufref_T;
+
 /*
  * This is here because regexp.h needs pos_T and below regprog_T is used.
  */
@@ -84,7 +92,9 @@ typedef struct file_buffer	buf_T;  /* forward declaration */
 # ifdef FEAT_XCLIPBOARD
 #  include <X11/Intrinsic.h>
 # endif
-# define guicolor_T int		/* avoid error in prototypes */
+# define guicolor_T long_u		/* avoid error in prototypes and
+					 * make FEAT_TERMGUICOLORS work */
+# define INVALCOLOR ((guicolor_T)0x1ffffff)
 #endif
 
 /*
@@ -110,6 +120,9 @@ typedef struct xfilemark
 {
     fmark_T	fmark;
     char_u	*fname;		/* file name, used when fnum == 0 */
+#ifdef FEAT_VIMINFO
+    time_T	time_set;
+#endif
 } xfmark_T;
 
 /*
@@ -353,7 +366,7 @@ struct u_header
     int		uh_flags;	/* see below */
     pos_T	uh_namedm[NMARKS];	/* marks before undo/after redo */
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
-    time_t	uh_time;	/* timestamp when the change was made */
+    time_T	uh_time;	/* timestamp when the change was made */
     long	uh_save_nr;	/* set when the file was saved after the
 				   changes in this block */
 #ifdef U_DEBUG
@@ -911,6 +924,10 @@ typedef struct attr_entry
 	    /* These colors need to be > 8 bits to hold 256. */
 	    short_u	    fg_color;	/* foreground color number */
 	    short_u	    bg_color;	/* background color number */
+# ifdef FEAT_TERMGUICOLORS
+	    long_u	    fg_rgb;	/* foreground color RGB */
+	    long_u	    bg_rgb;	/* background color RGB */
+# endif
 	} cterm;
 # ifdef FEAT_GUI
 	struct
@@ -1008,6 +1025,7 @@ typedef struct
 #ifdef FEAT_MBYTE
     vimconv_T	vir_conv;	/* encoding conversion */
 #endif
+    int		vir_version;	/* viminfo version detected or -1 */
     garray_T	vir_barlines;	/* lines starting with | */
 } vir_T;
 
@@ -1101,11 +1119,29 @@ typedef struct hashtable_S
 typedef long_u hash_T;		/* Type for hi_hash */
 
 
-#if VIM_SIZEOF_INT <= 3		/* use long if int is smaller than 32 bits */
-typedef long	varnumber_T;
+#ifdef FEAT_NUM64
+/* Use 64-bit Number. */
+# ifdef WIN3264
+typedef __int64		    varnumber_T;
+typedef unsigned __int64    uvarnumber_T;
+# elif defined(HAVE_STDINT_H)
+typedef int64_t		    varnumber_T;
+typedef uint64_t	    uvarnumber_T;
+# else
+typedef long		    varnumber_T;
+typedef unsigned long	    uvarnumber_T;
+# endif
 #else
-typedef int	varnumber_T;
+/* Use 32-bit Number. */
+# if VIM_SIZEOF_INT <= 3	/* use long if int is smaller than 32 bits */
+typedef long		    varnumber_T;
+typedef unsigned long	    uvarnumber_T;
+# else
+typedef int		    varnumber_T;
+typedef unsigned int	    uvarnumber_T;
+# endif
 #endif
+
 typedef double	float_T;
 
 typedef struct listvar_S list_T;
@@ -1255,6 +1291,8 @@ struct partial_S
 {
     int		pt_refcount;	/* reference count */
     char_u	*pt_name;	/* function name */
+    int		pt_auto;	/* when TRUE the partial was created for using
+				   dict.member in handle_subscript() */
     int		pt_argc;	/* number of arguments */
     typval_T	*pt_argv;	/* arguments in allocated array */
     dict_T	*pt_dict;	/* dict for "self" */
@@ -1301,6 +1339,7 @@ struct jobvar_S
 struct readq_S
 {
     char_u	*rq_buffer;
+    long_u	rq_buflen;
     readq_T	*rq_next;
     readq_T	*rq_prev;
 };
@@ -1392,7 +1431,9 @@ typedef struct {
     char_u	*ch_callback;	/* call when a msg is not handled */
     partial_T	*ch_partial;
 
-    buf_T	*ch_buffer;	/* buffer to read from or write to */
+    bufref_T	ch_bufref;	/* buffer to read from or write to */
+    int		ch_nomodifiable; /* TRUE when buffer can be 'nomodifiable' */
+    int		ch_nomod_error;	/* TRUE when e_modifiable was given */
     int		ch_buf_append;	/* write appended lines instead top-bot */
     linenr_T	ch_buf_top;	/* next line to send */
     linenr_T	ch_buf_bot;	/* last line to send */
@@ -1410,6 +1451,11 @@ struct channel_S {
     char	*ch_hostname;	/* only for socket, allocated */
     int		ch_port;	/* only for socket */
 
+    int		ch_to_be_closed; /* When TRUE reading or writing failed and
+				  * the channel must be closed when it's safe
+				  * to invoke callbacks. */
+    int		ch_to_be_freed; /* When TRUE channel must be freed when it's
+				 * safe to invoke callbacks. */
     int		ch_error;	/* When TRUE an error was reported.  Avoids
 				 * giving pages full of error messages when
 				 * the other side has exited, only mention the
@@ -1464,6 +1510,8 @@ struct channel_S {
 #define JO_IN_BUF	    0x4000000	/* "in_buf" (JO_OUT_BUF << 2) */
 #define JO_CHANNEL	    0x8000000	/* "channel" */
 #define JO_BLOCK_WRITE	    0x10000000	/* "block_write" */
+#define JO_OUT_MODIFIABLE   0x20000000	/* "out_modifiable" */
+#define JO_ERR_MODIFIABLE   0x40000000	/* "err_modifiable" (JO_OUT_ << 1) */
 #define JO_ALL		    0x7fffffff
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
@@ -1487,6 +1535,7 @@ typedef struct
     char_u	jo_io_name_buf[4][NUMBUFLEN];
     char_u	*jo_io_name[4];	/* not allocated! */
     int		jo_io_buf[4];
+    int		jo_modifiable[4];
     channel_T	*jo_channel;
 
     linenr_T	jo_in_top;
@@ -1511,7 +1560,6 @@ typedef struct
     int		jo_id;
     char_u	jo_soe_buf[NUMBUFLEN];
     char_u	*jo_stoponexit;
-    char_u	jo_ecb_buf[NUMBUFLEN];
 } jobopt_T;
 
 
@@ -1729,8 +1777,12 @@ struct file_buffer
 
     long	b_mtime;	/* last change time of original file */
     long	b_mtime_read;	/* last change time when reading */
-    off_t	b_orig_size;	/* size of original file in bytes */
+    off_T	b_orig_size;	/* size of original file in bytes */
     int		b_orig_mode;	/* mode of original file */
+#ifdef FEAT_VIMINFO
+    time_T	b_last_used;	/* time when the buffer was last used; used
+				 * for viminfo */
+#endif
 
     pos_T	b_namedm[NMARKS]; /* current named marks (mark.c) */
 
@@ -1794,7 +1846,7 @@ struct file_buffer
     long	b_u_seq_last;	/* last used undo sequence number */
     long	b_u_save_nr_last; /* counter for last file write */
     long	b_u_seq_cur;	/* hu_seq of header below which we are now */
-    time_t	b_u_time_cur;	/* uh_time of header below which we are now */
+    time_T	b_u_time_cur;	/* uh_time of header below which we are now */
     long	b_u_save_nr_cur; /* file write nr after which we are now */
 
     /*
@@ -1848,9 +1900,10 @@ struct file_buffer
 #ifdef FEAT_MBYTE
     int		b_p_bomb;	/* 'bomb' */
 #endif
-#if defined(FEAT_QUICKFIX)
+#ifdef FEAT_QUICKFIX
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
+    int		b_has_qf_entry;
 #endif
     int		b_p_bl;		/* 'buflisted' */
 #ifdef FEAT_CINDENT
@@ -2448,7 +2501,7 @@ struct window_S
     int		w_wrow, w_wcol;	    /* cursor position in window */
 
     linenr_T	w_botline;	    /* number of the line below the bottom of
-				       the screen */
+				       the window */
     int		w_empty_rows;	    /* number of ~ rows in window */
 #ifdef FEAT_DIFF
     int		w_filler_rows;	    /* number of filler rows at the end of the
@@ -2872,7 +2925,7 @@ typedef struct
     int		use_aucmd_win;	/* using aucmd_win */
     win_T	*save_curwin;	/* saved curwin */
     win_T	*new_curwin;	/* new curwin */
-    buf_T	*new_curbuf;	/* new curbuf */
+    bufref_T	new_curbuf;	/* new curbuf */
     char_u	*globaldir;	/* saved value of globaldir */
 #endif
 } aco_save_T;

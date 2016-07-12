@@ -839,6 +839,9 @@ EXTERN int	p_tbidi;	/* 'termbidi' */
 #ifdef FEAT_MBYTE
 EXTERN char_u	*p_tenc;	/* 'termencoding' */
 #endif
+#ifdef FEAT_TERMGUICOLORS
+EXTERN int	p_tgc;		/* 'termguicolors' */
+#endif
 EXTERN int	p_terse;	/* 'terse' */
 EXTERN int	p_ta;		/* 'textauto' */
 EXTERN int	p_to;		/* 'tildeop' */

@@ -16,7 +16,7 @@ The Tcl Interface to Vim				*tcl* *Tcl* *TCL*
 8. Examples				|tcl-examples|
 9. Dynamic loading			|tcl-dynamic|
 
-{Vi does not have any of these commands} *E280* *E281*
+{Vi does not have any of these commands} *E280*
 
 The Tcl interface only works when Vim was compiled with the |+tcl| feature.
 

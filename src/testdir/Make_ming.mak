@@ -45,58 +45,77 @@ SCRIPTS_BENCH = bench_re_freeze.out
 # Must run test1 first to create small.vim.
 $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
 
-.SUFFIXES: .in .out
+.SUFFIXES: .in .out .res .vim
 
-vimall:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32)
+vimall:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) newtests
 	echo ALL DONE
 
-nongui:	fixff $(SCRIPTS_FIRST) $(SCRIPTS)
+nongui:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests
 	echo ALL DONE
 
 benchmark: $(SCRIPTS_BENCH)
 
-small:
+small: nolog
 	echo ALL DONE
 
-gui:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI)
+gui:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests
 	echo ALL DONE
 
-win32:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32)
+win32:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) newtests
 	echo ALL DONE
 
+# TODO: find a way to avoid changing the distributed files.
 fixff:
-	# TODO: find a way to avoid changing the distributed files.
 	-$(VIMPROG) -u dos.vim $(NO_PLUGIN) "+argdo set ff=dos|upd" +q *.in *.ok
 	-$(VIMPROG) -u dos.vim $(NO_PLUGIN) "+argdo set ff=unix|upd" +q \
 		dotest.in test60.ok test71.ok test74.ok test_listchars.ok \
 		test_getcwd.ok test_wordcount.ok
 
 clean:
-	-$(DEL) *.out
-	-$(DEL) test.ok
-	-$(DEL) small.vim
-	-$(DEL) tiny.vim
-	-$(DEL) mbyte.vim
-	-$(DEL) mzscheme.vim
-	-$(DEL) lua.vim
-	-$(DELDIR) Xdir1
-	-$(DELDIR) Xfind
-	-$(DEL) X*
-	-$(DEL) viminfo
+	-@if exist *.out $(DEL) *.out
+	-@if exist *.failed $(DEL) *.failed
+	-@if exist *.res $(DEL) *.res
+	-@if exist test.in $(DEL) test.in
+	-@if exist test.ok $(DEL) test.ok
+	-@if exist small.vim $(DEL) small.vim
+	-@if exist tiny.vim $(DEL) tiny.vim
+	-@if exist mbyte.vim $(DEL) mbyte.vim
+	-@if exist mzscheme.vim $(DEL) mzscheme.vim
+	-@if exist lua.vim $(DEL) lua.vim
+	-@if exist Xdir1 $(DELDIR) Xdir1
+	-@if exist Xfind $(DELDIR) Xfind
+	-@if exist X* $(DEL) X*
+	-@if exist viminfo $(DEL) viminfo
+	-@if exist test.log $(DEL) test.log
+	-@if exist messages $(DEL) messages
 
 .in.out:
-	$(CP) $*.ok test.ok
+	-@if exist $*.ok $(CP) $*.ok test.ok
 	$(VIMPROG) -u dos.vim $(NO_PLUGIN) -s dotest.in $*.in
-	diff test.out $*.ok
-	-$(DEL) $*.out
-	$(MV) test.out $*.out
-	-$(DELDIR) Xdir1
-	-$(DELDIR) Xfind
-	-$(DEL) X*
-	-$(DEL) test.ok
-	-$(DEL) viminfo
+	@diff test.out $*.ok
+	-@if exist $*.out $(DEL) $*.out
+	@$(MV) test.out $*.out
+	-@if exist Xdir1 $(DELDIR) Xdir1
+	-@if exist Xfind $(DELDIR) Xfind
+	-@if exist X* $(DEL) X*
+	-@if exist test.ok $(DEL) test.ok
+	-@if exist viminfo $(DEL) viminfo
+
+nolog:
+	-@if exist test.log $(DEL) test.log
+	-@if exist messages $(DEL) messages
 
 bench_re_freeze.out: bench_re_freeze.vim
 	-$(DEL) benchmark.out
 	$(VIMPROG) -u dos.vim $(NO_PLUGIN) $*.in
 	$(CAT) benchmark.out
+
+# New style of tests uses Vim script with assert calls.  These are easier
+# to write and a lot easier to read and debug.
+# Limitation: Only works with the +eval feature.
+
+newtests: $(NEW_TESTS)
+
+.vim.res:
+	$(VIMPROG) -u NONE $(NO_PLUGIN) -S runtest.vim $*.vim
+

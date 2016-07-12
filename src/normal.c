@@ -414,8 +414,8 @@ static const struct nv_cmd
     {K_TABMENU, nv_tabmenu,	0,			0},
 #endif
 #ifdef FEAT_FKMAP
-    {K_F8,	farsi_fkey,	0,			0},
-    {K_F9,	farsi_fkey,	0,			0},
+    {K_F8,	farsi_f8,	0,			0},
+    {K_F9,	farsi_f9,	0,			0},
 #endif
 #ifdef FEAT_NETBEANS_INTG
     {K_F21,	nv_nbcmd,	NV_NCH_ALW,		0},
@@ -4244,7 +4244,7 @@ find_decl(
     int		len,
     int		locally,
     int		thisblock,
-    int		searchflags)	/* flags passed to searchit() */
+    int		flags_arg)	/* flags passed to searchit() */
 {
     char_u	*pat;
     pos_T	old_pos;
@@ -4255,6 +4255,7 @@ find_decl(
     int		save_p_scs;
     int		retval = OK;
     int		incll;
+    int		searchflags = flags_arg;
 
     if ((pat = alloc(len + 7)) == NULL)
 	return FAIL;
@@ -4340,8 +4341,10 @@ find_decl(
 
 	/* For finding a local variable and the match is before the "{" search
 	 * to find a later match.  For K&R style function declarations this
-	 * skips the function header without types. */
+	 * skips the function header without types.  Remove SEARCH_START from
+	 * flags to avoid getting stuck at one position. */
 	found_pos = curwin->w_cursor;
+	searchflags &= ~SEARCH_START;
     }
 
     if (t == FAIL)
@@ -5477,10 +5480,12 @@ nv_ident(cmdarg_T *cap)
 {
     char_u	*ptr = NULL;
     char_u	*buf;
+    unsigned	buflen;
     char_u	*newbuf;
     char_u	*p;
     char_u	*kp;		/* value of 'keywordprg' */
-    int		kp_help;	/* 'keywordprg' is ":help" */
+    int		kp_help;	/* 'keywordprg' is ":he" */
+    int		kp_ex;		/* 'keywordprg' starts with ":" */
     int		n = 0;		/* init for GCC */
     int		cmdchar;
     int		g_cmd;		/* "g" command */
@@ -5528,7 +5533,9 @@ nv_ident(cmdarg_T *cap)
     kp = (*curbuf->b_p_kp == NUL ? p_kp : curbuf->b_p_kp);
     kp_help = (*kp == NUL || STRCMP(kp, ":he") == 0
 						 || STRCMP(kp, ":help") == 0);
-    buf = alloc((unsigned)(n * 2 + 30 + STRLEN(kp)));
+    kp_ex = (*kp == ':');
+    buflen = (unsigned)(n * 2 + 30 + STRLEN(kp));
+    buf = alloc(buflen);
     if (buf == NULL)
 	return;
     buf[0] = NUL;
@@ -5554,6 +5561,15 @@ nv_ident(cmdarg_T *cap)
 	case 'K':
 	    if (kp_help)
 		STRCPY(buf, "he! ");
+	    else if (kp_ex)
+	    {
+		if (cap->count0 != 0)
+		    vim_snprintf((char *)buf, buflen, "%s %ld",
+							     kp, cap->count0);
+		else
+		    STRCPY(buf, kp);
+		STRCAT(buf, " ");
+	    }
 	    else
 	    {
 		/* An external command will probably use an argument starting

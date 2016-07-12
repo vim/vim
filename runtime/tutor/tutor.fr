@@ -190,7 +190,7 @@ NOTE : En avançant dans ce cours, n'essayez pas de mémoriser, apprenez par
 
   5. Pour insérer ou ajouter du texte tapez :
          i   tapez le texte à insérer avant le curseur   <Échap>
-         A   tapez le texte à ajouter après le curseur   <Échap>
+         A   tapez le texte à ajouter en fin de ligne    <Échap>
 
 NOTE : Appuyer  <Échap>  vous place en mode Normal ou annule une commande
        partiellement tapée dont vous ne voulez plus.
@@ -1034,5 +1034,5 @@ NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
   Dernières mises à jour par Dominique Pellé.
 
   E-mail :      dominique.pelle@gmail.com
-  Last Change : 2014 Aug 18
+  Last Change : 2016 Jul 02
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

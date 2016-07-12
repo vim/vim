@@ -256,7 +256,7 @@ getConnInfo(char *file, char **host, char **port, char **auth)
     char_u *lp;
     char_u *nlp;
 #ifdef UNIX
-    struct stat	st;
+    stat_T	st;
 
     /*
      * For Unix only accept the file when it's not accessible by others.
@@ -382,51 +382,56 @@ handle_key_queue(void)
     void
 netbeans_parse_messages(void)
 {
+    readq_T	*node;
     char_u	*buffer;
     char_u	*p;
     int		own_node;
 
     while (nb_channel != NULL)
     {
-	buffer = channel_peek(nb_channel, PART_SOCK);
-	if (buffer == NULL)
+	node = channel_peek(nb_channel, PART_SOCK);
+	if (node == NULL)
 	    break;	/* nothing to read */
 
-	/* Locate the first line in the first buffer. */
-	p = vim_strchr(buffer, '\n');
+	/* Locate the end of the first line in the first buffer. */
+	p = channel_first_nl(node);
 	if (p == NULL)
 	{
 	    /* Command isn't complete.  If there is no following buffer,
 	     * return (wait for more). If there is another buffer following,
 	     * prepend the text to that buffer and delete this one.  */
-	    if (channel_collapse(nb_channel, PART_SOCK) == FAIL)
+	    if (channel_collapse(nb_channel, PART_SOCK, TRUE) == FAIL)
 		return;
+	    continue;
+	}
+
+	/* There is a complete command at the start of the buffer.
+	 * Terminate it with a NUL.  When no more text is following unlink
+	 * the buffer.  Do this before executing, because new buffers can
+	 * be added while busy handling the command. */
+	*p++ = NUL;
+	if (*p == NUL)
+	{
+	    own_node = TRUE;
+	    buffer = channel_get(nb_channel, PART_SOCK);
+	    /* "node" is now invalid! */
 	}
 	else
 	{
-	    /* There is a complete command at the start of the buffer.
-	     * Terminate it with a NUL.  When no more text is following unlink
-	     * the buffer.  Do this before executing, because new buffers can
-	     * be added while busy handling the command. */
-	    *p++ = NUL;
-	    if (*p == NUL)
-	    {
-		own_node = TRUE;
-		channel_get(nb_channel, PART_SOCK);
-	    }
-	    else
-		own_node = FALSE;
-
-	    /* now, parse and execute the commands */
-	    nb_parse_cmd(buffer);
-
-	    if (own_node)
-		/* buffer finished, dispose of it */
-		vim_free(buffer);
-	    else
-		/* more follows, move it to the start */
-		STRMOVE(buffer, p);
+	    own_node = FALSE;
+	    buffer = node->rq_buffer;
 	}
+
+	/* Now, parse and execute the commands.  This may set nb_channel to
+	 * NULL if the channel is closed. */
+	nb_parse_cmd(buffer);
+
+	if (own_node)
+	    /* buffer finished, dispose of it */
+	    vim_free(buffer);
+	else if (nb_channel != NULL)
+	    /* more follows, move it to the start */
+	    channel_consume(nb_channel, PART_SOCK, (int)(p - buffer));
     }
 }
 
@@ -556,7 +561,7 @@ static void addsigntype(nbbuf_T *, int localsigntype, char_u *typeName,
 			char_u *tooltip, char_u *glyphfile,
 			char_u *fg, char_u *bg);
 static void print_read_msg(nbbuf_T *buf);
-static void print_save_msg(nbbuf_T *buf, off_t nchars);
+static void print_save_msg(nbbuf_T *buf, off_T nchars);
 
 static int curPCtype = -1;
 
@@ -760,7 +765,8 @@ netbeans_end(void)
 nb_send(char *buf, char *fun)
 {
     if (nb_channel != NULL)
-	channel_send(nb_channel, PART_SOCK, (char_u *)buf, fun);
+	channel_send(nb_channel, PART_SOCK, (char_u *)buf,
+						       (int)STRLEN(buf), fun);
 }
 
 /*
@@ -1736,7 +1742,7 @@ nb_do_cmd(
 		buf->bufp->b_changed = TRUE;
 	    else
 	    {
-		struct stat	st;
+		stat_T	st;
 
 		/* Assume NetBeans stored the file.  Reset the timestamp to
 		 * avoid "file changed" warnings. */
@@ -2171,10 +2177,15 @@ nb_do_cmd(
 #endif
 			)
 		{
+#ifdef FEAT_AUTOCMD
+		    bufref_T bufref;
+
+		    set_bufref(&bufref, buf->bufp);
+#endif
 		    buf_write_all(buf->bufp, FALSE);
 #ifdef FEAT_AUTOCMD
 		    /* an autocommand may have deleted the buffer */
-		    if (!buf_valid(buf->bufp))
+		    if (!bufref_valid(&bufref))
 			buf->bufp = NULL;
 #endif
 		}
@@ -2584,6 +2595,23 @@ netbeans_send_disconnect(void)
 	nb_send(buf, "netbeans_disconnect");
     }
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    int
+set_ref_in_nb_channel(int copyID)
+{
+    int abort = FALSE;
+    typval_T tv;
+
+    if (nb_channel != NULL)
+    {
+	tv.v_type = VAR_CHANNEL;
+	tv.vval.v_channel = nb_channel;
+	abort = set_ref_in_item(&tv, copyID, NULL, NULL);
+    }
+    return abort;
+}
+#endif
 
 #if defined(FEAT_GUI_X11) || defined(FEAT_GUI_W32) || defined(PROTO)
 /*
@@ -3448,7 +3476,7 @@ pos2off(buf_T *buf, pos_T *pos)
 print_read_msg(nbbuf_T *buf)
 {
     int	    lnum = buf->bufp->b_ml.ml_line_count;
-    off_t   nchars = buf->bufp->b_orig_size;
+    off_T   nchars = buf->bufp->b_orig_size;
     char_u  c;
 
     msg_add_fname(buf->bufp, buf->bufp->b_ffname);
@@ -3482,7 +3510,7 @@ print_read_msg(nbbuf_T *buf)
  * writing a file.
  */
     static void
-print_save_msg(nbbuf_T *buf, off_t nchars)
+print_save_msg(nbbuf_T *buf, off_T nchars)
 {
     char_u	c;
     char_u	*p;

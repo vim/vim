@@ -1,7 +1,7 @@
 " An example for a vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2016 Apr 05
+" Last change:	2016 Jun 21
 "
 " To use it, copy it to
 "     for Unix and OS/2:  ~/.vimrc
@@ -111,4 +111,6 @@ endif
 "
 " The matchit plugin makes the % command work better, but it is not backwards
 " compatible.
-packadd matchit
+if has('syntax') && has('eval')
+  packadd matchit
+endif

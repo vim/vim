@@ -416,13 +416,13 @@ redraw_asap(int type)
  * it belongs. If highlighting was changed a redraw is needed.
  */
     void
-redraw_after_callback()
+redraw_after_callback(void)
 {
     if (State == HITRETURN || State == ASKMORE)
 	; /* do nothing */
     else if (State & CMDLINE)
 	redrawcmdline();
-    else if ((State & NORMAL) || (State & INSERT))
+    else if (State & (NORMAL | INSERT))
     {
 	update_screen(0);
 	setcursor();
@@ -432,7 +432,10 @@ redraw_after_callback()
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
-	gui_update_cursor(TRUE, FALSE);
+	/* Don't update the cursor when it is blinking and off to avoid
+	 * flicker. */
+	if (!gui_mch_is_blink_off())
+	    gui_update_cursor(FALSE, FALSE);
 	gui_mch_flush();
     }
 #endif
@@ -483,8 +486,6 @@ update_curbuf(int type)
 }
 
 /*
- * update_screen()
- *
  * Based on the current value of curwin->w_topline, transfer a screenfull
  * of stuff from Filemem to ScreenLines[], and update curwin->w_botline.
  */
@@ -495,6 +496,10 @@ update_screen(int type)
     static int	did_intro = FALSE;
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
     int		did_one;
+#endif
+#ifdef FEAT_GUI
+    int		gui_cursor_col;
+    int		gui_cursor_row;
 #endif
 
     /* Don't do anything if the screen structures are (not yet) valid. */
@@ -693,7 +698,11 @@ update_screen(int type)
 		 * scrolling may make it difficult to redraw the text under
 		 * it. */
 		if (gui.in_use)
+		{
+		    gui_cursor_col = gui.cursor_col;
+		    gui_cursor_row = gui.cursor_row;
 		    gui_undraw_cursor();
+		}
 #endif
 	    }
 #endif
@@ -748,8 +757,16 @@ update_screen(int type)
     if (gui.in_use)
     {
 	out_flush();	/* required before updating the cursor */
-	if (did_one)
+	if (did_one && !gui_mch_is_blink_off())
+	{
+	    /* Put the GUI position where the cursor was, gui_update_cursor()
+	     * uses that. */
+	    gui.col = gui_cursor_col;
+	    gui.row = gui_cursor_row;
 	    gui_update_cursor(FALSE, FALSE);
+	    screen_cur_col = gui.col;
+	    screen_cur_row = gui.row;
+	}
 	gui_update_scrollbars(FALSE);
     }
 #endif
@@ -800,6 +817,10 @@ update_single_line(win_T *wp, linenr_T lnum)
 {
     int		row;
     int		j;
+
+    /* Don't do anything if the screen structures are (not yet) valid. */
+    if (!screen_valid(TRUE))
+	return;
 
     if (lnum >= wp->w_topline && lnum < wp->w_botline
 				 && foldedCount(wp, lnum, &win_foldinfo) == 0)
@@ -7828,7 +7849,7 @@ screen_start_highlight(int attr)
 	{
 	    if (attr > HL_ALL)				/* special HL attr. */
 	    {
-		if (t_colors > 1)
+		if (IS_CTERM)
 		    aep = syn_cterm_attr2entry(attr);
 		else
 		    aep = syn_term_attr2entry(attr);
@@ -7839,8 +7860,16 @@ screen_start_highlight(int attr)
 	    }
 	    if ((attr & HL_BOLD) && T_MD != NULL)	/* bold */
 		out_str(T_MD);
-	    else if (aep != NULL && t_colors > 1 && aep->ae_u.cterm.fg_color
-						      && cterm_normal_fg_bold)
+	    else if (aep != NULL && cterm_normal_fg_bold &&
+#ifdef FEAT_TERMGUICOLORS
+			(p_tgc ?
+			    (aep->ae_u.cterm.fg_rgb != (long_u)INVALCOLOR):
+#endif
+			    (t_colors > 1 && aep->ae_u.cterm.fg_color)
+#ifdef FEAT_TERMGUICOLORS
+			)
+#endif
+		    )
 		/* If the Normal FG color has BOLD attribute and the new HL
 		 * has a FG color defined, clear BOLD. */
 		out_str(T_ME);
@@ -7860,17 +7889,29 @@ screen_start_highlight(int attr)
 	     */
 	    if (aep != NULL)
 	    {
-		if (t_colors > 1)
+#ifdef FEAT_TERMGUICOLORS
+		if (p_tgc)
 		{
-		    if (aep->ae_u.cterm.fg_color)
-			term_fg_color(aep->ae_u.cterm.fg_color - 1);
-		    if (aep->ae_u.cterm.bg_color)
-			term_bg_color(aep->ae_u.cterm.bg_color - 1);
+		    if (aep->ae_u.cterm.fg_rgb != (long_u)INVALCOLOR)
+			term_fg_rgb_color(aep->ae_u.cterm.fg_rgb);
+		    if (aep->ae_u.cterm.bg_rgb != (long_u)INVALCOLOR)
+			term_bg_rgb_color(aep->ae_u.cterm.bg_rgb);
 		}
 		else
+#endif
 		{
-		    if (aep->ae_u.term.start != NULL)
-			out_str(aep->ae_u.term.start);
+		    if (t_colors > 1)
+		    {
+			if (aep->ae_u.cterm.fg_color)
+			    term_fg_color(aep->ae_u.cterm.fg_color - 1);
+			if (aep->ae_u.cterm.bg_color)
+			    term_bg_color(aep->ae_u.cterm.bg_color - 1);
+		    }
+		    else
+		    {
+			if (aep->ae_u.term.start != NULL)
+			    out_str(aep->ae_u.term.start);
+		    }
 		}
 	    }
 	}
@@ -7904,14 +7945,23 @@ screen_stop_highlight(void)
 	    {
 		attrentry_T *aep;
 
-		if (t_colors > 1)
+		if (IS_CTERM)
 		{
 		    /*
 		     * Assume that t_me restores the original colors!
 		     */
 		    aep = syn_cterm_attr2entry(screen_attr);
-		    if (aep != NULL && (aep->ae_u.cterm.fg_color
-						 || aep->ae_u.cterm.bg_color))
+		    if (aep != NULL &&
+#ifdef FEAT_TERMGUICOLORS
+			    (p_tgc ?
+				(aep->ae_u.cterm.fg_rgb != (long_u)INVALCOLOR ||
+				 aep->ae_u.cterm.bg_rgb != (long_u)INVALCOLOR):
+#endif
+				(aep->ae_u.cterm.fg_color || aep->ae_u.cterm.bg_color)
+#ifdef FEAT_TERMGUICOLORS
+			    )
+#endif
+			)
 			do_ME = TRUE;
 		}
 		else
@@ -7959,15 +8009,27 @@ screen_stop_highlight(void)
 	    if (do_ME || (screen_attr & (HL_BOLD | HL_INVERSE)))
 		out_str(T_ME);
 
-	    if (t_colors > 1)
+#ifdef FEAT_TERMGUICOLORS
+	    if (p_tgc)
 	    {
-		/* set Normal cterm colors */
-		if (cterm_normal_fg_color != 0)
-		    term_fg_color(cterm_normal_fg_color - 1);
-		if (cterm_normal_bg_color != 0)
-		    term_bg_color(cterm_normal_bg_color - 1);
-		if (cterm_normal_fg_bold)
-		    out_str(T_MD);
+		if (cterm_normal_fg_gui_color != (long_u)INVALCOLOR)
+		    term_fg_rgb_color(cterm_normal_fg_gui_color);
+		if (cterm_normal_bg_gui_color != (long_u)INVALCOLOR)
+		    term_bg_rgb_color(cterm_normal_bg_gui_color);
+	    }
+	    else
+#endif
+	    {
+		if (t_colors > 1)
+		{
+		    /* set Normal cterm colors */
+		    if (cterm_normal_fg_color != 0)
+			term_fg_color(cterm_normal_fg_color - 1);
+		    if (cterm_normal_bg_color != 0)
+			term_bg_color(cterm_normal_bg_color - 1);
+		    if (cterm_normal_fg_bold)
+			out_str(T_MD);
+		}
 	    }
 	}
     }
@@ -7981,10 +8043,17 @@ screen_stop_highlight(void)
     void
 reset_cterm_colors(void)
 {
-    if (t_colors > 1)
+    if (IS_CTERM)
     {
 	/* set Normal cterm colors */
+#ifdef FEAT_TERMGUICOLORS
+	if (p_tgc ?
+		(cterm_normal_fg_gui_color != (long_u)INVALCOLOR
+		 || cterm_normal_bg_gui_color != (long_u)INVALCOLOR):
+		(cterm_normal_fg_color > 0 || cterm_normal_bg_color > 0))
+#else
 	if (cterm_normal_fg_color > 0 || cterm_normal_bg_color > 0)
+#endif
 	{
 	    out_str(T_OP);
 	    screen_attr = -1;
@@ -8228,7 +8297,7 @@ screen_fill(
 #ifdef FEAT_GUI
 	    !gui.in_use &&
 #endif
-			    t_colors <= 1);
+	    !IS_CTERM);
     for (row = start_row; row < end_row; ++row)
     {
 #ifdef FEAT_MBYTE
@@ -8911,7 +8980,13 @@ can_clear(char_u *p)
 #ifdef FEAT_GUI
 		|| gui.in_use
 #endif
-		|| cterm_normal_bg_color == 0 || *T_UT != NUL));
+#ifdef FEAT_TERMGUICOLORS
+		|| (p_tgc && cterm_normal_bg_gui_color == (long_u)INVALCOLOR)
+		|| (!p_tgc && cterm_normal_bg_color == 0)
+#else
+		|| cterm_normal_bg_color == 0
+#endif
+		|| *T_UT != NUL));
 }
 
 /*
@@ -10194,7 +10269,7 @@ unshowmode(int force)
  * Clear the mode message.
  */
     void
-clearmode()
+clearmode(void)
 {
     msg_pos_mode();
     if (Recording)
@@ -10241,6 +10316,9 @@ draw_tabline(void)
     int		use_sep_chars = (t_colors < 8
 #ifdef FEAT_GUI
 					    && !gui.in_use
+#endif
+#ifdef FEAT_TERMGUICOLORS
+					    && !p_tgc
 #endif
 					    );
 

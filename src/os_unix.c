@@ -175,12 +175,12 @@ typedef int waitstatus;
 #endif
 static pid_t wait4pid(pid_t, waitstatus *);
 
-static int  WaitForChar(long);
-static int  WaitForCharOrMouse(long, int *break_loop);
+static int  WaitForChar(long msec, int *interrupted);
+static int  WaitForCharOrMouse(long msec, int *interrupted);
 #if defined(__BEOS__) || defined(VMS)
-int  RealWaitForChar(int, long, int *, int *break_loop);
+int  RealWaitForChar(int, long, int *, int *interrupted);
 #else
-static int  RealWaitForChar(int, long, int *, int *break_loop);
+static int  RealWaitForChar(int, long, int *, int *interrupted);
 #endif
 
 #ifdef FEAT_XCLIPBOARD
@@ -369,6 +369,21 @@ mch_write(char_u *s, int len)
 	RealWaitForChar(read_cmd_fd, p_wd, NULL, NULL);
 }
 
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+/*
+ * Return time in msec since "start_tv".
+ */
+    static long
+elapsed(struct timeval *start_tv)
+{
+    struct timeval  now_tv;
+
+    gettimeofday(&now_tv, NULL);
+    return (now_tv.tv_sec - start_tv->tv_sec) * 1000L
+	 + (now_tv.tv_usec - start_tv->tv_usec) / 1000L;
+}
+#endif
+
 /*
  * mch_inchar(): low level input function.
  * Get a characters from the keyboard.
@@ -385,6 +400,13 @@ mch_inchar(
     int		tb_change_cnt)
 {
     int		len;
+    int		interrupted = FALSE;
+    long	wait_time;
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+    struct timeval  start_tv;
+
+    gettimeofday(&start_tv, NULL);
+#endif
 
 #ifdef MESSAGE_QUEUE
     parse_queued_messages();
@@ -395,63 +417,105 @@ mch_inchar(
     while (do_resize)
 	handle_resize();
 
-    if (wtime >= 0)
+    for (;;)
     {
-	while (WaitForChar(wtime) == 0)		/* no character available */
+	if (wtime >= 0)
+	    wait_time = wtime;
+	else
+	    wait_time = p_ut;
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+	wait_time -= elapsed(&start_tv);
+	if (wait_time >= 0)
 	{
+#endif
+	    if (WaitForChar(wait_time, &interrupted))
+		break;
+
+	    /* no character available */
 	    if (do_resize)
+	    {
 		handle_resize();
+		continue;
+	    }
 #ifdef FEAT_CLIENTSERVER
-	    else if (!server_waiting())
-#else
-	    else
+	    if (server_waiting())
+	    {
+		parse_queued_messages();
+		continue;
+	    }
 #endif
-		/* return if not interrupted by resize or server */
-		return 0;
 #ifdef MESSAGE_QUEUE
-	    parse_queued_messages();
+	    if (interrupted)
+	    {
+		parse_queued_messages();
+		continue;
+	    }
 #endif
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 	}
-    }
-    else	/* wtime == -1 */
-    {
+#endif
+	if (wtime >= 0)
+	    /* no character available within "wtime" */
+	    return 0;
+
+	/* wtime == -1: no character available within 'updatetime' */
+#ifdef FEAT_AUTOCMD
+	if (trigger_cursorhold() && maxlen >= 3
+					   && !typebuf_changed(tb_change_cnt))
+	{
+	    buf[0] = K_SPECIAL;
+	    buf[1] = KS_EXTRA;
+	    buf[2] = (int)KE_CURSORHOLD;
+	    return 3;
+	}
+#endif
 	/*
 	 * If there is no character available within 'updatetime' seconds
 	 * flush all the swap files to disk.
 	 * Also done when interrupted by SIGWINCH.
 	 */
-	if (WaitForChar(p_ut) == 0)
-	{
-#ifdef FEAT_AUTOCMD
-	    if (trigger_cursorhold() && maxlen >= 3
-					   && !typebuf_changed(tb_change_cnt))
-	    {
-		buf[0] = K_SPECIAL;
-		buf[1] = KS_EXTRA;
-		buf[2] = (int)KE_CURSORHOLD;
-		return 3;
-	    }
-#endif
-	    before_blocking();
-	}
+	before_blocking();
+	break;
     }
 
-    for (;;)	/* repeat until we got a character */
+    /* repeat until we got a character */
+    for (;;)
     {
+	long	wtime_now = -1L;
+
 	while (do_resize)    /* window changed size */
 	    handle_resize();
 
 #ifdef MESSAGE_QUEUE
 	parse_queued_messages();
+
+# ifdef FEAT_JOB_CHANNEL
+	if (has_pending_job())
+	{
+	    /* Don't wait longer than a few seconds, checking for a finished
+	     * job requires polling. */
+	    if (p_ut > 9000L)
+		wtime_now = 1000L;
+	    else
+		wtime_now = 10000L - p_ut;
+	}
+# endif
 #endif
 	/*
 	 * We want to be interrupted by the winch signal
 	 * or by an event on the monitored file descriptors.
 	 */
-	if (WaitForChar(-1L) == 0)
+	if (!WaitForChar(wtime_now, &interrupted))
 	{
 	    if (do_resize)	    /* interrupted by SIGWINCH signal */
-		handle_resize();
+		continue;
+#ifdef MESSAGE_QUEUE
+	    if (interrupted || wtime_now > 0)
+	    {
+		parse_queued_messages();
+		continue;
+	    }
+#endif
 	    return 0;
 	}
 
@@ -468,9 +532,7 @@ mch_inchar(
 	 */
 	len = read_from_input_buf(buf, (long)maxlen);
 	if (len > 0)
-	{
 	    return len;
-	}
     }
 }
 
@@ -482,12 +544,12 @@ handle_resize(void)
 }
 
 /*
- * return non-zero if a character is available
+ * Return non-zero if a character is available.
  */
     int
 mch_char_avail(void)
 {
-    return WaitForChar(0L);
+    return WaitForChar(0L, NULL);
 }
 
 #if defined(HAVE_TOTAL_MEM) || defined(PROTO)
@@ -677,7 +739,7 @@ mch_delay(long msec, int ignoreinput)
 	in_mch_delay = FALSE;
     }
     else
-	WaitForChar(msec);
+	WaitForChar(msec, NULL);
 }
 
 #if defined(HAVE_STACK_LIMIT) \
@@ -1028,6 +1090,12 @@ deathtrap SIGDEFARG(sigarg)
     /* Remember how often we have been called. */
     ++entered;
 
+#ifdef FEAT_AUTOCMD
+    /* Executing autocommands is likely to use more stack space than we have
+     * available in the signal stack. */
+    block_autocmds();
+#endif
+
 #ifdef FEAT_EVAL
     /* Set the v:dying variable. */
     set_vim_var_nr(VV_DYING, (long)entered);
@@ -1108,6 +1176,8 @@ deathtrap SIGDEFARG(sigarg)
     /* Preserve files and exit.  This sets the really_exiting flag to prevent
      * calling free(). */
     preserve_exit();
+
+    /* NOTREACHED */
 
 #ifdef NBDEBUG
     reset_signals();
@@ -1479,22 +1549,15 @@ mch_input_isatty(void)
 # if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H) \
 	&& (defined(FEAT_XCLIPBOARD) || defined(FEAT_TITLE))
 
-static void xopen_message(struct timeval *tvp);
+static void xopen_message(struct timeval *start_tv);
 
 /*
  * Give a message about the elapsed time for opening the X window.
  */
     static void
-xopen_message(
-    struct timeval *tvp)	/* must contain start time */
+xopen_message(struct timeval *start_tv)
 {
-    struct timeval  end_tv;
-
-    /* Compute elapsed time. */
-    gettimeofday(&end_tv, NULL);
-    smsg((char_u *)_("Opening the X display took %ld msec"),
-	    (end_tv.tv_sec - tvp->tv_sec) * 1000L
-				   + (end_tv.tv_usec - tvp->tv_usec) / 1000L);
+    smsg((char_u *)_("Opening the X display took %ld msec"), elapsed(start_tv));
 }
 # endif
 #endif
@@ -3348,7 +3411,13 @@ mch_settmode(int tmode)
 	tnew.c_cc[VTIME] = 0;		/* don't wait */
     }
     else if (tmode == TMODE_SLEEP)
-	tnew.c_lflag &= ~(ECHO);
+    {
+	/* Also reset ICANON here, otherwise on Solaris select() won't see
+	 * typeahead characters. */
+	tnew.c_lflag &= ~(ICANON | ECHO);
+	tnew.c_cc[VMIN] = 1;		/* return after 1 char */
+	tnew.c_cc[VTIME] = 0;		/* don't wait */
+    }
 
 # if defined(HAVE_TERMIOS_H)
     {
@@ -3940,7 +4009,7 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
      */
     for (i = 0; i < 2; ++i)
     {
-	p = cmd;
+	p = skipwhite(cmd);
 	inquote = FALSE;
 	*argc = 0;
 	for (;;)
@@ -4847,15 +4916,11 @@ mch_call_shell(
 # if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 			if (wait_pid == 0)
 			{
-			    struct timeval  now_tv;
-			    long	    msec;
+			    long	    msec = elapsed(&start_tv);
 
 			    /* Avoid that we keep looping here without
 			     * checking for a CTRL-C for a long time.  Don't
 			     * break out too often to avoid losing typeahead. */
-			    gettimeofday(&now_tv, NULL);
-			    msec = (now_tv.tv_sec - start_tv.tv_sec) * 1000L
-				 + (now_tv.tv_usec - start_tv.tv_usec) / 1000L;
 			    if (msec > 2000)
 			    {
 				noread_cnt = 5;
@@ -5138,7 +5203,8 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
     if (pid == 0)
     {
-	int		null_fd = -1;
+	int	null_fd = -1;
+	int	stderr_works = TRUE;
 
 	/* child */
 	reset_signals();		/* handle signals normally */
@@ -5175,6 +5241,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	{
 	    close(2);
 	    ignored = dup(null_fd);
+	    stderr_works = FALSE;
 	}
 	else if (use_out_for_err)
 	{
@@ -5193,7 +5260,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	/* set up stdout for the child */
 	if (use_null_for_out && null_fd >= 0)
 	{
-	    close(0);
+	    close(1);
 	    ignored = dup(null_fd);
 	}
 	else
@@ -5204,13 +5271,19 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	    ignored = dup(fd_out[1]);
 	    close(fd_out[1]);
 	}
+
 	if (null_fd >= 0)
 	    close(null_fd);
 
 	/* See above for type of argv. */
 	execvp(argv[0], argv);
 
-	perror("executing job failed");
+	if (stderr_works)
+	    perror("executing job failed");
+#ifdef EXITFREE
+	/* calling free_all_mem() here causes problems. Ignore valgrind
+	 * reporting possibly leaked memory. */
+#endif
 	_exit(EXEC_FAILED);	    /* exec failed, return failure code */
     }
 
@@ -5358,15 +5431,18 @@ mch_breakcheck(void)
  * from inbuf[].
  * "msec" == -1 will block forever.
  * Invokes timer callbacks when needed.
+ * "interrupted" (if not NULL) is set to TRUE when no character is available
+ * but something else needs to be done.
+ * Returns TRUE when a character is available.
  * When a GUI is being used, this will never get called -- webb
  */
     static int
-WaitForChar(long msec)
+WaitForChar(long msec, int *interrupted)
 {
 #ifdef FEAT_TIMERS
     long    due_time;
     long    remaining = msec;
-    int	    break_loop = FALSE;
+    int	    tb_change_cnt = typebuf.tb_change_cnt;
 
     /* When waiting very briefly don't trigger timers. */
     if (msec >= 0 && msec < 10L)
@@ -5377,11 +5453,16 @@ WaitForChar(long msec)
 	/* Trigger timers and then get the time in msec until the next one is
 	 * due.  Wait up to that time. */
 	due_time = check_due_timer();
+	if (typebuf.tb_change_cnt != tb_change_cnt)
+	{
+	    /* timer may have used feedkeys() */
+	    return FALSE;
+	}
 	if (due_time <= 0 || (msec > 0 && due_time > remaining))
 	    due_time = remaining;
-	if (WaitForCharOrMouse(due_time, &break_loop))
+	if (WaitForCharOrMouse(due_time, interrupted))
 	    return TRUE;
-	if (break_loop)
+	if (interrupted != NULL && *interrupted)
 	    /* Nothing available, but need to return so that side effects get
 	     * handled, such as handling a message on a channel. */
 	    return FALSE;
@@ -5390,7 +5471,7 @@ WaitForChar(long msec)
     }
     return FALSE;
 #else
-    return WaitForCharOrMouse(msec, NULL);
+    return WaitForCharOrMouse(msec, interrupted);
 #endif
 }
 
@@ -5398,10 +5479,12 @@ WaitForChar(long msec)
  * Wait "msec" msec until a character is available from the mouse or keyboard
  * or from inbuf[].
  * "msec" == -1 will block forever.
+ * "interrupted" (if not NULL) is set to TRUE when no character is available
+ * but something else needs to be done.
  * When a GUI is being used, this will never get called -- webb
  */
     static int
-WaitForCharOrMouse(long msec, int *break_loop)
+WaitForCharOrMouse(long msec, int *interrupted)
 {
 #ifdef FEAT_MOUSE_GPM
     int		gpm_process_wanted;
@@ -5448,9 +5531,9 @@ WaitForCharOrMouse(long msec, int *break_loop)
 # ifdef FEAT_MOUSE_GPM
 	gpm_process_wanted = 0;
 	avail = RealWaitForChar(read_cmd_fd, msec,
-					     &gpm_process_wanted, break_loop);
+					     &gpm_process_wanted, interrupted);
 # else
-	avail = RealWaitForChar(read_cmd_fd, msec, NULL, break_loop);
+	avail = RealWaitForChar(read_cmd_fd, msec, NULL, interrupted);
 # endif
 	if (!avail)
 	{
@@ -5473,7 +5556,7 @@ WaitForCharOrMouse(long msec, int *break_loop)
 	;
 
 #else
-    avail = RealWaitForChar(read_cmd_fd, msec, NULL, break_loop);
+    avail = RealWaitForChar(read_cmd_fd, msec, NULL, interrupted);
 #endif
     return avail;
 }
@@ -5486,13 +5569,15 @@ WaitForCharOrMouse(long msec, int *break_loop)
  * When a GUI is being used, this will not be used for input -- webb
  * Or when a Linux GPM mouse event is waiting.
  * Or when a clientserver message is on the queue.
+ * "interrupted" (if not NULL) is set to TRUE when no character is available
+ * but something else needs to be done.
  */
 #if defined(__BEOS__)
     int
 #else
     static int
 #endif
-RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *break_loop)
+RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 {
     int		ret;
     int		result;
@@ -5506,25 +5591,10 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *break_loop)
     /* Remember at what time we started, so that we know how much longer we
      * should wait after being interrupted. */
 #  define USE_START_TV
+    long	    start_msec = msec;
     struct timeval  start_tv;
 
-    if (msec > 0 && (
-#  ifdef FEAT_XCLIPBOARD
-	    xterm_Shell != (Widget)0
-#   if defined(USE_XSMP) || defined(FEAT_MZSCHEME)
-	    ||
-#   endif
-#  endif
-#  ifdef USE_XSMP
-	    xsmp_icefd != -1
-#   ifdef FEAT_MZSCHEME
-	    ||
-#   endif
-#  endif
-#  ifdef FEAT_MZSCHEME
-	(mzthreads_allowed() && p_mzq > 0)
-#  endif
-	    ))
+    if (msec > 0)
 	gettimeofday(&start_tv, NULL);
 # endif
 
@@ -5602,12 +5672,14 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *break_loop)
 #ifdef FEAT_JOB_CHANNEL
 	nfd = channel_poll_setup(nfd, &fds);
 #endif
+	if (interrupted != NULL)
+	    *interrupted = FALSE;
 
 	ret = poll(fds, nfd, towait);
 
 	result = ret > 0 && (fds[0].revents & POLLIN);
-	if (break_loop != NULL && ret > 0)
-	    *break_loop = TRUE;
+	if (result == 0 && interrupted != NULL && ret > 0)
+	    *interrupted = TRUE;
 
 # ifdef FEAT_MZSCHEME
 	if (ret == 0 && mzquantum_used)
@@ -5653,7 +5725,6 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *break_loop)
 	if (ret > 0)
 	    ret = channel_poll_check(ret, &fds);
 #endif
-
 
 #else /* HAVE_SELECT */
 
@@ -5735,13 +5806,15 @@ select_eintr:
 # ifdef FEAT_JOB_CHANNEL
 	maxfd = channel_select_setup(maxfd, &rfds, &wfds);
 # endif
+	if (interrupted != NULL)
+	    *interrupted = FALSE;
 
 	ret = select(maxfd + 1, &rfds, &wfds, &efds, tvp);
 	result = ret > 0 && FD_ISSET(fd, &rfds);
 	if (result)
 	    --ret;
-	if (break_loop != NULL && ret > 0)
-	    *break_loop = TRUE;
+	else if (interrupted != NULL && ret > 0)
+	    *interrupted = TRUE;
 
 # ifdef EINTR
 	if (ret == -1 && errno == EINTR)
@@ -5836,12 +5909,8 @@ select_eintr:
 	if (msec > 0)
 	{
 # ifdef USE_START_TV
-	    struct timeval  mtv;
-
 	    /* Compute remaining wait time. */
-	    gettimeofday(&mtv, NULL);
-	    msec -= (mtv.tv_sec - start_tv.tv_sec) * 1000L
-				   + (mtv.tv_usec - start_tv.tv_usec) / 1000L;
+	    msec = start_msec - elapsed(&start_tv);
 # else
 	    /* Guess we got interrupted halfway. */
 	    msec = msec / 2;

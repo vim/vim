@@ -74,3 +74,58 @@ func Test_strcharpart()
 
   call assert_equal('a', strcharpart('axb', -1, 2))
 endfunc
+
+func Test_getreg_empty_list()
+  call assert_equal('', getreg('x'))
+  call assert_equal([], getreg('x', 1, 1))
+  let x = getreg('x', 1, 1)
+  let y = x
+  call add(x, 'foo')
+  call assert_equal(['foo'], y)
+endfunc
+
+func Test_loop_over_null_list()
+  let null_list = test_null_list()
+  for i in null_list
+    call assert_true(0, 'should not get here')
+  endfor
+endfunc
+
+func Test_compare_null_dict()
+  call assert_fails('let x = test_null_dict()[10]')
+  call assert_equal({}, {})
+  call assert_equal(test_null_dict(), test_null_dict())
+  call assert_notequal({}, test_null_dict())
+endfunc
+
+func Test_set_reg_null_list()
+  call setreg('x', test_null_list())
+endfunc
+
+func Test_special_char()
+  " The failure is only visible using valgrind.
+  call assert_fails('echo "\<C-">')
+endfunc
+
+func Test_option_value()
+  " boolean
+  set bri
+  call assert_equal(1, &bri)
+  set nobri
+  call assert_equal(0, &bri)
+
+  " number
+  set ts=1
+  call assert_equal(1, &ts)
+  set ts=8
+  call assert_equal(8, &ts)
+
+  " string
+  exe "set cedit=\<Esc>"
+  call assert_equal("\<Esc>", &cedit)
+  set cpo=
+  call assert_equal("", &cpo)
+  set cpo=abcdefgi
+  call assert_equal("abcdefgi", &cpo)
+  set cpo&vim
+endfunc

@@ -347,7 +347,6 @@ Source =
         $PYTHON_SRC
         $TCL_SRC
         $RUBY_SRC
-        $SNIFF_SRC
         $WORKSHOP_SRC
 
 Objects =

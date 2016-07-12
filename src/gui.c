@@ -571,7 +571,7 @@ gui_init(void)
 	    {
 #ifdef UNIX
 		{
-		    struct stat s;
+		    stat_T s;
 
 		    /* if ".gvimrc" file is not owned by user, set 'secure'
 		     * mode */
@@ -1773,7 +1773,7 @@ gui_write(
 	if (s[0] == ESC && s[1] == '|')
 	{
 	    p = s + 2;
-	    if (VIM_ISDIGIT(*p))
+	    if (VIM_ISDIGIT(*p) || (*p == '-' && VIM_ISDIGIT(*(p + 1))))
 	    {
 		arg1 = getdigits(&p);
 		if (p > s + len)
@@ -2855,6 +2855,7 @@ gui_wait_for_chars_or_timer(long wtime)
 #ifdef FEAT_TIMERS
     int	    due_time;
     long    remaining = wtime;
+    int	    tb_change_cnt = typebuf.tb_change_cnt;
 
     /* When waiting very briefly don't trigger timers. */
     if (wtime >= 0 && wtime < 10L)
@@ -2865,6 +2866,11 @@ gui_wait_for_chars_or_timer(long wtime)
 	/* Trigger timers and then get the time in wtime until the next one is
 	 * due.  Wait up to that time. */
 	due_time = check_due_timer();
+	if (typebuf.tb_change_cnt != tb_change_cnt)
+	{
+	    /* timer may have used feedkeys() */
+	    return FALSE;
+	}
 	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
 	    due_time = remaining;
 	if (gui_mch_wait_for_chars(due_time))
@@ -5342,10 +5348,15 @@ gui_do_findrepl(
     }
     else
     {
-	/* Search for the next match. */
+	int searchflags = SEARCH_MSG + SEARCH_MARK;
+
+	/* Search for the next match.
+	 * Don't skip text under cursor for single replace. */
+	if (type == FRD_REPLACE)
+	    searchflags += SEARCH_START;
 	i = msg_scroll;
 	(void)do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
-					      SEARCH_MSG + SEARCH_MARK, NULL);
+							   searchflags, NULL);
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */
     }
 

@@ -2368,7 +2368,7 @@ find_closest_color(Colormap colormap, XColor *colorPtr)
 
     for (i = 0; i  < cmap_size; i++)
 	colortable[i].pixel = (unsigned long)i;
-    XQueryColors (gui.dpy, colormap, colortable, cmap_size);
+    XQueryColors(gui.dpy, colormap, colortable, cmap_size);
 
     /*
      * Find the color that best approximates the desired one, then
@@ -2792,7 +2792,8 @@ gui_mch_update(void)
     int
 gui_mch_wait_for_chars(long wtime)
 {
-    int		    focus;
+    int	    focus;
+    int	    retval = FAIL;
 
     /*
      * Make this static, in case gui_x11_timer_cb is called after leaving
@@ -2828,7 +2829,15 @@ gui_mch_wait_for_chars(long wtime)
 	}
 
 #ifdef MESSAGE_QUEUE
+# ifdef FEAT_TIMERS
+	did_add_timer = FALSE;
+# endif
 	parse_queued_messages();
+# ifdef FEAT_TIMERS
+	if (did_add_timer)
+	    /* Need to recompute the waiting time. */
+	    break;
+# endif
 #endif
 
 	/*
@@ -2843,12 +2852,15 @@ gui_mch_wait_for_chars(long wtime)
 
 	if (input_available())
 	{
-	    if (timer != (XtIntervalId)0 && !timed_out)
-		XtRemoveTimeOut(timer);
-	    return OK;
+	    retval = OK;
+	    break;
 	}
     }
-    return FAIL;
+
+    if (timer != (XtIntervalId)0 && !timed_out)
+	XtRemoveTimeOut(timer);
+
+    return retval;
 }
 
 /*
@@ -3142,6 +3154,18 @@ static long_u		blink_waittime = 700;
 static long_u		blink_ontime = 400;
 static long_u		blink_offtime = 250;
 static XtIntervalId	blink_timer = (XtIntervalId)0;
+
+    int
+gui_mch_is_blinking(void)
+{
+    return blink_state != BLINK_NONE;
+}
+
+    int
+gui_mch_is_blink_off(void)
+{
+    return blink_state == BLINK_OFF;
+}
 
     void
 gui_mch_set_blinking(long waittime, long on, long off)

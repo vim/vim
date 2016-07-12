@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Apr 14
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,12 +40,15 @@ done, the features in this document are not available.	See |+eval| and
 There are nine types of variables:
 
 Number		A 32 or 64 bit signed number.  |expr-number| *Number*
+		64-bit Number is available only when compiled with the
+		|+num64| feature.
 		Examples:  -123  0x10  0177
 
 Float		A floating point number. |floating-point-format| *Float*
 		{only when compiled with the |+float| feature}
 		Examples: 123.456  1.15e-6  -1.1e3
 
+							*E928*
 String		A NUL terminated string of 8-bit unsigned characters (bytes).
 		|expr-string| Examples: "ab\txx\"--"  'x-z''a,c'
 
@@ -58,6 +61,9 @@ Dictionary	An associative, unordered array: Each entry has a key and a
 
 Funcref		A reference to a function |Funcref|.
 		Example: function("strlen")
+		It can be bound to a dictionary and arguments, it then works
+		like a Partial.
+		Example: function("Callback", [arg], myDict)
 
 Special		|v:false|, |v:true|, |v:none| and |v:null|.  *Special*
 
@@ -94,14 +100,29 @@ To force conversion from String to Number, add zero to it: >
 To avoid a leading zero to cause octal conversion, or for using a different
 base, use |str2nr()|.
 
+							*TRUE* *FALSE*
 For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
+You can also use |v:false| and |v:true|.  When TRUE is returned from a
+function it is the Number one, FALSE is the number zero.
 
-Note that in the command >
+Note that in the command: >
 	:if "foo"
-"foo" is converted to 0, which means FALSE.  To test for a non-empty string,
-use empty(): >
+	:" NOT executed
+"foo" is converted to 0, which means FALSE.  If the string starts with a
+non-zero number it means TRUE: >
+	:if "8foo"
+	:" executed
+To test for a non-empty string, use empty(): >
 	:if !empty("foo")
 <
+							*non-zero-arg*
+Function arguments often behave slightly different from |TRUE|: If the
+argument is present and it evaluates to a non-zero Number, |v:true| or a
+non-empty String, then the value is considere to be TRUE.
+Note that " " and "0" are also non-empty strings, thus cause the mode to be
+cleared.  A List, Dictionary or Float is not a Number or String, thus
+evaluates to FALSE.
+
 		*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910* *E913*
 List, Dictionary, Funcref and Job types are not automatically converted.
 
@@ -149,6 +170,43 @@ The name of the referenced function can be obtained with |string()|. >
 You can use |call()| to invoke a Funcref and use a list variable for the
 arguments: >
 	:let r = call(Fn, mylist)
+<
+								*Partial*
+A Funcref optionally binds a Dictionary and/or arguments.  This is also called
+a Partial.  This is created by passing the Dictionary and/or arguments to
+function().  When calling the function the Dictionary and/or arguments will be
+passed to the function.  Example: >
+
+	let Cb = function('Callback', ['foo'], myDict)
+	call Cb()
+
+This will invoke the function as if using: >
+	call myDict.Callback('foo')
+
+This is very useful when passing a function around, e.g. in the arguments of
+|ch_open()|.
+
+Note that binding a function to a Dictionary also happens when the function is
+a member of the Dictionary: >
+
+	let myDict.myFunction = MyFunction
+	call myDict.myFunction()
+
+Here MyFunction() will get myDict passed as "self".  This happens when the
+"myFunction" member is accessed.  When making assigning "myFunction" to
+otherDict and calling it, it will be bound to otherDict: >
+
+	let otherDict.myFunction = myDict.myFunction
+	call otherDict.myFunction()
+
+Now "self" will be "otherDict".  But when the dictionary was bound explicitly
+this won't happen: >
+
+	let myDict.myFunction = function(MyFunction, myDict)
+	let otherDict.myFunction = myDict.myFunction
+	call otherDict.myFunction()
+
+Here "self" will be "myDict", because it was bound explitly.
 
 
 1.3 Lists ~
@@ -651,7 +709,7 @@ expr1							*expr1* *E109*
 expr2 ? expr1 : expr1
 
 The expression before the '?' is evaluated to a number.  If it evaluates to
-non-zero, the result is the value of the expression between the '?' and ':',
+|TRUE|, the result is the value of the expression between the '?' and ':',
 otherwise the result is the value of the expression after the ':'.
 Example: >
 	:echo lnum == 1 ? "top" : lnum
@@ -679,12 +737,12 @@ expr2 and expr3						*expr2* *expr3*
 The "||" and "&&" operators take one argument on each side.  The arguments
 are (converted to) Numbers.  The result is:
 
-	 input				 output ~
-n1		n2		n1 || n2	n1 && n2 ~
-zero		zero		zero		zero
-zero		non-zero	non-zero	zero
-non-zero	zero		non-zero	zero
-non-zero	non-zero	non-zero	non-zero
+    input			 output ~
+n1	n2		n1 || n2	n1 && n2 ~
+|FALSE|	|FALSE|		|FALSE|		|FALSE|
+|FALSE|	|TRUE|		|TRUE|		|FALSE|
+|TRUE|	|FALSE|		|TRUE|		|FALSE|
+|TRUE|	|TRUE|		|TRUE|		|TRUE|
 
 The operators can be concatenated, for example: >
 
@@ -700,8 +758,8 @@ arguments are not evaluated.  This is like what happens in C.  For example: >
 	let a = 1
 	echo a || b
 
-This is valid even if there is no variable called "b" because "a" is non-zero,
-so the result must be non-zero.  Similarly below: >
+This is valid even if there is no variable called "b" because "a" is |TRUE|,
+so the result must be |TRUE|.  Similarly below: >
 
 	echo exists("b") && b == "yes"
 
@@ -752,14 +810,17 @@ A |Dictionary| can only be compared with a |Dictionary| and only "equal", "not
 equal" and "is" can be used.  This compares the key/values of the |Dictionary|
 recursively.  Ignoring case means case is ignored when comparing item values.
 
-							*E693* *E694*
-A |Funcref| can only be compared with a |Funcref| and only "equal" and "not
-equal" can be used.  Case is never ignored.  Whether arguments or a Dictionary
-are bound (with a partial) is ignored.  This is so that when a function is
-made a member of a Dictionary it is still considered to be the same function.
-To compare partials to see if they bind the same argument and Dictionary
-values use string(): >
-	echo string(Partial1) == string(Partial2)
+							*E694*
+A |Funcref| can only be compared with a |Funcref| and only "equal", "not
+equal", "is" and "isnot" can be used.  Case is never ignored.  Whether
+arguments or a Dictionary are bound (with a partial) matters.  The
+Dictionaries must also be equal (or the same, in case of "is") and the
+arguments must be equal (or the same).
+
+To compare Funcrefs to see if they refer to the same function, ignoring bound
+Dictionary and arguments, use |get()| to get the function name: >
+	if get(Part1, 'name') == get(Part2, 'name')
+	   " Part1 and Part2 refer to the same function
 
 When using "is" or "isnot" with a |List| or a |Dictionary| this checks if the
 expressions are referring to the same |List| or |Dictionary| instance.  A copy
@@ -847,6 +908,11 @@ When dividing a Number by zero the result depends on the value:
 	 <0 / 0  = -0x7fffffff	(like negative infinity)
 	(before Vim 7.2 it was always 0x7fffffff)
 
+When 64-bit Number support is enabled:
+	  0 / 0  = -0x8000000000000000	(like NaN for Float)
+	 >0 / 0  =  0x7fffffffffffffff	(like positive infinity)
+	 <0 / 0  = -0x7fffffffffffffff	(like negative infinity)
+
 When the righthand side of '%' is zero, the result is 0.
 
 None of these work for |Funcref|s.
@@ -860,7 +926,7 @@ expr7							*expr7*
 - expr7			unary minus		*expr-unary--*
 + expr7			unary plus		*expr-unary-+*
 
-For '!' non-zero becomes zero, zero becomes one.
+For '!' |TRUE| becomes |FALSE|, |FALSE| becomes |TRUE| (one).
 For '-' the sign of the number is changed.
 For '+' the number is unchanged.
 
@@ -1317,6 +1383,10 @@ v:beval_winnr	The number of the window, over which the mouse pointer is. Only
 		window has number zero (unlike most other places where a
 		window gets a number).
 
+					*v:beval_winid* *beval_winid-variable*
+v:beval_winid	The window ID of the window, over which the mouse pointer is.
+		Otherwise like v:beval_winnr.
+
 					*v:char* *char-variable*
 v:char		Argument for evaluating 'formatexpr' and used for the typed
 		character when using <expr> in an abbreviation |:map-<expr>|.
@@ -1423,9 +1493,11 @@ v:exception	The value of the exception most recently caught and not
 					*v:false* *false-variable*
 v:false		A Number with value zero. Used to put "false" in JSON.  See
 		|json_encode()|.
-		When used as a string this evaluates to "false". >
+		When used as a string this evaluates to "v:false". >
 			echo v:false
-<			false ~
+<			v:false ~
+		That is so that eval() can parse the string back to the same
+		value.
 
 					*v:fcs_reason* *fcs_reason-variable*
 v:fcs_reason	The reason why the |FileChangedShell| event was triggered.
@@ -1550,6 +1622,10 @@ v:mouse_win	Window number for a mouse click obtained with |getchar()|.
 		First window has number 1, like with |winnr()|.  The value is
 		zero when there was no mouse button click.
 
+					*v:mouse_winid* *mouse_winid-variable*
+v:mouse_winid	Window ID for a mouse click obtained with |getchar()|.
+		The value is zero when there was no mouse button click.
+
 					*v:mouse_lnum* *mouse_lnum-variable*
 v:mouse_lnum	Line number for a mouse click obtained with |getchar()|.
 		This is the text line number, not the screen line number.  The
@@ -1564,17 +1640,21 @@ v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 v:none		An empty String. Used to put an empty item in JSON.  See
 		|json_encode()|.
 		When used as a number this evaluates to zero.
-		When used as a string this evaluates to "none". >
+		When used as a string this evaluates to "v:none". >
 			echo v:none
-<			none ~
+<			v:none ~
+		That is so that eval() can parse the string back to the same
+		value.
 
 					*v:null* *null-variable*
 v:null		An empty String. Used to put "null" in JSON.  See
 		|json_encode()|.
 		When used as a number this evaluates to zero.
-		When used as a string this evaluates to "null". >
+		When used as a string this evaluates to "v:null". >
 			echo v:null
-<			null ~
+<			v:null ~
+		That is so that eval() can parse the string back to the same
+		value.
 
 					*v:oldfiles* *oldfiles-variable*
 v:oldfiles	List of file names that is loaded from the |viminfo| file on
@@ -1724,7 +1804,7 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		{only when compiled with |+termresponse| feature}
 
 					*v:testing* *testing-variable*
-v:testing	Must be set before using `garbagecollect_for_testing()`.
+v:testing	Must be set before using `test_garbagecollect_now()`.
 
 				*v:this_session* *this_session-variable*
 v:this_session	Full filename of the last loaded or saved session file.  See
@@ -1747,9 +1827,11 @@ v:throwpoint	The point where the exception most recently caught and not
 						*v:true* *true-variable*
 v:true		A Number with value one. Used to put "true" in JSON.  See
 		|json_encode()|.
-		When used as a string this evaluates to "true". >
+		When used as a string this evaluates to "v:true". >
 			echo v:true
-<			true ~
+<			v:true ~
+		That is so that eval() can parse the string back to the same
+		value.
 						*v:val* *val-variable*
 v:val		Value of the current item of a |List| or |Dictionary|.	Only
 		valid while evaluating the expression used with |map()| and
@@ -1780,7 +1862,7 @@ v:windowid	When any X11 based GUI is running or when running in a
 		When an MS-Windows GUI is running this will be set to the
 		window handle.
 		Otherwise the value is zero.
-		Note: for windows inside Vim use |winnr()|.
+		Note: for windows inside Vim use |winnr()| or |win_getid()|.
 
 ==============================================================================
 4. Builtin Functions					*functions*
@@ -1794,8 +1876,6 @@ USAGE				RESULT	DESCRIPTION	~
 abs({expr})			Float or Number  absolute value of {expr}
 acos({expr})			Float	arc cosine of {expr}
 add({list}, {item})		List	append {item} to |List| {list}
-alloc_fail({id}, {countdown}, {repeat})
-				none	make memory allocation fail
 and({expr}, {expr})		Number  bitwise AND
 append({lnum}, {string})	Number	append {string} below line {lnum}
 append({lnum}, {list})		Number	append lines {list} below line {lnum}
@@ -1818,11 +1898,12 @@ atan2({expr}, {expr})		Float   arc tangent of {expr1} / {expr2}
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
-bufexists({expr})		Number	TRUE if buffer {expr} exists
-buflisted({expr})		Number	TRUE if buffer {expr} is listed
-bufloaded({expr})		Number	TRUE if buffer {expr} is loaded
+bufexists({expr})		Number	|TRUE| if buffer {expr} exists
+buflisted({expr})		Number	|TRUE| if buffer {expr} is listed
+bufloaded({expr})		Number	|TRUE| if buffer {expr} is loaded
 bufname({expr})			String	Name of the buffer {expr}
 bufnr({expr} [, {create}])	Number	Number of the buffer {expr}
+bufwinid({expr})		Number	window ID of buffer {expr}
 bufwinnr({expr})		Number	window number of buffer {expr}
 byte2line({byte})		Number	line number at byte count {byte}
 byteidx({expr}, {nr})		Number	byte index of {nr}'th char in {expr}
@@ -1874,26 +1955,25 @@ cursor({lnum}, {col} [, {off}])
 cursor({list})			Number	move cursor to position in {list}
 deepcopy({expr} [, {noref}])	any	make a full copy of {expr}
 delete({fname} [, {flags}])	Number	delete the file or directory {fname}
-did_filetype()			Number	TRUE if FileType autocommand event used
+did_filetype()			Number	|TRUE| if FileType autocmd event used
 diff_filler({lnum})		Number	diff filler lines about {lnum}
 diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
-disable_char_avail_for_testing({expr})
-				none	test without typeahead
-empty({expr})			Number	TRUE if {expr} is empty
+empty({expr})			Number	|TRUE| if {expr} is empty
 escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
-eventhandler()			Number	TRUE if inside an event handler
+eventhandler()			Number	|TRUE| if inside an event handler
 executable({expr})		Number	1 if executable {expr} exists
+execute({command})		String	execute {command} and get the output
 exepath({expr})			String  full path of the command {expr}
-exists({expr})			Number	TRUE if {expr} exists
+exists({expr})			Number	|TRUE| if {expr} exists
 extend({expr1}, {expr2} [, {expr3}])
 				List/Dict insert items of {expr2} into {expr1}
 exp({expr})			Float	exponential of {expr}
 expand({expr} [, {nosuf} [, {list}]])
 				any	expand special keywords in {expr}
 feedkeys({string} [, {mode}])	Number	add key sequence to typeahead buffer
-filereadable({file})		Number	TRUE if {file} is a readable file
-filewritable({file})		Number	TRUE if {file} is a writable file
+filereadable({file})		Number	|TRUE| if {file} is a readable file
+filewritable({file})		Number	|TRUE| if {file} is a writable file
 filter({expr}, {string})	List/Dict  remove items from {expr} where
 					{string} is 0
 finddir({name}[, {path}[, {count}]])
@@ -1914,9 +1994,9 @@ foreground()			Number	bring the Vim window to the foreground
 function({name} [, {arglist}] [, {dict}])
 				Funcref reference to function {name}
 garbagecollect([{atexit}])	none	free memory, breaking cyclic references
-garbagecollect_for_testing()	none	free memory right now
 get({list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get({dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
+get({func}, {what})		any	get property of funcref/partial {func}
 getbufline({expr}, {lnum} [, {end}])
 				List	lines {lnum} to {end} of buffer {expr}
 getbufvar({expr}, {varname} [, {def}])
@@ -1928,6 +2008,7 @@ getcmdline()			String	return the current command-line
 getcmdpos()			Number	return cursor position in command-line
 getcmdtype()			String	return current command-line type
 getcmdwintype()			String	return current command-line window type
+getcompletion({pat}, {type})	List	list of cmdline completion matches
 getcurpos()			List	position of the cursor
 getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
 getfontname([{name}])		String	name of font being used
@@ -1958,17 +2039,17 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])
 glob2regpat({expr})		String  convert a glob pat into a search pat
 globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 				String	do glob({expr}) for all dirs in {path}
-has({feature})			Number	TRUE if feature {feature} supported
-has_key({dict}, {key})		Number	TRUE if {dict} has entry {key}
+has({feature})			Number	|TRUE| if feature {feature} supported
+has_key({dict}, {key})		Number	|TRUE| if {dict} has entry {key}
 haslocaldir([{winnr} [, {tabnr}]])
-				Number	TRUE if the window executed |:lcd|
+				Number	|TRUE| if the window executed |:lcd|
 hasmapto({what} [, {mode} [, {abbr}]])
-				Number	TRUE if mapping to {what} exists
+				Number	|TRUE| if mapping to {what} exists
 histadd({history}, {item})	String	add an item to a history
 histdel({history} [, {item}])	String	remove an item from a history
 histget({history} [, {index}])	String	get the item {index} from a history
 histnr({history})		Number	highest index of a history
-hlexists({name})		Number	TRUE if highlight group {name} exists
+hlexists({name})		Number	|TRUE| if highlight group {name} exists
 hlID({name})			Number	syntax ID of highlight group {name}
 hostname()			String	name of the machine Vim is running on
 iconv({expr}, {from}, {to})	String	convert encoding of {expr}
@@ -1985,9 +2066,9 @@ inputsave()			Number	save and clear typeahead
 inputsecret({prompt} [, {text}]) String  like input() but hiding the text
 insert({list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
 invert({expr})			Number  bitwise invert
-isdirectory({directory})	Number	TRUE if {directory} is a directory
-islocked({expr})		Number	TRUE if {expr} is locked
-isnan({expr})			Number  TRUE if {expr} is NaN
+isdirectory({directory})	Number	|TRUE| if {directory} is a directory
+islocked({expr})		Number	|TRUE| if {expr} is locked
+isnan({expr})			Number  |TRUE| if {expr} is NaN
 items({dict})			List	key-value pairs in {dict}
 job_getchannel({job})		Channel	get the channel handle for {job}
 job_info({job})			Dict	get information about {job}
@@ -2004,7 +2085,7 @@ json_encode({expr})		String	encode JSON
 keys({dict})			List	keys in {dict}
 len({expr})			Number	the length of {expr}
 libcall({lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
-libcallnr({lib}, {func}, {arg})  Number  idem, but return a Number
+libcallnr({lib}, {func}, {arg})	Number  idem, but return a Number
 line({expr})			Number	line nr of cursor, last line or mark
 line2byte({lnum})		Number	byte count of line {lnum}
 lispindent({lnum})		Number	Lisp indent for line {lnum}
@@ -2066,7 +2147,7 @@ remote_peek({serverid} [, {retvar}])
 remote_read({serverid})		String	read reply string
 remote_send({server}, {string} [, {idvar}])
 				String	send key sequence
-remove({list}, {idx} [, {end}])  any	remove items {idx}-{end} from {list}
+remove({list}, {idx} [, {end}])	any	remove items {idx}-{end} from {list}
 remove({dict}, {key})		any	remove entry {key} from {dict}
 rename({from}, {to})		Number	rename (move) file from {from} to {to}
 repeat({expr}, {count})		String	repeat {expr} {count} times
@@ -2127,14 +2208,17 @@ sqrt({expr})			Float	square root of {expr}
 str2float({expr})		Float	convert String to Float
 str2nr({expr} [, {base}])	Number	convert String to Number
 strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
+strcharpart({str}, {start}[, {len}])
+				String	{len} characters of {str} at {start}
 strdisplaywidth({expr} [, {col}]) Number display length of the String {expr}
 strftime({format}[, {time}])	String	time in specified format
+strgetchar({str}, {index})	Number	get char {index} from {str}
 stridx({haystack}, {needle}[, {start}])
 				Number	index of {needle} in {haystack}
 string({expr})			String	String representation of {expr} value
 strlen({expr})			Number	length of the String {expr}
-strpart({src}, {start}[, {len}])
-				String	{len} characters of {src} at {start}
+strpart({str}, {start}[, {len}])
+				String	{len} characters of {str} at {start}
 strridx({haystack}, {needle} [, {start}])
 				Number	last index of {needle} in {haystack}
 strtrans({expr})		String	translate string to make it printable
@@ -2151,7 +2235,7 @@ synconcealed({lnum}, {col})	List    info about concealing
 synstack({lnum}, {col})		List	stack of syntax IDs at {lnum} and {col}
 system({expr} [, {input}])	String	output of shell command/filter {expr}
 systemlist({expr} [, {input}])	List	output of shell command/filter {expr}
-tabpagebuflist([{arg}])	List	list of buffer numbers in tab page
+tabpagebuflist([{arg}])		List	list of buffer numbers in tab page
 tabpagenr([{arg}])		Number	number of current or last tab page
 tabpagewinnr({tabarg}[, {arg}]) Number	number of current window in tab page
 taglist({expr})			List	list of tags matching {expr}
@@ -2159,6 +2243,17 @@ tagfiles()			List	tags files used
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
+test_alloc_fail({id}, {countdown}, {repeat})
+				none	make memory allocation fail
+test_disable_char_avail({expr}) none	test without typeahead
+test_garbagecollect_now()	none	free memory right now for testing
+test_null_channel()		Channel	null value for testing
+test_null_dict()		Dict	null value for testing
+test_null_job()			Job	null value for testing
+test_null_list()		List	null value for testing
+test_null_partial()		Funcref	null value for testing
+test_null_string()		String	null value for testing
+test_settime({expr})		none	set current time for testing
 timer_start({time}, {callback} [, {options}])
 				Number	create a timer
 timer_stop({timer})		none	stop a timer
@@ -2234,13 +2329,6 @@ add({list}, {expr})					*add()*
 		Use |insert()| to add an item at another position.
 
 
-alloc_fail({id}, {countdown}, {repeat})			*alloc_fail()*
-		This is for testing: If the memory allocation with {id} is
-		called, then decrement {countdown}, and when it reaches zero
-		let memory allocation fail {repeat} times.  When {repeat} is
-		smaller than one it fails one time.
-
-
 and({expr}, {expr})					*and()*
 		Bitwise AND on the two arguments.  The arguments are converted
 		to a number.  A List, Dict or Float argument causes an error.
@@ -2278,6 +2366,7 @@ arglistid([{winnr} [, {tabnr}]])
 		With {winnr} only use this window in the current tab page.
 		With {winnr} and {tabnr} use the window in the specified tab
 		page.
+		{winnr} can be the window number or the window ID.
 
 							*argv()*
 argv([{nr}])	The result is the {nr}th file in the argument list of the
@@ -2366,7 +2455,7 @@ assert_notmatch({pattern}, {actual} [, {msg}])
 assert_true({actual} [, {msg}])					*assert_true()*
 		When {actual} is not true an error message is added to
 		|v:errors|, like with |assert_equal()|.
-		A value is true when it is a non-zero number.  When {actual}
+		A value is TRUE when it is a non-zero number.  When {actual}
 		is not a number the assert fails.
 		When {msg} is omitted an error in the form "Expected True but
 		got {actual}" is produced.
@@ -2411,9 +2500,9 @@ atan2({expr1}, {expr2})					*atan2()*
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
 		Put up a file requester.  This only works when "has("browse")"
-		returns non-zero (only in some GUI versions).
+		returns |TRUE| (only in some GUI versions).
 		The input fields are:
-		    {save}	when non-zero, select file to write
+		    {save}	when |TRUE|, select file to write
 		    {title}	title for the requester
 		    {initdir}	directory to start browsing in
 		    {default}	default file name
@@ -2423,7 +2512,7 @@ browse({save}, {title}, {initdir}, {default})
 							*browsedir()*
 browsedir({title}, {initdir})
 		Put up a directory requester.  This only works when
-		"has("browse")" returns non-zero (only in some GUI versions).
+		"has("browse")" returns |TRUE| (only in some GUI versions).
 		On systems where a directory browser is not supported a file
 		browser is used.  In that case: select a file in the directory
 		to be used.
@@ -2434,7 +2523,7 @@ browsedir({title}, {initdir})
 		browsing is not possible, an empty string is returned.
 
 bufexists({expr})					*bufexists()*
-		The result is a Number, which is non-zero if a buffer called
+		The result is a Number, which is |TRUE| if a buffer called
 		{expr} exists.
 		If the {expr} argument is a number, buffer numbers are used.
 		If the {expr} argument is a string it must match a buffer name
@@ -2456,12 +2545,12 @@ bufexists({expr})					*bufexists()*
 		Obsolete name: buffer_exists().
 
 buflisted({expr})					*buflisted()*
-		The result is a Number, which is non-zero if a buffer called
+		The result is a Number, which is |TRUE| if a buffer called
 		{expr} exists and is listed (has the 'buflisted' option set).
 		The {expr} argument is used like with |bufexists()|.
 
 bufloaded({expr})					*bufloaded()*
-		The result is a Number, which is non-zero if a buffer called
+		The result is a Number, which is |TRUE| if a buffer called
 		{expr} exists and is loaded (shown in a window or hidden).
 		The {expr} argument is used like with |bufexists()|.
 
@@ -2514,6 +2603,16 @@ bufnr({expr} [, {create}])
 							*last_buffer_nr()*
 		Obsolete name for bufnr("$"): last_buffer_nr().
 
+bufwinid({expr})					*bufwinid()*
+		The result is a Number, which is the window ID of the first
+		window associated with buffer {expr}.  For the use of {expr},
+		see |bufname()| above.	If buffer {expr} doesn't exist or
+		there is no such window, -1 is returned.  Example: >
+
+	echo "A window containing buffer 1 is " . (bufwinid(1))
+<
+		Only deals with the current tab page.
+
 bufwinnr({expr})					*bufwinnr()*
 		The result is a Number, which is the number of the first
 		window associated with buffer {expr}.  For the use of {expr},
@@ -2551,7 +2650,9 @@ byteidx({expr}, {nr})					*byteidx()*
 		same: >
 			let s = strpart(str, byteidx(str, 3))
 			echo strpart(s, 0, byteidx(s, 1))
-<		If there are less than {nr} characters -1 is returned.
+<		Also see |strgetchar()| and |strcharpart()|.
+
+		If there are less than {nr} characters -1 is returned.
 		If there are exactly {nr} characters the length of the string
 		in bytes is returned.
 
@@ -2701,7 +2802,7 @@ complete_add({expr})				*complete_add()*
 complete_check()				*complete_check()*
 		Check for a key typed while looking for completion matches.
 		This is to be used when looking for matches takes some time.
-		Returns non-zero when searching for matches is to be aborted,
+		Returns |TRUE| when searching for matches is to be aborted,
 		zero otherwise.
 		Only to be used by the function specified with the
 		'completefunc' option.
@@ -2917,8 +3018,11 @@ ch_status({handle})						*ch_status()*
 		Return the status of {handle}:
 			"fail"		failed to open the channel
 			"open"		channel can be used
+			"buffered"	channel can be read, not written to
 			"closed"	channel can not be used
 		{handle} can be Channel or a Job that has a Channel.
+		"buffered" is used when the channel was closed but there is
+		still data that can be obtained with |ch_read()|.
 
 							*copy()*
 copy({expr})	Make a copy of {expr}.	For Numbers and Strings this isn't
@@ -2958,7 +3062,7 @@ count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		in |List| or |Dictionary| {comp}.
 		If {start} is given then start with the item with this index.
 		{start} can only be used with a |List|.
-		When {ic} is given and it's non-zero then case is ignored.
+		When {ic} is given and it's |TRUE| then case is ignored.
 
 
 							*cscope_connection()*
@@ -3072,7 +3176,7 @@ delete({fname} [, {flags}])					*delete()*
 		when the line number is in a variable.
 
 							*did_filetype()*
-did_filetype()	Returns non-zero when autocommands are being executed and the
+did_filetype()	Returns |TRUE| when autocommands are being executed and the
 		FileType event has been triggered at least once.  Can be used
 		to avoid triggering the FileType event again in the scripts
 		that detect the file type. |FileType|
@@ -3101,14 +3205,6 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		line.
 		The highlight ID can be used with |synIDattr()| to obtain
 		syntax information about the highlighting.
-
-					*disable_char_avail_for_testing()*
-disable_char_avail_for_testing({expr})
-		When {expr} is 1 the internal char_avail() function will
-		return FALSE.  When {expr} is 0 the char_avail() function will
-		function normally.
-		Only use this for a test where typeahead causes the test not
-		to work.  E.g., to trigger the CursorMovedI autocommand event.
 
 empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
@@ -3167,6 +3263,31 @@ executable({expr})					*executable()*
 			0	does not exist
 			-1	not implemented on this system
 
+execute({command} [, {silent}])					*execute()*
+		Execute an Ex command or commands and return the output as a
+		string.
+		{command} can be a string or a List.  In case of a List the
+		lines are executed one by one.
+		This is equivalent to: >
+			redir => var
+			{command}
+			redir END
+<
+		The optional {silent} argument can have these values:
+			""		no `:silent` used
+			"silent"	`:silent` used
+			"silent!"	`:silent!` used
+		The default is 'silent'.  Note that with "silent!", unlike
+		`:redir`, error messages are dropped.
+							*E930*
+		It is not possible to use `:redir` anywhere in {command}.
+
+		To get a list of lines use |split()| on the result: >
+			split(execute('args'), "\n")
+
+<		When used recursively the output of the recursive call is not
+		included in the output of the higher level call.
+
 exepath({expr})						*exepath()*
 		If {expr} is an executable and is either an absolute path, a
 		relative path or found in $PATH, return the full path.
@@ -3177,7 +3298,7 @@ exepath({expr})						*exepath()*
 		an empty string is returned.
 
 							*exists()*
-exists({expr})	The result is a Number, which is non-zero if {expr} is
+exists({expr})	The result is a Number, which is |TRUE| if {expr} is
 		defined, zero otherwise.  The {expr} argument is a string,
 		which contains one of these:
 			&option-name	Vim option (only checks if it exists,
@@ -3274,7 +3395,7 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 		Expand wildcards and the following special keywords in {expr}.
 		'wildignorecase' applies.
 
-		If {list} is given and it is non-zero, a List will be returned.
+		If {list} is given and it is |TRUE|, a List will be returned.
 		Otherwise the result is a String and when there are several
 		matches, they are separated by <NL> characters.  [Note: in
 		version 5.0 a space was used, which caused problems when a
@@ -3333,7 +3454,7 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 		When {expr} does not start with '%', '#' or '<', it is
 		expanded like a file name is expanded on the command line.
 		'suffixes' and 'wildignore' are used, unless the optional
-		{nosuf} argument is given and it is non-zero.
+		{nosuf} argument is given and it is |TRUE|.
 		Names for non-existing files are included.  The "**" item can
 		be used to search in a directory tree.  For example, to find
 		all "README" files in the current directory and below: >
@@ -3418,12 +3539,16 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 			will behave as if <Esc> is typed, to avoid getting
 			stuck, waiting for a character to be typed before the
 			script continues.
+		'!'	When used with 'x' will not end Insert mode. Can be
+			used in a test when a timer is set to exit Insert mode
+			a little later.  Useful for testing CursorHoldI.
+
 		Return value is always 0.
 
 filereadable({file})					*filereadable()*
-		The result is a Number, which is TRUE when a file with the
+		The result is a Number, which is |TRUE| when a file with the
 		name {file} exists, and can be read.  If {file} doesn't exist,
-		or is a directory, the result is FALSE.  {file} is any
+		or is a directory, the result is |FALSE|.  {file} is any
 		expression, which is used as a String.
 		If you don't care about the file being readable you can use
 		|glob()|.
@@ -3438,31 +3563,46 @@ filewritable({file})					*filewritable()*
 		directory, and we can write to it, the result is 2.
 
 
-filter({expr}, {string})					*filter()*
-		{expr} must be a |List| or a |Dictionary|.
-		For each item in {expr} evaluate {string} and when the result
+filter({expr1}, {expr2})				*filter()*
+		{expr1} must be a |List| or a |Dictionary|.
+		For each item in {expr1} evaluate {expr2} and when the result
 		is zero remove the item from the |List| or |Dictionary|.
-		Inside {string} |v:val| has the value of the current item.
-		For a |Dictionary| |v:key| has the key of the current item.
+		{expr2} must be a |string| or |Funcref|.
+		
+		if {expr2} is a |string|, inside {expr2} |v:val| has the value
+		of the current item.  For a |Dictionary| |v:key| has the key
+		of the current item.
 		Examples: >
-			:call filter(mylist, 'v:val !~ "OLD"')
+			call filter(mylist, 'v:val !~ "OLD"')
 <		Removes the items where "OLD" appears. >
-			:call filter(mydict, 'v:key >= 8')
+			call filter(mydict, 'v:key >= 8')
 <		Removes the items with a key below 8. >
-			:call filter(var, 0)
+			call filter(var, 0)
 <		Removes all the items, thus clears the |List| or |Dictionary|.
 
-		Note that {string} is the result of expression and is then
+		Note that {expr2} is the result of expression and is then
 		used as an expression again.  Often it is good to use a
 		|literal-string| to avoid having to double backslashes.
 
+		If {expr2} is a |Funcref| it must take two arguments:
+			1. the key or the index of the current item.
+			2. the value of the current item.
+		The function must return |TRUE| if the item should be kept.
+		Example that keeps the odd items of a list: >
+			func Odd(idx, val)
+			  return a:idx % 2 == 1
+			endfunc
+			call filter(mylist, function('Odd'))
+<
 		The operation is done in-place.  If you want a |List| or
 		|Dictionary| to remain unmodified make a copy first: >
 			:let l = filter(copy(mylist), 'v:val =~ "KEEP"')
 
-<		Returns {expr}, the |List| or |Dictionary| that was filtered.
-		When an error is encountered while evaluating {string} no
-		further items in {expr} are processed.
+<		Returns {expr1}, the |List| or |Dictionary| that was filtered.
+		When an error is encountered while evaluating {expr2} no
+		further items in {expr1} are processed.  When {expr2} is a
+		Funcref errors inside a function are ignored, unless it was
+		defined with the "abort" flag.
 
 
 finddir({name}[, {path}[, {count}]])				*finddir()*
@@ -3493,17 +3633,19 @@ float2nr({expr})					*float2nr()*
 		decimal point.
 		{expr} must evaluate to a |Float| or a Number.
 		When the value of {expr} is out of range for a |Number| the
-		result is truncated to 0x7fffffff or -0x7fffffff.  NaN results
-		in -0x80000000.
+		result is truncated to 0x7fffffff or -0x7fffffff (or when
+		64-bit Number support is enabled, 0x7fffffffffffffff or
+		-0x7fffffffffffffff.  NaN results in -0x80000000 (or when
+		64-bit Number support is enabled, -0x8000000000000000).
 		Examples: >
 			echo float2nr(3.95)
 <			3  >
 			echo float2nr(-23.45)
 <			-23  >
 			echo float2nr(1.0e100)
-<			2147483647  >
+<			2147483647  (or 9223372036854775807) >
 			echo float2nr(-1.0e150)
-<			-2147483647  >
+<			-2147483647 (or -9223372036854775807) >
 			echo float2nr(1.0e-100)
 <			0
 		{only available when compiled with the |+float| feature}
@@ -3632,7 +3774,7 @@ function({name} [, {arglist}] [, {dict}])
 			let Broken = function(dict.Func, [arg], dict)
 <
 		When {arglist} or {dict} is present this creates a partial.
-		That mans the argument list and/or the dictionary is stored in
+		That means the argument list and/or the dictionary is stored in
 		the Funcref and will be used when the Funcref is called.
 		
 		The arguments are passed to the function in front of other
@@ -3699,11 +3841,10 @@ garbagecollect([{atexit}])				*garbagecollect()*
 		collection will also be done when exiting Vim, if it wasn't
 		done before.  This is useful when checking for memory leaks.
 
-garbagecollect_for_testing()			 *garbagecollect_for_testing()*
-		Like garbagecollect(), but executed right away.  This must
-		only be called directly to avoid any structure to exist
-		internally, and |v:testing| must have been set before calling
-		any function.
+		The garbage collection is not done immediately but only when
+		it's safe to perform.  This is when waiting for the user to
+		type a character.  To force garbage collection immediately use
+		|test_garbagecollect_now()|.
 
 get({list}, {idx} [, {default}])			*get()*
 		Get item {idx} from |List| {list}.  When this item is not
@@ -3713,6 +3854,13 @@ get({dict}, {key} [, {default}])
 		Get item with key {key} from |Dictionary| {dict}.  When this
 		item is not available return {default}.  Return zero when
 		{default} is omitted.
+get({func}, {what})
+		Get an item with from Funcref {func}.  Possible values for
+		{what} are:
+			'name'	The function name
+			'func'	The function
+			'dict'	The dictionary
+			'args'	The list with arguments
 
 							*getbufline()*
 getbufline({expr}, {lnum} [, {end}])
@@ -3785,8 +3933,8 @@ getchar([expr])						*getchar()*
 
 		When the user clicks a mouse button, the mouse event will be
 		returned.  The position can then be found in |v:mouse_col|,
-		|v:mouse_lnum| and |v:mouse_win|.  This example positions the
-		mouse as it would normally happen: >
+		|v:mouse_lnum|, |v:mouse_winid| and |v:mouse_win|.  This
+		example positions the mouse as it would normally happen: >
 			let c = getchar()
 			if c == "\<LeftMouse>" && v:mouse_win > 0
 			  exe v:mouse_win . "wincmd w"
@@ -3897,6 +4045,49 @@ getcmdwintype()						*getcmdwintype()*
 		values are the same as |getcmdtype()|. Returns an empty string
 		when not in the command-line window.
 
+getcompletion({pat}, {type})			*getcompletion()*
+		Return a list of command-line completion matches. {type}
+		specifies what for.  The following completion types are
+		supported:
+
+		augroup		autocmd groups
+		buffer		buffer names
+		behave		:behave suboptions
+		color		color schemes
+		command		Ex command (and arguments)
+		compiler	compilers
+		cscope		|:cscope| suboptions
+		dir		directory names
+		environment	environment variable names
+		event		autocommand events
+		expression	Vim expression
+		file		file and directory names
+		file_in_path	file and directory names in |'path'|
+		filetype	filetype names |'filetype'|
+		function	function name
+		help		help subjects
+		highlight	highlight groups
+		history		:history suboptions
+		locale		locale names (as output of locale -a)
+		mapping		mapping name
+		menu		menus
+		option		options
+		shellcmd	Shell command
+		sign		|:sign| suboptions
+		syntax		syntax file names |'syntax'|
+		syntime		|:syntime| suboptions
+		tag		tags
+		tag_listfiles	tags, file names
+		user		user names
+		var		user variables
+
+		If {pat} is an empty string, then all the matches are returned.
+		Otherwise only items matching {pat} are returned. See
+		|wildcards| for the use of special characters in {pat}.
+
+		If there are no matches, an empty list is returned.  An
+		invalid value for {type} produces an error.
+
 							*getcurpos()*
 getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
 		includes an extra item in the list:
@@ -3918,6 +4109,7 @@ getcwd([{winnr} [, {tabnr}]])
 		in the current tab page.
 		With {winnr} and {tabnr} return the local current directory of
 		the window in the specified tab page.
+		{winnr} can be the window number or the window ID.
 		Return an empty string if the arguments are invalid.
 
 getfsize({fname})					*getfsize()*
@@ -4014,7 +4206,9 @@ getline({lnum} [, {end}])
 
 getloclist({nr})					*getloclist()*
 		Returns a list with all the entries in the location list for
-		window {nr}. When {nr} is zero the current window is used.
+		window {nr}.  {nr} can be the window number or the window ID.
+		When {nr} is zero the current window is used.
+
 		For a location list window, the displayed location list is
 		returned.  For an invalid window number {nr}, an empty list is
 		returned. Otherwise, same as |getqflist()|.
@@ -4076,13 +4270,13 @@ getqflist()						*getqflist()*
 				bufname() to get the name
 			lnum	line number in the buffer (first line is 1)
 			col	column number (first column is 1)
-			vcol	non-zero: "col" is visual column
-				zero: "col" is byte index
+			vcol	|TRUE|: "col" is visual column
+				|FALSE|: "col" is byte index
 			nr	error number
 			pattern	search pattern used to locate the error
 			text	description of the error
 			type	type of the error, 'E', '1', etc.
-			valid	non-zero: recognized error message
+			valid	|TRUE|: recognized error message
 
 		When there is no error list or it's empty an empty list is
 		returned. Quickfix list entries with non-existing buffer
@@ -4100,16 +4294,21 @@ getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		The result is a String, which is the contents of register
 		{regname}.  Example: >
 			:let cliptext = getreg('*')
-<		getreg('=') returns the last evaluated value of the expression
+<		When {regname} was not set the result is a empty string.
+
+		getreg('=') returns the last evaluated value of the expression
 		register.  (For use in maps.)
 		getreg('=', 1) returns the expression itself, so that it can
 		be restored with |setreg()|.  For other registers the extra
 		argument is ignored, thus you can always give it.
-		If {list} is present and non-zero result type is changed to 
-		|List|. Each list item is one text line. Use it if you care
+
+		If {list} is present and |TRUE|, the result type is changed
+		to |List|. Each list item is one text line. Use it if you care
 		about zero bytes possibly present inside register: without
 		third argument both NLs and zero bytes are represented as NLs
 		(see |NL-used-for-Nul|).
+		When the register was not set an empty list is returned.
+
 		If {regname} is not specified, |v:register| is used.
 
 
@@ -4143,6 +4342,7 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 		Note that {varname} must be the name without "w:".
 		Tabs are numbered starting with one.  For the current tabpage
 		use |getwinvar()|.
+		{winnr} can be the window number or the window ID.
 		When {winnr} is zero the current window is used.
 		This also works for a global option, buffer-local option and
 		window-local option, but it doesn't work for a global variable
@@ -4173,13 +4373,13 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 		Expand the file wildcards in {expr}.  See |wildcards| for the
 		use of special characters.
 
-		Unless the optional {nosuf} argument is given and is non-zero,
+		Unless the optional {nosuf} argument is given and is |TRUE|,
 		the 'suffixes' and 'wildignore' options apply: Names matching
 		one of the patterns in 'wildignore' will be skipped and
 		'suffixes' affect the ordering of matches.
 		'wildignorecase' always applies.
 
-		When {list} is present and it is non-zero the result is a List
+		When {list} is present and it is |TRUE| the result is a List
 		with all matching files. The advantage of using a List is,
 		you also get filenames containing newlines correctly.
 		Otherwise the result is a String and when there are several
@@ -4190,7 +4390,7 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 		A name for a non-existing file is not included.  A symbolic
 		link is only included if it points to an existing file.
 		However, when the {alllinks} argument is present and it is
-		non-zero then all symbolic links are included.
+		|TRUE| then all symbolic links are included.
 
 		For most systems backticks can be used to get files names from
 		any external command.  Example: >
@@ -4227,12 +4427,12 @@ globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 		If the expansion fails for one of the directories, there is no
 		error message.
 
-		Unless the optional {nosuf} argument is given and is non-zero,
+		Unless the optional {nosuf} argument is given and is |TRUE|,
 		the 'suffixes' and 'wildignore' options apply: Names matching
 		one of the patterns in 'wildignore' will be skipped and
 		'suffixes' affect the ordering of matches.
 
-		When {list} is present and it is non-zero the result is a List
+		When {list} is present and it is |TRUE| the result is a List
 		with all matching files. The advantage of using a List is, you
 		also get filenames containing newlines correctly. Otherwise
 		the result is a String and when there are several matches,
@@ -4267,6 +4467,7 @@ haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
 		With {winnr} use this window in the current tab page.
 		With {winnr} and {tabnr} use the window in the specified tab
 		page.
+		{winnr} can be the window number or the window ID.
 		Return 0 if the arguments are invalid.
 
 hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
@@ -4274,7 +4475,7 @@ hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		contains {what} in somewhere in the rhs (what it is mapped to)
 		and this mapping exists in one of the modes indicated by
 		{mode}.
-		When {abbr} is there and it is non-zero use abbreviations
+		When {abbr} is there and it is |TRUE| use abbreviations
 		instead of mappings.  Don't forget to specify Insert and/or
 		Command-line mode.
 		Both the global mappings and the mappings local to the current
@@ -4433,7 +4634,7 @@ index({list}, {expr} [, {start} [, {ic}]])			*index()*
 		is not used here, case always matters.
 		If {start} is given then start looking at the item with index
 		{start} (may be negative for an item relative to the end).
-		When {ic} is given and it is non-zero, ignore case.  Otherwise
+		When {ic} is given and it is |TRUE|, ignore case.  Otherwise
 		case must match.
 		-1 is returned when {expr} is not found in {list}.
 		Example: >
@@ -4561,13 +4762,13 @@ invert({expr})						*invert()*
 			:let bits = invert(bits)
 
 isdirectory({directory})				*isdirectory()*
-		The result is a Number, which is non-zero when a directory
+		The result is a Number, which is |TRUE| when a directory
 		with the name {directory} exists.  If {directory} doesn't
-		exist, or isn't a directory, the result is FALSE.  {directory}
+		exist, or isn't a directory, the result is |FALSE|.  {directory}
 		is any expression, which is used as a String.
 
 islocked({expr})					*islocked()* *E786*
-		The result is a Number, which is non-zero when {expr} is the
+		The result is a Number, which is |TRUE| when {expr} is the
 		name of a locked variable.
 		{expr} must be the name of a variable, |List| item or
 		|Dictionary| entry, not the variable itself!  Example: >
@@ -4580,7 +4781,7 @@ islocked({expr})					*islocked()* *E786*
 		message.  Use |exists()| to check for existence.
 
 isnan({expr})						*isnan()*
-		Return non-zero if {expr} is a float with value NaN. >
+		Return |TRUE| if {expr} is a float with value NaN. >
 			echo isnan(0.0 / 0.0)
 <			1 ~
 
@@ -4658,6 +4859,10 @@ job_status({job})					*job_status()* *E916*
 			"fail"	job failed to start
 			"dead"	job died or was stopped after running
 		
+		On Unix a non-existing command results in "dead" instead of
+		"fail", because a fork happens before the failure can be
+		detected.
+
 		If an exit callback was set with the "exit_cb" option and the
 		job is now detected to be "dead" the callback will be invoked.
 
@@ -4931,29 +5136,43 @@ luaeval({expr}[, {expr}])					*luaeval()*
 		See |lua-luaeval| for more details.
 		{only available when compiled with the |+lua| feature}
 
-map({expr}, {string})					*map()*
-		{expr} must be a |List| or a |Dictionary|.
-		Replace each item in {expr} with the result of evaluating
-		{string}.
-		Inside {string} |v:val| has the value of the current item.
-		For a |Dictionary| |v:key| has the key of the current item
-		and for a |List| |v:key| has the index of the current item.
+map({expr1}, {expr2})					*map()*
+		{expr1} must be a |List| or a |Dictionary|.
+		Replace each item in {expr1} with the result of evaluating
+		{expr2}.  {expr2} must be a |string| or |Funcref|.
+		
+		If {expr2} is a |string|, inside {expr2} |v:val| has the value
+		of the current item.  For a |Dictionary| |v:key| has the key
+		of the current item and for a |List| |v:key| has the index of
+		the current item.
 		Example: >
 			:call map(mylist, '"> " . v:val . " <"')
 <		This puts "> " before and " <" after each item in "mylist".
 
-		Note that {string} is the result of an expression and is then
+		Note that {expr2} is the result of an expression and is then
 		used as an expression again.  Often it is good to use a
 		|literal-string| to avoid having to double backslashes.  You
 		still have to double ' quotes
 
+		If {expr2} is a |Funcref| it is called with two arguments:
+			1. The key or the index of the current item.
+			2. the value of the current item.
+		The function must return the new value of the item. Example
+		that changes each value by "key-value": >
+			func KeyValue(key, val)
+			  return a:key . '-' . a:val
+			endfunc
+			call map(myDict, function('KeyValue'))
+<
 		The operation is done in-place.  If you want a |List| or
 		|Dictionary| to remain unmodified make a copy first: >
 			:let tlist = map(copy(mylist), ' v:val . "\t"')
 
-<		Returns {expr}, the |List| or |Dictionary| that was filtered.
-		When an error is encountered while evaluating {string} no
-		further items in {expr} are processed.
+<		Returns {expr1}, the |List| or |Dictionary| that was filtered.
+		When an error is encountered while evaluating {expr2} no
+		further items in {expr1} are processed.  When {expr2} is a
+		Funcref errors inside a function are ignored, unless it was
+		defined with the "abort" flag.
 
 
 maparg({name}[, {mode} [, {abbr} [, {dict}]]])			*maparg()*
@@ -4980,10 +5199,10 @@ maparg({name}[, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 			""	Normal, Visual and Operator-pending
 		When {mode} is omitted, the modes for "" are used.
 
-		When {abbr} is there and it is non-zero use abbreviations
+		When {abbr} is there and it is |TRUE| use abbreviations
 		instead of mappings.
 
-		When {dict} is there and it is non-zero return a dictionary
+		When {dict} is there and it is |TRUE| return a dictionary
 		containing all the information of the mapping with the
 		following items:
 		  "lhs"	     The {lhs} of the mapping.
@@ -5014,7 +5233,7 @@ mapcheck({name}[, {mode} [, {abbr}]])			*mapcheck()*
 		Check if there is a mapping that matches with {name} in mode
 		{mode}.  See |maparg()| for {mode} and special names in
 		{name}.
-		When {abbr} is there and it is non-zero use abbreviations
+		When {abbr} is there and it is |TRUE| use abbreviations
 		instead of mappings.
 		A match happens with a mapping that starts with {name} and
 		with a mapping which is equal to the start of {name}.
@@ -5296,8 +5515,7 @@ mkdir({name} [, {path} [, {prot}]])
 mode([expr])	Return a string that indicates the current mode.
 		If [expr] is supplied and it evaluates to a non-zero Number or
 		a non-empty String (|non-zero-arg|), then the full mode is
-		returned, otherwise only the first letter is returned.  Note
-		that " " and "0" are also non-empty strings.
+		returned, otherwise only the first letter is returned.
 
 			n	Normal
 			no	Operator-pending
@@ -5590,7 +5808,6 @@ pumvisible()						*pumvisible()*
 		This can be used to avoid some things that would remove the
 		popup menu.
 
-							*E860*
 py3eval({expr})						*py3eval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
@@ -6210,9 +6427,11 @@ setline({lnum}, {text})					*setline()*
 
 setloclist({nr}, {list} [, {action}])			*setloclist()*
 		Create or replace or add to the location list for window {nr}.
-		When {nr} is zero the current window is used. For a location
-		list window, the displayed location list is modified.  For an
-		invalid window number {nr}, -1 is returned.
+		{nr} can be the window number or the window ID.
+		When {nr} is zero the current window is used.
+
+		For a location list window, the displayed location list is
+		modified.  For an invalid window number {nr}, -1 is returned.
 		Otherwise, same as |setqflist()|.
 		Also see |location-list|.
 
@@ -6301,12 +6520,18 @@ setqflist({list} [, {action}])				*setqflist()*
 		Note that the list is not exactly the same as what
 		|getqflist()| returns.
 
+							*E927*
 		If {action} is set to 'a', then the items from {list} are
 		added to the existing quickfix list. If there is no existing
-		list, then a new list is created. If {action} is set to 'r',
-		then the items from the current quickfix list are replaced
-		with the items from {list}. If {action} is not present or is
-		set to ' ', then a new list is created.
+		list, then a new list is created.
+		
+		If {action} is set to 'r', then the items from the current
+		quickfix list are replaced with the items from {list}.  This
+		can also be used to clear the list: >
+			:call setqflist([], 'r')
+<	
+		If {action} is not present or is set to ' ', then a new list
+		is created.
 
 		Returns zero for success, -1 for failure.
 
@@ -6373,6 +6598,7 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		{val}.
 		Tabs are numbered starting with one.  For the current tabpage
 		use |setwinvar()|.
+		{winnr} can be the window number or the window ID.
 		When {winnr} is zero the current window is used.
 		This also works for a global or local buffer option, but it
 		doesn't work for a global or local buffer variable.
@@ -6399,8 +6625,8 @@ shellescape({string} [, {special}])			*shellescape()*
 		On MS-Windows and MS-DOS, when 'shellslash' is not set, it
 		will enclose {string} in double quotes and double all double
 		quotes within {string}.
-		For other systems, it will enclose {string} in single quotes
-		and replace all "'" with "'\''".
+		Otherwise it will enclose {string} in single quotes and
+		replace all "'" with "'\''".
 		When the {special} argument is present and it's a non-zero
 		Number or a non-empty String (|non-zero-arg|), then special
 		items such as "!", "%", "#" and "<cword>" will be preceded by
@@ -6652,7 +6878,6 @@ strchars({expr} [, {skipcc}])					*strchars()*
 		counted separately.
 		When {skipcc} set to 1, Composing characters are ignored.
 		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
-
 		
 		{skipcc} is only available after 7.4.755.  For backward
 		compatibility, you can define a wrapper function: >
@@ -6670,6 +6895,13 @@ strchars({expr} [, {skipcc}])					*strchars()*
 		      endfunction
 		    endif
 <
+strcharpart({src}, {start}[, {len}])			*strcharpart()*
+		Like |strpart()| but using character index and length instead
+		of byte index and length.
+		When a character index is used where a character does not
+		exist it is assumed to be one byte.  For example: >
+			strcharpart('abc', -1, 2)
+<		results in 'a'.
 
 strdisplaywidth({expr}[, {col}])			*strdisplaywidth()*
 		The result is a Number, which is the number of display cells
@@ -6702,6 +6934,12 @@ strftime({format} [, {time}])				*strftime()*
 						   Show mod time of file.c.
 <		Not available on all systems.  To check use: >
 			:if exists("*strftime")
+
+strgetchar({str}, {index})				*strgetchar()*
+		Get character {index} from {str}.  This uses a character
+		index, not a byte index.  Composing characters are considered
+		separate characters here.
+		Also see |strcharpart()| and |strchars()|.
 
 stridx({haystack}, {needle} [, {start}])		*stridx()*
 		The result is a Number, which gives the byte index in
@@ -6752,14 +6990,17 @@ strlen({expr})	The result is a Number, which is the length of the String
 strpart({src}, {start}[, {len}])			*strpart()*
 		The result is a String, which is part of {src}, starting from
 		byte {start}, with the byte length {len}.
-		When non-existing bytes are included, this doesn't result in
-		an error, the bytes are simply omitted.
+		To count characters instead of bytes use |strcharpart()|.
+
+		When bytes are selected which do not exist, this doesn't
+		result in an error, the bytes are simply omitted.
 		If {len} is missing, the copy continues from {start} till the
 		end of the {src}. >
 			strpart("abcdefg", 3, 2)    == "de"
 			strpart("abcdefg", -2, 4)   == "ab"
 			strpart("abcdefg", 5, 4)    == "fg"
 			strpart("abcdefg", 3)	    == "defg"
+
 <		Note: To get the first character, {start} must be 0.  For
 		example, to get three bytes under and after the cursor: >
 			strpart(getline("."), col(".") - 1, 3)
@@ -6865,9 +7106,9 @@ synID({lnum}, {col}, {trans})				*synID()*
 		that's where the cursor can be in Insert mode, synID() returns
 		zero.
 
-		When {trans} is non-zero, transparent items are reduced to the
+		When {trans} is |TRUE|, transparent items are reduced to the
 		item that they reveal.	This is useful when wanting to know
-		the effective color.  When {trans} is zero, the transparent
+		the effective color.  When {trans} is |FALSE|, the transparent
 		item is returned.  This is useful when wanting to know which
 		syntax item is effective (e.g. inside parens).
 		Warning: This function can be very slow.  Best speed is
@@ -7092,17 +7333,6 @@ taglist({expr})							*taglist()*
 		located by Vim. Refer to |tags-file-format| for the format of
 		the tags file generated by the different ctags tools.
 
-tempname()					*tempname()* *temp-file-name*
-		The result is a String, which is the name of a file that
-		doesn't exist.	It can be used for a temporary file.  The name
-		is different for at least 26 consecutive calls.  Example: >
-			:let tmpfile = tempname()
-			:exe "redir > " . tmpfile
-<		For Unix, the file will be in a private directory |tempfile|.
-		For MS-Windows forward slashes are used when the 'shellslash'
-		option is set or when 'shellcmdflag' starts with '-'.
-
-
 tan({expr})						*tan()*
 		Return the tangent of {expr}, measured in radians, as a |Float|
 		in the range [-inf, inf].
@@ -7126,6 +7356,64 @@ tanh({expr})						*tanh()*
 <			-0.761594
 		{only available when compiled with the |+float| feature}
 
+
+tempname()					*tempname()* *temp-file-name*
+		The result is a String, which is the name of a file that
+		doesn't exist.	It can be used for a temporary file.  The name
+		is different for at least 26 consecutive calls.  Example: >
+			:let tmpfile = tempname()
+			:exe "redir > " . tmpfile
+<		For Unix, the file will be in a private directory |tempfile|.
+		For MS-Windows forward slashes are used when the 'shellslash'
+		option is set or when 'shellcmdflag' starts with '-'.
+
+
+test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
+		This is for testing: If the memory allocation with {id} is
+		called, then decrement {countdown}, and when it reaches zero
+		let memory allocation fail {repeat} times.  When {repeat} is
+		smaller than one it fails one time.
+
+
+					*test_disable_char_avail()*
+test_disable_char_avail({expr})
+		When {expr} is 1 the internal char_avail() function will
+		return |FALSE|.  When {expr} is 0 the char_avail() function will
+		function normally.
+		Only use this for a test where typeahead causes the test not
+		to work.  E.g., to trigger the CursorMovedI autocommand event.
+
+test_garbagecollect_now()			 *test_garbagecollect_now()*
+		Like garbagecollect(), but executed right away.  This must
+		only be called directly to avoid any structure to exist
+		internally, and |v:testing| must have been set before calling
+		any function.
+
+test_null_channel()					*test_null_channel()*
+		Return a Channel that is null. Only useful for testing.
+		{only available when compiled with the +channel feature}
+
+test_null_dict()					*test_null_dict()*
+		Return a Dict that is null. Only useful for testing.
+
+test_null_job()						*test_null_job()*
+		Return a Job that is null. Only useful for testing.
+		{only available when compiled with the +job feature}
+
+test_null_list()					*test_null_list()*
+		Return a List that is null. Only useful for testing.
+
+test_null_partial()					*test_null_partial()*
+		Return a Partial that is null. Only useful for testing.
+
+test_null_string()					*test_null_string()*
+		Return a String that is null. Only useful for testing.
+
+test_settime({expr})					*test_settime()*
+		Set the time Vim uses internally.  Currently only used for
+		timestamps in the history, as they are used in viminfo.
+		{expr} must evaluate to a number.  When the value is zero the
+		normal behavior is restored.
 
 							*timer_start()*
 timer_start({time}, {callback} [, {options}])
@@ -7155,8 +7443,9 @@ timer_start({time}, {callback} [, {options}])
 		{only available when compiled with the |+timers| feature}
 
 timer_stop({timer})					*timer_stop()*
-		Stop a timer.  {timer} is an ID returned by timer_start().
-		The timer callback will no longer be invoked.
+		Stop a timer.  The timer callback will no longer be invoked.
+		{timer} is an ID returned by timer_start(), thus it must be a
+		Number.
 
 tolower({expr})						*tolower()*
 		The result is a copy of the String given, with all uppercase
@@ -7338,16 +7627,12 @@ visualmode([expr])						*visualmode()*
 		Visual mode that was used.
 		If Visual mode is active, use |mode()| to get the Visual mode
 		(e.g., in a |:vmap|).
-							*non-zero-arg*
 		If [expr] is supplied and it evaluates to a non-zero Number or
 		a non-empty String, then the Visual mode will be cleared and
-		the old value is returned.  Note that " " and "0" are also
-		non-empty strings, thus cause the mode to be cleared.  A List,
-		Dictionary or Float is not a Number or String, thus does not
-		cause the mode to be cleared.
+		the old value is returned.  See |non-zero-arg|.
 
 wildmenumode()					*wildmenumode()*
-		Returns non-zero when the wildmenu is active and zero
+		Returns |TRUE| when the wildmenu is active and |FALSE|
 		otherwise.  See 'wildmenu' and 'wildmode'.
 		This can be used in mappings to handle the 'wildcharm' option
 		gracefully. (Makes only sense with |mapmode-c| mappings).
@@ -7387,9 +7672,11 @@ win_id2win({expr})					*win_id2win()*
 
 							*winbufnr()*
 winbufnr({nr})	The result is a Number, which is the number of the buffer
-		associated with window {nr}.  When {nr} is zero, the number of
-		the buffer in the current window is returned.  When window
-		{nr} doesn't exist, -1 is returned.
+		associated with window {nr}.  {nr} can be the window number or
+		the window ID.
+		When {nr} is zero, the number of the buffer in the current
+		window is returned.
+		When window {nr} doesn't exist, -1 is returned.
 		Example: >
   :echo "The file in the current window is " . bufname(winbufnr(0))
 <
@@ -7400,6 +7687,7 @@ wincol()	The result is a Number, which is the virtual column of the
 
 winheight({nr})						*winheight()*
 		The result is a Number, which is the height of window {nr}.
+		{nr} can be the window number or the window ID.
 		When {nr} is zero, the height of the current window is
 		returned.  When window {nr} doesn't exist, -1 is returned.
 		An existing window always has a height of zero or more.
@@ -7479,6 +7767,7 @@ winsaveview()	Returns a |Dictionary| that contains information to restore
 
 winwidth({nr})						*winwidth()*
 		The result is a Number, which is the width of window {nr}.
+		{nr} can be the window number or the window ID.
 		When {nr} is zero, the width of the current window is
 		returned.  When window {nr} doesn't exist, -1 is returned.
 		An existing window always has a width of zero or more.
@@ -7487,7 +7776,10 @@ winwidth({nr})						*winwidth()*
   :if winwidth(0) <= 50
   :  exe "normal 50\<C-W>|"
   :endif
-<
+<               For getting the terminal or screen size, see the 'columns'
+               option.
+
+
 wordcount()						*wordcount()*
 		The result is a dictionary of byte/chars/word statistics for
 		the current buffer.  This is the same info as provided by
@@ -7674,8 +7966,10 @@ multi_lang		Compiled with support for multiple languages.
 mzscheme		Compiled with MzScheme interface |mzscheme|.
 netbeans_enabled	Compiled with support for |netbeans| and connected.
 netbeans_intg		Compiled with support for |netbeans|.
+num64			Compiled with 64-bit |Number| support.
 ole			Compiled with OLE automation support for Win32.
 os2			OS/2 version of Vim.
+packages		Compiled with |packages| support.
 path_extra		Compiled with up/downwards search in 'path' and 'tags'
 perl			Compiled with Perl interface.
 persistent_undo		Compiled with support for persistent undo history.
@@ -7709,6 +8003,7 @@ tag_old_static		Compiled with support for old static tags
 tag_any_white		Compiled with support for any white characters in tags
 			files |tag-any-white|.
 tcl			Compiled with Tcl interface.
+termguicolors		Compiled with true color in terminal support.
 terminfo		Compiled with terminfo instead of termcap.
 termresponse		Compiled with support for |t_RV| and |v:termresponse|.
 textobjects		Compiled with support for |text-objects|.
@@ -8422,14 +8717,6 @@ This does NOT work: >
 				endfor
 <			Note that reordering the list (e.g., with sort() or
 			reverse()) may have unexpected effects.
-			Note that the type of each list item should be
-			identical to avoid errors for the type of {var}
-			changing.  Unlet the variable at the end of the loop
-			to allow multiple item types: >
-				for item in ["foo", ["bar"]]
-				   echo item
-				   unlet item  " E706 without this
-				endfor
 
 :for [{var1}, {var2}, ...] in {listlist}
 :endfo[r]

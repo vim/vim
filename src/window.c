@@ -475,6 +475,8 @@ wingotofile:
 		ptr = grab_file_name(Prenum1, &lnum);
 		if (ptr != NULL)
 		{
+		    tabpage_T	*oldtab = curtab;
+		    win_T	*oldwin = curwin;
 # ifdef FEAT_GUI
 		    need_mouse_correct = TRUE;
 # endif
@@ -482,9 +484,15 @@ wingotofile:
 		    if (win_split(0, 0) == OK)
 		    {
 			RESET_BINDING(curwin);
-			(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LASTL,
-							   ECMD_HIDE, NULL);
-			if (nchar == 'F' && lnum >= 0)
+			if (do_ecmd(0, ptr, NULL, NULL, ECMD_LASTL,
+						   ECMD_HIDE, NULL) == FAIL)
+			{
+			    /* Failed to open the file, close the window
+			     * opened for it. */
+			    win_close(curwin, FALSE);
+			    goto_tabpage_win(oldtab, oldwin);
+			}
+			else if (nchar == 'F' && lnum >= 0)
 			{
 			    curwin->w_cursor.lnum = lnum;
 			    check_cursor_lnum();
@@ -1164,8 +1172,13 @@ win_split_ins(
 	 * one row for the status line */
 	win_new_height(wp, new_size);
 	if (flags & (WSP_TOP | WSP_BOT))
-	    frame_new_height(curfrp, curfrp->fr_height
-			- (new_size + STATUS_HEIGHT), flags & WSP_TOP, FALSE);
+	{
+	    int new_fr_height = curfrp->fr_height - new_size;
+
+	    if (!((flags & WSP_BOT) && p_ls == 0))
+		new_fr_height -= STATUS_HEIGHT;
+	    frame_new_height(curfrp, new_fr_height, flags & WSP_TOP, FALSE);
+	}
 	else
 	    win_new_height(oldwin, oldwin_height - (new_size + STATUS_HEIGHT));
 	if (before)	/* new window above current one */
@@ -1178,18 +1191,13 @@ win_split_ins(
 	{
 	    wp->w_winrow = oldwin->w_winrow + oldwin->w_height + STATUS_HEIGHT;
 	    wp->w_status_height = oldwin->w_status_height;
-	    /* Don't set the status_height for oldwin yet, this might break
-	     * frame_fix_height(oldwin), therefore will be set below. */
+	    if (!(flags & WSP_BOT))
+		oldwin->w_status_height = STATUS_HEIGHT;
 	}
 	if (flags & WSP_BOT)
 	    frame_add_statusline(curfrp);
 	frame_fix_height(wp);
 	frame_fix_height(oldwin);
-
-	if (!before)
-	    /* new window above current one, set the status_height after
-	     * frame_fix_height(oldwin) */
-	    oldwin->w_status_height = STATUS_HEIGHT;
     }
 
     if (flags & (WSP_TOP | WSP_BOT))
@@ -2331,6 +2339,9 @@ win_close(win_T *win, int free_buf)
      */
     if (win->w_buffer != NULL)
     {
+	bufref_T    bufref;
+
+	set_bufref(&bufref, curbuf);
 #ifdef FEAT_AUTOCMD
 	win->w_closing = TRUE;
 #endif
@@ -2341,7 +2352,7 @@ win_close(win_T *win, int free_buf)
 #endif
 	/* Make sure curbuf is valid. It can become invalid if 'bufhidden' is
 	 * "wipe". */
-	if (!buf_valid(curbuf))
+	if (!bufref_valid(&bufref))
 	    curbuf = firstbuf;
     }
 
@@ -4421,7 +4432,7 @@ buf_jump_open_tab(buf_T *buf)
 }
 #endif
 
-static int last_win_id = 0;
+static int last_win_id = LOWEST_WIN_ID - 1;
 
 /*
  * Allocate a window structure and link it in the window list when "hidden" is
@@ -6623,12 +6634,12 @@ restore_win(
  * No autocommands will be executed.  Use aucmd_prepbuf() if there are any.
  */
     void
-switch_buffer(buf_T **save_curbuf, buf_T *buf)
+switch_buffer(bufref_T *save_curbuf, buf_T *buf)
 {
 # ifdef FEAT_AUTOCMD
     block_autocmds();
 # endif
-    *save_curbuf = curbuf;
+    set_bufref(save_curbuf, curbuf);
     --curbuf->b_nwindows;
     curbuf = buf;
     curwin->w_buffer = buf;
@@ -6639,17 +6650,17 @@ switch_buffer(buf_T **save_curbuf, buf_T *buf)
  * Restore the current buffer after using switch_buffer().
  */
     void
-restore_buffer(buf_T *save_curbuf)
+restore_buffer(bufref_T *save_curbuf)
 {
 # ifdef FEAT_AUTOCMD
     unblock_autocmds();
 # endif
     /* Check for valid buffer, just in case. */
-    if (buf_valid(save_curbuf))
+    if (bufref_valid(save_curbuf))
     {
 	--curbuf->b_nwindows;
-	curwin->w_buffer = save_curbuf;
-	curbuf = save_curbuf;
+	curwin->w_buffer = save_curbuf->br_buf;
+	curbuf = save_curbuf->br_buf;
 	++curbuf->b_nwindows;
     }
 }

@@ -47,7 +47,6 @@ int vpeekc_nomap(void);
 int vpeekc_any(void);
 int char_avail(void);
 void vungetc(int c);
-int inchar(char_u *buf, int maxlen, long wait_time, int tb_change_cnt);
 int fix_input_buffer(char_u *buf, int len, int script);
 int input_available(void);
 int do_map(int maptype, char_u *arg, int mode, int abbrev);

@@ -1305,7 +1305,7 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
-    {"guicursor",    "gcr",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+    {"guicursor",    "gcr", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef CURSOR_SHAPE
 			    (char_u *)&p_guicursor, PV_NONE,
 			    {
@@ -1665,7 +1665,7 @@ static struct vimoption options[] =
     {"keywordprg",  "kp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_kp, PV_KP,
 			    {
-#if defined(MSWIN)
+#ifdef MSWIN
 			    (char_u *)":help",
 #else
 # ifdef VMS
@@ -1766,7 +1766,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_lpl, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
 #if defined(DYNAMIC_LUA)
-    {"luadll",      NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"luadll",      NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_luadll, PV_NONE,
 			    {(char_u *)DYNAMIC_LUA_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
@@ -2012,7 +2012,7 @@ static struct vimoption options[] =
 #endif
 				(char_u *)0L} SCRIPTID_INIT},
 #if defined(DYNAMIC_PERL)
-    {"perldll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"perldll",     NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_perldll, PV_NONE,
 			    {(char_u *)DYNAMIC_PERL_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
@@ -2123,13 +2123,13 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
 #if defined(DYNAMIC_PYTHON3)
-    {"pythonthreedll",  NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"pythonthreedll",  NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_py3dll, PV_NONE,
 			    {(char_u *)DYNAMIC_PYTHON3_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
 #endif
 #if defined(DYNAMIC_PYTHON)
-    {"pythondll",   NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"pythondll",   NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_pydll, PV_NONE,
 			    {(char_u *)DYNAMIC_PYTHON_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
@@ -2208,7 +2208,7 @@ static struct vimoption options[] =
 #endif
 			    SCRIPTID_INIT},
 #if defined(DYNAMIC_RUBY)
-    {"rubydll",     NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"rubydll",     NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_rubydll, PV_NONE,
 			    {(char_u *)DYNAMIC_RUBY_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
@@ -2592,7 +2592,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_tgst, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
 #if defined(DYNAMIC_TCL)
-    {"tcldll",      NULL,   P_STRING|P_VI_DEF|P_SECURE,
+    {"tcldll",      NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_tcldll, PV_NONE,
 			    {(char_u *)DYNAMIC_TCL_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
@@ -2614,6 +2614,15 @@ static struct vimoption options[] =
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCRIPTID_INIT},
+    {"termguicolors", "tgc", P_BOOL|P_VI_DEF|P_VIM|P_RCLR,
+#ifdef FEAT_TERMGUICOLORS
+			    (char_u *)&p_tgc, PV_NONE,
+			    {(char_u *)FALSE, (char_u *)FALSE}
+#else
+			    (char_u*)NULL, PV_NONE,
+			    {(char_u *)FALSE, (char_u *)FALSE}
 #endif
 			    SCRIPTID_INIT},
     {"terse",	    NULL,   P_BOOL|P_VI_DEF,
@@ -3011,6 +3020,8 @@ static struct vimoption options[] =
     p_term("t_xs", T_XS)
     p_term("t_ZH", T_CZH)
     p_term("t_ZR", T_CZR)
+    p_term("t_8f", T_8F)
+    p_term("t_8b", T_8B)
 
 /* terminal key codes are not in here */
 
@@ -4169,7 +4180,7 @@ do_set(
     int		afterchar;	    /* character just after option name */
     int		len;
     int		i;
-    long	value;
+    varnumber_T	value;
     int		key;
     long_u	flags;		    /* flags for current option */
     char_u	*varp = NULL;	    /* pointer to variable for current option */
@@ -6952,6 +6963,8 @@ did_set_string_option(
     {
 	if (check_opt_strings(p_cot, p_cot_values, TRUE) != OK)
 	    errmsg = e_invarg;
+	else
+	    completeopt_was_set();
     }
 #endif /* FEAT_INS_EXPAND */
 
@@ -7989,7 +8002,8 @@ set_bool_option(
 		need_start_insertmode = TRUE;
 	    stop_insert_mode = FALSE;
 	}
-	else
+	/* only reset if it was set previously */
+	else if (old_value)
 	{
 	    need_start_insertmode = FALSE;
 	    stop_insert_mode = TRUE;
@@ -8350,6 +8364,17 @@ set_bool_option(
 	}
     }
 
+#endif
+
+#ifdef FEAT_TERMGUICOLORS
+    /* 'termguicolors' */
+    else if ((int *)varp == &p_tgc)
+    {
+# ifdef FEAT_GUI
+	if (!gui.in_use && !gui.starting)
+# endif
+	    highlight_gui_started();
+    }
 #endif
 
     /*
@@ -9078,7 +9103,7 @@ get_option_value(
 	if ((int *)varp == &curbuf->b_changed)
 	    *numval = curbufIsChanged();
 	else
-	    *numval = *(int *)varp;
+	    *numval = (long) *(int *)varp;
     }
     return 1;
 }
@@ -10609,12 +10634,6 @@ buf_copy_options(buf_T *buf, int flags)
     char_u	*save_p_isk = NULL;	    /* init for GCC */
     int		dont_do_help;
     int		did_isk = FALSE;
-
-    /*
-     * Don't do anything if the buffer is invalid.
-     */
-    if (buf == NULL || !buf_valid(buf))
-	return;
 
     /*
      * Skip this when the option defaults have not been set yet.  Happens when

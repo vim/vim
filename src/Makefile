@@ -582,7 +582,7 @@ CClink = $(CC)
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
-#CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 #CFLAGS = -g -O2 -Wall -Wextra -Wmissing-prototypes -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1 -DU_DEBUG
 #PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
 #MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
@@ -1076,6 +1076,9 @@ SYS_DELMENU_FILE = $(DESTDIR)$(SCRIPTLOC)/delmenu.vim
 ### Name of the bugreport file target.
 SYS_BUGR_FILE	= $(DESTDIR)$(SCRIPTLOC)/bugreport.vim
 
+### Name of the rgb.txt file target.
+SYS_RGB_FILE   = $(DESTDIR)$(SCRIPTLOC)/rgb.txt
+
 ### Name of the file type detection file target.
 SYS_FILETYPE_FILE = $(DESTDIR)$(SCRIPTLOC)/filetype.vim
 
@@ -1475,6 +1478,7 @@ DEST_MAN_RU_U = $(DEST_MAN_TOP)/ru.UTF-8$(MAN1DIR)
 TAGS_INCL = *.h
 
 BASIC_SRC = \
+	arabic.c \
 	blowfish.c \
 	buffer.c \
 	charset.c \
@@ -1489,6 +1493,7 @@ BASIC_SRC = \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
+	farsi.c \
 	fileio.c \
 	fold.c \
 	getchar.c \
@@ -1572,6 +1577,7 @@ LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) \
 #LINT_SRC = $(BASIC_SRC)
 
 OBJ_COMMON = \
+	objects/arabic.o \
 	objects/buffer.o \
 	objects/blowfish.o \
 	objects/charset.o \
@@ -1586,6 +1592,7 @@ OBJ_COMMON = \
 	objects/ex_docmd.o \
 	objects/ex_eval.o \
 	objects/ex_getln.o \
+	objects/farsi.o \
 	objects/fileio.o \
 	objects/fold.o \
 	objects/getchar.o \
@@ -1649,6 +1656,7 @@ MEMFILE_TEST_OBJ = $(OBJ_COMMON) \
 	objects/memfile_test.o
 
 PRO_AUTO = \
+	arabic.pro \
 	blowfish.pro \
 	buffer.pro \
 	charset.pro \
@@ -1663,6 +1671,7 @@ PRO_AUTO = \
 	ex_docmd.pro \
 	ex_eval.pro \
 	ex_getln.pro \
+	farsi.pro \
 	fileio.pro \
 	fold.pro \
 	getchar.pro \
@@ -1940,6 +1949,10 @@ test check:
 	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 	$(MAKE) -f Makefile unittest
 
+# Run the tests with the GUI.  Assumes vim/gvim was already built
+testgui:
+	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) GUI_FLAG=-g $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+
 benchmark:
 	cd testdir; $(MAKE) -f Makefile benchmark VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
@@ -1977,10 +1990,8 @@ test1 \
 	test_listlbr_utf8 \
 	test_mapping \
 	test_marks \
-	test_match_conceal \
 	test_nested_function \
 	test_options \
-	test_ruby \
 	test_search_mbyte \
 	test_signs \
 	test_tagcase \
@@ -1991,7 +2002,7 @@ test1 \
 	test2 test3 test4 test5 test6 test7 test8 test9 \
 	test11 test12 test13 test14 test15 test16 test17 test18 test19 \
 	test20 test21 test22 test23 test24 test25 test26 test27 test28 test29 \
-	test30 test31 test32 test33 test34 test35 test36 test37 test38 test39 \
+	test30 test31 test32 test33 test34 test36 test37 test38 test39 \
 	test40 test41 test42 test43 test44 test45 test46 test47 test48 test49 \
 	test50 test51 test52 test53 test54 test55 test56 test57 test58 test59 \
 	test60 test61 test62 test63 test64 test65 test66 test67 test68 test69 \
@@ -2005,49 +2016,71 @@ test1 \
 test_arglist \
 	test_assert \
 	test_assign \
+	test_autochdir \
 	test_autocmd \
 	test_backspace_opt \
 	test_cdo \
 	test_channel \
+	test_cmdline \
 	test_cursor_func \
 	test_delete \
 	test_ex_undo \
+	test_execute_func \
 	test_expand \
+	test_expand_dllpath \
 	test_expr \
+	test_expr_utf8 \
+	test_farsi \
 	test_feedkeys \
 	test_file_perm \
+	test_filter_map \
 	test_fnamemodify \
 	test_glob2regpat \
+	test_goto \
 	test_hardcopy \
 	test_help_tagjump \
 	test_history \
 	test_increment \
+	test_increment_dbcs \
 	test_join \
 	test_json \
+	test_jumps \
 	test_langmap \
+	test_largefile \
 	test_lispwords \
+	test_man \
+	test_matchadd_conceal \
+	test_matchadd_conceal_utf8 \
 	test_matchstrpos \
 	test_menu \
+	test_messages \
 	test_packadd \
 	test_partial \
 	test_perl \
+	test_popup \
 	test_quickfix \
 	test_regexp_latin \
 	test_regexp_utf8 \
 	test_reltime \
+	test_ruby \
 	test_searchpos \
 	test_set \
 	test_sort \
+	test_stat \
 	test_statusline \
 	test_syn_attr \
 	test_syntax \
 	test_tabline \
+	test_tagjump \
 	test_timers \
+	test_true_false \
 	test_undolevels \
+	test_usercommands \
 	test_unlet \
 	test_viminfo \
 	test_viml \
 	test_visual \
+	test_window_cmd \
 	test_window_id \
 	test_alot_latin \
 	test_alot_utf8 \
@@ -2161,6 +2194,9 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	chmod $(VIMSCRIPTMOD) $(MSWIN_FILE)
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/evim.vim $(EVIM_FILE)
 	chmod $(VIMSCRIPTMOD) $(EVIM_FILE)
+# install the rgb.txt file
+	$(INSTALL_DATA) $(SCRIPTSOURCE)/rgb.txt $(SYS_RGB_FILE)
+	chmod $(VIMSCRIPTMOD) $(SYS_RGB_FILE)
 # install the bugreport file
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/bugreport.vim $(SYS_BUGR_FILE)
 	chmod $(VIMSCRIPTMOD) $(SYS_BUGR_FILE)
@@ -2350,12 +2386,18 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 ICON48PATH = $(DESTDIR)$(DATADIR)/icons/hicolor/48x48/apps
 ICON32PATH = $(DESTDIR)$(DATADIR)/icons/locolor/32x32/apps
 ICON16PATH = $(DESTDIR)$(DATADIR)/icons/locolor/16x16/apps
+ICONTHEMEPATH = $(DATADIR)/icons/hicolor
 DESKTOPPATH = $(DESTDIR)$(DATADIR)/applications
 KDEPATH = $(HOME)/.kde/share/icons
 install-icons:
 	if test -d $(ICON48PATH) -a -w $(ICON48PATH) \
 		-a ! -f $(ICON48PATH)/gvim.png; then \
 	   $(INSTALL_DATA) $(SCRIPTSOURCE)/vim48x48.png $(ICON48PATH)/gvim.png; \
+	   if test -z "$(DESTDIR)" -a -x "$(GTK_UPDATE_ICON_CACHE)" \
+		   -a -w $(ICONTHEMEPATH) \
+		   -a -f $(ICONTHEMEPATH)/index.theme; then \
+		$(GTK_UPDATE_ICON_CACHE) -q $(ICONTHEMEPATH); \
+	   fi \
 	fi
 	if test -d $(ICON32PATH) -a -w $(ICON32PATH) \
 		-a ! -f $(ICON32PATH)/gvim.png; then \
@@ -2369,6 +2411,9 @@ install-icons:
 	   $(INSTALL_DATA) $(SCRIPTSOURCE)/vim.desktop \
 		$(SCRIPTSOURCE)/gvim.desktop \
 		$(DESKTOPPATH); \
+	   if test -z "$(DESTDIR)" -a -x "$(UPDATE_DESKTOP_DATABASE)"; then \
+	      $(UPDATE_DESKTOP_DATABASE) -q $(DESKTOPPATH); \
+	   fi \
 	fi
 
 $(HELPSOURCE)/vim.1 $(MACROSOURCE) $(TOOLSSOURCE):
@@ -2514,6 +2559,7 @@ uninstall_runtime:
 	-rm -f $(DEST_MAN_RU)/xxd.1 $(DEST_MAN_RU_U)/xxd.1
 	-rm -f $(DEST_HELP)/*.txt $(DEST_HELP)/tags $(DEST_HELP)/*.pl
 	-rm -f $(DEST_HELP)/*.??x $(DEST_HELP)/tags-??
+	-rm -f $(SYS_RGB_FILE)
 	-rm -f $(SYS_MENU_FILE) $(SYS_SYNMENU_FILE) $(SYS_DELMENU_FILE)
 	-rm -f $(SYS_BUGR_FILE) $(EVIM_FILE) $(MSWIN_FILE)
 	-rm -f $(DEST_SCRIPT)/gvimrc_example.vim $(DEST_SCRIPT)/vimrc_example.vim
@@ -2586,6 +2632,7 @@ shadow:	runtime pixmaps
 				 ../../testdir/*.py \
 				 ../../testdir/python* \
 				 ../../testdir/sautest \
+				 ../../testdir/samples \
 				 ../../testdir/test83-tags? \
 				 ../../testdir/*.ok .
 
@@ -2712,6 +2759,9 @@ auto/gui_gtk_gresources.h: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
 objects:
 	mkdir objects
 
+objects/arabic.o: arabic.c
+	$(CCC) -o $@ arabic.c
+
 objects/blowfish.o: blowfish.c
 	$(CCC) -o $@ blowfish.c
 
@@ -2753,6 +2803,9 @@ objects/ex_eval.o: ex_eval.c
 
 objects/ex_getln.o: ex_getln.c
 	$(CCC) -o $@ ex_getln.c
+
+objects/farsi.o: farsi.c
+	$(CCC) -o $@ farsi.c
 
 objects/fileio.o: fileio.c
 	$(CCC) -o $@ fileio.c
@@ -3073,6 +3126,10 @@ $(APPDIR)/Contents:
 ###############################################################################
 ### (automatically generated by 'make depend')
 ### Dependencies:
+objects/arabic.o: arabic.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
+ farsi.h arabic.h
 objects/blowfish.o: blowfish.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \
@@ -3129,6 +3186,10 @@ objects/ex_getln.o: ex_getln.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h
+objects/farsi.o: farsi.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
+ farsi.h arabic.h
 objects/fileio.o: fileio.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
@@ -3164,7 +3225,7 @@ objects/json.o: json.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
 objects/main.o: main.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
- farsi.h arabic.h farsi.c arabic.c
+ farsi.h arabic.h
 objects/mark.o: mark.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
@@ -3277,10 +3338,10 @@ objects/window.o: window.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/gui.o: gui.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.h \
  keymap.h term.h macros.h option.h structs.h regexp.h gui.h gui_beval.h \
  proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h farsi.h arabic.h
-objects/gui_gtk.o: gui_gtk.c gui_gtk_f.h vim.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
- regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \
- globals.h farsi.h arabic.h
+objects/gui_gtk.o: gui_gtk.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
+ farsi.h arabic.h gui_gtk_f.h
 objects/gui_gtk_f.o: gui_gtk_f.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \
@@ -3357,11 +3418,11 @@ objects/pty.o: pty.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.
 objects/json_test.o: json_test.c main.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \
- globals.h farsi.h arabic.h farsi.c arabic.c json.c
+ globals.h farsi.h arabic.h json.c
 objects/memfile_test.o: memfile_test.c main.c vim.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h \
  structs.h regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h \
- ex_cmds.h proto.h globals.h farsi.h arabic.h farsi.c arabic.c memfile.c
+ ex_cmds.h proto.h globals.h farsi.h arabic.h memfile.c
 objects/hangulin.o: hangulin.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \

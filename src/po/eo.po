@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-29 23:03+0200\n"
-"PO-Revision-Date: 2016-03-29 23:05+0200\n"
+"POT-Creation-Date: 2016-07-02 16:21+0200\n"
+"PO-Revision-Date: 2016-07-02 17:05+0200\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -441,6 +441,9 @@ msgstr "E714: Listo bezonata"
 msgid "E715: Dictionary required"
 msgstr "E715: Vortaro bezonata"
 
+msgid "E928: String required"
+msgstr "E928: Ĉeno bezonata"
+
 #, c-format
 msgid "E118: Too many arguments for function: %s"
 msgstr "E118: Tro da argumentoj por funkcio: %s"
@@ -719,6 +722,10 @@ msgstr "argumento de reverse()"
 msgid "E258: Unable to send to client"
 msgstr "E258: Ne eblas sendi al kliento"
 
+#, c-format
+msgid "E927: Invalid action: '%s'"
+msgstr "E927: Nevalida ago: '%s'"
+
 msgid "sort() argument"
 msgstr "argumento de sort()"
 
@@ -968,6 +975,10 @@ msgstr " MALSUKCESIS"
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
 msgstr "E137: Dosiero viminfo ne skribeblas: %s"
+
+#, c-format
+msgid "E929: Too many viminfo temp files, like %s!"
+msgstr "E929: Tro da provizoraj dosieroj viminfo, kiel %s!"
 
 #, c-format
 msgid "E138: Can't write viminfo file %s!"
@@ -1719,6 +1730,9 @@ msgstr "Esprimo"
 msgid "Input Line"
 msgstr "Eniga linio"
 
+msgid "Debug Line"
+msgstr "Sencimiga linio"
+
 msgid "E198: cmd_pchar beyond the command length"
 msgstr "E198: cmd_pchar preter la longo de komando"
 
@@ -1963,11 +1977,6 @@ msgstr "1 signo"
 #, c-format
 msgid "%lld characters"
 msgstr "%lld signoj"
-
-#. Explicit typecast avoids warning on Mac OS X 10.6
-#, c-format
-msgid "%ld characters"
-msgstr "%ld signoj"
 
 msgid "[noeol]"
 msgstr "[sen EOL]"
@@ -2641,6 +2650,7 @@ msgid ""
 "       i: Find files #including this file\n"
 "       s: Find this C symbol\n"
 "       t: Find this text string\n"
+"       a: Find assignments to this symbol\n"
 msgstr ""
 "\n"
 "       c: Trovi funkciojn, kiuj alvokas tiun funkcion\n"
@@ -2651,6 +2661,7 @@ msgstr ""
 "       i: Trovi dosierojn, kiuj inkluzivas (#include) tiun dosieron\n"
 "       s: Trovi tiun C-simbolon\n"
 "       t: Trovi tiun ĉenon\n"
+"       a: Trovi valirizojn al tiu simbolo\n"
 
 #, c-format
 msgid "E625: cannot open cscope database: %s"
@@ -2955,6 +2966,9 @@ msgstr "Ne eblas malfermi por eligo de skripto: \""
 
 msgid "Vim: Error: Failure to start gvim from NetBeans\n"
 msgstr "Vim: Eraro: malsukcesis lanĉi gvim el NetBeans\n"
+
+msgid "Vim: Error: This version of Vim does not run in a Cygwin terminal\n"
+msgstr "Vim: Eraro: Tiu versio de Vim ne ruliĝas en terminalo Cygwin\n"
 
 msgid "Vim: Warning: Output is not to a terminal\n"
 msgstr "Vim: Averto: Eligo ne estas al terminalo\n"
@@ -4269,28 +4283,28 @@ msgid "%ld Cols; "
 msgstr "%ld Kolumnoj; "
 
 #, c-format
-msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
-msgstr "Apartigis %s%ld de %ld Linioj; %ld de %ld Vortoj; %ld de %ld Bajtoj"
+msgid "Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Bytes"
+msgstr "Apartigis %s%ld de %ld Linioj; %lld de %lld Vortoj; %lld de %lld Bajtoj"
 
 #, c-format
 msgid ""
-"Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
-"Bytes"
+"Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of "
+"%lld Bytes"
 msgstr ""
-"Apartigis %s%ld de %ld Linioj; %ld de %ld Vortoj; %ld de %ld Signoj; %ld de "
-"%ld Bajtoj"
+"Apartigis %s%ld de %ld Linioj; %lld de %lld Vortoj; %lld de %lld Signoj; %lld de "
+"%lld Bajtoj"
 
 #, c-format
-msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
-msgstr "Kol %s de %s; Linio %ld de %ld; Vorto %ld de %ld; Bajto %ld de %ld"
+msgid "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Byte %lld of %lld"
+msgstr "Kol %s de %s; Linio %ld de %ld; Vorto %lld de %lld; Bajto %lld de %lld"
 
 #, c-format
 msgid ""
-"Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
-"%ld"
+"Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte "
+"%lld of %lld"
 msgstr ""
-"Kol %s de %s; Linio %ld de %ld; Vorto %ld de %ld; Signo %ld de %ld; Bajto "
-"%ld de %ld"
+"Kol %s de %s; Linio %ld de %ld; Vorto %lld de %lld; Signo %lld de %lld; Bajto "
+"%lld de %lld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -4548,6 +4562,10 @@ msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
 msgstr "E244: Nevalida nomo de signaro \"%s\" en nomo de tiparo \"%s\""
 
 #, c-format
+msgid "E244: Illegal quality name \"%s\" in font name \"%s\""
+msgstr "E244: Nevalida nomo de kvalito \"%s\" en nomo de tiparo \"%s\""
+
+#, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Nevalida signo '%c' en nomo de tiparo \"%s\""
 
@@ -4724,6 +4742,7 @@ msgstr "E376: Nevalida %%%c en prefikso de formata ĉeno"
 msgid "E377: Invalid %%%c in format string"
 msgstr "E377: Nevalida %%%c en formata ĉeno"
 
+#. nothing found
 msgid "E378: 'errorformat' contains no pattern"
 msgstr "E378: 'errorformat' enhavas neniun ŝablonon"
 
@@ -5786,6 +5805,9 @@ msgstr ""
 "\n"
 "--- Klavoj de terminalo ---"
 
+msgid "Cannot open $VIMRUNTIME/rgb.txt"
+msgstr "Ne povas malfermi $VIMRUNTIME/rgb.txt"
+
 msgid "new shell started\n"
 msgstr "nova ŝelo lanĉita\n"
 
@@ -5802,7 +5824,7 @@ msgstr "E881: Nombro de linioj ŝanĝiĝis neatendite"
 
 #. must display the prompt
 msgid "No undo possible; continue anyway"
-msgstr "Malfaro neebla; daŭrigi tamene"
+msgstr "Malfaro neebla; tamen daŭrigi"
 
 #, c-format
 msgid "E828: Cannot open undo file for writing: %s"
@@ -6819,9 +6841,6 @@ msgstr "sennoma funkcio %s ne ekzistas"
 msgid "function %s does not exist"
 msgstr "funkcio %s ne ekzistas"
 
-msgid "function constructor does not accept keyword arguments"
-msgstr "konstruilo de funkcio ne akceptas ŝlosilvortajn argumentojn"
-
 #, c-format
 msgid "failed to run function %s"
 msgstr "malsukcesis ruli funkcion %s"
@@ -6907,6 +6926,10 @@ msgstr "E859: Konverto de revena python-objekto al vim-valoro malsukcesis"
 #, c-format
 msgid "unable to convert %s to vim dictionary"
 msgstr "ne povis konverti %s al vim-vortaro"
+
+#, c-format
+msgid "unable to convert %s to vim list"
+msgstr "ne povis konverti %s al vim-listo"
 
 #, c-format
 msgid "unable to convert %s to vim structure"

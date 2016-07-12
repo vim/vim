@@ -164,6 +164,7 @@ do_debug(char_u *cmd)
 	    ignore_script = TRUE;
 	}
 
+	vim_free(cmdline);
 	cmdline = getcmdline_prompt('>', NULL, 0, EXPAND_NOTHING, NULL);
 
 	if (typeahead_saved)
@@ -306,8 +307,6 @@ do_debug(char_u *cmd)
 	    (void)do_cmdline(cmdline, getexline, NULL,
 						DOCMD_VERBOSE|DOCMD_EXCRESET);
 	    debug_break_level = n;
-
-	    vim_free(cmdline);
 	}
 	lines_left = Rows - 1;
     }
@@ -335,9 +334,8 @@ do_debug(char_u *cmd)
 get_maxbacktrace_level(void)
 {
     char	*p, *q;
-    int		maxbacktrace = 1;
+    int		maxbacktrace = 0;
 
-    maxbacktrace = 0;
     if (sourcing_name != NULL)
     {
 	p = (char *)sourcing_name;
@@ -1103,6 +1101,7 @@ insert_timer(timer_T *timer)
     if (first_timer != NULL)
 	first_timer->tr_prev = timer;
     first_timer = timer;
+    did_add_timer = TRUE;
 }
 
 /*
@@ -1122,8 +1121,7 @@ remove_timer(timer_T *timer)
     static void
 free_timer(timer_T *timer)
 {
-    vim_free(timer->tr_callback);
-    partial_unref(timer->tr_partial);
+    free_callback(timer->tr_callback, timer->tr_partial);
     vim_free(timer);
 }
 
@@ -1175,7 +1173,7 @@ timer_callback(timer_T *timer)
  * Return the time in msec until the next timer is due.
  */
     long
-check_due_timer()
+check_due_timer(void)
 {
     timer_T	*timer;
     long	this_due;
@@ -1253,6 +1251,25 @@ stop_timer(timer_T *timer)
 {
     remove_timer(timer);
     free_timer(timer);
+}
+
+/*
+ * Mark references in partials of timers.
+ */
+    int
+set_ref_in_timer(int copyID)
+{
+    int		abort = FALSE;
+    timer_T	*timer;
+    typval_T	tv;
+
+    for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+    {
+	tv.v_type = VAR_PARTIAL;
+	tv.vval.v_partial = timer->tr_partial;
+	abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+    }
+    return abort;
 }
 # endif
 
@@ -1675,6 +1692,7 @@ prof_def_func(void)
 autowrite(buf_T *buf, int forceit)
 {
     int		r;
+    bufref_T	bufref;
 
     if (!(p_aw || p_awa) || !p_write
 #ifdef FEAT_QUICKFIX
@@ -1683,11 +1701,12 @@ autowrite(buf_T *buf, int forceit)
 #endif
 	    || (!forceit && buf->b_p_ro) || buf->b_ffname == NULL)
 	return FAIL;
+    set_bufref(&bufref, buf);
     r = buf_write_all(buf, forceit);
 
     /* Writing may succeed but the buffer still changed, e.g., when there is a
      * conversion error.  We do want to return FAIL then. */
-    if (buf_valid(buf) && bufIsChanged(buf))
+    if (bufref_valid(&bufref) && bufIsChanged(buf))
 	r = FAIL;
     return r;
 }
@@ -1705,10 +1724,15 @@ autowrite_all(void)
     for (buf = firstbuf; buf; buf = buf->b_next)
 	if (bufIsChanged(buf) && !buf->b_p_ro)
 	{
+#ifdef FEAT_AUTOCMD
+	    bufref_T	bufref;
+
+	    set_bufref(&bufref, buf);
+#endif
 	    (void)buf_write_all(buf, FALSE);
 #ifdef FEAT_AUTOCMD
 	    /* an autocommand may have deleted the buffer */
-	    if (!buf_valid(buf))
+	    if (!bufref_valid(&bufref))
 		buf = firstbuf;
 #endif
 	}
@@ -1721,7 +1745,12 @@ autowrite_all(void)
     int
 check_changed(buf_T *buf, int flags)
 {
-    int forceit = (flags & CCGD_FORCEIT);
+    int		forceit = (flags & CCGD_FORCEIT);
+#ifdef FEAT_AUTOCMD
+    bufref_T	bufref;
+
+    set_bufref(&bufref, buf);
+#endif
 
     if (       !forceit
 	    && bufIsChanged(buf)
@@ -1744,13 +1773,13 @@ check_changed(buf_T *buf, int flags)
 					))
 			++count;
 # ifdef FEAT_AUTOCMD
-	    if (!buf_valid(buf))
+	    if (!bufref_valid(&bufref))
 		/* Autocommand deleted buffer, oops!  It's not changed now. */
 		return FALSE;
 # endif
 	    dialog_changed(buf, count > 1);
 # ifdef FEAT_AUTOCMD
-	    if (!buf_valid(buf))
+	    if (!bufref_valid(&bufref))
 		/* Autocommand deleted buffer, oops!  It's not changed now. */
 		return FALSE;
 # endif
@@ -1849,6 +1878,11 @@ dialog_changed(
 			)
 		    && !buf2->b_p_ro)
 	    {
+#ifdef FEAT_AUTOCMD
+		bufref_T bufref;
+
+		set_bufref(&bufref, buf2);
+#endif
 #ifdef FEAT_BROWSE
 		/* May get file name, when there is none */
 		browse_save_fname(buf2);
@@ -1859,7 +1893,7 @@ dialog_changed(
 		    (void)buf_write_all(buf2, FALSE);
 #ifdef FEAT_AUTOCMD
 		/* an autocommand may have deleted the buffer */
-		if (!buf_valid(buf2))
+		if (!bufref_valid(&bufref))
 		    buf2 = firstbuf;
 #endif
 	    }
@@ -1965,11 +1999,14 @@ check_changed_any(
 	    continue;
 	if ((!hidden || buf->b_nwindows == 0) && bufIsChanged(buf))
 	{
+	    bufref_T bufref;
+
+	    set_bufref(&bufref, buf);
 	    /* Try auto-writing the buffer.  If this fails but the buffer no
 	    * longer exists it's not changed, that's OK. */
 	    if (check_changed(buf, (p_awa ? CCGD_AW : 0)
 				 | CCGD_MULTWIN
-				 | CCGD_ALLBUF) && buf_valid(buf))
+				 | CCGD_ALLBUF) && bufref_valid(&bufref))
 		break;	    /* didn't save - still changes */
 	}
     }
@@ -2012,10 +2049,15 @@ check_changed_any(
 	FOR_ALL_TAB_WINDOWS(tp, wp)
 	    if (wp->w_buffer == buf)
 	    {
+# ifdef FEAT_AUTOCMD
+		bufref_T bufref;
+
+		set_bufref(&bufref, buf);
+# endif
 		goto_tabpage_win(tp, wp);
 # ifdef FEAT_AUTOCMD
 		/* Paranoia: did autocms wipe out the buffer with changes? */
-		if (!buf_valid(buf))
+		if (!bufref_valid(&bufref))
 		{
 		    goto theend;
 		}
@@ -3326,15 +3368,18 @@ add_pack_plugin(char_u *fname, void *cookie)
     int	    c;
     char_u  *new_rtp;
     int	    keep;
-    int	    oldlen;
-    int	    addlen;
+    size_t  oldlen;
+    size_t  addlen;
+    char_u  *afterdir;
+    size_t  afterlen = 0;
     char_u  *ffname = fix_fname(fname);
+    size_t  fname_len;
 
     if (ffname == NULL)
 	return;
     if (cookie != &APP_LOAD && strstr((char *)p_rtp, (char *)ffname) == NULL)
     {
-	/* directory not in 'runtimepath', add it */
+	/* directory is not yet in 'runtimepath', add it */
 	p4 = p3 = p2 = p1 = get_past_head(ffname);
 	for (p = p1; *p; mb_ptr_adv(p))
 	    if (vim_ispathsep_nocolon(*p))
@@ -3349,7 +3394,20 @@ add_pack_plugin(char_u *fname, void *cookie)
 	 * find the part up to "pack" in 'runtimepath' */
 	c = *p4;
 	*p4 = NUL;
-	insp = (char_u *)strstr((char *)p_rtp, (char *)ffname);
+
+	/* Find "ffname" in "p_rtp", ignoring '/' vs '\' differences. */
+	fname_len = STRLEN(ffname);
+	insp = p_rtp;
+	for (;;)
+	{
+	    if (vim_fnamencmp(insp, ffname, fname_len) == 0)
+		break;
+	    insp = vim_strchr(insp, ',');
+	    if (insp == NULL)
+		break;
+	    ++insp;
+	}
+
 	if (insp == NULL)
 	    /* not found, append at the end */
 	    insp = p_rtp + STRLEN(p_rtp);
@@ -3362,20 +3420,31 @@ add_pack_plugin(char_u *fname, void *cookie)
 	}
 	*p4 = c;
 
-	oldlen = (int)STRLEN(p_rtp);
-	addlen = (int)STRLEN(ffname);
-	new_rtp = alloc(oldlen + addlen + 2);
+	/* check if rtp/pack/name/start/name/after exists */
+	afterdir = concat_fnames(ffname, (char_u *)"after", TRUE);
+	if (afterdir != NULL && mch_isdir(afterdir))
+	    afterlen = STRLEN(afterdir) + 1; /* add one for comma */
+
+	oldlen = STRLEN(p_rtp);
+	addlen = STRLEN(ffname) + 1; /* add one for comma */
+	new_rtp = alloc((int)(oldlen + addlen + afterlen + 1)); /* add one for NUL */
 	if (new_rtp == NULL)
 	    goto theend;
 	keep = (int)(insp - p_rtp);
 	mch_memmove(new_rtp, p_rtp, keep);
 	new_rtp[keep] = ',';
-	mch_memmove(new_rtp + keep + 1, ffname, addlen + 1);
+	mch_memmove(new_rtp + keep + 1, ffname, addlen);
 	if (p_rtp[keep] != NUL)
-	    mch_memmove(new_rtp + keep + 1 + addlen, p_rtp + keep,
+	    mch_memmove(new_rtp + keep + addlen, p_rtp + keep,
 							   oldlen - keep + 1);
+	if (afterlen > 0)
+	{
+	    STRCAT(new_rtp, ",");
+	    STRCAT(new_rtp, afterdir);
+	}
 	set_option_value((char_u *)"rtp", 0L, new_rtp, 0);
 	vim_free(new_rtp);
+	vim_free(afterdir);
     }
 
     if (cookie != &APP_ADD_DIR)
@@ -3640,7 +3709,7 @@ do_source(
     int			    save_debug_break_level = debug_break_level;
     scriptitem_T	    *si = NULL;
 # ifdef UNIX
-    struct stat		    st;
+    stat_T		    st;
     int			    stat_ok;
 # endif
 #endif

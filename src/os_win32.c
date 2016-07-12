@@ -1446,6 +1446,9 @@ WaitForChar(long msec)
     INPUT_RECORD    ir;
     DWORD	    cRecords;
     WCHAR	    ch, ch2;
+#ifdef FEAT_TIMERS
+    int		    tb_change_cnt = typebuf.tb_change_cnt;
+#endif
 
     if (msec > 0)
 	/* Wait until the specified time has elapsed. */
@@ -1511,6 +1514,11 @@ WaitForChar(long msec)
 		    /* Trigger timers and then get the time in msec until the
 		     * next one is due.  Wait up to that time. */
 		    due_time = check_due_timer();
+		    if (typebuf.tb_change_cnt != tb_change_cnt)
+		    {
+			/* timer may have used feedkeys() */
+			return FALSE;
+		    }
 		    if (due_time > 0 && dwWaitTime > (DWORD)due_time)
 			dwWaitTime = due_time;
 		}
@@ -3050,7 +3058,7 @@ mch_dirname(
     long
 mch_getperm(char_u *name)
 {
-    struct stat st;
+    stat_T	st;
     int		n;
 
     n = mch_stat((char *)name, &st);
