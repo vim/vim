@@ -129,3 +129,9 @@ func Test_option_value()
   call assert_equal("abcdefgi", &cpo)
   set cpo&vim
 endfunc
+
+function Test_printf_64bit()
+  if has('num64')
+    call assert_equal("123456789012345", printf('%d', 123456789012345))
+  endif
+endfunc

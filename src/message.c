@@ -4198,6 +4198,15 @@ vim_vsnprintf(
 		default: break;
 	    }
 
+# if defined(FEAT_EVAL) && defined(FEAT_NUM64)
+	    switch (fmt_spec)
+	    {
+		case 'd': case 'u': case 'o': case 'x': case 'X':
+		    if (tvs != NULL && length_modifier == '\0')
+			length_modifier = 'L';
+	    }
+# endif
+
 	    /* get parameter value, do initial processing */
 	    switch (fmt_spec)
 	    {
