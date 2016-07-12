@@ -42,6 +42,9 @@ if &lines < 24 || &columns < 80
   cquit
 endif
 
+" Common with all tests on all systems.
+source setup.vim
+
 " For consistency run all tests with 'nocompatible' set.
 " This also enables use of line continuation.
 set nocp viminfo+=nviminfo
@@ -54,9 +57,6 @@ lang mess C
 
 " Always use forward slashes.
 set shellslash
-
-" Make sure $HOME does not get read or written.
-let $HOME = '/does/not/exist'
 
 let s:srcdir = expand('%:p:h:h')
 
