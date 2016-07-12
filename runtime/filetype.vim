@@ -1624,8 +1624,8 @@ au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 " Python
 au BufNewFile,BufRead *.py,*.pyw		setf python
 
-" Python Shell Startup
-au BufNewFile,BufRead .pythonstartu		setf python
+" Python Shell Startup Files
+au BufNewFile,BufRead .pythonstartup,.pythonrc	setf python
 
 " Quixote (Python-based web framework)
 au BufNewFile,BufRead *.ptl			setf python
