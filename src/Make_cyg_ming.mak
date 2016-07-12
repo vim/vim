@@ -42,7 +42,8 @@ DIRECTX=no
 FEATURES=HUGE
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
-ARCH=i686
+# If not set, it will be automatically detected. (Normally i686 or x86-64.)
+#ARCH=i686
 # Set to yes to cross-compile from unix; no=native Windows (and Cygwin).
 CROSS=no
 # Set to path to iconv.h and libiconv.a to enable using 'iconv.dll'.
@@ -111,6 +112,46 @@ INTLLIB=gnu_gettext
 #DYNAMIC_GETTEXT=DYNAMIC_GETTEXT
 #INTLPATH=$(GETTEXT)/lib
 #INTLLIB=intl
+
+
+# Command definitions (depends on cross-compiling and shell)
+ifeq ($(CROSS),yes)
+# cross-compiler prefix:
+ifndef CROSS_COMPILE
+CROSS_COMPILE = i586-pc-mingw32msvc-
+endif
+DEL = rm
+MKDIR = mkdir -p
+DIRSLASH = /
+else
+# normal (Windows) compilation:
+ifndef CROSS_COMPILE
+CROSS_COMPILE =
+endif
+ifneq (sh.exe, $(SHELL))
+DEL = rm
+MKDIR = mkdir -p
+DIRSLASH = /
+else
+DEL = del
+MKDIR = mkdir
+DIRSLASH = \\
+endif
+endif
+CC := $(CROSS_COMPILE)gcc
+CXX := $(CROSS_COMPILE)g++
+ifeq ($(UNDER_CYGWIN),yes)
+WINDRES := $(CROSS_COMPILE)windres
+else
+WINDRES := windres
+endif
+WINDRES_CC = $(CC)
+
+# Get the default ARCH.
+ifndef ARCH
+ARCH := $(shell $(CC) -dumpmachine | sed -e 's/-.*//')
+endif
+
 
 #	Perl interface:
 #	  PERL=[Path to Perl directory] (Set inside Make_cyg.mak or Make_ming.mak)
@@ -383,37 +424,6 @@ DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 ifeq ($(ARCH),x86-64)
 DEFINES+=-DMS_WIN64
 endif
-ifeq ($(CROSS),yes)
-# cross-compiler prefix:
-ifndef CROSS_COMPILE
-CROSS_COMPILE = i586-pc-mingw32msvc-
-endif
-DEL = rm
-MKDIR = mkdir -p
-DIRSLASH = /
-else
-# normal (Windows) compilation:
-ifndef CROSS_COMPILE
-CROSS_COMPILE =
-endif
-ifneq (sh.exe, $(SHELL))
-DEL = rm
-MKDIR = mkdir -p
-DIRSLASH = /
-else
-DEL = del
-MKDIR = mkdir
-DIRSLASH = \\
-endif
-endif
-CC := $(CROSS_COMPILE)gcc
-CXX := $(CROSS_COMPILE)g++
-ifeq ($(UNDER_CYGWIN),yes)
-WINDRES := $(CROSS_COMPILE)windres
-else
-WINDRES := windres
-endif
-WINDRES_CC = $(CC)
 
 #>>>>> end of choices
 ###########################################################################
