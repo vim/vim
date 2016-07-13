@@ -149,7 +149,7 @@ WINDRES_CC = $(CC)
 
 # Get the default ARCH.
 ifndef ARCH
-ARCH := $(shell $(CC) -dumpmachine | sed -e 's/-.*//')
+ARCH := $(shell $(CC) -dumpmachine | sed -e 's/-.*//' -e 's/_/-/')
 endif
 
 
