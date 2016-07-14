@@ -1753,6 +1753,9 @@ struct file_buffer
     unsigned int b_fab_mrs;	/* Max record size  */
 #endif
     int		b_fnum;		/* buffer number for this file. */
+    char_u	b_key[VIM_SIZEOF_INT * 2 + 1];
+				/* key used for buf_hashtab, holds b_fnum as
+				   hex string */
 
     int		b_changed;	/* 'modified': Set to TRUE if something in the
 				   file has been changed and not written out. */

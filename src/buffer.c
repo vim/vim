@@ -350,6 +350,28 @@ buf_valid(buf_T *buf)
 }
 
 /*
+ * A hash table used to quickly lookup a buffer by its number.
+ */
+static hashtab_T buf_hashtab;
+
+    static void
+buf_hashtab_add(buf_T *buf)
+{
+    sprintf((char *)buf->b_key, "%x", buf->b_fnum);
+    if (hash_add(&buf_hashtab, buf->b_key) == FAIL)
+	EMSG(_("E931: Buffer cannot be registered"));
+}
+
+    static void
+buf_hashtab_remove(buf_T *buf)
+{
+    hashitem_T *hi = hash_find(&buf_hashtab, buf->b_key);
+
+    if (!HASHITEM_EMPTY(hi))
+	hash_remove(&buf_hashtab, hi);
+}
+
+/*
  * Close the link to a buffer.
  * "action" is used when there is no longer a window for the buffer.
  * It can be:
@@ -723,6 +745,9 @@ free_buffer(buf_T *buf)
 #endif
 #ifdef FEAT_AUTOCMD
     aubuflocal_remove(buf);
+
+    buf_hashtab_remove(buf);
+
     if (autocmd_busy)
     {
 	/* Do not free the buffer structure while autocommands are executing,
@@ -1703,6 +1728,8 @@ do_autochdir(void)
  * functions for dealing with the buffer list
  */
 
+static int  top_file_num = 1;		/* highest file number */
+
 /*
  * Add a file name to the buffer list.  Return a pointer to the buffer.
  * If the same file name already exists return a pointer to that buffer.
@@ -1715,8 +1742,6 @@ do_autochdir(void)
  *				    if the buffer already exists.
  * This is the ONLY way to create a new buffer.
  */
-static int  top_file_num = 1;		/* highest file number */
-
     buf_T *
 buflist_new(
     char_u	*ffname,	/* full path of fname or relative */
@@ -1728,6 +1753,9 @@ buflist_new(
 #ifdef UNIX
     stat_T	st;
 #endif
+
+    if (top_file_num == 1)
+	hash_init(&buf_hashtab);
 
     fname_expand(curbuf, &ffname, &sfname);	/* will allocate ffname */
 
@@ -1907,6 +1935,7 @@ buflist_new(
 	    }
 	    top_file_num = 1;
 	}
+	buf_hashtab_add(buf);
 
 	/*
 	 * Always copy the options from the current buffer.
@@ -2579,19 +2608,22 @@ fname_match(
 #endif
 
 /*
- * find file in buffer list by number
+ * Find a file in the buffer list by buffer number.
  */
     buf_T *
 buflist_findnr(int nr)
 {
-    buf_T	*buf;
+    char_u	key[VIM_SIZEOF_INT * 2 + 1];
+    hashitem_T	*hi;
 
     if (nr == 0)
 	nr = curwin->w_alt_fnum;
-    /* Assume newer buffers are used more often, start from the end. */
-    for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
-	if (buf->b_fnum == nr)
-	    return buf;
+    sprintf((char *)key, "%x", nr);
+    hi = hash_find(&buf_hashtab, key);
+
+    if (!HASHITEM_EMPTY(hi))
+	return (buf_T *)(hi->hi_key
+			     - ((unsigned)(curbuf->b_key - (char_u *)curbuf)));
     return NULL;
 }
 
