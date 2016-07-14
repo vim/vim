@@ -743,10 +743,11 @@ free_buffer(buf_T *buf)
 #ifdef FEAT_JOB_CHANNEL
     channel_buffer_free(buf);
 #endif
-#ifdef FEAT_AUTOCMD
-    aubuflocal_remove(buf);
 
     buf_hashtab_remove(buf);
+
+#ifdef FEAT_AUTOCMD
+    aubuflocal_remove(buf);
 
     if (autocmd_busy)
     {
