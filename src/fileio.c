@@ -4709,9 +4709,17 @@ restore_backup:
     if (perm >= 0)		/* set perm. of new file same as old file */
 	(void)mch_setperm(wfname, perm);
 #ifdef HAVE_ACL
-    /* Probably need to set the ACL before changing the user (can't set the
-     * ACL on a file the user doesn't own). */
+    /*
+     * Probably need to set the ACL before changing the user (can't set the
+     * ACL on a file the user doesn't own).
+     * On Solaris, with ZFS and the aclmode property set to "discard" (the
+     * default), chmod() discards all part of a file's ACL that don't represent
+     * the mode of the file.  It's non-trivial for us to discover whether we're
+     * in that situation, so we simply always re-set the ACL.
+     */
+# ifndef HAVE_SOLARIS_ZFS_ACL
     if (!backup_copy)
+# endif
 	mch_set_acl(wfname, acl);
 #endif
 #ifdef FEAT_CRYPT
