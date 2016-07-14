@@ -149,7 +149,7 @@ WINDRES_CC = $(CC)
 
 # Get the default ARCH.
 ifndef ARCH
-ARCH := $(shell $(CC) -dumpmachine | sed -e 's/-.*//' -e 's/_/-/')
+ARCH := $(shell $(CC) -dumpmachine | sed -e 's/-.*//' -e 's/_/-/' -e 's/^mingw32$$/i686/')
 endif
 
 
