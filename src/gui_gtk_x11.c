@@ -6646,18 +6646,9 @@ gui_mch_flush(void)
 # else
     if (gui.mainwin != NULL && GTK_WIDGET_REALIZED(gui.mainwin))
 # endif
-	gdk_display_sync(gtk_widget_get_display(gui.mainwin));
+	gdk_display_flush(gtk_widget_get_display(gui.mainwin));
 #else
     gdk_flush(); /* historical misnomer: calls XSync(), not XFlush() */
-#endif
-    /* This happens to actually do what gui_mch_flush() is supposed to do,
-     * according to the comment above. */
-#if GTK_CHECK_VERSION(3,0,0)
-    if (gui.drawarea != NULL && gtk_widget_get_window(gui.drawarea) != NULL)
-	gdk_window_process_updates(gtk_widget_get_window(gui.drawarea), FALSE);
-#else
-    if (gui.drawarea != NULL && gui.drawarea->window != NULL)
-	gdk_window_process_updates(gui.drawarea->window, FALSE);
 #endif
 }
 
