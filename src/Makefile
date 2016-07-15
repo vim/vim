@@ -2055,6 +2055,7 @@ test_arglist \
 	test_matchstrpos \
 	test_menu \
 	test_messages \
+	test_netbeans \
 	test_packadd \
 	test_partial \
 	test_perl \

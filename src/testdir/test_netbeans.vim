@@ -1,0 +1,51 @@
+" Test the netbeans interface.
+
+if !has('netbeans_intg')
+  finish
+endif
+
+source shared.vim
+
+let s:python = PythonProg()
+if s:python == ''
+  " Can't run this test.
+  finish
+endif
+
+" Run "testfunc" after sarting the server and stop the server afterwards.
+func s:run_server(testfunc, ...)
+  call RunServer('test_netbeans.py', a:testfunc, a:000)
+endfunc
+
+func Nb_basic(port)
+  call delete("Xnetbeans")
+  exe 'nbstart :localhost:' . a:port . ':bunny'
+  call assert_true(has("netbeans_enabled"))
+
+  call WaitFor('len(readfile("Xnetbeans")) > 2')
+  split +$ Makefile
+
+  " Opening Makefile will result in a setDot command
+  call WaitFor('len(readfile("Xnetbeans")) > 4')
+  let pos = getcurpos()
+  call assert_equal(2, pos[1])
+  call assert_equal(20, pos[2])
+  close
+  nbclose
+
+  call WaitFor('len(readfile("Xnetbeans")) > 6')
+  let lines = readfile("Xnetbeans")
+  call assert_equal('AUTH bunny', lines[0])
+  call assert_equal('0:version=0 "2.5"', lines[1])
+  call assert_equal('0:startupDone=0', lines[2])
+  call assert_equal('0:fileOpened=0 "Makefile" T F', substitute(lines[3], '".*/', '"', ''))
+
+  call assert_equal('0:disconnect=1', lines[6])
+
+  call delete("Xnetbeans")
+endfunc
+
+func Test_nb_basic()
+  call ch_log('Test_nb_basic')
+  call s:run_server('Nb_basic')
+endfunc
