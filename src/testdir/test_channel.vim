@@ -95,6 +95,18 @@ func Ch_communicate(port)
   endif
   call assert_equal('got it', g:Ch_responseMsg)
 
+  " Using lambda.
+  let g:Ch_responseMsg = ''
+  call ch_sendexpr(handle, 'hello!', {'callback': {a, b -> Ch_requestHandler(a, b)}})
+  call WaitFor('exists("g:Ch_responseHandle")')
+  if !exists('g:Ch_responseHandle')
+    call assert_false(1, 'g:Ch_responseHandle was not set')
+  else
+    call assert_equal(handle, g:Ch_responseHandle)
+    unlet g:Ch_responseHandle
+  endif
+  call assert_equal('got it', g:Ch_responseMsg)
+
   " Collect garbage, tests that our handle isn't collected.
   call test_garbagecollect_now()
 
@@ -1069,6 +1081,32 @@ func Test_read_in_close_cb()
   endtry
 endfunc
 
+func Test_out_cb_lambda()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_out_cb_lambda()')
+
+  let job = job_start(s:python . " test_channel_pipe.py",
+  \ {'out_cb': {ch, msg -> execute("let g:Ch_outmsg = 'lambda: ' . msg")},
+  \ 'out_mode': 'json',
+  \ 'err_cb': {ch, msg -> execute(":let g:Ch_errmsg = 'lambda: ' . msg")},
+  \ 'err_mode': 'json'})
+  call assert_equal("run", job_status(job))
+  try
+    let g:Ch_outmsg = ''
+    let g:Ch_errmsg = ''
+    call ch_sendraw(job, "echo [0, \"hello\"]\n")
+    call ch_sendraw(job, "echoerr [0, \"there\"]\n")
+    call WaitFor('g:Ch_outmsg != ""')
+    call assert_equal("lambda: hello", g:Ch_outmsg)
+    call WaitFor('g:Ch_errmsg != ""')
+    call assert_equal("lambda: there", g:Ch_errmsg)
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
 """"""""""
 
 let g:Ch_unletResponse = ''
@@ -1285,6 +1323,24 @@ func Test_collapse_buffers()
   bwipe!
 endfunc
 
+function Ch_test_close_lambda(port)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
+  if ch_status(handle) == "fail"
+    call assert_false(1, "Can't open channel")
+    return
+  endif
+  let g:Ch_close_ret = ''
+  call ch_setoptions(handle, {'close_cb': {ch -> execute("let g:Ch_close_ret = 'closed'")}})
+
+  call assert_equal('', ch_evalexpr(handle, 'close me'))
+  call WaitFor('"closed" == g:Ch_close_ret')
+  call assert_equal('closed', g:Ch_close_ret)
+endfunc
+
+func Test_close_lambda()
+  call ch_log('Test_close_lambda()')
+  call s:run_server('Ch_test_close_lambda')
+endfunc
 
 " Uncomment this to see what happens, output is in src/testdir/channellog.
  call ch_logfile('channellog', 'w')

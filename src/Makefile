@@ -2046,6 +2046,7 @@ test_arglist \
 	test_join \
 	test_json \
 	test_jumps \
+	test_lambda \
 	test_langmap \
 	test_largefile \
 	test_lispwords \
