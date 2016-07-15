@@ -95,6 +95,8 @@ SRC_ALL =	\
 		src/testdir/*.py \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/runtest.vim \
+		src/testdir/shared.vim \
+		src/testdir/setup.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test[0-9]*a.ok \
 		src/testdir/test_[a-z]*.ok \
