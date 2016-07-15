@@ -49,3 +49,28 @@ func Test_nb_basic()
   call ch_log('Test_nb_basic')
   call s:run_server('Nb_basic')
 endfunc
+
+func Nb_file_auth(port)
+  call assert_fails('nbstart =notexist', 'E660:')
+  call writefile(['host=localhost', 'port=' . a:port, 'auth=bunny'], 'Xnbauth')
+  call setfperm('Xnbauth', "rw-r--r--")
+  call assert_fails('nbstart =Xnbauth', 'E668:')
+  call setfperm('Xnbauth', "rw-------")
+  exe 'nbstart :localhost:' . a:port . ':bunny'
+  call assert_true(has("netbeans_enabled"))
+
+  call WaitFor('len(readfile("Xnetbeans")) > 2')
+  nbclose
+  let lines = readfile("Xnetbeans")
+  call assert_equal('AUTH bunny', lines[0])
+  call assert_equal('0:version=0 "2.5"', lines[1])
+  call assert_equal('0:startupDone=0', lines[2])
+
+  call delete("Xnbauth")
+  call delete("Xnetbeans")
+endfunc
+
+func Test_nb_file_auth()
+  call ch_log('Test_nb_file_auth')
+  call s:run_server('Nb_file_auth')
+endfunc
