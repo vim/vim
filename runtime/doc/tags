@@ -4462,6 +4462,7 @@ E928	eval.txt	/*E928*
 E929	starting.txt	/*E929*
 E93	windows.txt	/*E93*
 E930	eval.txt	/*E930*
+E931	message.txt	/*E931*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
@@ -5809,6 +5810,7 @@ expr-is?	eval.txt	/*expr-is?*
 expr-isnot	eval.txt	/*expr-isnot*
 expr-isnot#	eval.txt	/*expr-isnot#*
 expr-isnot?	eval.txt	/*expr-isnot?*
+expr-lambda	eval.txt	/*expr-lambda*
 expr-nesting	eval.txt	/*expr-nesting*
 expr-number	eval.txt	/*expr-number*
 expr-option	eval.txt	/*expr-option*
@@ -6968,6 +6970,7 @@ l:	eval.txt	/*l:*
 l:var	eval.txt	/*l:var*
 lCursor	mbyte.txt	/*lCursor*
 lace.vim	syntax.txt	/*lace.vim*
+lambda	eval.txt	/*lambda*
 lang-variable	eval.txt	/*lang-variable*
 language-mapping	map.txt	/*language-mapping*
 last-pattern	pattern.txt	/*last-pattern*
@@ -8958,6 +8961,7 @@ v_v	visual.txt	/*v_v*
 v_x	change.txt	/*v_x*
 v_y	change.txt	/*v_y*
 v_~	change.txt	/*v_~*
+vab	motion.txt	/*vab*
 val-variable	eval.txt	/*val-variable*
 valgrind	debug.txt	/*valgrind*
 values()	eval.txt	/*values()*
@@ -9005,6 +9009,7 @@ vi	intro.txt	/*vi*
 vi-differences	vi_diff.txt	/*vi-differences*
 vi:	options.txt	/*vi:*
 vi_diff.txt	vi_diff.txt	/*vi_diff.txt*
+vib	motion.txt	/*vib*
 view	starting.txt	/*view*
 view-diffs	diff.txt	/*view-diffs*
 view-file	starting.txt	/*view-file*

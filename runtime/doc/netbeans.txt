@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.4.  Last change: 2016 Feb 18
+*netbeans.txt*  For Vim version 7.4.  Last change: 2016 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -58,6 +58,8 @@ Current projects using the NetBeans protocol of Vim are:
 	http://www.freehackers.org/VimWrapper
 
 Check the specific project pages to see how to use Vim with these projects.
+
+An alternative is to use a channel, see |channel|.
 
 In the rest of this help page, we will use the term "Vim Controller" to
 describe the program controlling Vim through the NetBeans socket interface.

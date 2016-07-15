@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Jul 07
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6,13 +6,9 @@
 
 		      Inter-process communication		*channel*
 
-DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT
-
 Vim uses channels to communicate with other processes.
-A channel uses a socket or pipes			*socket-interface*
+A channel uses a socket or pipes.			*socket-interface*
 Jobs can be used to start processes and communicate with them.
-
-Vim current supports up to 10 simultaneous channels.
 The Netbeans interface also uses a channel. |netbeans|
 
 1. Overview				|job-channel-overview|
@@ -569,11 +565,13 @@ See |job_setoptions()| and |ch_setoptions()|.
 "out_cb": handler	Callback for when there is something to read on
 			stdout.  Only for when the channel uses pipes.  When
 			"out_cb" wasn't set the channel callback is used.
+			The two arguments are the channel and the message.
 
 						*job-err_cb* *err_cb*
 "err_cb": handler	Callback for when there is something to read on
 			stderr.  Only for when the channel uses pipes.  When
 			"err_cb" wasn't set the channel callback is used.
+			The two arguments are the channel and the message.
 						*job-close_cb*
 "close_cb": handler	Callback for when the channel is closed.  Same as
 			"close_cb" on |ch_open()|, see |close_cb|.
