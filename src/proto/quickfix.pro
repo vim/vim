@@ -11,6 +11,7 @@ void ex_cclose(exarg_T *eap);
 void ex_copen(exarg_T *eap);
 void ex_cbottom(exarg_T *eap);
 linenr_T qf_current_entry(win_T *wp);
+win_T *qf_get_cur_window(win_T *win);
 int bt_quickfix(buf_T *buf);
 int bt_nofile(buf_T *buf);
 int bt_dontwrite(buf_T *buf);

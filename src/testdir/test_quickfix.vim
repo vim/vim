@@ -1438,3 +1438,27 @@ function Test_cbottom()
   call XbottomTests('c')
   call XbottomTests('l')
 endfunction
+
+function s:test_getqfwinid(cchar)
+    call s:setup_commands(a:cchar)
+
+    Xclose
+
+    let this_win = win_getid()
+    call assert_equal(-1, getqfwinid())
+
+    Xgetexpr ['non-error 1', 'non-error 2', 'non-error 3']
+    Xopen
+
+    if a:cchar == 'c'
+        call assert_equal(win_getid(), getqfwinid())
+    else
+        call assert_equal(win_getid(), getqfwinid(this_win))
+    endif
+    Xclose
+endfunction
+
+function Test_getqfwinid()
+    call s:test_getqfwinid('c')
+    call s:test_getqfwinid('l')
+endfunction

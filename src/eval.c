@@ -613,6 +613,7 @@ static void f_getpid(typval_T *argvars, typval_T *rettv);
 static void f_getcurpos(typval_T *argvars, typval_T *rettv);
 static void f_getpos(typval_T *argvars, typval_T *rettv);
 static void f_getqflist(typval_T *argvars, typval_T *rettv);
+static void f_getqfwinid(typval_T *argvars, typval_T *rettv);
 static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
 static void f_gettabvar(typval_T *argvars, typval_T *rettv);
@@ -8827,6 +8828,7 @@ static struct fst
     {"getpid",		0, 0, f_getpid},
     {"getpos",		1, 1, f_getpos},
     {"getqflist",	0, 0, f_getqflist},
+    {"getqfwinid",	0, 1, f_getqfwinid},
     {"getreg",		0, 3, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
     {"gettabvar",	2, 3, f_gettabvar},
@@ -13750,13 +13752,37 @@ f_getqflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	wp = NULL;
 	if (argvars[0].v_type != VAR_UNKNOWN)	/* getloclist() */
 	{
-	    wp = find_win_by_nr(&argvars[0], NULL);
+	    wp = find_win_by_nr(&argvars[0], curtab);
 	    if (wp == NULL)
 		return;
 	}
 
 	(void)get_errorlist(wp, rettv->vval.v_list);
     }
+#endif
+}
+
+    static void
+f_getqfwinid(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_QUICKFIX
+    win_T	*wp = NULL;
+#endif
+
+    rettv->vval.v_number = -1;
+
+#ifdef FEAT_QUICKFIX
+    /* get the loclist for the given window */
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+        wp = find_win_by_nr(&argvars[0], NULL);
+        if (wp == NULL)
+            return;
+    }
+
+    wp = qf_get_cur_window(wp);
+
+    rettv->vval.v_number = (wp != NULL) ? wp->w_id : -1;
 #endif
 }
 
@@ -13996,7 +14022,7 @@ f_getwinposy(typval_T *argvars UNUSED, typval_T *rettv)
     static win_T *
 find_win_by_nr(
     typval_T	*vp,
-    tabpage_T	*tp UNUSED)	/* NULL for current tab page */
+    tabpage_T	*tp UNUSED)
 {
 #ifdef FEAT_WINDOWS
     win_T	*wp;
@@ -14010,6 +14036,16 @@ find_win_by_nr(
 	return NULL;
     if (nr == 0)
 	return curwin;
+
+    /* If 'vp' is a window id and 'tp' is NULL then search in all the tp. */
+    if (nr >= LOWEST_WIN_ID && tp == NULL)
+    {
+        FOR_ALL_TAB_WINDOWS(tp, wp)
+            if (wp->w_id == nr)
+                return wp;
+
+        return NULL;
+    }
 
     for (wp = (tp == NULL || tp == curtab) ? firstwin : tp->tp_firstwin;
 						  wp != NULL; wp = wp->w_next)
@@ -18971,7 +19007,7 @@ f_setloclist(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    win = find_win_by_nr(&argvars[0], NULL);
+    win = find_win_by_nr(&argvars[0], curtab);
     if (win != NULL)
 	set_qf_ll_list(win, &argvars[1], &argvars[2], rettv);
 }
@@ -21825,7 +21861,7 @@ f_winbufnr(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0], NULL);
+    wp = find_win_by_nr(&argvars[0], curtab);
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
@@ -21850,7 +21886,7 @@ f_winheight(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0], NULL);
+    wp = find_win_by_nr(&argvars[0], curtab);
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
@@ -22002,7 +22038,7 @@ f_winwidth(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0], NULL);
+    wp = find_win_by_nr(&argvars[0], curtab);
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else

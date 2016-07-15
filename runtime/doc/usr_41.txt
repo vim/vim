@@ -816,6 +816,8 @@ Quickfix and location lists:			*quickfix-functions*
 	setqflist()		modify a quickfix list
 	getloclist()		list of location list items
 	setloclist()		modify a location list
+	getqfwinid()		get the window ID of a quickfix or location
+				list window
 
 Insert mode completion:				*completion-functions*
 	complete()		set found matches

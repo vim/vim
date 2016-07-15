@@ -3050,12 +3050,13 @@ is_qf_win(win_T *win, qf_info_T *qi)
 qf_find_win(qf_info_T *qi)
 {
     win_T	*win;
+    tabpage_T	*tab;
 
-    FOR_ALL_WINDOWS(win)
+    FOR_ALL_TAB_WINDOWS(tab, win)
 	if (is_qf_win(win, qi))
-	    break;
+	    return win;
 
-    return win;
+    return NULL;
 }
 
 /*
@@ -3073,6 +3074,21 @@ qf_find_buf(qf_info_T *qi)
 	    return win->w_buffer;
 
     return NULL;
+}
+
+    win_T *
+qf_get_cur_window(win_T *win)
+{
+    qf_info_T	*qi = &ql_info;
+
+    if (win != NULL)
+    {
+	qi = GET_LOC_LIST(win);
+	if (qi == NULL)
+	    return NULL;
+    }
+
+    return qf_find_win(qi);
 }
 
 /*
