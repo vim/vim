@@ -1122,7 +1122,12 @@ set_callback(
 {
     free_callback(*cbp, *pp);
     if (callback != NULL && *callback != NUL)
-	*cbp = vim_strsave(callback);
+    {
+	if (partial != NULL)
+	    *cbp = partial->pt_name;
+	else
+	    *cbp = vim_strsave(callback);
+    }
     else
 	*cbp = NULL;
     *pp = partial;
