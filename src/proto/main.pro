@@ -1,4 +1,5 @@
 /* main.c */
+void common_init(mparm_T *params);
 void main_loop(int cmdwin, int noexmode);
 void getout_preserve_modified(int exitval);
 void getout(int exitval);

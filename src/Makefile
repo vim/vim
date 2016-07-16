@@ -1558,9 +1558,11 @@ JSON_TEST_SRC = json_test.c
 JSON_TEST_TARGET = json_test$(EXEEXT)
 MEMFILE_TEST_SRC = memfile_test.c
 MEMFILE_TEST_TARGET = memfile_test$(EXEEXT)
+MESSAGE_TEST_SRC = message_test.c
+MESSAGE_TEST_TARGET = message_test$(EXEEXT)
 
-UNITTEST_SRC = $(JSON_TEST_SRC) $(MEMFILE_TEST_SRC)
-UNITTEST_TARGETS = $(JSON_TEST_TARGET) $(MEMFILE_TEST_TARGET)
+UNITTEST_SRC = $(JSON_TEST_SRC) $(MEMFILE_TEST_SRC) $(MESSAGE_TEST_SRC)
+UNITTEST_TARGETS = $(JSON_TEST_TARGET) $(MEMFILE_TEST_TARGET) $(MESSAGE_TEST_TARGET)
 
 # All sources, also the ones that are not configured
 ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC)
@@ -1604,7 +1606,6 @@ OBJ_COMMON = \
 	objects/mark.o \
 	objects/memline.o \
 	objects/menu.o \
-	objects/message.o \
 	objects/misc1.o \
 	objects/misc2.o \
 	objects/move.o \
@@ -1642,18 +1643,27 @@ OBJ_COMMON = \
 	$(CHANNEL_OBJ) \
 	$(WSDEBUG_OBJ)
 
+# The files included by tests are not in OBJ_COMMON.
 OBJ = $(OBJ_COMMON) \
 	objects/json.o \
 	objects/main.o \
-	objects/memfile.o
+	objects/memfile.o \
+	objects/message.o
 
 JSON_TEST_OBJ = $(OBJ_COMMON) \
-	objects/json_test.o \
-	objects/memfile.o
+	objects/memfile.o \
+	objects/message.o \
+	objects/json_test.o
 
 MEMFILE_TEST_OBJ = $(OBJ_COMMON) \
 	objects/json.o \
+	objects/message.o \
 	objects/memfile_test.o
+
+MESSAGE_TEST_OBJ = $(OBJ_COMMON) \
+	objects/json.o \
+	objects/memfile.o \
+	objects/message_test.o
 
 PRO_AUTO = \
 	arabic.pro \
@@ -1970,6 +1980,9 @@ run_json_test: $(JSON_TEST_TARGET)
 run_memfile_test: $(MEMFILE_TEST_TARGET)
 	./$(MEMFILE_TEST_TARGET)
 
+run_message_test: $(MESSAGE_TEST_TARGET)
+	./$(MESSAGE_TEST_TARGET)
+
 # Run individual OLD style test, assuming that Vim was already compiled.
 test1 \
 	test_autocmd_option \
@@ -2120,6 +2133,13 @@ $(MEMFILE_TEST_TARGET): auto/config.mk objects $(MEMFILE_TEST_OBJ)
 	$(CCC) version.c -o objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(MEMFILE_TEST_TARGET) $(MEMFILE_TEST_OBJ) $(ALL_LIBS)" \
+		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+		sh $(srcdir)/link.sh
+
+$(MESSAGE_TEST_TARGET): auto/config.mk objects $(MESSAGE_TEST_OBJ)
+	$(CCC) version.c -o objects/version.o
+	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
+		-o $(MESSAGE_TEST_TARGET) $(MESSAGE_TEST_OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
 		sh $(srcdir)/link.sh
 
@@ -2941,6 +2961,9 @@ objects/menu.o: menu.c
 objects/message.o: message.c
 	$(CCC) -o $@ message.c
 
+objects/message_test.o: message_test.c
+	$(CCC) -o $@ message_test.c
+
 objects/misc1.o: misc1.c
 	$(CCC) -o $@ misc1.c
 
@@ -3426,6 +3449,10 @@ objects/memfile_test.o: memfile_test.c main.c vim.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h \
  structs.h regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h \
  ex_cmds.h proto.h globals.h farsi.h arabic.h memfile.c
+objects/message_test.o: message_test.c main.c vim.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h \
+ structs.h regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h \
+ ex_cmds.h proto.h globals.h farsi.h arabic.h message.c
 objects/hangulin.o: hangulin.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \

@@ -3053,3 +3053,67 @@ struct timer_S
     partial_T	*tr_partial;
 #endif
 };
+
+/* Maximum number of commands from + or -c arguments. */
+#define MAX_ARG_CMDS 10
+
+/* values for "window_layout" */
+#define WIN_HOR	    1	    /* "-o" horizontally split windows */
+#define	WIN_VER	    2	    /* "-O" vertically split windows */
+#define	WIN_TABS    3	    /* "-p" windows on tab pages */
+
+/* Struct for various parameters passed between main() and other functions. */
+typedef struct
+{
+    int		argc;
+    char	**argv;
+
+    int		evim_mode;		/* started as "evim" */
+    char_u	*use_vimrc;		/* vimrc from -u argument */
+
+    int		n_commands;		     /* no. of commands from + or -c */
+    char_u	*commands[MAX_ARG_CMDS];     /* commands from + or -c arg. */
+    char_u	cmds_tofree[MAX_ARG_CMDS];   /* commands that need free() */
+    int		n_pre_commands;		     /* no. of commands from --cmd */
+    char_u	*pre_commands[MAX_ARG_CMDS]; /* commands from --cmd argument */
+
+    int		edit_type;		/* type of editing to do */
+    char_u	*tagname;		/* tag from -t argument */
+#ifdef FEAT_QUICKFIX
+    char_u	*use_ef;		/* 'errorfile' from -q argument */
+#endif
+
+    int		want_full_screen;
+    int		stdout_isatty;		/* is stdout a terminal? */
+    int		not_a_term;		/* no warning for missing term? */
+    char_u	*term;			/* specified terminal name */
+#ifdef FEAT_CRYPT
+    int		ask_for_key;		/* -x argument */
+#endif
+    int		no_swap_file;		/* "-n" argument used */
+#ifdef FEAT_EVAL
+    int		use_debug_break_level;
+#endif
+#ifdef FEAT_WINDOWS
+    int		window_count;		/* number of windows to use */
+    int		window_layout;		/* 0, WIN_HOR, WIN_VER or WIN_TABS */
+#endif
+
+#ifdef FEAT_CLIENTSERVER
+    int		serverArg;		/* TRUE when argument for a server */
+    char_u	*serverName_arg;	/* cmdline arg for server name */
+    char_u	*serverStr;		/* remote server command */
+    char_u	*serverStrEnc;		/* encoding of serverStr */
+    char_u	*servername;		/* allocated name for our server */
+#endif
+#if !defined(UNIX)
+# define EXPAND_FILENAMES
+    int		literal;		/* don't expand file names */
+#endif
+#ifdef MSWIN
+    int		full_path;		/* file name argument was full path */
+#endif
+#ifdef FEAT_DIFF
+    int		diff_mode;		/* start with 'diff' set */
+#endif
+} mparm_T;

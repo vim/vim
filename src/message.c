@@ -260,7 +260,7 @@ trunc_string(
 	    return;
 	}
 	n = ptr2cells(s + e);
-	if (len + n >= half)
+	if (len + n > half)
 	    break;
 	len += n;
 	buf[e] = s[e];
