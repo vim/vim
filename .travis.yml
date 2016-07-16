@@ -37,8 +37,8 @@ script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
   - if [ "$CHECK_AUTOCONF" = "yes" -a "$CC" = "gcc" ]; then make -C src autoconf; fi
   - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi
-  - if [ "x$BUILD" = "yes" ]; (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC); fi
-  - if [ "x$BUILD" = "yes" ]; ${SRCDIR}/vim --version; fi
+  - if [ "x$BUILD" = "yes" ]; then (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC); fi
+  - if [ "x$BUILD" = "yes" ]; then ${SRCDIR}/vim --version; fi
   - make $SHADOWOPT $TEST
 
 after_success:
