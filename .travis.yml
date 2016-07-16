@@ -37,7 +37,7 @@ script:
   - if [ "$CHECK_AUTOCONF" = "yes" -a "$CC" = "gcc" ]; then make -C src autoconf; fi
   - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi && (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC)
   - ${SRCDIR}/vim --version
-  - make $SHADOWOPT scripttests
+  - make $SHADOWOPT unittests scripttests
 
 after_success:
   - if [ x"$COVERAGE" = "xyes" ]; then ~/.local/bin/coveralls -b $SRCDIR -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
