@@ -1937,6 +1937,11 @@ types.vim: $(TAGS_SRC) $(TAGS_INCL)
 			{printf("%s ", $$1)}END{print ""}' > $@
 	echo "syn keyword Constant OK FAIL TRUE FALSE MAYBE" >> $@
 
+# TESTING
+#
+# Execute the test scripts and the unittests.
+test check: scripttests unittests
+
 # Execute the test scripts.  Run these after compiling Vim, before installing.
 # This doesn't depend on $(VIMTARGET), because that won't work when configure
 # wasn't run yet.  Restart make to build it instead.
@@ -1948,7 +1953,7 @@ types.vim: $(TAGS_SRC) $(TAGS_INCL)
 # If everything is alright, the final message will be "ALL DONE".  If not you
 # get "TEST FAILURE".
 #
-test check:
+scripttests:
 	$(MAKE) -f Makefile $(VIMTARGET)
 	if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); $(MAKE) -f Makefile check VIM=../$(VIMTARGET); \
@@ -1957,7 +1962,7 @@ test check:
 		ln -s $(VIMTARGET) vim; \
 	fi
 	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
-	$(MAKE) -f Makefile unittest
+
 
 # Run the tests with the GUI.  Assumes vim/gvim was already built
 testgui:
@@ -1969,6 +1974,7 @@ benchmark:
 unittesttargets:
 	$(MAKE) -f Makefile $(UNITTEST_TARGETS)
 
+# Execute the unittests one by one.
 unittest unittests: $(UNITTEST_TARGETS)
 	@for t in $(UNITTEST_TARGETS); do \
 		./$$t || exit 1; echo $$t passed; \
