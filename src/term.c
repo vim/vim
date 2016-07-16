@@ -395,7 +395,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_RIGHT,		"\033[C"},
 # endif
 
-# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS) || defined(__EMX__)
+# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS)
 /*
  * standard ANSI terminal, default for unix
  */
@@ -431,20 +431,16 @@ static struct builtin_term builtin_termcaps[] =
 #  endif
 # endif
 
-# if defined(ALL_BUILTIN_TCAPS) || defined(__EMX__)
+# if defined(ALL_BUILTIN_TCAPS)
 /*
  * These codes are valid when nansi.sys or equivalent has been installed.
  * Function keys on a PC are preceded with a NUL. These are converted into
  * K_NUL '\316' in mch_inchar(), because we cannot handle NULs in key codes.
  * CTRL-arrow is used instead of SHIFT-arrow.
  */
-#ifdef __EMX__
-    {(int)KS_NAME,	"os2ansi"},
-#else
     {(int)KS_NAME,	"pcansi"},
     {(int)KS_DL,	"\033[M"},
     {(int)KS_AL,	"\033[L"},
-#endif
     {(int)KS_CE,	"\033[K"},
     {(int)KS_CL,	"\033[2J"},
     {(int)KS_ME,	"\033[0m"},
@@ -516,7 +512,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_PAGEUP,		"\316I"},
 # endif
 
-# if defined(WIN3264) || defined(ALL_BUILTIN_TCAPS) || defined(__EMX__)
+# if defined(WIN3264) || defined(ALL_BUILTIN_TCAPS)
 /*
  * These codes are valid for the Win32 Console .  The entries that start with
  * ESC | are translated into console calls in os_win32.c.  The function keys
@@ -793,7 +789,7 @@ static struct builtin_term builtin_termcaps[] =
 #  endif
 # endif
 
-# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS) || defined(__EMX__)
+# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS)
     {(int)KS_NAME,	"xterm"},
     {(int)KS_CE,	IF_EB("\033[K", ESC_STR "[K")},
     {(int)KS_AL,	IF_EB("\033[L", ESC_STR "[L")},
@@ -1310,10 +1306,6 @@ termgui_mch_get_rgb(guicolor_T color)
 
 #ifdef __MINT__
 # define DEFAULT_TERM	(char_u *)"vt52"
-#endif
-
-#ifdef __EMX__
-# define DEFAULT_TERM	(char_u *)"os2ansi"
 #endif
 
 #ifdef VMS
@@ -2094,7 +2086,7 @@ vim_tgetstr(char *s, char_u **pp)
 }
 #endif /* HAVE_TGETENT */
 
-#if defined(HAVE_TGETENT) && (defined(UNIX) || defined(__EMX__) || defined(VMS) || defined(MACOS_X))
+#if defined(HAVE_TGETENT) && (defined(UNIX) || defined(VMS) || defined(MACOS_X))
 /*
  * Get Columns and Rows from the termcap. Used after a window signal if the
  * ioctl() fails. It doesn't make sense to call tgetent each time if the "co"
@@ -2398,11 +2390,7 @@ termcapinit(char_u *name)
 /*
  * the number of calls to ui_write is reduced by using the buffer "out_buf"
  */
-#ifdef DOS16
-# define OUT_SIZE	255		/* only have 640K total... */
-#else
-# define OUT_SIZE	2047
-#endif
+#define OUT_SIZE	2047
 	    /* Add one to allow mch_write() in os_win32.c to append a NUL */
 static char_u		out_buf[OUT_SIZE + 1];
 static int		out_pos = 0;	/* number of chars in out_buf */

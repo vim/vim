@@ -33,10 +33,6 @@
 # include <stdlib.h>
 #endif
 
-#ifdef __EMX__
-# define HAVE_TOTAL_MEM
-#endif
-
 #if defined(__CYGWIN__) || defined(__CYGWIN32__)
 # define WIN32UNIX	/* Compiling for Win32 using Unix files. */
 # define BINARY_FILE_IO

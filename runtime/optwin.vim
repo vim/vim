@@ -540,7 +540,7 @@ call append("$", "scrolljump\tminimal number of lines to scroll at a time")
 call append("$", " \tset sj=" . &sj)
 call append("$", "ttyscroll\tmaximum number of lines to use scrolling instead of redrawing")
 call append("$", " \tset tsl=" . &tsl)
-if has("gui") || has("msdos") || has("win32")
+if has("gui") || has("win32")
   call append("$", "guicursor\tspecifies what the cursor looks like in different modes")
   call <SID>OptionG("gcr", &gcr)
 endif
@@ -1016,11 +1016,9 @@ call append("$", "patchmode\tkeep oldest version of a file; specifies file name 
 call <SID>OptionG("pm", &pm)
 call append("$", "fsync\tforcibly sync the file to disk after writing it")
 call <SID>BinOptionG("fs", &fs)
-if !has("msdos")
-  call append("$", "shortname\tuse 8.3 file names")
-  call append("$", "\t(local to buffer)")
-  call <SID>BinOptionL("sn")
-endif
+call append("$", "shortname\tuse 8.3 file names")
+call append("$", "\t(local to buffer)")
+call <SID>BinOptionL("sn")
 call append("$", "cryptmethod\tencryption method for file writing: zip or blowfish")
 call append("$", "\t(local to buffer)")
 call <SID>OptionL("cm")
@@ -1136,20 +1134,14 @@ if has("quickfix")
 endif
 
 
-if has("msdos") || has("os2") || has("win16") || has("win32") || has("osfiletype")
+if has("win32") || has("osfiletype")
   call <SID>Header("system specific")
-  if has("msdos")
-    call append("$", "bioskey\tcall the BIOS to get a keyoard character")
-    call <SID>BinOptionG("biosk", &biosk)
-    call append("$", "conskey\tuse direct console I/O to get a keyboard character")
-    call <SID>BinOptionG("consk", &consk)
-  endif
   if has("osfiletype")
     call append("$", "osfiletype\tOS-specific information about the type of file")
     call append("$", "\t(local to buffer)")
     call <SID>OptionL("oft")
   endif
-  if has("msdos") || has("os2") || has("win16") || has("win32")
+  if has("win32")
     call append("$", "shellslash\tuse forward slashes in file names; for Unix-like shells")
     call <SID>BinOptionG("ssl", &ssl)
   endif

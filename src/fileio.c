@@ -367,7 +367,7 @@ readfile(
      */
     if (sfname == NULL)
 	sfname = fname;
-#if defined(UNIX) || defined(__EMX__)
+#if defined(UNIX)
     fname = sfname;
 #endif
 
@@ -3150,7 +3150,7 @@ buf_write(
     int		    prev_got_int = got_int;
     int		    file_readonly = FALSE;  /* overwritten file is read-only */
     static char	    *err_readonly = "is read-only (cannot override: \"W\" in 'cpoptions')";
-#if defined(UNIX) || defined(__EMX__XX)	    /*XXX fix me sometime? */
+#if defined(UNIX)			    /*XXX fix me sometime? */
     int		    made_writable = FALSE;  /* 'w' bit has been set */
 #endif
 					/* writing everything */
@@ -7320,12 +7320,7 @@ vim_settempdir(char_u *tempdir)
     {
 	if (vim_FullName(tempdir, buf, MAXPATHL, FALSE) == FAIL)
 	    STRCPY(buf, tempdir);
-# ifdef __EMX__
-	if (vim_strchr(buf, '/') != NULL)
-	    STRCAT(buf, "/");
-	else
-# endif
-	    add_pathsep(buf);
+	add_pathsep(buf);
 	vim_tempdir = vim_strsave(buf);
 	vim_free(buf);
     }
@@ -7385,15 +7380,7 @@ vim_tempname(
 	    if (itmp[0] != '$' && mch_isdir(itmp))
 	    {
 		/* directory exists */
-# ifdef __EMX__
-		/* If $TMP contains a forward slash (perhaps using bash or
-		 * tcsh), don't add a backslash, use a forward slash!
-		 * Adding 2 backslashes didn't work. */
-		if (vim_strchr(itmp, '/') != NULL)
-		    STRCAT(itmp, "/");
-		else
-# endif
-		    add_pathsep(itmp);
+		add_pathsep(itmp);
 
 # ifdef HAVE_MKDTEMP
 		{

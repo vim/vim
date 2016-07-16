@@ -35,7 +35,7 @@
 # ifdef AMIGA
 #  include "os_amiga.pro"
 # endif
-# if defined(UNIX) || defined(__EMX__) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 #  include "os_unix.pro"
 # endif
 # ifdef WIN3264

@@ -75,7 +75,7 @@ typedef struct
     char_u	*serverStrEnc;		/* encoding of serverStr */
     char_u	*servername;		/* allocated name for our server */
 #endif
-#if !defined(UNIX) && !defined(__EMX__)
+#if !defined(UNIX)
 # define EXPAND_FILENAMES
     int		literal;		/* don't expand file names */
 #endif
@@ -183,7 +183,7 @@ main
 
 #if defined(WIN32) && defined(FEAT_MBYTE)
     /*
-     * MingW expands command line arguments, which confuses our code to
+     * MinGW expands command line arguments, which confuses our code to
      * convert when 'encoding' changes.  Get the unexpanded arguments.
      */
     argc = get_cmd_argsW(&argv);
@@ -230,10 +230,6 @@ main
     }
 #endif
     starttime = time(NULL);
-
-#ifdef __EMX__
-    _wildcard(&params.argc, &params.argv);
-#endif
 
 #ifdef FEAT_MBYTE
     (void)mb_init();	/* init mb_bytelen_tab[] to ones */
@@ -3216,7 +3212,7 @@ mainerr(
     int		n,	/* one of the ME_ defines */
     char_u	*str)	/* extra argument or NULL */
 {
-#if defined(UNIX) || defined(__EMX__) || defined(VMS)
+#if defined(UNIX) || defined(VMS)
     reset_signals();		/* kill us with CTRL-C here, if you like */
 #endif
 
@@ -3269,7 +3265,7 @@ usage(void)
 #endif
     };
 
-#if defined(UNIX) || defined(__EMX__) || defined(VMS)
+#if defined(UNIX) || defined(VMS)
     reset_signals();		/* kill us with CTRL-C here, if you like */
 #endif
 

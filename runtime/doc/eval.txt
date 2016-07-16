@@ -1914,7 +1914,7 @@ USAGE				RESULT	DESCRIPTION	~
 abs({expr})			Float or Number  absolute value of {expr}
 acos({expr})			Float	arc cosine of {expr}
 add({list}, {item})		List	append {item} to |List| {list}
-and({expr}, {expr})		Number  bitwise AND
+and({expr}, {expr})		Number	bitwise AND
 append({lnum}, {string})	Number	append {string} below line {lnum}
 append({lnum}, {list})		Number	append lines {list} below line {lnum}
 argc()				Number	number of files in the argument list
@@ -1932,7 +1932,7 @@ assert_notmatch({pat}, {text} [, {msg}]) none  assert {pat} not matches {text}
 assert_true({actual} [, {msg}])          none  assert {actual} is true
 asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
-atan2({expr}, {expr})		Float   arc tangent of {expr1} / {expr2}
+atan2({expr}, {expr})		Float	arc tangent of {expr1} / {expr2}
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -1956,21 +1956,21 @@ ch_evalraw({handle}, {string} [, {options}])
 				any	evaluate {string} on raw {handle}
 ch_getbufnr({handle}, {what})	Number	get buffer number for {handle}/{what}
 ch_getjob({channel})		Job	get the Job of {channel}
-ch_info({handle})		String	info about channel  {handle}
+ch_info({handle})		String	info about channel {handle}
 ch_log({msg} [, {handle}])	none	write {msg} in the channel log file
 ch_logfile({fname} [, {mode}])	none	start logging channel activity
 ch_open({address} [, {options}])
-				Channel open a channel to {address}
-ch_read({handle} [, {options}]) String  read from  {handle}
+				Channel	open a channel to {address}
+ch_read({handle} [, {options}]) String	read from {handle}
 ch_readraw({handle} [, {options}])
-				String  read raw from  {handle}
+				String	read raw from {handle}
 ch_sendexpr({handle}, {expr} [, {options}])
 				any	send {expr} over JSON {handle}
 ch_sendraw({handle}, {string} [, {options}])
 				any	send {string} over raw {handle}
 ch_setoptions({handle}, {options})
 				none	set options for {handle}
-ch_status({handle})		String	status of channel  {handle}
+ch_status({handle})		String	status of channel {handle}
 changenr()			Number	current change number
 char2nr({expr}[, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
 cindent({lnum})			Number	C indent for line {lnum}
@@ -1985,7 +1985,7 @@ copy({expr})			any	make a shallow copy of {expr}
 cos({expr})			Float	cosine of {expr}
 cosh({expr})			Float	hyperbolic cosine of {expr}
 count({list}, {expr} [, {ic} [, {start}]])
-				Number	 count how many {expr} are in {list}
+				Number	count how many {expr} are in {list}
 cscope_connection([{num} , {dbpath} [, {prepend}]])
 				Number	checks existence of cscope connection
 cursor({lnum}, {col} [, {off}])
@@ -2002,7 +2002,7 @@ eval({string})			any	evaluate {string} into its value
 eventhandler()			Number	|TRUE| if inside an event handler
 executable({expr})		Number	1 if executable {expr} exists
 execute({command})		String	execute {command} and get the output
-exepath({expr})			String  full path of the command {expr}
+exepath({expr})			String	full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
 extend({expr1}, {expr2} [, {expr3}])
 				List/Dict insert items of {expr2} into {expr1}
@@ -2030,7 +2030,7 @@ foldtext()			String	line displayed for closed fold
 foldtextresult({lnum})		String	text for closed fold at {lnum}
 foreground()			Number	bring the Vim window to the foreground
 function({name} [, {arglist}] [, {dict}])
-				Funcref reference to function {name}
+				Funcref	reference to function {name}
 garbagecollect([{atexit}])	none	free memory, breaking cyclic references
 get({list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get({dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
@@ -2074,7 +2074,7 @@ getwinvar({nr}, {varname} [, {def}])
 				any	variable {varname} in window {nr}
 glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])
 				any	expand file wildcards in {expr}
-glob2regpat({expr})		String  convert a glob pat into a search pat
+glob2regpat({expr})		String	convert a glob pat into a search pat
 globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 				String	do glob({expr}) for all dirs in {path}
 has({feature})			Number	|TRUE| if feature {feature} supported
@@ -2097,22 +2097,22 @@ index({list}, {expr} [, {start} [, {ic}]])
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
 inputdialog({prompt} [, {text} [, {completion}]]])
-				String  like input() but in a GUI dialog
+				String	like input() but in a GUI dialog
 inputlist({textlist})		Number	let the user pick from a choice list
 inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
-inputsecret({prompt} [, {text}]) String  like input() but hiding the text
+inputsecret({prompt} [, {text}]) String	like input() but hiding the text
 insert({list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
-invert({expr})			Number  bitwise invert
+invert({expr})			Number	bitwise invert
 isdirectory({directory})	Number	|TRUE| if {directory} is a directory
 islocked({expr})		Number	|TRUE| if {expr} is locked
-isnan({expr})			Number  |TRUE| if {expr} is NaN
+isnan({expr})			Number	|TRUE| if {expr} is NaN
 items({dict})			List	key-value pairs in {dict}
 job_getchannel({job})		Channel	get the channel handle for {job}
 job_info({job})			Dict	get information about {job}
 job_setoptions({job}, {options}) none	set options for {job}
 job_start({command} [, {options}])
-				Job	 start a job
+				Job	start a job
 job_status({job})		String	get the status of {job}
 job_stop({job} [, {how}])	Number	stop {job}
 join({list} [, {sep}])		String	join {list} items into one String
@@ -2123,7 +2123,7 @@ json_encode({expr})		String	encode JSON
 keys({dict})			List	keys in {dict}
 len({expr})			Number	the length of {expr}
 libcall({lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
-libcallnr({lib}, {func}, {arg})	Number  idem, but return a Number
+libcallnr({lib}, {func}, {arg})	Number	idem, but return a Number
 line({expr})			Number	line nr of cursor, last line or mark
 line2byte({lnum})		Number	byte count of line {lnum}
 lispindent({lnum})		Number	Lisp indent for line {lnum}
@@ -2161,7 +2161,7 @@ mode([expr])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char({expr}[, {utf8}])	String	single char with ASCII/UTF8 value {expr}
-or({expr}, {expr})		Number  bitwise OR
+or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr})		String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
 pow({x}, {y})			Float	{x} to the power of {y}
@@ -2269,7 +2269,7 @@ synID({lnum}, {col}, {trans})	Number	syntax ID at {lnum} and {col}
 synIDattr({synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
 synIDtrans({synID})		Number	translated syntax ID of {synID}
-synconcealed({lnum}, {col})	List    info about concealing
+synconcealed({lnum}, {col})	List	info about concealing
 synstack({lnum}, {col})		List	stack of syntax IDs at {lnum} and {col}
 system({expr} [, {input}])	String	output of shell command/filter {expr}
 systemlist({expr} [, {input}])	List	output of shell command/filter {expr}
@@ -2326,7 +2326,7 @@ winwidth({nr})			Number	width of window {nr}
 wordcount()			Dict	get byte/char/word statistics
 writefile({list}, {fname} [, {flags}])
 				Number	write list of lines to file {fname}
-xor({expr}, {expr})		Number  bitwise XOR
+xor({expr}, {expr})		Number	bitwise XOR
 
 
 abs({expr})							*abs()*
@@ -7934,8 +7934,6 @@ diff			Compiled with |vimdiff| and 'diff' support.
 digraphs		Compiled with support for digraphs.
 directx			Compiled with support for Direct-X and 'renderoptions'.
 dnd			Compiled with support for the "~ register |quote_~|.
-dos16			16 bits DOS version of Vim.
-dos32			32 bits DOS (DJGPP) version of Vim.
 ebcdic			Compiled on a machine with ebcdic character set.
 emacs_tags		Compiled with support for Emacs tags.
 eval			Compiled with expression evaluation support.  Always
@@ -8008,7 +8006,6 @@ netbeans_enabled	Compiled with support for |netbeans| and connected.
 netbeans_intg		Compiled with support for |netbeans|.
 num64			Compiled with 64-bit |Number| support.
 ole			Compiled with OLE automation support for Win32.
-os2			OS/2 version of Vim.
 packages		Compiled with |packages| support.
 path_extra		Compiled with up/downwards search in 'path' and 'tags'
 perl			Compiled with Perl interface.

@@ -56,8 +56,7 @@
 /*
  * For Unix, Mac and Win32 use +huge by default.  These days CPUs are fast and
  * Memory is cheap.
- * Use +big for older systems: Other MS-Windows, dos32, OS/2 and VMS.
- * The dos16 version has very little RAM available, use +small.
+ * Use +big for older systems: Other MS-Windows and VMS.
  * Otherwise use +normal
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \

@@ -9,7 +9,7 @@
 #ifndef VIM__H
 # define VIM__H
 
-/* use fastcall for Borland, when compiling for Win32 (not for DOS16) */
+/* use fastcall for Borland, when compiling for Win32 */
 #if defined(__BORLANDC__) && defined(WIN32) && !defined(DEBUG)
 #if defined(FEAT_PERL) || \
     defined(FEAT_PYTHON) || \
@@ -27,7 +27,7 @@
 # endif
 #endif
 
-#if defined(WIN32) || defined(_WIN64) || defined(__EMX__)
+#if defined(WIN32) || defined(_WIN64)
 # include "vimio.h"
 #endif
 
@@ -82,10 +82,6 @@
 # endif
 #else
 # define ROOT_UID 0
-#endif
-
-#ifdef __EMX__		/* hand-edited config.h for OS/2 with EMX */
-# include "os_os2_cfg.h"
 #endif
 
 /*
@@ -252,7 +248,7 @@
 # include "os_beos.h"
 #endif
 
-#if (defined(UNIX) || defined(__EMX__) || defined(VMS)) \
+#if (defined(UNIX) || defined(VMS)) \
 	&& (!defined(MACOS_X) || defined(HAVE_CONFIG_H))
 # include "os_unix.h"	    /* bring lots of system header files */
 #endif
@@ -275,12 +271,6 @@
 #if !defined(__cplusplus) && defined(UNIX) \
   && !defined(MACOS_X) /* MACOS_X doesn't yet support osdef.h */
 # include "auto/osdef.h"	/* bring missing declarations in */
-#endif
-
-#ifdef __EMX__
-# define    getcwd  _getcwd2
-# define    chdir   _chdir2
-# undef	    CHECK_INODE
 #endif
 
 #ifdef AMIGA
@@ -477,7 +467,7 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 #endif
 
 #if defined(HAVE_ERRNO_H) \
-	|| defined(WIN32) || defined(_WIN64) || defined(__EMX__)
+	|| defined(WIN32) || defined(_WIN64)
 # include <errno.h>
 #endif
 
@@ -1530,7 +1520,7 @@ typedef UINT32_TYPEDEF UINT32_T;
  * EMX doesn't have a global way of making open() use binary I/O.
  * Use O_BINARY for all open() calls.
  */
-#if defined(__EMX__) || defined(__CYGWIN32__)
+#if defined(__CYGWIN32__)
 # define O_EXTRA    O_BINARY
 #else
 # define O_EXTRA    0

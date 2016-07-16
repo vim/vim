@@ -1818,7 +1818,7 @@ check_menu_pointer(vimmenu_T *root, vimmenu_T *menu_to_check)
  * defined.  This is done once here.  add_menu_path() may have already been
  * called to define these menus, and may be called again.  This function calls
  * itself recursively.	Should be called at the top level with:
- * gui_create_initial_menus(root_menu, NULL);
+ * gui_create_initial_menus(root_menu);
  */
     void
 gui_create_initial_menus(vimmenu_T *menu)

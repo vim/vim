@@ -211,14 +211,10 @@ static RETSIGTYPE deathtrap SIGPROTOARG;
 static void catch_int_signal(void);
 static void set_signals(void);
 static void catch_signals(RETSIGTYPE (*func_deadly)(), RETSIGTYPE (*func_other)());
-#ifndef __EMX__
 static int  have_wildcard(int, char_u **);
 static int  have_dollars(int, char_u **);
-#endif
 
-#ifndef __EMX__
 static int save_patterns(int num_pat, char_u **pat, int *num_file, char_u ***file);
-#endif
 
 #ifndef SIG_ERR
 # define SIG_ERR	((RETSIGTYPE (*)())-1)
@@ -226,10 +222,8 @@ static int save_patterns(int num_pat, char_u **pat, int *num_file, char_u ***fil
 
 /* volatile because it is used in signal handler sig_winch(). */
 static volatile int do_resize = FALSE;
-#ifndef __EMX__
 static char_u	*extra_shell_arg = NULL;
 static int	show_shell_mess = TRUE;
-#endif
 /* volatile because it is used in signal handler deathtrap(). */
 static volatile int deadly_signal = 0;	    /* The signal we caught */
 /* volatile because it is used in signal handler deathtrap(). */
@@ -570,13 +564,10 @@ mch_char_avail(void)
     long_u
 mch_total_mem(int special UNUSED)
 {
-# ifdef __EMX__
-    return ulimit(3, 0L) >> 10;   /* always 32MB? */
-# else
     long_u	mem = 0;
     long_u	shiftright = 10;  /* how much to shift "mem" right for Kbyte */
 
-#  ifdef HAVE_SYSCTL
+# ifdef HAVE_SYSCTL
     int		mib[2], physmem;
     size_t	len;
 
@@ -586,9 +577,9 @@ mch_total_mem(int special UNUSED)
     len = sizeof(physmem);
     if (sysctl(mib, 2, &physmem, &len, NULL, 0) == 0)
 	mem = (long_u)physmem;
-#  endif
+# endif
 
-#  if defined(HAVE_SYS_SYSINFO_H) && defined(HAVE_SYSINFO)
+# if defined(HAVE_SYS_SYSINFO_H) && defined(HAVE_SYSINFO)
     if (mem == 0)
     {
 	struct sysinfo sinfo;
@@ -596,7 +587,7 @@ mch_total_mem(int special UNUSED)
 	/* Linux way of getting amount of RAM available */
 	if (sysinfo(&sinfo) == 0)
 	{
-#   ifdef HAVE_SYSINFO_MEM_UNIT
+#  ifdef HAVE_SYSINFO_MEM_UNIT
 	    /* avoid overflow as much as possible */
 	    while (shiftright > 0 && (sinfo.mem_unit & 1) == 0)
 	    {
@@ -604,14 +595,14 @@ mch_total_mem(int special UNUSED)
 		--shiftright;
 	    }
 	    mem = sinfo.totalram * sinfo.mem_unit;
-#   else
+#  else
 	    mem = sinfo.totalram;
-#   endif
+#  endif
 	}
     }
-#  endif
+# endif
 
-#  ifdef HAVE_SYSCONF
+# ifdef HAVE_SYSCONF
     if (mem == 0)
     {
 	long	    pagesize, pagecount;
@@ -630,19 +621,19 @@ mch_total_mem(int special UNUSED)
 	    mem = (long_u)pagesize * pagecount;
 	}
     }
-#  endif
+# endif
 
     /* Return the minimum of the physical memory and the user limit, because
      * using more than the user limit may cause Vim to be terminated. */
-#  if defined(HAVE_SYS_RESOURCE_H) && defined(HAVE_GETRLIMIT)
+# if defined(HAVE_SYS_RESOURCE_H) && defined(HAVE_GETRLIMIT)
     {
 	struct rlimit	rlp;
 
 	if (getrlimit(RLIMIT_DATA, &rlp) == 0
 		&& rlp.rlim_cur < ((rlim_t)1 << (sizeof(long_u) * 8 - 1))
-#   ifdef RLIM_INFINITY
+#  ifdef RLIM_INFINITY
 		&& rlp.rlim_cur != RLIM_INFINITY
-#   endif
+#  endif
 		&& ((long_u)rlp.rlim_cur >> 10) < (mem >> shiftright)
 	   )
 	{
@@ -650,12 +641,11 @@ mch_total_mem(int special UNUSED)
 	    shiftright = 10;
 	}
     }
-#  endif
+# endif
 
     if (mem > 0)
 	return mem >> shiftright;
     return (long_u)0x1fffff;
-# endif
 }
 #endif
 
@@ -712,9 +702,6 @@ mch_delay(long msec, int ignoreinput)
 #  ifndef HAVE_SELECT
 	poll(NULL, 0, (int)msec);
 #  else
-#   ifdef __EMX__
-	_sleep2(msec);
-#   else
 	{
 	    struct timeval tv;
 
@@ -726,7 +713,6 @@ mch_delay(long msec, int ignoreinput)
 	     */
 	    select(0, NULL, NULL, NULL, &tv);
 	}
-#   endif /* __EMX__ */
 #  endif /* HAVE_SELECT */
 # endif /* HAVE_NANOSLEEP */
 #endif /* HAVE_USLEEP */
@@ -2608,17 +2594,13 @@ mch_FullName(
     int
 mch_isFullName(char_u *fname)
 {
-#ifdef __EMX__
-    return _fnisabs(fname);
-#else
-# ifdef VMS
+#ifdef VMS
     return ( fname[0] == '/'	       || fname[0] == '.'	    ||
 	     strchr((char *)fname,':') || strchr((char *)fname,'"') ||
 	    (strchr((char *)fname,'[') && strchr((char *)fname,']'))||
 	    (strchr((char *)fname,'<') && strchr((char *)fname,'>'))   );
-# else
+#else
     return (*fname == '/' || *fname == '~');
-# endif
 #endif
 }
 
@@ -3840,19 +3822,6 @@ mch_get_shellsize(void)
     char_u	*p;
 
     /*
-     * For OS/2 use _scrsize().
-     */
-# ifdef __EMX__
-    {
-	int s[2];
-
-	_scrsize(s);
-	columns = s[0];
-	rows = s[1];
-    }
-# endif
-
-    /*
      * 1. try using an ioctl. It is the most accurate method.
      *
      * Try using TIOCGWINSZ first, some systems that have it also define
@@ -4102,9 +4071,6 @@ mch_call_shell(
     int		tmode = cur_tmode;
 #ifdef USE_SYSTEM	/* use system() to start the shell: simple but slow */
     int	    x;
-# ifndef __EMX__
-    char_u  *newcmd;   /* only needed for unix */
-# else
     /*
      * Set the preferred shell in the EMXSHELL environment variable (but
      * only if it is different from what is already in the environment).
@@ -4125,7 +4091,6 @@ mch_call_shell(
 	    putenv((char *)p);	/* don't free the pointer! */
 	}
     }
-# endif
 
     out_flush();
 
@@ -4137,24 +4102,11 @@ mch_call_shell(
     loose_clipboard();
 # endif
 
-# ifdef __EMX__
-    if (cmd == NULL)
-	x = system("");	/* this starts an interactive shell in emx */
-    else
-	x = system((char *)cmd);
-    /* system() returns -1 when error occurs in starting shell */
-    if (x == -1 && !emsg_silent)
-    {
-	MSG_PUTS(_("\nCannot execute shell "));
-	msg_outtrans(p_sh);
-	msg_putchar('\n');
-    }
-# else /* not __EMX__ */
     if (cmd == NULL)
 	x = system((char *)p_sh);
     else
     {
-#  ifdef VMS
+# ifdef VMS
 	if (ofn = strchr((char *)cmd, '>'))
 	    *ofn++ = '\0';
 	if (ifn = strchr((char *)cmd, '<'))
@@ -4170,7 +4122,7 @@ mch_call_shell(
 	    x = vms_sys((char *)cmd, ofn, ifn);
 	else
 	    x = system((char *)cmd);
-#  else
+# else
 	newcmd = lalloc(STRLEN(p_sh)
 		+ (extra_shell_arg == NULL ? 0 : STRLEN(extra_shell_arg))
 		+ STRLEN(p_shcf) + STRLEN(cmd) + 4, TRUE);
@@ -4185,7 +4137,7 @@ mch_call_shell(
 	    x = system((char *)newcmd);
 	    vim_free(newcmd);
 	}
-#  endif
+# endif
     }
 # ifdef VMS
     x = vms_sys_status(x);
@@ -4194,7 +4146,6 @@ mch_call_shell(
 	;
     else if (x == 127)
 	MSG_PUTS(_("\nCannot execute shell sh\n"));
-# endif	/* __EMX__ */
     else if (x && !(options & SHELL_SILENT))
     {
 	MSG_PUTS(_("\nshell returned "));
@@ -5742,12 +5693,6 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	    mzquantum_used = TRUE;
 	}
 # endif
-# ifdef __EMX__
-	/* don't check for incoming chars if not in raw mode, because select()
-	 * always returns TRUE then (in some version of emx.dll) */
-	if (curr_tmode != TMODE_RAW)
-	    return 0;
-# endif
 
 	if (towait >= 0)
 	{
@@ -5975,121 +5920,7 @@ mch_expand_wildcards(
     size_t	len;
     char_u	*p;
     int		dir;
-#ifdef __EMX__
-    /*
-     * This is the OS/2 implementation.
-     */
-# define EXPL_ALLOC_INC	16
-    char_u	**expl_files;
-    size_t	files_alloced, files_free;
-    char_u	*buf;
-    int		has_wildcard;
 
-    *num_file = 0;	/* default: no files found */
-    files_alloced = EXPL_ALLOC_INC; /* how much space is allocated */
-    files_free = EXPL_ALLOC_INC;    /* how much space is not used  */
-    *file = (char_u **)alloc(sizeof(char_u **) * files_alloced);
-    if (*file == NULL)
-	return FAIL;
-
-    for (; num_pat > 0; num_pat--, pat++)
-    {
-	expl_files = NULL;
-	if (vim_strchr(*pat, '$') || vim_strchr(*pat, '~'))
-	    /* expand environment var or home dir */
-	    buf = expand_env_save(*pat);
-	else
-	    buf = vim_strsave(*pat);
-	expl_files = NULL;
-	has_wildcard = mch_has_exp_wildcard(buf);  /* (still) wildcards? */
-	if (has_wildcard)   /* yes, so expand them */
-	    expl_files = (char_u **)_fnexplode(buf);
-
-	/*
-	 * return value of buf if no wildcards left,
-	 * OR if no match AND EW_NOTFOUND is set.
-	 */
-	if ((!has_wildcard && ((flags & EW_NOTFOUND) || mch_getperm(buf) >= 0))
-		|| (expl_files == NULL && (flags & EW_NOTFOUND)))
-	{   /* simply save the current contents of *buf */
-	    expl_files = (char_u **)alloc(sizeof(char_u **) * 2);
-	    if (expl_files != NULL)
-	    {
-		expl_files[0] = vim_strsave(buf);
-		expl_files[1] = NULL;
-	    }
-	}
-	vim_free(buf);
-
-	/*
-	 * Count number of names resulting from expansion,
-	 * At the same time add a backslash to the end of names that happen to
-	 * be directories, and replace slashes with backslashes.
-	 */
-	if (expl_files)
-	{
-	    for (i = 0; (p = expl_files[i]) != NULL; i++)
-	    {
-		dir = mch_isdir(p);
-		/* If we don't want dirs and this is one, skip it */
-		if ((dir && !(flags & EW_DIR)) || (!dir && !(flags & EW_FILE)))
-		    continue;
-
-		/* Skip files that are not executable if we check for that. */
-		if (!dir && (flags & EW_EXEC)
-			     && !mch_can_exe(p, NULL, !(flags & EW_SHELLCMD)))
-		    continue;
-
-		if (--files_free == 0)
-		{
-		    /* need more room in table of pointers */
-		    files_alloced += EXPL_ALLOC_INC;
-		    *file = (char_u **)vim_realloc(*file,
-					   sizeof(char_u **) * files_alloced);
-		    if (*file == NULL)
-		    {
-			EMSG(_(e_outofmem));
-			*num_file = 0;
-			return FAIL;
-		    }
-		    files_free = EXPL_ALLOC_INC;
-		}
-		slash_adjust(p);
-		if (dir)
-		{
-		    /* For a directory we add a '/', unless it's already
-		     * there. */
-		    len = STRLEN(p);
-		    if (((*file)[*num_file] = alloc(len + 2)) != NULL)
-		    {
-			STRCPY((*file)[*num_file], p);
-			if (!after_pathsep((*file)[*num_file],
-						    (*file)[*num_file] + len))
-			{
-			    (*file)[*num_file][len] = psepc;
-			    (*file)[*num_file][len + 1] = NUL;
-			}
-		    }
-		}
-		else
-		{
-		    (*file)[*num_file] = vim_strsave(p);
-		}
-
-		/*
-		 * Error message already given by either alloc or vim_strsave.
-		 * Should return FAIL, but returning OK works also.
-		 */
-		if ((*file)[*num_file] == NULL)
-		    break;
-		(*num_file)++;
-	    }
-	    _fnexplodefree((char **)expl_files);
-	}
-    }
-    return OK;
-
-#else /* __EMX__ */
     /*
      * This is the non-OS/2 implementation (really Unix).
      */
@@ -6566,13 +6397,10 @@ notfound:
     if (flags & EW_NOTFOUND)
 	return save_patterns(num_pat, pat, num_file, file);
     return FAIL;
-
-#endif /* __EMX__ */
 }
 
 #endif /* VMS */
 
-#ifndef __EMX__
     static int
 save_patterns(
     int		num_pat,
@@ -6598,7 +6426,6 @@ save_patterns(
     *num_file = num_pat;
     return OK;
 }
-#endif
 
 /*
  * Return TRUE if the string "p" contains a wildcard that mch_expandpath() can
@@ -6649,7 +6476,6 @@ mch_has_wildcard(char_u *p)
     return FALSE;
 }
 
-#ifndef __EMX__
     static int
 have_wildcard(int num, char_u **file)
 {
@@ -6671,7 +6497,6 @@ have_dollars(int num, char_u **file)
 	    return TRUE;
     return FALSE;
 }
-#endif	/* ifndef __EMX__ */
 
 #if !defined(HAVE_RENAME) || defined(PROTO)
 /*

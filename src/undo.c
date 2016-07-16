@@ -641,7 +641,7 @@ u_savecommon(
 	u_getbot();
     }
 
-#if !defined(UNIX) && !defined(WIN32) && !defined(__EMX__)
+#if !defined(UNIX) && !defined(WIN32)
 	/*
 	 * With Amiga we can't handle big undo's, because
 	 * then u_alloc_line would have to allocate a block larger than 32K

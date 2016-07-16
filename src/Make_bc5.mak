@@ -1,7 +1,7 @@
 #
 # Makefile for Vim.
 # Compiler: Borland C++ 5.0 and later 32-bit compiler
-#  Targets: Dos16 or Win32 (Windows NT and Windows 95) (with/without GUI)
+#  Targets: Win32 (Windows NT and Windows 95) (with/without GUI)
 #
 # NOTE: THIS IS OLD AND PROBABLY NO LONGER WORKS.
 #

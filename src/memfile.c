@@ -602,16 +602,7 @@ mf_sync(memfile_T *mfp, int flags)
 # ifdef HAVE_FSYNC
 	/*
 	 * most Unixes have the very useful fsync() function, just what we need.
-	 * However, with OS/2 and EMX it is also available, but there are
-	 * reports of bad problems with it (a bug in HPFS.IFS).
-	 * So we disable use of it here in case someone tries to be smart
-	 * and changes os_os2_cfg.h... (even though there is no __EMX__ test
-	 * in the #if, as __EMX__ does not have sync(); we hope for a timely
-	 * sync from the system itself).
 	 */
-#  if defined(__EMX__)
-   error "Don't use fsync with EMX! Read emxdoc.doc or emxfix01.doc for info."
-#  endif
 	if (STRCMP(p_sws, "fsync") == 0)
 	{
 	    if (fsync(mfp->mf_fd))
