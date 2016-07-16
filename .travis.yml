@@ -6,7 +6,7 @@ compiler:
 
 env:
   - BUILD=yes TEST=scripttests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src
-  - BUILD= TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src
+  - BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
     CHECK_AUTOCONF=yes
   - BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
@@ -37,11 +37,11 @@ script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
   - if [ "$CHECK_AUTOCONF" = "yes" -a "$CC" = "gcc" ]; then make -C src autoconf; fi
   - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi
-  - if [ "x$BUILD" = "yes" ]; then (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC); fi
-  - if [ "x$BUILD" = "yes" ]; then ${SRCDIR}/vim --version; fi
+  - (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && if [ "$BUILD" = "yes" ]; then make -j$NPROC; fi)
+  - if [ "$BUILD" = "yes" ]; then ${SRCDIR}/vim --version; fi
   - make $SHADOWOPT $TEST
 
 after_success:
-  - if [ x"$COVERAGE" = "xyes" ]; then ~/.local/bin/coveralls -b $SRCDIR -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
+  - if [ "$COVERAGE" = "yes" ]; then ~/.local/bin/coveralls -b $SRCDIR -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
 
 # vim:set sts=2 sw=2 tw=0 et:
