@@ -1581,7 +1581,7 @@ static char_u *qf_last_bufname = NULL;
 static bufref_T  qf_last_bufref = {NULL, 0};
 
 /*
- * Get buffer number for file "dir.name".
+ * Get buffer number for file "directory.fname".
  * Also sets the b_has_qf_entry flag.
  */
     static int
@@ -4109,11 +4109,13 @@ ex_vimgrep(exarg_T *eap)
 		while (vim_regexec_multi(&regmatch, curwin, buf, lnum,
 							       col, NULL) > 0)
 		{
-		    ;
+		    /* Pass the buffer number so that it gets used even for a
+		     * dummy buffer, unless duplicate_name is set, then the
+		     * buffer will be wiped out below. */
 		    if (qf_add_entry(qi,
 				NULL,       /* dir */
 				fname,
-				0,
+				duplicate_name ? 0 : buf->b_fnum,
 				ml_get_buf(buf,
 				     regmatch.startpos[0].lnum + lnum, FALSE),
 				regmatch.startpos[0].lnum + lnum,
@@ -4177,12 +4179,17 @@ ex_vimgrep(exarg_T *eap)
 		    else if (buf != first_match_buf || (flags & VGR_NOJUMP))
 		    {
 			unload_dummy_buffer(buf, dirname_start);
+			/* Keeping the buffer, remove the dummy flag. */
+			buf->b_flags &= ~BF_DUMMY;
 			buf = NULL;
 		    }
 		}
 
 		if (buf != NULL)
 		{
+		    /* Keeping the buffer, remove the dummy flag. */
+		    buf->b_flags &= ~BF_DUMMY;
+
 		    /* If the buffer is still loaded we need to use the
 		     * directory we jumped to below. */
 		    if (buf == first_match_buf
