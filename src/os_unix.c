@@ -4070,27 +4070,7 @@ mch_call_shell(
 #endif
     int		tmode = cur_tmode;
 #ifdef USE_SYSTEM	/* use system() to start the shell: simple but slow */
-    int	    x;
-    /*
-     * Set the preferred shell in the EMXSHELL environment variable (but
-     * only if it is different from what is already in the environment).
-     * Emx then takes care of whether to use "/c" or "-c" in an
-     * intelligent way. Simply pass the whole thing to emx's system() call.
-     * Emx also starts an interactive shell if system() is passed an empty
-     * string.
-     */
-    char_u *p, *old;
-
-    if (((old = (char_u *)getenv("EMXSHELL")) == NULL) || STRCMP(old, p_sh))
-    {
-	/* should check HAVE_SETENV, but I know we don't have it. */
-	p = alloc(10 + strlen(p_sh));
-	if (p)
-	{
-	    sprintf((char *)p, "EMXSHELL=%s", p_sh);
-	    putenv((char *)p);	/* don't free the pointer! */
-	}
-    }
+    char_u	*newcmd;	/* only needed for unix */
 
     out_flush();
 
