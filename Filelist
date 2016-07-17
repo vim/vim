@@ -44,6 +44,7 @@ SRC_ALL =	\
 		src/hashtab.c \
 		src/json.c \
 		src/json_test.c \
+		src/list.c \
 		src/keymap.h \
 		src/macros.h \
 		src/main.c \
@@ -146,6 +147,7 @@ SRC_ALL =	\
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
 		src/proto/json.pro \
+		src/proto/list.pro \
 		src/proto/main.pro \
 		src/proto/mark.pro \
 		src/proto/mbyte.pro \

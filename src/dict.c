@@ -10,7 +10,6 @@
 /*
  * dict.c: Dictionary support
  */
-#define USING_FLOAT_STUFF
 
 #include "vim.h"
 
