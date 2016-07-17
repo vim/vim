@@ -45,5 +45,79 @@ func Test_getcompletion()
     call assert_true(matchcount > 0)
   endif
 
+  let l = getcompletion('v:n', 'var')
+  call assert_true(index(l, 'v:null') >= 0)
+
+  let l = getcompletion('', 'augroup')
+  call assert_true(index(l, 'END') >= 0)
+
+  let l = getcompletion('', 'behave')
+  call assert_true(index(l, 'mswin') >= 0)
+
+  let l = getcompletion('', 'color')
+  call assert_true(index(l, 'default') >= 0)
+
+  let l = getcompletion('', 'command')
+  call assert_true(index(l, 'sleep') >= 0)
+
+  let l = getcompletion('', 'dir')
+  call assert_true(index(l, 'samples') >= 0)
+
+  let l = getcompletion('exe', 'expression')
+  call assert_true(index(l, 'executable(') >= 0)
+
+  let l = getcompletion('tag', 'function')
+  call assert_true(index(l, 'taglist(') >= 0)
+
+  let l = getcompletion('run', 'file')
+  call assert_true(index(l, 'runtest.vim') >= 0)
+
+  let l = getcompletion('ha', 'filetype')
+  call assert_true(index(l, 'hamster') >= 0)
+
+  let l = getcompletion('z', 'syntax')
+  call assert_true(index(l, 'zimbu') >= 0)
+
+  let l = getcompletion('jikes', 'compiler')
+  call assert_true(index(l, 'jikes') >= 0)
+
+  let l = getcompletion('last', 'help')
+  call assert_true(index(l, ':tablast') >= 0)
+
+  let l = getcompletion('time', 'option')
+  call assert_true(index(l, 'timeoutlen') >= 0)
+
+  let l = getcompletion('er', 'highlight')
+  call assert_true(index(l, 'ErrorMsg') >= 0)
+
+  " For others test if the name is recognized.
+  let names = ['buffer', 'environment', 'file_in_path',
+	\ 'mapping', 'shellcmd', 'tag', 'tag_listfiles', 'user']
+  if has('cscope')
+    call add(names, 'cscope')
+  endif
+  if has('cmdline_hist')
+    call add(names, 'history')
+  endif
+  if has('gettext')
+    call add(names, 'locale')
+  endif
+  if has('profile')
+    call add(names, 'syntime')
+  endif
+  if has('signs')
+    call add(names, 'sign')
+  endif
+
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//", "word\tfile\tcmd"], 'Xtags')
+
+  for name in names
+    let matchcount = len(getcompletion('', name))
+    call assert_true(matchcount >= 0, 'No matches for ' . name)
+  endfor
+
+  call delete('Xtags')
+
   call assert_fails('call getcompletion("", "burp")', 'E475:')
 endfunc
