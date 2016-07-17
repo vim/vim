@@ -95,6 +95,7 @@ SRC = \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	dict.c \
 	diff.c \
 	digraph.c \
 	edit.c \
@@ -111,6 +112,7 @@ SRC = \
 	hardcopy.c \
 	hashtab.c \
 	json.c \
+	list.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -137,6 +139,7 @@ SRC = \
 	term.c \
 	ui.c \
 	undo.c \
+	userfunc.c \
 	window.c \
 	version.c
 
@@ -147,6 +150,7 @@ OBJ = \
 	charset.o \
 	crypt.o \
 	crypt_zip.o \
+	dict.o \
 	diff.o \
 	digraph.o \
 	edit.o \
@@ -163,6 +167,7 @@ OBJ = \
 	hardcopy.o \
 	hashtab.o \
 	json.o \
+	list.o \
 	main.o \
 	mark.o \
 	memfile.o \
@@ -189,6 +194,7 @@ OBJ = \
 	term.o \
 	ui.o \
 	undo.o \
+	userfunc.o \
 	window.o \
 	$(TERMLIB)
 
@@ -199,6 +205,7 @@ PRO = \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
 	proto/edit.pro \
@@ -215,6 +222,7 @@ PRO = \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
 	proto/json.pro \
+	proto/list.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -242,6 +250,7 @@ PRO = \
 	proto/termlib.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/userfunc.pro \
 	proto/window.pro
 
 all: proto Vim
@@ -311,6 +320,8 @@ crypt.o:		crypt.c
 proto/crypt.pro:	crypt.c
 crypt_zip.o:		crypt_zip.c
 proto/crypt_zip.pro:	crypt_zip.c
+dict.o:			dict.c
+proto/dict.pro:		dict.c
 diff.o:			diff.c
 proto/diff.pro:		diff.c
 digraph.o:		digraph.c
@@ -343,6 +354,8 @@ hashtab.o:		hashtab.c
 proto/hashtab.pro:	hashtab.c
 json.o:			json.c
 proto/json.pro:		json.c
+list.o:			list.c
+proto/list.pro:		list.c
 main.o:			main.c
 proto/main.pro:		main.c
 mark.o:			mark.c
@@ -397,4 +410,6 @@ ui.o:			ui.c
 proto/ui.pro:		ui.c
 undo.o:			undo.c
 proto/undo.pro:		undo.c
+userfunc.o:		userfunc.c
+proto/userfunc.pro:	userfunc.c
 window.o:		window.c

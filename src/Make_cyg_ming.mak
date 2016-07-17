@@ -610,6 +610,7 @@ OBJ = \
 	$(OUTDIR)/charset.o \
 	$(OUTDIR)/crypt.o \
 	$(OUTDIR)/crypt_zip.o \
+	$(OUTDIR)/dict.o \
 	$(OUTDIR)/diff.o \
 	$(OUTDIR)/digraph.o \
 	$(OUTDIR)/edit.o \
@@ -626,6 +627,7 @@ OBJ = \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
 	$(OUTDIR)/json.o \
+	$(OUTDIR)/list.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \
@@ -655,6 +657,7 @@ OBJ = \
 	$(OUTDIR)/term.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
+	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
 	$(OUTDIR)/vimrc.o \
 	$(OUTDIR)/window.o

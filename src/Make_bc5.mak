@@ -543,6 +543,7 @@ vimobj =  \
 	$(OBJDIR)\charset.obj \
 	$(OBJDIR)\crypt.obj \
 	$(OBJDIR)\crypt_zip.obj \
+	$(OBJDIR)\dict.obj \
 	$(OBJDIR)\diff.obj \
 	$(OBJDIR)\digraph.obj \
 	$(OBJDIR)\edit.obj \
@@ -559,6 +560,7 @@ vimobj =  \
 	$(OBJDIR)\hardcopy.obj \
 	$(OBJDIR)\hashtab.obj \
 	$(OBJDIR)\json.obj \
+	$(OBJDIR)\list.obj \
 	$(OBJDIR)\main.obj \
 	$(OBJDIR)\mark.obj \
 	$(OBJDIR)\memfile.obj \
@@ -584,6 +586,7 @@ vimobj =  \
 	$(OBJDIR)\term.obj \
 	$(OBJDIR)\ui.obj \
 	$(OBJDIR)\undo.obj \
+	$(OBJDIR)\userfunc.obj \
 	$(OBJDIR)\version.obj \
 	$(OBJDIR)\window.obj \
 	$(OBJDIR)\pathdef.obj

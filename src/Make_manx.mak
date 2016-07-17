@@ -42,6 +42,7 @@ SRC =	arabic.c \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	dict.c \
 	diff.c \
 	digraph.c \
 	edit.c \
@@ -58,6 +59,7 @@ SRC =	arabic.c \
 	hardcopy.c \
 	hashtab.c \
 	json.c \
+	list.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -84,6 +86,7 @@ SRC =	arabic.c \
 	term.c \
 	ui.c \
 	undo.c \
+	userfunc.c \
 	window.c \
 	version.c
 
@@ -95,6 +98,7 @@ OBJ =	obj/arabic.o \
 	obj/charset.o \
 	obj/crypt.o \
 	obj/crypt_zip.o \
+	obj/dict.o \
 	obj/diff.o \
 	obj/digraph.o \
 	obj/edit.o \
@@ -111,6 +115,7 @@ OBJ =	obj/arabic.o \
 	obj/hardcopy.o \
 	obj/hashtab.o \
 	obj/json.o \
+	obj/list.o \
 	obj/main.o \
 	obj/mark.o \
 	obj/memfile.o \
@@ -137,6 +142,7 @@ OBJ =	obj/arabic.o \
 	obj/term.o \
 	obj/ui.o \
 	obj/undo.o \
+	obj/userfunc.o \
 	obj/window.o \
 	$(TERMLIB)
 
@@ -146,6 +152,7 @@ PRO =	proto/arabic.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
 	proto/edit.pro \
@@ -162,6 +169,7 @@ PRO =	proto/arabic.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
 	proto/json.pro \
+	proto/list.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -189,6 +197,7 @@ PRO =	proto/arabic.pro \
 	proto/termlib.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/userfunc.pro \
 	proto/window.pro
 
 all: Vim xxd/Xxd
@@ -253,6 +262,9 @@ obj/crypt.o:	crypt.c
 obj/crypt_zip.o: crypt_zip.c
 	$(CCSYM) $@ crypt_zip.c
 
+obj/dict.o:	dict.c
+	$(CCSYM) $@ dict.c
+
 obj/diff.o:	diff.c
 	$(CCSYM) $@ diff.c
 
@@ -301,6 +313,9 @@ obj/hashtab.o:	hashtab.c
 
 obj/json.o:	json.c
 	$(CCSYM) $@ json.c
+
+obj/list.o:	list.c
+	$(CCSYM) $@ list.c
 
 # Don't use $(SYMS) here, because main.c defines EXTERN
 obj/main.o:	main.c option.h globals.h
@@ -385,6 +400,9 @@ obj/ui.o:	ui.c
 
 obj/undo.o:	undo.c
 	$(CCSYM) $@ undo.c
+
+obj/userfunc.o:	userfunc.c
+	$(CCSYM) $@ userfunc.c
 
 obj/window.o:	window.c
 	$(CCSYM) $@ window.c
