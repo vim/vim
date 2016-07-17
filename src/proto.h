@@ -67,6 +67,7 @@ extern int _stricoll(char *a, char *b);
 # ifdef FEAT_CSCOPE
 #  include "if_cscope.pro"
 # endif
+# include "dict.pro"
 # include "diff.pro"
 # include "digraph.pro"
 # include "edit.pro"
