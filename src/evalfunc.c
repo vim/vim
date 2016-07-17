@@ -3447,12 +3447,9 @@ f_foldtext(typval_T *argvars UNUSED, typval_T *rettv)
 	    && dashes != NULL)
     {
 	/* Find first non-empty line in the fold. */
-	while (lnum < (linenr_T)get_vim_var_nr(VV_FOLDEND))
-	{
+	for (lnum = foldstart; lnum < foldend; ++lnum)
 	    if (!linewhite(lnum))
 		break;
-	    ++lnum;
-	}
 
 	/* Find interesting text in this line. */
 	s = skipwhite(ml_get(lnum));
