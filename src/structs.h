@@ -3117,3 +3117,48 @@ typedef struct
     int		diff_mode;		/* start with 'diff' set */
 #endif
 } mparm_T;
+
+/*
+ * Structure returned by get_lval() and used by set_var_lval().
+ * For a plain name:
+ *	"name"	    points to the variable name.
+ *	"exp_name"  is NULL.
+ *	"tv"	    is NULL
+ * For a magic braces name:
+ *	"name"	    points to the expanded variable name.
+ *	"exp_name"  is non-NULL, to be freed later.
+ *	"tv"	    is NULL
+ * For an index in a list:
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the (first) list item value
+ *	"li"	    points to the (first) list item
+ *	"range", "n1", "n2" and "empty2" indicate what items are used.
+ * For an existing Dict item:
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the dict item value
+ *	"newkey"    is NULL
+ * For a non-existing Dict item:
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the Dictionary typval_T
+ *	"newkey"    is the key for the new item.
+ */
+typedef struct lval_S
+{
+    char_u	*ll_name;	/* start of variable name (can be NULL) */
+    char_u	*ll_exp_name;	/* NULL or expanded name in allocated memory. */
+    typval_T	*ll_tv;		/* Typeval of item being used.  If "newkey"
+				   isn't NULL it's the Dict to which to add
+				   the item. */
+    listitem_T	*ll_li;		/* The list item or NULL. */
+    list_T	*ll_list;	/* The list or NULL. */
+    int		ll_range;	/* TRUE when a [i:j] range was used */
+    long	ll_n1;		/* First index for list */
+    long	ll_n2;		/* Second index for list range */
+    int		ll_empty2;	/* Second index is empty: [i:] */
+    dict_T	*ll_dict;	/* The Dictionary or NULL */
+    dictitem_T	*ll_di;		/* The dictitem or NULL */
+    char_u	*ll_newkey;	/* New key for Dict in alloc. mem or NULL. */
+} lval_T;

@@ -1531,6 +1531,7 @@ BASIC_SRC = \
 	term.c \
 	ui.c \
 	undo.c \
+	userfunc.c \
 	version.c \
 	window.c \
 	$(OS_EXTRA_SRC)
@@ -1631,6 +1632,7 @@ OBJ_COMMON = \
 	objects/term.o \
 	objects/ui.o \
 	objects/undo.o \
+	objects/userfunc.o \
 	objects/version.o \
 	objects/window.o \
 	$(GUI_OBJ) \
@@ -1731,6 +1733,7 @@ PRO_AUTO = \
 	termlib.pro \
 	ui.pro \
 	undo.pro \
+	userfunc.pro \
 	version.pro \
 	window.pro \
 	gui_beval.pro \
@@ -3066,6 +3069,9 @@ objects/ui.o: ui.c
 objects/undo.o: undo.c
 	$(CCC) -o $@ undo.c
 
+objects/userfunc.o: userfunc.c
+	$(CCC) -o $@ userfunc.c
+
 objects/window.o: window.c
 	$(CCC) -o $@ window.c
 
@@ -3376,6 +3382,10 @@ objects/ui.o: ui.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h ascii.h 
  keymap.h term.h macros.h option.h structs.h regexp.h gui.h gui_beval.h \
  proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h farsi.h arabic.h
 objects/undo.o: undo.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
+ farsi.h arabic.h
+objects/userfunc.o: userfunc.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
  farsi.h arabic.h

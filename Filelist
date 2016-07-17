@@ -84,6 +84,7 @@ SRC_ALL =	\
 		src/termlib.c \
 		src/ui.c \
 		src/undo.c \
+		src/userfunc.c \
 		src/version.c \
 		src/version.h \
 		src/vim.h \
@@ -175,6 +176,7 @@ SRC_ALL =	\
 		src/proto/termlib.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
+		src/proto/userfunc.pro \
 		src/proto/version.pro \
 		src/proto/winclip.pro \
 		src/proto/window.pro \
