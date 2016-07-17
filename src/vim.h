@@ -932,6 +932,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define BLN_DUMMY	4	/* allocating dummy buffer */
 #define BLN_NEW		8	/* create a new buffer */
 #define BLN_NOOPT	16	/* don't copy options to existing buffer */
+#define BLN_DUMMY_OK	32	/* also find an existing dummy buffer */
 
 /* Values for in_cinkeys() */
 #define KEY_OPEN_FORW	0x101
@@ -2401,5 +2402,9 @@ int vim_main2(int argc, char **argv);
 
 /* Lowest number used for window ID. Cannot have this many windows. */
 #define LOWEST_WIN_ID 1000
+
+/* Used by the garbage collector. */
+#define COPYID_INC 2
+#define COPYID_MASK (~0x1)
 
 #endif /* VIM__H */

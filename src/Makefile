@@ -1484,6 +1484,7 @@ BASIC_SRC = \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	dict.c \
 	diff.c \
 	digraph.c \
 	edit.c \
@@ -1585,6 +1586,7 @@ OBJ_COMMON = \
 	objects/charset.o \
 	objects/crypt.o \
 	objects/crypt_zip.o \
+	objects/dict.o \
 	objects/diff.o \
 	objects/digraph.o \
 	objects/edit.o \
@@ -1672,6 +1674,7 @@ PRO_AUTO = \
 	charset.pro \
 	crypt.pro \
 	crypt_zip.pro \
+	dict.pro \
 	diff.pro \
 	digraph.pro \
 	edit.pro \
@@ -2806,6 +2809,9 @@ objects/crypt.o: crypt.c
 objects/crypt_zip.o: crypt_zip.c
 	$(CCC) -o $@ crypt_zip.c
 
+objects/dict.o: dict.c
+	$(CCC) -o $@ dict.c
+
 objects/diff.o: diff.c
 	$(CCC) -o $@ diff.c
 
@@ -3182,6 +3188,10 @@ objects/crypt_zip.o: crypt_zip.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h
+objects/dict.o: dict.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
+ farsi.h arabic.h
 objects/diff.o: diff.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \

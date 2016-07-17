@@ -18,6 +18,7 @@ SRC_ALL =	\
 		src/charset.c \
 		src/crypt.c \
 		src/crypt_zip.c \
+		src/dict.c \
 		src/diff.c \
 		src/digraph.c \
 		src/edit.c \
@@ -53,6 +54,7 @@ SRC_ALL =	\
 		src/memline.c \
 		src/menu.c \
 		src/message.c \
+		src/message_test.c \
 		src/misc1.c \
 		src/misc2.c \
 		src/move.c \
@@ -125,6 +127,7 @@ SRC_ALL =	\
 		src/proto/charset.pro \
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
+		src/proto/dict.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \
 		src/proto/edit.pro \
