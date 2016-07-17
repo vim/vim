@@ -1165,7 +1165,7 @@ $(OUTDIR)/crypt.obj:	$(OUTDIR) crypt.c  $(INCL)
 
 $(OUTDIR)/crypt_zip.obj: $(OUTDIR) crypt_zip.c  $(INCL)
 
-$(OUTDIR)/dict.obj:	$(OUTDIR) dictf.c  $(INCL)
+$(OUTDIR)/dict.obj:	$(OUTDIR) dict.c  $(INCL)
 
 $(OUTDIR)/diff.obj:	$(OUTDIR) diff.c  $(INCL)
 
