@@ -2595,7 +2595,7 @@ qf_msg(qf_info_T *qi, int which, char *lead)
     {
 	while (STRLEN(buf) < 34)
 	    STRCAT(buf, " ");
-	STRCAT(buf, title);
+	vim_strcat(buf, title, IOSIZE);
     }
     trunc_string(buf, buf, Columns - 1, IOSIZE);
     msg(buf);
