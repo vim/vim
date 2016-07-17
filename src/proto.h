@@ -72,6 +72,7 @@ extern int _stricoll(char *a, char *b);
 # include "digraph.pro"
 # include "edit.pro"
 # include "eval.pro"
+# include "evalfunc.pro"
 # include "ex_cmds.pro"
 # include "ex_cmds2.pro"
 # include "ex_docmd.pro"

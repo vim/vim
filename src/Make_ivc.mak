@@ -221,6 +221,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/digraph.obj" \
 	"$(INTDIR)/edit.obj" \
 	"$(INTDIR)/eval.obj" \
+	"$(INTDIR)/evalfunc.obj" \
 	"$(INTDIR)/ex_cmds.obj" \
 	"$(INTDIR)/ex_cmds2.obj" \
 	"$(INTDIR)/ex_docmd.obj" \
@@ -376,6 +377,10 @@ SOURCE=.\edit.c
 # Begin Source File
 
 SOURCE=.\eval.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\evalfunc.c
 # End Source File
 # Begin Source File
 

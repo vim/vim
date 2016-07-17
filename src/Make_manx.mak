@@ -47,6 +47,7 @@ SRC =	arabic.c \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalfunc.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
@@ -103,6 +104,7 @@ OBJ =	obj/arabic.o \
 	obj/digraph.o \
 	obj/edit.o \
 	obj/eval.o \
+	obj/evalfunc.o \
 	obj/ex_cmds.o \
 	obj/ex_cmds2.o \
 	obj/ex_docmd.o \
@@ -157,6 +159,7 @@ PRO =	proto/arabic.pro \
 	proto/digraph.pro \
 	proto/edit.pro \
 	proto/eval.pro \
+	proto/evalfunc.pro \
 	proto/ex_cmds.pro \
 	proto/ex_cmds2.pro \
 	proto/ex_docmd.pro \
@@ -276,6 +279,9 @@ obj/edit.o:	edit.c
 
 obj/eval.o:	eval.c
 	$(CCSYM) $@ eval.c
+
+obj/evalfunc.o:	evalfunc.c
+	$(CCSYM) $@ evalfunc.c
 
 obj/ex_cmds.o:	ex_cmds.c
 	$(CCSYM) $@ ex_cmds.c

@@ -2051,6 +2051,15 @@ typedef struct _stat64 stat_T;
 typedef struct stat stat_T;
 #endif
 
+typedef enum
+{
+    ASSERT_EQUAL,
+    ASSERT_NOTEQUAL,
+    ASSERT_MATCH,
+    ASSERT_NOTMATCH,
+    ASSERT_OTHER
+} assert_type_T;
+
 #include "ex_cmds.h"	    /* Ex command defines */
 #include "proto.h"	    /* function prototypes */
 

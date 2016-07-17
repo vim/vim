@@ -1489,6 +1489,7 @@ BASIC_SRC = \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalfunc.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
@@ -1593,6 +1594,7 @@ OBJ_COMMON = \
 	objects/digraph.o \
 	objects/edit.o \
 	objects/eval.o \
+	objects/evalfunc.o \
 	objects/ex_cmds.o \
 	objects/ex_cmds2.o \
 	objects/ex_docmd.o \
@@ -1683,6 +1685,7 @@ PRO_AUTO = \
 	digraph.pro \
 	edit.pro \
 	eval.pro \
+	evalfunc.pro \
 	ex_cmds.pro \
 	ex_cmds2.pro \
 	ex_docmd.pro \
@@ -2830,6 +2833,9 @@ objects/edit.o: edit.c
 objects/eval.o: eval.c
 	$(CCC) -o $@ eval.c
 
+objects/evalfunc.o: evalfunc.c
+	$(CCC) -o $@ evalfunc.c
+
 objects/ex_cmds.o: ex_cmds.c
 	$(CCC) -o $@ ex_cmds.c
 
@@ -3217,6 +3223,10 @@ objects/edit.o: edit.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
  farsi.h arabic.h
 objects/eval.o: eval.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
+ farsi.h arabic.h version.h
+objects/evalfunc.o: evalfunc.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h proto.h globals.h \
  farsi.h arabic.h version.h

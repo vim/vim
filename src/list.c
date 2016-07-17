@@ -884,4 +884,44 @@ failret:
     return OK;
 }
 
-#endif /* defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) */
+/*
+ * Write list of strings to file
+ */
+    int
+write_list(FILE *fd, list_T *list, int binary)
+{
+    listitem_T	*li;
+    int		c;
+    int		ret = OK;
+    char_u	*s;
+
+    for (li = list->lv_first; li != NULL; li = li->li_next)
+    {
+	for (s = get_tv_string(&li->li_tv); *s != NUL; ++s)
+	{
+	    if (*s == '\n')
+		c = putc(NUL, fd);
+	    else
+		c = putc(*s, fd);
+	    if (c == EOF)
+	    {
+		ret = FAIL;
+		break;
+	    }
+	}
+	if (!binary || li->li_next != NULL)
+	    if (putc('\n', fd) == EOF)
+	    {
+		ret = FAIL;
+		break;
+	    }
+	if (ret == FAIL)
+	{
+	    EMSG(_(e_write));
+	    break;
+	}
+    }
+    return ret;
+}
+
+#endif /* defined(FEAT_EVAL) */

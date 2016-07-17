@@ -548,6 +548,7 @@ vimobj =  \
 	$(OBJDIR)\digraph.obj \
 	$(OBJDIR)\edit.obj \
 	$(OBJDIR)\eval.obj \
+	$(OBJDIR)\evalfunc.obj \
 	$(OBJDIR)\ex_cmds.obj \
 	$(OBJDIR)\ex_cmds2.obj \
 	$(OBJDIR)\ex_docmd.obj \

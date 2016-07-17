@@ -37,6 +37,7 @@ SRC = \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalfunc.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
@@ -91,6 +92,7 @@ OBJ =	o/arabic.o \
 	o/digraph.o \
 	o/edit.o \
 	o/eval.o \
+	o/evalfunc.o \
 	o/ex_cmds.o \
 	o/ex_cmds2.o \
 	o/ex_docmd.o \
@@ -174,6 +176,8 @@ o/digraph.o:	digraph.c  $(SYMS)
 o/edit.o:	edit.c	$(SYMS)
 
 o/eval.o:	eval.c  $(SYMS)
+
+o/evalfunc.o:	evalfunc.c  $(SYMS)
 
 o/ex_cmds.o:	ex_cmds.c  $(SYMS)
 

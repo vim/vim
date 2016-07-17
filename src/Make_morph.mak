@@ -35,6 +35,7 @@ SRC =	arabic.c						\
 	digraph.c						\
 	edit.c							\
 	eval.c							\
+	evalfunc.c						\
 	ex_cmds.c						\
 	ex_cmds2.c						\
 	ex_docmd.c						\

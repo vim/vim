@@ -100,6 +100,7 @@ SRC = \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalfunc.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
@@ -155,6 +156,7 @@ OBJ = \
 	digraph.o \
 	edit.o \
 	eval.o \
+	evalfunc.o \
 	ex_cmds.o \
 	ex_cmds2.o \
 	ex_docmd.o \
@@ -210,6 +212,7 @@ PRO = \
 	proto/digraph.pro \
 	proto/edit.pro \
 	proto/eval.pro \
+	proto/evalfunc.pro \
 	proto/ex_cmds.pro \
 	proto/ex_cmds2.pro \
 	proto/ex_docmd.pro \
@@ -330,6 +333,8 @@ edit.o:			edit.c
 proto/edit.pro:		edit.c
 eval.o:			eval.c
 proto/eval.pro:		eval.c
+evalfunc.o:		evalfunc.c
+proto/evalfunc.pro:	evalfunc.c
 ex_cmds.o:		ex_cmds.c
 proto/ex_cmds.pro:	ex_cmds.c
 ex_cmds2.o:		ex_cmds2.c
