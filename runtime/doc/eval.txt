@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 15
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1214,7 +1214,7 @@ lambda expression				*expr-lambda* *lambda*
 {args -> expr1}		lambda expression
 
 A lambda expression creates a new unnamed function which returns the result of
-evaluating |expr1|.  Lambda expressions are differ from |user-functions| in
+evaluating |expr1|.  Lambda expressions differ from |user-functions| in
 the following ways:
 
 1. The body of the lambda expression is an |expr1| and not a sequence of |Ex|

@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Jul 03
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Jul 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -75,6 +75,14 @@ especially useful for callbacks on channels and timers.  E.g., for the timer
 example above, to pass an argument to the function: >
 	let tempTimer = timer_start(4000, function('CheckTemp', ['out']))
 This will call CheckTemp('out') four seconds later.
+
+
+Lambda ~
+
+A short way to create a function has been added: {args -> expr}.  See |lambda|.
+This is useful for functions such as `filter()` and `map()`, which now also
+accept a function argument.  Example: >
+	:call filter(mylist, {idx, val -> val > 20})
 
 
 Packages ~

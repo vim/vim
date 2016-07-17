@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jul 15
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jul 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,9 +34,6 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Problem with setqflist([]): grep 4 times, ":colder 3", setqflist([]) will
-clear the next list, not the current one.  Ramel Eshed, Jun 8.
-
 +channel:
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
@@ -51,6 +48,8 @@ clear the next list, not the current one.  Ramel Eshed, Jun 8.
 Later
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
+
+Quickfix refactoring. (Yegappan Lakshmanan,)
 
 Quickfix improvements for background building and grepping:
 - Add a command modifier ":usefname" to quickfix commands and functions to
@@ -118,6 +117,8 @@ Or avoid recursiveness.
 
 Also use funcref for substitute, instead of \=.
 
+Patch to define v:t_number etc. (Ken Takata, 2016 Jul 15)
+
 Python: Extended funcrefs: use func_T* structure in place of char_u* function
 names.
 (ZyX, 2013 Jul 15, update Sep 22, 24, 28; Update 2013 Dec 15, 2014 Jan 6)
@@ -125,8 +126,6 @@ Also fixes Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
-
-Patch to remove unsupported systems. (Hirohito Higashi, 2016 Jul 13)
 
 Cursor positioned in the wrong place when editing src/testdir/test_viml.vim.
 
@@ -144,7 +143,15 @@ Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
 5)
 
+Support closure for lambda?  Ken Takata is working on it.
+
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
+
+Patch to allow setting w:quickfix_title via setqflist() and setloclist()
+functions. (Christian Brabandt, 2013 May 8, update May 21)
+Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
+Second one. Update May 22.
+Update by Daniel Hahler, 2014 Jul 4, Aug 14, Oct 14, Oct 15.
 
 Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
 13, last version)  Update June 26, #830.
@@ -548,12 +555,6 @@ Wrong scrolling when using incsearch.  Patch by Christian Brabandt, 2014 Dec 4.
 Is this a good solution?
 
 Patch to add /pattern/ to :oldfiles.  Pull #575.
-
-Patch to allow setting w:quickfix_title via setqflist() and setloclist()
-functions. (Christian Brabandt, 2013 May 8, update May 21)
-Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
-Second one. Update May 22.
-Update by Daniel Hahler, 2014 Jul 4, Aug 14, Oct 14, Oct 15.
 
 Patch: Let rare word highlighting overrule good word highlighting.
 (Jakson A. Aquino, 2010 Jul 30, again 2011 Jul 2)

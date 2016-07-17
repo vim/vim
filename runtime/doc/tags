@@ -2074,6 +2074,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :checkpath	tagsrch.txt	/*:checkpath*
 :checkt	editing.txt	/*:checkt*
 :checktime	editing.txt	/*:checktime*
+:chi	quickfix.txt	/*:chi*
+:chistory	quickfix.txt	/*:chistory*
 :cl	quickfix.txt	/*:cl*
 :cla	quickfix.txt	/*:cla*
 :clast	quickfix.txt	/*:clast*
@@ -2441,6 +2443,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lgrepadd	quickfix.txt	/*:lgrepadd*
 :lh	helphelp.txt	/*:lh*
 :lhelpgrep	helphelp.txt	/*:lhelpgrep*
+:lhi	quickfix.txt	/*:lhi*
+:lhistory	quickfix.txt	/*:lhistory*
 :list	various.txt	/*:list*
 :ll	quickfix.txt	/*:ll*
 :lla	quickfix.txt	/*:lla*
