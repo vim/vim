@@ -505,6 +505,9 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 #endif
 #include <stdarg.h>
 
+/* for offsetof() */
+#include <stddef.h>
+
 #if defined(HAVE_SYS_SELECT_H) && \
 	(!defined(HAVE_SYS_TIME_H) || defined(SYS_SELECT_WITH_SYS_TIME))
 # include <sys/select.h>

@@ -600,8 +600,7 @@ typedef struct wordcount_S
     char_u	wc_word[1];	    /* word, actually longer */
 } wordcount_T;
 
-static wordcount_T dumwc;
-#define WC_KEY_OFF  (unsigned)(dumwc.wc_word - (char_u *)&dumwc)
+#define WC_KEY_OFF  offsetof(wordcount_T, wc_word)
 #define HI2WC(hi)     ((wordcount_T *)((hi)->hi_key - WC_KEY_OFF))
 #define MAXWORDCOUNT 0xffff
 

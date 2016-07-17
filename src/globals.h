@@ -1649,18 +1649,6 @@ EXTERN int  did_add_timer INIT(= FALSE);
 #ifdef FEAT_EVAL
 EXTERN time_T time_for_testing INIT(= 0);
 
-/*
- * In a hashtab item "hi_key" points to "di_key" in a dictitem.
- * This avoids adding a pointer to the hashtab item.
- * DI2HIKEY() converts a dictitem pointer to a hashitem key pointer.
- * HIKEY2DI() converts a hashitem key pointer to a dictitem pointer.
- * HI2DI() converts a hashitem pointer to a dictitem pointer.
- */
-EXTERN dictitem_T dumdi;
-# define DI2HIKEY(di) ((di)->di_key)
-# define HIKEY2DI(p)  ((dictitem_T *)(p - (dumdi.di_key - (char_u *)&dumdi)))
-# define HI2DI(hi)     HIKEY2DI((hi)->hi_key)
-
 /* Abort conversion to string after a recursion error. */
 EXTERN int  did_echo_string_emsg INIT(= FALSE);
 #endif
