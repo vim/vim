@@ -2593,9 +2593,14 @@ qf_msg(qf_info_T *qi, int which, char *lead)
 
     if (title != NULL)
     {
-	while (STRLEN(buf) < 34)
-	    STRCAT(buf, " ");
-	vim_strcat(buf, title, IOSIZE);
+	size_t	len = STRLEN(buf);
+
+	if (len < 34)
+	{
+	    vim_memset(buf + len, ' ', 34 - len);
+	    buf[34] = NUL;
+	}
+	vim_strcat(buf, (char_u *)title, IOSIZE);
     }
     trunc_string(buf, buf, Columns - 1, IOSIZE);
     msg(buf);
