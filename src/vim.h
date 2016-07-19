@@ -2061,6 +2061,8 @@ typedef enum
 } assert_type_T;
 
 #include "ex_cmds.h"	    /* Ex command defines */
+#include "spell.h"	    /* spell checking stuff */
+
 #include "proto.h"	    /* function prototypes */
 
 /* This has to go after the include of proto.h, as proto/gui.pro declares
