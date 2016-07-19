@@ -11061,14 +11061,21 @@ f_substitute(typval_T *argvars, typval_T *rettv)
 
     char_u	*str = get_tv_string_chk(&argvars[0]);
     char_u	*pat = get_tv_string_buf_chk(&argvars[1], patbuf);
-    char_u	*sub = get_tv_string_buf_chk(&argvars[2], subbuf);
+    char_u	*sub = NULL;
+    typval_T	*expr = NULL;
     char_u	*flg = get_tv_string_buf_chk(&argvars[3], flagsbuf);
 
+    if (argvars[2].v_type == VAR_FUNC || argvars[2].v_type == VAR_PARTIAL)
+	expr = &argvars[2];
+    else
+	sub = get_tv_string_buf_chk(&argvars[2], subbuf);
+
     rettv->v_type = VAR_STRING;
-    if (str == NULL || pat == NULL || sub == NULL || flg == NULL)
+    if (str == NULL || pat == NULL || (sub == NULL && expr == NULL)
+								|| flg == NULL)
 	rettv->vval.v_string = NULL;
     else
-	rettv->vval.v_string = do_string_sub(str, pat, sub, flg);
+	rettv->vval.v_string = do_string_sub(str, pat, sub, expr, flg);
 }
 
 /*

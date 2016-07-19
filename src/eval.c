@@ -9769,7 +9769,7 @@ repeat:
 			if (sub != NULL && str != NULL)
 			{
 			    *usedlen = (int)(p + 1 - src);
-			    s = do_string_sub(str, pat, sub, flags);
+			    s = do_string_sub(str, pat, sub, NULL, flags);
 			    if (s != NULL)
 			    {
 				*fnamep = s;
@@ -9813,6 +9813,7 @@ repeat:
 
 /*
  * Perform a substitution on "str" with pattern "pat" and substitute "sub".
+ * When "sub" is NULL "expr" is used, must be a VAR_FUNC or VAR_PARTIAL.
  * "flags" can be "g" to do a global substitute.
  * Returns an allocated string, NULL for error.
  */
@@ -9821,6 +9822,7 @@ do_string_sub(
     char_u	*str,
     char_u	*pat,
     char_u	*sub,
+    typval_T	*expr,
     char_u	*flags)
 {
     int		sublen;
@@ -9873,7 +9875,7 @@ do_string_sub(
 	     * - The substituted text.
 	     * - The text after the match.
 	     */
-	    sublen = vim_regsub(&regmatch, sub, tail, FALSE, TRUE, FALSE);
+	    sublen = vim_regsub(&regmatch, sub, expr, tail, FALSE, TRUE, FALSE);
 	    if (ga_grow(&ga, (int)((end - tail) + sublen -
 			    (regmatch.endp[0] - regmatch.startp[0]))) == FAIL)
 	    {
@@ -9885,7 +9887,7 @@ do_string_sub(
 	    i = (int)(regmatch.startp[0] - tail);
 	    mch_memmove((char_u *)ga.ga_data + ga.ga_len, tail, (size_t)i);
 	    /* add the substituted text */
-	    (void)vim_regsub(&regmatch, sub, (char_u *)ga.ga_data
+	    (void)vim_regsub(&regmatch, sub, expr, (char_u *)ga.ga_data
 					  + ga.ga_len + i, TRUE, TRUE, FALSE);
 	    ga.ga_len += i + sublen - 1;
 	    tail = regmatch.endp[0];
@@ -9906,7 +9908,7 @@ do_string_sub(
     if (p_cpo == empty_option)
 	p_cpo = save_cpo;
     else
-	/* Darn, evaluating {sub} expression changed the value. */
+	/* Darn, evaluating {sub} expression or {expr} changed the value. */
 	free_string_option(save_cpo);
 
     return ret;

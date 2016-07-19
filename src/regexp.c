@@ -7169,7 +7169,7 @@ static fptr_T do_Upper(int *, int);
 static fptr_T do_lower(int *, int);
 static fptr_T do_Lower(int *, int);
 
-static int vim_regsub_both(char_u *source, char_u *dest, int copy, int magic, int backslash);
+static int vim_regsub_both(char_u *source, typval_T *expr, char_u *dest, int copy, int magic, int backslash);
 
     static fptr_T
 do_upper(int *d, int c)
@@ -7312,6 +7312,7 @@ static int		submatch_line_lbr;
 vim_regsub(
     regmatch_T	*rmp,
     char_u	*source,
+    typval_T	*expr,
     char_u	*dest,
     int		copy,
     int		magic,
@@ -7322,7 +7323,7 @@ vim_regsub(
     reg_maxline = 0;
     reg_buf = curbuf;
     reg_line_lbr = TRUE;
-    return vim_regsub_both(source, dest, copy, magic, backslash);
+    return vim_regsub_both(source, expr, dest, copy, magic, backslash);
 }
 #endif
 
@@ -7342,12 +7343,13 @@ vim_regsub_multi(
     reg_firstlnum = lnum;
     reg_maxline = curbuf->b_ml.ml_line_count - lnum;
     reg_line_lbr = FALSE;
-    return vim_regsub_both(source, dest, copy, magic, backslash);
+    return vim_regsub_both(source, NULL, dest, copy, magic, backslash);
 }
 
     static int
 vim_regsub_both(
     char_u	*source,
+    typval_T	*expr,
     char_u	*dest,
     int		copy,
     int		magic,
@@ -7364,11 +7366,11 @@ vim_regsub_both(
     linenr_T	clnum = 0;	/* init for GCC */
     int		len = 0;	/* init for GCC */
 #ifdef FEAT_EVAL
-    static char_u *eval_result = NULL;
+    static char_u   *eval_result = NULL;
 #endif
 
     /* Be paranoid... */
-    if (source == NULL || dest == NULL)
+    if ((source == NULL && expr == NULL) || dest == NULL)
     {
 	EMSG(_(e_null));
 	return 0;
@@ -7381,11 +7383,11 @@ vim_regsub_both(
     /*
      * When the substitute part starts with "\=" evaluate it as an expression.
      */
-    if (source[0] == '\\' && source[1] == '='
+    if (expr != NULL || (source[0] == '\\' && source[1] == '='
 #ifdef FEAT_EVAL
 	    && !can_f_submatch	    /* can't do this recursively */
 #endif
-	    )
+	    ))
     {
 #ifdef FEAT_EVAL
 	/* To make sure that the length doesn't change between checking the
@@ -7406,6 +7408,7 @@ vim_regsub_both(
 	{
 	    win_T	*save_reg_win;
 	    int		save_ireg_ic;
+	    int		prev_can_f_submatch = can_f_submatch;
 
 	    vim_free(eval_result);
 
@@ -7422,7 +7425,40 @@ vim_regsub_both(
 	    save_ireg_ic = ireg_ic;
 	    can_f_submatch = TRUE;
 
-	    eval_result = eval_to_string(source + 2, NULL, TRUE);
+	    if (expr != NULL)
+	    {
+		typval_T	argv[1];
+		int		dummy;
+		char_u		buf[NUMBUFLEN];
+		typval_T	rettv;
+
+		rettv.v_type = VAR_STRING;
+		rettv.vval.v_string = NULL;
+		if (prev_can_f_submatch)
+		{
+		    /* can't do this recursively */
+		}
+		else if (expr->v_type == VAR_FUNC)
+		{
+		    s = expr->vval.v_string;
+		    call_func(s, (int)STRLEN(s), &rettv, 0, argv,
+					     0L, 0L, &dummy, TRUE, NULL, NULL);
+		}
+		else if (expr->v_type == VAR_PARTIAL)
+		{
+		    partial_T   *partial = expr->vval.v_partial;
+
+		    s = partial->pt_name;
+		    call_func(s, (int)STRLEN(s), &rettv, 0, argv,
+					  0L, 0L, &dummy, TRUE, partial, NULL);
+		}
+		eval_result = get_tv_string_buf_chk(&rettv, buf);
+		if (eval_result != NULL)
+		    eval_result = vim_strsave(eval_result);
+	    }
+	    else
+		eval_result = eval_to_string(source + 2, NULL, TRUE);
+
 	    if (eval_result != NULL)
 	    {
 		int had_backslash = FALSE;

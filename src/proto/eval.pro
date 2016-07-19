@@ -126,6 +126,6 @@ void assert_exception(typval_T *argvars);
 void assert_fails(typval_T *argvars);
 void fill_assert_error(garray_T *gap, typval_T *opt_msg_tv, char_u *exp_str, typval_T *exp_tv, typval_T *got_tv, assert_type_T atype);
 int modify_fname(char_u *src, int *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen);
-char_u *do_string_sub(char_u *str, char_u *pat, char_u *sub, char_u *flags);
+char_u *do_string_sub(char_u *str, char_u *pat, char_u *sub, typval_T *expr, char_u *flags);
 void filter_map(typval_T *argvars, typval_T *rettv, int map);
 /* vim: set ft=c : */
