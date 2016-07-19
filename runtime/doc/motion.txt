@@ -659,6 +659,14 @@ i`							*v_i`* *i`*
 			Special case: With a count of 2 the quotes are
 			included, but no extra white space as with a"/a'/a`.
 
+am{char}						*v_am* *am*
+			"a matched {char}".  Selects the text from the
+			previous {char} until the next {char}.  A count is
+			currently not used.
+
+im{char}						*v_im* *im*
+			Like am{char} but exclude the {char}.
+
 When used after an operator:
 For non-block objects:
 	For the "a" commands: The operator applies to the object and the white

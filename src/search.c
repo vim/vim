@@ -4661,6 +4661,140 @@ abort_search:
     return FALSE;
 }
 
+    /*
+     * Find matching {char} on each side of cursor/visually selected range.
+     * Returns TRUE if found, else FALSE.
+     */
+    int
+current_match(
+    oparg_T	*oap,		/* used to set operator range, mode, etc */
+    long	count,		/* not currently used */
+    int		include,	/* TRUE == include bounding char */
+    int		matchchar)	/* char to match on both sides */
+{
+    pos_T	old_pos;	/* initial cursor position (to restore) */
+    pos_T	start_pos;	/* left bound */
+    pos_T	end_pos;	/* right bound */
+    int		ret;		/* temp holder for return values */
+    int		vis_bef_curs;	/* store visual mode direction */
+
+    /*
+     * Store visual mode direction so we can be sure it is set the same
+     * direction when we're done.
+     */
+    vis_bef_curs = LTOREQ_POS(VIsual, curwin->w_cursor);
+
+    /*
+     * Remember starting position so we can restore if we cannot find the
+     * requested object.
+     */
+    old_pos = start_pos = end_pos = curwin->w_cursor;
+
+    /*
+     * If there is a visually selected range, use its bounds as the starting
+     * bounds.  Otherwise, have both bounds start under the cursor.
+     */
+    if (VIsual_active && LT_POS(VIsual, curwin->w_cursor))
+    {
+	start_pos = VIsual;
+    }
+    else if (VIsual_active && LT_POS(curwin->w_cursor, VIsual))
+    {
+	end_pos = VIsual;
+    }
+
+    while (count--)
+    {
+	/*
+	 * Search for the left bound.  It can be under or behind the starting
+	 * position of the cursor position/visually selected range.
+	 */
+	curwin->w_cursor = start_pos;
+	while (gchar_cursor() != matchchar && decl(&curwin->w_cursor) != -1)
+	    ;
+	if (gchar_cursor() != matchchar)
+	{
+	    /* Failed to find left bound, abort. */
+	    curwin->w_cursor = old_pos;
+	    return FAIL;
+	}
+	start_pos = curwin->w_cursor;
+
+	/*
+	 * Search for the right bound.  It has to be to the right of the starting
+	 * cursor position/visually selected range.
+	 */
+	curwin->w_cursor = end_pos;
+	while (incl(&curwin->w_cursor) != -1 && gchar_cursor() != matchchar)
+	    ;
+	if (gchar_cursor() != matchchar)
+	{
+	    /* Failed to find right bound, abort. */
+	    curwin->w_cursor = old_pos;
+	    return FAIL;
+	}
+	end_pos = curwin->w_cursor;
+
+	if (count)
+	{
+	    if (decl(&start_pos) == -1)
+	    {
+		curwin->w_cursor = old_pos;
+		return FAIL;
+	    }
+	}
+    }
+
+    /*
+     * If not include (i.e.: o_i was used), try to move the bounds inward, but
+     * be sure they don't overlap or switch sides.
+     */
+    if (!include)
+    {
+	/* try moving in right bound */
+	curwin->w_cursor = end_pos;
+	ret = decl(&curwin->w_cursor);
+	if (ret != -1 && !LTOREQ_POS(curwin->w_cursor, start_pos))
+	    end_pos = curwin->w_cursor;
+
+	/* try moving in left bound */
+	curwin->w_cursor = start_pos;
+	ret = incl(&curwin->w_cursor);
+	if (ret != -1 && !LT_POS(end_pos, curwin->w_cursor))
+	{
+	    start_pos = curwin->w_cursor;
+	}
+    }
+
+    /*
+     * We've found the new bounds.  Set it in the appropriate places before
+     * returning.
+     */
+    if (VIsual_active)
+    {
+	/* Retain direction we had when starting. */
+	if (vis_bef_curs)
+	{
+	    VIsual = start_pos;
+	    curwin->w_cursor = end_pos;
+	}
+	else
+	{
+	    curwin->w_cursor = start_pos;
+	    VIsual = end_pos;
+	}
+	redraw_curbuf_later(INVERTED);	/* update the inversion */
+    }
+    else
+    {
+	oap->start = start_pos;
+	curwin->w_cursor = end_pos;
+	oap->motion_type = MCHAR;
+	oap->inclusive = TRUE;
+    }
+    return OK;
+}
+
 #endif /* FEAT_TEXTOBJ */
 
 static int is_one_char(char_u *pattern, int move, pos_T *cur, int direction);

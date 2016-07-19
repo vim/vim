@@ -3,6 +3,8 @@
 source check.vim
 CheckFeature textobjects
 
+scriptencoding utf8
+
 func CpoM(line, useM, expected)
   new
 
@@ -281,3 +283,159 @@ func Test_sentence_with_cursor_on_delimiter()
 
   %delete _
 endfunc
+
+function! Test_match_textobject()
+  " Tests every combination of the following:
+  " - every non-whitespace printable ASCII character (bang/33 to tilde/126)
+  "   and a multi-byte
+  " - im (i) or am (a)
+  " - in-line (l) or entire-line (L)
+  " - single line (s) or multi-line (S)
+  "   that . will properly repeat
+
+  let filler = '   '
+  let testchars = map(range(33, 126), 'nr2char(v:val)')
+  call add(testchars, '‽')
+  for c in testchars
+    for ia in ['i', 'a']
+      for lL in ['l', 'L']
+	for sS in ['s', 'S']
+	  let surround = (lL ==# 'l') ? 'X' : ''
+	  if c ==# 'X' && surround ==# 'X'
+	    let surround = 'Y'
+	  endif
+	  if sS ==# 's'
+	    let text = [surround.c.filler.c.surround]
+	  else
+	    let text = [surround.c.filler, filler.c.surround]
+	  endif
+
+	  let exp = (ia ==# 'i')
+		\ ? (surround.c.'OK'.c.surround)
+		\ : (surround.'OK'.surround)
+
+	  " Replace text object with OK
+	  call setline(line('.'), text)
+	  call feedkeys('2|c'.ia.'m'.c.'OK', 'nx')
+	  let l = getline('.')
+	  call assert_equal(exp, l,
+		\'Expected '''.exp.''' but got '''.l.''' performing c'.ia.'m'.c.'OK')
+
+	  " Repeat with .
+	  call setline(line('.'), text)
+	  call feedkeys('2|.', 'nx')
+	  let l = getline('.')
+	  call assert_equal(exp, l,
+		\'Expected '''.exp.''' but got '''.l.''' repeating c'.ia.'m'.c.'OK')
+	endfor
+      endfor
+    endfor
+  endfor
+endfunction
+
+function! Test_match_single_char_filler()
+  for c in [',', '‽']
+    call setline(line('.'), 'foo'.c.'i'.c.'foo')
+    call feedkeys('0ficim'.c.'OK', 'nx')
+    call assert_equal('foo'.c.'OK'.c.'foo', getline('.'))
+
+    call setline(line('.'), 'foo'.c.'i'.c.'foo')
+    call feedkeys('0ficam'.c.'OK', 'nx')
+    call assert_equal('fooOKfoo', getline('.'))
+  endfor
+endfunction
+
+function! Test_match_count()
+  for c in [',', '‽']
+    " Test explicit count (1im/1am)
+    call setline(line('.'), 'foo'.c.'bar'.c.'i'.c.'baz'.c.'quux')
+    call feedkeys('0fic1im'.c.'OK', 'nx')
+    call assert_equal('foo'.c.'bar'.c.'OK'.c.'baz'.c.'quux', getline('.'))
+
+    call setline(line('.'), 'foo'.c.'bar'.c.'i'.c.'baz'.c.'quux')
+    call feedkeys('0fic1am'.c.'OK', 'nx')
+    call assert_equal('foo'.c.'barOKbaz'.c.'quux', getline('.'))
+
+    call setline(line('.'), 'foo'.c.c.'i'.c.c.'bar')
+    call feedkeys('0fic1im'.c.'OK', 'nx')
+    call assert_equal('foo'.c.c.'OK'.c.c.'bar', getline('.'))
+
+    call setline(line('.'), 'foo'.c.c.'i'.c.c.'bar')
+    call feedkeys('0fic1am'.c.'OK', 'nx')
+    call assert_equal('foo'.c.'OK'.c.'bar', getline('.'))
+
+    " Test count > 1
+    call setline(line('.'), 'foo'.c.'bar'.c.'i'.c.'baz'.c.'quux')
+    call feedkeys('0fic2im'.c.'OK', 'nx')
+    call assert_equal('foo'.c.'OK'.c.'quux', getline('.'))
+
+    call setline(line('.'), 'foo'.c.'bar'.c.'i'.c.'baz'.c.'quux')
+    call feedkeys('0fic2am'.c.'OK', 'nx')
+    call assert_equal('fooOKquux', getline('.'))
+
+    call setline(line('.'), 'foo'.c.c.'i'.c.c.'bar')
+    call feedkeys('0fic1im'.c.'OK', 'nx')
+    call assert_equal('foo'.c.c.'OK'.c.c.'bar', getline('.'))
+
+    call setline(line('.'), 'foo'.c.c.'i'.c.c.'bar')
+    call feedkeys('0fic1am'.c.'OK', 'nx')
+    call assert_equal('foo'.c.'OK'.c.'bar', getline('.'))
+
+    " Test explicit 1 count with match at edges of line
+    call setline(line('.'), c.'i'.c)
+    call feedkeys('0fic1im'.c.'OK', 'nx')
+    call assert_equal(c.'OK'.c, getline('.'))
+
+    call setline(line('.'), c.'i'.c)
+    call feedkeys('0fic1am'.c.'OK', 'nx')
+    call assert_equal('OK', getline('.'))
+
+    call setline(line('.'), c.c.'i'.c.c)
+    call feedkeys('0fic1im'.c.'OK', 'nx')
+    call assert_equal(c.c.'OK'.c.c, getline('.'))
+
+    call setline(line('.'), c.c.'i'.c.c)
+    call feedkeys('0fic1am'.c.'OK', 'nx')
+    call assert_equal(c.'OK'.c, getline('.'))
+
+    " Test count > 1 with match at edges of line
+    call setline(line('.'), c.'foo'.c.'i'.c.'bar'.c)
+    call feedkeys('0fic2im'.c.'OK', 'nx')
+    call assert_equal(c.'OK'.c, getline('.'))
+
+    call setline(line('.'), c.'foo'.c.'i'.c.'bar'.c)
+    call feedkeys('0fic2am'.c.'OK', 'nx')
+    call assert_equal('OK', getline('.'))
+
+    call setline(line('.'), c.c.'i'.c.c)
+    call feedkeys('0fic2im'.c.'OK', 'nx')
+    call assert_equal(c.'OK'.c, getline('.'))
+
+    call setline(line('.'), c.c.'i'.c.c)
+    call feedkeys('0fic2am'.c.'OK', 'nx')
+    call assert_equal('OK', getline('.'))
+  endfor
+endfunction!
+
+function! Test_match_fail()
+  " Unbalanced on the right
+  call setline(line('.'), 'foo,i')
+  call feedkeys('0ficim,G', 'nx')
+  call assert_equal('foo,i', getline('.'))
+  call feedkeys('0ficam,G', 'nx')
+  call assert_equal('foo,i', getline('.'))
+
+  " Unbalanced on the left
+  call setline(line('.'), 'i,foo')
+  call feedkeys('0ficim,G', 'nx')
+  call assert_equal('i,foo', getline('.'))
+  call feedkeys('0ficam,G', 'nx')
+  call assert_equal('i,foo', getline('.'))
+
+  " Selecting too many matches
+  call setline(line('.'), '1,i,1')
+  call feedkeys('0fic2im,G', 'nx')
+  call assert_equal('1,i,1', getline('.'))
+  call feedkeys('0fic2am,G', 'nx')
+  call assert_equal('1,i,1', getline('.'))
+endfunction
