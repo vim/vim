@@ -23,7 +23,7 @@ void win_redraw_last_status(frame_T *frp);
 void win_redr_status_matches(expand_T *xp, int num_matches, char_u **matches, int match, int showtail);
 void win_redr_status(win_T *wp);
 int stl_connected(win_T *wp);
-int get_keymap_str(win_T *wp, char_u *buf, int len);
+int get_keymap_str(win_T *wp, char_u *fmt, char_u *buf, int len);
 void screen_putchar(int c, int row, int col, int attr);
 void screen_getbytes(int row, int col, char_u *bytes, int *attrp);
 void screen_puts(char_u *text, int row, int col, int attr);
