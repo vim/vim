@@ -602,6 +602,10 @@ AUTOCONF = autoconf
 # PURIFY - remove the # to use the "purify" program (hoi Nia++!)
 #PURIFY = purify
 
+# VALGRIND - remove the # to use valgrind for memory leaks and access errors.
+#            Used for the unittest targets.
+# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind.$@
+
 # NBDEBUG - debugging the netbeans interface.
 #EXTRA_DEFS = -DNBDEBUG
 
@@ -1567,6 +1571,7 @@ MESSAGE_TEST_TARGET = message_test$(EXEEXT)
 
 UNITTEST_SRC = $(JSON_TEST_SRC) $(MEMFILE_TEST_SRC) $(MESSAGE_TEST_SRC)
 UNITTEST_TARGETS = $(JSON_TEST_TARGET) $(MEMFILE_TEST_TARGET) $(MESSAGE_TEST_TARGET)
+RUN_UNITTESTS = run_json_test run_memfile_test run_message_test
 
 # All sources, also the ones that are not configured
 ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC)
@@ -1987,19 +1992,16 @@ unittesttargets:
 	$(MAKE) -f Makefile $(UNITTEST_TARGETS)
 
 # Execute the unittests one by one.
-unittest unittests: $(UNITTEST_TARGETS)
-	@for t in $(UNITTEST_TARGETS); do \
-		./$$t || exit 1; echo $$t passed; \
-	done
+unittest unittests: $(RUN_UNITTESTS)
 
 run_json_test: $(JSON_TEST_TARGET)
-	./$(JSON_TEST_TARGET)
+	$(VALGRIND) ./$(JSON_TEST_TARGET) || exit 1; echo $* passed;
 
 run_memfile_test: $(MEMFILE_TEST_TARGET)
-	./$(MEMFILE_TEST_TARGET)
+	$(VALGRIND) ./$(MEMFILE_TEST_TARGET) || exit 1; echo $* passed;
 
 run_message_test: $(MESSAGE_TEST_TARGET)
-	./$(MESSAGE_TEST_TARGET)
+	$(VALGRIND) ./$(MESSAGE_TEST_TARGET) || exit 1; echo $* passed;
 
 # Run individual OLD style test, assuming that Vim was already compiled.
 test1 \
