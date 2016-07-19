@@ -6104,6 +6104,7 @@ gui_get_color_cmn(char_u *name)
 	    {(char_u *)"gray",		RGB(0xBE, 0xBE, 0xBE)},
 	    {(char_u *)"green",		RGB(0x00, 0xFF, 0x00)},
 	    {(char_u *)"grey",		RGB(0xBE, 0xBE, 0xBE)},
+	    {(char_u *)"grey90",	RGB(0xE5, 0xE5, 0xE5)},
 	    {(char_u *)"lightblue",	RGB(0xAD, 0xD8, 0xE6)},
 	    {(char_u *)"lightcyan",	RGB(0xE0, 0xFF, 0xFF)},
 	    {(char_u *)"lightgray",	RGB(0xD3, 0xD3, 0xD3)},
@@ -6114,6 +6115,7 @@ gui_get_color_cmn(char_u *name)
 	    {(char_u *)"lightyellow",	RGB(0xFF, 0xFF, 0xE0)},
 	    {(char_u *)"magenta",	RGB(0xFF, 0x00, 0xFF)},
 	    {(char_u *)"red",		RGB(0xFF, 0x00, 0x00)},
+	    {(char_u *)"seagreen",	RGB(0x2E, 0x8B, 0x57)},
 	    {(char_u *)"white",		RGB(0xFF, 0xFF, 0xFF)},
 	    {(char_u *)"yellow",	RGB(0xFF, 0xFF, 0x00)},
     };
