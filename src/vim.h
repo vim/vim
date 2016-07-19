@@ -1652,7 +1652,7 @@ typedef UINT32_TYPEDEF UINT32_T;
 #ifdef HAVE_STRERROR
 # define PERROR(msg)		    (void)emsg3((char_u *)"%s: %s", (char_u *)msg, (char_u *)strerror(errno))
 #else
-# define PERROR(msg)		    perror(msg)
+# define PERROR(msg)		    do_perror(msg)
 #endif
 
 typedef long	linenr_T;		/* line number type */
