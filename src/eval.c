@@ -177,6 +177,16 @@ static struct vimvar
     {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
     {VV_NAME("testing",		 VAR_NUMBER), 0},
+    {VV_NAME("t_number",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_string",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_func",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_list",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_dict",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_float",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_bool",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_none",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_job",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_channel",	 VAR_NUMBER), VV_RO},
 };
 
 /* shorthand */
@@ -291,6 +301,17 @@ eval_init(void)
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);
     set_vim_var_nr(VV_NONE, VVAL_NONE);
     set_vim_var_nr(VV_NULL, VVAL_NULL);
+
+    set_vim_var_nr(VV_TYPE_NUMBER,  VAR_TYPE_NUMBER);
+    set_vim_var_nr(VV_TYPE_STRING,  VAR_TYPE_STRING);
+    set_vim_var_nr(VV_TYPE_FUNC,    VAR_TYPE_FUNC);
+    set_vim_var_nr(VV_TYPE_LIST,    VAR_TYPE_LIST);
+    set_vim_var_nr(VV_TYPE_DICT,    VAR_TYPE_DICT);
+    set_vim_var_nr(VV_TYPE_FLOAT,   VAR_TYPE_FLOAT);
+    set_vim_var_nr(VV_TYPE_BOOL,    VAR_TYPE_BOOL);
+    set_vim_var_nr(VV_TYPE_NONE,    VAR_TYPE_NONE);
+    set_vim_var_nr(VV_TYPE_JOB,     VAR_TYPE_JOB);
+    set_vim_var_nr(VV_TYPE_CHANNEL, VAR_TYPE_CHANNEL);
 
     set_reg_var(0);  /* default for v:register is not 0 but '"' */
 

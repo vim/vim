@@ -1968,13 +1968,35 @@ typedef int sock_T;
 #define VV_NONE		68
 #define VV_VIM_DID_ENTER 69
 #define VV_TESTING	70
-#define VV_LEN		71	/* number of v: vars */
+#define VV_TYPE_NUMBER	71
+#define VV_TYPE_STRING	72
+#define VV_TYPE_FUNC	73
+#define VV_TYPE_LIST	74
+#define VV_TYPE_DICT	75
+#define VV_TYPE_FLOAT	76
+#define VV_TYPE_BOOL	77
+#define VV_TYPE_NONE	78
+#define VV_TYPE_JOB	79
+#define VV_TYPE_CHANNEL	80
+#define VV_LEN		81	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L
 #define VVAL_TRUE	1L
 #define VVAL_NONE	2L
 #define VVAL_NULL	3L
+
+/* Type values for type(). */
+#define VAR_TYPE_NUMBER	    0
+#define VAR_TYPE_STRING	    1
+#define VAR_TYPE_FUNC	    2
+#define VAR_TYPE_LIST	    3
+#define VAR_TYPE_DICT	    4
+#define VAR_TYPE_FLOAT	    5
+#define VAR_TYPE_BOOL	    6
+#define VAR_TYPE_NONE	    7
+#define VAR_TYPE_JOB	    8
+#define VAR_TYPE_CHANNEL    9
 
 #ifdef FEAT_CLIPBOARD
 

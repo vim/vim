@@ -12136,22 +12136,22 @@ f_type(typval_T *argvars, typval_T *rettv)
 
     switch (argvars[0].v_type)
     {
-	case VAR_NUMBER: n = 0; break;
-	case VAR_STRING: n = 1; break;
+	case VAR_NUMBER: n = VAR_TYPE_NUMBER; break;
+	case VAR_STRING: n = VAR_TYPE_STRING; break;
 	case VAR_PARTIAL:
-	case VAR_FUNC:   n = 2; break;
-	case VAR_LIST:   n = 3; break;
-	case VAR_DICT:   n = 4; break;
-	case VAR_FLOAT:  n = 5; break;
+	case VAR_FUNC:   n = VAR_TYPE_FUNC; break;
+	case VAR_LIST:   n = VAR_TYPE_LIST; break;
+	case VAR_DICT:   n = VAR_TYPE_DICT; break;
+	case VAR_FLOAT:  n = VAR_TYPE_FLOAT; break;
 	case VAR_SPECIAL:
 	     if (argvars[0].vval.v_number == VVAL_FALSE
 		     || argvars[0].vval.v_number == VVAL_TRUE)
-		 n = 6;
+		 n = VAR_TYPE_BOOL;
 	     else
-		 n = 7;
+		 n = VAR_TYPE_NONE;
 	     break;
-	case VAR_JOB:     n = 8; break;
-	case VAR_CHANNEL: n = 9; break;
+	case VAR_JOB:     n = VAR_TYPE_JOB; break;
+	case VAR_CHANNEL: n = VAR_TYPE_CHANNEL; break;
 	case VAR_UNKNOWN:
 	     EMSG2(_(e_intern2), "f_type(UNKNOWN)");
 	     n = -1;

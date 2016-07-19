@@ -188,6 +188,7 @@ endfunc
 " Test that we can open two channels.
 func Ch_two_channels(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
+  call assert_equal(v:t_channel, type(handle))
   if ch_status(handle) == "fail"
     call assert_false(1, "Can't open channel")
     return
@@ -420,6 +421,7 @@ func Test_raw_pipe()
   endif
   call ch_log('Test_raw_pipe()')
   let job = job_start(s:python . " test_channel_pipe.py", {'mode': 'raw'})
+  call assert_equal(v:t_job, type(job))
   call assert_equal("run", job_status(job))
   try
     " For a change use the job where a channel is expected.
