@@ -46,3 +46,8 @@ function Test_lambda_fails()
   call assert_fails('echo {a, a -> a + a}(1, 2)', 'E15:')
   call assert_fails('echo {a, b -> a + b)}(1, 2)', 'E15:')
 endfunc
+
+func Test_not_lamda()
+  let x = {'>' : 'foo'}
+  call assert_equal('foo', x['>'])
+endfunc

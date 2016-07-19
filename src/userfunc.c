@@ -150,7 +150,9 @@ func_init()
     hash_init(&func_hashtab);
 }
 
-/* Get function arguments. */
+/*
+ * Get function arguments.
+ */
     static int
 get_function_args(
     char_u	**argp,
@@ -232,7 +234,9 @@ get_function_args(
 	    break;
 	}
     }
-    ++p;	/* skip the ')' */
+    if (*p != endchar)
+	goto err_ret;
+    ++p;	/* skip "endchar" */
 
     *argp = p;
     return OK;
