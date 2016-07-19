@@ -53,8 +53,10 @@ endfunc
 func Nb_file_auth(port)
   call assert_fails('nbstart =notexist', 'E660:')
   call writefile(['host=localhost', 'port=' . a:port, 'auth=bunny'], 'Xnbauth')
-  call setfperm('Xnbauth', "rw-r--r--")
-  call assert_fails('nbstart =Xnbauth', 'E668:')
+  if has('unix')
+    call setfperm('Xnbauth', "rw-r--r--")
+    call assert_fails('nbstart =Xnbauth', 'E668:')
+  endif
   call setfperm('Xnbauth', "rw-------")
   exe 'nbstart :localhost:' . a:port . ':bunny'
   call assert_true(has("netbeans_enabled"))
