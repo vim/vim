@@ -258,6 +258,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/search.obj" \
 	"$(INTDIR)/sha256.obj" \
 	"$(INTDIR)/spell.obj" \
+	"$(INTDIR)/spellfile.obj" \
 	"$(INTDIR)/syntax.obj" \
 	"$(INTDIR)/tag.obj" \
 	"$(INTDIR)/term.obj" \
@@ -675,6 +676,10 @@ SOURCE=.\sha256.c
 # Begin Source File
 
 SOURCE=.\spell.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\spellfile.c
 # End Source File
 # Begin Source File
 

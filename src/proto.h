@@ -158,6 +158,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # include "search.pro"
 # include "spell.pro"
+# include "spellfile.pro"
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"

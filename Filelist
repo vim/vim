@@ -78,6 +78,8 @@ SRC_ALL =	\
 		src/sha256.c \
 		src/structs.h \
 		src/spell.c \
+		src/spell.h \
+		src/spellfile.c \
 		src/syntax.c \
 		src/tag.c \
 		src/term.c \
@@ -172,6 +174,7 @@ SRC_ALL =	\
 		src/proto/search.pro \
 		src/proto/sha256.pro \
 		src/proto/spell.pro \
+		src/proto/spellfile.pro \
 		src/proto/syntax.pro \
 		src/proto/tag.pro \
 		src/proto/term.pro \

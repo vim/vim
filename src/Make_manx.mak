@@ -82,6 +82,7 @@ SRC =	arabic.c \
 	search.c \
 	sha256.c \
 	spell.c \
+	spellfile.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -139,6 +140,7 @@ OBJ =	obj/arabic.o \
 	obj/search.o \
 	obj/sha256.o \
 	obj/spell.o \
+	obj/spellfile.o \
 	obj/syntax.o \
 	obj/tag.o \
 	obj/term.o \
@@ -194,6 +196,7 @@ PRO =	proto/arabic.pro \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/spell.pro \
+	proto/spellfile.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
@@ -388,6 +391,9 @@ obj/sha256.o:	sha256.c
 
 obj/spell.o:	spell.c
 	$(CCSYM) $@ spell.c
+
+obj/spellfile.o: spellfile.c
+	$(CCSYM) $@ spellfile.c
 
 obj/syntax.o:	syntax.c
 	$(CCSYM) $@ syntax.c
