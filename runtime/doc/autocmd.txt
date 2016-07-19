@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.4.  Last change: 2016 Jun 09
+*autocmd.txt*   For Vim version 7.4.  Last change: 2016 Jul 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -294,7 +294,8 @@ Name			triggered by ~
 |CursorMovedI|		the cursor was moved in Insert mode
 
 |WinNew|		after creating a new window
-|TabNew|		after creating a new window
+|TabNew|		after creating a new tab page
+|TabClosed|		after closing a tab page
 |WinEnter|		after entering another window
 |WinLeave|		before leaving a window
 |TabEnter|		after entering another tab page
@@ -307,9 +308,6 @@ Name			triggered by ~
 |InsertLeave|		when leaving Insert mode
 |InsertCharPre|		when a character was typed in Insert mode, before
 			inserting it
-
-|TextChanged|		after a change was made to the text in Normal mode
-|TextChangedI|		after a change was made to the text in Insert mode
 
 |TextChanged|		after a change was made to the text in Normal mode
 |TextChangedI|		after a change was made to the text in Insert mode
@@ -879,6 +877,8 @@ Syntax				When the 'syntax' option has been set.  The
 				where this option was set, and <amatch> for
 				the new value of 'syntax'.
 				See |:syn-on|.
+							*TabClosed*
+TabClosed			After closing a tab page.
 							*TabEnter*
 TabEnter			Just after entering a tab page. |tab-page|
 				After triggering the WinEnter and before
@@ -975,6 +975,11 @@ WinLeave			Before leaving a window.  If the window to be
 				executes the BufLeave autocommands before the
 				WinLeave autocommands (but not for ":new").
 				Not used for ":qa" or ":q" when exiting Vim.
+
+							*WinNew*
+WinNew				When a new window was created.  Not done for
+				the fist window, when Vim has just started.
+				Before a WinEnter event.
 
 ==============================================================================
 6. Patterns					*autocmd-patterns* *{pat}*

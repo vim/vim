@@ -7707,6 +7707,7 @@ static struct event_name
     {"SwapExists",	EVENT_SWAPEXISTS},
     {"Syntax",		EVENT_SYNTAX},
     {"TabNew",		EVENT_TABNEW},
+    {"TabClosed",	EVENT_TABCLOSED},
     {"TabEnter",	EVENT_TABENTER},
     {"TabLeave",	EVENT_TABLEAVE},
     {"TermChanged",	EVENT_TERMCHANGED},

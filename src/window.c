@@ -2095,6 +2095,9 @@ close_windows(
     win_T	*wp;
     tabpage_T   *tp, *nexttp;
     int		h = tabline_height();
+#ifdef FEAT_AUTOCMD
+    int		count = tabpage_index(NULL);
+#endif
 
     ++RedrawingDisabled;
 
@@ -2137,6 +2140,11 @@ close_windows(
     }
 
     --RedrawingDisabled;
+
+#ifdef FEAT_AUTOCMD
+    if (count != tabpage_index(NULL))
+	apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
+#endif
 
     redraw_tabline = TRUE;
     if (h != tabline_height())
@@ -2220,6 +2228,7 @@ close_last_window_tabpage(
 	/* Since goto_tabpage_tp above did not trigger *Enter autocommands, do
 	 * that now. */
 #ifdef FEAT_AUTOCMD
+	apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
 	if (old_curbuf != curbuf)

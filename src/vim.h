@@ -1331,6 +1331,7 @@ enum auto_event
     EVENT_TABENTER,		/* after entering a tab page */
     EVENT_TABLEAVE,		/* before leaving a tab page */
     EVENT_TABNEW,		/* when entering a new tab page */
+    EVENT_TABCLOSED,		/* after closing a tab page */
     EVENT_SHELLCMDPOST,		/* after ":!cmd" */
     EVENT_SHELLFILTERPOST,	/* after ":1,2!cmd", ":w !cmd", ":r !cmd". */
     EVENT_TEXTCHANGED,		/* text was modified */
