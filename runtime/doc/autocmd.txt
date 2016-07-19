@@ -293,6 +293,8 @@ Name			triggered by ~
 |CursorMoved|		the cursor was moved in Normal mode
 |CursorMovedI|		the cursor was moved in Insert mode
 
+|WinNew|		after creating a new window
+|TabNew|		after creating a new window
 |WinEnter|		after entering another window
 |WinLeave|		before leaving a window
 |TabEnter|		after entering another tab page
@@ -305,6 +307,9 @@ Name			triggered by ~
 |InsertLeave|		when leaving Insert mode
 |InsertCharPre|		when a character was typed in Insert mode, before
 			inserting it
+
+|TextChanged|		after a change was made to the text in Normal mode
+|TextChangedI|		after a change was made to the text in Insert mode
 
 |TextChanged|		after a change was made to the text in Normal mode
 |TextChangedI|		after a change was made to the text in Insert mode
@@ -882,6 +887,10 @@ TabEnter			Just after entering a tab page. |tab-page|
 TabLeave			Just before leaving a tab page. |tab-page|
 				A WinLeave event will have been triggered
 				first.
+							*TabNew*
+TabNew				When a tab page was created. |tab-page|
+				A WinEnter event will have been triggered
+				first, TabEnter follows.
 							*TermChanged*
 TermChanged			After the value of 'term' has changed.  Useful
 				for re-loading the syntax file to update the

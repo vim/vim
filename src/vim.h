@@ -1315,6 +1315,7 @@ enum auto_event
     EVENT_VIMRESIZED,		/* after Vim window was resized */
     EVENT_WINENTER,		/* after entering a window */
     EVENT_WINLEAVE,		/* before leaving a window */
+    EVENT_WINNEW,		/* when entering a new window */
     EVENT_ENCODINGCHANGED,	/* after changing the 'encoding' option */
     EVENT_INSERTCHARPRE,	/* before inserting a char */
     EVENT_CURSORHOLD,		/* cursor in same position for a while */
@@ -1327,8 +1328,9 @@ enum auto_event
     EVENT_SPELLFILEMISSING,	/* spell file missing */
     EVENT_CURSORMOVED,		/* cursor was moved */
     EVENT_CURSORMOVEDI,		/* cursor was moved in Insert mode */
-    EVENT_TABLEAVE,		/* before leaving a tab page */
     EVENT_TABENTER,		/* after entering a tab page */
+    EVENT_TABLEAVE,		/* before leaving a tab page */
+    EVENT_TABNEW,		/* when entering a new tab page */
     EVENT_SHELLCMDPOST,		/* after ":!cmd" */
     EVENT_SHELLFILTERPOST,	/* after ":1,2!cmd", ":w !cmd", ":r !cmd". */
     EVENT_TEXTCHANGED,		/* text was modified */
