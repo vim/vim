@@ -1906,6 +1906,8 @@ struct file_buffer
 #ifdef FEAT_QUICKFIX
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
+#define BUF_HAS_QF_ENTRY 1
+#define BUF_HAS_LL_ENTRY 2
     int		b_has_qf_entry;
 #endif
     int		b_p_bl;		/* 'buflisted' */
