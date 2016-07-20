@@ -2061,6 +2061,7 @@ test_arglist \
 	test_cscope \
 	test_cursor_func \
 	test_delete \
+	test_digraph \
 	test_ex_undo \
 	test_execute_func \
 	test_expand \
