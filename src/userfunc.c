@@ -199,14 +199,17 @@ get_function_args(
 		break;
 	    }
 	    if (newargs != NULL && ga_grow(newargs, 1) == FAIL)
-		return FAIL;
+		goto err_ret;
 	    if (newargs != NULL)
 	    {
 		c = *p;
 		*p = NUL;
 		arg = vim_strsave(arg);
 		if (arg == NULL)
+		{
+		    *p = c;
 		    goto err_ret;
+		}
 
 		/* Check for duplicate argument name. */
 		for (i = 0; i < newargs->ga_len; ++i)
