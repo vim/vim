@@ -1,9 +1,7 @@
-" Tests for Visual mode
+" Tests for Visual mode.  Uses double-wide character.
 if !has('multi_byte')
   finish
 endif
-set encoding=utf-8
-scriptencoding utf-8
 
 if !has('visual')
   finish

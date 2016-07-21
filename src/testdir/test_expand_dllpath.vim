@@ -1,5 +1,3 @@
-scriptencoding utf-8
-
 func s:test_expand_dllpath(optname)
   let $TEST_EXPAND_DLLPATH = '/dllpath/lib' . substitute(a:optname, '\zedll$', '.', '')
   execute 'let dllpath_save = &' . a:optname

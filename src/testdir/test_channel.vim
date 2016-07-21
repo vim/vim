@@ -1,5 +1,4 @@
 " Test for channel functions.
-scriptencoding utf-8
 
 if !has('channel')
   finish
