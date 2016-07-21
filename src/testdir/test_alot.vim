@@ -5,7 +5,6 @@ source test_assign.vim
 source test_autocmd.vim
 source test_cursor_func.vim
 source test_delete.vim
-source test_digraph.vim
 source test_execute_func.vim
 source test_ex_undo.vim
 source test_expand.vim
