@@ -1046,7 +1046,9 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 	guicolor_T	pixel;
 #if GTK_CHECK_VERSION(3,0,0)
 	GdkRGBA		color = { 0.0, 0.0, 0.0, 1.0 };
+# if PANGO_VERSION_CHECK(1,38,0)
 	PangoAttribute  *attr_alpha;
+# endif
 #else
 	GdkColor	color = { 0, 0, 0, 0 };
 #endif
@@ -1115,8 +1117,10 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 				DOUBLE2UINT16(color.red),
 				DOUBLE2UINT16(color.green),
 				DOUBLE2UINT16(color.blue));
+# if PANGO_VERSION_CHECK(1,38,0)
 			attr_alpha = pango_attr_foreground_alpha_new(
 				DOUBLE2UINT16(color.alpha));
+# endif
 # undef DOUBLE2UINT16
 #else
 			attr = pango_attr_foreground_new(
@@ -1126,9 +1130,11 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 			attr->end_index   = pdest - buf + outlen;
 			pango_attr_list_insert(attr_list, attr);
 #if GTK_CHECK_VERSION(3,0,0)
+# if PANGO_VERSION_CHECK(1,38,0)
 			attr_alpha->start_index = pdest - buf;
 			attr_alpha->end_index   = pdest - buf + outlen;
 			pango_attr_list_insert(attr_list, attr_alpha);
+# endif
 #endif
 		    }
 		    pdest += outlen;
