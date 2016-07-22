@@ -6197,7 +6197,10 @@ gui_get_color_cmn(char_u *name)
 		    char_u *s = vim_strsave((char_u *)line + pos);
 
 		    if (s == NULL)
+		    {
+			fclose(fd);
 			return INVALCOLOR;
+		    }
 		    colornames_table[size].color_name = s;
 		    colornames_table[size].color = (guicolor_T)RGB(r, g, b);
 		}
