@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 16
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1535,7 +1535,7 @@ v:false		A Number with value zero. Used to put "false" in JSON.  See
 			echo v:false
 <			v:false ~
 		That is so that eval() can parse the string back to the same
-		value.
+		value.  Read-only.
 
 					*v:fcs_reason* *fcs_reason-variable*
 v:fcs_reason	The reason why the |FileChangedShell| event was triggered.
@@ -1682,7 +1682,7 @@ v:none		An empty String. Used to put an empty item in JSON.  See
 			echo v:none
 <			v:none ~
 		That is so that eval() can parse the string back to the same
-		value.
+		value.  Read-only.
 
 					*v:null* *null-variable*
 v:null		An empty String. Used to put "null" in JSON.  See
@@ -1692,7 +1692,7 @@ v:null		An empty String. Used to put "null" in JSON.  See
 			echo v:null
 <			v:null ~
 		That is so that eval() can parse the string back to the same
-		value.
+		value.  Read-only.
 
 					*v:oldfiles* *oldfiles-variable*
 v:oldfiles	List of file names that is loaded from the |viminfo| file on
@@ -1890,7 +1890,7 @@ v:true		A Number with value one. Used to put "true" in JSON.  See
 			echo v:true
 <			v:true ~
 		That is so that eval() can parse the string back to the same
-		value.
+		value.  Read-only.
 						*v:val* *val-variable*
 v:val		Value of the current item of a |List| or |Dictionary|.	Only
 		valid while evaluating the expression used with |map()| and
@@ -7144,15 +7144,23 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 		unmodified.
 
 		Example: >
-			:let &path = substitute(&path, ",\\=[^,]*$", "", "")
+		   :let &path = substitute(&path, ",\\=[^,]*$", "", "")
 <		This removes the last component of the 'path' option. >
-			:echo substitute("testing", ".*", "\\U\\0", "")
+		   :echo substitute("testing", ".*", "\\U\\0", "")
 <		results in "TESTING".
 
 		When {sub} starts with "\=", the remainder is interpreted as
 		an expression. See |sub-replace-expression|.  Example: >
-			:echo substitute(s, '%\(\x\x\)',
+		   :echo substitute(s, '%\(\x\x\)',
 			   \ '\=nr2char("0x" . submatch(1))', 'g')
+
+<		When {sub} is a Funcref that function is called, with one
+		optional argument.  Example: >
+		   :echo substitute(s, '%\(\x\x\)', SubNr, 'g')
+<		The optional argument is a list which contains the whole
+		matched string and up to nine submatches,like what
+		|submatch()| returns. Example: >
+		   :echo substitute(s, '\(\x\x\)', {m -> '0x' . m[1]}, 'g')
 
 synID({lnum}, {col}, {trans})				*synID()*
 		The result is a Number, which is the syntax ID at the position
@@ -7546,18 +7554,20 @@ trunc({expr})							*trunc()*
 		{only available when compiled with the |+float| feature}
 		
 							*type()*
-type({expr})	The result is a Number, depending on the type of {expr}:
-			Number:	    0
-			String:	    1
-			Funcref:    2
-			List:	    3
-			Dictionary: 4
-			Float:	    5
-			Boolean:    6 (v:false and v:true)
-			None	    7 (v:null and v:none)
-			Job	    8
-			Channel	    9
-		To avoid the magic numbers it should be used this way: >
+type({expr})	The result is a Number representing the type of {expr}.
+		Instead of using the number directly, it is better to use the
+		v:t_ variable that has the value:
+			Number:	    0  |v:t_number|
+			String:	    1  |v:t_string|
+			Funcref:    2  |v:t_func|
+			List:	    3  |v:t_list|
+			Dictionary: 4  |v:t_dict|
+			Float:	    5  |v:t_float|
+			Boolean:    6  |v:t_bool| (v:false and v:true)
+			None	    7  |v:t_none| (v:null and v:none)
+			Job	    8  |v:t_job|
+			Channel	    9  |v:t_channel|
+		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")
 			:if type(myvar) == type(function("tr"))
@@ -7566,6 +7576,8 @@ type({expr})	The result is a Number, depending on the type of {expr}:
 			:if type(myvar) == type(0.0)
 			:if type(myvar) == type(v:false)
 			:if type(myvar) == type(v:none)
+<		To check if the v:t_ variables exist use this: >
+			:if exists('v:t_number')
 
 undofile({name})					*undofile()*
 		Return the name of the undo file that would be used for a file

@@ -32,4 +32,5 @@ char_u *list2string(typval_T *tv, int copyID, int restore_copyID);
 int list_join(garray_T *gap, list_T *l, char_u *sep, int echo_style, int restore_copyID, int copyID);
 int get_list_tv(char_u **arg, typval_T *rettv, int evaluate);
 int write_list(FILE *fd, list_T *list, int binary);
+void init_static_list(staticList10_T *sl);
 /* vim: set ft=c : */

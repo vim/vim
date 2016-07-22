@@ -1245,6 +1245,14 @@ struct listvar_S
 };
 
 /*
+ * Static list with 10 items.  Use init_static_list() to initialize.
+ */
+typedef struct {
+    list_T	sl_list;	/* must be first */
+    listitem_T	sl_items[10];
+} staticList10_T;
+
+/*
  * Structure to hold an item of a Dictionary.
  * Also used for a variable.
  * The key is copied into "di_key" to avoid an extra alloc/free for it.

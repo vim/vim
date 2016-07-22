@@ -10101,7 +10101,7 @@ item_compare2(const void *s1, const void *s2)
 
     rettv.v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
     res = call_func(func_name, (int)STRLEN(func_name),
-				 &rettv, 2, argv, 0L, 0L, &dummy, TRUE,
+				 &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE,
 				 partial, sortinfo->item_compare_selfdict);
     clear_tv(&argv[0]);
     clear_tv(&argv[1]);

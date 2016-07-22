@@ -988,7 +988,7 @@ call_vim_function(
     }
 
     rettv->v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    ret = call_func(func, (int)STRLEN(func), rettv, argc, argvars,
+    ret = call_func(func, (int)STRLEN(func), rettv, argc, argvars, NULL,
 		    curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 		    &doesrange, TRUE, NULL, NULL);
     if (safe)
@@ -9930,8 +9930,8 @@ filter_map_one(typval_T *tv, typval_T *expr, int map, int *remp)
     if (expr->v_type == VAR_FUNC)
     {
 	s = expr->vval.v_string;
-	if (call_func(s, (int)STRLEN(s),
-		    &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
+	if (call_func(s, (int)STRLEN(s), &rettv, 2, argv, NULL,
+				     0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
 	    goto theend;
     }
     else if (expr->v_type == VAR_PARTIAL)
@@ -9939,9 +9939,8 @@ filter_map_one(typval_T *tv, typval_T *expr, int map, int *remp)
 	partial_T   *partial = expr->vval.v_partial;
 
 	s = partial->pt_name;
-	if (call_func(s, (int)STRLEN(s),
-		    &rettv, 2, argv, 0L, 0L, &dummy, TRUE, partial, NULL)
-								      == FAIL)
+	if (call_func(s, (int)STRLEN(s), &rettv, 2, argv, NULL,
+				  0L, 0L, &dummy, TRUE, partial, NULL) == FAIL)
 	    goto theend;
     }
     else

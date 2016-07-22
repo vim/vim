@@ -5,7 +5,7 @@ char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_au
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, partial_T *partial, dict_T *selfdict);
 void free_all_functions(void);
 int func_call(char_u *name, typval_T *args, partial_T *partial, dict_T *selfdict, typval_T *rettv);
-int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, partial_T *partial, dict_T *selfdict_in);
+int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, int (*argv_func)(int, typval_T *, int), linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, partial_T *partial, dict_T *selfdict_in);
 void ex_function(exarg_T *eap);
 int eval_fname_script(char_u *p);
 int translated_function_exists(char_u *name);

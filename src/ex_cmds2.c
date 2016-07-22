@@ -1163,7 +1163,7 @@ timer_callback(timer_T *timer)
     argv[1].v_type = VAR_UNKNOWN;
 
     call_func(timer->tr_callback, (int)STRLEN(timer->tr_callback),
-			&rettv, 1, argv, 0L, 0L, &dummy, TRUE,
+			&rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE,
 			timer->tr_partial, NULL);
     clear_tv(&rettv);
 }

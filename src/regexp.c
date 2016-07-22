@@ -7290,6 +7290,50 @@ static int		submatch_line_lbr;
 #endif
 
 #if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) || defined(PROTO)
+
+/*
+ * Put the submatches in "argv[0]" which is a list passed into call_func() by
+ * vim_regsub_both().
+ */
+    static int
+fill_submatch_list(int argc UNUSED, typval_T *argv, int argcount)
+{
+    listitem_T	*li;
+    int		i;
+    char_u	*s;
+
+    if (argcount == 0)
+	/* called function doesn't take an argument */
+	return 0;
+
+    /* Relies on sl_list to be the first item in staticList10_T. */
+    init_static_list((staticList10_T *)(argv->vval.v_list));
+
+    /* There are always 10 list items in staticList10_T. */
+    li = argv->vval.v_list->lv_first;
+    for (i = 0; i < 10; ++i)
+    {
+	s = submatch_match->startp[i];
+	if (s == NULL || submatch_match->endp[i] == NULL)
+	    s = NULL;
+	else
+	    s = vim_strnsave(s, (int)(submatch_match->endp[i] - s));
+	li->li_tv.v_type = VAR_STRING;
+	li->li_tv.vval.v_string = s;
+	li = li->li_next;
+    }
+    return 1;
+}
+
+    static void
+clear_submatch_list(staticList10_T *sl)
+{
+    int i;
+
+    for (i = 0; i < 10; ++i)
+	vim_free(sl->sl_items[i].li_tv.vval.v_string);
+}
+
 /*
  * vim_regsub() - perform substitutions after a vim_regexec() or
  * vim_regexec_multi() match.
@@ -7427,10 +7471,11 @@ vim_regsub_both(
 
 	    if (expr != NULL)
 	    {
-		typval_T	argv[1];
+		typval_T	argv[2];
 		int		dummy;
 		char_u		buf[NUMBUFLEN];
 		typval_T	rettv;
+		staticList10_T	matchList;
 
 		rettv.v_type = VAR_STRING;
 		rettv.vval.v_string = NULL;
@@ -7438,23 +7483,35 @@ vim_regsub_both(
 		{
 		    /* can't do this recursively */
 		}
-		else if (expr->v_type == VAR_FUNC)
+		else
 		{
-		    s = expr->vval.v_string;
-		    call_func(s, (int)STRLEN(s), &rettv, 0, argv,
+		    argv[0].v_type = VAR_LIST;
+		    argv[0].vval.v_list = &matchList.sl_list;
+		    matchList.sl_list.lv_len = 0;
+		    if (expr->v_type == VAR_FUNC)
+		    {
+			s = expr->vval.v_string;
+			call_func(s, (int)STRLEN(s), &rettv,
+					1, argv, fill_submatch_list,
 					     0L, 0L, &dummy, TRUE, NULL, NULL);
-		}
-		else if (expr->v_type == VAR_PARTIAL)
-		{
-		    partial_T   *partial = expr->vval.v_partial;
+		    }
+		    else if (expr->v_type == VAR_PARTIAL)
+		    {
+			partial_T   *partial = expr->vval.v_partial;
 
-		    s = partial->pt_name;
-		    call_func(s, (int)STRLEN(s), &rettv, 0, argv,
+			s = partial->pt_name;
+			call_func(s, (int)STRLEN(s), &rettv,
+					1, argv, fill_submatch_list,
 					  0L, 0L, &dummy, TRUE, partial, NULL);
+		    }
+		    if (matchList.sl_list.lv_len > 0)
+			/* fill_submatch_list() was called */
+			clear_submatch_list(&matchList);
 		}
 		eval_result = get_tv_string_buf_chk(&rettv, buf);
 		if (eval_result != NULL)
 		    eval_result = vim_strsave(eval_result);
+		clear_tv(&rettv);
 	    }
 	    else
 		eval_result = eval_to_string(source + 2, NULL, TRUE);
