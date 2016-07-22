@@ -1408,7 +1408,8 @@ qf_add_entry(
 
 	qfp->qf_fnum = bufnum;
 	if (buf != NULL)
-	    buf->b_has_qf_entry = TRUE;
+	    buf->b_has_qf_entry |=
+		(qi == &ql_info) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
     }
     else
 	qfp->qf_fnum = qf_get_fnum(qi, dir, fname);
@@ -1680,7 +1681,8 @@ qf_get_fnum(qf_info_T *qi, char_u *directory, char_u *fname)
     if (buf == NULL)
 	return 0;
 
-    buf->b_has_qf_entry = TRUE;
+    buf->b_has_qf_entry =
+			(qi == &ql_info) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
     return buf->b_fnum;
 }
 
@@ -2593,9 +2595,14 @@ qf_msg(qf_info_T *qi, int which, char *lead)
 
     if (title != NULL)
     {
-	while (STRLEN(buf) < 34)
-	    STRCAT(buf, " ");
-	STRCAT(buf, title);
+	size_t	len = STRLEN(buf);
+
+	if (len < 34)
+	{
+	    vim_memset(buf + len, ' ', 34 - len);
+	    buf[34] = NUL;
+	}
+	vim_strcat(buf, (char_u *)title, IOSIZE);
     }
     trunc_string(buf, buf, Columns - 1, IOSIZE);
     msg(buf);
@@ -2723,8 +2730,9 @@ qf_mark_adjust(
     int		idx;
     qf_info_T	*qi = &ql_info;
     int		found_one = FALSE;
+    int		buf_has_flag = wp == NULL ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
 
-    if (!curbuf->b_has_qf_entry)
+    if (!(curbuf->b_has_qf_entry & buf_has_flag))
 	return;
     if (wp != NULL)
     {
@@ -2753,7 +2761,7 @@ qf_mark_adjust(
 		}
 
     if (!found_one)
-	curbuf->b_has_qf_entry = FALSE;
+	curbuf->b_has_qf_entry &= ~buf_has_flag;
 }
 
 /*

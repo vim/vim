@@ -37,6 +37,7 @@ SRC = \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalfunc.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
@@ -71,6 +72,7 @@ SRC = \
 	search.c \
 	sha256.c \
 	spell.c \
+	spellfile.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -91,6 +93,7 @@ OBJ =	o/arabic.o \
 	o/digraph.o \
 	o/edit.o \
 	o/eval.o \
+	o/evalfunc.o \
 	o/ex_cmds.o \
 	o/ex_cmds2.o \
 	o/ex_docmd.o \
@@ -125,6 +128,7 @@ OBJ =	o/arabic.o \
 	o/search.o \
 	o/sha256.o \
 	o/spell.o \
+	o/spellfile.o \
 	o/syntax.o \
 	o/tag.o \
 	o/term.o \
@@ -174,6 +178,8 @@ o/digraph.o:	digraph.c  $(SYMS)
 o/edit.o:	edit.c	$(SYMS)
 
 o/eval.o:	eval.c  $(SYMS)
+
+o/evalfunc.o:	evalfunc.c  $(SYMS)
 
 o/ex_cmds.o:	ex_cmds.c  $(SYMS)
 
@@ -246,7 +252,9 @@ o/search.o:	search.c  $(SYMS) regexp.h
 
 o/sha256.o:	sha256.c  $(SYMS)
 
-o/spell.o:	spell.c  $(SYMS)
+o/spell.o:	spell.c  $(SYMS) spell.h
+
+o/spellfile.o:	spellfile.c  $(SYMS) spell.h
 
 o/syntax.o:	syntax.c  $(SYMS)
 

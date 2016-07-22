@@ -2865,8 +2865,10 @@ create_blank_pointer(void)
     GdkPixmap	*blank_mask;
 #endif
     GdkCursor	*cursor;
+#if GTK_CHECK_VERSION(3,0,0)
+    GdkRGBA	color = { 0.0, 0.0, 0.0, 1.0 };
+#else
     GdkColor	color = { 0, 0, 0, 0 };
-#if !GTK_CHECK_VERSION(3,0,0)
     char	blank_data[] = { 0x0 };
 #endif
 
@@ -2892,10 +2894,11 @@ create_blank_pointer(void)
 	surf = cairo_image_surface_create(CAIRO_FORMAT_A1, 1, 1);
 	cr = cairo_create(surf);
 
-	cairo_set_source_rgb(cr,
-			     color.red / 65535.0,
-			     color.green / 65535.0,
-			     color.blue / 65535.0);
+	cairo_set_source_rgba(cr,
+			     color.red,
+			     color.green,
+			     color.blue,
+			     color.alpha);
 	cairo_rectangle(cr, 0, 0, 1, 1);
 	cairo_fill(cr);
 	cairo_destroy(cr);
@@ -3824,12 +3827,18 @@ gui_mch_init(void)
     gui.border_width = 2;
     gui.scrollbar_width = SB_DEFAULT_WIDTH;
     gui.scrollbar_height = SB_DEFAULT_WIDTH;
+#if GTK_CHECK_VERSION(3,0,0)
+    gui.fgcolor = g_new(GdkRGBA, 1);
+    gui.bgcolor = g_new(GdkRGBA, 1);
+    gui.spcolor = g_new(GdkRGBA, 1);
+#else
     /* LINTED: avoid warning: conversion to 'unsigned long' */
     gui.fgcolor = g_new0(GdkColor, 1);
     /* LINTED: avoid warning: conversion to 'unsigned long' */
     gui.bgcolor = g_new0(GdkColor, 1);
     /* LINTED: avoid warning: conversion to 'unsigned long' */
     gui.spcolor = g_new0(GdkColor, 1);
+#endif
 
     /* Initialise atoms */
     html_atom = gdk_atom_intern("text/html", FALSE);
@@ -4344,63 +4353,22 @@ gui_mch_forked(void)
 #endif /* FEAT_GUI_GNOME && FEAT_SESSION */
 
 #if GTK_CHECK_VERSION(3,0,0)
-    static void
-gui_gtk_get_rgb_from_pixel(guint32 pixel, GdkRGBA *result)
+    static GdkRGBA
+color_to_rgba(guicolor_T color)
 {
-    GdkVisual * const visual = gtk_widget_get_visual(gui.drawarea);
-    guint32 r_mask, g_mask, b_mask;
-    gint r_shift, g_shift, b_shift;
-
-    if (visual == NULL)
-    {
-	result->red = 0.0;
-	result->green = 0.0;
-	result->blue = 0.0;
-	result->alpha = 0.0;
-	return;
-    }
-
-    gdk_visual_get_red_pixel_details(visual, &r_mask, &r_shift, NULL);
-    gdk_visual_get_green_pixel_details(visual, &g_mask, &g_shift, NULL);
-    gdk_visual_get_blue_pixel_details(visual, &b_mask, &b_shift, NULL);
-
-    result->red = ((pixel & r_mask) >> r_shift) / 255.0;
-    result->green = ((pixel & g_mask) >> g_shift) / 255.0;
-    result->blue = ((pixel & b_mask) >> b_shift) / 255.0;
-    result->alpha = 1.0;
-}
-
-/* Convert a GdRGBA into a pixel value using drawarea's visual */
-    static guint32
-gui_gtk_get_pixel_from_rgb(const GdkRGBA *rgba)
-{
-    GdkVisual * const visual = gtk_widget_get_visual(gui.drawarea);
-    guint32 r_mask, g_mask, b_mask;
-    gint r_shift, g_shift, b_shift;
-    guint32 r, g, b;
-
-    if (visual == NULL)
-	return 0;
-
-    gdk_visual_get_red_pixel_details(visual, &r_mask, &r_shift, NULL);
-    gdk_visual_get_green_pixel_details(visual, &g_mask, &g_shift, NULL);
-    gdk_visual_get_blue_pixel_details(visual, &b_mask, &b_shift, NULL);
-
-    r = rgba->red * 65535;
-    g = rgba->green * 65535;
-    b = rgba->blue * 65535;
-
-    return ((r << r_shift) & r_mask) |
-	   ((g << g_shift) & g_mask) |
-	   ((b << b_shift) & b_mask);
+    GdkRGBA rgba;
+    rgba.red   = ((color & 0xff0000) >> 16) / 255.0;
+    rgba.green = ((color & 0xff00) >> 8) / 255.0;
+    rgba.blue  = ((color & 0xff)) / 255.0;
+    rgba.alpha = 1.0;
+    return rgba;
 }
 
     static void
-set_cairo_source_rgb_from_pixel(cairo_t *cr, guint32 pixel)
+set_cairo_source_rgba_from_color(cairo_t *cr, guicolor_T color)
 {
-    GdkRGBA result;
-    gui_gtk_get_rgb_from_pixel(pixel, &result);
-    cairo_set_source_rgb(cr, result.red, result.green, result.blue);
+    const GdkRGBA rgba = color_to_rgba(color);
+    cairo_set_source_rgba(cr, rgba.red, rgba.green, rgba.blue, rgba.alpha);
 }
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
@@ -4421,19 +4389,19 @@ gui_mch_new_colors(void)
 #endif
     {
 #if GTK_CHECK_VERSION(3,4,0)
-	GdkRGBA color;
+	GdkRGBA rgba;
 
-	gui_gtk_get_rgb_from_pixel(gui.back_pixel, &color);
+	rgba = color_to_rgba(gui.back_pixel);
 	{
 	    cairo_pattern_t * const pat = cairo_pattern_create_rgba(
-		    color.red, color.green, color.blue, color.alpha);
+		    rgba.red, rgba.green, rgba.blue, rgba.alpha);
 	    if (pat != NULL)
 	    {
 		gdk_window_set_background_pattern(da_win, pat);
 		cairo_pattern_destroy(pat);
 	    }
 	    else
-		gdk_window_set_background_rgba(da_win, &color);
+		gdk_window_set_background_rgba(da_win, &rgba);
 	}
 #else /* !GTK_CHECK_VERSION(3,4,0) */
 	GdkColor color = { 0, 0, 0, 0 };
@@ -5518,93 +5486,36 @@ gui_mch_free_font(GuiFont font)
 }
 
 /*
- * Return the Pixel value (color) for the given color name.  This routine was
- * pretty much taken from example code in the Silicon Graphics OSF/Motif
- * Programmer's Guide.
+ * Return the Pixel value (color) for the given color name.
+ *
  * Return INVALCOLOR for error.
  */
     guicolor_T
 gui_mch_get_color(char_u *name)
 {
-    /* A number of colors that some X11 systems don't have */
-    static const char *const vimnames[][2] =
-    {
-	{"LightRed",	"#FFBBBB"},
-	{"LightGreen",	"#88FF88"},
-	{"LightMagenta","#FFBBFF"},
-	{"DarkCyan",	"#008888"},
-	{"DarkBlue",	"#0000BB"},
-	{"DarkRed",	"#BB0000"},
-	{"DarkMagenta", "#BB00BB"},
-	{"DarkGrey",	"#BBBBBB"},
-	{"DarkYellow",	"#BBBB00"},
-	{"Gray10",	"#1A1A1A"},
-	{"Grey10",	"#1A1A1A"},
-	{"Gray20",	"#333333"},
-	{"Grey20",	"#333333"},
-	{"Gray30",	"#4D4D4D"},
-	{"Grey30",	"#4D4D4D"},
-	{"Gray40",	"#666666"},
-	{"Grey40",	"#666666"},
-	{"Gray50",	"#7F7F7F"},
-	{"Grey50",	"#7F7F7F"},
-	{"Gray60",	"#999999"},
-	{"Grey60",	"#999999"},
-	{"Gray70",	"#B3B3B3"},
-	{"Grey70",	"#B3B3B3"},
-	{"Gray80",	"#CCCCCC"},
-	{"Grey80",	"#CCCCCC"},
-	{"Gray90",	"#E5E5E5"},
-	{"Grey90",	"#E5E5E5"},
-	{NULL, NULL}
-    };
-
     if (!gui.in_use)		/* can't do this when GUI not running */
 	return INVALCOLOR;
 
-    while (name != NULL)
-    {
 #if GTK_CHECK_VERSION(3,0,0)
-	GdkRGBA     color;
+    return name != NULL ? gui_get_color_cmn(name) : INVALCOLOR;
 #else
-	GdkColor    color;
-#endif
-	int	    parsed;
-	int	    i;
+    guicolor_T color;
+    GdkColor gcolor;
+    int ret;
 
-#if GTK_CHECK_VERSION(3,0,0)
-	parsed = gdk_rgba_parse(&color, (const gchar *)name);
-#else
-	parsed = gdk_color_parse((const char *)name, &color);
-#endif
+    color = (name != NULL) ? gui_get_color_cmn(name) : INVALCOLOR;
+    if (color == INVALCOLOR)
+	return INVALCOLOR;
 
-	if (parsed)
-	{
-#if GTK_CHECK_VERSION(3,0,0)
-	    return (guicolor_T)gui_gtk_get_pixel_from_rgb(&color);
-#else
-	    gdk_colormap_alloc_color(gtk_widget_get_colormap(gui.drawarea),
-				     &color, FALSE, TRUE);
-	    return (guicolor_T)color.pixel;
-#endif
-	}
-	/* add a few builtin names and try again */
-	for (i = 0; ; ++i)
-	{
-	    if (vimnames[i][0] == NULL)
-	    {
-		name = NULL;
-		break;
-	    }
-	    if (STRICMP(name, vimnames[i][0]) == 0)
-	    {
-		name = (char_u *)vimnames[i][1];
-		break;
-	    }
-	}
-    }
+    gcolor.red = (guint16)(((color & 0xff0000) >> 16) / 255.0 * 65535 + 0.5);
+    gcolor.green = (guint16)(((color & 0xff00) >> 8) / 255.0 * 65535 + 0.5);
+    gcolor.blue = (guint16)((color & 0xff) / 255.0 * 65535 + 0.5);
 
-    return INVALCOLOR;
+    ret = gdk_colormap_alloc_color(gtk_widget_get_colormap(gui.drawarea),
+	    &gcolor, FALSE, TRUE);
+
+    return ret != 0 ? (guicolor_T)gcolor.pixel : INVALCOLOR;
+#endif
 }
 
 /*
@@ -5613,7 +5524,11 @@ gui_mch_get_color(char_u *name)
     void
 gui_mch_set_fg_color(guicolor_T color)
 {
+#if GTK_CHECK_VERSION(3,0,0)
+    *gui.fgcolor = color_to_rgba(color);
+#else
     gui.fgcolor->pixel = (unsigned long)color;
+#endif
 }
 
 /*
@@ -5622,7 +5537,11 @@ gui_mch_set_fg_color(guicolor_T color)
     void
 gui_mch_set_bg_color(guicolor_T color)
 {
+#if GTK_CHECK_VERSION(3,0,0)
+    *gui.bgcolor = color_to_rgba(color);
+#else
     gui.bgcolor->pixel = (unsigned long)color;
+#endif
 }
 
 /*
@@ -5631,7 +5550,11 @@ gui_mch_set_bg_color(guicolor_T color)
     void
 gui_mch_set_sp_color(guicolor_T color)
 {
+#if GTK_CHECK_VERSION(3,0,0)
+    *gui.spcolor = color_to_rgba(color);
+#else
     gui.spcolor->pixel = (unsigned long)color;
+#endif
 }
 
 /*
@@ -5792,7 +5715,9 @@ draw_glyph_string(int row, int col, int num_cells, int flags,
     if (!(flags & DRAW_TRANSP))
     {
 #if GTK_CHECK_VERSION(3,0,0)
-	set_cairo_source_rgb_from_pixel(cr, gui.bgcolor->pixel);
+	cairo_set_source_rgba(cr,
+		gui.bgcolor->red, gui.bgcolor->green, gui.bgcolor->blue,
+		gui.bgcolor->alpha);
 	cairo_rectangle(cr,
 			FILL_X(col), FILL_Y(row),
 			num_cells * gui.char_width, gui.char_height);
@@ -5811,7 +5736,9 @@ draw_glyph_string(int row, int col, int num_cells, int flags,
     }
 
 #if GTK_CHECK_VERSION(3,0,0)
-    set_cairo_source_rgb_from_pixel(cr, gui.fgcolor->pixel);
+    cairo_set_source_rgba(cr,
+	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+	    gui.fgcolor->alpha);
     cairo_move_to(cr, TEXT_X(col), TEXT_Y(row));
     pango_cairo_show_glyph_string(cr, font, glyphs);
 #else
@@ -5829,7 +5756,9 @@ draw_glyph_string(int row, int col, int num_cells, int flags,
     if ((flags & DRAW_BOLD) && !gui.font_can_bold)
 #if GTK_CHECK_VERSION(3,0,0)
     {
-	set_cairo_source_rgb_from_pixel(cr, gui.fgcolor->pixel);
+	cairo_set_source_rgba(cr,
+		gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+		gui.fgcolor->alpha);
 	cairo_move_to(cr, TEXT_X(col) + 1, TEXT_Y(row));
 	pango_cairo_show_glyph_string(cr, font, glyphs);
     }
@@ -5865,7 +5794,9 @@ draw_under(int flags, int row, int col, int cells)
 #if GTK_CHECK_VERSION(3,0,0)
 	cairo_set_line_width(cr, 1.0);
 	cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
-	set_cairo_source_rgb_from_pixel(cr, gui.spcolor->pixel);
+	cairo_set_source_rgba(cr,
+		gui.spcolor->red, gui.spcolor->green, gui.spcolor->blue,
+		gui.spcolor->alpha);
 	for (i = FILL_X(col); i < FILL_X(col + cells); ++i)
 	{
 	    offset = val[i % 8];
@@ -5894,7 +5825,9 @@ draw_under(int flags, int row, int col, int cells)
 	{
 	    cairo_set_line_width(cr, 1.0);
 	    cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
-	    set_cairo_source_rgb_from_pixel(cr, gui.fgcolor->pixel);
+	    cairo_set_source_rgba(cr,
+		    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+		    gui.fgcolor->alpha);
 	    cairo_move_to(cr, FILL_X(col), y + 0.5);
 	    cairo_line_to(cr, FILL_X(col + cells), y + 0.5);
 	    cairo_stroke(cr);
@@ -6361,7 +6294,7 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
     };
     cairo_t * const cr = cairo_create(gui.surface);
 
-    set_cairo_source_rgb_from_pixel(cr, gui.norm_pixel ^ gui.back_pixel);
+    set_cairo_source_rgba_from_color(cr, gui.norm_pixel ^ gui.back_pixel);
 # if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1,9,2)
     cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
 # else
@@ -6445,7 +6378,9 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
     gui_mch_set_fg_color(color);
 
 #if GTK_CHECK_VERSION(3,0,0)
-    set_cairo_source_rgb_from_pixel(cr, gui.fgcolor->pixel);
+    cairo_set_source_rgba(cr,
+	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+	    gui.fgcolor->alpha);
 #else
     gdk_gc_set_foreground(gui.text_gc, gui.fgcolor);
 #endif
@@ -6488,7 +6423,9 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
 	cairo_t *cr;
 
 	cr = cairo_create(gui.surface);
-	set_cairo_source_rgb_from_pixel(cr, gui.fgcolor->pixel);
+	cairo_set_source_rgba(cr,
+		gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+		gui.fgcolor->alpha);
 	cairo_rectangle(cr,
 # ifdef FEAT_RIGHTLEFT
 	    /* vertical line should be on the right of current point */
@@ -6686,7 +6623,7 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
 	if (pat != NULL)
 	    cairo_set_source(cr, pat);
 	else
-	    set_cairo_source_rgb_from_pixel(cr, gui.back_pixel);
+	    set_cairo_source_rgba_from_color(cr, gui.back_pixel);
 	gdk_cairo_rectangle(cr, &rect);
 	cairo_fill(cr);
 	cairo_destroy(cr);
@@ -6719,7 +6656,7 @@ gui_gtk_window_clear(GdkWindow *win)
     if (pat != NULL)
 	cairo_set_source(cr, pat);
     else
-	set_cairo_source_rgb_from_pixel(cr, gui.back_pixel);
+	set_cairo_source_rgba_from_color(cr, gui.back_pixel);
     gdk_cairo_rectangle(cr, &rect);
     cairo_fill(cr);
     cairo_destroy(cr);
@@ -7079,23 +7016,18 @@ gui_mch_enable_scrollbar(scrollbar_T *sb, int flag)
     long_u
 gui_mch_get_rgb(guicolor_T pixel)
 {
-    GdkColor color;
 #if GTK_CHECK_VERSION(3,0,0)
-    GdkRGBA rgba;
-
-    gui_gtk_get_rgb_from_pixel(pixel, &rgba);
-
-    color.red = rgba.red * 65535;
-    color.green = rgba.green * 65535;
-    color.blue = rgba.blue * 65535;
+    return (long_u)pixel;
 #else
+    GdkColor color;
+
     gdk_colormap_query_color(gtk_widget_get_colormap(gui.drawarea),
 			     (unsigned long)pixel, &color);
-#endif
 
     return (((unsigned)color.red   & 0xff00) << 8)
 	 |  ((unsigned)color.green & 0xff00)
 	 | (((unsigned)color.blue  & 0xff00) >> 8);
+#endif
 }
 
 /*
@@ -7355,7 +7287,9 @@ gui_mch_drawsign(int row, int col, int typenr)
 		    cairo_surface_get_content(gui.surface),
 		    SIGN_WIDTH, SIGN_HEIGHT);
 	    bg_cr = cairo_create(bg_surf);
-	    set_cairo_source_rgb_from_pixel(bg_cr, gui.bgcolor->pixel);
+	    cairo_set_source_rgba(bg_cr,
+		    gui.bgcolor->red, gui.bgcolor->green, gui.bgcolor->blue,
+		    gui.bgcolor->alpha);
 	    cairo_paint(bg_cr);
 
 	    sign_surf = cairo_surface_create_similar(gui.surface,

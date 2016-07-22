@@ -47,6 +47,7 @@ SRC =	arabic.c \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalfunc.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
@@ -81,6 +82,7 @@ SRC =	arabic.c \
 	search.c \
 	sha256.c \
 	spell.c \
+	spellfile.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -103,6 +105,7 @@ OBJ =	obj/arabic.o \
 	obj/digraph.o \
 	obj/edit.o \
 	obj/eval.o \
+	obj/evalfunc.o \
 	obj/ex_cmds.o \
 	obj/ex_cmds2.o \
 	obj/ex_docmd.o \
@@ -137,6 +140,7 @@ OBJ =	obj/arabic.o \
 	obj/search.o \
 	obj/sha256.o \
 	obj/spell.o \
+	obj/spellfile.o \
 	obj/syntax.o \
 	obj/tag.o \
 	obj/term.o \
@@ -157,6 +161,7 @@ PRO =	proto/arabic.pro \
 	proto/digraph.pro \
 	proto/edit.pro \
 	proto/eval.pro \
+	proto/evalfunc.pro \
 	proto/ex_cmds.pro \
 	proto/ex_cmds2.pro \
 	proto/ex_docmd.pro \
@@ -191,6 +196,7 @@ PRO =	proto/arabic.pro \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/spell.pro \
+	proto/spellfile.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
@@ -276,6 +282,9 @@ obj/edit.o:	edit.c
 
 obj/eval.o:	eval.c
 	$(CCSYM) $@ eval.c
+
+obj/evalfunc.o:	evalfunc.c
+	$(CCSYM) $@ evalfunc.c
 
 obj/ex_cmds.o:	ex_cmds.c
 	$(CCSYM) $@ ex_cmds.c
@@ -382,6 +391,9 @@ obj/sha256.o:	sha256.c
 
 obj/spell.o:	spell.c
 	$(CCSYM) $@ spell.c
+
+obj/spellfile.o: spellfile.c
+	$(CCSYM) $@ spellfile.c
 
 obj/syntax.o:	syntax.c
 	$(CCSYM) $@ syntax.c

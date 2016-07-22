@@ -3097,24 +3097,9 @@ netbeans_draw_multisign_indicator(int row)
 
 #if GTK_CHECK_VERSION(3,0,0)
     cr = cairo_create(gui.surface);
-    {
-	GdkVisual *visual = NULL;
-	guint32 r_mask, g_mask, b_mask;
-	gint r_shift, g_shift, b_shift;
-
-	visual = gdk_window_get_visual(gtk_widget_get_window(gui.drawarea));
-	if (visual != NULL)
-	{
-	    gdk_visual_get_red_pixel_details(visual, &r_mask, &r_shift, NULL);
-	    gdk_visual_get_green_pixel_details(visual, &g_mask, &g_shift, NULL);
-	    gdk_visual_get_blue_pixel_details(visual, &b_mask, &b_shift, NULL);
-
-	    cairo_set_source_rgb(cr,
-		    ((gui.fgcolor->red & r_mask) >> r_shift) / 255.0,
-		    ((gui.fgcolor->green & g_mask) >> g_shift) / 255.0,
-		    ((gui.fgcolor->blue & b_mask) >> b_shift) / 255.0);
-	}
-    }
+    cairo_set_source_rgba(cr,
+	    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+	    gui.fgcolor->alpha);
 #endif
 
     x = 0;

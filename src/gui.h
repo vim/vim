@@ -380,9 +380,15 @@ typedef struct Gui
     GtkWidget	*menubar_h;	    /* menubar handle */
     GtkWidget	*toolbar_h;	    /* toolbar handle */
 # endif
+# ifdef USE_GTK3
+    GdkRGBA	*fgcolor;	    /* GDK-styled foreground color */
+    GdkRGBA	*bgcolor;	    /* GDK-styled background color */
+    GdkRGBA	*spcolor;	    /* GDK-styled special color */
+# else
     GdkColor	*fgcolor;	    /* GDK-styled foreground color */
     GdkColor	*bgcolor;	    /* GDK-styled background color */
     GdkColor	*spcolor;	    /* GDK-styled special color */
+# endif
 # ifdef USE_GTK3
     cairo_surface_t *surface;       /* drawarea surface */
     gboolean	     by_signal;     /* cause of draw operation */

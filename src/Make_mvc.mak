@@ -559,6 +559,7 @@ OBJ = \
 	$(OUTDIR)\digraph.obj \
 	$(OUTDIR)\edit.obj \
 	$(OUTDIR)\eval.obj \
+	$(OUTDIR)\evalfunc.obj \
 	$(OUTDIR)\ex_cmds.obj \
 	$(OUTDIR)\ex_cmds2.obj \
 	$(OUTDIR)\ex_docmd.obj \
@@ -596,6 +597,7 @@ OBJ = \
 	$(OUTDIR)\search.obj \
 	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\spell.obj \
+	$(OUTDIR)\spellfile.obj \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
@@ -1175,6 +1177,8 @@ $(OUTDIR)/edit.obj:	$(OUTDIR) edit.c  $(INCL)
 
 $(OUTDIR)/eval.obj:	$(OUTDIR) eval.c  $(INCL)
 
+$(OUTDIR)/evalfunc.obj:	$(OUTDIR) evalfunc.c  $(INCL)
+
 $(OUTDIR)/ex_cmds.obj:	$(OUTDIR) ex_cmds.c  $(INCL)
 
 $(OUTDIR)/ex_cmds2.obj:	$(OUTDIR) ex_cmds2.c  $(INCL)
@@ -1303,6 +1307,8 @@ $(OUTDIR)/sha256.obj:	$(OUTDIR) sha256.c  $(INCL)
 
 $(OUTDIR)/spell.obj:	$(OUTDIR) spell.c  $(INCL)
 
+$(OUTDIR)/spellfile.obj:	$(OUTDIR) spellfile.c  $(INCL)
+
 $(OUTDIR)/syntax.obj:	$(OUTDIR) syntax.c  $(INCL)
 
 $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
@@ -1372,6 +1378,7 @@ proto.h: \
 	proto/digraph.pro \
 	proto/edit.pro \
 	proto/eval.pro \
+	proto/evalfunc.pro \
 	proto/ex_cmds.pro \
 	proto/ex_cmds2.pro \
 	proto/ex_docmd.pro \
@@ -1407,6 +1414,7 @@ proto.h: \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/spell.pro \
+	proto/spellfile.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \

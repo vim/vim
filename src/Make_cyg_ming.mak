@@ -615,6 +615,7 @@ OBJ = \
 	$(OUTDIR)/digraph.o \
 	$(OUTDIR)/edit.o \
 	$(OUTDIR)/eval.o \
+	$(OUTDIR)/evalfunc.o \
 	$(OUTDIR)/ex_cmds.o \
 	$(OUTDIR)/ex_cmds2.o \
 	$(OUTDIR)/ex_docmd.o \
@@ -652,6 +653,7 @@ OBJ = \
 	$(OUTDIR)/search.o \
 	$(OUTDIR)/sha256.o \
 	$(OUTDIR)/spell.o \
+	$(OUTDIR)/spellfile.o \
 	$(OUTDIR)/syntax.o \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \

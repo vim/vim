@@ -100,6 +100,7 @@ SRC = \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalfunc.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
@@ -134,6 +135,7 @@ SRC = \
 	search.c \
 	sha256.c \
 	spell.c \
+	spellfile.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -155,6 +157,7 @@ OBJ = \
 	digraph.o \
 	edit.o \
 	eval.o \
+	evalfunc.o \
 	ex_cmds.o \
 	ex_cmds2.o \
 	ex_docmd.o \
@@ -189,6 +192,7 @@ OBJ = \
 	search.o \
 	sha256.o \
 	spell.o \
+	spellfile.o \
 	syntax.o \
 	tag.o \
 	term.o \
@@ -210,6 +214,7 @@ PRO = \
 	proto/digraph.pro \
 	proto/edit.pro \
 	proto/eval.pro \
+	proto/evalfunc.pro \
 	proto/ex_cmds.pro \
 	proto/ex_cmds2.pro \
 	proto/ex_docmd.pro \
@@ -244,6 +249,7 @@ PRO = \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/spell.pro \
+	proto/spellfile.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
@@ -330,6 +336,8 @@ edit.o:			edit.c
 proto/edit.pro:		edit.c
 eval.o:			eval.c
 proto/eval.pro:		eval.c
+evalfunc.o:		evalfunc.c
+proto/evalfunc.pro:	evalfunc.c
 ex_cmds.o:		ex_cmds.c
 proto/ex_cmds.pro:	ex_cmds.c
 ex_cmds2.o:		ex_cmds2.c
@@ -398,6 +406,8 @@ sha256.o:		sha256.c
 proto/sha256.pro:	sha256.c
 spell.o:		spell.c
 proto/spell.pro:	spell.c
+spellfile.o:		spellfile.c
+proto/spellfile.pro:	spellfile.c
 syntax.o:		syntax.c
 proto/syntax.pro:	syntax.c
 tag.o:			tag.c

@@ -72,6 +72,7 @@ extern int _stricoll(char *a, char *b);
 # include "digraph.pro"
 # include "edit.pro"
 # include "eval.pro"
+# include "evalfunc.pro"
 # include "ex_cmds.pro"
 # include "ex_cmds2.pro"
 # include "ex_docmd.pro"
@@ -157,6 +158,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # include "search.pro"
 # include "spell.pro"
+# include "spellfile.pro"
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"

@@ -884,4 +884,75 @@ failret:
     return OK;
 }
 
-#endif /* defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) */
+/*
+ * Write list of strings to file
+ */
+    int
+write_list(FILE *fd, list_T *list, int binary)
+{
+    listitem_T	*li;
+    int		c;
+    int		ret = OK;
+    char_u	*s;
+
+    for (li = list->lv_first; li != NULL; li = li->li_next)
+    {
+	for (s = get_tv_string(&li->li_tv); *s != NUL; ++s)
+	{
+	    if (*s == '\n')
+		c = putc(NUL, fd);
+	    else
+		c = putc(*s, fd);
+	    if (c == EOF)
+	    {
+		ret = FAIL;
+		break;
+	    }
+	}
+	if (!binary || li->li_next != NULL)
+	    if (putc('\n', fd) == EOF)
+	    {
+		ret = FAIL;
+		break;
+	    }
+	if (ret == FAIL)
+	{
+	    EMSG(_(e_write));
+	    break;
+	}
+    }
+    return ret;
+}
+
+/*
+ * Initialize a static list with 10 items.
+ */
+    void
+init_static_list(staticList10_T *sl)
+{
+    list_T  *l = &sl->sl_list;
+    int	    i;
+
+    memset(sl, 0, sizeof(staticList10_T));
+    l->lv_first = &sl->sl_items[0];
+    l->lv_last = &sl->sl_items[9];
+    l->lv_refcount = DO_NOT_FREE_CNT;
+    l->lv_lock = VAR_FIXED;
+    sl->sl_list.lv_len = 10;
+
+    for (i = 0; i < 10; ++i)
+    {
+	listitem_T *li = &sl->sl_items[i];
+
+	if (i == 0)
+	    li->li_prev = NULL;
+	else
+	    li->li_prev = li - 1;
+	if (i == 9)
+	    li->li_next = NULL;
+	else
+	    li->li_next = li + 1;
+    }
+}
+
+#endif /* defined(FEAT_EVAL) */

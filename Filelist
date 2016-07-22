@@ -23,6 +23,7 @@ SRC_ALL =	\
 		src/digraph.c \
 		src/edit.c \
 		src/eval.c \
+		src/evalfunc.c \
 		src/ex_cmds.c \
 		src/ex_cmds.h \
 		src/ex_cmds2.c \
@@ -77,6 +78,8 @@ SRC_ALL =	\
 		src/sha256.c \
 		src/structs.h \
 		src/spell.c \
+		src/spell.h \
+		src/spellfile.c \
 		src/syntax.c \
 		src/tag.c \
 		src/term.c \
@@ -134,6 +137,7 @@ SRC_ALL =	\
 		src/proto/digraph.pro \
 		src/proto/edit.pro \
 		src/proto/eval.pro \
+		src/proto/evalfunc.pro \
 		src/proto/ex_cmds.pro \
 		src/proto/ex_cmds2.pro \
 		src/proto/ex_docmd.pro \
@@ -170,6 +174,7 @@ SRC_ALL =	\
 		src/proto/search.pro \
 		src/proto/sha256.pro \
 		src/proto/spell.pro \
+		src/proto/spellfile.pro \
 		src/proto/syntax.pro \
 		src/proto/tag.pro \
 		src/proto/term.pro \

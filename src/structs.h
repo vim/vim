@@ -1245,6 +1245,14 @@ struct listvar_S
 };
 
 /*
+ * Static list with 10 items.  Use init_static_list() to initialize.
+ */
+typedef struct {
+    list_T	sl_list;	/* must be first */
+    listitem_T	sl_items[10];
+} staticList10_T;
+
+/*
  * Structure to hold an item of a Dictionary.
  * Also used for a variable.
  * The key is copied into "di_key" to avoid an extra alloc/free for it.
@@ -1906,6 +1914,8 @@ struct file_buffer
 #ifdef FEAT_QUICKFIX
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
+#define BUF_HAS_QF_ENTRY 1
+#define BUF_HAS_LL_ENTRY 2
     int		b_has_qf_entry;
 #endif
     int		b_p_bl;		/* 'buflisted' */

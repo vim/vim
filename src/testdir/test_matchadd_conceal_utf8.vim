@@ -2,8 +2,6 @@
 if !has('conceal') || !has('multi_byte')
   finish
 endif
-set encoding=utf-8
-scriptencoding utf-8
 
 if !has('gui_running') && has('unix')
   set term=ansi

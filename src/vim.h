@@ -1315,6 +1315,7 @@ enum auto_event
     EVENT_VIMRESIZED,		/* after Vim window was resized */
     EVENT_WINENTER,		/* after entering a window */
     EVENT_WINLEAVE,		/* before leaving a window */
+    EVENT_WINNEW,		/* when entering a new window */
     EVENT_ENCODINGCHANGED,	/* after changing the 'encoding' option */
     EVENT_INSERTCHARPRE,	/* before inserting a char */
     EVENT_CURSORHOLD,		/* cursor in same position for a while */
@@ -1327,8 +1328,10 @@ enum auto_event
     EVENT_SPELLFILEMISSING,	/* spell file missing */
     EVENT_CURSORMOVED,		/* cursor was moved */
     EVENT_CURSORMOVEDI,		/* cursor was moved in Insert mode */
-    EVENT_TABLEAVE,		/* before leaving a tab page */
     EVENT_TABENTER,		/* after entering a tab page */
+    EVENT_TABLEAVE,		/* before leaving a tab page */
+    EVENT_TABNEW,		/* when entering a new tab page */
+    EVENT_TABCLOSED,		/* after closing a tab page */
     EVENT_SHELLCMDPOST,		/* after ":!cmd" */
     EVENT_SHELLFILTERPOST,	/* after ":1,2!cmd", ":w !cmd", ":r !cmd". */
     EVENT_TEXTCHANGED,		/* text was modified */
@@ -1649,7 +1652,7 @@ typedef UINT32_TYPEDEF UINT32_T;
 #ifdef HAVE_STRERROR
 # define PERROR(msg)		    (void)emsg3((char_u *)"%s: %s", (char_u *)msg, (char_u *)strerror(errno))
 #else
-# define PERROR(msg)		    perror(msg)
+# define PERROR(msg)		    do_perror(msg)
 #endif
 
 typedef long	linenr_T;		/* line number type */
@@ -1968,13 +1971,35 @@ typedef int sock_T;
 #define VV_NONE		68
 #define VV_VIM_DID_ENTER 69
 #define VV_TESTING	70
-#define VV_LEN		71	/* number of v: vars */
+#define VV_TYPE_NUMBER	71
+#define VV_TYPE_STRING	72
+#define VV_TYPE_FUNC	73
+#define VV_TYPE_LIST	74
+#define VV_TYPE_DICT	75
+#define VV_TYPE_FLOAT	76
+#define VV_TYPE_BOOL	77
+#define VV_TYPE_NONE	78
+#define VV_TYPE_JOB	79
+#define VV_TYPE_CHANNEL	80
+#define VV_LEN		81	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L
 #define VVAL_TRUE	1L
 #define VVAL_NONE	2L
 #define VVAL_NULL	3L
+
+/* Type values for type(). */
+#define VAR_TYPE_NUMBER	    0
+#define VAR_TYPE_STRING	    1
+#define VAR_TYPE_FUNC	    2
+#define VAR_TYPE_LIST	    3
+#define VAR_TYPE_DICT	    4
+#define VAR_TYPE_FLOAT	    5
+#define VAR_TYPE_BOOL	    6
+#define VAR_TYPE_NONE	    7
+#define VAR_TYPE_JOB	    8
+#define VAR_TYPE_CHANNEL    9
 
 #ifdef FEAT_CLIPBOARD
 
@@ -2051,7 +2076,18 @@ typedef struct _stat64 stat_T;
 typedef struct stat stat_T;
 #endif
 
+typedef enum
+{
+    ASSERT_EQUAL,
+    ASSERT_NOTEQUAL,
+    ASSERT_MATCH,
+    ASSERT_NOTMATCH,
+    ASSERT_OTHER
+} assert_type_T;
+
 #include "ex_cmds.h"	    /* Ex command defines */
+#include "spell.h"	    /* spell checking stuff */
+
 #include "proto.h"	    /* function prototypes */
 
 /* This has to go after the include of proto.h, as proto/gui.pro declares

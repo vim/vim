@@ -1538,6 +1538,8 @@ EXTERN char_u e_dictreq[]	INIT(= N_("E715: Dictionary required"));
 EXTERN char_u e_listidx[]	INIT(= N_("E684: list index out of range: %ld"));
 EXTERN char_u e_toomanyarg[]	INIT(= N_("E118: Too many arguments for function: %s"));
 EXTERN char_u e_dictkey[]	INIT(= N_("E716: Key not present in Dictionary: %s"));
+EXTERN char_u e_listreq[]	INIT(= N_("E714: List required"));
+EXTERN char_u e_listdictarg[]	INIT(= N_("E712: Argument of %s must be a List or Dictionary"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char_u e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));

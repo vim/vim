@@ -58,9 +58,8 @@ struct ufunc
 #define FC_DICT	    4		/* Dict function, uses "self" */
 
 /* From user function to hashitem and back. */
-static ufunc_T dumuf;
 #define UF2HIKEY(fp) ((fp)->uf_name)
-#define HIKEY2UF(p)  ((ufunc_T *)(p - (dumuf.uf_name - (char_u *)&dumuf)))
+#define HIKEY2UF(p)  ((ufunc_T *)(p - offsetof(ufunc_T, uf_name)))
 #define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
 
 #define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
@@ -151,7 +150,9 @@ func_init()
     hash_init(&func_hashtab);
 }
 
-/* Get function arguments. */
+/*
+ * Get function arguments.
+ */
     static int
 get_function_args(
     char_u	**argp,
@@ -198,14 +199,17 @@ get_function_args(
 		break;
 	    }
 	    if (newargs != NULL && ga_grow(newargs, 1) == FAIL)
-		return FAIL;
+		goto err_ret;
 	    if (newargs != NULL)
 	    {
 		c = *p;
 		*p = NUL;
 		arg = vim_strsave(arg);
 		if (arg == NULL)
+		{
+		    *p = c;
 		    goto err_ret;
+		}
 
 		/* Check for duplicate argument name. */
 		for (i = 0; i < newargs->ga_len; ++i)
@@ -233,7 +237,9 @@ get_function_args(
 	    break;
 	}
     }
-    ++p;	/* skip the ')' */
+    if (*p != endchar)
+	goto err_ret;
+    ++p;	/* skip "endchar" */
 
     *argp = p;
     return OK;
@@ -474,7 +480,7 @@ get_func_tv(
 								  &argvars[i];
 	}
 
-	ret = call_func(name, len, rettv, argcount, argvars,
+	ret = call_func(name, len, rettv, argcount, argvars, NULL,
 		 firstline, lastline, doesrange, evaluate, partial, selfdict);
 
 	funcargs.ga_len -= i;
@@ -1133,7 +1139,7 @@ func_call(
     }
 
     if (item == NULL)
-	r = call_func(name, (int)STRLEN(name), rettv, argc, argv,
+	r = call_func(name, (int)STRLEN(name), rettv, argc, argv, NULL,
 				 curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 					     &dummy, TRUE, partial, selfdict);
 
@@ -1146,6 +1152,11 @@ func_call(
 
 /*
  * Call a function with its resolved parameters
+ *
+ * "argv_func", when not NULL, can be used to fill in arguments only when the
+ * invoked function uses them.  It is called like this:
+ *   new_argcount = argv_func(current_argcount, argv, called_func_argcount)
+ *
  * Return FAIL when the function can't be called,  OK otherwise.
  * Also returns OK when an error was encountered while executing the function.
  */
@@ -1157,6 +1168,8 @@ call_func(
     int		argcount_in,	/* number of "argvars" */
     typval_T	*argvars_in,	/* vars for arguments, must have "argcount"
 				   PLUS ONE elements! */
+    int		(* argv_func)(int, typval_T *, int),
+				/* function to fill in argvars */
     linenr_T	firstline,	/* first line of range */
     linenr_T	lastline,	/* last line of range */
     int		*doesrange,	/* return: function handled range */
@@ -1248,6 +1261,9 @@ call_func(
 
 	    if (fp != NULL)
 	    {
+		if (argv_func != NULL)
+		    argcount = argv_func(argcount, argvars, fp->uf_args.ga_len);
+
 		if (fp->uf_flags & FC_RANGE)
 		    *doesrange = TRUE;
 		if (argcount < fp->uf_args.ga_len)

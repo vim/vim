@@ -1,7 +1,8 @@
 " A series of tests that can run in one Vim invocation.
 " This makes testing go faster, since Vim doesn't need to restart.
 
-" These tests use utf8 'encoding'.  Setting 'encoding' is in the individual
+" These tests use utf8 'encoding'.  Setting 'encoding' is already done in
+" runtest.vim.  Checking for the multi_byte feature is in the individual
 " files, so that they can be run by themselves.
 
 source test_expr_utf8.vim

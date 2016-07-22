@@ -8,6 +8,7 @@ void trunc_string(char_u *s, char_u *buf, int room, int buflen);
 void reset_last_sourcing(void);
 void msg_source(int attr);
 int emsg_not_now(void);
+void do_perror(char *msg);
 int emsg(char_u *s);
 int emsg2(char_u *s, char_u *a1);
 void emsg_invreg(int name);

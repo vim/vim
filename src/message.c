@@ -298,9 +298,9 @@ trunc_string(
 	{
 	    do
 		half = half - (*mb_head_off)(s, s + half - 1) - 1;
-	    while (utf_iscomposing(utf_ptr2char(s + half)) && half > 0);
+	    while (half > 0 && utf_iscomposing(utf_ptr2char(s + half)));
 	    n = ptr2cells(s + half);
-	    if (len + n > room)
+	    if (len + n > room || half == 0)
 		break;
 	    len += n;
 	    i = half;
@@ -520,6 +520,21 @@ emsg_not_now(void)
 	return TRUE;
     return FALSE;
 }
+
+#if !defined(HAVE_STRERROR) || defined(PROTO)
+/*
+ * Replacement for perror() that behaves more or less like emsg() was called.
+ * v:errmsg will be set and called_emsg will be set.
+ */
+    void
+do_perror(char *msg)
+{
+    perror(msg);
+    ++emsg_silent;
+    emsg((char_u *)msg);
+    --emsg_silent;
+}
+#endif
 
 /*
  * emsg() - display an error message
