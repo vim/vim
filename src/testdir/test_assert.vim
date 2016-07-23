@@ -105,6 +105,19 @@ func Test_assert_fail_fails()
   call remove(v:errors, 0)
 endfunc
 
+func Test_assert_inrange()
+  call assert_inrange(7, 7, 7)
+  call assert_inrange(5, 7, 5)
+  call assert_inrange(5, 7, 6)
+  call assert_inrange(5, 7, 7)
+
+  call assert_inrange(5, 7, 4)
+  call assert_match("Expected range 5 - 7, but got 4", v:errors[0])
+  call remove(v:errors, 0)
+  call assert_inrange(5, 7, 8)
+  call assert_match("Expected range 5 - 7, but got 8", v:errors[0])
+  call remove(v:errors, 0)
+endfunc
 
 func Test_user_is_happy()
   smile

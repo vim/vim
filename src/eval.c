@@ -8992,6 +8992,39 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     }
 }
 
+    void
+assert_inrange(typval_T *argvars)
+{
+    garray_T	ga;
+    int		error = FALSE;
+    varnumber_T	lower = get_tv_number_chk(&argvars[0], &error);
+    varnumber_T	upper = get_tv_number_chk(&argvars[1], &error);
+    varnumber_T	actual = get_tv_number_chk(&argvars[2], &error);
+    char_u	*tofree;
+    char	msg[200];
+    char_u	numbuf[NUMBUFLEN];
+
+    if (error)
+	return;
+    if (actual < lower || actual > upper)
+    {
+	prepare_assert_error(&ga);
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	{
+	    ga_concat(&ga, tv2string(&argvars[3], &tofree, numbuf, 0));
+	    vim_free(tofree);
+	}
+	else
+	{
+	    vim_snprintf(msg, 200, "Expected range %ld - %ld, but got %ld",
+				       (long)lower, (long)upper, (long)actual);
+	    ga_concat(&ga, (char_u *)msg);
+	}
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
+}
+
 /*
  * Common for assert_true() and assert_false().
  */

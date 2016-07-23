@@ -48,6 +48,7 @@ static void f_assert_equal(typval_T *argvars, typval_T *rettv);
 static void f_assert_exception(typval_T *argvars, typval_T *rettv);
 static void f_assert_fails(typval_T *argvars, typval_T *rettv);
 static void f_assert_false(typval_T *argvars, typval_T *rettv);
+static void f_assert_inrange(typval_T *argvars, typval_T *rettv);
 static void f_assert_match(typval_T *argvars, typval_T *rettv);
 static void f_assert_notequal(typval_T *argvars, typval_T *rettv);
 static void f_assert_notmatch(typval_T *argvars, typval_T *rettv);
@@ -460,6 +461,7 @@ static struct fst
     {"assert_exception", 1, 2, f_assert_exception},
     {"assert_fails",	1, 2, f_assert_fails},
     {"assert_false",	1, 2, f_assert_false},
+    {"assert_inrange",	2, 3, f_assert_inrange},
     {"assert_match",	2, 3, f_assert_match},
     {"assert_notequal",	2, 3, f_assert_notequal},
     {"assert_notmatch",	2, 3, f_assert_notmatch},
@@ -1275,6 +1277,15 @@ f_assert_fails(typval_T *argvars, typval_T *rettv UNUSED)
 f_assert_false(typval_T *argvars, typval_T *rettv UNUSED)
 {
     assert_bool(argvars, FALSE);
+}
+
+/*
+ * "assert_inrange(lower, upper[, msg])" function
+ */
+    static void
+f_assert_inrange(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    assert_inrange(argvars);
 }
 
 /*
