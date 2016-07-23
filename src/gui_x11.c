@@ -71,16 +71,16 @@
 # define DFLT_MENU_FG_COLOR	"black"
 # define DFLT_SCROLL_BG_COLOR	"gray60"
 # define DFLT_SCROLL_FG_COLOR	"gray77"
-# define DFLT_TOOLTIP_BG_COLOR	"#ffffffff9191"
-# define DFLT_TOOLTIP_FG_COLOR	"#000000000000"
+# define DFLT_TOOLTIP_BG_COLOR	"#ffff91"
+# define DFLT_TOOLTIP_FG_COLOR	"#000000"
 #else
 /* use the default (CDE) colors */
 # define DFLT_MENU_BG_COLOR	""
 # define DFLT_MENU_FG_COLOR	""
 # define DFLT_SCROLL_BG_COLOR	""
 # define DFLT_SCROLL_FG_COLOR	""
-# define DFLT_TOOLTIP_BG_COLOR	"#ffffffff9191"
-# define DFLT_TOOLTIP_FG_COLOR	"#000000000000"
+# define DFLT_TOOLTIP_BG_COLOR	"#ffff91"
+# define DFLT_TOOLTIP_FG_COLOR	"#000000"
 #endif
 
 Widget vimShell = (Widget)0;
@@ -136,7 +136,6 @@ static guicolor_T	prev_sp_color = INVALCOLOR;
 static XButtonPressedEvent last_mouse_event;
 #endif
 
-static int find_closest_color(Colormap colormap, XColor *colorPtr);
 static void gui_x11_timer_cb(XtPointer timed_out, XtIntervalId *interval_id);
 static void gui_x11_visibility_cb(Widget w, XtPointer dud, XEvent *event, Boolean *dum);
 static void gui_x11_expose_cb(Widget w, XtPointer dud, XEvent *event, Boolean *dum);
@@ -2242,171 +2241,33 @@ fontset_ascent(XFontSet fs)
  * Return INVALCOLOR for error.
  */
     guicolor_T
-gui_mch_get_color(char_u *reqname)
+gui_mch_get_color(char_u *name)
 {
-    int		i;
-    char_u	*name = reqname;
+    guicolor_T  requested;
+    XColor      available;
     Colormap	colormap;
-    XColor      color;
-    static char *(vimnames[][2]) =
-    {
-	/* A number of colors that some X11 systems don't have */
-	{"LightRed",	"#FFBBBB"},
-	{"LightGreen",	"#88FF88"},
-	{"LightMagenta","#FFBBFF"},
-	{"DarkCyan",	"#008888"},
-	{"DarkBlue",	"#0000BB"},
-	{"DarkRed",	"#BB0000"},
-	{"DarkMagenta",	"#BB00BB"},
-	{"DarkGrey",	"#BBBBBB"},
-	{"DarkYellow",	"#BBBB00"},
-	{"Gray10",	"#1A1A1A"},
-	{"Grey10",	"#1A1A1A"},
-	{"Gray20",	"#333333"},
-	{"Grey20",	"#333333"},
-	{"Gray30",	"#4D4D4D"},
-	{"Grey30",	"#4D4D4D"},
-	{"Gray40",	"#666666"},
-	{"Grey40",	"#666666"},
-	{"Gray50",	"#7F7F7F"},
-	{"Grey50",	"#7F7F7F"},
-	{"Gray60",	"#999999"},
-	{"Grey60",	"#999999"},
-	{"Gray70",	"#B3B3B3"},
-	{"Grey70",	"#B3B3B3"},
-	{"Gray80",	"#CCCCCC"},
-	{"Grey80",	"#CCCCCC"},
-	{"Gray90",	"#E5E5E5"},
-	{"Grey90",	"#E5E5E5"},
-	{NULL, NULL}
-    };
+#define COLORSPECBUFSIZE 8 /* space enough to hold "#RRGGBB" */
+    char        spec[COLORSPECBUFSIZE];
 
     /* can't do this when GUI not running */
-    if (!gui.in_use || *reqname == NUL)
+    if (!gui.in_use || name == NULL || *name == NUL)
 	return INVALCOLOR;
 
-    colormap = DefaultColormap(gui.dpy, XDefaultScreen(gui.dpy));
+    requested = gui_get_color_cmn(name);
+    if (requested == INVALCOLOR)
+	return INVALCOLOR;
 
-    /* Do this twice if the name isn't recognized. */
-    while (name != NULL)
-    {
-	i = XParseColor(gui.dpy, colormap, (char *)name, &color);
-
-#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
-	if (i == 0)
-	{
-	    char *old;
-
-	    /* The X11 system is trying to resolve named colors only by names
-	     * corresponding to the current locale language.  But Vim scripts
-	     * usually contain the English color names.  Therefore we have to
-	     * try a second time here with the native "C" locale set.
-	     * Hopefully, restoring the old locale this way works on all
-	     * systems...
-	     */
-	    old = setlocale(LC_ALL, NULL);
-	    if (old != NULL && STRCMP(old, "C") != 0)
-	    {
-		old = (char *)vim_strsave((char_u *)old);
-		setlocale(LC_ALL, "C");
-		i = XParseColor(gui.dpy, colormap, (char *)name, &color);
-		setlocale(LC_ALL, old);
-		vim_free(old);
-	    }
-	}
-#endif
-	if (i != 0 && (XAllocColor(gui.dpy, colormap, &color) != 0
-		    || find_closest_color(colormap, &color) == OK))
-	    return (guicolor_T)color.pixel;
-
-	/* check for a few builtin names */
-	for (i = 0; ; ++i)
-	{
-	    if (vimnames[i][0] == NULL)
-	    {
-		name = NULL;
-		break;
-	    }
-	    if (STRICMP(name, vimnames[i][0]) == 0)
-	    {
-		name = (char_u *)vimnames[i][1];
-		break;
-	    }
-	}
-    }
+    vim_snprintf(spec, COLORSPECBUFSIZE, "#%.2x%.2x%.2x",
+	    (requested & 0xff0000) >> 16,
+	    (requested & 0xff00) >> 8,
+	    requested & 0xff);
+#undef COLORSPECBUFSIZE
+    colormap = DefaultColormap(gui.dpy, DefaultScreen(gui.dpy));
+    if (XParseColor(gui.dpy, colormap, (char *)spec, &available) != 0
+	    && XAllocColor(gui.dpy, colormap, &available) != 0)
+	return (guicolor_T)available.pixel;
 
     return INVALCOLOR;
-}
-
-/*
- * Find closest color for "colorPtr" in "colormap".  set "colorPtr" to the
- * resulting color.
- * Based on a similar function in TCL.
- * Return FAIL if not able to find or allocate a color.
- */
-    static int
-find_closest_color(Colormap colormap, XColor *colorPtr)
-{
-    double	tmp, distance, closestDistance;
-    int		i, closest, numFound, cmap_size;
-    XColor	*colortable;
-    XVisualInfo	template, *visInfoPtr;
-
-    template.visualid = XVisualIDFromVisual(DefaultVisual(gui.dpy,
-						    XDefaultScreen(gui.dpy)));
-    visInfoPtr = XGetVisualInfo(gui.dpy, (long)VisualIDMask,
-							&template, &numFound);
-    if (numFound < 1)
-	/* FindClosestColor couldn't lookup visual */
-	return FAIL;
-
-    cmap_size = visInfoPtr->colormap_size;
-    XFree((char *)visInfoPtr);
-    colortable = (XColor *)alloc((unsigned)(cmap_size * sizeof(XColor)));
-    if (!colortable)
-	return FAIL;  /* out of memory */
-
-    for (i = 0; i  < cmap_size; i++)
-	colortable[i].pixel = (unsigned long)i;
-    XQueryColors(gui.dpy, colormap, colortable, cmap_size);
-
-    /*
-     * Find the color that best approximates the desired one, then
-     * try to allocate that color.  If that fails, it must mean that
-     * the color was read-write (so we can't use it, since it's owner
-     * might change it) or else it was already freed.  Try again,
-     * over and over again, until something succeeds.
-     */
-    closestDistance = 1e30;
-    closest = 0;
-    for (i = 0; i < cmap_size; i++)
-    {
-	/*
-	 * Use Euclidean distance in RGB space, weighted by Y (of YIQ)
-	 * as the objective function;  this accounts for differences
-	 * in the color sensitivity of the eye.
-	 */
-	tmp = .30 * (((int)colorPtr->red) - (int)colortable[i].red);
-	distance = tmp * tmp;
-	tmp = .61 * (((int)colorPtr->green) - (int)colortable[i].green);
-	distance += tmp * tmp;
-	tmp = .11 * (((int)colorPtr->blue) - (int)colortable[i].blue);
-	distance += tmp * tmp;
-	if (distance < closestDistance)
-	{
-	    closest = i;
-	    closestDistance = distance;
-	}
-    }
-
-    if (XAllocColor(gui.dpy, colormap, &colortable[closest]) != 0)
-    {
-	gui.color_approx = TRUE;
-	*colorPtr = colortable[closest];
-    }
-
-    vim_free(colortable);
-    return OK;
 }
 
 /*
