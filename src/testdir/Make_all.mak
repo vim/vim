@@ -108,7 +108,6 @@ SCRIPTS_ALL = \
 	test_search_mbyte.out \
 	test_signs.out \
 	test_tagcase.out \
-	test_textobjects.out \
 	test_utf8.out \
 	test_wordcount.out \
 	test_writefile.out
@@ -187,6 +186,7 @@ NEW_TESTS = test_arglist.res \
 	    test_ruby.res \
 	    test_stat.res \
 	    test_syntax.res \
+	    test_textobjects.res \
 	    test_usercommands.res \
 	    test_viminfo.res \
 	    test_viml.res \
