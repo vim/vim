@@ -237,18 +237,19 @@ msg_strtrunc(
 trunc_string(
     char_u	*s,
     char_u	*buf,
-    int		room,
+    int		room_in,
     int		buflen)
 {
-    int		half;
-    int		len;
+    size_t	room = room_in - 3; /* "..." takes 3 chars */
+    size_t	half;
+    size_t	len = 0;
     int		e;
     int		i;
     int		n;
 
-    room -= 3;
+    if (room_in < 3)
+	room = 0;
     half = room / 2;
-    len = 0;
 
     /* First part: Start of the string. */
     for (e = 0; len < half && e < buflen; ++e)
@@ -320,7 +321,7 @@ trunc_string(
 	if (s != buf)
 	{
 	    len = STRLEN(s);
-	    if (len >= buflen)
+	    if (len >= (size_t)buflen)
 		len = buflen - 1;
 	    len = len - e + 1;
 	    if (len < 1)
@@ -333,8 +334,8 @@ trunc_string(
     {
 	/* set the middle and copy the last part */
 	mch_memmove(buf + e, "...", (size_t)3);
-	len = (int)STRLEN(s + i) + 1;
-	if (len >= buflen - e - 3)
+	len = STRLEN(s + i) + 1;
+	if (len >= (size_t)buflen - e - 3)
 	    len = buflen - e - 3 - 1;
 	mch_memmove(buf + e + 3, s + i, len);
 	buf[e + 3 + len - 1] = NUL;
