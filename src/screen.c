@@ -6767,7 +6767,7 @@ win_redr_status(win_T *wp)
 	screen_fill(row, row + 1, len + W_WINCOL(wp),
 			this_ru_col + W_WINCOL(wp), fillchar, fillchar, attr);
 
-	if (get_keymap_str(wp, NameBuff, MAXPATHL)
+	if (get_keymap_str(wp, (char_u *)"<%s>", NameBuff, MAXPATHL)
 		&& (int)(this_ru_col - len) > (int)(STRLEN(NameBuff) + 1))
 	    screen_puts(NameBuff, row, (int)(this_ru_col - STRLEN(NameBuff)
 						   - 1 + W_WINCOL(wp)), attr);
@@ -6862,6 +6862,7 @@ stl_connected(win_T *wp)
     int
 get_keymap_str(
     win_T	*wp,
+    char_u	*fmt,	    /* format string containing one %s item */
     char_u	*buf,	    /* buffer for the result */
     int		len)	    /* length of buffer */
 {
@@ -6894,9 +6895,7 @@ get_keymap_str(
 #endif
 		p = (char_u *)"lang";
 	}
-	if ((int)(STRLEN(p) + 3) < len)
-	    sprintf((char *)buf, "<%s>", p);
-	else
+	if (vim_snprintf((char *)buf, len, (char *)fmt, p) > len - 1)
 	    buf[0] = NUL;
 #ifdef FEAT_EVAL
 	vim_free(s);
@@ -10166,7 +10165,9 @@ showmode(void)
 			MSG_PUTS_ATTR(_(" Arabic"), attr);
 		    else
 # endif
-			MSG_PUTS_ATTR(_(" (lang)"), attr);
+			if (get_keymap_str(curwin, (char_u *)" (%s)",
+							   NameBuff, MAXPATHL))
+			    MSG_PUTS_ATTR(NameBuff, attr);
 		}
 #endif
 		if ((State & INSERT) && p_paste)
