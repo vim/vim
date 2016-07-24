@@ -171,6 +171,7 @@ NEW_TESTS = test_arglist.res \
 	    test_cscope.res \
 	    test_digraph.res \
 	    test_farsi.res \
+	    test_gn.res \
 	    test_hardcopy.res \
 	    test_history.res \
 	    test_increment.res \

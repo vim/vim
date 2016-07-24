@@ -2076,6 +2076,7 @@ test_arglist \
 	test_filter_map \
 	test_fnamemodify \
 	test_glob2regpat \
+	test_gn \
 	test_goto \
 	test_hardcopy \
 	test_help_tagjump \
