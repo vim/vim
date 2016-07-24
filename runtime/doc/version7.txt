@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4.  Last change: 2016 Jun 04
+*version7.txt*  For Vim version 7.4.  Last change: 2016 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18306,6 +18306,7 @@ Patch 7.4b.022
 Problem:    Not waiting for a character when the tick count overflows.
 Solution:   Subtract the unsigned numbers and cast to int. (Ken Takata)
 Files:	    src/os_win32.c
+
 
 
  vim:tw=78:ts=8:ft=help:norl:

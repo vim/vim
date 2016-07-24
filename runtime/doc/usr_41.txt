@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Jul 09
+*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Jul 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -592,7 +592,7 @@ String manipulation:					*string-functions*
 	match()			position where a pattern matches in a string
 	matchend()		position where a pattern match ends in a string
 	matchstr()		match of a pattern in a string
-	matchstrpos()		match and postions of a pattern in a string
+	matchstrpos()		match and positions of a pattern in a string
 	matchlist()		like matchstr() and also return submatches
 	stridx()		first index of a short string in a long string
 	strridx()		last index of a short string in a long string
@@ -810,6 +810,7 @@ Command line:					*command-line-functions*
 	setcmdpos()		set position of the cursor in the command line
 	getcmdtype()		return the current command-line type
 	getcmdwintype()		return the current command-line window type
+	getcompletion()		list of command-line completion matches
 
 Quickfix and location lists:			*quickfix-functions*
 	getqflist()		list of quickfix errors
@@ -907,6 +908,7 @@ Mappings:				    *mapping-functions*
 Testing:				    *test-functions*
 	assert_equal()		assert that two expressions values are equal
 	assert_notequal()	assert that two expressions values are not equal
+	assert_inrange()	assert that an expression is inside a range
 	assert_match()		assert that a pattern matches the value
 	assert_notmatch()	assert that a pattern does not match the value
 	assert_false()		assert that an expression is false
@@ -914,6 +916,7 @@ Testing:				    *test-functions*
 	assert_exception()	assert that a command throws an exception
 	assert_fails()		assert that a function call fails
 	test_alloc_fail()	make memory allocation fail
+	test_autochdir()	enable 'autochdir' during startup
 	test_disable_char_avail()	test without typeahead
 	test_garbagecollect_now()	free memory right now
 	test_null_channel()	return a null Channel

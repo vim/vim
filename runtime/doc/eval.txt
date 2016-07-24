@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 23
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2306,6 +2306,7 @@ tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
+test_autochdir()		none	enable 'autochdir' during startup
 test_disable_char_avail({expr}) none	test without typeahead
 test_garbagecollect_now()	none	free memory right now for testing
 test_null_channel()		Channel	null value for testing
@@ -7453,8 +7454,11 @@ test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 		let memory allocation fail {repeat} times.  When {repeat} is
 		smaller than one it fails one time.
 
+test_autochdir()					*test_autochdir()*
+		Set a flag to enable the effect of 'autochdir' before Vim
+		startup has finished.
 
-					*test_disable_char_avail()*
+						*test_disable_char_avail()*
 test_disable_char_avail({expr})
 		When {expr} is 1 the internal char_avail() function will
 		return |FALSE|.  When {expr} is 0 the char_avail() function will

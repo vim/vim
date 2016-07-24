@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jul 17
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Jul 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,6 +35,7 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
+- Channel test fails with Motif.  Sometimes kills the X11 server.
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
   minute.  Option to set the droptime.
@@ -48,17 +49,6 @@ not be repeated below, unless there is extra information.
 Later
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
-
-Quickfix refactoring. (Yegappan Lakshmanan,)
-
-Quickfix improvements for background building and grepping:
-- Add a command modifier ":usefname" to quickfix commands and functions to
-  keep a file name as a string and not create a buffer for it? To avoid
-  creating lots of buffers. (Ramel Eshed)
-  Store the relative file name and set a flag "qf_relative".  Before changing
-  directory turn them into full paths.
-  When using getqflist() or getloclist() we need to get the bufnr for other
-  plugins.  Add a flag to not do that.
 
 Regexp problems:
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
@@ -115,17 +105,25 @@ What if there is an invalid character?
 Should json_encode()/json_decode() restrict recursiveness?
 Or avoid recursiveness.
 
-Also use funcref for substitute, instead of \=.
+Patch to test popupmenu.  Fails, possibly due to a bug.
+(Christian Brabandt, 2016 Jul 23)
 
-Patch to define v:t_number etc. (Ken Takata, 2016 Jul 15)
+7   In "-- INSERT (lang) --" show the name of the keymap used instead of
+    "lang". (Ilya Dogolazky)
+Patch: Show keymap name in mode indicator (Dmitri Vereshchagin, 2016 Jul 19,
+#933)
 
-Python: Extended funcrefs: use func_T* structure in place of char_u* function
-names.
-(ZyX, 2013 Jul 15, update Sep 22, 24, 28; Update 2013 Dec 15, 2014 Jan 6)
-Also fixes Bug: E685 error for func_unref(). (ZyX, 2010 Aug 5)
+Patch to fix the Problem using cgn to change a search hit when
+replacement includes hit. Reported by John Beckett, fix by Christian Brabandt,
+2016 Jan 11.
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
+Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
+
+Problem with completion on "**/" in $path. (issue #932)
+Happens in uniquefy_paths() ?  More info Jul 22.
+Fix for this (Harm te Hennepe, 2016 Jul 21, #939)
 
 Cursor positioned in the wrong place when editing src/testdir/test_viml.vim.
 
@@ -138,20 +136,27 @@ Javascript indent wrong after /* in single quoted string:
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
 
+Updating marks in quickfix list is broken. (Yegappan, 2016 Jul 18)
+
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 
 For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
 5)
 
 Support closure for lambda?  Ken Takata is working on it.
+Patch Jul 19.  Still need test updates.
 
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
+
+Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
 
 Patch to allow setting w:quickfix_title via setqflist() and setloclist()
 functions. (Christian Brabandt, 2013 May 8, update May 21)
 Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
 Second one. Update May 22.
 Update by Daniel Hahler, 2014 Jul 4, Aug 14, Oct 14, Oct 15.
+Rethink this: can we add an argument to setqflist() and getqflist() for these
+extra items?
 
 Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
 13, last version)  Update June 26, #830.
@@ -159,8 +164,6 @@ Instead use a Vim script implementation, invoked from a Vim command.
 
 ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
 Also with latest version.
-
-Patch to load rgb.txt once. (Christian Brabandt, 2016 Apr 29)
 
 Still problems with 'emoji'.  See issue #721.  Patch 7.4.1697 half-fixes it.
 Avoid PLAN_WRITE in windgoto() ?
@@ -178,9 +181,6 @@ Otherwise task flickers in taskbar.
 
 Should make ":@r" handle line continuation. (Cesar Romani, 2016 Jun 26)
 Also for ":@.".
-
-Patch to add TabNew, TabNewEntered and TabClosed autocommand events.
-(Felipe Morales, 2015 Feb 1)
 
 Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 
@@ -222,7 +222,7 @@ Reject the value? #710.
 Patch to support strikethrough next to bold and italic. (Christian Brabandt,
 2013 Jul 30)  Update from Ken Takata, 2013 Oct 12.
 Update mentioned by Christian, 2016 Apr 25.
-Update from Ken Takata, 2016 Apr 26.
+Update from Ken Takata, 2016 Jul 17.
 
 Patch to improve cscope. (Adrian Kocis, #843)
 
@@ -328,6 +328,8 @@ Patch from Christian Brabandt, 2016 Mar 30, #712.
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
 
+Patch to show search statistics. (Christian Brabandt, 2016 Jul 22)
+
 When the CursorMovedI event triggers, and CTRL-X was typed, a script cannot
 restore the mode properly. (Andrew Stewart, 2016 Apr 20)
 Do not trigger the event?
@@ -391,10 +393,6 @@ wrong name. (Aram, 2014 Nov 7)  Vim 7.4.
 
 Can't recognize the $ProgramFiles(x86) environment variable.  Recognize it
 specifically?  First try with the parens, then without.
-
-Half-finished patch to fix the Problem using cgn to change a search hit when
-replacement includes hit. Reported by John Beckett, fix by Christian Brabandt,
-2016 Jan 11.
 
 Patch to add :mapgroup, put mappings in a group like augroup.
 (Yasuhiro Matsumoto, 2016 Feb 19)
@@ -3558,8 +3556,6 @@ Multi-byte characters:
     convert_input() for Mac GUI.
 -   Add mnemonics from RFC1345 longer than two characters.
     Support CTRL-K _{mnemonic}_
-7   In "-- INSERT (lang) --" show the name of the keymap used instead of
-    "lang". (Ilya Dogolazky)
 -   Make 'breakat' accept multi-byte characters.  Problem: can't use a lookup
     table anymore (breakat_flags[]).
     Simplistic solution: when 'formatoptions' contains "m" also break a line

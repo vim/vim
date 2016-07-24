@@ -4701,8 +4701,10 @@ TRUE	eval.txt	/*TRUE*
 TSQL	ft_sql.txt	/*TSQL*
 TTpro-telnet	syntax.txt	/*TTpro-telnet*
 Tab	intro.txt	/*Tab*
+TabClosed	autocmd.txt	/*TabClosed*
 TabEnter	autocmd.txt	/*TabEnter*
 TabLeave	autocmd.txt	/*TabLeave*
+TabNew	autocmd.txt	/*TabNew*
 Tcl	if_tcl.txt	/*Tcl*
 TermChanged	autocmd.txt	/*TermChanged*
 TermResponse	autocmd.txt	/*TermResponse*
@@ -4748,6 +4750,7 @@ WWW	intro.txt	/*WWW*
 Win32	os_win32.txt	/*Win32*
 WinEnter	autocmd.txt	/*WinEnter*
 WinLeave	autocmd.txt	/*WinLeave*
+WinNew	autocmd.txt	/*WinNew*
 X	change.txt	/*X*
 X11	options.txt	/*X11*
 X11-icon	gui_x11.txt	/*X11-icon*
@@ -4965,6 +4968,7 @@ assert_equal()	eval.txt	/*assert_equal()*
 assert_exception()	eval.txt	/*assert_exception()*
 assert_fails()	eval.txt	/*assert_fails()*
 assert_false()	eval.txt	/*assert_false()*
+assert_inrange()	eval.txt	/*assert_inrange()*
 assert_match()	eval.txt	/*assert_match()*
 assert_notequal()	eval.txt	/*assert_notequal()*
 assert_notmatch()	eval.txt	/*assert_notmatch()*
@@ -5012,6 +5016,8 @@ b	motion.txt	/*b*
 b:	eval.txt	/*b:*
 b:changedtick	eval.txt	/*b:changedtick*
 b:changelog_name	filetype.txt	/*b:changelog_name*
+b:clojure_syntax_keywords	syntax.txt	/*b:clojure_syntax_keywords*
+b:clojure_syntax_without_core_keywords	syntax.txt	/*b:clojure_syntax_without_core_keywords*
 b:current_syntax-variable	syntax.txt	/*b:current_syntax-variable*
 b:netrw_lastfile	pi_netrw.txt	/*b:netrw_lastfile*
 b:tex_stylish	syntax.txt	/*b:tex_stylish*
@@ -6162,6 +6168,7 @@ g:clojure_fuzzy_indent_blacklist	indent.txt	/*g:clojure_fuzzy_indent_blacklist*
 g:clojure_fuzzy_indent_patterns	indent.txt	/*g:clojure_fuzzy_indent_patterns*
 g:clojure_maxlines	indent.txt	/*g:clojure_maxlines*
 g:clojure_special_indent_words	indent.txt	/*g:clojure_special_indent_words*
+g:clojure_syntax_keywords	syntax.txt	/*g:clojure_syntax_keywords*
 g:colors_name	options.txt	/*g:colors_name*
 g:decada	ft_ada.txt	/*g:decada*
 g:decada.Error_Format	ft_ada.txt	/*g:decada.Error_Format*
@@ -8425,9 +8432,11 @@ t_ZH	term.txt	/*t_ZH*
 t_ZR	term.txt	/*t_ZR*
 t_al	term.txt	/*t_al*
 t_bc	term.txt	/*t_bc*
+t_bool-varialble	eval.txt	/*t_bool-varialble*
 t_cd	term.txt	/*t_cd*
 t_cdl	version4.txt	/*t_cdl*
 t_ce	term.txt	/*t_ce*
+t_channel-varialble	eval.txt	/*t_channel-varialble*
 t_ci	version4.txt	/*t_ci*
 t_cil	version4.txt	/*t_cil*
 t_cl	term.txt	/*t_cl*
@@ -8439,6 +8448,7 @@ t_cv	version4.txt	/*t_cv*
 t_cvv	version4.txt	/*t_cvv*
 t_da	term.txt	/*t_da*
 t_db	term.txt	/*t_db*
+t_dict-varialble	eval.txt	/*t_dict-varialble*
 t_dl	term.txt	/*t_dl*
 t_ed	version4.txt	/*t_ed*
 t_el	version4.txt	/*t_el*
@@ -8452,9 +8462,12 @@ t_f6	version4.txt	/*t_f6*
 t_f7	version4.txt	/*t_f7*
 t_f8	version4.txt	/*t_f8*
 t_f9	version4.txt	/*t_f9*
+t_float-varialble	eval.txt	/*t_float-varialble*
 t_fs	term.txt	/*t_fs*
+t_func-varialble	eval.txt	/*t_func-varialble*
 t_help	version4.txt	/*t_help*
 t_il	version4.txt	/*t_il*
+t_job-varialble	eval.txt	/*t_job-varialble*
 t_k1	term.txt	/*t_k1*
 t_k2	term.txt	/*t_k2*
 t_k3	term.txt	/*t_k3*
@@ -8479,12 +8492,15 @@ t_kr	term.txt	/*t_kr*
 t_ks	term.txt	/*t_ks*
 t_ku	term.txt	/*t_ku*
 t_le	term.txt	/*t_le*
+t_list-varialble	eval.txt	/*t_list-varialble*
 t_mb	term.txt	/*t_mb*
 t_md	term.txt	/*t_md*
 t_me	term.txt	/*t_me*
 t_mr	term.txt	/*t_mr*
 t_ms	term.txt	/*t_ms*
 t_nd	term.txt	/*t_nd*
+t_none-varialble	eval.txt	/*t_none-varialble*
+t_number-varialble	eval.txt	/*t_number-varialble*
 t_op	term.txt	/*t_op*
 t_se	term.txt	/*t_se*
 t_sf1	version4.txt	/*t_sf1*
@@ -8504,6 +8520,7 @@ t_sku	version4.txt	/*t_sku*
 t_so	term.txt	/*t_so*
 t_sr	term.txt	/*t_sr*
 t_star7	term.txt	/*t_star7*
+t_string-varialble	eval.txt	/*t_string-varialble*
 t_tb	version4.txt	/*t_tb*
 t_te	term.txt	/*t_te*
 t_ti	term.txt	/*t_ti*
@@ -8637,6 +8654,7 @@ terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*
 test_alloc_fail()	eval.txt	/*test_alloc_fail()*
+test_autochdir()	eval.txt	/*test_autochdir()*
 test_disable_char_avail()	eval.txt	/*test_disable_char_avail()*
 test_garbagecollect_now()	eval.txt	/*test_garbagecollect_now()*
 test_null_channel()	eval.txt	/*test_null_channel()*
@@ -8845,6 +8863,17 @@ v:statusmsg	eval.txt	/*v:statusmsg*
 v:swapchoice	eval.txt	/*v:swapchoice*
 v:swapcommand	eval.txt	/*v:swapcommand*
 v:swapname	eval.txt	/*v:swapname*
+v:t_TYPE	eval.txt	/*v:t_TYPE*
+v:t_bool	eval.txt	/*v:t_bool*
+v:t_channel	eval.txt	/*v:t_channel*
+v:t_dict	eval.txt	/*v:t_dict*
+v:t_float	eval.txt	/*v:t_float*
+v:t_func	eval.txt	/*v:t_func*
+v:t_job	eval.txt	/*v:t_job*
+v:t_list	eval.txt	/*v:t_list*
+v:t_none	eval.txt	/*v:t_none*
+v:t_number	eval.txt	/*v:t_number*
+v:t_string	eval.txt	/*v:t_string*
 v:termresponse	eval.txt	/*v:termresponse*
 v:testing	eval.txt	/*v:testing*
 v:this_session	eval.txt	/*v:this_session*

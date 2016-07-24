@@ -13,16 +13,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-03 16:10+0200\n"
-"PO-Revision-Date:  2016-02-11 14:42+0200\n"
+"POT-Creation-Date: 2016-07-16 16:34+0200\n"
+"PO-Revision-Date:  2016-07-16 16:50+0200\n"
 "Last-Translator:   Antonio Colombo   <azc100@gmail.com>\n"
 "Language-Team:     Antonio Colombo   <azc100@gmail.com>\n"
-"                   Vlad Sandrini     <vlad.gently@gmail.com>\n"
-"                   Luciano Montanaro <mikelima@cirulla.net>\n"
 "Language: Italian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-1\n"
 "Content-Transfer-Encoding: 8-bit\n"
+"                   Vlad Sandrini     <vlad.gently@gmail.com>\n"
+"                   Luciano Montanaro <mikelima@cirulla.net>\n"
 
 msgid "E831: bf_key_init() called with empty password"
 msgstr "E831: chiamata a bf_key_init() con password nulla"
@@ -53,6 +53,9 @@ msgstr "E82: Non riesco ad allocare alcun buffer, esco..."
 
 msgid "E83: Cannot allocate buffer, using other one..."
 msgstr "E83: Non riesco ad allocare un buffer, uso l'altro..."
+
+msgid "E931: Buffer cannot be registered"
+msgstr "E931: Non riesco a registrare il buffer"
 
 msgid "E515: No buffers were unloaded"
 msgstr "E515: Nessun buffer scaricato"
@@ -207,6 +210,7 @@ msgstr "    riga=%ld id=%d, nome=%s"
 msgid "E902: Cannot connect to port"
 msgstr "E902: Non posso commettermi alla porta"
 
+#, c-format
 msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: Non posso usare callback con %s()"
 
@@ -222,6 +226,7 @@ msgstr "E920: il file _io necessita di impostare _name"
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: il buffer in_io necessita di impostare in_buf o in_name"
 
+#, c-format
 msgid "E918: buffer must be loaded: %s"
 msgstr "E918: il buffer dev'essere caricato: %s"
 
@@ -582,6 +587,14 @@ msgstr "E722: Manca virgola nel Dizionario: %s"
 msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: Manca '}' a fine Dizionario: %s"
 
+#, c-format
+msgid "E125: Illegal argument: %s"
+msgstr "E125: Argomento non ammesso: %s"
+
+#, c-format
+msgid "E853: Duplicate argument name: %s"
+msgstr "E853: Nome argomento duplicato: %s"
+
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: variabile troppo nidificata per la visualizzazione"
 
@@ -654,8 +667,8 @@ msgid "E922: expected a dict"
 msgstr "E922: aspettavo un Dizionario"
 
 msgid "E923: Second argument of function() must be a list or a dict"
-msgstr "E923: Il secondo argomento di function() dev'essere una Lista"
-" o un Dizionario"
+msgstr ""
+"E923: Il secondo argomento di function() dev'essere una Lista o un Dizionario"
 
 msgid ""
 "&OK\n"
@@ -710,6 +723,7 @@ msgstr "argomento di reverse()"
 msgid "E258: Unable to send to client"
 msgstr "E258: Impossibile inviare al client"
 
+#, c-format
 msgid "E927: Invalid action: '%s'"
 msgstr "E927: Azione non valida: '%s'"
 
@@ -823,14 +837,6 @@ msgstr "E124: Manca '(': %s"
 
 msgid "E862: Cannot use g: here"
 msgstr "E862: Non si può usare g: qui"
-
-#, c-format
-msgid "E125: Illegal argument: %s"
-msgstr "E125: Argomento non ammesso: %s"
-
-#, c-format
-msgid "E853: Duplicate argument name: %s"
-msgstr "E853: Nome argomento duplicato: %s"
 
 msgid "E126: Missing :endfunction"
 msgstr "E126: Manca :endfunction"
@@ -965,6 +971,10 @@ msgstr " FALLITO"
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
 msgstr "E137: File viminfo \"%s\" inaccessibile in scrittura"
+
+#, c-format
+msgid "E929: Too many viminfo temp files, like %s!"
+msgstr "E929: Troppi file temporanei viminfo, come %s!"
 
 #, c-format
 msgid "E138: Can't write viminfo file %s!"
@@ -1270,9 +1280,8 @@ msgstr "Cerco \"%s\" in \"%s\""
 msgid "Searching for \"%s\""
 msgstr "Cerco \"%s\""
 
-#, fuzzy, c-format
 msgid "not found in '%s': \"%s\""
-msgstr "non trovato in '%s: \"%s\""
+msgstr "non trovato in '%s': \"%s\""
 
 msgid "Source Vim script"
 msgstr "Esegui script Vim"
@@ -1507,6 +1516,9 @@ msgstr ""
 msgid "E466: :winpos requires two number arguments"
 msgstr "E466: :winpos richiede due argomenti numerici"
 
+msgid "E930: Cannot use :redir inside execute()"
+msgstr "E930: Non è possibile usare :redir all'interno di execute()"
+
 msgid "Save Redirection"
 msgstr "Salva Redirezione"
 
@@ -1717,6 +1729,9 @@ msgstr "Espressione"
 
 msgid "Input Line"
 msgstr "Riga di Input"
+
+msgid "Debug Line"
+msgstr "Riga di Debug"
 
 msgid "E198: cmd_pchar beyond the command length"
 msgstr "E198: cmd_pchar dopo la fine del comando"
@@ -1973,11 +1988,6 @@ msgstr "1 carattere"
 #, c-format
 msgid "%lld characters"
 msgstr "%lld caratteri"
-
-#. Explicit typecast avoids warning on Mac OS X 10.6
-#, c-format
-msgid "%ld characters"
-msgstr "%ld caratteri"
 
 msgid "[noeol]"
 msgstr "[noeol]"
@@ -2639,6 +2649,7 @@ msgstr "%-5s: %s%*s (Uso: %s)"
 
 msgid ""
 "\n"
+"       a: Find assignments to this symbol\n"
 "       c: Find functions calling this function\n"
 "       d: Find functions called by this function\n"
 "       e: Find this egrep pattern\n"
@@ -2649,6 +2660,7 @@ msgid ""
 "       t: Find this text string\n"
 msgstr ""
 "\n"
+"       a: Trova assegnazioni a questo simbolo\n"
 "       c: Trova funzioni che chiamano questa\n"
 "       d: Trova funzioni chiamate da questa\n"
 "       e: Trova questa espressione egrep\n"
@@ -2656,7 +2668,7 @@ msgstr ""
 "       g: Trova questa definizione\n"
 "       i: Trova file che #includono questo file\n"
 "       s: Trova questo simbolo C\n"
-"       t: Trova questa stringa\n"
+"       t: Trova questa stringa di testo\n"
 
 #, c-format
 msgid "E625: cannot open cscope database: %s"
@@ -2960,6 +2972,10 @@ msgstr "Non posso aprire come script output: \""
 
 msgid "Vim: Error: Failure to start gvim from NetBeans\n"
 msgstr "Vim: Errore: Avvio di gvim da NetBeans non riuscito\n"
+
+msgid "Vim: Error: This version of Vim does not run in a Cygwin terminal\n"
+msgstr "Vim: Errore: Questa versione di Vim non funziona in un"
+" terminale Cygwin\n"
 
 msgid "Vim: Warning: Output is not to a terminal\n"
 msgstr "Vim: Avviso: Output non diretto a un terminale\n"
@@ -4262,29 +4278,27 @@ msgstr ""
 msgid "%ld Cols; "
 msgstr "%ld Col.; "
 
-#, c-format
-msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
-msgstr "Selezionate %s%ld di %ld Righe; %ld di %ld Parole; %ld di %ld Caratt."
-
-#, c-format
-msgid ""
-"Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
-"Bytes"
+msgid "Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Bytes"
 msgstr ""
-"Selezionate %s%ld di %ld Righe; %ld di %ld Parole; %ld di %ld Caratt.; %ld "
-"di %ld Byte"
+"Selezionate %s%ld di %ld Righe; %lld di %lld Parole; %lld di %lld Caratt."
 
-#, c-format
-msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
-msgstr "Col. %s di %s; Riga %ld di %ld; Parola %ld di %ld; Caratt. %ld di %ld"
-
-#, c-format
 msgid ""
-"Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
-"%ld"
+"Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of "
+"%lld Bytes"
 msgstr ""
-"Col. %s di %s; Riga %ld di %ld; Parola %ld di %ld; Caratt. %ld di %ld; Byte "
-"%ld di %ld"
+"Selezionate %s%ld di %ld Righe; %lld di %lld Parole; %lld di %lld Caratt.;"
+" %lld di %lld Byte"
+
+msgid "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Byte %lld of %lld"
+msgstr ""
+"Col. %s di %s; Riga %ld di %ld; Parola %lld di %lld; Caratt. %lld di %lld"
+
+msgid ""
+"Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte "
+"%lld of %lld"
+msgstr ""
+"Col. %s di %s; Riga %ld di %ld; Parola %lld di %lld; Caratt. %lld di %lld;"
+" Byte %lld di %lld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -4541,6 +4555,7 @@ msgstr "Stampato: '%s'"
 msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
 msgstr "E244: Nome di charset non ammesso \"%s\" nel fonte di nome \"%s\""
 
+#, c-format
 msgid "E244: Illegal quality name \"%s\" in font name \"%s\""
 msgstr "E244: Nome di qualità non ammesso \"%s\" nel font di nome \"%s\""
 
@@ -4579,18 +4594,13 @@ msgstr ""
 "\n"
 "Non posso impostare il contesto di sicurezza per "
 
+#, c-format
 msgid "Could not set security context %s for %s"
 msgstr "Non posso impostare il contesto di sicurezza %s per %s"
 
+#, c-format
 msgid "Could not get security context %s for %s. Removing it!"
 msgstr "Non posso ottenere il contesto di sicurezza %s per %s. Lo rimuovo!"
-
-msgid ""
-"\n"
-"Cannot execute shell "
-msgstr ""
-"\n"
-"Non riesco a eseguire shell "
 
 msgid ""
 "\n"
@@ -4619,6 +4629,13 @@ msgid ""
 msgstr ""
 "\n"
 "Non riesco ad effettuare 'fork'\n"
+
+msgid ""
+"\n"
+"Cannot execute shell "
+msgstr ""
+"\n"
+"Non riesco a eseguire shell "
 
 msgid ""
 "\n"
@@ -4717,6 +4734,7 @@ msgstr "E376: %%%c non valido nel prefisso della stringa di 'format'"
 msgid "E377: Invalid %%%c in format string"
 msgstr "E377: %%%c non valido nella stringa di 'format'"
 
+#. nothing found
 msgid "E378: 'errorformat' contains no pattern"
 msgstr "E378: 'errorformat' non contiene alcun modello"
 
@@ -6649,6 +6667,7 @@ msgstr "E764: opzione '%s' non impostata"
 msgid "E850: Invalid register name"
 msgstr "E850: Nome registro non valido"
 
+#, c-format
 msgid "E919: Directory not found in '%s': \"%s\""
 msgstr "E919: Directory non trovata in '%s': \"%s\""
 
@@ -6895,6 +6914,7 @@ msgstr ""
 msgid "unable to convert %s to vim dictionary"
 msgstr "impossibile convertire %s a dizionario vim"
 
+#, c-format
 msgid "unable to convert %s to vim list"
 msgstr "impossibile convertire %s a Lista vim"
 
@@ -6926,3 +6946,4 @@ msgid ""
 msgstr ""
 "Impostazione di percorso non riuscita: sys.path non è una lista\n"
 "Dovresti aggiungere vim.VIM_SPECIAL_PATH a sys.path"
+
