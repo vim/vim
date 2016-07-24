@@ -1319,7 +1319,7 @@ get_window(
 {
     win_T	*wp = NULL;	/* window filename is in */
 
-    for (wp = firstwin; wp != NULL; wp = W_NEXT(wp))
+    FOR_ALL_WINDOWS(wp)
 	if (buf == wp->w_buffer)
 	    break;
     return wp;

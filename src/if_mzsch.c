@@ -1916,7 +1916,7 @@ get_window_count(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED
 #ifdef FEAT_WINDOWS
     win_T   *w;
 
-    for (w = firstwin; w != NULL; w = w->w_next)
+    FOR_ALL_WINDOWS(w)
 #endif
 	++n;
     return scheme_make_integer(n);
@@ -2197,7 +2197,7 @@ get_buffer_by_num(void *data, int argc, Scheme_Object **argv)
 
     fnum = SCHEME_INT_VAL(GUARANTEE_INTEGER(prim->name, 0));
 
-    for (buf = firstbuf; buf; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (buf->b_fnum == fnum)
 	    return buffer_new(buf);
 
@@ -2220,7 +2220,7 @@ get_buffer_by_name(void *data, int argc, Scheme_Object **argv)
     fname = GUARANTEED_STRING_ARG(prim->name, 0);
     buffer = scheme_false;
 
-    for (buf = firstbuf; buf; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	if (buf->b_ffname == NULL || buf->b_sfname == NULL)
 	    /* empty string */
@@ -2283,7 +2283,7 @@ get_buffer_count(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED
     buf_T   *b;
     int	    n = 0;
 
-    for (b = firstbuf; b; b = b->b_next) ++n;
+    FOR_ALL_BUFFERS(b) ++n;
     return scheme_make_integer(n);
 }
 

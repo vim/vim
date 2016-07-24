@@ -2814,7 +2814,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
 	win_T	    *wp;
 	linenr_T    wlnum;
 
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_p_diff && wp != curwin)
 	    {
 		redraw_win_later(wp, VALID);
@@ -2924,7 +2924,7 @@ changed_lines(
 	win_T	    *wp;
 	linenr_T    wlnum;
 
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_p_diff && wp != curwin)
 	    {
 		redraw_win_later(wp, VALID);
@@ -3213,7 +3213,7 @@ check_status(buf_T *buf)
 {
     win_T	*wp;
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer == buf && wp->w_status_height)
 	{
 	    wp->w_redr_status = TRUE;
@@ -9475,7 +9475,7 @@ preserve_exit(void)
 
     ml_close_notmod();		    /* close all not-modified buffers */
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	if (buf->b_ml.ml_mfp != NULL && buf->b_ml.ml_mfp->mf_fname != NULL)
 	{

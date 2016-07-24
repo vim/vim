@@ -65,7 +65,7 @@ diff_buf_delete(buf_T *buf)
     int		i;
     tabpage_T	*tp;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
     {
 	i = diff_buf_idx_tp(buf, tp);
 	if (i != DB_COUNT)
@@ -92,7 +92,7 @@ diff_buf_adjust(win_T *win)
     {
 	/* When there is no window showing a diff for this buffer, remove
 	 * it from the diffs. */
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_buffer == win->w_buffer && wp->w_p_diff)
 		break;
 	if (wp == NULL)
@@ -178,7 +178,7 @@ diff_invalidate(buf_T *buf)
     tabpage_T	*tp;
     int		i;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
     {
 	i = diff_buf_idx_tp(buf, tp);
 	if (i != DB_COUNT)
@@ -204,7 +204,7 @@ diff_mark_adjust(
     tabpage_T	*tp;
 
     /* Handle all tab pages that use the current buffer in a diff. */
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
     {
 	idx = diff_buf_idx_tp(curbuf, tp);
 	if (idx != DB_COUNT)
@@ -591,7 +591,7 @@ diff_redraw(
     win_T	*wp;
     int		n;
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS(wp)
 	if (wp->w_p_diff)
 	{
 	    redraw_win_later(wp, SOME_VALID);
@@ -1198,7 +1198,7 @@ ex_diffoff(exarg_T *eap)
     int		diffwin = FALSE;
 #endif
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS(wp)
     {
 	if (eap->forceit ? wp->w_p_diff : wp == curwin)
 	{
@@ -1879,7 +1879,7 @@ diffopt_changed(void)
 
     /* If "icase" or "iwhite" was added or removed, need to update the diff. */
     if (diff_flags != diff_flags_new)
-	for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	FOR_ALL_TABPAGES(tp)
 	    tp->tp_diff_invalid = TRUE;
 
     diff_flags = diff_flags_new;
@@ -2434,7 +2434,7 @@ diff_fold_update(diff_T *dp, int skip_idx)
     int		i;
     win_T	*wp;
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS(wp)
 	for (i = 0; i < DB_COUNT; ++i)
 	    if (curtab->tp_diffbuf[i] == wp->w_buffer && i != skip_idx)
 		foldUpdate(wp, dp->df_lnum[i],
@@ -2450,7 +2450,7 @@ diff_mode_buf(buf_T *buf)
 {
     tabpage_T	*tp;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
 	if (diff_buf_idx_tp(buf, tp) != DB_COUNT)
 	    return TRUE;
     return FALSE;

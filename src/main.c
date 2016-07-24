@@ -742,7 +742,7 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
 	win_T	*wp;
 
 	/* set options in each window for "vimdiff". */
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	    diff_win_options(wp, TRUE);
     }
 #endif
@@ -1375,8 +1375,7 @@ getout(int exitval)
 	for (tp = first_tabpage; tp != NULL; tp = next_tp)
 	{
 	    next_tp = tp->tp_next;
-	    for (wp = (tp == curtab)
-		    ? firstwin : tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	    {
 		if (wp->w_buffer == NULL)
 		    /* Autocmd must have close the buffer already, skip. */
@@ -1399,7 +1398,7 @@ getout(int exitval)
 # endif
 
 	/* Trigger BufUnload for buffers that are loaded */
-	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	FOR_ALL_BUFFERS(buf)
 	    if (buf->b_ml.ml_mfp != NULL)
 	    {
 		bufref_T bufref;

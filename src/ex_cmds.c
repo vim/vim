@@ -1497,7 +1497,7 @@ do_shell(
 		&& !autocmd_busy
 #endif
 		&& msg_silent == 0)
-	for (buf = firstbuf; buf; buf = buf->b_next)
+	FOR_ALL_BUFFERS(buf)
 	    if (bufIsChanged(buf))
 	    {
 #ifdef FEAT_GUI_MSWIN
@@ -2345,7 +2345,7 @@ read_viminfo_up_to_marks(
 #endif
 
     /* Change file names to buffer numbers for fmarks. */
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	fmarks_check_names(buf);
 
     return eof;
@@ -3413,7 +3413,7 @@ do_wqall(exarg_T *eap)
     if (eap->cmdidx == CMD_xall || eap->cmdidx == CMD_wqall)
 	exiting = TRUE;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	if (bufIsChanged(buf))
 	{
@@ -6115,7 +6115,7 @@ prepare_tagpreview(
      */
     if (!curwin->w_p_pvw)
     {
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_p_pvw)
 		break;
 	if (wp != NULL)
@@ -6272,7 +6272,7 @@ ex_help(exarg_T *eap)
 	if (cmdmod.tab != 0)
 	    wp = NULL;
 	else
-	    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_WINDOWS(wp)
 		if (wp->w_buffer != NULL && wp->w_buffer->b_help)
 		    break;
 	if (wp != NULL && wp->w_buffer->b_nwindows > 0)
@@ -7745,7 +7745,7 @@ ex_sign(exarg_T *eap)
 		if (idx == SIGNCMD_UNPLACE && *arg == NUL)
 		{
 		    /* ":sign unplace {id}": remove placed sign by number */
-		    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+		    FOR_ALL_BUFFERS(buf)
 			if ((lnum = buf_delsign(buf, id)) != 0)
 			    update_debug_sign(buf, lnum);
 		    return;

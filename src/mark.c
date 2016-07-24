@@ -1864,7 +1864,7 @@ write_viminfo_marks(FILE *fp_out, garray_T *buflist)
 #endif
 
     fputs(_("\n# History of marks within files (newest to oldest):\n"), fp_out);
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	/*
 	 * Only write something if buffer has been loaded and at least one
@@ -2018,7 +2018,7 @@ copy_viminfo_marks(
 	else /* fp_out != NULL */
 	{
 	    /* This is slow if there are many buffers!! */
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 		if (buf->b_ffname != NULL)
 		{
 		    home_replace(NULL, buf->b_ffname, name_buf, LSIZE, TRUE);

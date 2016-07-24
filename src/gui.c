@@ -4082,7 +4082,7 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
     {
 	do_check_scrollbind(TRUE);
 	/* need to update the window right here */
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_redr_type > 0)
 		updateWindow(wp);
 	setcursor();
@@ -4166,7 +4166,7 @@ gui_update_scrollbars(
     /* avoid that moving components around generates events */
     ++hold_gui_events;
 
-    for (wp = firstwin; wp != NULL; wp = W_NEXT(wp))
+    FOR_ALL_WINDOWS(wp)
     {
 	if (wp->w_buffer == NULL)	/* just in case */
 	    continue;

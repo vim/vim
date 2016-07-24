@@ -473,7 +473,7 @@ nb_parse_cmd(char_u *cmd)
     {
 	buf_T	*buf;
 
-	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	FOR_ALL_BUFFERS(buf)
 	    buf->b_has_sign_column = FALSE;
 
 	/* The IDE is breaking the connection. */
@@ -721,7 +721,7 @@ count_changed_buffers(void)
     int		n;
 
     n = 0;
-    for (bufp = firstbuf; bufp != NULL; bufp = bufp->b_next)
+    FOR_ALL_BUFFERS(bufp)
 	if (bufp->b_changed)
 	    ++n;
     return n;

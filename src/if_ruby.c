@@ -1151,7 +1151,7 @@ static VALUE buffer_s_count(void)
     buf_T *b;
     int n = 0;
 
-    for (b = firstbuf; b != NULL; b = b->b_next)
+    FOR_ALL_BUFFERS(b)
     {
 	/*  Deleted buffers should not be counted
 	 *    SegPhault - 01/07/05 */
@@ -1167,7 +1167,7 @@ static VALUE buffer_s_aref(VALUE self UNUSED, VALUE num)
     buf_T *b;
     int n = NUM2INT(num);
 
-    for (b = firstbuf; b != NULL; b = b->b_next)
+    FOR_ALL_BUFFERS(b)
     {
 	/*  Deleted buffers should not be counted
 	 *    SegPhault - 01/07/05 */
@@ -1418,7 +1418,7 @@ static VALUE window_s_count(void)
     win_T	*w;
     int n = 0;
 
-    for (w = firstwin; w != NULL; w = w->w_next)
+    FOR_ALL_WINDOWS(w)
 	n++;
     return INT2NUM(n);
 #else

@@ -633,7 +633,7 @@ Handle_KAHL_SRCH_AE(
     if (error)
 	return error;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (buf->b_ml.ml_mfp != NULL
 		&& SearchData.theFile.parID == buf->b_FSSpec.parID
 		&& SearchData.theFile.name[0] == buf->b_FSSpec.name[0]
@@ -725,7 +725,7 @@ Handle_KAHL_MOD_AE(
 #endif
 
     numFiles = 0;
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (buf->b_ml.ml_mfp != NULL)
 	{
 	    /* Add this file to the list */
@@ -807,7 +807,7 @@ Handle_KAHL_GTTX_AE(
     if (error)
 	return error;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (buf->b_ml.ml_mfp != NULL)
 	    if (GetTextData.theFile.parID == buf->b_FSSpec.parID)
 	    {
@@ -6422,7 +6422,7 @@ getTabCount(void)
     tabpage_T	*tp;
     int		numTabs = 0;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
 	++numTabs;
     return numTabs;
 }

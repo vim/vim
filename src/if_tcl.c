@@ -388,7 +388,7 @@ buffercmd(
 	    Tcl_WrongNumArgs(interp, 1, objv, "bufNumber");
 	    return TCL_ERROR;
 	}
-	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	FOR_ALL_BUFFERS(buf)
 	{
 	    if (buf->b_fnum == n)
 	    {
@@ -416,7 +416,7 @@ buffercmd(
 		err = TCL_ERROR;
 		break;
 	    }
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 	    {
 		name = tclgetbuffer(interp, buf);
 		if (name == NULL)

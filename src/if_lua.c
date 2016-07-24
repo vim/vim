@@ -1402,13 +1402,13 @@ luaV_buffer(lua_State *L)
 	if (lua_isnumber(L, 1)) /* by number? */
 	{
 	    int n = lua_tointeger(L, 1);
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 		if (buf->b_fnum == n) break;
 	}
 	else { /* by name */
 	    size_t l;
 	    const char *s = lua_tolstring(L, 1, &l);
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 	    {
 		if (buf->b_ffname == NULL || buf->b_sfname == NULL)
 		{

@@ -5253,7 +5253,7 @@ garbage_collect(int testing)
 	abort = abort || set_ref_in_ht(&SCRIPT_VARS(i), copyID, NULL);
 
     /* buffer-local variables */
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	abort = abort || set_ref_in_item(&buf->b_bufvar.di_tv, copyID,
 								  NULL, NULL);
 
@@ -5269,7 +5269,7 @@ garbage_collect(int testing)
 
 #ifdef FEAT_WINDOWS
     /* tabpage-local variables */
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
 	abort = abort || set_ref_in_item(&tp->tp_winvar.di_tv, copyID,
 								  NULL, NULL);
 #endif
@@ -8303,8 +8303,8 @@ find_win_by_nr(
     if (nr == 0)
 	return curwin;
 
-    for (wp = (tp == NULL || tp == curtab) ? firstwin : tp->tp_firstwin;
-						  wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
+    {
 	if (nr >= LOWEST_WIN_ID)
 	{
 	    if (wp->w_id == nr)
@@ -8312,6 +8312,7 @@ find_win_by_nr(
 	}
 	else if (--nr <= 0)
 	    break;
+    }
     if (nr >= LOWEST_WIN_ID)
 	return NULL;
     return wp;

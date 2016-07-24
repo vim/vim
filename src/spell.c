@@ -2875,7 +2875,7 @@ spell_free_all(void)
     buf_T	*buf;
 
     /* Go through all buffers and handle 'spelllang'. <VN> */
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	ga_clear(&buf->b_s.b_langp);
 
     while (first_lang != NULL)
@@ -2911,7 +2911,7 @@ spell_reload(void)
     spell_free_all();
 
     /* Go through all buffers and handle 'spelllang'. */
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS(wp)
     {
 	/* Only load the wordlists when 'spelllang' is set and there is a
 	 * window for this buffer in which 'spell' is set. */

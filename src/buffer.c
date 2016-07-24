@@ -105,7 +105,7 @@ open_buffer(
 	 * If we can't create one for the current buffer, take another buffer
 	 */
 	close_buffer(NULL, curbuf, 0, FALSE);
-	for (curbuf = firstbuf; curbuf != NULL; curbuf = curbuf->b_next)
+	FOR_ALL_BUFFERS(curbuf)
 	    if (curbuf->b_ml.ml_mfp != NULL)
 		break;
 	/*
@@ -1284,7 +1284,7 @@ do_buffer(
 	 * If deleting the last (listed) buffer, make it empty.
 	 * The last (listed) buffer cannot be unloaded.
 	 */
-	for (bp = firstbuf; bp != NULL; bp = bp->b_next)
+	FOR_ALL_BUFFERS(bp)
 	    if (bp->b_p_bl && bp != buf)
 		break;
 	if (bp == NULL && buf == curbuf)
@@ -1410,7 +1410,7 @@ do_buffer(
 	    buf = bp;
 	if (buf == NULL)	/* No loaded buffer, find listed one */
 	{
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 		if (buf->b_p_bl && buf != curbuf)
 		    break;
 	}
@@ -2406,7 +2406,7 @@ buflist_findpat(
 #ifdef FEAT_WINDOWS
 			    win_T	*wp;
 
-			    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+			    FOR_ALL_WINDOWS(wp)
 				if (wp->w_buffer == buf)
 				    break;
 			    if (wp == NULL)
@@ -2508,7 +2508,7 @@ ExpandBufnames(
 	for (round = 1; round <= 2; ++round)
 	{
 	    count = 0;
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 	    {
 		if (!buf->b_p_bl)	/* skip unlisted buffers */
 		    continue;
@@ -2734,7 +2734,7 @@ wininfo_other_tab_diff(wininfo_T *wip)
 
     if (wip->wi_opt.wo_diff)
     {
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	    /* return FALSE when it's a window in the current tab page, thus
 	     * the buffer was in diff mode here */
 	    if (wip->wi_win == wp)
@@ -3153,7 +3153,7 @@ buflist_slash_adjust(void)
 {
     buf_T	*bp;
 
-    for (bp = firstbuf; bp != NULL; bp = bp->b_next)
+    FOR_ALL_BUFFERS(bp)
     {
 	if (bp->b_ffname != NULL)
 	    slash_adjust(bp->b_ffname);
@@ -5083,7 +5083,7 @@ ex_buffer_all(exarg_T *eap)
 #endif
 	{
 	    /* Check if this buffer already has a window */
-	    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_WINDOWS(wp)
 		if (wp->w_buffer == buf)
 		    break;
 	    /* If the buffer already has a window, move it */
@@ -5461,7 +5461,7 @@ write_viminfo_bufferlist(FILE *fp)
 #endif
 
     fputs(_("\n# Buffer list:\n"), fp);
-    for (buf = firstbuf; buf != NULL ; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	if (buf->b_fname == NULL
 		|| !buf->b_p_bl
@@ -5847,7 +5847,7 @@ buf_delete_all_signs(void)
 {
     buf_T	*buf;		/* buffer we are checking for signs */
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (buf->b_signlist != NULL)
 	    buf_delete_signs(buf);
 }
