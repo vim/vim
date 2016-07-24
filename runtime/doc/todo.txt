@@ -3558,8 +3558,6 @@ Multi-byte characters:
     convert_input() for Mac GUI.
 -   Add mnemonics from RFC1345 longer than two characters.
     Support CTRL-K _{mnemonic}_
-7   In "-- INSERT (lang) --" show the name of the keymap used instead of
-    "lang". (Ilya Dogolazky)
 -   Make 'breakat' accept multi-byte characters.  Problem: can't use a lookup
     table anymore (breakat_flags[]).
     Simplistic solution: when 'formatoptions' contains "m" also break a line
