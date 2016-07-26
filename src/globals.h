@@ -1356,7 +1356,7 @@ EXTERN int	term_is_xterm INIT(= FALSE);	/* xterm-like 'term' */
 EXTERN char	psepc INIT(= '\\');	/* normal path separator character */
 EXTERN char	psepcN INIT(= '/');	/* abnormal path separator character */
 /* normal path separator string */
-EXTERN char	pseps[2] = INIT(= {'\\' COMMA 0});
+EXTERN char	pseps[2] INIT(= {'\\' COMMA 0});
 #endif
 
 #ifdef FEAT_VIRTUALEDIT
