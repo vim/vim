@@ -2640,11 +2640,11 @@ ex_delfunction(exarg_T *eap)
     void
 func_unref(char_u *name)
 {
-    ufunc_T *fp;
+    ufunc_T *fp = NULL;
 
     if (name == NULL)
 	return;
-    else if (isdigit(*name))
+    if (isdigit(*name))
     {
 	fp = find_func(name);
 	if (fp == NULL)
@@ -2654,25 +2654,18 @@ func_unref(char_u *name)
 #endif
 		EMSG2(_(e_intern2), "func_unref()");
 	}
-	else if (--fp->uf_refcount <= 0)
-	{
-	    /* Only delete it when it's not being used.  Otherwise it's done
-	     * when "uf_calls" becomes zero. */
-	    if (fp->uf_calls == 0)
-		func_free(fp);
-	}
     }
     else if (STRNCMP(name, "<lambda>", 8) == 0)
     {
 	/* fail silently, when lambda function isn't found. */
 	fp = find_func(name);
-	if (fp != NULL && --fp->uf_refcount <= 0)
-	{
-	    /* Only delete it when it's not being used.  Otherwise it's done
-	     * when "uf_calls" becomes zero. */
-	    if (fp->uf_calls == 0)
-		func_free(fp);
-	}
+    }
+    if (fp != NULL && --fp->uf_refcount <= 0)
+    {
+	/* Only delete it when it's not being used.  Otherwise it's done
+	 * when "uf_calls" becomes zero. */
+	if (fp->uf_calls == 0)
+	    func_free(fp);
     }
 }
 
