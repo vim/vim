@@ -4008,6 +4008,7 @@ do_ecmd(
 	    }
 	    vim_free(new_name);
 	    au_new_curbuf.br_buf = NULL;
+	    au_new_curbuf.br_buf_free_count = 0;
 #endif
 	}
 
@@ -4389,6 +4390,7 @@ delbuf_msg(char_u *name)
 	    name == NULL ? (char_u *)"" : name);
     vim_free(name);
     au_new_curbuf.br_buf = NULL;
+    au_new_curbuf.br_buf_free_count = 0;
 }
 #endif
 

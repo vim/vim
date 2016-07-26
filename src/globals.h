@@ -384,7 +384,7 @@ EXTERN int	keep_filetype INIT(= FALSE);	/* value for did_filetype when
 
 /* When deleting the current buffer, another one must be loaded.  If we know
  * which one is preferred, au_new_curbuf is set to it */
-EXTERN bufref_T	au_new_curbuf INIT(= {NULL});
+EXTERN bufref_T	au_new_curbuf INIT(= {NULL COMMA 0});
 
 /* When deleting a buffer/window and autocmd_busy is TRUE, do not free the
  * buffer/window. but link it in the list starting with
@@ -1355,11 +1355,8 @@ EXTERN int	term_is_xterm INIT(= FALSE);	/* xterm-like 'term' */
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char	psepc INIT(= '\\');	/* normal path separator character */
 EXTERN char	psepcN INIT(= '/');	/* abnormal path separator character */
-EXTERN char	pseps[2]		/* normal path separator string */
-# ifdef DO_INIT
-			= {'\\', 0}
-# endif
-			;
+/* normal path separator string */
+EXTERN char	pseps[2] = INIT(= {'\\' COMMA 0});
 #endif
 
 #ifdef FEAT_VIRTUALEDIT
