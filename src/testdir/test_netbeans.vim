@@ -27,6 +27,7 @@ func Nb_basic(port)
 
   " Opening Makefile will result in a setDot command
   call WaitFor('len(readfile("Xnetbeans")) > 4')
+  call WaitFor('getcurpos()[1] == 2')
   let pos = getcurpos()
   call assert_equal(2, pos[1])
   call assert_equal(20, pos[2])
