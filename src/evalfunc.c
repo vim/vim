@@ -4164,8 +4164,8 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 {
     char_u	*pat;
     expand_T	xpc;
-    int		options = WILD_KEEP_ALL | WILD_SILENT | WILD_USE_NL
-					  | WILD_LIST_NOTFOUND | WILD_NO_BEEP;
+    int		options = WILD_SILENT | WILD_USE_NL | WILD_ADD_SLASH
+					| WILD_NO_BEEP;
 
     if (p_wic)
 	options |= WILD_ICASE;
@@ -4194,7 +4194,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
     if ((rettv_list_alloc(rettv) != FAIL) && (pat != NULL))
     {
-	int i;
+	int	i;
 
 	ExpandOne(&xpc, pat, NULL, options, WILD_ALL_KEEP);
 
