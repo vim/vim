@@ -25,6 +25,9 @@
 #ifndef USR_VIMRC_FILE3
 # define USR_VIMRC_FILE3	"$VIM\\_vimrc"
 #endif
+#ifndef VIM_DEFAULTS_FILE
+# define VIM_DEFAULTS_FILE	"$VIMRUNTIME\\defaults.vim"
+#endif
 #ifndef EVIM_FILE
 # define EVIM_FILE		"$VIMRUNTIME\\evim.vim"
 #endif

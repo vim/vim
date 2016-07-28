@@ -526,8 +526,9 @@ RT_ALL =	\
 		runtime/macros/urm/examples \
 		runtime/macros/urm/urm \
 		runtime/macros/urm/urm.vim \
-		runtime/mswin.vim \
+		runtime/defaults.vim \
 		runtime/evim.vim \
+		runtime/mswin.vim \
 		runtime/optwin.vim \
 		runtime/ftplugin.vim \
 		runtime/ftplugof.vim \

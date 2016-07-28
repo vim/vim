@@ -759,6 +759,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    2111,
+/**/
     2110,
 /**/
     2109,
@@ -5349,6 +5351,9 @@ list_version(void)
     version_msg("\"\n");
 # endif
 #endif
+    version_msg(_("       defaults file: \""));
+    version_msg(VIM_DEFAULTS_FILE);
+    version_msg("\"\n");
 #ifdef FEAT_GUI
 # ifdef SYS_MENU_FILE
     version_msg(_("    system menu file: \""));

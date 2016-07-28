@@ -906,6 +906,11 @@
 /* #define USR_VIMRC_FILE3	"$VIM/.vimrc" */
 
 /*
+ * VIM_DEFAULTS_FILE	Name of the defaults.vim script file
+ */
+/* #define VIM_DEFAULTS_FILE	"$VIMRUNTIME/defaults.vim" */
+
+/*
  * EVIM_FILE		Name of the evim.vim script file
  */
 /* #define EVIM_FILE		"$VIMRUNTIME/evim.vim" */

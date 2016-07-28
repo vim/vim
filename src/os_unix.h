@@ -303,6 +303,10 @@ typedef struct dsc$descriptor   DESC;
 # endif
 #endif
 
+#ifndef VIM_DEFAULTS_FILE
+# define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
+#endif
+
 #ifndef EVIM_FILE
 # define EVIM_FILE	"$VIMRUNTIME/evim.vim"
 #endif
