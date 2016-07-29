@@ -7758,6 +7758,7 @@ static AutoPatCmd *active_apc_list = NULL; /* stack of active autocommands */
  */
 static garray_T augroups = {0, 0, sizeof(char_u *), 10, NULL};
 #define AUGROUP_NAME(i) (((char_u **)augroups.ga_data)[i])
+static char_u *deleted_augroup = NULL;
 
 /*
  * The ID of the current group.  Group 0 is the default one.
@@ -7812,7 +7813,7 @@ show_autocmd(AutoPat *ap, event_T event)
 	if (ap->group != AUGROUP_DEFAULT)
 	{
 	    if (AUGROUP_NAME(ap->group) == NULL)
-		msg_puts_attr((char_u *)_("--Deleted--"), hl_attr(HLF_E));
+		msg_puts_attr(deleted_augroup, hl_attr(HLF_E));
 	    else
 		msg_puts_attr(AUGROUP_NAME(ap->group), hl_attr(HLF_T));
 	    msg_puts((char_u *)"  ");
@@ -8009,8 +8010,31 @@ au_del_group(char_u *name)
 	EMSG2(_("E367: No such group: \"%s\""), name);
     else
     {
+	event_T	event;
+	AutoPat	*ap;
+	int	in_use = FALSE;
+
+	for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
+					    event = (event_T)((int)event + 1))
+	{
+	    for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+		if (ap->group == i)
+		{
+		    give_warning((char_u *)_("W19: Deleting augroup that is still in use"), TRUE);
+		    in_use = TRUE;
+		    event = NUM_EVENTS;
+		    break;
+		}
+	}
 	vim_free(AUGROUP_NAME(i));
-	AUGROUP_NAME(i) = NULL;
+	if (in_use)
+	{
+	    if (deleted_augroup == NULL)
+		deleted_augroup = (char_u *)_("--Deleted--");
+	    AUGROUP_NAME(i) = deleted_augroup;
+	}
+	else
+	    AUGROUP_NAME(i) = NULL;
     }
 }
 
@@ -8024,7 +8048,8 @@ au_find_group(char_u *name)
     int	    i;
 
     for (i = 0; i < augroups.ga_len; ++i)
-	if (AUGROUP_NAME(i) != NULL && STRCMP(AUGROUP_NAME(i), name) == 0)
+	if (AUGROUP_NAME(i) != NULL && AUGROUP_NAME(i) != deleted_augroup
+		&& STRCMP(AUGROUP_NAME(i), name) == 0)
 	    return i;
     return AUGROUP_ERROR;
 }
@@ -8081,10 +8106,20 @@ do_augroup(char_u *arg, int del_group)
     void
 free_all_autocmds(void)
 {
+    int		i;
+    char_u	*s;
+
     for (current_augroup = -1; current_augroup < augroups.ga_len;
 							    ++current_augroup)
 	do_autocmd((char_u *)"", TRUE);
-    ga_clear_strings(&augroups);
+
+    for (i = 0; i < augroups.ga_len; ++i)
+    {
+	s = ((char_u **)(augroups.ga_data))[i];
+	if (s != deleted_augroup)
+	    vim_free(s);
+    }
+    ga_clear(&augroups);
 }
 #endif
 
@@ -9830,7 +9865,8 @@ get_augroup_name(expand_T *xp UNUSED, int idx)
 	return (char_u *)"END";
     if (idx >= augroups.ga_len)		/* end of list */
 	return NULL;
-    if (AUGROUP_NAME(idx) == NULL)	/* skip deleted entries */
+    if (AUGROUP_NAME(idx) == NULL || AUGROUP_NAME(idx) == deleted_augroup)
+	/* skip deleted entries */
 	return (char_u *)"";
     return AUGROUP_NAME(idx);		/* return a name */
 }
@@ -9894,7 +9930,8 @@ get_event_name(expand_T *xp UNUSED, int idx)
 {
     if (idx < augroups.ga_len)		/* First list group names, if wanted */
     {
-	if (!include_groups || AUGROUP_NAME(idx) == NULL)
+	if (!include_groups || AUGROUP_NAME(idx) == NULL
+				       || AUGROUP_NAME(idx) == deleted_augroup)
 	    return (char_u *)"";	/* skip deleted entries */
 	return AUGROUP_NAME(idx);	/* return a name */
     }
