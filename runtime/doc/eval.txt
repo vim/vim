@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 24
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,7 +40,7 @@ done, the features in this document are not available.	See |+eval| and
 There are nine types of variables:
 
 Number		A 32 or 64 bit signed number.  |expr-number| *Number*
-		64-bit Number is available only when compiled with the
+		64-bit Numbers are available only when compiled with the
 		|+num64| feature.
 		Examples:  -123  0x10  0177
 
@@ -1219,7 +1219,7 @@ the following ways:
 
 1. The body of the lambda expression is an |expr1| and not a sequence of |Ex|
    commands.
-2. The prefix "a:" is optional for arguments.  E.g.: >
+2. The prefix "a:" should not be used for arguments.  E.g.: >
 	:let F = {arg1, arg2 -> arg1 - arg2}
 	:echo F(5, 2)
 <	3
@@ -1228,6 +1228,18 @@ The arguments are optional.  Example: >
 	:let F = {-> 'error function'}
 	:echo F()
 <	error function
+							*closure*
+Lambda expressions can access outer scope variables and arguments.  This is
+often called a closure.  Example where "i" a and "a:arg" are used in a lambda
+while they exists in the function scope.  They remain valid even after the
+function returns: >
+	:function Foo(arg)
+	:  let i = 3
+	:  return {x -> x + i - a:arg}
+	:endfunction
+	:let Bar = Foo(4)
+	:echo Bar(6)
+<	5
 
 Examples for using a lambda expression with |sort()|, |map()| and |filter()|: >
 	:echo map([1, 2, 3], {idx, val -> val + 1})
@@ -1244,6 +1256,12 @@ The lambda expression is also useful for Channel, Job and timer: >
 	Handler called
 
 Note how execute() is used to execute an Ex command.  That's ugly though.
+
+
+Lambda expressions have internal names like '<lambda>42'.  If you get an error
+for a lambda expression, you can find what it is with the following command: >
+	:function {'<lambda>42'}
+See also: |numbered-function|
 
 ==============================================================================
 3. Internal variable				*internal-variables* *E461*
@@ -7494,7 +7512,8 @@ test_null_string()					*test_null_string()*
 
 test_settime({expr})					*test_settime()*
 		Set the time Vim uses internally.  Currently only used for
-		timestamps in the history, as they are used in viminfo.
+		timestamps in the history, as they are used in viminfo, and
+		for undo.
 		{expr} must evaluate to a number.  When the value is zero the
 		normal behavior is restored.
 

@@ -87,6 +87,7 @@ char_u *get_tv_string_chk(typval_T *varp);
 char_u *get_tv_string_buf_chk(typval_T *varp, char_u *buf);
 dictitem_T *find_var(char_u *name, hashtab_T **htp, int no_autoload);
 dictitem_T *find_var_in_ht(hashtab_T *ht, int htname, char_u *varname, int no_autoload);
+hashtab_T *find_var_ht(char_u *name, char_u **varname);
 char_u *get_var_value(char_u *name);
 void new_script_vars(scid_T id);
 void init_var_dict(dict_T *dict, dictitem_T *dict_var, int scope);

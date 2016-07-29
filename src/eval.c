@@ -237,8 +237,8 @@ static int get_env_tv(char_u **arg, typval_T *rettv, int evaluate);
 
 static int get_env_len(char_u **arg);
 static char_u * make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
+static void check_vars(char_u *name, int len);
 static typval_T *alloc_string_tv(char_u *string);
-static hashtab_T *find_var_ht(char_u *name, char_u **varname);
 static void delete_var(hashtab_T *ht, hashitem_T *hi);
 static void list_one_var(dictitem_T *v, char_u *prefix, int *first);
 static void list_one_var_a(char_u *prefix, char_u *name, int type, char_u *string, int *first);
@@ -4332,6 +4332,9 @@ eval7(
 	    {
 		partial_T *partial;
 
+		if (!evaluate)
+		    check_vars(s, len);
+
 		/* If "s" is the name of a variable of type VAR_FUNC
 		 * use its contents. */
 		s = deref_func_name(s, &len, &partial, !evaluate);
@@ -4363,7 +4366,10 @@ eval7(
 	    else if (evaluate)
 		ret = get_var_tv(s, len, rettv, NULL, TRUE, FALSE);
 	    else
+	    {
+		check_vars(s, len);
 		ret = OK;
+	    }
 	}
 	vim_free(alias);
     }
@@ -5540,6 +5546,10 @@ set_ref_in_item(
 	    }
 	}
     }
+    else if (tv->v_type == VAR_FUNC)
+    {
+	abort = set_ref_in_func(tv->vval.v_string, copyID);
+    }
     else if (tv->v_type == VAR_PARTIAL)
     {
 	partial_T	*pt = tv->vval.v_partial;
@@ -5549,6 +5559,8 @@ set_ref_in_item(
 	 */
 	if (pt != NULL)
 	{
+	    abort = set_ref_in_func(pt->pt_name, copyID);
+
 	    if (pt->pt_dict != NULL)
 	    {
 		typval_T dtv;
@@ -6791,6 +6803,34 @@ get_var_tv(
 }
 
 /*
+ * Check if variable "name[len]" is a local variable or an argument.
+ * If so, "*eval_lavars_used" is set to TRUE.
+ */
+    static void
+check_vars(char_u *name, int len)
+{
+    int		cc;
+    char_u	*varname;
+    hashtab_T	*ht;
+
+    if (eval_lavars_used == NULL)
+	return;
+
+    /* truncate the name, so that we can use strcmp() */
+    cc = name[len];
+    name[len] = NUL;
+
+    ht = find_var_ht(name, &varname);
+    if (ht == get_funccal_local_ht() || ht == get_funccal_args_ht())
+    {
+	if (find_var(name, NULL, TRUE) != NULL)
+	    *eval_lavars_used = TRUE;
+    }
+
+    name[len] = cc;
+}
+
+/*
  * Handle expr[expr], expr[expr:expr] subscript and .name lookup.
  * Also handle function call with Funcref variable: func(expr)
  * Can all be combined: dict.func(expr)[idx]['func'](expr)
@@ -7274,13 +7314,20 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 {
     char_u	*varname;
     hashtab_T	*ht;
+    dictitem_T	*ret = NULL;
 
     ht = find_var_ht(name, &varname);
     if (htp != NULL)
 	*htp = ht;
     if (ht == NULL)
 	return NULL;
-    return find_var_in_ht(ht, *name, varname, no_autoload || htp != NULL);
+    ret = find_var_in_ht(ht, *name, varname, no_autoload || htp != NULL);
+    if (ret != NULL)
+	return ret;
+
+    /* Search in parent scope for lambda */
+    return find_var_in_scoped_ht(name, varname ? &varname : NULL,
+		no_autoload || htp != NULL);
 }
 
 /*
@@ -7341,7 +7388,7 @@ find_var_in_ht(
  * Return NULL if the name is not valid.
  * Set "varname" to the start of name without ':'.
  */
-    static hashtab_T *
+    hashtab_T *
 find_var_ht(char_u *name, char_u **varname)
 {
     hashitem_T	*hi;
@@ -7616,6 +7663,10 @@ set_var(
 	return;
     }
     v = find_var_in_ht(ht, 0, varname, TRUE);
+
+    /* Search in parent scope which is possible to reference from lambda */
+    if (v == NULL)
+	v = find_var_in_scoped_ht(name, varname ? &varname : NULL, TRUE);
 
     if ((tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
 				      && var_check_func_name(name, v == NULL))

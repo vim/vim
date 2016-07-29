@@ -1265,8 +1265,16 @@ set_ref_in_timer(int copyID)
 
     for (timer = first_timer; timer != NULL; timer = timer->tr_next)
     {
-	tv.v_type = VAR_PARTIAL;
-	tv.vval.v_partial = timer->tr_partial;
+	if (timer->tr_partial != NULL)
+	{
+	    tv.v_type = VAR_PARTIAL;
+	    tv.vval.v_partial = timer->tr_partial;
+	}
+	else
+	{
+	    tv.v_type = VAR_FUNC;
+	    tv.vval.v_string = timer->tr_callback;
+	}
 	abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
     }
     return abort;
