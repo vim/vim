@@ -90,6 +90,8 @@ static char *(main_errors[]) =
 
 static char_u *start_dir = NULL;	/* current working dir on startup */
 
+static int has_dash_c_arg = FALSE;
+
     int
 # ifdef VIMDLL
 _export
@@ -1928,6 +1930,7 @@ command_line_scan(mparm_T *parmp)
 
 	    case 'C':		/* "-C"  Compatible */
 		change_compatible(TRUE);
+		has_dash_c_arg = TRUE;
 		break;
 
 	    case 'e':		/* "-e" Ex mode */
@@ -3001,7 +3004,7 @@ source_startup_scripts(mparm_T *parmp)
 #ifdef USR_EXRC_FILE2
 		&& do_source((char_u *)USR_EXRC_FILE2, FALSE, DOSO_NONE) == FAIL
 #endif
-		)
+		&& !has_dash_c_arg)
 	    {
 		/* When no .vimrc file was found: source defaults.vim. */
 		do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE);

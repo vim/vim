@@ -2107,6 +2107,7 @@ test_arglist \
 	test_regexp_utf8 \
 	test_reltime \
 	test_ruby \
+	test_startup \
 	test_searchpos \
 	test_set \
 	test_sort \
