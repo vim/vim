@@ -98,11 +98,11 @@
 # ifndef HAVE_CONFIG_H
 #  define UNIX
 # endif
-# ifndef FEAT_CLIPBOARD
+# if defined(FEAT_SMALL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
-#  if defined(FEAT_SMALL) && !defined(FEAT_MOUSE)
-#   define FEAT_MOUSE
-#  endif
+# endif
+# if defined(FEAT_SMALL) && !defined(FEAT_MOUSE)
+#  define FEAT_MOUSE
 # endif
 #endif
 #if defined(MACOS_X) || defined(MACOS_CLASSIC)
