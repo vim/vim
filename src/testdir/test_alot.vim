@@ -36,6 +36,5 @@ source test_tabline.vim
 source test_tagjump.vim
 source test_timers.vim
 source test_true_false.vim
-source test_undolevels.vim
 source test_unlet.vim
 source test_window_cmd.vim
