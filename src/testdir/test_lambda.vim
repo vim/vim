@@ -1,5 +1,9 @@
 " Test for lambda and closure
 
+function! Test_lambda_feature()
+  call assert_equal(1, has('lambda'))
+endfunction
+
 function! Test_lambda_with_filter()
   let s:x = 2
   call assert_equal([2, 3], filter([1, 2, 3], {i, v -> v >= s:x}))

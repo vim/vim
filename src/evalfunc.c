@@ -5205,6 +5205,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_KEYMAP
 	"keymap",
 #endif
+	"lambda", /* always with FEAT_EVAL, since 7.4.2120 with closure */
 #ifdef FEAT_LANGMAP
 	"langmap",
 #endif
