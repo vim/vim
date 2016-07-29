@@ -2867,7 +2867,6 @@ write_viminfo_barlines(vir_T *virp, FILE *fp_out)
 }
 #endif /* FEAT_VIMINFO */
 
-#if defined(FEAT_CMDHIST) || defined(FEAT_VIMINFO) || defined(PROTO)
 /*
  * Return the current time in seconds.  Calls time(), unless test_settime()
  * was used.
@@ -2881,7 +2880,6 @@ vim_time(void)
     return time(NULL);
 # endif
 }
-#endif
 
 /*
  * Implementation of ":fixdel", also used by get_stty().
