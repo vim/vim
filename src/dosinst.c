@@ -1153,10 +1153,9 @@ install_vimrc(int idx)
 		    fprintf(fd, "set compatible\n");
 		    break;
 	case compat_some_enhancements:
-		    fprintf(fd, "set nocompatible\n");
+		    fprintf(fd, "source $VIMRUNTIME/defaults.vim\n");
 		    break;
 	case compat_all_enhancements:
-		    fprintf(fd, "set nocompatible\n");
 		    fprintf(fd, "source $VIMRUNTIME/vimrc_example.vim\n");
 		    break;
     }
