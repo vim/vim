@@ -1,3 +1,5 @@
+" Test for lambda and closure
+
 function! Test_lambda_with_filter()
   let s:x = 2
   call assert_equal([2, 3], filter([1, 2, 3], {i, v -> v >= s:x}))
@@ -100,7 +102,7 @@ function! Test_lambda_do_not_share_local_variable()
   call assert_equal('no', l:F[1]())
 endfunction
 
-function! Test_lambda_closure()
+function! Test_lambda_closure_counter()
   function! s:foo()
     let x = 0
     return {-> [execute("let x += 1"), x][-1]}
@@ -208,4 +210,36 @@ function! Test_lambda_combination()
   let Z = {f -> {x -> f({y -> x(x)(y)})}({x -> f({y -> x(x)(y)})})}
   let Fact = {f -> {x -> x == 0 ? 1 : x * f(x - 1)}}
   call assert_equal(120, Z(Fact)(5))
+endfunction
+
+function! Test_closure_counter()
+  function! s:foo()
+    let x = 0
+    function! s:bar() closure
+      let x += 1
+      return x
+    endfunction
+    return function('s:bar')
+  endfunction
+
+  let l:F = s:foo()
+  call test_garbagecollect_now()
+  call assert_equal(1, l:F())
+  call assert_equal(2, l:F())
+  call assert_equal(3, l:F())
+  call assert_equal(4, l:F())
+endfunction
+
+function! Test_closure_unlet()
+  function! s:foo()
+    let x = 1
+    function! s:bar() closure
+      unlet x
+    endfunction
+    call s:bar()
+    return l:
+  endfunction
+
+  call assert_false(has_key(s:foo(), 'x'))
+  call test_garbagecollect_now()
 endfunction

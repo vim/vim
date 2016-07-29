@@ -2837,7 +2837,9 @@ do_unlet(char_u *name, int forceit)
 	    }
 	}
 	hi = hash_find(ht, varname);
-	if (!HASHITEM_EMPTY(hi))
+	if (HASHITEM_EMPTY(hi))
+	    hi = find_hi_in_scoped_ht(name, &varname, &ht);
+	if (hi != NULL && !HASHITEM_EMPTY(hi))
 	{
 	    di = HI2DI(hi);
 	    if (var_check_fixed(di->di_flags, name, FALSE)

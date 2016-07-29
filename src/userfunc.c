@@ -59,6 +59,7 @@ struct ufunc
 #define FC_ABORT    1		/* abort function on error */
 #define FC_RANGE    2		/* function accepts range */
 #define FC_DICT	    4		/* Dict function, uses "self" */
+#define FC_CLOSURE  8		/* closure, uses outer scope variables */
 
 /* From user function to hashitem and back. */
 #define UF2HIKEY(fp) ((fp)->uf_name)
@@ -312,7 +313,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (evaluate)
     {
-	int	len;
+	int	len, flags = 0;
 	char_u	*p;
 
 	sprintf((char*)name, "<lambda>%d", ++lambda_no);
@@ -341,6 +342,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	fp->uf_lines = newlines;
 	if (current_funccal != NULL && eval_lavars)
 	{
+	    flags |= FC_CLOSURE;
 	    fp->uf_scoped = current_funccal;
 	    current_funccal->fc_refcount++;
 	    if (ga_grow(&current_funccal->fc_funcs, 1) == FAIL)
@@ -361,7 +363,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    func_do_profile(fp);
 #endif
 	fp->uf_varargs = TRUE;
-	fp->uf_flags = 0;
+	fp->uf_flags = flags;
 	fp->uf_calls = 0;
 	fp->uf_script_ID = current_SID;
 
@@ -1487,6 +1489,8 @@ list_func_head(ufunc_T *fp, int indent)
 	MSG_PUTS(" range");
     if (fp->uf_flags & FC_DICT)
 	MSG_PUTS(" dict");
+    if (fp->uf_flags & FC_CLOSURE)
+	MSG_PUTS(" closure");
     msg_clr_eos();
     if (p_verbose > 0)
 	last_set_msg(fp->uf_script_ID);
@@ -1948,7 +1952,7 @@ ex_function(exarg_T *eap)
     if (get_function_args(&p, ')', &newargs, &varargs, eap->skip) == FAIL)
 	goto errret_2;
 
-    /* find extra arguments "range", "dict" and "abort" */
+    /* find extra arguments "range", "dict", "abort" and "closure" */
     for (;;)
     {
 	p = skipwhite(p);
@@ -1966,6 +1970,11 @@ ex_function(exarg_T *eap)
 	{
 	    flags |= FC_ABORT;
 	    p += 5;
+	}
+	else if (STRNCMP(p, "closure", 7) == 0)
+	{
+	    flags |= FC_CLOSURE;
+	    p += 7;
 	}
 	else
 	    break;
@@ -2299,7 +2308,25 @@ ex_function(exarg_T *eap)
     }
     fp->uf_args = newargs;
     fp->uf_lines = newlines;
-    fp->uf_scoped = NULL;
+    if ((flags & FC_CLOSURE) != 0)
+    {
+	if (current_funccal == NULL)
+	{
+	    emsg_funcname(N_("E932 Closure function should not be at top level: %s"),
+		    name);
+	    goto erret;
+	}
+	fp->uf_scoped = current_funccal;
+	current_funccal->fc_refcount++;
+	if (ga_grow(&current_funccal->fc_funcs, 1) == FAIL)
+	    goto erret;
+	((ufunc_T **)current_funccal->fc_funcs.ga_data)
+				[current_funccal->fc_funcs.ga_len++] = fp;
+	func_ref(current_funccal->func->uf_name);
+    }
+    else
+	fp->uf_scoped = NULL;
+
 #ifdef FEAT_PROFILE
     fp->uf_tml_count = NULL;
     fp->uf_tml_total = NULL;
@@ -3533,6 +3560,42 @@ get_current_funccal_dict(hashtab_T *ht)
 	    && ht == &current_funccal->l_vars.dv_hashtab)
 	return &current_funccal->l_vars;
     return NULL;
+}
+
+/*
+ * Search hashitem in parent scope.
+ */
+    hashitem_T *
+find_hi_in_scoped_ht(char_u *name, char_u **varname, hashtab_T **pht)
+{
+    funccall_T	*old_current_funccal = current_funccal;
+    hashtab_T	*ht;
+    hashitem_T	*hi = NULL;
+
+    if (current_funccal == NULL || current_funccal->func->uf_scoped == NULL)
+      return NULL;
+
+    /* Search in parent scope which is possible to reference from lambda */
+    current_funccal = current_funccal->func->uf_scoped;
+    while (current_funccal)
+    {
+      ht = find_var_ht(name, varname);
+      if (ht != NULL && **varname != NUL)
+      {
+	  hi = hash_find(ht, *varname);
+	  if (!HASHITEM_EMPTY(hi))
+	  {
+	      *pht = ht;
+	      break;
+	  }
+      }
+      if (current_funccal == current_funccal->func->uf_scoped)
+	  break;
+      current_funccal = current_funccal->func->uf_scoped;
+    }
+    current_funccal = old_current_funccal;
+
+    return hi;
 }
 
 /*

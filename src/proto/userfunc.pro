@@ -46,6 +46,7 @@ void *clear_current_funccal(void);
 void restore_current_funccal(void *f);
 void list_func_vars(int *first);
 dict_T *get_current_funccal_dict(hashtab_T *ht);
+hashitem_T *find_hi_in_scoped_ht(char_u *name, char_u **varname, hashtab_T **pht);
 dictitem_T *find_var_in_scoped_ht(char_u *name, char_u **varname, int no_autoload);
 int set_ref_in_previous_funccal(int copyID);
 int set_ref_in_call_stack(int copyID);
