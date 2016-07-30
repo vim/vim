@@ -1954,7 +1954,7 @@ do_one_cmd(
 #endif
 			    continue;
 			}
-			if (!checkforcmd(&ea.cmd, "noswapfile", 6))
+			if (!checkforcmd(&ea.cmd, "noswapfile", 3))
 			    break;
 			cmdmod.noswapfile = TRUE;
 			continue;
