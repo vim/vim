@@ -304,7 +304,7 @@ trunc_string(
 	    if (len + n > room || half == 0)
 		break;
 	    len += n;
-	    i = half;
+	    i = (int)half;
 	}
     }
     else
