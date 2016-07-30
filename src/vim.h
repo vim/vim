@@ -98,12 +98,6 @@
 # ifndef HAVE_CONFIG_H
 #  define UNIX
 # endif
-# if defined(FEAT_SMALL) && !defined(FEAT_CLIPBOARD)
-#  define FEAT_CLIPBOARD
-# endif
-# if defined(FEAT_SMALL) && !defined(FEAT_MOUSE)
-#  define FEAT_MOUSE
-# endif
 #endif
 #if defined(MACOS_X) || defined(MACOS_CLASSIC)
 # define MACOS
@@ -180,7 +174,20 @@
 #endif
 
 
-#include "feature.h"	/* #defines for optionals and features */
+/*
+ * #defines for optionals and features
+ * Also defines FEAT_TINY, FEAT_SMALL, etc. when FEAT_HUGE is defined.
+ */
+#include "feature.h"
+
+#if defined(MACOS_X_UNIX)
+# if defined(FEAT_SMALL) && !defined(FEAT_CLIPBOARD)
+#  define FEAT_CLIPBOARD
+# endif
+# if defined(FEAT_SMALL) && !defined(FEAT_MOUSE)
+#  define FEAT_MOUSE
+# endif
+#endif
 
 /* +x11 is only enabled when it's both available and wanted. */
 #if defined(HAVE_X11) && defined(WANT_X11)
