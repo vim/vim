@@ -1224,6 +1224,9 @@ free_all_mem(void)
     channel_free_all();
     job_free_all();
 # endif
+#ifdef FEAT_TIMERS
+    timer_free_all();
+#endif
 
     free_termoptions();
 

@@ -1279,6 +1279,21 @@ set_ref_in_timer(int copyID)
     }
     return abort;
 }
+
+#  if defined(EXITFREE) || defined(PROTO)
+    void
+timer_free_all()
+{
+    timer_T *timer;
+
+    while (first_timer != NULL)
+    {
+	timer = first_timer;
+	remove_timer(timer);
+	free_timer(timer);
+    }
+}
+#  endif
 # endif
 
 #if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
