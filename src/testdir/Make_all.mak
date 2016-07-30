@@ -43,7 +43,6 @@ SCRIPTS_ALL = \
 	test44.out \
 	test45.out \
 	test46.out \
-	test47.out \
 	test48.out \
 	test51.out \
 	test53.out \
@@ -168,6 +167,7 @@ NEW_TESTS = test_arglist.res \
 	    test_channel.res \
 	    test_cmdline.res \
 	    test_cscope.res \
+	    test_diffmode.res \
 	    test_digraph.res \
 	    test_farsi.res \
 	    test_gn.res \
