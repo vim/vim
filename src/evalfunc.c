@@ -11931,7 +11931,11 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
     }
     else
     {
-	timer->tr_callback = vim_strsave(callback);
+	if (timer->tr_partial == NULL)
+	    timer->tr_callback = vim_strsave(callback);
+	else
+	    /* pointer into the partial */
+	    timer->tr_callback = callback;
 	rettv->vval.v_number = timer->tr_id;
     }
 }
