@@ -4092,7 +4092,9 @@ do_ecmd(
 	    if (u_savecommon(0, curbuf->b_ml.ml_line_count + 1, 0, TRUE)
 								     == FAIL)
 	    {
+#ifdef FEAT_AUTOCMD
 		vim_free(new_name);
+#endif
 		goto theend;
 	    }
 	    u_unchanged(curbuf);
