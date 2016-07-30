@@ -1272,10 +1272,14 @@ channel_set_req_callback(
 
     if (item != NULL)
     {
-	item->cq_callback = vim_strsave(callback);
 	item->cq_partial = partial;
 	if (partial != NULL)
+	{
 	    ++partial->pt_refcount;
+	    item->cq_callback = callback;
+	}
+	else
+	    item->cq_callback = vim_strsave(callback);
 	item->cq_seq_nr = id;
 	item->cq_prev = head->cq_prev;
 	head->cq_prev = item;
@@ -4465,10 +4469,14 @@ job_set_options(job_T *job, jobopt_T *opt)
 	}
 	else
 	{
-	    job->jv_exit_cb = vim_strsave(opt->jo_exit_cb);
 	    job->jv_exit_partial = opt->jo_exit_partial;
 	    if (job->jv_exit_partial != NULL)
+	    {
+		job->jv_exit_cb = opt->jo_exit_cb;
 		++job->jv_exit_partial->pt_refcount;
+	    }
+	    else
+		job->jv_exit_cb = vim_strsave(opt->jo_exit_cb);
 	}
     }
 }
