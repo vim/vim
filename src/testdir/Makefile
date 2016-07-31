@@ -80,14 +80,14 @@ test1.out: test1.in
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
 	-$(RUN_VIM) $*.in
 
-	# For flaky tests retry one time.
-	@/bin/sh -c "if test -f test.out -a $* = test61; then \
-		  if diff test.out $*.ok; \
-		  then echo flaky test ok first time; \
-		  else rm -rf $*.failed $(RM_ON_RUN); \
-			$(RUN_VIM) $*.in; \
-		  fi \
-		fi"
+	# For flaky tests retry one time.  No tests at the moment.
+	#@/bin/sh -c "if test -f test.out -a $* = test61; then \
+	#	  if diff test.out $*.ok; \
+	#	  then echo flaky test ok first time; \
+	#	  else rm -rf $*.failed $(RM_ON_RUN); \
+	#		$(RUN_VIM) $*.in; \
+	#	  fi \
+	#	fi"
 
 	# Check if the test.out file matches test.ok.
 	@/bin/sh -c "if test -f test.out; then \

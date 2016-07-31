@@ -49,7 +49,7 @@ Building with Visual Studio (VS 98, VS .NET, VS .NET 2003, VS 2005, VS 2008,
 VS2010, VS2012, VS2013 and VS2015) is straightforward. (These instructions
 should also work for VS 4 and VS 5.)
 
-Using VS C++ 2008 Express is recommended, the binaries build with that run on
+Using VS C++ 2008 Express is recommended, the binaries built with that run on
 nearly all platforms.  Binaries from later versions may not run on Windows 95
 or XP.
 
