@@ -150,6 +150,7 @@ static int
 # endif
 	prof_self_cmp(const void *s1, const void *s2);
 #endif
+static void funccal_unref(funccall_T *fc, ufunc_T *fp);
 
     void
 func_init()
@@ -258,6 +259,23 @@ err_ret:
 }
 
 /*
+ * Register function "fp" as using "current_funccal" as its scope.
+ */
+    static int
+register_closure(ufunc_T *fp)
+{
+    funccal_unref(fp->uf_scoped, NULL);
+    fp->uf_scoped = current_funccal;
+    current_funccal->fc_refcount++;
+    if (ga_grow(&current_funccal->fc_funcs, 1) == FAIL)
+	return FAIL;
+    ((ufunc_T **)current_funccal->fc_funcs.ga_data)
+	[current_funccal->fc_funcs.ga_len++] = fp;
+    func_ref(current_funccal->func->uf_name);
+    return OK;
+}
+
+/*
  * Parse a lambda expression and get a Funcref from "*arg".
  * Return OK or FAIL.  Returns NOTDONE for dict or {expr}.
  */
@@ -318,7 +336,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
 	sprintf((char*)name, "<lambda>%d", ++lambda_no);
 
-	fp = (ufunc_T *)alloc((unsigned)(sizeof(ufunc_T) + STRLEN(name)));
+	fp = (ufunc_T *)alloc_clear((unsigned)(sizeof(ufunc_T) + STRLEN(name)));
 	if (fp == NULL)
 	    goto errret;
 
@@ -343,13 +361,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	if (current_funccal != NULL && eval_lavars)
 	{
 	    flags |= FC_CLOSURE;
-	    fp->uf_scoped = current_funccal;
-	    current_funccal->fc_refcount++;
-	    if (ga_grow(&current_funccal->fc_funcs, 1) == FAIL)
+	    if (register_closure(fp) == FAIL)
 		goto errret;
-	    ((ufunc_T **)current_funccal->fc_funcs.ga_data)
-				    [current_funccal->fc_funcs.ga_len++] = fp;
-	    func_ref(current_funccal->func->uf_name);
 	}
 	else
 	    fp->uf_scoped = NULL;
@@ -660,8 +673,15 @@ free_funccal(
 	ufunc_T	    *fp = ((ufunc_T **)(fc->fc_funcs.ga_data))[i];
 
 	if (fp != NULL)
-	    fp->uf_scoped = NULL;
+	{
+	    /* Function may have been redefined and point to another
+	     * funccall_T, don't clear it then. */
+	    if (fp->uf_scoped == fc)
+		fp->uf_scoped = NULL;
+	    func_unref(fc->func->uf_name);
+	}
     }
+    ga_clear(&fc->fc_funcs);
 
     /* The a: variables typevals may not have been allocated, only free the
      * allocated variables. */
@@ -674,15 +694,6 @@ free_funccal(
     if (free_val)
 	for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
 	    clear_tv(&li->li_tv);
-
-    for (i = 0; i < fc->fc_funcs.ga_len; ++i)
-    {
-	ufunc_T	    *fp = ((ufunc_T **)(fc->fc_funcs.ga_data))[i];
-
-	if (fp != NULL)
-	    func_unref(fc->func->uf_name);
-    }
-    ga_clear(&fc->fc_funcs);
 
     func_unref(fc->func->uf_name);
     vim_free(fc);
@@ -1046,8 +1057,8 @@ call_user_func(
     current_funccal = fc->caller;
     --depth;
 
-    /* If the a:000 list and the l: and a: dicts are not referenced we can
-     * free the funccall_T and what's in it. */
+    /* If the a:000 list and the l: and a: dicts are not referenced and there
+     * is no closure using it, we can free the funccall_T and what's in it. */
     if (fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
 	    && fc->l_vars.dv_refcount == DO_NOT_FREE_CNT
 	    && fc->l_avars.dv_refcount == DO_NOT_FREE_CNT
@@ -1061,8 +1072,8 @@ call_user_func(
 	listitem_T	*li;
 	int		todo;
 
-	/* "fc" is still in use.  This can happen when returning "a:000" or
-	 * assigning "l:" to a global variable.
+	/* "fc" is still in use.  This can happen when returning "a:000",
+	 * assigning "l:" to a global variable or defining a closure.
 	 * Link "fc" in the list for garbage collection later. */
 	fc->caller = previous_funccal;
 	previous_funccal = fc;
@@ -1121,13 +1132,11 @@ funccal_unref(funccall_T *fc, ufunc_T *fp)
 	func_unref(fc->func->uf_name);
 
 	if (fp != NULL)
-	{
 	    for (i = 0; i < fc->fc_funcs.ga_len; ++i)
 	    {
 		if (((ufunc_T **)(fc->fc_funcs.ga_data))[i] == fp)
 		    ((ufunc_T **)(fc->fc_funcs.ga_data))[i] = NULL;
 	    }
-	}
     }
 }
 
@@ -1976,6 +1985,12 @@ ex_function(exarg_T *eap)
 	{
 	    flags |= FC_CLOSURE;
 	    p += 7;
+	    if (current_funccal == NULL)
+	    {
+		emsg_funcname(N_("E932 Closure function should not be at top level: %s"),
+			name == NULL ? (char_u *)"" : name);
+		goto erret;
+	    }
 	}
 	else
 	    break;
@@ -2265,7 +2280,7 @@ ex_function(exarg_T *eap)
 	    }
 	}
 
-	fp = (ufunc_T *)alloc((unsigned)(sizeof(ufunc_T) + STRLEN(name)));
+	fp = (ufunc_T *)alloc_clear((unsigned)(sizeof(ufunc_T) + STRLEN(name)));
 	if (fp == NULL)
 	    goto erret;
 
@@ -2311,19 +2326,9 @@ ex_function(exarg_T *eap)
     fp->uf_lines = newlines;
     if ((flags & FC_CLOSURE) != 0)
     {
-	if (current_funccal == NULL)
-	{
-	    emsg_funcname(N_("E932 Closure function should not be at top level: %s"),
-		    name);
+	++fp->uf_refcount;
+	if (register_closure(fp) == FAIL)
 	    goto erret;
-	}
-	fp->uf_scoped = current_funccal;
-	current_funccal->fc_refcount++;
-	if (ga_grow(&current_funccal->fc_funcs, 1) == FAIL)
-	    goto erret;
-	((ufunc_T **)current_funccal->fc_funcs.ga_data)
-				[current_funccal->fc_funcs.ga_len++] = fp;
-	func_ref(current_funccal->func->uf_name);
     }
     else
 	fp->uf_scoped = NULL;
@@ -3582,21 +3587,21 @@ find_hi_in_scoped_ht(char_u *name, char_u **varname, hashtab_T **pht)
 
     /* Search in parent scope which is possible to reference from lambda */
     current_funccal = current_funccal->func->uf_scoped;
-    while (current_funccal)
+    while (current_funccal != NULL)
     {
-      ht = find_var_ht(name, varname);
-      if (ht != NULL && **varname != NUL)
-      {
-	  hi = hash_find(ht, *varname);
-	  if (!HASHITEM_EMPTY(hi))
-	  {
-	      *pht = ht;
-	      break;
-	  }
-      }
-      if (current_funccal == current_funccal->func->uf_scoped)
-	  break;
-      current_funccal = current_funccal->func->uf_scoped;
+	ht = find_var_ht(name, varname);
+	if (ht != NULL && **varname != NUL)
+	{
+	    hi = hash_find(ht, *varname);
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		*pht = ht;
+		break;
+	    }
+	}
+	if (current_funccal == current_funccal->func->uf_scoped)
+	    break;
+	current_funccal = current_funccal->func->uf_scoped;
     }
     current_funccal = old_current_funccal;
 

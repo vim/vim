@@ -247,3 +247,27 @@ function! Test_closure_unlet()
   call assert_false(has_key(s:foo(), 'x'))
   call test_garbagecollect_now()
 endfunction
+
+function! LambdaFoo()
+  let x = 0
+  function! LambdaBar() closure
+    let x += 1
+    return x
+  endfunction
+  return function('LambdaBar')
+endfunction
+
+func Test_closure_refcount()
+  let g:Count = LambdaFoo()
+  call test_garbagecollect_now()
+  call assert_equal(1, g:Count())
+  let g:Count2 = LambdaFoo()
+  call test_garbagecollect_now()
+  call assert_equal(1, g:Count2())
+  call assert_equal(2, g:Count())
+  call assert_equal(3, g:Count2())
+
+  " This causes memory access errors.
+  " delfunc LambdaFoo
+  " delfunc LambdaBar
+endfunc
