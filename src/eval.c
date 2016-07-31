@@ -7813,7 +7813,7 @@ var_check_func_name(
     /* Don't allow hiding a function.  When "v" is not NULL we might be
      * assigning another function to the same var, the type is checked
      * below. */
-    if (new_var && function_exists(name))
+    if (new_var && function_exists(name, FALSE))
     {
 	EMSG2(_("E705: Variable name conflicts with existing function: %s"),
 								    name);

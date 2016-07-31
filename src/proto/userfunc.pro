@@ -9,7 +9,7 @@ int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typva
 void ex_function(exarg_T *eap);
 int eval_fname_script(char_u *p);
 int translated_function_exists(char_u *name);
-int function_exists(char_u *name);
+int function_exists(char_u *name, int no_deref);
 char_u *get_expanded_name(char_u *name, int check);
 void func_dump_profile(FILE *fd);
 void prof_child_enter(proftime_T *tm);

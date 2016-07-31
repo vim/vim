@@ -295,7 +295,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     if (ret == FAIL || **arg != '>')
 	goto errret;
 
-    /* Set up dictionaries for checking local variables and arguments. */
+    /* Set up a flag for checking local variables and arguments. */
     if (evaluate)
 	eval_lavars_used = &eval_lavars;
 
@@ -1504,6 +1504,7 @@ list_func_head(ufunc_T *fp, int indent)
  * TFN_INT:	    internal function name OK
  * TFN_QUIET:	    be quiet
  * TFN_NO_AUTOLOAD: do not use script autoloading
+ * TFN_NO_DEREF:    do not dereference a Funcref
  * Advances "pp" to just after the function name (if no error).
  */
     static char_u *
@@ -1618,7 +1619,7 @@ trans_function_name(
 	if (name == lv.ll_exp_name)
 	    name = NULL;
     }
-    else
+    else if (!(flags & TFN_NO_DEREF))
     {
 	len = (int)(end - *pp);
 	name = deref_func_name(*pp, &len, partial, flags & TFN_NO_AUTOLOAD);
@@ -1690,7 +1691,7 @@ trans_function_name(
 								       start);
 	goto theend;
     }
-    if (!skip && !(flags & TFN_QUIET))
+    if (!skip && !(flags & TFN_QUIET) && !(flags & TFN_NO_DEREF))
     {
 	char_u *cp = vim_strchr(lv.ll_name, ':');
 
@@ -2381,16 +2382,20 @@ translated_function_exists(char_u *name)
 
 /*
  * Return TRUE if a function "name" exists.
+ * If "no_defef" is TRUE, do not dereference a Funcref.
  */
     int
-function_exists(char_u *name)
+function_exists(char_u *name, int no_deref)
 {
     char_u  *nm = name;
     char_u  *p;
     int	    n = FALSE;
+    int	    flag;
 
-    p = trans_function_name(&nm, FALSE, TFN_INT|TFN_QUIET|TFN_NO_AUTOLOAD,
-			    NULL, NULL);
+    flag = TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD;
+    if (no_deref)
+	flag |= TFN_NO_DEREF;
+    p = trans_function_name(&nm, FALSE, flag, NULL, NULL);
     nm = skipwhite(nm);
 
     /* Only accept "funcname", "funcname ", "funcname (..." and

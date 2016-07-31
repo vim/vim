@@ -2458,6 +2458,7 @@ int vim_main2(int argc, char **argv);
 #define TFN_INT		1	/* internal function name OK */
 #define TFN_QUIET	2	/* no error messages */
 #define TFN_NO_AUTOLOAD	4	/* do not use script autoloading */
+#define TFN_NO_DEREF	8	/* do not dereference a Funcref */
 
 /* Values for get_lval() flags argument: */
 #define GLV_QUIET	TFN_QUIET	/* no error messages */

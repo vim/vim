@@ -2845,7 +2845,7 @@ f_exists(typval_T *argvars, typval_T *rettv)
     }
     else if (*p == '*')			/* internal or user defined function */
     {
-	n = function_exists(p + 1);
+	n = function_exists(p + 1, FALSE);
     }
     else if (*p == ':')
     {
@@ -3577,7 +3577,7 @@ f_function(typval_T *argvars, typval_T *rettv)
 	EMSG2(_(e_invarg2), s);
     /* Don't check an autoload name for existence here. */
     else if (use_string && vim_strchr(s, AUTOLOAD_CHAR) == NULL
-						       && !function_exists(s))
+						&& !function_exists(s, TRUE))
 	EMSG2(_("E700: Unknown function: %s"), s);
     else
     {
