@@ -54,6 +54,7 @@ hashitem_T *find_hi_in_scoped_ht(char_u *name, hashtab_T **pht);
 dictitem_T *find_var_in_scoped_ht(char_u *name, int no_autoload);
 int set_ref_in_previous_funccal(int copyID);
 int set_ref_in_call_stack(int copyID);
+int set_ref_in_functions(int copyID);
 int set_ref_in_func_args(int copyID);
 int set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID);
 /* vim: set ft=c : */

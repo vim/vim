@@ -270,3 +270,17 @@ func Test_closure_refcount()
   delfunc LambdaFoo
   delfunc LambdaBar
 endfunc
+
+func Test_named_function_closure()
+  func! Afoo()
+    let x = 14
+    func! s:Abar() closure
+      return x
+    endfunc
+    call assert_equal(14, s:Abar())
+  endfunc
+  call Afoo()
+  call assert_equal(14, s:Abar())
+  call test_garbagecollect_now()
+  call assert_equal(14, s:Abar())
+endfunc

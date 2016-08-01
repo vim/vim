@@ -5304,6 +5304,9 @@ garbage_collect(int testing)
     /* function-local variables */
     abort = abort || set_ref_in_call_stack(copyID);
 
+    /* named functions (matters for closures) */
+    abort = abort || set_ref_in_functions(copyID);
+
     /* function call arguments, if v:testing is set. */
     abort = abort || set_ref_in_func_args(copyID);
 

@@ -65,7 +65,7 @@ static int
 # endif
 	prof_self_cmp(const void *s1, const void *s2);
 #endif
-static void funccal_unref(funccall_T *fc, ufunc_T *fp);
+static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 
     void
 func_init()
@@ -182,10 +182,9 @@ register_closure(ufunc_T *fp)
     if (fp->uf_scoped == current_funccal)
 	/* no change */
 	return OK;
-    funccal_unref(fp->uf_scoped, fp);
+    funccal_unref(fp->uf_scoped, fp, FALSE);
     fp->uf_scoped = current_funccal;
     current_funccal->fc_refcount++;
-    func_ptr_ref(current_funccal->func);
 
     if (ga_grow(&current_funccal->fc_funcs, 1) == FAIL)
 	return FAIL;
@@ -603,14 +602,12 @@ free_funccal(
     {
 	ufunc_T	    *fp = ((ufunc_T **)(fc->fc_funcs.ga_data))[i];
 
-	if (fp != NULL)
-	{
-	    /* Function may have been redefined and point to another
-	     * funccall_T, don't clear it then. */
-	    if (fp->uf_scoped == fc)
-		fp->uf_scoped = NULL;
-	    func_ptr_unref(fc->func);
-	}
+	/* When garbage collecting a funccall_T may be freed before the
+	 * function that references it, clear its uf_scoped field.
+	 * The function may have been redefined and point to another
+	 * funccall_T, don't clear it then. */
+	if (fp != NULL && fp->uf_scoped == fc)
+	    fp->uf_scoped = NULL;
     }
     ga_clear(&fc->fc_funcs);
 
@@ -1030,9 +1027,10 @@ call_user_func(
 /*
  * Unreference "fc": decrement the reference count and free it when it
  * becomes zero.  "fp" is detached from "fc".
+ * When "force" is TRUE we are exiting.
  */
     static void
-funccal_unref(funccall_T *fc, ufunc_T *fp)
+funccal_unref(funccall_T *fc, ufunc_T *fp, int force)
 {
     funccall_T	**pfc;
     int		i;
@@ -1040,10 +1038,10 @@ funccal_unref(funccall_T *fc, ufunc_T *fp)
     if (fc == NULL)
 	return;
 
-    if (--fc->fc_refcount <= 0
-		&& fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
+    if (--fc->fc_refcount <= 0 && (force || (
+		fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
 		&& fc->l_vars.dv_refcount == DO_NOT_FREE_CNT
-		&& fc->l_avars.dv_refcount == DO_NOT_FREE_CNT)
+		&& fc->l_avars.dv_refcount == DO_NOT_FREE_CNT)))
 	for (pfc = &previous_funccal; *pfc != NULL; pfc = &(*pfc)->caller)
 	{
 	    if (fc == *pfc)
@@ -1054,13 +1052,8 @@ funccal_unref(funccall_T *fc, ufunc_T *fp)
 	    }
 	}
     for (i = 0; i < fc->fc_funcs.ga_len; ++i)
-    {
 	if (((ufunc_T **)(fc->fc_funcs.ga_data))[i] == fp)
-	{
-	    func_ptr_unref(fc->func);
 	    ((ufunc_T **)(fc->fc_funcs.ga_data))[i] = NULL;
-	}
-    }
 }
 
 /*
@@ -1083,9 +1076,10 @@ func_remove(ufunc_T *fp)
 
 /*
  * Free a function and remove it from the list of functions.
+ * When "force" is TRUE we are exiting.
  */
     static void
-func_free(ufunc_T *fp)
+func_free(ufunc_T *fp, int force)
 {
     /* clear this function */
     ga_clear_strings(&(fp->uf_args));
@@ -1100,7 +1094,7 @@ func_free(ufunc_T *fp)
     if ((fp->uf_flags & (FC_DELETED | FC_REMOVED)) == 0)
 	func_remove(fp);
 
-    funccal_unref(fp->uf_scoped, fp);
+    funccal_unref(fp->uf_scoped, fp, force);
 
     vim_free(fp);
 }
@@ -1117,7 +1111,7 @@ free_all_functions(void)
 	for (hi = func_hashtab.ht_array; ; ++hi)
 	    if (!HASHITEM_EMPTY(hi))
 	    {
-		func_free(HI2UF(hi));
+		func_free(HI2UF(hi), TRUE);
 		break;
 	    }
     hash_clear(&func_hashtab);
@@ -1331,7 +1325,7 @@ call_func(
 		    if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
 			/* Function was unreferenced while being used, free it
 			 * now. */
-			func_free(fp);
+			func_free(fp, FALSE);
 		    if (did_save_redo)
 			restoreRedobuff();
 		    restore_search_patterns();
@@ -1675,6 +1669,20 @@ theend:
 }
 
 /*
+ * There are two kinds of function names:
+ * 1. ordinary names, function defined with :function
+ * 2. numbered functions and lambdas
+ * For the first we only count the name stored in func_hashtab as a reference,
+ * using function() does not count as a reference, because the function is
+ * looked up by name.
+ */
+    static int
+func_name_refcount(char_u *name)
+{
+    return isdigit(*name) || *name == '<';
+}
+
+/*
  * ":function"
  */
     void
@@ -1721,7 +1729,7 @@ ex_function(exarg_T *eap)
 		{
 		    --todo;
 		    fp = HI2UF(hi);
-		    if (!isdigit(*fp->uf_name))
+		    if (!func_name_refcount(fp->uf_name))
 			list_func_head(fp, FALSE);
 		}
 	    }
@@ -2656,20 +2664,6 @@ get_user_func_name(expand_T *xp, int idx)
 #endif /* FEAT_CMDL_COMPL */
 
 /*
- * There are two kinds of function names:
- * 1. ordinary names, function defined with :function
- * 2. numbered functions and lambdas
- * For the first we only count the name stored in func_hashtab as a reference,
- * using function() does not count as a reference, because the function is
- * looked up by name.
- */
-    static int
-func_name_refcount(char_u *name)
-{
-    return isdigit(*name) || *name == '<';
-}
-
-/*
  * ":delfunction {name}"
  */
     void
@@ -2738,7 +2732,7 @@ ex_delfunction(exarg_T *eap)
 		fp->uf_flags |= FC_DELETED;
 	    }
 	    else
-		func_free(fp);
+		func_free(fp, FALSE);
 	}
     }
 }
@@ -2767,7 +2761,7 @@ func_unref(char_u *name)
 	/* Only delete it when it's not being used.  Otherwise it's done
 	 * when "uf_calls" becomes zero. */
 	if (fp->uf_calls == 0)
-	    func_free(fp);
+	    func_free(fp, FALSE);
     }
 }
 
@@ -2783,7 +2777,7 @@ func_ptr_unref(ufunc_T *fp)
 	/* Only delete it when it's not being used.  Otherwise it's done
 	 * when "uf_calls" becomes zero. */
 	if (fp->uf_calls == 0)
-	    func_free(fp);
+	    func_free(fp, FALSE);
     }
 }
 
@@ -3676,6 +3670,21 @@ set_ref_in_previous_funccal(int copyID)
     return abort;
 }
 
+    static int
+set_ref_in_funccal(funccall_T *fc, int copyID)
+{
+    int abort = FALSE;
+
+    if (fc->fc_copyID != copyID)
+    {
+	fc->fc_copyID = copyID;
+	abort = abort || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL);
+	abort = abort || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL);
+	abort = abort || set_ref_in_func(NULL, fc->func, copyID);
+    }
+    return abort;
+}
+
 /*
  * Set "copyID" in all local vars and arguments in the call stack.
  */
@@ -3686,10 +3695,31 @@ set_ref_in_call_stack(int copyID)
     funccall_T	*fc;
 
     for (fc = current_funccal; fc != NULL; fc = fc->caller)
+	abort = abort || set_ref_in_funccal(fc, copyID);
+    return abort;
+}
+
+/*
+ * Set "copyID" in all functions available by name.
+ */
+    int
+set_ref_in_functions(int copyID)
+{
+    int		todo;
+    hashitem_T	*hi = NULL;
+    int		abort = FALSE;
+    ufunc_T	*fp;
+
+    todo = (int)func_hashtab.ht_used;
+    for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
     {
-	fc->fc_copyID = copyID;
-	abort = abort || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL);
-	abort = abort || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL);
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    fp = HI2UF(hi);
+	    if (!func_name_refcount(fp->uf_name))
+		abort = abort || set_ref_in_func(NULL, fp, copyID);
+	}
     }
     return abort;
 }
@@ -3711,9 +3741,6 @@ set_ref_in_func_args(int copyID)
 
 /*
  * Mark all lists and dicts referenced through function "name" with "copyID".
- * "list_stack" is used to add lists to be marked.  Can be NULL.
- * "ht_stack" is used to add hashtabs to be marked.  Can be NULL.
- *
  * Returns TRUE if setting references failed somehow.
  */
     int
@@ -3725,6 +3752,7 @@ set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID)
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
     char_u	*fname;
+    int		abort = FALSE;
 
     if (name == NULL && fp_in == NULL)
 	return FALSE;
@@ -3737,17 +3765,10 @@ set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID)
     if (fp != NULL)
     {
 	for (fc = fp->uf_scoped; fc != NULL; fc = fc->func->uf_scoped)
-	{
-	    if (fc->fc_copyID != copyID)
-	    {
-		fc->fc_copyID = copyID;
-		set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL);
-		set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL);
-	    }
-	}
+	    abort = abort || set_ref_in_funccal(fc, copyID);
     }
     vim_free(tofree);
-    return FALSE;
+    return abort;
 }
 
 #endif /* FEAT_EVAL */
