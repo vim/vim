@@ -40,6 +40,7 @@ char_u *get_user_var_name(expand_T *xp, int idx);
 int eval0(char_u *arg, typval_T *rettv, char_u **nextcmd, int evaluate);
 int eval1(char_u **arg, typval_T *rettv, int evaluate);
 int get_option_tv(char_u **arg, typval_T *rettv, int evaluate);
+char_u *partial_name(partial_T *pt);
 void partial_unref(partial_T *pt);
 int tv_equal(typval_T *tv1, typval_T *tv2, int ic, int recursive);
 int get_copyID(void);

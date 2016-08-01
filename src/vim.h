@@ -2475,6 +2475,7 @@ int vim_main2(int argc, char **argv);
 #define ERROR_DICT	4
 #define ERROR_NONE	5
 #define ERROR_OTHER	6
+#define ERROR_DELETED	7
 
 /* flags for find_name_end() */
 #define FNE_INCL_BR	1	/* include [] in name */

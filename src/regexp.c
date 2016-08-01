@@ -7499,7 +7499,7 @@ vim_regsub_both(
 		    {
 			partial_T   *partial = expr->vval.v_partial;
 
-			s = partial->pt_name;
+			s = partial_name(partial);
 			call_func(s, (int)STRLEN(s), &rettv,
 					1, argv, fill_submatch_list,
 					  0L, 0L, &dummy, TRUE, partial, NULL);

@@ -1217,16 +1217,20 @@ free_all_mem(void)
 	if (delete_first_msg() == FAIL)
 	    break;
 
-# ifdef FEAT_EVAL
-    eval_clear();
-# endif
 # ifdef FEAT_JOB_CHANNEL
     channel_free_all();
-    job_free_all();
 # endif
 #ifdef FEAT_TIMERS
     timer_free_all();
 #endif
+# ifdef FEAT_EVAL
+    /* must be after channel_free_all() with unrefs partials */
+    eval_clear();
+# endif
+# ifdef FEAT_JOB_CHANNEL
+    /* must be after eval_clear() with unrefs jobs */
+    job_free_all();
+# endif
 
     free_termoptions();
 

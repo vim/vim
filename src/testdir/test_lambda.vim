@@ -152,7 +152,7 @@ function! Test_lambda_delfunc()
   endfunction
 
   let l:F = s:gen()
-  call assert_fails(':call l:F()', 'E117:')
+  call assert_fails(':call l:F()', 'E933:')
 endfunction
 
 function! Test_lambda_scope()

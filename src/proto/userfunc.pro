@@ -3,9 +3,11 @@ void func_init(void);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, partial_T *partial, dict_T *selfdict);
+ufunc_T *find_func(char_u *name);
 void free_all_functions(void);
 int func_call(char_u *name, typval_T *args, partial_T *partial, dict_T *selfdict, typval_T *rettv);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, int (*argv_func)(int, typval_T *, int), linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, partial_T *partial, dict_T *selfdict_in);
+char_u *trans_function_name(char_u **pp, int skip, int flags, funcdict_T *fdp, partial_T **partial);
 void ex_function(exarg_T *eap);
 int eval_fname_script(char_u *p);
 int translated_function_exists(char_u *name);
@@ -17,7 +19,9 @@ void prof_child_exit(proftime_T *tm);
 char_u *get_user_func_name(expand_T *xp, int idx);
 void ex_delfunction(exarg_T *eap);
 void func_unref(char_u *name);
+void func_ptr_unref(ufunc_T *fp);
 void func_ref(char_u *name);
+void func_ptr_ref(ufunc_T *fp);
 void ex_return(exarg_T *eap);
 void ex_call(exarg_T *eap);
 int do_return(exarg_T *eap, int reanimate, int is_cmd, void *rettv);
@@ -51,5 +55,5 @@ dictitem_T *find_var_in_scoped_ht(char_u *name, char_u **varname, int no_autoloa
 int set_ref_in_previous_funccal(int copyID);
 int set_ref_in_call_stack(int copyID);
 int set_ref_in_func_args(int copyID);
-int set_ref_in_func(char_u *name, int copyID);
+int set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID);
 /* vim: set ft=c : */

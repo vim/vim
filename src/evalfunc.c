@@ -148,6 +148,7 @@ static void f_foldlevel(typval_T *argvars, typval_T *rettv);
 static void f_foldtext(typval_T *argvars, typval_T *rettv);
 static void f_foldtextresult(typval_T *argvars, typval_T *rettv);
 static void f_foreground(typval_T *argvars, typval_T *rettv);
+static void f_funcref(typval_T *argvars, typval_T *rettv);
 static void f_function(typval_T *argvars, typval_T *rettv);
 static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
@@ -563,6 +564,7 @@ static struct fst
     {"foldtext",	0, 0, f_foldtext},
     {"foldtextresult",	1, 1, f_foldtextresult},
     {"foreground",	0, 0, f_foreground},
+    {"funcref",		1, 3, f_funcref},
     {"function",	1, 3, f_function},
     {"garbagecollect",	0, 1, f_garbagecollect},
     {"get",		2, 3, f_get},
@@ -1723,7 +1725,7 @@ f_call(typval_T *argvars, typval_T *rettv)
     else if (argvars[0].v_type == VAR_PARTIAL)
     {
 	partial = argvars[0].vval.v_partial;
-	func = partial->pt_name;
+	func = partial_name(partial);
     }
     else
 	func = get_tv_string(&argvars[0]);
@@ -3543,16 +3545,14 @@ f_foreground(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #endif
 }
 
-/*
- * "function()" function
- */
     static void
-f_function(typval_T *argvars, typval_T *rettv)
+common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 {
     char_u	*s;
     char_u	*name;
     int		use_string = FALSE;
     partial_T   *arg_pt = NULL;
+    char_u	*trans_name = NULL;
 
     if (argvars[0].v_type == VAR_FUNC)
     {
@@ -3564,7 +3564,7 @@ f_function(typval_T *argvars, typval_T *rettv)
     {
 	/* function(dict.MyFunc, [arg]) */
 	arg_pt = argvars[0].vval.v_partial;
-	s = arg_pt->pt_name;
+	s = partial_name(arg_pt);
     }
     else
     {
@@ -3573,11 +3573,22 @@ f_function(typval_T *argvars, typval_T *rettv)
 	use_string = TRUE;
     }
 
+    if (((use_string && vim_strchr(s, AUTOLOAD_CHAR) == NULL)
+				   || is_funcref))
+    {
+	name = s;
+	trans_name = trans_function_name(&name, FALSE,
+	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
+	if (*name != NUL)
+	    s = NULL;
+    }
+
     if (s == NULL || *s == NUL || (use_string && VIM_ISDIGIT(*s)))
 	EMSG2(_(e_invarg2), s);
     /* Don't check an autoload name for existence here. */
-    else if (use_string && vim_strchr(s, AUTOLOAD_CHAR) == NULL
-						&& !function_exists(s, TRUE))
+    else if (trans_name != NULL && (is_funcref
+				? find_func(trans_name) == NULL
+				: !translated_function_exists(trans_name)))
 	EMSG2(_("E700: Unknown function: %s"), s);
     else
     {
@@ -3625,7 +3636,7 @@ f_function(typval_T *argvars, typval_T *rettv)
 		{
 		    EMSG(_("E922: expected a dict"));
 		    vim_free(name);
-		    return;
+		    goto theend;
 		}
 		if (argvars[dict_idx].vval.v_dict == NULL)
 		    dict_idx = 0;
@@ -3636,14 +3647,14 @@ f_function(typval_T *argvars, typval_T *rettv)
 		{
 		    EMSG(_("E923: Second argument of function() must be a list or a dict"));
 		    vim_free(name);
-		    return;
+		    goto theend;
 		}
 		list = argvars[arg_idx].vval.v_list;
 		if (list == NULL || list->lv_len == 0)
 		    arg_idx = 0;
 	    }
 	}
-	if (dict_idx > 0 || arg_idx > 0 || arg_pt != NULL)
+	if (dict_idx > 0 || arg_idx > 0 || arg_pt != NULL || is_funcref)
 	{
 	    partial_T	*pt = (partial_T *)alloc_clear(sizeof(partial_T));
 
@@ -3670,17 +3681,14 @@ f_function(typval_T *argvars, typval_T *rettv)
 		    {
 			vim_free(pt);
 			vim_free(name);
-			return;
+			goto theend;
 		    }
-		    else
-		    {
-			for (i = 0; i < arg_len; i++)
-			    copy_tv(&arg_pt->pt_argv[i], &pt->pt_argv[i]);
-			if (lv_len > 0)
-			    for (li = list->lv_first; li != NULL;
-							     li = li->li_next)
-				copy_tv(&li->li_tv, &pt->pt_argv[i++]);
-		    }
+		    for (i = 0; i < arg_len; i++)
+			copy_tv(&arg_pt->pt_argv[i], &pt->pt_argv[i]);
+		    if (lv_len > 0)
+			for (li = list->lv_first; li != NULL;
+							 li = li->li_next)
+			    copy_tv(&li->li_tv, &pt->pt_argv[i++]);
 		}
 
 		/* For "function(dict.func, [], dict)" and "func" is a partial
@@ -3702,8 +3710,23 @@ f_function(typval_T *argvars, typval_T *rettv)
 		}
 
 		pt->pt_refcount = 1;
-		pt->pt_name = name;
-		func_ref(pt->pt_name);
+		if (arg_pt != NULL && arg_pt->pt_func != NULL)
+		{
+		    pt->pt_func = arg_pt->pt_func;
+		    func_ptr_ref(pt->pt_func);
+		    vim_free(name);
+		}
+		else if (is_funcref)
+		{
+		    pt->pt_func = find_func(trans_name);
+		    func_ptr_ref(pt->pt_func);
+		    vim_free(name);
+		}
+		else
+		{
+		    pt->pt_name = name;
+		    func_ref(name);
+		}
 	    }
 	    rettv->v_type = VAR_PARTIAL;
 	    rettv->vval.v_partial = pt;
@@ -3716,6 +3739,26 @@ f_function(typval_T *argvars, typval_T *rettv)
 	    func_ref(name);
 	}
     }
+theend:
+    vim_free(trans_name);
+}
+
+/*
+ * "funcref()" function
+ */
+    static void
+f_funcref(typval_T *argvars, typval_T *rettv)
+{
+    common_function(argvars, rettv, TRUE);
+}
+
+/*
+ * "function()" function
+ */
+    static void
+f_function(typval_T *argvars, typval_T *rettv)
+{
+    common_function(argvars, rettv, FALSE);
 }
 
 /*
@@ -3781,14 +3824,20 @@ f_get(typval_T *argvars, typval_T *rettv)
 	if (pt != NULL)
 	{
 	    char_u *what = get_tv_string(&argvars[1]);
+	    char_u *n;
 
 	    if (STRCMP(what, "func") == 0 || STRCMP(what, "name") == 0)
 	    {
 		rettv->v_type = (*what == 'f' ? VAR_FUNC : VAR_STRING);
-		if (pt->pt_name == NULL)
+		n = partial_name(pt);
+		if (n == NULL)
 		    rettv->vval.v_string = NULL;
 		else
-		    rettv->vval.v_string = vim_strsave(pt->pt_name);
+		{
+		    rettv->vval.v_string = vim_strsave(n);
+		    if (rettv->v_type == VAR_FUNC)
+			func_ref(rettv->vval.v_string);
+		}
 	    }
 	    else if (STRCMP(what, "dict") == 0)
 	    {
@@ -10104,7 +10153,7 @@ item_compare2(const void *s1, const void *s2)
     if (partial == NULL)
 	func_name = sortinfo->item_compare_func;
     else
-	func_name = partial->pt_name;
+	func_name = partial_name(partial);
 
     /* Copy the values.  This is needed to be able to set v_lock to VAR_FIXED
      * in the copy without changing the original list items. */
@@ -11863,16 +11912,14 @@ get_callback(typval_T *arg, partial_T **pp)
     {
 	*pp = arg->vval.v_partial;
 	++(*pp)->pt_refcount;
-	return (*pp)->pt_name;
+	return partial_name(*pp);
     }
     *pp = NULL;
-    if (arg->v_type == VAR_FUNC)
+    if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
     {
 	func_ref(arg->vval.v_string);
 	return arg->vval.v_string;
     }
-    if (arg->v_type == VAR_STRING)
-	return arg->vval.v_string;
     if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
 	return (char_u *)"";
     EMSG(_("E921: Invalid callback argument"));

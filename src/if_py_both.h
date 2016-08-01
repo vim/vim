@@ -6310,7 +6310,7 @@ ConvertToPyObject(typval_T *tv)
 	    if (tv->vval.v_partial->pt_dict != NULL)
 		tv->vval.v_partial->pt_dict->dv_refcount++;
 	    return NEW_FUNCTION(tv->vval.v_partial == NULL
-				? (char_u *)"" : tv->vval.v_partial->pt_name,
+			     ? (char_u *)"" : partial_name(tv->vval.v_partial),
 				tv->vval.v_partial->pt_argc, argv,
 				tv->vval.v_partial->pt_dict,
 				tv->vval.v_partial->pt_auto);

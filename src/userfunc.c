@@ -14,52 +14,12 @@
 #include "vim.h"
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-
-typedef struct funccall_S funccall_T;
-
-/*
- * Structure to hold info for a user function.
- */
-typedef struct ufunc ufunc_T;
-
-struct ufunc
-{
-    int		uf_varargs;	/* variable nr of arguments */
-    int		uf_flags;
-    int		uf_calls;	/* nr of active calls */
-    garray_T	uf_args;	/* arguments */
-    garray_T	uf_lines;	/* function lines */
-#ifdef FEAT_PROFILE
-    int		uf_profiling;	/* TRUE when func is being profiled */
-    /* profiling the function as a whole */
-    int		uf_tm_count;	/* nr of calls */
-    proftime_T	uf_tm_total;	/* time spent in function + children */
-    proftime_T	uf_tm_self;	/* time spent in function itself */
-    proftime_T	uf_tm_children;	/* time spent in children this call */
-    /* profiling the function per line */
-    int		*uf_tml_count;	/* nr of times line was executed */
-    proftime_T	*uf_tml_total;	/* time spent in a line + children */
-    proftime_T	*uf_tml_self;	/* time spent in a line itself */
-    proftime_T	uf_tml_start;	/* start time for current line */
-    proftime_T	uf_tml_children; /* time spent in children for this line */
-    proftime_T	uf_tml_wait;	/* start wait time for current line */
-    int		uf_tml_idx;	/* index of line being timed; -1 if none */
-    int		uf_tml_execed;	/* line being timed was executed */
-#endif
-    scid_T	uf_script_ID;	/* ID of script where function was defined,
-				   used for s: variables */
-    int		uf_refcount;	/* for numbered function: reference count */
-    funccall_T	*uf_scoped;	/* l: local variables for closure */
-    char_u	uf_name[1];	/* name of function (actually longer); can
-				   start with <SNR>123_ (<SNR> is K_SPECIAL
-				   KS_EXTRA KE_SNR) */
-};
-
 /* function flags */
 #define FC_ABORT    1		/* abort function on error */
 #define FC_RANGE    2		/* function accepts range */
 #define FC_DICT	    4		/* Dict function, uses "self" */
 #define FC_CLOSURE  8		/* closure, uses outer scope variables */
+#define FC_DELETED  16		/* :delfunction used while uf_refcount > 0 */
 
 /* From user function to hashitem and back. */
 #define UF2HIKEY(fp) ((fp)->uf_name)
@@ -68,52 +28,6 @@ struct ufunc
 
 #define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
 #define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
-
-#define MAX_FUNC_ARGS	20	/* maximum number of function arguments */
-#define VAR_SHORT_LEN	20	/* short variable name length */
-#define FIXVAR_CNT	12	/* number of fixed variables */
-
-/* structure to hold info for a function that is currently being executed. */
-struct funccall_S
-{
-    ufunc_T	*func;		/* function being called */
-    int		linenr;		/* next line to be executed */
-    int		returned;	/* ":return" used */
-    struct			/* fixed variables for arguments */
-    {
-	dictitem_T	var;		/* variable (without room for name) */
-	char_u	room[VAR_SHORT_LEN];	/* room for the name */
-    } fixvar[FIXVAR_CNT];
-    dict_T	l_vars;		/* l: local function variables */
-    dictitem_T	l_vars_var;	/* variable for l: scope */
-    dict_T	l_avars;	/* a: argument variables */
-    dictitem_T	l_avars_var;	/* variable for a: scope */
-    list_T	l_varlist;	/* list for a:000 */
-    listitem_T	l_listitems[MAX_FUNC_ARGS];	/* listitems for a:000 */
-    typval_T	*rettv;		/* return value */
-    linenr_T	breakpoint;	/* next line with breakpoint or zero */
-    int		dbg_tick;	/* debug_tick when breakpoint was set */
-    int		level;		/* top nesting level of executed function */
-#ifdef FEAT_PROFILE
-    proftime_T	prof_child;	/* time spent in a child */
-#endif
-    funccall_T	*caller;	/* calling function or NULL */
-
-    /* for closure */
-    int		fc_refcount;
-    int		fc_copyID;	/* for garbage collection */
-    garray_T	fc_funcs;	/* list of ufunc_T* which refer this */
-};
-
-/*
- * Struct used by trans_function_name()
- */
-typedef struct
-{
-    dict_T	*fd_dict;	/* Dictionary used */
-    char_u	*fd_newkey;	/* new key in "dict" in allocated memory */
-    dictitem_T	*fd_di;		/* Dictionary item used */
-} funcdict_T;
 
 /*
  * All user-defined functions are found in this hashtable.
@@ -271,7 +185,7 @@ register_closure(ufunc_T *fp)
 	return FAIL;
     ((ufunc_T **)current_funccal->fc_funcs.ga_data)
 	[current_funccal->fc_funcs.ga_len++] = fp;
-    func_ref(current_funccal->func->uf_name);
+    func_ptr_ref(current_funccal->func);
     return OK;
 }
 
@@ -288,7 +202,6 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     ufunc_T	*fp = NULL;
     int		varargs;
     int		ret;
-    char_u	name[20];
     char_u	*start = skipwhite(*arg + 1);
     char_u	*s, *e;
     static int	lambda_no = 0;
@@ -331,14 +244,22 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (evaluate)
     {
-	int	len, flags = 0;
-	char_u	*p;
+	int	    len, flags = 0;
+	char_u	    *p;
+	char_u	    name[20];
+	partial_T   *pt;
 
 	sprintf((char*)name, "<lambda>%d", ++lambda_no);
 
 	fp = (ufunc_T *)alloc_clear((unsigned)(sizeof(ufunc_T) + STRLEN(name)));
 	if (fp == NULL)
 	    goto errret;
+	pt = (partial_T *)alloc_clear((unsigned)sizeof(partial_T));
+	if (pt == NULL)
+	{
+	    vim_free(fp);
+	    goto errret;
+	}
 
 	ga_init2(&newlines, (int)sizeof(char_u *), 1);
 	if (ga_grow(&newlines, 1) == FAIL)
@@ -380,8 +301,10 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	fp->uf_calls = 0;
 	fp->uf_script_ID = current_SID;
 
-	rettv->vval.v_string = vim_strsave(name);
-	rettv->v_type = VAR_FUNC;
+	pt->pt_func = fp;
+	pt->pt_refcount = 1;
+	rettv->vval.v_partial = pt;
+	rettv->v_type = VAR_PARTIAL;
     }
 
     eval_lavars_used = old_eval_lavars;
@@ -406,6 +329,7 @@ deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload)
 {
     dictitem_T	*v;
     int		cc;
+    char_u	*s;
 
     if (partialp != NULL)
 	*partialp = NULL;
@@ -421,8 +345,9 @@ deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload)
 	    *lenp = 0;
 	    return (char_u *)"";	/* just in case */
 	}
-	*lenp = (int)STRLEN(v->di_tv.vval.v_string);
-	return v->di_tv.vval.v_string;
+	s = v->di_tv.vval.v_string;
+	*lenp = (int)STRLEN(s);
+	return s;
     }
 
     if (v != NULL && v->di_tv.v_type == VAR_PARTIAL)
@@ -436,8 +361,9 @@ deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload)
 	}
 	if (partialp != NULL)
 	    *partialp = pt;
-	*lenp = (int)STRLEN(pt->pt_name);
-	return pt->pt_name;
+	s = partial_name(pt);
+	*lenp = (int)STRLEN(s);
+	return s;
     }
 
     return name;
@@ -611,7 +537,7 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
  * Find a function by name, return pointer to it in ufuncs.
  * Return NULL for unknown function.
  */
-    static ufunc_T *
+    ufunc_T *
 find_func(char_u *name)
 {
     hashitem_T	*hi;
@@ -678,7 +604,7 @@ free_funccal(
 	     * funccall_T, don't clear it then. */
 	    if (fp->uf_scoped == fc)
 		fp->uf_scoped = NULL;
-	    func_unref(fc->func->uf_name);
+	    func_ptr_unref(fc->func);
 	}
     }
     ga_clear(&fc->fc_funcs);
@@ -695,7 +621,7 @@ free_funccal(
 	for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
 	    clear_tv(&li->li_tv);
 
-    func_unref(fc->func->uf_name);
+    func_ptr_unref(fc->func);
     vim_free(fc);
 }
 
@@ -759,7 +685,7 @@ call_user_func(
     fc->fc_refcount = 0;
     fc->fc_copyID = 0;
     ga_init2(&fc->fc_funcs, sizeof(ufunc_T *), 1);
-    func_ref(fp->uf_name);
+    func_ptr_ref(fp);
 
     if (STRNCMP(fp->uf_name, "<lambda>", 8) == 0)
 	islambda = TRUE;
@@ -1112,24 +1038,25 @@ funccal_unref(funccall_T *fc, ufunc_T *fp)
 
     if (--fc->fc_refcount <= 0)
     {
-	for (pfc = &previous_funccal; *pfc != NULL; )
+	for (pfc = &previous_funccal; *pfc != NULL; pfc = &(*pfc)->caller)
 	{
-	    if (fc == *pfc
-		    && fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
+	    if (fc == *pfc)
+	    {
+		if (fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
 		    && fc->l_vars.dv_refcount == DO_NOT_FREE_CNT
 		    && fc->l_avars.dv_refcount == DO_NOT_FREE_CNT)
-	    {
-		*pfc = fc->caller;
-		free_funccal(fc, TRUE);
-		freed = TRUE;
+		{
+		    *pfc = fc->caller;
+		    free_funccal(fc, TRUE);
+		    freed = TRUE;
+		}
+		break;
 	    }
-	    else
-		pfc = &(*pfc)->caller;
 	}
     }
     if (!freed)
     {
-	func_unref(fc->func->uf_name);
+	func_ptr_unref(fc->func);
 
 	if (fp != NULL)
 	    for (i = 0; i < fc->fc_funcs.ga_len; ++i)
@@ -1141,13 +1068,24 @@ funccal_unref(funccall_T *fc, ufunc_T *fp)
 }
 
 /*
+ * Remove the function from the function hashtable.  If the function was
+ * deleted while it still has references this was already done.
+ */
+    static void
+func_remove(ufunc_T *fp)
+{
+    hashitem_T	*hi = hash_find(&func_hashtab, UF2HIKEY(fp));
+
+    if (!HASHITEM_EMPTY(hi))
+	hash_remove(&func_hashtab, hi);
+}
+
+/*
  * Free a function and remove it from the list of functions.
  */
     static void
 func_free(ufunc_T *fp)
 {
-    hashitem_T	*hi;
-
     /* clear this function */
     ga_clear_strings(&(fp->uf_args));
     ga_clear_strings(&(fp->uf_lines));
@@ -1156,13 +1094,7 @@ func_free(ufunc_T *fp)
     vim_free(fp->uf_tml_total);
     vim_free(fp->uf_tml_self);
 #endif
-
-    /* remove the function from the function hashtable */
-    hi = hash_find(&func_hashtab, UF2HIKEY(fp));
-    if (HASHITEM_EMPTY(hi))
-	EMSG2(_(e_intern2), "func_free()");
-    else
-	hash_remove(&func_hashtab, hi);
+    func_remove(fp);
 
     funccal_unref(fp->uf_scoped, fp);
 
@@ -1333,7 +1265,10 @@ call_func(
 	    /*
 	     * User defined function.
 	     */
-	    fp = find_func(rfname);
+	    if (partial != NULL && partial->pt_func != NULL)
+		fp = partial->pt_func;
+	    else
+		fp = find_func(rfname);
 
 #ifdef FEAT_AUTOCMD
 	    /* Trigger FuncUndefined event, may load the function. */
@@ -1353,7 +1288,9 @@ call_func(
 		fp = find_func(rfname);
 	    }
 
-	    if (fp != NULL)
+	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
+		error = ERROR_DELETED;
+	    else if (fp != NULL)
 	    {
 		if (argv_func != NULL)
 		    argcount = argv_func(argcount, argvars, fp->uf_args.ga_len);
@@ -1387,9 +1324,7 @@ call_func(
 		    call_user_func(fp, argcount, argvars, rettv,
 					       firstline, lastline,
 				  (fp->uf_flags & FC_DICT) ? selfdict : NULL);
-		    if (--fp->uf_calls <= 0 && (isdigit(*fp->uf_name)
-				|| STRNCMP(fp->uf_name, "<lambda>", 8) == 0)
-						      && fp->uf_refcount <= 0)
+		    if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
 			/* Function was unreferenced while being used, free it
 			 * now. */
 			func_free(fp);
@@ -1432,6 +1367,9 @@ call_func(
 	{
 	    case ERROR_UNKNOWN:
 		    emsg_funcname(N_("E117: Unknown function: %s"), name);
+		    break;
+	    case ERROR_DELETED:
+		    emsg_funcname(N_("E933: Function was deleted: %s"), name);
 		    break;
 	    case ERROR_TOOMANY:
 		    emsg_funcname((char *)e_toomanyarg, name);
@@ -1516,7 +1454,7 @@ list_func_head(ufunc_T *fp, int indent)
  * TFN_NO_DEREF:    do not dereference a Funcref
  * Advances "pp" to just after the function name (if no error).
  */
-    static char_u *
+    char_u *
 trans_function_name(
     char_u	**pp,
     int		skip,		/* only find the end, don't evaluate */
@@ -1595,7 +1533,7 @@ trans_function_name(
 	else if (lv.ll_tv->v_type == VAR_PARTIAL
 					  && lv.ll_tv->vval.v_partial != NULL)
 	{
-	    name = vim_strsave(lv.ll_tv->vval.v_partial->pt_name);
+	    name = vim_strsave(partial_name(lv.ll_tv->vval.v_partial));
 	    *pp = end;
 	    if (partial != NULL)
 		*partial = lv.ll_tv->vval.v_partial;
@@ -1752,6 +1690,7 @@ ex_function(exarg_T *eap)
     int		varargs = FALSE;
     int		flags = 0;
     ufunc_T	*fp;
+    int		overwrite = FALSE;
     int		indent;
     int		nesting;
     char_u	*skip_until = NULL;
@@ -2214,11 +2153,22 @@ ex_function(exarg_T *eap)
 									name);
 		goto erret;
 	    }
-	    /* redefine existing function */
-	    ga_clear_strings(&(fp->uf_args));
-	    ga_clear_strings(&(fp->uf_lines));
-	    vim_free(name);
-	    name = NULL;
+	    if (fp->uf_refcount > 1)
+	    {
+		/* This function is referenced somewhere, don't redefine it but
+		 * create a new one. */
+		--fp->uf_refcount;
+		fp = NULL;
+		overwrite = TRUE;
+	    }
+	    else
+	    {
+		/* redefine existing function */
+		ga_clear_strings(&(fp->uf_args));
+		ga_clear_strings(&(fp->uf_lines));
+		vim_free(name);
+		name = NULL;
+	    }
 	}
     }
     else
@@ -2308,7 +2258,6 @@ ex_function(exarg_T *eap)
 	    fudi.fd_di->di_tv.v_type = VAR_FUNC;
 	    fudi.fd_di->di_tv.v_lock = 0;
 	    fudi.fd_di->di_tv.vval.v_string = vim_strsave(name);
-	    fp->uf_refcount = 1;
 
 	    /* behave like "dict" was used */
 	    flags |= FC_DICT;
@@ -2316,17 +2265,22 @@ ex_function(exarg_T *eap)
 
 	/* insert the new function in the function list */
 	STRCPY(fp->uf_name, name);
-	if (hash_add(&func_hashtab, UF2HIKEY(fp)) == FAIL)
+	if (overwrite)
+	{
+	    hi = hash_find(&func_hashtab, name);
+	    hi->hi_key = UF2HIKEY(fp);
+	}
+	else if (hash_add(&func_hashtab, UF2HIKEY(fp)) == FAIL)
 	{
 	    vim_free(fp);
 	    goto erret;
 	}
+	fp->uf_refcount = 1;
     }
     fp->uf_args = newargs;
     fp->uf_lines = newlines;
     if ((flags & FC_CLOSURE) != 0)
     {
-	++fp->uf_refcount;
 	if (register_closure(fp) == FAIL)
 	    goto erret;
     }
@@ -2750,13 +2704,30 @@ ex_delfunction(exarg_T *eap)
 	    dictitem_remove(fudi.fd_dict, fudi.fd_di);
 	}
 	else
-	    func_free(fp);
+	{
+	    /* Normal functions (not numbered functions and lambdas) have a
+	     * refcount of 1 for the entry in the hashtable.  When deleting
+	     * them and the refcount is more than one, it should be kept.
+	     * Numbered functions and lambdas snould be kept if the refcount is
+	     * one or more. */
+	    if (fp->uf_refcount > (isdigit(fp->uf_name[0])
+					     || fp->uf_name[0] == '<') ? 0 : 1)
+	    {
+		/* Function is still referenced somewhere.  Don't free it but
+		 * do remove it from the hashtable. */
+		func_remove(fp);
+		fp->uf_flags |= FC_DELETED;
+		fp->uf_refcount--;
+	    }
+	    else
+		func_free(fp);
+	}
     }
 }
 
 /*
  * Unreference a Function: decrement the reference count and free it when it
- * becomes zero.  Only for numbered functions.
+ * becomes zero.
  */
     void
 func_unref(char_u *name)
@@ -2765,22 +2736,30 @@ func_unref(char_u *name)
 
     if (name == NULL)
 	return;
-    if (isdigit(*name))
+    fp = find_func(name);
+    if (fp == NULL && isdigit(*name))
     {
-	fp = find_func(name);
-	if (fp == NULL)
-	{
 #ifdef EXITFREE
-	    if (!entered_free_all_mem)
+	if (!entered_free_all_mem)
 #endif
-		EMSG2(_(e_intern2), "func_unref()");
-	}
+	    EMSG2(_(e_intern2), "func_unref()");
     }
-    else if (STRNCMP(name, "<lambda>", 8) == 0)
+    if (fp != NULL && --fp->uf_refcount <= 0)
     {
-	/* fail silently, when lambda function isn't found. */
-	fp = find_func(name);
+	/* Only delete it when it's not being used.  Otherwise it's done
+	 * when "uf_calls" becomes zero. */
+	if (fp->uf_calls == 0)
+	    func_free(fp);
     }
+}
+
+/*
+ * Unreference a Function: decrement the reference count and free it when it
+ * becomes zero.
+ */
+    void
+func_ptr_unref(ufunc_T *fp)
+{
     if (fp != NULL && --fp->uf_refcount <= 0)
     {
 	/* Only delete it when it's not being used.  Otherwise it's done
@@ -2800,21 +2779,23 @@ func_ref(char_u *name)
 
     if (name == NULL)
 	return;
+    fp = find_func(name);
+    if (fp != NULL)
+	++fp->uf_refcount;
     else if (isdigit(*name))
-    {
-	fp = find_func(name);
-	if (fp == NULL)
-	    EMSG2(_(e_intern2), "func_ref()");
-	else
-	    ++fp->uf_refcount;
-    }
-    else if (STRNCMP(name, "<lambda>", 8) == 0)
-    {
-	/* fail silently, when lambda function isn't found. */
-	fp = find_func(name);
-	if (fp != NULL)
-	    ++fp->uf_refcount;
-    }
+	/* Only give an error for a numbered function.
+	 * Fail silently, when named or lambda function isn't found. */
+	EMSG2(_(e_intern2), "func_ref()");
+}
+
+/*
+ * Count a reference to a Function.
+ */
+    void
+func_ptr_ref(ufunc_T *fp)
+{
+    if (fp != NULL)
+	++fp->uf_refcount;
 }
 
 /*
@@ -3298,18 +3279,24 @@ func_has_abort(
     dict_T *
 make_partial(dict_T *selfdict_in, typval_T *rettv)
 {
-    char_u	*fname = rettv->v_type == VAR_FUNC ? rettv->vval.v_string
-					 : rettv->vval.v_partial->pt_name;
+    char_u	*fname;
     char_u	*tofree = NULL;
     ufunc_T	*fp;
     char_u	fname_buf[FLEN_FIXED + 1];
     int		error;
     dict_T	*selfdict = selfdict_in;
 
-    /* Translate "s:func" to the stored function name. */
-    fname = fname_trans_sid(fname, fname_buf, &tofree, &error);
-    fp = find_func(fname);
-    vim_free(tofree);
+    if (rettv->v_type == VAR_PARTIAL && rettv->vval.v_partial->pt_func != NULL)
+	fp = rettv->vval.v_partial->pt_func;
+    else
+    {
+	fname = rettv->v_type == VAR_FUNC ? rettv->vval.v_string
+					      : rettv->vval.v_partial->pt_name;
+	/* Translate "s:func" to the stored function name. */
+	fname = fname_trans_sid(fname, fname_buf, &tofree, &error);
+	fp = find_func(fname);
+	vim_free(tofree);
+    }
 
     if (fp != NULL && (fp->uf_flags & FC_DICT))
     {
@@ -3335,8 +3322,16 @@ make_partial(dict_T *selfdict_in, typval_T *rettv)
 		/* Partial: copy the function name, use selfdict and copy
 		 * args.  Can't take over name or args, the partial might
 		 * be referenced elsewhere. */
-		pt->pt_name = vim_strsave(ret_pt->pt_name);
-		func_ref(pt->pt_name);
+		if (ret_pt->pt_name != NULL)
+		{
+		    pt->pt_name = vim_strsave(ret_pt->pt_name);
+		    func_ref(pt->pt_name);
+		}
+		else
+		{
+		    pt->pt_func = ret_pt->pt_func;
+		    func_ptr_ref(pt->pt_func);
+		}
 		if (ret_pt->pt_argc > 0)
 		{
 		    pt->pt_argv = (typval_T *)alloc(
@@ -3703,20 +3698,23 @@ set_ref_in_func_args(int copyID)
  * Returns TRUE if setting references failed somehow.
  */
     int
-set_ref_in_func(char_u *name, int copyID)
+set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID)
 {
-    ufunc_T	*fp;
+    ufunc_T	*fp = fp_in;
     funccall_T	*fc;
     int		error = ERROR_NONE;
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
     char_u	*fname;
 
-    if (name == NULL)
+    if (name == NULL && fp_in == NULL)
 	return FALSE;
 
-    fname = fname_trans_sid(name, fname_buf, &tofree, &error);
-    fp = find_func(fname);
+    if (fp_in == NULL)
+    {
+	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
+	fp = find_func(fname);
+    }
     if (fp != NULL)
     {
 	for (fc = fp->uf_scoped; fc != NULL; fc = fc->func->uf_scoped)
