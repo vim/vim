@@ -1380,6 +1380,16 @@ typedef struct
     dictitem_T	*fd_di;		/* Dictionary item used */
 } funcdict_T;
 
+#else
+/* dummy typedefs for function prototypes */
+typedef struct
+{
+    int	    dummy;
+} ufunc_T;
+typedef struct
+{
+    int	    dummy;
+} funcdict_T;
 #endif
 
 struct partial_S
