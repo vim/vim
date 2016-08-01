@@ -46,6 +46,7 @@ int swapping_screen(void);
 void setmouse(void);
 int mouse_has(int c);
 int mouse_model_popup(void);
+int is_xterm_like_mouse_from_termcap(char_u *name);
 void scroll_start(void);
 void cursor_on(void);
 void cursor_off(void);
