@@ -2863,7 +2863,6 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 	    return NULL;
 	}
 	self->name = vim_strsave(name);
-	func_ref(self->name);
     }
     else
 	if ((self->name = get_expanded_name(name,
@@ -2875,6 +2874,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 	    return NULL;
 	}
 
+    func_ref(self->name);
     self->argc = argc;
     self->argv = argv;
     self->self = selfdict;
