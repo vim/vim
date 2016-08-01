@@ -2711,7 +2711,7 @@ ex_delfunction(exarg_T *eap)
 	     * Numbered functions and lambdas snould be kept if the refcount is
 	     * one or more. */
 	    if (fp->uf_refcount > (isdigit(fp->uf_name[0])
-					     || fp->uf_name[0] == '<') ? 0 : 1)
+					     || fp->uf_name[0] == '<' ? 0 : 1))
 	    {
 		/* Function is still referenced somewhere.  Don't free it but
 		 * do remove it from the hashtable. */

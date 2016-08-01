@@ -267,7 +267,6 @@ func Test_closure_refcount()
   call assert_equal(2, g:Count())
   call assert_equal(3, g:Count2())
 
-  " This causes memory access errors.
-  " delfunc LambdaFoo
-  " delfunc LambdaBar
+  delfunc LambdaFoo
+  delfunc LambdaBar
 endfunc
