@@ -1327,7 +1327,7 @@ typedef struct
 #endif
     scid_T	uf_script_ID;	/* ID of script where function was defined,
 				   used for s: variables */
-    int		uf_refcount;	/* for numbered function: reference count */
+    int		uf_refcount;	/* reference count, see func_name_refcount() */
     funccall_T	*uf_scoped;	/* l: local variables for closure */
     char_u	uf_name[1];	/* name of function (actually longer); can
 				   start with <SNR>123_ (<SNR> is K_SPECIAL
@@ -1365,9 +1365,11 @@ struct funccall_S
     funccall_T	*caller;	/* calling function or NULL */
 
     /* for closure */
-    int		fc_refcount;
+    int		fc_refcount;	/* number of user functions that reference this
+				 * funccal */
     int		fc_copyID;	/* for garbage collection */
-    garray_T	fc_funcs;	/* list of ufunc_T* which refer this */
+    garray_T	fc_funcs;	/* list of ufunc_T* which keep a reference to
+				 * "func" */
 };
 
 /*
