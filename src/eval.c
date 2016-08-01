@@ -2838,7 +2838,7 @@ do_unlet(char_u *name, int forceit)
 	}
 	hi = hash_find(ht, varname);
 	if (HASHITEM_EMPTY(hi))
-	    hi = find_hi_in_scoped_ht(name, &varname, &ht);
+	    hi = find_hi_in_scoped_ht(name, &ht);
 	if (hi != NULL && !HASHITEM_EMPTY(hi))
 	{
 	    di = HI2DI(hi);
@@ -7344,8 +7344,7 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	return ret;
 
     /* Search in parent scope for lambda */
-    return find_var_in_scoped_ht(name, varname ? &varname : NULL,
-		no_autoload || htp != NULL);
+    return find_var_in_scoped_ht(name, no_autoload || htp != NULL);
 }
 
 /*
@@ -7684,7 +7683,7 @@ set_var(
 
     /* Search in parent scope which is possible to reference from lambda */
     if (v == NULL)
-	v = find_var_in_scoped_ht(name, varname ? &varname : NULL, TRUE);
+	v = find_var_in_scoped_ht(name, TRUE);
 
     if ((tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
 				      && var_check_func_name(name, v == NULL))

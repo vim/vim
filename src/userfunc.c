@@ -3571,11 +3571,12 @@ get_current_funccal_dict(hashtab_T *ht)
  * Search hashitem in parent scope.
  */
     hashitem_T *
-find_hi_in_scoped_ht(char_u *name, char_u **varname, hashtab_T **pht)
+find_hi_in_scoped_ht(char_u *name, hashtab_T **pht)
 {
     funccall_T	*old_current_funccal = current_funccal;
     hashtab_T	*ht;
     hashitem_T	*hi = NULL;
+    char_u	*varname;
 
     if (current_funccal == NULL || current_funccal->func->uf_scoped == NULL)
       return NULL;
@@ -3584,10 +3585,10 @@ find_hi_in_scoped_ht(char_u *name, char_u **varname, hashtab_T **pht)
     current_funccal = current_funccal->func->uf_scoped;
     while (current_funccal != NULL)
     {
-	ht = find_var_ht(name, varname);
-	if (ht != NULL && **varname != NUL)
+	ht = find_var_ht(name, &varname);
+	if (ht != NULL && *varname != NUL)
 	{
-	    hi = hash_find(ht, *varname);
+	    hi = hash_find(ht, varname);
 	    if (!HASHITEM_EMPTY(hi))
 	    {
 		*pht = ht;
@@ -3607,11 +3608,12 @@ find_hi_in_scoped_ht(char_u *name, char_u **varname, hashtab_T **pht)
  * Search variable in parent scope.
  */
     dictitem_T *
-find_var_in_scoped_ht(char_u *name, char_u **varname, int no_autoload)
+find_var_in_scoped_ht(char_u *name, int no_autoload)
 {
     dictitem_T	*v = NULL;
     funccall_T	*old_current_funccal = current_funccal;
     hashtab_T	*ht;
+    char_u	*varname;
 
     if (current_funccal == NULL || current_funccal->func->uf_scoped == NULL)
 	return NULL;
@@ -3620,11 +3622,10 @@ find_var_in_scoped_ht(char_u *name, char_u **varname, int no_autoload)
     current_funccal = current_funccal->func->uf_scoped;
     while (current_funccal)
     {
-	ht = find_var_ht(name, varname ? &(*varname) : NULL);
-	if (ht != NULL)
+	ht = find_var_ht(name, &varname);
+	if (ht != NULL && *varname != NUL)
 	{
-	    v = find_var_in_ht(ht, *name,
-		    varname ? *varname : NULL, no_autoload);
+	    v = find_var_in_ht(ht, *name, varname, no_autoload);
 	    if (v != NULL)
 		break;
 	}
