@@ -3435,6 +3435,33 @@ mouse_model_popup(void)
 {
     return (p_mousem[0] == 'p');
 }
+
+/*
+ * Return TRUE if the terminal (with terminal name name) has an xterm-style
+ * mouse according to the terminal's capabilities, or FALSE if unknown, or on
+ * error.
+ *
+ * This routine will not give a definite negative, i.e. is it returns FALSE, it
+ * just means it cannot guess at the terminal's capabilities based on its
+ * termcap entry and its own rather dumb internal logic...
+ */
+    int
+is_xterm_like_mouse_from_termcap(char_u* name)
+{
+#if defined(HAVE_TGETENT)
+    char_u tbuf[TBUFSZ];
+    if (NULL == tgetent_error(tbuf, name)) {
+	char_u *tp = tbuf;
+	/* okay, don't have to guess based on terminal name */
+	const char_u* kmous = TGETSTR("Km", &tp);
+	if (kmous) {
+	    /* check if mouse works as the xterm one does */
+	    if (0 == strcmp((const char*) kmous, "\033[M")) return TRUE;
+	}
+    }
+#endif
+    return FALSE;
+}
 #endif
 
 /*

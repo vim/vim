@@ -2258,8 +2258,9 @@ vim_is_xterm(char_u *name)
     int
 use_xterm_like_mouse(char_u *name)
 {
-    return (name != NULL
-	    && (term_is_xterm || STRNICMP(name, "screen", 6) == 0));
+    return (NULL != name) && (
+	    is_xterm_like_mouse_from_termcap(name) ||
+	    term_is_xterm || STRNICMP(name, "screen", 6) == 0);
 }
 #endif
 
