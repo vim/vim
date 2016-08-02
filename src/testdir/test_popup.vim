@@ -203,6 +203,7 @@ func! Test_popup_complete()
   call feedkeys("aM\<f5>\<enter>\<esc>", 'tx')
   call assert_equal(["March", "M", "March"], getline(1,4))
   %d
+  bwipe!
 endfu
 
 
