@@ -203,7 +203,6 @@ func! Test_popup_complete()
   call feedkeys("aM\<f5>\<enter>\<esc>", 'tx')
   call assert_equal(["March", "M", "March"], getline(1,4))
   %d
-  bwipe!
 endfu
 
 
@@ -233,7 +232,6 @@ func! Test_popup_completion_insertmode()
   call feedkeys("a\<f5>\<c-p>\<c-p>\<enter>\<esc>", 'tx')
   call assert_equal('December', getline(1))
 
-  bwipe!
   iunmap <F5>
 endfunc
 
