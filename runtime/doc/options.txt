@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Jul 28
+*options.txt*	For Vim version 7.4.  Last change: 2016 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2618,7 +2618,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	{Vi: directory to put temp file in, defaults to "/tmp"}
 
 					*'display'* *'dy'*
-'display' 'dy'		string	(default "")
+'display' 'dy'		string	(default "", set to "truncate" in
+							       |defaults.vim|)
 			global
 			{not in Vi}
 	Change the way text is displayed.  This is comma separated list of

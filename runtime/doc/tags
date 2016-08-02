@@ -1232,6 +1232,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +job	various.txt	/*+job*
 +jumplist	various.txt	/*+jumplist*
 +keymap	various.txt	/*+keymap*
++lambda	various.txt	/*+lambda*
 +langmap	various.txt	/*+langmap*
 +libcall	various.txt	/*+libcall*
 +linebreak	various.txt	/*+linebreak*
@@ -1994,6 +1995,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :bmodified	windows.txt	/*:bmodified*
 :bn	windows.txt	/*:bn*
 :bnext	windows.txt	/*:bnext*
+:bo	windows.txt	/*:bo*
 :botright	windows.txt	/*:botright*
 :bp	windows.txt	/*:bp*
 :bprevious	windows.txt	/*:bprevious*
@@ -2286,6 +2288,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :for	eval.txt	/*:for*
 :fu	eval.txt	/*:fu*
 :func-abort	eval.txt	/*:func-abort*
+:func-closure	eval.txt	/*:func-closure*
 :func-dict	eval.txt	/*:func-dict*
 :func-range	eval.txt	/*:func-range*
 :function	eval.txt	/*:function*
@@ -4467,6 +4470,8 @@ E929	starting.txt	/*E929*
 E93	windows.txt	/*E93*
 E930	eval.txt	/*E930*
 E931	message.txt	/*E931*
+E932	eval.txt	/*E932*
+E933	eval.txt	/*E933*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
@@ -4745,6 +4750,7 @@ W15	repeat.txt	/*W15*
 W16	message.txt	/*W16*
 W17	arabic.txt	/*W17*
 W18	syntax.txt	/*W18*
+W19	autocmd.txt	/*W19*
 WORD	motion.txt	/*WORD*
 WWW	intro.txt	/*WWW*
 Win32	os_win32.txt	/*Win32*
@@ -5340,6 +5346,7 @@ clipboard-unnamed	options.txt	/*clipboard-unnamed*
 clipboard-unnamedplus	options.txt	/*clipboard-unnamedplus*
 clojure-indent	indent.txt	/*clojure-indent*
 close_cb	channel.txt	/*close_cb*
+closure	eval.txt	/*closure*
 cmdarg-variable	eval.txt	/*cmdarg-variable*
 cmdbang-variable	eval.txt	/*cmdbang-variable*
 cmdline-arguments	vi_diff.txt	/*cmdline-arguments*
@@ -5582,6 +5589,7 @@ debugger.txt	debugger.txt	/*debugger.txt*
 dec-mouse	options.txt	/*dec-mouse*
 decada_members	ft_ada.txt	/*decada_members*
 deepcopy()	eval.txt	/*deepcopy()*
+defaults.vim	starting.txt	/*defaults.vim*
 definition-search	tagsrch.txt	/*definition-search*
 definitions	intro.txt	/*definitions*
 delete()	eval.txt	/*delete()*
@@ -6110,6 +6118,7 @@ ftplugin-name	usr_05.txt	/*ftplugin-name*
 ftplugin-overrule	filetype.txt	/*ftplugin-overrule*
 ftplugin-special	usr_41.txt	/*ftplugin-special*
 ftplugins	usr_05.txt	/*ftplugins*
+funcref()	eval.txt	/*funcref()*
 function()	eval.txt	/*function()*
 function-argument	eval.txt	/*function-argument*
 function-key	intro.txt	/*function-key*

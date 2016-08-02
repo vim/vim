@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Jul 23
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -77,12 +77,18 @@ example above, to pass an argument to the function: >
 This will call CheckTemp('out') four seconds later.
 
 
-Lambda ~
+Lambda and Closure ~
 
 A short way to create a function has been added: {args -> expr}.  See |lambda|.
 This is useful for functions such as `filter()` and `map()`, which now also
 accept a function argument.  Example: >
 	:call filter(mylist, {idx, val -> val > 20})
+
+A lambda can use variables defined in the scope where the lambda is defined.
+This is usually called a |closure|.
+
+User defined functions can also be a closure by adding the "closure" argument
+|:func-closure|.
 
 
 Packages ~
@@ -145,6 +151,8 @@ In Vim script the following types have been added:
 
 Many functions and commands have been added to support the new types.
 
+On some systems the numbers used in Vim script are now 64 bit.  This can be
+checked with the |+num64| feature.
 
 
 Various new items					*new-items-8*
@@ -309,6 +317,12 @@ INCOMPATIBLE CHANGES				*incompatible-8*
 
 These changes are incompatible with previous releases.  Check this list if you
 run into a problem when upgrading from Vim 7.4 to 8.0.
+
+When no vimrc file is found, the |defaults.vim| script is loaded to set more
+useful default values for new users.  That includes setting 'nocompatible'.
+Thus Vim no longer starts up in Vi compatible mode.  If you do want that,
+either create a .vimrc file that does "set compatible" or start Vim with
+"Vim -C".
 
 The support for MS-DOS has been removed.  It hasn't been working for a while
 and removing it cleans up the code quite a bit.
@@ -523,7 +537,7 @@ Files:	    src/diff.c
 
 Patch 7.4.032
 Problem:    NFA engine does not match the NUL character. (Jonathon Merz)
-Solution:   Ues 0x0a instead of NUL. (Christian Brabandt)
+Solution:   Use 0x0a instead of NUL. (Christian Brabandt)
 Files:	    src/regexp_nfa.c, src/testdir/test64.in, src/testdir/test64.ok
 
 Patch 7.4.033
@@ -566,7 +580,7 @@ Solution:   Ignore the error when locating the word.  Explicitly mention what
 Files:	    src/normal.c, src/spell.c
 
 Patch 7.4.039
-Problem:    MS-Windows: MSCV10 and earlier can't handle symlinks to a
+Problem:    MS-Windows: MSVC10 and earlier can't handle symlinks to a
 	    directory properly.
 Solution:   Add stat_symlink_aware() and wstat_symlink_aware(). (Ken Takata)
 Files:	    src/os_mswin.c, src/os_win32.c, src/os_win32.h
@@ -638,7 +652,7 @@ Files:	    src/search.c, src/testdir/test53.in, src/testdir/test53.ok
 Patch 7.4.051
 Problem:    Syntax highlighting a Yaml file causes a crash. (Blake Preston)
 Solution:   Copy the pim structure before calling addstate() to avoid it
-	    becoming invalide when the state list is reallocated.
+	    becoming invalid when the state list is reallocated.
 Files:	    src/regexp_nfa.c
 
 Patch 7.4.052
@@ -828,7 +842,7 @@ Files:	    src/Make_mvc.mak
 Patch 7.4.082
 Problem:    Using "gf" in a changed buffer suggests adding "!", which is not
 	    possible. (Tim Chase)
-Solution:   Pass a flag to check_changed() wether adding ! make sense.
+Solution:   Pass a flag to check_changed() whether adding ! make sense.
 Files:	    src/vim.h, src/ex_cmds2.c, src/proto/ex_cmds2.pro, src/globals.h,
 	    src/ex_cmds.c, src/ex_docmd.c
 
@@ -995,7 +1009,7 @@ Solution:   Match with the colorscheme name. (Christian Brabandt)
 Files:	    runtime/doc/autocmd.txt, src/fileio.c, src/syntax.c
 
 Patch 7.4.110
-Problem:    "gUgn" cannot be repeeated. (Dimitar Dimitrov)
+Problem:    "gUgn" cannot be repeated. (Dimitar Dimitrov)
 Solution:   Don't put "gn" in a different order in the redo buffer.  Restore
 	    'wrapscan' when the pattern isn't found. (Christian Wellenbrock)
 Files:	    src/normal.c, src/search.c, src/test53.in, src/test53.ok
@@ -1170,7 +1184,7 @@ Solution:   Fix the problems. (Ken Takata)
 Files:	    src/Make_bc5.mak, src/if_py_both.h, src/os_win32.c
 
 Patch 7.4.142 (after 7.4.137)
-Problem:    On MS-Windows 8 IME input doen't work correctly.
+Problem:    On MS-Windows 8 IME input doesn't work correctly.
 Solution:   Work around the problem. (Nobuhiro Takasaki)
 Files:	    src/os_win32.c
 
@@ -1186,7 +1200,7 @@ Files:	    src/os_mswin.c
 
 Patch 7.4.145
 Problem:    getregtype() does not return zero for unknown register.
-Solution:   Adjust documention: return empty string for unknown register.
+Solution:   Adjust documentation: return empty string for unknown register.
 	    Check the register name to be valid. (Yukihiro Nakadaira)
 Files:	    runtime/doc/eval.txt, src/ops.c
 
@@ -1364,7 +1378,7 @@ Solution:   Check the platform, when the wide function is supported don't fall
 Files:	    src/os_mswin.c, src/os_win32.c
 
 Patch 7.4.176
-Problem:    Dictionary.update() thows an error when used without arguments.
+Problem:    Dictionary.update() throws an error when used without arguments.
 	    Python programmers don't expect that.
 Solution:   Make Dictionary.update() without arguments do nothing. (ZyX)
 Files:	    src/if_py_both.h, src/testdir/test86.in, src/testdir/test87.in
@@ -1711,7 +1725,7 @@ Files:	    src/ex_cmds.c, src/ex_docmd.c, src/proto/ex_docmd.pro
 
 Patch 7.4.233
 Problem:    Escaping special characters for using "%" with a shell command is
-	    inconsistant, parenthesis are escaped but spaces are not.
+	    inconsistent, parentheses are escaped but spaces are not.
 Solution:   Only escape "!". (Gary Johnson)
 Files:	    src/ex_docmd.c
 
@@ -1890,7 +1904,7 @@ Solution:   Add line_lbr flag to regexec_nl().
 Files:	    src/regexp.c, src/regexp_nfa.c, src/regexp.h
 
 Patch 7.4.263
-Problem:    GCC 4.8 compiler warning for hiding a declaration (Francois Gannaz)
+Problem:    GCC 4.8 compiler warning for hiding a declaration (François Gannaz)
 Solution:   Remove the second declaration.
 Files:	    src/eval.c
 
@@ -1964,7 +1978,7 @@ Solution:   Also check the file size.
 Files:	    src/fileio.c
 
 Patch 7.4.275
-Problem:    When changing the type of a sign that hasn't been placed ther is
+Problem:    When changing the type of a sign that hasn't been placed there is
 	    no error message.
 Solution:   Add an error message. (Christian Brabandt)
 Files:	    src/ex_cmds.c
@@ -2028,7 +2042,7 @@ Solution:   (Christian Brabandt)
 Files:	    src/misc1.c
 
 Patch 7.4.286
-Problem:    Error messages are inconsistant. (ZyX)
+Problem:    Error messages are inconsistent. (ZyX)
 Solution:   Change "Lists" to "list".
 Files:	    src/eval.c
 
@@ -2222,7 +2236,7 @@ Files:	    src/syntax.c
 
 Patch 7.4.319
 Problem:    Crash when putting zero bytes on the clipboard.
-Solution:   Do not support the utf8_atom target when not using an Unicode
+Solution:   Do not support the utf8_atom target when not using a Unicode
 	    encoding. (Naofumi Honda)
 Files:	    src/ui.c
 
@@ -2310,7 +2324,7 @@ Solution:   Put the function inside the #ifdef.
 Files:	    src/screen.c
 
 Patch 7.4.334 (after 7.4.330)
-Problem:    Unitialized variables, causing some problems.
+Problem:    Uninitialized variables, causing some problems.
 Solution:   Initialize the variables. (Dominique Pelle)
 Files:	    src/screen.c, src/window.c
 
@@ -2372,7 +2386,7 @@ Solution:   Fix off-by-one error.  (Ozaki Kiichi)
 Files:	    src/window.c
 
 Patch 7.4.344
-Problem:    Unessecary initializations and other things related to
+Problem:    Unnecessary initializations and other things related to
 	    matchaddpos().
 Solution:   Code cleanup. (Alexey Radkov)
 Files:	    runtime/doc/eval.txt, src/screen.c, src/window.c
@@ -2396,7 +2410,7 @@ Files:	    src/testdir/test55.in, src/testdir/test55.ok
 Patch 7.4.348
 Problem:    When using "J1" in 'cinoptions' a line below a continuation line
 	    gets too much indent.
-Solution:   Fix parenthesis in condition.
+Solution:   Fix parentheses in condition.
 Files:	    src/misc1.c
 
 Patch 7.4.349
@@ -2408,7 +2422,7 @@ Files:	    src/screen.c, src/window.c
 
 Patch 7.4.350
 Problem:    Using C indenting for Javascript does not work well for a {} block
-	    inside parenthesis.
+	    inside parentheses.
 Solution:   When looking for a matching paren ignore one that is before the
 	    start of a {} block.
 Files:	    src/misc1.c, src/testdir/test3.in, src/testdir/test3.ok
@@ -2573,7 +2587,7 @@ Solution:   Compute the available room properly. (Yukihiro Nakadaira)
 Files:	    src/window.c
 
 Patch 7.4.378
-Problem:    Title of quickfist list is not kept for setqflist(list, 'r').
+Problem:    Title of quickfix list is not kept for setqflist(list, 'r').
 Solution:   Keep the title.  Add a test. (Lcd)
 Files:	    src/quickfix.c, src/testdir/Make_amiga.mak,
 	    src/testdir/Make_dos.mak, src/testdir/Make_ming.mak,
@@ -2969,7 +2983,7 @@ Solution:   Do not call ex_window() when ex_normal_busy or got_int was set.
 Files:	    src/ex_getln.c
 
 Patch 7.4.442 (after 7.4.434)
-Problem:    Using unitinialized variable.
+Problem:    Using uninitialized variable.
 Solution:   Pass the first window of the tabpage.
 Files:	    src/eval.c
 
@@ -3100,7 +3114,7 @@ Files:	    src/gui_w32.c
 
 Patch 7.4.465 (after 7.4.016)
 Problem:    Crash when expanding a very long string.
-Solution:   Use wsncpy() instead of wcscpy(). (Ken Takata)
+Solution:   Use wcsncpy() instead of wcscpy(). (Ken Takata)
 Files:	    src/os_win32.c
 
 Patch 7.4.466 (after 7.4.460)
@@ -3140,7 +3154,7 @@ Solution:   Convert the printer name from the active codepage to 'encoding'.
 Files:	    src/os_mswin.c
 
 Patch 7.4.472
-Problem:    The "precedes" entry in 'listchar' will be drawn when 'showbreak
+Problem:    The "precedes" entry in 'listchar' will be drawn when 'showbreak'
 	    is set and 'list' is not.
 Solution:   Only draw this character when 'list' is on. (Christian Brabandt)
 Files:	    src/screen.c
@@ -3429,7 +3443,7 @@ Files:	    src/buffer.c, src/regexp.c, src/syntax.c, src/spell.c,
 	    src/proto/regexp.pro, src/os_unix.c
 
 Patch 7.4.520
-Problem:    Sun PCK locale is not recognzed.
+Problem:    Sun PCK locale is not recognized.
 Solution:   Add PCK in the table. (Keiichi Oono)
 Files:	    src/mbyte.c
 
@@ -3498,7 +3512,7 @@ Files:	    runtime/doc/editing.txt, runtime/doc/tabpage.txt,
 
 Patch 7.4.531
 Problem:    Comments about parsing an Ex command are wrong.
-Solution:   Correct the steop numbers.
+Solution:   Correct the step numbers.
 Files:	    src/ex_docmd.c
 
 Patch 7.4.532
@@ -3555,7 +3569,7 @@ Files:	    src/ex_docmd.c
 
 Patch 7.4.541
 Problem:    Crash when doing a range assign.
-Solution:   Check for NULL poiter. (Yukihiro Nakadaira)
+Solution:   Check for NULL pointer. (Yukihiro Nakadaira)
 Files:	    src/eval.c, src/testdir/test55.in, src/testdir/test55.ok
 
 Patch 7.4.542
@@ -3602,14 +3616,14 @@ Solution:   Advance the cursor over the multi-byte character. (Christian
 Files:	    src/search.c
 
 Patch 7.4.548
-Problem:    Compilation fails with native version of MinGW-w64, because the
+Problem:    Compilation fails with native version of MinGW-w64, because
 	    it doesn't have x86_64-w64-mingw32-windres.exe.
 Solution:   Use windres instead. (Ken Takata)
 Files:	    src/Make_cyg_ming.mak
 
 Patch 7.4.549
 Problem:    Function name not recognized correctly when inside a function.
-Solution:   Don't check for an alpha character.
+Solution:   Don't check for an alpha character. (Ozaki Kiichi)
 Files:	    src/eval.c, src/testdir/test_nested_function.in,
 	    src/testdir/test_nested_function.ok, src/testdir/Make_amiga.mak,
 	    src/testdir/Make_dos.mak, src/testdir/Make_ming.mak,
@@ -3721,7 +3735,7 @@ Files:	    runtime/doc/editing.txt, runtime/doc/tabpage.txt,
 	    src/testdir/test_command_count.ok
 
 Patch 7.4.567
-Problem:    Non-ascii vertical separater characters are always redrawn.
+Problem:    Non-ascii vertical separator characters are always redrawn.
 Solution:   Compare only the one byte that's stored. (Thiago Padilha)
 Files:	    src/screen.c
 
@@ -3798,7 +3812,7 @@ Solution:   Skip over white space.
 Files:	    src/ex_docmd.c
 
 Patch 7.4.581
-Problem:    Compiler warnings for unitinialized variables. (John Little)
+Problem:    Compiler warnings for uninitialized variables. (John Little)
 Solution:   Initialize the variables.
 Files:	    src/ops.c
 
@@ -3930,7 +3944,7 @@ Problem:    'foldcolumn' may be set such that it fills the whole window, not
 	    leaving space for text.
 Solution:   Reduce the foldcolumn width when there is not sufficient room.
 	    (idea by Christian Brabandt)
-Files:	    src/srcreen.c
+Files:	    src/screen.c
 
 Patch 7.4.604
 Problem:    Running tests changes viminfo.
@@ -4019,7 +4033,7 @@ Solution:   Return one.
 Files:	    src/if_lua.c
 
 Patch 7.4.620
-Problem:    Compiler warning for unitinialized variable. (Tony Mechelynck)
+Problem:    Compiler warning for uninitialized variable. (Tony Mechelynck)
 Solution:   Initialize "did_free". (Ben Fritz)
 Files:	    src/eval.c
 
@@ -4079,7 +4093,7 @@ Files:	    src/fileio.c
 Patch 7.4.631
 Problem:    The default conceal character is documented to be a space but it's
 	    initially a dash. (Christian Brabandt)
-Solution:   Make the intial value a space.
+Solution:   Make the initial value a space.
 Files:	    src/globals.h
 
 Patch 7.4.632 (after 7.4.592)
@@ -4261,7 +4275,7 @@ Files:	    src/edit.c
 
 Patch 7.4.662
 Problem:    When 'M' is in the 'cpo' option then selecting a text object in
-	    parenthesis does not work correctly.
+	    parentheses does not work correctly.
 Solution:   Keep 'M' in 'cpo' when finding a match. (Hirohito Higashi)
 Files:	    src/search.c, src/testdir/Make_amiga.mak,
 	    src/testdir/Make_dos.mak, src/testdir/Make_ming.mak,
@@ -4463,7 +4477,7 @@ Solution:   Disable viminfo in the text objects test.
 Files:      src/testdir/test_textobjects.in
 
 Patch 7.4.695
-Problem:    Out-of-bounds read, dectected by Coverity.
+Problem:    Out-of-bounds read, detected by Coverity.
 Solution:   Remember the value of cmap for the first matching encoding.  Reset
             cmap to that value if first matching encoding is going to be used.
             (Eliseo Martínez)
@@ -4506,7 +4520,7 @@ Solution:   Initialize it.
 Files:      src/hardcopy.c
 
 Patch 7.4.702
-Problem:    Joining an empty list does uneccessary work.
+Problem:    Joining an empty list does unnecessary work.
 Solution:   Let join() return early. (Marco Hinz)
 Files:      src/eval.c
 
@@ -4553,7 +4567,7 @@ Files:      src/window.c, runtime/doc/tabpage.txt, src/ex_docmd.c,
             src/testdir/test62.in, src/testdir/test62.ok
 
 Patch 7.4.710
-Problem:    It is not possible to make spaces visibible in list mode.
+Problem:    It is not possible to make spaces visible in list mode.
 Solution:   Add the "space" item to 'listchars'. (David Bürgin, issue 350)
 Files:      runtime/doc/options.txt, src/globals.h, src/message.h,
             src/screen.c, src/testdir/test_listchars.in,
@@ -5030,7 +5044,7 @@ Solution:   Add #ifdef's.
 Files:      src/option.c
 
 Patch 7.4.789 (after 7.4.788)
-Problem:    Using freed memory and crash. (Dominique Pellej)
+Problem:    Using freed memory and crash. (Dominique Pelle)
 Solution:   Correct use of pointers. (Hirohito Higashi)
 Files:      src/option.c
 
@@ -5147,7 +5161,7 @@ Solution:   Clear the command line or update the displayed command.
 Files:      src/normal.c
 
 Patch 7.4.808
-Problem:    On MS-Windows 8 IME input doen't work correctly.
+Problem:    On MS-Windows 8 IME input doesn't work correctly.
 Solution:   Read console input before calling MsgWaitForMultipleObjects().
             (vim-jp, Nobuhiro Takasaki)
 Files:      src/os_win32.c
@@ -5267,7 +5281,7 @@ Files:      src/Makefile
 
 Patch 7.4.828
 Problem:    Crash when using "syn keyword x c". (Dominique Pelle)
-Solution:   Initialize the keyword tabble. (Raymond Ko, PR 397)
+Solution:   Initialize the keyword table. (Raymond Ko, PR 397)
 Files:      src/syntax.c
 
 Patch 7.4.829
@@ -5310,7 +5324,7 @@ Solution:   Get the byte size of each character. (Dominique Pelle)
 Files:      src/misc2.c
 
 Patch 7.4.836
-Problem:    Accessing unitinialized memory.
+Problem:    Accessing uninitialized memory.
 Solution:   Add missing calls to init_tv(). (Dominique Pelle)
 Files:      src/eval.c
 
@@ -5519,7 +5533,8 @@ Files:      src/misc1.c
 
 Patch 7.4.872
 Problem:    Not using CI services available.
-Solution:   Add configuration files for travis and appveyor. (PR #401)
+Solution:   Add configuration files for travis and appveyor. (Ken Takata,
+            vim-jp, PR #401)
 Files:      .travis.yml, appveyor.yml, Filelist
 
 Patch 7.4.873 (after 7.4.866)
@@ -5694,7 +5709,7 @@ Files:      src/os_win32.c
 
 Patch 7.4.903
 Problem:    MS-Windows: When 'encoding' differs from the current code page,
-            expandinig wildcards may cause illegal memory access.
+            expanding wildcards may cause illegal memory access.
 Solution:   Allocate a longer buffer. (Ken Takata)
 Files:      src/misc1.c
 
@@ -5887,13 +5902,13 @@ Solution:   Add safety check for NULL pointer. Check mouse position for valid
 Files:      src/window.c, src/term.c
 
 Patch 7.4.937
-Problem:    Segfault reading unitialized memory.
+Problem:    Segfault reading uninitialized memory.
 Solution:   Do not read match \z0, it does not exist. (Marius Gedminas, closes
             #497)
 Files:      src/regexp_nfa.c
 
 Patch 7.4.938
-Problem:    X11 and GTK have moure mouse buttons than Vim supports.
+Problem:    X11 and GTK have more mouse buttons than Vim supports.
 Solution:   Recognize more mouse buttons. (Benoit Pierre, closes #498)
 Files:      src/gui_gtk_x11.c, src/gui_x11.c
 
@@ -5977,7 +5992,7 @@ Files:      src/screen.c, src/testdir/test_listlbr_utf8.in,
 
 Patch 7.4.950
 Problem:    v:errors is not initialized.
-Solution:   Initialze it to an empty list. (Thinca)
+Solution:   Initialize it to an empty list. (Thinca)
 Files:      src/eval.c
 
 Patch 7.4.951
@@ -6003,7 +6018,7 @@ Files:      src/testdir/runtest.vim
 
 Patch 7.4.954
 Problem:    When using Lua there may be a crash. (issue #468)
-Solution:   Avoid using an unitialized tv. (Yukihiro Nakadaira)
+Solution:   Avoid using an uninitialized tv. (Yukihiro Nakadaira)
 Files:      src/if_lua.c
 
 Patch 7.4.955
@@ -6037,12 +6052,12 @@ Solution:   Use a tiny C program to get the version of _MSC_VER. (Ken Takata)
 Files:      src/Make_mvc.mak
 
 Patch 7.4.961
-Problem:    Test107 fails in some circunstances.
+Problem:    Test107 fails in some circumstances.
 Solution:   When using "zt", "zb" and "z=" recompute the fraction.
 Files:      src/normal.c, src/window.c, src/proto/window.pro
 
 Patch 7.4.962
-Problem:    Cannot run the tests with gvim.  Cannot run individual new stests.
+Problem:    Cannot run the tests with gvim.  Cannot run individual new tests.
 Solution:   Add the -f flag. Add new test targets in Makefile.
 Files:      src/Makefile, src/testdir/Makefile
 
@@ -6079,7 +6094,7 @@ Solution:   Reduce the count from 8 to 7. (suggested by ZyX)
 Files:      src/testdir/test86.in, src/testdir/test87.in
 
 Patch 7.4.969
-Problem:    Compiler warnings on Windowx x64 build.
+Problem:    Compiler warnings on Windows x64 build.
 Solution:   Add type casts. (Mike Williams)
 Files:      src/option.c
 
@@ -6158,7 +6173,7 @@ Files:      src/testdir/runtest.vim
 Patch 7.4.982
 Problem:    Keeping the list of tests updated is a hassle.
 Solution:   Move the list to a separate file, so that it only needs to be
-            udpated in one place.
+            updated in one place.
 Files:      src/testdir/Make_amiga.mak, src/testdir/Make_dos.mak,
             src/testdir/Make_ming.mak, src/testdir/Make_os2.mak,
             src/testdir/Make_vms.mms, src/testdir/Makefile,
@@ -6269,7 +6284,7 @@ Files:      .travis.yml
 
 Patch 7.4.998
 Problem:    Running tests in shadow directory fails.  Test 49 fails.
-Solution:   Link more files for the shadow directory. Make test 49 end up in
+Solution:   Link more files for the shadow directory. Make test 49 ends up in
             the right buffer.
 Files:      src/Makefile, src/testdir/test49.in
 
@@ -6301,7 +6316,7 @@ Solution:   Run autoconf on one of the builds. (James McCoy, closes #510)
 Files:      .travis.yml
 
 Patch 7.4.1004
-Problem:    Using Makefile when auto/config.mk does not exists results in
+Problem:    Using Makefile when auto/config.mk does not exist results in
             warnings.
 Solution:   Use default values for essential variables.
 Files:      src/Makefile
@@ -6576,13 +6591,13 @@ Solution:   Set 'fileformat' to "unix".
 Files:      src/testdir/test_wordcount.in
 
 Patch 7.4.1049 (after patch 7.4.1048)
-Problem:    Wordcount test still still fails on MS-Windows.
+Problem:    Wordcount test still fails on MS-Windows.
 Solution:   Set 'fileformats' to "unix".
 Files:      src/testdir/test_wordcount.in
 
 Patch 7.4.1050
 Problem:    Warning for unused var with tiny features. (Tony Mechelynck)
-Solution:   Add #ifdef.  Use vim_snprintf().  Reduce number of statemements.
+Solution:   Add #ifdef.  Use vim_snprintf().  Reduce number of statements.
 Files:      src/ops.c
 
 Patch 7.4.1051
@@ -6652,7 +6667,7 @@ Files:      src/Make_cyg_ming.mak, src/Make_mvc.mak
 Patch 7.4.1063
 Problem:    TCL_VER_LONG and DYNAMIC_TCL_VER are not set when building with
             Cygwin and MingW.
-Solution:   Add TCL_VER_LONG and DYNAMIC_TCL_VER to the makefile.
+Solution:   Add TCL_VER_LONG and DYNAMIC_TCL_VER to the makefile. (Ken Takata)
 Files:      src/Make_cyg_ming.mak
 
 Patch 7.4.1064
@@ -6719,7 +6734,7 @@ Files:      src/misc2.c, src/vim.h, src/alloc.h, src/globals.h,
             src/testdir/test_quickfix.vim
 
 Patch 7.4.1074
-Problem:    Warning from VX2015 compiler.
+Problem:    Warning from VC2015 compiler.
 Solution:   Add a type cast. (Mike Williams)
 Files:      src/gui_dwrite.cpp
 
@@ -6959,7 +6974,7 @@ Files:      src/eval.c, src/testdir/test_viml.vim
 
 Patch 7.4.1114 (after 7.4.1107)
 Problem:    delete() does not work well with symbolic links.
-Solution:   Recognize symbolik links.
+Solution:   Recognize symbolic links.
 Files:      src/eval.c, src/fileio.c, src/os_unix.c, src/proto/os_unix.pro,
             src/testdir/test_delete.vim, runtime/doc/eval.txt
 
@@ -7147,7 +7162,7 @@ Solution:   Move the call to gui_gtk_register_resource(). (Kazunobu Kuriyama)
 Files:      src/gui_gtk_x11.c
 
 Patch 7.4.1139
-Problem:    MS-Windows: getftype() returns "file for symlink to directory.
+Problem:    MS-Windows: getftype() returns "file" for symlink to directory.
 Solution:   Make it return "dir". (Ken Takata)
 Files:      src/os_mswin.c
 
@@ -7184,7 +7199,7 @@ Files:      src/ex_cmds.c
 
 Patch 7.4.1145
 Problem:    Default features are conservative.
-Solution:   Make the default feature set for most of todays systems "huge".
+Solution:   Make the default feature set for most of today's systems "huge".
 Files:      src/feature.h, src/configure.in, src/auto/configure
 
 Patch 7.4.1146
@@ -7250,7 +7265,7 @@ Files:      src/json.c, src/eval.c, src/proto.h, src/structs.h, src/vim.h,
 
 Patch 7.4.1155
 Problem:    Build with normal features fails.
-Solution:   Always deinfe dict_lookup().
+Solution:   Always define dict_lookup().
 Files:      src/eval.c
 
 Patch 7.4.1156
@@ -7297,7 +7312,7 @@ Files:      src/eval.c, src/testdir/test_viml.vim
 
 Patch 7.4.1164
 Problem:    No tests for comparing special variables.  Error in jsondecode()
-            not reported.  test_json does not work Japanse system.
+            not reported.  test_json does not work with Japanese system.
 Solution:   Set scriptencoding. (Ken Takata) Add a few more tests. Add error.
 Files:      src/json.c, src/testdir/test_viml.vim, src/testdir/test_json.vim
 
@@ -7356,7 +7371,7 @@ Solution:   Add a test.
 Files:      src/testdir/test_viml.vim
 
 Patch 7.4.1174
-Problem:    Netbeans contains dead code insde #ifndef INIT_SOCKETS.
+Problem:    Netbeans contains dead code inside #ifndef INIT_SOCKETS.
 Solution:   Remove the dead code.
 Files:      src/netbeans.c
 
@@ -7631,7 +7646,7 @@ Files:      src/version.c, src/winclip.c, src/window.c, src/workshop.c,
 Patch 7.4.1216
 Problem:    Still using HAVE_STDARG_H.
 Solution:   Assume it's always defined.
-Files:      src/eval.c, src/misc2.c, src/vim.h, src/proto.h, src/congifure.in,
+Files:      src/eval.c, src/misc2.c, src/vim.h, src/proto.h, src/configure.in,
             src/auto/configure, config.h.in, src/os_amiga.h, src/os_msdos.h,
             src/os_vms_conf.h, src/os_win32.h
 
@@ -8051,7 +8066,7 @@ Solution:   Adjust the test for MS-Windows using "waittime".
 Files:      src/channel.c, src/testdir/test_channel.vim
 
 Patch 7.4.1290
-Problem:    Coverity complains about uneccessary check for NULL.
+Problem:    Coverity complains about unnecessary check for NULL.
 Solution:   Remove the check.
 Files:      src/eval.c
 
@@ -8061,7 +8076,7 @@ Solution:   Use return instead of break. (Ken Takata)
 Files:      src/testdir/test_channel.py
 
 Patch 7.4.1292
-Problem:    Some compilers complain about uninitialzed variable, even though
+Problem:    Some compilers complain about uninitialized variable, even though
             all possible cases are handled. (Dominique Pelle)
 Solution:   Add a default initialization.
 Files:      src/eval.c
@@ -8187,7 +8202,7 @@ Solution:   Don't give an error when handling WM_NETBEANS.  Re-enable tests
 Files:      src/gui_w48.c, src/testdir/test_channel.vim
 
 Patch 7.4.1314
-Problem:    Warning for uninitialzed variable.
+Problem:    Warning for uninitialized variable.
 Solution:   Initialize it. (Dominique Pelle)
 Files:      src/channel.c
 
@@ -8334,7 +8349,7 @@ Files:      src/os_unix.c
 
 Patch 7.4.1339
 Problem:    Warnings when building the GUI with MingW. (Cesar Romani)
-Solution:   Add type cats. (Yasuhiro Matsumoto)
+Solution:   Add type casts. (Yasuhiro Matsumoto)
 Files:      src/edit.c, src/gui_w32.c, src/gui_w48.c, src/os_mswin.c,
             src/os_win32.c
 
@@ -8374,7 +8389,7 @@ Files:      src/gui_w32.c, src/gui_w48.c
 
 Patch 7.4.1346
 Problem:    Compiler warnings in build with -O2.
-Solution:   Add inintializations.
+Solution:   Add initializations.
 Files:      src/eval.c
 
 Patch 7.4.1347
@@ -8460,7 +8475,7 @@ Solution:   Use the 1 msec waittime for all systems.
 Files:      src/channel.c
 
 Patch 7.4.1362 (after 7.4.1356)
-Problem:    Using unitinialized value.
+Problem:    Using uninitialized value.
 Solution:   Initialize jo_set.
 Files:      src/eval.c
 
@@ -8629,7 +8644,7 @@ Solution:   Make GLIB_COMPILE_RESOURCES empty instead of leaving it at "no".
 Files:      src/configure.in, src/auto/configure
 
 Patch 7.4.1391
-Problem:    Warning for uninitialzed variable.
+Problem:    Warning for uninitialized variable.
 Solution:   Set it to zero. (Christian Brabandt)
 Files:      src/eval.c
 
@@ -8668,7 +8683,7 @@ Files:      src/testdir/test_sort.vim
 
 Patch 7.4.1398
 Problem:    The close-cb option is not implemented yet.
-Solution:   Implemente close-cb. (Yasuhiro Matsumoto)
+Solution:   Implement close-cb. (Yasuhiro Matsumoto)
 Files:      src/channel.c, src/eval.c, src/structs.h, src/proto/channel.pro,
             src/testdir/test_channel.py, src/testdir/test_channel.vim
 
@@ -8784,7 +8799,7 @@ Solution:   Put it back.
 Files:      appveyor.yml
 
 Patch 7.4.1416
-Problem:    Using "u_char" intead of "char_u", which doesn't work everywhere.
+Problem:    Using "u_char" instead of "char_u", which doesn't work everywhere.
             (Jörg Plate)
 Solution:   Use "char_u" always.
 Files:      src/integration.c, src/macros.h
@@ -8925,7 +8940,7 @@ Files:      src/eval.c, src/channel.c, src/testdir/test_channel.vim,
             runtime/doc/channel.txt, runtime/doc/eval.txt
 
 Patch 7.4.1439 (after 7.4.1434)
-Problem:    Using uninitialzed variable.
+Problem:    Using uninitialized variable.
 Solution:   Initialize vc_type.
 Files:      src/json.c
 
@@ -9040,7 +9055,7 @@ Solution:   Use previous method for WIN32.
 Files:      src/channel.c
 
 Patch 7.4.1460
-Problem:    Syntax error in rarily used code.
+Problem:    Syntax error in rarely used code.
 Solution:   Fix the mch_rename() declaration. (Ken Takata)
 Files:      src/os_unix.c, src/proto/os_unix.pro
 
@@ -9051,7 +9066,7 @@ Solution:   Only use quotes when needed. (Yasuhiro Matsumoto)
 Files:      src/eval.c
 
 Patch 7.4.1462
-Problem:    Two more rarily used functions with errors.
+Problem:    Two more rarely used functions with errors.
 Solution:   Add proper argument types. (Dominique Pelle)
 Files:      src/misc2.c, src/termlib.c
 
@@ -9121,7 +9136,7 @@ Files:      src/eval.c
 
 Patch 7.4.1475
 Problem:    When using hangulinput with utf-8 a CSI character is
-            misintepreted.
+            misinterpreted.
 Solution:   Convert CSI to K_CSI. (SungHyun Nam)
 Files:      src/ui.c
 
@@ -9148,7 +9163,7 @@ Files:      src/ex_cmds2.c, src/testdir/test_loadplugin.vim,
             src/testdir/Make_all.mak
 
 Patch 7.4.1480
-Problem:    Cannot add a pack direcory without loading a plugin.
+Problem:    Cannot add a pack directory without loading a plugin.
 Solution:   Add the :packadd command.
 Files:      src/ex_cmds.h, src/ex_cmds2.c, src/proto/ex_cmds2.pro,
             src/testdir/test_loadplugin.vim, runtime/doc/repeat.txt
@@ -9426,7 +9441,7 @@ Solution:   Close hThread on the process info. (Ken Takata)
 Files:      src/os_win32.c
 
 Patch 7.4.1531
-Problem:    Compiler warning for unitinialized variable. (Dominique Pelle)
+Problem:    Compiler warning for uninitialized variable. (Dominique Pelle)
 Solution:   Always give the variable a value.
 Files:      src/channel.c
 
@@ -9658,7 +9673,7 @@ Files:      runtime/doc/options.txt, src/buffer.c, src/ex_cmds.c,
 
 Patch 7.4.1571
 Problem:    No test for ":help".
-Solution:   Add a test for what 7.4.1568 fixed. (Higashi Higashi)
+Solution:   Add a test for what 7.4.1568 fixed. (Hirohito Higashi)
 Files:      src/testdir/test_alot.vim, src/testdir/test_help_tagjump.vim
 
 Patch 7.4.1572
@@ -9727,7 +9742,7 @@ Solution:   Translate the function name.  Use dict arg if present.
 Files:      src/eval.c, src/testdir/test_partial.vim
 
 Patch 7.4.1583
-Problem:    Warning for unitinialized variable.
+Problem:    Warning for uninitialized variable.
 Solution:   Initialize it. (Dominique)
 Files:      src/ex_cmds2.c
 
@@ -9890,11 +9905,11 @@ Files:      Filelist, Contents, READMEdir/Contents
 
 Patch 7.4.1610
 Problem:    Compiler warnings for non-virtual destructor.
-Solution:   Mark the classe final. (Ken Takata)
+Solution:   Mark the classes final. (Ken Takata)
 Files:      src/Make_cyg_ming.mak, src/gui_dwrite.cpp, src/if_ole.cpp
 
 Patch 7.4.1611
-Problem:    The versplit feature makes the code uneccessary complicated.
+Problem:    The versplit feature makes the code unnecessary complicated.
 Solution:   Remove FEAT_VERTSPLIT, always support vertical splits when
             FEAT_WINDOWS is defined.
 Files:      src/buffer.c, src/charset.c, src/eval.c, src/ex_cmds.c,
@@ -10064,7 +10079,7 @@ Files:      src/eval.c
 
 Patch 7.4.1640
 Problem:    Crash when an autocommand changes a quickfix list. (Dominique)
-Solution:   Check wether an entry is still valid. (Yegappan Lakshmanan,
+Solution:   Check whether an entry is still valid. (Yegappan Lakshmanan,
             Hirohito Higashi)
 Files:      src/quickfix.c, src/testdir/test_quickfix.vim
 
@@ -10088,7 +10103,7 @@ Patch 7.4.1644
 Problem:    Using string() on a partial that exists in the dictionary it binds
             results in an error. (Nikolai Pavlov)
 Solution:   Make string() not fail on a recursively nested structure. (Ken
-            Takta)
+            Takata)
 Files:      src/eval.c, src/testdir/test_partial.vim
 
 Patch 7.4.1645
@@ -10609,7 +10624,7 @@ Files:      src/configure.in, src/auto/configure, src/config.mk.in,
 
 Patch 7.4.1734 (after 7.4.1730)
 Problem:    Test fails when not using utf-8.
-Solution:   Split test in regularand utf-8 part.
+Solution:   Split test in regular and utf-8 part.
 Files:      src/testdir/test_expr.vim, src/testdir/test_expr_utf8.vim,
             src/testdir/test_alot_utf8.vim
 
@@ -10664,7 +10679,7 @@ Solution:   use mb_cptr2len().  Add a test. (Naruhiko Nishino)
 Files:      src/eval.c, src/testdir/test_expr_utf8.vim
 
 Patch 7.4.1743
-Problem:    Clang warns for uninitialzed variable. (Michael Jarvis)
+Problem:    Clang warns for uninitialized variable. (Michael Jarvis)
 Solution:   Initialize it.
 Files:      src/if_py_both.h
 
@@ -10869,7 +10884,7 @@ Files:      src/term.c
 
 Patch 7.4.1779
 Problem:    Using negative index in strcharpart(). (Yegappan Lakshmanan)
-Solution:   Assume single byte when using a negative iindex.
+Solution:   Assume single byte when using a negative index.
 Files:      src/eval.c
 
 Patch 7.4.1780
@@ -10880,7 +10895,7 @@ Files:      src/ex_cmds2.c, src/json.c, src/misc1.c, src/ops.c,
 
 Patch 7.4.1781
 Problem:    synIDattr() does not respect 'guicolors'.
-Solution:   Change the conditition for the mode. (Christian Brabandt)
+Solution:   Change the condition for the mode. (Christian Brabandt)
 Files:      src/eval.c
 
 Patch 7.4.1782
@@ -11233,7 +11248,7 @@ Files:      runtime/doc/if_pyth.txt, src/if_py_both.h, src/testdir/test86.in,
 Patch 7.4.1844
 Problem:    Using old function name in comment.  More functions should start
             with test_.
-Solution:   Rename function in comment. (Higashi Higashi) Rename
+Solution:   Rename function in comment. (Hirohito Higashi) Rename
             disable_char_avail_for_testing() to test_disable_char_avail().
             And alloc_fail() to test_alloc_fail().
 Files:      src/eval.c, src/getchar.c, src/testdir/runtest.vim,
@@ -11293,7 +11308,7 @@ Patch 7.4.1854
 Problem:    When setting 'termguicolors' the Ignore highlighting doesn't work.
             (Charles Campbell)
 Solution:   Handle the color names "fg" and "bg" when the GUI isn't running
-            and no colors are speficied, fall back to black and white.
+            and no colors are specified, fall back to black and white.
 Files:      src/syntax.c
 
 Patch 7.4.1855
@@ -11340,7 +11355,7 @@ Files:      src/ex_cmds2.c
 Patch 7.4.1862
 Problem:    string() with repeated argument does not give a result usable by
             eval().
-Solution:   Refactor echo_striong and tv2string(), moving the common part to
+Solution:   Refactor echo_string and tv2string(), moving the common part to
             echo_string_core(). (Ken Takata)
 Files:      src/eval.c, src/testdir/test_viml.vim, src/testdir/test86.ok,
             src/testdir/test87.ok
@@ -11356,7 +11371,7 @@ Solution:   Use "getcwdu" instead of "getcwd". (Ken Takata)
 Files:      src/if_py_both.h
 
 Patch 7.4.1865
-Problem:    Memory leaks in tet49. (Dominique Pelle)
+Problem:    Memory leaks in test49. (Dominique Pelle)
 Solution:   Use NULL instead of an empty string.
 Files:      src/eval.c
 
@@ -11431,7 +11446,7 @@ Patch 7.4.1878
 Problem:    Whether a job has exited isn't detected until a character is
             typed.  After calling exit_cb the cursor is in the wrong place.
 Solution:   Don't wait forever for a character to be typed when there is a
-            pending job.  Update the screen if neede after calling exit_cb.
+            pending job.  Update the screen if needed after calling exit_cb.
 Files:      src/os_unix.c, src/channel.c, src/proto/channel.pro
 
 Patch 7.4.1879 (after 7.4.1877)
@@ -11605,7 +11620,7 @@ Solution:   Change type to size_t. (Mike Williams)
 Files:      src/ex_cmds.c
 
 Patch 7.4.1908
-Problem:    Netbeans uses uninitialzed pointer and freed memory.
+Problem:    Netbeans uses uninitialized pointer and freed memory.
 Solution:   Set "buffer" at the right place (hint by Ken Takata)
 Files:      src/netbeans.c
 
@@ -11742,7 +11757,7 @@ Solution:   Merge based on timestamp.
 Files:      src/mark.c, src/testdir/test_viminfo.vim
 
 Patch 7.4.1933
-Problem:    Compiler warning about uninitialzed variable. (Yegappan)
+Problem:    Compiler warning about uninitialized variable. (Yegappan)
 Solution:   Give it a dummy value.
 Files:      src/ex_getln.c
 

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2016 Jul 28
+*starting.txt*  For Vim version 7.4.  Last change: 2016 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -979,7 +979,7 @@ This has the side effect of setting or resetting other options (see
 changed.  This has the same effect like the value of 'compatible' had this
 value when starting Vim.
 
-'compatible is NOT reset, and |defaults.vim| is not loaded:
+'compatible' is NOT reset, and |defaults.vim| is not loaded:
 - when Vim was started with the |-u| command line argument, especially with
   "-u NONE", or
 - when started with the |-C| command line argument, or

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Jul 23
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,6 +33,8 @@ not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Should free_all_functions(void) skip numbered and lambda functions?
 
 +channel:
 - Channel test fails with Motif.  Sometimes kills the X11 server.
@@ -108,15 +110,6 @@ Or avoid recursiveness.
 Patch to test popupmenu.  Fails, possibly due to a bug.
 (Christian Brabandt, 2016 Jul 23)
 
-7   In "-- INSERT (lang) --" show the name of the keymap used instead of
-    "lang". (Ilya Dogolazky)
-Patch: Show keymap name in mode indicator (Dmitri Vereshchagin, 2016 Jul 19,
-#933)
-
-Patch to fix the Problem using cgn to change a search hit when
-replacement includes hit. Reported by John Beckett, fix by Christian Brabandt,
-2016 Jan 11.
-
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
@@ -136,27 +129,31 @@ Javascript indent wrong after /* in single quoted string:
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
 
-Updating marks in quickfix list is broken. (Yegappan, 2016 Jul 18)
-
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 
 For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
 5)
 
-Support closure for lambda?  Ken Takata is working on it.
-Patch Jul 19.  Still need test updates.
-
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 
 Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
+
+Do we need some way (option) to show the sign column even when there are no
+signs?  Patch by Christian Brabandt, 2016 Jul 29.
 
 Patch to allow setting w:quickfix_title via setqflist() and setloclist()
 functions. (Christian Brabandt, 2013 May 8, update May 21)
 Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
 Second one. Update May 22.
 Update by Daniel Hahler, 2014 Jul 4, Aug 14, Oct 14, Oct 15.
-Rethink this: can we add an argument to setqflist() and getqflist() for these
-extra items?
+Updated patch: add an argument to setqflist() and getqflist() for these
+extra items: Yegappan, 2016 Jul 30.
+
+Patch to detect st terminal supporting xterm mouse. (Manuel Schiller, 2016 Aug
+2, #963)
+
+Syntax highlighting for messages with RFC3339 timestamp (#946)
+Did maintainer reply?
 
 Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
 13, last version)  Update June 26, #830.
@@ -174,13 +171,32 @@ Cannot delete a file with square brackets with delete(). (#696)
 No autocommand for when changing directory.  Patch from allen haim, 2016 Jun
 27, #888
 Justin M Keyes: use "global" or "window" for the pattern.  Can add "tab"
-later.
+later.  What if entering a window where ":lcd" was used?
+
+Completion for input() does not expand environment variables. (chdiza, 2016
+Jul 25, #948)
+
+Patch to have text objects defined by arbitrary single characters. (Daniel
+Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
+Ben Fritz: problem with 'selection' set to "exclusive".
+Updated to current Vim, not quite right yet. (Ben Fritz, 2014 Mar 27)
+Updated to current Vim (James McCoy, 2016 Jul 30, #958)
+Still a bit of work left.
+
+Patch to add CTRL-N / CTRL-P while searching. (Christian Brabandt, 2016 Jul
+29)
+
+'s$^$\=capture("s/^//gn")' locks Vim in sandbox mode (#950)
+Patch by Christian Brabandt, 2016 Jul 27.
 
 MS-Windows: use WS_HIDE instead of SW_SHOWMINNOACTIVE in os_win32.c?
 Otherwise task flickers in taskbar.
 
 Should make ":@r" handle line continuation. (Cesar Romani, 2016 Jun 26)
 Also for ":@.".
+
+Patch to make printf() convert to string for %s items. (Ken Takata, 2016 Aug
+1)
 
 Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 
@@ -219,12 +235,18 @@ emoji_width table has only one entry.
 It's possible to add ",," to 'wildignore', an empty entry.  Causes problems.
 Reject the value? #710.
 
+Patch to fix increment/decrement not working properly when 'virtualedit' is
+set. (Hirohito Higashi, 2016 Aug 1, #923)
+
 Patch to support strikethrough next to bold and italic. (Christian Brabandt,
 2013 Jul 30)  Update from Ken Takata, 2013 Oct 12.
 Update mentioned by Christian, 2016 Apr 25.
 Update from Ken Takata, 2016 Jul 17.
 
 Patch to improve cscope. (Adrian Kocis, #843)
+
+Patch to add getbufinfo(), gettabinfo() and getwininfo(). (Yegappan
+Lakshmanan, 2016 Apr 2016)  Update Jul 29.  #833.
 
 Patch for groovy multi-line comment highlighting. (Justin M. Keyes, 2016 May
 20 #644)
@@ -297,9 +319,6 @@ Add configure check?
 Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
-
-Patch to add getbufinfo(), gettabinfo() and getwininfo(). (Yegappan
-Lakshmanan, 2016 Apr 2016)  Update Jun 8.
 
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
@@ -623,6 +642,9 @@ Spell files use a latin single quote. Unicode also has another single quote:
 New OpenOffice spell files support this with ICONV.  But they are not
 compatible with Vim spell files.  The old files can no longer be downloaded.
 
+xterm should be able to pass focus changes to Vim, so that Vim can check for
+buffers that changed.  Perhaps in misc.c, function selectwindow().
+Xterm 224 supports it!
 Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
 Saito, 2013 Apr 24)  Has a problem (email 2015 Jan 7).
 Update 2015 Jan 10.
@@ -866,11 +888,6 @@ In the ATTENTION message about an existing swap file, mention the name of the
 process that is running.  It might actually be some other program, e.g. after
 a reboot.
 
-Patch to have text objects defined by arbitrary single characters. (Daniel
-Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
-Ben Fritz: problem with 'selection' set to "exclusive".
-Updated to current Vim, not quite right yet. (Ben Fritz, 2014 Mar 27)
-
 Patch to select the next or previous text object if there isn't one under the
 cursor. (Daniel Thau, 2013 Nov 20)
 
@@ -891,9 +908,6 @@ Or use expand('<sid>')?
 Patch to make confirm() display colors. (Christian Brabandt, 2012 Nov 9)
 
 Patch to add functions for signs. (Christian Brabandt, 2013 Jan 27)
-
-Do we need some way (option) to show the sign column even when there are no
-signs?  Patch by Christian Brabandt, 2013 Aug 22.
 
 Patch to remove flicker from popup menu. (Yasuhiro Matsumoto, 2013 Aug 15)
 
@@ -2264,10 +2278,6 @@ Patch for adding ":lscscope". (Navdeep Parhar, 2007 Apr 26; update 2008 Apr
 ":mkview" isn't called with the right buffer argument.  Happens when using
 tabs and the autocommand "autocmd BufWinLeave * mkview".  (James Vega, 2007
 Jun 18)
-
-xterm should be able to pass focus changes to Vim, so that Vim can check for
-buffers that changed.  Perhaps in misc.c, function selectwindow().
-Xterm 224 supports it!
 
 When completing from another file that uses a different encoding completion
 text has the wrong encoding.  E.g., when 'encoding' is utf-8 and file is

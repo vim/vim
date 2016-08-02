@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2016 Jul 09
+*various.txt*   For Vim version 7.4.  Last change: 2016 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -361,6 +361,7 @@ N  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+job*		starting and stopping jobs |job|
 N  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|
+N  *+lambda*		|lambda| and |closure|
 B  *+langmap*		|'langmap'|
 N  *+libcall*		|libcall()|
 N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
