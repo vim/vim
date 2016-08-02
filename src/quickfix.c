@@ -651,11 +651,7 @@ qf_get_next_file_line(qfstate_T *state)
 
     discard = FALSE;
     state->linelen = (int)STRLEN(IObuff);
-    if (state->linelen == IOSIZE - 1 && !(IObuff[state->linelen - 1] == '\n'
-#ifdef USE_CRNL
-		|| IObuff[state->linelen - 1] == '\r'
-#endif
-		))
+    if (state->linelen == IOSIZE - 1 && !(IObuff[state->linelen - 1] == '\n'))
     {
 	/*
 	 * The current line exceeds IObuff, continue reading using
@@ -680,11 +676,7 @@ qf_get_next_file_line(qfstate_T *state)
 		break;
 	    state->linelen = (int)STRLEN(state->growbuf + growbuflen);
 	    growbuflen += state->linelen;
-	    if ((state->growbuf)[growbuflen - 1] == '\n'
-#ifdef USE_CRNL
-		    || (state->growbuf)[growbuflen - 1] == '\r'
-#endif
-	       )
+	    if ((state->growbuf)[growbuflen - 1] == '\n')
 		break;
 	    if (state->growbufsiz == LINE_MAXLEN)
 	    {
@@ -708,11 +700,7 @@ qf_get_next_file_line(qfstate_T *state)
 	     */
 	    if (fgets((char *)IObuff, IOSIZE, state->fd) == NULL
 		    || (int)STRLEN(IObuff) < IOSIZE - 1
-		    || IObuff[IOSIZE - 1] == '\n'
-#ifdef USE_CRNL
-		    || IObuff[IOSIZE - 1] == '\r'
-#endif
-	       )
+		    || IObuff[IOSIZE - 1] == '\n')
 		break;
 	}
 
@@ -757,11 +745,13 @@ qf_get_nextline(qfstate_T *state)
 
     /* remove newline/CR from the line */
     if (state->linelen > 0 && state->linebuf[state->linelen - 1] == '\n')
+    {
 	state->linebuf[state->linelen - 1] = NUL;
 #ifdef USE_CRNL
-    if (state->linelen > 0 && state->linebuf[state->linelen - 1] == '\r')
-	state->linebuf[state->linelen - 1] = NUL;
+	if (state->linelen > 1 && state->linebuf[state->linelen - 2] == '\r')
+	    state->linebuf[state->linelen - 2] = NUL;
 #endif
+    }
 
 #ifdef FEAT_MBYTE
     remove_bom(state->linebuf);
