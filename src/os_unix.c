@@ -2259,7 +2259,10 @@ vim_is_xterm(char_u *name)
 use_xterm_like_mouse(char_u *name)
 {
     return (name != NULL
-	    && (term_is_xterm || STRNICMP(name, "screen", 6) == 0));
+	    && (term_is_xterm || STRNICMP(name, "screen", 6) == 0
+		|| STRICMP(name, "st") == 0 
+		|| STRNICMP(name, "st-", 3) == 0
+		|| STRNICMP(name, "stterm", 6) == 0));
 }
 #endif
 
