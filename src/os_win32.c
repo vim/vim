@@ -4267,7 +4267,7 @@ sub_process_writer(LPVOID param)
 
     /* finished all the lines, close pipe */
     CloseHandle(g_hChildStd_IN_Wr);
-    ExitThread(0);
+    return 0;
 }
 
 
@@ -4491,8 +4491,8 @@ mch_system_piped(char *cmd, int options)
 
     if (options & SHELL_WRITE)
     {
-	HANDLE thread =
-	   CreateThread(NULL,  /* security attributes */
+	HANDLE thread = (HANDLE)
+	 _beginthreadex(NULL,  /* security attributes */
 			0,     /* default stack size */
 			sub_process_writer, /* function to be executed */
 			g_hChildStd_IN_Wr,  /* parameter */
