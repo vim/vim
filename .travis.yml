@@ -62,6 +62,7 @@ addons:
       - python3-dev
       - liblua5.1-0-dev
       - lua5.1
+      - cscope
 
 before_install:
   - pip install --user cpp-coveralls
