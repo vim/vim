@@ -417,6 +417,88 @@ function! Test_match_count()
   endfor
 endfunction!
 
+function! Test_match_visual()
+  for c in [',', '‽']
+    " Single char between matches should immediately expand for im
+    let one = 'X'.c.'foo'.c.'bar'.c.'i'.c.'baz'.c.'quux'.c.'X'
+    " Two chars between characters should first select both chars for im
+    let two = 'X'.c.'foo'.c.'bar'.c.'ii'.c.'baz'.c.'quux'.c.'X'
+
+    " Basic visual selection works
+    call setline(line('.'), one)
+    call setreg('"', '')
+    call feedkeys('0fivim'.c.'y', 'nx')
+    call assert_equal('bar'.c.'i'.c.'baz', getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fivam'.c.'y', 'nx')
+    call assert_equal(c.'i'.c, getreg('"'))
+
+    call setline(line('.'), two)
+    call setreg('"', '')
+    call feedkeys('0fivim'.c.'y', 'nx')
+    call assert_equal('ii', getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fivam'.c.'y', 'nx')
+    call assert_equal(c.'ii'.c, getreg('"'))
+
+    " Visual selection with count
+    call setline(line('.'), one)
+    call setreg('"', '')
+    call feedkeys('0fiv2im'.c.'y', 'nx')
+    call assert_equal('foo'.c.'bar'.c.'i'.c.'baz'.c.'quux', getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fiv2am'.c.'y', 'nx')
+    call assert_equal(c.'bar'.c.'i'.c.'baz'.c, getreg('"'))
+
+    call setline(line('.'), two)
+    call setreg('"', '')
+    call feedkeys('0fiv2im'.c.'y', 'nx')
+    call assert_equal('bar'.c.'ii'.c.'baz', getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fiv2am'.c.'y', 'nx')
+    call assert_equal(c.'bar'.c.'ii'.c.'baz'.c, getreg('"'))
+
+    " Expand an existing visual selection
+    call setline(line('.'), one)
+    call setreg('"', '')
+    call feedkeys('0fivim'.c.'im'.c.'y', 'nx')
+    call assert_equal('foo'.c.'bar'.c.'i'.c.'baz'.c.'quux', getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fivam'.c.'am'.c.'y', 'nx')
+    call assert_equal(c.'bar'.c.'i'.c.'baz'.c, getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fivim'.c.'am'.c.'y', 'nx')
+    call assert_equal(c.'bar'.c.'i'.c.'baz'.c, getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fivam'.c.'im'.c.'y', 'nx')
+    call assert_equal('bar'.c.'i'.c.'baz', getreg('"'))
+
+    call setline(line('.'), two)
+    call setreg('"', '')
+    call feedkeys('0fivim'.c.'im'.c.'y', 'nx')
+    call assert_equal('bar'.c.'ii'.c.'baz', getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fivam'.c.'am'.c.'y', 'nx')
+    call assert_equal(c.'bar'.c.'ii'.c.'baz'.c, getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fivim'.c.'am'.c.'y', 'nx')
+    call assert_equal(c.'ii'.c, getreg('"'))
+
+    call setreg('"', '')
+    call feedkeys('0fivam'.c.'im'.c.'y', 'nx')
+    call assert_equal('bar'.c.'ii'.c.'baz', getreg('"'))
+  endfor
+endfunction
+
 function! Test_match_fail()
   " Unbalanced on the right
   call setline(line('.'), 'foo,i')
