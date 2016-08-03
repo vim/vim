@@ -472,12 +472,15 @@ vimLoadLib(char *name)
 # endif
 /* Dummy functions */
 static char *null_libintl_gettext(const char *);
+static char *null_libintl_ngettext(const char *, const char *, unsigned long n);
 static char *null_libintl_textdomain(const char *);
 static char *null_libintl_bindtextdomain(const char *, const char *);
 static char *null_libintl_bind_textdomain_codeset(const char *, const char *);
 
 static HINSTANCE hLibintlDLL = NULL;
 char *(*dyn_libintl_gettext)(const char *) = null_libintl_gettext;
+char *(*dyn_libintl_ngettext)(const char *, const char *, unsigned long n)
+						= null_libintl_ngettext;
 char *(*dyn_libintl_textdomain)(const char *) = null_libintl_textdomain;
 char *(*dyn_libintl_bindtextdomain)(const char *, const char *)
 						= null_libintl_bindtextdomain;
@@ -495,6 +498,7 @@ dyn_libintl_init(void)
     } libintl_entry[] =
     {
 	{"gettext", (FARPROC*)&dyn_libintl_gettext},
+	{"ngettext", (FARPROC*)&dyn_libintl_ngettext},
 	{"textdomain", (FARPROC*)&dyn_libintl_textdomain},
 	{"bindtextdomain", (FARPROC*)&dyn_libintl_bindtextdomain},
 	{NULL, NULL}
@@ -553,6 +557,7 @@ dyn_libintl_end(void)
 	FreeLibrary(hLibintlDLL);
     hLibintlDLL			= NULL;
     dyn_libintl_gettext		= null_libintl_gettext;
+    dyn_libintl_ngettext	= null_libintl_ngettext;
     dyn_libintl_textdomain	= null_libintl_textdomain;
     dyn_libintl_bindtextdomain	= null_libintl_bindtextdomain;
     dyn_libintl_bind_textdomain_codeset = null_libintl_bind_textdomain_codeset;
@@ -563,6 +568,16 @@ dyn_libintl_end(void)
 null_libintl_gettext(const char *msgid)
 {
     return (char*)msgid;
+}
+
+/*ARGSUSED*/
+    static char *
+null_libintl_ngettext(
+	const char *msgid,
+	const char *msgid_plural,
+	unsigned long n)
+{
+    return n == 1 ? msgid : msgid_plural;
 }
 
 /*ARGSUSED*/

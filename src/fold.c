@@ -1853,8 +1853,8 @@ foldDelMarker(linenr_T lnum, char_u *marker, int markerlen)
 /* get_foldtext() {{{2 */
 /*
  * Return the text for a closed fold at line "lnum", with last line "lnume".
- * When 'foldtext' isn't set puts the result in "buf[51]".  Otherwise the
- * result is in allocated memory.
+ * When 'foldtext' isn't set puts the result in "buf[FOLD_TEXT_LEN]".
+ * Otherwise the result is in allocated memory.
  */
     char_u *
 get_foldtext(
@@ -1960,8 +1960,12 @@ get_foldtext(
     if (text == NULL)
 #endif
     {
-	sprintf((char *)buf, _("+--%3ld lines folded "),
-						    (long)(lnume - lnum + 1));
+	long count = (long)(lnume - lnum + 1);
+
+	vim_snprintf((char *)buf, FOLD_TEXT_LEN,
+		     ngettext("+--%3ld line folded ",
+					       "+--%3ld lines folded ", count),
+		     count);
 	text = buf;
     }
     return text;

@@ -3448,6 +3448,7 @@ f_foldtext(typval_T *argvars UNUSED, typval_T *rettv)
     char_u	*r;
     int		len;
     char	*txt;
+    long	count;
 #endif
 
     rettv->v_type = VAR_STRING;
@@ -3478,14 +3479,15 @@ f_foldtext(typval_T *argvars UNUSED, typval_T *rettv)
 		    s = skipwhite(s + 1);
 	    }
 	}
-	txt = _("+-%s%3ld lines: ");
+	count = (long)(foldend - foldstart + 1);
+	txt = ngettext("+-%s%3ld line: ", "+-%s%3ld lines: ", count);
 	r = alloc((unsigned)(STRLEN(txt)
 		    + STRLEN(dashes)	    /* for %s */
 		    + 20		    /* for %3ld */
 		    + STRLEN(s)));	    /* concatenated */
 	if (r != NULL)
 	{
-	    sprintf((char *)r, txt, dashes, (long)(foldend - foldstart + 1));
+	    sprintf((char *)r, txt, dashes, count);
 	    len = (int)STRLEN(r);
 	    STRCAT(r, s);
 	    /* remove 'foldmarker' and 'commentstring' */
@@ -3505,7 +3507,7 @@ f_foldtextresult(typval_T *argvars UNUSED, typval_T *rettv)
 #ifdef FEAT_FOLDING
     linenr_T	lnum;
     char_u	*text;
-    char_u	buf[51];
+    char_u	buf[FOLD_TEXT_LEN];
     foldinfo_T  foldinfo;
     int		fold_count;
 #endif
@@ -3520,8 +3522,7 @@ f_foldtextresult(typval_T *argvars UNUSED, typval_T *rettv)
     fold_count = foldedCount(curwin, lnum, &foldinfo);
     if (fold_count > 0)
     {
-	text = get_foldtext(curwin, lnum, lnum + fold_count - 1,
-							      &foldinfo, buf);
+	text = get_foldtext(curwin, lnum, lnum + fold_count - 1, &foldinfo, buf);
 	if (text == buf)
 	    text = vim_strsave(text);
 	rettv->vval.v_string = text;
