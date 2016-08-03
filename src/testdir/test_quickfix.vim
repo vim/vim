@@ -407,6 +407,7 @@ endfunction
 
 function Test_helpgrep()
   call s:test_xhelpgrep('c')
+  helpclose
   call s:test_xhelpgrep('l')
 endfunc
 
