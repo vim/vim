@@ -154,7 +154,7 @@ SCRIPTS_WIN32 = test50.out
 
 
 # Tests for the GUI.
-SCRIPTS_GUI = test16.out
+SCRIPTS_GUI =
 
 
 # Tests using runtest.vim.vim.
@@ -171,6 +171,7 @@ NEW_TESTS = test_arglist.res \
 	    test_digraph.res \
 	    test_farsi.res \
 	    test_gn.res \
+	    test_gui.res \
 	    test_hardcopy.res \
 	    test_history.res \
 	    test_increment.res \
