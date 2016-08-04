@@ -21,8 +21,8 @@ endfunc
 
 func Test_shell_command()
   new
-  r !echo 'hello'
-  call assert_equal('hello', getline(2))
+  r !echo hello
+  call assert_equal('hello', substitute(getline(2), '\W', '', 'g'))
   bwipe!
   call assert_true(1, match(execute('winpos'), 'Window position: X \d\+, Y \d\+') >= 0)
 endfunc
