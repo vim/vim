@@ -577,7 +577,7 @@ null_libintl_ngettext(
 	const char *msgid_plural,
 	unsigned long n)
 {
-    return n == 1 ? msgid : msgid_plural;
+    return (char *)(n == 1 ? msgid : msgid_plural);
 }
 
 /*ARGSUSED*/
