@@ -131,7 +131,7 @@ else
 endif
 
 " Names of flaky tests.
-let s:flaky = ['Test_reltime()', 'Test_nb_basic()']
+let s:flaky = ['Test_reltime()', 'Test_nb_basic()', 'Test_communicate()']
 
 " Locate Test_ functions and execute them.
 set nomore
