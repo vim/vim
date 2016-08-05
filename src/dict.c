@@ -418,6 +418,7 @@ dict_find(dict_T *d, char_u *key, int len)
 /*
  * Get a string item from a dictionary.
  * When "save" is TRUE allocate memory for it.
+ * When FALSE a shared buffer is used, can only be used once!
  * Returns NULL if the entry doesn't exist or out of memory.
  */
     char_u *

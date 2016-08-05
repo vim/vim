@@ -9659,11 +9659,11 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		}
 	    }
 
-	    group = get_dict_string(d, (char_u *)"group", FALSE);
+	    group = get_dict_string(d, (char_u *)"group", TRUE);
 	    priority = (int)get_dict_number(d, (char_u *)"priority");
 	    id = (int)get_dict_number(d, (char_u *)"id");
 	    conceal = dict_find(d, (char_u *)"conceal", -1) != NULL
-			      ? get_dict_string(d, (char_u *)"conceal", FALSE)
+			      ? get_dict_string(d, (char_u *)"conceal", TRUE)
 			      : NULL;
 	    if (i == 0)
 	    {
@@ -9677,6 +9677,8 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		list_unref(s);
 		s = NULL;
 	    }
+	    vim_free(group);
+	    vim_free(conceal);
 
 	    li = li->li_next;
 	}
