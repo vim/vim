@@ -4240,6 +4240,13 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
     }
 # endif
+#ifdef FEAT_CSCOPE
+    if (xpc.xp_context == EXPAND_CSCOPE)
+    {
+	set_context_in_cscope_cmd(&xpc, xpc.xp_pattern, CMD_cscope);
+	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+    }
+#endif
 
     pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
     if ((rettv_list_alloc(rettv) != FAIL) && (pat != NULL))
