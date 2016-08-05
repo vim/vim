@@ -1,27 +1,5 @@
 " Test binding arguments to a Funcref.
  
-" NOTE: This function may cause memory leaks to be reported.
-" That is because when fork/exec fails memory is not freed.  Since the process
-" exists right away it's not a real leak.
-func Test_job_start_fails()
-  if has('job')
-    let job = job_start('axdfxsdf')
-    for i in range(100)
-      let status = job_status(job)
-      if status == 'dead' || status == 'fail'
-	break
-      endif
-      sleep 10m
-    endfor
-    if has('unix')
-      call assert_equal('dead', job_status(job))
-    else
-      call assert_equal('fail', job_status(job))
-    endif
-    unlet job
-  endif
-endfunc
-
 func MyFunc(arg1, arg2, arg3)
   return a:arg1 . '/' . a:arg2 . '/' . a:arg3
 endfunc
