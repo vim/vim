@@ -19,6 +19,8 @@ func Test_after_comes_later()
     return
   endif
   let before = [
+	\ 'set nocp viminfo+=nviminfo',
+	\ 'set guioptions+=M',
 	\ 'let $HOME = "/does/not/exist"',
 	\ 'set loadplugins',
 	\ 'set rtp=Xhere,Xafter',

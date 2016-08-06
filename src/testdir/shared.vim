@@ -135,7 +135,10 @@ func RunVim(before, after)
 
   let cmd = readfile('vimcmd')[0]
   let cmd = substitute(cmd, '-u \f\+', '-u NONE', '')
-  exe "silent !" . cmd . " --cmd 'so Xbefore.vim' -S Xafter.vim"
+  if cmd !~ '-u NONE'
+    let cmd = cmd . ' -u NONE'
+  endif
+  exe "silent !" . cmd . " --cmd \"so Xbefore.vim\" -S Xafter.vim"
 
   call delete('Xbefore.vim')
   call delete('Xafter.vim')
