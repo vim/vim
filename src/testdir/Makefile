@@ -127,4 +127,6 @@ newtestssilent: $(NEW_TESTS)
 
 
 .vim.res:
-	$(RUN_VIMTEST) -u NONE -U NONE -S runtest.vim $*.vim
+	@echo "$(RUN_VIMTEST)" > vimcmd
+	$(RUN_VIMTEST) -U NONE -S runtest.vim $*.vim
+	@rm vimcmd

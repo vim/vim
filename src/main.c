@@ -439,6 +439,11 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
 #endif
 
 #ifndef NO_VIM_MAIN
+    /* Reset 'loadplugins' for "-u NONE" before "--cmd" arguments.
+     * Allows for setting 'loadplugins' there. */
+    if (params.use_vimrc != NULL && STRCMP(params.use_vimrc, "NONE") == 0)
+	p_lpl = FALSE;
+
     /* Execute --cmd arguments. */
     exe_pre_commands(&params);
 
@@ -453,14 +458,22 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
     if (p_lpl)
     {
 # ifdef VMS	/* Somehow VMS doesn't handle the "**". */
-	source_runtime((char_u *)"plugin/*.vim", DIP_ALL);
+	source_runtime((char_u *)"plugin/*.vim", DIP_ALL | DIP_NOAFTER);
 # else
-	source_runtime((char_u *)"plugin/**/*.vim", DIP_ALL);
+	source_runtime((char_u *)"plugin/**/*.vim", DIP_ALL | DIP_NOAFTER);
 # endif
 	TIME_MSG("loading plugins");
 
 	ex_packloadall(NULL);
 	TIME_MSG("loading packages");
+
+# ifdef VMS	/* Somehow VMS doesn't handle the "**". */
+	source_runtime((char_u *)"plugin/*.vim", DIP_ALL | DIP_AFTER);
+# else
+	source_runtime((char_u *)"plugin/**/*.vim", DIP_ALL | DIP_AFTER);
+# endif
+	TIME_MSG("loading after plugins");
+
     }
 #endif
 
@@ -2945,8 +2958,6 @@ source_startup_scripts(mparm_T *parmp)
 	    if (use_gvimrc == NULL)	    /* don't load gvimrc either */
 		use_gvimrc = parmp->use_vimrc;
 #endif
-	    if (parmp->use_vimrc[2] == 'N')
-		p_lpl = FALSE;		    /* don't load plugins either */
 	}
 	else
 	{

@@ -3240,15 +3240,30 @@ do_in_path(
 	rtp = rtp_copy;
 	while (*rtp != NUL && ((flags & DIP_ALL) || !did_one))
 	{
+	    size_t buflen;
+
 	    /* Copy the path from 'runtimepath' to buf[]. */
 	    copy_option_part(&rtp, buf, MAXPATHL, ",");
+	    buflen = STRLEN(buf);
+
+	    /* Skip after or non-after directories. */
+	    if (flags & (DIP_NOAFTER | DIP_AFTER))
+	    {
+		int is_after = buflen >= 5
+				     && STRCMP(buf + buflen - 5, "after") == 0;
+
+		if ((is_after && (flags & DIP_NOAFTER))
+			|| (!is_after && (flags & DIP_AFTER)))
+		    continue;
+	    }
+
 	    if (name == NULL)
 	    {
 		(*callback)(buf, (void *) &cookie);
 		if (!did_one)
 		    did_one = (cookie == NULL);
 	    }
-	    else if (STRLEN(buf) + STRLEN(name) + 2 < MAXPATHL)
+	    else if (buflen + STRLEN(name) + 2 < MAXPATHL)
 	    {
 		add_pathsep(buf);
 		tail = buf + STRLEN(buf);
@@ -3512,6 +3527,7 @@ static int did_source_packages = FALSE;
 /*
  * ":packloadall"
  * Find plugins in the package directories and source them.
+ * "eap" is NULL when invoked during startup.
  */
     void
 ex_packloadall(exarg_T *eap)
