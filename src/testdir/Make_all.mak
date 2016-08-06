@@ -51,7 +51,6 @@ SCRIPTS_ALL = \
 	test57.out \
 	test60.out \
 	test62.out \
-	test63.out \
 	test64.out \
 	test65.out \
 	test66.out \
