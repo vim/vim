@@ -62,6 +62,10 @@ func Test_after_comes_later()
 endfunc
 
 func Test_help_arg()
+  if !has('unix') && has('gui')
+    " this doesn't work with gvim on MS-Windows
+    return
+  endif
   if RunVim([], [], '--help >Xtestout')
     let lines = readfile('Xtestout')
     call assert_true(len(lines) > 20)
