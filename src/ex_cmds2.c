@@ -1139,10 +1139,8 @@ create_timer(long msec, int repeat)
     timer->tr_id = ++last_timer_id;
     insert_timer(timer);
     if (repeat != 0)
-    {
 	timer->tr_repeat = repeat - 1;
-	timer->tr_interval = msec;
-    }
+    timer->tr_interval = msec;
 
     profile_setlimit(msec, &timer->tr_due);
     return timer;
@@ -1251,6 +1249,64 @@ stop_timer(timer_T *timer)
 {
     remove_timer(timer);
     free_timer(timer);
+}
+
+    void
+add_timer_info(typval_T *rettv, timer_T *timer)
+{
+    list_T	*list = rettv->vval.v_list;
+    dict_T	*dict = dict_alloc();
+    dictitem_T	*di;
+    long	remaining;
+    proftime_T	now;
+
+    if (dict == NULL)
+	return;
+    list_append_dict(list, dict);
+
+    dict_add_nr_str(dict, "id", (long)timer->tr_id, NULL);
+    dict_add_nr_str(dict, "time", (long)timer->tr_interval, NULL);
+
+    profile_start(&now);
+# ifdef WIN3264
+    remaining = (long)(((double)(timer->tr_due.QuadPart - now.QuadPart)
+					       / (double)fr.QuadPart) * 1000);
+# else
+    remaining = (timer->tr_due.tv_sec - now.tv_sec) * 1000
+			       + (timer->tr_due.tv_usec - now.tv_usec) / 1000;
+# endif
+    dict_add_nr_str(dict, "remaining", (long)remaining, NULL);
+
+    dict_add_nr_str(dict, "repeat",
+	       (long)(timer->tr_repeat < 0 ? -1 : timer->tr_repeat + 1), NULL);
+
+    di = dictitem_alloc((char_u *)"callback");
+    if (di != NULL)
+    {
+	if (dict_add(dict, di) == FAIL)
+	    vim_free(di);
+	else if (timer->tr_partial != NULL)
+	{
+	    di->di_tv.v_type = VAR_PARTIAL;
+	    di->di_tv.vval.v_partial = timer->tr_partial;
+	    ++timer->tr_partial->pt_refcount;
+	}
+	else
+	{
+	    di->di_tv.v_type = VAR_FUNC;
+	    di->di_tv.vval.v_string = vim_strsave(timer->tr_callback);
+	}
+	di->di_tv.v_lock = 0;
+    }
+}
+
+    void
+add_timer_info_all(typval_T *rettv)
+{
+    timer_T *timer;
+
+    for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+	add_timer_info(rettv, timer);
 }
 
 /*
