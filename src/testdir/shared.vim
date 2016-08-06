@@ -126,21 +126,32 @@ endfunc
 " "after" is a list of commands to be executed after loading plugins.
 " Plugins are not loaded, unless 'loadplugins' is set in "before".
 " Return 1 if Vim could be executed.
-func RunVim(before, after)
+func RunVim(before, after, arguments)
   if !filereadable('vimcmd')
     return 0
   endif
-  call writefile(a:before, 'Xbefore.vim')
-  call writefile(a:after, 'Xafter.vim')
+  let args = a:arguments
+  if len(a:before) > 0
+    call writefile(a:before, 'Xbefore.vim')
+    let args .= ' --cmd "so Xbefore.vim"'
+  endif
+  if len(a:after) > 0
+    call writefile(a:after, 'Xafter.vim')
+    let args .= ' -S Xafter.vim'
+  endif
 
   let cmd = readfile('vimcmd')[0]
   let cmd = substitute(cmd, '-u \f\+', '-u NONE', '')
   if cmd !~ '-u NONE'
     let cmd = cmd . ' -u NONE'
   endif
-  exe "silent !" . cmd . " --cmd \"so Xbefore.vim\" -S Xafter.vim"
+  exe "silent !" . cmd . ' ' . args
 
-  call delete('Xbefore.vim')
-  call delete('Xafter.vim')
+  if len(a:before) > 0
+    call delete('Xbefore.vim')
+  endif
+  if len(a:after) > 0
+    call delete('Xafter.vim')
+  endif
   return 1
 endfunc

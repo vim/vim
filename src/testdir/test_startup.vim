@@ -41,7 +41,7 @@ func Test_after_comes_later()
   call mkdir('Xafter/plugin', 'p')
   call writefile(['let done = 1'], 'Xafter/plugin/later.vim')
 
-  if RunVim(before, after)
+  if RunVim(before, after, '')
 
     let lines = readfile('Xtestout')
     let expected = ['Xbefore.vim', 'here.vim', 'foo.vim', 'later.vim', 'Xafter.vim']
@@ -59,4 +59,25 @@ func Test_after_comes_later()
   call delete('Xtestout')
   call delete('Xhere', 'rf')
   call delete('Xafter', 'rf')
+endfunc
+
+func Test_help_arg()
+  if RunVim([], [], '--help >Xtestout')
+    let lines = readfile('Xtestout')
+    call assert_true(len(lines) > 20)
+    call assert_true(lines[0] =~ 'Vi IMproved')
+
+    " check if  couple of lines are there
+    let found = 0
+    for line in lines
+      if line =~ '-R.*Readonly mode'
+	let found += 1
+      endif
+      if line =~ '--version'
+	let found += 1
+      endif
+    endfor
+    call assert_equal(2, found)
+  endif
+  call delete('Xtestout')
 endfunc
