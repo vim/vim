@@ -5229,14 +5229,14 @@ get_styled_font_variants(void)
 static PangoEngineShape *default_shape_engine = NULL;
 
 /*
- * Create a map from ASCII characters in the range [32,126] to glyphs
+ * Create a map from ASCII characters [ ,0-9,a-z,A-Z] to glyphs
  * of the current font.  This is used by gui_gtk2_draw_string() to skip
  * the itemize and shaping process for the most common case.
  */
     static void
 ascii_glyph_table_init(void)
 {
-    char_u	    ascii_chars[128];
+    char_u	    ascii_chars[2 * 128];
     PangoAttrList   *attr_list;
     GList	    *item_list;
     int		    i;
@@ -5249,12 +5249,18 @@ ascii_glyph_table_init(void)
     gui.ascii_glyphs = NULL;
     gui.ascii_font   = NULL;
 
-    /* For safety, fill in question marks for the control characters. */
-    for (i = 0; i < 32; ++i)
-	ascii_chars[i] = '?';
-    for (; i < 127; ++i)
-	ascii_chars[i] = i;
-    ascii_chars[i] = '?';
+    /* For safety, fill in question marks for the control characters. As an
+     * ugly hack, we also keep spaces between the individual characters, thus
+     * hopefully bypassing any shaping, and forcin these characters to be drawn
+     * without any shaping/ligatures/... */
+    for (i = 0; i < 128; ++i) {
+        if (i == ' ' || (i >= '0' && i <= '9') || (i >= 'A' && i <= 'Z') || (i >= 'a' && i <= 'z')) {
+            ascii_chars[2 * i + 0] = i;
+        } else {
+            ascii_chars[2 * i + 0] = '?';
+        }
+	ascii_chars[2 * i + 1] = ' ';
+    }
 
     attr_list = pango_attr_list_new();
     item_list = pango_itemize(gui.text_context, (const char *)ascii_chars,
@@ -5925,25 +5931,26 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
     glyphs = pango_glyph_string_new();
 
     /*
-     * Optimization hack:  If possible, skip the itemize and shaping process
-     * for pure ASCII strings.	This optimization is particularly effective
-     * because Vim draws space characters to clear parts of the screen.
+     * Optimization hack: If possible, skip the itemize and shaping process for
+     * pure alphanumeric ASCII strings. This optimization is particularly
+     * effective because Vim draws space characters to clear parts of the
+     * screen.
      */
     if (!(flags & DRAW_ITALIC)
 	    && !((flags & DRAW_BOLD) && gui.font_can_bold)
 	    && gui.ascii_glyphs != NULL)
     {
-	char_u *p;
+	char_u *p, *q;
 
-	for (p = s; p < s + len; ++p)
-	    if (*p & 0x80)
+	for (p = s, q = s + len; p < q; ++p)
+	    if (!(*p == ' ' || (*p >= '0' && *p <= '9') || (*p >= 'A' && *p <= 'Z') || (*p >= 'a' && *p <= 'z')))
 		goto not_ascii;
 
 	pango_glyph_string_set_size(glyphs, len);
 
 	for (i = 0; i < len; ++i)
 	{
-	    glyphs->glyphs[i] = gui.ascii_glyphs->glyphs[s[i]];
+	    glyphs->glyphs[i] = gui.ascii_glyphs->glyphs[2 * s[i]];
 	    glyphs->log_clusters[i] = i;
 	}
 
