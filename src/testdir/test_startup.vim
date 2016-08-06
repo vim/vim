@@ -36,19 +36,20 @@ func Test_after_comes_later()
   call mkdir('Xafter/plugin', 'p')
   call writefile(['let done = 1'], 'Xafter/plugin/later.vim')
 
-  call RunVim(before, after)
+  if RunVim(before, after)
 
-  let lines = readfile('Xtestout')
-  let expected = ['Xbefore.vim', 'here.vim', 'foo.vim', 'later.vim', 'Xafter.vim']
-  let found = []
-  for line in lines
-    for one in expected
-      if line =~ one
-	call add(found, one)
-      endif
+    let lines = readfile('Xtestout')
+    let expected = ['Xbefore.vim', 'here.vim', 'foo.vim', 'later.vim', 'Xafter.vim']
+    let found = []
+    for line in lines
+      for one in expected
+	if line =~ one
+	  call add(found, one)
+	endif
+      endfor
     endfor
-  endfor
-  call assert_equal(expected, found)
+    call assert_equal(expected, found)
+  endif
 
   call delete('Xtestout')
   call delete('Xhere', 'rf')
