@@ -1259,6 +1259,9 @@ add_timer_info(typval_T *rettv, timer_T *timer)
     dictitem_T	*di;
     long	remaining;
     proftime_T	now;
+# ifdef WIN3264
+    LARGE_INTEGER   fr;
+#endif
 
     if (dict == NULL)
 	return;
@@ -1269,6 +1272,7 @@ add_timer_info(typval_T *rettv, timer_T *timer)
 
     profile_start(&now);
 # ifdef WIN3264
+    QueryPerformanceFrequency(&fr);
     remaining = (long)(((double)(timer->tr_due.QuadPart - now.QuadPart)
 					       / (double)fr.QuadPart) * 1000);
 # else
