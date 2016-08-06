@@ -15,6 +15,9 @@ endfunc
 " 2. packages
 " 3. plugins in after directories
 func Test_after_comes_later()
+  if !has('packages')
+    return
+  endif
   let before = [
 	\ 'let $HOME = "/does/not/exist"',
 	\ 'set loadplugins',
