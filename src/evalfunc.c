@@ -397,8 +397,10 @@ static void f_tanh(typval_T *argvars, typval_T *rettv);
 #endif
 #ifdef FEAT_TIMERS
 static void f_timer_info(typval_T *argvars, typval_T *rettv);
+static void f_timer_pause(typval_T *argvars, typval_T *rettv);
 static void f_timer_start(typval_T *argvars, typval_T *rettv);
 static void f_timer_stop(typval_T *argvars, typval_T *rettv);
+static void f_timer_stopall(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_tolower(typval_T *argvars, typval_T *rettv);
 static void f_toupper(typval_T *argvars, typval_T *rettv);
@@ -817,8 +819,10 @@ static struct fst
     {"test_settime",	1, 1, f_test_settime},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, f_timer_info},
+    {"timer_pause",	2, 2, f_timer_pause},
     {"timer_start",	2, 3, f_timer_start},
     {"timer_stop",	1, 1, f_timer_stop},
+    {"timer_stopall",	0, 0, f_timer_stopall},
 #endif
     {"tolower",		1, 1, f_tolower},
     {"toupper",		1, 1, f_toupper},
@@ -11988,6 +11992,25 @@ f_timer_info(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "timer_pause(timer, paused)" function
+ */
+    static void
+f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    timer_T	*timer = NULL;
+    int		paused = (int)get_tv_number(&argvars[1]);
+
+    if (argvars[0].v_type != VAR_NUMBER)
+	EMSG(_(e_number_exp));
+    else
+    {
+	timer = find_timer((int)get_tv_number(&argvars[0]));
+	if (timer != NULL)
+	    timer->tr_paused = paused;
+    }
+}
+
+/*
  * "timer_start(time, callback [, options])" function
  */
     static void
@@ -12047,6 +12070,15 @@ f_timer_stop(typval_T *argvars, typval_T *rettv UNUSED)
     timer = find_timer((int)get_tv_number(&argvars[0]));
     if (timer != NULL)
 	stop_timer(timer);
+}
+
+/*
+ * "timer_stopall()" function
+ */
+    static void
+f_timer_stopall(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    stop_all_timers();
 }
 #endif
 

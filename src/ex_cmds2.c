@@ -1189,6 +1189,8 @@ check_due_timer(void)
 	next_due = -1;
 	for (timer = first_timer; timer != NULL; timer = timer->tr_next)
 	{
+	    if (timer->tr_paused)
+		continue;
 # ifdef WIN3264
 	    this_due = (long)(((double)(timer->tr_due.QuadPart - now.QuadPart)
 					       / (double)fr.QuadPart) * 1000);
@@ -1252,6 +1254,15 @@ stop_timer(timer_T *timer)
 }
 
     void
+stop_all_timers(void)
+{
+    timer_T *timer;
+
+    while (first_timer != NULL)
+	stop_timer(first_timer);
+}
+
+    void
 add_timer_info(typval_T *rettv, timer_T *timer)
 {
     list_T	*list = rettv->vval.v_list;
@@ -1283,6 +1294,7 @@ add_timer_info(typval_T *rettv, timer_T *timer)
 
     dict_add_nr_str(dict, "repeat",
 	       (long)(timer->tr_repeat < 0 ? -1 : timer->tr_repeat + 1), NULL);
+    dict_add_nr_str(dict, "paused", (long)(timer->tr_paused), NULL);
 
     di = dictitem_alloc((char_u *)"callback");
     if (di != NULL)
