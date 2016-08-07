@@ -1256,8 +1256,6 @@ stop_timer(timer_T *timer)
     void
 stop_all_timers(void)
 {
-    timer_T *timer;
-
     while (first_timer != NULL)
 	stop_timer(first_timer);
 }
