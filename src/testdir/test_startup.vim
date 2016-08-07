@@ -177,7 +177,8 @@ func Test_read_stdin()
 	\ ]
   if RunVimPiped([], after, '-', 'echo something | ')
     let lines = readfile('Xtestout')
-    call assert_equal('something', lines[0])
+    " MS-Windows adds a space after the word
+    call assert_equal(['something'], split(lines[0]))
   endif
   call delete('Xtestout')
 endfunc
