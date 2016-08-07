@@ -169,3 +169,15 @@ func Test_startuptime()
   endif
   call delete('Xtestout')
 endfunc
+
+func Test_read_stdin()
+  let after = [
+	\ 'write Xtestout',
+	\ 'quit!',
+	\ ]
+  if RunVimPiped([], after, '-', 'echo something | ')
+    let lines = readfile('Xtestout')
+    call assert_equal('something', lines[0])
+  endif
+  call delete('Xtestout')
+endfunc
