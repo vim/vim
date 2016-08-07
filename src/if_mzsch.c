@@ -1009,8 +1009,11 @@ static intptr_t _tls_index = 0;
 #endif
 
     int
-mzscheme_main(int argc, char** argv)
+mzscheme_main()
 {
+    int	    argc = 0;
+    char    *argv = NULL;
+
 #ifdef DYNAMIC_MZSCHEME
     /*
      * Racket requires trampolined startup.  We can not load it later.
@@ -1019,16 +1022,16 @@ mzscheme_main(int argc, char** argv)
     if (!mzscheme_enabled(FALSE))
     {
 	disabled = TRUE;
-	return vim_main2(argc, argv);
+	return vim_main2();
     }
 #endif
 #ifdef HAVE_TLS_SPACE
     scheme_register_tls_space(&tls_space, _tls_index);
 #endif
 #ifdef TRAMPOLINED_MZVIM_STARTUP
-    return scheme_main_setup(TRUE, mzscheme_env_main, argc, argv);
+    return scheme_main_setup(TRUE, mzscheme_env_main, argc, &argv);
 #else
-    return mzscheme_env_main(NULL, argc, argv);
+    return mzscheme_env_main(NULL, argc, &argv);
 #endif
 }
 
@@ -1056,7 +1059,7 @@ mzscheme_env_main(Scheme_Env *env, int argc, char **argv)
      * We trampoline into vim_main2
      * Passing argc, argv through from mzscheme_main
      */
-    vim_main_result = vim_main2(argc, argv);
+    vim_main_result = vim_main2();
 #if !defined(TRAMPOLINED_MZVIM_STARTUP) && defined(MZ_PRECISE_GC)
     /* releasing dummy */
     MZ_GC_REG();

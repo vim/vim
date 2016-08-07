@@ -3,7 +3,7 @@ int mzscheme_enabled(int verbose);
 void mzvim_check_threads(void);
 void mzvim_reset_timer(void);
 void mzscheme_end(void);
-int mzscheme_main(int argc, char **argv);
+int mzscheme_main(void);
 void mzscheme_buffer_free(buf_T *buf);
 void mzscheme_window_free(win_T *win);
 void ex_mzscheme(exarg_T *eap);

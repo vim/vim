@@ -92,6 +92,9 @@ static char_u *start_dir = NULL;	/* current working dir on startup */
 
 static int has_dash_c_arg = FALSE;
 
+/* Various parameters passed between main() and other functions. */
+static mparm_T	params;
+
     int
 # ifdef VIMDLL
 _export
@@ -106,9 +109,6 @@ main
 # endif
 (int argc, char **argv)
 {
-    char_u	*fname = NULL;		/* file name from command line */
-    mparm_T	params;			/* various parameters passed between
-					 * main() and other functions. */
 #ifdef STARTUPTIME
     int		i;
 #endif
@@ -157,6 +157,7 @@ main
 #endif
 
 #ifdef STARTUPTIME
+    /* Need to find "--startuptime" before actually parsing arguments. */
     for (i = 1; i < argc; ++i)
     {
 	if (STRICMP(argv[i], "--startuptime") == 0 && i + 1 < argc)
@@ -241,7 +242,7 @@ main
 		mch_chdir((char *)start_dir);
 	}
 #endif
-	fname = alist_name(&GARGLIST[0]);
+	params.fname = alist_name(&GARGLIST[0]);
     }
 
 #if defined(WIN32) && defined(FEAT_MBYTE)
@@ -263,7 +264,7 @@ main
 	 * Hint: to avoid this when typing a command use a forward slash.
 	 * If the cd fails, it doesn't matter.
 	 */
-	(void)vim_chdirfile(fname);
+	(void)vim_chdirfile(params.fname);
 	if (start_dir != NULL)
 	    mch_dirname(start_dir, MAXPATHL);
     }
@@ -281,7 +282,7 @@ main
     /*
      * When listing swap file names, don't do cursor positioning et. al.
      */
-    if (recoverymode && fname == NULL)
+    if (recoverymode && params.fname == NULL)
 	params.want_full_screen = FALSE;
 
     /*
@@ -312,8 +313,8 @@ main
 	if (getcwd((char *)NameBuff, MAXPATHL) != NULL
 						&& STRCMP(NameBuff, "/") == 0)
 	{
-	    if (fname != NULL)
-		(void)vim_chdirfile(fname);
+	    if (params.fname != NULL)
+		(void)vim_chdirfile(params.fname);
 	    else
 	    {
 		expand_env((char_u *)"$HOME", NameBuff, MAXPATHL);
@@ -407,37 +408,23 @@ main
      * Newer version of MzScheme (Racket) require earlier (trampolined)
      * initialisation via scheme_main_setup.
      * Implement this by initialising it as early as possible
-     * and splitting off remaining Vim main into vim_main2
+     * and splitting off remaining Vim main into vim_main2().
      */
-    {
-	/* Pack up preprocessed command line arguments.
-	 * It is safe because Scheme does not access argc/argv. */
-	char *args[2];
-	args[0] = (char *)fname;
-	args[1] = (char *)&params;
-	return mzscheme_main(2, args);
-    }
-}
+    return mzscheme_main();
+#else
+    return vim_main2();
 #endif
+}
 #endif /* NO_VIM_MAIN */
 
-/* vim_main2() needs to be produced when FEAT_MZSCHEME is defined even when
- * NO_VIM_MAIN is defined. */
-#ifdef FEAT_MZSCHEME
+/*
+ * vim_main2() is needed for FEAT_MZSCHEME, but we define it always to keep
+ * things simple.
+ * It is also defined when NO_VIM_MAIN is defined, but then it's empty.
+ */
     int
-vim_main2(int argc UNUSED, char **argv UNUSED)
+vim_main2(void)
 {
-# ifndef NO_VIM_MAIN
-    char_u	*fname = (char_u *)argv[0];
-    mparm_T	params;
-
-    memcpy(&params, argv[1], sizeof(params));
-# else
-    return 0;
-}
-# endif
-#endif
-
 #ifndef NO_VIM_MAIN
     /* Reset 'loadplugins' for "-u NONE" before "--cmd" arguments.
      * Allows for setting 'loadplugins' there. */
@@ -493,7 +480,7 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
      * This uses the 'dir' option, therefore it must be after the
      * initializations.
      */
-    if (recoverymode && fname == NULL)
+    if (recoverymode && params.fname == NULL)
     {
 	recover_names(NULL, TRUE, 0, NULL);
 	mch_exit(0);
@@ -888,16 +875,17 @@ vim_main2(int argc UNUSED, char **argv UNUSED)
     */
     main_loop(FALSE, FALSE);
 
+#endif /* NO_VIM_MAIN */
+
     return 0;
 }
-#endif /* NO_VIM_MAIN */
 #endif /* PROTO */
 
 /*
  * Initialisation shared by main() and some tests.
  */
     void
-common_init(mparm_T *params)
+common_init(mparm_T *paramp)
 {
 
 #ifdef FEAT_MBYTE
@@ -914,7 +902,7 @@ common_init(mparm_T *params)
 #ifdef MAC_OS_CLASSIC
     /* Prepare for possibly starting GUI sometime */
     /* Macintosh needs this before any memory is allocated. */
-    gui_prepare(&params->argc, params->argv);
+    gui_prepare(&paramp->argc, paramp->argv);
     TIME_MSG("GUI prepared");
 #endif
 
@@ -963,14 +951,14 @@ common_init(mparm_T *params)
      *   --socketid
      *   --windowid
      */
-    early_arg_scan(params);
+    early_arg_scan(paramp);
 
 #ifdef FEAT_SUN_WORKSHOP
-    findYourself(params->argv[0]);
+    findYourself(paramp->argv[0]);
 #endif
 #if defined(FEAT_GUI) && !defined(MAC_OS_CLASSIC)
     /* Prepare for possibly starting GUI sometime */
-    gui_prepare(&params->argc, params->argv);
+    gui_prepare(&paramp->argc, paramp->argv);
     TIME_MSG("GUI prepared");
 #endif
 
@@ -985,7 +973,7 @@ common_init(mparm_T *params)
      * (needed for :! to * work). mch_check_win() will also handle the -d or
      * -dev argument.
      */
-    params->stdout_isatty = (mch_check_win(params->argc, params->argv) != FAIL);
+    paramp->stdout_isatty = (mch_check_win(paramp->argc, paramp->argv) != FAIL);
     TIME_MSG("window checked");
 
     /*

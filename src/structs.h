@@ -3160,7 +3160,7 @@ struct timer_S
     timer_T	*tr_prev;
     proftime_T	tr_due;		    /* when the callback is to be invoked */
     int		tr_repeat;	    /* number of times to repeat, -1 forever */
-    long	tr_interval;	    /* only set when it repeats */
+    long	tr_interval;	    /* msec */
     char_u	*tr_callback;	    /* allocated */
     partial_T	*tr_partial;
 #endif
@@ -3179,6 +3179,8 @@ typedef struct
 {
     int		argc;
     char	**argv;
+
+    char_u	*fname;			/* first file to edit */
 
     int		evim_mode;		/* started as "evim" */
     char_u	*use_vimrc;		/* vimrc from -u argument */
