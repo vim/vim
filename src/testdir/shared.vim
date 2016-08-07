@@ -130,7 +130,7 @@ func RunVim(before, after, arguments)
   if !filereadable('vimcmd')
     return 0
   endif
-  let args = a:arguments
+  let args = ''
   if len(a:before) > 0
     call writefile(a:before, 'Xbefore.vim')
     let args .= ' --cmd "so Xbefore.vim"'
@@ -145,7 +145,7 @@ func RunVim(before, after, arguments)
   if cmd !~ '-u NONE'
     let cmd = cmd . ' -u NONE'
   endif
-  exe "silent !" . cmd . ' ' . args
+  exe "silent !" . cmd . args . ' ' . a:arguments
 
   if len(a:before) > 0
     call delete('Xbefore.vim')

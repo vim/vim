@@ -69,7 +69,7 @@ func Test_help_arg()
   if RunVim([], [], '--help >Xtestout')
     let lines = readfile('Xtestout')
     call assert_true(len(lines) > 20)
-    call assert_true(lines[0] =~ 'Vi IMproved')
+    call assert_match('Vi IMproved', lines[0])
 
     " check if  couple of lines are there
     let found = 0
@@ -82,6 +82,90 @@ func Test_help_arg()
       endif
     endfor
     call assert_equal(2, found)
+  endif
+  call delete('Xtestout')
+endfunc
+
+func Test_compatible_args()
+  let after = [
+	\ 'call writefile([string(&compatible)], "Xtestout")',
+	\ 'set viminfo+=nviminfo',
+	\ 'quit',
+	\ ]
+  if RunVim([], after, '-C')
+    let lines = readfile('Xtestout')
+    call assert_equal('1', lines[0])
+  endif
+
+  if RunVim([], after, '-N')
+    let lines = readfile('Xtestout')
+    call assert_equal('0', lines[0])
+  endif
+
+  call delete('Xtestout')
+endfunc
+
+func Test_file_args()
+  let after = [
+	\ 'call writefile(argv(), "Xtestout")',
+	\ 'qall',
+	\ ]
+  if RunVim([], after, '')
+    let lines = readfile('Xtestout')
+    call assert_equal(0, len(lines))
+  endif
+
+  if RunVim([], after, 'one')
+    let lines = readfile('Xtestout')
+    call assert_equal(1, len(lines))
+    call assert_equal('one', lines[0])
+  endif
+
+  if RunVim([], after, 'one two three')
+    let lines = readfile('Xtestout')
+    call assert_equal(3, len(lines))
+    call assert_equal('one', lines[0])
+    call assert_equal('two', lines[1])
+    call assert_equal('three', lines[2])
+  endif
+
+  if RunVim([], after, 'one -c echo two')
+    let lines = readfile('Xtestout')
+    call assert_equal(2, len(lines))
+    call assert_equal('one', lines[0])
+    call assert_equal('two', lines[1])
+  endif
+
+  if RunVim([], after, 'one -- -c echo two')
+    let lines = readfile('Xtestout')
+    call assert_equal(4, len(lines))
+    call assert_equal('one', lines[0])
+    call assert_equal('-c', lines[1])
+    call assert_equal('echo', lines[2])
+    call assert_equal('two', lines[3])
+  endif
+
+  call delete('Xtestout')
+endfunc
+
+func Test_startuptime()
+  if !has('startuptime')
+    return
+  endif
+  let after = ['qall']
+  if RunVim([], after, '--startuptime Xtestout one')
+    let lines = readfile('Xtestout')
+    let expected = ['--- VIM STARTING ---', 'parsing arguments',
+	  \ 'shell init', 'inits 3', 'start termcap', 'opening buffers']
+    let found = []
+    for line in lines
+      for exp in expected
+	if line =~ exp
+	  call add(found, exp)
+	endif
+      endfor
+    endfor
+    call assert_equal(expected, found)
   endif
   call delete('Xtestout')
 endfunc
