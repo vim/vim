@@ -130,7 +130,7 @@ endfunc
 " Plugins are not loaded, unless 'loadplugins' is set in "before".
 " Return 1 if Vim could be executed.
 func RunVim(before, after, arguments)
-  call RunVimPiped(a:before, a:after, a:arguments, '')
+  return RunVimPiped(a:before, a:after, a:arguments, '')
 endfunc
 
 func RunVimPiped(before, after, arguments, pipecmd)
