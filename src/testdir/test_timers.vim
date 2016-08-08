@@ -27,7 +27,7 @@ func Test_repeat_three()
   let timer = timer_start(50, 'MyHandler', {'repeat': 3})
   let slept = WaitFor('g:val == 3')
   call assert_equal(3, g:val)
-  call assert_inrange(100, 250, slept)
+  call assert_inrange(80, 200, slept)
 endfunc
 
 func Test_repeat_many()
