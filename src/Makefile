@@ -2032,7 +2032,6 @@ test1 \
 	test_marks \
 	test_nested_function \
 	test_search_mbyte \
-	test_signs \
 	test_tagcase \
 	test_utf8 \
 	test_wordcount \
@@ -2110,10 +2109,11 @@ test_arglist \
 	test_regexp_utf8 \
 	test_reltime \
 	test_ruby \
-	test_startup \
 	test_searchpos \
 	test_set \
+	test_signs \
 	test_sort \
+	test_startup \
 	test_stat \
 	test_statusline \
 	test_syn_attr \

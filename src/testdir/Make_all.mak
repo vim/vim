@@ -102,7 +102,6 @@ SCRIPTS_ALL = \
 	test_marks.out \
 	test_nested_function.out \
 	test_search_mbyte.out \
-	test_signs.out \
 	test_tagcase.out \
 	test_utf8.out \
 	test_wordcount.out \
@@ -184,6 +183,7 @@ NEW_TESTS = test_arglist.res \
 	    test_perl.res \
 	    test_quickfix.res \
 	    test_ruby.res \
+	    test_signs.res \
 	    test_startup.res \
 	    test_stat.res \
 	    test_syntax.res \
