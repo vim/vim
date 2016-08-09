@@ -3893,7 +3893,7 @@ ins_compl_prep(int c)
 
 	    /* CTRL-E means completion is Ended, go back to the typed text.
 	     * but only do this, if the Popup is still visible */
-	    if (c == Ctrl_E && pum_visible())
+	    if (c == Ctrl_E)
 	    {
 		ins_compl_delete();
 		if (compl_leader != NULL)

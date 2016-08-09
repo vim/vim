@@ -170,11 +170,12 @@ func! Test_popup_complete()
 
   " Insert match immediately, if there is only one match
   "  <c-e> Should select a character from the line below
-  call append(1, ["December2015"])
-  :1
-  call feedkeys("aD\<f5>\<C-E>\<C-E>\<C-E>\<C-E>\<enter>\<esc>", 'tx')
-  call assert_equal(["December2015", "", "December2015"], getline(1,3))
-  %d
+  " TODO: test disabled because the code change has been reverted.
+  " call append(1, ["December2015"])
+  " :1
+  " call feedkeys("aD\<f5>\<C-E>\<C-E>\<C-E>\<C-E>\<enter>\<esc>", 'tx')
+  " call assert_equal(["December2015", "", "December2015"], getline(1,3))
+  " %d
 
   " use menuone for 'completeopt'
   " Since for the first <c-y> the menu is still shown, will only select
