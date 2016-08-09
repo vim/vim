@@ -9,6 +9,14 @@ func SetUp()
   if has("gui_kde")
     set guifont=Courier\ 10\ Pitch/8/-1/5/50/0/0/0/0/0
   endif
+
+  " Gnome insists on creating $HOME/.gnome2/..
+  call mkdir('Xhome')
+  let $HOME = fnamemodify('Xhome', ':p')
+endfunc
+
+func TearDown()
+  call delete('Xhome', 'rf')
 endfunc
 
 " Test for resetting "secure" flag after GUI has started.

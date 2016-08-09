@@ -72,16 +72,17 @@ func Test_help_arg()
     call assert_match('Vi IMproved', lines[0])
 
     " check if  couple of lines are there
-    let found = 0
+    let found = []
     for line in lines
       if line =~ '-R.*Readonly mode'
-	let found += 1
+	call add(found, 'Readonly mode')
       endif
-      if line =~ '--version'
-	let found += 1
+      " Watch out for a second --version line in the Gnome version.
+      if line =~ '--version.*Print version information and exit'
+	call add(found, "--version")
       endif
     endfor
-    call assert_equal(2, found)
+    call assert_equal(['Readonly mode', '--version'], found)
   endif
   call delete('Xtestout')
 endfunc
