@@ -185,6 +185,7 @@ NEW_TESTS = test_arglist.res \
 	    test_ruby.res \
 	    test_signs.res \
 	    test_startup.res \
+	    test_startup_utf8.res \
 	    test_stat.res \
 	    test_syntax.res \
 	    test_textobjects.res \

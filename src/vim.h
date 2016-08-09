@@ -980,7 +980,8 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define READ_STDIN	0x04	/* read from stdin */
 #define READ_BUFFER	0x08	/* read from curbuf (converting stdin) */
 #define READ_DUMMY	0x10	/* reading into a dummy buffer */
-#define READ_KEEP_UNDO	0x20	/* keep undo info*/
+#define READ_KEEP_UNDO	0x20	/* keep undo info */
+#define READ_FIFO	0x40	/* read from fifo or socket */
 
 /* Values for change_indent() */
 #define INDENT_SET	1	/* set indent */

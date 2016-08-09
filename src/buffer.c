@@ -70,6 +70,64 @@ static char *e_auabort = N_("E855: Autocommands caused command to abort");
 /* Number of times free_buffer() was called. */
 static int	buf_free_count = 0;
 
+/* Read data from buffer for retrying. */
+    static int
+read_buffer(
+    int		read_stdin,	    /* read file from stdin, otherwise fifo */
+    exarg_T	*eap,		    /* for forced 'ff' and 'fenc' or NULL */
+    int		flags)		    /* extra flags for readfile() */
+{
+    int		retval = OK;
+    linenr_T	line_count;
+
+    /*
+     * Read from the buffer which the text is already filled in and append at
+     * the end.  This makes it possible to retry when 'fileformat' or
+     * 'fileencoding' was guessed wrong.
+     */
+    line_count = curbuf->b_ml.ml_line_count;
+    retval = readfile(
+	    read_stdin ? NULL : curbuf->b_ffname,
+	    read_stdin ? NULL : curbuf->b_fname,
+	    (linenr_T)line_count, (linenr_T)0, (linenr_T)MAXLNUM, eap,
+	    flags | READ_BUFFER);
+    if (retval == OK)
+    {
+	/* Delete the binary lines. */
+	while (--line_count >= 0)
+	    ml_delete((linenr_T)1, FALSE);
+    }
+    else
+    {
+	/* Delete the converted lines. */
+	while (curbuf->b_ml.ml_line_count > line_count)
+	    ml_delete(line_count, FALSE);
+    }
+    /* Put the cursor on the first line. */
+    curwin->w_cursor.lnum = 1;
+    curwin->w_cursor.col = 0;
+
+    if (read_stdin)
+    {
+	/* Set or reset 'modified' before executing autocommands, so that
+	 * it can be changed there. */
+	if (!readonlymode && !bufempty())
+	    changed();
+	else if (retval != FAIL)
+	    unchanged(curbuf, FALSE);
+
+#ifdef FEAT_AUTOCMD
+# ifdef FEAT_EVAL
+	apply_autocmds_retval(EVENT_STDINREADPOST, NULL, NULL, FALSE,
+							curbuf, &retval);
+# else
+	apply_autocmds(EVENT_STDINREADPOST, NULL, NULL, FALSE, curbuf);
+# endif
+#endif
+    }
+    return retval;
+}
+
 /*
  * Open current buffer, that is: open the memfile and read the file into
  * memory.
@@ -88,6 +146,7 @@ open_buffer(
 #ifdef FEAT_SYN_HL
     long	old_tw = curbuf->b_p_tw;
 #endif
+    int		read_fifo = FALSE;
 
     /*
      * The 'readonly' flag is only set when BF_NEVERLOADED is being reset.
@@ -143,17 +202,42 @@ open_buffer(
        )
     {
 	int old_msg_silent = msg_silent;
-
+#ifdef UNIX
+	int save_bin = curbuf->b_p_bin;
+	int perm;
+#endif
 #ifdef FEAT_NETBEANS_INTG
 	int oldFire = netbeansFireChanges;
 
 	netbeansFireChanges = 0;
 #endif
+#ifdef UNIX
+	perm = mch_getperm(curbuf->b_ffname);
+	if (perm >= 0 && (0
+# ifdef S_ISFIFO
+		      || S_ISFIFO(perm)
+# endif
+# ifdef S_ISSOCK
+		      || S_ISSOCK(perm)
+# endif
+		    ))
+		read_fifo = TRUE;
+	if (read_fifo)
+	    curbuf->b_p_bin = TRUE;
+#endif
 	if (shortmess(SHM_FILEINFO))
 	    msg_silent = 1;
 	retval = readfile(curbuf->b_ffname, curbuf->b_fname,
 		  (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM, eap,
-		  flags | READ_NEW);
+		  flags | READ_NEW | (read_fifo ? READ_FIFO : 0));
+#ifdef UNIX
+	if (read_fifo)
+	{
+	    curbuf->b_p_bin = save_bin;
+	    if (retval == OK)
+		retval = read_buffer(FALSE, eap, flags);
+	}
+#endif
 	msg_silent = old_msg_silent;
 #ifdef FEAT_NETBEANS_INTG
 	netbeansFireChanges = oldFire;
@@ -164,8 +248,7 @@ open_buffer(
     }
     else if (read_stdin)
     {
-	int		save_bin = curbuf->b_p_bin;
-	linenr_T	line_count;
+	int	save_bin = curbuf->b_p_bin;
 
 	/*
 	 * First read the text in binary mode into the buffer.
@@ -179,42 +262,7 @@ open_buffer(
 		  flags | (READ_NEW + READ_STDIN));
 	curbuf->b_p_bin = save_bin;
 	if (retval == OK)
-	{
-	    line_count = curbuf->b_ml.ml_line_count;
-	    retval = readfile(NULL, NULL, (linenr_T)line_count,
-			    (linenr_T)0, (linenr_T)MAXLNUM, eap,
-			    flags | READ_BUFFER);
-	    if (retval == OK)
-	    {
-		/* Delete the binary lines. */
-		while (--line_count >= 0)
-		    ml_delete((linenr_T)1, FALSE);
-	    }
-	    else
-	    {
-		/* Delete the converted lines. */
-		while (curbuf->b_ml.ml_line_count > line_count)
-		    ml_delete(line_count, FALSE);
-	    }
-	    /* Put the cursor on the first line. */
-	    curwin->w_cursor.lnum = 1;
-	    curwin->w_cursor.col = 0;
-
-	    /* Set or reset 'modified' before executing autocommands, so that
-	     * it can be changed there. */
-	    if (!readonlymode && !bufempty())
-		changed();
-	    else if (retval != FAIL)
-		unchanged(curbuf, FALSE);
-#ifdef FEAT_AUTOCMD
-# ifdef FEAT_EVAL
-	    apply_autocmds_retval(EVENT_STDINREADPOST, NULL, NULL, FALSE,
-							curbuf, &retval);
-# else
-	    apply_autocmds(EVENT_STDINREADPOST, NULL, NULL, FALSE, curbuf);
-# endif
-#endif
-	}
+	    retval = read_buffer(TRUE, eap, flags);
     }
 
     /* if first time loading this buffer, init b_chartab[] */
@@ -243,7 +291,7 @@ open_buffer(
 #endif
        )
 	changed();
-    else if (retval != FAIL && !read_stdin)
+    else if (retval != FAIL && !read_stdin && !read_fifo)
 	unchanged(curbuf, FALSE);
     save_file_ff(curbuf);		/* keep this fileformat */
 
