@@ -447,7 +447,7 @@ gui_init_check(void)
      * See gui_do_fork().
      * Use a simpler check if the GUI window can probably be opened.
      */
-    result = gui.dofork ? gui_mch_early_init_check() : gui_mch_init_check();
+    result = gui.dofork ? gui_mch_early_init_check(TRUE) : gui_mch_init_check();
 # else
     result = gui_mch_init_check();
 # endif

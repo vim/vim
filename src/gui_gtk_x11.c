@@ -542,8 +542,10 @@ gui_mch_prepare(int *argc, char **argv)
 	}
 
 	/* These arguments make gnome_program_init() print a message and exit.
-	 * Must start the GUI for this, otherwise ":gui" will exit later! */
-	if (option->flags & ARG_NEEDS_GUI)
+	 * Must start the GUI for this, otherwise ":gui" will exit later!
+	 * Only when the GUI can start. */
+	if ((option->flags & ARG_NEEDS_GUI)
+				      && gui_mch_early_init_check(FALSE) == OK)
 	    gui.starting = TRUE;
 
 	if (option->flags & ARG_KEEP)
@@ -1663,7 +1665,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
  * Return OK or FAIL.
  */
     int
-gui_mch_early_init_check(void)
+gui_mch_early_init_check(int give_message)
 {
     char_u *p;
 
@@ -1672,7 +1674,8 @@ gui_mch_early_init_check(void)
     if (p == NULL || *p == NUL)
     {
 	gui.dying = TRUE;
-	EMSG(_((char *)e_opendisp));
+	if (give_message)
+	    EMSG(_((char *)e_opendisp));
 	return FAIL;
     }
     return OK;
