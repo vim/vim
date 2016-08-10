@@ -416,6 +416,7 @@ main
 #endif
 }
 #endif /* NO_VIM_MAIN */
+#endif /* PROTO */
 
 /*
  * vim_main2() is needed for FEAT_MZSCHEME, but we define it always to keep
@@ -879,7 +880,6 @@ vim_main2(void)
 
     return 0;
 }
-#endif /* PROTO */
 
 /*
  * Initialisation shared by main() and some tests.

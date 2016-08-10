@@ -1,5 +1,6 @@
 /* main.c */
-void common_init(mparm_T *params);
+int vim_main2(void);
+void common_init(mparm_T *paramp);
 void main_loop(int cmdwin, int noexmode);
 void getout_preserve_modified(int exitval);
 void getout(int exitval);

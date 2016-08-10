@@ -2440,9 +2440,6 @@ typedef enum
 #define JSON_JS		1   /* use JS instead of JSON */
 #define JSON_NO_NONE	2   /* v:none item not allowed */
 
-/* This is in main.c, cproto can't handle it. */
-int vim_main2(void);
-
 /* Used for flags of do_in_path() */
 #define DIP_ALL	    0x01	/* all matches, not just the first one */
 #define DIP_DIR	    0x02	/* find directories instead of files. */
