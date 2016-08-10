@@ -16,7 +16,7 @@
 # include <X11/StringDefs.h>
 #endif
 
-#ifdef FEAT_BEVAL
+#if defined(FEAT_BEVAL) || defined(PROTO)
 # include "gui_beval.h"
 #endif
 

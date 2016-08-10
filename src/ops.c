@@ -6283,7 +6283,7 @@ write_viminfo_registers(FILE *fp)
  * 'permanent' of the two), otherwise the PRIMARY one.
  * For now, use a hard-coded sanity limit of 1Mb of data.
  */
-#if defined(FEAT_X11) && defined(FEAT_CLIPBOARD)
+#if (defined(FEAT_X11) && defined(FEAT_CLIPBOARD)) || defined(PROTO)
     void
 x11_export_final_selection(void)
 {

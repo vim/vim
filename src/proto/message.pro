@@ -4,7 +4,7 @@ int verb_msg(char_u *s);
 int msg_attr(char_u *s, int attr);
 int msg_attr_keep(char_u *s, int attr, int keep);
 char_u *msg_strtrunc(char_u *s, int force);
-void trunc_string(char_u *s, char_u *buf, int room, int buflen);
+void trunc_string(char_u *s, char_u *buf, int room_in, int buflen);
 void reset_last_sourcing(void);
 void msg_source(int attr);
 int emsg_not_now(void);

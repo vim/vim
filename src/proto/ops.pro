@@ -47,7 +47,7 @@ void op_addsub(oparg_T *oap, linenr_T Prenum1, int g_cmd);
 void prepare_viminfo_registers(void);
 void finish_viminfo_registers(void);
 int read_viminfo_register(vir_T *virp, int force);
-void handle_viminfo_register(garray_T *values, int writing);
+void handle_viminfo_register(garray_T *values, int force);
 void write_viminfo_registers(FILE *fp);
 void x11_export_final_selection(void);
 void clip_free_selection(VimClipboard *cbd);
