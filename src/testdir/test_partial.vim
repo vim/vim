@@ -260,22 +260,25 @@ func Test_cyclic_dict_arg()
   unlet Pt
 endfunc
 
-func Ignored(job1, job2, status)
+func Ignored3(job1, job2, status)
 endfunc
 
 func Test_cycle_partial_job()
   if has('job')
     let job = job_start('echo')
-    call job_setoptions(job, {'exit_cb': function('Ignored', [job])})
+    call job_setoptions(job, {'exit_cb': function('Ignored3', [job])})
     unlet job
   endif
+endfunc
+
+func Ignored2(job, status)
 endfunc
 
 func Test_ref_job_partial_dict()
   if has('job')
     let g:ref_job = job_start('echo')
     let d = {'a': 'b'}
-    call job_setoptions(g:ref_job, {'exit_cb': function('string', [], d)})
+    call job_setoptions(g:ref_job, {'exit_cb': function('Ignored2', [], d)})
   endif
 endfunc
 
