@@ -11,6 +11,7 @@ dict_T *dict_copy(dict_T *orig, int deep, int copyID);
 int dict_add(dict_T *d, dictitem_T *item);
 int dict_add_nr_str(dict_T *d, char *key, varnumber_T nr, char_u *str);
 int dict_add_list(dict_T *d, char *key, list_T *list);
+int dict_add_dict(dict_T *d, char *key, dict_T *dict);
 long dict_len(dict_T *d);
 dictitem_T *dict_find(dict_T *d, char_u *key, int len);
 char_u *get_dict_string(dict_T *d, char_u *key, int save);

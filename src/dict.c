@@ -367,6 +367,30 @@ dict_add_list(dict_T *d, char *key, list_T *list)
 }
 
 /*
+ * Add a dict entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_dict(dict_T *d, char *key, dict_T *dict)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    item->di_tv.v_lock = 0;
+    item->di_tv.v_type = VAR_DICT;
+    item->di_tv.vval.v_dict = dict;
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    ++dict->dv_refcount;
+    return OK;
+}
+
+/*
  * Get the number of items in a Dictionary.
  */
     long

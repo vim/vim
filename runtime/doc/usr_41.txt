@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Jul 24
+*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Aug 07
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -803,6 +803,9 @@ Buffers, windows and the argument list:
 	win_gotoid()		go to window with ID
 	win_id2tabwin()		get tab and window nr from window ID
 	win_id2win()		get window nr from window ID
+	getbufinfo()		get a list with buffer information
+	gettabinfo()		get a list with tab page information
+	getwininfo()		get a list with window information
 
 Command line:					*command-line-functions*
 	getcmdline()		get the current command line
@@ -957,7 +960,10 @@ Jobs:		    			        *job-functions*
 
 Timers:						*timer-functions*
 	timer_start()		create a timer
+	timer_pause()		pause or unpause a timer
 	timer_stop()		stop a timer
+	timer_stopall()		stop all timers
+	timer_info()		get information about timers
 
 Various:					*various-functions*
 	mode()			get current editing mode

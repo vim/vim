@@ -152,6 +152,7 @@ static void f_funcref(typval_T *argvars, typval_T *rettv);
 static void f_function(typval_T *argvars, typval_T *rettv);
 static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
+static void f_getbufinfo(typval_T *argvars, typval_T *rettv);
 static void f_getbufline(typval_T *argvars, typval_T *rettv);
 static void f_getbufvar(typval_T *argvars, typval_T *rettv);
 static void f_getchar(typval_T *argvars, typval_T *rettv);
@@ -179,8 +180,10 @@ static void f_getpos(typval_T *argvars, typval_T *rettv);
 static void f_getqflist(typval_T *argvars, typval_T *rettv);
 static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
+static void f_gettabinfo(typval_T *argvars, typval_T *rettv);
 static void f_gettabvar(typval_T *argvars, typval_T *rettv);
 static void f_gettabwinvar(typval_T *argvars, typval_T *rettv);
+static void f_getwininfo(typval_T *argvars, typval_T *rettv);
 static void f_getwinposx(typval_T *argvars, typval_T *rettv);
 static void f_getwinposy(typval_T *argvars, typval_T *rettv);
 static void f_getwinvar(typval_T *argvars, typval_T *rettv);
@@ -572,6 +575,7 @@ static struct fst
     {"function",	1, 3, f_function},
     {"garbagecollect",	0, 1, f_garbagecollect},
     {"get",		2, 3, f_get},
+    {"getbufinfo",	0, 1, f_getbufinfo},
     {"getbufline",	2, 3, f_getbufline},
     {"getbufvar",	2, 3, f_getbufvar},
     {"getchar",		0, 1, f_getchar},
@@ -599,8 +603,10 @@ static struct fst
     {"getqflist",	0, 1, f_getqflist},
     {"getreg",		0, 3, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
+    {"gettabinfo",	0, 1, f_gettabinfo},
     {"gettabvar",	2, 3, f_gettabvar},
     {"gettabwinvar",	3, 4, f_gettabwinvar},
+    {"getwininfo",	0, 1, f_getwininfo},
     {"getwinposx",	0, 0, f_getwinposx},
     {"getwinposy",	0, 0, f_getwinposy},
     {"getwinvar",	2, 3, f_getwinvar},
@@ -3882,6 +3888,161 @@ f_get(typval_T *argvars, typval_T *rettv)
 	copy_tv(tv, rettv);
 }
 
+#ifdef FEAT_SIGNS
+/*
+ * Returns information about signs placed in a buffer as list of dicts.
+ */
+    static void
+get_buffer_signs(buf_T *buf, list_T *l)
+{
+    signlist_T	*sign;
+
+    for (sign = buf->b_signlist; sign; sign = sign->next)
+    {
+	dict_T *d = dict_alloc();
+
+	if (d != NULL)
+	{
+	    dict_add_nr_str(d, "id", sign->id, NULL);
+	    dict_add_nr_str(d, "lnum", sign->lnum, NULL);
+	    dict_add_nr_str(d, "name", 0L,
+		    vim_strsave(sign_typenr2name(sign->typenr)));
+
+	    list_append_dict(l, d);
+	}
+    }
+}
+#endif
+
+/*
+ * Returns buffer options, variables and other attributes in a dictionary.
+ */
+    static dict_T *
+get_buffer_info(buf_T *buf)
+{
+    dict_T	*dict;
+    dict_T	*opts;
+    dict_T	*vars;
+    tabpage_T	*tp;
+    win_T	*wp;
+    list_T	*windows;
+
+    dict = dict_alloc();
+    if (dict == NULL)
+	return NULL;
+
+    dict_add_nr_str(dict, "nr", buf->b_fnum, NULL);
+    dict_add_nr_str(dict, "name", 0L,
+	    buf->b_ffname != NULL ? buf->b_ffname : (char_u *)"");
+    dict_add_nr_str(dict, "lnum", buflist_findlnum(buf), NULL);
+    dict_add_nr_str(dict, "loaded", buf->b_ml.ml_mfp != NULL, NULL);
+    dict_add_nr_str(dict, "listed", buf->b_p_bl, NULL);
+    dict_add_nr_str(dict, "changed", bufIsChanged(buf), NULL);
+    dict_add_nr_str(dict, "changedtick", buf->b_changedtick, NULL);
+    dict_add_nr_str(dict, "hidden",
+		    buf->b_ml.ml_mfp != NULL && buf->b_nwindows == 0,
+		    NULL);
+
+    /* Copy buffer variables */
+    vars = dict_copy(buf->b_vars, TRUE, 0);
+    if (vars != NULL)
+	dict_add_dict(dict, "variables", vars);
+
+    /* Copy buffer options */
+    opts = get_winbuf_options(TRUE);
+    if (opts != NULL)
+	dict_add_dict(dict, "options", opts);
+
+    /* List of windows displaying this buffer */
+    windows = list_alloc();
+    if (windows != NULL)
+    {
+	FOR_ALL_TAB_WINDOWS(tp, wp)
+	    if (wp->w_buffer == buf)
+		list_append_number(windows, (varnumber_T)wp->w_id);
+	dict_add_list(dict, "windows", windows);
+    }
+
+#ifdef FEAT_SIGNS
+    if (buf->b_signlist != NULL)
+    {
+	/* List of signs placed in this buffer */
+	list_T	*signs = list_alloc();
+	if (signs != NULL)
+	{
+	    get_buffer_signs(buf, signs);
+	    dict_add_list(dict, "signs", signs);
+	}
+    }
+#endif
+
+    return dict;
+}
+
+/*
+ * "getbufinfo()" function
+ */
+    static void
+f_getbufinfo(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf = NULL;
+    buf_T	*argbuf = NULL;
+    dict_T	*d;
+    int		filtered = FALSE;
+    int		sel_buflisted = FALSE;
+    int		sel_bufloaded = FALSE;
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
+    /* List of all the buffers or selected buffers */
+    if (argvars[0].v_type == VAR_DICT)
+    {
+	dict_T	*sel_d = argvars[0].vval.v_dict;
+
+	if (sel_d != NULL)
+	{
+	    dictitem_T	*di;
+
+	    filtered = TRUE;
+
+	    di = dict_find(sel_d, (char_u *)"buflisted", -1);
+	    if (di != NULL && get_tv_number(&di->di_tv))
+		sel_buflisted = TRUE;
+
+	    di = dict_find(sel_d, (char_u *)"bufloaded", -1);
+	    if (di != NULL && get_tv_number(&di->di_tv))
+		sel_bufloaded = TRUE;
+	}
+    }
+    else if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	/* Information about one buffer.  Argument specifies the buffer */
+	(void)get_tv_number(&argvars[0]);   /* issue errmsg if type error */
+	++emsg_off;
+	argbuf = get_buf_tv(&argvars[0], FALSE);
+	--emsg_off;
+	if (argbuf == NULL)
+	    return;
+    }
+
+    /* Return information about all the buffers or a specified buffer */
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    {
+	if (argbuf != NULL && argbuf != buf)
+	    continue;
+	if (filtered && ((sel_bufloaded && buf->b_ml.ml_mfp == NULL)
+					   || (sel_buflisted && !buf->b_p_bl)))
+	    continue;
+
+	d = get_buffer_info(buf);
+	if (d != NULL)
+	    list_append_dict(rettv->vval.v_list, d);
+	if (argbuf != NULL)
+	    return;
+    }
+}
+
 static void get_buffer_lines(buf_T *buf, linenr_T start, linenr_T end, int retlist, typval_T *rettv);
 
 /*
@@ -4817,6 +4978,79 @@ f_getregtype(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = vim_strsave(buf);
 }
 
+#ifdef FEAT_WINDOWS
+/*
+ * Returns information (variables, options, etc.) about a tab page
+ * as a dictionary.
+ */
+    static dict_T *
+get_tabpage_info(tabpage_T *tp, int tp_idx)
+{
+    win_T	*wp;
+    dict_T	*dict;
+    dict_T	*vars;
+    list_T	*l;
+
+    dict = dict_alloc();
+    if (dict == NULL)
+	return NULL;
+
+    dict_add_nr_str(dict, "nr", tp_idx, NULL);
+
+    l = list_alloc();
+    if (l != NULL)
+    {
+	for (wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
+		wp; wp = wp->w_next)
+	    list_append_number(l, (varnumber_T)wp->w_id);
+	dict_add_list(dict, "windows", l);
+    }
+
+    /* Copy tabpage variables */
+    vars = dict_copy(tp->tp_vars, TRUE, 0);
+    if (vars != NULL)
+	dict_add_dict(dict, "variables", vars);
+
+    return dict;
+}
+#endif
+
+/*
+ * "gettabinfo()" function
+ */
+    static void
+f_gettabinfo(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_WINDOWS
+    tabpage_T	*tp, *tparg = NULL;
+    dict_T	*d;
+    int		tpnr = 1;
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	/* Information about one tab page */
+	tparg = find_tabpage((int)get_tv_number_chk(&argvars[0], NULL));
+	if (tparg == NULL)
+	    return;
+    }
+
+    /* Get information about a specific tab page or all tab pages */
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, tpnr++)
+    {
+	if (tparg != NULL && tp != tparg)
+	    continue;
+	d = get_tabpage_info(tp, tpnr);
+	if (d != NULL)
+	    list_append_dict(rettv->vval.v_list, d);
+	if (tparg != NULL)
+	    return;
+    }
+#endif
+}
+
 /*
  * "gettabvar()" function
  */
@@ -4867,6 +5101,89 @@ f_gettabvar(typval_T *argvars, typval_T *rettv)
 f_gettabwinvar(typval_T *argvars, typval_T *rettv)
 {
     getwinvar(argvars, rettv, 1);
+}
+
+#ifdef FEAT_WINDOWS
+/*
+ * Returns information about a window as a dictionary.
+ */
+    static dict_T *
+get_win_info(win_T *wp, short tpnr, short winnr)
+{
+    dict_T	*dict;
+    dict_T	*vars;
+    dict_T	*opts;
+
+    dict = dict_alloc();
+    if (dict == NULL)
+	return NULL;
+
+    dict_add_nr_str(dict, "tpnr", tpnr, NULL);
+    dict_add_nr_str(dict, "nr", winnr, NULL);
+    dict_add_nr_str(dict, "winid", wp->w_id, NULL);
+    dict_add_nr_str(dict, "height", wp->w_height, NULL);
+    dict_add_nr_str(dict, "width", wp->w_width, NULL);
+    dict_add_nr_str(dict, "bufnum", wp->w_buffer->b_fnum, NULL);
+
+    /* Copy window variables */
+    vars = dict_copy(wp->w_vars, TRUE, 0);
+    if (vars != NULL)
+	dict_add_dict(dict, "variables", vars);
+
+    /* Copy window options */
+    opts = get_winbuf_options(FALSE);
+    if (opts != NULL)
+	dict_add_dict(dict, "options", opts);
+
+    return dict;
+}
+#endif
+
+/*
+ * "getwininfo()" function
+ */
+    static void
+f_getwininfo(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_WINDOWS
+    tabpage_T	*tp;
+    win_T	*wp = NULL, *wparg = NULL;
+    dict_T	*d;
+    short	tabnr, winnr;
+#endif
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
+#ifdef FEAT_WINDOWS
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	wparg = win_id2wp(argvars);
+	if (wparg == NULL)
+	    return;
+    }
+
+    /* Collect information about either all the windows across all the tab
+     * pages or one particular window.
+     */
+    tabnr = 1;
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, tabnr++)
+    {
+	wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
+	winnr = 1;
+	for (; wp; wp = wp->w_next, winnr++)
+	{
+	    if (wparg != NULL && wp != wparg)
+		continue;
+	    d = get_win_info(wp, tabnr, winnr);
+	    if (d != NULL)
+		list_append_dict(rettv->vval.v_list, d);
+	    if (wparg != NULL)
+		/* found information about a specific window */
+		return;
+	}
+    }
+#endif
 }
 
 /*

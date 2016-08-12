@@ -160,6 +160,7 @@ NEW_TESTS = test_arglist.res \
 	    test_assert.res \
 	    test_autochdir \
 	    test_backspace_opt.res \
+	    test_bufwintabinfo.res \
 	    test_cdo.res \
 	    test_channel.res \
 	    test_cmdline.res \

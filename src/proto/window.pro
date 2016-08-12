@@ -86,6 +86,7 @@ int get_tab_number(tabpage_T *tp);
 int win_getid(typval_T *argvars);
 int win_gotoid(typval_T *argvars);
 void win_id2tabwin(typval_T *argvars, list_T *list);
+win_T *win_id2wp(typval_T *argvars);
 int win_id2win(typval_T *argvars);
 void win_findbuf(typval_T *argvars, list_T *list);
 /* vim: set ft=c : */

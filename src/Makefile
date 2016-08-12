@@ -2056,6 +2056,7 @@ test_arglist \
 	test_autochdir \
 	test_autocmd \
 	test_backspace_opt \
+	test_bufwintabinfo \
 	test_cdo \
 	test_channel \
 	test_cmdline \
