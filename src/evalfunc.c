@@ -171,6 +171,7 @@ static void f_getfsize(typval_T *argvars, typval_T *rettv);
 static void f_getftime(typval_T *argvars, typval_T *rettv);
 static void f_getftype(typval_T *argvars, typval_T *rettv);
 static void f_getline(typval_T *argvars, typval_T *rettv);
+static void f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED);
 static void f_getmatches(typval_T *argvars, typval_T *rettv);
 static void f_getpid(typval_T *argvars, typval_T *rettv);
 static void f_getcurpos(typval_T *argvars, typval_T *rettv);
@@ -591,11 +592,11 @@ static struct fst
     {"getftime",	1, 1, f_getftime},
     {"getftype",	1, 1, f_getftype},
     {"getline",		1, 2, f_getline},
-    {"getloclist",	1, 1, f_getqflist},
+    {"getloclist",	1, 2, f_getloclist},
     {"getmatches",	0, 0, f_getmatches},
     {"getpid",		0, 0, f_getpid},
     {"getpos",		1, 1, f_getpos},
-    {"getqflist",	0, 0, f_getqflist},
+    {"getqflist",	0, 1, f_getqflist},
     {"getreg",		0, 3, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
     {"gettabvar",	2, 3, f_gettabvar},
@@ -741,10 +742,10 @@ static struct fst
     {"setcmdpos",	1, 1, f_setcmdpos},
     {"setfperm",	2, 2, f_setfperm},
     {"setline",		2, 2, f_setline},
-    {"setloclist",	2, 3, f_setloclist},
+    {"setloclist",	2, 4, f_setloclist},
     {"setmatches",	1, 1, f_setmatches},
     {"setpos",		2, 2, f_setpos},
-    {"setqflist",	1, 2, f_setqflist},
+    {"setqflist",	1, 3, f_setqflist},
     {"setreg",		2, 3, f_setreg},
     {"settabvar",	3, 3, f_settabvar},
     {"settabwinvar",	4, 4, f_settabwinvar},
@@ -4529,6 +4530,51 @@ f_getline(typval_T *argvars, typval_T *rettv)
     get_buffer_lines(curbuf, lnum, end, retlist, rettv);
 }
 
+static void get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv);
+
+    static void
+get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
+{
+#ifdef FEAT_QUICKFIX
+    if (what_arg->v_type == VAR_UNKNOWN)
+    {
+	if (rettv_list_alloc(rettv) == OK)
+	    if (is_qf || wp != NULL)
+		(void)get_errorlist(wp, -1, rettv->vval.v_list);
+    }
+    else
+    {
+	if (rettv_dict_alloc(rettv) == OK)
+	    if (is_qf || (wp != NULL))
+	    {
+		if (what_arg->v_type == VAR_DICT)
+		{
+		    dict_T	*d = what_arg->vval.v_dict;
+
+		    if (d != NULL)
+			get_errorlist_properties(wp, d, rettv->vval.v_dict);
+		}
+		else
+		    EMSG(_(e_dictreq));
+	    }
+    }
+#endif
+}
+
+/*
+ * "getloclist()" function
+ */
+    static void
+f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_QUICKFIX
+    win_T	*wp;
+
+    wp = find_win_by_nr(&argvars[0], NULL);
+    get_qf_loc_list(FALSE, wp, &argvars[1], rettv);
+#endif
+}
+
 /*
  * "getmatches()" function
  */
@@ -4666,28 +4712,13 @@ f_getpos(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "getqflist()" and "getloclist()" functions
+ * "getqflist()" function
  */
     static void
 f_getqflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_QUICKFIX
-    win_T	*wp;
-#endif
-
-#ifdef FEAT_QUICKFIX
-    if (rettv_list_alloc(rettv) == OK)
-    {
-	wp = NULL;
-	if (argvars[0].v_type != VAR_UNKNOWN)	/* getloclist() */
-	{
-	    wp = find_win_by_nr(&argvars[0], NULL);
-	    if (wp == NULL)
-		return;
-	}
-
-	(void)get_errorlist(wp, rettv->vval.v_list);
-    }
+    get_qf_loc_list(TRUE, NULL, &argvars[0], rettv);
 #endif
 }
 
@@ -9525,7 +9556,7 @@ f_setline(typval_T *argvars, typval_T *rettv)
 	appended_lines_mark(lcount, added);
 }
 
-static void set_qf_ll_list(win_T *wp, typval_T *list_arg, typval_T *action_arg, typval_T *rettv);
+static void set_qf_ll_list(win_T *wp, typval_T *list_arg, typval_T *action_arg, typval_T *what_arg, typval_T *rettv);
 
 /*
  * Used by "setqflist()" and "setloclist()" functions
@@ -9535,6 +9566,7 @@ set_qf_ll_list(
     win_T	*wp UNUSED,
     typval_T	*list_arg UNUSED,
     typval_T	*action_arg UNUSED,
+    typval_T	*what_arg UNUSED,
     typval_T	*rettv)
 {
 #ifdef FEAT_QUICKFIX
@@ -9551,6 +9583,8 @@ set_qf_ll_list(
     else
     {
 	list_T  *l = list_arg->vval.v_list;
+	dict_T	*d = NULL;
+	int	valid_dict = TRUE;
 
 	if (action_arg->v_type == VAR_STRING)
 	{
@@ -9567,8 +9601,20 @@ set_qf_ll_list(
 	else
 	    EMSG(_(e_stringreq));
 
-	if (l != NULL && action && set_errorlist(wp, l, action,
-	       (char_u *)(wp == NULL ? "setqflist()" : "setloclist()")) == OK)
+	if (action_arg->v_type != VAR_UNKNOWN
+		&& what_arg->v_type != VAR_UNKNOWN)
+	{
+	    if (what_arg->v_type == VAR_DICT)
+		d = what_arg->vval.v_dict;
+	    else
+	    {
+		EMSG(_(e_dictreq));
+		valid_dict = FALSE;
+	    }
+	}
+
+	if (l != NULL && action && valid_dict && set_errorlist(wp, l, action,
+	    (char_u *)(wp == NULL ? "setqflist()" : "setloclist()"), d) == OK)
 	    rettv->vval.v_number = 0;
     }
 #endif
@@ -9586,7 +9632,7 @@ f_setloclist(typval_T *argvars, typval_T *rettv)
 
     win = find_win_by_nr(&argvars[0], NULL);
     if (win != NULL)
-	set_qf_ll_list(win, &argvars[1], &argvars[2], rettv);
+	set_qf_ll_list(win, &argvars[1], &argvars[2], &argvars[3], rettv);
 }
 
 /*
@@ -9754,7 +9800,7 @@ f_setpos(typval_T *argvars, typval_T *rettv)
     static void
 f_setqflist(typval_T *argvars, typval_T *rettv)
 {
-    set_qf_ll_list(NULL, &argvars[0], &argvars[1], rettv);
+    set_qf_ll_list(NULL, &argvars[0], &argvars[1], &argvars[2], rettv);
 }
 
 /*
