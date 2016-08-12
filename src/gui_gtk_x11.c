@@ -6698,7 +6698,7 @@ check_copy_area(void)
      * we don't want it to be.	I'm not sure if it's correct to call
      * gui_dont_update_cursor() at this point but it works as a quick
      * fix for now. */
-    gui_dont_update_cursor();
+    gui_dont_update_cursor(TRUE);
 
     do
     {

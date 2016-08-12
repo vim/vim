@@ -498,6 +498,7 @@ update_screen(int type)
     int		did_one;
 #endif
 #ifdef FEAT_GUI
+    int		did_undraw = FALSE;
     int		gui_cursor_col;
     int		gui_cursor_row;
 #endif
@@ -697,11 +698,12 @@ update_screen(int type)
 		/* Remove the cursor before starting to do anything, because
 		 * scrolling may make it difficult to redraw the text under
 		 * it. */
-		if (gui.in_use)
+		if (gui.in_use && wp == curwin)
 		{
 		    gui_cursor_col = gui.cursor_col;
 		    gui_cursor_row = gui.cursor_row;
 		    gui_undraw_cursor();
+		    did_undraw = TRUE;
 		}
 #endif
 	    }
@@ -757,7 +759,7 @@ update_screen(int type)
     if (gui.in_use)
     {
 	out_flush();	/* required before updating the cursor */
-	if (did_one && !gui_mch_is_blink_off())
+	if (did_undraw && !gui_mch_is_blink_off())
 	{
 	    /* Put the GUI position where the cursor was, gui_update_cursor()
 	     * uses that. */
@@ -9679,7 +9681,7 @@ screen_ins_lines(
 #ifdef FEAT_GUI
     /* Don't update the GUI cursor here, ScreenLines[] is invalid until the
      * scrolling is actually carried out. */
-    gui_dont_update_cursor();
+    gui_dont_update_cursor(row + off <= gui.cursor_row);
 #endif
 
     if (*T_CCS != NUL)	   /* cursor relative to region */
@@ -9781,10 +9783,10 @@ screen_ins_lines(
 }
 
 /*
- * delete lines on the screen and update ScreenLines[]
- * 'end' is the line after the scrolled part. Normally it is Rows.
- * When scrolling region used 'off' is the offset from the top for the region.
- * 'row' and 'end' are relative to the start of the region.
+ * Delete lines on the screen and update ScreenLines[].
+ * "end" is the line after the scrolled part. Normally it is Rows.
+ * When scrolling region used "off" is the offset from the top for the region.
+ * "row" and "end" are relative to the start of the region.
  *
  * Return OK for success, FAIL if the lines are not deleted.
  */
@@ -9900,7 +9902,8 @@ screen_del_lines(
 #ifdef FEAT_GUI
     /* Don't update the GUI cursor here, ScreenLines[] is invalid until the
      * scrolling is actually carried out. */
-    gui_dont_update_cursor();
+    gui_dont_update_cursor(gui.cursor_row >= row + off
+						&& gui.cursor_row < end + off);
 #endif
 
     if (*T_CCS != NUL)	    /* cursor relative to region */

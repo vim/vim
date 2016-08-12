@@ -1964,12 +1964,13 @@ gui_write(
  * gui_can_update_cursor() afterwards.
  */
     void
-gui_dont_update_cursor(void)
+gui_dont_update_cursor(int undraw)
 {
     if (gui.in_use)
     {
 	/* Undraw the cursor now, we probably can't do it after the change. */
-	gui_undraw_cursor();
+	if (undraw)
+	    gui_undraw_cursor();
 	can_update_cursor = FALSE;
     }
 }
