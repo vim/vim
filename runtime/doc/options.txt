@@ -6744,8 +6744,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the |+signs|
 			feature}
-	Whether or not to draw the signcolumn. "auto" means it will only be
-	drawn when there is a sign to display.
+	Whether or not to draw the signcolumn. Valid values are:
+	   "auto"   	only when there is a sign to display
+	   "no"	    	never
+	   "yes"    	always
 
 
 			*'smartcase'* *'scs'* *'nosmartcase'* *'noscs'*

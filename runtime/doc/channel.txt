@@ -54,7 +54,7 @@ Common combination are:
 - Using a job connected through pipes in NL mode.  E.g., to run a style
   checker and receive errors and warnings.
 - Using a deamon, connecting over a socket in JSON mode.  E.g. to lookup
-  crosss-refrences in a database.
+  cross-references in a database.
 
 ==============================================================================
 2. Channel demo				*channel-demo* *demoserver.py*

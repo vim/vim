@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 02
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,8 +33,6 @@ not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Should free_all_functions(void) skip numbered and lambda functions?
 
 +channel:
 - Channel test fails with Motif.  Sometimes kills the X11 server.
@@ -138,19 +136,13 @@ Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 
 Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
 
-Do we need some way (option) to show the sign column even when there are no
-signs?  Patch by Christian Brabandt, 2016 Jul 29.
-
-Patch to allow setting w:quickfix_title via setqflist() and setloclist()
-functions. (Christian Brabandt, 2013 May 8, update May 21)
-Patch to add getlocstack() / setlocstack(). (Christian Brabandt, 2013 May 14)
-Second one. Update May 22.
-Update by Daniel Hahler, 2014 Jul 4, Aug 14, Oct 14, Oct 15.
-Updated patch: add an argument to setqflist() and getqflist() for these
-extra items: Yegappan, 2016 Jul 30.
+Also return quickfix vs location list in getwininfo().
 
 Patch to detect st terminal supporting xterm mouse. (Manuel Schiller, 2016 Aug
 2, #963)
+
+Patch to fix that " mark is not stored in viminfo when closing a window in
+another tab. (Hirohito Higashi, 2016 Aug 11, #974)
 
 Syntax highlighting for messages with RFC3339 timestamp (#946)
 Did maintainer reply?
@@ -168,6 +160,10 @@ Should already never use utf-8 chars to position the cursor.
 
 Cannot delete a file with square brackets with delete(). (#696)
 
+Patch to add the EndOfBuffer highlight group, used instead of NonText for "~"
+lines. (Marco Hinz, 2014 Nov 2)
+Update from James McCoy, 2016 Aug 3.
+
 No autocommand for when changing directory.  Patch from allen haim, 2016 Jun
 27, #888
 Justin M Keyes: use "global" or "window" for the pattern.  Can add "tab"
@@ -176,15 +172,23 @@ later.  What if entering a window where ":lcd" was used?
 Completion for input() does not expand environment variables. (chdiza, 2016
 Jul 25, #948)
 
+Patch to improve GTK shaping. (Manuel Schiller, 2016 Aug 7)
+
+Patch to make matchaddpos() not highlight the character after the line.
+(Hirohito Higashi, 2016 Aug 7)
+
+'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
+
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
 Ben Fritz: problem with 'selection' set to "exclusive".
 Updated to current Vim, not quite right yet. (Ben Fritz, 2014 Mar 27)
 Updated to current Vim (James McCoy, 2016 Jul 30, #958)
-Still a bit of work left.
+Still a bit of work left.  Check if "vimx" works.
+Added tests, Aug 3.
 
-Patch to add CTRL-N / CTRL-P while searching. (Christian Brabandt, 2016 Jul
-29)
+Patch to add CTRL-N / CTRL-P while searching. (Christian Brabandt, 2016 Aug
+3)  Problem: two matches in one line and using CTRL-P does not move back.
 
 's$^$\=capture("s/^//gn")' locks Vim in sandbox mode (#950)
 Patch by Christian Brabandt, 2016 Jul 27.
@@ -198,6 +202,8 @@ Also for ":@.".
 Patch to make printf() convert to string for %s items. (Ken Takata, 2016 Aug
 1)
 
+Patch to add %b to printf(). (Ozaki Kiichi, 2016 Aug 5)
+
 Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 
 Patch on issue #728 by Christian Brabandt, 2016 Apr 7.  Update with test: Apr 8.
@@ -206,12 +212,19 @@ Might be related to:
 Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
 handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
 
+Second problem in #966: ins_compl_add_tv() uses get_dict_string() multiple
+times, overwrites the one buffer. (Nikolay Pavlov, 2016 Aug 5)
+
 Patch to add 'topbot' to 'belloff' option. (Coot, 2016 Mar 18, #695)
 
 Patch for C syntax HL. (Bradley Garagan, 2016 Apr 17) #763
 
 Patch to make matchit work better, respect 'matchpairs'. (Ken Takata, 2016 Mar
 25)
+
+Patch to fix that on suckless Terminal mousewheel up does not work.
+(Ralph Eastwood, 2013 Nov 25)
+Patch for mouse support on suckless Terminal. #971  Manuel Schiller
 
 This does not work: :set cscopequickfix=a-
 (Linewi, 2015 Jul 12, #914)
@@ -245,9 +258,6 @@ Update from Ken Takata, 2016 Jul 17.
 
 Patch to improve cscope. (Adrian Kocis, #843)
 
-Patch to add getbufinfo(), gettabinfo() and getwininfo(). (Yegappan
-Lakshmanan, 2016 Apr 2016)  Update Jul 29.  #833.
-
 Patch for groovy multi-line comment highlighting. (Justin M. Keyes, 2016 May
 20 #644)
 
@@ -265,7 +275,7 @@ No test, needs some work to include.
 Patch to improve indenting for C++ constructor with initializer list.
 (Hirohito Higashi, 2016 Mar 31)
 
-After 7.5 is released:
+After 8.0 is released:
 - Drop support for older MS-Windows systems, before XP.
   Patch from Ken Takata, 2016 Mar 8.
 
@@ -540,7 +550,7 @@ Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
 Patch for drag&drop reordering of GUI tab pages reordering.
 (Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
 Now on Git: https://gist.github.com/nocd5/165286495c782b815b94
-Update 2016 Mar 15.
+Update 2016 Aug 10.
 
 Patch on Issue 72: 'autochdir' causes problems for :vimgrep.
 
@@ -559,9 +569,6 @@ When in 'comments' "n:x" follows after three-part comment directly it repeats
 any one-character from the previous line. (Kartik Agaram, 2014 Sep 19)
 
 Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
-
-Patch to add the EndOfBuffer highlight group, used instead of NonText for "~"
-lines. (Marco Hinz, 2014 Nov 2)
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
@@ -776,9 +783,6 @@ Patch by Thomas Tuegel, also for GTK, 2013 Nov 24
 Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
 With tests: Sep 5.
 
-Patch to fix that on suckless Terminal mousewheel up does not work.
-(Ralph Eastwood, 2013 Nov 25)
-
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
 Checking runtime scripts: Thilo Six, 2012 Jun 6.
@@ -870,9 +874,6 @@ Improve the installer for MS-Windows.  There are a few alternatives:
 - The one on Issue 279.
 Problem: they all work slightly different (e.g. don't install vimrun.exe).
 How to test that it works well for all Vim users?
-
-Patch to check whether a buffer is quickfix or a location list.
-(Yasuhiro Matsumoto, 2014 Dec 9)
 
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
 
@@ -1383,7 +1384,7 @@ https://scan.coverity.com/projects/241
 Patch to support :undo absolute jump to file save number. (Christian Brabandt,
 2010 Nov 5)
 
-Patch to use 'foldnextmax' also for "marker" foldmethod. (Arnaud Lacombe, 2011
+Patch to use 'foldnestmax' also for "marker" foldmethod. (Arnaud Lacombe, 2011
 Jan 7)
 
 Bug with 'incsearch' going to wrong line. (Wolfram Kresse, 2009 Aug 17)
@@ -2452,9 +2453,6 @@ Awaiting updated patches:
     done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
 7   Add a "-@ filelist" argument: read file names from a file. (David
     Kotchan has a patch for it)
-8   Include a connection to an external program through a pipe?  See
-    patches from Felbinger for a mathematica interface.
-    Or use emacs server kind of thing?
 7   Add ":justify" command.  Patch from Vit Stradal 2002 Nov 25.
 -   findmatch() should be adjusted for Lisp.  See remark at
     get_lisp_indent().  Esp. \( and \) should be skipped. (Dorai Sitaram,

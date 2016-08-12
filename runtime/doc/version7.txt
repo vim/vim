@@ -4026,7 +4026,7 @@ Solution:   Check for NULL pointer returned from mch_open().
 Files:	    src/if_cscope.c
 
 Patch 7.0.154
-Problem:    When 'foldnextmax' is negative Vim can hang. (James Vega)
+Problem:    When 'foldnestmax' is negative Vim can hang. (James Vega)
 Solution:   Avoid the fold level becoming negative.
 Files:	    src/fold.c, src/syntax.c
 
