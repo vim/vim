@@ -2416,11 +2416,12 @@ static struct vimoption options[] =
     {"signcolumn",   "scl",  P_STRING|P_ALLOCED|P_VI_DEF|P_RWIN,
 #ifdef FEAT_SIGNS
 			    (char_u *)VAR_WIN, PV_SCL,
-			    {(char_u *)"auto", (char_u *)0L} SCRIPTID_INIT},
+			    {(char_u *)"auto", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
+			    SCRIPTID_INIT},
     {"slowopen",    "slow", P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
