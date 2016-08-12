@@ -2255,23 +2255,6 @@ win_update(win_T *wp)
 #endif
 }
 
-#ifdef FEAT_SIGNS
-static int draw_signcolumn(win_T *wp);
-
-/*
- * Return TRUE when window "wp" has a column to draw signs in.
- */
-    static int
-draw_signcolumn(win_T *wp)
-{
-    return (wp->w_buffer->b_signlist != NULL
-# ifdef FEAT_NETBEANS_INTG
-				|| wp->w_buffer->b_has_sign_column
-# endif
-		    );
-}
-#endif
-
 /*
  * Clear the rest of the window and mark the unused lines with "c1".  use "c2"
  * as the filler character.
@@ -2313,7 +2296,7 @@ win_draw_end(
 	}
 # endif
 # ifdef FEAT_SIGNS
-	if (draw_signcolumn(wp))
+	if (signcolumn_on(wp))
 	{
 	    int nn = n + 2;
 
@@ -2363,7 +2346,7 @@ win_draw_end(
 	}
 #endif
 #ifdef FEAT_SIGNS
-	if (draw_signcolumn(wp))
+	if (signcolumn_on(wp))
 	{
 	    int	    nn = n + 2;
 
@@ -2507,7 +2490,7 @@ fold_line(
 
 #ifdef FEAT_SIGNS
     /* If signs are being displayed, add two spaces. */
-    if (draw_signcolumn(wp))
+    if (signcolumn_on(wp))
     {
 	len = W_WIDTH(wp) - col;
 	if (len > 0)
@@ -3677,7 +3660,7 @@ win_line(
 		draw_state = WL_SIGN;
 		/* Show the sign column when there are any signs in this
 		 * buffer or when using Netbeans. */
-		if (draw_signcolumn(wp))
+		if (signcolumn_on(wp))
 		{
 		    int	text_sign;
 # ifdef FEAT_SIGN_ICONS

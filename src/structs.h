@@ -263,6 +263,10 @@ typedef struct
     int		wo_crb_save;	/* 'cursorbind' state saved for diff mode*/
 # define w_p_crb_save w_onebuf_opt.wo_crb_save
 #endif
+#ifdef FEAT_SIGNS
+    char_u	*wo_scl;
+# define w_p_scl w_onebuf_opt.wo_scl	/* 'signcolumn' */
+#endif
 
 #ifdef FEAT_EVAL
     int		wo_scriptID[WV_COUNT];	/* SIDs for window-local options */

@@ -633,6 +633,9 @@ EXTERN int	p_magic;	/* 'magic' */
 EXTERN char_u	*p_mef;		/* 'makeef' */
 EXTERN char_u	*p_mp;		/* 'makeprg' */
 #endif
+#ifdef FEAT_SIGNS
+EXTERN char_u  *p_scl;		/* signcolumn */
+#endif
 #ifdef FEAT_SYN_HL
 EXTERN char_u   *p_cc;		/* 'colorcolumn' */
 EXTERN int      p_cc_cols[256]; /* array for 'colorcolumn' columns */
@@ -1173,6 +1176,9 @@ enum
     , WV_WFW
 #endif
     , WV_WRAP
+#ifdef FEAT_SIGNS
+    , WV_SCL
+#endif
     , WV_COUNT	    /* must be the last one */
 };
 

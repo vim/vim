@@ -16,7 +16,7 @@ function! Test_whichwrap()
   set whichwrap&
 endfunction
 
-function! Test_options()
+function Test_options()
   let caught = 'ok'
   try
     options
@@ -29,7 +29,7 @@ function! Test_options()
   close
 endfunction
 
-function! Test_path_keep_commas()
+function Test_path_keep_commas()
   " Test that changing 'path' keeps two commas.
   set path=foo,,bar
   set path-=bar
@@ -38,3 +38,11 @@ function! Test_path_keep_commas()
 
   set path&
 endfunction
+
+func Test_signcolumn()
+  call assert_equal("auto", &signcolumn)
+  set signcolumn=yes
+  set signcolumn=no
+  call assert_fails('set signcolumn=nope')
+endfunc
+
