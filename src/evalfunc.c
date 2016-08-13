@@ -4699,12 +4699,10 @@ f_getline(typval_T *argvars, typval_T *rettv)
     get_buffer_lines(curbuf, lnum, end, retlist, rettv);
 }
 
-static void get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv);
-
+#ifdef FEAT_QUICKFIX
     static void
 get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
 {
-#ifdef FEAT_QUICKFIX
     if (what_arg->v_type == VAR_UNKNOWN)
     {
 	if (rettv_list_alloc(rettv) == OK)
@@ -4727,8 +4725,8 @@ get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
 		    EMSG(_(e_dictreq));
 	    }
     }
-#endif
 }
+#endif
 
 /*
  * "getloclist()" function
