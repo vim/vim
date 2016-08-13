@@ -586,7 +586,7 @@ static struct fst
     {"getcmdtype",	0, 0, f_getcmdtype},
     {"getcmdwintype",	0, 0, f_getcmdwintype},
 #if defined(FEAT_CMDL_COMPL)
-    {"getcompletion",	2, 2, f_getcompletion},
+    {"getcompletion",	2, 3, f_getcompletion},
 #endif
     {"getcurpos",	0, 0, f_getcurpos},
     {"getcwd",		0, 2, f_getcwd},
@@ -4382,11 +4382,19 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 {
     char_u	*pat;
     expand_T	xpc;
+    int		filtered = FALSE;
     int		options = WILD_SILENT | WILD_USE_NL | WILD_ADD_SLASH
 					| WILD_NO_BEEP;
 
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	filtered = get_tv_number_chk(&argvars[2], NULL);
+
     if (p_wic)
 	options |= WILD_ICASE;
+
+    /* For filtered results, 'wildignore' is used */
+    if (!filtered)
+	options |= WILD_KEEP_ALL;
 
     ExpandInit(&xpc);
     xpc.xp_pattern = get_tv_string(&argvars[0]);
