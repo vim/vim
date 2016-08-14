@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Aug 12
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Aug 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9,7 +9,7 @@ Expression evaluation			*expression* *expr* *E15* *eval*
 Using expressions is introduced in chapter 41 of the user manual |usr_41.txt|.
 
 Note: Expression evaluation can be disabled at compile time.  If this has been
-done, the features in this document are not available.	See |+eval| and
+done, the features in this document are not available.  See |+eval| and
 |no-eval-feature|.
 
 1.  Variables			|variables|
@@ -127,7 +127,7 @@ evaluates to FALSE.
 List, Dictionary, Funcref and Job types are not automatically converted.
 
 							*E805* *E806* *E808*
-When mixing Number and Float the Number is converted to Float.	Otherwise
+When mixing Number and Float the Number is converted to Float.  Otherwise
 there is no automatic conversion of Float.  You can use str2float() for String
 to Float, printf() for Float to String and float2nr() for Float to Number.
 
@@ -140,10 +140,10 @@ You will not get an error if you try to change the type of a variable.
 
 1.2 Function references ~
 					*Funcref* *E695* *E718*
-A Funcref variable is obtained with the |function()| function or created with
-the lambda expression |expr-lambda|.  It can be used in an expression in the
-place of a function name, before the parenthesis around the arguments, to
-invoke the function it refers to.  Example: >
+A Funcref variable is obtained with the |function()| function, the |funcref()|
+function or created with the lambda expression |expr-lambda|.  It can be used
+in an expression in the place of a function name, before the parenthesis
+around the arguments, to invoke the function it refers to.  Example: >
 
 	:let Fn = function("MyFunc")
 	:echo Fn()
@@ -175,8 +175,8 @@ arguments: >
 								*Partial*
 A Funcref optionally binds a Dictionary and/or arguments.  This is also called
 a Partial.  This is created by passing the Dictionary and/or arguments to
-function().  When calling the function the Dictionary and/or arguments will be
-passed to the function.  Example: >
+function() or funcref().  When calling the function the Dictionary and/or
+arguments will be passed to the function.  Example: >
 
 	let Cb = function('Callback', ['foo'], myDict)
 	call Cb()
@@ -213,7 +213,7 @@ Here "self" will be "myDict", because it was bound explicitly.
 1.3 Lists ~
 						*list* *List* *Lists* *E686*
 A List is an ordered sequence of items.  An item can be of any type.  Items
-can be accessed by their index number.	Items can be added and removed at any
+can be accessed by their index number.  Items can be added and removed at any
 position in the sequence.
 
 
@@ -224,7 +224,7 @@ Examples: >
 	:let mylist = [1, two, 3, "four"]
 	:let emptylist = []
 
-An item can be any expression.	Using a List for an item creates a
+An item can be any expression.  Using a List for an item creates a
 List of Lists: >
 	:let nestlist = [[11, 12], [21, 22], [31, 32]]
 
@@ -283,7 +283,7 @@ length minus one is used: >
 	:echo mylist[2:8]		" result: [2, 3]
 
 NOTE: mylist[s:e] means using the variable "s:e" as index.  Watch out for
-using a single letter variable before the ":".	Insert a space when needed:
+using a single letter variable before the ":".  Insert a space when needed:
 mylist[s : e].
 
 
@@ -412,7 +412,7 @@ This works like: >
 If all you want to do is modify each item in the list then the |map()|
 function will be a simpler method than a for loop.
 
-Just like the |:let| command, |:for| also accepts a list of variables.	This
+Just like the |:let| command, |:for| also accepts a list of variables.  This
 requires the argument to be a list of lists. >
 	:for [lnum, col] in [[1, 3], [2, 8], [3, 0]]
 	:   call Doit(lnum, col)
@@ -469,11 +469,11 @@ only appear once.  Examples: >
 <							*E713* *E716* *E717*
 A key is always a String.  You can use a Number, it will be converted to a
 String automatically.  Thus the String '4' and the number 4 will find the same
-entry.	Note that the String '04' and the Number 04 are different, since the
+entry.  Note that the String '04' and the Number 04 are different, since the
 Number will be converted to the String '4'.  The empty string can be used as a
 key.
 
-A value can be any expression.	Using a Dictionary for a value creates a
+A value can be any expression.  Using a Dictionary for a value creates a
 nested Dictionary: >
 	:let nestdict = {1: {11: 'a', 12: 'b'}, 2: {21: 'c'}}
 
@@ -500,7 +500,7 @@ key lookup can be repeated: >
 
 Dictionary to List conversion ~
 
-You may want to loop over the entries in a dictionary.	For this you need to
+You may want to loop over the entries in a dictionary.  For this you need to
 turn the Dictionary into a List and pass it to |:for|.
 
 Most often you want to loop over the keys, using the |keys()| function: >
@@ -567,7 +567,7 @@ This removes all entries from "dict" with a value not matching 'x'.
 Dictionary function ~
 				*Dictionary-function* *self* *E725* *E862*
 When a function is defined with the "dict" attribute it can be used in a
-special way with a dictionary.	Example: >
+special way with a dictionary.  Example: >
 	:function Mylen() dict
 	:   return len(self.data)
 	:endfunction
@@ -591,7 +591,7 @@ assigned to a Dictionary in this way: >
 	:echo mydict.len()
 
 The function will then get a number and the value of dict.len is a |Funcref|
-that references this function.	The function can only be used through a
+that references this function.  The function can only be used through a
 |Funcref|.  It will automatically be deleted when there is no |Funcref|
 remaining that refers to it.
 
@@ -839,7 +839,7 @@ values are different: >
 "is#"/"isnot#" and "is?"/"isnot?" can be used to match and ignore case.
 
 When comparing a String with a Number, the String is converted to a Number,
-and the comparison is done on Numbers.	This means that: >
+and the comparison is done on Numbers.  This means that: >
 	echo 0 == 'x'
 	1
 because 'x' converted to a Number is zero.  However: >
@@ -934,7 +934,7 @@ For '+' the number is unchanged.
 
 A String will be converted to a Number first.
 
-These three can be repeated and mixed.	Examples:
+These three can be repeated and mixed.  Examples:
 	!-1	    == 0
 	!!8	    == 1
 	--9	    == 9
@@ -960,7 +960,7 @@ compatibility).  Use [-1:] to get the last byte.
 
 If expr8 is a |List| then it results the item at index expr1.  See |list-index|
 for possible index values.  If the index is out of range this results in an
-error.	Example: >
+error.  Example: >
 	:let item = mylist[-1]		" get last item
 
 Generally, if a |List| index is equal to or higher than the length of the
@@ -992,7 +992,7 @@ Examples: >
 <
 							*slice*
 If expr8 is a |List| this results in a new |List| with the items indicated by
-the indexes expr1a and expr1b.	This works like with a String, as explained
+the indexes expr1a and expr1b.  This works like with a String, as explained
 just above. Also see |sublist| below.  Examples: >
 	:let l = mylist[:3]		" first four items
 	:let l = mylist[4:4]		" List with one item
@@ -1051,7 +1051,7 @@ Floating point numbers can be written in two forms:
 contain digits.
 [-+] means there is an optional plus or minus sign.
 {exp} is the exponent, power of 10.
-Only a decimal point is accepted, not a comma.	No matter what the current
+Only a decimal point is accepted, not a comma.  No matter what the current
 locale is.
 {only when compiled with the |+float| feature}
 
@@ -1120,8 +1120,10 @@ A string constant accepts these special characters:
 \\	backslash
 \"	double quote
 \<xxx>	Special key named "xxx".  e.g. "\<C-W>" for CTRL-W.  This is for use
-	in mappings, the 0x80 byte is escaped.  Don't use <Char-xxxx> to get a
-	utf-8 character, use \uxxxx as mentioned above.
+	in mappings, the 0x80 byte is escaped.
+	To use the double quote character it must be escaped: "<M-\">".
+	Don't use <Char-xxxx> to get a utf-8 character, use \uxxxx as
+	mentioned above.
 
 Note that "\xff" is stored as the byte 255, which may be invalid in some
 encodings.  Use "\u00ff" to store character 255 according to the current value
@@ -1136,11 +1138,11 @@ literal-string						*literal-string* *E115*
 
 Note that single quotes are used.
 
-This string is taken as it is.	No backslashes are removed or have a special
+This string is taken as it is.  No backslashes are removed or have a special
 meaning.  The only exception is that two quotes stand for one quote.
 
 Single quoted strings are useful for patterns, so that backslashes do not need
-to be doubled.	These two commands are equivalent: >
+to be doubled.  These two commands are equivalent: >
 	if a =~ "\\s*"
 	if a =~ '\s*'
 
@@ -1166,7 +1168,7 @@ register						*expr-register* *@r*
 
 The result is the contents of the named register, as a single string.
 Newlines are inserted where required.  To get the contents of the unnamed
-register use @" or @@.	See |registers| for an explanation of the available
+register use @" or @@.  See |registers| for an explanation of the available
 registers.
 
 When using the '=' register you get the expression itself, not what it
@@ -1326,7 +1328,7 @@ without the |+windows| feature}
 
 						*global-variable* *g:var* *g:*
 Inside functions global variables are accessed with "g:".  Omitting this will
-access a variable local to a function.	But "g:" can also be used in any other
+access a variable local to a function.  But "g:" can also be used in any other
 place if you like.
 
 						*local-variable* *l:var* *l:*
@@ -1468,7 +1470,7 @@ v:cmdarg	This variable is used for two purposes:
 		   set before an autocommand event for a file read/write
 		   command is triggered.  There is a leading space to make it
 		   possible to append this variable directly after the
-		   read/write command.	Note: The "+cmd" argument isn't
+		   read/write command.  Note: The "+cmd" argument isn't
 		   included here, because it will be executed anyway.
 		2. When printing a PostScript file with ":hardcopy" this is
 		   the argument for the ":hardcopy" command.  This can be used
@@ -1488,7 +1490,7 @@ v:completed_item
 
 					*v:count* *count-variable*
 v:count		The count given for the last Normal mode command.  Can be used
-		to get the count before a mapping.  Read-only.	Example: >
+		to get the count before a mapping.  Read-only.  Example: >
 	:map _x :<C-U>echo "the count is " . v:count<CR>
 <		Note: The <C-U> is required to remove the line range that you
 		get when typing ':' after a count.
@@ -1511,7 +1513,7 @@ v:ctype		The current locale setting for characters of the runtime
 		See |multi-lang|.
 
 					*v:dying* *dying-variable*
-v:dying		Normally zero.	When a deadly signal is caught it's set to
+v:dying		Normally zero.  When a deadly signal is caught it's set to
 		one.  When multiple signals are caught the number increases.
 		Can be used in an autocommand to check if Vim didn't
 		terminate normally. {only works on Unix}
@@ -1601,7 +1603,7 @@ v:fname_out	The name of the output file.  Only valid while
 			'diffexpr'	output of diff
 			'patchexpr'	resulting patched file
 		(*) When doing conversion for a write command (e.g., ":w
-		file") it will be equal to v:fname_in.	When doing conversion
+		file") it will be equal to v:fname_in.  When doing conversion
 		for a read command (e.g., ":e file") it will be a temporary
 		file and different from v:fname_in.
 
@@ -1758,7 +1760,7 @@ v:prevcount	The count given for the last but one Normal mode command.
 <		Read-only.
 
 					*v:profiling* *profiling-variable*
-v:profiling	Normally zero.	Set to one after using ":profile start".
+v:profiling	Normally zero.  Set to one after using ":profile start".
 		See |profiling|.
 
 					*v:progname* *progname-variable*
@@ -1837,14 +1839,14 @@ v:swapchoice	|SwapExists| autocommands can set this to the selected choice
 			'd'	Delete swapfile
 			'q'	Quit
 			'a'	Abort
-		The value should be a single-character string.	An empty value
+		The value should be a single-character string.  An empty value
 		results in the user being asked, as would happen when there is
 		no SwapExists autocommand.  The default is empty.
 
 					*v:swapcommand* *swapcommand-variable*
 v:swapcommand	Normal mode command to be executed after a file has been
 		opened.  Can be used for a |SwapExists| autocommand to have
-		another Vim open the file and jump to the right place.	For
+		another Vim open the file and jump to the right place.  For
 		example, when jumping to a tag the value is ":tag tagname\r".
 		For ":edit +cmd file" the value is ":cmd\r".
 
@@ -1871,7 +1873,7 @@ v:t_string	Value of String type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
-		termcap entry.	It is set when Vim receives an escape sequence
+		termcap entry.  It is set when Vim receives an escape sequence
 		that starts with ESC [ or CSI and ends in a 'c', with only
 		digits, ';' and '.' in between.
 		When this option is set, the TermResponse autocommand event is
@@ -1894,7 +1896,7 @@ v:this_session	Full filename of the last loaded or saved session file.  See
 
 					*v:throwpoint* *throwpoint-variable*
 v:throwpoint	The point where the exception most recently caught and not
-		finished was thrown.  Not set when commands are typed.	See
+		finished was thrown.  Not set when commands are typed.  See
 		also |v:exception| and |throw-variables|.
 		Example: >
 	:try
@@ -1913,7 +1915,7 @@ v:true		A Number with value one. Used to put "true" in JSON.  See
 		That is so that eval() can parse the string back to the same
 		value.  Read-only.
 						*v:val* *val-variable*
-v:val		Value of the current item of a |List| or |Dictionary|.	Only
+v:val		Value of the current item of a |List| or |Dictionary|.  Only
 		valid while evaluating the expression used with |map()| and
 		|filter()|.  Read-only.
 
@@ -2081,7 +2083,7 @@ garbagecollect([{atexit}])	none	free memory, breaking cyclic references
 get({list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get({dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 get({func}, {what})		any	get property of funcref/partial {func}
-getbufinfo( [{expr}])		List  	information about buffers
+getbufinfo([{expr}])		List  	information about buffers
 getbufline({expr}, {lnum} [, {end}])
 				List	lines {lnum} to {end} of buffer {expr}
 getbufvar({expr}, {varname} [, {def}])
@@ -2112,12 +2114,12 @@ getqflist([{what}])		List	list of quickfix items
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of register
 getregtype([{regname}])		String	type of register
-gettabinfo( [{expr}])		List  	list of tab pages
+gettabinfo([{expr}])		List  	list of tab pages
 gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
-getwininfo( [{winid}])		List  	list of windows
+getwininfo([{winid}])		List  	list of windows
 getwinposx()			Number	X coord in pixels of GUI Vim window
 getwinposy()			Number	Y coord in pixels of GUI Vim window
 getwinvar({nr}, {varname} [, {def}])
@@ -2436,7 +2438,7 @@ append({lnum}, {expr})					*append()*
 		the current buffer.
 		{lnum} can be zero to insert a line before the first one.
 		Returns 1 for failure ({lnum} out of range or out of memory),
-		0 for success.	Example: >
+		0 for success.  Example: >
 			:let failed = append(line('$'), "# THE END")
 			:let failed = append(0, ["Chapter 1", "the beginning"])
 <
@@ -2661,7 +2663,7 @@ bufname({expr})						*bufname()*
 		If {expr} is a Number, that buffer number's name is given.
 		Number zero is the alternate buffer for the current window.
 		If {expr} is a String, it is used as a |file-pattern| to match
-		with the buffer names.	This is always done like 'magic' is
+		with the buffer names.  This is always done like 'magic' is
 		set and 'cpoptions' is empty.  When there is more than one
 		match an empty string is returned.
 		"" or "%" can be used for the current buffer, "#" for the
@@ -2707,7 +2709,7 @@ bufnr({expr} [, {create}])
 bufwinid({expr})					*bufwinid()*
 		The result is a Number, which is the window ID of the first
 		window associated with buffer {expr}.  For the use of {expr},
-		see |bufname()| above.	If buffer {expr} doesn't exist or
+		see |bufname()| above.  If buffer {expr} doesn't exist or
 		there is no such window, -1 is returned.  Example: >
 
 	echo "A window containing buffer 1 is " . (bufwinid(1))
@@ -2717,7 +2719,7 @@ bufwinid({expr})					*bufwinid()*
 bufwinnr({expr})					*bufwinnr()*
 		The result is a Number, which is the number of the first
 		window associated with buffer {expr}.  For the use of {expr},
-		see |bufname()| above.	If buffer {expr} doesn't exist or
+		see |bufname()| above.  If buffer {expr} doesn't exist or
 		there is no such window, -1 is returned.  Example: >
 
 	echo "A window containing buffer 1 is " . (bufwinnr(1))
@@ -2850,7 +2852,7 @@ col({expr})	The result is a Number, which is the byte index of the column
 			col("$")		length of cursor line plus one
 			col("'t")		column of mark t
 			col("'" . markname)	column of mark markname
-<		The first column is 1.	0 is returned for an error.
+<		The first column is 1.  0 is returned for an error.
 		For an uppercase mark the column may actually be in another
 		buffer.
 		For the cursor position, when 'virtualedit' is active, the
@@ -2897,7 +2899,7 @@ complete_add({expr})				*complete_add()*
 		Returns 0 for failure (empty string or out of memory),
 		1 when the match was added, 2 when the match was already in
 		the list.
-		See |complete-functions| for an explanation of {expr}.	It is
+		See |complete-functions| for an explanation of {expr}.  It is
 		the same as one item in the list that 'omnifunc' would return.
 
 complete_check()				*complete_check()*
@@ -2957,7 +2959,7 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
    :endif
 <		In a GUI dialog, buttons are used.  The layout of the buttons
 		depends on the 'v' flag in 'guioptions'.  If it is included,
-		the buttons are always put vertically.	Otherwise,  confirm()
+		the buttons are always put vertically.  Otherwise,  confirm()
 		tries to put the buttons in one horizontal line.  If they
 		don't fit, a vertical layout is used anyway.  For some systems
 		the horizontal layout is always used.
@@ -3126,7 +3128,7 @@ ch_status({handle})						*ch_status()*
 		still data that can be obtained with |ch_read()|.
 
 							*copy()*
-copy({expr})	Make a copy of {expr}.	For Numbers and Strings this isn't
+copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 		different from using {expr} directly.
 		When {expr} is a |List| a shallow copy is created.  This means
 		that the original |List| can be changed without changing the
@@ -3238,7 +3240,7 @@ cursor({list})
 
 
 deepcopy({expr}[, {noref}])				*deepcopy()* *E698*
-		Make a copy of {expr}.	For Numbers and Strings this isn't
+		Make a copy of {expr}.  For Numbers and Strings this isn't
 		different from using {expr} directly.
 		When {expr} is a |List| a full copy is created.  This means
 		that the original |List| can be changed without changing the
@@ -3348,10 +3350,10 @@ executable({expr})					*executable()*
 		searchpath for programs.		*PATHEXT*
 		On MS-DOS and MS-Windows the ".exe", ".bat", etc. can
 		optionally be included.  Then the extensions in $PATHEXT are
-		tried.	Thus if "foo.exe" does not exist, "foo.exe.bat" can be
-		found.	If $PATHEXT is not set then ".exe;.com;.bat;.cmd" is
+		tried.  Thus if "foo.exe" does not exist, "foo.exe.bat" can be
+		found.  If $PATHEXT is not set then ".exe;.com;.bat;.cmd" is
 		used.  A dot by itself can be used in $PATHEXT to try using
-		the name without an extension.	When 'shell' looks like a
+		the name without an extension.  When 'shell' looks like a
 		Unix shell, then the name is also tried without adding an
 		extension.
 		On MS-DOS and MS-Windows it only checks if the file exists and
@@ -3418,7 +3420,7 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 					|user-functions|). Also works for a
 					variable that is a Funcref.
 			varname		internal variable (see
-					|internal-variables|).	Also works
+					|internal-variables|).  Also works
 					for |curly-braces-names|, |Dictionary|
 					entries, |List| items, etc.  Beware
 					that evaluating an index may cause an
@@ -3506,7 +3508,7 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 		version 5.0 a space was used, which caused problems when a
 		file name contains a space]
 
-		If the expansion fails, the result is an empty string.	A name
+		If the expansion fails, the result is an empty string.  A name
 		for a non-existing file is not included, unless {expr} does
 		not start with '%', '#' or '<', see below.
 
@@ -3570,7 +3572,7 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 		slow, because a shell may be used to do the expansion.  See
 		|expr-env-expand|.
 		The expanded variable is still handled like a list of file
-		names.	When an environment variable cannot be expanded, it is
+		names.  When an environment variable cannot be expanded, it is
 		left unchanged.  Thus ":echo expand('$FOOBAR')" results in
 		"$FOOBAR".
 
@@ -3593,7 +3595,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		items copied is equal to the original length of the List.
 		E.g., when {expr3} is 1 you get N new copies of the first item
 		(where N is the original length of the List).
-		Use |add()| to concatenate one item to a list.	To concatenate
+		Use |add()| to concatenate one item to a list.  To concatenate
 		two lists into a new list use the + operator: >
 			:let newlist = [1, 2, 3] + [4, 5]
 <
@@ -3787,7 +3789,7 @@ fmod({expr1}, {expr2})					*fmod()*
 
 
 fnameescape({string})					*fnameescape()*
-		Escape {string} for use as file name command argument.	All
+		Escape {string} for use as file name command argument.  All
 		characters that have a special meaning, such as '%' and '|'
 		are escaped with a backslash.
 		For most systems the characters escaped are
@@ -3824,7 +3826,7 @@ foldclosedend({lnum})					*foldclosedend()*
 
 foldlevel({lnum})					*foldlevel()*
 		The result is a Number, which is the foldlevel of line {lnum}
-		in the current buffer.	For nested folds the deepest level is
+		in the current buffer.  For nested folds the deepest level is
 		returned.  If there is no fold at line {lnum}, zero is
 		returned.  It doesn't matter if the folds are open or closed.
 		When used while updating folds (from 'foldexpr') -1 is
@@ -3839,7 +3841,7 @@ foldtext()	Returns a String, to be displayed for a closed fold.  This is
 		|v:foldstart|, |v:foldend| and |v:folddashes| variables.
 		The returned string looks like this: >
 			+-- 45 lines: abcdef
-<		The number of dashes depends on the foldlevel.	The "45" is
+<		The number of dashes depends on the foldlevel.  The "45" is
 		the number of lines in the fold.  "abcdef" is the text in the
 		first non-blank line of the fold.  Leading white space, "//"
 		or "/*" and the text from the 'foldmarker' and 'commentstring'
@@ -3857,7 +3859,7 @@ foldtextresult({lnum})					*foldtextresult()*
 		{not available when compiled without the |+folding| feature}
 
 							*foreground()*
-foreground()	Move the Vim window to the foreground.	Useful when sent from
+foreground()	Move the Vim window to the foreground.  Useful when sent from
 		a client to a Vim server. |remote_send()|
 		On Win32 systems this might not work, the OS does not always
 		allow a window to bring itself to the foreground.  Use
@@ -3983,7 +3985,7 @@ get({func}, {what})
 							*getbufinfo()*
 getbufinfo([{expr}])
 getbufinfo([{dict}])
-		Get information aobut buffers as a List of Dictionaries.
+		Get information about buffers as a List of Dictionaries.
 
 		Without an argument information about all the buffers is
 		returned.
@@ -4153,7 +4155,7 @@ getcharmod()						*getcharmod()*
 			96	mouse quadruple click (== 32 + 64)
 			128	command (Macintosh only)
 		Only the modifiers that have not been included in the
-		character itself are obtained.	Thus Shift-a results in "A"
+		character itself are obtained.  Thus Shift-a results in "A"
 		without a modifier.
 
 getcharsearch()						*getcharsearch()*
@@ -4375,7 +4377,7 @@ getline({lnum} [, {end}])
 
 <		To get lines from another buffer see |getbufline()|
 
-getloclist({nr},[, {what}])				*getloclist()*
+getloclist({nr}[, {what}])				*getloclist()*
 		Returns a list with all the entries in the location list for
 		window {nr}.  {nr} can be the window number or the window ID.
 		When {nr} is zero the current window is used.
@@ -4412,7 +4414,7 @@ getmatches()						*getmatches()*
 							*getpid()*
 getpid()	Return a Number which is the process ID of the Vim process.
 		On Unix and MS-Windows this is a unique number, until Vim
-		exits.	On MS-DOS it's always zero.
+		exits.  On MS-DOS it's always zero.
 
 							*getpos()*
 getpos({expr})	Get the position for {expr}.  For possible values of {expr}
@@ -4568,7 +4570,7 @@ getwinposx()	The result is a Number, which is the X coordinate in pixels of
 
 							*getwinposy()*
 getwinposy()	The result is a Number, which is the Y coordinate in pixels of
-		the top of the GUI Vim window.	The result will be -1 if the
+		the top of the GUI Vim window.  The result will be -1 if the
 		information is not available.
 
 getwininfo([{winid}])					*getwininfo()*
@@ -4625,7 +4627,7 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 			:let tagfiles = glob("`find . -name tags -print`")
 			:let &tags = substitute(tagfiles, "\n", ",", "g")
 <		The result of the program inside the backticks should be one
-		item per line.	Spaces inside an item are allowed.
+		item per line.  Spaces inside an item are allowed.
 
 		See |expand()| for expanding special Vim variables.  See
 		|system()| for getting the raw output of an external command.
@@ -4640,7 +4642,7 @@ glob2regpat({expr})					 *glob2regpat()*
 <		When {expr} is an empty string the result is "^$", match an
 		empty string.
 		Note that the result depends on the system.  On MS-Windows
-		a backslash usually means a patch separator.
+		a backslash usually means a path separator.
 
 								*globpath()*
 globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
@@ -4721,7 +4723,7 @@ hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		When {mode} is omitted, "nvo" is used.
 
 		This function is useful to check if a mapping already exists
-		to a function in a Vim script.	Example: >
+		to a function in a Vim script.  Example: >
 			:if !hasmapto('\ABCdoit')
 			:   map <Leader>d \ABCdoit
 			:endif
@@ -4817,7 +4819,7 @@ hlID({name})	The result is a Number, which is the ID of the highlight group
 		with name {name}.  When the highlight group doesn't exist,
 		zero is returned.
 		This can be used to retrieve information about the highlight
-		group.	For example, to get the background color of the
+		group.  For example, to get the background color of the
 		"Comment" group: >
 	:echo synIDattr(synIDtrans(hlID("Comment")), "bg")
 <							*highlightID()*
@@ -4879,7 +4881,7 @@ input({prompt} [, {text} [, {completion}]])		*input()*
 		in the prompt to start a new line.
 		The highlighting set with |:echohl| is used for the prompt.
 		The input is entered just like a command-line, with the same
-		editing commands and mappings.	There is a separate history
+		editing commands and mappings.  There is a separate history
 		for lines typed for input().
 		Example: >
 			:if input("Coffee or beer? ") == "beer"
@@ -4893,9 +4895,9 @@ input({prompt} [, {text} [, {completion}]])		*input()*
 
 <		The optional {completion} argument specifies the type of
 		completion supported for the input.  Without it completion is
-		not performed.	The supported completion types are the same as
+		not performed.  The supported completion types are the same as
 		that can be supplied to a user-defined command using the
-		"-complete=" argument.	Refer to |:command-completion| for
+		"-complete=" argument.  Refer to |:command-completion| for
 		more information.  Example: >
 			let fname = input("File: ", "", "file")
 <
@@ -4936,12 +4938,12 @@ inputlist({textlist})					*inputlist()*
 		displayed, one string per line.  The user will be prompted to
 		enter a number, which is returned.
 		The user can also select an item by clicking on it with the
-		mouse.	For the first string 0 is returned.  When clicking
+		mouse.  For the first string 0 is returned.  When clicking
 		above the first item a negative number is returned.  When
 		clicking on the prompt one more than the length of {textlist}
 		is returned.
 		Make sure {textlist} has less than 'lines' entries, otherwise
-		it won't work.	It's a good idea to put the entry number at
+		it won't work.  It's a good idea to put the entry number at
 		the start of the string.  And put a prompt in the first item.
 		Example: >
 			let color = inputlist(['Select color:', '1. red',
@@ -4975,7 +4977,7 @@ inputsecret({prompt} [, {text}])			*inputsecret()*
 insert({list}, {item} [, {idx}])			*insert()*
 		Insert {item} at the start of |List| {list}.
 		If {idx} is specified insert {item} before the item with index
-		{idx}.	If {idx} is zero it goes before the first item, just
+		{idx}.  If {idx} is zero it goes before the first item, just
 		like omitting {idx}.  A negative {idx} is also possible, see
 		|list-index|.  -1 inserts just before the last item.
 		Returns the resulting |List|.  Examples: >
@@ -5495,7 +5497,7 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		When {expr} is a |List| then this returns the index of the
 		first item where {pat} matches.  Each item is used as a
 		String, |Lists| and |Dictionaries| are used as echoed.
-		Otherwise, {expr} is used as a String.	The result is a
+		Otherwise, {expr} is used as a String.  The result is a
 		Number, which gives the index (byte offset) in {expr} where
 		{pat} matches.
 		A match at the first character or |List| item returns zero.
@@ -5506,7 +5508,7 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 			:echo match([1, 'x'], '\a')	" results in 1
 <		See |string-match| for how {pat} is used.
 								*strpbrk()*
-		Vim doesn't have a strpbrk() function.	But you can do: >
+		Vim doesn't have a strpbrk() function.  But you can do: >
 			:let sepidx = match(line, '[.,;: \t]')
 <								*strcasestr()*
 		Vim doesn't have a strcasestr() function.  But you can add
@@ -5543,7 +5545,7 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 
 		See |pattern| for the patterns that are accepted.
 		The 'ignorecase' option is used to set the ignore-caseness of
-		the pattern.  'smartcase' is NOT used.	The matching is always
+		the pattern.  'smartcase' is NOT used.  The matching is always
 		done like 'magic' is set and 'cpoptions' is empty.
 
 					*matchadd()* *E798* *E799* *E801*
@@ -5559,7 +5561,7 @@ matchadd({group}, {pattern}[, {priority}[, {id}[, {dict}]]])
 		concealed.
 
 		The optional {priority} argument assigns a priority to the
-		match.	A match with a high priority will have its
+		match.  A match with a high priority will have its
 		highlighting overrule that of a match with a lower priority.
 		A priority is specified as an integer (negative numbers are no
 		exception).  If the {priority} argument is not specified, the
@@ -5596,7 +5598,7 @@ matchadd({group}, {pattern}[, {priority}[, {id}[, {dict}]]])
 			:call matchdelete(m)
 
 <		A list of matches defined by |matchadd()| and |:match| are
-		available from |getmatches()|.	All matches can be deleted in
+		available from |getmatches()|.  All matches can be deleted in
 		one operation by |clearmatches()|.
 
 							*matchaddpos()*
@@ -5732,7 +5734,7 @@ mkdir({name} [, {path} [, {prot}]])
 		necessary.  Otherwise it must be "".
 		If {prot} is given it is used to set the protection bits of
 		the new directory.  The default is 0755 (rwxr-xr-x: r/w for
-		the user readable for others).	Use 0700 to make it unreadable
+		the user readable for others).  Use 0700 to make it unreadable
 		for others.  This is only used for the last part of {name}.
 		Thus if you create /tmp/foo/bar then /tmp/foo will be created
 		with 0755.
@@ -5923,7 +5925,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 			      number produced by a signed conversion (d).
 
 		    +	      A sign must always be placed before a number
-			      produced by a signed conversion.	A + overrides
+			      produced by a signed conversion.  A + overrides
 			      a space if both are used.
 
 		field-width
@@ -5949,7 +5951,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 		A field width or precision, or both, may be indicated by an
 		asterisk '*' instead of a digit string.  In this case, a
-		Number argument supplies the field width or precision.	A
+		Number argument supplies the field width or precision.  A
 		negative field width is treated as a left adjustment flag
 		followed by a positive field width; a negative precision is
 		treated as though it were missing.  Example: >
@@ -6153,7 +6155,7 @@ reltimestr({time})				*reltimestr()*
 
 							*remote_expr()* *E449*
 remote_expr({server}, {string} [, {idvar}])
-		Send the {string} to {server}.	The string is sent as an
+		Send the {string} to {server}.  The string is sent as an
 		expression and the result is returned after evaluation.
 		The result must be a String or a |List|.  A |List| is turned
 		into a String by joining the items with a line break in
@@ -6188,7 +6190,7 @@ remote_foreground({server})				*remote_foreground()*
 remote_peek({serverid} [, {retvar}])		*remote_peek()*
 		Returns a positive number if there are available strings
 		from {serverid}.  Copies any reply string into the variable
-		{retvar} if specified.	{retvar} must be a string with the
+		{retvar} if specified.  {retvar} must be a string with the
 		name of a variable.
 		Returns zero if none are available.
 		Returns -1 if something is wrong.
@@ -6210,7 +6212,7 @@ remote_read({serverid})				*remote_read()*
 <
 							*remote_send()* *E241*
 remote_send({server}, {string} [, {idvar}])
-		Send the {string} to {server}.	The string is sent as input
+		Send the {string} to {server}.  The string is sent as input
 		keys and the function returns immediately.  At the Vim server
 		the keys are not mapped |:map|.
 		If {idvar} is present, it is taken as the name of a variable
@@ -6262,7 +6264,7 @@ repeat({expr}, {count})					*repeat()*
 			:let separator = repeat('-', 80)
 <		When {count} is zero or negative the result is empty.
 		When {expr} is a |List| the result is {expr} concatenated
-		{count} times.	Example: >
+		{count} times.  Example: >
 			:let longlist = repeat(['a', 'b'], 3)
 <		Results in ['a', 'b', 'a', 'b', 'a', 'b'].
 
@@ -6281,7 +6283,7 @@ resolve({filename})					*resolve()* *E655*
 		path name) and also keeps a trailing path separator.
 
 							*reverse()*
-reverse({list})	Reverse the order of items in {list} in-place.	Returns
+reverse({list})	Reverse the order of items in {list} in-place.  Returns
 		{list}.
 		If you want a list to remain unmodified make a copy first: >
 			:let revlist = reverse(copy(mylist))
@@ -6378,7 +6380,7 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		A zero value is equal to not giving the argument.
 
 		When the {timeout} argument is given the search stops when
-		more than this many milliseconds have passed.	Thus when
+		more than this many milliseconds have passed.  Thus when
 		{timeout} is 500 the search stops after half a second.
 		The value must not be negative.  A zero value is like not
 		giving the argument.
@@ -6495,7 +6497,7 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}
 <		When starting at the "if 2", with the cursor on the "i", and
 		searching forwards, the "endif 2" is found.  When starting on
 		the character just before the "if 2", the "endif 1" will be
-		found.	That's because the "if 2" will be found first, and
+		found.  That's because the "if 2" will be found first, and
 		then this is considered to be a nested if/endif from "if 2" to
 		"endif 2".
 		When searching backwards and {end} is more than one character,
@@ -6608,7 +6610,7 @@ setcharsearch({dict})					*setcharsearch()*
 
 setcmdpos({pos})					*setcmdpos()*
 		Set the cursor position in the command line to byte position
-		{pos}.	The first position is 1.
+		{pos}.  The first position is 1.
 		Use |getcmdpos()| to obtain the current position.
 		Only works while editing the command line, thus you must use
 		|c_CTRL-\_e|, |c_CTRL-R_=| or |c_CTRL-R_CTRL-R| with '='.  For
@@ -6657,7 +6659,7 @@ setline({lnum}, {text})					*setline()*
 			:endfor
 <		Note: The '[ and '] marks are not set.
 
-setloclist({nr}, {list} [, {action}[, {what}])		*setloclist()*
+setloclist({nr}, {list}[, {action}[, {what}]])		*setloclist()*
 		Create or replace or add to the location list for window {nr}.
 		{nr} can be the window number or the window ID.
 		When {nr} is zero the current window is used.
@@ -6686,7 +6688,7 @@ setpos({expr}, {list})
 		    [bufnum, lnum, col, off]
 		    [bufnum, lnum, col, off, curswant]
 
-		"bufnum" is the buffer number.	Zero can be used for the
+		"bufnum" is the buffer number.  Zero can be used for the
 		current buffer.  Setting the cursor is only possible for
 		the current buffer.  To set a mark in another buffer you can
 		use the |bufnr()| function to turn a file name into a buffer
@@ -7326,7 +7328,7 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 
 		A "~" in {sub} is not replaced with the previous {sub}.
 		Note that some codes in {sub} have a special meaning
-		|sub-replace-special|.	For example, to replace something with
+		|sub-replace-special|.  For example, to replace something with
 		"\n" (two characters), use "\\\\n" or '\\n'.
 
 		When {pat} does not match in {expr}, {expr} is returned
@@ -7347,9 +7349,9 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 		optional argument.  Example: >
 		   :echo substitute(s, '%\(\x\x\)', SubNr, 'g')
 <		The optional argument is a list which contains the whole
-		matched string and up to nine submatches,like what
-		|submatch()| returns. Example: >
-		   :echo substitute(s, '\(\x\x\)', {m -> '0x' . m[1]}, 'g')
+		matched string and up to nine submatches, like what
+		|submatch()| returns.  Example: >
+		   :echo substitute(s, '%\(\x\x\)', {m -> '0x' . m[1]}, 'g')
 
 synID({lnum}, {col}, {trans})				*synID()*
 		The result is a Number, which is the syntax ID at the position
@@ -7364,7 +7366,7 @@ synID({lnum}, {col}, {trans})				*synID()*
 		zero.
 
 		When {trans} is |TRUE|, transparent items are reduced to the
-		item that they reveal.	This is useful when wanting to know
+		item that they reveal.  This is useful when wanting to know
 		the effective color.  When {trans} is |FALSE|, the transparent
 		item is returned.  This is useful when wanting to know which
 		syntax item is effective (e.g. inside parens).
@@ -7380,7 +7382,7 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		syntax ID {synID}.  This can be used to obtain information
 		about a syntax item.
 		{mode} can be "gui", "cterm" or "term", to get the attributes
-		for that mode.	When {mode} is omitted, or an invalid value is
+		for that mode.  When {mode} is omitted, or an invalid value is
 		used, the attributes for the currently active highlighting are
 		used (GUI, cterm or term).
 		Use synIDtrans() to follow linked highlight groups.
@@ -7617,7 +7619,7 @@ tanh({expr})						*tanh()*
 
 tempname()					*tempname()* *temp-file-name*
 		The result is a String, which is the name of a file that
-		doesn't exist.	It can be used for a temporary file.  The name
+		doesn't exist.  It can be used for a temporary file.  The name
 		is different for at least 26 consecutive calls.  Example: >
 			:let tmpfile = tempname()
 			:exe "redir > " . tmpfile
@@ -7882,7 +7884,7 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 		each item.  For the use of {func} and {dict} see |sort()|.
 
 values({dict})						*values()*
-		Return a |List| with all the values of {dict}.	The |List| is
+		Return a |List| with all the values of {dict}.  The |List| is
 		in arbitrary order.
 
 
@@ -7918,7 +7920,7 @@ virtcol({expr})						*virtcol()*
   virtcol(".")	   with text "foo^Lbar", with cursor on the "^L", returns 5
   virtcol("$")	   with text "foo^Lbar", returns 9
   virtcol("'t")    with text "	  there", with 't at 'h', returns 6
-<		The first column is 1.	0 is returned for an error.
+<		The first column is 1.  0 is returned for an error.
 		A more advanced example that echoes the maximum length of
 		all lines: >
 		    echo max(map(range(1, line('$')), "virtcol([v:val, '$'])"))
@@ -8007,7 +8009,7 @@ winheight({nr})						*winheight()*
 <
 							*winline()*
 winline()	The result is a Number, which is the screen line of the cursor
-		in the window.	This is counting screen lines from the top of
+		in the window.  This is counting screen lines from the top of
 		the window.  The first line is one.
 		If the cursor was moved the view on the file will be updated
 		first, this may cause a scroll.
@@ -8207,7 +8209,7 @@ dialog_con		Compiled with console dialog support.
 dialog_gui		Compiled with GUI dialog support.
 diff			Compiled with |vimdiff| and 'diff' support.
 digraphs		Compiled with support for digraphs.
-directx			Compiled with support for Direct-X and 'renderoptions'.
+directx			Compiled with support for DirectX and 'renderoptions'.
 dnd			Compiled with support for the "~ register |quote_~|.
 ebcdic			Compiled on a machine with ebcdic character set.
 emacs_tags		Compiled with support for Emacs tags.
@@ -8439,9 +8441,9 @@ See |:verbose-cmd| for more information.
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >
 				:function dict.init(arg)
-<			"dict" must be an existing dictionary.	The entry
+<			"dict" must be an existing dictionary.  The entry
 			"init" is added if it didn't exist yet.  Otherwise [!]
-			is required to overwrite an existing function.	The
+			is required to overwrite an existing function.  The
 			result is a |Funcref| to a numbered function.  The
 			function can only be used with a |Funcref| and will be
 			deleted if there are no more references to it.
@@ -8467,7 +8469,7 @@ See |:verbose-cmd| for more information.
 			abort as soon as an error is detected.
 								*:func-dict*
 			When the [dict] argument is added, the function must
-			be invoked through an entry in a |Dictionary|.	The
+			be invoked through an entry in a |Dictionary|.  The
 			local variable "self" will then be set to the
 			dictionary.  See |Dictionary-function|.
 						*:func-closure* *E932*
@@ -8508,7 +8510,7 @@ See |:verbose-cmd| for more information.
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >
 				:delfunc dict.init
-<			This will remove the "init" entry from "dict".	The
+<			This will remove the "init" entry from "dict".  The
 			function is deleted if there are no more references to
 			it.
 							*:retu* *:return* *E133*
@@ -8528,7 +8530,7 @@ See |:verbose-cmd| for more information.
 			returns at the outermost ":endtry".
 
 						*function-argument* *a:var*
-An argument can be defined by giving its name.	In the function this can then
+An argument can be defined by giving its name.  In the function this can then
 be used as "a:name" ("a:" for argument).
 					*a:0* *a:1* *a:000* *E740* *...*
 Up to 20 arguments can be given, separated by commas.  After the named
@@ -8599,7 +8601,7 @@ This function can then be called with: >
 		itself, the function is executed for each line in the range,
 		with the cursor in the first column of that line.  The cursor
 		is left at the last line (possibly moved by the last function
-		call).	The arguments are re-evaluated for each line.  Thus
+		call).  The arguments are re-evaluated for each line.  Thus
 		this works:
 						*function-range-example*  >
 	:function Mynumber(arg)
@@ -8644,7 +8646,7 @@ This is introduced in the user manual, section |41.14|.
 
 The autocommand is useful if you have a plugin that is a long Vim script file.
 You can define the autocommand and quickly quit the script with |:finish|.
-That makes Vim startup faster.	The autocommand should then load the same file
+That makes Vim startup faster.  The autocommand should then load the same file
 again, setting a variable to skip the |:finish| command.
 
 Use the FuncUndefined autocommand event with a pattern that matches the
@@ -8726,7 +8728,7 @@ name.  So in the above example, if the variable "adjective" was set to
 "adjective" was set to "quiet", then it would be to "my_quiet_variable".
 
 One application for this is to create a set of variables governed by an option
-value.	For example, the statement >
+value.  For example, the statement >
 	echo my_{&background}_message
 
 would output the contents of "my_dark_message" or "my_light_message" depending
@@ -8772,7 +8774,7 @@ This does NOT work: >
 			must be a valid index in that list.  For nested list
 			the index can be repeated.
 			This cannot be used to add an item to a |List|.
-			This cannot be used to set a byte in a String.	You
+			This cannot be used to set a byte in a String.  You
 			can do that like this: >
 				:let var = var[0:2] . 'X' . var[4:]
 <
@@ -8817,7 +8819,7 @@ This does NOT work: >
 			that would match everywhere.
 
 :let @{reg-name} .= {expr1}
-			Append {expr1} to register {reg-name}.	If the
+			Append {expr1} to register {reg-name}.  If the
 			register was empty it's like setting it to {expr1}.
 
 :let &{option-name} = {expr1}			*:let-option* *:let-&*
@@ -8893,7 +8895,7 @@ This does NOT work: >
 			|List| item.
 
 								*E121*
-:let {var-name}	..	List the value of variable {var-name}.	Multiple
+:let {var-name}	..	List the value of variable {var-name}.  Multiple
 			variable names may be given.  Special names recognized
 			here:				*E738*
 			  g:	global variables
@@ -9042,7 +9044,7 @@ This does NOT work: >
 				:for item in copy(mylist)
 <			When not making a copy, Vim stores a reference to the
 			next item in the list, before executing the commands
-			with the current item.	Thus the current item can be
+			with the current item.  Thus the current item can be
 			removed without effect.  Removing any later item means
 			it will not be found.  Thus the following example
 			works (an inefficient way to make a list empty): >
@@ -9248,7 +9250,7 @@ This does NOT work: >
 			message in the |message-history|.  When used in a
 			script or function the line number will be added.
 			Spaces are placed between the arguments as with the
-			:echo command.	When used inside a try conditional,
+			:echo command.  When used inside a try conditional,
 			the message is raised as an error exception instead
 			(see |try-echoerr|).
 			Example: >
@@ -9377,14 +9379,14 @@ the finally clause.  It is resumed at the ":endtry", so that commands after
 the ":endtry" are not executed and the exception might be caught elsewhere,
 see |try-nesting|.
    When during execution of a catch clause another exception is thrown, the
-remaining lines in that catch clause are not executed.	The new exception is
+remaining lines in that catch clause are not executed.  The new exception is
 not matched against the patterns in any of the ":catch" commands of the same
 try conditional and none of its catch clauses is taken.  If there is, however,
 a finally clause, it is executed, and the exception pends during its
 execution.  The commands following the ":endtry" are not executed.  The new
 exception might, however, be caught elsewhere, see |try-nesting|.
    When during execution of the finally clause (if present) an exception is
-thrown, the remaining lines in the finally clause are skipped.	If the finally
+thrown, the remaining lines in the finally clause are skipped.  If the finally
 clause has been taken because of an exception from the try block or one of the
 catch clauses, the original (pending) exception is discarded.  The commands
 following the ":endtry" are not executed, and the exception from the finally
@@ -9418,7 +9420,7 @@ catch an exception thrown in its try block or throws a new exception from one
 of its catch clauses or its finally clause, the outer try conditional is
 checked according to the rules above.  If the inner try conditional is in the
 try block of the outer try conditional, its catch clauses are checked, but
-otherwise only the finally clause is executed.	It does not matter for
+otherwise only the finally clause is executed.  It does not matter for
 nesting, whether the inner try conditional is directly contained in the outer
 one, or whether the outer one sources a script or calls a function containing
 the inner try conditional.
@@ -9481,7 +9483,7 @@ executed. >
 however displays "in Bar" and throws 4711.
 
 Any other command that takes an expression as argument might also be
-abandoned by an (uncaught) exception during the expression evaluation.	The
+abandoned by an (uncaught) exception during the expression evaluation.  The
 exception is then propagated to the caller of the command.
    Example: >
 
@@ -9665,13 +9667,13 @@ CLEANUP CODE						*try-finally*
 
 Scripts often change global settings and restore them at their end.  If the
 user however interrupts the script by pressing CTRL-C, the settings remain in
-an inconsistent state.	The same may happen to you in the development phase of
+an inconsistent state.  The same may happen to you in the development phase of
 a script when an error occurs or you explicitly throw an exception without
 catching it.  You can solve these problems by using a try conditional with
 a finally clause for restoring the settings.  Its execution is guaranteed on
 normal control flow, on error, on an explicit ":throw", and on interrupt.
 (Note that errors and interrupts from inside the try conditional are converted
-to exceptions.	When not caught, they terminate the script after the finally
+to exceptions.  When not caught, they terminate the script after the finally
 clause has been executed.)
 Example: >
 
@@ -9729,7 +9731,7 @@ This displays "first", "cleanup", "second", "cleanup", and "end". >
 	:echo Foo() "returned by Foo"
 
 This displays "cleanup" and "4711 returned by Foo".  You don't need to add an
-extra ":return" in the finally clause.	(Above all, this would override the
+extra ":return" in the finally clause.  (Above all, this would override the
 return value.)
 
 							*except-from-finally*
@@ -9773,7 +9775,7 @@ or >
 	Vim:{errmsg}
 
 {cmdname} is the name of the command that failed; the second form is used when
-the command name is not known.	{errmsg} is the error message usually produced
+the command name is not known.  {errmsg} is the error message usually produced
 when the error occurs outside try conditionals.  It always begins with
 a capital "E", followed by a two or three-digit error number, a colon, and
 a space.
@@ -9878,7 +9880,7 @@ This works also when a try conditional is active.
 CATCHING INTERRUPTS					*catch-interrupt*
 
 When there are active try conditionals, an interrupt (CTRL-C) is converted to
-the exception "Vim:Interrupt".	You can catch it like every exception.	The
+the exception "Vim:Interrupt".  You can catch it like every exception.  The
 script is not terminated, then.
    Example: >
 
@@ -9912,7 +9914,7 @@ script is not terminated, then.
 	:endwhile
 
 You can interrupt a task here by pressing CTRL-C; the script then asks for
-a new command.	If you press CTRL-C at the prompt, the script is terminated.
+a new command.  If you press CTRL-C at the prompt, the script is terminated.
 
 For testing what happens when CTRL-C would be pressed on a specific line in
 your script, use the debug mode and execute the |>quit| or |>interrupt|
@@ -10069,7 +10071,7 @@ For some commands, the normal action can be replaced by a sequence of
 autocommands.  Exceptions from that sequence will be catchable by the caller
 of the command.
    Example:  For the ":write" command, the caller cannot know whether the file
-had actually been written when the exception occurred.	You need to tell it in
+had actually been written when the exception occurred.  You need to tell it in
 some way. >
 
 	:if !exists("cnt")
@@ -10217,8 +10219,8 @@ or ":endif".  On the other hand, errors should be catchable as exceptions
 
 This problem has been solved by converting errors to exceptions and using
 immediate abortion (if not suppressed by ":silent!") only when a try
-conditional is active.	This is no restriction since an (error) exception can
-be caught only from an active try conditional.	If you want an immediate
+conditional is active.  This is no restriction since an (error) exception can
+be caught only from an active try conditional.  If you want an immediate
 termination without catching the error, just use a try conditional without
 catch clause.  (You can cause cleanup code being executed before termination
 by specifying a finally clause.)
@@ -10233,8 +10235,8 @@ conditional of a new script, you might change the control flow of the existing
 script on error.  You get the immediate abortion on error and can catch the
 error in the new script.  If however the sourced script suppresses error
 messages by using the ":silent!" command (checking for errors by testing
-|v:errmsg| if appropriate), its execution path is not changed.	The error is
-not converted to an exception.	(See |:silent|.)  So the only remaining cause
+|v:errmsg| if appropriate), its execution path is not changed.  The error is
+not converted to an exception.  (See |:silent|.)  So the only remaining cause
 where this happens is for scripts that don't care about errors and produce
 error messages.  You probably won't want to use such code from your new
 scripts.
@@ -10466,7 +10468,7 @@ option will still be marked as it was set in the sandbox.
 In a few situations it is not allowed to change the text in the buffer, jump
 to another window and some other things that might confuse or break what Vim
 is currently doing.  This mostly applies to things that happen when Vim is
-actually doing something else.	For example, evaluating the 'balloonexpr' may
+actually doing something else.  For example, evaluating the 'balloonexpr' may
 happen any moment the mouse cursor is resting at some position.
 
 This is not allowed when the textlock is active:

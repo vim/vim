@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Aug 12
+*options.txt*	For Vim version 7.4.  Last change: 2016 Aug 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3945,17 +3945,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'highlight'* *'hl'*
 'highlight' 'hl'	string	(default (as a single string):
-				     "8:SpecialKey,@:NonText,d:Directory,
-				     e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,
-				     M:ModeMsg,n:LineNr,N:CursorLineNr,
-				     r:Question,s:StatusLine,S:StatusLineNC,
-				     c:VertSplit, t:Title,v:Visual,
-				     w:WarningMsg,W:WildMenu,
-				     f:Folded,F:FoldColumn,A:DiffAdd,
-				     C:DiffChange,D:DiffDelete,T:DiffText,
-				     >:SignColumn,B:SpellBad,P:SpellCap,
-				     R:SpellRare,L:SpellLocal,-:Conceal,
-				     +:Pmenu,=:PmenuSel,
+				     "8:SpecialKey,~:EndOfBuffer,@:NonText,
+				     d:Directory,e:ErrorMsg,i:IncSearch,
+				     l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,
+				     N:CursorLineNr,r:Question,s:StatusLine,
+				     S:StatusLineNC,c:VertSplit,t:Title,
+				     v:Visual,w:WarningMsg,W:WildMenu,f:Folded,
+				     F:FoldColumn,A:DiffAdd,C:DiffChange,
+				     D:DiffDelete,T:DiffText,>:SignColumn,
+				     B:SpellBad,P:SpellCap,R:SpellRare,
+				     L:SpellLocal,-:Conceal,+:Pmenu,=:PmenuSel,
 				     x:PmenuSbar,X:PmenuThumb")
 			global
 			{not in Vi}
@@ -3964,7 +3963,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	first character in a pair gives the occasion, the second the mode to
 	use for that occasion.  The occasions are:
 	|hl-SpecialKey|	 8  Meta and special keys listed with ":map"
-	|hl-NonText|	 @  '~' and '@' at the end of the window and
+	|hl-EndOfBuffer|   ~  lines after the last line in the buffer
+	|hl-NonText|	 @  '@' at the end of the window and
 			    characters from 'showbreak'
 	|hl-Directory|	 d  directories in CTRL-D listing and other special
 			    things in listings
@@ -7936,8 +7936,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"xterm", "xterm2", "urxvt" or "sgr" (because dec mouse codes conflict
 	with them).
 	This option is automatically set to "xterm", when the 'term' option is
-	set to a name that starts with "xterm", "mlterm", or "screen", and
-	'ttymouse' is not set already.
+	set to a name that starts with "xterm", "mlterm", "screen", "st" (full
+	match only), "st-" or "stterm", and 'ttymouse' is not set already.
 	Additionally, if vim is compiled with the |+termresponse| feature and
 	|t_RV| is set to the escape sequence to request the xterm version
 	number, more intelligent detection process runs.
