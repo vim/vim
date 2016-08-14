@@ -425,3 +425,33 @@ func Test_viminfo_file_marks()
 
   call delete('Xviminfo')
 endfunc
+
+func Test_viminfo_file_mark_tabclose()
+  tabnew Xtestfileintab
+  call setline(1, ['a','b','c','d','e'])
+  4
+  q!
+  wviminfo Xviminfo
+  sp Xviminfo
+  /^> .*Xtestfileintab
+  let lnum = line('.')
+  while 1
+    if lnum == line('$')
+      call assert_false(1, 'mark not found in Xtestfileintab')
+      break
+    endif
+    let lnum += 1
+    let line = getline(lnum)
+    if line == ''
+      call assert_false(1, 'mark not found in Xtestfileintab')
+      break
+    endif
+    if line =~ "^\t\""
+      call assert_equal('4', substitute(line, ".*\"\t\\(\\d\\).*", '\1', ''))
+      break
+    endif
+  endwhile
+
+  call delete('Xviminfo')
+  silent! bwipe Xtestfileintab
+endfunc

@@ -1358,7 +1358,7 @@ win_init_some(win_T *newp, win_T *oldp)
 
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
- * Check if "win" is a pointer to an existing window.
+ * Check if "win" is a pointer to an existing window in the current tab page.
  */
     int
 win_valid(win_T *win)
@@ -1370,6 +1370,28 @@ win_valid(win_T *win)
     FOR_ALL_WINDOWS(wp)
 	if (wp == win)
 	    return TRUE;
+    return FALSE;
+}
+
+/*
+ * Check if "win" is a pointer to an existing window in any tab page.
+ */
+    int
+win_valid_any_tab(win_T *win)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    if (win == NULL)
+	return FALSE;
+    FOR_ALL_TABPAGES(tp)
+    {
+	FOR_ALL_WINDOWS_IN_TAB(tp, wp)
+	{
+	    if (wp == win)
+		return TRUE;
+	}
+    }
     return FALSE;
 }
 
