@@ -5239,7 +5239,7 @@ static PangoEngineShape *default_shape_engine = NULL;
     static void
 ascii_glyph_table_init(void)
 {
-    char_u	    ascii_chars[128];
+    char_u	    ascii_chars[2 * 128];
     PangoAttrList   *attr_list;
     GList	    *item_list;
     int		    i;
@@ -5252,12 +5252,16 @@ ascii_glyph_table_init(void)
     gui.ascii_glyphs = NULL;
     gui.ascii_font   = NULL;
 
-    /* For safety, fill in question marks for the control characters. */
-    for (i = 0; i < 32; ++i)
-	ascii_chars[i] = '?';
-    for (; i < 127; ++i)
-	ascii_chars[i] = i;
-    ascii_chars[i] = '?';
+    /* For safety, fill in question marks for the control characters.
+     * Put a space between characters to avoid shaping. */
+    for (i = 0; i < 128; ++i)
+    {
+	if (i >= 32 && i < 127)
+	    ascii_chars[2 * i] = i;
+	else
+	    ascii_chars[2 * i] = '?';
+	ascii_chars[2 * i + 1] = ' ';
+    }
 
     attr_list = pango_attr_list_new();
     item_list = pango_itemize(gui.text_context, (const char *)ascii_chars,
@@ -5946,7 +5950,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 
 	for (i = 0; i < len; ++i)
 	{
-	    glyphs->glyphs[i] = gui.ascii_glyphs->glyphs[s[i]];
+	    glyphs->glyphs[i] = gui.ascii_glyphs->glyphs[2 * s[i]];
 	    glyphs->log_clusters[i] = i;
 	}
 
