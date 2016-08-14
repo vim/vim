@@ -5988,7 +5988,7 @@ __:
 eof
 	    	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
 	    rm -f -- "${tmp_mkf}"
-	    if test "x$MACOSX" = "xyes" && ${vi_cv_path_python} -c \
+	    if test "x$MACOSX" = "xyes" && test -n "${python_PYTHONFRAMEWORK}" && ${vi_cv_path_python} -c \
 		"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"; then
 	      vi_cv_path_python_plibs="-framework Python"
 	      if test "x${vi_cv_path_python}" != "x/usr/bin/python" && test -n "${python_PYTHONFRAMEWORKPREFIX}"; then
