@@ -233,8 +233,6 @@ static int get_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int free_unref_items(int copyID);
 static int get_env_tv(char_u **arg, typval_T *rettv, int evaluate);
-
-
 static int get_env_len(char_u **arg);
 static char_u * make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
 static void check_vars(char_u *name, int len);
@@ -4926,7 +4924,7 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 			  break;
 
 			    /* Special key, e.g.: "\<C-W>" */
-		case '<': extra = trans_special(&p, name, TRUE);
+		case '<': extra = trans_special(&p, name, TRUE, TRUE);
 			  if (extra != 0)
 			  {
 			      name += extra;
@@ -4943,6 +4941,11 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     }
     *name = NUL;
+    if (p == NUL)
+    {
+	EMSG2(_("E114: Missing quote: %s"), *arg);
+	return FAIL;
+    }
     *arg = p + 1;
 
     return OK;

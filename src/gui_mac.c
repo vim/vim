@@ -4830,7 +4830,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	char_u	    *p_actext;
 
 	p_actext = menu->actext;
-	key = find_special_key(&p_actext, &modifiers, FALSE, FALSE);
+	key = find_special_key(&p_actext, &modifiers, FALSE, FALSE, FALSE);
 	if (*p_actext != 0)
 	    key = 0; /* error: trailing text */
 	/* find_special_key() returns a keycode with as many of the

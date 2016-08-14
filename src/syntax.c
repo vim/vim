@@ -7939,7 +7939,7 @@ do_highlight(
 		 */
 		for (p = arg, off = 0; off < 100 - 6 && *p; )
 		{
-		    len = trans_special(&p, buf + off, FALSE);
+		    len = trans_special(&p, buf + off, FALSE, FALSE);
 		    if (len > 0)	    /* recognized special char */
 			off += len;
 		    else		    /* copy as normal char */

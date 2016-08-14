@@ -9478,7 +9478,7 @@ find_key_option(char_u *arg)
     {
 	--arg;			    /* put arg at the '<' */
 	modifiers = 0;
-	key = find_special_key(&arg, &modifiers, TRUE, TRUE);
+	key = find_special_key(&arg, &modifiers, TRUE, TRUE, FALSE);
 	if (modifiers)		    /* can't handle modifiers here */
 	    key = 0;
     }
