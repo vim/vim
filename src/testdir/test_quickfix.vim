@@ -1113,6 +1113,85 @@ function Test_setqflist_empty_older()
   call Xlist_empty_older('l')
 endfunction
 
+" Tests for the :cfilter and :lfilter commands.
+function XfilterTests(cchar)
+  let Xfilter = a:cchar . 'filter'
+  let Xolder = a:cchar . 'older'
+  let Xgetexpr = a:cchar . 'getexpr'
+  if a:cchar == 'c'
+    let Xgetlist = 'getqflist()'
+  else
+    let Xgetlist = 'getloclist(0)'
+  endif
+
+  " With an empty list, command should return error
+  exe Xgetexpr . ' []'
+  exe 'silent! ' . Xfilter . ' /Pattern/'
+  call assert_true(v:errmsg ==# 'E42: No Errors')
+
+  " Populate the list
+  exe Xgetexpr . " ['Xtestfile1:1:3:a simple line of text',
+		  \ 'Dummy line of text 1',
+		  \ 'Xtestfile2:2:2:another line of TEXT',
+		  \ 'Dummy line of text 2',
+		  \ 'Xtestfile3:3:1:third line of Text']"
+
+  exe Xfilter . ' /third/'
+  exe 'let l = ' . Xgetlist
+  call assert_equal('third line of Text', l[0].text)
+
+  exe Xolder
+  exe Xfilter . ' /abc/'
+  exe 'let l = ' . Xgetlist
+  call assert_true(len(l) == 0)
+
+  exe Xolder
+  exe Xfilter . ' /\ctext/'
+  exe 'let l = ' . Xgetlist
+  call assert_true(len(l) == 3 &&
+			  \ l[0].text ==# 'a simple line of text' &&
+			  \ l[1].text ==# 'another line of TEXT' &&
+			  \ l[2].text ==# 'third line of Text')
+
+  let @/ = "TEXT"
+  exe Xolder
+  exe Xfilter . ' //'
+  exe 'let l = ' . Xgetlist
+  call assert_true(len(l) == 1 && l[0].text ==# 'another line of TEXT')
+
+  exe Xolder
+  exe Xfilter . '! text'
+  exe 'let l = ' . Xgetlist
+  call assert_true(len(l) == 2 &&
+			  \ l[0].text ==# 'another line of TEXT' &&
+			  \ l[1].text ==# 'third line of Text')
+
+  " Search for text in the filenames
+  exe Xolder
+  exe Xfilter . ' Xtestfile2'
+  exe 'let l = ' . Xgetlist
+  call assert_true(len(l) == 1 &&
+			  \ l[0].text ==# 'another line of TEXT')
+
+  exe Xolder
+  exe Xfilter . '! Xtestfile'
+  exe 'let l = ' . Xgetlist
+  call assert_true(len(l) == 0)
+
+  exe Xolder
+  exe 'silent! ' . Xfilter . ' /Pattern'
+  call assert_true(v:errmsg ==# 'E682: Invalid search pattern or delimiter')
+
+  let @/ = ""
+  exe 'silent! ' . Xfilter . ' //'
+  call assert_true(v:errmsg ==# 'E35: No previous regular expression', v:errmsg)
+endfunction
+
+function Test_cfilter()
+  call XfilterTests('c')
+  call XfilterTests('l')
+endfunction
+
 function! XquickfixSetListWithAct(cchar)
   call s:setup_commands(a:cchar)
 

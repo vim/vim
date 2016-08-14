@@ -1149,6 +1149,7 @@ tag	      command	      action ~
 |:center|	:ce[nter]	format lines at the center
 |:cexpr|	:cex[pr]	read errors from expr and jump to first
 |:cfile|	:cf[ile]	read file with error messages and jump to first
+|:cfilter|	:cfilt[er]	filter entries in the quickfix list
 |:cfirst|	:cfir[st]	go to the specified error, default first one
 |:cgetbuffer|	:cgetb[uffer]	get errors from buffer
 |:cgetexpr|	:cgete[xpr]	get errors from expr
@@ -1309,6 +1310,7 @@ tag	      command	      action ~
 |:lcscope|	:lcs[cope]	like ":cscope" but uses location list
 |:ldo|		:ld[o]		execute command in valid location list entries
 |:lfdo|		:lfd[o]		execute command in each file in location list
+|:lfilter|	:lfilt[er]	filter entries in the location list
 |:left|		:le[ft]		left align lines
 |:leftabove|	:lefta[bove]	make split window appear left or above
 |:let|		:let		assign a value to a variable or option
