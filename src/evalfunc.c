@@ -4027,7 +4027,7 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
     }
 
     /* Return information about all the buffers or a specified buffer */
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	if (argbuf != NULL && argbuf != buf)
 	    continue;
@@ -5030,7 +5030,7 @@ f_gettabinfo(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_WINDOWS
     tabpage_T	*tp, *tparg = NULL;
     dict_T	*d;
-    int		tpnr = 1;
+    int		tpnr = 0;
 
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -5044,8 +5044,9 @@ f_gettabinfo(typval_T *argvars, typval_T *rettv)
     }
 
     /* Get information about a specific tab page or all tab pages */
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, tpnr++)
+    FOR_ALL_TABPAGES(tp)
     {
+	tpnr++;
 	if (tparg != NULL && tp != tparg)
 	    continue;
 	d = get_tabpage_info(tp, tpnr);
@@ -5131,6 +5132,12 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict_add_nr_str(dict, "width", wp->w_width, NULL);
     dict_add_nr_str(dict, "bufnum", wp->w_buffer->b_fnum, NULL);
 
+#ifdef FEAT_QUICKFIX
+    dict_add_nr_str(dict, "quickfix", bt_quickfix(wp->w_buffer), NULL);
+    dict_add_nr_str(dict, "loclist",
+	    (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL), NULL);
+#endif
+
     /* Copy window variables */
     vars = dict_copy(wp->w_vars, TRUE, 0);
     if (vars != NULL)
@@ -5155,7 +5162,7 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
     tabpage_T	*tp;
     win_T	*wp = NULL, *wparg = NULL;
     dict_T	*d;
-    short	tabnr, winnr;
+    short	tabnr = 0, winnr;
 #endif
 
     if (rettv_list_alloc(rettv) != OK)
@@ -5172,13 +5179,13 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
     /* Collect information about either all the windows across all the tab
      * pages or one particular window.
      */
-    tabnr = 1;
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, tabnr++)
+    FOR_ALL_TABPAGES(tp)
     {
-	wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
-	winnr = 1;
-	for (; wp; wp = wp->w_next, winnr++)
+	tabnr++;
+	winnr = 0;
+	FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	{
+	    winnr++;
 	    if (wparg != NULL && wp != wparg)
 		continue;
 	    d = get_win_info(wp, tabnr, winnr);
