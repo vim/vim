@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.4.  Last change: 2016 Aug 10
+*syntax.txt*	For Vim version 7.4.  Last change: 2016 Aug 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3764,7 +3764,7 @@ Whether or not it is actually concealed depends on the value of the
 'conceallevel' option.  The 'concealcursor' option is used to decide whether
 concealable items in the current line are displayed unconcealed to be able to
 edit the line.
-Another way to conceal text with with |matchadd()|.
+Another way to conceal text is with |matchadd()|.
 
 concealends						*:syn-concealends*
 
@@ -4870,7 +4870,7 @@ DiffChange	diff mode: Changed line |diff.txt|
 DiffDelete	diff mode: Deleted line |diff.txt|
 							*hl-DiffText*
 DiffText	diff mode: Changed text within a changed line |diff.txt|
-							*hl-EndofBuffer*
+							*hl-EndOfBuffer*
 EndOfBuffer	filler lines (~) after the last line in the buffer.
 		By default, this is highlighted like |hl-NonText|.
 							*hl-ErrorMsg*

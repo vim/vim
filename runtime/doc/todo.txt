@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 12
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -105,9 +105,6 @@ What if there is an invalid character?
 Should json_encode()/json_decode() restrict recursiveness?
 Or avoid recursiveness.
 
-Patch to test popupmenu.  Fails, possibly due to a bug.
-(Christian Brabandt, 2016 Jul 23)
-
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
@@ -136,59 +133,18 @@ Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 
 Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
 
-Also return quickfix vs location list in getwininfo().
-
-Patch to detect st terminal supporting xterm mouse. (Manuel Schiller, 2016 Aug
-2, #963)
-
-Patch to fix that " mark is not stored in viminfo when closing a window in
-another tab. (Hirohito Higashi, 2016 Aug 11, #974)
-
 Syntax highlighting for messages with RFC3339 timestamp (#946)
 Did maintainer reply?
-
-Patch to add filtering of the quickfix list. (Yegappan Lakshmanan, 2016 Mar
-13, last version)  Update June 26, #830.
-Instead use a Vim script implementation, invoked from a Vim command.
 
 ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
 Also with latest version.
 
-Still problems with 'emoji'.  See issue #721.  Patch 7.4.1697 half-fixes it.
-Avoid PLAN_WRITE in windgoto() ?
-Should already never use utf-8 chars to position the cursor.
-
 Cannot delete a file with square brackets with delete(). (#696)
-
-Patch to add the EndOfBuffer highlight group, used instead of NonText for "~"
-lines. (Marco Hinz, 2014 Nov 2)
-Update from James McCoy, 2016 Aug 3.
-
-No autocommand for when changing directory.  Patch from allen haim, 2016 Jun
-27, #888
-Justin M Keyes: use "global" or "window" for the pattern.  Can add "tab"
-later.  What if entering a window where ":lcd" was used?
 
 Completion for input() does not expand environment variables. (chdiza, 2016
 Jul 25, #948)
 
-Patch to improve GTK shaping. (Manuel Schiller, 2016 Aug 7)
-
-Patch to make matchaddpos() not highlight the character after the line.
-(Hirohito Higashi, 2016 Aug 7)
-
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
-
-Patch to have text objects defined by arbitrary single characters. (Daniel
-Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
-Ben Fritz: problem with 'selection' set to "exclusive".
-Updated to current Vim, not quite right yet. (Ben Fritz, 2014 Mar 27)
-Updated to current Vim (James McCoy, 2016 Jul 30, #958)
-Still a bit of work left.  Check if "vimx" works.
-Added tests, Aug 3.
-
-Patch to add CTRL-N / CTRL-P while searching. (Christian Brabandt, 2016 Aug
-3)  Problem: two matches in one line and using CTRL-P does not move back.
 
 's$^$\=capture("s/^//gn")' locks Vim in sandbox mode (#950)
 Patch by Christian Brabandt, 2016 Jul 27.
@@ -329,6 +285,16 @@ Add configure check?
 Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
+
+Patch to test popupmenu.  Fails, possibly due to a bug.
+(Christian Brabandt, 2016 Jul 23)
+
+Patch to have text objects defined by arbitrary single characters. (Daniel
+Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
+Added tests (James McCoy, 2016 Aug 3).  Still needs more work.
+
+Patch to add CTRL-N / CTRL-P while searching. (Christian Brabandt, 2016 Aug
+3)  Problem: two matches in one line and using CTRL-P does not move back.
 
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)
@@ -653,8 +619,7 @@ xterm should be able to pass focus changes to Vim, so that Vim can check for
 buffers that changed.  Perhaps in misc.c, function selectwindow().
 Xterm 224 supports it!
 Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
-Saito, 2013 Apr 24)  Has a problem (email 2015 Jan 7).
-Update 2015 Jan 10.
+Saito, 2013 Apr 24) Update 2016 Aug 12.
 Also see issue #609.
 We could add the enable/disable sequences to t_ti/t_te or t_ks/t_ke.
 

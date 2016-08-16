@@ -3646,7 +3646,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		qXX - quality XX.  Valid quality names are: PROOF, DRAFT,
 		      ANTIALIASED, NONANTIALIASED, CLEARTYPE, DEFAULT.
 		      Normally you would use "qDEFAULT".
-		      Some quality values isn't supported in legacy OSs.
+		      Some quality values are not supported in legacy OSs.
 
 	  Use a ':' to separate the options.
 	- A '_' can be used in the place of a space, so you don't need to use
@@ -4403,7 +4403,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	if you want to use Vim as a modeless editor.  Used for |evim|.
 	These Insert mode commands will be useful:
 	- Use the cursor keys to move around.
-	- Use CTRL-O to execute one Normal mode command |i_CTRL-O|).  When
+	- Use CTRL-O to execute one Normal mode command |i_CTRL-O|.  When
 	  this is a mapping, it is executed as if 'insertmode' was off.
 	  Normal mode remains active until the mapping is finished.
 	- Use CTRL-L to execute a number of Normal mode commands, then use
@@ -4751,7 +4751,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	use this command to get the tallest window possible: >
 		:set lines=999
 <	Minimum value is 2, maximum value is 1000.
-	If you get less lines than expected, check the 'guiheadroom' option.
+	If you get fewer lines than expected, check the 'guiheadroom' option.
 	When you set this option and Vim is unable to change the physical
 	number of lines of the display, the display may be messed up.
 

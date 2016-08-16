@@ -6638,6 +6638,7 @@ hl-DiffChange	syntax.txt	/*hl-DiffChange*
 hl-DiffDelete	syntax.txt	/*hl-DiffDelete*
 hl-DiffText	syntax.txt	/*hl-DiffText*
 hl-Directory	syntax.txt	/*hl-Directory*
+hl-EndOfBuffer	syntax.txt	/*hl-EndOfBuffer*
 hl-ErrorMsg	syntax.txt	/*hl-ErrorMsg*
 hl-FoldColumn	syntax.txt	/*hl-FoldColumn*
 hl-Folded	syntax.txt	/*hl-Folded*
@@ -7591,6 +7592,7 @@ new-search-path	version6.txt	/*new-search-path*
 new-searchpat	version6.txt	/*new-searchpat*
 new-session-files	version5.txt	/*new-session-files*
 new-spell	version7.txt	/*new-spell*
+new-style-testing	eval.txt	/*new-style-testing*
 new-tab-pages	version7.txt	/*new-tab-pages*
 new-undo-branches	version7.txt	/*new-undo-branches*
 new-unlisted-buffers	version6.txt	/*new-unlisted-buffers*
@@ -7634,6 +7636,7 @@ ocaml.vim	syntax.txt	/*ocaml.vim*
 octal	eval.txt	/*octal*
 octal-nrformats	options.txt	/*octal-nrformats*
 octal-number	eval.txt	/*octal-number*
+old-style-testing	eval.txt	/*old-style-testing*
 oldfiles-variable	eval.txt	/*oldfiles-variable*
 ole-activation	if_ole.txt	/*ole-activation*
 ole-eval	if_ole.txt	/*ole-eval*
@@ -8678,6 +8681,7 @@ test_null_list()	eval.txt	/*test_null_list()*
 test_null_partial()	eval.txt	/*test_null_partial()*
 test_null_string()	eval.txt	/*test_null_string()*
 test_settime()	eval.txt	/*test_settime()*
+testing	eval.txt	/*testing*
 testing-variable	eval.txt	/*testing-variable*
 tex-cchar	syntax.txt	/*tex-cchar*
 tex-cole	syntax.txt	/*tex-cole*
@@ -8708,12 +8712,14 @@ throw-from-catch	eval.txt	/*throw-from-catch*
 throw-variables	eval.txt	/*throw-variables*
 throwpoint-variable	eval.txt	/*throwpoint-variable*
 time-functions	usr_41.txt	/*time-functions*
+timer	eval.txt	/*timer*
 timer-functions	usr_41.txt	/*timer-functions*
 timer_info()	eval.txt	/*timer_info()*
 timer_pause()	eval.txt	/*timer_pause()*
 timer_start()	eval.txt	/*timer_start()*
 timer_stop()	eval.txt	/*timer_stop()*
 timer_stopall()	eval.txt	/*timer_stopall()*
+timers	eval.txt	/*timers*
 timestamp	editing.txt	/*timestamp*
 timestamps	editing.txt	/*timestamps*
 tips	tips.txt	/*tips*
