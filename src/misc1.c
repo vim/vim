@@ -3416,7 +3416,7 @@ get_keystroke(void)
 	if (n > 0)
 	{
 	    /* Replace zero and CSI by a special key code. */
-	    n = fix_input_buffer(buf + len, n, FALSE);
+	    n = fix_input_buffer(buf + len, n);
 	    len += n;
 	    waited = 0;
 	}

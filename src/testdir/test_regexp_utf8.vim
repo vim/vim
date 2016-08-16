@@ -25,11 +25,13 @@ endfunc
 func Test_equivalence_re1()
   set re=1
   call s:equivalence_test()
+  set re=0
 endfunc
 
 func Test_equivalence_re2()
   set re=2
   call s:equivalence_test()
+  set re=0
 endfunc
 
 func s:classes_test()
@@ -82,9 +84,26 @@ endfunc
 func Test_classes_re1()
   set re=1
   call s:classes_test()
+  set re=0
 endfunc
 
 func Test_classes_re2()
   set re=2
   call s:classes_test()
+  set re=0
+endfunc
+
+func Test_source_utf8()
+  " check that sourcing a script with 0x80 as second byte works
+  new
+  call setline(1, [':%s/àx/--à1234--/g', ':%s/Àx/--À1234--/g'])
+  write! Xscript
+  bwipe!
+  new
+  call setline(1, [' àx ', ' Àx '])
+  source! Xscript | echo
+  call assert_equal(' --à1234-- ', getline(1))
+  call assert_equal(' --À1234-- ', getline(2))
+  bwipe!
+  call delete('Xscript')
 endfunc

@@ -3060,7 +3060,7 @@ inchar(
     if (typebuf_changed(tb_change_cnt))
 	return 0;
 
-    return fix_input_buffer(buf, len, script_char >= 0);
+    return fix_input_buffer(buf, len);
 }
 
 /*
@@ -3069,10 +3069,7 @@ inchar(
  * Returns the new length.
  */
     int
-fix_input_buffer(
-    char_u	*buf,
-    int		len,
-    int		script)		/* TRUE when reading from a script */
+fix_input_buffer(char_u *buf, int len)
 {
     int		i;
     char_u	*p = buf;
@@ -3083,7 +3080,6 @@ fix_input_buffer(
      * Replace	     NUL by K_SPECIAL KS_ZERO	 KE_FILLER
      * Replace K_SPECIAL by K_SPECIAL KS_SPECIAL KE_FILLER
      * Replace       CSI by K_SPECIAL KS_EXTRA   KE_CSI
-     * Don't replace K_SPECIAL when reading a script file.
      */
     for (i = len; --i >= 0; ++p)
     {
@@ -3106,7 +3102,7 @@ fix_input_buffer(
 	}
 	else
 #endif
-	if (p[0] == NUL || (p[0] == K_SPECIAL && !script
+	if (p[0] == NUL || (p[0] == K_SPECIAL
 #ifdef FEAT_AUTOCMD
 		    /* timeout may generate K_CURSORHOLD */
 		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
