@@ -5884,6 +5884,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 		  %04x	hex number padded with zeros to at least 4 characters
 		  %X	hex number using upper case letters
 		  %o	octal number
+		  %08b	binary number padded with zeros to at least 8 chars
 		  %f	floating point number in the form 123.456
 		  %e	floating point number in the form 1.234e3
 		  %E	floating point number in the form 1.234E3
@@ -5910,6 +5911,9 @@ printf({fmt}, {expr1} ...)				*printf()*
 			      character of the output string to a zero (except
 			      if a zero value is printed with an explicit
 			      precision of zero).
+			      For b and B conversions, a non-zero result has
+			      the string "0b" (or "0B" for B conversions)
+			      prepended to it.
 			      For x and X conversions, a non-zero result has
 			      the string "0x" (or "0X" for X conversions)
 			      prepended to it.
@@ -5917,8 +5921,8 @@ printf({fmt}, {expr1} ...)				*printf()*
 		    0 (zero)  Zero padding.  For all conversions the converted
 			      value is padded on the left with zeros rather
 			      than blanks.  If a precision is given with a
-			      numeric conversion (d, o, x, and X), the 0 flag
-			      is ignored.
+			      numeric conversion (d, b, B, o, x, and X), the 0
+			      flag is ignored.
 
 		    -	      A negative field width flag; the converted value
 			      is to be left adjusted on the field boundary.
@@ -5966,12 +5970,13 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 		The conversion specifiers and their meanings are:
 
-				*printf-d* *printf-o* *printf-x* *printf-X*
-		doxX	The Number argument is converted to signed decimal
-			(d), unsigned octal (o), or unsigned hexadecimal (x
-			and X) notation.  The letters "abcdef" are used for
-			x conversions; the letters "ABCDEF" are used for X
-			conversions.
+				*printf-d* *printf-b* *printf-B* *printf-o*
+				*printf-x* *printf-X*
+		dbBoxX	The Number argument is converted to signed decimal
+			(d), unsigned binary (b and B), unsigned octal (o), or
+			unsigned hexadecimal (x and X) notation.  The letters
+			"abcdef" are used for x conversions; the letters
+			"ABCDEF" are used for X conversions.
 			The precision, if any, gives the minimum number of
 			digits that must appear; if the converted value
 			requires fewer digits, it is padded on the left with

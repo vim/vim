@@ -163,6 +163,23 @@ function Test_printf_spec_s()
   call assert_equal(string(function('printf', ['%s'])), printf('%s', function('printf', ['%s'])))
 endfunc
 
+function Test_printf_spec_b()
+  call assert_equal("0", printf('%b', 0))
+  call assert_equal("00001100", printf('%08b', 12))
+  call assert_equal("11111111", printf('%08b', 0xff))
+  call assert_equal("   1111011", printf('%10b', 123))
+  call assert_equal("0001111011", printf('%010b', 123))
+  call assert_equal(" 0b1111011", printf('%#10b', 123))
+  call assert_equal("0B01111011", printf('%#010B', 123))
+  call assert_equal("1001001100101100000001011010010", printf('%b', 1234567890))
+  if has('num64')
+    call assert_equal("11100000100100010000110000011011101111101111001", printf('%b', 123456789012345))
+    call assert_equal("1111111111111111111111111111111111111111111111111111111111111111", printf('%b', -1))
+  else
+    call assert_equal("11111111111111111111111111111111", printf('%b', -1))
+  endif
+endfunc
+
 func Test_substitute_expr()
   let g:val = 'XXX'
   call assert_equal('XXX', substitute('yyy', 'y*', '\=g:val', ''))
