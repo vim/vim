@@ -3291,10 +3291,10 @@ f_float2nr(typval_T *argvars, typval_T *rettv)
     if (get_float_arg(argvars, &f) == OK)
     {
 # ifdef FEAT_NUM64
-	if (f < -0x7fffffffffffffff)
-	    rettv->vval.v_number = -0x7fffffffffffffff;
-	else if (f > 0x7fffffffffffffff)
-	    rettv->vval.v_number = 0x7fffffffffffffff;
+	if (f < -0x7fffffffffffffffLL)
+	    rettv->vval.v_number = -0x7fffffffffffffffLL;
+	else if (f > 0x7fffffffffffffffLL)
+	    rettv->vval.v_number = 0x7fffffffffffffffLL;
 	else
 	    rettv->vval.v_number = (varnumber_T)f;
 # else

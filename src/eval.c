@@ -4087,11 +4087,11 @@ eval6(
 		    {
 #ifdef FEAT_NUM64
 			if (n1 == 0)
-			    n1 = -0x7fffffffffffffff - 1; /* similar to NaN */
+			    n1 = -0x7fffffffffffffffLL - 1; /* similar to NaN */
 			else if (n1 < 0)
-			    n1 = -0x7fffffffffffffff;
+			    n1 = -0x7fffffffffffffffLL;
 			else
-			    n1 = 0x7fffffffffffffff;
+			    n1 = 0x7fffffffffffffffLL;
 #else
 			if (n1 == 0)
 			    n1 = -0x7fffffffL - 1L;	/* similar to NaN */
