@@ -7861,6 +7861,11 @@ ex_sign(exarg_T *eap)
 		{			/* ... not currently in a window */
 		    char_u	*cmd;
 
+		    if (buf->b_fname == NULL)
+		    {
+			EMSG(_("E934: Cannot jump to a buffer that does not have a name"));
+			return;
+		    }
 		    cmd = alloc((unsigned)STRLEN(buf->b_fname) + 25);
 		    if (cmd == NULL)
 			return;
