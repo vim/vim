@@ -4658,8 +4658,16 @@ vim_strsave_escape_csi(
     char_u	*res;
     char_u	*s, *d;
 
-    /* Need a buffer to hold up to three times as much. */
-    res = alloc((unsigned)(STRLEN(p) * 3) + 1);
+    /* Need a buffer to hold up to three times as much.  Four in case of an
+     * illegal utf-8 byte:
+     * 0xc0 -> 0xc3 0x80 -> 0xc3 K_SPECIAL KS_SPECIAL KE_FILLER */
+    res = alloc((unsigned)(STRLEN(p) *
+#ifdef FEAT_MBYTE
+			4
+#else
+			3
+#endif
+			    ) + 1);
     if (res != NULL)
     {
 	d = res;
@@ -4674,22 +4682,10 @@ vim_strsave_escape_csi(
 	    }
 	    else
 	    {
-#ifdef FEAT_MBYTE
-		int len  = mb_char2len(PTR2CHAR(s));
-		int len2 = mb_ptr2len(s);
-#endif
 		/* Add character, possibly multi-byte to destination, escaping
-		 * CSI and K_SPECIAL. */
+		 * CSI and K_SPECIAL. Be careful, it can be an illegal byte! */
 		d = add_char2buf(PTR2CHAR(s), d);
-#ifdef FEAT_MBYTE
-		while (len < len2)
-		{
-		    /* add following combining char */
-		    d = add_char2buf(PTR2CHAR(s + len), d);
-		    len += mb_char2len(PTR2CHAR(s + len));
-		}
-#endif
-		mb_ptr_adv(s);
+		s += MB_CPTR2LEN(s);
 	    }
 	}
 	*d = NUL;

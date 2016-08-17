@@ -11166,7 +11166,7 @@ f_strgetchar(typval_T *argvars, typval_T *rettv)
 		break;
 	    }
 	    --charidx;
-	    byteidx += mb_cptr2len(str + byteidx);
+	    byteidx += MB_CPTR2LEN(str + byteidx);
 	}
     }
 #else
@@ -11326,7 +11326,7 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 	if (nchar > 0)
 	    while (nchar > 0 && nbyte < slen)
 	    {
-		nbyte += mb_cptr2len(p + nbyte);
+		nbyte += MB_CPTR2LEN(p + nbyte);
 		--nchar;
 	    }
 	else
@@ -11341,7 +11341,7 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 		if (off < 0)
 		    len += 1;
 		else
-		    len += mb_cptr2len(p + off);
+		    len += MB_CPTR2LEN(p + off);
 		--charlen;
 	    }
 	}

@@ -4370,7 +4370,7 @@ dump_pipe(int	    options,
 	     * round. */
 	    for (p = buffer; p < buffer + len; p += l)
 	    {
-		l = mb_cptr2len(p);
+		l = MB_CPTR2LEN(p);
 		if (l == 0)
 		    l = 1;  /* NUL byte? */
 		else if (MB_BYTE2LEN(*p) != l)
