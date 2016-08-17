@@ -318,7 +318,6 @@ New and extended functions: ~
 
 New Vim variables: ~
 
-|v:vim_did_enter|	Set when VimEnter autocommands are triggered
 |v:beval_winid|		Window ID of the window where the mouse pointer is
 |v:completed_item|	complete items for the most recently completed word
 |v:errors|		errors found by assert functions
