@@ -7,4 +7,4 @@ func Test_ptag_with_notagstack()
   set tagstack&vim
 endfunc
 
-" vim: sw=2 et
+" vim: shiftwidth=2 sts=2 expandtab

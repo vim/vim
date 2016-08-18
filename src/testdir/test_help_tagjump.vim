@@ -150,4 +150,4 @@ func Test_help_complete()
   endtry
 endfunc
 
-" vim: et sw=2:
+" vim: shiftwidth=2 sts=2 expandtab

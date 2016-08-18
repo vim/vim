@@ -186,4 +186,4 @@ func Test_matchaddpos()
   set hlsearch&
 endfunc
 
-" vim: et ts=2 sw=2
+" vim: shiftwidth=2 sts=2 expandtab

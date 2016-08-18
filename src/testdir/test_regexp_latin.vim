@@ -38,4 +38,3 @@ func Test_recursive_substitute()
   call setwinvar(1, 'myvar', 1)
   bwipe!
 endfunc
-

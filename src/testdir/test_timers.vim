@@ -112,4 +112,4 @@ func Test_paused()
   call assert_inrange(0, 10, slept)
 endfunc
 
-" vim: ts=2 sw=0 et
+" vim: shiftwidth=2 sts=2 expandtab
