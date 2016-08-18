@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 16
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,7 +34,11 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Rename 'langnoremap' to 'langremap' and invert the value?
+
 +channel:
+- Check that raw mode does NL-NUL conversion.
+- Implement |job-term| ?
 - Channel test fails with Motif.  Sometimes kills the X11 server.
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
@@ -99,11 +103,16 @@ Regexp problems:
 - Search for /\%d0\+  causes error E363 in a file with consecutive NUL
   characters. (Christian Brabandt, 2016 Jun 7)
 
+getbufinfo() may return a lot of data.  Select what to return?
+    remove variables, does that help?
+
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
 Should json_encode()/json_decode() restrict recursiveness?
 Or avoid recursiveness.
+
+Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
@@ -133,6 +142,8 @@ Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 
 Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
 
+cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
+
 Syntax highlighting for messages with RFC3339 timestamp (#946)
 Did maintainer reply?
 
@@ -146,27 +157,16 @@ Jul 25, #948)
 
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
 
-'s$^$\=capture("s/^//gn")' locks Vim in sandbox mode (#950)
-Patch by Christian Brabandt, 2016 Jul 27.
-
 MS-Windows: use WS_HIDE instead of SW_SHOWMINNOACTIVE in os_win32.c?
 Otherwise task flickers in taskbar.
 
 Should make ":@r" handle line continuation. (Cesar Romani, 2016 Jun 26)
 Also for ":@.".
 
-Patch to make printf() convert to string for %s items. (Ken Takata, 2016 Aug
-1)
-
-Patch to add %b to printf(). (Ozaki Kiichi, 2016 Aug 5)
-
 Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 
 Patch on issue #728 by Christian Brabandt, 2016 Apr 7.  Update with test: Apr 8.
 Explanation Apr 12.
-Might be related to:
-Test 44 fails when [[=A=]] is changed to [[=À=]].  Caused by getcmdline() not
-handling the 0x80 as a second byte correctly?  (Dominique Pelle, 2015 Jun 10)
 
 Second problem in #966: ins_compl_add_tv() uses get_dict_string() multiple
 times, overwrites the one buffer. (Nikolay Pavlov, 2016 Aug 5)

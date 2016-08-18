@@ -4474,6 +4474,7 @@ E930	eval.txt	/*E930*
 E931	message.txt	/*E931*
 E932	eval.txt	/*E932*
 E933	eval.txt	/*E933*
+E934	sign.txt	/*E934*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
@@ -5069,6 +5070,7 @@ beval_lnum-variable	eval.txt	/*beval_lnum-variable*
 beval_text-variable	eval.txt	/*beval_text-variable*
 beval_winid-variable	eval.txt	/*beval_winid-variable*
 beval_winnr-variable	eval.txt	/*beval_winnr-variable*
+binary-number	eval.txt	/*binary-number*
 bitwise-function	usr_41.txt	/*bitwise-function*
 blockwise-examples	visual.txt	/*blockwise-examples*
 blockwise-operators	visual.txt	/*blockwise-operators*
@@ -7793,10 +7795,12 @@ print-options	print.txt	/*print-options*
 print.txt	print.txt	/*print.txt*
 printf()	eval.txt	/*printf()*
 printf-%	eval.txt	/*printf-%*
+printf-B	eval.txt	/*printf-B*
 printf-E	eval.txt	/*printf-E*
 printf-G	eval.txt	/*printf-G*
 printf-S	eval.txt	/*printf-S*
 printf-X	eval.txt	/*printf-X*
+printf-b	eval.txt	/*printf-b*
 printf-c	eval.txt	/*printf-c*
 printf-d	eval.txt	/*printf-d*
 printf-e	eval.txt	/*printf-e*
@@ -9202,6 +9206,7 @@ win_id2win()	eval.txt	/*win_id2win()*
 winbufnr()	eval.txt	/*winbufnr()*
 wincol()	eval.txt	/*wincol()*
 window	windows.txt	/*window*
+window-ID	windows.txt	/*window-ID*
 window-contents	intro.txt	/*window-contents*
 window-exit	editing.txt	/*window-exit*
 window-functions	usr_41.txt	/*window-functions*
