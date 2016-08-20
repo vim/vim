@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2016 Jul 29
+" Last change:	2016 Aug 20
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".
@@ -24,6 +24,9 @@ set history=200		" keep 200 lines of command line history
 set ruler		" show the cursor position all the time
 set showcmd		" display incomplete commands
 set wildmenu		" display completion matches in a status line
+
+set ttimeout		" time out for key codes
+set ttimeoutlen=100	" wait up to 100ms after Esc for special key
 
 " Show @@@ in the last line if it is truncated.
 set display=truncate
