@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2016 Mar 05
+*starting.txt*  For Vim version 7.4.  Last change: 2016 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -249,7 +249,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -Z		Restricted mode.  All commands that make use of an external
 		shell are disabled.  This includes suspending with CTRL-Z,
 		":sh", filtering, the system() function, backtick expansion,
-		delete(), rename(), mkdir(), writefile(), libcall(), etc.
+		delete(), rename(), mkdir(), writefile(), libcall(),
+		job_start(), etc.
 		{not in Vi}
 
 							*-g*
@@ -805,13 +806,13 @@ accordingly.  Vim proceeds in this order:
 	For the Macintosh the $VIMRUNTIME/macmap.vim is read.
 
 	  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc* *$MYVIMRC*
-     c. Four places are searched for initializations.  The first that exists
+     c. Five places are searched for initializations.  The first that exists
 	is used, the others are ignored.  The $MYVIMRC environment variable is
 	set to the file that was first found, unless $MYVIMRC was already set
 	and when using VIMINIT.
-	-  The environment variable VIMINIT (see also |compatible-default|) (*)
-	   The value of $VIMINIT is used as an Ex command line.
-	-  The user vimrc file(s):
+	I   The environment variable VIMINIT (see also |compatible-default|) (*)
+	    The value of $VIMINIT is used as an Ex command line.
+	II  The user vimrc file(s):
 		    "$HOME/.vimrc"	   (for Unix and OS/2) (*)
 		    "$HOME/.vim/vimrc"	   (for Unix and OS/2) (*)
 		    "s:.vimrc"		   (for Amiga) (*)
@@ -828,13 +829,14 @@ accordingly.  Vim proceeds in this order:
 		Note: For MS-DOS and Win32, "$HOME" is checked first.  If no
 		"_vimrc" or ".vimrc" is found there, "$VIM" is tried.
 		See |$VIM| for when $VIM is not set.
-	-  The environment variable EXINIT.
-	   The value of $EXINIT is used as an Ex command line.
-	-  The user exrc file(s).  Same as for the user vimrc file, but with
-	   "vimrc" replaced by "exrc".  But only one of ".exrc" and "_exrc" is
-	   used, depending on the system.  And without the (*)!
-	-  You would usually have "syntax on" and/or "filetype on" commands,
-	   which trigger initializing filetype detection, see |syntax-loading|.
+	III The environment variable EXINIT.
+	    The value of $EXINIT is used as an Ex command line.
+	IV  The user exrc file(s).  Same as for the user vimrc file, but with
+	    "vimrc" replaced by "exrc".  But only one of ".exrc" and "_exrc" is
+	    used, depending on the system.  And without the (*)!
+	V   The default vimrc file, $VIMRUNTIME/defaults.vim.  This sets up
+	    options values and has "syntax on" and "filetype on" commands,
+	    which is what most new users will want.  See |defaults.vim|.
 
      d. If the 'exrc' option is on (which is not the default), the current
 	directory is searched for three files.  The first that exists is used,
@@ -856,6 +858,8 @@ accordingly.  Vim proceeds in this order:
 	searched for the "plugin" sub-directory and all files ending in ".vim"
 	will be sourced (in alphabetical order per directory), also in
 	subdirectories.
+	However, directories in 'runtimepath' ending in "after" are skipped
+	here and only loaded after packages, see below.
 	Loading plugins won't be done when:
 	- The 'loadplugins' option was reset in a vimrc file.
 	- The |--noplugin| command line argument is used.
@@ -863,11 +867,17 @@ accordingly.  Vim proceeds in this order:
 	- When Vim was compiled without the |+eval| feature.
 	Note that using "-c 'set noloadplugins'" doesn't work, because the
 	commands from the command line have not been executed yet.  You can
-	use "--cmd 'set noloadplugins'" |--cmd|.
+	use "--cmd 'set noloadplugins'" or "--cmd 'set loadplugins'" |--cmd|.
 
-	Plugin packs are loaded.  These are plugins, as above, but found in
-	'packpath' directories.  Every plugin directory found is added in
-	'runtimepath'.  See |packages|.
+	Packages are loaded.  These are plugins, as above, but found in the
+	"start" directory of each entry in 'packpath'.  Every plugin directory
+	found is added in 'runtimepath' and then the plugins are sourced.  See
+	|packages|.
+
+	The plugins scripts are loaded, as above, but now only the directories
+	ending in "after" are used.  Note that 'runtimepath' will have changed
+	if packages have been found, but that should not add a directory
+	ending in "after".
 
 5. Set 'shellpipe' and 'shellredir'
 	The 'shellpipe' and 'shellredir' options are set according to the
@@ -905,9 +915,13 @@ accordingly.  Vim proceeds in this order:
 12. Execute startup commands
 	If a "-t" flag was given to Vim, the tag is jumped to.
 	The commands given with the |-c| and |+cmd| arguments are executed.
-	The starting flag is reset, has("vim_starting") will now return zero.
 	If the 'insertmode' option is set, Insert mode is entered.
+	The starting flag is reset, has("vim_starting") will now return zero.
+	The |v:vim_did_enter| variable is set to 1.
 	The |VimEnter| autocommands are executed.
+
+The $MYVIMRC or $MYGVIMRC file will be set to the first found vimrc and/or
+gvimrc file.
 
 Some hints on using initializations:
 
@@ -955,16 +969,29 @@ problems if you have a file with only <NL>s and have a line like
 
 						     *compatible-default*
 When Vim starts, the 'compatible' option is on.  This will be used when Vim
-starts its initializations.  But as soon as a user vimrc file is found, or a
-vimrc file in the current directory, or the "VIMINIT" environment variable is
-set, it will be set to 'nocompatible'.  This has the side effect of setting or
-resetting other options (see 'compatible').  But only the options that have
-not been set or reset will be changed.  This has the same effect like the
-value of 'compatible' had this value when starting Vim.  Note that this
-doesn't happen for the system-wide vimrc file nor when Vim was started with
-the |-u| command line argument.  It does also happen for gvimrc files.  The
-$MYVIMRC or $MYGVIMRC file will be set to the first found vimrc and/or gvimrc
-file.
+starts its initializations.  But as soon as:
+- a user vimrc file is found, or
+- a vimrc file in the current directory, or
+- the "VIMINIT" environment variable is set, or
+- the "-N" command line argument is given, or
+  even when no vimrc file exists.
+- the |defaults.vim| script is loaded, or
+- gvimrc file was found,
+then it will be set to 'nocompatible'.
+
+Note that this does NOT happen when a system-wide vimrc file was found.
+
+This has the side effect of setting or resetting other options (see
+'compatible').  But only the options that have not been set or reset will be
+changed.  This has the same effect like the value of 'compatible' had this
+value when starting Vim.
+
+'compatible' is NOT reset, and |defaults.vim| is not loaded:
+- when Vim was started with the |-u| command line argument, especially with
+  "-u NONE", or
+- when started with the |-C| command line argument, or
+- when the name of the executable ends in "ex". (This has been done to make
+  Vim behave like "ex", when it is started as "ex")
 
 But there is a side effect of setting or resetting 'compatible' at the moment
 a .vimrc file is found: Mappings are interpreted the moment they are
@@ -972,16 +999,24 @@ encountered.  This makes a difference when using things like "<CR>".  If the
 mappings depend on a certain value of 'compatible', set or reset it before
 giving the mapping.
 
-The above behavior can be overridden in these ways:
-- If the "-N" command line argument is given, 'nocompatible' will be used,
-  even when no vimrc file exists.
-- If the "-C" command line argument is given, 'compatible' will be used, even
-  when a vimrc file exists.
-- If the "-u {vimrc}" argument is used, 'compatible' will be used.
-- When the name of the executable ends in "ex", then this works like the "-C"
-  argument was given: 'compatible' will be used, even when a vimrc file
-  exists.  This has been done to make Vim behave like "ex", when it is started
-  as "ex".
+							*defaults.vim*
+If Vim is started normally and no user vimrc file is found, the
+$VIMRUTIME/defaults.vim script is loaded.  This will set 'compatible' off,
+switch on syntax highlighting and a few more things.  See the script for
+details.  NOTE: this is done since Vim 8.0, not in Vim 7.4. (it was added in
+patch 7.4.2111 to be exact).
+
+This should work well for new Vim users.  If you create your own .vimrc, it is
+recommended to add this line somewhere near the top: >
+	source $VIMRUNTIME/defaults.vim
+Then Vim works like before you had a .vimrc. Copying $VIMRUNTIME/vimrc_example
+is way to do this.  Alternatively, you can copy defaults.vim to your .vimrc
+and modify it.
+
+If you don't like some of the defaults, you can still source defaults.vim and
+revert individual settings.  See the defaults.vim file for hints on how to
+revert each item.
+
 
 Avoiding trojan horses:					*trojan-horse*
 While reading the "vimrc" or the "exrc" file in the current directory, some
@@ -1410,6 +1445,34 @@ file (it's actually merged with the existing one, if one exists).  The
 'viminfo' option is a string containing information about what info should be
 stored, and contains limits on how much should be stored (see 'viminfo').
 
+Merging happens in two ways.  Most items that have been changed or set in the
+current Vim session are stored, and what was not changed is filled from what
+is currently in the viminfo file.  For example:
+- Vim session A reads the viminfo, which contains variable START.
+- Vim session B does the same
+- Vim session A sets the variables AAA and BOTH and exits
+- Vim session B sets the variables BBB and BOTH and exits
+Now the viminfo will have:
+   START - it was in the viminfo and wasn't changed in session A or B
+   AAA   - value from session A, session B kept it
+   BBB   - value from session B
+   BOTH  - value from session B, value from session A is lost
+
+							*viminfo-timestamp*
+For some items a timestamp is used to keep the last changed version.  Here it
+doesn't matter in which sequence Vim sessions exit, the newest item(s) are
+always kept.  This is used for:
+- The command line history.
+- The search string history.
+- The input-line history.
+- Contents of non-empty registers.
+- The jump list
+- File marks
+The timestamp feature was added before Vim 8.0.  Older versions of Vim,
+starting with 7.4.1131, will keep the items with timestamp, but not use them.
+Thus when using both an older and a newer version of Vim the most recent data
+will be kept.
+
 Notes for Unix:
 - The file protection for the viminfo file will be set to prevent other users
   from being able to read it, because it may contain any text or commands that
@@ -1532,14 +1595,14 @@ most of the information will be restored).
 			already set (registers, marks, |v:oldfiles|, etc.)
 			will be overwritten   {not in Vi}
 
-				*:wv* *:wviminfo* *E137* *E138* *E574* *E886*
+			*:wv* *:wviminfo* *E137* *E138* *E574* *E886* *E929*
 :wv[iminfo][!] [file]	Write to viminfo file [file] (default: see above).
 			The information in the file is first read in to make
 			a merge between old and new info.  When [!] is used,
 			the old information is not read first, only the
 			internal info is written.  If 'viminfo' is empty, marks
 			for up to 100 files will be written.
-			When you get error "E138: Can't write viminfo file"
+			When you get error "E929: Too many viminfo temp files"
 			check that no old temp files were left behind (e.g.
 			~/.viminf*) and that you can write in the directory of
 			the .viminfo file.

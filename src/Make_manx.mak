@@ -36,26 +36,31 @@ SHELL = csh
 REN = $(SHELL) -c mv -f
 DEL = $(SHELL) -c rm -f
 
-SRC =	blowfish.c \
+SRC =	arabic.c \
+	blowfish.c \
 	buffer.c \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	dict.c \
 	diff.c \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalfunc.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
+	farsi.c \
 	fileio.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
 	json.c \
+	list.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -77,36 +82,43 @@ SRC =	blowfish.c \
 	search.c \
 	sha256.c \
 	spell.c \
+	spellfile.c \
 	syntax.c \
 	tag.c \
 	term.c \
 	ui.c \
 	undo.c \
+	userfunc.c \
 	window.c \
 	version.c
 
 INCL = vim.h feature.h keymap.h macros.h ascii.h term.h structs.h os_amiga.h
 
-OBJ =	obj/blowfish.o \
+OBJ =	obj/arabic.o \
+	obj/blowfish.o \
 	obj/buffer.o \
 	obj/charset.o \
 	obj/crypt.o \
 	obj/crypt_zip.o \
+	obj/dict.o \
 	obj/diff.o \
 	obj/digraph.o \
 	obj/edit.o \
 	obj/eval.o \
+	obj/evalfunc.o \
 	obj/ex_cmds.o \
 	obj/ex_cmds2.o \
 	obj/ex_docmd.o \
 	obj/ex_eval.o \
 	obj/ex_getln.o \
+	obj/farsi.o \
 	obj/fileio.o \
 	obj/fold.o \
 	obj/getchar.o \
 	obj/hardcopy.o \
 	obj/hashtab.o \
 	obj/json.o \
+	obj/list.o \
 	obj/main.o \
 	obj/mark.o \
 	obj/memfile.o \
@@ -128,34 +140,41 @@ OBJ =	obj/blowfish.o \
 	obj/search.o \
 	obj/sha256.o \
 	obj/spell.o \
+	obj/spellfile.o \
 	obj/syntax.o \
 	obj/tag.o \
 	obj/term.o \
 	obj/ui.o \
 	obj/undo.o \
+	obj/userfunc.o \
 	obj/window.o \
 	$(TERMLIB)
 
-PRO =	proto/blowfish.pro \
+PRO =	proto/arabic.pro \
+	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
 	proto/edit.pro \
 	proto/eval.pro \
+	proto/evalfunc.pro \
 	proto/ex_cmds.pro \
 	proto/ex_cmds2.pro \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
+	proto/farsi.pro \
 	proto/fileio.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
 	proto/json.pro \
+	proto/list.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -177,12 +196,14 @@ PRO =	proto/blowfish.pro \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/spell.pro \
+	proto/spellfile.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
 	proto/termlib.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/userfunc.pro \
 	proto/window.pro
 
 all: Vim xxd/Xxd
@@ -229,6 +250,9 @@ CCNOSYM = $(CC) $(CFLAGS) -o
 
 $(OBJ): $(SYMS)
 
+obj/arabic.o:	arabic.c
+	$(CCSYM) $@ arabic.c
+
 obj/blowfish.o:	blowfish.c
 	$(CCSYM) $@ blowfish.c
 
@@ -244,6 +268,9 @@ obj/crypt.o:	crypt.c
 obj/crypt_zip.o: crypt_zip.c
 	$(CCSYM) $@ crypt_zip.c
 
+obj/dict.o:	dict.c
+	$(CCSYM) $@ dict.c
+
 obj/diff.o:	diff.c
 	$(CCSYM) $@ diff.c
 
@@ -255,6 +282,9 @@ obj/edit.o:	edit.c
 
 obj/eval.o:	eval.c
 	$(CCSYM) $@ eval.c
+
+obj/evalfunc.o:	evalfunc.c
+	$(CCSYM) $@ evalfunc.c
 
 obj/ex_cmds.o:	ex_cmds.c
 	$(CCSYM) $@ ex_cmds.c
@@ -271,6 +301,9 @@ obj/ex_eval.o:	ex_eval.c ex_cmds.h
 
 obj/ex_getln.o:	ex_getln.c
 	$(CCSYM) $@ ex_getln.c
+
+obj/farsi.o:	farsi.c
+	$(CCSYM) $@ farsi.c
 
 obj/fileio.o:	fileio.c
 	$(CCSYM) $@ fileio.c
@@ -289,6 +322,9 @@ obj/hashtab.o:	hashtab.c
 
 obj/json.o:	json.c
 	$(CCSYM) $@ json.c
+
+obj/list.o:	list.c
+	$(CCSYM) $@ list.c
 
 # Don't use $(SYMS) here, because main.c defines EXTERN
 obj/main.o:	main.c option.h globals.h
@@ -356,6 +392,9 @@ obj/sha256.o:	sha256.c
 obj/spell.o:	spell.c
 	$(CCSYM) $@ spell.c
 
+obj/spellfile.o: spellfile.c
+	$(CCSYM) $@ spellfile.c
+
 obj/syntax.o:	syntax.c
 	$(CCSYM) $@ syntax.c
 
@@ -373,6 +412,9 @@ obj/ui.o:	ui.c
 
 obj/undo.o:	undo.c
 	$(CCSYM) $@ undo.c
+
+obj/userfunc.o:	userfunc.c
+	$(CCSYM) $@ userfunc.c
 
 obj/window.o:	window.c
 	$(CCSYM) $@ window.c

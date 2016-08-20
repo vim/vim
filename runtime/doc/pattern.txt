@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.4.  Last change: 2016 Jan 03
+*pattern.txt*   For Vim version 7.4.  Last change: 2016 Jun 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -576,7 +576,7 @@ An atom can be followed by an indication of how many times the atom can be
 matched and in what way.  This is called a multi.  See |/multi| for an
 overview.
 
-						*/star* */\star* *E56*
+							*/star* */\star*
 *	(use \* when 'magic' is not set)
 	Matches 0 or more of the preceding atom, as many as possible.
 	Example  'nomagic'	matches ~
@@ -596,7 +596,7 @@ overview.
 	the end of the file and then tries matching "END", backing up one
 	character at a time.
 
-							*/\+* *E57*
+							*/\+*
 \+	Matches 1 or more of the preceding atom, as many as possible. {not in
 	Vi}
 	Example		matches ~
@@ -612,7 +612,7 @@ overview.
 \?	Just like \=.  Cannot be used when searching backwards with the "?"
 	command. {not in Vi}
 
-					*/\{* *E58* *E60* *E554* *E870*
+					*/\{* *E60* *E554* *E870*
 \{n,m}	Matches n to m of the preceding atom, as many as possible
 \{n}	Matches n of the preceding atom
 \{n,}	Matches at least n of the preceding atom, as many as possible
@@ -954,14 +954,18 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 <	When 'hlsearch' is set and you move the cursor around and make changes
 	this will clearly show when the match is updated or not.
 	To match the text up to column 17: >
-		/.*\%17v
-<	Column 17 is included, because that's where the "\%17v" matches,
-	even though this is a |/zero-width| match.  Adding a dot to match the
-	next character has the same result: >
-		/.*\%17v.
+		/^.*\%17v
+<	Column 17 is not included, because this is a |/zero-width| match. To
+	include the column use: >
+		/^.*\%17v.
 <	This command does the same thing, but also matches when there is no
 	character in column 17: >
-		/.*\%<18v.
+		/^.*\%<18v.
+<	Note that without the "^" to anchor the match in the first column,
+	this will also highlight column 17: >
+		/.*\%17v
+<	Column 17 is highlighted by 'hlsearch' because there is another match
+	where ".*" matches zero characters.
 <
 
 Character classes: {not in Vi}
@@ -1079,8 +1083,8 @@ x	A single character, with no special meaning, matches itself
 	  belonging to that character class.  The following character classes
 	  are supported:
 			  Name		Contents ~
-*[:alnum:]*		  [:alnum:]     letters and digits
-*[:alpha:]*		  [:alpha:]     letters
+*[:alnum:]*		  [:alnum:]     ASCII letters and digits
+*[:alpha:]*		  [:alpha:]     ASCII letters
 *[:blank:]*		  [:blank:]     space and tab characters
 *[:cntrl:]*		  [:cntrl:]     control characters
 *[:digit:]*		  [:digit:]     decimal digits
@@ -1088,7 +1092,7 @@ x	A single character, with no special meaning, matches itself
 *[:lower:]*		  [:lower:]     lowercase letters (all letters when
 					'ignorecase' is used)
 *[:print:]*		  [:print:]     printable characters including space
-*[:punct:]*		  [:punct:]     punctuation characters
+*[:punct:]*		  [:punct:]     ASCII punctuation characters
 *[:space:]*		  [:space:]     whitespace characters
 *[:upper:]*		  [:upper:]     uppercase letters (all letters when
 					'ignorecase' is used)
@@ -1104,8 +1108,9 @@ x	A single character, with no special meaning, matches itself
 	  '/', alphabetic, numeric, '_' or '~'.
 	  These items only work for 8-bit characters, except [:lower:] and
 	  [:upper:] also work for multi-byte characters when using the new
-	  regexp engine.  In the future these items may work for multi-byte
-	  characters.
+	  regexp engine.  See |two-engines|.  In the future these items may
+	  work for multi-byte characters.  For now, to get all "alpha"
+	  characters you can use: [[:lower:][:upper:]].
 							*/[[=* *[==]*
 	- An equivalence class.  This means that characters are matched that
 	  have almost the same meaning, e.g., when ignoring accents.  This

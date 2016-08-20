@@ -32,7 +32,6 @@ SCRIPTS_ALL = \
 	test31.out \
 	test33.out \
 	test34.out \
-	test35.out \
 	test36.out \
 	test37.out \
 	test38.out \
@@ -44,7 +43,6 @@ SCRIPTS_ALL = \
 	test44.out \
 	test45.out \
 	test46.out \
-	test47.out \
 	test48.out \
 	test51.out \
 	test53.out \
@@ -52,9 +50,6 @@ SCRIPTS_ALL = \
 	test56.out \
 	test57.out \
 	test60.out \
-	test61.out \
-	test62.out \
-	test63.out \
 	test64.out \
 	test65.out \
 	test66.out \
@@ -85,7 +80,6 @@ SCRIPTS_ALL = \
 	test102.out \
 	test103.out \
 	test104.out \
-	test105.out \
 	test107.out \
 	test108.out \
 	test_autocmd_option.out \
@@ -103,16 +97,10 @@ SCRIPTS_ALL = \
 	test_insertcount.out \
 	test_listchars.out \
 	test_listlbr.out \
-	test_mapping.out \
 	test_marks.out \
-	test_match_conceal.out \
 	test_nested_function.out \
-	test_options.out \
-	test_ruby.out \
 	test_search_mbyte.out \
-	test_signs.out \
 	test_tagcase.out \
-	test_textobjects.out \
 	test_utf8.out \
 	test_wordcount.out \
 	test_writefile.out
@@ -130,7 +118,6 @@ SCRIPTS_MORE1 = \
 # Tests that run on most systems, but not on Amiga and DOS/Windows.
 SCRIPTS_MORE2 = \
 	test2.out \
-	test10.out \
 	test12.out \
 	test13.out \
 	test25.out \
@@ -162,29 +149,53 @@ SCRIPTS_WIN32 = test50.out
 
 
 # Tests for the GUI.
-SCRIPTS_GUI = test16.out
+SCRIPTS_GUI =
 
 
 # Tests using runtest.vim.vim.
-# Keep test_alot.res as the last one, sort the others.
+# Keep test_alot*.res as the last one, sort the others.
 NEW_TESTS = test_arglist.res \
 	    test_assert.res \
+	    test_autochdir \
 	    test_backspace_opt.res \
+	    test_bufwintabinfo.res \
 	    test_cdo.res \
 	    test_channel.res \
+	    test_cmdline.res \
+	    test_cscope.res \
+	    test_diffmode.res \
+	    test_digraph.res \
+	    test_farsi.res \
+	    test_gn.res \
+	    test_gui.res \
 	    test_hardcopy.res \
 	    test_history.res \
 	    test_increment.res \
+	    test_increment_dbcs.res \
+	    test_job_fails.res \
 	    test_json.res \
 	    test_langmap.res \
+	    test_man.res \
+	    test_matchadd_conceal.res \
+	    test_netbeans.res \
 	    test_packadd.res \
 	    test_perl.res \
 	    test_quickfix.res \
+	    test_ruby.res \
+	    test_signs.res \
+	    test_startup.res \
+	    test_startup_utf8.res \
+	    test_stat.res \
 	    test_syntax.res \
+	    test_textobjects.res \
+	    test_undo.res \
+	    test_usercommands.res \
 	    test_viminfo.res \
 	    test_viml.res \
 	    test_visual.res \
 	    test_window_id.res \
+	    test_alot_latin.res \
+	    test_alot_utf8.res \
 	    test_alot.res
 
 

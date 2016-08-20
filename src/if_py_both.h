@@ -72,6 +72,7 @@ typedef void (*runner)(const char *, void *
 static int ConvertFromPyObject(PyObject *, typval_T *);
 static int _ConvertFromPyObject(PyObject *, typval_T *, PyObject *);
 static int ConvertFromPyMapping(PyObject *, typval_T *);
+static int ConvertFromPySequence(PyObject *, typval_T *);
 static PyObject *WindowNew(win_T *, tabpage_T *);
 static PyObject *BufferNew (buf_T *);
 static PyObject *LineToString(const char *);
@@ -502,6 +503,7 @@ static struct PyMethodDef OutputMethods[] = {
     {"readable",    (PyCFunction)AlwaysFalse,		METH_NOARGS,	""},
     {"seekable",    (PyCFunction)AlwaysFalse,		METH_NOARGS,	""},
     {"writable",    (PyCFunction)AlwaysTrue,		METH_NOARGS,	""},
+    {"closed",      (PyCFunction)AlwaysFalse,		METH_NOARGS,	""},
     {"__dir__",	    (PyCFunction)OutputDir,		METH_NOARGS,	""},
     { NULL,	    NULL,				0,		NULL}
 };
@@ -1433,6 +1435,7 @@ typedef struct pylinkedlist_S {
 
 static pylinkedlist_T *lastdict = NULL;
 static pylinkedlist_T *lastlist = NULL;
+static pylinkedlist_T *lastfunc = NULL;
 
     static void
 pyll_remove(pylinkedlist_T *ref, pylinkedlist_T **last)
@@ -2828,14 +2831,21 @@ typedef struct
 {
     PyObject_HEAD
     char_u	*name;
+    int		argc;
+    typval_T	*argv;
+    dict_T	*self;
+    pylinkedlist_T	ref;
+    int		auto_rebind;
 } FunctionObject;
 
 static PyTypeObject FunctionType;
 
-#define NEW_FUNCTION(name) FunctionNew(&FunctionType, name)
+#define NEW_FUNCTION(name, argc, argv, self, pt_auto) \
+    FunctionNew(&FunctionType, (name), (argc), (argv), (self), (pt_auto))
 
     static PyObject *
-FunctionNew(PyTypeObject *subtype, char_u *name)
+FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
+	dict_T *selfdict, int auto_rebind)
 {
     FunctionObject	*self;
 
@@ -2853,7 +2863,6 @@ FunctionNew(PyTypeObject *subtype, char_u *name)
 	    return NULL;
 	}
 	self->name = vim_strsave(name);
-	func_ref(self->name);
     }
     else
 	if ((self->name = get_expanded_name(name,
@@ -2865,6 +2874,15 @@ FunctionNew(PyTypeObject *subtype, char_u *name)
 	    return NULL;
 	}
 
+    func_ref(self->name);
+    self->argc = argc;
+    self->argv = argv;
+    self->self = selfdict;
+    self->auto_rebind = selfdict == NULL ? TRUE : auto_rebind;
+
+    if (self->argv || self->self)
+	pyll_add((PyObject *)(self), &self->ref, &lastfunc);
+
     return (PyObject *)(self);
 }
 
@@ -2872,19 +2890,83 @@ FunctionNew(PyTypeObject *subtype, char_u *name)
 FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 {
     PyObject	*self;
+    PyObject	*selfdictObject;
+    PyObject	*autoRebindObject;
+    PyObject	*argsObject = NULL;
     char_u	*name;
+    typval_T	selfdicttv;
+    typval_T	argstv;
+    list_T	*argslist = NULL;
+    dict_T	*selfdict = NULL;
+    int		argc = 0;
+    int		auto_rebind = TRUE;
+    typval_T	*argv = NULL;
+    typval_T	*curtv;
+    listitem_T	*li;
 
-    if (kwargs)
+    if (kwargs != NULL)
     {
-	PyErr_SET_STRING(PyExc_TypeError,
-		N_("function constructor does not accept keyword arguments"));
-	return NULL;
+	selfdictObject = PyDict_GetItemString(kwargs, "self");
+	if (selfdictObject != NULL)
+	{
+	    if (ConvertFromPyMapping(selfdictObject, &selfdicttv) == -1)
+		return NULL;
+	    selfdict = selfdicttv.vval.v_dict;
+	}
+	argsObject = PyDict_GetItemString(kwargs, "args");
+	if (argsObject != NULL)
+	{
+	    if (ConvertFromPySequence(argsObject, &argstv) == -1)
+	    {
+		dict_unref(selfdict);
+		return NULL;
+	    }
+	    argslist = argstv.vval.v_list;
+
+	    argc = argslist->lv_len;
+	    if (argc != 0)
+	    {
+		argv = PyMem_New(typval_T, (size_t) argc);
+		if (argv == NULL)
+		{
+		    PyErr_NoMemory();
+		    dict_unref(selfdict);
+		    list_unref(argslist);
+		    return NULL;
+		}
+		curtv = argv;
+		for (li = argslist->lv_first; li != NULL; li = li->li_next)
+		    copy_tv(&li->li_tv, curtv++);
+	    }
+	    list_unref(argslist);
+	}
+	if (selfdict != NULL)
+	{
+	    auto_rebind = FALSE;
+	    autoRebindObject = PyDict_GetItemString(kwargs, "auto_rebind");
+	    if (autoRebindObject != NULL)
+	    {
+		auto_rebind = PyObject_IsTrue(autoRebindObject);
+		if (auto_rebind == -1)
+		{
+		    dict_unref(selfdict);
+		    list_unref(argslist);
+		    return NULL;
+		}
+	    }
+	}
     }
 
     if (!PyArg_ParseTuple(args, "et", "ascii", &name))
+    {
+	dict_unref(selfdict);
+	while (argc--)
+	    clear_tv(&argv[argc]);
+	PyMem_Free(argv);
 	return NULL;
+    }
 
-    self = FunctionNew(subtype, name);
+    self = FunctionNew(subtype, name, argc, argv, selfdict, auto_rebind);
 
     PyMem_Free(name);
 
@@ -2894,14 +2976,21 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
     static void
 FunctionDestructor(FunctionObject *self)
 {
+    int i;
     func_unref(self->name);
     vim_free(self->name);
+    for (i = 0; i < self->argc; ++i)
+	clear_tv(&self->argv[i]);
+    PyMem_Free(self->argv);
+    dict_unref(self->self);
+    if (self->argv || self->self)
+	pyll_remove(&self->ref, &lastfunc);
 
     DESTRUCTOR_FINISH(self);
 }
 
 static char *FunctionAttrs[] = {
-    "softspace",
+    "softspace", "args", "self", "auto_rebind",
     NULL
 };
 
@@ -2909,6 +2998,73 @@ static char *FunctionAttrs[] = {
 FunctionDir(PyObject *self)
 {
     return ObjectDir(self, FunctionAttrs);
+}
+
+    static PyObject *
+FunctionAttr(FunctionObject *self, char *name)
+{
+    list_T *list;
+    int i;
+    if (strcmp(name, "name") == 0)
+	return PyString_FromString((char *)(self->name));
+    else if (strcmp(name, "args") == 0)
+    {
+	if (self->argv == NULL)
+	    return AlwaysNone(NULL);
+	list = list_alloc();
+	for (i = 0; i < self->argc; ++i)
+	    list_append_tv(list, &self->argv[i]);
+	return NEW_LIST(list);
+    }
+    else if (strcmp(name, "self") == 0)
+	return self->self == NULL
+	    ? AlwaysNone(NULL)
+	    : NEW_DICTIONARY(self->self);
+    else if (strcmp(name, "auto_rebind") == 0)
+	return self->auto_rebind
+	    ? AlwaysTrue(NULL)
+	    : AlwaysFalse(NULL);
+    else if (strcmp(name, "__members__") == 0)
+	return ObjectDir(NULL, FunctionAttrs);
+    return NULL;
+}
+
+/* Populate partial_T given function object.
+ *
+ * "exported" should be set to true when it is needed to construct a partial
+ * that may be stored in a variable (i.e. may be freed by Vim).
+ */
+    static void
+set_partial(FunctionObject *self, partial_T *pt, int exported)
+{
+    int i;
+
+    pt->pt_name = self->name;
+    if (self->argv)
+    {
+	pt->pt_argc = self->argc;
+	if (exported)
+	{
+	    pt->pt_argv = (typval_T *)alloc_clear(
+		    sizeof(typval_T) * self->argc);
+	    for (i = 0; i < pt->pt_argc; ++i)
+		copy_tv(&self->argv[i], &pt->pt_argv[i]);
+	}
+	else
+	    pt->pt_argv = self->argv;
+    }
+    else
+    {
+	pt->pt_argc = 0;
+	pt->pt_argv = NULL;
+    }
+    pt->pt_auto = self->auto_rebind || !exported;
+    pt->pt_dict = self->self;
+    if (exported && self->self)
+	++pt->pt_dict->dv_refcount;
+    if (exported)
+	pt->pt_name = vim_strsave(pt->pt_name);
+    pt->pt_refcount = 1;
 }
 
     static PyObject *
@@ -2922,8 +3078,10 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
     PyObject	*selfdictObject;
     PyObject	*ret;
     int		error;
+    partial_T	pt;
+    partial_T	*pt_ptr = NULL;
 
-    if (ConvertFromPyObject(argsObject, &args) == -1)
+    if (ConvertFromPySequence(argsObject, &args) == -1)
 	return NULL;
 
     if (kwargs != NULL)
@@ -2940,11 +3098,18 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
 	}
     }
 
+    if (self->argv || self->self)
+    {
+	vim_memset(&pt, 0, sizeof(partial_T));
+	set_partial(self, &pt, FALSE);
+	pt_ptr = &pt;
+    }
+
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
 
     VimTryStart();
-    error = func_call(name, &args, NULL, selfdict, &rettv);
+    error = func_call(name, &args, pt_ptr, selfdict, &rettv);
 
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
@@ -2970,14 +3135,51 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
     static PyObject *
 FunctionRepr(FunctionObject *self)
 {
-#ifdef Py_TRACE_REFS
-    /* For unknown reason self->name may be NULL after calling
-     * Finalize */
-    return PyString_FromFormat("<vim.Function '%s'>",
-	    (self->name == NULL ? "<NULL>" : (char *)self->name));
-#else
-    return PyString_FromFormat("<vim.Function '%s'>", (char *)self->name);
-#endif
+    PyObject *ret;
+    garray_T repr_ga;
+    int i;
+    char_u *tofree = NULL;
+    typval_T tv;
+    char_u numbuf[NUMBUFLEN];
+
+    ga_init2(&repr_ga, (int)sizeof(char), 70);
+    ga_concat(&repr_ga, (char_u *)"<vim.Function '");
+    if (self->name)
+	ga_concat(&repr_ga, self->name);
+    else
+	ga_concat(&repr_ga, (char_u *)"<NULL>");
+    ga_append(&repr_ga, '\'');
+    if (self->argv)
+    {
+	ga_concat(&repr_ga, (char_u *)", args=[");
+	++emsg_silent;
+	for (i = 0; i < self->argc; i++)
+	{
+	    if (i != 0)
+		ga_concat(&repr_ga, (char_u *)", ");
+	    ga_concat(&repr_ga, tv2string(&self->argv[i], &tofree, numbuf,
+			get_copyID()));
+	    vim_free(tofree);
+	}
+	--emsg_silent;
+	ga_append(&repr_ga, ']');
+    }
+    if (self->self)
+    {
+	ga_concat(&repr_ga, (char_u *)", self=");
+	tv.v_type = VAR_DICT;
+	tv.vval.v_dict = self->self;
+	++emsg_silent;
+	ga_concat(&repr_ga, tv2string(&tv, &tofree, numbuf, get_copyID()));
+	--emsg_silent;
+	vim_free(tofree);
+	if (self->auto_rebind)
+	    ga_concat(&repr_ga, (char_u *)", auto_rebind=True");
+    }
+    ga_append(&repr_ga, '>');
+    ret = PyString_FromString((char *)repr_ga.ga_data);
+    ga_clear(&repr_ga);
+    return ret;
 }
 
 static struct PyMethodDef FunctionMethods[] = {
@@ -3207,7 +3409,7 @@ set_option_value_for(
 {
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
-    buf_T	*save_curbuf = NULL;
+    bufref_T	save_curbuf;
     int		set_ret = 0;
 
     VimTryStart();
@@ -3229,7 +3431,7 @@ set_option_value_for(
 	case SREQ_BUF:
 	    switch_buffer(&save_curbuf, (buf_T *)from);
 	    set_ret = set_option_value_err(key, numval, stringval, opt_flags);
-	    restore_buffer(save_curbuf);
+	    restore_buffer(&save_curbuf);
 	    break;
 	case SREQ_GLOBAL:
 	    set_ret = set_option_value_err(key, numval, stringval, opt_flags);
@@ -3673,8 +3875,6 @@ WindowAttr(WindowObject *self, char *name)
 #ifdef FEAT_WINDOWS
     else if (strcmp(name, "row") == 0)
 	return PyLong_FromLong((long)(self->win->w_winrow));
-#endif
-#ifdef FEAT_VERTSPLIT
     else if (strcmp(name, "width") == 0)
 	return PyLong_FromLong((long)(W_WIDTH(self->win)));
     else if (strcmp(name, "col") == 0)
@@ -3765,7 +3965,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 
 	return 0;
     }
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     else if (strcmp(name, "width") == 0)
     {
 	long	width;
@@ -4073,17 +4273,17 @@ switch_to_win_for_buf(
     buf_T	*buf,
     win_T	**save_curwinp,
     tabpage_T	**save_curtabp,
-    buf_T	**save_curbufp)
+    bufref_T	*save_curbuf)
 {
     win_T	*wp;
     tabpage_T	*tp;
 
     if (find_win_for_buf(buf, &wp, &tp) == FAIL)
-	switch_buffer(save_curbufp, buf);
+	switch_buffer(save_curbuf, buf);
     else if (switch_win(save_curwinp, save_curtabp, wp, tp, TRUE) == FAIL)
     {
 	restore_win(*save_curwinp, *save_curtabp, TRUE);
-	switch_buffer(save_curbufp, buf);
+	switch_buffer(save_curbuf, buf);
     }
 }
 
@@ -4091,9 +4291,9 @@ switch_to_win_for_buf(
 restore_win_for_buf(
     win_T	*save_curwin,
     tabpage_T	*save_curtab,
-    buf_T	*save_curbuf)
+    bufref_T	*save_curbuf)
 {
-    if (save_curbuf == NULL)
+    if (save_curbuf->br_buf == NULL)
 	restore_win(save_curwin, save_curtab, TRUE);
     else
 	restore_buffer(save_curbuf);
@@ -4111,7 +4311,7 @@ restore_win_for_buf(
     static int
 SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 {
-    buf_T	*save_curbuf = NULL;
+    bufref_T	save_curbuf = {NULL, 0};
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
 
@@ -4136,13 +4336,13 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	{
 	    if (buf == curbuf)
 		py_fix_cursor((linenr_T)n, (linenr_T)n + 1, (linenr_T)-1);
-	    if (save_curbuf == NULL)
+	    if (save_curbuf.br_buf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
 		 * holds the buffer, otherwise line numbers will be invalid. */
 		deleted_lines_mark((linenr_T)n, 1L);
 	}
 
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4178,7 +4378,7 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	else
 	    changed_bytes((linenr_T)n, 0);
 
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	/* Check that the cursor is not beyond the end of the line now. */
 	if (buf == curbuf)
@@ -4215,7 +4415,7 @@ SetBufferLineList(
 	PyObject *list,
 	PyInt *len_change)
 {
-    buf_T	*save_curbuf = NULL;
+    bufref_T	save_curbuf = {NULL, 0};
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
 
@@ -4246,17 +4446,18 @@ SetBufferLineList(
 		    break;
 		}
 	    }
-	    if (buf == curbuf && (save_curwin != NULL || save_curbuf == NULL))
+	    if (buf == curbuf && (save_curwin != NULL
+					       || save_curbuf.br_buf == NULL))
 		/* Using an existing window for the buffer, adjust the cursor
 		 * position. */
 		py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)-n);
-	    if (save_curbuf == NULL)
+	    if (save_curbuf.br_buf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
 		 * holds the buffer, otherwise line numbers will be invalid. */
 		deleted_lines_mark((linenr_T)lo, (long)i);
 	}
 
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4378,7 +4579,7 @@ SetBufferLineList(
 	 * changed range, and move any in the remainder of the buffer.
 	 * Only adjust marks if we managed to switch to a window that holds
 	 * the buffer, otherwise line numbers will be invalid. */
-	if (save_curbuf == NULL)
+	if (save_curbuf.br_buf == NULL)
 	    mark_adjust((linenr_T)lo, (linenr_T)(hi - 1),
 						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
@@ -4387,7 +4588,7 @@ SetBufferLineList(
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
 	/* END of region without "return". */
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4415,7 +4616,7 @@ SetBufferLineList(
     static int
 InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 {
-    buf_T	*save_curbuf = NULL;
+    bufref_T	save_curbuf = {NULL, 0};
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
 
@@ -4437,13 +4638,13 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	    RAISE_UNDO_FAIL;
 	else if (ml_append((linenr_T)n, (char_u *)str, 0, FALSE) == FAIL)
 	    RAISE_INSERT_LINE_FAIL;
-	else if (save_curbuf == NULL)
+	else if (save_curbuf.br_buf == NULL)
 	    /* Only adjust marks if we managed to switch to a window that
 	     * holds the buffer, otherwise line numbers will be invalid. */
 	    appended_lines_mark((linenr_T)n, 1L);
 
 	vim_free(str);
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 	update_screen(VALID);
 
 	if (VimTryEnd())
@@ -4504,7 +4705,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 		}
 		vim_free(array[i]);
 	    }
-	    if (i > 0 && save_curbuf == NULL)
+	    if (i > 0 && save_curbuf.br_buf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
 		 * holds the buffer, otherwise line numbers will be invalid. */
 		appended_lines_mark((linenr_T)n, (long)i);
@@ -4513,7 +4714,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	/* Free the array of lines. All of its contents have now
 	 * been freed. */
 	PyMem_Free(array);
-	restore_win_for_buf(save_curwin, save_curtab, save_curbuf);
+	restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
 
 	update_screen(VALID);
 
@@ -5016,7 +5217,7 @@ BufferMark(BufferObject *self, PyObject *pmarkObject)
     pos_T	*posp;
     char_u	*pmark;
     char_u	mark;
-    buf_T	*savebuf;
+    bufref_T	savebuf;
     PyObject	*todecref;
 
     if (CheckBuffer(self))
@@ -5040,7 +5241,7 @@ BufferMark(BufferObject *self, PyObject *pmarkObject)
     VimTryStart();
     switch_buffer(&savebuf, self->buf);
     posp = getmark(mark, FALSE);
-    restore_buffer(savebuf);
+    restore_buffer(&savebuf);
     if (VimTryEnd())
 	return NULL;
 
@@ -5553,11 +5754,13 @@ set_ref_in_py(const int copyID)
     pylinkedlist_T	*cur;
     dict_T	*dd;
     list_T	*ll;
+    int		i;
     int		abort = FALSE;
+    FunctionObject	*func;
 
     if (lastdict != NULL)
     {
-	for(cur = lastdict ; !abort && cur != NULL ; cur = cur->pll_prev)
+	for (cur = lastdict ; !abort && cur != NULL ; cur = cur->pll_prev)
 	{
 	    dd = ((DictionaryObject *) (cur->pll_obj))->dict;
 	    if (dd->dv_copyID != copyID)
@@ -5570,7 +5773,7 @@ set_ref_in_py(const int copyID)
 
     if (lastlist != NULL)
     {
-	for(cur = lastlist ; !abort && cur != NULL ; cur = cur->pll_prev)
+	for (cur = lastlist ; !abort && cur != NULL ; cur = cur->pll_prev)
 	{
 	    ll = ((ListObject *) (cur->pll_obj))->list;
 	    if (ll->lv_copyID != copyID)
@@ -5578,6 +5781,24 @@ set_ref_in_py(const int copyID)
 		ll->lv_copyID = copyID;
 		abort = abort || set_ref_in_list(ll, copyID, NULL);
 	    }
+	}
+    }
+
+    if (lastfunc != NULL)
+    {
+	for (cur = lastfunc ; !abort && cur != NULL ; cur = cur->pll_prev)
+	{
+	    func = (FunctionObject *) cur->pll_obj;
+	    if (func->self != NULL && func->self->dv_copyID != copyID)
+	    {
+		func->self->dv_copyID = copyID;
+		abort = abort || set_ref_in_ht(
+			&func->self->dv_hashtab, copyID, NULL);
+	    }
+	    if (func->argc)
+		for (i = 0; !abort && i < func->argc; ++i)
+		    abort = abort
+			|| set_ref_in_item(&func->argv[i], copyID, NULL, NULL);
 	}
     }
 
@@ -5882,6 +6103,35 @@ ConvertFromPyMapping(PyObject *obj, typval_T *tv)
 }
 
     static int
+ConvertFromPySequence(PyObject *obj, typval_T *tv)
+{
+    PyObject	*lookup_dict;
+    int		ret;
+
+    if (!(lookup_dict = PyDict_New()))
+	return -1;
+
+    if (PyType_IsSubtype(obj->ob_type, &ListType))
+    {
+	tv->v_type = VAR_LIST;
+	tv->vval.v_list = (((ListObject *)(obj))->list);
+	++tv->vval.v_list->lv_refcount;
+	ret = 0;
+    }
+    else if (PyIter_Check(obj) || PySequence_Check(obj))
+	ret = convert_dl(obj, tv, pyseq_to_tv, lookup_dict);
+    else
+    {
+	PyErr_FORMAT(PyExc_TypeError,
+		N_("unable to convert %s to vim list"),
+		Py_TYPE_NAME(obj));
+	ret = -1;
+    }
+    Py_DECREF(lookup_dict);
+    return ret;
+}
+
+    static int
 ConvertFromPyObject(PyObject *obj, typval_T *tv)
 {
     PyObject	*lookup_dict;
@@ -5911,11 +6161,22 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     }
     else if (PyType_IsSubtype(obj->ob_type, &FunctionType))
     {
-	if (set_string_copy(((FunctionObject *) (obj))->name, tv) == -1)
-	    return -1;
+	FunctionObject *func = (FunctionObject *) obj;
+	if (func->self != NULL || func->argv != NULL)
+	{
+	    partial_T *pt = (partial_T *)alloc_clear(sizeof(partial_T));
+	    set_partial(func, pt, TRUE);
+	    tv->vval.v_partial = pt;
+	    tv->v_type = VAR_PARTIAL;
+	}
+	else
+	{
+	    if (set_string_copy(func->name, tv) == -1)
+		return -1;
 
-	tv->v_type = VAR_FUNC;
-	func_ref(tv->vval.v_string);
+	    tv->v_type = VAR_FUNC;
+	}
+	func_ref(func->name);
     }
     else if (PyBytes_Check(obj))
     {
@@ -6011,6 +6272,8 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     static PyObject *
 ConvertToPyObject(typval_T *tv)
 {
+    typval_T *argv;
+    int i;
     if (tv == NULL)
     {
 	PyErr_SET_VIM(N_("internal error: NULL reference passed"));
@@ -6033,14 +6296,41 @@ ConvertToPyObject(typval_T *tv)
 	    return NEW_DICTIONARY(tv->vval.v_dict);
 	case VAR_FUNC:
 	    return NEW_FUNCTION(tv->vval.v_string == NULL
-					  ? (char_u *)"" : tv->vval.v_string);
+					  ? (char_u *)"" : tv->vval.v_string,
+					  0, NULL, NULL, TRUE);
+	case VAR_PARTIAL:
+	    if (tv->vval.v_partial->pt_argc)
+	    {
+		argv = PyMem_New(typval_T, (size_t)tv->vval.v_partial->pt_argc);
+		for (i = 0; i < tv->vval.v_partial->pt_argc; i++)
+		    copy_tv(&tv->vval.v_partial->pt_argv[i], &argv[i]);
+	    }
+	    else
+		argv = NULL;
+	    if (tv->vval.v_partial->pt_dict != NULL)
+		tv->vval.v_partial->pt_dict->dv_refcount++;
+	    return NEW_FUNCTION(tv->vval.v_partial == NULL
+			     ? (char_u *)"" : partial_name(tv->vval.v_partial),
+				tv->vval.v_partial->pt_argc, argv,
+				tv->vval.v_partial->pt_dict,
+				tv->vval.v_partial->pt_auto);
 	case VAR_UNKNOWN:
+	case VAR_CHANNEL:
+	case VAR_JOB:
 	    Py_INCREF(Py_None);
 	    return Py_None;
-	default:
+	case VAR_SPECIAL:
+	    switch (tv->vval.v_number)
+	    {
+		case VVAL_FALSE: return AlwaysFalse(NULL);
+		case VVAL_TRUE:  return AlwaysTrue(NULL);
+		case VVAL_NONE:
+		case VVAL_NULL:  return AlwaysNone(NULL);
+	    }
 	    PyErr_SET_VIM(N_("internal error: invalid value type"));
 	    return NULL;
     }
+    return NULL;
 }
 
 typedef struct
@@ -6481,8 +6771,13 @@ populate_module(PyObject *m)
 	return -1;
     ADD_OBJECT(m, "os", other_module);
 
+#if PY_MAJOR_VERSION >= 3
     if (!(py_getcwd = PyObject_GetAttrString(other_module, "getcwd")))
 	return -1;
+#else
+    if (!(py_getcwd = PyObject_GetAttrString(other_module, "getcwdu")))
+	return -1;
+#endif
     ADD_OBJECT(m, "_getcwd", py_getcwd)
 
     if (!(py_chdir = PyObject_GetAttrString(other_module, "chdir")))

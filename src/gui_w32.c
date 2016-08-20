@@ -247,6 +247,7 @@ gui_mch_set_rendering_options(char_u *s)
 # define CONST
 # define FAR
 # define NEAR
+# undef _cdecl
 # define _cdecl
 typedef int BOOL;
 typedef int BYTE;
@@ -288,6 +289,7 @@ typedef void VOID;
 typedef int LPNMHDR;
 typedef int LONG;
 typedef int WNDPROC;
+typedef int UINT_PTR;
 #endif
 
 #ifndef GET_X_LPARAM
@@ -540,6 +542,18 @@ static long_u		blink_ontime = 400;
 static long_u		blink_offtime = 250;
 static UINT		blink_timer = 0;
 
+    int
+gui_mch_is_blinking(void)
+{
+    return blink_state != BLINK_NONE;
+}
+
+    int
+gui_mch_is_blink_off(void)
+{
+    return blink_state == BLINK_OFF;
+}
+
     void
 gui_mch_set_blinking(long wait, long on, long off)
 {
@@ -679,7 +693,7 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
     int		i;
 #ifdef FEAT_MBYTE
     WCHAR	wstring[2];
-    char_u	*ws = NULL;;
+    char_u	*ws = NULL;
 
     if (os_version.dwPlatformId != VER_PLATFORM_WIN32_NT)
     {
@@ -1555,16 +1569,6 @@ gui_mch_free_font(GuiFont font)
 	DeleteObject((HFONT)font);
 }
 
-    static int
-hex_digit(int c)
-{
-    if (VIM_ISDIGIT(c))
-	return c - '0';
-    c = TOLOWER_ASC(c);
-    if (c >= 'a' && c <= 'f')
-	return c - 'a' + 10;
-    return -1000;
-}
 /*
  * Return the Pixel value (color) for the given color name.
  * Return INVALCOLOR for error.
@@ -1572,65 +1576,7 @@ hex_digit(int c)
     guicolor_T
 gui_mch_get_color(char_u *name)
 {
-    typedef struct guicolor_tTable
-    {
-	char	    *name;
-	COLORREF    color;
-    } guicolor_tTable;
-
-    static guicolor_tTable table[] =
-    {
-	{"Black",		RGB(0x00, 0x00, 0x00)},
-	{"DarkGray",		RGB(0xA9, 0xA9, 0xA9)},
-	{"DarkGrey",		RGB(0xA9, 0xA9, 0xA9)},
-	{"Gray",		RGB(0xC0, 0xC0, 0xC0)},
-	{"Grey",		RGB(0xC0, 0xC0, 0xC0)},
-	{"LightGray",		RGB(0xD3, 0xD3, 0xD3)},
-	{"LightGrey",		RGB(0xD3, 0xD3, 0xD3)},
-	{"Gray10",		RGB(0x1A, 0x1A, 0x1A)},
-	{"Grey10",		RGB(0x1A, 0x1A, 0x1A)},
-	{"Gray20",		RGB(0x33, 0x33, 0x33)},
-	{"Grey20",		RGB(0x33, 0x33, 0x33)},
-	{"Gray30",		RGB(0x4D, 0x4D, 0x4D)},
-	{"Grey30",		RGB(0x4D, 0x4D, 0x4D)},
-	{"Gray40",		RGB(0x66, 0x66, 0x66)},
-	{"Grey40",		RGB(0x66, 0x66, 0x66)},
-	{"Gray50",		RGB(0x7F, 0x7F, 0x7F)},
-	{"Grey50",		RGB(0x7F, 0x7F, 0x7F)},
-	{"Gray60",		RGB(0x99, 0x99, 0x99)},
-	{"Grey60",		RGB(0x99, 0x99, 0x99)},
-	{"Gray70",		RGB(0xB3, 0xB3, 0xB3)},
-	{"Grey70",		RGB(0xB3, 0xB3, 0xB3)},
-	{"Gray80",		RGB(0xCC, 0xCC, 0xCC)},
-	{"Grey80",		RGB(0xCC, 0xCC, 0xCC)},
-	{"Gray90",		RGB(0xE5, 0xE5, 0xE5)},
-	{"Grey90",		RGB(0xE5, 0xE5, 0xE5)},
-	{"White",		RGB(0xFF, 0xFF, 0xFF)},
-	{"DarkRed",		RGB(0x80, 0x00, 0x00)},
-	{"Red",			RGB(0xFF, 0x00, 0x00)},
-	{"LightRed",		RGB(0xFF, 0xA0, 0xA0)},
-	{"DarkBlue",		RGB(0x00, 0x00, 0x80)},
-	{"Blue",		RGB(0x00, 0x00, 0xFF)},
-	{"LightBlue",		RGB(0xAD, 0xD8, 0xE6)},
-	{"DarkGreen",		RGB(0x00, 0x80, 0x00)},
-	{"Green",		RGB(0x00, 0xFF, 0x00)},
-	{"LightGreen",		RGB(0x90, 0xEE, 0x90)},
-	{"DarkCyan",		RGB(0x00, 0x80, 0x80)},
-	{"Cyan",		RGB(0x00, 0xFF, 0xFF)},
-	{"LightCyan",		RGB(0xE0, 0xFF, 0xFF)},
-	{"DarkMagenta",		RGB(0x80, 0x00, 0x80)},
-	{"Magenta",		RGB(0xFF, 0x00, 0xFF)},
-	{"LightMagenta",	RGB(0xFF, 0xA0, 0xFF)},
-	{"Brown",		RGB(0x80, 0x40, 0x40)},
-	{"Yellow",		RGB(0xFF, 0xFF, 0x00)},
-	{"LightYellow",		RGB(0xFF, 0xFF, 0xE0)},
-	{"DarkYellow",		RGB(0xBB, 0xBB, 0x00)},
-	{"SeaGreen",		RGB(0x2E, 0x8B, 0x57)},
-	{"Orange",		RGB(0xFF, 0xA5, 0x00)},
-	{"Purple",		RGB(0xA0, 0x20, 0xF0)},
-	{"SlateBlue",		RGB(0x6A, 0x5A, 0xCD)},
-	{"Violet",		RGB(0xEE, 0x82, 0xEE)},
-    };
+    int i;
 
     typedef struct SysColorTable
     {
@@ -1677,27 +1623,6 @@ gui_mch_get_color(char_u *name)
 	{"SYS_WINDOWTEXT", COLOR_WINDOWTEXT}
     };
 
-    int		    r, g, b;
-    int		    i;
-
-    if (name[0] == '#' && STRLEN(name) == 7)
-    {
-	/* Name is in "#rrggbb" format */
-	r = hex_digit(name[1]) * 16 + hex_digit(name[2]);
-	g = hex_digit(name[3]) * 16 + hex_digit(name[4]);
-	b = hex_digit(name[5]) * 16 + hex_digit(name[6]);
-	if (r < 0 || g < 0 || b < 0)
-	    return INVALCOLOR;
-	return RGB(r, g, b);
-    }
-    else
-    {
-	/* Check if the name is one of the colors we know */
-	for (i = 0; i < sizeof(table) / sizeof(table[0]); i++)
-	    if (STRICMP(name, table[i].name) == 0)
-		return table[i].color;
-    }
-
     /*
      * Try to look up a system colour.
      */
@@ -1705,56 +1630,9 @@ gui_mch_get_color(char_u *name)
 	if (STRICMP(name, sys_table[i].name) == 0)
 	    return GetSysColor(sys_table[i].color);
 
-    /*
-     * Last attempt. Look in the file "$VIMRUNTIME/rgb.txt".
-     */
-    {
-#define LINE_LEN 100
-	FILE	*fd;
-	char	line[LINE_LEN];
-	char_u	*fname;
-
-	fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
-	if (fname == NULL)
-	    return INVALCOLOR;
-
-	fd = mch_fopen((char *)fname, "rt");
-	vim_free(fname);
-	if (fd == NULL)
-	    return INVALCOLOR;
-
-	while (!feof(fd))
-	{
-	    int	    len;
-	    int	    pos;
-	    char    *color;
-
-	    fgets(line, LINE_LEN, fd);
-	    len = (int)STRLEN(line);
-
-	    if (len <= 1 || line[len-1] != '\n')
-		continue;
-
-	    line[len-1] = '\0';
-
-	    i = sscanf(line, "%d %d %d %n", &r, &g, &b, &pos);
-	    if (i != 3)
-		continue;
-
-	    color = line + pos;
-
-	    if (STRICMP(color, name) == 0)
-	    {
-		fclose(fd);
-		return (guicolor_T) RGB(r, g, b);
-	    }
-	}
-
-	fclose(fd);
-    }
-
-    return INVALCOLOR;
+    return gui_get_color_cmn(name);
 }
+
 /*
  * Return OK if the key with the termcap name "name" is supported.
  */
@@ -2003,7 +1881,7 @@ process_message(void)
 		    && (vk != VK_SPACE || !(GetKeyState(VK_MENU) & 0x8000)))
 	    {
 		/*
-		 * Behave as exected if we have a dead key and the special key
+		 * Behave as expected if we have a dead key and the special key
 		 * is a key that would normally trigger the dead key nominal
 		 * character output (such as a NUMPAD printable character or
 		 * the TAB key, etc...).
@@ -2158,6 +2036,22 @@ gui_mch_update(void)
 	    process_message();
 }
 
+    static void
+remove_any_timer(void)
+{
+    MSG		msg;
+
+    if (s_wait_timer != 0 && !s_timed_out)
+    {
+	KillTimer(NULL, s_wait_timer);
+
+	/* Eat spurious WM_TIMER messages */
+	while (pPeekMessage(&msg, s_hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
+	    ;
+	s_wait_timer = 0;
+    }
+}
+
 /*
  * GUI input routine called by gui_wait_for_chars().  Waits for a character
  * from the keyboard.
@@ -2170,7 +2064,6 @@ gui_mch_update(void)
     int
 gui_mch_wait_for_chars(int wtime)
 {
-    MSG		msg;
     int		focus;
 
     s_timed_out = FALSE;
@@ -2209,6 +2102,9 @@ gui_mch_wait_for_chars(int wtime)
 	    s_need_activate = FALSE;
 	}
 
+#ifdef FEAT_TIMERS
+	did_add_timer = FALSE;
+#endif
 #ifdef MESSAGE_QUEUE
 	/* Check channel while waiting message. */
 	for (;;)
@@ -2218,7 +2114,7 @@ gui_mch_wait_for_chars(int wtime)
 	    parse_queued_messages();
 
 	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)
-		|| MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLEVENTS)
+		|| MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
 								!= WAIT_TIMEOUT)
 		break;
 	}
@@ -2234,15 +2130,7 @@ gui_mch_wait_for_chars(int wtime)
 
 	if (input_available())
 	{
-	    if (s_wait_timer != 0 && !s_timed_out)
-	    {
-		KillTimer(NULL, s_wait_timer);
-
-		/* Eat spurious WM_TIMER messages */
-		while (pPeekMessage(&msg, s_hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
-		    ;
-		s_wait_timer = 0;
-	    }
+	    remove_any_timer();
 	    allow_scrollbar = FALSE;
 
 	    /* Clear pending mouse button, the release event may have been
@@ -2253,6 +2141,15 @@ gui_mch_wait_for_chars(int wtime)
 
 	    return OK;
 	}
+
+#ifdef FEAT_TIMERS
+	if (did_add_timer)
+	{
+	    /* Need to recompute the waiting time. */
+	    remove_any_timer();
+	    break;
+	}
+#endif
     }
     allow_scrollbar = FALSE;
     return FAIL;
@@ -3291,6 +3188,7 @@ logfont2name(LOGFONT lf)
     char	*p;
     char	*res;
     char	*charset_name;
+    char	*quality_name;
     char	*font_name = lf.lfFaceName;
 
     charset_name = charset_id2name((int)lf.lfCharSet);
@@ -3304,6 +3202,8 @@ logfont2name(LOGFONT lf)
 						(char_u **)&font_name, &len);
     }
 #endif
+    quality_name = quality_id2name((int)lf.lfQuality);
+
     res = (char *)alloc((unsigned)(strlen(font_name) + 20
 		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)));
     if (res != NULL)
@@ -3330,6 +3230,11 @@ logfont2name(LOGFONT lf)
 	{
 	    STRCAT(p, ":c");
 	    STRCAT(p, charset_name);
+	}
+	if (quality_name != NULL)
+	{
+	    STRCAT(p, ":q");
+	    STRCAT(p, quality_name);
 	}
     }
 
@@ -3548,7 +3453,7 @@ gui_mch_settitle(
     set_window_title(s_hwnd, (title == NULL ? "VIM" : (char *)title));
 }
 
-#ifdef FEAT_MOUSESHAPE
+#if defined(FEAT_MOUSESHAPE) || defined(PROTO)
 /* Table for shape IDCs.  Keep in sync with the mshape_names[] table in
  * misc2.c! */
 static LPCSTR mshape_idcs[] =
@@ -3611,7 +3516,7 @@ mch_set_mouse_shape(int shape)
 }
 #endif
 
-#ifdef FEAT_BROWSE
+#if defined(FEAT_BROWSE) || defined(PROTO)
 /*
  * The file browser exists in two versions: with "W" uses wide characters,
  * without "W" the current codepage.  When FEAT_MBYTE is defined and on
@@ -7129,10 +7034,8 @@ gui_mch_menu_grey(
     }
     else
 #endif
-    if (grey)
-	EnableMenuItem(s_menuBar, menu->id, MF_BYCOMMAND | MF_GRAYED);
-    else
-	EnableMenuItem(s_menuBar, menu->id, MF_BYCOMMAND | MF_ENABLED);
+    (void)EnableMenuItem(menu->parent ? menu->parent->submenu_id : s_menuBar,
+		    menu->id, MF_BYCOMMAND | (grey ? MF_GRAYED : MF_ENABLED));
 
 #ifdef FEAT_TEAROFF
     if ((menu->parent != NULL) && (IsWindow(menu->parent->tearoff_handle)))

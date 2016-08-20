@@ -114,4 +114,6 @@ bench_re_freeze.out: bench_re_freeze.vim
 newtests: $(NEW_TESTS)
 
 .vim.res:
+	@echo "$(VIMPROG)" > vimcmd
 	$(VIMPROG) -u NONE $(NO_PLUGIN) -S runtest.vim $*.vim
+	@del vimcmd

@@ -237,18 +237,19 @@ msg_strtrunc(
 trunc_string(
     char_u	*s,
     char_u	*buf,
-    int		room,
+    int		room_in,
     int		buflen)
 {
-    int		half;
-    int		len;
+    size_t	room = room_in - 3; /* "..." takes 3 chars */
+    size_t	half;
+    size_t	len = 0;
     int		e;
     int		i;
     int		n;
 
-    room -= 3;
+    if (room_in < 3)
+	room = 0;
     half = room / 2;
-    len = 0;
 
     /* First part: Start of the string. */
     for (e = 0; len < half && e < buflen; ++e)
@@ -260,7 +261,7 @@ trunc_string(
 	    return;
 	}
 	n = ptr2cells(s + e);
-	if (len + n >= half)
+	if (len + n > half)
 	    break;
 	len += n;
 	buf[e] = s[e];
@@ -298,12 +299,12 @@ trunc_string(
 	{
 	    do
 		half = half - (*mb_head_off)(s, s + half - 1) - 1;
-	    while (utf_iscomposing(utf_ptr2char(s + half)) && half > 0);
+	    while (half > 0 && utf_iscomposing(utf_ptr2char(s + half)));
 	    n = ptr2cells(s + half);
-	    if (len + n > room)
+	    if (len + n > room || half == 0)
 		break;
 	    len += n;
-	    i = half;
+	    i = (int)half;
 	}
     }
     else
@@ -313,19 +314,36 @@ trunc_string(
 	    len += n;
     }
 
-    /* Set the middle and copy the last part. */
-    if (e + 3 < buflen)
+
+    if (i <= e + 3)
     {
+	/* text fits without truncating */
+	if (s != buf)
+	{
+	    len = STRLEN(s);
+	    if (len >= (size_t)buflen)
+		len = buflen - 1;
+	    len = len - e + 1;
+	    if (len < 1)
+		buf[e - 1] = NUL;
+	    else
+		mch_memmove(buf + e, s + e, len);
+	}
+    }
+    else if (e + 3 < buflen)
+    {
+	/* set the middle and copy the last part */
 	mch_memmove(buf + e, "...", (size_t)3);
-	len = (int)STRLEN(s + i) + 1;
-	if (len >= buflen - e - 3)
+	len = STRLEN(s + i) + 1;
+	if (len >= (size_t)buflen - e - 3)
 	    len = buflen - e - 3 - 1;
 	mch_memmove(buf + e + 3, s + i, len);
 	buf[e + 3 + len - 1] = NUL;
     }
     else
     {
-	buf[e - 1] = NUL;  /* make sure it is truncated */
+	/* can't fit in the "...", just truncate it */
+	buf[e - 1] = NUL;
     }
 }
 
@@ -504,6 +522,21 @@ emsg_not_now(void)
     return FALSE;
 }
 
+#if !defined(HAVE_STRERROR) || defined(PROTO)
+/*
+ * Replacement for perror() that behaves more or less like emsg() was called.
+ * v:errmsg will be set and called_emsg will be set.
+ */
+    void
+do_perror(char *msg)
+{
+    perror(msg);
+    ++emsg_silent;
+    emsg((char_u *)msg);
+    --emsg_silent;
+}
+#endif
+
 /*
  * emsg() - display an error message
  *
@@ -566,22 +599,25 @@ emsg(char_u *s)
 	 */
 	if (emsg_silent != 0)
 	{
-	    msg_start();
-	    p = get_emsg_source();
-	    if (p != NULL)
+	    if (emsg_noredir == 0)
 	    {
-		STRCAT(p, "\n");
-		redir_write(p, -1);
-		vim_free(p);
+		msg_start();
+		p = get_emsg_source();
+		if (p != NULL)
+		{
+		    STRCAT(p, "\n");
+		    redir_write(p, -1);
+		    vim_free(p);
+		}
+		p = get_emsg_lnum();
+		if (p != NULL)
+		{
+		    STRCAT(p, "\n");
+		    redir_write(p, -1);
+		    vim_free(p);
+		}
+		redir_write(s, -1);
 	    }
-	    p = get_emsg_lnum();
-	    if (p != NULL)
-	    {
-		STRCAT(p, "\n");
-		redir_write(p, -1);
-		vim_free(p);
-	    }
-	    redir_write(s, -1);
 	    return TRUE;
 	}
 
@@ -766,20 +802,54 @@ delete_first_msg(void)
  * ":messages" command.
  */
     void
-ex_messages(exarg_T *eap UNUSED)
+ex_messages(exarg_T *eap)
 {
     struct msg_hist *p;
     char_u	    *s;
+    int		    c = 0;
+
+    if (STRCMP(eap->arg, "clear") == 0)
+    {
+	int keep = eap->addr_count == 0 ? 0 : eap->line2;
+
+	while (msg_hist_len > keep)
+	    (void)delete_first_msg();
+	return;
+    }
+
+    if (*eap->arg != NUL)
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
 
     msg_hist_off = TRUE;
 
-    s = mch_getenv((char_u *)"LANG");
-    if (s != NULL && *s != NUL)
-	msg_attr((char_u *)
-		_("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
-		hl_attr(HLF_T));
+    p = first_msg_hist;
+    if (eap->addr_count != 0)
+    {
+	/* Count total messages */
+	for (; p != NULL && !got_int; p = p->next)
+	    c++;
 
-    for (p = first_msg_hist; p != NULL && !got_int; p = p->next)
+	c -= eap->line2;
+
+	/* Skip without number of messages specified */
+	for (p = first_msg_hist; p != NULL && !got_int && c > 0;
+						    p = p->next, c--);
+    }
+
+    if (p == first_msg_hist)
+    {
+	s = mch_getenv((char_u *)"LANG");
+	if (s != NULL && *s != NUL)
+	    msg_attr((char_u *)
+		    _("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
+		    hl_attr(HLF_T));
+    }
+
+    /* Display what was not skipped. */
+    for (; p != NULL && !got_int; p = p->next)
 	if (p->msg != NULL)
 	    msg_attr(p->msg, p->attr);
 
@@ -870,6 +940,8 @@ wait_return(int redraw)
 #ifdef USE_ON_FLY_SCROLL
 	dont_scroll = TRUE;		/* disallow scrolling here */
 #endif
+	cmdline_row = msg_row;
+
 	/* Avoid the sequence that the user types ":" at the hit-return prompt
 	 * to start an Ex command, but the file-changed dialog gets in the
 	 * way. */
@@ -2426,6 +2498,7 @@ msg_puts_printf(char_u *str, int maxlen)
     static int
 do_more_prompt(int typed_char)
 {
+    static int	entered = FALSE;
     int		used_typed_char = typed_char;
     int		oldState = State;
     int		c;
@@ -2436,6 +2509,13 @@ do_more_prompt(int typed_char)
     msgchunk_T	*mp_last = NULL;
     msgchunk_T	*mp;
     int		i;
+
+    /* We get called recursively when a timer callback outputs a message. In
+     * that case don't show another prompt. Also when at the hit-Enter prompt
+     * and nothing was typed. */
+    if (entered || (State == HITRETURN && typed_char == 0))
+	return FALSE;
+    entered = TRUE;
 
     if (typed_char == 'G')
     {
@@ -2675,6 +2755,7 @@ do_more_prompt(int typed_char)
 	msg_col = Columns - 1;
 #endif
 
+    entered = FALSE;
 #ifdef FEAT_CON_DIALOG
     return retval;
 #else
@@ -3018,7 +3099,9 @@ redir_write(char_u *str, int maxlen)
 	    while (cur_col < msg_col)
 	    {
 #ifdef FEAT_EVAL
-		if (redir_reg)
+		if (redir_execute)
+		    execute_redir_str((char_u *)" ", -1);
+		else if (redir_reg)
 		    write_reg_contents(redir_reg, (char_u *)" ", -1, TRUE);
 		else if (redir_vname)
 		    var_redir_str((char_u *)" ", -1);
@@ -3033,9 +3116,11 @@ redir_write(char_u *str, int maxlen)
 	}
 
 #ifdef FEAT_EVAL
-	if (redir_reg)
+	if (redir_execute)
+	    execute_redir_str(s, maxlen);
+	else if (redir_reg)
 	    write_reg_contents(redir_reg, s, maxlen, TRUE);
-	if (redir_vname)
+	else if (redir_vname)
 	    var_redir_str(s, maxlen);
 #endif
 
@@ -3043,7 +3128,7 @@ redir_write(char_u *str, int maxlen)
 	while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
 	{
 #ifdef FEAT_EVAL
-	    if (!redir_reg && !redir_vname)
+	    if (!redir_reg && !redir_vname && !redir_execute)
 #endif
 		if (redir_fd != NULL)
 		    putc(*s, redir_fd);
@@ -3068,7 +3153,7 @@ redirecting(void)
 {
     return redir_fd != NULL || *p_vfile != NUL
 #ifdef FEAT_EVAL
-			  || redir_reg || redir_vname
+			  || redir_reg || redir_vname || redir_execute
 #endif
 				       ;
 }
@@ -3801,8 +3886,8 @@ do_browse(
 #if defined(FEAT_EVAL)
 static char *e_printf = N_("E766: Insufficient arguments for printf()");
 
-static long tv_nr(typval_T *tvs, int *idxp);
-static char *tv_str(typval_T *tvs, int *idxp);
+static varnumber_T tv_nr(typval_T *tvs, int *idxp);
+static char *tv_str(typval_T *tvs, int *idxp, char_u **tofree);
 # ifdef FEAT_FLOAT
 static double tv_float(typval_T *tvs, int *idxp);
 # endif
@@ -3810,11 +3895,11 @@ static double tv_float(typval_T *tvs, int *idxp);
 /*
  * Get number argument from "idxp" entry in "tvs".  First entry is 1.
  */
-    static long
+    static varnumber_T
 tv_nr(typval_T *tvs, int *idxp)
 {
     int		idx = *idxp - 1;
-    long	n = 0;
+    varnumber_T	n = 0;
     int		err = FALSE;
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
@@ -3831,20 +3916,28 @@ tv_nr(typval_T *tvs, int *idxp)
 
 /*
  * Get string argument from "idxp" entry in "tvs".  First entry is 1.
+ * If "tofree" is NULL get_tv_string_chk() is used.  Some types (e.g. List)
+ * are not converted to a string.
+ * If "tofree" is not NULL echo_string() is used.  All types are converted to
+ * a string with the same format as ":echo".  The caller must free "*tofree".
  * Returns NULL for an error.
  */
     static char *
-tv_str(typval_T *tvs, int *idxp)
+tv_str(typval_T *tvs, int *idxp, char_u **tofree)
 {
-    int		idx = *idxp - 1;
-    char	*s = NULL;
+    int		    idx = *idxp - 1;
+    char	    *s = NULL;
+    static char_u   numbuf[NUMBUFLEN];
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
 	EMSG(_(e_printf));
     else
     {
 	++*idxp;
-	s = (char *)get_tv_string_chk(&tvs[idx]);
+	if (tofree != NULL)
+	    s = (char *)echo_string(&tvs[idx], tofree, numbuf, get_copyID());
+	else
+	    s = (char *)get_tv_string_chk(&tvs[idx]);
     }
     return s;
 }
@@ -3867,7 +3960,7 @@ tv_float(typval_T *tvs, int *idxp)
 	if (tvs[idx].v_type == VAR_FLOAT)
 	    f = tvs[idx].vval.v_float;
 	else if (tvs[idx].v_type == VAR_NUMBER)
-	    f = tvs[idx].vval.v_number;
+	    f = (double)tvs[idx].vval.v_number;
 	else
 	    EMSG(_("E807: Expected Float argument for printf()"));
     }
@@ -3998,12 +4091,14 @@ vim_vsnprintf(
 	    char    length_modifier = '\0';
 
 	    /* temporary buffer for simple numeric->string conversion */
-# ifdef FEAT_FLOAT
+# if defined(FEAT_FLOAT)
 #  define TMP_LEN 350	/* On my system 1e308 is the biggest number possible.
 			 * That sounds reasonable to use as the maximum
 			 * printable. */
+# elif defined(FEAT_NUM64)
+#  define TMP_LEN 66
 # else
-#  define TMP_LEN 32
+#  define TMP_LEN 34
 # endif
 	    char    tmp[TMP_LEN];
 
@@ -4027,6 +4122,10 @@ vim_vsnprintf(
 
 	    /* current conversion specifier character */
 	    char    fmt_spec = '\0';
+
+	    /* buffer for 's' and 'S' specs */
+	    char_u  *tofree = NULL;
+
 
 	    str_arg = NULL;
 	    p++;  /* skip '%' */
@@ -4125,7 +4224,11 @@ vim_vsnprintf(
 		if (length_modifier == 'l' && *p == 'l')
 		{
 		    /* double l = long long */
+# ifdef FEAT_NUM64
+		    length_modifier = 'L';
+# else
 		    length_modifier = 'l';	/* treat it as a single 'l' */
+# endif
 		    p++;
 		}
 	    }
@@ -4141,6 +4244,15 @@ vim_vsnprintf(
 		case 'F': fmt_spec = 'f'; break;
 		default: break;
 	    }
+
+# if defined(FEAT_EVAL) && defined(FEAT_NUM64)
+	    switch (fmt_spec)
+	    {
+		case 'd': case 'u': case 'o': case 'x': case 'X':
+		    if (tvs != NULL && length_modifier == '\0')
+			length_modifier = 'L';
+	    }
+# endif
 
 	    /* get parameter value, do initial processing */
 	    switch (fmt_spec)
@@ -4178,7 +4290,7 @@ vim_vsnprintf(
 		case 'S':
 		    str_arg =
 # if defined(FEAT_EVAL)
-				tvs != NULL ? tv_str(tvs, &arg_idx) :
+				tvs != NULL ? tv_str(tvs, &arg_idx, &tofree) :
 # endif
 				    va_arg(ap, char *);
 		    if (str_arg == NULL)
@@ -4233,9 +4345,13 @@ vim_vsnprintf(
 		}
 		break;
 
-	    case 'd': case 'u': case 'o': case 'x': case 'X': case 'p':
+	    case 'd': case 'u':
+	    case 'b': case 'B':
+	    case 'o':
+	    case 'x': case 'X':
+	    case 'p':
 		{
-		    /* NOTE: the u, o, x, X and p conversion specifiers
+		    /* NOTE: the u, b, o, x, X and p conversion specifiers
 		     * imply the value is unsigned;  d implies a signed
 		     * value */
 
@@ -4254,6 +4370,15 @@ vim_vsnprintf(
 		    long int long_arg = 0;
 		    unsigned long int ulong_arg = 0;
 
+# ifdef FEAT_NUM64
+		    /* only defined for length modifier ll */
+		    varnumber_T llong_arg = 0;
+		    uvarnumber_T ullong_arg = 0;
+# endif
+
+		    /* only defined for b convertion */
+		    uvarnumber_T bin_arg = 0;
+
 		    /* pointer argument value -only defined for p
 		     * conversion */
 		    void *ptr_arg = NULL;
@@ -4263,10 +4388,22 @@ vim_vsnprintf(
 			length_modifier = '\0';
 			ptr_arg =
 # if defined(FEAT_EVAL)
-				 tvs != NULL ? (void *)tv_str(tvs, &arg_idx) :
+				 tvs != NULL ? (void *)tv_str(tvs, &arg_idx,
+									NULL) :
 # endif
 					va_arg(ap, void *);
 			if (ptr_arg != NULL)
+			    arg_sign = 1;
+		    }
+		    else if (fmt_spec == 'b' || fmt_spec == 'B')
+		    {
+			bin_arg =
+# if defined(FEAT_EVAL)
+				    tvs != NULL ?
+					   (uvarnumber_T)tv_nr(tvs, &arg_idx) :
+# endif
+					va_arg(ap, uvarnumber_T);
+			if (bin_arg != 0)
 			    arg_sign = 1;
 		    }
 		    else if (fmt_spec == 'd')
@@ -4298,6 +4435,19 @@ vim_vsnprintf(
 			    else if (long_arg < 0)
 				arg_sign = -1;
 			    break;
+# ifdef FEAT_NUM64
+			case 'L':
+			    llong_arg =
+#  if defined(FEAT_EVAL)
+					tvs != NULL ? tv_nr(tvs, &arg_idx) :
+#  endif
+					    va_arg(ap, varnumber_T);
+			    if (llong_arg > 0)
+				arg_sign =  1;
+			    else if (llong_arg < 0)
+				arg_sign = -1;
+			    break;
+# endif
 			}
 		    }
 		    else
@@ -4326,6 +4476,18 @@ vim_vsnprintf(
 				if (ulong_arg != 0)
 				    arg_sign = 1;
 				break;
+# ifdef FEAT_NUM64
+			    case 'L':
+				ullong_arg =
+#  if defined(FEAT_EVAL)
+					    tvs != NULL ? (uvarnumber_T)
+							tv_nr(tvs, &arg_idx) :
+#  endif
+						va_arg(ap, uvarnumber_T);
+				if (ullong_arg != 0)
+				    arg_sign = 1;
+				break;
+# endif
 			}
 		    }
 
@@ -4350,7 +4512,8 @@ vim_vsnprintf(
 		    else if (alternate_form)
 		    {
 			if (arg_sign != 0
-				     && (fmt_spec == 'x' || fmt_spec == 'X') )
+				     && (fmt_spec == 'b' || fmt_spec == 'B'
+				      || fmt_spec == 'x' || fmt_spec == 'X') )
 			{
 			    tmp[str_arg_l++] = '0';
 			    tmp[str_arg_l++] = fmt_spec;
@@ -4366,21 +4529,31 @@ vim_vsnprintf(
 		    {
 			/* When zero value is formatted with an explicit
 			 * precision 0, the resulting formatted string is
-			 * empty (d, i, u, o, x, X, p).   */
+			 * empty (d, i, u, b, B, o, x, X, p).   */
 		    }
 		    else
 		    {
-			char	f[5];
+			char	f[6];
 			int	f_l = 0;
 
 			/* construct a simple format string for sprintf */
 			f[f_l++] = '%';
 			if (!length_modifier)
 			    ;
-			else if (length_modifier == '2')
+			else if (length_modifier == 'L')
 			{
+# ifdef FEAT_NUM64
+#  ifdef WIN3264
+			    f[f_l++] = 'I';
+			    f[f_l++] = '6';
+			    f[f_l++] = '4';
+#  else
 			    f[f_l++] = 'l';
 			    f[f_l++] = 'l';
+#  endif
+# else
+			    f[f_l++] = 'l';
+# endif
 			}
 			else
 			    f[f_l++] = length_modifier;
@@ -4389,6 +4562,22 @@ vim_vsnprintf(
 
 			if (fmt_spec == 'p')
 			    str_arg_l += sprintf(tmp + str_arg_l, f, ptr_arg);
+			else if (fmt_spec == 'b' || fmt_spec == 'B')
+			{
+			    char	    b[8 * sizeof(uvarnumber_T)];
+			    size_t	    b_l = 0;
+			    uvarnumber_T    bn = bin_arg;
+
+			    do
+			    {
+				b[sizeof(b) - ++b_l] = '0' + (bn & 0x1);
+				bn >>= 1;
+			    }
+			    while (bn != 0);
+
+			    memcpy(tmp + str_arg_l, b + sizeof(b) - b_l, b_l);
+			    str_arg_l += b_l;
+			}
 			else if (fmt_spec == 'd')
 			{
 			    /* signed */
@@ -4401,6 +4590,11 @@ vim_vsnprintf(
 			    case 'l': str_arg_l += sprintf(
 						tmp + str_arg_l, f, long_arg);
 				      break;
+# ifdef FEAT_NUM64
+			    case 'L': str_arg_l += sprintf(
+					       tmp + str_arg_l, f, llong_arg);
+				      break;
+# endif
 			    }
 			}
 			else
@@ -4415,6 +4609,11 @@ vim_vsnprintf(
 			    case 'l': str_arg_l += sprintf(
 					       tmp + str_arg_l, f, ulong_arg);
 				      break;
+# ifdef FEAT_NUM64
+			    case 'L': str_arg_l += sprintf(
+					      tmp + str_arg_l, f, ullong_arg);
+				      break;
+# endif
 			    }
 			}
 
@@ -4728,6 +4927,7 @@ vim_vsnprintf(
 		    str_l += pn;
 		}
 	    }
+	    vim_free(tofree);
 	}
     }
 

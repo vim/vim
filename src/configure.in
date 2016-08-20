@@ -88,9 +88,12 @@ fi
 
 dnl If configure thinks we are cross compiling, there might be something
 dnl wrong with the CC or CFLAGS settings, give a useful warning message
+CROSS_COMPILING=
 if test "$cross_compiling" = yes; then
   AC_MSG_RESULT([cannot compile a simple program; if not cross compiling check CC and CFLAGS])
+  CROSS_COMPILING=1
 fi
+AC_SUBST(CROSS_COMPILING)
 
 dnl gcc-cpp has the wonderful -MM option to produce nicer dependencies.
 dnl But gcc 3.1 changed the meaning!  See near the end.
@@ -434,7 +437,7 @@ fi
 dnl Check user requested features.
 
 AC_MSG_CHECKING(--with-features argument)
-AC_ARG_WITH(features, [  --with-features=TYPE    tiny, small, normal, big or huge (default: normal)],
+AC_ARG_WITH(features, [  --with-features=TYPE    tiny, small, normal, big or huge (default: huge)],
 	features="$withval"; AC_MSG_RESULT($features),
 	features="huge"; AC_MSG_RESULT(Defaulting to huge))
 
@@ -1190,7 +1193,7 @@ eof
 	    dnl -- delete the lines from make about Entering/Leaving directory
 	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
 	    rm -f -- "${tmp_mkf}"
-	    if test "x$MACOSX" = "xyes" && ${vi_cv_path_python} -c \
+	    if test "x$MACOSX" = "xyes" && test -n "${python_PYTHONFRAMEWORK}" && ${vi_cv_path_python} -c \
 		"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"; then
 	      vi_cv_path_python_plibs="-framework Python"
 	      if test "x${vi_cv_path_python}" != "x/usr/bin/python" && test -n "${python_PYTHONFRAMEWORKPREFIX}"; then
@@ -2685,10 +2688,42 @@ if test "x$GUITYPE" = "xGTK"; then
   else
     AC_MSG_RESULT([cannot obtain from pkg_config.])
   fi
+
+  AC_MSG_CHECKING([--disable-icon-cache-update argument])
+  AC_ARG_ENABLE(icon_cache_update,
+          [  --disable-icon-cache-update        update disabled],
+          [],
+          [enable_icon_cache_update="yes"])
+  if test "$enable_icon_cache_update" = "yes"; then
+    AC_MSG_RESULT([not set])
+    AC_PATH_PROG(GTK_UPDATE_ICON_CACHE,[gtk-update-icon-cache],no)
+    if test "x$GTK_UPDATE_ICON_CACHE" = "xno" ; then
+      AC_MSG_RESULT([not found in PATH.])
+    fi
+  else
+    AC_MSG_RESULT([update disabled])
+  fi
+
+  AC_MSG_CHECKING([--disable-desktop-database-update argument])
+  AC_ARG_ENABLE(desktop_database_update,
+          [  --disable-desktop-database-update  update disabled],
+          [],
+          [enable_desktop_database_update="yes"])
+  if test "$enable_desktop_database_update" = "yes"; then
+    AC_MSG_RESULT([not set])
+    AC_PATH_PROG(UPDATE_DESKTOP_DATABASE,[update-desktop-database],no)
+    if test "x$UPDATE_DESKTOP_DATABASE" = "xno" ; then
+      AC_MSG_RESULT([not found in PATH.])
+    fi
+  else
+    AC_MSG_RESULT([update disabled])
+  fi
 fi
 AC_SUBST(GLIB_COMPILE_RESOURCES)
 AC_SUBST(GRESOURCE_SRC)
 AC_SUBST(GRESOURCE_OBJ)
+AC_SUBST(GTK_UPDATE_ICON_CACHE)
+AC_SUBST(UPDATE_DESKTOP_DATABASE)
 
 dnl Check for Motif include files location.
 dnl The LAST one found is used, this makes the highest version to be used,

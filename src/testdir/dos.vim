@@ -5,3 +5,5 @@ set shell=c:\COMMAND.COM shellquote= shellxquote= shellcmdflag=/c shellredir=>
 if executable("cmd.exe")
    set shell=cmd.exe
 endif
+
+source setup.vim

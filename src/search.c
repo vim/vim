@@ -4594,7 +4594,6 @@ current_search(
 	orig_pos = curwin->w_cursor;
 
 	pos = curwin->w_cursor;
-	start_pos = VIsual;
 
 	/* make sure, searching further will extend the match */
 	if (VIsual_active)
@@ -4606,7 +4605,7 @@ current_search(
 	}
     }
     else
-	orig_pos = pos = start_pos = curwin->w_cursor;
+	orig_pos = pos = curwin->w_cursor;
 
     /* Is the pattern is zero-width? */
     one_char = is_one_char(spats[last_idx].pat, TRUE);
@@ -4720,7 +4719,7 @@ current_search(
 }
 
 /*
- * Check if the pattern is one character or zero-width.
+ * Check if the pattern is one character long or zero-width.
  * If move is TRUE, check from the beginning of the buffer, else from the
  * current cursor position.
  * Returns TRUE, FALSE or -1 for failure.
@@ -4735,10 +4734,15 @@ is_one_char(char_u *pattern, int move)
     int		save_called_emsg = called_emsg;
     int		flag = 0;
 
+    if (pattern == NULL)
+	pattern = spats[last_idx].pat;
+
     if (search_regcomp(pattern, RE_SEARCH, RE_SEARCH,
 					      SEARCH_KEEP, &regmatch) == FAIL)
 	return -1;
 
+    /* init startcol correctly */
+    regmatch.startpos[0].col = -1;
     /* move to match */
     if (move)
 	clearpos(&pos)
@@ -4749,22 +4753,30 @@ is_one_char(char_u *pattern, int move)
 	flag = SEARCH_START;
     }
 
-    if (searchit(curwin, curbuf, &pos, FORWARD, spats[last_idx].pat, 1,
+    if (searchit(curwin, curbuf, &pos, FORWARD, pattern, 1,
 			      SEARCH_KEEP + flag, RE_SEARCH, 0, NULL) != FAIL)
     {
 	/* Zero-width pattern should match somewhere, then we can check if
 	 * start and end are in the same position. */
 	called_emsg = FALSE;
-	nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
-						  pos.lnum, (colnr_T)0, NULL);
+	do
+	{
+	    regmatch.startpos[0].col++;
+	    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
+					    pos.lnum, regmatch.startpos[0].col, NULL);
+	    if (!nmatched)
+		break;
+	} while (regmatch.startpos[0].col < pos.col);
 
 	if (!called_emsg)
+	{
 	    result = (nmatched != 0
 		&& regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
 		&& regmatch.startpos[0].col == regmatch.endpos[0].col);
-
-	if (!result && inc(&pos) >= 0 && pos.col == regmatch.endpos[0].col)
-	    result = TRUE;
+	    /* one char width */
+	    if (!result && inc(&pos) >= 0 && pos.col == regmatch.endpos[0].col)
+		result = TRUE;
+	}
     }
 
     called_emsg |= save_called_emsg;

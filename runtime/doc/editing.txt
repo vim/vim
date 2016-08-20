@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.4.  Last change: 2016 Feb 16
+*editing.txt*   For Vim version 7.4.  Last change: 2016 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -393,7 +393,7 @@ These are the common ones:
 To avoid the special meaning of the wildcards prepend a backslash.  However,
 on MS-Windows the backslash is a path separator and "path\[abc]" is still seen
 as a wildcard when "[" is in the 'isfname' option.  A simple way to avoid this
-is to use "path\[[]abc]".  Then the file "path[abc]" literally.
+is to use "path\[[]abc]", this matches the file "path\[abc]".
 
 					*starstar-wildcard*
 Expanding "**" is possible on Unix, Win32, Mac OS/X and a few other systems.
@@ -1114,10 +1114,12 @@ The names can be in upper- or lowercase.
 			edited.  See |:confirm| and 'confirm'.  {not in Vi}
 
 :q[uit]!		Quit without writing, also when the current buffer has
-			changes.  If this is the last window and there is a
-			modified hidden buffer, the current buffer is
-			abandoned and the first changed hidden buffer becomes
-			the current buffer.
+			changes.  The buffer is unloaded, also when it has
+			'hidden' set.
+			If this is the last window and there is a modified
+			hidden buffer, the current buffer is abandoned and the
+			first changed hidden buffer becomes the current
+			buffer.
 			Use ":qall!" to exit always.
 
 :cq[uit]		Quit always, without writing, and return an error
@@ -1221,7 +1223,7 @@ Examples: >
 
 If you want to always use ":confirm", set the 'confirm' option.
 
-			*:browse* *:bro* *E338* *E614* *E615* *E616* *E578*
+			*:browse* *:bro* *E338* *E614* *E615* *E616*
 :bro[wse] {command}	Open a file selection dialog for an argument to
 			{command}.  At present this works for |:e|, |:w|,
 			|:wall|, |:wq|, |:wqall|, |:x|, |:xall|, |:exit|,

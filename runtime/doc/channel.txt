@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Mar 14
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6,13 +6,9 @@
 
 		      Inter-process communication		*channel*
 
-DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT  DRAFT
-
 Vim uses channels to communicate with other processes.
-A channel uses a socket or pipes			*socket-interface*
+A channel uses a socket or pipes.			*socket-interface*
 Jobs can be used to start processes and communicate with them.
-
-Vim current supports up to 10 simultaneous channels.
 The Netbeans interface also uses a channel. |netbeans|
 
 1. Overview				|job-channel-overview|
@@ -58,10 +54,10 @@ Common combination are:
 - Using a job connected through pipes in NL mode.  E.g., to run a style
   checker and receive errors and warnings.
 - Using a deamon, connecting over a socket in JSON mode.  E.g. to lookup
-  crosss-refrences in a database.
+  cross-references in a database.
 
 ==============================================================================
-2. Channel demo						*channel-demo*
+2. Channel demo				*channel-demo* *demoserver.py*
 
 This requires Python.  The demo program can be found in
 $VIMRUNTIME/tools/demoserver.py
@@ -120,24 +116,13 @@ Use |ch_status()| to see if the channel could be opened.
 
 {address} has the form "hostname:port".  E.g., "localhost:8765".
 
-{options} is a dictionary with optional entries:
+{options} is a dictionary with optional entries:	*channel-open-options*
 
 "mode" can be:						*channel-mode*
 	"json" - Use JSON, see below; most convenient way. Default.
 	"js"   - Use JS (JavaScript) encoding, more efficient than JSON.
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
-						*in_mode* *out_mode* *err_mode*
-"in_mode"	mode specifically for stdin, only when using pipes
-"out_mode"	mode specifically for stdout, only when using pipes
-"err_mode"	mode specifically for stderr, only when using pipes
-		Note: when setting "mode" the part specific mode is
-		overwritten.  Therefore set "mode" first and the part specific
-		mode later.
-
-		Note: when writing to a file or buffer and when reading from a
-		buffer NL mode is used by default.
-
 						*channel-callback* *E921*
 "callback"	A function that is called when a message is received that is
 		not handled otherwise.  It gets two arguments: the channel
@@ -153,20 +138,23 @@ Use |ch_status()| to see if the channel could be opened.
 		excluding the NL.
 		When "mode" is "raw" the "msg" argument is the whole message
 		as a string.
-							*out_cb*
-"out_cb"	A function like "callback" but used for stdout.  Only for when
-		the channel uses pipes.  When "out_cb" wasn't set the channel
-		callback is used.
-							*err_cb*
-"err_cb"	A function like "callback" but used for stderr.  Only for when
-		the channel uses pipes.  When "err_cb" wasn't set the channel
-		callback is used.
+
+		For all callbacks: Use |function()| to bind it to arguments
+		and/or a Dictionary.  Or use the form "dict.function" to bind
+		the Dictionary.
+
+		Callbacks are only called at a "safe" moment, usually when Vim
+		is waiting for the user to type a character.  Vim does not use
+		multi-threading.
 
 							*close_cb*
 "close_cb"	A function that is called when the channel gets closed, other
 		than by calling ch_close().  It should be defined like this: >
 	func MyCloseHandler(channel)
-<							*waittime*
+<		Vim will invoke callbacks that handle data before invoking
+		close_cb, thus when this function is called no more data will
+		be received.
+							*waittime*
 "waittime"	The time to wait for the connection to be made in
 		milliseconds.  A negative number waits forever.
 
@@ -175,16 +163,10 @@ Use |ch_status()| to see if the channel could be opened.
 		actually uses a 1 msec timeout, that is required on many
 		systems.  Use a larger value for a remote server, e.g.  10
 		msec at least.
-
+							*channel-timeout*
 "timeout"	The time to wait for a request when blocking, E.g. when using
 		ch_evalexpr().  In milliseconds.  The default is 2000 (2
 		seconds).
-						*out_timeout* *err_timeout*
-"out_timeout"	Timeout for stdout.  Only when using pipes.
-"err_timeout"	Timeout for stderr.  Only when using pipes.
-		Note: when setting "timeout" the part specific mode is
-		overwritten.  Therefore set "timeout" first and the part
-		specific mode later.
 
 When "mode" is "json" or "js" the "callback" is optional.  When omitted it is
 only possible to receive a message after sending one.
@@ -212,13 +194,20 @@ pipes are used (stdin/stdout/stderr) they are all closed.  This might not be
 what you want!  Stopping the job with job_stop() might be better.
 All readahead is discarded, callbacks will no longer be invoked.
 
+Note that a channel is closed in three stages:
+  - The I/O ends, log message: "Closing channel". There can still be queued
+    messages to read or callbacks to invoke.
+  - The readahead is cleared, log message: "Clearing channel".  Some variables
+    may still reference the channel.
+  - The channel is freed, log message: "Freeing channel".
+
 When the channel can't be opened you will get an error message.  There is a
 difference between MS-Windows and Unix: On Unix when the port doesn't exist
 ch_open() fails quickly.  On MS-Windows "waittime" applies.
-*E898* *E899* *E900* *E901* *E902*
+*E898* *E901* *E902*
 
 If there is an error reading or writing a channel it will be closed.
-*E896* *E630* *E631* 
+*E630* *E631* 
 
 ==============================================================================
 4. Using a JSON or JS channel					*channel-use*
@@ -269,10 +258,6 @@ message, it must use the number zero:
 Then channel handler will then get {response} converted to Vim types.  If the
 channel does not have a handler the message is dropped.
 
-On read error or ch_close(), when using a socket with RAW or NL mode, the
-string "DETACH\n" is sent, if still possible.  The channel will then be
-inactive.
-
 It is also possible to use ch_sendraw() and ch_evalraw() on a JSON or JS
 channel.  The caller is then completely responsible for correct encoding and
 decoding.
@@ -322,6 +307,9 @@ completion or error.  You could use functions in an |autoload| script:
 	["ex","call myscript#MyFunc(arg)"]
 
 You can also use "call |feedkeys()|" to insert any key sequence.
+
+When there is an error a message is written to the channel log, if it exists,
+and v:errmsg is set to the error.
 
 
 Command "normal" ~
@@ -408,6 +396,7 @@ To obtain the status of a channel: ch_status(channel).  The possible results
 are:
 	"fail"		Failed to open the channel.
 	"open"		The channel can be used.
+	"buffered"	The channel was closed but there is data to read.
 	"closed"	The channel was closed.
 
 To obtain the job associated with a channel: ch_getjob(channel)
@@ -424,6 +413,23 @@ To read all output from a RAW channel that is available: >
 	let output = ch_readraw(channel)
 To read the error output: >
 	let output = ch_readraw(channel, {"part": "err"})
+
+ch_read() and ch_readraw() use the channel timeout.  When there is nothing to
+read within that time an empty string is returned.  To specify a different
+timeout in msec use the "timeout" option:
+	{"timeout": 123} ~
+To read from the error output use the "part" option:
+	{"part": "err"} ~
+To read a message with a specific ID, on a JS or JSON channel:
+	{"id": 99} ~
+When no ID is specified or the ID is -1, the first message is returned. This
+overrules any callback waiting for this message.
+
+For a RAW channel this returns whatever is available, since Vim does not know
+where a message ends.
+For a NL channel this returns one message.
+For a JS or JSON channel this returns one decoded message.
+This includes any sequence number.
 
 ==============================================================================
 8. Starting a job with a channel			*job-start* *job*
@@ -446,7 +452,7 @@ it like this: >
     func MyHandler(channel, msg)
 
 Without the handler you need to read the output with |ch_read()| or
-|ch_readraw()|.
+|ch_readraw()|. You can do this in the close callback, see |read-in-close-cb|.
 
 The handler defined for "out_cb" will not receive stderr.  If you want to
 handle that separately, add an "err_cb" handler: >
@@ -485,6 +491,24 @@ time a line is added to the buffer, the last-but-one line will be send to the
 job stdin.  This allows for editing the last line and sending it when pressing
 Enter.
 
+NUL bytes in the text will be passed to the job (internally Vim stores these
+as NL bytes).
+
+
+Reading job output in the close callback ~
+							*read-in-close-cb*
+If the job can take some time and you don't need intermediate results, you can
+add a close callback and read the output there: >
+
+	func! CloseHandler(channel)
+	  while ch_status(a:channel) == 'buffered'
+	    echomsg ch_read(a:channel)
+	  endwhile
+	endfunc
+	let job = job_start(command, {'close_cb': 'CloseHandler'})
+
+You will want to do something more useful than "echomsg".
+
 ==============================================================================
 9. Starting a job without a channel			*job-start-nochannel*
 
@@ -521,24 +545,55 @@ job_setoptions(job, {options}).  Many options can be used with the channel
 related to the job, using ch_setoptions(channel, {options}).
 See |job_setoptions()| and |ch_setoptions()|.
 
+						*in_mode* *out_mode* *err_mode*
+"in_mode"		mode specifically for stdin, only when using pipes
+"out_mode"		mode specifically for stdout, only when using pipes
+"err_mode"		mode specifically for stderr, only when using pipes
+			See |channel-mode| for the values.
+
+			Note: when setting "mode" the part specific mode is
+			overwritten.  Therefore set "mode" first and the part
+			specific mode later.
+
+			Note: when writing to a file or buffer and when
+			reading from a buffer NL mode is used by default.
+
 						*job-callback*
 "callback": handler	Callback for something to read on any part of the
 			channel.
-						*job-out_cb*
+						*job-out_cb* *out_cb*
 "out_cb": handler	Callback for when there is something to read on
-			stdout.
-						*job-err_cb*
+			stdout.  Only for when the channel uses pipes.  When
+			"out_cb" wasn't set the channel callback is used.
+			The two arguments are the channel and the message.
+
+						*job-err_cb* *err_cb*
 "err_cb": handler	Callback for when there is something to read on
-			stderr.
+			stderr.  Only for when the channel uses pipes.  When
+			"err_cb" wasn't set the channel callback is used.
+			The two arguments are the channel and the message.
 						*job-close_cb*
 "close_cb": handler	Callback for when the channel is closed.  Same as
-			"close_cb" on ch_open().
+			"close_cb" on |ch_open()|, see |close_cb|.
 						*job-exit_cb*
 "exit_cb": handler	Callback for when the job ends.  The arguments are the
 			job and the exit status.
 			Vim checks about every 10 seconds for jobs that ended.
-			The callback can also be triggered by calling
-			|job_status()|.
+			The check also be triggered by calling |job_status()|,
+			which may then invoke the exit_cb handler.
+			Note that data can be buffered, callbacks may still be
+			called after the process ends.
+							*job-timeout*
+"timeout"		The time to wait for a request when blocking, E.g.
+			when using ch_evalexpr().  In milliseconds.  The
+			default is 2000 (2 seconds).
+						*out_timeout* *err_timeout*
+"out_timeout"		Timeout for stdout.  Only when using pipes.
+"err_timeout"		Timeout for stderr.  Only when using pipes.
+			Note: when setting "timeout" the part specific mode is
+			overwritten.  Therefore set "timeout" first and the
+			part specific mode later.
+
 						*job-stoponexit*
 "stoponexit": {signal}	Send {signal} to the job when Vim exits.  See
 			|job_stop()| for possible values.
@@ -571,18 +626,25 @@ See |job_setoptions()| and |ch_setoptions()|.
 "out_io": "null"	disconnect stdout (goes to /dev/null)
 "out_io": "pipe"	stdout is connected to the channel (default)
 "out_io": "file"	stdout writes to a file
-"out_io": "buffer" 	stdout appends to a buffer
+"out_io": "buffer" 	stdout appends to a buffer (see below)
 "out_name": "/path/file" the name of the file or buffer to write to
 "out_buf": number	the number of the buffer to write to
+"out_modifiable": 0	when writing to a buffer, 'modifiable' will be off
+			(see below)
 
 				*job-err_io* *err_name* *err_buf*
 "err_io": "out"		stderr messages to go to stdout
 "err_io": "null"	disconnect stderr  (goes to /dev/null)
 "err_io": "pipe"	stderr is connected to the channel (default)
 "err_io": "file"	stderr writes to a file
-"err_io": "buffer" 	stderr appends to a buffer
+"err_io": "buffer" 	stderr appends to a buffer (see below)
 "err_name": "/path/file" the name of the file or buffer to write to
 "err_buf": number	the number of the buffer to write to
+"err_modifiable": 0	when writing to a buffer, 'modifiable' will be off
+			(see below)
+
+"block_write": number	only for testing: pretend every other write to stdin
+			will block
 
 
 Writing to a buffer ~
@@ -598,19 +660,33 @@ When using JS or JSON mode with "buffer", only messages with zero or negative
 ID will be added to the buffer, after decoding + encoding.  Messages with a
 positive number will be handled by a callback, commands are handled as usual.
 
-The name of the buffer is compared the full name of existing buffers.  If
-there is a match that buffer is used.  Otherwise a new buffer is created.
-Use an empty name to always create a new buffer.  |ch_getbufnr()| can then be
-used to get the buffer number.
+The name of the buffer from "out_name" or "err_name" is compared the full name
+of existing buffers, also after expanding the name for the current directory.
+E.g., when a buffer was created with ":edit somename" and the buffer name is
+"somename" it will use that buffer.
+
+If there is no matching buffer a new buffer is created.  Use an empty name to
+always create a new buffer.  |ch_getbufnr()| can then be used to get the
+buffer number.
 
 For a new buffer 'buftype' is set to "nofile" and 'bufhidden' to "hide".  If
 you prefer other settings, create the buffer first and pass the buffer number.
+
+The "out_modifiable" and "err_modifiable" options can be used to set the
+'modifiable' option off, or write to a buffer that has 'modifiable' off.  That
+means that lines will be appended to the buffer, but the user can't easily
+change the buffer.
+
+When an existing buffer is to be written where 'modifiable' is off and the
+"out_modifiable" or "err_modifiable" options is not zero, an error is given
+and the buffer will not be written to.
 
 When the buffer written to is displayed in a window and the cursor is in the
 first column of the last line, the cursor will be moved to the newly added
 line and the window is scrolled up to show the cursor if needed.
 
-Undo is synced for every added line.
+Undo is synced for every added line.  NUL bytes are accepted (internally Vim
+stores these as NL bytes).
 
 
 Writing to a file ~

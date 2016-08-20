@@ -23,7 +23,7 @@ void gui_stop_highlight(int mask);
 void gui_clear_block(int row1, int col1, int row2, int col2);
 void gui_update_cursor_later(void);
 void gui_write(char_u *s, int len);
-void gui_dont_update_cursor(void);
+void gui_dont_update_cursor(int undraw);
 void gui_can_update_cursor(void);
 int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
 void gui_undraw_cursor(void);

@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.4.  Last change: 2016 Feb 24
+*quickref.txt*  For Vim version 7.4.  Last change: 2016 Aug 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -679,6 +679,7 @@ Short explanation of each option:		*option-list*
 'display'	  'dy'	    list of flags for how to display text
 'eadirection'	  'ead'     in which direction 'equalalways' works
 'edcompatible'	  'ed'	    toggle flags of ":substitute" command
+'emoji'		  'emo'	    emoji characters are considered full width
 'encoding'	  'enc'     encoding used internally
 'endofline'	  'eol'     write <EOL> for last line in file
 'equalalways'	  'ea'	    windows are automatically made the same size
@@ -830,6 +831,7 @@ Short explanation of each option:		*option-list*
 'printmbcharset'  'pmbcs'   CJK character set to be used for :hardcopy
 'printmbfont'	  'pmbfn'   font names to be used for CJK output of :hardcopy
 'printoptions'	  'popt'    controls the format of :hardcopy output
+'prompt'	  'prompt'  enable prompt in Ex mode
 'pumheight'	  'ph'	    maximum height of the popup menu
 'pythondll'		    name of the Python 2 dynamic library
 'pythonthreedll'	    name of the Python 3 dynamic library
@@ -881,6 +883,7 @@ Short explanation of each option:		*option-list*
 'showtabline'	  'stal'    tells when the tab pages line is displayed
 'sidescroll'	  'ss'	    minimum number of columns to scroll horizontal
 'sidescrolloff'   'siso'    min. nr. of columns to left and right of cursor
+'signcolumn'	  'scl'	    when to display the sign column
 'smartcase'	  'scs'     no ignore case when pattern has uppercase
 'smartindent'	  'si'	    smart autoindenting for C programs
 'smarttab'	  'sta'     use 'shiftwidth' when inserting <Tab>
@@ -914,6 +917,7 @@ Short explanation of each option:		*option-list*
 'term'			    name of the terminal
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
+'termguicolors'	  'tgc'     use GUI colors for the terminal
 'terse'			    shorten some messages
 'textauto'	  'ta'	    obsolete, use 'fileformats'
 'textmode'	  'tx'	    obsolete, use 'fileformat'

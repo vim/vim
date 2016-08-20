@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.4.  Last change: 2016 Feb 18
+*netbeans.txt*  For Vim version 7.4.  Last change: 2016 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -58,6 +58,8 @@ Current projects using the NetBeans protocol of Vim are:
 	http://www.freehackers.org/VimWrapper
 
 Check the specific project pages to see how to use Vim with these projects.
+
+An alternative is to use a channel, see |channel|.
 
 In the rest of this help page, we will use the term "Vim Controller" to
 describe the program controlling Vim through the NetBeans socket interface.
@@ -827,7 +829,7 @@ REJECT		Not used.
 These errors occur when a message violates the protocol:
 *E627* *E628* *E629* *E632* *E633* *E634* *E635* *E636*
 *E637* *E638* *E639* *E640* *E641* *E642* *E643* *E644* *E645* *E646*
-*E647* *E648* *E649* *E650* *E651* *E652* *E653* *E654*
+*E647* *E648* *E649* *E650* *E651* *E652*
 
 
 ==============================================================================

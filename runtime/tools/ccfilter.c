@@ -309,7 +309,7 @@ int main( int argc, char *argv[] )
 	  ok = sscanf( p, "make[%*d]: Entering directory `%[^']",
 		       BasePath );
 	  if (verbose)
-	    printf( "[%u]?%s\n", ok, Line );
+	    printf( "[%u]?%s\n", (unsigned)ok, Line );
 	}
        else
 	{

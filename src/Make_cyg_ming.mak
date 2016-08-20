@@ -42,7 +42,8 @@ DIRECTX=no
 FEATURES=HUGE
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
-ARCH=i686
+# If not set, it will be automatically detected. (Normally i686 or x86-64.)
+#ARCH=i686
 # Set to yes to cross-compile from unix; no=native Windows (and Cygwin).
 CROSS=no
 # Set to path to iconv.h and libiconv.a to enable using 'iconv.dll'.
@@ -67,7 +68,11 @@ CSCOPE=yes
 # Set to yes to enable Netbeans support (requires CHANNEL).
 NETBEANS=$(GUI)
 # Set to yes to enable inter process communication.
+ifeq (HUGE, $(FEATURES))
+CHANNEL=yes
+else
 CHANNEL=$(GUI)
+endif
 
 
 # Link against the shared version of libstdc++ by default.  Set
@@ -107,6 +112,46 @@ INTLLIB=gnu_gettext
 #DYNAMIC_GETTEXT=DYNAMIC_GETTEXT
 #INTLPATH=$(GETTEXT)/lib
 #INTLLIB=intl
+
+
+# Command definitions (depends on cross-compiling and shell)
+ifeq ($(CROSS),yes)
+# cross-compiler prefix:
+ifndef CROSS_COMPILE
+CROSS_COMPILE = i586-pc-mingw32msvc-
+endif
+DEL = rm
+MKDIR = mkdir -p
+DIRSLASH = /
+else
+# normal (Windows) compilation:
+ifndef CROSS_COMPILE
+CROSS_COMPILE =
+endif
+ifneq (sh.exe, $(SHELL))
+DEL = rm
+MKDIR = mkdir -p
+DIRSLASH = /
+else
+DEL = del
+MKDIR = mkdir
+DIRSLASH = \\
+endif
+endif
+CC := $(CROSS_COMPILE)gcc
+CXX := $(CROSS_COMPILE)g++
+ifeq ($(UNDER_CYGWIN),yes)
+WINDRES := $(CROSS_COMPILE)windres
+else
+WINDRES := windres
+endif
+WINDRES_CC = $(CC)
+
+# Get the default ARCH.
+ifndef ARCH
+ARCH := $(shell $(CC) -dumpmachine | sed -e 's/-.*//' -e 's/_/-/' -e 's/^mingw32$$/i686/')
+endif
+
 
 #	Perl interface:
 #	  PERL=[Path to Perl directory] (Set inside Make_cyg.mak or Make_ming.mak)
@@ -375,46 +420,16 @@ endif # RUBY
 # Any other defines can be included here.
 DEF_GUI=-DFEAT_GUI_W32 -DFEAT_CLIPBOARD
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
-	-DHAVE_PATHDEF -DFEAT_$(FEATURES)
+	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H
 ifeq ($(ARCH),x86-64)
 DEFINES+=-DMS_WIN64
 endif
-ifeq ($(CROSS),yes)
-# cross-compiler prefix:
-ifndef CROSS_COMPILE
-CROSS_COMPILE = i586-pc-mingw32msvc-
-endif
-DEL = rm
-MKDIR = mkdir -p
-DIRSLASH = /
-else
-# normal (Windows) compilation:
-ifndef CROSS_COMPILE
-CROSS_COMPILE =
-endif
-ifneq (sh.exe, $(SHELL))
-DEL = rm
-MKDIR = mkdir -p
-DIRSLASH = /
-else
-DEL = del
-MKDIR = mkdir
-DIRSLASH = \\
-endif
-endif
-CC := $(CROSS_COMPILE)gcc
-CXX := $(CROSS_COMPILE)g++
-ifeq ($(UNDER_CYGWIN),yes)
-WINDRES := $(CROSS_COMPILE)windres
-else
-WINDRES := windres
-endif
-WINDRES_CC = $(CC)
 
 #>>>>> end of choices
 ###########################################################################
 
 CFLAGS = -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
+CXXFLAGS = -std=gnu++11
 WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
 EXTRA_LIBS =
 
@@ -587,27 +602,33 @@ endif
 
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lversion
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os_w32exe.o
+CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
+	$(OUTDIR)/arabic.o \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
 	$(OUTDIR)/crypt.o \
 	$(OUTDIR)/crypt_zip.o \
+	$(OUTDIR)/dict.o \
 	$(OUTDIR)/diff.o \
 	$(OUTDIR)/digraph.o \
 	$(OUTDIR)/edit.o \
 	$(OUTDIR)/eval.o \
+	$(OUTDIR)/evalfunc.o \
 	$(OUTDIR)/ex_cmds.o \
 	$(OUTDIR)/ex_cmds2.o \
 	$(OUTDIR)/ex_docmd.o \
 	$(OUTDIR)/ex_eval.o \
 	$(OUTDIR)/ex_getln.o \
+	$(OUTDIR)/farsi.o \
 	$(OUTDIR)/fileio.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
 	$(OUTDIR)/json.o \
+	$(OUTDIR)/list.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \
@@ -632,11 +653,13 @@ OBJ = \
 	$(OUTDIR)/search.o \
 	$(OUTDIR)/sha256.o \
 	$(OUTDIR)/spell.o \
+	$(OUTDIR)/spellfile.o \
 	$(OUTDIR)/syntax.o \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
+	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
 	$(OUTDIR)/vimrc.o \
 	$(OUTDIR)/window.o
@@ -722,6 +745,7 @@ OBJ += $(GUIOBJ)
 LFLAGS += -mwindows
 OUTDIR = gobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
 else
+OBJ += $(CUIOBJ)
 TARGET := vim$(DEBUG_SUFFIX).exe
 OUTDIR = obj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
 endif
@@ -837,6 +861,7 @@ endif
 INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
 	structs.h regexp.h option.h ex_cmds.h proto.h globals.h farsi.h \
 	gui.h
+CUI_INCL = iscygpty.h
 
 $(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
@@ -864,14 +889,14 @@ $(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL)
 	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
 
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
-	$(CC) -c $(CFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
+	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
 
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
 	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
 
 # Remove -D__IID_DEFINED__ for newer versions of the w32api
 $(OUTDIR)/if_ole.o: if_ole.cpp $(INCL)
-	$(CC) $(CFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
+	$(CC) $(CFLAGS) $(CXXFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
 
 $(OUTDIR)/if_ruby.o: if_ruby.c $(INCL)
 ifeq (16, $(RUBY))
@@ -881,6 +906,12 @@ endif
 if_perl.c: if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap \
 	     $(PERLTYPEMAP) if_perl.xs > $@
+
+$(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
+	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
+
+$(OUTDIR)/main.o:		main.c $(INCL) $(CUI_INCL)
+	$(CC) -c $(CFLAGS) main.c -o $(OUTDIR)/main.o
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o

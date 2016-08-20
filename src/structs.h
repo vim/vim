@@ -69,6 +69,14 @@ typedef struct frame_S		frame_T;
 typedef int			scid_T;		/* script ID */
 typedef struct file_buffer	buf_T;  /* forward declaration */
 
+/* Reference to a buffer that stores the value of buf_free_count.
+ * bufref_valid() only needs to check "buf" when the count differs.
+ */
+typedef struct {
+    buf_T   *br_buf;
+    int	    br_buf_free_count;
+} bufref_T;
+
 /*
  * This is here because regexp.h needs pos_T and below regprog_T is used.
  */
@@ -84,7 +92,9 @@ typedef struct file_buffer	buf_T;  /* forward declaration */
 # ifdef FEAT_XCLIPBOARD
 #  include <X11/Intrinsic.h>
 # endif
-# define guicolor_T int		/* avoid error in prototypes */
+# define guicolor_T long_u		/* avoid error in prototypes and
+					 * make FEAT_TERMGUICOLORS work */
+# define INVALCOLOR ((guicolor_T)0x1ffffff)
 #endif
 
 /*
@@ -110,6 +120,9 @@ typedef struct xfilemark
 {
     fmark_T	fmark;
     char_u	*fname;		/* file name, used when fnum == 0 */
+#ifdef FEAT_VIMINFO
+    time_T	time_set;
+#endif
 } xfmark_T;
 
 /*
@@ -250,6 +263,10 @@ typedef struct
     int		wo_crb_save;	/* 'cursorbind' state saved for diff mode*/
 # define w_p_crb_save w_onebuf_opt.wo_crb_save
 #endif
+#ifdef FEAT_SIGNS
+    char_u	*wo_scl;
+# define w_p_scl w_onebuf_opt.wo_scl	/* 'signcolumn' */
+#endif
 
 #ifdef FEAT_EVAL
     int		wo_scriptID[WV_COUNT];	/* SIDs for window-local options */
@@ -353,7 +370,7 @@ struct u_header
     int		uh_flags;	/* see below */
     pos_T	uh_namedm[NMARKS];	/* marks before undo/after redo */
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
-    time_t	uh_time;	/* timestamp when the change was made */
+    time_T	uh_time;	/* timestamp when the change was made */
     long	uh_save_nr;	/* set when the file was saved after the
 				   changes in this block */
 #ifdef U_DEBUG
@@ -911,6 +928,10 @@ typedef struct attr_entry
 	    /* These colors need to be > 8 bits to hold 256. */
 	    short_u	    fg_color;	/* foreground color number */
 	    short_u	    bg_color;	/* background color number */
+# ifdef FEAT_TERMGUICOLORS
+	    long_u	    fg_rgb;	/* foreground color RGB */
+	    long_u	    bg_rgb;	/* background color RGB */
+# endif
 	} cterm;
 # ifdef FEAT_GUI
 	struct
@@ -1008,6 +1029,7 @@ typedef struct
 #ifdef FEAT_MBYTE
     vimconv_T	vir_conv;	/* encoding conversion */
 #endif
+    int		vir_version;	/* viminfo version detected or -1 */
     garray_T	vir_barlines;	/* lines starting with | */
 } vir_T;
 
@@ -1101,11 +1123,29 @@ typedef struct hashtable_S
 typedef long_u hash_T;		/* Type for hi_hash */
 
 
-#if VIM_SIZEOF_INT <= 3		/* use long if int is smaller than 32 bits */
-typedef long	varnumber_T;
+#ifdef FEAT_NUM64
+/* Use 64-bit Number. */
+# ifdef WIN3264
+typedef __int64		    varnumber_T;
+typedef unsigned __int64    uvarnumber_T;
+# elif defined(HAVE_STDINT_H)
+typedef int64_t		    varnumber_T;
+typedef uint64_t	    uvarnumber_T;
+# else
+typedef long		    varnumber_T;
+typedef unsigned long	    uvarnumber_T;
+# endif
 #else
-typedef int	varnumber_T;
+/* Use 32-bit Number. */
+# if VIM_SIZEOF_INT <= 3	/* use long if int is smaller than 32 bits */
+typedef long		    varnumber_T;
+typedef unsigned long	    uvarnumber_T;
+# else
+typedef int		    varnumber_T;
+typedef unsigned int	    uvarnumber_T;
+# endif
 #endif
+
 typedef double	float_T;
 
 typedef struct listvar_S list_T;
@@ -1209,6 +1249,14 @@ struct listvar_S
 };
 
 /*
+ * Static list with 10 items.  Use init_static_list() to initialize.
+ */
+typedef struct {
+    list_T	sl_list;	/* must be first */
+    listitem_T	sl_items[10];
+} staticList10_T;
+
+/*
  * Structure to hold an item of a Dictionary.
  * Also used for a variable.
  * The key is copied into "di_key" to avoid an extra alloc/free for it.
@@ -1220,6 +1268,15 @@ struct dictitem_S
     char_u	di_key[1];	/* key (actually longer!) */
 };
 typedef struct dictitem_S dictitem_T;
+
+/* A dictitem with a 16 character key (plus NUL). */
+struct dictitem16_S
+{
+    typval_T	di_tv;		/* type and value of the variable */
+    char_u	di_flags;	/* flags (only used for variable) */
+    char_u	di_key[17];	/* key */
+};
+typedef struct dictitem16_S dictitem16_T;
 
 #define DI_FLAGS_RO	1  /* "di_flags" value: read-only variable */
 #define DI_FLAGS_RO_SBX 2  /* "di_flags" value: read-only in the sandbox */
@@ -1242,10 +1299,114 @@ struct dictvar_S
     dict_T	*dv_used_prev;	/* previous dict in used dicts list */
 };
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+typedef struct funccall_S funccall_T;
+
+/*
+ * Structure to hold info for a user function.
+ */
+typedef struct
+{
+    int		uf_varargs;	/* variable nr of arguments */
+    int		uf_flags;
+    int		uf_calls;	/* nr of active calls */
+    garray_T	uf_args;	/* arguments */
+    garray_T	uf_lines;	/* function lines */
+#ifdef FEAT_PROFILE
+    int		uf_profiling;	/* TRUE when func is being profiled */
+    /* profiling the function as a whole */
+    int		uf_tm_count;	/* nr of calls */
+    proftime_T	uf_tm_total;	/* time spent in function + children */
+    proftime_T	uf_tm_self;	/* time spent in function itself */
+    proftime_T	uf_tm_children;	/* time spent in children this call */
+    /* profiling the function per line */
+    int		*uf_tml_count;	/* nr of times line was executed */
+    proftime_T	*uf_tml_total;	/* time spent in a line + children */
+    proftime_T	*uf_tml_self;	/* time spent in a line itself */
+    proftime_T	uf_tml_start;	/* start time for current line */
+    proftime_T	uf_tml_children; /* time spent in children for this line */
+    proftime_T	uf_tml_wait;	/* start wait time for current line */
+    int		uf_tml_idx;	/* index of line being timed; -1 if none */
+    int		uf_tml_execed;	/* line being timed was executed */
+#endif
+    scid_T	uf_script_ID;	/* ID of script where function was defined,
+				   used for s: variables */
+    int		uf_refcount;	/* reference count, see func_name_refcount() */
+    funccall_T	*uf_scoped;	/* l: local variables for closure */
+    char_u	uf_name[1];	/* name of function (actually longer); can
+				   start with <SNR>123_ (<SNR> is K_SPECIAL
+				   KS_EXTRA KE_SNR) */
+} ufunc_T;
+
+#define MAX_FUNC_ARGS	20	/* maximum number of function arguments */
+#define VAR_SHORT_LEN	20	/* short variable name length */
+#define FIXVAR_CNT	12	/* number of fixed variables */
+
+/* structure to hold info for a function that is currently being executed. */
+struct funccall_S
+{
+    ufunc_T	*func;		/* function being called */
+    int		linenr;		/* next line to be executed */
+    int		returned;	/* ":return" used */
+    struct			/* fixed variables for arguments */
+    {
+	dictitem_T	var;		/* variable (without room for name) */
+	char_u	room[VAR_SHORT_LEN];	/* room for the name */
+    } fixvar[FIXVAR_CNT];
+    dict_T	l_vars;		/* l: local function variables */
+    dictitem_T	l_vars_var;	/* variable for l: scope */
+    dict_T	l_avars;	/* a: argument variables */
+    dictitem_T	l_avars_var;	/* variable for a: scope */
+    list_T	l_varlist;	/* list for a:000 */
+    listitem_T	l_listitems[MAX_FUNC_ARGS];	/* listitems for a:000 */
+    typval_T	*rettv;		/* return value */
+    linenr_T	breakpoint;	/* next line with breakpoint or zero */
+    int		dbg_tick;	/* debug_tick when breakpoint was set */
+    int		level;		/* top nesting level of executed function */
+#ifdef FEAT_PROFILE
+    proftime_T	prof_child;	/* time spent in a child */
+#endif
+    funccall_T	*caller;	/* calling function or NULL */
+
+    /* for closure */
+    int		fc_refcount;	/* number of user functions that reference this
+				 * funccal */
+    int		fc_copyID;	/* for garbage collection */
+    garray_T	fc_funcs;	/* list of ufunc_T* which keep a reference to
+				 * "func" */
+};
+
+/*
+ * Struct used by trans_function_name()
+ */
+typedef struct
+{
+    dict_T	*fd_dict;	/* Dictionary used */
+    char_u	*fd_newkey;	/* new key in "dict" in allocated memory */
+    dictitem_T	*fd_di;		/* Dictionary item used */
+} funcdict_T;
+
+#else
+/* dummy typedefs for function prototypes */
+typedef struct
+{
+    int	    dummy;
+} ufunc_T;
+typedef struct
+{
+    int	    dummy;
+} funcdict_T;
+#endif
+
 struct partial_S
 {
     int		pt_refcount;	/* reference count */
-    char_u	*pt_name;	/* function name */
+    char_u	*pt_name;	/* function name; when NULL use
+				 * pt_func->uf_name */
+    ufunc_T	*pt_func;	/* function pointer; when NULL lookup function
+				 * with pt_name */
+    int		pt_auto;	/* when TRUE the partial was created for using
+				   dict.member in handle_subscript() */
     int		pt_argc;	/* number of arguments */
     typval_T	*pt_argv;	/* arguments in allocated array */
     dict_T	*pt_dict;	/* dict for "self" */
@@ -1281,6 +1442,8 @@ struct jobvar_S
     buf_T	*jv_in_buf;	/* buffer from "in-name" */
 
     int		jv_refcount;	/* reference count */
+    int		jv_copyID;
+
     channel_T	*jv_channel;	/* channel for I/O, reference counted */
 };
 
@@ -1290,6 +1453,7 @@ struct jobvar_S
 struct readq_S
 {
     char_u	*rq_buffer;
+    long_u	rq_buflen;
     readq_T	*rq_next;
     readq_T	*rq_prev;
 };
@@ -1318,6 +1482,14 @@ typedef enum
     MODE_JSON,
     MODE_JS
 } ch_mode_T;
+
+typedef enum {
+    JIO_PIPE,	    /* default */
+    JIO_NULL,
+    JIO_FILE,
+    JIO_BUFFER,
+    JIO_OUT
+} job_io_T;
 
 /* Ordering matters, it is used in for loops: IN is last, only SOCK/OUT/ERR
  * are polled. */
@@ -1351,18 +1523,32 @@ typedef struct {
 #endif
 
     ch_mode_T	ch_mode;
+    job_io_T	ch_io;
     int		ch_timeout;	/* request timeout in msec */
 
     readq_T	ch_head;	/* header for circular raw read queue */
     jsonq_T	ch_json_head;	/* header for circular json read queue */
     int		ch_block_id;	/* ID that channel_read_json_block() is
 				   waiting for */
+    /* When ch_waiting is TRUE use ch_deadline to wait for incomplete message
+     * to be complete. */
+    int		ch_waiting;
+#ifdef WIN32
+    DWORD	ch_deadline;
+#else
+    struct timeval ch_deadline;
+#endif
+    int		ch_block_write;	/* for testing: 0 when not used, -1 when write
+				 * does not block, 1 simulate blocking */
 
     cbq_T	ch_cb_head;	/* dummy node for per-request callbacks */
     char_u	*ch_callback;	/* call when a msg is not handled */
     partial_T	*ch_partial;
 
-    buf_T	*ch_buffer;	/* buffer to read from or write to */
+    bufref_T	ch_bufref;	/* buffer to read from or write to */
+    int		ch_nomodifiable; /* TRUE when buffer can be 'nomodifiable' */
+    int		ch_nomod_error;	/* TRUE when e_modifiable was given */
+    int		ch_buf_append;	/* write appended lines instead top-bot */
     linenr_T	ch_buf_top;	/* next line to send */
     linenr_T	ch_buf_bot;	/* last line to send */
 } chanpart_T;
@@ -1372,9 +1558,18 @@ struct channel_S {
     channel_T	*ch_prev;
 
     int		ch_id;		/* ID of the channel */
+    int		ch_last_msg_id;	/* ID of the last message */
 
     chanpart_T	ch_part[4];	/* info for socket, out, err and in */
 
+    char	*ch_hostname;	/* only for socket, allocated */
+    int		ch_port;	/* only for socket */
+
+    int		ch_to_be_closed; /* When TRUE reading or writing failed and
+				  * the channel must be closed when it's safe
+				  * to invoke callbacks. */
+    int		ch_to_be_freed; /* When TRUE channel must be freed when it's
+				 * safe to invoke callbacks. */
     int		ch_error;	/* When TRUE an error was reported.  Avoids
 				 * giving pages full of error messages when
 				 * the other side has exited, only mention the
@@ -1392,11 +1587,12 @@ struct channel_S {
 
     job_T	*ch_job;	/* Job that uses this channel; this does not
 				 * count as a reference to avoid a circular
-				 * reference. */
+				 * reference, the job refers to the channel. */
     int		ch_job_killed;	/* TRUE when there was a job and it was killed
 				 * or we know it died. */
 
     int		ch_refcount;	/* reference count */
+    int		ch_copyID;
 };
 
 #define JO_MODE		    0x0001	/* channel mode */
@@ -1427,20 +1623,15 @@ struct channel_S {
 #define JO_ERR_BUF	    0x2000000	/* "err_buf" (JO_OUT_BUF << 1) */
 #define JO_IN_BUF	    0x4000000	/* "in_buf" (JO_OUT_BUF << 2) */
 #define JO_CHANNEL	    0x8000000	/* "channel" */
-#define JO_ALL		    0xfffffff
+#define JO_BLOCK_WRITE	    0x10000000	/* "block_write" */
+#define JO_OUT_MODIFIABLE   0x20000000	/* "out_modifiable" */
+#define JO_ERR_MODIFIABLE   0x40000000	/* "err_modifiable" (JO_OUT_ << 1) */
+#define JO_ALL		    0x7fffffff
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
     (JO_CALLBACK + JO_OUT_CALLBACK + JO_ERR_CALLBACK + JO_CLOSE_CALLBACK)
 #define JO_TIMEOUT_ALL	(JO_TIMEOUT + JO_OUT_TIMEOUT + JO_ERR_TIMEOUT)
-
-typedef enum {
-    JIO_PIPE,	    /* default */
-    JIO_NULL,
-    JIO_FILE,
-    JIO_BUFFER,
-    JIO_OUT
-} job_io_T;
 
 /*
  * Options for job and channel commands.
@@ -1458,6 +1649,7 @@ typedef struct
     char_u	jo_io_name_buf[4][NUMBUFLEN];
     char_u	*jo_io_name[4];	/* not allocated! */
     int		jo_io_buf[4];
+    int		jo_modifiable[4];
     channel_T	*jo_channel;
 
     linenr_T	jo_in_top;
@@ -1477,11 +1669,11 @@ typedef struct
     int		jo_timeout;
     int		jo_out_timeout;
     int		jo_err_timeout;
+    int		jo_block_write;	/* for testing only */
     int		jo_part;
     int		jo_id;
     char_u	jo_soe_buf[NUMBUFLEN];
     char_u	*jo_stoponexit;
-    char_u	jo_ecb_buf[NUMBUFLEN];
 } jobopt_T;
 
 
@@ -1675,6 +1867,9 @@ struct file_buffer
     unsigned int b_fab_mrs;	/* Max record size  */
 #endif
     int		b_fnum;		/* buffer number for this file. */
+    char_u	b_key[VIM_SIZEOF_INT * 2 + 1];
+				/* key used for buf_hashtab, holds b_fnum as
+				   hex string */
 
     int		b_changed;	/* 'modified': Set to TRUE if something in the
 				   file has been changed and not written out. */
@@ -1699,8 +1894,12 @@ struct file_buffer
 
     long	b_mtime;	/* last change time of original file */
     long	b_mtime_read;	/* last change time when reading */
-    off_t	b_orig_size;	/* size of original file in bytes */
+    off_T	b_orig_size;	/* size of original file in bytes */
     int		b_orig_mode;	/* mode of original file */
+#ifdef FEAT_VIMINFO
+    time_T	b_last_used;	/* time when the buffer was last used; used
+				 * for viminfo */
+#endif
 
     pos_T	b_namedm[NMARKS]; /* current named marks (mark.c) */
 
@@ -1764,7 +1963,7 @@ struct file_buffer
     long	b_u_seq_last;	/* last used undo sequence number */
     long	b_u_save_nr_last; /* counter for last file write */
     long	b_u_seq_cur;	/* hu_seq of header below which we are now */
-    time_t	b_u_time_cur;	/* uh_time of header below which we are now */
+    time_T	b_u_time_cur;	/* uh_time of header below which we are now */
     long	b_u_save_nr_cur; /* file write nr after which we are now */
 
     /*
@@ -1818,9 +2017,12 @@ struct file_buffer
 #ifdef FEAT_MBYTE
     int		b_p_bomb;	/* 'bomb' */
 #endif
-#if defined(FEAT_QUICKFIX)
+#ifdef FEAT_QUICKFIX
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
+#define BUF_HAS_QF_ENTRY 1
+#define BUF_HAS_LL_ENTRY 2
+    int		b_has_qf_entry;
 #endif
     int		b_p_bl;		/* 'buflisted' */
 #ifdef FEAT_CINDENT
@@ -2200,7 +2402,7 @@ typedef struct w_line
 struct frame_S
 {
     char	fr_layout;	/* FR_LEAF, FR_COL or FR_ROW */
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     int		fr_width;
     int		fr_newwidth;	/* new width used in win_equal_rec() */
 #endif
@@ -2237,6 +2439,8 @@ typedef struct
     linenr_T	first_lnum;	/* first lnum to search for multi-line pat */
     colnr_T	startcol; /* in win_line() points to char where HL starts */
     colnr_T	endcol;	 /* in win_line() points to char where HL ends */
+    int		is_addpos;	/* position specified directly by
+				   matchaddpos(). TRUE/FALSE */
 #ifdef FEAT_RELTIME
     proftime_T	tm;	/* for a time limit */
 #endif
@@ -2370,8 +2574,6 @@ struct window_S
 				       status/command line(s) */
 #ifdef FEAT_WINDOWS
     int		w_status_height;    /* number of status lines (0 or 1) */
-#endif
-#ifdef FEAT_VERTSPLIT
     int		w_wincol;	    /* Leftmost column of window in screen.
 				       use W_WINCOL() */
     int		w_width;	    /* Width of window, excluding separation.
@@ -2420,7 +2622,7 @@ struct window_S
     int		w_wrow, w_wcol;	    /* cursor position in window */
 
     linenr_T	w_botline;	    /* number of the line below the bottom of
-				       the screen */
+				       the window */
     int		w_empty_rows;	    /* number of ~ rows in window */
 #ifdef FEAT_DIFF
     int		w_filler_rows;	    /* number of filler rows at the end of the
@@ -2844,7 +3046,7 @@ typedef struct
     int		use_aucmd_win;	/* using aucmd_win */
     win_T	*save_curwin;	/* saved curwin */
     win_T	*new_curwin;	/* new curwin */
-    buf_T	*new_curbuf;	/* new curbuf */
+    bufref_T	new_curbuf;	/* new curbuf */
     char_u	*globaldir;	/* saved value of globaldir */
 #endif
 } aco_save_T;
@@ -2951,6 +3153,7 @@ struct js_reader
 				/* function to fill the buffer or NULL;
                                  * return TRUE when the buffer was filled */
     void	*js_cookie;	/* can be used by js_fill */
+    int		js_cookie_arg;	/* can be used by js_fill */
 };
 typedef struct js_reader js_read_T;
 
@@ -2962,9 +3165,121 @@ struct timer_S
     timer_T	*tr_next;
     timer_T	*tr_prev;
     proftime_T	tr_due;		    /* when the callback is to be invoked */
+    int		tr_paused;	    /* when TRUE callback is not invoked */
     int		tr_repeat;	    /* number of times to repeat, -1 forever */
-    long	tr_interval;	    /* only set when it repeats */
+    long	tr_interval;	    /* msec */
     char_u	*tr_callback;	    /* allocated */
     partial_T	*tr_partial;
 #endif
 };
+
+/* Maximum number of commands from + or -c arguments. */
+#define MAX_ARG_CMDS 10
+
+/* values for "window_layout" */
+#define WIN_HOR	    1	    /* "-o" horizontally split windows */
+#define	WIN_VER	    2	    /* "-O" vertically split windows */
+#define	WIN_TABS    3	    /* "-p" windows on tab pages */
+
+/* Struct for various parameters passed between main() and other functions. */
+typedef struct
+{
+    int		argc;
+    char	**argv;
+
+    char_u	*fname;			/* first file to edit */
+
+    int		evim_mode;		/* started as "evim" */
+    char_u	*use_vimrc;		/* vimrc from -u argument */
+
+    int		n_commands;		     /* no. of commands from + or -c */
+    char_u	*commands[MAX_ARG_CMDS];     /* commands from + or -c arg. */
+    char_u	cmds_tofree[MAX_ARG_CMDS];   /* commands that need free() */
+    int		n_pre_commands;		     /* no. of commands from --cmd */
+    char_u	*pre_commands[MAX_ARG_CMDS]; /* commands from --cmd argument */
+
+    int		edit_type;		/* type of editing to do */
+    char_u	*tagname;		/* tag from -t argument */
+#ifdef FEAT_QUICKFIX
+    char_u	*use_ef;		/* 'errorfile' from -q argument */
+#endif
+
+    int		want_full_screen;
+    int		stdout_isatty;		/* is stdout a terminal? */
+    int		not_a_term;		/* no warning for missing term? */
+    char_u	*term;			/* specified terminal name */
+#ifdef FEAT_CRYPT
+    int		ask_for_key;		/* -x argument */
+#endif
+    int		no_swap_file;		/* "-n" argument used */
+#ifdef FEAT_EVAL
+    int		use_debug_break_level;
+#endif
+#ifdef FEAT_WINDOWS
+    int		window_count;		/* number of windows to use */
+    int		window_layout;		/* 0, WIN_HOR, WIN_VER or WIN_TABS */
+#endif
+
+#ifdef FEAT_CLIENTSERVER
+    int		serverArg;		/* TRUE when argument for a server */
+    char_u	*serverName_arg;	/* cmdline arg for server name */
+    char_u	*serverStr;		/* remote server command */
+    char_u	*serverStrEnc;		/* encoding of serverStr */
+    char_u	*servername;		/* allocated name for our server */
+#endif
+#if !defined(UNIX)
+# define EXPAND_FILENAMES
+    int		literal;		/* don't expand file names */
+#endif
+#ifdef MSWIN
+    int		full_path;		/* file name argument was full path */
+#endif
+#ifdef FEAT_DIFF
+    int		diff_mode;		/* start with 'diff' set */
+#endif
+} mparm_T;
+
+/*
+ * Structure returned by get_lval() and used by set_var_lval().
+ * For a plain name:
+ *	"name"	    points to the variable name.
+ *	"exp_name"  is NULL.
+ *	"tv"	    is NULL
+ * For a magic braces name:
+ *	"name"	    points to the expanded variable name.
+ *	"exp_name"  is non-NULL, to be freed later.
+ *	"tv"	    is NULL
+ * For an index in a list:
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the (first) list item value
+ *	"li"	    points to the (first) list item
+ *	"range", "n1", "n2" and "empty2" indicate what items are used.
+ * For an existing Dict item:
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the dict item value
+ *	"newkey"    is NULL
+ * For a non-existing Dict item:
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the Dictionary typval_T
+ *	"newkey"    is the key for the new item.
+ */
+typedef struct lval_S
+{
+    char_u	*ll_name;	/* start of variable name (can be NULL) */
+    char_u	*ll_exp_name;	/* NULL or expanded name in allocated memory. */
+    typval_T	*ll_tv;		/* Typeval of item being used.  If "newkey"
+				   isn't NULL it's the Dict to which to add
+				   the item. */
+    listitem_T	*ll_li;		/* The list item or NULL. */
+    list_T	*ll_list;	/* The list or NULL. */
+    int		ll_range;	/* TRUE when a [i:j] range was used */
+    long	ll_n1;		/* First index for list */
+    long	ll_n2;		/* Second index for list range */
+    int		ll_empty2;	/* Second index is empty: [i:] */
+    dict_T	*ll_dict;	/* The Dictionary or NULL */
+    dictitem_T	*ll_di;		/* The dictitem or NULL */
+    char_u	*ll_newkey;	/* New key for Dict in alloc. mem or NULL. */
+} lval_T;

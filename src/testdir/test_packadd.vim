@@ -11,14 +11,19 @@ func TearDown()
 endfunc
 
 func Test_packadd()
-  call mkdir(s:plugdir . '/plugin', 'p')
+  call mkdir(s:plugdir . '/plugin/also', 'p')
   call mkdir(s:plugdir . '/ftdetect', 'p')
+  call mkdir(s:plugdir . '/after', 'p')
   set rtp&
   let rtp = &rtp
   filetype on
 
   exe 'split ' . s:plugdir . '/plugin/test.vim'
   call setline(1, 'let g:plugin_works = 42')
+  wq
+
+  exe 'split ' . s:plugdir . '/plugin/also/loaded.vim'
+  call setline(1, 'let g:plugin_also_works = 77')
   wq
 
   exe 'split ' . s:plugdir . '/ftdetect/test.vim'
@@ -28,9 +33,11 @@ func Test_packadd()
   packadd mytest
 
   call assert_equal(42, g:plugin_works)
+  call assert_equal(77, g:plugin_also_works)
   call assert_equal(17, g:ftdetect_works)
   call assert_true(len(&rtp) > len(rtp))
-  call assert_true(&rtp =~ 'testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
+  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
+  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/opt/mytest/after$')
 
   " Check exception
   call assert_fails("packadd directorynotfound", 'E919:')
@@ -82,14 +89,39 @@ func Test_packadd_completion()
 endfunc
 
 func Test_packloadall()
-  let plugindir = &packpath . '/pack/mine/start/foo/plugin'
-  call mkdir(plugindir, 'p')
-  call writefile(['let g:plugin_foo_number = 1234'], plugindir . '/bar.vim')
+  " plugin foo with an autoload directory
+  let fooplugindir = &packpath . '/pack/mine/start/foo/plugin'
+  call mkdir(fooplugindir, 'p')
+  call writefile(['let g:plugin_foo_number = 1234',
+	\ 'let g:plugin_foo_auto = bbb#value',
+	\ 'let g:plugin_extra_auto = extra#value'], fooplugindir . '/bar.vim')
+  let fooautodir = &packpath . '/pack/mine/start/foo/autoload'
+  call mkdir(fooautodir, 'p')
+  call writefile(['let bar#value = 77'], fooautodir . '/bar.vim')
+
+  " plugin aaa with an autoload directory
+  let aaaplugindir = &packpath . '/pack/mine/start/aaa/plugin'
+  call mkdir(aaaplugindir, 'p')
+  call writefile(['let g:plugin_aaa_number = 333',
+	\ 'let g:plugin_aaa_auto = bar#value'], aaaplugindir . '/bbb.vim')
+  let aaaautodir = &packpath . '/pack/mine/start/aaa/autoload'
+  call mkdir(aaaautodir, 'p')
+  call writefile(['let bbb#value = 55'], aaaautodir . '/bbb.vim')
+
+  " plugin extra with only an autoload directory
+  let extraautodir = &packpath . '/pack/mine/start/extra/autoload'
+  call mkdir(extraautodir, 'p')
+  call writefile(['let extra#value = 99'], extraautodir . '/extra.vim')
+
   packloadall
   call assert_equal(1234, g:plugin_foo_number)
+  call assert_equal(55, g:plugin_foo_auto)
+  call assert_equal(99, g:plugin_extra_auto)
+  call assert_equal(333, g:plugin_aaa_number)
+  call assert_equal(77, g:plugin_aaa_auto)
 
   " only works once
-  call writefile(['let g:plugin_bar_number = 4321'], plugindir . '/bar2.vim')
+  call writefile(['let g:plugin_bar_number = 4321'], fooplugindir . '/bar2.vim')
   packloadall
   call assert_false(exists('g:plugin_bar_number'))
 

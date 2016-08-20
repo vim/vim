@@ -274,7 +274,7 @@
 /* Backup multi-byte pointer. Only use with "p" > "s" ! */
 # define mb_ptr_back(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
 /* get length of multi-byte char, not including composing chars */
-# define mb_cptr2len(p)	    (enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p))
+# define MB_CPTR2LEN(p)	    (enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p))
 
 # define MB_COPY_CHAR(f, t) if (has_mbyte) mb_copy_char(&f, &t); else *t++ = *f++
 # define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : (int)STRLEN(p))
@@ -282,6 +282,7 @@
 # define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : (int)*(p))
 #else
 # define MB_PTR2LEN(p)		1
+# define MB_CPTR2LEN(p)		1
 # define mb_ptr_adv(p)		++p
 # define mb_cptr_adv(p)		++p
 # define mb_ptr_back(s, p)	--p
@@ -353,3 +354,14 @@
 #  endif
 # endif
 #endif
+
+/*
+ * In a hashtab item "hi_key" points to "di_key" in a dictitem.
+ * This avoids adding a pointer to the hashtab item.
+ * DI2HIKEY() converts a dictitem pointer to a hashitem key pointer.
+ * HIKEY2DI() converts a hashitem key pointer to a dictitem pointer.
+ * HI2DI() converts a hashitem pointer to a dictitem pointer.
+ */
+# define DI2HIKEY(di) ((di)->di_key)
+# define HIKEY2DI(p)  ((dictitem_T *)(p - offsetof(dictitem_T, di_key)))
+# define HI2DI(hi)     HIKEY2DI((hi)->hi_key)

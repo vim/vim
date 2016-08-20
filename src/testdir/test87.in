@@ -7,6 +7,7 @@ STARTTEST
 :lang C
 :fun Test()
 :py3 import vim
+:py3 cb = vim.current.buffer
 :let l = []
 :py3 l=vim.bindeval('l')
 :py3 f=vim.bindeval('function("strlen")')
@@ -200,7 +201,15 @@ EOF
 :let l = [0, 1, 2, 3]
 :py3 l=vim.bindeval('l')
 :lockvar! l
-:py3 l[2]='i'
+py3 << EOF
+def emsg(ei):
+    return ei[0].__name__ + ':' + repr(ei[1].args)
+
+try:
+    l[2]='i'
+except vim.error:
+    cb.append('l[2] threw vim.error: ' + emsg(sys.exc_info()))
+EOF
 :$put =string(l)
 :unlockvar! l
 :"
@@ -614,7 +623,6 @@ EOF
 :   autocmd BufFilePre * python3 cb.append(vim.eval('expand("<abuf>")') + ':BufFilePre:' + vim.eval('bufnr("%")'))
 :augroup END
 py3 << EOF
-cb = vim.current.buffer
 # Tests BufferAppend and BufferItem
 cb.append(b[0])
 # Tests BufferSlice and BufferAssSlice
@@ -859,6 +867,237 @@ EOF
 :$put =string(py3eval('vim.List()'))
 :$put =string(py3eval('vim.List(iter(''abc7''))'))
 :$put =string(py3eval('vim.Function(''tr'')'))
+:$put =string(py3eval('vim.Function(''tr'', args=[123, 3, 4])'))
+:$put =string(py3eval('vim.Function(''tr'', args=[])'))
+:$put =string(py3eval('vim.Function(''tr'', self={})'))
+:$put =string(py3eval('vim.Function(''tr'', args=[123, 3, 4], self={})'))
+:$put ='auto_rebind'
+:$put =string(py3eval('vim.Function(''tr'', auto_rebind=False)'))
+:$put =string(py3eval('vim.Function(''tr'', args=[123, 3, 4], auto_rebind=False)'))
+:$put =string(py3eval('vim.Function(''tr'', args=[], auto_rebind=False)'))
+:$put =string(py3eval('vim.Function(''tr'', self={}, auto_rebind=False)'))
+:$put =string(py3eval('vim.Function(''tr'', args=[123, 3, 4], self={}, auto_rebind=False)'))
+:"
+:" Test vim.Function
+:function Args(...)
+:   return a:000
+:endfunction
+:function SelfArgs(...) dict
+:   return [a:000, self]
+:endfunction
+:" The following four lines should not crash
+:let Pt = function('tr', [[]], {'l': []})
+:py3 Pt = vim.bindeval('Pt')
+:unlet Pt
+:py3 del Pt
+py3 << EOF
+def ecall(out_prefix, func, *args, **kwargs):
+    line = out_prefix + ': '
+    try:
+        ret = func(*args, **kwargs)
+    except Exception:
+        line += '!exception: ' + emsg(sys.exc_info())
+    else:
+        line += '!result: ' + str(vim.Function('string')(ret), 'utf-8')
+    cb.append(line)
+a = vim.Function('Args')
+pa1 = vim.Function('Args', args=['abcArgsPA1'])
+pa2 = vim.Function('Args', args=[])
+pa3 = vim.Function('Args', args=['abcArgsPA3'], self={'abcSelfPA3': 'abcSelfPA3Val'})
+pa4 = vim.Function('Args', self={'abcSelfPA4': 'abcSelfPA4Val'})
+cb.append('a: ' + repr(a))
+cb.append('pa1: ' + repr(pa1))
+cb.append('pa2: ' + repr(pa2))
+cb.append('pa3: ' + repr(pa3))
+cb.append('pa4: ' + repr(pa4))
+sa = vim.Function('SelfArgs')
+psa1 = vim.Function('SelfArgs', args=['abcArgsPSA1'])
+psa2 = vim.Function('SelfArgs', args=[])
+psa3 = vim.Function('SelfArgs', args=['abcArgsPSA3'], self={'abcSelfPSA3': 'abcSelfPSA3Val'})
+psa4 = vim.Function('SelfArgs', self={'abcSelfPSA4': 'abcSelfPSA4Val'})
+psa5 = vim.Function('SelfArgs', self={'abcSelfPSA5': 'abcSelfPSA5Val'}, auto_rebind=0)
+psa6 = vim.Function('SelfArgs', args=['abcArgsPSA6'], self={'abcSelfPSA6': 'abcSelfPSA6Val'}, auto_rebind=())
+psa7 = vim.Function('SelfArgs', args=['abcArgsPSA7'], auto_rebind=[])
+psa8 = vim.Function('SelfArgs', auto_rebind=False)
+psa9 = vim.Function('SelfArgs', self={'abcSelfPSA9': 'abcSelfPSA9Val'}, auto_rebind=True)
+psaA = vim.Function('SelfArgs', args=['abcArgsPSAA'], self={'abcSelfPSAA': 'abcSelfPSAAVal'}, auto_rebind=1)
+psaB = vim.Function('SelfArgs', args=['abcArgsPSAB'], auto_rebind={'abcARPSAB': 'abcARPSABVal'})
+psaC = vim.Function('SelfArgs', auto_rebind=['abcARPSAC'])
+cb.append('sa: ' + repr(sa))
+cb.append('psa1: ' + repr(psa1))
+cb.append('psa2: ' + repr(psa2))
+cb.append('psa3: ' + repr(psa3))
+cb.append('psa4: ' + repr(psa4))
+cb.append('psa5: ' + repr(psa5))
+cb.append('psa6: ' + repr(psa6))
+cb.append('psa7: ' + repr(psa7))
+cb.append('psa8: ' + repr(psa8))
+cb.append('psa9: ' + repr(psa9))
+cb.append('psaA: ' + repr(psaA))
+cb.append('psaB: ' + repr(psaB))
+cb.append('psaC: ' + repr(psaC))
+
+psar = vim.Function('SelfArgs', args=[{'abcArgsPSAr': 'abcArgsPSArVal'}], self={'abcSelfPSAr': 'abcSelfPSArVal'})
+psar.args[0]['abcArgsPSAr2'] = [psar.self, psar.args[0]]
+psar.self['rec'] = psar
+psar.self['self'] = psar.self
+psar.self['args'] = psar.args
+
+try:
+    cb.append('psar: ' + repr(psar))
+except Exception:
+    cb.append('!!!!!!!! Caught exception: ' + emsg(sys.exc_info()))
+EOF
+:$put ='s(a): '.string(py3eval('a'))
+:$put ='s(pa1): '.string(py3eval('pa1'))
+:$put ='s(pa2): '.string(py3eval('pa2'))
+:$put ='s(pa3): '.string(py3eval('pa3'))
+:$put ='s(pa4): '.string(py3eval('pa4'))
+:$put ='s(sa): '.string(py3eval('sa'))
+:$put ='s(psa1): '.string(py3eval('psa1'))
+:$put ='s(psa2): '.string(py3eval('psa2'))
+:$put ='s(psa3): '.string(py3eval('psa3'))
+:$put ='s(psa4): '.string(py3eval('psa4'))
+:$put ='s(psa5): '.string(py3eval('psa5'))
+:$put ='s(psa6): '.string(py3eval('psa6'))
+:$put ='s(psa7): '.string(py3eval('psa7'))
+:$put ='s(psa8): '.string(py3eval('psa8'))
+:$put ='s(psa9): '.string(py3eval('psa9'))
+:$put ='s(psaA): '.string(py3eval('psaA'))
+:$put ='s(psaB): '.string(py3eval('psaB'))
+:$put ='s(psaC): '.string(py3eval('psaC'))
+:
+:for v in ['sa', 'psa1', 'psa2', 'psa3', 'psa4', 'psa5', 'psa6', 'psa7', 'psa8', 'psa9', 'psaA', 'psaB', 'psaC']
+:   let d = {'f': py3eval(v)}
+:   $put ='d.'.v.'(): '.string(d.f())
+:endfor
+:
+:py3 ecall('a()', a, )
+:py3 ecall('pa1()', pa1, )
+:py3 ecall('pa2()', pa2, )
+:py3 ecall('pa3()', pa3, )
+:py3 ecall('pa4()', pa4, )
+:py3 ecall('sa()', sa, )
+:py3 ecall('psa1()', psa1, )
+:py3 ecall('psa2()', psa2, )
+:py3 ecall('psa3()', psa3, )
+:py3 ecall('psa4()', psa4, )
+:
+:py3 ecall('a(42, 43)', a, 42, 43)
+:py3 ecall('pa1(42, 43)', pa1, 42, 43)
+:py3 ecall('pa2(42, 43)', pa2, 42, 43)
+:py3 ecall('pa3(42, 43)', pa3, 42, 43)
+:py3 ecall('pa4(42, 43)', pa4, 42, 43)
+:py3 ecall('sa(42, 43)', sa, 42, 43)
+:py3 ecall('psa1(42, 43)', psa1, 42, 43)
+:py3 ecall('psa2(42, 43)', psa2, 42, 43)
+:py3 ecall('psa3(42, 43)', psa3, 42, 43)
+:py3 ecall('psa4(42, 43)', psa4, 42, 43)
+:
+:py3 ecall('a(42, self={"20": 1})', a, 42, self={'20': 1})
+:py3 ecall('pa1(42, self={"20": 1})', pa1, 42, self={'20': 1})
+:py3 ecall('pa2(42, self={"20": 1})', pa2, 42, self={'20': 1})
+:py3 ecall('pa3(42, self={"20": 1})', pa3, 42, self={'20': 1})
+:py3 ecall('pa4(42, self={"20": 1})', pa4, 42, self={'20': 1})
+:py3 ecall('sa(42, self={"20": 1})', sa, 42, self={'20': 1})
+:py3 ecall('psa1(42, self={"20": 1})', psa1, 42, self={'20': 1})
+:py3 ecall('psa2(42, self={"20": 1})', psa2, 42, self={'20': 1})
+:py3 ecall('psa3(42, self={"20": 1})', psa3, 42, self={'20': 1})
+:py3 ecall('psa4(42, self={"20": 1})', psa4, 42, self={'20': 1})
+:
+:py3 ecall('a(self={"20": 1})', a, self={'20': 1})
+:py3 ecall('pa1(self={"20": 1})', pa1, self={'20': 1})
+:py3 ecall('pa2(self={"20": 1})', pa2, self={'20': 1})
+:py3 ecall('pa3(self={"20": 1})', pa3, self={'20': 1})
+:py3 ecall('pa4(self={"20": 1})', pa4, self={'20': 1})
+:py3 ecall('sa(self={"20": 1})', sa, self={'20': 1})
+:py3 ecall('psa1(self={"20": 1})', psa1, self={'20': 1})
+:py3 ecall('psa2(self={"20": 1})', psa2, self={'20': 1})
+:py3 ecall('psa3(self={"20": 1})', psa3, self={'20': 1})
+:py3 ecall('psa4(self={"20": 1})', psa4, self={'20': 1})
+py3 << EOF
+def s(v):
+    if v is None:
+        return repr(v)
+    else:
+        return str(vim.Function('string')(v), 'utf-8')
+
+cb.append('a.args: ' + s(a.args))
+cb.append('pa1.args: ' + s(pa1.args))
+cb.append('pa2.args: ' + s(pa2.args))
+cb.append('pa3.args: ' + s(pa3.args))
+cb.append('pa4.args: ' + s(pa4.args))
+cb.append('sa.args: ' + s(sa.args))
+cb.append('psa1.args: ' + s(psa1.args))
+cb.append('psa2.args: ' + s(psa2.args))
+cb.append('psa3.args: ' + s(psa3.args))
+cb.append('psa4.args: ' + s(psa4.args))
+
+cb.append('a.self: ' + s(a.self))
+cb.append('pa1.self: ' + s(pa1.self))
+cb.append('pa2.self: ' + s(pa2.self))
+cb.append('pa3.self: ' + s(pa3.self))
+cb.append('pa4.self: ' + s(pa4.self))
+cb.append('sa.self: ' + s(sa.self))
+cb.append('psa1.self: ' + s(psa1.self))
+cb.append('psa2.self: ' + s(psa2.self))
+cb.append('psa3.self: ' + s(psa3.self))
+cb.append('psa4.self: ' + s(psa4.self))
+
+cb.append('a.name: ' + s(a.name))
+cb.append('pa1.name: ' + s(pa1.name))
+cb.append('pa2.name: ' + s(pa2.name))
+cb.append('pa3.name: ' + s(pa3.name))
+cb.append('pa4.name: ' + s(pa4.name))
+cb.append('sa.name: ' + s(sa.name))
+cb.append('psa1.name: ' + s(psa1.name))
+cb.append('psa2.name: ' + s(psa2.name))
+cb.append('psa3.name: ' + s(psa3.name))
+cb.append('psa4.name: ' + s(psa4.name))
+
+cb.append('a.auto_rebind: ' + s(a.auto_rebind))
+cb.append('pa1.auto_rebind: ' + s(pa1.auto_rebind))
+cb.append('pa2.auto_rebind: ' + s(pa2.auto_rebind))
+cb.append('pa3.auto_rebind: ' + s(pa3.auto_rebind))
+cb.append('pa4.auto_rebind: ' + s(pa4.auto_rebind))
+cb.append('sa.auto_rebind: ' + s(sa.auto_rebind))
+cb.append('psa1.auto_rebind: ' + s(psa1.auto_rebind))
+cb.append('psa2.auto_rebind: ' + s(psa2.auto_rebind))
+cb.append('psa3.auto_rebind: ' + s(psa3.auto_rebind))
+cb.append('psa4.auto_rebind: ' + s(psa4.auto_rebind))
+cb.append('psa5.auto_rebind: ' + s(psa5.auto_rebind))
+cb.append('psa6.auto_rebind: ' + s(psa6.auto_rebind))
+cb.append('psa7.auto_rebind: ' + s(psa7.auto_rebind))
+cb.append('psa8.auto_rebind: ' + s(psa8.auto_rebind))
+cb.append('psa9.auto_rebind: ' + s(psa9.auto_rebind))
+cb.append('psaA.auto_rebind: ' + s(psaA.auto_rebind))
+cb.append('psaB.auto_rebind: ' + s(psaB.auto_rebind))
+cb.append('psaC.auto_rebind: ' + s(psaC.auto_rebind))
+
+del s
+
+del a
+del pa1
+del pa2
+del pa3
+del pa4
+del sa
+del psa1
+del psa2
+del psa3
+del psa4
+del psa5
+del psa6
+del psa7
+del psa8
+del psa9
+del psaA
+del psaB
+del psaC
+del psar
+
+del ecall
+EOF
 :"
 :" Test stdout/stderr
 :redir => messages
@@ -1106,6 +1345,11 @@ ee('assert sys.stdout.writable()==True')
 ee('assert sys.stdout.readable()==False')
 ee('assert sys.stderr.writable()==True')
 ee('assert sys.stderr.readable()==False')
+ee('assert sys.stdout.closed()==False')
+ee('assert sys.stderr.closed()==False')
+ee('assert sys.stdout.errors=="strict"')
+ee('assert sys.stderr.errors=="strict"')
+ee('assert sys.stdout.encoding==sys.stderr.encoding')
 ee('sys.stdout.write(None)')
 cb.append(">> OutputWriteLines")
 ee('sys.stdout.writelines(None)')
@@ -1134,7 +1378,7 @@ ee('vim.foreach_rtp(FailingCall())')
 ee('vim.foreach_rtp(int, 2)')
 cb.append('> import')
 old_rtp = vim.options['rtp']
-vim.options['rtp'] = os.getcwd().replace(',', '\\,').replace('\\', '\\\\')
+vim.options['rtp'] = os.getcwd().replace('\\', '\\\\').replace(',', '\\,')
 ee('import xxx_no_such_module_xxx')
 ee('import failing_import')
 ee('import failing')
@@ -1218,9 +1462,20 @@ ee('l.locked = FailingTrue()')
 ee('l.xxx = True')
 cb.append("> Function")
 cb.append(">> FunctionConstructor")
+cb.append(">>> FunctionConstructor")
 ee('vim.Function("123")')
 ee('vim.Function("xxx_non_existent_function_xxx")')
 ee('vim.Function("xxx#non#existent#function#xxx")')
+ee('vim.Function("xxx_non_existent_function_xxx2", args=[])')
+ee('vim.Function("xxx_non_existent_function_xxx3", self={})')
+ee('vim.Function("xxx_non_existent_function_xxx4", args=[], self={})')
+cb.append(">>> FunctionNew")
+ee('vim.Function("tr", self="abcFuncSelf")')
+ee('vim.Function("tr", args=427423)')
+ee('vim.Function("tr", self="abcFuncSelf2", args="abcFuncArgs2")')
+ee('vim.Function(self="abcFuncSelf2", args="abcFuncArgs2")')
+ee('vim.Function("tr", "", self="abcFuncSelf2", args="abcFuncArgs2")')
+ee('vim.Function("tr", "")')
 cb.append(">> FunctionCall")
 convertfrompyobject_test('f(%s)')
 convertfrompymapping_test('fd(self=%s)')
@@ -1374,16 +1629,16 @@ def test_keyboard_interrupt():
         vim.command('while 1 | endwhile')
     except KeyboardInterrupt:
         cb.append('Caught KeyboardInterrupt')
-    except Exception as e:
-        cb.append('!!!!!!!! Caught exception: ' + repr(e))
+    except Exception:
+        cb.append('!!!!!!!! Caught exception: ' + emsg(sys.exc_info()))
     else:
         cb.append('!!!!!!!! No exception')
     try:
         vim.command('$ put =\'Running :put\'')
     except KeyboardInterrupt:
         cb.append('!!!!!!!! Caught KeyboardInterrupt')
-    except Exception as e:
-        cb.append('!!!!!!!! Caught exception: ' + repr(e))
+    except Exception:
+        cb.append('!!!!!!!! Caught exception: ' + emsg(sys.exc_info()))
     else:
         cb.append('No exception')
 EOF
@@ -1403,6 +1658,7 @@ EOF
 py3 << EOF
 del cb
 del ee
+del emsg
 del sys
 del os
 del vim
@@ -1434,8 +1690,9 @@ EOF
 :call garbagecollect(1)
 :"
 :/^start:/,$wq! test.out
+:/^start:/,$w! test.out
 :" vim: et ts=4 isk-=\:
-:call getchar()
+:while getchar(0) isnot 0|endwhile
 ENDTEST
 
 start:

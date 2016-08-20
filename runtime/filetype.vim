@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2015 Dec 03
+" Last Change:	2016 Aug 18
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -17,7 +17,7 @@ augroup filetypedetect
 
 " Ignored extensions
 if exists("*fnameescape")
-au BufNewFile,BufRead ?\+.orig,?\+.bak,?\+.old,?\+.new,?\+.dpkg-dist,?\+.dpkg-old,?\+.dpkg-new,?\+.dpkg-bak,?\+.rpmsave,?\+.rpmnew
+au BufNewFile,BufRead ?\+.orig,?\+.bak,?\+.old,?\+.new,?\+.dpkg-dist,?\+.dpkg-old,?\+.dpkg-new,?\+.dpkg-bak,?\+.rpmsave,?\+.rpmnew,?\+.pacsave,?\+.pacnew
 	\ exe "doau filetypedetect BufRead " . fnameescape(expand("<afile>:r"))
 au BufNewFile,BufRead *~
 	\ let s:name = expand("<afile>") |
@@ -534,7 +534,7 @@ au BufNewFile,BufRead configure.in,configure.ac setf config
 au BufNewFile,BufRead *.cu			setf cuda
 
 " Dockerfile
-au BufNewFile,BufRead Dockerfile		setf dockerfile
+au BufNewFile,BufRead Dockerfile,*.Dockerfile	setf dockerfile
 
 " WildPackets EtherPeek Decoder
 au BufNewFile,BufRead *.dcd			setf dcd
@@ -779,8 +779,7 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
 " Git
-au BufNewFile,BufRead COMMIT_EDITMSG		setf gitcommit
-au BufNewFile,BufRead MERGE_MSG			setf gitcommit
+au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG setf gitcommit
 au BufNewFile,BufRead *.git/config,.gitconfig,.gitmodules setf gitconfig
 au BufNewFile,BufRead *.git/modules/*/config	setf gitconfig
 au BufNewFile,BufRead */.config/git/config	setf gitconfig
@@ -1019,7 +1018,7 @@ au BufNewFile,BufRead *.jgr			setf jgraph
 au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
 
 " JSON
-au BufNewFile,BufRead *.json,*.jsonp		setf json
+au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
 
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix
@@ -1621,11 +1620,9 @@ au BufNewFile,BufRead */etc/protocols		setf protocols
 " Pyrex
 au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 
-" Python
-au BufNewFile,BufRead *.py,*.pyw		setf python
-
+" Python, Python Shell Startup Files
 " Quixote (Python-based web framework)
-au BufNewFile,BufRead *.ptl			setf python
+au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,*.ptl  setf python
 
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
@@ -1861,10 +1858,18 @@ au BufNewFile,BufRead catalog			setf catalog
 au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 
 " Shell scripts (sh, ksh, bash, bash2, csh); Allow .profile_foo etc.
-" Gentoo ebuilds are actually bash scripts
-au BufNewFile,BufRead .bashrc*,bashrc,bash.bashrc,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,*.bash,*/{,.}bash[_-]completion{,.d,.sh}{,/*},*.ebuild,*.eclass call SetFileTypeSH("bash")
+" Gentoo ebuilds and Arch Linux PKGBUILDs are actually bash scripts
+au BufNewFile,BufRead .bashrc*,bashrc,bash.bashrc,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,*.bash,*/{,.}bash[_-]completion{,.d,.sh}{,/*},*.ebuild,*.eclass,PKGBUILD* call SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc*,*.ksh call SetFileTypeSH("ksh")
 au BufNewFile,BufRead */etc/profile,.profile*,*.sh,*.env call SetFileTypeSH(getline(1))
+
+" Shell script (Arch Linux) or PHP file (Drupal)
+au BufNewFile,BufRead *.install
+	\ if getline(1) =~ '<?php' |
+	\   setf php |
+	\ else |
+	\   call SetFileTypeSH("bash") |
+	\ endif
 
 " Also called from scripts.vim.
 func! SetFileTypeSH(name)
@@ -2636,6 +2641,8 @@ au BufNewFile,BufRead [rR]akefile*		call s:StarSetf('ruby')
 
 " Mail (also matches muttrc.vim, so this is below the other checks)
 au BufNewFile,BufRead mutt[[:alnum:]._-]\\\{6\}	setf mail
+
+au BufNewFile,BufRead reportbug-*		call s:StarSetf('mail')
 
 " Modconf
 au BufNewFile,BufRead */etc/modutils/*

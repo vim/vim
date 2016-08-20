@@ -201,8 +201,8 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    break;
 
 	case VAR_NUMBER:
-	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%ld",
-						    (long)val->vval.v_number);
+	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%lld",
+						    val->vval.v_number);
 	    ga_concat(gap, numbuf);
 	    break;
 
@@ -350,8 +350,10 @@ json_skip_white(js_read_T *reader)
 	if (reader->js_fill != NULL && c == NUL)
 	{
 	    if (reader->js_fill(reader))
+	    {
 		reader->js_end = reader->js_buf + STRLEN(reader->js_buf);
-	    continue;
+		continue;
+	    }
 	}
 	if (c == NUL || c > ' ')
 	    break;
@@ -536,8 +538,7 @@ json_decode_string(js_read_T *reader, typval_T *res)
     int		len;
     char_u	*p;
     int		c;
-    long	nr;
-    char_u	buf[NUMBUFLEN];
+    varnumber_T	nr;
 
     if (res != NULL)
 	ga_init2(&ga, 1, 200);
@@ -599,7 +600,7 @@ json_decode_string(js_read_T *reader, typval_T *res)
 			    && (int)(reader->js_end - p) >= 6
 			    && *p == '\\' && *(p+1) == 'u')
 		    {
-			long	nr2 = 0;
+			varnumber_T	nr2 = 0;
 
 			/* decode surrogate pair: \ud812\u3456 */
 			len = 0;
@@ -615,10 +616,11 @@ json_decode_string(js_read_T *reader, typval_T *res)
 		    if (res != NULL)
 		    {
 #ifdef FEAT_MBYTE
+			char_u	buf[NUMBUFLEN];
 			buf[utf_char2bytes((int)nr, buf)] = NUL;
 			ga_concat(&ga, buf);
 #else
-			ga_append(&ga, nr);
+			ga_append(&ga, (int)nr);
 #endif
 		    }
 		    break;
@@ -764,7 +766,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		else
 #endif
 		{
-		    long nr;
+		    varnumber_T nr;
 
 		    vim_str2nr(reader->js_buf + reader->js_used,
 			    NULL, &len, 0, /* what */
@@ -877,8 +879,9 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
 /*
  * Decode the JSON from "reader" and store the result in "res".
  * "options" can be JSON_JS or zero;
- * Return FAIL if the message has a decoding error or the message is
- * truncated.  Consumes the message anyway.
+ * Return FAIL for a decoding error.
+ * Return MAYBE for an incomplete message.
+ * Consumes the message anyway.
  */
     int
 json_decode(js_read_T *reader, typval_T *res, int options)
@@ -891,7 +894,7 @@ json_decode(js_read_T *reader, typval_T *res, int options)
     ret = json_decode_item(reader, res, options);
     json_skip_white(reader);
 
-    return ret == OK ? OK : FAIL;
+    return ret;
 }
 
 /*

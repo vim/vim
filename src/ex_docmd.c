@@ -122,6 +122,7 @@ static int	getargopt(exarg_T *eap);
 # define ex_cfile		ex_ni
 # define qf_list		ex_ni
 # define qf_age			ex_ni
+# define qf_history		ex_ni
 # define ex_helpgrep		ex_ni
 # define ex_vimgrep		ex_ni
 #endif
@@ -129,6 +130,7 @@ static int	getargopt(exarg_T *eap);
 # define ex_cclose		ex_ni
 # define ex_copen		ex_ni
 # define ex_cwindow		ex_ni
+# define ex_cbottom		ex_ni
 #endif
 #if !defined(FEAT_QUICKFIX) || !defined(FEAT_EVAL)
 # define ex_cexpr		ex_ni
@@ -474,6 +476,7 @@ static void	ex_folddo(exarg_T *eap);
 #endif
 #ifndef FEAT_JUMPLIST
 # define ex_jumps		ex_ni
+# define ex_clearjumps		ex_ni
 # define ex_changes		ex_ni
 #endif
 
@@ -1705,7 +1708,7 @@ current_win_nr(win_T *win)
     win_T	*wp;
     int		nr = 0;
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS(wp)
     {
 	++nr;
 	if (wp == win)
@@ -1720,7 +1723,7 @@ current_tab_nr(tabpage_T *tab)
     tabpage_T	*tp;
     int		nr = 0;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
     {
 	++nr;
 	if (tp == tab)
@@ -1951,7 +1954,7 @@ do_one_cmd(
 #endif
 			    continue;
 			}
-			if (!checkforcmd(&ea.cmd, "noswapfile", 6))
+			if (!checkforcmd(&ea.cmd, "noswapfile", 3))
 			    break;
 			cmdmod.noswapfile = TRUE;
 			continue;
@@ -2013,7 +2016,7 @@ do_one_cmd(
 
 	    case 'v':	if (checkforcmd(&ea.cmd, "vertical", 4))
 			{
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 			    cmdmod.split |= WSP_VERT;
 #endif
 			    continue;
@@ -2139,7 +2142,8 @@ do_one_cmd(
 #endif
 	}
 	ea.cmd = skipwhite(ea.cmd);
-	lnum = get_address(&ea, &ea.cmd, ea.addr_type, ea.skip, ea.addr_count == 0);
+	lnum = get_address(&ea, &ea.cmd, ea.addr_type, ea.skip,
+							  ea.addr_count == 0);
 	if (ea.cmd == NULL)		    /* error detected */
 	    goto doend;
 	if (lnum == MAXLNUM)
@@ -2339,7 +2343,7 @@ do_one_cmd(
 	vim_free(p);
 	/* If the autocommands did something and didn't cause an error, try
 	 * finding the command again. */
-	p = (ret && !aborting()) ? find_command(&ea, NULL) : NULL;
+	p = (ret && !aborting()) ? find_command(&ea, NULL) : ea.cmd;
     }
 #endif
 
@@ -5448,9 +5452,11 @@ ex_doautocmd(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
     int		call_do_modelines = check_nomodeline(&arg);
+    int		did_aucmd;
 
-    (void)do_doautocmd(arg, TRUE);
-    if (call_do_modelines)  /* Only when there is no <nomodeline>. */
+    (void)do_doautocmd(arg, TRUE, &did_aucmd);
+    /* Only when there is no <nomodeline>. */
+    if (call_do_modelines && did_aucmd)
 	do_modelines(0);
 }
 #endif
@@ -6412,6 +6418,26 @@ uc_split_args(char_u *arg, size_t *lenp)
     return buf;
 }
 
+    static size_t
+add_cmd_modifier(char_u *buf, char *mod_str, int *multi_mods)
+{
+    size_t result;
+
+    result = STRLEN(mod_str);
+    if (*multi_mods)
+	result += 1;
+    if (buf != NULL)
+    {
+	if (*multi_mods)
+	    STRCAT(buf, " ");
+	STRCAT(buf, mod_str);
+    }
+
+    *multi_mods = 1;
+
+    return result;
+}
+
 /*
  * Check for a <> code in a user command.
  * "code" points to the '<'.  "len" the length of the <> (inclusive).
@@ -6435,8 +6461,8 @@ uc_check_code(
     char_u	*p = code + 1;
     size_t	l = len - 2;
     int		quote = 0;
-    enum { ct_ARGS, ct_BANG, ct_COUNT, ct_LINE1, ct_LINE2, ct_REGISTER,
-	ct_LT, ct_NONE } type = ct_NONE;
+    enum { ct_ARGS, ct_BANG, ct_COUNT, ct_LINE1, ct_LINE2, ct_MODS,
+	ct_REGISTER, ct_LT, ct_NONE } type = ct_NONE;
 
     if ((vim_strchr((char_u *)"qQfF", *p) != NULL) && p[1] == '-')
     {
@@ -6462,6 +6488,8 @@ uc_check_code(
 	type = ct_LT;
     else if (STRNICMP(p, "reg>", l) == 0 || STRNICMP(p, "register>", l) == 0)
 	type = ct_REGISTER;
+    else if (STRNICMP(p, "mods>", l) == 0)
+	type = ct_MODS;
 
     switch (type)
     {
@@ -6582,6 +6610,90 @@ uc_check_code(
 		*buf = '"';
 	}
 
+	break;
+    }
+
+    case ct_MODS:
+    {
+	int multi_mods = 0;
+	typedef struct {
+	    int *varp;
+	    char *name;
+	} mod_entry_T;
+	static mod_entry_T mod_entries[] = {
+#ifdef FEAT_BROWSE_CMD
+	    {&cmdmod.browse, "browse"},
+#endif
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+	    {&cmdmod.confirm, "confirm"},
+#endif
+	    {&cmdmod.hide, "hide"},
+	    {&cmdmod.keepalt, "keepalt"},
+	    {&cmdmod.keepjumps, "keepjumps"},
+	    {&cmdmod.keepmarks, "keepmarks"},
+	    {&cmdmod.keeppatterns, "keeppatterns"},
+	    {&cmdmod.lockmarks, "lockmarks"},
+	    {&cmdmod.noswapfile, "noswapfile"},
+	    {NULL, NULL}
+	};
+	int i;
+
+	result = quote ? 2 : 0;
+	if (buf != NULL)
+	{
+	    if (quote)
+		*buf++ = '"';
+	    *buf = '\0';
+	}
+
+#ifdef FEAT_WINDOWS
+	/* :aboveleft and :leftabove */
+	if (cmdmod.split & WSP_ABOVE)
+	    result += add_cmd_modifier(buf, "aboveleft", &multi_mods);
+	/* :belowright and :rightbelow */
+	if (cmdmod.split & WSP_BELOW)
+	    result += add_cmd_modifier(buf, "belowright", &multi_mods);
+	/* :botright */
+	if (cmdmod.split & WSP_BOT)
+	    result += add_cmd_modifier(buf, "botright", &multi_mods);
+#endif
+
+	/* the modifiers that are simple flags */
+	for (i = 0; mod_entries[i].varp != NULL; ++i)
+	    if (*mod_entries[i].varp)
+		result += add_cmd_modifier(buf, mod_entries[i].name,
+								 &multi_mods);
+
+	/* TODO: How to support :noautocmd? */
+#ifdef HAVE_SANDBOX
+	/* TODO: How to support :sandbox?*/
+#endif
+	/* :silent */
+	if (msg_silent > 0)
+	    result += add_cmd_modifier(buf,
+		    emsg_silent > 0 ? "silent!" : "silent", &multi_mods);
+#ifdef FEAT_WINDOWS
+	/* :tab */
+	if (cmdmod.tab > 0)
+	    result += add_cmd_modifier(buf, "tab", &multi_mods);
+	/* :topleft */
+	if (cmdmod.split & WSP_TOP)
+	    result += add_cmd_modifier(buf, "topleft", &multi_mods);
+#endif
+	/* TODO: How to support :unsilent?*/
+	/* :verbose */
+	if (p_verbose > 0)
+	    result += add_cmd_modifier(buf, "verbose", &multi_mods);
+#ifdef FEAT_WINDOWS
+	/* :vertical */
+	if (cmdmod.split & WSP_VERT)
+	    result += add_cmd_modifier(buf, "vertical", &multi_mods);
+#endif
+	if (quote && buf != NULL)
+	{
+	    buf += result - 2;
+	    *buf = '"';
+	}
 	break;
     }
 
@@ -6938,6 +7050,18 @@ parse_compl_arg(
 # endif
     return OK;
 }
+
+    int
+cmdcomplete_str_to_type(char_u *complete_str)
+{
+    int i;
+
+    for (i = 0; command_complete[i].expand != 0; ++i)
+	if (STRCMP(complete_str, command_complete[i].name) == 0)
+	    return command_complete[i].expand;
+
+    return EXPAND_NOTHING;
+}
 #endif
 
     static void
@@ -7149,7 +7273,7 @@ ex_close(exarg_T *eap)
 	    if (eap->addr_count == 0)
 		ex_win_close(eap->forceit, curwin, NULL);
 	    else {
-		for (win = firstwin; win != NULL; win = win->w_next)
+		FOR_ALL_WINDOWS(win)
 		{
 		    winnr++;
 		    if (winnr == eap->line2)
@@ -7171,7 +7295,7 @@ ex_pclose(exarg_T *eap)
 {
     win_T	*win;
 
-    for (win = firstwin; win != NULL; win = win->w_next)
+    FOR_ALL_WINDOWS(win)
 	if (win->w_p_pvw)
 	{
 	    ex_win_close(eap->forceit, win, NULL);
@@ -7199,8 +7323,11 @@ ex_win_close(
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || cmdmod.confirm) && p_write)
 	{
+	    bufref_T bufref;
+
+	    set_bufref(&bufref, buf);
 	    dialog_changed(buf, FALSE);
-	    if (buf_valid(buf) && bufIsChanged(buf))
+	    if (bufref_valid(&bufref) && bufIsChanged(buf))
 		return;
 	    need_hide = FALSE;
 	}
@@ -7288,7 +7415,7 @@ ex_tabonly(exarg_T *eap)
 	     * up the lists. */
 	    for (done = 0; done < 1000; ++done)
 	    {
-		for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+		FOR_ALL_TABPAGES(tp)
 		    if (tp->tp_topframe != topframe)
 		    {
 			tabpage_close_other(tp, eap->forceit);
@@ -7346,6 +7473,10 @@ tabpage_close_other(tabpage_T *tp, int forceit)
 	if (!valid_tabpage(tp) || tp->tp_firstwin == wp)
 	    break;
     }
+
+#ifdef FEAT_AUTOCMD
+    apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
+#endif
 
     redraw_tabline = TRUE;
     if (h != tabline_height())
@@ -7413,7 +7544,7 @@ ex_hide(exarg_T *eap)
 		int	winnr = 0;
 		win_T	*win;
 
-		for (win = firstwin; win != NULL; win = win->w_next)
+		FOR_ALL_WINDOWS(win)
 		{
 		    winnr++;
 		    if (winnr == eap->line2)
@@ -7587,11 +7718,7 @@ ex_shell(exarg_T *eap UNUSED)
  * list. This function takes over responsibility for freeing the list.
  *
  * XXX The list is made into the argument list. This is freed using
- * FreeWild(), which does a series of vim_free() calls, unless the two defines
- * __EMX__ and __ALWAYS_HAS_TRAILING_NUL_POINTER are set. In this case, a
- * routine _fnexplodefree() is used. This may cause problems, but as the drop
- * file functionality is (currently) not in EMX this is not presently a
- * problem.
+ * FreeWild(), which does a series of vim_free() calls.
  */
     void
 handle_drop(
@@ -7725,7 +7852,7 @@ alist_new(void)
 # endif
 #endif
 
-#if (!defined(UNIX) && !defined(__EMX__)) || defined(PROTO)
+#if !defined(UNIX) || defined(PROTO)
 /*
  * Expand the file names in the global argument list.
  * If "fnum_list" is not NULL, use "fnum_list[fnum_len]" as a list of buffer
@@ -7923,14 +8050,6 @@ ex_splitview(exarg_T *eap)
     int		browse_flag = cmdmod.browse;
 # endif
 
-# ifndef FEAT_VERTSPLIT
-    if (eap->cmdidx == CMD_vsplit || eap->cmdidx == CMD_vnew)
-    {
-	ex_ni(eap);
-	return;
-    }
-# endif
-
 # ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 # endif
@@ -7942,10 +8061,8 @@ ex_splitview(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_split)
 	    eap->cmdidx = CMD_new;
-#  ifdef FEAT_VERTSPLIT
 	if (eap->cmdidx == CMD_vsplit)
 	    eap->cmdidx = CMD_vnew;
-#  endif
     }
 # endif
 
@@ -7964,9 +8081,7 @@ ex_splitview(exarg_T *eap)
 # endif
 # ifdef FEAT_BROWSE
     if (cmdmod.browse
-#  ifdef FEAT_VERTSPLIT
 	    && eap->cmdidx != CMD_vnew
-# endif
 	    && eap->cmdidx != CMD_new)
     {
 # ifdef FEAT_AUTOCMD
@@ -8224,11 +8339,10 @@ ex_resize(exarg_T *eap)
 	    ;
     }
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-#endif
+# endif
     n = atol((char *)eap->arg);
-#ifdef FEAT_VERTSPLIT
     if (cmdmod.split & WSP_VERT)
     {
 	if (*eap->arg == '-' || *eap->arg == '+')
@@ -8238,7 +8352,6 @@ ex_resize(exarg_T *eap)
 	win_setwidth_win((int)n, wp);
     }
     else
-#endif
     {
 	if (*eap->arg == '-' || *eap->arg == '+')
 	    n += curwin->w_height;
@@ -8397,7 +8510,7 @@ do_exedit(
     if ((eap->cmdidx == CMD_new
 		|| eap->cmdidx == CMD_tabnew
 		|| eap->cmdidx == CMD_tabedit
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		|| eap->cmdidx == CMD_vnew
 #endif
 		) && *eap->arg == NUL)
@@ -8409,7 +8522,7 @@ do_exedit(
 		      old_curwin == NULL ? curwin : NULL);
     }
     else if ((eap->cmdidx != CMD_split
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		&& eap->cmdidx != CMD_vsplit
 #endif
 		)
@@ -8577,7 +8690,7 @@ ex_syncbind(exarg_T *eap UNUSED)
     if (curwin->w_p_scb)
     {
 	topline = curwin->w_topline;
-	for (wp = firstwin; wp; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	{
 	    if (wp->w_p_scb && wp->w_buffer)
 	    {
@@ -8598,7 +8711,7 @@ ex_syncbind(exarg_T *eap UNUSED)
     /*
      * Set all scrollbind windows to the same topline.
      */
-    for (curwin = firstwin; curwin; curwin = curwin->w_next)
+    FOR_ALL_WINDOWS(curwin)
     {
 	if (curwin->w_p_scb)
 	{
@@ -9358,6 +9471,14 @@ ex_redir(exarg_T *eap)
     char_u	*fname;
     char_u	*arg = eap->arg;
 
+#ifdef FEAT_EVAL
+    if (redir_execute)
+    {
+	EMSG(_("E930: Cannot use :redir inside execute()"));
+	return;
+    }
+#endif
+
     if (STRICMP(eap->arg, "END") == 0)
 	close_redir();
     else
@@ -10054,6 +10175,7 @@ ex_stopinsert(exarg_T *eap UNUSED)
 {
     restart_edit = 0;
     stop_insert_mode = TRUE;
+    clearmode();
 }
 
 /*
@@ -10839,7 +10961,7 @@ makeopens(
 	return FAIL;
 
     /* Now put the other buffers into the buffer list */
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	if (!(only_save_windows && buf->b_nwindows == 0)
 		&& !(buf->b_help && !(ssop_flags & SSOP_HELP))
@@ -11802,7 +11924,7 @@ ex_filetype(exarg_T *eap)
 	}
 	if (*arg == 'd')
 	{
-	    (void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE);
+	    (void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE, NULL);
 	    do_modelines(0);
 	}
     }

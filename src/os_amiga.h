@@ -160,6 +160,9 @@ typedef long off_t;
 #ifndef USR_VIMRC_FILE4
 # define USR_VIMRC_FILE4 "$VIM/.vimrc"
 #endif
+#ifndef VIM_DEFAULTS_FILE
+# define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
+#endif
 #ifndef EVIM_FILE
 # define EVIM_FILE	"$VIMRUNTIME/evim.vim"
 #endif

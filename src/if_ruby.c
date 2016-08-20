@@ -31,6 +31,10 @@
 # define RUBYEXTERN extern
 #endif
 
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 24
+# define USE_RUBY_INTEGER
+#endif
+
 #ifdef DYNAMIC_RUBY
 /*
  * This is tricky.  In ruby.h there is (inline) function rb_class_of()
@@ -39,6 +43,9 @@
  */
 # define rb_cFalseClass		(*dll_rb_cFalseClass)
 # define rb_cFixnum		(*dll_rb_cFixnum)
+# if defined(USE_RUBY_INTEGER)
+#  define rb_cInteger		(*dll_rb_cInteger)
+# endif
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
 #  define rb_cFloat		(*dll_rb_cFloat)
 # endif
@@ -318,6 +325,9 @@ static void ruby_vim_init(void);
 static VALUE (*dll_rb_assoc_new) (VALUE, VALUE);
 VALUE *dll_rb_cFalseClass;
 VALUE *dll_rb_cFixnum;
+# if defined(USE_RUBY_INTEGER)
+VALUE *dll_rb_cInteger;
+# endif
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
 VALUE *dll_rb_cFloat;
 # endif
@@ -505,6 +515,9 @@ static struct
     {"rb_assoc_new", (RUBY_PROC*)&dll_rb_assoc_new},
     {"rb_cFalseClass", (RUBY_PROC*)&dll_rb_cFalseClass},
     {"rb_cFixnum", (RUBY_PROC*)&dll_rb_cFixnum},
+# if defined(USE_RUBY_INTEGER)
+    {"rb_cInteger", (RUBY_PROC*)&dll_rb_cInteger},
+# endif
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
     {"rb_cFloat", (RUBY_PROC*)&dll_rb_cFloat},
 # endif
@@ -731,8 +744,9 @@ vim_str2rb_enc_str(const char *s)
     {
 	enc = rb_enc_find((char *)sval);
 	vim_free(sval);
-	if (enc) {
-	    return rb_enc_str_new(s, strlen(s), enc);
+	if (enc)
+	{
+	    return rb_enc_str_new(s, (long)strlen(s), enc);
 	}
     }
 #endif
@@ -773,19 +787,23 @@ void ex_rubydo(exarg_T *eap)
     {
 	if (u_save(eap->line1 - 1, eap->line2 + 1) != OK)
 	    return;
-	for (i = eap->line1; i <= eap->line2; i++) {
+	for (i = eap->line1; i <= eap->line2; i++)
+	{
 	    VALUE line;
 
 	    line = vim_str2rb_enc_str((char *)ml_get(i));
 	    rb_lastline_set(line);
 	    eval_enc_string_protect((char *) eap->arg, &state);
-	    if (state) {
+	    if (state)
+	    {
 		error_print(state);
 		break;
 	    }
 	    line = rb_lastline_get();
-	    if (!NIL_P(line)) {
-		if (TYPE(line) != T_STRING) {
+	    if (!NIL_P(line))
+	    {
+		if (TYPE(line) != T_STRING)
+		{
 		    EMSG(_("E265: $_ must be an instance of String"));
 		    return;
 		}
@@ -898,7 +916,8 @@ static void error_print(int state)
 #define TAG_FATAL	0x8
 #define TAG_MASK	0xf
 
-    switch (state) {
+    switch (state)
+    {
     case TAG_RETURN:
 	EMSG(_("E267: unexpected return"));
 	break;
@@ -923,10 +942,12 @@ static void error_print(int state)
 	eclass = CLASS_OF(ruby_errinfo);
 	einfo = rb_obj_as_string(ruby_errinfo);
 #endif
-	if (eclass == rb_eRuntimeError && RSTRING_LEN(einfo) == 0) {
+	if (eclass == rb_eRuntimeError && RSTRING_LEN(einfo) == 0)
+	{
 	    EMSG(_("E272: unhandled exception"));
 	}
-	else {
+	else
+	{
 	    VALUE epath;
 	    char *p;
 
@@ -1130,7 +1151,7 @@ static VALUE buffer_s_count(void)
     buf_T *b;
     int n = 0;
 
-    for (b = firstbuf; b != NULL; b = b->b_next)
+    FOR_ALL_BUFFERS(b)
     {
 	/*  Deleted buffers should not be counted
 	 *    SegPhault - 01/07/05 */
@@ -1146,7 +1167,7 @@ static VALUE buffer_s_aref(VALUE self UNUSED, VALUE num)
     buf_T *b;
     int n = NUM2INT(num);
 
-    for (b = firstbuf; b != NULL; b = b->b_next)
+    FOR_ALL_BUFFERS(b)
     {
 	/*  Deleted buffers should not be counted
 	 *    SegPhault - 01/07/05 */
@@ -1208,7 +1229,8 @@ static VALUE set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
 	/* set curwin/curbuf for "buf" and save some things */
 	aucmd_prepbuf(&aco, buf);
 
-	if (u_savesub(n) == OK) {
+	if (u_savesub(n) == OK)
+	{
 	    ml_replace(n, (char_u *)line, TRUE);
 	    changed();
 #ifdef SYNTAX_HL
@@ -1249,7 +1271,8 @@ static VALUE buffer_delete(VALUE self, VALUE num)
 	/* set curwin/curbuf for "buf" and save some things */
 	aucmd_prepbuf(&aco, buf);
 
-	if (u_savedel(n, 1) == OK) {
+	if (u_savedel(n, 1) == OK)
+	{
 	    ml_delete(n, 0);
 
 	    /* Changes to non-active buffers should properly refresh
@@ -1288,7 +1311,8 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
 	/* set curwin/curbuf for "buf" and save some things */
 	aucmd_prepbuf(&aco, buf);
 
-	if (u_inssub(n + 1) == OK) {
+	if (u_inssub(n + 1) == OK)
+	{
 	    ml_append(n, (char_u *) line, (colnr_T) 0, FALSE);
 
 	    /*  Changes to non-active buffers should properly refresh screen
@@ -1394,7 +1418,7 @@ static VALUE window_s_count(void)
     win_T	*w;
     int n = 0;
 
-    for (w = firstwin; w != NULL; w = w->w_next)
+    FOR_ALL_WINDOWS(w)
 	n++;
     return INT2NUM(n);
 #else
@@ -1449,7 +1473,7 @@ static VALUE window_width(VALUE self UNUSED)
 
 static VALUE window_set_width(VALUE self UNUSED, VALUE width)
 {
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     win_T *win = get_win(self);
     win_T *savewin = curwin;
 
@@ -1494,7 +1518,8 @@ static VALUE f_p(int argc, VALUE *argv, VALUE self UNUSED)
     int i;
     VALUE str = rb_str_new("", 0);
 
-    for (i = 0; i < argc; i++) {
+    for (i = 0; i < argc; i++)
+    {
 	if (i > 0) rb_str_cat(str, ", ", 2);
 	rb_str_concat(str, rb_inspect(argv[i]));
     }

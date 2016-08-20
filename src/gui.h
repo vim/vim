@@ -16,7 +16,7 @@
 # include <X11/StringDefs.h>
 #endif
 
-#ifdef FEAT_BEVAL
+#if defined(FEAT_BEVAL) || defined(PROTO)
 # include "gui_beval.h"
 #endif
 
@@ -179,7 +179,7 @@ typedef struct GuiScrollbar
     /* Values measured in characters: */
     int		top;		/* Top of scroll bar (chars from row 0) */
     int		height;		/* Current height of scroll bar in rows */
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     int		width;		/* Current width of scroll bar in cols */
 #endif
     int		status_height;	/* Height of status line */
@@ -380,9 +380,15 @@ typedef struct Gui
     GtkWidget	*menubar_h;	    /* menubar handle */
     GtkWidget	*toolbar_h;	    /* toolbar handle */
 # endif
+# ifdef USE_GTK3
+    GdkRGBA	*fgcolor;	    /* GDK-styled foreground color */
+    GdkRGBA	*bgcolor;	    /* GDK-styled background color */
+    GdkRGBA	*spcolor;	    /* GDK-styled special color */
+# else
     GdkColor	*fgcolor;	    /* GDK-styled foreground color */
     GdkColor	*bgcolor;	    /* GDK-styled background color */
     GdkColor	*spcolor;	    /* GDK-styled special color */
+# endif
 # ifdef USE_GTK3
     cairo_surface_t *surface;       /* drawarea surface */
     gboolean	     by_signal;     /* cause of draw operation */

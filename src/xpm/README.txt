@@ -4,6 +4,10 @@ This is XPM library compiled for Windows which is intended for use with Vim
 Libraries in x86 directory were compiled with MSVC6 and MinGW. Proposed
 commands to compile Vim are:
 
+If you want to build XPM library by yourself, you may want to use the
+following Win32 port:
+https://github.com/koron/libXpm-win32
+
 Any version of MSVC starting from version 6.0:
 nmake -f Make_mvc.mak GUI=yes CSCOPE=yes NETBEANS=yes XPM=e:\hg\xpm\x86
 

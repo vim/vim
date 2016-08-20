@@ -1,18 +1,52 @@
 language: c
 
+os:
+  - osx
+  - linux
+
 compiler:
   - clang
   - gcc
 
 env:
-  - COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src
+  - BUILD=yes TEST=scripttests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
-    CHECK_AUTOCONF=yes
-  - COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
-  - COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-  - COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+  - BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
+  - BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+    # Mac OSX build
+  - BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+    "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
 
 sudo: false
+
+git:
+  depth: 1
+
+# instead of a 6*2*2 matrix (2*os + 2*compiler + 6*env),
+# exclude some builds on mac os x and linux
+# linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
+matrix:
+  exclude:
+    - os: osx
+      env: BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
+    - os: osx
+      env: BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+    - os: osx
+      env: BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+    - os: osx
+      env: BUILD=yes TEST=scripttests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
+    - os: linux
+      compiler: clang
+      env: BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+    - os: linux
+      compiler: clang
+      env: BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+    - os: linux
+      env: BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
 
 branches:
   except:
@@ -28,18 +62,22 @@ addons:
       - python3-dev
       - liblua5.1-0-dev
       - lua5.1
+      - cscope
 
 before_install:
   - pip install --user cpp-coveralls
+    # Lua is not installed on Travis OSX
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install lua; export LUA_PREFIX=/usr/local; fi
 
 script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
   - if [ "$CHECK_AUTOCONF" = "yes" -a "$CC" = "gcc" ]; then make -C src autoconf; fi
-  - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi && (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && make -j$NPROC)
-  - ${SRCDIR}/vim --version
-  - make $SHADOWOPT test
+  - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi
+  - (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && if [ "$BUILD" = "yes" ]; then make -j$NPROC; fi)
+  - if [ "$BUILD" = "yes" ]; then ${SRCDIR}/vim --version; fi
+  - make $SHADOWOPT $TEST
 
 after_success:
-  - if [ x"$COVERAGE" = "xyes" ]; then ~/.local/bin/coveralls -b $SRCDIR -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
+  - if [ "$COVERAGE" = "yes" ]; then ~/.local/bin/coveralls -b $SRCDIR -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
 
 # vim:set sts=2 sw=2 tw=0 et:

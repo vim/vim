@@ -638,6 +638,8 @@ NARROW_PROTO
 MOTIF_LIBNAME
 GRESOURCE_OBJ
 GRESOURCE_SRC
+UPDATE_DESKTOP_DATABASE
+GTK_UPDATE_ICON_CACHE
 GLIB_COMPILE_RESOURCES
 GNOME_INCLUDEDIR
 GNOME_LIBDIR
@@ -721,6 +723,7 @@ OS_EXTRA_OBJ
 OS_EXTRA_SRC
 XCODE_SELECT
 CPP_MM
+CROSS_COMPILING
 STRIP
 AWK
 FGREP
@@ -754,6 +757,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -827,6 +831,8 @@ enable_gtktest
 with_gnome_includes
 with_gnome_libs
 with_gnome
+enable_icon_cache_update
+enable_desktop_database_update
 with_motif_lib
 with_tlib
 enable_largefile
@@ -883,6 +889,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1135,6 +1142,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1272,7 +1288,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1425,6 +1441,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1487,6 +1504,8 @@ Optional Features:
   --enable-nextaw-check   If auto-select GUI, check for neXtaw default=yes
   --enable-carbon-check   If auto-select GUI, check for Carbon default=yes
   --disable-gtktest       Do not try to compile and run a test GTK program
+  --disable-icon-cache-update        update disabled
+  --disable-desktop-database-update  update disabled
   --disable-largefile     omit support for large files
   --disable-acl           Don't check for ACL support.
   --disable-gpm           Don't use gpm (Linux mouse daemon).
@@ -1505,7 +1524,7 @@ Optional Packages:
   --with-view-name=NAME   what to call the View executable
   --with-global-runtime=DIR    global runtime directory in 'runtimepath'
   --with-modified-by=NAME       name of who modified a release version
-  --with-features=TYPE    tiny, small, normal, big or huge (default: normal)
+  --with-features=TYPE    tiny, small, normal, big or huge (default: huge)
   --with-compiledby=NAME  name to show in :version message
   --with-lua-prefix=PFX   Prefix where Lua is installed.
   --with-luajit           Link with LuaJIT instead of Lua.
@@ -4113,10 +4132,13 @@ else
 $as_echo "no" >&6; }
 fi
 
+CROSS_COMPILING=
 if test "$cross_compiling" = yes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot compile a simple program; if not cross compiling check CC and CFLAGS" >&5
 $as_echo "cannot compile a simple program; if not cross compiling check CC and CFLAGS" >&6; }
+  CROSS_COMPILING=1
 fi
+
 
 test "$GCC" = yes && CPP_MM=M;
 
@@ -5966,7 +5988,7 @@ __:
 eof
 	    	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
 	    rm -f -- "${tmp_mkf}"
-	    if test "x$MACOSX" = "xyes" && ${vi_cv_path_python} -c \
+	    if test "x$MACOSX" = "xyes" && test -n "${python_PYTHONFRAMEWORK}" && ${vi_cv_path_python} -c \
 		"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"; then
 	      vi_cv_path_python_plibs="-framework Python"
 	      if test "x${vi_cv_path_python}" != "x/usr/bin/python" && test -n "${python_PYTHONFRAMEWORKPREFIX}"; then
@@ -9347,7 +9369,133 @@ $as_echo "not usable." >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot obtain from pkg_config." >&5
 $as_echo "cannot obtain from pkg_config." >&6; }
   fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-icon-cache-update argument" >&5
+$as_echo_n "checking --disable-icon-cache-update argument... " >&6; }
+  # Check whether --enable-icon_cache_update was given.
+if test "${enable_icon_cache_update+set}" = set; then :
+  enableval=$enable_icon_cache_update;
+else
+  enable_icon_cache_update="yes"
 fi
+
+  if test "$enable_icon_cache_update" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: not set" >&5
+$as_echo "not set" >&6; }
+    # Extract the first word of "gtk-update-icon-cache", so it can be a program name with args.
+set dummy gtk-update-icon-cache; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_GTK_UPDATE_ICON_CACHE+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $GTK_UPDATE_ICON_CACHE in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_GTK_UPDATE_ICON_CACHE="$GTK_UPDATE_ICON_CACHE" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_GTK_UPDATE_ICON_CACHE="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_GTK_UPDATE_ICON_CACHE" && ac_cv_path_GTK_UPDATE_ICON_CACHE="no"
+  ;;
+esac
+fi
+GTK_UPDATE_ICON_CACHE=$ac_cv_path_GTK_UPDATE_ICON_CACHE
+if test -n "$GTK_UPDATE_ICON_CACHE"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GTK_UPDATE_ICON_CACHE" >&5
+$as_echo "$GTK_UPDATE_ICON_CACHE" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    if test "x$GTK_UPDATE_ICON_CACHE" = "xno" ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found in PATH." >&5
+$as_echo "not found in PATH." >&6; }
+    fi
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: update disabled" >&5
+$as_echo "update disabled" >&6; }
+  fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-desktop-database-update argument" >&5
+$as_echo_n "checking --disable-desktop-database-update argument... " >&6; }
+  # Check whether --enable-desktop_database_update was given.
+if test "${enable_desktop_database_update+set}" = set; then :
+  enableval=$enable_desktop_database_update;
+else
+  enable_desktop_database_update="yes"
+fi
+
+  if test "$enable_desktop_database_update" = "yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: not set" >&5
+$as_echo "not set" >&6; }
+    # Extract the first word of "update-desktop-database", so it can be a program name with args.
+set dummy update-desktop-database; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_UPDATE_DESKTOP_DATABASE+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $UPDATE_DESKTOP_DATABASE in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_UPDATE_DESKTOP_DATABASE="$UPDATE_DESKTOP_DATABASE" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_UPDATE_DESKTOP_DATABASE="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_UPDATE_DESKTOP_DATABASE" && ac_cv_path_UPDATE_DESKTOP_DATABASE="no"
+  ;;
+esac
+fi
+UPDATE_DESKTOP_DATABASE=$ac_cv_path_UPDATE_DESKTOP_DATABASE
+if test -n "$UPDATE_DESKTOP_DATABASE"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $UPDATE_DESKTOP_DATABASE" >&5
+$as_echo "$UPDATE_DESKTOP_DATABASE" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    if test "x$UPDATE_DESKTOP_DATABASE" = "xno" ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found in PATH." >&5
+$as_echo "not found in PATH." >&6; }
+    fi
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: update disabled" >&5
+$as_echo "update disabled" >&6; }
+  fi
+fi
+
+
 
 
 

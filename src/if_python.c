@@ -1195,7 +1195,10 @@ OutputGetattr(PyObject *self, char *name)
 	return PyInt_FromLong(((OutputObject *)(self))->softspace);
     else if (strcmp(name, "__members__") == 0)
 	return ObjectDir(NULL, OutputAttrs);
-
+    else if (strcmp(name, "errors") == 0)
+	return PyString_FromString("strict");
+    else if (strcmp(name, "encoding") == 0)
+	return PyString_FromString(ENC_OPT);
     return Py_FindMethod(OutputMethods, self, name);
 }
 
@@ -1539,12 +1542,12 @@ ListGetattr(PyObject *self, char *name)
     static PyObject *
 FunctionGetattr(PyObject *self, char *name)
 {
-    FunctionObject	*this = (FunctionObject *)(self);
+    PyObject	*r;
 
-    if (strcmp(name, "name") == 0)
-	return PyString_FromString((char *)(this->name));
-    else if (strcmp(name, "__members__") == 0)
-	return ObjectDir(NULL, FunctionAttrs);
+    r = FunctionAttr((FunctionObject *)(self), name);
+
+    if (r || PyErr_Occurred())
+	return r;
     else
 	return Py_FindMethod(FunctionMethods, self, name);
 }

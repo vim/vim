@@ -2460,4 +2460,3 @@ keymap_unload(void)
 }
 
 #endif /* FEAT_KEYMAP */
-

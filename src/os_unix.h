@@ -33,10 +33,6 @@
 # include <stdlib.h>
 #endif
 
-#ifdef __EMX__
-# define HAVE_TOTAL_MEM
-#endif
-
 #if defined(__CYGWIN__) || defined(__CYGWIN32__)
 # define WIN32UNIX	/* Compiling for Win32 using Unix files. */
 # define BINARY_FILE_IO
@@ -305,6 +301,10 @@ typedef struct dsc$descriptor   DESC;
 # ifndef USR_GVIMRC_FILE3
 #  define USR_GVIMRC_FILE3  "sys$login:_gvimrc"
 # endif
+#endif
+
+#ifndef VIM_DEFAULTS_FILE
+# define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
 #endif
 
 #ifndef EVIM_FILE
