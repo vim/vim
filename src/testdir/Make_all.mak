@@ -100,7 +100,6 @@ SCRIPTS_ALL = \
 	test_marks.out \
 	test_nested_function.out \
 	test_search_mbyte.out \
-	test_tagcase.out \
 	test_utf8.out \
 	test_wordcount.out \
 	test_writefile.out

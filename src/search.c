@@ -367,9 +367,18 @@ free_search_patterns(void)
     int
 ignorecase(char_u *pat)
 {
-    int		ic = p_ic;
+    return ignorecase_opt(pat, p_ic, p_scs);
+}
 
-    if (ic && !no_smartcase && p_scs
+/*
+ * As ignorecase() put pass the "ic" and "scs" flags.
+ */
+    int
+ignorecase_opt(char_u *pat, int ic_in, int scs)
+{
+    int		ic = ic_in;
+
+    if (ic && !no_smartcase && scs
 #ifdef FEAT_INS_EXPAND
 				&& !(ctrl_x_mode && curbuf->b_p_inf)
 #endif
