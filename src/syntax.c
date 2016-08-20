@@ -7775,10 +7775,12 @@ do_highlight(
 				i = (color < 7 || color == 8);
 			    /* Set the 'background' option if the value is
 			     * wrong. */
-			    if (i != (*p_bg == 'd'))
-				set_option_value((char_u *)"bg", 0L,
-					i ?  (char_u *)"dark"
-					  : (char_u *)"light", 0);
+			    /*
+			     * if (i != (*p_bg == 'd'))
+			     *     set_option_value((char_u *)"bg", 0L,
+			     *             i ?  (char_u *)"dark"
+			     *               : (char_u *)"light", 0);
+			     */
 			}
 		    }
 		}

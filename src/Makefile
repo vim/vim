@@ -2099,6 +2099,7 @@ test_arglist \
 	test_menu \
 	test_messages \
 	test_netbeans \
+	test_oldfiles \
 	test_options \
 	test_packadd \
 	test_partial \
