@@ -27,10 +27,6 @@
 /* Is there any system that doesn't have access()? */
 #define USE_MCH_ACCESS
 
-#if (defined(sun) || defined(__FreeBSD__)) && defined(S_ISCHR)
-# define OPEN_CHR_FILES
-static int is_dev_fd_file(char_u *fname);
-#endif
 #ifdef FEAT_MBYTE
 static char_u *next_fenc(char_u **pp);
 # ifdef FEAT_EVAL
@@ -2718,14 +2714,14 @@ failed:
     return OK;
 }
 
-#ifdef OPEN_CHR_FILES
+#if defined(OPEN_CHR_FILES) || defined(PROTO)
 /*
  * Returns TRUE if the file name argument is of the form "/dev/fd/\d\+",
  * which is the name of files used for process substitution output by
  * some shells on some operating systems, e.g., bash on SunOS.
  * Do not accept "/dev/fd/[012]", opening these may hang Vim.
  */
-    static int
+    int
 is_dev_fd_file(char_u *fname)
 {
     return (STRNCMP(fname, "/dev/fd/", 8) == 0
