@@ -455,3 +455,28 @@ func Test_viminfo_file_mark_tabclose()
   call delete('Xviminfo')
   silent! bwipe Xtestfileintab
 endfunc
+
+func Test_oldfiles()
+  let v:oldfiles = []
+  let lines = [
+	\ '# comment line',
+	\ '*encoding=utf-8',
+	\ '',
+	\ "> /tmp/file_one.txt",
+	\ "\t\"\t11\t0",
+	\ "",
+	\ "> /tmp/file_two.txt",
+	\ "\t\"\t11\t0",
+	\ "",
+	\ "> /tmp/another.txt",
+	\ "\t\"\t11\t0",
+	\ "",
+	\ ]
+  call writefile(lines, 'Xviminfo')
+  rviminfo! Xviminfo
+  call delete('Xviminfo')
+
+  call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt', '3: /tmp/another.txt'], filter(split(execute('oldfile'), "\n"), {i, v -> v =~ '/tmp/'}))
+  call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt'], filter(split(execute('oldfile file_'), "\n"), {i, v -> v =~ '/tmp/'}))
+  call assert_equal(['3: /tmp/another.txt'], filter(split(execute('oldfile /another/'), "\n"), {i, v -> v =~ '/tmp/'}))
+endfunc

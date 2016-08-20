@@ -8391,3 +8391,84 @@ ex_drop(exarg_T *eap)
     }
 }
 #endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * List v:oldfiles in a nice way.
+ */
+    void
+ex_oldfiles(exarg_T *eap UNUSED)
+{
+    list_T	*l = get_vim_var_list(VV_OLDFILES);
+    listitem_T	*li;
+    int		nr = 0;
+    char_u	*reg_pat = NULL;
+    char_u	*fname;
+    regmatch_T	regmatch;
+
+    if (l == NULL)
+	msg((char_u *)_("No old files"));
+    else
+    {
+	if (*eap->arg != NUL)
+	{
+	    if (skip_vimgrep_pat(eap->arg, &reg_pat, NULL) == NULL)
+	    {
+		EMSG(_(e_invalpat));
+		return;
+	    }
+	    regmatch.regprog = vim_regcomp(reg_pat, p_magic ? RE_MAGIC : 0);
+	    if (regmatch.regprog == NULL)
+		return;
+	}
+
+	msg_start();
+	msg_scroll = TRUE;
+	for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
+	{
+	    ++nr;
+	    fname = get_tv_string(&li->li_tv);
+	    if (reg_pat == NULL || *reg_pat == NUL
+				  || vim_regexec(&regmatch, fname, (colnr_T)0))
+	    {
+		msg_outnum((long)nr);
+		MSG_PUTS(": ");
+		msg_outtrans(fname);
+		msg_putchar('\n');
+		out_flush();	    /* output one line at a time */
+		ui_breakcheck();
+	    }
+	}
+	if (*eap->arg != NUL)
+	    vim_regfree(regmatch.regprog);
+
+	/* Assume "got_int" was set to truncate the listing. */
+	got_int = FALSE;
+
+# ifdef FEAT_BROWSE_CMD
+	if (cmdmod.browse)
+	{
+	    quit_more = FALSE;
+	    nr = prompt_for_number(FALSE);
+	    msg_starthere();
+	    if (nr > 0)
+	    {
+		char_u *p = list_find_str(get_vim_var_list(VV_OLDFILES),
+								    (long)nr);
+
+		if (p != NULL)
+		{
+		    p = expand_env_save(p);
+		    eap->arg = p;
+		    eap->cmdidx = CMD_edit;
+		    cmdmod.browse = FALSE;
+		    do_exedit(eap, NULL);
+		    vim_free(p);
+		}
+	    }
+	}
+# endif
+    }
+}
+#endif
+
