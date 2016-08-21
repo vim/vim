@@ -11491,7 +11491,11 @@ f_submatch(typval_T *argvars, typval_T *rettv)
     no = (int)get_tv_number_chk(&argvars[0], &error);
     if (error)
 	return;
-    error = FALSE;
+    if (no < 0 || no >= NSUBEXP)
+    {
+        EMSGN(_("E935: invalid submatch number: %d"), no);
+        return;
+    }
     if (argvars[1].v_type != VAR_UNKNOWN)
 	retList = (int)get_tv_number_chk(&argvars[1], &error);
     if (error)
