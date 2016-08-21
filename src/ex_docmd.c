@@ -1858,9 +1858,7 @@ do_one_cmd(
 /*
  * 2. Handle command modifiers.
  */
-	p = ea.cmd;
-	if (VIM_ISDIGIT(*ea.cmd))
-	    p = skipwhite(skipdigits(ea.cmd));
+	p = skip_range(ea.cmd, NULL);
 	switch (*p)
 	{
 	    /* When adding an entry, also modify cmd_exists(). */
@@ -1992,10 +1990,19 @@ do_one_cmd(
 	    case 't':	if (checkforcmd(&p, "tab", 3))
 			{
 #ifdef FEAT_WINDOWS
-			    if (vim_isdigit(*ea.cmd))
-				cmdmod.tab = atoi((char *)ea.cmd) + 1;
-			    else
+			    long tabnr = get_address(&ea, &ea.cmd, ADDR_TABS,
+								ea.skip, FALSE);
+			    if (tabnr == MAXLNUM)
 				cmdmod.tab = tabpage_index(curtab) + 1;
+			    else
+			    {
+				if (tabnr < 0 || tabnr > LAST_TAB_NR)
+				{
+				    errormsg = (char_u *)_(e_invrange);
+				    goto doend;
+				}
+				cmdmod.tab = tabnr + 1;
+			    }
 			    ea.cmd = p;
 #endif
 			    continue;
