@@ -604,6 +604,7 @@ EXTERN char_u	*p_km;		/* 'keymodel' */
 #ifdef FEAT_LANGMAP
 EXTERN char_u	*p_langmap;	/* 'langmap'*/
 EXTERN int	p_lnr;		/* 'langnoremap' */
+EXTERN int	p_lrm;		/* 'langremap' */
 #endif
 #if defined(FEAT_MENU) && defined(FEAT_MULTI_LANG)
 EXTERN char_u	*p_lm;		/* 'langmenu' */

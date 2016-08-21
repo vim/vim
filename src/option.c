@@ -1705,6 +1705,13 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
+    {"langremap",  "lrm",   P_BOOL|P_VI_DEF,
+#ifdef FEAT_LANGMAP
+			    (char_u *)&p_lrm, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"laststatus",  "ls",   P_NUM|P_VI_DEF|P_RALL,
 #ifdef FEAT_WINDOWS
 			    (char_u *)&p_ls, PV_NONE,
@@ -7893,6 +7900,15 @@ set_bool_option(
     {
 	compatible_set();
     }
+
+#ifdef FEAT_LANGMAP
+    if ((int *)varp == &p_lrm)
+	/* 'langremap' -> !'langnoremap' */
+	p_lnr = !p_lrm;
+    else if ((int *)varp == &p_lnr)
+	/* 'langnoremap' -> !'langremap' */
+	p_lrm = !p_lnr;
+#endif
 
 #ifdef FEAT_PERSISTENT_UNDO
     /* 'undofile' */

@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2016 Aug 20
+" Last change:	2016 Aug 21
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".
@@ -107,9 +107,9 @@ if !exists(":DiffOrig")
 		  \ | wincmd p | diffthis
 endif
 
-if has('langmap') && exists('+langnoremap')
+if has('langmap') && exists('+langremap')
   " Prevent that the langmap option applies to characters that result from a
-  " mapping.  If unset (default), this may break plugins (but it's backward
+  " mapping.  If set (default), this may break plugins (but it's backward
   " compatible).
-  set langnoremap
+  set nolangremap
 endif
