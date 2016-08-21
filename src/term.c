@@ -4939,7 +4939,7 @@ check_termcode(
 		button = getdigits(&p);
 		mouse_code = 0;
 
-		switch( button )
+		switch (button)
 		{
 		    case 4: mouse_code = MOUSE_LEFT; break;
 		    case 1: mouse_code = MOUSE_RIGHT; break;
@@ -4947,7 +4947,7 @@ check_termcode(
 		    default: return -1;
 		}
 
-		switch( action )
+		switch (action)
 		{
 		    case 31: /* Initial press */
 			if (*p++ != ';')
@@ -5096,9 +5096,11 @@ check_termcode(
 	    else if (orig_num_clicks == 4)
 		modifiers |= MOD_MASK_4CLICK;
 
-	    /* Work out our pseudo mouse event */
+	    /* Work out our pseudo mouse event. Note that MOUSE_RELEASE gets
+	     * added, then it's not mouse up/down. */
 	    key_name[0] = (int)KS_EXTRA;
-	    if (wheel_code != 0)
+            if (wheel_code != 0
+			      && (wheel_code & MOUSE_RELEASE) != MOUSE_RELEASE)
 	    {
 		if (wheel_code & MOUSE_CTRL)
 		    modifiers |= MOD_MASK_CTRL;
