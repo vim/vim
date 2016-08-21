@@ -1172,6 +1172,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	spell	    Error happened on spell suggest.
 	wildmode    More matches in |cmdline-completion| available
 		    (depends on the 'wildmode' setting).
+	topbot	    Do not ring a bell when search hit top or bottom (and
+		    is continuing).
 
 	This is most useful, to fine tune when in insert mode the bell should
 	be rung. For normal mode and ex commands, the bell is often rung to
