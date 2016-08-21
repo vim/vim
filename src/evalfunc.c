@@ -3587,8 +3587,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	use_string = TRUE;
     }
 
-    if (((use_string && vim_strchr(s, AUTOLOAD_CHAR) == NULL)
-				   || is_funcref))
+    if ((use_string && vim_strchr(s, AUTOLOAD_CHAR) == NULL) || is_funcref)
     {
 	name = s;
 	trans_name = trans_function_name(&name, FALSE,
@@ -3597,7 +3596,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	    s = NULL;
     }
 
-    if (s == NULL || *s == NUL || (use_string && VIM_ISDIGIT(*s)))
+    if (s == NULL || *s == NUL || (use_string && VIM_ISDIGIT(*s))
+					 || (is_funcref && trans_name == NULL))
 	EMSG2(_(e_invarg2), s);
     /* Don't check an autoload name for existence here. */
     else if (trans_name != NULL && (is_funcref
