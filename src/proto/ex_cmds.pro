@@ -65,5 +65,6 @@ char_u *get_sign_name(expand_T *xp, int idx);
 void set_context_in_sign_cmd(expand_T *xp, char_u *arg);
 void ex_smile(exarg_T *eap);
 void ex_drop(exarg_T *eap);
+char_u *skip_vimgrep_pat(char_u *p, char_u **s, int *flags);
 void ex_oldfiles(exarg_T *eap);
 /* vim: set ft=c : */
