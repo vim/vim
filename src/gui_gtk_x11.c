@@ -7020,7 +7020,7 @@ gui_mch_enable_scrollbar(scrollbar_T *sb, int flag)
 /*
  * Return the RGB value of a pixel as long.
  */
-    long_u
+    guicolor_T
 gui_mch_get_rgb(guicolor_T pixel)
 {
 #if GTK_CHECK_VERSION(3,0,0)
@@ -7031,9 +7031,10 @@ gui_mch_get_rgb(guicolor_T pixel)
     gdk_colormap_query_color(gtk_widget_get_colormap(gui.drawarea),
 			     (unsigned long)pixel, &color);
 
-    return (((unsigned)color.red   & 0xff00) << 8)
+    return (guicolor_T)(
+	    (((unsigned)color.red   & 0xff00) << 8)
 	 |  ((unsigned)color.green & 0xff00)
-	 | (((unsigned)color.blue  & 0xff00) >> 8);
+	 | (((unsigned)color.blue  & 0xff00) >> 8));
 #endif
 }
 

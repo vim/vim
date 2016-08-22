@@ -1,7 +1,7 @@
 /* term.c */
 guicolor_T termgui_mch_get_color(char_u *name);
 guicolor_T termgui_get_color(char_u *name);
-long_u termgui_mch_get_rgb(guicolor_T color);
+guicolor_T termgui_mch_get_rgb(guicolor_T color);
 int set_termname(char_u *term);
 void set_mouse_termcode(int n, char_u *s);
 void del_mouse_termcode(int n);
@@ -25,8 +25,8 @@ void term_set_winpos(int x, int y);
 void term_set_winsize(int width, int height);
 void term_fg_color(int n);
 void term_bg_color(int n);
-void term_fg_rgb_color(long_u rgb);
-void term_bg_rgb_color(long_u rgb);
+void term_fg_rgb_color(guicolor_T rgb);
+void term_bg_rgb_color(guicolor_T rgb);
 void term_settitle(char_u *title);
 void ttest(int pairs);
 void add_long_to_buf(long_u val, char_u *dst);

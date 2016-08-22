@@ -3095,7 +3095,7 @@ gui_x11_blink_cb(
 /*
  * Return the RGB value of a pixel as a long.
  */
-    long_u
+    guicolor_T
 gui_mch_get_rgb(guicolor_T pixel)
 {
     XColor	xc;
@@ -3105,8 +3105,8 @@ gui_mch_get_rgb(guicolor_T pixel)
     xc.pixel = pixel;
     XQueryColor(gui.dpy, colormap, &xc);
 
-    return ((xc.red & 0xff00) << 8) + (xc.green & 0xff00)
-						   + ((unsigned)xc.blue >> 8);
+    return (guicolor_T)(((xc.red & 0xff00) << 8) + (xc.green & 0xff00)
+						   + ((unsigned)xc.blue >> 8));
 }
 
 /*

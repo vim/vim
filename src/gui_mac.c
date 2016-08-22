@@ -5181,10 +5181,10 @@ gui_mch_start_blink(void)
 /*
  * Return the RGB value of a pixel as long.
  */
-    long_u
+    guicolor_T
 gui_mch_get_rgb(guicolor_T pixel)
 {
-    return (Red(pixel) << 16) + (Green(pixel) << 8) + Blue(pixel);
+    return (guicolor_T)((Red(pixel) << 16) + (Green(pixel) << 8) + Blue(pixel));
 }
 
 

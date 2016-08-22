@@ -2263,11 +2263,11 @@ SaveInst(HINSTANCE hInst)
 /*
  * Return the RGB value of a pixel as a long.
  */
-    long_u
+    guicolor_T
 gui_mch_get_rgb(guicolor_T pixel)
 {
-    return (GetRValue(pixel) << 16) + (GetGValue(pixel) << 8)
-							   + GetBValue(pixel);
+    return (guicolor_T)((GetRValue(pixel) << 16) + (GetGValue(pixel) << 8)
+							   + GetBValue(pixel));
 }
 
 #if defined(FEAT_GUI_DIALOG) || defined(PROTO)

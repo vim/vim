@@ -368,8 +368,8 @@ EXTERN int	cterm_normal_fg_color INIT(= 0);
 EXTERN int	cterm_normal_fg_bold INIT(= 0);
 EXTERN int	cterm_normal_bg_color INIT(= 0);
 #ifdef FEAT_TERMGUICOLORS
-EXTERN long_u	cterm_normal_fg_gui_color INIT(= INVALCOLOR);
-EXTERN long_u	cterm_normal_bg_gui_color INIT(= INVALCOLOR);
+EXTERN guicolor_T cterm_normal_fg_gui_color INIT(= INVALCOLOR);
+EXTERN guicolor_T cterm_normal_bg_gui_color INIT(= INVALCOLOR);
 #endif
 
 #ifdef FEAT_AUTOCMD

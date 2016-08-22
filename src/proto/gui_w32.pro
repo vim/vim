@@ -35,7 +35,7 @@ void gui_mch_enable_menu(int flag);
 void gui_mch_set_menu_pos(int x, int y, int w, int h);
 void gui_mch_menu_hidden(vimmenu_T *menu, int hidden);
 void gui_mch_draw_menubar(void);
-long_u gui_mch_get_rgb(guicolor_T pixel);
+guicolor_T gui_mch_get_rgb(guicolor_T pixel);
 void gui_mch_activate_window(void);
 void gui_mch_show_toolbar(int showit);
 void gui_mch_show_tabline(int showit);

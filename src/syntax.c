@@ -8488,7 +8488,7 @@ color_name2handle(char_u *name)
 	    return gui.norm_pixel;
 #endif
 #ifdef FEAT_TERMGUICOLORS
-	if (cterm_normal_fg_gui_color != (long_u)INVALCOLOR)
+	if (cterm_normal_fg_gui_color != INVALCOLOR)
 	    return cterm_normal_fg_gui_color;
 	/* Guess that the foreground is black or white. */
 	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "black" : "white"));
@@ -8503,7 +8503,7 @@ color_name2handle(char_u *name)
 	    return gui.back_pixel;
 #endif
 #ifdef FEAT_TERMGUICOLORS
-	if (cterm_normal_bg_gui_color != (long_u)INVALCOLOR)
+	if (cterm_normal_bg_gui_color != INVALCOLOR)
 	    return cterm_normal_bg_gui_color;
 	/* Guess that the background is white or black. */
 	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "white" : "black"));
@@ -8782,9 +8782,9 @@ hl_combine_attr(int char_attr, int prim_attr)
 		if (spell_aep->ae_u.cterm.bg_color > 0)
 		    new_en.ae_u.cterm.bg_color = spell_aep->ae_u.cterm.bg_color;
 #ifdef FEAT_TERMGUICOLORS
-		if (spell_aep->ae_u.cterm.fg_rgb != (long_u)INVALCOLOR)
+		if (spell_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
 		    new_en.ae_u.cterm.fg_rgb = spell_aep->ae_u.cterm.fg_rgb;
-		if (spell_aep->ae_u.cterm.bg_rgb != (long_u)INVALCOLOR)
+		if (spell_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
 		    new_en.ae_u.cterm.bg_rgb = spell_aep->ae_u.cterm.bg_rgb;
 #endif
 	    }
@@ -9076,7 +9076,7 @@ highlight_color(
 		color = HL_TABLE()[id - 1].sg_gui_bg;
 	    if (color == INVALCOLOR)
 		return NULL;
-	    rgb = GUI_MCH_GET_RGB(color);
+	    rgb = (long_u)GUI_MCH_GET_RGB(color);
 	    sprintf((char *)buf, "#%02x%02x%02x",
 				      (unsigned)(rgb >> 16),
 				      (unsigned)(rgb >> 8) & 255,

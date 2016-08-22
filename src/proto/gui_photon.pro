@@ -25,7 +25,7 @@ void mch_set_mouse_shape(int shape);
 void gui_mch_mousehide(int hide);
 void gui_mch_getmouse(int *x, int *y);
 void gui_mch_setmouse(int x, int y);
-long_u gui_mch_get_rgb(guicolor_T pixel);
+guicolor_T gui_mch_get_rgb(guicolor_T pixel);
 void gui_mch_new_colors(void);
 guicolor_T gui_mch_get_color(char_u *name);
 void gui_mch_set_fg_color(guicolor_T color);

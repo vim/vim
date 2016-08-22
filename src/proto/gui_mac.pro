@@ -78,7 +78,7 @@ void gui_mch_menu_grey(vimmenu_T *menu, int grey);
 void gui_mch_menu_hidden(vimmenu_T *menu, int hidden);
 void gui_mch_draw_menubar(void);
 int gui_mch_get_lightness(guicolor_T pixel);
-long_u gui_mch_get_rgb(guicolor_T pixel);
+guicolor_T gui_mch_get_rgb(guicolor_T pixel);
 int gui_mch_get_mouse_x(void);
 int gui_mch_get_mouse_y(void);
 void gui_mch_setmouse(int x, int y);
