@@ -32,7 +32,7 @@ func Test_repeat_three()
   let t1 = reltime()
   let timer = timer_start(50, 'MyHandler', {'repeat': 3})
   call WaitFor('g:val == 3')
-  call assert_inrange(150, 200, s:milliseconds_since(t1))
+  call assert_inrange(150, 300, s:milliseconds_since(t1))
   call assert_equal(3, g:val)
 endfunc
 
@@ -116,7 +116,7 @@ func Test_paused()
 
   let t1 = reltime()
   let slept = WaitFor('g:val == 1')
-  call assert_inrange(0, 10, s:milliseconds_since(t1))
+  call assert_inrange(0, 50, s:milliseconds_since(t1))
   call assert_equal(1, g:val)
 endfunc
 
