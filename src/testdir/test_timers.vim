@@ -14,20 +14,26 @@ func MyHandlerWithLists(lists, timer)
   let x = string(a:lists)
 endfunc
 
+func s:milliseconds_since(t1)
+  return float2nr(reltimefloat(reltime(a:t1)) * 1000)
+endfunc
+
 func Test_oneshot()
   let g:val = 0
+  let t1 = reltime()
   let timer = timer_start(50, 'MyHandler')
-  let slept = WaitFor('g:val == 1')
+  call WaitFor('g:val == 1')
+  call assert_inrange(50, 100, s:milliseconds_since(t1))
   call assert_equal(1, g:val)
-  call assert_inrange(30, 100, slept)
 endfunc
 
 func Test_repeat_three()
   let g:val = 0
+  let t1 = reltime()
   let timer = timer_start(50, 'MyHandler', {'repeat': 3})
-  let slept = WaitFor('g:val == 3')
+  call WaitFor('g:val == 3')
+  call assert_inrange(150, 300, s:milliseconds_since(t1))
   call assert_equal(3, g:val)
-  call assert_inrange(80, 200, slept)
 endfunc
 
 func Test_repeat_many()
@@ -45,10 +51,11 @@ func Test_with_partial_callback()
     let g:val += 1
   endfunction
 
+  let t1 = reltime()
   call timer_start(50, s:meow.bite)
-  let slept = WaitFor('g:val == 1')
+  call WaitFor('g:val == 1')
+  call assert_inrange(50, 100, s:milliseconds_since(t1))
   call assert_equal(1, g:val)
-  call assert_inrange(30, 100, slept)
 endfunc
 
 func Test_retain_partial()
@@ -107,9 +114,10 @@ func Test_paused()
   let info = timer_info(id)
   call assert_equal(0, info[0]['paused'])
 
+  let t1 = reltime()
   let slept = WaitFor('g:val == 1')
+  call assert_inrange(0, 50, s:milliseconds_since(t1))
   call assert_equal(1, g:val)
-  call assert_inrange(0, 10, slept)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
