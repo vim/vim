@@ -2931,12 +2931,14 @@ buflist_list(exarg_T *eap)
 		|| (vim_strchr(eap->arg, '#')
 		      && (buf == curbuf || curwin->w_alt_fnum != buf->b_fnum)))
 	    continue;
-	msg_putchar('\n');
 	if (buf_spname(buf) != NULL)
 	    vim_strncpy(NameBuff, buf_spname(buf), MAXPATHL - 1);
 	else
 	    home_replace(buf, buf->b_fname, NameBuff, MAXPATHL, TRUE);
+	if (message_filtered(NameBuff))
+	    continue;
 
+	msg_putchar('\n');
 	len = vim_snprintf((char *)IObuff, IOSIZE - 20, "%3d%c%c%c%c%c \"%s\"",
 		buf->b_fnum,
 		buf->b_p_bl ? ' ' : 'u',
