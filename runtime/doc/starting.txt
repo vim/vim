@@ -1616,7 +1616,6 @@ most of the information will be restored).
 			{not in Vi, only when compiled with the |+eval|
 			feature}
 
-:ol[dfiles] {pat}
 :ol[dfiles] /{pat}/
 			Like `:oldfiles` but only files matching {pat} will
 			be included.  {pat} is a Vim search pattern.  Instead
@@ -1633,5 +1632,9 @@ most of the information will be restored).
 			and still get the prompt to enter a file number.
 			Use ! to abandon a modified buffer. |abandon|
 			{not when compiled with tiny or small features}
+
+:bro[wse] ol[dfiles]! /{pat}/
+			Like `:oldfiles /{pat}/`, but also prompt for a number
+			the same way `:browse oldfiles` does.
 
  vim:tw=78:ts=8:ft=help:norl:
