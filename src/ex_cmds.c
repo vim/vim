@@ -8392,7 +8392,6 @@ ex_drop(exarg_T *eap)
 }
 #endif
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Skip over the pattern argument of ":vimgrep /pat/[g][j]".
  * Put the start of the pattern in "*s", unless "s" is NULL.
@@ -8444,7 +8443,6 @@ skip_vimgrep_pat(char_u *p, char_u **s, int *flags)
     }
     return p;
 }
-#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
