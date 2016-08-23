@@ -39,6 +39,7 @@ json_encode(typval_T *val, int options)
 	vim_free(ga.ga_data);
 	return vim_strsave((char_u *)"");
     }
+    ga_grow(&ga, 1);   /* Reserve a room for "\n". */
     return ga.ga_data;
 }
 
