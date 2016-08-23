@@ -43,6 +43,7 @@ void msg_puts_title(char_u *s);
 void msg_puts_long_attr(char_u *longstr, int attr);
 void msg_puts_long_len_attr(char_u *longstr, int len, int attr);
 void msg_puts_attr(char_u *s, int attr);
+int message_filtered(char_u *msg);
 void may_clear_sb_text(void);
 void clear_sb_text(void);
 void show_sb_text(void);

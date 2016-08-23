@@ -13,6 +13,7 @@ source test_expand_dllpath.vim
 source test_feedkeys.vim
 source test_fnamemodify.vim
 source test_file_perm.vim
+source test_filter_cmd.vim
 source test_filter_map.vim
 source test_glob2regpat.vim
 source test_goto.vim

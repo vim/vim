@@ -137,6 +137,11 @@ msg_attr_keep(
     int		retval;
     char_u	*buf = NULL;
 
+    /* Skip messages not matching ":filter pattern".
+     * Don't filter when there is an error. */
+    if (!emsg_on_display && message_filtered(s))
+	return TRUE;
+
 #ifdef FEAT_EVAL
     if (attr == 0)
 	set_vim_var_string(VV_STATUSMSG, s, -1);
@@ -2147,6 +2152,17 @@ msg_puts_display(
 	store_sb_text(&sb_str, s, attr, &sb_col, FALSE);
 
     msg_check();
+}
+
+/*
+ * Return TRUE when ":filter pattern" was used and "msg" does not match
+ * "pattern".
+ */
+    int
+message_filtered(char_u *msg)
+{
+    return cmdmod.filter_regmatch.regprog != NULL
+		     && !vim_regexec(&cmdmod.filter_regmatch, msg, (colnr_T)0);
 }
 
 /*

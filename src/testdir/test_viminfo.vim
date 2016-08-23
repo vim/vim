@@ -476,7 +476,7 @@ func Test_oldfiles()
   rviminfo! Xviminfo
   call delete('Xviminfo')
 
-  call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt', '3: /tmp/another.txt'], filter(split(execute('oldfile'), "\n"), {i, v -> v =~ '/tmp/'}))
-  call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt'], filter(split(execute('oldfile file_'), "\n"), {i, v -> v =~ '/tmp/'}))
-  call assert_equal(['3: /tmp/another.txt'], filter(split(execute('oldfile /another/'), "\n"), {i, v -> v =~ '/tmp/'}))
+  call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt', '3: /tmp/another.txt'], filter(split(execute('oldfiles'), "\n"), {i, v -> v =~ '/tmp/'}))
+  call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt'], filter(split(execute('filter file_ oldfiles'), "\n"), {i, v -> v =~ '/tmp/'}))
+  call assert_equal(['3: /tmp/another.txt'], filter(split(execute('filter /another/ oldfiles'), "\n"), {i, v -> v =~ '/tmp/'}))
 endfunc
