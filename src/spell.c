@@ -2470,7 +2470,7 @@ did_set_spelllang(win_T *wp)
 		 * destroying the buffer we are using... */
 		if (!bufref_valid(&bufref))
 		{
-		    ret_msg = (char_u *)"E797: SpellFileMissing autocommand deleted buffer";
+		    ret_msg = (char_u *)N_("E797: SpellFileMissing autocommand deleted buffer");
 		    goto theend;
 		}
 #endif

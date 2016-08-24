@@ -7088,7 +7088,7 @@ helptags_one(
 	    || filecount == 0)
     {
 	if (!got_int)
-	    EMSG2("E151: No match: %s", NameBuff);
+	    EMSG2(_("E151: No match: %s"), NameBuff);
 	return;
     }
 
@@ -7331,7 +7331,7 @@ do_helptags(char_u *dirname, int add_help_tags)
 						    EW_FILE|EW_SILENT) == FAIL
 	    || filecount == 0)
     {
-	EMSG2("E151: No match: %s", NameBuff);
+	EMSG2(_("E151: No match: %s"), NameBuff);
 	return;
     }
 

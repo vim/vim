@@ -702,7 +702,7 @@ channel_open(
     if ((host = gethostbyname(hostname)) == NULL)
     {
 	ch_error(channel, "in gethostbyname() in channel_open()");
-	PERROR("E901: gethostbyname() in channel_open()");
+	PERROR(_("E901: gethostbyname() in channel_open()"));
 	channel_free(channel);
 	return NULL;
     }
@@ -729,7 +729,7 @@ channel_open(
 	if (sd == -1)
 	{
 	    ch_error(channel, "in socket() in channel_open().");
-	    PERROR("E898: socket() in channel_open()");
+	    PERROR(_("E898: socket() in channel_open()"));
 	    channel_free(channel);
 	    return NULL;
 	}
@@ -2070,7 +2070,7 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
     {
 	ch_error(channel, "received command with non-string argument");
 	if (p_verbose > 2)
-	    EMSG("E903: received command with non-string argument");
+	    EMSG(_("E903: received command with non-string argument"));
 	return;
     }
     arg = argv[1].vval.v_string;
@@ -2129,13 +2129,13 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 	{
 	    ch_error(channel, "last argument for expr/call must be a number");
 	    if (p_verbose > 2)
-		EMSG("E904: last argument for expr/call must be a number");
+		EMSG(_("E904: last argument for expr/call must be a number"));
 	}
 	else if (is_call && argv[2].v_type != VAR_LIST)
 	{
 	    ch_error(channel, "third argument for call must be a list");
 	    if (p_verbose > 2)
-		EMSG("E904: third argument for call must be a list");
+		EMSG(_("E904: third argument for call must be a list"));
 	}
 	else
 	{
@@ -2195,7 +2195,7 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
     else if (p_verbose > 2)
     {
 	ch_errors(channel, "Received unknown command: %s", (char *)cmd);
-	EMSG2("E905: received unknown command: %s", cmd);
+	EMSG2(_("E905: received unknown command: %s"), cmd);
     }
 }
 
@@ -3382,7 +3382,7 @@ channel_send(channel_T *channel, int part, char_u *buf, int len, char *fun)
 	if (!channel->ch_error && fun != NULL)
 	{
 	    ch_errors(channel, "%s(): write while not connected", fun);
-	    EMSG2("E630: %s(): write while not connected", fun);
+	    EMSG2(_("E630: %s(): write while not connected"), fun);
 	}
 	channel->ch_error = TRUE;
 	return FAIL;
@@ -3407,7 +3407,7 @@ channel_send(channel_T *channel, int part, char_u *buf, int len, char *fun)
 	if (!channel->ch_error && fun != NULL)
 	{
 	    ch_errors(channel, "%s(): write failed", fun);
-	    EMSG2("E631: %s(): write failed", fun);
+	    EMSG2(_("E631: %s(): write failed"), fun);
 	}
 	channel->ch_error = TRUE;
 	return FAIL;
