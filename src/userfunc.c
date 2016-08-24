@@ -1955,7 +1955,7 @@ ex_function(exarg_T *eap)
 	    p += 7;
 	    if (current_funccal == NULL)
 	    {
-		emsg_funcname(N_("E932 Closure function should not be at top level: %s"),
+		emsg_funcname(N_("E932: Closure function should not be at top level: %s"),
 			name == NULL ? (char_u *)"" : name);
 		goto erret;
 	    }
@@ -2738,7 +2738,7 @@ ex_delfunction(exarg_T *eap)
 	    /* A normal function (not a numbered function or lambda) has a
 	     * refcount of 1 for the entry in the hashtable.  When deleting
 	     * it and the refcount is more than one, it should be kept.
-	     * A numbered function and lambda snould be kept if the refcount is
+	     * A numbered function and lambda should be kept if the refcount is
 	     * one or more. */
 	    if (fp->uf_refcount > (func_name_refcount(fp->uf_name) ? 0 : 1))
 	    {
@@ -3479,7 +3479,7 @@ free_unref_funccal(int copyID, int testing)
 }
 
 /*
- * Get function call environment based on bactrace debug level
+ * Get function call environment based on backtrace debug level
  */
     static funccall_T *
 get_funccal(void)
