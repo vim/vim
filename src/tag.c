@@ -1078,6 +1078,9 @@ end_do_tag:
 	curwin->w_tagstackidx = tagstackidx;
 #ifdef FEAT_WINDOWS
     postponed_split = 0;	/* don't split next time */
+# ifdef FEAT_QUICKFIX
+    g_do_tagpreview = 0;	/* don't do tag preview next time */
+# endif
 #endif
 
 #ifdef FEAT_CSCOPE
