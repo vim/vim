@@ -77,7 +77,7 @@ function s:OneScope(lnum,text,add)
         \ cursor(a:lnum, match(a:text, ')' . s:line_term)) > -1) &&
         \ s:GetPair('(', ')', 'cbW', 100) > 0 && search('\C\l\+\_s*\%#','bW') &&
         \ (a:add || ((expand('<cword>') !=# 'while' || !s:GetPair('\C\<do\>', '\C\<while\>','nbW',100)) &&
-        \ expand('cword') !=# 'each' || search('\C\<for\_s\+\%#','nbW'))) ? expand('<cword>') : ''
+        \ expand('<cword>') !=# 'each' || search('\C\<for\_s\+\%#','nbW'))) ? expand('<cword>') : ''
 endfunction
 
 " https://github.com/sweet-js/sweet.js/wiki/design#give-lookbehind-to-the-reader
