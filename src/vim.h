@@ -1313,6 +1313,7 @@ enum auto_event
     EVENT_QUICKFIXCMDPOST,	/* after :make, :grep etc. */
     EVENT_QUICKFIXCMDPRE,	/* before :make, :grep etc. */
     EVENT_QUITPRE,		/* before :quit */
+    EVENT_SEARCHHITBOUNDARY,	/* search hit top or bottom */
     EVENT_SESSIONLOADPOST,	/* after loading a session file */
     EVENT_STDINREADPOST,	/* after reading from stdin */
     EVENT_STDINREADPRE,		/* before reading from stdin */
