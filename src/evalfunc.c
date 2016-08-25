@@ -5989,10 +5989,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_GUI
 	else if (STRICMP(name, "gui_running") == 0)
 	    n = (gui.in_use || gui.starting);
-# ifdef FEAT_GUI_W32
-	else if (STRICMP(name, "gui_win32s") == 0)
-	    n = gui_is_win32s();
-# endif
 # ifdef FEAT_BROWSE
 	else if (STRICMP(name, "browse") == 0)
 	    n = gui.in_use;	/* gui_mch_browse() works when GUI is running */

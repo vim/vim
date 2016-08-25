@@ -3294,16 +3294,6 @@ set_init_1(void)
 	}
     }
 
-#ifdef FEAT_GUI_W32
-    /* force 'shortname' for Win32s */
-    if (gui_is_win32s())
-    {
-	opt_idx = findoption((char_u *)"shortname");
-	if (opt_idx >= 0)
-	    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)TRUE;
-    }
-#endif
-
 #ifdef FEAT_SEARCHPATH
     {
 	char_u	*cdpath;

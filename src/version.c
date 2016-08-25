@@ -764,6 +764,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    2253,
+/**/
     2252,
 /**/
     2251,
@@ -5419,8 +5421,6 @@ list_version(void)
     MSG_PUTS(_("\nMS-Windows 32-bit GUI version"));
 #   endif
 #  endif
-    if (gui_is_win32s())
-	MSG_PUTS(_(" in Win32s mode"));
 # ifdef FEAT_OLE
     MSG_PUTS(_(" with OLE support"));
 # endif

@@ -62,7 +62,6 @@ void mch_set_mouse_shape(int shape);
 char_u *gui_mch_browsedir(char_u *title, char_u *initdir);
 char_u *gui_mch_browse(int saving, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter);
 int get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree);
-int gui_is_win32s(void);
 void gui_mch_set_parent(char *title);
 void gui_mch_prepare(int *argc, char **argv);
 int gui_mch_init(void);

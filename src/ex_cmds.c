@@ -1927,11 +1927,7 @@ write_viminfo(char_u *file, int forceit)
 #ifdef UNIX
 				    shortname,
 #else
-# ifdef FEAT_GUI_W32
-				    gui_is_win32s(),
-# else
 				    FALSE,
-# endif
 #endif
 				    fname,
 #ifdef VMS

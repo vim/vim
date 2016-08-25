@@ -4533,15 +4533,6 @@ is_winnt_3(void)
 	    || (os_version.dwPlatformId == VER_PLATFORM_WIN32s));
 }
 
-/*
- * Return TRUE when running under Win32s.
- */
-    int
-gui_is_win32s(void)
-{
-    return (os_version.dwPlatformId == VER_PLATFORM_WIN32s);
-}
-
 #ifdef FEAT_MENU
 /*
  * Figure out how high the menu bar is at the moment.
