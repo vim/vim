@@ -1,6 +1,6 @@
 " Vim indent file
 " Language: Javascript
-" Maintainer: Chris Paul
+" Maintainer: Chris Paul ( https://github.com/bounceme )
 " URL: https://github.com/pangloss/vim-javascript
 " Last Change: August 25, 2016
 
