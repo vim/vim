@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Jul 15
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Aug 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -247,9 +247,15 @@ In which {number} is different every time.  It must be used in the response
 This way Vim knows which sent message matches with which received message and
 can call the right handler.  Also when the messages arrive out of order.
 
+A newline character is terminating the JSON text.  This can be used to
+separate the read text.  For example, in Python:
+	splitidx = read_text.find('\n')
+	message = read_text[:splitidx]
+	rest = read_text[splitidx + 1:]
+
 The sender must always send valid JSON to Vim.  Vim can check for the end of
 the message by parsing the JSON.  It will only accept the message if the end
-was received.
+was received.  A newline after the message is optional.
 
 When the process wants to send a message to Vim without first receiving a
 message, it must use the number zero:

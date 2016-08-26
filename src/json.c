@@ -23,9 +23,26 @@ static int json_decode_item(js_read_T *reader, typval_T *res, int options);
 
 /*
  * Encode "val" into a JSON format string.
+ * The result is added to "gap"
+ * Returns FAIL on failure and makes gap->ga_data empty.
+ */
+    static int
+json_encode_gap(garray_T *gap, typval_T *val, int options)
+{
+    if (json_encode_item(gap, val, get_copyID(), options) == FAIL)
+    {
+	ga_clear(gap);
+	gap->ga_data = vim_strsave((char_u *)"");
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Encode "val" into a JSON format string.
  * The result is in allocated memory.
  * The result is empty when encoding fails.
- * "options" can be JSON_JS or zero;
+ * "options" can contain JSON_JS, JSON_NO_NONE and JSON_NL.
  */
     char_u *
 json_encode(typval_T *val, int options)
@@ -34,17 +51,13 @@ json_encode(typval_T *val, int options)
 
     /* Store bytes in the growarray. */
     ga_init2(&ga, 1, 4000);
-    if (json_encode_item(&ga, val, get_copyID(), options) == FAIL)
-    {
-	vim_free(ga.ga_data);
-	return vim_strsave((char_u *)"");
-    }
+    json_encode_gap(&ga, val, options);
     return ga.ga_data;
 }
 
 /*
  * Encode ["nr", "val"] into a JSON format string in allocated memory.
- * "options" can be JSON_JS or zero;
+ * "options" can contain JSON_JS, JSON_NO_NONE and JSON_NL.
  * Returns NULL when out of memory.
  */
     char_u *
@@ -52,7 +65,7 @@ json_encode_nr_expr(int nr, typval_T *val, int options)
 {
     typval_T	listtv;
     typval_T	nrtv;
-    char_u	*text;
+    garray_T	ga;
 
     nrtv.v_type = VAR_NUMBER;
     nrtv.vval.v_number = nr;
@@ -65,9 +78,11 @@ json_encode_nr_expr(int nr, typval_T *val, int options)
 	return NULL;
     }
 
-    text = json_encode(&listtv, options);
+    ga_init2(&ga, 1, 4000);
+    if (json_encode_gap(&ga, &listtv, options) == OK && (options & JSON_NL))
+	ga_append(&ga, '\n');
     list_unref(listtv.vval.v_list);
-    return text;
+    return ga.ga_data;
 }
 
     static void

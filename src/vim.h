@@ -2440,6 +2440,7 @@ typedef enum
 /* Options for json_encode() and json_decode. */
 #define JSON_JS		1   /* use JS instead of JSON */
 #define JSON_NO_NONE	2   /* v:none item not allowed */
+#define JSON_NL		4   /* append a NL */
 
 /* Used for flags of do_in_path() */
 #define DIP_ALL	    0x01	/* all matches, not just the first one */

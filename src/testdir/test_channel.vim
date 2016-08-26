@@ -55,6 +55,17 @@ func Ch_communicate(port)
   call WaitFor('exists("g:split")')
   call assert_equal(123, g:split)
 
+  " string with ][ should work
+  call assert_equal('this][that', ch_evalexpr(handle, 'echo this][that'))
+
+  " sending three messages quickly then reading should work
+  for i in range(3)
+    call ch_sendexpr(handle, 'echo hello ' . i)
+  endfor
+  call assert_equal('hello 0', ch_read(handle)[1])
+  call assert_equal('hello 1', ch_read(handle)[1])
+  call assert_equal('hello 2', ch_read(handle)[1])
+
   " Request that triggers sending two ex commands.  These will usually be
   " handled before getting the response, but it's not guaranteed, thus wait a
   " tiny bit for the commands to get executed.
