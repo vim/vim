@@ -222,7 +222,7 @@ OPTIONS
 
        -R          Read-only  mode.   The  'readonly' option will be set.  You
                    can still edit the buffer, but will be prevented from acci‐
-                   dently  overwriting  a file.  If you do want to overwrite a
+                   dentally overwriting a file.  If you do want to overwrite a
                    file, add an exclamation mark to  the  Ex  command,  as  in
                    ":w!".   The  -R  option  also  implies  the -n option (see
                    below).  The 'readonly' option  can  be  reset  with  ":set

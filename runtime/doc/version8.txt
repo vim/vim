@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Aug 18
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Aug 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -141,8 +141,10 @@ This adds the 'renderoptions' option to allow for switching on DirectX
 
 GTK+ 3 support ~
 
-GTK+ 2 is getting old, GTK+ 3 is here.  Support has been added and it already
-works quite well, mostly just like GTK+ 2.
+The GTK+ 3 GUI works just like GTK+ 2 except for hardly noticeable technical
+differences between them.  Configure still chooses GTK+ 2 if both 2 and 3 are
+available.  See src/Makefile for how to use GTK+ 3 instead.  See
+|gui-x11-compiling| for other details.
 
 
 Vim script enhancements					*new-vim-script-8*
@@ -165,15 +167,6 @@ Many items were added so support |new-style-testing|.
 Various new items					*new-items-8*
 -----------------
 
-Normal mode commands: ~
-
-|g+|		g+		go to newer text state N times
-|g,|		g,		go to N newer position in change list
-|g-|		g-		go to older text state N times
-|g;|		g;		go to N older position in change list
-|g_|		g_		cursor to the last CHAR N - 1 lines lower
-
-
 Visual mode commands: ~
 
 |v_CTRL-A|	CTRL-A		add N to number in highlighted text
@@ -194,7 +187,7 @@ Options: ~
 'breakindentopt'	settings for 'breakindent'.
 'emoji'			emoji characters are considered full width
 'fixendofline'		make sure last line in file has <EOL>
-'langnoremap'		do not apply 'langmap' to mapped characters
+'langremap'		do apply 'langmap' to mapped characters
 'luadll'		name of the Lua dynamic library
 'packpath'		list of directories used for packages
 'perldll'		name of the Perl dynamic library
@@ -396,6 +389,7 @@ Rmd (markdown with R code chunks) syntax and indent
 Rmd ftplugin
 Rnoweb ftplugin
 Rnoweb indent
+Scala syntax and indent and ftplugin
 SystemVerilog syntax and indent and ftplugin
 Systemd syntax and indent and ftplugin
 Teraterm (TTL) syntax and indent
@@ -12884,7 +12878,7 @@ Files:      src/search.c, src/testdir/Make_all.mak, src/Makefile,
             src/testdir/test_gn.vim
 
 Patch 7.4.2101
-Problem:    Looping over windows, buffers and tab pages is inconsistant.
+Problem:    Looping over windows, buffers and tab pages is inconsistent.
 Solution:   Use FOR_ALL_ macros everywhere. (Yegappan Lakshmanan)
 Files:      src/buffer.c, src/diff.c, src/edit.c, src/eval.c, src/evalfunc.c,
             src/ex_cmds.c, src/ex_cmds2.c, src/ex_docmd.c, src/fileio.c,

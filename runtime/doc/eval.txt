@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Aug 18
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Aug 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7305,7 +7305,7 @@ strwidth({expr})					*strwidth()*
 		Ambiguous, this function's return value depends on 'ambiwidth'.
 		Also see |strlen()|, |strdisplaywidth()| and |strchars()|.
 
-submatch({nr}[, {list}])				*submatch()*
+submatch({nr}[, {list}])			*submatch()* *E935*
 		Only for an expression in a |:substitute| command or
 		substitute() function.
 		Returns the {nr}'th submatch of the matched text.  When {nr}

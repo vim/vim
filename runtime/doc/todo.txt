@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 18
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,7 +34,13 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Rename 'langnoremap' to 'langremap' and invert the value?
+Make ":filter" work with more commands.
+
+C highlighting: modern C allows /* comment */ #ifdef
+
+Ramel Eshed: system() is much slower than job_start(), why? (Aug 26)
+
+Error in viminfo. (John Chen, 2016 Aug 26, #1010)
 
 +channel:
 - Check that raw mode does NL-NUL conversion.
@@ -55,6 +61,8 @@ Later
     With xterm could use -S{pty}.
 
 Regexp problems:
+- The new engine does not do the example in change.txt correctly, where the
+  meaning of \1 and \2 is explained. (Harm te Hennepe, #990)
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
   (Manuel Ortega, 2016 Apr 24)
   Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
@@ -138,6 +146,8 @@ Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
 5)
 
+Patch to fix compiler warning with gtk3. (Kazunobu Kuriyama, 2016 Aug 24)
+
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 
 Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
@@ -157,6 +167,9 @@ Jul 25, #948)
 
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
 
+Patch to add context information to quickfix/location list. (Yegappan
+Lakshmanan, 2016 Aug 25)
+
 MS-Windows: use WS_HIDE instead of SW_SHOWMINNOACTIVE in os_win32.c?
 Otherwise task flickers in taskbar.
 
@@ -165,22 +178,8 @@ Also for ":@.".
 
 Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 
-Patch on issue #728 by Christian Brabandt, 2016 Apr 7.  Update with test: Apr 8.
-Explanation Apr 12.
-
 Second problem in #966: ins_compl_add_tv() uses get_dict_string() multiple
 times, overwrites the one buffer. (Nikolay Pavlov, 2016 Aug 5)
-
-Patch to add 'topbot' to 'belloff' option. (Coot, 2016 Mar 18, #695)
-
-Patch for C syntax HL. (Bradley Garagan, 2016 Apr 17) #763
-
-Patch to make matchit work better, respect 'matchpairs'. (Ken Takata, 2016 Mar
-25)
-
-Patch to fix that on suckless Terminal mousewheel up does not work.
-(Ralph Eastwood, 2013 Nov 25)
-Patch for mouse support on suckless Terminal. #971  Manuel Schiller
 
 This does not work: :set cscopequickfix=a-
 (Linewi, 2015 Jul 12, #914)
@@ -260,6 +259,9 @@ Problem using ":try" inside ":execute". (ZyX, 2013 Sep 15)
 
 Patch to make tests pass with EBCDIC. (Owen Leibman, 2016 Apr 10)
 
+Add ":read :command", to insert the output of an Ex command?
+Can already do it with ":$put =execute('command')".
+
 When repeating the 'confirm' dialog one needs to press Enter. (ds26gte, 2016
 Apr 17)  #762
 
@@ -289,6 +291,14 @@ Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 Patch to test popupmenu.  Fails, possibly due to a bug.
 (Christian Brabandt, 2016 Jul 23)
 
+Patch to introduce 'cmdencoding'. (Ken Takata, Aug 18?)
+Better help Aug 19.
+Problem: applies to too many commands, such as :cbuffer.
+Should there be a different value for :make and :grep?
+    Win32: When running ":make" and 'encoding' differs from the system locale,
+    the output should be converted.  Esp. when 'encoding' is "utf-8". (Yongwei
+    Wu) Should we use 'termencoding' for this?
+
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
 Added tests (James McCoy, 2016 Aug 3).  Still needs more work.
@@ -316,9 +326,6 @@ Patch to avoid redrawing tabline when the popup menu is visible.
 
 Patch to add {skip} argument to search(). (Christian Brabandt, 2016 Feb 24)
 Update 2016 Jun 10, #861
-
-Add value "smart" to 'tagcase': ignore case when tag is all lower case.
-Patch from Christian Brabandt, 2016 Mar 30, #712.
 
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
@@ -543,8 +550,6 @@ Should be easy to highlight all matches with 'incsearch'.  Idea by Itchyny,
 
 Wrong scrolling when using incsearch.  Patch by Christian Brabandt, 2014 Dec 4.
 Is this a good solution?
-
-Patch to add /pattern/ to :oldfiles.  Pull #575.
 
 Patch: Let rare word highlighting overrule good word highlighting.
 (Jakson A. Aquino, 2010 Jul 30, again 2011 Jul 2)
@@ -2216,10 +2221,6 @@ Add a mark for the other end of the Visual area (VIsual pos).  '< and '> are
 only set after Visual moded is ended.
 Also add a variable for the Visual mode.  So that this mode and '< '> can be
 used to set what "gv" selects. (Ben Schmidt)
-
-Win32: When running ":make" and 'encoding' differs from the system locale, the
-output should be converted.  Esp. when 'encoding' is "utf-8". (Yongwei Wu)
-Should we use 'termencoding' for this?
 
 Win32, NTFS: When editing a specific infostream directly and 'backupcopy' is
 "auto" should detect this situation and work like 'backupcopy' is "yes".  File

@@ -400,6 +400,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'langmap'	options.txt	/*'langmap'*
 'langmenu'	options.txt	/*'langmenu'*
 'langnoremap'	options.txt	/*'langnoremap'*
+'langremap'	options.txt	/*'langremap'*
 'laststatus'	options.txt	/*'laststatus'*
 'lazyredraw'	options.txt	/*'lazyredraw'*
 'lbr'	options.txt	/*'lbr'*
@@ -416,6 +417,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'lnr'	options.txt	/*'lnr'*
 'loadplugins'	options.txt	/*'loadplugins'*
 'lpl'	options.txt	/*'lpl'*
+'lrm'	options.txt	/*'lrm'*
 'ls'	options.txt	/*'ls'*
 'lsp'	options.txt	/*'lsp'*
 'luadll'	options.txt	/*'luadll'*
@@ -586,6 +588,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'nojoinspaces'	options.txt	/*'nojoinspaces'*
 'nojs'	options.txt	/*'nojs'*
 'nolangnoremap'	options.txt	/*'nolangnoremap'*
+'nolangremap'	options.txt	/*'nolangremap'*
 'nolazyredraw'	options.txt	/*'nolazyredraw'*
 'nolbr'	options.txt	/*'nolbr'*
 'nolinebreak'	options.txt	/*'nolinebreak'*
@@ -594,6 +597,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'nolnr'	options.txt	/*'nolnr'*
 'noloadplugins'	options.txt	/*'noloadplugins'*
 'nolpl'	options.txt	/*'nolpl'*
+'nolrm'	options.txt	/*'nolrm'*
 'nolz'	options.txt	/*'nolz'*
 'noma'	options.txt	/*'noma'*
 'nomacatsui'	options.txt	/*'nomacatsui'*
@@ -1593,6 +1597,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 /\{-	pattern.txt	/*\/\\{-*
 /\~	pattern.txt	/*\/\\~*
 /^	pattern.txt	/*\/^*
+/_CTRL-L	cmdline.txt	/*\/_CTRL-L*
+/_CTRL-N	cmdline.txt	/*\/_CTRL-N*
+/_CTRL-P	cmdline.txt	/*\/_CTRL-P*
 /atom	pattern.txt	/*\/atom*
 /bar	pattern.txt	/*\/bar*
 /branch	pattern.txt	/*\/branch*
@@ -2267,6 +2274,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :filetype-overview	filetype.txt	/*:filetype-overview*
 :filetype-plugin-off	filetype.txt	/*:filetype-plugin-off*
 :filetype-plugin-on	filetype.txt	/*:filetype-plugin-on*
+:filt	various.txt	/*:filt*
+:filter	various.txt	/*:filter*
 :fin	editing.txt	/*:fin*
 :fina	eval.txt	/*:fina*
 :finally	eval.txt	/*:finally*
@@ -4475,6 +4484,7 @@ E931	message.txt	/*E931*
 E932	eval.txt	/*E932*
 E933	eval.txt	/*E933*
 E934	sign.txt	/*E934*
+E935	eval.txt	/*E935*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
@@ -9217,6 +9227,7 @@ window-size	term.txt	/*window-size*
 window-size-functions	usr_41.txt	/*window-size-functions*
 window-tag	windows.txt	/*window-tag*
 window-variable	eval.txt	/*window-variable*
+windowid	windows.txt	/*windowid*
 windowid-variable	eval.txt	/*windowid-variable*
 windows	windows.txt	/*windows*
 windows-3.1	os_win32.txt	/*windows-3.1*
@@ -9226,6 +9237,7 @@ windows-starting	windows.txt	/*windows-starting*
 windows.txt	windows.txt	/*windows.txt*
 windows95	os_win32.txt	/*windows95*
 winheight()	eval.txt	/*winheight()*
+winid	windows.txt	/*winid*
 winline()	eval.txt	/*winline()*
 winnr()	eval.txt	/*winnr()*
 winrestcmd()	eval.txt	/*winrestcmd()*
