@@ -1570,8 +1570,9 @@ getcmdline(
 			    vim_beep(BO_ERROR);
 			goto cmdline_not_changed;
 		}
+		else
 #endif
-		else if (xpc.xp_numfiles > 0)
+		if (xpc.xp_numfiles > 0)
 		{
 		    if (nextwild(&xpc, (c == Ctrl_P) ? WILD_PREV : WILD_NEXT,
 						    0, firstc != '@') == FAIL)
