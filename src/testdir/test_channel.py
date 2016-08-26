@@ -38,10 +38,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             print("received: {0}".format(received))
 
             # We may receive two messages at once. Take the part up to the
-            # matching "]" (recognized by finding "][").
+            # matching "]" (recognized by finding "\n" as a delimiter).
             todo = received
             while todo != '':
-                splitidx = todo.find('][')
+                splitidx = todo.find('\n')
                 if splitidx < 0:
                      used = todo
                      todo = ''
@@ -202,6 +202,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     elif decoded[1] == 'wait a bit':
                         time.sleep(0.2)
                         response = "waited"
+                    elif decoded[1] == 'contains `][`':
+                        response = "ok"
+                    elif decoded[1] == 'contains `\n`':
+                        response = "ok"
                     elif decoded[1] == '!quit!':
                         # we're done
                         self.server.shutdown()

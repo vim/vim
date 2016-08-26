@@ -175,6 +175,12 @@ func Ch_communicate(port)
   call assert_equal(type(11), type(resp[0]))
   call assert_equal('waited', resp[1])
 
+  " contains `][`
+  call assert_equal('ok', ch_evalexpr(handle, 'contains `][`'))
+
+  " contains \n
+  call assert_equal('ok', ch_evalexpr(handle, "contains `\n`"))
+
   " make the server quit, can't check if this works, should not hang.
   call ch_sendexpr(handle, '!quit!')
 endfunc
