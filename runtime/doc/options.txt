@@ -1674,6 +1674,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set columns=9999
 <	Minimum value is 12, maximum value is 10000.
 
+						*'columnspace'* *'csp'*
+'columnspace' 'csp'	number	(default 0)
+			global
+			{not in Vi}
+			{only in the MacVim GUI}
+	Number of pixel columns inserted between characters.  With some fonts
+  there can be too much room between characters.  Then it makes sense
+  to set 'columnspace' to a negative value.  This may cause display
+  problems though!
+
 					*'comments'* *'com'* *E524* *E525*
 'comments' 'com'	string	(default
 				"s1:/*,mb:*,ex:*/,://,b:#,:%,:XCOMM,n:>,fb:-")

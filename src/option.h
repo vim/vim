@@ -611,6 +611,7 @@ EXTERN char_u	*p_lm;		/* 'langmenu' */
 #endif
 #ifdef FEAT_GUI
 EXTERN long	p_linespace;	/* 'linespace' */
+EXTERN long	p_columnspace;	/* 'columnspace' */
 #endif
 #ifdef FEAT_LISP
 EXTERN char_u	*p_lispwords;	/* 'lispwords' */

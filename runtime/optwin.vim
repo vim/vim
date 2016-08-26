@@ -638,6 +638,8 @@ if has("gui")
   endif
   call append("$", "linespace\tnumber of pixel lines to use between characters")
   call append("$", " \tset lsp=" . &lsp)
+  call append("$", "columnspace\tnumber of pixel columns to use between characters")
+  call append("$", " \tset csp=" . &csp)
   if has("balloon_eval")
     call append("$", "balloondelay\tdelay in milliseconds before a balloon may pop up")
     call append("$", " \tset bdlay=" . &bdlay)

@@ -644,6 +644,7 @@ Short explanation of each option:		*option-list*
 'cmdwinheight'	  'cwh'     height of the command-line window
 'colorcolumn'	  'cc'	    columns to highlight
 'columns'	  'co'	    number of columns in the display
+'columnspace'	  'csp'     number of pixel columns to use between characters
 'comments'	  'com'     patterns that can start a comment line
 'commentstring'   'cms'     template for comments; used for fold marker
 'compatible'	  'cp'	    behave Vi-compatible as much as possible
