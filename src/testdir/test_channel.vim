@@ -368,11 +368,11 @@ func Ch_raw_one_time_callback(port)
   call ch_setoptions(handle, {'mode': 'raw'})
 
   " The message are sent raw, we do our own JSON strings here.
-  call ch_sendraw(handle, "[1, \"hello!\"]", {'callback': 'Ch_handleRaw1'})
+  call ch_sendraw(handle, "[1, \"hello!\"]\n", {'callback': 'Ch_handleRaw1'})
   call WaitFor('g:Ch_reply1 != ""')
   call assert_equal("[1, \"got it\"]", g:Ch_reply1)
-  call ch_sendraw(handle, "[2, \"echo something\"]", {'callback': 'Ch_handleRaw2'})
-  call ch_sendraw(handle, "[3, \"wait a bit\"]", {'callback': 'Ch_handleRaw3'})
+  call ch_sendraw(handle, "[2, \"echo something\"]\n", {'callback': 'Ch_handleRaw2'})
+  call ch_sendraw(handle, "[3, \"wait a bit\"]\n", {'callback': 'Ch_handleRaw3'})
   call WaitFor('g:Ch_reply2 != ""')
   call assert_equal("[2, \"something\"]", g:Ch_reply2)
   " wait for the 200 msec delayed reply
