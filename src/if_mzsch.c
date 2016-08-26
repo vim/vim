@@ -1008,8 +1008,13 @@ static intptr_t _tls_index = 0;
 # endif
 #endif
 
+/*
+ * mzscheme_main() is called early in main().
+ * We may call scheme_main_setup() which calls mzscheme_env_main() which then
+ * trampolines into vim_main2(), which never returns.
+ */
     int
-mzscheme_main()
+mzscheme_main(void)
 {
     int	    argc = 0;
     char    *argv = NULL;
@@ -1036,9 +1041,8 @@ mzscheme_main()
 }
 
     static int
-mzscheme_env_main(Scheme_Env *env, int argc, char **argv)
+mzscheme_env_main(Scheme_Env *env, int argc UNUSED, char **argv UNUSED)
 {
-    int vim_main_result;
 #ifdef TRAMPOLINED_MZVIM_STARTUP
     /* Scheme has created the environment for us */
     environment = env;
@@ -1055,17 +1059,10 @@ mzscheme_env_main(Scheme_Env *env, int argc, char **argv)
 # endif
 #endif
 
-    /* mzscheme_main is called as a trampoline from main.
-     * We trampoline into vim_main2
-     * Passing argc, argv through from mzscheme_main
-     */
-    vim_main_result = vim_main2();
-#if !defined(TRAMPOLINED_MZVIM_STARTUP) && defined(MZ_PRECISE_GC)
-    /* releasing dummy */
-    MZ_GC_REG();
-    MZ_GC_UNREG();
-#endif
-    return vim_main_result;
+    vim_main2();
+    /* not reached, vim_main2() will loop until exit() */
+
+    return 0;
 }
 
     static Scheme_Object*
