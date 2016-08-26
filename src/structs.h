@@ -572,6 +572,7 @@ typedef struct
     char_u	*save_ei;		/* saved value of 'eventignore' */
 # endif
     regmatch_T	filter_regmatch;	/* set by :filter /pat/ */
+    int		filter_force;		/* set for :filter! */
 } cmdmod_T;
 
 #define MF_SEED_LEN	8

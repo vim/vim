@@ -2161,8 +2161,12 @@ msg_puts_display(
     int
 message_filtered(char_u *msg)
 {
-    return cmdmod.filter_regmatch.regprog != NULL
-		     && !vim_regexec(&cmdmod.filter_regmatch, msg, (colnr_T)0);
+    int match;
+
+    if (cmdmod.filter_regmatch.regprog == NULL)
+	return FALSE;
+    match = vim_regexec(&cmdmod.filter_regmatch, msg, (colnr_T)0);
+    return cmdmod.filter_force ? match : !match;
 }
 
 /*
