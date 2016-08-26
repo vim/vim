@@ -2526,7 +2526,7 @@ barline_writestring(FILE *fd, char_u *s, int remaining_start)
 	else
 	    ++len;
     }
-    if (len > remaining)
+    if (len > remaining - 2)
     {
 	fprintf(fd, ">%d\n|<", len);
 	remaining = LSIZE - 20;
