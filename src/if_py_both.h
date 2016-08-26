@@ -3009,9 +3009,9 @@ FunctionAttr(FunctionObject *self, char *name)
 	return PyString_FromString((char *)(self->name));
     else if (strcmp(name, "args") == 0)
     {
-	if (self->argv == NULL)
+	if (self->argv == NULL || (list = list_alloc()) == NULL)
 	    return AlwaysNone(NULL);
-	list = list_alloc();
+
 	for (i = 0; i < self->argc; ++i)
 	    list_append_tv(list, &self->argv[i]);
 	return NEW_LIST(list);
