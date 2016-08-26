@@ -181,6 +181,7 @@ NEW_TESTS = test_arglist.res \
 	    test_perl.res \
 	    test_quickfix.res \
 	    test_ruby.res \
+	    test_search.res \
 	    test_signs.res \
 	    test_startup.res \
 	    test_startup_utf8.res \
