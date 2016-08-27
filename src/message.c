@@ -12,6 +12,7 @@
  */
 
 #define MESSAGE_FILE		/* don't include prototype for smsg() */
+#define USING_FLOAT_STUFF
 
 #include "vim.h"
 
