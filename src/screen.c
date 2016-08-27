@@ -3528,17 +3528,10 @@ win_line(
      * Handle highlighting the last used search pattern and matches.
      * Do this for both search_hl and the match list.
      */
-    cur = wp->w_match_head;
-    shl_flag = FALSE;
-    while (cur != NULL || shl_flag == FALSE)
+    cur = NULL;
+    shl = &search_hl;
+    do
     {
-	if (shl_flag == FALSE)
-	{
-	    shl = &search_hl;
-	    shl_flag = TRUE;
-	}
-	else
-	    shl = &cur->hl;
 	shl->startcol = MAXCOL;
 	shl->endcol = MAXCOL;
 	shl->attr_cur = 0;
@@ -3581,9 +3574,11 @@ win_line(
 	    }
 	    area_highlighting = TRUE;
 	}
-	if (shl != &search_hl && cur != NULL)
-	    cur = cur->next;
+	cur = (&search_hl == shl) ? wp->w_match_head : cur->next;
+	if (cur != NULL)
+	    shl = &cur->hl;
     }
+    while (cur != NULL);
 #endif
 
 #ifdef FEAT_SYN_HL
@@ -3980,7 +3975,8 @@ win_line(
 #ifdef FEAT_CONCEAL
 			    prev_syntax_id = 0;
 #endif
-			    next_search_hl(wp, shl, lnum, (colnr_T)v, cur);
+			    next_search_hl(wp, shl, lnum, (colnr_T)v,
+					   shl != &search_hl ? cur : NULL);
 			    pos_inprogress = cur == NULL || cur->pos.cur == 0
 							       ? FALSE : TRUE;
 
@@ -7562,8 +7558,6 @@ prepare_search_hl(win_T *wp, linenr_T lnum)
 {
     matchitem_T *cur;		/* points to the match list */
     match_T	*shl;		/* points to search_hl or a match */
-    int		shl_flag;	/* flag to indicate whether search_hl
-				   has been processed or not */
     int		pos_inprogress;	/* marks that position match search is
 				   in progress */
     int		n;
@@ -7573,17 +7567,10 @@ prepare_search_hl(win_T *wp, linenr_T lnum)
      * of the window or just after a closed fold.
      * Do this both for search_hl and the match list.
      */
-    cur = wp->w_match_head;
-    shl_flag = FALSE;
-    while (cur != NULL || shl_flag == FALSE)
+    cur = NULL;
+    shl = &search_hl;
+    do
     {
-	if (shl_flag == FALSE)
-	{
-	    shl = &search_hl;
-	    shl_flag = TRUE;
-	}
-	else
-	    shl = &cur->hl;
 	if (shl->rm.regprog != NULL
 		&& shl->lnum == 0
 		&& re_multiline(shl->rm.regprog))
@@ -7624,9 +7611,11 @@ prepare_search_hl(win_T *wp, linenr_T lnum)
 		}
 	    }
 	}
-	if (shl != &search_hl && cur != NULL)
-	    cur = cur->next;
+        cur = (shl == &search_hl) ? wp->w_match_head : cur->next;
+        if (cur != NULL)
+            shl = &cur->hl;
     }
+    while (cur != NULL);
 }
 
 /*
