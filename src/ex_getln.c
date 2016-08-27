@@ -1503,82 +1503,14 @@ getcmdline(
 
 	case Ctrl_N:	    /* next match */
 	case Ctrl_P:	    /* previous match */
-#ifdef FEAT_SEARCH_EXTRA
-		    if (p_is && !cmd_silent && (firstc == '/' || firstc == '?'))
-		    {
-			pos_T  t;
-			int    search_flags = SEARCH_KEEP + SEARCH_NOOF
-								 + SEARCH_PEEK;
-
-			if (char_avail())
-			    continue;
-			cursor_off();
-			out_flush();
-			if (c == Ctrl_N)
-			{
-			    t = match_end;
-			    search_flags += SEARCH_COL;
-			}
-			else
-			    t = match_start;
-			++emsg_off;
-			i = searchit(curwin, curbuf, &t,
-				     c == Ctrl_N ? FORWARD : BACKWARD,
-				     ccline.cmdbuff, count, search_flags,
-				     RE_SEARCH, 0, NULL);
-			--emsg_off;
-			if (i)
-			{
-			    old_cursor = match_start;
-			    match_end = t;
-			    match_start = t;
-			    if (c == Ctrl_P && firstc == '/')
-			    {
-				/* move just before the current match, so that
-				 * when nv_search finishes the cursor will be
-				 * put back on the match */
-				old_cursor = t;
-				(void)decl(&old_cursor);
-			    }
-			    if (lt(t, old_cursor) && c == Ctrl_N)
-			    {
-				/* wrap around */
-				old_cursor = t;
-				if (firstc == '?')
-				    (void)incl(&old_cursor);
-				else
-				    (void)decl(&old_cursor);
-			    }
-
-			    set_search_match(&match_end);
-			    curwin->w_cursor = match_start;
-			    changed_cline_bef_curs();
-			    update_topline();
-			    validate_cursor();
-			    highlight_match = TRUE;
-			    old_curswant = curwin->w_curswant;
-			    old_leftcol = curwin->w_leftcol;
-			    old_topline = curwin->w_topline;
-# ifdef FEAT_DIFF
-			    old_topfill = curwin->w_topfill;
-# endif
-			    old_botline = curwin->w_botline;
-			    update_screen(NOT_VALID);
-			    redrawcmdline();
-			}
-			else
-			    vim_beep(BO_ERROR);
-			goto cmdline_not_changed;
-		}
-		else
-#endif
 		if (xpc.xp_numfiles > 0)
 		{
 		    if (nextwild(&xpc, (c == Ctrl_P) ? WILD_PREV : WILD_NEXT,
 						    0, firstc != '@') == FAIL)
 			break;
-		    goto cmdline_changed;
+		    goto cmdline_not_changed;
 		}
+		/* FALLTHROUGH */
 
 #ifdef FEAT_CMDHIST
 	case K_UP:
@@ -1722,6 +1654,77 @@ getcmdline(
 		    goto cmdline_changed;
 		}
 		beep_flush();
+#endif
+		goto cmdline_not_changed;
+
+	case Ctrl_G:	    /* next match */
+	case Ctrl_T:	    /* previous match */
+#ifdef FEAT_SEARCH_EXTRA
+		if (p_is && !cmd_silent && (firstc == '/' || firstc == '?'))
+		{
+		    pos_T  t;
+		    int    search_flags = SEARCH_KEEP + SEARCH_NOOF
+							     + SEARCH_PEEK;
+
+		    if (char_avail())
+			continue;
+		    cursor_off();
+		    out_flush();
+		    if (c == Ctrl_G)
+		    {
+			t = match_end;
+			search_flags += SEARCH_COL;
+		    }
+		    else
+			t = match_start;
+		    ++emsg_off;
+		    i = searchit(curwin, curbuf, &t,
+				 c == Ctrl_G ? FORWARD : BACKWARD,
+				 ccline.cmdbuff, count, search_flags,
+				 RE_SEARCH, 0, NULL);
+		    --emsg_off;
+		    if (i)
+		    {
+			old_cursor = match_start;
+			match_end = t;
+			match_start = t;
+			if (c == Ctrl_T && firstc == '/')
+			{
+			    /* move just before the current match, so that
+			     * when nv_search finishes the cursor will be
+			     * put back on the match */
+			    old_cursor = t;
+			    (void)decl(&old_cursor);
+			}
+			if (lt(t, old_cursor) && c == Ctrl_G)
+			{
+			    /* wrap around */
+			    old_cursor = t;
+			    if (firstc == '?')
+				(void)incl(&old_cursor);
+			    else
+				(void)decl(&old_cursor);
+			}
+
+			set_search_match(&match_end);
+			curwin->w_cursor = match_start;
+			changed_cline_bef_curs();
+			update_topline();
+			validate_cursor();
+			highlight_match = TRUE;
+			old_curswant = curwin->w_curswant;
+			old_leftcol = curwin->w_leftcol;
+			old_topline = curwin->w_topline;
+# ifdef FEAT_DIFF
+			old_topfill = curwin->w_topfill;
+# endif
+			old_botline = curwin->w_botline;
+			update_screen(NOT_VALID);
+			redrawcmdline();
+		    }
+		    else
+			vim_beep(BO_ERROR);
+		}
 		goto cmdline_not_changed;
 #endif
 
