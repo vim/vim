@@ -3921,7 +3921,6 @@ get_buffer_signs(buf_T *buf, list_T *l)
 get_buffer_info(buf_T *buf)
 {
     dict_T	*dict;
-    dict_T	*opts;
     tabpage_T	*tp;
     win_T	*wp;
     list_T	*windows;
@@ -3944,11 +3943,6 @@ get_buffer_info(buf_T *buf)
 
     /* Get a reference to buffer variables */
     dict_add_dict(dict, "variables", buf->b_vars);
-
-    /* Copy buffer options */
-    opts = get_winbuf_options(TRUE);
-    if (opts != NULL)
-	dict_add_dict(dict, "options", opts);
 
     /* List of windows displaying this buffer */
     windows = list_alloc();
@@ -4156,9 +4150,23 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
 	save_curbuf = curbuf;
 	curbuf = buf;
 
-	if (*varname == '&')	/* buffer-local-option */
+	if (*varname == '&')
 	{
-	    if (get_option_tv(&varname, rettv, TRUE) == OK)
+	    if (varname[1] == NUL)
+	    {
+		/* get all buffer-local options in a dict */
+		dict_T	*opts = get_winbuf_options(TRUE);
+
+		if (opts != NULL)
+		{
+		    rettv->v_type = VAR_DICT;
+		    rettv->vval.v_dict = opts;
+		    ++opts->dv_refcount;
+		    done = TRUE;
+		}
+	    }
+	    else if (get_option_tv(&varname, rettv, TRUE) == OK)
+		/* buffer-local-option */
 		done = TRUE;
 	}
 	else if (STRCMP(varname, "changedtick") == 0)
@@ -5112,7 +5120,6 @@ f_gettabwinvar(typval_T *argvars, typval_T *rettv)
 get_win_info(win_T *wp, short tpnr, short winnr)
 {
     dict_T	*dict;
-    dict_T	*opts;
 
     dict = dict_alloc();
     if (dict == NULL)
@@ -5131,13 +5138,8 @@ get_win_info(win_T *wp, short tpnr, short winnr)
 	    (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL), NULL);
 #endif
 
-    /* Make a reference to window variables */
+    /* Add a reference to window variables */
     dict_add_dict(dict, "variables", wp->w_vars);
-
-    /* Copy window options */
-    opts = get_winbuf_options(FALSE);
-    if (opts != NULL)
-	dict_add_dict(dict, "options", opts);
 
     return dict;
 }
