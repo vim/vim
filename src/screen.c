@@ -3546,7 +3546,8 @@ win_line(
 	v = (long)(ptr - line);
 	if (cur != NULL)
 	    cur->pos.cur = 0;
-	next_search_hl(wp, shl, lnum, (colnr_T)v, cur);
+	next_search_hl(wp, shl, lnum, (colnr_T)v,
+					       shl == &search_hl ? NULL : cur);
 
 	/* Need to get the line again, a multi-line regexp may have made it
 	 * invalid. */
@@ -3980,7 +3981,8 @@ win_line(
 #ifdef FEAT_CONCEAL
 			    prev_syntax_id = 0;
 #endif
-			    next_search_hl(wp, shl, lnum, (colnr_T)v, cur);
+			    next_search_hl(wp, shl, lnum, (colnr_T)v,
+					       shl == &search_hl ? NULL : cur);
 			    pos_inprogress = cur == NULL || cur->pos.cur == 0
 							       ? FALSE : TRUE;
 
@@ -7607,7 +7609,8 @@ prepare_search_hl(win_T *wp, linenr_T lnum)
 	    while (shl->first_lnum < lnum && (shl->rm.regprog != NULL
 					  || (cur != NULL && pos_inprogress)))
 	    {
-		next_search_hl(wp, shl, shl->first_lnum, (colnr_T)n, cur);
+		next_search_hl(wp, shl, shl->first_lnum, (colnr_T)n,
+					       shl == &search_hl ? NULL : cur);
 		pos_inprogress = cur == NULL || cur->pos.cur == 0
 							      ? FALSE : TRUE;
 		if (shl->lnum != 0)
