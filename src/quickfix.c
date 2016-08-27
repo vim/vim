@@ -4753,11 +4753,15 @@ qf_add_entries(
 }
 
     static int
-qf_set_properties(qf_info_T *qi, dict_T *what)
+qf_set_properties(qf_info_T *qi, dict_T *what, int action)
 {
     dictitem_T	*di;
     int		retval = FAIL;
     int		qf_idx;
+    int		newlist = FALSE;
+
+    if (action == ' ' || qi->qf_curlist == qi->qf_listcount)
+	newlist = TRUE;
 
     qf_idx = qi->qf_curlist;		/* default is the current list */
     if ((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
@@ -4771,6 +4775,13 @@ qf_set_properties(qf_info_T *qi, dict_T *what)
 	}
 	else
 	    return FAIL;
+	newlist = FALSE;	/* use the specified list */
+    }
+
+    if (newlist)
+    {
+	qf_new_list(qi, NULL);
+	qf_idx = qi->qf_curlist;
     }
 
     if ((di = dict_find(what, (char_u *)"title", -1)) != NULL)
@@ -4813,7 +4824,7 @@ set_errorlist(
     }
 
     if (what != NULL)
-	retval = qf_set_properties(qi, what);
+	retval = qf_set_properties(qi, what, action);
     else
 	retval = qf_add_entries(qi, list, title, action);
 
