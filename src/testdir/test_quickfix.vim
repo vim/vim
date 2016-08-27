@@ -1772,6 +1772,21 @@ func Xproperty_tests(cchar)
     if a:cchar == 'l'
 	call assert_equal({}, getloclist(99, {'title': 1}))
     endif
+
+    " Context related tests
+    call g:Xsetlist([], 'a', {'context':[1,2,3]})
+    call garbagecollect()
+    let d = g:Xgetlist({'context':1})
+    call assert_equal([1,2,3], d.context)
+    call g:Xsetlist([], 'a', {'context':{'color':'green'}})
+    let d = g:Xgetlist({'context':1})
+    call assert_equal({'color':'green'}, d.context)
+    call g:Xsetlist([], 'a', {'context':"Context info"})
+    let d = g:Xgetlist({'context':1})
+    call assert_equal("Context info", d.context)
+    call g:Xsetlist([], 'a', {'context':246})
+    let d = g:Xgetlist({'context':1})
+    call assert_equal(246, d.context)
 endfunc
 
 func Test_qf_property()
