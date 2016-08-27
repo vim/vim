@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Aug 26
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -395,6 +395,9 @@ This {string} can also be JSON, use |json_encode()| to create it and
 
 It is not possible to use |ch_evalexpr()| or |ch_sendexpr()| on a raw channel.
 
+A String in Vim cannot contain NUL bytes.  To send or receive NUL bytes read
+or write from a buffer.  See |in_io-buffer| and |out_io-buffer|.
+
 ==============================================================================
 7. More channel functions				*channel-more*
 
@@ -480,7 +483,7 @@ For example, to start a job and write its output in buffer "dummy": >
 
 
 Job input from a buffer ~
-
+							*in_io-buffer*
 To run a job that reads from a buffer: >
 	let job = job_start({command},
 	    \ {'in_io': 'buffer', 'in_name': 'mybuffer'})
@@ -654,7 +657,7 @@ See |job_setoptions()| and |ch_setoptions()|.
 
 
 Writing to a buffer ~
-
+							*out_io-buffer*
 When the out_io or err_io mode is "buffer" and there is a callback, the text
 is appended to the buffer before invoking the callback.
 

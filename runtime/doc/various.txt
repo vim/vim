@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2016 Aug 23
+*various.txt*   For Vim version 7.4.  Last change: 2016 Aug 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -91,6 +91,8 @@ g8			Print the hex values of the bytes used in the
 			on paper see |:hardcopy|.  In the GUI you can use the
 			File.Print menu entry.
 			See |ex-flags| for [flags].
+			The |:filter| command can be used to only show lines
+			matching a pattern.
 
 :[range]p[rint] {count} [flags]
 			Print {count} lines, starting with [range] (default
@@ -528,7 +530,9 @@ N  *+X11*		Unix only: can restore window title |X11|
 :filt[er] {pat} {command}
 :filt[er] /{pat}/ {command}
 			Restrict the output of {command} to matches with {pat}.
-
+			For example, to list only xml files: >
+				:filter /\.xml$/ oldfiles
+<
 			{pat} is a Vim search pattern.  Instead of enclosing
 			it in / any non-ID character (see |'isident'|) can be
 			used, so long as it does not appear in {pat}.  Without

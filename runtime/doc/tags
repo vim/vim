@@ -1597,9 +1597,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 /\{-	pattern.txt	/*\/\\{-*
 /\~	pattern.txt	/*\/\\~*
 /^	pattern.txt	/*\/^*
+/_CTRL-G	cmdline.txt	/*\/_CTRL-G*
 /_CTRL-L	cmdline.txt	/*\/_CTRL-L*
-/_CTRL-N	cmdline.txt	/*\/_CTRL-N*
-/_CTRL-P	cmdline.txt	/*\/_CTRL-P*
+/_CTRL-T	cmdline.txt	/*\/_CTRL-T*
 /atom	pattern.txt	/*\/atom*
 /bar	pattern.txt	/*\/bar*
 /branch	pattern.txt	/*\/branch*
@@ -5176,6 +5176,7 @@ c_CTRL-C	cmdline.txt	/*c_CTRL-C*
 c_CTRL-D	cmdline.txt	/*c_CTRL-D*
 c_CTRL-E	cmdline.txt	/*c_CTRL-E*
 c_CTRL-F	cmdline.txt	/*c_CTRL-F*
+c_CTRL-G	cmdline.txt	/*c_CTRL-G*
 c_CTRL-H	cmdline.txt	/*c_CTRL-H*
 c_CTRL-I	cmdline.txt	/*c_CTRL-I*
 c_CTRL-J	cmdline.txt	/*c_CTRL-J*
@@ -5192,6 +5193,7 @@ c_CTRL-R_CTRL-O	cmdline.txt	/*c_CTRL-R_CTRL-O*
 c_CTRL-R_CTRL-P	cmdline.txt	/*c_CTRL-R_CTRL-P*
 c_CTRL-R_CTRL-R	cmdline.txt	/*c_CTRL-R_CTRL-R*
 c_CTRL-R_CTRL-W	cmdline.txt	/*c_CTRL-R_CTRL-W*
+c_CTRL-T	cmdline.txt	/*c_CTRL-T*
 c_CTRL-U	cmdline.txt	/*c_CTRL-U*
 c_CTRL-V	cmdline.txt	/*c_CTRL-V*
 c_CTRL-W	cmdline.txt	/*c_CTRL-W*
@@ -6863,6 +6865,7 @@ improvements-7	version7.txt	/*improvements-7*
 improvements-8	version8.txt	/*improvements-8*
 in_bot	channel.txt	/*in_bot*
 in_buf	channel.txt	/*in_buf*
+in_io-buffer	channel.txt	/*in_io-buffer*
 in_mode	channel.txt	/*in_mode*
 in_name	channel.txt	/*in_name*
 in_top	channel.txt	/*in_top*
@@ -7693,6 +7696,7 @@ os_win32.txt	os_win32.txt	/*os_win32.txt*
 other-features	vi_diff.txt	/*other-features*
 out_buf	channel.txt	/*out_buf*
 out_cb	channel.txt	/*out_cb*
+out_io-buffer	channel.txt	/*out_io-buffer*
 out_mode	channel.txt	/*out_mode*
 out_name	channel.txt	/*out_name*
 out_timeout	channel.txt	/*out_timeout*

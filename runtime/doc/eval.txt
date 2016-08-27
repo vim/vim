@@ -3272,6 +3272,7 @@ delete({fname} [, {flags}])					*delete()*
 		
 		When {flags} is "rf": Deletes the directory by the name
 		{fname} and everything in it, recursively.  BE CAREFUL!
+
 		A symbolic link itself is deleted, not what it points to.
 		
 		The result is a Number, which is 0 if the delete operation was

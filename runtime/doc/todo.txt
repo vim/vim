@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 26
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,15 +35,9 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Make ":filter" work with more commands.
-
-C highlighting: modern C allows /* comment */ #ifdef
-
-Ramel Eshed: system() is much slower than job_start(), why? (Aug 26)
-
-Error in viminfo. (John Chen, 2016 Aug 26, #1010)
+Search for: msg_putchar('\n')
 
 +channel:
-- Check that raw mode does NL-NUL conversion.
 - Implement |job-term| ?
 - Channel test fails with Motif.  Sometimes kills the X11 server.
 - When a message in the queue but there is no callback, drop it after a while?
@@ -111,9 +105,6 @@ Regexp problems:
 - Search for /\%d0\+  causes error E363 in a file with consecutive NUL
   characters. (Christian Brabandt, 2016 Jun 7)
 
-getbufinfo() may return a lot of data.  Select what to return?
-    remove variables, does that help?
-
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
@@ -125,10 +116,6 @@ Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
-
-Problem with completion on "**/" in $path. (issue #932)
-Happens in uniquefy_paths() ?  More info Jul 22.
-Fix for this (Harm te Hennepe, 2016 Jul 21, #939)
 
 Cursor positioned in the wrong place when editing src/testdir/test_viml.vim.
 
@@ -193,6 +180,8 @@ Patch for restoring wide characters in the console buffer.
 
 We can use '. to go to the last change in the current buffer, but how about
 the last change in any buffer?  Can we use ', (, is next to .)?
+
+Ramel Eshed: system() is much slower than job_start(), why? (Aug 26)
 
 Patch for Python: #622. (Roland Puntaier, 2016 Feb 2)
 What does it change?
@@ -404,6 +393,10 @@ inconsistent with the documentation.
 
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?
+
+C highlighting: modern C allows: /* comment */ #ifdef
+and also line continuation after #include.
+I can't recommend it though.
 
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
