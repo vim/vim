@@ -59,7 +59,7 @@ func Nb_file_auth(port)
     call assert_fails('nbstart =Xnbauth', 'E668:')
   endif
   call setfperm('Xnbauth', "rw-------")
-  exe 'nbstart :localhost:' . a:port . ':bunny'
+  exe 'nbstart =Xnbauth'
   call assert_true(has("netbeans_enabled"))
 
   call WaitFor('len(readfile("Xnetbeans")) > 2')
