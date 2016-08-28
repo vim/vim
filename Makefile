@@ -51,12 +51,9 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #
 # dossrc	vim##src.zip		sources for MS-DOS
 # dosrt		vim##rt.zip		runtime for MS-DOS
-# dosbin	vim##d16.zip		binary for MS-DOS 16 bits
-#		vim##d32.zip		binary for MS-DOS 32 bits
-#		vim##w32.zip		binary for Win32
+# dosbin	vim##w32.zip		binary for Win32
 #		gvim##.zip		binary for GUI Win32
 #		gvim##ole.zip		OLE exe for Win32 GUI
-#		gvim##_s.zip		exe for Win32s GUI
 #
 # OBSOLETE
 # amisrc	vim##src.tgz		sources for Amiga
@@ -72,15 +69,6 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 
 MAJOR = 7
 MINOR = 4
-
-# Uncomment this line if the Win32s version is to be included.
-# DOSBIN_S =  dosbin_s
-
-# Uncomment this line if the 16 bit DOS version is to be included.
-# DOSBIN_D16 = dosbin_d16
-
-# Uncomment this line if the 32 bit DOS version is to be included.
-# DOSBIN_D32 = dosbin_d32
 
 # CHECKLIST for creating a new version:
 #
@@ -152,7 +140,9 @@ MINOR = 4
 #   > rm testdir/*.out testdir/*.res
 #   > nmake -f Make_mvc.mak test
 #   - check the output.
-# - Rename vim.exe to vimw32.exe, xxd/xxd.exe to xxdw32.exe.
+# - Rename: vim.exe to vimw32.exe,
+#           tee/tee.exe to teew32.exe,
+#           xxd/xxd.exe to xxdw32.exe
 # - Rename vim.pdb to vimw32.pdb.
 # - Rename install.exe to installw32.exe and uninstal.exe to uninstalw32.exe.
 # Win32 GUI version build:
@@ -187,7 +177,8 @@ MINOR = 4
 # NSIS self installing exe:
 # - To get NSIS see http://nsis.sourceforge.net
 # - Make sure gvim_ole.exe, vimw32.exe, installw32.exe,
-#   uninstalw32.exe and xxdw32.exe have been build as mentioned above.
+#   uninstalw32.exe, teew32.exe and xxdw32.exe have been build as mentioned
+#   above.
 # - copy these files (get them from a binary archive or build them):
 #	gvimext.dll in src/GvimExt
 #	gvimext64.dll in src/GvimExt
@@ -221,15 +212,7 @@ MINOR = 4
 # 32 bit DOS version: Support was removed in 7.4.1399.  When syncing to before
 # that it probably won't build.
 #
-# Win32s GUI version: (requires a very old compiler)
-# - Set environment for Visual C++ 4.1 (requires a new console window):
-#   "vcvars32.bat" (use the path for VC 4.1 e:\msdev\bin)
-# - "nmake -f Make_mvc.mak GUI=yes INTL=no clean" (use the path for VC 4.1)
-# - "nmake -f Make_mvc.mak GUI=yes INTL=no" (use the path for VC 4.1)
-# - Rename "gvim.exe" to "gvim_w32s.exe".
-# - Rename "install.exe" to "installw32.exe"
-# - Rename "uninstal.exe" to "uninstalw32.exe"
-# - The produced uninstalw32.exe and vimrun.exe are used.
+# Win32s GUI version: Support was removed in patch 7.4.1364.
 #
 # OS/2 support was removed in patch 7.4.1008.  If you want to give it a try
 # sync to before that and check the old version of this Makefile for
@@ -268,24 +251,15 @@ dist/comment:
 	mkdir dist/comment
 
 COMMENT_RT = comment/$(VERSION)-rt
-COMMENT_D16 = comment/$(VERSION)-bin-d16
-COMMENT_D32 = comment/$(VERSION)-bin-d32
 COMMENT_W32 = comment/$(VERSION)-bin-w32
 COMMENT_GVIM = comment/$(VERSION)-bin-gvim
 COMMENT_OLE = comment/$(VERSION)-bin-ole
-COMMENT_W32S = comment/$(VERSION)-bin-w32s
 COMMENT_SRC = comment/$(VERSION)-src
 COMMENT_HTML = comment/$(VERSION)-html
 COMMENT_FARSI = comment/$(VERSION)-farsi
 
 dist/$(COMMENT_RT): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) runtime files for MS-DOS and MS-Windows" > dist/$(COMMENT_RT)
-
-dist/$(COMMENT_D16): dist/comment
-	echo "Vim - Vi IMproved - v$(VDOT) binaries for MS-DOS 16 bit real mode" > dist/$(COMMENT_D16)
-
-dist/$(COMMENT_D32): dist/comment
-	echo "Vim - Vi IMproved - v$(VDOT) binaries for MS-DOS 32 bit protected mode" > dist/$(COMMENT_D32)
 
 dist/$(COMMENT_W32): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) binaries for MS-Windows NT/95" > dist/$(COMMENT_W32)
@@ -295,9 +269,6 @@ dist/$(COMMENT_GVIM): dist/comment
 
 dist/$(COMMENT_OLE): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) MS-Windows GUI binaries with OLE support" > dist/$(COMMENT_OLE)
-
-dist/$(COMMENT_W32S): dist/comment
-	echo "Vim - Vi IMproved - v$(VDOT) GUI binaries for MS-Windows 3.1/3.11" > dist/$(COMMENT_W32S)
 
 dist/$(COMMENT_SRC): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) sources for MS-DOS and MS-Windows" > dist/$(COMMENT_SRC)
@@ -501,7 +472,7 @@ runtime_unix2dos: dosrt_files
 	cd dist/vim/$(VIMRTDIR); tar cf - * \
 		| (cd ../../../runtime/dos; tar xf -)
 
-dosbin: prepare dosbin_gvim dosbin_w32 $(DOSBIN_D32) dosbin_ole $(DOSBIN_S) $(DOSBIN_D16)
+dosbin: prepare dosbin_gvim dosbin_w32 dosbin_ole $(DOSBIN_S)
 
 # make Win32 gvim
 dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
@@ -514,6 +485,7 @@ dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	-rm $(IN_README_DIR)
 	cp gvim.exe dist/vim/$(VIMRTDIR)/gvim.exe
+	cp teew32.exe dist/vim/$(VIMRTDIR)/tee.exe
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp vimrun.exe dist/vim/$(VIMRTDIR)/vimrun.exe
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
@@ -532,42 +504,12 @@ dosbin_w32: dist no_title.vim dist/$(COMMENT_W32)
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	cp vimw32.exe dist/vim/$(VIMRTDIR)/vim.exe
+	cp teew32.exe dist/vim/$(VIMRTDIR)/tee.exe
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
 	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
 	cd dist && zip -9 -rD -z vim$(VERSION)w32.zip vim <$(COMMENT_W32)
 	cp vimw32.pdb dist/vim$(VERSION)w32.pdb
-
-# make 32bit DOS
-dosbin_d32: dist no_title.vim dist/$(COMMENT_D32)
-	-rm -rf dist/vim$(VERSION)d32.zip
-	-rm -rf dist/vim
-	mkdir dist/vim
-	mkdir dist/vim/$(VIMRTDIR)
-	tar cf - \
-		$(BIN_DOS) \
-		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	cp vimd32.exe dist/vim/$(VIMRTDIR)/vim.exe
-	cp xxdd32.exe dist/vim/$(VIMRTDIR)/xxd.exe
-	cp installd32.exe dist/vim/$(VIMRTDIR)/install.exe
-	cp uninstald32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
-	cp csdpmi4b.zip dist/vim/$(VIMRTDIR)
-	cd dist && zip -9 -rD -z vim$(VERSION)d32.zip vim <$(COMMENT_D32)
-
-# make 16bit DOS
-dosbin_d16: dist no_title.vim dist/$(COMMENT_D16)
-	-rm -rf dist/vim$(VERSION)d16.zip
-	-rm -rf dist/vim
-	mkdir dist/vim
-	mkdir dist/vim/$(VIMRTDIR)
-	tar cf - \
-		$(BIN_DOS) \
-		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	cp vimd16.exe dist/vim/$(VIMRTDIR)/vim.exe
-	cp xxdd16.exe dist/vim/$(VIMRTDIR)/xxd.exe
-	cp installd16.exe dist/vim/$(VIMRTDIR)/install.exe
-	cp uninstald16.exe dist/vim/$(VIMRTDIR)/uninstal.exe
-	cd dist && zip -9 -rD -z vim$(VERSION)d16.zip vim <$(COMMENT_D16)
 
 # make Win32 gvim with OLE
 dosbin_ole: dist no_title.vim dist/$(COMMENT_OLE)
@@ -579,6 +521,7 @@ dosbin_ole: dist no_title.vim dist/$(COMMENT_OLE)
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	cp gvim_ole.exe dist/vim/$(VIMRTDIR)/gvim.exe
+	cp teew32.exe dist/vim/$(VIMRTDIR)/tee.exe
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp vimrun.exe dist/vim/$(VIMRTDIR)/vimrun.exe
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
@@ -589,22 +532,6 @@ dosbin_ole: dist no_title.vim dist/$(COMMENT_OLE)
 	cp src/VisVim/README_VisVim.txt dist/vim/$(VIMRTDIR)
 	cd dist && zip -9 -rD -z gvim$(VERSION)ole.zip vim <$(COMMENT_OLE)
 	cp gvim_ole.pdb dist/gvim$(VERSION)ole.pdb
-
-# make Win32s gvim
-dosbin_s: dist no_title.vim dist/$(COMMENT_W32S)
-	-rm -rf dist/gvim$(VERSION)_s.zip
-	-rm -rf dist/vim
-	mkdir dist/vim
-	mkdir dist/vim/$(VIMRTDIR)
-	tar cf - \
-		$(BIN_DOS) \
-		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	cp gvim_w32s.exe dist/vim/$(VIMRTDIR)/gvim.exe
-	cp xxdd32.exe dist/vim/$(VIMRTDIR)/xxd.exe
-	cp README_w32s.txt dist/vim/$(VIMRTDIR)
-	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
-	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
-	cd dist && zip -9 -rD -z gvim$(VERSION)_s.zip vim <$(COMMENT_W32S)
 
 html: dist dist/$(COMMENT_HTML)
 	-rm -rf dist/vim$(VERSION)html.zip

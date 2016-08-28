@@ -93,6 +93,7 @@ SRC_ALL =	\
 		src/vim.h \
 		src/winclip.c \
 		src/window.c \
+		src/tee/tee.c \
 		src/xxd/xxd.c \
 		src/main.aap \
 		src/testdir/main.aap \
@@ -263,6 +264,7 @@ SRC_UNIX =	\
 		src/workshop.h \
 		src/wsdebug.c \
 		src/wsdebug.h \
+		src/tee/Makefile \
 		src/xxd/Makefile \
 
 # source files for both DOS and Unix
@@ -357,6 +359,7 @@ SRC_DOS =	\
 		src/vimrun.c \
 		src/xpm_w32.c \
 		src/xpm_w32.h \
+		src/tee/Make_mvc.mak \
 		src/xxd/Make_bc5.mak \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
