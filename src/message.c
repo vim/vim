@@ -3990,6 +3990,7 @@ tv_float(typval_T *tvs, int *idxp)
 # endif
 #endif
 
+#ifdef FEAT_FLOAT
 /*
  * Return the representation of infinity for printf() function:
  * "-inf", "inf", "+inf", " inf", "-INF", "INF", "+INF" or " INF".
@@ -4011,6 +4012,7 @@ infinity_str(int positive,
 	idx += 4;
     return table[idx];
 }
+#endif
 
 /*
  * This code was included to provide a portable vsnprintf() and snprintf().
