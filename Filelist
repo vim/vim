@@ -316,6 +316,7 @@ SRC_DOS =	\
 		src/Make_dvc.mak \
 		src/Make_ming.mak \
 		src/Make_mvc.mak \
+		tools/rename.bat \
 		src/bigvim.bat \
 		src/bigvim64.bat \
 		src/msvcsetup.bat \

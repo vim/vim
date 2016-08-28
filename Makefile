@@ -137,19 +137,21 @@ MINOR = 4
 # - > cd src
 #   > nmake -f Make_mvc.mak
 # - Run the tests:
-#   > rm testdir/*.out testdir/*.res
+#   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
 #   - check the output.
-# - Rename: vim.exe to vimw32.exe,
-#           tee/tee.exe to teew32.exe,
+# - Rename (using tools/rename.bat):
+#           vim.exe to vimw32.exe
+#           tee/tee.exe to teew32.exe
 #           xxd/xxd.exe to xxdw32.exe
-# - Rename vim.pdb to vimw32.pdb.
-# - Rename install.exe to installw32.exe and uninstal.exe to uninstalw32.exe.
+#           vim.pdb to vimw32.pdb
+#           install.exe to installw32.exe
+#           uninstal.exe to uninstalw32.exe
 # Win32 GUI version build:
 # - > cd src
 #   > nmake -f Make_mvc.mak GUI=yes
 # - Run the tests:
-#   > rm testdir/*.out testdir/*.res
+#   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak testgvim
 #   - check the output.
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
@@ -163,7 +165,7 @@ MINOR = 4
 #   Adjust bigvim.bat to match the version of each interface you want.
 #   > bigvim.bat
 # - Run the tests:
-#   > rm testdir/*.out testdir/*.res
+#   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak testgvim
 #   - check the output.
 # - Rename "gvim.exe" to "gvim_ole.exe".
@@ -473,6 +475,7 @@ runtime_unix2dos: dosrt_files
 		| (cd ../../../runtime/dos; tar xf -)
 
 dosbin: prepare dosbin_gvim dosbin_w32 dosbin_ole $(DOSBIN_S)
+	-rm $(IN_README_DIR)
 
 # make Win32 gvim
 dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
@@ -483,7 +486,6 @@ dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
 	tar cf - \
 		$(BIN_DOS) \
 		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	-rm $(IN_README_DIR)
 	cp gvim.exe dist/vim/$(VIMRTDIR)/gvim.exe
 	cp teew32.exe dist/vim/$(VIMRTDIR)/tee.exe
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
