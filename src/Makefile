@@ -335,9 +335,13 @@ CClink = $(CC)
 
 # Uncomment one of these lines if you have that GUI but don't want to use it.
 # The automatic check will use another one that can be found.
-# Gnome is disabled by default, it may cause trouble.
+# Gnome is disabled by default, because it may cause trouble.
+#
+# When both GTK+ 2 and GTK+ 3 are possible then GTK+ 2 will be selected.
+# To use GTK+ 3 instead use --enable-gui=gtk3 (see below).
 #CONF_OPT_GUI = --disable-gtk2-check
 #CONF_OPT_GUI = --enable-gnome2-check
+#CONF_OPT_GUI = --disable-gtk3-check
 #CONF_OPT_GUI = --disable-motif-check
 #CONF_OPT_GUI = --disable-athena-check
 #CONF_OPT_GUI = --disable-nextaw-check
@@ -348,18 +352,24 @@ CClink = $(CC)
 #
 # GTK versions that are known not to work 100% are rejected.
 # Use "--disable-gtktest" to accept them anyway.
-# Only GTK 2 is supported, for GTK 1 use Vim 7.2.
+# For GTK 1 use Vim 7.2.
 #
 # GNOME means GTK with Gnome support.  If using GTK and --enable-gnome-check
 # is used then GNOME will automatically be used if it is found.  If you have
 # GNOME, but do not want to use it (e.g., want a GTK-only version), then use
 # --enable-gui=gtk or leave out --enable-gnome-check.
 #
+# GNOME makes sense only for GTK+ 2.  Avoid use of --enable-gnome-check with
+# GTK+ 3 build, as the functionality of GNOME is already incooperated into
+# GTK+ 3.
+#
 # If the selected GUI isn't found, the GUI is disabled automatically
 #CONF_OPT_GUI = --enable-gui=gtk2
 #CONF_OPT_GUI = --enable-gui=gtk2 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=gnome2
 #CONF_OPT_GUI = --enable-gui=gnome2 --disable-gtktest
+#CONF_OPT_GUI = --enable-gui=gtk3
+#CONF_OPT_GUI = --enable-gui=gtk3 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=motif
 #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
 #CONF_OPT_GUI = --enable-gui=athena
@@ -368,7 +378,7 @@ CClink = $(CC)
 # Carbon GUI for Mac OS X
 #CONF_OPT_GUI = --enable-gui=carbon
 
-# Uncomment this line to run an indivisual test with gvim.
+# Uncomment this line to run an individual test with gvim.
 #GUI_TESTARG = GUI_FLAG=-g 
 
 # DARWIN - detecting Mac OS X
@@ -402,6 +412,7 @@ CClink = $(CC)
 
 # MZSCHEME
 # Uncomment this when you want to include the MzScheme interface.
+# NOTE: does not work well together with valgrind.
 #CONF_OPT_MZSCHEME = --enable-mzschemeinterp
 # PLT/mrscheme/drscheme Home dir; the PLTHOME environment variable also works
 #CONF_OPT_PLTHOME  = --with-plthome=/usr/local/plt
@@ -3371,7 +3382,7 @@ objects/option.o: option.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/os_unix.o: os_unix.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h spell.h proto.h \
- globals.h farsi.h arabic.h os_unixx.h
+ globals.h farsi.h arabic.h if_mzsch.h os_unixx.h
 objects/pathdef.o: auto/pathdef.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h spell.h \
@@ -3545,7 +3556,7 @@ objects/if_lua.o: if_lua.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/if_mzsch.o: if_mzsch.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h spell.h \
- proto.h globals.h farsi.h arabic.h if_mzsch.h
+ proto.h globals.h farsi.h arabic.h if_mzsch.h mzscheme_base.c
 objects/if_perl.o: auto/if_perl.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro alloc.h ex_cmds.h spell.h \

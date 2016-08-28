@@ -398,14 +398,15 @@ lua_link_init(char *libname, int verbose)
     }
     return OK;
 }
+#endif /* DYNAMIC_LUA */
 
+#if defined(DYNAMIC_LUA) || defined(PROTO)
     int
 lua_enabled(int verbose)
 {
     return lua_link_init((char *)p_luadll, verbose) == OK;
 }
-
-#endif /* DYNAMIC_LUA */
+#endif
 
 #if LUA_VERSION_NUM > 501
     static int

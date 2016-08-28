@@ -137,6 +137,8 @@ typedef int PSNSECINFO;
 typedef int PSNSECINFOW;
 typedef int STARTUPINFO;
 typedef int PROCESS_INFORMATION;
+typedef int LPSECURITY_ATTRIBUTES;
+# define __stdcall /* empty */
 #endif
 
 #ifndef FEAT_GUI_W32

@@ -410,7 +410,11 @@ typedef __int64 off_T;
 #  define vim_ftell _ftelli64
 # endif
 #else
+# ifdef PROTO
+typedef long off_T;
+# else
 typedef off_t off_T;
+# endif
 # ifdef HAVE_FSEEKO
 #  define vim_lseek lseek
 #  define vim_ftell ftello
@@ -1809,10 +1813,14 @@ typedef int proftime_T;	    /* dummy for function prototypes */
  * bits elsewhere.  That causes memory corruption.  Define time_T and use it
  * for global variables to avoid that.
  */
-#ifdef WIN3264
-typedef __time64_t  time_T;
+#ifdef PROTO
+typedef long  time_T;
 #else
+# ifdef WIN3264
+typedef __time64_t  time_T;
+# else
 typedef time_t	    time_T;
+# endif
 #endif
 
 #ifdef _WIN64

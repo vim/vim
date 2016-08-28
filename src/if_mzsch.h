@@ -10,6 +10,11 @@
 # include <stdint.h>
 #endif
 
+#ifdef PROTO
+/* avoid syntax error for defining Thread_Local_Variables. */
+# define __thread /* empty */
+#endif
+
 /* #ifdef needed for "make depend" */
 #ifdef FEAT_MZSCHEME
 # include <schvers.h>
