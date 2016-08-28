@@ -187,6 +187,7 @@ static struct vimvar
     {VV_NAME("t_none",		 VAR_NUMBER), VV_RO},
     {VV_NAME("t_job",		 VAR_NUMBER), VV_RO},
     {VV_NAME("t_channel",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("searchhit",	 VAR_STRING), VV_RO},
 };
 
 /* shorthand */

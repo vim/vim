@@ -1039,7 +1039,9 @@ searchit(
 	    if (!shortmess(SHM_SEARCH) && (options & SEARCH_MSG)) {
 		give_warning((char_u *)_(dir == BACKWARD
 					  ? top_bot_msg : bot_top_msg), TRUE);
+		set_vim_var_string(VV_SEARCHHIT, dir == BACKWARD ? "top" : "bottom", -1);
 		apply_autocmds(EVENT_SEARCHHITBOUNDARY, NULL, NULL, FALSE, curbuf);
+		set_vim_var_string(VV_SEARCHHIT, NULL, -1);
 	    }
 	}
 	if (got_int || called_emsg
