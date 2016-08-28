@@ -2457,7 +2457,8 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	   chmod $(FILEMOD) $(DEST_KMAP)/README.txt $(DEST_KMAP)/*.vim; \
 	fi
 
-# install the icons for KDE, if the directory exists and the icon doesn't.
+# Install the icons for KDE, if the directory exists and the icon doesn't.
+# Always when $(DESTDIR) is not empty.
 ICON48PATH = $(DESTDIR)$(DATADIR)/icons/hicolor/48x48/apps
 ICON32PATH = $(DESTDIR)$(DATADIR)/icons/locolor/32x32/apps
 ICON16PATH = $(DESTDIR)$(DATADIR)/icons/locolor/16x16/apps
@@ -2465,6 +2466,11 @@ ICONTHEMEPATH = $(DATADIR)/icons/hicolor
 DESKTOPPATH = $(DESTDIR)$(DATADIR)/applications
 KDEPATH = $(HOME)/.kde/share/icons
 install-icons:
+	if test -n "$(DESTDIR)"; then \
+		$(SHELL) ./mkinstalldirs $(ICON48PATH) $(ICON32PATH) \
+		$(ICON16PATH) $(DESKTOPPATH); \
+	fi
+
 	if test -d $(ICON48PATH) -a -w $(ICON48PATH) \
 		-a ! -f $(ICON48PATH)/gvim.png; then \
 	   $(INSTALL_DATA) $(SCRIPTSOURCE)/vim48x48.png $(ICON48PATH)/gvim.png; \
