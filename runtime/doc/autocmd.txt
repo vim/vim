@@ -322,6 +322,8 @@ Name			triggered by ~
 |QuickFixCmdPre|	before a quickfix command is run
 |QuickFixCmdPost|	after a quickfix command is run
 
+|SearchHitBoundary|	if search hit top or bottom
+
 |SessionLoadPost|	after loading a session file
 
 |MenuPopup|		just before showing the popup menu
@@ -815,6 +817,10 @@ RemoteReply			When a reply from a Vim that functions as
 				Note that even if an autocommand is defined,
 				the reply should be read with |remote_read()|
 				to consume it.
+							*SearchHitBoundary*
+SearchHitBoundary		When search hit top or bottom.  Then
+				|v:searchhit| is set to "top" or "bottom".
+
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
 				the |:mksession| command.

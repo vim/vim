@@ -1812,6 +1812,11 @@ v:searchforward			*v:searchforward* *searchforward-variable*
 		function. |function-search-undo|.
 		Read-write.
 
+					*v:searchhit* *searchhit-variable*
+v:searchhit
+		Set to "top" if search hit top, or "bottom" if search hit
+		bottom.  It is only set during |SearchHitBoundary| event.
+
 					*v:shell_error* *shell_error-variable*
 v:shell_error	Result of the last shell command.  When non-zero, the last
 		shell command had an error.  When zero, there was no problem.
