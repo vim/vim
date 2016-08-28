@@ -56,6 +56,7 @@ void win_drag_status_line(win_T *dragwin, int offset);
 void win_drag_vsep_line(win_T *dragwin, int offset);
 void set_fraction(win_T *wp);
 void win_new_height(win_T *wp, int height);
+void scroll_to_fraction(win_T *wp, int prev_height);
 void win_new_width(win_T *wp, int width);
 void win_comp_scroll(win_T *wp);
 void command_height(void);
