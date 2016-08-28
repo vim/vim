@@ -8471,6 +8471,7 @@ ex_oldfiles(exarg_T *eap UNUSED)
 		msg_outnum((long)nr);
 		MSG_PUTS(": ");
 		msg_outtrans(fname);
+		msg_clr_eos();
 		msg_putchar('\n');
 		out_flush();	    /* output one line at a time */
 		ui_breakcheck();
