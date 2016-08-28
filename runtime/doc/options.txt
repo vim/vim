@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.4.  Last change: 2016 Aug 26
+*options.txt*	For Vim version 7.4.  Last change: 2016 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2856,10 +2856,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	Enables the reading of .vimrc, .exrc and .gvimrc in the current
-	directory.  If you switch this option on you should also consider
-	setting the 'secure' option (see |initialization|).  Using a local
-	.exrc, .vimrc or .gvimrc is a potential security leak, use with care!
-	also see |.vimrc| and |gui-init|.
+	directory.
+
+	Setting this option is a potential security leak.  E.g., consider
+	unpacking a package or fetching files from github, a .vimrc in there
+	might be a trojan horse.  BETTER NOT SET THIS OPTION!
+	Instead, define an autocommand in your .vimrc to set options for a
+	matching directory.
+
+	If you do switch this option on you should also consider setting the
+	'secure' option (see |initialization|).
+	Also see |.vimrc| and |gui-init|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 

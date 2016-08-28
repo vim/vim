@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Aug 27
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Aug 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3272,6 +3272,8 @@ delete({fname} [, {flags}])					*delete()*
 		
 		When {flags} is "rf": Deletes the directory by the name
 		{fname} and everything in it, recursively.  BE CAREFUL!
+		Note: on MS-Windows it is not possible to delete a directory
+		that is being used.
 
 		A symbolic link itself is deleted, not what it points to.
 		
@@ -6344,7 +6346,7 @@ round({expr})							*round()*
 		{only available when compiled with the |+float| feature}
 
 screenattr(row, col)						*screenattr()*
-		Like screenchar(), but return the attribute.  This is a rather
+		Like |screenchar()|, but return the attribute.  This is a rather
 		arbitrary number that can only be used to compare to the
 		attribute at other positions.
 
