@@ -3456,7 +3456,7 @@ send_common(
 	    EMSG2(_("E917: Cannot use a callback with %s()"), fun);
 	    return NULL;
 	}
-	channel_set_req_callback(channel, part_send,
+	channel_set_req_callback(channel, *part_read,
 				       opt->jo_callback, opt->jo_partial, id);
     }
 
