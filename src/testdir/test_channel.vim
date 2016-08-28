@@ -245,7 +245,6 @@ endfunc
 
 """""""""
 
-let g:Ch_reply = ""
 func Ch_handler(chan, msg)
   unlet g:Ch_reply
   let g:Ch_reply = a:msg
@@ -271,8 +270,10 @@ endfunc
 
 func Test_channel_handler()
   call ch_log('Test_channel_handler()')
+  let g:Ch_reply = ""
   let s:chopt.callback = 'Ch_handler'
   call s:run_server('Ch_channel_handler')
+  let g:Ch_reply = ""
   let s:chopt.callback = function('Ch_handler')
   call s:run_server('Ch_channel_handler')
   unlet s:chopt.callback
@@ -442,6 +443,11 @@ func Test_raw_pipe()
     call ch_sendraw(job, "double this\n")
     let msg = ch_readraw(job)
     call assert_equal("this\nAND this\n", substitute(msg, "\r", "", 'g'))
+
+    let g:Ch_reply = ""
+    call ch_sendraw(job, "double this\n", {'callback': 'Ch_handler'})
+    call WaitFor('"" != g:Ch_reply')
+    call assert_equal("this\nAND this\n", substitute(g:Ch_reply, "\r", "", 'g'))
 
     let reply = ch_evalraw(job, "quit\n", {'timeout': 100})
     call assert_equal("Goodbye!\n", substitute(reply, "\r", "", 'g'))
