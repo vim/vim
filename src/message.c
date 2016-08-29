@@ -4797,7 +4797,7 @@ vim_vsnprintf(
 				    precision = max_prec;
 				l += sprintf(format + l, ".%d", (int)precision);
 			    }
-			    format[l] = fmt_spec;
+			    format[l] = fmt_spec == 'F' ? 'f' : fmt_spec;
 			    format[l + 1] = NUL;
 
 			    str_arg_l = sprintf(tmp, format, f);
