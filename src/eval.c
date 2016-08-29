@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -4167,7 +4167,7 @@ eval7(
     rettv->v_type = VAR_UNKNOWN;
 
     /*
-     * Skip '!' and '-' characters.  They are handled later.
+     * Skip '!', '-' and '+' characters.  They are handled later.
      */
     start_leader = *arg;
     while (**arg == '!' || **arg == '-' || **arg == '+')

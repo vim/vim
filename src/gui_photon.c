@@ -1,4 +1,4 @@
-/* vi:set ts=8 sw=4 sts=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *			Photon GUI support by Julian Kinraid

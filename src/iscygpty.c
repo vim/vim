@@ -178,4 +178,4 @@ int is_cygpty_used(void)
 	return ret;
 }
 
-/* vim: set ts=4 sw=4: */
+/* vi:set ts=8 sts=4 sw=4 noet: */

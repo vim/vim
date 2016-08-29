@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * MzScheme interface by Sergey Khorev <sergey.khorev@gmail.com>
  * Based on work by Brent Fulgham <bfulgham@debian.org>
