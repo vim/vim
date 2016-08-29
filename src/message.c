@@ -4030,7 +4030,7 @@ infinity_str(int positive,
  * with flags: '-', '+', ' ', '0' and '#'.
  * An asterisk is supported for field width as well as precision.
  *
- * Limited support for floating point was added: 'f', 'e', 'E', 'g', 'G'.
+ * Limited support for floating point was added: 'f', 'F', 'e', 'E', 'g', 'G'.
  *
  * Length modifiers 'h' (short int) and 'l' (long int) and 'll' (long long int)
  * are supported.
@@ -4286,7 +4286,6 @@ vim_vsnprintf(
 		case 'D': fmt_spec = 'd'; length_modifier = 'l'; break;
 		case 'U': fmt_spec = 'u'; length_modifier = 'l'; break;
 		case 'O': fmt_spec = 'o'; length_modifier = 'l'; break;
-		case 'F': fmt_spec = 'f'; break;
 		default: break;
 	    }
 
@@ -4715,6 +4714,7 @@ vim_vsnprintf(
 
 # ifdef FEAT_FLOAT
 	    case 'f':
+	    case 'F':
 	    case 'e':
 	    case 'E':
 	    case 'g':
@@ -4740,13 +4740,13 @@ vim_vsnprintf(
 			 * "1.0" as "1", we don't want that. */
 			if ((abs_f >= 0.001 && abs_f < 10000000.0)
 							      || abs_f == 0.0)
-			    fmt_spec = 'f';
+			    fmt_spec = ASCII_ISUPPER(fmt_spec) ? 'F' : 'f';
 			else
 			    fmt_spec = fmt_spec == 'g' ? 'e' : 'E';
 			remove_trailing_zeroes = TRUE;
 		    }
 
-		    if (fmt_spec == 'f' &&
+		    if ((fmt_spec == 'f' || fmt_spec == 'F') &&
 #  ifdef VAX
 			    abs_f > 1.0e38
 #  else
@@ -4762,23 +4762,6 @@ vim_vsnprintf(
 		    }
 		    else
 		    {
-			format[0] = '%';
-			l = 1;
-			if (precision_specified)
-			{
-			    size_t max_prec = TMP_LEN - 10;
-
-			    /* Make sure we don't get more digits than we
-			     * have room for. */
-			    if (fmt_spec == 'f' && abs_f > 1.0)
-				max_prec -= (size_t)log10(abs_f);
-			    if (precision > max_prec)
-				precision = max_prec;
-			    l += sprintf(format + 1, ".%d", (int)precision);
-			}
-			format[l] = fmt_spec;
-			format[l + 1] = NUL;
-
 			if (isnan(f))
 			{
 			    /* Not a number: nan or NAN */
@@ -4795,8 +4778,30 @@ vim_vsnprintf(
 			    zero_padding = 0;
 			}
 			else
+                        {
 			    /* Regular float number */
+			    format[0] = '%';
+			    l = 1;
+			    if (force_sign)
+				format[l++] = space_for_positive ? ' ' : '+';
+			    if (precision_specified)
+			    {
+				size_t max_prec = TMP_LEN - 10;
+
+				/* Make sure we don't get more digits than we
+				 * have room for. */
+				if ((fmt_spec == 'f' || fmt_spec == 'F')
+								&& abs_f > 1.0)
+				    max_prec -= (size_t)log10(abs_f);
+				if (precision > max_prec)
+				    precision = max_prec;
+				l += sprintf(format + l, ".%d", (int)precision);
+			    }
+			    format[l] = fmt_spec;
+			    format[l + 1] = NUL;
+
 			    str_arg_l = sprintf(tmp, format, f);
+                        }
 
 			if (remove_trailing_zeroes)
 			{
@@ -4804,7 +4809,7 @@ vim_vsnprintf(
 			    char *tp;
 
 			    /* Using %g or %G: remove superfluous zeroes. */
-			    if (fmt_spec == 'f')
+			    if (fmt_spec == 'f' || fmt_spec == 'F')
 				tp = tmp + str_arg_l - 1;
 			    else
 			    {
@@ -4860,6 +4865,13 @@ vim_vsnprintf(
 				--str_arg_l;
 			    }
 			}
+		    }
+		    if (zero_padding && min_field_width > str_arg_l
+					      && (tmp[0] == '-' || force_sign))
+		    {
+			/* padding 0's should be inserted after the sign */
+			number_of_zeros_to_pad = min_field_width - str_arg_l;
+			zero_padding_insertion_ind = 1;
 		    }
 		    str_arg = tmp;
 		    break;
