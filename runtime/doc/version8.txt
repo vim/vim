@@ -211,7 +211,7 @@ Ex commands: ~
 |:cfdo|			execute command in each file in error list
 |:chistory|		display quickfix list stack
 |:clearjumps|		clear the jump list
-:filter			only output lines that (do not) match a pattern
+|:filter|		only output lines that (do not) match a pattern
 |:helpclose|		close one help window
 |:lbottom|		scroll to the bottom of the location window
 |:ldo|			execute command in valid location list entries
@@ -12742,8 +12742,8 @@ Files:      src/fileio.c, src/window.c, src/vim.h,
             src/testdir/test_autocmd.vim, runtime/doc/autocmd.txt
 
 Patch 7.4.2078
-Problem:    Running checks in po diretory fails.
-Solution:   Add colors used in syntax.c to the builtiin color table.
+Problem:    Running checks in po directory fails.
+Solution:   Add colors used in syntax.c to the builtin color table.
 Files:      src/term.c
 
 Patch 7.4.2079
