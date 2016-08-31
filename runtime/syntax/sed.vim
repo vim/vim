@@ -72,38 +72,36 @@ syn region sedReplacement64 matchgroup=Special start=+@\(\\\\\|\\@\)*+ skip=+[^\
 " (y) does not allow any flags.  To save memory, I ignore this problem.
 syn match sedST	"[sy]" nextgroup=sedRegexp\d\+
 
-command -nargs=+ HiLink hi def link <args>
 
-HiLink sedAddress		Macro
-HiLink sedACI		NONE
-HiLink sedBranch		Label
-HiLink sedComment		Comment
-HiLink sedDelete		Function
-HiLink sedError		Error
-HiLink sedFlag		Type
-HiLink sedFlagwrite		Constant
-HiLink sedFunction		Function
-HiLink sedLabel		Label
-HiLink sedLineCont		Special
-HiLink sedPutHoldspc	Function
-HiLink sedReplaceMeta	Special
-HiLink sedRegexpMeta	Special
-HiLink sedRW		Constant
-HiLink sedSemicolon		Special
-HiLink sedST		Function
-HiLink sedSpecial		Special
-HiLink sedWhitespace	NONE
+hi def link sedAddress		Macro
+hi def link sedACI		NONE
+hi def link sedBranch		Label
+hi def link sedComment		Comment
+hi def link sedDelete		Function
+hi def link sedError		Error
+hi def link sedFlag		Type
+hi def link sedFlagwrite		Constant
+hi def link sedFunction		Function
+hi def link sedLabel		Label
+hi def link sedLineCont		Special
+hi def link sedPutHoldspc	Function
+hi def link sedReplaceMeta	Special
+hi def link sedRegexpMeta	Special
+hi def link sedRW		Constant
+hi def link sedSemicolon		Special
+hi def link sedST		Function
+hi def link sedSpecial		Special
+hi def link sedWhitespace	NONE
 if exists("highlight_sedtabs")
-HiLink sedTab		Todo
+hi def link sedTab		Todo
 endif
 let __sed_i = char2nr(" ") " ASCII: 32, EBCDIC: 64
 while __sed_i <= __sed_last
-exe "HiLink sedRegexp".__sed_i		"Macro"
-exe "HiLink sedReplacement".__sed_i	"NONE"
+exe "hi def link sedRegexp".__sed_i		"Macro"
+exe "hi def link sedReplacement".__sed_i	"NONE"
 let __sed_i = __sed_i + 1
 endwhile
 
-delcommand HiLink
 
 unlet __sed_i __sed_last __sed_delimiter __sed_metacharacters
 

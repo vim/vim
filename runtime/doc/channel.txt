@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Aug 27
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Aug 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -25,7 +25,9 @@ The Netbeans interface also uses a channel. |netbeans|
 
 {Vi does not have any of these features}
 {only when compiled with the |+channel| feature for channel stuff}
+	You can check this with: `has('channel')`
 {only when compiled with the |+job| feature for job stuff}
+	You can check this with: `has('job')`
 
 ==============================================================================
 1. Overview						*job-channel-overview*

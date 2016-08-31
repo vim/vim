@@ -35,17 +35,15 @@ endif
 
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet
-command -nargs=+ HiLink hi def link <args>
 
-HiLink manTitle	    Title
-HiLink manSectionHeading  Statement
-HiLink manOptionDesc	    Constant
-HiLink manLongOptionDesc  Constant
-HiLink manReference	    PreProc
-HiLink manSubHeading      Function
-HiLink manCFuncDefinition Function
+hi def link manTitle	    Title
+hi def link manSectionHeading  Statement
+hi def link manOptionDesc	    Constant
+hi def link manLongOptionDesc  Constant
+hi def link manReference	    PreProc
+hi def link manSubHeading      Function
+hi def link manCFuncDefinition Function
 
-delcommand HiLink
 
 let b:current_syntax = "man"
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 30
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Aug 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -43,10 +43,14 @@ Test_sign_completion() fails on MS-Windows (console and GUI)  Completion
 doesn't have both tb_paste.xpm and tb_print.xpm but "tb_p".  Different default
 options?
 
+Patch to trigger autocommands for :cexpr etc. (Yegappan, Aug 30, #1021)
+
 Test_nb_basic() fails on MS-Windows GUI. line 12: Expected 2 but got 1.
 line 13: Expected 20 but got 1.
 
 Figure out building with Ruby on MS-Windows.
+
+Problem with 'incsearch'. (Mike Williams, 2016 Aug 31)
 
 :cexpr doesn't trigger QuickFixCmdPost. (Mathias Stearn, 2016 Aug 29, #1021)
 Needs documentation. (Yegappan)
@@ -57,6 +61,7 @@ Patch to make it possible to define a test but skip it, by throwing an
 exception. (Christian Brabandt, 2016 Aug 30)
 
 +channel:
+- Add 'cwd' argument: directory to change to in the child.
 - Implement |job-term| ?
 - Channel test fails with Motif.  Sometimes kills the X11 server.
 - When a message in the queue but there is no callback, drop it after a while?
