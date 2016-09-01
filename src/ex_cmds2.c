@@ -1090,6 +1090,9 @@ profile_zero(proftime_T *tm)
 static timer_T	*first_timer = NULL;
 static int	last_timer_id = 0;
 
+static timer_T	*current_timer = NULL;
+static int	free_current_timer = FALSE;
+
 /*
  * Insert a timer in the list of timers.
  */
@@ -1121,8 +1124,13 @@ remove_timer(timer_T *timer)
     static void
 free_timer(timer_T *timer)
 {
-    free_callback(timer->tr_callback, timer->tr_partial);
-    vim_free(timer);
+    if (timer == current_timer)
+	free_current_timer = TRUE;
+    else
+    {
+	free_callback(timer->tr_callback, timer->tr_partial);
+	vim_free(timer);
+    }
 }
 
 /*
@@ -1200,18 +1208,23 @@ check_due_timer(void)
 # endif
 	    if (this_due <= 1)
 	    {
-		remove_timer(timer);
+		current_timer = timer;
+		free_current_timer = FALSE;
 		timer_callback(timer);
+		current_timer = NULL;
+
 		did_one = TRUE;
-		if (timer->tr_repeat != 0)
+		if (timer->tr_repeat != 0 && !free_current_timer)
 		{
 		    profile_setlimit(timer->tr_interval, &timer->tr_due);
 		    if (timer->tr_repeat > 0)
 			--timer->tr_repeat;
-		    insert_timer(timer);
 		}
 		else
+		{
 		    free_timer(timer);
+		    remove_timer(timer);
+		}
 		/* the callback may do anything, start all over */
 		break;
 	    }
