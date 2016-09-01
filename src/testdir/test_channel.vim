@@ -533,8 +533,20 @@ func Test_nl_err_to_out_pipe()
     call assert_equal(1, found_send)
     call assert_equal(1, found_recv)
     call assert_equal(1, found_stop)
+    " On MS-Windows need to sleep for a moment to be able to delete the file.
+    sleep 10m
     call delete('Xlog')
   endtry
+endfunc
+
+func Stop_g_job()
+  call job_stop(g:job)
+  if has('win32')
+    " On MS-Windows the server must close the file handle before we are able
+    " to delete the file.
+    call WaitFor('job_status(g:job) == "dead"')
+    sleep 10m
+  endif
 endfunc
 
 func Test_nl_read_file()
@@ -543,17 +555,17 @@ func Test_nl_read_file()
   endif
   call ch_log('Test_nl_read_file()')
   call writefile(['echo something', 'echoerr wrong', 'double this'], 'Xinput')
-  let job = job_start(s:python . " test_channel_pipe.py",
+  let g:job = job_start(s:python . " test_channel_pipe.py",
 	\ {'in_io': 'file', 'in_name': 'Xinput'})
-  call assert_equal("run", job_status(job))
+  call assert_equal("run", job_status(g:job))
   try
-    let handle = job_getchannel(job)
+    let handle = job_getchannel(g:job)
     call assert_equal("something", ch_readraw(handle))
     call assert_equal("wrong", ch_readraw(handle, {'part': 'err'}))
     call assert_equal("this", ch_readraw(handle))
     call assert_equal("AND this", ch_readraw(handle))
   finally
-    call job_stop(job)
+    call Stop_g_job()
     call delete('Xinput')
   endtry
 endfunc
@@ -563,18 +575,18 @@ func Test_nl_write_out_file()
     return
   endif
   call ch_log('Test_nl_write_out_file()')
-  let job = job_start(s:python . " test_channel_pipe.py",
+  let g:job = job_start(s:python . " test_channel_pipe.py",
 	\ {'out_io': 'file', 'out_name': 'Xoutput'})
-  call assert_equal("run", job_status(job))
+  call assert_equal("run", job_status(g:job))
   try
-    let handle = job_getchannel(job)
+    let handle = job_getchannel(g:job)
     call ch_sendraw(handle, "echo line one\n")
     call ch_sendraw(handle, "echo line two\n")
     call ch_sendraw(handle, "double this\n")
     call WaitFor('len(readfile("Xoutput")) > 2')
     call assert_equal(['line one', 'line two', 'this', 'AND this'], readfile('Xoutput'))
   finally
-    call job_stop(job)
+    call Stop_g_job()
     call delete('Xoutput')
   endtry
 endfunc
@@ -584,18 +596,18 @@ func Test_nl_write_err_file()
     return
   endif
   call ch_log('Test_nl_write_err_file()')
-  let job = job_start(s:python . " test_channel_pipe.py",
+  let g:job = job_start(s:python . " test_channel_pipe.py",
 	\ {'err_io': 'file', 'err_name': 'Xoutput'})
-  call assert_equal("run", job_status(job))
+  call assert_equal("run", job_status(g:job))
   try
-    let handle = job_getchannel(job)
+    let handle = job_getchannel(g:job)
     call ch_sendraw(handle, "echoerr line one\n")
     call ch_sendraw(handle, "echoerr line two\n")
     call ch_sendraw(handle, "doubleerr this\n")
     call WaitFor('len(readfile("Xoutput")) > 2')
     call assert_equal(['line one', 'line two', 'this', 'AND this'], readfile('Xoutput'))
   finally
-    call job_stop(job)
+    call Stop_g_job()
     call delete('Xoutput')
   endtry
 endfunc
@@ -605,11 +617,11 @@ func Test_nl_write_both_file()
     return
   endif
   call ch_log('Test_nl_write_both_file()')
-  let job = job_start(s:python . " test_channel_pipe.py",
+  let g:job = job_start(s:python . " test_channel_pipe.py",
 	\ {'out_io': 'file', 'out_name': 'Xoutput', 'err_io': 'out'})
-  call assert_equal("run", job_status(job))
+  call assert_equal("run", job_status(g:job))
   try
-    let handle = job_getchannel(job)
+    let handle = job_getchannel(g:job)
     call ch_sendraw(handle, "echoerr line one\n")
     call ch_sendraw(handle, "echo line two\n")
     call ch_sendraw(handle, "double this\n")
@@ -617,7 +629,7 @@ func Test_nl_write_both_file()
     call WaitFor('len(readfile("Xoutput")) > 5')
     call assert_equal(['line one', 'line two', 'this', 'AND this', 'that', 'AND that'], readfile('Xoutput'))
   finally
-    call job_stop(job)
+    call Stop_g_job()
     call delete('Xoutput')
   endtry
 endfunc
