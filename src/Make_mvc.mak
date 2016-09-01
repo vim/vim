@@ -934,7 +934,7 @@ RUBY_PLATFORM = i386-mswin32
 !else # CPU
 RUBY_PLATFORM = x64-mswin64
 !endif # CPU
-!if $(MSVCRT_VER) >= 70
+!if $(MSVCRT_VER) >= 70 && $(RUBY_VER) > 19
 RUBY_PLATFORM = $(RUBY_PLATFORM)_$(MSVCRT_VER)
 !endif # MSVCRT_VER
 !endif # RUBY_PLATFORM
