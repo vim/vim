@@ -4845,6 +4845,9 @@ ex_cbuffer(exarg_T *eap)
 {
     buf_T	*buf = NULL;
     qf_info_T	*qi = &ql_info;
+#ifdef FEAT_AUTOCMD
+    char_u	*au_name = NULL;
+#endif
 
     if (eap->cmdidx == CMD_lbuffer || eap->cmdidx == CMD_lgetbuffer
 	    || eap->cmdidx == CMD_laddbuffer)
@@ -4853,6 +4856,28 @@ ex_cbuffer(exarg_T *eap)
 	if (qi == NULL)
 	    return;
     }
+
+#ifdef FEAT_AUTOCMD
+    switch (eap->cmdidx)
+    {
+	case CMD_cbuffer:	au_name = (char_u *)"cbuffer"; break;
+	case CMD_cgetbuffer:	au_name = (char_u *)"cgetbuffer"; break;
+	case CMD_caddbuffer:	au_name = (char_u *)"caddbuffer"; break;
+	case CMD_lbuffer:	au_name = (char_u *)"lbuffer"; break;
+	case CMD_lgetbuffer:	au_name = (char_u *)"lgetbuffer"; break;
+	case CMD_laddbuffer:	au_name = (char_u *)"laddbuffer"; break;
+	default: break;
+    }
+    if (au_name != NULL)
+    {
+	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+# ifdef FEAT_EVAL
+	if (did_throw || force_abort)
+	    return;
+# endif
+    }
+#endif
 
     if (*eap->arg == NUL)
 	buf = curbuf;
@@ -4887,10 +4912,16 @@ ex_cbuffer(exarg_T *eap)
 			    (eap->cmdidx != CMD_caddbuffer
 			     && eap->cmdidx != CMD_laddbuffer),
 						   eap->line1, eap->line2,
-						   qf_title) > 0
-		    && (eap->cmdidx == CMD_cbuffer
-			|| eap->cmdidx == CMD_lbuffer))
-		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
+						   qf_title) > 0)
+	    {
+#ifdef FEAT_AUTOCMD
+		if (au_name != NULL)
+		    apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
+			    curbuf->b_fname, TRUE, curbuf);
+#endif
+		if (eap->cmdidx == CMD_cbuffer || eap->cmdidx == CMD_lbuffer)
+		    qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
+	    }
 	}
     }
 }
@@ -4905,6 +4936,9 @@ ex_cexpr(exarg_T *eap)
 {
     typval_T	*tv;
     qf_info_T	*qi = &ql_info;
+#ifdef FEAT_AUTOCMD
+    char_u	*au_name = NULL;
+#endif
 
     if (eap->cmdidx == CMD_lexpr || eap->cmdidx == CMD_lgetexpr
 	    || eap->cmdidx == CMD_laddexpr)
@@ -4913,6 +4947,28 @@ ex_cexpr(exarg_T *eap)
 	if (qi == NULL)
 	    return;
     }
+
+#ifdef FEAT_AUTOCMD
+    switch (eap->cmdidx)
+    {
+	case CMD_cexpr:	    au_name = (char_u *)"cexpr"; break;
+	case CMD_cgetexpr:  au_name = (char_u *)"cgetexpr"; break;
+	case CMD_caddexpr:  au_name = (char_u *)"caddexpr"; break;
+	case CMD_lexpr:	    au_name = (char_u *)"lexpr"; break;
+	case CMD_lgetexpr:  au_name = (char_u *)"lgetexpr"; break;
+	case CMD_laddexpr:  au_name = (char_u *)"laddexpr"; break;
+	default: break;
+    }
+    if (au_name != NULL)
+    {
+	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+# ifdef FEAT_EVAL
+	if (did_throw || force_abort)
+	    return;
+# endif
+    }
+#endif
 
     /* Evaluate the expression.  When the result is a string or a list we can
      * use it to fill the errorlist. */
@@ -4925,10 +4981,16 @@ ex_cexpr(exarg_T *eap)
 	    if (qf_init_ext(qi, NULL, NULL, tv, p_efm,
 			    (eap->cmdidx != CMD_caddexpr
 			     && eap->cmdidx != CMD_laddexpr),
-				 (linenr_T)0, (linenr_T)0, *eap->cmdlinep) > 0
-		    && (eap->cmdidx == CMD_cexpr
-			|| eap->cmdidx == CMD_lexpr))
-		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
+				 (linenr_T)0, (linenr_T)0, *eap->cmdlinep) > 0)
+	    {
+#ifdef FEAT_AUTOCMD
+		if (au_name != NULL)
+		    apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
+			    curbuf->b_fname, TRUE, curbuf);
+#endif
+		if (eap->cmdidx == CMD_cexpr || eap->cmdidx == CMD_lexpr)
+		    qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
+	    }
 	}
 	else
 	    EMSG(_("E777: String or List expected"));
