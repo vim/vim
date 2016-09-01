@@ -792,6 +792,46 @@ func Test_pipe_from_buffer_nr()
   call Run_test_pipe_from_buffer(0)
 endfunc
 
+func Run_pipe_through_sort(all)
+  if !executable('sort') || !has('job')
+    return
+  endif
+  split sortin
+  call setline(1, ['ccc', 'aaa', 'ddd', 'bbb', 'eee'])
+  let options = {'in_io': 'buffer', 'in_name': 'sortin',
+	\ 'out_io': 'buffer', 'out_name': 'sortout'}
+  if !a:all
+    let options.in_top = 2
+    let options.in_bot = 4
+  endif
+  let g:job = job_start('sort', options)
+  call assert_equal("run", job_status(g:job))
+  call WaitFor('job_status(g:job) == "dead"')
+  call assert_equal("dead", job_status(g:job))
+  sp sortout
+  call assert_equal('Reading from channel output...', getline(1))
+  if a:all
+    call assert_equal(['aaa', 'bbb', 'ccc', 'ddd', 'eee'], getline(2, 6))
+  else
+    call assert_equal(['aaa', 'bbb', 'ddd'], getline(2, 4))
+  endif
+
+  call job_stop(g:job)
+  unlet g:job
+  bwipe! sortin
+  bwipe! sortout
+endfunc
+
+func Test_pipe_through_sort_all()
+  call ch_log('Test_pipe_through_sort_all()')
+  call Run_pipe_through_sort(1)
+endfunc
+
+func Test_pipe_through_sort_some()
+  call ch_log('Test_pipe_through_sort_some()')
+  call Run_pipe_through_sort(0)
+endfunc
+
 func Test_pipe_to_nameless_buffer()
   if !has('job')
     return
