@@ -1060,7 +1060,7 @@ For example, after three jump commands you have this jump list:
     3	  1    0 some text ~
     2	 70    0 another line ~
     1  1154   23 end. ~
- > ~
+ >  0  1167    0 foo bar ~
 
 The "file/text" column shows the file name, or the text at the jump if it is
 in the current file (an indent is removed and a long line is truncated to fit
