@@ -27,6 +27,7 @@ int channel_is_open(channel_T *channel);
 char *channel_status(channel_T *channel);
 void channel_info(channel_T *channel, dict_T *dict);
 void channel_close(channel_T *channel, int invoke_close_cb);
+void channel_close_in(channel_T *channel);
 void channel_clear(channel_T *channel);
 void channel_free_all(void);
 char_u *channel_read_block(channel_T *channel, int part, int timeout);

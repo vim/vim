@@ -2736,6 +2736,15 @@ channel_close(channel_T *channel, int invoke_close_cb)
 }
 
 /*
+ * Close the "in" part channel "channel".
+ */
+    void
+channel_close_in(channel_T *channel)
+{
+    may_close_part(&channel->CH_IN_FD);
+}
+
+/*
  * Clear the read buffer on "channel"/"part".
  */
     static void

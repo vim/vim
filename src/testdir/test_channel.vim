@@ -792,22 +792,32 @@ func Test_pipe_from_buffer_nr()
   call Run_test_pipe_from_buffer(0)
 endfunc
 
-func Run_pipe_through_sort(all)
+func Run_pipe_through_sort(all, use_buffer)
   if !executable('sort') || !has('job')
     return
   endif
-  split sortin
-  call setline(1, ['ccc', 'aaa', 'ddd', 'bbb', 'eee'])
-  let options = {'in_io': 'buffer', 'in_name': 'sortin',
-	\ 'out_io': 'buffer', 'out_name': 'sortout'}
+  let options = {'out_io': 'buffer', 'out_name': 'sortout'}
+  if a:use_buffer
+    split sortin
+    call setline(1, ['ccc', 'aaa', 'ddd', 'bbb', 'eee'])
+    let options.in_io = 'buffer'
+    let options.in_name = 'sortin'
+  endif
   if !a:all
     let options.in_top = 2
     let options.in_bot = 4
   endif
   let g:job = job_start('sort', options)
   call assert_equal("run", job_status(g:job))
+
+  if !a:use_buffer
+    call ch_sendraw(g:job, "ccc\naaa\nddd\nbbb\neee\n")
+    call ch_close_in(g:job)
+  endif
+
   call WaitFor('job_status(g:job) == "dead"')
   call assert_equal("dead", job_status(g:job))
+
   sp sortout
   call assert_equal('Reading from channel output...', getline(1))
   if a:all
@@ -818,18 +828,25 @@ func Run_pipe_through_sort(all)
 
   call job_stop(g:job)
   unlet g:job
-  bwipe! sortin
+  if a:use_buffer
+    bwipe! sortin
+  endif
   bwipe! sortout
 endfunc
 
 func Test_pipe_through_sort_all()
   call ch_log('Test_pipe_through_sort_all()')
-  call Run_pipe_through_sort(1)
+  call Run_pipe_through_sort(1, 1)
 endfunc
 
 func Test_pipe_through_sort_some()
   call ch_log('Test_pipe_through_sort_some()')
-  call Run_pipe_through_sort(0)
+  call Run_pipe_through_sort(0, 1)
+endfunc
+
+func Test_pipe_through_sort_feed()
+  call ch_log('Test_pipe_through_sort_feed()')
+  call Run_pipe_through_sort(1, 0)
 endfunc
 
 func Test_pipe_to_nameless_buffer()

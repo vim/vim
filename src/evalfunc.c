@@ -77,6 +77,7 @@ static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
 #ifdef FEAT_JOB_CHANNEL
 static void f_ch_close(typval_T *argvars, typval_T *rettv);
+static void f_ch_close_in(typval_T *argvars, typval_T *rettv);
 static void f_ch_evalexpr(typval_T *argvars, typval_T *rettv);
 static void f_ch_evalraw(typval_T *argvars, typval_T *rettv);
 static void f_ch_getbufnr(typval_T *argvars, typval_T *rettv);
@@ -499,6 +500,7 @@ static struct fst
 #endif
 #ifdef FEAT_JOB_CHANNEL
     {"ch_close",	1, 1, f_ch_close},
+    {"ch_close_in",	1, 1, f_ch_close_in},
     {"ch_evalexpr",	2, 3, f_ch_evalexpr},
     {"ch_evalraw",	2, 3, f_ch_evalraw},
     {"ch_getbufnr",	2, 2, f_ch_getbufnr},
@@ -1789,6 +1791,18 @@ f_ch_close(typval_T *argvars, typval_T *rettv UNUSED)
 	channel_close(channel, FALSE);
 	channel_clear(channel);
     }
+}
+
+/*
+ * "ch_close()" function
+ */
+    static void
+f_ch_close_in(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    channel_T *channel = get_channel_arg(&argvars[0], TRUE, FALSE, 0);
+
+    if (channel != NULL)
+	channel_close_in(channel);
 }
 
 /*

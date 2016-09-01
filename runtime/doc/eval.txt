@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.4.  Last change: 2016 Aug 31
+*eval.txt*	For Vim version 7.4.  Last change: 2016 Sep 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2009,6 +2009,7 @@ call({func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil({expr})			Float	round {expr} up
 ch_close({handle})		none	close {handle}
+ch_close_in({handle})		none	close in part of {handle}
 ch_evalexpr({handle}, {expr} [, {options}])
 				any	evaluate {expr} on JSON {handle}
 ch_evalraw({handle}, {string} [, {options}])
@@ -2980,6 +2981,14 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 ch_close({handle})						*ch_close()*
 		Close {handle}.  See |channel-close|.
 		{handle} can be Channel or a Job that has a Channel.
+		A close callback is not invoked.
+
+		{only available when compiled with the |+channel| feature}
+
+ch_close_in({handle})						*ch_close_in()*
+		Close the "in" part of {handle}.  See |channel-close-in|.
+		{handle} can be Channel or a Job that has a Channel.
+		A close callback is not invoked.
 
 		{only available when compiled with the |+channel| feature}
 

@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Aug 31
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Sep 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -501,6 +501,10 @@ A special mode is when "in_top" is set to zero and "in_bot" is not set: Every
 time a line is added to the buffer, the last-but-one line will be send to the
 job stdin.  This allows for editing the last line and sending it when pressing
 Enter.
+							*channel-close-in*
+When not using the special mode the pipe or socket will be closed after the
+last line has been written.  This signals the reading end that the input
+finished.  You can also use |ch_close_in()| to close it sooner.
 
 NUL bytes in the text will be passed to the job (internally Vim stores these
 as NL bytes).
