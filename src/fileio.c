@@ -8018,7 +8018,7 @@ au_del_group(char_u *name)
 					    event = (event_T)((int)event + 1))
 	{
 	    for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
-		if (ap->group == i)
+		if (ap->group == i && ap->pat != NULL)
 		{
 		    give_warning((char_u *)_("W19: Deleting augroup that is still in use"), TRUE);
 		    in_use = TRUE;
