@@ -86,7 +86,7 @@ SCRIPTS_ALL = \
 	test_autoformat_join.out \
 	test_breakindent.out \
 	test_changelist.out \
-	test_charsearch.out \
+    	test_charsearch.out \
 	test_close_count.out \
 	test_command_count.out \
 	test_comparators.out \
@@ -97,12 +97,9 @@ SCRIPTS_ALL = \
 	test_insertcount.out \
 	test_listchars.out \
 	test_listlbr.out \
-	test_marks.out \
-	test_nested_function.out \
 	test_search_mbyte.out \
 	test_utf8.out \
-	test_wordcount.out \
-	test_writefile.out
+	test_wordcount.out
 
 
 # Tests that run on most systems, but not on Amiga.
@@ -175,7 +172,9 @@ NEW_TESTS = test_arglist.res \
 	    test_json.res \
 	    test_langmap.res \
 	    test_man.res \
+	    test_marks.res \
 	    test_matchadd_conceal.res \
+	    test_nested_function.res \
 	    test_netbeans.res \
 	    test_packadd.res \
 	    test_perl.res \
@@ -194,6 +193,7 @@ NEW_TESTS = test_arglist.res \
 	    test_viml.res \
 	    test_visual.res \
 	    test_window_id.res \
+	    test_writefile.res \
 	    test_alot_latin.res \
 	    test_alot_utf8.res \
 	    test_alot.res

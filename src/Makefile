@@ -2039,12 +2039,9 @@ test1 \
 	test_listchars \
 	test_listlbr \
 	test_listlbr_utf8 \
-	test_marks \
-	test_nested_function \
 	test_search_mbyte \
 	test_utf8 \
 	test_wordcount \
-	test_writefile \
 	test2 test3 test4 test5 test6 test7 test8 test9 \
 	test11 test12 test13 test14 test15 test17 test18 test19 \
 	test20 test21 test22 test23 test24 test25 test26 test27 test28 test29 \
@@ -2105,11 +2102,13 @@ test_arglist \
 	test_lispwords \
 	test_man \
 	test_mapping \
+	test_marks \
 	test_match \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
 	test_menu \
 	test_messages \
+    	test_nested_function \
 	test_netbeans \
 	test_options \
 	test_packadd \
@@ -2148,6 +2147,7 @@ test_arglist \
 	test_visual \
 	test_window_cmd \
 	test_window_id \
+	test_writefile \
 	test_alot_latin \
 	test_alot_utf8 \
 	test_alot:
