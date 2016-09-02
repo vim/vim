@@ -2379,7 +2379,7 @@ win_close(win_T *win, int free_buf)
 #endif
 	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, TRUE);
 #ifdef FEAT_AUTOCMD
-	if (win_valid(win))
+	if (win_valid_any_tab(win))
 	    win->w_closing = FALSE;
 #endif
 	/* Make sure curbuf is valid. It can become invalid if 'bufhidden' is
@@ -2399,9 +2399,18 @@ win_close(win_T *win, int free_buf)
 	getout(0);
     }
 
-    /* Autocommands may have closed the window already, or closed the only
-     * other window or moved to another tab page. */
-    else if (!win_valid(win) || last_window() || curtab != prev_curtab
+    /* Autocommands may have moved to another tab page. */
+    if (curtab != prev_curtab && win_valid_any_tab(win)
+						      && win->w_buffer == NULL)
+    {
+	/* Need to close the window anyway, since the buffer is NULL. */
+	win_close_othertab(win, FALSE, prev_curtab);
+	return FAIL;
+    }
+
+    /* Autocommands may have closed the window already or closed the only
+     * other window. */
+    if (!win_valid(win) || last_window()
 	    || close_last_window_tabpage(win, free_buf, prev_curtab))
 	return FAIL;
 
@@ -2492,12 +2501,15 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     int		free_tp = FALSE;
 
 #ifdef FEAT_AUTOCMD
-    if (win->w_closing || win->w_buffer->b_closing)
+    /* Get here with win->w_buffer == NULL when win_close() detects the tab
+     * page changed. */
+    if (win->w_closing || (win->w_buffer != NULL && win->w_buffer->b_closing))
 	return; /* window is already being closed */
 #endif
 
-    /* Close the link to the buffer. */
-    close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, FALSE);
+    if (win->w_buffer != NULL)
+	/* Close the link to the buffer. */
+	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, FALSE);
 
     /* Careful: Autocommands may have closed the tab page or made it the
      * current tab page.  */
