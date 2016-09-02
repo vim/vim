@@ -26,6 +26,7 @@ build_script:
 test_script:
   - cd src/testdir
     # Testing with MSVC gvim
+  - path C:\Python35-x64;%PATH%
   - nmake -f Make_dos.mak VIMPROG=..\gvim
   - nmake -f Make_dos.mak clean
     # Testing with MingW console version
