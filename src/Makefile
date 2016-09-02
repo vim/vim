@@ -2027,7 +2027,6 @@ test1 \
 	test_autoformat_join \
 	test_breakindent \
 	test_changelist \
-	test_charsearch \
 	test_close_count \
 	test_command_count \
 	test_comparators \
@@ -2046,13 +2045,13 @@ test1 \
 	test11 test12 test13 test14 test15 test17 test18 test19 \
 	test20 test21 test22 test23 test24 test25 test26 test27 test28 test29 \
 	test30 test31 test32 test33 test34 test36 test37 test38 test39 \
-	test40 test41 test42 test43 test44 test45 test46 test48 test49 \
+	test40 test41 test42 test43 test44 test45 test48 test49 \
 	test50 test51 test52 test53 test54 test55 test56 test57 test58 test59 \
 	test60 test64 test65 test66 test67 test68 test69 \
 	test70 test71 test72 test73 test74 test75 test76 test77 test78 test79 \
-	test80 test81 test82 test83 test84 test85 test86 test87 test88 test89 \
+	test80 test82 test83 test84 test85 test86 test87 test88 test89 \
 	test90 test91 test92 test93 test94 test95 test97 test98 test99 \
-	test100 test101 test102 test103 test104 test107 test108:
+	test100 test101 test103 test104 test107 test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test, assuming that Vim was already compiled.
@@ -2065,6 +2064,7 @@ test_arglist \
 	test_bufwintabinfo \
 	test_cdo \
 	test_channel \
+	test_charsearch \
 	test_cmdline \
 	test_cscope \
 	test_cursor_func \
@@ -2082,6 +2082,7 @@ test_arglist \
 	test_file_perm \
 	test_filter_cmd \
 	test_filter_map \
+	test_fnameescape \
 	test_fnamemodify \
 	test_glob2regpat \
 	test_gn \
@@ -2130,6 +2131,7 @@ test_arglist \
 	test_startup_utf8 \
 	test_stat \
 	test_statusline \
+	test_substitute \
 	test_syn_attr \
 	test_syntax \
 	test_tabline \
