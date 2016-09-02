@@ -1222,8 +1222,8 @@ check_due_timer(void)
 		}
 		else
 		{
-		    free_timer(timer);
 		    remove_timer(timer);
+		    free_timer(timer);
 		}
 		/* the callback may do anything, start all over */
 		break;
