@@ -2475,12 +2475,7 @@ do_one_cmd(
 		&& !IS_USER_CMDIDX(ea.cmdidx))
 	{
 	    /* Command not allowed when editing the command line. */
-#ifdef FEAT_CMDWIN
-	    if (cmdwin_type != 0)
-		errormsg = (char_u *)_(e_cmdwin);
-	    else
-#endif
-		errormsg = (char_u *)_(e_secure);
+	    errormsg = get_text_locked_msg();
 	    goto doend;
 	}
 #ifdef FEAT_AUTOCMD

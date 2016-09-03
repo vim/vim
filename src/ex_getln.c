@@ -2133,12 +2133,17 @@ text_locked(void)
     void
 text_locked_msg(void)
 {
+    EMSG(_(get_text_locked_msg()));
+}
+
+    char_u *
+get_text_locked_msg(void)
+{
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
-	EMSG(_(e_cmdwin));
-    else
+	return e_cmdwin;
 #endif
-	EMSG(_(e_secure));
+    return e_secure;
 }
 
 #if defined(FEAT_AUTOCMD) || defined(PROTO)

@@ -3935,25 +3935,28 @@ do_ecmd(
 		auto_buf = TRUE;
 	    else
 	    {
+		win_T	    *the_curwin = curwin;
+
+		/* Set the w_closing flag to avoid that autocommands close the
+		 * window. */
+		the_curwin->w_closing = TRUE;
+
 		if (curbuf == old_curbuf.br_buf)
 #endif
 		    buf_copy_options(buf, BCO_ENTER);
 
-		/* close the link to the current buffer */
+		/* Close the link to the current buffer. This will set
+		 * curwin->w_buffer to NULL. */
 		u_sync(FALSE);
 		close_buffer(oldwin, curbuf,
 			       (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE);
 
 #ifdef FEAT_AUTOCMD
-		/* Autocommands may open a new window and leave oldwin open
-		 * which leads to crashes since the above call sets
-		 * oldwin->w_buffer to NULL. */
-		if (curwin != oldwin && oldwin != aucmd_win
-			     && win_valid(oldwin) && oldwin->w_buffer == NULL)
-		    win_close(oldwin, FALSE);
+		the_curwin->w_closing = FALSE;
 
 # ifdef FEAT_EVAL
-		if (aborting())	    /* autocmds may abort script processing */
+		/* autocmds may abort script processing */
+		if (aborting() && curwin->w_buffer != NULL)
 		{
 		    vim_free(new_name);
 		    goto theend;

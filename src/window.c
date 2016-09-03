@@ -3912,12 +3912,7 @@ goto_tabpage(int n)
     if (text_locked())
     {
 	/* Not allowed when editing the command line. */
-#ifdef FEAT_CMDWIN
-	if (cmdwin_type != 0)
-	    EMSG(_(e_cmdwin));
-	else
-#endif
-	    EMSG(_(e_secure));
+	text_locked_msg();
 	return;
     }
 
