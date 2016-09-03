@@ -177,17 +177,22 @@ getcmdline(
     int		histype;		/* history type to be used */
 #endif
 #ifdef FEAT_SEARCH_EXTRA
-    pos_T	old_cursor;
+    pos_T	search_start;		/* where 'incsearch' starts searching */
+    pos_T       save_cursor;
     colnr_T	old_curswant;
+    colnr_T     init_curswant = curwin->w_curswant;
     colnr_T	old_leftcol;
+    colnr_T     init_leftcol = curwin->w_leftcol;
     linenr_T	old_topline;
-    pos_T       cursor_start;
+    linenr_T    init_topline = curwin->w_topline;
     pos_T       match_start = curwin->w_cursor;
     pos_T       match_end;
 # ifdef FEAT_DIFF
     int		old_topfill;
+    int         init_topfill = curwin->w_topfill;
 # endif
     linenr_T	old_botline;
+    linenr_T	init_botline = curwin->w_botline;
     int		did_incsearch = FALSE;
     int		incsearch_postponed = FALSE;
 #endif
@@ -230,8 +235,8 @@ getcmdline(
     ccline.overstrike = FALSE;		    /* always start in insert mode */
 #ifdef FEAT_SEARCH_EXTRA
     clearpos(&match_end);
-    old_cursor = curwin->w_cursor;	    /* needs to be restored later */
-    cursor_start = old_cursor;
+    save_cursor = curwin->w_cursor;	    /* may be restored later */
+    search_start = curwin->w_cursor;
     old_curswant = curwin->w_curswant;
     old_leftcol = curwin->w_leftcol;
     old_topline = curwin->w_topline;
@@ -1006,11 +1011,17 @@ getcmdline(
 		    ccline.cmdbuff[ccline.cmdlen] = NUL;
 #ifdef FEAT_SEARCH_EXTRA
 		    if (ccline.cmdlen == 0)
-			old_cursor = cursor_start;
-		    else
 		    {
-			old_cursor = match_start;
-			decl(&old_cursor);
+			search_start = save_cursor;
+			/* save view settings, so that the screen
+			 * won't be restored at the wrong position */
+			old_curswant = init_curswant;
+			old_leftcol = init_leftcol;
+			old_topline = init_topline;
+# ifdef FEAT_DIFF
+			old_topfill = init_topfill;
+# endif
+			old_botline = init_botline;
 		    }
 #endif
 		    redrawcmd();
@@ -1040,7 +1051,7 @@ getcmdline(
 		    }
 #ifdef FEAT_SEARCH_EXTRA
 		    if (ccline.cmdlen == 0)
-			old_cursor = cursor_start;
+			search_start = save_cursor;
 #endif
 		    redraw_cmdline = TRUE;
 		    goto returncmd;		/* back to cmd mode */
@@ -1127,7 +1138,7 @@ getcmdline(
 		ccline.cmdbuff[ccline.cmdlen] = NUL;
 #ifdef FEAT_SEARCH_EXTRA
 		if (ccline.cmdlen == 0)
-		    old_cursor = cursor_start;
+		    search_start = save_cursor;
 #endif
 		redrawcmd();
 		goto cmdline_changed;
@@ -1468,7 +1479,7 @@ getcmdline(
 		    if (did_incsearch)
 		    {
 			curwin->w_cursor = match_end;
-			if (!equalpos(curwin->w_cursor, old_cursor))
+			if (!equalpos(curwin->w_cursor, search_start))
 			{
 			    c = gchar_cursor();
 			    /* If 'ignorecase' and 'smartcase' are set and the
@@ -1685,7 +1696,7 @@ getcmdline(
 		    --emsg_off;
 		    if (i)
 		    {
-			old_cursor = match_start;
+			search_start = match_start;
 			match_end = t;
 			match_start = t;
 			if (c == Ctrl_T && firstc == '/')
@@ -1693,17 +1704,17 @@ getcmdline(
 			    /* move just before the current match, so that
 			     * when nv_search finishes the cursor will be
 			     * put back on the match */
-			    old_cursor = t;
-			    (void)decl(&old_cursor);
+			    search_start = t;
+			    (void)decl(&search_start);
 			}
-			if (lt(t, old_cursor) && c == Ctrl_G)
+			if (lt(t, search_start) && c == Ctrl_G)
 			{
 			    /* wrap around */
-			    old_cursor = t;
+			    search_start = t;
 			    if (firstc == '?')
-				(void)incl(&old_cursor);
+				(void)incl(&search_start);
 			    else
-				(void)decl(&old_cursor);
+				(void)decl(&search_start);
 			}
 
 			set_search_match(&match_end);
@@ -1870,7 +1881,7 @@ cmdline_changed:
 		continue;
 	    }
 	    incsearch_postponed = FALSE;
-	    curwin->w_cursor = old_cursor;  /* start at old position */
+	    curwin->w_cursor = search_start;  /* start at old position */
 
 	    /* If there is no command line, don't do anything */
 	    if (ccline.cmdlen == 0)
@@ -1988,9 +1999,18 @@ returncmd:
 #ifdef FEAT_SEARCH_EXTRA
     if (did_incsearch)
     {
-	curwin->w_cursor = old_cursor;
 	if (gotesc)
-	    curwin->w_cursor = cursor_start;
+	    curwin->w_cursor = save_cursor;
+	else
+	{
+	    if (!equalpos(save_cursor, search_start))
+	    {
+		/* put the '" mark at the original position */
+		curwin->w_cursor = save_cursor;
+		setpcmark();
+	    }
+	    curwin->w_cursor = search_start;
+	}
 	curwin->w_curswant = old_curswant;
 	curwin->w_leftcol = old_leftcol;
 	curwin->w_topline = old_topline;
