@@ -2109,8 +2109,9 @@ test_arglist \
 	test_matchadd_conceal_utf8 \
 	test_menu \
 	test_messages \
-    	test_nested_function \
+	test_nested_function \
 	test_netbeans \
+	test_normal \
 	test_options \
 	test_packadd \
 	test_partial \
