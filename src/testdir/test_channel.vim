@@ -831,6 +831,7 @@ func Run_pipe_through_sort(all, use_buffer)
   call assert_equal("dead", job_status(g:job))
 
   sp sortout
+  call WaitFor('line("$") > 3')
   call assert_equal('Reading from channel output...', getline(1))
   if a:all
     call assert_equal(['aaa', 'bbb', 'ccc', 'ddd', 'eee'], getline(2, 6))
