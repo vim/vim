@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2016 Aug 28
+" Last change:	2016 Sep 02
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".
@@ -10,6 +10,12 @@
 
 " When started as "evim", evim.vim will already have done these settings.
 if v:progname =~? "evim"
+  finish
+endif
+
+" Bail out if something that ran earlier, e.g. a system wide vimrc, does not
+" want Vim to use these default values.
+if exists('skip_defaults_vim')
   finish
 endif
 
