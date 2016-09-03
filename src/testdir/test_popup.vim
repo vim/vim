@@ -16,6 +16,21 @@ func! ListMonths()
   return ''
 endfunc
 
+func! Test_popup_complete2()
+  " Insert match immediately, if there is only one match
+  "  <c-e> Should select a character from the line below
+  " TODO: test disabled because the code change has been reverted.
+  throw "Skipped: Bug with <c-e> and popupmenu not fixed yet"
+  new
+  inoremap <f5> <c-r>=ListMonths()<cr>
+  call append(1, ["December2015"])
+  :1
+  call feedkeys("aD\<f5>\<C-E>\<C-E>\<C-E>\<C-E>\<enter>\<esc>", 'tx')
+  call assert_equal(["December2015", "", "December2015"], getline(1,3))
+  %d
+  bw!
+endfu
+
 func! Test_popup_complete()
   new
   inoremap <f5> <c-r>=ListMonths()<cr>
@@ -167,15 +182,6 @@ func! Test_popup_complete()
   call feedkeys("aD\<f5>\<C-Y>\<C-Y>\<C-Y>\<C-Y>\<enter>\<esc>", 'tx')
   call assert_equal(["December2015", "December2015", ""], getline(1,3))
   %d
-
-  " Insert match immediately, if there is only one match
-  "  <c-e> Should select a character from the line below
-  " TODO: test disabled because the code change has been reverted.
-  " call append(1, ["December2015"])
-  " :1
-  " call feedkeys("aD\<f5>\<C-E>\<C-E>\<C-E>\<C-E>\<enter>\<esc>", 'tx')
-  " call assert_equal(["December2015", "", "December2015"], getline(1,3))
-  " %d
 
   " use menuone for 'completeopt'
   " Since for the first <c-y> the menu is still shown, will only select

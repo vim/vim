@@ -121,7 +121,7 @@ nolog:
 RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_PLUGIN)
 
 newtests: newtestssilent
-	@/bin/sh -c "if test -f messages && grep -q 'FAILED' messages; then cat messages && cat test.log; fi"
+	@/bin/sh -c "if test -f messages && grep -q 'SKIPPED\|FAILED' messages; then cat messages && if test -f test.log; then cat test.log; fi ; fi"
 
 newtestssilent: $(NEW_TESTS)
 

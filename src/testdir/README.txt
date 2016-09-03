@@ -20,7 +20,7 @@ TO ADD A NEW STYLE TEST:
 4) Also add an entry in src/Makefile.
 
 What you can use (see test_assert.vim for an example):
-- Call assert_equal(), assert_true() and assert_false().
+- Call assert_equal(), assert_true(), assert_false(), etc.
 - Use try/catch to check for exceptions.
 - Use alloc_fail() to have memory allocation fail. This makes it possible
   to check memory allocation failures are handled gracefully.  You need to
@@ -29,6 +29,9 @@ What you can use (see test_assert.vim for an example):
 - Use disable_char_avail_for_testing(1) if char_avail() must return FALSE for
   a while.  E.g. to trigger the CursorMovedI autocommand event.
   See test_cursor_func.vim for an example
+- If the bug that is being tested isn't fixed yet, you can throw an exception
+  so that it's clear this still needs work.  E.g.:
+	  throw "Skipped: Bug with <c-e> and popupmenu not fixed yet"
 - See the start of runtest.vim for more help.
 
 
