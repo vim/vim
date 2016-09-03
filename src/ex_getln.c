@@ -1657,9 +1657,9 @@ getcmdline(
 #endif
 		goto cmdline_not_changed;
 
+#ifdef FEAT_SEARCH_EXTRA
 	case Ctrl_G:	    /* next match */
 	case Ctrl_T:	    /* previous match */
-#ifdef FEAT_SEARCH_EXTRA
 		if (p_is && !cmd_silent && (firstc == '/' || firstc == '?'))
 		{
 		    pos_T  t;
@@ -1724,8 +1724,9 @@ getcmdline(
 		    }
 		    else
 			vim_beep(BO_ERROR);
+		    goto cmdline_not_changed;
 		}
-		goto cmdline_not_changed;
+		break;
 #endif
 
 	case Ctrl_V:
