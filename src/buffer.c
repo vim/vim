@@ -707,7 +707,7 @@ buf_freeall(buf_T *buf, int flags)
     int		is_curbuf = (buf == curbuf);
     bufref_T	bufref;
 # ifdef FEAT_WINDOWS
-    int		is_curwin = (curwin!= NULL && curwin->w_buffer == buf);
+    int		is_curwin = (curwin != NULL && curwin->w_buffer == buf);
     win_T	*the_curwin = curwin;
     tabpage_T	*the_curtab = curtab;
 # endif
@@ -772,7 +772,7 @@ buf_freeall(buf_T *buf, int flags)
 #endif
 #ifdef FEAT_SYN_HL
     /* Remove any ownsyntax, unless exiting. */
-    if (firstwin != NULL && curwin->w_buffer == buf)
+    if (curwin != NULL && curwin->w_buffer == buf)
 	reset_synblock(curwin);
 #endif
 
@@ -788,7 +788,7 @@ buf_freeall(buf_T *buf, int flags)
 		clearFolding(win);
     }
 # else
-    if (curwin->w_buffer == buf)
+    if (curwin != NULL && curwin->w_buffer == buf)
 	clearFolding(curwin);
 # endif
 #endif
