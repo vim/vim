@@ -476,6 +476,7 @@ close_buffer(
 	unload_buf = TRUE;
 #endif
 
+#ifdef FEAT_AUTOCMD
     /* Disallow deleting the buffer when it is locked (already being closed or
      * halfway a command that relies on it). Unloading is allowed. */
     if (buf->b_locked > 0 && (del_buf || wipe_buf))
@@ -483,6 +484,7 @@ close_buffer(
 	EMSG(_("E937: Attempt to delete a buffer that is in use"));
 	return;
     }
+#endif
 
     if (win != NULL
 #ifdef FEAT_WINDOWS
