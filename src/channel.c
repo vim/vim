@@ -2142,7 +2142,7 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 	}
 	else
 	{
-	    typval_T	*tv;
+	    typval_T	*tv = NULL;
 	    typval_T	res_tv;
 	    typval_T	err_tv;
 	    char_u	*json = NULL;
@@ -2159,8 +2159,6 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 		ch_logs(channel, "Calling '%s'", (char *)arg);
 		if (func_call(arg, &argv[2], NULL, NULL, &res_tv) == OK)
 		    tv = &res_tv;
-		else
-		    tv = NULL;
 	    }
 
 	    if (argv[id_idx].v_type == VAR_NUMBER)
@@ -2174,11 +2172,9 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 		    /* If evaluation failed or the result can't be encoded
 		     * then return the string "ERROR". */
 		    vim_free(json);
-		    free_tv(tv);
 		    err_tv.v_type = VAR_STRING;
 		    err_tv.vval.v_string = (char_u *)"ERROR";
-		    tv = &err_tv;
-		    json = json_encode_nr_expr(id, tv, options | JSON_NL);
+		    json = json_encode_nr_expr(id, &err_tv, options | JSON_NL);
 		}
 		if (json != NULL)
 		{
@@ -2191,7 +2187,7 @@ channel_exe_cmd(channel_T *channel, int part, typval_T *argv)
 	    --emsg_skip;
 	    if (tv == &res_tv)
 		clear_tv(tv);
-	    else if (tv != &err_tv)
+	    else
 		free_tv(tv);
 	}
     }
