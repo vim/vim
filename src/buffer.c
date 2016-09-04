@@ -476,6 +476,14 @@ close_buffer(
 	unload_buf = TRUE;
 #endif
 
+    /* Disallow deleting the buffer when it is locked (already being closed or
+     * halfway a command that relies on it). Unloading is allowed. */
+    if (buf->b_locked > 0 && (del_buf || wipe_buf))
+    {
+	EMSG(_("E937: Attempt to delete a buffer that is in use"));
+	return;
+    }
+
     if (win != NULL
 #ifdef FEAT_WINDOWS
 	&& win_valid_any_tab(win) /* in case autocommands closed the window */
@@ -499,7 +507,7 @@ close_buffer(
     /* When the buffer is no longer in a window, trigger BufWinLeave */
     if (buf->b_nwindows == 1)
     {
-	buf->b_closing = TRUE;
+	++buf->b_locked;
 	if (apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
 								  FALSE, buf)
 		&& !bufref_valid(&bufref))
@@ -509,7 +517,7 @@ aucmd_abort:
 	    EMSG(_(e_auabort));
 	    return;
 	}
-	buf->b_closing = FALSE;
+	--buf->b_locked;
 	if (abort_if_last && one_window())
 	    /* Autocommands made this the only window. */
 	    goto aucmd_abort;
@@ -518,13 +526,13 @@ aucmd_abort:
 	 * BufHidden */
 	if (!unload_buf)
 	{
-	    buf->b_closing = TRUE;
+	    ++buf->b_locked;
 	    if (apply_autocmds(EVENT_BUFHIDDEN, buf->b_fname, buf->b_fname,
 								  FALSE, buf)
 		    && !bufref_valid(&bufref))
 		/* Autocommands deleted the buffer. */
 		goto aucmd_abort;
-	    buf->b_closing = FALSE;
+	    --buf->b_locked;
 	    if (abort_if_last && one_window())
 		/* Autocommands made this the only window. */
 		goto aucmd_abort;
@@ -685,7 +693,7 @@ buf_freeall(buf_T *buf, int flags)
 # endif
 
     /* Make sure the buffer isn't closed by autocommands. */
-    buf->b_closing = TRUE;
+    ++buf->b_locked;
     set_bufref(&bufref, buf);
     if (buf->b_ml.ml_mfp != NULL)
     {
@@ -711,7 +719,7 @@ buf_freeall(buf_T *buf, int flags)
 	    /* autocommands deleted the buffer */
 	    return;
     }
-    buf->b_closing = FALSE;
+    --buf->b_locked;
 
 # ifdef FEAT_WINDOWS
     /* If the buffer was in curwin and the window has changed, go back to that
@@ -1369,7 +1377,7 @@ do_buffer(
 	 */
 	while (buf == curbuf
 # ifdef FEAT_AUTOCMD
-		   && !(curwin->w_closing || curwin->w_buffer->b_closing)
+		   && !(curwin->w_closing || curwin->w_buffer->b_locked > 0)
 # endif
 		   && (firstwin != lastwin || first_tabpage->tp_next != NULL))
 	{
@@ -5100,7 +5108,7 @@ ex_buffer_all(exarg_T *eap)
 #endif
 		    ) && firstwin != lastwin
 #ifdef FEAT_AUTOCMD
-		    && !(wp->w_closing || wp->w_buffer->b_closing)
+		    && !(wp->w_closing || wp->w_buffer->b_locked > 0)
 #endif
 		    )
 	    {

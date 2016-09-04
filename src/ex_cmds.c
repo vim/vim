@@ -3872,8 +3872,8 @@ do_ecmd(
 	    oldbuf = TRUE;
 	    set_bufref(&bufref, buf);
 	    (void)buf_check_timestamp(buf, FALSE);
-	    /* Check if autocommands made buffer invalid or changed the current
-	     * buffer. */
+	    /* Check if autocommands made the buffer invalid or changed the
+	     * current buffer. */
 	    if (!bufref_valid(&bufref)
 #ifdef FEAT_AUTOCMD
 		    || curbuf != old_curbuf.br_buf
@@ -3938,8 +3938,9 @@ do_ecmd(
 		win_T	    *the_curwin = curwin;
 
 		/* Set the w_closing flag to avoid that autocommands close the
-		 * window. */
+		 * window.  And set b_locked for the same reason. */
 		the_curwin->w_closing = TRUE;
+		++buf->b_locked;
 
 		if (curbuf == old_curbuf.br_buf)
 #endif
@@ -3953,6 +3954,7 @@ do_ecmd(
 
 #ifdef FEAT_AUTOCMD
 		the_curwin->w_closing = FALSE;
+		--buf->b_locked;
 
 # ifdef FEAT_EVAL
 		/* autocmds may abort script processing */
@@ -4138,11 +4140,6 @@ do_ecmd(
  */
     /* Assume success now */
     retval = OK;
-
-    /*
-     * Reset cursor position, could be used by autocommands.
-     */
-    check_cursor();
 
     /*
      * Check if we are editing the w_arg_idx file in the argument list.

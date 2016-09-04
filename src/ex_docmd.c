@@ -7201,7 +7201,7 @@ ex_quit(exarg_T *eap)
     /* Refuse to quit when locked or when the buffer in the last window is
      * being closed (can only happen in autocommands). */
     if (curbuf_locked() || (wp->w_buffer->b_nwindows == 1
-						  && wp->w_buffer->b_closing))
+						&& wp->w_buffer->b_locked > 0))
 	return;
 #endif
 
@@ -7283,7 +7283,7 @@ ex_quit_all(exarg_T *eap)
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
     /* Refuse to quit when locked or when the buffer in the last window is
      * being closed (can only happen in autocommands). */
-    if (curbuf_locked() || (curbuf->b_nwindows == 1 && curbuf->b_closing))
+    if (curbuf_locked() || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
 	return;
 #endif
 
@@ -7665,7 +7665,7 @@ ex_exit(exarg_T *eap)
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
     /* Refuse to quit when locked or when the buffer in the last window is
      * being closed (can only happen in autocommands). */
-    if (curbuf_locked() || (curbuf->b_nwindows == 1 && curbuf->b_closing))
+    if (curbuf_locked() || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
 	return;
 #endif
 

@@ -1845,8 +1845,8 @@ struct file_buffer
 
     int		b_flags;	/* various BF_ flags */
 #ifdef FEAT_AUTOCMD
-    int		b_closing;	/* buffer is being closed, don't let
-				   autocommands close it too. */
+    int		b_locked;	/* Buffer is being closed or referenced, don't
+				   let autocommands wipe it out. */
 #endif
 
     /*
