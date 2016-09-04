@@ -450,6 +450,11 @@ close_buffer(
     int		is_curbuf;
     int		nwindows;
     bufref_T	bufref;
+# ifdef FEAT_WINDOWS
+    int		is_curwin = (curwin!= NULL && curwin->w_buffer == buf);
+    win_T	*the_curwin = curwin;
+    tabpage_T	*the_curtab = curtab;
+# endif
 #endif
     int		unload_buf = (action != 0);
     int		del_buf = (action == DOBUF_DEL || action == DOBUF_WIPE);
@@ -544,6 +549,19 @@ aucmd_abort:
 	    return;
 # endif
     }
+
+# ifdef FEAT_WINDOWS
+    /* If the buffer was in curwin and the window has changed, go back to that
+     * window, if it still exists.  This avoids that ":edit x" triggering a
+     * "tabnext" BufUnload autocmd leaves a window behind without a buffer. */
+    if (is_curwin && curwin != the_curwin &&  win_valid_any_tab(the_curwin))
+    {
+	block_autocmds();
+	goto_tabpage_win(the_curtab, the_curwin);
+	unblock_autocmds();
+    }
+# endif
+
     nwindows = buf->b_nwindows;
 #endif
 
