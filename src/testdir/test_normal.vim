@@ -192,6 +192,30 @@ func! Test_normal05_formatexpr()
   bw!
 endfu
 
+func Test_normal05_formatexpr_newbuf()
+  " Edit another buffer in the 'formatexpr' function
+  new
+  func! Format()
+    edit another
+  endfunc
+  set formatexpr=Format()
+  norm gqG
+  bw!
+  set formatexpr=
+endfunc
+
+func Test_normal05_formatexpr_setopt()
+  " Change the 'formatexpr' value in the function
+  new
+  func! Format()
+    set formatexpr=
+  endfunc
+  set formatexpr=Format()
+  norm gqG
+  bw!
+  set formatexpr=
+endfunc
+
 func! Test_normal06_formatprg()
   " basic test for formatprg
   " only test on non windows platform
