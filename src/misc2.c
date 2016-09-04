@@ -505,6 +505,28 @@ get_cursor_rel_lnum(
 }
 
 /*
+ * Make sure "pos.lnum" and "pos.col" are valid in "buf".
+ * This allows for the col to be on the NUL byte.
+ */
+    void
+check_pos(buf_T *buf, pos_T *pos)
+{
+    char_u *line;
+    colnr_T len;
+
+    if (pos->lnum > buf->b_ml.ml_line_count)
+	pos->lnum = buf->b_ml.ml_line_count;
+
+    if (pos->col > 0)
+    {
+	line = ml_get_buf(buf, pos->lnum, FALSE);
+	len = (colnr_T)STRLEN(line);
+	if (pos->col > len)
+	    pos->col = len;
+    }
+}
+
+/*
  * Make sure curwin->w_cursor.lnum is valid.
  */
     void

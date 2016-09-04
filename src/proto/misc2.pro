@@ -12,6 +12,7 @@ int dec_cursor(void);
 int dec(pos_T *lp);
 int decl(pos_T *lp);
 linenr_T get_cursor_rel_lnum(win_T *wp, linenr_T lnum);
+void check_pos(buf_T *buf, pos_T *pos);
 void check_cursor_lnum(void);
 void check_cursor_col(void);
 void check_cursor_col_win(win_T *win);

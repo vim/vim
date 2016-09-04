@@ -9451,7 +9451,10 @@ get_op_vcol(
 #ifdef FEAT_MBYTE
     /* prevent from moving onto a trail byte */
     if (has_mbyte)
+    {
+	check_pos(curwin->w_buffer, &oap->end);
 	mb_adjustpos(curwin->w_buffer, &oap->end);
+    }
 #endif
 
     getvvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
