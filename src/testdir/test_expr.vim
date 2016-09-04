@@ -335,6 +335,13 @@ function Test_printf_errors()
   call assert_fails('echo printf("%d", 1.2)', 'E805:')
 endfunc
 
+function Test_max_min_errors()
+  call assert_fails('call max(v:true)', 'E712:')
+  call assert_fails('call max(v:true)', 'max()')
+  call assert_fails('call min(v:true)', 'E712:')
+  call assert_fails('call min(v:true)', 'min()')
+endfunc
+
 function Test_printf_64bit()
   if has('num64')
     call assert_equal("123456789012345", printf('%d', 123456789012345))
