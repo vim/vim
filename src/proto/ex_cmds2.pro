@@ -20,7 +20,7 @@ int profile_passed_limit(proftime_T *tm);
 void profile_zero(proftime_T *tm);
 timer_T *create_timer(long msec, int repeat);
 long check_due_timer(void);
-timer_T *find_timer(int id);
+timer_T *find_timer(long id);
 void stop_timer(timer_T *timer);
 void stop_all_timers(void);
 void add_timer_info(typval_T *rettv, timer_T *timer);

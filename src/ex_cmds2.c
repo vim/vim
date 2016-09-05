@@ -1088,10 +1088,17 @@ profile_zero(proftime_T *tm)
 
 # if defined(FEAT_TIMERS) || defined(PROTO)
 static timer_T	*first_timer = NULL;
-static int	last_timer_id = 0;
+static long	last_timer_id = 0;
 
-static timer_T	*current_timer = NULL;
-static int	free_current_timer = FALSE;
+# ifdef WIN3264
+#  define GET_TIMEDIFF(timer, now) \
+	(long)(((double)(timer->tr_due.QuadPart - now.QuadPart) \
+					   / (double)fr.QuadPart) * 1000);
+# else
+#  define GET_TIMEDIFF(timer, now) \
+	(timer->tr_due.tv_sec - now.tv_sec) * 1000 \
+			   + (timer->tr_due.tv_usec - now.tv_usec) / 1000;
+# endif
 
 /*
  * Insert a timer in the list of timers.
@@ -1124,13 +1131,8 @@ remove_timer(timer_T *timer)
     static void
 free_timer(timer_T *timer)
 {
-    if (timer == current_timer)
-	free_current_timer = TRUE;
-    else
-    {
-	free_callback(timer->tr_callback, timer->tr_partial);
-	vim_free(timer);
-    }
+    free_callback(timer->tr_callback, timer->tr_partial);
+    vim_free(timer);
 }
 
 /*
@@ -1144,7 +1146,10 @@ create_timer(long msec, int repeat)
 
     if (timer == NULL)
 	return NULL;
-    timer->tr_id = ++last_timer_id;
+    if (++last_timer_id < 0)
+	/* Overflow!  Might cause duplicates... */
+	last_timer_id = 0;
+    timer->tr_id = last_timer_id;
     insert_timer(timer);
     if (repeat != 0)
 	timer->tr_repeat = repeat - 1;
@@ -1165,7 +1170,7 @@ timer_callback(timer_T *timer)
     typval_T	argv[2];
 
     argv[0].v_type = VAR_NUMBER;
-    argv[0].vval.v_number = timer->tr_id;
+    argv[0].vval.v_number = (varnumber_T)timer->tr_id;
     argv[1].v_type = VAR_UNKNOWN;
 
     call_func(timer->tr_callback, (int)STRLEN(timer->tr_callback),
@@ -1182,77 +1187,76 @@ timer_callback(timer_T *timer)
 check_due_timer(void)
 {
     timer_T	*timer;
+    timer_T	*timer_next;
     long	this_due;
     long	next_due = -1;
     proftime_T	now;
     int		did_one = FALSE;
+    long	current_id = last_timer_id;
 # ifdef WIN3264
     LARGE_INTEGER   fr;
 
     QueryPerformanceFrequency(&fr);
 # endif
-    while (!got_int)
+    profile_start(&now);
+    for (timer = first_timer; timer != NULL && !got_int; timer = timer_next)
     {
-	profile_start(&now);
-	next_due = -1;
-	for (timer = first_timer; timer != NULL; timer = timer->tr_next)
-	{
-	    if (timer->tr_paused)
-		continue;
-# ifdef WIN3264
-	    this_due = (long)(((double)(timer->tr_due.QuadPart - now.QuadPart)
-					       / (double)fr.QuadPart) * 1000);
-# else
-	    this_due = (timer->tr_due.tv_sec - now.tv_sec) * 1000
-			       + (timer->tr_due.tv_usec - now.tv_usec) / 1000;
-# endif
-	    if (this_due <= 1)
-	    {
-		current_timer = timer;
-		free_current_timer = FALSE;
-		timer_callback(timer);
-		current_timer = NULL;
+	timer_next = timer->tr_next;
 
-		did_one = TRUE;
-		if (timer->tr_repeat != 0 && !free_current_timer)
-		{
-		    profile_setlimit(timer->tr_interval, &timer->tr_due);
-		    if (timer->tr_repeat > 0)
-			--timer->tr_repeat;
-		}
-		else
-		{
-		    remove_timer(timer);
-		    free_timer(timer);
-		}
-		/* the callback may do anything, start all over */
-		break;
+	if (timer->tr_id == -1 || timer->tr_firing || timer->tr_paused)
+	    continue;
+	this_due = GET_TIMEDIFF(timer, now);
+	if (this_due <= 1)
+	{
+	    timer->tr_firing = TRUE;
+	    timer_callback(timer);
+	    timer->tr_firing = FALSE;
+	    timer_next = timer->tr_next;
+	    did_one = TRUE;
+
+	    /* Only fire the timer again if it repeats and stop_timer() wasn't
+	     * called while inside the callback (tr_id == -1). */
+	    if (timer->tr_repeat != 0 && timer->tr_id != -1)
+	    {
+		profile_setlimit(timer->tr_interval, &timer->tr_due);
+		this_due = GET_TIMEDIFF(timer, now);
+		if (this_due < 1)
+		    this_due = 1;
+		if (timer->tr_repeat > 0)
+		    --timer->tr_repeat;
 	    }
-	    if (next_due == -1 || next_due > this_due)
-		next_due = this_due;
+	    else
+	    {
+		this_due = -1;
+		remove_timer(timer);
+		free_timer(timer);
+	    }
 	}
-	if (timer == NULL)
-	    break;
+	if (this_due > 0 && (next_due == -1 || next_due > this_due))
+	    next_due = this_due;
     }
 
     if (did_one)
 	redraw_after_callback();
 
-    return next_due;
+    return current_id != last_timer_id ? 1 : next_due;
 }
 
 /*
  * Find a timer by ID.  Returns NULL if not found;
  */
     timer_T *
-find_timer(int id)
+find_timer(long id)
 {
     timer_T *timer;
 
-    for (timer = first_timer; timer != NULL; timer = timer->tr_next)
-	if (timer->tr_id == id)
-	    break;
-    return timer;
+    if (id >= 0)
+    {
+	for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+	    if (timer->tr_id == id)
+		return timer;
+    }
+    return NULL;
 }
 
 
@@ -1262,15 +1266,27 @@ find_timer(int id)
     void
 stop_timer(timer_T *timer)
 {
-    remove_timer(timer);
-    free_timer(timer);
+    if (timer->tr_firing)
+	/* Free the timer after the callback returns. */
+	timer->tr_id = -1;
+    else
+    {
+	remove_timer(timer);
+	free_timer(timer);
+    }
 }
 
     void
 stop_all_timers(void)
 {
-    while (first_timer != NULL)
-	stop_timer(first_timer);
+    timer_T *timer;
+    timer_T *timer_next;
+
+    for (timer = first_timer; timer != NULL; timer = timer_next)
+    {
+	timer_next = timer->tr_next;
+	stop_timer(timer);
+    }
 }
 
     void
@@ -1289,18 +1305,14 @@ add_timer_info(typval_T *rettv, timer_T *timer)
 	return;
     list_append_dict(list, dict);
 
-    dict_add_nr_str(dict, "id", (long)timer->tr_id, NULL);
+    dict_add_nr_str(dict, "id", timer->tr_id, NULL);
     dict_add_nr_str(dict, "time", (long)timer->tr_interval, NULL);
 
     profile_start(&now);
 # ifdef WIN3264
     QueryPerformanceFrequency(&fr);
-    remaining = (long)(((double)(timer->tr_due.QuadPart - now.QuadPart)
-					       / (double)fr.QuadPart) * 1000);
-# else
-    remaining = (timer->tr_due.tv_sec - now.tv_sec) * 1000
-			       + (timer->tr_due.tv_usec - now.tv_usec) / 1000;
 # endif
+    remaining = GET_TIMEDIFF(timer, now);
     dict_add_nr_str(dict, "remaining", (long)remaining, NULL);
 
     dict_add_nr_str(dict, "repeat",
@@ -1333,7 +1345,8 @@ add_timer_info_all(typval_T *rettv)
     timer_T *timer;
 
     for (timer = first_timer; timer != NULL; timer = timer->tr_next)
-	add_timer_info(rettv, timer);
+	if (timer->tr_id != -1)
+	    add_timer_info(rettv, timer);
 }
 
 /*

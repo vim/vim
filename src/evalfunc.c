@@ -12398,12 +12398,14 @@ f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 f_timer_start(typval_T *argvars, typval_T *rettv)
 {
-    long    msec = (long)get_tv_number(&argvars[0]);
-    timer_T *timer;
-    int	    repeat = 0;
-    char_u  *callback;
-    dict_T  *dict;
+    long	msec = (long)get_tv_number(&argvars[0]);
+    timer_T	*timer;
+    int		repeat = 0;
+    char_u	*callback;
+    dict_T	*dict;
+    partial_T	*partial;
 
+    rettv->vval.v_number = -1;
     if (check_secure())
 	return;
     if (argvars[2].v_type != VAR_UNKNOWN)
@@ -12418,13 +12420,13 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
 	    repeat = get_dict_number(dict, (char_u *)"repeat");
     }
 
-    timer = create_timer(msec, repeat);
-    callback = get_callback(&argvars[1], &timer->tr_partial);
+    callback = get_callback(&argvars[1], &partial);
     if (callback == NULL)
-    {
-	stop_timer(timer);
-	rettv->vval.v_number = -1;
-    }
+	return;
+
+    timer = create_timer(msec, repeat);
+    if (timer == NULL)
+	free_callback(callback, partial);
     else
     {
 	if (timer->tr_partial == NULL)
@@ -12432,7 +12434,8 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
 	else
 	    /* pointer into the partial */
 	    timer->tr_callback = callback;
-	rettv->vval.v_number = timer->tr_id;
+	timer->tr_partial = partial;
+	rettv->vval.v_number = (varnumber_T)timer->tr_id;
     }
 }
 
