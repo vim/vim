@@ -9,6 +9,9 @@ STARTTEST
 :set visualbell
 :set nocp viminfo+=nviminfo
 :"
+:" On windows a swapfile in Xtopdir prevents it from being cleaned up.
+:set noswapfile
+:"
 :function! GetCwdInfo(win, tab)
 : let tab_changed = 0
 : let mod = ":t"
