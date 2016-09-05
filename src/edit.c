@@ -5304,7 +5304,7 @@ ins_complete(int c, int enable_pum)
 	    if (compl_pattern == NULL)
 		return FAIL;
 	    set_cmd_context(&compl_xp, compl_pattern,
-				     (int)STRLEN(compl_pattern), curs_col);
+				  (int)STRLEN(compl_pattern), curs_col, FALSE);
 	    if (compl_xp.xp_context == EXPAND_UNSUCCESSFUL
 		    || compl_xp.xp_context == EXPAND_NOTHING)
 		/* No completion possible, use an empty pattern to get a

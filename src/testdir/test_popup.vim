@@ -242,22 +242,27 @@ func! Test_popup_completion_insertmode()
   iunmap <F5>
 endfunc
 
-function! ComplTest() abort
-  call complete(1, ['source', 'soundfold'])
-  return ''
-endfunction
-
 func Test_noinsert_complete()
+  function! s:complTest1() abort
+    call complete(1, ['source', 'soundfold'])
+    return ''
+  endfunction
+
+  function! s:complTest2() abort
+    call complete(1, ['source', 'soundfold'])
+    return ''
+  endfunction
+
   new
   set completeopt+=noinsert
-  inoremap <F5>  <C-R>=ComplTest()<CR>
+  inoremap <F5>  <C-R>=s:complTest1()<CR>
   call feedkeys("i\<F5>soun\<CR>\<CR>\<ESC>.", 'tx')
   call assert_equal('soundfold', getline(1))
   call assert_equal('soundfold', getline(2))
   bwipe!
 
   new
-  inoremap <F5>  <C-R>=Test()<CR>
+  inoremap <F5>  <C-R>=s:complTest2()<CR>
   call feedkeys("i\<F5>\<CR>\<ESC>", 'tx')
   call assert_equal('source', getline(1))
   bwipe!
@@ -266,10 +271,20 @@ func Test_noinsert_complete()
   iunmap <F5>
 endfunc
 
+func Test_compl_vim_cmds_after_register_expr()
+  function! s:test_func()
+    return 'autocmd '
+  endfunction
+  augroup AAAAA_Group
+    au!
+  augroup END
 
-function! Test() abort
-  call complete(1, ['source', 'soundfold'])
-  return ''
-endfunction
+  new
+  call feedkeys("i\<c-r>=s:test_func()\<CR>\<C-x>\<C-v>\<Esc>", 'tx')
+  call assert_equal('autocmd AAAAA_Group', getline(1))
+  autocmd! AAAAA_Group
+  augroup! AAAAA_Group
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
