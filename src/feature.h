@@ -332,7 +332,7 @@
  * sorted by character values.  I'm not sure how to fix this. Should we really
  * do a EBCDIC to ASCII conversion for this??
  */
-#if defined(FEAT_NORMAL) && !defined(EBCDIC)
+#if !defined(EBCDIC)
 # define FEAT_TAG_BINS
 #endif
 

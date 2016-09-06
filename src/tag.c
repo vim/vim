@@ -1578,10 +1578,12 @@ find_tags(
 	 */
 	for (;;)
 	{
+#ifdef FEAT_TAG_BINS
 	    /* check for CTRL-C typed, more often when jumping around */
 	    if (state == TS_BINARY || state == TS_SKIP_BACK)
 		line_breakcheck();
 	    else
+#endif
 		fast_breakcheck();
 #ifdef FEAT_INS_EXPAND
 	    if ((flags & TAG_INS_COMP))	/* Double brackets for gcc */
