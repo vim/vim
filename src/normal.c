@@ -7099,6 +7099,10 @@ nv_replace(cmdarg_T *cap)
 	curwin->w_set_curswant = TRUE;
 	set_last_insert(cap->nchar);
     }
+
+#ifdef FEAT_FOLDING
+    foldUpdateInsert();
+#endif
 }
 
 /*

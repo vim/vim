@@ -25,6 +25,7 @@ void foldCreate(linenr_T start, linenr_T end);
 void deleteFold(linenr_T start, linenr_T end, int recursive, int had_visual);
 void clearFolding(win_T *win);
 void foldUpdate(win_T *wp, linenr_T top, linenr_T bot);
+void foldUpdateInsert();
 void foldUpdateAll(win_T *win);
 int foldMoveTo(int updown, int dir, long count);
 void foldInitWin(win_T *new_win);

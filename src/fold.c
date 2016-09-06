@@ -811,7 +811,7 @@ foldUpdate(win_T *wp, linenr_T top, linenr_T bot)
 {
     fold_T	*fp;
 
-    if (disable_fold_update > 0)
+    if (State & INSERT)
 	return;
 
     /* Mark all folds from top to bot as maybe-small. */
@@ -838,6 +838,22 @@ foldUpdate(win_T *wp, linenr_T top, linenr_T bot)
 	foldUpdateIEMS(wp, top, bot);
 	got_int |= save_got_int;
     }
+}
+
+/* foldUpdateInsert() {{{2 */
+/*
+ * Update folds for the insert changes in the buffer of a window.
+ */
+    void
+foldUpdateInsert()
+{
+    if (foldmethodIsManual(curwin)
+	    || foldmethodIsSyntax(curwin)
+	    || foldmethodIsExpr(curwin))
+	return;
+
+    foldUpdateAll(curwin);
+    foldOpenCursor();
 }
 
 /* foldUpdateAll() {{{2 */
