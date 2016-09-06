@@ -2401,7 +2401,7 @@ parse_line:
 				      && vim_memcmp(mfp2->match, mfp->match,
 						       (size_t)mfp->len) == 0)
 				  break;
-			      line_breakcheck();
+			      fast_breakcheck();
 			  }
 			if (i < 0)
 			{
