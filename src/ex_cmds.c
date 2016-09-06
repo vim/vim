@@ -3947,7 +3947,7 @@ do_ecmd(
 		    buf_copy_options(buf, BCO_ENTER);
 
 		/* Close the link to the current buffer. This will set
-		 * curwin->w_buffer to NULL. */
+		 * oldwin->w_buffer to NULL. */
 		u_sync(FALSE);
 		close_buffer(oldwin, curbuf,
 			       (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE);

@@ -1815,7 +1815,7 @@ screen_puts_mbyte(char_u *s, int l, int attr)
     void
 msg_puts(char_u *s)
 {
- msg_puts_attr(s, 0);
+    msg_puts_attr(s, 0);
 }
 
     void
