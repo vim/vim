@@ -4485,6 +4485,7 @@ E932	eval.txt	/*E932*
 E933	eval.txt	/*E933*
 E934	sign.txt	/*E934*
 E935	eval.txt	/*E935*
+E936	autocmd.txt	/*E936*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
@@ -5245,6 +5246,7 @@ cc	change.txt	/*cc*
 ceil()	eval.txt	/*ceil()*
 ch.vim	syntax.txt	/*ch.vim*
 ch_close()	eval.txt	/*ch_close()*
+ch_close_in()	eval.txt	/*ch_close_in()*
 ch_evalexpr()	eval.txt	/*ch_evalexpr()*
 ch_evalraw()	eval.txt	/*ch_evalraw()*
 ch_getbufnr()	eval.txt	/*ch_getbufnr()*
@@ -5287,6 +5289,7 @@ changing	change.txt	/*changing*
 channel	channel.txt	/*channel*
 channel-callback	channel.txt	/*channel-callback*
 channel-close	channel.txt	/*channel-close*
+channel-close-in	channel.txt	/*channel-close-in*
 channel-commands	channel.txt	/*channel-commands*
 channel-demo	channel.txt	/*channel-demo*
 channel-functions	usr_41.txt	/*channel-functions*

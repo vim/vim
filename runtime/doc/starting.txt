@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2016 Aug 27
+*starting.txt*  For Vim version 7.4.  Last change: 2016 Sep 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1029,6 +1029,9 @@ and modify it.
 If you don't like some of the defaults, you can still source defaults.vim and
 revert individual settings.  See the defaults.vim file for hints on how to
 revert each item.
+
+If you use a system-wide vimrc and don't want defaults.vim to change settings,
+set the "skip_defaults_vim" variable.
 
 
 Avoiding trojan horses ~

@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Aug 28
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Sep 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -243,6 +243,7 @@ New and extended functions: ~
 |bufwinid()|		get the window ID of a specific buffer
 |byteidxcomp()|		like byteidx() but count composing characters
 |ch_close()|		close a channel
+|ch_close_in()|		close the in part of a channel
 |ch_evalexpr()|		evaluates an expression over channel
 |ch_evalraw()|		evaluates a raw string over channel
 |ch_getbufnr()|		get the buffer number of a channel
@@ -6364,7 +6365,7 @@ Files:      src/testdir/Make_dos.mak
 
 Patch 7.4.995
 Problem:    gdk_pixbuf_new_from_inline() is deprecated.
-Solution:   Generate auto/gui_gtk_gresources.c. (Kazunobu Kazunobu,
+Solution:   Generate auto/gui_gtk_gresources.c. (Kazunobu Kuriyama,
             closes #507)
 Files:      src/Makefile, src/auto/configure, src/config.h.in,
             src/config.mk.in, src/configure.in, src/gui_gtk.c,
@@ -7848,7 +7849,7 @@ Files:      src/os_win32.c
 Patch 7.4.1231
 Problem:    JSON messages are not parsed properly.
 Solution:   Queue received messages.
-Files:      src/eval,c src/channel.c, src/json.c, src/proto/eval.pro,
+Files:      src/eval.c src/channel.c, src/json.c, src/proto/eval.pro,
             src/proto/channel.pro, src/proto/json.pro, src/structs.h
 
 Patch 7.4.1232
@@ -9312,7 +9313,7 @@ Problem:    ":loadplugin" is not optimal, some people find it confusing.
 Solution:   Only use ":packadd" with an optional "!".
 Files:      src/ex_cmds.h, src/ex_cmds2.c, src/testdir/test_loadplugin.vim,
             src/testdir/test_packadd.vim, src/testdir/Make_all.mak,
-            runtime/doc/repeat.txt.
+            runtime/doc/repeat.txt
 
 Patch 7.4.1487
 Problem:    For WIN32 isinf() is defined as a macro.
@@ -10164,7 +10165,7 @@ Files:      src/ops.c, src/testdir/test_increment.vim
 Patch 7.4.1635
 Problem:    Channel test is a bit flaky.
 Solution:   Remove 'DETACH' if it's there.
-Files:      src/test_channel.vim
+Files:      src/testdir/test_channel.vim
 
 Patch 7.4.1636
 Problem:    When 'F' is in 'shortmess' the prompt for the encryption key isn't
@@ -10824,7 +10825,7 @@ Files:      src/normal.c, src/testdir/test_goto.vim, src/testdir/test_alot.vim
 Patch 7.4.1749
 Problem:    When using GTK 3.20 there are a few warnings.
 Solution:   Use new functions when available. (Kazunobu Kuriyama)
-Files:      src/gui_beval,c src/gui_gtk_x11.c
+Files:      src/gui_beval.c src/gui_gtk_x11.c
 
 Patch 7.4.1750
 Problem:    When a buffer gets updated while in command line mode, the screen
@@ -13020,7 +13021,7 @@ Files:      src/evalfunc.c, src/version.c, src/testdir/test_lambda.vim
 
 Patch 7.4.2122 (after 7.4.2118)
 Problem:    Mac: don't get +clipboard in huge build.
-Solution:   Move #define down below including featureh.h
+Solution:   Move #define down below including feature.h
 Files:      src/vim.h
 
 Patch 7.4.2123
@@ -13145,7 +13146,7 @@ Files:      src/userfunc.c, src/proto/userfunc.pro, src/eval.c,
             src/testdir/test_lambda.vim
 
 Patch 7.4.2144
-Problem:    On MS-Windows quickix does not handle a line with 1023 bytes
+Problem:    On MS-Windows quickfix does not handle a line with 1023 bytes
             ending in CR-LF properly.
 Solution:   Don't consider CR a line break. (Ken Takata)
 Files:      src/quickfix.c
@@ -13605,7 +13606,7 @@ Files:      src/getchar.c, src/proto/getchar.pro, src/misc1.c,
 Patch 7.4.2223
 Problem:    Buffer overflow when using latin1 character with feedkeys().
 Solution:   Check for an illegal character.  Add a test.
-Files:      src/testdir/test_regexp_utf8.vim, src/testdir/test_source.vim,
+Files:      src/testdir/test_regexp_utf8.vim, src/testdir/test_source_utf8.vim,
             src/testdir/test_alot_utf8.vim, src/Makefile, src/getchar.c,
             src/macros.h, src/evalfunc.c, src/os_unix.c, src/os_win32.c,
             src/spell.c,

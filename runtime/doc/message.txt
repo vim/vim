@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.4.  Last change: 2016 Jul 16
+*message.txt*   For Vim version 7.4.  Last change: 2016 Sep 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -39,6 +39,7 @@ back.
 Note: If the output has been stopped with "q" at the more prompt, it will only
 be displayed up to this point.
 The previous command output is cleared when another command produces output.
+The "g<" output is not redirected.
 
 If you are using translated messages, the first printed line tells who
 maintains the messages or the translations.  You can use this to contact the

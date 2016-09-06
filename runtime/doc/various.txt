@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2016 Aug 26
+*various.txt*   For Vim version 7.4.  Last change: 2016 Sep 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -422,7 +422,7 @@ N  *+statusline*	Options 'statusline', 'rulerformat' and special
 m  *+sun_workshop*	|workshop|
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
-N  *+tag_binary*	binary searching in tags file |tag-binary-search|
+T  *+tag_binary*	binary searching in tags file |tag-binary-search|
 N  *+tag_old_static*	old method for static tags |tag-old-static|
 m  *+tag_any_white*	any white space allowed in tags file |tag-any-white|
 m  *+tcl*		Tcl interface |tcl|

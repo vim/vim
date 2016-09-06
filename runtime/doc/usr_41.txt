@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Aug 07
+*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Sep 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -932,6 +932,7 @@ Testing:				    *test-functions*
 Inter-process communication:		    *channel-functions*
 	ch_open()		open a channel
 	ch_close()		close a channel
+	ch_close_in()		close the in part of a channel
 	ch_read()		read a message from a channel
 	ch_readraw()		read a raw message from a channel
 	ch_sendexpr()		send a JSON message over a channel

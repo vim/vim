@@ -2,7 +2,7 @@
 " Language:	python
 " Maintainer:	James Sully <sullyj3@gmail.com>
 " Previous Maintainer: Johannes Zellner <johannes@zellner.org>
-" Last Change:	Wed, 29 June 2016
+" Last Change:	Fri, 02 September 2016
 " https://github.com/sullyj3/vim-ftplugin-python
 
 if exists("b:did_ftplugin") | finish | endif
@@ -22,10 +22,10 @@ setlocal omnifunc=pythoncomplete#Complete
 
 set wildignore+=*.pyc
 
-nnoremap <silent> <buffer> ]] :call <SID>Python_jump('n', '\v%$\|^(class\|def)>', 'W')<cr>
-nnoremap <silent> <buffer> [[ :call <SID>Python_jump('n', '\v^(class\|def)>', 'Wb')<cr>
-nnoremap <silent> <buffer> ]m :call <SID>Python_jump('n', '\v%$\|^\s*(class\|def)>', 'W')<cr>
-nnoremap <silent> <buffer> [m :call <SID>Python_jump('n', '\v^\s*(class\|def)>', 'Wb')<cr>
+noremap <silent> <buffer> ]] :call <SID>Python_jump('n', '\v%$\|^(class\|def)>', 'W')<cr>
+noremap <silent> <buffer> [[ :call <SID>Python_jump('n', '\v^(class\|def)>', 'Wb')<cr>
+noremap <silent> <buffer> ]m :call <SID>Python_jump('n', '\v%$\|^\s*(class\|def)>', 'W')<cr>
+noremap <silent> <buffer> [m :call <SID>Python_jump('n', '\v^\s*(class\|def)>', 'Wb')<cr>
 
 xnoremap <silent> <buffer> ]] :call <SID>Python_jump('x', '\v%$\|^(class\|def)>', 'W')<cr>
 xnoremap <silent> <buffer> [[ :call <SID>Python_jump('x', '\v^(class\|def)>', 'Wb')<cr>
