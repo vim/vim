@@ -598,11 +598,11 @@ you need some tricks described below.
 
 When building, you need to set the following variables at least:
 
-    RUBY:          Where ruby is installed. E.g. C:\Ruby22
-    DYNAMIC_RUBY:  Whether dynamic linking is used. Usually, set to yes.
-    RUBY_VER:      Ruby version. E.g. 22 for Ruby 2.2.X.
-    RUBY_VER_LONG: Ruby API version in a long format.
-                   E.g. 2.2.0 for Ruby 2.2.X.
+    RUBY:              Where ruby is installed. E.g. C:\Ruby22
+    DYNAMIC_RUBY:      Whether dynamic linking is used. Usually, set to yes.
+    RUBY_VER:          Ruby version. E.g. 22 for Ruby 2.2.X.
+    RUBY_API_VER_LONG: Ruby API version in a long format.
+                       E.g. 2.2.0 for Ruby 2.2.X.
 
 Ruby version vs. Ruby API version:
 
@@ -653,7 +653,7 @@ config.h and Ruby's DLL name. Here are the steps for working around them:
   4) Build Vim. Note that you need to adjust some variables (as one line):
 
       nmake -f Make_mvc.mak
-          RUBY=C:\Ruby22 DYNAMIC_RUBY=yes RUBY_VER=22 RUBY_VER_LONG=2.2.0
+          RUBY=C:\Ruby22 DYNAMIC_RUBY=yes RUBY_VER=22 RUBY_API_VER_LONG=2.2.0
           RUBY_MSVCRT_NAME=msvcrt
           WINVER=0x501
 
@@ -668,7 +668,7 @@ Using MinGW is easier than using MSVC when linking with RubyInstaller.
 After you install RubyInstaller, just type this (as one line):
 
     mingw32-make -f Make_ming.mak
-        RUBY=C:/Ruby22 DYNAMIC_RUBY=yes RUBY_VER=22 RUBY_VER_LONG=2.2.0
+        RUBY=C:/Ruby22 DYNAMIC_RUBY=yes RUBY_VER=22 RUBY_API_VER_LONG=2.2.0
         WINVER=0x501
 
 If you set WINVER explicitly, it must be set to >=0x500, when building with

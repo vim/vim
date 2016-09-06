@@ -158,7 +158,7 @@ MINOR = 4
 # - Move gvim.pdb to here.
 # - Copy "GvimExt/gvimext.dll" to here.
 # - Delete vimrun.exe, install.exe and uninstal.exe.
-# Win32 GUI version with OLE, PERL, TCL, PYTHON and dynamic IME:
+# Win32 GUI version with OLE, PERL, Ruby, TCL, PYTHON and dynamic IME:
 # - Install the interfaces you want, see src/INSTALLpc.txt
 # - Build:
 #   > cd src
