@@ -1079,7 +1079,7 @@ channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
  * Returns NULL if there is something very wrong (error already reported).
  */
     static buf_T *
-find_buffer(char_u *name, int err)
+find_buffer(char_u *name, int err, int msg)
 {
     buf_T *buf = NULL;
     buf_T *save_curbuf = curbuf;
@@ -1104,7 +1104,8 @@ find_buffer(char_u *name, int err)
 #endif
 	if (curbuf->b_ml.ml_mfp == NULL)
 	    ml_open(curbuf);
-	ml_replace(1, (char_u *)(err ? "Reading from channel error..."
+	if (msg)
+	    ml_replace(1, (char_u *)(err ? "Reading from channel error..."
 				   : "Reading from channel output..."), TRUE);
 	changed_bytes(1, 0);
 	curbuf = save_curbuf;
@@ -1196,7 +1197,11 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	}
 	else
 	{
-	    buf = find_buffer(opt->jo_io_name[PART_OUT], FALSE);
+	    int msg = TRUE;
+
+	    if (opt->jo_set2 & JO2_OUT_MSG)
+		msg = opt->jo_message[PART_OUT];
+	    buf = find_buffer(opt->jo_io_name[PART_OUT], FALSE, msg);
 	}
 	if (buf != NULL)
 	{
@@ -1235,7 +1240,13 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 		EMSGN(_(e_nobufnr), (long)opt->jo_io_buf[PART_ERR]);
 	}
 	else
-	    buf = find_buffer(opt->jo_io_name[PART_ERR], TRUE);
+	{
+	    int msg = TRUE;
+
+	    if (opt->jo_set2 & JO2_ERR_MSG)
+		msg = opt->jo_message[PART_ERR];
+	    buf = find_buffer(opt->jo_io_name[PART_ERR], TRUE, msg);
+	}
 	if (buf != NULL)
 	{
 	    if (opt->jo_set & JO_ERR_MODIFIABLE)
@@ -2227,6 +2238,7 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, int part)
     int		save_write_to = buffer->b_write_to_channel;
     chanpart_T  *ch_part = &channel->ch_part[part];
     int		save_p_ma = buffer->b_p_ma;
+    int		empty = (buffer->b_ml.ml_flags & ML_EMPTY);
 
     if (!buffer->b_p_ma && !ch_part->ch_nomodifiable)
     {
@@ -2253,9 +2265,16 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, int part)
     curbuf = buffer;
     u_sync(TRUE);
     /* ignore undo failure, undo is not very useful here */
-    ignored = u_save(lnum, lnum + 1);
+    ignored = u_save(lnum, lnum + 1 + (empty ? 1 : 0));
 
-    ml_append(lnum, msg, 0, FALSE);
+    if (empty)
+    {
+	/* The buffer is empty, replace the first (dummy) line. */
+	ml_replace(lnum, msg, TRUE);
+	lnum = 0;
+    }
+    else
+	ml_append(lnum, msg, 0, FALSE);
     appended_lines_mark(lnum, 1L);
     curbuf = save_curbuf;
     if (ch_part->ch_nomodifiable)
@@ -4082,6 +4101,16 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    break;
 		opt->jo_set |= JO_OUT_MODIFIABLE << (part - PART_OUT);
 		opt->jo_modifiable[part] = get_tv_number(item);
+	    }
+	    else if (STRCMP(hi->hi_key, "out_msg") == 0
+		    || STRCMP(hi->hi_key, "err_msg") == 0)
+	    {
+		part = part_from_char(*hi->hi_key);
+
+		if (!(supported & JO_OUT_IO))
+		    break;
+		opt->jo_set2 |= JO2_OUT_MSG << (part - PART_OUT);
+		opt->jo_message[part] = get_tv_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "in_top") == 0
 		    || STRCMP(hi->hi_key, "in_bot") == 0)

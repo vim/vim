@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Sep 01
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Sep 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -646,6 +646,8 @@ See |job_setoptions()| and |ch_setoptions()|.
 "out_buf": number	the number of the buffer to write to
 "out_modifiable": 0	when writing to a buffer, 'modifiable' will be off
 			(see below)
+"out_msg": 0		when writing to a new buffer, the first line will be
+			set to "Reading from channel output..."
 
 				*job-err_io* *err_name* *err_buf*
 "err_io": "out"		stderr messages to go to stdout
@@ -657,6 +659,8 @@ See |job_setoptions()| and |ch_setoptions()|.
 "err_buf": number	the number of the buffer to write to
 "err_modifiable": 0	when writing to a buffer, 'modifiable' will be off
 			(see below)
+"err_msg": 0		when writing to a new buffer, the first line will be
+			set to "Reading from channel error..."
 
 "block_write": number	only for testing: pretend every other write to stdin
 			will block
@@ -686,8 +690,16 @@ buffer number.
 
 For a new buffer 'buftype' is set to "nofile" and 'bufhidden' to "hide".  If
 you prefer other settings, create the buffer first and pass the buffer number.
-
+					*out_modifiable* *err_modifiable*
 The "out_modifiable" and "err_modifiable" options can be used to set the
+'modifiable' option off, or write to a buffer that has 'modifiable' off.  That
+means that lines will be appended to the buffer, but the user can't easily
+change the buffer.
+					*out_msg* *err_msg*
+The "out_msg" option can be used to specify whether a new buffer will have the
+first line set to "Reading from channel output...".  The default is to add the
+message.  "err_msg" does the same for channel error.
+
 'modifiable' option off, or write to a buffer that has 'modifiable' off.  That
 means that lines will be appended to the buffer, but the user can't easily
 change the buffer.

@@ -638,21 +638,27 @@ func BufCloseCb(ch)
   let g:Ch_bufClosed = 'yes'
 endfunc
 
-func Run_test_pipe_to_buffer(use_name, nomod)
+func Run_test_pipe_to_buffer(use_name, nomod, do_msg)
   if !has('job')
     return
   endif
   call ch_log('Test_pipe_to_buffer()')
   let g:Ch_bufClosed = 'no'
   let options = {'out_io': 'buffer', 'close_cb': 'BufCloseCb'}
+  let expected = ['', 'line one', 'line two', 'this', 'AND this', 'Goodbye!']
   if a:use_name
     let options['out_name'] = 'pipe-output'
-    let firstline = 'Reading from channel output...'
+    if a:do_msg
+      let expected[0] = 'Reading from channel output...'
+    else
+      let options['out_msg'] = 0
+      call remove(expected, 0)
+    endif
   else
     sp pipe-output
     let options['out_buf'] = bufnr('%')
     quit
-    let firstline = ''
+    call remove(expected, 0)
   endif
   if a:nomod
     let options['out_modifiable'] = 0
@@ -667,7 +673,7 @@ func Run_test_pipe_to_buffer(use_name, nomod)
     call ch_sendraw(handle, "quit\n")
     sp pipe-output
     call WaitFor('line("$") >= 6 && g:Ch_bufClosed == "yes"')
-    call assert_equal([firstline, 'line one', 'line two', 'this', 'AND this', 'Goodbye!'], getline(1, '$'))
+    call assert_equal(expected, getline(1, '$'))
     if a:nomod
       call assert_equal(0, &modifiable)
     else
@@ -681,31 +687,41 @@ func Run_test_pipe_to_buffer(use_name, nomod)
 endfunc
 
 func Test_pipe_to_buffer_name()
-  call Run_test_pipe_to_buffer(1, 0)
+  call Run_test_pipe_to_buffer(1, 0, 1)
 endfunc
 
 func Test_pipe_to_buffer_nr()
-  call Run_test_pipe_to_buffer(0, 0)
+  call Run_test_pipe_to_buffer(0, 0, 1)
 endfunc
 
 func Test_pipe_to_buffer_name_nomod()
-  call Run_test_pipe_to_buffer(1, 1)
+  call Run_test_pipe_to_buffer(1, 1, 1)
 endfunc
 
-func Run_test_pipe_err_to_buffer(use_name, nomod)
+func Test_pipe_to_buffer_name_nomsg()
+  call Run_test_pipe_to_buffer(1, 0, 1)
+endfunc
+
+func Run_test_pipe_err_to_buffer(use_name, nomod, do_msg)
   if !has('job')
     return
   endif
   call ch_log('Test_pipe_err_to_buffer()')
   let options = {'err_io': 'buffer'}
+  let expected = ['', 'line one', 'line two', 'this', 'AND this']
   if a:use_name
     let options['err_name'] = 'pipe-err'
-    let firstline = 'Reading from channel error...'
+    if a:do_msg
+      let expected[0] = 'Reading from channel error...'
+    else
+      let options['err_msg'] = 0
+      call remove(expected, 0)
+    endif
   else
     sp pipe-err
     let options['err_buf'] = bufnr('%')
     quit
-    let firstline = ''
+    call remove(expected, 0)
   endif
   if a:nomod
     let options['err_modifiable'] = 0
@@ -720,7 +736,7 @@ func Run_test_pipe_err_to_buffer(use_name, nomod)
     call ch_sendraw(handle, "quit\n")
     sp pipe-err
     call WaitFor('line("$") >= 5')
-    call assert_equal([firstline, 'line one', 'line two', 'this', 'AND this'], getline(1, '$'))
+    call assert_equal(expected, getline(1, '$'))
     if a:nomod
       call assert_equal(0, &modifiable)
     else
@@ -733,15 +749,19 @@ func Run_test_pipe_err_to_buffer(use_name, nomod)
 endfunc
 
 func Test_pipe_err_to_buffer_name()
-  call Run_test_pipe_err_to_buffer(1, 0)
+  call Run_test_pipe_err_to_buffer(1, 0, 1)
 endfunc
   
 func Test_pipe_err_to_buffer_nr()
-  call Run_test_pipe_err_to_buffer(0, 0)
+  call Run_test_pipe_err_to_buffer(0, 0, 1)
 endfunc
   
 func Test_pipe_err_to_buffer_name_nomod()
-  call Run_test_pipe_err_to_buffer(1, 1)
+  call Run_test_pipe_err_to_buffer(1, 1, 1)
+endfunc
+  
+func Test_pipe_err_to_buffer_name_nomsg()
+  call Run_test_pipe_err_to_buffer(1, 0, 0)
 endfunc
   
 func Test_pipe_both_to_buffer()
@@ -1407,7 +1427,7 @@ func Test_collapse_buffers()
   1,$delete
   call job_start('cat test_channel.vim', {'out_io': 'buffer', 'out_name': 'testout'})
   call WaitFor('line("$") > g:linecount')
-  call assert_inrange(g:linecount + 1, g:linecount + 2, line('$'))
+  call assert_inrange(g:linecount, g:linecount + 1, line('$'))
   bwipe!
 endfunc
 
@@ -1425,9 +1445,9 @@ func Test_raw_passes_nul()
   1,$delete
   call job_start('cat Xtestread', {'out_io': 'buffer', 'out_name': 'testout'})
   call WaitFor('line("$") > 2')
-  call assert_equal("asdf\nasdf", getline(2))
-  call assert_equal("xxx\n", getline(3))
-  call assert_equal("\nyyy", getline(4))
+  call assert_equal("asdf\nasdf", getline(1))
+  call assert_equal("xxx\n", getline(2))
+  call assert_equal("\nyyy", getline(3))
 
   call delete('Xtestread')
   bwipe!

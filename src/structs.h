@@ -1634,6 +1634,10 @@ struct channel_S {
 #define JO_ERR_MODIFIABLE   0x40000000	/* "err_modifiable" (JO_OUT_ << 1) */
 #define JO_ALL		    0x7fffffff
 
+#define JO2_OUT_MSG	    0x0001	/* "out_msg" */
+#define JO2_ERR_MSG	    0x0002	/* "err_msg" (JO_OUT_ << 1) */
+#define JO2_ALL		    0x0003
+
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
     (JO_CALLBACK + JO_OUT_CALLBACK + JO_ERR_CALLBACK + JO_CLOSE_CALLBACK)
@@ -1645,6 +1649,7 @@ struct channel_S {
 typedef struct
 {
     int		jo_set;		/* JO_ bits for values that were set */
+    int		jo_set2;	/* JO2_ bits for values that were set */
 
     ch_mode_T	jo_mode;
     ch_mode_T	jo_in_mode;
@@ -1656,6 +1661,7 @@ typedef struct
     char_u	*jo_io_name[4];	/* not allocated! */
     int		jo_io_buf[4];
     int		jo_modifiable[4];
+    int		jo_message[4];
     channel_T	*jo_channel;
 
     linenr_T	jo_in_top;
