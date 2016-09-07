@@ -13,16 +13,13 @@ SCRIPTS_ALL = \
 	test3.out \
 	test4.out \
 	test5.out \
-	test6.out \
 	test7.out \
 	test8.out \
 	test9.out \
 	test14.out \
 	test15.out \
-	test18.out \
 	test19.out \
 	test20.out \
-	test21.out \
 	test22.out \
 	test23.out \
 	test24.out \
@@ -74,7 +71,6 @@ SCRIPTS_ALL = \
 	test95.out \
 	test98.out \
 	test99.out \
-	test101.out \
 	test103.out \
 	test104.out \
 	test107.out \
@@ -109,7 +105,6 @@ SCRIPTS_MORE1 = \
 
 # Tests that run on most systems, but not on Amiga and DOS/Windows.
 SCRIPTS_MORE2 = \
-	test2.out \
 	test12.out \
 	test25.out \
 	test49.out \
@@ -147,7 +142,7 @@ SCRIPTS_GUI =
 # Keep test_alot*.res as the last one, sort the others.
 NEW_TESTS = test_arglist.res \
 	    test_assert.res \
-	    test_autochdir \
+	    test_autochdir.res \
 	    test_backspace_opt.res \
 	    test_bufwintabinfo.res \
 	    test_cdo.res \
@@ -159,10 +154,12 @@ NEW_TESTS = test_arglist.res \
 	    test_digraph.res \
 	    test_farsi.res \
 	    test_fnameescape.res \
+	    test_gf.res \
 	    test_gn.res \
 	    test_gui.res \
 	    test_hardcopy.res \
 	    test_history.res \
+	    test_hlsearch.res \
 	    test_increment.res \
 	    test_increment_dbcs.res \
 	    test_job_fails.res \
@@ -180,6 +177,7 @@ NEW_TESTS = test_arglist.res \
 	    test_ruby.res \
 	    test_search.res \
 	    test_signs.res \
+	    test_smartindent.res \
 	    test_startup.res \
 	    test_startup_utf8.res \
 	    test_stat.res \

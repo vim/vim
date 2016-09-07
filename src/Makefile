@@ -2041,7 +2041,7 @@ test1 \
 	test_search_mbyte \
 	test_utf8 \
 	test_wordcount \
-	test2 test3 test4 test5 test6 test7 test8 test9 \
+	test3 test4 test5 test6 test7 test8 test9 \
 	test11 test12 test14 test15 test17 test18 test19 \
 	test20 test21 test22 test23 test24 test25 test26 test27 test28 test29 \
 	test30 test31 test32 test33 test34 test36 test37 test38 test39 \
@@ -2085,12 +2085,14 @@ test_arglist \
 	test_fnameescape \
 	test_fnamemodify \
 	test_glob2regpat \
+	test_gf \
 	test_gn \
 	test_goto \
 	test_gui \
 	test_hardcopy \
 	test_help_tagjump \
 	test_history \
+	test_hlsearch \
 	test_increment \
 	test_increment_dbcs \
 	test_job_fails \
@@ -2128,6 +2130,7 @@ test_arglist \
 	test_signs \
 	test_sort \
 	test_source_utf8 \
+	test_smartindent \
 	test_startup \
 	test_startup_utf8 \
 	test_stat \
