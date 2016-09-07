@@ -34,6 +34,7 @@ syn region  javaScriptComment	       start="/\*"  end="\*/" contains=@Spell,java
 syn match   javaScriptSpecial	       "\\\d\d\d\|\\."
 syn region  javaScriptStringD	       start=+"+  skip=+\\\\\|\\"+  end=+"\|$+	contains=javaScriptSpecial,@htmlPreproc
 syn region  javaScriptStringS	       start=+'+  skip=+\\\\\|\\'+  end=+'\|$+	contains=javaScriptSpecial,@htmlPreproc
+syn region  javaScriptStringT	       start=+`+  skip=+\\\\\|\\`+  end=+`+	contains=javaScriptSpecial,@htmlPreproc
 
 syn match   javaScriptSpecialCharacter "'\\.'"
 syn match   javaScriptNumber	       "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
@@ -86,6 +87,7 @@ hi def link javaScriptCommentTodo		Todo
 hi def link javaScriptSpecial		Special
 hi def link javaScriptStringS		String
 hi def link javaScriptStringD		String
+hi def link javaScriptStringT		String
 hi def link javaScriptCharacter		Character
 hi def link javaScriptSpecialCharacter	javaScriptSpecial
 hi def link javaScriptNumber		javaScriptValue
