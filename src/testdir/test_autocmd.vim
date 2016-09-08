@@ -13,6 +13,9 @@ if has('timers')
   endfunc
 
   func Test_cursorhold_insert()
+    " Need to move the cursor.
+    call feedkeys("ggG", "xt")
+
     let g:triggered = 0
     au CursorHoldI * let g:triggered += 1
     set updatetime=20
@@ -93,6 +96,7 @@ function Test_autocmd_bufwinleave_with_tabfirst()
   augroup END
   call setline(1, ['a', 'b', 'c'])
   edit! a.txt
+  tabclose
 endfunc
 
 " SEGV occurs in older versions.  (At least 7.4.2321 or older)
