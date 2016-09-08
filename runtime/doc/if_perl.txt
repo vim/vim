@@ -83,6 +83,9 @@ Example vim script: >
 	EOF
 	endfunction
 <
+To see what version of Perl you have: >
+	:perl print $^V
+<
 
 							*:perldo* *:perld*
 :[range]perld[o] {cmd}	Execute Perl command {cmd} for each line in the

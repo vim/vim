@@ -59,6 +59,12 @@ Example:
 	EOF
 	endfunction
 <
+To see what version of Lua you have: >
+	:lua print(_VERSION)
+
+If you use LuaJIT you can also use this: >
+	:lua print(jit.version)
+<
 
 							*:luado*
 :[range]luado {body}	Execute Lua function "function (line, linenr) {body}

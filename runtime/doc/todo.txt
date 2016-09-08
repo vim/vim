@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Sep 06
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Sep 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,18 +36,24 @@ not be repeated below, unless there is extra information.
 
 Invalid memory access in do_pending_operator. (Dominique, 2016 Sep 5)
 
-test_autocmd fails when run directly, passes when run through test_alot.
+Invalid memory access in msg_puts_printf (Dominique, 2016 Sep 6)
+
+Crash after wiping a buffer. (Dominique, Sep 7)
+
+With MS-Windows gvim:
+    test_netbeans.vim fails.  Nb_basic line 12 and 13.
+    test86 fails  partial fix
+    test87 fails
 
 Make ":filter" work with more commands.
 Search for: msg_putchar('\n')
 
 +channel:
-- option to not put "Reading from channel" in the buffer.
-- Add 'cwd' argument: directory to change to in the child.
-    check for valid directory before forking.
 - channel_wait() may return an error while there is still something to read.
   Perhaps try to read once?
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
+- Add 'cwd' argument to start_job(): directory to change to in the child.
+    check for valid directory before forking.
 - Implement |job-term| ?
 - Channel test fails with Motif.  Sometimes kills the X11 server.
 - When a message in the queue but there is no callback, drop it after a while?
@@ -309,7 +315,7 @@ Patch to test popupmenu.  Fails, possibly due to a bug.
 Patch to introduce 'cmdencoding'. (Ken Takata, Aug 18?)
 Better help Aug 19.
 Problem: applies to too many commands, such as :cbuffer.
-Should there be a different value for :make and :grep?
+Updated patch with three options, 2016 Sep 8.
     Win32: When running ":make" and 'encoding' differs from the system locale,
     the output should be converted.  Esp. when 'encoding' is "utf-8". (Yongwei
     Wu) Should we use 'termencoding' for this?

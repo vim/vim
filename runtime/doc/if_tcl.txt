@@ -54,6 +54,9 @@ Example: >
 	EOF
 	endfunction
 <
+To see what version of Tcl you have: >
+	:tcl puts [info patchlevel]
+<
 
 							*:tcldo* *:tcld*
 :[range]tcld[o] {cmd}	Execute Tcl command {cmd} for each line in [range]

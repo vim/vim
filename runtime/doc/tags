@@ -5735,6 +5735,8 @@ erlang.vim	syntax.txt	/*erlang.vim*
 err_buf	channel.txt	/*err_buf*
 err_cb	channel.txt	/*err_cb*
 err_mode	channel.txt	/*err_mode*
+err_modifiable	channel.txt	/*err_modifiable*
+err_msg	channel.txt	/*err_msg*
 err_name	channel.txt	/*err_name*
 err_timeout	channel.txt	/*err_timeout*
 errmsg-variable	eval.txt	/*errmsg-variable*
@@ -7701,6 +7703,8 @@ out_buf	channel.txt	/*out_buf*
 out_cb	channel.txt	/*out_cb*
 out_io-buffer	channel.txt	/*out_io-buffer*
 out_mode	channel.txt	/*out_mode*
+out_modifiable	channel.txt	/*out_modifiable*
+out_msg	channel.txt	/*out_msg*
 out_name	channel.txt	/*out_name*
 out_timeout	channel.txt	/*out_timeout*
 p	change.txt	/*p*
