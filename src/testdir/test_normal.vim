@@ -15,7 +15,7 @@ func! MyFormatExpr()
   endfor
 endfu
 
-function! CountSpaces(type, ...)
+func! CountSpaces(type, ...)
   " for testing operatorfunc
   " will count the number of spaces
   " and return the result in g:a
@@ -34,6 +34,10 @@ function! CountSpaces(type, ...)
   let &selection = sel_save
   let @@ = reg_save
 endfunction
+
+func! IsWindows()
+  return has("win32") || has("win64") || has("win95")
+endfu
 
 fun! Test_normal00_optrans()
   new
@@ -65,22 +69,32 @@ endfu
 func! Test_normal01_keymodel()
   call Setup_NewWindow()
   " Test 1: depending on 'keymodel' <s-down> does something different
-  :50
+  50
   call feedkeys("V\<S-Up>y", 'tx')
   call assert_equal(['47', '48', '49', '50'], getline("'<", "'>"))
-  :set keymodel=startsel
-  :50
+  set keymodel=startsel
+  50
   call feedkeys("V\<S-Up>y", 'tx')
   call assert_equal(['49', '50'], getline("'<", "'>"))
   " Start visual mode when keymodel = startsel
-  :50
+  50
   call feedkeys("\<S-Up>y", 'tx')
   call assert_equal(['49', '5'], getreg(0, 0, 1))
   " Do not start visual mode when keymodel=
-  :set keymodel=
-  :50
+  set keymodel=
+  50
   call feedkeys("\<S-Up>y$", 'tx')
   call assert_equal(['42'], getreg(0, 0, 1))
+  " Stop visual mode when keymodel=stopsel
+  set keymodel=stopsel
+  50
+  call feedkeys("Vkk\<Up>yy", 'tx')
+  call assert_equal(['47'], getreg(0, 0, 1))
+
+  set keymodel=
+  50
+  call feedkeys("Vkk\<Up>yy", 'tx')
+  call assert_equal(['47', '48', '49', '50'], getreg(0, 0, 1))
 
   " clean up
   bw!
@@ -96,6 +110,16 @@ func! Test_normal02_selectmode()
   50
   exe ":norm! V9jo\<c-g>y"
   call assert_equal('y60', getline('.'))
+  " clean up
+  bw!
+endfu
+
+func! Test_normal02_selectmode2()
+  " some basic select mode tests
+  call Setup_NewWindow()
+  50
+  call feedkeys(":set im\n\<c-o>gHc\<c-o>:set noim\n", 'tx')
+  call assert_equal('c51', getline('.'))
   " clean up
   bw!
 endfu
@@ -123,7 +147,7 @@ endfu
 func! Test_normal04_filter()
   " basic filter test
   " only test on non windows platform
-  if has("win32") || has("win64") || has("win95")
+  if IsWindows()
     return
   endif
   call Setup_NewWindow()
@@ -186,7 +210,7 @@ endfunc
 func! Test_normal06_formatprg()
   " basic test for formatprg
   " only test on non windows platform
-  if has("win32") || has("win64") || has("win95")
+  if IsWindows()
     return
   else
     " uses sed to number non-empty lines
@@ -1158,6 +1182,10 @@ endfu
 
 func! Test_normal21_nv_hat()
   set hidden
+  new
+  " to many buffers opened already, will not work
+  "call assert_fails(":b#", 'E23')
+  "call assert_equal('', @#)
   e Xfoobar
   e Xfile2
   call feedkeys("\<c-^>", 't')
@@ -1988,11 +2016,23 @@ func! Test_normal45_drop()
 endfu
 
 func! Test_normal46_ignore()
+  " This test uses multi byte characters
+  if !has("multi_byte")
+    return
+  endif
+
   new
   " How to test this?
   " let's just for now test, that the buffer
   " does not change
   call feedkeys("\<c-s>", 't')
+  call assert_equal([''], getline(1,'$'))
+
+  " no valid commands
+  exe "norm! \<char-0x100>"
+  call assert_equal([''], getline(1,'$'))
+
+  exe "norm! ä"
   call assert_equal([''], getline(1,'$'))
 
   " clean up
@@ -2011,4 +2051,159 @@ func! Test_normal47_visual_buf_wipe()
   bw!
   norm yp
   set nomodified
+endfu
+
+func! Test_normal47_autocmd()
+  " disabled, does not seem to be possible currently
+  throw "Skipped: not possible to test cursorhold autocmd while waiting for input in normal_cmd"
+  new
+  call append(0, repeat('-',20))
+  au CursorHold * call feedkeys('2l', '')
+  1
+  set updatetime=20
+  " should delete 12 chars (d12l)
+  call feedkeys('d1', '!')
+  call assert_equal('--------', getline(1))
+
+  " clean up
+  au! CursorHold
+  set updatetime=4000
+  bw!
+endfu
+
+func! Test_normal48_wincmd()
+  new
+  exe "norm! \<c-w>c"
+  call assert_equal(1, winnr('$'))
+  call assert_fails(":norm! \<c-w>c", "E444")
+endfu
+
+func! Test_normal49_counts()
+  new
+  call setline(1, 'one two three four five six seven eight nine ten')
+  1
+  norm! 3d2w
+  call assert_equal('seven eight nine ten', getline(1))
+  bw!
+endfu
+
+func! Test_normal50_commandline()
+  if !has("timers") || !has("cmdline_hist") || !has("vertsplit")
+    return
+  endif
+  func! DoTimerWork(id)
+    call assert_equal('[Command Line]', bufname(''))
+    " should fail, with E11, but does fail with E23?
+    "call feedkeys("\<c-^>", 'tm')
+
+    " should also fail with E11
+    call assert_fails(":wincmd p", 'E11')
+    " return from commandline window
+    call feedkeys("\<cr>")
+  endfu
+
+  let oldlang=v:lang
+  lang C
+  set updatetime=20
+  call timer_start(100, 'DoTimerWork')
+  try
+    " throws E23, for whatever reason...
+    call feedkeys('q:', 'x!')
+  catch /E23/
+    " no-op
+  endtry
+  " clean up
+  set updatetime=4000
+  exe "lang" oldlang
+  bw!
+endfu
+
+func! Test_normal51_FileChangedRO()
+  if !has("autocmd")
+    return
+  endif
+  call writefile(['foo'], 'Xreadonly.log')
+  new Xreadonly.log
+  setl ro
+  au FileChangedRO <buffer> :call feedkeys("\<c-^>", 'tix')
+  call assert_fails(":norm! Af", 'E788')
+  call assert_equal(['foo'], getline(1,'$'))
+  call assert_equal('Xreadonly.log', bufname(''))
+
+  " cleanup
+  bw!
+  call delete("Xreadonly.log")
+endfu
+
+func! Test_normal52_rl()
+  if !has("rightleft")
+    return
+  endif
+  new
+  call setline(1, 'abcde fghij klmnopq')
+  norm! 1gg$
+  set rl
+  call assert_equal(19, col('.'))
+  call feedkeys('l', 'tx')
+  call assert_equal(18, col('.'))
+  call feedkeys('h', 'tx')
+  call assert_equal(19, col('.'))
+  call feedkeys("\<right>", 'tx')
+  call assert_equal(18, col('.'))
+  call feedkeys("\<s-right>", 'tx')
+  call assert_equal(13, col('.'))
+  call feedkeys("\<c-right>", 'tx')
+  call assert_equal(7, col('.'))
+  call feedkeys("\<c-left>", 'tx')
+  call assert_equal(13, col('.'))
+  call feedkeys("\<s-left>", 'tx')
+  call assert_equal(19, col('.'))
+  call feedkeys("<<", 'tx')
+  call assert_equal('	abcde fghij klmnopq',getline(1))
+  call feedkeys(">>", 'tx')
+  call assert_equal('abcde fghij klmnopq',getline(1))
+
+  " cleanup
+  set norl
+  bw!
+endfu
+
+func! Test_normal53_digraph()
+  if !has('digraphs')
+    return
+  endif
+  new
+  call setline(1, 'abcdefgh|')
+  exe "norm! 1gg0f\<c-k>!!"
+  call assert_equal(9, col('.'))
+  set cpo+=D
+  exe "norm! 1gg0f\<c-k>!!"
+  call assert_equal(1, col('.'))
+
+  set cpo-=D
+  bw!
+endfu
+
+func! Test_normal54_Ctrl_bsl()
+	new
+	call setline(1, 'abcdefghijklmn')
+	exe "norm! df\<c-\>\<c-n>"
+	call assert_equal(['abcdefghijklmn'], getline(1,'$'))
+	exe "norm! df\<c-\>\<c-g>"
+	call assert_equal(['abcdefghijklmn'], getline(1,'$'))
+	exe "norm! df\<c-\>m"
+	call assert_equal(['abcdefghijklmn'], getline(1,'$'))
+  if !has("multi_byte")
+    return
+  endif
+	call setline(2, 'abcdefghijklmnāf')
+	norm! 2gg0
+	exe "norm! df\<Char-0x101>"
+	call assert_equal(['abcdefghijklmn', 'f'], getline(1,'$'))
+	norm! 1gg0
+	exe "norm! df\<esc>"
+	call assert_equal(['abcdefghijklmn', 'f'], getline(1,'$'))
+
+	" clean up
+	bw!
 endfu
