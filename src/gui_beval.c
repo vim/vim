@@ -508,7 +508,7 @@ removeEventHandler(BalloonEval *beval)
     /* LINTED: avoid warning: dubious operation on enum */
 # if GTK_CHECK_VERSION(3,0,0)
     g_signal_handlers_disconnect_by_func(G_OBJECT(beval->target),
-					 G_CALLBACK(target_event_cb),
+					 FUNC2GENERIC(target_event_cb),
 					 beval);
 # else
     gtk_signal_disconnect_by_func((GtkObject*)(beval->target),
@@ -522,7 +522,7 @@ removeEventHandler(BalloonEval *beval)
 	/* LINTED: avoid warning: dubious operation on enum */
 # if GTK_CHECK_VERSION(3,0,0)
 	g_signal_handlers_disconnect_by_func(G_OBJECT(gui.mainwin),
-					     G_CALLBACK(mainwin_event_cb),
+					     FUNC2GENERIC(mainwin_event_cb),
 					     beval);
 # else
 	gtk_signal_disconnect_by_func((GtkObject*)(gui.mainwin),
