@@ -53,3 +53,12 @@ func Test_nested_backrefs()
   bwipe!
   set re=0
 endfunc
+
+func Test_eow_with_optional()
+  let expected = ['abc def', 'abc', 'def', '', '', '', '', '', '', '']
+  for re in range(0, 2)
+    exe 'set re=' . re
+    let actual = matchlist('abc def', '\(abc\>\)\?\s*\(def\)')
+    call assert_equal(expected, actual)
+  endfor
+endfunc

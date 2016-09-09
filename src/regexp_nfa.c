@@ -4340,6 +4340,9 @@ state_in_list(
     return FALSE;
 }
 
+/* Offset used for "off" by addstate_here(). */
+#define ADDSTATE_HERE_OFFSET 10
+
 /*
  * Add "state" and possibly what follows to state list ".".
  * Returns "subs_arg", possibly copied into temp_subs.
@@ -4350,9 +4353,14 @@ addstate(
     nfa_state_T		*state,	    /* state to update */
     regsubs_T		*subs_arg,  /* pointers to subexpressions */
     nfa_pim_T		*pim,	    /* postponed look-behind match */
-    int			off)	    /* byte offset, when -1 go to next line */
+    int			off_arg)    /* byte offset, when -1 go to next line */
 {
     int			subidx;
+    int			off = off_arg;
+    int			add_here = FALSE;
+    int			listindex = 0;
+    int			k;
+    int			found = FALSE;
     nfa_thread_T	*thread;
     struct multipos	save_multipos;
     int			save_in_use;
@@ -4364,6 +4372,13 @@ addstate(
 #ifdef ENABLE_LOG
     int			did_print = FALSE;
 #endif
+
+    if (off_arg <= -ADDSTATE_HERE_OFFSET)
+    {
+	add_here = TRUE;
+	off = 0;
+	listindex = -(off_arg + ADDSTATE_HERE_OFFSET);
+    }
 
     switch (state->c)
     {
@@ -4448,13 +4463,28 @@ addstate(
 		if (!nfa_has_backref && pim == NULL && !l->has_pim
 						     && state->c != NFA_MATCH)
 		{
+		    /* When called from addstate_here() do insert before
+		     * existing states. */
+		    if (add_here)
+		    {
+			for (k = 0; k < l->n && k < listindex; ++k)
+			    if (l->t[k].state->id == state->id)
+			    {
+				found = TRUE;
+				break;
+			    }
+		    }
+		    if (!add_here || found)
+		    {
 skip_add:
 #ifdef ENABLE_LOG
-		    nfa_set_code(state->c);
-		    fprintf(log_fd, "> Not adding state %d to list %d. char %d: %s\n",
-			    abs(state->id), l->id, state->c, code);
+			nfa_set_code(state->c);
+			fprintf(log_fd, "> Not adding state %d to list %d. char %d: %s pim: %s has_pim: %d found: %d\n",
+			    abs(state->id), l->id, state->c, code,
+			    pim == NULL ? "NULL" : "yes", l->has_pim, found);
 #endif
-		    return subs;
+			return subs;
+		    }
 		}
 
 		/* Do not add the state again when it exists with the same
@@ -4519,14 +4549,14 @@ skip_add:
 
 	case NFA_SPLIT:
 	    /* order matters here */
-	    subs = addstate(l, state->out, subs, pim, off);
-	    subs = addstate(l, state->out1, subs, pim, off);
+	    subs = addstate(l, state->out, subs, pim, off_arg);
+	    subs = addstate(l, state->out1, subs, pim, off_arg);
 	    break;
 
 	case NFA_EMPTY:
 	case NFA_NOPEN:
 	case NFA_NCLOSE:
-	    subs = addstate(l, state->out, subs, pim, off);
+	    subs = addstate(l, state->out, subs, pim, off_arg);
 	    break;
 
 	case NFA_MOPEN:
@@ -4626,7 +4656,7 @@ skip_add:
 		sub->list.line[subidx].start = reginput + off;
 	    }
 
-	    subs = addstate(l, state->out, subs, pim, off);
+	    subs = addstate(l, state->out, subs, pim, off_arg);
 	    /* "subs" may have changed, need to set "sub" again */
 #ifdef FEAT_SYN_HL
 	    if (state->c >= NFA_ZOPEN && state->c <= NFA_ZOPEN9)
@@ -4652,7 +4682,7 @@ skip_add:
 			: subs->norm.list.line[0].end != NULL))
 	    {
 		/* Do not overwrite the position set by \ze. */
-		subs = addstate(l, state->out, subs, pim, off);
+		subs = addstate(l, state->out, subs, pim, off_arg);
 		break;
 	    }
 	case NFA_MCLOSE1:
@@ -4725,7 +4755,7 @@ skip_add:
 		vim_memset(&save_multipos, 0, sizeof(save_multipos));
 	    }
 
-	    subs = addstate(l, state->out, subs, pim, off);
+	    subs = addstate(l, state->out, subs, pim, off_arg);
 	    /* "subs" may have changed, need to set "sub" again */
 #ifdef FEAT_SYN_HL
 	    if (state->c >= NFA_ZCLOSE && state->c <= NFA_ZCLOSE9)
@@ -4762,8 +4792,10 @@ addstate_here(
     int count;
     int listidx = *ip;
 
-    /* first add the state(s) at the end, so that we know how many there are */
-    addstate(l, state, subs, pim, 0);
+    /* First add the state(s) at the end, so that we know how many there are.
+     * Pass the listidx as offset (avoids adding another argument to
+     * addstate(). */
+    addstate(l, state, subs, pim, -listidx - ADDSTATE_HERE_OFFSET);
 
     /* when "*ip" was at the end of the list, nothing to do */
     if (listidx + 1 == tlen)
