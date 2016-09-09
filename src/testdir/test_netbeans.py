@@ -42,10 +42,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 myfile.write(received)
 
             response = ''
-            if received.find('Makefile') > 0:
+            if received.find('README.txt') > 0:
                 name = received.split('"')[1]
                 response = '5:putBufferNumber!33 "' + name + '"\n'
-                response += '5:setDot!1 2/19\n'
+                response += '5:setDot!1 3/19\n'
             elif received.find('disconnect') > 0:
                 # we're done
                 self.server.shutdown()

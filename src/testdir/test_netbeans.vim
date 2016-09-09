@@ -23,13 +23,13 @@ func Nb_basic(port)
   call assert_true(has("netbeans_enabled"))
 
   call WaitFor('len(readfile("Xnetbeans")) > 2')
-  split +$ Makefile
+  split +$ README.txt
 
-  " Opening Makefile will result in a setDot command
+  " Opening README.txt will result in a setDot command
   call WaitFor('len(readfile("Xnetbeans")) > 4')
   call WaitFor('getcurpos()[1] == 2')
   let pos = getcurpos()
-  call assert_equal(2, pos[1])
+  call assert_equal(3, pos[1])
   call assert_equal(20, pos[2])
   close
   nbclose
@@ -39,7 +39,7 @@ func Nb_basic(port)
   call assert_equal('AUTH bunny', lines[0])
   call assert_equal('0:version=0 "2.5"', lines[1])
   call assert_equal('0:startupDone=0', lines[2])
-  call assert_equal('0:fileOpened=0 "Makefile" T F', substitute(lines[3], '".*/', '"', ''))
+  call assert_equal('0:fileOpened=0 "README.txt" T F', substitute(lines[3], '".*/', '"', ''))
 
   call assert_equal('0:disconnect=1', lines[6])
 
