@@ -628,7 +628,7 @@ b'testdir'
 test87.in
 > Output
 >> OutputSetattr
-del sys.stdout.softspace:(<class 'AttributeError'>, AttributeError("can't delete OutputObject attributes",))
+del sys.stdout.softspace:(<class 'AttributeError'>, AttributeError('cannot delete OutputObject attributes',))
 >>> Testing NumberToLong using sys.stdout.softspace = %s
 sys.stdout.softspace = []:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got list',))
 sys.stdout.softspace = None:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got NoneType',))

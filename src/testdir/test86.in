@@ -239,6 +239,14 @@ def ee(expr, g=globals(), l=locals()):
                               'TypeError:("\'FailingNumber\' object is not iterable",)')
         if msg.find('(\'\'') > -1 or msg.find('(\'can\'t') > -1:
             msg = msg.replace('(\'', '("').replace('\',)', '",)')
+        # Some Python versions say can't, others cannot.
+        if msg.find('can\'t') > -1:
+            msg = msg.replace('can\'t', 'cannot')
+        # Some Python versions use single quote, some double quote
+        if msg.find('"cannot ') > -1:
+            msg = msg.replace('"cannot ', '\'cannot ')
+        if msg.find(' attributes"') > -1:
+            msg = msg.replace(' attributes"', ' attributes\'')
         if expr == 'fd(self=[])':
             # HACK: PyMapping_Check changed meaning
             msg = msg.replace('AttributeError:(\'keys\',)',

@@ -238,9 +238,18 @@ def ee(expr, g=globals(), l=locals()):
                 else:
                     cb.append(expr + ':' + repr((e.__class__, e)))
             elif sys.version_info >= (3, 5) and e.__class__ is ValueError and str(e) == 'embedded null byte':
-                msg = cb.append(expr + ':' + repr((TypeError, TypeError('expected bytes with no null'))))
+                cb.append(expr + ':' + repr((TypeError, TypeError('expected bytes with no null'))))
             else:
-                cb.append(expr + ':' + repr((e.__class__, e)))
+                msg = repr((e.__class__, e))
+                # Some Python versions say can't, others cannot.
+                if msg.find('can\'t') > -1:
+                    msg = msg.replace('can\'t', 'cannot')
+                # Some Python versions use single quote, some double quote
+                if msg.find('"cannot ') > -1:
+                    msg = msg.replace('"cannot ', '\'cannot ')
+                if msg.find(' attributes"') > -1:
+                    msg = msg.replace(' attributes"', ' attributes\'')
+                cb.append(expr + ':' + msg)
         else:
             cb.append(expr + ':NOT FAILED')
     except Exception as e:
