@@ -580,7 +580,11 @@ aucmd_abort:
 
     /* When closing the current buffer stop Visual mode before freeing
      * anything. */
-    if (buf == curbuf)
+    if (buf == curbuf
+#if defined(EXITFREE)
+	    && !entered_free_all_mem
+#endif
+	    )
 	end_visual_mode();
 
     /*
