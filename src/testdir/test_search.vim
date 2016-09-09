@@ -268,3 +268,14 @@ func Test_search_cmdline2()
   call test_disable_char_avail(0)
   bw!
 endfunc
+
+func Test_use_sub_pat()
+  split
+  let @/ = ''
+  func X()
+    s/^/a/
+    /
+  endfunc
+  call X()
+  bwipe!
+endfunc
