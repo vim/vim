@@ -4354,7 +4354,7 @@ addstate(
 {
     int			subidx;
     nfa_thread_T	*thread;
-    lpos_T		save_lpos;
+    struct multipos	save_multipos;
     int			save_in_use;
     char_u		*save_ptr;
     int			i;
@@ -4572,8 +4572,7 @@ skip_add:
 
 	    /* avoid compiler warnings */
 	    save_ptr = NULL;
-	    save_lpos.lnum = 0;
-	    save_lpos.col = 0;
+	    vim_memset(&save_multipos, 0, sizeof(save_multipos));
 
 	    /* Set the position (with "off" added) in the subexpression.  Save
 	     * and restore it when it was in use.  Otherwise fill any gap. */
@@ -4581,8 +4580,7 @@ skip_add:
 	    {
 		if (subidx < sub->in_use)
 		{
-		    save_lpos.lnum = sub->list.multi[subidx].start_lnum;
-		    save_lpos.col = sub->list.multi[subidx].start_col;
+		    save_multipos = sub->list.multi[subidx];
 		    save_in_use = -1;
 		}
 		else
@@ -4640,10 +4638,7 @@ skip_add:
 	    if (save_in_use == -1)
 	    {
 		if (REG_MULTI)
-                {
-		    sub->list.multi[subidx].start_lnum = save_lpos.lnum;
-		    sub->list.multi[subidx].start_col = save_lpos.col;
-                }
+		    sub->list.multi[subidx] = save_multipos;
 		else
 		    sub->list.line[subidx].start = save_ptr;
 	    }
@@ -4707,8 +4702,7 @@ skip_add:
 		sub->in_use = subidx + 1;
 	    if (REG_MULTI)
 	    {
-		save_lpos.lnum = sub->list.multi[subidx].end_lnum;
-		save_lpos.col = sub->list.multi[subidx].end_col;
+		save_multipos = sub->list.multi[subidx];
 		if (off == -1)
 		{
 		    sub->list.multi[subidx].end_lnum = reglnum + 1;
@@ -4728,8 +4722,7 @@ skip_add:
 		save_ptr = sub->list.line[subidx].end;
 		sub->list.line[subidx].end = reginput + off;
 		/* avoid compiler warnings */
-		save_lpos.lnum = 0;
-		save_lpos.col = 0;
+		vim_memset(&save_multipos, 0, sizeof(save_multipos));
 	    }
 
 	    subs = addstate(l, state->out, subs, pim, off);
@@ -4742,10 +4735,7 @@ skip_add:
 		sub = &subs->norm;
 
 	    if (REG_MULTI)
-            {
-		sub->list.multi[subidx].end_lnum = save_lpos.lnum;
-		sub->list.multi[subidx].end_col = save_lpos.col;
-            }
+		sub->list.multi[subidx] = save_multipos;
 	    else
 		sub->list.line[subidx].end = save_ptr;
 	    sub->in_use = save_in_use;
