@@ -12429,7 +12429,7 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
 	free_callback(callback, partial);
     else
     {
-	if (timer->tr_partial == NULL)
+	if (partial == NULL)
 	    timer->tr_callback = vim_strsave(callback);
 	else
 	    /* pointer into the partial */
