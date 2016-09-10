@@ -1143,10 +1143,11 @@ free_timer(timer_T *timer)
 create_timer(long msec, int repeat)
 {
     timer_T	*timer = (timer_T *)alloc_clear(sizeof(timer_T));
+    long	prev_id = last_timer_id;
 
     if (timer == NULL)
 	return NULL;
-    if (++last_timer_id < 0)
+    if (++last_timer_id <= prev_id)
 	/* Overflow!  Might cause duplicates... */
 	last_timer_id = 0;
     timer->tr_id = last_timer_id;
