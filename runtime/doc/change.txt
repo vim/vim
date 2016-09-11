@@ -871,7 +871,8 @@ command		text	result ~
 The numbering of "\1", "\2" etc. is done based on which "\(" comes first in
 the pattern (going left to right).  When a parentheses group matches several
 times, the last one will be used for "\1", "\2", etc.  Example: >
-  :s/\(\(a[a-d] \)*\)/\2/      modifies "aa ab x" to "ab x"
+  :s/\(\(a[a-d] \)*\)/\2/      modifies "aa ab x" to "x"
+At first "\2" matches to "aa ", at second - "ab " and at third (last) - "x".
 
 When using parentheses in combination with '|', like in \([ab]\)\|\([cd]\),
 either the first or second pattern in parentheses did not match, so either
