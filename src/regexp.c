@@ -255,9 +255,6 @@
 #define un_Magic(x)	((x) + 256)
 #define is_Magic(x)	((x) < 0)
 
-static int no_Magic(int x);
-static int toggle_Magic(int x);
-
     static int
 no_Magic(int x)
 {
