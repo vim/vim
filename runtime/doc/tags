@@ -4617,6 +4617,7 @@ OptionSet	autocmd.txt	/*OptionSet*
 OverTheSpot	mbyte.txt	/*OverTheSpot*
 P	change.txt	/*P*
 PATHEXT	eval.txt	/*PATHEXT*
+PEP8	filetype.txt	/*PEP8*
 PHP_BracesAtCodeLevel	indent.txt	/*PHP_BracesAtCodeLevel*
 PHP_autoformatcomment	indent.txt	/*PHP_autoformatcomment*
 PHP_default_indenting	indent.txt	/*PHP_default_indenting*
@@ -6090,6 +6091,7 @@ ft-printcap-syntax	syntax.txt	/*ft-printcap-syntax*
 ft-progress-syntax	syntax.txt	/*ft-progress-syntax*
 ft-ptcap-syntax	syntax.txt	/*ft-ptcap-syntax*
 ft-python-indent	indent.txt	/*ft-python-indent*
+ft-python-plugin	filetype.txt	/*ft-python-plugin*
 ft-python-syntax	syntax.txt	/*ft-python-syntax*
 ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
 ft-r-indent	indent.txt	/*ft-r-indent*
@@ -8025,6 +8027,14 @@ ruby-set_option	if_ruby.txt	/*ruby-set_option*
 ruby-vim	if_ruby.txt	/*ruby-vim*
 ruby-window	if_ruby.txt	/*ruby-window*
 ruby.vim	syntax.txt	/*ruby.vim*
+ruby_fold	syntax.txt	/*ruby_fold*
+ruby_foldable_groups	syntax.txt	/*ruby_foldable_groups*
+ruby_foldable_groups	syntax.txt	/*ruby_foldable_groups*
+ruby_minlines	syntax.txt	/*ruby_minlines*
+ruby_no_expensive	syntax.txt	/*ruby_no_expensive*
+ruby_operators	syntax.txt	/*ruby_operators*
+ruby_space_errors	syntax.txt	/*ruby_space_errors*
+ruby_spellcheck_strings	syntax.txt	/*ruby_spellcheck_strings*
 russian	russian.txt	/*russian*
 russian-intro	russian.txt	/*russian-intro*
 russian-issues	russian.txt	/*russian-issues*
@@ -8159,6 +8169,7 @@ sin()	eval.txt	/*sin()*
 single-repeat	repeat.txt	/*single-repeat*
 sinh()	eval.txt	/*sinh()*
 skeleton	autocmd.txt	/*skeleton*
+skip_defaults_vim	starting.txt	/*skip_defaults_vim*
 slice	eval.txt	/*slice*
 slow-fast-terminal	term.txt	/*slow-fast-terminal*
 slow-start	starting.txt	/*slow-start*

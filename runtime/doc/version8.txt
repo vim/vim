@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Sep 08
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Sep 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -914,8 +914,7 @@ Files:	    src/testdir/test100.in, src/testdir/test100.ok,
 	    src/testdir/Make_vms.mms, src/testdir/Makefile, src/Makefile
 
 Patch 7.4.076
-Problem:    "cgn" does not wrap around the end of the file. (Dimitrov
-	    Dimitrov)
+Problem:    "cgn" does not wrap around the end of the file. (Dimitar Dimitrov)
 Solution:   Restore 'wrapscan' earlier. (Christian Brabandt)
 Files:	    src/search.c
 
@@ -7666,8 +7665,7 @@ Problem:    Still more files still using __ARGS.
 Solution:   Remove __ARGS in really the last files.
 Files:      src/proto/if_mzsch.pro, src/if_mzsch.c, src/vim.h,
             src/proto/gui_gtk_gresources.pro, src/proto/gui_mac.pro,
-            src/proto/if_ole.pro, src/proto/if_ole.pro, src/proto/os_qnx.pro,
-            src/Makefile
+            src/proto/if_ole.pro, src/proto/os_qnx.pro, src/Makefile
 
 Patch 7.4.1204
 Problem:    Latin1 characters cause encoding conversion.
@@ -8811,7 +8809,7 @@ Files:      Filelist, src/Make_bc3.mak, src/Make_bc5.mak, src/Make_djg.mak,
             src/misc1.c, src/misc2.c, src/netbeans.c, src/option.c,
             src/option.h, src/os_msdos.c, src/os_msdos.h, src/proto.h,
             src/proto/os_msdos.pro, src/regexp.c, src/screen.c, src/structs.h,
-            src/syntax.c, src/term.c, src/term.c, src/undo.c, src/uninstal.c,
+            src/syntax.c, src/term.c, src/undo.c, src/uninstal.c,
             src/version.c, src/vim.h, src/window.c, src/xxd/Make_bc3.mak,
             src/xxd/Make_djg.mak
 
@@ -14395,6 +14393,72 @@ Problem:    Autocommand test fails when run directly, passes when run as part
             of test_alot.
 Solution:   Add command to make the cursor move.  Close a tab page.
 Files:      src/testdir/test_autocmd.vim
+
+Patch 7.4.2347
+Problem:    Crash when closing a buffer while Visual mode is active.
+            (Dominique Pelle)
+Solution:   Adjust the position before computing the number of lines.
+            When closing the current buffer stop Visual mode.
+Files:      src/buffer.c, src/normal.c, src/testdir/test_normal.vim
+
+Patch 7.4.2348
+Problem:    Crash on exit when EXITFREE is defined. (Dominique Pelle)
+Solution:   Don't access curwin when exiting.
+Files:      src/buffer.c
+
+Patch 7.4.2349
+Problem:    Valgrind reports using uninitialzed memory. (Dominique Pelle)
+Solution:   Check the length before checking for a NUL.
+Files:      src/message.c
+
+Patch 7.4.2350
+Problem:    Test 86 and 87 fail with some version of Python.
+Solution:   Unify "can't" and "cannot".  Unify quotes.
+Files:      src/testdir/test86.in, src/testdir/test86.ok,
+            src/testdir/test87.in, src/testdir/test87.ok
+
+Patch 7.4.2351
+Problem:    Netbeans test fails when run from unpacked MS-Windows sources.
+Solution:   Open README.txt instead of Makefile.
+Files:      src/testdir/test_netbeans.py, src/testdir/test_netbeans.vim
+
+Patch 7.4.2352
+Problem:    Netbeans test fails in shadow directory.
+Solution:   Also copy README.txt to the shadow directory.
+Files:      src/Makefile
+
+Patch 7.4.2353
+Problem:    Not enough test coverage for Normal mode commands.
+Solution:   Add more tests. (Christian Brabandt)
+Files:      src/testdir/test_normal.vim
+
+Patch 7.4.2354
+Problem:    The example that explains nested backreferences does not work
+            properly with the new regexp engine. (Harm te Hennepe)
+Solution:   Also save the end position when adding a state. (closes #990)
+Files:      src/regexp_nfa.c, src/testdir/test_regexp_latin.vim
+
+Patch 7.4.2355
+Problem:    Regexp fails to match when using "\>\)\?". (Ramel)
+Solution:   When a state is already in the list, but addstate_here() is used
+            and the existing state comes later, add the new state anyway.
+Files:      src/regexp_nfa.c, src/testdir/test_regexp_latin.vim
+
+Patch 7.4.2356
+Problem:    Reading past end of line when using previous substitute pattern.
+            (Dominique Pelle)
+Solution:   Don't set "pat" only set "searchstr".
+Files:      src/search.c, src/testdir/test_search.vim
+
+Patch 7.4.2357
+Problem:    Attempt to read history entry while not initialized.
+Solution:   Skip when the index is negative.
+Files:      src/ex_getln.c
+
+Patch 7.4.2358
+Problem:    Compiler warnings with Solaris Studio when using GTK3.
+Solution:   Define FUNC2GENERIC depending on the system. (Kazunobu Kuriyama)
+Files:      src/gui.h, src/gui_beval.c, src/gui_gtk_f.c
 
 [STILL MORE COMING!]
 

@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.4.  Last change: 2016 Jul 21
+*repeat.txt*    For Vim version 7.4.  Last change: 2016 Sep 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -158,7 +158,7 @@ q			Stops recording.  (Implementation note: The 'q' that
 :[addr]@:		Repeat last command-line.  First set cursor at line
 			[addr] (default is current line).  {not in Vi}
 
-							*:@@*
+:[addr]@							*:@@*
 :[addr]@@		Repeat the previous :@{0-9a-z"}.  First set cursor at
 			line [addr] (default is current line).  {Vi: only in
 			some versions}

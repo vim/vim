@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Sep 08
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Sep 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,20 +34,6 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Invalid memory access in do_pending_operator. (Dominique, 2016 Sep 5)
-
-Invalid memory access in msg_puts_printf (Dominique, 2016 Sep 6)
-
-Crash after wiping a buffer. (Dominique, Sep 7)
-
-With MS-Windows gvim:
-    test_netbeans.vim fails.  Nb_basic line 12 and 13.
-    test86 fails  partial fix
-    test87 fails
-
-Make ":filter" work with more commands.
-Search for: msg_putchar('\n')
-
 +channel:
 - channel_wait() may return an error while there is still something to read.
   Perhaps try to read once?
@@ -71,8 +57,6 @@ Later
     With xterm could use -S{pty}.
 
 Regexp problems:
-- The new engine does not do the example in change.txt correctly, where the
-  meaning of \1 and \2 is explained. (Harm te Hennepe, #990)
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
   (Manuel Ortega, 2016 Apr 24)
   Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
@@ -92,8 +76,6 @@ Regexp problems:
   2013 Dec 11)
 - Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin Szamotulski
   Remark from Brett 2014 Jan 6 and 7.
-- Difference in NFA and old engine. (Brett Stahlman, 2014 Nov 5)
-- Bug when using \>. (Ramel, 2014 Feb 2) (Aaron Bohannon, 2014 Feb 13)
 - NFA regexp doesn't handle \%<v correctly. (Ingo Karkat, 2014 May 12)
 - Does not work with NFA regexp engine:
   \%u, \%x, \%o, \%d followed by a composing character
@@ -117,9 +99,7 @@ Regexp problems:
   out the \& works.  Seems any column check after \& fails.
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
-- Search for \\~ causes error E874.
-- Search for /\%d0\+  causes error E363 in a file with consecutive NUL
-  characters. (Christian Brabandt, 2016 Jun 7)
+  had_endbrace[] is set but not initialized or used.
 
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
@@ -133,8 +113,6 @@ Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
 
-Cursor positioned in the wrong place when editing src/testdir/test_viml.vim.
-
 Javascript indent wrong after /* in single quoted string:
     var SRC = 'src/*.js';
     function log(tag) {
@@ -146,13 +124,8 @@ Add tests for using number larger than number of lines in buffer.
 
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 
-For current Windows build .pdb file is missing. (Gabriele Fava, 2016 May 11)
-5)
-
 min() and max() spawn lots of error messages if sorted list/dictionary
 contains invalid data (Nikolay Pavlov, 2016 Sep 4, #1039)
-
-Patch to fix compiler warning with gtk3. (Kazunobu Kuriyama, 2016 Aug 24)
 
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 

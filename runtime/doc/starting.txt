@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.4.  Last change: 2016 Sep 03
+*starting.txt*  For Vim version 7.4.  Last change: 2016 Sep 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1021,17 +1021,20 @@ patch 7.4.2111 to be exact).
 
 This should work well for new Vim users.  If you create your own .vimrc, it is
 recommended to add this line somewhere near the top: >
+	unlet! skip_defaults_vim
 	source $VIMRUNTIME/defaults.vim
 Then Vim works like before you had a .vimrc. Copying $VIMRUNTIME/vimrc_example
 is way to do this.  Alternatively, you can copy defaults.vim to your .vimrc
-and modify it.
+and modify it (but then you won't get updates when it changes).
 
 If you don't like some of the defaults, you can still source defaults.vim and
 revert individual settings.  See the defaults.vim file for hints on how to
 revert each item.
-
+						*skip_defaults_vim*
 If you use a system-wide vimrc and don't want defaults.vim to change settings,
-set the "skip_defaults_vim" variable.
+set the "skip_defaults_vim" variable.  If this was set and you want to load
+defaults.vim from your .vimrc, first unlet skip_defaults_vim, as in the
+example above.
 
 
 Avoiding trojan horses ~

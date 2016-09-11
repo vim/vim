@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.4.  Last change: 2016 Apr 12
+*change.txt*    For Vim version 7.4.  Last change: 2016 Sep 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -872,6 +872,7 @@ The numbering of "\1", "\2" etc. is done based on which "\(" comes first in
 the pattern (going left to right).  When a parentheses group matches several
 times, the last one will be used for "\1", "\2", etc.  Example: >
   :s/\(\(a[a-d] \)*\)/\2/      modifies "aa ab x" to "ab x"
+The "\2" is for "\(a[a-d] \)".  At first it matches "aa ", secondly "ab ".
 
 When using parentheses in combination with '|', like in \([ab]\)\|\([cd]\),
 either the first or second pattern in parentheses did not match, so either
