@@ -1,4 +1,4 @@
-README_zOS.txt for version 7.4 of Vim: Vi IMproved.
+README_zOS.txt for version 8.0 of Vim: Vi IMproved.
 
 This readme explains how to build Vim on z/OS.  Formerly called OS/390.
 See "README.txt" for general information about Vim.
@@ -78,7 +78,7 @@ Change to the vim directory and do:
 With X11:
 ---------
 
-WARNING: This instruction was not tested with Vim 7.4.
+WARNING: This instruction was not tested with Vim 7.4 or later.
 
 There are two ways for building VIM with X11 support. The first way is simple
 and results in a big executable (~13 Mb), the second needs a few additional

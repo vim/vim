@@ -4,9 +4,6 @@
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
-NOTE: VIM 8 WAS NOT RELEASED YET, this is work in progress
-
-
 				*vim8* *vim-8* *version-8.0* *version8.0*
 Welcome to Vim 8!  A large number of bugs have been fixed and several nice
 features have been added.  This file mentions all the new items and changes to
@@ -37,7 +34,8 @@ differences between other versions.
 ==============================================================================
 NEW FEATURES						*new-8*
 
-First a list of the bigger new features.  A comprehensive list is below.
+First an overview of the more interesting new features.  A comprehensive list
+is below.
 
 
 Asynchronous I/O support, channels ~
@@ -14497,5 +14495,15 @@ Patch 7.4.2365
 Problem:    Needless line break. Confusing directory name.
 Solution:   Remove line break.  Prepend "../" to "tools".
 Files:      Makefile, src/normal.c
+
+Patch 7.4.2366
+Problem:    MS-Windows gvim.exe does not have DirectX support.
+Solution:   Add the DIRECTX to the script.
+Files:      src/bigvim.bat
+
+Patch 7.4.2367 (after 7.4.2364)
+Problem:    Test runner misses a comma.
+Solution:   Add the comma.
+Files:      src/testdir/runtest.vim
 
  vim:tw=78:ts=8:ft=help:norl:

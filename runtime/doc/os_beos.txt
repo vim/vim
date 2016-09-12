@@ -1,4 +1,4 @@
-*os_beos.txt*	For Vim version 7.4.  Last change: 2016 Mar 28
+*os_beos.txt*	For Vim version 8.0.  Last change: 2016 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

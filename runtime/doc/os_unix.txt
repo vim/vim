@@ -1,4 +1,4 @@
-*os_unix.txt*   For Vim version 7.4.  Last change: 2005 Mar 29
+*os_unix.txt*   For Vim version 8.0.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

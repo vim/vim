@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Sep 11
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Sep 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,9 +34,13 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+After 8.0 is released:
+- Drop support for older MS-Windows systems, before XP.
+  Patch from Ken Takata, 2016 Mar 8.
+
 +channel:
 - channel_wait() may return an error while there is still something to read.
-  Perhaps try to read once?
+  Perhaps try to read once more?
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
@@ -52,7 +56,6 @@ not be repeated below, unless there is extra information.
   Feb 9)  How to do this on MS-Windows?
 - For connection to server, a "keep open" flag would be useful.  Retry
   connecting in the main loop with zero timeout.
-Later
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
 
@@ -226,10 +229,6 @@ McCoy, 2016 Sept 6, #1046)
 >
 Patch to improve indenting for C++ constructor with initializer list.
 (Hirohito Higashi, 2016 Mar 31)
-
-After 8.0 is released:
-- Drop support for older MS-Windows systems, before XP.
-  Patch from Ken Takata, 2016 Mar 8.
 
 Add stronger encryption.  Could use libsodium (NaCl).
 https://github.com/jedisct1/libsodium/

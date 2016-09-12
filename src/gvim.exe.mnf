@@ -2,7 +2,7 @@
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" >
   <assemblyIdentity
     processorArchitecture="*"
-    version="7.4.0.0"
+    version="8.0.0.0"
     type="win32"
     name="Vim"
   />

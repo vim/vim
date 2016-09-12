@@ -8029,7 +8029,6 @@ ruby-window	if_ruby.txt	/*ruby-window*
 ruby.vim	syntax.txt	/*ruby.vim*
 ruby_fold	syntax.txt	/*ruby_fold*
 ruby_foldable_groups	syntax.txt	/*ruby_foldable_groups*
-ruby_foldable_groups	syntax.txt	/*ruby_foldable_groups*
 ruby_minlines	syntax.txt	/*ruby_minlines*
 ruby_no_expensive	syntax.txt	/*ruby_no_expensive*
 ruby_operators	syntax.txt	/*ruby_operators*

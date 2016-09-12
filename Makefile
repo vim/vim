@@ -67,16 +67,17 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    To do all this you need the Unix archive and compiled binaries.
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
-MAJOR = 7
-MINOR = 4
+MAJOR = 8
+MINOR = 0
 
 # CHECKLIST for creating a new version:
 #
-# - Update Vim version number.  For a test version in: src/version.h, Contents,
-#   MAJOR/MINOR above, VIMMAJOR and VIMMINOR in src/Makefile, README*.txt,
-#   runtime/doc/*.txt and nsis/gvim.nsi.
+# - Update Vim version number.  For a test version in: src/version.h,
+#   READMEdir/Contents, MAJOR/MINOR above, VIMMAJOR and VIMMINOR in
+#   src/Makefile, README.txt, README.md, READMEdir/README*.txt,
+#   runtime/doc/*.txt and make nsis/gvim_version.nsh.
 #   For a minor/major version: src/GvimExt/GvimExt.reg, src/vim.def,
-#   src/vim16.def, src/gvim.exe.mnf.
+#   src/gvim.exe.mnf.
 # - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, MZscheme, Lua (if
 #   you can make it all work), Cscope and "huge" features.  Exclude workshop
 #   and SNiFF.
@@ -96,7 +97,7 @@ MINOR = 4
 # - Check for missing entries in runtime/makemenu.vim (with checkmenu script).
 # - Check for missing options in runtime/optwin.vim et al. (with check.vim).
 # - Do "make menu" to update the runtime/synmenu.vim file.
-# - Add remarks for changes to runtime/doc/version7.txt.
+# - Add remarks for changes to runtime/doc/version8.txt.
 # - Check that runtime/doc/help.txt doesn't contain entries in "LOCAL
 #   ADDITIONS".
 # - In runtime/doc run "make" and "make html" to check for errors.
@@ -192,6 +193,7 @@ MINOR = 4
 #   version).
 # - go to ../nsis and do:
 #   > makensis gvim.nsi  (takes a few minutes).
+#      ignore warning for libwinpthread-1.dll
 # - Copy gvim##.exe to the dist directory.
 #
 # 64 bit builds (these are not in the normal distribution, the 32 bit build

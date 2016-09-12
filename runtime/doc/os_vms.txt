@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.4.  Last change: 2014 Aug 29
+*os_vms.txt*    For Vim version 8.0.  Last change: 2014 Aug 29
 
 
 		  VIM REFERENCE MANUAL
