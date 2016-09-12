@@ -4752,8 +4752,8 @@ msgstr "要離開請輸入                  :q<Enter>            "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "線上說明請輸入                :help<Enter>         "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "新版本資訊請輸入              :help version7<Enter>"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "新版本資訊請輸入              :help version8<Enter>"
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi 相容模式"

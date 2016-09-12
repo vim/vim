@@ -5683,8 +5683,8 @@ msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "feu  :help<Entrar> o <F1>        per a obtenir ajuda      "
 
 # amplada 53 caràcters
-msgid "type  :help version7<Enter>   for version info"
-msgstr "feu  :help version7<Entrar>      per a info de la versió  "
+msgid "type  :help version8<Enter>   for version info"
+msgstr "feu  :help version8<Entrar>      per a info de la versió  "
 
 msgid "Running in Vi compatible mode"
 msgstr "Funcionant en mode compatible amb Vi"

@@ -6195,8 +6195,8 @@ msgstr "наберите :q<Enter>               чтобы выйти из программы     "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "наберите :help<Enter> или <F1>   для получения справки        "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "наберите :help version7<Enter>   чтобы узнать об этой версии  "
+msgid "type  :help version8<Enter>   for version info"
+msgstr "наберите :help version8<Enter>   чтобы узнать об этой версии  "
 
 msgid "Running in Vi compatible mode"
 msgstr "Работа в Vi-совместимом режиме"

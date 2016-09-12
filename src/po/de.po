@@ -5521,8 +5521,8 @@ msgstr "Tippe  :q<Enter>                zum Beenden               "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "Tippe  :help<Enter>  oder <F1>  für Online Hilfe          "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "Tippe  :help version7<Enter>    für Versions-Informationen"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "Tippe  :help version8<Enter>    für Versions-Informationen"
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi kompatible Einstellung"
