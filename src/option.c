@@ -12363,8 +12363,10 @@ get_winbuf_options(int bufopt)
 	    {
 		if (opt->flags & P_STRING)
 		    dict_add_nr_str(d, opt->fullname, 0L, *(char_u **)varp);
+		else if (opt->flags & P_NUM)
+		    dict_add_nr_str(d, opt->fullname, *(long *)varp, NULL);
 		else
-		    dict_add_nr_str(d, opt->fullname, *varp, NULL);
+		    dict_add_nr_str(d, opt->fullname, *(int *)varp, NULL);
 	    }
 	}
     }
