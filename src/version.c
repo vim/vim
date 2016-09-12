@@ -17,6 +17,7 @@
  * Vim originated from Stevie version 3.6 (Fish disk 217) by GRWalter (Fred)
  * It has been changed beyond recognition since then.
  *
+ * Differences between version 7.x and 8.x can be found with ":help version8".
  * Differences between version 6.x and 7.x can be found with ":help version7".
  * Differences between version 5.x and 6.x can be found with ":help version6".
  * Differences between version 4.x and 5.x can be found with ":help version5".
@@ -1238,7 +1239,7 @@ intro_message(
 	"",
 	N_("type  :q<Enter>               to exit         "),
 	N_("type  :help<Enter>  or  <F1>  for on-line help"),
-	N_("type  :help version7<Enter>   for version info"),
+	N_("type  :help version8<Enter>   for version info"),
 	NULL,
 	"",
 	N_("Running in Vi compatible mode"),

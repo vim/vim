@@ -6510,8 +6510,8 @@ msgstr "tapez  :q<Entrée>               pour sortir du programme          "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "tapez  :help<Entrée>  ou  <F1>  pour accéder à l'aide en ligne    "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "tapez  :help version7<Entrée>   pour lire les notes de mise à jour"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "tapez  :help version8<Entrée>   pour lire les notes de mise à jour"
 
 # DB - Pour les trois messages qui suivent :
 #        :set cp
