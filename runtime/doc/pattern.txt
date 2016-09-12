@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.4.  Last change: 2016 Jun 08
+*pattern.txt*   For Vim version 7.4.  Last change: 2016 Sep 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -355,8 +355,8 @@ For starters, read chapter 27 of the user manual |usr_27.txt|.
 				*/\%#=* *two-engines* *NFA*
 Vim includes two regexp engines:
 1. An old, backtracking engine that supports everything.
-2. A new, NFA engine that works much faster on some patterns, but does not
-   support everything.
+2. A new, NFA engine that works much faster on some patterns, possibly slower
+   on some patterns.
 
 Vim will automatically select the right engine for you.  However, if you run
 into a problem or want to specifically select one engine or the other, you can

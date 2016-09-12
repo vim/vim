@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 7.4.  Last change: 2016 Sep 07
+*channel.txt*      For Vim version 7.4.  Last change: 2016 Sep 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -277,7 +277,7 @@ With a JSON channel the process can send commands to Vim that will be
 handled by Vim internally, it does not require a handler for the channel.
 
 Possible commands are:				*E903* *E904* *E905*
-    ["redraw"  {forced}]
+    ["redraw", {forced}]
     ["ex",     {Ex command}]
     ["normal", {Normal mode command}]
     ["expr",   {expression}, {number}]

@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Sep 09
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Sep 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14456,10 +14456,41 @@ Solution:   Skip when the index is negative.
 Files:      src/ex_getln.c
 
 Patch 7.4.2358
-Problem:    Compiler warnings with Solaris Studio when using GTK3.
+Problem:    Compiler warnings with Solaris Studio when using GTK3. (Danek
+            Duvall)
 Solution:   Define FUNC2GENERIC depending on the system. (Kazunobu Kuriyama)
 Files:      src/gui.h, src/gui_beval.c, src/gui_gtk_f.c
 
-[STILL MORE COMING!]
+Patch 7.4.2359
+Problem:    Memory leak in timer_start().
+Solution:   Check the right field to be NULL.
+Files:      src/evalfunc.c, src/testdir/test_timers.vim
+
+Patch 7.4.2360
+Problem:    Invalid memory access when formatting. (Dominique Pelle)
+Solution:   Make sure cursor line and column are associated.
+Files:      src/misc1.c
+
+Patch 7.4.2361
+Problem:    Checking for last_timer_id to overflow is not reliable. (Ozaki
+            Kiichi)
+Solution:   Check for the number not going up.
+Files:      src/ex_cmds2.c
+
+Patch 7.4.2362
+Problem:    Illegal memory access with ":1@". (Dominique Pelle)
+Solution:   Correct cursor column after setting the line number.  Also avoid
+            calling end_visual_mode() when not in Visual mode.
+Files:      src/ex_docmd.c, src/buffer.c
+
+Patch 7.4.2363
+Problem:    Superfluous function prototypes.
+Solution:   Remove them.
+Files:      src/regexp.c
+
+Patch 7.4.2364
+Problem:    Sort test sometimes fails.
+Solution:   Add it to the list of flaky tests.
+Files:      src/testdir/runtest.vim
 
  vim:tw=78:ts=8:ft=help:norl:

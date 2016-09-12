@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.4.  Last change: 2016 Sep 10
+*todo.txt*      For Vim version 7.4.  Last change: 2016 Sep 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -118,6 +118,9 @@ Javascript indent wrong after /* in single quoted string:
     function log(tag) {
 	a = b;
     }
+
+Problem passing non-UTF-8 strings to Python 3. (Björn Linse, 2016 Sep 11,
+#1053)  With patch, does it work?
 
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
