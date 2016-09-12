@@ -14493,4 +14493,9 @@ Problem:    Sort test sometimes fails.
 Solution:   Add it to the list of flaky tests.
 Files:      src/testdir/runtest.vim
 
+Patch 7.4.2365
+Problem:    Needless line break. Confusing directory name.
+Solution:   Remove line break.  Prepend "../" to "tools".
+Files:      Makefile, src/normal.c
+
  vim:tw=78:ts=8:ft=help:norl:

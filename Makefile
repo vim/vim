@@ -140,7 +140,7 @@ MINOR = 4
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
 #   - check the output.
-# - Rename (using tools/rename.bat):
+# - Rename (using ../tools/rename.bat):
 #           vim.exe to vimw32.exe
 #           tee/tee.exe to teew32.exe
 #           xxd/xxd.exe to xxdw32.exe
