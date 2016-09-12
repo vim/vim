@@ -188,6 +188,7 @@ Section "Vim executables and runtime files"
 	File /oname=install.exe ${VIMSRC}\installw32.exe
 	File /oname=uninstal.exe ${VIMSRC}\uninstalw32.exe
 	File ${VIMSRC}\vimrun.exe
+	File /oname=tee.exe ${VIMSRC}\teew32.exe
 	File /oname=xxd.exe ${VIMSRC}\xxdw32.exe
 	File ${VIMTOOLS}\diff.exe
 	File ${VIMRT}\vimtutor.bat
@@ -214,6 +215,28 @@ Section "Vim executables and runtime files"
 
 	SetOutPath $0\macros
 	File ${VIMRT}\macros\*.*
+
+	SetOutPath $0\pack\dist\opt\dvorak\dvorak
+	File ${VIMRT}\pack\dist\opt\dvorak\dvorak\*.*
+	SetOutPath $0\pack\dist\opt\dvorak\plugin
+	File ${VIMRT}\pack\dist\opt\dvorak\plugin\*.*
+
+	SetOutPath $0\pack\dist\opt\editexisting\plugin
+	File ${VIMRT}\pack\dist\opt\editexisting\plugin\*.*
+
+	SetOutPath $0\pack\dist\opt\justify\plugin
+	File ${VIMRT}\pack\dist\opt\justify\plugin\*.*
+
+	SetOutPath $0\pack\dist\opt\matchit\doc
+	File ${VIMRT}\pack\dist\opt\matchit\doc\*.*
+	SetOutPath $0\pack\dist\opt\matchit\plugin
+	File ${VIMRT}\pack\dist\opt\matchit\plugin\*.*
+
+	SetOutPath $0\pack\dist\opt\shellmenu\plugin
+	File ${VIMRT}\pack\dist\opt\shellmenu\plugin\*.*
+
+	SetOutPath $0\pack\dist\opt\swapmouse\plugin
+	File ${VIMRT}\pack\dist\opt\swapmouse\plugin\*.*
 
 	SetOutPath $0\plugin
 	File ${VIMRT}\plugin\*.*

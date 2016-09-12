@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -266,7 +266,7 @@ static long char_to_long(char_u *);
 static char_u *make_percent_swname(char_u *dir, char_u *name);
 #endif
 #ifdef FEAT_CRYPT
-static cryptstate_T *ml_crypt_prepare(memfile_T *mfp, off_t offset, int reading);
+static cryptstate_T *ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading);
 #endif
 #ifdef FEAT_BYTEOFF
 static void ml_updatechunk(buf_T *buf, long line, long len, int updtype);
@@ -739,7 +739,7 @@ ml_open_files(void)
 {
     buf_T	*buf;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (!buf->b_p_ro || buf->b_changed)
 	    ml_open_file(buf);
 }
@@ -873,7 +873,7 @@ ml_close_all(int del_file)
 {
     buf_T	*buf;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	ml_close(buf, del_file && ((buf->b_flags & BF_PRESERVED) == 0
 				 || vim_strchr(p_cpo, CPO_PRESERVE) == NULL));
 #ifdef FEAT_SPELL
@@ -893,7 +893,7 @@ ml_close_notmod(void)
 {
     buf_T	*buf;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
 	if (!bufIsChanged(buf))
 	    ml_close(buf, TRUE);    /* close all not-modified buffers */
 }
@@ -973,7 +973,7 @@ ml_upd_block0(buf_T *buf, upd_block0_T what)
     static void
 set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 {
-    struct stat	st;
+    stat_T	st;
 
     if (buf->b_ffname == NULL)
 	b0p->b0_fname[0] = NUL;
@@ -1114,7 +1114,7 @@ ml_recover(void)
     infoptr_T	*ip;
     blocknr_T	bnum;
     int		page_count;
-    struct stat	org_stat, swp_stat;
+    stat_T	org_stat, swp_stat;
     int		len;
     int		directly;
     linenr_T	lnum;
@@ -1127,7 +1127,7 @@ ml_recover(void)
     int		idx;
     int		top;
     int		txt_start;
-    off_t	size;
+    off_T	size;
     int		called_from_main;
     int		serious_error = TRUE;
     long	mtime;
@@ -1323,7 +1323,7 @@ ml_recover(void)
 	    msg_end();
 	    goto theend;
 	}
-	if ((size = lseek(mfp->mf_fd, (off_t)0L, SEEK_END)) <= 0)
+	if ((size = vim_lseek(mfp->mf_fd, (off_T)0L, SEEK_END)) <= 0)
 	    mfp->mf_blocknr_max = 0;	    /* no file or empty file */
 	else
 	    mfp->mf_blocknr_max = (blocknr_T)(size / mfp->mf_page_size);
@@ -1908,7 +1908,7 @@ recover_names(
 	 */
 	if (*dirp == NUL && file_count + num_files == 0 && fname != NULL)
 	{
-	    struct stat	    st;
+	    stat_T	    st;
 	    char_u	    *swapname;
 
 	    swapname = modname(fname_res,
@@ -2038,7 +2038,7 @@ make_percent_swname(char_u *dir, char_u *name)
 }
 #endif
 
-#if (defined(UNIX) || defined(__EMX__) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
+#if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 static int process_still_running;
 #endif
 
@@ -2049,7 +2049,7 @@ static int process_still_running;
     static time_t
 swapfile_info(char_u *fname)
 {
-    struct stat	    st;
+    stat_T	    st;
     int		    fd;
     struct block0   b0;
     time_t	    x = (time_t)0;
@@ -2126,7 +2126,7 @@ swapfile_info(char_u *fname)
 		{
 		    MSG_PUTS(_("\n        process ID: "));
 		    msg_outnum(char_to_long(b0.b0_pid));
-#if defined(UNIX) || defined(__EMX__)
+#if defined(UNIX)
 		    /* EMX kill() not working correctly, it seems */
 		    if (kill((pid_t)char_to_long(b0.b0_pid), 0) == 0)
 		    {
@@ -2262,9 +2262,9 @@ end:
 ml_sync_all(int check_file, int check_char)
 {
     buf_T		*buf;
-    struct stat		st;
+    stat_T		st;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	if (buf->b_ml.ml_mfp == NULL || buf->b_ml.ml_mfp->mf_fname == NULL)
 	    continue;			    /* no file */
@@ -2542,7 +2542,8 @@ ml_append(
     return ml_append_int(curbuf, lnum, line, len, newfile, FALSE);
 }
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL) || (defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)) \
+	|| defined(PROTO)
 /*
  * Like ml_append() but for an arbitrary buffer.  The buffer must already have
  * a memline.
@@ -4028,7 +4029,7 @@ attention_message(
     buf_T   *buf,	/* buffer being edited */
     char_u  *fname)	/* swap file name */
 {
-    struct stat st;
+    stat_T	st;
     time_t	x, sx;
     char	*p;
 
@@ -4206,7 +4207,7 @@ findswapname(
 	{
 	    char_u	    *tail;
 	    char_u	    *fname2;
-	    struct stat	    s1, s2;
+	    stat_T	    s1, s2;
 	    int		    f1, f2;
 	    int		    created1 = FALSE, created2 = FALSE;
 	    int		    same = FALSE;
@@ -4295,7 +4296,7 @@ findswapname(
 	if (mch_getperm(fname) < 0)	/* it does not exist */
 	{
 #ifdef HAVE_LSTAT
-	    struct stat sb;
+	    stat_T	sb;
 
 	    /*
 	     * Extra security check: When a swap file is a symbolic link, this
@@ -4444,7 +4445,7 @@ findswapname(
 		    }
 #endif
 
-#if (defined(UNIX) || defined(__EMX__) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
+#if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 		    process_still_running = FALSE;
 #endif
 #ifdef FEAT_AUTOCMD
@@ -4496,13 +4497,13 @@ findswapname(
 				    name == NULL
 					?  (char_u *)_("Swap file already exists!")
 					: name,
-# if defined(UNIX) || defined(__EMX__) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 				    process_still_running
 					? (char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Quit\n&Abort") :
 # endif
 					(char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Delete it\n&Quit\n&Abort"), 1, NULL, FALSE);
 
-# if defined(UNIX) || defined(__EMX__) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 			if (process_still_running && choice >= 4)
 			    choice++;	/* Skip missing "Delete it" button */
 # endif
@@ -4662,7 +4663,7 @@ fnamecmp_ino(
     char_u	*fname_s,	    /* file name from swap file */
     long	ino_block0)
 {
-    struct stat	st;
+    stat_T	st;
     ino_t	ino_c = 0;	    /* ino of current file */
     ino_t	ino_s;		    /* ino of file from swap file */
     char_u	buf_c[MAXPATHL];    /* full path of fname_c */
@@ -4779,7 +4780,7 @@ ml_setflags(buf_T *buf)
 ml_encrypt_data(
     memfile_T	*mfp,
     char_u	*data,
-    off_t	offset,
+    off_T	offset,
     unsigned	size)
 {
     DATA_BL	*dp = (DATA_BL *)data;
@@ -4824,7 +4825,7 @@ ml_encrypt_data(
 ml_decrypt_data(
     memfile_T	*mfp,
     char_u	*data,
-    off_t	offset,
+    off_T	offset,
     unsigned	size)
 {
     DATA_BL	*dp = (DATA_BL *)data;
@@ -4858,7 +4859,7 @@ ml_decrypt_data(
  * Return an allocated cryptstate_T *.
  */
     static cryptstate_T *
-ml_crypt_prepare(memfile_T *mfp, off_t offset, int reading)
+ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 {
     buf_T	*buf = mfp->mf_buffer;
     char_u	salt[50];

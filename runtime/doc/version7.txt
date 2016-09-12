@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.4.  Last change: 2014 Aug 29
+*version7.txt*  For Vim version 8.0.  Last change: 2016 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1681,7 +1681,7 @@ work.  Use "LPT1" then.
 The GTK font dialog uses a font size zero when the font name doesn't include a
 size.  Use a default size of 10.
 
-This example in the documentation didn't work:
+This example in the documentation didn't work: >
     :e `=foo . ".c"`
 Skip over the expression in `=expr` when looking for comments, |, % and #.
 
@@ -4026,7 +4026,7 @@ Solution:   Check for NULL pointer returned from mch_open().
 Files:	    src/if_cscope.c
 
 Patch 7.0.154
-Problem:    When 'foldnextmax' is negative Vim can hang. (James Vega)
+Problem:    When 'foldnestmax' is negative Vim can hang. (James Vega)
 Solution:   Avoid the fold level becoming negative.
 Files:	    src/fold.c, src/syntax.c
 
@@ -10158,7 +10158,7 @@ an error.  Was caused by patch 7.2.132.
 Make the references to features in the help more consistent. (Sylvain Hitier)
 
 ==============================================================================
-VERSION 7.4					*version-7.4* *version7.4*
+VERSION 7.4				*version-7.4* *version7.4* *vim-7.4*
 
 This section is about improvements made between version 7.3 and 7.4.
 
@@ -18306,6 +18306,7 @@ Patch 7.4b.022
 Problem:    Not waiting for a character when the tick count overflows.
 Solution:   Subtract the unsigned numbers and cast to int. (Ken Takata)
 Files:	    src/os_win32.c
+
 
 
  vim:tw=78:ts=8:ft=help:norl:

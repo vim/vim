@@ -5708,8 +5708,8 @@ msgstr "skriv  :q<Enter>                  for å avslutte   "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "skriv  :help<Enter>  eller  <F1>  for on-line hjelp"
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "skriv  :help version7<Enter>      for versjonsinfo "
+msgid "type  :help version8<Enter>   for version info"
+msgstr "skriv  :help version8<Enter>      for versjonsinfo "
 
 msgid "Running in Vi compatible mode"
 msgstr "Kjører i Vi-kompatibel modus"

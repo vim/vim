@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.4.  Last change: 2016 Mar 15
+*usr_41.txt*	For Vim version 8.0.  Last change: 2016 Sep 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -592,6 +592,7 @@ String manipulation:					*string-functions*
 	match()			position where a pattern matches in a string
 	matchend()		position where a pattern match ends in a string
 	matchstr()		match of a pattern in a string
+	matchstrpos()		match and positions of a pattern in a string
 	matchlist()		like matchstr() and also return submatches
 	stridx()		first index of a short string in a long string
 	strridx()		last index of a short string in a long string
@@ -601,13 +602,16 @@ String manipulation:					*string-functions*
 	strdisplaywidth()	size of string when displayed, deals with tabs
 	substitute()		substitute a pattern match with a string
 	submatch()		get a specific match in ":s" and substitute()
-	strpart()		get part of a string
+	strpart()		get part of a string using byte index
+	strcharpart()		get part of a string using char index
+	strgetchar()		get character from a string using char index
 	expand()		expand special keywords
 	iconv()			convert text from one encoding to another
 	byteidx()		byte index of a character in a string
 	byteidxcomp()		like byteidx() but count composing characters
 	repeat()		repeat a string multiple times
 	eval()			evaluate a string expression
+	execute()		execute an Ex command and get the output
 
 List manipulation:					*list-functions*
 	get()			get an item without error for wrong index
@@ -677,6 +681,7 @@ Floating point computation:				*float-functions*
 	sinh()			hyperbolic sine
 	cosh()			hyperbolic cosine
 	tanh()			hyperbolic tangent
+	isnan()			check for not a number
 
 Other computation:					*bitwise-function*
 	and()			bitwise AND
@@ -731,11 +736,14 @@ Working with text in the current buffer:		*text-functions*
 	searchpair()		find the other end of a start/skip/end
 	searchpairpos()		find the other end of a start/skip/end
 	searchdecl()		search for the declaration of a name
+	getcharsearch()		return character search information
+	setcharsearch()		set character search information
 
 					*system-functions* *file-functions*
 System functions and manipulation of files:
 	glob()			expand wildcards
 	globpath()		expand wildcards in a number of directories
+	glob2regpat()		convert a glob pattern into a search pattern
 	findfile()		find a file in a list of directories
 	finddir()		find a directory in a list of directories
 	resolve()		find out where a shortcut points to
@@ -747,6 +755,7 @@ System functions and manipulation of files:
 	filereadable()		check if a file can be read
 	filewritable()		check if a file can be written to
 	getfperm()		get the permissions of a file
+	setfperm()		set the permissions of a file
 	getftype()		get the kind of a file
 	isdirectory()		check if a directory exists
 	getfsize()		get the size of a file
@@ -768,6 +777,7 @@ Date and Time:				*date-functions* *time-functions*
 	strftime()		convert time to a string
 	reltime()		get the current or elapsed time accurately
 	reltimestr()		convert reltime() result to a string
+	reltimefloat()		convert reltime() result to a Float
 
 			*buffer-functions* *window-functions* *arg-functions*
 Buffers, windows and the argument list:
@@ -784,9 +794,18 @@ Buffers, windows and the argument list:
 	tabpagenr()		get the number of a tab page
 	tabpagewinnr()		like winnr() for a specified tab page
 	winnr()			get the window number for the current window
+	bufwinid()		get the window ID of a specific buffer
 	bufwinnr()		get the window number of a specific buffer
 	winbufnr()		get the buffer number of a specific window
 	getbufline()		get a list of lines from the specified buffer
+	win_findbuf()		find windows containing a buffer
+	win_getid()		get window ID of a window
+	win_gotoid()		go to window with ID
+	win_id2tabwin()		get tab and window nr from window ID
+	win_id2win()		get window nr from window ID
+	getbufinfo()		get a list with buffer information
+	gettabinfo()		get a list with tab page information
+	getwininfo()		get a list with window information
 
 Command line:					*command-line-functions*
 	getcmdline()		get the current command line
@@ -794,6 +813,7 @@ Command line:					*command-line-functions*
 	setcmdpos()		set position of the cursor in the command line
 	getcmdtype()		return the current command-line type
 	getcmdwintype()		return the current command-line window type
+	getcompletion()		list of command-line completion matches
 
 Quickfix and location lists:			*quickfix-functions*
 	getqflist()		list of quickfix errors
@@ -890,18 +910,61 @@ Mappings:				    *mapping-functions*
 
 Testing:				    *test-functions*
 	assert_equal()		assert that two expressions values are equal
+	assert_notequal()	assert that two expressions values are not equal
+	assert_inrange()	assert that an expression is inside a range
+	assert_match()		assert that a pattern matches the value
+	assert_notmatch()	assert that a pattern does not match the value
 	assert_false()		assert that an expression is false
 	assert_true()		assert that an expression is true
 	assert_exception()	assert that a command throws an exception
 	assert_fails()		assert that a function call fails
+	test_alloc_fail()	make memory allocation fail
+	test_autochdir()	enable 'autochdir' during startup
+	test_disable_char_avail()	test without typeahead
+	test_garbagecollect_now()	free memory right now
+	test_null_channel()	return a null Channel
+	test_null_dict()	return a null Dict
+	test_null_job()		return a null Job
+	test_null_list()	return a null List
+	test_null_partial()	return a null Partial function
+	test_null_string()	return a null String
 
-Inter-process communication:
+Inter-process communication:		    *channel-functions*
 	ch_open()		open a channel
 	ch_close()		close a channel
+	ch_close_in()		close the in part of a channel
+	ch_read()		read a message from a channel
+	ch_readraw()		read a raw message from a channel
 	ch_sendexpr()		send a JSON message over a channel
 	ch_sendraw()		send a raw message over a channel
-	jsonencode()		encode an expression to a JSON string
-	jsondecode()		decode a JSON string to Vim types
+	ch_evalexpr()		evaluates an expression over channel
+	ch_evalraw()		evaluates a raw string over channel
+	ch_status()		get status of a channel
+	ch_getbufnr()		get the buffer number of a channel
+	ch_getjob()		get the job associated with a channel
+	ch_info()		get channel information
+	ch_log()		write a message in the channel log file
+	ch_logfile()		set the channel log file
+	ch_setoptions()		set the options for a channel
+	json_encode()		encode an expression to a JSON string
+	json_decode()		decode a JSON string to Vim types
+	js_encode()		encode an expression to a JSON string
+	js_decode()		decode a JSON string to Vim types
+
+Jobs:		    			        *job-functions*
+	job_start()		start a job
+	job_stop()		stop a job
+	job_status()		get the status of a job
+	job_getchannel()	get the channel used by a job
+	job_info()		get information about a job
+	job_setoptions()	set options for a job
+
+Timers:						*timer-functions*
+	timer_start()		create a timer
+	timer_pause()		pause or unpause a timer
+	timer_stop()		stop a timer
+	timer_stopall()		stop all timers
+	timer_info()		get information about timers
 
 Various:					*various-functions*
 	mode()			get current editing mode
@@ -926,6 +989,8 @@ Various:					*various-functions*
 
 	shiftwidth()		effective value of 'shiftwidth'
 
+	wordcount()		get byte/word/char count of buffer
+
 	taglist()		get list of matching tags
 	tagfiles()		get a list of tags files
 
@@ -934,7 +999,6 @@ Various:					*various-functions*
 	perleval()		evaluate Perl expression (|+perl|)
 	py3eval()		evaluate Python expression (|+python3|)
 	pyeval()		evaluate Python expression (|+python|)
-	wordcount()		get byte/word/char count of buffer
 
 ==============================================================================
 *41.7*	Defining a function
@@ -1402,9 +1466,9 @@ Now we can instantiate a Dutch translation object: >
 And a German translator: >
 
 	:let uk2de = copy(transdict)
-	:let uk2de.words = {'one': 'ein', 'two': 'zwei', 'three': 'drei'}
+	:let uk2de.words = {'one': 'eins', 'two': 'zwei', 'three': 'drei'}
 	:echo uk2de.translate('three one')
-<	drei ein ~
+<	drei eins ~
 
 You see that the copy() function is used to make a copy of the "transdict"
 Dictionary and then the copy is changed to add the words.  The original

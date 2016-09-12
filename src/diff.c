@@ -1,4 +1,4 @@
-/* vim:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -65,7 +65,7 @@ diff_buf_delete(buf_T *buf)
     int		i;
     tabpage_T	*tp;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
     {
 	i = diff_buf_idx_tp(buf, tp);
 	if (i != DB_COUNT)
@@ -92,7 +92,7 @@ diff_buf_adjust(win_T *win)
     {
 	/* When there is no window showing a diff for this buffer, remove
 	 * it from the diffs. */
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_buffer == win->w_buffer && wp->w_p_diff)
 		break;
 	if (wp == NULL)
@@ -135,7 +135,7 @@ diff_buf_add(buf_T *buf)
 	    return;
 	}
 
-    EMSGN(_("E96: Can not diff more than %ld buffers"), DB_COUNT);
+    EMSGN(_("E96: Cannot diff more than %ld buffers"), DB_COUNT);
 }
 
 /*
@@ -178,7 +178,7 @@ diff_invalidate(buf_T *buf)
     tabpage_T	*tp;
     int		i;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
     {
 	i = diff_buf_idx_tp(buf, tp);
 	if (i != DB_COUNT)
@@ -204,7 +204,7 @@ diff_mark_adjust(
     tabpage_T	*tp;
 
     /* Handle all tab pages that use the current buffer in a diff. */
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
     {
 	idx = diff_buf_idx_tp(curbuf, tp);
 	if (idx != DB_COUNT)
@@ -591,7 +591,7 @@ diff_redraw(
     win_T	*wp;
     int		n;
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS(wp)
 	if (wp->w_p_diff)
 	{
 	    redraw_win_later(wp, SOME_VALID);
@@ -888,7 +888,7 @@ ex_diffpatch(exarg_T *eap)
     char_u	*browseFile = NULL;
     int		browse_flag = cmdmod.browse;
 #endif
-    struct stat st;
+    stat_T	st;
 
 #ifdef FEAT_BROWSE
     if (cmdmod.browse)
@@ -1069,11 +1069,16 @@ theend:
 ex_diffsplit(exarg_T *eap)
 {
     win_T	*old_curwin = curwin;
-    buf_T	*old_curbuf = curbuf;
+    bufref_T	old_curbuf;
 
+    set_bufref(&old_curbuf, curbuf);
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
+    /* Need to compute w_fraction when no redraw happened yet. */
+    validate_cursor();
+    set_fraction(curwin);
+
     /* don't use a new tab page, each tab page has its own diffs */
     cmdmod.tab = 0;
 
@@ -1092,14 +1097,17 @@ ex_diffsplit(exarg_T *eap)
 	    {
 		diff_win_options(old_curwin, TRUE);
 
-		if (buf_valid(old_curbuf))
+		if (bufref_valid(&old_curbuf))
 		    /* Move the cursor position to that of the old window. */
 		    curwin->w_cursor.lnum = diff_get_corresponding_line(
-			    old_curbuf,
+			    old_curbuf.br_buf,
 			    old_curwin->w_cursor.lnum,
 			    curbuf,
 			    curwin->w_cursor.lnum);
 	    }
+	    /* Now that lines are folded scroll to show the cursor at the same
+	     * relative position. */
+	    scroll_to_fraction(curwin, curwin->w_height);
 	}
     }
 }
@@ -1197,7 +1205,7 @@ ex_diffoff(exarg_T *eap)
     int		diffwin = FALSE;
 #endif
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS(wp)
     {
 	if (eap->forceit ? wp->w_p_diff : wp == curwin)
 	{
@@ -1235,10 +1243,14 @@ ex_diffoff(exarg_T *eap)
 							 : wp->w_p_fen_save;
 
 		foldUpdateAll(wp);
-		/* make sure topline is not halfway a fold */
-		changed_window_setting_win(wp);
 #endif
 	    }
+	    /* remove filler lines */
+	    wp->w_topfill = 0;
+
+	    /* make sure topline is not halfway a fold and cursor is
+	     * invalidated */
+	    changed_window_setting_win(wp);
 
 	    /* Note: 'sbo' is not restored, it's a global option. */
 	    diff_buf_adjust(wp);
@@ -1557,7 +1569,8 @@ diff_check(win_T *wp, linenr_T lnum)
 	    /* Compare all lines.  If they are equal the lines were inserted
 	     * in some buffers, deleted in others, but not changed. */
 	    for (i = 0; i < DB_COUNT; ++i)
-		if (i != idx && curtab->tp_diffbuf[i] != NULL && dp->df_count[i] != 0)
+		if (i != idx && curtab->tp_diffbuf[i] != NULL
+						      && dp->df_count[i] != 0)
 		    if (!diff_equal_entry(dp, idx, i))
 			return -1;
 	}
@@ -1877,7 +1890,7 @@ diffopt_changed(void)
 
     /* If "icase" or "iwhite" was added or removed, need to update the diff. */
     if (diff_flags != diff_flags_new)
-	for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	FOR_ALL_TABPAGES(tp)
 	    tp->tp_diff_invalid = TRUE;
 
     diff_flags = diff_flags_new;
@@ -2432,7 +2445,7 @@ diff_fold_update(diff_T *dp, int skip_idx)
     int		i;
     win_T	*wp;
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_WINDOWS(wp)
 	for (i = 0; i < DB_COUNT; ++i)
 	    if (curtab->tp_diffbuf[i] == wp->w_buffer && i != skip_idx)
 		foldUpdate(wp, dp->df_lnum[i],
@@ -2448,7 +2461,7 @@ diff_mode_buf(buf_T *buf)
 {
     tabpage_T	*tp;
 
-    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+    FOR_ALL_TABPAGES(tp)
 	if (diff_buf_idx_tp(buf, tp) != DB_COUNT)
 	    return TRUE;
     return FALSE;

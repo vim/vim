@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.4.  Last change: 2015 Dec 03
+*if_ruby.txt*   For Vim version 8.0.  Last change: 2016 Sep 01
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -57,6 +57,9 @@ Example Vim script: >
 	gem = Garnet.new("pretty")
 	EOF
 	endfunction
+<
+To see what version of Ruby you have: >
+	:ruby print RUBY_VERSION
 <
 
 						*:rubydo* *:rubyd* *E265*
@@ -205,7 +208,7 @@ MS-Windows ~
 You need to install the right version of Ruby for this to work.  You can find
 the package to download from:
 http://www.garbagecollect.jp/ruby/mswin32/en/download/release.html
-Currently that is ruby-1.9.1-p429-i386-mswin32.zip
+Currently that is ruby-1.9.2-p136-i386-mswin32.zip
 
 To use the Ruby interface the Ruby DLL must be in your search path.  In a
 console window type "path" to see what directories are used.  The 'rubydll'

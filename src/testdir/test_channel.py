@@ -38,15 +38,15 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             print("received: {0}".format(received))
 
             # We may receive two messages at once. Take the part up to the
-            # matching "]" (recognized by finding "][").
+            # newline, which should be after the matching "]".
             todo = received
             while todo != '':
-                splitidx = todo.find('][')
+                splitidx = todo.find('\n')
                 if splitidx < 0:
                      used = todo
                      todo = ''
                 else:
-                     used = todo[:splitidx + 1]
+                     used = todo[:splitidx]
                      todo = todo[splitidx + 1:]
                 if used != received:
                     print("using: {0}".format(used))
@@ -73,6 +73,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
+                    elif decoded[1] == 'bad command':
+                        cmd = '["ex","foo bar"]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
                     elif decoded[1] == 'do normal':
                         # Send a normal command.
                         cmd = '["normal","G$s more\u001b"]'
@@ -85,16 +90,28 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
+                    elif decoded[1] == 'eval-special':
+                        # Send an eval request.  We ignore the response.
+                        cmd = '["expr","\\"foo\x7f\x10\x01bar\\"", -2]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                    elif decoded[1] == 'eval-getline':
+                        # Send an eval request.  We ignore the response.
+                        cmd = '["expr","getline(3)", -3]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
                     elif decoded[1] == 'eval-fails':
                         # Send an eval request that will fail.
-                        cmd = '["expr","xxx", -2]'
+                        cmd = '["expr","xxx", -4]'
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
                     elif decoded[1] == 'eval-error':
                         # Send an eval request that works but the result can't
                         # be encoded.
-                        cmd = '["expr","function(\\"tr\\")", -3]'
+                        cmd = '["expr","function(\\"tr\\")", -5]'
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"

@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -35,7 +35,7 @@
 # ifdef AMIGA
 #  include "os_amiga.pro"
 # endif
-# if defined(UNIX) || defined(__EMX__) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 #  include "os_unix.pro"
 # endif
 # ifdef WIN3264
@@ -67,10 +67,12 @@ extern int _stricoll(char *a, char *b);
 # ifdef FEAT_CSCOPE
 #  include "if_cscope.pro"
 # endif
+# include "dict.pro"
 # include "diff.pro"
 # include "digraph.pro"
 # include "edit.pro"
 # include "eval.pro"
+# include "evalfunc.pro"
 # include "ex_cmds.pro"
 # include "ex_cmds2.pro"
 # include "ex_docmd.pro"
@@ -85,12 +87,19 @@ extern int _stricoll(char *a, char *b);
 # include "hardcopy.pro"
 # include "hashtab.pro"
 # include "json.pro"
+# include "list.pro"
 # include "main.pro"
 # include "mark.pro"
 # include "memfile.pro"
 # include "memline.pro"
 # ifdef FEAT_MENU
 #  include "menu.pro"
+# endif
+# ifdef FEAT_FKMAP
+#  include "farsi.pro"
+# endif
+# ifdef FEAT_ARABIC
+#  include "arabic.pro"
 # endif
 
 /* These prototypes cannot be produced automatically. */
@@ -149,6 +158,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # include "search.pro"
 # include "spell.pro"
+# include "spellfile.pro"
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"
@@ -157,6 +167,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # include "ui.pro"
 # include "undo.pro"
+# include "userfunc.pro"
 # include "version.pro"
 # include "window.pro"
 

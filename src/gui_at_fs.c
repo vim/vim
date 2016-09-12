@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4: */
+/* vi:set ts=8 sts=4 sw=4 noet: */
 
 /*
  * Copyright 1989 Software Research Associates, Inc., Tokyo, Japan
@@ -183,7 +183,7 @@ static void SFclearList(int n, int doScroll);
 static void SFbuttonPressList(Widget w, int n, XButtonPressedEvent *event);
 static void SFbuttonReleaseList(Widget w, int n, XButtonReleasedEvent *event);
 static void SFdirModTimer(XtPointer cl, XtIntervalId *id);
-static char SFstatChar(struct stat *statBuf);
+static char SFstatChar(stat_T *statBuf);
 static void SFdrawStrings(Window w, SFDir *dir, int from, int to);
 static int SFnewInvertEntry(int n, XMotionEvent *event);
 static void SFinvertEntry(int n);
@@ -873,7 +873,7 @@ static int SFcheckDir(int n, SFDir *dir);
     static int
 SFcheckDir(int n, SFDir *dir)
 {
-    struct stat	statBuf;
+    stat_T	statBuf;
     int		i;
 
     if ((!mch_stat(".", &statBuf)) && (statBuf.st_mtime != dir->mtime))
@@ -943,7 +943,7 @@ SFcheckFiles(SFDir *dir)
     int		i;
     char	*str;
     int		last;
-    struct stat	statBuf;
+    stat_T	statBuf;
 
     result = 0;
 
@@ -1017,7 +1017,7 @@ SFdirModTimer(XtPointer cl UNUSED, XtIntervalId *id UNUSED)
 /* Return a single character describing what kind of file STATBUF is.  */
 
     static char
-SFstatChar(struct stat *statBuf)
+SFstatChar(stat_T *statBuf)
 {
     if (S_ISDIR (statBuf->st_mode))
 	return '/';
@@ -1313,13 +1313,13 @@ SFdeleteEntry(SFDir *dir, SFEntry *entry)
 #endif
 }
 
-static void SFwriteStatChar(char *name, int last, struct stat *statBuf);
+static void SFwriteStatChar(char *name, int last, stat_T *statBuf);
 
     static void
 SFwriteStatChar(
     char	*name,
     int		last,
-    struct stat	*statBuf)
+    stat_T	*statBuf)
 {
     name[last] = SFstatChar(statBuf);
 }
@@ -1329,7 +1329,7 @@ static int SFstatAndCheck(SFDir *dir, SFEntry *entry);
     static int
 SFstatAndCheck(SFDir *dir, SFEntry *entry)
 {
-    struct stat	statBuf;
+    stat_T	statBuf;
     char	save;
     int		last;
 
@@ -2059,7 +2059,7 @@ SFgetDir(
     char		*str;
     int			len;
     int			maxChars;
-    struct stat		statBuf;
+    stat_T		statBuf;
 
     maxChars = strlen(dir->dir) - 1;
 

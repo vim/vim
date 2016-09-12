@@ -14,14 +14,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-01 09:02+0900\n"
-"PO-Revision-Date: 2016-02-01-09:08+0900\n"
+"POT-Creation-Date: 2016-09-10 21:10+0900\n"
+"PO-Revision-Date: 2016-09-10 21:20+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: vim-jp (https://github.com/vim-jp/lang-ja)\n"
 "Language: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=euc-jp\n"
 "Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 msgid "E831: bf_key_init() called with empty password"
 msgstr "E831: bf_key_init() が空パスワードで呼び出されました"
@@ -52,6 +53,12 @@ msgstr "E82: バッファを1つも作成できないので, 終了します..."
 
 msgid "E83: Cannot allocate buffer, using other one..."
 msgstr "E83: バッファを作成できないので, 他のを使用します..."
+
+msgid "E931: Buffer cannot be registered"
+msgstr "E931: バッファを登録できません"
+
+msgid "E937: Attempt to delete a buffer that is in use"
+msgstr "E937: 使用中のバッファを削除しようと試みました"
 
 msgid "E515: No buffers were unloaded"
 msgstr "E515: 解放されたバッファはありません"
@@ -202,17 +209,55 @@ msgstr "%s のサイン:"
 msgid "    line=%ld  id=%d  name=%s"
 msgstr "    行=%ld  識別子=%d  名前=%s"
 
-msgid "E897: All channels are in use"
-msgstr "E897: 全チャンネルが使用中です"
-
-msgid "E899: Cannot connect to port after retry2"
-msgstr "E899: 2回のリトライをしてもポートに接続できません"
-
 msgid "E902: Cannot connect to port"
 msgstr "E902: ポートに接続できません"
 
-msgid "E896: read from channel"
-msgstr "E896: チャンネルから読み込み"
+msgid "E901: gethostbyname() in channel_open()"
+msgstr "E901: channel_open() 内の gethostbyname() が失敗しました"
+
+msgid "E898: socket() in channel_open()"
+msgstr "E898: channel_open() 内の socket() が失敗しました"
+
+msgid "E903: received command with non-string argument"
+msgstr "E903: 非文字列の引数のコマンドを受信しました"
+
+msgid "E904: last argument for expr/call must be a number"
+msgstr "E904: expr/call の最後の引数は数字でなければなりません"
+
+msgid "E904: third argument for call must be a list"
+msgstr "E904: call の3番目の引数はリスト型でなければなりません"
+
+#, c-format
+msgid "E905: received unknown command: %s"
+msgstr "E905: 未知のコマンドを受信しました: %s"
+
+#, c-format
+msgid "E630: %s(): write while not connected"
+msgstr "E630: %s(): 非接続状態で書き込みました"
+
+#, c-format
+msgid "E631: %s(): write failed"
+msgstr "E631: %s(): 書き込みに失敗しました"
+
+#, c-format
+msgid "E917: Cannot use a callback with %s()"
+msgstr "E917: %s() にコールバックは使えません"
+
+msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+msgstr "E912: 生や nl チャンネルに ch_evalexpr()/ch_sendexpr は使えません"
+
+msgid "E906: not an open channel"
+msgstr "E906: 開いていないチャンネルです"
+
+msgid "E920: _io file requires _name to be set"
+msgstr "E920: _io ファイルは _name の設定が必要です"
+
+msgid "E915: in_io buffer requires in_buf or in_name to be set"
+msgstr "E915: in_io バッファは in_buf か in_name の設定が必要です"
+
+#, c-format
+msgid "E918: buffer must be loaded: %s"
+msgstr "E918: バッファがロードされてなければなりません: %s"
 
 msgid "E821: File is encrypted with unknown method"
 msgstr "E821: ファイルが未知の方法で暗号化されています"
@@ -233,7 +278,30 @@ msgid "[crypted]"
 msgstr "[暗号化]"
 
 #, c-format
-msgid "E96: Can not diff more than %ld buffers"
+msgid "E720: Missing colon in Dictionary: %s"
+msgstr "E720: 辞書型にコロンがありません: %s"
+
+#, c-format
+msgid "E721: Duplicate key in Dictionary: \"%s\""
+msgstr "E721: 辞書型に重複キーがあります: \"%s\""
+
+#, c-format
+msgid "E722: Missing comma in Dictionary: %s"
+msgstr "E722: 辞書型にカンマがありません: %s"
+
+#, c-format
+msgid "E723: Missing end of Dictionary '}': %s"
+msgstr "E723: 辞書型の最後に '}' がありません: %s"
+
+msgid "extend() argument"
+msgstr "extend() の引数"
+
+#, c-format
+msgid "E737: Key already exists: %s"
+msgstr "E737: キーは既に存在します: %s"
+
+#, c-format
+msgid "E96: Cannot diff more than %ld buffers"
 msgstr "E96: %ld 以上のバッファはdiffできません"
 
 msgid "E810: Cannot read or write temp files"
@@ -389,12 +457,9 @@ msgstr "%d 番目の該当 (全該当 %d 個中)"
 msgid "match %d"
 msgstr "%d 番目の該当"
 
+#. maximum nesting of lists and dicts
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: 予期せぬ文字が :let にありました"
-
-#, c-format
-msgid "E684: list index out of range: %ld"
-msgstr "E684: リストのインデックスが範囲外です: %ld"
 
 #, c-format
 msgid "E121: Undefined variable: %s"
@@ -403,48 +468,12 @@ msgstr "E121: 未定義の変数です: %s"
 msgid "E111: Missing ']'"
 msgstr "E111: ']' が見つかりません"
 
-#, c-format
-msgid "E686: Argument of %s must be a List"
-msgstr "E686: %s の引数はリスト型でなければなりません"
-
-#, c-format
-msgid "E712: Argument of %s must be a List or Dictionary"
-msgstr "E712: %s の引数はリスト型または辞書型でなければなりません"
-
-msgid "E714: List required"
-msgstr "E714: リスト型が必要です"
-
-msgid "E715: Dictionary required"
-msgstr "E715: 辞書型が必要です"
-
-#, c-format
-msgid "E118: Too many arguments for function: %s"
-msgstr "E118: 関数の引数が多過ぎます: %s"
-
-#, c-format
-msgid "E716: Key not present in Dictionary: %s"
-msgstr "E716: 辞書型にキーが存在しません: %s"
-
-#, c-format
-msgid "E122: Function %s already exists, add ! to replace it"
-msgstr "E122: 関数 %s は定義済です, 再定義するには ! を追加してください"
-
-msgid "E717: Dictionary entry already exists"
-msgstr "E717: 辞書型内にエントリが既に存在します"
-
-msgid "E718: Funcref required"
-msgstr "E718: 関数参照型が要求されます"
-
 msgid "E719: Cannot use [:] with a Dictionary"
 msgstr "E719: [:] を辞書型と組み合わせては使えません"
 
 #, c-format
 msgid "E734: Wrong variable type for %s="
 msgstr "E734: 異なった型の変数です %s="
-
-#, c-format
-msgid "E130: Unknown function: %s"
-msgstr "E130: 未知の関数です: %s"
 
 #, c-format
 msgid "E461: Illegal variable name: %s"
@@ -486,10 +515,6 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: :for の後に \"in\" がありません"
 
 #, c-format
-msgid "E107: Missing parentheses: %s"
-msgstr "E107: カッコ '(' がありません: %s"
-
-#, c-format
 msgid "E108: No such variable: \"%s\""
 msgstr "E108: その変数はありません: \"%s\""
 
@@ -511,9 +536,6 @@ msgstr "E735: 辞書型は辞書型としか比較できません"
 msgid "E736: Invalid operation for Dictionary"
 msgstr "E736: 辞書型には無効な操作です"
 
-msgid "E693: Can only compare Funcref with Funcref"
-msgstr "E693: 関数参照型は関数参照型としか比較できません"
-
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: 関数参照型には無効な操作です"
 
@@ -525,6 +547,9 @@ msgstr "E110: ')' が見つかりません"
 
 msgid "E695: Cannot index a Funcref"
 msgstr "E695: 関数参照型はインデックスできません"
+
+msgid "E909: Cannot index a special variable"
+msgstr "E909: 特殊変数はインデックスできません"
 
 #, c-format
 msgid "E112: Option name missing: %s"
@@ -542,69 +567,122 @@ msgstr "E114: 引用符 (\") がありません: %s"
 msgid "E115: Missing quote: %s"
 msgstr "E115: 引用符 (') がありません: %s"
 
-#, c-format
-msgid "E696: Missing comma in List: %s"
-msgstr "E696: リスト型にカンマがありません: %s"
-
-#, c-format
-msgid "E697: Missing end of List ']': %s"
-msgstr "E697: リスト型の最後に ']' がありません: %s"
-
 msgid "Not enough memory to set references, garbage collection aborted!"
 msgstr ""
 "ガーベッジコレクションを中止しました! 参照を作成するのにメモリが不足しました"
 
-#, c-format
-msgid "E720: Missing colon in Dictionary: %s"
-msgstr "E720: 辞書型にコロンがありません: %s"
-
-#, c-format
-msgid "E721: Duplicate key in Dictionary: \"%s\""
-msgstr "E721: 辞書型に重複キーがあります: \"%s\""
-
-#, c-format
-msgid "E722: Missing comma in Dictionary: %s"
-msgstr "E722: 辞書型にカンマがありません: %s"
-
-#, c-format
-msgid "E723: Missing end of Dictionary '}': %s"
-msgstr "E723: 辞書型の最後に '}' がありません: %s"
-
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: 表示するには変数の入れ子が深過ぎます"
 
-#, c-format
-msgid "E740: Too many arguments for function %s"
-msgstr "E740: 関数の引数が多過ぎます: %s"
+msgid "E805: Using a Float as a Number"
+msgstr "E805: 浮動小数点数を数値として扱っています"
+
+msgid "E703: Using a Funcref as a Number"
+msgstr "E703: 関数参照型を数値として扱っています。"
+
+msgid "E745: Using a List as a Number"
+msgstr "E745: リスト型を数値として扱っています"
+
+msgid "E728: Using a Dictionary as a Number"
+msgstr "E728: 辞書型を数値として扱っています"
+
+msgid "E910: Using a Job as a Number"
+msgstr "E910: ジョブを数値として扱っています"
+
+msgid "E913: Using a Channel as a Number"
+msgstr "E913: チャンネルを数値として扱っています。"
+
+msgid "E891: Using a Funcref as a Float"
+msgstr "E891: 関数参照型を浮動小数点数として扱っています。"
+
+msgid "E892: Using a String as a Float"
+msgstr "E892: 文字列を浮動小数点数として扱っています"
+
+msgid "E893: Using a List as a Float"
+msgstr "E893: リスト型を浮動小数点数として扱っています"
+
+msgid "E894: Using a Dictionary as a Float"
+msgstr "E894: 辞書型を浮動小数点数として扱っています"
+
+msgid "E907: Using a special value as a Float"
+msgstr "E907: 特殊値を浮動小数点数として扱っています"
+
+msgid "E911: Using a Job as a Float"
+msgstr "E911: ジョブを浮動小数点数として扱っています"
+
+msgid "E914: Using a Channel as a Float"
+msgstr "E914: チャンネルを浮動小数点数として扱っています。"
+
+msgid "E729: using Funcref as a String"
+msgstr "E729: 関数参照型を文字列として扱っています"
+
+msgid "E730: using List as a String"
+msgstr "E730: リスト型を文字列として扱っています"
+
+msgid "E731: using Dictionary as a String"
+msgstr "E731: 辞書型を文字列として扱っています"
+
+msgid "E908: using an invalid value as a String"
+msgstr "E908: 無効な値を文字列として扱っています"
 
 #, c-format
-msgid "E116: Invalid arguments for function %s"
-msgstr "E116: 関数の無効な引数です: %s"
+msgid "E795: Cannot delete variable %s"
+msgstr "E795: 変数 %s を削除できません"
 
 #, c-format
-msgid "E117: Unknown function: %s"
-msgstr "E117: 未知の関数です: %s"
+msgid "E704: Funcref variable name must start with a capital: %s"
+msgstr "E704: 関数参照型変数名は大文字で始まらなければなりません: %s"
 
 #, c-format
-msgid "E119: Not enough arguments for function: %s"
-msgstr "E119: 関数の引数が足りません: %s"
+msgid "E705: Variable name conflicts with existing function: %s"
+msgstr "E705: 変数名が既存の関数名と衝突します: %s"
 
 #, c-format
-msgid "E120: Using <SID> not in a script context: %s"
-msgstr "E120: スクリプト以外で<SID>が使われました: %s"
+msgid "E741: Value is locked: %s"
+msgstr "E741: 値がロックされています: %s"
+
+msgid "Unknown"
+msgstr "不明"
 
 #, c-format
-msgid "E725: Calling dict function without Dictionary: %s"
-msgstr "E725: 辞書用関数が呼ばれましたが辞書がありません: %s"
+msgid "E742: Cannot change value of %s"
+msgstr "E742: %s の値を変更できません"
+
+msgid "E698: variable nested too deep for making a copy"
+msgstr "E698: コピーを取るには変数の入れ子が深過ぎます"
+
+msgid ""
+"\n"
+"# global variables:\n"
+msgstr ""
+"\n"
+"# グローバル変数:\n"
+
+msgid ""
+"\n"
+"\tLast set from "
+msgstr ""
+"\n"
+"\t最後にセットしたスクリプト: "
+
+msgid "map() argument"
+msgstr "map() の引数"
+
+msgid "filter() argument"
+msgstr "filter() の引数"
+
+#, c-format
+msgid "E686: Argument of %s must be a List"
+msgstr "E686: %s の引数はリスト型でなければなりません"
+
+msgid "E928: String required"
+msgstr "E928: 文字列が必要です"
 
 msgid "E808: Number or Float required"
 msgstr "E808: 数値か浮動小数点数が必要です"
 
 msgid "add() argument"
 msgstr "add() の引数"
-
-msgid "E699: Too many arguments"
-msgstr "E699: 引数が多過ぎます"
 
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() は挿入モードでしか利用できません"
@@ -617,32 +695,20 @@ msgstr "E785: complete() は挿入モードでしか利用できません"
 msgid "&Ok"
 msgstr "&Ok"
 
-msgid "E999: Invalid callback argument"
-msgstr "E999: 無効なコールバック引数です"
-
-msgid "E999: not an open channel"
-msgstr "E999: 開いていないチャンネルです"
-
-msgid "extend() argument"
-msgstr "extend() の引数"
-
 #, c-format
-msgid "E737: Key already exists: %s"
-msgstr "E737: キーは既に存在します: %s"
-
-msgid "map() argument"
-msgstr "map() の引数"
-
-msgid "filter() argument"
-msgstr "filter() の引数"
-
-#, c-format
-msgid "+-%s%3ld lines: "
-msgstr "+-%s%3ld 行: "
+msgid "+-%s%3ld line: "
+msgid_plural "+-%s%3ld lines: "
+msgstr[0] "+-%s%3ld 行: "
 
 #, c-format
 msgid "E700: Unknown function: %s"
 msgstr "E700: 未知の関数です: %s"
+
+msgid "E922: expected a dict"
+msgstr "E922: 辞書が期待されています"
+
+msgid "E923: Second argument of function() must be a list or a dict"
+msgstr "E923: function() の第 2 引数はリスト型または辞書型でなければなりません"
 
 msgid ""
 "&OK\n"
@@ -660,8 +726,15 @@ msgstr "insert() の引数"
 msgid "E786: Range not allowed"
 msgstr "E786: 範囲指定は許可されていません"
 
+msgid "E916: not a valid job"
+msgstr "E916: 有効なジョブではありません"
+
 msgid "E701: Invalid type for len()"
 msgstr "E701: len() には無効な型です"
+
+#, c-format
+msgid "E798: ID is reserved for \":match\": %ld"
+msgstr "E798: ID は \":match\" のために予約されています: %ld"
 
 msgid "E726: Stride is zero"
 msgstr "E726: ストライド(前進量)が 0 です"
@@ -695,6 +768,10 @@ msgstr "reverse() の引数"
 msgid "E258: Unable to send to client"
 msgstr "E258: クライアントへ送ることができません"
 
+#, c-format
+msgid "E927: Invalid action: '%s'"
+msgstr "E927: 無効な操作です: %s"
+
 msgid "sort() argument"
 msgstr "sort() の引数"
 
@@ -710,163 +787,15 @@ msgstr "E882: Uniq の比較関数が失敗しました"
 msgid "(Invalid)"
 msgstr "(無効)"
 
+#, c-format
+msgid "E935: invalid submatch number: %d"
+msgstr "E935: 無効なサブマッチ番号: %d"
+
 msgid "E677: Error writing temp file"
 msgstr "E677: 一時ファイル書込中にエラーが発生しました"
 
-msgid "E805: Using a Float as a Number"
-msgstr "E805: 浮動小数点数を数値として扱っています"
-
-msgid "E703: Using a Funcref as a Number"
-msgstr "E703: 関数参照型を数値として扱っています。"
-
-msgid "E745: Using a List as a Number"
-msgstr "E745: リスト型を数値として扱っています"
-
-msgid "E728: Using a Dictionary as a Number"
-msgstr "E728: 辞書型を数値として扱っています"
-
-msgid "E891: Using a Funcref as a Float"
-msgstr "E891: 関数参照型を浮動小数点数として扱っています。"
-
-msgid "E892: Using a String as a Float"
-msgstr "E892: 文字列を浮動小数点数として扱っています"
-
-msgid "E893: Using a List as a Float"
-msgstr "E893: リスト型を浮動小数点数として扱っています"
-
-msgid "E894: Using a Dictionary as a Float"
-msgstr "E894: 辞書型を浮動小数点数として扱っています"
-
-msgid "E729: using Funcref as a String"
-msgstr "E729: 関数参照型を文字列として扱っています"
-
-msgid "E730: using List as a String"
-msgstr "E730: リスト型を文字列として扱っています"
-
-msgid "E731: using Dictionary as a String"
-msgstr "E731: 辞書型を文字列として扱っています"
-
-#, c-format
-msgid "E706: Variable type mismatch for: %s"
-msgstr "E706: 変数の型が一致しません: %s"
-
-#, c-format
-msgid "E795: Cannot delete variable %s"
-msgstr "E795: 変数 %s を削除できません"
-
-#, c-format
-msgid "E704: Funcref variable name must start with a capital: %s"
-msgstr "E704: 関数参照型変数名は大文字で始まらなければなりません: %s"
-
-#, c-format
-msgid "E705: Variable name conflicts with existing function: %s"
-msgstr "E705: 変数名が既存の関数名と衝突します: %s"
-
-#, c-format
-msgid "E741: Value is locked: %s"
-msgstr "E741: 値がロックされています: %s"
-
-msgid "Unknown"
-msgstr "不明"
-
-#, c-format
-msgid "E742: Cannot change value of %s"
-msgstr "E742: %s の値を変更できません"
-
-msgid "E698: variable nested too deep for making a copy"
-msgstr "E698: コピーを取るには変数の入れ子が深過ぎます"
-
-#, c-format
-msgid "E123: Undefined function: %s"
-msgstr "E123: 未定義の関数です: %s"
-
-#, c-format
-msgid "E124: Missing '(': %s"
-msgstr "E124: '(' がありません: %s"
-
-msgid "E862: Cannot use g: here"
-msgstr "E862: ここでは g: は使えません"
-
-#, c-format
-msgid "E125: Illegal argument: %s"
-msgstr "E125: 不正な引数です: %s"
-
-#, c-format
-msgid "E853: Duplicate argument name: %s"
-msgstr "E853: 引数名が重複しています: %s"
-
-msgid "E126: Missing :endfunction"
-msgstr "E126: :endfunction がありません"
-
-#, c-format
-msgid "E707: Function name conflicts with variable: %s"
-msgstr "E707: 関数名が変数名と衝突します: %s"
-
-#, c-format
-msgid "E127: Cannot redefine function %s: It is in use"
-msgstr "E127: 関数 %s を再定義できません: 使用中です"
-
-#, c-format
-msgid "E746: Function name does not match script file name: %s"
-msgstr "E746: 関数名がスクリプトのファイル名と一致しません: %s"
-
-msgid "E129: Function name required"
-msgstr "E129: 関数名が要求されます"
-
-#, c-format
-msgid "E128: Function name must start with a capital or \"s:\": %s"
-msgstr "E128: 関数名は大文字か \"s:\" で始まらなければなりません: %s"
-
-#, c-format
-msgid "E884: Function name cannot contain a colon: %s"
-msgstr "E884: 関数名にはコロンは含められません: %s"
-
-#, c-format
-msgid "E131: Cannot delete function %s: It is in use"
-msgstr "E131: 関数 %s を削除できません: 使用中です"
-
-msgid "E132: Function call depth is higher than 'maxfuncdepth'"
-msgstr "E132: 関数呼出の入れ子数が 'maxfuncdepth' を超えました"
-
-#, c-format
-msgid "calling %s"
-msgstr "%s を実行中です"
-
-#, c-format
-msgid "%s aborted"
-msgstr "%s が中断されました"
-
-#, c-format
-msgid "%s returning #%ld"
-msgstr "%s が #%ld を返しました"
-
-#, c-format
-msgid "%s returning %s"
-msgstr "%s が %s を返しました"
-
-#, c-format
-msgid "continuing in %s"
-msgstr "%s の実行を継続中です"
-
-msgid "E133: :return not inside a function"
-msgstr "E133: 関数外に :return がありました"
-
-msgid ""
-"\n"
-"# global variables:\n"
-msgstr ""
-"\n"
-"# グローバル変数:\n"
-
-msgid ""
-"\n"
-"\tLast set from "
-msgstr ""
-"\n"
-"\tLast set from "
-
-msgid "No old files"
-msgstr "古いファイルはありません"
+msgid "E921: Invalid callback argument"
+msgstr "E921: 無効なコールバック引数です"
 
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
@@ -927,6 +856,10 @@ msgstr " 失敗"
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
 msgstr "E137: viminfoファイルが書込みできません: %s"
+
+#, c-format
+msgid "E929: Too many viminfo temp files, like %s!"
+msgstr "E929: 一時viminfoファイルが多過ぎます! 例: %s"
 
 #, c-format
 msgid "E138: Can't write viminfo file %s!"
@@ -1098,8 +1031,8 @@ msgid "Sorry, help file \"%s\" not found"
 msgstr "残念ですがヘルプファイル \"%s\" が見つかりません"
 
 #, c-format
-msgid "E150: Not a directory: %s"
-msgstr "E150: ディレクトリではありません: %s"
+msgid "E151: No match: %s"
+msgstr "E151: マッチはありません: %s"
 
 #, c-format
 msgid "E152: Cannot open %s for writing"
@@ -1117,6 +1050,10 @@ msgstr "E670: 1つの言語のヘルプファイルに複数のエンコードが混在しています: %s"
 #, c-format
 msgid "E154: Duplicate tag \"%s\" in file %s/%s"
 msgstr "E154: タグ \"%s\" がファイル %s/%s に重複しています"
+
+#, c-format
+msgid "E150: Not a directory: %s"
+msgstr "E150: ディレクトリではありません: %s"
 
 #, c-format
 msgid "E160: Unknown sign command: %s"
@@ -1143,6 +1080,9 @@ msgstr "E159: signの番号がありません"
 msgid "E158: Invalid buffer name: %s"
 msgstr "E158: 無効なバッファ名です: %s"
 
+msgid "E934: Cannot jump to a buffer that does not have a name"
+msgstr "E934: 名前の無いバッファへはジャンプできません"
+
 #, c-format
 msgid "E157: Invalid sign ID: %ld"
 msgstr "E157: 無効なsign識別子です: %ld"
@@ -1160,6 +1100,9 @@ msgstr " (非サポート)"
 
 msgid "[Deleted]"
 msgstr "[削除済]"
+
+msgid "No old files"
+msgstr "古いファイルはありません"
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "デバッグモードに入ります. 続けるには \"cont\" と入力してください."
@@ -1233,8 +1176,8 @@ msgid "Searching for \"%s\""
 msgstr "\"%s\" を検索中"
 
 #, c-format
-msgid "not found in 'runtimepath': \"%s\""
-msgstr "'runtimepath' の中には見つかりません: \"%s\""
+msgid "not found in '%s': \"%s\""
+msgstr "'%s' の中にはありません: \"%s\""
 
 msgid "Source Vim script"
 msgstr "Vimスクリプトの取込み"
@@ -1262,6 +1205,10 @@ msgstr "行 %ld: %s を取込中"
 #, c-format
 msgid "finished sourcing %s"
 msgstr "%s の取込を完了"
+
+#, c-format
+msgid "continuing in %s"
+msgstr "%s の実行を継続中です"
 
 msgid "modeline"
 msgstr "モード行"
@@ -1465,6 +1412,9 @@ msgstr ""
 
 msgid "E466: :winpos requires two number arguments"
 msgstr "E466: :winpos には2つの数値の引数が必要です"
+
+msgid "E930: Cannot use :redir inside execute()"
+msgstr "E930: execute() の中では :redir は使えません"
 
 msgid "Save Redirection"
 msgstr "リダイレクトを保存します"
@@ -1673,6 +1623,9 @@ msgstr "式"
 
 msgid "Input Line"
 msgstr "入力行"
+
+msgid "Debug Line"
+msgstr "デバッグ行"
 
 msgid "E198: cmd_pchar beyond the command length"
 msgstr "E198: cmd_pchar がコマンド長を超えました"
@@ -1919,11 +1872,6 @@ msgstr "1 文字"
 msgid "%lld characters"
 msgstr "%lld 文字"
 
-#. Explicit typecast avoids warning on Mac OS X 10.6
-#, c-format
-msgid "%ld characters"
-msgstr "%ld 文字"
-
 msgid "[noeol]"
 msgstr "[noeol]"
 
@@ -2015,6 +1963,12 @@ msgstr "autocommand: %s <バッファ=%d> が自動的に削除されます"
 msgid "E367: No such group: \"%s\""
 msgstr "E367: そのグループはありません: \"%s\""
 
+msgid "E936: Cannot delete the current group"
+msgstr "E936: 現在のグループは削除できません"
+
+msgid "W19: Deleting augroup that is still in use"
+msgstr "W19: 使用中の augroup を消そうとしています"
+
 #, c-format
 msgid "E215: Illegal character after *: %s"
 msgstr "E215: * の後に不正な文字がありました: %s"
@@ -2076,8 +2030,9 @@ msgid "E351: Cannot delete fold with current 'foldmethod'"
 msgstr "E351: 現在の 'foldmethod' では折畳みを削除できません"
 
 #, c-format
-msgid "+--%3ld lines folded "
-msgstr "+--%3ld 行が折畳まれました "
+msgid "+--%3ld line folded "
+msgid_plural "+--%3ld lines folded "
+msgstr[0] "+--%3ld 行が折畳まれました "
 
 msgid "E222: Add to read buffer"
 msgstr "E222: 読込バッファへ追加"
@@ -2170,6 +2125,18 @@ msgstr "Vim ダイアログ"
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr "E232: メッセージとコールバックのある BalloonEval を作成できません"
 
+msgid "_Cancel"
+msgstr "キャンセル(_C)"
+
+msgid "_Save"
+msgstr "保存(_S)"
+
+msgid "_Open"
+msgstr "開く(_O)"
+
+msgid "_OK"
+msgstr "_OK"
+
 msgid ""
 "&Yes\n"
 "&No\n"
@@ -2178,6 +2145,12 @@ msgstr ""
 "はい(&Y)\n"
 "いいえ(&N)\n"
 "キャンセル(&C)"
+
+msgid "Yes"
+msgstr "はい"
+
+msgid "No"
+msgstr "いいえ"
 
 msgid "Input _Methods"
 msgstr "インプットメソッド"
@@ -2212,17 +2185,17 @@ msgstr "上"
 msgid "Down"
 msgstr "下"
 
-#. 'Find Next' button
 msgid "Find Next"
 msgstr "次を検索"
 
-#. 'Replace' button
 msgid "Replace"
 msgstr "置換"
 
-#. 'Replace All' button
 msgid "Replace All"
 msgstr "全て置換"
+
+msgid "_Close"
+msgstr "閉じる(_C)"
 
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: セッションマネージャから \"die\" 要求を受け取りました\n"
@@ -2275,17 +2248,6 @@ msgstr "全て置換(&A)"
 msgid "&Undo"
 msgstr "アンドゥ(&U)"
 
-#, c-format
-msgid "E671: Cannot find window title \"%s\""
-msgstr "E671: タイトルが \"%s\" のウィンドウは見つかりません"
-
-#, c-format
-msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
-msgstr "E243: 引数はサポートされません: \"-%s\"; OLE版を使用してください."
-
-msgid "E672: Unable to open window inside MDI application"
-msgstr "E672: MDIアプリの中ではウィンドウを開けません"
-
 msgid "Open tab..."
 msgstr "タブページを開く"
 
@@ -2302,6 +2264,17 @@ msgstr "使われません"
 
 msgid "Directory\t*.nothing\n"
 msgstr "ディレクトリ\t*.nothing\n"
+
+#, c-format
+msgid "E671: Cannot find window title \"%s\""
+msgstr "E671: タイトルが \"%s\" のウィンドウは見つかりません"
+
+#, c-format
+msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
+msgstr "E243: 引数はサポートされません: \"-%s\"; OLE版を使用してください."
+
+msgid "E672: Unable to open window inside MDI application"
+msgstr "E672: MDIアプリの中ではウィンドウを開けません"
 
 msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr "Vim E458: 色指定が正しくないのでエントリを割り当てられません"
@@ -2564,6 +2537,7 @@ msgstr "%-5s: %s%*s (使用法: %s)"
 
 msgid ""
 "\n"
+"       a: Find assignments to this symbol\n"
 "       c: Find functions calling this function\n"
 "       d: Find functions called by this function\n"
 "       e: Find this egrep pattern\n"
@@ -2574,6 +2548,7 @@ msgid ""
 "       t: Find this text string\n"
 msgstr ""
 "\n"
+"       a: このシンボルに対する代入を探す\n"
 "       c: この関数を呼んでいる関数を探す\n"
 "       d: この関数から呼んでいる関数を探す\n"
 "       e: このegrepパターンを探す\n"
@@ -2701,19 +2676,6 @@ msgstr "範囲外の行番号です"
 msgid "not allowed in the Vim sandbox"
 msgstr "サンドボックスでは許されません"
 
-#, c-format
-msgid "E370: Could not load library %s"
-msgstr "E370: ライブラリ %s をロードできませんでした"
-
-msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"このコマンドは無効です, ごめんなさい: Perlライブラリをロードできませんでした."
-
-msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr ""
-"E299: サンドボックスでは Safe モジュールを使用しないPerlスクリプトは禁じられ"
-"ています"
-
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: このVimでは :py3 を使った後に :python を使えません"
 
@@ -2768,95 +2730,6 @@ msgstr "E272: 取り扱われなかった例外があります"
 #, c-format
 msgid "E273: unknown longjmp status %d"
 msgstr "E273: 未知のlongjmp状態: %d"
-
-msgid "Toggle implementation/definition"
-msgstr "実装と定義を切り替える"
-
-msgid "Show base class of"
-msgstr "次のクラスの基底を表示"
-
-msgid "Show overridden member function"
-msgstr "オーバーライドされたメンバ関数を表示"
-
-msgid "Retrieve from file"
-msgstr "ファイルから回復する"
-
-msgid "Retrieve from project"
-msgstr "プロジェクトから回復する"
-
-msgid "Retrieve from all projects"
-msgstr "全てのプロジェクトから回復する"
-
-msgid "Retrieve"
-msgstr "回復"
-
-msgid "Show source of"
-msgstr "次のソースを表示する"
-
-msgid "Find symbol"
-msgstr "見つけたシンボル"
-
-msgid "Browse class"
-msgstr "クラスを参照"
-
-msgid "Show class in hierarchy"
-msgstr "階層でクラスを表示"
-
-msgid "Show class in restricted hierarchy"
-msgstr "限定された階層でクラスを表示"
-
-msgid "Xref refers to"
-msgstr "Xref の参照先"
-
-msgid "Xref referred by"
-msgstr "Xref が参照される"
-
-msgid "Xref has a"
-msgstr "Xref が次のものをもっています"
-
-msgid "Xref used by"
-msgstr "Xref が使用される"
-
-msgid "Show docu of"
-msgstr "次の文章を表示"
-
-msgid "Generate docu for"
-msgstr "次の文章を生成"
-
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"SNiFF+に接続できません. 環境をチェックしてください(sniffemacs が $PATH になけ"
-"ればなりません).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: 読込中にエラーが発生しました. 切断しました"
-
-msgid "SNiFF+ is currently "
-msgstr "現在SNiFF+ の状態は「"
-
-msgid "not "
-msgstr "未"
-
-msgid "connected"
-msgstr "接続」です"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: 未知の SNiFF+ リクエストです: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: SNiFF+ への接続中のエラーです"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ に接続されていません"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: SNiFF+ バッファがありません"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: 書込み中にエラーが発生したので切断しました"
 
 msgid "invalid buffer number"
 msgstr "無効なバッファ番号です"
@@ -2944,6 +2817,14 @@ msgstr "E573: 無効なサーバーIDが使われました: %s"
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: VIM 実体の登録プロパティが不正です. 消去しました!"
 
+#, c-format
+msgid "E696: Missing comma in List: %s"
+msgstr "E696: リスト型にカンマがありません: %s"
+
+#, c-format
+msgid "E697: Missing end of List ']': %s"
+msgstr "E697: リスト型の最後に ']' がありません: %s"
+
 msgid "Unknown option argument"
 msgstr "未知のオプション引数です"
 
@@ -2969,11 +2850,11 @@ msgstr "%d 個のファイルが編集を控えています\n"
 msgid "netbeans is not supported with this GUI\n"
 msgstr "netbeans はこのGUIでは利用できません\n"
 
-msgid "This Vim was not compiled with the diff feature."
-msgstr "このVimにはdiff機能がありません(コンパイル時設定)."
-
 msgid "'-nb' cannot be used: not enabled at compile time\n"
 msgstr "'-nb' 使用不可能です: コンパイル時に無効にされています\n"
+
+msgid "This Vim was not compiled with the diff feature."
+msgstr "このVimにはdiff機能がありません(コンパイル時設定)."
 
 msgid "Attempt to open script file again: \""
 msgstr "スクリプトファイルを再び開いてみます: \""
@@ -2986,6 +2867,9 @@ msgstr "スクリプト出力用を開けません"
 
 msgid "Vim: Error: Failure to start gvim from NetBeans\n"
 msgstr "Vim: エラー: NetBeansからgvimをスタートできません\n"
+
+msgid "Vim: Error: This version of Vim does not run in a Cygwin terminal\n"
+msgstr "Vim: エラー: このバージョンのVimはCygwin端末では動作しません\n"
 
 msgid "Vim: Warning: Output is not to a terminal\n"
 msgstr "Vim: 警告: 端末への出力ではありません\n"
@@ -3150,6 +3034,9 @@ msgstr "-F\t\t\tペルシア語モードで起動する"
 
 msgid "-T <terminal>\tSet terminal type to <terminal>"
 msgstr "-T <terminal>\t端末を <terminal> に設定する"
+
+msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
+msgstr "--not-a-term\t\t入出力が端末でないとの警告をスキップする"
 
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <vimrc>\t\t.vimrcの代わりに <vimrc> を使う"
@@ -3821,15 +3708,13 @@ msgid ""
 "\n"
 "(1) Another program may be editing the same file.  If this is the case,\n"
 "    be careful not to end up with two different instances of the same\n"
-"    file when making changes."
+"    file when making changes.  Quit, or continue with caution.\n"
 msgstr ""
 "\n"
 "(1) 別のプログラムが同じファイルを編集しているかもしれません.\n"
 "    この場合には, 変更をしてしまうと1つのファイルに対して異なる2つの\n"
-"    インスタンスができてしまうので, そうしないように気をつけてください."
-
-msgid "  Quit, or continue with caution.\n"
-msgstr "    終了するか, 注意しながら続けてください.\n"
+"    インスタンスができてしまうので, そうしないように気をつけてください.\n"
+"    終了するか, 注意しながら続けてください.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
 msgstr "(2) このファイルの編集セッションがクラッシュした.\n"
@@ -4275,25 +4160,27 @@ msgid "%ld Cols; "
 msgstr "%ld 列; "
 
 #, c-format
-msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
-msgstr "選択 %s%ld / %ld 行; %ld / %ld 単語; %ld / %ld バイト"
+msgid "Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Bytes"
+msgstr "選択 %s%ld / %ld 行; %lld / %lld 単語; %lld / %lld バイト"
 
 #, c-format
 msgid ""
-"Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
-"Bytes"
-msgstr "選択 %s%ld / %ld 行; %ld / %ld 単語; %ld / %ld 文字; %ld / %ld バイト"
-
-#, c-format
-msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
-msgstr "列 %s / %s; 行 %ld of %ld; 単語 %ld / %ld; バイト %ld / %ld"
-
-#, c-format
-msgid ""
-"Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
-"%ld"
+"Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of "
+"%lld Bytes"
 msgstr ""
-"列 %s / %s; 行 %ld / %ld; 単語 %ld / %ld; 文字 %ld / %ld; バイト %ld of %ld"
+"選択 %s%ld / %ld 行; %lld / %lld 単語; %lld / %lld 文字; %lld / %lld バイト"
+
+#, c-format
+msgid "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Byte %lld of %lld"
+msgstr "列 %s / %s; 行 %ld of %ld; 単語 %lld / %lld; バイト %lld / %lld"
+
+#, c-format
+msgid ""
+"Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte "
+"%lld of %lld"
+msgstr ""
+"列 %s / %s; 行 %ld / %ld; 単語 %lld / %lld; 文字 %lld / %lld; バイト %lld of "
+"%lld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -4526,7 +4413,7 @@ msgid "Message"
 msgstr "メッセージ"
 
 msgid "'columns' is not 80, cannot execute external commands"
-msgstr "'columns' が80ではないため, 外部コマンドを実行できません"
+msgstr "'columns' が 80 ではないため、外部コマンドを実行できません"
 
 msgid "E237: Printer selection failed"
 msgstr "E237: プリンタの選択に失敗しました"
@@ -4550,6 +4437,10 @@ msgstr "印刷しています: '%s'"
 #, c-format
 msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
 msgstr "E244: 文字セット名 \"%s\" は不正です (フォント名 \"%s\")"
+
+#, c-format
+msgid "E244: Illegal quality name \"%s\" in font name \"%s\""
+msgstr "E244: 品質名 \"%s\" は不正です (フォント名 \"%s\")"
 
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
@@ -4596,13 +4487,6 @@ msgstr "セキュリティコンテキスト %s を %s から取得できません. 削除します!"
 
 msgid ""
 "\n"
-"Cannot execute shell "
-msgstr ""
-"\n"
-"シェルを実行できません "
-
-msgid ""
-"\n"
 "Cannot execute shell sh\n"
 msgstr ""
 "\n"
@@ -4628,6 +4512,13 @@ msgid ""
 msgstr ""
 "\n"
 "fork できません\n"
+
+msgid ""
+"\n"
+"Cannot execute shell "
+msgstr ""
+"\n"
+"シェルを実行できません "
 
 msgid ""
 "\n"
@@ -4672,10 +4563,6 @@ msgid "Could not fix up function pointers to the DLL!"
 msgstr "DLLから関数ポインタを取得できませんでした"
 
 #, c-format
-msgid "shell returned %d"
-msgstr "シェルがコード %d で終了しました"
-
-#, c-format
 msgid "Vim: Caught %s event\n"
 msgstr "Vim: イベント %s を検知\n"
 
@@ -4704,6 +4591,10 @@ msgid "Vim Warning"
 msgstr "Vimの警告"
 
 #, c-format
+msgid "shell returned %d"
+msgstr "シェルがコード %d で終了しました"
+
+#, c-format
 msgid "E372: Too many %%%c in format string"
 msgstr "E372: フォーマット文字列に %%%c が多過ぎます"
 
@@ -4726,6 +4617,7 @@ msgstr "E376: フォーマット文字列の前置に無効な %%%c があります"
 msgid "E377: Invalid %%%c in format string"
 msgstr "E377: フォーマット文字列に無効な %%%c があります"
 
+#. nothing found
 msgid "E378: 'errorformat' contains no pattern"
 msgstr "E378: 'errorformat' にパターンが指定されていません"
 
@@ -4735,6 +4627,15 @@ msgstr "E379: ディレクトリ名が無いか空です"
 msgid "E553: No more items"
 msgstr "E553: 要素がもうありません"
 
+msgid "E924: Current window was closed"
+msgstr "E924: 現在のウィンドウが閉じられました"
+
+msgid "E925: Current quickfix was changed"
+msgstr "E925: 現在の quickfix が変更されました"
+
+msgid "E926: Current location list was changed"
+msgstr "E926: 現在のロケーションリストが変更されました"
+
 #, c-format
 msgid "(%d of %d)%s%s: "
 msgstr "(%d of %d)%s%s: "
@@ -4742,15 +4643,18 @@ msgstr "(%d of %d)%s%s: "
 msgid " (line deleted)"
 msgstr " (行が削除されました)"
 
+#, c-format
+msgid "%serror list %d of %d; %d errors "
+msgstr "%s エラー一覧 %d of %d; %d 個エラー"
+
 msgid "E380: At bottom of quickfix stack"
 msgstr "E380: quickfix スタックの末尾です"
 
 msgid "E381: At top of quickfix stack"
 msgstr "E381: quickfix スタックの先頭です"
 
-#, c-format
-msgid "error list %d of %d; %d errors"
-msgstr "エラー一覧 %d of %d; %d 個エラー"
+msgid "No entries"
+msgstr "エントリがありません"
 
 msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: 'buftype' オプションが設定されているので書込みません"
@@ -4986,9 +4890,6 @@ msgstr " ヘブライ"
 msgid " Arabic"
 msgstr " アラビア"
 
-msgid " (lang)"
-msgstr " (言語)"
-
 msgid " (paste)"
 msgstr " (貼り付け)"
 
@@ -5083,8 +4984,49 @@ msgstr ""
 "# 最後の %s検索パターン:\n"
 "~"
 
-msgid "E759: Format error in spell file"
-msgstr "E759: スペルファイルの書式エラーです"
+msgid "E756: Spell checking is not enabled"
+msgstr "E756: スペルチェックは無効化されています"
+
+#, c-format
+msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
+msgstr ""
+"警告: 単語リスト \"%s_%s.spl\" および \"%s_ascii.spl\" は見つかりません"
+
+#, c-format
+msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
+msgstr ""
+"警告: 単語リスト \"%s.%s.spl\" および \"%s.ascii.spl\" は見つかりません"
+
+msgid "E797: SpellFileMissing autocommand deleted buffer"
+msgstr "E797: autocommand の SpellFileMissing がバッファを削除しました"
+
+#, c-format
+msgid "Warning: region %s not supported"
+msgstr "警告9: %s という範囲はサポートされていません"
+
+msgid "Sorry, no suggestions"
+msgstr "残念ですが, 修正候補はありません"
+
+#, c-format
+msgid "Sorry, only %ld suggestions"
+msgstr "残念ですが, 修正候補は %ld 個しかありません"
+
+#. for when 'cmdheight' > 1
+#. avoid more prompt
+#, c-format
+msgid "Change \"%.*s\" to:"
+msgstr "\"%.*s\" を次へ変換:"
+
+#, c-format
+msgid " < \"%.*s\""
+msgstr " < \"%.*s\""
+
+msgid "E752: No previous spell replacement"
+msgstr "E752: スペル置換がまだ実行されていません"
+
+#, c-format
+msgid "E753: Not found: %s"
+msgstr "E753: 見つかりません: %s"
 
 msgid "E758: Truncated spell file"
 msgstr "E758: スペルファイルが切取られているようです"
@@ -5107,19 +5049,6 @@ msgstr "E762: FOL, LOW もしくは UPP の文字が範囲外です"
 msgid "Compressing word tree..."
 msgstr "単語ツリーを圧縮しています..."
 
-msgid "E756: Spell checking is not enabled"
-msgstr "E756: スペルチェックは無効化されています"
-
-#, c-format
-msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
-msgstr ""
-"警告: 単語リスト \"%s_%s.spl\" および \"%s_ascii.spl\" は見つかりません"
-
-#, c-format
-msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
-msgstr ""
-"警告: 単語リスト \"%s.%s.spl\" および \"%s.ascii.spl\" は見つかりません"
-
 #, c-format
 msgid "Reading spell file \"%s\""
 msgstr "スペルファイル \"%s\" を読込中"
@@ -5137,8 +5066,24 @@ msgid "E770: Unsupported section in spell file"
 msgstr "E770: スペルファイルにサポートしていないセクションがあります"
 
 #, c-format
-msgid "Warning: region %s not supported"
-msgstr "警告9: %s という範囲はサポートされていません"
+msgid "E778: This does not look like a .sug file: %s"
+msgstr "E778: .sug ファイルではないようです: %s"
+
+#, c-format
+msgid "E779: Old .sug file, needs to be updated: %s"
+msgstr "E779: 古い .sug ファイルなので, アップデートしてください: %s"
+
+#, c-format
+msgid "E780: .sug file is for newer version of Vim: %s"
+msgstr "E780: より新しいバージョンの Vim 用の .sug ファイルです: %s"
+
+#, c-format
+msgid "E781: .sug file doesn't match .spl file: %s"
+msgstr "E781: .sug ファイルが .spl ファイルと一致しません: %s"
+
+#, c-format
+msgid "E782: error while reading .sug file: %s"
+msgstr "E782: .sug ファイルの読込中にエラーが発生しました: %s"
 
 #, c-format
 msgid "Reading affix file %s ..."
@@ -5408,50 +5353,6 @@ msgstr "単語 '%.*s' が %s へ追加されました"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: 単語の文字がスペルファイルと異なります"
-
-msgid "Sorry, no suggestions"
-msgstr "残念ですが, 修正候補はありません"
-
-#, c-format
-msgid "Sorry, only %ld suggestions"
-msgstr "残念ですが, 修正候補は %ld 個しかありません"
-
-#. for when 'cmdheight' > 1
-#. avoid more prompt
-#, c-format
-msgid "Change \"%.*s\" to:"
-msgstr "\"%.*s\" を次へ変換:"
-
-#, c-format
-msgid " < \"%.*s\""
-msgstr " < \"%.*s\""
-
-msgid "E752: No previous spell replacement"
-msgstr "E752: スペル置換がまだ実行されていません"
-
-#, c-format
-msgid "E753: Not found: %s"
-msgstr "E753: 見つかりません: %s"
-
-#, c-format
-msgid "E778: This does not look like a .sug file: %s"
-msgstr "E778: .sug ファイルではないようです: %s"
-
-#, c-format
-msgid "E779: Old .sug file, needs to be updated: %s"
-msgstr "E779: 古い .sug ファイルなので, アップデートしてください: %s"
-
-#, c-format
-msgid "E780: .sug file is for newer version of Vim: %s"
-msgstr "E780: より新しいバージョンの Vim 用の .sug ファイルです: %s"
-
-#, c-format
-msgid "E781: .sug file doesn't match .spl file: %s"
-msgstr "E781: .sug ファイルが .spl ファイルと一致しません: %s"
-
-#, c-format
-msgid "E782: error while reading .sug file: %s"
-msgstr "E782: .sug ファイルの読込中にエラーが発生しました: %s"
 
 #. This should have been checked when generating the .spl
 #. * file.
@@ -5789,6 +5690,9 @@ msgstr ""
 "\n"
 "--- 端末キー ---"
 
+msgid "Cannot open $VIMRUNTIME/rgb.txt"
+msgstr "$VIMRUNTIME/rgb.txtを開けません"
+
 msgid "new shell started\n"
 msgstr "新しいシェルを起動します\n"
 
@@ -5936,6 +5840,130 @@ msgstr "E439: アンドゥリストが壊れています"
 msgid "E440: undo line missing"
 msgstr "E440: アンドゥ行がありません"
 
+#, c-format
+msgid "E122: Function %s already exists, add ! to replace it"
+msgstr "E122: 関数 %s は定義済です, 再定義するには ! を追加してください"
+
+msgid "E717: Dictionary entry already exists"
+msgstr "E717: 辞書型内にエントリが既に存在します"
+
+msgid "E718: Funcref required"
+msgstr "E718: 関数参照型が要求されます"
+
+#, c-format
+msgid "E130: Unknown function: %s"
+msgstr "E130: 未知の関数です: %s"
+
+#, c-format
+msgid "E125: Illegal argument: %s"
+msgstr "E125: 不正な引数です: %s"
+
+#, c-format
+msgid "E853: Duplicate argument name: %s"
+msgstr "E853: 引数名が重複しています: %s"
+
+#, c-format
+msgid "E740: Too many arguments for function %s"
+msgstr "E740: 関数の引数が多過ぎます: %s"
+
+#, c-format
+msgid "E116: Invalid arguments for function %s"
+msgstr "E116: 関数の無効な引数です: %s"
+
+msgid "E132: Function call depth is higher than 'maxfuncdepth'"
+msgstr "E132: 関数呼出の入れ子数が 'maxfuncdepth' を超えました"
+
+#, c-format
+msgid "calling %s"
+msgstr "%s を実行中です"
+
+#, c-format
+msgid "%s aborted"
+msgstr "%s が中断されました"
+
+#, c-format
+msgid "%s returning #%ld"
+msgstr "%s が #%ld を返しました"
+
+#, c-format
+msgid "%s returning %s"
+msgstr "%s が %s を返しました"
+
+msgid "E699: Too many arguments"
+msgstr "E699: 引数が多過ぎます"
+
+#, c-format
+msgid "E117: Unknown function: %s"
+msgstr "E117: 未知の関数です: %s"
+
+#, c-format
+msgid "E933: Function was deleted: %s"
+msgstr "E933: 関数は削除されました: %s"
+
+#, c-format
+msgid "E119: Not enough arguments for function: %s"
+msgstr "E119: 関数の引数が足りません: %s"
+
+#, c-format
+msgid "E120: Using <SID> not in a script context: %s"
+msgstr "E120: スクリプト以外で<SID>が使われました: %s"
+
+#, c-format
+msgid "E725: Calling dict function without Dictionary: %s"
+msgstr "E725: 辞書用関数が呼ばれましたが辞書がありません: %s"
+
+msgid "E129: Function name required"
+msgstr "E129: 関数名が要求されます"
+
+#, c-format
+msgid "E128: Function name must start with a capital or \"s:\": %s"
+msgstr "E128: 関数名は大文字か \"s:\" で始まらなければなりません: %s"
+
+#, c-format
+msgid "E884: Function name cannot contain a colon: %s"
+msgstr "E884: 関数名にはコロンは含められません: %s"
+
+#, c-format
+msgid "E123: Undefined function: %s"
+msgstr "E123: 未定義の関数です: %s"
+
+#, c-format
+msgid "E124: Missing '(': %s"
+msgstr "E124: '(' がありません: %s"
+
+msgid "E862: Cannot use g: here"
+msgstr "E862: ここでは g: は使えません"
+
+#, c-format
+msgid "E932: Closure function should not be at top level: %s"
+msgstr "E932: クロージャー関数はトップレベルに記述できません: %s"
+
+msgid "E126: Missing :endfunction"
+msgstr "E126: :endfunction がありません"
+
+#, c-format
+msgid "E707: Function name conflicts with variable: %s"
+msgstr "E707: 関数名が変数名と衝突します: %s"
+
+#, c-format
+msgid "E127: Cannot redefine function %s: It is in use"
+msgstr "E127: 関数 %s を再定義できません: 使用中です"
+
+#, c-format
+msgid "E746: Function name does not match script file name: %s"
+msgstr "E746: 関数名がスクリプトのファイル名と一致しません: %s"
+
+#, c-format
+msgid "E131: Cannot delete function %s: It is in use"
+msgstr "E131: 関数 %s を削除できません: 使用中です"
+
+msgid "E133: :return not inside a function"
+msgstr "E133: 関数外に :return がありました"
+
+#, c-format
+msgid "E107: Missing parentheses: %s"
+msgstr "E107: カッコ '(' がありません: %s"
+
 #. Only MS VC 4.1 and earlier can do Win32s
 msgid ""
 "\n"
@@ -5958,9 +5986,6 @@ msgstr ""
 "\n"
 "MS-Windows 32 ビット GUI 版"
 
-msgid " in Win32s mode"
-msgstr " in Win32s モード"
-
 msgid " with OLE support"
 msgstr " with OLE サポート"
 
@@ -5977,27 +6002,6 @@ msgid ""
 msgstr ""
 "\n"
 "MS-Windows 32 ビット コンソール 版"
-
-msgid ""
-"\n"
-"MS-Windows 16-bit version"
-msgstr ""
-"\n"
-"MS-Windows 16 ビット 版"
-
-msgid ""
-"\n"
-"32-bit MS-DOS version"
-msgstr ""
-"\n"
-"32 ビット MS-DOS 版"
-
-msgid ""
-"\n"
-"16-bit MS-DOS version"
-msgstr ""
-"\n"
-"16 ビット MS-DOS 版"
 
 msgid ""
 "\n"
@@ -6092,6 +6096,9 @@ msgstr ""
 msgid "without GUI."
 msgstr "without GUI."
 
+msgid "with GTK3 GUI."
+msgstr "with GTK3 GUI."
+
 msgid "with GTK2-GNOME GUI."
 msgstr "with GTK2-GNOME GUI."
 
@@ -6155,6 +6162,9 @@ msgstr "  第2ユーザー gvimrc: \""
 msgid "3rd user gvimrc file: \""
 msgstr "  第3ユーザー gvimrc: \""
 
+msgid "       defaults file: \""
+msgstr "  デフォルトファイル: \""
+
 msgid "    system menu file: \""
 msgstr "    システムメニュー: \""
 
@@ -6200,8 +6210,8 @@ msgstr "終了するには           :q<Enter>              "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "オンラインヘルプは     :help<Enter> か <F1>   "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "バージョン情報は       :help version7<Enter>  "
+msgid "type  :help version8<Enter>   for version info"
+msgstr "バージョン情報は       :help version8<Enter>  "
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi互換モードで動作中"
@@ -6246,10 +6256,10 @@ msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "詳細はメニューの ヘルプ->スポンサー/登録 を参照して下さい"
 
 msgid "WARNING: Windows 95/98/ME detected"
-msgstr "   警告: Windows 95/98/Me を検出  "
+msgstr "警告: Windows 95/98/ME を検出しました"
 
 msgid "type  :help windows95<Enter>  for info on this"
-msgstr " 詳細な情報は          :help windows95<Enter> "
+msgstr "詳細な情報は            :help windows95<Enter>"
 
 msgid "Already only one window"
 msgstr "既にウィンドウは1つしかありません"
@@ -6282,8 +6292,37 @@ msgstr "E446: カーソルの下にファイル名がありません"
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: pathには \"%s\" というファイルがありません"
 
+#, c-format
+msgid "E799: Invalid ID: %ld (must be greater than or equal to 1)"
+msgstr "E799: 無効な ID: %ld (1 以上でなければなりません)"
+
+#, c-format
+msgid "E801: ID already taken: %ld"
+msgstr "E801: ID はすでに利用中です: %ld"
+
 msgid "List or number required"
 msgstr "リストか数値が必要です"
+
+#, c-format
+msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"
+msgstr "E802: 無効な ID: %ld (1 以上でなければなりません)"
+
+#, c-format
+msgid "E803: ID not found: %ld"
+msgstr "E803: ID はありません: %ld"
+
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: ライブラリ %s をロードできませんでした"
+
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"このコマンドは無効です, ごめんなさい: Perlライブラリをロードできませんでした."
+
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr ""
+"E299: サンドボックスでは Safe モジュールを使用しないPerlスクリプトは禁じられ"
+"ています"
 
 msgid "Edit with &multiple Vims"
 msgstr "複数のVimで編集する (&M)"
@@ -6561,6 +6600,28 @@ msgstr "E794: サンドボックスでは変数 \"%s\" に値を設定できません"
 msgid "E713: Cannot use empty key for Dictionary"
 msgstr "E713: 辞書型に空のキーを使うことはできません"
 
+msgid "E715: Dictionary required"
+msgstr "E715: 辞書型が必要です"
+
+#, c-format
+msgid "E684: list index out of range: %ld"
+msgstr "E684: リストのインデックスが範囲外です: %ld"
+
+#, c-format
+msgid "E118: Too many arguments for function: %s"
+msgstr "E118: 関数の引数が多過ぎます: %s"
+
+#, c-format
+msgid "E716: Key not present in Dictionary: %s"
+msgstr "E716: 辞書型にキーが存在しません: %s"
+
+msgid "E714: List required"
+msgstr "E714: リスト型が必要です"
+
+#, c-format
+msgid "E712: Argument of %s must be a List or Dictionary"
+msgstr "E712: %s の引数はリスト型または辞書型でなければなりません"
+
 msgid "E47: Error while reading errorfile"
 msgstr "E47: エラーファイルの読込中にエラーが発生しました"
 
@@ -6660,6 +6721,10 @@ msgstr "E764: オプション '%s' は設定されていません"
 msgid "E850: Invalid register name"
 msgstr "E850: 無効なレジスタ名です"
 
+#, c-format
+msgid "E919: Directory not found in '%s': \"%s\""
+msgstr "E919: ディレクトリが '%s' の中にありません: \"%s\""
+
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "上まで検索したので下に戻ります"
 
@@ -6731,11 +6796,11 @@ msgstr "辞書の変更に失敗しました"
 
 #, c-format
 msgid "expected 3-tuple as imp.find_module() result, but got %s"
-msgstr "imp.find_module() が %s を返しました (期待値: 2 要素のタプル)"
+msgstr "imp.find_module() が %s を返しました (期待値: 3 要素のタプル)"
 
 #, c-format
 msgid "expected 3-tuple as imp.find_module() result, but got tuple of size %d"
-msgstr "impl.find_module() が %d 要素のタプルを返しました (期待値: 2)"
+msgstr "imp.find_module() が %d 要素のタプルを返しました (期待値: 3)"
 
 msgid "internal error: imp.find_module returned tuple with NULL"
 msgstr "内部エラー: imp.find_module が NULL を含むタプルを返しました"
@@ -6805,9 +6870,6 @@ msgstr "無名関数 %s は存在しません"
 #, c-format
 msgid "function %s does not exist"
 msgstr "関数 %s がありません"
-
-msgid "function constructor does not accept keyword arguments"
-msgstr "関数のコンストラクタはキーワード引数を受け付けません"
 
 #, c-format
 msgid "failed to run function %s"
@@ -6894,6 +6956,10 @@ msgstr "E859: 返されたpythonオブジェクトをvimの値に変換できませんでした"
 #, c-format
 msgid "unable to convert %s to vim dictionary"
 msgstr "%s vimの辞書型に変換できません"
+
+#, c-format
+msgid "unable to convert %s to vim list"
+msgstr "%s をvimのリストに変換できません"
 
 #, c-format
 msgid "unable to convert %s to vim structure"

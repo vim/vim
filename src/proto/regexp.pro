@@ -7,7 +7,7 @@ void free_regexp_stuff(void);
 reg_extmatch_T *ref_extmatch(reg_extmatch_T *em);
 void unref_extmatch(reg_extmatch_T *em);
 char_u *regtilde(char_u *source, int magic);
-int vim_regsub(regmatch_T *rmp, char_u *source, char_u *dest, int copy, int magic, int backslash);
+int vim_regsub(regmatch_T *rmp, char_u *source, typval_T *expr, char_u *dest, int copy, int magic, int backslash);
 int vim_regsub_multi(regmmatch_T *rmp, linenr_T lnum, char_u *source, char_u *dest, int copy, int magic, int backslash);
 char_u *reg_submatch(int no);
 list_T *reg_submatch_list(int no);

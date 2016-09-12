@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.4.  Last change: 2016 Mar 19
+*quickfix.txt*  For Vim version 8.0.  Last change: 2016 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -35,11 +35,13 @@ positions in files.  For example, |:vimgrep| finds pattern matches.  You can
 use the positions in a script with the |getqflist()| function.  Thus you can
 do a lot more than the edit/compile/fix cycle!
 
-If you are using Manx's Aztec C compiler on the Amiga look here for how to use
-it with Vim: |quickfix-manx|.  If you are using another compiler you should
-save the error messages in a file and start Vim with "vim -q filename".  An
-easy way to do this is with the |:make| command (see below).  The
-'errorformat' option should be set to match the error messages from your
+If you have the error messages in a file you can start Vim with: >
+	vim -q filename
+
+From inside Vim an easy way to run a command and handle the output is with the
+|:make| command (see below).
+
+The 'errorformat' option should be set to match the error messages from your
 compiler (see |errorformat| below).
 
 						*location-list* *E776*
@@ -49,8 +51,8 @@ have a separate location list.  A location list can be associated with only
 one window.  The location list is independent of the quickfix list.
 
 When a window with a location list is split, the new window gets a copy of the
-location list.  When there are no references to a location list, the location
-list is destroyed.
+location list.  When there are no longer any references to a location list,
+the location list is destroyed.
 
 The following quickfix commands can be used.  The location list commands are
 similar to the quickfix commands, replacing the 'c' prefix in the quickfix
@@ -59,6 +61,10 @@ command with 'l'.
 							*E924*
 If the current window was closed by an |autocommand| while processing a
 location list command, it will be aborted.
+
+							*E925* *E926*
+If the current quickfix or location list was changed by an |autocommand| while
+processing a quickfix or location list command, it will be aborted.
 
 							*:cc*
 :cc[!] [nr]		Display error [nr].  If [nr] is omitted, the same
@@ -266,11 +272,24 @@ location list command, it will be aborted.
 			The 'switchbuf' settings are respected when jumping
 			to a buffer.
 
+:cl[ist] +{count}	List the current and next {count} valid errors.  This
+			is similar to ":clist from from+count", where "from"
+			is the current error position.
+
 :cl[ist]! [from] [, [to]]
 			List all errors.
 
-							*:lli* *:llist*
-:lli[st] [from] [, [to]]
+:cl[ist]! +{count}	List the current and next {count} error lines.  This
+                        is useful to see unrecognized lines after the current
+			one.  For example, if ":clist" shows:
+        8384 testje.java:252: error: cannot find symbol ~
+                        Then using ":cl! +3" shows the reason:
+        8384 testje.java:252: error: cannot find symbol ~
+        8385:   ZexitCode = Fmainx(); ~
+        8386:               ^ ~
+        8387:   symbol:   method Fmainx() ~
+
+:lli[st] [from] [, [to]]				*:lli* *:llist*
 			Same as ":clist", except the location list for the
 			current window is used instead of the quickfix list.
 
@@ -314,7 +333,7 @@ EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
 				etc.
 <			When the current file can't be |abandon|ed and the [!]
 			is not present, the command fails.
-			When an error is detected excecution stops.
+			When an error is detected execution stops.
 			The last buffer (or where an error occurred) becomes
 			the current buffer.
 			{cmd} can contain '|' to concatenate several commands.
@@ -418,6 +437,17 @@ EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
 :lw[indow] [height]	Same as ":cwindow", except use the window showing the
 			location list for the current window.
 
+							*:cbo* *:cbottom*
+:cbo[ttom]		Put the cursor in the last line of the quickfix window
+			and scroll to make it visible.  This is useful for
+			when errors are added by an asynchronous callback.
+			Only call it once in a while if there are many
+			updates to avoid a lot of redrawing.
+
+							*:lbo* *:lbottom*
+:lbo[ttom]		Same as ":cbottom", except use the window showing the
+			location list for the current window.
+
 Normally the quickfix window is at the bottom of the screen.  If there are
 vertical splits, it's at the bottom of the rightmost column of windows.  To
 make it always occupy the full width: >
@@ -452,6 +482,9 @@ substitute string of the ":s" command, which is used to evaluate an
 expression.
 The BufWinEnter event is also triggered, again using "quickfix" for the buffer
 name.
+
+Note: When adding to an existing quickfix list the autocommand are not
+triggered.
 
 Note: Making changes in the quickfix window has no effect on the list of
 errors.  'modifiable' is off to avoid making changes.  If you delete or insert
@@ -497,7 +530,7 @@ lists.  They set one of the existing error lists as the current one.
 			list, an error message is given.
 
 						*:lolder* *:lol*
-:lol[der] [count]	Same as ":colder", except use the location list for
+:lol[der] [count]	Same as `:colder`, except use the location list for
 			the current window instead of the quickfix list.
 
 						*:cnewer* *:cnew* *E381*
@@ -506,8 +539,19 @@ lists.  They set one of the existing error lists as the current one.
 			list, an error message is given.
 
 						*:lnewer* *:lnew*
-:lnew[er] [count]	Same as ":cnewer", except use the location list for
+:lnew[er] [count]	Same as `:cnewer`, except use the location list for
 			the current window instead of the quickfix list.
+
+						*:chistory* *:chi*
+:chi[story]		Show the list of error lists.  The current list is
+			marked with ">".  The output looks like:
+				  error list 1 of 3; 43 errors ~
+				> error list 2 of 3; 0 errors ~
+				  error list 3 of 3; 15 errors ~
+
+						*:lhistory* *:lhi*
+:lhi[story]		Show the list of location lists, otherwise like
+			`:chistory`.
 
 When adding a new error list, it becomes the current list.
 

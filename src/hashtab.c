@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -28,8 +28,6 @@
  */
 
 #include "vim.h"
-
-#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
 
 #if 0
 # define HT_DEBUG	/* extra checks for table consistency  and statistics */
@@ -72,6 +70,7 @@ hash_init(hashtab_T *ht)
     ht->ht_mask = HT_INIT_SIZE - 1;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
 /*
  * Free the array of a hash table.  Does not free the items it contains!
  * If "ht" is not freed then you should call hash_init() next!
@@ -105,6 +104,7 @@ hash_clear_all(hashtab_T *ht, int off)
     }
     hash_clear(ht);
 }
+#endif
 
 /*
  * Find "key" in hashtable "ht".  "key" must not be NULL.
@@ -468,8 +468,7 @@ hash_hash(char_u *key)
     char_u	*p;
 
     if ((hash = *key) == 0)
-	return (hash_T)0;	/* Empty keys are not allowed, but we don't
-				   want to crash if we get one. */
+	return (hash_T)0;
     p = key + 1;
 
     /* A simplistic algorithm that appears to do very well.
@@ -479,5 +478,3 @@ hash_hash(char_u *key)
 
     return hash;
 }
-
-#endif

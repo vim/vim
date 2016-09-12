@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -890,12 +890,7 @@ win_col_off(win_T *wp)
 	    + wp->w_p_fdc
 #endif
 #ifdef FEAT_SIGNS
-	    + (
-# ifdef FEAT_NETBEANS_INTG
-		/* show glyph gutter in netbeans */
-		wp->w_buffer->b_has_sign_column ||
-# endif
-		wp->w_buffer->b_signlist != NULL ? 2 : 0)
+	    + (signcolumn_on(wp) ? 2 : 0)
 #endif
 	   );
 }
@@ -2484,6 +2479,7 @@ onepage(int dir, long count)
     foldAdjustCursor();
 #endif
     cursor_correct();
+    check_cursor_col();
     if (retval == OK)
 	beginline(BL_SOL | BL_FIX);
     curwin->w_valid &= ~(VALID_WCOL|VALID_WROW|VALID_VIRTCOL);
@@ -2820,7 +2816,7 @@ do_check_cursorbind(void)
      * loop through the cursorbound windows
      */
     VIsual_select = VIsual_active = 0;
-    for (curwin = firstwin; curwin; curwin = curwin->w_next)
+    FOR_ALL_WINDOWS(curwin)
     {
 	curbuf = curwin->w_buffer;
 	/* skip original window  and windows with 'noscrollbind' */

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.4.  Last change: 2016 Mar 08
+*change.txt*    For Vim version 8.0.  Last change: 2016 Sep 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -852,7 +852,7 @@ Examples: >
   :s/abcde/abc^Mde/		 modifies "abcde"    to "abc", "de" (two lines)
   :s/$/\^M/			 modifies "abcde"    to "abcde^M"
   :s/\w\+/\u\0/g		 modifies "bla bla"  to "Bla Bla"
-  :s/\w\+/\L\u/g		 modifies "BLA bla"  to "Bla Bla"
+  :s/\w\+/\L\u\0/g		 modifies "BLA bla"  to "Bla Bla"
 
 Note: "\L\u" can be used to capitalize the first letter of a word.  This is
 not compatible with Vi and older versions of Vim, where the "\u" would cancel
@@ -872,6 +872,7 @@ The numbering of "\1", "\2" etc. is done based on which "\(" comes first in
 the pattern (going left to right).  When a parentheses group matches several
 times, the last one will be used for "\1", "\2", etc.  Example: >
   :s/\(\(a[a-d] \)*\)/\2/      modifies "aa ab x" to "ab x"
+The "\2" is for "\(a[a-d] \)".  At first it matches "aa ", secondly "ab ".
 
 When using parentheses in combination with '|', like in \([ab]\)\|\([cd]\),
 either the first or second pattern in parentheses did not match, so either
@@ -1205,7 +1206,7 @@ name '"'.  This means you have to type two double quotes.  Writing to the ""
 register writes to register "0.
 {Vi: register contents are lost when changing files, no '"'}
 
-2. Numbered registers "0 to "9		*quote_number* *quote0*	*quote1*
+2. Numbered registers "0 to "9		*quote_number* *quote0* *quote1*
 					*quote2* *quote3* *quote4* *quote9*
 Vim fills these registers with text from yank and delete commands.
    Numbered register 0 contains the text from the most recent yank command,

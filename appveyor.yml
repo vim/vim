@@ -26,9 +26,10 @@ build_script:
 test_script:
   - cd src/testdir
     # Testing with MSVC gvim
+  - path C:\Python35-x64;%PATH%
   - nmake -f Make_dos.mak VIMPROG=..\gvim
   - nmake -f Make_dos.mak clean
     # Testing with MingW console version
   - nmake -f Make_dos.mak VIMPROG=..\vim
 
-# vim: sw=2 sts=2 et ts=2 sr
+# vim: sw=2 sts=2 et ts=8 sr

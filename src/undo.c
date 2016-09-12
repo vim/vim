@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -534,7 +534,7 @@ u_savecommon(
 
 	uhp->uh_seq = ++curbuf->b_u_seq_last;
 	curbuf->b_u_seq_cur = uhp->uh_seq;
-	uhp->uh_time = time(NULL);
+	uhp->uh_time = vim_time();
 	uhp->uh_save_nr = 0;
 	curbuf->b_u_time_cur = uhp->uh_time + 1;
 
@@ -641,7 +641,7 @@ u_savecommon(
 	u_getbot();
     }
 
-#if !defined(UNIX) && !defined(WIN32) && !defined(__EMX__)
+#if !defined(UNIX) && !defined(WIN32)
 	/*
 	 * With Amiga we can't handle big undo's, because
 	 * then u_alloc_line would have to allocate a block larger than 32K
@@ -778,7 +778,7 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
     char_u	*undo_file_name = NULL;
     int		dir_len;
     char_u	*p;
-    struct stat st;
+    stat_T	st;
     char_u	*ffname = buf_ffname;
 #ifdef HAVE_READLINK
     char_u	fname_buf[MAXPATHL];
@@ -1522,8 +1522,8 @@ u_write_undo(
     int		write_ok = FALSE;
 #ifdef UNIX
     int		st_old_valid = FALSE;
-    struct stat	st_old;
-    struct stat	st_new;
+    stat_T	st_old;
+    stat_T	st_new;
 #endif
     bufinfo_T	bi;
 
@@ -1804,8 +1804,8 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name)
     int		*uhp_table_used;
 #endif
 #ifdef UNIX
-    struct stat	st_orig;
-    struct stat	st_undo;
+    stat_T	st_orig;
+    stat_T	st_undo;
 #endif
     bufinfo_T	bi;
 
@@ -2350,7 +2350,7 @@ undo_time(
 	else
 	{
 	    if (dosec)
-		closest = (long)(time(NULL) - starttime + 1);
+		closest = (long)(vim_time() - starttime + 1);
 	    else if (dofile)
 		closest = curbuf->b_u_save_nr_last + 2;
 	    else
@@ -3104,10 +3104,10 @@ u_add_time(char_u *buf, size_t buflen, time_t tt)
 #ifdef HAVE_STRFTIME
     struct tm	*curtime;
 
-    if (time(NULL) - tt >= 100)
+    if (vim_time() - tt >= 100)
     {
 	curtime = localtime(&tt);
-	if (time(NULL) - tt < (60L * 60L * 12L))
+	if (vim_time() - tt < (60L * 60L * 12L))
 	    /* within 12 hours */
 	    (void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
 	else
@@ -3117,7 +3117,7 @@ u_add_time(char_u *buf, size_t buflen, time_t tt)
     else
 #endif
 	vim_snprintf((char *)buf, buflen, _("%ld seconds ago"),
-						     (long)(time(NULL) - tt));
+						      (long)(vim_time() - tt));
 }
 
 /*

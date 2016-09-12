@@ -398,14 +398,15 @@ lua_link_init(char *libname, int verbose)
     }
     return OK;
 }
+#endif /* DYNAMIC_LUA */
 
+#if defined(DYNAMIC_LUA) || defined(PROTO)
     int
 lua_enabled(int verbose)
 {
     return lua_link_init((char *)p_luadll, verbose) == OK;
 }
-
-#endif /* DYNAMIC_LUA */
+#endif
 
 #if LUA_VERSION_NUM > 501
     static int
@@ -1402,13 +1403,13 @@ luaV_buffer(lua_State *L)
 	if (lua_isnumber(L, 1)) /* by number? */
 	{
 	    int n = lua_tointeger(L, 1);
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 		if (buf->b_fnum == n) break;
 	}
 	else { /* by name */
 	    size_t l;
 	    const char *s = lua_tolstring(L, 1, &l);
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 	    {
 		if (buf->b_ffname == NULL || buf->b_sfname == NULL)
 		{

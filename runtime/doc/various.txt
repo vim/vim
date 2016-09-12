@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.4.  Last change: 2016 Mar 20
+*various.txt*   For Vim version 8.0.  Last change: 2016 Sep 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -91,6 +91,8 @@ g8			Print the hex values of the bytes used in the
 			on paper see |:hardcopy|.  In the GUI you can use the
 			File.Print menu entry.
 			See |ex-flags| for [flags].
+			The |:filter| command can be used to only show lines
+			matching a pattern.
 
 :[range]p[rint] {count} [flags]
 			Print {count} lines, starting with [range] (default
@@ -361,6 +363,7 @@ N  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+job*		starting and stopping jobs |job|
 N  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|
+N  *+lambda*		|lambda| and |closure|
 B  *+langmap*		|'langmap'|
 N  *+libcall*		|libcall()|
 N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
@@ -390,7 +393,9 @@ N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
+   *+num64*		64-bit Number support |Number|
 m  *+ole*		Win32 GUI only: |ole-interface|
+N  *+packages*		Loading |packages|
 N  *+path_extra*	Up/downwards search in 'path' and 'tags'
 m  *+perl*		Perl interface |perl|
 m  *+perl/dyn*		Perl interface |perl-dynamic| |/dyn|
@@ -417,13 +422,14 @@ N  *+statusline*	Options 'statusline', 'rulerformat' and special
 m  *+sun_workshop*	|workshop|
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
-N  *+tag_binary*	binary searching in tags file |tag-binary-search|
+T  *+tag_binary*	binary searching in tags file |tag-binary-search|
 N  *+tag_old_static*	old method for static tags |tag-old-static|
 m  *+tag_any_white*	any white space allowed in tags file |tag-any-white|
 m  *+tcl*		Tcl interface |tcl|
 m  *+tcl/dyn*		Tcl interface |tcl-dynamic| |/dyn|
    *+terminfo*		uses |terminfo| instead of termcap
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
+B  *+termguicolors*	24-bit color in xterm-compatible terminals support
 N  *+textobjects*	|text-objects| selection
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+timers*		the |timer_start()| function
@@ -467,9 +473,12 @@ N  *+X11*		Unix only: can restore window title |X11|
 			shown on the screen.  When [!] is included, an
 			existing file is overwritten.  When [!] is omitted,
 			and {file} exists, this command fails.
+
 			Only one ":redir" can be active at a time.  Calls to
 			":redir" will close any active redirection before
-			starting redirection to the new target.
+			starting redirection to the new target.  For recursive
+			use check out |execute()|.
+
 			To stop the messages and commands from being echoed to
 			the screen, put the commands in a function and call it
 			with ":silent call Function()".
@@ -509,11 +518,34 @@ N  *+X11*		Unix only: can restore window title |X11|
 			redirection starts, if the variable is removed or
 			locked or the variable type is changed, then further
 			command output messages will cause errors. {not in Vi}
+			To get the output of one command the |execute()|
+			function can be used.
 
 :redi[r] =>> {var}	Append messages to an existing variable.  Only string
 			variables can be used. {not in Vi}
 
 :redi[r] END		End redirecting messages.  {not in Vi}
+
+							*:filt* *:filter*
+:filt[er] {pat} {command}
+:filt[er] /{pat}/ {command}
+			Restrict the output of {command} to matches with {pat}.
+			For example, to list only xml files: >
+				:filter /\.xml$/ oldfiles
+<
+			{pat} is a Vim search pattern.  Instead of enclosing
+			it in / any non-ID character (see |'isident'|) can be
+			used, so long as it does not appear in {pat}.  Without
+			the enclosing character the pattern cannot include the
+			bar character.
+
+			The pattern is matched against the relevant part of
+			the output, not necessarily the whole line. Only some
+			commands support filtering, try it out to check if it
+			works.
+
+			Only normal messages are filtered, error messages are
+			not.
 
 						*:sil* *:silent* *:silent!*
 :sil[ent][!] {command}	Execute {command} silently.  Normal messages will not
@@ -605,13 +637,16 @@ K			Run a program to lookup the keyword under the
 			directory of Vim.  It is called 'ref' and does a
 			simple spelling check.
 			Special cases:
+			- If 'keywordprg' begins with ":" it is invoked as
+			  a Vim Ex command with [count].
 			- If 'keywordprg' is empty, the ":help" command is
 			  used.  It's a good idea to include more characters
 			  in 'iskeyword' then, to be able to find more help.
-			- When 'keywordprg' is equal to "man", a count before
-			  "K" is inserted after the "man" command and before
-			  the keyword.  For example, using "2K" while the
-			  cursor is on "mkdir", results in: >
+			- When 'keywordprg' is equal to "man" or starts with
+			  ":", a [count] before "K" is inserted after
+			  keywordprg and before the keyword.  For example,
+			  using "2K" while the cursor is on "mkdir", results
+			  in: >
 				!man 2 mkdir
 <			- When 'keywordprg' is equal to "man -s", a count
 			  before "K" is inserted after the "-s".  If there is

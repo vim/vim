@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 7.4.  Last change: 2015 Oct 16
+*if_perl.txt*   For Vim version 8.0.  Last change: 2015 Oct 16
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -82,6 +82,9 @@ Example vim script: >
 		VIM::Msg("tcls????");
 	EOF
 	endfunction
+<
+To see what version of Perl you have: >
+	:perl print $^V
 <
 
 							*:perldo* *:perld*

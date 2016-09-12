@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *			Visual Workshop integration by Gordon Prieur
@@ -61,6 +61,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 
 	    set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
 	    set_vim_var_nr(VV_BEVAL_WINNR, winnr);
+	    set_vim_var_nr(VV_BEVAL_WINID, wp->w_id);
 	    set_vim_var_nr(VV_BEVAL_LNUM, (long)lnum);
 	    set_vim_var_nr(VV_BEVAL_COL, (long)(col + 1));
 	    set_vim_var_string(VV_BEVAL_TEXT, text, -1);
@@ -507,7 +508,7 @@ removeEventHandler(BalloonEval *beval)
     /* LINTED: avoid warning: dubious operation on enum */
 # if GTK_CHECK_VERSION(3,0,0)
     g_signal_handlers_disconnect_by_func(G_OBJECT(beval->target),
-					 G_CALLBACK(target_event_cb),
+					 FUNC2GENERIC(target_event_cb),
 					 beval);
 # else
     gtk_signal_disconnect_by_func((GtkObject*)(beval->target),
@@ -521,7 +522,7 @@ removeEventHandler(BalloonEval *beval)
 	/* LINTED: avoid warning: dubious operation on enum */
 # if GTK_CHECK_VERSION(3,0,0)
 	g_signal_handlers_disconnect_by_func(G_OBJECT(gui.mainwin),
-					     G_CALLBACK(mainwin_event_cb),
+					     FUNC2GENERIC(mainwin_event_cb),
 					     beval);
 # else
 	gtk_signal_disconnect_by_func((GtkObject*)(gui.mainwin),
@@ -557,8 +558,13 @@ target_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
 		{
 		    GdkWindow * const win = gtk_widget_get_window(widget);
 		    GdkDisplay * const dpy = gdk_window_get_display(win);
+#  if GTK_CHECK_VERSION(3,20,0)
+		    GdkSeat * const seat = gdk_display_get_default_seat(dpy);
+		    GdkDevice * const dev = gdk_seat_get_pointer(seat);
+#  else
 		    GdkDeviceManager * const mngr = gdk_display_get_device_manager(dpy);
 		    GdkDevice * const dev = gdk_device_manager_get_client_pointer(mngr);
+#  endif
 		    gdk_window_get_device_position(win, dev , &x, &y, &state);
 		}
 # else
@@ -1038,7 +1044,14 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 	attrentry_T	*aep;
 	PangoAttribute	*attr;
 	guicolor_T	pixel;
+#if GTK_CHECK_VERSION(3,0,0)
+	GdkRGBA		color = { 0.0, 0.0, 0.0, 1.0 };
+# if PANGO_VERSION_CHECK(1,38,0)
+	PangoAttribute  *attr_alpha;
+# endif
+#else
 	GdkColor	color = { 0, 0, 0, 0 };
+#endif
 
 	/* Look up the RGB values of the SpecialKey foreground color. */
 	aep = syn_gui_attr2entry(hl_attr(HLF_8));
@@ -1046,30 +1059,10 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 	if (pixel != INVALCOLOR)
 # if GTK_CHECK_VERSION(3,0,0)
 	{
-	    GdkVisual * const visual = gtk_widget_get_visual(gui.drawarea);
-
-	    if (visual == NULL)
-	    {
-		color.red = 0;
-		color.green = 0;
-		color.blue = 0;
-	    }
-	    else
-	    {
-		guint32 r_mask, g_mask, b_mask;
-		gint r_shift, g_shift, b_shift;
-
-		gdk_visual_get_red_pixel_details(visual, &r_mask, &r_shift,
-						 NULL);
-		gdk_visual_get_green_pixel_details(visual, &g_mask, &g_shift,
-						   NULL);
-		gdk_visual_get_blue_pixel_details(visual, &b_mask, &b_shift,
-						  NULL);
-
-		color.red = ((pixel & r_mask) >> r_shift) / 255.0 * 65535;
-		color.green = ((pixel & g_mask) >> g_shift) / 255.0 * 65535;
-		color.blue = ((pixel & b_mask) >> b_shift) / 255.0 * 65535;
-	    }
+	    color.red = ((pixel & 0xff0000) >> 16) / 255.0;
+	    color.green = ((pixel & 0xff00) >> 8) / 255.0;
+	    color.blue = (pixel & 0xff) / 255.0;
+	    color.alpha = 1.0;
 	}
 # else
 	    gdk_colormap_query_color(gtk_widget_get_colormap(gui.drawarea),
@@ -1118,11 +1111,31 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 		    }
 		    if (pixel != INVALCOLOR)
 		    {
+#if GTK_CHECK_VERSION(3,0,0)
+# define DOUBLE2UINT16(val) ((guint16)((val) * 65535 + 0.5))
+			attr = pango_attr_foreground_new(
+				DOUBLE2UINT16(color.red),
+				DOUBLE2UINT16(color.green),
+				DOUBLE2UINT16(color.blue));
+# if PANGO_VERSION_CHECK(1,38,0)
+			attr_alpha = pango_attr_foreground_alpha_new(
+				DOUBLE2UINT16(color.alpha));
+# endif
+# undef DOUBLE2UINT16
+#else
 			attr = pango_attr_foreground_new(
 				color.red, color.green, color.blue);
+#endif
 			attr->start_index = pdest - buf;
 			attr->end_index   = pdest - buf + outlen;
 			pango_attr_list_insert(attr_list, attr);
+#if GTK_CHECK_VERSION(3,0,0)
+# if PANGO_VERSION_CHECK(1,38,0)
+			attr_alpha->start_index = pdest - buf;
+			attr_alpha->end_index   = pdest - buf + outlen;
+			pango_attr_list_insert(attr_list, attr_alpha);
+# endif
+#endif
 		    }
 		    pdest += outlen;
 		    p += charlen;

@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.4.  Last change: 2014 Mar 08
+*gui_x11.txt*   For Vim version 8.0.  Last change: 2016 Aug 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -305,7 +305,7 @@ If a name is used that exists on other systems, but not in X11, the default
 "arrow" pointer is used.
 
 ==============================================================================
-5. GTK version						*gui-gtk* *GTK+* *GTK*
+5. GTK version					*gui-gtk* *GTK+* *GTK* *GTK3*
 
 The GTK version of the GUI works a little bit different.
 
@@ -421,6 +421,9 @@ These are the different looks:
 GNOME is compiled with if it was found by configure and the
 --enable-gnome-check argument was used.
 
+Note: Avoid use of --enable-gnome-check with GTK+ 3 GUI build.  The
+functionality mentioned above is consolidated in GTK+ 3.
+
 
 GNOME session support			*gui-gnome-session* *gnome-session*
 
@@ -457,20 +460,37 @@ continues on Yzis: https://github.com/chrizel/Yzis.
 ==============================================================================
 8. Compiling						*gui-x11-compiling*
 
-If using X11, Vim's Makefile will by default first try to find the necessary
-GTK+ files on your system.  If the GTK+ files cannot be found, then the Motif
-files will be searched for.  Finally, if this fails, the Athena files will be
-searched for.  If all three fail, the GUI will be disabled.
+If using X11, Vim's configure will by default first try to find the necessary
+GTK+ files on your system.  When both GTK+ 2 and GTK+ 3 are available, GTK+ 2
+will be chosen unless --enable-gui=gtk3 is passed explicitly to configure.
 
-For GTK+, Vim's configuration process requires that GTK+ be properly
-installed.  That is, the shell script 'gtk-config' must be in your PATH, and
-you can already successful compile, build, and execute a GTK+ program.  The
-reason for this is that the compiler flags (CFLAGS) and link flags (LDFLAGS)
-are obtained through the 'gtk-config' shell script.
+If the GTK+ files cannot be found, then the Motif files will be searched for.
+Finally, if this fails, the Athena files will be searched for.  If all three
+fail, the GUI will be disabled.
 
-If you want to build with GTK+ 2 support pass the --enable-gtk2-check argument
-to ./configure.  Optionally, support for GNOME 2 will be compiled if the
---enable-gnome-check option is also given.
+For GTK+, Vim's configuration process uses pkg-config(1) to check if the
+GTK+ required for a specified build is properly installed and usable.
+Accordingly, it is a good idea to make sure before running configure that
+your system has a working pkg-config together with the .pc file of the
+required GTK+.  For that, say, run the following on the command line to see if
+your pkg-config works with your GTK+ 2: >
+
+    $ pkgconfig --modversion gtk+-2.0
+
+Replace gtk+-2.0 with gtk+-3.0 for GTK+ 3. If you get the correct version
+number of your GTK+, you can proceed; if not, you probably need to do some
+system administration chores to set up pkg-config and GTK+ correctly.
+
+The GTK+ 2 GUI is built by default.  Therefore, you usually don't need to pass
+any options such as --enable-gui=gtk2 to configure and build that.
+
+Optionally, the GTK+ 2 GUI can consolidate the GNOME 2 support.  This support
+is enabled by passing --enable-gnome-check to configure.
+
+If you want to build the GTK+ 3 GUI, you have to pass --enable-gui=gtk3
+explicitly to configure, and avoid passing --enable-gnome-check to that, as
+the functionality of the GNOME 2 support has already been consolidated in
+GTK+ 3.
 
 Otherwise, if you are using Motif or Athena, when you have the Motif or Athena
 files in a directory where configure doesn't look, edit the Makefile to enter
@@ -478,18 +498,14 @@ the names of the directories.  Search for "GUI_INC_LOC" for an example to set
 the Motif directories, "CONF_OPT_X" for Athena.
 
 							*gui-x11-gtk*
-At the time of this writing, GTK+ version 1.0.6 and 1.2 are outdated.  It
-is suggested that you use GTK 2.  The GTK 1 support will most likely be
-dropped soon.
+Currently, Vim supports both GTK+ 2 and GTK+ 3.
 
-For the GTK+ 2 GUI, using the latest release of the GTK+ 2.0 or GTK+ 2.2
-series is recommended.
+The GTK+ 2 GUI requires GTK+ 2.2 or later.
 
-Lastly, although GTK+ has supposedly been ported to the Win32 platform, this
-has not been tested with Vim and is also unsupported.  Also, it's unlikely to
-even compile since GTK+ GUI uses parts of the generic X11 code.  This might
-change in distant future; particularly because getting rid of the X11 centric
-code parts is also required for GTK+ framebuffer support.
+Although the GTK+ 3 GUI is written in such a way that the source code can be
+compiled against all versions of the 3.x series, we recommend GTK+ 3.10 or
+later because of its substantial implementation changes in redraw done at
+that version.
 
 							*gui-x11-motif*
 For Motif, you need at least Motif version 1.2 and/or X11R5.  Motif 2.0 and

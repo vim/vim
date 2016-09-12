@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved    by Bram Moolenaar
  *
@@ -10,13 +10,12 @@
 /*
  * arabic.c: functions for Arabic language
  *
- * Included by main.c, when FEAT_ARABIC & FEAT_GUI is defined.
- *
- * --
- *
  * Author: Nadim Shaikli & Isam Bayazidi
- *
  */
+
+#include "vim.h"
+
+#if defined(FEAT_ARABIC) || defined(PROTO)
 
 static int  A_is_a(int cur_c);
 static int  A_is_s(int cur_c);
@@ -1148,3 +1147,5 @@ A_is_special(int c)
 {
     return (c == a_HAMZA || c == a_s_HAMZA);
 }
+
+#endif /* FEAT_ARABIC */

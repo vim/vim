@@ -12,7 +12,7 @@ SCRIPTSOURCE = ../../runtime
 #   The output goes into a file "valgrind.testN"
 #   Vim should be compiled with EXITFREE to avoid false warnings.
 #   This will make testing about 10 times as slow.
-# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=15 --log-file=valgrind.$*
+# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind.$*
 
 default: nongui
 
@@ -52,7 +52,7 @@ $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(SCRIPTS_FIRST)
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmark.out
-RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f -u unix.vim $(NO_PLUGIN) -s dotest.in
+RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_PLUGIN) -s dotest.in
 
 clean:
 	-rm -rf *.out *.failed *.res *.rej *.orig test.log messages $(RM_ON_RUN) $(RM_ON_START) valgrind.*
@@ -80,14 +80,14 @@ test1.out: test1.in
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
 	-$(RUN_VIM) $*.in
 
-	# For flaky tests retry one time.
-	@/bin/sh -c "if test -f test.out -a $* = test61; then \
-		  if diff test.out $*.ok; \
-		  then echo flaky test ok first time; \
-		  else rm -rf $*.failed $(RM_ON_RUN); \
-			$(RUN_VIM) $*.in; \
-		  fi \
-		fi"
+	# For flaky tests retry one time.  No tests at the moment.
+	#@/bin/sh -c "if test -f test.out -a $* = test61; then \
+	#	  if diff test.out $*.ok; \
+	#	  then echo flaky test ok first time; \
+	#	  else rm -rf $*.failed $(RM_ON_RUN); \
+	#		$(RUN_VIM) $*.in; \
+	#	  fi \
+	#	fi"
 
 	# Check if the test.out file matches test.ok.
 	@/bin/sh -c "if test -f test.out; then \
@@ -118,13 +118,15 @@ nolog:
 # New style of tests uses Vim script with assert calls.  These are easier
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
-RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f -u unix.vim $(NO_PLUGIN)
+RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_PLUGIN)
 
 newtests: newtestssilent
-	@/bin/sh -c "if test -f messages && grep -q 'FAILED' messages; then cat messages && cat test.log; fi"
+	@/bin/sh -c "if test -f messages && grep -q 'SKIPPED\|FAILED' messages; then cat messages && if test -f test.log; then cat test.log; fi ; fi"
 
 newtestssilent: $(NEW_TESTS)
 
 
 .vim.res:
-	$(RUN_VIMTEST) -u NONE -U NONE -S runtest.vim $*.vim
+	@echo "$(RUN_VIMTEST)" > vimcmd
+	$(RUN_VIMTEST) -U NONE -S runtest.vim $*.vim
+	@rm vimcmd

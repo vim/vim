@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * CSCOPE support for Vim added by Andy Kahn <kahn@zk3.dec.com>
  * Ported to Win32 by Sergey Khorev <sergey.khorev@gmail.com>
@@ -42,7 +42,7 @@ static int	    cs_find_common(char *opt, char *pat, int, int, int, char_u *cmdli
 static int	    cs_help(exarg_T *eap);
 static void	    clear_csinfo(int i);
 static int	    cs_insert_filelist(char *, char *, char *,
-			struct stat *);
+			stat_T *);
 static int	    cs_kill(exarg_T *eap);
 static void	    cs_kill_execute(int, char *);
 static cscmd_T *    cs_lookup_cmd(exarg_T *eap);
@@ -70,7 +70,7 @@ static cscmd_T	    cs_cmds[] =
     { "add",	cs_add,
 		N_("Add a new database"),     "add file|dir [pre-path] [flags]", 0 },
     { "find",	cs_find,
-		N_("Query for a pattern"),    "find c|d|e|f|g|i|s|t name", 1 },
+		N_("Query for a pattern"),    "find a|c|d|e|f|g|i|s|t name", 1 },
     { "help",	cs_help,
 		N_("Show this message"),      "help", 0 },
     { "kill",	cs_kill,
@@ -126,12 +126,12 @@ get_cscope_name(expand_T *xp UNUSED, int idx)
 	{
 	    const char *query_type[] =
 	    {
-		"c", "d", "e", "f", "g", "i", "s", "t", NULL
+		"a", "c", "d", "e", "f", "g", "i", "s", "t", NULL
 	    };
 
 	    /* Complete with query type of ":cscope find {query_type}".
-	     * {query_type} can be letters (c, d, ... t) or numbers (0, 1,
-	     * ..., 8) but only complete with letters, since numbers are
+	     * {query_type} can be letters (c, d, ... a) or numbers (0, 1,
+	     * ..., 9) but only complete with letters, since numbers are
 	     * redundant. */
 	    return (char_u *)query_type[idx];
 	}
@@ -520,7 +520,7 @@ cs_add_common(
     char *arg2,	    /* prepend path - may contain environment variables */
     char *flags)
 {
-    struct stat statbuf;
+    stat_T	statbuf;
     int		ret;
     char	*fname = NULL;
     char	*fname2 = NULL;
@@ -547,7 +547,7 @@ cs_add_common(
     fname = (char *)vim_strnsave((char_u *)fname, len);
     vim_free(fbuf);
 #endif
-    ret = stat(fname, &statbuf);
+    ret = mch_stat(fname, &statbuf);
     if (ret < 0)
     {
 staterr:
@@ -559,13 +559,13 @@ staterr:
     /* get the prepend path (arg2), expand it, and try to stat it */
     if (arg2 != NULL)
     {
-	struct stat statbuf2;
+	stat_T	    statbuf2;
 
 	if ((ppath = (char *)alloc(MAXPATHL + 1)) == NULL)
 	    goto add_err;
 
 	expand_env((char_u *)arg2, (char_u *)ppath, MAXPATHL);
-	ret = stat(ppath, &statbuf2);
+	ret = mch_stat(ppath, &statbuf2);
 	if (ret < 0)
 	    goto staterr;
     }
@@ -592,7 +592,7 @@ staterr:
 	else
 	    (void)sprintf(fname2, "%s/%s", fname, CSCOPE_DBFILE);
 
-	ret = stat(fname2, &statbuf);
+	ret = mch_stat(fname2, &statbuf);
 	if (ret < 0)
 	{
 	    if (p_csverbose)
@@ -790,6 +790,9 @@ cs_create_cmd(char *csoption, char *pattern)
 	break;
     case '8' : case 'i' :
 	search = 8;
+	break;
+    case '9' : case 'a' :
+	search = 9;
 	break;
     default :
 	(void)EMSG(_("E561: unknown cscope search type"));
@@ -1151,6 +1154,9 @@ cs_find_common(
     case '8' :
 	cmdletter = 'i';
 	break;
+    case '9' :
+	cmdletter = 'a';
+	break;
     default :
 	cmdletter = opt[0];
     }
@@ -1345,6 +1351,7 @@ cs_help(exarg_T *eap UNUSED)
 				      cmdp->usage);
 	if (strcmp(cmdp->name, "find") == 0)
 	    MSG_PUTS(_("\n"
+		       "       a: Find assignments to this symbol\n"
 		       "       c: Find functions calling this function\n"
 		       "       d: Find functions called by this function\n"
 		       "       e: Find this egrep pattern\n"
@@ -1414,7 +1421,7 @@ cs_insert_filelist(
     char *fname,
     char *ppath,
     char *flags,
-    struct stat *sb UNUSED)
+    stat_T *sb UNUSED)
 {
     short	i, j;
 #ifndef UNIX

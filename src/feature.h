@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *
@@ -56,8 +56,7 @@
 /*
  * For Unix, Mac and Win32 use +huge by default.  These days CPUs are fast and
  * Memory is cheap.
- * Use +big for older systems: Other MS-Windows, dos32, OS/2 and VMS.
- * The dos16 version has very little RAM available, use +small.
+ * Use +big for older systems: Other MS-Windows and VMS.
  * Otherwise use +normal
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
@@ -333,7 +332,7 @@
  * sorted by character values.  I'm not sure how to fix this. Should we really
  * do a EBCDIC to ASCII conversion for this??
  */
-#if defined(FEAT_NORMAL) && !defined(EBCDIC)
+#if !defined(EBCDIC)
 # define FEAT_TAG_BINS
 #endif
 
@@ -362,11 +361,15 @@
  * +eval		Built-in script language and expression evaluation,
  *			":let", ":if", etc.
  * +float		Floating point variables.
+ * +num64		64-bit Number.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_EVAL
 # if defined(HAVE_FLOAT_FUNCS) || defined(WIN3264) || defined(MACOS)
 #  define FEAT_FLOAT
+# endif
+# if defined(HAVE_STDINT_H) || defined(WIN3264) || (VIM_SIZEOF_LONG >= 8)
+#  define FEAT_NUM64
 # endif
 #endif
 
@@ -814,6 +817,13 @@
 # endif
 #endif
 
+/*
+ * +termguicolors	'termguicolors' option.
+ */
+#if (defined(FEAT_BIG) && defined(FEAT_SYN_HL)) && !defined(ALWAYS_USE_GUI)
+# define FEAT_TERMGUICOLORS
+#endif
+
 /* Mac specific thing: Codewarrior interface. */
 #ifdef FEAT_GUI_MAC
 # define FEAT_CW_EDITOR
@@ -894,6 +904,11 @@
 /* #define USR_VIMRC_FILE	"~/foo/.vimrc" */
 /* #define USR_VIMRC_FILE2	"~/bar/.vimrc" */
 /* #define USR_VIMRC_FILE3	"$VIM/.vimrc" */
+
+/*
+ * VIM_DEFAULTS_FILE	Name of the defaults.vim script file
+ */
+/* #define VIM_DEFAULTS_FILE	"$VIMRUNTIME/defaults.vim" */
 
 /*
  * EVIM_FILE		Name of the evim.vim script file

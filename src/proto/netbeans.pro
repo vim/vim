@@ -10,6 +10,7 @@ void netbeans_beval_cb(BalloonEval *beval, int state);
 int netbeans_active(void);
 void netbeans_open(char *params, int doabort);
 void netbeans_send_disconnect(void);
+int set_ref_in_nb_channel(int copyID);
 void netbeans_frame_moved(int new_x, int new_y);
 void netbeans_file_activated(buf_T *bufp);
 void netbeans_file_opened(buf_T *bufp);

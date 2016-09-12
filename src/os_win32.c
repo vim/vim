@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -137,6 +137,8 @@ typedef int PSNSECINFO;
 typedef int PSNSECINFOW;
 typedef int STARTUPINFO;
 typedef int PROCESS_INFORMATION;
+typedef int LPSECURITY_ATTRIBUTES;
+# define __stdcall /* empty */
 #endif
 
 #ifndef FEAT_GUI_W32
@@ -472,12 +474,15 @@ vimLoadLib(char *name)
 # endif
 /* Dummy functions */
 static char *null_libintl_gettext(const char *);
+static char *null_libintl_ngettext(const char *, const char *, unsigned long n);
 static char *null_libintl_textdomain(const char *);
 static char *null_libintl_bindtextdomain(const char *, const char *);
 static char *null_libintl_bind_textdomain_codeset(const char *, const char *);
 
 static HINSTANCE hLibintlDLL = NULL;
 char *(*dyn_libintl_gettext)(const char *) = null_libintl_gettext;
+char *(*dyn_libintl_ngettext)(const char *, const char *, unsigned long n)
+						= null_libintl_ngettext;
 char *(*dyn_libintl_textdomain)(const char *) = null_libintl_textdomain;
 char *(*dyn_libintl_bindtextdomain)(const char *, const char *)
 						= null_libintl_bindtextdomain;
@@ -495,6 +500,7 @@ dyn_libintl_init(void)
     } libintl_entry[] =
     {
 	{"gettext", (FARPROC*)&dyn_libintl_gettext},
+	{"ngettext", (FARPROC*)&dyn_libintl_ngettext},
 	{"textdomain", (FARPROC*)&dyn_libintl_textdomain},
 	{"bindtextdomain", (FARPROC*)&dyn_libintl_bindtextdomain},
 	{NULL, NULL}
@@ -553,6 +559,7 @@ dyn_libintl_end(void)
 	FreeLibrary(hLibintlDLL);
     hLibintlDLL			= NULL;
     dyn_libintl_gettext		= null_libintl_gettext;
+    dyn_libintl_ngettext	= null_libintl_ngettext;
     dyn_libintl_textdomain	= null_libintl_textdomain;
     dyn_libintl_bindtextdomain	= null_libintl_bindtextdomain;
     dyn_libintl_bind_textdomain_codeset = null_libintl_bind_textdomain_codeset;
@@ -563,6 +570,16 @@ dyn_libintl_end(void)
 null_libintl_gettext(const char *msgid)
 {
     return (char*)msgid;
+}
+
+/*ARGSUSED*/
+    static char *
+null_libintl_ngettext(
+	const char *msgid,
+	const char *msgid_plural,
+	unsigned long n)
+{
+    return (char *)(n == 1 ? msgid : msgid_plural);
 }
 
 /*ARGSUSED*/
@@ -1446,6 +1463,9 @@ WaitForChar(long msec)
     INPUT_RECORD    ir;
     DWORD	    cRecords;
     WCHAR	    ch, ch2;
+#ifdef FEAT_TIMERS
+    int		    tb_change_cnt = typebuf.tb_change_cnt;
+#endif
 
     if (msec > 0)
 	/* Wait until the specified time has elapsed. */
@@ -1511,6 +1531,11 @@ WaitForChar(long msec)
 		    /* Trigger timers and then get the time in msec until the
 		     * next one is due.  Wait up to that time. */
 		    due_time = check_due_timer();
+		    if (typebuf.tb_change_cnt != tb_change_cnt)
+		    {
+			/* timer may have used feedkeys() */
+			return FALSE;
+		    }
 		    if (due_time > 0 && dwWaitTime > (DWORD)due_time)
 			dwWaitTime = due_time;
 		}
@@ -2039,7 +2064,6 @@ mch_init(void)
     Columns = 80;
 
     /* Look for 'vimrun' */
-    if (!gui_is_win32s())
     {
 	char_u vimrun_location[_MAX_PATH + 4];
 
@@ -3050,7 +3074,7 @@ mch_dirname(
     long
 mch_getperm(char_u *name)
 {
-    struct stat st;
+    stat_T	st;
     int		n;
 
     n = mch_stat((char *)name, &st);
@@ -4119,7 +4143,7 @@ mch_system_classic(char *cmd, int options)
      * Win32s either as it stops the synchronous spawn workaround working.
      * Don't activate the window to keep focus on Vim.
      */
-    if ((options & SHELL_DOOUT) && !mch_windows95() && !gui_is_win32s())
+    if ((options & SHELL_DOOUT) && !mch_windows95())
 	si.wShowWindow = SW_SHOWMINNOACTIVE;
     else
 	si.wShowWindow = SW_SHOWNORMAL;
@@ -4204,7 +4228,7 @@ mch_system_classic(char *cmd, int options)
  * process. This way avoid to hang up vim totally if the children
  * process take a long time to process the lines.
  */
-    static DWORD WINAPI
+    static unsigned int __stdcall
 sub_process_writer(LPVOID param)
 {
     HANDLE	    g_hChildStd_IN_Wr = param;
@@ -4259,7 +4283,7 @@ sub_process_writer(LPVOID param)
 
     /* finished all the lines, close pipe */
     CloseHandle(g_hChildStd_IN_Wr);
-    ExitThread(0);
+    return 0;
 }
 
 
@@ -4347,7 +4371,7 @@ dump_pipe(int	    options,
 	     * round. */
 	    for (p = buffer; p < buffer + len; p += l)
 	    {
-		l = mb_cptr2len(p);
+		l = MB_CPTR2LEN(p);
 		if (l == 0)
 		    l = 1;  /* NUL byte? */
 		else if (MB_BYTE2LEN(*p) != l)
@@ -4483,8 +4507,8 @@ mch_system_piped(char *cmd, int options)
 
     if (options & SHELL_WRITE)
     {
-	HANDLE thread =
-	   CreateThread(NULL,  /* security attributes */
+	HANDLE thread = (HANDLE)
+	 _beginthreadex(NULL,  /* security attributes */
 			0,     /* default stack size */
 			sub_process_writer, /* function to be executed */
 			g_hChildStd_IN_Wr,  /* parameter */
@@ -5186,11 +5210,9 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
 
-    if (!use_file_for_in)
-	CloseHandle(ifd[0]);
-    if (!use_file_for_out)
-	CloseHandle(ofd[1]);
-    if (!use_out_for_err && !use_file_for_err)
+    CloseHandle(ifd[0]);
+    CloseHandle(ofd[1]);
+    if (!use_out_for_err && !use_null_for_err)
 	CloseHandle(efd[1]);
 
     job->jv_channel = channel;

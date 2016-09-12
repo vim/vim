@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -197,7 +197,7 @@ EXTERN int	need_maketitle INIT(= TRUE); /* call maketitle() soon */
 #endif
 
 EXTERN int	quit_more INIT(= FALSE);    /* 'q' hit at "--more--" msg */
-#if defined(UNIX) || defined(__EMX__) || defined(VMS) || defined(MACOS_X)
+#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
 EXTERN int	newline_on_exit INIT(= FALSE);	/* did msg in altern. screen */
 EXTERN int	intr_char INIT(= 0);	    /* extra interrupt character */
 #endif
@@ -325,11 +325,9 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 EXTERN scid_T	current_SID INIT(= 0);
 #endif
 
-#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
 /* Magic number used for hashitem "hi_key" value indicating a deleted item.
  * Only the address is used. */
 EXTERN char_u	hash_removed;
-#endif
 
 
 EXTERN int	scroll_region INIT(= FALSE); /* term supports scroll region */
@@ -369,6 +367,10 @@ EXTERN char_u	*use_gvimrc INIT(= NULL);	/* "-U" cmdline argument */
 EXTERN int	cterm_normal_fg_color INIT(= 0);
 EXTERN int	cterm_normal_fg_bold INIT(= 0);
 EXTERN int	cterm_normal_bg_color INIT(= 0);
+#ifdef FEAT_TERMGUICOLORS
+EXTERN guicolor_T cterm_normal_fg_gui_color INIT(= INVALCOLOR);
+EXTERN guicolor_T cterm_normal_bg_gui_color INIT(= INVALCOLOR);
+#endif
 
 #ifdef FEAT_AUTOCMD
 EXTERN int	autocmd_busy INIT(= FALSE);	/* Is apply_autocmds() busy? */
@@ -382,7 +384,7 @@ EXTERN int	keep_filetype INIT(= FALSE);	/* value for did_filetype when
 
 /* When deleting the current buffer, another one must be loaded.  If we know
  * which one is preferred, au_new_curbuf is set to it */
-EXTERN buf_T	*au_new_curbuf INIT(= NULL);
+EXTERN bufref_T	au_new_curbuf INIT(= {NULL COMMA 0});
 
 /* When deleting a buffer/window and autocmd_busy is TRUE, do not free the
  * buffer/window. but link it in the list starting with
@@ -546,6 +548,10 @@ EXTERN win_T	*lastwin;		/* last window */
 EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
 # define W_NEXT(wp) ((wp)->w_next)
 # define FOR_ALL_WINDOWS(wp) for (wp = firstwin; wp != NULL; wp = wp->w_next)
+# define FOR_ALL_TABPAGES(tp) for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+# define FOR_ALL_WINDOWS_IN_TAB(tp, wp) \
+    for ((wp) = ((tp) == NULL || (tp) == curtab) \
+	    ? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
 /*
  * When using this macro "break" only breaks out of the inner loop. Use "goto"
  * to break out of the tabpage loop.
@@ -559,6 +565,8 @@ EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
 # define lastwin curwin
 # define W_NEXT(wp) NULL
 # define FOR_ALL_WINDOWS(wp) wp = curwin;
+# define FOR_ALL_TABPAGES(tp) for (;FALSE;)
+# define FOR_ALL_WINDOWS_IN_TAB(tp, wp) wp = curwin;
 # define FOR_ALL_TAB_WINDOWS(tp, wp) wp = curwin;
 #endif
 
@@ -592,6 +600,8 @@ EXTERN int	    redraw_tabline INIT(= FALSE);  /* need to redraw tabline */
 EXTERN buf_T	*firstbuf INIT(= NULL);	/* first buffer */
 EXTERN buf_T	*lastbuf INIT(= NULL);	/* last buffer */
 EXTERN buf_T	*curbuf INIT(= NULL);	/* currently active buffer */
+
+#define FOR_ALL_BUFFERS(buf) for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 
 /* Flag that is set when switching off 'swapfile'.  It means that all blocks
  * are to be loaded into memory.  Shouldn't be global... */
@@ -631,6 +641,13 @@ EXTERN int	exiting INIT(= FALSE);
 EXTERN int	really_exiting INIT(= FALSE);
 				/* TRUE when we are sure to exit, e.g., after
 				 * a deadly signal */
+#if defined(FEAT_AUTOCHDIR)
+EXTERN int	test_autochdir INIT(= FALSE);
+#endif
+#if defined(EXITFREE)
+EXTERN int	entered_free_all_mem INIT(= FALSE);
+				/* TRUE when in or after free_all_mem() */
+#endif
 /* volatile because it is used in signal handler deathtrap(). */
 EXTERN volatile int full_screen INIT(= FALSE);
 				/* TRUE when doing full-screen output
@@ -963,6 +980,7 @@ EXTERN cmdmod_T	cmdmod;			/* Ex command modifiers */
 
 EXTERN int	msg_silent INIT(= 0);	/* don't print messages */
 EXTERN int	emsg_silent INIT(= 0);	/* don't print error messages */
+EXTERN int	emsg_noredir INIT(= 0);	/* don't redirect error messages */
 EXTERN int	cmd_silent INIT(= FALSE); /* don't echo the command line */
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) \
@@ -1098,6 +1116,7 @@ EXTERN FILE *redir_fd INIT(= NULL);	/* message redirection file */
 #ifdef FEAT_EVAL
 EXTERN int  redir_reg INIT(= 0);	/* message redirection register */
 EXTERN int  redir_vname INIT(= 0);	/* message redirection variable */
+EXTERN int  redir_execute INIT(= 0);	/* execute() redirection */
 #endif
 
 #ifdef FEAT_LANGMAP
@@ -1174,6 +1193,10 @@ EXTERN int	fill_stlnc INIT(= ' ');
 EXTERN int	fill_vert INIT(= ' ');
 EXTERN int	fill_fold INIT(= '-');
 EXTERN int	fill_diff INIT(= '-');
+#endif
+
+#ifdef FEAT_FOLDING
+EXTERN int	disable_fold_update INIT(= 0);
 #endif
 
 /* Whether 'keymodel' contains "stopsel" and "startsel". */
@@ -1332,11 +1355,8 @@ EXTERN int	term_is_xterm INIT(= FALSE);	/* xterm-like 'term' */
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char	psepc INIT(= '\\');	/* normal path separator character */
 EXTERN char	psepcN INIT(= '/');	/* abnormal path separator character */
-EXTERN char	pseps[2]		/* normal path separator string */
-# ifdef DO_INIT
-			= {'\\', 0}
-# endif
-			;
+/* normal path separator string */
+EXTERN char	pseps[2] INIT(= {'\\' COMMA 0});
 #endif
 
 #ifdef FEAT_VIRTUALEDIT
@@ -1489,7 +1509,7 @@ EXTERN char_u e_notread[]	INIT(= N_("E485: Can't read file %s"));
 EXTERN char_u e_nowrtmsg[]	INIT(= N_("E37: No write since last change (add ! to override)"));
 EXTERN char_u e_nowrtmsg_nobang[]   INIT(= N_("E37: No write since last change"));
 EXTERN char_u e_null[]		INIT(= N_("E38: Null argument"));
-#ifdef FEAT_DIGRAPHS
+#if defined(FEAT_DIGRAPHS) || defined(FEAT_TIMERS)
 EXTERN char_u e_number_exp[]	INIT(= N_("E39: Number expected"));
 #endif
 #ifdef FEAT_QUICKFIX
@@ -1519,6 +1539,12 @@ EXTERN char_u e_readonly[]	INIT(= N_("E45: 'readonly' option is set (add ! to ov
 EXTERN char_u e_readonlyvar[]	INIT(= N_("E46: Cannot change read-only variable \"%s\""));
 EXTERN char_u e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
 EXTERN char_u e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));
+EXTERN char_u e_dictreq[]	INIT(= N_("E715: Dictionary required"));
+EXTERN char_u e_listidx[]	INIT(= N_("E684: list index out of range: %ld"));
+EXTERN char_u e_toomanyarg[]	INIT(= N_("E118: Too many arguments for function: %s"));
+EXTERN char_u e_dictkey[]	INIT(= N_("E716: Key not present in Dictionary: %s"));
+EXTERN char_u e_listreq[]	INIT(= N_("E714: List required"));
+EXTERN char_u e_listdictarg[]	INIT(= N_("E712: Argument of %s must be a List or Dictionary"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char_u e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
@@ -1596,7 +1622,7 @@ EXTERN int xsmp_icefd INIT(= -1);   /* The actual connection */
 #endif
 
 /* For undo we need to know the lowest time possible. */
-EXTERN time_t starttime;
+EXTERN time_T starttime;
 
 #ifdef STARTUPTIME
 EXTERN FILE *time_fd INIT(= NULL);  /* where to write startup timing */
@@ -1619,6 +1645,22 @@ EXTERN int  alloc_fail_countdown INIT(= -1);
 EXTERN int  alloc_fail_repeat INIT(= 0);
 
 EXTERN int  disable_char_avail_for_testing INIT(= 0);
+
+EXTERN int  in_free_unref_items INIT(= FALSE);
+#endif
+
+#ifdef FEAT_TIMERS
+EXTERN int  did_add_timer INIT(= FALSE);
+#endif
+
+#ifdef FEAT_EVAL
+EXTERN time_T time_for_testing INIT(= 0);
+
+/* Abort conversion to string after a recursion error. */
+EXTERN int  did_echo_string_emsg INIT(= FALSE);
+
+/* Used for checking if local variables or arguments used in a lambda. */
+EXTERN int *eval_lavars_used INIT(= NULL);
 #endif
 
 /*

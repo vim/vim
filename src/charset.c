@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -571,7 +571,7 @@ transchar(int c)
 		    (c >= ' ' && c <= '~')
 #endif
 #ifdef FEAT_FKMAP
-			|| F_ischar(c)
+			|| (p_altkeymap && F_ischar(c))
 #endif
 		)) || (c < 256 && vim_isprintc_strict(c)))
     {
@@ -1836,14 +1836,14 @@ vim_str2nr(
 				       is bin */
     int			*len,	    /* return: detected length of number */
     int			what,	    /* what numbers to recognize */
-    long		*nptr,	    /* return: signed result */
-    unsigned long	*unptr,	    /* return: unsigned result */
+    varnumber_T		*nptr,	    /* return: signed result */
+    uvarnumber_T	*unptr,	    /* return: unsigned result */
     int			maxlen)     /* max length of string to check */
 {
     char_u	    *ptr = start;
     int		    pre = 0;		/* default is decimal */
     int		    negative = FALSE;
-    unsigned long   un = 0;
+    uvarnumber_T    un = 0;
     int		    n;
 
     if (ptr[0] == '-')
@@ -1912,7 +1912,7 @@ vim_str2nr(
 	/* octal */
 	while ('0' <= *ptr && *ptr <= '7')
 	{
-	    un = 8 * un + (unsigned long)(*ptr - '0');
+	    un = 8 * un + (uvarnumber_T)(*ptr - '0');
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -1925,7 +1925,7 @@ vim_str2nr(
 	    n += 2;	    /* skip over "0x" */
 	while (vim_isxdigit(*ptr))
 	{
-	    un = 16 * un + (unsigned long)hex2nr(*ptr);
+	    un = 16 * un + (uvarnumber_T)hex2nr(*ptr);
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -1936,7 +1936,7 @@ vim_str2nr(
 	/* decimal */
 	while (VIM_ISDIGIT(*ptr))
 	{
-	    un = 10 * un + (unsigned long)(*ptr - '0');
+	    un = 10 * un + (uvarnumber_T)(*ptr - '0');
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -1950,9 +1950,9 @@ vim_str2nr(
     if (nptr != NULL)
     {
 	if (negative)   /* account for leading '-' for decimal numbers */
-	    *nptr = -(long)un;
+	    *nptr = -(varnumber_T)un;
 	else
-	    *nptr = (long)un;
+	    *nptr = (varnumber_T)un;
     }
     if (unptr != NULL)
 	*unptr = un;

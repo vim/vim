@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -138,6 +138,9 @@
 #endif
 #ifndef SYS_OPTWIN_FILE
 #  define SYS_OPTWIN_FILE "$VIMRUNTIME/optwin.vim"
+#endif
+#ifndef VIM_DEFAULTS_FILE
+#  define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
 #endif
 #ifndef EVIM_FILE
 #  define EVIM_FILE	"$VIMRUNTIME/evim.vim"

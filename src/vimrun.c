@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *			this file by Vince Negri
@@ -17,89 +17,66 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef __CYGWIN__
-# include <conio.h>
+#include <conio.h>
+#ifndef WIN32_LEAN_AND_MEAN
+# define WIN32_LEAN_AND_MEAN
 #endif
+#include <windows.h>
 
 #ifdef __BORLANDC__
-extern char *
-#ifdef _RTLDLL
-__import
-#endif
-_oscmd;
 # define _kbhit kbhit
 # define _getch getch
-#else
-# ifdef __MINGW32__
-#  ifndef WIN32_LEAN_AND_MEAN
-#   define WIN32_LEAN_AND_MEAN
-#  endif
-#  include <windows.h>
-# else
-#  ifdef __CYGWIN__
-#   ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#   endif
-#   include <windows.h>
-#   define _getch getchar
-#  else
-extern char *_acmdln;
-#  endif
-# endif
 #endif
 
     int
 main(void)
 {
-    const char	*p;
-    int		retval;
-    int		inquote = 0;
-    int		silent = 0;
+    const wchar_t   *p;
+    int		    retval;
+    int		    inquote = 0;
+    int		    silent = 0;
+    HANDLE	    hstdout;
+    DWORD	    written;
 
-#ifdef __BORLANDC__
-    p = _oscmd;
-#else
-# if defined(__MINGW32__) || defined(__CYGWIN__)
-    p = (const char *)GetCommandLine();
-# else
-    p = _acmdln;
-# endif
-#endif
+    p = (const wchar_t *)GetCommandLineW();
+
     /*
      * Skip the executable name, which might be in "".
      */
     while (*p)
     {
-	if (*p == '"')
+	if (*p == L'"')
 	    inquote = !inquote;
-	else if (!inquote && *p == ' ')
+	else if (!inquote && *p == L' ')
 	{
 	    ++p;
 	    break;
 	}
 	++p;
     }
-    while (*p == ' ')
+    while (*p == L' ')
         ++p;
 
     /*
      * "-s" argument: don't wait for a key hit.
      */
-    if (p[0] == '-' && p[1] == 's' && p[2] == ' ')
+    if (p[0] == L'-' && p[1] == L's' && p[2] == L' ')
     {
 	silent = 1;
 	p += 3;
-	while (*p == ' ')
+	while (*p == L' ')
 	    ++p;
     }
 
     /* Print the command, including quotes and redirection. */
-    puts(p);
+    hstdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    WriteConsoleW(hstdout, p, wcslen(p), &written, NULL);
+    WriteConsoleW(hstdout, L"\r\n", 2, &written, NULL);
 
     /*
      * Do it!
      */
-    retval = system(p);
+    retval = _wsystem(p);
 
     if (retval == -1)
 	perror("vimrun system(): ");
@@ -110,10 +87,8 @@ main(void)
     {
 	puts("Hit any key to close this window...");
 
-#ifndef __CYGWIN__
 	while (_kbhit())
 	    (void)_getch();
-#endif
 	(void)_getch();
     }
 

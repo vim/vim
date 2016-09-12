@@ -6335,8 +6335,8 @@ msgstr ":q<Enter>                 вихід з Vim              "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr ":help<Enter> або <F1>     перегляд допомоги        "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr ":help version7<Enter>     інформація про версію    "
+msgid "type  :help version8<Enter>   for version info"
+msgstr ":help version8<Enter>     інформація про версію    "
 
 msgid "Running in Vi compatible mode"
 msgstr "Ви працюєте в режимі сумісному з Vi"

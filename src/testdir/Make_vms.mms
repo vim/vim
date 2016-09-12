@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2016 Feb 25
+# Last change:  2016 Aug 04
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -104,7 +104,7 @@ SCRIPT = $(SCRIPTS_ALL) $(SCRIPTS_MORE3)
 # On ODS-2 tests fail. 
 
 .IFDEF WANT_GUI
-SCRIPT_GUI = test16.out
+SCRIPT_GUI = 
 GUI_OPTION = -g
 .ENDIF
 

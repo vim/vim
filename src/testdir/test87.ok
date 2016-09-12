@@ -57,6 +57,7 @@ None
 [0, 1, 2, 3, 4, 5, 6, 7]
 [0, 1, 2, 3, 4, 5, 6, 7]
 [0, 1, 2, 3, 4, 5, 6, 7]
+l[2] threw vim.error: error:('list is locked',)
 [0, 1, 2, 3]
 [function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd']
 [function('New'), function('DictNew'), 'NewStart', 1, 2, 3, 'NewEnd', 'DictNewStart', 1, 2, 3, 'DictNewEnd', {'a': 'b'}]
@@ -447,20 +448,169 @@ tabpage:__dir__,number,valid,vars,window,windows
 range:__dir__,append,end,start
 dictionary:__dir__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
 list:__dir__,extend,locked
-function:__dir__,softspace
-output:__dir__,close,flush,isatty,readable,seekable,softspace,writable,write,writelines
+function:__dir__,args,auto_rebind,self,softspace
+output:__dir__,close,closed,flush,isatty,readable,seekable,softspace,writable,write,writelines
 {}
 {'a': 1}
 {'a': 1}
 []
 ['a', 'b', 'c', '7']
 function('tr')
+function('tr', [123, 3, 4])
+function('tr')
+function('tr', {})
+function('tr', [123, 3, 4], {})
+auto_rebind
+function('tr')
+function('tr', [123, 3, 4])
+function('tr')
+function('tr', {})
+function('tr', [123, 3, 4], {})
+a: <vim.Function 'Args'>
+pa1: <vim.Function 'Args', args=['abcArgsPA1']>
+pa2: <vim.Function 'Args'>
+pa3: <vim.Function 'Args', args=['abcArgsPA3'], self={'abcSelfPA3': 'abcSelfPA3Val'}>
+pa4: <vim.Function 'Args', self={'abcSelfPA4': 'abcSelfPA4Val'}>
+sa: <vim.Function 'SelfArgs'>
+psa1: <vim.Function 'SelfArgs', args=['abcArgsPSA1']>
+psa2: <vim.Function 'SelfArgs'>
+psa3: <vim.Function 'SelfArgs', args=['abcArgsPSA3'], self={'abcSelfPSA3': 'abcSelfPSA3Val'}>
+psa4: <vim.Function 'SelfArgs', self={'abcSelfPSA4': 'abcSelfPSA4Val'}>
+psa5: <vim.Function 'SelfArgs', self={'abcSelfPSA5': 'abcSelfPSA5Val'}>
+psa6: <vim.Function 'SelfArgs', args=['abcArgsPSA6'], self={'abcSelfPSA6': 'abcSelfPSA6Val'}>
+psa7: <vim.Function 'SelfArgs', args=['abcArgsPSA7']>
+psa8: <vim.Function 'SelfArgs'>
+psa9: <vim.Function 'SelfArgs', self={'abcSelfPSA9': 'abcSelfPSA9Val'}, auto_rebind=True>
+psaA: <vim.Function 'SelfArgs', args=['abcArgsPSAA'], self={'abcSelfPSAA': 'abcSelfPSAAVal'}, auto_rebind=True>
+psaB: <vim.Function 'SelfArgs', args=['abcArgsPSAB']>
+psaC: <vim.Function 'SelfArgs'>
+psar: <vim.Function 'SelfArgs', args=[{'abcArgsPSAr2': [{'rec': function('SelfArgs', [{...}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{...}]}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], self={'rec': function('SelfArgs', [{'abcArgsPSAr2': [{...}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}], {...}), 'self': {...}, 'abcSelfPSAr': 'abcSelfPSArVal', 'args': [{'abcArgsPSAr2': [{...}, {...}], 'abcArgsPSAr': 'abcArgsPSArVal'}]}>
+s(a): function('Args')
+s(pa1): function('Args', ['abcArgsPA1'])
+s(pa2): function('Args')
+s(pa3): function('Args', ['abcArgsPA3'], {'abcSelfPA3': 'abcSelfPA3Val'})
+s(pa4): function('Args', {'abcSelfPA4': 'abcSelfPA4Val'})
+s(sa): function('SelfArgs')
+s(psa1): function('SelfArgs', ['abcArgsPSA1'])
+s(psa2): function('SelfArgs')
+s(psa3): function('SelfArgs', ['abcArgsPSA3'], {'abcSelfPSA3': 'abcSelfPSA3Val'})
+s(psa4): function('SelfArgs', {'abcSelfPSA4': 'abcSelfPSA4Val'})
+s(psa5): function('SelfArgs', {'abcSelfPSA5': 'abcSelfPSA5Val'})
+s(psa6): function('SelfArgs', ['abcArgsPSA6'], {'abcSelfPSA6': 'abcSelfPSA6Val'})
+s(psa7): function('SelfArgs', ['abcArgsPSA7'])
+s(psa8): function('SelfArgs')
+s(psa9): function('SelfArgs', {'abcSelfPSA9': 'abcSelfPSA9Val'})
+s(psaA): function('SelfArgs', ['abcArgsPSAA'], {'abcSelfPSAA': 'abcSelfPSAAVal'})
+s(psaB): function('SelfArgs', ['abcArgsPSAB'])
+s(psaC): function('SelfArgs')
+d.sa(): [[], {'f': function('SelfArgs')}]
+d.psa1(): [['abcArgsPSA1'], {'f': function('SelfArgs', ['abcArgsPSA1'])}]
+d.psa2(): [[], {'f': function('SelfArgs')}]
+d.psa3(): [['abcArgsPSA3'], {'abcSelfPSA3': 'abcSelfPSA3Val'}]
+d.psa4(): [[], {'abcSelfPSA4': 'abcSelfPSA4Val'}]
+d.psa5(): [[], {'abcSelfPSA5': 'abcSelfPSA5Val'}]
+d.psa6(): [['abcArgsPSA6'], {'abcSelfPSA6': 'abcSelfPSA6Val'}]
+d.psa7(): [['abcArgsPSA7'], {'f': function('SelfArgs', ['abcArgsPSA7'])}]
+d.psa8(): [[], {'f': function('SelfArgs')}]
+d.psa9(): [[], {'f': function('SelfArgs', {'abcSelfPSA9': 'abcSelfPSA9Val'})}]
+d.psaA(): [['abcArgsPSAA'], {'f': function('SelfArgs', ['abcArgsPSAA'], {'abcSelfPSAA': 'abcSelfPSAAVal'})}]
+d.psaB(): [['abcArgsPSAB'], {'f': function('SelfArgs', ['abcArgsPSAB'])}]
+d.psaC(): [[], {'f': function('SelfArgs')}]
+a(): !result: []
+pa1(): !result: ['abcArgsPA1']
+pa2(): !result: []
+pa3(): !result: ['abcArgsPA3']
+pa4(): !result: []
+sa(): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa1(): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa2(): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa3(): !result: [['abcArgsPSA3'], {'abcSelfPSA3': 'abcSelfPSA3Val'}]
+psa4(): !result: [[], {'abcSelfPSA4': 'abcSelfPSA4Val'}]
+a(42, 43): !result: [42, 43]
+pa1(42, 43): !result: ['abcArgsPA1', 42, 43]
+pa2(42, 43): !result: [42, 43]
+pa3(42, 43): !result: ['abcArgsPA3', 42, 43]
+pa4(42, 43): !result: [42, 43]
+sa(42, 43): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa1(42, 43): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa2(42, 43): !exception: error:('Vim:E725: Calling dict function without Dictionary: SelfArgs',)
+psa3(42, 43): !result: [['abcArgsPSA3', 42, 43], {'abcSelfPSA3': 'abcSelfPSA3Val'}]
+psa4(42, 43): !result: [[42, 43], {'abcSelfPSA4': 'abcSelfPSA4Val'}]
+a(42, self={"20": 1}): !result: [42]
+pa1(42, self={"20": 1}): !result: ['abcArgsPA1', 42]
+pa2(42, self={"20": 1}): !result: [42]
+pa3(42, self={"20": 1}): !result: ['abcArgsPA3', 42]
+pa4(42, self={"20": 1}): !result: [42]
+sa(42, self={"20": 1}): !result: [[42], {'20': 1}]
+psa1(42, self={"20": 1}): !result: [['abcArgsPSA1', 42], {'20': 1}]
+psa2(42, self={"20": 1}): !result: [[42], {'20': 1}]
+psa3(42, self={"20": 1}): !result: [['abcArgsPSA3', 42], {'20': 1}]
+psa4(42, self={"20": 1}): !result: [[42], {'20': 1}]
+a(self={"20": 1}): !result: []
+pa1(self={"20": 1}): !result: ['abcArgsPA1']
+pa2(self={"20": 1}): !result: []
+pa3(self={"20": 1}): !result: ['abcArgsPA3']
+pa4(self={"20": 1}): !result: []
+sa(self={"20": 1}): !result: [[], {'20': 1}]
+psa1(self={"20": 1}): !result: [['abcArgsPSA1'], {'20': 1}]
+psa2(self={"20": 1}): !result: [[], {'20': 1}]
+psa3(self={"20": 1}): !result: [['abcArgsPSA3'], {'20': 1}]
+psa4(self={"20": 1}): !result: [[], {'20': 1}]
+a.args: None
+pa1.args: ['abcArgsPA1']
+pa2.args: None
+pa3.args: ['abcArgsPA3']
+pa4.args: None
+sa.args: None
+psa1.args: ['abcArgsPSA1']
+psa2.args: None
+psa3.args: ['abcArgsPSA3']
+psa4.args: None
+a.self: None
+pa1.self: None
+pa2.self: None
+pa3.self: {'abcSelfPA3': 'abcSelfPA3Val'}
+pa4.self: {'abcSelfPA4': 'abcSelfPA4Val'}
+sa.self: None
+psa1.self: None
+psa2.self: None
+psa3.self: {'abcSelfPSA3': 'abcSelfPSA3Val'}
+psa4.self: {'abcSelfPSA4': 'abcSelfPSA4Val'}
+a.name: 'Args'
+pa1.name: 'Args'
+pa2.name: 'Args'
+pa3.name: 'Args'
+pa4.name: 'Args'
+sa.name: 'SelfArgs'
+psa1.name: 'SelfArgs'
+psa2.name: 'SelfArgs'
+psa3.name: 'SelfArgs'
+psa4.name: 'SelfArgs'
+a.auto_rebind: 1
+pa1.auto_rebind: 1
+pa2.auto_rebind: 1
+pa3.auto_rebind: 0
+pa4.auto_rebind: 0
+sa.auto_rebind: 1
+psa1.auto_rebind: 1
+psa2.auto_rebind: 1
+psa3.auto_rebind: 0
+psa4.auto_rebind: 0
+psa5.auto_rebind: 0
+psa6.auto_rebind: 0
+psa7.auto_rebind: 1
+psa8.auto_rebind: 1
+psa9.auto_rebind: 1
+psaA.auto_rebind: 1
+psaB.auto_rebind: 1
+psaC.auto_rebind: 1
 '
 abcdef
-line  :
+Error detected while processing function RunTest[]..Test:
+line :
 abcdef
 abcA
-line  :
+line :
 abcB'
 ['a', 'dup_a']
 ['a', 'a']
@@ -478,7 +628,7 @@ b'testdir'
 test87.in
 > Output
 >> OutputSetattr
-del sys.stdout.softspace:(<class 'AttributeError'>, AttributeError("can't delete OutputObject attributes",))
+del sys.stdout.softspace:(<class 'AttributeError'>, AttributeError('cannot delete OutputObject attributes',))
 >>> Testing NumberToLong using sys.stdout.softspace = %s
 sys.stdout.softspace = []:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got list',))
 sys.stdout.softspace = None:(<class 'TypeError'>, TypeError('expected int() or something supporting coercing to int(), but got NoneType',))
@@ -503,6 +653,11 @@ assert sys.stdout.writable()==True:NOT FAILED
 assert sys.stdout.readable()==False:NOT FAILED
 assert sys.stderr.writable()==True:NOT FAILED
 assert sys.stderr.readable()==False:NOT FAILED
+assert sys.stdout.closed()==False:NOT FAILED
+assert sys.stderr.closed()==False:NOT FAILED
+assert sys.stdout.errors=="strict":NOT FAILED
+assert sys.stderr.errors=="strict":NOT FAILED
+assert sys.stdout.encoding==sys.stderr.encoding:NOT FAILED
 sys.stdout.write(None):(<class 'TypeError'>, TypeError("Can't convert 'NoneType' object to str implicitly",))
 >> OutputWriteLines
 sys.stdout.writelines(None):(<class 'TypeError'>, TypeError("'NoneType' object is not iterable",))
@@ -1046,9 +1201,20 @@ l.locked = FailingTrue():(<class 'NotImplementedError'>, NotImplementedError('bo
 l.xxx = True:(<class 'AttributeError'>, AttributeError('cannot set attribute xxx',))
 > Function
 >> FunctionConstructor
+>>> FunctionConstructor
 vim.Function("123"):(<class 'ValueError'>, ValueError('unnamed function 123 does not exist',))
 vim.Function("xxx_non_existent_function_xxx"):(<class 'ValueError'>, ValueError('function xxx_non_existent_function_xxx does not exist',))
 vim.Function("xxx#non#existent#function#xxx"):NOT FAILED
+vim.Function("xxx_non_existent_function_xxx2", args=[]):(<class 'ValueError'>, ValueError('function xxx_non_existent_function_xxx2 does not exist',))
+vim.Function("xxx_non_existent_function_xxx3", self={}):(<class 'ValueError'>, ValueError('function xxx_non_existent_function_xxx3 does not exist',))
+vim.Function("xxx_non_existent_function_xxx4", args=[], self={}):(<class 'ValueError'>, ValueError('function xxx_non_existent_function_xxx4 does not exist',))
+>>> FunctionNew
+vim.Function("tr", self="abcFuncSelf"):(<class 'AttributeError'>, AttributeError('keys',))
+vim.Function("tr", args=427423):(<class 'TypeError'>, TypeError('unable to convert int to vim list',))
+vim.Function("tr", self="abcFuncSelf2", args="abcFuncArgs2"):(<class 'AttributeError'>, AttributeError('keys',))
+vim.Function(self="abcFuncSelf2", args="abcFuncArgs2"):(<class 'AttributeError'>, AttributeError('keys',))
+vim.Function("tr", "", self="abcFuncSelf2", args="abcFuncArgs2"):(<class 'AttributeError'>, AttributeError('keys',))
+vim.Function("tr", ""):(<class 'TypeError'>, TypeError('function takes exactly 1 argument (2 given)',))
 >> FunctionCall
 >>> Testing StringToChars using f({%s : 1})
 f({1 : 1}):(<class 'TypeError'>, TypeError('expected bytes() or str() instance, but got int',))

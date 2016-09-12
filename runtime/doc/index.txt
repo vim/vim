@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.4.  Last change: 2016 Mar 12
+*index.txt*     For Vim version 8.0.  Last change: 2016 Aug 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -49,6 +49,7 @@ tag		char		action in Insert mode	~
 |i_CTRL-G_k|	CTRL-G k	line up, to column where inserting started
 |i_CTRL-G_k|	CTRL-G <Up>	line up, to column where inserting started
 |i_CTRL-G_u|	CTRL-G u	start new undoable edit
+|i_CTRL-G_U|	CTRL-G U	don't break undo with next cursor movement
 |i_<BS>|	<BS>		delete character before the cursor
 |i_digraph|	{char1}<BS>{char2}
 				enter digraph (only when 'digraph' option set)
@@ -859,6 +860,7 @@ tag		command	      note action in Visual mode	~
 ------------------------------------------------------------------------------
 |v_CTRL-\_CTRL-N| CTRL-\ CTRL-N	   stop Visual mode
 |v_CTRL-\_CTRL-G| CTRL-\ CTRL-G	   go to mode specified with 'insertmode'
+|v_CTRL-A|	CTRL-A		2  add N to number in highlighted text
 |v_CTRL-C|	CTRL-C		   stop Visual mode
 |v_CTRL-G|	CTRL-G		   toggle between Visual mode and Select mode
 |v_<BS>|	<BS>		2  Select mode: delete highlighted area
@@ -867,6 +869,7 @@ tag		command	      note action in Visual mode	~
 				   command
 |v_CTRL-V|	CTRL-V		   make Visual mode blockwise or stop Visual
 				   mode
+|v_CTRL-X|	CTRL-X		2  subtract N from number in highlighted text
 |v_<Esc>|	<Esc>		   stop Visual mode
 |v_CTRL-]|	CTRL-]		   jump to highlighted tag
 |v_!|		!{filter}	2  filter the highlighted lines through the
@@ -923,6 +926,8 @@ tag		command	      note action in Visual mode	~
 |v_a}|		a}		   same as aB
 |v_c|		c		2  delete highlighted area and start insert
 |v_d|		d		2  delete highlighted area
+|v_g_CTRL-A|	g CTRL-A	2  add N to number in highlighted text
+|v_g_CTRL-X|	g CTRL-X	2  subtract N from number in highlighted text
 |v_gJ|		gJ		2  join the highlighted lines without
 				   inserting spaces
 |v_gq|		gq		2  format the highlighted lines
@@ -979,7 +984,7 @@ tag		command	      action in Command-line editing mode	~
 |c_CTRL-E|	CTRL-E		cursor to end of command-line
 |'cedit'|	CTRL-F		default value for 'cedit': opens the
 				command-line window; otherwise not used
-		CTRL-G		not used
+|c_CTRL-G|	CTRL-G		next match when 'incsearch' is active
 |c_<BS>|	<BS>		delete the character in front of the cursor
 |c_digraph|	{char1} <BS> {char2}
 				enter digraph when 'digraph' is on
@@ -1012,7 +1017,7 @@ tag		command	      action in Command-line editing mode	~
 				insert the contents of a register or object
 				under the cursor literally
 		CTRL-S		(used for terminal control flow)
-		CTRL-T		not used
+|c_CTRL-T|	CTRL-T		previous match when 'incsearch' is active
 |c_CTRL-U|	CTRL-U		remove all characters
 |c_CTRL-V|	CTRL-V		insert next non-digit literally, insert three
 				digit decimal number as a single byte.
@@ -1134,6 +1139,7 @@ tag	      command	      action ~
 |:caddfile|	:caddf[ile]	add error message to current quickfix list
 |:call|		:cal[l]		call a function
 |:catch|	:cat[ch]	part of a :try command
+|:cbottom|	:cbo[ttom]	scroll to the bottom of the quickfix window
 |:cbuffer|	:cb[uffer]	parse error messages and jump to first error
 |:cc|		:cc		go to specific error
 |:cclose|	:ccl[ose]	close quickfix window
@@ -1151,8 +1157,10 @@ tag	      command	      action ~
 |:chdir|	:chd[ir]	change directory
 |:checkpath|	:che[ckpath]	list included files
 |:checktime|	:checkt[ime]	check timestamp of loaded buffers
-|:clist|	:cl[ist]	list all errors
+|:chistory|	:chi[story]	list the error lists
 |:clast|	:cla[st]	go to the specified error, default last one
+|:clearjumps|	:cle[arjumps]	clear the jump list
+|:clist|	:cl[ist]	list all errors
 |:close|	:clo[se]	close current window
 |:cmap|		:cm[ap]		like ":map" but for Command-line mode
 |:cmapclear|	:cmapc[lear]	clear all mappings for Command-line mode
@@ -1199,7 +1207,7 @@ tag	      command	      action ~
 |:display|	:di[splay]	display registers
 |:djump|	:dj[ump]	jump to #define
 |:dl|		:dl		short for |:delete| with the 'l' flag
-|:dl|		:del[ete]l	short for |:delete| with the 'l' flag
+|:del|		:del[ete]l	short for |:delete| with the 'l' flag
 |:dlist|	:dli[st]	list #defines
 |:doautocmd|	:do[autocmd]	apply autocommands to current buffer
 |:doautoall|	:doautoa[ll]	apply autocommands for all loaded buffers
@@ -1231,6 +1239,7 @@ tag	      command	      action ~
 |:file|		:f[ile]		show or set the current file name
 |:files|	:files		list all files in the buffer list
 |:filetype|	:filet[ype]	switch file type detection on/off
+|:filter|	:filt[er]	filter output of following command
 |:find|		:fin[d]		find file in 'path' and edit it
 |:finally|	:fina[lly]	part of a :try command
 |:finish|	:fini[sh]	quit sourcing a Vim script
@@ -1293,6 +1302,7 @@ tag	      command	      action ~
 |:last|		:la[st]		go to the last file in the argument list
 |:language|	:lan[guage]	set the language (locale)
 |:later|	:lat[er]	go to newer change, redo
+|:lbottom|	:lbo[ttom]	scroll to the bottom of the location window
 |:lbuffer|	:lb[uffer]	parse locations and jump to first location
 |:lcd|		:lc[d]		change directory locally
 |:lchdir|	:lch[dir]	change directory locally
@@ -1312,6 +1322,7 @@ tag	      command	      action ~
 |:lgrep|	:lgr[ep]	run 'grepprg' and jump to first match
 |:lgrepadd|	:lgrepa[dd]	like :grep, but append to current list
 |:lhelpgrep|	:lh[elpgrep]	like ":helpgrep" but uses location list
+|:lhistory|	:lhi[story]	list the location lists
 |:ll|		:ll		go to specific location
 |:llast|	:lla[st]	go to the specified location, default last one
 |:llist|	:lli[st]	list all locations

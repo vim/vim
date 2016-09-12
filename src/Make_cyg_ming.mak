@@ -42,7 +42,8 @@ DIRECTX=no
 FEATURES=HUGE
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
-ARCH=i686
+# If not set, it will be automatically detected. (Normally i686 or x86-64.)
+#ARCH=i686
 # Set to yes to cross-compile from unix; no=native Windows (and Cygwin).
 CROSS=no
 # Set to path to iconv.h and libiconv.a to enable using 'iconv.dll'.
@@ -67,7 +68,11 @@ CSCOPE=yes
 # Set to yes to enable Netbeans support (requires CHANNEL).
 NETBEANS=$(GUI)
 # Set to yes to enable inter process communication.
+ifeq (HUGE, $(FEATURES))
+CHANNEL=yes
+else
 CHANNEL=$(GUI)
+endif
 
 
 # Link against the shared version of libstdc++ by default.  Set
@@ -108,13 +113,53 @@ INTLLIB=gnu_gettext
 #INTLPATH=$(GETTEXT)/lib
 #INTLLIB=intl
 
+
+# Command definitions (depends on cross-compiling and shell)
+ifeq ($(CROSS),yes)
+# cross-compiler prefix:
+ifndef CROSS_COMPILE
+CROSS_COMPILE = i586-pc-mingw32msvc-
+endif
+DEL = rm
+MKDIR = mkdir -p
+DIRSLASH = /
+else
+# normal (Windows) compilation:
+ifndef CROSS_COMPILE
+CROSS_COMPILE =
+endif
+ifneq (sh.exe, $(SHELL))
+DEL = rm
+MKDIR = mkdir -p
+DIRSLASH = /
+else
+DEL = del
+MKDIR = mkdir
+DIRSLASH = \\
+endif
+endif
+CC := $(CROSS_COMPILE)gcc
+CXX := $(CROSS_COMPILE)g++
+ifeq ($(UNDER_CYGWIN),yes)
+WINDRES := $(CROSS_COMPILE)windres
+else
+WINDRES := windres
+endif
+WINDRES_CC = $(CC)
+
+# Get the default ARCH.
+ifndef ARCH
+ARCH := $(shell $(CC) -dumpmachine | sed -e 's/-.*//' -e 's/_/-/' -e 's/^mingw32$$/i686/')
+endif
+
+
 #	Perl interface:
 #	  PERL=[Path to Perl directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_PERL=yes (to load the Perl DLL dynamically)
-#	  PERL_VER=[Perl version, eg 56, 58, 510] (default is 56)
+#	  PERL_VER=[Perl version, eg 56, 58, 510] (default is 524)
 ifdef PERL
 ifndef PERL_VER
-PERL_VER=56
+PERL_VER=524
 endif
 ifndef DYNAMIC_PERL
 DYNAMIC_PERL=yes
@@ -143,14 +188,14 @@ endif
 #	Lua interface:
 #	  LUA=[Path to Lua directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_LUA=yes (to load the Lua DLL dynamically)
-#	  LUA_VER=[Lua version, eg 51, 52] (default is 51)
+#	  LUA_VER=[Lua version, eg 51, 52] (default is 53)
 ifdef LUA
 ifndef DYNAMIC_LUA
 DYNAMIC_LUA=yes
 endif
 
 ifndef LUA_VER
-LUA_VER=51
+LUA_VER=53
 endif
 
 ifeq (no,$(DYNAMIC_LUA))
@@ -162,7 +207,7 @@ endif
 #	MzScheme interface:
 #	  MZSCHEME=[Path to MzScheme directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLL dynamically)
-#	  MZSCHEME_VER=[MzScheme version] (default is 205_000)
+#	  MZSCHEME_VER=[MzScheme version] (default is 3m_a0solc (6.6))
 #	  MZSCHEME_DEBUG=no
 ifdef MZSCHEME
 ifndef DYNAMIC_MZSCHEME
@@ -170,7 +215,7 @@ DYNAMIC_MZSCHEME=yes
 endif
 
 ifndef MZSCHEME_VER
-MZSCHEME_VER=205_000
+MZSCHEME_VER=3m_a0solc
 endif
 
 # for version 4.x we need to generate byte-code for Scheme base
@@ -218,7 +263,7 @@ endif
 #	Python interface:
 #	  PYTHON=[Path to Python directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
-#	  PYTHON_VER=[Python version, eg 22, 23, ..., 27] (default is 22)
+#	  PYTHON_VER=[Python version, eg 22, 23, ..., 27] (default is 27)
 ifdef PYTHON
 ifndef DYNAMIC_PYTHON
 DYNAMIC_PYTHON=yes
@@ -251,14 +296,14 @@ endif
 #	Python3 interface:
 #	  PYTHON3=[Path to Python3 directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)
-#	  PYTHON3_VER=[Python3 version, eg 31, 32] (default is 31)
+#	  PYTHON3_VER=[Python3 version, eg 31, 32] (default is 35)
 ifdef PYTHON3
 ifndef DYNAMIC_PYTHON3
 DYNAMIC_PYTHON3=yes
 endif
 
 ifndef PYTHON3_VER
-PYTHON3_VER=31
+PYTHON3_VER=35
 endif
 ifndef DYNAMIC_PYTHON3_DLL
 DYNAMIC_PYTHON3_DLL=python$(PYTHON3_VER).dll
@@ -283,18 +328,18 @@ endif
 #	TCL interface:
 #	  TCL=[Path to TCL directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_TCL=yes (to load the TCL DLL dynamically)
-#	  TCL_VER=[TCL version, eg 83, 84] (default is 83)
-#	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.3)
+#	  TCL_VER=[TCL version, eg 83, 84] (default is 86)
+#	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.6)
 #	    You must set TCL_VER_LONG when you set TCL_VER.
 ifdef TCL
 ifndef DYNAMIC_TCL
 DYNAMIC_TCL=yes
 endif
 ifndef TCL_VER
-TCL_VER = 83
+TCL_VER = 86
 endif
 ifndef TCL_VER_LONG
-TCL_VER_LONG = 8.3
+TCL_VER_LONG = 8.6
 endif
 TCLINC += -I$(TCL)/include
 endif
@@ -303,36 +348,39 @@ endif
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
-#	  RUBY_VER=[Ruby version, eg 18, 19, 20] (default is 18)
-#	  RUBY_VER_LONG=[Ruby version, eg 1.8, 1.9.1, 2.0.0] (default is 1.8)
-#	    You must set RUBY_VER_LONG when changing RUBY_VER.
-#	    RUBY_API_VER is derived from RUBY_VER_LONG.
+#	  RUBY_VER=[Ruby version, eg 19, 22] (default is 22)
+#	  RUBY_API_VER_LONG=[Ruby API version, eg 1.8, 1.9.1, 2.2.0]
+#			    (default is 2.2.0)
+#	    You must set RUBY_API_VER_LONG when changing RUBY_VER.
 #	    Note: If you use Ruby 1.9.3, set as follows:
 #	      RUBY_VER=19
-#	      RUBY_VER_LONG=1.9.1 (not 1.9.3, because the API version is 1.9.1.)
+#	      RUBY_API_VER_LONG=1.9.1 (not 1.9.3, because the API version is 1.9.1.)
 ifdef RUBY
 ifndef DYNAMIC_RUBY
 DYNAMIC_RUBY=yes
 endif
 #  Set default value
 ifndef RUBY_VER
-RUBY_VER = 18
+RUBY_VER = 22
 endif
 ifndef RUBY_VER_LONG
-RUBY_VER_LONG = 1.8
+RUBY_VER_LONG = 2.2.0
+endif
+ifndef RUBY_API_VER_LONG
+RUBY_API_VER_LONG = $(RUBY_VER_LONG)
 endif
 ifndef RUBY_API_VER
-RUBY_API_VER = $(subst .,,$(RUBY_VER_LONG))
+RUBY_API_VER = $(subst .,,$(RUBY_API_VER_LONG))
 endif
 
 ifndef RUBY_PLATFORM
 ifeq ($(RUBY_VER), 16)
 RUBY_PLATFORM = i586-mswin32
 else
-ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_VER_LONG)/i386-mingw32),)
+ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/i386-mingw32),)
 RUBY_PLATFORM = i386-mingw32
 else
-ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_VER_LONG)/x64-mingw32),)
+ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/x64-mingw32),)
 RUBY_PLATFORM = x64-mingw32
 else
 RUBY_PLATFORM = i386-mswin32
@@ -361,9 +409,9 @@ ifeq (19, $(word 1,$(sort 19 $(RUBY_VER))))
 RUBY_19_OR_LATER = 1
 endif
 
-RUBYINC = -I $(RUBY)/lib/ruby/$(RUBY_VER_LONG)/$(RUBY_PLATFORM)
+RUBYINC = -I $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/$(RUBY_PLATFORM)
 ifdef RUBY_19_OR_LATER
-RUBYINC += -I $(RUBY)/include/ruby-$(RUBY_VER_LONG) -I $(RUBY)/include/ruby-$(RUBY_VER_LONG)/$(RUBY_PLATFORM)
+RUBYINC += -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG) -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG)/$(RUBY_PLATFORM)
 endif
 ifeq (no, $(DYNAMIC_RUBY))
 RUBYLIB = -L$(RUBY)/lib -l$(RUBY_INSTALL_NAME)
@@ -375,47 +423,16 @@ endif # RUBY
 # Any other defines can be included here.
 DEF_GUI=-DFEAT_GUI_W32 -DFEAT_CLIPBOARD
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
-	-DHAVE_PATHDEF -DFEAT_$(FEATURES)
+	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H
 ifeq ($(ARCH),x86-64)
 DEFINES+=-DMS_WIN64
 endif
-ifeq ($(CROSS),yes)
-# cross-compiler prefix:
-ifndef CROSS_COMPILE
-CROSS_COMPILE = i586-pc-mingw32msvc-
-endif
-DEL = rm
-MKDIR = mkdir -p
-DIRSLASH = /
-else
-# normal (Windows) compilation:
-ifndef CROSS_COMPILE
-CROSS_COMPILE =
-endif
-ifneq (sh.exe, $(SHELL))
-DEL = rm
-MKDIR = mkdir -p
-DIRSLASH = /
-else
-DEL = del
-MKDIR = mkdir
-DIRSLASH = \\
-endif
-endif
-CC := $(CROSS_COMPILE)gcc
-CXX := $(CROSS_COMPILE)g++
-ifeq ($(UNDER_CYGWIN),yes)
-WINDRES := $(CROSS_COMPILE)windres
-else
-WINDRES := windres
-endif
-WINDRES_CC = $(CC)
 
 #>>>>> end of choices
 ###########################################################################
 
 CFLAGS = -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
-CXXFLAGS = -std=c++11
+CXXFLAGS = -std=gnu++11
 WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
 EXTRA_LIBS =
 
@@ -588,27 +605,33 @@ endif
 
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lversion
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os_w32exe.o
+CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
+	$(OUTDIR)/arabic.o \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
 	$(OUTDIR)/crypt.o \
 	$(OUTDIR)/crypt_zip.o \
+	$(OUTDIR)/dict.o \
 	$(OUTDIR)/diff.o \
 	$(OUTDIR)/digraph.o \
 	$(OUTDIR)/edit.o \
 	$(OUTDIR)/eval.o \
+	$(OUTDIR)/evalfunc.o \
 	$(OUTDIR)/ex_cmds.o \
 	$(OUTDIR)/ex_cmds2.o \
 	$(OUTDIR)/ex_docmd.o \
 	$(OUTDIR)/ex_eval.o \
 	$(OUTDIR)/ex_getln.o \
+	$(OUTDIR)/farsi.o \
 	$(OUTDIR)/fileio.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
 	$(OUTDIR)/json.o \
+	$(OUTDIR)/list.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \
@@ -633,11 +656,13 @@ OBJ = \
 	$(OUTDIR)/search.o \
 	$(OUTDIR)/sha256.o \
 	$(OUTDIR)/spell.o \
+	$(OUTDIR)/spellfile.o \
 	$(OUTDIR)/syntax.o \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
+	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
 	$(OUTDIR)/vimrc.o \
 	$(OUTDIR)/window.o
@@ -723,6 +748,7 @@ OBJ += $(GUIOBJ)
 LFLAGS += -mwindows
 OUTDIR = gobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
 else
+OBJ += $(CUIOBJ)
 TARGET := vim$(DEBUG_SUFFIX).exe
 OUTDIR = obj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
 endif
@@ -838,6 +864,7 @@ endif
 INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
 	structs.h regexp.h option.h ex_cmds.h proto.h globals.h farsi.h \
 	gui.h
+CUI_INCL = iscygpty.h
 
 $(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
@@ -882,6 +909,12 @@ endif
 if_perl.c: if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap \
 	     $(PERLTYPEMAP) if_perl.xs > $@
+
+$(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
+	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
+
+$(OUTDIR)/main.o:		main.c $(INCL) $(CUI_INCL)
+	$(CC) -c $(CFLAGS) main.c -o $(OUTDIR)/main.o
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o

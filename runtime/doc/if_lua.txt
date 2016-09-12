@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 7.4.  Last change: 2015 Oct 16
+*if_lua.txt*    For Vim version 8.0.  Last change: 2015 Oct 16
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
@@ -58,6 +58,12 @@ Example:
 		linenr, #curline))
 	EOF
 	endfunction
+<
+To see what version of Lua you have: >
+	:lua print(_VERSION)
+
+If you use LuaJIT you can also use this: >
+	:lua print(jit.version)
 <
 
 							*:luado*

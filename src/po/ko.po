@@ -5944,8 +5944,8 @@ msgstr "끝내려면                   :q<엔터>               입력"
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "온라인 도움말을 보려면     :help<엔터> 또는 <F1>  입력"
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "판 정보를 보려면           :help version7<엔터>   입력"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "판 정보를 보려면           :help version8<엔터>   입력"
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi 호환 상태로 실행중입니다"

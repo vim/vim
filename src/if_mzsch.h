@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * MzScheme interface for Vim, wrapper around scheme.h
  */
@@ -8,6 +8,11 @@
 /* Hack to engage Cygwin-specific settings */
 # define __CYGWIN32__
 # include <stdint.h>
+#endif
+
+#ifdef PROTO
+/* avoid syntax error for defining Thread_Local_Variables. */
+# define __thread /* empty */
 #endif
 
 /* #ifdef needed for "make depend" */

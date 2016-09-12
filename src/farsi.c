@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -9,9 +9,11 @@
 
 /*
  * farsi.c: functions for Farsi language
- *
- * Included by main.c, when FEAT_FKMAP is defined.
  */
+
+#include "vim.h"
+
+#if defined(FEAT_FKMAP) || defined(PROTO)
 
 static int toF_Xor_X_(int c);
 static int F_is_TyE(int c);
@@ -35,7 +37,7 @@ static int toF_ending(int c);
 static void lrswapbuf(char_u *buf, int len);
 
 /*
-** Convert the given Farsi character into a _X or _X_ type
+ * Convert the given Farsi character into a _X or _X_ type
 */
     static int
 toF_Xor_X_(int c)
@@ -44,61 +46,35 @@ toF_Xor_X_(int c)
 
     switch (c)
     {
-	case BE:
-		return _BE;
-	case PE:
-		return _PE;
-	case TE:
-		return _TE;
-	case SE:
-		return _SE;
-	case JIM:
-		return _JIM;
-	case CHE:
-		return _CHE;
-	case HE_J:
-		return _HE_J;
-	case XE:
-		return _XE;
-	case SIN:
-		return _SIN;
-	case SHIN:
-		return _SHIN;
-	case SAD:
-		return _SAD;
-	case ZAD:
-		return _ZAD;
-	case AYN:
-		return _AYN;
-	case AYN_:
-		return _AYN_;
-	case GHAYN:
-		return _GHAYN;
-	case GHAYN_:
-		return _GHAYN_;
-	case FE:
-		return _FE;
-	case GHAF:
-		return _GHAF;
-	case KAF:
-		return _KAF;
-	case GAF:
-		return _GAF;
-	case LAM:
-		return _LAM;
-	case MIM:
-		return _MIM;
-	case NOON:
-		return _NOON;
+	case BE: return _BE;
+	case PE: return _PE;
+	case TE: return _TE;
+	case SE: return _SE;
+	case JIM: return _JIM;
+	case CHE: return _CHE;
+	case HE_J: return _HE_J;
+	case XE: return _XE;
+	case SIN: return _SIN;
+	case SHIN: return _SHIN;
+	case SAD: return _SAD;
+	case ZAD: return _ZAD;
+	case AYN: return _AYN;
+	case AYN_: return _AYN_;
+	case GHAYN: return _GHAYN;
+	case GHAYN_: return _GHAYN_;
+	case FE: return _FE;
+	case GHAF: return _GHAF;
+	case KAF: return _KAF;
+	case GAF: return _GAF;
+	case LAM: return _LAM;
+	case MIM: return _MIM;
+	case NOON: return _NOON;
 	case YE:
-	case YE_:
-		return _YE;
+	case YE_: return _YE;
 	case YEE:
-	case YEE_:
-		return _YEE;
+	case YEE_: return _YEE;
 	case IE:
-	case IE_:
-		return _IE;
+	case IE_: return _IE;
 	case F_HE:
 		tempc = _HE;
 
@@ -128,86 +104,58 @@ toF_Xor_X_(int c)
 }
 
 /*
-** Convert the given Farsi character into Farsi capital character .
+ * Convert the given Farsi character into Farsi capital character.
 */
-    int
-toF_TyA(int c )
+    static int
+toF_TyA(int c)
 {
     switch (c)
     {
-	case ALEF_:
-		return ALEF;
-	case ALEF_U_H_:
-		return ALEF_U_H;
-	case _BE:
-		return BE;
-	case _PE:
-		return PE;
-	case _TE:
-		return TE;
-	case _SE:
-		return SE;
-	case _JIM:
-		return JIM;
-	case _CHE:
-		return CHE;
-	case _HE_J:
-		return HE_J;
-	case _XE:
-		return XE;
-	case _SIN:
-		return SIN;
-	case _SHIN:
-		return SHIN;
-	case _SAD:
-		return SAD;
-	case _ZAD:
-		return ZAD;
+	case ALEF_: return ALEF;
+	case ALEF_U_H_: return ALEF_U_H;
+	case _BE: return BE;
+	case _PE: return PE;
+	case _TE: return TE;
+	case _SE: return SE;
+	case _JIM: return JIM;
+	case _CHE: return CHE;
+	case _HE_J: return HE_J;
+	case _XE: return XE;
+	case _SIN: return SIN;
+	case _SHIN: return SHIN;
+	case _SAD: return SAD;
+	case _ZAD: return ZAD;
 	case _AYN:
 	case AYN_:
-	case _AYN_:
-		return AYN;
+	case _AYN_: return AYN;
 	case _GHAYN:
 	case GHAYN_:
-	case _GHAYN_:
-		return GHAYN;
-	case _FE:
-		return FE;
-	case _GHAF:
-		return GHAF;
-/* I am not sure what it is !!!	    case _KAF_H: */
-	case _KAF:
-		return KAF;
-	case _GAF:
-		return GAF;
-	case _LAM:
-		return LAM;
-	case _MIM:
-		return MIM;
-	case _NOON:
-		return NOON;
+	case _GHAYN_: return GHAYN;
+	case _FE: return FE;
+	case _GHAF: return GHAF;
+	/* I am not sure what it is !!!	    case _KAF_H: */
+	case _KAF: return KAF;
+	case _GAF: return GAF;
+	case _LAM: return LAM;
+	case _MIM: return MIM;
+	case _NOON: return NOON;
 	case _YE:
-	case YE_:
-		return YE;
+	case YE_: return YE;
 	case _YEE:
-	case YEE_:
-		return YEE;
-	case TEE_:
-		return TEE;
+	case YEE_: return YEE;
+	case TEE_: return TEE;
 	case _IE:
-	case IE_:
-		return IE;
+	case IE_: return IE;
 	case _HE:
-	case _HE_:
-		return F_HE;
+	case _HE_: return F_HE;
     }
     return c;
 }
 
 /*
-** Is the character under the cursor+offset in the given buffer a join type.
-** That is a character that is combined with the others.
-** Note: the offset is used only for command line buffer.
+ * Is the character under the cursor+offset in the given buffer a join type.
+ * That is a character that is combined with the others.
+ * Note: the offset is used only for command line buffer.
 */
     static int
 F_is_TyB_TyC_TyD(int src, int offset)
@@ -258,7 +206,7 @@ F_is_TyB_TyC_TyD(int src, int offset)
 }
 
 /*
-** Is the Farsi character one of the terminating only type.
+ * Is the Farsi character one of the terminating only type.
 */
     static int
 F_is_TyE(int c)
@@ -281,7 +229,7 @@ F_is_TyE(int c)
 }
 
 /*
-** Is the Farsi character one of the none leading type.
+ * Is the Farsi character one of the none leading type.
 */
     static int
 F_is_TyC_TyD(int c)
@@ -305,7 +253,7 @@ F_is_TyC_TyD(int c)
 }
 
 /*
-** Convert a none leading Farsi char into a leading type.
+ * Convert a none leading Farsi char into a leading type.
 */
     static int
 toF_TyB(int c)
@@ -313,7 +261,7 @@ toF_TyB(int c)
     switch (c)
     {
 	case ALEF_:	return ALEF;
-	case ALEF_U_H_:	    return ALEF_U_H;
+	case ALEF_U_H_:	return ALEF_U_H;
 	case _AYN_:	return _AYN;
 	case AYN_:	return AYN;	/* exception - there are many of them */
 	case _GHAYN_:	return _GHAYN;
@@ -328,7 +276,7 @@ toF_TyB(int c)
 }
 
 /*
-** Overwrite the current redo and cursor characters + left adjust
+ * Overwrite the current redo and cursor characters + left adjust.
 */
     static void
 put_curr_and_l_to_X(int c)
@@ -373,7 +321,7 @@ put_and_redo(int c)
 }
 
 /*
-** Change the char. under the cursor to a X_ or X type
+ * Change the char. under the cursor to a X_ or X type
 */
     static void
 chg_c_toX_orX(void)
@@ -497,7 +445,7 @@ chg_c_toX_orX(void)
 }
 
 /*
-** Change the char. under the cursor to a _X_ or X_ type
+ * Change the char. under the cursor to a _X_ or X_ type
 */
 
     static void
@@ -549,7 +497,7 @@ chg_c_to_X_orX_(void)
 }
 
 /*
-** Change the char. under the cursor to a _X_ or _X type
+ * Change the char. under the cursor to a _X_ or _X type
 */
     static void
 chg_c_to_X_or_X (void)
@@ -580,10 +528,10 @@ chg_c_to_X_or_X (void)
 }
 
 /*
-** Change the character left to the cursor to a _X_ or X_ type
+ * Change the character left to the cursor to a _X_ or X_ type
 */
     static void
-chg_l_to_X_orX_ (void)
+chg_l_to_X_orX_(void)
 {
     int	tempc;
 
@@ -648,7 +596,7 @@ chg_l_to_X_orX_ (void)
 }
 
 /*
-** Change the character left to the cursor to a X or _X type
+ * Change the character left to the cursor to a X or _X type
 */
 
     static void
@@ -717,7 +665,7 @@ chg_l_toXor_X (void)
 }
 
 /*
-** Change the character right to the cursor to a _X or _X_ type
+ * Change the character right to the cursor to a _X or _X_ type
 */
 
     static void
@@ -742,7 +690,7 @@ chg_r_to_Xor_X_(void)
 }
 
 /*
-** Map Farsi keyboard when in fkmap mode.
+ * Map Farsi keyboard when in fkmap mode.
 */
 
     int
@@ -899,8 +847,8 @@ fkmap(int c)
 	    if (p_ri && c == NL && curwin->w_cursor.col)
 	    {
 		/*
-		** If the char before the cursor is _X_ or X_ do not change
-		** the one under the cursor with X type.
+		 * If the char before the cursor is _X_ or X_ do not change
+		 * the one under the cursor with X type.
 		*/
 
 		dec_cursor();
@@ -914,8 +862,7 @@ fkmap(int c)
 		inc_cursor();
 	    }
 
-	    if (!p_ri)
-	    if (!curwin->w_cursor.col)
+	    if (!p_ri && !curwin->w_cursor.col)
 	    {
 		switch (c)
 		{
@@ -1154,43 +1101,42 @@ fkmap(int c)
 
 	case 'a':
 		tempc = _SHIN;
-	    break;
+		break;
 	case 'A':
 		tempc = WAW_H;
-	    break;
+		break;
 	case 'b':
 		tempc = ZAL;
-	    break;
+		break;
 	case 'c':
 		tempc = ZE;
-	    break;
+		break;
 	case 'C':
 		tempc = JE;
-	    break;
+		break;
 	case 'd':
 		tempc = _YE;
-	    break;
+		break;
 	case 'D':
 		tempc = _YEE;
-	    break;
+		break;
 	case 'e':
 		tempc = _SE;
-	    break;
+		break;
 	case 'f':
 		tempc = _BE;
-	    break;
+		break;
 	case 'g':
 		tempc = _LAM;
-	    break;
+		break;
 	case 'G':
 	    if (!curwin->w_cursor.col  &&  STRLEN(ml_get_curline()))
-		{
+	    {
 
 		if (gchar_cursor() == _LAM)
 		    chg_c_toX_orX ();
-		else
-		    if (p_ri)
-			chg_c_to_X_or_X ();
+		else if (p_ri)
+		    chg_c_to_X_or_X ();
 	    }
 
 	    if (!p_ri)
@@ -1204,16 +1150,15 @@ fkmap(int c)
 	    {
 		chg_c_toX_orX ();
 		chg_l_toXor_X ();
-		    tempc = ALEF_U_H;
+		tempc = ALEF_U_H;
+	    }
+	    else if (F_is_TyB_TyC_TyD(SRC_EDT, AT_CURSOR))
+	    {
+		tempc = ALEF_U_H_;
+		chg_l_toXor_X ();
 	    }
 	    else
-		if (F_is_TyB_TyC_TyD(SRC_EDT, AT_CURSOR))
-		{
-			tempc = ALEF_U_H_;
-		    chg_l_toXor_X ();
-		}
-		else
-			tempc = ALEF_U_H;
+		tempc = ALEF_U_H;
 
 	    if (!p_ri)
 		inc_cursor();
@@ -1249,11 +1194,11 @@ fkmap(int c)
 	    {
 		if (F_is_TyB_TyC_TyD(SRC_EDT, AT_CURSOR))
 		{
-			tempc = ALEF_;
+		    tempc = ALEF_;
 		    chg_l_toXor_X ();
 		}
 		else
-			tempc = ALEF;
+		    tempc = ALEF;
 	    }
 
 	    if (!p_ri)
@@ -1261,8 +1206,8 @@ fkmap(int c)
 
 	    return tempc;
 	case 'i':
-	    if (!curwin->w_cursor.col  &&  STRLEN(ml_get_curline()))
-		{
+	    if (!curwin->w_cursor.col && STRLEN(ml_get_curline()))
+	    {
 		if (!p_ri && !F_is_TyE(tempc))
 		    chg_c_to_X_orX_ ();
 		if (p_ri)
@@ -1277,9 +1222,9 @@ fkmap(int c)
 		dec_cursor();
 
 	    if (F_is_TyB_TyC_TyD(SRC_EDT, AT_CURSOR))
-		    tempc = _HE_;
+		tempc = _HE_;
 	    else
-		    tempc = _HE;
+		tempc = _HE;
 
 	    if (!p_ri)
 		inc_cursor();
@@ -1289,7 +1234,7 @@ fkmap(int c)
 	    break;
 	case 'J':
 	    if (!curwin->w_cursor.col  &&  STRLEN(ml_get_curline()))
-		{
+	    {
 		if (p_ri)
 		    chg_c_to_X_or_X ();
 
@@ -1304,11 +1249,11 @@ fkmap(int c)
 
 	    if (F_is_TyB_TyC_TyD(SRC_EDT, AT_CURSOR))
 	    {
-		    tempc = TEE_;
+		tempc = TEE_;
 		chg_l_toXor_X ();
 	    }
 	    else
-			tempc = TEE;
+		tempc = TEE;
 
 	    if (!p_ri)
 		inc_cursor();
@@ -1385,7 +1330,7 @@ fkmap(int c)
 	    break;
 	case 'y':
 	    if (!curwin->w_cursor.col  &&  STRLEN(ml_get_curline()))
-		{
+	    {
 		if (!p_ri && !F_is_TyE(tempc))
 		    chg_c_to_X_orX_ ();
 		if (p_ri)
@@ -1434,7 +1379,7 @@ fkmap(int c)
     if ((F_isalpha(tempc) || F_isdigit(tempc)))
     {
 	if (!curwin->w_cursor.col  &&  STRLEN(ml_get_curline()))
-	    {
+	{
 	    if (!p_ri && !F_is_TyE(tempc))
 		chg_c_to_X_orX_ ();
 	    if (p_ri)
@@ -1461,7 +1406,7 @@ fkmap(int c)
 }
 
 /*
-** Convert a none leading Farsi char into a leading type.
+ * Convert a none leading Farsi char into a leading type.
 */
     static int
 toF_leading(int c)
@@ -1515,7 +1460,7 @@ toF_leading(int c)
 }
 
 /*
-** Convert a given Farsi char into right joining type.
+ * Convert a given Farsi char into right joining type.
 */
     static int
 toF_Rjoin(int c)
@@ -1571,7 +1516,7 @@ toF_Rjoin(int c)
 }
 
 /*
-** Can a given Farsi character join via its left edj.
+ * Can a given Farsi character join via its left edj.
 */
     static int
 canF_Ljoin(int c)
@@ -1645,7 +1590,7 @@ canF_Ljoin(int c)
 }
 
 /*
-** Can a given Farsi character join via its right edj.
+ * Can a given Farsi character join via its right edj.
 */
     static int
 canF_Rjoin(int c)
@@ -1673,7 +1618,7 @@ canF_Rjoin(int c)
 }
 
 /*
-** is a given Farsi character a terminating type.
+ * is a given Farsi character a terminating type.
 */
     static int
 F_isterm(int c)
@@ -1700,86 +1645,54 @@ F_isterm(int c)
 }
 
 /*
-** Convert the given Farsi character into a ending type .
+ * Convert the given Farsi character into a ending type .
 */
     static int
 toF_ending(int c)
 {
-
     switch (c)
     {
-	case _BE:
-		return BE;
-	case _PE:
-		return PE;
-	case _TE:
-		return TE;
-	case _SE:
-		return SE;
-	case _JIM:
-		return JIM;
-	case _CHE:
-		return CHE;
-	case _HE_J:
-		return HE_J;
-	case _XE:
-		return XE;
-	case _SIN:
-		return SIN;
-	case _SHIN:
-		return SHIN;
-	case _SAD:
-		return SAD;
-	case _ZAD:
-		return ZAD;
-	case _AYN:
-		return AYN;
-	case _AYN_:
-		return AYN_;
-	case _GHAYN:
-		return GHAYN;
-	case _GHAYN_:
-		return GHAYN_;
-	case _FE:
-		return FE;
-	case _GHAF:
-		return GHAF;
+	case _BE: return BE;
+	case _PE: return PE;
+	case _TE: return TE;
+	case _SE: return SE;
+	case _JIM: return JIM;
+	case _CHE: return CHE;
+	case _HE_J: return HE_J;
+	case _XE: return XE;
+	case _SIN: return SIN;
+	case _SHIN: return SHIN;
+	case _SAD: return SAD;
+	case _ZAD: return ZAD;
+	case _AYN: return AYN;
+	case _AYN_: return AYN_;
+	case _GHAYN: return GHAYN;
+	case _GHAYN_: return GHAYN_;
+	case _FE: return FE;
+	case _GHAF: return GHAF;
 	case _KAF_H:
-	case _KAF:
-		return KAF;
-	case _GAF:
-		return GAF;
-	case _LAM:
-		return LAM;
-	case _MIM:
-		return MIM;
-	case _NOON:
-		return NOON;
-	case _YE:
-		return YE_;
-	case YE_:
-		return YE;
-	case _YEE:
-		return YEE_;
-	case YEE_:
-		return YEE;
-	case TEE:
-		return TEE_;
-	case _IE:
-		return IE_;
-	case IE_:
-		return IE;
+	case _KAF: return KAF;
+	case _GAF: return GAF;
+	case _LAM: return LAM;
+	case _MIM: return MIM;
+	case _NOON: return NOON;
+	case _YE: return YE_;
+	case YE_: return YE;
+	case _YEE: return YEE_;
+	case YEE_: return YEE;
+	case TEE: return TEE_;
+	case _IE: return IE_;
+	case IE_: return IE;
 	case _HE:
-	case _HE_:
-		return F_HE;
+	case _HE_: return F_HE;
     }
     return c;
 }
 
 /*
-** Convert the Farsi 3342 standard into Farsi VIM.
+ * Convert the Farsi 3342 standard into Farsi VIM.
 */
-    void
+    static void
 conv_to_pvim(void)
 {
     char_u	*ptr;
@@ -1791,7 +1704,7 @@ conv_to_pvim(void)
 
 	llen = (int)STRLEN(ptr);
 
-	for ( i = 0; i < llen-1; i++)
+	for (i = 0; i < llen-1; i++)
 	{
 	    if (canF_Ljoin(ptr[i]) && canF_Rjoin(ptr[i+1]))
 	    {
@@ -1817,8 +1730,8 @@ conv_to_pvim(void)
      * Following lines contains Farsi encoded character.
      */
 
-    do_cmdline_cmd((char_u *)"%s/\202\231/\232/g");
-    do_cmdline_cmd((char_u *)"%s/\201\231/\370\334/g");
+    do_cmdline_cmd((char_u *)"%s/\202\231/\232/ge");
+    do_cmdline_cmd((char_u *)"%s/\201\231/\370\334/ge");
 
     /* Assume the screen has been messed up: clear it and redraw. */
     redraw_later(CLEAR);
@@ -1828,7 +1741,7 @@ conv_to_pvim(void)
 /*
  * Convert the Farsi VIM into Farsi 3342 standard.
  */
-    void
+    static void
 conv_to_pstd(void)
 {
     char_u	*ptr;
@@ -1837,20 +1750,15 @@ conv_to_pstd(void)
     /*
      * Following line contains Farsi encoded character.
      */
-
-    do_cmdline_cmd((char_u *)"%s/\232/\202\231/g");
+    do_cmdline_cmd((char_u *)"%s/\232/\202\231/ge");
 
     for (lnum = 1; lnum <= curbuf->b_ml.ml_line_count; ++lnum)
     {
 	ptr = ml_get((linenr_T)lnum);
-
 	llen = (int)STRLEN(ptr);
 
-	for ( i = 0; i < llen; i++)
-	{
+	for (i = 0; i < llen; i++)
 	    ptr[i] = toF_TyA(ptr[i]);
-
-	}
     }
 
     /* Assume the screen has been messed up: clear it and redraw. */
@@ -2148,7 +2056,7 @@ cmdl_fkmap(int c)
 	case 'f':   return _BE;
 	case 'g':   return _LAM;
 	case 'G':
-		    if (cmd_gchar(AT_CURSOR) == _LAM )
+		if (cmd_gchar(AT_CURSOR) == _LAM)
 		{
 		    cmd_pchar(LAM, AT_CURSOR);
 			    return ALEF_U_H;
@@ -2159,7 +2067,7 @@ cmdl_fkmap(int c)
 		else
 			return ALEF_U_H;
 	case 'h':
-		    if (cmd_gchar(AT_CURSOR) == _LAM )
+		if (cmd_gchar(AT_CURSOR) == _LAM)
 		{
 		    cmd_pchar(LA, AT_CURSOR);
 		    redrawcmdline();
@@ -2215,9 +2123,9 @@ cmdl_fkmap(int c)
 	case ',':   return WAW;
 	case '[':   return _JIM;
 	case ']':   return _CHE;
-	}
+    }
 
-	return c;
+    return c;
 }
 
 /*
@@ -2226,7 +2134,7 @@ cmdl_fkmap(int c)
     int
 F_isalpha(int c)
 {
-    return (( c >= TEE_ && c <= _YE)
+    return ((c >= TEE_ && c <= _YE)
 	    || (c >= ALEF_A && c <= YE)
 	    || (c >= _IE && c <= YE_));
 }
@@ -2246,45 +2154,42 @@ F_isdigit(int c)
     int
 F_ischar(int c)
 {
- return (c >= TEE_ && c <= YE_);
+    return (c >= TEE_ && c <= YE_);
 }
 
     void
-farsi_fkey(
-    cmdarg_T	*cap)
+farsi_f8(cmdarg_T *cap UNUSED)
 {
-    int		c = cap->cmdchar;
-
-    if (c == K_F8)
+    if (p_altkeymap)
     {
-	if (p_altkeymap)
+	if (curwin->w_farsi & W_R_L)
 	{
-	    if (curwin->w_farsi & W_R_L)
-	    {
-		p_fkmap = 0;
-		do_cmdline_cmd((char_u *)"set norl");
-		MSG("");
-	    }
-	    else
-	    {
-		p_fkmap = 1;
-		do_cmdline_cmd((char_u *)"set rl");
-		MSG("");
-	    }
-
-	    curwin->w_farsi = curwin->w_farsi ^ W_R_L;
+	    p_fkmap = 0;
+	    do_cmdline_cmd((char_u *)"set norl");
+	    MSG("");
 	}
-    }
-
-    if (c == K_F9)
-    {
-	if (p_altkeymap && curwin->w_p_rl)
+	else
 	{
-	    curwin->w_farsi = curwin->w_farsi ^ W_CONV;
-	    if (curwin->w_farsi & W_CONV)
-		conv_to_pvim();
-	    else
-		conv_to_pstd();
+	    p_fkmap = 1;
+	    do_cmdline_cmd((char_u *)"set rl");
+	    MSG("");
 	}
+
+	curwin->w_farsi = curwin->w_farsi ^ W_R_L;
     }
 }
+
+    void
+farsi_f9(cmdarg_T *cap UNUSED)
+{
+    if (p_altkeymap && curwin->w_p_rl)
+    {
+	curwin->w_farsi = curwin->w_farsi ^ W_CONV;
+	if (curwin->w_farsi & W_CONV)
+	    conv_to_pvim();
+	else
+	    conv_to_pstd();
+    }
+}
+
+#endif /* FEAT_FKMAP */

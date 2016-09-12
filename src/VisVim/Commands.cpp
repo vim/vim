@@ -575,7 +575,7 @@ static BOOL VimOpenFile(BSTR& FileName, long LineNr)
 	if (LineNr > 0)
 	{
 		// Goto line
-		sprintf(VimCmd, ":%d\n", LineNr);
+		sprintf(VimCmd, ":%ld\n", LineNr);
 		if (! VimOle.Method(DispatchId, "s", TO_OLE_STR_BUF(VimCmd, Buf)))
 			goto OleError;
 	}

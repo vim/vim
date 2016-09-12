@@ -950,6 +950,20 @@ func Test_type()
     call assert_equal(6, type(v:true))
     call assert_equal(7, type(v:none))
     call assert_equal(7, type(v:null))
+    call assert_equal(8, v:t_job)
+    call assert_equal(9, v:t_channel)
+    call assert_equal(v:t_number, type(0))
+    call assert_equal(v:t_string, type(""))
+    call assert_equal(v:t_func, type(function("tr")))
+    call assert_equal(v:t_func, type(function("tr", [8])))
+    call assert_equal(v:t_list, type([]))
+    call assert_equal(v:t_dict, type({}))
+    call assert_equal(v:t_float, type(0.0))
+    call assert_equal(v:t_bool, type(v:false))
+    call assert_equal(v:t_bool, type(v:true))
+    call assert_equal(v:t_none, type(v:none))
+    call assert_equal(v:t_none, type(v:null))
+
 
     call assert_equal(0, 0 + v:false)
     call assert_equal(1, 0 + v:true)
@@ -1050,6 +1064,178 @@ func Test_skip()
     call assert_false(0 && string(sp))
     call assert_false(0 && len(sp))
 
+endfunc
+
+"-------------------------------------------------------------------------------
+" Test 93:  :echo and string()					    {{{1
+"-------------------------------------------------------------------------------
+
+func Test_echo_and_string()
+    " String
+    let a = 'foo bar'
+    redir => result
+    echo a
+    echo string(a)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["foo bar",
+		     \ "'foo bar'"], l)
+
+    " Float
+    if has('float')
+	let a = -1.2e0
+	redir => result
+	echo a
+	echo string(a)
+	redir END
+	let l = split(result, "\n")
+	call assert_equal(["-1.2",
+			 \ "-1.2"], l)
+    endif
+
+    " Funcref
+    redir => result
+    echo function('string')
+    echo string(function('string'))
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["string",
+		     \ "function('string')"], l)
+
+    " Recursive dictionary
+    let a = {}
+    let a["a"] = a
+    redir => result
+    echo a
+    echo string(a)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': {...}}",
+		     \ "{'a': {...}}"], l)
+
+    " Recursive list
+    let a = [0]
+    let a[0] = a
+    redir => result
+    echo a
+    echo string(a)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[[...]]",
+		     \ "[[...]]"], l)
+
+    " Empty dictionaries in a list
+    let a = {}
+    redir => result
+    echo [a, a, a]
+    echo string([a, a, a])
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[{}, {}, {}]",
+		     \ "[{}, {}, {}]"], l)
+
+    " Empty dictionaries in a dictionary
+    let a = {}
+    let b = {"a": a, "b": a}
+    redir => result
+    echo b
+    echo string(b)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': {}, 'b': {}}",
+		     \ "{'a': {}, 'b': {}}"], l)
+
+    " Empty lists in a list
+    let a = []
+    redir => result
+    echo [a, a, a]
+    echo string([a, a, a])
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[[], [], []]",
+		     \ "[[], [], []]"], l)
+
+    " Empty lists in a dictionary
+    let a = []
+    let b = {"a": a, "b": a}
+    redir => result
+    echo b
+    echo string(b)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': [], 'b': []}",
+		     \ "{'a': [], 'b': []}"], l)
+
+    " Dictionaries in a list
+    let a = {"one": "yes", "two": "yes", "three": "yes"}
+    redir => result
+    echo [a, a, a]
+    echo string([a, a, a])
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[{'one': 'yes', 'two': 'yes', 'three': 'yes'}, {...}, {...}]",
+		     \ "[{'one': 'yes', 'two': 'yes', 'three': 'yes'}, {'one': 'yes', 'two': 'yes', 'three': 'yes'}, {'one': 'yes', 'two': 'yes', 'three': 'yes'}]"], l)
+
+    " Dictionaries in a dictionary
+    let a = {"one": "yes", "two": "yes", "three": "yes"}
+    let b = {"a": a, "b": a}
+    redir => result
+    echo b
+    echo string(b)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': {'one': 'yes', 'two': 'yes', 'three': 'yes'}, 'b': {...}}",
+		     \ "{'a': {'one': 'yes', 'two': 'yes', 'three': 'yes'}, 'b': {'one': 'yes', 'two': 'yes', 'three': 'yes'}}"], l)
+
+    " Lists in a list
+    let a = [1, 2, 3]
+    redir => result
+    echo [a, a, a]
+    echo string([a, a, a])
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["[[1, 2, 3], [...], [...]]",
+		     \ "[[1, 2, 3], [1, 2, 3], [1, 2, 3]]"], l)
+
+    " Lists in a dictionary
+    let a = [1, 2, 3]
+    let b = {"a": a, "b": a}
+    redir => result
+    echo b
+    echo string(b)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["{'a': [1, 2, 3], 'b': [...]}",
+		     \ "{'a': [1, 2, 3], 'b': [1, 2, 3]}"], l)
+
+endfunc
+
+"-------------------------------------------------------------------------------
+" Test 94:  64-bit Numbers					    {{{1
+"-------------------------------------------------------------------------------
+
+func Test_num64()
+    if !has('num64')
+	return
+    endif
+
+    call assert_notequal( 4294967296, 0)
+    call assert_notequal(-4294967296, 0)
+    call assert_equal( 4294967296,  0xFFFFffff + 1)
+    call assert_equal(-4294967296, -0xFFFFffff - 1)
+
+    call assert_equal( 9223372036854775807,  1 / 0)
+    call assert_equal(-9223372036854775807, -1 / 0)
+    call assert_equal(-9223372036854775808,  0 / 0)
+
+    call assert_equal( 0x7FFFffffFFFFffff, float2nr( 1.0e150))
+    call assert_equal(-0x7FFFffffFFFFffff, float2nr(-1.0e150))
+
+    let rng = range(0xFFFFffff, 0x100000001)
+    call assert_equal([0xFFFFffff, 0x100000000, 0x100000001], rng)
+    call assert_equal(0x100000001, max(rng))
+    call assert_equal(0xFFFFffff, min(rng))
+    call assert_equal(rng, sort(range(0x100000001, 0xFFFFffff, -1), 'N'))
 endfunc
 
 "-------------------------------------------------------------------------------
