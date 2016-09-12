@@ -5588,8 +5588,8 @@ msgstr "输入  :q<Enter>               退出            "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "输入  :help<Enter>  或  <F1>  查看在线帮助    "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "输入  :help version7<Enter>   查看版本信息    "
+msgid "type  :help version8<Enter>   for version info"
+msgstr "输入  :help version8<Enter>   查看版本信息    "
 
 msgid "Running in Vi compatible mode"
 msgstr "运行于 Vi 兼容模式"

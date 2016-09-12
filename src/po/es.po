@@ -7647,8 +7647,8 @@ msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "escriba  «:help<Intro>» o <F1>  para obtener ayuda     "
 
 #: version.c:1706
-msgid "type  :help version7<Enter>   for version info"
-msgstr "escriba «:help version7<Intro>» para información de la versión"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "escriba «:help version8<Intro>» para información de la versión"
 
 #: version.c:1709
 msgid "Running in Vi compatible mode"

@@ -6110,8 +6110,8 @@ msgstr "wprowadü :q<Enter>                zakoÒczenie programu   "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "wprowadü :help<Enter>  lub  <F1>  pomoc na bieøπco       "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "wprowadü :help version7<Enter>    dla informacji o wersji"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "wprowadü :help version8<Enter>    dla informacji o wersji"
 
 msgid "Running in Vi compatible mode"
 msgstr "Dzia≥am w trybie zgodnoúci z Vi"

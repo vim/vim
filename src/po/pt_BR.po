@@ -5775,8 +5775,8 @@ msgstr "digite  :q<Enter>             para sair          "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "digite  :help<Enter> ou <F1>  para ajuda on-line "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "digite  :help version7<Enter> para info da versão"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "digite  :help version8<Enter> para info da versão"
 
 msgid "Running in Vi compatible mode"
 msgstr "Executando no modo compatível com Vi"

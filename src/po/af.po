@@ -4719,8 +4719,8 @@ msgstr "tik   :q<Enter>               om program verlaat    "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "tik   :help<Enter>  of  <F1>  vir aanlyn hulp       "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "tik   :help version7<Enter>   vir weergawe-inligting"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "tik   :help version8<Enter>   vir weergawe-inligting"
 
 msgid "Running in Vi compatible mode"
 msgstr "Voer tans uit in Vi-versoenbare modus"
