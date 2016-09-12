@@ -147,7 +147,7 @@ endif
 let s:flaky = [
       \ 'Test_reltime()',
       \ 'Test_nb_basic()',
-      \ 'Test_communicate()'
+      \ 'Test_communicate()',
       \ 'Test_pipe_through_sort_some()'
       \ ]
 
