@@ -159,7 +159,7 @@ Many functions and commands have been added to support the new types.
 On some systems the numbers used in Vim script are now 64 bit.  This can be
 checked with the |+num64| feature.
 
-Many items were added so support |new-style-testing|.
+Many items were added to support |new-style-testing|.
 
 printf() now accepts any type of argument for %s.  It is converted to a string
 like with string().
