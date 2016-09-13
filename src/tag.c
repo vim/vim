@@ -1236,29 +1236,6 @@ prepare_pats(pat_T *pats, int has_re)
 	pats->regmatch.regprog = NULL;
 }
 
-static hash_T tag_hash(char_u *key, int len);
-
-/*
- * Get the hash number for a key.
- * Unlike hash_hash, this supports embedded NUL bytes.
- */
-    static hash_T
-tag_hash(char_u *key, int len)
-{
-    hash_T	hash;
-    char_u	*p;
-
-    if ((hash = *key) == 0)
-	return (hash_T)0;
-    p = key + 1;
-    len--;
-
-    while (len-- > 0)
-	hash = hash * 101 + *p++;
-
-    return hash;
-}
-
 /*
  * find_tags() - search for tags in tags files
  *
@@ -2417,11 +2394,11 @@ parse_line:
 			hash++;
 		    else
 #endif
-			hash = tag_hash(mfp, len);
-		    hi = hash_lookup(&ht_match[mtt], mfp, hash);
+			hash = hash_buf_hash(mfp, len);
+		    hi = hash_buf_lookup(&ht_match[mtt], mfp, len, hash);
 		    if (HASHITEM_EMPTY(hi))
 		    {
-			if (hash_add_item(&ht_match[mtt], hi, mfp, hash) == FAIL)
+			if (hash_buf_add_item(&ht_match[mtt], hi, mfp, len, hash) == FAIL)
 			{
 			    /* Out of memory! Just forget about the rest. */
 			    retval = OK;

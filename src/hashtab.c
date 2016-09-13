@@ -10,8 +10,11 @@
 /*
  * hashtab.c: Handling of a hashtable with Vim-specific properties.
  *
- * Each item in a hashtable has a NUL terminated string key.  A key can appear
- * only once in the table.
+ * Each item in a hashtable has a unique key.  The key can either be a NUL
+ * terminated string or a fixed-length byte sequence (buf).  The hash_buf_*
+ * functions are used for storing/retrieving hash items represented by a
+ * fixed-length byte sequence, while the similarly named hash_* functions are
+ * used for NUL terminated strings.
  *
  * A hash number is computed from the key for quick lookup.  When the hashes
  * of two different keys point to the same entry an algorithm is used to
@@ -118,11 +121,23 @@ hash_find(hashtab_T *ht, char_u *key)
     return hash_lookup(ht, key, hash_hash(key));
 }
 
+    hashitem_T *
+hash_buf_find(hashtab_T *ht, char_u *key, size_t keylen)
+{
+    return hash_buf_lookup(ht, key, keylen, hash_buf_hash(key, keylen));
+}
+
 /*
  * Like hash_find(), but caller computes "hash".
  */
     hashitem_T *
 hash_lookup(hashtab_T *ht, char_u *key, hash_T hash)
+{
+    return hash_buf_lookup(ht, key, STRLEN(key), hash);
+}
+
+    hashitem_T *
+hash_buf_lookup(hashtab_T *ht, char_u *key, size_t keylen, hash_T hash)
 {
     hash_T	perturb;
     hashitem_T	*freeitem;
@@ -146,7 +161,8 @@ hash_lookup(hashtab_T *ht, char_u *key, hash_T hash)
 	return hi;
     if (hi->hi_key == HI_KEY_REMOVED)
 	freeitem = hi;
-    else if (hi->hi_hash == hash && STRCMP(hi->hi_key, key) == 0)
+    else if (hi->hi_hash == hash && hi->hi_keylen == keylen
+		&& memcmp(hi->hi_key, key, keylen) == 0)
 	return hi;
     else
 	freeitem = NULL;
@@ -171,7 +187,8 @@ hash_lookup(hashtab_T *ht, char_u *key, hash_T hash)
 	    return freeitem == NULL ? hi : freeitem;
 	if (hi->hi_hash == hash
 		&& hi->hi_key != HI_KEY_REMOVED
-		&& STRCMP(hi->hi_key, key) == 0)
+		&& hi->hi_keylen == keylen
+		&& memcmp(hi->hi_key, key, keylen) == 0)
 	    return hi;
 	if (hi->hi_key == HI_KEY_REMOVED && freeitem == NULL)
 	    freeitem = hi;
@@ -202,16 +219,22 @@ hash_debug_results(void)
     int
 hash_add(hashtab_T *ht, char_u *key)
 {
-    hash_T	hash = hash_hash(key);
+    return hash_buf_add(ht, key, STRLEN(key));
+}
+
+    int
+hash_buf_add(hashtab_T *ht, char_u *key, size_t keylen)
+{
+    hash_T	hash = hash_buf_hash(key, keylen);
     hashitem_T	*hi;
 
-    hi = hash_lookup(ht, key, hash);
+    hi = hash_buf_lookup(ht, key, keylen, hash);
     if (!HASHITEM_EMPTY(hi))
     {
-	internal_error("hash_add()");
+	internal_error("hash_buf_add()");
 	return FAIL;
     }
-    return hash_add_item(ht, hi, key, hash);
+    return hash_buf_add_item(ht, hi, key, keylen, hash);
 }
 
 /*
@@ -227,6 +250,17 @@ hash_add_item(
     char_u	*key,
     hash_T	hash)
 {
+    return hash_buf_add_item(ht, hi, key, STRLEN(key), hash);
+}
+
+    int
+hash_buf_add_item(
+    hashtab_T	*ht,
+    hashitem_T	*hi,
+    char_u	*key,
+    size_t	keylen,
+    hash_T	hash)
+{
     /* If resizing failed before and it fails again we can't add an item. */
     if (ht->ht_error && hash_may_resize(ht, 0) == FAIL)
 	return FAIL;
@@ -235,6 +269,7 @@ hash_add_item(
     if (hi->hi_key == NULL)
 	++ht->ht_filled;
     hi->hi_key = key;
+    hi->hi_keylen = keylen;
     hi->hi_hash = hash;
 
     /* When the space gets low may resize the array. */
@@ -462,16 +497,24 @@ hash_may_resize(
     hash_T
 hash_hash(char_u *key)
 {
+    return hash_buf_hash(key, STRLEN(key));
+}
+
+    hash_T
+hash_buf_hash(char_u *key, size_t keylen)
+{
     hash_T	hash;
     char_u	*p;
 
-    if ((hash = *key) == 0)
-	return (hash_T)0;
+    hash = *key;
+    if (hash == 0 && keylen <= 1)
+	return hash;
     p = key + 1;
+    keylen--;
 
     /* A simplistic algorithm that appears to do very well.
      * Suggested by George Reilly. */
-    while (*p != NUL)
+    while (keylen-- > 0)
 	hash = hash * 101 + *p++;
 
     return hash;
