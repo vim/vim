@@ -2207,7 +2207,13 @@ parse_line:
 	     */
 	    if (match)
 	    {
-		int len;
+		/*
+		 * Only compare "cmplen" bytes of mfp when looking for
+		 * duplicates in the hash.  This may be different than the
+		 * actual length of the key (e.g., help tags).
+		 */
+		int cmplen = 0;
+		int len = 0;
 #ifdef FEAT_CSCOPE
 		if (use_cscope)
 		{
@@ -2281,7 +2287,9 @@ parse_line:
 		    if (mfp != NULL)
 		    {
 			int heuristic;
-#define ML_HELP_LEN 6
+			/* "cmplen" includes the language and the NUL, but
+			 * not the priority. */
+			cmplen = len + ML_EXTRA + 1;
 			p = mfp;
 			STRCPY(p, tagp.tagname);
 #ifdef FEAT_MULTI_LANG
@@ -2317,6 +2325,7 @@ parse_line:
 			    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
 			    if (mfp != NULL)
 			    {
+				cmplen = len + 1; /* include the NUL */
 				p = mfp;
 				vim_strncpy(p, tagp.command + 2, len);
 			    }
@@ -2331,6 +2340,7 @@ parse_line:
 			mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
 			if (mfp != NULL)
 			{
+			    cmplen = len + 1; /* include the NUL */
 			    p = mfp;
 			    vim_strncpy(p, tagp.tagname, len);
 			}
@@ -2358,6 +2368,7 @@ parse_line:
 		    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
 		    if (mfp != NULL)
 		    {
+			cmplen = len;
 			p = mfp;
 			p[0] = mtt;
 			STRCPY(p + 1, tag_fname);
@@ -2394,11 +2405,11 @@ parse_line:
 			hash++;
 		    else
 #endif
-			hash = hash_buf_hash(mfp, len);
-		    hi = hash_buf_lookup(&ht_match[mtt], mfp, len, hash);
+			hash = hash_buf_hash(mfp, cmplen);
+		    hi = hash_buf_lookup(&ht_match[mtt], mfp, cmplen, hash);
 		    if (HASHITEM_EMPTY(hi))
 		    {
-			if (hash_buf_add_item(&ht_match[mtt], hi, mfp, len, hash) == FAIL)
+			if (hash_buf_add_item(&ht_match[mtt], hi, mfp, cmplen, hash) == FAIL)
 			{
 			    /* Out of memory! Just forget about the rest. */
 			    retval = OK;
