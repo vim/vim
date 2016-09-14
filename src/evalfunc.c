@@ -3612,7 +3612,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 
     if (s == NULL || *s == NUL || (use_string && VIM_ISDIGIT(*s))
 					 || (is_funcref && trans_name == NULL))
-	EMSG2(_(e_invarg2), s);
+	EMSG2(_(e_invarg2), use_string ? get_tv_string(&argvars[0]) : s);
     /* Don't check an autoload name for existence here. */
     else if (trans_name != NULL && (is_funcref
 				? find_func(trans_name) == NULL
