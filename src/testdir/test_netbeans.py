@@ -52,7 +52,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 return
 
             if len(response) > 0:
-                self.request.sendall(response)
+                self.request.sendall(response.encode('utf-8'))
                 # Write the respoinse into the file, so that the test can knows
                 # the command was sent.
                 with open("Xnetbeans", "a") as myfile:
