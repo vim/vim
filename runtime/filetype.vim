@@ -676,6 +676,9 @@ au BufNewFile,BufRead *.dts,*.dtsi		setf dts
 " EDIF (*.edf,*.edif,*.edn,*.edo)
 au BufNewFile,BufRead *.ed\(f\|if\|n\|o\)	setf edif
 
+" EditorConfig (close enough to dosini)
+au BufNewFile,BufRead .editorconfig		setf dosini
+
 " Embedix Component Description
 au BufNewFile,BufRead *.ecd			setf ecd
 
