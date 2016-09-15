@@ -213,7 +213,7 @@ an 50.40.340 &Syntax.FG.Gitolite :cal SetSyn("gitolite")<CR>
 an 50.40.350 &Syntax.FG.Gkrellmrc :cal SetSyn("gkrellmrc")<CR>
 an 50.40.360 &Syntax.FG.Gnash :cal SetSyn("gnash")<CR>
 an 50.40.370 &Syntax.FG.GP :cal SetSyn("gp")<CR>
-an 50.40.380 &Syntax.FG.GPG :cal SetSyn("gpg")<CR>
+an 50.40.380 &Syntax.FG.GPG\ config :cal SetSyn("gpgconf")<CR>
 an 50.40.390 &Syntax.FG.Grof :cal SetSyn("gprof")<CR>
 an 50.40.400 &Syntax.FG.Group\ file :cal SetSyn("group")<CR>
 an 50.40.410 &Syntax.FG.Grub :cal SetSyn("grub")<CR>

@@ -12,16 +12,16 @@ set cpo&vim
 
 setlocal iskeyword+=-
 
-syn keyword gpgTodo     contained FIXME TODO XXX NOTE
+syn keyword gpgconfTodo     contained FIXME TODO XXX NOTE
 
-syn region  gpgComment  contained display oneline start='#' end='$'
-                        \ contains=gpgTodo,gpgID,@Spell
+syn region  gpgconfComment  contained display oneline start='#' end='$'
+                        \ contains=gpgconfTodo,gpgconfID,@Spell
 
-syn match   gpgID       contained display '\<\(0x\)\=\x\{8,}\>'
+syn match   gpgconfID       contained display '\<\(0x\)\=\x\{8,}\>'
 
-syn match   gpgBegin    display '^' skipwhite nextgroup=gpgComment,gpgOption,gpgCommand
+syn match   gpgconfBegin    display '^' skipwhite nextgroup=gpgconfComment,gpgconfOption,gpgconfCommand
 
-syn keyword gpgCommand  contained skipwhite nextgroup=gpgArg
+syn keyword gpgconfCommand  contained skipwhite nextgroup=gpgconfArg
                         \ check-sigs decrypt decrypt-files delete-key
                         \ delete-secret-and-public-key delete-secret-key
                         \ edit-key encrypt-files export export-all
@@ -32,13 +32,13 @@ syn keyword gpgCommand  contained skipwhite nextgroup=gpgArg
                         \ list-sigs lsign-key nrsign-key print-md print-mds
                         \ recv-keys search-keys send-keys sign-key verify
                         \ verify-files
-syn keyword gpgCommand  contained skipwhite nextgroup=gpgArgError
+syn keyword gpgconfCommand  contained skipwhite nextgroup=gpgconfArgError
                         \ check-trustdb clearsign desig-revoke detach-sign
                         \ encrypt gen-key gen-revoke help list-packets
                         \ rebuild-keydb-caches sign store symmetric
                         \ update-trustdb version warranty
 
-syn keyword gpgOption   contained skipwhite nextgroup=gpgArg
+syn keyword gpgconfOption   contained skipwhite nextgroup=gpgconfArg
                         \ attribute-fd cert-digest-algo charset cipher-algo
                         \ command-fd comment completes-needed compress
                         \ compress-algo debug default-cert-check-level
@@ -55,7 +55,7 @@ syn keyword gpgOption   contained skipwhite nextgroup=gpgArg
                         \ recipient s2k-cipher-algo s2k-digest-algo s2k-mode
                         \ secret-keyring set-filename set-policy-url status-fd
                         \ trusted-key verify-options keyid-format list-options
-syn keyword gpgOption   contained skipwhite nextgroup=gpgArgError
+syn keyword gpgconfOption   contained skipwhite nextgroup=gpgconfArgError
                         \ allow-freeform-uid allow-non-selfsigned-uid
                         \ allow-secret-key-import always-trust
                         \ armor ask-cert-expire ask-sig-expire
@@ -89,17 +89,17 @@ syn keyword gpgOption   contained skipwhite nextgroup=gpgArgError
                         \ utf8-strings verbose with-colons with-fingerprint
                         \ with-key-data yes
 
-syn match   gpgArg      contained display '\S\+\(\s\+\S\+\)*' contains=gpgID
-syn match   gpgArgError contained display '\S\+\(\s\+\S\+\)*'
+syn match   gpgconfArg      contained display '\S\+\(\s\+\S\+\)*' contains=gpgconfID
+syn match   gpgconfArgError contained display '\S\+\(\s\+\S\+\)*'
 
-hi def link gpgComment  Comment
-hi def link gpgTodo     Todo
-hi def link gpgID       Number
-hi def link gpgOption   Keyword
-hi def link gpgCommand  Error
-hi def link gpgArgError Error
+hi def link gpgconfComment  Comment
+hi def link gpgconfTodo     Todo
+hi def link gpgconfID       Number
+hi def link gpgconfOption   Keyword
+hi def link gpgconfCommand  Error
+hi def link gpgconfArgError Error
 
-let b:current_syntax = "gpg"
+let b:current_syntax = "gpgconf"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

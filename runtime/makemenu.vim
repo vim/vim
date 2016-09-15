@@ -232,7 +232,7 @@ SynMenu FG.Gitolite:gitolite
 SynMenu FG.Gkrellmrc:gkrellmrc
 SynMenu FG.Gnash:gnash
 SynMenu FG.GP:gp
-SynMenu FG.GPG:gpg
+SynMenu FG.GPG\ config:gpgconf
 SynMenu FG.Grof:gprof
 SynMenu FG.Group\ file:group
 SynMenu FG.Grub:grub
