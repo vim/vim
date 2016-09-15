@@ -1055,7 +1055,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	    else
 	    {
 	    	free(cmdStrW);
-	    	/* And handle error */
+	    	cmdStrW = NULL;
 	    }
 	}
 	wcscat(cmdStrW, L" \"");
