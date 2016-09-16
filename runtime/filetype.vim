@@ -806,9 +806,11 @@ au BufNewFile,BufRead gkrellmrc,gkrellmrc_?	setf gkrellmrc
 au BufNewFile,BufRead *.gp,.gprc		setf gp
 
 " GPG
-au BufNewFile,BufRead */.gnupg/options		setf gpg
-au BufNewFile,BufRead */.gnupg/gpg.conf		setf gpg
-au BufNewFile,BufRead */usr/*/gnupg/options.skel setf gpg
+au BufNewFile,BufRead */.gnupg/options		setf gpgconf
+au BufNewFile,BufRead */.gnupg/gpg.conf		setf gpgconf
+au BufNewFile,BufRead $GNUPGHOME/options	setf gpgconf
+au BufNewFile,BufRead $GNUPGHOME/gpg.conf	setf gpgconf
+au BufNewFile,BufRead */usr/*/gnupg/options.skel setf gpgconf
 
 " gnash(1) configuration files
 au BufNewFile,BufRead gnashrc,.gnashrc,gnashpluginrc,.gnashpluginrc setf gnash
