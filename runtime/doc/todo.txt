@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Sep 12
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Sep 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,13 +34,19 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Netbeans test fails with Python 3. (jonathon, 2016 Sep 13, #1070)
+
+Revert 7.4.990?  (Christian Brabandt, 2016 Sep 16)
+
 After 8.0 is released:
 - Drop support for older MS-Windows systems, before XP.
-  Patch from Ken Takata, 2016 Mar 8.
+  Patch from Ken Takata, updated 2016 Sep 12.
 
 +channel:
 - channel_wait() may return an error while there is still something to read.
   Perhaps try to read once more?
+  Possibly reproduced by Santiago Alejandro Agüero, 2016 Sep 12, 13.
+  Apparently select() returns an error while reading could work.
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
@@ -142,6 +148,9 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 
 cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
 
+When using ":diffput" through a mapping, undo in the target buffer isn't
+synced.  (Ryan Carney, 2016 Sep 14)
+
 Syntax highlighting for messages with RFC3339 timestamp (#946)
 Did maintainer reply?
 
@@ -182,6 +191,11 @@ Patch for syntax folding optimization. (Shougo, 2016 Sep 6, #1045)
 
 Patch for restoring wide characters in the console buffer.
 (Ken Takata, 2016 Jun 7)
+
+Patch for drag&drop reordering of GUI tab pages reordering.
+(Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
+Now on Git: https://gist.github.com/nocd5/165286495c782b815b94
+Update 2016 Aug 10.
 
 We can use '. to go to the last change in the current buffer, but how about
 the last change in any buffer?  Can we use ', (, is next to .)?
@@ -225,7 +239,7 @@ Neovim patch for utfc_ptr2char_len() https://github.com/neovim/neovim/pull/4574
 No test, needs some work to include.
 
 Patch to make finding duplicate tags much faster, using a hashtab. (James
-McCoy, 2016 Sept 6, #1046)
+McCoy, 2016 Sept 14, #1046)  Should work now.
 >
 Patch to improve indenting for C++ constructor with initializer list.
 (Hirohito Higashi, 2016 Mar 31)
@@ -260,6 +274,9 @@ Can already do it with ":$put =execute('command')".
 
 When repeating the 'confirm' dialog one needs to press Enter. (ds26gte, 2016
 Apr 17)  #762
+
+exists(":tearoff") does not tell you if the command is implemented. (Tony
+Mechelynck)  Perhaps use exists("::tearoff") to check?
 
 Use vim.vim syntax highlighting for help file examples, but without ":" in
 'iskeyword' for syntax.
@@ -519,11 +536,6 @@ Patch to add :lockjumps. (Carlo Baldassi, 2015 May 25)
 OK to not block marks?
 
 Mixup of highlighting when there is a match and SpellBad. (ZyX, 2015 Jan 1)
-
-Patch for drag&drop reordering of GUI tab pages reordering.
-(Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
-Now on Git: https://gist.github.com/nocd5/165286495c782b815b94
-Update 2016 Aug 10.
 
 Patch on Issue 72: 'autochdir' causes problems for :vimgrep.
 

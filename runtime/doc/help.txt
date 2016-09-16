@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.0.  Last change: 2016 Mar 31
+*help.txt*	For Vim version 8.0.  Last change: 2016 Sep 12
 
 			VIM - main help file
 									 k
@@ -135,6 +135,7 @@ Advanced editing ~
 |autocmd.txt|	automatically executing commands on an event
 |filetype.txt|	settings done specifically for a type of file
 |eval.txt|	expression evaluation, conditional commands
+|channel.txt|	Jobs, Channels, inter-process communication
 |fold.txt|	hide (fold) ranges of lines
 
 Special issues ~

@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Sep 12
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Sep 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -159,7 +159,7 @@ Many functions and commands have been added to support the new types.
 On some systems the numbers used in Vim script are now 64 bit.  This can be
 checked with the |+num64| feature.
 
-Many items were added so support |new-style-testing|.
+Many items were added to support |new-style-testing|.
 
 printf() now accepts any type of argument for %s.  It is converted to a string
 like with string().
@@ -1031,7 +1031,7 @@ Files:	    src/configure.in, src/auto/configure
 
 Patch 7.4.095 (after 7.4.093)
 Problem:    Regexp for LuaJIT version doesn't work on BSD.
-Solution:   Use "*" instead of "\+" and "\?". (Ozaki)
+Solution:   Use "*" instead of "\+" and "\?". (Ozaki Kiichi)
 Files:	    src/configure.in, src/auto/configure
 
 Patch 7.4.096
@@ -1750,7 +1750,7 @@ Files:	    src/Makefile
 
 Patch 7.4.218
 Problem:    It's not easy to remove duplicates from a list.
-Solution:   Add the uniq() function. (LCD)
+Solution:   Add the uniq() function. (Lcd)
 Files:	    runtime/doc/change.txt, runtime/doc/eval.txt,
 	    runtime/doc/usr_41.txt, runtime/doc/version7.txt, src/eval.c,
 	    src/testdir/test55.in, src/testdir/test55.ok
@@ -4311,7 +4311,7 @@ Files:	    src/misc2.c
 
 Patch 7.4.650
 Problem:    Configure check may fail because the dl library is not used.
-Solution:   Put "-ldl" in LIBS rather than LDFLAGS. (Oazki Kiichi)
+Solution:   Put "-ldl" in LIBS rather than LDFLAGS. (Ozaki Kiichi)
 Files:	    src/configure.in, src/auto/configure
 
 Patch 7.4.651 (after 7.4.582)
@@ -4903,7 +4903,7 @@ Solution:   Make the buffer larger. (Kazunobu Kuriyama)
 Files:      src/eval.c
 
 Patch 7.4.749 (after 7.4.741)
-Problem:    For some options two consecutive commas are OK. (Nikolay Pavlov)
+Problem:    For some options two consecutive commas are OK. (Nikolai Pavlov)
 Solution:   Add the P_ONECOMMA flag.
 Files:      src/option.c
 
@@ -6969,7 +6969,7 @@ Files:      src/Make_mvc.mak, src/GvimExt/Makefile
 
 Patch 7.4.1096
 Problem:    Need several lines to verify a command produces an error.
-Solution:   Add assert_fails(). (suggested by Nikolay Pavlov)
+Solution:   Add assert_fails(). (suggested by Nikolai Pavlov)
             Make the quickfix alloc test actually work.
 Files:      src/testdir/test_quickfix.vim, src/eval.c, runtime/doc/eval.txt,
             src/misc2.c, src/alloc.h
@@ -7432,7 +7432,7 @@ Files:      src/mbyte.c, src/os_win32.c
 
 Patch 7.4.1166
 Problem:    Can't encode a Funcref into JSON.  jsonencode() doesn't handle the
-            same list or dict twice properly.  (Nikolay Pavlov)
+            same list or dict twice properly.  (Nikolai Pavlov)
 Solution:   Give an error.  Reset copyID when the list or dict is finished.
 Files:      src/json.c, src/proto/json.pro, src/testdir/test_json.vim
 
@@ -7442,7 +7442,7 @@ Solution:   Add tests.
 Files:      src/testdir/test_viml.vim
 
 Patch 7.4.1168
-Problem:    This doesn't give the right result: eval(string(v:true)). (Nikolay
+Problem:    This doesn't give the right result: eval(string(v:true)). (Nikolai
             Pavlov)
 Solution:   Make the string "v:true" instead of "true".
 Files:      src/eval.c, src/testdir/test_viml.vim
@@ -7993,7 +7993,7 @@ Files:      src/testdir/test_channel.vim
 
 Patch 7.4.1258
 Problem:    The channel test can fail if messages arrive later.
-Solution:   Add a short sleep. (Jun T.)
+Solution:   Add a short sleep. (Jun Takimoto)
 Files:      src/testdir/test_channel.vim
 
 Patch 7.4.1259
@@ -8848,8 +8848,8 @@ Files:      src/channel.c, src/gui_w32.c, src/os_win32.c, src/structs.h,
 
 Patch 7.4.1405
 Problem:    Completion menu flickers.
-Solution:   Delay showing the popup menu. (Shougo, Justin M. Keyes, closes
-            #656)
+Solution:   Delay showing the popup menu. (Shougo Matsu, Justin M. Keyes,
+	    closes #656)
 Files:      src/edit.c
 
 Patch 7.4.1406
@@ -9372,7 +9372,7 @@ Solution:   Handle blinking differently. (Kazunobu Kuriyama)
 Files:      src/gui_gtk_x11.c
 
 Patch 7.4.1498
-Problem:    Error for locked item when using json_decode(). (Shougo)
+Problem:    Error for locked item when using json_decode(). (Shougo Matsu)
 Solution:   Initialize v_lock.
 Files:      src/json.c
 
@@ -9775,7 +9775,7 @@ Files:      src/testdir/Make_all.mak, src/testdir/test106.in,
 
 Patch 7.4.1570
 Problem:    There is no way to avoid the message when editing a file.
-Solution:   Add the "F" flag to 'shortmess'. (Shougo, closes #686)
+Solution:   Add the "F" flag to 'shortmess'. (Shougo Matsu, closes #686)
 Files:      runtime/doc/options.txt, src/buffer.c, src/ex_cmds.c,
             src/option.h
 
@@ -10793,7 +10793,7 @@ Files:      src/if_py_both.h
 
 Patch 7.4.1744
 Problem:    Python: Converting a sequence may leak memory.
-Solution:   Decrement a reference. (Nikolay Pavlov)
+Solution:   Decrement a reference. (Nikolai Pavlov)
 Files:      src/if_py_both.h
 
 Patch 7.4.1745
@@ -10866,7 +10866,8 @@ Files:      src/option.c, src/testdir/test_alot.vim,
 Patch 7.4.1757
 Problem:    When using complete() it may set 'modified' even though nothing
             was inserted.
-Solution:   Use Down/Up instead of Next/Previous match. (Shougo, closes #745)
+Solution:   Use Down/Up instead of Next/Previous match. (Shougo Matsu, closes
+	    #745)
 Files:      src/edit.c
 
 Patch 7.4.1758
@@ -11392,7 +11393,7 @@ Solution:   Check if ch_to_be_closed is set.
 Files:      src/channel.c
 
 Patch 7.4.1850
-Problem:    GUI freezes when using a job. (Shougo)
+Problem:    GUI freezes when using a job. (Shougo Matsu)
 Solution:   Unregister the channel when there is an input error.
 Files:      src/channel.c
 
@@ -12354,12 +12355,12 @@ Files:      src/testdir/test_cmdline.vim
 
 Patch 7.4.2013
 Problem:    Using "noinsert" in 'completeopt' breaks redo.
-Solution:   Set compl_curr_match. (Shougo, closes #874)
+Solution:   Set compl_curr_match. (Shougo Matsu, closes #874)
 Files:      src/edit.c, src/testdir/test_popup.vim
 
 Patch 7.4.2014
 Problem:    Using "noinsert" in 'completeopt' does not insert match.
-Solution:   Set compl_enter_selects. (Shougo, closes #875)
+Solution:   Set compl_enter_selects. (Shougo Matsu, closes #875)
 Files:      src/edit.c, src/testdir/test_popup.vim
 
 Patch 7.4.2015
@@ -14279,7 +14280,7 @@ Solution:   Make close_buffer() go back to the right window.
 Files:      src/buffer.c, src/testdir/test_autocmd.vim
 
 Patch 7.4.2329
-Problem:    Error for min() and max() contains %s. (Nikolay Pavlov)
+Problem:    Error for min() and max() contains %s. (Nikolai Pavlov)
 Solution:   Pass the function name. (closes #1040)
 Files:      src/evalfunc.c, src/testdir/test_expr.vim
 
@@ -14405,7 +14406,7 @@ Solution:   Don't access curwin when exiting.
 Files:      src/buffer.c
 
 Patch 7.4.2349
-Problem:    Valgrind reports using uninitialzed memory. (Dominique Pelle)
+Problem:    Valgrind reports using uninitialized memory. (Dominique Pelle)
 Solution:   Check the length before checking for a NUL.
 Files:      src/message.c
 
