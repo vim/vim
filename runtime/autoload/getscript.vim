@@ -236,7 +236,7 @@ fun! getscript#GetLatestVimScripts()
 "    call Decho("..depscript<".depscript.">")
 
     " found a "GetLatestVimScripts: # #" line in the script;
-    " check if its already in the datafile by searching backwards from llp1,
+    " check if it's already in the datafile by searching backwards from llp1,
     " the (prior to reading in the plugin script) last line plus one of the GetLatestVimScripts.dat file,
     " for the script-id with no wrapping allowed.
     let curline     = line(".")
