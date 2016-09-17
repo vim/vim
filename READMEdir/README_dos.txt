@@ -41,7 +41,7 @@ These are the normal steps to install Vim from the .zip archives:
    located.  Check the $VIM setting to see where it points to:
 	set VIM
    For example, if you have
-	C:\vim\vim74
+	C:\vim\vim80
    do
 	cd C:\
    Binary and runtime Vim archives are normally unpacked in the same location,

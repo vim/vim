@@ -55,8 +55,8 @@ Here are guidelines for removing Vim by hand:
    skip the next step.
 
 5. Delete the distributed files.  If you followed the directions, these will
-   be located in a directory like "C:\vim\vim74".  If the $VIM environment
-   variable is set, the directory will be $VIM\vim74.  Delete the "vim74"
+   be located in a directory like "C:\vim\vim80".  If the $VIM environment
+   variable is set, the directory will be $VIM\vim80.  Delete the "vim80"
    directory and all that is in it.  Warning: If you changed any of the
    distributed files, or added some of your own files, you might want to save
    these first.  But normally you would not have changed or added files here.
