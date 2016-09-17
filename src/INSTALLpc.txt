@@ -722,40 +722,40 @@ The MS-DOS support was removed in patch 7.4.1399.
 After you've built the Vim binaries as described above, you're ready to
 install Vim on your system.  However, if you've obtained the Vim sources
 using Git, Mercurial or by downloading them as a unix tar file, you must
-first create a "vim74" directory.  If you instead downloaded the sources as
+first create a "vim80" directory.  If you instead downloaded the sources as
 zip files, you can skip this setup as the zip archives already have the
 correct directory structure.
 
-  A.  Create a Vim "runtime" subdirectory named "vim74"
+  A.  Create a Vim "runtime" subdirectory named "vim80"
   -----------------------------------------------------
   If you obtained your Vim sources as zip files, you can skip this step.
   Otherwise, continue reading.
 
   Go to the directory that contains the Vim "src" and "runtime"
-  directories and create a new subdirectory named "vim74".
+  directories and create a new subdirectory named "vim80".
 
-  Copy the "runtime" files into "vim74":
-     copy runtime\* vim74
+  Copy the "runtime" files into "vim80":
+     copy runtime\* vim80
 
-  B.  Copy the new binaries into the "vim74" directory
+  B.  Copy the new binaries into the "vim80" directory
   ----------------------------------------------------
   Regardless of how you installed the Vim sources, you need to copy the
-  new binaries you created above into "vim74":
+  new binaries you created above into "vim80":
 
-     copy src\*.exe vim74
-     copy src\GvimExt\gvimext.dll vim74
-     copy src\xxd\xxd.exe vim74
+     copy src\*.exe vim80
+     copy src\GvimExt\gvimext.dll vim80
+     copy src\xxd\xxd.exe vim80
 
-  C.  Move the "vim74" directory into the Vim installation subdirectory
+  C.  Move the "vim80" directory into the Vim installation subdirectory
   ---------------------------------------------------------------------
-  Move the "vim74" subdirectory into the subdirectory where you want Vim
+  Move the "vim80" subdirectory into the subdirectory where you want Vim
   to be installed.  Typically, this subdirectory will be named "vim".
-  If you already have a "vim74" subdirectory in "vim", delete it first
+  If you already have a "vim80" subdirectory in "vim", delete it first
   by running its uninstal.exe program.
 
   D.  Install Vim
   ---------------
-  "cd" to your Vim installation subdirectory "vim\vim74" and run the
+  "cd" to your Vim installation subdirectory "vim\vim80" and run the
   "install.exe" program.  It will ask you a number of questions about
   how you would like to have your Vim setup.  Among these are:
   - You can tell it to write a "_vimrc" file with your preferences in the
