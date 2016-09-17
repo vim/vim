@@ -6874,7 +6874,7 @@ libcall_common(typval_T *argvars, typval_T *rettv, int type)
 	return;
 
 #ifdef FEAT_LIBCALL
-    /* The first two args must be strings, otherwise its meaningless */
+    /* The first two args must be strings, otherwise it's meaningless */
     if (argvars[0].v_type == VAR_STRING && argvars[1].v_type == VAR_STRING)
     {
 	string_in = NULL;
