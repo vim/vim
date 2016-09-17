@@ -65,7 +65,7 @@ endif
 " zip#Browse: {{{2
 fun! zip#Browse(zipfile)
 "  call Dfunc("zip#Browse(zipfile<".a:zipfile.">)")
-  " sanity check: insure that the zipfile has "PK" as its first two letters
+  " sanity check: ensure that the zipfile has "PK" as its first two letters
   "               (zipped files have a leading PK as a "magic cookie")
   if !filereadable(a:zipfile) || readfile(a:zipfile, "", 1)[0] !~ '^PK'
    exe "noautocmd e ".fnameescape(a:zipfile)
