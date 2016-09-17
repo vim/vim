@@ -69,7 +69,7 @@
                     --with-mac-arch=$arch
                     --cache-file=auto/config.cache
 
-    # Configure arguments: create an empty "config.arg" file when its missing
+    # Configure arguments: create an empty "config.arg" file when it's missing
     config.arg:
         :touch {exist} config.arg
 
