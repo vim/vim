@@ -71,7 +71,7 @@ static Boolean	 workshopHotKeysEnabled = False;
 
 /*
  * The following enum is from <gp_dbx/gp_dbx_common.h>. We can't include it
- * here because its C++.
+ * here because it's C++.
  */
 enum
 {
@@ -1752,7 +1752,7 @@ setDollarVim(
  *			directory. This is a Sun Visual WorkShop requirement!
  *
  * Note:		We override a user's $VIM because it won't have the
- *			WorkShop specific files. S/he may not like this but its
+ *			WorkShop specific files. S/he may not like this but it's
  *			better than getting the wrong files (especially as the
  *			user is likely to have $VIM set to 5.4 or later).
  */
