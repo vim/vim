@@ -1,9 +1,8 @@
 " Test for delete().
 
 func Test_file_delete()
-  split Xfile
-  call setline(1, ['a', 'b'])
-  wq
+  call writefile(['a', 'b'], 'Xfile')
+
   call assert_equal(['a', 'b'], readfile('Xfile'))
   call assert_equal(0, delete('Xfile'))
   call assert_fails('call readfile("Xfile")', 'E484:')
@@ -12,6 +11,7 @@ endfunc
 
 func Test_dir_delete()
   call mkdir('Xdir1')
+
   call assert_true(isdirectory('Xdir1'))
   call assert_equal(0, delete('Xdir1', 'd'))
   call assert_false(isdirectory('Xdir1'))
@@ -19,14 +19,11 @@ func Test_dir_delete()
 endfunc
 
 func Test_recursive_delete()
-  call mkdir('Xdir1')
-  call mkdir('Xdir1/subdir')
+  call mkdir('Xdir1/subdir', 'p')
   call mkdir('Xdir1/empty')
-  split Xdir1/Xfile
-  call setline(1, ['a', 'b'])
-  w
-  w Xdir1/subdir/Xfile
-  close
+  call writefile(['a', 'b'], 'Xdir1/Xfile')
+  call writefile(['a', 'b'], 'Xdir1/subdir/Xfile')
+
   call assert_true(isdirectory('Xdir1'))
   call assert_equal(['a', 'b'], readfile('Xdir1/Xfile'))
   call assert_true(isdirectory('Xdir1/subdir'))
@@ -41,10 +38,10 @@ func Test_symlink_delete()
   if !has('unix')
     return
   endif
-  split Xfile
-  call setline(1, ['a', 'b'])
-  wq
+
+  call writefile(['a', 'b'], 'Xfile')
   silent !ln -s Xfile Xlink
+
   " Delete the link, not the file
   call assert_equal(0, delete('Xlink'))
   call assert_equal(-1, delete('Xlink'))
@@ -55,8 +52,10 @@ func Test_symlink_dir_delete()
   if !has('unix')
     return
   endif
+
   call mkdir('Xdir1')
   silent !ln -s Xdir1 Xlink
+
   call assert_true(isdirectory('Xdir1'))
   call assert_true(isdirectory('Xlink'))
   " Delete the link, not the directory
@@ -69,15 +68,12 @@ func Test_symlink_recursive_delete()
   if !has('unix')
     return
   endif
-  call mkdir('Xdir3')
-  call mkdir('Xdir3/subdir')
+
+  call mkdir('Xdir3/subdir', 'p')
   call mkdir('Xdir4')
-  split Xdir3/Xfile
-  call setline(1, ['a', 'b'])
-  w
-  w Xdir3/subdir/Xfile
-  w Xdir4/Xfile
-  close
+  call writefile(['a', 'b'], 'Xdir3/Xfile')
+  call writefile(['a', 'b'], 'Xdir3/subdir/Xfile')
+  call writefile(['a', 'b'], 'Xdir4/Xfile')
   silent !ln -s ../Xdir4 Xdir3/Xlink
 
   call assert_true(isdirectory('Xdir3'))
@@ -96,4 +92,43 @@ func Test_symlink_recursive_delete()
   call assert_equal(['a', 'b'], readfile('Xdir4/Xfile'))
   call assert_equal(0, delete('Xdir4/Xfile'))
   call assert_equal(0, delete('Xdir4', 'd'))
+endfunc
+
+func Test_complicated_name_recursive_delete()
+  call mkdir('Xcomplicated/[complicated-1 ]', 'p')
+  call mkdir('Xcomplicated/{complicated,2 }', 'p')
+  call writefile(['a', 'b'], 'Xcomplicated/Xfile')
+  call writefile(['a', 'b'], 'Xcomplicated/[complicated-1 ]/Xfile')
+  call writefile(['a', 'b'], 'Xcomplicated/{complicated,2 }/Xfile')
+
+  call assert_true(isdirectory('Xcomplicated'))
+  call assert_equal(['a', 'b'], readfile('Xcomplicated/Xfile'))
+  call assert_true(isdirectory('Xcomplicated/[complicated-1 ]'))
+  call assert_equal(['a', 'b'], readfile('Xcomplicated/[complicated-1 ]/Xfile'))
+  call assert_true(isdirectory('Xcomplicated/{complicated,2 }'))
+  call assert_equal(['a', 'b'], readfile('Xcomplicated/{complicated,2 }/Xfile'))
+  call assert_equal(0, delete('Xcomplicated', 'rf'))
+  call assert_false(isdirectory('Xcomplicated'))
+  call assert_equal(-1, delete('Xcomplicated', 'd'))
+endfunc
+
+func Test_complicated_name_recursive_delete_unix()
+  if !has('unix')
+    return
+  endif
+
+  call mkdir('Xcomplicated/[complicated-1 ?', 'p')
+  call writefile(['a', 'b'], 'Xcomplicated/Xfile')
+  call writefile(['a', 'b'], 'Xcomplicated/[complicated-1 ?/Xfile')
+  call writefile(['a', 'b'], 'Xcomplicated/[complicated-1 |/Xfile')
+
+  call assert_true(isdirectory('Xcomplicated'))
+  call assert_equal(['a', 'b'], readfile('Xcomplicated/Xfile'))
+  call assert_true(isdirectory('Xcomplicated/[complicated-1 ?'))
+  call assert_equal(['a', 'b'], readfile('Xcomplicated/[complicated-1 ?/Xfile'))
+  call assert_true(isdirectory('Xcomplicated/(complicated-2 |'))
+  call assert_equal(['a', 'b'], readfile('Xcomplicated/(complicated-2 |/Xfile'))
+  call assert_equal(0, delete('Xcomplicated', 'rf'))
+  call assert_false(isdirectory('Xcomplicated'))
+  call assert_equal(-1, delete('Xcomplicated', 'd'))
 endfunc

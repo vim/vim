@@ -7261,7 +7261,20 @@ delete_recursive(char_u *name)
 # endif
 	    )
     {
-	vim_snprintf((char *)NameBuff, MAXPATHL, "%s/*", name);
+	char_u *esc_name, *esc_name2;
+	/* Escape some regexp chars in file names as these probably will be
+	 * interpreted as ill-formed regular expressions in
+	 * gen_expand_wildcards. */
+	esc_name = do_string_sub(name, (char_u *)"[",
+		(char_u *)"[[]", NULL, (char_u *)"g");
+	if (esc_name == NULL)
+	    return -1;
+	esc_name2 = vim_strsave_escaped(esc_name, (char_u *)"{}?");
+	vim_free(esc_name);
+	if (esc_name2 == NULL)
+	    return -1;
+	vim_snprintf((char *)NameBuff, MAXPATHL, "%s/*", esc_name2);
+	vim_free(esc_name2);
 	exp = vim_strsave(NameBuff);
 	if (exp == NULL)
 	    return -1;
