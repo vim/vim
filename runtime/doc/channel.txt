@@ -33,7 +33,7 @@ The Netbeans interface also uses a channel. |netbeans|
 1. Overview						*job-channel-overview*
 
 There are four main types of jobs:
-1. A deamon, serving several Vim instances.
+1. A daemon, serving several Vim instances.
    Vim connects to it with a socket.
 2. One job working with one Vim instance, asynchronously.
    Uses a socket or pipes.
