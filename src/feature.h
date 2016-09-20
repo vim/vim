@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *
@@ -56,8 +56,7 @@
 /*
  * For Unix, Mac and Win32 use +huge by default.  These days CPUs are fast and
  * Memory is cheap.
- * Use +big for older systems: Other MS-Windows, dos32, OS/2 and VMS.
- * The dos16 version has very little RAM available, use +small.
+ * Use +big for older systems: Other MS-Windows and VMS.
  * Otherwise use +normal
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
@@ -97,6 +96,7 @@
 /*
  * +windows		Multiple windows.  Without this there is no help
  *			window and no status lines.
+ * +vertsplit		Vertically split windows.
  */
 #ifdef FEAT_SMALL
 # define FEAT_WINDOWS
@@ -109,16 +109,6 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_LISTCMDS
-#endif
-
-/*
- * +vertsplit		Vertically split windows.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_VERTSPLIT
-#endif
-#if defined(FEAT_VERTSPLIT) && !defined(FEAT_WINDOWS)
-# define FEAT_WINDOWS
 #endif
 
 /*
@@ -144,8 +134,8 @@
 # define FEAT_JUMPLIST
 #endif
 
-/* the cmdline-window requires FEAT_VERTSPLIT and FEAT_CMDHIST */
-#if defined(FEAT_VERTSPLIT) && defined(FEAT_CMDHIST)
+/* the cmdline-window requires FEAT_WINDOWS and FEAT_CMDHIST */
+#if defined(FEAT_WINDOWS) && defined(FEAT_CMDHIST)
 # define FEAT_CMDWIN
 #endif
 
@@ -342,7 +332,7 @@
  * sorted by character values.  I'm not sure how to fix this. Should we really
  * do a EBCDIC to ASCII conversion for this??
  */
-#if defined(FEAT_NORMAL) && !defined(EBCDIC)
+#if !defined(EBCDIC)
 # define FEAT_TAG_BINS
 #endif
 
@@ -371,11 +361,15 @@
  * +eval		Built-in script language and expression evaluation,
  *			":let", ":if", etc.
  * +float		Floating point variables.
+ * +num64		64-bit Number.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_EVAL
 # if defined(HAVE_FLOAT_FUNCS) || defined(WIN3264) || defined(MACOS)
 #  define FEAT_FLOAT
+# endif
+# if defined(HAVE_STDINT_H) || defined(WIN3264) || (VIM_SIZEOF_LONG >= 8)
+#  define FEAT_NUM64
 # endif
 #endif
 
@@ -397,6 +391,13 @@
 	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
 		|| defined(WIN3264))
 # define FEAT_RELTIME
+#endif
+
+/*
+ * +timers		timer_start()
+ */
+#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(WIN32))
+# define FEAT_TIMERS
 #endif
 
 /*
@@ -594,7 +595,7 @@
  * +mksession		":mksession" command.
  *			Requires +windows and +vertsplit.
  */
-#if defined(FEAT_NORMAL) && defined(FEAT_WINDOWS) && defined(FEAT_VERTSPLIT)
+#if defined(FEAT_NORMAL) && defined(FEAT_WINDOWS)
 # define FEAT_SESSION
 #endif
 
@@ -816,6 +817,13 @@
 # endif
 #endif
 
+/*
+ * +termguicolors	'termguicolors' option.
+ */
+#if (defined(FEAT_BIG) && defined(FEAT_SYN_HL)) && !defined(ALWAYS_USE_GUI)
+# define FEAT_TERMGUICOLORS
+#endif
+
 /* Mac specific thing: Codewarrior interface. */
 #ifdef FEAT_GUI_MAC
 # define FEAT_CW_EDITOR
@@ -896,6 +904,11 @@
 /* #define USR_VIMRC_FILE	"~/foo/.vimrc" */
 /* #define USR_VIMRC_FILE2	"~/bar/.vimrc" */
 /* #define USR_VIMRC_FILE3	"$VIM/.vimrc" */
+
+/*
+ * VIM_DEFAULTS_FILE	Name of the defaults.vim script file
+ */
+/* #define VIM_DEFAULTS_FILE	"$VIMRUNTIME/defaults.vim" */
 
 /*
  * EVIM_FILE		Name of the evim.vim script file
@@ -1250,15 +1263,8 @@
 /*
  * The +channel feature requires +eval.
  */
-#if !defined(FEAT_EVAL) && defined(FEAT_CHANNEL)
-# undef FEAT_CHANNEL
-#endif
-
-/*
- * The +job feature requires +eval and Unix or MS-Windows.
- */
-#if (defined(UNIX) || defined(WIN32)) && defined(FEAT_EVAL)
-# define FEAT_JOB
+#if !defined(FEAT_EVAL) && defined(FEAT_JOB_CHANNEL)
+# undef FEAT_JOB_CHANNEL
 #endif
 
 /*

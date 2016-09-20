@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Scheme (R5RS + some R6RS extras)
-" Last Change:	2012 May 13
+" Last Change:	2016 May 23
 " Maintainer:	Sergey Khorev <sergey.khorev@gmail.com>
 " Original author:	Dirk van Deun <dirk@igwe.vub.ac.be>
 
@@ -14,11 +14,8 @@
 
 " Initializing:
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+" quit when a syntax file was already loaded
+if exists("b:current_syntax")
   finish
 endif
 
@@ -64,11 +61,7 @@ syn region schemeUnquote matchgroup=Delimiter start=",@#\[" end="\]" contains=AL
 
 " R5RS Scheme Functions and Syntax:
 
-if version < 600
-  set iskeyword=33,35-39,42-58,60-90,94,95,97-122,126,_
-else
-  setlocal iskeyword=33,35-39,42-58,60-90,94,95,97-122,126,_
-endif
+setlocal iskeyword=33,35-39,42-58,60-90,94,95,97-122,126,_
 
 syn keyword schemeSyntax lambda and or if cond case define let let* letrec
 syn keyword schemeSyntax begin do delay set! else =>
@@ -245,6 +238,18 @@ if exists("b:is_mzscheme") || exists("is_mzscheme")
     syn region schemeUnquote matchgroup=Delimiter start="#,@\[" end="\]" contains=ALL
     syn region schemeQuoted matchgroup=Delimiter start="#['`]" end=![ \t()\[\]";]!me=e-1 contains=ALL
     syn region schemeQuoted matchgroup=Delimiter start="#['`](" matchgroup=Delimiter end=")" contains=ALL
+
+    " Identifiers are very liberal in MzScheme/Racket
+    syn match schemeOther ![^()[\]{}",'`;#|\\ ]\+!
+
+    " Language setting
+    syn match schemeLang "#lang [-+_/A-Za-z0-9]\+\>"
+
+    " Various number forms
+    syn match schemeNumber "[-+]\=[0-9]\+\(\.[0-9]*\)\=\(e[-+]\=[0-9]\+\)\=\>"
+    syn match schemeNumber "[-+]\=\.[0-9]\+\(e[-+]\=[0-9]\+\)\=\>"
+    syn match schemeNumber "[-+]\=[0-9]\+/[0-9]\+\>"
+    syn match schemeNumber "\([-+]\=\([0-9]\+\(\.[0-9]*\)\=\(e[-+]\=[0-9]\+\)\=\|\.[0-9]\+\(e[-+]\=[0-9]\+\)\=\|[0-9]\+/[0-9]\+\)\)\=[-+]\([0-9]\+\(\.[0-9]*\)\=\(e[-+]\=[0-9]\+\)\=\|\.[0-9]\+\(e[-+]\=[0-9]\+\)\=\|[0-9]\+/[0-9]\+\)\=i\>"
 endif
 
 
@@ -294,35 +299,28 @@ syn sync match matchPlace grouphere NONE "^[^ \t]"
 " ... i.e. synchronize on a line that starts at the left margin
 
 " Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_scheme_syntax_inits")
-  if version < 508
-    let did_scheme_syntax_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
+" Only when an item doesn't have highlighting yet
 
-  HiLink schemeSyntax		Statement
-  HiLink schemeFunc		Function
+hi def link schemeSyntax		Statement
+hi def link schemeFunc		Function
 
-  HiLink schemeString		String
-  HiLink schemeCharacter	Character
-  HiLink schemeNumber		Number
-  HiLink schemeBoolean		Boolean
+hi def link schemeString		String
+hi def link schemeCharacter	Character
+hi def link schemeNumber		Number
+hi def link schemeBoolean		Boolean
 
-  HiLink schemeDelimiter	Delimiter
-  HiLink schemeConstant		Constant
+hi def link schemeDelimiter	Delimiter
+hi def link schemeConstant		Constant
 
-  HiLink schemeComment		Comment
-  HiLink schemeMultilineComment	Comment
-  HiLink schemeError		Error
+hi def link schemeComment		Comment
+hi def link schemeMultilineComment	Comment
+hi def link schemeError		Error
 
-  HiLink schemeExtSyntax	Type
-  HiLink schemeExtFunc		PreProc
-  delcommand HiLink
-endif
+hi def link schemeExtSyntax	Type
+hi def link schemeExtFunc		PreProc
+
+hi def link schemeLang		PreProc
+
 
 let b:current_syntax = "scheme"
 

@@ -1,10 +1,12 @@
 /* gui_gtk_x11.c */
 void gui_mch_prepare(int *argc, char **argv);
 void gui_mch_free_all(void);
+int gui_mch_is_blinking(void);
+int gui_mch_is_blink_off(void);
 void gui_mch_set_blinking(long waittime, long on, long off);
 void gui_mch_stop_blink(void);
 void gui_mch_start_blink(void);
-int gui_mch_early_init_check(void);
+int gui_mch_early_init_check(int give_message);
 int gui_mch_init_check(void);
 void gui_mch_show_tabline(int showit);
 int gui_mch_showing_tabline(void);
@@ -64,7 +66,7 @@ void gui_mch_menu_grey(vimmenu_T *menu, int grey);
 void gui_mch_menu_hidden(vimmenu_T *menu, int hidden);
 void gui_mch_draw_menubar(void);
 void gui_mch_enable_scrollbar(scrollbar_T *sb, int flag);
-long_u gui_mch_get_rgb(guicolor_T pixel);
+guicolor_T gui_mch_get_rgb(guicolor_T pixel);
 void gui_mch_getmouse(int *x, int *y);
 void gui_mch_setmouse(int x, int y);
 void gui_mch_mousehide(int hide);

@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  * X command server by Flemming Madsen
@@ -606,6 +606,7 @@ ServerWait(
     {
 	while (XCheckWindowEvent(dpy, commWindow, PropertyChangeMask, &event))
 	    serverEventProc(dpy, &event, 1);
+	server_parse_messages();
 
 	if (endCond(endData) != 0)
 	    break;

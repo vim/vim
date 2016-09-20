@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -79,7 +79,7 @@ static mapblock_T	*first_abbr = NULL; /* first entry in abbrlist */
 static int		KeyNoremap = 0;	    /* remapping flags */
 
 /*
- * variables used by vgetorpeek() and flush_buffers()
+ * Variables used by vgetorpeek() and flush_buffers().
  *
  * typebuf.tb_buf[] contains all characters that are not consumed yet.
  * typebuf.tb_buf[typebuf.tb_off] is the first valid character.
@@ -129,6 +129,7 @@ static int	vgetorpeek(int);
 static void	map_free(mapblock_T **);
 static void	validate_maphash(void);
 static void	showmap(mapblock_T *mp, int local);
+static int	inchar(char_u *buf, int maxlen, long wait_time, int tb_change_cnt);
 #ifdef FEAT_EVAL
 static char_u	*eval_map_expr(char_u *str, int c);
 #endif
@@ -1523,7 +1524,7 @@ before_blocking(void)
     updatescript(0);
 #ifdef FEAT_EVAL
     if (may_garbage_collect)
-	garbage_collect();
+	garbage_collect(FALSE);
 #endif
 }
 
@@ -1571,7 +1572,7 @@ vgetc(void)
     /* Do garbage collection when garbagecollect() was called previously and
      * we are now at the toplevel. */
     if (may_garbage_collect && want_garbage_collect)
-	garbage_collect();
+	garbage_collect(FALSE);
 #endif
 
     /*
@@ -1880,7 +1881,7 @@ char_avail(void)
     int	    retval;
 
 #ifdef FEAT_EVAL
-    /* When disable_char_avail_for_testing(1) was called pretend there is no
+    /* When test_disable_char_avail(1) was called pretend there is no
      * typeahead. */
     if (disable_char_avail_for_testing)
 	return FALSE;
@@ -1918,7 +1919,7 @@ vungetc(int c)
  *	This may do a blocking wait if "advance" is TRUE.
  *
  * if "advance" is TRUE (vgetc()):
- *	really get the character.
+ *	Really get the character.
  *	KeyTyped is set to TRUE in the case the user typed the key.
  *	KeyStuffed is TRUE if the character comes from the stuff buffer.
  * if "advance" is FALSE (vpeekc()):
@@ -2941,7 +2942,7 @@ vgetorpeek(int advance)
  *  Return the number of obtained characters.
  *  Return -1 when end of input script reached.
  */
-    int
+    static int
 inchar(
     char_u	*buf,
     int		maxlen,
@@ -3059,7 +3060,7 @@ inchar(
     if (typebuf_changed(tb_change_cnt))
 	return 0;
 
-    return fix_input_buffer(buf, len, script_char >= 0);
+    return fix_input_buffer(buf, len);
 }
 
 /*
@@ -3068,10 +3069,7 @@ inchar(
  * Returns the new length.
  */
     int
-fix_input_buffer(
-    char_u	*buf,
-    int		len,
-    int		script)		/* TRUE when reading from a script */
+fix_input_buffer(char_u *buf, int len)
 {
     int		i;
     char_u	*p = buf;
@@ -3082,7 +3080,6 @@ fix_input_buffer(
      * Replace	     NUL by K_SPECIAL KS_ZERO	 KE_FILLER
      * Replace K_SPECIAL by K_SPECIAL KS_SPECIAL KE_FILLER
      * Replace       CSI by K_SPECIAL KS_EXTRA   KE_CSI
-     * Don't replace K_SPECIAL when reading a script file.
      */
     for (i = len; --i >= 0; ++p)
     {
@@ -3105,7 +3102,7 @@ fix_input_buffer(
 	}
 	else
 #endif
-	if (p[0] == NUL || (p[0] == K_SPECIAL && !script
+	if (p[0] == NUL || (p[0] == K_SPECIAL
 #ifdef FEAT_AUTOCMD
 		    /* timeout may generate K_CURSORHOLD */
 		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
@@ -3990,6 +3987,9 @@ showmap(
     int		len = 1;
     char_u	*mapchars;
 
+    if (message_filtered(mp->m_keys) && message_filtered(mp->m_str))
+	return;
+
     if (msg_didout || msg_silent != 0)
     {
 	msg_putchar('\n');
@@ -4661,8 +4661,16 @@ vim_strsave_escape_csi(
     char_u	*res;
     char_u	*s, *d;
 
-    /* Need a buffer to hold up to three times as much. */
-    res = alloc((unsigned)(STRLEN(p) * 3) + 1);
+    /* Need a buffer to hold up to three times as much.  Four in case of an
+     * illegal utf-8 byte:
+     * 0xc0 -> 0xc3 0x80 -> 0xc3 K_SPECIAL KS_SPECIAL KE_FILLER */
+    res = alloc((unsigned)(STRLEN(p) *
+#ifdef FEAT_MBYTE
+			4
+#else
+			3
+#endif
+			    ) + 1);
     if (res != NULL)
     {
 	d = res;
@@ -4677,22 +4685,10 @@ vim_strsave_escape_csi(
 	    }
 	    else
 	    {
-#ifdef FEAT_MBYTE
-		int len  = mb_char2len(PTR2CHAR(s));
-		int len2 = mb_ptr2len(s);
-#endif
 		/* Add character, possibly multi-byte to destination, escaping
-		 * CSI and K_SPECIAL. */
+		 * CSI and K_SPECIAL. Be careful, it can be an illegal byte! */
 		d = add_char2buf(PTR2CHAR(s), d);
-#ifdef FEAT_MBYTE
-		while (len < len2)
-		{
-		    /* add following combining char */
-		    d = add_char2buf(PTR2CHAR(s + len), d);
-		    len += mb_char2len(PTR2CHAR(s + len));
-		}
-#endif
-		mb_ptr_adv(s);
+		s += MB_CPTR2LEN(s);
 	    }
 	}
 	*d = NUL;

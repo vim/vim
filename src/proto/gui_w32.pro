@@ -1,6 +1,8 @@
 /* gui_w32.c */
 int directx_enabled(void);
 int gui_mch_set_rendering_options(char_u *s);
+int gui_mch_is_blinking(void);
+int gui_mch_is_blink_off(void);
 void gui_mch_set_blinking(long wait, long on, long off);
 void gui_mch_stop_blink(void);
 void gui_mch_start_blink(void);
@@ -33,7 +35,7 @@ void gui_mch_enable_menu(int flag);
 void gui_mch_set_menu_pos(int x, int y, int w, int h);
 void gui_mch_menu_hidden(vimmenu_T *menu, int hidden);
 void gui_mch_draw_menubar(void);
-long_u gui_mch_get_rgb(guicolor_T pixel);
+guicolor_T gui_mch_get_rgb(guicolor_T pixel);
 void gui_mch_activate_window(void);
 void gui_mch_show_toolbar(int showit);
 void gui_mch_show_tabline(int showit);
@@ -60,7 +62,6 @@ void mch_set_mouse_shape(int shape);
 char_u *gui_mch_browsedir(char_u *title, char_u *initdir);
 char_u *gui_mch_browse(int saving, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter);
 int get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree);
-int gui_is_win32s(void);
 void gui_mch_set_parent(char *title);
 void gui_mch_prepare(int *argc, char **argv);
 int gui_mch_init(void);

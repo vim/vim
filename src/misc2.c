@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -169,7 +169,7 @@ coladvance2(
 
 	if (finetune
 		&& curwin->w_p_wrap
-# ifdef FEAT_VERTSPLIT
+# ifdef FEAT_WINDOWS
 		&& curwin->w_width != 0
 # endif
 		&& wcol >= (colnr_T)width)
@@ -502,6 +502,28 @@ get_cursor_rel_lnum(
 	retval = lnum - cursor;
 
     return retval;
+}
+
+/*
+ * Make sure "pos.lnum" and "pos.col" are valid in "buf".
+ * This allows for the col to be on the NUL byte.
+ */
+    void
+check_pos(buf_T *buf, pos_T *pos)
+{
+    char_u *line;
+    colnr_T len;
+
+    if (pos->lnum > buf->b_ml.ml_line_count)
+	pos->lnum = buf->b_ml.ml_line_count;
+
+    if (pos->col > 0)
+    {
+	line = ml_get_buf(buf, pos->lnum, FALSE);
+	len = (colnr_T)STRLEN(line);
+	if (pos->col > len)
+	    pos->col = len;
+    }
 }
 
 /*
@@ -851,7 +873,7 @@ alloc_clear(unsigned size)
     char_u *
 alloc_check(unsigned size)
 {
-#if !defined(UNIX) && !defined(__EMX__)
+#if !defined(UNIX)
     if (sizeof(int) == 2 && size > 0x7fff)
     {
 	/* Don't hide this message */
@@ -1036,13 +1058,12 @@ static void free_findfile(void);
 free_all_mem(void)
 {
     buf_T	*buf, *nextbuf;
-    static int	entered = FALSE;
 
     /* When we cause a crash here it is caught and Vim tries to exit cleanly.
      * Don't try freeing everything again. */
-    if (entered)
+    if (entered_free_all_mem)
 	return;
-    entered = TRUE;
+    entered_free_all_mem = TRUE;
 
 # ifdef FEAT_AUTOCMD
     /* Don't want to trigger autocommands from here on. */
@@ -1127,9 +1148,6 @@ free_all_mem(void)
 # ifdef FEAT_DIFF
     diff_clear(curtab);
 # endif
-# ifdef FEAT_CHANNEL
-    channel_free_all();
-# endif
     clear_sb_text();	      /* free any scrollback text */
 
     /* Free some global vars. */
@@ -1177,9 +1195,12 @@ free_all_mem(void)
 #endif
     for (buf = firstbuf; buf != NULL; )
     {
+	bufref_T    bufref;
+
+	set_bufref(&bufref, buf);
 	nextbuf = buf->b_next;
 	close_buffer(NULL, buf, DOBUF_WIPE, FALSE);
-	if (buf_valid(buf))
+	if (bufref_valid(&bufref))
 	    buf = nextbuf;	/* didn't work, try next one */
 	else
 	    buf = firstbuf;
@@ -1218,8 +1239,19 @@ free_all_mem(void)
 	if (delete_first_msg() == FAIL)
 	    break;
 
+# ifdef FEAT_JOB_CHANNEL
+    channel_free_all();
+# endif
+#ifdef FEAT_TIMERS
+    timer_free_all();
+#endif
 # ifdef FEAT_EVAL
+    /* must be after channel_free_all() with unrefs partials */
     eval_clear();
+# endif
+# ifdef FEAT_JOB_CHANNEL
+    /* must be after eval_clear() with unrefs jobs */
+    job_free_all();
 # endif
 
     free_termoptions();
@@ -2664,13 +2696,14 @@ get_special_key_name(int c, int modifiers)
 trans_special(
     char_u	**srcp,
     char_u	*dst,
-    int		keycode) /* prefer key code, e.g. K_DEL instead of DEL */
+    int		keycode, /* prefer key code, e.g. K_DEL instead of DEL */
+    int		in_string) /* TRUE when inside a double quoted string */
 {
     int		modifiers = 0;
     int		key;
     int		dlen = 0;
 
-    key = find_special_key(srcp, &modifiers, keycode, FALSE);
+    key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string);
     if (key == 0)
 	return 0;
 
@@ -2710,7 +2743,8 @@ find_special_key(
     char_u	**srcp,
     int		*modp,
     int		keycode,     /* prefer key code, e.g. K_DEL instead of DEL */
-    int		keep_x_key)  /* don't translate xHome to Home key */
+    int		keep_x_key,  /* don't translate xHome to Home key */
+    int		in_string)   /* TRUE in string, double quote is escaped */
 {
     char_u	*last_dash;
     char_u	*end_of_name;
@@ -2719,7 +2753,7 @@ find_special_key(
     int		modifiers;
     int		bit;
     int		key;
-    unsigned long n;
+    uvarnumber_T	n;
     int		l;
 
     src = *srcp;
@@ -2741,8 +2775,14 @@ find_special_key(
 		else
 #endif
 		    l = 1;
-		if (bp[l + 1] == '>')
-		    bp += l;	/* anything accepted, like <C-?> */
+		/* Anything accepted, like <C-?>.
+		 * <C-"> or <M-"> are not special in strings as " is
+		 * the string delimiter. With a backslash it works: <M-\"> */
+		if (!(in_string && bp[1] == '"') && bp[2] == '>')
+		    bp += l;
+		else if (in_string && bp[1] == '\\' && bp[2] == '"'
+							       && bp[3] == '>')
+		    bp += 2;
 	    }
 	}
 	if (bp[0] == 't' && bp[1] == '_' && bp[2] && bp[3])
@@ -2786,20 +2826,22 @@ find_special_key(
 	    }
 	    else
 	    {
-		/*
-		 * Modifier with single letter, or special key name.
-		 */
+		int off = 1;
+
+		/* Modifier with single letter, or special key name.  */
+		if (in_string && last_dash[1] == '\\' && last_dash[2] == '"')
+		    off = 2;
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
-		    l = mb_ptr2len(last_dash + 1);
+		    l = mb_ptr2len(last_dash + off);
 		else
 #endif
 		    l = 1;
-		if (modifiers != 0 && last_dash[l + 1] == '>')
-		    key = PTR2CHAR(last_dash + 1);
+		if (modifiers != 0 && last_dash[l + off] == '>')
+		    key = PTR2CHAR(last_dash + off);
 		else
 		{
-		    key = get_special_key_code(last_dash + 1);
+		    key = get_special_key_code(last_dash + off);
 		    if (!keep_x_key)
 			key = handle_x_keys(key);
 		}
@@ -3633,7 +3675,7 @@ get_shape_idx(int mouse)
     }
     if (mouse && drag_status_line)
 	return SHAPE_IDX_SDRAG;
-# ifdef FEAT_VERTSPLIT
+# ifdef FEAT_WINDOWS
     if (mouse && drag_sep_line)
 	return SHAPE_IDX_VDRAG;
 # endif
@@ -5045,7 +5087,7 @@ ff_check_visited(
 {
     ff_visited_T	*vp;
 #ifdef UNIX
-    struct stat		st;
+    stat_T		st;
     int			url = FALSE;
 #endif
 
@@ -5152,7 +5194,7 @@ ff_create_stack_element(
     new->ffs_filearray_cur  = 0;
     new->ffs_stage	   = 0;
     new->ffs_level	   = level;
-    new->ffs_star_star_empty = star_star_empty;;
+    new->ffs_star_star_empty = star_star_empty;
 
     /* the following saves NULL pointer checks in vim_findfile */
     if (fix_part == NULL)
@@ -6070,12 +6112,12 @@ get4c(FILE *fd)
 }
 
 /*
- * Read 8 bytes from "fd" and turn them into a time_t, MSB first.
+ * Read 8 bytes from "fd" and turn them into a time_T, MSB first.
  */
-    time_t
+    time_T
 get8ctime(FILE *fd)
 {
-    time_t	n = 0;
+    time_T	n = 0;
     int		i;
 
     for (i = 0; i < 8; ++i)
@@ -6137,11 +6179,11 @@ put_bytes(FILE *fd, long_u nr, int len)
 #endif
 
 /*
- * Write time_t to file "fd" in 8 bytes.
+ * Write time_T to file "fd" in 8 bytes.
  * Returns FAIL when the write failed.
  */
     int
-put_time(FILE *fd, time_t the_time)
+put_time(FILE *fd, time_T the_time)
 {
     char_u	buf[8];
 
@@ -6150,26 +6192,26 @@ put_time(FILE *fd, time_t the_time)
 }
 
 /*
- * Write time_t to "buf[8]".
+ * Write time_T to "buf[8]".
  */
     void
-time_to_bytes(time_t the_time, char_u *buf)
+time_to_bytes(time_T the_time, char_u *buf)
 {
     int		c;
     int		i;
     int		bi = 0;
-    time_t	wtime = the_time;
+    time_T	wtime = the_time;
 
-    /* time_t can be up to 8 bytes in size, more than long_u, thus we
+    /* time_T can be up to 8 bytes in size, more than long_u, thus we
      * can't use put_bytes() here.
      * Another problem is that ">>" may do an arithmetic shift that keeps the
      * sign.  This happens for large values of wtime.  A cast to long_u may
-     * truncate if time_t is 8 bytes.  So only use a cast when it is 4 bytes,
+     * truncate if time_T is 8 bytes.  So only use a cast when it is 4 bytes,
      * it's safe to assume that long_u is 4 bytes or more and when using 8
      * bytes the top bit won't be set. */
     for (i = 7; i >= 0; --i)
     {
-	if (i + 1 > (int)sizeof(time_t))
+	if (i + 1 > (int)sizeof(time_T))
 	    /* ">>" doesn't work well when shifting more bits than avail */
 	    buf[bi++] = 0;
 	else
@@ -6221,7 +6263,7 @@ has_non_ascii(char_u *s)
 parse_queued_messages(void)
 {
     /* For Win32 mch_breakcheck() does not check for input, do it here. */
-# if defined(WIN32) && defined(FEAT_CHANNEL)
+# if defined(WIN32) && defined(FEAT_JOB_CHANNEL)
     channel_handle_events();
 # endif
 
@@ -6229,7 +6271,10 @@ parse_queued_messages(void)
     /* Process the queued netbeans messages. */
     netbeans_parse_messages();
 # endif
-# ifdef FEAT_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
+    /* Write any buffer lines still to be written. */
+    channel_write_any_lines();
+
     /* Process the messages queued on channels. */
     channel_parse_messages();
 # endif
@@ -6237,7 +6282,7 @@ parse_queued_messages(void)
     /* Process the queued clientserver messages. */
     server_parse_messages();
 # endif
-# ifdef FEAT_JOB
+# ifdef FEAT_JOB_CHANNEL
     /* Check if any jobs have ended. */
     job_check_ended();
 # endif

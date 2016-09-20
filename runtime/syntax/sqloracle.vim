@@ -4,7 +4,12 @@
 " Repository:   https://github.com/chrisbra/vim-sqloracle-syntax
 " License:      Vim
 " Previous Maintainer:	Paul Moore
-" Last Change:	2015 Nov 24
+" Last Change:	2016 Jul 22
+
+" Changes:
+" 02.04.2016: Support for when keyword
+" 03.04.2016: Support for join related keywords
+" 22.07.2016: Support Oracle Q-Quote-Syntax
 
 if exists("b:current_syntax")
   finish
@@ -24,10 +29,11 @@ syn keyword sqlKeyword	index initial initrans into is level link logging loop
 syn keyword sqlKeyword	maxextents maxtrans mode modify monitoring
 syn keyword sqlKeyword	nocache nocompress nologging noparallel nowait of offline on online start
 syn keyword sqlKeyword	parallel successful synonym table tablespace then to trigger uid
-syn keyword sqlKeyword	unique user validate values view whenever
+syn keyword sqlKeyword	unique user validate values view when whenever
 syn keyword sqlKeyword	where with option order pctfree pctused privileges procedure
 syn keyword sqlKeyword	public resource return row rowlabel rownum rows
 syn keyword sqlKeyword	session share size smallint type using
+syn keyword sqlKeyword	join cross inner outer left right
 
 syn keyword sqlOperator	not and or
 syn keyword sqlOperator	in any some all between exists
@@ -47,8 +53,13 @@ syn keyword sqlType	boolean char character date float integer long
 syn keyword sqlType	mlslabel number raw rowid varchar varchar2 varray
 
 " Strings:
-syn region sqlString	start=+"+  skip=+\\\\\|\\"+  end=+"+
-syn region sqlString	start=+'+  skip=+\\\\\|\\'+  end=+'+
+syn region sqlString	matchgroup=Quote start=+"+  skip=+\\\\\|\\"+  end=+"+
+syn region sqlString	matchgroup=Quote start=+'+  skip=+\\\\\|\\'+  end=+'+
+syn region sqlString	matchgroup=Quote start=+n\?q'\z([^[(<{]\)+    end=+\z1'+
+syn region sqlString	matchgroup=Quote start=+n\?q'<+   end=+>'+
+syn region sqlString	matchgroup=Quote start=+n\?q'{+   end=+}'+
+syn region sqlString	matchgroup=Quote start=+n\?q'(+   end=+)'+
+syn region sqlString	matchgroup=Quote start=+n\?q'\[+  end=+]'+
 
 " Numbers:
 syn match sqlNumber	"-\=\<\d*\.\=[0-9_]\>"
@@ -117,18 +128,17 @@ syn keyword sqlFunction	xmlparse xmlpatch xmlpi xmlquery xmlroot xmlsequence xml
 syn keyword sqlTodo TODO FIXME XXX DEBUG NOTE contained
 
 " Define the default highlighting.
-command -nargs=+ HiLink hi def link <args>
-HiLink sqlComment	Comment
-HiLink sqlFunction	Function
-HiLink sqlKeyword	sqlSpecial
-HiLink sqlNumber	Number
-HiLink sqlOperator	sqlStatement
-HiLink sqlSpecial	Special
-HiLink sqlStatement	Statement
-HiLink sqlString	String
-HiLink sqlType		Type
-HiLink sqlTodo		Todo
+hi def link Quote            Special
+hi def link sqlComment	Comment
+hi def link sqlFunction	Function
+hi def link sqlKeyword	sqlSpecial
+hi def link sqlNumber	Number
+hi def link sqlOperator	sqlStatement
+hi def link sqlSpecial	Special
+hi def link sqlStatement	Statement
+hi def link sqlString	String
+hi def link sqlType		Type
+hi def link sqlTodo		Todo
 
-delcommand HiLink
 let b:current_syntax = "sql"
 " vim: ts=8

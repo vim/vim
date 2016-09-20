@@ -59,17 +59,6 @@ STARTTEST
 :  $put =v:exception
 :endtry
 :"
-:" Changing var type should fail
-:try
-:  let d = []
-:catch
-:  $put =v:exception[:14] . v:exception[-1:-1]
-:endtry
-:try
-:  let l = {}
-:catch
-:  $put =v:exception[:14] . v:exception[-1:-1]
-:endtry
 :"
 :" removing items with :unlet
 :unlet l[2]
@@ -184,12 +173,8 @@ let l = [0, 1, 2, 3]
 :let dict.data = [1,2,3]
 :call dict.func("len: ")
 :let x = dict.func("again: ")
-:try
-:  let Fn = dict.func
-:  call Fn('xxx')
-:catch
-:  $put =v:exception[:15]
-:endtry
+:let Fn = dict.func
+:call Fn('xxx')
 :" 
 :" Function in script-local List or Dict
 :let g:dict = {}

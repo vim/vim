@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -159,6 +159,9 @@ typedef long off_t;
 #endif
 #ifndef USR_VIMRC_FILE4
 # define USR_VIMRC_FILE4 "$VIM/.vimrc"
+#endif
+#ifndef VIM_DEFAULTS_FILE
+# define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
 #endif
 #ifndef EVIM_FILE
 # define EVIM_FILE	"$VIMRUNTIME/evim.vim"

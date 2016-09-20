@@ -16,6 +16,8 @@ void write_viminfo(char_u *file, int forceit);
 int viminfo_readline(vir_T *virp);
 char_u *viminfo_readstring(vir_T *virp, int off, int convert);
 void viminfo_writestring(FILE *fd, char_u *p);
+int barline_writestring(FILE *fd, char_u *s, int remaining_start);
+time_T vim_time(void);
 void do_fixdel(exarg_T *eap);
 void print_line_no_prefix(linenr_T lnum, int use_number, int list);
 void print_line(linenr_T lnum, int use_number, int list);
@@ -63,4 +65,6 @@ char_u *get_sign_name(expand_T *xp, int idx);
 void set_context_in_sign_cmd(expand_T *xp, char_u *arg);
 void ex_smile(exarg_T *eap);
 void ex_drop(exarg_T *eap);
+char_u *skip_vimgrep_pat(char_u *p, char_u **s, int *flags);
+void ex_oldfiles(exarg_T *eap);
 /* vim: set ft=c : */

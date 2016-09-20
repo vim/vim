@@ -1,17 +1,12 @@
 " Vim syntax file
-" Language:	VHDL
-" Maintainer:	Daniel Kho <daniel.kho@tauhop.com>
+" Language:		VHDL [VHSIC (Very High Speed Integrated Circuit) Hardware Description Language]
+" Maintainer:		Daniel Kho <daniel.kho@tauhop.com>
 " Previous Maintainer:	Czo <Olivier.Sirol@lip6.fr>
-" Credits:	Stephan Hegel <stephan.hegel@snc.siemens.com.cn>
-" Last Changed:	2015 Dec 4 by Daniel Kho
+" Credits:		Stephan Hegel <stephan.hegel@snc.siemens.com.cn>
+" Last Changed:		2016 Mar 05 by Daniel Kho
 
-" VHSIC (Very High Speed Integrated Circuit) Hardware Description Language
-
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+" quit when a syntax file was already loaded
+if exists("b:current_syntax")
   finish
 endif
 
@@ -56,17 +51,40 @@ syn keyword 	vhdlStatement	note warning error failure
 syn match	vhdlStatement	"\<\(if\|else\)\>"
 syn match	vhdlError	"\<else\s\+if\>"
 
-" Predefined VHDL types
-syn keyword	vhdlType	bit bit_vector
-syn keyword	vhdlType	character boolean integer real time
-syn keyword	vhdlType	boolean_vector integer_vector real_vector time_vector
-syn keyword	vhdlType	string severity_level
-" Predefined standard ieee VHDL types
-syn keyword	vhdlType	positive natural signed unsigned
-syn keyword	vhdlType	unresolved_signed unresolved_unsigned u_signed u_unsigned
-syn keyword	vhdlType	line text
-syn keyword	vhdlType	std_logic std_logic_vector
-syn keyword	vhdlType	std_ulogic std_ulogic_vector
+" Types and type qualifiers
+" Predefined standard VHDL types
+syn match	vhdlType	"\<bit\>\'\="
+syn match	vhdlType	"\<boolean\>\'\="
+syn match	vhdlType	"\<natural\>\'\="
+syn match	vhdlType	"\<positive\>\'\="
+syn match	vhdlType	"\<integer\>\'\="
+syn match	vhdlType	"\<real\>\'\="
+syn match	vhdlType	"\<time\>\'\="
+
+syn match	vhdlType	"\<bit_vector\>\'\="
+syn match	vhdlType	"\<boolean_vector\>\'\="
+syn match	vhdlType	"\<integer_vector\>\'\="
+syn match	vhdlType	"\<real_vector\>\'\="
+syn match	vhdlType	"\<time_vector\>\'\="
+
+syn match	vhdlType	"\<character\>\'\="
+syn match	vhdlType	"\<string\>\'\="
+"syn keyword	vhdlType	severity_level
+syn keyword	vhdlType	line
+syn keyword	vhdlType	text
+
+" Predefined standard IEEE VHDL types
+syn match	vhdlType	"\<std_ulogic\>\'\="
+syn match	vhdlType	"\<std_logic\>\'\="
+syn match	vhdlType	"\<std_ulogic_vector\>\'\="
+syn match	vhdlType	"\<std_logic_vector\>\'\="
+syn match	vhdlType	"\<unresolved_signed\>\'\="
+syn match	vhdlType	"\<unresolved_unsigned\>\'\="
+syn match	vhdlType	"\<u_signed\>\'\="
+syn match	vhdlType	"\<u_unsigned\>\'\="
+syn match	vhdlType	"\<signed\>\'\="
+syn match	vhdlType	"\<unsigned\>\'\="
+
 
 " array attributes
 syn match	vhdlAttribute	"\'high"
@@ -191,15 +209,23 @@ syn case	ignore
 syn region	vhdlComment	start="/\*" end="\*/"	contains=vhdlTodo,vhdlFixme,@Spell
 syn match	vhdlComment	"\(^\|\s\)--.*"		contains=vhdlTodo,vhdlFixme,@Spell
 
+" Standard IEEE P1076.6 preprocessor directives (metacomments).
+syn match	vhdlPreProc	"/\*\s*rtl_synthesis\s\+\(on\|off\)\s*\*/"
+syn match	vhdlPreProc	"\(^\|\s\)--\s*rtl_synthesis\s\+\(on\|off\)\s*"
+syn match	vhdlPreProc	"/\*\s*rtl_syn\s\+\(on\|off\)\s*\*/"
+syn match	vhdlPreProc	"\(^\|\s\)--\s*rtl_syn\s\+\(on\|off\)\s*"
+
 " Industry-standard directives. These are not standard VHDL, but are commonly
 " used in the industry.
 syn match	vhdlPreProc	"/\*\s*synthesis\s\+translate_\(on\|off\)\s*\*/"
 "syn match	vhdlPreProc	"/\*\s*simulation\s\+translate_\(on\|off\)\s*\*/"
+syn match	vhdlPreProc	"/\*\s*pragma\s\+translate_\(on\|off\)\s*\*/"
 syn match	vhdlPreProc	"/\*\s*pragma\s\+synthesis_\(on\|off\)\s*\*/"
 syn match	vhdlPreProc	"/\*\s*synopsys\s\+translate_\(on\|off\)\s*\*/"
 
 syn match	vhdlPreProc	"\(^\|\s\)--\s*synthesis\s\+translate_\(on\|off\)\s*"
 "syn match	vhdlPreProc	"\(^\|\s\)--\s*simulation\s\+translate_\(on\|off\)\s*"
+syn match	vhdlPreProc	"\(^\|\s\)--\s*pragma\s\+translate_\(on\|off\)\s*"
 syn match	vhdlPreProc	"\(^\|\s\)--\s*pragma\s\+synthesis_\(on\|off\)\s*"
 syn match	vhdlPreProc	"\(^\|\s\)--\s*synopsys\s\+translate_\(on\|off\)\s*"
 
@@ -207,35 +233,25 @@ syn match	vhdlPreProc	"\(^\|\s\)--\s*synopsys\s\+translate_\(on\|off\)\s*"
 syn sync	minlines=600
 
 " Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_vhdl_syntax_inits")
-    if version < 508
-	let did_vhdl_syntax_inits = 1
-	command -nargs=+ HiLink hi link <args>
-    else
-	command -nargs=+ HiLink hi def link <args>
-    endif
+" Only when an item doesn't have highlighting yet
 
-    HiLink  vhdlSpecial	    Special
-    HiLink  vhdlStatement   Statement
-    HiLink  vhdlCharacter   Character
-    HiLink  vhdlString	    String
-    HiLink  vhdlVector	    Number
-    HiLink  vhdlBoolean	    Number
-    HiLink  vhdlTodo	    Todo
-    HiLink  vhdlFixme	    Fixme
-    HiLink  vhdlComment	    Comment
-    HiLink  vhdlNumber	    Number
-    HiLink  vhdlTime	    Number
-    HiLink  vhdlType	    Type
-    HiLink  vhdlOperator    Operator
-    HiLink  vhdlError	    Error
-    HiLink  vhdlAttribute   Special
-    HiLink  vhdlPreProc	    PreProc
+hi def link vhdlSpecial	Special
+hi def link vhdlStatement   Statement
+hi def link vhdlCharacter   Character
+hi def link vhdlString	String
+hi def link vhdlVector	Number
+hi def link vhdlBoolean	Number
+hi def link vhdlTodo	Todo
+hi def link vhdlFixme	Fixme
+hi def link vhdlComment	Comment
+hi def link vhdlNumber	Number
+hi def link vhdlTime	Number
+hi def link vhdlType	Type
+hi def link vhdlOperator    Operator
+hi def link vhdlError	Error
+hi def link vhdlAttribute   Special
+hi def link vhdlPreProc	PreProc
 
-    delcommand HiLink
-endif
 
 let b:current_syntax = "vhdl"
 

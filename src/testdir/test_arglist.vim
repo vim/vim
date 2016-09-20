@@ -287,3 +287,32 @@ function Test_argpos()
   call assert_equal(0, argidx())
   %argd
 endfunction
+
+" Test for autocommand that redefines the argument list, when doing ":all".
+function Test_arglist_autocmd()
+  autocmd BufReadPost Xxx2 next Xxx2 Xxx1
+  call writefile(['test file Xxx1'], 'Xxx1')
+  call writefile(['test file Xxx2'], 'Xxx2')
+  call writefile(['test file Xxx3'], 'Xxx3')
+
+  new
+  " redefine arglist; go to Xxx1
+  next! Xxx1 Xxx2 Xxx3
+  " open window for all args
+  all
+  call assert_equal('test file Xxx1', getline(1))
+  wincmd w
+  wincmd w
+  call assert_equal('test file Xxx1', getline(1))
+  " should now be in Xxx2
+  rewind
+  call assert_equal('test file Xxx2', getline(1))
+
+  autocmd! BufReadPost Xxx2
+  enew! | only
+  call delete('Xxx1')
+  call delete('Xxx2')
+  call delete('Xxx3')
+  argdelete Xxx*
+  bwipe! Xxx1 Xxx2 Xxx3
+endfunction

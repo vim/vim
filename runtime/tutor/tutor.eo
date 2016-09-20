@@ -160,7 +160,7 @@ RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
 
   4. Konservu la dosieron kun þanøoj kaj eliru el Vim per:  :wq  <Enenklavo>
 
-  5. Se vi eliris la instruilon vimtutor en paþo 1, restartigu la intruilon
+  5. Se vi eliris el la instruilo vimtutor en paþo 1, restartigu la instruilon
      vimtutor kaj moviøu suben al la sekvanta resumo.
 
   6. Post kiam vi legis la suprajn paþojn, kaj komprenis ilin: faru ilin.
@@ -229,7 +229,7 @@ Nun daýrigu al la leciono 2.
 
   3. Movu la kursoron æe la fino de la øusta linio (POST la unua . ).
 
-  4. Tajpu   d$   por forivþi øis la fino de la linio.
+  4. Tajpu   d$   por foriviþi øis la fino de la linio.
 
 ---> Iu tajpis la finon de æi tiu linio dufoje. fino de æi tiu linio dufoje.
 
@@ -670,7 +670,7 @@ RIMARKO: Se vi volus eliri el Vim kaj restartigi øin denove per  vim TESTO,
   3. Premu la  :  signon.  Æe la fino de la ekrano  :'<,'>  aperos.
 
   4. Tajpu  w TESTO  , kie TESTO estas dosiernomo, kiu ankoraý ne ekzistas.
-     Kontrolu, ke vi vidas  :'<,'>w TESTO  antaý premi <Enenklavo>.
+     Kontrolu, ke vi vidas  :'<,'>w TESTO  antaý ol premi <Enenklavo>.
 
   5. Vim konservos la apartigitajn liniojn al la dosiero TESTO.  Uzu  :dir
      aý  :!ls  por vidigi øin.  Ne forviþu øin.  Ni uzos øin en la sekvanta
@@ -688,7 +688,7 @@ RIMARKO: Premo de  v  komencas Viduman apartigon.  Vi povas movi la kursoron
 
          ** Por enmeti la enhavon de dosiero, tajpu  :r DOSIERNOMON **
 
-  1. Movu la kursoron ¼us super æi tiu linio.
+  1. Movu la kursoron tuj super æi tiu linio.
 
 RIMARKO: Post plenumo de paþo 2, vi vidos tekston el la leciono 5.3.  Tiam
          moviøu SUBEN por vidi tiun lecionon denove.
@@ -741,7 +741,7 @@ RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
   2. Tajpu la minusklan literon  o  por malfermi linion SUB la kursoro kaj
      eniri la Enmetan reøimon.
 
-  3. Nun tajpu tekston kaj premu <ESK> por eliri la Enmetan reøimon.
+  3. Nun tajpu tekston kaj premu <ESK> por eliri el la Enmeta reøimo.
 
 ---> Post tajpo de  o  la kursoro moviøas al la malfermata linio en
      Enmeta reøimo.
@@ -765,7 +765,7 @@ RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
   3. Tajpu  a  (minuskle) por aldoni tekston POST la kursoro.
 
   4. Kompletigu la vorton same kiel la linio sub øi.  Premu <ESK> por
-     eliri la Enmetan reøimon.
+     eliri el la Enmeta reøimo.
 
   5. Uzu  e  por moviøi al la sekvanta nekompleta vorto kaj ripetu
      paþojn 3 kaj 4.
@@ -789,7 +789,7 @@ RIMARKO: Æiu  a, i kaj A  iras al la sama Enmeta reøimo, la nura malsamo
   2. Nun premu  R  kaj tajpu la nombron sub øi en la dua linio, por ke øi
      anstataýigu la xxx .
 
-  3. Premu <ESK> por foriri la Anstataýigan reøimon. Rimarku, ke la cetera
+  3. Premu <ESK> por foriri el la Anstataýiga reøimo. Rimarku, ke la cetera
      parto de la linio restas neþanøata.
 
   4. Ripetu la paþojn por anstataýigi la restantajn xxx.
@@ -810,7 +810,7 @@ RIMARKO: Anstataýiga reøimo estas same kiel Enmeta reøimo, sed æiu signo
 
   1. Iru al la linio markita per ---> sube kaj poziciu la kursoron post "a)".
 
-  2. Komencu la Viduman reøimon per  v  kaj movu la kursoron ¼us antaý "unua".
+  2. Komencu la Viduman reøimon per  v  kaj movu la kursoron tuj antaý "unua".
 
   3. Tajpu  y  por kopii la emfazitan tekston.
 
@@ -986,6 +986,6 @@ RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
 
   Esperantigita fare de Dominique Pellé, 2008-04-01
   Retpoþto: dominique.pelle@gmail.com
-  Lasta þanøo: 2011-11-27
+  Lasta þanøo: 2016-07-02
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

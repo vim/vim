@@ -398,14 +398,15 @@ lua_link_init(char *libname, int verbose)
     }
     return OK;
 }
+#endif /* DYNAMIC_LUA */
 
+#if defined(DYNAMIC_LUA) || defined(PROTO)
     int
 lua_enabled(int verbose)
 {
     return lua_link_init((char *)p_luadll, verbose) == OK;
 }
-
-#endif /* DYNAMIC_LUA */
+#endif
 
 #if LUA_VERSION_NUM > 501
     static int
@@ -1177,7 +1178,7 @@ luaV_window_index(lua_State *L)
 	lua_pushinteger(L, w->w_cursor.lnum);
     else if (strncmp(s, "col", 3) == 0)
 	lua_pushinteger(L, w->w_cursor.col + 1);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     else if (strncmp(s, "width", 5) == 0)
 	lua_pushinteger(L, W_WIDTH(w));
 #endif
@@ -1220,7 +1221,7 @@ luaV_window_newindex (lua_State *L)
 	w->w_cursor.col = v - 1;
 	update_screen(VALID);
     }
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     else if (strncmp(s, "width", 5) == 0)
     {
 	win_T *win = curwin;
@@ -1402,13 +1403,13 @@ luaV_buffer(lua_State *L)
 	if (lua_isnumber(L, 1)) /* by number? */
 	{
 	    int n = lua_tointeger(L, 1);
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 		if (buf->b_fnum == n) break;
 	}
 	else { /* by name */
 	    size_t l;
 	    const char *s = lua_tolstring(L, 1, &l);
-	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    FOR_ALL_BUFFERS(buf)
 	    {
 		if (buf->b_ffname == NULL || buf->b_sfname == NULL)
 		{

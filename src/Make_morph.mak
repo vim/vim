@@ -24,26 +24,31 @@ RM =		rm
 .c.o:
 	${CC} ${CFLAGS} $< -o $@
 
-SRC =	blowfish.c						\
+SRC =	arabic.c						\
+	blowfish.c						\
 	buffer.c						\
 	charset.c						\
 	crypt.c							\
 	crypt_zip.c						\
+	dict.c							\
 	diff.c							\
 	digraph.c						\
 	edit.c							\
 	eval.c							\
+	evalfunc.c						\
 	ex_cmds.c						\
 	ex_cmds2.c						\
 	ex_docmd.c						\
 	ex_eval.c						\
 	ex_getln.c						\
+	farsi.c							\
 	fileio.c						\
 	fold.c							\
 	getchar.c						\
 	hardcopy.c						\
 	hashtab.c						\
 	json.c							\
+	list.c							\
 	main.c							\
 	mark.c							\
 	mbyte.c							\
@@ -65,11 +70,13 @@ SRC =	blowfish.c						\
 	search.c						\
 	sha256.c						\
 	spell.c							\
+	spellfile.c						\
 	syntax.c						\
 	tag.c							\
 	term.c							\
 	ui.c							\
 	undo.c							\
+	userfunc.c						\
 	version.c						\
 	window.c						\
 

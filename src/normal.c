@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -414,8 +414,8 @@ static const struct nv_cmd
     {K_TABMENU, nv_tabmenu,	0,			0},
 #endif
 #ifdef FEAT_FKMAP
-    {K_F8,	farsi_fkey,	0,			0},
-    {K_F9,	farsi_fkey,	0,			0},
+    {K_F8,	farsi_f8,	0,			0},
+    {K_F9,	farsi_f9,	0,			0},
 #endif
 #ifdef FEAT_NETBEANS_INTG
     {K_F21,	nv_nbcmd,	NV_NCH_ALW,		0},
@@ -1609,6 +1609,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    oap->start = curwin->w_cursor;
 	}
 
+	/* Just in case lines were deleted that make the position invalid. */
+	check_pos(curwin->w_buffer, &oap->end);
 	oap->line_count = oap->end.lnum - oap->start.lnum + 1;
 
 #ifdef FEAT_VIRTUALEDIT
@@ -2306,8 +2308,6 @@ do_mouse(
     int		in_status_line;	/* mouse in status line */
 #ifdef FEAT_WINDOWS
     static int	in_tab_line = FALSE; /* mouse clicked in tab line */
-#endif
-#ifdef FEAT_VERTSPLIT
     int		in_sep_line;	/* mouse in vertical separator line */
 #endif
     int		c1, c2;
@@ -2384,13 +2384,11 @@ do_mouse(
 	drag_status_line = FALSE;
 	update_mouseshape(SHAPE_IDX_STATUS);
     }
-# ifdef FEAT_VERTSPLIT
     if (!is_drag && drag_sep_line)
     {
 	drag_sep_line = FALSE;
 	update_mouseshape(SHAPE_IDX_VSEP);
     }
-# endif
 #endif
 
     /*
@@ -2784,7 +2782,7 @@ do_mouse(
 			oap == NULL ? NULL : &(oap->inclusive), which_button);
     moved = (jump_flags & CURSOR_MOVED);
     in_status_line = (jump_flags & IN_STATUS_LINE);
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     in_sep_line = (jump_flags & IN_SEP_LINE);
 #endif
 
@@ -3022,7 +3020,7 @@ do_mouse(
 	}
 #endif
     }
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     else if (in_sep_line)
     {
 # ifdef FEAT_MOUSESHAPE
@@ -4077,7 +4075,7 @@ check_scrollbind(linenr_T topline_diff, long leftcol_diff)
      * loop through the scrollbound windows and scroll accordingly
      */
     VIsual_select = VIsual_active = 0;
-    for (curwin = firstwin; curwin; curwin = curwin->w_next)
+    FOR_ALL_WINDOWS(curwin)
     {
 	curbuf = curwin->w_buffer;
 	/* skip original window  and windows with 'noscrollbind' */
@@ -4232,7 +4230,8 @@ nv_gd(
     char_u	*ptr;
 
     if ((len = find_ident_under_cursor(&ptr, FIND_IDENT)) == 0
-	    || find_decl(ptr, len, nchar == 'd', thisblock, 0) == FAIL)
+	    || find_decl(ptr, len, nchar == 'd', thisblock, SEARCH_START)
+								      == FAIL)
 	clearopbeep(oap);
 #ifdef FEAT_FOLDING
     else if ((fdo_flags & FDO_SEARCH) && KeyTyped && oap->op_type == OP_NOP)
@@ -4253,7 +4252,7 @@ find_decl(
     int		len,
     int		locally,
     int		thisblock,
-    int		searchflags)	/* flags passed to searchit() */
+    int		flags_arg)	/* flags passed to searchit() */
 {
     char_u	*pat;
     pos_T	old_pos;
@@ -4264,6 +4263,7 @@ find_decl(
     int		save_p_scs;
     int		retval = OK;
     int		incll;
+    int		searchflags = flags_arg;
 
     if ((pat = alloc(len + 7)) == NULL)
 	return FAIL;
@@ -4349,8 +4349,10 @@ find_decl(
 
 	/* For finding a local variable and the match is before the "{" search
 	 * to find a later match.  For K&R style function declarations this
-	 * skips the function header without types. */
+	 * skips the function header without types.  Remove SEARCH_START from
+	 * flags to avoid getting stuck at one position. */
 	found_pos = curwin->w_cursor;
+	searchflags &= ~SEARCH_START;
     }
 
     if (t == FAIL)
@@ -4401,10 +4403,10 @@ nv_screengo(oparg_T *oap, int dir, long dist)
     if (width2 == 0)
 	width2 = 1; /* avoid divide by zero */
 
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
     if (curwin->w_width != 0)
-    {
 #endif
+    {
       /*
        * Instead of sticking at the last character of the buffer line we
        * try to stick in the last column of the screen.
@@ -4491,9 +4493,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	    }
 	}
       }
-#ifdef FEAT_VERTSPLIT
     }
-#endif
 
     if (virtual_active() && atend)
 	coladvance(MAXCOL);
@@ -5490,10 +5490,12 @@ nv_ident(cmdarg_T *cap)
 {
     char_u	*ptr = NULL;
     char_u	*buf;
+    unsigned	buflen;
     char_u	*newbuf;
     char_u	*p;
     char_u	*kp;		/* value of 'keywordprg' */
-    int		kp_help;	/* 'keywordprg' is ":help" */
+    int		kp_help;	/* 'keywordprg' is ":he" */
+    int		kp_ex;		/* 'keywordprg' starts with ":" */
     int		n = 0;		/* init for GCC */
     int		cmdchar;
     int		g_cmd;		/* "g" command */
@@ -5541,7 +5543,9 @@ nv_ident(cmdarg_T *cap)
     kp = (*curbuf->b_p_kp == NUL ? p_kp : curbuf->b_p_kp);
     kp_help = (*kp == NUL || STRCMP(kp, ":he") == 0
 						 || STRCMP(kp, ":help") == 0);
-    buf = alloc((unsigned)(n * 2 + 30 + STRLEN(kp)));
+    kp_ex = (*kp == ':');
+    buflen = (unsigned)(n * 2 + 30 + STRLEN(kp));
+    buf = alloc(buflen);
     if (buf == NULL)
 	return;
     buf[0] = NUL;
@@ -5567,6 +5571,15 @@ nv_ident(cmdarg_T *cap)
 	case 'K':
 	    if (kp_help)
 		STRCPY(buf, "he! ");
+	    else if (kp_ex)
+	    {
+		if (cap->count0 != 0)
+		    vim_snprintf((char *)buf, buflen, "%s %ld",
+							     kp, cap->count0);
+		else
+		    STRCPY(buf, kp);
+		STRCAT(buf, " ");
+	    }
 	    else
 	    {
 		/* An external command will probably use an argument starting
@@ -6086,8 +6099,7 @@ nv_up(cmdarg_T *cap)
  * cap->arg is TRUE for CR and "+": Move cursor to first non-blank.
  */
     static void
-nv_down(
-    cmdarg_T	*cap)
+nv_down(cmdarg_T *cap)
 {
     if (mod_mask & MOD_MASK_SHIFT)
     {
@@ -6217,6 +6229,7 @@ nv_dollar(cmdarg_T *cap)
 nv_search(cmdarg_T *cap)
 {
     oparg_T	*oap = cap->oap;
+    pos_T	save_cursor = curwin->w_cursor;
 
     if (cap->cmdchar == '?' && cap->oap->op_type == OP_ROT13)
     {
@@ -6227,6 +6240,8 @@ nv_search(cmdarg_T *cap)
 	return;
     }
 
+    /* When using 'incsearch' the cursor may be moved to set a different search
+     * start position. */
     cap->searchbuf = getcmdline(cap->cmdchar, cap->count1, 0);
 
     if (cap->searchbuf == NULL)
@@ -6236,7 +6251,8 @@ nv_search(cmdarg_T *cap)
     }
 
     (void)normal_search(cap, cap->cmdchar, cap->searchbuf,
-						(cap->arg ? 0 : SEARCH_MARK));
+			(cap->arg || !equalpos(save_cursor, curwin->w_cursor))
+							   ? 0 : SEARCH_MARK);
 }
 
 /*
@@ -7987,7 +8003,7 @@ nv_g_cmd(cmdarg_T *cap)
 	oap->motion_type = MCHAR;
 	oap->inclusive = FALSE;
 	if (curwin->w_p_wrap
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		&& curwin->w_width != 0
 #endif
 		)
@@ -8054,7 +8070,7 @@ nv_g_cmd(cmdarg_T *cap)
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = TRUE;
 	    if (curwin->w_p_wrap
-#ifdef FEAT_VERTSPLIT
+#ifdef FEAT_WINDOWS
 		    && curwin->w_width != 0
 #endif
 	       )
@@ -9213,13 +9229,20 @@ nv_join(cmdarg_T *cap)
 	    cap->count0 = 2;	    /* default for join is two lines! */
 	if (curwin->w_cursor.lnum + cap->count0 - 1 >
 						   curbuf->b_ml.ml_line_count)
-	    clearopbeep(cap->oap);  /* beyond last line */
-	else
 	{
-	    prep_redo(cap->oap->regname, cap->count0,
-			 NUL, cap->cmdchar, NUL, NUL, cap->nchar);
-	    (void)do_join(cap->count0, cap->nchar == NUL, TRUE, TRUE, TRUE);
+	    /* can't join when on the last line */
+	    if (cap->count0 <= 2)
+	    {
+		clearopbeep(cap->oap);
+		return;
+	    }
+	    cap->count0 = curbuf->b_ml.ml_line_count
+						  - curwin->w_cursor.lnum + 1;
 	}
+
+	prep_redo(cap->oap->regname, cap->count0,
+				     NUL, cap->cmdchar, NUL, NUL, cap->nchar);
+	(void)do_join(cap->count0, cap->nchar == NUL, TRUE, TRUE, TRUE);
     }
 }
 

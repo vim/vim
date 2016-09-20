@@ -18,10 +18,12 @@ SRC_ALL =	\
 		src/charset.c \
 		src/crypt.c \
 		src/crypt_zip.c \
+		src/dict.c \
 		src/diff.c \
 		src/digraph.c \
 		src/edit.c \
 		src/eval.c \
+		src/evalfunc.c \
 		src/ex_cmds.c \
 		src/ex_cmds.h \
 		src/ex_cmds2.c \
@@ -43,6 +45,7 @@ SRC_ALL =	\
 		src/hashtab.c \
 		src/json.c \
 		src/json_test.c \
+		src/list.c \
 		src/keymap.h \
 		src/macros.h \
 		src/main.c \
@@ -53,6 +56,7 @@ SRC_ALL =	\
 		src/memline.c \
 		src/menu.c \
 		src/message.c \
+		src/message_test.c \
 		src/misc1.c \
 		src/misc2.c \
 		src/move.c \
@@ -74,6 +78,8 @@ SRC_ALL =	\
 		src/sha256.c \
 		src/structs.h \
 		src/spell.c \
+		src/spell.h \
+		src/spellfile.c \
 		src/syntax.c \
 		src/tag.c \
 		src/term.c \
@@ -81,11 +87,13 @@ SRC_ALL =	\
 		src/termlib.c \
 		src/ui.c \
 		src/undo.c \
+		src/userfunc.c \
 		src/version.c \
 		src/version.h \
 		src/vim.h \
 		src/winclip.c \
 		src/window.c \
+		src/tee/tee.c \
 		src/xxd/xxd.c \
 		src/main.aap \
 		src/testdir/main.aap \
@@ -95,6 +103,8 @@ SRC_ALL =	\
 		src/testdir/*.py \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/runtest.vim \
+		src/testdir/shared.vim \
+		src/testdir/setup.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test[0-9]*a.ok \
 		src/testdir/test_[a-z]*.ok \
@@ -116,21 +126,25 @@ SRC_ALL =	\
 		src/testdir/bench*.vim \
 		src/testdir/samples/*.txt \
 		src/proto.h \
+		src/proto/arabic.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/channel.pro \
 		src/proto/charset.pro \
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
+		src/proto/dict.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \
 		src/proto/edit.pro \
 		src/proto/eval.pro \
+		src/proto/evalfunc.pro \
 		src/proto/ex_cmds.pro \
 		src/proto/ex_cmds2.pro \
 		src/proto/ex_docmd.pro \
 		src/proto/ex_eval.pro \
 		src/proto/ex_getln.pro \
+		src/proto/farsi.pro \
 		src/proto/fileio.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \
@@ -139,6 +153,7 @@ SRC_ALL =	\
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
 		src/proto/json.pro \
+		src/proto/list.pro \
 		src/proto/main.pro \
 		src/proto/mark.pro \
 		src/proto/mbyte.pro \
@@ -160,12 +175,14 @@ SRC_ALL =	\
 		src/proto/search.pro \
 		src/proto/sha256.pro \
 		src/proto/spell.pro \
+		src/proto/spellfile.pro \
 		src/proto/syntax.pro \
 		src/proto/tag.pro \
 		src/proto/term.pro \
 		src/proto/termlib.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
+		src/proto/userfunc.pro \
 		src/proto/version.pro \
 		src/proto/winclip.pro \
 		src/proto/window.pro \
@@ -247,6 +264,7 @@ SRC_UNIX =	\
 		src/workshop.h \
 		src/wsdebug.c \
 		src/wsdebug.h \
+		src/tee/Makefile \
 		src/xxd/Makefile \
 
 # source files for both DOS and Unix
@@ -298,6 +316,7 @@ SRC_DOS =	\
 		src/Make_dvc.mak \
 		src/Make_ming.mak \
 		src/Make_mvc.mak \
+		tools/rename.bat \
 		src/bigvim.bat \
 		src/bigvim64.bat \
 		src/msvcsetup.bat \
@@ -317,6 +336,8 @@ SRC_DOS =	\
 		src/if_ole.h \
 		src/if_ole.idl \
 		src/if_perl_msvc/stdbool.h \
+		src/iscygpty.c \
+		src/iscygpty.h \
 		src/iid_ole.c \
 		src/os_dos.h \
 		src/os_w32dll.c \
@@ -337,9 +358,9 @@ SRC_DOS =	\
 		src/vimio.h \
 		src/gvim.exe.mnf \
 		src/vimrun.c \
-		src/vimtbar.h \
 		src/xpm_w32.c \
 		src/xpm_w32.h \
+		src/tee/Make_mvc.mak \
 		src/xxd/Make_bc5.mak \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
@@ -375,15 +396,15 @@ SRC_DOS_BIN =	\
 		src/tools.bmp \
 		src/vim*.ico \
 		src/vim.tlb \
-		src/vimtbar.lib \
 		src/xpm/COPYRIGHT \
 		src/xpm/README.txt \
 		src/xpm/include/*.h \
 		src/xpm/x64/lib/libXpm.a \
 		src/xpm/x64/lib/libXpm.lib \
+		src/xpm/x64/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
-		src/vimtbar.dll \
+		src/xpm/x86/lib-vc14/libXpm.lib \
 		nsis/icons/*.bmp \
 		nsis/icons/*.ico \
 
@@ -483,7 +504,6 @@ RT_ALL =	\
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/macros/README.txt \
-		runtime/macros/dvorak \
 		runtime/macros/editexisting.vim \
 		runtime/macros/hanoi/click.me \
 		runtime/macros/hanoi/hanoi.vim \
@@ -495,7 +515,6 @@ RT_ALL =	\
 		runtime/macros/life/click.me \
 		runtime/macros/life/life.vim \
 		runtime/macros/matchit.vim \
-		runtime/macros/matchit.txt \
 		runtime/macros/maze/README.txt \
 		runtime/macros/maze/[mM]akefile \
 		runtime/macros/maze/main.aap \
@@ -511,8 +530,9 @@ RT_ALL =	\
 		runtime/macros/urm/examples \
 		runtime/macros/urm/urm \
 		runtime/macros/urm/urm.vim \
-		runtime/mswin.vim \
+		runtime/defaults.vim \
 		runtime/evim.vim \
+		runtime/mswin.vim \
 		runtime/optwin.vim \
 		runtime/ftplugin.vim \
 		runtime/ftplugof.vim \
@@ -525,6 +545,16 @@ RT_ALL =	\
 		runtime/tutor/tutor \
 		runtime/tutor/tutor.vim \
 		runtime/vimrc_example.vim \
+		runtime/pack/dist/opt/dvorak/plugin/dvorak.vim \
+		runtime/pack/dist/opt/dvorak/dvorak/enable.vim \
+		runtime/pack/dist/opt/dvorak/dvorak/disable.vim \
+		runtime/pack/dist/opt/editexisting/plugin/editexisting.vim \
+		runtime/pack/dist/opt/justify/plugin/justify.vim \
+		runtime/pack/dist/opt/matchit/plugin/matchit.vim \
+		runtime/pack/dist/opt/matchit/doc/matchit.txt \
+		runtime/pack/dist/opt/matchit/doc/tags \
+		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
+		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
 
 # runtime files for all distributions without CR-NL translation
 RT_ALL_BIN =	\
@@ -605,7 +635,6 @@ RT_AMI =	\
 		README.txt.info \
 		README_ami.txt \
 		README_ami.txt.info \
-		libs/arp.library \
 		runtime/doc.info \
 		runtime/doc/*.info \
 		runtime/icons/README.txt \
@@ -692,6 +721,35 @@ EXTRA =		\
 		src/tee/Makefile \
 		src/tee/Make_mvc.mak \
 		src/tee/tee.c \
+
+# files in READMEdir that are included from the top dir
+IN_README_DIR = \
+		README.txt.info \
+		README_ami.txt \
+		README_ami.txt.info \
+		README_amibin.txt \
+		README_amibin.txt.info \
+		README_amisrc.txt \
+		README_amisrc.txt.info \
+		README_bindos.txt \
+		README_dos.txt \
+		README_extra.txt \
+		README_mac.txt \
+		README_ole.txt \
+		README_os2.txt \
+		README_os390.txt \
+		README_src.txt \
+		README_srcdos.txt \
+		README_unix.txt \
+		README_vms.txt \
+		README_w32s.txt \
+		Contents \
+		Contents.info \
+		Vim.info \
+		Xxd.info \
+		runtime.info \
+		src.info \
+		vimdir.info \
 
 # generic language files
 LANG_GEN = \

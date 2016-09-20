@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.4.  Last change: 2015 Nov 24
+*term.txt*      For Vim version 8.0.  Last change: 2016 Sep 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -302,7 +302,10 @@ Added by Vim (there are no standard codes for these):
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
 		see |'ambiwidth'|
 	t_RB	request terminal background color		*t_RB* *'t_RB'*
-		see |'ambiwidth'|
+	t_8f	set foreground color (R, G, B)			*t_8f* *'t_8f'*
+		|xterm-true-color|
+	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
+		|xterm-true-color|
 
 KEY CODES
 Note: Use the <> form if possible
@@ -418,6 +421,27 @@ produce different codes, depending on the mode it is in (8-bit, VT102,
 VT220, etc.).  The result is that codes like <xF1> are no longer needed.
 Note: This is only done on startup.  If the xterm options are changed after
 Vim has started, the escape sequences may not be recognized anymore.
+
+							*xterm-true-color*
+Vim supports using true colors in the terminal (taken from |highlight-guifg|
+and |highlight-guibg|), given that the terminal supports this. To make this 
+work the 'termguicolors' option needs to be set.
+See https://gist.github.com/XVilka/8346728 for a list of terminals that
+support true colors.
+
+Sometimes setting 'termguicolors' is not enough and one has to set the |t_8f|
+and |t_8b| options explicitly. Default values of these options are
+"^[[38;2;%lu;%lu;%lum" and "^[[48;2;%lu;%lu;%lum" respectively, but it is only
+set when `$TERM` is `xterm`. Some terminals accept the same sequences, but
+with all semicolons replaced by colons (this is actually more compatible, but
+less widely supported): >
+	 let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
+	 let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
+
+These options contain printf strings, with |printf()| (actually, its C
+equivalent hence `l` modifier) invoked with the t_ option value and three
+unsigned long integers that may have any value between 0 and 255 (inclusive)
+representing red, green and blue colors respectively.
 
 							*xterm-resize*
 Window resizing with xterm only works if the allowWindowOps resource is
@@ -542,7 +566,7 @@ correct values.
 
 One command can be used to set the screen size:
 
-						*:mod* *:mode* *E359* *E362*
+						*:mod* *:mode* *E359*
 :mod[e] [mode]
 
 Without argument this only detects the screen size and redraws the screen.

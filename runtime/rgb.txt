@@ -1,4 +1,3 @@
-! $XConsortium: rgb.txt,v 10.41 94/02/20 18:39:36 rws Exp $
 255 250 250		snow
 248 248 255		ghost white
 248 248 255		GhostWhite
@@ -58,6 +57,14 @@
 119 136 153		LightSlateGrey
 190 190 190		gray
 190 190 190		grey
+190 190 190		x11 gray
+190 190 190		X11Gray
+190 190 190		x11 grey
+190 190 190		X11Grey
+128 128 128		web gray
+128 128 128		WebGray
+128 128 128		web grey
+128 128 128		WebGrey
 211 211 211		light grey
 211 211 211		LightGrey
 211 211 211		light gray
@@ -106,6 +113,7 @@
  72 209 204		MediumTurquoise
  64 224 208		turquoise
   0 255 255		cyan
+  0 255 255		aqua
 224 255 255		light cyan
 224 255 255		LightCyan
  95 158 160		cadet blue
@@ -132,6 +140,11 @@
 124 252   0		lawn green
 124 252   0		LawnGreen
   0 255   0		green
+  0 255   0		lime
+  0 255   0		x11 green
+  0 255   0		X11Green
+  0 128   0		web green
+  0 128   0		WebGreen
 127 255   0		chartreuse
   0 250 154		medium spring green
   0 250 154		MediumSpringGreen
@@ -203,11 +216,16 @@
 219 112 147		pale violet red
 219 112 147		PaleVioletRed
 176  48  96		maroon
+176  48  96		x11 maroon
+176  48  96		X11Maroon
+128   0   0		web maroon
+128   0   0		WebMaroon
 199  21 133		medium violet red
 199  21 133		MediumVioletRed
 208  32 144		violet red
 208  32 144		VioletRed
 255   0 255		magenta
+255   0 255		fuchsia
 238 130 238		violet
 221 160 221		plum
 218 112 214		orchid
@@ -220,6 +238,10 @@
 138  43 226		blue violet
 138  43 226		BlueViolet
 160  32 240		purple
+160  32 240		x11 purple
+160  32 240		X11Purple
+128   0 128		web purple
+128   0 128		WebPurple
 147 112 219		medium purple
 147 112 219		MediumPurple
 216 191 216		thistle
@@ -751,3 +773,10 @@
 139   0   0		DarkRed
 144 238 144		light green
 144 238 144		LightGreen
+220  20  60		crimson
+ 75   0 130		indigo
+128 128   0		olive
+102  51 153		rebecca purple
+102  51 153		RebeccaPurple
+192 192 192		silver
+  0 128 128		teal

@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -137,6 +137,8 @@ typedef int PSNSECINFO;
 typedef int PSNSECINFOW;
 typedef int STARTUPINFO;
 typedef int PROCESS_INFORMATION;
+typedef int LPSECURITY_ATTRIBUTES;
+# define __stdcall /* empty */
 #endif
 
 #ifndef FEAT_GUI_W32
@@ -214,7 +216,6 @@ static void standend(void);
 static void visual_bell(void);
 static void cursor_visible(BOOL fVisible);
 static DWORD write_chars(char_u *pchBuf, DWORD cbToWrite);
-static WCHAR tgetch(int *pmodifiers, WCHAR *pch2);
 static void create_conin(void);
 static int s_cursor_visible = TRUE;
 static int did_create_conin = FALSE;
@@ -473,12 +474,15 @@ vimLoadLib(char *name)
 # endif
 /* Dummy functions */
 static char *null_libintl_gettext(const char *);
+static char *null_libintl_ngettext(const char *, const char *, unsigned long n);
 static char *null_libintl_textdomain(const char *);
 static char *null_libintl_bindtextdomain(const char *, const char *);
 static char *null_libintl_bind_textdomain_codeset(const char *, const char *);
 
 static HINSTANCE hLibintlDLL = NULL;
 char *(*dyn_libintl_gettext)(const char *) = null_libintl_gettext;
+char *(*dyn_libintl_ngettext)(const char *, const char *, unsigned long n)
+						= null_libintl_ngettext;
 char *(*dyn_libintl_textdomain)(const char *) = null_libintl_textdomain;
 char *(*dyn_libintl_bindtextdomain)(const char *, const char *)
 						= null_libintl_bindtextdomain;
@@ -496,6 +500,7 @@ dyn_libintl_init(void)
     } libintl_entry[] =
     {
 	{"gettext", (FARPROC*)&dyn_libintl_gettext},
+	{"ngettext", (FARPROC*)&dyn_libintl_ngettext},
 	{"textdomain", (FARPROC*)&dyn_libintl_textdomain},
 	{"bindtextdomain", (FARPROC*)&dyn_libintl_bindtextdomain},
 	{NULL, NULL}
@@ -554,6 +559,7 @@ dyn_libintl_end(void)
 	FreeLibrary(hLibintlDLL);
     hLibintlDLL			= NULL;
     dyn_libintl_gettext		= null_libintl_gettext;
+    dyn_libintl_ngettext	= null_libintl_ngettext;
     dyn_libintl_textdomain	= null_libintl_textdomain;
     dyn_libintl_bindtextdomain	= null_libintl_bindtextdomain;
     dyn_libintl_bind_textdomain_codeset = null_libintl_bind_textdomain_codeset;
@@ -564,6 +570,16 @@ dyn_libintl_end(void)
 null_libintl_gettext(const char *msgid)
 {
     return (char*)msgid;
+}
+
+/*ARGSUSED*/
+    static char *
+null_libintl_ngettext(
+	const char *msgid,
+	const char *msgid_plural,
+	unsigned long n)
+{
+    return (char *)(n == 1 ? msgid : msgid_plural);
 }
 
 /*ARGSUSED*/
@@ -1447,6 +1463,9 @@ WaitForChar(long msec)
     INPUT_RECORD    ir;
     DWORD	    cRecords;
     WCHAR	    ch, ch2;
+#ifdef FEAT_TIMERS
+    int		    tb_change_cnt = typebuf.tb_change_cnt;
+#endif
 
     if (msec > 0)
 	/* Wait until the specified time has elapsed. */
@@ -1492,7 +1511,7 @@ WaitForChar(long msec)
 	{
 	    DWORD dwWaitTime = dwEndTime - dwNow;
 
-#ifdef FEAT_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	    /* Check channel while waiting input. */
 	    if (dwWaitTime > 100)
 		dwWaitTime = 100;
@@ -1501,6 +1520,26 @@ WaitForChar(long msec)
 	    if (mzthreads_allowed() && p_mzq > 0
 				    && (msec < 0 || (long)dwWaitTime > p_mzq))
 		dwWaitTime = p_mzq; /* don't wait longer than 'mzquantum' */
+#endif
+#ifdef FEAT_TIMERS
+	    {
+		long	due_time;
+
+		/* When waiting very briefly don't trigger timers. */
+		if (dwWaitTime > 10)
+		{
+		    /* Trigger timers and then get the time in msec until the
+		     * next one is due.  Wait up to that time. */
+		    due_time = check_due_timer();
+		    if (typebuf.tb_change_cnt != tb_change_cnt)
+		    {
+			/* timer may have used feedkeys() */
+			return FALSE;
+		    }
+		    if (due_time > 0 && dwWaitTime > (DWORD)due_time)
+			dwWaitTime = due_time;
+		}
+	    }
 #endif
 #ifdef FEAT_CLIENTSERVER
 	    /* Wait for either an event on the console input or a message in
@@ -1604,7 +1643,7 @@ create_conin(void)
 }
 
 /*
- * Get a keystroke or a mouse event
+ * Get a keystroke or a mouse event, use a blocking wait.
  */
     static WCHAR
 tgetch(int *pmodifiers, WCHAR *pch2)
@@ -2025,7 +2064,6 @@ mch_init(void)
     Columns = 80;
 
     /* Look for 'vimrun' */
-    if (!gui_is_win32s())
     {
 	char_u vimrun_location[_MAX_PATH + 4];
 
@@ -3036,7 +3074,7 @@ mch_dirname(
     long
 mch_getperm(char_u *name)
 {
-    struct stat st;
+    stat_T	st;
     int		n;
 
     n = mch_stat((char *)name, &st);
@@ -4105,7 +4143,7 @@ mch_system_classic(char *cmd, int options)
      * Win32s either as it stops the synchronous spawn workaround working.
      * Don't activate the window to keep focus on Vim.
      */
-    if ((options & SHELL_DOOUT) && !mch_windows95() && !gui_is_win32s())
+    if ((options & SHELL_DOOUT) && !mch_windows95())
 	si.wShowWindow = SW_SHOWMINNOACTIVE;
     else
 	si.wShowWindow = SW_SHOWNORMAL;
@@ -4190,7 +4228,7 @@ mch_system_classic(char *cmd, int options)
  * process. This way avoid to hang up vim totally if the children
  * process take a long time to process the lines.
  */
-    static DWORD WINAPI
+    static unsigned int __stdcall
 sub_process_writer(LPVOID param)
 {
     HANDLE	    g_hChildStd_IN_Wr = param;
@@ -4245,7 +4283,7 @@ sub_process_writer(LPVOID param)
 
     /* finished all the lines, close pipe */
     CloseHandle(g_hChildStd_IN_Wr);
-    ExitThread(0);
+    return 0;
 }
 
 
@@ -4333,7 +4371,7 @@ dump_pipe(int	    options,
 	     * round. */
 	    for (p = buffer; p < buffer + len; p += l)
 	    {
-		l = mb_cptr2len(p);
+		l = MB_CPTR2LEN(p);
 		if (l == 0)
 		    l = 1;  /* NUL byte? */
 		else if (MB_BYTE2LEN(*p) != l)
@@ -4469,8 +4507,8 @@ mch_system_piped(char *cmd, int options)
 
     if (options & SHELL_WRITE)
     {
-	HANDLE thread =
-	   CreateThread(NULL,  /* security attributes */
+	HANDLE thread = (HANDLE)
+	 _beginthreadex(NULL,  /* security attributes */
 			0,     /* default stack size */
 			sub_process_writer, /* function to be executed */
 			g_hChildStd_IN_Wr,  /* parameter */
@@ -4991,21 +5029,64 @@ mch_call_shell(
     return x;
 }
 
-#if defined(FEAT_JOB) || defined(PROTO)
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+    static HANDLE
+job_io_file_open(
+        char_u *fname,
+        DWORD dwDesiredAccess,
+        DWORD dwShareMode,
+        LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+        DWORD dwCreationDisposition,
+        DWORD dwFlagsAndAttributes)
+{
+    HANDLE h;
+# ifdef FEAT_MBYTE
+    WCHAR *wn = NULL;
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+        wn = enc_to_utf16(fname, NULL);
+        if (wn != NULL)
+        {
+            h = CreateFileW(wn, dwDesiredAccess, dwShareMode,
+                     lpSecurityAttributes, dwCreationDisposition,
+                     dwFlagsAndAttributes, NULL);
+            vim_free(wn);
+            if (h == INVALID_HANDLE_VALUE
+                          && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+                wn = NULL;
+        }
+    }
+    if (wn == NULL)
+# endif
+
+        h = CreateFile((LPCSTR)fname, dwDesiredAccess, dwShareMode,
+                     lpSecurityAttributes, dwCreationDisposition,
+                     dwFlagsAndAttributes, NULL);
+    return h;
+}
+
     void
 mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 {
     STARTUPINFO		si;
     PROCESS_INFORMATION	pi;
     HANDLE		jo;
-# ifdef FEAT_CHANNEL
-    channel_T		*channel;
-    int			use_file_for_in = options->jo_io[PART_IN] == JIO_FILE;
-    int			use_out_for_err = options->jo_io[PART_ERR] == JIO_OUT;
+    SECURITY_ATTRIBUTES saAttr;
+    channel_T		*channel = NULL;
     HANDLE		ifd[2];
     HANDLE		ofd[2];
     HANDLE		efd[2];
-    SECURITY_ATTRIBUTES saAttr;
+
+    int		use_null_for_in = options->jo_io[PART_IN] == JIO_NULL;
+    int		use_null_for_out = options->jo_io[PART_OUT] == JIO_NULL;
+    int		use_null_for_err = options->jo_io[PART_ERR] == JIO_NULL;
+    int		use_file_for_in = options->jo_io[PART_IN] == JIO_FILE;
+    int		use_file_for_out = options->jo_io[PART_OUT] == JIO_FILE;
+    int		use_file_for_err = options->jo_io[PART_ERR] == JIO_FILE;
+    int		use_out_for_err = options->jo_io[PART_ERR] == JIO_OUT;
+
+    if (use_out_for_err && use_null_for_out)
+	use_null_for_err = TRUE;
 
     ifd[0] = INVALID_HANDLE_VALUE;
     ifd[1] = INVALID_HANDLE_VALUE;
@@ -5013,11 +5094,6 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     ofd[1] = INVALID_HANDLE_VALUE;
     efd[0] = INVALID_HANDLE_VALUE;
     efd[1] = INVALID_HANDLE_VALUE;
-
-    channel = add_channel();
-    if (channel == NULL)
-	return;
-# endif
 
     jo = CreateJobObject(NULL, NULL);
     if (jo == NULL)
@@ -5032,35 +5108,82 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
     si.dwFlags |= STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_HIDE;
 
-# ifdef FEAT_CHANNEL
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
+
     if (use_file_for_in)
     {
 	char_u *fname = options->jo_io_name[PART_IN];
 
-	// TODO
-	EMSG2(_(e_notopen), fname);
-	goto failed;
+	ifd[0] = job_io_file_open(fname, GENERIC_READ,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		&saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
+	if (ifd[0] == INVALID_HANDLE_VALUE)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    goto failed;
+	}
     }
-    else if (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 0)
-	    || !pSetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0))
+    else if (!use_null_for_in &&
+	    (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 0)
+	    || !pSetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0)))
 	goto failed;
 
-    if (!CreatePipe(&ofd[0], &ofd[1], &saAttr, 0)
-	    || !pSetHandleInformation(ofd[0], HANDLE_FLAG_INHERIT, 0))
+    if (use_file_for_out)
+    {
+	char_u *fname = options->jo_io_name[PART_OUT];
+
+	ofd[1] = job_io_file_open(fname, GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
+	if (ofd[1] == INVALID_HANDLE_VALUE)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    goto failed;
+	}
+    }
+    else if (!use_null_for_out &&
+	    (!CreatePipe(&ofd[0], &ofd[1], &saAttr, 0)
+	    || !pSetHandleInformation(ofd[0], HANDLE_FLAG_INHERIT, 0)))
 	goto failed;
 
-    if (!use_out_for_err
-	   && (!CreatePipe(&efd[0], &efd[1], &saAttr, 0)
+    if (use_file_for_err)
+    {
+	char_u *fname = options->jo_io_name[PART_ERR];
+
+	efd[1] = job_io_file_open(fname, GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
+	if (efd[1] == INVALID_HANDLE_VALUE)
+	{
+	    EMSG2(_(e_notopen), fname);
+	    goto failed;
+	}
+    }
+    else if (!use_out_for_err && !use_null_for_err &&
+	    (!CreatePipe(&efd[0], &efd[1], &saAttr, 0)
 	    || !pSetHandleInformation(efd[0], HANDLE_FLAG_INHERIT, 0)))
 	goto failed;
+
     si.dwFlags |= STARTF_USESTDHANDLES;
     si.hStdInput = ifd[0];
     si.hStdOutput = ofd[1];
     si.hStdError = use_out_for_err ? ofd[1] : efd[1];
-# endif
+
+    if (!use_null_for_in || !use_null_for_out || !use_null_for_err)
+    {
+	if (options->jo_set & JO_CHANNEL)
+	{
+	    channel = options->jo_channel;
+	    if (channel != NULL)
+		++channel->ch_refcount;
+	}
+	else
+	    channel = add_channel();
+	if (channel == NULL)
+	    goto failed;
+    }
 
     if (!vim_create_process(cmd, TRUE,
 	    CREATE_SUSPENDED |
@@ -5082,39 +5205,38 @@ mch_start_job(char *cmd, job_T *job, jobopt_T *options)
 	jo = NULL;
     }
     ResumeThread(pi.hThread);
-    CloseHandle(job->jv_proc_info.hThread);
+    CloseHandle(pi.hThread);
     job->jv_proc_info = pi;
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
 
-# ifdef FEAT_CHANNEL
     CloseHandle(ifd[0]);
     CloseHandle(ofd[1]);
-    if (!use_out_for_err)
+    if (!use_out_for_err && !use_null_for_err)
 	CloseHandle(efd[1]);
 
     job->jv_channel = channel;
-    channel_set_pipes(channel, (sock_T)ifd[1], (sock_T)ofd[0],
-			       use_out_for_err ? INVALID_FD : (sock_T)efd[0]);
-    channel_set_job(channel, job, options);
-#   ifdef FEAT_GUI
-     channel_gui_register(channel);
-#   endif
-# endif
+    if (channel != NULL)
+    {
+	channel_set_pipes(channel,
+		      use_file_for_in || use_null_for_in
+					      ? INVALID_FD : (sock_T)ifd[1],
+		      use_file_for_out || use_null_for_out
+					     ? INVALID_FD : (sock_T)ofd[0],
+		      use_out_for_err || use_file_for_err || use_null_for_err
+					    ? INVALID_FD : (sock_T)efd[0]);
+	channel_set_job(channel, job, options);
+    }
     return;
 
 failed:
-# ifdef FEAT_CHANNEL
     CloseHandle(ifd[0]);
     CloseHandle(ofd[0]);
     CloseHandle(efd[0]);
     CloseHandle(ifd[1]);
     CloseHandle(ofd[1]);
     CloseHandle(efd[1]);
-    channel_free(channel);
-# else
-    ;  /* make compiler happy */
-# endif
+    channel_unref(channel);
 }
 
     char *
@@ -5988,7 +6110,7 @@ mch_write(
 
 
 /*
- * Delay for half a second.
+ * Delay for "msec" milliseconds.
  */
 /*ARGSUSED*/
     void

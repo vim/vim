@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * Handling of regular expressions: vim_regcomp(), vim_regexec(), vim_regsub()
  *
@@ -254,9 +254,6 @@
 #define Magic(x)	((int)(x) - 256)
 #define un_Magic(x)	((x) + 256)
 #define is_Magic(x)	((x) < 0)
-
-static int no_Magic(int x);
-static int toggle_Magic(int x);
 
     static int
 no_Magic(int x)
@@ -791,7 +788,7 @@ char *EQUIVAL_CLASS_C[16] = {
     "E\x71\x72\x73\x74",
     "I\x75\x76\x77\x78",
     "N\x69",
-    "O\xEB\xEC\xED\xEE\xEF",
+    "O\xEB\xEC\xED\xEE\xEF\x80",
     "U\xFB\xFC\xFD\xFE",
     "Y\xBA",
     "a\x42\x43\x44\x45\x46\x47",
@@ -799,7 +796,7 @@ char *EQUIVAL_CLASS_C[16] = {
     "e\x51\x52\x53\x54",
     "i\x55\x56\x57\x58",
     "n\x49",
-    "o\xCB\xCC\xCD\xCE\xCF",
+    "o\xCB\xCC\xCD\xCE\xCF\x70",
     "u\xDB\xDC\xDD\xDE",
     "y\x8D\xDF",
 };
@@ -2542,14 +2539,14 @@ collection:
 				}
 				break;
 			    case CLASS_ALNUM:
-				for (cu = 1; cu <= 255; cu++)
+				for (cu = 1; cu < 128; cu++)
 				    if (isalnum(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_ALPHA:
-				for (cu = 1; cu <= 255; cu++)
+				for (cu = 1; cu < 128; cu++)
 				    if (isalpha(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_BLANK:
 				regc(' ');
@@ -2558,32 +2555,33 @@ collection:
 			    case CLASS_CNTRL:
 				for (cu = 1; cu <= 255; cu++)
 				    if (iscntrl(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_DIGIT:
 				for (cu = 1; cu <= 255; cu++)
 				    if (VIM_ISDIGIT(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_GRAPH:
 				for (cu = 1; cu <= 255; cu++)
 				    if (isgraph(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_LOWER:
 				for (cu = 1; cu <= 255; cu++)
-				    if (MB_ISLOWER(cu))
-					regc(cu);
+				    if (MB_ISLOWER(cu) && cu != 170
+								 && cu != 186)
+					regmbc(cu);
 				break;
 			    case CLASS_PRINT:
 				for (cu = 1; cu <= 255; cu++)
 				    if (vim_isprintc(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_PUNCT:
-				for (cu = 1; cu <= 255; cu++)
+				for (cu = 1; cu < 128; cu++)
 				    if (ispunct(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_SPACE:
 				for (cu = 9; cu <= 13; cu++)
@@ -2593,12 +2591,12 @@ collection:
 			    case CLASS_UPPER:
 				for (cu = 1; cu <= 255; cu++)
 				    if (MB_ISUPPER(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_XDIGIT:
 				for (cu = 1; cu <= 255; cu++)
 				    if (vim_isxdigit(cu))
-					regc(cu);
+					regmbc(cu);
 				break;
 			    case CLASS_TAB:
 				regc('\t');
@@ -7168,7 +7166,7 @@ static fptr_T do_Upper(int *, int);
 static fptr_T do_lower(int *, int);
 static fptr_T do_Lower(int *, int);
 
-static int vim_regsub_both(char_u *source, char_u *dest, int copy, int magic, int backslash);
+static int vim_regsub_both(char_u *source, typval_T *expr, char_u *dest, int copy, int magic, int backslash);
 
     static fptr_T
 do_upper(int *d, int c)
@@ -7289,6 +7287,50 @@ static int		submatch_line_lbr;
 #endif
 
 #if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) || defined(PROTO)
+
+/*
+ * Put the submatches in "argv[0]" which is a list passed into call_func() by
+ * vim_regsub_both().
+ */
+    static int
+fill_submatch_list(int argc UNUSED, typval_T *argv, int argcount)
+{
+    listitem_T	*li;
+    int		i;
+    char_u	*s;
+
+    if (argcount == 0)
+	/* called function doesn't take an argument */
+	return 0;
+
+    /* Relies on sl_list to be the first item in staticList10_T. */
+    init_static_list((staticList10_T *)(argv->vval.v_list));
+
+    /* There are always 10 list items in staticList10_T. */
+    li = argv->vval.v_list->lv_first;
+    for (i = 0; i < 10; ++i)
+    {
+	s = submatch_match->startp[i];
+	if (s == NULL || submatch_match->endp[i] == NULL)
+	    s = NULL;
+	else
+	    s = vim_strnsave(s, (int)(submatch_match->endp[i] - s));
+	li->li_tv.v_type = VAR_STRING;
+	li->li_tv.vval.v_string = s;
+	li = li->li_next;
+    }
+    return 1;
+}
+
+    static void
+clear_submatch_list(staticList10_T *sl)
+{
+    int i;
+
+    for (i = 0; i < 10; ++i)
+	vim_free(sl->sl_items[i].li_tv.vval.v_string);
+}
+
 /*
  * vim_regsub() - perform substitutions after a vim_regexec() or
  * vim_regexec_multi() match.
@@ -7311,6 +7353,7 @@ static int		submatch_line_lbr;
 vim_regsub(
     regmatch_T	*rmp,
     char_u	*source,
+    typval_T	*expr,
     char_u	*dest,
     int		copy,
     int		magic,
@@ -7321,7 +7364,7 @@ vim_regsub(
     reg_maxline = 0;
     reg_buf = curbuf;
     reg_line_lbr = TRUE;
-    return vim_regsub_both(source, dest, copy, magic, backslash);
+    return vim_regsub_both(source, expr, dest, copy, magic, backslash);
 }
 #endif
 
@@ -7341,12 +7384,13 @@ vim_regsub_multi(
     reg_firstlnum = lnum;
     reg_maxline = curbuf->b_ml.ml_line_count - lnum;
     reg_line_lbr = FALSE;
-    return vim_regsub_both(source, dest, copy, magic, backslash);
+    return vim_regsub_both(source, NULL, dest, copy, magic, backslash);
 }
 
     static int
 vim_regsub_both(
     char_u	*source,
+    typval_T	*expr,
     char_u	*dest,
     int		copy,
     int		magic,
@@ -7363,11 +7407,11 @@ vim_regsub_both(
     linenr_T	clnum = 0;	/* init for GCC */
     int		len = 0;	/* init for GCC */
 #ifdef FEAT_EVAL
-    static char_u *eval_result = NULL;
+    static char_u   *eval_result = NULL;
 #endif
 
     /* Be paranoid... */
-    if (source == NULL || dest == NULL)
+    if ((source == NULL && expr == NULL) || dest == NULL)
     {
 	EMSG(_(e_null));
 	return 0;
@@ -7380,11 +7424,11 @@ vim_regsub_both(
     /*
      * When the substitute part starts with "\=" evaluate it as an expression.
      */
-    if (source[0] == '\\' && source[1] == '='
+    if (expr != NULL || (source[0] == '\\' && source[1] == '='
 #ifdef FEAT_EVAL
 	    && !can_f_submatch	    /* can't do this recursively */
 #endif
-	    )
+	    ))
     {
 #ifdef FEAT_EVAL
 	/* To make sure that the length doesn't change between checking the
@@ -7405,6 +7449,7 @@ vim_regsub_both(
 	{
 	    win_T	*save_reg_win;
 	    int		save_ireg_ic;
+	    int		prev_can_f_submatch = can_f_submatch;
 
 	    vim_free(eval_result);
 
@@ -7421,7 +7466,53 @@ vim_regsub_both(
 	    save_ireg_ic = ireg_ic;
 	    can_f_submatch = TRUE;
 
-	    eval_result = eval_to_string(source + 2, NULL, TRUE);
+	    if (expr != NULL)
+	    {
+		typval_T	argv[2];
+		int		dummy;
+		char_u		buf[NUMBUFLEN];
+		typval_T	rettv;
+		staticList10_T	matchList;
+
+		rettv.v_type = VAR_STRING;
+		rettv.vval.v_string = NULL;
+		if (prev_can_f_submatch)
+		{
+		    /* can't do this recursively */
+		}
+		else
+		{
+		    argv[0].v_type = VAR_LIST;
+		    argv[0].vval.v_list = &matchList.sl_list;
+		    matchList.sl_list.lv_len = 0;
+		    if (expr->v_type == VAR_FUNC)
+		    {
+			s = expr->vval.v_string;
+			call_func(s, (int)STRLEN(s), &rettv,
+					1, argv, fill_submatch_list,
+					     0L, 0L, &dummy, TRUE, NULL, NULL);
+		    }
+		    else if (expr->v_type == VAR_PARTIAL)
+		    {
+			partial_T   *partial = expr->vval.v_partial;
+
+			s = partial_name(partial);
+			call_func(s, (int)STRLEN(s), &rettv,
+					1, argv, fill_submatch_list,
+					  0L, 0L, &dummy, TRUE, partial, NULL);
+		    }
+		    if (matchList.sl_list.lv_len > 0)
+			/* fill_submatch_list() was called */
+			clear_submatch_list(&matchList);
+		}
+		eval_result = get_tv_string_buf_chk(&rettv, buf);
+		if (eval_result != NULL)
+		    eval_result = vim_strsave(eval_result);
+		clear_tv(&rettv);
+	    }
+	    else
+		eval_result = eval_to_string(source + 2, NULL, TRUE);
+
 	    if (eval_result != NULL)
 	    {
 		int had_backslash = FALSE;
@@ -7910,7 +8001,7 @@ reg_submatch_list(int no)
 
     if (error)
     {
-	list_free(list, TRUE);
+	list_free(list);
 	return NULL;
     }
     return list;

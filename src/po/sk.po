@@ -5359,8 +5359,8 @@ msgstr "zadajte  :q<Enter>                  pre ukonèenie programu "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "zadajte  :help<Enter>  alebo  <F1>  pre pomocníka          "
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "zadajte  :help version7<Enter>      pre informácie o verzii"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "zadajte  :help version8<Enter>      pre informácie o verzii"
 
 msgid "Running in Vi compatible mode"
 msgstr "Pracujem v re¾ime kompatibility s Vi"

@@ -1,4 +1,4 @@
-*quotes.txt*    For Vim version 7.4.  Last change: 2010 Nov 03
+*quotes.txt*    For Vim version 8.0.  Last change: 2010 Nov 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

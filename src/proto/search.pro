@@ -7,6 +7,7 @@ void save_search_patterns(void);
 void restore_search_patterns(void);
 void free_search_patterns(void);
 int ignorecase(char_u *pat);
+int ignorecase_opt(char_u *pat, int ic_in, int scs);
 int pat_has_uppercase(char_u *pat);
 char_u *last_csearch(void);
 int last_csearch_forward(void);

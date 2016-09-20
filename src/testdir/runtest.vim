@@ -42,9 +42,20 @@ if &lines < 24 || &columns < 80
   cquit
 endif
 
+" Common with all tests on all systems.
+source setup.vim
+
 " For consistency run all tests with 'nocompatible' set.
 " This also enables use of line continuation.
 set nocp viminfo+=nviminfo
+
+" Use utf-8 or latin1 be default, instead of whatever the system default
+" happens to be.  Individual tests can overrule this at the top of the file.
+if has('multi_byte')
+  set encoding=utf-8
+else
+  set encoding=latin1
+endif
 
 " Avoid stopping at the "hit enter" prompt
 set nomore
@@ -56,6 +67,9 @@ lang mess C
 set shellslash
 
 let s:srcdir = expand('%:p:h:h')
+
+" Prepare for calling test_garbagecollect_now().
+let v:testing = 1
 
 " Support function: get the alloc ID by name.
 function GetAllocId(name)
@@ -82,6 +96,9 @@ function RunTheTest(test)
   let s:done += 1
   try
     exe 'call ' . a:test
+  catch /^\cskipped/
+    call add(s:messages, '    Skipped')
+    call add(s:skipped, 'SKIPPED ' . a:test . ': ' . substitute(v:exception, '^\S*\s\+', '',  ''))
   catch
     call add(v:errors, 'Caught exception in ' . a:test . ': ' . v:exception . ' @ ' . v:throwpoint)
   endtry
@@ -89,6 +106,21 @@ function RunTheTest(test)
   if exists("*TearDown")
     call TearDown()
   endif
+
+  " Close any extra windows and make the current one not modified.
+  while 1
+    let wincount = winnr('$')
+    if wincount == 1
+      break
+    endif
+    bwipe!
+    if wincount == winnr('$')
+      " Did not manage to close a window.
+      only!
+      break
+    endif
+  endwhile
+  set nomodified
 endfunc
 
 " Source the test script.  First grab the file name, in case the script
@@ -98,6 +130,7 @@ let s:done = 0
 let s:fail = 0
 let s:errors = []
 let s:messages = []
+let s:skipped = []
 if expand('%') =~ 'test_viml.vim'
   " this test has intentional s:errors, don't use try/catch.
   source %
@@ -111,7 +144,12 @@ else
 endif
 
 " Names of flaky tests.
-let s:flaky = ['Test_reltime()']
+let s:flaky = [
+      \ 'Test_reltime()',
+      \ 'Test_nb_basic()',
+      \ 'Test_communicate()',
+      \ 'Test_pipe_through_sort_some()'
+      \ ]
 
 " Locate Test_ functions and execute them.
 set nomore
@@ -141,8 +179,10 @@ for s:test in sort(s:tests)
     call extend(s:errors, v:errors)
     let v:errors = []
   endif
-
 endfor
+
+" Don't write viminfo on exit.
+set viminfo=
 
 if s:fail == 0
   " Success, create the .res file so that make knows it's done.
@@ -169,7 +209,10 @@ if s:fail > 0
   call extend(s:messages, s:errors)
 endif
 
-" Append messages to "messages"
+" Add SKIPPED messages
+call extend(s:messages, s:skipped)
+
+" Append messages to the file "messages"
 split messages
 call append(line('$'), '')
 call append(line('$'), 'From ' . g:testname . ':')

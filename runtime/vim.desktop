@@ -74,6 +74,7 @@ TryExec=vim
 Exec=vim %F
 Terminal=true
 Type=Application
+Keywords=Text;editor;
 Icon=gvim
 Categories=Utility;TextEditor;
 StartupNotify=false

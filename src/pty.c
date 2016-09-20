@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *
@@ -247,7 +247,7 @@ OpenPTY(char **ttyn)
 OpenPTY(char **ttyn)
 {
     int		f;
-    struct stat buf;
+    stat_T	buf;
     /* used for opening a new pty-pair: */
     static char TtyName[32];
 

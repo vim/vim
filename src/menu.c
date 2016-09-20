@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *				GUI/Motif support by Robert Webb
@@ -1818,7 +1818,7 @@ check_menu_pointer(vimmenu_T *root, vimmenu_T *menu_to_check)
  * defined.  This is done once here.  add_menu_path() may have already been
  * called to define these menus, and may be called again.  This function calls
  * itself recursively.	Should be called at the top level with:
- * gui_create_initial_menus(root_menu, NULL);
+ * gui_create_initial_menus(root_menu);
  */
     void
 gui_create_initial_menus(vimmenu_T *menu)
@@ -1970,7 +1970,12 @@ gui_show_popupmenu(void)
 
     /* Only show a popup when it is defined and has entries */
     if (menu != NULL && menu->children != NULL)
+    {
+	/* Update the menus now, in case the MenuPopup autocommand did
+	 * anything. */
+	gui_update_menus(0);
 	gui_mch_show_popupmenu(menu);
+    }
 }
 #endif /* FEAT_GUI */
 

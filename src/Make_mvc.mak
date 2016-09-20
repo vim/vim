@@ -39,12 +39,12 @@
 #	Lua interface:
 #	  LUA=[Path to Lua directory]
 #	  DYNAMIC_LUA=yes (to load the Lua DLL dynamically)
-#	  LUA_VER=[Lua version]  (default is 51)
+#	  LUA_VER=[Lua version]  (default is 53)
 #
 #	MzScheme interface:
 #	  MZSCHEME=[Path to MzScheme directory]
 #	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLLs dynamically)
-#	  MZSCHEME_VER=[version, 205_000, ...]
+#	  MZSCHEME_VER=[version, 205_000, ...] (default is 3m_a0solc (6.6))
 #	  MZSCHEME_DEBUG=no
 #
 #	Perl interface:
@@ -52,34 +52,34 @@
 #	  DYNAMIC_PERL=yes (to load the Perl DLL dynamically)
 #	  PERL_VER=[Perl version, in the form 55 (5.005), 56 (5.6.x),
 #		    510 (5.10.x), etc]
-#	  (default is 56)
+#	  (default is 524)
 #
 #	Python interface:
 #	  PYTHON=[Path to Python directory]
 #	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
-#	  PYTHON_VER=[Python version, eg 22, 23, ..., 27]  (default is 22)
+#	  PYTHON_VER=[Python version, eg 22, 23, ..., 27]  (default is 27)
 #
 #	Python3 interface:
 #	  PYTHON3=[Path to Python3 directory]
 #	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)
-#	  PYTHON3_VER=[Python3 version, eg 30, 31]  (default is 31)
+#	  PYTHON3_VER=[Python3 version, eg 30, 31]  (default is 35)
 #
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory]
 #	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
-#	  RUBY_VER=[Ruby version, eg 18, 19, 20] (default is 18)
-#	  RUBY_VER_LONG=[Ruby version, eg 1.8, 1.9.1, 2.0.0] (default is 1.8)
-#	    You must set RUBY_VER_LONG when change RUBY_VER.
-#	    RUBY_API_VER is derived from RUBY_VER_LONG.
+#	  RUBY_VER=[Ruby version, eg 19, 22] (default is 22)
+#	  RUBY_API_VER_LONG=[Ruby API version, eg 1.8, 1.9.1, 2.2.0]
+#	  		    (default is 2.2.0)
+#	    You must set RUBY_API_VER_LONG when change RUBY_VER.
 #	    Note: If you use Ruby 1.9.3, set as follows:
 #	      RUBY_VER=19
-#	      RUBY_VER_LONG=1.9.1 (not 1.9.3, because the API version is 1.9.1.)
+#	      RUBY_API_VER_LONG=1.9.1 (not 1.9.3, because the API version is 1.9.1.)
 #
 #	Tcl interface:
 #	  TCL=[Path to Tcl directory]
 #	  DYNAMIC_TCL=yes (to load the Tcl DLL dynamically)
-#	  TCL_VER=[Tcl version, e.g. 80, 83]  (default is 83)
-#	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.3)
+#	  TCL_VER=[Tcl version, e.g. 80, 83]  (default is 86)
+#	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.6)
 #	    You must set TCL_VER_LONG when you set TCL_VER.
 #
 #	Cscope support: CSCOPE=yes
@@ -255,6 +255,45 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 !endif
 
 
+# Check VC version.
+!if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
+!message *** ERROR
+!message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
+!message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
+!error Make aborted.
+!else
+!include msvcver.~
+!if [del msvcver.c msvcver.~]
+!endif
+!endif
+
+!if $(MSVCVER) < 1900
+MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
+MSVCRT_VER = ($(MSVCVER) / 10 - 60)
+!else
+MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
+MSVCRT_VER = ($(MSVCVER) / 10 - 50)
+!endif
+
+# Calculate MSVCRT_VER
+!if [(set /a MSVCRT_VER="$(MSVCRT_VER)" > nul) && set MSVCRT_VER > msvcrtver.~] == 0
+!include msvcrtver.~
+!if [del msvcrtver.~]
+!endif
+!endif
+
+# Base name of the msvcrXX.dll
+!if $(MSVCRT_VER) <= 60
+MSVCRT_NAME = msvcrt
+!else
+MSVCRT_NAME = msvcr$(MSVCRT_VER)
+!endif
+
+!if $(MSVC_MAJOR) == 6
+CPU = ix86
+!endif
+
+
 # Flag to turn on Win64 compatibility warnings for VC7.x and VC8.
 WP64CHECK = /Wp64
 
@@ -262,6 +301,10 @@ WP64CHECK = /Wp64
 # PATH = c:\msvc20\bin;$(PATH)
 # INCLUDE = c:\msvc20\include
 # LIB = c:\msvc20\lib
+
+!if "$(FEATURES)"==""
+FEATURES = HUGE
+!endif
 
 !ifndef CTAGS
 CTAGS = ctags
@@ -283,11 +326,16 @@ NETBEANS = $(GUI)
 !endif
 
 !ifndef CHANNEL
+!if "$(FEATURES)"=="HUGE"
+CHANNEL = yes
+!else
 CHANNEL = $(GUI)
 !endif
+!endif
 
-# Only allow NETBEANS and XPM for a GUI build and CHANNEL.
+# GUI sepcific features.
 !if "$(GUI)" == "yes"
+# Only allow NETBEANS for a GUI build and CHANNEL.
 !if "$(NETBEANS)" == "yes" && "$(CHANNEL)" == "yes"
 # NETBEANS - Include support for Netbeans integration
 NETBEANS_PRO	= proto/netbeans.pro
@@ -309,8 +357,11 @@ DIRECTX_INCL	= gui_dwrite.h
 DIRECTX_OBJ	= $(OUTDIR)\gui_dwrite.obj
 !endif
 
+# Only allow XPM for a GUI build.
 !ifndef XPM
-# XPM is not set, use the included xpm files, depending on the architecture.
+!ifndef USE_MSVCRT
+# Both XPM and USE_MSVCRT are not set, use the included xpm files, depending
+# on the architecture.
 !if "$(CPU)" == "AMD64"
 XPM = xpm\x64
 !elseif "$(CPU)" == "i386"
@@ -318,13 +369,22 @@ XPM = xpm\x86
 !else
 XPM = no
 !endif
-!endif
+!else # USE_MSVCRT
+XPM = no
+!endif # USE_MSVCRT
+!endif # XPM
 !if "$(XPM)" != "no"
 # XPM - Include support for XPM signs
 # See the xpm directory for more information.
 XPM_OBJ   = $(OBJDIR)/xpm_w32.obj
 XPM_DEFS  = -DFEAT_XPM_W32
+!if $(MSVC_MAJOR) >= 14
+# VC14 cannot use a library built by VC12 or eariler, because VC14 uses
+# Universal CRT.
+XPM_LIB   = $(XPM)\lib-vc14\libXpm.lib
+!else
 XPM_LIB   = $(XPM)\lib\libXpm.lib
+!endif
 XPM_INC	  = -I $(XPM)\include -I $(XPM)\..\include
 !endif
 !endif
@@ -332,7 +392,7 @@ XPM_INC	  = -I $(XPM)\include -I $(XPM)\..\include
 !if "$(CHANNEL)" == "yes"
 CHANNEL_PRO	= proto/channel.pro
 CHANNEL_OBJ	= $(OBJDIR)/channel.obj
-CHANNEL_DEFS	= -DFEAT_CHANNEL
+CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL
 
 NETBEANS_LIB	= WSock32.lib
 !endif
@@ -386,43 +446,6 @@ DEL_TREE = deltree /y
 
 INTDIR=$(OBJDIR)
 OUTDIR=$(OBJDIR)
-
-!if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
-!message *** ERROR
-!message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
-!message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
-!error Make aborted.
-!else
-!include msvcver.~
-!if [del msvcver.c msvcver.~]
-!endif
-!endif
-
-!if $(MSVCVER) < 1900
-MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
-MSVCRT_VER = ($(MSVCVER) / 10 - 60)
-!else
-MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
-MSVCRT_VER = ($(MSVCVER) / 10 - 50)
-!endif
-
-# Calculate MSVCRT_VER
-!if [(set /a MSVCRT_VER="$(MSVCRT_VER)" > nul) && set MSVCRT_VER > msvcrtver.~] == 0
-!include msvcrtver.~
-!if [del msvcrtver.~]
-!endif
-!endif
-
-# Base name of the msvcrXX.dll
-!if $(MSVCRT_VER) <= 60
-MSVCRT_NAME = msvcrt
-!else
-MSVCRT_NAME = msvcr$(MSVCRT_VER)
-!endif
-
-!if $(MSVC_MAJOR) == 6
-CPU = ix86
-!endif
 
 # Convert processor ID to MVC-compatible number
 !if $(MSVC_MAJOR) < 8
@@ -478,6 +501,11 @@ OPTFLAG = $(OPTFLAG) /GL
 CFLAGS=$(CFLAGS) $(WP64CHECK)
 !endif
 
+# VC10 or later has stdint.h.
+!if $(MSVC_MAJOR) >= 10
+CFLAGS = $(CFLAGS) -DHAVE_STDINT_H
+!endif
+
 # Static code analysis generally available starting with VS2012 (VC11) or
 # Windows SDK 7.1 (VC10)
 !if ("$(ANALYZE)" == "yes") && ($(MSVC_MAJOR) >= 10)
@@ -520,26 +548,31 @@ INCL =	vim.h os_win32.h ascii.h feature.h globals.h keymap.h macros.h \
 	$(NBDEBUG_INCL)
 
 OBJ = \
+	$(OUTDIR)\arabic.obj \
 	$(OUTDIR)\blowfish.obj \
 	$(OUTDIR)\buffer.obj \
 	$(OUTDIR)\charset.obj \
 	$(OUTDIR)\crypt.obj \
 	$(OUTDIR)\crypt_zip.obj \
+	$(OUTDIR)\dict.obj \
 	$(OUTDIR)\diff.obj \
 	$(OUTDIR)\digraph.obj \
 	$(OUTDIR)\edit.obj \
 	$(OUTDIR)\eval.obj \
+	$(OUTDIR)\evalfunc.obj \
 	$(OUTDIR)\ex_cmds.obj \
 	$(OUTDIR)\ex_cmds2.obj \
 	$(OUTDIR)\ex_docmd.obj \
 	$(OUTDIR)\ex_eval.obj \
 	$(OUTDIR)\ex_getln.obj \
+	$(OUTDIR)\farsi.obj \
 	$(OUTDIR)\fileio.obj \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\hardcopy.obj \
 	$(OUTDIR)\hashtab.obj \
 	$(OUTDIR)\json.obj \
+	$(OUTDIR)\list.obj \
 	$(OUTDIR)\main.obj \
 	$(OUTDIR)\mark.obj \
 	$(OUTDIR)\mbyte.obj \
@@ -564,11 +597,13 @@ OBJ = \
 	$(OUTDIR)\search.obj \
 	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\spell.obj \
+	$(OUTDIR)\spellfile.obj \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
+	$(OUTDIR)\userfunc.obj \
 	$(OUTDIR)\window.obj \
 	$(OUTDIR)\vim.res
 
@@ -632,6 +667,8 @@ GUI_LIB = \
 	/machine:$(CPU)
 !else
 SUBSYSTEM = console
+CUI_INCL = iscygpty.h
+CUI_OBJ = $(OUTDIR)\iscygpty.obj
 !endif
 
 !if "$(SUBSYSTEM_VER)" != ""
@@ -663,8 +700,8 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_GETTEXT
 # TCL interface
 !ifdef TCL
 !ifndef TCL_VER
-TCL_VER = 83
-TCL_VER_LONG = 8.3
+TCL_VER = 86
+TCL_VER_LONG = 8.6
 !endif
 !message Tcl requested (version $(TCL_VER)) - root dir is "$(TCL)"
 !if "$(DYNAMIC_TCL)" == "yes"
@@ -686,7 +723,7 @@ TCL_LIB = $(TCL)\lib\tcl$(TCL_VER)vc.lib
 # Lua interface
 !ifdef LUA
 !ifndef LUA_VER
-LUA_VER = 51
+LUA_VER = 53
 !endif
 !message Lua requested (version $(LUA_VER)) - root dir is "$(LUA)"
 !if "$(DYNAMIC_LUA)" == "yes"
@@ -714,7 +751,7 @@ DYNAMIC_PYTHON3=yes
 # PYTHON interface
 !ifdef PYTHON
 !ifndef PYTHON_VER
-PYTHON_VER = 22
+PYTHON_VER = 27
 !endif
 !message Python requested (version $(PYTHON_VER)) - root dir is "$(PYTHON)"
 !if "$(DYNAMIC_PYTHON)" == "yes"
@@ -735,7 +772,7 @@ PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
 # PYTHON3 interface
 !ifdef PYTHON3
 !ifndef PYTHON3_VER
-PYTHON3_VER = 31
+PYTHON3_VER = 35
 !endif
 !message Python3 requested (version $(PYTHON3_VER)) - root dir is "$(PYTHON3)"
 !if "$(DYNAMIC_PYTHON3)" == "yes"
@@ -757,7 +794,7 @@ PYTHON3_LIB = $(PYTHON3)\libs\python$(PYTHON3_VER).lib
 !ifdef MZSCHEME
 !message MzScheme requested - root dir is "$(MZSCHEME)"
 !ifndef MZSCHEME_VER
-MZSCHEME_VER = 205_000
+MZSCHEME_VER = 3m_a0solc
 !endif
 !ifndef MZSCHEME_COLLECTS
 MZSCHEME_COLLECTS=$(MZSCHEME)\collects
@@ -815,7 +852,7 @@ MZSCHEME_LIB = $(MZSCHEME_LIB) /STACK:8388608
 # Perl interface
 !ifdef PERL
 !ifndef PERL_VER
-PERL_VER = 56
+PERL_VER = 524
 !endif
 !message Perl requested (version $(PERL_VER)) - root dir is "$(PERL)"
 !if "$(DYNAMIC_PERL)" == "yes"
@@ -880,13 +917,16 @@ XSUBPP_TYPEMAP = $(PERL)\lib\ExtUtils\typemap
 !ifdef RUBY
 #  Set default value
 !ifndef RUBY_VER
-RUBY_VER = 18
+RUBY_VER = 22
 !endif
 !ifndef RUBY_VER_LONG
-RUBY_VER_LONG = 1.8
+RUBY_VER_LONG = 2.2.0
+!endif
+!ifndef RUBY_API_VER_LONG
+RUBY_API_VER_LONG = $(RUBY_VER_LONG)
 !endif
 !ifndef RUBY_API_VER
-RUBY_API_VER = $(RUBY_VER_LONG:.=)
+RUBY_API_VER = $(RUBY_API_VER_LONG:.=)
 !endif
 
 !if $(RUBY_VER) >= 18
@@ -897,7 +937,7 @@ RUBY_PLATFORM = i386-mswin32
 !else # CPU
 RUBY_PLATFORM = x64-mswin64
 !endif # CPU
-!if $(MSVCRT_VER) >= 70
+!if $(MSVCRT_VER) >= 70 && $(RUBY_VER) > 19
 RUBY_PLATFORM = $(RUBY_PLATFORM)_$(MSVCRT_VER)
 !endif # MSVCRT_VER
 !endif # RUBY_PLATFORM
@@ -929,9 +969,9 @@ RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 CFLAGS = $(CFLAGS) -DFEAT_RUBY
 RUBY_OBJ = $(OUTDIR)\if_ruby.obj
 !if $(RUBY_VER) >= 19
-RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_VER_LONG)\$(RUBY_PLATFORM)" /I "$(RUBY)\include\ruby-$(RUBY_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_VER_LONG)\$(RUBY_PLATFORM)"
+RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
 !else
-RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_VER_LONG)\$(RUBY_PLATFORM)"
+RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
 !endif
 RUBY_LIB = $(RUBY)\lib\$(RUBY_INSTALL_NAME).lib
 # Do we want to load Ruby dynamically?
@@ -953,9 +993,6 @@ CFLAGS = $(CFLAGS) -DMSWINPS
 #
 # FEATURES: TINY, SMALL, NORMAL, BIG or HUGE
 #
-!if "$(FEATURES)"==""
-FEATURES = HUGE
-!endif
 CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 
 #
@@ -1006,12 +1043,12 @@ all:	$(VIM).exe \
 	tee/tee.exe \
 	GvimExt/gvimext.dll
 
-$(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
+$(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
 		$(CSCOPE_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS) version.c
-	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(GUI_OBJ) $(OLE_OBJ) \
+	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) \
 		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
 		$(TCL_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
 		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
@@ -1121,6 +1158,8 @@ testclean:
 !ENDIF
 	$(CC) $(CFLAGS) $<
 
+$(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
+
 $(OUTDIR)/blowfish.obj:	$(OUTDIR) blowfish.c  $(INCL)
 
 $(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
@@ -1131,6 +1170,8 @@ $(OUTDIR)/crypt.obj:	$(OUTDIR) crypt.c  $(INCL)
 
 $(OUTDIR)/crypt_zip.obj: $(OUTDIR) crypt_zip.c  $(INCL)
 
+$(OUTDIR)/dict.obj:	$(OUTDIR) dict.c  $(INCL)
+
 $(OUTDIR)/diff.obj:	$(OUTDIR) diff.c  $(INCL)
 
 $(OUTDIR)/digraph.obj:	$(OUTDIR) digraph.c  $(INCL)
@@ -1138,6 +1179,8 @@ $(OUTDIR)/digraph.obj:	$(OUTDIR) digraph.c  $(INCL)
 $(OUTDIR)/edit.obj:	$(OUTDIR) edit.c  $(INCL)
 
 $(OUTDIR)/eval.obj:	$(OUTDIR) eval.c  $(INCL)
+
+$(OUTDIR)/evalfunc.obj:	$(OUTDIR) evalfunc.c  $(INCL)
 
 $(OUTDIR)/ex_cmds.obj:	$(OUTDIR) ex_cmds.c  $(INCL)
 
@@ -1148,6 +1191,8 @@ $(OUTDIR)/ex_docmd.obj:	$(OUTDIR) ex_docmd.c  $(INCL) ex_cmds.h
 $(OUTDIR)/ex_eval.obj:	$(OUTDIR) ex_eval.c  $(INCL) ex_cmds.h
 
 $(OUTDIR)/ex_getln.obj:	$(OUTDIR) ex_getln.c  $(INCL)
+
+$(OUTDIR)/farsi.obj:	$(OUTDIR) farsi.c  $(INCL)
 
 $(OUTDIR)/fileio.obj:	$(OUTDIR) fileio.c  $(INCL)
 
@@ -1203,9 +1248,14 @@ $(OUTDIR)/if_ruby.obj: $(OUTDIR) if_ruby.c  $(INCL)
 $(OUTDIR)/if_tcl.obj: $(OUTDIR) if_tcl.c  $(INCL)
 	$(CC) $(CFLAGS) $(TCL_INC) if_tcl.c
 
+$(OUTDIR)/iscygpty.obj:	$(OUTDIR) iscygpty.c $(CUI_INCL)
+	$(CC) $(CFLAGS) iscygpty.c -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
+
 $(OUTDIR)/json.obj:	$(OUTDIR) json.c  $(INCL)
 
-$(OUTDIR)/main.obj:	$(OUTDIR) main.c  $(INCL)
+$(OUTDIR)/list.obj:	$(OUTDIR) list.c  $(INCL)
+
+$(OUTDIR)/main.obj:	$(OUTDIR) main.c  $(INCL) $(CUI_INCL)
 
 $(OUTDIR)/mark.obj:	$(OUTDIR) mark.c  $(INCL)
 
@@ -1260,6 +1310,8 @@ $(OUTDIR)/sha256.obj:	$(OUTDIR) sha256.c  $(INCL)
 
 $(OUTDIR)/spell.obj:	$(OUTDIR) spell.c  $(INCL)
 
+$(OUTDIR)/spellfile.obj:	$(OUTDIR) spellfile.c  $(INCL)
+
 $(OUTDIR)/syntax.obj:	$(OUTDIR) syntax.c  $(INCL)
 
 $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
@@ -1269,6 +1321,8 @@ $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
 $(OUTDIR)/ui.obj:	$(OUTDIR) ui.c  $(INCL)
 
 $(OUTDIR)/undo.obj:	$(OUTDIR) undo.c  $(INCL)
+
+$(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 
 $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
 
@@ -1316,25 +1370,30 @@ auto:
 
 # End Custom Build
 proto.h: \
+	proto/arabic.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
 	proto/edit.pro \
 	proto/eval.pro \
+	proto/evalfunc.pro \
 	proto/ex_cmds.pro \
 	proto/ex_cmds2.pro \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
+	proto/farsi.pro \
 	proto/fileio.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
 	proto/json.pro \
+	proto/list.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -1358,11 +1417,13 @@ proto.h: \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/spell.pro \
+	proto/spellfile.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/userfunc.pro \
 	proto/window.pro \
 	$(NETBEANS_PRO) \
 	$(CHANNEL_PRO)

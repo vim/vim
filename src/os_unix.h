@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -31,10 +31,6 @@
 
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
-#endif
-
-#ifdef __EMX__
-# define HAVE_TOTAL_MEM
 #endif
 
 #if defined(__CYGWIN__) || defined(__CYGWIN32__)
@@ -305,6 +301,10 @@ typedef struct dsc$descriptor   DESC;
 # ifndef USR_GVIMRC_FILE3
 #  define USR_GVIMRC_FILE3  "sys$login:_gvimrc"
 # endif
+#endif
+
+#ifndef VIM_DEFAULTS_FILE
+# define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
 #endif
 
 #ifndef EVIM_FILE

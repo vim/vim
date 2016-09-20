@@ -1,6 +1,6 @@
 " Vim script for Evim key bindings
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 29
+" Last Change:	2016 Jul 24
 
 " Don't use Vi-compatible mode.
 set nocompatible
@@ -62,5 +62,13 @@ if has("autocmd")
   au FileType text setlocal tw=78
 
 endif " has("autocmd")
+
+" Add optional packages.
+"
+" The matchit plugin makes the % command work better, but it is not backwards
+" compatible.
+if has('syntax') && has('eval')
+  packadd matchit
+endif
 
 " vim: set sw=2 :

@@ -1,4 +1,4 @@
-*hangulin.txt*  For Vim version 7.4.  Last change: 2015 Nov 24
+*hangulin.txt*  For Vim version 8.0.  Last change: 2015 Nov 24
 
 
 		  VIM REFERENCE MANUAL    by Chi-Deok Hwang and Sung-Hyun Nam

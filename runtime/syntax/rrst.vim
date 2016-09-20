@@ -1,16 +1,14 @@
 " reStructured Text with R statements
 " Language: reST with R code chunks
 " Maintainer: Alex Zvoleff, azvoleff@mail.sdsu.edu
-" Last Change: Wed Jul 09, 2014  10:29PM
+" Homepage: https://github.com/jalvesaq/R-Vim-runtime
+" Last Change: Tue Jun 28, 2016  08:53AM
 "
 " CONFIGURATION:
 "   To highlight chunk headers as R code, put in your vimrc:
 "   let rrst_syn_hl_chunk = 1
 
-" for portability
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
@@ -20,8 +18,6 @@ unlet b:current_syntax
 
 " load all of the r syntax highlighting rules into @R
 syntax include @R syntax/r.vim
-
-setlocal iskeyword=@,48-57,_,.
 
 " highlight R chunks
 if exists("g:rrst_syn_hl_chunk")

@@ -78,3 +78,5 @@ src/testdir/dostmp/*
 src/testdir/messages
 src/testdir/viminfo
 src/memfile_test
+src/json_test
+src/message_test

@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *
@@ -505,18 +505,18 @@ gtk_form_unrealize(GtkWidget *widget)
 	{
 #if GTK_CHECK_VERSION(3,0,0)
 	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
-		    G_CALLBACK(gtk_form_child_map),
+		    FUNC2GENERIC(gtk_form_child_map),
 		    child);
 	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
-		    G_CALLBACK(gtk_form_child_unmap),
+		    FUNC2GENERIC(gtk_form_child_unmap),
 		    child);
 #else
 	    gtk_signal_disconnect_by_func(GTK_OBJECT(child->widget),
-					  GTK_SIGNAL_FUNC(gtk_form_child_map),
-					  child);
+		    GTK_SIGNAL_FUNC(gtk_form_child_map),
+		    child);
 	    gtk_signal_disconnect_by_func(GTK_OBJECT(child->widget),
-					  GTK_SIGNAL_FUNC(gtk_form_child_unmap),
-					  child);
+		    GTK_SIGNAL_FUNC(gtk_form_child_unmap),
+		    child);
 #endif
 
 	    gdk_window_set_user_data(child->window, NULL);
@@ -793,14 +793,14 @@ gtk_form_remove(GtkContainer *container, GtkWidget *widget)
 	{
 #if GTK_CHECK_VERSION(3,0,0)
 	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
-					  G_CALLBACK(&gtk_form_child_map), child);
+		    FUNC2GENERIC(&gtk_form_child_map), child);
 	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
-					  G_CALLBACK(&gtk_form_child_unmap), child);
+		    FUNC2GENERIC(&gtk_form_child_unmap), child);
 #else
 	    gtk_signal_disconnect_by_func(GTK_OBJECT(child->widget),
-					  GTK_SIGNAL_FUNC(&gtk_form_child_map), child);
+		    GTK_SIGNAL_FUNC(&gtk_form_child_map), child);
 	    gtk_signal_disconnect_by_func(GTK_OBJECT(child->widget),
-					  GTK_SIGNAL_FUNC(&gtk_form_child_unmap), child);
+		    GTK_SIGNAL_FUNC(&gtk_form_child_unmap), child);
 #endif
 
 	    /* FIXME: This will cause problems for reparenting NO_WINDOW

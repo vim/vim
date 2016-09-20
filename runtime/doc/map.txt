@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.4.  Last change: 2016 Jan 10
+*map.txt*       For Vim version 8.0.  Last change: 2016 Aug 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -430,6 +430,9 @@ with a space.
 
 Note: When using mappings for Visual mode, you can use the "'<" mark, which
 is the start of the last selected Visual area in the current buffer |'<|.
+
+The |:filter| command can be used to select what mappings to list.  The
+pattern is matched against the {lhs} and {rhs} in the raw form.
 
 							*:map-verbose*
 When 'verbose' is non-zero, listing a key map will also display where it was
@@ -1177,6 +1180,10 @@ scripts.
 			    "	Command has the -register attribute
 			    b	Command is local to current buffer
 			(see below for details on attributes)
+			The list can be filtered on command name with
+			|:filter|, e.g., to list all commands with "Pyth" in
+			the name: >
+				filter Pyth command
 
 :com[mand] {cmd}	List the user-defined commands that start with {cmd}
 
@@ -1274,6 +1281,7 @@ completion can be enabled:
 	-complete=mapping	mapping name
 	-complete=menu		menus
 	-complete=option	options
+	-complete=packadd	optional package |pack-add| names
 	-complete=shellcmd	Shell command
 	-complete=sign		|:sign| suboptions
 	-complete=syntax	syntax file names |'syntax'|
@@ -1358,7 +1366,7 @@ Possible attributes are:
 Note that -range=N and -count=N are mutually exclusive - only one should be
 specified.
 
-					*E889* *:command-addr*
+					*:command-addr*
 It is possible that the special characters in the range like ., $ or % which
 by default correspond to the current line, last line and the whole buffer,
 relate to arguments, (loaded) buffers, windows or tab pages.
@@ -1411,6 +1419,29 @@ The valid escape sequences are
 	<bang>	(See the '-bang' attribute) Expands to a ! if the
 		command was executed with a ! modifier, otherwise
 		expands to nothing.
+						*<mods>*
+	<mods>  The command modifiers, if specified. Otherwise, expands to
+		nothing. Supported modifiers are |:aboveleft|, |:belowright|,
+		|:botright|, |:browse|, |:confirm|, |:hide|, |:keepalt|,
+		|:keepjumps|, |:keepmarks|, |:keeppatterns|, |:leftabove|,
+		|:lockmarks|, |:noswapfile| |:rightbelow|, |:silent|, |:tab|,
+		|:topleft|, |:verbose|, and |:vertical|.
+		Note that these are not yet supported: |:noautocmd|,
+		|:sandbox| and |:unsilent|.
+		Examples: >
+		    command! -nargs=+ -complete=file MyEdit
+				\ for f in expand(<q-args>, 0, 1) |
+				\ exe '<mods> split ' . f |
+				\ endfor
+
+		    function! SpecialEdit(files, mods)
+			for f in expand(a:files, 0, 1)
+			    exe a:mods . ' split ' . f
+			endfor
+		    endfunction
+		    command! -nargs=+ -complete=file Sedit
+				\ call SpecialEdit(<q-args>, <q-mods>)
+<
 						*<reg>* *<register>*
 	<reg>	(See the '-register' attribute) The optional register,
 		if specified.  Otherwise, expands to nothing.  <register>

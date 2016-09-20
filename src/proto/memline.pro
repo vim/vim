@@ -30,8 +30,8 @@ int resolve_symlink(char_u *fname, char_u *buf);
 char_u *makeswapname(char_u *fname, char_u *ffname, buf_T *buf, char_u *dir_name);
 char_u *get_file_in_dir(char_u *fname, char_u *dname);
 void ml_setflags(buf_T *buf);
-char_u *ml_encrypt_data(memfile_T *mfp, char_u *data, off_t offset, unsigned size);
-void ml_decrypt_data(memfile_T *mfp, char_u *data, off_t offset, unsigned size);
+char_u *ml_encrypt_data(memfile_T *mfp, char_u *data, off_T offset, unsigned size);
+void ml_decrypt_data(memfile_T *mfp, char_u *data, off_T offset, unsigned size);
 long ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp);
 void goto_byte(long cnt);
 /* vim: set ft=c : */

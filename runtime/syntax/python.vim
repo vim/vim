@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Zvezdan Petkovic <zpetkovic@acm.org>
-" Last Change:	2015 Sep 15
+" Last Change:	2016 Sep 14
 " Credits:	Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
 "
@@ -36,11 +36,8 @@
 "   let python_highlight_all = 1
 "
 
-" For version 5.x: Clear all syntax items.
-" For version 6.x: Quit when a syntax file was already loaded.
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+" quit when a syntax file was already loaded.
+if exists("b:current_syntax")
   finish
 endif
 
@@ -72,7 +69,7 @@ set cpo&vim
 "   built-in below (use 'from __future__ import print_function' in 2)
 " - async and await were added in Python 3.5 and are soft keywords.
 "
-syn keyword pythonStatement	False, None, True
+syn keyword pythonStatement	False None True
 syn keyword pythonStatement	as assert break continue del exec global
 syn keyword pythonStatement	lambda nonlocal pass print return with yield
 syn keyword pythonStatement	class def nextgroup=pythonFunction skipwhite
@@ -84,14 +81,30 @@ syn keyword pythonInclude	from import
 syn keyword pythonAsync		async await
 
 " Decorators (new in Python 2.4)
-syn match   pythonDecorator	"@" display nextgroup=pythonFunction skipwhite
-" The zero-length non-grouping match before the function name is
-" extremely important in pythonFunction.  Without it, everything is
-" interpreted as a function inside the contained environment of
-" doctests.
+" Python 3.5 introduced the use of the same symbol for matrix
+" multiplication.  We now have to exclude the symbol from being
+" highlighted when used in that context. Hence, the check that it's
+" preceded by empty space only (possibly in a docstring/doctest) and
+" followed by decorator name, optional parenthesized list of arguments,
+" and the next line with either def, class, or another decorator.
+syn match   pythonDecorator
+  \ "\%(\%(^\s*\)\%(\%(>>>\|\.\.\.\)\s\+\)\=\)\zs@\%(\s*\h\%(\w\|\.\)*\s*\%((\_\s\{-}[^)]\_.\{-})\s*\)\=\%(#.*\)\=\n\s*\%(\.\.\.\s\+\)\=\%(@\s*\h\|\%(def\|class\)\s\+\)\)\@="
+  \ display nextgroup=pythonDecoratorName skipwhite
+
 " A dot must be allowed because of @MyClass.myfunc decorators.
+" It must be preceded by a decorator symbol and on a separate line from
+" a function/class it decorates.
+syn match   pythonDecoratorName
+  \ "\%(@\s*\)\@<=\h\%(\w\|\.\)*\%(\s*\%((\_\s\{-}[^)]\_.\{-})\s*\)\=\%(#.*\)\=\n\)\@="
+  \ contained display nextgroup=pythonFunction skipnl
+
+" The zero-length non-grouping match of def or class before the function
+" name is extremely important in pythonFunction.  Without it, everything
+" is interpreted as a function inside the contained environment of
+" doctests.
 syn match   pythonFunction
-      \ "\%(\%(def\s\|class\s\|@\)\s*\)\@<=\h\%(\w\|\.\)*" contained
+  \ "\%(\%(^\s*\)\%(\%(>>>\|\.\.\.\)\s\+\)\=\%(def\|class\)\s\+\)\@<=\h\w*"
+  \ contained
 
 syn match   pythonComment	"#.*$" contains=pythonTodo,@Spell
 syn keyword pythonTodo		FIXME NOTE NOTES TODO XXX contained
@@ -199,6 +212,8 @@ if !exists("python_no_builtin_highlight")
   syn keyword pythonBuiltin	ascii bytes exec
   " non-essential built-in functions; Python 2 only
   syn keyword pythonBuiltin	apply buffer coerce intern
+  " avoid highlighting attributes as builtins
+  syn match   pythonAttribute	/\.\h\w*/hs=s+1 contains=ALLBUT,pythonBuiltin transparent
 endif
 
 " From the 'Python Library Reference' class hierarchy at the bottom.
@@ -274,49 +289,39 @@ endif
 " Sync at the beginning of class, function, or method definition.
 syn sync match pythonSync grouphere NONE "^\s*\%(def\|class\)\s\+\h\w*\s*("
 
-if version >= 508 || !exists("did_python_syn_inits")
-  if version <= 508
-    let did_python_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  " The default highlight links.  Can be overridden later.
-  HiLink pythonStatement	Statement
-  HiLink pythonConditional	Conditional
-  HiLink pythonRepeat		Repeat
-  HiLink pythonOperator		Operator
-  HiLink pythonException	Exception
-  HiLink pythonInclude		Include
-  HiLink pythonAsync		Statement
-  HiLink pythonDecorator	Define
-  HiLink pythonFunction		Function
-  HiLink pythonComment		Comment
-  HiLink pythonTodo		Todo
-  HiLink pythonString		String
-  HiLink pythonRawString	String
-  HiLink pythonQuotes		String
-  HiLink pythonTripleQuotes	pythonQuotes
-  HiLink pythonEscape		Special
-  if !exists("python_no_number_highlight")
-    HiLink pythonNumber		Number
-  endif
-  if !exists("python_no_builtin_highlight")
-    HiLink pythonBuiltin	Function
-  endif
-  if !exists("python_no_exception_highlight")
-    HiLink pythonExceptions	Structure
-  endif
-  if exists("python_space_error_highlight")
-    HiLink pythonSpaceError	Error
-  endif
-  if !exists("python_no_doctest_highlight")
-    HiLink pythonDoctest	Special
-    HiLink pythonDoctestValue	Define
-  endif
-
-  delcommand HiLink
+" The default highlight links.  Can be overridden later.
+hi def link pythonStatement		Statement
+hi def link pythonConditional		Conditional
+hi def link pythonRepeat		Repeat
+hi def link pythonOperator		Operator
+hi def link pythonException		Exception
+hi def link pythonInclude		Include
+hi def link pythonAsync			Statement
+hi def link pythonDecorator		Define
+hi def link pythonDecoratorName		Function
+hi def link pythonFunction		Function
+hi def link pythonComment		Comment
+hi def link pythonTodo			Todo
+hi def link pythonString		String
+hi def link pythonRawString		String
+hi def link pythonQuotes		String
+hi def link pythonTripleQuotes		pythonQuotes
+hi def link pythonEscape		Special
+if !exists("python_no_number_highlight")
+  hi def link pythonNumber		Number
+endif
+if !exists("python_no_builtin_highlight")
+  hi def link pythonBuiltin		Function
+endif
+if !exists("python_no_exception_highlight")
+  hi def link pythonExceptions		Structure
+endif
+if exists("python_space_error_highlight")
+  hi def link pythonSpaceError		Error
+endif
+if !exists("python_no_doctest_highlight")
+  hi def link pythonDoctest		Special
+  hi def link pythonDoctestValue	Define
 endif
 
 let b:current_syntax = "python"

@@ -1,4 +1,4 @@
-/* vim:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  * vim600:fdm=marker fdl=1 fdc=3:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
@@ -153,7 +153,7 @@ hasFoldingWin(
     int		use_level = FALSE;
     int		maybe_small = FALSE;
     garray_T	*gap;
-    int		low_level = 0;;
+    int		low_level = 0;
 
     checkupdate(win);
     /*
@@ -810,6 +810,9 @@ clearFolding(win_T *win)
 foldUpdate(win_T *wp, linenr_T top, linenr_T bot)
 {
     fold_T	*fp;
+
+    if (disable_fold_update > 0)
+	return;
 
     /* Mark all folds from top to bot as maybe-small. */
     (void)foldFind(&wp->w_folds, top, &fp);
@@ -1850,8 +1853,8 @@ foldDelMarker(linenr_T lnum, char_u *marker, int markerlen)
 /* get_foldtext() {{{2 */
 /*
  * Return the text for a closed fold at line "lnum", with last line "lnume".
- * When 'foldtext' isn't set puts the result in "buf[51]".  Otherwise the
- * result is in allocated memory.
+ * When 'foldtext' isn't set puts the result in "buf[FOLD_TEXT_LEN]".
+ * Otherwise the result is in allocated memory.
  */
     char_u *
 get_foldtext(
@@ -1957,8 +1960,12 @@ get_foldtext(
     if (text == NULL)
 #endif
     {
-	sprintf((char *)buf, _("+--%3ld lines folded "),
-						    (long)(lnume - lnum + 1));
+	long count = (long)(lnume - lnum + 1);
+
+	vim_snprintf((char *)buf, FOLD_TEXT_LEN,
+		     ngettext("+--%3ld line folded ",
+					       "+--%3ld lines folded ", count),
+		     count);
 	text = buf;
     }
     return text;
@@ -3029,7 +3036,7 @@ foldlevelExpr(fline_T *flp)
     /* KeyTyped may be reset to 0 when calling a function which invokes
      * do_cmdline().  To make 'foldopen' work correctly restore KeyTyped. */
     save_keytyped = KeyTyped;
-    n = eval_foldexpr(flp->wp->w_p_fde, &c);
+    n = (int)eval_foldexpr(flp->wp->w_p_fde, &c);
     KeyTyped = save_keytyped;
 
     switch (c)

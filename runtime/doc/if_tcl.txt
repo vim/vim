@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.4.  Last change: 2016 Jan 01
+*if_tcl.txt*    For Vim version 8.0.  Last change: 2016 Jan 01
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -16,7 +16,7 @@ The Tcl Interface to Vim				*tcl* *Tcl* *TCL*
 8. Examples				|tcl-examples|
 9. Dynamic loading			|tcl-dynamic|
 
-{Vi does not have any of these commands} *E280* *E281*
+{Vi does not have any of these commands} *E280*
 
 The Tcl interface only works when Vim was compiled with the |+tcl| feature.
 
@@ -53,6 +53,9 @@ Example: >
 	    }
 	EOF
 	endfunction
+<
+To see what version of Tcl you have: >
+	:tcl puts [info patchlevel]
 <
 
 							*:tcldo* *:tcld*
@@ -526,7 +529,8 @@ can use Vim without this file.
 MS-Windows ~
 
 To use the Tcl interface the Tcl DLL must be in your search path.  In a
-console window type "path" to see what directories are used.
+console window type "path" to see what directories are used.  The 'tcldll'
+option can be also used to specify the Tcl DLL.
 
 The name of the DLL must match the Tcl version Vim was compiled with.
 Currently the name is "tcl86.dll".  That is for Tcl 8.6.  To know for sure

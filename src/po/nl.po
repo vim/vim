@@ -5391,8 +5391,8 @@ msgstr "typ :q<Enter> om te stoppen"
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "typ :help<Enter> of <F1> voor on-line hulp"
 
-msgid "type  :help version7<Enter>   for version info"
-msgstr "typ :help version7<Enter> voor versieinformatie"
+msgid "type  :help version8<Enter>   for version info"
+msgstr "typ :help version8<Enter> voor versieinformatie"
 
 msgid "Running in Vi compatible mode"
 msgstr "wordt uitgevoerd in Vi compatible-modus"

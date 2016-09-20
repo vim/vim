@@ -2,3 +2,5 @@
 set shell=csh
 map! /tmp t:
 cmap !rm !Delete all
+
+source setup.vim

@@ -50,7 +50,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             if data == '':
                 print("=== socket closed ===")
                 break
-            print("received: {}".format(data))
+            print("received: {0}".format(data))
             try:
                 decoded = json.loads(data)
             except ValueError:
@@ -65,7 +65,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 else:
                     response = "what?"
                 encoded = json.dumps([decoded[0], response])
-                print("sending {}".format(encoded))
+                print("sending {0}".format(encoded))
                 self.request.sendall(encoded.encode('utf-8'))
         thesocket = None
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     server_thread.start()
     print("Server loop running in thread: ", server_thread.name)
 
-    print("Listening on port {}".format(PORT))
+    print("Listening on port {0}".format(PORT))
     while True:
         typed = sys.stdin.readline()
         if "quit" in typed:
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         if thesocket is None:
             print("No socket yet")
         else:
-            print("sending {}".format(typed))
+            print("sending {0}".format(typed))
             thesocket.sendall(typed.encode('utf-8'))
 
     server.shutdown()

@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.4.  Last change: 2016 Jan 24
+*if_mzsch.txt*  For Vim version 8.0.  Last change: 2016 Jan 24
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -97,6 +97,9 @@ procedures is restricted.
 	:mzscheme (require (prefix vim- vimext)) ; for MzScheme < 4.x
 	:mzscheme (require (prefix-in vim- 'vimext)) ; MzScheme 4.x
 	:mzscheme (vim-set-buff-line 10 "This is line #10")
+
+To see what version of MzScheme you have: >
+	:mzscheme (display (version))
 <
 Inline script usage: >
 	function! <SID>SetFirstLine()

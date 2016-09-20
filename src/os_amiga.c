@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -1123,7 +1123,7 @@ out_num(long n)
 dos_packet(
     struct MsgPort *pid,    /* process identifier ... (handlers message port) */
     long	    action, /* packet type ... (what you want handler to do)   */
-		    arg)    /* single argument */
+    long	    arg)    /* single argument */
 {
 # ifdef FEAT_ARP
     struct MsgPort	    *replyport;

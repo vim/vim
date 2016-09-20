@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4 noet:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
  *
@@ -81,7 +81,7 @@ static void mf_ins_free(memfile_T *, bhdr_T *);
 static bhdr_T *mf_rem_free(memfile_T *);
 static int  mf_read(memfile_T *, bhdr_T *);
 static int  mf_write(memfile_T *, bhdr_T *);
-static int  mf_write_block(memfile_T *mfp, bhdr_T *hp, off_t offset, unsigned size);
+static int  mf_write_block(memfile_T *mfp, bhdr_T *hp, off_T offset, unsigned size);
 static int  mf_trans_add(memfile_T *, bhdr_T *);
 static void mf_do_open(memfile_T *, char_u *, int);
 static void mf_hash_init(mf_hashtab_T *);
@@ -124,7 +124,7 @@ static int mf_hash_grow(mf_hashtab_T *);
 mf_open(char_u *fname, int flags)
 {
     memfile_T		*mfp;
-    off_t		size;
+    off_T		size;
 #if defined(STATFS) && defined(UNIX) && !defined(__QNX__) && !defined(__minix)
 # define USE_FSTATFS
     struct STATFS	stf;
@@ -179,7 +179,7 @@ mf_open(char_u *fname, int flags)
 #endif
 
     if (mfp->mf_fd < 0 || (flags & (O_TRUNC|O_EXCL))
-		      || (size = lseek(mfp->mf_fd, (off_t)0L, SEEK_END)) <= 0)
+		  || (size = vim_lseek(mfp->mf_fd, (off_T)0L, SEEK_END)) <= 0)
 	mfp->mf_blocknr_max = 0;	/* no file or empty file */
     else
 	mfp->mf_blocknr_max = (blocknr_T)((size + mfp->mf_page_size - 1)
@@ -602,16 +602,7 @@ mf_sync(memfile_T *mfp, int flags)
 # ifdef HAVE_FSYNC
 	/*
 	 * most Unixes have the very useful fsync() function, just what we need.
-	 * However, with OS/2 and EMX it is also available, but there are
-	 * reports of bad problems with it (a bug in HPFS.IFS).
-	 * So we disable use of it here in case someone tries to be smart
-	 * and changes os_os2_cfg.h... (even though there is no __EMX__ test
-	 * in the #if, as __EMX__ does not have sync(); we hope for a timely
-	 * sync from the system itself).
 	 */
-#  if defined(__EMX__)
-   error "Don't use fsync with EMX! Read emxdoc.doc or emxfix01.doc for info."
-#  endif
 	if (STRCMP(p_sws, "fsync") == 0)
 	{
 	    if (fsync(mfp->mf_fd))
@@ -805,7 +796,7 @@ mf_release(memfile_T *mfp, int page_count)
     if (mfp->mf_fd < 0 && need_release && p_uc)
     {
 	/* find for which buffer this memfile is */
-	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	FOR_ALL_BUFFERS(buf)
 	    if (buf->b_ml.ml_mfp == mfp)
 		break;
 	if (buf != NULL && buf->b_may_swap)
@@ -870,7 +861,7 @@ mf_release_all(void)
     bhdr_T	*hp;
     int		retval = FALSE;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
     {
 	mfp = buf->b_ml.ml_mfp;
 	if (mfp != NULL)
@@ -966,7 +957,7 @@ mf_rem_free(memfile_T *mfp)
     static int
 mf_read(memfile_T *mfp, bhdr_T *hp)
 {
-    off_t	offset;
+    off_T	offset;
     unsigned	page_size;
     unsigned	size;
 
@@ -974,9 +965,9 @@ mf_read(memfile_T *mfp, bhdr_T *hp)
 	return FAIL;
 
     page_size = mfp->mf_page_size;
-    offset = (off_t)page_size * hp->bh_bnum;
+    offset = (off_T)page_size * hp->bh_bnum;
     size = page_size * hp->bh_page_count;
-    if (lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
+    if (vim_lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
     {
 	PERROR(_("E294: Seek error in swap file read"));
 	return FAIL;
@@ -1005,7 +996,7 @@ mf_read(memfile_T *mfp, bhdr_T *hp)
     static int
 mf_write(memfile_T *mfp, bhdr_T *hp)
 {
-    off_t	offset;	    /* offset in the file */
+    off_T	offset;	    /* offset in the file */
     blocknr_T	nr;	    /* block nr which is being written */
     bhdr_T	*hp2;
     unsigned	page_size;  /* number of bytes in a page */
@@ -1038,8 +1029,8 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
 	else
 	    hp2 = hp;
 
-	offset = (off_t)page_size * nr;
-	if (lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
+	offset = (off_T)page_size * nr;
+	if (vim_lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
 	{
 	    PERROR(_("E296: Seek error in swap file write"));
 	    return FAIL;
@@ -1083,7 +1074,7 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
 mf_write_block(
     memfile_T	*mfp,
     bhdr_T	*hp,
-    off_t	offset UNUSED,
+    off_T	offset UNUSED,
     unsigned	size)
 {
     char_u	*data = hp->bh_data;
@@ -1247,7 +1238,7 @@ mf_do_open(
     int		flags)		/* flags for open() */
 {
 #ifdef HAVE_LSTAT
-    struct stat sb;
+    stat_T	sb;
 #endif
 
     mfp->mf_fname = fname;
