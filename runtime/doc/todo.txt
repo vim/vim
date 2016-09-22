@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Sep 16
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Sep 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,9 +34,24 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Ukrainian translations (Anatolii Sakhnik, 2016 Sep 15)
+
 Netbeans test fails with Python 3. (jonathon, 2016 Sep 13, #1070)
 
 Revert 7.4.990?  (Christian Brabandt, 2016 Sep 16)
+
+Update for ratpoison (Magnus Woldrich, 2016 Sep 15)
+
+Crash when editing file with only encryption header. (igor2x, 2016 Sep 18,
+#1096) Patch by Christian, Sep 22.
+
+Idea from Sven: record sequence of keys.  Useful to show others what they are
+doing (look over the shoulder), and also to see what happened.
+Probably list of keystrokes, with some annotations for mode changes.
+Could store in logfile to be able to analyise it with an external command.
+E.g. to see when's the last time a plugin command was used.
+
+Patch for typos. (Matthew Brener, 2016 Sep 16, #1088)
 
 After 8.0 is released:
 - Drop support for older MS-Windows systems, before XP.
@@ -110,6 +125,11 @@ Regexp problems:
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
   had_endbrace[] is set but not initialized or used.
 
+Strang syntax highlighting problem. (Brett Stahlman, 2016 Sep 17)
+
+Patch to convert test_command_count into new style. (Naruhiko Nishino, 2016
+Sep 17)
+
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
@@ -135,6 +155,7 @@ Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
 
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
+E.g. deepcopy(test_null_list())
 
 min() and max() spawn lots of error messages if sorted list/dictionary
 contains invalid data (Nikolay Pavlov, 2016 Sep 4, #1039)
@@ -148,11 +169,19 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 
 cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
 
+Patch to change order of compiler flags. (Yousong Zhou, 2016 Sep 19, #1100)
+
+Patch for :pyx, run python commands depending on the supported version.
+(Marc Weber, update from Ken Takata, 2016 Sep 19)
+
 When using ":diffput" through a mapping, undo in the target buffer isn't
 synced.  (Ryan Carney, 2016 Sep 14)
 
 Syntax highlighting for messages with RFC3339 timestamp (#946)
 Did maintainer reply?
+
+Patch to avoid problem with special characters in file name.
+(Shougo, 2016 Sept 19, #1099)  Not finished?
 
 ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
 Also with latest version.
@@ -182,6 +211,9 @@ This does not work: :set cscopequickfix=a-
 (Linewi, 2015 Jul 12, #914)
 
 Possibly wrong value for seq_cur. (Florent Fayolle, 2016 May 15, #806)
+
+Patch to add separate highlighting for quickfix current line.
+(anishsane, 2016 Sep 16, #1080)
 
 Filetype plugin for awk. (Doug Kearns, 2016 Sep 5)
 

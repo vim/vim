@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.0.  Last change: 2016 Aug 20
+*tagsrch.txt*   For Vim version 8.0.  Last change: 2016 Sep 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -91,7 +91,7 @@ The ignore-case matches are not found for a ":tag" command when:
 - 'tagcase' is "followscs" and 'smartcase' option is on and the pattern
   contains an upper case character.
 
-The gnore-case matches are found when:
+The ignore-case matches are found when:
 - a pattern is used (starting with a "/")
 - for ":tselect"
 - when 'tagcase' is "followic" and 'ignorecase' is off

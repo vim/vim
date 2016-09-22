@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2016 Sep 07
+*eval.txt*	For Vim version 8.0.  Last change: 2016 Sep 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -125,7 +125,8 @@ cleared.  A List, Dictionary or Float is not a Number or String, thus
 evaluates to FALSE.
 
 		*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910* *E913*
-List, Dictionary, Funcref and Job types are not automatically converted.
+List, Dictionary, Funcref, Job and Channel types are not automatically
+converted.
 
 							*E805* *E806* *E808*
 When mixing Number and Float the Number is converted to Float.  Otherwise
@@ -643,7 +644,7 @@ It's possible to form a variable name with curly braces, see
 
 Expression syntax summary, from least to most significant:
 
-|expr1|   expr2
+|expr1|	expr2
 	expr2 ? expr1 : expr1	if-then-else
 
 |expr2|	expr3
@@ -691,7 +692,7 @@ Expression syntax summary, from least to most significant:
 	expr8.name		entry in a |Dictionary|
 	expr8(expr1, ...)	function call with |Funcref| variable
 
-|expr9|   number		number constant
+|expr9|	number			number constant
 	"string"		string constant, backslash is special
 	'string'		string constant, ' is doubled
 	[expr1, ...]		|List|
@@ -957,7 +958,7 @@ expr8[expr1]		item of String or |List|	*expr-[]* *E111*
 							*E909* *subscript*
 If expr8 is a Number or String this results in a String that contains the
 expr1'th single byte from expr8.  expr8 is used as a String, expr1 as a
-Number.  This doesn't recognize multi-byte encodings, see |byteidx()| for
+Number.  This doesn't recognize multi-byte encodings, see `byteidx()` for
 an alternative, or use `split()` to turn the string into a list of characters.
 
 Index zero gives the first byte.  This is like it works in C.  Careful:
@@ -1244,7 +1245,7 @@ The arguments are optional.  Example: >
 <	error function
 							*closure*
 Lambda expressions can access outer scope variables and arguments.  This is
-often called a closure.  Example where "i" a and "a:arg" are used in a lambda
+often called a closure.  Example where "i" and "a:arg" are used in a lambda
 while they exist in the function scope.  They remain valid even after the
 function returns: >
 	:function Foo(arg)
@@ -2072,8 +2073,8 @@ expand({expr} [, {nosuf} [, {list}]])
 feedkeys({string} [, {mode}])	Number	add key sequence to typeahead buffer
 filereadable({file})		Number	|TRUE| if {file} is a readable file
 filewritable({file})		Number	|TRUE| if {file} is a writable file
-filter({expr}, {string})	List/Dict  remove items from {expr} where
-					{string} is 0
+filter({expr1}, {expr2})	List/Dict  remove items from {expr1} where
+					{expr2} is 0
 finddir({name}[, {path}[, {count}]])
 				String	find directory {name} in {path}
 findfile({name}[, {path}[, {count}]])
@@ -2097,7 +2098,7 @@ garbagecollect([{atexit}])	none	free memory, breaking cyclic references
 get({list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get({dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 get({func}, {what})		any	get property of funcref/partial {func}
-getbufinfo([{expr}])		List  	information about buffers
+getbufinfo([{expr}])		List	information about buffers
 getbufline({expr}, {lnum} [, {end}])
 				List	lines {lnum} to {end} of buffer {expr}
 getbufvar({expr}, {varname} [, {def}])
@@ -2128,12 +2129,12 @@ getqflist([{what}])		List	list of quickfix items
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of register
 getregtype([{regname}])		String	type of register
-gettabinfo([{expr}])		List  	list of tab pages
+gettabinfo([{expr}])		List	list of tab pages
 gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
-getwininfo([{winid}])		List  	list of windows
+getwininfo([{winid}])		List	list of windows
 getwinposx()			Number	X coord in pixels of GUI Vim window
 getwinposy()			Number	Y coord in pixels of GUI Vim window
 getwinvar({nr}, {varname} [, {def}])
@@ -2197,7 +2198,7 @@ localtime()			Number	current time
 log({expr})			Float	natural logarithm (base e) of {expr}
 log10({expr})			Float	logarithm of Float {expr} to base 10
 luaeval({expr}[, {expr}])	any	evaluate |Lua| expression
-map({expr}, {string})		List/Dict  change each item in {expr} to {expr}
+map({expr1}, {expr2})		List/Dict  change each item in {expr1} to {expr}
 maparg({name}[, {mode} [, {abbr} [, {dict}]]])
 				String or Dict
 					rhs of mapping {name} in mode {mode}
@@ -3701,9 +3702,10 @@ filter({expr1}, {expr2})				*filter()*
 		is zero remove the item from the |List| or |Dictionary|.
 		{expr2} must be a |string| or |Funcref|.
 		
-		if {expr2} is a |string|, inside {expr2} |v:val| has the value
+		If {expr2} is a |string|, inside {expr2} |v:val| has the value
 		of the current item.  For a |Dictionary| |v:key| has the key
-		of the current item.
+		of the current item and for a |List| |v:key| has the index of
+		the current item.
 		Examples: >
 			call filter(mylist, 'v:val !~ "OLD"')
 <		Removes the items where "OLD" appears. >
@@ -3725,7 +3727,11 @@ filter({expr1}, {expr2})				*filter()*
 			  return a:idx % 2 == 1
 			endfunc
 			call filter(mylist, function('Odd'))
-<
+<		It is shorter when using a |lambda|: >
+			call filter(myList, {idx, val -> idx * val <= 42})
+<		If you do not use "val" you can leave it out: >
+			call filter(myList, {idx -> idx % 2 == 1})
+
 		The operation is done in-place.  If you want a |List| or
 		|Dictionary| to remain unmodified make a copy first: >
 			:let l = filter(copy(mylist), 'v:val =~ "KEEP"')
@@ -5439,6 +5445,10 @@ map({expr1}, {expr2})					*map()*
 			  return a:key . '-' . a:val
 			endfunc
 			call map(myDict, function('KeyValue'))
+<		It is shorter when using a |lambda|: >
+			call map(myDict, {key, val -> key . '-' . val})
+<		If you do not use "val" you can leave it out: >
+			call map(myDict, {key -> 'item: ' . key})
 <
 		The operation is done in-place.  If you want a |List| or
 		|Dictionary| to remain unmodified make a copy first: >

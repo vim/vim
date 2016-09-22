@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.0.  Last change: 2016 Sep 03
+*autocmd.txt*   For Vim version 8.0.  Last change: 2016 Sep 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -983,7 +983,7 @@ WinLeave			Before leaving a window.  If the window to be
 
 							*WinNew*
 WinNew				When a new window was created.  Not done for
-				the fist window, when Vim has just started.
+				the first window, when Vim has just started.
 				Before a WinEnter event.
 
 ==============================================================================

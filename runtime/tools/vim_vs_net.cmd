@@ -15,8 +15,7 @@
 @rem    :h --remote-silent for more details
 @rem
 @rem --servername VS_NET
-@rem This will create a new instance of vim called VS_NET.  So if you
-open
+@rem This will create a new instance of vim called VS_NET.  So if you open
 @rem multiple files from VS, they will use the same instance of Vim.
 @rem This allows you to have multiple copies of Vim running, but you can
 @rem control which one has VS files in it.
