@@ -17,16 +17,18 @@ func! ListMonths()
 endfunc
 
 func! Test_popup_complete2()
-  " Insert match immediately, if there is only one match
-  "  <c-e> Should select a character from the line below
-  " TODO: test disabled because the code change has been reverted.
-  throw "Skipped: Bug with <c-e> and popupmenu not fixed yet"
+  " Although the popupmenu is not visible, this does not mean completion mode
+  " has ended. After pressing <f5> to complete the currently typed char, Vim
+  " still stays in the first state of the completion (:h ins-completion-menu),
+  " although the popupmenu wasn't shown <c-e> will remove the inserted
+  " completed text (:h complete_CTRL-E), while the following <c-e> will behave
+  " like expected (:h i_CTRL-E)
   new
   inoremap <f5> <c-r>=ListMonths()<cr>
   call append(1, ["December2015"])
   :1
   call feedkeys("aD\<f5>\<C-E>\<C-E>\<C-E>\<C-E>\<enter>\<esc>", 'tx')
-  call assert_equal(["December2015", "", "December2015"], getline(1,3))
+  call assert_equal(["Dece", "", "December2015"], getline(1,3))
   %d
   bw!
 endfu
