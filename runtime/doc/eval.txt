@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2016 Sep 22
+*eval.txt*	For Vim version 8.0.  Last change: 2016 Sep 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4788,6 +4788,7 @@ histadd({history}, {item})				*histadd()*
 			"expr"	 or "="   typed expression history
 			"input"  or "@"	  input line history
 			"debug"  or ">"   debug command history
+			empty		  the current or last used history
 		The {history} string does not need to be the whole name, one
 		character is sufficient.
 		If {item} does already exist in the history, it will be

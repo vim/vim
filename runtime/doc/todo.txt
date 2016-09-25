@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Sep 22
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Sep 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,16 +34,7 @@ not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Ukrainian translations (Anatolii Sakhnik, 2016 Sep 15)
-
-Netbeans test fails with Python 3. (jonathon, 2016 Sep 13, #1070)
-
-Revert 7.4.990?  (Christian Brabandt, 2016 Sep 16)
-
-Update for ratpoison (Magnus Woldrich, 2016 Sep 15)
-
-Crash when editing file with only encryption header. (igor2x, 2016 Sep 18,
-#1096) Patch by Christian, Sep 22.
+Move test71 tests to test_crypt.
 
 Idea from Sven: record sequence of keys.  Useful to show others what they are
 doing (look over the shoulder), and also to see what happened.
@@ -52,6 +43,7 @@ Could store in logfile to be able to analyise it with an external command.
 E.g. to see when's the last time a plugin command was used.
 
 Patch for typos. (Matthew Brener, 2016 Sep 16, #1088)
+Lots of its to it's.
 
 After 8.0 is released:
 - Drop support for older MS-Windows systems, before XP.
@@ -62,6 +54,7 @@ After 8.0 is released:
   Perhaps try to read once more?
   Possibly reproduced by Santiago Alejandro Agüero, 2016 Sep 12, 13.
   Apparently select() returns an error while reading could work.
+  Another example from Daniel Hahler, Sep 24.
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
@@ -156,6 +149,9 @@ Add tests for using number larger than number of lines in buffer.
 
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 E.g. deepcopy(test_null_list())
+
+Patch to make it possible to extend a list with itself.
+(Nikolai Pavlov, 2016 Sep 23)
 
 min() and max() spawn lots of error messages if sorted list/dictionary
 contains invalid data (Nikolay Pavlov, 2016 Sep 4, #1039)
