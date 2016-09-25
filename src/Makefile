@@ -2066,6 +2066,7 @@ test_arglist \
 	test_channel \
 	test_charsearch \
 	test_cmdline \
+	test_crypt \
 	test_cscope \
 	test_cursor_func \
 	test_delete \

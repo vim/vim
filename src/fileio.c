@@ -3011,6 +3011,9 @@ check_for_cryptkey(
 
 	    /* Remove cryptmethod specific header from the text. */
 	    header_len = crypt_get_header_len(method);
+	    if (*sizep <= header_len)
+		/* invalid header, buffer can't be encrypted */
+		return NULL;
 	    *filesizep += header_len;
 	    *sizep -= header_len;
 	    mch_memmove(ptr, ptr + header_len, (size_t)*sizep);
