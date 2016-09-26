@@ -7305,7 +7305,7 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 #ifdef FEAT_JOB_CHANNEL
 	    {
 		channel_T *channel = varp->vval.v_channel;
-		char      *status = channel_status(channel);
+		char      *status = channel_status(channel, -1);
 
 		if (channel == NULL)
 		    vim_snprintf((char *)buf, NUMBUFLEN, "channel %s", status);
