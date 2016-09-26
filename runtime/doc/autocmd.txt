@@ -79,11 +79,15 @@ exception is that "<sfile>" is expanded when the autocmd is defined.  Example:
 
 Here Vim expands <sfile> to the name of the file containing this line.
 
-When your .vimrc file is sourced twice, the autocommands will appear twice.
-To avoid this, put this command in your .vimrc file, before defining
-autocommands: >
+":autocmd" adds to the list of autocommands regardless of whether they are
+already present.  If you'd like to be able to source your .vimrc more than
+once avoiding repeated autocommands, just wrap them in a group and clear the
+group first with ":autocmd!":
 
-	:autocmd!	" Remove ALL autocommands for the current group.
+        augroup vimrc
+            autocmd! " Remove all commands in the vimrc group
+            au BufNewFile,BufRead *.html so <sfile>:h/html.vim
+        augroup END
 
 If you don't want to remove all autocommands, you can instead use a variable
 to ensure that Vim includes the autocommands only once: >
