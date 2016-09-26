@@ -3070,7 +3070,7 @@ ch_log({msg} [, {handle}])					*ch_log()*
 		When {handle} is passed the channel number is used for the
 		message.
 		{handle} can be Channel or a Job that has a Channel.  The
-		Channel must open.
+		Channel must be open.
 
 ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		Start logging channel activity to {fname}.
