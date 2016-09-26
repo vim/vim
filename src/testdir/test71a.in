@@ -1,18 +1,0 @@
-
-start of text
-01234567890123456789012345678901234567
-line 2  foo bar blah
-line 3 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-end of text
-
-start of cm=zip bytes
-VimCrypt~01!lV'Ş}Mg ê£V©çE#32Ué—
-end of cm=zip bytes
-
-start of cm=blowfish bytes
-VimCrypt~02!k)¾—#İSœõ=ºàÈ#¥M´†JÃAÍ¥M´†!€›õáÒ‚˜÷Ú
-end of cm=blowfish bytes
-
-start of cm=blowfish2 bytes
-VimCrypt~03!ÑNã;ÓÀ ^C)÷.¶«FSà‹6Ò[TË§…Ø¾92Q³Ì@—ßš­Ivª.ØÉî`½$¯%Ğ
-end of cm=blowfish2 bytes

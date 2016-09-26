@@ -1,5 +1,8 @@
 " Tests for encryption.
-" TODO: include tests from test71.
+
+if !has('cryptv')
+  finish
+endif
 
 func Common_head_only(text)
   " This was crashing Vim
