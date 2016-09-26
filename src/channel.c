@@ -2590,23 +2590,41 @@ channel_has_readahead(channel_T *channel, int part)
 
 /*
  * Return a string indicating the status of the channel.
+ * If "req_part" is not negative check that part.
  */
     char *
-channel_status(channel_T *channel)
+channel_status(channel_T *channel, int req_part)
 {
     int part;
     int has_readahead = FALSE;
 
     if (channel == NULL)
 	 return "fail";
-    if (channel_is_open(channel))
-	 return "open";
-    for (part = PART_SOCK; part <= PART_ERR; ++part)
-	if (channel_has_readahead(channel, part))
-	{
+    if (req_part == PART_OUT)
+    {
+	if (channel->CH_OUT_FD != INVALID_FD)
+	    return "open";
+	if (channel_has_readahead(channel, PART_OUT))
 	    has_readahead = TRUE;
-	    break;
-	}
+    }
+    else if (req_part == PART_ERR)
+    {
+	if (channel->CH_ERR_FD != INVALID_FD)
+	    return "open";
+	if (channel_has_readahead(channel, PART_ERR))
+	    has_readahead = TRUE;
+    }
+    else
+    {
+	if (channel_is_open(channel))
+	    return "open";
+	for (part = PART_SOCK; part <= PART_ERR; ++part)
+	    if (channel_has_readahead(channel, part))
+	    {
+		has_readahead = TRUE;
+		break;
+	    }
+    }
 
     if (has_readahead)
 	return "buffered";
@@ -2619,6 +2637,7 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, int part)
     chanpart_T *chanpart = &channel->ch_part[part];
     char	namebuf[20];  /* longest is "sock_timeout" */
     size_t	tail;
+    char	*status;
     char	*s = "";
 
     vim_strncpy((char_u *)namebuf, (char_u *)name, 4);
@@ -2626,8 +2645,13 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, int part)
     tail = STRLEN(namebuf);
 
     STRCPY(namebuf + tail, "status");
-    dict_add_nr_str(dict, namebuf, 0,
-		(char_u *)(chanpart->ch_fd == INVALID_FD ? "closed" : "open"));
+    if (chanpart->ch_fd != INVALID_FD)
+	status = "open";
+    else if (channel_has_readahead(channel, part))
+	status = "buffered";
+    else
+	status = "closed";
+    dict_add_nr_str(dict, namebuf, 0, (char_u *)status);
 
     STRCPY(namebuf + tail, "mode");
     switch (chanpart->ch_mode)
@@ -2660,7 +2684,7 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, int part)
 channel_info(channel_T *channel, dict_T *dict)
 {
     dict_add_nr_str(dict, "id", channel->ch_id, NULL);
-    dict_add_nr_str(dict, "status", 0, (char_u *)channel_status(channel));
+    dict_add_nr_str(dict, "status", 0, (char_u *)channel_status(channel, -1));
 
     if (channel->ch_hostname != NULL)
     {
@@ -4244,6 +4268,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		val = get_tv_string(item);
 		if (STRCMP(val, "err") == 0)
 		    opt->jo_part = PART_ERR;
+		else if (STRCMP(val, "out") == 0)
+		    opt->jo_part = PART_OUT;
 		else
 		{
 		    EMSG2(_(e_invarg2), val);

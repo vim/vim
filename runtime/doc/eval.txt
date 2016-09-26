@@ -2031,7 +2031,8 @@ ch_sendraw({handle}, {string} [, {options}])
 				any	send {string} over raw {handle}
 ch_setoptions({handle}, {options})
 				none	set options for {handle}
-ch_status({handle})		String	status of channel {handle}
+ch_status({handle} [, {options}])
+				String	status of channel {handle}
 changenr()			Number	current change number
 char2nr({expr}[, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
 cindent({lnum})			Number	C indent for line {lnum}
@@ -3042,7 +3043,8 @@ ch_info({handle})						*ch_info()*
 		Returns a Dictionary with information about {handle}.  The
 		items are:
 		   "id"		  number of the channel
-		   "status"	  "open" (any part is open) or "closed"
+		   "status"	  "open", "buffered" or "closed", like
+				  ch_status()
 		When opened with ch_open():
 		   "hostname"	  the hostname of the address
 		   "port"	  the port of the address
@@ -3051,11 +3053,11 @@ ch_info({handle})						*ch_info()*
 		   "sock_io"	  "socket"
 		   "sock_timeout" timeout in msec
 		When opened with job_start():
-		   "out_status"	  "open" or "closed"
+		   "out_status"	  "open", "buffered" or "closed"
 		   "out_mode"	  "NL", "RAW", "JSON" or "JS"
 		   "out_io"	  "null", "pipe", "file" or "buffer"
 		   "out_timeout"  timeout in msec
-		   "err_status"	  "open" or "closed"
+		   "err_status"	  "open", "buffered" or "closed"
 		   "err_mode"	  "NL", "RAW", "JSON" or "JS"
 		   "err_io"	  "out", "null", "pipe", "file" or "buffer"
 		   "err_timeout"  timeout in msec
@@ -3140,7 +3142,7 @@ ch_setoptions({handle}, {options})			*ch_setoptions()*
 		These options cannot be changed:
 			"waittime"	only applies to |ch_open()|
 
-ch_status({handle})						*ch_status()*
+ch_status({handle} [, {options}])				*ch_status()*
 		Return the status of {handle}:
 			"fail"		failed to open the channel
 			"open"		channel can be used
@@ -3150,6 +3152,11 @@ ch_status({handle})						*ch_status()*
 		"buffered" is used when the channel was closed but there is
 		still data that can be obtained with |ch_read()|.
 
+		If {options} is given it can contain a "part" entry to specify
+		the part of the channel to return the status for: "out" or
+		"err".  For example, to get the error status: >
+			ch_status(job, {"part": "err"})
+<
 							*copy()*
 copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 		different from using {expr} directly.

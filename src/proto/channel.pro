@@ -24,7 +24,7 @@ void channel_consume(channel_T *channel, int part, int len);
 int channel_collapse(channel_T *channel, int part, int want_nl);
 int channel_can_write_to(channel_T *channel);
 int channel_is_open(channel_T *channel);
-char *channel_status(channel_T *channel);
+char *channel_status(channel_T *channel, int req_part);
 void channel_info(channel_T *channel, dict_T *dict);
 void channel_close(channel_T *channel, int invoke_close_cb);
 void channel_close_in(channel_T *channel);

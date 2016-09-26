@@ -434,6 +434,23 @@ func Test_raw_pipe()
   let job = job_start(s:python . " test_channel_pipe.py", {'mode': 'raw'})
   call assert_equal(v:t_job, type(job))
   call assert_equal("run", job_status(job))
+
+  call assert_equal("open", ch_status(job))
+  call assert_equal("open", ch_status(job), {"part": "out"})
+  call assert_equal("open", ch_status(job), {"part": "err"})
+  call assert_fails('call ch_status(job, {"in_mode": "raw"})', 'E475:')
+  call assert_fails('call ch_status(job, {"part": "in"})', 'E475:')
+
+  let dict = ch_info(job)
+  call assert_true(dict.id != 0)
+  call assert_equal('open', dict.status)
+  call assert_equal('open', dict.out_status)
+  call assert_equal('RAW', dict.out_mode)
+  call assert_equal('pipe', dict.out_io)
+  call assert_equal('open', dict.err_status)
+  call assert_equal('RAW', dict.err_mode)
+  call assert_equal('pipe', dict.err_io)
+
   try
     " For a change use the job where a channel is expected.
     call ch_sendraw(job, "echo something\n")
