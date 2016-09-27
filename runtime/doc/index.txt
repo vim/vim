@@ -1002,7 +1002,7 @@ tag		command	      action in Command-line editing mode	~
 |c_CTRL-L|	CTRL-L		do completion on the pattern in front of the
 				cursor and insert the longest common part
 |c_<CR>|	<CR>		execute entered command
-|c_<CR>|	CTRL-M		same as <CR>
+|c_CTRL-M|	CTRL-M		same as <CR>
 |c_CTRL-N|	CTRL-N		after using 'wildchar' with multiple matches:
 				go to next match, otherwise: same as <Down>
 		CTRL-O		not used
