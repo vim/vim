@@ -1733,58 +1733,58 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	option		+ set value	effect	~
 
-	'allowrevins'	  off		no CTRL-_ command
+	'allowrevins'	  off		  no CTRL-_ command
 	'backupcopy'	  Unix: "yes"	  backup file is a copy
 			  others: "auto"  copy or rename backup file
-	'backspace'	  ""		normal backspace
-	'backup'	  off		no backup file
-	'cindent'	  off		no C code indentation
-	'cedit'		+ ""		no key to open the |cmdwin|
-	'cpoptions'	+ (all flags)	Vi-compatible flags
-	'cscopetag'	  off		don't use cscope for ":tag"
-	'cscopetagorder'  0		see |cscopetagorder|
-	'cscopeverbose'	  off		see |cscopeverbose|
-	'digraph'	  off		no digraphs
-	'esckeys'	+ off		no <Esc>-keys in Insert mode
-	'expandtab'	  off		tabs not expanded to spaces
-	'fileformats'	+ ""		no automatic file format detection,
-			  "dos,unix"	except for DOS, Windows and OS/2
-	'formatoptions'	+ "vt"		Vi compatible formatting
-	'gdefault'	  off		no default 'g' flag for ":s"
-	'history'	+ 0		no commandline history
-	'hkmap'		  off		no Hebrew keyboard mapping
-	'hkmapp'	  off		no phonetic Hebrew keyboard mapping
-	'hlsearch'	  off		no highlighting of search matches
-	'incsearch'	  off		no incremental searching
-	'indentexpr'	  ""		no indenting by expression
-	'insertmode'	  off		do not start in Insert mode
-	'iskeyword'	+ "@,48-57,_"	keywords contain alphanumeric
+	'backspace'	  ""		  normal backspace
+	'backup'	  off		  no backup file
+	'cindent'	  off		  no C code indentation
+	'cedit'		+ ""		  no key to open the |cmdwin|
+	'cpoptions'	+ (all flags)	  Vi-compatible flags
+	'cscopetag'	  off		  don't use cscope for ":tag"
+	'cscopetagorder'  0		  see |cscopetagorder|
+	'cscopeverbose'	  off		  see |cscopeverbose|
+	'digraph'	  off		  no digraphs
+	'esckeys'	+ off		  no <Esc>-keys in Insert mode
+	'expandtab'	  off		  tabs not expanded to spaces
+	'fileformats'	+ ""		  no automatic file format detection,
+			  "dos,unix"	  except for DOS, Windows and OS/2
+	'formatoptions'	+ "vt"		  Vi compatible formatting
+	'gdefault'	  off		  no default 'g' flag for ":s"
+	'history'	+ 0		  no commandline history
+	'hkmap'		  off		  no Hebrew keyboard mapping
+	'hkmapp'	  off		  no phonetic Hebrew keyboard mapping
+	'hlsearch'	  off		  no highlighting of search matches
+	'incsearch'	  off		  no incremental searching
+	'indentexpr'	  ""		  no indenting by expression
+	'insertmode'	  off		  do not start in Insert mode
+	'iskeyword'	+ "@,48-57,_"	  keywords contain alphanumeric
 						characters and '_'
-	'joinspaces'	  on		insert 2 spaces after period
-	'modeline'	+ off		no modelines
-	'more'		+ off		no pauses in listings
-	'revins'	  off		no reverse insert
-	'ruler'		  off		no ruler
-	'scrolljump'	  1		no jump scroll
-	'scrolloff'	  0		no scroll offset
-	'shiftround'	  off		indent not rounded to shiftwidth
-	'shortmess'	+ ""		no shortening of messages
-	'showcmd'	+ off		command characters not shown
-	'showmode'	+ off		current mode not shown
-	'smartcase'	  off		no automatic ignore case switch
-	'smartindent'	  off		no smart indentation
-	'smarttab'	  off		no smart tab size
-	'softtabstop'	  0		tabs are always 'tabstop' positions
-	'startofline'	  on		goto startofline with some commands
-	'tagrelative'	+ off		tag file names are not relative
-	'textauto'	+ off		no automatic textmode detection
-	'textwidth'	  0		no automatic line wrap
-	'tildeop'	  off		tilde is not an operator
-	'ttimeout'	  off		no terminal timeout
-	'whichwrap'	+ ""		left-right movements don't wrap
-	'wildchar'	+ CTRL-E	only when the current value is <Tab>
-					use CTRL-E for cmdline completion
-	'writebackup'	  on or off	depends on the |+writebackup| feature
+	'joinspaces'	  on		  insert 2 spaces after period
+	'modeline'	+ off		  no modelines
+	'more'		+ off		  no pauses in listings
+	'revins'	  off		  no reverse insert
+	'ruler'		  off		  no ruler
+	'scrolljump'	  1		  no jump scroll
+	'scrolloff'	  0		  no scroll offset
+	'shiftround'	  off		  indent not rounded to shiftwidth
+	'shortmess'	+ ""		  no shortening of messages
+	'showcmd'	+ off		  command characters not shown
+	'showmode'	+ off		  current mode not shown
+	'smartcase'	  off		  no automatic ignore case switch
+	'smartindent'	  off		  no smart indentation
+	'smarttab'	  off		  no smart tab size
+	'softtabstop'	  0		  tabs are always 'tabstop' positions
+	'startofline'	  on		  goto startofline with some commands
+	'tagrelative'	+ off		  tag file names are not relative
+	'textauto'	+ off		  no automatic textmode detection
+	'textwidth'	  0		  no automatic line wrap
+	'tildeop'	  off		  tilde is not an operator
+	'ttimeout'	  off		  no terminal timeout
+	'whichwrap'	+ ""		  left-right movements don't wrap
+	'wildchar'	+ CTRL-E	  only when the current value is <Tab>
+					  use CTRL-E for cmdline completion
+	'writebackup'	  on or off	  depends on the |+writebackup| feature
 
 						*'complete'* *'cpt'* *E535*
 'complete' 'cpt'	string	(default: ".,w,b,u,t,i")
