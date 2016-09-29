@@ -79,7 +79,6 @@ SCRIPTS_ALL = \
 	test_breakindent.out \
 	test_changelist.out \
 	test_close_count.out \
-	test_command_count.out \
 	test_comparators.out \
 	test_erasebackword.out \
 	test_eval.out \
