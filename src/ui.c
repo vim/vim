@@ -353,12 +353,22 @@ ui_new_shellsize(void)
     void
 ui_breakcheck(void)
 {
+    ui_breakcheck_force(FALSE);
+}
+
+/*
+ * When "force" is true also check when the terminal is not in raw mode.
+ * This is useful to read input on channels.
+ */
+    void
+ui_breakcheck_force(int force)
+{
 #ifdef FEAT_GUI
     if (gui.in_use)
 	gui_mch_update();
     else
 #endif
-	mch_breakcheck();
+	mch_breakcheck(force);
 }
 
 /*****************************************************************************

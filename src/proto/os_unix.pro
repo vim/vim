@@ -61,7 +61,7 @@ void mch_start_job(char **argv, job_T *job, jobopt_T *options);
 char *mch_job_status(job_T *job);
 int mch_stop_job(job_T *job, char_u *how);
 void mch_clear_job(job_T *job);
-void mch_breakcheck(void);
+void mch_breakcheck(int force);
 int mch_expandpath(garray_T *gap, char_u *path, int flags);
 int mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, int flags);
 int mch_has_exp_wildcard(char_u *p);

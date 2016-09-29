@@ -1381,7 +1381,7 @@ mch_call_shell(
  * trouble with lattice-c programs.
  */
     void
-mch_breakcheck(void)
+mch_breakcheck(int force)
 {
    if (SetSignal(0L, (long)(SIGBREAKF_CTRL_C|SIGBREAKF_CTRL_D|SIGBREAKF_CTRL_E|SIGBREAKF_CTRL_F)) & SIGBREAKF_CTRL_C)
 	got_int = TRUE;

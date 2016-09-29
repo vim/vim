@@ -4,6 +4,7 @@ int ch_log_active(void);
 void ch_log(channel_T *ch, char *msg);
 void ch_logs(channel_T *ch, char *msg, char *name);
 channel_T *add_channel(void);
+int has_any_channel(void);
 int channel_unref(channel_T *channel);
 int free_unused_channels_contents(int copyID, int mask);
 void free_unused_channels(int copyID, int mask);

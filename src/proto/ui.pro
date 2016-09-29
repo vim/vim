@@ -10,6 +10,7 @@ int ui_get_shellsize(void);
 void ui_set_shellsize(int mustset);
 void ui_new_shellsize(void);
 void ui_breakcheck(void);
+void ui_breakcheck_force(int force);
 void clip_init(int can_use);
 void clip_update_selection(VimClipboard *clip);
 void clip_own_selection(VimClipboard *cbd);

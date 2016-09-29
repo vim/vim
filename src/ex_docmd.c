@@ -9065,8 +9065,17 @@ do_sleep(long msec)
 		wait_now = due_time;
 	}
 #endif
+#ifdef FEAT_JOB_CHANNEL
+	if (has_any_channel() && wait_now > 100L)
+	    wait_now = 100L;
+#endif
 	ui_delay(wait_now, TRUE);
-	ui_breakcheck();
+#ifdef FEAT_JOB_CHANNEL
+	if (has_any_channel())
+	    ui_breakcheck_force(TRUE);
+	else
+#endif
+	    ui_breakcheck();
 #ifdef MESSAGE_QUEUE
 	/* Process the netbeans and clientserver messages that may have been
 	 * received in the call to ui_breakcheck() when the GUI is in use. This

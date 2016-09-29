@@ -6187,10 +6187,10 @@ mch_remove(char_u *name)
 
 
 /*
- * check for an "interrupt signal": CTRL-break or CTRL-C
+ * Check for an "interrupt signal": CTRL-break or CTRL-C.
  */
     void
-mch_breakcheck(void)
+mch_breakcheck(int force)
 {
 #ifndef FEAT_GUI_W32	    /* never used */
     if (g_fCtrlCPressed || g_fCBrkPressed)

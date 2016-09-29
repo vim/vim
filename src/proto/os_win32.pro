@@ -48,7 +48,7 @@ void mch_set_normal_colors(void);
 void mch_write(char_u *s, int len);
 void mch_delay(long msec, int ignoreinput);
 int mch_remove(char_u *name);
-void mch_breakcheck(void);
+void mch_breakcheck(int force);
 long_u mch_total_mem(int special);
 int mch_wrename(WCHAR *wold, WCHAR *wnew);
 int mch_rename(const char *pszOldFile, const char *pszNewFile);

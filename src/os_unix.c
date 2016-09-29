@@ -5364,9 +5364,10 @@ mch_clear_job(job_T *job)
  * In cooked mode we should get SIGINT, no need to check.
  */
     void
-mch_breakcheck(void)
+mch_breakcheck(int force)
 {
-    if (curr_tmode == TMODE_RAW && RealWaitForChar(read_cmd_fd, 0L, NULL, NULL))
+    if ((curr_tmode == TMODE_RAW || force)
+			       && RealWaitForChar(read_cmd_fd, 0L, NULL, NULL))
 	fill_input_buf(FALSE);
 }
 

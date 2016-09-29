@@ -341,6 +341,12 @@ add_channel(void)
     return channel;
 }
 
+    int
+has_any_channel(void)
+{
+    return first_channel != NULL;
+}
+
 /*
  * Called when the refcount of a channel is zero.
  * Return TRUE if "channel" has a callback and the associated job wasn't
