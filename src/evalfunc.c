@@ -11874,7 +11874,7 @@ get_cmd_output_as_rettv(
 	if (list == NULL)
 	    goto errret;
 
-	for (i = 0; i < len; ++i)
+	for (i = 0; i <= len; ++i)
 	{
 	    start = res + i;
 	    while (i < len && res[i] != NL)
