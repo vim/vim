@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2016 Sep 25
+*eval.txt*	For Vim version 8.0.  Last change: 2016 Sep 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3072,7 +3072,7 @@ ch_log({msg} [, {handle}])					*ch_log()*
 		When {handle} is passed the channel number is used for the
 		message.
 		{handle} can be Channel or a Job that has a Channel.  The
-		Channel must open.
+		Channel must be open for the channel number to be used.
 
 ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		Start logging channel activity to {fname}.
@@ -3738,7 +3738,7 @@ filter({expr1}, {expr2})				*filter()*
 			call filter(myList, {idx, val -> idx * val <= 42})
 <		If you do not use "val" you can leave it out: >
 			call filter(myList, {idx -> idx % 2 == 1})
-
+<
 		The operation is done in-place.  If you want a |List| or
 		|Dictionary| to remain unmodified make a copy first: >
 			:let l = filter(copy(mylist), 'v:val =~ "KEEP"')
@@ -4369,7 +4369,7 @@ getfperm({fname})					*getfperm()*
 <		This will hopefully (from a security point of view) display
 		the string "rw-r--r--" or even "rw-------".
 
-		For setting permissins use |setfperm()|.
+		For setting permissions use |setfperm()|.
 
 getftime({fname})					*getftime()*
 		The result is a Number, which is the last modification time of

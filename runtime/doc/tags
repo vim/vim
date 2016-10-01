@@ -5184,6 +5184,7 @@ c_CTRL-I	cmdline.txt	/*c_CTRL-I*
 c_CTRL-J	cmdline.txt	/*c_CTRL-J*
 c_CTRL-K	cmdline.txt	/*c_CTRL-K*
 c_CTRL-L	cmdline.txt	/*c_CTRL-L*
+c_CTRL-M	cmdline.txt	/*c_CTRL-M*
 c_CTRL-N	cmdline.txt	/*c_CTRL-N*
 c_CTRL-P	cmdline.txt	/*c_CTRL-P*
 c_CTRL-Q	cmdline.txt	/*c_CTRL-Q*
@@ -5200,6 +5201,7 @@ c_CTRL-U	cmdline.txt	/*c_CTRL-U*
 c_CTRL-V	cmdline.txt	/*c_CTRL-V*
 c_CTRL-W	cmdline.txt	/*c_CTRL-W*
 c_CTRL-Y	cmdline.txt	/*c_CTRL-Y*
+c_CTRL-[	cmdline.txt	/*c_CTRL-[*
 c_CTRL-\_CTRL-G	intro.txt	/*c_CTRL-\\_CTRL-G*
 c_CTRL-\_CTRL-N	intro.txt	/*c_CTRL-\\_CTRL-N*
 c_CTRL-\_e	cmdline.txt	/*c_CTRL-\\_e*

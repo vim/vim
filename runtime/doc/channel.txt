@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.0.  Last change: 2016 Sep 20
+*channel.txt*      For Vim version 8.0.  Last change: 2016 Sep 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -465,6 +465,11 @@ it like this: >
 Without the handler you need to read the output with |ch_read()| or
 |ch_readraw()|. You can do this in the close callback, see |read-in-close-cb|.
 
+Note that if the job exits before you read the output, the output may be lost.
+This depends on the system (on Unix this happens because closing the write end
+of a pipe causes the read end to get EOF).  To avoid this make the job sleep
+for a short while before it exits.
+
 The handler defined for "out_cb" will not receive stderr.  If you want to
 handle that separately, add an "err_cb" handler: >
     let job = job_start(command, {"out_cb": "MyHandler",
@@ -516,7 +521,7 @@ If the job can take some time and you don't need intermediate results, you can
 add a close callback and read the output there: >
 
 	func! CloseHandler(channel)
-	  while ch_status(a:channel) == 'buffered'
+	  while ch_status(a:channel, {'part': 'out'}) == 'buffered'
 	    echomsg ch_read(a:channel)
 	  endwhile
 	endfunc

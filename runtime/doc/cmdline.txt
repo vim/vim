@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.0.  Last change: 2016 Aug 27
+*cmdline.txt*   For Vim version 8.0.  Last change: 2016 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -229,9 +229,10 @@ CTRL-Y		When there is a modeless selection, copy the selection into
 		the clipboard. |modeless-selection|
 		If there is no selection CTRL-Y is inserted as a character.
 
-CTRL-J					*c_CTRL-J* *c_<NL>* *c_<CR>* *c_CR*
+CTRL-M or CTRL-J		*c_CTRL-M* *c_CTRL-J* *c_<NL>* *c_<CR>* *c_CR*
 <CR> or <NL>	start entered command
-							*c_<Esc>* *c_Esc*
+
+CTRL-[						*c_CTRL-[* *c_<Esc>* *c_Esc*
 <Esc>		When typed and 'x' not present in 'cpoptions', quit
 		Command-line mode without executing.  In macros or when 'x'
 		present in 'cpoptions', start entered command.

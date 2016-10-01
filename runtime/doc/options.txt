@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2016 Sep 16
+*options.txt*	For Vim version 8.0.  Last change: 2016 Oct 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10,7 +10,7 @@ Options							*options*
 2. Automatically setting options	|auto-setting|
 3. Options summary			|option-summary|
 
-For an overview of options see help.txt |option-list|.
+For an overview of options see quickref.txt |option-list|.
 
 Vim has a number of internal variables and switches which can be set to
 achieve special effects.  These options come in three forms:
@@ -1734,12 +1734,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	option		+ set value	effect	~
 
 	'allowrevins'	  off		no CTRL-_ command
-	'backupcopy'	  Unix: "yes"	  backup file is a copy
-			  others: "auto"  copy or rename backup file
 	'backspace'	  ""		normal backspace
+	'backupcopy'	  Unix: "yes"	backup file is a copy
+			  else: "auto"  copy or rename backup file
 	'backup'	  off		no backup file
-	'cindent'	  off		no C code indentation
 	'cedit'		+ ""		no key to open the |cmdwin|
+	'cindent'	  off		no C code indentation
 	'cpoptions'	+ (all flags)	Vi-compatible flags
 	'cscopetag'	  off		don't use cscope for ":tag"
 	'cscopetagorder'  0		see |cscopetagorder|
@@ -1781,6 +1781,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'textwidth'	  0		no automatic line wrap
 	'tildeop'	  off		tilde is not an operator
 	'ttimeout'	  off		no terminal timeout
+	'viminfo'       + {unchanged}	no viminfo file	
 	'whichwrap'	+ ""		left-right movements don't wrap
 	'wildchar'	+ CTRL-E	only when the current value is <Tab>
 					use CTRL-E for cmdline completion

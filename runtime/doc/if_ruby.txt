@@ -207,21 +207,19 @@ MS-Windows ~
 
 You need to install the right version of Ruby for this to work.  You can find
 the package to download from:
-http://www.garbagecollect.jp/ruby/mswin32/en/download/release.html
-Currently that is ruby-1.9.2-p136-i386-mswin32.zip
+http://rubyinstaller.org/downloads/
+Currently that is rubyinstaller-2.2.5.exe
 
 To use the Ruby interface the Ruby DLL must be in your search path.  In a
 console window type "path" to see what directories are used.  The 'rubydll'
 option can be also used to specify the Ruby DLL.
 
 The name of the DLL must match the Ruby version Vim was compiled with.
-Currently the name is "msvcrt-ruby191.dll".  That is for Ruby 1.9.1.  To know
+Currently the name is "msvcrt-ruby220.dll".  That is for Ruby 2.2.X.  To know
 for sure edit "gvim.exe" and search for "ruby\d*.dll\c".
 
-If you want to build Vim with Ruby 1.9.1, you need to edit the config.h file
-and comment-out the check for _MSC_VER.
-You may also need to rename the include directory name to match the version,
-strangely for Ruby 1.9.3 the directory is called 1.9.1.
+If you want to build Vim with RubyInstaller 1.9 or 2.X using MSVC, you need
+some tricks.  See the src/INSTALLpc.txt for detail.
 
 
 Unix ~
