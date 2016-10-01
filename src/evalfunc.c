@@ -4443,40 +4443,51 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     if (!filtered)
 	options |= WILD_KEEP_ALL;
 
-    ExpandInit(&xpc);
-    xpc.xp_pattern = get_tv_string(&argvars[0]);
-    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    xpc.xp_context = cmdcomplete_str_to_type(get_tv_string(&argvars[1]));
-    if (xpc.xp_context == EXPAND_NOTHING)
-    {
-	if (argvars[1].v_type == VAR_STRING)
-	    EMSG2(_(e_invarg2), argvars[1].vval.v_string);
-	else
-	    EMSG(_(e_invarg));
+    if (argvars[1].v_type != VAR_STRING) {
+	EMSG(_(e_invarg));
 	return;
     }
 
-# if defined(FEAT_MENU)
-    if (xpc.xp_context == EXPAND_MENUS)
+    ExpandInit(&xpc);
+    if (STRCMP(get_tv_string(&argvars[1]), "cmdline") == 0)
     {
-	set_context_in_menu_cmd(&xpc, (char_u *)"menu", xpc.xp_pattern, FALSE);
+	set_one_cmd_context(&xpc, get_tv_string(&argvars[0]));
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
     }
-# endif
+    else
+    {
+	xpc.xp_pattern = get_tv_string(&argvars[0]);
+	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	xpc.xp_context = cmdcomplete_str_to_type(get_tv_string(&argvars[1]));
+	if (xpc.xp_context == EXPAND_NOTHING)
+	{
+	    EMSG2(_(e_invarg2), argvars[1].vval.v_string);
+	    return;
+	}
+
+#ifdef FEAT_MENU
+	if (xpc.xp_context == EXPAND_MENUS)
+	{
+	    set_context_in_menu_cmd(&xpc, (char_u *)"menu",
+		    xpc.xp_pattern, FALSE);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
+#endif
 #ifdef FEAT_CSCOPE
-    if (xpc.xp_context == EXPAND_CSCOPE)
-    {
-	set_context_in_cscope_cmd(&xpc, xpc.xp_pattern, CMD_cscope);
-	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    }
+	if (xpc.xp_context == EXPAND_CSCOPE)
+	{
+	    set_context_in_cscope_cmd(&xpc, xpc.xp_pattern, CMD_cscope);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
 #endif
 #ifdef FEAT_SIGNS
-    if (xpc.xp_context == EXPAND_SIGN)
-    {
-	set_context_in_sign_cmd(&xpc, xpc.xp_pattern);
-	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    }
+	if (xpc.xp_context == EXPAND_SIGN)
+	{
+	    set_context_in_sign_cmd(&xpc, xpc.xp_pattern);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
 #endif
+    }
 
     pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
     if ((rettv_list_alloc(rettv) != FAIL) && (pat != NULL))
