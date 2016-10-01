@@ -1781,6 +1781,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'textwidth'	  0		no automatic line wrap
 	'tildeop'	  off		tilde is not an operator
 	'ttimeout'	  off		no terminal timeout
+	'viminfo'	+ (no change)	reset to default by "set nocompatible"
 	'whichwrap'	+ ""		left-right movements don't wrap
 	'wildchar'	+ CTRL-E	only when the current value is <Tab>
 					use CTRL-E for cmdline completion
