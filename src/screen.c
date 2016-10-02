@@ -765,6 +765,9 @@ update_screen(int type)
 	     * uses that. */
 	    gui.col = gui_cursor_col;
 	    gui.row = gui_cursor_row;
+# ifdef FEAT_MBYTE
+	    gui.col = mb_fix_col(gui.col, gui.row);
+# endif
 	    gui_update_cursor(FALSE, FALSE);
 	    screen_cur_col = gui.col;
 	    screen_cur_row = gui.row;
