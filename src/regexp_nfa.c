@@ -5432,7 +5432,7 @@ skip_to_start(int c, colnr_T *colp)
     char_u *s;
 
     /* Used often, do some work to avoid call overhead. */
-    if (!ireg_ic
+    if (!rex.reg_ic
 #ifdef FEAT_MBYTE
 		&& !has_mbyte
 #endif
@@ -5467,7 +5467,7 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
 	{
 	    c1 = PTR2CHAR(match_text + len1);
 	    c2 = PTR2CHAR(regline + col + len2);
-	    if (c1 != c2 && (!ireg_ic || MB_TOLOWER(c1) != MB_TOLOWER(c2)))
+	    if (c1 != c2 && (!rex.reg_ic || MB_TOLOWER(c1) != MB_TOLOWER(c2)))
 	    {
 		match = FALSE;
 		break;
@@ -5485,15 +5485,15 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
 	    cleanup_subexpr();
 	    if (REG_MULTI)
 	    {
-		reg_startpos[0].lnum = reglnum;
-		reg_startpos[0].col = col;
-		reg_endpos[0].lnum = reglnum;
-		reg_endpos[0].col = col + len2;
+		rex.reg_startpos[0].lnum = reglnum;
+		rex.reg_startpos[0].col = col;
+		rex.reg_endpos[0].lnum = reglnum;
+		rex.reg_endpos[0].col = col + len2;
 	    }
 	    else
 	    {
-		reg_startp[0] = regline + col;
-		reg_endp[0] = regline + col + len2;
+		rex.reg_startp[0] = regline + col;
+		rex.reg_endp[0] = regline + col + len2;
 	    }
 	    return 1L;
 	}
@@ -5728,8 +5728,8 @@ nfa_regmatch(
 	      {
 #ifdef FEAT_MBYTE
 		/* If the match ends before a composing characters and
-		 * ireg_icombine is not set, that is not really a match. */
-		if (enc_utf8 && !ireg_icombine && utf_iscomposing(curc))
+		 * rex.reg_icombine is not set, that is not really a match. */
+		if (enc_utf8 && !rex.reg_icombine && utf_iscomposing(curc))
 		    break;
 #endif
 		nfa_match = TRUE;
@@ -6048,16 +6048,16 @@ nfa_regmatch(
 		    int this_class;
 
 		    /* Get class of current and previous char (if it exists). */
-		    this_class = mb_get_class_buf(reginput, reg_buf);
+		    this_class = mb_get_class_buf(reginput, rex.reg_buf);
 		    if (this_class <= 1)
 			result = FALSE;
 		    else if (reg_prev_class() == this_class)
 			result = FALSE;
 		}
 #endif
-		else if (!vim_iswordc_buf(curc, reg_buf)
+		else if (!vim_iswordc_buf(curc, rex.reg_buf)
 			   || (reginput > regline
-				   && vim_iswordc_buf(reginput[-1], reg_buf)))
+				&& vim_iswordc_buf(reginput[-1], rex.reg_buf)))
 		    result = FALSE;
 		if (result)
 		{
@@ -6076,16 +6076,16 @@ nfa_regmatch(
 		    int this_class, prev_class;
 
 		    /* Get class of current and previous char (if it exists). */
-		    this_class = mb_get_class_buf(reginput, reg_buf);
+		    this_class = mb_get_class_buf(reginput, rex.reg_buf);
 		    prev_class = reg_prev_class();
 		    if (this_class == prev_class
 					|| prev_class == 0 || prev_class == 1)
 			result = FALSE;
 		}
 #endif
-		else if (!vim_iswordc_buf(reginput[-1], reg_buf)
+		else if (!vim_iswordc_buf(reginput[-1], rex.reg_buf)
 			|| (reginput[0] != NUL
-					   && vim_iswordc_buf(curc, reg_buf)))
+					&& vim_iswordc_buf(curc, rex.reg_buf)))
 		    result = FALSE;
 		if (result)
 		{
@@ -6096,7 +6096,7 @@ nfa_regmatch(
 
 	    case NFA_BOF:
 		if (reglnum == 0 && reginput == regline
-					&& (!REG_MULTI || reg_firstlnum == 1))
+				     && (!REG_MULTI || rex.reg_firstlnum == 1))
 		{
 		    add_here = TRUE;
 		    add_state = t->state->out;
@@ -6104,7 +6104,7 @@ nfa_regmatch(
 		break;
 
 	    case NFA_EOF:
-		if (reglnum == reg_maxline && curc == NUL)
+		if (reglnum == rex.reg_maxline && curc == NUL)
 		{
 		    add_here = TRUE;
 		    add_state = t->state->out;
@@ -6131,7 +6131,7 @@ nfa_regmatch(
 		     * (no preceding character). */
 		    len += mb_char2len(mc);
 		}
-		if (ireg_icombine && len == 0)
+		if (rex.reg_icombine && len == 0)
 		{
 		    /* If \Z was present, then ignore composing characters.
 		     * When ignoring the base character this always matches. */
@@ -6190,8 +6190,8 @@ nfa_regmatch(
 #endif
 
 	    case NFA_NEWL:
-		if (curc == NUL && !reg_line_lbr && REG_MULTI
-						    && reglnum <= reg_maxline)
+		if (curc == NUL && !rex.reg_line_lbr && REG_MULTI
+						 && reglnum <= rex.reg_maxline)
 		{
 		    go_to_nextline = TRUE;
 		    /* Pass -1 for the offset, which means taking the position
@@ -6199,7 +6199,7 @@ nfa_regmatch(
 		    add_state = t->state->out;
 		    add_off = -1;
 		}
-		else if (curc == '\n' && reg_line_lbr)
+		else if (curc == '\n' && rex.reg_line_lbr)
 		{
 		    /* match \n as if it is an ordinary character */
 		    add_state = t->state->out;
@@ -6244,7 +6244,7 @@ nfa_regmatch(
 			    result = result_if_matched;
 			    break;
 			}
-			if (ireg_ic)
+			if (rex.reg_ic)
 			{
 			    int curc_low = MB_TOLOWER(curc);
 			    int done = FALSE;
@@ -6262,7 +6262,7 @@ nfa_regmatch(
 		    }
 		    else if (state->c < 0 ? check_char_class(state->c, curc)
 			        : (curc == state->c
-				   || (ireg_ic && MB_TOLOWER(curc)
+				   || (rex.reg_ic && MB_TOLOWER(curc)
 						    == MB_TOLOWER(state->c))))
 		    {
 			result = result_if_matched;
@@ -6320,13 +6320,13 @@ nfa_regmatch(
 		break;
 
 	    case NFA_KWORD:	/*  \k	*/
-		result = vim_iswordp_buf(reginput, reg_buf);
+		result = vim_iswordp_buf(reginput, rex.reg_buf);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_SKWORD:	/*  \K	*/
 		result = !VIM_ISDIGIT(curc)
-					&& vim_iswordp_buf(reginput, reg_buf);
+				     && vim_iswordp_buf(reginput, rex.reg_buf);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
@@ -6441,24 +6441,24 @@ nfa_regmatch(
 		break;
 
 	    case NFA_LOWER_IC:	/* [a-z] */
-		result = ri_lower(curc) || (ireg_ic && ri_upper(curc));
+		result = ri_lower(curc) || (rex.reg_ic && ri_upper(curc));
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NLOWER_IC:	/* [^a-z] */
 		result = curc != NUL
-			  && !(ri_lower(curc) || (ireg_ic && ri_upper(curc)));
+			&& !(ri_lower(curc) || (rex.reg_ic && ri_upper(curc)));
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_UPPER_IC:	/* [A-Z] */
-		result = ri_upper(curc) || (ireg_ic && ri_lower(curc));
+		result = ri_upper(curc) || (rex.reg_ic && ri_lower(curc));
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NUPPER_IC:	/* ^[A-Z] */
 		result = curc != NUL
-			  && !(ri_upper(curc) || (ireg_ic && ri_lower(curc)));
+			&& !(ri_upper(curc) || (rex.reg_ic && ri_lower(curc)));
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
@@ -6549,7 +6549,7 @@ nfa_regmatch(
 	    case NFA_LNUM_LT:
 		result = (REG_MULTI &&
 			nfa_re_num_cmp(t->state->val, t->state->c - NFA_LNUM,
-			    (long_u)(reglnum + reg_firstlnum)));
+			    (long_u)(reglnum + rex.reg_firstlnum)));
 		if (result)
 		{
 		    add_here = TRUE;
@@ -6575,7 +6575,7 @@ nfa_regmatch(
 		{
 		    int     op = t->state->c - NFA_VCOL;
 		    colnr_T col = (colnr_T)(reginput - regline);
-		    win_T   *wp = reg_win == NULL ? curwin : reg_win;
+		    win_T   *wp = rex.reg_win == NULL ? curwin : rex.reg_win;
 
 		    /* Bail out quickly when there can't be a match, avoid the
 		     * overhead of win_linetabsize() on long lines. */
@@ -6611,18 +6611,18 @@ nfa_regmatch(
 	    case NFA_MARK_GT:
 	    case NFA_MARK_LT:
 	      {
-		pos_T	*pos = getmark_buf(reg_buf, t->state->val, FALSE);
+		pos_T	*pos = getmark_buf(rex.reg_buf, t->state->val, FALSE);
 
 		/* Compare the mark position to the match position. */
 		result = (pos != NULL		     /* mark doesn't exist */
 			&& pos->lnum > 0    /* mark isn't set in reg_buf */
-			&& (pos->lnum == reglnum + reg_firstlnum
+			&& (pos->lnum == reglnum + rex.reg_firstlnum
 				? (pos->col == (colnr_T)(reginput - regline)
 				    ? t->state->c == NFA_MARK
 				    : (pos->col < (colnr_T)(reginput - regline)
 					? t->state->c == NFA_MARK_GT
 					: t->state->c == NFA_MARK_LT))
-				: (pos->lnum < reglnum + reg_firstlnum
+				: (pos->lnum < reglnum + rex.reg_firstlnum
 				    ? t->state->c == NFA_MARK_GT
 				    : t->state->c == NFA_MARK_LT)));
 		if (result)
@@ -6634,10 +6634,11 @@ nfa_regmatch(
 	      }
 
 	    case NFA_CURSOR:
-		result = (reg_win != NULL
-			&& (reglnum + reg_firstlnum == reg_win->w_cursor.lnum)
+		result = (rex.reg_win != NULL
+			&& (reglnum + rex.reg_firstlnum
+						 == rex.reg_win->w_cursor.lnum)
 			&& ((colnr_T)(reginput - regline)
-						   == reg_win->w_cursor.col));
+						== rex.reg_win->w_cursor.col));
 		if (result)
 		{
 		    add_here = TRUE;
@@ -6691,12 +6692,12 @@ nfa_regmatch(
 #endif
 		result = (c == curc);
 
-		if (!result && ireg_ic)
+		if (!result && rex.reg_ic)
 		    result = MB_TOLOWER(c) == MB_TOLOWER(curc);
 #ifdef FEAT_MBYTE
-		/* If ireg_icombine is not set only skip over the character
+		/* If rex.reg_icombine is not set only skip over the character
 		 * itself.  When it is set skip over composing characters. */
-		if (result && enc_utf8 && !ireg_icombine)
+		if (result && enc_utf8 && !rex.reg_icombine)
 		    clen = utf_ptr2len(reginput);
 #endif
 		ADD_STATE_IF_MATCH(t->state);
@@ -6815,8 +6816,8 @@ nfa_regmatch(
 		&& ((toplevel
 			&& reglnum == 0
 			&& clen != 0
-			&& (ireg_maxcol == 0
-			    || (colnr_T)(reginput - regline) < ireg_maxcol))
+			&& (rex.reg_maxcol == 0
+			    || (colnr_T)(reginput - regline) < rex.reg_maxcol))
 		    || (nfa_endp != NULL
 			&& (REG_MULTI
 			    ? (reglnum < nfa_endp->se_u.pos.lnum
@@ -6856,8 +6857,8 @@ nfa_regmatch(
 			/* Checking if the required start character matches is
 			 * cheaper than adding a state that won't match. */
 			c = PTR2CHAR(reginput + clen);
-			if (c != prog->regstart && (!ireg_ic || MB_TOLOWER(c)
-					       != MB_TOLOWER(prog->regstart)))
+			if (c != prog->regstart && (!rex.reg_ic
+			       || MB_TOLOWER(c) != MB_TOLOWER(prog->regstart)))
 			{
 #ifdef ENABLE_LOG
 			    fprintf(log_fd, "  Skipping start state, regstart does not match\n");
@@ -6997,40 +6998,40 @@ nfa_regtry(
     {
 	for (i = 0; i < subs.norm.in_use; i++)
 	{
-	    reg_startpos[i].lnum = subs.norm.list.multi[i].start_lnum;
-	    reg_startpos[i].col = subs.norm.list.multi[i].start_col;
+	    rex.reg_startpos[i].lnum = subs.norm.list.multi[i].start_lnum;
+	    rex.reg_startpos[i].col = subs.norm.list.multi[i].start_col;
 
-	    reg_endpos[i].lnum = subs.norm.list.multi[i].end_lnum;
-	    reg_endpos[i].col = subs.norm.list.multi[i].end_col;
+	    rex.reg_endpos[i].lnum = subs.norm.list.multi[i].end_lnum;
+	    rex.reg_endpos[i].col = subs.norm.list.multi[i].end_col;
 	}
 
-	if (reg_startpos[0].lnum < 0)
+	if (rex.reg_startpos[0].lnum < 0)
 	{
-	    reg_startpos[0].lnum = 0;
-	    reg_startpos[0].col = col;
+	    rex.reg_startpos[0].lnum = 0;
+	    rex.reg_startpos[0].col = col;
 	}
-	if (reg_endpos[0].lnum < 0)
+	if (rex.reg_endpos[0].lnum < 0)
 	{
 	    /* pattern has a \ze but it didn't match, use current end */
-	    reg_endpos[0].lnum = reglnum;
-	    reg_endpos[0].col = (int)(reginput - regline);
+	    rex.reg_endpos[0].lnum = reglnum;
+	    rex.reg_endpos[0].col = (int)(reginput - regline);
 	}
 	else
 	    /* Use line number of "\ze". */
-	    reglnum = reg_endpos[0].lnum;
+	    reglnum = rex.reg_endpos[0].lnum;
     }
     else
     {
 	for (i = 0; i < subs.norm.in_use; i++)
 	{
-	    reg_startp[i] = subs.norm.list.line[i].start;
-	    reg_endp[i] = subs.norm.list.line[i].end;
+	    rex.reg_startp[i] = subs.norm.list.line[i].start;
+	    rex.reg_endp[i] = subs.norm.list.line[i].end;
 	}
 
-	if (reg_startp[0] == NULL)
-	    reg_startp[0] = regline + col;
-	if (reg_endp[0] == NULL)
-	    reg_endp[0] = reginput;
+	if (rex.reg_startp[0] == NULL)
+	    rex.reg_startp[0] = regline + col;
+	if (rex.reg_endp[0] == NULL)
+	    rex.reg_endp[0] = reginput;
     }
 
 #ifdef FEAT_SYN_HL
@@ -7093,16 +7094,16 @@ nfa_regexec_both(
 
     if (REG_MULTI)
     {
-	prog = (nfa_regprog_T *)reg_mmatch->regprog;
+	prog = (nfa_regprog_T *)rex.reg_mmatch->regprog;
 	line = reg_getline((linenr_T)0);    /* relative to the cursor */
-	reg_startpos = reg_mmatch->startpos;
-	reg_endpos = reg_mmatch->endpos;
+	rex.reg_startpos = rex.reg_mmatch->startpos;
+	rex.reg_endpos = rex.reg_mmatch->endpos;
     }
     else
     {
-	prog = (nfa_regprog_T *)reg_match->regprog;
-	reg_startp = reg_match->startp;
-	reg_endp = reg_match->endp;
+	prog = (nfa_regprog_T *)rex.reg_match->regprog;
+	rex.reg_startp = rex.reg_match->startp;
+	rex.reg_endp = rex.reg_match->endp;
     }
 
     /* Be paranoid... */
@@ -7112,16 +7113,16 @@ nfa_regexec_both(
 	goto theend;
     }
 
-    /* If pattern contains "\c" or "\C": overrule value of ireg_ic */
+    /* If pattern contains "\c" or "\C": overrule value of rex.reg_ic */
     if (prog->regflags & RF_ICASE)
-	ireg_ic = TRUE;
+	rex.reg_ic = TRUE;
     else if (prog->regflags & RF_NOICASE)
-	ireg_ic = FALSE;
+	rex.reg_ic = FALSE;
 
 #ifdef FEAT_MBYTE
-    /* If pattern contains "\Z" overrule value of ireg_icombine */
+    /* If pattern contains "\Z" overrule value of rex.reg_icombine */
     if (prog->regflags & RF_ICOMBINE)
-	ireg_icombine = TRUE;
+	rex.reg_icombine = TRUE;
 #endif
 
     regline = line;
@@ -7160,14 +7161,14 @@ nfa_regexec_both(
 	 * Nothing else to try. Doesn't handle combining chars well. */
 	if (prog->match_text != NULL
 #ifdef FEAT_MBYTE
-		    && !ireg_icombine
+		    && !rex.reg_icombine
 #endif
 		)
 	    return find_match_text(col, prog->regstart, prog->match_text);
     }
 
     /* If the start column is past the maximum column: no need to try. */
-    if (ireg_maxcol > 0 && col >= ireg_maxcol)
+    if (rex.reg_maxcol > 0 && col >= rex.reg_maxcol)
 	goto theend;
 
     nstate = prog->nstate;
@@ -7326,17 +7327,17 @@ nfa_regexec_nl(
     colnr_T	col,	/* column to start looking for match */
     int		line_lbr)
 {
-    reg_match = rmp;
-    reg_mmatch = NULL;
-    reg_maxline = 0;
-    reg_line_lbr = line_lbr;
-    reg_buf = curbuf;
-    reg_win = NULL;
-    ireg_ic = rmp->rm_ic;
+    rex.reg_match = rmp;
+    rex.reg_mmatch = NULL;
+    rex.reg_maxline = 0;
+    rex.reg_line_lbr = line_lbr;
+    rex.reg_buf = curbuf;
+    rex.reg_win = NULL;
+    rex.reg_ic = rmp->rm_ic;
 #ifdef FEAT_MBYTE
-    ireg_icombine = FALSE;
+    rex.reg_icombine = FALSE;
 #endif
-    ireg_maxcol = 0;
+    rex.reg_maxcol = 0;
     return nfa_regexec_both(line, col, NULL);
 }
 
@@ -7375,18 +7376,18 @@ nfa_regexec_multi(
     colnr_T	col,		/* column to start looking for match */
     proftime_T	*tm)		/* timeout limit or NULL */
 {
-    reg_match = NULL;
-    reg_mmatch = rmp;
-    reg_buf = buf;
-    reg_win = win;
-    reg_firstlnum = lnum;
-    reg_maxline = reg_buf->b_ml.ml_line_count - lnum;
-    reg_line_lbr = FALSE;
-    ireg_ic = rmp->rmm_ic;
+    rex.reg_match = NULL;
+    rex.reg_mmatch = rmp;
+    rex.reg_buf = buf;
+    rex.reg_win = win;
+    rex.reg_firstlnum = lnum;
+    rex.reg_maxline = rex.reg_buf->b_ml.ml_line_count - lnum;
+    rex.reg_line_lbr = FALSE;
+    rex.reg_ic = rmp->rmm_ic;
 #ifdef FEAT_MBYTE
-    ireg_icombine = FALSE;
+    rex.reg_icombine = FALSE;
 #endif
-    ireg_maxcol = rmp->rmm_maxcol;
+    rex.reg_maxcol = rmp->rmm_maxcol;
 
     return nfa_regexec_both(NULL, col, tm);
 }
