@@ -1484,6 +1484,27 @@ func Test_raw_passes_nul()
   bwipe!
 endfunc
 
+func MyLineCountCb(ch, msg)
+  let g:linecount += 1
+endfunc
+
+func Test_read_nonl_line()
+  if !has('job')
+    return
+  endif
+
+  let g:linecount = 0
+  if has('win32')
+    " workaround: 'shellescape' does improper escaping double quotes
+    let arg = 'import sys;sys.stdout.write(\"1\n2\n3\")'
+  else
+    let arg = 'import sys;sys.stdout.write("1\n2\n3")'
+  endif
+  call job_start([s:python, '-c', arg], {'callback': 'MyLineCountCb'})
+  call WaitFor('3 <= g:linecount')
+  call assert_equal(3, g:linecount)
+endfunc
+
 function Ch_test_close_lambda(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
