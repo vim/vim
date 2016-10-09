@@ -1010,39 +1010,42 @@ restofline:
 	}
 	else if (vim_strchr((char_u *)"CZ", idx) != NULL)
 	{				/* continuation of multi-line msg */
-	    qfline_T *qfprev = qi->qf_lists[qi->qf_curlist].qf_last;
-
-	    if (qfprev == NULL)
-		return QF_FAIL;
-	    if (*fields->errmsg && !qi->qf_multiignore)
+	    if (!qi->qf_multiignore)
 	    {
-		len = (int)STRLEN(qfprev->qf_text);
-		if ((ptr = alloc((unsigned)(len + STRLEN(fields->errmsg) + 2)))
-			== NULL)
-		    return QF_FAIL;
-		STRCPY(ptr, qfprev->qf_text);
-		vim_free(qfprev->qf_text);
-		qfprev->qf_text = ptr;
-		*(ptr += len) = '\n';
-		STRCPY(++ptr, fields->errmsg);
-	    }
-	    if (qfprev->qf_nr == -1)
-		qfprev->qf_nr = fields->enr;
-	    if (vim_isprintc(fields->type) && !qfprev->qf_type)
-		/* only printable chars allowed */
-		qfprev->qf_type = fields->type;
+		qfline_T *qfprev = qi->qf_lists[qi->qf_curlist].qf_last;
 
-	    if (!qfprev->qf_lnum)
-		qfprev->qf_lnum = fields->lnum;
-	    if (!qfprev->qf_col)
-		qfprev->qf_col = fields->col;
-	    qfprev->qf_viscol = fields->use_viscol;
-	    if (!qfprev->qf_fnum)
-		qfprev->qf_fnum = qf_get_fnum(qi, qi->qf_directory,
-			*fields->namebuf || qi->qf_directory != NULL
-			? fields->namebuf
-			: qi->qf_currfile != NULL && fields->valid
-			? qi->qf_currfile : 0);
+		if (qfprev == NULL)
+		    return QF_FAIL;
+		if (*fields->errmsg && !qi->qf_multiignore)
+		{
+		    len = (int)STRLEN(qfprev->qf_text);
+		    if ((ptr = alloc((unsigned)(len + STRLEN(fields->errmsg) + 2)))
+			    == NULL)
+			return QF_FAIL;
+		    STRCPY(ptr, qfprev->qf_text);
+		    vim_free(qfprev->qf_text);
+		    qfprev->qf_text = ptr;
+		    *(ptr += len) = '\n';
+		    STRCPY(++ptr, fields->errmsg);
+		}
+		if (qfprev->qf_nr == -1)
+		    qfprev->qf_nr = fields->enr;
+		if (vim_isprintc(fields->type) && !qfprev->qf_type)
+		    /* only printable chars allowed */
+		    qfprev->qf_type = fields->type;
+
+		if (!qfprev->qf_lnum)
+		    qfprev->qf_lnum = fields->lnum;
+		if (!qfprev->qf_col)
+		    qfprev->qf_col = fields->col;
+		qfprev->qf_viscol = fields->use_viscol;
+		if (!qfprev->qf_fnum)
+		    qfprev->qf_fnum = qf_get_fnum(qi, qi->qf_directory,
+			    *fields->namebuf || qi->qf_directory != NULL
+			    ? fields->namebuf
+			    : qi->qf_currfile != NULL && fields->valid
+			    ? qi->qf_currfile : 0);
+	    }
 	    if (idx == 'Z')
 		qi->qf_multiline = qi->qf_multiignore = FALSE;
 	    line_breakcheck();
