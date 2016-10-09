@@ -3061,7 +3061,7 @@ channel_close_on_error(channel_T *channel, char *func)
      * Only send "DETACH" for a netbeans channel.
      */
     if (channel->ch_nb_close_cb != NULL)
-	channel_save(channel, PART_OUT, (char_u *)DETACH_MSG_RAW,
+	channel_save(channel, PART_SOCK, (char_u *)DETACH_MSG_RAW,
 			      (int)STRLEN(DETACH_MSG_RAW), FALSE, "PUT ");
 
     /* When reading from stdout is not possible, assume the other side has

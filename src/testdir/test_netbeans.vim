@@ -35,6 +35,7 @@ func Nb_basic(port)
   nbclose
 
   call WaitFor('len(readfile("Xnetbeans")) > 6')
+  call assert_false(has("netbeans_enabled"))
   let lines = readfile("Xnetbeans")
   call assert_equal('AUTH bunny', lines[0])
   call assert_equal('0:version=0 "2.5"', lines[1])
