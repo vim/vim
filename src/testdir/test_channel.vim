@@ -1505,6 +1505,23 @@ func Test_read_nonl_line()
   call assert_equal(3, g:linecount)
 endfunc
 
+func Test_read_from_terminated_job()
+  if !has('job')
+    return
+  endif
+
+  let g:linecount = 0
+  if has('win32')
+    " workaround: 'shellescape' does improper escaping double quotes 
+    let arg = 'import os,sys;os.close(1);sys.stderr.write(\"test\n\")'
+  else
+    let arg = 'import os,sys;os.close(1);sys.stderr.write("test\n")'
+  endif
+  call job_start([s:python, '-c', arg], {'callback': 'MyLineCountCb'})
+  call WaitFor('1 <= g:linecount')
+  call assert_equal(1, g:linecount)
+endfunc
+
 function Ch_test_close_lambda(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
