@@ -28,13 +28,7 @@
 "		  or february
 "	GetLatestVimScripts: 1290 1 :AutoInstall: LogiPat.vim
 "
-"  Behold, you will conceive in your womb, and bring forth a son, {{{1
-"  and will call his name Jesus. He will be great, and will be
-"  called the Son of the Most High. The Lord God will give him the
-"  throne of his father, David, and he will reign over the house of
-"  Jacob forever. There will be no end to his kingdom. (Luke 1:31-33 WEB)
-
-" ---------------------------------------------------------------------
+ ---------------------------------------------------------------------
 " Load Once: {{{1
 if &cp || exists("loaded_logiPat")
  finish
