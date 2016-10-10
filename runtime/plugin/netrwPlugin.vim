@@ -13,7 +13,6 @@
 "               in no event will the copyright holder be liable for any damages
 "               resulting from the use of this software.
 "
-"  (James 1:22 RSV)
 " =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 " Load Once: {{{1
 if &cp || exists("g:loaded_netrwPlugin")
