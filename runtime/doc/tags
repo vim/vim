@@ -6027,6 +6027,7 @@ ft-csh-syntax	syntax.txt	/*ft-csh-syntax*
 ft-css-omni	insert.txt	/*ft-css-omni*
 ft-cweb-syntax	syntax.txt	/*ft-cweb-syntax*
 ft-cynlib-syntax	syntax.txt	/*ft-cynlib-syntax*
+ft-dash-syntax	syntax.txt	/*ft-dash-syntax*
 ft-desktop-syntax	syntax.txt	/*ft-desktop-syntax*
 ft-dircolors-syntax	syntax.txt	/*ft-dircolors-syntax*
 ft-docbk-syntax	syntax.txt	/*ft-docbk-syntax*
@@ -6087,6 +6088,7 @@ ft-php-syntax	syntax.txt	/*ft-php-syntax*
 ft-php3-syntax	syntax.txt	/*ft-php3-syntax*
 ft-phtml-syntax	syntax.txt	/*ft-phtml-syntax*
 ft-plaintex-syntax	syntax.txt	/*ft-plaintex-syntax*
+ft-posix-synax	syntax.txt	/*ft-posix-synax*
 ft-postscr-syntax	syntax.txt	/*ft-postscr-syntax*
 ft-ppwiz-syntax	syntax.txt	/*ft-ppwiz-syntax*
 ft-printcap-syntax	syntax.txt	/*ft-printcap-syntax*
@@ -6340,8 +6342,6 @@ g:netrw_win95ftp	pi_netrw.txt	/*g:netrw_win95ftp*
 g:netrw_winsize	pi_netrw.txt	/*g:netrw_winsize*
 g:netrw_wiw	pi_netrw.txt	/*g:netrw_wiw*
 g:netrw_xstrlen	pi_netrw.txt	/*g:netrw_xstrlen*
-g:sh_isk	syntax.txt	/*g:sh_isk*
-g:sh_noisk	syntax.txt	/*g:sh_noisk*
 g:syntax_on	syntax.txt	/*g:syntax_on*
 g:tar_browseoptions	pi_tar.txt	/*g:tar_browseoptions*
 g:tar_cmd	pi_tar.txt	/*g:tar_cmd*

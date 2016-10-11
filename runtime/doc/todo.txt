@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Oct 01
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Oct 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -62,9 +62,6 @@ Regexp problems:
   (Manuel Ortega, 2016 Apr 24)
   Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
   LC_CTYPE
-- The regexp engines are not reentrant, causing havoc when interrupted by a
-  remote expression or something else.  Move global variables onto the stack
-  or into an allocated struct.
 - The old engine does not find a match for "/\%#=1\(\)\{80}", the new engine
   matches everywhere.
 - Using win_linetabsize() can still be slow. Cache the result, store col and
@@ -80,6 +77,7 @@ Regexp problems:
 - NFA regexp doesn't handle \%<v correctly. (Ingo Karkat, 2014 May 12)
 - Does not work with NFA regexp engine:
   \%u, \%x, \%o, \%d followed by a composing character
+- Search for \%d0\+ may fail with E363. (Christian Brabandt, 2016 Oct 4)
 - \%'[ does not work.  '%'] does work.  (Masaaki Nakamura, 2016 Apr 4)
 - Bug relating to back references. (Ingo Karkat, 2014 Jul 24)
 - New RE does not give an error for empty group: "\(\)\{2}" (Dominique Pelle,
@@ -112,6 +110,8 @@ Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 
 Patch to recognize tmux. (Michael Henry, 2016 Sep 29)
 
+Patch to fix escaping of job arguments. (Yasuhiro Matsumoto, 2016 Oct 5)
+
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
@@ -140,9 +140,14 @@ Patch to make it possible to extend a list with itself.
 min() and max() spawn lots of error messages if sorted list/dictionary
 contains invalid data (Nikolay Pavlov, 2016 Sep 4, #1039)
 
+Should :vmap in matchit.vim be :xmap?  (Tony Mechelynck)
+
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 
 Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
+
+Add "unicode true" to NSIS installer.  Doesn't work with Windows 95, which we
+no longer support.
 
 sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 4#1038)
@@ -150,13 +155,18 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 Patch to add "cmdline" completion to getcompletion(). (Shougo, Oct 1, #1140)
 
 Patch for systemlist(), add empty item. (thinca, Sep 30, #1135)
-Adjust the documentation instead?  Do include the test.
+Add an argument to choose binary or non-binary (like readfile()), when omitted
+use the current behavior.
+Include the test.
 
 Idea from Sven: record sequence of keys.  Useful to show others what they are
 doing (look over the shoulder), and also to see what happened.
 Probably list of keystrokes, with some annotations for mode changes.
 Could store in logfile to be able to analyise it with an external command.
 E.g. to see when's the last time a plugin command was used.
+
+execute() cannot be used with command completeion. (Daniel Hahler, 2016 Oct 1,
+#1141)
 
 cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
 
@@ -181,6 +191,9 @@ Cannot delete a file with square brackets with delete(). (#696)
 
 Completion for input() does not expand environment variables. (chdiza, 2016
 Jul 25, #948)
+
+Patch to fix wrong encoding of error message on Cygwin/MSYS terminal.
+(Ken Takata, 2016 Oct 4)
 
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
 
@@ -227,9 +240,6 @@ We can use '. to go to the last change in the current buffer, but how about
 the last change in any buffer?  Can we use ', (, is next to .)?
 
 Ramel Eshed: system() is much slower than job_start(), why? (Aug 26)
-
-Patch to make gd and gD work better for non-K&R code and with comments.
-(Anton Lindqvist, 2016 Aug 29)
 
 When generating the Unicode tables with runtime/tools/unicode.vim the
 emoji_width table has only one entry.

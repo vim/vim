@@ -2,7 +2,7 @@
 " Language:	python
 " Maintainer:	James Sully <sullyj3@gmail.com>
 " Previous Maintainer: Johannes Zellner <johannes@zellner.org>
-" Last Change:	Tue, 06 September 2016
+" Last Change:	Tue, 09 October 2016
 " https://github.com/sullyj3/vim-ftplugin-python
 
 if exists("b:did_ftplugin") | finish | endif
@@ -22,10 +22,10 @@ setlocal omnifunc=pythoncomplete#Complete
 
 set wildignore+=*.pyc
 
-let b:next_toplevel='\v%$\|^(class\|def)>'
-let b:prev_toplevel='\v^(class\|def)>'
-let b:next='\v%$\|^\s*(class\|def)>'
-let b:prev='\v^\s*(class\|def)>'
+let b:next_toplevel='\v%$\|^(class\|def\|async def)>'
+let b:prev_toplevel='\v^(class\|def\|async def)>'
+let b:next='\v%$\|^\s*(class\|def\|async def)>'
+let b:prev='\v^\s*(class\|def\|async def)>'
 
 execute "nnoremap <silent> <buffer> ]] :call <SID>Python_jump('n', '". b:next_toplevel."', 'W')<cr>"
 execute "nnoremap <silent> <buffer> [[ :call <SID>Python_jump('n', '". b:prev_toplevel."', 'Wb')<cr>"
