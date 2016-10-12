@@ -6556,7 +6556,7 @@ gui-w32-printing	gui_w32.txt	/*gui-w32-printing*
 gui-w32-start	gui_w32.txt	/*gui-w32-start*
 gui-w32-various	gui_w32.txt	/*gui-w32-various*
 gui-w32-windowid	gui_w32.txt	/*gui-w32-windowid*
-gui-w32s	gui_w32.txt	/*gui-w32s*
+gui-w32s	os_win32.txt	/*gui-w32s*
 gui-win32-maximized	gui_w32.txt	/*gui-win32-maximized*
 gui-x11	gui_x11.txt	/*gui-x11*
 gui-x11-athena	gui_x11.txt	/*gui-x11-athena*
@@ -7262,7 +7262,6 @@ mouse_winid-variable	eval.txt	/*mouse_winid-variable*
 movement	intro.txt	/*movement*
 ms-dos	os_msdos.txt	/*ms-dos*
 msdos	os_msdos.txt	/*msdos*
-msdos-mode	gui_w32.txt	/*msdos-mode*
 msql.vim	syntax.txt	/*msql.vim*
 mswin.vim	gui_w32.txt	/*mswin.vim*
 multi-byte	mbyte.txt	/*multi-byte*
@@ -9232,6 +9231,7 @@ win32-startup	os_win32.txt	/*win32-startup*
 win32-term	os_win32.txt	/*win32-term*
 win32-vimrun	gui_w32.txt	/*win32-vimrun*
 win32-win3.1	os_win32.txt	/*win32-win3.1*
+win32-win95	os_win32.txt	/*win32-win95*
 win32s	os_win32.txt	/*win32s*
 win_findbuf()	eval.txt	/*win_findbuf()*
 win_getid()	eval.txt	/*win_getid()*
@@ -9261,6 +9261,8 @@ windows-intro	windows.txt	/*windows-intro*
 windows-starting	windows.txt	/*windows-starting*
 windows.txt	windows.txt	/*windows.txt*
 windows95	os_win32.txt	/*windows95*
+windows98	os_win32.txt	/*windows98*
+windowsme	os_win32.txt	/*windowsme*
 winheight()	eval.txt	/*winheight()*
 winid	windows.txt	/*winid*
 winline()	eval.txt	/*winline()*

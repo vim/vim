@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2016 Oct 01
+*options.txt*	For Vim version 8.0.  Last change: 2016 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7966,8 +7966,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"xterm", "xterm2", "urxvt" or "sgr" (because dec mouse codes conflict
 	with them).
 	This option is automatically set to "xterm", when the 'term' option is
-	set to a name that starts with "xterm", "mlterm", "screen", "st" (full
-	match only), "st-" or "stterm", and 'ttymouse' is not set already.
+	set to a name that starts with "xterm", "mlterm", "screen", "tmux",
+	"st" (full match only), "st-" or "stterm", and 'ttymouse' is not set
+	already.
 	Additionally, if vim is compiled with the |+termresponse| feature and
 	|t_RV| is set to the escape sequence to request the xterm version
 	number, more intelligent detection process runs.

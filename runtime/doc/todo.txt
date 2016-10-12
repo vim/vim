@@ -38,6 +38,7 @@ not be repeated below, unless there is extra information.
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
+  Part of patch for environment, Yasuhiro Matsumoto, #1160
 - Implement |job-term| ?
 - Channel test fails with Motif.  Sometimes kills the X11 server.
 - When a message in the queue but there is no callback, drop it after a while?
@@ -104,19 +105,12 @@ Or avoid recursiveness.
 
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 
-Patch to recognize tmux. (Michael Henry, 2016 Sep 29)
-
 Patch to fix escaping of job arguments. (Yasuhiro Matsumoto, 2016 Oct 5)
+Still not right.
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
-
-Javascript indent wrong after /* in single quoted string:
-    var SRC = 'src/*.js';
-    function log(tag) {
-	a = b;
-    }
 
 Problem passing non-UTF-8 strings to Python 3. (Björn Linse, 2016 Sep 11,
 #1053)  With patch, does it work?
