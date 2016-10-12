@@ -1093,11 +1093,11 @@ static long	last_timer_id = 0;
 # ifdef WIN3264
 #  define GET_TIMEDIFF(timer, now) \
 	(long)(((double)(timer->tr_due.QuadPart - now.QuadPart) \
-					   / (double)fr.QuadPart) * 1000);
+					   / (double)fr.QuadPart) * 1000)
 # else
 #  define GET_TIMEDIFF(timer, now) \
 	(timer->tr_due.tv_sec - now.tv_sec) * 1000 \
-			   + (timer->tr_due.tv_usec - now.tv_usec) / 1000;
+			   + (timer->tr_due.tv_usec - now.tv_usec) / 1000
 # endif
 
 /*
