@@ -483,6 +483,8 @@ struct vimoption
  * Exception: "t_" options are at the end.
  * The options with a NULL variable are 'hidden': a set command for them is
  * ignored and they are not printed.
+ * Please keep the table for 'compatible' in runtime/doc/options.txt updated
+ * when making changes here.
  */
 static struct vimoption options[] =
 {
