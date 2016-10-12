@@ -24,7 +24,7 @@ STARTTEST
 :hi Crash term='asdf
 :redir END
 :" filter ctermfg and ctermbg, the numbers depend on the terminal
-:e test.out
+:e! test.out
 :%s/ctermfg=\d*/ctermfg=2/
 :%s/ctermbg=\d*/ctermbg=3/
 :" filter out possibly translated error message

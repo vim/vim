@@ -24,7 +24,7 @@ STARTTEST
 :call add(results, "#BufEnter#<buffer>: " . exists("#BufEnter#<buffer>"))
 :edit testfile2.test
 :call add(results, "#BufEnter#<buffer>: " . exists("#BufEnter#<buffer>"))
-:e test.out
+:e! test.out
 :call append(0, results)
 :$d
 :w

@@ -7,7 +7,7 @@ STARTTEST
 :set shell=doesnotexist
 :" consistent sorting of file names
 :set nofileignorecase
-:e test.out
+:e! test.out
 :$put =glob('Xxx\{')
 :$put =glob('Xxx\$')
 :w! Xxx{
