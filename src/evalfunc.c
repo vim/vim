@@ -6017,7 +6017,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #if defined(WIN3264)
 	else if (STRICMP(name, "win95") == 0)
-	    n = mch_windows95();
+	    n = FALSE;		/* Win9x is no more supported. */
 #endif
 #ifdef FEAT_NETBEANS_INTG
 	else if (STRICMP(name, "netbeans_enabled") == 0)

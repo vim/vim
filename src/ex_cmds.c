@@ -1175,14 +1175,6 @@ do_filter(
     if (*cmd == NUL)	    /* no filter command */
 	return;
 
-#ifdef WIN3264
-    /*
-     * Check if external commands are allowed now.
-     */
-    if (can_end_termcap_mode(TRUE) == FALSE)
-	return;
-#endif
-
     cursor_save = curwin->w_cursor;
     linecount = line2 - line1 + 1;
     curwin->w_cursor.lnum = line1;
@@ -1459,12 +1451,6 @@ do_shell(
     }
 
 #ifdef MSWIN
-    /*
-     * Check if external commands are allowed now.
-     */
-    if (can_end_termcap_mode(TRUE) == FALSE)
-	return;
-
     /*
      * Check if ":!start" is used.
      */

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Oct 09
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Oct 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,10 +33,6 @@ not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-After 8.0 is released:
-- Drop support for older MS-Windows systems, before XP.
-  Patch from Ken Takata, updated 2016 Sep 12.
 
 +channel:
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
@@ -1809,10 +1805,6 @@ popup menu over it, first draw the new popup menu, remember its position and
 size and then redraw the text, skipping the characters under the popup menu.
 This should avoid flicker.  Other solution by A.Politz, 2007 Aug 22.
 
-Windows 98: pasting from the clipboard with text from another application has
-a trailing NUL.  (Joachim Hofmann)  Perhaps the length specified for CF_TEXT
-isn't right?
-
 When a register contains illegal bytes, writing viminfo in utf-8 and reading
 it back doesn't result in utf-8. (Devin Bayer)
 
@@ -2418,8 +2410,6 @@ GTK+ GUI known bugs:
 Win32 GUI known bugs:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
     the screen.
-8   On Windows 98 the unicows library is needed to support functions with UCS2
-    file names.  Can we load unicows.dll dynamically?
 8   The -P argument doesn't work very well with many MDI applications.
     The last argument of CreateWindowEx() should be used, see MSDN docs.
     Tutorial: http://win32assembly.online.fr/tut32.html

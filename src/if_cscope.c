@@ -839,14 +839,10 @@ cs_create_connection(int i)
     HANDLE	stdin_rd, stdout_rd;
     HANDLE	stdout_wr, stdin_wr;
     BOOL	created;
-# ifdef __BORLANDC__
-#  define OPEN_OH_ARGTYPE long
+# if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+#  define OPEN_OH_ARGTYPE intptr_t
 # else
-#  if (_MSC_VER >= 1300) || defined(__MINGW32__)
-#   define OPEN_OH_ARGTYPE intptr_t
-#  else
-#   define OPEN_OH_ARGTYPE long
-#  endif
+#  define OPEN_OH_ARGTYPE long
 # endif
 #endif
 
@@ -1427,11 +1423,8 @@ cs_insert_filelist(
 #ifndef UNIX
     BY_HANDLE_FILE_INFORMATION bhfi;
 
-    /* On windows 9x GetFileInformationByHandle doesn't work, so skip it */
-    if (!mch_windows95())
+    switch (win32_fileinfo((char_u *)fname, &bhfi))
     {
-	switch (win32_fileinfo((char_u *)fname, &bhfi))
-	{
 	case FILEINFO_ENC_FAIL:		/* enc_to_utf16() failed */
 	case FILEINFO_READ_FAIL:	/* CreateFile() failed */
 	    if (p_csverbose)
@@ -1454,7 +1447,6 @@ cs_insert_filelist(
 	    if (p_csverbose)
 		(void)EMSG(_("E626: cannot get cscope database information"));
 	    return -1;
-	}
     }
 #endif
 
@@ -1468,9 +1460,8 @@ cs_insert_filelist(
 	    /* compare pathnames first */
 	    && ((fullpathcmp((char_u *)csinfo[j].fname,
 			(char_u *)fname, FALSE) & FPC_SAME)
-		/* if not Windows 9x, test index file attributes too */
-		|| (!mch_windows95()
-		    && csinfo[j].nVolume == bhfi.dwVolumeSerialNumber
+		/* test index file attributes too */
+		|| (csinfo[j].nVolume == bhfi.dwVolumeSerialNumber
 		    && csinfo[j].nIndexHigh == bhfi.nFileIndexHigh
 		    && csinfo[j].nIndexLow == bhfi.nFileIndexLow))
 #endif

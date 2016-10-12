@@ -3,7 +3,6 @@ HINSTANCE vimLoadLib(char *name);
 int dyn_libintl_init(void);
 void dyn_libintl_end(void);
 void PlatformId(void);
-int mch_windows95(void);
 void mch_setmouse(int on);
 void mch_update_cursor(void);
 int mch_char_avail(void);

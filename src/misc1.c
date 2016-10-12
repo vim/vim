@@ -9450,10 +9450,7 @@ prepare_to_exit(void)
 	 * screen (if there are two screens).
 	 */
 	settmode(TMODE_COOK);
-#ifdef WIN3264
-	if (can_end_termcap_mode(FALSE) == TRUE)
-#endif
-	    stoptermcap();
+	stoptermcap();
 	out_flush();
     }
 }

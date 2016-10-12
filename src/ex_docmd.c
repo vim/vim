@@ -7611,14 +7611,7 @@ ex_stop(exarg_T *eap)
     /*
      * Disallow suspending for "rvim".
      */
-    if (!check_restricted()
-#ifdef WIN3264
-	/*
-	 * Check if external commands are allowed now.
-	 */
-	&& can_end_termcap_mode(TRUE)
-#endif
-					)
+    if (!check_restricted())
     {
 	if (!eap->forceit)
 	    autowrite_all();

@@ -22,7 +22,7 @@
  * - If it's a list of flags, add some code in do_set(), search for WW_ALL.
  * - When adding an option with expansion (P_EXPAND), but with a different
  *   default for Vi and Vim (no P_VI_DEF), add some code at VIMEXP.
- * - Add documentation!  One line in doc/help.txt, full description in
+ * - Add documentation!  One line in doc/quickref.txt, full description in
  *   options.txt, and any other related places.
  * - Add an entry in runtime/optwin.vim.
  * When making changes:
@@ -9944,13 +9944,7 @@ clear_termoptions(void)
     if (gui.starting)
 	clear_xterm_clip();
 #endif
-#ifdef WIN3264
-    /*
-     * Check if this is allowed now.
-     */
-    if (can_end_termcap_mode(FALSE) == TRUE)
-#endif
-	stoptermcap();			/* stop termcap mode */
+    stoptermcap();			/* stop termcap mode */
 
     free_termoptions();
 }

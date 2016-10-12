@@ -3,7 +3,7 @@
 #   DEBUG=yes		Build debug version (for VC7 and maybe later)
 #
 
-TARGETOS=BOTH
+TARGETOS=WINNT
 !ifndef APPVER
 APPVER=5.0
 !endif

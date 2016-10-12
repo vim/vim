@@ -19,7 +19,6 @@ void display_errors(void);
 int mch_has_exp_wildcard(char_u *p);
 int mch_has_wildcard(char_u *p);
 int mch_chdir(char *path);
-int can_end_termcap_mode(int give_msg);
 int mch_screenmode(char_u *arg);
 int mch_icon_load(HANDLE *iconp);
 int mch_libcall(char_u *libname, char_u *funcname, char_u *argstring, int argint, char_u **string_result, int *number_result);

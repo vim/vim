@@ -38,11 +38,7 @@
 
 # if defined(FEAT_PRINTER) && !defined(FEAT_POSTSCRIPT)
 #  include <dlgs.h>
-#  ifdef WIN3264
-#   include <winspool.h>
-#  else
-#   include <print.h>
-#  endif
+#  include <winspool.h>
 #  include <commdlg.h>
 #endif
 
@@ -128,10 +124,6 @@ typedef void VOID;
 
 #ifdef MCH_WRITE_DUMP
 FILE* fdDump = NULL;
-#endif
-
-#ifdef WIN3264
-extern DWORD g_PlatformId;
 #endif
 
 #ifndef FEAT_GUI_MSWIN
@@ -248,20 +240,13 @@ mch_early_init(void)
 {
     int		i;
 
-#ifdef WIN3264
     PlatformId();
-#endif
 
     /* Init the tables for toupper() and tolower() */
     for (i = 0; i < 256; ++i)
 	toupper_tab[i] = tolower_tab[i] = i;
-#ifdef WIN3264
     CharUpperBuff((LPSTR)toupper_tab, 256);
     CharLowerBuff((LPSTR)tolower_tab, 256);
-#else
-    AnsiUpperBuff((LPSTR)toupper_tab, 256);
-    AnsiLowerBuff((LPSTR)tolower_tab, 256);
-#endif
 }
 
 
@@ -299,14 +284,12 @@ mch_settitle(
 	{
 	    /* Convert the title from 'encoding' to the active codepage. */
 	    WCHAR	*wp = enc_to_utf16(title, NULL);
-	    int	n;
 
 	    if (wp != NULL)
 	    {
-		n = SetConsoleTitleW(wp);
+		SetConsoleTitleW(wp);
 		vim_free(wp);
-		if (n != 0 || GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
-		    return;
+		return;
 	    }
 	}
 #  endif
@@ -379,12 +362,7 @@ mch_FullName(
 #endif
     {
 #ifdef FEAT_MBYTE
-	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage
-# ifdef __BORLANDC__
-		/* Wide functions of Borland C 5.5 do not work on Windows 98. */
-		&& g_PlatformId == VER_PLATFORM_WIN32_NT
-# endif
-	   )
+	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
 	{
 	    WCHAR	*wname;
 	    WCHAR	wbuf[MAX_PATH];
@@ -641,12 +619,7 @@ vim_stat(const char *name, stat_T *stp)
 	}
     }
 #ifdef FEAT_MBYTE
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage
-# ifdef __BORLANDC__
-	    /* Wide functions of Borland C 5.5 do not work on Windows 98. */
-	    && g_PlatformId == VER_PLATFORM_WIN32_NT
-# endif
-       )
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	WCHAR	*wp = enc_to_utf16(buf, NULL);
 	int	n;
@@ -655,11 +628,7 @@ vim_stat(const char *name, stat_T *stp)
 	{
 	    n = wstat_symlink_aware(wp, stp);
 	    vim_free(wp);
-	    if (n >= 0 || g_PlatformId == VER_PLATFORM_WIN32_NT)
-		return n;
-	    /* Retry with non-wide function (for Windows 98). Can't use
-	     * GetLastError() here and it's unclear what errno gets set to if
-	     * the _wstat() fails for missing wide functions. */
+	    return n;
 	}
     }
 #endif
@@ -823,9 +792,7 @@ mch_chdir(char *path)
 	{
 	    n = _wchdir(p);
 	    vim_free(p);
-	    if (n == 0 || g_PlatformId == VER_PLATFORM_WIN32_NT)
-		return n;
-	    /* Retry with non-wide function (for Windows 98). */
+	    return n;
 	}
     }
 #endif
@@ -833,27 +800,6 @@ mch_chdir(char *path)
     return chdir(path);	       /* let the normal chdir() do the rest */
 }
 
-
-/*
- * Switching off termcap mode is only allowed when Columns is 80, otherwise a
- * crash may result.  It's always allowed on NT or when running the GUI.
- */
-/*ARGSUSED*/
-    int
-can_end_termcap_mode(
-    int give_msg)
-{
-#ifdef FEAT_GUI_MSWIN
-    return TRUE;	/* GUI starts a new console anyway */
-#else
-    if (g_PlatformId == VER_PLATFORM_WIN32_NT || Columns == 80)
-	return TRUE;
-    if (give_msg)
-	msg((char_u *)
-		_("'columns' is not 80, cannot execute external commands"));
-    return FALSE;
-#endif
-}
 
 #ifdef FEAT_GUI_MSWIN
 /*
@@ -887,17 +833,10 @@ mch_screenmode(
  * and returns an allocated string.
  * Return OK if it worked, FAIL if not.
  */
-# ifdef WIN3264
 typedef LPTSTR (*MYSTRPROCSTR)(LPTSTR);
 typedef LPTSTR (*MYINTPROCSTR)(int);
 typedef int (*MYSTRPROCINT)(LPTSTR);
 typedef int (*MYINTPROCINT)(int);
-# else
-typedef LPSTR (*MYSTRPROCSTR)(LPSTR);
-typedef LPSTR (*MYINTPROCSTR)(int);
-typedef int (*MYSTRPROCINT)(LPSTR);
-typedef int (*MYINTPROCINT)(int);
-# endif
 
 /*
  * Check if a pointer points to a valid NUL terminated string.
@@ -1093,7 +1032,7 @@ Trace(
 #endif //_DEBUG
 
 #if !defined(FEAT_GUI) || defined(PROTO)
-# if defined(FEAT_TITLE) && defined(WIN3264)
+# ifdef FEAT_TITLE
 extern HWND g_hWnd;	/* This is in os_win32.c. */
 # endif
 
@@ -1114,7 +1053,7 @@ GetConsoleHwnd(void)
     if (s_hwnd != 0)
 	return;
 
-# if defined(FEAT_TITLE) && defined(WIN3264)
+# ifdef FEAT_TITLE
     /* Window handle may have been found by init code (Windows NT only) */
     if (g_hWnd != 0)
     {
@@ -1539,7 +1478,6 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	    )
     {
 	prt_dlg.Flags |= PD_RETURNDEFAULT;
-#ifdef WIN3264
 	/*
 	 * MSDN suggests setting the first parameter to WINSPOOL for
 	 * NT, but NULL appears to work just as well.
@@ -1547,7 +1485,6 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	if (*p_pdev != NUL)
 	    prt_dlg.hDC = CreateDC(NULL, (LPCSTR)p_pdev, NULL, NULL);
 	else
-#endif
 	{
 	    prt_dlg.Flags |= PD_RETURNDEFAULT;
 	    if (PrintDlg(&prt_dlg) == 0)
@@ -1593,10 +1530,8 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     mem = (DEVMODE *)GlobalLock(prt_dlg.hDevMode);
     if (mem != NULL)
     {
-#ifdef WIN3264
 	if (mem->dmCopies != 1)
 	    stored_nCopies = mem->dmCopies;
-#endif
 	if ((mem->dmFields & DM_DUPLEX) && (mem->dmDuplex & ~DMDUP_SIMPLEX))
 	    psettings->duplex = TRUE;
 	if ((mem->dmFields & DM_COLOR) && (mem->dmColor & DMCOLOR_COLOR))
@@ -1953,7 +1888,7 @@ shortcut_errorw:
 		goto shortcut_end;
 	    }
 	}
-	/* Retry with non-wide function (for Windows 98). */
+	goto shortcut_end;
     }
 # endif
     // create a link manager object and request its interface
@@ -2681,7 +2616,6 @@ charset_pairs[] =
     {"OEM",		OEM_CHARSET},
     {"SHIFTJIS",	SHIFTJIS_CHARSET},
     {"SYMBOL",		SYMBOL_CHARSET},
-#ifdef WIN3264
     {"ARABIC",		ARABIC_CHARSET},
     {"BALTIC",		BALTIC_CHARSET},
     {"EASTEUROPE",	EASTEUROPE_CHARSET},
@@ -2693,10 +2627,8 @@ charset_pairs[] =
     {"RUSSIAN",		RUSSIAN_CHARSET},
     {"THAI",		THAI_CHARSET},
     {"TURKISH",		TURKISH_CHARSET},
-# if (!defined(_MSC_VER) || (_MSC_VER > 1010)) \
-	&& (!defined(__BORLANDC__) || (__BORLANDC__ > 0x0500))
+#ifdef VIETNAMESE_CHARSET
     {"VIETNAMESE",	VIETNAMESE_CHARSET},
-# endif
 #endif
     {NULL,		0}
 };
