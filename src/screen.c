@@ -7786,21 +7786,23 @@ next_search_hl_pos(
     shl->lnum = 0;
     for (i = posmatch->cur; i < MAXPOSMATCH; i++)
     {
-	if (posmatch->pos[i].lnum == 0)
+	llpos_T	*pos = &posmatch->pos[i];
+
+	if (pos->lnum == 0)
 	    break;
-	if (posmatch->pos[i].col < mincol)
+	if (pos->col + pos->len - 1 <= mincol)
 	    continue;
-	if (posmatch->pos[i].lnum == lnum)
+	if (pos->lnum == lnum)
 	{
 	    if (shl->lnum == lnum)
 	    {
 		/* partially sort positions by column numbers
 		 * on the same line */
-		if (posmatch->pos[i].col < posmatch->pos[bot].col)
+		if (pos->col < posmatch->pos[bot].col)
 		{
-		    llpos_T	tmp = posmatch->pos[i];
+		    llpos_T	tmp = *pos;
 
-		    posmatch->pos[i] = posmatch->pos[bot];
+		    *pos = posmatch->pos[bot];
 		    posmatch->pos[bot] = tmp;
 		}
 	    }
