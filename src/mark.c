@@ -1597,7 +1597,8 @@ handle_viminfo_mark(garray_T *values, int force)
 
     if (fm != NULL)
     {
-	if (vi_namedfm != NULL || fm->time_set < timestamp || force)
+	if (vi_namedfm != NULL || fm->fmark.mark.lnum == 0
+					  || fm->time_set < timestamp || force)
 	{
 	    fm->fmark.mark.lnum = lnum;
 	    fm->fmark.mark.col = col;

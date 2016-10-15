@@ -1,6 +1,6 @@
 " Test for reading and writing .viminfo
 
-function Test_read_and_write()
+function Test_viminfo_read_and_write()
   call histdel(':')
   let lines = [
 	\ '# comment line',
@@ -17,7 +17,7 @@ function Test_read_and_write()
   let lines = readfile('Xviminfo')
   let done = 0
   for line in lines
-    if line[0] == '|' && line !~ '^|[234],'
+    if line[0] == '|' && line !~ '^|[234],' && line !~ '^|<'
       if done == 0
 	call assert_equal('|1,4', line)
       elseif done == 1
@@ -469,7 +469,27 @@ func Test_viminfo_file_mark_tabclose()
   silent! bwipe Xtestfileintab
 endfunc
 
-func Test_oldfiles()
+func Test_viminfo_file_mark_zero_time()
+  let lines = [
+	\ '# Viminfo version',
+	\ '|1,4',
+	\ '',
+	\ '*encoding=utf-8',
+	\ '',
+	\ '# File marks:',
+	\ "'B  1  0  /tmp/nothing",
+	\ '|4,66,1,0,0,"/tmp/nothing"',
+	\ "",
+	\ ]
+  call writefile(lines, 'Xviminfo')
+  delmark B
+  rviminfo Xviminfo
+  call delete('Xviminfo')
+  call assert_equal(1, line("'B"))
+  delmark B
+endfunc
+
+func Test_viminfo_oldfiles()
   let v:oldfiles = []
   let lines = [
 	\ '# comment line',
