@@ -2495,7 +2495,8 @@ typedef enum
 #define FNE_INCL_BR	1	/* include [] in name */
 #define FNE_CHECK_START	2	/* check name starts with valid character */
 
-#if (defined(sun) || defined(__FreeBSD__)) && defined(S_ISCHR)
+#if (defined(sun) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)) \
+	&& defined(S_ISCHR)
 # define OPEN_CHR_FILES
 #endif
 
