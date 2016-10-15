@@ -179,8 +179,8 @@ static void ins_compl_add_dict(dict_T *dict);
 #endif
 static int  ins_compl_get_exp(pos_T *ini);
 static void ins_compl_delete(void);
-static void ins_compl_insert(void);
-static int  ins_compl_next(int allow_get_expansion, int count, int insert_match);
+static void ins_compl_insert(int in_compl_func);
+static int  ins_compl_next(int allow_get_expansion, int count, int insert_match, int in_compl_func);
 static int  ins_compl_key2dir(int c);
 static int  ins_compl_pum_key(int c);
 static int  ins_compl_key2count(int c);
@@ -861,7 +861,7 @@ edit(
 				   && (c == CAR || c == K_KENTER || c == NL)))
 		{
 		    ins_compl_delete();
-		    ins_compl_insert();
+		    ins_compl_insert(FALSE);
 		}
 	    }
 	}
@@ -3297,7 +3297,7 @@ ins_compl_files(
 			break;
 		}
 		line_breakcheck();
-		ins_compl_check_keys(50);
+		ins_compl_check_keys(50, FALSE);
 	    }
 	    fclose(fp);
 	}
@@ -4036,8 +4036,6 @@ ins_compl_next_buf(buf_T *buf, int flag)
 }
 
 #ifdef FEAT_COMPL_FUNC
-static void expand_by_function(int type, char_u *base);
-
 /*
  * Execute user defined complete function 'completefunc' or 'omnifunc', and
  * get matches in "matches".
@@ -4596,7 +4594,7 @@ ins_compl_get_exp(pos_T *ini)
 		break;
 	    /* Fill the popup menu as soon as possible. */
 	    if (type != -1)
-		ins_compl_check_keys(0);
+		ins_compl_check_keys(0, FALSE);
 
 	    if ((ctrl_x_mode != 0 && !CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 							 || compl_interrupted)
@@ -4653,9 +4651,12 @@ ins_compl_delete(void)
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc());
 }
 
-/* Insert the new text being completed. */
+/*
+ * Insert the new text being completed.
+ * "in_compl_func" is TRUE when called from complete_check().
+ */
     static void
-ins_compl_insert(void)
+ins_compl_insert(int in_compl_func)
 {
     dict_T	*dict;
 
@@ -4682,7 +4683,8 @@ ins_compl_insert(void)
 		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_INFO]));
     }
     set_vim_var_dict(VV_COMPLETED_ITEM, dict);
-    compl_curr_match = compl_shown_match;
+    if (!in_compl_func)
+	compl_curr_match = compl_shown_match;
 }
 
 /*
@@ -4706,7 +4708,8 @@ ins_compl_next(
     int	    allow_get_expansion,
     int	    count,		/* repeat completion this many times; should
 				   be at least 1 */
-    int	    insert_match)	/* Insert the newly selected match */
+    int	    insert_match,	/* Insert the newly selected match */
+    int	    in_compl_func)	/* called from complete_check() */
 {
     int	    num_matches = -1;
     int	    i;
@@ -4856,7 +4859,7 @@ ins_compl_next(
     else if (insert_match)
     {
 	if (!compl_get_longest || compl_used_match)
-	    ins_compl_insert();
+	    ins_compl_insert(in_compl_func);
 	else
 	    ins_bytes(compl_leader + ins_compl_len());
     }
@@ -4921,9 +4924,11 @@ ins_compl_next(
  * mode.  Also, when compl_pending is not zero, show a completion as soon as
  * possible. -- webb
  * "frequency" specifies out of how many calls we actually check.
+ * "in_compl_func" is TRUE when called from complete_check(), don't set
+ * compl_curr_match.
  */
     void
-ins_compl_check_keys(int frequency)
+ins_compl_check_keys(int frequency, int in_compl_func)
 {
     static int	count = 0;
 
@@ -4949,7 +4954,7 @@ ins_compl_check_keys(int frequency)
 	    c = safe_vgetc();	/* Eat the character */
 	    compl_shows_dir = ins_compl_key2dir(c);
 	    (void)ins_compl_next(FALSE, ins_compl_key2count(c),
-						    c != K_UP && c != K_DOWN);
+				      c != K_UP && c != K_DOWN, in_compl_func);
 	}
 	else
 	{
@@ -4972,7 +4977,7 @@ ins_compl_check_keys(int frequency)
 	int todo = compl_pending > 0 ? compl_pending : -compl_pending;
 
 	compl_pending = 0;
-	(void)ins_compl_next(FALSE, todo, TRUE);
+	(void)ins_compl_next(FALSE, todo, TRUE, in_compl_func);
     }
 }
 
@@ -5490,7 +5495,8 @@ ins_complete(int c, int enable_pum)
      * Find next match (and following matches).
      */
     save_w_wrow = curwin->w_wrow;
-    n = ins_compl_next(TRUE, ins_compl_key2count(c), ins_compl_use_match(c));
+    n = ins_compl_next(TRUE, ins_compl_key2count(c),
+						ins_compl_use_match(c), FALSE);
 
     /* may undisplay the popup menu */
     ins_compl_upd_pum();

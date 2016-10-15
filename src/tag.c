@@ -1587,7 +1587,7 @@ find_tags(
 		fast_breakcheck();
 #ifdef FEAT_INS_EXPAND
 	    if ((flags & TAG_INS_COMP))	/* Double brackets for gcc */
-		ins_compl_check_keys(30);
+		ins_compl_check_keys(30, FALSE);
 	    if (got_int || compl_interrupted)
 #else
 	    if (got_int)

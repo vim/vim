@@ -15,7 +15,7 @@ char_u *find_word_start(char_u *ptr);
 char_u *find_word_end(char_u *ptr);
 int ins_compl_active(void);
 int ins_compl_add_tv(typval_T *tv, int dir);
-void ins_compl_check_keys(int frequency);
+void ins_compl_check_keys(int frequency, int in_compl_func);
 int get_literal(void);
 void insertchar(int c, int flags, int second_indent);
 void auto_format(int trailblank, int prev_line);
