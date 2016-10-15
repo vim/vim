@@ -4973,11 +4973,51 @@ mch_job_status(job_T *job)
     if (!GetExitCodeProcess(job->jv_proc_info.hProcess, &dwExitCode)
 	    || dwExitCode != STILL_ACTIVE)
     {
-	job->jv_status = JOB_ENDED;
 	job->jv_exitval = (int)dwExitCode;
+	if (job->jv_status != JOB_ENDED)
+	{
+	    ch_log(job->jv_channel, "Job ended");
+	    job->jv_status = JOB_ENDED;
+	}
 	return "dead";
     }
     return "run";
+}
+
+    job_T *
+mch_detect_ended_job(job_T *job_list)
+{
+    HANDLE jobHandles[MAXIMUM_WAIT_OBJECTS];
+    job_T *jobArray[MAXIMUM_WAIT_OBJECTS];
+    job_T *job = job_list;
+
+    while (job != NULL)
+    {
+	DWORD n;
+	DWORD result;
+
+	for (n = 0; n < MAXIMUM_WAIT_OBJECTS
+				       && job != NULL; job = job->jv_next)
+	{
+	    if (job->jv_status == JOB_STARTED)
+	    {
+		jobHandles[n] = job->jv_proc_info.hProcess;
+		jobArray[n] = job;
+		++n;
+	    }
+	}
+	if (n == 0)
+	    continue;
+	result = WaitForMultipleObjects(n, jobHandles, FALSE, 0);
+	if (result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0 + n)
+	{
+	    job_T *wait_job = jobArray[result - WAIT_OBJECT_0];
+
+	    if (STRCMP(mch_job_status(wait_job), "dead") == 0)
+		return wait_job;
+	}
+    }
+    return NULL;
 }
 
     int

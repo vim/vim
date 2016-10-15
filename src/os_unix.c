@@ -5294,8 +5294,7 @@ mch_job_status(job_T *job)
     if (wait_pid == -1)
     {
 	/* process must have exited */
-	job->jv_status = JOB_ENDED;
-	return "dead";
+	goto return_dead;
     }
     if (wait_pid == 0)
 	return "run";
@@ -5303,16 +5302,62 @@ mch_job_status(job_T *job)
     {
 	/* LINTED avoid "bitwise operation on signed value" */
 	job->jv_exitval = WEXITSTATUS(status);
-	job->jv_status = JOB_ENDED;
-	return "dead";
+	goto return_dead;
     }
     if (WIFSIGNALED(status))
     {
 	job->jv_exitval = -1;
-	job->jv_status = JOB_ENDED;
-	return "dead";
+	goto return_dead;
     }
     return "run";
+
+return_dead:
+    if (job->jv_status != JOB_ENDED)
+    {
+	ch_log(job->jv_channel, "Job ended");
+	job->jv_status = JOB_ENDED;
+    }
+    return "dead";
+}
+
+    job_T *
+mch_detect_ended_job(job_T *job_list)
+{
+# ifdef HAVE_UNION_WAIT
+    union wait	status;
+# else
+    int		status = -1;
+# endif
+    pid_t	wait_pid = 0;
+    job_T	*job;
+
+# ifdef __NeXT__
+    wait_pid = wait4(-1, &status, WNOHANG, (struct rusage *)0);
+# else
+    wait_pid = waitpid(-1, &status, WNOHANG);
+# endif
+    if (wait_pid <= 0)
+	/* no process ended */
+	return NULL;
+    for (job = job_list; job != NULL; job = job->jv_next)
+    {
+	if (job->jv_pid == wait_pid)
+	{
+	    if (WIFEXITED(status))
+		/* LINTED avoid "bitwise operation on signed value" */
+		job->jv_exitval = WEXITSTATUS(status);
+	    else if (WIFSIGNALED(status))
+		job->jv_exitval = -1;
+	    if (job->jv_status != JOB_ENDED)
+	    {
+		ch_log(job->jv_channel, "Job ended");
+		job->jv_status = JOB_ENDED;
+	    }
+	    return job;
+	}
+    }
+    return NULL;
+
 }
 
     int
