@@ -16,6 +16,27 @@ func! ListMonths()
   return ''
 endfunc
 
+function! TestCompleteAdd(findstart, base)
+  if a:findstart
+    return 0
+  else
+    let batch_size = 5
+    " 3 batches of completion entries
+    for i in range(0, 2)
+      " add entries in batches
+      for j in range(i * batch_size, i * batch_size + batch_size - 1)
+        call complete_add(j)
+      endfor
+      sleep 300m " simulate delay
+
+      if complete_check()
+        break
+      endif
+    endfor
+    return []
+  endif
+endfunction
+
 func! Test_popup_complete2()
   " Although the popupmenu is not visible, this does not mean completion mode
   " has ended. After pressing <f5> to complete the currently typed char, Vim
@@ -287,6 +308,14 @@ func Test_compl_vim_cmds_after_register_expr()
   autocmd! AAAAA_Group
   augroup! AAAAA_Group
   bwipe!
+endfunc
+
+func Test_complete_add()
+  new
+  setlocal omnifunc=TestCompleteAdd
+  call feedkeys("i\<c-x>\<C-o>\<c-n>\<C-y>\<ESC>", 'tx')
+  call assert_equal('1', getline(1))
+  setlocal omnifunc=
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
