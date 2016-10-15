@@ -4832,6 +4832,7 @@ ExpandFromContext(
 	{
 	    {EXPAND_COMMANDS, get_command_name, FALSE, TRUE},
 	    {EXPAND_BEHAVE, get_behave_arg, TRUE, TRUE},
+	    {EXPAND_MESSAGES, get_messages_arg, TRUE, TRUE},
 #ifdef FEAT_CMDHIST
 	    {EXPAND_HISTORY, get_history_arg, TRUE, TRUE},
 #endif

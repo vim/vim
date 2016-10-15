@@ -61,4 +61,5 @@ int put_eol(FILE *fd);
 int put_line(FILE *fd, char *s);
 void dialog_msg(char_u *buff, char *format, char_u *fname);
 char_u *get_behave_arg(expand_T *xp, int idx);
+char_u *get_messages_arg(expand_T *xp, int idx);
 /* vim: set ft=c : */
