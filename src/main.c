@@ -1163,8 +1163,11 @@ main_loop(
 		    && last_changedtick != curbuf->b_changedtick)
 	    {
 		if (last_changedtick_buf == curbuf)
-		    apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL,
-							       FALSE, curbuf);
+        {
+		  curbuf->b_compl_changedtick = curbuf->b_changedtick;
+		  apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL,
+						 FALSE, curbuf);
+        }
 		last_changedtick_buf = curbuf;
 		last_changedtick = curbuf->b_changedtick;
 	    }
