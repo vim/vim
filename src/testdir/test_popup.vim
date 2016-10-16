@@ -378,7 +378,7 @@ func DummyCompleteFour(findstart, base)
   endif
 endfunc
 
-:"Test that 'completefunc' works when it's OK.
+" Test that 'completefunc' works when it's OK.
 func Test_omnifunc_with_check()
   new
   setlocal omnifunc=DummyCompleteFour
@@ -399,5 +399,31 @@ func Test_omnifunc_with_check()
 
   q!
 endfunc
+
+function UndoComplete()
+  call complete(1, ['January', 'February', 'March',
+        \ 'April', 'May', 'June', 'July', 'August', 'September',
+        \ 'October', 'November', 'December'])
+  return ''
+endfunc
+
+" Test that no undo item is created when no completion is inserted
+func Test_complete_no_undo()
+  set completeopt=menu,preview,noinsert,noselect
+  inoremap <Right> <C-R>=UndoComplete()<CR>
+  new
+  call feedkeys("ixxx\<CR>\<CR>yyy\<Esc>k", 'xt')
+  call feedkeys("iaaa\<Esc>0", 'xt')
+  call assert_equal('aaa', getline(2))
+  call feedkeys("i\<Right>\<Esc>", 'xt')
+  call assert_equal('aaa', getline(2))
+  call feedkeys("u", 'xt')
+  call assert_equal('', getline(2))
+
+  iunmap <Right>
+  set completeopt&
+  q!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -2799,9 +2799,6 @@ set_completion(colnr_T startcol, list_T *list)
 	ins_compl_prep(' ');
     ins_compl_clear();
 
-    if (stop_arrow() == FAIL)
-	return;
-
     compl_direction = FORWARD;
     if (startcol > curwin->w_cursor.col)
 	startcol = curwin->w_cursor.col;
@@ -3876,7 +3873,8 @@ ins_compl_prep(int c)
 		/* put the cursor on the last char, for 'tw' formatting */
 		if (prev_col > 0)
 		    dec_cursor();
-		if (stop_arrow() == OK)
+		/* only format when something was inserted */
+		if (!arrow_used && !ins_need_undo)
 		    insertchar(NUL, 0, -1);
 		if (prev_col > 0
 			     && ml_get_curline()[curwin->w_cursor.col] != NUL)
