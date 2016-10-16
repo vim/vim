@@ -7773,6 +7773,10 @@ next_search_hl(
     }
 }
 
+/*
+ * If there is a match fill "shl" and return one.
+ * Return zero otherwise.
+ */
     static int
 next_search_hl_pos(
     match_T	    *shl,	/* points to a match */
@@ -7781,55 +7785,52 @@ next_search_hl_pos(
     colnr_T	    mincol)	/* minimal column for a match */
 {
     int	    i;
-    int	    bot = -1;
+    int	    found = -1;
 
-    shl->lnum = 0;
     for (i = posmatch->cur; i < MAXPOSMATCH; i++)
     {
 	llpos_T	*pos = &posmatch->pos[i];
 
 	if (pos->lnum == 0)
 	    break;
-	if (pos->col + pos->len - 1 <= mincol)
+	if (pos->len == 0 && pos->col < mincol)
 	    continue;
 	if (pos->lnum == lnum)
 	{
-	    if (shl->lnum == lnum)
+	    if (found >= 0)
 	    {
-		/* partially sort positions by column numbers
-		 * on the same line */
-		if (pos->col < posmatch->pos[bot].col)
+		/* if this match comes before the one at "found" then swap
+		 * them */
+		if (pos->col < posmatch->pos[found].col)
 		{
 		    llpos_T	tmp = *pos;
 
-		    *pos = posmatch->pos[bot];
-		    posmatch->pos[bot] = tmp;
+		    *pos = posmatch->pos[found];
+		    posmatch->pos[found] = tmp;
 		}
 	    }
 	    else
-	    {
-		bot = i;
-		shl->lnum = lnum;
-	    }
+		found = i;
 	}
     }
     posmatch->cur = 0;
-    if (shl->lnum == lnum && bot >= 0)
+    if (found >= 0)
     {
-	colnr_T	start = posmatch->pos[bot].col == 0
-					     ? 0 : posmatch->pos[bot].col - 1;
-	colnr_T	end = posmatch->pos[bot].col == 0
-				    ? MAXCOL : start + posmatch->pos[bot].len;
+	colnr_T	start = posmatch->pos[found].col == 0
+					    ? 0 : posmatch->pos[found].col - 1;
+	colnr_T	end = posmatch->pos[found].col == 0
+				   ? MAXCOL : start + posmatch->pos[found].len;
 
+	shl->lnum = lnum;
 	shl->rm.startpos[0].lnum = 0;
 	shl->rm.startpos[0].col = start;
 	shl->rm.endpos[0].lnum = 0;
 	shl->rm.endpos[0].col = end;
 	shl->is_addpos = TRUE;
-	posmatch->cur = bot + 1;
-	return TRUE;
+	posmatch->cur = found + 1;
+	return 1;
     }
-    return FALSE;
+    return 0;
 }
 #endif
 
