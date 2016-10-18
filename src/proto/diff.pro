@@ -22,6 +22,6 @@ void nv_diffgetput(int put, long count);
 void ex_diffgetput(exarg_T *eap);
 int diff_mode_buf(buf_T *buf);
 int diff_move_to(int dir, long count);
-linenr_T diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1, buf_T *buf2, linenr_T lnum3);
+linenr_T diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1);
 linenr_T diff_lnum_win(linenr_T lnum, win_T *wp);
 /* vim: set ft=c : */

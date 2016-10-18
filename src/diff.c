@@ -1100,10 +1100,7 @@ ex_diffsplit(exarg_T *eap)
 		if (bufref_valid(&old_curbuf))
 		    /* Move the cursor position to that of the old window. */
 		    curwin->w_cursor.lnum = diff_get_corresponding_line(
-			    old_curbuf.br_buf,
-			    old_curwin->w_cursor.lnum,
-			    curbuf,
-			    curwin->w_cursor.lnum);
+			    old_curbuf.br_buf, old_curwin->w_cursor.lnum);
 	    }
 	    /* Now that lines are folded scroll to show the cursor at the same
 	     * relative position. */
@@ -2524,21 +2521,22 @@ diff_move_to(int dir, long count)
     return OK;
 }
 
-    linenr_T
-diff_get_corresponding_line(
+/*
+ * Return the line number in the current window that is closest to "lnum1" in
+ * "buf1" in diff mode.
+ */
+    static linenr_T
+diff_get_corresponding_line_int(
     buf_T	*buf1,
-    linenr_T	lnum1,
-    buf_T	*buf2,
-    linenr_T	lnum3)
+    linenr_T	lnum1)
 {
     int		idx1;
     int		idx2;
     diff_T	*dp;
     int		baseline = 0;
-    linenr_T	lnum2;
 
     idx1 = diff_buf_idx(buf1);
-    idx2 = diff_buf_idx(buf2);
+    idx2 = diff_buf_idx(curbuf);
     if (idx1 == DB_COUNT || idx2 == DB_COUNT || curtab->tp_first_diff == NULL)
 	return lnum1;
 
@@ -2551,15 +2549,8 @@ diff_get_corresponding_line(
     for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
     {
 	if (dp->df_lnum[idx1] > lnum1)
-	{
-	    lnum2 = lnum1 - baseline;
-	    /* don't end up past the end of the file */
-	    if (lnum2 > buf2->b_ml.ml_line_count)
-		lnum2 = buf2->b_ml.ml_line_count;
-
-	    return lnum2;
-	}
-	else if ((dp->df_lnum[idx1] + dp->df_count[idx1]) > lnum1)
+	    return lnum1 - baseline;
+	if ((dp->df_lnum[idx1] + dp->df_count[idx1]) > lnum1)
 	{
 	    /* Inside the diffblock */
 	    baseline = lnum1 - dp->df_lnum[idx1];
@@ -2568,10 +2559,11 @@ diff_get_corresponding_line(
 
 	    return dp->df_lnum[idx2] + baseline;
 	}
-	else if (   (dp->df_lnum[idx1] == lnum1)
-		 && (dp->df_count[idx1] == 0)
-		 && (dp->df_lnum[idx2] <= lnum3)
-		 && ((dp->df_lnum[idx2] + dp->df_count[idx2]) > lnum3))
+	if (    (dp->df_lnum[idx1] == lnum1)
+	     && (dp->df_count[idx1] == 0)
+	     && (dp->df_lnum[idx2] <= curwin->w_cursor.lnum)
+	     && ((dp->df_lnum[idx2] + dp->df_count[idx2])
+						      > curwin->w_cursor.lnum))
 	    /*
 	     * Special case: if the cursor is just after a zero-count
 	     * block (i.e. all filler) and the target cursor is already
@@ -2579,18 +2571,28 @@ diff_get_corresponding_line(
 	     * unmoved. This makes repeated CTRL-W W operations work
 	     * as expected.
 	     */
-	    return lnum3;
+	    return curwin->w_cursor.lnum;
 	baseline = (dp->df_lnum[idx1] + dp->df_count[idx1])
 				   - (dp->df_lnum[idx2] + dp->df_count[idx2]);
     }
 
     /* If we get here then the cursor is after the last diff */
-    lnum2 = lnum1 - baseline;
-    /* don't end up past the end of the file */
-    if (lnum2 > buf2->b_ml.ml_line_count)
-	lnum2 = buf2->b_ml.ml_line_count;
+    return lnum1 - baseline;
+}
 
-    return lnum2;
+/*
+ * Return the line number in the current window that is closest to "lnum1" in
+ * "buf1" in diff mode.  Checks the line number to be valid.
+ */
+    linenr_T
+diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1)
+{
+    linenr_T lnum = diff_get_corresponding_line_int(buf1, lnum1);
+
+    /* don't end up past the end of the file */
+    if (lnum > curbuf->b_ml.ml_line_count)
+	return curbuf->b_ml.ml_line_count;
+    return lnum;
 }
 
 #if defined(FEAT_FOLDING) || defined(PROTO)
