@@ -1433,6 +1433,21 @@ func Test_job_start_invalid()
   call assert_fails('call job_start("")', 'E474:')
 endfunc
 
+func Test_job_stop_immediately()
+  if !has('job')
+    return
+  endif
+
+  let job = job_start([s:python, '-c', 'import time;time.sleep(10)'])
+  try
+    call job_stop(job)
+    call WaitFor('"dead" == job_status(job)')
+    call assert_equal('dead', job_status(job))
+  finally
+    call job_stop(job, 'kill')
+  endtry
+endfunc
+
 " This was leaking memory.
 func Test_partial_in_channel_cycle()
   let d = {}

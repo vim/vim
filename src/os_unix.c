@@ -211,6 +211,15 @@ static RETSIGTYPE deathtrap SIGPROTOARG;
 static void catch_int_signal(void);
 static void set_signals(void);
 static void catch_signals(RETSIGTYPE (*func_deadly)(), RETSIGTYPE (*func_other)());
+#ifdef HAVE_SIGPROCMASK
+# define SIGSET_DECL(set)	sigset_t set;
+# define BLOCK_SIGNALS(set)	block_signals(set)
+# define UNBLOCK_SIGNALS(set)	unblock_signals(set)
+#else
+# define SIGSET_DECL(set)
+# define BLOCK_SIGNALS(set)	do { /**/ } while (0)
+# define UNBLOCK_SIGNALS(set)	do { /**/ } while (0)
+#endif
 static int  have_wildcard(int, char_u **);
 static int  have_dollars(int, char_u **);
 
@@ -1467,6 +1476,33 @@ catch_signals(
 	else if (func_other != SIG_ERR)
 	    signal(signal_info[i].sig, func_other);
 }
+
+#ifdef HAVE_SIGPROCMASK
+    static void
+block_signals(sigset_t *set)
+{
+    sigset_t	newset;
+    int		i;
+
+    sigemptyset(&newset);
+
+    for (i = 0; signal_info[i].sig != -1; i++)
+	sigaddset(&newset, signal_info[i].sig);
+
+# if defined(_REENTRANT) && defined(SIGCONT)
+    /* SIGCONT isn't in the list, because its default action is ignore */
+    sigaddset(&newset, SIGCONT);
+# endif
+
+    sigprocmask(SIG_BLOCK, &newset, set);
+}
+
+    static void
+unblock_signals(sigset_t *set)
+{
+    sigprocmask(SIG_SETMASK, set, NULL);
+}
+#endif
 
 /*
  * Handling of SIGHUP, SIGQUIT and SIGTERM:
@@ -4283,12 +4319,18 @@ mch_call_shell(
 
     if (!pipe_error)			/* pty or pipe opened or not used */
     {
+	SIGSET_DECL(curset)
+
 # ifdef __BEOS__
 	beos_cleanup_read_thread();
 # endif
 
-	if ((pid = fork()) == -1)	/* maybe we should use vfork() */
+	BLOCK_SIGNALS(&curset);
+	pid = fork();	/* maybe we should use vfork() */
+	if (pid == -1)
 	{
+	    UNBLOCK_SIGNALS(&curset);
+
 	    MSG_PUTS(_("\nCannot fork\n"));
 	    if ((options & (SHELL_READ|SHELL_WRITE))
 # ifdef FEAT_GUI
@@ -4315,6 +4357,7 @@ mch_call_shell(
 	else if (pid == 0)	/* child */
 	{
 	    reset_signals();		/* handle signals normally */
+	    UNBLOCK_SIGNALS(&curset);
 
 	    if (!show_shell_mess || (options & SHELL_EXPAND))
 	    {
@@ -4458,6 +4501,7 @@ mch_call_shell(
 	     */
 	    catch_signals(SIG_IGN, SIG_ERR);
 	    catch_int_signal();
+	    UNBLOCK_SIGNALS(&curset);
 
 	    /*
 	     * For the GUI we redirect stdin, stdout and stderr to our window.
@@ -5069,6 +5113,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
     int		use_file_for_out = options->jo_io[PART_OUT] == JIO_FILE;
     int		use_file_for_err = options->jo_io[PART_ERR] == JIO_FILE;
     int		use_out_for_err = options->jo_io[PART_ERR] == JIO_OUT;
+    SIGSET_DECL(curset)
 
     if (use_out_for_err && use_null_for_out)
 	use_null_for_err = TRUE;
@@ -5140,13 +5185,14 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	    goto failed;
     }
 
+    BLOCK_SIGNALS(&curset);
     pid = fork();	/* maybe we should use vfork() */
-    if (pid  == -1)
+    if (pid == -1)
     {
 	/* failed to fork */
+	UNBLOCK_SIGNALS(&curset);
 	goto failed;
     }
-
     if (pid == 0)
     {
 	int	null_fd = -1;
@@ -5154,6 +5200,7 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 
 	/* child */
 	reset_signals();		/* handle signals normally */
+	UNBLOCK_SIGNALS(&curset);
 
 # ifdef HAVE_SETSID
 	/* Create our own process group, so that the child and all its
@@ -5234,6 +5281,8 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
     }
 
     /* parent */
+    UNBLOCK_SIGNALS(&curset);
+
     job->jv_pid = pid;
     job->jv_status = JOB_STARTED;
     job->jv_channel = channel;  /* ch_refcount was set above */
@@ -5357,7 +5406,6 @@ mch_detect_ended_job(job_T *job_list)
 	}
     }
     return NULL;
-
 }
 
     int
