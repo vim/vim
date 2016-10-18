@@ -427,6 +427,11 @@ func Test_complete_no_undo()
   call feedkeys("u", 'xt')
   call assert_equal('bbb', getline(2))
 
+  call feedkeys("A\<Right>\<C-N>\<Esc>", 'xt')
+  call assert_equal('January', getline(2))
+  call feedkeys("u", 'xt')
+  call assert_equal('bbb', getline(2))
+
   iunmap <Right>
   set completeopt&
   q!
