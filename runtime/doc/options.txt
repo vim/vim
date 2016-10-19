@@ -1739,32 +1739,32 @@ A jump table for the options with a short description can be found at |Q_op|.
 	option		? set value	effect
 
 	'allowrevins'	+ off		no CTRL-_ command
-	'antialias'	+ 		
-	'arabic'	+ 		
-	'arabicshape'	+ 		
+	'antialias'	+ off		don't use antialiased fonts
+	'arabic'	+ off	 	reset arabic-related options
+	'arabicshape'	+ on		correct character shapes
 	'backspace'	+ ""		normal backspace
 	'backup'	+ off		no backup file
 	'backupcopy'	* Unix: "yes"	backup file is a copy
 			  else: "auto"	copy or rename backup file
-	'balloonexpr'	+ 		
-	'breakindent'	+ 		
-	'cedit'		- {unchanged}	
+	'balloonexpr'	+ ""		text to show in evaluation balloon
+	'breakindent'	+ off		don't indent when wrapping lines
+	'cedit'		- {unchanged}	{set vim default only on resetting 'cp'}
 	'cindent'	+ off		no C code indentation
-	'compatible'	- {unchanged}	
-	'copyindent'	+ 		
+	'compatible'	- {unchanged}	{set vim default only on resetting 'cp'}
+	'copyindent'	+ off		don't copy indent structure
 	'cpoptions'	* (all flags)	Vi-compatible flags
-	'cscopepathcomp'+ 		
-	'cscoperelative'+ 		
+	'cscopepathcomp'+ 0		don't show directories in tags list
+	'cscoperelative'+ off		
 	'cscopetag'	+ off		don't use cscope for ":tag"
 	'cscopetagorder'  0		see |cscopetagorder|
 	'cscopeverbose'	+ off		see |cscopeverbose|
-	'delcombine'	+ 		
+	'delcombine'	+ off		unicode: delete whole char combination
 	'digraph'	+ off		no digraphs
 	'esckeys'	* off		no <Esc>-keys in Insert mode
 	'expandtab'	+ off		tabs not expanded to spaces
 	'fileformats'	* ""		no automatic file format detection,
 			  "dos,unix"	except for DOS, Windows and OS/2
-	'formatexpr'	+ 		
+	'formatexpr'	+ ""		use 'formatprg' for auto-formatting
 	'formatoptions'	* "vt"		Vi compatible formatting
 	'gdefault'	+ off		no default 'g' flag for ":s"
 	'history'	* 0		no commandline history
@@ -1779,34 +1779,35 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'joinspaces'	+ on		insert 2 spaces after period
 	'modeline'	* off		no modelines
 	'more'		* off		no pauses in listings
-	'mzquantum'	- {unchanged}	
-	'numberwidth'	* 		
-	'preserveindent'+ 		
+	'mzquantum'	- {unchanged}	{set vim default only on resetting 'cp'}
+	'numberwidth'	* 8		min number of columns for line number
+	'preserveindent'+ off		don't preserve current indent structure
+						when changing it
 	'revins'	+ off		no reverse insert
 	'ruler'		+ off		no ruler
 	'scrolljump'	+ 1		no jump scroll
 	'scrolloff'	+ 0		no scroll offset
-	'shelltemp'	- {unchanged}	
+	'shelltemp'	- {unchanged}	{set vim default only on resetting 'cp'}
 	'shiftround'	+ off		indent not rounded to shiftwidth
 	'shortmess'	* ""		no shortening of messages
 	'showcmd'	* off		command characters not shown
 	'showmode'	* off		current mode not shown
-	'sidescrolloff'	+ 		
+	'sidescrolloff'	+ 0		cursor moves to edge of screen in scroll
 	'smartcase'	+ off		no automatic ignore case switch
 	'smartindent'	+ off		no smart indentation
 	'smarttab'	+ off		no smart tab size
 	'softtabstop'	+ 0		tabs are always 'tabstop' positions
 	'startofline'	+ on		goto startofline with some commands
-	'tagcase'	* 		
+	'tagcase'	* "followic"	'ignorecase' when searching tags file
 	'tagrelative'	* off		tag file names are not relative
-	'termguicolors'	+ 		
+	'termguicolors'	+ off		don't use highlight-(guifg|guibg)
 	'textauto'	* off		no automatic textmode detection
 	'textwidth'	+ 0		no automatic line wrap
 	'tildeop'	+ off		tilde is not an operator
 	'ttimeout'	+ off		no terminal timeout
-	'undofile'	+ 		
-	'viminfo'       - {unchanged}	
-	'virtualedit'	+ 		
+	'undofile'	+ off		don't use an undo file
+	'viminfo'       - {unchanged}	{set vim default only on resetting 'cp'}
+	'virtualedit'	+ ""		cursor can only be placed on characters
 	'whichwrap'	* ""		left-right movements don't wrap
 	'wildchar'	* CTRL-E	only when the current value is <Tab>
 					use CTRL-E for cmdline completion
