@@ -21,7 +21,19 @@ maillist is also fine.
 
 Please use the GitHub issues only for actual issues. If you are not 100% sure
 that your problem is a Vim issue, please first discuss this on the Vim user
-maillist.  Try reproducing the problem without any plugins or settings:
+maillist.
+
+Describe your issue properly.  If you spend 30 seconds throwing out a sloppy
+report, do expect that others will spend exactly the same amount on trying to
+resolve it.  In contrast, if you write a complete and pleasantly informative
+bug report, you will almost certainly be rewarded by excellent help with your
+problem.
+
+Please be polite.  You are asking software developers for help, that spend their
+spare time for free, so you might want to avoid treating them as if they were a
+commodity or at your free disposal.
+
+Try reproducing the problem without any plugins or settings:
 
     vim -N -u NONE
 
@@ -36,8 +48,9 @@ Feel free to report even the smallest problem, also typos in the documentation.
 You can find known issues in the todo file: ":help todo".
 Or open [the todo file] on GitHub to see the latest version.
 
-[the todo file]: https://github.com/vim/vim/blob/master/runtime/doc/todo.txt
+Please be prepared to try out patches.
 
+[the todo file]: https://github.com/vim/vim/blob/master/runtime/doc/todo.txt
 
 # Syntax, indent and other runtime files
 
