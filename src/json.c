@@ -861,7 +861,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 	    break;
     }
 
-    if (res != NUL)
+    if (res != NULL)
     {
 	res->v_type = VAR_SPECIAL;
 	res->vval.v_number = VVAL_NONE;
