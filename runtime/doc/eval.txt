@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2016 Oct 02
+*eval.txt*	For Vim version 8.0.  Last change: 2016 Oct 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8214,7 +8214,7 @@ writefile({list}, {fname} [, {flags}])
 		end does cause the last line in the file to end in a NL.
 
 		When {flags} contains "a" then append mode is used, lines are
-		append to the file: >
+		appended to the file: >
 			:call writefile(["foo"], "event.log", "a")
 			:call writefile(["bar"], "event.log", "a")
 >

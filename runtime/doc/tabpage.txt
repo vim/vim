@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 8.0.  Last change: 2016 Sep 09
+*tabpage.txt*   For Vim version 8.0.  Last change: 2016 Oct 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -57,6 +57,8 @@ clicking right of the labels.
 
 In the GUI tab pages line you can use the right mouse button to open menu.
 |tabline-menu|.
+
+For the related autocommands see |tabnew-autocmd|.
 
 :[count]tabe[dit]				*:tabe* *:tabedit* *:tabnew*
 :[count]tabnew
@@ -287,6 +289,7 @@ Variables local to a tab page start with "t:". |tabpage-variable|
 
 Currently there is only one option local to a tab page: 'cmdheight'.
 
+						*tabnew-autocmd*
 The TabLeave and TabEnter autocommand events can be used to do something when
 switching from one tab page to another.  The exact order depends on what you
 are doing.  When creating a new tab page this works as if you create a new

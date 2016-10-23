@@ -1,7 +1,7 @@
 " Menu Translations:	Slovenian / Slovensko
 " Maintainer:		Mojca Miklavec <mojca.miklavec.lists@gmail.com>
 " Originally By:	Mojca Miklavec <mojca.miklavec.lists@gmail.com>
-" Last Change:		Sat, 17 Jun 2006
+" Last Change:		2016 Oct 17
 " vim:set foldmethod=marker tabstop=8:
 
 " TODO: add/check all '&'s
@@ -31,7 +31,7 @@ menutrans E&xit<Tab>:qa			&Izhod<Tab>:qa
 
 if has("diff")
     menutrans Split\ &Diff\ with\.\.\.	Primerjaj\ z\ (di&ff)\ \.\.\.
-    menutrans Split\ Patched\ &By\.\.\.	&Popravi\ z\ (patch)\ \.\.\.
+    menutrans Split\ Patched\ &By\.\.\.	&Popravi\ s\ (patch)\ \.\.\.
 endif
 " }}} FILE / DATOTEKA
 
@@ -96,12 +96,12 @@ menutrans Soft\ &Tabstop				Širina\ &tabulatorja
 menutrans Te&xt\ Width\.\.\.				Širina\ besedila\ \.\.\.
 menutrans &File\ Format\.\.\.				Format\ &datoteke\ \.\.\.
 menutrans C&olor\ Scheme				&Barvna\ shema\ \.\.\.
-menutrans &Keymap					&Keymap
+menutrans &Keymap					Razporeditev\ tip&k
 menutrans Select\ Fo&nt\.\.\.				Pisava\ \.\.\.
 " }}} EDIT / UREDI
 
 " {{{  TOOLS / ORODJA
-menutrans &Tools					&Orodja
+menutrans &Tools					O&rodja
 menutrans &Jump\ to\ this\ tag<Tab>g^]			&Skoči\ k\ tej\ znački<Tab>g^]
 menutrans Jump\ &back<Tab>^T				Skoči\ Na&zaj<Tab>^T
 menutrans Build\ &Tags\ File				Napravi\ datoteke\ z\ značkami\ (tag)
@@ -175,7 +175,7 @@ menutrans &Set\ Compiler				Nastavi\ &prevajalnik
 menutrans Se&T\ Compiler				Nastavi\ &prevajalnik " bug in original translation?
 
 menutrans &Convert\ to\ HEX<Tab>:%!xxd			Pretvori\ v\ HE&X<Tab>:%!xxd
-menutrans Conve&rt\ back<Tab>:%!xxd\ -r			Pretvori\ nazaj<Tab>:%!xxd\ -r
+menutrans Conve&rt\ back<Tab>:%!xxd\ -r			Povrni\ pretvo&rbo<Tab>:%!xxd\ -r
 " }}}  TOOLS / ORODJA
 
 " {{{ SYNTAX / BARVANJE KODE
@@ -242,7 +242,7 @@ menutrans &About		&O\ programu
 " {{{ POPUP
 menutrans &Undo				&Razveljavi
 menutrans Cu&t				&Izreži
-menutrans &Copy				&Kopieraj
+menutrans &Copy				&Kopiraj
 menutrans &Paste			&Prilepi
 menutrans &Delete			&Zbriši
 menutrans Select\ Blockwise		Izbiraj\ po\ blokih

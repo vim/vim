@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Oct 12
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Oct 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,7 +35,10 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
+- Check for job cleanup more often?  Patch from Ozaki Kiichi, 2016 Oct 22.
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
+- On Windows job_stop() stops cmd.exe, not the commands it runs. (#1184)
+    Patch from Yasuhiro Matsumoto, Oct 21.
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
   Part of patch for environment, Yasuhiro Matsumoto, #1160
@@ -103,10 +106,26 @@ What if there is an invalid character?
 Should json_encode()/json_decode() restrict recursiveness?
 Or avoid recursiveness.
 
+Patch to fix conceal mode. (Christian Brabandt, 2016 Oct 23, close #1092)
+
+Patch to reset ex_exitvalue after catch. (Christian Brabandt, 2016 Oct 23)
+
+Wrong diff highlighting with three files. (2016 Oct 20, #1186)
+Also get E749 on exit.
+
+Patch for better explanation of 'compatible' side effects.
+https://github.com/vim/vim/pull/1161/files
+
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 
+Screen updated delayed when using CTRL-O u in Insert mode.
+(Barlik, #1191)  Perhaps because status message?
+
+Patch for restoring wide characters in the console buffer.
+(Ken Takata, 2016 Jun 7)
+
 Patch to fix escaping of job arguments. (Yasuhiro Matsumoto, 2016 Oct 5)
-Still not right.
+Update Oct 14: https://gist.github.com/mattn/d47e7d3bfe5ade4be86062b565a4bfca
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
@@ -149,6 +168,9 @@ Add an argument to choose binary or non-binary (like readfile()), when omitted
 use the current behavior.
 Include the test.
 
+When 'keywordprg' starts with ":" the argument is still escaped as a shell
+command argument. (Romain Lafourcade, 2016 Oct 16, #1175)
+
 Idea from Sven: record sequence of keys.  Useful to show others what they are
 doing (look over the shoulder), and also to see what happened.
 Probably list of keystrokes, with some annotations for mode changes.
@@ -178,6 +200,9 @@ ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
 Also with latest version.
 
 Cannot delete a file with square brackets with delete(). (#696)
+
+Patch to add ":syn foldlevel" to use fold level further down the line.
+(Brad King, 2016 Oct 19)
 
 Completion for input() does not expand environment variables. (chdiza, 2016
 Jul 25, #948)
@@ -217,9 +242,6 @@ Filetype plugin for awk. (Doug Kearns, 2016 Sep 5)
 Patch to improve map documentation. Issue #799.
 
 Patch for syntax folding optimization. (Shougo, 2016 Sep 6, #1045)
-
-Patch for restoring wide characters in the console buffer.
-(Ken Takata, 2016 Jun 7)
 
 Patch for drag&drop reordering of GUI tab pages reordering.
 (Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
@@ -330,6 +352,9 @@ Updated patch with three options, 2016 Sep 8.
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
 Added tests (James McCoy, 2016 Aug 3).  Still needs more work.
+
+Feature request: add the "al" text object, to manipulate a screen line.
+Especially useful when using 'linebreak'
 
 Access to uninitialized memory in match_backref() regexp_nda.c:4882
 (Dominique Pelle, 2015 Nov 6)

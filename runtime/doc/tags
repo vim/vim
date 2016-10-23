@@ -8599,6 +8599,7 @@ tab-page-commands	tabpage.txt	/*tab-page-commands*
 tab-page-intro	tabpage.txt	/*tab-page-intro*
 tab-page-other	tabpage.txt	/*tab-page-other*
 tabline-menu	tabpage.txt	/*tabline-menu*
+tabnew-autocmd	tabpage.txt	/*tabnew-autocmd*
 tabpage	tabpage.txt	/*tabpage*
 tabpage-variable	eval.txt	/*tabpage-variable*
 tabpage.txt	tabpage.txt	/*tabpage.txt*
