@@ -4429,6 +4429,12 @@ form_configure_event(GtkWidget *widget UNUSED,
 {
     int usable_height = event->height;
 
+#if GTK_CHECK_VERSION(3,0,0)
+    if (!gtk_check_version(3, 22, 2) &&
+        event->window != gtk_widget_get_window(gui.formwin))
+	return TRUE;
+#endif
+
     /* When in a GtkPlug, we can't guarantee valid heights (as a round
      * no. of char-heights), so we have to manually sanitise them.
      * Widths seem to sort themselves out, don't ask me why.
