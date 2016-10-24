@@ -3099,6 +3099,9 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
     if (event->width == cur_width && event->height == cur_height)
 	return TRUE;
 
+    if (!gtk_check_version(3, 22, 2) && event->send_event == FALSE)
+	return TRUE;
+
     cur_width = event->width;
     cur_height = event->height;
 
