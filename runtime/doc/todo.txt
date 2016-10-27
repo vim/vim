@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Oct 23
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Oct 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,8 +37,6 @@ not be repeated below, unless there is extra information.
 +channel:
 - Check for job cleanup more often?  Patch from Ozaki Kiichi, 2016 Oct 22.
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
-- On Windows job_stop() stops cmd.exe, not the commands it runs. (#1184)
-    Patch from Yasuhiro Matsumoto, Oct 21.
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
   Part of patch for environment, Yasuhiro Matsumoto, #1160
@@ -103,12 +101,22 @@ Regexp problems:
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
+Bug: Json with same key should not give internal error. (Lcd, 2016 Oct 26)
+Make dict_add give a duplicate key error.
+
 Should json_encode()/json_decode() restrict recursiveness?
 Or avoid recursiveness.
+
+Allow using json with empty key?  Dict already has it.
+
+Json string with trailing \u should be an error. (Lcd)
 
 Patch to fix conceal mode. (Christian Brabandt, 2016 Oct 23, close #1092)
 
 Patch to reset ex_exitvalue after catch. (Christian Brabandt, 2016 Oct 23)
+
+Patch to deal with changed configure events in GTK 3. (Jan Alexander Steffens,
+2016 Oct 23 #1193)
 
 Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
@@ -145,6 +153,8 @@ E.g. deepcopy(test_null_list())
 
 Patch to make it possible to extend a list with itself.
 (Nikolai Pavlov, 2016 Sep 23)
+
+Patch to add Zstandard compressed file support. (Nick Terrell, 2016 Oct 24)
 
 min() and max() spawn lots of error messages if sorted list/dictionary
 contains invalid data (Nikolay Pavlov, 2016 Sep 4, #1039)
@@ -183,6 +193,8 @@ execute() cannot be used with command completeion. (Daniel Hahler, 2016 Oct 1,
 cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
 
 Patch to change order of compiler flags. (Yousong Zhou, 2016 Sep 19, #1100)
+
+Patch to order results from taglist(). (Duncan McDougall, 2016 Oct 25)
 
 Patch for :pyx, run python commands depending on the supported version.
 (Marc Weber, update from Ken Takata, 2016 Sep 19)
