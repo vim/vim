@@ -1362,9 +1362,11 @@ func Test_exit_callback()
   endif
 endfunc
 
-let g:exit_cb_time = {'start': 0, 'end': 0}
 function MyExitTimeCb(job, status)
-  let g:exit_cb_time.end = reltime(g:exit_cb_time.start)
+  if job_info(a:job).process == g:exit_cb_val.process
+    let g:exit_cb_val.end = reltime(g:exit_cb_val.start)
+  endif
+  call Resume()
 endfunction
 
 func Test_exit_callback_interval()
@@ -1372,11 +1374,30 @@ func Test_exit_callback_interval()
     return
   endif
 
-  let g:exit_cb_time.start = reltime()
+  let g:exit_cb_val = {'start': reltime(), 'end': 0, 'process': 0}
   let job = job_start([s:python, '-c', 'import time;time.sleep(0.5)'], {'exit_cb': 'MyExitTimeCb'})
-  call WaitFor('g:exit_cb_time.end != 0')
-  let elapsed = reltimefloat(g:exit_cb_time.end)
-  call assert_true(elapsed > 0.3)
+  let g:exit_cb_val.process = job_info(job).process
+  call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
+  let elapsed = reltimefloat(g:exit_cb_val.end)
+  call assert_true(elapsed > 0.5)
+  call assert_true(elapsed < 1.0)
+
+  " case: unreferenced job, using timer
+  if !has('timers')
+    return
+  endif
+
+  let g:exit_cb_val = {'start': reltime(), 'end': 0, 'process': 0}
+  let g:job = job_start([s:python, '-c', 'import time;time.sleep(0.5)'], {'exit_cb': 'MyExitTimeCb'})
+  let g:exit_cb_val.process = job_info(g:job).process
+  unlet g:job
+  call Standby(1000)
+  if type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0
+    let elapsed = reltimefloat(g:exit_cb_val.end)
+  else
+    let elapsed = 1.0
+  endif
+  call assert_true(elapsed > 0.5)
   call assert_true(elapsed < 1.0)
 endfunc
 

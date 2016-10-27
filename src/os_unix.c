@@ -404,139 +404,121 @@ mch_inchar(
 {
     int		len;
     int		interrupted = FALSE;
+    int		did_start_blocking = FALSE;
     long	wait_time;
+    long	elapsed_time = 0;
 #if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
     struct timeval  start_tv;
 
     gettimeofday(&start_tv, NULL);
 #endif
 
-#ifdef MESSAGE_QUEUE
-    parse_queued_messages();
-#endif
-
-    /* Check if window changed size while we were busy, perhaps the ":set
-     * columns=99" command was used. */
-    while (do_resize)
-	handle_resize();
-
+    /* repeat until we got a character or waited long enough */
     for (;;)
     {
-	if (wtime >= 0)
-	    wait_time = wtime;
-	else
-	    wait_time = p_ut;
-#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-	wait_time -= elapsed(&start_tv);
-	if (wait_time >= 0)
-	{
-#endif
-	    if (WaitForChar(wait_time, &interrupted))
-		break;
-
-	    /* no character available */
-	    if (do_resize)
-	    {
-		handle_resize();
-		continue;
-	    }
-#ifdef FEAT_CLIENTSERVER
-	    if (server_waiting())
-	    {
-		parse_queued_messages();
-		continue;
-	    }
-#endif
-#ifdef MESSAGE_QUEUE
-	    if (interrupted)
-	    {
-		parse_queued_messages();
-		continue;
-	    }
-#endif
-#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-	}
-#endif
-	if (wtime >= 0)
-	    /* no character available within "wtime" */
-	    return 0;
-
-	/* wtime == -1: no character available within 'updatetime' */
-#ifdef FEAT_AUTOCMD
-	if (trigger_cursorhold() && maxlen >= 3
-					   && !typebuf_changed(tb_change_cnt))
-	{
-	    buf[0] = K_SPECIAL;
-	    buf[1] = KS_EXTRA;
-	    buf[2] = (int)KE_CURSORHOLD;
-	    return 3;
-	}
-#endif
-	/*
-	 * If there is no character available within 'updatetime' seconds
-	 * flush all the swap files to disk.
-	 * Also done when interrupted by SIGWINCH.
-	 */
-	before_blocking();
-	break;
-    }
-
-    /* repeat until we got a character */
-    for (;;)
-    {
-	long	wtime_now = -1L;
-
-	while (do_resize)    /* window changed size */
+	/* Check if window changed size while we were busy, perhaps the ":set
+	 * columns=99" command was used. */
+	while (do_resize)
 	    handle_resize();
 
 #ifdef MESSAGE_QUEUE
 	parse_queued_messages();
-
-# ifdef FEAT_JOB_CHANNEL
-	if (has_pending_job())
-	{
-	    /* Don't wait longer than a few seconds, checking for a finished
-	     * job requires polling. */
-	    if (p_ut > 9000L)
-		wtime_now = 1000L;
-	    else
-		wtime_now = 10000L - p_ut;
-	}
-# endif
 #endif
+	if (wtime < 0 && did_start_blocking)
+	    /* blocking and already waited for p_ut */
+	    wait_time = -1;
+	else
+	{
+	    if (wtime >= 0)
+		wait_time = wtime;
+	    else
+		/* going to block after p_ut */
+		wait_time = p_ut;
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+	    elapsed_time = elapsed(&start_tv);
+#endif
+	    wait_time -= elapsed_time;
+	    if (wait_time < 0)
+	    {
+		if (wtime >= 0)
+		    /* no character available within "wtime" */
+		    return 0;
+
+		if (wtime < 0)
+		{
+		    /* no character available within 'updatetime' */
+		    did_start_blocking = TRUE;
+#ifdef FEAT_AUTOCMD
+		    if (trigger_cursorhold() && maxlen >= 3
+					    && !typebuf_changed(tb_change_cnt))
+		    {
+			buf[0] = K_SPECIAL;
+			buf[1] = KS_EXTRA;
+			buf[2] = (int)KE_CURSORHOLD;
+			return 3;
+		    }
+#endif
+		    /*
+		     * If there is no character available within 'updatetime'
+		     * seconds flush all the swap files to disk.
+		     * Also done when interrupted by SIGWINCH.
+		     */
+		    before_blocking();
+		    continue;
+		}
+	    }
+	}
+
+#ifdef FEAT_JOB_CHANNEL
+	/* Checking if a job ended requires polling.  Do this every 100 msec. */
+	if (has_pending_job() && (wait_time < 0 || wait_time > 100L))
+	    wait_time = 100L;
+#endif
+
 	/*
 	 * We want to be interrupted by the winch signal
 	 * or by an event on the monitored file descriptors.
 	 */
-	if (!WaitForChar(wtime_now, &interrupted))
+	if (WaitForChar(wait_time, &interrupted))
 	{
-	    if (do_resize)	    /* interrupted by SIGWINCH signal */
-		continue;
-#ifdef MESSAGE_QUEUE
-	    if (interrupted || wtime_now > 0)
-	    {
-		parse_queued_messages();
-		continue;
-	    }
-#endif
-	    return 0;
+	    /* If input was put directly in typeahead buffer bail out here. */
+	    if (typebuf_changed(tb_change_cnt))
+		return 0;
+
+	    /*
+	     * For some terminals we only get one character at a time.
+	     * We want the get all available characters, so we could keep on
+	     * trying until none is available
+	     * For some other terminals this is quite slow, that's why we don't
+	     * do it.
+	     */
+	    len = read_from_input_buf(buf, (long)maxlen);
+	    if (len > 0)
+		return len;
+	    continue;
 	}
 
-	/* If input was put directly in typeahead buffer bail out here. */
-	if (typebuf_changed(tb_change_cnt))
-	    return 0;
+	/* no character available */
+#if !(defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H))
+	/* estimate the elapsed time */
+	elapsed += wait_time;
+#endif
 
-	/*
-	 * For some terminals we only get one character at a time.
-	 * We want the get all available characters, so we could keep on
-	 * trying until none is available
-	 * For some other terminals this is quite slow, that's why we don't do
-	 * it.
-	 */
-	len = read_from_input_buf(buf, (long)maxlen);
-	if (len > 0)
-	    return len;
+	if (do_resize	    /* interrupted by SIGWINCH signal */
+#ifdef FEAT_CLIENTSERVER
+		|| server_waiting()
+#endif
+#ifdef MESSAGE_QUEUE
+		|| interrupted
+#endif
+		|| wait_time > 0
+		|| !did_start_blocking)
+	    continue;
+
+	/* no character available or interrupted */
+	break;
     }
+    return 0;
 }
 
     static void

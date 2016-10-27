@@ -136,6 +136,34 @@ func WaitFor(expr)
   return 1000
 endfunc
 
+" Wait for up to a given milliseconds.
+" With the +timers feature this waits for key-input by getchar(), Resume()
+" feeds key-input and resumes process. Return time waited in milliseconds.
+" Without +timers it uses simply :sleep.
+func Standby(msec)
+  if has('timers')
+    let start = reltime()
+    let g:_standby_timer = timer_start(a:msec, function('s:feedkeys'))
+    call getchar()
+    return float2nr(reltimefloat(reltime(start)) * 1000)
+  else
+    execute 'sleep ' a:msec . 'm'
+    return a:msec
+  endif
+endfunc
+
+func Resume()
+  if exists('g:_standby_timer')
+    call timer_stop(g:_standby_timer)
+    call s:feedkeys(0)
+    unlet g:_standby_timer
+  endif
+endfunc
+
+func s:feedkeys(timer)
+  call feedkeys('x', 'nt')
+endfunc
+
 " Run Vim, using the "vimcmd" file and "-u NORC".
 " "before" is a list of Vim commands to be executed before loading plugins.
 " "after" is a list of Vim commands to be executed after loading plugins.

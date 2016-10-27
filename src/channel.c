@@ -4643,8 +4643,8 @@ job_stop_on_exit(void)
 }
 
 /*
- * Return TRUE when there is any job that might exit, which means
- * job_check_ended() should be called once in a while.
+ * Return TRUE when there is any job that has an exit callback and might exit,
+ * which means job_check_ended() should be called more often.
  */
     int
 has_pending_job(void)
@@ -4652,7 +4652,11 @@ has_pending_job(void)
     job_T	    *job;
 
     for (job = first_job; job != NULL; job = job->jv_next)
-	if (job_still_alive(job))
+	/* Only should check if the channel has been closed, if the channel is
+	 * open the job won't exit. */
+	if (job->jv_status == JOB_STARTED && job->jv_exit_cb != NULL
+		&& (job->jv_channel == NULL
+		    || !channel_still_useful(job->jv_channel)))
 	    return TRUE;
     return FALSE;
 }
