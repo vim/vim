@@ -1437,7 +1437,6 @@ struct jobvar_S
 #endif
 #ifdef WIN32
     PROCESS_INFORMATION	jv_proc_info;
-    HANDLE		jv_job_object;
 #endif
     jobstatus_T	jv_status;
     char_u	*jv_stoponexit; /* allocated */
