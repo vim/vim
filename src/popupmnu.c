@@ -582,7 +582,9 @@ pum_set_selected(int n, int repeat)
 
 	    if (curwin->w_p_pvw)
 	    {
-		if (curbuf->b_fname == NULL
+		if (!resized
+			&& curbuf->b_nwindows == 1
+			&& curbuf->b_fname == NULL
 			&& curbuf->b_p_bt[0] == 'n' && curbuf->b_p_bt[2] == 'f'
 			&& curbuf->b_p_bh[0] == 'w')
 		{
