@@ -378,7 +378,7 @@ func DummyCompleteFour(findstart, base)
   endif
 endfunc
 
-" Test that 'completefunc' works when it's OK.
+" Test that 'omnifunc' works when it's OK.
 func Test_omnifunc_with_check()
   new
   setlocal omnifunc=DummyCompleteFour
@@ -437,5 +437,31 @@ func Test_complete_no_undo()
   q!
 endfunc
 
+function! DummyCompleteFive(findstart, base)
+  if a:findstart
+    return 0
+  else
+    return [
+          \   { 'word': 'January', 'info': "info1-1\n1-2\n1-3" },
+          \   { 'word': 'February', 'info': "info2-1\n2-2\n2-3" },
+          \   { 'word': 'March', 'info': "info3-1\n3-2\n3-3" },
+          \   { 'word': 'April', 'info': "info4-1\n4-2\n4-3" },
+          \   { 'word': 'May', 'info': "info5-1\n5-2\n5-3" },
+          \ ]
+  endif
+endfunc
+
+" Test that 'completefunc' on Scratch buffer with preview window works when
+" it's OK.
+func Test_completefunc_with_scratch_buffer()
+  new +setlocal\ buftype=nofile\ bufhidden=wipe\ noswapfile
+  set completeopt+=preview
+  setlocal completefunc=DummyCompleteFive
+  call feedkeys("A\<C-X>\<C-U>\<C-N>\<C-N>\<C-N>\<Esc>", "x")
+  call assert_equal(['April'], getline(1, '$'))
+  pclose
+  q!
+  set completeopt&
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
