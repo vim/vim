@@ -5390,6 +5390,10 @@ mch_detect_ended_job(job_T *job_list)
     return NULL;
 }
 
+/*
+ * Send a (deadly) signal to "job".
+ * Return FAIL if "how" is not a valid name.
+ */
     int
 mch_stop_job(job_T *job, char_u *how)
 {
