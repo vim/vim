@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.0.  Last change: 2016 Sep 29
+*channel.txt*      For Vim version 8.0.  Last change: 2016 Oct 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -598,9 +598,10 @@ See |job_setoptions()| and |ch_setoptions()|.
 						*job-exit_cb*
 "exit_cb": handler	Callback for when the job ends.  The arguments are the
 			job and the exit status.
-			Vim checks about every 10 seconds for jobs that ended.
-			The check also be triggered by calling |job_status()|,
-			which may then invoke the exit_cb handler.
+			Vim checks up to 10 times per second for jobs that
+			ended.  The check can also be triggered by calling
+			|job_status()|, which may then invoke the exit_cb
+			handler.
 			Note that data can be buffered, callbacks may still be
 			called after the process ends.
 							*job-timeout*

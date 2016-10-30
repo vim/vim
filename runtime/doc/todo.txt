@@ -35,7 +35,6 @@ not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
-- Check for job cleanup more often?  Patch from Ozaki Kiichi, 2016 Oct 22.
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
@@ -110,8 +109,6 @@ Or avoid recursiveness.
 Allow using json with empty key?  Dict already has it.
 
 Json string with trailing \u should be an error. (Lcd)
-
-Patch to fix conceal mode. (Christian Brabandt, 2016 Oct 23, close #1092)
 
 Patch to reset ex_exitvalue after catch. (Christian Brabandt, 2016 Oct 23)
 
