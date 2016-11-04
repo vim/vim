@@ -60,7 +60,9 @@ pum_display(
     int		above_row;
     int		below_row;
     int		redo_count = 0;
+#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     win_T	*pvwin;
+#endif
 
 redo:
     def_width = PUM_DEF_WIDTH;
