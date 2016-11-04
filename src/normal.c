@@ -5713,9 +5713,13 @@ nv_ident(cmdarg_T *cap)
      */
     if (cmdchar == 'K' && !kp_help)
     {
-	/* Escape the argument properly for a shell command */
 	ptr = vim_strnsave(ptr, n);
-	p = vim_strsave_shellescape(ptr, TRUE, TRUE);
+	if (kp_ex)
+	    /* Escape the argument properly for an Ex command */
+	    p = vim_strsave_fnameescape(ptr, FALSE);
+	else
+	    /* Escape the argument properly for a shell command */
+	    p = vim_strsave_shellescape(ptr, TRUE, TRUE);
 	vim_free(ptr);
 	if (p == NULL)
 	{
