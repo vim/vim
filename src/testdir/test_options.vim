@@ -49,6 +49,9 @@ func Test_signcolumn()
 endfunc
 
 func Test_filetype_valid()
+  if !has('autocmd')
+    return
+  endif
   set ft=valid_name
   call assert_equal("valid_name", &filetype)
   set ft=valid-name
@@ -66,6 +69,9 @@ func Test_filetype_valid()
 endfunc
 
 func Test_syntax_valid()
+  if !has('syntax')
+    return
+  endif
   set syn=valid_name
   call assert_equal("valid_name", &syntax)
   set syn=valid-name
@@ -83,6 +89,9 @@ func Test_syntax_valid()
 endfunc
 
 func Test_keymap_valid()
+  if !has('keymap')
+    return
+  endif
   call assert_fails(":set kmp=valid_name", "E544:")
   call assert_fails(":set kmp=valid_name", "valid_name")
   call assert_fails(":set kmp=valid-name", "E544:")
