@@ -5823,6 +5823,21 @@ set_string_option(
 }
 
 /*
+ * Return TRUE if "val" is a valid 'filetype' name.
+ * Also used for 'syntax' and 'keymap'.
+ */
+    static int
+valid_filetype(char_u *val)
+{
+    char_u *s;
+
+    for (s = val; *s != NUL; ++s)
+	if (!ASCII_ISALNUM(*s) && vim_strchr((char_u *)".-_", *s) == NULL)
+	    return FALSE;
+    return TRUE;
+}
+
+/*
  * Handle string options that need some action to perform when changed.
  * Returns NULL for success, or an error message for an error.
  */
@@ -6235,8 +6250,11 @@ did_set_string_option(
 #ifdef FEAT_KEYMAP
     else if (varp == &curbuf->b_p_keymap)
     {
-	/* load or unload key mapping tables */
-	errmsg = keymap_init();
+	if (!valid_filetype(*varp))
+	    errmsg = e_invarg;
+	else
+	    /* load or unload key mapping tables */
+	    errmsg = keymap_init();
 
 	if (errmsg == NULL)
 	{
@@ -7218,6 +7236,22 @@ did_set_string_option(
     else if (varp == &p_rop && gui.in_use)
     {
 	if (!gui_mch_set_rendering_options(p_rop))
+	    errmsg = e_invarg;
+    }
+#endif
+
+#ifdef FEAT_AUTOCMD
+    else if (gvarp == &p_ft)
+    {
+	if (!valid_filetype(*varp))
+	    errmsg = e_invarg;
+    }
+#endif
+
+#ifdef FEAT_SYN_HL
+    else if (gvarp == &p_syn)
+    {
+	if (!valid_filetype(*varp))
 	    errmsg = e_invarg;
     }
 #endif
