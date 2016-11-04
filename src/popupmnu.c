@@ -54,18 +54,21 @@ pum_display(
     int		kind_width;
     int		extra_width;
     int		i;
-    int		top_clear;
     int		row;
     int		context_lines;
     int		col;
-    int		above_row = cmdline_row;
+    int		above_row;
+    int		below_row;
     int		redo_count = 0;
+    win_T	*pvwin;
 
 redo:
     def_width = PUM_DEF_WIDTH;
     max_width = 0;
     kind_width = 0;
     extra_width = 0;
+    above_row = 0;
+    below_row = cmdline_row;
 
     /* Pretend the pum is already there to avoid that must_redraw is set when
      * 'cuc' is on. */
@@ -76,18 +79,16 @@ redo:
     row = curwin->w_wrow + W_WINROW(curwin);
 
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
-    if (firstwin->w_p_pvw)
-	top_clear = firstwin->w_height;
-    else
-#endif
-	top_clear = 0;
-
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
-    /* When the preview window is at the bottom stop just above it.  Also
-     * avoid drawing over the status line so that it's clear there is a window
-     * boundary. */
-    if (lastwin->w_p_pvw)
-	above_row -= lastwin->w_height + lastwin->w_status_height + 1;
+    FOR_ALL_WINDOWS(pvwin)
+	if (pvwin->w_p_pvw)
+	    break;
+    if (pvwin != NULL)
+    {
+	if (W_WINROW(pvwin) < W_WINROW(curwin))
+	    above_row = W_WINROW(pvwin) + pvwin->w_height;
+	else if (W_WINROW(pvwin) > W_WINROW(curwin) + curwin->w_height)
+	    below_row = W_WINROW(pvwin);
+    }
 #endif
 
     /*
@@ -102,8 +103,7 @@ redo:
 
     /* Put the pum below "row" if possible.  If there are few lines decide on
      * where there is more room. */
-    if (row  + 2 >= above_row - pum_height
-					 && row > (above_row - top_clear) / 2)
+    if (row - above_row >= below_row - row)
     {
 	/* pum above "row" */
 
@@ -141,8 +141,8 @@ redo:
 				+ curwin->w_cline_height - curwin->w_wrow;
 
 	pum_row = row + context_lines;
-	if (size > above_row - pum_row)
-	    pum_height = above_row - pum_row;
+	if (size > below_row - pum_row)
+	    pum_height = below_row - pum_row;
 	else
 	    pum_height = size;
 	if (p_ph > 0 && pum_height > p_ph)
@@ -154,13 +154,11 @@ redo:
 	return;
 
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
-    /* If there is a preview window at the top avoid drawing over it. */
-    if (firstwin->w_p_pvw
-	    && pum_row < firstwin->w_height
-	    && pum_height > firstwin->w_height + 4)
+    /* If there is a preview window at the above avoid drawing over it. */
+    if (pvwin != NULL && pum_row < above_row && pum_height > above_row)
     {
-	pum_row += firstwin->w_height;
-	pum_height -= firstwin->w_height;
+	pum_row += above_row;
+	pum_height -= above_row;
     }
 #endif
 
