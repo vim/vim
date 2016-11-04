@@ -141,6 +141,7 @@
 #undef	HAVE_SYS_POLL_H
 #undef	HAVE_PWD_H
 #undef  HAVE_FCHDIR
+#undef  HAVE_LSTAT
 
 /* Hardware specific */
 #ifdef  VAX
@@ -148,13 +149,15 @@
 #undef  HAVE_USLEEP
 #undef  HAVE_STRCASECMP
 #undef  HAVE_STRINGS_H
-#undef	HAVE_SIGSETJMP
+#undef  HAVE_SIGSETJMP
+#undef  HAVE_ISNAN
 #else
 #define HAVE_GETTIMEOFDAY
 #define HAVE_USLEEP
 #define HAVE_STRCASECMP
 #define HAVE_STRINGS_H
-#define	HAVE_SIGSETJMP
+#define HAVE_SIGSETJMP
+#define HAVE_ISNAN
 #endif
 
 /* Compiler specific */

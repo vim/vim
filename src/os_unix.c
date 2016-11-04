@@ -501,7 +501,7 @@ mch_inchar(
 	/* no character available */
 #if !(defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H))
 	/* estimate the elapsed time */
-	elapsed += wait_time;
+	elapsed_time += wait_time;
 #endif
 
 	if (do_resize	    /* interrupted by SIGWINCH signal */
@@ -2644,7 +2644,7 @@ fname_case(
     DIR		*dirp;
     struct dirent *dp;
 
-    if (lstat((char *)name, &st) >= 0)
+    if (mch_lstat((char *)name, &st) >= 0)
     {
 	/* Open the directory where the file is located. */
 	slash = vim_strrchr(name, '/');
@@ -2677,7 +2677,7 @@ fname_case(
 		    vim_strncpy(newname, name, MAXPATHL);
 		    vim_strncpy(newname + (tail - name), (char_u *)dp->d_name,
 						    MAXPATHL - (tail - name));
-		    if (lstat((char *)newname, &st2) >= 0
+		    if (mch_lstat((char *)newname, &st2) >= 0
 			    && st.st_ino == st2.st_ino
 			    && st.st_dev == st2.st_dev)
 		    {
@@ -3040,7 +3040,7 @@ mch_isrealdir(char_u *name)
 
     if (*name == NUL)	    /* Some stat()s don't flag "" as an error. */
 	return FALSE;
-    if (lstat((char *)name, &statb))
+    if (mch_lstat((char *)name, &statb))
 	return FALSE;
 #ifdef _POSIX_SOURCE
     return (S_ISDIR(statb.st_mode) ? TRUE : FALSE);
@@ -4098,6 +4098,7 @@ mch_call_shell(
     int		tmode = cur_tmode;
 #ifdef USE_SYSTEM	/* use system() to start the shell: simple but slow */
     char_u	*newcmd;	/* only needed for unix */
+    int		x;
 
     out_flush();
 

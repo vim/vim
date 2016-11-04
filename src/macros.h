@@ -177,6 +177,7 @@
 # define mch_fstat(n, p)	fstat(vms_fixfilename(n), (p))
 	/* VMS does not have lstat() */
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
+# define mch_rmdir(n)		rmdir(vms_fixfilename(n))
 #else
 # ifndef WIN32
 #   define mch_access(n, p)	access((n), (p))

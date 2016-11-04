@@ -75,10 +75,6 @@
 # ifdef VMS
 #  define mch_remove(x) delete((char *)(x))
 #  define vim_mkdir(x, y) mkdir((char *)(x), y)
-#  ifdef VAX
-#  else
-#   define mch_rmdir(x) rmdir((char *)(x))
-#  endif
 # else
 #  define vim_mkdir(x, y) mkdir((char *)(x), y)
 #  define mch_rmdir(x) rmdir((char *)(x))
