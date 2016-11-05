@@ -5822,6 +5822,7 @@ set_string_option(
     return r;
 }
 
+#if defined(FEAT_KEYMAP) || defined(FEAT_AUTOCMD) || defined(FEAT_SYN_HL)
 /*
  * Return TRUE if "val" is a valid 'filetype' name.
  * Also used for 'syntax' and 'keymap'.
@@ -5836,6 +5837,7 @@ valid_filetype(char_u *val)
 	    return FALSE;
     return TRUE;
 }
+#endif
 
 /*
  * Handle string options that need some action to perform when changed.
