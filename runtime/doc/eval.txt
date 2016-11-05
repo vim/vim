@@ -7548,7 +7548,10 @@ system({expr} [, {input}])				*system()* *E677*
 		If {input} is given and is a |List| it is written to the file
 		in a way |writefile()| does with {binary} set to "b" (i.e.
 		with a newline between each list item with newlines inside
-		list items converted to NULs).  
+		list items converted to NULs).
+		When {input} is given and is a number that is a valid id for
+		an existing buffer then the content of the buffer is written
+		to the file line by line, separated by a NL.
 
 		Pipes are not used, the 'shelltemp' option is not used.
 

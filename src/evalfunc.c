@@ -11824,7 +11824,28 @@ get_cmd_output_as_rettv(
 	    EMSG2(_(e_notopen), infile);
 	    goto errret;
 	}
-	if (argvars[1].v_type == VAR_LIST)
+	if (argvars[1].v_type == VAR_NUMBER)
+	{
+	    linenr_T line;
+	    buf_T *buf;
+	    size_t len;
+
+	    buf = buflist_findnr(argvars[1].vval.v_number);
+	    if (buf == NULL)
+		EMSGN(_(e_nobufnr), argvars[1].vval.v_number);
+
+	    for (line = 1; line <= buf->b_ml.ml_line_count; line++)
+	    {
+		p = ml_get_buf(buf, line, FALSE);
+		len = STRLEN(p);
+		if (len > 0 && fwrite(p, len, 1, fd) != 1) {
+		    err = TRUE;
+		    break;
+		}
+		fputc(NL, fd);
+	    }
+	}
+	else if (argvars[1].v_type == VAR_LIST)
 	{
 	    if (write_list(fd, argvars[1].vval.v_list, TRUE) == FAIL)
 		err = TRUE;
