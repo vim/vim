@@ -1249,6 +1249,9 @@ func! Test_normal23_K()
   call assert_equal('aa%bb', fnamemodify(bufname('%'), ':t'))
   bwipe!
   4
+  if IsWindows()
+    set noswapfile
+  endif
   norm! K
   call assert_equal('cc|dd', fnamemodify(bufname('%'), ':t'))
   bwipe!
