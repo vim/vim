@@ -1076,7 +1076,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 	    if (bi->bi_used >= bi->bi_avail)
 	    {
 		n = fread(bi->bi_buffer, 1, (size_t)CRYPT_BUF_SIZE, bi->bi_fp);
-		if (n <= 0)
+		if (n == 0)
 		{
 		    /* Error may be checked for only later.  Fill with zeros,
 		     * so that the reader won't use garbage. */
