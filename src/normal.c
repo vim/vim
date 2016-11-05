@@ -1995,6 +1995,11 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    break;
 
 	case OP_FUNCTION:
+#ifdef FEAT_LINEBREAK
+	    /* Restore linebreak, so that when the user edits it looks as
+	     * before. */
+	    curwin->w_p_lbr = lbr_saved;
+#endif
 	    op_function(oap);		/* call 'operatorfunc' */
 	    break;
 
