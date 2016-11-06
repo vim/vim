@@ -546,6 +546,7 @@ EXTERN int	clip_unnamed_saved INIT(= 0);
 EXTERN win_T	*firstwin;		/* first window */
 EXTERN win_T	*lastwin;		/* last window */
 EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
+# define ONE_WINDOW (firstwin == lastwin)
 # define W_NEXT(wp) ((wp)->w_next)
 # define FOR_ALL_WINDOWS(wp) for (wp = firstwin; wp != NULL; wp = wp->w_next)
 # define FOR_ALL_TABPAGES(tp) for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
@@ -563,6 +564,7 @@ EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
 #else
 # define firstwin curwin
 # define lastwin curwin
+# define ONE_WINDOW 1
 # define W_NEXT(wp) NULL
 # define FOR_ALL_WINDOWS(wp) wp = curwin;
 # define FOR_ALL_TABPAGES(tp) for (;FALSE;)

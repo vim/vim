@@ -1510,7 +1510,7 @@ win_update(win_T *wp)
 	if (mid_start == 0)
 	{
 	    mid_end = wp->w_height;
-	    if (lastwin == firstwin)
+	    if (ONE_WINDOW)
 	    {
 		/* Clear the screen when it was not done by win_del_lines() or
 		 * win_ins_lines() above, "screen_cleared" is FALSE or MAYBE
@@ -5670,7 +5670,10 @@ win_line(
 #ifdef FEAT_DIFF
 		     && filler_todo <= 0
 #endif
-		     && W_WIDTH(wp) == Columns)
+#ifdef FEAT_WINDOWS
+		     && W_WIDTH(wp) == Columns
+#endif
+		     )
 	    {
 		/* Remember that the line wraps, used for modeless copy. */
 		LineWraps[screen_row - 1] = TRUE;
@@ -10524,7 +10527,7 @@ fillchar_status(int *attr, int is_curwin)
      * window differs, or the fillchars differ, or this is not the
      * current window */
     if (*attr != 0 && ((hl_attr(HLF_S) != hl_attr(HLF_SNC)
-			|| !is_curwin || firstwin == lastwin)
+			|| !is_curwin || ONE_WINDOW)
 		    || (fill_stl != fill_stlnc)))
 	return fill;
     if (is_curwin)

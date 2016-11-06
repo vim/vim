@@ -234,7 +234,7 @@ newwindow:
 /* cursor to previous window with wrap around */
     case 'W':
 		CHECK_CMDWIN
-		if (firstwin == lastwin && Prenum != 1)	/* just one window */
+		if (ONE_WINDOW && Prenum != 1)	/* just one window */
 		    beep_flush();
 		else
 		{
@@ -1593,7 +1593,7 @@ win_rotate(int upwards, int count)
     frame_T	*frp;
     int		n;
 
-    if (firstwin == lastwin)		/* nothing to do */
+    if (ONE_WINDOW)		/* nothing to do */
     {
 	beep_flush();
 	return;
@@ -2206,7 +2206,7 @@ one_window(void)
     }
     return TRUE;
 #else
-    return firstwin == lastwin;
+    return ONE_WINDOW;
 #endif
 }
 
@@ -2220,7 +2220,7 @@ close_last_window_tabpage(
     int		free_buf,
     tabpage_T   *prev_curtab)
 {
-    if (firstwin == lastwin)
+    if (ONE_WINDOW)
     {
 #ifdef FEAT_AUTOCMD
 	buf_T	*old_curbuf = curbuf;
@@ -2625,7 +2625,7 @@ winframe_remove(
     /*
      * If there is only one window there is nothing to remove.
      */
-    if (tp == NULL ? firstwin == lastwin : tp->tp_firstwin == tp->tp_lastwin)
+    if (tp == NULL ? ONE_WINDOW : tp->tp_firstwin == tp->tp_lastwin)
 	return NULL;
 
     /*
@@ -2780,7 +2780,7 @@ win_altframe(
     frame_T	*frp;
     int		b;
 
-    if (tp == NULL ? firstwin == lastwin : tp->tp_firstwin == tp->tp_lastwin)
+    if (tp == NULL ? ONE_WINDOW : tp->tp_firstwin == tp->tp_lastwin)
 	/* Last window in this tab page, will go to next tab page. */
 	return alt_tabpage()->tp_curwin->w_frame;
 
