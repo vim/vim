@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2016 Oct 15
+*eval.txt*	For Vim version 8.0.  Last change: 2016 Nov 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2523,7 +2523,7 @@ assert_exception({error} [, {msg}])			*assert_exception()*
 assert_fails({cmd} [, {error}])					*assert_fails()*
 		Run {cmd} and add an error message to |v:errors| if it does
 		NOT produce an error.
-		When {error} is given it must match |v:errmsg|.
+		When {error} is given it must match in |v:errmsg|.
 
 assert_false({actual} [, {msg}])				*assert_false()*
 		When {actual} is not false an error message is added to

@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.0.  Last change: 2016 Jul 17
+*quickfix.txt*  For Vim version 8.0.  Last change: 2016 Nov 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -878,7 +878,7 @@ need to write down a "todo" list.
 
 
 The Vim plugins in the "compiler" directory will set options to use the
-selected compiler.  For ":compiler" local options are set, for ":compiler!"
+selected compiler.  For `:compiler` local options are set, for `:compiler!`
 global options.
 							*current_compiler*
 To support older Vim versions, the plugins always use "current_compiler" and

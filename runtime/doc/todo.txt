@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Oct 27
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Nov 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -97,6 +97,11 @@ Regexp problems:
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
   had_endbrace[] is set but not initialized or used.
 
+Patch to support nested namespace syntax. (Pauli, 2016 Oct 30, #1214)
+
+Make html indent file use javascript indent, now that it's not just cindent.
+#1220
+
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
@@ -114,6 +119,7 @@ Patch to reset ex_exitvalue after catch. (Christian Brabandt, 2016 Oct 23)
 
 Patch to deal with changed configure events in GTK 3. (Jan Alexander Steffens,
 2016 Oct 23 #1193)
+Remarks from nuko8, 2016 Nov 2.
 
 Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
@@ -144,6 +150,9 @@ Add tests for using number larger than number of lines in buffer.
 
 Patch to make v:shell_error writable. (Christian Brabandt, 2016 Sep 27)
 Is there another solution?
+
+On MS-Windows with 'clipboard' set to "unnamed" this doesn't work to double
+lines: :g/^/normal yyp   On Unix it works OK.  (Bryce Orgill, 2016 Nov 5)
 
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 E.g. deepcopy(test_null_list())
