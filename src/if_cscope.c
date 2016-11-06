@@ -1178,12 +1178,12 @@ cs_find_common(
 	}
 
 # ifdef FEAT_AUTOCMD
-	if (*qfpos != '0')
+	if (*qfpos != '0'
+		&& apply_autocmds(EVENT_QUICKFIXCMDPRE, (char_u *)"cscope",
+					       curbuf->b_fname, TRUE, curbuf))
 	{
-	    apply_autocmds(EVENT_QUICKFIXCMDPRE, (char_u *)"cscope",
-					       curbuf->b_fname, TRUE, curbuf);
 #  ifdef FEAT_EVAL
-	    if (did_throw || force_abort)
+	    if (aborting())
 		return FALSE;
 #  endif
 	}

@@ -3446,12 +3446,11 @@ ex_make(exarg_T *eap)
 	case CMD_lgrepadd:  au_name = (char_u *)"lgrepadd"; break;
 	default: break;
     }
-    if (au_name != NULL)
+    if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf))
     {
-	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
-					       curbuf->b_fname, TRUE, curbuf);
 # ifdef FEAT_EVAL
-	if (did_throw || force_abort)
+	if (aborting())
 	    return;
 # endif
     }
@@ -3970,12 +3969,13 @@ ex_vimgrep(exarg_T *eap)
 	case CMD_lgrepadd:    au_name = (char_u *)"lgrepadd"; break;
 	default: break;
     }
-    if (au_name != NULL)
+    if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf))
     {
-	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
-					       curbuf->b_fname, TRUE, curbuf);
-	if (did_throw || force_abort)
+# ifdef FEAT_EVAL
+	if (aborting())
 	    return;
+# endif
     }
 #endif
 
@@ -4875,12 +4875,11 @@ ex_cbuffer(exarg_T *eap)
 	case CMD_laddbuffer:	au_name = (char_u *)"laddbuffer"; break;
 	default: break;
     }
-    if (au_name != NULL)
+    if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf))
     {
-	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
-					       curbuf->b_fname, TRUE, curbuf);
 # ifdef FEAT_EVAL
-	if (did_throw || force_abort)
+	if (aborting())
 	    return;
 # endif
     }
@@ -4966,12 +4965,11 @@ ex_cexpr(exarg_T *eap)
 	case CMD_laddexpr:  au_name = (char_u *)"laddexpr"; break;
 	default: break;
     }
-    if (au_name != NULL)
+    if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf))
     {
-	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
-					       curbuf->b_fname, TRUE, curbuf);
 # ifdef FEAT_EVAL
-	if (did_throw || force_abort)
+	if (aborting())
 	    return;
 # endif
     }
@@ -5042,12 +5040,13 @@ ex_helpgrep(exarg_T *eap)
 	case CMD_lhelpgrep: au_name = (char_u *)"lhelpgrep"; break;
 	default: break;
     }
-    if (au_name != NULL)
+    if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf))
     {
-	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
-					       curbuf->b_fname, TRUE, curbuf);
-	if (did_throw || force_abort)
+# ifdef FEAT_EVAL
+	if (aborting())
 	    return;
+# endif
     }
 #endif
 
