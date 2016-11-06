@@ -345,7 +345,11 @@
 #  endif
 #  if !defined(INFINITY)
 #   if defined(DBL_MAX)
-#    define INFINITY (DBL_MAX+DBL_MAX)
+#    ifdef VMS
+#     define INFINITY DBL_MAX
+#    else
+#     define INFINITY (DBL_MAX+DBL_MAX)
+#    endif
 #   else
 #    define INFINITY (1.0 / 0.0)
 #   endif
