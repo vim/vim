@@ -369,7 +369,7 @@ Leave out the fourth argument if no response is to be sent:
 ==============================================================================
 6. Using a RAW or NL channel				*channel-raw*
 
-If mode is RAW or NL then a message can be send like this: >
+If mode is RAW or NL then a message can be sent like this: >
     let response = ch_evalraw(channel, {string})
 
 The {string} is sent as-is.  The response will be what can be read from the
