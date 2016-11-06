@@ -435,6 +435,7 @@ spell_check(
     int		wrongcaplen = 0;
     int		lpi;
     int		count_word = docount;
+    int		camel_case = 0;
 
     /* A word never starts at a space or a control character.  Return quickly
      * then, skipping over the character. */
@@ -466,10 +467,15 @@ spell_check(
     mi.mi_fend = ptr;
     if (spell_iswordp(mi.mi_fend, wp))
     {
+	int last_char_upper;
+	int this_char_upper = SPELL_ISUPPER(*mi.mi_fend);
 	do
 	{
+	    last_char_upper = this_char_upper;
 	    MB_PTR_ADV(mi.mi_fend);
-	} while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp));
+	    this_char_upper = SPELL_ISUPPER(*mi.mi_fend);
+	    camel_case = wp->w_p_scc && !last_char_upper && this_char_upper;
+	} while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp) && !camel_case);
 
 	if (capcol != NULL && *capcol == 0 && wp->w_s->b_cap_prog != NULL)
 	{
@@ -499,6 +505,12 @@ spell_check(
     (void)spell_casefold(ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
 							     MAXWLEN + 1);
     mi.mi_fwordlen = (int)STRLEN(mi.mi_fword);
+
+    // Introduce a fake word end space into the folded word if the word is camel case
+    if (camel_case)
+    {
+	mi.mi_fword[mi.mi_fwordlen-1] = ' ';
+    }
 
     /* The word is bad unless we recognize it. */
     mi.mi_result = SP_BAD;

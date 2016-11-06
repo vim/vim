@@ -228,6 +228,8 @@ typedef struct
 #ifdef FEAT_SPELL
     int		wo_spell;
 # define w_p_spell w_onebuf_opt.wo_spell /* 'spell' */
+    int		wo_scc;
+# define w_p_scc w_onebuf_opt.wo_scc	/* 'spellcamelcase' */
 #endif
 #ifdef FEAT_SYN_HL
     int		wo_cuc;

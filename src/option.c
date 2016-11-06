@@ -235,6 +235,7 @@
 #define PV_SCROLL	OPT_WIN(WV_SCROLL)
 #ifdef FEAT_SPELL
 # define PV_SPELL	OPT_WIN(WV_SPELL)
+# define PV_SCC		OPT_WIN(WV_SCC)
 #endif
 #ifdef FEAT_SYN_HL
 # define PV_CUC		OPT_WIN(WV_CUC)
@@ -2578,6 +2579,13 @@ static struct vimoption options[] =
     {"spell",	    NULL,   P_BOOL|P_VI_DEF|P_RWIN,
 #ifdef FEAT_SPELL
 			    (char_u *)VAR_WIN, PV_SPELL,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
+    {"spellcamelcase", "scc", P_BOOL|P_VI_DEF|P_RWIN,
+#ifdef FEAT_SPELL
+			    (char_u *)VAR_WIN, PV_SCC,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
@@ -10617,6 +10625,7 @@ get_varp(struct vimoption *p)
 	case PV_LIST:	return (char_u *)&(curwin->w_p_list);
 #ifdef FEAT_SPELL
 	case PV_SPELL:	return (char_u *)&(curwin->w_p_spell);
+	case PV_SCC:	return (char_u *)&(curwin->w_p_scc);
 #endif
 #ifdef FEAT_SYN_HL
 	case PV_CUC:	return (char_u *)&(curwin->w_p_cuc);

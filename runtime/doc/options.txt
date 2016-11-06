@@ -7131,6 +7131,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on spell checking will be done.  See |spell|.
 	The languages are specified with 'spelllang'.
 
+						*'spellcamelcase'* *'scc'*
+						*'nospellcamelcase'* *'noscc'*
+'spellcamelcase'	boolean	(default off)
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	When on spell checking will treat each word in a camelCase identifier
+	as a distinct word.
+
 						*'spellcapcheck'* *'spc'*
 'spellcapcheck' 'spc'	string	(default "[.?!]\_[\])'" \t]\+")
 			local to buffer

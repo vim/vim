@@ -1175,6 +1175,7 @@ enum
     , WV_SCROLL
 #ifdef FEAT_SPELL
     , WV_SPELL
+    , WV_SCC
 #endif
 #ifdef FEAT_SYN_HL
     , WV_CUC
