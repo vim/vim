@@ -68,7 +68,7 @@ win32:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) newtests
 fixff:
 	-$(VIMPROG) -u dos.vim $(NO_PLUGIN) "+argdo set ff=dos|upd" +q *.in *.ok
 	-$(VIMPROG) -u dos.vim $(NO_PLUGIN) "+argdo set ff=unix|upd" +q \
-		dotest.in test60.ok test71.ok test74.ok test_listchars.ok \
+		dotest.in test60.ok test_listchars.ok \
 		test_getcwd.ok test_wordcount.ok
 
 clean:
