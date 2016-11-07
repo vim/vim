@@ -238,6 +238,10 @@ static volatile int deadly_signal = 0;	    /* The signal we caught */
 /* volatile because it is used in signal handler deathtrap(). */
 static volatile int in_mch_delay = FALSE;    /* sleeping in mch_delay() */
 
+#if defined(FEAT_JOB_CHANNEL) && !defined(USE_SYSTEM)
+static int dont_check_job_ended = 0;
+#endif
+
 static int curr_tmode = TMODE_COOK;	/* contains current terminal mode */
 
 #ifdef USE_XSMP
@@ -4485,7 +4489,9 @@ mch_call_shell(
 	    catch_signals(SIG_IGN, SIG_ERR);
 	    catch_int_signal();
 	    UNBLOCK_SIGNALS(&curset);
-
+# ifdef FEAT_JOB_CHANNEL
+	    ++dont_check_job_ended;
+# endif
 	    /*
 	     * For the GUI we redirect stdin, stdout and stderr to our window.
 	     * This is also used to pipe stdin/stdout to/from the external
@@ -5030,6 +5036,10 @@ finished:
 		wait4pid(wpid, NULL);
 	    }
 
+# ifdef FEAT_JOB_CHANNEL
+	    --dont_check_job_ended;
+# endif
+
 	    /*
 	     * Set to raw mode right now, otherwise a CTRL-C after
 	     * catch_signals() will kill Vim.
@@ -5362,6 +5372,14 @@ mch_detect_ended_job(job_T *job_list)
 # endif
     pid_t	wait_pid = 0;
     job_T	*job;
+
+# ifndef USE_SYSTEM
+    /* Do not do this when waiting for a shell command to finish, we would get
+     * the exit value here (and discard it), the exit value obtained there
+     * would then be wrong.  */
+    if (dont_check_job_ended > 0)
+	return NULL;
+# endif
 
 # ifdef __NeXT__
     wait_pid = wait4(-1, &status, WNOHANG, (struct rusage *)0);
