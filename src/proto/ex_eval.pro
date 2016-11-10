@@ -7,7 +7,7 @@ int cause_errthrow(char_u *mesg, int severe, int *ignore);
 void free_global_msglist(void);
 void do_errthrow(struct condstack *cstack, char_u *cmdname);
 int do_intthrow(struct condstack *cstack);
-char_u *get_exception_string(void *value, int type, char_u *cmdname, int *should_free);
+char_u *get_exception_string(void *value, except_type_T type, char_u *cmdname, int *should_free);
 void discard_current_exception(void);
 void report_make_pending(int pending, void *value);
 void report_resume_pending(int pending, void *value);

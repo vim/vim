@@ -16,7 +16,7 @@
 #if defined(FEAT_EVAL) || defined(PROTO)
 
 static void	free_msglist(struct msglist *l);
-static int	throw_exception(void *, int, char_u *);
+static int	throw_exception(void *, except_type_T, char_u *);
 static char_u	*get_end_emsg(struct condstack *cstack);
 
 /*
@@ -422,7 +422,7 @@ do_intthrow(struct condstack *cstack)
     char_u *
 get_exception_string(
     void	*value,
-    int		type,
+    except_type_T type,
     char_u	*cmdname,
     int		*should_free)
 {
@@ -503,7 +503,7 @@ get_exception_string(
  * error exception.
  */
     static int
-throw_exception(void *value, int type, char_u *cmdname)
+throw_exception(void *value, except_type_T type, char_u *cmdname)
 {
     except_T	*excp;
     int		should_free;
