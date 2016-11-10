@@ -2893,7 +2893,7 @@ get_logfont(
      */
     for (p = name; *p && *p != ':'; p++)
     {
-	if (p - name + 1 > LF_FACESIZE)
+	if (p - name + 1 >= LF_FACESIZE)
 	    goto theend;			/* Name too long */
 	lf->lfFaceName[p - name] = *p;
     }
