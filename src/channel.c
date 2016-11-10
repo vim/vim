@@ -4674,6 +4674,9 @@ job_check_ended(void)
 {
     int		i;
 
+    if (first_job == NULL)
+	return;
+
     for (i = 0; i < MAX_CHECK_ENDED; ++i)
     {
 	job_T	*job = mch_detect_ended_job(first_job);
