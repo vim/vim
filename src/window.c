@@ -791,7 +791,7 @@ win_split_ins(
 	oldwin = curwin;
 
     /* add a status line when p_ls == 1 and splitting the first window */
-    if (lastwin == firstwin && p_ls == 1 && oldwin->w_status_height == 0)
+    if (ONE_WINDOW && p_ls == 1 && oldwin->w_status_height == 0)
     {
 	if (oldwin->w_height <= p_wmh && new_wp == NULL)
 	{
@@ -1492,7 +1492,7 @@ win_exchange(long Prenum)
     win_T	*wp2;
     int		temp;
 
-    if (lastwin == firstwin)	    /* just one window */
+    if (ONE_WINDOW)	    /* just one window */
     {
 	beep_flush();
 	return;
@@ -1674,7 +1674,7 @@ win_totop(int size, int flags)
     int		dir;
     int		height = curwin->w_height;
 
-    if (lastwin == firstwin)
+    if (ONE_WINDOW)
     {
 	beep_flush();
 	return;
@@ -2123,7 +2123,7 @@ close_windows(
 
     ++RedrawingDisabled;
 
-    for (wp = firstwin; wp != NULL && lastwin != firstwin; )
+    for (wp = firstwin; wp != NULL && !ONE_WINDOW; )
     {
 	if (wp->w_buffer == buf && (!keep_curwin || wp != curwin)
 #ifdef FEAT_AUTOCMD
@@ -3373,7 +3373,7 @@ close_others(
 	}
     }
 
-    if (message && lastwin != firstwin)
+    if (message && !ONE_WINDOW)
 	EMSG(_("E445: Other window contains changes"));
 }
 
@@ -5971,7 +5971,7 @@ last_status(
 {
     /* Don't make a difference between horizontal or vertical split. */
     last_status_rec(topframe, (p_ls == 2
-			  || (p_ls == 1 && (morewin || lastwin != firstwin))));
+			  || (p_ls == 1 && (morewin || !ONE_WINDOW))));
 }
 
     static void

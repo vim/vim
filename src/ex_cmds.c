@@ -4577,7 +4577,7 @@ ex_z(exarg_T *eap)
     if (eap->forceit)
 	bigness = curwin->w_height;
 #ifdef FEAT_WINDOWS
-    else if (firstwin != lastwin)
+    else if (!ONE_WINDOW)
 	bigness = curwin->w_height - 3;
 #endif
     else

@@ -8551,7 +8551,7 @@ set_num_option(
 	}
 
 	/* Change window height NOW */
-	if (lastwin != firstwin)
+	if (!ONE_WINDOW)
 	{
 	    if (pp == &p_wh && curwin->w_height < p_wh)
 		win_setheight((int)p_wh);
@@ -8591,7 +8591,7 @@ set_num_option(
 	}
 
 	/* Change window width NOW */
-	if (lastwin != firstwin && curwin->w_width < p_wiw)
+	if (!ONE_WINDOW && curwin->w_width < p_wiw)
 	    win_setwidth((int)p_wiw);
     }
 
@@ -10075,7 +10075,7 @@ istermoption(struct vimoption *p)
 comp_col(void)
 {
 #if defined(FEAT_CMDL_INFO) && defined(FEAT_WINDOWS)
-    int last_has_status = (p_ls == 2 || (p_ls == 1 && firstwin != lastwin));
+    int last_has_status = (p_ls == 2 || (p_ls == 1 && !ONE_WINDOW));
 
     sc_col = 0;
     ru_col = 0;
