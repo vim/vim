@@ -2299,7 +2299,7 @@ vim_is_ctrl_x_key(int c)
 	case CTRL_X_EVAL:
 	    return (c == Ctrl_P || c == Ctrl_N);
     }
-    EMSG(_(e_internal));
+    internal_error("vim_is_ctrl_x_key()");
     return FALSE;
 }
 
@@ -5431,7 +5431,7 @@ ins_complete(int c, int enable_pum)
 	}
 	else
 	{
-	    EMSG2(_(e_intern2), "ins_complete()");
+	    internal_error("ins_complete()");
 	    return FAIL;
 	}
 

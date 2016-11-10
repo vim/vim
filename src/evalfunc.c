@@ -2644,7 +2644,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    break;
 #endif
 	case VAR_UNKNOWN:
-	    EMSG2(_(e_intern2), "f_empty(UNKNOWN)");
+	    internal_error("f_empty(UNKNOWN)");
 	    n = TRUE;
 	    break;
     }
@@ -12695,7 +12695,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_JOB:     n = VAR_TYPE_JOB; break;
 	case VAR_CHANNEL: n = VAR_TYPE_CHANNEL; break;
 	case VAR_UNKNOWN:
-	     EMSG2(_(e_intern2), "f_type(UNKNOWN)");
+	     internal_error("f_type(UNKNOWN)");
 	     n = -1;
 	     break;
     }

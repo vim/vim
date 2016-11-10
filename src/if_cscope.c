@@ -1792,7 +1792,7 @@ cs_manage_matches(
 	cs_print_tags_priv(mp, cp, cnt);
 	break;
     default:	/* should not reach here */
-	(void)EMSG(_("E570: fatal error in cs_manage_matches"));
+	IEMSG(_("E570: fatal error in cs_manage_matches"));
 	return NULL;
     }
 

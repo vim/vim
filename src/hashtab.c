@@ -210,7 +210,7 @@ hash_add(hashtab_T *ht, char_u *key)
     hi = hash_lookup(ht, key, hash);
     if (!HASHITEM_EMPTY(hi))
     {
-	EMSG2(_(e_intern2), "hash_add()");
+	internal_error("hash_add()");
 	return FAIL;
     }
     return hash_add_item(ht, hi, key, hash);

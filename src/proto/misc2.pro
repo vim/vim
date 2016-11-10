@@ -99,8 +99,6 @@ int get_user_name(char_u *buf, int len);
 void sort_strings(char_u **files, int count);
 int pathcmp(const char *p, const char *q, int maxlen);
 int filewritable(char_u *fname);
-int emsg3(char_u *s, char_u *a1, char_u *a2);
-int emsgn(char_u *s, long n);
 int get2c(FILE *fd);
 int get3c(FILE *fd);
 int get4c(FILE *fd);

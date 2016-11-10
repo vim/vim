@@ -3231,7 +3231,7 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
     {
 	if (buf != curbuf)
 	{
-	    EMSG2(_(e_intern2), "qf_fill_buffer()");
+	    internal_error("qf_fill_buffer()");
 	    return;
 	}
 

@@ -2582,7 +2582,7 @@ undo_time(
 	    if (uhp == NULL || uhp->uh_walk != mark)
 	    {
 		/* Need to redo more but can't find it... */
-		EMSG2(_(e_intern2), "undo_time()");
+		internal_error("undo_time()");
 		break;
 	    }
 	}
@@ -2654,7 +2654,7 @@ u_undoredo(int undo)
 #ifdef FEAT_AUTOCMD
 	    unblock_autocmds();
 #endif
-	    EMSG(_("E438: u_undo: line numbers wrong"));
+	    IEMSG(_("E438: u_undo: line numbers wrong"));
 	    changed();		/* don't want UNCHANGED now */
 	    return;
 	}
@@ -3234,7 +3234,7 @@ u_get_headentry(void)
 {
     if (curbuf->b_u_newhead == NULL || curbuf->b_u_newhead->uh_entry == NULL)
     {
-	EMSG(_("E439: undo list corrupt"));
+	IEMSG(_("E439: undo list corrupt"));
 	return NULL;
     }
     return curbuf->b_u_newhead->uh_entry;
@@ -3266,7 +3266,7 @@ u_getbot(void)
 	uep->ue_bot = uep->ue_top + uep->ue_size + 1 + extra;
 	if (uep->ue_bot < 1 || uep->ue_bot > curbuf->b_ml.ml_line_count)
 	{
-	    EMSG(_("E440: undo line missing"));
+	    IEMSG(_("E440: undo line missing"));
 	    uep->ue_bot = uep->ue_top + 1;  /* assume all lines deleted, will
 					     * get all the old lines back
 					     * without deleting the current

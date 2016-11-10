@@ -250,7 +250,7 @@ add_buff(
     }
     else if (buf->bh_curr == NULL)	/* buffer has already been read */
     {
-	EMSG(_("E222: Add to read buffer"));
+	IEMSG(_("E222: Add to read buffer"));
 	return;
     }
     else if (buf->bh_index != 0)
@@ -1321,11 +1321,11 @@ alloc_typebuf(void)
 free_typebuf(void)
 {
     if (typebuf.tb_buf == typebuf_init)
-	EMSG2(_(e_intern2), "Free typebuf 1");
+	internal_error("Free typebuf 1");
     else
 	vim_free(typebuf.tb_buf);
     if (typebuf.tb_noremap == noremapbuf_init)
-	EMSG2(_(e_intern2), "Free typebuf 2");
+	internal_error("Free typebuf 2");
     else
 	vim_free(typebuf.tb_noremap);
 }
@@ -4868,7 +4868,7 @@ makemap(
 			c1 = 'l';
 			break;
 		    default:
-			EMSG(_("E228: makemap: Illegal mode"));
+			IEMSG(_("E228: makemap: Illegal mode"));
 			return FAIL;
 		}
 		do	/* do this twice if c2 is set, 3 times with c3 */

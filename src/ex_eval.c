@@ -595,7 +595,7 @@ discard_exception(except_T *excp, int was_finished)
 
     if (excp == NULL)
     {
-	EMSG(_(e_internal));
+	internal_error("discard_exception()");
 	return;
     }
 
@@ -700,7 +700,7 @@ catch_exception(except_T *excp)
 finish_exception(except_T *excp)
 {
     if (excp != caught_stack)
-	EMSG(_(e_internal));
+	internal_error("finish_exception()");
     caught_stack = caught_stack->caught;
     if (caught_stack != NULL)
     {
@@ -1603,7 +1603,7 @@ ex_catch(exarg_T *eap)
 	     * ":break", ":return", ":finish", error, interrupt, or another
 	     * exception. */
 	    if (cstack->cs_exception[cstack->cs_idx] != current_exception)
-		EMSG(_(e_internal));
+		internal_error("ex_catch()");
 	}
 	else
 	{
@@ -1737,7 +1737,7 @@ ex_finally(exarg_T *eap)
 		 * exception will be discarded. */
 		if (did_throw && cstack->cs_exception[cstack->cs_idx]
 							 != current_exception)
-		    EMSG(_(e_internal));
+		    internal_error("ex_finally()");
 	    }
 
 	    /*

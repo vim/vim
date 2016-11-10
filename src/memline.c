@@ -333,7 +333,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 0)
     {
-	EMSG(_("E298: Didn't get block nr 0?"));
+	IEMSG(_("E298: Didn't get block nr 0?"));
 	goto error;
     }
     b0p = (ZERO_BL *)(hp->bh_data);
@@ -383,7 +383,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 1)
     {
-	EMSG(_("E298: Didn't get block nr 1?"));
+	IEMSG(_("E298: Didn't get block nr 1?"));
 	goto error;
     }
     pp = (PTR_BL *)(hp->bh_data);
@@ -401,7 +401,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 2)
     {
-	EMSG(_("E298: Didn't get block nr 2?"));
+	IEMSG(_("E298: Didn't get block nr 2?"));
 	goto error;
     }
 
@@ -950,7 +950,7 @@ ml_upd_block0(buf_T *buf, upd_block0_T what)
 
     b0p = (ZERO_BL *)(hp->bh_data);
     if (ml_check_b0_id(b0p) == FAIL)
-	EMSG(_("E304: ml_upd_block0(): Didn't get block 0??"));
+	IEMSG(_("E304: ml_upd_block0(): Didn't get block 0??"));
     else
     {
 	if (what == UB_FNAME)
@@ -2450,7 +2450,7 @@ ml_get_buf(
 	    /* Avoid giving this message for a recursive call, may happen when
 	     * the GUI redraws part of the text. */
 	    ++recursive;
-	    EMSGN(_("E315: ml_get: invalid lnum: %ld"), lnum);
+	    IEMSGN(_("E315: ml_get: invalid lnum: %ld"), lnum);
 	    --recursive;
 	}
 errorret:
@@ -2485,7 +2485,7 @@ errorret:
 		/* Avoid giving this message for a recursive call, may happen
 		 * when the GUI redraws part of the text. */
 		++recursive;
-		EMSGN(_("E316: ml_get: cannot find line %ld"), lnum);
+		IEMSGN(_("E316: ml_get: cannot find line %ld"), lnum);
 		--recursive;
 	    }
 	    goto errorret;
@@ -2900,7 +2900,7 @@ ml_append_int(
 	    pp = (PTR_BL *)(hp->bh_data);   /* must be pointer block */
 	    if (pp->pb_id != PTR_ID)
 	    {
-		EMSG(_("E317: pointer block id wrong 3"));
+		IEMSG(_("E317: pointer block id wrong 3"));
 		mf_put(mfp, hp, FALSE, FALSE);
 		return FAIL;
 	    }
@@ -3042,7 +3042,7 @@ ml_append_int(
 	 */
 	if (stack_idx < 0)
 	{
-	    EMSG(_("E318: Updated too many blocks?"));
+	    IEMSG(_("E318: Updated too many blocks?"));
 	    buf->b_ml.ml_stack_top = 0;	/* invalidate stack */
 	}
     }
@@ -3220,7 +3220,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
 	    pp = (PTR_BL *)(hp->bh_data);   /* must be pointer block */
 	    if (pp->pb_id != PTR_ID)
 	    {
-		EMSG(_("E317: pointer block id wrong 4"));
+		IEMSG(_("E317: pointer block id wrong 4"));
 		mf_put(mfp, hp, FALSE, FALSE);
 		return FAIL;
 	    }
@@ -3432,7 +3432,7 @@ ml_flush_line(buf_T *buf)
 
 	hp = ml_find_line(buf, lnum, ML_FIND);
 	if (hp == NULL)
-	    EMSGN(_("E320: Cannot find line %ld"), lnum);
+	    IEMSGN(_("E320: Cannot find line %ld"), lnum);
 	else
 	{
 	    dp = (DATA_BL *)(hp->bh_data);
@@ -3674,7 +3674,7 @@ ml_find_line(buf_T *buf, linenr_T lnum, int action)
 	pp = (PTR_BL *)(dp);		/* must be pointer block */
 	if (pp->pb_id != PTR_ID)
 	{
-	    EMSG(_("E317: pointer block id wrong"));
+	    IEMSG(_("E317: pointer block id wrong"));
 	    goto error_block;
 	}
 
@@ -3719,11 +3719,11 @@ ml_find_line(buf_T *buf, linenr_T lnum, int action)
 	if (idx >= (int)pp->pb_count)	    /* past the end: something wrong! */
 	{
 	    if (lnum > buf->b_ml.ml_line_count)
-		EMSGN(_("E322: line number out of range: %ld past the end"),
+		IEMSGN(_("E322: line number out of range: %ld past the end"),
 					      lnum - buf->b_ml.ml_line_count);
 
 	    else
-		EMSGN(_("E323: line count wrong in block %ld"), bnum);
+		IEMSGN(_("E323: line count wrong in block %ld"), bnum);
 	    goto error_block;
 	}
 	if (action == ML_DELETE)
@@ -3817,7 +3817,7 @@ ml_lineadd(buf_T *buf, int count)
 	if (pp->pb_id != PTR_ID)
 	{
 	    mf_put(mfp, hp, FALSE, FALSE);
-	    EMSG(_("E317: pointer block id wrong 2"));
+	    IEMSG(_("E317: pointer block id wrong 2"));
 	    break;
 	}
 	pp->pb_pointer[ip->ip_index].pe_line_count += count;

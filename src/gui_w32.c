@@ -8620,7 +8620,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	EMSG(_("E232: Cannot create BalloonEval with both message and callback"));
+	IEMSG(_("E232: Cannot create BalloonEval with both message and callback"));
 	return NULL;
     }
 

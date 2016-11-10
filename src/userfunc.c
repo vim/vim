@@ -2771,7 +2771,7 @@ func_unref(char_u *name)
 #ifdef EXITFREE
 	if (!entered_free_all_mem)
 #endif
-	    EMSG2(_(e_intern2), "func_unref()");
+	    internal_error("func_unref()");
     }
     if (fp != NULL && --fp->uf_refcount <= 0)
     {
@@ -2814,7 +2814,7 @@ func_ref(char_u *name)
     else if (isdigit(*name))
 	/* Only give an error for a numbered function.
 	 * Fail silently, when named or lambda function isn't found. */
-	EMSG2(_(e_intern2), "func_ref()");
+	internal_error("func_ref()");
 }
 
 /*

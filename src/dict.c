@@ -214,7 +214,7 @@ dictitem_remove(dict_T *dict, dictitem_T *item)
 
     hi = hash_find(&dict->dv_hashtab, item->di_key);
     if (HASHITEM_EMPTY(hi))
-	EMSG2(_(e_intern2), "dictitem_remove()");
+	internal_error("dictitem_remove()");
     else
 	hash_remove(&dict->dv_hashtab, hi);
     dictitem_free(item);

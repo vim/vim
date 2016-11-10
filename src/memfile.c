@@ -482,7 +482,7 @@ mf_put(
     flags = hp->bh_flags;
 
     if ((flags & BH_LOCKED) == 0)
-	EMSG(_("E293: block was not locked"));
+	IEMSG(_("E293: block was not locked"));
     flags &= ~BH_LOCKED;
     if (dirty)
     {

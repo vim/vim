@@ -426,7 +426,7 @@ bf_key_init(
     keylen = (int)STRLEN(key) / 2;
     if (keylen == 0)
     {
-	EMSG(_("E831: bf_key_init() called with empty password"));
+	IEMSG(_("E831: bf_key_init() called with empty password"));
 	return;
     }
     for (i = 0; i < keylen; i++)
