@@ -1232,6 +1232,32 @@ func Test_out_cb_lambda()
   endtry
 endfunc
 
+func Test_close_and_exit_cb()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_close_and_exit_cb')
+
+  let dict = {'ret': {}}
+  func dict.close_cb(ch) dict
+    let self.ret['close_cb'] = job_status(ch_getjob(a:ch))
+  endfunc
+  func dict.exit_cb(job, status) dict
+    let self.ret['exit_cb'] = job_status(a:job)
+  endfunc
+
+  let g:job = job_start('echo', {
+        \ 'close_cb': dict.close_cb,
+        \ 'exit_cb': dict.exit_cb,
+        \ })
+  call assert_equal('run', job_status(g:job))
+  unlet g:job
+  call WaitFor('len(dict.ret) >= 2')
+  call assert_equal(2, len(dict.ret))
+  call assert_match('^\%(dead\|run\)', dict.ret['close_cb'])
+  call assert_equal('dead', dict.ret['exit_cb'])
+endfunc
+
 """"""""""
 
 let g:Ch_unletResponse = ''
