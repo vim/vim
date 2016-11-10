@@ -4443,6 +4443,13 @@ job_free_all(void)
 #endif
 
     static int
+job_still_alive(job_T *job)
+{
+    return job->jv_status == JOB_STARTED
+		   && (job->jv_stoponexit != NULL || job->jv_exit_cb != NULL);
+}
+
+    static int
 job_channel_still_useful(job_T *job)
 {
     return job->jv_channel != NULL && channel_still_useful(job->jv_channel);
@@ -4456,7 +4463,7 @@ job_channel_still_useful(job_T *job)
     static int
 job_still_useful(job_T *job)
 {
-    return job->jv_status == JOB_STARTED || job_channel_still_useful(job);
+    return job_still_alive(job) || job_channel_still_useful(job);
 }
 
     static void
@@ -4519,8 +4526,9 @@ job_unref(job_T *job)
     {
 	if (!job_channel_still_useful(job))
 	{
-	    /* Do not free the job when it has not ended yet. */
-	    if (job->jv_status != JOB_STARTED)
+	    /* Do not free the job when it has not ended yet and there is a
+	     * "stoponexit" flag or an exit callback. */
+	    if (!job_still_alive(job))
 	    {
 		job_free(job);
 	    }
