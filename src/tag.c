@@ -1478,13 +1478,13 @@ find_tags(
      */
 #ifdef FEAT_MULTI_LANG
     /* Set a flag if the file extension is .txt */
-    int is_txt = 0;
+    int is_txt = FALSE;
     if ((flags & TAG_KEEP_LANG)
-	  && help_lang_find == NULL
-	  && curbuf->b_fname != NULL
-	  && (i = (int)STRLEN(curbuf->b_fname)) > 4
-	  && STRICMP(curbuf->b_fname + i - 4, ".txt") == 0)
-	is_txt = 1;
+	    && help_lang_find == NULL
+	    && curbuf->b_fname != NULL
+	    && (i = (int)STRLEN(curbuf->b_fname)) > 4
+	    && STRICMP(curbuf->b_fname + i - 4, ".txt") == 0)
+	is_txt = TRUE;
 #endif
 #ifdef FEAT_TAG_BINS
     orgpat.regmatch.rm_ic = ((p_ic || !noic)
