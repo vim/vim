@@ -1356,6 +1356,7 @@ find_tags(
     char_u	*help_lang_find = NULL;		/* lang to be found */
     char_u	help_lang[3];			/* lang of current tags file */
     char_u	*saved_pat = NULL;		/* copy of pat[] */
+    int 	is_txt = FALSE;			/* flag of file extension */
 #endif
 
     pat_T	orgpat;			/* holds unconverted pattern info */
@@ -1478,7 +1479,6 @@ find_tags(
      */
 #ifdef FEAT_MULTI_LANG
     /* Set a flag if the file extension is .txt */
-    int is_txt = FALSE;
     if ((flags & TAG_KEEP_LANG)
 	    && help_lang_find == NULL
 	    && curbuf->b_fname != NULL
