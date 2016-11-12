@@ -1112,6 +1112,7 @@ qf_init_ext(
     qffields_T	    fields = {NULL, NULL, 0, 0L, 0, FALSE, NULL, 0, 0, 0};
 #ifdef FEAT_WINDOWS
     qfline_T	    *old_last = NULL;
+    int		    adding = FALSE;
 #endif
     static efm_T    *fmt_first = NULL;
     char_u	    *efm;
@@ -1140,6 +1141,7 @@ qf_init_ext(
     else if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
     {
 	/* Adding to existing list, use last entry. */
+	adding = TRUE;
 	old_last = qi->qf_lists[qi->qf_curlist].qf_last;
     }
 #endif
@@ -1266,10 +1268,13 @@ qf_init_ext(
     }
     EMSG(_(e_readerrf));
 error2:
-    qf_free(qi, qi->qf_curlist);
-    qi->qf_listcount--;
-    if (qi->qf_curlist > 0)
-	--qi->qf_curlist;
+    if (!adding)
+    {
+	qf_free(qi, qi->qf_curlist);
+	qi->qf_listcount--;
+	if (qi->qf_curlist > 0)
+	    --qi->qf_curlist;
+    }
 qf_init_end:
     if (state.fd != NULL)
 	fclose(state.fd);
