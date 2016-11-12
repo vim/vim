@@ -1479,12 +1479,12 @@ find_tags(
 #ifdef FEAT_MULTI_LANG
     /* Set a flag if the file extension is .txt */
     int is_txt = 0;
-      if ((flags & TAG_KEEP_LANG)
-              && help_lang_find == NULL
-	      && curbuf->b_fname != NULL
-	      && (i = (int)STRLEN(curbuf->b_fname)) > 4
-	      && STRICMP(curbuf->b_fname + i - 4, ".txt") == 0)
-	  is_txt = 1;
+    if ((flags & TAG_KEEP_LANG)
+	  && help_lang_find == NULL
+	  && curbuf->b_fname != NULL
+	  && (i = (int)STRLEN(curbuf->b_fname)) > 4
+	  && STRICMP(curbuf->b_fname + i - 4, ".txt") == 0)
+	is_txt = 1;
 #endif
 #ifdef FEAT_TAG_BINS
     orgpat.regmatch.rm_ic = ((p_ic || !noic)
@@ -1524,7 +1524,7 @@ find_tags(
 		    STRCPY(help_lang, "en");
 		else
 		{
-	    	    /* Prefer help tags according to 'helplang'.  Put the
+		    /* Prefer help tags according to 'helplang'.  Put the
 		     * two-letter language name in help_lang[]. */
 		    i = (int)STRLEN(tag_fname);
 		    if (i > 3 && tag_fname[i - 3] == '-')
