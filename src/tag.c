@@ -1476,6 +1476,16 @@ find_tags(
      * When the tag file is case-fold sorted, it is either one or the other.
      * Only ignore case when TAG_NOIC not used or 'ignorecase' set.
      */
+#ifdef FEAT_MULTI_LANG
+    /* Set a flag if the file extension is .txt */
+    int is_txt = 0;
+      if ((flags & TAG_KEEP_LANG)
+              && help_lang_find == NULL
+	      && curbuf->b_fname != NULL
+	      && (i = (int)STRLEN(curbuf->b_fname)) > 4
+	      && STRICMP(curbuf->b_fname + i - 4, ".txt") == 0)
+	  is_txt = 1;
+#endif
 #ifdef FEAT_TAG_BINS
     orgpat.regmatch.rm_ic = ((p_ic || !noic)
 				&& (findall || orgpat.headlen == 0 || !p_tbs));
@@ -1509,14 +1519,19 @@ find_tags(
 #ifdef FEAT_MULTI_LANG
 	    if (curbuf->b_help)
 	    {
-		/* Prefer help tags according to 'helplang'.  Put the
-		 * two-letter language name in help_lang[]. */
-		i = (int)STRLEN(tag_fname);
-		if (i > 3 && tag_fname[i - 3] == '-')
-		    STRCPY(help_lang, tag_fname + i - 2);
-		else
+		/* Keep en if the file extension is .txt*/
+		if (is_txt)
 		    STRCPY(help_lang, "en");
-
+		else
+		{
+	    	    /* Prefer help tags according to 'helplang'.  Put the
+		     * two-letter language name in help_lang[]. */
+		    i = (int)STRLEN(tag_fname);
+		    if (i > 3 && tag_fname[i - 3] == '-')
+			STRCPY(help_lang, tag_fname + i - 2);
+		    else
+			STRCPY(help_lang, "en");
+		}
 		/* When searching for a specific language skip tags files
 		 * for other languages. */
 		if (help_lang_find != NULL
