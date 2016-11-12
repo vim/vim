@@ -201,8 +201,6 @@ set_context_in_cscope_cmd(
 #endif /* FEAT_CMDL_COMPL */
 
 /*
- * PRIVATE: do_cscope_general
- *
  * Find the command, print help if invalid, and then call the corresponding
  * command function.
  */
@@ -242,31 +240,28 @@ do_cscope_general(
 }
 
 /*
- * PUBLIC: do_cscope
+ * Implementation of ":cscope" and ":lcscope"
  */
     void
-do_cscope(exarg_T *eap)
+ex_cscope(exarg_T *eap)
 {
     do_cscope_general(eap, FALSE);
 }
 
 /*
- * PUBLIC: do_scscope
- *
- * same as do_cscope, but splits window, too.
+ * Implementation of ":scscope". Same as ex_cscope(), but splits window, too.
  */
     void
-do_scscope(exarg_T *eap)
+ex_scscope(exarg_T *eap)
 {
     do_cscope_general(eap, TRUE);
 }
 
 /*
- * PUBLIC: do_cstag
- *
+ * Implementation of ":cstag"
  */
     void
-do_cstag(exarg_T *eap)
+ex_cstag(exarg_T *eap)
 {
     int ret = FALSE;
 
@@ -336,13 +331,11 @@ do_cstag(exarg_T *eap)
 #endif
     }
 
-} /* do_cscope */
+}
 
 
 /*
- * PUBLIC: cs_find
- *
- * this simulates a vim_fgets(), but for cscope, returns the next line
+ * This simulates a vim_fgets(), but for cscope, returns the next line
  * from the cscope output.  should only be called from find_tags()
  *
  * returns TRUE if eof, FALSE otherwise
@@ -361,9 +354,7 @@ cs_fgets(char_u *buf, int size)
 
 
 /*
- * PUBLIC: cs_free_tags
- *
- * called only from do_tag(), when popping the tag stack
+ * Called only from do_tag(), when popping the tag stack.
  */
     void
 cs_free_tags(void)
@@ -373,9 +364,7 @@ cs_free_tags(void)
 
 
 /*
- * PUBLIC: cs_print_tags
- *
- * called from do_tag()
+ * Called from do_tag().
  */
     void
 cs_print_tags(void)
@@ -467,12 +456,8 @@ cs_connection(int num, char_u *dbpath, char_u *ppath)
  ****************************************************************************/
 
 /*
- * PRIVATE: cs_add
- *
- * add cscope database or a directory name (to look for cscope.out)
- * to the cscope connection list
- *
- * MAXPATHL 256
+ * Add cscope database or a directory name (to look for cscope.out)
+ * to the cscope connection list.
  */
     static int
 cs_add(exarg_T *eap UNUSED)
@@ -508,10 +493,8 @@ cs_stat_emsg(char *fname)
 
 
 /*
- * PRIVATE: cs_add_common
- *
- * the common routine to add a new cscope connection.  called by
- * cs_add() and cs_reset().  i really don't like to do this, but this
+ * The common routine to add a new cscope connection.  Called by
+ * cs_add() and cs_reset().  I really don't like to do this, but this
  * routine uses a number of goto statements.
  */
     static int
@@ -666,9 +649,7 @@ cs_check_for_tags(void)
 
 
 /*
- * PRIVATE: cs_cnt_connections
- *
- * count the number of cscope connections
+ * Count the number of cscope connections.
  */
     static int
 cs_cnt_connections(void)
@@ -693,9 +674,7 @@ cs_reading_emsg(
 
 #define	CSREAD_BUFSIZE	2048
 /*
- * PRIVATE: cs_cnt_matches
- *
- * count the number of matches for a given cscope connection.
+ * Count the number of matches for a given cscope connection.
  */
     static int
 cs_cnt_matches(int idx)
@@ -754,8 +733,6 @@ cs_cnt_matches(int idx)
 
 
 /*
- * PRIVATE: cs_create_cmd
- *
  * Creates the actual cscope command query from what the user entered.
  */
     static char *
@@ -817,8 +794,6 @@ cs_create_cmd(char *csoption, char *pattern)
 
 
 /*
- * PRIVATE: cs_create_connection
- *
  * This piece of code was taken/adapted from nvi.  do we need to add
  * the BSD license notice?
  */
@@ -1056,8 +1031,6 @@ err_closing:
 
 
 /*
- * PRIVATE: cs_find
- *
  * Query cscope using command line interface.  Parse the output and use tselect
  * to allow choices.  Like Nvi, creates a pipe to send to/from query/cscope.
  *
@@ -1102,9 +1075,7 @@ cs_find(exarg_T *eap)
 
 
 /*
- * PRIVATE: cs_find_common
- *
- * common code for cscope find, shared by cs_find() and do_cstag()
+ * Common code for cscope find, shared by cs_find() and ex_cstag().
  */
     static int
 cs_find_common(
@@ -1323,9 +1294,7 @@ cs_find_common(
 } /* cs_find_common */
 
 /*
- * PRIVATE: cs_help
- *
- * print help
+ * Print help.
  */
     static int
 cs_help(exarg_T *eap UNUSED)
@@ -1408,9 +1377,7 @@ GetWin32Error(void)
 #endif
 
 /*
- * PRIVATE: cs_insert_filelist
- *
- * insert a new cscope database filename into the filelist
+ * Insert a new cscope database filename into the filelist.
  */
     static int
 cs_insert_filelist(
@@ -1551,9 +1518,7 @@ cs_insert_filelist(
 
 
 /*
- * PRIVATE: cs_lookup_cmd
- *
- * find cscope command in command table
+ * Find cscope command in command table.
  */
     static cscmd_T *
 cs_lookup_cmd(exarg_T *eap)
@@ -1582,9 +1547,7 @@ cs_lookup_cmd(exarg_T *eap)
 
 
 /*
- * PRIVATE: cs_kill
- *
- * nuke em
+ * Nuke em.
  */
     static int
 cs_kill(exarg_T *eap UNUSED)
@@ -1639,8 +1602,6 @@ cs_kill(exarg_T *eap UNUSED)
 
 
 /*
- * PRIVATE: cs_kill_execute
- *
  * Actually kills a specific cscope connection.
  */
     static void
@@ -1659,22 +1620,20 @@ cs_kill_execute(
 
 
 /*
- * PRIVATE: cs_make_vim_style_matches
- *
- * convert the cscope output into a ctags style entry (as might be found
+ * Convert the cscope output into a ctags style entry (as might be found
  * in a ctags tags file).  there's one catch though: cscope doesn't tell you
  * the type of the tag you are looking for.  for example, in Darren Hiebert's
  * ctags (the one that comes with vim), #define's use a line number to find the
  * tag in a file while function definitions use a regexp search pattern.
  *
- * i'm going to always use the line number because cscope does something
+ * I'm going to always use the line number because cscope does something
  * quirky (and probably other things i don't know about):
  *
  *     if you have "#  define" in your source file, which is
  *     perfectly legal, cscope thinks you have "#define".  this
  *     will result in a failed regexp search. :(
  *
- * besides, even if this particular case didn't happen, the search pattern
+ * Besides, even if this particular case didn't happen, the search pattern
  * would still have to be modified to escape all the special regular expression
  * characters to comply with ctags formatting.
  */
@@ -1721,9 +1680,7 @@ cs_make_vim_style_matches(
 
 
 /*
- * PRIVATE: cs_manage_matches
- *
- * this is kind of hokey, but i don't see an easy way round this..
+ * This is kind of hokey, but i don't see an easy way round this.
  *
  * Store: keep a ptr to the (malloc'd) memory of matches originally
  * generated from cs_find().  the matches are originally lines directly
@@ -1801,9 +1758,7 @@ cs_manage_matches(
 
 
 /*
- * PRIVATE: cs_parse_results
- *
- * parse cscope output
+ * Parse cscope output.
  */
     static char *
 cs_parse_results(
@@ -1864,9 +1819,7 @@ cs_parse_results(
 
 #ifdef FEAT_QUICKFIX
 /*
- * PRIVATE: cs_file_results
- *
- * write cscope find results to file
+ * Write cscope find results to file.
  */
     static void
 cs_file_results(FILE *f, int *nummatches_a)
@@ -1919,10 +1872,8 @@ cs_file_results(FILE *f, int *nummatches_a)
 #endif
 
 /*
- * PRIVATE: cs_fill_results
- *
- * get parsed cscope output and calls cs_make_vim_style_matches to convert
- * into ctags format
+ * Get parsed cscope output and calls cs_make_vim_style_matches to convert
+ * into ctags format.
  * When there are no matches sets "*matches_p" to NULL.
  */
     static void
@@ -2032,9 +1983,7 @@ cs_pathcomponents(char *path)
 }
 
 /*
- * PRIVATE: cs_print_tags_priv
- *
- * called from cs_manage_matches()
+ * Called from cs_manage_matches().
  */
     static void
 cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
@@ -2182,9 +2131,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 
 
 /*
- * PRIVATE: cs_read_prompt
- *
- * read a cscope prompt (basically, skip over the ">> ")
+ * Read a cscope prompt (basically, skip over the ">> ").
  */
     static int
 cs_read_prompt(int i)
@@ -2280,8 +2227,6 @@ sig_handler SIGDEFARG(sigarg)
 #endif
 
 /*
- * PRIVATE: cs_release_csp
- *
  * Does the actual free'ing for the cs ptr with an optional flag of whether
  * or not to free the filename.  Called by cs_kill and cs_reset.
  */
@@ -2408,9 +2353,7 @@ cs_release_csp(int i, int freefnpp)
 
 
 /*
- * PRIVATE: cs_reset
- *
- * calls cs_kill on all cscope connections then reinits
+ * Calls cs_kill on all cscope connections then reinits.
  */
     static int
 cs_reset(exarg_T *eap UNUSED)
@@ -2474,8 +2417,6 @@ cs_reset(exarg_T *eap UNUSED)
 
 
 /*
- * PRIVATE: cs_resolve_file
- *
  * Construct the full pathname to a file found in the cscope database.
  * (Prepends ppath, if there is one and if it's not already prepended,
  * otherwise just uses the name found.)
@@ -2544,9 +2485,7 @@ cs_resolve_file(int i, char *name)
 
 
 /*
- * PRIVATE: cs_show
- *
- * show all cscope connections
+ * Show all cscope connections.
  */
     static int
 cs_show(exarg_T *eap UNUSED)
@@ -2579,8 +2518,6 @@ cs_show(exarg_T *eap UNUSED)
 
 
 /*
- * PUBLIC: cs_end
- *
  * Only called when VIM exits to quit any cscope sessions.
  */
     void
