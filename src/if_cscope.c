@@ -340,7 +340,7 @@ do_cstag(exarg_T *eap)
 
 
 /*
- * PUBLIC: cs_find
+ * PUBLIC: cs_fgets
  *
  * this simulates a vim_fgets(), but for cscope, returns the next line
  * from the cscope output.  should only be called from find_tags()
