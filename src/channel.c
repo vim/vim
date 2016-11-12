@@ -19,7 +19,7 @@
 # define CH_HAS_GUI (gui.in_use || gui.starting)
 #endif
 
-/* Note: when making changes here also adjust configure.in. */
+/* Note: when making changes here also adjust configure.ac. */
 #ifdef WIN32
 /* WinSock API is separated from C API, thus we can't use read(), write(),
  * errno... */

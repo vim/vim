@@ -207,7 +207,7 @@ SRC_UNIX =	\
 		src/config.mk.dist \
 		src/config.mk.in \
 		src/configure \
-		src/configure.in \
+		src/configure.ac \
 		src/gui_at_fs.c \
 		src/gui_at_sb.c \
 		src/gui_at_sb.h \

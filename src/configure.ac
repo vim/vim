@@ -1,4 +1,4 @@
-dnl configure.in: autoconf script for Vim
+dnl configure.ac: autoconf script for Vim
 
 dnl Process this file with autoconf 2.12 or 2.13 to produce "configure".
 dnl Should also work with autoconf 2.54 and later.

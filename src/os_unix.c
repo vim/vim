@@ -265,7 +265,7 @@ static xsmp_config_T xsmp;
  * that describe the signals. That is nearly what we want here.  But
  * autoconf does only check for sys_siglist (without the underscore), I
  * do not want to change everything today.... jw.
- * This is why AC_DECL_SYS_SIGLIST is commented out in configure.in
+ * This is why AC_DECL_SYS_SIGLIST is commented out in configure.ac.
  */
 #endif
 

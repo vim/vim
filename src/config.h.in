@@ -1,6 +1,6 @@
 /*
- * config.h.in.  Generated automatically from configure.in by autoheader, and
- * manually changed after that.
+ * config.h.in.  Originally generated automatically from configure.ac by
+ * autoheader and manually changed after that.
  */
 
 /* Define if we have EBCDIC code */
