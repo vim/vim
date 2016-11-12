@@ -690,8 +690,8 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #####################################################
 
 ### Uncomment things here only if the values chosen by configure are wrong.
-### It's better to adjust configure.in and "make autoconf", if you can!
-### Then send the required changes to configure.in to the bugs list.
+### It's better to adjust configure.ac and "make autoconf", if you can!
+### Then send the required changes to configure.ac to the bugs list.
 
 ### (1) BSD/OS 2.0.1, 2.1 or 3.0 using shared libraries
 ###
@@ -1832,7 +1832,7 @@ reconfig: scratch clean
 # - DO NOT RUN autoconf MANUALLY!  It will overwrite ./configure instead of
 #   producing auto/configure.
 # - autoconf is not run automatically, because a patch usually changes both
-#   configure.in and auto/configure but can't update the timestamps.  People
+#   configure.ac and auto/configure but can't update the timestamps.  People
 #   who do not have (the correct version of) autoconf would run into trouble.
 #
 # Two tricks are required to make autoconf put its output in the "auto" dir:
