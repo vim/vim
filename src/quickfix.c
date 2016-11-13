@@ -1617,7 +1617,7 @@ static char_u *qf_last_bufname = NULL;
 static bufref_T  qf_last_bufref = {NULL, 0};
 
 /*
- * Get buffer number for file "directory.fname".
+ * Get buffer number for file "directory/fname".
  * Also sets the b_has_qf_entry flag.
  */
     static int
@@ -2711,7 +2711,9 @@ qf_free(qf_info_T *qi, int idx)
     qi->qf_lists[idx].qf_index = 0;
 
     qf_clean_dir_stack(&qi->qf_dir_stack);
+    qi->qf_directory = NULL;
     qf_clean_dir_stack(&qi->qf_file_stack);
+    qi->qf_currfile = NULL;
 }
 
 /*
