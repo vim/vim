@@ -1425,7 +1425,8 @@ typedef enum
 {
     JOB_FAILED,
     JOB_STARTED,
-    JOB_ENDED
+    JOB_ENDED,
+    JOB_FINISHED
 } jobstatus_T;
 
 /*

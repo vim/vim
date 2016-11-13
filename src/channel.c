@@ -4466,11 +4466,19 @@ job_still_useful(job_T *job)
     return job_still_alive(job) || job_channel_still_useful(job);
 }
 
+/*
+ * NOTE: Must call job_cleanup() only once right after the status of "job"
+ * changed to JOB_ENDED (i.e. after job_status() returned "dead" first or
+ * mch_detect_ended_job() returned non-NULL).
+ */
     static void
 job_cleanup(job_T *job)
 {
     if (job->jv_status != JOB_ENDED)
 	return;
+
+    /* Ready to cleanup the job. */
+    job->jv_status = JOB_FINISHED;
 
     if (job->jv_exit_cb != NULL)
     {
@@ -4691,6 +4699,8 @@ job_check_ended(void)
     for (i = 0; i < MAX_CHECK_ENDED; ++i)
     {
 	job_T	*job = mch_detect_ended_job(first_job);
+	/* NOTE: mch_detect_ended_job() must return only "job" the status of
+	 * which turned to JOB_ENDED. */
 
 	if (job == NULL)
 	    break;
@@ -4908,7 +4918,7 @@ job_status(job_T *job)
 {
     char	*result;
 
-    if (job->jv_status == JOB_ENDED)
+    if (job->jv_status >= JOB_ENDED)
 	/* No need to check, dead is dead. */
 	result = "dead";
     else if (job->jv_status == JOB_FAILED)
