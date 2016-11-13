@@ -4478,7 +4478,9 @@ job_cleanup(job_T *job)
 	typval_T	rettv;
 	int		dummy;
 
-	/* invoke the exit callback; make sure the refcount is > 0 */
+	/* invoke the exit callback; make sure the refcount is > 0.  Do not
+	 * free it in case that the close callback of the associated channel
+	 * isn't invoked yet and will get information by job_info(). */
 	++job->jv_refcount;
 	argv[0].v_type = VAR_JOB;
 	argv[0].vval.v_job = job;
@@ -4493,8 +4495,9 @@ job_cleanup(job_T *job)
     }
     if (job->jv_refcount == 0 && !job_channel_still_useful(job))
     {
-	/* The job was already unreferenced, now that it ended it can be
-	 * freed. Careful: caller must not use "job" after this! */
+	/* The job was already unreferenced and the associated channel was
+	 * detached, now that it ended it can be freed. Careful: caller must
+	 * not use "job" after this! */
 	job_free(job);
     }
 }
