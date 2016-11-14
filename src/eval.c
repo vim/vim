@@ -4339,10 +4339,17 @@ eval7(
 		 * use its contents. */
 		s = deref_func_name(s, &len, &partial, !evaluate);
 
-		/* Invoke the function. */
-		ret = get_func_tv(s, len, rettv, arg,
-			  curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-			  &len, evaluate, partial, NULL);
+		/* Need to make a copy, in case evaluating the arguments makes
+		 * the name invalid. */
+		s = vim_strsave(s);
+		if (s == NULL)
+		    ret = FAIL;
+		else
+		    /* Invoke the function. */
+		    ret = get_func_tv(s, len, rettv, arg,
+			      curwin->w_cursor.lnum, curwin->w_cursor.lnum,
+			      &len, evaluate, partial, NULL);
+		vim_free(s);
 
 		/* If evaluate is FALSE rettv->v_type was not set in
 		 * get_func_tv, but it's needed in handle_subscript() to parse
