@@ -156,6 +156,7 @@ NEW_TESTS = test_arglist.res \
 	    test_gn.res \
 	    test_gui.res \
 	    test_hardcopy.res \
+	    test_hide.res \
 	    test_history.res \
 	    test_hlsearch.res \
 	    test_increment.res \
