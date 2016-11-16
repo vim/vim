@@ -3099,6 +3099,9 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
     if (event->width == cur_width && event->height == cur_height)
 	return TRUE;
 
+    if (!gtk_check_version(3, 22, 2) && event->send_event == FALSE)
+	return TRUE;
+
     cur_width = event->width;
     cur_height = event->height;
 
@@ -4428,6 +4431,12 @@ form_configure_event(GtkWidget *widget UNUSED,
 		     gpointer data UNUSED)
 {
     int usable_height = event->height;
+
+#if GTK_CHECK_VERSION(3,0,0)
+    if (!gtk_check_version(3, 22, 2) &&
+        event->window != gtk_widget_get_window(gui.formwin))
+	return TRUE;
+#endif
 
     /* When in a GtkPlug, we can't guarantee valid heights (as a round
      * no. of char-heights), so we have to manually sanitise them.
