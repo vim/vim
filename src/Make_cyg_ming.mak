@@ -85,7 +85,7 @@ endif
 # Link against the shared version of libwinpthread by default.  Set
 # STATIC_WINPTHREAD to "yes" to link against static version instead.
 ifndef STATIC_WINPTHREAD
-STATIC_WINPTHREAD=no
+STATIC_WINPTHREAD=$(STATIC_STDCPLUS)
 endif
 
 # If the user doesn't want gettext, undefine it.
