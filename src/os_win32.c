@@ -4978,7 +4978,7 @@ mch_job_status(job_T *job)
 	    || dwExitCode != STILL_ACTIVE)
     {
 	job->jv_exitval = (int)dwExitCode;
-	if (job->jv_status != JOB_ENDED)
+	if (job->jv_status < JOB_ENDED)
 	{
 	    ch_log(job->jv_channel, "Job ended");
 	    job->jv_status = JOB_ENDED;
