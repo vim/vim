@@ -1730,6 +1730,26 @@ namespace test
 {
 111111111111111111;
 }
+namespace test::cpp17
+{
+111111111111111111;
+}
+namespace ::incorrectcpp17
+{
+	111111111111111111;
+}
+namespace test::incorrectcpp17::
+{
+	111111111111111111;
+}
+namespace test:incorrectcpp17
+{
+	111111111111111111;
+}
+namespace test:::incorrectcpp17
+{
+	111111111111111111;
+}
 namespace{
 111111111111111111;
 }
