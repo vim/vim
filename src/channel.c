@@ -4442,8 +4442,11 @@ job_free_all(void)
 }
 #endif
 
+/*
+ * Return TRUE if the process of "job" has to be checked whether is ended.
+ */
     static int
-job_still_alive(job_T *job)
+job_need_end_check(job_T *job)
 {
     return job->jv_status == JOB_STARTED
 		   && (job->jv_stoponexit != NULL || job->jv_exit_cb != NULL);
@@ -4463,7 +4466,7 @@ job_channel_still_useful(job_T *job)
     static int
 job_still_useful(job_T *job)
 {
-    return job_still_alive(job) || job_channel_still_useful(job);
+    return job_need_end_check(job) || job_channel_still_useful(job);
 }
 
 /*
@@ -4539,7 +4542,7 @@ job_unref(job_T *job)
 	{
 	    /* Do not free the job when it has not ended yet and there is a
 	     * "stoponexit" flag or an exit callback. */
-	    if (!job_still_alive(job))
+	    if (!job_need_end_check(job))
 	    {
 		job_free(job);
 	    }
