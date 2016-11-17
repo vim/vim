@@ -7290,7 +7290,7 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 		if (job == NULL)
 		    return (char_u *)"no process";
 		status = job->jv_status == JOB_FAILED ? "fail"
-				: job->jv_status == JOB_ENDED ? "dead"
+				: job->jv_status >= JOB_ENDED ? "dead"
 				: "run";
 # ifdef UNIX
 		vim_snprintf((char *)buf, NUMBUFLEN,

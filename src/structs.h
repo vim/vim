@@ -1421,11 +1421,13 @@ struct partial_S
     dict_T	*pt_dict;	/* dict for "self" */
 };
 
+/* Status of a job.  Order matters! */
 typedef enum
 {
     JOB_FAILED,
     JOB_STARTED,
-    JOB_ENDED
+    JOB_ENDED,	    /* detected job done */
+    JOB_FINISHED    /* job done and cleanup done */
 } jobstatus_T;
 
 /*

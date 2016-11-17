@@ -5354,7 +5354,7 @@ mch_job_status(job_T *job)
     return "run";
 
 return_dead:
-    if (job->jv_status != JOB_ENDED)
+    if (job->jv_status < JOB_ENDED)
     {
 	ch_log(job->jv_channel, "Job ended");
 	job->jv_status = JOB_ENDED;
@@ -5398,7 +5398,7 @@ mch_detect_ended_job(job_T *job_list)
 		job->jv_exitval = WEXITSTATUS(status);
 	    else if (WIFSIGNALED(status))
 		job->jv_exitval = -1;
-	    if (job->jv_status != JOB_ENDED)
+	    if (job->jv_status < JOB_ENDED)
 	    {
 		ch_log(job->jv_channel, "Job ended");
 		job->jv_status = JOB_ENDED;
