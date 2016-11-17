@@ -61,8 +61,8 @@ NOTE : Les touches fléchées devraient également fonctionner. Mais en utilisant
      Ceci quitte l'éditeur SANS enregistrer les changements que vous avez
      faits.
 
-  3. Lorsque l'invite du shell vous sera présentée, tapez la commande qui
-     vous a mené dans ce tutoriel. Cela pourrait être :    vimtutor <Entrée>
+  3. Revenez ici en tapant la commande qui vous a mené à ce tutoriel.
+     Cela pourrait être :    vimtutor <Entrée>
 
   4. Si vous avez mémorisé ces étapes et êtes confiant, effectuez les étapes
      1 à 3 pour sortir puis rentrer dans l'éditeur.
@@ -154,7 +154,7 @@ NOTE : En avançant dans ce cours, n'essayez pas de mémoriser, apprenez par
 !! NOTE : Lisez toute la leçon avant d'exécuter les instructions ci-dessous !!
 
   1. Sortez de ce tutoriel comme vous l'avez fait dans la Leçon 1.2 :  :q!
-     Ou, si vous avez accès à un autre terminal, exécutez y les actions
+     Ou, si vous avez accès à un autre terminal, exécutez-y les actions
      qui suivent.
 
   2. À l'invite du shell, tapez cette commande :  vim tutor <Entrée>
@@ -704,7 +704,7 @@ NOTE : Si vous quittez Vim et le redémarrez de nouveau avec le fichier TEST,
   3. Appuyez  :  . En bas de l'écran  :'<,'> va apparaître.
 
   4. Tapez   w TEST  , où TEST est un nom de fichier qui n'existe pas.
-     Vérifiez que vous voyez  :'<,'>w TEST  avant de d'appuyer sur <Entrée>.
+     Vérifiez que vous voyez  :'<,'>w TEST  avant d'appuyer sur <Entrée>.
 
   5. Vim va enregistrer les lignes sélectionnées dans le fichier TEST.
      Utilisez  :!dir  ou  :!ls pour le voir. Ne l'effacez pas encore !
@@ -1034,5 +1034,5 @@ NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
   Dernières mises à jour par Dominique Pellé.
 
   E-mail :      dominique.pelle@gmail.com
-  Last Change : 2016 Jul 02
+  Last Change : 2016 Nov 08
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

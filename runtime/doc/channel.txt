@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.0.  Last change: 2016 Oct 27
+*channel.txt*      For Vim version 8.0.  Last change: 2016 Nov 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -369,7 +369,7 @@ Leave out the fourth argument if no response is to be sent:
 ==============================================================================
 6. Using a RAW or NL channel				*channel-raw*
 
-If mode is RAW or NL then a message can be send like this: >
+If mode is RAW or NL then a message can be sent like this: >
     let response = ch_evalraw(channel, {string})
 
 The {string} is sent as-is.  The response will be what can be read from the

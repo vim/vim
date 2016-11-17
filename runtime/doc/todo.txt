@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Nov 06
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Nov 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -28,13 +28,29 @@ See |develop.txt| for development plans.  You can vote for which items should
 be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Issues can also be entered online: https://github.com/vim/vim/issues
-Updates will be forwarded to the vim_dev maillist.  Issues entered there will
-not be repeated below, unless there is extra information.
+Only use this for bug reports, not for questions!  Those belong on the
+maillist.  Updates will be forwarded to the vim_dev maillist.  Issues entered
+there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Test_help_complete sometimes fails on MS-Windows:
+function RunTheTest[9]..Test_help_complete line 22: Expected ['h test-char@ab',
+'h test-char@en', 'h test-col@ab', 'h test-col@en'] but got ['h test-char@en', '
+h test-char@en\t', 'h test-col@ab', 'h test-col@en']
+Appears to be related to calling feedkeys() with exactly 8 characters.
+
+Patch for GTK3: Kazunobu Kuriyama, 14 Nov.
+
+Patch for fix breakindent bug (Christian, Nov 15)
+
 +channel:
+- Skip checking if job ended if there aren't any. (ichizok, 2016 Nov 7, #1196)
+- problem with channel callback getting job, while the job was already
+  deleted.  #1242.  Fix in #1245 (ichizok), but is that correct?
+  Perhaps just replace job_still_alive() with job_still_useful()?
+  That's not sufficient.
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
@@ -96,14 +112,28 @@ Regexp problems:
 - The pattern "\1" with the old engine gives E65, with the new engine it
   matches the empty string. (Dominique Pelle, 2015 Oct 2, Nov 24)
   had_endbrace[] is set but not initialized or used.
+- Difference between two engines: ".*\zs\/\@>\/" on text "///"
+  (Chris Paul, 2016 Nov 13)  New engine not greedy enough?
 
 Patch to support nested namespace syntax. (Pauli, 2016 Oct 30, #1214)
+
+Patch to fix popup menu positioning. (Hirohito Higashi, 2016 Nov 7, #1241)
+
+Patch to make help tag jumps keep language. (Tatsuki, #1249)
+Test by Hirohito Higashi.
 
 Make html indent file use javascript indent, now that it's not just cindent.
 #1220
 
+Patch to use buffer id for system() and systemlist() (LemonBoy, 2016 Nov 7,
+#1240)
+
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
+
+Bug: ":earlier 100d" doesn't work after using undo file.
+(Pavol Juhas, 2016 Nov 15, #1254)
+Fix by Christian, but lacks a test.
 
 Bug: Json with same key should not give internal error. (Lcd, 2016 Oct 26)
 Make dict_add give a duplicate key error.
@@ -145,6 +175,9 @@ Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
 Problem passing non-UTF-8 strings to Python 3. (Björn Linse, 2016 Sep 11,
 #1053)  With patch, does it work?
 
+Patch to make finding duplicate tags much faster, using a hashtab. (James
+McCoy, 2016 Sept 14, #1046)  Should work now.  Updated Nov 12.
+>
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
 
@@ -186,6 +219,9 @@ Include the test.
 
 When 'keywordprg' starts with ":" the argument is still escaped as a shell
 command argument. (Romain Lafourcade, 2016 Oct 16, #1175)
+
+Patch to support CamelCase for spell checking: See a lower-to-upper case
+change as a word boundary. (btucker-MPCData, 2016 Nov 6, #1235)
 
 Idea from Sven: record sequence of keys.  Useful to show others what they are
 doing (look over the shoulder), and also to see what happened.
@@ -296,9 +332,6 @@ Add redrawtabline command. (Naruhiko Nishino, 2016 Jun 11)
 Neovim patch for utfc_ptr2char_len() https://github.com/neovim/neovim/pull/4574
 No test, needs some work to include.
 
-Patch to make finding duplicate tags much faster, using a hashtab. (James
-McCoy, 2016 Sept 14, #1046)  Should work now.
->
 Patch to improve indenting for C++ constructor with initializer list.
 (Hirohito Higashi, 2016 Mar 31)
 
@@ -3830,7 +3863,7 @@ Code size:
     left out.
 8   When compiled with a GUI-only version, the termcap entries for terminals
     can be removed.
-8   Can the check for libelf in configure.in be removed?
+8   Can the check for libelf in configure.ac be removed?
 
 
 Messages:
@@ -5552,7 +5585,7 @@ From vile:
 Far future and "big" extensions:
 -   Instead of using a Makefile and autoconf, use a simple shell script to
     find the C compiler and do everything with C code.  Translate something
-    like an Aap recipe and configure.in to C.  Avoids depending on Python,
+    like an Aap recipe and configure.ac to C.  Avoids depending on Python,
     thus will work everywhere.  With batch file to find the C compiler it
     would also work on MS-Windows.
 -   Make it easy to setup Vim for groups of users: novice vi users, novice
