@@ -5762,6 +5762,7 @@ cin_is_cpp_namespace(char_u *s)
 {
     char_u	*p;
     int		has_name = FALSE;
+    int		has_name_start = FALSE;
 
     s = cin_skipcomment(s);
     if (STRNCMP(s, "namespace", 9) == 0 && (s[9] == NUL || !vim_iswordc(s[9])))
@@ -5780,9 +5781,17 @@ cin_is_cpp_namespace(char_u *s)
 	    }
 	    else if (vim_iswordc(*p))
 	    {
+		has_name_start = TRUE;
 		if (has_name)
 		    return FALSE; /* word character after skipping past name */
 		++p;
+	    }
+	    else if (p[0] == ':' && p[1] == ':' && vim_iswordc(p[2]))
+	    {
+		if (!has_name_start || has_name)
+		    return FALSE;
+		/* C++ 17 nested namespace */
+		p += 3;
 	    }
 	    else
 	    {
