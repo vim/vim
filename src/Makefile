@@ -2029,7 +2029,6 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 test1 \
 	test_autocmd_option \
 	test_autoformat_join \
-	test_breakindent \
 	test_changelist \
 	test_close_count \
 	test_comparators \
@@ -2064,6 +2063,7 @@ test_arglist \
 	test_autochdir \
 	test_autocmd \
 	test_backspace_opt \
+	test_breakindent \
 	test_bufwintabinfo \
 	test_cdo \
 	test_channel \
