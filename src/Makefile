@@ -2854,300 +2854,397 @@ auto/gui_gtk_gresources.h: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
 objects:
 	mkdir -p objects
 
-objects/arabic.o: objects arabic.c
+objects/arabic.o: arabic.c
+	mkdir -p objects
 	$(CCC) -o $@ arabic.c
 
-objects/blowfish.o: objects blowfish.c
+objects/blowfish.o: blowfish.c
+	mkdir -p objects
 	$(CCC) -o $@ blowfish.c
 
-objects/buffer.o: objects buffer.c
+objects/buffer.o: buffer.c
+	mkdir -p objects
 	$(CCC) -o $@ buffer.c
 
-objects/charset.o: objects charset.c
+objects/charset.o: charset.c
+	mkdir -p objects
 	$(CCC) -o $@ charset.c
 
-objects/crypt.o: objects crypt.c
+objects/crypt.o: crypt.c
+	mkdir -p objects
 	$(CCC) -o $@ crypt.c
 
-objects/crypt_zip.o: objects crypt_zip.c
+objects/crypt_zip.o: crypt_zip.c
+	mkdir -p objects
 	$(CCC) -o $@ crypt_zip.c
 
-objects/dict.o: objects dict.c
+objects/dict.o: dict.c
+	mkdir -p objects
 	$(CCC) -o $@ dict.c
 
-objects/diff.o: objects diff.c
+objects/diff.o: diff.c
+	mkdir -p objects
 	$(CCC) -o $@ diff.c
 
-objects/digraph.o: objects digraph.c
+objects/digraph.o: digraph.c
+	mkdir -p objects
 	$(CCC) -o $@ digraph.c
 
-objects/edit.o: objects edit.c
+objects/edit.o: edit.c
+	mkdir -p objects
 	$(CCC) -o $@ edit.c
 
-objects/eval.o: objects eval.c
+objects/eval.o: eval.c
+	mkdir -p objects
 	$(CCC) -o $@ eval.c
 
-objects/evalfunc.o: objects evalfunc.c
+objects/evalfunc.o: evalfunc.c
+	mkdir -p objects
 	$(CCC) -o $@ evalfunc.c
 
-objects/ex_cmds.o: objects ex_cmds.c
+objects/ex_cmds.o: ex_cmds.c
+	mkdir -p objects
 	$(CCC) -o $@ ex_cmds.c
 
-objects/ex_cmds2.o: objects ex_cmds2.c
+objects/ex_cmds2.o: ex_cmds2.c
+	mkdir -p objects
 	$(CCC) -o $@ ex_cmds2.c
 
-objects/ex_docmd.o: objects ex_docmd.c
+objects/ex_docmd.o: ex_docmd.c
+	mkdir -p objects
 	$(CCC) -o $@ ex_docmd.c
 
-objects/ex_eval.o: objects ex_eval.c
+objects/ex_eval.o: ex_eval.c
+	mkdir -p objects
 	$(CCC) -o $@ ex_eval.c
 
-objects/ex_getln.o: objects ex_getln.c
+objects/ex_getln.o: ex_getln.c
+	mkdir -p objects
 	$(CCC) -o $@ ex_getln.c
 
-objects/farsi.o: objects farsi.c
+objects/farsi.o: farsi.c
+	mkdir -p objects
 	$(CCC) -o $@ farsi.c
 
-objects/fileio.o: objects fileio.c
+objects/fileio.o: fileio.c
+	mkdir -p objects
 	$(CCC) -o $@ fileio.c
 
-objects/fold.o: objects fold.c
+objects/fold.o: fold.c
+	mkdir -p objects
 	$(CCC) -o $@ fold.c
 
-objects/getchar.o: objects getchar.c
+objects/getchar.o: getchar.c
+	mkdir -p objects
 	$(CCC) -o $@ getchar.c
 
-objects/hardcopy.o: objects hardcopy.c
+objects/hardcopy.o: hardcopy.c
+	mkdir -p objects
 	$(CCC) -o $@ hardcopy.c
 
-objects/hashtab.o: objects hashtab.c
+objects/hashtab.o: hashtab.c
+	mkdir -p objects
 	$(CCC) -o $@ hashtab.c
 
-objects/gui.o: objects gui.c
+objects/gui.o: gui.c
+	mkdir -p objects
 	$(CCC) -o $@ gui.c
 
-objects/gui_at_fs.o: objects gui_at_fs.c
+objects/gui_at_fs.o: gui_at_fs.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_at_fs.c
 
-objects/gui_at_sb.o: objects gui_at_sb.c
+objects/gui_at_sb.o: gui_at_sb.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_at_sb.c
 
-objects/gui_athena.o: objects gui_athena.c
+objects/gui_athena.o: gui_athena.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_athena.c
 
-objects/gui_beval.o: objects gui_beval.c
+objects/gui_beval.o: gui_beval.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_beval.c
 
-objects/gui_gtk.o: objects gui_gtk.c
+objects/gui_gtk.o: gui_gtk.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_gtk.c
 
-objects/gui_gtk_f.o: objects gui_gtk_f.c
+objects/gui_gtk_f.o: gui_gtk_f.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_gtk_f.c
 
-objects/gui_gtk_gresources.o: objects auto/gui_gtk_gresources.c
+objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
+	mkdir -p objects
 	$(CCC) $(PERL_CFLAGS) -o $@ auto/gui_gtk_gresources.c
 
-objects/gui_gtk_x11.o: objects gui_gtk_x11.c
+objects/gui_gtk_x11.o: gui_gtk_x11.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_gtk_x11.c
 
-objects/gui_motif.o: objects gui_motif.c
+objects/gui_motif.o: gui_motif.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_motif.c
 
-objects/gui_xmdlg.o: objects gui_xmdlg.c
+objects/gui_xmdlg.o: gui_xmdlg.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_xmdlg.c
 
-objects/gui_xmebw.o: objects gui_xmebw.c
+objects/gui_xmebw.o: gui_xmebw.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_xmebw.c
 
-objects/gui_x11.o: objects gui_x11.c
+objects/gui_x11.o: gui_x11.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_x11.c
 
-objects/gui_photon.o: objects gui_photon.c
+objects/gui_photon.o: gui_photon.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_photon.c
 
-objects/gui_mac.o: objects gui_mac.c
+objects/gui_mac.o: gui_mac.c
+	mkdir -p objects
 	$(CCC) -o $@ gui_mac.c
 
-objects/hangulin.o: objects hangulin.c
+objects/hangulin.o: hangulin.c
+	mkdir -p objects
 	$(CCC) -o $@ hangulin.c
 
-objects/if_cscope.o: objects if_cscope.c
+objects/if_cscope.o: if_cscope.c
+	mkdir -p objects
 	$(CCC) -o $@ if_cscope.c
 
-objects/if_xcmdsrv.o: objects if_xcmdsrv.c
+objects/if_xcmdsrv.o: if_xcmdsrv.c
+	mkdir -p objects
 	$(CCC) -o $@ if_xcmdsrv.c
 
-objects/if_lua.o: objects if_lua.c
+objects/if_lua.o: if_lua.c
+	mkdir -p objects
 	$(CCC) $(LUA_CFLAGS) -o $@ if_lua.c
 
-objects/if_mzsch.o: objects if_mzsch.c $(MZSCHEME_EXTRA)
+objects/if_mzsch.o: if_mzsch.c $(MZSCHEME_EXTRA)
+	mkdir -p objects
 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
 
 mzscheme_base.c:
 	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
 
-objects/if_perl.o: objects auto/if_perl.c
+objects/if_perl.o: auto/if_perl.c
+	mkdir -p objects
 	$(CCC) $(PERL_CFLAGS) -o $@ auto/if_perl.c
 
-objects/if_perlsfio.o: objects if_perlsfio.c
+objects/if_perlsfio.o: if_perlsfio.c
+	mkdir -p objects
 	$(CCC) $(PERL_CFLAGS) -o $@ if_perlsfio.c
 
-objects/py_getpath.o: objects $(PYTHON_CONFDIR)/getpath.c
+objects/py_getpath.o: $(PYTHON_CONFDIR)/getpath.c
+	mkdir -p objects
 	$(CCC) $(PYTHON_CFLAGS) -o $@ $(PYTHON_CONFDIR)/getpath.c \
 		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN \
 		$(PYTHON_GETPATH_CFLAGS)
 
-objects/if_python.o: objects if_python.c if_py_both.h
+objects/if_python.o: if_python.c if_py_both.h
+	mkdir -p objects
 	$(CCC) $(PYTHON_CFLAGS) $(PYTHON_CFLAGS_EXTRA) -o $@ if_python.c
 
-objects/if_python3.o: objects if_python3.c if_py_both.h
+objects/if_python3.o: if_python3.c if_py_both.h
+	mkdir -p objects
 	$(CCC) $(PYTHON3_CFLAGS) $(PYTHON3_CFLAGS_EXTRA) -o $@ if_python3.c
 
-objects/if_ruby.o: objects if_ruby.c
+objects/if_ruby.o: if_ruby.c
+	mkdir -p objects
 	$(CCC) $(RUBY_CFLAGS) -o $@ if_ruby.c
 
-objects/if_tcl.o: objects if_tcl.c
+objects/if_tcl.o: if_tcl.c
+	mkdir -p objects
 	$(CCC) $(TCL_CFLAGS) -o $@ if_tcl.c
 
-objects/integration.o: objects integration.c
+objects/integration.o: integration.c
+	mkdir -p objects
 	$(CCC) -o $@ integration.c
 
-objects/json.o: objects json.c
+objects/json.o: json.c
+	mkdir -p objects
 	$(CCC) -o $@ json.c
 
-objects/json_test.o: objects json_test.c
+objects/json_test.o: json_test.c
+	mkdir -p objects
 	$(CCC) -o $@ json_test.c
 
-objects/list.o: objects list.c
+objects/list.o: list.c
+	mkdir -p objects
 	$(CCC) -o $@ list.c
 
-objects/main.o: objects main.c
+objects/main.o: main.c
+	mkdir -p objects
 	$(CCC) -o $@ main.c
 
-objects/mark.o: objects mark.c
+objects/mark.o: mark.c
+	mkdir -p objects
 	$(CCC) -o $@ mark.c
 
-objects/memfile.o: objects memfile.c
+objects/memfile.o: memfile.c
+	mkdir -p objects
 	$(CCC) -o $@ memfile.c
 
-objects/memfile_test.o: objects memfile_test.c
+objects/memfile_test.o: memfile_test.c
+	mkdir -p objects
 	$(CCC) -o $@ memfile_test.c
 
-objects/memline.o: objects memline.c
+objects/memline.o: memline.c
+	mkdir -p objects
 	$(CCC) -o $@ memline.c
 
-objects/menu.o: objects menu.c
+objects/menu.o: menu.c
+	mkdir -p objects
 	$(CCC) -o $@ menu.c
 
-objects/message.o: objects message.c
+objects/message.o: message.c
+	mkdir -p objects
 	$(CCC) -o $@ message.c
 
-objects/message_test.o: objects message_test.c
+objects/message_test.o: message_test.c
+	mkdir -p objects
 	$(CCC) -o $@ message_test.c
 
-objects/misc1.o: objects misc1.c
+objects/misc1.o: misc1.c
+	mkdir -p objects
 	$(CCC) -o $@ misc1.c
 
-objects/misc2.o: objects misc2.c
+objects/misc2.o: misc2.c
+	mkdir -p objects
 	$(CCC) -o $@ misc2.c
 
-objects/move.o: objects move.c
+objects/move.o: move.c
+	mkdir -p objects
 	$(CCC) -o $@ move.c
 
-objects/mbyte.o: objects mbyte.c
+objects/mbyte.o: mbyte.c
+	mkdir -p objects
 	$(CCC) -o $@ mbyte.c
 
-objects/normal.o: objects normal.c
+objects/normal.o: normal.c
+	mkdir -p objects
 	$(CCC) -o $@ normal.c
 
-objects/ops.o: objects ops.c
+objects/ops.o: ops.c
+	mkdir -p objects
 	$(CCC) -o $@ ops.c
 
-objects/option.o: objects option.c
+objects/option.o: option.c
+	mkdir -p objects
 	$(CCC) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS) -o $@ option.c
 
-objects/os_beos.o: objects os_beos.c
+objects/os_beos.o: os_beos.c
+	mkdir -p objects
 	$(CCC) -o $@ os_beos.c
 
-objects/os_qnx.o: objects os_qnx.c
+objects/os_qnx.o: os_qnx.c
+	mkdir -p objects
 	$(CCC) -o $@ os_qnx.c
 
-objects/os_macosx.o: objects os_macosx.m
+objects/os_macosx.o: os_macosx.m
+	mkdir -p objects
 	$(CCC) -o $@ os_macosx.m
 
-objects/os_mac_conv.o: objects os_mac_conv.c
+objects/os_mac_conv.o: os_mac_conv.c
+	mkdir -p objects
 	$(CCC) -o $@ os_mac_conv.c
 
-objects/os_unix.o: objects os_unix.c
+objects/os_unix.o: os_unix.c
+	mkdir -p objects
 	$(CCC) -o $@ os_unix.c
 
-objects/os_mswin.o: objects os_mswin.c
+objects/os_mswin.o: os_mswin.c
+	mkdir -p objects
 	$(CCC) -o $@ os_mswin.c
 
-objects/winclip.o: objects winclip.c
+objects/winclip.o: winclip.c
+	mkdir -p objects
 	$(CCC) -o $@ winclip.c
 
-objects/pathdef.o: objects auto/pathdef.c
+objects/pathdef.o: auto/pathdef.c
+	mkdir -p objects
 	$(CCC) -o $@ auto/pathdef.c
 
-objects/pty.o: objects pty.c
+objects/pty.o: pty.c
+	mkdir -p objects
 	$(CCC) -o $@ pty.c
 
-objects/popupmnu.o: objects popupmnu.c
+objects/popupmnu.o: popupmnu.c
+	mkdir -p objects
 	$(CCC) -o $@ popupmnu.c
 
-objects/quickfix.o: objects quickfix.c
+objects/quickfix.o: quickfix.c
+	mkdir -p objects
 	$(CCC) -o $@ quickfix.c
 
-objects/regexp.o: objects regexp.c regexp_nfa.c
+objects/regexp.o: regexp.c regexp_nfa.c
+	mkdir -p objects
 	$(CCC) -o $@ regexp.c
 
-objects/screen.o: objects screen.c
+objects/screen.o: screen.c
+	mkdir -p objects
 	$(CCC) -o $@ screen.c
 
-objects/search.o: objects search.c
+objects/search.o: search.c
+	mkdir -p objects
 	$(CCC) -o $@ search.c
 
-objects/sha256.o: objects sha256.c
+objects/sha256.o: sha256.c
+	mkdir -p objects
 	$(CCC) -o $@ sha256.c
 
-objects/spell.o: objects spell.c
+objects/spell.o: spell.c
+	mkdir -p objects
 	$(CCC) -o $@ spell.c
 
-objects/spellfile.o: objects spellfile.c
+objects/spellfile.o: spellfile.c
+	mkdir -p objects
 	$(CCC) -o $@ spellfile.c
 
-objects/syntax.o: objects syntax.c
+objects/syntax.o: syntax.c
+	mkdir -p objects
 	$(CCC) -o $@ syntax.c
 
-objects/tag.o: objects tag.c
+objects/tag.o: tag.c
+	mkdir -p objects
 	$(CCC) -o $@ tag.c
 
-objects/term.o: objects term.c
+objects/term.o: term.c
+	mkdir -p objects
 	$(CCC) -o $@ term.c
 
-objects/ui.o: objects ui.c
+objects/ui.o: ui.c
+	mkdir -p objects
 	$(CCC) -o $@ ui.c
 
-objects/undo.o: objects undo.c
+objects/undo.o: undo.c
+	mkdir -p objects
 	$(CCC) -o $@ undo.c
 
-objects/userfunc.o: objects userfunc.c
+objects/userfunc.o: userfunc.c
+	mkdir -p objects
 	$(CCC) -o $@ userfunc.c
 
-objects/window.o: objects window.c
+objects/window.o: window.c
+	mkdir -p objects
 	$(CCC) -o $@ window.c
 
-objects/workshop.o: objects workshop.c
+objects/workshop.o: workshop.c
+	mkdir -p objects
 	$(CCC) -o $@ workshop.c
 
-objects/wsdebug.o: objects wsdebug.c
+objects/wsdebug.o: wsdebug.c
+	mkdir -p objects
 	$(CCC) -o $@ wsdebug.c
 
-objects/netbeans.o: objects netbeans.c
+objects/netbeans.o: netbeans.c
+	mkdir -p objects
 	$(CCC) -o $@ netbeans.c
 
-objects/channel.o: objects channel.c
+objects/channel.o: channel.c
+	mkdir -p objects
 	$(CCC) -o $@ channel.c
 
 Makefile:
