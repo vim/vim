@@ -1178,12 +1178,23 @@ drawBalloon(BalloonEval *beval)
 	int		y_offset = EVAL_OFFSET_Y;
 	PangoLayout	*layout;
 # ifdef HAVE_GTK_MULTIHEAD
+#  if GTK_CHECK_VERSION(3,22,2)
+	GdkRectangle rect;
+	GdkMonitor * const mon = gdk_display_get_monitor_at_window(
+		gtk_widget_get_display(beval->balloonShell),
+		gtk_widget_get_window(beval->balloonShell));
+	gdk_monitor_get_geometry(mon, &rect);
+
+	screen_w = rect.width;
+	screen_h = rect.height;
+#  else
 	GdkScreen	*screen;
 
 	screen = gtk_widget_get_screen(beval->target);
 	gtk_window_set_screen(GTK_WINDOW(beval->balloonShell), screen);
 	screen_w = gdk_screen_get_width(screen);
 	screen_h = gdk_screen_get_height(screen);
+#  endif
 # else
 	screen_w = gdk_screen_width();
 	screen_h = gdk_screen_height();

@@ -3076,10 +3076,16 @@ drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
     gui.blank_pointer = NULL;
 }
 
+#if GTK_CHECK_VERSION(3,22,2)
+    static void
+drawarea_style_updated_cb(GtkWidget *widget UNUSED,
+			 gpointer data UNUSED)
+#else
     static void
 drawarea_style_set_cb(GtkWidget	*widget UNUSED,
 		      GtkStyle	*previous_style UNUSED,
 		      gpointer	data UNUSED)
+#endif
 {
     gui_mch_new_colors();
 }
@@ -3095,6 +3101,31 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
 
     g_return_val_if_fail(event
 	    && event->width >= 1 && event->height >= 1, TRUE);
+
+# if GTK_CHECK_VERSION(3,22,2)
+    /* As of 3.22.2, GdkWindows have started distributing configure events to
+     * their "native" children (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=12579fe71b3b8f79eb9c1b80e429443bcc437dd0).
+     *
+     * As can be seen from the implementation of move_native_children() and
+     * configure_native_child() in gdkwindow.c, those functions actually
+     * propagate configure events to every child, failing to distinguish
+     * "native" one from non-native one.
+     *
+     * Naturally, configure events propagated to here like that are fallacious
+     * and, as a matter of fact, they trigger a geometric collapse of
+     * gui.drawarea in fullscreen and miximized modes.
+     *
+     * To filter out such nuisance events, we are making use of the fact that
+     * the field send_event of such GdkEventConfigures is set to FALSE in
+     * configure_native_child().
+     *
+     * Obviously, this is a terrible hack making GVim depend on GTK's
+     * implementation details.  Therefore, watch out any relevant internal
+     * changes happening in GTK in the feature (sigh).
+     */
+    if (event->send_event == FALSE)
+	return TRUE;
+# endif
 
     if (event->width == cur_width && event->height == cur_height)
 	return TRUE;
@@ -3519,8 +3550,12 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 	/* If the event was generated for 3rd button popup the menu. */
 	if (bevent->button == 3)
 	{
+# if GTK_CHECK_VERSION(3,22,2)
+	    gtk_menu_popup_at_pointer(GTK_MENU(widget), event);
+# else
 	    gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL,
 						bevent->button, bevent->time);
+# endif
 	    /* We handled the event. */
 	    return TRUE;
 	}
@@ -4116,6 +4151,9 @@ gui_mch_init(void)
 #endif
 
     gui.drawarea = gtk_drawing_area_new();
+#if GTK_CHECK_VERSION(3,22,2)
+    gtk_widget_set_name(gui.drawarea, "vim-gui-drawarea");
+#endif
 #if GTK_CHECK_VERSION(3,0,0)
     gui.surface = NULL;
     gui.by_signal = FALSE;
@@ -4167,8 +4205,13 @@ gui_mch_init(void)
 		     G_CALLBACK(drawarea_unrealize_cb), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "configure-event",
 	    G_CALLBACK(drawarea_configure_event_cb), NULL);
+# if GTK_CHECK_VERSION(3,22,2)
+    g_signal_connect_after(G_OBJECT(gui.drawarea), "style-updated",
+			   G_CALLBACK(&drawarea_style_updated_cb), NULL);
+# else
     g_signal_connect_after(G_OBJECT(gui.drawarea), "style-set",
 			   G_CALLBACK(&drawarea_style_set_cb), NULL);
+# endif
 #else
     gtk_signal_connect(GTK_OBJECT(gui.drawarea), "realize",
 		       GTK_SIGNAL_FUNC(drawarea_realize_cb), NULL);
@@ -4384,14 +4427,34 @@ set_cairo_source_rgba_from_color(cairo_t *cr, guicolor_T color)
 gui_mch_new_colors(void)
 {
 #if GTK_CHECK_VERSION(3,0,0)
+# if !GTK_CHECK_VERSION(3,22,2)
     GdkWindow * const da_win = gtk_widget_get_window(gui.drawarea);
+# endif
 
     if (gui.drawarea != NULL && gtk_widget_get_window(gui.drawarea) != NULL)
 #else
     if (gui.drawarea != NULL && gui.drawarea->window != NULL)
 #endif
     {
-#if GTK_CHECK_VERSION(3,4,0)
+#if GTK_CHECK_VERSION(3,22,2)
+	GtkStyleContext * const context
+	    = gtk_widget_get_style_context(gui.drawarea);
+	GtkCssProvider * const provider = gtk_css_provider_new();
+	gchar * const css = g_strdup_printf(
+		"widget#vim-gui-drawarea {\n"
+		"  background-color: #%.2lx%.2lx%.2lx;\n"
+		"}\n",
+		 (gui.back_pixel >> 16) & 0xff,
+		 (gui.back_pixel >> 8) & 0xff,
+		 gui.back_pixel & 0xff);
+
+	gtk_css_provider_load_from_data(provider, css, -1, NULL);
+	gtk_style_context_add_provider(context,
+		GTK_STYLE_PROVIDER(provider), G_MAXUINT);
+
+	g_free(css);
+	g_object_unref(provider);
+#elif GTK_CHECK_VERSION(3,4,0) /* !GTK_CHECK_VERSION(3,22,2) */
 	GdkRGBA rgba;
 
 	rgba = color_to_rgba(gui.back_pixel);
@@ -4415,7 +4478,7 @@ gui_mch_new_colors(void)
 # else
 	gdk_window_set_background(gui.drawarea->window, &color);
 # endif
-#endif /* !GTK_CHECK_VERSION(3,4,0) */
+#endif /* !GTK_CHECK_VERSION(3,22,2) */
     }
 }
 
@@ -4428,6 +4491,26 @@ form_configure_event(GtkWidget *widget UNUSED,
 		     gpointer data UNUSED)
 {
     int usable_height = event->height;
+
+#if GTK_CHECK_VERSION(3,22,2)
+    /* As of 3.22.2, GdkWindows have started distributing configure events to
+     * their "native" children (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=12579fe71b3b8f79eb9c1b80e429443bcc437dd0).
+     *
+     * As can be seen from the implementation of move_native_children() and
+     * configure_native_child() in gdkwindow.c, those functions actually
+     * propagate configure events to every child, failing to distinguish
+     * "native" one from non-native one.
+     *
+     * Naturally, configure events propagated to here like that are fallacious
+     * and, as a matter of fact, they trigger a geometric collapse of
+     * gui.formwin.
+     *
+     * To filter out such fallacious events, check if the given event is the
+     * one that was sent out to the right place. Ignore it if not.
+     */
+    if (event->window != gtk_widget_get_window(gui.formwin))
+	return TRUE;
+#endif
 
     /* When in a GtkPlug, we can't guarantee valid heights (as a round
      * no. of char-heights), so we have to manually sanitise them.
@@ -4890,6 +4973,16 @@ gui_mch_set_shellsize(int width, int height,
 gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 {
 #ifdef HAVE_GTK_MULTIHEAD
+# if GTK_CHECK_VERSION(3,22,2)
+    GdkRectangle rect;
+    GdkMonitor * const mon = gdk_display_get_monitor_at_window(
+	    gtk_widget_get_display(gui.mainwin),
+	    gtk_widget_get_window(gui.mainwin));
+    gdk_monitor_get_geometry(mon, &rect);
+
+    *screen_w = rect.width;
+    *screen_h = rect.height - p_ghr;
+# else
     GdkScreen* screen;
 
     if (gui.mainwin != NULL && gtk_widget_has_screen(gui.mainwin))
@@ -4899,6 +4992,7 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 
     *screen_w = gdk_screen_get_width(screen);
     *screen_h = gdk_screen_get_height(screen) - p_ghr;
+# endif
 #else
     *screen_w = gdk_screen_width();
     /* Subtract 'guiheadroom' from the height to allow some room for the
@@ -6626,11 +6720,15 @@ gui_mch_clear_block(int row1, int col1, int row2, int col2)
 	};
 	GdkWindow * const win = gtk_widget_get_window(gui.drawarea);
 	cairo_t * const cr = cairo_create(gui.surface);
+# if GTK_CHECK_VERSION(3,22,2)
+	set_cairo_source_rgba_from_color(cr, gui.back_pixel);
+# else
 	cairo_pattern_t * const pat = gdk_window_get_background_pattern(win);
 	if (pat != NULL)
 	    cairo_set_source(cr, pat);
 	else
 	    set_cairo_source_rgba_from_color(cr, gui.back_pixel);
+# endif
 	gdk_cairo_rectangle(cr, &rect);
 	cairo_fill(cr);
 	cairo_destroy(cr);
@@ -6659,11 +6757,15 @@ gui_gtk_window_clear(GdkWindow *win)
 	0, 0, gdk_window_get_width(win), gdk_window_get_height(win)
     };
     cairo_t * const cr = cairo_create(gui.surface);
+# if GTK_CHECK_VERSION(3,22,2)
+    set_cairo_source_rgba_from_color(cr, gui.back_pixel);
+# else
     cairo_pattern_t * const pat = gdk_window_get_background_pattern(win);
     if (pat != NULL)
 	cairo_set_source(cr, pat);
     else
 	set_cairo_source_rgba_from_color(cr, gui.back_pixel);
+# endif
     gdk_cairo_rectangle(cr, &rect);
     cairo_fill(cr);
     cairo_destroy(cr);

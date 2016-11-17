@@ -1881,10 +1881,36 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 #  endif
 # endif /* FEAT_XIM */
 
+# if GTK_CHECK_VERSION(3,22,2)
+    {
+	GdkEventButton trigger;
+
+	/* A pseudo event to have gtk_menu_popup_at_pointer() work. Since the
+	 * function calculates the popup menu position on the basis of the
+	 * actual pointer position when it is invoked, the fields x, y, x_root
+	 * and y_root are set to zero for convenience. */
+	trigger.type       = GDK_BUTTON_PRESS;
+	trigger.window     = gtk_widget_get_window(gui.drawarea);
+	trigger.send_event = FALSE;
+	trigger.time       = gui.event_time;
+	trigger.x          = 0.0;
+	trigger.y          = 0.0;
+	trigger.axes       = NULL;
+	trigger.state      = 0;
+	trigger.button     = 3;
+	trigger.device     = NULL;
+	trigger.x_root     = 0.0;
+	trigger.y_root     = 0.0;
+
+	gtk_menu_popup_at_pointer(GTK_MENU(menu->submenu_id),
+				  (GdkEvent *)&trigger);
+    }
+#else
     gtk_menu_popup(GTK_MENU(menu->submenu_id),
 		   NULL, NULL,
 		   (GtkMenuPositionFunc)NULL, NULL,
 		   3U, gui.event_time);
+#endif
 }
 
 /* Ugly global variable to pass "mouse_pos" flag from gui_make_popup() to
@@ -1942,10 +1968,55 @@ gui_make_popup(char_u *path_name, int mouse_pos)
 
     if (menu != NULL && menu->submenu_id != NULL)
     {
+# if GTK_CHECK_VERSION(3,22,2)
+	GdkWindow * const win = gtk_widget_get_window(gui.drawarea);
+	GdkEventButton trigger;
+
+	/* A pseudo event to have gtk_menu_popup_at_*() functions work. Since
+	 * the position where the menu pops up is automatically adjusted by
+	 * the functions, none of the fields x, y, x_root and y_root has to be
+	 * set to a specific value here; therefore, they are set to zero for
+	 * convenience.*/
+	trigger.type       = GDK_BUTTON_PRESS;
+	trigger.window     = win;
+	trigger.send_event = FALSE;
+	trigger.time       = GDK_CURRENT_TIME;
+	trigger.x          = 0.0;
+	trigger.y          = 0.0;
+	trigger.axes       = NULL;
+	trigger.state      = 0;
+	trigger.button     = 0;
+	trigger.device     = NULL;
+	trigger.x_root     = 0.0;
+	trigger.y_root     = 0.0;
+
+	if (mouse_pos)
+	    gtk_menu_popup_at_pointer(GTK_MENU(menu->submenu_id),
+				      (GdkEvent *)&trigger);
+	else
+	{
+	    gint origin_x, origin_y;
+	    GdkRectangle rect = { 0, 0, 0, 0 };
+
+	    gdk_window_get_origin(win, &origin_x, &origin_y);
+	    popup_menu_position_func(NULL, &rect.x, &rect.y, NULL, NULL);
+
+	    rect.x -= origin_x;
+	    rect.y -= origin_y;
+
+	    gtk_menu_popup_at_rect(GTK_MENU(menu->submenu_id),
+				   win,
+				   &rect,
+				   GDK_GRAVITY_SOUTH_EAST,
+				   GDK_GRAVITY_NORTH_WEST,
+				   (GdkEvent *)&trigger);
+	}
+# else
 	gtk_menu_popup(GTK_MENU(menu->submenu_id),
 		       NULL, NULL,
 		       &popup_menu_position_func, NULL,
 		       0U, (guint32)GDK_CURRENT_TIME);
+# endif
     }
 }
 
