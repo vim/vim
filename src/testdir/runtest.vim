@@ -89,7 +89,11 @@ endfunc
 function RunTheTest(test)
   echo 'Executing ' . a:test
   if exists("*SetUp")
-    call SetUp()
+    try
+      call SetUp()
+    catch
+      call add(v:errors, 'Caught exception in SetUp() before ' . a:test . ': ' . v:exception . ' @ ' . v:throwpoint)
+    endtry
   endif
 
   call add(s:messages, 'Executing ' . a:test)
@@ -104,7 +108,11 @@ function RunTheTest(test)
   endtry
 
   if exists("*TearDown")
-    call TearDown()
+    try
+      call TearDown()
+    catch
+      call add(v:errors, 'Caught exception in TearDown() after ' . a:test . ': ' . v:exception . ' @ ' . v:throwpoint)
+    endtry
   endif
 
   " Close any extra windows and make the current one not modified.
@@ -221,3 +229,5 @@ call append(line('$'), s:messages)
 write
 
 qall!
+
+" vim: shiftwidth=2 sts=2 expandtab
