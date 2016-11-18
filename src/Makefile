@@ -1867,7 +1867,7 @@ CCC = $(CC) -c -I$(srcdir) $(ALL_CFLAGS)
 
 # Link the target for normal use or debugging.
 # A shell script is used to try linking without unnecessary libraries.
-$(VIMTARGET): auto/config.mk objects $(OBJ) version.c version.h
+$(VIMTARGET): auto/config.mk objects/.dirstamp $(OBJ) version.c version.h
 	$(CCC) version.c -o objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(VIMTARGET) $(OBJ) $(ALL_LIBS)" \
@@ -2185,21 +2185,21 @@ testclean:
 
 # Unittests
 # It's build just like Vim to satisfy all dependencies.
-$(JSON_TEST_TARGET): auto/config.mk objects $(JSON_TEST_OBJ)
+$(JSON_TEST_TARGET): auto/config.mk objects/.dirstamp $(JSON_TEST_OBJ)
 	$(CCC) version.c -o objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(JSON_TEST_TARGET) $(JSON_TEST_OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
 		sh $(srcdir)/link.sh
 
-$(MEMFILE_TEST_TARGET): auto/config.mk objects $(MEMFILE_TEST_OBJ)
+$(MEMFILE_TEST_TARGET): auto/config.mk objects/.dirstamp $(MEMFILE_TEST_OBJ)
 	$(CCC) version.c -o objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(MEMFILE_TEST_TARGET) $(MEMFILE_TEST_OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
 		sh $(srcdir)/link.sh
 
-$(MESSAGE_TEST_TARGET): auto/config.mk objects $(MESSAGE_TEST_OBJ)
+$(MESSAGE_TEST_TARGET): auto/config.mk objects/.dirstamp $(MESSAGE_TEST_OBJ)
 	$(CCC) version.c -o objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(MESSAGE_TEST_TARGET) $(MESSAGE_TEST_OBJ) $(ALL_LIBS)" \
@@ -2684,7 +2684,7 @@ uninstall_runtime:
 # Clean up all the files that have been produced, except configure's.
 # We support common typing mistakes for Juergen! :-)
 clean celan: testclean
-	-rm -f *.o objects/* core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
+	-rm -f *.o objects/* objects/.dirstamp core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h
 	-rm -f conftest* *~ auto/link.sed
 	-rm -f $(UNITTEST_TARGETS)
@@ -2851,400 +2851,304 @@ auto/gui_gtk_gresources.h: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
 # commands understand putting object files in another directory, it must be
 # specified for each file separately.
 
-objects:
+objects/.dirstamp:
 	mkdir -p objects
+	touch objects/.dirstamp
 
-objects/arabic.o: arabic.c
-	mkdir -p objects
+objects/arabic.o: objects/.dirstamp arabic.c
 	$(CCC) -o $@ arabic.c
 
-objects/blowfish.o: blowfish.c
-	mkdir -p objects
+objects/blowfish.o: objects/.dirstamp blowfish.c
 	$(CCC) -o $@ blowfish.c
 
-objects/buffer.o: buffer.c
-	mkdir -p objects
+objects/buffer.o: objects/.dirstamp buffer.c
 	$(CCC) -o $@ buffer.c
 
-objects/charset.o: charset.c
-	mkdir -p objects
+objects/charset.o: objects/.dirstamp charset.c
 	$(CCC) -o $@ charset.c
 
-objects/crypt.o: crypt.c
-	mkdir -p objects
+objects/crypt.o: objects/.dirstamp crypt.c
 	$(CCC) -o $@ crypt.c
 
-objects/crypt_zip.o: crypt_zip.c
-	mkdir -p objects
+objects/crypt_zip.o: objects/.dirstamp crypt_zip.c
 	$(CCC) -o $@ crypt_zip.c
 
-objects/dict.o: dict.c
-	mkdir -p objects
+objects/dict.o: objects/.dirstamp dict.c
 	$(CCC) -o $@ dict.c
 
-objects/diff.o: diff.c
-	mkdir -p objects
+objects/diff.o: objects/.dirstamp diff.c
 	$(CCC) -o $@ diff.c
 
-objects/digraph.o: digraph.c
-	mkdir -p objects
+objects/digraph.o: objects/.dirstamp digraph.c
 	$(CCC) -o $@ digraph.c
 
-objects/edit.o: edit.c
-	mkdir -p objects
+objects/edit.o: objects/.dirstamp edit.c
 	$(CCC) -o $@ edit.c
 
-objects/eval.o: eval.c
-	mkdir -p objects
+objects/eval.o: objects/.dirstamp eval.c
 	$(CCC) -o $@ eval.c
 
-objects/evalfunc.o: evalfunc.c
-	mkdir -p objects
+objects/evalfunc.o: objects/.dirstamp evalfunc.c
 	$(CCC) -o $@ evalfunc.c
 
-objects/ex_cmds.o: ex_cmds.c
-	mkdir -p objects
+objects/ex_cmds.o: objects/.dirstamp ex_cmds.c
 	$(CCC) -o $@ ex_cmds.c
 
-objects/ex_cmds2.o: ex_cmds2.c
-	mkdir -p objects
+objects/ex_cmds2.o: objects/.dirstamp ex_cmds2.c
 	$(CCC) -o $@ ex_cmds2.c
 
-objects/ex_docmd.o: ex_docmd.c
-	mkdir -p objects
+objects/ex_docmd.o: objects/.dirstamp ex_docmd.c
 	$(CCC) -o $@ ex_docmd.c
 
-objects/ex_eval.o: ex_eval.c
-	mkdir -p objects
+objects/ex_eval.o: objects/.dirstamp ex_eval.c
 	$(CCC) -o $@ ex_eval.c
 
-objects/ex_getln.o: ex_getln.c
-	mkdir -p objects
+objects/ex_getln.o: objects/.dirstamp ex_getln.c
 	$(CCC) -o $@ ex_getln.c
 
-objects/farsi.o: farsi.c
-	mkdir -p objects
+objects/farsi.o: objects/.dirstamp farsi.c
 	$(CCC) -o $@ farsi.c
 
-objects/fileio.o: fileio.c
-	mkdir -p objects
+objects/fileio.o: objects/.dirstamp fileio.c
 	$(CCC) -o $@ fileio.c
 
-objects/fold.o: fold.c
-	mkdir -p objects
+objects/fold.o: objects/.dirstamp fold.c
 	$(CCC) -o $@ fold.c
 
-objects/getchar.o: getchar.c
-	mkdir -p objects
+objects/getchar.o: objects/.dirstamp getchar.c
 	$(CCC) -o $@ getchar.c
 
-objects/hardcopy.o: hardcopy.c
-	mkdir -p objects
+objects/hardcopy.o: objects/.dirstamp hardcopy.c
 	$(CCC) -o $@ hardcopy.c
 
-objects/hashtab.o: hashtab.c
-	mkdir -p objects
+objects/hashtab.o: objects/.dirstamp hashtab.c
 	$(CCC) -o $@ hashtab.c
 
-objects/gui.o: gui.c
-	mkdir -p objects
+objects/gui.o: objects/.dirstamp gui.c
 	$(CCC) -o $@ gui.c
 
-objects/gui_at_fs.o: gui_at_fs.c
-	mkdir -p objects
+objects/gui_at_fs.o: objects/.dirstamp gui_at_fs.c
 	$(CCC) -o $@ gui_at_fs.c
 
-objects/gui_at_sb.o: gui_at_sb.c
-	mkdir -p objects
+objects/gui_at_sb.o: objects/.dirstamp gui_at_sb.c
 	$(CCC) -o $@ gui_at_sb.c
 
-objects/gui_athena.o: gui_athena.c
-	mkdir -p objects
+objects/gui_athena.o: objects/.dirstamp gui_athena.c
 	$(CCC) -o $@ gui_athena.c
 
-objects/gui_beval.o: gui_beval.c
-	mkdir -p objects
+objects/gui_beval.o: objects/.dirstamp gui_beval.c
 	$(CCC) -o $@ gui_beval.c
 
-objects/gui_gtk.o: gui_gtk.c
-	mkdir -p objects
+objects/gui_gtk.o: objects/.dirstamp gui_gtk.c
 	$(CCC) -o $@ gui_gtk.c
 
-objects/gui_gtk_f.o: gui_gtk_f.c
-	mkdir -p objects
+objects/gui_gtk_f.o: objects/.dirstamp gui_gtk_f.c
 	$(CCC) -o $@ gui_gtk_f.c
 
-objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
-	mkdir -p objects
+objects/gui_gtk_gresources.o: objects/.dirstamp auto/gui_gtk_gresources.c
 	$(CCC) $(PERL_CFLAGS) -o $@ auto/gui_gtk_gresources.c
 
-objects/gui_gtk_x11.o: gui_gtk_x11.c
-	mkdir -p objects
+objects/gui_gtk_x11.o: objects/.dirstamp gui_gtk_x11.c
 	$(CCC) -o $@ gui_gtk_x11.c
 
-objects/gui_motif.o: gui_motif.c
-	mkdir -p objects
+objects/gui_motif.o: objects/.dirstamp gui_motif.c
 	$(CCC) -o $@ gui_motif.c
 
-objects/gui_xmdlg.o: gui_xmdlg.c
-	mkdir -p objects
+objects/gui_xmdlg.o: objects/.dirstamp gui_xmdlg.c
 	$(CCC) -o $@ gui_xmdlg.c
 
-objects/gui_xmebw.o: gui_xmebw.c
-	mkdir -p objects
+objects/gui_xmebw.o: objects/.dirstamp gui_xmebw.c
 	$(CCC) -o $@ gui_xmebw.c
 
-objects/gui_x11.o: gui_x11.c
-	mkdir -p objects
+objects/gui_x11.o: objects/.dirstamp gui_x11.c
 	$(CCC) -o $@ gui_x11.c
 
-objects/gui_photon.o: gui_photon.c
-	mkdir -p objects
+objects/gui_photon.o: objects/.dirstamp gui_photon.c
 	$(CCC) -o $@ gui_photon.c
 
-objects/gui_mac.o: gui_mac.c
-	mkdir -p objects
+objects/gui_mac.o: objects/.dirstamp gui_mac.c
 	$(CCC) -o $@ gui_mac.c
 
-objects/hangulin.o: hangulin.c
-	mkdir -p objects
+objects/hangulin.o: objects/.dirstamp hangulin.c
 	$(CCC) -o $@ hangulin.c
 
-objects/if_cscope.o: if_cscope.c
-	mkdir -p objects
+objects/if_cscope.o: objects/.dirstamp if_cscope.c
 	$(CCC) -o $@ if_cscope.c
 
-objects/if_xcmdsrv.o: if_xcmdsrv.c
-	mkdir -p objects
+objects/if_xcmdsrv.o: objects/.dirstamp if_xcmdsrv.c
 	$(CCC) -o $@ if_xcmdsrv.c
 
-objects/if_lua.o: if_lua.c
-	mkdir -p objects
+objects/if_lua.o: objects/.dirstamp if_lua.c
 	$(CCC) $(LUA_CFLAGS) -o $@ if_lua.c
 
-objects/if_mzsch.o: if_mzsch.c $(MZSCHEME_EXTRA)
-	mkdir -p objects
+objects/if_mzsch.o: objects/.dirstamp if_mzsch.c $(MZSCHEME_EXTRA)
 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
 
 mzscheme_base.c:
 	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
 
-objects/if_perl.o: auto/if_perl.c
-	mkdir -p objects
+objects/if_perl.o: objects/.dirstamp auto/if_perl.c
 	$(CCC) $(PERL_CFLAGS) -o $@ auto/if_perl.c
 
-objects/if_perlsfio.o: if_perlsfio.c
-	mkdir -p objects
+objects/if_perlsfio.o: objects/.dirstamp if_perlsfio.c
 	$(CCC) $(PERL_CFLAGS) -o $@ if_perlsfio.c
 
-objects/py_getpath.o: $(PYTHON_CONFDIR)/getpath.c
-	mkdir -p objects
+objects/py_getpath.o: objects/.dirstamp $(PYTHON_CONFDIR)/getpath.c
 	$(CCC) $(PYTHON_CFLAGS) -o $@ $(PYTHON_CONFDIR)/getpath.c \
 		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN \
 		$(PYTHON_GETPATH_CFLAGS)
 
-objects/if_python.o: if_python.c if_py_both.h
-	mkdir -p objects
+objects/if_python.o: objects/.dirstamp if_python.c if_py_both.h
 	$(CCC) $(PYTHON_CFLAGS) $(PYTHON_CFLAGS_EXTRA) -o $@ if_python.c
 
-objects/if_python3.o: if_python3.c if_py_both.h
-	mkdir -p objects
+objects/if_python3.o: objects/.dirstamp if_python3.c if_py_both.h
 	$(CCC) $(PYTHON3_CFLAGS) $(PYTHON3_CFLAGS_EXTRA) -o $@ if_python3.c
 
-objects/if_ruby.o: if_ruby.c
-	mkdir -p objects
+objects/if_ruby.o: objects/.dirstamp if_ruby.c
 	$(CCC) $(RUBY_CFLAGS) -o $@ if_ruby.c
 
-objects/if_tcl.o: if_tcl.c
-	mkdir -p objects
+objects/if_tcl.o: objects/.dirstamp if_tcl.c
 	$(CCC) $(TCL_CFLAGS) -o $@ if_tcl.c
 
-objects/integration.o: integration.c
-	mkdir -p objects
+objects/integration.o: objects/.dirstamp integration.c
 	$(CCC) -o $@ integration.c
 
-objects/json.o: json.c
-	mkdir -p objects
+objects/json.o: objects/.dirstamp json.c
 	$(CCC) -o $@ json.c
 
-objects/json_test.o: json_test.c
-	mkdir -p objects
+objects/json_test.o: objects/.dirstamp json_test.c
 	$(CCC) -o $@ json_test.c
 
-objects/list.o: list.c
-	mkdir -p objects
+objects/list.o: objects/.dirstamp list.c
 	$(CCC) -o $@ list.c
 
-objects/main.o: main.c
-	mkdir -p objects
+objects/main.o: objects/.dirstamp main.c
 	$(CCC) -o $@ main.c
 
-objects/mark.o: mark.c
-	mkdir -p objects
+objects/mark.o: objects/.dirstamp mark.c
 	$(CCC) -o $@ mark.c
 
-objects/memfile.o: memfile.c
-	mkdir -p objects
+objects/memfile.o: objects/.dirstamp memfile.c
 	$(CCC) -o $@ memfile.c
 
-objects/memfile_test.o: memfile_test.c
-	mkdir -p objects
+objects/memfile_test.o: objects/.dirstamp memfile_test.c
 	$(CCC) -o $@ memfile_test.c
 
-objects/memline.o: memline.c
-	mkdir -p objects
+objects/memline.o: objects/.dirstamp memline.c
 	$(CCC) -o $@ memline.c
 
-objects/menu.o: menu.c
-	mkdir -p objects
+objects/menu.o: objects/.dirstamp menu.c
 	$(CCC) -o $@ menu.c
 
-objects/message.o: message.c
-	mkdir -p objects
+objects/message.o: objects/.dirstamp message.c
 	$(CCC) -o $@ message.c
 
-objects/message_test.o: message_test.c
-	mkdir -p objects
+objects/message_test.o: objects/.dirstamp message_test.c
 	$(CCC) -o $@ message_test.c
 
-objects/misc1.o: misc1.c
-	mkdir -p objects
+objects/misc1.o: objects/.dirstamp misc1.c
 	$(CCC) -o $@ misc1.c
 
-objects/misc2.o: misc2.c
-	mkdir -p objects
+objects/misc2.o: objects/.dirstamp misc2.c
 	$(CCC) -o $@ misc2.c
 
-objects/move.o: move.c
-	mkdir -p objects
+objects/move.o: objects/.dirstamp move.c
 	$(CCC) -o $@ move.c
 
-objects/mbyte.o: mbyte.c
-	mkdir -p objects
+objects/mbyte.o: objects/.dirstamp mbyte.c
 	$(CCC) -o $@ mbyte.c
 
-objects/normal.o: normal.c
-	mkdir -p objects
+objects/normal.o: objects/.dirstamp normal.c
 	$(CCC) -o $@ normal.c
 
-objects/ops.o: ops.c
-	mkdir -p objects
+objects/ops.o: objects/.dirstamp ops.c
 	$(CCC) -o $@ ops.c
 
-objects/option.o: option.c
-	mkdir -p objects
+objects/option.o: objects/.dirstamp option.c
 	$(CCC) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS) -o $@ option.c
 
-objects/os_beos.o: os_beos.c
-	mkdir -p objects
+objects/os_beos.o: objects/.dirstamp os_beos.c
 	$(CCC) -o $@ os_beos.c
 
-objects/os_qnx.o: os_qnx.c
-	mkdir -p objects
+objects/os_qnx.o: objects/.dirstamp os_qnx.c
 	$(CCC) -o $@ os_qnx.c
 
-objects/os_macosx.o: os_macosx.m
-	mkdir -p objects
+objects/os_macosx.o: objects/.dirstamp os_macosx.m
 	$(CCC) -o $@ os_macosx.m
 
-objects/os_mac_conv.o: os_mac_conv.c
-	mkdir -p objects
+objects/os_mac_conv.o: objects/.dirstamp os_mac_conv.c
 	$(CCC) -o $@ os_mac_conv.c
 
-objects/os_unix.o: os_unix.c
-	mkdir -p objects
+objects/os_unix.o: objects/.dirstamp os_unix.c
 	$(CCC) -o $@ os_unix.c
 
-objects/os_mswin.o: os_mswin.c
-	mkdir -p objects
+objects/os_mswin.o: objects/.dirstamp os_mswin.c
 	$(CCC) -o $@ os_mswin.c
 
-objects/winclip.o: winclip.c
-	mkdir -p objects
+objects/winclip.o: objects/.dirstamp winclip.c
 	$(CCC) -o $@ winclip.c
 
-objects/pathdef.o: auto/pathdef.c
-	mkdir -p objects
+objects/pathdef.o: objects/.dirstamp auto/pathdef.c
 	$(CCC) -o $@ auto/pathdef.c
 
-objects/pty.o: pty.c
-	mkdir -p objects
+objects/pty.o: objects/.dirstamp pty.c
 	$(CCC) -o $@ pty.c
 
-objects/popupmnu.o: popupmnu.c
-	mkdir -p objects
+objects/popupmnu.o: objects/.dirstamp popupmnu.c
 	$(CCC) -o $@ popupmnu.c
 
-objects/quickfix.o: quickfix.c
-	mkdir -p objects
+objects/quickfix.o: objects/.dirstamp quickfix.c
 	$(CCC) -o $@ quickfix.c
 
-objects/regexp.o: regexp.c regexp_nfa.c
-	mkdir -p objects
+objects/regexp.o: objects/.dirstamp regexp.c regexp_nfa.c
 	$(CCC) -o $@ regexp.c
 
-objects/screen.o: screen.c
-	mkdir -p objects
+objects/screen.o: objects/.dirstamp screen.c
 	$(CCC) -o $@ screen.c
 
-objects/search.o: search.c
-	mkdir -p objects
+objects/search.o: objects/.dirstamp search.c
 	$(CCC) -o $@ search.c
 
-objects/sha256.o: sha256.c
-	mkdir -p objects
+objects/sha256.o: objects/.dirstamp sha256.c
 	$(CCC) -o $@ sha256.c
 
-objects/spell.o: spell.c
-	mkdir -p objects
+objects/spell.o: objects/.dirstamp spell.c
 	$(CCC) -o $@ spell.c
 
-objects/spellfile.o: spellfile.c
-	mkdir -p objects
+objects/spellfile.o: objects/.dirstamp spellfile.c
 	$(CCC) -o $@ spellfile.c
 
-objects/syntax.o: syntax.c
-	mkdir -p objects
+objects/syntax.o: objects/.dirstamp syntax.c
 	$(CCC) -o $@ syntax.c
 
-objects/tag.o: tag.c
-	mkdir -p objects
+objects/tag.o: objects/.dirstamp tag.c
 	$(CCC) -o $@ tag.c
 
-objects/term.o: term.c
-	mkdir -p objects
+objects/term.o: objects/.dirstamp term.c
 	$(CCC) -o $@ term.c
 
-objects/ui.o: ui.c
-	mkdir -p objects
+objects/ui.o: objects/.dirstamp ui.c
 	$(CCC) -o $@ ui.c
 
-objects/undo.o: undo.c
-	mkdir -p objects
+objects/undo.o: objects/.dirstamp undo.c
 	$(CCC) -o $@ undo.c
 
-objects/userfunc.o: userfunc.c
-	mkdir -p objects
+objects/userfunc.o: objects/.dirstamp userfunc.c
 	$(CCC) -o $@ userfunc.c
 
-objects/window.o: window.c
-	mkdir -p objects
+objects/window.o: objects/.dirstamp window.c
 	$(CCC) -o $@ window.c
 
-objects/workshop.o: workshop.c
-	mkdir -p objects
+objects/workshop.o: objects/.dirstamp workshop.c
 	$(CCC) -o $@ workshop.c
 
-objects/wsdebug.o: wsdebug.c
-	mkdir -p objects
+objects/wsdebug.o: objects/.dirstamp wsdebug.c
 	$(CCC) -o $@ wsdebug.c
 
-objects/netbeans.o: netbeans.c
-	mkdir -p objects
+objects/netbeans.o: objects/.dirstamp netbeans.c
 	$(CCC) -o $@ netbeans.c
 
-objects/channel.o: channel.c
-	mkdir -p objects
+objects/channel.o: objects/.dirstamp channel.c
 	$(CCC) -o $@ channel.c
 
 Makefile:
