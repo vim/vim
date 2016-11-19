@@ -297,6 +297,9 @@ CPU = ix86
 # Flag to turn on Win64 compatibility warnings for VC7.x and VC8.
 WP64CHECK = /Wp64
 
+# Use multiprocess build
+USE_MP = yes
+
 #>>>>> path of the compiler and linker; name of include and lib directories
 # PATH = c:\msvc20\bin;$(PATH)
 # INCLUDE = c:\msvc20\include
@@ -472,6 +475,14 @@ NODEFAULTLIB =
 !else
 NODEFAULTLIB = /nodefaultlib
 !endif
+
+# Use multiprocess build on MSVC 10
+!if "$(USE_MP)"=="yes"
+!if $(MSVC_MAJOR) >= 10
+CFLAGS = $(CFLAGS) /MP
+!endif
+!endif
+
 
 !ifdef NODEBUG
 VIM = vim
