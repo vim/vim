@@ -3102,7 +3102,7 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
     g_return_val_if_fail(event
 	    && event->width >= 1 && event->height >= 1, TRUE);
 
-# if GTK_CHECK_VERSION(3,22,2)
+# if GTK_CHECK_VERSION(3,22,2) && !GTK_CHECK_VERSION(3,22,4)
     /* As of 3.22.2, GdkWindows have started distributing configure events to
      * their "native" children (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=12579fe71b3b8f79eb9c1b80e429443bcc437dd0).
      *
@@ -3123,6 +3123,10 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
      * implementation details.  Therefore, watch out any relevant internal
      * changes happening in GTK in the feature (sigh).
      */
+    /* Follow-up
+     * After a few weeks later, the GdkWindow change mentioned above was
+     * reverted (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=f70039cb9603a02d2369fec4038abf40a1711155).
+     * The corresponding official release is 3.22.4. */
     if (event->send_event == FALSE)
 	return TRUE;
 # endif
@@ -4492,7 +4496,7 @@ form_configure_event(GtkWidget *widget UNUSED,
 {
     int usable_height = event->height;
 
-#if GTK_CHECK_VERSION(3,22,2)
+#if GTK_CHECK_VERSION(3,22,2) && !GTK_CHECK_VERSION(3,22,4)
     /* As of 3.22.2, GdkWindows have started distributing configure events to
      * their "native" children (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=12579fe71b3b8f79eb9c1b80e429443bcc437dd0).
      *
@@ -4508,6 +4512,10 @@ form_configure_event(GtkWidget *widget UNUSED,
      * To filter out such fallacious events, check if the given event is the
      * one that was sent out to the right place. Ignore it if not.
      */
+    /* Follow-up
+     * After a few weeks later, the GdkWindow change mentioned above was
+     * reverted (https://git.gnome.org/browse/gtk+/commit/?h=gtk-3-22&id=f70039cb9603a02d2369fec4038abf40a1711155).
+     * The corresponding official release is 3.22.4. */
     if (event->window != gtk_widget_get_window(gui.formwin))
 	return TRUE;
 #endif
