@@ -238,7 +238,8 @@ endfunc
 
 func Test_undofile_earlier()
   " Issue #1254
-  let t0 = localtime() - 10
+  " create undofile with timestamps older than Vim startup time.
+  let t0 = localtime() - 43200
   call test_settime(t0)
   new Xfile
   call feedkeys("ione\<Esc>", 'xt')
@@ -252,19 +253,13 @@ func Test_undofile_earlier()
   w
   wundo Xundofile
   bwipe!
+  " restore normal timestamps.
   call test_settime(0)
-  new Xearlier.vim
-  put ='edit Xfile'
-  put ='rundo Xundofile'
-  put ='earlier 1m'
-  put ='x'
-  w
-  bwipe!
-  silent execute '!' fnameescape(v:progpath) '-e -s -i NONE -S Xearlier.vim'
   new Xfile
+  rundo Xundofile
+  earlier 1d
   call assert_equal('', getline(1))
   bwipe!
   call delete('Xfile')
   call delete('Xundofile')
-  call delete('Xearlier.vim')
 endfunc
