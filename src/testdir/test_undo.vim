@@ -235,3 +235,36 @@ func Test_insert_expr()
 
   close!
 endfunc
+
+func Test_undofile_earlier()
+  " Issue #1254
+  let t0 = localtime() - 10
+  call test_settime(t0)
+  new Xfile
+  call feedkeys("ione\<Esc>", 'xt')
+  set ul=100
+  call test_settime(t0 + 1)
+  call feedkeys("otwo\<Esc>", 'xt')
+  set ul=100
+  call test_settime(t0 + 2)
+  call feedkeys("othree\<Esc>", 'xt')
+  set ul=100
+  w
+  wundo Xundofile
+  bwipe!
+  call test_settime(0)
+  new Xearlier.vim
+  put ='edit Xfile'
+  put ='rundo Xundofile'
+  put ='earlier 1m'
+  put ='x'
+  w
+  bwipe!
+  silent execute '!' fnameescape(v:progpath) '-e -s -i NONE -S Xearlier.vim'
+  new Xfile
+  call assert_equal('', getline(1))
+  bwipe!
+  call delete('Xfile')
+  call delete('Xundofile')
+  call delete('Xearlier.vim')
+endfunc
