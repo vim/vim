@@ -2512,7 +2512,7 @@ typedef enum
 #else
 # if defined(WIN32)
 #  define ELAPSED_TICKCOUNT
-#  define ELAPSED_INIT(v) v = GetTickCount
+#  define ELAPSED_INIT(v) v = GetTickCount()
 #  define ELAPSED_FUNC(v) elapsed(v)
 #  define ELAPSED_TYPE DWORD
     long elapsed(DWORD start_tick);
