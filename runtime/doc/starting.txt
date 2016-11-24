@@ -421,6 +421,10 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		not connected to a terminal.  This will avoid the warning and
 		the two second delay that would happen. {not in Vi}
 
+							*--ttyfail*
+--ttyfail	When the stdin or stdout is not a terminal (tty) then exit
+		right away.
+
 							*-d*
 -d		Start in diff mode, like |vimdiff|.
 		{not in Vi} {not available when compiled without the |+diff|

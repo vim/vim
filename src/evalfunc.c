@@ -5959,6 +5959,10 @@ f_has(typval_T *argvars, typval_T *rettv)
 	}
 	else if (STRICMP(name, "vim_starting") == 0)
 	    n = (starting != 0);
+	else if (STRICMP(name, "ttyin") == 0)
+	    n = mch_input_isatty();
+	else if (STRICMP(name, "ttyout") == 0)
+	    n = stdout_isatty;
 #ifdef FEAT_MBYTE
 	else if (STRICMP(name, "multi_byte_encoding") == 0)
 	    n = has_mbyte;

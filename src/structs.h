@@ -3225,8 +3225,8 @@ typedef struct
 #endif
 
     int		want_full_screen;
-    int		stdout_isatty;		/* is stdout a terminal? */
     int		not_a_term;		/* no warning for missing term? */
+    int		tty_fail;		/* exit if not a tty */
     char_u	*term;			/* specified terminal name */
 #ifdef FEAT_CRYPT
     int		ask_for_key;		/* -x argument */

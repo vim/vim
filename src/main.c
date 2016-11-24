@@ -973,7 +973,7 @@ common_init(mparm_T *paramp)
      * (needed for :! to * work). mch_check_win() will also handle the -d or
      * -dev argument.
      */
-    paramp->stdout_isatty = (mch_check_win(paramp->argc, paramp->argv) != FAIL);
+    stdout_isatty = (mch_check_win(paramp->argc, paramp->argv) != FAIL);
     TIME_MSG("window checked");
 
     /*
@@ -1828,6 +1828,7 @@ command_line_scan(mparm_T *parmp)
 				/* "--literal" take files literally */
 				/* "--nofork" don't fork */
 				/* "--not-a-term" don't warn for not a term */
+				/* "--ttyfail" exit if not a term */
 				/* "--noplugin[s]" skip plugins */
 				/* "--cmd <cmd>" execute cmd before vimrc */
 		if (STRICMP(argv[0] + argv_idx, "help") == 0)
@@ -1857,6 +1858,8 @@ command_line_scan(mparm_T *parmp)
 		    p_lpl = FALSE;
 		else if (STRNICMP(argv[0] + argv_idx, "not-a-term", 10) == 0)
 		    parmp->not_a_term = TRUE;
+		else if (STRNICMP(argv[0] + argv_idx, "ttyfail", 7) == 0)
+		    parmp->tty_fail = TRUE;
 		else if (STRNICMP(argv[0] + argv_idx, "cmd", 3) == 0)
 		{
 		    want_argument = TRUE;
@@ -2489,7 +2492,7 @@ check_tty(mparm_T *parmp)
 	if (!input_isatty)
 	    silent_mode = TRUE;
     }
-    else if (parmp->want_full_screen && (!parmp->stdout_isatty || !input_isatty)
+    else if (parmp->want_full_screen && (!stdout_isatty || !input_isatty)
 #ifdef FEAT_GUI
 	    /* don't want the delay when started from the desktop */
 	    && !gui.starting
@@ -2504,7 +2507,7 @@ check_tty(mparm_T *parmp)
 	 * input buffer so fast I can't even kill the process in under 2
 	 * minutes (and it beeps continuously the whole time :-)
 	 */
-	if (netbeans_active() && (!parmp->stdout_isatty || !input_isatty))
+	if (netbeans_active() && (!stdout_isatty || !input_isatty))
 	{
 	    mch_errmsg(_("Vim: Error: Failure to start gvim from NetBeans\n"));
 	    exit(1);
@@ -2517,11 +2520,13 @@ check_tty(mparm_T *parmp)
 	    exit(1);
 	}
 #endif
-	if (!parmp->stdout_isatty)
+	if (!stdout_isatty)
 	    mch_errmsg(_("Vim: Warning: Output is not to a terminal\n"));
 	if (!input_isatty)
 	    mch_errmsg(_("Vim: Warning: Input is not from a terminal\n"));
 	out_flush();
+	if (parmp->tty_fail && (!stdout_isatty || !input_isatty))
+	    exit(1);
 	if (scriptin[0] == NULL)
 	    ui_delay(2000L, TRUE);
 	TIME_MSG("Warning delay");
@@ -3287,6 +3292,7 @@ usage(void)
 #endif
     main_msg(_("-T <terminal>\tSet terminal type to <terminal>"));
     main_msg(_("--not-a-term\t\tSkip warning for input/output not being a terminal"));
+    main_msg(_("--ttyfail\t\tExit if input or output is not a terminal"));
     main_msg(_("-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"));
 #ifdef FEAT_GUI
     main_msg(_("-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"));
