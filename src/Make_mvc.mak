@@ -106,6 +106,8 @@
 #	Default is "xpm", using the files included in the distribution.
 #	Use "no" to disable this feature.
 #
+#   Name of who modified a release version: MODIFIED_BY=[name of modifier]
+#
 #	Optimization: OPTIMIZE=[SPACE, SPEED, MAXSPEED] (default is MAXSPEED)
 #
 #	Processor Version: CPUNR=[i386, i486, i586, i686, pentium4] (default is
@@ -996,6 +998,13 @@ CFLAGS = $(CFLAGS) -DMSWINPS
 !endif # POSTSCRIPT
 
 #
+# MODIFIED_BY - Name of who modified a release version
+#
+!if "$(MODIFIED_BY)" != ""
+CFLAGS = $(CFLAGS) -DMODIFIED_BY=\"$(MODIFIED_BY)\"
+!endif
+
+#
 # FEATURES: TINY, SMALL, NORMAL, BIG or HUGE
 #
 CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
@@ -1350,13 +1359,17 @@ $(OUTDIR)/dimm_i.obj: $(OUTDIR) dimm_i.c $(INCL)
 
 $(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
 
-# $CFLAGS may contain backslashes and double quotes, escape them both.
+# $CFLAGS may contain backslashes, double quotes and chevrons, escape them all.
 E0_CFLAGS = $(CFLAGS:\=\\)
-E_CFLAGS = $(E0_CFLAGS:"=\")
+E00_CFLAGS = $(E0_CFLAGS:"=\")
+E000_CFLAGS = $(E00_CFLAGS:<=^^<)
+E_CFLAGS = $(E000_CFLAGS:>=^^>)
 # ") stop the string
-# $LINKARGS2 may contain backslashes and double quotes, escape them both.
+# $LINKARGS2 may contain backslashes, double quotes and chevrons, escape them all.
 E0_LINKARGS2 = $(LINKARGS2:\=\\)
-E_LINKARGS2 = $(E0_LINKARGS2:"=\")
+E00_LINKARGS2 = $(E0_LINKARGS2:"=\")
+E000_LINKARGS2 = $(E00_LINKARGS2:<=^^<)
+E_LINKARGS2 = $(E000_LINKARGS2:>=^^>)
 # ") stop the string
 
 $(PATHDEF_SRC): auto
