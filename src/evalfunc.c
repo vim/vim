@@ -296,6 +296,7 @@ static void f_pyeval(typval_T *argvars, typval_T *rettv);
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 static void f_pyxeval(typval_T *argvars, typval_T *rettv);
 #endif
+static void f_rand(typval_T *argvars, typval_T *rettv);
 static void f_range(typval_T *argvars, typval_T *rettv);
 static void f_readfile(typval_T *argvars, typval_T *rettv);
 static void f_reltime(typval_T *argvars, typval_T *rettv);
@@ -358,6 +359,7 @@ static void f_spellsuggest(typval_T *argvars, typval_T *rettv);
 static void f_split(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_sqrt(typval_T *argvars, typval_T *rettv);
+static void f_srand(typval_T *argvars, typval_T *rettv);
 static void f_str2float(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_str2nr(typval_T *argvars, typval_T *rettv);
@@ -732,6 +734,7 @@ static struct fst
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
     {"pyxeval",		1, 1, f_pyxeval},
 #endif
+    {"rand",		1, 1, f_rand},
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
     {"reltime",		0, 2, f_reltime},
@@ -794,6 +797,9 @@ static struct fst
     {"split",		1, 3, f_split},
 #ifdef FEAT_FLOAT
     {"sqrt",		1, 1, f_sqrt},
+#endif
+    {"srand",		0, 1, f_srand},
+#ifdef FEAT_FLOAT
     {"str2float",	1, 1, f_str2float},
 #endif
     {"str2nr",		1, 2, f_str2nr},
@@ -8178,6 +8184,52 @@ f_pyxeval(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
+ * "rand()" function
+ */
+    static void
+f_rand(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    listitem_T  *lx, *ly, *lz, *lw;
+    long	x, y, z, w, t;
+
+    if (argvars[0].v_type != VAR_LIST)
+	goto theend;
+    l = argvars[0].vval.v_list;
+    if (list_len(l) != 4)
+	goto theend;
+
+    lx = list_find(l, 0L);
+    ly = list_find(l, 1L);
+    lz = list_find(l, 2L);
+    lw = list_find(l, 3L);
+    if (lx->li_tv.v_type != VAR_NUMBER) goto theend;
+    if (ly->li_tv.v_type != VAR_NUMBER) goto theend;
+    if (lz->li_tv.v_type != VAR_NUMBER) goto theend;
+    if (lw->li_tv.v_type != VAR_NUMBER) goto theend;
+    x = lx->li_tv.vval.v_number;
+    y = ly->li_tv.vval.v_number;
+    z = lz->li_tv.vval.v_number;
+    w = lw->li_tv.vval.v_number;
+
+    rettv->v_type = VAR_NUMBER;
+    t = x ^ (x << 11);
+    x = y; y = z; z = w;
+    w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+
+    lx->li_tv.vval.v_number = (varnumber_T)x;
+    ly->li_tv.vval.v_number = (varnumber_T)y;
+    lz->li_tv.vval.v_number = (varnumber_T)z;
+    lw->li_tv.vval.v_number = (varnumber_T)w;
+
+    rettv->vval.v_number = (varnumber_T)w;
+    return;
+
+theend:
+    EMSG2(_(e_invarg2), get_tv_string(&argvars[0]));
+}
+
+/*
  * "range()" function
  */
     static void
@@ -11203,7 +11255,36 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
     else
 	rettv->vval.v_float = 0.0;
 }
+#endif
 
+/*
+ * "rand()" function
+ */
+    static void
+f_srand(typval_T *argvars, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (argvars[0].v_type == VAR_UNKNOWN)
+	list_append_number(rettv->vval.v_list, 123456789);
+    else if (argvars[0].v_type == VAR_NUMBER)
+    {
+	long x = (long)argvars[0].vval.v_number;
+	if (x < 0)
+	    list_append_number(rettv->vval.v_list, (long)time(NULL));
+	else
+	    list_append_number(rettv->vval.v_list, (long)argvars[0].vval.v_number);
+    }
+    else {
+	EMSG(_(e_invarg));
+	return;
+    }
+    list_append_number(rettv->vval.v_list, 362436069);
+    list_append_number(rettv->vval.v_list, 521288629);
+    list_append_number(rettv->vval.v_list, 88675123);
+}
+
+#ifdef FEAT_FLOAT
 /*
  * "str2float()" function
  */

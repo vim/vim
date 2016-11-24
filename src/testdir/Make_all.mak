@@ -181,6 +181,7 @@ NEW_TESTS = test_arabic.res \
 	    test_quotestar.res \
 	    test_retab.res \
 	    test_registers.res \
+	    test_rand.res \
 	    test_ruby.res \
 	    test_scrollbind.res \
 	    test_search.res \

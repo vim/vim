@@ -2233,6 +2233,7 @@ test_arglist \
 	test_quotestar \
 	test_recover \
 	test_regex_char_classes \
+	test_rand \
 	test_regexp_latin \
 	test_regexp_utf8 \
 	test_registers \

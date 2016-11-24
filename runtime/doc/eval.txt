@@ -2254,6 +2254,7 @@ pumvisible()			Number	whether popup menu is visible
 pyeval({expr})			any	evaluate |Python| expression
 py3eval({expr})			any	evaluate |python3| expression
 pyxeval({expr})			any	evaluate |python_x| expression
+rand({expr})			Number	get random number generated from {expr}
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile({fname} [, {binary} [, {max}]])
@@ -2331,6 +2332,7 @@ spellsuggest({word} [, {max} [, {capital}]])
 split({expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
 sqrt({expr})			Float	square root of {expr}
+srand({expr})			List	initialize seed for xorshift randomize
 str2float({expr})		Float	convert String to Float
 str2nr({expr} [, {base}])	Number	convert String to Number
 strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
@@ -6316,6 +6318,16 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			range(0)		" []
 			range(2, 0)		" error!
 <
+
+							*rand()*
+rand({expr})
+		Return random Number generated from {expr}:
+		{expr} is need to initialize by |srand()|.
+
+		Examples: >
+			:let r = srand()
+			:echo rand(r)
+<
 							*readfile()*
 readfile({fname} [, {binary} [, {max}]])
 		Read file {fname} and return a |List|, each line of the file
@@ -7355,6 +7367,10 @@ sqrt({expr})						*sqrt()*
 		"nan" may be different, it depends on system libraries.
 		{only available when compiled with the |+float| feature}
 		
+
+srand([{expr}])						*srand()*
+		Return xorshift random generator. This return value is used for
+		|rand()| to get random Number.
 
 str2float({expr})					*str2float()*
 		Convert String {expr} to a Float.  This mostly works the same
