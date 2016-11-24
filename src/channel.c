@@ -3815,6 +3815,11 @@ channel_parse_messages(void)
     int		ret = FALSE;
     int		r;
     ch_part_T	part = PART_SOCK;
+#ifdef ELAPSED_FUNC
+    ELAPSED_TYPE  start_tv;
+
+    ELAPSED_INIT(start_tv);
+#endif
 
     ++safe_to_invoke_callback;
 
@@ -3859,7 +3864,14 @@ channel_parse_messages(void)
 	    r = may_invoke_callback(channel, part);
 	    if (r == OK)
 		ret = TRUE;
-	    if (channel_unref(channel) || r == OK)
+	    if (channel_unref(channel) || (r == OK
+#ifdef ELAPSED_FUNC
+			/* Limit the time we loop here to 100 msec, otherwise
+			 * Vim becomes unresponsive when the callback takes
+			 * more than a bit of time. */
+			&& ELAPSED_FUNC(start_tv) < 100L
+#endif
+			))
 	    {
 		/* channel was freed or something was done, start over */
 		channel = first_channel;
