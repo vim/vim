@@ -12658,20 +12658,22 @@ error:
     static void
 f_trim(typval_T *argvars, typval_T *rettv)
 {
-    int i, j, k, l;
     char_u	*spaces = " \t\n\r\x0B";
     char_u	maskbuf[NUMBUFLEN];
     char_u	retbuf[NUMBUFLEN];
     char_u	*mask;
 
     char_u	*str = get_tv_string_chk(&argvars[0]);
+
+    int i, j, k, l;
+    int len = STRLEN(str);
+    int needtrim;
+
     if (argvars[1].v_type == VAR_STRING)
 	mask = get_tv_string_buf_chk(&argvars[1], maskbuf);
     else
 	mask = spaces;
 
-    int len = STRLEN(str);
-    int needtrim;
 
     for (i = 0; i < len; i++) {
 	needtrim = FALSE;
