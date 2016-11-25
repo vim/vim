@@ -8195,6 +8195,11 @@ f_rand(typval_T *argvars, typval_T *rettv)
     static int static_seed_initialized = FALSE;
     static UINT32_TYPEDEF xyzw[4] = {123456789, 362436069, 521288629, 88675123};
 
+#define SHUFFLE_XORSHIFT128 \
+	t = x ^ (x << 11); \
+	x = y; y = z; z = w; \
+	w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	/* When argument is not given, return random number initialized
@@ -8209,11 +8214,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
 	y = xyzw[1];
 	z = xyzw[2];
 	w = xyzw[3];
-
-	t = x ^ (x << 11);
-	x = y; y = z; z = w;
-	w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
-
+	SHUFFLE_XORSHIFT128;
 	xyzw[0] = x;
 	xyzw[1] = y;
 	xyzw[2] = z;
@@ -8239,11 +8240,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
 	y = (UINT32_TYPEDEF)ly->li_tv.vval.v_number;
 	z = (UINT32_TYPEDEF)lz->li_tv.vval.v_number;
 	w = (UINT32_TYPEDEF)lw->li_tv.vval.v_number;
-
-	t = x ^ (x << 11);
-	x = y; y = z; z = w;
-	w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
-
+	SHUFFLE_XORSHIFT128;
 	lx->li_tv.vval.v_number = (varnumber_T)x;
 	ly->li_tv.vval.v_number = (varnumber_T)y;
 	lz->li_tv.vval.v_number = (varnumber_T)z;
