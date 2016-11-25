@@ -2332,7 +2332,7 @@ spellsuggest({word} [, {max} [, {capital}]])
 split({expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
 sqrt({expr})			Float	square root of {expr}
-srand({expr})			List	initialize seed for xorshift randomize
+srand([{expr}])			List	initialize seed for xorshift randomize
 str2float({expr})		Float	convert String to Float
 str2nr({expr} [, {base}])	Number	convert String to Number
 strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
@@ -7373,6 +7373,11 @@ sqrt({expr})						*sqrt()*
 srand([{expr}])						*srand()*
 		Return xorshift random generator. This return value is used for
 		|rand()| to get random Number.
+		- If {expr} is not given, return initialized seed values.
+		- If {expr} is negative value, return seed initialized with
+		  time(NULL).
+		- If {expr} is positive value, return seed values which x
+		  element is {expr}.
 
 str2float({expr})					*str2float()*
 		Convert String {expr} to a Float.  This mostly works the same
