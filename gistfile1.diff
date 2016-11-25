@@ -1,5 +1,5 @@
 diff --git a/src/evalfunc.c b/src/evalfunc.c
-index 846a914..b46c22d 100644
+index 846a914..917fdad 100644
 --- a/src/evalfunc.c
 +++ b/src/evalfunc.c
 @@ -410,6 +410,7 @@ static void f_timer_stopall(typval_T *argvars, typval_T *rettv);
@@ -34,7 +34,7 @@ index 846a914..b46c22d 100644
 +    if (argvars[1].v_type == VAR_STRING)
 +	mask = get_tv_string_chk(&argvars[1]);
 +    else
-+	mask = (char_u*) " \t\n\r\x0b";
++	mask = (char_u*) " \t\v\r\n";
 +
 +    head = s;
 +    while (*head)
