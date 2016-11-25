@@ -2254,7 +2254,7 @@ pumvisible()			Number	whether popup menu is visible
 pyeval({expr})			any	evaluate |Python| expression
 py3eval({expr})			any	evaluate |python3| expression
 pyxeval({expr})			any	evaluate |python_x| expression
-rand({expr})			Number	get random number generated from {expr}
+rand([{expr}])			Number	get random number generated from {expr}
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile({fname} [, {binary} [, {max}]])
@@ -6323,6 +6323,8 @@ range({expr} [, {max} [, {stride}]])				*range()*
 rand({expr})
 		Return random Number generated from {expr}:
 		{expr} is need to initialize by |srand()|.
+		If {max} is not specified, return random Number from internal
+		values initialized.
 
 		Examples: >
 			:let r = srand()
