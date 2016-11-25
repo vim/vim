@@ -410,6 +410,7 @@ static void f_timer_stopall(typval_T *argvars, typval_T *rettv);
 static void f_tolower(typval_T *argvars, typval_T *rettv);
 static void f_toupper(typval_T *argvars, typval_T *rettv);
 static void f_tr(typval_T *argvars, typval_T *rettv);
+static void f_trim(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_trunc(typval_T *argvars, typval_T *rettv);
 #endif
@@ -836,6 +837,7 @@ static struct fst
     {"tolower",		1, 1, f_tolower},
     {"toupper",		1, 1, f_toupper},
     {"tr",		3, 3, f_tr},
+    {"trim",		1, 2, f_trim},
 #ifdef FEAT_FLOAT
     {"trunc",		1, 1, f_trunc},
 #endif
@@ -12648,6 +12650,56 @@ error:
     ga_append(&ga, NUL);
 
     rettv->vval.v_string = ga.ga_data;
+}
+
+/*
+ * "trim()" function
+ */
+    static void
+f_trim(typval_T *argvars, typval_T *rettv)
+{
+    int i, j, k, l;
+    char_u	*spaces = " \t\n\r\x0B";
+    char_u	maskbuf[NUMBUFLEN];
+    char_u	retbuf[NUMBUFLEN];
+    char_u	*mask;
+
+    char_u	*str = get_tv_string_chk(&argvars[0]);
+    if (argvars[1].v_type == VAR_STRING)
+	mask = get_tv_string_buf_chk(&argvars[1], maskbuf);
+    else
+	mask = spaces;
+
+    int len = STRLEN(str);
+    int needtrim;
+
+    for (i = 0; i < len; i++) {
+	needtrim = FALSE;
+	for (k = 0; mask[k] != '\0'; k++) {
+	    if (str[i] == mask[k]) {
+		needtrim = TRUE;
+	    }
+	}
+	if (needtrim == FALSE)
+	    break;
+    }
+
+    for (j = len - 1; j > 0; j--) {
+	needtrim = FALSE;
+	for (k = 0; mask[k] != '\0'; k++) {
+	    if (str[j] == mask[k]) {
+		needtrim = TRUE;
+	    }
+	}
+	if (needtrim == FALSE)
+	    break;
+    }
+
+    for (l = 0; i <= j; l++, i++) {
+	retbuf[l] = str[i];
+    }
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = vim_strsave(retbuf);
 }
 
 #ifdef FEAT_FLOAT
