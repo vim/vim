@@ -731,10 +731,11 @@ static struct fst
 #ifdef FEAT_PYTHON
     {"pyeval",		1, 1, f_pyeval},
 #endif
+<<<<<<< HEAD
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
     {"pyxeval",		1, 1, f_pyxeval},
 #endif
-    {"rand",		1, 1, f_rand},
+    {"rand",		0, 1, f_rand},
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
     {"reltime",		0, 2, f_reltime},
@@ -8189,39 +8190,69 @@ f_pyxeval(typval_T *argvars, typval_T *rettv)
     static void
 f_rand(typval_T *argvars, typval_T *rettv)
 {
-    list_T	*l;
-    listitem_T  *lx, *ly, *lz, *lw;
+    list_T	*l = NULL;
     UINT32_TYPEDEF  x, y, z, w, t;
+    static int static_seed_initialized = FALSE;
+    static UINT32_TYPEDEF xyzw[4] = {123456789, 362436069, 521288629, 88675123};
 
-    if (argvars[0].v_type != VAR_LIST)
-	goto theend;
-    l = argvars[0].vval.v_list;
-    if (list_len(l) != 4)
-	goto theend;
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	/* When argument is not given, return random number initialized
+	 * staticly. */
+	if (!static_seed_initialized)
+	{
+	    xyzw[0] = (varnumber_T)time(NULL);
+	    static_seed_initialized = TRUE;
+	}
 
-    lx = list_find(l, 0L);
-    ly = list_find(l, 1L);
-    lz = list_find(l, 2L);
-    lw = list_find(l, 3L);
-    if (lx->li_tv.v_type != VAR_NUMBER) goto theend;
-    if (ly->li_tv.v_type != VAR_NUMBER) goto theend;
-    if (lz->li_tv.v_type != VAR_NUMBER) goto theend;
-    if (lw->li_tv.v_type != VAR_NUMBER) goto theend;
-    x = (UINT32_TYPEDEF)lx->li_tv.vval.v_number;
-    y = (UINT32_TYPEDEF)ly->li_tv.vval.v_number;
-    z = (UINT32_TYPEDEF)lz->li_tv.vval.v_number;
-    w = (UINT32_TYPEDEF)lw->li_tv.vval.v_number;
+	x = xyzw[0];
+	y = xyzw[1];
+	z = xyzw[2];
+	w = xyzw[3];
+
+	t = x ^ (x << 11);
+	x = y; y = z; z = w;
+	w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+
+	xyzw[0] = x;
+	xyzw[1] = y;
+	xyzw[2] = z;
+	xyzw[3] = w;
+    }
+    else if (argvars[0].v_type == VAR_LIST)
+    {
+	listitem_T	*lx, *ly, *lz, *lw;
+
+	l = argvars[0].vval.v_list;
+	if (list_len(l) != 4)
+	    goto theend;
+
+	lx = list_find(l, 0L);
+	ly = list_find(l, 1L);
+	lz = list_find(l, 2L);
+	lw = list_find(l, 3L);
+	if (lx->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (ly->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (lz->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (lw->li_tv.v_type != VAR_NUMBER) goto theend;
+	x = (UINT32_TYPEDEF)lx->li_tv.vval.v_number;
+	y = (UINT32_TYPEDEF)ly->li_tv.vval.v_number;
+	z = (UINT32_TYPEDEF)lz->li_tv.vval.v_number;
+	w = (UINT32_TYPEDEF)lw->li_tv.vval.v_number;
+
+	t = x ^ (x << 11);
+	x = y; y = z; z = w;
+	w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+
+	lx->li_tv.vval.v_number = (varnumber_T)x;
+	ly->li_tv.vval.v_number = (varnumber_T)y;
+	lz->li_tv.vval.v_number = (varnumber_T)z;
+	lw->li_tv.vval.v_number = (varnumber_T)w;
+    }
+    else
+	goto theend;
 
     rettv->v_type = VAR_NUMBER;
-    t = x ^ (x << 11);
-    x = y; y = z; z = w;
-    w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
-
-    lx->li_tv.vval.v_number = (varnumber_T)x;
-    ly->li_tv.vval.v_number = (varnumber_T)y;
-    lz->li_tv.vval.v_number = (varnumber_T)z;
-    lw->li_tv.vval.v_number = (varnumber_T)w;
-
     rettv->vval.v_number = (varnumber_T)w;
     return;
 
@@ -11271,9 +11302,9 @@ f_srand(typval_T *argvars, typval_T *rettv)
     {
 	long x = (long)argvars[0].vval.v_number;
 	if (x < 0)
-	    list_append_number(rettv->vval.v_list, (long)time(NULL));
+	    list_append_number(rettv->vval.v_list, (varnumber_T)time(NULL));
 	else
-	    list_append_number(rettv->vval.v_list, (long)argvars[0].vval.v_number);
+	    list_append_number(rettv->vval.v_list, argvars[0].vval.v_number);
     }
     else {
 	EMSG(_(e_invarg));
