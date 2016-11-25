@@ -452,10 +452,11 @@ struct vimoption
 #define P_NFNAME       0x400000L /* only normal file name chars allowed */
 #define P_INSECURE     0x800000L /* option was set from a modeline */
 #define P_PRI_MKRC    0x1000000L /* priority for :mkvimrc (setting option has
-				   side effects) */
+				    side effects) */
 #define P_NO_ML       0x2000000L /* not allowed in modeline */
 #define P_CURSWANT    0x4000000L /* update curswant required; not needed when
 				  * there is a redraw flag */
+#define P_NDNAME      0x8000000L /* only normal dir name chars allowed */
 
 #define ISK_LATIN1  (char_u *)"@,48-57,_,192-255"
 
@@ -992,7 +993,7 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
-    {"dictionary",  "dict", P_STRING|P_EXPAND|P_VI_DEF|P_ONECOMMA|P_NODUP|P_NFNAME,
+    {"dictionary",  "dict", P_STRING|P_EXPAND|P_VI_DEF|P_ONECOMMA|P_NODUP|P_NDNAME,
 #ifdef FEAT_INS_EXPAND
 			    (char_u *)&p_dict, PV_DICT,
 #else
@@ -5876,11 +5877,13 @@ did_set_string_option(
 	errmsg = e_secure;
     }
 
-    /* Check for a "normal" file name in some options.  Disallow a path
-     * separator (slash and/or backslash), wildcards and characters that are
-     * often illegal in a file name. */
-    else if ((options[opt_idx].flags & P_NFNAME)
+    /* Check for a "normal" directory or file name in some options.  Disallow a
+     * path separator (slash and/or backslash), wildcards and characters that
+     * are often illegal in a file name. */
+    else if (((options[opt_idx].flags & P_NFNAME)
 		    && vim_strpbrk(*varp, (char_u *)"/\\*?[|;&<>\r\n") != NULL)
+	  || ((options[opt_idx].flags & P_NDNAME)
+		    && vim_strpbrk(*varp, (char_u *)"*?[|;&<>\r\n") != NULL))
     {
 	errmsg = e_invarg;
     }
