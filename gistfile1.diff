@@ -1,5 +1,5 @@
 diff --git a/src/evalfunc.c b/src/evalfunc.c
-index 846a914..d6e63ea 100644
+index 846a914..82274a0 100644
 --- a/src/evalfunc.c
 +++ b/src/evalfunc.c
 @@ -410,6 +410,7 @@ static void f_timer_stopall(typval_T *argvars, typval_T *rettv);
@@ -52,7 +52,7 @@ index 846a914..d6e63ea 100644
 +	    mb_ptr_adv(p);
 +	}
 +#endif
-+	if (!*p)
++	if (!p || !*p)
 +	    break;
 +	mb_ptr_adv(head);
 +    }
@@ -80,11 +80,11 @@ index 846a914..d6e63ea 100644
 +		break;
 +	}
 +#endif
-+	if (!*p)
++	if (!p || !*p)
 +	    last = trail;
 +	mb_ptr_adv(trail);
 +    }
-+    if (!*p)
++    if (!p || !*p)
 +	rettv->vval.v_string = vim_strnsave(head, last - head);
 +    else
 +	rettv->vval.v_string = vim_strsave(head);
