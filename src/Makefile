@@ -2162,6 +2162,7 @@ test_arglist \
 	test_nested_function \
 	test_netbeans \
 	test_normal \
+	test_number \
 	test_options \
 	test_packadd \
 	test_partial \
