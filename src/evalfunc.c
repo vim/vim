@@ -8191,7 +8191,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l;
     listitem_T  *lx, *ly, *lz, *lw;
-    long	x, y, z, w, t;
+    UINT32_TYPEDEF  x, y, z, w, t;
 
     if (argvars[0].v_type != VAR_LIST)
 	goto theend;
@@ -8207,10 +8207,10 @@ f_rand(typval_T *argvars, typval_T *rettv)
     if (ly->li_tv.v_type != VAR_NUMBER) goto theend;
     if (lz->li_tv.v_type != VAR_NUMBER) goto theend;
     if (lw->li_tv.v_type != VAR_NUMBER) goto theend;
-    x = lx->li_tv.vval.v_number;
-    y = ly->li_tv.vval.v_number;
-    z = lz->li_tv.vval.v_number;
-    w = lw->li_tv.vval.v_number;
+    x = (UINT32_TYPEDEF)lx->li_tv.vval.v_number;
+    y = (UINT32_TYPEDEF)ly->li_tv.vval.v_number;
+    z = (UINT32_TYPEDEF)lz->li_tv.vval.v_number;
+    w = (UINT32_TYPEDEF)lw->li_tv.vval.v_number;
 
     rettv->v_type = VAR_NUMBER;
     t = x ^ (x << 11);
