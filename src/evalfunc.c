@@ -11298,17 +11298,17 @@ f_srand(typval_T *argvars, typval_T *rettv)
 	return;
     if (argvars[0].v_type == VAR_UNKNOWN)
 	list_append_number(rettv->vval.v_list, 123456789);
-    else if (argvars[0].v_type == VAR_NUMBER)
+    else
     {
-	long x = (long)argvars[0].vval.v_number;
+	int error = FALSE;
+	UINT32_TYPEDEF  x = (UINT32_TYPEDEF)get_tv_number_chk(&argvars[0], &error);
+	if (error)
+	    return;
+
 	if (x < 0)
 	    list_append_number(rettv->vval.v_list, (varnumber_T)time(NULL));
 	else
 	    list_append_number(rettv->vval.v_list, argvars[0].vval.v_number);
-    }
-    else {
-	EMSG(_(e_invarg));
-	return;
     }
     list_append_number(rettv->vval.v_list, 362436069);
     list_append_number(rettv->vval.v_list, 521288629);
