@@ -1,5 +1,5 @@
 diff --git a/src/evalfunc.c b/src/evalfunc.c
-index 846a914..82274a0 100644
+index 846a914..0b4764f 100644
 --- a/src/evalfunc.c
 +++ b/src/evalfunc.c
 @@ -410,6 +410,7 @@ static void f_timer_stopall(typval_T *argvars, typval_T *rettv);
@@ -18,7 +18,7 @@ index 846a914..82274a0 100644
  #ifdef FEAT_FLOAT
      {"trunc",		1, 1, f_trunc},
  #endif
-@@ -12654,6 +12656,74 @@ error:
+@@ -12654,6 +12656,81 @@ error:
      rettv->vval.v_string = ga.ga_data;
  }
  
@@ -41,6 +41,8 @@ index 846a914..82274a0 100644
 +    {
 +#ifndef FEAT_MBYTE
 +	p = vim_strchr(mask, *head);
++	if (!p)
++	    break;
 +#else
 +	int c1 = (*mb_ptr2char)(head), c2;
 +	p = mask;
@@ -51,16 +53,16 @@ index 846a914..82274a0 100644
 +		break;
 +	    mb_ptr_adv(p);
 +	}
-+#endif
-+	if (!p || !*p)
++	if (!*p)
 +	    break;
++#endif
 +	mb_ptr_adv(head);
 +    }
 +
 +    rettv->v_type = VAR_STRING;
 +    if (!*head)
 +    {
-+	rettv->vval.v_string = vim_strsave(s);
++	rettv->vval.v_string = vim_strsave((char_u*)"");
 +	return;
 +    }
 +
@@ -69,6 +71,8 @@ index 846a914..82274a0 100644
 +    {
 +#ifndef FEAT_MBYTE
 +	p = vim_strchr(mask, *trail);
++	if (p)
++	    last = trail;
 +#else
 +	int c1 = (*mb_ptr2char)(trail), c2;
 +	p = mask;
@@ -79,12 +83,15 @@ index 846a914..82274a0 100644
 +	    if (c1 == c2)
 +		break;
 +	}
-+#endif
-+	if (!p || !*p)
++	if (*p)
++	{
 +	    last = trail;
++	    p = NULL;
++	}
++#endif
 +	mb_ptr_adv(trail);
 +    }
-+    if (!p || !*p)
++    if (!p)
 +	rettv->vval.v_string = vim_strnsave(head, last - head);
 +    else
 +	rettv->vval.v_string = vim_strsave(head);
