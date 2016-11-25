@@ -1,5 +1,5 @@
 diff --git a/src/evalfunc.c b/src/evalfunc.c
-index 846a914..0b4764f 100644
+index 846a914..ac1a2b9 100644
 --- a/src/evalfunc.c
 +++ b/src/evalfunc.c
 @@ -410,6 +410,7 @@ static void f_timer_stopall(typval_T *argvars, typval_T *rettv);
@@ -83,7 +83,7 @@ index 846a914..0b4764f 100644
 +	    if (c1 == c2)
 +		break;
 +	}
-+	if (*p)
++	if (!*p)
 +	{
 +	    last = trail;
 +	    p = NULL;
