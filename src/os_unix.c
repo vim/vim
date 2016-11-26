@@ -462,6 +462,10 @@ mch_inchar(
 	/* Checking if a job ended requires polling.  Do this every 100 msec. */
 	if (has_pending_job() && (wait_time < 0 || wait_time > 100L))
 	    wait_time = 100L;
+	/* If there is readahead then parse_queued_messages() timed out and we
+	 * should call it again soon. */
+	if ((wait_time < 0 || wait_time > 100L) && channel_any_readahead())
+	    wait_time = 10L;
 #endif
 
 	/*

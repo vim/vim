@@ -3900,6 +3900,31 @@ channel_parse_messages(void)
 }
 
 /*
+ * Return TRUE if any channel has readahead.  That means we should not block on
+ * waiting for input.
+ */
+    int
+channel_any_readahead(void)
+{
+    channel_T	*channel = first_channel;
+    ch_part_T	part = PART_SOCK;
+
+    while (channel != NULL)
+    {
+	if (channel_has_readahead(channel, part))
+	    return TRUE;
+	if (part < PART_ERR)
+	    ++part;
+	else
+	{
+	    channel = channel->ch_next;
+	    part = PART_SOCK;
+	}
+    }
+    return FALSE;
+}
+
+/*
  * Mark references to lists used in channels.
  */
     int

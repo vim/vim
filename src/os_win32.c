@@ -1351,9 +1351,15 @@ WaitForChar(long msec)
 	    DWORD dwWaitTime = dwEndTime - dwNow;
 
 #ifdef FEAT_JOB_CHANNEL
-	    /* Check channel while waiting input. */
+	    /* Check channel while waiting for input. */
 	    if (dwWaitTime > 100)
+	    {
 		dwWaitTime = 100;
+		/* If there is readahead then parse_queued_messages() timed out
+		 * and we should call it again soon. */
+		if (channel_any_readahead())
+		    dwWaitTime = 10;
+	    }
 #endif
 #ifdef FEAT_MZSCHEME
 	    if (mzthreads_allowed() && p_mzq > 0

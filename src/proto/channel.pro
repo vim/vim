@@ -44,6 +44,7 @@ int channel_poll_check(int ret_in, void *fds_in);
 int channel_select_setup(int maxfd_in, void *rfds_in, void *wfds_in);
 int channel_select_check(int ret_in, void *rfds_in, void *wfds_in);
 int channel_parse_messages(void);
+int channel_any_readahead(void);
 int set_ref_in_channel(int copyID);
 ch_part_T channel_part_send(channel_T *channel);
 ch_part_T channel_part_read(channel_T *channel);

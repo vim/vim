@@ -6264,7 +6264,7 @@ parse_queued_messages(void)
 }
 #endif
 
-#ifdef ELAPSED_TIMEVAL  /* proto is defined in vim.h */
+#ifdef ELAPSED_TIMEVAL  /* no PROTO here, proto is defined in vim.h */
 /*
  * Return time in msec since "start_tv".
  */
@@ -6288,9 +6288,6 @@ elapsed(DWORD start_tick)
 {
     DWORD	now = GetTickCount();
 
-    if (now < start_tick)
-	/* overflow */
-	return (long)now;
     return (long)now - (long)start_tick;
 }
 #endif
