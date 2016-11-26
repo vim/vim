@@ -121,3 +121,18 @@ func Test_dictionary()
   call assert_fails("set dictionary=/not>there", "E474:")
   call assert_fails("set dictionary=/not.*there", "E474:")
 endfunc
+
+func Test_thesaurus()
+  " Check that it's possible to set the option.
+  set thesaurus=/usr/share/mythes/th
+  call assert_equal('/usr/share/mythes/th', &thesaurus)
+  set thesaurus=/usr/share/mythes/th,/and/there
+  call assert_equal('/usr/share/mythes/th,/and/there', &thesaurus)
+  set thesaurus=/usr/share/mythes\ th
+  call assert_equal('/usr/share/mythes th', &thesaurus)
+
+  " Check rejecting weird characters.
+  call assert_fails("set thesaurus=/not&there", "E474:")
+  call assert_fails("set thesaurus=/not>there", "E474:")
+  call assert_fails("set thesaurus=/not.*there", "E474:")
+endfunc
