@@ -1351,9 +1351,15 @@ WaitForChar(long msec)
 	    DWORD dwWaitTime = dwEndTime - dwNow;
 
 #ifdef FEAT_JOB_CHANNEL
-	    /* Check channel while waiting input. */
+	    /* Check channel while waiting for input. */
 	    if (dwWaitTime > 100)
+	    {
 		dwWaitTime = 100;
+		/* If there is readahead then parse_queued_messages() timed out
+		 * and we should call it again soon. */
+		if (channel_any_readahead())
+		    dwWaitTime = 10;
+	    }
 #endif
 #ifdef FEAT_MZSCHEME
 	    if (mzthreads_allowed() && p_mzq > 0
@@ -4287,9 +4293,6 @@ mch_system_piped(char *cmd, int options)
 		    /* Get extra characters when we don't have any.  Reset the
 		     * counter and timer. */
 		    noread_cnt = 0;
-# if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-		    gettimeofday(&start_tv, NULL);
-# endif
 		    len = ui_inchar(ta_buf, BUFLEN, 10L, 0);
 		}
 		if (ta_len > 0 || len > 0)

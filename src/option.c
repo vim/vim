@@ -452,10 +452,11 @@ struct vimoption
 #define P_NFNAME       0x400000L /* only normal file name chars allowed */
 #define P_INSECURE     0x800000L /* option was set from a modeline */
 #define P_PRI_MKRC    0x1000000L /* priority for :mkvimrc (setting option has
-				   side effects) */
+				    side effects) */
 #define P_NO_ML       0x2000000L /* not allowed in modeline */
 #define P_CURSWANT    0x4000000L /* update curswant required; not needed when
 				  * there is a redraw flag */
+#define P_NDNAME      0x8000000L /* only normal dir name chars allowed */
 
 #define ISK_LATIN1  (char_u *)"@,48-57,_,192-255"
 
@@ -992,7 +993,7 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
-    {"dictionary",  "dict", P_STRING|P_EXPAND|P_VI_DEF|P_ONECOMMA|P_NODUP,
+    {"dictionary",  "dict", P_STRING|P_EXPAND|P_VI_DEF|P_ONECOMMA|P_NODUP|P_NDNAME,
 #ifdef FEAT_INS_EXPAND
 			    (char_u *)&p_dict, PV_DICT,
 #else
@@ -2058,7 +2059,7 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
-    {"printexpr", "pexpr",  P_STRING|P_VI_DEF,
+    {"printexpr", "pexpr",  P_STRING|P_VI_DEF|P_SECURE,
 #ifdef FEAT_POSTSCRIPT
 			    (char_u *)&p_pexpr, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
@@ -2659,7 +2660,7 @@ static struct vimoption options[] =
     {"textwidth",   "tw",   P_NUM|P_VI_DEF|P_VIM|P_RBUF,
 			    (char_u *)&p_tw, PV_TW,
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
-    {"thesaurus",   "tsr",  P_STRING|P_EXPAND|P_VI_DEF|P_ONECOMMA|P_NODUP,
+    {"thesaurus",   "tsr",  P_STRING|P_EXPAND|P_VI_DEF|P_ONECOMMA|P_NODUP|P_NDNAME,
 #ifdef FEAT_INS_EXPAND
 			    (char_u *)&p_tsr, PV_TSR,
 #else
@@ -5876,11 +5877,13 @@ did_set_string_option(
 	errmsg = e_secure;
     }
 
-    /* Check for a "normal" file name in some options.  Disallow a path
-     * separator (slash and/or backslash), wildcards and characters that are
-     * often illegal in a file name. */
-    else if ((options[opt_idx].flags & P_NFNAME)
-			 && vim_strpbrk(*varp, (char_u *)"/\\*?[|<>") != NULL)
+    /* Check for a "normal" directory or file name in some options.  Disallow a
+     * path separator (slash and/or backslash), wildcards and characters that
+     * are often illegal in a file name. */
+    else if (((options[opt_idx].flags & P_NFNAME)
+		    && vim_strpbrk(*varp, (char_u *)"/\\*?[|;&<>\r\n") != NULL)
+	  || ((options[opt_idx].flags & P_NDNAME)
+		    && vim_strpbrk(*varp, (char_u *)"*?[|;&<>\r\n") != NULL))
     {
 	errmsg = e_invarg;
     }
@@ -7021,6 +7024,7 @@ did_set_string_option(
 
 
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
+    /* 'toolbar' */
     else if (varp == &p_toolbar)
     {
 	if (opt_strings_flags(p_toolbar, p_toolbar_values,
@@ -7235,6 +7239,7 @@ did_set_string_option(
 #endif
 
 #if defined(FEAT_RENDER_OPTIONS)
+    /* 'renderoptions' */
     else if (varp == &p_rop && gui.in_use)
     {
 	if (!gui_mch_set_rendering_options(p_rop))
@@ -7262,19 +7267,19 @@ did_set_string_option(
     else
     {
 	p = NULL;
-	if (varp == &p_ww)
+	if (varp == &p_ww) /* 'whichwrap' */
 	    p = (char_u *)WW_ALL;
-	if (varp == &p_shm)
+	if (varp == &p_shm) /* 'shortmess' */
 	    p = (char_u *)SHM_ALL;
-	else if (varp == &(p_cpo))
+	else if (varp == &(p_cpo)) /* 'cpoptions' */
 	    p = (char_u *)CPO_ALL;
-	else if (varp == &(curbuf->b_p_fo))
+	else if (varp == &(curbuf->b_p_fo)) /* 'formatoptions' */
 	    p = (char_u *)FO_ALL;
 #ifdef FEAT_CONCEAL
-	else if (varp == &curwin->w_p_cocu)
+	else if (varp == &curwin->w_p_cocu) /* 'concealcursor' */
 	    p = (char_u *)COCU_ALL;
 #endif
-	else if (varp == &p_mouse)
+	else if (varp == &p_mouse) /* 'mouse' */
 	{
 #ifdef FEAT_MOUSE
 	    p = (char_u *)MOUSE_ALL;
@@ -7284,7 +7289,7 @@ did_set_string_option(
 #endif
 	}
 #if defined(FEAT_GUI)
-	else if (varp == &p_go)
+	else if (varp == &p_go) /* 'guioptions' */
 	    p = (char_u *)GO_ALL;
 #endif
 	if (p != NULL)

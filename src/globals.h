@@ -643,6 +643,8 @@ EXTERN int	exiting INIT(= FALSE);
 EXTERN int	really_exiting INIT(= FALSE);
 				/* TRUE when we are sure to exit, e.g., after
 				 * a deadly signal */
+EXTERN int	stdout_isatty INIT(= TRUE);	/* is stdout a terminal? */
+
 #if defined(FEAT_AUTOCHDIR)
 EXTERN int	test_autochdir INIT(= FALSE);
 #endif
