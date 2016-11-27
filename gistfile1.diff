@@ -1,0 +1,103 @@
+diff --git a/src/evalfunc.c b/src/evalfunc.c
+index 846a914..917fdad 100644
+--- a/src/evalfunc.c
++++ b/src/evalfunc.c
+@@ -410,6 +410,7 @@ static void f_timer_stopall(typval_T *argvars, typval_T *rettv);
+ static void f_tolower(typval_T *argvars, typval_T *rettv);
+ static void f_toupper(typval_T *argvars, typval_T *rettv);
+ static void f_tr(typval_T *argvars, typval_T *rettv);
++static void f_trim(typval_T *argvars, typval_T *rettv);
+ #ifdef FEAT_FLOAT
+ static void f_trunc(typval_T *argvars, typval_T *rettv);
+ #endif
+@@ -836,6 +837,7 @@ static struct fst
+     {"tolower",		1, 1, f_tolower},
+     {"toupper",		1, 1, f_toupper},
+     {"tr",		3, 3, f_tr},
++    {"trim",		1, 2, f_trim},
+ #ifdef FEAT_FLOAT
+     {"trunc",		1, 1, f_trunc},
+ #endif
+@@ -12654,6 +12656,82 @@ error:
+     rettv->vval.v_string = ga.ga_data;
+ }
+ 
++/*
++ * "trim()" function
++ */
++    static void
++f_trim(typval_T *argvars, typval_T *rettv)
++{
++    char_u	*s = get_tv_string_chk(&argvars[0]);
++    char_u	*mask, *head, *trail, *last = NULL, *p;
++
++    if (argvars[1].v_type == VAR_STRING)
++	mask = get_tv_string_chk(&argvars[1]);
++    else
++	mask = (char_u*) " \t\v\r\n";
++
++    head = s;
++    while (*head)
++    {
++#ifndef FEAT_MBYTE
++	p = vim_strchr(mask, *head);
++	if (!p)
++	    break;
++#else
++	int c1 = (*mb_ptr2char)(head), c2;
++	p = mask;
++	while (*p)
++	{
++	    c2 = (*mb_ptr2char)(p);
++	    if (c1 == c2)
++		break;
++	    mb_ptr_adv(p);
++	}
++	if (!*p)
++	    break;
++#endif
++	mb_ptr_adv(head);
++    }
++
++    rettv->v_type = VAR_STRING;
++    if (!*head)
++    {
++	rettv->vval.v_string = vim_strsave((char_u*)"");
++	return;
++    }
++
++    trail = head;
++    while (*trail)
++    {
++#ifndef FEAT_MBYTE
++	p = vim_strchr(mask, *trail);
++	mb_ptr_adv(trail);
++	if (p)
++	    last = trail;
++#else
++	int c1 = (*mb_ptr2char)(trail), c2;
++	p = mask;
++	while (*p)
++	{
++	    c2 = (*mb_ptr2char)(p);
++	    if (c1 == c2)
++		break;
++	    mb_ptr_adv(p);
++	}
++	mb_ptr_adv(trail);
++	if (!*p)
++	{
++	    last = trail;
++	    p = NULL;
++	}
++#endif
++    }
++    if (last)
++	rettv->vval.v_string = vim_strnsave(head, last - head);
++    else
++	rettv->vval.v_string = vim_strsave(head);
++}
++
+ #ifdef FEAT_FLOAT
+ /*
+  * "trunc({float})" function
