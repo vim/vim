@@ -80,6 +80,7 @@ let test_values = {
       \ 'completeopt': [['', 'menu', 'menu,longest'], ['xxx', 'menu,,,longest,']],
       \ 'cryptmethod': [['', 'zip'], ['xxx']],
       \ 'cscopequickfix': [['', 's-', 's-,c+,e0'], ['xxx', 's,g,d']],
+      \ 'cursorlineopt': [['both', 'line', 'number'], ['', 'xxx', 'line,number']],
       \ 'debug': [['', 'msg', 'msg', 'beep'], ['xxx']],
       \ 'diffopt': [['', 'filler', 'icase,iwhite'], ['xxx', 'algorithm:xxx', 'algorithm:']],
       \ 'display': [['', 'lastline', 'lastline,uhex'], ['xxx']],
