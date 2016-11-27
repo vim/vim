@@ -2151,6 +2151,7 @@ test_arglist \
 	test_tagjump \
 	test_textobjects \
 	test_timers \
+	test_trim \
 	test_true_false \
 	test_undo \
 	test_unlet \
