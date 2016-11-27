@@ -15,4 +15,7 @@ func Test_trim()
   call assert_equal(trim("    tteesstttt你好您R E SER V E早好你你    \t  \x0B ttestt", " 你好tes"), "您R E SER V E早好你你    \t  \x0B")
   call assert_equal(trim("    tteesstttt你好您R E SER V E早好你你    \t  \x0B ttestt", "   你你你好好好tttsses"), "您R E SER V E早好你你    \t  \x0B")
   call assert_equal(trim("这些些不要这些留下这些", "这些不要"), "留下")
+  call assert_equal(trim("", ""), "")
+  call assert_equal(trim("a", ""), "a")
+  call assert_equal(trim("", "a"), "")
 endfunc
