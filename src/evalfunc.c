@@ -12662,50 +12662,75 @@ error:
     static void
 f_trim(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*spaces = " \t\n\r\x0B";
-    char_u	maskbuf[NUMBUFLEN];
-    char_u	retbuf[NUMBUFLEN];
-    char_u	*mask;
-
-    char_u	*str = get_tv_string_chk(&argvars[0]);
-
-    int i, j, k, l;
-    int len = STRLEN(str);
-    int needtrim;
+    char_u	*s = get_tv_string_chk(&argvars[0]);
+    char_u	*mask, *head, *trail, *last = NULL, *p;
+    int c1, c2;
 
     if (argvars[1].v_type == VAR_STRING)
-	mask = get_tv_string_buf_chk(&argvars[1], maskbuf);
+	mask = get_tv_string_chk(&argvars[1]);
     else
-	mask = spaces;
+	mask = (char_u*) " \t\v\r\n";
 
-
-    for (i = 0; i < len; i++) {
-	needtrim = FALSE;
-	for (k = 0; mask[k] != '\0'; k++) {
-	    if (str[i] == mask[k]) {
-		needtrim = TRUE;
-	    }
-	}
-	if (needtrim == FALSE)
+    head = s;
+    while (*head)
+    {
+#ifndef FEAT_MBYTE
+	p = vim_strchr(mask, *head);
+	if (!p)
 	    break;
-    }
-
-    for (j = len - 1; j > 0; j--) {
-	needtrim = FALSE;
-	for (k = 0; mask[k] != '\0'; k++) {
-	    if (str[j] == mask[k]) {
-		needtrim = TRUE;
-	    }
+#else
+	c1 = (*mb_ptr2char)(head);
+	p = mask;
+	while (*p)
+	{
+	    c2 = (*mb_ptr2char)(p);
+	    if (c1 == c2)
+		break;
+	    mb_ptr_adv(p);
 	}
-	if (needtrim == FALSE)
+	if (!*p)
 	    break;
+#endif
+	mb_ptr_adv(head);
     }
 
-    for (l = 0; i <= j; l++, i++) {
-	retbuf[l] = str[i];
-    }
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strsave(retbuf);
+    if (!*head)
+    {
+	rettv->vval.v_string = vim_strsave((char_u*)"");
+	return;
+    }
+
+    trail = head;
+    while (*trail)
+    {
+#ifndef FEAT_MBYTE
+	p = vim_strchr(mask, *trail);
+	mb_ptr_adv(trail);
+	if (p)
+	    last = trail;
+#else
+	c1 = (*mb_ptr2char)(trail);
+	p = mask;
+	while (*p)
+	{
+	    c2 = (*mb_ptr2char)(p);
+	    if (c1 == c2)
+		break;
+	    mb_ptr_adv(p);
+	}
+	mb_ptr_adv(trail);
+	if (!*p)
+	{
+	    last = trail;
+	    p = NULL;
+	}
+#endif
+    }
+    if (last)
+	rettv->vval.v_string = vim_strnsave(head, last - head);
+    else
+	rettv->vval.v_string = vim_strsave(head);
 }
 
 #ifdef FEAT_FLOAT
