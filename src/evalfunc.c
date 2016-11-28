@@ -8191,7 +8191,7 @@ f_pyxeval(typval_T *argvars, typval_T *rettv)
 f_rand(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l = NULL;
-    UINT32_TYPEDEF  x, y, z, w, t;
+    UINT32_TYPEDEF x, y, z, w, t;
     static int static_seed_initialized = FALSE;
     static UINT32_TYPEDEF xyzw[4] = {123456789, 362436069, 521288629, 88675123};
 
@@ -8203,7 +8203,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	/* When argument is not given, return random number initialized
-	 * staticly. */
+	 * statically. */
 	if (!static_seed_initialized)
 	{
 	    xyzw[0] = (varnumber_T)time(NULL);
@@ -11298,7 +11298,7 @@ f_srand(typval_T *argvars, typval_T *rettv)
     else
     {
 	int error = FALSE;
-	UINT32_TYPEDEF  x = (UINT32_TYPEDEF)get_tv_number_chk(&argvars[0], &error);
+	UINT32_TYPEDEF x = (UINT32_TYPEDEF)get_tv_number_chk(&argvars[0], &error);
 	if (error)
 	    return;
 
