@@ -62,8 +62,7 @@ func Test_mksession_utf8()
   split
   norm! j016|3zl
   split
-  " NOTE: When remove The following line, test failed.  I'm not sure.
-  normal!vv
+  call wincol()
   mksession! test_mks.out
   let li = filter(readfile('test_mks.out'), 'v:val =~# "\\(^ *normal! 0\\|^ *exe ''normal!\\)"')
   let expected = [
