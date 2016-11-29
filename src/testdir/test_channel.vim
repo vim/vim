@@ -58,6 +58,9 @@ func Ch_communicate(port)
   " string with ][ should work
   call assert_equal('this][that', ch_evalexpr(handle, 'echo this][that'))
 
+  " nothing to read now
+  call assert_equal(0, ch_canread(handle))
+
   " sending three messages quickly then reading should work
   for i in range(3)
     call ch_sendexpr(handle, 'echo hello ' . i)
@@ -368,7 +371,7 @@ func Ch_raw_one_time_callback(port)
   endif
   call ch_setoptions(handle, {'mode': 'raw'})
 
-  " The message are sent raw, we do our own JSON strings here.
+  " The messages are sent raw, we do our own JSON strings here.
   call ch_sendraw(handle, "[1, \"hello!\"]\n", {'callback': 'Ch_handleRaw1'})
   call WaitFor('g:Ch_reply1 != ""')
   call assert_equal("[1, \"got it\"]", g:Ch_reply1)
@@ -431,7 +434,10 @@ func Test_raw_pipe()
     return
   endif
   call ch_log('Test_raw_pipe()')
-  let job = job_start(s:python . " test_channel_pipe.py", {'mode': 'raw'})
+  " Add a dummy close callback to avoid that messages are dropped when calling
+  " ch_canread().
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'mode': 'raw', 'close_cb': {chan -> 0}})
   call assert_equal(v:t_job, type(job))
   call assert_equal("run", job_status(job))
 
@@ -458,6 +464,9 @@ func Test_raw_pipe()
     call assert_equal("something\n", substitute(msg, "\r", "", 'g'))
 
     call ch_sendraw(job, "double this\n")
+    let g:handle = job_getchannel(job)
+    call WaitFor('ch_canread(g:handle)')
+    unlet g:handle
     let msg = ch_readraw(job)
     call assert_equal("this\nAND this\n", substitute(msg, "\r", "", 'g'))
 

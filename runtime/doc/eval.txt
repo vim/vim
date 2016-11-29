@@ -2009,6 +2009,7 @@ byteidxcomp({expr}, {nr})	Number	byte index of {nr}'th char in {expr}
 call({func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
 ceil({expr})			Float	round {expr} up
+ch_canread({handle})		Number	check if there is something to read
 ch_close({handle})		none	close {handle}
 ch_close_in({handle})		none	close in part of {handle}
 ch_evalexpr({handle}, {expr} [, {options}])
@@ -2980,16 +2981,28 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		don't fit, a vertical layout is used anyway.  For some systems
 		the horizontal layout is always used.
 
+ch_canread({handle})						*ch_canread()*
+		Return non-zero when there is something to read from {handle}.
+		{handle} can be a Channel or a Job that has a Channel.
+
+		This is useful to read from a channel at a convenient time,
+		e.g. from a timer.
+
+		Note that messages are dropped when the channel does not have
+		a callback.  Add a close callback to avoid that.
+
+		{only available when compiled with the |+channel| feature}
+
 ch_close({handle})						*ch_close()*
 		Close {handle}.  See |channel-close|.
-		{handle} can be Channel or a Job that has a Channel.
+		{handle} can be a Channel or a Job that has a Channel.
 		A close callback is not invoked.
 
 		{only available when compiled with the |+channel| feature}
 
 ch_close_in({handle})						*ch_close_in()*
 		Close the "in" part of {handle}.  See |channel-close-in|.
-		{handle} can be Channel or a Job that has a Channel.
+		{handle} can be a Channel or a Job that has a Channel.
 		A close callback is not invoked.
 
 		{only available when compiled with the |+channel| feature}
@@ -2998,7 +3011,7 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 		Send {expr} over {handle}.  The {expr} is encoded
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|.
-		{handle} can be Channel or a Job that has a Channel.
+		{handle} can be a Channel or a Job that has a Channel.
 								*E917*
 		{options} must be a Dictionary.  It must not have a "callback"
 		entry.  It can have a "timeout" entry to specify the timeout
@@ -3012,7 +3025,7 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 
 ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 		Send {string} over {handle}.
-		{handle} can be Channel or a Job that has a Channel.
+		{handle} can be a Channel or a Job that has a Channel.
 
 		Works like |ch_evalexpr()|, but does not encode the request or
 		decode the response.  The caller is responsible for the
@@ -3025,7 +3038,7 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 
 ch_getbufnr({handle}, {what})				 *ch_getbufnr()*
 		Get the buffer number that {handle} is using for {what}.
-		{handle} can be Channel or a Job that has a Channel.
+		{handle} can be a Channel or a Job that has a Channel.
 		{what} can be "err" for stderr, "out" for stdout or empty for
 		socket output.
 		Returns -1 when there is no buffer.
@@ -3099,7 +3112,7 @@ ch_open({address} [, {options}])				*ch_open()*
 
 ch_read({handle} [, {options}])					*ch_read()*
 		Read from {handle} and return the received message.
-		{handle} can be Channel or a Job that has a Channel.
+		{handle} can be a Channel or a Job that has a Channel.
 		See |channel-more|.
 		{only available when compiled with the |+channel| feature}
 
@@ -3113,7 +3126,7 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		according to the type of channel.  The function cannot be used
 		with a raw channel.
 		See |channel-use|.				*E912*
-		{handle} can be Channel or a Job that has a Channel.
+		{handle} can be a Channel or a Job that has a Channel.
 
 		{only available when compiled with the |+channel| feature}
 
@@ -3134,7 +3147,7 @@ ch_setoptions({handle}, {options})			*ch_setoptions()*
 			"timeout"	default read timeout in msec
 			"mode"		mode for the whole channel
 		See |ch_open()| for more explanation.
-		{handle} can be Channel or a Job that has a Channel.
+		{handle} can be a Channel or a Job that has a Channel.
 
 		Note that changing the mode may cause queued messages to be
 		lost.
@@ -3148,7 +3161,7 @@ ch_status({handle} [, {options}])				*ch_status()*
 			"open"		channel can be used
 			"buffered"	channel can be read, not written to
 			"closed"	channel can not be used
-		{handle} can be Channel or a Job that has a Channel.
+		{handle} can be a Channel or a Job that has a Channel.
 		"buffered" is used when the channel was closed but there is
 		still data that can be obtained with |ch_read()|.
 

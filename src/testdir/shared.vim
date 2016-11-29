@@ -88,7 +88,7 @@ func RunServer(cmd, testfunc, args)
 
     call call(function(a:testfunc), [port])
   catch
-    call assert_false(1, "Caught exception: " . v:exception)
+    call assert_false(1, 'Caught exception: "' . v:exception . '" in ' . v:throwpoint)
   finally
     call s:kill_server(a:cmd)
   endtry

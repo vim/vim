@@ -418,7 +418,11 @@ This uses the channel timeout.  To read without a timeout, just get any
 message that is available: >
 	let output = ch_read(channel, {'timeout': 0})
 When no message was available then the result is v:none for a JSON or JS mode
-channels, an empty string for a RAW or NL channel.
+channels, an empty string for a RAW or NL channel.  You can use |ch_canread()|
+to check if there is something to read.
+
+Note that when there is no callback message are dropped.  To avoid that add a
+close callback to the channel.
 
 To read all output from a RAW channel that is available: >
 	let output = ch_readraw(channel)
@@ -464,6 +468,11 @@ it like this: >
 
 Without the handler you need to read the output with |ch_read()| or
 |ch_readraw()|. You can do this in the close callback, see |read-in-close-cb|.
+
+Note that if the job exits before you read the output, the output may be lost.
+This depends on the system (on Unix this happens because closing the write end
+of a pipe causes the read end to get EOF).  To avoid this make the job sleep
+for a short while before it exits.
 
 Note that if the job exits before you read the output, the output may be lost.
 This depends on the system (on Unix this happens because closing the write end
