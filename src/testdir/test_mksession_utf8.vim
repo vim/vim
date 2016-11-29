@@ -18,12 +18,12 @@ func Test_mksession_utf8()
     \   '    four leadinG spaces',
     \   'two		consecutive tabs',
     \   'two	tabs	in one line',
-    \   'one 窶ｦ multibyteCharacter',
-    \   'a 窶彙窶・two multiByte characters',
-    \   '窶彡窶・竄ｬ three mulTibyte characters'
+    \   'one … multibyteCharacter',
+    \   'a “b” two multiByte characters',
+    \   '“c”1€ three mulTibyte characters'
     \ ])
   let tmpfile = tempname()
-  w! tmpfile
+  exec 'w! ' . tmpfile
   /^start:
   set wrap
   vsplit
