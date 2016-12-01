@@ -81,6 +81,13 @@ ifndef STATIC_STDCPLUS
 STATIC_STDCPLUS=no
 endif
 
+
+# Link against the shared version of libwinpthread by default.  Set
+# STATIC_WINPTHREAD to "yes" to link against static version instead.
+ifndef STATIC_WINPTHREAD
+STATIC_WINPTHREAD=$(STATIC_STDCPLUS)
+endif
+
 # If the user doesn't want gettext, undefine it.
 ifeq (no, $(GETTEXT))
 GETTEXT=
@@ -815,6 +822,10 @@ LIB += -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
 else
 LIB += -lstdc++
 endif
+endif
+
+ifeq (yes, $(STATIC_WINPTHREAD))
+LIB += -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic
 endif
 
 all: $(TARGET) vimrun.exe xxd/xxd.exe install.exe uninstal.exe GvimExt/gvimext.dll
