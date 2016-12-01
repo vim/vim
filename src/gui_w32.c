@@ -3551,12 +3551,12 @@ gui_mch_browseW(
     filterp = convert_filterW(filter);
 
     vim_memset(&fileStruct, 0, sizeof(OPENFILENAMEW));
-#ifdef OPENFILENAME_SIZE_VERSION_400W
+#  ifdef OPENFILENAME_SIZE_VERSION_400W
     /* be compatible with Windows NT 4.0 */
     fileStruct.lStructSize = OPENFILENAME_SIZE_VERSION_400W;
-#else
+#  else
     fileStruct.lStructSize = sizeof(fileStruct);
-#endif
+#  endif
 
     if (title != NULL)
 	titlep = enc_to_utf16(title, NULL);
@@ -3593,10 +3593,10 @@ gui_mch_browseW(
      * Don't use OFN_OVERWRITEPROMPT, Vim has its own ":confirm" dialog.
      */
     fileStruct.Flags = (OFN_NOCHANGEDIR | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY);
-#ifdef FEAT_SHORTCUT
+#  ifdef FEAT_SHORTCUT
     if (curbuf->b_p_bin)
 	fileStruct.Flags |= OFN_NODEREFERENCELINKS;
-#endif
+#  endif
     if (saving)
     {
 	if (!GetSaveFileNameW(&fileStruct))

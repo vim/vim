@@ -40,7 +40,7 @@
 #  include <dlgs.h>
 #  include <winspool.h>
 #  include <commdlg.h>
-#endif
+# endif
 
 #endif /* PROTO */
 
@@ -1619,7 +1619,9 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 
 	if (psettings->n_uncollated_copies == 0)
 	    psettings->n_uncollated_copies = 1;
-    } else {
+    }
+    else
+    {
 	psettings->n_collated_copies = 1;
 	psettings->n_uncollated_copies = 1;
     }
