@@ -1684,20 +1684,29 @@ OBJ = $(OBJ_COMMON) \
 	objects/memfile.o \
 	objects/message.o
 
-JSON_TEST_OBJ = $(OBJ_COMMON) \
+OBJ_JSON_TEST = \
 	objects/memfile.o \
 	objects/message.o \
 	objects/json_test.o
 
-MEMFILE_TEST_OBJ = $(OBJ_COMMON) \
+JSON_TEST_OBJ = $(OBJ_COMMON) $(OBJ_JSON_TEST)
+
+OBJ_MEMFILE_TEST = \
 	objects/json.o \
 	objects/message.o \
 	objects/memfile_test.o
 
-MESSAGE_TEST_OBJ = $(OBJ_COMMON) \
+MEMFILE_TEST_OBJ = $(OBJ_COMMON) $(OBJ_MEMFILE_TEST)
+
+OBJ_MESSAGE_TEST = \
 	objects/json.o \
 	objects/memfile.o \
 	objects/message_test.o
+
+MESSAGE_TEST_OBJ = $(OBJ_COMMON) $(OBJ_MESSAGE_TEST)
+
+ALL_OBJ = $(OBJ_COMMON) $(OBJ_JSON_TEST) $(OBJ_MEMFILE_TEST) $(OBJ_MESSAGE_TEST)
+
 
 PRO_AUTO = \
 	arabic.pro \
@@ -2853,8 +2862,14 @@ auto/gui_gtk_gresources.h: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
 # commands understand putting object files in another directory, it must be
 # specified for each file separately.
 
-objects:
-	mkdir objects
+objects objects/.dirstamp:
+	mkdir -p objects
+	touch objects/.dirstamp
+
+# All object files depend on the objects directory, so that parallel make
+# works.  Can't depend on the directory itself, its timestamp changes all the
+# time.
+$(ALL_OBJ): objects/.dirstamp
 
 objects/arabic.o: arabic.c
 	$(CCC) -o $@ arabic.c
