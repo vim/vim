@@ -65,6 +65,15 @@ function Test_tabpage()
     call assert_true(tabpagenr() == 2 && tabpagewinnr(2, '$') == 2 && tabpagewinnr(2) == 1)
     tabclose
     q
+    "
+    "
+    " Test for ":tab drop vertical-split-window" to jump test1 buffer
+    tabedit test1
+    vnew
+    tabfirst
+    tab drop test1
+    call assert_equal([2, 2, 2, 2], [tabpagenr('$'), tabpagenr(), tabpagewinnr(2, '$'), tabpagewinnr(2)])
+    1tabonly
   endif
   "
   "
