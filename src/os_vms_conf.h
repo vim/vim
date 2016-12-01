@@ -101,7 +101,6 @@
 #define HAVE_STRTOL
 #define HAVE_TGETENT
 #define HAVE_MEMSET
-#define HAVE_MEMCMP
 #define HAVE_STRERROR
 #define HAVE_FCHOWN
 #define HAVE_RENAME

@@ -154,7 +154,6 @@
 #undef BAD_GETCWD
 
 /* Define if you the function: */
-#undef HAVE_BCMP
 #undef HAVE_FCHDIR
 #undef HAVE_FCHOWN
 #undef HAVE_FSEEKO
@@ -170,7 +169,6 @@
 #undef HAVE_ICONV
 #undef HAVE_NL_LANGINFO_CODESET
 #undef HAVE_LSTAT
-#undef HAVE_MEMCMP
 #undef HAVE_MEMSET
 #undef HAVE_MKDTEMP
 #undef HAVE_NANOSLEEP
