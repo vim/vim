@@ -1786,7 +1786,7 @@ f_ceil(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_canread(typval_T *argvars, typval_T *rettv)
 {
-    channel_T *channel = get_channel_arg(&argvars[0], TRUE, TRUE, 0);
+    channel_T *channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
 
     rettv->vval.v_number = 0;
     if (channel != NULL)

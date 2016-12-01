@@ -42,6 +42,9 @@ static int	confirm_msg_used = FALSE;	/* displaying confirm_msg */
 static char_u	*confirm_msg = NULL;		/* ":confirm" message */
 static char_u	*confirm_msg_tail;		/* tail of confirm_msg */
 #endif
+#ifdef FEAT_JOB_CHANNEL
+static int emsg_to_channel_log = FALSE;
+#endif
 
 struct msg_hist
 {
@@ -165,6 +168,14 @@ msg_attr_keep(
 		&& last_msg_hist->msg != NULL
 		&& STRCMP(s, last_msg_hist->msg)))
 	add_msg_hist(s, -1, attr);
+
+#ifdef FEAT_JOB_CHANNEL
+    if (emsg_to_channel_log)
+    {
+	/* Write message in the channel log. */
+	ch_logs(NULL, "ERROR: %s", (char *)s);
+    }
+#endif
 
     /* When displaying keep_msg, don't let msg_start() free it, caller must do
      * that. */
@@ -556,6 +567,7 @@ emsg(char_u *s)
 {
     int		attr;
     char_u	*p;
+    int		r;
 #ifdef FEAT_EVAL
     int		ignore = FALSE;
     int		severe;
@@ -624,6 +636,9 @@ emsg(char_u *s)
 		}
 		redir_write(s, -1);
 	    }
+#ifdef FEAT_JOB_CHANNEL
+	    ch_logs(NULL, "ERROR: %s", (char *)s);
+#endif
 	    return TRUE;
 	}
 
@@ -650,6 +665,9 @@ emsg(char_u *s)
 				     * and a redraw is expected because
 				     * msg_scrolled is non-zero */
 
+#ifdef FEAT_JOB_CHANNEL
+    emsg_to_channel_log = TRUE;
+#endif
     /*
      * Display name and line number for the source of the error.
      */
@@ -659,7 +677,12 @@ emsg(char_u *s)
      * Display the error message itself.
      */
     msg_nowait = FALSE;			/* wait for this msg */
-    return msg_attr(s, attr);
+    r = msg_attr(s, attr);
+
+#ifdef FEAT_JOB_CHANNEL
+    emsg_to_channel_log = FALSE;
+#endif
+    return r;
 }
 
 

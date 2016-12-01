@@ -1474,6 +1474,7 @@ struct jsonq_S
     typval_T	*jq_value;
     jsonq_T	*jq_next;
     jsonq_T	*jq_prev;
+    int		jq_no_callback; /* TRUE when no callback was found */
 };
 
 struct cbq_S
@@ -1597,6 +1598,7 @@ struct channel_S {
     partial_T	*ch_partial;
     char_u	*ch_close_cb;	/* call when channel is closed */
     partial_T	*ch_close_partial;
+    int		ch_drop_never;
 
     job_T	*ch_job;	/* Job that uses this channel; this does not
 				 * count as a reference to avoid a circular
@@ -1684,6 +1686,7 @@ typedef struct
     partial_T	*jo_close_partial; /* not referenced! */
     char_u	*jo_exit_cb;	/* not allocated! */
     partial_T	*jo_exit_partial; /* not referenced! */
+    int		jo_drop_never;
     int		jo_waittime;
     int		jo_timeout;
     int		jo_out_timeout;

@@ -155,7 +155,13 @@ Use |ch_status()| to see if the channel could be opened.
 	func MyCloseHandler(channel)
 <		Vim will invoke callbacks that handle data before invoking
 		close_cb, thus when this function is called no more data will
-		be received.
+		be passed to the callbacks.
+							*channel-drop*
+"drop"		Specifies when to drop messages:
+		    "auto"	When there is no callback to handle a message.
+				The "close_cb" is also considered for this.
+		    "never"	All messages will be kept.
+
 							*waittime*
 "waittime"	The time to wait for the connection to be made in
 		milliseconds.  A negative number waits forever.
