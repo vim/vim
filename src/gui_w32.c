@@ -2297,19 +2297,24 @@ GetTextWidthEnc(HDC hdc, char_u *str, int len)
 # define GetTextWidthEnc(h, s, l) GetTextWidth((h), (s), (l))
 #endif
 
+static void get_work_area(RECT *spi_rect);
+
 /*
  * A quick little routine that will center one window over another, handy for
- * dialog boxes.  Taken from the Win32SDK samples.
+ * dialog boxes.  Taken from the Win32SDK samples and modified for multiple
+ * monitors.
  */
     static BOOL
 CenterWindow(
     HWND hwndChild,
     HWND hwndParent)
 {
-    RECT    rChild, rParent;
-    int     wChild, hChild, wParent, hParent;
-    int     wScreen, hScreen, xNew, yNew;
-    HDC     hdc;
+    HMONITOR	    mon;
+    MONITORINFO	    moninfo;
+    RECT	    rChild, rParent, rScreen;
+    int		    wChild, hChild, wParent, hParent;
+    int		    xNew, yNew;
+    HDC		    hdc;
 
     GetWindowRect(hwndChild, &rChild);
     wChild = rChild.right - rChild.left;
@@ -2317,32 +2322,39 @@ CenterWindow(
 
     /* If Vim is minimized put the window in the middle of the screen. */
     if (hwndParent == NULL || IsMinimized(hwndParent))
-	SystemParametersInfo(SPI_GETWORKAREA, 0, &rParent, 0);
+	get_work_area(&rParent);
     else
 	GetWindowRect(hwndParent, &rParent);
     wParent = rParent.right - rParent.left;
     hParent = rParent.bottom - rParent.top;
 
-    hdc = GetDC(hwndChild);
-    wScreen = GetDeviceCaps (hdc, HORZRES);
-    hScreen = GetDeviceCaps (hdc, VERTRES);
-    ReleaseDC(hwndChild, hdc);
-
-    xNew = rParent.left + ((wParent - wChild) /2);
-    if (xNew < 0)
+    moninfo.cbSize = sizeof(MONITORINFO);
+    mon = MonitorFromWindow(hwndChild, MONITOR_DEFAULTTOPRIMARY);
+    if (mon != NULL && GetMonitorInfo(mon, &moninfo))
     {
-	xNew = 0;
+	rScreen = moninfo.rcWork;
     }
-    else if ((xNew+wChild) > wScreen)
+    else
     {
-	xNew = wScreen - wChild;
+	hdc = GetDC(hwndChild);
+	rScreen.left = 0;
+	rScreen.top = 0;
+	rScreen.right = GetDeviceCaps(hdc, HORZRES);
+	rScreen.bottom = GetDeviceCaps(hdc, VERTRES);
+	ReleaseDC(hwndChild, hdc);
     }
 
-    yNew = rParent.top	+ ((hParent - hChild) /2);
-    if (yNew < 0)
-	yNew = 0;
-    else if ((yNew+hChild) > hScreen)
-	yNew = hScreen - hChild;
+    xNew = rParent.left + ((wParent - wChild) / 2);
+    if (xNew < rScreen.left)
+	xNew = rScreen.left;
+    else if ((xNew + wChild) > rScreen.right)
+	xNew = rScreen.right - wChild;
+
+    yNew = rParent.top + ((hParent - hChild) / 2);
+    if (yNew < rScreen.top)
+	yNew = rScreen.top;
+    else if ((yNew + hChild) > rScreen.bottom)
+	yNew = rScreen.bottom - hChild;
 
     return SetWindowPos(hwndChild, NULL, xNew, yNew, 0, 0,
 						   SWP_NOSIZE | SWP_NOZORDER);
@@ -5559,7 +5571,7 @@ get_work_area(RECT *spi_rect)
     MONITORINFO	    moninfo;
 
     /* work out which monitor the window is on, and get *it's* work area */
-    mon = MonitorFromWindow(s_hwnd, 1 /*MONITOR_DEFAULTTOPRIMARY*/);
+    mon = MonitorFromWindow(s_hwnd, MONITOR_DEFAULTTOPRIMARY);
     if (mon != NULL)
     {
 	moninfo.cbSize = sizeof(MONITORINFO);
