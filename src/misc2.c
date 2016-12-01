@@ -1740,27 +1740,6 @@ vim_memset(void *ptr, int c, size_t size)
 }
 #endif
 
-#ifdef VIM_MEMCMP
-/*
- * Return zero when "b1" and "b2" are the same for "len" bytes.
- * Return non-zero otherwise.
- */
-    int
-vim_memcmp(void *b1, void *b2, size_t len)
-{
-    char_u  *p1 = (char_u *)b1, *p2 = (char_u *)b2;
-
-    for ( ; len > 0; --len)
-    {
-	if (*p1 != *p2)
-	    return 1;
-	++p1;
-	++p2;
-    }
-    return 0;
-}
-#endif
-
 /* skipped when generating prototypes, the prototype is in vim.h */
 #ifdef VIM_MEMMOVE
 /*

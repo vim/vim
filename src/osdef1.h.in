@@ -50,12 +50,7 @@ extern int	poll(struct pollfd *, long, int);
 #ifdef HAVE_MEMSET
 extern void	*memset(void *, int, size_t);
 #endif
-#ifdef HAVE_BCMP
-extern int	bcmp(void *, void *, size_t);
-#endif
-#ifdef HAVE_MEMCMP
 extern int	memcmp(const void *, const void *, size_t);
-#endif
 #ifdef HAVE_STRPBRK
 extern char	*strpbrk(const char *, const char *);
 #endif
