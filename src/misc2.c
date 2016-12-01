@@ -6243,7 +6243,8 @@ parse_queued_messages(void)
 }
 #endif
 
-#ifdef ELAPSED_TIMEVAL  /* no PROTO here, proto is defined in vim.h */
+#ifndef PROTO  /* proto is defined in vim.h */
+# ifdef ELAPSED_TIMEVAL
 /*
  * Return time in msec since "start_tv".
  */
@@ -6256,9 +6257,9 @@ elapsed(struct timeval *start_tv)
     return (now_tv.tv_sec - start_tv->tv_sec) * 1000L
 	 + (now_tv.tv_usec - start_tv->tv_usec) / 1000L;
 }
-#endif
+# endif
 
-#ifdef ELAPSED_TICKCOUNT
+# ifdef ELAPSED_TICKCOUNT
 /*
  * Return time in msec since "start_tick".
  */
@@ -6269,4 +6270,5 @@ elapsed(DWORD start_tick)
 
     return (long)now - (long)start_tick;
 }
+# endif
 #endif

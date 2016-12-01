@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.0.  Last change: 2016 Oct 02
+*change.txt*    For Vim version 8.0.  Last change: 2016 Nov 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -684,6 +684,7 @@ g&			Synonym for `:%s//~/&` (repeat last substitute with
 							*:s_flags*
 The flags that you can use for the substitute commands:
 
+							*:&&*
 [&]	Must be the first one: Keep the flags from the previous substitute
 	command.  Examples: >
 		:&&

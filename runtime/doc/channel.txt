@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.0.  Last change: 2016 Nov 07
+*channel.txt*      For Vim version 8.0.  Last change: 2016 Dec 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -480,11 +480,6 @@ This depends on the system (on Unix this happens because closing the write end
 of a pipe causes the read end to get EOF).  To avoid this make the job sleep
 for a short while before it exits.
 
-Note that if the job exits before you read the output, the output may be lost.
-This depends on the system (on Unix this happens because closing the write end
-of a pipe causes the read end to get EOF).  To avoid this make the job sleep
-for a short while before it exits.
-
 The handler defined for "out_cb" will not receive stderr.  If you want to
 handle that separately, add an "err_cb" handler: >
     let job = job_start(command, {"out_cb": "MyHandler",
@@ -549,7 +544,7 @@ You will want to do something more useful than "echomsg".
 
 To start another process without creating a channel: >
     let job = job_start(command,
-    	\ {"in_io": "null", "out_io": "null", "err_io": "null"})
+	\ {"in_io": "null", "out_io": "null", "err_io": "null"})
 
 This starts {command} in the background, Vim does not wait for it to finish.
 
@@ -611,6 +606,10 @@ See |job_setoptions()| and |ch_setoptions()|.
 "close_cb": handler	Callback for when the channel is closed.  Same as
 			"close_cb" on |ch_open()|, see |close_cb|.
 						*job-exit_cb*
+"drop"			Specifies when to drop messages.  Same as "drop" on
+			|ch_open()|, see |channel-drop|.  For "auto" the
+			exit_cb is not considered.
+
 "exit_cb": handler	Callback for when the job ends.  The arguments are the
 			job and the exit status.
 			Vim checks up to 10 times per second for jobs that
@@ -644,7 +643,7 @@ See |job_setoptions()| and |ch_setoptions()|.
 "channel": {channel}	Use an existing channel instead of creating a new one.
 			The parts of the channel that get used for the new job
 			will be disconnected from what they were used before.
-			If the channel was still use by another job this may
+			If the channel was still used by another job this may
 			cause I/O errors.
 			Existing callbacks and other settings remain.
 
@@ -662,7 +661,7 @@ See |job_setoptions()| and |ch_setoptions()|.
 "out_io": "null"	disconnect stdout (goes to /dev/null)
 "out_io": "pipe"	stdout is connected to the channel (default)
 "out_io": "file"	stdout writes to a file
-"out_io": "buffer" 	stdout appends to a buffer (see below)
+"out_io": "buffer"	stdout appends to a buffer (see below)
 "out_name": "/path/file" the name of the file or buffer to write to
 "out_buf": number	the number of the buffer to write to
 "out_modifiable": 0	when writing to a buffer, 'modifiable' will be off
@@ -675,7 +674,7 @@ See |job_setoptions()| and |ch_setoptions()|.
 "err_io": "null"	disconnect stderr  (goes to /dev/null)
 "err_io": "pipe"	stderr is connected to the channel (default)
 "err_io": "file"	stderr writes to a file
-"err_io": "buffer" 	stderr appends to a buffer (see below)
+"err_io": "buffer"	stderr appends to a buffer (see below)
 "err_name": "/path/file" the name of the file or buffer to write to
 "err_buf": number	the number of the buffer to write to
 "err_modifiable": 0	when writing to a buffer, 'modifiable' will be off

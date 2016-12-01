@@ -1357,6 +1357,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 --servername	remote.txt	/*--servername*
 --socketid	starting.txt	/*--socketid*
 --startuptime	starting.txt	/*--startuptime*
+--ttyfail	starting.txt	/*--ttyfail*
 --version	starting.txt	/*--version*
 --windowid	starting.txt	/*--windowid*
 -A	starting.txt	/*-A*
@@ -1844,6 +1845,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :$	cmdline.txt	/*:$*
 :%	cmdline.txt	/*:%*
 :&	change.txt	/*:&*
+:&&	change.txt	/*:&&*
 :'	cmdline.txt	/*:'*
 :,	cmdline.txt	/*:,*
 :.	cmdline.txt	/*:.*
@@ -5248,6 +5250,7 @@ catch-text	eval.txt	/*catch-text*
 cc	change.txt	/*cc*
 ceil()	eval.txt	/*ceil()*
 ch.vim	syntax.txt	/*ch.vim*
+ch_canread()	eval.txt	/*ch_canread()*
 ch_close()	eval.txt	/*ch_close()*
 ch_close_in()	eval.txt	/*ch_close_in()*
 ch_evalexpr()	eval.txt	/*ch_evalexpr()*
@@ -5295,6 +5298,7 @@ channel-close	channel.txt	/*channel-close*
 channel-close-in	channel.txt	/*channel-close-in*
 channel-commands	channel.txt	/*channel-commands*
 channel-demo	channel.txt	/*channel-demo*
+channel-drop	channel.txt	/*channel-drop*
 channel-functions	usr_41.txt	/*channel-functions*
 channel-mode	channel.txt	/*channel-mode*
 channel-more	channel.txt	/*channel-more*

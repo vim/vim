@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2016 Nov 04
+*eval.txt*	For Vim version 8.0.  Last change: 2016 Nov 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3084,7 +3084,7 @@ ch_log({msg} [, {handle}])					*ch_log()*
 		|ch_logfile()|.
 		When {handle} is passed the channel number is used for the
 		message.
-		{handle} can be Channel or a Job that has a Channel.  The
+		{handle} can be a Channel or a Job that has a Channel.  The
 		Channel must be open for the channel number to be used.
 
 ch_logfile({fname} [, {mode}])					*ch_logfile()*

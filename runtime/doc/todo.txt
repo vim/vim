@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Nov 17
+*todo.txt*      For Vim version 8.0.  Last change: 2016 Dec 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,22 +35,7 @@ there will not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Test_help_complete sometimes fails on MS-Windows:
-function RunTheTest[9]..Test_help_complete line 22: Expected ['h test-char@ab',
-'h test-char@en', 'h test-col@ab', 'h test-col@en'] but got ['h test-char@en', '
-h test-char@en\t', 'h test-col@ab', 'h test-col@en']
-Appears to be related to calling feedkeys() with exactly 8 characters.
-
-Patch for GTK3: Kazunobu Kuriyama, 14 Nov.
-
-Patch for fix breakindent bug (Christian, Nov 15)
-
 +channel:
-- Skip checking if job ended if there aren't any. (ichizok, 2016 Nov 7, #1196)
-- problem with channel callback getting job, while the job was already
-  deleted.  #1242.  Fix in #1245 (ichizok), but is that correct?
-  Perhaps just replace job_still_alive() with job_still_useful()?
-  That's not sufficient.
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
@@ -115,18 +100,18 @@ Regexp problems:
 - Difference between two engines: ".*\zs\/\@>\/" on text "///"
   (Chris Paul, 2016 Nov 13)  New engine not greedy enough?
 
-Patch to support nested namespace syntax. (Pauli, 2016 Oct 30, #1214)
-
-Patch to fix popup menu positioning. (Hirohito Higashi, 2016 Nov 7, #1241)
-
-Patch to make help tag jumps keep language. (Tatsuki, #1249)
-Test by Hirohito Higashi.
+'] mark invalid after undoing insert "hello".
 
 Make html indent file use javascript indent, now that it's not just cindent.
 #1220
 
+Use __sun instead of sun define check.  #1296
+
 Patch to use buffer id for system() and systemlist() (LemonBoy, 2016 Nov 7,
 #1240)
+
+When using symbolic links, a package path will not be inserted at the right
+position in 'runtimepath'. (Dugan Chen, 2016 Nov 18)
 
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
@@ -134,6 +119,7 @@ What if there is an invalid character?
 Bug: ":earlier 100d" doesn't work after using undo file.
 (Pavol Juhas, 2016 Nov 15, #1254)
 Fix by Christian, but lacks a test.
+Test by Pavol Juhas, Nov 22.
 
 Bug: Json with same key should not give internal error. (Lcd, 2016 Oct 26)
 Make dict_add give a duplicate key error.
@@ -162,6 +148,9 @@ Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 Screen updated delayed when using CTRL-O u in Insert mode.
 (Barlik, #1191)  Perhaps because status message?
 
+Patch to fix that empty first tab is not in session.
+(Hirohito Higashi, 2016 Nov 25, #1282)
+
 Patch for restoring wide characters in the console buffer.
 (Ken Takata, 2016 Jun 7)
 
@@ -187,6 +176,11 @@ Is there another solution?
 On MS-Windows with 'clipboard' set to "unnamed" this doesn't work to double
 lines: :g/^/normal yyp   On Unix it works OK.  (Bryce Orgill, 2016 Nov 5)
 
+Patch for wrong cursor position on wrapped line, involving breakindent.
+(Ozaki Kiichi, 2016 Nov 25)
+
+Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
+
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 E.g. deepcopy(test_null_list())
 
@@ -194,6 +188,13 @@ Patch to make it possible to extend a list with itself.
 (Nikolai Pavlov, 2016 Sep 23)
 
 Patch to add Zstandard compressed file support. (Nick Terrell, 2016 Oct 24)
+
+Patch to add trim() function. (Bukn, 2016 Nov 25, #1280)
+
+Patch to add MODIFIED_BY to MSVC build file. (Chen Lei, 2016 Nov 24, #1275)
+
+On Windows buffer completion sees backslash as escape char instead of path
+separator. (Toffanim, 2016 Nov 24, #1274)
 
 min() and max() spawn lots of error messages if sorted list/dictionary
 contains invalid data (Nikolay Pavlov, 2016 Sep 4, #1039)
@@ -272,6 +273,9 @@ Lakshmanan, 2016 Aug 25)
 MS-Windows: use WS_HIDE instead of SW_SHOWMINNOACTIVE in os_win32.c?
 Otherwise task flickers in taskbar.
 
+Bogus characters inserted when triggering indent while changing test.
+(Vitor Antunes, 2016 Nov 22, #1269)
+
 Should make ":@r" handle line continuation. (Cesar Romani, 2016 Jun 26)
 Also for ":@.".
 
@@ -279,6 +283,9 @@ Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 
 Have a way to get the call stack, in a function and from an exception.
 #1125
+
+Patch to add 'pythonhome' and 'pythonthreehome' options. (Kazuki Sakamoto,
+2016 Nov 21, #1266)
 
 Second problem in #966: ins_compl_add_tv() uses get_dict_string() multiple
 times, overwrites the one buffer. (Nikolay Pavlov, 2016 Aug 5)
@@ -1306,6 +1313,7 @@ With "tw=55 fo+=a" typing space before ) doesn't work well. (Scott Mcdermott,
 
 Patch to add random number generator. (Hong Xu, 2010 Nov 8, update Nov 10)
 Alternative from Christian Brabandt. (2010 Sep 19)
+New one from Yasuhiro Matsumoto, #1277.
 
 Messages in message.txt are highlighted as examples.
 

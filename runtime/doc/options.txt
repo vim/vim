@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2016 Oct 12
+*options.txt*	For Vim version 8.0.  Last change: 2016 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -242,7 +242,7 @@ opt+=val" the expansion is done before the adding or removing.
 Handling of local options			*local-options*
 
 Some of the options only apply to a window or buffer.  Each window or buffer
-has its own copy of this option, thus can each have their own value.  This
+has its own copy of this option, thus each can have its own value.  This
 allows you to set 'list' in one window but not in another.  And set
 'shiftwidth' to 3 in one buffer and 4 in another.
 
@@ -3871,6 +3871,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The format of this option is like that of 'statusline'.
 	'guitabtooltip' is used for the tooltip, see below.
+	The expression will be evaluated in the |sandbox| when set from a
+	modeline, see |sandbox-option|.
 
 	Only used when the GUI tab pages line is displayed.  'e' must be
 	present in 'guioptions'.  For the non-GUI tab pages line 'tabline' is
@@ -5699,6 +5701,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			and |+postscript| features}
 	Expression used to print the PostScript produced with |:hardcopy|.
 	See |pexpr-option|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 						*'printfont'* *'pfn'*
 'printfont' 'pfn'	string	(default "courier")
@@ -7818,7 +7822,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Amiga console, Win32 console, all GUI versions and terminals with a
 	non-empty 't_ts' option).
 	When Vim was compiled with HAVE_X11 defined, the original title will
-	be restored if possible |X11|.
+	be restored if possible, see |X11|.
 	When this option contains printf-style '%' items, they will be
 	expanded according to the rules used for 'statusline'.
 	Example: >

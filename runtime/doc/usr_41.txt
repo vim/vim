@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.0.  Last change: 2016 Sep 01
+*usr_41.txt*	For Vim version 8.0.  Last change: 2016 Nov 29
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -930,6 +930,7 @@ Testing:				    *test-functions*
 	test_null_string()	return a null String
 
 Inter-process communication:		    *channel-functions*
+	ch_canread()		check if there is something to read
 	ch_open()		open a channel
 	ch_close()		close a channel
 	ch_close_in()		close the in part of a channel

@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.0.  Last change: 2016 Sep 27
+*editing.txt*   For Vim version 8.0.  Last change: 2016 Nov 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -977,12 +977,12 @@ WRITING WITH MULTIPLE BUFFERS				*buffer-write*
 
 							*:wa* *:wall*
 :wa[ll]			Write all changed buffers.  Buffers without a file
-			name or which are readonly are not written. {not in
-			Vi}
+			name cause an error message.  Buffers which are
+			readonly are not written. {not in Vi}
 
 :wa[ll]!		Write all changed buffers, even the ones that are
 			readonly.  Buffers without a file name are not
-			written. {not in Vi}
+			written and cause an error message. {not in Vi}
 
 
 Vim will warn you if you try to overwrite a file that has been changed

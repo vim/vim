@@ -17,7 +17,7 @@ There are three ways to remove Vim:
    have to use uninstal.exe.
 
 It's recommended to use the method that matches with how you installed Vim.
-Thus if you installed Vim by hand, deleted it by hand.
+Thus if you installed Vim by hand, delete it by hand.
 
 The first two methods should be available from the Add/Remove software window
 and the Vim entry in the Start menu.  If these have been removed already, find
@@ -33,8 +33,8 @@ Here are guidelines for removing Vim by hand:
    menu entry.  You only need to run uninstal.exe when you have installed the
    menu entry.  You can also run uninstal.exe from the Control panel with the
    Add/Remove programs application.
-   Note that uninstal.exe offers you to uninstal other items.  You can skip
-   this.
+   Note that uninstal.exe offers you the option to uninstal other items.  You
+   can skip this.
 
 2. Only if you have used the OLE version of gvim: Remove the registration of
    this program by running "gvim -unregister" in a console window.
@@ -46,7 +46,7 @@ Here are guidelines for removing Vim by hand:
    If you created .bat files when installing Vim, also search for vim.bat,
    gvim.bat, etc.
 
-4. If you completely want to delete vim, and are not going to install another
+4. If you want to completely delete vim, and are not going to install another
    version, you can delete the vimrc files that you created.  These are
    normally located in a directory like "C:\vim".  If the $VIM environment
    variable is set, it will tell the name of the directory.  Normally you can
