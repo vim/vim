@@ -742,7 +742,7 @@ do_tag(
 			/* skip backslash used for escaping a command char or
 			 * a backslash */
 			if (*p == '\\' && (*(p + 1) == *tagp.command
-				        || *(p + 1) == '\\'))
+					|| *(p + 1) == '\\'))
 			    ++p;
 
 			if (*p == TAB)
@@ -1356,6 +1356,7 @@ find_tags(
     char_u	*help_lang_find = NULL;		/* lang to be found */
     char_u	help_lang[3];			/* lang of current tags file */
     char_u	*saved_pat = NULL;		/* copy of pat[] */
+    int		is_txt = FALSE;			/* flag of file extension */
 #endif
 
     pat_T	orgpat;			/* holds unconverted pattern info */
@@ -1388,7 +1389,7 @@ find_tags(
      */
     switch (curbuf->b_tc_flags ? curbuf->b_tc_flags : tc_flags)
     {
-	case TC_FOLLOWIC:                break;
+	case TC_FOLLOWIC:		 break;
 	case TC_IGNORE:    p_ic = TRUE;  break;
 	case TC_MATCH:     p_ic = FALSE; break;
 	case TC_FOLLOWSCS: p_ic = ignorecase(pat); break;
@@ -1476,6 +1477,15 @@ find_tags(
      * When the tag file is case-fold sorted, it is either one or the other.
      * Only ignore case when TAG_NOIC not used or 'ignorecase' set.
      */
+#ifdef FEAT_MULTI_LANG
+    /* Set a flag if the file extension is .txt */
+    if ((flags & TAG_KEEP_LANG)
+	    && help_lang_find == NULL
+	    && curbuf->b_fname != NULL
+	    && (i = (int)STRLEN(curbuf->b_fname)) > 4
+	    && STRICMP(curbuf->b_fname + i - 4, ".txt") == 0)
+	is_txt = TRUE;
+#endif
 #ifdef FEAT_TAG_BINS
     orgpat.regmatch.rm_ic = ((p_ic || !noic)
 				&& (findall || orgpat.headlen == 0 || !p_tbs));
@@ -1509,14 +1519,19 @@ find_tags(
 #ifdef FEAT_MULTI_LANG
 	    if (curbuf->b_help)
 	    {
-		/* Prefer help tags according to 'helplang'.  Put the
-		 * two-letter language name in help_lang[]. */
-		i = (int)STRLEN(tag_fname);
-		if (i > 3 && tag_fname[i - 3] == '-')
-		    STRCPY(help_lang, tag_fname + i - 2);
-		else
+		/* Keep en if the file extension is .txt*/
+		if (is_txt)
 		    STRCPY(help_lang, "en");
-
+		else
+		{
+		    /* Prefer help tags according to 'helplang'.  Put the
+		     * two-letter language name in help_lang[]. */
+		    i = (int)STRLEN(tag_fname);
+		    if (i > 3 && tag_fname[i - 3] == '-')
+			STRCPY(help_lang, tag_fname + i - 2);
+		    else
+			STRCPY(help_lang, "en");
+		}
 		/* When searching for a specific language skip tags files
 		 * for other languages. */
 		if (help_lang_find != NULL
