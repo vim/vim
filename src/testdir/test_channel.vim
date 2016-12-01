@@ -129,6 +129,9 @@ func Ch_communicate(port)
   call ch_setoptions(handle, {'mode': 'json'})
   call assert_fails("call ch_setoptions(handle, {'waittime': 111})", "E475")
   call ch_setoptions(handle, {'callback': ''})
+  call ch_setoptions(handle, {'drop': 'never'})
+  call ch_setoptions(handle, {'drop': 'auto'})
+  call assert_fails("call ch_setoptions(handle, {'drop': 'bad'})", "E475")
 
   " Send an eval request that works.
   call assert_equal('ok', ch_evalexpr(handle, 'eval-works'))
@@ -249,6 +252,7 @@ endfunc
 """""""""
 
 func Ch_handler(chan, msg)
+  call ch_log('Ch_handler()')
   unlet g:Ch_reply
   let g:Ch_reply = a:msg
 endfunc
@@ -272,6 +276,7 @@ func Ch_channel_handler(port)
 endfunc
 
 func Test_channel_handler()
+call ch_logfile('channellog', 'w')
   call ch_log('Test_channel_handler()')
   let g:Ch_reply = ""
   let s:chopt.callback = 'Ch_handler'
@@ -437,7 +442,7 @@ func Test_raw_pipe()
   " Add a dummy close callback to avoid that messages are dropped when calling
   " ch_canread().
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'mode': 'raw', 'close_cb': {chan -> 0}})
+	\ {'mode': 'raw', 'drop': 'never'})
   call assert_equal(v:t_job, type(job))
   call assert_equal("run", job_status(job))
 
