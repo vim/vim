@@ -3865,7 +3865,6 @@ set_one_cmd_context(
 	case CMD_cfdo:
 	case CMD_confirm:
 	case CMD_debug:
-	case CMD_filter:
 	case CMD_folddoclosed:
 	case CMD_folddoopen:
 	case CMD_hide:
@@ -3889,6 +3888,16 @@ set_one_cmd_context(
 	case CMD_vertical:
 	case CMD_windo:
 	    return arg;
+
+	case CMD_filter:
+	    if (*arg != NUL)
+		arg = skip_vimgrep_pat(arg, NULL, NULL);
+	    if (arg == NULL || *arg == NUL)
+	    {
+		xp->xp_context = EXPAND_NOTHING;
+		return NULL;
+	    }
+	    return skipwhite(arg);
 
 #ifdef FEAT_CMDL_COMPL
 # ifdef FEAT_SEARCH_EXTRA
