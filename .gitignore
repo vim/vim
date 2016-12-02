@@ -5,6 +5,7 @@ src/xxd/xxd
 src/auto/if_perl.c
 src/auto/gui_gtk_gresources.c
 src/auto/gui_gtk_gresources.h
+src/objects/.dirstamp
 src/tags
 
 # We do need src/auto/configure.
