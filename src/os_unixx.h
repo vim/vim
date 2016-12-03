@@ -18,7 +18,7 @@
 #endif
 
    /* sun's sys/ioctl.h redefines symbols from termio world */
-#if defined(HAVE_SYS_IOCTL_H) && !defined(sun)
+#if defined(HAVE_SYS_IOCTL_H) && !defined(__sun)
 # include <sys/ioctl.h>
 #endif
 

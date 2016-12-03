@@ -119,7 +119,7 @@ FILE   _FAR *_Cdecl _FARFUNC fdopen(int __handle, char _FAR *__type);
  * FILE is defined on OS 4.x, not on 5.x (Solaris).
  * if __SVR4 is defined (some Solaris versions), don't include this.
  */
-#if defined(sun) && defined(FILE) && !defined(__SVR4) && defined(__STDC__)
+#if defined(__sun) && defined(FILE) && !defined(__SVR4) && defined(__STDC__)
 #  define __P(a) a
 /* excerpt from my sun_stdlib.h */
 extern int fprintf __P((FILE *, char *, ...));

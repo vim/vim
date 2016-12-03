@@ -36,7 +36,7 @@ extern int	fputs(char *, FILE *);
 extern int	ferror(FILE *);
 #endif
 extern int	fflush(FILE *);
-#if defined(sun) || defined(_SEQUENT_)
+#if defined(__sun) || defined(_SEQUENT_)
 /* used inside of stdio macros getc(), puts(), putchar()... */
 extern int	_flsbuf(int, FILE *);
 extern int	_filbuf(FILE *);
@@ -125,7 +125,7 @@ extern int	access(char *, int);
 #endif
 extern int	fsync(int);
 extern int	fchown(int, int, int);
-#if defined(HAVE_GETCWD) && !defined(sun) && !defined(__TANDEM)
+#if defined(HAVE_GETCWD) && !defined(__sun) && !defined(__TANDEM)
 extern char	*getcwd(char *, int);
 #else
 extern char	*getwd(char *);
