@@ -17,8 +17,8 @@
 # define signal sigset
 #endif
 
-   /* sun's sys/ioctl.h redefines symbols from termio world */
-#if defined(HAVE_SYS_IOCTL_H) && !defined(sun)
+   /* Sun's sys/ioctl.h redefines symbols from termio world */
+#if defined(HAVE_SYS_IOCTL_H) && !defined(SUN_SYSTEM)
 # include <sys/ioctl.h>
 #endif
 

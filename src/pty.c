@@ -62,7 +62,7 @@
 #ifdef sinix
 #undef buf_T
 #endif
-# ifdef sun
+# ifdef SUN_SYSTEM
 #  include <sys/conf.h>
 # endif
 #endif
@@ -87,11 +87,11 @@
 # include <sys/ptem.h>
 #endif
 
-#if !defined(sun) && !defined(VMS) && !defined(MACOS)
+#if !defined(SUN_SYSTEM) && !defined(VMS) && !defined(MACOS)
 # include <sys/ioctl.h>
 #endif
 
-#if defined(sun) && defined(LOCKPTY) && !defined(TIOCEXCL)
+#if defined(SUN_SYSTEM) && defined(LOCKPTY) && !defined(TIOCEXCL)
 # include <sys/ttold.h>
 #endif
 
@@ -166,7 +166,7 @@ SetupSlavePTY(int fd)
 # endif
     if (ioctl(fd, I_PUSH, "ldterm") != 0)
 	return -1;
-# ifdef sun
+# ifdef SUN_SYSTEM
     if (ioctl(fd, I_PUSH, "ttcompat") != 0)
 	return -1;
 # endif
@@ -391,7 +391,7 @@ OpenPTY(char **ttyn)
 		continue;
 	    }
 #endif
-#if defined(sun) && defined(TIOCGPGRP) && !defined(SUNOS3)
+#if defined(SUN_SYSTEM) && defined(TIOCGPGRP) && !defined(SUNOS3)
 	    /* Hack to ensure that the slave side of the pty is
 	     * unused. May not work in anything other than SunOS4.1
 	     */

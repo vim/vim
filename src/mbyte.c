@@ -5735,7 +5735,7 @@ static char e_xim[] = N_("E285: Failed to create input context");
 #endif
 
 #if defined(FEAT_GUI_X11) || defined(PROTO)
-# if defined(XtSpecificationRelease) && XtSpecificationRelease >= 6 && !defined(sun)
+# if defined(XtSpecificationRelease) && XtSpecificationRelease >= 6 && !defined(SUN_SYSTEM)
 #  define USE_X11R6_XIM
 # endif
 
