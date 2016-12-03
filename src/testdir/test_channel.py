@@ -126,6 +126,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
+                        # Need to wait for Vim to give up, otherwise it
+                        # sometimes fails on OS X.
+                        time.sleep(0.2)
                     elif decoded[1] == 'malformed2':
                         cmd = '"unterminated string'
                         print("sending: {0}".format(cmd))
