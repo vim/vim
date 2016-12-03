@@ -26,7 +26,10 @@ func Ch_requestHandler(handle, msg)
 endfunc
 
 func Ch_communicate(port)
+  " Avoid dropping messages, since we don't use a callback here.
+  let s:chopt.drop = 'never'
   let handle = ch_open('localhost:' . a:port, s:chopt)
+  unlet s:chopt.drop
   if ch_status(handle) == "fail"
     call assert_false(1, "Can't open channel")
     return
