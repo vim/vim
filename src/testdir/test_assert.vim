@@ -117,6 +117,8 @@ func Test_assert_inrange()
   call assert_inrange(5, 7, 8)
   call assert_match("Expected range 5 - 7, but got 8", v:errors[0])
   call remove(v:errors, 0)
+
+  call assert_fails('call assert_inrange(1, 1)', 'E119:')
 endfunc
 
 func Test_user_is_happy()
