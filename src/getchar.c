@@ -2009,7 +2009,7 @@ vgetorpeek(int advance)
 	    {
 		/* KeyTyped = FALSE;  When the command that stuffed something
 		 * was typed, behave like the stuffed command was typed.
-		 * needed for CTRL-W CTRl-] to open a fold, for example. */
+		 * needed for CTRL-W CTRL-] to open a fold, for example. */
 		KeyStuffed = TRUE;
 	    }
 	    if (typebuf.tb_no_abbr_cnt == 0)
