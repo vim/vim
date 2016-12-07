@@ -55,8 +55,11 @@ func s:classes_test()
   let upperchars = ''
   let xdigitchars = ''
   let identchars = ''
+  let identchars1 = ''
   let kwordchars = ''
+  let kwordchars1 = ''
   let fnamechars = ''
+  let fnamechars1 = ''
   let i = 1
   while i <= 255
     let c = nr2char(i)
@@ -111,11 +114,20 @@ func s:classes_test()
     if c =~ '[[:ident:]]'
       let identchars .= c
     endif
+    if c =~ '\i'
+      let identchars1 .= c
+    endif
     if c =~ '[[:keyword:]]'
       let kwordchars .= c
     endif
+    if c =~ '\k'
+      let kwordchars1 .= c
+    endif
     if c =~ '[[:fname:]]'
       let fnamechars .= c
+    endif
+    if c =~ '\f'
+      let fnamechars1 .= c
     endif
     let i += 1
   endwhile
@@ -163,6 +175,10 @@ func s:classes_test()
   call assert_equal(identchars_ok, identchars)
   call assert_equal(kwordchars_ok, kwordchars)
   call assert_equal(fnamechars_ok, fnamechars)
+
+  call assert_equal(identchars1, identchars)
+  call assert_equal(kwordchars1, kwordchars)
+  call assert_equal(fnamechars1, fnamechars)
 endfunc
 
 func Test_classes_re1()
