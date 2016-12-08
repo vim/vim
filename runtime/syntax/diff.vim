@@ -347,7 +347,7 @@ syn match diffLine	"^\d\+\(,\d\+\)\=[cda]\d\+\>.*"
 
 syn match diffFile	"^diff\>.*"
 syn match diffFile	"^+++ .*"
-syn match diffFile	"^Index: .*"
+syn match diffFile	"\c^index.*"
 syn match diffFile	"^==== .*"
 syn match diffOldFile	"^\*\*\* .*"
 syn match diffNewFile	"^--- .*"
