@@ -7411,7 +7411,7 @@ $as_echo_n "checking whether compiling with process communication is possible...
 	/* Check bitfields */
 	struct nbbuf {
 	unsigned int  initDone:1;
-	ushort signmaplen;
+	unsigned short signmaplen;
 	};
 
 int
@@ -12000,8 +12000,8 @@ if test "x$vim_cv_getcwd_broken" = "xyes" ; then
 
 fi
 
-for ac_func in bcmp fchdir fchown fsync getcwd getpseudotty \
-	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat memcmp \
+for ac_func in fchdir fchown fsync getcwd getpseudotty \
+	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \

@@ -1995,7 +1995,7 @@ if test "$enable_channel" = "yes"; then
 	/* Check bitfields */
 	struct nbbuf {
 	unsigned int  initDone:1;
-	ushort signmaplen;
+	unsigned short signmaplen;
 	};
 	    ], [
 		/* Check creating a socket. */
