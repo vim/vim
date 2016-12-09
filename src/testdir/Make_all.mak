@@ -148,6 +148,7 @@ NEW_TESTS = test_arglist.res \
 	    test_cscope.res \
 	    test_diffmode.res \
 	    test_digraph.res \
+	    test_display.res \
 	    test_farsi.res \
 	    test_fnameescape.res \
 	    test_gf.res \
