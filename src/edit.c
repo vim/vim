@@ -3875,7 +3875,7 @@ ins_compl_prep(int c)
 		if (prev_col > 0)
 		    dec_cursor();
 		/* only format when something was inserted */
-		if (!arrow_used && !ins_need_undo)
+		if (!arrow_used && !ins_need_undo && c != Ctrl_E)
 		    insertchar(NUL, 0, -1);
 		if (prev_col > 0
 			     && ml_get_curline()[curwin->w_cursor.col] != NUL)
