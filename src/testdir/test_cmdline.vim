@@ -234,3 +234,10 @@ func Test_remove_char_in_cmdline()
   call feedkeys(":abc def\<S-Left>\<C-U>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"def', @:)
 endfunc
+
+func Test_illegal_address()
+  new
+  2;'(
+  2;')
+  quit
+endfunc
