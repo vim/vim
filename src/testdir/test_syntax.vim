@@ -83,7 +83,7 @@ endfunc
 
 func Test_syntime()
   if !has('profile')
-    finish
+    return
   endif
 
   syntax on
