@@ -1001,6 +1001,7 @@ common_init(mparm_T *paramp)
 
 #ifdef FEAT_EVAL
     set_lang_var();		/* set v:lang and v:ctype */
+    set_argv_var((char_u **)paramp->argv);  /* set v:argv */
 #endif
 }
 

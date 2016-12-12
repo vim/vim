@@ -187,6 +187,7 @@ static struct vimvar
     {VV_NAME("t_none",		 VAR_NUMBER), VV_RO},
     {VV_NAME("t_job",		 VAR_NUMBER), VV_RO},
     {VV_NAME("t_channel",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("argv",		 VAR_LIST), VV_RO},
 };
 
 /* shorthand */
@@ -6644,6 +6645,23 @@ set_vim_var_dict(int idx, dict_T *val)
 	    HI2DI(hi)->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	}
     }
+}
+
+/*
+ * Set v:argv list.
+ */
+    void
+set_argv_var(char_u **argv)
+{
+    list_T	*l;
+
+    l = list_alloc();
+    l->lv_lock = VAR_FIXED;
+    while (*++argv) {
+	list_append_string(l, *argv, -1);
+	l->lv_last->li_tv.v_lock = VAR_FIXED;
+    }
+    set_vim_var_list(VV_ARGV, l);
 }
 
 /*

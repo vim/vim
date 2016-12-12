@@ -1429,6 +1429,10 @@ variables for each buffer.  Use local buffer variables instead |b:var|.
 
 Predefined Vim variables:			*vim-variable* *v:var* *v:*
 
+				*v:argv* *argv-variable*
+v:argv		Command line arguments Vim was invoked with.  This is a list
+		of strings.
+
 					*v:beval_col* *beval_col-variable*
 v:beval_col	The number of the column, over which the mouse pointer is.
 		This is the byte index in the |v:beval_lnum| line.
