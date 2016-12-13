@@ -1740,6 +1740,16 @@ typedef struct list_stack_S
     struct list_stack_S	*prev;
 } list_stack_T;
 
+/*
+ * Structure used for iterating over dictionary items.
+ * Initialize with dict_iterate_start().
+ */
+struct dict_iterator_S
+{
+    int         items;
+    hashitem_T	*hi;
+};
+
 /* values for b_syn_spell: what to do with toplevel text */
 #define SYNSPL_DEFAULT	0	/* spell check if @Spell not defined */
 #define SYNSPL_TOP	1	/* spell check toplevel text */
@@ -2097,6 +2107,7 @@ struct file_buffer
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	/* 'completefunc' */
     char_u	*b_p_ofu;	/* 'omnifunc' */
+    char_u	*b_p_tfu;	/* 'tagfunc' */
 #endif
     int		b_p_eol;	/* 'endofline' */
     int		b_p_fixeol;	/* 'fixendofline' */

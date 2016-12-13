@@ -26,7 +26,8 @@ typedef struct tag_pointers
     char_u	*command;	/* first char of command */
     /* filled in by parse_match(): */
     char_u	*command_end;	/* first char after command */
-    char_u	*tag_fname;	/* file name of the tags file */
+    char_u	*tag_fname;	/* file name of the tags file. This is used
+				 * when 'tr' is set. */
 #ifdef FEAT_EMACS_TAGS
     int		is_etag;	/* TRUE for emacs tag */
 #endif
@@ -148,6 +149,7 @@ do_tag(
     int		skip_msg = FALSE;
     char_u	*buf_ffname = curbuf->b_ffname;	    /* name to use for
 						       priority computation */
+    int         use_tfu = 1;
 
     /* remember the matches for the last used tag */
     static int		num_matches = 0;
@@ -172,6 +174,7 @@ do_tag(
     {
 	type = DT_TAG;
 	no_regexp = TRUE;
+	use_tfu = 0;
     }
 
     prev_num_matches = num_matches;
@@ -527,6 +530,10 @@ do_tag(
 #endif
 	    if (verbose)
 		flags |= TAG_VERBOSE;
+
+	    if (!use_tfu)
+		flags |= TAG_DONT_USE_TFU;
+
 	    if (find_tags(name, &new_num_matches, &new_matches, flags,
 					    max_num_matches, buf_ffname) == OK
 		    && new_num_matches < max_num_matches)
@@ -1233,6 +1240,196 @@ prepare_pats(pat_T *pats, int has_re)
 	pats->regmatch.regprog = NULL;
 }
 
+struct match_found
+{
+    int	len;			/* nr of chars of match[] to be compared */
+    char_u	match[1];	/* actually longer */
+};
+
+#ifdef FEAT_COMPL_FUNC
+/*
+ * find_tfu_tags() - call the user-defined function to generate a list of tags
+ *                   used by find_tags().
+ *
+ * Return OK if at least 1 tag has been successfully found, FAIL otherwise.
+ * pat         - used as the pattern supplied to the user-defined function,
+ * ga          - the tags will be placed here,
+ * match_count - here the number of tags found will be placed,
+ * flags       - used to compose a string containing flags passed to the function.
+ */
+    static int
+find_tfu_tags(char_u *pat, garray_T *ga, int *match_count, int flags)
+{
+    pos_T       pos;
+    list_T      *taglist;
+    listitem_T  *item;
+    int         ntags = 0;
+    int         result = FAIL;
+    char_u      *args[2];
+    char_u      flagString[3];
+
+    if (*curbuf->b_p_tfu == NUL)
+	goto done;
+
+    args[0] = pat;
+    args[1] = flagString;
+
+    vim_snprintf((char *)flagString, sizeof(flagString),
+		 "%s%s",
+		 g_tag_at_cursor      ? "c": "",
+		 flags & TAG_INS_COMP ? "i": "");
+
+    pos = curwin->w_cursor;
+    taglist = call_func_retlist(curbuf->b_p_tfu, 2, args, FALSE);
+    curwin->w_cursor = pos;	/* restore the cursor position */
+
+    if (taglist == NULL)
+	goto done;
+
+    for (item = taglist->lv_first; item != NULL; item = item->li_next)
+    {
+	struct match_found     *mfp;
+	char_u                 *res_name, *res_fname, *res_cmd, *res_kind;
+	int                    len;
+	struct dict_iterator_S iter;
+	char_u                 *dict_key;
+	typval_T               *tv;
+	int                    has_extra = 0;
+
+	if (item->li_tv.v_type != VAR_DICT)
+	    continue;
+
+#ifdef FEAT_EMACS_TAGS
+	len = 3;
+#else
+	len = 2;
+#endif
+
+	res_name = NULL;
+	res_fname = NULL;
+	res_cmd = NULL;
+	res_kind = NULL;
+
+	dict_iterate_start(&item->li_tv, &iter);
+	while (NULL != (dict_key = dict_iterate_next(&iter, &tv)))
+	{
+	    if (tv->v_type != VAR_STRING)
+		continue;
+
+	    len += STRLEN(tv->vval.v_string) + 1; /* Space for "\tVALUE". */
+	    if (!STRCMP(dict_key, "name"))
+	    {
+		res_name = tv->vval.v_string;
+		continue;
+	    }
+	    if (!STRCMP(dict_key, "filename"))
+	    {
+		res_fname = tv->vval.v_string;
+		continue;
+	    }
+	    if (!STRCMP(dict_key, "cmd"))
+	    {
+		res_cmd = tv->vval.v_string;
+		continue;
+	    }
+	    has_extra = 1;
+	    if (!STRCMP(dict_key, "kind"))
+	    {
+		res_kind = tv->vval.v_string;
+		continue;
+	    }
+	    len += STRLEN(dict_key) + 1; /* Other elements will be stored as "\tKEY:VALUE".
+					  * Allocate space for the key and the colon. */
+	}
+
+	if (has_extra)
+	    len += 2; /* need space for ;" */
+
+	if (!res_name || !res_fname || !res_cmd)
+	    continue;
+
+	mfp = (struct match_found *)alloc(
+			(int)sizeof(struct match_found) + len);
+	if (mfp != NULL)
+	{
+	    char_u *p;
+	    mfp->len = len;
+	    p = mfp->match;
+	    p[0] = 0;   /* mtt */
+	    p[1] = NUL; /* no tag file name */
+	    p = p + 2;
+#ifdef FEAT_EMACS_TAGS
+	    *p = NUL;
+	    ++p;
+#endif
+
+	    STRCPY(p, res_name);
+	    p += STRLEN(p);
+
+	    *p++ = TAB;
+	    STRCPY(p, res_fname);
+	    p += STRLEN(p);
+
+	    *p++ = TAB;
+	    STRCPY(p, res_cmd);
+	    p += STRLEN(p);
+
+	    if (has_extra)
+	    {
+		STRCPY(p, ";\"");
+		p += STRLEN(p);
+
+		if (res_kind)
+		{
+		    *p++ = TAB;
+		    STRCPY(p, res_kind);
+		    p += STRLEN(p);
+		}
+
+		dict_iterate_start(&item->li_tv, &iter);
+		while (NULL != (dict_key = dict_iterate_next(&iter, &tv)))
+		{
+		    if (tv->v_type != VAR_STRING)
+			continue;
+
+		    if (!STRCMP(dict_key, "name"))
+			continue;
+		    if (!STRCMP(dict_key, "filename"))
+			continue;
+		    if (!STRCMP(dict_key, "cmd"))
+			continue;
+		    if (!STRCMP(dict_key, "kind"))
+			continue;
+
+		    *p++ = TAB;
+		    STRCPY(p, dict_key);
+		    p += STRLEN(p);
+		    STRCPY(p, ":");
+		    p += STRLEN(p);
+		    STRCPY(p, tv->vval.v_string);
+		    p += STRLEN(p);
+		}
+	    }
+
+	    /* FIXME:2010-04-24:llorens: Don't add identical matches. */
+	    if (ga_grow(ga, 1) == OK)
+	    {
+		((struct match_found **)(ga->ga_data)) [ga->ga_len++] = mfp;
+		++ntags;
+		result = OK;
+	    }
+	    else
+		vim_free(mfp);
+	}
+    }
+
+    list_free(taglist);
+done:
+    *match_count = ntags;
+    return result;
+}
+#endif
+
 /*
  * find_tags() - search for tags in tags files
  *
@@ -1258,6 +1455,7 @@ prepare_pats(pat_T *pats, int has_re)
  * TAG_NOIC	  don't always ignore case
  * TAG_KEEP_LANG  keep language
  * TAG_CSCOPE	  use cscope results for tags
+ * TAG_DONT_USE_TFU  do not invoke the 'tagfunc' command
  */
     int
 find_tags(
@@ -1377,6 +1575,10 @@ find_tags(
     int		use_cscope = (flags & TAG_CSCOPE);
 #endif
     int		verbose = (flags & TAG_VERBOSE);
+#ifdef FEAT_COMPL_FUNC
+    int         use_tfu = ((flags & TAG_DONT_USE_TFU) == 0);
+    static int  tfu_call_level = 0;
+#endif
     int		save_p_ic = p_ic;
 
     /*
@@ -1472,6 +1674,16 @@ find_tags(
     /* This is only to avoid a compiler warning for using search_info
      * uninitialised. */
     vim_memset(&search_info, 0, (size_t)1);
+#endif
+
+#ifdef FEAT_COMPL_FUNC
+    if (*curbuf->b_p_tfu != NUL && use_tfu && tfu_call_level == 0)
+    {
+	++tfu_call_level;
+	retval = find_tfu_tags(pat, &ga_match[0], &match_count, flags);
+	--tfu_call_level;
+	goto findtag_end;
+    }
 #endif
 
     /*
@@ -3800,11 +4012,11 @@ expand_tags(
 	tagnmflag = 0;
     if (pat[0] == '/')
 	ret = find_tags(pat + 1, num_file, file,
-		TAG_REGEXP | tagnmflag | TAG_VERBOSE,
+		TAG_REGEXP | tagnmflag | TAG_VERBOSE | TAG_DONT_USE_TFU,
 		TAG_MANY, curbuf->b_ffname);
     else
 	ret = find_tags(pat, num_file, file,
-		TAG_REGEXP | tagnmflag | TAG_VERBOSE | TAG_NOIC,
+		TAG_REGEXP | tagnmflag | TAG_VERBOSE | TAG_DONT_USE_TFU | TAG_NOIC,
 		TAG_MANY, curbuf->b_ffname);
     if (ret == OK && !tagnames)
     {

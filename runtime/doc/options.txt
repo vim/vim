@@ -7584,6 +7584,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
+							*'tagfunc'* *'tfu'*
+'tagfunc' 'tfu'		string	(default: empty)
+			local to buffer
+			{not in Vi}
+			{not available when compiled without the +eval
+			or +insert_expand feature}
+	This option specifies a function to be used to perform tag searches.
+	The function should take two parameters, the first of which is the
+	pattern to be searched, while the second is a set of flags which may
+	be used by the function to decide on its behaviour. Currently the
+	following flags may appear:
+		'c' - indicates that the context around the cursor position
+		      can be used to generate more accurate results,
+		'i' - the function is being called during insert-mode
+		      completion.
+	See |tag-function| for an explanation of what the function should
+	return and an example of such a function.
+
 						*'taglength'* *'tl'*
 'taglength' 'tl'	number	(default 0)
 			global

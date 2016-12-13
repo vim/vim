@@ -1100,6 +1100,9 @@ EXTERN int	g_do_tagpreview INIT(= 0);  /* for tag preview commands:
 					       height of preview window */
 # endif
 #endif
+EXTERN int	g_tag_at_cursor INIT(= 0);  /* whether the tag command comes
+					       from the command line (0) or was
+					       invoked as a normal command (1) */
 EXTERN int	replace_offset INIT(= 0);   /* offset for replace_push() */
 
 EXTERN char_u	*escape_chars INIT(= (char_u *)" \t\\\"|");

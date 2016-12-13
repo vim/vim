@@ -364,6 +364,57 @@ dict_add_list(dict_T *d, char *key, list_T *list)
     }
     return OK;
 }
+/* Initializes a data structure used for iterating over dictionary items in
+ * dict_iterate_next().
+ */
+    void
+dict_iterate_start(typval_T *argvars, struct dict_iterator_S *iter)
+{
+    dict_T	*d;
+
+    if (argvars[0].v_type != VAR_DICT)
+    {
+	iter->items = 0;
+	return;
+    }
+
+    if ((d = argvars[0].vval.v_dict) == NULL)
+    {
+	iter->items = 0;
+	return;
+    }
+
+    iter->items = (int)d->dv_hashtab.ht_used;
+    iter->hi = d->dv_hashtab.ht_array;
+}
+
+/* Allows iterating over the items stored in a dictionary.
+ * Returns the pointer to the key, *tv_result is set to point to the value
+ * for that key.
+ * If there are no more items, NULL is returned.
+ * iter should be initialized with dict_iterate_start() before calling this
+ * function for the first time.
+ */
+    char_u*
+dict_iterate_next(struct dict_iterator_S *iter, typval_T **tv_result)
+{
+    dictitem_T	*di;
+    char_u      *result;
+
+    if (iter->items <= 0)
+	return NULL;
+
+    while (HASHITEM_EMPTY(iter->hi))
+	++iter->hi;
+
+    di = HI2DI(iter->hi);
+    result = di->di_key;
+    *tv_result = &di->di_tv;
+
+    --iter->items;
+    ++iter->hi;
+    return result;
+}
 
 /*
  * Add a dict entry to dictionary "d".

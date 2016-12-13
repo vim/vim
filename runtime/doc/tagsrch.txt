@@ -14,6 +14,7 @@ See section |29.1| of the user manual for an introduction.
 4. Tags details			|tag-details|
 5. Tags file format		|tags-file-format|
 6. Include file searches	|include-search|
+7. Programmable tag search	|tag-function|
 
 ==============================================================================
 1. Jump to a tag					*tag-commands*
@@ -853,4 +854,57 @@ Common arguments for the commands above:
 <	For a ":djump", ":dsplit", ":dlist" and ":dsearch" command the pattern
 	is used as a literal string, not as a search pattern.
 
+==============================================================================
+7. Programmable tag search					*tag-function*
+
+It is possible to provide Vim with a script which will generate a list of tags
+used for commands like |:tag|, |:tselect| and normal mode commands like
+|CTRL-]|. The Vim script function used for generating the taglist is specified
+by setting the 'tagfunc' option. The function will be called with two
+arguments:
+   a:pattern - the tag identifier used during the tag search,
+   a:flags   - a list of flags to control the function behaviour.
+
+Currently the only flag that may be passed to the tag function is 'c' which
+indicates that the function was invoked due to a normal command being
+processed (mnemonic: the tag function may use the Context around the cursor to
+perform a better job of generating the tag list.
+
+Note that when 'tagfunc' is set, the priority of the tags described in
+|tag-priority| does not apply. Instead, the priority is exactly as the
+ordering of the elements in the list returned by the function.
+
+The function should return a list of dictionaries. Each of the dictionaries
+must at least include the following entries:
+	name		Name of the tag.
+	filename	Name of the file where the tag is
+			defined.  It is either relative to the
+			current directory or a full path.
+	cmd		Ex command used to locate the tag in the file. This
+			can be either an ex search pattern, a line number or
+			a line number followed by a byte number.
+Note that the format of the result is similar to that of |taglist()|,
+which makes it possible to use its output to generate the result.
+
+
+The following is a hypothetical example of a function used for 'tagfunc'. It
+uses the output of |taglist()| to generate the result: a list of tags in the
+inverse order of file names.
+
+>
+	function! TagFunc(pattern, flags)
+	  function! CompareFilenames(item1, item2)
+	    let f1 = a:item1['filename']
+	    let f2 = a:item2['filename']
+	    return f1 >=# f2 ?
+			\ -1 : f1 <=# f2 ? 1 : 0
+	  endfunction
+
+	  let result = taglist(a:pattern)
+	  call sort(result, "CompareFilenames")
+
+	  return result
+	endfunc
+	set tagfunc=TagFunc
+<
  vim:tw=78:ts=8:ft=help:norl:

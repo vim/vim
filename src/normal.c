@@ -5801,7 +5801,11 @@ nv_ident(cmdarg_T *cap)
 	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
     }
     else
-	do_cmdline_cmd(buf);
+    {
+	g_tag_at_cursor = 1;
+ 	do_cmdline_cmd(buf);
+	g_tag_at_cursor = 0;
+    }
 
     vim_free(buf);
 }

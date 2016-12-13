@@ -14,6 +14,8 @@ int dict_add_list(dict_T *d, char *key, list_T *list);
 int dict_add_dict(dict_T *d, char *key, dict_T *dict);
 long dict_len(dict_T *d);
 dictitem_T *dict_find(dict_T *d, char_u *key, int len);
+void dict_iterate_start(typval_T *argvars, struct dict_iterator_S *iter);
+char_u *dict_iterate_next(struct dict_iterator_S *iter, typval_T **tv_result);
 char_u *get_dict_string(dict_T *d, char_u *key, int save);
 varnumber_T get_dict_number(dict_T *d, char_u *key);
 char_u *dict2string(typval_T *tv, int copyID, int restore_copyID);
