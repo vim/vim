@@ -5058,9 +5058,9 @@ set_ref_in_quickfix(int copyID)
 
     FOR_ALL_TAB_WINDOWS(tp, win)
     {
-	if (win->w_llist_ref != NULL)
+	if (win->w_llist != NULL)
 	{
-	    abort = mark_quickfix_ctx(win->w_llist_ref, copyID);
+	    abort = mark_quickfix_ctx(win->w_llist, copyID);
 	    if (abort)
 		return abort;
 	}

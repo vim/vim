@@ -1775,7 +1775,7 @@ func Xproperty_tests(cchar)
 
     " Context related tests
     call g:Xsetlist([], 'a', {'context':[1,2,3]})
-    call garbagecollect()
+    call test_garbagecollect_now()
     let d = g:Xgetlist({'context':1})
     call assert_equal([1,2,3], d.context)
     call g:Xsetlist([], 'a', {'context':{'color':'green'}})
