@@ -435,8 +435,8 @@ and |t_8b| options explicitly. Default values of these options are
 set when `$TERM` is `xterm`. Some terminals accept the same sequences, but
 with all semicolons replaced by colons (this is actually more compatible, but
 less widely supported): >
-	 let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
-	 let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
+	 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+	 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 
 These options contain printf strings, with |printf()| (actually, its C
 equivalent hence `l` modifier) invoked with the t_ option value and three
