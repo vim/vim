@@ -4894,7 +4894,7 @@ check_char_class(int class, int c)
 		return OK;
 	    break;
 	case NFA_CLASS_KEYWORD:
-	    if (reg_iswordc(c) && c != 0xa0) /* exclude blank */
+	    if (reg_iswordc(c))
 		return OK;
 	    break;
 	case NFA_CLASS_FNAME:

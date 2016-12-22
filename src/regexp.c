@@ -2630,8 +2630,7 @@ collection:
 				break;
 			    case CLASS_KEYWORD:
 				for (cu = 1; cu <= 255; cu++)
-				    /* exclude blank */
-				    if (reg_iswordc(cu) && cu != 0xa0)
+				    if (reg_iswordc(cu))
 					regmbc(cu);
 				break;
 			    case CLASS_FNAME:
