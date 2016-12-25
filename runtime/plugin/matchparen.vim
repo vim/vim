@@ -18,11 +18,40 @@ if !exists("g:matchparen_insert_timeout")
   let g:matchparen_insert_timeout = 60
 endif
 
-augroup matchparen
-  " Replace all matchparen autocommands
-  autocmd! CursorMoved,CursorMovedI,WinEnter * call s:Highlight_Matching_Pair()
+if has('timers')
+  if !exists('g:matchparen_show_delay')
+    let g:matchparen_show_delay = 200
+  endif
+  if !exists('g:matchparen_hide_delay')
+    let g:matchparen_hide_delay = 500
+  endif
+endif
+
+if !exists('g:matchparen_events')
+  let g:matchparen_events = 'WinEnter,CursorMoved,CursorMovedI'
   if exists('##TextChanged')
-    autocmd! TextChanged,TextChangedI * call s:Highlight_Matching_Pair()
+    let g:matchparen_events .= ',TextChanged,TextChangedI'
+  endif
+endif
+
+augroup matchparen
+  au!
+  if has('timers')
+    exec 'au '.g:matchparen_events.' * call s:delayed_show.highlight()'
+  else
+    if !exists('g:matchparen_events_clear')
+      let g:matchparen_events_clear = 'WinLeave'
+      if exists('##CursorHold')
+        let g:matchparen_events_clear =
+              \ 'CursorHold,CursorHoldI,'.g:matchparen_events_clear
+      endif
+    endif
+
+    exec 'au '.g:matchparen_events.' * call s:Highlight_Matching_Pair()'
+    if len(g:matchparen_events_clear)
+      exec 'au '.g:matchparen_events_clear.' *
+            \ if exists("w:paren_hl_on") && w:paren_hl_on | sil! call matchdelete(3) | endif'
+    endif
   endif
 augroup END
 
@@ -33,6 +62,47 @@ endif
 
 let s:cpo_save = &cpo
 set cpo-=C
+
+let s:delayed_show = {
+      \ 'show_timer': 0,
+      \ 'show_pos': [],
+      \ 'hide_timer': 0,
+      \ }
+
+function! s:delayed_show.highlight()
+  if s:delayed_show.show_timer
+    call timer_stop(s:delayed_show.show_timer)
+  endif
+  if s:delayed_show.hide_timer
+    call timer_stop(s:delayed_show.hide_timer)
+    call s:delayed_show.hide_cb(s:delayed_show.hide_timer)
+  endif
+  let s:delayed_show.show_timer = timer_start(g:matchparen_show_delay, s:delayed_show.show_cb)
+  let s:delayed_show.show_pos = getpos('.')
+endfunction
+
+function! s:delayed_show.show_cb(timer)
+  if s:delayed_show.show_pos == getpos('.')
+    call s:Highlight_Matching_Pair()
+
+    " If something was highlighted, start a timer to hide it.
+    if exists('w:paren_hl_on') && w:paren_hl_on
+      if s:delayed_show.hide_timer
+        call timer_stop(s:delayed_show.hide_timer)
+      endif
+      let s:delayed_show.hide_timer = timer_start(g:matchparen_hide_delay, s:delayed_show.hide_cb)
+    endif
+  endif
+endfunction
+
+function! s:delayed_show.hide_cb(timer) abort
+  if exists('w:paren_hl_on') && w:paren_hl_on
+    sil! call matchdelete(3)
+    let w:paren_hl_on = 0
+  endif
+  let s:delayed_show.hide_timer = 0
+endfunction
+
 
 " The function that is invoked (very often) to define a ":match" highlighting
 " for any matching paren.
@@ -184,7 +254,7 @@ function! s:Highlight_Matching_Pair()
   endif
 
   " If a match is found setup match highlighting.
-  if m_lnum > 0 && m_lnum >= stoplinetop && m_lnum <= stoplinebottom 
+  if m_lnum > 0 && m_lnum >= stoplinetop && m_lnum <= stoplinebottom
     if exists('*matchaddpos')
       call matchaddpos('MatchParen', [[c_lnum, c_col - before], [m_lnum, m_col]], 10, 3)
     else
