@@ -47,6 +47,7 @@ endif
 if exists(":Man") != 2
   com -nargs=+ Man call s:GetPage(<f-args>)
   nmap <Leader>K :call <SID>PreGetPage(0)<CR>
+  nmap <Plug>ManPreGetPage :call <SID>PreGetPage(0)<CR>
 endif
 
 " Define functions only once.
