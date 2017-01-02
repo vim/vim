@@ -63,3 +63,35 @@ function! Test_address_fold()
 
   quit!
 endfunction
+
+function! Test_indent_fold()
+    new
+    call setline(1, ['', 'a', '    b', '    c'])
+    setl fen fdm=indent
+    2
+    norm! >>
+    let a=map(range(1,4), 'foldclosed(v:val)')
+    call assert_equal([-1,-1,-1,-1], a)
+endfu
+
+function! Test_indent_fold()
+    new
+    call setline(1, ['', 'a', '    b', '    c'])
+    setl fen fdm=indent
+    2
+    norm! >>
+    let a=map(range(1,4), 'foldclosed(v:val)')
+    call assert_equal([-1,-1,-1,-1], a)
+    bw!
+endfu
+
+function! Test_indent_fold2()
+    new
+    call setline(1, ['', '{{{', '}}}', '{{{', '}}}'])
+    setl fen fdm=marker
+    2
+    norm! >>
+    let a=map(range(1,5), 'foldclosed(v:val)')
+    call assert_equal([-1,-1,-1,4,4], a)
+    bw!
+endfu
