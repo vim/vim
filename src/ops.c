@@ -3351,6 +3351,8 @@ do_put(
      */
     if (regname == '.')
     {
+	if (VIsual_active)
+	    stuffcharReadbuff(VIsual_mode);
 	(void)stuff_inserted((dir == FORWARD ? (count == -1 ? 'o' : 'a') :
 				    (count == -1 ? 'O' : 'i')), count, FALSE);
 	/* Putting the text is done later, so can't really move the cursor to
