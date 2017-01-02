@@ -787,8 +787,9 @@ do_cmdline(
 #endif
 
     /* It's possible to create an endless loop with ":execute", catch that
-     * here.  The value of 200 allows nested function calls, ":source", etc. */
-    if (call_depth == 200)
+     * here.  The value of 200 allows nested function calls, ":source", etc.
+     * Allow 200 or 'maxfuncdepth', whatever is larger. */
+    if (call_depth >= 200 && call_depth >= p_mfd)
     {
 	EMSG(_("E169: Command too recursive"));
 #ifdef FEAT_EVAL
