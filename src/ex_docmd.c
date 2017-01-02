@@ -4370,7 +4370,7 @@ get_address(
     int		addr_type,  /* flag: one of ADDR_LINES, ... */
     int		skip,	    /* only skip the address, don't use it */
     int		to_other_file,  /* flag: may jump to other file */
-    int		address_count)	    /* 1 for first address, >1 after comma */
+    int		address_count UNUSED) /* 1 for first address, >1 after comma */
 {
     int		c;
     int		i;
@@ -7589,7 +7589,7 @@ ex_all(exarg_T *eap)
 #endif /* FEAT_WINDOWS */
 
     static void
-ex_hide(exarg_T *eap)
+ex_hide(exarg_T *eap UNUSED)
 {
     /* ":hide" or ":hide | cmd": hide current window */
 #ifdef FEAT_WINDOWS
