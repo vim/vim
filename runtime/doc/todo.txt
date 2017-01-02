@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2016 Dec 01
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Jan 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,10 +36,14 @@ there will not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 +channel:
+- Try out background make plugin: 
+  https://github.com/AndrewVos/vim-make-background
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
 - Add 'cwd' argument to start_job(): directory to change to in the child.
     check for valid directory before forking.
   Part of patch for environment, Yasuhiro Matsumoto, #1160
+- When out_cb executes :sleep, the close_cb may be invoked. (Daniel Hahler,
+  2016 Dec 11, #1320)
 - Implement |job-term| ?
 - Channel test fails with Motif.  Sometimes kills the X11 server.
 - When a message in the queue but there is no callback, drop it after a while?
@@ -70,8 +74,8 @@ Regexp problems:
 - Issue 164: freeze on regexp search.
 - Ignorecase not handled properly for multi-byte characters. (Axel Bender,
   2013 Dec 11)
-- Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin Szamotulski
-  Remark from Brett 2014 Jan 6 and 7.
+- Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin
+  Szamotulski; Remark from Brett 2014 Jan 6 and 7.
 - NFA regexp doesn't handle \%<v correctly. (Ingo Karkat, 2014 May 12)
 - Does not work with NFA regexp engine:
   \%u, \%x, \%o, \%d followed by a composing character
@@ -105,10 +109,13 @@ Regexp problems:
 Make html indent file use javascript indent, now that it's not just cindent.
 #1220
 
-Use __sun instead of sun define check.  #1296
+Patch to fix completion of :filter command. (Ichizok, 2016 Dec 3, #1299)
 
 Patch to use buffer id for system() and systemlist() (LemonBoy, 2016 Nov 7,
 #1240)
+
+Concatenation with null string causes an error: 'a'[1:0] .. 'b'
+Might as well handle it like an empty string.
 
 When using symbolic links, a package path will not be inserted at the right
 position in 'runtimepath'. (Dugan Chen, 2016 Nov 18)
@@ -116,16 +123,38 @@ position in 'runtimepath'. (Dugan Chen, 2016 Nov 18)
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
+Putting "k" early in 'complete' does not use dictionary first?
+(RubenGZ, 2016 Dec 10, #1316)
+patch proposed by Hirohito Higashi, 2016 Dec 11.
+
+Patch to fix NULL pointer when sorting zero elements. (Dominique, 2016 Dec 15)
+
+Patch to test float functions. (Dominique, 2016 Dec 16)
+
+Patch to improve completion of :syntax command. (Dominique, 2016 Dec 12)
+
+Patch to use IEMSG() in more places. (Dominique, 2016 Dec 27)
+
+Patch to avoid ubsan warning for integer overflow. (Dominique, 2016 Dec 26)
+
 Bug: ":earlier 100d" doesn't work after using undo file.
 (Pavol Juhas, 2016 Nov 15, #1254)
 Fix by Christian, but lacks a test.
+Test in testdir/test_undo.vim doesn't catch the problem.
 Test by Pavol Juhas, Nov 22.
+Patch with test (Pavol Juhas,, 2016 Dec 3, #1300)
 
 Bug: Json with same key should not give internal error. (Lcd, 2016 Oct 26)
 Make dict_add give a duplicate key error.
 
+Patch to make str2nr and str2float work with signed values.
+(Lemonbody, 2016 Dec 18, #1332)
+
 Should json_encode()/json_decode() restrict recursiveness?
 Or avoid recursiveness.
+
+Patch to fix UBSan error.  Is this actually needed?
+(Yegappan, 2016 Dec 18)
 
 Allow using json with empty key?  Dict already has it.
 
@@ -137,16 +166,54 @@ Patch to deal with changed configure events in GTK 3. (Jan Alexander Steffens,
 2016 Oct 23 #1193)
 Remarks from nuko8, 2016 Nov 2.
 
+Patch to change order of compiler flags. (Yousong Zhou, 2016 Sep 19, #1100)
+
+Patch to add command line completion for :cexpr commands. (Yegappan
+Lakshmanan, 2016 Dec 13)
+
+Patch to avoid warnings for overflow. (Mike Williams, 2016 Dec 16)
+Update Dec 19.
+
 Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
+Another example in #1309
+
+Patch to fix vim_iswordp() works differently on chars <256 that are two bytes.
+Ozaki Kiichi, 2016 Dec 11.
+
+When deleting a mark or register, leave a tombstone, so that it's also deleted
+when writing viminfo (and the delete was the most recent action). #1339
+
+Relevant neovim patch:
+https://github.com/neovim/neovim/pull/5717
+test case: 
+https://github.com/neovim/neovim/pull/5717#issuecomment-264845481
+Others:
+https://github.com/neovim/neovim/issues/5713#issuecomment-265136186
+https://github.com/neovim/neovim/pull/5737#issuecomment-266055165
 
 Patch for better explanation of 'compatible' side effects.
 https://github.com/vim/vim/pull/1161/files
 
+Patch to adjust marks when adding a new line to the end of buffer in diff
+mode. (James McCoy, 2016 Dec 14, #1329)
+
+Suggestion to improve pt-br spell checking. (Marcelo D Montu, 2016 Dec 15,
+#1330)
+
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
+
+Rule to use "^" for statusline does not work if a space is defined with
+highlighting for both stl and stlnc.  Patch by Ken Hamada (itchyny, 2016 Dec 11)
+
+8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
+    Patch by Christian Wellenbrock, 2013 Jul 5.
 
 Screen updated delayed when using CTRL-O u in Insert mode.
 (Barlik, #1191)  Perhaps because status message?
+
+Patch to add buffer name argument to taglist().
+Ordering of tags in result of taglist call. (Duncan McDougall, #1194)
 
 Patch to fix that empty first tab is not in session.
 (Hirohito Higashi, 2016 Nov 25, #1282)
@@ -171,7 +238,7 @@ Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
 
 Patch to make v:shell_error writable. (Christian Brabandt, 2016 Sep 27)
-Is there another solution?
+Useful to restore it.  Is there another solution?
 
 On MS-Windows with 'clipboard' set to "unnamed" this doesn't work to double
 lines: :g/^/normal yyp   On Unix it works OK.  (Bryce Orgill, 2016 Nov 5)
@@ -235,9 +302,10 @@ execute() cannot be used with command completeion. (Daniel Hahler, 2016 Oct 1,
 
 cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
 
-Patch to change order of compiler flags. (Yousong Zhou, 2016 Sep 19, #1100)
-
 Patch to order results from taglist(). (Duncan McDougall, 2016 Oct 25)
+
+patch for 'spellcamelcase' option: spellcheck each CamelCased word.
+(Ben Tucker, 2016 Dec 2)
 
 Patch for :pyx, run python commands depending on the supported version.
 (Marc Weber, update from Ken Takata, 2016 Sep 19)
@@ -268,7 +336,7 @@ Patch to fix wrong encoding of error message on Cygwin/MSYS terminal.
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
 
 Patch to add context information to quickfix/location list. (Yegappan
-Lakshmanan, 2016 Aug 25)
+Lakshmanan, 2016 Aug 25, #1012)
 
 MS-Windows: use WS_HIDE instead of SW_SHOWMINNOACTIVE in os_win32.c?
 Otherwise task flickers in taskbar.
@@ -980,9 +1048,6 @@ Szamotulski, 2012 Nov 8)
 
 Session file creation: 'autochdir' causes trouble.  Keep it off until after
 loading all files.
-
-8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
-    Patch by Christian Wellenbrock, 2013 Jul 5.
 
 MS-Windows resizing problems:
 - Windows window on screen positioning: Patch by Yukihiro Nakadaira, 2012 Jun

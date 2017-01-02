@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Nov 06
+*version8.txt*  For Vim version 8.0.  Last change: 2016 Dec 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -179,6 +179,12 @@ Visual mode commands: ~
 Insert mode commands: ~
 
 |i_CTRL-G_U|	CTRL-G U	don't break undo with next cursor movement
+
+
+Cmdline mode commands: ~
+
+|/_CTRL-G|	CTRL-G		move to the next match in 'incsearch' mode
+|/_CTRL-T|	CTRL-T		move to the previous match in 'incsearch' mode
 
 
 Options: ~

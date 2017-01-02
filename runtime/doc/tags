@@ -6964,6 +6964,7 @@ job-callback	channel.txt	/*job-callback*
 job-channel-overview	channel.txt	/*job-channel-overview*
 job-close_cb	channel.txt	/*job-close_cb*
 job-control	channel.txt	/*job-control*
+job-drop	channel.txt	/*job-drop*
 job-err_cb	channel.txt	/*job-err_cb*
 job-err_io	channel.txt	/*job-err_io*
 job-exit_cb	channel.txt	/*job-exit_cb*
@@ -7099,7 +7100,6 @@ logiPat-man	pi_logipat.txt	/*logiPat-man*
 logiPat-manual	pi_logipat.txt	/*logiPat-manual*
 logiPat-operators	pi_logipat.txt	/*logiPat-operators*
 logiPat-pattern	pi_logipat.txt	/*logiPat-pattern*
-logiPat.txt	pi_logipat.txt	/*logiPat.txt*
 long-lines	version5.txt	/*long-lines*
 love	intro.txt	/*love*
 lowercase	change.txt	/*lowercase*
@@ -7781,6 +7781,7 @@ php3.vim	syntax.txt	/*php3.vim*
 phtml.vim	syntax.txt	/*phtml.vim*
 pi_getscript.txt	pi_getscript.txt	/*pi_getscript.txt*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
+pi_logipat.txt	pi_logipat.txt	/*pi_logipat.txt*
 pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
