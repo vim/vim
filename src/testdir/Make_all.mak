@@ -151,6 +151,7 @@ NEW_TESTS = test_arglist.res \
 	    test_display.res \
 	    test_farsi.res \
 	    test_fnameescape.res \
+	    test_fold.res \
 	    test_gf.res \
 	    test_gn.res \
 	    test_gui.res \

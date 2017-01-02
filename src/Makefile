@@ -2106,6 +2106,7 @@ test_arglist \
 	test_filter_map \
 	test_fnameescape \
 	test_fnamemodify \
+	test_fold \
 	test_glob2regpat \
 	test_gf \
 	test_gn \

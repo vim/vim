@@ -137,7 +137,7 @@ static int	getargopt(exarg_T *eap);
 #endif
 
 static int	check_more(int, int);
-static linenr_T get_address(exarg_T *, char_u **, int addr_type, int skip, int to_other_file);
+static linenr_T get_address(exarg_T *, char_u **, int addr_type, int skip, int to_other_file, int address_count);
 static void	get_flags(exarg_T *eap);
 #if !defined(FEAT_PERL) \
 	|| !defined(FEAT_PYTHON) || !defined(FEAT_PYTHON3) \
@@ -1791,6 +1791,7 @@ do_one_cmd(
     cmdmod_T		save_cmdmod;
     int			ni;			/* set when Not Implemented */
     char_u		*cmd;
+    int			address_count = 1;
 
     vim_memset(&ea, 0, sizeof(ea));
     ea.line1 = 1;
@@ -2015,7 +2016,7 @@ do_one_cmd(
 			{
 #ifdef FEAT_WINDOWS
 			    long tabnr = get_address(&ea, &ea.cmd, ADDR_TABS,
-								ea.skip, FALSE);
+							    ea.skip, FALSE, 1);
 			    if (tabnr == MAXLNUM)
 				cmdmod.tab = tabpage_index(curtab) + 1;
 			    else
@@ -2175,7 +2176,7 @@ do_one_cmd(
 	}
 	ea.cmd = skipwhite(ea.cmd);
 	lnum = get_address(&ea, &ea.cmd, ea.addr_type, ea.skip,
-							  ea.addr_count == 0);
+					  ea.addr_count == 0, address_count++);
 	if (ea.cmd == NULL)		    /* error detected */
 	    goto doend;
 	if (lnum == MAXLNUM)
@@ -4363,7 +4364,8 @@ get_address(
     char_u	**ptr,
     int		addr_type,  /* flag: one of ADDR_LINES, ... */
     int		skip,	    /* only skip the address, don't use it */
-    int		to_other_file)  /* flag: may jump to other file */
+    int		to_other_file,  /* flag: may jump to other file */
+    int		address_count)	    /* 1 for first address, >1 after comma */
 {
     int		c;
     int		i;
@@ -4639,10 +4641,20 @@ get_address(
 		    || addr_type == ADDR_BUFFERS)
 		lnum = compute_buffer_local_count(
 				    addr_type, lnum, (i == '-') ? -1 * n : n);
-	    else if (i == '-')
-		lnum -= n;
 	    else
-		lnum += n;
+	    {
+#ifdef FEAT_FOLDING
+		/* Relative line addressing, need to adjust for folded lines
+		 * now, but only do it after the first address. */
+		if (addr_type == ADDR_LINES && (i == '-' || i == '+')
+			&& address_count >= 2)
+		    (void)hasFolding(lnum, NULL, &lnum);
+#endif
+		if (i == '-')
+		    lnum -= n;
+		else
+		    lnum += n;
+	    }
 	}
     } while (*cmd == '/' || *cmd == '?');
 
@@ -9301,7 +9313,7 @@ ex_copymove(exarg_T *eap)
 {
     long	n;
 
-    n = get_address(eap, &eap->arg, eap->addr_type, FALSE, FALSE);
+    n = get_address(eap, &eap->arg, eap->addr_type, FALSE, FALSE, 1);
     if (eap->arg == NULL)	    /* error detected */
     {
 	eap->nextcmd = NULL;
