@@ -8765,6 +8765,10 @@ hl_combine_attr(int char_attr, int prim_attr)
 	else
 	{
 	    vim_memset(&new_en, 0, sizeof(new_en));
+#ifdef FEAT_TERMGUICOLORS
+	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
+#endif
 	    if (char_attr <= HL_ALL)
 		new_en.ae_attr = char_attr;
 	}
