@@ -66,7 +66,7 @@ addons:
 
 before_install:
   - pip install --user cpp-coveralls
-  - pip install --user requests[security]
+  - pip install --user pyopenssl ndg-httpsclient pyasn1
     # Lua is not installed on Travis OSX
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install lua; export LUA_PREFIX=/usr/local; fi
 
