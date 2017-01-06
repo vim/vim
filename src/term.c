@@ -6069,8 +6069,12 @@ hex_digit(int c)
     guicolor_T
 gui_get_color_cmn(char_u *name)
 {
-    /* On MS-Windows an RGB macro is available and it's different from ours,
-     * but does what is needed. */
+    /* On MS-Windows an RGB macro is available and it produces 0x00bbggrr color
+     * values as used by the MS-Windows GDI api.  It should be used only for
+     * MS-Windows GDI builds. */
+# if defined(RGB) && defined(WIN32) && !defined(FEAT_GUI)
+#  undef RGB
+# endif
 # ifndef RGB
 #  define RGB(r, g, b)	((r<<16) | (g<<8) | (b))
 # endif
