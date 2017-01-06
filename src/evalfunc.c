@@ -3973,7 +3973,8 @@ get_buffer_info(buf_T *buf)
     dict_add_nr_str(dict, "bufnr", buf->b_fnum, NULL);
     dict_add_nr_str(dict, "name", 0L,
 	    buf->b_ffname != NULL ? buf->b_ffname : (char_u *)"");
-    dict_add_nr_str(dict, "lnum", buflist_findlnum(buf), NULL);
+    dict_add_nr_str(dict, "lnum", buf == curbuf ? curwin->w_cursor.lnum
+						: buflist_findlnum(buf), NULL);
     dict_add_nr_str(dict, "loaded", buf->b_ml.ml_mfp != NULL, NULL);
     dict_add_nr_str(dict, "listed", buf->b_p_bl, NULL);
     dict_add_nr_str(dict, "changed", bufIsChanged(buf), NULL);
