@@ -9509,15 +9509,15 @@ do_searchpair(
 
     /* Make two search patterns: start/end (pat2, for in nested pairs) and
      * start/middle/end (pat3, for the top pair). */
-    pat2 = alloc((unsigned)(STRLEN(spat) + STRLEN(epat) + 15));
-    pat3 = alloc((unsigned)(STRLEN(spat) + STRLEN(mpat) + STRLEN(epat) + 23));
+    pat2 = alloc((unsigned)(STRLEN(spat) + STRLEN(epat) + 17));
+    pat3 = alloc((unsigned)(STRLEN(spat) + STRLEN(mpat) + STRLEN(epat) + 25));
     if (pat2 == NULL || pat3 == NULL)
 	goto theend;
-    sprintf((char *)pat2, "\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
+    sprintf((char *)pat2, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
     if (*mpat == NUL)
 	STRCPY(pat3, pat2);
     else
-	sprintf((char *)pat3, "\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
+	sprintf((char *)pat3, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
 							    spat, epat, mpat);
     if (flags & SP_START)
 	options |= SEARCH_START;
