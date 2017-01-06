@@ -44,12 +44,12 @@ $(DOSTMP_INFILES): $(*B).in
 # This moves test99.in to test99.in.bak temporarily.
 $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 	-@if exist test.out DEL test.out
-	move $(*B).in $(*B).in.bak
-	copy $(DOSTMP)\$(*B).in $(*B).in
-	copy $(*B).ok test.ok
+	move $(*B).in $(*B).in.bak > nul
+	copy $(DOSTMP)\$(*B).in $(*B).in > nul
+	copy $(*B).ok test.ok > nul
 	$(VIMPROG) -u dos.vim $(NO_PLUGIN) -s dotest.in $(*B).in
-	-@if exist test.out MOVE /y test.out $(DOSTMP)\$(*B).out
-	-@if exist $(*B).in.bak move /y $(*B).in.bak $(*B).in
+	-@if exist test.out MOVE /y test.out $(DOSTMP)\$(*B).out > nul
+	-@if exist $(*B).in.bak move /y $(*B).in.bak $(*B).in > nul
 	-@if exist test.ok del test.ok
 	-@if exist Xdir1 rd /s /q Xdir1
 	-@if exist Xfind rd /s /q Xfind
@@ -58,10 +58,10 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 	$(VIMPROG) -u dos.vim $(NO_PLUGIN) "+set ff=unix|f test.out|wq" \
 		$(DOSTMP)\$(*B).out
 	@diff test.out $*.ok & if errorlevel 1 \
-		( move /y test.out $*.failed \
+		( move /y test.out $*.failed > nul \
 		 & del $(DOSTMP)\$(*B).out \
 		 & echo $* FAILED >> test.log ) \
-		else ( move /y test.out $*.out )
+		else ( move /y test.out $*.out > nul )
 
 # Must run test1 first to create small.vim.
 # This rule must come after the one that copies the input files to dostmp to
