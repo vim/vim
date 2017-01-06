@@ -66,8 +66,9 @@ addons:
 
 before_install:
   - pip install --user cpp-coveralls
+    # needed for https support for coveralls
     # building cffi only works sith gcc, not with clang
-  - if [ "$CC" = "gcc" ]; then pip install --user pyopenssl ndg-httpsclient pyasn1; fi
+  - CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1
     # Lua is not installed on Travis OSX
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install lua; export LUA_PREFIX=/usr/local; fi
 
