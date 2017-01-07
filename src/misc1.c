@@ -5422,7 +5422,6 @@ static int	skip_label(linenr_T, char_u **pp);
 static int	cin_first_id_amount(void);
 static int	cin_get_equal_amount(linenr_T lnum);
 static int	cin_ispreproc(char_u *);
-static int	cin_ispreproc_cont(char_u **pp, linenr_T *lnump);
 static int	cin_iscomment(char_u *);
 static int	cin_islinecomment(char_u *);
 static int	cin_isterminated(char_u *, int, int);
@@ -6002,13 +6001,18 @@ cin_ispreproc(char_u *s)
  * Return TRUE if line "*pp" at "*lnump" is a preprocessor statement or a
  * continuation line of a preprocessor statement.  Decrease "*lnump" to the
  * start and return the line in "*pp".
+ * Put the amount of indent in "*amount".
  */
     static int
-cin_ispreproc_cont(char_u **pp, linenr_T *lnump)
+cin_ispreproc_cont(char_u **pp, linenr_T *lnump, int *amount)
 {
     char_u	*line = *pp;
     linenr_T	lnum = *lnump;
     int		retval = FALSE;
+    int		candidate_amount = *amount;
+
+    if (*line != NUL && line[STRLEN(line) - 1] == '\\')
+	candidate_amount = get_indent_lnum(lnum);
 
     for (;;)
     {
@@ -6027,6 +6031,8 @@ cin_ispreproc_cont(char_u **pp, linenr_T *lnump)
 
     if (lnum != *lnump)
 	*pp = ml_get(*lnump);
+    if (retval)
+	*amount = candidate_amount;
     return retval;
 }
 
@@ -7390,7 +7396,7 @@ get_c_indent(void)
 		l = skipwhite(ml_get(lnum));
 		if (cin_nocode(l))		/* skip comment lines */
 		    continue;
-		if (cin_ispreproc_cont(&l, &lnum))
+		if (cin_ispreproc_cont(&l, &lnum, &amount))
 		    continue;			/* ignore #define, #if, etc. */
 		curwin->w_cursor.lnum = lnum;
 
@@ -7803,10 +7809,10 @@ get_c_indent(void)
 		 */
 		if (curwin->w_cursor.lnum <= ourscope)
 		{
-		    /* we reached end of scope:
-		     * if looking for a enum or structure initialization
+		    /* We reached end of scope:
+		     * If looking for a enum or structure initialization
 		     * go further back:
-		     * if it is an initializer (enum xxx or xxx =), then
+		     * If it is an initializer (enum xxx or xxx =), then
 		     * don't add ind_continuation, otherwise it is a variable
 		     * declaration:
 		     * int x,
@@ -7845,7 +7851,8 @@ get_c_indent(void)
 			/*
 			 * Skip preprocessor directives and blank lines.
 			 */
-			if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum))
+			if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum,
+								    &amount))
 			    continue;
 
 			if (cin_nocode(l))
@@ -7962,7 +7969,8 @@ get_c_indent(void)
 			    }
 
 			    /* Skip preprocessor directives and blank lines. */
-			    if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum))
+			    if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum,
+								    &amount))
 				continue;
 
 			    /* Finally the actual check for "namespace". */
@@ -8138,7 +8146,7 @@ get_c_indent(void)
 		 * unlocked it)
 		 */
 		l = ml_get_curline();
-		if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum)
+		if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum, &amount)
 							     || cin_nocode(l))
 		    continue;
 
@@ -8859,7 +8867,7 @@ term_again:
 	/*
 	 * Skip preprocessor directives and blank lines.
 	 */
-	if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum))
+	if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum, &amount))
 	    continue;
 
 	if (cin_nocode(l))
@@ -8960,7 +8968,7 @@ term_again:
 	    {
 		look = ml_get(--curwin->w_cursor.lnum);
 		if (!(cin_nocode(look) || cin_ispreproc_cont(
-				      &look, &curwin->w_cursor.lnum)))
+				      &look, &curwin->w_cursor.lnum, &amount)))
 		    break;
 	    }
 	    if (curwin->w_cursor.lnum > 0

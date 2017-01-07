@@ -2080,3 +2080,17 @@ var a,
 	i;
 JSEND
 
+
+/* start of define */
+{
+}
+#define AAA \
+	BBB\
+	CCC
+
+#define CNT \
+	1 + \
+	2 + \
+	4
+/* end of define */
+

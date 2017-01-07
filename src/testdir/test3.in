@@ -2318,6 +2318,25 @@ i;
 JSEND
 
 STARTTEST
+:set cin cino&
+/start of define
+=/end of define
+ENDTEST
+
+/* start of define */
+{
+}
+#define AAA \
+BBB\
+CCC
+
+#define CNT \
+1 + \
+2 + \
+4
+/* end of define */
+
+STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d
 :1;/start of AUTO/,$wq! test.out
 ENDTEST
