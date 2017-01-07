@@ -184,6 +184,7 @@ NEW_TESTS = test_arglist.res \
 	    test_stat.res \
 	    test_substitute.res \
 	    test_syntax.res \
+	    test_system.res \
 	    test_textobjects.res \
 	    test_undo.res \
 	    test_usercommands.res \
