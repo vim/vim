@@ -5971,6 +5971,22 @@ string2float(
     char	*s = (char *)text;
     float_T	f;
 
+    /* MS-Windows does not deal with "inf" and "nan" properly. */
+    if (STRNICMP(text, "inf", 3) == 0)
+    {
+	*value = INFINITY;
+	return 3;
+    }
+    if (STRNICMP(text, "-inf", 3) == 0)
+    {
+	*value = -INFINITY;
+	return 4;
+    }
+    if (STRNICMP(text, "nan", 3) == 0)
+    {
+	*value = NAN;
+	return 3;
+    }
     f = strtod(s, &s);
     *value = f;
     return (int)((char_u *)s - text);
