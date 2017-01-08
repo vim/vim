@@ -772,7 +772,9 @@ getcmdline(
 		/*
 		 * Open a window to edit the command line (and history).
 		 */
+		save_cmdline(&save_ccline);
 		c = ex_window();
+		restore_cmdline(&save_ccline);
 		some_key_typed = TRUE;
 	    }
 	}
