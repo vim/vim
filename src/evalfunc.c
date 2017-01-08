@@ -11817,7 +11817,6 @@ get_cmd_output_as_rettv(
     char_u	*res = NULL;
     char_u	*p;
     char_u	*infile = NULL;
-    char_u	buf[NUMBUFLEN];
     int		err = FALSE;
     FILE	*fd;
     list_T	*list = NULL;
@@ -11831,7 +11830,7 @@ get_cmd_output_as_rettv(
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	/*
-	 * Write the string to a temp file, to be used for input of the shell
+	 * Write the text to a temp file, to be used for input of the shell
 	 * command.
 	 */
 	if ((infile = vim_tempname('i', TRUE)) == NULL)
@@ -11846,14 +11845,42 @@ get_cmd_output_as_rettv(
 	    EMSG2(_(e_notopen), infile);
 	    goto errret;
 	}
-	if (argvars[1].v_type == VAR_LIST)
+	if (argvars[1].v_type == VAR_NUMBER)
+	{
+	    linenr_T	lnum;
+	    buf_T	*buf;
+
+	    buf = buflist_findnr(argvars[1].vval.v_number);
+	    if (buf == NULL)
+	    {
+		EMSGN(_(e_nobufnr), argvars[1].vval.v_number);
+		goto errret;
+	    }
+
+	    for (lnum = 1; lnum <= buf->b_ml.ml_line_count; lnum++)
+	    {
+		for (p = ml_get_buf(buf, lnum, FALSE); *p != NUL; ++p)
+		    if (putc(*p == '\n' ? NUL : *p, fd) == EOF)
+		    {
+			err = TRUE;
+			break;
+		    }
+		if (putc(NL, fd) == EOF)
+		{
+		    err = TRUE;
+		    break;
+		}
+	    }
+	}
+	else if (argvars[1].v_type == VAR_LIST)
 	{
 	    if (write_list(fd, argvars[1].vval.v_list, TRUE) == FAIL)
 		err = TRUE;
 	}
 	else
 	{
-	    size_t len;
+	    size_t	len;
+	    char_u	buf[NUMBUFLEN];
 
 	    p = get_tv_string_buf_chk(&argvars[1], buf);
 	    if (p == NULL)
