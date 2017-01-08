@@ -279,7 +279,6 @@ func Ch_channel_handler(port)
 endfunc
 
 func Test_channel_handler()
-call ch_logfile('channellog', 'w')
   call ch_log('Test_channel_handler()')
   let g:Ch_reply = ""
   let s:chopt.callback = 'Ch_handler'
