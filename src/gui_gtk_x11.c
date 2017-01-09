@@ -35,6 +35,9 @@
 # ifdef _
 #  undef _
 # endif
+# ifdef ngettext
+#  undef ngettext
+# endif
 # ifdef N_
 #  undef N_
 # endif
