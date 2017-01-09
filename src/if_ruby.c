@@ -514,9 +514,10 @@ static struct
 {
     {"rb_assoc_new", (RUBY_PROC*)&dll_rb_assoc_new},
     {"rb_cFalseClass", (RUBY_PROC*)&dll_rb_cFalseClass},
-    {"rb_cFixnum", (RUBY_PROC*)&dll_rb_cFixnum},
 # if defined(USE_RUBY_INTEGER)
     {"rb_cInteger", (RUBY_PROC*)&dll_rb_cInteger},
+# else
+    {"rb_cFixnum", (RUBY_PROC*)&dll_rb_cFixnum},
 # endif
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 20
     {"rb_cFloat", (RUBY_PROC*)&dll_rb_cFloat},
