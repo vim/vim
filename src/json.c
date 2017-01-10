@@ -577,6 +577,8 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
     ga_init2(&stack, sizeof(json_dec_item_T), 100);
     cur_item = res;
     init_tv(&item);
+    if (res != NULL)
+    init_tv(res);
 
     fill_numbuflen(reader);
     p = reader->js_buf + reader->js_used;
@@ -985,7 +987,6 @@ item_end:
 
 theend:
     ga_clear(&stack);
-    clear_tv(&item);
     return retval;
 }
 
