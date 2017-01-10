@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.0.  Last change: 2016 Sep 09
+*filetype.txt*  For Vim version 8.0.  Last change: 2017 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -573,6 +573,8 @@ Man {number} {name}
 
 Global mapping:
 <Leader>K	Displays the manual page for the word under the cursor.
+<Plug>ManPreGetPage  idem, allows for using a mapping: >
+			nmap <F1> <Plug>ManPreGetPage<CR>
 
 Local mappings:
 CTRL-]		Jump to the manual page for the word under the cursor.

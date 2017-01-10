@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2016 Nov 29
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Jan 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7615,7 +7615,8 @@ systemlist({expr} [, {input}])				*systemlist()*
 		Same as |system()|, but returns a |List| with lines (parts of 
 		output separated by NL) with NULs transformed into NLs. Output 
 		is the same as |readfile()| will output with {binary} argument 
-		set to "b".
+		set to "b".  Note that on MS-Windows you may get trailing CR
+		characters.
 
 		Returns an empty string on error.
 

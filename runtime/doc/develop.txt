@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.0.  Last change: 2016 Jan 31
+*develop.txt*   For Vim version 8.0.  Last change: 2017 Jan 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -177,7 +177,7 @@ The basic steps to make changes to the code:
 5. Make a patch with "git diff".  You can also create a pull request on
    github, but it's the diff that matters.
 6. Make a note about what changed, preferably mentioning the problem and the
-   solution.  Send an email to the vim-dev maillist with an explanation and
+   solution.  Send an email to the |vim-dev| maillist with an explanation and
    include the diff. Or create a pull request on github.
 
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Jan 02
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Jan 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,8 +29,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Issues can also be entered online: https://github.com/vim/vim/issues
 Only use this for bug reports, not for questions!  Those belong on the
-maillist.  Updates will be forwarded to the vim_dev maillist.  Issues entered
-there will not be repeated below, unless there is extra information.
+maillist.  Updates will be forwarded to the |vim_dev| maillist.  Issues
+entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
@@ -109,11 +109,6 @@ Regexp problems:
 Make html indent file use javascript indent, now that it's not just cindent.
 #1220
 
-Patch to fix completion of :filter command. (Ichizok, 2016 Dec 3, #1299)
-
-Patch to use buffer id for system() and systemlist() (LemonBoy, 2016 Nov 7,
-#1240)
-
 Concatenation with null string causes an error: 'a'[1:0] .. 'b'
 Might as well handle it like an empty string.
 
@@ -123,26 +118,11 @@ position in 'runtimepath'. (Dugan Chen, 2016 Nov 18)
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
-Putting "k" early in 'complete' does not use dictionary first?
-(RubenGZ, 2016 Dec 10, #1316)
-patch proposed by Hirohito Higashi, 2016 Dec 11.
+Include rust files. (Klabnik, #1356)
 
-Patch to fix NULL pointer when sorting zero elements. (Dominique, 2016 Dec 15)
-
-Patch to test float functions. (Dominique, 2016 Dec 16)
-
-Patch to improve completion of :syntax command. (Dominique, 2016 Dec 12)
-
-Patch to use IEMSG() in more places. (Dominique, 2016 Dec 27)
+More float tests.  (Dominique, #1364)
 
 Patch to avoid ubsan warning for integer overflow. (Dominique, 2016 Dec 26)
-
-Bug: ":earlier 100d" doesn't work after using undo file.
-(Pavol Juhas, 2016 Nov 15, #1254)
-Fix by Christian, but lacks a test.
-Test in testdir/test_undo.vim doesn't catch the problem.
-Test by Pavol Juhas, Nov 22.
-Patch with test (Pavol Juhas,, 2016 Dec 3, #1300)
 
 Bug: Json with same key should not give internal error. (Lcd, 2016 Oct 26)
 Make dict_add give a duplicate key error.
@@ -166,10 +146,15 @@ Patch to deal with changed configure events in GTK 3. (Jan Alexander Steffens,
 2016 Oct 23 #1193)
 Remarks from nuko8, 2016 Nov 2.
 
+Multi-byte bug: dv} splits char. (Urtica Dioica, 2017 Jan 9)
+
 Patch to change order of compiler flags. (Yousong Zhou, 2016 Sep 19, #1100)
 
 Patch to add command line completion for :cexpr commands. (Yegappan
 Lakshmanan, 2016 Dec 13)
+
+Patch for :pyx, run python commands depending on the supported version.
+(Marc Weber, update from Ken Takata, 2016 Sep 19, 2017 Jan 6)
 
 Patch to avoid warnings for overflow. (Mike Williams, 2016 Dec 16)
 Update Dec 19.
@@ -194,6 +179,9 @@ https://github.com/neovim/neovim/pull/5737#issuecomment-266055165
 
 Patch for better explanation of 'compatible' side effects.
 https://github.com/vim/vim/pull/1161/files
+
+Patch to add 'makeencoding', useful when the system encoding differs from
+Vim's 'encoding' setting. (Ken Takata, 2017 Jan 6)
 
 Patch to adjust marks when adding a new line to the end of buffer in diff
 mode. (James McCoy, 2016 Dec 14, #1329)
@@ -240,6 +228,9 @@ Add tests for using number larger than number of lines in buffer.
 Patch to make v:shell_error writable. (Christian Brabandt, 2016 Sep 27)
 Useful to restore it.  Is there another solution?
 
+"ci[" does not look for next [ like ci" does look for next ".
+(J.F. 2017 Jan 7)
+
 On MS-Windows with 'clipboard' set to "unnamed" this doesn't work to double
 lines: :g/^/normal yyp   On Unix it works OK.  (Bryce Orgill, 2016 Nov 5)
 
@@ -247,6 +238,10 @@ Patch for wrong cursor position on wrapped line, involving breakindent.
 (Ozaki Kiichi, 2016 Nov 25)
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
+
+When adding an item to a new quickfix list make ":cnext" jump to that item.
+Make a difference being at the first item and not having used :cnext at all.
+(Afanasiy Fet, 2017 Jan 3)
 
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 E.g. deepcopy(test_null_list())
@@ -280,6 +275,9 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 
 Patch to add "cmdline" completion to getcompletion(). (Shougo, Oct 1, #1140)
 
+Feature request: Complete members of a dictionary. (Luc Hermitte, 2017 Jan 4,
+#1350)
+
 Patch for systemlist(), add empty item. (thinca, Sep 30, #1135)
 Add an argument to choose binary or non-binary (like readfile()), when omitted
 use the current behavior.
@@ -307,9 +305,6 @@ Patch to order results from taglist(). (Duncan McDougall, 2016 Oct 25)
 patch for 'spellcamelcase' option: spellcheck each CamelCased word.
 (Ben Tucker, 2016 Dec 2)
 
-Patch for :pyx, run python commands depending on the supported version.
-(Marc Weber, update from Ken Takata, 2016 Sep 19)
-
 When using ":diffput" through a mapping, undo in the target buffer isn't
 synced.  (Ryan Carney, 2016 Sep 14)
 
@@ -332,6 +327,19 @@ Jul 25, #948)
 
 Patch to fix wrong encoding of error message on Cygwin/MSYS terminal.
 (Ken Takata, 2016 Oct 4)
+
+Patch to introduce 'cmdencoding'. (Ken Takata, Aug 18?)
+Better help Aug 19.
+Problem: applies to too many commands, such as :cbuffer.
+Updated patch with three options, 2016 Sep 8.
+    Win32: When running ":make" and 'encoding' differs from the system locale,
+    the output should be converted.  Esp. when 'encoding' is "utf-8". (Yongwei
+    Wu) Should we use 'termencoding' for this?
+
+Patch to add 'systemencoding', convert between 'encoding' and this for file
+names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
+Assume the system converts between the actual encoding of the filesystem to
+the system encoding (usually utf-8).
 
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
 
@@ -467,14 +475,6 @@ Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
 
-Patch to introduce 'cmdencoding'. (Ken Takata, Aug 18?)
-Better help Aug 19.
-Problem: applies to too many commands, such as :cbuffer.
-Updated patch with three options, 2016 Sep 8.
-    Win32: When running ":make" and 'encoding' differs from the system locale,
-    the output should be converted.  Esp. when 'encoding' is "utf-8". (Yongwei
-    Wu) Should we use 'termencoding' for this?
-
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
 Added tests (James McCoy, 2016 Aug 3).  Still needs more work.
@@ -487,6 +487,9 @@ Access to uninitialized memory in match_backref() regexp_nda.c:4882
 
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
+
+In debug mode one can inspect variables, but not the function parameters
+(starting with a:). (Luc Hermitte, 2017 Jan 4, #1352)
 
 7   Add a watchpoint in the debug mode: An expression that breaks execution
     when evaluating to non-zero.  Add the "watchadd expr" command, stop when
@@ -1354,11 +1357,6 @@ Regexp engine performance:
     reproduce it.  Caused by "syntax sync fromstart" in combination with patch
     7.2.274.  (Christian Brabandt, 2010 May 27) Generally, folding with
     'foldmethod' set to "syntax" is slow.  Do profiling to find out why.
-
-Patch to add 'systemencoding', convert between 'encoding' and this for file
-names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
-Assume the system converts between the actual encoding of the filesystem to
-the system encoding (usually utf-8).
 
 Problem producing tags file when hebrew.frx is present.  It has a BOM.
 Results in E670. (Tony Mechelynck, 2010 May 2)

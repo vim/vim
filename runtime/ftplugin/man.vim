@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2016 Jun 20
+" Last Change: 	2017 Jan 04
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -47,6 +47,7 @@ endif
 if exists(":Man") != 2
   com -nargs=+ Man call s:GetPage(<f-args>)
   nmap <Leader>K :call <SID>PreGetPage(0)<CR>
+  nmap <Plug>ManPreGetPage :call <SID>PreGetPage(0)<CR>
 endif
 
 " Define functions only once.
