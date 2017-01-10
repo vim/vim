@@ -18,6 +18,7 @@ source test_filter_cmd.vim
 source test_filter_map.vim
 source test_float_func.vim
 source test_fnamemodify.vim
+source test_functions.vim
 source test_glob2regpat.vim
 source test_goto.vim
 source test_help_tagjump.vim

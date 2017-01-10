@@ -11066,10 +11066,13 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
 f_str2float(typval_T *argvars, typval_T *rettv)
 {
     char_u *p = skipwhite(get_tv_string(&argvars[0]));
+    int     isneg = (*p == '-');
 
-    if (*p == '+')
+    if (*p == '+' || *p == '-')
 	p = skipwhite(p + 1);
     (void)string2float(p, &rettv->vval.v_float);
+    if (isneg)
+	rettv->vval.v_float *= -1;
     rettv->v_type = VAR_FLOAT;
 }
 #endif
@@ -11084,6 +11087,7 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     varnumber_T	n;
     int		what;
+    int		isneg;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
@@ -11096,7 +11100,8 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
     }
 
     p = skipwhite(get_tv_string(&argvars[0]));
-    if (*p == '+')
+    isneg = (*p == '-');
+    if (*p == '+' || *p == '-')
 	p = skipwhite(p + 1);
     switch (base)
     {
@@ -11106,7 +11111,11 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	default: what = 0;
     }
     vim_str2nr(p, NULL, NULL, what, &n, NULL, 0);
-    rettv->vval.v_number = n;
+    if (isneg)
+	rettv->vval.v_number = -n;
+    else
+	rettv->vval.v_number = n;
+
 }
 
 #ifdef HAVE_STRFTIME

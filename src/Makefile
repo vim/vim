@@ -2091,6 +2091,7 @@ test_arglist \
 	test_delete \
 	test_diffmode \
 	test_digraph \
+	test_functions \
 	test_display \
 	test_ex_undo \
 	test_execute_func \
