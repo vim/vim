@@ -50,7 +50,7 @@ enum
     NFA_CONCAT,			    /* concatenate two previous items (postfix
 				     * only) */
     NFA_OR,			    /* \| (postfix only) */
-    NFA_STAR,			    /* greedy * (posfix only) */
+    NFA_STAR,			    /* greedy * (postfix only) */
     NFA_STAR_NONGREEDY,		    /* non-greedy * (postfix only) */
     NFA_QUEST,			    /* greedy \? (postfix only) */
     NFA_QUEST_NONGREEDY,	    /* non-greedy \? (postfix only) */
@@ -2169,7 +2169,7 @@ nfa_regpiece(void)
 	     * maximum is much larger than the minimum and when the maximum is
 	     * large.  Bail out if we can use the other engine. */
 	    if ((nfa_re_flags & RE_AUTO)
-				   && (maxval > minval + 200 || maxval > 500))
+				   && (maxval > 500 || maxval > minval + 200))
 		return FAIL;
 
 	    /* Ignore previous call to nfa_regatom() */
