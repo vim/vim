@@ -978,23 +978,22 @@ ins_typebuf(
 
     addlen = (int)STRLEN(str);
 
-    /*
-     * Easy case: there is room in front of typebuf.tb_buf[typebuf.tb_off]
-     */
     if (offset == 0 && addlen <= typebuf.tb_off)
     {
+	/*
+	 * Easy case: there is room in front of typebuf.tb_buf[typebuf.tb_off]
+	 */
 	typebuf.tb_off -= addlen;
 	mch_memmove(typebuf.tb_buf + typebuf.tb_off, str, (size_t)addlen);
     }
-
-    /*
-     * Need to allocate a new buffer.
-     * In typebuf.tb_buf there must always be room for 3 * MAXMAPLEN + 4
-     * characters.  We add some extra room to avoid having to allocate too
-     * often.
-     */
     else
     {
+	/*
+	 * Need to allocate a new buffer.
+	 * In typebuf.tb_buf there must always be room for 3 * MAXMAPLEN + 4
+	 * characters.  We add some extra room to avoid having to allocate too
+	 * often.
+	 */
 	newoff = MAXMAPLEN + 4;
 	newlen = typebuf.tb_len + addlen + newoff + 4 * (MAXMAPLEN + 4);
 	if (newlen < 0)		    /* string is getting too long */
@@ -2009,7 +2008,7 @@ vgetorpeek(int advance)
 	    {
 		/* KeyTyped = FALSE;  When the command that stuffed something
 		 * was typed, behave like the stuffed command was typed.
-		 * needed for CTRL-W CTRl-] to open a fold, for example. */
+		 * needed for CTRL-W CTRL-] to open a fold, for example. */
 		KeyStuffed = TRUE;
 	    }
 	    if (typebuf.tb_no_abbr_cnt == 0)

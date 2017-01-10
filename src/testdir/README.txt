@@ -14,10 +14,10 @@ can.  Use an old style test when it needs to run without the +eval feature.
 TO ADD A NEW STYLE TEST:
 
 1) Create a test_<subject>.vim file.
-2) Add test_<subject>.vim to NEW_TESTS in Make_all.mak in alphabetical order.
-3) Use make test_<subject>.res to run a single test in src/testdir/.
+2) Add test_<subject>.res to NEW_TESTS in Make_all.mak in alphabetical order.
+3) Also add an entry in src/Makefile.
+4) Use make test_<subject>.res to run a single test in src/testdir/.
    Use make test_<subject>  to run a single test in src/.
-4) Also add an entry in src/Makefile.
 
 What you can use (see test_assert.vim for an example):
 - Call assert_equal(), assert_true(), assert_false(), etc.
