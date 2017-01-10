@@ -1896,9 +1896,12 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 
     /* When a message is incomplete we wait for a short while for more to
      * arrive.  After the delay drop the input, otherwise a truncated string
-     * or list will make us hang.  */
+     * or list will make us hang.
+     * Do not generate error messages, they will be written in a channel log. */
+    ++emsg_silent;
     status = json_decode(&reader, &listtv,
 				  chanpart->ch_mode == MODE_JS ? JSON_JS : 0);
+    --emsg_silent;
     if (status == OK)
     {
 	/* Only accept the response when it is a list with at least two

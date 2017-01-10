@@ -148,8 +148,9 @@ func Test_json_decode()
 
   call assert_fails('call json_decode("\"")', "E474:")
   call assert_fails('call json_decode("blah")', "E474:")
-  call assert_fails('call json_decode("true blah")', "E474:")
+  call assert_fails('call json_decode("true blah")', "E488:")
   call assert_fails('call json_decode("<foobar>")', "E474:")
+  call assert_fails('call json_decode("{\"a\":1,\"a\":2}")', "E937:")
 
   call assert_fails('call json_decode("{")', "E474:")
   call assert_fails('call json_decode("{foobar}")', "E474:")

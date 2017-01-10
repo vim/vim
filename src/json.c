@@ -428,6 +428,7 @@ json_decode_array(js_read_T *reader, typval_T *res, int options)
 	{
 	    if (*p == NUL)
 		return MAYBE;
+	    EMSG(_(e_invarg));
 	    return FAIL;
 	}
     }
@@ -488,6 +489,7 @@ json_decode_object(js_read_T *reader, typval_T *res, int options)
 		if (key == NULL || *key == NUL)
 		{
 		    clear_tv(&tvkey);
+		    EMSG(_(e_invarg));
 		    return FAIL;
 		}
 	    }
@@ -501,6 +503,7 @@ json_decode_object(js_read_T *reader, typval_T *res, int options)
 		clear_tv(&tvkey);
 	    if (*p == NUL)
 		return MAYBE;
+	    EMSG(_(e_invarg));
 	    return FAIL;
 	}
 	++reader->js_used;
@@ -512,6 +515,14 @@ json_decode_object(js_read_T *reader, typval_T *res, int options)
 	    if (res != NULL)
 		clear_tv(&tvkey);
 	    return ret;
+	}
+
+	if (res != NULL && dict_find(res->vval.v_dict, key, -1) != NULL)
+	{
+	    EMSG2(_("E937: Duplicate key in JSON: \"%s\""), key);
+	    clear_tv(&tvkey);
+	    clear_tv(&item);
+	    return FAIL;
 	}
 
 	if (res != NULL)
@@ -540,6 +551,7 @@ json_decode_object(js_read_T *reader, typval_T *res, int options)
 	{
 	    if (*p == NUL)
 		return MAYBE;
+	    EMSG(_(e_invarg));
 	    return FAIL;
 	}
     }
@@ -715,7 +727,7 @@ json_decode_string(js_read_T *reader, typval_T *res)
  * Decode one item and put it in "res".  If "res" is NULL only advance.
  * Must already have skipped white space.
  *
- * Return FAIL for a decoding error.
+ * Return FAIL for a decoding error (and give an error).
  * Return MAYBE for an incomplete message.
  */
     static int
@@ -739,7 +751,10 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 
 	case ',': /* comma: empty item */
 	    if ((options & JSON_JS) == 0)
+	    {
+		EMSG(_(e_invarg));
 		return FAIL;
+	    }
 	    /* FALLTHROUGH */
 	case NUL: /* empty */
 	    if (res != NULL)
@@ -761,7 +776,10 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    if (*sp == NUL)
 			return MAYBE;
 		    if (!VIM_ISDIGIT(*sp))
+		    {
+			EMSG(_(e_invarg));
 			return FAIL;
+		    }
 		}
 		sp = skipdigits(sp);
 		if (*sp == '.' || *sp == 'e' || *sp == 'E')
@@ -866,6 +884,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 	res->v_type = VAR_SPECIAL;
 	res->vval.v_number = VVAL_NONE;
     }
+    EMSG(_(e_invarg));
     return FAIL;
 }
 
@@ -884,10 +903,17 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
     json_skip_white(reader);
     ret = json_decode_item(reader, res, options);
     if (ret != OK)
+    {
+	if (ret == MAYBE)
+	    EMSG(_(e_invarg));
 	return FAIL;
+    }
     json_skip_white(reader);
     if (reader->js_buf[reader->js_used] != NUL)
+    {
+	EMSG(_(e_trailing));
 	return FAIL;
+    }
     return OK;
 }
 

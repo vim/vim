@@ -6818,8 +6818,7 @@ f_json_decode(typval_T *argvars, typval_T *rettv)
     reader.js_buf = get_tv_string(&argvars[0]);
     reader.js_fill = NULL;
     reader.js_used = 0;
-    if (json_decode_all(&reader, rettv, 0) != OK)
-	EMSG(_(e_invarg));
+    json_decode_all(&reader, rettv, 0);
 }
 
 /*
