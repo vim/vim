@@ -378,7 +378,7 @@ json_skip_white(js_read_T *reader)
 }
 
     static int
-json_decode_string(js_read_T *reader, typval_T *res)
+json_decode_string(js_read_T *reader, typval_T *res, int quote)
 {
     garray_T    ga;
     int		len;
@@ -389,8 +389,8 @@ json_decode_string(js_read_T *reader, typval_T *res)
     if (res != NULL)
 	ga_init2(&ga, 1, 200);
 
-    p = reader->js_buf + reader->js_used + 1; /* skip over " */
-    while (*p != '"')
+    p = reader->js_buf + reader->js_used + 1; /* skip over " or ' */
+    while (*p != quote)
     {
 	/* The JSON is always expected to be utf-8, thus use utf functions
 	 * here. The string is converted below if needed. */
@@ -504,7 +504,7 @@ json_decode_string(js_read_T *reader, typval_T *res)
     }
 
     reader->js_used = (int)(p - reader->js_buf);
-    if (*p == '"')
+    if (*p == quote)
     {
 	++reader->js_used;
 	if (res != NULL)
@@ -620,7 +620,8 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 
 	if (top_item != NULL && top_item->jd_type == JSON_OBJECT_KEY
 		&& (options & JSON_JS)
-		&& reader->js_buf[reader->js_used] != '"')
+		&& reader->js_buf[reader->js_used] != '"'
+		&& reader->js_buf[reader->js_used] != '\'')
 	{
 	    char_u *key;
 
@@ -690,7 +691,17 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    continue;
 
 		case '"': /* string */
-		    retval = json_decode_string(reader, cur_item);
+		    retval = json_decode_string(reader, cur_item, *p);
+		    break;
+
+		case '\'':
+		    if (options & JSON_JS)
+			retval = json_decode_string(reader, cur_item, *p);
+		    else
+		    {
+			EMSG(_(e_invarg));
+			retval = FAIL;
+		    }
 		    break;
 
 		case ',': /* comma: empty item */

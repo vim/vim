@@ -181,7 +181,7 @@ test_fill_called_on_string(void)
     reader.js_buf = (char_u *)" \"foo";
     reader.js_end = reader.js_buf + STRLEN(reader.js_buf);
     reader.js_cookie =        " \"foobar\"  ";
-    assert(json_decode_string(&reader, NULL) == OK);
+    assert(json_decode_string(&reader, NULL, '"') == OK);
 }
 #endif
 

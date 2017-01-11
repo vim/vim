@@ -5229,6 +5229,7 @@ join({list} [, {sep}])					*join()*
 js_decode({string})					*js_decode()*
 		This is similar to |json_decode()| with these differences:
 		- Object key names do not have to be in quotes.
+		- Strings can be in single quotes.
 		- Empty items in an array (between two commas) are allowed and
 		  result in v:none items.
 
