@@ -773,9 +773,7 @@ getcmdline(
 		/*
 		 * Open a window to edit the command line (and history).
 		 */
-		save_cmdline(&save_ccline);
 		c = ex_window();
-		restore_cmdline(&save_ccline);
 		some_key_typed = TRUE;
 	    }
 	}
@@ -6904,9 +6902,7 @@ ex_window(void)
     redraw_later(SOME_VALID);
 
     /* Save the command line info, can be used recursively. */
-    save_ccline = ccline;
-    ccline.cmdbuff = NULL;
-    ccline.cmdprompt = NULL;
+    save_cmdline(&save_ccline);
 
     /* No Ex mode here! */
     exmode_active = 0;
@@ -6953,7 +6949,7 @@ ex_window(void)
 # endif
 
     /* Restore the command line info. */
-    ccline = save_ccline;
+    restore_cmdline(&save_ccline);
     cmdwin_type = 0;
 
     exmode_active = save_exmode;
