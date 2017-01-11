@@ -255,8 +255,10 @@ func Test_js_decode()
   call assert_equal(v:none, js_decode(''))
   call assert_equal(type(v:none), type(js_decode('')))
   call assert_equal("", js_decode('""'))
+  call assert_equal("", js_decode("''"))
 
   call assert_equal({'n': 1}, js_decode('{"n":1,}'))
+  call assert_equal({'n': '1'}, js_decode("{'n':'1',}"))
 
   call assert_fails('call js_decode("\"")', "E474:")
   call assert_fails('call js_decode("blah")', "E474:")
