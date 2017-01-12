@@ -5091,23 +5091,9 @@ ex_language(exarg_T *eap)
 # if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
 static char_u	**locales = NULL;	/* Array of all available locales */
+
+#  ifndef WIN32
 static int	did_init_locales = FALSE;
-
-static void init_locales(void);
-static char_u **find_locales(void);
-
-/*
- * Lazy initialization of all available locales.
- */
-    static void
-init_locales(void)
-{
-    if (!did_init_locales)
-    {
-	did_init_locales = TRUE;
-	locales = find_locales();
-    }
-}
 
 /* Return an array of strings for all available locales + NULL for the
  * last element.  Return NULL in case of error. */
@@ -5148,6 +5134,22 @@ find_locales(void)
     }
     ((char_u **)locales_ga.ga_data)[locales_ga.ga_len] = NULL;
     return (char_u **)locales_ga.ga_data;
+}
+#  endif
+
+/*
+ * Lazy initialization of all available locales.
+ */
+    static void
+init_locales(void)
+{
+#  ifndef WIN32
+    if (!did_init_locales)
+    {
+	did_init_locales = TRUE;
+	locales = find_locales();
+    }
+#  endif
 }
 
 #  if defined(EXITFREE) || defined(PROTO)
