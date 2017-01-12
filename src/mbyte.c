@@ -4584,47 +4584,6 @@ static HINSTANCE hMsvcrtDLL = 0;
 #   endif
 
 /*
- * Get the address of 'funcname' which is imported by 'hInst' DLL.
- */
-    static void *
-get_iconv_import_func(HINSTANCE hInst, const char *funcname)
-{
-    PBYTE			pImage = (PBYTE)hInst;
-    PIMAGE_DOS_HEADER		pDOS = (PIMAGE_DOS_HEADER)hInst;
-    PIMAGE_NT_HEADERS		pPE;
-    PIMAGE_IMPORT_DESCRIPTOR	pImpDesc;
-    PIMAGE_THUNK_DATA		pIAT;	    /* Import Address Table */
-    PIMAGE_THUNK_DATA		pINT;	    /* Import Name Table */
-    PIMAGE_IMPORT_BY_NAME	pImpName;
-
-    if (pDOS->e_magic != IMAGE_DOS_SIGNATURE)
-	return NULL;
-    pPE = (PIMAGE_NT_HEADERS)(pImage + pDOS->e_lfanew);
-    if (pPE->Signature != IMAGE_NT_SIGNATURE)
-	return NULL;
-    pImpDesc = (PIMAGE_IMPORT_DESCRIPTOR)(pImage
-	    + pPE->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
-							    .VirtualAddress);
-    for (; pImpDesc->FirstThunk; ++pImpDesc)
-    {
-	if (!pImpDesc->OriginalFirstThunk)
-	    continue;
-	pIAT = (PIMAGE_THUNK_DATA)(pImage + pImpDesc->FirstThunk);
-	pINT = (PIMAGE_THUNK_DATA)(pImage + pImpDesc->OriginalFirstThunk);
-	for (; pIAT->u1.Function; ++pIAT, ++pINT)
-	{
-	    if (IMAGE_SNAP_BY_ORDINAL(pINT->u1.Ordinal))
-		continue;
-	    pImpName = (PIMAGE_IMPORT_BY_NAME)(pImage
-					+ (UINT_PTR)(pINT->u1.AddressOfData));
-	    if (strcmp((char *)pImpName->Name, funcname) == 0)
-		return (void *)pIAT->u1.Function;
-	}
-    }
-    return NULL;
-}
-
-/*
  * Try opening the iconv.dll and return TRUE if iconv() can be used.
  */
     int
@@ -4671,7 +4630,7 @@ iconv_enabled(int verbose)
     iconv_open	= (void *)GetProcAddress(hIconvDLL, "libiconv_open");
     iconv_close	= (void *)GetProcAddress(hIconvDLL, "libiconv_close");
     iconvctl	= (void *)GetProcAddress(hIconvDLL, "libiconvctl");
-    iconv_errno	= get_iconv_import_func(hIconvDLL, "_errno");
+    iconv_errno	= get_dll_import_func(hIconvDLL, "_errno");
     if (iconv_errno == NULL)
 	iconv_errno = (void *)GetProcAddress(hMsvcrtDLL, "_errno");
     if (iconv == NULL || iconv_open == NULL || iconv_close == NULL

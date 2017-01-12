@@ -4455,6 +4455,9 @@ vim_setenv(char_u *name, char_u *val)
     {
 	sprintf((char *)envbuf, "%s=%s", name, val);
 	putenv((char *)envbuf);
+# ifdef libintl_putenv
+	libintl_putenv((char *)envbuf);
+# endif
     }
 #endif
 #ifdef FEAT_GETTEXT

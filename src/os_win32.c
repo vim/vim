@@ -425,6 +425,84 @@ vimLoadLib(char *name)
     return dll;
 }
 
+#if defined(DYNAMIC_ICONV) || defined(DYNAMIC_GETTEXT) || defined(PROTO)
+/*
+ * Get related information about 'funcname' which is imported by 'hInst'.
+ * If 'info' is 0, return the function address.
+ * If 'info' is 1, return the module name which the function is imported from.
+ */
+    static void *
+get_imported_func_info(HINSTANCE hInst, const char *funcname, int info)
+{
+    PBYTE			pImage = (PBYTE)hInst;
+    PIMAGE_DOS_HEADER		pDOS = (PIMAGE_DOS_HEADER)hInst;
+    PIMAGE_NT_HEADERS		pPE;
+    PIMAGE_IMPORT_DESCRIPTOR	pImpDesc;
+    PIMAGE_THUNK_DATA		pIAT;	    /* Import Address Table */
+    PIMAGE_THUNK_DATA		pINT;	    /* Import Name Table */
+    PIMAGE_IMPORT_BY_NAME	pImpName;
+
+    if (pDOS->e_magic != IMAGE_DOS_SIGNATURE)
+	return NULL;
+    pPE = (PIMAGE_NT_HEADERS)(pImage + pDOS->e_lfanew);
+    if (pPE->Signature != IMAGE_NT_SIGNATURE)
+	return NULL;
+    pImpDesc = (PIMAGE_IMPORT_DESCRIPTOR)(pImage
+	    + pPE->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
+							    .VirtualAddress);
+    for (; pImpDesc->FirstThunk; ++pImpDesc)
+    {
+	if (!pImpDesc->OriginalFirstThunk)
+	    continue;
+	pIAT = (PIMAGE_THUNK_DATA)(pImage + pImpDesc->FirstThunk);
+	pINT = (PIMAGE_THUNK_DATA)(pImage + pImpDesc->OriginalFirstThunk);
+	for (; pIAT->u1.Function; ++pIAT, ++pINT)
+	{
+	    if (IMAGE_SNAP_BY_ORDINAL(pINT->u1.Ordinal))
+		continue;
+	    pImpName = (PIMAGE_IMPORT_BY_NAME)(pImage
+					+ (UINT_PTR)(pINT->u1.AddressOfData));
+	    if (strcmp((char *)pImpName->Name, funcname) == 0)
+	    {
+		switch (info)
+		{
+		    case 0:
+			return (void *)pIAT->u1.Function;
+		    case 1:
+			return (void *)(pImage + pImpDesc->Name);
+		    default:
+			return NULL;
+		}
+	    }
+	}
+    }
+    return NULL;
+}
+
+/*
+ * Get the module handle which 'funcname' in 'hInst' is imported from.
+ */
+    HINSTANCE
+find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname)
+{
+    char    *modulename;
+
+    modulename = (char *)get_imported_func_info(hInst, funcname, 1);
+    if (modulename != NULL)
+	return GetModuleHandleA(modulename);
+    return NULL;
+}
+
+/*
+ * Get the address of 'funcname' which is imported by 'hInst' DLL.
+ */
+    void *
+get_dll_import_func(HINSTANCE hInst, const char *funcname)
+{
+    return get_imported_func_info(hInst, funcname, 0);
+}
+#endif
+
 #if defined(DYNAMIC_GETTEXT) || defined(PROTO)
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
@@ -436,6 +514,7 @@ static char *null_libintl_ngettext(const char *, const char *, unsigned long n);
 static char *null_libintl_textdomain(const char *);
 static char *null_libintl_bindtextdomain(const char *, const char *);
 static char *null_libintl_bind_textdomain_codeset(const char *, const char *);
+static int null_libintl_putenv(const char *);
 
 static HINSTANCE hLibintlDLL = NULL;
 char *(*dyn_libintl_gettext)(const char *) = null_libintl_gettext;
@@ -446,6 +525,7 @@ char *(*dyn_libintl_bindtextdomain)(const char *, const char *)
 						= null_libintl_bindtextdomain;
 char *(*dyn_libintl_bind_textdomain_codeset)(const char *, const char *)
 				       = null_libintl_bind_textdomain_codeset;
+int (*dyn_libintl_putenv)(const char *) = null_libintl_putenv;
 
     int
 dyn_libintl_init(void)
@@ -463,6 +543,7 @@ dyn_libintl_init(void)
 	{"bindtextdomain", (FARPROC*)&dyn_libintl_bindtextdomain},
 	{NULL, NULL}
     };
+    HINSTANCE hmsvcrt;
 
     /* No need to initialize twice. */
     if (hLibintlDLL)
@@ -507,6 +588,13 @@ dyn_libintl_init(void)
 	dyn_libintl_bind_textdomain_codeset =
 					 null_libintl_bind_textdomain_codeset;
 
+    /* _putenv() function for the libintl.dll is optional. */
+    hmsvcrt = find_imported_module_by_funcname(hLibintlDLL, "getenv");
+    if (hmsvcrt != NULL)
+	dyn_libintl_putenv = (void *)GetProcAddress(hmsvcrt, "_putenv");
+    if (dyn_libintl_putenv == NULL || dyn_libintl_putenv == putenv)
+	dyn_libintl_putenv = null_libintl_putenv;
+
     return 1;
 }
 
@@ -521,6 +609,7 @@ dyn_libintl_end(void)
     dyn_libintl_textdomain	= null_libintl_textdomain;
     dyn_libintl_bindtextdomain	= null_libintl_bindtextdomain;
     dyn_libintl_bind_textdomain_codeset = null_libintl_bind_textdomain_codeset;
+    dyn_libintl_putenv		= null_libintl_putenv;
 }
 
 /*ARGSUSED*/
@@ -560,6 +649,13 @@ null_libintl_bind_textdomain_codeset(const char *domainname,
 null_libintl_textdomain(const char *domainname)
 {
     return NULL;
+}
+
+/*ARGSUSED*/
+    int
+null_libintl_putenv(const char *envstring)
+{
+    return 0;
 }
 
 #endif /* DYNAMIC_GETTEXT */
@@ -4781,32 +4877,32 @@ mch_call_shell(
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
     static HANDLE
 job_io_file_open(
-        char_u *fname,
-        DWORD dwDesiredAccess,
-        DWORD dwShareMode,
-        LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-        DWORD dwCreationDisposition,
-        DWORD dwFlagsAndAttributes)
+	char_u *fname,
+	DWORD dwDesiredAccess,
+	DWORD dwShareMode,
+	LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+	DWORD dwCreationDisposition,
+	DWORD dwFlagsAndAttributes)
 {
     HANDLE h;
 # ifdef FEAT_MBYTE
     WCHAR *wn = NULL;
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
-        wn = enc_to_utf16(fname, NULL);
-        if (wn != NULL)
-        {
-            h = CreateFileW(wn, dwDesiredAccess, dwShareMode,
-                     lpSecurityAttributes, dwCreationDisposition,
-                     dwFlagsAndAttributes, NULL);
-            vim_free(wn);
-        }
+	wn = enc_to_utf16(fname, NULL);
+	if (wn != NULL)
+	{
+	    h = CreateFileW(wn, dwDesiredAccess, dwShareMode,
+		    lpSecurityAttributes, dwCreationDisposition,
+		    dwFlagsAndAttributes, NULL);
+	    vim_free(wn);
+	}
     }
     if (wn == NULL)
 # endif
-        h = CreateFile((LPCSTR)fname, dwDesiredAccess, dwShareMode,
-                     lpSecurityAttributes, dwCreationDisposition,
-                     dwFlagsAndAttributes, NULL);
+	h = CreateFile((LPCSTR)fname, dwDesiredAccess, dwShareMode,
+		lpSecurityAttributes, dwCreationDisposition,
+		dwFlagsAndAttributes, NULL);
     return h;
 }
 
