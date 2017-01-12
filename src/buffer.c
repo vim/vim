@@ -113,16 +113,19 @@ read_buffer(
 	 * it can be changed there. */
 	if (!readonlymode && !bufempty())
 	    changed();
-	else if (retval != FAIL)
+	else if (retval == OK)
 	    unchanged(curbuf, FALSE);
 
 #ifdef FEAT_AUTOCMD
+	if (retval == OK)
+	{
 # ifdef FEAT_EVAL
-	apply_autocmds_retval(EVENT_STDINREADPOST, NULL, NULL, FALSE,
+	    apply_autocmds_retval(EVENT_STDINREADPOST, NULL, NULL, FALSE,
 							curbuf, &retval);
 # else
-	apply_autocmds(EVENT_STDINREADPOST, NULL, NULL, FALSE, curbuf);
+	    apply_autocmds(EVENT_STDINREADPOST, NULL, NULL, FALSE, curbuf);
 # endif
+	}
 #endif
     }
     return retval;
@@ -294,7 +297,7 @@ open_buffer(
 #endif
        )
 	changed();
-    else if (retval != FAIL && !read_stdin && !read_fifo)
+    else if (retval == OK && !read_stdin && !read_fifo)
 	unchanged(curbuf, FALSE);
     save_file_ff(curbuf);		/* keep this fileformat */
 
@@ -328,7 +331,7 @@ open_buffer(
 # endif
 #endif
 
-    if (retval != FAIL)
+    if (retval == OK)
     {
 #ifdef FEAT_AUTOCMD
 	/*
