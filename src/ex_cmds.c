@@ -1313,7 +1313,7 @@ do_filter(
 	if (otmp != NULL)
 	{
 	    if (readfile(otmp, NULL, line2, (linenr_T)0, (linenr_T)MAXLNUM,
-						    eap, READ_FILTER) == FAIL)
+						    eap, READ_FILTER) != OK)
 	    {
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 		if (!aborting())
