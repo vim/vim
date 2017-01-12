@@ -1239,6 +1239,77 @@ func Test_num64()
 endfunc
 
 "-------------------------------------------------------------------------------
+" Test 95:  lines of :append, :change, :insert			    {{{1
+"-------------------------------------------------------------------------------
+
+function! DefineFunction(name, body)
+    let func = join(['function! ' . a:name . '()'] + a:body + ['endfunction'], "\n")
+    exec func
+endfunction
+
+func Test_script_lines()
+    " :append
+    try
+        call DefineFunction('T_Append', [
+                    \ 'append',
+                    \ 'py <<EOS',
+                    \ '.',
+                    \ ])
+    catch
+        call assert_false(1, "Can't define function")
+    endtry
+    try
+        call DefineFunction('T_Append', [
+                    \ 'append',
+                    \ 'abc',
+                    \ ])
+        call assert_false(1, "Shouldn't be able to define function")
+    catch
+        call assert_exception('Vim(function):E126: Missing :endfunction')
+    endtry
+
+    " :change
+    try
+        call DefineFunction('T_Change', [
+                    \ 'change',
+                    \ 'py <<EOS',
+                    \ '.',
+                    \ ])
+    catch
+        call assert_false(1, "Can't define function")
+    endtry
+    try
+        call DefineFunction('T_Change', [
+                    \ 'change',
+                    \ 'abc',
+                    \ ])
+        call assert_false(1, "Shouldn't be able to define function")
+    catch
+        call assert_exception('Vim(function):E126: Missing :endfunction')
+    endtry
+
+    " :insert
+    try
+        call DefineFunction('T_Insert', [
+                    \ 'insert',
+                    \ 'py <<EOS',
+                    \ '.',
+                    \ ])
+    catch
+        call assert_false(1, "Can't define function")
+    endtry
+    try
+        call DefineFunction('T_Insert', [
+                    \ 'insert',
+                    \ 'abc',
+                    \ ])
+        call assert_false(1, "Shouldn't be able to define function")
+    catch
+        call assert_exception('Vim(function):E126: Missing :endfunction')
+    endtry
+endfunc
+
+"-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
 " vim: fdt=substitute(substitute(foldtext(),\ '\\%(^+--\\)\\@<=\\(\\s*\\)\\(.\\{-}\\)\:\ \\%(\"\ \\)\\=\\(Test\ \\d*\\)\:\\s*',\ '\\3\ (\\2)\:\ \\1',\ \"\"),\ '\\(Test\\s*\\)\\(\\d\\)\\D\\@=',\ '\\1\ \\2',\ "")
