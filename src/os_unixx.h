@@ -113,7 +113,7 @@
 
 /* shared library access */
 #if defined(HAVE_DLFCN_H) && defined(USE_DLOPEN)
-# ifdef __MVS__
+# if defined(__MVS__) && !defined (__SUSV3)
     /* needed to define RTLD_LAZY (Anthony Giorgio) */
 #  define __SUSV3
 # endif

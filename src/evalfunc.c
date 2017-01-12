@@ -923,34 +923,6 @@ get_expr_name(expand_T *xp, int idx)
 
 #endif /* FEAT_CMDL_COMPL */
 
-#if defined(EBCDIC) || defined(PROTO)
-/*
- * Compare struct fst by function name.
- */
-    static int
-compare_func_name(const void *s1, const void *s2)
-{
-    struct fst *p1 = (struct fst *)s1;
-    struct fst *p2 = (struct fst *)s2;
-
-    return STRCMP(p1->f_name, p2->f_name);
-}
-
-/*
- * Sort the function table by function name.
- * The sorting of the table above is ASCII dependant.
- * On machines using EBCDIC we have to sort it.
- */
-    static void
-sortFunctions(void)
-{
-    int		funcCnt = (int)(sizeof(functions) / sizeof(struct fst)) - 1;
-
-    qsort(functions, (size_t)funcCnt, sizeof(struct fst), compare_func_name);
-}
-#endif
-
-
 /*
  * Find internal function in table above.
  * Return index, or -1 if not found
