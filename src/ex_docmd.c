@@ -8857,7 +8857,7 @@ ex_read(exarg_T *eap)
 			  eap->line2, (linenr_T)0, (linenr_T)MAXLNUM, eap, 0);
 
 	}
-	if (i == FAIL)
+	if (i != OK)
 	{
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 	    if (!aborting())

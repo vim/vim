@@ -322,3 +322,22 @@ func Test_three_windows()
   call delete('Xtestje2')
   call delete('Xtestje3')
 endfunc
+
+func Test_BufEnter()
+  au! BufEnter
+  au Bufenter * let val = val . '+'
+  let g:val = ''
+  split NewFile
+  call assert_equal('+', g:val)
+  bwipe!
+  call assert_equal('++', g:val)
+
+  " Also get BufEnter when editing a directory
+  call mkdir('Xdir')
+  split Xdir
+  call assert_equal('+++', g:val)
+  bwipe!
+
+  call delete('Xdir', 'd')
+  au! BufEnter
+endfunc

@@ -210,7 +210,7 @@ filemess(
  * READ_KEEP_UNDO  don't clear undo info or read it from a file
  * READ_FIFO	read from fifo/socket instead of a file
  *
- * return FAIL for failure, OK otherwise
+ * return FAIL for failure, NOTDONE for directory (failure), or OK
  */
     int
 readfile(
@@ -450,13 +450,18 @@ readfile(
 # endif
 						)
 	{
+	    int retval = FAIL;
+
 	    if (S_ISDIR(perm))
+	    {
 		filemess(curbuf, fname, (char_u *)_("is a directory"), 0);
+		retval = NOTDONE;
+	    }
 	    else
 		filemess(curbuf, fname, (char_u *)_("is not a file"), 0);
 	    msg_end();
 	    msg_scroll = msg_save;
-	    return FAIL;
+	    return retval;
 	}
 #endif
 #if defined(MSWIN)
@@ -7136,7 +7141,7 @@ buf_reload(buf_T *buf, int orig_mode)
 #endif
 	    if (readfile(buf->b_ffname, buf->b_fname, (linenr_T)0,
 			(linenr_T)0,
-			(linenr_T)MAXLNUM, &ea, flags) == FAIL)
+			(linenr_T)MAXLNUM, &ea, flags) != OK)
 	    {
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 		if (!aborting())
