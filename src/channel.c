@@ -710,7 +710,14 @@ channel_open(
 	channel_free(channel);
 	return NULL;
     }
-    memcpy((char *)&server.sin_addr, host->h_addr, host->h_length);
+    {
+	char		*p;
+
+	/* When using host->h_addr directly ubsan warns for it to not be
+	 * aligned.  First copy the pointer to aviod that. */
+	memcpy(&p, &host->h_addr, sizeof(p));
+	memcpy((char *)&server.sin_addr, p, host->h_length);
+    }
 
     /* On Mac and Solaris a zero timeout almost never works.  At least wait
      * one millisecond. Let's do it for all systems, because we don't know why
