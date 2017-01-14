@@ -2851,7 +2851,7 @@ do_check_cursorbind(void)
 	    if (has_mbyte)
 		mb_adjust_cursor();
 # endif
-	    redraw_later(VALID);
+	    redraw_later(curwin->w_p_cul ? NOT_VALID : VALID);
 
 	    /* Only scroll when 'scrollbind' hasn't done this. */
 	    if (!curwin->w_p_scb)
