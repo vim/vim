@@ -936,7 +936,7 @@ item_end:
 			&& dict_find(top_item->jd_tv.vval.v_dict,
 						 top_item->jd_key, -1) != NULL)
 		{
-		    EMSG2(_("E937: Duplicate key in JSON: \"%s\""),
+		    EMSG2(_("E938: Duplicate key in JSON: \"%s\""),
 							     top_item->jd_key);
 		    clear_tv(&top_item->jd_key_tv);
 		    clear_tv(cur_item);
