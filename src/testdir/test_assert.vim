@@ -32,7 +32,7 @@ func Test_assert_notequal()
   call assert_notequal([1, 2, 3], s)
 
   call assert_notequal('foo', s)
-  call assert_match("Expected 'foo' differs from 'foo'", v:errors[0])
+  call assert_match("Expected not equal to 'foo'", v:errors[0])
   call remove(v:errors, 0)
 endfunc
 

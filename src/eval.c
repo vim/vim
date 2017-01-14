@@ -9256,6 +9256,8 @@ fill_assert_error(
     {
 	if (atype == ASSERT_MATCH || atype == ASSERT_NOTMATCH)
 	    ga_concat(gap, (char_u *)"Pattern ");
+	else if (atype == ASSERT_NOTEQUAL)
+	    ga_concat(gap, (char_u *)"Expected not equal to ");
 	else
 	    ga_concat(gap, (char_u *)"Expected ");
 	if (exp_str == NULL)
@@ -9265,16 +9267,17 @@ fill_assert_error(
 	}
 	else
 	    ga_concat_esc(gap, exp_str);
-	if (atype == ASSERT_MATCH)
-	    ga_concat(gap, (char_u *)" does not match ");
-	else if (atype == ASSERT_NOTMATCH)
-	    ga_concat(gap, (char_u *)" does match ");
-	else if (atype == ASSERT_NOTEQUAL)
-	    ga_concat(gap, (char_u *)" differs from ");
-	else
-	    ga_concat(gap, (char_u *)" but got ");
-	ga_concat_esc(gap, tv2string(got_tv, &tofree, numbuf, 0));
-	vim_free(tofree);
+	if (atype != ASSERT_NOTEQUAL)
+	{
+	    if (atype == ASSERT_MATCH)
+		ga_concat(gap, (char_u *)" does not match ");
+	    else if (atype == ASSERT_NOTMATCH)
+		ga_concat(gap, (char_u *)" does match ");
+	    else
+		ga_concat(gap, (char_u *)" but got ");
+	    ga_concat_esc(gap, tv2string(got_tv, &tofree, numbuf, 0));
+	    vim_free(tofree);
+	}
     }
 }
 
