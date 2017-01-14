@@ -862,7 +862,11 @@ static int ensure_ruby_initialized(void)
 	    int argc = 1;
 	    char *argv[] = {"gvim.exe"};
 	    char **argvp = argv;
+# ifdef RUBY19_OR_LATER
+	    ruby_sysinit(&argc, &argvp);
+# else
 	    NtInitialize(&argc, &argvp);
+# endif
 #endif
 	    {
 #if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
