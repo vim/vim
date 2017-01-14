@@ -107,6 +107,7 @@
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
 # define PV_BEXPR	OPT_BOTH(OPT_BUF(BV_BEXPR))
 #endif
+#define PV_FP		OPT_BOTH(OPT_BUF(BV_FP))
 #ifdef FEAT_EVAL
 # define PV_FEX		OPT_BUF(BV_FEX)
 #endif
@@ -1258,7 +1259,7 @@ static struct vimoption options[] =
 			    {(char_u *)"^\\s*\\d\\+[\\]:.)}\\t ]\\s*",
 						 (char_u *)0L} SCRIPTID_INIT},
     {"formatprg",   "fp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
-			    (char_u *)&p_fp, PV_NONE,
+			    (char_u *)&p_fp, PV_FP,
 			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
     {"fsync",       "fs",   P_BOOL|P_SECURE|P_VI_DEF,
 #ifdef HAVE_FSYNC
@@ -5481,6 +5482,7 @@ check_buf_options(buf_T *buf)
 #if defined(FEAT_CRYPT)
     check_string_option(&buf->b_p_cm);
 #endif
+    check_string_option(&buf->b_p_fp);
 #if defined(FEAT_EVAL)
     check_string_option(&buf->b_p_fex);
 #endif
@@ -10175,6 +10177,9 @@ unset_global_local_option(char_u *name, void *from)
 	    clear_string_option(&buf->b_p_tsr);
 	    break;
 #endif
+	case PV_FP:
+	    clear_string_option(&buf->b_p_fp);
+	    break;
 #ifdef FEAT_QUICKFIX
 	case PV_EFM:
 	    clear_string_option(&buf->b_p_efm);
@@ -10228,6 +10233,7 @@ get_varp_scope(struct vimoption *p, int opt_flags)
     {
 	switch ((int)p->indir)
 	{
+	    case PV_FP:   return (char_u *)&(curbuf->b_p_fp);
 #ifdef FEAT_QUICKFIX
 	    case PV_EFM:  return (char_u *)&(curbuf->b_p_efm);
 	    case PV_GP:   return (char_u *)&(curbuf->b_p_gp);
@@ -10308,6 +10314,8 @@ get_varp(struct vimoption *p)
 	case PV_TSR:	return *curbuf->b_p_tsr != NUL
 				    ? (char_u *)&(curbuf->b_p_tsr) : p->var;
 #endif
+	case PV_FP:	return *curbuf->b_p_fp != NUL
+				    ? (char_u *)&(curbuf->b_p_fp) : p->var;
 #ifdef FEAT_QUICKFIX
 	case PV_EFM:	return *curbuf->b_p_efm != NUL
 				    ? (char_u *)&(curbuf->b_p_efm) : p->var;
@@ -10873,6 +10881,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_inde = vim_strsave(p_inde);
 	    buf->b_p_indk = vim_strsave(p_indk);
 #endif
+	    buf->b_p_fp = empty_option;
 #if defined(FEAT_EVAL)
 	    buf->b_p_fex = vim_strsave(p_fex);
 #endif

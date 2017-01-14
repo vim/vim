@@ -2097,6 +2097,7 @@ struct file_buffer
     long_u	b_p_inde_flags;	/* flags for 'indentexpr' */
     char_u	*b_p_indk;	/* 'indentkeys' */
 #endif
+    char_u	*b_p_fp;	/* 'formatprg' */
 #if defined(FEAT_EVAL)
     char_u	*b_p_fex;	/* 'formatexpr' */
     long_u	b_p_fex_flags;	/* flags for 'formatexpr' */
