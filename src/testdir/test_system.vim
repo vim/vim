@@ -48,6 +48,10 @@ function! Test_System()
 endfunction
 
 function! Test_system_exmode()
+  if !has('unix')
+    return
+  endif
+
   let cmd=" -es -u NONE -c 'source Xscript' +q; echo $?"
   " Need to put this in a script, "catch" isn't found after an unknown
   " function.
