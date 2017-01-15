@@ -35,9 +35,9 @@ typedef struct tag_pointers
 } tagptrs_T;
 
 /*
- * The matching tags are first stored in ga_match[].  In which one depends on
- * the priority of the match.
- * At the end, the matches from ga_match[] are concatenated, to make a list
+ * The matching tags are first stored in one of the ht_match[] hash tables.  In
+ * which one depends on the priority of the match.
+ * At the end, all the matches from ht_match[] are concatenated, to make a list
  * sorted on priority.
  */
 #define MT_ST_CUR	0		/* static match in current file */
@@ -1341,12 +1341,9 @@ find_tags(
     int		is_etag;		/* current file is emaces style */
 #endif
 
-    struct match_found
-    {
-	int	len;		/* nr of chars of match[] to be compared */
-	char_u	match[1];	/* actually longer */
-    } *mfp, *mfp2;
-    garray_T	ga_match[MT_COUNT];
+    char_u	*mfp;
+    hashtab_T	ht_match[MT_COUNT];
+    hash_T	hash = 0;
     int		match_count = 0;		/* number of matches found */
     char_u	**matches;
     int		mtt;
@@ -1402,16 +1399,16 @@ find_tags(
     vimconv.vc_type = CONV_NONE;
 #endif
 
-/*
- * Allocate memory for the buffers that are used
- */
+    /*
+     * Allocate memory for the buffers that are used
+     */
     lbuf = alloc(lbuf_size);
     tag_fname = alloc(MAXPATHL + 1);
 #ifdef FEAT_EMACS_TAGS
     ebuf = alloc(LSIZE);
 #endif
     for (mtt = 0; mtt < MT_COUNT; ++mtt)
-	ga_init2(&ga_match[mtt], (int)sizeof(struct match_found *), 100);
+	hash_init(&ht_match[mtt]);
 
     /* check for out of memory situation */
     if (lbuf == NULL || tag_fname == NULL
@@ -2206,10 +2203,12 @@ parse_line:
 	    }
 
 	    /*
-	     * If a match is found, add it to ga_match[].
+	     * If a match is found, add it to ht_match[].
 	     */
 	    if (match)
 	    {
+		int len = 0;
+
 #ifdef FEAT_CSCOPE
 		if (use_cscope)
 		{
@@ -2262,179 +2261,169 @@ parse_line:
 		}
 
 		/*
-		 * Add the found match in ga_match[mtt], avoiding duplicates.
+		 * Add the found match in ht_match[mtt].
 		 * Store the info we need later, which depends on the kind of
 		 * tags we are dealing with.
 		 */
-		if (ga_grow(&ga_match[mtt], 1) == OK)
+		if (help_only)
 		{
-		    int len;
-		    int heuristic;
-
-		    if (help_only)
-		    {
 #ifdef FEAT_MULTI_LANG
 # define ML_EXTRA 3
 #else
 # define ML_EXTRA 0
 #endif
-			/*
-			 * Append the help-heuristic number after the
-			 * tagname, for sorting it later.
-			 */
-			*tagp.tagname_end = NUL;
-			len = (int)(tagp.tagname_end - tagp.tagname);
-			mfp = (struct match_found *)
-				 alloc((int)sizeof(struct match_found) + len
-							     + 10 + ML_EXTRA);
-			if (mfp != NULL)
-			{
-			    /* "len" includes the language and the NUL, but
-			     * not the priority. */
-			    mfp->len = len + ML_EXTRA + 1;
-#define ML_HELP_LEN 6
-			    p = mfp->match;
-			    STRCPY(p, tagp.tagname);
-#ifdef FEAT_MULTI_LANG
-			    p[len] = '@';
-			    STRCPY(p + len + 1, help_lang);
-#endif
-
-			    heuristic = help_heuristic(tagp.tagname,
-					match_re ? matchoff : 0, !match_no_ic);
-#ifdef FEAT_MULTI_LANG
-			    heuristic += help_pri;
-#endif
-			    sprintf((char *)p + len + 1 + ML_EXTRA, "%06d",
-								   heuristic);
-			}
-			*tagp.tagname_end = TAB;
-		    }
-		    else if (name_only)
+		    /*
+		     * Append the help-heuristic number after the tagname, for
+		     * sorting it later.  The heuristic is ignored for
+		     * detecting duplicates.
+		     * The format is {tagname}@{lang}NUL{heuristic}NUL
+		     */
+		    *tagp.tagname_end = NUL;
+		    len = (int)(tagp.tagname_end - tagp.tagname);
+		    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 10 + ML_EXTRA + 1);
+		    if (mfp != NULL)
 		    {
-			if (get_it_again)
+			int heuristic;
+
+			p = mfp;
+			STRCPY(p, tagp.tagname);
+#ifdef FEAT_MULTI_LANG
+			p[len] = '@';
+			STRCPY(p + len + 1, help_lang);
+#endif
+
+			heuristic = help_heuristic(tagp.tagname,
+				    match_re ? matchoff : 0, !match_no_ic);
+#ifdef FEAT_MULTI_LANG
+			heuristic += help_pri;
+#endif
+			sprintf((char *)p + len + 1 + ML_EXTRA, "%06d",
+							       heuristic);
+		    }
+		    *tagp.tagname_end = TAB;
+		}
+		else if (name_only)
+		{
+		    if (get_it_again)
+		    {
+			char_u *temp_end = tagp.command;
+
+			if (*temp_end == '/')
+			    while (*temp_end && *temp_end != '\r'
+				    && *temp_end != '\n'
+				    && *temp_end != '$')
+				temp_end++;
+
+			if (tagp.command + 2 < temp_end)
 			{
-			    char_u *temp_end = tagp.command;
-
-			    if (*temp_end == '/')
-				while (*temp_end && *temp_end != '\r'
-					&& *temp_end != '\n'
-					&& *temp_end != '$')
-				    temp_end++;
-
-			    if (tagp.command + 2 < temp_end)
-			    {
-				len = (int)(temp_end - tagp.command - 2);
-				mfp = (struct match_found *)alloc(
-					(int)sizeof(struct match_found) + len);
-				if (mfp != NULL)
-				{
-				    mfp->len = len + 1; /* include the NUL */
-				    p = mfp->match;
-				    vim_strncpy(p, tagp.command + 2, len);
-				}
-			    }
-			    else
-				mfp = NULL;
-			    get_it_again = FALSE;
+			    len = (int)(temp_end - tagp.command - 2);
+			    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+			    if (mfp != NULL)
+				vim_strncpy(mfp, tagp.command + 2, len);
 			}
 			else
-			{
-			    len = (int)(tagp.tagname_end - tagp.tagname);
-			    mfp = (struct match_found *)alloc(
-				       (int)sizeof(struct match_found) + len);
-			    if (mfp != NULL)
-			    {
-				mfp->len = len + 1; /* include the NUL */
-				p = mfp->match;
-				vim_strncpy(p, tagp.tagname, len);
-			    }
-
-			    /* if wanted, re-read line to get long form too */
-			    if (State & INSERT)
-				get_it_again = p_sft;
-			}
+			    mfp = NULL;
+			get_it_again = FALSE;
 		    }
 		    else
 		    {
-			/* Save the tag in a buffer.
-			 * Emacs tag: <mtt><tag_fname><NUL><ebuf><NUL><lbuf>
-			 * other tag: <mtt><tag_fname><NUL><NUL><lbuf>
-			 * without Emacs tags: <mtt><tag_fname><NUL><lbuf>
-			 */
-			len = (int)STRLEN(tag_fname)
-						 + (int)STRLEN(lbuf) + 3;
-#ifdef FEAT_EMACS_TAGS
-			if (is_etag)
-			    len += (int)STRLEN(ebuf) + 1;
-			else
-			    ++len;
-#endif
-			mfp = (struct match_found *)alloc(
-				       (int)sizeof(struct match_found) + len);
+			len = (int)(tagp.tagname_end - tagp.tagname);
+			mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
 			if (mfp != NULL)
-			{
-			    mfp->len = len;
-			    p = mfp->match;
-			    p[0] = mtt;
-			    STRCPY(p + 1, tag_fname);
-#ifdef BACKSLASH_IN_FILENAME
-			    /* Ignore differences in slashes, avoid adding
-			     * both path/file and path\file. */
-			    slash_adjust(p + 1);
-#endif
-			    s = p + 1 + STRLEN(tag_fname) + 1;
-#ifdef FEAT_EMACS_TAGS
-			    if (is_etag)
-			    {
-				STRCPY(s, ebuf);
-				s += STRLEN(ebuf) + 1;
-			    }
-			    else
-				*s++ = NUL;
-#endif
-			    STRCPY(s, lbuf);
-			}
-		    }
+			    vim_strncpy(mfp, tagp.tagname, len);
 
-		    if (mfp != NULL)
-		    {
-			/*
-			 * Don't add identical matches.
-			 * This can take a lot of time when finding many
-			 * matches, check for CTRL-C now and then.
-			 * Add all cscope tags, because they are all listed.
-			 */
-#ifdef FEAT_CSCOPE
-			if (use_cscope)
-			    i = -1;
-			else
-#endif
-			  for (i = ga_match[mtt].ga_len; --i >= 0 && !got_int; )
-			  {
-			      mfp2 = ((struct match_found **)
-						  (ga_match[mtt].ga_data))[i];
-			      if (mfp2->len == mfp->len
-				      && memcmp(mfp2->match, mfp->match,
-						       (size_t)mfp->len) == 0)
-				  break;
-			      fast_breakcheck();
-			  }
-			if (i < 0)
-			{
-			    ((struct match_found **)(ga_match[mtt].ga_data))
-					       [ga_match[mtt].ga_len++] = mfp;
-			    ++match_count;
-			}
-			else
-			    vim_free(mfp);
+			/* if wanted, re-read line to get long form too */
+			if (State & INSERT)
+			    get_it_again = p_sft;
 		    }
 		}
-		else    /* Out of memory! Just forget about the rest. */
+		else
 		{
-		    retval = OK;
-		    stop_searching = TRUE;
-		    break;
+#define TAG_SEP 0x01
+		    size_t tag_fname_len = STRLEN(tag_fname);
+#ifdef FEAT_EMACS_TAGS
+		    size_t ebuf_len = 0;
+#endif
+
+		    /* Save the tag in a buffer.
+		     * Use 0x01 to separate fields (Can't use NUL, because the
+		     * hash key is terminated by NUL).
+		     * Emacs tag: <mtt><tag_fname><0x01><ebuf><0x01><lbuf><NUL>
+		     * other tag: <mtt><tag_fname><0x01><0x01><lbuf><NUL>
+		     * without Emacs tags: <mtt><tag_fname><0x01><lbuf><NUL>
+		     */
+		    len = (int)tag_fname_len + (int)STRLEN(lbuf) + 3;
+#ifdef FEAT_EMACS_TAGS
+		    if (is_etag)
+		    {
+			ebuf_len = STRLEN(ebuf);
+			len += (int)ebuf_len + 1;
+		    }
+		    else
+			++len;
+#endif
+		    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+		    if (mfp != NULL)
+		    {
+			p = mfp;
+			p[0] = mtt;
+			STRCPY(p + 1, tag_fname);
+#ifdef BACKSLASH_IN_FILENAME
+			/* Ignore differences in slashes, avoid adding
+			 * both path/file and path\file. */
+			slash_adjust(p + 1);
+#endif
+			p[tag_fname_len + 1] = TAG_SEP;
+			s = p + 1 + tag_fname_len + 1;
+#ifdef FEAT_EMACS_TAGS
+			if (is_etag)
+			{
+			    STRCPY(s, ebuf);
+			    s[ebuf_len] = TAG_SEP;
+			    s += ebuf_len + 1;
+			}
+			else
+			    *s++ = TAG_SEP;
+#endif
+			STRCPY(s, lbuf);
+		    }
+		}
+
+		if (mfp != NULL)
+		{
+		    hashitem_T	*hi;
+
+		    /*
+		     * Don't add identical matches.
+		     * Add all cscope tags, because they are all listed.
+		     * "mfp" is used as a hash key, there is a NUL byte to end
+		     * the part matters for comparing, more bytes may follow
+		     * after it.  E.g. help tags store the priority after the
+		     * NUL.
+		     */
+#ifdef FEAT_CSCOPE
+		    if (use_cscope)
+			hash++;
+		    else
+#endif
+			hash = hash_hash(mfp);
+		    hi = hash_lookup(&ht_match[mtt], mfp, hash);
+		    if (HASHITEM_EMPTY(hi))
+		    {
+			if (hash_add_item(&ht_match[mtt], hi, mfp, hash)
+								       == FAIL)
+			{
+			    /* Out of memory! Just forget about the rest. */
+			    retval = OK;
+			    stop_searching = TRUE;
+			    break;
+			}
+			else
+			    ++match_count;
+		    }
+		    else
+			/* duplicate tag, drop it */
+			vim_free(mfp);
 		}
 	    }
 #ifdef FEAT_CSCOPE
@@ -2532,7 +2521,7 @@ findtag_end:
 #endif
 
     /*
-     * Move the matches from the ga_match[] arrays into one list of
+     * Move the matches from the ht_match[] arrays into one list of
      * matches.  When retval == FAIL, free the matches.
      */
     if (retval == FAIL)
@@ -2546,22 +2535,29 @@ findtag_end:
     match_count = 0;
     for (mtt = 0; mtt < MT_COUNT; ++mtt)
     {
-	for (i = 0; i < ga_match[mtt].ga_len; ++i)
+	hashitem_T	*hi;
+	long_u		todo;
+
+	todo = (long)ht_match[mtt].ht_used;
+	for (hi = ht_match[mtt].ht_array; todo > 0; ++hi)
 	{
-	    mfp = ((struct match_found **)(ga_match[mtt].ga_data))[i];
-	    if (matches == NULL)
-		vim_free(mfp);
-	    else
+	    if (!HASHITEM_EMPTY(hi))
 	    {
-		/* To avoid allocating memory again we turn the struct
-		 * match_found into a string.  For help the priority was not
-		 * included in the length. */
-		mch_memmove(mfp, mfp->match,
-			 (size_t)(mfp->len + (help_only ? ML_HELP_LEN : 0)));
-		matches[match_count++] = (char_u *)mfp;
+		mfp = hi->hi_key;
+		if (matches == NULL)
+		    vim_free(mfp);
+		else
+		{
+		    /* now change the TAG_SEP back to NUL */
+		    for (p = mfp; *p != NUL; ++p)
+			if (*p == TAG_SEP)
+			    *p = NUL;
+		    matches[match_count++] = (char_u *)mfp;
+		}
+		todo--;
 	    }
 	}
-	ga_clear(&ga_match[mtt]);
+	hash_clear(&ht_match[mtt]);
     }
 
     *matchesp = matches;
