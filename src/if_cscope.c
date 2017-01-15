@@ -207,7 +207,7 @@ set_context_in_cscope_cmd(
     static void
 do_cscope_general(
     exarg_T	*eap,
-    int		make_split) /* whether to split window */
+    int		make_split UNUSED) /* whether to split window */
 {
     cscmd_T *cmdp;
 
