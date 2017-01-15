@@ -2147,6 +2147,7 @@ test_arglist \
 	test_partial \
 	test_perl \
 	test_popup \
+	test_profile \
 	test_quickfix \
 	test_regexp_latin \
 	test_regexp_utf8 \
