@@ -2841,17 +2841,15 @@ do_check_cursorbind(void)
 	    restart_edit_save = restart_edit;
 	    restart_edit = TRUE;
 	    check_cursor();
-# ifdef FEAT_SYN_HL
-	    if (curwin->w_p_cuc)
+	    if (curwin->w_p_cul || curwin->w_p_cuc)
 		validate_cursor();
-# endif
 	    restart_edit = restart_edit_save;
 # ifdef FEAT_MBYTE
 	    /* Correct cursor for multi-byte character. */
 	    if (has_mbyte)
 		mb_adjust_cursor();
 # endif
-	    redraw_later(curwin->w_p_cul ? NOT_VALID : VALID);
+	    redraw_later(VALID);
 
 	    /* Only scroll when 'scrollbind' hasn't done this. */
 	    if (!curwin->w_p_scb)
