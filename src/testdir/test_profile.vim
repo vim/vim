@@ -4,6 +4,9 @@ if !has('profile')
 endif
 
 func Test_profile_func()
+  if !has('unix')
+    return
+  endif
   let lines = [
     \ "func! Foo1()",
     \ "endfunc",
@@ -13,6 +16,8 @@ func Test_profile_func()
     \ "    let count = count - 1",
     \ "  endwhile",
     \ "endfunc",
+    \ "func! Foo3()",
+    \ "endfunc",
     \ "func! Bar()",
     \ "endfunc",
     \ "call Foo1()",
@@ -21,7 +26,12 @@ func Test_profile_func()
     \ "call Foo1()",
     \ "profile continue",
     \ "call Foo2()",
+    \ "call Foo3()",
     \ "call Bar()",
+    \ "if !v:profiling",
+    \ "  delfunc Foo2",
+    \ "endif",
+    \ "delfunc Foo3"
     \ ]
 
   call writefile(lines, 'Xprofile_func.vim')
@@ -39,11 +49,13 @@ func Test_profile_func()
   call assert_equal('FUNCTION  Foo2()', lines[7])
   call assert_equal('Called 1 time',    lines[8])
 
-  " - Foo2() should come before Foo1() since Foo1() does much more work.
   " - Foo1() is called 3 times but should be reported as called twice
   "   since one call is in between "profile pause" .. "profile continue".
-  " - Function Bar() which is called is not expected to be profiled since
-  "   it does not match "profile func Foo*".
+  " - Foo2() should come before Foo1() since Foo1() does much more work.\
+  " - Foo3() is not reported because function is deleted.
+  " - Unlike Foo3(), Foo2() should not be deleted since there is a check
+  "   for v:profiling.
+  " - Bar() is not reported since it does not match "profile func Foo*".
   call assert_equal('FUNCTIONS SORTED ON TOTAL TIME',        lines[18])
   call assert_equal('count  total (s)   self (s)  function', lines[19])
   call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Foo2()$',        lines[20])
@@ -60,10 +72,17 @@ func Test_profile_func()
 endfunc
 
 func Test_profile_file()
+  if !has('unix')
+    return
+  endif
   let lines = [
-    \ "func! Foo()",
-    \ "endfunc",
-    \ "call Foo()"
+    \ 'func! Foo()',
+    \ 'endfunc',
+    \ 'for i in range(10)',
+    \ '  " a comment',
+    \ '  call Foo()',
+    \ 'endfor',
+    \ 'call Foo()'
     \ ]
 
   call writefile(lines, 'Xprofile_file.vim')
@@ -73,20 +92,27 @@ func Test_profile_file()
     \ . " -c 'profile file Xprofile_file.vim'"
     \ . " -c 'so Xprofile_file.vim'"
     \ . " -c 'so Xprofile_file.vim'")
+
   let lines = readfile('Xprofile_file.log')
 
-  call assert_equal(10, len(lines))
+  call assert_equal(14, len(lines))
 
-  call assert_match('SCRIPT .*Xprofile_file.vim',                       lines[0])
-  call assert_equal('Sourced 2 times',                                  lines[1])
-  call assert_match('Total time:\s\+\d\+\.\d\+',                        lines[2])
-  call assert_match(' Self time:\s\+\d\+\.\d\+',                        lines[3])
-  call assert_equal('',                                                 lines[4])
-  call assert_equal('count  total (s)   self (s)',                      lines[5])
-  call assert_equal('                            func! Foo()',          lines[6])
-  call assert_equal('                            endfunc',              lines[7])
-  call assert_match('^\s*2\s\+\d\+\.\d\+\s\+\d\+\.\d\+\s\+call Foo()$', lines[8])
-  call assert_equal('', lines[9])
+  call assert_match('^SCRIPT .*Xprofile_file.vim$',                      lines[0])
+  call assert_equal('Sourced 2 times',                                   lines[1])
+  call assert_match('^Total time:\s\+\d\+\.\d\+$',                       lines[2])
+  call assert_match('^ Self time:\s\+\d\+\.\d\+$',                       lines[3])
+  call assert_equal('',                                                  lines[4])
+  call assert_equal('count  total (s)   self (s)',                       lines[5])
+  call assert_equal('                            func! Foo()',           lines[6])
+  call assert_equal('                            endfunc',               lines[7])
+  " Loop iterates 10 times. Since script runs twice, body executes 20 times.
+  " First line of loop executes one more time than body to detect end of loop.
+  call assert_match('^\s*22\s\+\d\+\.\d\+\s\+for i in range(10)$',       lines[8])
+  call assert_equal('                              " a comment',         lines[9])
+  call assert_match('^\s*20\s\+\d\+\.\d\+\s\+\d\+\.\d\+\s\+call Foo()$', lines[10])
+  call assert_match('^\s*20\s\+\d\+\.\d\+\s\+endfor$',                   lines[11])
+  call assert_match('^\s*2\s\+\d\+\.\d\+\s\+\d\+\.\d\+\s\+call Foo()$',  lines[12])
+  call assert_equal('',                                                  lines[13])
 
   call delete('Xprofile_file.vim')
   call delete('Xprofile_file.log')
@@ -96,7 +122,7 @@ func Test_profile_completion()
   call feedkeys(":profile \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"profile continue file func pause start', @:)
 
-  call feedkeys(":profile start \<C-A>\<C-B>\"\<CR>", 'tx')
+  call feedkeys(":profile start test_prof\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match('^"profile start .* test_profile\.vim ', @:)
 endfunc
 
