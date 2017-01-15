@@ -1098,6 +1098,7 @@ struct stl_hlrec
 typedef struct hashitem_S
 {
     long_u	hi_hash;	/* cached hash number of hi_key */
+    size_t	hi_keylen;
     char_u	*hi_key;
 } hashitem_T;
 
