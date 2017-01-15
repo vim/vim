@@ -4,6 +4,9 @@ if !has('profile')
 endif
 
 func Test_profile_func()
+  if !has('unix')
+    return
+  endif
   let lines = [
     \ "func! Foo1()",
     \ "endfunc",
@@ -32,7 +35,7 @@ func Test_profile_func()
     \ ]
 
   call writefile(lines, 'Xprofile_func.vim')
-  let a = system(v:progpath
+  call system(v:progpath
     \ . " -es -u NONE -U NONE -i NONE --noplugin"
     \ . " -c 'profile start Xprofile_func.log'"
     \ . " -c 'profile func Foo*'"
@@ -85,6 +88,9 @@ func Test_profile_func()
 endfunc
 
 func Test_profile_file()
+  if !has('unix')
+    return
+  endif
   let lines = [
     \ 'func! Foo()',
     \ 'endfunc',
@@ -96,7 +102,7 @@ func Test_profile_file()
     \ ]
 
   call writefile(lines, 'Xprofile_file.vim')
-  let a = system(v:progpath
+  call system(v:progpath
     \ . " -es -u NONE -U NONE -i NONE --noplugin"
     \ . " -c 'profile start Xprofile_file.log'"
     \ . " -c 'profile file Xprofile_file.vim'"
