@@ -3,7 +3,7 @@ if !has('profile')
   finish
 endif
 
-func Test_profile()
+func Test_profile_func()
   let lines = [
     \ "func! Foo1()",
     \ "endfunc",
@@ -24,13 +24,15 @@ func Test_profile()
     \ "call Bar()",
     \ ]
 
-  call writefile(lines, 'Xprofile.vim')
+  call writefile(lines, 'Xprofile_func.vim')
   let a = system(v:progpath
-    \ . " -u NONE -i NONE --noplugin "
-    \ . "-c 'profile start Xprofile.log' "
-    \ . "-c 'profile func Foo*' "
-    \ . "-c 'so Xprofile.vim'")
-  let lines = readfile('Xprofile.log')
+    \ . " -u NONE -i NONE --noplugin"
+    \ . " -c 'profile start Xprofile_func.log'"
+    \ . " -c 'profile func Foo*'"
+    \ . " -c 'so Xprofile_func.vim'")
+  let lines = readfile('Xprofile_func.log')
+
+  call assert_equal(28, len(lines))
 
   call assert_equal('FUNCTION  Foo1()', lines[0])
   call assert_equal('Called 2 times',   lines[1])
@@ -53,8 +55,41 @@ func Test_profile()
   call assert_match('^\s*2\s\+\d\+\.\d\+\s\+Foo1()$',        lines[26])
   call assert_equal('',                                      lines[27])
 
-  call delete('Xprofile.vim')
-  call delete('Xprofile.log')
+  call delete('Xprofile_func.vim')
+  call delete('Xprofile_func.log')
+endfunc
+
+func Test_profile_file()
+  let lines = [
+    \ "func! Foo()",
+    \ "endfunc",
+    \ "call Foo()"
+    \ ]
+
+  call writefile(lines, 'Xprofile_file.vim')
+  let a = system(v:progpath
+    \ . " -u NONE -i NONE --noplugin"
+    \ . " -c 'profile start Xprofile_file.log'"
+    \ . " -c 'profile file Xprofile_file.vim'"
+    \ . " -c 'so Xprofile_file.vim'"
+    \ . " -c 'so Xprofile_file.vim'")
+  let lines = readfile('Xprofile_file.log')
+
+  call assert_equal(10, len(lines))
+
+  call assert_match('SCRIPT .*Xprofile_file.vim',                       lines[0])
+  call assert_equal('Sourced 2 times',                                  lines[1])
+  call assert_match('Total time:\s\+\d\+\.\d\+',                        lines[2])
+  call assert_match(' Self time:\s\+\d\+\.\d\+',                        lines[3])
+  call assert_equal('',                                                 lines[4])
+  call assert_equal('count  total (s)   self (s)',                      lines[5])
+  call assert_equal('                            func! Foo()',          lines[6])
+  call assert_equal('                            endfunc',              lines[7])
+  call assert_match('^\s*2\s\+\d\+\.\d\+\s\+\d\+\.\d\+\s\+call Foo()$', lines[8])
+  call assert_equal('', lines[9])
+
+  call delete('Xprofile_file.vim')
+  call delete('Xprofile_file.log')
 endfunc
 
 func Test_profile_completion()
