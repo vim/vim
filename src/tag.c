@@ -2280,7 +2280,7 @@ parse_line:
 		     */
 		    *tagp.tagname_end = NUL;
 		    len = (int)(tagp.tagname_end - tagp.tagname);
-		    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 10 + ML_EXTRA + 1);
+		    mfp = (char_u *)alloc(len + 10 + ML_EXTRA + 1);
 		    if (mfp != NULL)
 		    {
 			int heuristic;
@@ -2317,7 +2317,7 @@ parse_line:
 			if (tagp.command + 2 < temp_end)
 			{
 			    len = (int)(temp_end - tagp.command - 2);
-			    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+			    mfp = (char_u *)alloc(len + 1);
 			    if (mfp != NULL)
 				vim_strncpy(mfp, tagp.command + 2, len);
 			}
@@ -2328,7 +2328,7 @@ parse_line:
 		    else
 		    {
 			len = (int)(tagp.tagname_end - tagp.tagname);
-			mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+			mfp = (char_u *)alloc(len + 1);
 			if (mfp != NULL)
 			    vim_strncpy(mfp, tagp.tagname, len);
 
@@ -2362,7 +2362,7 @@ parse_line:
 		    else
 			++len;
 #endif
-		    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+		    mfp = (char_u *)alloc(len + 1);
 		    if (mfp != NULL)
 		    {
 			p = mfp;
@@ -2549,7 +2549,7 @@ findtag_end:
 		else
 		{
 		    /* now change the TAG_SEP back to NUL */
-		    for (p = mfp; *p != NUL; ++p)
+		    for (p = mfp + 1; *p != NUL; ++p)
 			if (*p == TAG_SEP)
 			    *p = NUL;
 		    matches[match_count++] = (char_u *)mfp;
