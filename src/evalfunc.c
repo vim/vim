@@ -6859,10 +6859,8 @@ f_len(typval_T *argvars, typval_T *rettv)
     }
 }
 
-static void libcall_common(typval_T *argvars, typval_T *rettv, int type);
-
     static void
-libcall_common(typval_T *argvars, typval_T *rettv, int type)
+libcall_common(typval_T *argvars UNUSED, typval_T *rettv, int type)
 {
 #ifdef FEAT_LIBCALL
     char_u		*string_in;

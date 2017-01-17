@@ -6918,7 +6918,7 @@ mch_libcall(
 	    if (argstring != NULL)
 	    {
 # if defined(USE_DLOPEN)
-		ProcAdd = (STRPROCSTR)dlsym(hinstLib, (const char *)funcname);
+		*(void **)(&ProcAdd) = dlsym(hinstLib, (const char *)funcname);
 		dlerr = (char *)dlerror();
 # else
 		if (shl_findsym(&hinstLib, (const char *)funcname,
@@ -6940,7 +6940,7 @@ mch_libcall(
 	    else
 	    {
 # if defined(USE_DLOPEN)
-		ProcAddI = (INTPROCSTR)dlsym(hinstLib, (const char *)funcname);
+		*(void **)(&ProcAddI) = dlsym(hinstLib, (const char *)funcname);
 		dlerr = (char *)dlerror();
 # else
 		if (shl_findsym(&hinstLib, (const char *)funcname,
