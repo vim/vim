@@ -462,7 +462,7 @@ static void syn_clear_keyword(int id, hashtab_T *ht);
 static void clear_keywtab(hashtab_T *ht);
 static void add_keyword(char_u *name, int id, int flags, short *cont_in_list, short *next_list, int conceal_char);
 static char_u *get_group_name(char_u *arg, char_u **name_end);
-static char_u *get_syn_options(char_u *arg, syn_opt_arg_T *opt, int *conceal_char);
+static char_u *get_syn_options(char_u *arg, syn_opt_arg_T *opt, int *conceal_char, int skip);
 static void syn_cmd_include(exarg_T *eap, int syncing);
 static void syn_cmd_iskeyword(exarg_T *eap, int syncing);
 static void syn_cmd_keyword(exarg_T *eap, int syncing);
@@ -481,7 +481,7 @@ static int syn_add_cluster(char_u *name);
 static void init_syn_patterns(void);
 static char_u *get_syn_pattern(char_u *arg, synpat_T *ci);
 static void syn_cmd_sync(exarg_T *eap, int syncing);
-static int get_id_list(char_u **arg, int keylen, short **list);
+static int get_id_list(char_u **arg, int keylen, short **list, int skip);
 static void syn_combine_list(short **clstr1, short **clstr2, int list_op);
 static void syn_incl_toplevel(int id, int *flagsp);
 
@@ -3434,7 +3434,14 @@ syn_cmd_conceal(exarg_T *eap UNUSED, int syncing UNUSED)
 	return;
 
     next = skiptowhite(arg);
-    if (STRNICMP(arg, "on", 2) == 0 && next - arg == 2)
+    if (*arg == NUL)
+    {
+	if (curwin->w_s->b_syn_conceal)
+	    MSG(_("syn conceal on"));
+	else
+	    MSG(_("syn conceal off"));
+    }
+    else if (STRNICMP(arg, "on", 2) == 0 && next - arg == 2)
 	curwin->w_s->b_syn_conceal = TRUE;
     else if (STRNICMP(arg, "off", 3) == 0 && next - arg == 3)
 	curwin->w_s->b_syn_conceal = FALSE;
@@ -3457,7 +3464,14 @@ syn_cmd_case(exarg_T *eap, int syncing UNUSED)
 	return;
 
     next = skiptowhite(arg);
-    if (STRNICMP(arg, "match", 5) == 0 && next - arg == 5)
+    if (*arg == NUL)
+    {
+	if (curwin->w_s->b_syn_ic)
+	    MSG(_("syntax case ignore"));
+	else
+	    MSG(_("syntax case match"));
+    }
+    else if (STRNICMP(arg, "match", 5) == 0 && next - arg == 5)
 	curwin->w_s->b_syn_ic = FALSE;
     else if (STRNICMP(arg, "ignore", 6) == 0 && next - arg == 6)
 	curwin->w_s->b_syn_ic = TRUE;
@@ -3479,7 +3493,16 @@ syn_cmd_spell(exarg_T *eap, int syncing UNUSED)
 	return;
 
     next = skiptowhite(arg);
-    if (STRNICMP(arg, "toplevel", 8) == 0 && next - arg == 8)
+    if (*arg == NUL)
+    {
+	if (curwin->w_s->b_syn_spell == SYNSPL_TOP)
+	    MSG(_("syntax spell toplevel"));
+	else if (curwin->w_s->b_syn_spell == SYNSPL_NOTOP)
+	    MSG(_("syntax spell notoplevel"));
+	else
+	    MSG(_("syntax spell default"));
+    }
+    else if (STRNICMP(arg, "toplevel", 8) == 0 && next - arg == 8)
 	curwin->w_s->b_syn_spell = SYNSPL_TOP;
     else if (STRNICMP(arg, "notoplevel", 10) == 0 && next - arg == 10)
 	curwin->w_s->b_syn_spell = SYNSPL_NOTOP;
@@ -3556,6 +3579,9 @@ syntax_clear(synblock_T *block)
     block->b_syn_ic = FALSE;	    /* Use case, by default */
     block->b_syn_spell = SYNSPL_DEFAULT; /* default spell checking */
     block->b_syn_containedin = FALSE;
+#ifdef FEAT_CONCEAL
+    block->b_syn_conceal = FALSE;
+#endif
 
     /* free the keywords */
     clear_keywtab(&block->b_keywtab);
@@ -4543,7 +4569,8 @@ get_group_name(
 get_syn_options(
     char_u	    *arg,		/* next argument to be checked */
     syn_opt_arg_T   *opt,		/* various things */
-    int		    *conceal_char UNUSED)
+    int		    *conceal_char UNUSED,
+    int		    skip)		/* TRUE if skipping over command */
 {
     char_u	*gname_start, *gname;
     int		syn_id;
@@ -4626,17 +4653,17 @@ get_syn_options(
 		EMSG(_("E395: contains argument not accepted here"));
 		return NULL;
 	    }
-	    if (get_id_list(&arg, 8, &opt->cont_list) == FAIL)
+	    if (get_id_list(&arg, 8, &opt->cont_list, skip) == FAIL)
 		return NULL;
 	}
 	else if (flagtab[fidx].argtype == 2)
 	{
-	    if (get_id_list(&arg, 11, &opt->cont_in_list) == FAIL)
+	    if (get_id_list(&arg, 11, &opt->cont_in_list, skip) == FAIL)
 		return NULL;
 	}
 	else if (flagtab[fidx].argtype == 3)
 	{
-	    if (get_id_list(&arg, 9, &opt->next_list) == FAIL)
+	    if (get_id_list(&arg, 9, &opt->next_list, skip) == FAIL)
 		return NULL;
 	}
 	else if (flagtab[fidx].argtype == 11 && arg[5] == '=')
@@ -4846,7 +4873,10 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 
     if (rest != NULL)
     {
-	syn_id = syn_check_group(arg, (int)(group_name_end - arg));
+	if (eap->skip)
+	    syn_id = -1;
+	else
+	    syn_id = syn_check_group(arg, (int)(group_name_end - arg));
 	if (syn_id != 0)
 	    /* allocate a buffer, for removing backslashes in the keyword */
 	    keyword_copy = alloc((unsigned)STRLEN(rest) + 1);
@@ -4868,7 +4898,8 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 	    p = keyword_copy;
 	    for ( ; rest != NULL && !ends_excmd(*rest); rest = skipwhite(rest))
 	    {
-		rest = get_syn_options(rest, &syn_opt_arg, &conceal_char);
+		rest = get_syn_options(rest, &syn_opt_arg, &conceal_char,
+								    eap->skip);
 		if (rest == NULL || ends_excmd(*rest))
 		    break;
 		/* Copy the keyword, removing backslashes, and add a NUL. */
@@ -4981,7 +5012,7 @@ syn_cmd_match(
     syn_opt_arg.cont_list = NULL;
     syn_opt_arg.cont_in_list = NULL;
     syn_opt_arg.next_list = NULL;
-    rest = get_syn_options(rest, &syn_opt_arg, &conceal_char);
+    rest = get_syn_options(rest, &syn_opt_arg, &conceal_char, eap->skip);
 
     /* get the pattern. */
     init_syn_patterns();
@@ -4991,7 +5022,7 @@ syn_cmd_match(
 	syn_opt_arg.flags |= HL_HAS_EOL;
 
     /* Get options after the pattern */
-    rest = get_syn_options(rest, &syn_opt_arg, &conceal_char);
+    rest = get_syn_options(rest, &syn_opt_arg, &conceal_char, eap->skip);
 
     if (rest != NULL)		/* all arguments are valid */
     {
@@ -5117,7 +5148,7 @@ syn_cmd_region(
     while (rest != NULL && !ends_excmd(*rest))
     {
 	/* Check for option arguments */
-	rest = get_syn_options(rest, &syn_opt_arg, &conceal_char);
+	rest = get_syn_options(rest, &syn_opt_arg, &conceal_char, eap->skip);
 	if (rest == NULL || ends_excmd(*rest))
 	    break;
 
@@ -5628,12 +5659,13 @@ syn_cmd_cluster(exarg_T *eap, int syncing UNUSED)
 		break;
 
 	    clstr_list = NULL;
-	    if (get_id_list(&rest, opt_len, &clstr_list) == FAIL)
+	    if (get_id_list(&rest, opt_len, &clstr_list, eap->skip) == FAIL)
 	    {
 		EMSG2(_(e_invarg2), rest);
 		break;
 	    }
-	    syn_combine_list(&SYN_CLSTR(curwin->w_s)[scl_id].scl_list,
+	    if (scl_id >= 0)
+		syn_combine_list(&SYN_CLSTR(curwin->w_s)[scl_id].scl_list,
 			     &clstr_list, list_op);
 	    got_clstr = TRUE;
 	}
@@ -5931,8 +5963,9 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 get_id_list(
     char_u	**arg,
     int		keylen,		/* length of keyword */
-    short	**list)		/* where to store the resulting list, if not
+    short	**list,		/* where to store the resulting list, if not
 				   NULL, the list is silently skipped! */
+    int		skip)
 {
     char_u	*p = NULL;
     char_u	*end;
@@ -6015,7 +6048,8 @@ get_id_list(
 	    }
 	    else if (name[1] == '@')
 	    {
-		id = syn_check_cluster(name + 2, (int)(end - p - 1));
+		if (!skip)
+		    id = syn_check_cluster(name + 2, (int)(end - p - 1));
 	    }
 	    else
 	    {
