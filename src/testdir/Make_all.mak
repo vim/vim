@@ -177,6 +177,7 @@ NEW_TESTS = test_arglist.res \
 	    test_perl.res \
 	    test_profile.res \
 	    test_quickfix.res \
+	    test_retab.res \
 	    test_ruby.res \
 	    test_search.res \
 	    test_signs.res \
