@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2016 Dec 10
+*version8.txt*  For Vim version 8.0.  Last change: 2017 Jan 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -230,6 +230,7 @@ Ex commands: ~
 Ex command modifiers: ~
 
 |:keeppatterns|		following command keeps search pattern history
+|<mods>|		supply command modifiers to user defined commands
 
 
 New and extended functions: ~

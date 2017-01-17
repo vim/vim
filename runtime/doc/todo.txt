@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Jan 09
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Jan 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,8 @@ entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+get_syn_options() does not respect skip in else part. (Zyx)
 
 +channel:
 - Try out background make plugin: 
@@ -120,27 +122,9 @@ What if there is an invalid character?
 
 Include rust files. (Klabnik, #1356)
 
-More float tests.  (Dominique, #1364)
-
-Patch to avoid ubsan warning for integer overflow. (Dominique, 2016 Dec 26)
-
-Bug: Json with same key should not give internal error. (Lcd, 2016 Oct 26)
-Make dict_add give a duplicate key error.
-
-Patch to make str2nr and str2float work with signed values.
-(Lemonbody, 2016 Dec 18, #1332)
-
-Should json_encode()/json_decode() restrict recursiveness?
-Or avoid recursiveness.
-
-Patch to fix UBSan error.  Is this actually needed?
-(Yegappan, 2016 Dec 18)
-
 Allow using json with empty key?  Dict already has it.
 
 Json string with trailing \u should be an error. (Lcd)
-
-Patch to reset ex_exitvalue after catch. (Christian Brabandt, 2016 Oct 23)
 
 Patch to deal with changed configure events in GTK 3. (Jan Alexander Steffens,
 2016 Oct 23 #1193)
@@ -158,6 +142,9 @@ Patch for :pyx, run python commands depending on the supported version.
 
 Patch to avoid warnings for overflow. (Mike Williams, 2016 Dec 16)
 Update Dec 19.
+
+When an item in the quickfix list has a file name that does not exist, behave
+like the item was not a match for :cnext.
 
 Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
@@ -219,9 +206,6 @@ Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
 Problem passing non-UTF-8 strings to Python 3. (Björn Linse, 2016 Sep 11,
 #1053)  With patch, does it work?
 
-Patch to make finding duplicate tags much faster, using a hashtab. (James
-McCoy, 2016 Sept 14, #1046)  Should work now.  Updated Nov 12.
->
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
 
@@ -250,6 +234,9 @@ Patch to make it possible to extend a list with itself.
 (Nikolai Pavlov, 2016 Sep 23)
 
 Patch to add Zstandard compressed file support. (Nick Terrell, 2016 Oct 24)
+
+Patch to add new regexp classes :ident:, :keyword:, :fname:.
+(ichizok, 2016 Jan 12, #1373)
 
 Patch to add trim() function. (Bukn, 2016 Nov 25, #1280)
 
@@ -474,6 +461,9 @@ Add configure check?
 Should use /usr/local/share/applications or /usr/share/applications.
 Or use $XDG_DATA_DIRS.
 Also need to run update-desktop-database (Kuriyama Kazunobu, 2015 Nov 4)
+
+Test object i{ and it do not behave the same. #1379
+Do not include the linebreak at the start?
 
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
@@ -972,11 +962,6 @@ highlighted as the cursor line.  (Alessandro Ivaldi, 2013 Jun 4)
 
 Two highlighting bugs. (ZyX, 2013 Aug 18)
 
-Patch to add the bufferlist() function. (Yegappan Lakshmanan, 2013 May 5)
-May 17: with winlist() and tabpagelist().
-May 19: with local variables.
-May 28: with options
-
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
 
@@ -1218,8 +1203,6 @@ right type.
 
 string() can't parse back "inf" and "nan".  Fix documentation or fix code?
 (ZyX, 2010 Aug 23)
-
-Make 'formatprg' global-local. (Sung Pae)
 
 When doing "redir => s:foo" in a script and then "redir END" somewhere else
 (e.g. in a function) it can't find s:foo.

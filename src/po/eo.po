@@ -5,7 +5,7 @@
 #
 # UNUA TRADUKISTO Dominique PELLE   <dominique.pelle ĉe gmail.com>
 # PROVLEGANTO(J)  Felipe CASTRO     <fefcas ĉe gmail.com>
-#                 Antono MECHELYNCK <antoine.mechelynck ĉe skynet.be>
+#                 Antono MECHELYNCK <antoine.mechelynck ĉe gmail.com>
 #                 Yves NEVELSTEEN
 #
 # Uzitaj vortaroj kaj fakvortaroj:
@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-26 20:54+0200\n"
-"PO-Revision-Date: 2016-08-26 20:30+0200\n"
+"POT-Creation-Date: 2017-01-16 00:30+0100\n"
+"PO-Revision-Date: 2017-01-16 01:14+0100\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -65,6 +65,9 @@ msgstr "E83: Ne eblas disponigi bufron, nun uzas alian..."
 
 msgid "E931: Buffer cannot be registered"
 msgstr "E931: Bufro ne povas esti registrita"
+
+msgid "E937: Attempt to delete a buffer that is in use"
+msgstr "E937: Provo de forviŝo de bufro, kiu estas uzanta"
 
 msgid "E515: No buffers were unloaded"
 msgstr "E515: Neniu bufro estis malŝargita"
@@ -269,7 +272,7 @@ msgid "E918: buffer must be loaded: %s"
 msgstr "E918: bufro devas esti ŝargita: %s"
 
 msgid "E821: File is encrypted with unknown method"
-msgstr "E821: Dosiero estas ĉifrata per nekonata metodo"
+msgstr "E821: Dosiero estas ĉifrita per nekonata metodo"
 
 msgid "Warning: Using a weak encryption method; see :help 'cm'"
 msgstr "Averto: uzo de malfortika ĉifrada metodo; vidu :help 'cm'"
@@ -1963,6 +1966,9 @@ msgstr "E462: Ne eblis prepari por reŝargi \"%s\""
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: Ne eblis reŝargi \"%s\""
 
+msgid "--Deleted--"
+msgstr "--Forviŝita--"
+
 #, c-format
 msgid "auto-removing autocommand: %s <buffer=%d>"
 msgstr "aŭto-forviŝas aŭtokomandon: %s <bufro=%d>"
@@ -1972,11 +1978,11 @@ msgstr "aŭto-forviŝas aŭtokomandon: %s <bufro=%d>"
 msgid "E367: No such group: \"%s\""
 msgstr "E367: Ne ekzistas tia grupo: \"%s\""
 
+msgid "E936: Cannot delete the current group"
+msgstr "E936: Ne eblas forviŝi la aktualan grupon"
+
 msgid "W19: Deleting augroup that is still in use"
 msgstr "W19: Forviŝo de augroup kiu estas ankoraŭ uzata"
-
-msgid "--Deleted--"
-msgstr "--Forviŝita--"
 
 #, c-format
 msgid "E215: Illegal character after *: %s"
@@ -2835,6 +2841,10 @@ msgstr ""
 "E251: Ecoj de registro de apero de VIM estas nevalide formata. Forviŝita!"
 
 #, c-format
+msgid "E938: Duplicate key in JSON: \"%s\""
+msgstr "E938: Ripetita ŝlosilo en JSON: \"%s\""
+
+#, c-format
 msgid "E696: Missing comma in List: %s"
 msgstr "E696: Mankas komo en Listo: %s"
 
@@ -3057,6 +3067,10 @@ msgstr "-T <terminalo>\tAgordi terminalon al <terminalo>"
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr ""
 "--not-a-term\t\tPreterpasi averton por enigo/eligo, kiu ne estas terminalo"
+
+msgid "--ttyfail\t\tExit if input or output is not a terminal"
+msgstr ""
+"--ttyfail\t\tEliri se le eniro aŭ eliro ne estas terminalo"
 
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <vimrc>\t\tUzi <vimrc> anstataŭ iun ajn .vimrc"
@@ -4453,9 +4467,6 @@ msgstr "ERARO DE ENIGO/ELIGO"
 
 msgid "Message"
 msgstr "Mesaĝo"
-
-msgid "'columns' is not 80, cannot execute external commands"
-msgstr "'columns' ne estas 80, ne eblas plenumi eksterajn komandojn"
 
 msgid "E237: Printer selection failed"
 msgstr "E237: Elekto de presilo malsukcesis"
@@ -5998,14 +6009,6 @@ msgstr "E133: \":return\" ekster funkcio"
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Mankas krampoj: %s"
 
-#. Only MS VC 4.1 and earlier can do Win32s
-msgid ""
-"\n"
-"MS-Windows 16/32-bit GUI version"
-msgstr ""
-"\n"
-"Grafika versio MS-Vindozo 16/32-bitoj"
-
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI version"
@@ -6305,13 +6308,6 @@ msgstr "tajpu  :help register<Enenklavo>  por pliaj informoj   "
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "menuo Helpo->Subteni/Registri     por pliaj informoj   "
 
-msgid "WARNING: Windows 95/98/ME detected"
-msgstr "AVERTO: Trovis Vindozon 95/98/ME"
-
-# DP: atentu al la spacetoj: ĉiuj ĉenoj devas havi la saman longon
-msgid "type  :help windows95<Enter>  for info on this"
-msgstr "tajpu  :help windows95<Enenklavo> por pliaj informoj   "
-
 msgid "Already only one window"
 msgstr "Jam nur unu fenestro"
 
@@ -6464,6 +6460,10 @@ msgstr "E236: La tiparo \"%s\" ne estas egallarĝa"
 
 msgid "E473: Internal error"
 msgstr "E473: Interna eraro"
+
+#, c-format
+msgid "E685: Internal error: %s"
+msgstr "E685: Interna eraro: %s"
 
 msgid "Interrupted"
 msgstr "Interrompita"
@@ -6744,10 +6744,6 @@ msgstr "E463: Regiono estas gardita, ne eblas ŝanĝi"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr "E744: NetBeans ne permesas ŝanĝojn en nurlegeblaj dosieroj"
-
-#, c-format
-msgid "E685: Internal error: %s"
-msgstr "E685: Interna eraro: %s"
 
 msgid "E363: pattern uses more memory than 'maxmempattern'"
 msgstr "E363: ŝablono uzas pli da memoro ol 'maxmempattern'"
