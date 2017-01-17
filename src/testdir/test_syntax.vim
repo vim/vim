@@ -186,6 +186,10 @@ func Test_syntax_arg_skipped()
     call assert_match('conceal on', execute('syntax conceal'))
     syn clear
     call assert_match('conceal off', execute('syntax conceal'))
+
+    syntax conceal on
+    syntax conceal off
+    call assert_match('conceal off', execute('syntax conceal'))
   endif
 
   syntax region Tar start=/</ end=/>/
@@ -283,8 +287,7 @@ func Test_syntax_arg_skipped()
   endif
   call assert_match('on C-style comments', execute('syntax sync'))
   call assert_match('maximal 5 lines', execute('syntax sync'))
-  syn clear
-  syn keyword Foo foo
+  syn sync clear
   if 0
     syn sync ccomment
   endif
@@ -293,3 +296,30 @@ func Test_syntax_arg_skipped()
   syn clear
 endfunc
 
+func Test_invalid_arg()
+  call assert_fails('syntax case asdf', 'E390:')
+  call assert_fails('syntax conceal asdf', 'E390:')
+  call assert_fails('syntax spell asdf', 'E390:')
+endfunc
+
+func Test_syn_sync()
+  syntax region HereGroup start=/this/ end=/that/
+  syntax sync match SyncHere grouphere HereGroup "pattern"
+  call assert_match('SyncHere', execute('syntax sync'))
+  syn sync clear
+  call assert_notmatch('SyncHere', execute('syntax sync'))
+  syn clear
+endfunc
+
+func Test_syn_clear()
+  syntax keyword Foo foo
+  syntax keyword Tar tar
+  call assert_match('Foo', execute('syntax'))
+  call assert_match('Tar', execute('syntax'))
+  syn clear Foo
+  call assert_notmatch('Foo', execute('syntax'))
+  call assert_match('Tar', execute('syntax'))
+  syn clear Foo Tar
+  call assert_notmatch('Foo', execute('syntax'))
+  call assert_notmatch('Tar', execute('syntax'))
+endfunc
