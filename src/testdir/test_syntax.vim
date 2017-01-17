@@ -156,6 +156,12 @@ func Test_syntax_completion()
   call feedkeys(":syn sync \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"syn sync ccomment clear fromstart linebreaks= linecont lines= match maxlines= minlines= region', @:)
 
+  " Check that clearing "Aap" avoids it showing up before Boolean.
+  hi Aap ctermfg=blue
+  call feedkeys(":syn list \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match('^"syn list Aap Boolean Character ', @:)
+  hi clear Aap
+
   call feedkeys(":syn list \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match('^"syn list Boolean Character ', @:)
 
@@ -192,11 +198,11 @@ func Test_syntax_arg_skipped()
     call assert_match('conceal off', execute('syntax conceal'))
   endif
 
-  syntax region Tar start=/</ end=/>/
+  syntax region Bar start=/</ end=/>/
   if 0
     syntax region NotTest start=/</ end=/>/ contains=@Spell
   endif
-  call assert_match('Tar', execute('syntax'))
+  call assert_match('Bar', execute('syntax'))
   call assert_notmatch('NotTest', execute('syntax'))
   call assert_notmatch('Spell', execute('syntax'))
 
@@ -206,6 +212,8 @@ func Test_syntax_arg_skipped()
     syntax rest
   endif
   call assert_equal(a, execute('hi Foo'))
+  hi clear Bar
+  hi clear Foo
 
   set ft=tags
   syn off
@@ -298,7 +306,9 @@ endfunc
 
 func Test_invalid_arg()
   call assert_fails('syntax case asdf', 'E390:')
-  call assert_fails('syntax conceal asdf', 'E390:')
+  if has('conceal')
+    call assert_fails('syntax conceal asdf', 'E390:')
+  endif
   call assert_fails('syntax spell asdf', 'E390:')
 endfunc
 
@@ -313,13 +323,15 @@ endfunc
 
 func Test_syn_clear()
   syntax keyword Foo foo
-  syntax keyword Tar tar
+  syntax keyword Bar tar
   call assert_match('Foo', execute('syntax'))
-  call assert_match('Tar', execute('syntax'))
+  call assert_match('Bar', execute('syntax'))
   syn clear Foo
   call assert_notmatch('Foo', execute('syntax'))
-  call assert_match('Tar', execute('syntax'))
-  syn clear Foo Tar
+  call assert_match('Bar', execute('syntax'))
+  syn clear Foo Bar
   call assert_notmatch('Foo', execute('syntax'))
-  call assert_notmatch('Tar', execute('syntax'))
+  call assert_notmatch('Bar', execute('syntax'))
+  hi clear Foo
+  hi clear Bar
 endfunc

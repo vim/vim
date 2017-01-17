@@ -22,6 +22,7 @@ struct hl_group
 {
     char_u	*sg_name;	/* highlight group name */
     char_u	*sg_name_u;	/* uppercase of sg_name */
+    int		sg_cleared;	/* "hi clear" was used */
 /* for normal terminals */
     int		sg_term;	/* "term=" highlighting attributes */
     char_u	*sg_start;	/* terminal string for start highl */
@@ -7327,6 +7328,7 @@ do_highlight(
 #ifdef FEAT_EVAL
 		HL_TABLE()[from_id - 1].sg_scriptID = current_SID;
 #endif
+		HL_TABLE()[from_id - 1].sg_cleared = FALSE;
 		redraw_all_later(SOME_VALID);
 	    }
 	}
@@ -8034,6 +8036,7 @@ do_highlight(
 	    error = TRUE;
 	    break;
 	}
+	HL_TABLE()[idx].sg_cleared = FALSE;
 
 	/*
 	 * When highlighting has been given for a group, don't link it.
@@ -8171,6 +8174,8 @@ hl_has_settings(int idx, int check_link)
     static void
 highlight_clear(int idx)
 {
+    HL_TABLE()[idx].sg_cleared = TRUE;
+
     HL_TABLE()[idx].sg_term = 0;
     vim_free(HL_TABLE()[idx].sg_start);
     HL_TABLE()[idx].sg_start = NULL;
@@ -9958,7 +9963,13 @@ get_highlight_name(expand_T *xp UNUSED, int idx)
 							 && include_link != 0)
 	return (char_u *)"clear";
 #endif
-    if (idx < 0 || idx >= highlight_ga.ga_len)
+    if (idx < 0)
+	return NULL;
+    /* Items are never removed from the table, skip the ones that were cleared.
+     */
+    while (idx < highlight_ga.ga_len && HL_TABLE()[idx].sg_cleared)
+	++idx;
+    if (idx >= highlight_ga.ga_len)
 	return NULL;
     return HL_TABLE()[idx].sg_name;
 }
