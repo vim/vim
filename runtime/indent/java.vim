@@ -68,6 +68,12 @@ function GetJavaIndent()
   " find start of previous line, in case it was a continuation line
   let lnum = SkipJavaBlanksAndComments(v:lnum - 1)
 
+  " If the previous line starts with 'package' or 'import', we should have the same indent as
+  " the previous one
+  if getline(lnum) =~ '^\s*\(package\|import\)\s\+.*'
+    return indent(lnum)
+  endif
+
   " If the previous line starts with '@', we should have the same indent as
   " the previous one
   if getline(lnum) =~ '^\s*@\S\+\s*$'

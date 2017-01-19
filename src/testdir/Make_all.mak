@@ -162,6 +162,7 @@ NEW_TESTS = test_arglist.res \
 	    test_hlsearch.res \
 	    test_increment.res \
 	    test_increment_dbcs.res \
+	    test_indent_java_class_annotation.res \
 	    test_job_fails.res \
 	    test_json.res \
 	    test_langmap.res \
