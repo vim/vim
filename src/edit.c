@@ -1025,7 +1025,7 @@ doESCkey:
 	case Ctrl_Z:	/* suspend when 'insertmode' set */
 	    if (!p_im)
 		goto normalchar;	/* insert CTRL-Z as normal char */
-	    stuffReadbuff((char_u *)":st\r");
+	    do_cmdline_cmd((char_u *)"stop");
 	    c = Ctrl_O;
 	    /*FALLTHROUGH*/
 

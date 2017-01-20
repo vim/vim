@@ -2982,9 +2982,9 @@ do_mouse(
 	if (State & INSERT)
 	    stuffcharReadbuff(Ctrl_O);
 	if (curwin->w_llist_ref == NULL)	/* quickfix window */
-	    stuffReadbuff((char_u *)":.cc\n");
+	    do_cmdline_cmd((char_u *)".cc");
 	else					/* location list window */
-	    stuffReadbuff((char_u *)":.ll\n");
+	    do_cmdline_cmd((char_u *)".ll");
 	got_click = FALSE;		/* ignore drag&release now */
     }
 #endif
