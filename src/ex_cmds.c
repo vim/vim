@@ -5263,6 +5263,10 @@ do_sub(exarg_T *eap)
 		    setmouse();		/* disable mouse in xterm */
 #endif
 		    curwin->w_cursor.col = regmatch.startpos[0].col;
+#ifdef FEAT_CURSORBIND
+		    if (curwin->w_p_crb)
+			do_check_cursorbind();
+#endif
 
 		    /* When 'cpoptions' contains "u" don't sync undo when
 		     * asking for confirmation. */
