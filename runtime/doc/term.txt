@@ -89,6 +89,18 @@ an external command (e.g., "!!"), the terminal will be put into Normal mode
 for a moment.  This means that you can stop the output to the screen by
 hitting a printing key.  Output resumes when you hit <BS>.
 
+						*xterm-bracketed-paste*
+When the 't_BE' option is set then 't_BE' will be sent to the
+terminal when entering "raw" mode and 't_BD' when leaving "raw" mode.  The
+terminal is then expected to put 't_PS' before pasted text and 't_PE' after
+pasted text.  This way Vim can separate text that is pasted from characters
+that are typed.  The pasted text is handled like when the middle mouse button
+is used.
+
+Note that in some situations Vim will not recognize the bracketed paste and
+you will get the raw text.  In other situations Vim will only get the first
+pasted character and drop the rest, e.g. when using the "r" command.
+
 							*cs7-problem*
 Note: If the terminal settings are changed after running Vim, you might have
 an illegal combination of settings.  This has been reported on Solaris 2.5
@@ -306,6 +318,10 @@ Added by Vim (there are no standard codes for these):
 		|xterm-true-color|
 	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
 		|xterm-true-color|
+	t_BE	enable bracketed paste mode			*t_BE* *'t_BE'*
+		|xterm-bracketed-paste|
+	t_BD	disable bracketed paste mode			*t_BD* *'t_BD'*
+		|xterm-bracketed-paste|
 
 KEY CODES
 Note: Use the <> form if possible
@@ -398,6 +414,8 @@ Note: Use the <> form if possible
 	t_KK	<k8>		keypad 8		 *<k8>*	*t_KK* *'t_KK'*
 	t_KL	<k9>		keypad 9		 *<k9>*	*t_KL* *'t_KL'*
 		<Mouse>		leader of mouse code		*<Mouse>*
+	t_PS	start of brackted paste |xterm-bracketed-paste|   *t_PS* 't_PS'
+	t_PE	end of bracketed paste |xterm-bracketed-paste|    *t_PE* 't_PE'
 
 Note about t_so and t_mr: When the termcap entry "so" is not present the
 entry for "mr" is used.  And vice versa.  The same is done for "se" and "me".

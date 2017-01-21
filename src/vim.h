@@ -2108,6 +2108,14 @@ typedef enum
     ASSERT_OTHER
 } assert_type_T;
 
+/* Mode for bracketed_paste(). */
+typedef enum {
+    PASTE_INSERT,	/* insert mode */
+    PASTE_CMDLINE,	/* command line */
+    PASTE_EX,		/* ex mode line */
+    PASTE_ONE_CHAR	/* return first character */
+} paste_mode_T;
+
 #include "ex_cmds.h"	    /* Ex command defines */
 #include "spell.h"	    /* spell checking stuff */
 

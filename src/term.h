@@ -89,10 +89,14 @@ enum SpecialKey
     KS_OP,	/* original color pair */
     KS_U7,	/* request cursor position */
     KS_8F,	/* set foreground color (RGB) */
-    KS_8B	/* set background color (RGB) */
+    KS_8B,	/* set background color (RGB) */
+    KS_CBE,	/* enable bracketed paste mode */
+    KS_CBD,	/* disable bracketed paste mode */
+    KS_CPS,	/* start of brackted paste */
+    KS_CPE	/* end of brackted paste */
 };
 
-#define KS_LAST	    KS_8B
+#define KS_LAST	    KS_CPE
 
 /*
  * the terminal capabilities are stored in this array
@@ -170,6 +174,10 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_U7	(term_str(KS_U7))	/* request cursor position */
 #define T_8F	(term_str(KS_8F))	/* set foreground color (RGB) */
 #define T_8B	(term_str(KS_8B))	/* set background color (RGB) */
+#define T_BE	(term_str(KS_CBE))	/* enable bracketed paste mode */
+#define T_BD	(term_str(KS_CBD))	/* disable bracketed paste mode */
+#define T_PS	(term_str(KS_CPS))	/* start of bracketed paste */
+#define T_PE	(term_str(KS_CPE))	/* end of bracketed paste */
 
 #define TMODE_COOK  0	/* terminal mode for external cmds and Ex mode */
 #define TMODE_SLEEP 1	/* terminal mode for sleeping (cooked but no echo) */

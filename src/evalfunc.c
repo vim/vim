@@ -4231,7 +4231,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
     {
 	if (argvars[0].v_type == VAR_UNKNOWN)
 	    /* getchar(): blocking wait. */
-	    n = safe_vgetc();
+	    n = plain_vgetc();
 	else if (get_tv_number_chk(&argvars[0], &error) == 1)
 	    /* getchar(1): only check if char avail */
 	    n = vpeekc_any();
@@ -4240,7 +4240,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 	    n = 0;
 	else
 	    /* getchar(0) and char avail: return char */
-	    n = safe_vgetc();
+	    n = plain_vgetc();
 
 	if (n == K_IGNORE)
 	    continue;

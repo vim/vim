@@ -391,6 +391,8 @@ enum key_extra
 #define K_KMULTIPLY	TERMCAP2KEY('K', '9')	/* keypad * */
 #define K_KENTER	TERMCAP2KEY('K', 'A')	/* keypad Enter */
 #define K_KPOINT	TERMCAP2KEY('K', 'B')	/* keypad . or ,*/
+#define K_PS		TERMCAP2KEY('P', 'S')	/* paste start */
+#define K_PE		TERMCAP2KEY('P', 'E')	/* paste end */
 
 #define K_K0		TERMCAP2KEY('K', 'C')	/* keypad 0 */
 #define K_K1		TERMCAP2KEY('K', 'D')	/* keypad 1 */

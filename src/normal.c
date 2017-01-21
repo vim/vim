@@ -426,6 +426,7 @@ static const struct nv_cmd
 #ifdef FEAT_AUTOCMD
     {K_CURSORHOLD, nv_cursorhold, NV_KEEPREG,		0},
 #endif
+    {K_PS,	nv_edit,	0,			0},
 };
 
 /* Number of commands in nv_cmds[]. */
@@ -3858,7 +3859,7 @@ add_to_showcmd(int c)
 	K_VER_SCROLLBAR, K_HOR_SCROLLBAR,
 	K_LEFTMOUSE_NM, K_LEFTRELEASE_NM,
 # endif
-	K_IGNORE,
+	K_IGNORE, K_PS,
 	K_LEFTMOUSE, K_LEFTDRAG, K_LEFTRELEASE,
 	K_MIDDLEMOUSE, K_MIDDLEDRAG, K_MIDDLERELEASE,
 	K_RIGHTMOUSE, K_RIGHTDRAG, K_RIGHTRELEASE,
@@ -9015,6 +9016,7 @@ nv_esc(cmdarg_T *cap)
 
 /*
  * Handle "A", "a", "I", "i" and <Insert> commands.
+ * Also handle K_PS, start bracketed paste.
  */
     static void
 nv_edit(cmdarg_T *cap)
@@ -9042,6 +9044,9 @@ nv_edit(cmdarg_T *cap)
 	/* Only give this error when 'insertmode' is off. */
 	EMSG(_(e_modifiable));
 	clearop(cap->oap);
+	if (cap->cmdchar == K_PS)
+	    /* drop the pasted text */
+	    bracketed_paste(PASTE_INSERT, TRUE, NULL);
     }
     else if (!checkclearopq(cap->oap))
     {
@@ -9073,6 +9078,7 @@ nv_edit(cmdarg_T *cap)
 		break;
 
 	    case 'a':	/* "a"ppend is like "i"nsert on the next character. */
+	    case K_PS:	/* bracketed paste works like "a"ppend */
 #ifdef FEAT_VIRTUALEDIT
 		/* increment coladd when in virtual space, increment the
 		 * column otherwise, also to append after an unprintable char */
@@ -9103,6 +9109,9 @@ nv_edit(cmdarg_T *cap)
 
 	invoke_edit(cap, FALSE, cap->cmdchar, FALSE);
     }
+    else if (cap->cmdchar == K_PS)
+	/* drop the pasted text */
+	bracketed_paste(PASTE_INSERT, TRUE, NULL);
 }
 
 /*

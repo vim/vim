@@ -309,6 +309,7 @@ static int	dont_sync_undo = FALSE;	/* CTRL-G U prevents syncing undo for
  * "cmdchar" can be:
  * 'i'	normal insert command
  * 'a'	normal append command
+ * K_PS bracketed paste
  * 'R'	replace command
  * 'r'	"r<CR>" command: insert one <CR>.  Note: count can be > 1, for redo,
  *	but still only one <CR> is inserted.  The <Esc> is not used for redo.
@@ -782,10 +783,14 @@ edit(
 	    dont_sync_undo = TRUE;
 	else
 	    dont_sync_undo = FALSE;
-	do
-	{
-	    c = safe_vgetc();
-	} while (c == K_IGNORE);
+	if (cmdchar == K_PS)
+	    /* Got here from normal mode when bracketed paste started. */
+	    c = K_PS;
+	else
+	    do
+	    {
+		c = safe_vgetc();
+	    } while (c == K_IGNORE);
 
 #ifdef FEAT_AUTOCMD
 	/* Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V. */
@@ -1193,6 +1198,16 @@ doESCkey:
 	    ins_mousescroll(MSCR_RIGHT);
 	    break;
 #endif
+	case K_PS:
+	    bracketed_paste(PASTE_INSERT, FALSE, NULL);
+	    if (cmdchar == K_PS)
+		/* invoked from normal mode, bail out */
+		goto doESCkey;
+	    break;
+	case K_PE:
+	    /* Got K_PE without K_PS, ignore. */
+	    break;
+
 #ifdef FEAT_GUI_TABLINE
 	case K_TABLINE:
 	case K_TABMENU:
@@ -9423,6 +9438,91 @@ ins_mousescroll(int dir)
     }
 }
 #endif
+
+/*
+ * Handle receiving P_PS: start paste mode.  Inserts the following text up to
+ * P_PE literally.
+ * When "drop" is TRUE then consume the text and drop it.
+ */
+    int
+bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
+{
+    int		c;
+    char_u	buf[NUMBUFLEN + MB_MAXBYTES];
+    int		idx = 0;
+    char_u	*end = find_termcode((char_u *)"PE");
+    int		ret_char = -1;
+    int		save_allow_keys = allow_keys;
+
+    /* If the end code is too long we can't detect it, read everything. */
+    if (STRLEN(end) >= NUMBUFLEN)
+	end = NULL;
+    ++no_mapping;
+    allow_keys = 0;
+    for (;;)
+    {
+	/* When the end is not defined read everything. */
+	if (end == NULL && vpeekc() == NUL)
+	    break;
+	c = plain_vgetc();
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    idx += (*mb_char2bytes)(c, buf + idx);
+	else
+#endif
+	    buf[idx++] = c;
+	buf[idx] = NUL;
+	if (end != NUL && STRNCMP(buf, end, idx) == 0)
+	{
+	    if (end[idx] == NUL)
+		break; /* Found the end of paste code. */
+	    continue;
+	}
+	if (!drop)
+	{
+	    switch (mode)
+	    {
+		case PASTE_CMDLINE:
+		    put_on_cmdline(buf, idx, TRUE);
+		    break;
+
+		case PASTE_EX:
+		    if (gap != NULL && ga_grow(gap, idx) == OK)
+		    {
+			mch_memmove((char *)gap->ga_data + gap->ga_len,
+							     buf, (size_t)idx);
+			gap->ga_len += idx;
+		    }
+		    break;
+
+		case PASTE_INSERT:
+		    if (stop_arrow() == OK)
+		    {
+			ins_char_bytes(buf, idx);
+			AppendToRedobuffLit(buf, idx);
+		    }
+		    break;
+
+		case PASTE_ONE_CHAR:
+		    if (ret_char == -1)
+		    {
+#ifdef FEAT_MBYTE
+			if (has_mbyte)
+			    ret_char = (*mb_ptr2char)(buf);
+			else
+#endif
+			    ret_char = buf[0];
+		    }
+		    break;
+	    }
+	}
+	idx = 0;
+    }
+    --no_mapping;
+    allow_keys = save_allow_keys;
+
+    return ret_char;
+}
 
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
     static void

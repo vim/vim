@@ -857,6 +857,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
     {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
 #  endif
+    {(int)KS_CBE,	IF_EB("\033[?2004h", ESC_STR "[?2004h")},
+    {(int)KS_CBD,	IF_EB("\033[?2004l", ESC_STR "[?2004l")},
 
     {K_UP,		IF_EB("\033O*A", ESC_STR "O*A")},
     {K_DOWN,		IF_EB("\033O*B", ESC_STR "O*B")},
@@ -902,13 +904,15 @@ static struct builtin_term builtin_termcaps[] =
     {K_ZEND,		IF_EB("\033[8;*~", ESC_STR "[8;*~")},
     {K_PAGEUP,		IF_EB("\033[5;*~", ESC_STR "[5;*~")},
     {K_PAGEDOWN,	IF_EB("\033[6;*~", ESC_STR "[6;*~")},
-    {K_KPLUS,		IF_EB("\033O*k", ESC_STR "O*k")},	/* keypad plus */
-    {K_KMINUS,		IF_EB("\033O*m", ESC_STR "O*m")},	/* keypad minus */
-    {K_KDIVIDE,		IF_EB("\033O*o", ESC_STR "O*o")},	/* keypad / */
-    {K_KMULTIPLY,	IF_EB("\033O*j", ESC_STR "O*j")},	/* keypad * */
-    {K_KENTER,		IF_EB("\033O*M", ESC_STR "O*M")},	/* keypad Enter */
-    {K_KPOINT,		IF_EB("\033O*n", ESC_STR "O*n")},	/* keypad . */
-    {K_KDEL,		IF_EB("\033[3;*~", ESC_STR "[3;*~")},	/* keypad Del */
+    {K_KPLUS,		IF_EB("\033O*k", ESC_STR "O*k")},     /* keypad plus */
+    {K_KMINUS,		IF_EB("\033O*m", ESC_STR "O*m")},     /* keypad minus */
+    {K_KDIVIDE,		IF_EB("\033O*o", ESC_STR "O*o")},     /* keypad / */
+    {K_KMULTIPLY,	IF_EB("\033O*j", ESC_STR "O*j")},     /* keypad * */
+    {K_KENTER,		IF_EB("\033O*M", ESC_STR "O*M")},     /* keypad Enter */
+    {K_KPOINT,		IF_EB("\033O*n", ESC_STR "O*n")},     /* keypad . */
+    {K_KDEL,		IF_EB("\033[3;*~", ESC_STR "[3;*~")}, /* keypad Del */
+    {K_PS,		IF_EB("\033[200~", ESC_STR "[200~")}, /* paste start */
+    {K_PE,		IF_EB("\033[201~", ESC_STR "[201~")}, /* paste end */
 
     {BT_EXTRA_KEYS,   ""},
     {TERMCAP2KEY('k', '0'), IF_EB("\033[10;*~", ESC_STR "[10;*~")}, /* F0 */
@@ -1224,6 +1228,8 @@ static struct builtin_term builtin_termcaps[] =
     {K_KMULTIPLY,	"[KMULTIPLY]"},
     {K_KENTER,		"[KENTER]"},
     {K_KPOINT,		"[KPOINT]"},
+    {K_PS,		"[PASTE-START]"},
+    {K_PE,		"[PASTE-END]"},
     {K_K0,		"[K0]"},
     {K_K1,		"[K1]"},
     {K_K2,		"[K2]"},
@@ -1538,6 +1544,8 @@ set_termname(char_u *term)
 				{KS_CSI, "SI"}, {KS_CEI, "EI"},
 				{KS_U7, "u7"}, {KS_RBG, "RB"},
 				{KS_8F, "8f"}, {KS_8B, "8b"},
+				{KS_CBE, "BE"}, {KS_CBD, "BD"},
+				{KS_CPS, "PS"}, {KS_CPE, "PE"},
 				{(enum SpecialKey)0, NULL}
 			    };
 
@@ -3140,6 +3148,7 @@ starttermcap(void)
     {
 	out_str(T_TI);			/* start termcap mode */
 	out_str(T_KS);			/* start "keypad transmit" mode */
+	out_str(T_BE);			/* enable bracketed paste moe */
 	out_flush();
 	termcap_active = TRUE;
 	screen_start();			/* don't know where cursor is now */
@@ -3189,6 +3198,7 @@ stoptermcap(void)
 	    check_for_codes_from_term();
 	}
 #endif
+	out_str(T_BD);			/* disable bracketed paste moe */
 	out_str(T_KE);			/* stop "keypad transmit" mode */
 	out_flush();
 	termcap_active = FALSE;
