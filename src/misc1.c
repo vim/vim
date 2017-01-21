@@ -2177,16 +2177,19 @@ ins_bytes_len(char_u *p, int len)
     void
 ins_char(int c)
 {
-#if defined(FEAT_MBYTE) || defined(PROTO)
     char_u	buf[MB_MAXBYTES + 1];
-    int		n;
+    int		n = 1;
 
+#if defined(FEAT_MBYTE) || defined(PROTO)
     n = (*mb_char2bytes)(c, buf);
 
     /* When "c" is 0x100, 0x200, etc. we don't want to insert a NUL byte.
      * Happens for CTRL-Vu9900. */
     if (buf[0] == 0)
 	buf[0] = '\n';
+#else
+    buf[0] = c;
+#endif
 
     ins_char_bytes(buf, n);
 }
@@ -2195,7 +2198,6 @@ ins_char(int c)
 ins_char_bytes(char_u *buf, int charlen)
 {
     int		c = buf[0];
-#endif
     int		newlen;		/* nr of bytes inserted */
     int		oldlen;		/* nr of bytes deleted (0 when not replacing) */
     char_u	*p;
@@ -2218,11 +2220,7 @@ ins_char_bytes(char_u *buf, int charlen)
 
     /* The lengths default to the values for when not replacing. */
     oldlen = 0;
-#ifdef FEAT_MBYTE
     newlen = charlen;
-#else
-    newlen = 1;
-#endif
 
     if (State & REPLACE_FLAG)
     {
