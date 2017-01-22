@@ -2180,7 +2180,7 @@ ins_char(int c)
     char_u	buf[MB_MAXBYTES + 1];
     int		n = 1;
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
+#ifdef FEAT_MBYTE
     n = (*mb_char2bytes)(c, buf);
 
     /* When "c" is 0x100, 0x200, etc. we don't want to insert a NUL byte.
