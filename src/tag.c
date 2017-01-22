@@ -1752,8 +1752,9 @@ line_read_in:
 	    /*
 	     * Emacs tags line with CTRL-L: New file name on next line.
 	     * The file name is followed by a ','.
+	     * Remember etag file name in ebuf.
 	     */
-	    if (*lbuf == Ctrl_L)	/* remember etag file name in ebuf */
+	    if (*lbuf == Ctrl_L && !use_cscope)
 	    {
 		is_etag = 1;		/* in case at the start */
 		state = TS_LINEAR;
