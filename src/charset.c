@@ -1901,7 +1901,11 @@ vim_str2nr(
 	    n += 2;	    /* skip over "0b" */
 	while ('0' <= *ptr && *ptr <= '1')
 	{
-	    un = 2 * un + (unsigned long)(*ptr - '0');
+	    /* avoid ubsan error for overflow */
+	    if (un < UVARNUM_MAX / 2)
+		un = 2 * un + (unsigned long)(*ptr - '0');
+	    else
+		un = UVARNUM_MAX;
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -1912,7 +1916,11 @@ vim_str2nr(
 	/* octal */
 	while ('0' <= *ptr && *ptr <= '7')
 	{
-	    un = 8 * un + (uvarnumber_T)(*ptr - '0');
+	    /* avoid ubsan error for overflow */
+	    if (un < UVARNUM_MAX / 8)
+		un = 8 * un + (uvarnumber_T)(*ptr - '0');
+	    else
+		un = UVARNUM_MAX;
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -1925,7 +1933,11 @@ vim_str2nr(
 	    n += 2;	    /* skip over "0x" */
 	while (vim_isxdigit(*ptr))
 	{
-	    un = 16 * un + (uvarnumber_T)hex2nr(*ptr);
+	    /* avoid ubsan error for overflow */
+	    if (un < UVARNUM_MAX / 16)
+		un = 16 * un + (uvarnumber_T)hex2nr(*ptr);
+	    else
+		un = UVARNUM_MAX;
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -1936,7 +1948,11 @@ vim_str2nr(
 	/* decimal */
 	while (VIM_ISDIGIT(*ptr))
 	{
-	    un = 10 * un + (uvarnumber_T)(*ptr - '0');
+	    /* avoid ubsan error for overflow */
+	    if (un < UVARNUM_MAX / 10)
+		un = 10 * un + (uvarnumber_T)(*ptr - '0');
+	    else
+		un = UVARNUM_MAX;
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -1950,9 +1966,19 @@ vim_str2nr(
     if (nptr != NULL)
     {
 	if (negative)   /* account for leading '-' for decimal numbers */
-	    *nptr = -(varnumber_T)un;
+	{
+	    /* avoid ubsan error for overflow */
+	    if (un > VARNUM_MAX)
+		*nptr = VARNUM_MIN;
+	    else
+		*nptr = -(varnumber_T)un;
+	}
 	else
+	{
+	    if (un > VARNUM_MAX)
+		un = VARNUM_MAX;
 	    *nptr = (varnumber_T)un;
+	}
     }
     if (unptr != NULL)
 	*unptr = un;

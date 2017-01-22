@@ -4109,21 +4109,12 @@ eval6(
 		{
 		    if (n2 == 0)	/* give an error message? */
 		    {
-#ifdef FEAT_NUM64
 			if (n1 == 0)
-			    n1 = -0x7fffffffffffffffLL - 1; /* similar to NaN */
+			    n1 = VARNUM_MIN; /* similar to NaN */
 			else if (n1 < 0)
-			    n1 = -0x7fffffffffffffffLL;
+			    n1 = -VARNUM_MAX;
 			else
-			    n1 = 0x7fffffffffffffffLL;
-#else
-			if (n1 == 0)
-			    n1 = -0x7fffffffL - 1L;	/* similar to NaN */
-			else if (n1 < 0)
-			    n1 = -0x7fffffffL;
-			else
-			    n1 = 0x7fffffffL;
-#endif
+			    n1 = VARNUM_MAX;
 		    }
 		    else
 			n1 = n1 / n2;
