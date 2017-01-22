@@ -107,6 +107,12 @@ test_decode_find_end(void)
     reader.js_buf = (char_u *)"  {   ";
     assert(json_find_end(&reader, 0) == MAYBE);
 
+    /* JS object with white space */
+    reader.js_buf = (char_u *)"  {  a  :  123  }  ";
+    assert(json_find_end(&reader, JSON_JS) == OK);
+    reader.js_buf = (char_u *)"  {  a  :   ";
+    assert(json_find_end(&reader, JSON_JS) == MAYBE);
+
     /* array without white space */
     reader.js_buf = (char_u *)"[\"a\",123]";
     assert(json_find_end(&reader, 0) == OK);
