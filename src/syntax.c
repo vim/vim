@@ -9956,6 +9956,13 @@ highlight_list_two(int cnt, int attr)
     char_u *
 get_highlight_name(expand_T *xp UNUSED, int idx)
 {
+    if (idx < 0)
+	return NULL;
+    /* Items are never removed from the table, skip the ones that were cleared.
+     */
+    while (idx < highlight_ga.ga_len && HL_TABLE()[idx].sg_cleared)
+	++idx;
+
 #ifdef FEAT_CMDL_COMPL
     if (idx == highlight_ga.ga_len && include_none != 0)
 	return (char_u *)"none";
@@ -9968,12 +9975,6 @@ get_highlight_name(expand_T *xp UNUSED, int idx)
 							 && include_link != 0)
 	return (char_u *)"clear";
 #endif
-    if (idx < 0)
-	return NULL;
-    /* Items are never removed from the table, skip the ones that were cleared.
-     */
-    while (idx < highlight_ga.ga_len && HL_TABLE()[idx].sg_cleared)
-	++idx;
     if (idx >= highlight_ga.ga_len)
 	return NULL;
     return HL_TABLE()[idx].sg_name;
