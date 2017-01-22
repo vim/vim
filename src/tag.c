@@ -1754,7 +1754,11 @@ line_read_in:
 	     * The file name is followed by a ','.
 	     * Remember etag file name in ebuf.
 	     */
-	    if (*lbuf == Ctrl_L && !use_cscope)
+	    if (*lbuf == Ctrl_L
+# ifdef FEAT_CSCOPE
+				&& !use_cscope
+# endif
+				)
 	    {
 		is_etag = 1;		/* in case at the start */
 		state = TS_LINEAR;
