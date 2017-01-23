@@ -3774,6 +3774,11 @@ do_put(
 	 */
 	if (y_type == MCHAR && y_size == 1)
 	{
+	    linenr_T end = curbuf->b_visual.vi_end.lnum;
+
+	    if (curbuf->b_visual.vi_end.lnum < curbuf->b_visual.vi_start.lnum)
+		end = curbuf->b_visual.vi_start.lnum;
+
 	    do {
 		totlen = count * yanklen;
 		if (totlen > 0)
@@ -3801,7 +3806,7 @@ do_put(
 		}
 		if (VIsual_active)
 		    lnum++;
-	    } while (VIsual_active && lnum <= curbuf->b_visual.vi_end.lnum);
+	    } while (VIsual_active && lnum <= end);
 
 	    if (VIsual_active) /* reset lnum to the last visual line */
 		lnum--;
