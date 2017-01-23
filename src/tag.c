@@ -1256,6 +1256,7 @@ prepare_pats(pat_T *pats, int has_re)
  * TAG_REGEXP	  use "pat" as a regexp
  * TAG_NOIC	  don't always ignore case
  * TAG_KEEP_LANG  keep language
+ * TAG_CSCOPE	  use cscope results for tags
  */
     int
 find_tags(
@@ -1423,6 +1424,14 @@ find_tags(
      */
     if (help_only)				/* want tags from help file */
 	curbuf->b_help = TRUE;			/* will be restored later */
+#ifdef FEAT_CSCOPE
+    else if (use_cscope)
+    {
+	/* Make sure we don't mix help and cscope, confuses Coverity. */
+	help_only = FALSE;
+	curbuf->b_help = FALSE;
+    }
+#endif
 
     orgpat.len = (int)STRLEN(pat);
 #ifdef FEAT_MULTI_LANG
@@ -2281,7 +2290,8 @@ parse_line:
 		     */
 		    *tagp.tagname_end = NUL;
 		    len = (int)(tagp.tagname_end - tagp.tagname);
-		    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 10 + ML_EXTRA + 1);
+		    mfp = (char_u *)alloc((int)sizeof(char_u)
+						    + len + 10 + ML_EXTRA + 1);
 		    if (mfp != NULL)
 		    {
 			int heuristic;
