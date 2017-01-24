@@ -3282,7 +3282,7 @@ else
 # include <stddef.h>
 #endif
 main() {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(0); }],
-			  res="OK", res="FAIL", res="FAIL")
+			  res="OK", res="FAIL", res="OK")
       if test "$res" = "OK"; then
 	break
       fi
@@ -3353,7 +3353,7 @@ main()
       ],[
 	vim_cv_tgent=non-zero
       ],[
-	AC_MSG_ERROR(failed to compile test program.)
+	vim_cv_tgent=zero
       ])
     ])
   
