@@ -1587,37 +1587,34 @@ strup_save(char_u *orig)
 
 	    if (enc_utf8)
 	    {
-		int	c, uc, len;
+		int	c, uc;
 		int	newl;
 		char_u	*s;
 
 		c = utf_ptr2char(p);
 		uc = utf_toupper(c);
 
+		/* Reallocate string when byte count changes.  This is rare,
+		 * thus it's OK to do another malloc()/free(). */
 		l = utf_ptr2len(p);
 		newl = utf_char2len(uc);
-		if (newl == l)
+		if (newl != l)
 		{
-		    utf_char2bytes(uc, p);
-		    p += newl;
-		}
-		else
-		{
-		    /* Reallocate string when byte count changes.  This is rare,
-		     * thus it's OK to do a realloc(). */
-		    len = STRLEN(res);
-		    s = vim_realloc(res, len + newl - l  + 1);
-		    if (s != NULL)
+		    s = alloc((unsigned)STRLEN(res) + 1 + newl - l);
+		    if (s == NULL)
 		    {
-			p = s + (p - res);
-			res = s;
-			mch_memmove(p + newl, p + l, len - l - (p - res) + 1);
-			utf_char2bytes(uc, p);
-			p += newl;
+			vim_free(res);
+			return NULL;
 		    }
-		    else
-			p += l; /* Don't change this character if realloc() fails. */
+		    mch_memmove(s, res, p - res);
+		    STRCPY(s + (p - res) + newl, p + l);
+		    p = s + (p - res);
+		    vim_free(res);
+		    res = s;
 		}
+
+		utf_char2bytes(uc, p);
+		p += newl;
 	    }
 	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 		p += l;		/* skip multi-byte character */
@@ -1653,37 +1650,34 @@ strlc_save(char_u *orig)
 
 	    if (enc_utf8)
 	    {
-		int	c, lc, len;
+		int	c, lc;
 		int	newl;
 		char_u	*s;
 
 		c = utf_ptr2char(p);
 		lc = utf_tolower(c);
 
+		/* Reallocate string when byte count changes.  This is rare,
+		 * thus it's OK to do another malloc()/free(). */
 		l = utf_ptr2len(p);
 		newl = utf_char2len(lc);
-		if (newl == l)
+		if (newl != l)
 		{
-		    utf_char2bytes(lc, p);
-		    p += newl;
-		}
-		else
-		{
-		    /* Reallocate string when byte count changes.  This is rare,
-		     * thus it's OK to do a realloc(). */
-		    len = STRLEN(res);
-		    s = vim_realloc(res, len + newl - l + 1);
-		    if (s != NULL)
+		    s = alloc((unsigned)STRLEN(res) + 1 + newl - l);
+		    if (s == NULL)
 		    {
-			p = s + (p - res);
-			res = s;
-			mch_memmove(p + newl, p + l, len - l - (p - res) + 1);
-			utf_char2bytes(lc, p);
-			p += newl;
+			vim_free(res);
+			return NULL;
 		    }
-		    else
-			p += l; /* Don't change this character if realloc() fails. */
+		    mch_memmove(s, res, p - res);
+		    STRCPY(s + (p - res) + newl, p + l);
+		    p = s + (p - res);
+		    vim_free(res);
+		    res = s;
 		}
+
+		utf_char2bytes(lc, p);
+		p += newl;
 	    }
 	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 		p += l;		/* skip multi-byte character */
