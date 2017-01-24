@@ -3651,6 +3651,7 @@ win_line(
 		{
 		    /* Draw the 'foldcolumn'.  Allocate a buffer, "extra" may
 		     * already be in use. */
+		    vim_free(p_extra_free);
 		    p_extra_free = alloc(12 + 1);
 
 		    if (p_extra_free != NULL)
@@ -4695,6 +4696,7 @@ win_line(
 			p = alloc((unsigned)(len + 1));
 			vim_memset(p, ' ', len);
 			p[len] = NUL;
+			vim_free(p_extra_free);
 			p_extra_free = p;
 			for (i = 0; i < tab_len; i++)
 			{
@@ -4857,6 +4859,7 @@ win_line(
 			vim_memset(p, ' ', n_extra);
 			STRNCPY(p, p_extra + 1, STRLEN(p_extra) - 1);
 			p[n_extra] = NUL;
+			vim_free(p_extra_free);
 			p_extra_free = p_extra = p;
 		    }
 		    else
@@ -5784,6 +5787,7 @@ win_line(
     }
 #endif
 
+    vim_free(p_extra_free);
     return row;
 }
 
