@@ -534,6 +534,10 @@ edit(
     revins_legal = 0;
     revins_scol = -1;
 #endif
+    if (!p_ek)
+	/* Disable bracketed paste mode, we won't recognize the escape
+	 * sequences. */
+	out_str(T_BD);
 
     /*
      * Handle restarting Insert mode.
@@ -8623,6 +8627,9 @@ ins_esc(
 #ifdef CURSOR_SHAPE
     ui_cursor_shape();		/* may show different cursor shape */
 #endif
+    if (!p_ek)
+	/* Re-enable bracketed paste mode. */
+	out_str(T_BE);
 
     /*
      * When recording or for CTRL-O, need to display the new mode.
