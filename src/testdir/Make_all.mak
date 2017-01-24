@@ -173,6 +173,7 @@ NEW_TESTS = test_arglist.res \
 	    test_nested_function.res \
 	    test_netbeans.res \
 	    test_normal.res \
+	    test_paste.res \
 	    test_packadd.res \
 	    test_perl.res \
 	    test_profile.res \

@@ -463,7 +463,10 @@ edit(
 	else
 #endif
 	{
-	    AppendCharToRedobuff(cmdchar);
+	    if (cmdchar == K_PS)
+		AppendCharToRedobuff('a');
+	    else
+		AppendCharToRedobuff(cmdchar);
 	    if (cmdchar == 'g')		    /* "gI" command */
 		AppendCharToRedobuff('I');
 	    else if (cmdchar == 'r')	    /* "r<CR>" command */
@@ -9502,8 +9505,10 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 			if (idx == 1 && (c == CAR || c == K_KENTER || c == NL))
 			    ins_eol(c);
 			else
+			{
 			    ins_char_bytes(buf, idx);
-			AppendToRedobuffLit(buf, idx);
+			    AppendToRedobuffLit(buf, idx);
+			}
 		    }
 		    break;
 
