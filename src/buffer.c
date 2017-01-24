@@ -2153,6 +2153,7 @@ free_buf_options(
 #if defined(FEAT_CRYPT)
     clear_string_option(&buf->b_p_cm);
 #endif
+    clear_string_option(&buf->b_p_fp);
 #if defined(FEAT_EVAL)
     clear_string_option(&buf->b_p_fex);
 #endif
