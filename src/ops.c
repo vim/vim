@@ -3774,16 +3774,25 @@ do_put(
 	 */
 	if (y_type == MCHAR && y_size == 1)
 	{
-	    linenr_T end = curbuf->b_visual.vi_end.lnum;
+	    linenr_T end;
 
-	    if (curbuf->b_visual.vi_end.lnum < curbuf->b_visual.vi_start.lnum)
-		end = curbuf->b_visual.vi_start.lnum;
+	    if (VIsual_active)
+	    {
+		end = curbuf->b_visual.vi_end.lnum;
+		if (end < curbuf->b_visual.vi_start.lnum)
+		    end = curbuf->b_visual.vi_start.lnum;
+	    }
 
 	    do {
 		totlen = count * yanklen;
 		if (totlen > 0)
 		{
 		    oldp = ml_get(lnum);
+		    if (VIsual_active && col > (int)STRLEN(oldp))
+		    {
+			lnum++;
+			continue;
+		    }
 		    newp = alloc_check((unsigned)(STRLEN(oldp) + totlen + 1));
 		    if (newp == NULL)
 			goto end;	/* alloc() gave an error message */
