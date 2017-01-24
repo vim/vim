@@ -9498,7 +9498,11 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 		case PASTE_INSERT:
 		    if (stop_arrow() == OK)
 		    {
-			ins_char_bytes(buf, idx);
+			c = buf[0];
+			if (idx == 1 && (c == CAR || c == K_KENTER || c == NL))
+			    ins_eol(c);
+			else
+			    ins_char_bytes(buf, idx);
 			AppendToRedobuffLit(buf, idx);
 		    }
 		    break;
