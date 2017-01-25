@@ -35,6 +35,16 @@ func Test_paste_insert_mode()
   call assert_equal('bar donfoo', getline(3))
   call assert_equal('bar doneeb', getline(4))
   call assert_equal('c', getline(5))
+
+  set ai et tw=10
+  call setline(1, ['a', '    b', 'c'])
+  2
+  call feedkeys("A\<Esc>[200~foo\<CR> bar bar bar\<Esc>[201~\<Esc>", 'xt')
+  call assert_equal('    bfoo', getline(2))
+  call assert_equal(' bar bar bar', getline(3))
+  call assert_equal('c', getline(4))
+
+  set ai& et& tw=0
   bwipe!
 endfunc
 

@@ -9463,12 +9463,17 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
     char_u	*end = find_termcode((char_u *)"PE");
     int		ret_char = -1;
     int		save_allow_keys = allow_keys;
+    int		save_paste = p_paste;
+    int		save_ai = curbuf->b_p_ai;
 
     /* If the end code is too long we can't detect it, read everything. */
     if (STRLEN(end) >= NUMBUFLEN)
 	end = NULL;
     ++no_mapping;
     allow_keys = 0;
+    p_paste = TRUE;
+    curbuf->b_p_ai = FALSE;
+
     for (;;)
     {
 	/* When the end is not defined read everything. */
@@ -9534,8 +9539,11 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 	}
 	idx = 0;
     }
+
     --no_mapping;
     allow_keys = save_allow_keys;
+    p_paste = save_paste;
+    curbuf->b_p_ai = save_ai;
 
     return ret_char;
 }
