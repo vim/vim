@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Matlab
-" Maintainer:	Maurizio Tranchero - maurizio(.)tranchero(@)gmail(.)com
+" Maintainer:	Alex Burka <vim@alexburka.com>
 " Credits:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
-"               Alex Burka
+"		Maurizio Tranchero - maurizio(.)tranchero(@)gmail(.)com
 "		Original author: Mario Eusebio
 " Last Change:	Mon Jan 23 2017
 " 		added support for cell mode
