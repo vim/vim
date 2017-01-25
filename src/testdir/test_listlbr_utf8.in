@@ -96,7 +96,7 @@ GGlGGlGGlGGlGGlGGlGGlGGlGGlGGl
 :else
 :   call append('$', "Not all attributes are different")
 :endif
-:set cpo&vim linebreak selection=exclusive
+:set cpo&vim linebreak selection=exclusive textwidth=0
 :"
 :let g:test ="Test 8: set linebreak with visual block mode and v_b_A and selection=exclusive and multibyte char"
 :$put =g:test
