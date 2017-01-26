@@ -75,8 +75,10 @@ addons:
       - cscope
 
 before_install:
-  - pip install --user cpp-coveralls
-  - pip install --user requests[security]
+  - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls; fi
+    # needed for https support for coveralls
+    # building cffi only works with gcc, not with clang
+  - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
     # Lua is not installed on Travis OSX
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install lua; export LUA_PREFIX=/usr/local; fi
 
