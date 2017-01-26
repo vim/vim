@@ -1714,15 +1714,8 @@ typedef unsigned short disptick_T;	/* display tick type */
 
 typedef void	    *vim_acl_T;		/* dummy to pass an ACL to a function */
 
-/*
- * Include a prototype for mch_memmove(), it may not be in alloc.pro.
- */
-#ifdef VIM_MEMMOVE
-void mch_memmove(void *, void *, size_t);
-#else
-# ifndef mch_memmove
-#  define mch_memmove(to, from, len) memmove(to, from, len)
-# endif
+#ifndef mch_memmove
+# define mch_memmove(to, from, len) memmove((char*)(to), (char*)(from), (char*)(len))
 #endif
 
 /*
