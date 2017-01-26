@@ -113,6 +113,9 @@ func Test_CmdErrors()
   call assert_fails('com! -addr DoCmd :', 'E179:')
   call assert_fails('com! -complete DoCmd :', 'E179:')
   call assert_fails('com! -complete=xxx DoCmd :', 'E180:')
+  call assert_fails('com! -complete=custom DoCmd :', 'E467:')
+  call assert_fails('com! -complete=customlist DoCmd :', 'E467:')
+  call assert_fails('com! -complete=behave,CustomComplete DoCmd :', 'E468:')
   call assert_fails('com! -nargs=x DoCmd :', 'E176:')
   call assert_fails('com! -count=1 -count=2 DoCmd :', 'E177:')
   call assert_fails('com! -count=x DoCmd :', 'E178:')
@@ -143,6 +146,12 @@ endfunc
 func Test_CmdCompletion()
   call feedkeys(":com -\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"com -addr bang bar buffer complete count nargs range register', @:)
+
+  call feedkeys(":com -nargs=0 -\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"com -nargs=0 -addr bang bar buffer complete count nargs range register', @:)
+
+  call feedkeys(":com -nargs=\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"com -nargs=* + 0 1 ?', @:)
 
   call feedkeys(":com -addr=\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"com -addr=arguments buffers lines loaded_buffers quickfix tabs windows', @:)
@@ -178,6 +187,10 @@ func Test_CmdCompletion()
   com! -complete=behave DoCmd :
   call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"DoCmd mswin xterm', @:)
+
+  " This does not work. Why?
+  "call feedkeys(":DoCmd x\<C-A>\<C-B>\"\<CR>", 'tx')
+  "call assert_equal('"DoCmd xterm', @:)
 
   com! -complete=custom,CustomComplete DoCmd :
   call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
