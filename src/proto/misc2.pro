@@ -40,6 +40,7 @@ char_u *vim_strsave_up(char_u *string);
 char_u *vim_strnsave_up(char_u *string, int len);
 void vim_strup(char_u *p);
 char_u *strup_save(char_u *orig);
+char_u *strlow_save(char_u *orig);
 void del_trailing_spaces(char_u *ptr);
 void vim_strncpy(char_u *to, char_u *from, size_t len);
 void vim_strcat(char_u *to, char_u *from, size_t tosize);
