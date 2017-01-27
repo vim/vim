@@ -1719,7 +1719,7 @@ vim_strncpy(char_u *to, char_u *from, size_t len)
 
 /*
  * Like strcat(), but make sure the result fits in "tosize" bytes and is
- * always NUL terminated.
+ * always NUL terminated. "from" and "to" may overlap.
  */
     void
 vim_strcat(char_u *to, char_u *from, size_t tosize)
@@ -1733,7 +1733,7 @@ vim_strcat(char_u *to, char_u *from, size_t tosize)
 	to[tosize - 1] = NUL;
     }
     else
-	STRCPY(to + tolen, from);
+	mch_memmove(to + tolen, from, fromlen + 1);
 }
 
 /*
