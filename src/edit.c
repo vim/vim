@@ -2821,6 +2821,7 @@ set_completion(colnr_T startcol, list_T *list)
     if (ctrl_x_mode != 0)
 	ins_compl_prep(' ');
     ins_compl_clear();
+    ins_compl_free();
 
     compl_direction = FORWARD;
     if (startcol > curwin->w_cursor.col)
