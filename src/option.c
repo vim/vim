@@ -6619,6 +6619,15 @@ did_set_string_option(
 	    mch_set_normal_colors();
 #endif
 	}
+	if (varp == &T_BE && termcap_active)
+	{
+	    if (*T_BE == NUL)
+		/* When clearing t_BE we assume the user no longer wants
+		 * bracketed paste, thus disable it by writing t_BD. */
+		out_str(T_BD);
+	    else
+		out_str(T_BE);
+	}
     }
 
 #ifdef FEAT_LINEBREAK
