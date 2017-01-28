@@ -5777,6 +5777,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+						*'pythonhome'*
+'pythonhome'		string	(default "")
+			global
+			{not in Vi}
+			{only available when compiled with the |+python/dyn|
+			feature}
+	Specifies the name of the Python 2.x home directory. When 'pythonhome'
+	and the PYTHONHOME environment variable are not set, PYTHON_HOME,
+	which was specified at compile time, will be used for the Python 2.x
+	home directory.
+	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
 						*'pythonthreedll'*
 'pythonthreedll'	string	(default depends on the build)
 			global
@@ -5785,6 +5799,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Specifies the name of the Python 3 shared library. The default is
 	DYNAMIC_PYTHON3_DLL, which was specified at compile time.
+	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+						*'pythonthreehome'*
+'pythonthreehome'	string	(default "")
+			global
+			{not in Vi}
+			{only available when compiled with the |+python3/dyn|
+			feature}
+	Specifies the name of the Python 3 home directory. When
+	'pythonthreehome' and the PYTHONHOME environment variable are not set,
+	PYTHON3_HOME, which was specified at compile time, will be used for
+	the Python 3 home directory.
 	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.

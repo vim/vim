@@ -860,12 +860,26 @@ Python3_Init(void)
 
 	init_structs();
 
-
-#ifdef PYTHON3_HOME
-# ifdef DYNAMIC_PYTHON3
-	if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
-# endif
+#ifdef DYNAMIC_PYTHON3
+	if (*p_py3home != '\0')
+	{
+	    int len;
+	    wchar_t *buf;
+	    len = mbstowcs(NULL, (char *)p_py3home, 0) + 1;
+	    buf = (wchar_t *)alloc(len * sizeof(wchar_t));
+	    if (buf && mbstowcs(buf, (char *)p_py3home, len) != (size_t)-1) {
+		Py_SetPythonHome(buf);
+		/* We must keep buf for Py_SetPythonHome */
+	    }
+	}
+# ifdef PYTHON3_HOME
+	else if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
 	    Py_SetPythonHome(PYTHON3_HOME);
+# endif
+#else
+# ifdef PYTHON3_HOME
+	Py_SetPythonHome(PYTHON3_HOME);
+# endif
 #endif
 
 	PyImport_AppendInittab("vim", Py3Init_vim);

@@ -834,7 +834,9 @@ Short explanation of each option:		*option-list*
 'prompt'	  'prompt'  enable prompt in Ex mode
 'pumheight'	  'ph'	    maximum height of the popup menu
 'pythondll'		    name of the Python 2 dynamic library
+'pythonhome'		    name of the Python 2 home directory
 'pythonthreedll'	    name of the Python 3 dynamic library
+'pythonthreehome'	    name of the Python 3 home directory
 'quoteescape'	  'qe'	    escape characters used in a string
 'readonly'	  'ro'	    disallow writing the buffer
 'redrawtime'	  'rdt'     timeout for 'hlsearch' and |:match| highlighting

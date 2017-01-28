@@ -690,9 +690,11 @@ EXTERN char_u	*p_perldll;	/* 'perldll' */
 #endif
 #if defined(DYNAMIC_PYTHON3)
 EXTERN char_u	*p_py3dll;	/* 'pythonthreedll' */
+EXTERN char_u	*p_py3home;	/* 'pythonthreehome' */
 #endif
 #if defined(DYNAMIC_PYTHON)
 EXTERN char_u	*p_pydll;	/* 'pythondll' */
+EXTERN char_u	*p_pyhome;	/* 'pythonhome' */
 #endif
 #ifdef FEAT_RELTIME
 EXTERN long	p_rdt;		/* 'redrawtime' */
