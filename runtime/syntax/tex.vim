@@ -603,6 +603,8 @@ if s:tex_fast =~# 'v'
    endif
   else
    syn region texZone		start="\\begin{[vV]erbatim}"		end="\\end{[vV]erbatim}\|%stopzone\>"
+   " listings package:
+   syn region texZone		start="\\begin{lstlisting}"		end="\\end{lstlisting}\|%stopzone\>"
    if b:tex_stylish
      syn region texZone		start="\\verb\*\=\z([^\ta-zA-Z@]\)"	end="\z1\|%stopzone\>"
    else
