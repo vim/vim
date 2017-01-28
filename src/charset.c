@@ -1296,7 +1296,14 @@ getvcol(
     if (pos->col == MAXCOL)
 	posptr = NULL;  /* continue until the NUL */
     else
+    {
 	posptr = ptr + pos->col;
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    /* always start on the first byte */
+	    posptr -= (*mb_head_off)(line, posptr);
+#endif
+    }
 
     /*
      * This function is used very often, do some speed optimizations.

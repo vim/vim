@@ -2058,7 +2058,6 @@ test1 \
 	test_listlbr \
 	test_listlbr_utf8 \
 	test_search_mbyte \
-	test_utf8 \
 	test_wordcount \
 	test3 test4 test5 test6 test7 test8 test9 \
 	test11 test12 test14 test15 test17 test18 test19 \
@@ -2183,6 +2182,7 @@ test_arglist \
 	test_undo \
 	test_unlet \
 	test_usercommands \
+	test_utf8 \
 	test_viminfo \
 	test_viml \
 	test_visual \

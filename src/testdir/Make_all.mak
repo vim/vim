@@ -84,7 +84,6 @@ SCRIPTS_ALL = \
 	test_listchars.out \
 	test_listlbr.out \
 	test_search_mbyte.out \
-	test_utf8.out \
 	test_wordcount.out
 
 
