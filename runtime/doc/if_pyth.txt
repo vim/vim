@@ -16,6 +16,7 @@ The Python Interface to Vim				*python* *Python*
 8. pyeval(), py3eval() Vim functions		|python-pyeval|
 9. Dynamic loading				|python-dynamic|
 10. Python 3					|python3|
+11. Python X					|python_x|
 
 {Vi does not have any of these commands}
 
@@ -711,6 +712,7 @@ vim.Function object				*python-Function*
 
 To facilitate bi-directional interface, you can use |pyeval()| and |py3eval()| 
 functions to evaluate Python expressions and pass their values to VimL.
+|pyxeval()| is also available.
 
 ==============================================================================
 9. Dynamic loading					*python-dynamic*
@@ -810,6 +812,70 @@ Note however, that when Python 2 and 3 are both available and loaded
 dynamically, these has() calls will try to load them.  If only one can be
 loaded at a time, just checking if Python 2 or 3 are available will prevent
 the other one from being available.
+
+==============================================================================
+11. Python X						*python_x* *pythonx*
+
+Because most python code can be written so that it works with python 2.6+ and
+python 3 the pyx* functions and commands have been writen.  They work exactly
+the same as the Python 2 and 3 variants, but select the Python version using
+the 'pyxversion' setting.
+
+You should set 'pyxversion' in your |.vimrc| to prefer Python 2 or Python 3
+for Python commands. If you change this setting at runtime you may risk that
+state of plugins (such as initialization) may be lost.
+
+If you want to use a module, you can put it in the {rtp}/pythonx directory.
+See |pythonx-directory|.
+
+							*:pyx* *:pythonx*
+The `:pyx` and `:pythonx` commands work similar to `:python`.  A simple check
+if the `:pyx` command is working: >
+	:pyx print("Hello")
+
+To see what version of Python is being used: >
+	:pyx import sys
+	:pyx print(sys.version)
+<
+					*:pyxfile* *python_x-special-comments*
+The `:pyxfile` command works similar to `:pyfile`.  However you can add one of
+these comments to force Vim using `:pyfile` or `:py3file`: >
+  #!/any string/python2		" Shebang. Must be the first line of the file.
+  #!/any string/python3		" Shebang. Must be the first line of the file.
+  # requires python 2.x		" Maximum lines depend on 'modelines'.
+  # requires python 3.x		" Maximum lines depend on 'modelines'.
+Unlike normal modelines, the bottom of the file is not checked.
+If none of them are found, the 'pyxversion' setting is used.
+							*W20* *W21*
+If Vim does not support the selected Python version a silent message will be
+printed.  Use `:messages` to read them.
+
+							*:pyxdo*
+The `:pyxdo` command works similar to `:pydo`.
+
+							*has-pythonx*
+You can test if pyx* commands are available with: >
+	if has('pythonx')
+	  echo 'pyx* commands are available. (Python ' . &pyx . ')'
+	endif
+
+When compiled with only one of |+python| or |+python3|, the has() returns 1.
+When compiled with both |+python| and |+python3|, the test depends on the
+'pyxversion' setting.  If 'pyxversion' is 0, it tests Python 3 first, and if
+it is not available then Python 2.  If 'pyxversion' is 2 or 3, it tests only
+Python 2 or 3 respectively.
+
+Note that for has('pythonx') to work it may try to dynamically load Python 3
+or 2.  This may have side effects, especially when Vim can only load one of
+the two.
+
+If a user prefers Python 2 and want to fallback to Python 3, he needs to set
+'pyxversion' explicitly in his |.vimrc|.  E.g.: >
+	if has('python')
+	  set pyx=2
+	elseif has('python3')
+	  set pyx=3
+	endif
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

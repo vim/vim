@@ -479,6 +479,17 @@ struct vimoption
 # define HIGHLIGHT_INIT "8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,N:CursorLineNr,r:Question,s:StatusLine,S:StatusLineNC,t:Title,v:Visual,w:WarningMsg,W:WildMenu,>:SignColumn,*:TabLine,#:TabLineSel,_:TabLineFill"
 #endif
 
+/* Default python version for pyx* commands */
+#if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
+# define DEFAULT_PYTHON_VER	0
+#elif defined(FEAT_PYTHON3)
+# define DEFAULT_PYTHON_VER	3
+#elif defined(FEAT_PYTHON)
+# define DEFAULT_PYTHON_VER	2
+#else
+# define DEFAULT_PYTHON_VER	0
+#endif
+
 /*
  * options[] is initialized here.
  * The order of the options MUST be alphabetic for ":set all" and findoption().
@@ -2143,6 +2154,14 @@ static struct vimoption options[] =
 			    {(char_u *)DYNAMIC_PYTHON_DLL, (char_u *)0L}
 			    SCRIPTID_INIT},
 #endif
+    {"pyxversion", "pyx",   P_NUM|P_VI_DEF|P_SECURE,
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
+			    (char_u *)&p_pyx, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)DEFAULT_PYTHON_VER, (char_u *)0L}
+			    SCRIPTID_INIT},
     {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_TEXTOBJ
 			    (char_u *)&p_qe, PV_QE,
@@ -8824,6 +8843,15 @@ set_num_option(
 #ifdef MZSCHEME_GUI_THREADS
     else if (pp == &p_mzq)
 	mzvim_reset_timer();
+#endif
+
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
+    /* 'pyxversion' */
+    else if (pp == &p_pyx)
+    {
+	if (p_pyx != 0 && p_pyx != 2 && p_pyx != 3)
+	    errmsg = e_invarg;
+    }
 #endif
 
     /* sync undo before 'undolevels' changes */

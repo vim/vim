@@ -2151,6 +2151,8 @@ test_arglist \
 	test_popup \
 	test_profile \
 	test_put \
+	test_pyx2 \
+	test_pyx3 \
 	test_quickfix \
 	test_regexp_latin \
 	test_regexp_utf8 \
@@ -2754,6 +2756,7 @@ shadow:	runtime pixmaps
 				 ../../testdir/*.vim \
 				 ../../testdir/*.py \
 				 ../../testdir/python* \
+				 ../../testdir/pyxfile \
 				 ../../testdir/sautest \
 				 ../../testdir/samples \
 				 ../../testdir/test83-tags? \

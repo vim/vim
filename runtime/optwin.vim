@@ -923,7 +923,7 @@ if has("folding")
   call append("$", "foldmarker\tmarkers used when 'foldmethod' is \"marker\"")
   call append("$", "\t(local to window)")
   call <SID>OptionL("fmr")
-  call append("$", "foldnestmax\tmaximum fold depth for when 'foldmethod is \"indent\" or \"syntax\"")
+  call append("$", "foldnestmax\tmaximum fold depth for when 'foldmethod' is \"indent\" or \"syntax\"")
   call append("$", "\t(local to window)")
   call <SID>OptionL("fdn")
 endif
@@ -1323,6 +1323,10 @@ endif
 if exists("&perldll")
   call append("$", "perldll\tname of the Perl dynamic library")
   call <SID>OptionG("perldll", &perldll)
+endif
+if has('pythonx')
+  call append("$", "pyxversion\twhether to use Python 2 or 3")
+  call append("$", " \tset pyx=" . &wd)
 endif
 if exists("&pythondll")
   call append("$", "pythondll\tname of the Python 2 dynamic library")

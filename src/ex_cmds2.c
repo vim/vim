@@ -3675,6 +3675,194 @@ ex_options(
 }
 #endif
 
+#if defined(FEAT_PYTHON3) || defined(FEAT_PYTHON) || defined(PROTO)
+
+# if (defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
+/*
+ * Detect Python 3 or 2, and initialize 'pyxversion'.
+ */
+    void
+init_pyxversion(void)
+{
+    if (p_pyx == 0)
+    {
+	if (python3_enabled(FALSE))
+	    p_pyx = 3;
+	else if (python_enabled(FALSE))
+	    p_pyx = 2;
+    }
+}
+# endif
+
+/*
+ * Does a file contain one of the following strings at the beginning of any
+ * line?
+ * "#!(any string)python2"  => returns 2
+ * "#!(any string)python3"  => returns 3
+ * "# requires python 2.x"  => returns 2
+ * "# requires python 3.x"  => returns 3
+ * otherwise return 0.
+ */
+    static int
+requires_py_version(char_u *filename)
+{
+    FILE    *file;
+    int	    requires_py_version = 0;
+    int	    i, lines;
+
+    lines = (int)p_mls;
+    if (lines < 0)
+	lines = 5;
+
+    file = mch_fopen((char *)filename, "r");
+    if (file != NULL)
+    {
+	for (i = 0; i < lines; i++)
+	{
+	    if (vim_fgets(IObuff, IOSIZE, file))
+		break;
+	    if (i == 0 && IObuff[0] == '#' && IObuff[1] == '!')
+	    {
+		/* Check shebang. */
+		if (strstr((char *)IObuff + 2, "python2") != NULL)
+		{
+		    requires_py_version = 2;
+		    break;
+		}
+		if (strstr((char *)IObuff + 2, "python3") != NULL)
+		{
+		    requires_py_version = 3;
+		    break;
+		}
+	    }
+	    IObuff[21] = '\0';
+	    if (STRCMP("# requires python 2.x", IObuff) == 0)
+	    {
+		requires_py_version = 2;
+		break;
+	    }
+	    if (STRCMP("# requires python 3.x", IObuff) == 0)
+	    {
+		requires_py_version = 3;
+		break;
+	    }
+	}
+	fclose(file);
+    }
+    return requires_py_version;
+}
+
+
+/*
+ * Source a python file using the requested python version.
+ */
+    static void
+source_pyx_file(exarg_T *eap, char_u *fname)
+{
+    exarg_T ex;
+    int	    v = requires_py_version(fname);
+
+# if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
+    init_pyxversion();
+# endif
+    if (v == 0)
+    {
+# if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
+	/* user didn't choose a preference, 'pyx' is used */
+	v = p_pyx;
+# elif defined(FEAT_PYTHON)
+	v = 2;
+# elif defined(FEAT_PYTHON3)
+	v = 3;
+# endif
+    }
+
+    /*
+     * now source, if required python version is not supported show
+     * unobtrusive message.
+     */
+    if (eap == NULL)
+	vim_memset(&ex, 0, sizeof(ex));
+    else
+	ex = *eap;
+    ex.arg = fname;
+    ex.cmd = (char_u *)(v == 2 ? "pyfile" : "pyfile3");
+
+    if (v == 2)
+    {
+# ifdef FEAT_PYTHON
+	ex_pyfile(&ex);
+# else
+	vim_snprintf((char *)IObuff, IOSIZE,
+		_("W20: Required python version 2.x not supported, ignoring file: %s"),
+		fname);
+	MSG(IObuff);
+# endif
+	return;
+    }
+    else
+    {
+# ifdef FEAT_PYTHON3
+	ex_py3file(&ex);
+# else
+	vim_snprintf((char *)IObuff, IOSIZE,
+		_("W21: Required python version 3.x not supported, ignoring file: %s"),
+		fname);
+	MSG(IObuff);
+# endif
+	return;
+    }
+}
+
+/*
+ * ":pyxfile {fname}"
+ */
+    void
+ex_pyxfile(exarg_T *eap)
+{
+    source_pyx_file(eap, eap->arg);
+}
+
+/*
+ * ":pyx"
+ */
+    void
+ex_pyx(exarg_T *eap)
+{
+# if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
+    init_pyxversion();
+    if (p_pyx == 2)
+	ex_python(eap);
+    else
+	ex_py3(eap);
+# elif defined(FEAT_PYTHON)
+    ex_python(eap);
+# elif defined(FEAT_PYTHON3)
+    ex_py3(eap);
+# endif
+}
+
+/*
+ * ":pyxdo"
+ */
+    void
+ex_pyxdo(exarg_T *eap)
+{
+# if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
+    init_pyxversion();
+    if (p_pyx == 2)
+	ex_pydo(eap);
+    else
+	ex_py3do(eap);
+# elif defined(FEAT_PYTHON)
+    ex_pydo(eap);
+# elif defined(FEAT_PYTHON3)
+    ex_py3do(eap);
+# endif
+}
+
+#endif
+
 /*
  * ":source {fname}"
  */

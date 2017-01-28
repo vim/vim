@@ -289,6 +289,9 @@ static void f_py3eval(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_PYTHON
 static void f_pyeval(typval_T *argvars, typval_T *rettv);
 #endif
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
+static void f_pyxeval(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_range(typval_T *argvars, typval_T *rettv);
 static void f_readfile(typval_T *argvars, typval_T *rettv);
 static void f_reltime(typval_T *argvars, typval_T *rettv);
@@ -715,6 +718,9 @@ static struct fst
 #endif
 #ifdef FEAT_PYTHON
     {"pyeval",		1, 1, f_pyeval},
+#endif
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
+    {"pyxeval",		1, 1, f_pyxeval},
 #endif
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
@@ -5734,15 +5740,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_PERSISTENT_UNDO
 	"persistent_undo",
 #endif
-#ifdef FEAT_PYTHON
-#ifndef DYNAMIC_PYTHON
+#if defined(FEAT_PYTHON) && !defined(DYNAMIC_PYTHON)
 	"python",
+	"pythonx",
 #endif
-#endif
-#ifdef FEAT_PYTHON3
-#ifndef DYNAMIC_PYTHON3
+#if defined(FEAT_PYTHON3) && !defined(DYNAMIC_PYTHON3)
 	"python3",
-#endif
+	"pythonx",
 #endif
 #ifdef FEAT_POSTSCRIPT
 	"postscript",
@@ -5972,17 +5976,30 @@ f_has(typval_T *argvars, typval_T *rettv)
 	else if (STRICMP(name, "ruby") == 0)
 	    n = ruby_enabled(FALSE);
 #endif
-#ifdef FEAT_PYTHON
 #ifdef DYNAMIC_PYTHON
 	else if (STRICMP(name, "python") == 0)
 	    n = python_enabled(FALSE);
 #endif
-#endif
-#ifdef FEAT_PYTHON3
 #ifdef DYNAMIC_PYTHON3
 	else if (STRICMP(name, "python3") == 0)
 	    n = python3_enabled(FALSE);
 #endif
+#if defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3)
+	else if (STRICMP(name, "pythonx") == 0)
+	{
+# if defined(DYNAMIC_PYTHON) && defined(DYNAMIC_PYTHON3)
+	    if (p_pyx == 0)
+		n = python3_enabled(FALSE) || python_enabled(FALSE);
+	    else if (p_pyx == 3)
+		n = python3_enabled(FALSE);
+	    else if (p_pyx == 2)
+		n = python_enabled(FALSE);
+# elif defined(DYNAMIC_PYTHON)
+	    n = python_enabled(FALSE);
+# elif defined(DYNAMIC_PYTHON3)
+	    n = python3_enabled(FALSE);
+# endif
+	}
 #endif
 #ifdef DYNAMIC_PERL
 	else if (STRICMP(name, "perl") == 0)
@@ -8007,6 +8024,9 @@ f_py3eval(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	buf[NUMBUFLEN];
 
+    if (p_pyx == 0)
+	p_pyx = 3;
+
     str = get_tv_string_buf(&argvars[0], buf);
     do_py3eval(str, rettv);
 }
@@ -8022,8 +8042,32 @@ f_pyeval(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	buf[NUMBUFLEN];
 
+    if (p_pyx == 0)
+	p_pyx = 2;
+
     str = get_tv_string_buf(&argvars[0], buf);
     do_pyeval(str, rettv);
+}
+#endif
+
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
+/*
+ * "pyxeval()" function
+ */
+    static void
+f_pyxeval(typval_T *argvars, typval_T *rettv)
+{
+# if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
+    init_pyxversion();
+    if (p_pyx == 2)
+	f_pyeval(argvars, rettv);
+    else
+	f_py3eval(argvars, rettv);
+# elif defined(FEAT_PYTHON)
+    f_pyeval(argvars, rettv);
+# elif defined(FEAT_PYTHON3)
+    f_py3eval(argvars, rettv);
+# endif
 }
 #endif
 

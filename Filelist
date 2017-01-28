@@ -122,6 +122,7 @@ SRC_ALL =	\
 		src/testdir/pythonx/topmodule/submodule/subsubmodule/subsubsubmodule.py \
 		src/testdir/python_after/*.py \
 		src/testdir/python_before/*.py \
+		src/testdir/pyxfile/*.py \
 		src/testdir/bench*.in \
 		src/testdir/bench*.vim \
 		src/testdir/samples/*.txt \

@@ -288,6 +288,11 @@ static void	ex_popup(exarg_T *eap);
 # define ex_py3do		ex_ni
 # define ex_py3file		ex_ni
 #endif
+#if !defined(FEAT_PYTHON) && !defined(FEAT_PYTHON3)
+# define ex_pyx			ex_script_ni
+# define ex_pyxdo		ex_ni
+# define ex_pyxfile		ex_ni
+#endif
 #ifndef FEAT_TCL
 # define ex_tcl			ex_script_ni
 # define ex_tcldo		ex_ni
