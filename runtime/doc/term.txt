@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.0.  Last change: 2016 Sep 02
+*term.txt*      For Vim version 8.0.  Last change: 2017 Jan 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -99,7 +99,12 @@ is used.
 
 Note that in some situations Vim will not recognize the bracketed paste and
 you will get the raw text.  In other situations Vim will only get the first
-pasted character and drop the rest, e.g. when using the "r" command.
+pasted character and drop the rest, e.g. when using the "r" command.  If you
+have a problem with this, disable bracketed paste by putting this in your
+.vimrc: >
+	set t_BE=
+If this is done while Vim is running the 't_BD' will be sent to the terminal
+to disable bracketed paste.
 
 							*cs7-problem*
 Note: If the terminal settings are changed after running Vim, you might have
@@ -414,7 +419,7 @@ Note: Use the <> form if possible
 	t_KK	<k8>		keypad 8		 *<k8>*	*t_KK* *'t_KK'*
 	t_KL	<k9>		keypad 9		 *<k9>*	*t_KL* *'t_KL'*
 		<Mouse>		leader of mouse code		*<Mouse>*
-	t_PS	start of brackted paste |xterm-bracketed-paste|   *t_PS* 't_PS'
+	t_PS	start of bracketed paste |xterm-bracketed-paste|  *t_PS* 't_PS'
 	t_PE	end of bracketed paste |xterm-bracketed-paste|    *t_PE* 't_PE'
 
 Note about t_so and t_mr: When the termcap entry "so" is not present the

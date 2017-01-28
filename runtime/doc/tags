@@ -774,6 +774,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'pvw'	options.txt	/*'pvw'*
 'pythondll'	options.txt	/*'pythondll'*
 'pythonthreedll'	options.txt	/*'pythonthreedll'*
+'pyx'	options.txt	/*'pyx'*
+'pyxversion'	options.txt	/*'pyxversion'*
 'qe'	options.txt	/*'qe'*
 'quote	motion.txt	/*'quote*
 'quoteescape'	options.txt	/*'quoteescape'*
@@ -923,6 +925,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_AB'	term.txt	/*'t_AB'*
 't_AF'	term.txt	/*'t_AF'*
 't_AL'	term.txt	/*'t_AL'*
+'t_BD'	term.txt	/*'t_BD'*
+'t_BE'	term.txt	/*'t_BE'*
 't_CS'	term.txt	/*'t_CS'*
 't_CV'	term.txt	/*'t_CV'*
 't_Ce'	term.txt	/*'t_Ce'*
@@ -2722,6 +2726,10 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :pyfile	if_pyth.txt	/*:pyfile*
 :python	if_pyth.txt	/*:python*
 :python3	if_pyth.txt	/*:python3*
+:pythonx	if_pyth.txt	/*:pythonx*
+:pyx	if_pyth.txt	/*:pyx*
+:pyxdo	if_pyth.txt	/*:pyxdo*
+:pyxfile	if_pyth.txt	/*:pyxfile*
 :q	editing.txt	/*:q*
 :qa	editing.txt	/*:qa*
 :qall	editing.txt	/*:qall*
@@ -4770,6 +4778,8 @@ W16	message.txt	/*W16*
 W17	arabic.txt	/*W17*
 W18	syntax.txt	/*W18*
 W19	autocmd.txt	/*W19*
+W20	if_pyth.txt	/*W20*
+W21	if_pyth.txt	/*W21*
 WORD	motion.txt	/*WORD*
 WWW	intro.txt	/*WWW*
 Win32	os_win32.txt	/*Win32*
@@ -6603,6 +6613,7 @@ hangulin.txt	hangulin.txt	/*hangulin.txt*
 has()	eval.txt	/*has()*
 has-patch	eval.txt	/*has-patch*
 has-python	if_pyth.txt	/*has-python*
+has-pythonx	if_pyth.txt	/*has-pythonx*
 has_key()	eval.txt	/*has_key()*
 haskell.vim	syntax.txt	/*haskell.vim*
 haslocaldir()	eval.txt	/*haslocaldir()*
@@ -7901,7 +7912,11 @@ python.vim	syntax.txt	/*python.vim*
 python2-directory	if_pyth.txt	/*python2-directory*
 python3	if_pyth.txt	/*python3*
 python3-directory	if_pyth.txt	/*python3-directory*
+python_x	if_pyth.txt	/*python_x*
+python_x-special-comments	if_pyth.txt	/*python_x-special-comments*
+pythonx	if_pyth.txt	/*pythonx*
 pythonx-directory	if_pyth.txt	/*pythonx-directory*
+pyxeval()	eval.txt	/*pyxeval()*
 q	repeat.txt	/*q*
 q/	cmdline.txt	/*q\/*
 q:	cmdline.txt	/*q:*
@@ -8443,6 +8458,8 @@ t_@7	term.txt	/*t_@7*
 t_AB	term.txt	/*t_AB*
 t_AF	term.txt	/*t_AF*
 t_AL	term.txt	/*t_AL*
+t_BD	term.txt	/*t_BD*
+t_BE	term.txt	/*t_BE*
 t_CS	term.txt	/*t_CS*
 t_CV	term.txt	/*t_CV*
 t_Ce	term.txt	/*t_Ce*
@@ -8481,6 +8498,8 @@ t_KI	term.txt	/*t_KI*
 t_KJ	term.txt	/*t_KJ*
 t_KK	term.txt	/*t_KK*
 t_KL	term.txt	/*t_KL*
+t_PE	term.txt	/*t_PE*
+t_PS	term.txt	/*t_PS*
 t_RB	term.txt	/*t_RB*
 t_RI	term.txt	/*t_RI*
 t_RV	term.txt	/*t_RV*
@@ -9332,6 +9351,7 @@ xterm-8-bit	term.txt	/*xterm-8-bit*
 xterm-8bit	term.txt	/*xterm-8bit*
 xterm-blink	syntax.txt	/*xterm-blink*
 xterm-blinking-cursor	syntax.txt	/*xterm-blinking-cursor*
+xterm-bracketed-paste	term.txt	/*xterm-bracketed-paste*
 xterm-clipboard	term.txt	/*xterm-clipboard*
 xterm-codes	term.txt	/*xterm-codes*
 xterm-color	syntax.txt	/*xterm-color*

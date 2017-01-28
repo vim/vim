@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Jan 16
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Jan 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,8 +35,6 @@ entered there will not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-get_syn_options() does not respect skip in else part. (Zyx)
-
 +channel:
 - Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
@@ -60,6 +58,7 @@ get_syn_options() does not respect skip in else part. (Zyx)
   connecting in the main loop with zero timeout.
 - job_start(): run job in a newly opened terminal.
     With xterm could use -S{pty}.
+    Although user could use "xterm -e 'cmd arg'".
 
 Regexp problems:
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
@@ -108,40 +107,27 @@ Regexp problems:
 
 '] mark invalid after undoing insert "hello".
 
-Make html indent file use javascript indent, now that it's not just cindent.
-#1220
-
-Concatenation with null string causes an error: 'a'[1:0] .. 'b'
-Might as well handle it like an empty string.
-
 When using symbolic links, a package path will not be inserted at the right
 position in 'runtimepath'. (Dugan Chen, 2016 Nov 18)
 
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
-Include rust files. (Klabnik, #1356)
-
 Allow using json with empty key?  Dict already has it.
 
 Json string with trailing \u should be an error. (Lcd)
 
-Patch to deal with changed configure events in GTK 3. (Jan Alexander Steffens,
-2016 Oct 23 #1193)
-Remarks from nuko8, 2016 Nov 2.
-
 Multi-byte bug: dv} splits char. (Urtica Dioica, 2017 Jan 9)
 
-Patch to change order of compiler flags. (Yousong Zhou, 2016 Sep 19, #1100)
+Patch: Make mode() return "ix" or "Rx" when in completion mode.
+(Yegappan Lakshmanan, 2017 Jan 19, #1397, update Jan 22)
 
-Patch to add command line completion for :cexpr commands. (Yegappan
-Lakshmanan, 2016 Dec 13)
+With Visual selection of a multi-byte character the '] mark is on the last
+byte, should be first byte?
 
-Patch for :pyx, run python commands depending on the supported version.
-(Marc Weber, update from Ken Takata, 2016 Sep 19, 2017 Jan 6)
-
-Patch to avoid warnings for overflow. (Mike Williams, 2016 Dec 16)
-Update Dec 19.
+When session file has name in argument list but the buffer was deleted, the
+buffer is not deleted when using the session file. (#1393)
+Should add the buffer in hidden state.
 
 When an item in the quickfix list has a file name that does not exist, behave
 like the item was not a match for :cnext.
@@ -150,18 +136,13 @@ Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
 Another example in #1309
 
-Patch to fix vim_iswordp() works differently on chars <256 that are two bytes.
-Ozaki Kiichi, 2016 Dec 11.
+Completion for user-defined commands does not work if a few chararacters were
+already typed. (Dominique, 2017 Jan 26)
 
 When deleting a mark or register, leave a tombstone, so that it's also deleted
 when writing viminfo (and the delete was the most recent action). #1339
 
 Relevant neovim patch:
-https://github.com/neovim/neovim/pull/5717
-test case: 
-https://github.com/neovim/neovim/pull/5717#issuecomment-264845481
-Others:
-https://github.com/neovim/neovim/issues/5713#issuecomment-265136186
 https://github.com/neovim/neovim/pull/5737#issuecomment-266055165
 
 Patch for better explanation of 'compatible' side effects.
@@ -199,6 +180,10 @@ Patch for restoring wide characters in the console buffer.
 Patch to fix escaping of job arguments. (Yasuhiro Matsumoto, 2016 Oct 5)
 Update Oct 14: https://gist.github.com/mattn/d47e7d3bfe5ade4be86062b565a4bfca
 
+The TermResponse event is not triggered when a plugin has set 'eventignore' to
+"all".  Netrw does this. (Gary Johnson, 2017 Jan 24)
+Postpone the event until 'eventignore' is reset.
+
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
@@ -220,6 +205,7 @@ lines: :g/^/normal yyp   On Unix it works OK.  (Bryce Orgill, 2016 Nov 5)
 
 Patch for wrong cursor position on wrapped line, involving breakindent.
 (Ozaki Kiichi, 2016 Nov 25)
+Does this also fix #1408 ?
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
 
@@ -568,6 +554,9 @@ Patch to add :mapgroup, put mappings in a group like augroup.
 
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
+
+Value of virtcol() for '[ and '] depend on multi-byte character.
+(Luchr, #277)
 
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?
@@ -1060,9 +1049,6 @@ Aug 16)
 
 When there are no command line arguments ":next" and ":argu" give E163, which
 is confusing.  Should say "the argument list is empty".
-
-xterm supports escape sequences to mark a paste operation.  Need to be
-enabled. (Bruno Sutic, 2014 Jul 11)  How to know the terminal supports this?
 
 URXVT:
 - will get stuck if byte sequence does not contain the expected semicolon.
