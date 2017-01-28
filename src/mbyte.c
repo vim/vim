@@ -895,7 +895,7 @@ mb_get_class_buf(char_u *p, buf_T *buf)
     if (enc_dbcs != 0 && p[0] != NUL && p[1] != NUL)
 	return dbcs_class(p[0], p[1]);
     if (enc_utf8)
-	return utf_class(utf_ptr2char(p));
+	return utf_class_buf(utf_ptr2char(p), buf);
     return 0;
 }
 
@@ -2694,6 +2694,12 @@ static struct interval emoji_all[] =
     int
 utf_class(int c)
 {
+    return utf_class_buf(c, curbuf);
+}
+
+    int
+utf_class_buf(int c, buf_T *buf)
+{
     /* sorted list of non-overlapping intervals */
     static struct clinterval
     {
@@ -2780,7 +2786,7 @@ utf_class(int c)
     {
 	if (c == ' ' || c == '\t' || c == NUL || c == 0xa0)
 	    return 0;	    /* blank */
-	if (vim_iswordc(c))
+	if (vim_iswordc_buf(c, buf))
 	    return 2;	    /* word character */
 	return 1;	    /* punctuation */
     }

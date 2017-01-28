@@ -899,16 +899,17 @@ vim_iswordc(int c)
     int
 vim_iswordc_buf(int c, buf_T *buf)
 {
-#ifdef FEAT_MBYTE
     if (c >= 0x100)
     {
+#ifdef FEAT_MBYTE
 	if (enc_dbcs != 0)
 	    return dbcs_class((unsigned)c >> 8, (unsigned)(c & 0xff)) >= 2;
 	if (enc_utf8)
-	    return utf_class(c) >= 2;
-    }
+	    return utf_class_buf(c, buf) >= 2;
 #endif
-    return (c > 0 && c < 0x100 && GET_CHARTAB(buf, c) != 0);
+	return FALSE;
+    }
+    return (c > 0 && GET_CHARTAB(buf, c) != 0);
 }
 
 /*
@@ -917,21 +918,19 @@ vim_iswordc_buf(int c, buf_T *buf)
     int
 vim_iswordp(char_u *p)
 {
-#ifdef FEAT_MBYTE
-    if (has_mbyte && MB_BYTE2LEN(*p) > 1)
-	return mb_get_class(p) >= 2;
-#endif
-    return GET_CHARTAB(curbuf, *p) != 0;
+    return vim_iswordp_buf(p, curbuf);
 }
 
     int
 vim_iswordp_buf(char_u *p, buf_T *buf)
 {
+    int	c = *p;
+
 #ifdef FEAT_MBYTE
-    if (has_mbyte && MB_BYTE2LEN(*p) > 1)
-	return mb_get_class(p) >= 2;
+    if (has_mbyte && MB_BYTE2LEN(c) > 1)
+	c = (*mb_ptr2char)(p);
 #endif
-    return (GET_CHARTAB(buf, *p) != 0);
+    return vim_iswordc_buf(c, buf);
 }
 
 /*
