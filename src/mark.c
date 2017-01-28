@@ -57,6 +57,7 @@ setmark(int c)
 setmark_pos(int c, pos_T *pos, int fnum)
 {
     int		i;
+    buf_T	*buf;
 
     /* Check for a special key (may cause islower() to crash). */
     if (c < 0)
@@ -75,9 +76,13 @@ setmark_pos(int c, pos_T *pos, int fnum)
 	return OK;
     }
 
+    buf = buflist_findnr(fnum);
+    if (buf == NULL)
+	return FAIL;
+
     if (c == '"')
     {
-	curbuf->b_last_cursor = *pos;
+	buf->b_last_cursor = *pos;
 	return OK;
     }
 
@@ -85,31 +90,31 @@ setmark_pos(int c, pos_T *pos, int fnum)
      * file. */
     if (c == '[')
     {
-	curbuf->b_op_start = *pos;
+	buf->b_op_start = *pos;
 	return OK;
     }
     if (c == ']')
     {
-	curbuf->b_op_end = *pos;
+	buf->b_op_end = *pos;
 	return OK;
     }
 
     if (c == '<' || c == '>')
     {
 	if (c == '<')
-	    curbuf->b_visual.vi_start = *pos;
+	    buf->b_visual.vi_start = *pos;
 	else
-	    curbuf->b_visual.vi_end = *pos;
-	if (curbuf->b_visual.vi_mode == NUL)
+	    buf->b_visual.vi_end = *pos;
+	if (buf->b_visual.vi_mode == NUL)
 	    /* Visual_mode has not yet been set, use a sane default. */
-	    curbuf->b_visual.vi_mode = 'v';
+	    buf->b_visual.vi_mode = 'v';
 	return OK;
     }
 
     if (ASCII_ISLOWER(c))
     {
 	i = c - 'a';
-	curbuf->b_namedm[i] = *pos;
+	buf->b_namedm[i] = *pos;
 	return OK;
     }
     if (ASCII_ISUPPER(c) || VIM_ISDIGIT(c))
@@ -396,7 +401,8 @@ getmark_buf_fnum(
     {
 	startp = &buf->b_visual.vi_start;
 	endp = &buf->b_visual.vi_end;
-	if ((c == '<') == lt(*startp, *endp))
+	if (((c == '<') == lt(*startp, *endp) || endp->lnum == 0)
+							  && startp->lnum != 0)
 	    posp = startp;
 	else
 	    posp = endp;
