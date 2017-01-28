@@ -121,6 +121,12 @@ func Test_assert_inrange()
   call assert_fails('call assert_inrange(1, 1)', 'E119:')
 endfunc
 
+func Test_assert_with_msg()
+  call assert_equal('foo', 'bar', 'testing')
+  call assert_match("testing: Expected 'foo' but got 'bar'", v:errors[0])
+  call remove(v:errors, 0)
+endfunc
+
 func Test_user_is_happy()
   smile
   sleep 300m
