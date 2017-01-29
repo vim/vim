@@ -92,7 +92,10 @@ script:
   - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi
   - (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && if [ "$BUILD" = "yes" ]; then make -j$NPROC; fi)
   - if [ "$BUILD" = "yes" ]; then ${SRCDIR}/vim --version; fi
+  - if [ -n "$ASAN_OPTIONS" ]; then export PATH=/usr/lib/llvm-$(clang -v 2>&1 | sed -n 's/.*version \([1-9]\.[0-9][0-9]*\).*/\1/p')/bin:$PATH; fi
   - make $SHADOWOPT $TEST
+  - if [ -n "$ASAN_OPTIONS" ]; then for log in $(find -type f -name 'asan.*' -size +0); do cat "$log"; err=1; done; fi
+  - if [ -n "$err" ]; then exit 1; fi
 
 after_success:
   - if [ "$COVERAGE" = "yes" ]; then ~/.local/bin/coveralls -b $SRCDIR -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
