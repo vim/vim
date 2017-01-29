@@ -2819,7 +2819,17 @@ f_execute(typval_T *argvars, typval_T *rettv)
 	--list->lv_refcount;
     }
 
-    rettv->vval.v_string = redir_execute_ga.ga_data;
+    /* Need to append a NUL to the result. */
+    if (ga_grow(&redir_execute_ga, 1) == OK)
+    {
+	((char *)redir_execute_ga.ga_data)[redir_execute_ga.ga_len] = NUL;
+	rettv->vval.v_string = redir_execute_ga.ga_data;
+    }
+    else
+    {
+	ga_clear(&redir_execute_ga);
+	rettv->vval.v_string = NULL;
+    }
     msg_silent = save_msg_silent;
     emsg_silent = save_emsg_silent;
     emsg_noredir = save_emsg_noredir;
