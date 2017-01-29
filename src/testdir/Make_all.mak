@@ -176,6 +176,8 @@ NEW_TESTS = test_arglist.res \
 	    test_packadd.res \
 	    test_perl.res \
 	    test_profile.res \
+	    test_python2.res \
+	    test_python3.res \
 	    test_pyx2.res \
 	    test_pyx3.res \
 	    test_quickfix.res \

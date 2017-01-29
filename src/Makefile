@@ -2168,6 +2168,8 @@ test_arglist \
 	test_popup \
 	test_profile \
 	test_put \
+	test_python2 \
+	test_python3 \
 	test_pyx2 \
 	test_pyx3 \
 	test_quickfix \
