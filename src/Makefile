@@ -2198,6 +2198,7 @@ test_arglist \
 	test_tabpage \
 	test_tagcase \
 	test_tagjump \
+	test_tcl \
 	test_textobjects \
 	test_timers \
 	test_true_false \
