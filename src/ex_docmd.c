@@ -7533,7 +7533,10 @@ get_tabpage_arg(exarg_T *eap)
     else if (eap->addr_count > 0)
     {
 	if (unaccept_arg0 && eap->line2 == 0)
+	{
 	    eap->errmsg = e_invrange;
+	    tab_number = 0;
+	}
 	else
 	{
 	    tab_number = eap->line2;
