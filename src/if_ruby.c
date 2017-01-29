@@ -783,6 +783,7 @@ void ex_rubydo(exarg_T *eap)
 {
     int state;
     linenr_T i;
+    buf_T   *was_curbuf = curbuf;
 
     if (ensure_ruby_initialized())
     {
@@ -792,6 +793,8 @@ void ex_rubydo(exarg_T *eap)
 	{
 	    VALUE line;
 
+	    if (i > curbuf->b_ml.ml_line_count)
+		break;
 	    line = vim_str2rb_enc_str((char *)ml_get(i));
 	    rb_lastline_set(line);
 	    eval_enc_string_protect((char *) eap->arg, &state);
@@ -800,6 +803,8 @@ void ex_rubydo(exarg_T *eap)
 		error_print(state);
 		break;
 	    }
+	    if (was_curbuf != curbuf)
+		break;
 	    line = rb_lastline_get();
 	    if (!NIL_P(line))
 	    {

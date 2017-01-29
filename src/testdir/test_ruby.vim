@@ -32,3 +32,20 @@ func Test_ruby_evaluate_dict()
   redir END
   call assert_equal(['{"a"=>"foo", "b"=>123}'], split(l:out, "\n"))
 endfunc
+
+func Test_rubydo()
+  " Check deleting lines does not trigger ml_get error.
+  new
+  call setline(1, ['one', 'two', 'three'])
+  rubydo Vim.command("%d_")
+  bwipe!
+
+  " Check switching to another buffer does not trigger ml_get error.
+  new
+  let wincount = winnr('$')
+  call setline(1, ['one', 'two', 'three'])
+  rubydo Vim.command("new")
+  call assert_equal(wincount + 1, winnr('$'))
+  bwipe!
+  bwipe!
+endfunc
