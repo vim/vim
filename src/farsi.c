@@ -1920,56 +1920,56 @@ cmdl_fkmap(int c)
 	case  NL:
 	case  TAB:
 
-	       switch ((tempc = cmd_gchar(AT_CURSOR)))
-	       {
-	    case _BE:
-	    case _PE:
-	    case _TE:
-	    case _SE:
-	    case _JIM:
-	    case _CHE:
-	    case _HE_J:
-	    case _XE:
-	    case _SIN:
-	    case _SHIN:
-	    case _SAD:
-	    case _ZAD:
-	    case _AYN:
-	    case _GHAYN:
-	    case _FE:
-	    case _GHAF:
-	    case _KAF:
-	    case _GAF:
-	    case _LAM:
-	    case _MIM:
-	    case _NOON:
-	    case _HE:
-	    case _HE_:
-			cmd_pchar(toF_TyA(tempc), AT_CURSOR);
-		break;
-	    case _AYN_:
-			cmd_pchar(AYN_, AT_CURSOR);
-		break;
-	    case _GHAYN_:
-			cmd_pchar(GHAYN_, AT_CURSOR);
-		break;
-	    case _IE:
-		if (F_is_TyB_TyC_TyD(SRC_CMD, AT_CURSOR+1))
-			    cmd_pchar(IE_, AT_CURSOR);
-		else
-			    cmd_pchar(IE, AT_CURSOR);
-		break;
-	    case _YEE:
-		if (F_is_TyB_TyC_TyD(SRC_CMD, AT_CURSOR+1))
-			    cmd_pchar(YEE_, AT_CURSOR);
-			else
-			    cmd_pchar(YEE, AT_CURSOR);
-		break;
-	    case _YE:
-		if (F_is_TyB_TyC_TyD(SRC_CMD, AT_CURSOR+1))
-			    cmd_pchar(YE_, AT_CURSOR);
-			else
-			    cmd_pchar(YE, AT_CURSOR);
+	    switch ((tempc = cmd_gchar(AT_CURSOR)))
+	    {
+		case _BE:
+		case _PE:
+		case _TE:
+		case _SE:
+		case _JIM:
+		case _CHE:
+		case _HE_J:
+		case _XE:
+		case _SIN:
+		case _SHIN:
+		case _SAD:
+		case _ZAD:
+		case _AYN:
+		case _GHAYN:
+		case _FE:
+		case _GHAF:
+		case _KAF:
+		case _GAF:
+		case _LAM:
+		case _MIM:
+		case _NOON:
+		case _HE:
+		case _HE_:
+		    cmd_pchar(toF_TyA(tempc), AT_CURSOR);
+		    break;
+		case _AYN_:
+		    cmd_pchar(AYN_, AT_CURSOR);
+		    break;
+		case _GHAYN_:
+		    cmd_pchar(GHAYN_, AT_CURSOR);
+		    break;
+		case _IE:
+		    if (F_is_TyB_TyC_TyD(SRC_CMD, AT_CURSOR+1))
+			cmd_pchar(IE_, AT_CURSOR);
+		    else
+			cmd_pchar(IE, AT_CURSOR);
+		    break;
+		case _YEE:
+		    if (F_is_TyB_TyC_TyD(SRC_CMD, AT_CURSOR+1))
+			cmd_pchar(YEE_, AT_CURSOR);
+		    else
+			cmd_pchar(YEE, AT_CURSOR);
+		    break;
+		case _YE:
+		    if (F_is_TyB_TyC_TyD(SRC_CMD, AT_CURSOR+1))
+			cmd_pchar(YE_, AT_CURSOR);
+		    else
+			cmd_pchar(YE, AT_CURSOR);
 	    }
 
 	    switch (c)
