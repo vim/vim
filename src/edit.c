@@ -6166,6 +6166,9 @@ insertchar(
 		&& (!has_mbyte || MB_BYTE2LEN_CHECK(c) == 1)
 #endif
 		&& i < INPUT_BUFLEN
+# ifdef FEAT_FKMAP
+		&& !(p_fkmap && KeyTyped) /* Farsi mode mapping moves cursor */
+# endif
 		&& (textwidth == 0
 		    || (virtcol += byte2cells(buf[i - 1])) < (colnr_T)textwidth)
 		&& !(!no_abbr && !vim_iswordc(c) && vim_iswordc(buf[i - 1])))
@@ -6174,10 +6177,6 @@ insertchar(
 	    c = vgetc();
 	    if (p_hkmap && KeyTyped)
 		c = hkmap(c);		    /* Hebrew mode mapping */
-# ifdef FEAT_FKMAP
-	    if (p_fkmap && KeyTyped)
-		c = fkmap(c);		    /* Farsi mode mapping */
-# endif
 	    buf[i++] = c;
 #else
 	    buf[i++] = vgetc();
