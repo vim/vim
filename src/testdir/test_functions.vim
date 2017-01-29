@@ -131,8 +131,12 @@ func Test_strftime()
   " Format of strftime() depends on system. We assume
   " that basic formats tested here are available and
   " identical on all systems which support strftime().
-  call assert_equal('2017-01-18 00:25:12', strftime('%Y-%m-%d %H:%M:%S', 1484695512))
-  call assert_match('\d\d\d\d-\(0\d\|1[012]\)-\([012]\d\|3[01]\) \([01]\d\|2[0-3]\):[0-5]\d:\([0-5]\d\|60\)', strftime('%Y-%m-%d %H:%M:%S'))
+  "
+  " The 2nd parameter of strftime() is a local time, so the output day
+  " of strftime() can be 17 or 18, depending on timezone.
+  call assert_match('^2017-01-1[78]$', strftime('%Y-%m-%d', 1484695512))
+  "
+  call assert_match('^\d\d\d\d-\(0\d\|1[012]\)-\([012]\d\|3[01]\) \([01]\d\|2[0-3]\):[0-5]\d:\([0-5]\d\|60\)$', strftime('%Y-%m-%d %H:%M:%S'))
 
   call assert_fails('call strftime([])', 'E730:')
   call assert_fails('call strftime("%Y", [])', 'E745:')
