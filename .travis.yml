@@ -19,8 +19,9 @@ env:
   - BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
     # ASAN build
-  - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DEXITFREE -fsanitize=address -fno-omit-frame-pointer" FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no
-    "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'" ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+  - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
+    FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+    "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
 
 sudo: false
 
@@ -42,12 +43,14 @@ matrix:
       env: BUILD=yes TEST=scripttests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
             "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
     - os: osx
-      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DEXITFREE -fsanitize=address -fno-omit-frame-pointer" FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no
-            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'" ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
+            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
     - os: linux
       compiler: gcc
-      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DEXITFREE -fsanitize=address -fno-omit-frame-pointer" FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no
-            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'" ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
+            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
     - os: linux
       compiler: clang
       env: BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
