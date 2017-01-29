@@ -125,7 +125,7 @@ func Test_str2nr()
 endfunc
 
 func Test_strftime()
-  if !exists('*strtime')
+  if !exists('*strftime')
     return
   endif
   " Format of strftime() depends on system. We assume
