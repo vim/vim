@@ -2147,6 +2147,7 @@ test_arglist \
 	test_langmap \
 	test_largefile \
 	test_lispwords \
+	test_lua \
 	test_man \
 	test_mapping \
 	test_marks \

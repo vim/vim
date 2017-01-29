@@ -164,6 +164,7 @@ NEW_TESTS = test_arglist.res \
 	    test_job_fails.res \
 	    test_json.res \
 	    test_langmap.res \
+	    test_lua.res \
 	    test_man.res \
 	    test_marks.res \
 	    test_matchadd_conceal.res \
@@ -172,8 +173,8 @@ NEW_TESTS = test_arglist.res \
 	    test_nested_function.res \
 	    test_netbeans.res \
 	    test_normal.res \
-	    test_paste.res \
 	    test_packadd.res \
+	    test_paste.res \
 	    test_perl.res \
 	    test_profile.res \
 	    test_python2.res \
