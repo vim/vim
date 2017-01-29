@@ -82,6 +82,21 @@ function Test_perldo()
   1
   call assert_false(search('\Cperl'))
   bw!
+
+  " Check deleting lines does not trigger ml_get error.
+  new
+  call setline(1, ['one', 'two', 'three'])
+  perldo VIM::DoCommand("%d_")
+  bwipe!
+
+  " Check switching to another buffer does not trigger ml_get error.
+  new
+  let wincount = winnr('$')
+  call setline(1, ['one', 'two', 'three'])
+  perldo VIM::DoCommand("new")
+  call assert_equal(wincount + 1, winnr('$'))
+  bwipe!
+  bwipe!
 endfunc
 
 function Test_VIM_package()

@@ -1286,6 +1286,7 @@ ex_perldo(exarg_T *eap)
     SV		*sv;
     char	*str;
     linenr_T	i;
+    buf_T	*was_curbuf = curbuf;
 
     if (bufempty())
 	return;
@@ -1321,11 +1322,14 @@ ex_perldo(exarg_T *eap)
     SAVETMPS;
     for (i = eap->line1; i <= eap->line2; i++)
     {
+	/* Check the line number, the command my have deleted lines. */
+	if (i > curbuf->b_ml.ml_line_count)
+	    break;
 	sv_setpv(GvSV(PL_defgv), (char *)ml_get(i));
 	PUSHMARK(sp);
 	perl_call_pv("VIM::perldo", G_SCALAR | G_EVAL);
 	str = SvPV(GvSV(PL_errgv), length);
-	if (length)
+	if (length || curbuf != was_curbuf)
 	    break;
 	SPAGAIN;
 	if (SvTRUEx(POPs))
