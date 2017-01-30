@@ -78,7 +78,7 @@ test1.out: test1.in
 	# 200 msec is sufficient, but only modern sleep supports a fraction of
 	# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	-$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in
 
 	# For flaky tests retry one time.  No tests at the moment.
 	#@/bin/sh -c "if test -f test.out -a $* = test61; then \
@@ -108,7 +108,7 @@ bench_re_freeze.out: bench_re_freeze.vim
 	# 200 msec is sufficient, but only modern sleep supports a fraction of
 	# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	-$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in
 	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
 
 nolog:
