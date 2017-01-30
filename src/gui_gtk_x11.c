@@ -3171,9 +3171,9 @@ delete_event_cb(GtkWidget *widget UNUSED,
     static int
 get_item_dimensions(GtkWidget *widget, GtkOrientation orientation)
 {
+# ifdef FEAT_GUI_GNOME
     GtkOrientation item_orientation = GTK_ORIENTATION_HORIZONTAL;
 
-# ifdef FEAT_GUI_GNOME
     if (using_gnome && widget != NULL)
     {
 	GtkWidget *parent;
@@ -3192,7 +3192,10 @@ get_item_dimensions(GtkWidget *widget, GtkOrientation orientation)
 	    item_orientation = bonobo_dock_item_get_orientation(dockitem);
 	}
     }
+# else
+#  define item_orientation GTK_ORIENTATION_HORIZONTAL
 # endif
+
 # if GTK_CHECK_VERSION(3,0,0)
     if (widget != NULL
 	    && item_orientation == orientation
@@ -3210,15 +3213,23 @@ get_item_dimensions(GtkWidget *widget, GtkOrientation orientation)
 
 	gtk_widget_get_allocation(widget, &allocation);
 
+#  ifdef FEAT_GUI_GNOME
 	if (orientation == GTK_ORIENTATION_HORIZONTAL)
 	    return allocation.height;
 	else
 	    return allocation.width;
+#  else
+	return allocation.height;
+#endif
 # else
+#  ifdef FEAT_GUI_GNOME
 	if (orientation == GTK_ORIENTATION_HORIZONTAL)
 	    return widget->allocation.height;
 	else
 	    return widget->allocation.width;
+#  else
+	return widget->allocation.height;
+#  endif
 # endif
     }
     return 0;
