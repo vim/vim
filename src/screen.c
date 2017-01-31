@@ -824,8 +824,9 @@ update_single_line(win_T *wp, linenr_T lnum)
     int		j;
 
     /* Don't do anything if the screen structures are (not yet) valid. */
-    if (!screen_valid(TRUE))
+    if (!screen_valid(TRUE) || updating_screen)
 	return;
+    updating_screen = TRUE;
 
     if (lnum >= wp->w_topline && lnum < wp->w_botline
 				 && foldedCount(wp, lnum, &win_foldinfo) == 0)
@@ -865,13 +866,11 @@ update_single_line(win_T *wp, linenr_T lnum)
 # endif
     }
     need_cursor_line_redraw = FALSE;
+    updating_screen = FALSE;
 }
 #endif
 
 #if defined(FEAT_SIGNS) || defined(FEAT_GUI)
-static void update_prepare(void);
-static void update_finish(void);
-
 /*
  * Prepare for updating one or more windows.
  * Caller must check for "updating_screen" already set to avoid recursiveness.
