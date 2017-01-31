@@ -3556,7 +3556,7 @@ get_funccal_args_var()
 {
     if (current_funccal == NULL)
 	return NULL;
-    return &current_funccal->l_avars_var;
+    return &get_funccal()->l_avars_var;
 }
 
 /*
