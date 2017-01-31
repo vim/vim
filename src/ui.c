@@ -363,12 +363,19 @@ ui_breakcheck(void)
     void
 ui_breakcheck_force(int force)
 {
+    int save_us = updating_screen;
+
+    /* We do not want gui_resize_shell() to redraw the screen here. */
+    ++updating_screen;
+
 #ifdef FEAT_GUI
     if (gui.in_use)
 	gui_mch_update();
     else
 #endif
 	mch_breakcheck(force);
+
+    updating_screen = save_us;
 }
 
 /*****************************************************************************
