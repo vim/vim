@@ -158,7 +158,7 @@ let s:flaky = [
       \ 'Test_communicate()',
       \ 'Test_nb_basic()',
       \ 'Test_pipe_through_sort_all()',
-      \ 'Test_pipe_through_sort_some()'
+      \ 'Test_pipe_through_sort_some()',
       \ 'Test_reltime()',
       \ ]
 
