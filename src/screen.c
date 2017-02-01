@@ -2903,7 +2903,7 @@ win_line(
     int		endrow,
     int		nochange UNUSED)	/* not updating for changed text */
 {
-    int		col;			/* visual column on screen */
+    int		col = 0;		/* visual column on screen */
     unsigned	off;			/* offset in ScreenLines/ScreenAttrs */
     int		c = 0;			/* init for GCC */
     long	vcol = 0;		/* virtual column (for tabs) */
@@ -3429,7 +3429,11 @@ win_line(
 #else
 	    --ptr;
 #endif
-	    n_skip = v - vcol;
+#ifdef FEAT_MBYTE
+           /* character fits on the screen, don't need to skip it */
+           if ((*mb_ptr2cells)(ptr) >= c && col == 0)
+#endif
+	       n_skip = v - vcol;
 	}
 
 	/*
