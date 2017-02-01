@@ -57,6 +57,9 @@ else
   set encoding=latin1
 endif
 
+" Avoid stopping at the "hit enter" prompt
+set nomore
+
 " Output all messages in English.
 lang mess C
 
@@ -168,7 +171,6 @@ let s:flaky = [
       \ ]
 
 " Locate Test_ functions and execute them.
-set nomore
 redir @q
 silent function /^Test_
 redir END
