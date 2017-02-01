@@ -3212,15 +3212,7 @@ get_item_dimensions(GtkWidget *widget, GtkOrientation orientation)
 	GtkAllocation allocation;
 
 	gtk_widget_get_allocation(widget, &allocation);
-
-#  ifdef FEAT_GUI_GNOME
-	if (orientation == GTK_ORIENTATION_HORIZONTAL)
-	    return allocation.height;
-	else
-	    return allocation.width;
-#  else
 	return allocation.height;
-#endif
 # else
 #  ifdef FEAT_GUI_GNOME
 	if (orientation == GTK_ORIENTATION_HORIZONTAL)
