@@ -57,9 +57,6 @@ else
   set encoding=latin1
 endif
 
-" Avoid stopping at the "hit enter" prompt
-set nomore
-
 " Output all messages in English.
 lang mess C
 
@@ -88,6 +85,14 @@ endfunc
 
 function RunTheTest(test)
   echo 'Executing ' . a:test
+
+  " Avoid stopping at the "hit enter" prompt
+  set nomore
+
+  " Avoid a three second wait when a message is about to be overwritten by the
+  " mode message.
+  set noshowmode
+
   if exists("*SetUp")
     try
       call SetUp()

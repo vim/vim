@@ -2193,6 +2193,8 @@ func! Test_normal51_FileChangedRO()
   if !has("autocmd")
     return
   endif
+  " Don't sleep after the warning message.
+  call test_settime(1)
   call writefile(['foo'], 'Xreadonly.log')
   new Xreadonly.log
   setl ro
@@ -2202,6 +2204,7 @@ func! Test_normal51_FileChangedRO()
   call assert_equal('Xreadonly.log', bufname(''))
 
   " cleanup
+  call test_settime(0)
   bw!
   call delete("Xreadonly.log")
 endfunc

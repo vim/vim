@@ -3264,7 +3264,11 @@ change_warning(
 #endif
 	msg_clr_eos();
 	(void)msg_end();
-	if (msg_silent == 0 && !silent_mode)
+	if (msg_silent == 0 && !silent_mode
+#ifdef FEAT_EVAL
+		&& time_for_testing != 1
+#endif
+		)
 	{
 	    out_flush();
 	    ui_delay(1000L, TRUE); /* give the user time to think about it */
