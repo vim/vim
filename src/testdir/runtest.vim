@@ -153,12 +153,13 @@ endif
 
 " Names of flaky tests.
 let s:flaky = [
-      \ 'Test_reltime()',
-      \ 'Test_nb_basic()',
-      \ 'Test_communicate()',
       \ 'Test_close_and_exit_cb()',
+      \ 'Test_collapse_buffers()',
+      \ 'Test_communicate()',
+      \ 'Test_nb_basic()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()'
+      \ 'Test_reltime()',
       \ ]
 
 " Locate Test_ functions and execute them.
