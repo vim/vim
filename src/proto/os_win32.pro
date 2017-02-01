@@ -65,4 +65,5 @@ void free_cmd_argsW(void);
 void used_file_arg(char *name, int literal, int full_path, int diff_mode);
 void set_alist_count(void);
 void fix_arg_enc(void);
+int mch_setenv(char *var, char *value, int x);
 /* vim: set ft=c : */

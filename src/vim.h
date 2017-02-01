@@ -594,6 +594,7 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #  endif
 #  define textdomain(domain) (*dyn_libintl_textdomain)(domain)
 #  define libintl_putenv(envstring) (*dyn_libintl_putenv)(envstring)
+#  define libintl_wputenv(envstring) (*dyn_libintl_wputenv)(envstring)
 # else
 #  include <libintl.h>
 #  define _(x) gettext((char *)(x))
