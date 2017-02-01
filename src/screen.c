@@ -777,6 +777,57 @@ update_screen(int type)
 #endif
 }
 
+#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL)
+/*
+ * Prepare for updating one or more windows.
+ * Caller must check for "updating_screen" already set to avoid recursiveness.
+ */
+    static void
+update_prepare(void)
+{
+    cursor_off();
+    updating_screen = TRUE;
+#ifdef FEAT_GUI
+    /* Remove the cursor before starting to do anything, because scrolling may
+     * make it difficult to redraw the text under it. */
+    if (gui.in_use)
+	gui_undraw_cursor();
+#endif
+#ifdef FEAT_SEARCH_EXTRA
+    start_search_hl();
+#endif
+}
+
+/*
+ * Finish updating one or more windows.
+ */
+    static void
+update_finish(void)
+{
+    if (redraw_cmdline)
+	showmode();
+
+# ifdef FEAT_SEARCH_EXTRA
+    end_search_hl();
+# endif
+
+    updating_screen = FALSE;
+
+# ifdef FEAT_GUI
+    gui_may_resize_shell();
+
+    /* Redraw the cursor and update the scrollbars when all screen updating is
+     * done. */
+    if (gui.in_use)
+    {
+	out_flush();	/* required before updating the cursor */
+	gui_update_cursor(FALSE, FALSE);
+	gui_update_scrollbars(FALSE);
+    }
+# endif
+}
+#endif
+
 #if defined(FEAT_CONCEAL) || defined(PROTO)
 /*
  * Return TRUE if the cursor line in window "wp" may be concealed, according
@@ -826,17 +877,12 @@ update_single_line(win_T *wp, linenr_T lnum)
     /* Don't do anything if the screen structures are (not yet) valid. */
     if (!screen_valid(TRUE) || updating_screen)
 	return;
-    updating_screen = TRUE;
 
     if (lnum >= wp->w_topline && lnum < wp->w_botline
 				 && foldedCount(wp, lnum, &win_foldinfo) == 0)
     {
-# ifdef FEAT_GUI
-	/* Remove the cursor before starting to do anything, because scrolling
-	 * may make it difficult to redraw the text under it. */
-	if (gui.in_use)
-	    gui_undraw_cursor();
-# endif
+	update_prepare();
+
 	row = 0;
 	for (j = 0; j < wp->w_lines_valid; ++j)
 	{
@@ -856,68 +902,10 @@ update_single_line(win_T *wp, linenr_T lnum)
 	    }
 	    row += wp->w_lines[j].wl_size;
 	}
-# ifdef FEAT_GUI
-	/* Redraw the cursor */
-	if (gui.in_use)
-	{
-	    out_flush();	/* required before updating the cursor */
-	    gui_update_cursor(FALSE, FALSE);
-	}
-# endif
+
+	update_finish();
     }
     need_cursor_line_redraw = FALSE;
-    updating_screen = FALSE;
-}
-#endif
-
-#if defined(FEAT_SIGNS) || defined(FEAT_GUI)
-/*
- * Prepare for updating one or more windows.
- * Caller must check for "updating_screen" already set to avoid recursiveness.
- */
-    static void
-update_prepare(void)
-{
-    cursor_off();
-    updating_screen = TRUE;
-#ifdef FEAT_GUI
-    /* Remove the cursor before starting to do anything, because scrolling may
-     * make it difficult to redraw the text under it. */
-    if (gui.in_use)
-	gui_undraw_cursor();
-#endif
-#ifdef FEAT_SEARCH_EXTRA
-    start_search_hl();
-#endif
-}
-
-/*
- * Finish updating one or more windows.
- */
-    static void
-update_finish(void)
-{
-    if (redraw_cmdline)
-	showmode();
-
-# ifdef FEAT_SEARCH_EXTRA
-    end_search_hl();
-# endif
-
-    updating_screen = FALSE;
-
-# ifdef FEAT_GUI
-    gui_may_resize_shell();
-
-    /* Redraw the cursor and update the scrollbars when all screen updating is
-     * done. */
-    if (gui.in_use)
-    {
-	out_flush();	/* required before updating the cursor */
-	gui_update_cursor(FALSE, FALSE);
-	gui_update_scrollbars(FALSE);
-    }
-# endif
 }
 #endif
 
