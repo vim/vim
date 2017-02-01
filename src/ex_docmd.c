@@ -11790,7 +11790,7 @@ ses_arglist(
 		    s = buf;
 		}
 	    }
-	    if (fputs("argadd ", fd) < 0
+	    if (fputs("$argadd ", fd) < 0
 		    || ses_put_fname(fd, s, flagp) == FAIL
 		    || put_eol(fd) == FAIL)
 	    {
