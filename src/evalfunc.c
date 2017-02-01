@@ -7783,21 +7783,26 @@ f_mode(typval_T *argvars, typval_T *rettv)
 	}
 	else
 #endif
-	if (State & REPLACE_FLAG)
-	    buf[0] = 'R';
-	else
-	    buf[0] = 'i';
+	{
+	    if (State & REPLACE_FLAG)
+		buf[0] = 'R';
+	    else
+		buf[0] = 'i';
+#ifdef FEAT_INS_EXPAND
+	    if (ins_compl_active())
+		buf[1] = 'c';
+	    else if (ctrl_x_mode == 1)
+		buf[1] = 'x';
+#endif
+	}
     }
-    else if (State & CMDLINE)
+    else if ((State & CMDLINE) || exmode_active)
     {
 	buf[0] = 'c';
-	if (exmode_active)
+	if (exmode_active == EXMODE_VIM)
 	    buf[1] = 'v';
-    }
-    else if (exmode_active)
-    {
-	buf[0] = 'c';
-	buf[1] = 'e';
+	else if (exmode_active == EXMODE_NORMAL)
+	    buf[1] = 'e';
     }
     else
     {
