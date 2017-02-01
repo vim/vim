@@ -620,14 +620,12 @@ dyn_libintl_end(void)
     dyn_libintl_wputenv		= null_libintl_wputenv;
 }
 
-/*ARGSUSED*/
     static char *
 null_libintl_gettext(const char *msgid)
 {
     return (char*)msgid;
 }
 
-/*ARGSUSED*/
     static char *
 null_libintl_ngettext(
 	const char *msgid,
@@ -637,38 +635,36 @@ null_libintl_ngettext(
     return (char *)(n == 1 ? msgid : msgid_plural);
 }
 
-/*ARGSUSED*/
     static char *
-null_libintl_bindtextdomain(const char *domainname, const char *dirname)
+null_libintl_bindtextdomain(
+	const char *domainname UNUSED,
+	const char *dirname UNUSED)
 {
     return NULL;
 }
 
-/*ARGSUSED*/
     static char *
-null_libintl_bind_textdomain_codeset(const char *domainname,
-							  const char *codeset)
+null_libintl_bind_textdomain_codeset(
+	const char *domainname UNUSED,
+	const char *codeset UNUSED)
 {
     return NULL;
 }
 
-/*ARGSUSED*/
     static char *
-null_libintl_textdomain(const char *domainname)
+null_libintl_textdomain(const char *domainname UNUSED)
 {
     return NULL;
 }
 
-/*ARGSUSED*/
     int
-null_libintl_putenv(const char *envstring)
+null_libintl_putenv(const char *envstring UNUSED)
 {
     return 0;
 }
 
-/*ARGSUSED*/
     int
-null_libintl_wputenv(const wchar_t *envstring)
+null_libintl_wputenv(const wchar_t *envstring UNUSED)
 {
     return 0;
 }
@@ -1060,9 +1056,8 @@ decode_key_event(
  * For the GUI the mouse handling is in gui_w32.c.
  */
 # ifdef FEAT_GUI_W32
-/*ARGSUSED*/
     void
-mch_setmouse(int on)
+mch_setmouse(int on UNUSED)
 {
 }
 # else
@@ -1658,13 +1653,12 @@ tgetch(int *pmodifiers, WCHAR *pch2)
  * If time == -1, wait forever for characters.
  * Returns the number of characters read into buf.
  */
-/*ARGSUSED*/
     int
 mch_inchar(
-    char_u	*buf,
-    int		maxlen,
-    long	time,
-    int		tb_change_cnt)
+    char_u	*buf UNUSED,
+    int		maxlen UNUSED,
+    long	time UNUSED,
+    int		tb_change_cnt UNUSED)
 {
 #ifndef FEAT_GUI_W32	    /* this isn't used for the GUI */
 
@@ -2592,11 +2586,10 @@ mch_exit(int r)
 /*
  * Do we have an interactive window?
  */
-/*ARGSUSED*/
     int
 mch_check_win(
-    int argc,
-    char **argv)
+    int argc UNUSED,
+    char **argv UNUSED)
 {
     get_exe_name();
 
@@ -5348,11 +5341,10 @@ termcap_mode_end(void)
 
 
 #ifdef FEAT_GUI_W32
-/*ARGSUSED*/
     void
 mch_write(
-    char_u  *s,
-    int	    len)
+    char_u  *s UNUSED,
+    int	    len UNUSED)
 {
     /* never used */
 }
@@ -6050,11 +6042,10 @@ mch_write(
 /*
  * Delay for "msec" milliseconds.
  */
-/*ARGSUSED*/
     void
 mch_delay(
     long    msec,
-    int	    ignoreinput)
+    int	    ignoreinput UNUSED)
 {
 #ifdef FEAT_GUI_W32
     Sleep((int)msec);	    /* never wait for input */
@@ -6143,9 +6134,8 @@ mch_breakcheck(int force)
 /*
  * How much main memory in KiB that can be used by VIM.
  */
-/*ARGSUSED*/
     long_u
-mch_total_mem(int special)
+mch_total_mem(int special UNUSED)
 {
     MEMORYSTATUSEX  ms;
 
