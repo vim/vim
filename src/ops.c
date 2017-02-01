@@ -2571,7 +2571,8 @@ op_insert(oparg_T *oap, long count1)
     }
 
     t1 = oap->start;
-    edit(NUL, FALSE, (linenr_T)count1);
+    if (edit(NUL, FALSE, (linenr_T)count1))
+	return;
 
     /* When a tab was inserted, and the characters in front of the tab
      * have been converted to a tab as well, the column of the cursor
