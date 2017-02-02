@@ -1075,12 +1075,17 @@ func_remove(ufunc_T *fp)
 }
 
 /*
- * Free a function and remove it from the list of functions.
+ * Free all things that a function contains.  Does not free the function
+ * itself, use func_free() for that.
  * When "force" is TRUE we are exiting.
  */
     static void
-func_free(ufunc_T *fp, int force)
+func_clear(ufunc_T *fp, int force)
 {
+    if (fp->uf_cleared)
+	return;
+    fp->uf_cleared = TRUE;
+
     /* clear this function */
     ga_clear_strings(&(fp->uf_args));
     ga_clear_strings(&(fp->uf_lines));
@@ -1089,14 +1094,33 @@ func_free(ufunc_T *fp, int force)
     vim_free(fp->uf_tml_total);
     vim_free(fp->uf_tml_self);
 #endif
+    funccal_unref(fp->uf_scoped, fp, force);
+}
+
+/*
+ * Free a function and remove it from the list of functions.  Does not free
+ * what a function contains, call func_clear() first.
+ */
+    static void
+func_free(ufunc_T *fp)
+{
     /* only remove it when not done already, otherwise we would remove a newer
      * version of the function */
     if ((fp->uf_flags & (FC_DELETED | FC_REMOVED)) == 0)
 	func_remove(fp);
 
-    funccal_unref(fp->uf_scoped, fp, force);
-
     vim_free(fp);
+}
+
+/*
+ * Free all things that a function contains and free the function itself.
+ * When "force" is TRUE we are exiting.
+ */
+    static void
+func_clear_free(ufunc_T *fp, int force)
+{
+    func_clear(fp, force);
+    func_free(fp);
 }
 
 /*
@@ -1120,10 +1144,40 @@ free_all_functions(void)
     hashitem_T	*hi;
     ufunc_T	*fp;
     long_u	skipped = 0;
-    long_u	todo;
+    long_u	todo = 1;
+    long_u	used;
 
-    /* Need to start all over every time, because func_free() may change the
-     * hash table. */
+    /* First clear what the functions contain.  Since this may lower the
+     * reference count of a function, it may also free a function and change
+     * the hash table. Restart if that happens. */
+    while (todo > 0)
+    {
+	todo = func_hashtab.ht_used;
+	for (hi = func_hashtab.ht_array; todo > 0; ++hi)
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		/* Only free functions that are not refcounted, those are
+		 * supposed to be freed when no longer referenced. */
+		fp = HI2UF(hi);
+		if (func_name_refcount(fp->uf_name))
+		    ++skipped;
+		else
+		{
+		    used = func_hashtab.ht_used;
+		    func_clear(fp, TRUE);
+		    if (used != func_hashtab.ht_used)
+		    {
+			skipped = 0;
+			break;
+		    }
+		}
+		--todo;
+	    }
+    }
+
+    /* Now actually free the functions.  Need to start all over every time,
+     * because func_free() may change the hash table. */
+    skipped = 0;
     while (func_hashtab.ht_used > skipped)
     {
 	todo = func_hashtab.ht_used;
@@ -1138,7 +1192,7 @@ free_all_functions(void)
 		    ++skipped;
 		else
 		{
-		    func_free(fp, TRUE);
+		    func_free(fp);
 		    skipped = 0;
 		    break;
 		}
@@ -1356,7 +1410,7 @@ call_func(
 		    if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
 			/* Function was unreferenced while being used, free it
 			 * now. */
-			func_free(fp, FALSE);
+			func_clear_free(fp, FALSE);
 		    if (did_save_redo)
 			restoreRedobuff();
 		    restore_search_patterns();
@@ -2756,7 +2810,7 @@ ex_delfunction(exarg_T *eap)
 		fp->uf_flags |= FC_DELETED;
 	    }
 	    else
-		func_free(fp, FALSE);
+		func_clear_free(fp, FALSE);
 	}
     }
 }
@@ -2785,7 +2839,7 @@ func_unref(char_u *name)
 	/* Only delete it when it's not being used.  Otherwise it's done
 	 * when "uf_calls" becomes zero. */
 	if (fp->uf_calls == 0)
-	    func_free(fp, FALSE);
+	    func_clear_free(fp, FALSE);
     }
 }
 
@@ -2801,7 +2855,7 @@ func_ptr_unref(ufunc_T *fp)
 	/* Only delete it when it's not being used.  Otherwise it's done
 	 * when "uf_calls" becomes zero. */
 	if (fp->uf_calls == 0)
-	    func_free(fp, FALSE);
+	    func_clear_free(fp, FALSE);
     }
 }
 
