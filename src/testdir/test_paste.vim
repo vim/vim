@@ -8,18 +8,36 @@ set term=xterm
 
 func Test_paste_normal_mode()
   new
+  " In first column text is inserted
   call setline(1, ['a', 'b', 'c'])
-  2
+  call cursor(2, 1)
   call feedkeys("\<Esc>[200~foo\<CR>bar\<Esc>[201~", 'xt')
-  call assert_equal('bfoo', getline(2))
-  call assert_equal('bar', getline(3))
+  call assert_equal('foo', getline(2))
+  call assert_equal('barb', getline(3))
   call assert_equal('c', getline(4))
 
+  " When repeating text is appended
   normal .
   call assert_equal('barfoo', getline(3))
-  call assert_equal('bar', getline(4))
+  call assert_equal('barb', getline(4))
   call assert_equal('c', getline(5))
   bwipe!
+
+  " In second column text is appended
+  call setline(1, ['a', 'bbb', 'c'])
+  call cursor(2, 2)
+  call feedkeys("\<Esc>[200~foo\<CR>bar\<Esc>[201~", 'xt')
+  call assert_equal('bbfoo', getline(2))
+  call assert_equal('barb', getline(3))
+  call assert_equal('c', getline(4))
+
+  " In last column text is appended
+  call setline(1, ['a', 'bbb', 'c'])
+  call cursor(2, 3)
+  call feedkeys("\<Esc>[200~foo\<CR>bar\<Esc>[201~", 'xt')
+  call assert_equal('bbbfoo', getline(2))
+  call assert_equal('bar', getline(3))
+  call assert_equal('c', getline(4))
 endfunc
 
 func Test_paste_insert_mode()

@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.0.  Last change: 2017 Jan 27
+*term.txt*      For Vim version 8.0.  Last change: 2017 Feb 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -95,7 +95,12 @@ terminal when entering "raw" mode and 't_BD' when leaving "raw" mode.  The
 terminal is then expected to put 't_PS' before pasted text and 't_PE' after
 pasted text.  This way Vim can separate text that is pasted from characters
 that are typed.  The pasted text is handled like when the middle mouse button
-is used.
+is used, it is inserted literally and not interpreted as commands.
+
+When the cursor is in the first column, the pasted text will be inserted
+before it.  Otherwise the pasted text is appended after the cursor position.
+This means one cannot paste after the first column.  Unfortunately Vim does
+not have a way to tell where the mouse pointer was.
 
 Note that in some situations Vim will not recognize the bracketed paste and
 you will get the raw text.  In other situations Vim will only get the first

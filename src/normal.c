@@ -9079,8 +9079,13 @@ nv_edit(cmdarg_T *cap)
 		    beginline(BL_WHITE|BL_FIX);
 		break;
 
+	    case K_PS:	/* Bracketed paste works like "a"ppend, unless the
+			   cursor is in the first column, then it inserts. */
+		if (curwin->w_cursor.col == 0)
+		    break;
+		/*FALLTHROUGH*/
+
 	    case 'a':	/* "a"ppend is like "i"nsert on the next character. */
-	    case K_PS:	/* bracketed paste works like "a"ppend */
 #ifdef FEAT_VIRTUALEDIT
 		/* increment coladd when in virtual space, increment the
 		 * column otherwise, also to append after an unprintable char */
