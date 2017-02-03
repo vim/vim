@@ -1118,6 +1118,10 @@ main_loop(
 	    skip_redraw = FALSE;
 	else if (do_redraw || stuff_empty())
 	{
+# ifdef FEAT_GUI
+	    /* If ui_breakcheck() was used a resize may have been postponed. */
+	    gui_may_resize_shell();
+# endif
 #if defined(FEAT_AUTOCMD) || defined(FEAT_CONCEAL)
 	    /* Trigger CursorMoved if the cursor moved. */
 	    if (!finish_op && (

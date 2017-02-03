@@ -4357,9 +4357,16 @@ skip_range(
 {
     unsigned	delim;
 
-    while (vim_strchr((char_u *)" \t0123456789.$%'/?-+,;", *cmd) != NULL)
+    while (vim_strchr((char_u *)" \t0123456789.$%'/?-+,;\\", *cmd) != NULL)
     {
-	if (*cmd == '\'')
+	if (*cmd == '\\')
+	{
+	    if (cmd[1] == '?' || cmd[1] == '/' || cmd[1] == '&')
+		++cmd;
+	    else
+		break;
+	}
+	else if (*cmd == '\'')
 	{
 	    if (*++cmd == NUL && ctx != NULL)
 		*ctx = EXPAND_NOTHING;
