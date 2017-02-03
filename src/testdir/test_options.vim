@@ -128,4 +128,75 @@ endfunc
 
 func Test_thesaurus()
   call Check_dir_option('thesaurus')
+endfun
+
+func Test_set_completion()
+  call feedkeys(":set di\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set dictionary diff diffexpr diffopt digraph directory display', @:)
+
+  " Expand boolan options. When doing :set no<Tab>
+  " vim displays the options names without "no" but completion uses "no...".
+  call feedkeys(":set nodi\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set nodiff digraph', @:)
+
+  call feedkeys(":set invdi\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set invdiff digraph', @:)
+
+  " Expand abbreviation of options.
+  call feedkeys(":set ts\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set tabstop thesaurus ttyscroll', @:)
+
+  " Expand current value
+  call feedkeys(":set fileencodings=\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set fileencodings=ucs-bom,utf-8,default,latin1', @:)
+
+  call feedkeys(":set fileencodings:\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set fileencodings:ucs-bom,utf-8,default,latin1', @:)
+
+  " Expand key codes.
+  call feedkeys(":set <H\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set <Help> <Home>', @:)
+
+  " Expand terminal options.
+  call feedkeys(":set t_A\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set t_AB t_AF t_AL', @:)
+endfunc
+
+func Test_set_errors()
+  call assert_fails('set backupcopy=', 'E474:')
+  call assert_fails('set regexpengine=3', 'E474:')
+  call assert_fails('set cmdwinheight=-1', 'E487:')
+  call assert_fails('set helpheight=-1', 'E487:')
+  call assert_fails('set report=-1', 'E487:')
+  call assert_fails('set shiftwidth=-1', 'E487:')
+  call assert_fails('set sidescroll=-1', 'E487:')
+  call assert_fails('set tabstop=-1', 'E487:')
+  call assert_fails('set updatetime=-1', 'E487:')
+  call assert_fails('set winheight=-1', 'E487:')
+  call assert_fails('set tabstop!', 'E488:')
+  call assert_fails('set xxx', 'E518:')
+  call assert_fails('set beautify?', 'E519:')
+  call assert_fails('set undolevels=x', 'E521:')
+  call assert_fails('set tabstop=', 'E521:')
+  call assert_fails('set term=', 'E522:')
+  call assert_fails('set comments=-', 'E524:')
+  call assert_fails('set comments=a', 'E525:')
+  if has('gui_running')
+    call assert_fails('set term=x', 'E530:')
+  else
+    call assert_fails('set term=gui', 'E531:')
+  endif
+  call assert_fails('set foldmarker=x', 'E536:')
+  call assert_fails('set commentstring=x', 'E537:')
+  call assert_fails('set complete=x', 'E539:')
+  call assert_fails('set statusline=%{', 'E540:')
+  call assert_fails('set statusline=' . repeat("%p", 81), 'E541:')
+  call assert_fails('set statusline=%(', 'E542:')
+  call assert_fails('set guicursor=x', 'E545:')
+  call assert_fails('set mouseshape=:', 'E546:')
+  call assert_fails('set backupext=~ patchmode=~', 'E589:')
+  call assert_fails('set winminheight=10 winheight=9', 'E591:')
+  call assert_fails('set winminwidth=10 winwidth=9', 'E592:')
+  call assert_fails("set showbreak=\x01", 'E595:')
+  call assert_fails('set t_foo=', 'E846:')
 endfunc
