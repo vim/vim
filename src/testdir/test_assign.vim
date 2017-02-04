@@ -15,11 +15,13 @@ func Test_let_termcap()
   call assert_match('t_te.*^[[yes;', execute("set termcap"))
   let &t_te = old_t_te
 
-  " Key code
-  let old_t_k1 = &t_k1
-  let &t_k1 = "that"
-  call assert_match('t_k1.*that', execute("set termcap"))
-  let &t_k1 = old_t_k1
+  if !has('gui_running')
+    " Key code
+    let old_t_k1 = &t_k1
+    let &t_k1 = "that"
+    call assert_match('t_k1.*that', execute("set termcap"))
+    let &t_k1 = old_t_k1
+  endif
 
   call assert_fails('let x = &t_xx', 'E15')
   let &t_xx = "yes"
