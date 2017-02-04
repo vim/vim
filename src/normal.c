@@ -9050,6 +9050,34 @@ nv_edit(cmdarg_T *cap)
 	    /* drop the pasted text */
 	    bracketed_paste(PASTE_INSERT, TRUE, NULL);
     }
+    else if (cap->cmdchar == K_PS && VIsual_active)
+    {
+	pos_T old_pos = curwin->w_cursor;
+	pos_T old_visual = VIsual;
+
+	/* In Visual mode the selected text is deleted. */
+	if (VIsual_mode == 'V' || curwin->w_cursor.lnum != VIsual.lnum)
+	{
+	    shift_delete_registers();
+	    cap->oap->regname = '1';
+	}
+	else
+	    cap->oap->regname = '-';
+	cap->cmdchar = 'd';
+	cap->nchar = NUL;
+	nv_operator(cap);
+	do_pending_operator(cap, 0, FALSE);
+	cap->cmdchar = K_PS;
+
+	/* When the last char in the line was deleted then append. Detect this
+	 * by checking if the cursor moved to before the Visual area. */
+	if (*ml_get_cursor() != NUL && lt(curwin->w_cursor, old_pos)
+					   && lt(curwin->w_cursor, old_visual))
+	    inc_cursor();
+
+	/* Insert to replace the deleted text with the pasted text. */
+	invoke_edit(cap, FALSE, cap->cmdchar, FALSE);
+    }
     else if (!checkclearopq(cap->oap))
     {
 	switch (cap->cmdchar)
@@ -9079,8 +9107,9 @@ nv_edit(cmdarg_T *cap)
 		    beginline(BL_WHITE|BL_FIX);
 		break;
 
-	    case K_PS:	/* Bracketed paste works like "a"ppend, unless the
-			   cursor is in the first column, then it inserts. */
+	    case K_PS:
+		/* Bracketed paste works like "a"ppend, unless the cursor is in
+		 * the first column, then it inserts. */
 		if (curwin->w_cursor.col == 0)
 		    break;
 		/*FALLTHROUGH*/

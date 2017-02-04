@@ -1628,6 +1628,22 @@ adjust_clip_reg(int *rp)
 #endif
 
 /*
+ * Shift the delete registers: "9 is cleared, "8 becomes "9, etc.
+ */
+    void
+shift_delete_registers()
+{
+    int		n;
+
+    y_current = &y_regs[9];
+    free_yank_all();			/* free register nine */
+    for (n = 9; n > 1; --n)
+	y_regs[n] = y_regs[n - 1];
+    y_previous = y_current = &y_regs[1];
+    y_regs[1].y_array = NULL;		/* set register one to empty */
+}
+
+/*
  * Handle a delete operation.
  *
  * Return FAIL if undo failed, OK otherwise.
@@ -1739,12 +1755,7 @@ op_delete(oparg_T *oap)
 	if (orig_regname != 0 || oap->motion_type == MLINE
 				   || oap->line_count > 1 || oap->use_reg_one)
 	{
-	    y_current = &y_regs[9];
-	    free_yank_all();			/* free register nine */
-	    for (n = 9; n > 1; --n)
-		y_regs[n] = y_regs[n - 1];
-	    y_previous = y_current = &y_regs[1];
-	    y_regs[1].y_array = NULL;		/* set register one to empty */
+	    shift_delete_registers();
 	    if (op_yank(oap, TRUE, FALSE) == OK)
 		did_yank = TRUE;
 	}

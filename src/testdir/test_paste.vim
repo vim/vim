@@ -70,3 +70,30 @@ func Test_paste_cmdline()
   call feedkeys(":a\<Esc>[200~foo\<CR>bar\<Esc>[201~b\<Home>\"\<CR>", 'xt')
   call assert_equal("\"afoo\<CR>barb", getreg(':'))
 endfunc
+
+func Test_paste_visual_mode()
+  new
+  call setline(1, 'here are some words')
+  call feedkeys("0fsve\<Esc>[200~more\<Esc>[201~", 'xt')
+  call assert_equal('here are more words', getline(1))
+  call assert_equal('some', getreg('-'))
+
+  " include last char in the line
+  call feedkeys("0fwve\<Esc>[200~noises\<Esc>[201~", 'xt')
+  call assert_equal('here are more noises', getline(1))
+  call assert_equal('words', getreg('-'))
+
+  " exclude last char in the line
+  call setline(1, 'some words!')
+  call feedkeys("0fwve\<Esc>[200~noises\<Esc>[201~", 'xt')
+  call assert_equal('some noises!', getline(1))
+  call assert_equal('words', getreg('-'))
+
+  " multi-line selection
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("0fwvj0fd\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal('some letters more', getline(1))
+  call assert_equal("words\nand", getreg('1'))
+
+  bwipe!
+endfunc
