@@ -9197,7 +9197,35 @@ get_option_value(
 
     opt_idx = findoption(name);
     if (opt_idx < 0)		    /* unknown option */
+    {
+	int key;
+
+	if (STRLEN(name) == 4 && name[0] == 't' && name[1] == '_'
+		&& (key = find_key_option(name)) != 0)
+	{
+	    char_u key_name[2];
+	    char_u *p;
+
+	    if (key < 0)
+	    {
+		key_name[0] = KEY2TERMCAP0(key);
+		key_name[1] = KEY2TERMCAP1(key);
+	    }
+	    else
+	    {
+		key_name[0] = KS_KEY;
+		key_name[1] = (key & 0xff);
+	    }
+	    p = find_termcode(key_name);
+	    if (p != NULL)
+	    {
+		if (stringval != NULL)
+		    *stringval = vim_strsave(p);
+		return 0;
+	    }
+	}
 	return -3;
+    }
 
     varp = get_varp_scope(&(options[opt_idx]), opt_flags);
 
@@ -9455,7 +9483,33 @@ set_option_value(
 
     opt_idx = findoption(name);
     if (opt_idx < 0)
+    {
+	int key;
+
+	if (STRLEN(name) == 4 && name[0] == 't' && name[1] == '_'
+		&& (key = find_key_option(name)) != 0)
+	{
+	    char_u key_name[2];
+
+	    if (key < 0)
+	    {
+		key_name[0] = KEY2TERMCAP0(key);
+		key_name[1] = KEY2TERMCAP1(key);
+	    }
+	    else
+	    {
+		key_name[0] = KS_KEY;
+		key_name[1] = (key & 0xff);
+	    }
+	    add_termcode(key_name, string, FALSE);
+	    if (full_screen)
+		ttest(FALSE);
+	    redraw_all_later(CLEAR);
+	    return NULL;
+	}
+
 	EMSG2(_("E355: Unknown option: %s"), name);
+    }
     else
     {
 	flags = options[opt_idx].flags;
