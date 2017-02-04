@@ -160,17 +160,42 @@ func Test_set_completion()
   " Expand terminal options.
   call feedkeys(":set t_A\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set t_AB t_AF t_AL', @:)
+
+  " Expand directories.
+  call feedkeys(":set cdpath=./\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match(' ./samples/ ', @:)
+  call assert_notmatch(' ./small.vim ', @:)
+
+  " Expand files and directories.
+  call feedkeys(":set tags=./\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match(' ./samples/.* ./small.vim', @:)
+
+  call feedkeys(":set tags=./\\\\ dif\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set tags=./\\ diff diffexpr diffopt', @:)
 endfunc
 
 func Test_set_errors()
+  call assert_fails('set scroll=-1', 'E49:')
   call assert_fails('set backupcopy=', 'E474:')
   call assert_fails('set regexpengine=3', 'E474:')
+  call assert_fails('set conceallevel=4', 'E474:')
+  call assert_fails('set history=10001', 'E474:')
+  call assert_fails('set numberwidth=11', 'E474:')
+  call assert_fails('set colorcolumn=-a')
+  call assert_fails('set colorcolumn=a')
+  call assert_fails('set colorcolumn=1,')
+  call assert_fails('set cmdheight=-1', 'E487:')
   call assert_fails('set cmdwinheight=-1', 'E487:')
+  call assert_fails('set conceallevel=-1', 'E487:')
   call assert_fails('set helpheight=-1', 'E487:')
+  call assert_fails('set history=-1', 'E487:')
   call assert_fails('set report=-1', 'E487:')
   call assert_fails('set shiftwidth=-1', 'E487:')
   call assert_fails('set sidescroll=-1', 'E487:')
   call assert_fails('set tabstop=-1', 'E487:')
+  call assert_fails('set textwidth=-1', 'E487:')
+  call assert_fails('set timeoutlen=-1', 'E487:')
+  call assert_fails('set updatecount=-1', 'E487:')
   call assert_fails('set updatetime=-1', 'E487:')
   call assert_fails('set winheight=-1', 'E487:')
   call assert_fails('set tabstop!', 'E488:')
