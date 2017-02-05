@@ -863,7 +863,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    && cur_item != NULL)
 	    {
 		top_item->jd_key = get_tv_string_buf_chk(cur_item, key_buf);
-		if (top_item->jd_key == NULL || *top_item->jd_key == NUL)
+		if (top_item->jd_key == NULL)
 		{
 		    clear_tv(cur_item);
 		    EMSG(_(e_invarg));

@@ -144,6 +144,11 @@ func Test_json_decode()
   call assert_equal(type(v:none), type(json_decode('')))
   call assert_equal("", json_decode('""'))
 
+  " empty key is OK
+  call assert_equal({'': 'ok'}, json_decode('{"": "ok"}'))
+  " but not twice
+  call assert_fails("call json_decode('{\"\": \"ok\", \"\": \"bad\"}')", 'E938:')
+
   call assert_equal({'n': 1}, json_decode('{"n":1,}'))
   call assert_fails("call json_decode(\"{'n':'1',}\")", 'E474:')
   call assert_fails("call json_decode(\"'n'\")", 'E474:')
