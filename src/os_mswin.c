@@ -201,6 +201,8 @@ int _stricoll(char *a, char *b)
     void
 mch_exit(int r)
 {
+    exiting = TRUE;
+
     display_errors();
 
     ml_close_all(TRUE);		/* remove all memfiles */

@@ -889,6 +889,8 @@ mch_early_init(void)
     void
 mch_exit(int r)
 {
+    exiting = TRUE;
+
     if (raw_in)			    /* put terminal in 'normal' mode */
     {
 	settmode(TMODE_COOK);

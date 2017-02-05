@@ -2538,8 +2538,9 @@ mch_init(void)
     void
 mch_exit(int r)
 {
-    stoptermcap();
+    exiting = TRUE;
 
+    stoptermcap();
     if (g_fWindInitCalled)
 	settmode(TMODE_COOK);
 

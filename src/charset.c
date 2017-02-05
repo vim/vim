@@ -1296,6 +1296,10 @@ getvcol(
 	posptr = NULL;  /* continue until the NUL */
     else
     {
+	/* Special check for an empty line, which can happen on exit, when
+	 * ml_get_buf() always returns an empty string. */
+	if (*ptr == NUL)
+	    pos->col = 0;
 	posptr = ptr + pos->col;
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
