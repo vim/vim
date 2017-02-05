@@ -4954,7 +4954,7 @@ do_set(
 			    if (flags & P_FLAGLIST)
 			    {
 				/* Remove flags that appear twice. */
-				for (s = newval; *s; ++s)
+				for (s = newval; *s;)
 				{
 				    /* if options have P_FLAGLIST and
 				     * P_ONECOMMA such as 'whichwrap' */
@@ -4966,7 +4966,7 @@ do_set(
 					    /* Remove the duplicated value and
 					     * the next comma. */
 					    STRMOVE(s, s + 2);
-					    s -= 2;
+					    continue;
 					}
 				    }
 				    else
@@ -4975,9 +4975,10 @@ do_set(
 					      && vim_strchr(s + 1, *s) != NULL)
 					{
 					    STRMOVE(s, s + 1);
-					    --s;
+					    continue;
 					}
 				    }
+				    ++s;
 				}
 			    }
 
