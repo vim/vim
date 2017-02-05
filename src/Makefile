@@ -2072,8 +2072,6 @@ test1 \
 	test_getcwd \
 	test_insertcount \
 	test_listchars \
-	test_listlbr \
-	test_listlbr_utf8 \
 	test_search_mbyte \
 	test_wordcount \
 	test3 test4 test5 test6 test7 test8 test9 \
@@ -2148,6 +2146,8 @@ test_arglist \
 	test_langmap \
 	test_largefile \
 	test_lispwords \
+	test_listlbr \
+	test_listlbr_utf8 \
 	test_lua \
 	test_man \
 	test_mapping \
