@@ -4,6 +4,9 @@ if !has('gui') || ($DISPLAY == "" && !has('gui_running'))
   finish
 endif
 
+let s:x11_based_gui = has('gui_athena') || has('gui_motif')
+	\ || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+
 " For KDE set a font, empty 'guifont' may cause a hang.
 func SetUp()
   if has("gui_kde")
@@ -32,10 +35,23 @@ func Test_1_set_secure()
   call assert_equal(1, has('gui_running'))
 endfunc
 
+func Test_getwinpos()
+  call assert_match('Window position: X \d\+, Y \d\+', execute('winpos'))
+  call assert_true(getwinposx() >= 0)
+  call assert_true(getwinposy() >= 0)
+endfunction
+
 func Test_shell_command()
   new
   r !echo hello
   call assert_equal('hello', substitute(getline(2), '\W', '', 'g'))
   bwipe!
-  call assert_true(1, match(execute('winpos'), 'Window position: X \d\+, Y \d\+') >= 0)
 endfunc
+
+func Test_windowid_variable()
+  if s:x11_based_gui || has('win32')
+    call assert_true(v:windowid > 0)
+  else
+    call assert_equal(0, v:windowid)
+  endif
+endfunction
