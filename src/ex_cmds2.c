@@ -3509,6 +3509,9 @@ add_pack_plugin(char_u *fname, void *cookie)
     size_t  afterlen = 0;
     char_u  *ffname = fix_fname(fname);
     size_t  fname_len;
+    char_u  *buf = NULL;
+    char_u  *rtp_ffname;
+    int	    match;
 
     if (ffname == NULL)
 	return;
@@ -3533,26 +3536,28 @@ add_pack_plugin(char_u *fname, void *cookie)
 	/* Find "ffname" in "p_rtp", ignoring '/' vs '\' differences. */
 	fname_len = STRLEN(ffname);
 	insp = p_rtp;
-	for (;;)
+	buf = alloc(MAXPATHL);
+	if (buf == NULL)
+	    goto theend;
+	while (*insp != NUL)
 	{
-	    if (vim_fnamencmp(insp, ffname, fname_len) == 0)
+	    copy_option_part(&insp, buf, MAXPATHL, ",");
+	    add_pathsep(buf);
+	    rtp_ffname = fix_fname(buf);
+	    if (rtp_ffname == NULL)
+		goto theend;
+	    match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
+	    vim_free(rtp_ffname);
+	    if (match)
 		break;
-	    insp = vim_strchr(insp, ',');
-	    if (insp == NULL)
-		break;
-	    ++insp;
 	}
 
-	if (insp == NULL)
+	if (*insp == NUL)
 	    /* not found, append at the end */
 	    insp = p_rtp + STRLEN(p_rtp);
 	else
-	{
 	    /* append after the matching directory. */
-	    insp += STRLEN(ffname);
-	    while (*insp != NUL && *insp != ',')
-		++insp;
-	}
+	    --insp;
 	*p4 = c;
 
 	/* check if rtp/pack/name/start/name/after exists */
@@ -3562,7 +3567,8 @@ add_pack_plugin(char_u *fname, void *cookie)
 
 	oldlen = STRLEN(p_rtp);
 	addlen = STRLEN(ffname) + 1; /* add one for comma */
-	new_rtp = alloc((int)(oldlen + addlen + afterlen + 1)); /* add one for NUL */
+	new_rtp = alloc((int)(oldlen + addlen + afterlen + 1));
+							  /* add one for NUL */
 	if (new_rtp == NULL)
 	    goto theend;
 	keep = (int)(insp - p_rtp);
@@ -3616,6 +3622,7 @@ add_pack_plugin(char_u *fname, void *cookie)
     }
 
 theend:
+    vim_free(buf);
     vim_free(ffname);
 }
 
