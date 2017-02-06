@@ -1141,7 +1141,11 @@ func Test_out_cb()
 
   let dict = {'thisis': 'dict: '}
   func dict.outHandler(chan, msg) dict
-    let g:Ch_outmsg = self.thisis . a:msg
+    if type(a:msg) == v:t_string
+      let g:Ch_outmsg = self.thisis . a:msg
+    else
+      let g:Ch_outobj = a:msg
+    endif
   endfunc
   func dict.errHandler(chan, msg) dict
     let g:Ch_errmsg = self.thisis . a:msg
@@ -1161,6 +1165,12 @@ func Test_out_cb()
     call assert_equal("dict: hello", g:Ch_outmsg)
     call WaitFor('g:Ch_errmsg != ""')
     call assert_equal("dict: there", g:Ch_errmsg)
+
+    " Receive a json object split in pieces
+    unlet! g:Ch_outobj
+    call ch_sendraw(job, "echosplit [0, {\"one\": 1,| \"tw|o\": 2, \"three\": 3|}]\n")
+    call WaitFor('exists("g:Ch_outobj")')
+    call assert_equal({'one': 1, 'two': 2, 'three': 3}, g:Ch_outobj)
   finally
     call job_stop(job)
   endtry

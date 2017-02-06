@@ -1563,9 +1563,11 @@ typedef struct {
     jsonq_T	ch_json_head;	/* header for circular json read queue */
     int		ch_block_id;	/* ID that channel_read_json_block() is
 				   waiting for */
-    /* When ch_waiting is TRUE use ch_deadline to wait for incomplete message
-     * to be complete. */
-    int		ch_waiting;
+    /* When ch_wait_len is non-zero use ch_deadline to wait for incomplete
+     * message to be complete. The value is the length of the incomplete
+     * message when the deadline was set.  If it gets longer (something was
+     * received) the deadline is reset. */
+    size_t	ch_wait_len;
 #ifdef WIN32
     DWORD	ch_deadline;
 #else
