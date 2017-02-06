@@ -58,6 +58,9 @@ static void f_asin(typval_T *argvars, typval_T *rettv);
 static void f_atan(typval_T *argvars, typval_T *rettv);
 static void f_atan2(typval_T *argvars, typval_T *rettv);
 #endif
+#ifdef FEAT_BEVAL
+static void f_balloon_show(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_browse(typval_T *argvars, typval_T *rettv);
 static void f_browsedir(typval_T *argvars, typval_T *rettv);
 static void f_bufexists(typval_T *argvars, typval_T *rettv);
@@ -482,6 +485,9 @@ static struct fst
 #ifdef FEAT_FLOAT
     {"atan",		1, 1, f_atan},
     {"atan2",		2, 2, f_atan2},
+#endif
+#ifdef FEAT_BEVAL
+    {"balloon_show",	1, 1, f_balloon_show},
 #endif
     {"browse",		4, 4, f_browse},
     {"browsedir",	2, 2, f_browsedir},
@@ -1357,6 +1363,18 @@ f_atan2(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_float = atan2(fx, fy);
     else
 	rettv->vval.v_float = 0.0;
+}
+#endif
+
+/*
+ * "balloon_show()" function
+ */
+#ifdef FEAT_BEVAL
+    static void
+f_balloon_show(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*msg = get_tv_string_chk(&argvars[0]);
+    gui_mch_post_balloon(balloonEval, msg);
 }
 #endif
 
