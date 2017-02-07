@@ -2122,7 +2122,7 @@ au BufNewFile,BufRead *.sqlj			setf sqlj
 au BufNewFile,BufRead *.sqr,*.sqi		setf sqr
 
 " OpenSSH configuration
-au BufNewFile,BufRead ssh_config,*/.ssh/config	setf sshconfig
+au BufNewFile,BufRead ssh_config,*/.ssh/config,*.sshconfig	setf sshconfig
 
 " OpenSSH server configuration
 au BufNewFile,BufRead sshd_config		setf sshdconfig
