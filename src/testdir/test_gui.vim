@@ -41,7 +41,7 @@ func Test_getfontname_with_arg()
     call assert_equal('', getfontname('notexist'))
 
     " Valid font name. This is usually the real name of 7x13 by default.
-    let l:fname = '-Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO10646-1'
+    let l:fname = '-misc-fixed-medium-r-normal--13-120-75-75-c-70-iso8859-1'
     call assert_equal(l:fname, getfontname(l:fname))
 
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
