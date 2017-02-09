@@ -2295,8 +2295,8 @@ do_one_cmd(
 	    if (!ea.skip)
 	    {
 		curwin->w_cursor.lnum = ea.line2;
-		/* don't leave the cursor on an illegal line */
-		check_cursor_lnum();
+		/* don't leave the cursor on an illegal line or column */
+		check_cursor();
 	    }
 	}
 	else if (*ea.cmd != ',')
