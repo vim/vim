@@ -212,8 +212,7 @@ getcmdline(
 #endif
     expand_T	xpc;
     long	*b_im_ptr = NULL;
-#if defined(FEAT_WILDMENU) || defined(FEAT_EVAL) \
-    || defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CMDWIN)
+#if defined(FEAT_WILDMENU) || defined(FEAT_EVAL) || defined(FEAT_SEARCH_EXTRA)
     /* Everything that may work recursively should save and restore the
      * current command line in save_ccline.  That includes update_screen(), a
      * custom status line may invoke ":normal". */
