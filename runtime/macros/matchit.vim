@@ -1,3 +1,5 @@
 " Load the matchit package.
 " For those users who were loading the matchit plugin from here.
-packadd matchit
+if 1
+    packadd matchit
+endif
