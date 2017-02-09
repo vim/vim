@@ -511,4 +511,24 @@ func Test_completion_clear_candidate_list()
   bw!
 endfunc
 
+func Test_completion_respect_bs_option()
+  new
+  let li = ["aaa", "aaa12345", "aaaabcdef", "aaaABC"]
+
+  set bs=indent,eol
+  call setline(1, li)
+  1
+  call feedkeys("A\<C-X>\<C-N>\<C-P>\<BS>\<BS>\<BS>\<Esc>", "tx")
+  call assert_equal('aaa', getline(1))
+
+  %d
+  set bs=indent,eol,start
+  call setline(1, li)
+  1
+  call feedkeys("A\<C-X>\<C-N>\<C-P>\<BS>\<BS>\<BS>\<Esc>", "tx")
+  call assert_equal('', getline(1))
+
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

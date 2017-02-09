@@ -3467,10 +3467,13 @@ ins_compl_bs(void)
     mb_ptr_back(line, p);
 
     /* Stop completion when the whole word was deleted.  For Omni completion
-     * allow the word to be deleted, we won't match everything. */
+     * allow the word to be deleted, we won't match everything.
+     * Respect the 'backspace' option. */
     if ((int)(p - line) - (int)compl_col < 0
 	    || ((int)(p - line) - (int)compl_col == 0
-		&& ctrl_x_mode != CTRL_X_OMNI) || ctrl_x_mode == CTRL_X_EVAL)
+		&& ctrl_x_mode != CTRL_X_OMNI) || ctrl_x_mode == CTRL_X_EVAL
+	    || (!can_bs(BS_START) && (int)(p - line) - (int)compl_col
+							- compl_length < 0))
 	return K_BS;
 
     /* Deleted more than what was used to find matches or didn't finish
