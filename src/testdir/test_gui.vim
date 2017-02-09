@@ -72,6 +72,65 @@ func Test_getfontname_without_arg()
   endif
 endfunc
 
+func Test_set_guifont()
+  let l:guifont_saved = &guifont
+  if has('xfontset')
+    " Prevent 'guifontset' from canceling 'guifont'.
+    let l:guifontset_saved = &guifontset
+    set guifontset=
+  endif
+
+  let skipped = 0
+  if has('gui_athena') || has('gui_motif')
+    " Non-empty font list with invalid font names.
+    "
+    " This test is twofold: (1) It checks if the command fails as expected
+    " when there are no loadable fonts found in the list. (2) It checks if
+    " 'guifont' remains the same after the command loads none of the fonts
+    " listed.
+    let l:flist = &guifont
+    call assert_fails('set guifont=-notexist1-*,-notexist2-*')
+    call assert_equal(l:flist, &guifont)
+
+    " Non-empty font list with a valid font name.  Should pick up the first
+    " valid font.
+    set guifont=-notexist1-*,fixed,-notexist2-*
+    call assert_equal('fixed', getfontname())
+
+    " Empty list. Should fallback to the built-in default.
+    set guifont=
+    call assert_equal('7x13', getfontname())
+
+  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+    " For GTK, what we refer to as 'font names' in our manual are actually
+    " 'initial font patterns'.  A valid font which matches the 'canonical font
+    " pattern' constructed from a given 'initial pattern' is to be looked up
+    " and loaded.  That explains why the GTK GUIs appear to accept 'invalid
+    " font names'.
+    "
+    " Non-empty list.  Should always pick up the first element, no matter how
+    " strange it is, as explained above.
+    set guifont=(´・ω・｀)\ 12,Courier\ 12
+    call assert_equal('(´・ω・｀) 12', getfontname())
+
+    " Empty list. Should fallback to the built-in default.
+    set guifont=
+    call assert_equal('Monospace 10', getfontname())
+
+  else
+    let skipped = 1
+  endif
+
+  if has('xfontset')
+    let &guifontset = l:guifontset_saved
+  endif
+  let &guifont = l:guifont_saved
+
+  if skipped
+    throw "Skipped: Test not implemented yet for this GUI"
+  endif
+endfunc
+
 func Test_getwinpos()
   call assert_match('Window position: X \d\+, Y \d\+', execute('winpos'))
   call assert_true(getwinposx() >= 0)
