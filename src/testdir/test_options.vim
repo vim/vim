@@ -226,3 +226,17 @@ func Test_set_errors()
   call assert_fails("set showbreak=\x01", 'E595:')
   call assert_fails('set t_foo=', 'E846:')
 endfunc
+
+func Test_set_ttytype()
+  " setting 'ttytype' used to cause a double-free when exiting vim and
+  " when vim is compiled with -DEXITFREE.
+  set ttytype=ansi
+  call assert_equal('ansi', &ttytype)
+  call assert_equal(&ttytype, &term)
+  set ttytype=xterm
+  call assert_equal('xterm', &ttytype)
+  call assert_equal(&ttytype, &term)
+  call assert_fails('set ttytype=xxx', 'E522:')
+  set ttytype&
+  call assert_equal(&ttytype, &term)
+endfunc
