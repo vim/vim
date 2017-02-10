@@ -228,15 +228,18 @@ func Test_set_errors()
 endfunc
 
 func Test_set_ttytype()
-  " setting 'ttytype' used to cause a double-free when exiting vim and
-  " when vim is compiled with -DEXITFREE.
-  set ttytype=ansi
-  call assert_equal('ansi', &ttytype)
-  call assert_equal(&ttytype, &term)
-  set ttytype=xterm
-  call assert_equal('xterm', &ttytype)
-  call assert_equal(&ttytype, &term)
-  call assert_fails('set ttytype=xxx', 'E522:')
-  set ttytype&
-  call assert_equal(&ttytype, &term)
+  if !has('gui_running') && has('unix')
+    " setting 'ttytype' used to cause a double-free when exiting vim and
+    " when vim is compiled with -DEXITFREE.
+    set ttytype=ansi
+    call assert_equal('ansi', &ttytype)
+    call assert_equal(&ttytype, &term)
+    set ttytype=xterm
+    call assert_equal('xterm', &ttytype)
+    call assert_equal(&ttytype, &term)
+    call assert_fails('set ttytype=', 'E529:')
+    call assert_fails('set ttytype=xxx', 'E522:')
+    set ttytype&
+    call assert_equal(&ttytype, &term)
+  endif
 endfunc
