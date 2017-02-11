@@ -4028,15 +4028,12 @@ expand_env_esc(
 		 */
 #  if defined(HAVE_GETPWNAM) && defined(HAVE_PWD_H)
 		{
-		    struct passwd *pw;
-
 		    /* Note: memory allocated by getpwnam() is never freed.
 		     * Calling endpwent() apparently doesn't help. */
-		    pw = getpwnam((char *)dst + 1);
-		    if (pw != NULL)
-			var = (char_u *)pw->pw_dir;
-		    else
-			var = NULL;
+		    struct passwd *pw = (*dst == NUL)
+					? NULL : getpwnam((char *)dst + 1);
+
+		    var = (pw == NULL) ? NULL : (char_u *)pw->pw_dir;
 		}
 		if (var == NULL)
 #  endif
