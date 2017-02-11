@@ -98,6 +98,7 @@ func Test_packadd_symlink_dir()
 
   set rtp&
   let rtp = &rtp
+  silent !rm top2_dir
 endfunc
 
 " Check command-line completion for 'packadd'
