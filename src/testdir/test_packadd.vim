@@ -73,7 +73,7 @@ func Test_packadd_symlink_dir()
   endif
   let top2_dir = s:topdir . '/Xdir2'
   let real_dir = s:topdir . '/Xsym'
-  silent !ln -s real_dir top2_dir
+  exec "silent !ln -s" real_dir top2_dir
   let &rtp = top2_dir . ',' . top2_dir . '/after'
   let &packpath = &rtp
 
@@ -98,7 +98,7 @@ func Test_packadd_symlink_dir()
 
   set rtp&
   let rtp = &rtp
-  silent !rm top2_dir
+  exec "silent !rm" top2_dir
 endfunc
 
 " Check command-line completion for 'packadd'
