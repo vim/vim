@@ -2490,7 +2490,7 @@ do_one_cmd(
 		&& !IS_USER_CMDIDX(ea.cmdidx))
 	{
 	    /* Command not allowed when editing the command line. */
-	    errormsg = get_text_locked_msg();
+	    errormsg = (char_u *)_(get_text_locked_msg());
 	    goto doend;
 	}
 #ifdef FEAT_AUTOCMD
