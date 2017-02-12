@@ -1917,6 +1917,8 @@ struct file_buffer
     int		b_changed;	/* 'modified': Set to TRUE if something in the
 				   file has been changed and not written out. */
     int		b_changedtick;	/* incremented for each change, also for undo */
+    int		b_compl_changedtick;	/* Used to track the changetick between
+                                           complete() calls */
 
     int		b_saving;	/* Set to TRUE if we are in the middle of
 				   saving the buffer. */

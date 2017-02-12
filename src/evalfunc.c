@@ -2127,6 +2127,7 @@ f_col(typval_T *argvars, typval_T *rettv)
 f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int	    startcol;
+    int	    save_undo_off;
 
     if ((State & INSERT) == 0)
     {
@@ -2149,7 +2150,15 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
     if (startcol <= 0)
 	return;
 
+    save_undo_off = undo_off;
+    if (curbuf->b_compl_changedtick != 0
+        && curbuf->b_compl_changedtick == curbuf->b_changedtick)
+      undo_off = TRUE;
+
     set_completion(startcol - 1, argvars[1].vval.v_list);
+
+    undo_off = save_undo_off;
+    curbuf->b_compl_changedtick = curbuf->b_changedtick;
 }
 
 /*
