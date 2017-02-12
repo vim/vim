@@ -523,7 +523,7 @@ NOTA: La posizione del cursore si vede nell'angolo in basso a destra dello
      schiacciato mentre premi la lettera o).  Ripeti  CTRL-O  per andare ancora
      indietro. Puoi usare  CTRL-I  per tornare in avanti.
 
-NOTA: "errroore" non è il modo giusto di digitare errore; errroore è un errore.
+---> "errroore" non è il modo giusto di digitare errore; errroore è un errore.
 NOTA: Quando la ricerca arriva a fine file, ricomincia dall'inizio del file,
       a meno che l'opzione 'wrapscan' sia stata disattivata.
 
@@ -730,7 +730,7 @@ NOTA:  Puoi anche leggere l'output prodotto da un comando esterno. Ad es.
 
   4. Per aprire una linea SOPRA il cursore, batti una   O  maiuscola, invece
      che una   o   minuscola. Prova sulla linea qui sotto.
-Apri una linea SOPRA questa battendo  O  mentre il cursore è su questa linea.
+---> Apri una linea SOPRA questa battendo  O  mentre il cursore è su questa linea.
 
 
 
