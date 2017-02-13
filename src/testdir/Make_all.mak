@@ -117,8 +117,7 @@ SCRIPTS_MORE4 = \
 	test59.out \
 	test72.out \
 	test78.out \
-	test83.out \
-	test89.out
+	test83.out
 
 
 # Tests specifically for MS-Windows.
