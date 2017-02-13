@@ -2121,6 +2121,7 @@ test_arglist \
 	test_fileformat \
 	test_filter_cmd \
 	test_filter_map \
+	test_findfile \
 	test_float_func \
 	test_fnameescape \
 	test_fnamemodify \

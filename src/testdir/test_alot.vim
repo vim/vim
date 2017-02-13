@@ -15,6 +15,7 @@ source test_file_perm.vim
 source test_fileformat.vim
 source test_filter_cmd.vim
 source test_filter_map.vim
+source test_findfile.vim
 source test_float_func.vim
 source test_fnamemodify.vim
 source test_functions.vim
