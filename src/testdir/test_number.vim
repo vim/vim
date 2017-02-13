@@ -27,6 +27,56 @@ function! s:validate_cursor() abort
   call wincol()
 endfunction
 
+func Test_set_options()
+  set nu rnu
+  call assert_equal(1, &nu)
+  call assert_equal(1, &rnu)
+
+  call s:test_windows(10, 20)
+  call assert_equal(1, &nu)
+  call assert_equal(1, &rnu)
+  call s:close_windows()
+
+  set nu& rnu&
+endfunc
+
+func Test_set_global_and_local()
+  " setlocal must NOT reset the other global value
+  set nonu nornu
+  setglobal nu
+  setlocal rnu
+  call assert_equal(1, &g:nu)
+
+  set nonu nornu
+  setglobal rnu
+  setlocal nu
+  call assert_equal(1, &g:rnu)
+
+  " setglobal MUST reset the other global value
+  set nonu nornu
+  setglobal nu
+  setglobal rnu
+  call assert_equal(1, &g:nu)
+
+  set nonu nornu
+  setglobal rnu
+  setglobal nu
+  call assert_equal(1, &g:rnu)
+
+  " set MUST reset the other global value
+  set nonu nornu
+  set nu
+  set rnu
+  call assert_equal(1, &g:nu)
+
+  set nonu nornu
+  set rnu
+  set nu
+  call assert_equal(1, &g:rnu)
+
+  set nu& rnu&
+endfunc
+
 func Test_number()
   call s:test_windows(10, 20)
   call setline(1, ["abcdefghij", "klmnopqrst", "uvwxyzABCD", "EFGHIJKLMN", "OPQRSTUVWX", "YZ"])
