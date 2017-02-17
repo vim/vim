@@ -453,8 +453,8 @@ func Test_getbufvar()
   call assert_equal(def_num, getbufvar(9, '', def_num))
   unlet def_num
 
-  call assert_equal(0, getbufvar(1, '&autoindent'))
-  call assert_equal(0, getbufvar(1, '&autoindent', 1))
+  call assert_equal(0, getbufvar(bnr, '&autoindent'))
+  call assert_equal(0, getbufvar(bnr, '&autoindent', 1))
 
   " Open new window with forced option values
   set fileformats=unix,dos
