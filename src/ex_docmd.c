@@ -626,7 +626,7 @@ do_exmode(
     int		save_msg_scroll;
     int		prev_msg_row;
     linenr_T	prev_line;
-    int		changedtick;
+    varnumber_T	changedtick;
 
     if (improved)
 	exmode_active = EXMODE_VIM;
@@ -660,7 +660,7 @@ do_exmode(
 	need_wait_return = FALSE;
 	ex_pressedreturn = FALSE;
 	ex_no_reprint = FALSE;
-	changedtick = curbuf->b_changedtick;
+	changedtick = *curbuf->b_changedtick;
 	prev_msg_row = msg_row;
 	prev_line = curwin->w_cursor.lnum;
 	if (improved)
@@ -673,7 +673,7 @@ do_exmode(
 	lines_left = Rows - 1;
 
 	if ((prev_line != curwin->w_cursor.lnum
-		    || changedtick != curbuf->b_changedtick) && !ex_no_reprint)
+		   || changedtick != *curbuf->b_changedtick) && !ex_no_reprint)
 	{
 	    if (curbuf->b_ml.ml_flags & ML_EMPTY)
 		EMSG(_(e_emptybuf));

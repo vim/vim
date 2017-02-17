@@ -503,7 +503,7 @@ syntax_start(win_T *wp, linenr_T lnum)
     linenr_T	parsed_lnum;
     linenr_T	first_stored;
     int		dist;
-    static int	changedtick = 0;	/* remember the last change ID */
+    static varnumber_T changedtick = 0;	/* remember the last change ID */
 
 #ifdef FEAT_CONCEAL
     current_sub_char = NUL;
@@ -516,13 +516,13 @@ syntax_start(win_T *wp, linenr_T lnum)
      */
     if (syn_block != wp->w_s
 	    || syn_buf != wp->w_buffer
-	    || changedtick != syn_buf->b_changedtick)
+	    || changedtick != *syn_buf->b_changedtick)
     {
 	invalidate_current_state();
 	syn_buf = wp->w_buffer;
 	syn_block = wp->w_s;
     }
-    changedtick = syn_buf->b_changedtick;
+    changedtick = *syn_buf->b_changedtick;
     syn_win = wp;
 
     /*

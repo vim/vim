@@ -492,7 +492,7 @@ get_breakindent_win(
     static int	    prev_indent = 0;  /* cached indent value */
     static long	    prev_ts     = 0L; /* cached tabstop value */
     static char_u   *prev_line = NULL; /* cached pointer to line */
-    static int	    prev_tick = 0;   /* changedtick of cached value */
+    static varnumber_T prev_tick = 0;   /* changedtick of cached value */
     int		    bri = 0;
     /* window width minus window margin space, i.e. what rests for text */
     const int	    eff_wwidth = W_WIDTH(wp)
@@ -502,11 +502,11 @@ get_breakindent_win(
 
     /* used cached indent, unless pointer or 'tabstop' changed */
     if (prev_line != line || prev_ts != wp->w_buffer->b_p_ts
-				  || prev_tick != wp->w_buffer->b_changedtick)
+				  || prev_tick != *wp->w_buffer->b_changedtick)
     {
 	prev_line = line;
 	prev_ts = wp->w_buffer->b_p_ts;
-	prev_tick = wp->w_buffer->b_changedtick;
+	prev_tick = *wp->w_buffer->b_changedtick;
 	prev_indent = get_indent_str(line,
 				     (int)wp->w_buffer->b_p_ts, wp->w_p_list);
     }
@@ -2768,7 +2768,7 @@ changed(void)
 	}
 	changed_int();
     }
-    ++curbuf->b_changedtick;
+    ++*curbuf->b_changedtick;
 }
 
 /*
@@ -3195,7 +3195,7 @@ unchanged(
 	need_maketitle = TRUE;	    /* set window title later */
 #endif
     }
-    ++buf->b_changedtick;
+    ++*buf->b_changedtick;
 #ifdef FEAT_NETBEANS_INTG
     netbeans_unmodified(buf);
 #endif

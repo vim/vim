@@ -25,7 +25,6 @@ void *call_func_retlist(char_u *func, int argc, char_u **argv, int safe);
 int eval_foldexpr(char_u *arg, int *cp);
 void ex_let(exarg_T *eap);
 void list_hashtable_vars(hashtab_T *ht, char_u *prefix, int empty, int *first);
-int check_changedtick(char_u *arg);
 char_u *get_lval(char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int flags, int fne_flags);
 void clear_lval(lval_T *lp);
 void *eval_for_line(char_u *arg, int *errp, char_u **nextcmdp, int skip);

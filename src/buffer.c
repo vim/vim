@@ -832,6 +832,7 @@ free_buffer(buf_T *buf)
     free_buffer_stuff(buf, TRUE);
 #ifdef FEAT_EVAL
     unref_var_dict(buf->b_vars);
+    buf->b_changedtick = &buf->b_ct_val;
 #endif
 #ifdef FEAT_LUA
     lua_buffer_free(buf);
@@ -873,6 +874,29 @@ free_buffer(buf_T *buf)
 }
 
 /*
+ * Initializes buf->b_changedtick.
+ */
+    static void
+init_changedtick(buf_T *buf)
+{
+#ifdef FEAT_EVAL
+    dictitem_T *di = dictitem_alloc((char_u *)"changedtick");
+
+    if (di != NULL)
+    {
+	di->di_flags |= DI_FLAGS_LOCK | DI_FLAGS_FIX | DI_FLAGS_RO;
+	di->di_tv.v_type = VAR_NUMBER;
+	di->di_tv.v_lock = VAR_FIXED;
+	di->di_tv.vval.v_number = 0;
+	dict_add(buf->b_vars, di);
+	buf->b_changedtick = &di->di_tv.vval.v_number;
+    }
+    else
+#endif
+	buf->b_changedtick = &buf->b_ct_val;
+}
+
+/*
  * Free stuff in the buffer for ":bdel" and when wiping out the buffer.
  */
     static void
@@ -889,8 +913,14 @@ free_buffer_stuff(
 #endif
     }
 #ifdef FEAT_EVAL
-    vars_clear(&buf->b_vars->dv_hashtab); /* free all internal variables */
-    hash_init(&buf->b_vars->dv_hashtab);
+    {
+	varnumber_T tick = *buf->b_changedtick;
+
+	vars_clear(&buf->b_vars->dv_hashtab); /* free all buffer variables */
+	hash_init(&buf->b_vars->dv_hashtab);
+	init_changedtick(buf);
+	*buf->b_changedtick = tick;
+    }
 #endif
 #ifdef FEAT_USR_CMDS
     uc_clear(&buf->b_ucmds);		/* clear local user commands */
@@ -1979,6 +2009,7 @@ buflist_new(
 	}
 	init_var_dict(buf->b_vars, &buf->b_bufvar, VAR_SCOPE);
 #endif
+	init_changedtick(buf);
     }
 
     if (ffname != NULL)

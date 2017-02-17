@@ -1148,11 +1148,11 @@ ml_recover(void)
     len = (int)STRLEN(fname);
     if (len >= 4 &&
 #if defined(VMS)
-	    STRNICMP(fname + len - 4, "_s" , 2)
+	    STRNICMP(fname + len - 4, "_s", 2)
 #else
-	    STRNICMP(fname + len - 4, ".s" , 2)
+	    STRNICMP(fname + len - 4, ".s", 2)
 #endif
-		== 0
+						== 0
 		&& vim_strchr((char_u *)"UVWuvw", fname[len - 2]) != NULL
 		&& ASCII_ISALPHA(fname[len - 1]))
     {
@@ -1649,7 +1649,7 @@ ml_recover(void)
 	if (!(curbuf->b_ml.ml_line_count == 2 && *ml_get(1) == NUL))
 	{
 	    changed_int();
-	    ++curbuf->b_changedtick;
+	    ++*curbuf->b_changedtick;
 	}
     }
     else
@@ -1663,7 +1663,7 @@ ml_recover(void)
 	    if (i != 0)
 	    {
 		changed_int();
-		++curbuf->b_changedtick;
+		++*curbuf->b_changedtick;
 		break;
 	    }
 	}

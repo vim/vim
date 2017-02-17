@@ -2539,7 +2539,7 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #ifdef FEAT_DIFF
     linenr_T		lnum = get_tv_lnum(argvars);
     static linenr_T	prev_lnum = 0;
-    static int		changedtick = 0;
+    static varnumber_T	changedtick = 0;
     static int		fnum = 0;
     static int		change_start = 0;
     static int		change_end = 0;
@@ -2550,7 +2550,7 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     if (lnum < 0)	/* ignore type error in {lnum} arg */
 	lnum = 0;
     if (lnum != prev_lnum
-	    || changedtick != curbuf->b_changedtick
+	    || changedtick != *curbuf->b_changedtick
 	    || fnum != curbuf->b_fnum)
     {
 	/* New line, buffer, change: need to get the values. */
@@ -2572,7 +2572,7 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	else
 	    hlID = (hlf_T)0;
 	prev_lnum = lnum;
-	changedtick = curbuf->b_changedtick;
+	changedtick = *curbuf->b_changedtick;
 	fnum = curbuf->b_fnum;
     }
 
@@ -3957,7 +3957,7 @@ get_buffer_info(buf_T *buf)
     dict_add_nr_str(dict, "loaded", buf->b_ml.ml_mfp != NULL, NULL);
     dict_add_nr_str(dict, "listed", buf->b_p_bl, NULL);
     dict_add_nr_str(dict, "changed", bufIsChanged(buf), NULL);
-    dict_add_nr_str(dict, "changedtick", buf->b_changedtick, NULL);
+    dict_add_nr_str(dict, "changedtick", *buf->b_changedtick, NULL);
     dict_add_nr_str(dict, "hidden",
 		    buf->b_ml.ml_mfp != NULL && buf->b_nwindows == 0,
 		    NULL);
@@ -4189,12 +4189,6 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
 	    else if (get_option_tv(&varname, rettv, TRUE) == OK)
 		/* buffer-local-option */
 		done = TRUE;
-	}
-	else if (STRCMP(varname, "changedtick") == 0)
-	{
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = curbuf->b_changedtick;
-	    done = TRUE;
 	}
 	else
 	{
@@ -6576,21 +6570,16 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	{
 	    if (lv.ll_tv == NULL)
 	    {
-		if (check_changedtick(lv.ll_name))
-		    rettv->vval.v_number = 1;	    /* always locked */
-		else
+		di = find_var(lv.ll_name, NULL, TRUE);
+		if (di != NULL)
 		{
-		    di = find_var(lv.ll_name, NULL, TRUE);
-		    if (di != NULL)
-		    {
-			/* Consider a variable locked when:
-			 * 1. the variable itself is locked
-			 * 2. the value of the variable is locked.
-			 * 3. the List or Dict value is locked.
-			 */
-			rettv->vval.v_number = ((di->di_flags & DI_FLAGS_LOCK)
-						  || tv_islocked(&di->di_tv));
-		    }
+		    /* Consider a variable locked when:
+		     * 1. the variable itself is locked
+		     * 2. the value of the variable is locked.
+		     * 3. the List or Dict value is locked.
+		     */
+		    rettv->vval.v_number = ((di->di_flags & DI_FLAGS_LOCK)
+						   || tv_islocked(&di->di_tv));
 		}
 	    }
 	    else if (lv.ll_range)
@@ -11551,8 +11540,8 @@ f_submatch(typval_T *argvars, typval_T *rettv)
 	return;
     if (no < 0 || no >= NSUBEXP)
     {
-        EMSGN(_("E935: invalid submatch number: %d"), no);
-        return;
+	EMSGN(_("E935: invalid submatch number: %d"), no);
+	return;
     }
     if (argvars[1].v_type != VAR_UNKNOWN)
 	retList = (int)get_tv_number_chk(&argvars[1], &error);

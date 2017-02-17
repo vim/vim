@@ -4926,9 +4926,9 @@ restore_backup:
 #ifdef FEAT_AUTOCMD
 	/* buf->b_changedtick is always incremented in unchanged() but that
 	 * should not trigger a TextChanged event. */
-	if (last_changedtick + 1 == buf->b_changedtick
+	if (last_changedtick + 1 == *buf->b_changedtick
 					       && last_changedtick_buf == buf)
-	    last_changedtick = buf->b_changedtick;
+	    last_changedtick = *buf->b_changedtick;
 #endif
 	u_unchanged(buf);
 	u_update_save_nr(buf);
