@@ -4748,6 +4748,49 @@ typedef struct {
     int	do_ic;		/* ignore case flag */
 } subflags_T;
 
+    static char_u *
+parse_sub_flags(char_u *cmd, subflags_T *subflags, int *which_pat)
+{
+    while (*cmd)
+    {
+	/*
+	 * Note that 'g' and 'c' are always inverted, also when p_ed is off.
+	 * 'r' is never inverted.
+	 */
+	if (*cmd == 'g')
+	    subflags->do_all = !subflags->do_all;
+	else if (*cmd == 'c')
+	    subflags->do_ask = !subflags->do_ask;
+	else if (*cmd == 'n')
+	    subflags->do_count = TRUE;
+	else if (*cmd == 'e')
+	    subflags->do_error = !subflags->do_error;
+	else if (*cmd == 'r')	    /* use last used regexp */
+	    *which_pat = RE_LAST;
+	else if (*cmd == 'p')
+	    subflags->do_print = TRUE;
+	else if (*cmd == '#')
+	{
+	    subflags->do_print = TRUE;
+	    subflags->do_number = TRUE;
+	}
+	else if (*cmd == 'l')
+	{
+	    subflags->do_print = TRUE;
+	    subflags->do_list = TRUE;
+	}
+	else if (*cmd == 'i')	    /* ignore case */
+	    subflags->do_ic = 'i';
+	else if (*cmd == 'I')	    /* don't ignore case */
+	    subflags->do_ic = 'I';
+	else
+	    break;
+	++cmd;
+    }
+
+    return cmd;
+}
+
 /* do_sub()
  *
  * Perform a substitution from line eap->line1 to line eap->line2 using the
@@ -4765,6 +4808,7 @@ do_sub(exarg_T *eap)
     regmmatch_T regmatch;
     static subflags_T subflags = {FALSE, FALSE, FALSE, TRUE, FALSE,
 							      FALSE, FALSE, 0};
+    char_u cmdflags[3] = {0};
 #ifdef FEAT_EVAL
     subflags_T	subflags_save;
 #endif
@@ -4808,8 +4852,43 @@ do_sub(exarg_T *eap)
 
 				/* new pattern and substitution */
     if (eap->cmd[0] == 's' && *cmd != NUL && !vim_iswhite(*cmd)
-		&& vim_strchr((char_u *)"0123456789cegriIp|\"", *cmd) == NULL)
+		&& vim_strchr((char_u *)"0123456789|\"", *cmd) == NULL)
     {
+	/*
+	 * Handle the 2-/3-character variants of :subsitute which embed the
+	 * flags in the command name.
+	 */
+	switch (*cmd)
+	{
+	    case 'c':
+		cmdflags[0] = *cmd++;
+		if (*cmd && vim_strchr((char_u *)"egiInpl", *cmd) != NULL)
+		    cmdflags[1] = *cmd++;
+		break;
+	    case 'g':
+		cmdflags[0] = *cmd++;
+		if (*cmd && vim_strchr((char_u *)"ceiInplr", *cmd) != NULL)
+		    cmdflags[1] = *cmd++;
+		break;
+	    case 'i':
+		cmdflags[0] = *cmd++;
+		if (*cmd && vim_strchr((char_u *)"ceInpr", *cmd) != NULL)
+		    cmdflags[1] = *cmd++;
+		break;
+	    case 'I':
+		cmdflags[0] = *cmd++;
+		if (*cmd && vim_strchr((char_u *)"ceginplr", *cmd) != NULL)
+		    cmdflags[1] = *cmd++;
+		break;
+	    case 'r':
+		cmdflags[0] = *cmd++;
+		if (*cmd && vim_strchr((char_u *)"cgiInpl", *cmd) != NULL)
+		    cmdflags[1] = *cmd++;
+		break;
+	    default:
+		break;
+	}
+
 				/* don't accept alphanumeric for separator */
 	if (isalpha(*cmd))
 	{
@@ -4908,17 +4987,20 @@ do_sub(exarg_T *eap)
      */
     if (pat != NULL && STRCMP(pat, "\\n") == 0
 	    && *sub == NUL
-	    && (*cmd == NUL || (cmd[1] == NUL && (*cmd == 'g' || *cmd == 'l'
-					     || *cmd == 'p' || *cmd == '#'))))
+	    && ((*cmd == NUL || (cmd[1] == NUL && (*cmd == 'g' || *cmd == 'l'
+					      || *cmd == 'p' || *cmd == '#')))
+		|| (*cmdflags == NUL || (cmdflags[1] == NUL
+					 && (*cmdflags == 'g' || *cmdflags == 'l'
+					     || *cmdflags == 'p')))))
     {
 	linenr_T    joined_lines_count;
 
 	curwin->w_cursor.lnum = eap->line1;
-	if (*cmd == 'l')
+	if (*cmd == 'l' || *cmdflags == 'l')
 	    eap->flags = EXFLAG_LIST;
 	else if (*cmd == '#')
 	    eap->flags = EXFLAG_NR;
-	else if (*cmd == 'p')
+	else if (*cmd == 'p' || *cmdflags == 'p')
 	    eap->flags = EXFLAG_PRINT;
 
 	/* The number of lines joined is the number of lines in the range plus
@@ -4966,42 +5048,8 @@ do_sub(exarg_T *eap)
 	subflags.do_number = FALSE;
 	subflags.do_ic = 0;
     }
-    while (*cmd)
-    {
-	/*
-	 * Note that 'g' and 'c' are always inverted, also when p_ed is off.
-	 * 'r' is never inverted.
-	 */
-	if (*cmd == 'g')
-	    subflags.do_all = !subflags.do_all;
-	else if (*cmd == 'c')
-	    subflags.do_ask = !subflags.do_ask;
-	else if (*cmd == 'n')
-	    subflags.do_count = TRUE;
-	else if (*cmd == 'e')
-	    subflags.do_error = !subflags.do_error;
-	else if (*cmd == 'r')	    /* use last used regexp */
-	    which_pat = RE_LAST;
-	else if (*cmd == 'p')
-	    subflags.do_print = TRUE;
-	else if (*cmd == '#')
-	{
-	    subflags.do_print = TRUE;
-	    subflags.do_number = TRUE;
-	}
-	else if (*cmd == 'l')
-	{
-	    subflags.do_print = TRUE;
-	    subflags.do_list = TRUE;
-	}
-	else if (*cmd == 'i')	    /* ignore case */
-	    subflags.do_ic = 'i';
-	else if (*cmd == 'I')	    /* don't ignore case */
-	    subflags.do_ic = 'I';
-	else
-	    break;
-	++cmd;
-    }
+    (void)parse_sub_flags(cmdflags, &subflags, &which_pat);
+    cmd = parse_sub_flags(cmd, &subflags, &which_pat);
     if (subflags.do_count)
 	subflags.do_ask = FALSE;
 
