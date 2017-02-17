@@ -7,6 +7,11 @@ endif
 let s:x11_based_gui = has('gui_athena') || has('gui_motif')
 	\ || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
 
+" Reasons for 'skipped'.
+let s:not_supported   = "Skipped: Feature/Option not supported by this GUI: "
+let s:not_implemented = "Skipped: Test not implemented yet for this GUI"
+let s:not_hosted      = "Skipped: Test not hosted by the system/environment"
+
 " For KDE set a font, empty 'guifont' may cause a hang.
 func SetUp()
   if has("gui_kde")
@@ -36,61 +41,77 @@ func Test_1_set_secure()
 endfunc
 
 func Test_getfontname_with_arg()
-  if has('gui_athena') || has('gui_motif')
+  let skipped = ''
+
+  if !s:x11_based_gui
+    let skipped = s:not_implemented
+  elseif has('gui_athena') || has('gui_motif')
     " Invalid font name. The result should be an empty string.
     call assert_equal('', getfontname('notexist'))
 
     " Valid font name. This is usually the real name of 7x13 by default.
-    let l:fname = '-misc-fixed-medium-r-normal--13-120-75-75-c-70-iso8859-1'
-    call assert_equal(l:fname, getfontname(l:fname))
+    let fname = '-misc-fixed-medium-r-normal--13-120-75-75-c-70-iso8859-1'
+    call assert_equal(fname, getfontname(fname))
 
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " Invalid font name. The result should be the name plus the default size.
     call assert_equal('notexist 10', getfontname('notexist'))
 
     " Valid font name. This is usually the real name of Monospace by default.
-    let l:fname = 'Bitstream Vera Sans Mono 12'
-    call assert_equal(l:fname, getfontname(l:fname))
-  else
-    throw "Skipped: Matched font name unpredictable to test on this GUI"
+    let fname = 'Bitstream Vera Sans Mono 12'
+    call assert_equal(fname, getfontname(fname))
+  endif
+
+  if !empty(skipped)
+    throw skipped
   endif
 endfunc
 
 func Test_getfontname_without_arg()
-  let l:fname = getfontname()
-  if has('gui_kde')
+  let skipped = ''
+
+  let fname = getfontname()
+
+  if !s:x11_based_gui
+    let skipped = s:not_implemented
+  elseif has('gui_kde')
     " 'expected' is the value specified by SetUp() above.
-    call assert_equal('Courier 10 Pitch/8/-1/5/50/0/0/0/0/0', l:fname)
+    call assert_equal('Courier 10 Pitch/8/-1/5/50/0/0/0/0/0', fname)
   elseif has('gui_athena') || has('gui_motif')
     " 'expected' is DFLT_FONT of gui_x11.c.
-    call assert_equal('7x13', l:fname)
+    call assert_equal('7x13', fname)
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " 'expected' is DEFAULT_FONT of gui_gtk_x11.c.
-    call assert_equal('Monospace 10', l:fname)
-  else
-    throw "Skipped: Default font name unpredictable to test on this GUI"
+    call assert_equal('Monospace 10', fname)
+  endif
+
+  if !empty(skipped)
+    throw skipped
   endif
 endfunc
 
 func Test_set_guifont()
-  let l:guifont_saved = &guifont
+  let skipped = ''
+
+  let guifont_saved = &guifont
   if has('xfontset')
     " Prevent 'guifontset' from canceling 'guifont'.
-    let l:guifontset_saved = &guifontset
+    let guifontset_saved = &guifontset
     set guifontset=
   endif
 
-  let skipped = 0
-  if has('gui_athena') || has('gui_motif')
+  if !s:x11_based_gui
+    let skipped = s:not_implemented
+  elseif has('gui_athena') || has('gui_motif')
     " Non-empty font list with invalid font names.
     "
     " This test is twofold: (1) It checks if the command fails as expected
     " when there are no loadable fonts found in the list. (2) It checks if
     " 'guifont' remains the same after the command loads none of the fonts
     " listed.
-    let l:flist = &guifont
+    let flist = &guifont
     call assert_fails('set guifont=-notexist1-*,-notexist2-*')
-    call assert_equal(l:flist, &guifont)
+    call assert_equal(flist, &guifont)
 
     " Non-empty font list with a valid font name.  Should pick up the first
     " valid font.
@@ -116,107 +137,124 @@ func Test_set_guifont()
     " Empty list. Should fallback to the built-in default.
     set guifont=
     call assert_equal('Monospace 10', getfontname())
-
-  else
-    let skipped = 1
   endif
 
   if has('xfontset')
-    let &guifontset = l:guifontset_saved
+    let &guifontset = guifontset_saved
   endif
-  let &guifont = l:guifont_saved
+  let &guifont = guifont_saved
 
-  if skipped
-    throw "Skipped: Test not implemented yet for this GUI"
+  if !empty(skipped)
+    throw skipped
   endif
 endfunc
 
 func Test_set_guifontset()
-  let skipped = 0
+  let skipped = ''
 
-  if has('xfontset')
-    let l:ctype_saved = v:ctype
-
-    " For UTF-8 locales, XCreateFontSet(3) is likely to fail in constructing a
-    " fontset automatically from one or two simple XLFDs because it requires
-    " the host system to have a fairly comprehensive collection of fixed-width
-    " fonts with various sizes and registries/encodings in order to get the
-    " job done.  To make the test meaningful for a wide variety of hosts, we
-    " confine ourselves to the following locale for which X11 historically has
-    " the fonts to use with.
-    language ctype ja_JP.eucJP
-
-    " Since XCreateFontSet(3) is very sensitive to locale, fonts must be
-    " chosen meticulously.
-    let l:font_head = '-misc-fixed-medium-r-normal--14'
-
-    let l:font_aw70 = l:font_head . '-130-75-75-c-70'
-    let l:font_aw140 = l:font_head . '-130-75-75-c-140'
-
-    let l:font_jisx0201 = l:font_aw70 . '-jisx0201.1976-0'
-    let l:font_jisx0208 = l:font_aw140 . '-jisx0208.1983-0'
-
-    " Full XLFDs
-    let l:fontset_name = join([ l:font_jisx0208, l:font_jisx0201 ], ',')
-    exec 'set guifontset=' . l:fontset_name
-    call assert_equal(l:fontset_name, &guifontset)
-
-    " XLFDs w/o CharSetRegistry and CharSetEncoding
-    let l:fontset_name = join([ l:font_aw140, l:font_aw70 ], ',')
-    exec 'set guifontset=' . l:fontset_name
-    call assert_equal(l:fontset_name, &guifontset)
-
-    " Singleton
-    let l:fontset_name = l:font_head . '-*'
-    exec 'set guifontset=' . l:fontset_name
-    call assert_equal(l:fontset_name, &guifontset)
-
-    " Aliases
-    let l:fontset_name = 'k14,r14'
-    exec 'set guifontset=' . l:fontset_name
-    call assert_equal(l:fontset_name, &guifontset)
-
-    exec 'language ctype' l:ctype_saved
-
+  if !has('xfontset')
+    let skipped = s:not_supported . 'xfontset'
   else
-    let skipped = 1
+    let ctype_saved = v:ctype
+
+    " First, since XCreateFontSet(3) is very sensitive to locale, fonts must
+    " be chosen meticulously.
+    let font_head = '-misc-fixed-medium-r-normal--14'
+
+    let font_aw70 = font_head . '-130-75-75-c-70'
+    let font_aw140 = font_head . '-130-75-75-c-140'
+
+    let font_jisx0201 = font_aw70 . '-jisx0201.1976-0'
+    let font_jisx0208 = font_aw140 . '-jisx0208.1983-0'
+
+    let full_XLFDs = join([ font_jisx0208, font_jisx0201 ], ',')
+    let short_XLFDs = join([ font_aw140, font_aw70 ], ',')
+    let singleton = font_head . '-*'
+    let aliases = 'k14,r14'
+
+    " Second, among 'locales', look up such a locale that gets 'set
+    " guifontset=' to work successfully with every fontset specified with
+    " 'fontsets'.
+    let locales = [ 'ja_JP.UTF-8', 'ja_JP.eucJP', 'ja_JP.SJIS' ]
+    let fontsets = [ full_XLFDs, short_XLFDs, singleton, aliases ]
+
+    let feasible = 0
+    for locale in locales
+      try
+        exec 'language ctype' locale
+      catch /^Vim\%((\a\+)\)\=:E197/
+        continue
+      endtry
+      let done = 0
+      for fontset in fontsets
+        try
+          exec 'set guifontset=' . fontset
+        catch /^Vim\%((\a\+)\)\=:E\%(250\|252\|234\|597\|598\)/
+          break
+        endtry
+        let done += 1
+      endfor
+      if done == len(fontsets)
+        let feasible = 1
+        break
+      endif
+    endfor
+
+    " Third, give a set of tests if it is found feasible.
+    if !feasible
+      let skipped = s:not_hosted
+    else
+      " N.B. 'v:ctype' has already been set to an appropriate value in the
+      " previous loop.
+      for fontset in fontsets
+        exec 'set guifontset=' . fontset
+        call assert_equal(fontset, &guifontset)
+      endfor
+    endif
+
+    " Finally, restore ctype.
+    exec 'language ctype' ctype_saved
   endif
 
-  if skipped
-    throw "Skipped: Not supported by this GUI"
+  if !empty(skipped)
+    throw skipped
   endif
 endfunc
 
 func Test_set_guifontwide()
-  let skipped = 0
+  let skipped = ''
 
-  if has('gui_gtk')
-    let l:guifont_saved = &guifont
-    let l:guifontwide_saved = &guifontwide
+  if !s:x11_based_gui
+    let skipped = s:not_implemented
+  elseif has('gui_gtk')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
 
-    let l:fc_match = exepath('fc-match')
-    if l:fc_match != ''
-      let &guifont = system('fc-match -f "%{family[0]} %{size}" monospace:size=10')
-      let l:wide = system('fc-match -f "%{family[0]} %{size}" monospace:size=10:lang=ja')
-      exec 'set guifontwide=' . fnameescape(l:wide)
-      call assert_equal(l:wide, &guifontwide)
+    let fc_match = exepath('fc-match')
+    if empty(fc_match)
+      let skipped = s:not_hosted
     else
-      let skipped = 3
+      let &guifont = system('fc-match -f "%{family[0]} %{size}" monospace:size=10:lang=en')
+      let wide = system('fc-match -f "%{family[0]} %{size}" monospace:size=10:lang=ja')
+      exec 'set guifontwide=' . fnameescape(wide)
+      call assert_equal(wide, &guifontwide)
     endif
 
-    let &guifontwide = l:guifontwide_saved
-    let &guifont = l:guifont_saved
+    let &guifontwide = guifontwide_saved
+    let &guifont = guifont_saved
 
   elseif has('gui_athena') || has('gui_motif')
     " guifontwide is premised upon the xfontset feature.
-    if has('xfontset')
-      let l:encoding_saved = &encoding
-      let l:guifont_saved = &guifont
-      let l:guifontset_saved = &guifontset
-      let l:guifontwide_saved = &guifontwide
+    if !has('xfontset')
+      let skipped = s:not_supported . 'xfontset'
+    else
+      let encoding_saved    = &encoding
+      let guifont_saved     = &guifont
+      let guifontset_saved  = &guifontset
+      let guifontwide_saved = &guifontwide
 
-      let l:nfont = '-misc-fixed-medium-r-normal-*-18-120-100-100-c-90-iso10646-1'
-      let l:wfont = '-misc-fixed-medium-r-normal-*-18-120-100-100-c-180-iso10646-1'
+      let nfont = '-misc-fixed-medium-r-normal-*-18-120-100-100-c-90-iso10646-1'
+      let wfont = '-misc-fixed-medium-r-normal-*-18-120-100-100-c-180-iso10646-1'
 
       set encoding=utf-8
 
@@ -225,18 +263,18 @@ func Test_set_guifontwide()
 
       " Case 1-1: Automatic selection
       set guifontwide=
-      exec 'set guifont=' . l:nfont
-      call assert_equal(l:wfont, &guifontwide)
+      exec 'set guifont=' . nfont
+      call assert_equal(wfont, &guifontwide)
 
       " Case 1-2: Manual selection
-      exec 'set guifontwide=' . l:wfont
-      exec 'set guifont=' . l:nfont
-      call assert_equal(l:wfont, &guifontwide)
+      exec 'set guifontwide=' . wfont
+      exec 'set guifont=' . nfont
+      call assert_equal(wfont, &guifontwide)
 
       " Case 2: guifontset is invalid
       try
         set guifontset=-*-notexist-*
-        call assert_false(1, "'set guifontset=notexist' should have failed")
+        call assert_false(1, "'set guifontset=-*-notexist-*' should have failed")
       catch
         call assert_exception('E598')
       endtry
@@ -245,31 +283,23 @@ func Test_set_guifontwide()
 
       " Case 2-1: Automatic selection
       set guifontwide=
-      exec 'set guifont=' . l:nfont
-      call assert_equal(l:wfont, &guifontwide)
+      exec 'set guifont=' . nfont
+      call assert_equal(wfont, &guifontwide)
 
       " Case 2-2: Manual selection
-      exec 'set guifontwide=' . l:wfont
-      exec 'set guifont=' . l:nfont
-      call assert_equal(l:wfont, &guifontwide)
+      exec 'set guifontwide=' . wfont
+      exec 'set guifont=' . nfont
+      call assert_equal(wfont, &guifontwide)
 
-      let &guifontwide = l:guifontwide_saved
-      let &guifontset = l:guifontset_saved
-      let &guifont = l:guifont_saved
-      let &encoding = l:encoding_saved
-    else
-      let skipped = 2
+      let &guifontwide = guifontwide_saved
+      let &guifontset  = guifontset_saved
+      let &guifont     = guifont_saved
+      let &encoding    = encoding_saved
     endif
-  else
-    let skipped = 1
   endif
 
-  if skipped == 1
-    throw "Skipped: Test not implemented yet for this GUI"
-  elseif skipped == 2
-    throw "Skipped: Not supported by this GUI"
-  elseif skipped == 3
-    throw "Skipped: Test not supported by the environment"
+  if !empty(skipped)
+    throw skipped
   endif
 endfunc
 
