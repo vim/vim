@@ -6551,7 +6551,7 @@ restore_snapshot(
 
 /*
  * Check if frames "sn" and "fr" have the same layout, same following frames
- * and same children.
+ * and same children.  And the window pointer is valid.
  */
     static int
 check_snapshot_rec(frame_T *sn, frame_T *fr)
@@ -6562,7 +6562,8 @@ check_snapshot_rec(frame_T *sn, frame_T *fr)
 	    || (sn->fr_next != NULL
 		&& check_snapshot_rec(sn->fr_next, fr->fr_next) == FAIL)
 	    || (sn->fr_child != NULL
-		&& check_snapshot_rec(sn->fr_child, fr->fr_child) == FAIL))
+		&& check_snapshot_rec(sn->fr_child, fr->fr_child) == FAIL)
+	    || !win_valid(sn->fr_win))
 	return FAIL;
     return OK;
 }
