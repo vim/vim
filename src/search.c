@@ -4241,7 +4241,11 @@ extend:
 	 * line, we get stuck there.  Trap this here. */
 	if (VIsual_mode == 'V' && start_lnum == curwin->w_cursor.lnum)
 	    goto extend;
-	VIsual.lnum = start_lnum;
+	if (VIsual.lnum != start_lnum)
+	{
+	    VIsual.lnum = start_lnum;
+	    VIsual.col = 0;
+	}
 	VIsual_mode = 'V';
 	redraw_curbuf_later(INVERTED);	/* update the inversion */
 	showmode();
