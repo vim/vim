@@ -136,6 +136,15 @@ func Test_thesaurus()
   call Check_dir_option('thesaurus')
 endfun
 
+func Test_complete()
+  " Trailing single backslash used to cause invalid memory access.
+  set complete=s\
+  new
+  call feedkeys("i\<C-N>\<Esc>", 'xt')
+  bwipe!
+  set complete&
+endfun
+
 func Test_set_completion()
   call feedkeys(":set di\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set dictionary diff diffexpr diffopt digraph directory display', @:)
