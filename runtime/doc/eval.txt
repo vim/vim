@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jan 28
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Feb 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1329,7 +1329,8 @@ b:changedtick	The total number of changes to the current buffer.  It is
 		    :	let my_changedtick = b:changedtick
 		    :	call My_Update()
 		    :endif
-<
+<		You cannot change or delete the b:changedtick variable.
+
 						*window-variable* *w:var* *w:*
 A variable name that is preceded with "w:" is local to the current window.  It
 is deleted when the window is closed.
@@ -4371,8 +4372,8 @@ getfontname([{name}])					*getfontname()*
 		Only works when the GUI is running, thus not in your vimrc or
 		gvimrc file.  Use the |GUIEnter| autocommand to use this
 		function just after the GUI has started.
-		Note that the GTK 2 GUI accepts any font name, thus checking
-		for a valid name does not work.
+		Note that the GTK GUI accepts any font name, thus checking for
+		a valid name does not work.
 
 getfperm({fname})					*getfperm()*
 		The result is a String, which is the read, write, and execute
@@ -5978,7 +5979,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 		  %e	floating point number as 1.23e3, inf, -inf or nan
 		  %E	floating point number as 1.23E3, INF, -INF or NAN
 		  %g	floating point number, as %f or %e depending on value
-		  %G	floating point number, as %f or %E depending on value
+		  %G	floating point number, as %F or %E depending on value
 		  %%	the % character itself
 
 		Conversion specifications start with '%' and end with the
@@ -7807,6 +7808,8 @@ test_settime({expr})					*test_settime()*
 		Set the time Vim uses internally.  Currently only used for
 		timestamps in the history, as they are used in viminfo, and
 		for undo.
+		Using a value of 1 makes Vim not sleep after a warning or
+		error message.
 		{expr} must evaluate to a number.  When the value is zero the
 		normal behavior is restored.
 
@@ -8463,6 +8466,7 @@ toolbar			Compiled with support for |gui-toolbar|.
 ttyin			input is a terminal (tty)
 ttyout			output is a terminal (tty)
 unix			Unix version of Vim.
+unnamedplus		Compiled with support for "unnamedplus" in 'clipboard'
 user_commands		User-defined commands.
 vertsplit		Compiled with vertically split windows |:vsplit|.
 vim_starting		True while initial source'ing takes place. |startup|
@@ -8966,6 +8970,11 @@ This does NOT work: >
 			value and the global value are changed.
 			Example: >
 				:let &path = &path . ',/usr/local/include'
+<			This also works for terminal codes in the form t_xx.
+			But only for alphanumerical names.  Example: >
+				:let &t_k1 = "\<Esc>[234;"
+<			When the code does not exist yet it will be created as
+			a terminal key code, there is no error.
 
 :let &{option-name} .= {expr1}
 			For a string option: Append {expr1} to the value.

@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 8.0.  Last change: 2017 Jan 28
+*if_pyth.txt*   For Vim version 8.0.  Last change: 2017 Feb 17
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -731,9 +731,11 @@ To use the Python interface the Python DLL must be in your search path.  In a
 console window type "path" to see what directories are used.  The 'pythondll'
 or 'pythonthreedll' option can be also used to specify the Python DLL.
 
-The name of the DLL must match the Python version Vim was compiled with.
-Currently the name is "python24.dll".  That is for Python 2.4.  To know for
-sure edit "gvim.exe" and search for "python\d*.dll\c".
+The name of the DLL should match the Python version Vim was compiled with.
+Currently the name for Python 2 is "python27.dll", that is for Python 2.7.
+That is the default value for 'pythondll'.  For Python 3 it is python35.dll
+(Python 3.5).  To know for sure edit "gvim.exe" and search for
+"python\d*.dll\c".
 
 
 Unix ~

@@ -4498,6 +4498,7 @@ E935	eval.txt	/*E935*
 E936	autocmd.txt	/*E936*
 E937	autocmd.txt	/*E937*
 E938	eval.txt	/*E938*
+E939	change.txt	/*E939*
 E94	windows.txt	/*E94*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
@@ -6588,7 +6589,7 @@ gui-x11-various	gui_x11.txt	/*gui-x11-various*
 gui.txt	gui.txt	/*gui.txt*
 gui_w32.txt	gui_w32.txt	/*gui_w32.txt*
 gui_x11.txt	gui_x11.txt	/*gui_x11.txt*
-guifontwide_gtk2	options.txt	/*guifontwide_gtk2*
+guifontwide_gtk	options.txt	/*guifontwide_gtk*
 guifontwide_win_mbyte	options.txt	/*guifontwide_win_mbyte*
 guioptions_a	options.txt	/*guioptions_a*
 guu	change.txt	/*guu*

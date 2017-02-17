@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Jan 28
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Feb 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,17 @@ entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Patch 195 introduced a regression in tag priority. (Charles Campbell, 2017 Feb
+10)
+
+Memory leak in test97?
+
+exists('&t_k1') returns false even when t_k1 was set.
+Use in test_assign.vim to only get value of &t_k1 if it exists. #1459
+
+test_gui fails with Athena:
+   Caught exception in Test_1_set_secure(): Vim(gui):E285: Failed to create input context @ function RunTheTest[21]..Test_1_set_secure, line 2
 
 +channel:
 - Try out background make plugin: 
@@ -105,51 +116,77 @@ Regexp problems:
 - Difference between two engines: ".*\zs\/\@>\/" on text "///"
   (Chris Paul, 2016 Nov 13)  New engine not greedy enough?
 
-'] mark invalid after undoing insert "hello".
-
-When using symbolic links, a package path will not be inserted at the right
-position in 'runtimepath'. (Dugan Chen, 2016 Nov 18)
+Add a toolbar in the terminal.  Can be global, above all windows, or specific
+for one window.
+Use tb_set(winid, [{'text': 'stop', 'cb': callback, 'hi': 'Green'}])
+    tb_highlight(winid, 'ToolBar')
+    tb_get(winid)
 
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
-Allow using json with empty key?  Dict already has it.
-
 Json string with trailing \u should be an error. (Lcd)
+
+Patch for double free setting 'ttytype' (Dominique, 2017 Feb 10, #1461)
+
+Patch for using uninitialized memory (Dominique, 2017 Feb 11, #1464)
+
+Patch for crash setting 'guicursor'. (Dominique, 2017 Feb 11, #1465)
 
 Multi-byte bug: dv} splits char. (Urtica Dioica, 2017 Jan 9)
 
-Patch: Make mode() return "ix" or "Rx" when in completion mode.
-(Yegappan Lakshmanan, 2017 Jan 19, #1397, update Jan 22)
+Patch to add test for 'number' and 'relativenumber'. (Ozaki Kiichi, #1447)
+Now merged in test89 (Feb 12)
 
-With Visual selection of a multi-byte character the '] mark is on the last
-byte, should be first byte?
+Patch to fix tabline redraw. (Christian Brabandt, 2017 Feb 10)
+Better way to fix this?
 
 When session file has name in argument list but the buffer was deleted, the
 buffer is not deleted when using the session file. (#1393)
 Should add the buffer in hidden state.
 
+Patch to change VimL to "Vim script". (Hirohito Higashi, 2017 Feb 14)
+
+Invalid memory access with :normal command. (Dominique Pelle, 2017 Feb 14)
+
+When "gf" excludes following ":99", jump to line 99.
+Also when editing a file foo.txt:99 ?
+
 When an item in the quickfix list has a file name that does not exist, behave
 like the item was not a match for :cnext.
+
+Patch for warning about integer overflow in undo.c (King, 2017 Feb 12)
+And another similar one.
+
+Patch for null pointer use in undo.c (King, 2017 Feb 12)
+
+Patch to avoid using CTRL-O when do_cmdline_cmd is called. (James McCoy, 2017
+Feb 7, #1453)
+
+Patch for multi-byte line wrap. (Ozaki Kiichi, 2017 Feb 7, #1456)
+
+Patch to show balloon with a function. (Jusufadis Bakamovic, #1449)
 
 Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
 Another example in #1309
 
-Completion for user-defined commands does not work if a few chararacters were
+Completion for user-defined commands does not work if a few characters were
 already typed. (Dominique, 2017 Jan 26)
+
+Patch for nsis script to add a dll file. (Christian Brabandt, 2017 Feb 10)
+Also include the .dll file?
+
+Patch for capitalizations in menus. (Zhen-Huan Hu, 2017 Feb 9)
 
 When deleting a mark or register, leave a tombstone, so that it's also deleted
 when writing viminfo (and the delete was the most recent action). #1339
-
-Relevant neovim patch:
-https://github.com/neovim/neovim/pull/5737#issuecomment-266055165
 
 Patch for better explanation of 'compatible' side effects.
 https://github.com/vim/vim/pull/1161/files
 
 Patch to add 'makeencoding', useful when the system encoding differs from
-Vim's 'encoding' setting. (Ken Takata, 2017 Jan 6)
+Vim's 'encoding' setting. (Ken Takata, 2017 Jan 31)
 
 Patch to adjust marks when adding a new line to the end of buffer in diff
 mode. (James McCoy, 2016 Dec 14, #1329)
@@ -159,17 +196,36 @@ Suggestion to improve pt-br spell checking. (Marcelo D Montu, 2016 Dec 15,
 
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 
+Patch to fix that test87 fails on Arch Linux. (Jesin, 2017 Feb 10)
+
+Completion for :!cmd shows each match twice. #1435
+
 Rule to use "^" for statusline does not work if a space is defined with
 highlighting for both stl and stlnc.  Patch by Ken Hamada (itchyny, 2016 Dec 11)
 
 8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
     Patch by Christian Wellenbrock, 2013 Jul 5.
 
+Using CTRL-G_U in InsertCharPre causes trouble for redo. (Israel Chauca
+Fuentes, 2017 Feb 12, #1470)
+
 Screen updated delayed when using CTRL-O u in Insert mode.
 (Barlik, #1191)  Perhaps because status message?
 
 Patch to add buffer name argument to taglist().
 Ordering of tags in result of taglist call. (Duncan McDougall, #1194)
+
+Patch to fix that b_ind_has_comment is not correctly reset. (Christian
+Brabandt, 2017 Feb 14, closes #1475)
+
+writefile() does not abort as soon as an error is found. (Nikolai Pavlov,
+2017 Feb 14, #1476)
+
+Patch to support on-the-spot and over-the-spot input method. (Ken Takata, 2017
+Feb 14).
+
+Add a command to take a range of lines, filter them and put the output
+somewhere else.  :{range}copy {dest} !cmd
 
 Patch to fix that empty first tab is not in session.
 (Hirohito Higashi, 2016 Nov 25, #1282)
@@ -184,12 +240,20 @@ The TermResponse event is not triggered when a plugin has set 'eventignore' to
 "all".  Netrw does this. (Gary Johnson, 2017 Jan 24)
 Postpone the event until 'eventignore' is reset.
 
+Patch to make urxvt mouse work better, recognize Esc[*M termcap code.
+(Maurice Bos, 2017 Feb 17, #1486)
+
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
 
 Problem passing non-UTF-8 strings to Python 3. (Björn Linse, 2016 Sep 11,
 #1053)  With patch, does it work?
+
+Using --remote to open a file in which a # appears does not work on
+MS-Windows.  Perhaps in \#  the \ is seen as a path separator. (Axel Bender,
+2017 Feb 9)  Can we expand wildcards first and send the path literally to the
+receiving Vim?  Or make an exception for #, it's not useful remotely.
 
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
@@ -228,6 +292,8 @@ Patch to add trim() function. (Bukn, 2016 Nov 25, #1280)
 
 Patch to add MODIFIED_BY to MSVC build file. (Chen Lei, 2016 Nov 24, #1275)
 
+Patch to change argument of :marks. (LemonBoy, 2017 Jan 29, #1426)
+
 On Windows buffer completion sees backslash as escape char instead of path
 separator. (Toffanim, 2016 Nov 24, #1274)
 
@@ -265,7 +331,7 @@ change as a word boundary. (btucker-MPCData, 2016 Nov 6, #1235)
 Idea from Sven: record sequence of keys.  Useful to show others what they are
 doing (look over the shoulder), and also to see what happened.
 Probably list of keystrokes, with some annotations for mode changes.
-Could store in logfile to be able to analyise it with an external command.
+Could store in logfile to be able to analyse it with an external command.
 E.g. to see when's the last time a plugin command was used.
 
 execute() cannot be used with command completeion. (Daniel Hahler, 2016 Oct 1,
@@ -293,7 +359,7 @@ Also with latest version.
 Cannot delete a file with square brackets with delete(). (#696)
 
 Patch to add ":syn foldlevel" to use fold level further down the line.
-(Brad King, 2016 Oct 19)
+(Brad King, 2016 Oct 19, update 2017 Jan 30)
 
 Completion for input() does not expand environment variables. (chdiza, 2016
 Jul 25, #948)

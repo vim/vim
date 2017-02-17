@@ -1445,7 +1445,7 @@ g CTRL-G also shows the number of characters if it differs from the number of
 bytes.
 
 Completion for ":debug" and entering an expression for the '=' register.  Skip
-":" between range and command name. (Peter winters)
+":" between range and command name. (Peter Winters)
 
 CTRL-Q in Insert mode now works like CTRL-V by default.  Previously it was
 ignored.
@@ -3371,7 +3371,7 @@ Files:	    runtime/scripts.vim
 Patch 7.0.050
 Problem:    After using the netbeans interface close command a stale pointer
 	    may be used.
-Solution:   Clear the pointer to the closed buffer. (Xaview de Gaye)
+Solution:   Clear the pointer to the closed buffer. (Xavier de Gaye)
 Files:	    src/netbeans.c
 
 Patch 7.0.051 (after 7.0.44)
@@ -16272,7 +16272,7 @@ Files:	    src/regexp_nfa.c, src/testdir/test64.in, src/testdir/test64.ok
 
 Patch 7.3.1026
 Problem:    New regexp: pattern that includes a new-line matches too early.
-	    (john McGowan)
+	    (John McGowan)
 Solution:   Do not start searching in the second line.
 Files:	    src/regexp_nfa.c, src/testdir/test64.in, src/testdir/test64.ok
 
