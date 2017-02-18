@@ -43,3 +43,10 @@ func Test_Visual_vapo()
   normal vapo
   bwipe!
 endfunc
+
+func Test_Visual_inner_quote()
+  new
+  normal oxX
+  normal vki'
+  bwipe!
+endfunc

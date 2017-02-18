@@ -4357,6 +4357,10 @@ current_quote(
     /* Correct cursor when 'selection' is exclusive */
     if (VIsual_active)
     {
+	/* this only works within one line */
+	if (VIsual.lnum != curwin->w_cursor.lnum)
+	    return FALSE;
+
 	vis_bef_curs = lt(VIsual, curwin->w_cursor);
 	if (*p_sel == 'e' && vis_bef_curs)
 	    dec_cursor();
