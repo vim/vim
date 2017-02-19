@@ -888,8 +888,13 @@ init_changedtick(buf_T *buf)
 	di->di_tv.v_type = VAR_NUMBER;
 	di->di_tv.v_lock = VAR_FIXED;
 	di->di_tv.vval.v_number = 0;
-	dict_add(buf->b_vars, di);
-	buf->b_changedtick = &di->di_tv.vval.v_number;
+	if (dict_add(buf->b_vars, di) == OK)
+	    buf->b_changedtick = &di->di_tv.vval.v_number;
+	else
+	{
+	    vim_free(di);
+	    buf->b_changedtick = &buf->b_ct_val;
+	}
     }
     else
 #endif
