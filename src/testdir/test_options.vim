@@ -132,6 +132,7 @@ func Test_cinkeys()
   " This used to cause invalid memory access
   set cindent cinkeys=0
   norm a
+  set cindent& cinkeys&
 endfunc
 
 func Test_dictionary()
