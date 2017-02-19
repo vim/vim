@@ -3776,7 +3776,10 @@ free_all_options(void)
 	{
 	    /* global option: free value and default value. */
 	    if (options[i].flags & P_ALLOCED && options[i].var != NULL)
-		free_string_option(*(char_u **)options[i].var);
+		/* Don't free value of 'ttytype' as it points to the same
+		 * value as 'term' which is already freed in this loop. */
+		if (STRCMP(options[i].fullname, "ttytype") != 0)
+		    free_string_option(*(char_u **)options[i].var);
 	    if (options[i].flags & P_DEF_ALLOCED)
 		free_string_option(options[i].def_val[VI_DEFAULT]);
 	}
