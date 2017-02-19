@@ -128,6 +128,12 @@ func Check_dir_option(name)
   call assert_fails("set " . a:name . "=/not.*there", "E474:")
 endfunc
 
+func Test_cinkeys()
+  " This used to cause invalid memory access
+  set cindent cinkeys=0
+  norm a
+endfunc
+
 func Test_dictionary()
   call Check_dir_option('dictionary')
 endfunc
