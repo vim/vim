@@ -26,7 +26,107 @@ EOF
   call assert_equal('abc/def/', getline('$'))
 endfunc
 
-fu <SID>catch_peval(expr)
+func Test_buffer_Delete()
+  new
+  call setline(1, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])
+  perl $curbuf->Delete(7)
+  perl $curbuf->Delete(2, 5)
+  perl $curbuf->Delete(10)
+  call assert_equal(['a', 'f', 'h'],  getline(1, '$'))
+  bwipe!
+endfunc
+
+func Test_buffer_Append()
+  new
+  perl $curbuf->Append(1, '1')
+  perl $curbuf->Append(2, '2', '3', '4')
+  perl @l = ('5' ..'7')
+  perl $curbuf->Append(0, @l)
+  call assert_equal(['5', '6', '7', '', '1', '2', '3', '4'], getline(1, '$'))
+  bwipe!
+endfunc
+
+func Test_buffer_Set()
+  new
+  call setline(1, ['1', '2', '3', '4', '5'])
+  perl $curbuf->Set(2, 'a', 'b', 'c')
+  perl $curbuf->Set(4, 'A', 'B', 'C')
+  call assert_equal(['1', 'a', 'b', 'A', 'B'], getline(1, '$'))
+  bwipe!
+endfunc
+
+func Test_buffer_Get()
+  new
+  call setline(1, ['1', '2', '3', '4'])
+  call assert_equal('2:3', perleval('join(":", $curbuf->Get(2, 3))'))
+  bwipe!
+endfunc
+
+func Test_buffer_Count()
+  new
+  call setline(1, ['a', 'b', 'c'])
+  call assert_equal(3, perleval('$curbuf->Count()'))
+  bwipe!
+endfunc
+
+func Test_buffer_Name()
+  new
+  call assert_equal('', perleval('$curbuf->Name()'))
+  bwipe!
+  new Xfoo
+  call assert_equal('Xfoo', perleval('$curbuf->Name()'))
+  bwipe!
+endfunc
+
+func Test_buffer_Number()
+  call assert_equal(bufnr('%'), perleval('$curbuf->Number()'))
+endfunc
+
+func Test_window_Cursor()
+  new
+  call setline(1, ['line1', 'line2'])
+  perl $curwin->Cursor(2, 3)
+  call assert_equal('2:3', perleval('join(":", $curwin->Cursor())'))
+  " Col is numbered from 0 in Perl, and from 1 in Vim script.
+  call assert_equal([0, 2, 4, 0], getpos('.'))
+  bwipe!
+endfunc
+
+func Test_window_SetHeight()
+  new
+  perl $curwin->SetHeight(2)
+  call assert_equal(2, winheight(0))
+  bwipe!
+endfunc
+
+func Test_VIM_Windows()
+  new
+  " VIM::Windows() without argument in scalar and list context.
+  perl $winnr = VIM::Windows()
+  perl @winlist = VIM::Windows()
+  perl $curbuf->Append(0, $winnr, scalar(@winlist))
+  call assert_equal(['2', '2', ''], getline(1, '$'))
+
+  " VIM::Windows() with window number argument.
+  perl VIM::Windows(VIM::Eval('winnr()'))->Buffer()->Set(1, 'bar')
+  call assert_equal('bar', getline(1))
+  bwipe!
+endfunc
+
+func Test_VIM_Buffers()
+  new Xbar
+  " VIM::Buffers() without argument in scalar and list context.
+  perl $nbuf = VIM::Buffers()
+  perl @buflist = VIM::Buffers()
+
+  " VIM::Buffers() with argument.
+  perl $mybuf = (VIM::Buffers('Xbar'))[0]
+  perl $mybuf->Append(0, $nbuf, scalar(@buflist))
+  call assert_equal(['2', '2', ''], getline(1, '$'))
+  bwipe!
+endfunc
+
+function <SID>catch_peval(expr)
   try
     call perleval(a:expr)
   catch
@@ -34,7 +134,7 @@ fu <SID>catch_peval(expr)
   endtry
   call assert_true(0, 'no exception for `perleval("'.a:expr.'")`')
   return ''
-endfunc
+endfunction
 
 function Test_perleval()
   call assert_false(perleval('undef'))
