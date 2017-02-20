@@ -2079,7 +2079,10 @@ get_lval(
 	    }
 	    /* existing variable, need to check if it can be changed */
 	    else if (var_check_ro(lp->ll_di->di_flags, name, FALSE))
+	    {
+		clear_tv(&var1);
 		return NULL;
+	    }
 
 	    if (len == -1)
 		clear_tv(&var1);

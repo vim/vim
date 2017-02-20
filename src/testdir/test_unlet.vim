@@ -17,3 +17,7 @@ func Test_not_existing()
   unlet! does_not_exist
   call assert_fails('unlet does_not_exist', 'E108:')
 endfunc
+
+func Test_unlet_fails()
+  call assert_fails('unlet v:["count"]', 'E46:')
+endfunc
