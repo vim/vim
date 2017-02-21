@@ -5095,6 +5095,7 @@ ins_complete(int c, int enable_pum)
     int		n;
     int		save_w_wrow;
     int		insert_match;
+    int		save_did_ai = did_ai;
 
     compl_direction = ins_compl_key2dir(c);
     insert_match = ins_compl_use_match(c);
@@ -5378,6 +5379,8 @@ ins_complete(int c, int enable_pum)
 	    {
 		EMSG2(_(e_notset), ctrl_x_mode == CTRL_X_FUNCTION
 					     ? "completefunc" : "omnifunc");
+		/* restore did_ai, so that adding comment leader works */
+		did_ai = save_did_ai;
 		return FAIL;
 	    }
 
