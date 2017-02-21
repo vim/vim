@@ -487,6 +487,9 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 # include <errno.h>
 #endif
 
+/* for INT_MAX et al. */
+#include <limits.h>
+
 /*
  * Allow other (non-unix) systems to configure themselves now
  * These are also in os_unix.h, because osdef.sh needs them there.
