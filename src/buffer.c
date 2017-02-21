@@ -884,7 +884,7 @@ init_changedtick(buf_T *buf)
 
     if (di != NULL)
     {
-	di->di_flags |= DI_FLAGS_LOCK | DI_FLAGS_FIX | DI_FLAGS_RO;
+	di->di_flags |= DI_FLAGS_FIX | DI_FLAGS_RO;
 	di->di_tv.v_type = VAR_NUMBER;
 	di->di_tv.v_lock = VAR_FIXED;
 	di->di_tv.vval.v_number = 0;

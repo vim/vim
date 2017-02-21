@@ -32,6 +32,12 @@ func Test_changedtick_bdel()
   call assert_equal(v + 1, getbufvar(bnr, 'changedtick'))
 endfunc
 
+func Test_changedtick_islocked()
+  call assert_equal(0, islocked('b:changedtick'))
+  let d = b:
+  call assert_equal(0, islocked('d.changedtick'))
+endfunc
+
 func Test_changedtick_fixed()
   call assert_fails('let b:changedtick = 4', 'E46:')
   call assert_fails('let b:["changedtick"] = 4', 'E46:')
