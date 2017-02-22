@@ -94,8 +94,8 @@ Then there is the ":let i += 1" command.  This does the same thing as
 ":let i = i + 1".  This adds one to the variable i and assigns the new value
 to the same variable.
 
-The example was given to explain the commands, but would you really want to
-make such a loop it can be written much more compact: >
+The example was given to explain the commands, but if you really want to
+make such a loop, it can be written much more compact: >
 
 	:for i in range(1, 4)
 	:  echo "count is" i
