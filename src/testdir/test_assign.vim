@@ -15,7 +15,7 @@ func Test_let_termcap()
   call assert_match('t_te.*^[[yes;', execute("set termcap"))
   let &t_te = old_t_te
 
-  if !has('gui_running')
+  if exists("+t_k1")
     " Key code
     let old_t_k1 = &t_k1
     let &t_k1 = "that"
