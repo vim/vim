@@ -120,10 +120,10 @@ newtests: $(NEW_TESTS)
 
 test_gui.res: test_gui.vim
 	@echo "$(VIMPROG)" > vimcmd
-	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $<
+	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
 	@del vimcmd
 
 test_gui_init.res: test_gui_init.vim
 	@echo "$(VIMPROG)" > vimcmd
-	$(VIMPROG) -u NONE -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
+	$(VIMPROG) -u NONE -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $*.vim
 	@del vimcmd
