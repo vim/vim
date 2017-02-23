@@ -2082,7 +2082,7 @@ test1 \
 	test50 test51 test52 test53 test54 test55 test56 test57 test58 test59 \
 	test60 test64 test65 test66 test67 test68 test69 \
 	test70 test72 test73 test74 test75 test77 test78 test79 \
-	test80 test82 test83 test84 test85 test86 test87 test88 test89 \
+	test80 test82 test83 test84 test85 test86 test87 test88 \
 	test90 test91 test94 test95 test97 test98 test99 \
 	test100 test101 test103 test104 test107 test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
@@ -2122,6 +2122,7 @@ test_arglist \
 	test_fileformat \
 	test_filter_cmd \
 	test_filter_map \
+	test_findfile \
 	test_float_func \
 	test_fnameescape \
 	test_fnamemodify \
@@ -2164,6 +2165,7 @@ test_arglist \
 	test_nested_function \
 	test_netbeans \
 	test_normal \
+	test_number \
 	test_options \
 	test_packadd \
 	test_partial \
