@@ -1449,8 +1449,8 @@ server_parse_message(
 	    char_u	*enc;
 
 	    /*
-	     * This is a (n)otification.  Sent with serverreply_send in VimL.
-	     * Execute any autocommand and save it for later retrieval
+	     * This is a (n)otification.  Sent with serverreply_send in Vim
+	     * script.  Execute any autocommand and save it for later retrieval
 	     */
 	    p += 2;
 	    gotWindow = 0;

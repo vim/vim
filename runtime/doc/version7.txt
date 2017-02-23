@@ -10202,7 +10202,7 @@ objects in place of `str()` ones avoiding possibility of UnicodeDecodeError.
 interfaces to some extent. Extent will be improved in the future.
 
 Added special |python-vars| objects also available for |python-buffer| and 
-|python-window|. They ease access to VimL variables from Python.
+|python-window|. They ease access to Vim script variables from Python.
 
 Now you no longer need to alter `sys.path` to import your module: special 
 hooks are responsible for importing from {rtp}/python2, {rtp}/python3 and 

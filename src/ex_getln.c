@@ -5140,8 +5140,8 @@ expand_shellcmd(
 static void * call_user_expand_func(void *(*user_expand_func)(char_u *, int, char_u **, int), expand_T	*xp, int *num_file, char_u ***file);
 
 /*
- * Call "user_expand_func()" to invoke a user defined VimL function and return
- * the result (either a string or a List).
+ * Call "user_expand_func()" to invoke a user defined Vim script function and
+ * return the result (either a string or a List).
  */
     static void *
 call_user_expand_func(

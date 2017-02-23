@@ -2213,7 +2213,7 @@ test_arglist \
 	test_usercommands \
 	test_utf8 \
 	test_viminfo \
-	test_viml \
+	test_vimscript \
 	test_visual \
 	test_window_cmd \
 	test_window_id \

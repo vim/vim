@@ -676,11 +676,11 @@ vim.Function object				*python-Function*
                      dictionary. Note that explicit `self` keyword used when 
                      calling resulting object overrides this attribute.
         auto_rebind  Boolean. True if partial created from this Python object 
-                     and stored in the VimL dictionary should be automatically 
-                     rebound to the dictionary it is stored in when this 
-                     dictionary is indexed. Exposes Vim internal difference 
-                     between `dict.func` (auto_rebind=True) and 
-                     `function(dict.func,dict)` (auto_rebind=False). This 
+                     and stored in the Vim script dictionary should be
+                     automatically rebound to the dictionary it is stored in
+                     when this dictionary is indexed. Exposes Vim internal
+                     difference between `dict.func` (auto_rebind=True) and
+                     `function(dict.func,dict)` (auto_rebind=False). This
                      attribute makes no sense if `self` attribute is `None`.
 
     Constructor additionally accepts `args`, `self` and `auto_rebind` 
@@ -711,7 +711,7 @@ vim.Function object				*python-Function*
 8. pyeval() and py3eval() Vim functions			*python-pyeval*
 
 To facilitate bi-directional interface, you can use |pyeval()| and |py3eval()| 
-functions to evaluate Python expressions and pass their values to VimL.
+functions to evaluate Python expressions and pass their values to Vim script.
 |pyxeval()| is also available.
 
 ==============================================================================

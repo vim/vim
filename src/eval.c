@@ -950,7 +950,7 @@ eval_expr(char_u *arg, char_u **nextcmd)
 
 
 /*
- * Call some vimL function and return the result in "*rettv".
+ * Call some Vim script function and return the result in "*rettv".
  * Uses argv[argc] for the function arguments.  Only Number and String
  * arguments are currently supported.
  * Returns OK or FAIL.
@@ -1027,7 +1027,7 @@ call_vim_function(
 }
 
 /*
- * Call vimL function "func" and return the result as a number.
+ * Call Vim script function "func" and return the result as a number.
  * Returns -1 when calling the function fails.
  * Uses argv[argc] for the function arguments.
  */
@@ -1055,7 +1055,7 @@ call_func_retnr(
 
 # if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) || defined(PROTO)
 /*
- * Call vimL function "func" and return the result as a string.
+ * Call Vim script function "func" and return the result as a string.
  * Returns NULL when calling the function fails.
  * Uses argv[argc] for the function arguments.
  */
@@ -1080,7 +1080,7 @@ call_func_retstr(
 # endif
 
 /*
- * Call vimL function "func" and return the result as a List.
+ * Call Vim script function "func" and return the result as a List.
  * Uses argv[argc] for the function arguments.
  * Returns NULL when there is something wrong.
  */
