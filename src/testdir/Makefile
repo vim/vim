@@ -52,7 +52,7 @@ $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(SCRIPTS_FIRST)
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmark.out
-RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_PLUGIN) -s dotest.in
+RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_INITS) -s dotest.in
 
 clean:
 	-rm -rf *.out *.failed *.res *.rej *.orig test.log messages $(RM_ON_RUN) $(RM_ON_START) valgrind.*
@@ -118,7 +118,7 @@ nolog:
 # New style of tests uses Vim script with assert calls.  These are easier
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
-RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_PLUGIN)
+RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim
 
 newtests: newtestssilent
 	@/bin/sh -c "if test -f messages && grep -q 'SKIPPED\|FAILED' messages; then cat messages && if test -f test.log; then cat test.log; fi ; fi"
@@ -128,5 +128,15 @@ newtestssilent: $(NEW_TESTS)
 
 .vim.res:
 	@echo "$(RUN_VIMTEST)" > vimcmd
-	$(RUN_VIMTEST) -U NONE -S runtest.vim $*.vim
+	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim
+	@rm vimcmd
+
+test_gui.res: test_gui.vim
+	@echo "$(RUN_GVIMTEST)" > vimcmd
+	$(RUN_VIMTEST) -u NONE $(NO_INITS) -S runtest.vim $<
+	@rm vimcmd
+
+test_gui_init.res: test_gui_init.vim
+	@echo "$(RUN_GVIMTEST_WITH_GVIMRC)" > vimcmd
+	$(RUN_VIMTEST) -u NONE -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@rm vimcmd

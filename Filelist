@@ -105,7 +105,10 @@ SRC_ALL =	\
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/runtest.vim \
 		src/testdir/shared.vim \
+		src/testdir/view_util.vim \
 		src/testdir/setup.vim \
+		src/testdir/gui_init.vim \
+		src/testdir/setup_gui.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test[0-9]*a.ok \
 		src/testdir/test_[a-z]*.ok \

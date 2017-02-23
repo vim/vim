@@ -4,32 +4,14 @@ if !has('gui') || ($DISPLAY == "" && !has('gui_running'))
   finish
 endif
 
-let s:x11_based_gui = has('gui_athena') || has('gui_motif')
-	\ || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+source setup_gui.vim
 
-" Reasons for 'skipped'.
-let s:not_supported   = "Skipped: Feature/Option not supported by this GUI: "
-let s:not_implemented = "Skipped: Test not implemented yet for this GUI"
-let s:not_hosted      = "Skipped: Test not hosted by the system/environment"
-
-" For KDE set a font, empty 'guifont' may cause a hang.
-func SetUp()
-  if has("gui_kde")
-    set guifont=Courier\ 10\ Pitch/8/-1/5/50/0/0/0/0/0
-  endif
-
-  " Gnome insists on creating $HOME/.gnome2/, set $HOME to avoid changing the
-  " actual home directory.  But avoid triggering fontconfig by setting the
-  " cache directory.  Only needed for Unix.
-  if $XDG_CACHE_HOME == '' && exists('g:tester_HOME')
-    let $XDG_CACHE_HOME = g:tester_HOME . '/.cache'
-  endif
-  call mkdir('Xhome')
-  let $HOME = fnamemodify('Xhome', ':p')
+func Setup()
+  call GUISetUpCommon()
 endfunc
 
 func TearDown()
-  call delete('Xhome', 'rf')
+  call GUITearDownCommon()
 endfunc
 
 " Test for resetting "secure" flag after GUI has started.
@@ -43,8 +25,8 @@ endfunc
 func Test_getfontname_with_arg()
   let skipped = ''
 
-  if !s:x11_based_gui
-    let skipped = s:not_implemented
+  if !g:x11_based_gui
+    let skipped = g:not_implemented
   elseif has('gui_athena') || has('gui_motif')
     " Invalid font name. The result should be an empty string.
     call assert_equal('', getfontname('notexist'))
@@ -72,8 +54,8 @@ func Test_getfontname_without_arg()
 
   let fname = getfontname()
 
-  if !s:x11_based_gui
-    let skipped = s:not_implemented
+  if !g:x11_based_gui
+    let skipped = g:not_implemented
   elseif has('gui_kde')
     " 'expected' is the value specified by SetUp() above.
     call assert_equal('Courier 10 Pitch/8/-1/5/50/0/0/0/0/0', fname)
@@ -100,8 +82,8 @@ func Test_set_guifont()
     set guifontset=
   endif
 
-  if !s:x11_based_gui
-    let skipped = s:not_implemented
+  if !g:x11_based_gui
+    let skipped = g:not_implemented
   elseif has('gui_athena') || has('gui_motif')
     " Non-empty font list with invalid font names.
     "
@@ -153,7 +135,7 @@ func Test_set_guifontset()
   let skipped = ''
 
   if !has('xfontset')
-    let skipped = s:not_supported . 'xfontset'
+    let skipped = g:not_supported . 'xfontset'
   else
     let ctype_saved = v:ctype
 
@@ -202,7 +184,7 @@ func Test_set_guifontset()
 
     " Third, give a set of tests if it is found feasible.
     if !feasible
-      let skipped = s:not_hosted
+      let skipped = g:not_hosted
     else
       " N.B. 'v:ctype' has already been set to an appropriate value in the
       " previous loop.
@@ -224,15 +206,15 @@ endfunc
 func Test_set_guifontwide()
   let skipped = ''
 
-  if !s:x11_based_gui
-    let skipped = s:not_implemented
+  if !g:x11_based_gui
+    let skipped = g:not_implemented
   elseif has('gui_gtk')
     let guifont_saved = &guifont
     let guifontwide_saved = &guifontwide
 
     let fc_match = exepath('fc-match')
     if empty(fc_match)
-      let skipped = s:not_hosted
+      let skipped = g:not_hosted
     else
       let &guifont = system('fc-match -f "%{family[0]} %{size}" monospace:size=10:lang=en')
       let wide = system('fc-match -f "%{family[0]} %{size}" monospace:size=10:lang=ja')
@@ -246,7 +228,7 @@ func Test_set_guifontwide()
   elseif has('gui_athena') || has('gui_motif')
     " guifontwide is premised upon the xfontset feature.
     if !has('xfontset')
-      let skipped = s:not_supported . 'xfontset'
+      let skipped = g:not_supported . 'xfontset'
     else
       let encoding_saved    = &encoding
       let guifont_saved     = &guifont
@@ -303,6 +285,22 @@ func Test_set_guifontwide()
   endif
 endfunc
 
+func Test_set_guiheadroom()
+  let skipped = ''
+
+  if !g:x11_based_gui
+    let skipped = g:not_supported . 'guiheadroom'
+  else
+    " Since this script is to be read together with '-U NONE', the default
+    " value must be preserved.
+    call assert_equal(50, &guiheadroom)
+  endif
+
+  if !empty(skipped)
+    throw skipped
+  endif
+endfunc
+
 func Test_getwinpos()
   call assert_match('Window position: X \d\+, Y \d\+', execute('winpos'))
   call assert_true(getwinposx() >= 0)
@@ -317,7 +315,7 @@ func Test_shell_command()
 endfunc
 
 func Test_windowid_variable()
-  if s:x11_based_gui || has('win32')
+  if g:x11_based_gui || has('win32')
     call assert_true(v:windowid > 0)
   else
     call assert_equal(0, v:windowid)

@@ -2133,6 +2133,7 @@ test_arglist \
 	test_gn \
 	test_goto \
 	test_gui \
+	test_gui_init \
 	test_hardcopy \
 	test_help \
 	test_help_tagjump \

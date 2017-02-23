@@ -2,7 +2,10 @@
 # Common Makefile, defines the list of tests to run.
 #
 
-NO_PLUGIN = -U NONE --noplugin --not-a-term
+# Options for protecting the tests against undesirable interaction with the
+# environment
+NO_PLUGINS = --noplugin --not-a-term
+NO_INITS = -U NONE $(NO_PLUGINS)
 
 # The first script creates small.vim.
 SCRIPTS_FIRST = \
@@ -152,6 +155,7 @@ NEW_TESTS = test_arglist.res \
 	    test_gf.res \
 	    test_gn.res \
 	    test_gui.res \
+	    test_gui_init.res \
 	    test_hardcopy.res \
 	    test_help.res \
 	    test_hide.res \
