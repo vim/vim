@@ -25,7 +25,7 @@ env:
 sudo: false
 
 git:
-  depth: 10
+  depth: 20
 
 # instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
 # exclude some builds on mac os x and linux
