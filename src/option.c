@@ -5936,6 +5936,7 @@ did_set_string_option(
 	    /* Both 'term' and 'ttytype' point to T_NAME, only set the
 	     * P_ALLOCED flag on 'term'. */
 	    opt_idx = findoption((char_u *)"term");
+	    free_oldval = (options[opt_idx].flags & P_ALLOCED);
 	}
     }
 
