@@ -117,8 +117,7 @@ SCRIPTS_MORE4 = \
 	test59.out \
 	test72.out \
 	test78.out \
-	test83.out \
-	test89.out
+	test83.out
 
 
 # Tests specifically for MS-Windows.
@@ -174,6 +173,7 @@ NEW_TESTS = test_arglist.res \
 	    test_nested_function.res \
 	    test_netbeans.res \
 	    test_normal.res \
+	    test_number.res \
 	    test_packadd.res \
 	    test_paste.res \
 	    test_perl.res \
