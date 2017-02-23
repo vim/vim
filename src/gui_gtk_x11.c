@@ -630,6 +630,7 @@ static void gui_gtk_window_clear(GdkWindow *win);
     static void
 gui_gtk3_redraw(int x, int y, int width, int height)
 {
+    /* Range checks are left to gui_redraw_block() */
     gui_redraw_block(Y_2_ROW(y), X_2_COL(x),
 	    Y_2_ROW(y + height - 1), X_2_COL(x + width - 1),
 	    GUI_MON_NOCLEAR);
@@ -684,12 +685,20 @@ draw_event(GtkWidget *widget UNUSED,
 	if (list->status != CAIRO_STATUS_CLIP_NOT_REPRESENTABLE)
 	{
 	    int i;
+
+	    /* First clear all the blocks and then redraw them.  Just in case
+	     * some blocks overlap. */
 	    for (i = 0; i < list->num_rectangles; i++)
 	    {
 		const cairo_rectangle_t rect = list->rectangles[i];
 
-		gui_mch_clear_block(Y_2_ROW(rect.y), 1,
-			Y_2_ROW(rect.y + rect.height - 1), Columns);
+		gui_mch_clear_block(Y_2_ROW((int)rect.y), 0,
+			Y_2_ROW((int)(rect.y + rect.height)) - 1, Columns - 1);
+	    }
+
+	    for (i = 0; i < list->num_rectangles; i++)
+	    {
+		const cairo_rectangle_t rect = list->rectangles[i];
 
 		if (blink_mode)
 		    gui_gtk3_redraw(rect.x, rect.y, rect.width, rect.height);
@@ -6709,8 +6718,14 @@ gui_mch_flush(void)
  * (row2, col2) inclusive.
  */
     void
-gui_mch_clear_block(int row1, int col1, int row2, int col2)
+gui_mch_clear_block(int row1arg, int col1arg, int row2arg, int col2arg)
 {
+
+    int col1 = check_col(col1arg);
+    int col2 = check_col(col2arg);
+    int row1 = check_row(row1arg);
+    int row2 = check_row(row2arg);
+
 #if GTK_CHECK_VERSION(3,0,0)
     if (gtk_widget_get_window(gui.drawarea) == NULL)
 	return;
