@@ -1898,6 +1898,8 @@ get_lval(
      * Loop until no more [idx] or .key is following.
      */
     lp->ll_tv = &v->di_tv;
+    var1.v_type = VAR_UNKNOWN;
+    var2.v_type = VAR_UNKNOWN;
     while (*p == '[' || (*p == '.' && lp->ll_tv->v_type == VAR_DICT))
     {
 	if (!(lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list != NULL)
@@ -1955,8 +1957,7 @@ get_lval(
 		{
 		    if (!quiet)
 			EMSG(_(e_dictrange));
-		    if (!empty1)
-			clear_tv(&var1);
+		    clear_tv(&var1);
 		    return NULL;
 		}
 		if (rettv != NULL && (rettv->v_type != VAR_LIST
@@ -1964,8 +1965,7 @@ get_lval(
 		{
 		    if (!quiet)
 			EMSG(_("E709: [:] requires a List value"));
-		    if (!empty1)
-			clear_tv(&var1);
+		    clear_tv(&var1);
 		    return NULL;
 		}
 		p = skipwhite(p + 1);
@@ -1976,15 +1976,13 @@ get_lval(
 		    lp->ll_empty2 = FALSE;
 		    if (eval1(&p, &var2, TRUE) == FAIL)	/* recursive! */
 		    {
-			if (!empty1)
-			    clear_tv(&var1);
+			clear_tv(&var1);
 			return NULL;
 		    }
 		    if (get_tv_string_chk(&var2) == NULL)
 		    {
 			/* not a number or string */
-			if (!empty1)
-			    clear_tv(&var1);
+			clear_tv(&var1);
 			clear_tv(&var2);
 			return NULL;
 		    }
@@ -1998,10 +1996,8 @@ get_lval(
 	    {
 		if (!quiet)
 		    EMSG(_(e_missbrac));
-		if (!empty1)
-		    clear_tv(&var1);
-		if (lp->ll_range && !lp->ll_empty2)
-		    clear_tv(&var2);
+		clear_tv(&var1);
+		clear_tv(&var2);
 		return NULL;
 	    }
 
@@ -2064,16 +2060,14 @@ get_lval(
 		{
 		    if (!quiet)
 			EMSG2(_(e_dictkey), key);
-		    if (len == -1)
-			clear_tv(&var1);
+		    clear_tv(&var1);
 		    return NULL;
 		}
 		if (len == -1)
 		    lp->ll_newkey = vim_strsave(key);
 		else
 		    lp->ll_newkey = vim_strnsave(key, len);
-		if (len == -1)
-		    clear_tv(&var1);
+		clear_tv(&var1);
 		if (lp->ll_newkey == NULL)
 		    p = NULL;
 		break;
@@ -2086,8 +2080,7 @@ get_lval(
 		return NULL;
 	    }
 
-	    if (len == -1)
-		clear_tv(&var1);
+	    clear_tv(&var1);
 	    lp->ll_tv = &lp->ll_di->di_tv;
 	}
 	else
@@ -2098,11 +2091,10 @@ get_lval(
 	    if (empty1)
 		lp->ll_n1 = 0;
 	    else
-	    {
+		/* is number or string */
 		lp->ll_n1 = (long)get_tv_number(&var1);
-						    /* is number or string */
-		clear_tv(&var1);
-	    }
+	    clear_tv(&var1);
+
 	    lp->ll_dict = NULL;
 	    lp->ll_list = lp->ll_tv->vval.v_list;
 	    lp->ll_li = list_find(lp->ll_list, lp->ll_n1);
@@ -2116,8 +2108,7 @@ get_lval(
 	    }
 	    if (lp->ll_li == NULL)
 	    {
-		if (lp->ll_range && !lp->ll_empty2)
-		    clear_tv(&var2);
+		clear_tv(&var2);
 		if (!quiet)
 		    EMSGN(_(e_listidx), lp->ll_n1);
 		return NULL;
@@ -2161,6 +2152,7 @@ get_lval(
 	}
     }
 
+    clear_tv(&var1);
     return p;
 }
 
