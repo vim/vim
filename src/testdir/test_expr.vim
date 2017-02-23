@@ -473,3 +473,8 @@ func Test_setmatches()
   call setmatches(set)
   call assert_equal(exp, getmatches())
 endfunc
+
+func Test_empty_concatenate()
+  call assert_equal('b', 'a'[4:0] . 'b')
+  call assert_equal('b', 'b' . 'a'[4:0])
+endfunc
