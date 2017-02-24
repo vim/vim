@@ -12,14 +12,14 @@
  * Not used for GTK.
  */
 
+#include "vim.h"
+
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 #include <X11/cursorfont.h>
-
-#include "vim.h"
 
 /*
  * For Workshop XpmP.h is preferred, because it makes the signs drawn with a
