@@ -4454,7 +4454,7 @@ do_set(
 	    }
 
 	    /*
-	     * allow '=' and ':' for hystorical reasons (MSDOS command.com
+	     * allow '=' and ':' for historical reasons (MSDOS command.com
 	     * allows only one '=' character per "set" command line. grrr. (jw)
 	     */
 	    if (nextchar == '?'
@@ -4598,7 +4598,7 @@ do_set(
 				    || (long *)varp == &p_wcm)
 				&& (*arg == '<'
 				    || *arg == '^'
-				    || ((!arg[1] || vim_iswhite(arg[1]))
+				    || (*arg != NUL && (!arg[1] || vim_iswhite(arg[1]))
 					&& !VIM_ISDIGIT(*arg))))
 			{
 			    value = string_to_key(arg);
@@ -5829,7 +5829,7 @@ set_string_option(
 							   opt_flags)) == NULL)
 	    did_set_option(opt_idx, opt_flags, TRUE);
 
-	/* call autocomamnd after handling side effects */
+	/* call autocommand after handling side effects */
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 	if (saved_oldval != NULL)
 	{
