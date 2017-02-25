@@ -885,8 +885,10 @@ init_changedtick(buf_T *buf)
     di->di_tv.v_lock = VAR_FIXED;
     di->di_tv.vval.v_number = 0;
 
+#ifdef FEAT_EVAL
     STRCPY(buf->b_ct_di.di_key, "changedtick");
     (void)dict_add(buf->b_vars, di);
+#endif
 }
 
 /*
