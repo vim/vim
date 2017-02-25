@@ -46,6 +46,7 @@ let test_values = {
       \ 'updatecount': [[0, 1, 8, 9999], [-1]],
       \ 'updatetime': [[0, 1, 8, 9999], [-1]],
       \ 'verbose': [[-1, 0, 1, 8, 9999], []],
+      \ 'wildcharm': [[-1, 0, 100], []],
       \ 'winheight': [[1, 10, 999], [-1, 0]],
       \ 'winminheight': [[0, 1], [-1]],
       \ 'winminwidth': [[0, 1, 10], [-1]],
@@ -137,7 +138,7 @@ let test_values = {
       \ 'rubydll': [[], []],
       \ 'tcldll': [[], []],
       \
-      \ 'othernum': [[-1, 0, 100], []],
+      \ 'othernum': [[-1, 0, 100], ['']],
       \ 'otherstring': [['', 'xxx'], []],
       \}
 
