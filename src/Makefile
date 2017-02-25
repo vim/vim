@@ -2193,6 +2193,7 @@ test_arglist \
 	test_smartindent \
 	test_sort \
 	test_source_utf8 \
+	test_spell \
 	test_startup \
 	test_startup_utf8 \
 	test_stat \

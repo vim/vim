@@ -1734,14 +1734,14 @@ spell_move_to(
 	if (curline)
 	    break;	/* only check cursor line */
 
+	/* If we are back at the starting line and searched it again there
+	 * is no match, give up. */
+	if (lnum == wp->w_cursor.lnum && wrapped)
+	    break;
+
 	/* Advance to next line. */
 	if (dir == BACKWARD)
 	{
-	    /* If we are back at the starting line and searched it again there
-	     * is no match, give up. */
-	    if (lnum == wp->w_cursor.lnum && wrapped)
-		break;
-
 	    if (lnum > 1)
 		--lnum;
 	    else if (!p_ws)
@@ -1775,7 +1775,7 @@ spell_move_to(
 
 	    /* If we are back at the starting line and there is no match then
 	     * give up. */
-	    if (lnum == wp->w_cursor.lnum && (!found_one || wrapped))
+	    if (lnum == wp->w_cursor.lnum && !found_one)
 		break;
 
 	    /* Skip the characters at the start of the next line that were

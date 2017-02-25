@@ -192,6 +192,7 @@ NEW_TESTS = test_arglist.res \
 	    test_search.res \
 	    test_signs.res \
 	    test_smartindent.res \
+	    test_spell.res \
 	    test_startup.res \
 	    test_startup_utf8.res \
 	    test_stat.res \
