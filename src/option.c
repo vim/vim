@@ -1278,8 +1278,8 @@ static struct vimoption options[] =
 #endif
 			    SCRIPTID_INIT},
     {"foldmarker",  "fmr",  P_STRING|P_ALLOCED|P_VIM|P_VI_DEF|
-#ifdef FEAT_FOLDING
 						    P_RWIN|P_ONECOMMA|P_NODUP,
+#ifdef FEAT_FOLDING
 			    (char_u *)VAR_WIN, PV_FMR,
 			    {(char_u *)"{{{,}}}", (char_u *)NULL}
 #else
