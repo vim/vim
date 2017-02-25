@@ -27,8 +27,8 @@ let test_values = {
       \ 'foldcolumn': [[0, 1, 4, 12], [-1, 13, 999]],
       \ 'helpheight': [[0, 10, 100], [-1]],
       \ 'history': [[0, 1, 100], [-1, 10001]],
-      \ 'iminsert': [[0, 1, 2], [-1, 3, 999]],
-      \ 'imsearch': [[-1, 0, 1, 2], [-2, 3, 999]],
+      \ 'iminsert': [[0, 1], [-1, 3, 999]],
+      \ 'imsearch': [[-1, 0, 1], [-2, 3, 999]],
       \ 'lines': [[2, 24], [-1, 0, 1]],
       \ 'numberwidth': [[1, 4, 8, 10], [-1, 0, 11]],
       \ 'regexpengine': [[0, 1, 2], [-1, 3, 999]],
@@ -170,10 +170,14 @@ while 1
 	call add(script, 'set ' . name . '=' . val)
 	call add(script, 'set ' . shortname . '=' . val)
       endfor
+
+      " setting an option can only fail when it's implemented.
+      call add(script, "if exists('+" . name . "')")
       for val in a[1]
 	call add(script, "call assert_fails('set " . name . "=" . val . "')")
 	call add(script, "call assert_fails('set " . shortname . "=" . val . "')")
       endfor
+      call add(script, "endif")
     endif
 
     call add(script, 'set ' . name . '&')
