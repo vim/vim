@@ -6640,7 +6640,7 @@ set_vim_var_dict(int idx, dict_T *val)
 	    if (HASHITEM_EMPTY(hi))
 		continue;
 	    --todo;
-	    HI2DI(hi)->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
+	    HI2DI(hi)->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
 	}
     }
 }
