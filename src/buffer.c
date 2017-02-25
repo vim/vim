@@ -832,7 +832,6 @@ free_buffer(buf_T *buf)
     free_buffer_stuff(buf, TRUE);
 #ifdef FEAT_EVAL
     unref_var_dict(buf->b_vars);
-    buf->b_changedtick = &buf->b_ct_val;
 #endif
 #ifdef FEAT_LUA
     lua_buffer_free(buf);
@@ -874,31 +873,20 @@ free_buffer(buf_T *buf)
 }
 
 /*
- * Initializes buf->b_changedtick.
+ * Initializes b:changedtick.
  */
     static void
 init_changedtick(buf_T *buf)
 {
-#ifdef FEAT_EVAL
-    dictitem_T *di = dictitem_alloc((char_u *)"changedtick");
+    dictitem_T *di = (dictitem_T *)&buf->b_ct_di;
 
-    if (di != NULL)
-    {
-	di->di_flags |= DI_FLAGS_FIX | DI_FLAGS_RO;
-	di->di_tv.v_type = VAR_NUMBER;
-	di->di_tv.v_lock = VAR_FIXED;
-	di->di_tv.vval.v_number = 0;
-	if (dict_add(buf->b_vars, di) == OK)
-	    buf->b_changedtick = &di->di_tv.vval.v_number;
-	else
-	{
-	    vim_free(di);
-	    buf->b_changedtick = &buf->b_ct_val;
-	}
-    }
-    else
-#endif
-	buf->b_changedtick = &buf->b_ct_val;
+    di->di_flags = DI_FLAGS_FIX | DI_FLAGS_RO;
+    di->di_tv.v_type = VAR_NUMBER;
+    di->di_tv.v_lock = VAR_FIXED;
+    di->di_tv.vval.v_number = 0;
+
+    STRCPY(buf->b_ct_di.di_key, "changedtick");
+    (void)dict_add(buf->b_vars, di);
 }
 
 /*
@@ -919,12 +907,12 @@ free_buffer_stuff(
     }
 #ifdef FEAT_EVAL
     {
-	varnumber_T tick = *buf->b_changedtick;
+	varnumber_T tick = CHANGEDTICK(buf);
 
 	vars_clear(&buf->b_vars->dv_hashtab); /* free all buffer variables */
 	hash_init(&buf->b_vars->dv_hashtab);
 	init_changedtick(buf);
-	*buf->b_changedtick = tick;
+	CHANGEDTICK(buf) = tick;
     }
 #endif
 #ifdef FEAT_USR_CMDS

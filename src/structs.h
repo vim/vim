@@ -1916,9 +1916,10 @@ struct file_buffer
 
     int		b_changed;	/* 'modified': Set to TRUE if something in the
 				   file has been changed and not written out. */
-    varnumber_T	*b_changedtick;	/* points into b:changedtick or b_ct_val;
+    dictitem16_T b_ct_di;	/* holds the b:changedtick value in
+				   b_ct_di.di_tv.vval.v_number;
 				   incremented for each change, also for undo */
-    varnumber_T b_ct_val;	/* fallback for b:changedtick */
+#define CHANGEDTICK(buf) ((buf)->b_ct_di.di_tv.vval.v_number)
 
     int		b_saving;	/* Set to TRUE if we are in the middle of
 				   saving the buffer. */

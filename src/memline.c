@@ -1649,7 +1649,7 @@ ml_recover(void)
 	if (!(curbuf->b_ml.ml_line_count == 2 && *ml_get(1) == NUL))
 	{
 	    changed_int();
-	    ++*curbuf->b_changedtick;
+	    ++CHANGEDTICK(curbuf);
 	}
     }
     else
@@ -1663,7 +1663,7 @@ ml_recover(void)
 	    if (i != 0)
 	    {
 		changed_int();
-		++*curbuf->b_changedtick;
+		++CHANGEDTICK(curbuf);
 		break;
 	    }
 	}

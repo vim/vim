@@ -88,8 +88,7 @@ dict_free_contents(dict_T *d)
 	     * something recursive causing trouble. */
 	    di = HI2DI(hi);
 	    hash_remove(&d->dv_hashtab, hi);
-	    clear_tv(&di->di_tv);
-	    vim_free(di);
+	    dictitem_free(di);
 	    --todo;
 	}
     }

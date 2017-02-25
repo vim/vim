@@ -1162,15 +1162,15 @@ main_loop(
 #endif
 
 #ifdef FEAT_AUTOCMD
-	    /* Trigger TextChanged if b_changedtick differs. */
+	    /* Trigger TextChanged if b:changedtick differs. */
 	    if (!finish_op && has_textchanged()
-		    && last_changedtick != *curbuf->b_changedtick)
+		    && last_changedtick != CHANGEDTICK(curbuf))
 	    {
 		if (last_changedtick_buf == curbuf)
 		    apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL,
 							       FALSE, curbuf);
 		last_changedtick_buf = curbuf;
-		last_changedtick = *curbuf->b_changedtick;
+		last_changedtick = CHANGEDTICK(curbuf);
 	    }
 #endif
 
@@ -1388,11 +1388,11 @@ getout(int exitval)
 		    /* Autocmd must have close the buffer already, skip. */
 		    continue;
 		buf = wp->w_buffer;
-		if (buf->b_ct_val != -1)
+		if (CHANGEDTICK(buf) != -1)
 		{
 		    apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname,
 						    buf->b_fname, FALSE, buf);
-		    buf->b_ct_val = -1;  /* note that we did it already */
+		    CHANGEDTICK(buf) = -1;  /* note that we did it already */
 		    /* start all over, autocommands may mess up the lists */
 		    next_tp = first_tabpage;
 		    break;
