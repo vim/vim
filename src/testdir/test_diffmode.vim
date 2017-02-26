@@ -296,7 +296,7 @@ func Test_diff_move_to()
 endfunc
 
 func Test_diffpatch()
-  if !executable('patch')
+  if !has('unix') || !executable('patch')
     return
   endif
   new
