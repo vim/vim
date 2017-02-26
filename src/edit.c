@@ -1038,8 +1038,7 @@ doESCkey:
 	    if (!p_im)
 		goto normalchar;	/* insert CTRL-Z as normal char */
 	    do_cmdline_cmd((char_u *)"stop");
-	    c = Ctrl_O;
-	    /*FALLTHROUGH*/
+	    continue;
 
 	case Ctrl_O:	/* execute one command */
 #ifdef FEAT_COMPL_FUNC

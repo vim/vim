@@ -2982,8 +2982,6 @@ do_mouse(
 		|| (mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
 	    && bt_quickfix(curbuf))
     {
-	if (State & INSERT)
-	    stuffcharReadbuff(Ctrl_O);
 	if (curwin->w_llist_ref == NULL)	/* quickfix window */
 	    do_cmdline_cmd((char_u *)".cc");
 	else					/* location list window */
