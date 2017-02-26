@@ -2369,9 +2369,16 @@ getexmodeline(
 	if (ga_grow(&line_ga, 40) == FAIL)
 	    break;
 
-	/* Get one character at a time. */
+	/*
+	 * Get one character at a time.
+	 */
 	prev_char = c1;
-	c1 = vgetc();
+
+	/* Check for a ":normal" command and no more characters left. */
+	if (ex_normal_busy > 0 && typebuf.tb_len == 0)
+	    c1 = '\n';
+	else
+	    c1 = vgetc();
 
 	/*
 	 * Handle line editing.
