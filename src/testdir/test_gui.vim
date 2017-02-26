@@ -72,6 +72,47 @@ func Test_getfontname_without_arg()
   endif
 endfunc
 
+func Test_quoteplus()
+  let skipped = ''
+
+  if !g:x11_based_gui
+    let skipped = g:not_supported . 'quoteplus'
+  else
+    let quoteplus_saved = @+
+
+    let test_call     = 'Can you hear me?'
+    let test_response = 'Yes, I can.'
+    let vim_exe = exepath(v:progpath)
+    let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
+          \ . vim_exe . ' -f -g -u NONE -U NONE --noplugin -c ''%s'''
+    let cmd = 'call feedkeys("'
+          \ . '\"+p'
+          \ . ':s/' . test_call . '/' . test_response . '/\<CR>'
+          \ . '\"+yis'
+          \ . ':q!\<CR>", "tx")'
+    let run_vimtest = printf(testee, cmd)
+
+    " Set the quoteplus register to test_call, and another gvim will launched.
+    " Then, it first tries to paste the content of its own quotedplus register
+    " onto it.  Second, it tries to substitute test_responce for the pasted
+    " sentence.  If the sentence is identical to test_call, the substitution
+    " should succeed.  Third, it tries to yank the result of the substitution
+    " to its own quoteplus register, and last it quits.  When system()
+    " returns, the content of the quoteplus register should be identical to
+    " test_response if those quoteplus registers are synchronized properly
+    " with/through the X11 clipboard.
+    let @+ = test_call
+    call system(run_vimtest)
+    call assert_equal(test_response, @+)
+
+    let @+ = quoteplus_saved
+  endif
+
+  if !empty(skipped)
+    throw skipped
+  endif
+endfunc
+
 func Test_set_guifont()
   let skipped = ''
 
