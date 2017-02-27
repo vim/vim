@@ -4201,8 +4201,9 @@ win_line(
 	    /*
 	     * Get a character from the line itself.
 	     */
+	    c = *ptr;
 #ifdef FEAT_LINEBREAK
-	    c0 = c = *ptr;
+	    c0 = *ptr;
 #endif
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
