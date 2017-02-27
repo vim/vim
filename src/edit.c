@@ -2262,7 +2262,8 @@ has_compl_option(int dict_opt)
 	    vim_beep(BO_COMPL);
 	    setcursor();
 	    out_flush();
-	    ui_delay(2000L, FALSE);
+	    if (run_in_term())
+		ui_delay(2000L, FALSE);
 	}
 	return FALSE;
     }

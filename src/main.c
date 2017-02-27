@@ -3203,6 +3203,19 @@ mainerr_arg_missing(char_u *str)
     mainerr(ME_ARG_MISSING, str);
 }
 
+/*
+ * return TRUE, if the --not-a-term argument has not been given
+ */
+    int
+run_in_term()
+{
+#ifndef NO_VIM_MAIN
+    return !(params.not_a_term);
+#else
+    return 0;
+#endif
+}
+
 #ifndef NO_VIM_MAIN
 /*
  * print a message with three spaces prepended and '\n' appended.

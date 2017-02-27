@@ -391,6 +391,7 @@ static void f_tempname(typval_T *argvars, typval_T *rettv);
 static void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
 static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
 static void f_test_disable_char_avail(typval_T *argvars, typval_T *rettv);
+static void f_test_disable(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
@@ -828,6 +829,7 @@ static struct fst
     {"tempname",	0, 0, f_tempname},
     {"test_alloc_fail",	3, 3, f_test_alloc_fail},
     {"test_autochdir",	0, 0, f_test_autochdir},
+    {"test_disable",    2, 2, f_test_disable},
     {"test_disable_char_avail", 1, 1, f_test_disable_char_avail},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
     {"test_ignore_error",	1, 1, f_test_ignore_error},
@@ -12323,6 +12325,30 @@ f_test_autochdir(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #if defined(FEAT_AUTOCHDIR)
     test_autochdir = TRUE;
 #endif
+}
+
+/*
+ * "test_disable({name}, {val})" function
+ */
+    static void
+f_test_disable(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u *name = (char_u *)"";
+    int     val;
+
+    if (argvars[0].v_type != VAR_STRING
+	    || (argvars[1].v_type) != VAR_NUMBER)
+	EMSG(_(e_invarg));
+    else
+    {
+	name = get_tv_string_chk(&argvars[0]);
+	val = (int)get_tv_number(&argvars[1]);
+
+	if (STRNCMP(name, (char_u *)"redraw", 6) == 0)
+	   disable_redraw_for_testing = val; 
+	else if (STRNCMP(name, (char_u *)"char_avail", 10) == 0)
+	    disable_char_avail_for_testing = val;
+    }
 }
 
 /*

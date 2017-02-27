@@ -2360,6 +2360,7 @@ tempname()			String	name for a temporary file
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
+test_disable({expr}, {val})     none	test with Vim internal function disabled
 test_disable_char_avail({expr}) none	test without typeahead
 test_garbagecollect_now()	none	free memory right now for testing
 test_ignore_error({expr})	none	ignore a specific error
@@ -7796,7 +7797,15 @@ test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 test_autochdir()					*test_autochdir()*
 		Set a flag to enable the effect of 'autochdir' before Vim
 		startup has finished.
-
+						        *test_disable()*
+test_disable({name}, {val})
+                Disables certain parts of Vims internal function processing
+                to be able to test Vim. Only to be used for testing Vim.
+                Current supported values for name are: >
+                "redraw"    - disable the redrawing() function
+                "char_avail"- disable the char_avail() function (see also
+                              test_disable_char_avail() function)
+<
 						*test_disable_char_avail()*
 test_disable_char_avail({expr})
 		When {expr} is 1 the internal char_avail() function will

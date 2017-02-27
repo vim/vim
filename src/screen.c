@@ -10580,7 +10580,12 @@ fillchar_vsep(int *attr)
     int
 redrawing(void)
 {
-    return (!RedrawingDisabled
+#ifdef FEAT_EVAL
+    if (disable_redraw_for_testing)
+	return 0;
+    else
+#endif
+	return (!RedrawingDisabled
 		       && !(p_lz && char_avail() && !KeyTyped && !do_redraw));
 }
 
