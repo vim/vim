@@ -165,6 +165,7 @@ let s:flaky = [
       \ 'Test_collapse_buffers()',
       \ 'Test_communicate()',
       \ 'Test_nb_basic()',
+      \ 'Test_oneshot()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',
       \ 'Test_reltime()',
