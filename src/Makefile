@@ -2092,6 +2092,7 @@ test1 \
 
 # Run individual NEW style test, assuming that Vim was already compiled.
 test_arglist \
+	test_arabic \
 	test_assert \
 	test_assign \
 	test_autochdir \
