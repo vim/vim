@@ -35,6 +35,7 @@ func Test_arabic_input()
   " Typing sghl in Arabic insert mode should show the
   " Arabic word 'Salaam' i.e. 'peace'.
   call feedkeys('isghl', 'tx')
+  redraw
   call assert_equal([
   \ "\nd8 b3 ",
   \ "\nd9 84 + d8 a7 ",
@@ -42,6 +43,7 @@ func Test_arabic_input()
 
   " Without shaping, it should give individual Arabic letters.
   set noarabicshape
+  redraw
   call assert_equal([
   \ "\nd8 b3 ",
   \ "\nd9 84 ",
@@ -57,6 +59,7 @@ func Test_arabic_toggle_keymap()
   new
   set arabic
   call feedkeys("i12\<C-^>12\<C-^>12", 'tx')
+  redraw
   call assert_equal('١٢12١٢', getline('.'))
   set arabic&
   bwipe!
@@ -66,6 +69,7 @@ func Test_delcombine()
   new
   set arabic
   call feedkeys("isghl\<BS>\<BS>", 'tx')
+  redraw
   call assert_equal(["\nd8 b3 ", "\nd9 84 "], GetCharsUtf8(1))
 
   " Now the same with nodelcombine
