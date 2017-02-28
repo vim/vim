@@ -1,21 +1,26 @@
 " Simplistic testing of Arabic mode.
 
-if !has('arabic')
+if !has('arabic') || !has('multi_byte')
   finish
 endif
 
 set encoding=utf-8
 scriptencoding utf-8
 
-" Return list of utf8 sequences of each character at line lnum.
+source view_util.vim
+
+" Return list of Unicode characters at line lnum.
 " Combining characters are treated as a single item.
-func GetCharsUtf8(lnum)
+func s:get_chars(lnum)
   call cursor(a:lnum, 1)
   let chars = []
   let numchars = strchars(getline('.'), 1)
   for i in range(1, numchars)
     exe 'norm ' i . '|'
-    call add(chars, execute('norm g8'))
+    let c=execute('ascii')
+    let c=substitute(c, '\n\?<.\{-}Hex\s*', 'U+', 'g')
+    let c=substitute(c, ',\s*Octal\s*\d*', '', 'g')
+    call add(chars, c)
   endfor
   return chars
 endfunc
@@ -43,25 +48,28 @@ func Test_arabic_input()
   new
   set arabic
   " Typing sghl in Arabic insert mode should show the
-  " Arabic word 'Salaam' i.e. 'peace'.
-  call feedkeys('isghl', 'tx')
-  redraw
+  " Arabic word 'Salaam' i.e. 'peace', spelled:
+  " SEEN, LAM, ALEF, MEEM.
+  " See: https://www.mediawiki.org/wiki/VisualEditor/Typing/Right-to-left
+  call feedkeys('isghl!', 'tx')
+  call assert_match("^ *!\uFEE1\uFEFC\uFEB3$", ScreenLines(1, &columns)[0])
   call assert_equal([
-  \ "\nd8 b3 ",
-  \ "\nd9 84 + d8 a7 ",
-  \ "\nd9 85 "], GetCharsUtf8(1))
+  \ 'U+0633',
+  \ 'U+0644 U+0627',
+  \ 'U+0645',
+  \ 'U+21'], s:get_chars(1))
 
   " Without shaping, it should give individual Arabic letters.
   set noarabicshape
-  redraw
+  call assert_match("^ *!\u0645\u0627\u0644\u0633$", ScreenLines(1, &columns)[0])
   call assert_equal([
-  \ "\nd8 b3 ",
-  \ "\nd9 84 ",
-  \ "\nd8 a7 ",
-  \ "\nd9 85 "], GetCharsUtf8(1))
+  \ 'U+0633',
+  \ 'U+0644',
+  \ 'U+0627',
+  \ 'U+0645',
+  \ 'U+21'], s:get_chars(1))
 
-  set arabicshape&
-  set arabic&
+  set arabic& arabicshape&
   bwipe!
 endfunc
 
@@ -69,7 +77,7 @@ func Test_arabic_toggle_keymap()
   new
   set arabic
   call feedkeys("i12\<C-^>12\<C-^>12", 'tx')
-  redraw
+  call assert_match("^ *٢١21٢١$", ScreenLines(1, &columns)[0])
   call assert_equal('١٢12١٢', getline('.'))
   set arabic&
   bwipe!
@@ -79,14 +87,15 @@ func Test_delcombine()
   new
   set arabic
   call feedkeys("isghl\<BS>\<BS>", 'tx')
-  redraw
-  call assert_equal(["\nd8 b3 ", "\nd9 84 "], GetCharsUtf8(1))
+  call assert_match("^ *\uFEDE\uFEB3$", ScreenLines(1, &columns)[0])
+  call assert_equal(['U+0633', 'U+0644'], s:get_chars(1))
 
-  " Now the same with nodelcombine
+  " Now the same with 'nodelcombine'
   set nodelcombine
   %d
   call feedkeys("isghl\<BS>\<BS>", 'tx')
-  call assert_equal(["\nd8 b3 "], GetCharsUtf8(1)) 
+  call assert_match("^ *\uFEB1$", ScreenLines(1, &columns)[0])
+  call assert_equal(['U+0633'], s:get_chars(1))
   set arabic&
   bwipe!
 endfunc
