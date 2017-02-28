@@ -1863,7 +1863,7 @@ recover_names(
 	    else
 	    {
 #if defined(UNIX) || defined(WIN3264)
-		int	len = STRLEN(dir_name);
+		int	len = (int)STRLEN(dir_name);
 
 		p = dir_name + len;
 		if (after_pathsep(dir_name, p) && len > 1 && p[-1] == p[-2])
@@ -3924,7 +3924,7 @@ makeswapname(
 #endif
 
 #if defined(UNIX) || defined(WIN3264)  /* Need _very_ long file names */
-    int		len = STRLEN(dir_name);
+    int		len = (int)STRLEN(dir_name);
 
     s = dir_name + len;
     if (after_pathsep(dir_name, s) && len > 1 && s[-1] == s[-2])
