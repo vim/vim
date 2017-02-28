@@ -1,6 +1,6 @@
 " Test for folding
 
-function! Test_address_fold()
+func! Test_address_fold()
   new
   call setline(1, ['int FuncName() {/*{{{*/', 1, 2, 3, 4, 5, '}/*}}}*/',
 	      \ 'after fold 1', 'after fold 2', 'after fold 3'])
@@ -62,9 +62,9 @@ function! Test_address_fold()
   call assert_equal(['4', '5', '}/*}}}*/'], getreg(0,1,1))
 
   quit!
-endfunction
+endfunc
 
-function! Test_indent_fold()
+func! Test_indent_fold()
     new
     call setline(1, ['', 'a', '    b', '    c'])
     setl fen fdm=indent
@@ -72,9 +72,9 @@ function! Test_indent_fold()
     norm! >>
     let a=map(range(1,4), 'foldclosed(v:val)')
     call assert_equal([-1,-1,-1,-1], a)
-endfu
+endfunc
 
-function! Test_indent_fold()
+func! Test_indent_fold()
     new
     call setline(1, ['', 'a', '    b', '    c'])
     setl fen fdm=indent
@@ -83,9 +83,9 @@ function! Test_indent_fold()
     let a=map(range(1,4), 'foldclosed(v:val)')
     call assert_equal([-1,-1,-1,-1], a)
     bw!
-endfu
+endfunc
 
-function! Test_indent_fold2()
+func! Test_indent_fold2()
     new
     call setline(1, ['', '{{{', '}}}', '{{{', '}}}'])
     setl fen fdm=marker
@@ -94,4 +94,21 @@ function! Test_indent_fold2()
     let a=map(range(1,5), 'foldclosed(v:val)')
     call assert_equal([-1,-1,-1,4,4], a)
     bw!
-endfu
+endfunc
+
+func Test_manual_fold_with_filter()
+  if !executable('cat')
+    return
+  endif
+  new
+  call setline(1, range(1, 20))
+  4,$fold
+  %foldopen
+  10,$fold
+  %foldopen
+  " This filter command should not have an effect
+  1,8! cat
+  call feedkeys('5ggzdzMGdd', 'xt')
+  call assert_equal(['1', '2', '3', '4', '5', '6', '7', '8', '9'], getline(1, '$'))
+  bwipe!
+endfunc
