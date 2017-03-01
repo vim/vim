@@ -15,7 +15,7 @@ endif
 let s:cpo_save = &cpo
 set cpo-=C
 
-CompilerSet makeprg=xmllint\ --valid\ --noout
+CompilerSet makeprg=xmllint\ --valid\ --noout\ %:S
 
 CompilerSet errorformat=%+E%f:%l:\ %.%#\ error\ :\ %m,
 		    \%+W%f:%l:\ %.%#\ warning\ :\ %m,

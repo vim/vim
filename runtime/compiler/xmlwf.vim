@@ -15,7 +15,7 @@ if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
 endif
 
-CompilerSet makeprg=xmlwf\ %
+CompilerSet makeprg=xmlwf\ %:S
 
 CompilerSet errorformat=%f:%l%c:%m
 
