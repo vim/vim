@@ -297,7 +297,7 @@ endfunc
 func Test_searchc()
   " These commands used to cause memory overflow in searchc().
   new
-  norm=eccdo
-  exe "norm=et\u93CF"
+  norm ixx
+  exe "norm 0t\u93cf"
   bw!
 endfunc
