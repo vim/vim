@@ -5098,6 +5098,14 @@ ins_complete(int c, int enable_pum)
     int		save_w_wrow;
     int		insert_match;
     int		save_did_ai = did_ai;
+    static win_T    *lastwin = NULL;
+    static colnr_T  lastcol = 0;
+
+    if (lastwin != curwin)
+    {
+	lastwin = curwin;
+	lastcol = curwin->w_leftcol;
+    }
 
     compl_direction = ins_compl_key2dir(c);
     insert_match = ins_compl_use_match(c);
@@ -5696,6 +5704,11 @@ ins_complete(int c, int enable_pum)
     }
     compl_was_interrupted = compl_interrupted;
     compl_interrupted = FALSE;
+
+    if (lastcol != curwin->w_leftcol) {
+	redraw_later(CLEAR);
+	lastcol = curwin->w_leftcol;
+    }
 
     return OK;
 }
