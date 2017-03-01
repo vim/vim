@@ -539,7 +539,7 @@ emsg_not_now(void)
     return FALSE;
 }
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
 static garray_T ignore_error_list = GA_EMPTY;
 
     void
