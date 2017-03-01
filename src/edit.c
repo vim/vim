@@ -186,7 +186,7 @@ static int  ins_compl_pum_key(int c);
 static int  ins_compl_key2count(int c);
 static int  ins_compl_use_match(int c);
 static int  ins_complete(int c, int enable_pum);
-static void show_pum(int save_w_wrow);
+static void show_pum(int prev_w_wrow, int prev_w_leftcol);
 static unsigned  quote_meta(char_u *dest, char_u *str, int len);
 #endif /* FEAT_INS_EXPAND */
 
@@ -2818,6 +2818,7 @@ completeopt_was_set(void)
 set_completion(colnr_T startcol, list_T *list)
 {
     int save_w_wrow = curwin->w_wrow;
+    int save_w_leftcol = curwin->w_leftcol;
 
     /* If already doing completions stop it. */
     if (ctrl_x_mode != 0)
@@ -2858,7 +2859,7 @@ set_completion(colnr_T startcol, list_T *list)
 
     /* Lazily show the popup menu, unless we got interrupted. */
     if (!compl_interrupted)
-	show_pum(save_w_wrow);
+	show_pum(save_w_wrow, save_w_leftcol);
     out_flush();
 }
 
@@ -5096,6 +5097,7 @@ ins_complete(int c, int enable_pum)
     colnr_T	curs_col;	    /* cursor column */
     int		n;
     int		save_w_wrow;
+    int		save_w_leftcol;
     int		insert_match;
     int		save_did_ai = did_ai;
 
@@ -5539,6 +5541,7 @@ ins_complete(int c, int enable_pum)
      * Find next match (and following matches).
      */
     save_w_wrow = curwin->w_wrow;
+    save_w_leftcol = curwin->w_leftcol;
     n = ins_compl_next(TRUE, ins_compl_key2count(c), insert_match, FALSE);
 
     /* may undisplay the popup menu */
@@ -5691,9 +5694,8 @@ ins_complete(int c, int enable_pum)
 
     /* Show the popup menu, unless we got interrupted. */
     if (enable_pum && !compl_interrupted)
-    {
-	show_pum(save_w_wrow);
-    }
+	show_pum(save_w_wrow, save_w_leftcol);
+
     compl_was_interrupted = compl_interrupted;
     compl_interrupted = FALSE;
 
@@ -5701,21 +5703,22 @@ ins_complete(int c, int enable_pum)
 }
 
     static void
-show_pum(int save_w_wrow)
+show_pum(int prev_w_wrow, int prev_w_leftcol)
 {
-  /* RedrawingDisabled may be set when invoked through complete(). */
-  int n = RedrawingDisabled;
+    /* RedrawingDisabled may be set when invoked through complete(). */
+    int n = RedrawingDisabled;
 
-  RedrawingDisabled = 0;
+    RedrawingDisabled = 0;
 
-  /* If the cursor moved we need to remove the pum first. */
-  setcursor();
-  if (save_w_wrow != curwin->w_wrow)
-      ins_compl_del_pum();
+    /* If the cursor moved or the display scrolled we need to remove the pum
+     * first. */
+    setcursor();
+    if (prev_w_wrow != curwin->w_wrow || prev_w_leftcol != curwin->w_leftcol)
+	ins_compl_del_pum();
 
-  ins_compl_show_pum();
-  setcursor();
-  RedrawingDisabled = n;
+    ins_compl_show_pum();
+    setcursor();
+    RedrawingDisabled = n;
 }
 
 /*
