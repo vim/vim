@@ -6020,7 +6020,7 @@ uc_list(char_u *name, size_t name_len)
 
 	    /* Put out the title first time */
 	    if (!found)
-		MSG_PUTS_TITLE(_("\n    Name        Args       Address   Complete  Definition"));
+		MSG_PUTS_TITLE(_("\n    Name Args Address Complete Definition"));
 	    found = TRUE;
 	    msg_putchar('\n');
 	    if (got_int)
@@ -6033,12 +6033,8 @@ uc_list(char_u *name, size_t name_len)
 	    msg_putchar(' ');
 
 	    msg_outtrans_attr(cmd->uc_name, hl_attr(HLF_D));
-	    len = (int)STRLEN(cmd->uc_name) + 4;
 
-	    do {
-		msg_putchar(' ');
-		++len;
-	    } while (len < 16);
+	    msg_putchar(' ');
 
 	    len = 0;
 
@@ -6052,9 +6048,7 @@ uc_list(char_u *name, size_t name_len)
 	    case (EXTRA|NOSPC|NEEDARG): IObuff[len++] = '1'; break;
 	    }
 
-	    do {
-		IObuff[len++] = ' ';
-	    } while (len < 5);
+	    IObuff[len++] = ' ';
 
 	    /* Range */
 	    if (a & (RANGE|COUNT))
@@ -6077,9 +6071,7 @@ uc_list(char_u *name, size_t name_len)
 		    IObuff[len++] = '.';
 	    }
 
-	    do {
-		IObuff[len++] = ' ';
-	    } while (len < 11);
+	    IObuff[len++] = ' ';
 
 	    /* Address Type */
 	    for (j = 0; addr_type_complete[j].expand != -1; ++j)
@@ -6091,9 +6083,7 @@ uc_list(char_u *name, size_t name_len)
 		    break;
 		}
 
-	    do {
-		IObuff[len++] = ' ';
-	    } while (len < 21);
+	    IObuff[len++] = ' ';
 
 	    /* Completion */
 	    for (j = 0; command_complete[j].expand != 0; ++j)
@@ -6104,9 +6094,7 @@ uc_list(char_u *name, size_t name_len)
 		    break;
 		}
 
-	    do {
-		IObuff[len++] = ' ';
-	    } while (len < 35);
+	    IObuff[len++] = ' ';
 
 	    IObuff[len] = '\0';
 	    msg_outtrans(IObuff);
