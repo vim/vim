@@ -1994,6 +1994,7 @@ assert_true({actual} [, {msg}])          none  assert {actual} is true
 asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
+balloon_show({msg})            none    show {msg} inside the balloon
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -2619,6 +2620,18 @@ atan2({expr1}, {expr2})					*atan2()*
 <			2.356194
 		{only available when compiled with the |+float| feature}
 
+balloon_show({msg})                                     *balloon_show()*
+                Show {msg} inside the balloon.
+                Examples: >
+                        :call balloon_show('Hello!')
+<
+                Displaying user-defined messages is normally handled
+                with 'balloonexpr'. Limitation, however, with this approach
+                is that message to be displayed has to be known at the moment
+                when 'balloonexpr' is being evaluated. This puts restriction
+                on asynchronous execution where message to be displayed is yet
+                to be provided (e.g. by some plugin).
+                {only available when compiled with the +beval feature}
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
