@@ -1695,7 +1695,7 @@ searchc(cmdarg_T *cap, int t_cmd)
 		}
 		else
 		{
-		    if (memcmp(p + col, lastc_bytes, lastc_bytelen) == 0
+		    if (STRNCMP(p + col, lastc_bytes, lastc_bytelen) == 0
 								       && stop)
 			break;
 		}

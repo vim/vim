@@ -294,3 +294,10 @@ func Test_searchpair()
   q!
 endfunc
 
+func Test_searchc()
+  " These commands used to cause memory overflow in searchc().
+  new
+  norm=eccdo
+  exe "norm=et\u93CF"
+  bw!
+endfunc
