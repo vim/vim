@@ -1467,6 +1467,12 @@ WaitForChar(long msec)
 		    dwWaitTime = 10;
 	    }
 #endif
+#ifdef FEAT_BEVAL
+	    if (p_beval && dwWaitTime > 100)
+		/* The 'balloonexpr' may indirectly invoke a callback while
+		 * waiting for a character, need to check often. */
+		dwWaitTime = 100;
+#endif
 #ifdef FEAT_MZSCHEME
 	    if (mzthreads_allowed() && p_mzq > 0
 				    && (msec < 0 || (long)dwWaitTime > p_mzq))

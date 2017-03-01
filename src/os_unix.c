@@ -467,6 +467,12 @@ mch_inchar(
 	if ((wait_time < 0 || wait_time > 100L) && channel_any_readahead())
 	    wait_time = 10L;
 #endif
+#ifdef FEAT_BEVAL
+	if (p_beval && wait_time > 100L)
+	    /* The 'balloonexpr' may indirectly invoke a callback while waiting
+	     * for a character, need to check often. */
+	    wait_time = 100L;
+#endif
 
 	/*
 	 * We want to be interrupted by the winch signal

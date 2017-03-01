@@ -1981,19 +1981,20 @@ argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
 argv({nr})			String	{nr} entry of the argument list
 argv()				List	the argument list
-assert_equal({exp}, {act} [, {msg}])     none  assert {exp} is equal to {act}
-assert_exception({error} [, {msg}])      none  assert {error} is in v:exception
-assert_fails({cmd} [, {error}])          none  assert {cmd} fails
-assert_false({actual} [, {msg}])         none  assert {actual} is false
+assert_equal({exp}, {act} [, {msg}])  none  assert {exp} is equal to {act}
+assert_exception({error} [, {msg}])   none  assert {error} is in v:exception
+assert_fails({cmd} [, {error}])	      none  assert {cmd} fails
+assert_false({actual} [, {msg}])      none  assert {actual} is false
 assert_inrange({lower}, {upper}, {actual} [, {msg}])
 				none	assert {actual} is inside the range
-assert_match({pat}, {text} [, {msg}])    none  assert {pat} matches {text}
+assert_match({pat}, {text} [, {msg}])	 none  assert {pat} matches {text}
 assert_notequal({exp}, {act} [, {msg}])  none  assert {exp} is not equal {act}
 assert_notmatch({pat}, {text} [, {msg}]) none  assert {pat} not matches {text}
-assert_true({actual} [, {msg}])          none  assert {actual} is true
+assert_true({actual} [, {msg}])		 none  assert {actual} is true
 asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
+balloon_show({msg})		none	show {msg} inside the balloon
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -2619,6 +2620,25 @@ atan2({expr1}, {expr2})					*atan2()*
 <			2.356194
 		{only available when compiled with the |+float| feature}
 
+balloon_show({msg})                                     *balloon_show()*
+                Show {msg} inside the balloon.
+                Example: >
+			func GetBalloonContent()
+			   " initiate getting the content
+			   return ''
+			endfunc
+			set balloonexpr=GetBalloonContent()
+
+			func BalloonCallback(result)
+                          call balloon_show(a:result)
+			endfunc
+<
+		The intended use is that fetching the content of the balloon
+		is initiated from 'balloonexpr'.  It will invoke an
+		asynchronous method, in which a callback invokes
+		balloon_show().  The 'balloonexpr' itself can return an
+		empty string or a placeholder.
+                {only available when compiled with the +beval feature}
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
