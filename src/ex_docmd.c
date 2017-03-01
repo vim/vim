@@ -9812,6 +9812,7 @@ ex_redraw(exarg_T *eap)
 
     RedrawingDisabled = 0;
     p_lz = FALSE;
+    validate_cursor();
     update_topline();
     update_screen(eap->forceit ? CLEAR : VIsual_active ? INVERTED : 0);
 #ifdef FEAT_TITLE

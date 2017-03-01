@@ -3429,10 +3429,13 @@ win_line(
 #else
 	    --ptr;
 #endif
+	    /* If the character fits on the screen, don't need to skip it.
+	     * Except for a TAB. */
+	    if ((
 #ifdef FEAT_MBYTE
-           /* character fits on the screen, don't need to skip it */
-           if ((*mb_ptr2cells)(ptr) >= c && col == 0)
+			(*mb_ptr2cells)(ptr) >= c ||
 #endif
+		       *ptr == TAB) && col == 0)
 	       n_skip = v - vcol;
 	}
 
