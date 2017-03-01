@@ -2358,6 +2358,7 @@ test_alloc_fail({id}, {countdown}, {repeat})
 test_autochdir()		none	enable 'autochdir' during startup
 test_disable_char_avail({expr}) none	test without typeahead
 test_garbagecollect_now()	none	free memory right now for testing
+test_ignore_error({expr})	none	ignore a specific error
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
 test_null_job()			Job	null value for testing
@@ -7783,6 +7784,15 @@ test_garbagecollect_now()			 *test_garbagecollect_now()*
 		only be called directly to avoid any structure to exist
 		internally, and |v:testing| must have been set before calling
 		any function.
+
+test_ignore_error({expr})			 *test_ignore_error()*
+		Ignore any error containing {expr}.  A normal message is given
+		instead.
+		This is only meant to be used in tests, where catching the
+		error with try/catch cannot be used (because it skips over
+		following code).
+		{expr} is used literally, not as a pattern.
+		There is currently no way to revert this.
 
 test_null_channel()					*test_null_channel()*
 		Return a Channel that is null. Only useful for testing.

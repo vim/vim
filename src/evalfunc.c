@@ -389,6 +389,7 @@ static void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
 static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
 static void f_test_disable_char_avail(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
+static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
 static void f_test_null_channel(typval_T *argvars, typval_T *rettv);
 #endif
@@ -823,6 +824,7 @@ static struct fst
     {"test_autochdir",	0, 0, f_test_autochdir},
     {"test_disable_char_avail", 1, 1, f_test_disable_char_avail},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
+    {"test_ignore_error",	1, 1, f_test_ignore_error},
 #ifdef FEAT_JOB_CHANNEL
     {"test_null_channel", 0, 0, f_test_null_channel},
 #endif
@@ -12323,6 +12325,15 @@ f_test_garbagecollect_now(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     /* This is dangerous, any Lists and Dicts used internally may be freed
      * while still in use. */
     garbage_collect(TRUE);
+}
+
+/*
+ * "test_ignore_error()" function
+ */
+    static void
+f_test_ignore_error(typval_T *argvars, typval_T *rettv UNUSED)
+{
+     ignore_error_for_testing(get_tv_string(&argvars[0]));
 }
 
 #ifdef FEAT_JOB_CHANNEL

@@ -17,6 +17,9 @@ endfunc
 " Test for resetting "secure" flag after GUI has started.
 " Must be run first.
 func Test_1_set_secure()
+  " Ignore the "failed to create input context" error.
+  call test_ignore_error('E285')
+
   set exrc secure
   gui -f
   call assert_equal(1, has('gui_running'))

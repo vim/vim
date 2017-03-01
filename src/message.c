@@ -539,6 +539,31 @@ emsg_not_now(void)
     return FALSE;
 }
 
+#ifdef FEAT_EVAL
+static garray_T ignore_error_list = GA_EMPTY;
+
+    void
+ignore_error_for_testing(char_u *error)
+{
+    if (ignore_error_list.ga_itemsize == 0)
+	ga_init2(&ignore_error_list, sizeof(char_u *), 1);
+
+    ga_add_string(&ignore_error_list, error);
+}
+
+    static int
+ignore_error(char_u *msg)
+{
+    int i;
+
+    for (i = 0; i < ignore_error_list.ga_len; ++i)
+	if (strstr((char *)msg,
+		  (char *)((char_u **)(ignore_error_list.ga_data))[i]) != NULL)
+	    return TRUE;
+    return FALSE;
+}
+#endif
+
 #if !defined(HAVE_STRERROR) || defined(PROTO)
 /*
  * Replacement for perror() that behaves more or less like emsg() was called.
@@ -576,6 +601,12 @@ emsg(char_u *s)
     /* Skip this if not giving error messages at the moment. */
     if (emsg_not_now())
 	return TRUE;
+
+#ifdef FEAT_EVAL
+    /* When testing some errors are turned into a normal message. */
+    if (ignore_error(s))
+	return msg(s);
+#endif
 
     called_emsg = TRUE;
 
