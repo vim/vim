@@ -1693,12 +1693,9 @@ searchc(cmdarg_T *cap, int t_cmd)
 		    if (p[col] == c && stop)
 			break;
 		}
-		else
-		{
-		    if (memcmp(p + col, lastc_bytes, lastc_bytelen) == 0
+		else if (STRNCMP(p + col, lastc_bytes, lastc_bytelen) == 0
 								       && stop)
-			break;
-		}
+		    break;
 		stop = TRUE;
 	    }
 	}
