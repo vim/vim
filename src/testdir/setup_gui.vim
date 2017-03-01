@@ -27,3 +27,6 @@ endfunc
 func GUITearDownCommon()
   call delete('Xhome', 'rf')
 endfunc
+
+" Ignore the "failed to create input context" error.
+call test_ignore_error('E285')
