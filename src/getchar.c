@@ -4216,6 +4216,11 @@ set_context_in_map_cmd(
 		arg = skipwhite(arg + 8);
 		continue;
 	    }
+	    if (STRNCMP(arg, "<special>", 9) == 0)
+	    {
+		arg = skipwhite(arg + 9);
+		continue;
+	    }
 #ifdef FEAT_EVAL
 	    if (STRNCMP(arg, "<script>", 8) == 0)
 	    {
@@ -4267,7 +4272,7 @@ ExpandMappings(
     {
 	count = 0;
 
-	for (i = 0; i < 6; ++i)
+	for (i = 0; i < 7; ++i)
 	{
 	    if (i == 0)
 		p = (char_u *)"<silent>";
@@ -4285,6 +4290,8 @@ ExpandMappings(
 #endif
 	    else if (i == 5)
 		p = (char_u *)"<nowait>";
+	    else if (i == 6)
+		p = (char_u *)"<special>";
 	    else
 		continue;
 
