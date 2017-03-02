@@ -466,3 +466,8 @@ func Test_getbufvar()
 
   set fileformats&
 endfunc
+
+func Test_balloon_show()
+  " This won't do anything but must not crash either.
+  call balloon_show('hi!')
+endfunc

@@ -1375,7 +1375,8 @@ f_atan2(typval_T *argvars, typval_T *rettv)
     static void
 f_balloon_show(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    gui_mch_post_balloon(balloonEval, get_tv_string_chk(&argvars[0]));
+    if (balloonEval != NULL)
+	gui_mch_post_balloon(balloonEval, get_tv_string_chk(&argvars[0]));
 }
 #endif
 
