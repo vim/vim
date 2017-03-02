@@ -468,6 +468,8 @@ func Test_getbufvar()
 endfunc
 
 func Test_balloon_show()
-  " This won't do anything but must not crash either.
-  call balloon_show('hi!')
+  if has('balloon_eval')
+    " This won't do anything but must not crash either.
+    call balloon_show('hi!')
+  endif
 endfunc
