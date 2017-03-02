@@ -192,6 +192,7 @@ func RunVimPiped(before, after, arguments, pipecmd)
   if cmd !~ '-u NONE'
     let cmd = cmd . ' -u NONE'
   endif
+  let cmd .= ' --not-a-term'
 
   " With pipecmd we can't set VIMRUNTIME.
   if a:pipecmd != ''
