@@ -871,7 +871,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	This is a |/zero-width| match.  To make sure the whole pattern is
 	inside the Visual area put it at the start and end of the pattern,
 	e.g.: >
-		/\%Vfoo.*bar\%V
+		/\%Vfoo.*ba\%Vr
 <	Only works for the current buffer.
 
 						*/\%#* *cursor-position*
