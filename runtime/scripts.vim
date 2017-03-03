@@ -164,6 +164,10 @@ if s:line1 =~ "^#!"
   elseif s:name =~ 'haskell'
     set ft=haskell
 
+    " Scala
+  elseif s:name =~ 'scala\>'
+    set ft=scala
+
   endif
   unlet s:name
 
