@@ -124,6 +124,10 @@ if s:line1 =~ "^#!"
   elseif s:name =~ 'ruby'
     set ft=ruby
 
+    " JavaScript
+  elseif s:name =~ 'node\>' || s:name =~ 'nodejs\>' || s:name =~ 'rhino\>'
+    set ft=javascript
+
     " BC calculator
   elseif s:name =~ '^bc\>'
     set ft=bc
