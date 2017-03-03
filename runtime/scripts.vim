@@ -160,6 +160,10 @@ if s:line1 =~ "^#!"
   elseif s:name =~ 'escript'
     set ft=erlang
 
+    " Haskell
+  elseif s:name =~ 'haskell'
+    set ft=haskell
+
   endif
   unlet s:name
 
