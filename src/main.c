@@ -3528,7 +3528,7 @@ time_msg(
 
 #endif
 
-#ifndef NO_VIM_MAIN
+#if !defined(NO_VIM_MAIN) && defined(FEAT_EVAL)
     static void
 set_progpath(char_u *argv0)
 {
