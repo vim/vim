@@ -57,6 +57,9 @@ static void main_start_gui(void);
 # if defined(HAS_SWAP_EXISTS_ACTION)
 static void check_swap_exists_action(void);
 # endif
+# ifdef FEAT_EVAL
+static void set_progpath(char_u *argv0);
+# endif
 # if defined(FEAT_CLIENTSERVER) || defined(PROTO)
 static void exec_on_server(mparm_T *parmp);
 static void prepare_server(mparm_T *parmp);
@@ -1694,7 +1697,7 @@ parse_command_name(mparm_T *parmp)
 
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_PROGNAME, initstr, -1);
-    set_vim_var_string(VV_PROGPATH, (char_u *)parmp->argv[0], -1);
+    set_progpath((char_u *)parmp->argv[0]);
 #endif
 
     if (TOLOWER_ASC(initstr[0]) == 'r')
@@ -3417,7 +3420,7 @@ check_swap_exists_action(void)
 }
 #endif
 
-#endif
+#endif /* NO_VIM_MAIN */
 
 #if defined(STARTUPTIME) || defined(PROTO)
 static void time_diff(struct timeval *then, struct timeval *now);
@@ -3524,6 +3527,30 @@ time_msg(
 }
 
 #endif
+
+#ifndef NO_VIM_MAIN
+    static void
+set_progpath(char_u *argv0)
+{
+    char_u *val = argv0;
+    char_u buf[MAXPATHL];
+
+    /* A relative path containing a "/" will become invalid when using ":cd",
+     * turn it into a full path.
+     * On MS-Windows "vim.exe" is found in the current directory, thus also do
+     * it when there is no path and the file exists. */
+    if ( !mch_isFullName(argv0)
+# ifdef WIN32
+	    && mch_can_exe(argv0, NULL, TRUE)
+# else
+	    && gettail(argv0) != argv0
+# endif
+	    && vim_FullName(argv0, buf, MAXPATHL, TRUE) != FAIL)
+	val = buf;
+    set_vim_var_string(VV_PROGPATH, val, -1);
+}
+
+#endif /* NO_VIM_MAIN */
 
 #if (defined(FEAT_CLIENTSERVER) && !defined(NO_VIM_MAIN)) || defined(PROTO)
 

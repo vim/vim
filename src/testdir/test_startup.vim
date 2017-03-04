@@ -183,3 +183,17 @@ func Test_read_stdin()
   endif
   call delete('Xtestout')
 endfunc
+
+func Test_progpath()
+  " Tests normally run with "./vim" or "../vim", these must have been expanded
+  " to a full path.
+  if has('unix')
+    call assert_equal('/', v:progpath[0])
+  elseif has('win32')
+    call assert_equal(':', v:progpath[1])
+    call assert_match('[/\\]', v:progpath[2])
+  endif
+
+  " Only expect "vim" to appear in v:progname.
+  call assert_match('vim\c', v:progname)
+endfunc

@@ -1789,8 +1789,11 @@ v:progpath	Contains the command with which Vim was invoked, including the
 		|--remote-expr|.
 		To get the full path use: >
 			echo exepath(v:progpath)
-<		NOTE: This does not work when the command is a relative path
-		and the current directory has changed.
+<		If the path is relative it will be expanded to the full path,
+		so that it still works after `:cd`. Thus starting "./vim"
+		results in "/home/user/path/to/vim/src/vim".
+		On MS-Windows the executable may be called "vim.exe", but the
+		".exe" is not added to v:progpath.
 		Read-only.
 
 					*v:register* *register-variable*
