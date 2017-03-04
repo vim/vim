@@ -2455,7 +2455,7 @@ menutrans_lookup(char_u *name, int len)
     char_u		*dname;
 
     for (i = 0; i < menutrans_ga.ga_len; ++i)
-	if (STRNCMP(name, tp[i].from, len) == 0 && tp[i].from[len] == NUL)
+	if (STRNICMP(name, tp[i].from, len) == 0 && tp[i].from[len] == NUL)
 	    return tp[i].to;
 
     /* Now try again while ignoring '&' characters. */
@@ -2466,7 +2466,7 @@ menutrans_lookup(char_u *name, int len)
     if (dname != NULL)
     {
 	for (i = 0; i < menutrans_ga.ga_len; ++i)
-	    if (STRCMP(dname, tp[i].from_noamp) == 0)
+	    if (STRICMP(dname, tp[i].from_noamp) == 0)
 	    {
 		vim_free(dname);
 		return tp[i].to;
