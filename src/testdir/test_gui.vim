@@ -85,15 +85,16 @@ func Test_quoteplus()
     let vim_exe = exepath(v:progpath)
     let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
           \ . vim_exe
-	  \ . ' -f -g -u NONE -U NONE --noplugin --cmd ''%s'' -c ''%s'''
+	  \ . ' -u NONE -U NONE --noplugin --not-a-term -c ''%s'''
     " Ignore the "failed to create input context" error.
-    let cmd1 = 'call test_ignore_error("E285")'
-    let cmd2 = 'call feedkeys("'
+    let cmd = 'call test_ignore_error("E285") | '
+	  \ . 'gui -f | '
+	  \ . 'call feedkeys("'
           \ . '\"+p'
           \ . ':s/' . test_call . '/' . test_response . '/\<CR>'
           \ . '\"+yis'
           \ . ':q!\<CR>", "tx")'
-    let run_vimtest = printf(testee, cmd1, cmd2)
+    let run_vimtest = printf(testee, cmd)
 
     " Set the quoteplus register to test_call, and another gvim will launched.
     " Then, it first tries to paste the content of its own quotedplus register

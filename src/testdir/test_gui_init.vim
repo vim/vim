@@ -15,7 +15,10 @@ func TearDown()
   call GUITearDownCommon()
 endfunc
 
-" Make sure that the tests will be done with the GUI activated.
+" Ignore the "failed to create input context" error.
+call test_ignore_error('E285')
+
+" Start the GUI now, in the foreground.
 gui -f
 
 func Test_set_guiheadroom()
