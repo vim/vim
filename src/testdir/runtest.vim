@@ -168,6 +168,7 @@ let s:flaky = [
       \ 'Test_oneshot()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',
+      \ 'Test_quoteplus()',
       \ 'Test_reltime()',
       \ ]
 
