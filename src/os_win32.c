@@ -1918,11 +1918,11 @@ executable_exists(char *name, char_u **path, int use_path)
 
     if (!use_path)
     {
-	if (mch_getperm(name) != -1 && !mch_isdir(name))
+	if (mch_getperm((char_u *)name) != -1 && !mch_isdir((char_u *)name))
 	{
 	    if (path != NULL)
 	    {
-		if (mch_isFullName(name))
+		if (mch_isFullName((char_u *)name))
 		    *path = vim_strsave((char_u *)name);
 		else
 		    *path = FullName_save((char_u *)name, FALSE);
