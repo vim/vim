@@ -3927,9 +3927,13 @@ error:
 		    curbuf->b_op_start.lnum++;
 	    }
 	    /* Skip mark_adjust when adding lines after the last one, there
-	     * can't be marks there. */
+	     * can't be marks there. But still needed in diff mode. */
 	    if (curbuf->b_op_start.lnum + (y_type == MCHAR) - 1 + nr_lines
-						 < curbuf->b_ml.ml_line_count)
+						 < curbuf->b_ml.ml_line_count
+#ifdef FEAT_DIFF
+						 || curwin->w_p_diff
+#endif
+						 )
 		mark_adjust(curbuf->b_op_start.lnum + (y_type == MCHAR),
 					     (linenr_T)MAXLNUM, nr_lines, 0L);
 
@@ -6311,7 +6315,7 @@ write_viminfo_registers(FILE *fp)
 
 /*
  * Routine to export any final X selection we had to the environment
- * so that the text is still available after vim has exited. X selections
+ * so that the text is still available after Vim has exited. X selections
  * only exist while the owning application exists, so we write to the
  * permanent (while X runs) store CUT_BUFFER0.
  * Dump the CLIPBOARD selection if we own it (it's logically the more
