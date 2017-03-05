@@ -1722,70 +1722,96 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|posix-compliance|.
 	You can also set this option with the "-C" argument, and reset it with
 	"-N".  See |-C| and |-N|.
-	Switching this option off makes the Vim defaults be used for options
-	that have a different Vi and Vim default value.  See the options
-	marked with a '+' below.  Other options are not modified.
-	At the moment this option is set, several other options will be set
-	or reset to make Vim as Vi-compatible as possible.  See the table
-	below.  This can be used if you want to revert to Vi compatible
-	editing.
+	When this option is set, numerous other options are set to make Vim as
+	Vi-compatible as possible.  When this option is unset, various options
+	are set to make Vim more useful.  The table below lists all the
+	options affected.
+	The {?} column indicates when the options are affected.  A {+} means
+	that the option is set to the value given in {set value} when
+	'compatible' is set.  A {*} means that the option is set to the value
+	given in {set value} when 'compatible' is set AND is set to its
+	default value when 'compatible' is unset.  A {-} means the option is
+	NOT changed when setting 'compatible' but IS set to its default when
+	'compatible' is unset.
+	The {effect} column summarises the change when 'compatible' is set.
 	See also 'cpoptions'.
 
-	option		+ set value	effect	~
+	option		? set value	effect
 
-	'allowrevins'	  off		no CTRL-_ command
-	'backspace'	  ""		normal backspace
-	'backupcopy'	  Unix: "yes"	backup file is a copy
-			  else: "auto"  copy or rename backup file
-	'backup'	  off		no backup file
-	'cedit'		+ ""		no key to open the |cmdwin|
-	'cindent'	  off		no C code indentation
-	'cpoptions'	+ (all flags)	Vi-compatible flags
-	'cscopetag'	  off		don't use cscope for ":tag"
+	'allowrevins'	+ off		no CTRL-_ command
+	'antialias'	+ off		don't use antialiased fonts
+	'arabic'	+ off	 	reset arabic-related options
+	'arabicshape'	+ on		correct character shapes
+	'backspace'	+ ""		normal backspace
+	'backup'	+ off		no backup file
+	'backupcopy'	* Unix: "yes"	backup file is a copy
+			  else: "auto"	copy or rename backup file
+	'balloonexpr'	+ ""		text to show in evaluation balloon
+	'breakindent'	+ off		don't indent when wrapping lines
+	'cedit'		- {unchanged}	{set vim default only on resetting 'cp'}
+	'cindent'	+ off		no C code indentation
+	'compatible'	- {unchanged}	{set vim default only on resetting 'cp'}
+	'copyindent'	+ off		don't copy indent structure
+	'cpoptions'	* (all flags)	Vi-compatible flags
+	'cscopepathcomp'+ 0		don't show directories in tags list
+	'cscoperelative'+ off		
+	'cscopetag'	+ off		don't use cscope for ":tag"
 	'cscopetagorder'  0		see |cscopetagorder|
-	'cscopeverbose'	  off		see |cscopeverbose|
-	'digraph'	  off		no digraphs
-	'esckeys'	+ off		no <Esc>-keys in Insert mode
-	'expandtab'	  off		tabs not expanded to spaces
-	'fileformats'	+ ""		no automatic file format detection,
+	'cscopeverbose'	+ off		see |cscopeverbose|
+	'delcombine'	+ off		unicode: delete whole char combination
+	'digraph'	+ off		no digraphs
+	'esckeys'	* off		no <Esc>-keys in Insert mode
+	'expandtab'	+ off		tabs not expanded to spaces
+	'fileformats'	* ""		no automatic file format detection,
 			  "dos,unix"	except for DOS, Windows and OS/2
-	'formatoptions'	+ "vt"		Vi compatible formatting
-	'gdefault'	  off		no default 'g' flag for ":s"
-	'history'	+ 0		no commandline history
-	'hkmap'		  off		no Hebrew keyboard mapping
-	'hkmapp'	  off		no phonetic Hebrew keyboard mapping
-	'hlsearch'	  off		no highlighting of search matches
-	'incsearch'	  off		no incremental searching
-	'indentexpr'	  ""		no indenting by expression
-	'insertmode'	  off		do not start in Insert mode
-	'iskeyword'	+ "@,48-57,_"	keywords contain alphanumeric
+	'formatexpr'	+ ""		use 'formatprg' for auto-formatting
+	'formatoptions'	* "vt"		Vi compatible formatting
+	'gdefault'	+ off		no default 'g' flag for ":s"
+	'history'	* 0		no commandline history
+	'hkmap'		+ off		no Hebrew keyboard mapping
+	'hkmapp'	+ off		no phonetic Hebrew keyboard mapping
+	'hlsearch'	+ off		no highlighting of search matches
+	'incsearch'	+ off		no incremental searching
+	'indentexpr'	+ ""		no indenting by expression
+	'insertmode'	+ off		do not start in Insert mode
+	'iskeyword'	* "@,48-57,_"	keywords contain alphanumeric
 						characters and '_'
-	'joinspaces'	  on		insert 2 spaces after period
-	'modeline'	+ off		no modelines
-	'more'		+ off		no pauses in listings
-	'revins'	  off		no reverse insert
-	'ruler'		  off		no ruler
-	'scrolljump'	  1		no jump scroll
-	'scrolloff'	  0		no scroll offset
-	'shiftround'	  off		indent not rounded to shiftwidth
-	'shortmess'	+ ""		no shortening of messages
-	'showcmd'	+ off		command characters not shown
-	'showmode'	+ off		current mode not shown
-	'smartcase'	  off		no automatic ignore case switch
-	'smartindent'	  off		no smart indentation
-	'smarttab'	  off		no smart tab size
-	'softtabstop'	  0		tabs are always 'tabstop' positions
-	'startofline'	  on		goto startofline with some commands
-	'tagrelative'	+ off		tag file names are not relative
-	'textauto'	+ off		no automatic textmode detection
-	'textwidth'	  0		no automatic line wrap
-	'tildeop'	  off		tilde is not an operator
-	'ttimeout'	  off		no terminal timeout
-	'viminfo'       + {unchanged}	no viminfo file	
-	'whichwrap'	+ ""		left-right movements don't wrap
-	'wildchar'	+ CTRL-E	only when the current value is <Tab>
+	'joinspaces'	+ on		insert 2 spaces after period
+	'modeline'	* off		no modelines
+	'more'		* off		no pauses in listings
+	'mzquantum'	- {unchanged}	{set vim default only on resetting 'cp'}
+	'numberwidth'	* 8		min number of columns for line number
+	'preserveindent'+ off		don't preserve current indent structure
+						when changing it
+	'revins'	+ off		no reverse insert
+	'ruler'		+ off		no ruler
+	'scrolljump'	+ 1		no jump scroll
+	'scrolloff'	+ 0		no scroll offset
+	'shelltemp'	- {unchanged}	{set vim default only on resetting 'cp'}
+	'shiftround'	+ off		indent not rounded to shiftwidth
+	'shortmess'	* ""		no shortening of messages
+	'showcmd'	* off		command characters not shown
+	'showmode'	* off		current mode not shown
+	'sidescrolloff'	+ 0		cursor moves to edge of screen in scroll
+	'smartcase'	+ off		no automatic ignore case switch
+	'smartindent'	+ off		no smart indentation
+	'smarttab'	+ off		no smart tab size
+	'softtabstop'	+ 0		tabs are always 'tabstop' positions
+	'startofline'	+ on		goto startofline with some commands
+	'tagcase'	* "followic"	'ignorecase' when searching tags file
+	'tagrelative'	* off		tag file names are not relative
+	'termguicolors'	+ off		don't use highlight-(guifg|guibg)
+	'textauto'	* off		no automatic textmode detection
+	'textwidth'	+ 0		no automatic line wrap
+	'tildeop'	+ off		tilde is not an operator
+	'ttimeout'	+ off		no terminal timeout
+	'undofile'	+ off		don't use an undo file
+	'viminfo'       - {unchanged}	{set vim default only on resetting 'cp'}
+	'virtualedit'	+ ""		cursor can only be placed on characters
+	'whichwrap'	* ""		left-right movements don't wrap
+	'wildchar'	* CTRL-E	only when the current value is <Tab>
 					use CTRL-E for cmdline completion
-	'writebackup'	  on or off	depends on the |+writebackup| feature
+	'writebackup'	+ on or off	depends on the |+writebackup| feature
 
 						*'complete'* *'cpt'* *E535*
 'complete' 'cpt'	string	(default: ".,w,b,u,t,i")
