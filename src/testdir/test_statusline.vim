@@ -55,6 +55,7 @@ func Test_statusline()
  only
  set laststatus=2
  set splitbelow
+ set fileformat=unix
  call setline(1, range(1, 200))
 
  " %b: Value of character under cursor.
@@ -87,9 +88,11 @@ func Test_statusline()
  " %k: Value of "b:keymap_name" or 'keymap'
  "     when :lmap mappings are being used: <keymap>"
  set statusline=%k
- set keymap=esperanto
- call assert_match('^<Eo>\s*$', s:get_statusline())
- set keymap&
+ if has('keymap')
+   set keymap=esperanto
+   call assert_match('^<Eo>\s*$', s:get_statusline())
+   set keymap&
+ endif
 
  " %l: Line number.
  " %L: Number of line in buffer.
