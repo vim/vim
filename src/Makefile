@@ -2157,6 +2157,7 @@ test_arglist \
 	test_listlbr \
 	test_listlbr_utf8 \
 	test_lua \
+	test_makeencoding \
 	test_man \
 	test_mapping \
 	test_marks \

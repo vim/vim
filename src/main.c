@@ -559,11 +559,16 @@ vim_main2(void)
      */
     if (params.edit_type == EDIT_QF)
     {
+	char_u	*enc = NULL;
+
+# ifdef FEAT_MBYTE
+	enc = p_menc;
+# endif
 	if (params.use_ef != NULL)
 	    set_string_option_direct((char_u *)"ef", -1,
 					   params.use_ef, OPT_FREE, SID_CARG);
 	vim_snprintf((char *)IObuff, IOSIZE, "cfile %s", p_ef);
-	if (qf_init(NULL, p_ef, p_efm, TRUE, IObuff) < 0)
+	if (qf_init(NULL, p_ef, p_efm, TRUE, IObuff, enc) < 0)
 	{
 	    out_char('\n');
 	    mch_exit(3);

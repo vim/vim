@@ -170,6 +170,7 @@ NEW_TESTS = test_arabic.res \
 	    test_listlbr.res \
 	    test_listlbr_utf8.res \
 	    test_lua.res \
+	    test_makeencoding.res \
 	    test_man.res \
 	    test_marks.res \
 	    test_matchadd_conceal.res \

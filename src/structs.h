@@ -2133,6 +2133,9 @@ struct file_buffer
 #ifdef FEAT_LISP
     int		b_p_lisp;	/* 'lisp' */
 #endif
+#ifdef FEAT_MBYTE
+    char_u	*b_p_menc;	/* 'makeencoding' */
+#endif
     char_u	*b_p_mps;	/* 'matchpairs' */
     int		b_p_ml;		/* 'modeline' */
     int		b_p_ml_nobin;	/* b_p_ml saved for binary mode */

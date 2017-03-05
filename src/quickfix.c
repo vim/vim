@@ -116,7 +116,7 @@ struct efm_S
 
 static efm_T	*fmt_start = NULL; /* cached across qf_parse_line() calls */
 
-static int	qf_init_ext(qf_info_T *qi, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast, char_u *qf_title);
+static int	qf_init_ext(qf_info_T *qi, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast, char_u *qf_title, char_u *enc);
 static void	qf_store_title(qf_info_T *qi, char_u *title);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static void	ll_free_all(qf_info_T **pqi);
@@ -167,7 +167,8 @@ qf_init(
     char_u	    *efile,
     char_u	    *errorformat,
     int		    newlist,		/* TRUE: start a new error list */
-    char_u	    *qf_title)
+    char_u	    *qf_title,
+    char_u	    *enc)
 {
     qf_info_T	    *qi = &ql_info;
 
@@ -180,7 +181,7 @@ qf_init(
 
     return qf_init_ext(qi, efile, curbuf, NULL, errorformat, newlist,
 						    (linenr_T)0, (linenr_T)0,
-						    qf_title);
+						    qf_title, enc);
 }
 
 /*
@@ -498,6 +499,7 @@ typedef struct {
     buf_T	*buf;
     linenr_T	buflnum;
     linenr_T	lnumlast;
+    vimconv_T	vc;
 } qfstate_T;
 
     static char_u *
@@ -712,6 +714,30 @@ qf_get_next_file_line(qfstate_T *state)
     }
     else
 	state->linebuf = IObuff;
+
+#ifdef FEAT_MBYTE
+    /* Convert a line if it contains a non-ASCII character. */
+    if (state->vc.vc_type != CONV_NONE && has_non_ascii(state->linebuf)) {
+	char_u	*line;
+
+	line = string_convert(&state->vc, state->linebuf, &state->linelen);
+	if (line != NULL)
+	{
+	    if (state->linelen < IOSIZE)
+	    {
+		STRCPY(state->linebuf, line);
+		vim_free(line);
+	    }
+	    else
+	    {
+		vim_free(state->growbuf);
+		state->linebuf = state->growbuf = line;
+		state->growbufsiz = state->linelen < LINE_MAXLEN
+						? state->linelen : LINE_MAXLEN;
+	    }
+	}
+    }
+#endif
 
     return QF_OK;
 }
@@ -1105,11 +1131,11 @@ qf_init_ext(
     int		    newlist,		/* TRUE: start a new error list */
     linenr_T	    lnumfirst,		/* first line number to use */
     linenr_T	    lnumlast,		/* last line number to use */
-    char_u	    *qf_title)
+    char_u	    *qf_title,
+    char_u	    *enc)
 {
-    qfstate_T	    state = {NULL, 0, NULL, 0, NULL, NULL, NULL, NULL,
-			     NULL, 0, 0};
-    qffields_T	    fields = {NULL, NULL, 0, 0L, 0, FALSE, NULL, 0, 0, 0};
+    qfstate_T	    state;
+    qffields_T	    fields;
 #ifdef FEAT_WINDOWS
     qfline_T	    *old_last = NULL;
     int		    adding = FALSE;
@@ -1120,6 +1146,13 @@ qf_init_ext(
     int		    retval = -1;	/* default: return error flag */
     int		    status;
 
+    vim_memset(&state, 0, sizeof(state));
+    vim_memset(&fields, 0, sizeof(fields));
+#ifdef FEAT_MBYTE
+    state.vc.vc_type = CONV_NONE;
+    if (enc != NULL && *enc != NUL)
+	convert_setup(&state.vc, enc, p_enc);
+#endif
     fields.namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
     fields.errmsglen = CMDBUFFSIZE + 1;
     fields.errmsg = alloc_id(fields.errmsglen, aid_qf_errmsg);
@@ -1285,6 +1318,10 @@ qf_init_end:
 
 #ifdef FEAT_WINDOWS
     qf_update_buffer(qi, old_last);
+#endif
+#ifdef FEAT_MBYTE
+    if (state.vc.vc_type != CONV_NONE)
+	convert_setup(&state.vc, NULL, NULL);
 #endif
 
     return retval;
@@ -3431,6 +3468,7 @@ ex_make(exarg_T *eap)
 {
     char_u	*fname;
     char_u	*cmd;
+    char_u	*enc = NULL;
     unsigned	len;
     win_T	*wp = NULL;
     qf_info_T	*qi = &ql_info;
@@ -3463,6 +3501,9 @@ ex_make(exarg_T *eap)
 	    return;
 # endif
     }
+#endif
+#ifdef FEAT_MBYTE
+    enc = (*curbuf->b_p_menc != NUL) ? curbuf->b_p_menc : p_menc;
 #endif
 
     if (eap->cmdidx == CMD_lmake || eap->cmdidx == CMD_lgrep
@@ -3511,7 +3552,7 @@ ex_make(exarg_T *eap)
 			    && eap->cmdidx != CMD_lmake) ? p_gefm : p_efm,
 					   (eap->cmdidx != CMD_grepadd
 					    && eap->cmdidx != CMD_lgrepadd),
-					   *eap->cmdlinep);
+					   *eap->cmdlinep, enc);
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
 #ifdef FEAT_AUTOCMD
@@ -3850,6 +3891,7 @@ ex_cnext(exarg_T *eap)
     void
 ex_cfile(exarg_T *eap)
 {
+    char_u	*enc = NULL;
     win_T	*wp = NULL;
     qf_info_T	*qi = &ql_info;
 #ifdef FEAT_AUTOCMD
@@ -3873,6 +3915,9 @@ ex_cfile(exarg_T *eap)
     }
     if (au_name != NULL)
 	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name, NULL, FALSE, curbuf);
+#endif
+#ifdef FEAT_MBYTE
+    enc = (*curbuf->b_p_menc != NUL) ? curbuf->b_p_menc : p_menc;
 #endif
 #ifdef FEAT_BROWSE
     if (cmdmod.browse)
@@ -3901,7 +3946,7 @@ ex_cfile(exarg_T *eap)
      */
     if (qf_init(wp, p_ef, p_efm, (eap->cmdidx != CMD_caddfile
 				  && eap->cmdidx != CMD_laddfile),
-							   *eap->cmdlinep) > 0
+						       *eap->cmdlinep, enc) > 0
 				  && (eap->cmdidx == CMD_cfile
 					     || eap->cmdidx == CMD_lfile))
     {
@@ -4927,7 +4972,7 @@ ex_cbuffer(exarg_T *eap)
 			    (eap->cmdidx != CMD_caddbuffer
 			     && eap->cmdidx != CMD_laddbuffer),
 						   eap->line1, eap->line2,
-						   qf_title) > 0)
+						   qf_title, NULL) > 0)
 	    {
 #ifdef FEAT_AUTOCMD
 		if (au_name != NULL)
@@ -4995,7 +5040,8 @@ ex_cexpr(exarg_T *eap)
 	    if (qf_init_ext(qi, NULL, NULL, tv, p_efm,
 			    (eap->cmdidx != CMD_caddexpr
 			     && eap->cmdidx != CMD_laddexpr),
-				 (linenr_T)0, (linenr_T)0, *eap->cmdlinep) > 0)
+				 (linenr_T)0, (linenr_T)0, *eap->cmdlinep,
+				 NULL) > 0)
 	    {
 #ifdef FEAT_AUTOCMD
 		if (au_name != NULL)

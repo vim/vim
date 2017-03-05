@@ -1242,7 +1242,7 @@ cs_find_common(
 		wp = curwin;
 	    /* '-' starts a new error list */
 	    if (qf_init(wp, tmp, (char_u *)"%f%*\\t%l%*\\t%m",
-						  *qfpos == '-', cmdline) > 0)
+					  *qfpos == '-', cmdline, NULL) > 0)
 	    {
 # ifdef FEAT_WINDOWS
 		if (postponed_split != 0)
