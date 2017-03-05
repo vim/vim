@@ -230,13 +230,26 @@ def ee(expr, g=globals(), l=locals()):
                 cb.append(expr + ':' + repr((e.__class__, AttributeError(str(e)[str(e).rfind(" '") + 2:-1]))))
             elif sys.version_info >= (3, 3) and e.__class__ is ImportError and str(e).find('No module named \'') >= 0:
                 cb.append(expr + ':' + repr((e.__class__, ImportError(str(e).replace("'", '')))))
+            elif sys.version_info >= (3, 6) and e.__class__ is ModuleNotFoundError:
+                # Python 3.6 gives ModuleNotFoundError, change it to an ImportError
+                cb.append(expr + ':' + repr((ImportError, ImportError(str(e).replace("'", '')))))
             elif sys.version_info >= (3, 3) and e.__class__ is TypeError:
                 m = py33_type_error_pattern.search(str(e))
                 if m:
                     msg = '__call__() takes exactly {0} positional argument ({1} given)'.format(m.group(1), m.group(2))
                     cb.append(expr + ':' + repr((e.__class__, TypeError(msg))))
                 else:
-                    cb.append(expr + ':' + repr((e.__class__, e)))
+                    msg = repr((e.__class__, e))
+                    # Messages changed with Python 3.6, change new to old.
+                    newmsg1 = """'argument must be str, bytes or bytearray, not None'"""
+                    oldmsg1 = '''"Can't convert 'NoneType' object to str implicitly"'''
+                    if msg.find(newmsg1) > -1:
+                        msg = msg.replace(newmsg1, oldmsg1)
+                    newmsg2 = """'argument must be str, bytes or bytearray, not int'"""
+                    oldmsg2 = '''"Can't convert 'int' object to str implicitly"'''
+                    if msg.find(newmsg2) > -1:
+                        msg = msg.replace(newmsg2, oldmsg2)
+                    cb.append(expr + ':' + msg)
             elif sys.version_info >= (3, 5) and e.__class__ is ValueError and str(e) == 'embedded null byte':
                 cb.append(expr + ':' + repr((TypeError, TypeError('expected bytes with no null'))))
             else:
