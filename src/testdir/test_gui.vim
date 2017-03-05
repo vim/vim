@@ -22,6 +22,14 @@ func Test_1_set_secure()
   call assert_equal(1, has('gui_running'))
 endfunc
 
+" As for non-GUI, a balloon_show() test was already added with patch 8.0.0401
+func Test_balloon_show()
+  if has('balloon_eval')
+    " This won't do anything but must not crash either.
+    call balloon_show('hi!')
+  endif
+endfunc
+
 func Test_getfontname_with_arg()
   let skipped = ''
 
@@ -115,6 +123,129 @@ func Test_quoteplus()
   if !empty(skipped)
     throw skipped
   endif
+endfunc
+
+func Test_set_balloondelay()
+  if !exists('+balloondelay')
+    return
+  endif
+
+  let balloondelay_saved = &balloondelay
+
+  " Check if the default value is identical to that described in the manual.
+  set balloondelay&
+  call assert_equal(600, &balloondelay)
+
+  " Edge cases
+
+  " XXX This fact should be hidden so that people won't be tempted to write
+  " plugin/TimeMachine.vim.  TODO Add reasonable range checks to the source
+  " code.
+  set balloondelay=-1
+  call assert_equal(-1, &balloondelay)
+
+  " Though it's possible to interpret the zero delay to be 'as soon as
+  " possible' or even 'indefinite', its actual meaning depends on the GUI
+  " toolkit in use after all.
+  set balloondelay=0
+  call assert_equal(0, &balloondelay)
+
+  set balloondelay=1
+  call assert_equal(1, &balloondelay)
+
+  " Since p_bdelay is of type long currently, the upper bound can be
+  " impractically huge and machine-dependent.  Practically, it's sufficient
+  " to check if balloondelay works with 0xffffffff (32 bits) for now.
+  set balloondelay=4294967295
+  call assert_equal(4294967295, &balloondelay)
+
+  let &balloondelay = balloondelay_saved
+endfunc
+
+func Test_set_ballooneval()
+  if !exists('+ballooneval')
+    return
+  endif
+
+  let ballooneval_saved = &ballooneval
+
+  set ballooneval&
+  call assert_equal(0, &ballooneval)
+
+  set ballooneval
+  call assert_notequal(0, &ballooneval)
+
+  set noballooneval
+  call assert_equal(0, &ballooneval)
+
+  let &ballooneval = ballooneval_saved
+endfunc
+
+func Test_set_balloonexpr()
+  if !exists('+balloonexpr')
+    return
+  endif
+
+  let balloonexpr_saved = &balloonexpr
+
+  " Default value
+  set balloonexpr&
+  call assert_equal('', &balloonexpr)
+
+  " User-defined function
+  new
+  func MyBalloonExpr()
+      return 'Cursor is at line ' . v:beval_lnum .
+	      \', column ' . v:beval_col .
+	      \ ' of file ' .  bufname(v:beval_bufnr) .
+	      \ ' on word "' . v:beval_text . '"' .
+	      \ ' in window ' . v:beval_winid . ' (#' . v:beval_winnr . ')'
+  endfunc
+  setl balloonexpr=MyBalloonExpr()
+  setl ballooneval
+  call assert_equal('MyBalloonExpr()', &balloonexpr)
+  " TODO Read non-empty text, place the pointer at a character of a word,
+  " and check if the content of the balloon is the smae as what is expected.
+  " Also, check if textlock works as expected.
+  setl balloonexpr&
+  call assert_equal('', &balloonexpr)
+  delfunc MyBalloonExpr
+  bwipe!
+
+  " Multiline support
+  if has('balloon_multiline')
+    " Multiline balloon using NL
+    new
+    func MyBalloonFuncForMultilineUsingNL()
+      return "Multiline\nSuppported\nBalloon\nusing NL"
+    endfunc
+    setl balloonexpr=MyBalloonFuncForMultilineUsingNL()
+    setl ballooneval
+    call assert_equal('MyBalloonFuncForMultilineUsingNL()', &balloonexpr)
+    " TODO Read non-empty text, place the pointer at a character of a word,
+    " and check if the content of the balloon is the smae as what is
+    " expected.  Also, check if textlock works as expected.
+    setl balloonexpr&
+    delfunc MyBalloonFuncForMultilineUsingNL
+    bwipe!
+
+    " Multiline balloon using List
+    new
+    func MyBalloonFuncForMultilineUsingList()
+      return [ 'Multiline', 'Suppported', 'Balloon', 'using List' ]
+    endfunc
+    setl balloonexpr=MyBalloonFuncForMultilineUsingList()
+    setl ballooneval
+    call assert_equal('MyBalloonFuncForMultilineUsingList()', &balloonexpr)
+    " TODO Read non-empty text, place the pointer at a character of a word,
+    " and check if the content of the balloon is the smae as what is
+    " expected.  Also, check if textlock works as expected.
+    setl balloonexpr&
+    delfunc MyBalloonFuncForMultilineUsingList
+    bwipe!
+  endif
+
+  let &balloonexpr = balloonexpr_saved
 endfunc
 
 func Test_set_guifont()
