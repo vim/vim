@@ -6974,6 +6974,9 @@ parse_cino(buf_T *buf)
      * while(). */
     buf->b_ind_if_for_while = 0;
 
+    /* indentation for # comments */
+    buf->b_ind_hash_comment = 0;
+
     for (p = buf->b_p_cino; *p; )
     {
 	l = p++;

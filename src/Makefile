@@ -2104,6 +2104,7 @@ test_arglist \
 	test_channel \
 	test_charsearch \
 	test_changedtick \
+	test_cindent \
 	test_cmdline \
 	test_command_count \
 	test_crypt \

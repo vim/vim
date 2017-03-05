@@ -1,6 +1,7 @@
 /* vim: set cin ts=4 sw=4 : */
 
-Test for 'cindent'
+Test for 'cindent'.
+For new tests, consider putting them in test_cindent.vim.
 
 STARTTEST
 :so small.vim

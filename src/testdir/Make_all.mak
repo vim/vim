@@ -143,6 +143,7 @@ NEW_TESTS = test_arabic.res \
 	    test_cdo.res \
 	    test_channel.res \
 	    test_charsearch.res \
+	    test_cindent.res \
 	    test_cmdline.res \
 	    test_command_count.res \
 	    test_crypt.res \
