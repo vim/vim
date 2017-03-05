@@ -3533,21 +3533,31 @@ time_msg(
 set_progpath(char_u *argv0)
 {
     char_u *val = argv0;
+#ifdef WIN32
+    char_u *path = NULL;
+#else
     char_u buf[MAXPATHL];
+#endif
 
     /* A relative path containing a "/" will become invalid when using ":cd",
      * turn it into a full path.
      * On MS-Windows "vim.exe" is found in the current directory, thus also do
      * it when there is no path and the file exists. */
-    if ( !mch_isFullName(argv0)
+    if (!mch_isFullName(argv0))
+    {
 # ifdef WIN32
-	    && mch_can_exe(argv0, NULL, TRUE)
+	if (mch_can_exe(argv0, &path, FALSE) && path != NULL)
+	    val = path;
 # else
-	    && gettail(argv0) != argv0
+	if (gettail(argv0) != argv0
+			   && vim_FullName(argv0, buf, MAXPATHL, TRUE) != FAIL)
+	    val = buf;
 # endif
-	    && vim_FullName(argv0, buf, MAXPATHL, TRUE) != FAIL)
-	val = buf;
+    }
     set_vim_var_string(VV_PROGPATH, val, -1);
+#ifdef WIN32
+    vim_free(path);
+#endif
 }
 
 #endif /* NO_VIM_MAIN */
