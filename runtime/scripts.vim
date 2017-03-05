@@ -124,6 +124,10 @@ if s:line1 =~ "^#!"
   elseif s:name =~ 'ruby'
     set ft=ruby
 
+    " JavaScript
+  elseif s:name =~ 'node\>' || s:name =~ 'nodejs\>' || s:name =~ 'rhino\>'
+    set ft=javascript
+
     " BC calculator
   elseif s:name =~ '^bc\>'
     set ft=bc
@@ -155,6 +159,14 @@ if s:line1 =~ "^#!"
     " Erlang scripts
   elseif s:name =~ 'escript'
     set ft=erlang
+
+    " Haskell
+  elseif s:name =~ 'haskell'
+    set ft=haskell
+
+    " Scala
+  elseif s:name =~ 'scala\>'
+    set ft=scala
 
   endif
   unlet s:name
