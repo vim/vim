@@ -1183,10 +1183,11 @@ syn_stack_free_block(synblock_T *block)
     void
 syn_stack_free_all(synblock_T *block)
 {
+#ifdef FEAT_FOLDING
     win_T	*wp;
+#endif
 
     syn_stack_free_block(block);
-
 
 #ifdef FEAT_FOLDING
     /* When using "syntax" fold method, must update all folds. */

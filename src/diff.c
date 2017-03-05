@@ -2616,7 +2616,6 @@ diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1)
     return lnum;
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
 /*
  * For line "lnum" in the current window find the equivalent lnum in window
  * "wp", compensating for inserted/deleted lines.
@@ -2656,6 +2655,5 @@ diff_lnum_win(linenr_T lnum, win_T *wp)
 	n = dp->df_lnum[i] + dp->df_count[i];
     return n;
 }
-#endif
 
 #endif	/* FEAT_DIFF */
