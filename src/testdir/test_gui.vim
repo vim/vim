@@ -155,9 +155,9 @@ func Test_set_balloondelay()
 
   " Since p_bdelay is of type long currently, the upper bound can be
   " impractically huge and machine-dependent.  Practically, it's sufficient
-  " to check if balloondelay works with 0xffffffff (32 bits) for now.
-  set balloondelay=4294967295
-  call assert_equal(4294967295, &balloondelay)
+  " to check if balloondelay works with 0x7fffffff (32 bits) for now.
+  set balloondelay=2147483647
+  call assert_equal(2147483647, &balloondelay)
 
   let &balloondelay = balloondelay_saved
 endfunc
