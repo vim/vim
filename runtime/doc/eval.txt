@@ -1784,14 +1784,9 @@ v:progname	Contains the name (with path removed) with which Vim was
 		Read-only.
 
 					*v:progpath* *progpath-variable*
-v:progpath	Contains the command with which Vim was invoked, including the
-		path.  Useful if you want to message a Vim server using a
+v:progpath	Contains the absolute path of the command with which Vim was
+		invoked.  Useful if you want to message a Vim server using a
 		|--remote-expr|.
-		To get the full path use: >
-			echo exepath(v:progpath)
-<		If the path is relative it will be expanded to the full path,
-		so that it still works after `:cd`. Thus starting "./vim"
-		results in "/home/user/path/to/vim/src/vim".
 		On MS-Windows the executable may be called "vim.exe", but the
 		".exe" is not added to v:progpath.
 		Read-only.

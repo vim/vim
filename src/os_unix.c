@@ -3103,7 +3103,8 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
 	{
 	    if (path != NULL)
 	    {
-		if (name[0] == '.')
+		if (name[0] == '.'
+		    || (name[0] != '/' && vim_strchr(name, '/') != NULL))
 		    *path = FullName_save(name, TRUE);
 		else
 		    *path = vim_strsave(name);
@@ -3142,7 +3143,8 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
 	{
 	    if (path != NULL)
 	    {
-		if (buf[0] == '.')
+		if (buf[0] == '.'
+		    || (buf[0] != '/' && vim_strchr(buf, '/') != NULL))
 		    *path = FullName_save(buf, TRUE);
 		else
 		    *path = vim_strsave(buf);
