@@ -81,8 +81,8 @@ And there should be no ':set guifont'.  If it exists, then Gvim ignores
 ':set guifontset'.  It means VIM runs without fontset supporting.
 So, you can see only English.  Hangul does not be correctly displayed.
 
-After 'fontset' feature is enabled, VIM does not allow using english
-font only in 'font' setting for syntax.
+After "fontset" feature is enabled, VIM does not allow using english
+font only in "font" setting for syntax.
 For example, if you use >
    :set guifontset=eng_font,your_font
 in your .gvimrc, then you should do for syntax >

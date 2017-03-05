@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 8.0.  Last change: 2017 Feb 17
+*if_pyth.txt*   For Vim version 8.0.  Last change: 2017 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -174,8 +174,8 @@ vim.eval(str)						*python-eval*
 
 	    :py tagList = vim.eval('taglist("eval_expr")')
 <	The latter will return a python list of python dicts, for instance:
-	[{'cmd': '/^eval_expr(arg, nextcmd)$/', 'static': 0, 'name':
-	'eval_expr', 'kind': 'f', 'filename': './src/eval.c'}]
+	[{'cmd': '/^eval_expr(arg, nextcmd)$/', 'static': 0, 'name': ~
+	'eval_expr', 'kind': 'f', 'filename': './src/eval.c'}] ~
 
 vim.bindeval(str)					*python-bindeval*
 	Like |python-eval|, but returns special objects described in 
@@ -819,7 +819,7 @@ the other one from being available.
 11. Python X						*python_x* *pythonx*
 
 Because most python code can be written so that it works with python 2.6+ and
-python 3 the pyx* functions and commands have been writen.  They work exactly
+python 3 the pyx* functions and commands have been written.  They work exactly
 the same as the Python 2 and 3 variants, but select the Python version using
 the 'pyxversion' setting.
 
@@ -867,7 +867,7 @@ When compiled with both |+python| and |+python3|, the test depends on the
 it is not available then Python 2.  If 'pyxversion' is 2 or 3, it tests only
 Python 2 or 3 respectively.
 
-Note that for has('pythonx') to work it may try to dynamically load Python 3
+Note that for `has('pythonx')` to work it may try to dynamically load Python 3
 or 2.  This may have side effects, especially when Vim can only load one of
 the two.
 

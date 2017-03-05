@@ -252,7 +252,7 @@ But any non-empty string means that the flag is set.  An empty string means
 that the flag is not set.  't_CS' works like this too, but it isn't a termcap
 flag.
 
-OUTPUT CODES
+OUTPUT CODES						*terminal-output-codes*
 	option	meaning	~
 
 	t_AB	set background color (ANSI)			*t_AB* *'t_AB'*
@@ -333,7 +333,7 @@ Added by Vim (there are no standard codes for these):
 	t_BD	disable bracketed paste mode			*t_BD* *'t_BD'*
 		|xterm-bracketed-paste|
 
-KEY CODES
+KEY CODES						*terminal-key-codes*
 Note: Use the <> form if possible
 
 	option	name		meaning	~
@@ -424,8 +424,9 @@ Note: Use the <> form if possible
 	t_KK	<k8>		keypad 8		 *<k8>*	*t_KK* *'t_KK'*
 	t_KL	<k9>		keypad 9		 *<k9>*	*t_KL* *'t_KL'*
 		<Mouse>		leader of mouse code		*<Mouse>*
-	t_PS	start of bracketed paste |xterm-bracketed-paste|  *t_PS* 't_PS'
-	t_PE	end of bracketed paste |xterm-bracketed-paste|    *t_PE* 't_PE'
+								*t_PS* *'t_PS'*
+	t_PS	start of bracketed paste |xterm-bracketed-paste|
+	t_PE	end of bracketed paste |xterm-bracketed-paste|  *t_PE* *'t_PE'*
 
 Note about t_so and t_mr: When the termcap entry "so" is not present the
 entry for "mr" is used.  And vice versa.  The same is done for "se" and "me".

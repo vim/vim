@@ -965,6 +965,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_KJ'	term.txt	/*'t_KJ'*
 't_KK'	term.txt	/*'t_KK'*
 't_KL'	term.txt	/*'t_KL'*
+'t_PE'	term.txt	/*'t_PE'*
+'t_PS'	term.txt	/*'t_PS'*
 't_RB'	term.txt	/*'t_RB'*
 't_RI'	term.txt	/*'t_RI'*
 't_RV'	term.txt	/*'t_RV'*
@@ -4500,6 +4502,7 @@ E937	autocmd.txt	/*E937*
 E938	eval.txt	/*E938*
 E939	change.txt	/*E939*
 E94	windows.txt	/*E94*
+E940	eval.txt	/*E940*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
 E97	diff.txt	/*E97*
@@ -5071,6 +5074,7 @@ backup-changed	version4.txt	/*backup-changed*
 backup-extension	version4.txt	/*backup-extension*
 backup-table	editing.txt	/*backup-table*
 balloon-eval	debugger.txt	/*balloon-eval*
+balloon_show()	eval.txt	/*balloon_show()*
 bar	motion.txt	/*bar*
 bars	help.txt	/*bars*
 base_font_name_list	mbyte.txt	/*base_font_name_list*
@@ -8732,7 +8736,9 @@ termcap-options	term.txt	/*termcap-options*
 termcap-title	term.txt	/*termcap-title*
 terminal-colors	os_unix.txt	/*terminal-colors*
 terminal-info	term.txt	/*terminal-info*
+terminal-key-codes	term.txt	/*terminal-key-codes*
 terminal-options	term.txt	/*terminal-options*
+terminal-output-codes	term.txt	/*terminal-output-codes*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*
@@ -8740,6 +8746,7 @@ test_alloc_fail()	eval.txt	/*test_alloc_fail()*
 test_autochdir()	eval.txt	/*test_autochdir()*
 test_disable_char_avail()	eval.txt	/*test_disable_char_avail()*
 test_garbagecollect_now()	eval.txt	/*test_garbagecollect_now()*
+test_ignore_error()	eval.txt	/*test_ignore_error()*
 test_null_channel()	eval.txt	/*test_null_channel()*
 test_null_dict()	eval.txt	/*test_null_dict()*
 test_null_job()	eval.txt	/*test_null_job()*

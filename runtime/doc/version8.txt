@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2017 Jan 15
+*version8.txt*  For Vim version 8.0.  Last change: 2017 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -200,9 +200,9 @@ Options: ~
 'perldll'		name of the Perl dynamic library
 'pythondll'		name of the Python 2 dynamic library
 'pythonthreedll'	name of the Python 3 dynamic library
-'signcolumn'		when to display the sign column
 'renderoptions'		options for text rendering on Windows
 'rubydll'		name of the Ruby dynamic library
+'signcolumn'		when to display the sign column
 'tagcase'		how to handle case when searching in tags files
 'tcldll'		name of the Tcl dynamic library
 'termguicolors'		use GUI colors for the terminal
@@ -3436,7 +3436,7 @@ Files:	    runtime/doc/options.txt, src/Makefile, src/regexp.c, src/regexp.h,
 Patch 7.4.498 (after 7.4.497)
 Problem:    Typo in DOS makefile.
 Solution:   Change exists to exist. (Ken Takata)
-Files:	    src/testdirMake_dos.mak
+Files:	    src/testdir/Make_dos.mak
 
 Patch 7.4.499
 Problem:    substitute() can be slow with long strings.

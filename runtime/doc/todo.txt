@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Feb 17
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Mar 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,17 +34,6 @@ entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Patch 195 introduced a regression in tag priority. (Charles Campbell, 2017 Feb
-10)
-
-Memory leak in test97?
-
-exists('&t_k1') returns false even when t_k1 was set.
-Use in test_assign.vim to only get value of &t_k1 if it exists. #1459
-
-test_gui fails with Athena:
-   Caught exception in Test_1_set_secure(): Vim(gui):E285: Failed to create input context @ function RunTheTest[21]..Test_1_set_secure, line 2
 
 +channel:
 - Try out background make plugin: 
@@ -116,6 +105,11 @@ Regexp problems:
 - Difference between two engines: ".*\zs\/\@>\/" on text "///"
   (Chris Paul, 2016 Nov 13)  New engine not greedy enough?
 
+Running test_gui and test_gui_init with Motif sometimes kills the window
+manager.  Problem with Motif?
+
+Memory leak in test97?  The string is actually freed.  Weird.
+
 Add a toolbar in the terminal.  Can be global, above all windows, or specific
 for one window.
 Use tb_set(winid, [{'text': 'stop', 'cb': callback, 'hi': 'Green'}])
@@ -127,27 +121,11 @@ What if there is an invalid character?
 
 Json string with trailing \u should be an error. (Lcd)
 
-Patch for double free setting 'ttytype' (Dominique, 2017 Feb 10, #1461)
-
-Patch for using uninitialized memory (Dominique, 2017 Feb 11, #1464)
-
-Patch for crash setting 'guicursor'. (Dominique, 2017 Feb 11, #1465)
-
 Multi-byte bug: dv} splits char. (Urtica Dioica, 2017 Jan 9)
-
-Patch to add test for 'number' and 'relativenumber'. (Ozaki Kiichi, #1447)
-Now merged in test89 (Feb 12)
-
-Patch to fix tabline redraw. (Christian Brabandt, 2017 Feb 10)
-Better way to fix this?
 
 When session file has name in argument list but the buffer was deleted, the
 buffer is not deleted when using the session file. (#1393)
 Should add the buffer in hidden state.
-
-Patch to change VimL to "Vim script". (Hirohito Higashi, 2017 Feb 14)
-
-Invalid memory access with :normal command. (Dominique Pelle, 2017 Feb 14)
 
 When "gf" excludes following ":99", jump to line 99.
 Also when editing a file foo.txt:99 ?
@@ -155,35 +133,18 @@ Also when editing a file foo.txt:99 ?
 When an item in the quickfix list has a file name that does not exist, behave
 like the item was not a match for :cnext.
 
-Patch for warning about integer overflow in undo.c (King, 2017 Feb 12)
-And another similar one.
-
-Patch for null pointer use in undo.c (King, 2017 Feb 12)
-
-Patch to avoid using CTRL-O when do_cmdline_cmd is called. (James McCoy, 2017
-Feb 7, #1453)
-
-Patch for multi-byte line wrap. (Ozaki Kiichi, 2017 Feb 7, #1456)
-
-Patch to show balloon with a function. (Jusufadis Bakamovic, #1449)
-
 Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
 Another example in #1309
 
+Patch to change all use of &sw to shiftwidth(). (Tyru, 2017 Feb 19)
+Wait until maintainers integrate it.
+
 Completion for user-defined commands does not work if a few characters were
 already typed. (Dominique, 2017 Jan 26)
 
-Patch for nsis script to add a dll file. (Christian Brabandt, 2017 Feb 10)
-Also include the .dll file?
-
-Patch for capitalizations in menus. (Zhen-Huan Hu, 2017 Feb 9)
-
 When deleting a mark or register, leave a tombstone, so that it's also deleted
 when writing viminfo (and the delete was the most recent action). #1339
-
-Patch for better explanation of 'compatible' side effects.
-https://github.com/vim/vim/pull/1161/files
 
 Patch to add 'makeencoding', useful when the system encoding differs from
 Vim's 'encoding' setting. (Ken Takata, 2017 Jan 31)
@@ -199,6 +160,12 @@ Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 Patch to fix that test87 fails on Arch Linux. (Jesin, 2017 Feb 10)
 
 Completion for :!cmd shows each match twice. #1435
+
+GTK: When adding a timer from 'balloonexpr' it won't fire, because
+g_main_context_iteration() doesn't return.  Need to trigger an event when the
+timer expires.
+
+Screen update bug related to matchparen.  (Chris Heath, 2017 Mar 4, #1532)
 
 Rule to use "^" for statusline does not work if a space is defined with
 highlighting for both stl and stlnc.  Patch by Ken Hamada (itchyny, 2016 Dec 11)
@@ -255,8 +222,14 @@ MS-Windows.  Perhaps in \#  the \ is seen as a path separator. (Axel Bender,
 2017 Feb 9)  Can we expand wildcards first and send the path literally to the
 receiving Vim?  Or make an exception for #, it's not useful remotely.
 
+":sbr" docs state it respect 'switchbuf', but "vsplit" does not cause a
+vertical split. (Haldean Brown, 2017 Mar 1)
+
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
 Add tests for using number larger than number of lines in buffer.
+
+Might be useful to have isreadonly(), like we have islocked().
+Avoids exceptions, e.g. when using the b: namespace as a dict.
 
 Patch to make v:shell_error writable. (Christian Brabandt, 2016 Sep 27)
 Useful to restore it.  Is there another solution?
@@ -272,6 +245,9 @@ Patch for wrong cursor position on wrapped line, involving breakindent.
 Does this also fix #1408 ?
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
+
+Window resizing with 'winfixheight': With a vertical split the height changes
+anyway. (Tommy allen, 2017 Feb 21, #1502)
 
 When adding an item to a new quickfix list make ":cnext" jump to that item.
 Make a difference being at the first item and not having used :cnext at all.
@@ -460,6 +436,9 @@ Patch to improve indenting for C++ constructor with initializer list.
 Add stronger encryption.  Could use libsodium (NaCl).
 https://github.com/jedisct1/libsodium/
 Possibly include the needed code so that it can be build everywhere.
+
+Add a way to restart a timer.  It's similar to timer_stop() and timer_start(),
+but the reference remains valid.
 
 Patch to add setbufline(). (email from Yasuhiro Matsumoto, patch by Ozaki
 Kiichi, 2016 Feb 28)

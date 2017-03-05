@@ -1,4 +1,4 @@
-*mlang.txt*     For Vim version 8.0.  Last change: 2016 Jan 16
+*mlang.txt*     For Vim version 8.0.  Last change: 2017 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -179,6 +179,7 @@ Send an e-mail to the Vim maintainer <maintainer@vim.org>.
 			special characters like "&" and "<Tab>" need to be
 			included.  Spaces and dots need to be escaped with a
 			backslash, just like in other |:menu| commands.
+			Case in {english} is ignored.
 
 See the $VIMRUNTIME/lang directory for examples.
 
