@@ -19,13 +19,11 @@ env:
   - BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
     # ASAN build
-  - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -fsanitize=address -fno-omit-frame-pointer" FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no
+  - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
+    FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
 
 sudo: false
-
-git:
-  depth: 20
 
 # instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
 # exclude some builds on mac os x and linux
@@ -42,11 +40,13 @@ matrix:
       env: BUILD=yes TEST=scripttests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
             "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
     - os: osx
-      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -fsanitize=address -fno-omit-frame-pointer" FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no
+      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
+            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
             "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
     - os: linux
       compiler: gcc
-      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -fsanitize=address -fno-omit-frame-pointer" FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no
+      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
+            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
             "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
     - os: linux
       compiler: clang
@@ -92,7 +92,10 @@ script:
   - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi
   - (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && if [ "$BUILD" = "yes" ]; then make -j$NPROC; fi)
   - if [ "$BUILD" = "yes" ]; then ${SRCDIR}/vim --version; fi
+  - if [ -n "$ASAN_OPTIONS" ]; then export PATH=/usr/lib/llvm-$(clang -v 2>&1 | sed -n 's/.*version \([1-9]\.[0-9][0-9]*\).*/\1/p')/bin:$PATH; fi
   - make $SHADOWOPT $TEST
+  - if [ -n "$ASAN_OPTIONS" ]; then for log in $(find -type f -name 'asan.*' -size +0); do cat "$log"; err=1; done; fi
+  - if [ -n "$err" ]; then exit 1; fi
 
 after_success:
   - if [ "$COVERAGE" = "yes" ]; then ~/.local/bin/coveralls -b $SRCDIR -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
