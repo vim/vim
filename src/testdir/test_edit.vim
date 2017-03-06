@@ -778,7 +778,7 @@ func! Test_edit_CTRL_T()
   call feedkeys("A\<c-t>xyz", 'tnix')
   call assert_equal(["\<tab>abcxyz"], getline(1, '$'))
   set nopaste
-  " CTRL-X CTRL-T (thesaurus complete
+  " CTRL-X CTRL-T (thesaurus complete)
   call writefile(['angry furious mad enraged'], 'Xthesaurus')
   set thesaurus=Xthesaurus
   call setline(1, 'mad')
@@ -983,10 +983,10 @@ func! Test_edit_HOME_END()
   set foldopen+=hor
   call setline(1, ['abc', 'def'])
   call cursor(1, 1)
-  call feedkeys("AX\<Home>X\<esc>", 'tnix')
+  call feedkeys("AX\<Home>Y\<esc>", 'tnix')
   call cursor(2, 1)
-  call feedkeys("iZ\<End>Z\<esc>", 'tnix')
-  call assert_equal(['XabcX', 'ZdefZ'], getline(1, '$'))
+  call feedkeys("iZ\<End>Y\<esc>", 'tnix')
+  call assert_equal(['YabcX', 'ZdefY'], getline(1, '$'))
 
   set foldopen-=hor
   bw!
@@ -1003,6 +1003,7 @@ func! Test_edit_INS()
   call cursor(1, 1)
   call feedkeys("i\<Insert>Z\<Insert>YX>", 'tnix')
   call assert_equal(['ZYX>bc', 'def'], getline(1, '$'))
+  bw!
 endfunc
 
 func! Test_edit_LEFT_RIGHT()
