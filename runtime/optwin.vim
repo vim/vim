@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Jan 28
+" Last Change:	2017 Mar 06
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -1131,6 +1131,9 @@ if has("quickfix")
   call <SID>OptionG("gp", &gp)
   call append("$", "grepformat\tlist of formats for output of 'grepprg'")
   call <SID>OptionG("gfm", &gfm)
+  call append("$", "makeencoding\tencoding of the \":make\" and \":grep\" output")
+  call append("$", "\t(global or local to buffer)")
+  call <SID>OptionG("menc", &menc)
 endif
 
 
