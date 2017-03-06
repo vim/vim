@@ -55,7 +55,6 @@ func Test_statusline()
  only
  set laststatus=2
  set splitbelow
- set fileformat=unix
  call setline(1, range(1, 200))
 
  " %b: Value of character under cursor.
@@ -67,7 +66,13 @@ func Test_statusline()
  " %o: Byte number in file of byte under cursor, first byte is 1.
  " %O: As above, in hexadecimal.
  set statusline=%o,%O
+ set fileformat=dos
+ call assert_match('^789,315\s*$', s:get_statusline())
+ set fileformat=mac
  call assert_match('^610,262\s*$', s:get_statusline())
+ set fileformat=unix
+ call assert_match('^610,262\s*$', s:get_statusline())
+ set fileformat&
 
  " %f: Path to the file in the buffer, as typed or relative to current dir.
  set statusline=%f
@@ -92,6 +97,8 @@ func Test_statusline()
    set keymap=esperanto
    call assert_match('^<Eo>\s*$', s:get_statusline())
    set keymap&
+ else
+   call assert_match('^\s*$', s:get_statusline())
  endif
 
  " %l: Line number.
@@ -193,6 +200,8 @@ func Test_statusline()
  " %<: Where to truncate.
  exe 'set statusline=a%<b' . repeat('c', 1000) . 'd'
  call assert_match('^a<c*d$', s:get_statusline())
+ exe 'set statusline=a' . repeat('b', 1000) . '%<c'
+ call assert_match('^ab*>$', s:get_statusline())
 
  "%{: Evaluate expression between '%{' and '}' and substitute result.
  syntax on
@@ -212,7 +221,6 @@ func Test_statusline()
  " %#: Set highlight group. The name must follow and then a # again.
  set statusline=ab%#Todo#cd%#Error#ef
  call assert_match('^abcdef\s*$', s:get_statusline())
- redrawstatus
  let sa1=screenattr(&lines - 1, 1)
  let sa2=screenattr(&lines - 1, 3)
  let sa3=screenattr(&lines - 1, 5)
@@ -224,6 +232,23 @@ func Test_statusline()
  call assert_equal(sa3, screenattr(&lines - 1, 6))
  call assert_equal(sa3, screenattr(&lines - 1, 7))
 
+ " %*: Set highlight group to User{N}
+ set statusline=a%1*b%0*c
+ call assert_match('^abc\s*$', s:get_statusline())
+ let sa1=screenattr(&lines - 1, 1)
+ let sa2=screenattr(&lines - 1, 2)
+ let sa3=screenattr(&lines - 1, 3)
+ call assert_equal(sa1, sa3)
+ call assert_notequal(sa1, sa2)
+
+ " %%: a percent sign.
+ set statusline=10%%
+ call assert_match('^10%\s*$', s:get_statusline())
+
+ " %!: evaluated expression is used as the option value
+ set statusline=%!2*3+1
+ call assert_match('7\s*$', s:get_statusline())
+
  " Check statusline in current and non-current window
  " with the 'fillchars' option.
  set fillchars=stl:^,stlnc:=,vert:\|,fold:-,diff:-
@@ -234,6 +259,7 @@ func Test_statusline()
  close
 
  %bw!
+ call delete('Xstatusline')
  set statusline&
  set laststatus&
  set splitbelow&
