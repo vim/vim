@@ -130,4 +130,4 @@ test_gui_init.res: test_gui_init.vim
 	@del vimcmd
 
 opt_test.vim: ../option.c gen_opt_test.vim
-	$(VIMPROG) -u gen_opt_test.vim --noplugin --not-a-term ../option.c
+	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../option.c
