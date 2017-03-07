@@ -94,6 +94,7 @@ clean:
 	-if exist test.log del test.log
 	-if exist messages del messages
 	-if exist benchmark.out del benchmark.out
+	-if exist opt_test.vim del opt_test.vim
 
 nolog:
 	-if exist test.log del test.log
@@ -127,3 +128,6 @@ test_gui_init.res: test_gui_init.vim
 	@echo "$(VIMPROG)" > vimcmd
 	$(VIMPROG) -u NONE -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $*.vim
 	@del vimcmd
+
+opt_test.vim: ../option.c gen_opt_test.vim
+	$(VIMPROG) -u gen_opt_test.vim --noplugin --not-a-term

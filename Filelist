@@ -97,7 +97,7 @@ SRC_ALL =	\
 		src/tee/tee.c \
 		src/xxd/xxd.c \
 		src/main.aap \
-		src/gen_opt_test.vim \
+		src/testdir/gen_opt_test.vim \
 		src/testdir/main.aap \
 		src/testdir/README.txt \
 		src/testdir/Make_all.mak \

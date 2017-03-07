@@ -169,6 +169,10 @@ while 1
       for val in a[0]
 	call add(script, 'set ' . name . '=' . val)
 	call add(script, 'set ' . shortname . '=' . val)
+
+	if name == 'verbosefile' && !empty(val)
+	  call add(script, 'call delete("'. val. '")')
+	endif
       endfor
 
       " setting an option can only fail when it's implemented.
@@ -182,6 +186,10 @@ while 1
 
     call add(script, 'set ' . name . '&')
     call add(script, 'set ' . shortname . '&')
+
+    if name == 'more'
+      call add(script, 'set nomore')
+    endif
   endif
 endwhile
 

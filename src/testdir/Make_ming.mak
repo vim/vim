@@ -88,6 +88,7 @@ clean:
 	-@if exist viminfo $(DEL) viminfo
 	-@if exist test.log $(DEL) test.log
 	-@if exist messages $(DEL) messages
+	-@if exist opt_test.vim $(DEL) opt_test.vim
 
 .in.out:
 	-@if exist $*.ok $(CP) $*.ok test.ok
@@ -131,3 +132,5 @@ test_gui_init.res: test_gui_init.vim
 	$(VIMPROG) -u NONE -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@$(DEL) vimcmd
 
+opt_test.vim: ../option.c gen_opt_test.vim
+	$(VIMPROG) -u gen_opt_test.vim --noplugin --not-a-term

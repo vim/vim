@@ -55,7 +55,7 @@ RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmar
 RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_INITS) -s dotest.in
 
 clean:
-	-rm -rf *.out *.failed *.res *.rej *.orig test.log messages $(RM_ON_RUN) $(RM_ON_START) valgrind.*
+	-rm -rf *.out *.failed *.res *.rej *.orig opt_test.vim test.log messages $(RM_ON_RUN) $(RM_ON_START) valgrind.*
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
@@ -140,3 +140,7 @@ test_gui_init.res: test_gui_init.vim
 	@echo "$(RUN_GVIMTEST_WITH_GVIMRC)" > vimcmd
 	$(RUN_VIMTEST) -u NONE -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@rm vimcmd
+
+opt_test.vim: ../option.c gen_opt_test.vim
+	$(VIMPROG) -u gen_opt_test.vim --noplugin --not-a-term
+
