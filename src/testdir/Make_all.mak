@@ -221,4 +221,4 @@ test49.out: test49.vim
 
 test60.out: test60.vim
 
-test_options.res: opt_test.vim
+test_options.res test_alot.res: opt_test.vim
