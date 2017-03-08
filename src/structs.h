@@ -2236,6 +2236,7 @@ struct file_buffer
     int		b_ind_hash_comment;
     int		b_ind_cpp_namespace;
     int		b_ind_if_for_while;
+    int		b_ind_cpp_extern_c;
 #endif
 
     linenr_T	b_no_eol_lnum;	/* non-zero lnum when last line of next binary
