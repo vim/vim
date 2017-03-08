@@ -2,6 +2,7 @@ Tests for folding. vim: set ft=vim :
 
 STARTTEST
 :so small.vim
+:set belloff=all
 :" We also need the +syntax feature here.
 :if !has("syntax")
    e! test.ok

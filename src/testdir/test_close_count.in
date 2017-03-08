@@ -2,6 +2,7 @@ Tests for :[count]close! and :[count]hide     vim: set ft=vim :
 
 STARTTEST
 :so small.vim
+:set belloff=all
 :let tests = []
 :for i in range(5)
 :new

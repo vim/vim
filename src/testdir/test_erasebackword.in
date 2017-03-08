@@ -2,6 +2,7 @@ Test for erasing backword
 
 STARTTEST
 :so small.vim
+:set belloff=all
 :so mbyte.vim
 :set encoding=utf-8
 G
