@@ -27,6 +27,13 @@ func Test_empty()
   call assert_equal(1, empty(v:false))
   call assert_equal(0, empty(v:true))
 
+  if has('channel')
+    call assert_equal(1, empty(test_null_channel()))
+  endif
+  if has('job')
+    call assert_equal(1, empty(test_null_job()))
+  endif
+
   call assert_equal(0, empty(function('Test_empty')))
 endfunc
 
@@ -482,11 +489,17 @@ func Test_bufexists()
   call assert_equal(0, bufexists('Xfoo'))
 endfunc
 
+func Test_last_buffer_nr()
+  call assert_equal(bufnr('$'), last_buffer_nr())
+endfunc
+
 func Test_stridx()
   call assert_equal(-1, stridx('', 'l'))
   call assert_equal(0,  stridx('', ''))
   call assert_equal(0,  stridx('hello', ''))
   call assert_equal(-1, stridx('hello', 'L'))
+  call assert_equal(2,  stridx('hello', 'l', -1))
+  call assert_equal(2,  stridx('hello', 'l', 0))
   call assert_equal(2,  stridx('hello', 'l', 1))
   call assert_equal(3,  stridx('hello', 'l', 3))
   call assert_equal(-1, stridx('hello', 'l', 4))
@@ -505,6 +518,8 @@ func Test_strridx()
   call assert_equal(3,  strridx('hello', 'l', 3))
   call assert_equal(2,  strridx('hello', 'l', 2))
   call assert_equal(-1, strridx('hello', 'l', 1))
+  call assert_equal(-1, strridx('hello', 'l', 0))
+  call assert_equal(-1, strridx('hello', 'l', -1))
   call assert_equal(2,  strridx('hello', 'll'))
   call assert_equal(-1, strridx('hello', 'hello world'))
 endfunc
@@ -515,7 +530,7 @@ func Test_matchend()
   call assert_equal(-1, matchend('testing', 'ing', 5))
 endfunc
 
-func Test_nextnonblank()
+func Test_nextnonblank_prevnonblank()
   new
 insert
 This
@@ -526,6 +541,7 @@ is
 a
 Test
 .
+  call assert_equal(0, nextnonblank(-1))
   call assert_equal(0, nextnonblank(0))
   call assert_equal(1, nextnonblank(1))
   call assert_equal(4, nextnonblank(2))
@@ -535,22 +551,41 @@ Test
   call assert_equal(6, nextnonblank(6))
   call assert_equal(7, nextnonblank(7))
   call assert_equal(0, nextnonblank(8))
+
+  call assert_equal(0, prevnonblank(-1))
+  call assert_equal(0, prevnonblank(0))
+  call assert_equal(1, prevnonblank(1))
+  call assert_equal(1, prevnonblank(2))
+  call assert_equal(1, prevnonblank(3))
+  call assert_equal(4, prevnonblank(4))
+  call assert_equal(4, prevnonblank(5))
+  call assert_equal(6, prevnonblank(6))
+  call assert_equal(7, prevnonblank(7))
+  call assert_equal(0, prevnonblank(8))
   bw!
 endfunc
 
-func Test_byte2line()
+func Test_byte2line_line2byte()
   new
   call setline(1, ['a', 'bc', 'd'])
 
   set fileformat=unix
   call assert_equal([-1, -1, 1, 1, 2, 2, 2, 3, 3, -1],
   \                 map(range(-1, 8), 'byte2line(v:val)'))
+  call assert_equal([-1, -1, 1, 3, 6, 8, -1],
+  \                 map(range(-1, 5), 'line2byte(v:val)'))
+
   set fileformat=mac
   call assert_equal([-1, -1, 1, 1, 2, 2, 2, 3, 3, -1],
   \                 map(range(-1, 8), 'byte2line(v:val)'))
+  call assert_equal([-1, -1, 1, 3, 6, 8, -1],
+  \                 map(range(-1, 5), 'line2byte(v:val)'))
+
   set fileformat=dos
   call assert_equal([-1, -1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, -1],
   \                 map(range(-1, 11), 'byte2line(v:val)'))
+  call assert_equal([-1, -1, 1, 4, 8, 11, -1],
+  \                 map(range(-1, 5), 'line2byte(v:val)'))
 
   set fileformat&
   bw!
@@ -640,6 +675,14 @@ func Test_hostname()
   endif
 endfunc
 
+func Test_getpid()
+  " getpid() always returns the same value within a vim instance.
+  call assert_equal(getpid(), getpid())
+  if has('unix')
+    call assert_equal(systemlist('echo $PPID')[0], string(getpid()))
+  endif
+endfunc
+
 func Test_hlexists()
   call assert_equal(0, hlexists('does_not_exist'))
   call assert_equal(0, hlexists('Number'))
@@ -651,6 +694,25 @@ func Test_hlexists()
   call assert_equal(0, highlight_exists('does_not_exist'))
   call assert_equal(1, highlight_exists('Number'))
   syntax off
+endfunc
+
+func Test_col()
+  new
+  call setline(1, 'abcdef')
+  norm gg4|mx6|mY2|
+  call assert_equal(2, col('.'))
+  call assert_equal(7, col('$'))
+  call assert_equal(4, col("'x"))
+  call assert_equal(6, col("'Y"))
+  call assert_equal(2, col([1, 2]))
+  call assert_equal(7, col([1, '$']))
+
+  call assert_equal(0, col(''))
+  call assert_equal(0, col('x'))
+  call assert_equal(0, col([2, '$']))
+  call assert_equal(0, col([1, 100]))
+  call assert_equal(0, col([1]))
+  bw!
 endfunc
 
 func Test_balloon_show()
