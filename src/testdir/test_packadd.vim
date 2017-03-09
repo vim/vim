@@ -71,11 +71,12 @@ endfunc
 
 func Test_packadd_symlink_dir()
   if !has('unix')
-	  return
+    return
   endif
   let top2_dir = s:topdir . '/Xdir2'
   let real_dir = s:topdir . '/Xsym'
-  exec "silent !ln -s" real_dir top2_dir
+  call mkdir(real_dir, 'p')
+  exec "silent !ln -s Xsym"  top2_dir
   let &rtp = top2_dir . ',' . top2_dir . '/after'
   let &packpath = &rtp
 
