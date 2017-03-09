@@ -390,8 +390,7 @@ static void f_tagfiles(typval_T *argvars, typval_T *rettv);
 static void f_tempname(typval_T *argvars, typval_T *rettv);
 static void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
 static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
-static void f_test_disable_char_avail(typval_T *argvars, typval_T *rettv);
-static void f_test_disable(typval_T *argvars, typval_T *rettv);
+static void f_test_override(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
@@ -829,8 +828,6 @@ static struct fst
     {"tempname",	0, 0, f_tempname},
     {"test_alloc_fail",	3, 3, f_test_alloc_fail},
     {"test_autochdir",	0, 0, f_test_autochdir},
-    {"test_disable",    2, 2, f_test_disable},
-    {"test_disable_char_avail", 1, 1, f_test_disable_char_avail},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
     {"test_ignore_error",	1, 1, f_test_ignore_error},
 #ifdef FEAT_JOB_CHANNEL
@@ -843,6 +840,7 @@ static struct fst
     {"test_null_list",	0, 0, f_test_null_list},
     {"test_null_partial", 0, 0, f_test_null_partial},
     {"test_null_string", 0, 0, f_test_null_string},
+    {"test_override",    2, 2, f_test_override},
     {"test_settime",	1, 1, f_test_settime},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, f_timer_info},
@@ -12331,7 +12329,7 @@ f_test_autochdir(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
  * "test_disable({name}, {val})" function
  */
     static void
-f_test_disable(typval_T *argvars, typval_T *rettv UNUSED)
+f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 {
     char_u *name = (char_u *)"";
     int     val;
@@ -12344,20 +12342,16 @@ f_test_disable(typval_T *argvars, typval_T *rettv UNUSED)
 	name = get_tv_string_chk(&argvars[0]);
 	val = (int)get_tv_number(&argvars[1]);
 
-	if (STRNCMP(name, (char_u *)"redraw", 6) == 0)
+	if (STRCMP(name, (char_u *)"redraw") == 0)
 	   disable_redraw_for_testing = val; 
-	else if (STRNCMP(name, (char_u *)"char_avail", 10) == 0)
+	else if (STRCMP(name, (char_u *)"char_avail") == 0)
 	    disable_char_avail_for_testing = val;
+	else if (STRCMP(name, (char_u *)"ALL") == 0)
+	{
+	    disable_char_avail_for_testing = val;
+	    disable_redraw_for_testing = val; 
+	}
     }
-}
-
-/*
- * "test_disable_char_avail({expr})" function
- */
-    static void
-f_test_disable_char_avail(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    disable_char_avail_for_testing = (int)get_tv_number(&argvars[0]);
 }
 
 /*

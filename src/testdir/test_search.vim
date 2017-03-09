@@ -6,7 +6,7 @@ func Test_search_cmdline()
   endif
   " need to disable char_avail,
   " so that expansion of commandline works
-  call test_disable_char_avail(1)
+  call test_override("char_avail", 1)
   new
   call setline(1, ['  1', '  2 these', '  3 the', '  4 their', '  5 there', '  6 their', '  7 the', '  8 them', '  9 these', ' 10 foobar'])
   " Test 1
@@ -193,7 +193,7 @@ func Test_search_cmdline()
   call assert_equal('  3 the', getline('.'))
 
   " clean up
-  call test_disable_char_avail(0)
+  call test_override("char_avail", 0)
   bw!
 endfunc
 
@@ -203,7 +203,7 @@ func Test_search_cmdline2()
   endif
   " need to disable char_avail,
   " so that expansion of commandline works
-  call test_disable_char_avail(1)
+  call test_override("char_avail", 1)
   new
   call setline(1, ['  1', '  2 these', '  3 the theother'])
   " Test 1
@@ -265,7 +265,7 @@ func Test_search_cmdline2()
 
   " clean up
   set noincsearch
-  call test_disable_char_avail(0)
+  call test_override("char_avail", 0)
   bw!
 endfunc
 

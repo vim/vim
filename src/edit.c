@@ -2262,7 +2262,7 @@ has_compl_option(int dict_opt)
 	    vim_beep(BO_COMPL);
 	    setcursor();
 	    out_flush();
-	    if (run_in_term())
+	    if (!get_vim_var_nr(VV_TESTING))
 		ui_delay(2000L, FALSE);
 	}
 	return FALSE;

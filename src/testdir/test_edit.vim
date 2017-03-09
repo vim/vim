@@ -578,23 +578,23 @@ func! Test_edit_CTRL_K()
   call setline(1, 'A')
   call cursor(1, 1)
   set belloff=all
+  let v:testing = 1
   try
     call feedkeys("A\<c-x>\<c-k>\<esc>", 'tnix')
   catch
-    " error sleeps 2 seconds...
+    " error sleeps 2 seconds, when v:testing is not set
+    let v:testing = 0
   endtry
   set belloff=
   call delete('Xdictionary.txt')
 
   if has("multi_byte")
-    call test_disable("redraw", 1)
-    call test_disable("char_avail", 1)
+    call test_override("char_avail", 1)
     set showcmd
     %d
     call feedkeys("A\<c-k>a:\<esc>", 'tnix')
     call assert_equal(['ä'], getline(1, '$'))
-    call test_disable("redraw", 0)
-    call test_disable("char_avail", 0)
+    call test_override("char_avail", 0)
     set noshowcmd
   endif
   bw!
@@ -630,7 +630,7 @@ func! Test_edit_CTRL_L()
   %d
   if has("conceal") && has("syntax")
     call setline(1, ['foo', 'bar', 'foobar'])
-    call test_disable_char_avail(1)
+    call test_override("char_avail", 1)
     set conceallevel=2 concealcursor=n
     syn on
     syn match ErrorMsg "^bar"
@@ -646,7 +646,7 @@ func! Test_edit_CTRL_L()
     call assert_equal(['foo', 'bar ', 'foobar'], getline(1, '$'))
     call assert_equal(1, g:change)
 
-    call test_disable_char_avail(0)
+    call test_override("char_avail", 0)
     call clearmatches()
     syn off
     au! TextChangedI
@@ -705,16 +705,14 @@ endfunc
 func! Test_edit_CTRL_R()
   " Insert Register
   new
-  call test_disable("redraw", 1)
-  call test_disable("char_avail", 1)
+  call test_override("ALL", 1)
   set showcmd
   call feedkeys("AFOOBAR eins zwei\<esc>", 'tnix')
   call feedkeys("O\<c-r>.", 'tnix')
   call feedkeys("O\<c-r>=10*500\<cr>\<esc>", 'tnix')
   call feedkeys("O\<c-r>=getreg('=', 1)\<cr>\<esc>", 'tnix')
   call assert_equal(["getreg('=', 1)", '5000', "FOOBAR eins zwei", "FOOBAR eins zwei"], getline(1, '$'))
-  call test_disable("redraw", 0)
-  call test_disable("char_avail", 0)
+  call test_override("ALL", 0)
   set noshowcmd
   bw!
 endfunc
@@ -829,10 +827,12 @@ func! Test_edit_CTRL_T()
   call setline(1, 'mad')
   call cursor(1, 1)
   set belloff=all
+  let v:testing = 1
   try
     call feedkeys("A\<c-x>\<c-t>\<esc>", 'tnix')
   catch
-    " error sleeps 2 seconds...
+    " error sleeps 2 seconds, when v:testing is not set
+    let v:testing = 0
   endtry
   set belloff=
   call assert_equal(['mad'], getline(1, '$'))
@@ -934,9 +934,8 @@ func! Test_edit_CTRL_V()
   call cursor(2, 1)
   " force some redraws
   set showmode showcmd
-  "call test_disable_char_avail(1)
-  call test_disable('redraw', 1)
-  call test_disable('char', 1)
+  "call test_override_char_avail(1)
+  call test_override('ALL', 1)
   call feedkeys("A\<c-v>\<c-n>\<c-v>\<c-l>\<c-v>\<c-b>\<esc>", 'tnix')
   call assert_equal(["abc\x0e\x0c\x02"], getline(1, '$'))
 
@@ -949,9 +948,7 @@ func! Test_edit_CTRL_V()
     set norl
   endif
 
-  "call test_disable_char_avail(0)
-  call test_disable('redraw', 0)
-  call test_disable('char', 0)
+  call test_override('ALL', 0)
   set noshowmode showcmd
   bw!
 endfunc
