@@ -4129,7 +4129,6 @@ set_init_3(void)
 	    options[idx3].def_val[VI_DEFAULT] = p_shcf;
 	}
 
-# ifdef WIN3264
 	/* Somehow Win32 requires the quotes around the redirection too */
 	idx3 = findoption((char_u *)"sxq");
 	if (idx3 >= 0 && !(options[idx3].flags & P_WAS_SET))
@@ -4137,14 +4136,6 @@ set_init_3(void)
 	    p_sxq = (char_u *)"\"";
 	    options[idx3].def_val[VI_DEFAULT] = p_sxq;
 	}
-# else
-	idx3 = findoption((char_u *)"shq");
-	if (idx3 >= 0 && !(options[idx3].flags & P_WAS_SET))
-	{
-	    p_shq = (char_u *)"\"";
-	    options[idx3].def_val[VI_DEFAULT] = p_shq;
-	}
-# endif
     }
     else if (strstr((char *)gettail(p_sh), "cmd.exe") != NULL)
     {
