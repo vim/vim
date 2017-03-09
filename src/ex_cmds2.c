@@ -2832,8 +2832,15 @@ ex_argdelete(exarg_T *eap)
 	if (eap->line2 > ARGCOUNT)
 	    eap->line2 = ARGCOUNT;
 	n = eap->line2 - eap->line1 + 1;
-	if (*eap->arg != NUL || n <= 0)
+	if (*eap->arg != NUL)
+	    /* Can't have both a range and an argument. */
 	    EMSG(_(e_invarg));
+	else if (n <= 0)
+	{
+	    /* Don't give an error for ":%argdel" if the list is empty. */
+	    if (eap->line1 != 1 || eap->line2 != 0)
+		EMSG(_(e_invrange));
+	}
 	else
 	{
 	    for (i = eap->line1; i <= eap->line2; ++i)

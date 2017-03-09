@@ -6,6 +6,10 @@ func Test_argidx()
   call assert_equal(2, argidx())
   %argdelete
   call assert_equal(0, argidx())
+  " doing it again doesn't result in an error
+  %argdelete
+  call assert_equal(0, argidx())
+  call assert_fails('2argdelete', 'E16:')
 
   args a b c
   call assert_equal(0, argidx())
