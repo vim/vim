@@ -2360,7 +2360,6 @@ tempname()			String	name for a temporary file
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
-test_disable_char_avail({expr}) none	test without typeahead
 test_garbagecollect_now()	none	free memory right now for testing
 test_ignore_error({expr})	none	ignore a specific error
 test_null_channel()		Channel	null value for testing
@@ -2369,6 +2368,7 @@ test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
+test_override({expr}, {val})    none	test with Vim internal overrides
 test_settime({expr})		none	set current time for testing
 timer_info([{id}])		List	information about timers
 timer_pause({id}, {pause})	none	pause or unpause a timer

@@ -2111,6 +2111,7 @@ test_arglist \
 	test_digraph \
 	test_functions \
 	test_display \
+	test_edit \
 	test_ex_undo \
 	test_execute_func \
 	test_expand \
