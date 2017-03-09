@@ -44,9 +44,9 @@ func Test_curswant_with_autocommand()
   new
   call setline(1, ['func()', '{', '}', '----'])
   autocmd! CursorMovedI * call s:Highlight_Matching_Pair()
-  call test_disable_char_avail(1)
+  call test_override("char_avail", 1)
   exe "normal! 3Ga\<Down>X\<Esc>"
-  call test_disable_char_avail(0)
+  call test_override("char_avail", 0)
   call assert_equal('-X---', getline(4))
   autocmd! CursorMovedI *
   quit!
