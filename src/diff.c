@@ -977,7 +977,12 @@ ex_diffpatch(exarg_T *eap)
     {
 	/* Build the patch command and execute it.  Ignore errors.  Switch to
 	 * cooked mode to allow the user to respond to prompts. */
-	vim_snprintf((char *)buf, buflen, "patch -o %s %s < \"%s\"",
+	vim_snprintf((char *)buf, buflen,
+#ifdef UNIX
+		"patch -o %s %s < '%s'",
+#else
+		"patch -o %s %s < \"%s\"",
+#endif
 		tmp_new, tmp_orig,
 # ifdef UNIX
 		fullname != NULL ? fullname :
