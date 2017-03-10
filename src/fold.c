@@ -1760,7 +1760,7 @@ foldAddMarker(linenr_T lnum, char_u *marker, int markerlen)
     int		line_len;
     char_u	*newline;
     char_u	*p = (char_u *)strstr((char *)curbuf->b_p_cms, "%s");
-    int		line_is_comment;
+    int		line_is_comment = FALSE;
 
     /* Allocate a new line: old-line + 'cms'-start + marker + 'cms'-end */
     line = ml_get(lnum);
@@ -1768,9 +1768,10 @@ foldAddMarker(linenr_T lnum, char_u *marker, int markerlen)
 
     if (u_save(lnum - 1, lnum + 1) == OK)
     {
+#if defined(FEAT_COMMENTS)
 	/* Check if the line ends with an unclosed comment */
 	(void)skip_comment(line, FALSE, FALSE, &line_is_comment);
-
+#endif
 	newline = alloc((unsigned)(line_len + markerlen + STRLEN(cms) + 1));
 	if (newline == NULL)
 	    return;
