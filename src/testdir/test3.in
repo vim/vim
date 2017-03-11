@@ -970,7 +970,8 @@ break;
 /* end of AUTO */
 
 STARTTEST
-:set tw=0 wm=60 columns=80 noai fo=croq
+:set tw=0 noai fo=croq
+:let &wm = &columns - 20
 /serious/e
 a about life, the universe, and the rest
 ENDTEST
