@@ -906,6 +906,7 @@ ex_diffpatch(exarg_T *eap)
     int		browse_flag = cmdmod.browse;
 #endif
     stat_T	st;
+    char_u	*esc_name = NULL;
 
 #ifdef FEAT_BROWSE
     if (cmdmod.browse)
@@ -935,11 +936,14 @@ ex_diffpatch(exarg_T *eap)
     /* Get the absolute path of the patchfile, changing directory below. */
     fullname = FullName_save(eap->arg, FALSE);
 #endif
-    buflen = STRLEN(tmp_orig) + (
+    esc_name = vim_strsave_shellescape(
 # ifdef UNIX
-		    fullname != NULL ? STRLEN(fullname) :
+		    fullname != NULL ? fullname :
 # endif
-		    STRLEN(eap->arg)) + STRLEN(tmp_new) + 16;
+		    eap->arg, TRUE, TRUE);
+    if (esc_name == NULL)
+	goto theend;
+    buflen = STRLEN(tmp_orig) + STRLEN(esc_name) + STRLEN(tmp_new) + 16;
     buf = alloc((unsigned)buflen);
     if (buf == NULL)
 	goto theend;
@@ -977,17 +981,8 @@ ex_diffpatch(exarg_T *eap)
     {
 	/* Build the patch command and execute it.  Ignore errors.  Switch to
 	 * cooked mode to allow the user to respond to prompts. */
-	vim_snprintf((char *)buf, buflen,
-#ifdef UNIX
-		"patch -o %s %s < '%s'",
-#else
-		"patch -o %s %s < \"%s\"",
-#endif
-		tmp_new, tmp_orig,
-# ifdef UNIX
-		fullname != NULL ? fullname :
-# endif
-		eap->arg);
+	vim_snprintf((char *)buf, buflen, "patch -o %s %s < %s",
+						  tmp_new, tmp_orig, esc_name);
 #ifdef FEAT_AUTOCMD
 	block_autocmds();	/* Avoid ShellCmdPost stuff */
 #endif
@@ -1078,6 +1073,7 @@ theend:
 #ifdef UNIX
     vim_free(fullname);
 #endif
+    vim_free(esc_name);
 #ifdef FEAT_BROWSE
     vim_free(browseFile);
     cmdmod.browse = browse_flag;
