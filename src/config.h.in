@@ -446,6 +446,9 @@
 /* Define if fcntl()'s F_SETFD command knows about FD_CLOEXEC */
 #undef HAVE_FD_CLOEXEC
 
+/* Define if /proc/self/exe can be read */
+#undef HAVE_PROC_SELF_EXE
+
 /* Define if you want Cygwin to use the WIN32 clipboard, not compatible with X11*/
 #undef FEAT_CYGWIN_WIN32_CLIPBOARD
 
