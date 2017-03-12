@@ -408,7 +408,7 @@ edit(
 	 * the "A" command, thus set State to avoid that. Also check that the
 	 * line number is still valid (lines may have been deleted).
 	 * Do not restore if v:char was set to a non-empty string. */
-	if (!equalpos(curwin->w_cursor, save_cursor)
+	if (!EQUAL_POS(curwin->w_cursor, save_cursor)
 # ifdef FEAT_EVAL
 		&& *get_vim_var_str(VV_CHAR) == NUL
 # endif
@@ -1631,7 +1631,7 @@ ins_redraw(
 # endif
 		)
 # ifdef FEAT_AUTOCMD
-	&& !equalpos(last_cursormoved, curwin->w_cursor)
+	&& !EQUAL_POS(last_cursormoved, curwin->w_cursor)
 # endif
 # ifdef FEAT_INS_EXPAND
 	&& !pum_visible()
@@ -4130,7 +4130,7 @@ expand_by_function(
     }
     curwin->w_cursor = pos;	/* restore the cursor position */
     validate_cursor();
-    if (!equalpos(curwin->w_cursor, pos))
+    if (!EQUAL_POS(curwin->w_cursor, pos))
     {
 	EMSG(_(e_compldel));
 	goto theend;
@@ -5408,7 +5408,7 @@ ins_complete(int c, int enable_pum)
 	    }
 	    curwin->w_cursor = pos;	/* restore the cursor position */
 	    validate_cursor();
-	    if (!equalpos(curwin->w_cursor, pos))
+	    if (!EQUAL_POS(curwin->w_cursor, pos))
 	    {
 		EMSG(_(e_compldel));
 		return FAIL;
@@ -8947,7 +8947,7 @@ ins_bs(
      * can't backup past starting point unless 'backspace' > 1
      * can backup to a previous line if 'backspace' == 0
      */
-    if (       bufempty()
+    if (       BUFEMPTY()
 	    || (
 #ifdef FEAT_RIGHTLEFT
 		!revins_on &&
@@ -9462,7 +9462,7 @@ ins_mousescroll(int dir)
     }
 # endif
 
-    if (!equalpos(curwin->w_cursor, tpos))
+    if (!EQUAL_POS(curwin->w_cursor, tpos))
     {
 	start_arrow(&tpos);
 # ifdef FEAT_CINDENT

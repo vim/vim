@@ -206,7 +206,7 @@ setpcmark(void)
 checkpcmark(void)
 {
     if (curwin->w_prev_pcmark.lnum != 0
-	    && (equalpos(curwin->w_pcmark, curwin->w_cursor)
+	    && (EQUAL_POS(curwin->w_pcmark, curwin->w_cursor)
 		|| curwin->w_pcmark.lnum == 0))
     {
 	curwin->w_pcmark = curwin->w_prev_pcmark;
@@ -401,7 +401,7 @@ getmark_buf_fnum(
     {
 	startp = &buf->b_visual.vi_start;
 	endp = &buf->b_visual.vi_end;
-	if (((c == '<') == lt(*startp, *endp) || endp->lnum == 0)
+	if (((c == '<') == LT_POS(*startp, *endp) || endp->lnum == 0)
 							  && startp->lnum != 0)
 	    posp = startp;
 	else
@@ -497,14 +497,14 @@ getnextmark(
 	{
 	    if (dir == FORWARD)
 	    {
-		if ((result == NULL || lt(curbuf->b_namedm[i], *result))
-			&& lt(pos, curbuf->b_namedm[i]))
+		if ((result == NULL || LT_POS(curbuf->b_namedm[i], *result))
+			&& LT_POS(pos, curbuf->b_namedm[i]))
 		    result = &curbuf->b_namedm[i];
 	    }
 	    else
 	    {
-		if ((result == NULL || lt(*result, curbuf->b_namedm[i]))
-			&& lt(curbuf->b_namedm[i], pos))
+		if ((result == NULL || LT_POS(*result, curbuf->b_namedm[i]))
+			&& LT_POS(curbuf->b_namedm[i], pos))
 		    result = &curbuf->b_namedm[i];
 	    }
 	}
@@ -1063,7 +1063,7 @@ mark_adjust(
 	one_adjust(&(curbuf->b_last_change.lnum));
 
 	/* last cursor position, if it was set */
-	if (!equalpos(curbuf->b_last_cursor, initpos))
+	if (!EQUAL_POS(curbuf->b_last_cursor, initpos))
 	    one_adjust(&(curbuf->b_last_cursor.lnum));
 
 
@@ -1838,7 +1838,8 @@ write_buffer_marks(buf_T *buf, FILE *fp_out)
     for (i = 0; i < buf->b_changelistlen; ++i)
     {
 	/* skip duplicates */
-	if (i == 0 || !equalpos(buf->b_changelist[i - 1], buf->b_changelist[i]))
+	if (i == 0 || !EQUAL_POS(buf->b_changelist[i - 1],
+							 buf->b_changelist[i]))
 	    write_one_mark(fp_out, '+', &buf->b_changelist[i]);
     }
 #endif

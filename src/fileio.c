@@ -7118,7 +7118,7 @@ buf_reload(buf_T *buf, int orig_mode)
 	 * the old contents.  Can't use memory only, the file might be
 	 * too big.  Use a hidden buffer to move the buffer contents to.
 	 */
-	if (bufempty() || saved == FAIL)
+	if (BUFEMPTY() || saved == FAIL)
 	    savebuf = NULL;
 	else
 	{
@@ -7161,7 +7161,7 @@ buf_reload(buf_T *buf, int orig_mode)
 		{
 		    /* Put the text back from the save buffer.  First
 		     * delete any lines that readfile() added. */
-		    while (!bufempty())
+		    while (!BUFEMPTY())
 			if (ml_delete(buf->b_ml.ml_line_count, FALSE) == FAIL)
 			    break;
 		    (void)move_lines(savebuf, buf);

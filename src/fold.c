@@ -1039,7 +1039,7 @@ foldAdjustVisual(void)
     if (!VIsual_active || !hasAnyFolding(curwin))
 	return;
 
-    if (ltoreq(VIsual, curwin->w_cursor))
+    if (LTOREQ_POS(VIsual, curwin->w_cursor))
     {
 	start = &VIsual;
 	end = &curwin->w_cursor;

@@ -1540,7 +1540,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    if (VIsual_select && VIsual_mode == 'V'
 					    && cap->oap->op_type != OP_DELETE)
 	    {
-		if (lt(VIsual, curwin->w_cursor))
+		if (LT_POS(VIsual, curwin->w_cursor))
 		{
 		    VIsual.col = 0;
 		    curwin->w_cursor.col =
@@ -1572,7 +1572,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	 * Set oap->start to the first position of the operated text, oap->end
 	 * to the end of the operated text.  w_cursor is equal to oap->start.
 	 */
-	if (lt(oap->start, curwin->w_cursor))
+	if (LT_POS(oap->start, curwin->w_cursor))
 	{
 #ifdef FEAT_FOLDING
 	    /* Include folded lines completely. */
@@ -1776,7 +1776,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    && (!oap->inclusive
 			|| (oap->op_type == OP_YANK
 			    && gchar_pos(&oap->end) == NUL))
-		    && equalpos(oap->start, oap->end)
+		    && EQUAL_POS(oap->start, oap->end)
 #ifdef FEAT_VIRTUALEDIT
 		    && !(virtual_op && oap->start.coladd != oap->end.coladd)
 #endif
@@ -2683,12 +2683,12 @@ do_mouse(
 			    jump_flags = MOUSE_MAY_STOP_VIS;
 			else
 			{
-			    if ((lt(curwin->w_cursor, VIsual)
-					&& (lt(m_pos, curwin->w_cursor)
-					    || lt(VIsual, m_pos)))
-				    || (lt(VIsual, curwin->w_cursor)
-					&& (lt(m_pos, VIsual)
-					    || lt(curwin->w_cursor, m_pos))))
+			    if ((LT_POS(curwin->w_cursor, VIsual)
+					&& (LT_POS(m_pos, curwin->w_cursor)
+					    || LT_POS(VIsual, m_pos)))
+				    || (LT_POS(VIsual, curwin->w_cursor)
+					&& (LT_POS(m_pos, VIsual)
+					  || LT_POS(curwin->w_cursor, m_pos))))
 			    {
 				jump_flags = MOUSE_MAY_STOP_VIS;
 			    }
@@ -2754,7 +2754,7 @@ do_mouse(
 		 * Remember the start and end of visual before moving the
 		 * cursor.
 		 */
-		if (lt(curwin->w_cursor, VIsual))
+		if (LT_POS(curwin->w_cursor, VIsual))
 		{
 		    start_visual = curwin->w_cursor;
 		    end_visual = VIsual;
@@ -2891,9 +2891,9 @@ do_mouse(
 	     * If the click is after the end of visual, change the end.  If
 	     * the click is inside the visual, change the closest side.
 	     */
-	    if (lt(curwin->w_cursor, start_visual))
+	    if (LT_POS(curwin->w_cursor, start_visual))
 		VIsual = end_visual;
-	    else if (lt(end_visual, curwin->w_cursor))
+	    else if (LT_POS(end_visual, curwin->w_cursor))
 		VIsual = start_visual;
 	    else
 	    {
@@ -3097,7 +3097,7 @@ do_mouse(
 		if (oap != NULL
 			&& VIsual_mode == 'v'
 			&& !vim_iswordc(gchar_pos(&end_visual))
-			&& equalpos(curwin->w_cursor, VIsual)
+			&& EQUAL_POS(curwin->w_cursor, VIsual)
 			&& (pos = findmatch(oap, NUL)) != NULL)
 		{
 		    curwin->w_cursor = *pos;
@@ -3105,7 +3105,7 @@ do_mouse(
 			VIsual_mode = 'V';
 		    else if (*p_sel == 'e')
 		    {
-			if (lt(curwin->w_cursor, VIsual))
+			if (LT_POS(curwin->w_cursor, VIsual))
 			    ++VIsual.col;
 			else
 			    ++curwin->w_cursor.col;
@@ -3117,7 +3117,7 @@ do_mouse(
 	    {
 		/* When not found a match or when dragging: extend to include
 		 * a word. */
-		if (lt(curwin->w_cursor, orig_cursor))
+		if (LT_POS(curwin->w_cursor, orig_cursor))
 		{
 		    find_start_of_word(&curwin->w_cursor);
 		    find_end_of_word(&VIsual);
@@ -3745,7 +3745,7 @@ clear_showcmd(void)
 
     if (VIsual_active && !char_avail())
     {
-	int		cursor_bot = lt(VIsual, curwin->w_cursor);
+	int		cursor_bot = LT_POS(VIsual, curwin->w_cursor);
 	long		lines;
 	colnr_T		leftcol, rightcol;
 	linenr_T	top, bot;
@@ -4353,7 +4353,7 @@ find_decl(
     curwin->w_cursor.col = 0;
 
     /* Search forward for the identifier, ignore comment lines. */
-    clearpos(&found_pos);
+    CLEAR_POS(&found_pos);
     for (;;)
     {
 	valid = FALSE;
@@ -4419,13 +4419,10 @@ find_decl(
 	 * declarations this skips the function header without types. */
 	if (!valid)
 	{
-	    /* Braces needed due to macro expansion of clearpos. */
-	    clearpos(&found_pos);
+	    CLEAR_POS(&found_pos);
 	}
 	else
-	{
 	    found_pos = curwin->w_cursor;
-	}
 	/* Remove SEARCH_START from flags to avoid getting stuck at one
 	 * position. */
 	searchflags &= ~SEARCH_START;
@@ -5834,7 +5831,7 @@ get_visual_text(
     }
     else
     {
-	if (lt(curwin->w_cursor, VIsual))
+	if (LT_POS(curwin->w_cursor, VIsual))
 	{
 	    *pp = ml_get_pos(&curwin->w_cursor);
 	    *lenp = VIsual.col - curwin->w_cursor.col + 1;
@@ -6020,7 +6017,7 @@ nv_right(cmdarg_T *cap)
 		 * included, move to next line after that */
 		if (	   cap->oap->op_type != OP_NOP
 			&& !cap->oap->inclusive
-			&& !lineempty(curwin->w_cursor.lnum))
+			&& !LINEEMPTY(curwin->w_cursor.lnum))
 		    cap->oap->inclusive = TRUE;
 		else
 		{
@@ -6042,7 +6039,7 @@ nv_right(cmdarg_T *cap)
 	    }
 	    else
 	    {
-		if (!lineempty(curwin->w_cursor.lnum))
+		if (!LINEEMPTY(curwin->w_cursor.lnum))
 		    cap->oap->inclusive = TRUE;
 	    }
 	    break;
@@ -6121,7 +6118,7 @@ nv_left(cmdarg_T *cap)
 		 * Don't adjust op_end now, otherwise it won't work. */
 		if (	   (cap->oap->op_type == OP_DELETE
 			    || cap->oap->op_type == OP_CHANGE)
-			&& !lineempty(curwin->w_cursor.lnum))
+			&& !LINEEMPTY(curwin->w_cursor.lnum))
 		{
 		    char_u *cp = ml_get_cursor();
 
@@ -6333,7 +6330,7 @@ nv_search(cmdarg_T *cap)
     }
 
     (void)normal_search(cap, cap->cmdchar, cap->searchbuf,
-			(cap->arg || !equalpos(save_cursor, curwin->w_cursor))
+			(cap->arg || !EQUAL_POS(save_cursor, curwin->w_cursor))
 							   ? 0 : SEARCH_MARK);
 }
 
@@ -6347,7 +6344,7 @@ nv_next(cmdarg_T *cap)
     pos_T old = curwin->w_cursor;
     int   i = normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg);
 
-    if (i == 1 && equalpos(old, curwin->w_cursor))
+    if (i == 1 && EQUAL_POS(old, curwin->w_cursor))
     {
 	/* Avoid getting stuck on the current cursor position, which can
 	 * happen when an offset is given and the cursor is on the last char
@@ -6689,9 +6686,9 @@ nv_brackets(cmdarg_T *cap)
 
 	    if (VIsual_active)
 	    {
-		start = ltoreq(VIsual, curwin->w_cursor)
+		start = LTOREQ_POS(VIsual, curwin->w_cursor)
 						  ? VIsual : curwin->w_cursor;
-		end =  equalpos(start,VIsual) ? curwin->w_cursor : VIsual;
+		end =  EQUAL_POS(start,VIsual) ? curwin->w_cursor : VIsual;
 		curwin->w_cursor = (dir == BACKWARD ? start : end);
 	    }
 # ifdef FEAT_CLIPBOARD
@@ -7315,7 +7312,7 @@ n_swapchar(cmdarg_T *cap)
     if (checkclearopq(cap->oap))
 	return;
 
-    if (lineempty(curwin->w_cursor.lnum) && vim_strchr(p_ww, '~') == NULL)
+    if (LINEEMPTY(curwin->w_cursor.lnum) && vim_strchr(p_ww, '~') == NULL)
     {
 	clearopbeep(cap->oap);
 	return;
@@ -7559,7 +7556,7 @@ nv_gomark(cmdarg_T *cap)
 #ifdef FEAT_FOLDING
     if (cap->oap->op_type == OP_NOP
 	    && pos != NULL
-	    && (pos == (pos_T *)-1 || !equalpos(old_cursor, *pos))
+	    && (pos == (pos_T *)-1 || !EQUAL_POS(old_cursor, *pos))
 	    && (fdo_flags & FDO_MARK)
 	    && old_KeyTyped)
 	foldOpenCursor();
@@ -8763,7 +8760,7 @@ nv_wordcmd(cmdarg_T *cap)
 
     /* Don't leave the cursor on the NUL past the end of line. Unless we
      * didn't move it forward. */
-    if (lt(startpos, curwin->w_cursor))
+    if (LT_POS(startpos, curwin->w_cursor))
 	adjust_cursor(cap->oap);
 
     if (n == FAIL && cap->oap->op_type == OP_NOP)
@@ -8833,7 +8830,7 @@ nv_beginline(cmdarg_T *cap)
 adjust_for_sel(cmdarg_T *cap)
 {
     if (VIsual_active && cap->oap->inclusive && *p_sel == 'e'
-	    && gchar_cursor() != NUL && lt(VIsual, curwin->w_cursor))
+	    && gchar_cursor() != NUL && LT_POS(VIsual, curwin->w_cursor))
     {
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
@@ -8855,9 +8852,9 @@ unadjust_for_sel(void)
 {
     pos_T	*pp;
 
-    if (*p_sel == 'e' && !equalpos(VIsual, curwin->w_cursor))
+    if (*p_sel == 'e' && !EQUAL_POS(VIsual, curwin->w_cursor))
     {
-	if (lt(VIsual, curwin->w_cursor))
+	if (LT_POS(VIsual, curwin->w_cursor))
 	    pp = &curwin->w_cursor;
 	else
 	    pp = &VIsual;
@@ -9071,8 +9068,8 @@ nv_edit(cmdarg_T *cap)
 
 	/* When the last char in the line was deleted then append. Detect this
 	 * by checking if the cursor moved to before the Visual area. */
-	if (*ml_get_cursor() != NUL && lt(curwin->w_cursor, old_pos)
-					   && lt(curwin->w_cursor, old_visual))
+	if (*ml_get_cursor() != NUL && LT_POS(curwin->w_cursor, old_pos)
+				       && LT_POS(curwin->w_cursor, old_visual))
 	    inc_cursor();
 
 	/* Insert to replace the deleted text with the pasted text. */

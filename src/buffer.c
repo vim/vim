@@ -111,7 +111,7 @@ read_buffer(
     {
 	/* Set or reset 'modified' before executing autocommands, so that
 	 * it can be changed there. */
-	if (!readonlymode && !bufempty())
+	if (!readonlymode && !BUFEMPTY())
 	    changed();
 	else if (retval == OK)
 	    unchanged(curbuf, FALSE);
@@ -1959,7 +1959,7 @@ buflist_new(
 	    && curbuf != NULL
 	    && curbuf->b_ffname == NULL
 	    && curbuf->b_nwindows <= 1
-	    && (curbuf->b_ml.ml_mfp == NULL || bufempty()))
+	    && (curbuf->b_ml.ml_mfp == NULL || BUFEMPTY()))
     {
 	buf = curbuf;
 #ifdef FEAT_AUTOCMD
@@ -2334,7 +2334,7 @@ buflist_getfile(
 	/* If 'switchbuf' contains "split", "vsplit" or "newtab" and the
 	 * current buffer isn't empty: open new tab or window */
 	if (wp == NULL && (swb_flags & (SWB_VSPLIT | SWB_SPLIT | SWB_NEWTAB))
-							       && !bufempty())
+							       && !BUFEMPTY())
 	{
 	    if (swb_flags & SWB_NEWTAB)
 		tabpage_new();
@@ -5017,7 +5017,7 @@ do_arg_all(
 #ifdef FEAT_WINDOWS
     /* ":drop all" should re-use an empty window to avoid "--remote-tab"
      * leaving an empty tab page when executed locally. */
-    if (keep_tabs && bufempty() && curbuf->b_nwindows == 1
+    if (keep_tabs && BUFEMPTY() && curbuf->b_nwindows == 1
 			    && curbuf->b_ffname == NULL && !curbuf->b_changed)
 	use_firstwin = TRUE;
 #endif

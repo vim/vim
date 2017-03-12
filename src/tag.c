@@ -178,7 +178,7 @@ do_tag(
     free_string_option(nofile_fname);
     nofile_fname = NULL;
 
-    clearpos(&saved_fmark.mark);	/* shutup gcc 4.0 */
+    CLEAR_POS(&saved_fmark.mark);	/* shutup gcc 4.0 */
     saved_fmark.fnum = 0;
 
     /*

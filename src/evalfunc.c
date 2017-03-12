@@ -9552,20 +9552,20 @@ do_searchpair(
 
     save_cursor = curwin->w_cursor;
     pos = curwin->w_cursor;
-    clearpos(&firstpos);
-    clearpos(&foundpos);
+    CLEAR_POS(&firstpos);
+    CLEAR_POS(&foundpos);
     pat = pat3;
     for (;;)
     {
 	n = searchit(curwin, curbuf, &pos, dir, pat, 1L,
 					   options, RE_SEARCH, lnum_stop, &tm);
-	if (n == FAIL || (firstpos.lnum != 0 && equalpos(pos, firstpos)))
+	if (n == FAIL || (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos)))
 	    /* didn't find it or found the first match again: FAIL */
 	    break;
 
 	if (firstpos.lnum == 0)
 	    firstpos = pos;
-	if (equalpos(pos, foundpos))
+	if (EQUAL_POS(pos, foundpos))
 	{
 	    /* Found the same position again.  Can happen with a pattern that
 	     * has "\zs" at the end and searching backwards.  Advance one

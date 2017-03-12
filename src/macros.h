@@ -11,46 +11,46 @@
  */
 
 /*
- * pchar(lp, c) - put character 'c' at position 'lp'
+ * PCHAR(lp, c) - put character 'c' at position 'lp'
  */
-#define pchar(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
+#define PCHAR(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
 
 /*
  * Position comparisons
  */
 #ifdef FEAT_VIRTUALEDIT
-# define lt(a, b) (((a).lnum != (b).lnum) \
+# define LT_POS(a, b) (((a).lnum != (b).lnum) \
 		   ? (a).lnum < (b).lnum \
 		   : (a).col != (b).col \
 		       ? (a).col < (b).col \
 		       : (a).coladd < (b).coladd)
-# define ltp(a, b) (((a)->lnum != (b)->lnum) \
+# define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
 		   ? (a)->lnum < (b)->lnum \
 		   : (a)->col != (b)->col \
 		       ? (a)->col < (b)->col \
 		       : (a)->coladd < (b)->coladd)
-# define equalpos(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
-# define clearpos(a) {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;}
+# define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
+# define CLEAR_POS(a) {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;}
 #else
-# define lt(a, b) (((a).lnum != (b).lnum) \
+# define LT_POS(a, b) (((a).lnum != (b).lnum) \
 		   ? ((a).lnum < (b).lnum) : ((a).col < (b).col))
-# define ltp(a, b) (((a)->lnum != (b)->lnum) \
+# define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
 		   ? ((a)->lnum < (b)->lnum) : ((a)->col < (b)->col))
-# define equalpos(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col))
-# define clearpos(a) {(a)->lnum = 0; (a)->col = 0;}
+# define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col))
+# define CLEAR_POS(a) {(a)->lnum = 0; (a)->col = 0;}
 #endif
 
-#define ltoreq(a, b) (lt(a, b) || equalpos(a, b))
+#define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 
 /*
- * lineempty() - return TRUE if the line is empty
+ * LINEEMPTY() - return TRUE if the line is empty
  */
-#define lineempty(p) (*ml_get(p) == NUL)
+#define LINEEMPTY(p) (*ml_get(p) == NUL)
 
 /*
- * bufempty() - return TRUE if the current buffer is empty
+ * BUFEMPTY() - return TRUE if the current buffer is empty
  */
-#define bufempty() (curbuf->b_ml.ml_line_count == 1 && *ml_get((linenr_T)1) == NUL)
+#define BUFEMPTY() (curbuf->b_ml.ml_line_count == 1 && *ml_get((linenr_T)1) == NUL)
 
 /*
  * toupper() and tolower() that use the current locale.

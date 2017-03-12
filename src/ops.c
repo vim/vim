@@ -2190,7 +2190,7 @@ op_replace(oparg_T *oap, int c)
 	else if (!oap->inclusive)
 	    dec(&(oap->end));
 
-	while (ltoreq(curwin->w_cursor, oap->end))
+	while (LTOREQ_POS(curwin->w_cursor, oap->end))
 	{
 	    n = gchar_cursor();
 	    if (n != NUL)
@@ -2229,7 +2229,7 @@ op_replace(oparg_T *oap, int c)
 			    getvpos(&oap->end, end_vcol);
 		    }
 #endif
-		    pchar(curwin->w_cursor, c);
+		    PCHAR(curwin->w_cursor, c);
 		}
 	    }
 #ifdef FEAT_VIRTUALEDIT
@@ -2248,7 +2248,7 @@ op_replace(oparg_T *oap, int c)
 		curwin->w_cursor.col -= (virtcols + 1);
 		for (; virtcols >= 0; virtcols--)
 		{
-		    pchar(curwin->w_cursor, c);
+		    PCHAR(curwin->w_cursor, c);
 		    if (inc(&curwin->w_cursor) == -1)
 			break;
 		}
@@ -2338,7 +2338,7 @@ op_tilde(oparg_T *oap)
 		did_change |= swapchars(oap->op_type, &pos,
 				pos.lnum == oap->end.lnum ? oap->end.col + 1:
 					   (int)STRLEN(ml_get_pos(&pos)));
-		if (ltoreq(oap->end, pos) || inc(&pos) == -1)
+		if (LTOREQ_POS(oap->end, pos) || inc(&pos) == -1)
 		    break;
 	    }
 	if (did_change)
@@ -2490,7 +2490,7 @@ swapchar(int op_type, pos_T *pos)
 	}
 	else
 #endif
-	    pchar(*pos, nc);
+	    PCHAR(*pos, nc);
 	return TRUE;
     }
     return FALSE;
@@ -2575,7 +2575,7 @@ op_insert(oparg_T *oap, long count1)
 	    check_cursor_col();
 
 	    /* Works just like an 'i'nsert on the next character. */
-	    if (!lineempty(curwin->w_cursor.lnum)
+	    if (!LINEEMPTY(curwin->w_cursor.lnum)
 		    && oap->start_vcol != oap->end_vcol)
 		inc_cursor();
 	}
@@ -2588,7 +2588,7 @@ op_insert(oparg_T *oap, long count1)
      * have been converted to a tab as well, the column of the cursor
      * might have actually been reduced, so need to adjust here. */
     if (t1.lnum == curbuf->b_op_start_orig.lnum
-	    && lt(curbuf->b_op_start_orig, t1))
+	    && LT_POS(curbuf->b_op_start_orig, t1))
 	oap->start = curbuf->b_op_start_orig;
 
     /* If user has moved off this line, we don't know what to do, so do
@@ -2735,7 +2735,7 @@ op_change(oparg_T *oap)
     else if (op_delete(oap) == FAIL)
 	return FALSE;
 
-    if ((l > curwin->w_cursor.col) && !lineempty(curwin->w_cursor.lnum)
+    if ((l > curwin->w_cursor.col) && !LINEEMPTY(curwin->w_cursor.lnum)
 							 && !virtual_op)
 	inc_cursor();
 
@@ -3519,7 +3519,7 @@ do_put(
 	    ++lnum;
 	/* In an empty buffer the empty line is going to be replaced, include
 	 * it in the saved lines. */
-	if ((bufempty() ? u_save(0, 2) : u_save(lnum - 1, lnum)) == FAIL)
+	if ((BUFEMPTY() ? u_save(0, 2) : u_save(lnum - 1, lnum)) == FAIL)
 	    goto end;
 #ifdef FEAT_FOLDING
 	if (dir == FORWARD)
@@ -4936,7 +4936,7 @@ format_lines(
 		    && prev_is_end_par
 		    && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	    {
-		if (do_second_indent && !lineempty(curwin->w_cursor.lnum + 1))
+		if (do_second_indent && !LINEEMPTY(curwin->w_cursor.lnum + 1))
 		{
 #ifdef FEAT_COMMENTS
 		    if (leader_len == 0 && next_leader_len == 0)
@@ -7237,7 +7237,7 @@ cursor_pos_info(dict_T *dict)
 
 	if (VIsual_active)
 	{
-	    if (lt(VIsual, curwin->w_cursor))
+	    if (LT_POS(VIsual, curwin->w_cursor))
 	    {
 		min_pos = VIsual;
 		max_pos = curwin->w_cursor;

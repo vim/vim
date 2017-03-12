@@ -5272,7 +5272,8 @@ ind_find_start_CORS(void)	    /* XXX */
 
     /* If comment_pos is before rs_pos the raw string is inside the comment.
      * If rs_pos is before comment_pos the comment is inside the raw string. */
-    if (comment_pos == NULL || (rs_pos != NULL && lt(*rs_pos, *comment_pos)))
+    if (comment_pos == NULL || (rs_pos != NULL
+					     && LT_POS(*rs_pos, *comment_pos)))
 	return rs_pos;
     return comment_pos;
 }
@@ -7217,7 +7218,8 @@ get_c_indent(void)
 	comment_pos = &tryposCopy;
     }
     trypos = find_start_rawstring(curbuf->b_ind_maxcomment);
-    if (trypos != NULL && (comment_pos == NULL || lt(*trypos, *comment_pos)))
+    if (trypos != NULL && (comment_pos == NULL
+					     || LT_POS(*trypos, *comment_pos)))
     {
 	amount = -1;
 	goto laterend;
@@ -9352,7 +9354,7 @@ get_lisp_indent(void)
     {
 	paren = *pos;
 	pos = findmatch(NULL, '[');
-	if (pos == NULL || ltp(pos, &paren))
+	if (pos == NULL || LT_POSP(pos, &paren))
 	    pos = &paren;
     }
     if (pos != NULL)

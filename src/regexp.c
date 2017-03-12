@@ -4150,7 +4150,7 @@ reg_match_visual(void)
 
     if (VIsual_active)
     {
-	if (lt(VIsual, wp->w_cursor))
+	if (LT_POS(VIsual, wp->w_cursor))
 	{
 	    top = VIsual;
 	    bot = wp->w_cursor;
@@ -4164,7 +4164,7 @@ reg_match_visual(void)
     }
     else
     {
-	if (lt(curbuf->b_visual.vi_start, curbuf->b_visual.vi_end))
+	if (LT_POS(curbuf->b_visual.vi_start, curbuf->b_visual.vi_end))
 	{
 	    top = curbuf->b_visual.vi_start;
 	    bot = curbuf->b_visual.vi_end;

@@ -210,7 +210,7 @@ update_topline(void)
     /*
      * If the buffer is empty, always set topline to 1.
      */
-    if (bufempty())		/* special case - file is empty */
+    if (BUFEMPTY())		/* special case - file is empty */
     {
 	if (curwin->w_topline != 1)
 	    redraw_later(NOT_VALID);

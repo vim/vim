@@ -1403,7 +1403,8 @@ getvcol(
 		&& (State & NORMAL)
 		&& !wp->w_p_list
 		&& !virtual_active()
-		&& !(VIsual_active && (*p_sel == 'e' || ltoreq(*pos, VIsual)))
+		&& !(VIsual_active
+				&& (*p_sel == 'e' || LTOREQ_POS(*pos, VIsual)))
 		)
 	    *cursor = vcol + incr - 1;	    /* cursor at end */
 	else
@@ -1496,7 +1497,7 @@ getvcols(
 {
     colnr_T	from1, from2, to1, to2;
 
-    if (ltp(pos1, pos2))
+    if (LT_POSP(pos1, pos2))
     {
 	getvvcol(wp, pos1, &from1, NULL, &to1);
 	getvvcol(wp, pos2, &from2, NULL, &to2);

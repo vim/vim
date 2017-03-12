@@ -1288,7 +1288,7 @@ ex_perldo(exarg_T *eap)
     linenr_T	i;
     buf_T	*was_curbuf = curbuf;
 
-    if (bufempty())
+    if (BUFEMPTY())
 	return;
 
     if (perl_interp == NULL)

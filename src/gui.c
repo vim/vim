@@ -4476,7 +4476,7 @@ gui_do_scroll(void)
 	pum_redraw();
 #endif
 
-    return (wp == curwin && !equalpos(curwin->w_cursor, old_cursor));
+    return (wp == curwin && !EQUAL_POS(curwin->w_cursor, old_cursor));
 }
 
 
@@ -5118,7 +5118,7 @@ gui_update_screen(void)
 		curwin->w_p_cole > 0
 # endif
 		)
-		     && !equalpos(last_cursormoved, curwin->w_cursor))
+		     && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
     {
 # ifdef FEAT_AUTOCMD
 	if (has_cursormoved())

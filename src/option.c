@@ -4170,7 +4170,7 @@ set_init_3(void)
     }
 #endif
 
-    if (bufempty())
+    if (BUFEMPTY())
     {
 	int idx_ffs = findoption((char_u *)"ffs");
 

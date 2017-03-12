@@ -1603,7 +1603,7 @@ spell_move_to(
      * though...
      */
     lnum = wp->w_cursor.lnum;
-    clearpos(&found_pos);
+    CLEAR_POS(&found_pos);
 
     while (!got_int)
     {
@@ -8545,7 +8545,7 @@ ex_spelldump(exarg_T *eap)
     set_option_value((char_u*)"spl",  dummy, spl, OPT_LOCAL);
     vim_free(spl);
 
-    if (!bufempty())
+    if (!BUFEMPTY())
 	return;
 
     spell_dump_compl(NULL, 0, NULL, eap->forceit ? DUMPFLAG_COUNT : 0);

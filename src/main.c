@@ -1144,7 +1144,7 @@ main_loop(
 # endif
 			)
 # ifdef FEAT_AUTOCMD
-		 && !equalpos(last_cursormoved, curwin->w_cursor)
+		 && !EQUAL_POS(last_cursormoved, curwin->w_cursor)
 # endif
 		 )
 	    {
@@ -3557,8 +3557,11 @@ set_progpath(char_u *argv0)
 			   && vim_FullName(argv0, buf, MAXPATHL, TRUE) != FAIL)
 	    val = buf;
     }
+#  endif
 # endif
+
     set_vim_var_string(VV_PROGPATH, val, -1);
+
 # ifdef WIN32
     vim_free(path);
 # endif

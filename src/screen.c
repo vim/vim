@@ -2714,7 +2714,7 @@ fold_line(
      */
     if (VIsual_active && wp->w_buffer == curwin->w_buffer)
     {
-	if (ltoreq(curwin->w_cursor, VIsual))
+	if (LTOREQ_POS(curwin->w_cursor, VIsual))
 	{
 	    /* Visual is after curwin->w_cursor */
 	    top = &curwin->w_cursor;
@@ -3170,7 +3170,7 @@ win_line(
     if (VIsual_active && wp->w_buffer == curwin->w_buffer)
     {
 					/* Visual is after curwin->w_cursor */
-	if (ltoreq(curwin->w_cursor, VIsual))
+	if (LTOREQ_POS(curwin->w_cursor, VIsual))
 	{
 	    top = &curwin->w_cursor;
 	    bot = &VIsual;
