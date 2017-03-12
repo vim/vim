@@ -152,7 +152,7 @@ ex_menu(
 	{
 	    if (*arg == '\\')
 		STRMOVE(arg, arg + 1);
-	    mb_ptr_adv(arg);
+	    MB_PTR_ADV(arg);
 	}
 	if (*arg != NUL)
 	{
@@ -661,7 +661,7 @@ add_menu_path(
 
 		    STRCPY(tearpath, menu_path);
 		    idx = (int)(next_name - path_name - 1);
-		    for (s = tearpath; *s && s < tearpath + idx; mb_ptr_adv(s))
+		    for (s = tearpath; *s && s < tearpath + idx; MB_PTR_ADV(s))
 		    {
 			if ((*s == '\\' || *s == Ctrl_V) && s[1])
 			{
@@ -1472,7 +1472,7 @@ menu_name_skip(char_u *name)
 {
     char_u  *p;
 
-    for (p = name; *p && *p != '.'; mb_ptr_adv(p))
+    for (p = name; *p && *p != '.'; MB_PTR_ADV(p))
     {
 	if (*p == '\\' || *p == Ctrl_V)
 	{
@@ -2485,7 +2485,7 @@ menu_unescape_name(char_u *name)
 {
     char_u  *p;
 
-    for (p = name; *p && *p != '.'; mb_ptr_adv(p))
+    for (p = name; *p && *p != '.'; MB_PTR_ADV(p))
 	if (*p == '\\')
 	    STRMOVE(p, p + 1);
 }

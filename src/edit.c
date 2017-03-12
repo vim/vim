@@ -857,7 +857,7 @@ edit(
 
 		    if (str != NULL)
 		    {
-			for (p = str; *p != NUL; mb_ptr_adv(p))
+			for (p = str; *p != NUL; MB_PTR_ADV(p))
 			    ins_compl_addleader(PTR2CHAR(p));
 			vim_free(str);
 		    }
@@ -1492,7 +1492,7 @@ normalchar:
 		    if (*str != NUL && stop_arrow() != FAIL)
 		    {
 			/* Insert the new value of v:char literally. */
-			for (p = str; *p != NUL; mb_ptr_adv(p))
+			for (p = str; *p != NUL; MB_PTR_ADV(p))
 			{
 			    c = PTR2CHAR(p);
 			    if (c == CAR || c == K_KENTER || c == NL)
@@ -2403,7 +2403,7 @@ ins_compl_add_infercase(
 	    actual_len = 0;
 	    while (*p != NUL)
 	    {
-		mb_ptr_adv(p);
+		MB_PTR_ADV(p);
 		++actual_len;
 	    }
 	}
@@ -2419,7 +2419,7 @@ ins_compl_add_infercase(
 	    actual_compl_length = 0;
 	    while (*p != NUL)
 	    {
-		mb_ptr_adv(p);
+		MB_PTR_ADV(p);
 		++actual_compl_length;
 	    }
 	}
@@ -2722,8 +2722,8 @@ ins_compl_longest_match(compl_T *match)
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		mb_ptr_adv(p);
-		mb_ptr_adv(s);
+		MB_PTR_ADV(p);
+		MB_PTR_ADV(s);
 	    }
 	    else
 #endif
@@ -3474,7 +3474,7 @@ ins_compl_bs(void)
 
     line = ml_get_curline();
     p = line + curwin->w_cursor.col;
-    mb_ptr_back(line, p);
+    MB_PTR_BACK(line, p);
 
     /* Stop completion when the whole word was deleted.  For Omni completion
      * allow the word to be deleted, we won't match everything.
@@ -4023,7 +4023,7 @@ ins_compl_fixRedoBufForLeader(char_u *ptr_arg)
 	if (len > 0)
 	    len -= (*mb_head_off)(p, p + len);
 #endif
-	for (p += len; *p != NUL; mb_ptr_adv(p))
+	for (p += len; *p != NUL; MB_PTR_ADV(p))
 	    AppendCharToRedobuff(K_BS);
     }
     else
@@ -5336,9 +5336,9 @@ ins_complete(int c, int enable_pum)
 	    {
 		char_u	*p = line + startcol;
 
-		mb_ptr_back(line, p);
+		MB_PTR_BACK(line, p);
 		while (p > line && vim_isfilec(PTR2CHAR(p)))
-		    mb_ptr_back(line, p);
+		    MB_PTR_BACK(line, p);
 		if (p == line && vim_isfilec(PTR2CHAR(p)))
 		    startcol = 0;
 		else

@@ -3397,7 +3397,7 @@ win_line(
 #ifdef FEAT_MBYTE
 	    prev_ptr = ptr;
 #endif
-	    mb_ptr_adv(ptr);
+	    MB_PTR_ADV(ptr);
 	}
 
 	/* When:
@@ -4554,7 +4554,7 @@ win_line(
 		 * Found last space before word: check for line break.
 		 */
 		if (wp->w_p_lbr && c0 == c
-				      && vim_isbreak(c) && !vim_isbreak(*ptr))
+				      && VIM_ISBREAK(c) && !VIM_ISBREAK(*ptr))
 		{
 # ifdef FEAT_MBYTE
 		    int mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1) : 0;
@@ -6408,7 +6408,7 @@ status_match_len(expand_T *xp, char_u *s)
     {
 	s += skip_status_match_char(xp, s);
 	len += ptr2cells(s);
-	mb_ptr_adv(s);
+	MB_PTR_ADV(s);
     }
 
     return len;
@@ -10469,7 +10469,7 @@ draw_tabline(void)
 		    while (len > room)
 		    {
 			len -= ptr2cells(p);
-			mb_ptr_adv(p);
+			MB_PTR_ADV(p);
 		    }
 		else
 #endif

@@ -454,7 +454,7 @@ slash_adjust(char_u *p)
     {
 	if (*p == psepcN)
 	    *p = psepc;
-	mb_ptr_adv(p);
+	MB_PTR_ADV(p);
     }
 }
 
@@ -600,7 +600,7 @@ vim_stat(const char *name, stat_T *stp)
     vim_strncpy((char_u *)buf, (char_u *)name, sizeof(buf) - 1);
     p = buf + STRLEN(buf);
     if (p > buf)
-	mb_ptr_back(buf, p);
+	MB_PTR_BACK(buf, p);
 
     /* Remove trailing '\\' except root path. */
     if (p > buf && (*p == '\\' || *p == '/') && p[-1] != ':')
@@ -720,7 +720,7 @@ display_errors(void)
     int
 mch_has_exp_wildcard(char_u *p)
 {
-    for ( ; *p; mb_ptr_adv(p))
+    for ( ; *p; MB_PTR_ADV(p))
     {
 	if (vim_strchr((char_u *)"?*[", *p) != NULL
 		|| (*p == '~' && p[1] != NUL))
@@ -736,7 +736,7 @@ mch_has_exp_wildcard(char_u *p)
     int
 mch_has_wildcard(char_u *p)
 {
-    for ( ; *p; mb_ptr_adv(p))
+    for ( ; *p; MB_PTR_ADV(p))
     {
 	if (vim_strchr((char_u *)
 #  ifdef VIM_BACKTICK

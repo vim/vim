@@ -870,7 +870,7 @@ win_linetabsize(win_T *wp, char_u *line, colnr_T len)
     char_u	*s;
 
     for (s = line; *s != NUL && (len == MAXCOL || s < line + len);
-								mb_ptr_adv(s))
+								MB_PTR_ADV(s))
 	col += win_lbr_chartabsize(wp, line, s, col, NULL);
     return (int)col;
 }
@@ -1026,7 +1026,7 @@ lbr_chartabsize_adv(
     int		retval;
 
     retval = lbr_chartabsize(line, *s, col);
-    mb_ptr_adv(*s);
+    MB_PTR_ADV(*s);
     return retval;
 }
 
@@ -1089,8 +1089,8 @@ win_lbr_chartabsize(
      * needs a break here
      */
     if (wp->w_p_lbr
-	    && vim_isbreak(c)
-	    && !vim_isbreak(s[1])
+	    && VIM_ISBREAK(c)
+	    && !VIM_ISBREAK(s[1])
 	    && wp->w_p_wrap
 # ifdef FEAT_WINDOWS
 	    && wp->w_width != 0
@@ -1115,12 +1115,12 @@ win_lbr_chartabsize(
 	for (;;)
 	{
 	    ps = s;
-	    mb_ptr_adv(s);
+	    MB_PTR_ADV(s);
 	    c = *s;
 	    if (!(c != NUL
-		    && (vim_isbreak(c)
-			|| (!vim_isbreak(c)
-			    && (col2 == col || !vim_isbreak(*ps))))))
+		    && (VIM_ISBREAK(c)
+			|| (!VIM_ISBREAK(c)
+			    && (col2 == col || !VIM_ISBREAK(*ps))))))
 		break;
 
 	    col2 += win_chartabsize(wp, s, col2);
@@ -1369,7 +1369,7 @@ getvcol(
 		break;
 
 	    vcol += incr;
-	    mb_ptr_adv(ptr);
+	    MB_PTR_ADV(ptr);
 	}
     }
     else
@@ -1390,7 +1390,7 @@ getvcol(
 		break;
 
 	    vcol += incr;
-	    mb_ptr_adv(ptr);
+	    MB_PTR_ADV(ptr);
 	}
     }
     if (start != NULL)

@@ -4047,7 +4047,7 @@ mb_prevptr(
     char_u *p)
 {
     if (p > line)
-	mb_ptr_back(line, p);
+	MB_PTR_BACK(line, p);
     return p;
 }
 
@@ -5708,7 +5708,6 @@ static int xim_real_init(Window x11_window, Display *x11_display);
 
 
 #ifdef USE_X11R6_XIM
-static void xim_instantiate_cb(Display *display, XPointer client_data, XPointer	call_data);
 static void xim_destroy_cb(XIM im, XPointer client_data, XPointer call_data);
 
     static void

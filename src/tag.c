@@ -3544,7 +3544,7 @@ simplify_filename(char_u *filename)
 		tail = p + 1;
 		if (p[1] != NUL)
 		    while (vim_ispathsep(*tail))
-			mb_ptr_adv(tail);
+			MB_PTR_ADV(tail);
 		else if (p > start)
 		    --p;		/* strip preceding path separator */
 		STRMOVE(p, tail);
@@ -3556,7 +3556,7 @@ simplify_filename(char_u *filename)
 	    /* Skip to after ".." or "../" or "..///". */
 	    tail = p + 2;
 	    while (vim_ispathsep(*tail))
-		mb_ptr_adv(tail);
+		MB_PTR_ADV(tail);
 
 	    if (components > 0)		/* strip one preceding component */
 	    {
@@ -3583,7 +3583,7 @@ simplify_filename(char_u *filename)
 		    --p;
 		    /* Skip back to after previous '/'. */
 		    while (p > start && !after_pathsep(start, p))
-			mb_ptr_back(start, p);
+			MB_PTR_BACK(start, p);
 
 		    if (!do_strip)
 		    {

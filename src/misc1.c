@@ -1140,7 +1140,7 @@ open_line(
 
 			    while (old_size < repl_size && p > leader)
 			    {
-				mb_ptr_back(leader, p);
+				MB_PTR_BACK(leader, p);
 				old_size += ptr2cells(p);
 			    }
 			    l = lead_repl_len - (int)(endp - p);
@@ -2070,7 +2070,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     while (*s != NUL && --column >= 0)
     {
 	col += win_lbr_chartabsize(wp, line, s, (colnr_T)col, NULL);
-	mb_ptr_adv(s);
+	MB_PTR_ADV(s);
     }
 
     /*
@@ -4837,7 +4837,7 @@ gettail(char_u *fname)
     {
 	if (vim_ispathsep_nocolon(*p2))
 	    p1 = p2 + 1;
-	mb_ptr_adv(p2);
+	MB_PTR_ADV(p2);
     }
     return p1;
 }
@@ -4875,7 +4875,7 @@ gettail_dir(char_u *fname)
 		dir_end = next_dir_end;
 	    look_for_sep = TRUE;
 	}
-	mb_ptr_adv(p);
+	MB_PTR_ADV(p);
     }
     return dir_end;
 }
@@ -4910,7 +4910,7 @@ gettail_sep(char_u *fname)
 getnextcomp(char_u *fname)
 {
     while (*fname && !vim_ispathsep(*fname))
-	mb_ptr_adv(fname);
+	MB_PTR_ADV(fname);
     if (*fname)
 	++fname;
     return fname;
@@ -10378,7 +10378,7 @@ find_previous_pathsep(char_u *path, char_u **psep)
     {
 	if (vim_ispathsep(**psep))
 	    return OK;
-	mb_ptr_back(path, *psep);
+	MB_PTR_BACK(path, *psep);
     }
 
     return FAIL;
@@ -10533,7 +10533,7 @@ get_path_cutoff(char_u *fname, garray_T *gap)
     /* skip to the file or directory name */
     if (cutoff != NULL)
 	while (vim_ispathsep(*cutoff))
-	    mb_ptr_adv(cutoff);
+	    MB_PTR_ADV(cutoff);
 
     return cutoff;
 }
@@ -10790,7 +10790,7 @@ static int has_env_var(char_u *p);
     static int
 has_env_var(char_u *p)
 {
-    for ( ; *p; mb_ptr_adv(p))
+    for ( ; *p; MB_PTR_ADV(p))
     {
 	if (*p == '\\' && p[1] != NUL)
 	    ++p;
@@ -10816,7 +10816,7 @@ static int has_special_wildchar(char_u *p);
     static int
 has_special_wildchar(char_u *p)
 {
-    for ( ; *p; mb_ptr_adv(p))
+    for ( ; *p; MB_PTR_ADV(p))
     {
 	/* Allow for escaping. */
 	if (*p == '\\' && p[1] != NUL)
@@ -11293,7 +11293,7 @@ get_isolated_shell_name(void)
 
 	/* Find the last path separator before the space. */
 	p1 = p_sh;
-	for (p2 = p_sh; p2 < p; mb_ptr_adv(p2))
+	for (p2 = p_sh; p2 < p; MB_PTR_ADV(p2))
 	    if (vim_ispathsep(*p2))
 		p1 = p2 + 1;
 	p = vim_strnsave(p1, (int)(p - p1));

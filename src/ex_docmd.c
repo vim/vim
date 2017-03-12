@@ -3696,7 +3696,7 @@ set_one_cmd_context(
 		    return NULL;    /* It's a comment */
 		}
 	    }
-	    mb_ptr_adv(p);
+	    MB_PTR_ADV(p);
 	}
     }
 
@@ -3720,7 +3720,7 @@ set_one_cmd_context(
 	{
 	    if (*p == '\\' && *(p + 1) != NUL)
 		++p; /* skip over escaped character */
-	    mb_ptr_adv(p);
+	    MB_PTR_ADV(p);
 	}
     }
 
@@ -3780,7 +3780,7 @@ set_one_cmd_context(
 		    else
 #endif
 			len = 1;
-		    mb_ptr_adv(p);
+		    MB_PTR_ADV(p);
 		}
 		if (in_quote)
 		    bow = p;
@@ -3788,7 +3788,7 @@ set_one_cmd_context(
 		    xp->xp_pattern = p;
 		p -= len;
 	    }
-	    mb_ptr_adv(p);
+	    MB_PTR_ADV(p);
 	}
 
 	/*
@@ -4204,7 +4204,7 @@ set_one_cmd_context(
 			    arg = p + 1;
 			else if (*p == '\\' && *(p + 1) != NUL)
 			    ++p; /* skip over escaped character */
-			mb_ptr_adv(p);
+			MB_PTR_ADV(p);
 		    }
 		    xp->xp_pattern = arg;
 		}
@@ -5280,7 +5280,7 @@ separate_nextcmd(exarg_T *eap)
     p = eap->arg;
 #endif
 
-    for ( ; *p; mb_ptr_adv(p))
+    for ( ; *p; MB_PTR_ADV(p))
     {
 	if (*p == Ctrl_V)
 	{
@@ -5380,7 +5380,7 @@ skip_cmd_arg(
 	    else
 		++p;
 	}
-	mb_ptr_adv(p);
+	MB_PTR_ADV(p);
     }
     return p;
 }
@@ -11861,7 +11861,7 @@ ses_put_fname(FILE *fd, char_u *name, unsigned *flagp)
     if (*flagp & SSOP_SLASH)
     {
 	/* change all backslashes to forward slashes */
-	for (p = sname; *p != NUL; mb_ptr_adv(p))
+	for (p = sname; *p != NUL; MB_PTR_ADV(p))
 	    if (*p == '\\')
 		*p = '/';
     }

@@ -5741,7 +5741,7 @@ write_chars(
 	{
 	    char_u *p = pchBuf;
 	    for (n = 0; n < cchwritten; n++)
-		mb_cptr_adv(p);
+		MB_CPTR_ADV(p);
 	    written = p - pchBuf;
 	    g_coord.X += (SHORT)mb_string2cells(pchBuf, written);
 	}

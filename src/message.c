@@ -3746,7 +3746,7 @@ msg_show_console_dialog(
 	    }
 
 	    /* advance to the next character */
-	    mb_ptr_adv(r);
+	    MB_PTR_ADV(r);
 	}
 
 	if (copy)

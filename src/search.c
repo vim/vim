@@ -3828,7 +3828,7 @@ in_html_tag(
 
 	/* We search forward until the cursor, because searching backwards is
 	 * very slow for DBCS encodings. */
-	for (p = line; p < line + curwin->w_cursor.col; mb_ptr_adv(p))
+	for (p = line; p < line + curwin->w_cursor.col; MB_PTR_ADV(p))
 	    if (*p == '>' || *p == '<')
 	    {
 		lc = *p;
@@ -3848,7 +3848,7 @@ in_html_tag(
 	{
 	    if (*p == '<')	/* find '<' under/before cursor */
 		break;
-	    mb_ptr_back(line, p);
+	    MB_PTR_BACK(line, p);
 	    if (*p == '>')	/* find '>' before cursor */
 		break;
 	}
@@ -3859,7 +3859,7 @@ in_html_tag(
     pos.lnum = curwin->w_cursor.lnum;
     pos.col = (colnr_T)(p - line);
 
-    mb_ptr_adv(p);
+    MB_PTR_ADV(p);
     if (end_tag)
 	/* check that there is a '/' after the '<' */
 	return *p == '/';
@@ -3974,7 +3974,7 @@ again:
      */
     inc_cursor();
     p = ml_get_cursor();
-    for (cp = p; *cp != NUL && *cp != '>' && !vim_iswhite(*cp); mb_ptr_adv(cp))
+    for (cp = p; *cp != NUL && *cp != '>' && !vim_iswhite(*cp); MB_PTR_ADV(cp))
 	;
     len = (int)(cp - p);
     if (len == 0)

@@ -3192,7 +3192,7 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol)
     while (count < vcol && *ptr != NUL)
     {
 	count += win_lbr_chartabsize(wp, line, ptr, count, NULL);
-	mb_ptr_adv(ptr);
+	MB_PTR_ADV(ptr);
     }
     return (int)(ptr - line);
 }

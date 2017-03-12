@@ -486,7 +486,7 @@ shift_block(oparg_T *oap, int amount)
 	 * the part of which is displayed at the block's beginning. Let's start
 	 * searching from the next character. */
 	if (bd.startspaces)
-	    mb_ptr_adv(non_white);
+	    MB_PTR_ADV(non_white);
 
 	/* The character's column is in "bd.start_vcol".  */
 	non_white_col = bd.start_vcol;
@@ -526,7 +526,7 @@ shift_block(oparg_T *oap, int amount)
 	    if (verbatim_copy_width + incr > destination_col)
 		break;
 	    verbatim_copy_width += incr;
-	    mb_ptr_adv(verbatim_copy_end);
+	    MB_PTR_ADV(verbatim_copy_end);
 	}
 
 	/* If "destination_col" is different from the width of the initial
@@ -3458,7 +3458,7 @@ do_put(
 		goto end;
 	    p = ml_get_cursor();
 	    if (dir == FORWARD && *p != NUL)
-		mb_ptr_adv(p);
+		MB_PTR_ADV(p);
 	    ptr = vim_strsave(p);
 	    if (ptr == NULL)
 		goto end;
@@ -3468,7 +3468,7 @@ do_put(
 	    oldp = ml_get_curline();
 	    p = oldp + curwin->w_cursor.col;
 	    if (dir == FORWARD && *p != NUL)
-		mb_ptr_adv(p);
+		MB_PTR_ADV(p);
 	    ptr = vim_strnsave(oldp, p - oldp);
 	    if (ptr == NULL)
 		goto end;
@@ -4489,11 +4489,11 @@ do_join(
 	    if (has_mbyte)
 	    {
 		cend = curr + currsize;
-		mb_ptr_back(curr, cend);
+		MB_PTR_BACK(curr, cend);
 		endcurr1 = (*mb_ptr2char)(cend);
 		if (cend > curr)
 		{
-		    mb_ptr_back(curr, cend);
+		    MB_PTR_BACK(curr, cend);
 		    endcurr2 = (*mb_ptr2char)(cend);
 		}
 	    }
@@ -5262,7 +5262,7 @@ block_prep(
 	}
 #endif
 	prev_pstart = pstart;
-	mb_ptr_adv(pstart);
+	MB_PTR_ADV(pstart);
     }
     bdp->start_char_vcols = incr;
     if (bdp->start_vcol < oap->start_vcol)	/* line too short */

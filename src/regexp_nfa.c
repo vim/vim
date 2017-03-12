@@ -1425,7 +1425,7 @@ nfa_regatom(void)
 		    EMSG(_(e_nopresub));
 		    return FAIL;
 		}
-		for (lp = reg_prev_sub; *lp != NUL; mb_cptr_adv(lp))
+		for (lp = reg_prev_sub; *lp != NUL; MB_CPTR_ADV(lp))
 		{
 		    EMIT(PTR2CHAR(lp));
 		    if (lp != reg_prev_sub)
@@ -1672,7 +1672,7 @@ collection:
 		    else
 			EMIT(result);
 		    regparse = endp;
-		    mb_ptr_adv(regparse);
+		    MB_PTR_ADV(regparse);
 		    return OK;
 		}
 		/*
@@ -1684,7 +1684,7 @@ collection:
 		if (*regparse == '^')			/* negated range */
 		{
 		    negated = TRUE;
-		    mb_ptr_adv(regparse);
+		    MB_PTR_ADV(regparse);
 		    EMIT(NFA_START_NEG_COLL);
 		}
 		else
@@ -1694,7 +1694,7 @@ collection:
 		    startc = '-';
 		    EMIT(startc);
 		    EMIT(NFA_CONCAT);
-		    mb_ptr_adv(regparse);
+		    MB_PTR_ADV(regparse);
 		}
 		/* Emit the OR branches for each character in the [] */
 		emit_range = FALSE;
@@ -1797,7 +1797,7 @@ collection:
 		    {
 			emit_range = TRUE;
 			startc = oldstartc;
-			mb_ptr_adv(regparse);
+			MB_PTR_ADV(regparse);
 			continue;	    /* reading the end of the range */
 		    }
 
@@ -1817,7 +1817,7 @@ collection:
 			    )
 			)
 		    {
-			mb_ptr_adv(regparse);
+			MB_PTR_ADV(regparse);
 
 			if (*regparse == 'n')
 			    startc = reg_string ? NL : NFA_NEWL;
@@ -1832,7 +1832,7 @@ collection:
 				/* TODO(RE) This needs more testing */
 				startc = coll_get_char();
 				got_coll_char = TRUE;
-				mb_ptr_back(old_regparse, regparse);
+				MB_PTR_BACK(old_regparse, regparse);
 			    }
 			    else
 			    {
@@ -1932,10 +1932,10 @@ collection:
 			}
 		    }
 
-		    mb_ptr_adv(regparse);
+		    MB_PTR_ADV(regparse);
 		} /* while (p < endp) */
 
-		mb_ptr_back(old_regparse, regparse);
+		MB_PTR_BACK(old_regparse, regparse);
 		if (*regparse == '-')	    /* if last, '-' is just a char */
 		{
 		    EMIT('-');
@@ -1944,7 +1944,7 @@ collection:
 
 		/* skip the trailing ] */
 		regparse = endp;
-		mb_ptr_adv(regparse);
+		MB_PTR_ADV(regparse);
 
 		/* Mark end of the collection. */
 		if (negated == TRUE)

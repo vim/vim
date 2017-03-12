@@ -2064,7 +2064,7 @@ foldtext_cleanup(char_u *str)
 	}
 	else
 	{
-	    mb_ptr_adv(s);
+	    MB_PTR_ADV(s);
 	}
     }
 }
@@ -3249,7 +3249,7 @@ foldlevelMarker(fline_T *flp)
 		--flp->lvl_next;
 	}
 	else
-	    mb_ptr_adv(s);
+	    MB_PTR_ADV(s);
     }
 
     /* The level can't go negative, must be missing a start marker. */

@@ -6785,7 +6785,7 @@ did_set_string_option(
 	{
 	    if (ptr2cells(s) != 1)
 		errmsg = (char_u *)N_("E595: contains unprintable or wide character");
-	    mb_ptr_adv(s);
+	    MB_PTR_ADV(s);
 	}
     }
 #endif
@@ -11666,7 +11666,7 @@ ExpandOldSetting(int *num_file, char_u ***file)
 #ifdef BACKSLASH_IN_FILENAME
     /* For MS-Windows et al. we don't double backslashes at the start and
      * before a file name character. */
-    for (var = buf; *var != NUL; mb_ptr_adv(var))
+    for (var = buf; *var != NUL; MB_PTR_ADV(var))
 	if (var[0] == '\\' && var[1] == '\\'
 		&& expand_option_idx >= 0
 		&& (options[expand_option_idx].flags & P_EXPAND)
@@ -11866,7 +11866,7 @@ langmap_set(void)
     for (p = p_langmap; p[0] != NUL; )
     {
 	for (p2 = p; p2[0] != NUL && p2[0] != ',' && p2[0] != ';';
-							       mb_ptr_adv(p2))
+							       MB_PTR_ADV(p2))
 	{
 	    if (p2[0] == '\\' && p2[1] != NUL)
 		++p2;
@@ -11892,7 +11892,7 @@ langmap_set(void)
 	    to = NUL;
 	    if (p2 == NULL)
 	    {
-		mb_ptr_adv(p);
+		MB_PTR_ADV(p);
 		if (p[0] != ',')
 		{
 		    if (p[0] == '\\')
@@ -11932,10 +11932,10 @@ langmap_set(void)
 		langmap_mapchar[from & 255] = to;
 
 	    /* Advance to next pair */
-	    mb_ptr_adv(p);
+	    MB_PTR_ADV(p);
 	    if (p2 != NULL)
 	    {
-		mb_ptr_adv(p2);
+		MB_PTR_ADV(p2);
 		if (*p == ';')
 		{
 		    p = p2;
