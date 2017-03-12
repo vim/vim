@@ -9,6 +9,7 @@ int get_breakindent_win(win_T *wp, char_u *line);
 int open_line(int dir, int flags, int second_line_indent);
 int get_leader_len(char_u *line, char_u **flags, int backward, int include_space);
 int get_last_leader_offset(char_u *line, char_u **flags);
+char_u *skip_comment(char_u *line, int process, int include_space, int *is_comment);
 int plines(linenr_T lnum);
 int plines_win(win_T *wp, linenr_T lnum, int winheight);
 int plines_nofill(linenr_T lnum);

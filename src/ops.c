@@ -113,9 +113,6 @@ static void	copy_yank_reg(yankreg_T *reg);
 static void	may_set_selection(void);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
-#if defined(FEAT_COMMENTS) || defined(PROTO)
-static char_u	*skip_comment(char_u *line, int process, int include_space, int *is_comment);
-#endif
 static void	block_prep(oparg_T *oap, struct block_def *, linenr_T, int);
 static int	do_addsub(int op_type, pos_T *pos, int length, linenr_T Prenum1);
 #if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
@@ -4287,81 +4284,6 @@ dis_msg(
     }
     ui_breakcheck();
 }
-
-#if defined(FEAT_COMMENTS) || defined(PROTO)
-/*
- * If "process" is TRUE and the line begins with a comment leader (possibly
- * after some white space), return a pointer to the text after it. Put a boolean
- * value indicating whether the line ends with an unclosed comment in
- * "is_comment".
- * line - line to be processed,
- * process - if FALSE, will only check whether the line ends with an unclosed
- *	     comment,
- * include_space - whether to also skip space following the comment leader,
- * is_comment - will indicate whether the current line ends with an unclosed
- *		comment.
- */
-    static char_u *
-skip_comment(
-    char_u   *line,
-    int      process,
-    int	     include_space,
-    int      *is_comment)
-{
-    char_u *comment_flags = NULL;
-    int    lead_len;
-    int    leader_offset = get_last_leader_offset(line, &comment_flags);
-
-    *is_comment = FALSE;
-    if (leader_offset != -1)
-    {
-	/* Let's check whether the line ends with an unclosed comment.
-	 * If the last comment leader has COM_END in flags, there's no comment.
-	 */
-	while (*comment_flags)
-	{
-	    if (*comment_flags == COM_END
-		    || *comment_flags == ':')
-		break;
-	    ++comment_flags;
-	}
-	if (*comment_flags != COM_END)
-	    *is_comment = TRUE;
-    }
-
-    if (process == FALSE)
-	return line;
-
-    lead_len = get_leader_len(line, &comment_flags, FALSE, include_space);
-
-    if (lead_len == 0)
-	return line;
-
-    /* Find:
-     * - COM_END,
-     * - colon,
-     * whichever comes first.
-     */
-    while (*comment_flags)
-    {
-	if (*comment_flags == COM_END
-		|| *comment_flags == ':')
-	{
-	    break;
-	}
-	++comment_flags;
-    }
-
-    /* If we found a colon, it means that we are not processing a line
-     * starting with a closing part of a three-part comment. That's good,
-     * because we don't want to remove those as this would be annoying.
-     */
-    if (*comment_flags == ':' || *comment_flags == NUL)
-	line += lead_len;
-
-    return line;
-}
-#endif
 
 /*
  * Join 'count' lines (minimal 2) at cursor position.

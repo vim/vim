@@ -168,6 +168,22 @@ func Test_combining_folds_marker()
   bwipe!
 endfunc
 
+func Test_folds_marker_in_comment()
+  new
+  call setline(1, ['" foo', 'bar', 'baz'])
+  setl fen fdm=marker
+  setl com=sO:\"\ -,mO:\"\ \ ,eO:\"\",:\" cms=\"%s
+  norm! zf2j
+  setl nofen
+  :1y
+  call assert_equal(['" foo{{{'], getreg(0,1,1))
+  :+2y
+  call assert_equal(['baz"}}}'], getreg(0,1,1))
+
+  set foldmethod&
+  bwipe!
+endfunc
+
 func s:TestFoldExpr(lnum)
   let thisline = getline(a:lnum)
   if thisline == 'a'
