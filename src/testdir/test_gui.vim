@@ -30,6 +30,18 @@ func Test_balloon_show()
   endif
 endfunc
 
+func Test_colorscheme()
+  let colorscheme_saved = exists('g:colors_name') ? g:colors_name : 'default'
+
+  colorscheme torte
+  redraw!
+  sleep 200m
+  call assert_equal('dark', &background)
+
+  exec 'colorscheme' colorscheme_saved
+  redraw!
+endfunc
+
 func Test_getfontname_with_arg()
   let skipped = ''
 
@@ -40,8 +52,8 @@ func Test_getfontname_with_arg()
     call assert_equal('', getfontname('notexist'))
 
     " Valid font name. This is usually the real name of 7x13 by default.
-    let fname = '-misc-fixed-medium-r-normal--13-120-75-75-c-70-iso8859-1'
-    call assert_equal(fname, getfontname(fname))
+    let fname = '-Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO8859-1'
+    call assert_match(fname, getfontname(fname))
 
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " Invalid font name. The result should be the name plus the default size.
@@ -68,8 +80,9 @@ func Test_getfontname_without_arg()
     " 'expected' is the value specified by SetUp() above.
     call assert_equal('Courier 10 Pitch/8/-1/5/50/0/0/0/0/0', fname)
   elseif has('gui_athena') || has('gui_motif')
-    " 'expected' is DFLT_FONT of gui_x11.c.
-    call assert_equal('7x13', fname)
+    " 'expected' is DFLT_FONT of gui_x11.c or its real name.
+    let pat = '\(7x13\)\|\(\c-Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO8859-1\)'
+    call assert_match(pat, fname)
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " 'expected' is DEFAULT_FONT of gui_gtk_x11.c.
     call assert_equal('Monospace 10', fname)
@@ -78,6 +91,12 @@ func Test_getfontname_without_arg()
   if !empty(skipped)
     throw skipped
   endif
+endfunc
+
+func Test_getwinpos()
+  call assert_match('Window position: X \d\+, Y \d\+', execute('winpos'))
+  call assert_true(getwinposx() >= 0)
+  call assert_true(getwinposy() >= 0)
 endfunc
 
 func Test_quoteplus()
@@ -123,6 +142,18 @@ func Test_quoteplus()
   if !empty(skipped)
     throw skipped
   endif
+endfunc
+
+func Test_set_background()
+  let background_saved = &background
+
+  set background&
+  call assert_equal('light', &background)
+
+  set background=dark
+  call assert_equal('dark', &background)
+
+  let &background = background_saved
 endfunc
 
 func Test_set_balloondelay()
@@ -248,6 +279,46 @@ func Test_set_balloonexpr()
   let &balloonexpr = balloonexpr_saved
 endfunc
 
+" Invalid arguments are tested with test_options in conjunction with segfaults
+" caused by them (Patch 8.0.0357, 24922ec233).
+func Test_set_guicursor()
+  let guicursor_saved = &guicursor
+
+  let default = [
+        \ "n-v-c:block-Cursor/lCursor",
+        \ "ve:ver35-Cursor",
+        \ "o:hor50-Cursor",
+        \ "i-ci:ver25-Cursor/lCursor",
+        \ "r-cr:hor20-Cursor/lCursor",
+        \ "sm:block-Cursor-blinkwait175-blinkoff150-blinkon175"
+        \ ]
+
+  " Default Value
+  set guicursor&
+  call assert_equal(join(default, ','), &guicursor)
+
+  " Argument List Example 1
+  let opt_list = copy(default)
+  let opt_list[0] = "n-c-v:block-nCursor"
+  exec "set guicursor=" . join(opt_list, ',')
+  call assert_equal(join(opt_list, ','), &guicursor)
+  unlet opt_list
+
+  " Argument List Example 2
+  let opt_list = copy(default)
+  let opt_list[3] = "i-ci:ver30-iCursor-blinkwait300-blinkon200-blinkoff150"
+  exec "set guicursor=" . join(opt_list, ',')
+  call assert_equal(join(opt_list, ','), &guicursor)
+  unlet opt_list
+
+  " 'a' Mode
+  set guicursor&
+  let &guicursor .= ',a:blinkon0'
+  call assert_equal(join(default, ',') . ",a:blinkon0", &guicursor)
+
+  let &guicursor = guicursor_saved
+endfunc
+
 func Test_set_guifont()
   let skipped = ''
 
@@ -274,11 +345,13 @@ func Test_set_guifont()
     " Non-empty font list with a valid font name.  Should pick up the first
     " valid font.
     set guifont=-notexist1-*,fixed,-notexist2-*
-    call assert_equal('fixed', getfontname())
+    let pat = '\(fixed\)\|\(\c-Misc-Fixed-Medium-R-SemiCondensed--13-120-75-75-C-60-ISO8859-1\)'
+    call assert_match(pat, getfontname())
 
     " Empty list. Should fallback to the built-in default.
     set guifont=
-    call assert_equal('7x13', getfontname())
+    let pat = '\(7x13\)\|\(\c-Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO8859-1\)'
+    call assert_match(pat, getfontname())
 
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " For GTK, what we refer to as 'font names' in our manual are actually
@@ -477,10 +550,120 @@ func Test_set_guiheadroom()
   endif
 endfunc
 
-func Test_getwinpos()
-  call assert_match('Window position: X \d\+, Y \d\+', execute('winpos'))
-  call assert_true(getwinposx() >= 0)
-  call assert_true(getwinposy() >= 0)
+func Test_set_guioptions()
+  let guioptions_saved = &guioptions
+  let duration = '200m'
+
+  if has('win32')
+    " Default Value
+    set guioptions&
+    call assert_equal('egmrLtT', &guioptions)
+
+  else
+    " Default Value
+    set guioptions&
+    call assert_equal('aegimrLtT', &guioptions)
+
+    " To activate scrollbars of type 'L' or 'R'.
+    wincmd v
+    redraw!
+
+    " Remove all default GUI ornaments
+    set guioptions-=T
+    exec 'sleep' . duration
+    call assert_equal('aegimrLt', &guioptions)
+    set guioptions-=t
+    exec 'sleep' . duration
+    call assert_equal('aegimrL', &guioptions)
+    set guioptions-=L
+    exec 'sleep' . duration
+    call assert_equal('aegimr', &guioptions)
+    set guioptions-=r
+    exec 'sleep' . duration
+    call assert_equal('aegim', &guioptions)
+    set guioptions-=m
+    exec 'sleep' . duration
+    call assert_equal('aegi', &guioptions)
+
+    " Try non-default GUI ornaments
+    set guioptions+=l
+    exec 'sleep' . duration
+    call assert_equal('aegil', &guioptions)
+    set guioptions-=l
+    exec 'sleep' . duration
+    call assert_equal('aegi', &guioptions)
+
+    set guioptions+=R
+    exec 'sleep' . duration
+    call assert_equal('aegiR', &guioptions)
+    set guioptions-=R
+    exec 'sleep' . duration
+    call assert_equal('aegi', &guioptions)
+
+    set guioptions+=b
+    exec 'sleep' . duration
+    call assert_equal('aegib', &guioptions)
+    set guioptions+=h
+    exec 'sleep' . duration
+    call assert_equal('aegibh', &guioptions)
+    set guioptions-=h
+    exec 'sleep' . duration
+    call assert_equal('aegib', &guioptions)
+    set guioptions-=b
+    exec 'sleep' . duration
+    call assert_equal('aegi', &guioptions)
+
+    set guioptions+=v
+    exec 'sleep' . duration
+    call assert_equal('aegiv', &guioptions)
+    set guioptions-=v
+    exec 'sleep' . duration
+    call assert_equal('aegi', &guioptions)
+
+    if has('gui_motif')
+      set guioptions+=F
+      exec 'sleep' . duration
+      call assert_equal('aegiF', &guioptions)
+      set guioptions-=F
+      exec 'sleep' . duration
+      call assert_equal('aegi', &guioptions)
+    endif
+
+    " Restore GUI ornaments to the default state.
+    set guioptions+=m
+    exec 'sleep' . duration
+    call assert_equal('aegim', &guioptions)
+    set guioptions+=r
+    exec 'sleep' . duration
+    call assert_equal('aegimr', &guioptions)
+    set guioptions+=L
+    exec 'sleep' . duration
+    call assert_equal('aegimrL', &guioptions)
+    set guioptions+=t
+    exec 'sleep' . duration
+    call assert_equal('aegimrLt', &guioptions)
+    set guioptions+=T
+    exec 'sleep' . duration
+    call assert_equal("aegimrLtT", &guioptions)
+
+    wincmd o
+    redraw!
+  endif
+
+  let &guioptions = guioptions_saved
+endfunc
+
+func Test_set_guipty()
+  let guipty_saved = &guipty
+
+  " Default Value
+  set guipty&
+  call assert_equal(1, &guipty)
+
+  set noguipty
+  call assert_equal(0, &guipty)
+
+  let &guipty = guipty_saved
 endfunc
 
 func Test_shell_command()
@@ -488,6 +671,19 @@ func Test_shell_command()
   r !echo hello
   call assert_equal('hello', substitute(getline(2), '\W', '', 'g'))
   bwipe!
+endfunc
+
+func Test_syntax_colortest()
+  runtime syntax/colortest.vim
+  redraw!
+  sleep 200m
+  bwipe!
+endfunc
+
+func Test_set_term()
+  " It's enough to check the current value since setting 'term' to anything
+  " other than builtin_gui makes no sense at all.
+  call assert_equal('builtin_gui', &term)
 endfunc
 
 func Test_windowid_variable()

@@ -36,3 +36,25 @@ func Test_set_guiheadroom()
     throw skipped
   endif
 endfunc
+
+func Test_set_guioptions_for_M()
+  sleep 200ms
+  " Check if the 'M' option is included.
+  call assert_match('.*M.*', &guioptions)
+endfunc
+
+func Test_set_guioptions_for_p()
+  let skipped = ''
+
+  if !g:x11_based_gui
+    let skipped = g:not_supported . '''p'' of guioptions'
+  else
+    sleep 200ms
+    " Check if the 'p' option is included.
+    call assert_match('.*p.*', &guioptions)
+  endif
+
+  if !empty(skipped)
+    throw skipped
+  endif
+endfunc

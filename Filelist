@@ -110,6 +110,7 @@ SRC_ALL =	\
 		src/testdir/setup.vim \
 		src/testdir/gui_init.vim \
 		src/testdir/setup_gui.vim \
+		src/testdir/gui_preinit.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test[0-9]*a.ok \
 		src/testdir/test_[a-z]*.ok \

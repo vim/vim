@@ -138,7 +138,7 @@ test_gui.res: test_gui.vim
 
 test_gui_init.res: test_gui_init.vim
 	@echo "$(RUN_GVIMTEST_WITH_GVIMRC)" > vimcmd
-	$(RUN_VIMTEST) -u NONE -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
+	$(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@rm vimcmd
 
 opt_test.vim: ../option.c gen_opt_test.vim

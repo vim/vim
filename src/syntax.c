@@ -8169,7 +8169,7 @@ hl_has_settings(int idx, int check_link)
 	    || HL_TABLE()[idx].sg_gui_fg_name != NULL
 	    || HL_TABLE()[idx].sg_gui_bg_name != NULL
 	    || HL_TABLE()[idx].sg_gui_sp_name != NULL
-	    || HL_TABLE()[idx].sg_font_name != NUL
+	    || HL_TABLE()[idx].sg_font_name != NULL
 #endif
 	    || (check_link && (HL_TABLE()[idx].sg_set & SG_LINK)));
 }

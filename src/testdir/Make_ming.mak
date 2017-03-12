@@ -129,7 +129,7 @@ test_gui.res: test_gui.vim
 
 test_gui_init.res: test_gui_init.vim
 	@echo "$(VIMPROG)" > vimcmd
-	$(VIMPROG) -u NONE -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
+	$(VIMPROG) -u gui_preinit_vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@$(DEL) vimcmd
 
 opt_test.vim: ../option.c gen_opt_test.vim
