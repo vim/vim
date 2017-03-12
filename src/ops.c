@@ -113,9 +113,6 @@ static void	copy_yank_reg(yankreg_T *reg);
 static void	may_set_selection(void);
 #endif
 static void	dis_msg(char_u *p, int skip_esc);
-#if defined(FEAT_COMMENTS) || defined(PROTO)
-static char_u	*skip_comment(char_u *line, int process, int include_space, int *is_comment);
-#endif
 static void	block_prep(oparg_T *oap, struct block_def *, linenr_T, int);
 static int	do_addsub(int op_type, pos_T *pos, int length, linenr_T Prenum1);
 #if defined(FEAT_CLIPBOARD) || defined(FEAT_EVAL)
@@ -4301,7 +4298,7 @@ dis_msg(
  * is_comment - will indicate whether the current line ends with an unclosed
  *		comment.
  */
-    static char_u *
+    char_u *
 skip_comment(
     char_u   *line,
     int      process,
