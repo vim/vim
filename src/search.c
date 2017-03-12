@@ -1643,7 +1643,11 @@ searchc(cmdarg_T *cap, int t_cmd)
     }
     else		/* repeat previous search */
     {
-	if (*lastc == NUL)
+	if (*lastc == NUL
+#ifdef FEAT_MBYTE
+		&& lastc_bytelen == 1
+#endif
+		)
 	    return FAIL;
 	if (dir)	/* repeat in opposite direction */
 	    dir = -lastcdir;

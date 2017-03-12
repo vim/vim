@@ -2099,6 +2099,7 @@ test_arglist \
 	test_cdo \
 	test_channel \
 	test_charsearch \
+	test_charsearch_utf8 \
 	test_changedtick \
 	test_cindent \
 	test_cmdline \
