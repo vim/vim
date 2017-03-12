@@ -1789,7 +1789,7 @@ msg_prt_line(char_u *s, int list)
     if (list && lcs_trail)
     {
 	trail = s + STRLEN(s);
-	while (trail > s && vim_iswhite(trail[-1]))
+	while (trail > s && VIM_ISWHITE(trail[-1]))
 	    --trail;
     }
 

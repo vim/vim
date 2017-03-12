@@ -3371,7 +3371,7 @@ win_line(
 	if (lcs_trail)
 	{
 	    trailcol = (colnr_T)STRLEN(ptr);
-	    while (trailcol > (colnr_T)0 && vim_iswhite(ptr[trailcol - 1]))
+	    while (trailcol > (colnr_T)0 && VIM_ISWHITE(ptr[trailcol - 1]))
 		--trailcol;
 	    trailcol += (colnr_T) (ptr - line);
 	}
@@ -4577,7 +4577,7 @@ win_line(
 # else
 		    c_extra = ' ';
 # endif
-		    if (vim_iswhite(c))
+		    if (VIM_ISWHITE(c))
 		    {
 #ifdef FEAT_CONCEAL
 			if (c == TAB)

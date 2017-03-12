@@ -1516,7 +1516,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	if (error || eap->skip)
 	{
 	    arg = find_name_end(arg, NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
-	    if (!vim_iswhite(*arg) && !ends_excmd(*arg))
+	    if (!VIM_ISWHITE(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
 		EMSG(_(e_trailing));
@@ -1856,7 +1856,7 @@ get_lval(
     if (expr_start != NULL)
     {
 	/* Don't expand the name when we already know there is an error. */
-	if (unlet && !vim_iswhite(*p) && !ends_excmd(*p)
+	if (unlet && !VIM_ISWHITE(*p) && !ends_excmd(*p)
 						    && *p != '[' && *p != '.')
 	{
 	    EMSG(_(e_trailing));
@@ -2449,7 +2449,7 @@ eval_for_line(
 	return fi;
 
     expr = skipwhite(expr);
-    if (expr[0] != 'i' || expr[1] != 'n' || !vim_iswhite(expr[2]))
+    if (expr[0] != 'i' || expr[1] != 'n' || !VIM_ISWHITE(expr[2]))
     {
 	EMSG(_("E690: Missing \"in\" after :for"));
 	return fi;
@@ -2552,7 +2552,7 @@ set_context_for_expression(
 	    {
 		xp->xp_pattern = p;
 		MB_PTR_BACK(arg, p);
-		if (vim_iswhite(*p))
+		if (VIM_ISWHITE(*p))
 		    break;
 	    }
 	    return;
@@ -2698,7 +2698,7 @@ ex_unletlock(
 							     FNE_CHECK_START);
 	if (lv.ll_name == NULL)
 	    error = TRUE;	    /* error but continue parsing */
-	if (name_end == NULL || (!vim_iswhite(*name_end)
+	if (name_end == NULL || (!VIM_ISWHITE(*name_end)
 						   && !ends_excmd(*name_end)))
 	{
 	    if (name_end != NULL)
@@ -6866,7 +6866,7 @@ handle_subscript(
 		|| (**arg == '.' && rettv->v_type == VAR_DICT)
 		|| (**arg == '(' && (!evaluate || rettv->v_type == VAR_FUNC
 					    || rettv->v_type == VAR_PARTIAL)))
-	    && !vim_iswhite(*(*arg - 1)))
+	    && !VIM_ISWHITE(*(*arg - 1)))
     {
 	if (**arg == '(')
 	{

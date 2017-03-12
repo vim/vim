@@ -2104,7 +2104,7 @@ ex_function(exarg_T *eap)
 	else
 	{
 	    /* skip ':' and blanks*/
-	    for (p = theline; vim_iswhite(*p) || *p == ':'; ++p)
+	    for (p = theline; VIM_ISWHITE(*p) || *p == ':'; ++p)
 		;
 
 	    /* Check for "endfunction". */

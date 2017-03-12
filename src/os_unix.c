@@ -6139,7 +6139,7 @@ mch_expand_wildcards(
 	STRCAT(command, pat[0] + 1);		/* exclude first backtick */
 	p = command + STRLEN(command) - 1;
 	*p-- = ')';				/* remove last backtick */
-	while (p > command && vim_iswhite(*p))
+	while (p > command && VIM_ISWHITE(*p))
 	    --p;
 	if (*p == '&')				/* remove trailing '&' */
 	{

@@ -429,7 +429,7 @@ shift_block(oparg_T *oap, int amount)
 #endif
 		++bd.textstart;
 	}
-	for ( ; vim_iswhite(*bd.textstart); )
+	for ( ; VIM_ISWHITE(*bd.textstart); )
 	{
 	    /* TODO: is passing bd.textstart for start of the line OK? */
 	    incr = lbr_chartabsize_adv(bd.textstart, &bd.textstart,
@@ -491,7 +491,7 @@ shift_block(oparg_T *oap, int amount)
 	/* The character's column is in "bd.start_vcol".  */
 	non_white_col = bd.start_vcol;
 
-	while (vim_iswhite(*non_white))
+	while (VIM_ISWHITE(*non_white))
 	{
 	    incr = lbr_chartabsize_adv(bd.textstart, &non_white, non_white_col);
 	    non_white_col += incr;
@@ -4655,18 +4655,18 @@ same_leader(
     line1 = vim_strsave(ml_get(lnum));
     if (line1 != NULL)
     {
-	for (idx1 = 0; vim_iswhite(line1[idx1]); ++idx1)
+	for (idx1 = 0; VIM_ISWHITE(line1[idx1]); ++idx1)
 	    ;
 	line2 = ml_get(lnum + 1);
 	for (idx2 = 0; idx2 < leader2_len; ++idx2)
 	{
-	    if (!vim_iswhite(line2[idx2]))
+	    if (!VIM_ISWHITE(line2[idx2]))
 	    {
 		if (line1[idx1++] != line2[idx2])
 		    break;
 	    }
 	    else
-		while (vim_iswhite(line1[idx1]))
+		while (VIM_ISWHITE(line1[idx1]))
 		    ++idx1;
 	}
 	vim_free(line1);
@@ -5092,10 +5092,10 @@ ends_in_white(linenr_T lnum)
 
     if (*s == NUL)
 	return FALSE;
-    /* Don't use STRLEN() inside vim_iswhite(), SAS/C complains: "macro
+    /* Don't use STRLEN() inside VIM_ISWHITE(), SAS/C complains: "macro
      * invocation may call function multiple times". */
     l = STRLEN(s) - 1;
-    return vim_iswhite(s[l]);
+    return VIM_ISWHITE(s[l]);
 }
 
 /*
@@ -5250,7 +5250,7 @@ block_prep(
 	incr = lbr_chartabsize(line, pstart, (colnr_T)bdp->start_vcol);
 	bdp->start_vcol += incr;
 #ifdef FEAT_VISUALEXTRA
-	if (vim_iswhite(*pstart))
+	if (VIM_ISWHITE(*pstart))
 	{
 	    bdp->pre_whitesp += incr;
 	    bdp->pre_whitesp_c++;

@@ -4523,14 +4523,14 @@ regmatch(
 	    break;
 
 	  case WHITE:
-	    if (!vim_iswhite(c))
+	    if (!VIM_ISWHITE(c))
 		status = RA_NOMATCH;
 	    else
 		ADVANCE_REGINPUT();
 	    break;
 
 	  case NWHITE:
-	    if (c == NUL || vim_iswhite(c))
+	    if (c == NUL || VIM_ISWHITE(c))
 		status = RA_NOMATCH;
 	    else
 		ADVANCE_REGINPUT();

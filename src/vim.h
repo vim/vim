@@ -588,7 +588,7 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #ifdef FEAT_GETTEXT
 # ifdef DYNAMIC_GETTEXT
 #  define _(x) (*dyn_libintl_gettext)((char *)(x))
-#  define ngettext(x, xs, n) (*dyn_libintl_ngettext)((char *)(x), (char *)(xs), (n))
+#  define NGETTEXT(x, xs, n) (*dyn_libintl_ngettext)((char *)(x), (char *)(xs), (n))
 #  define N_(x) x
 #  define bindtextdomain(domain, dir) (*dyn_libintl_bindtextdomain)((domain), (dir))
 #  define bind_textdomain_codeset(domain, codeset) (*dyn_libintl_bind_textdomain_codeset)((domain), (codeset))
@@ -601,6 +601,7 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 # else
 #  include <libintl.h>
 #  define _(x) gettext((char *)(x))
+#  define NGETTEXT(x, xs, n) ngettext((x), (xs), (n))
 #  ifdef gettext_noop
 #   define N_(x) gettext_noop(x)
 #  else
@@ -609,7 +610,7 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 # endif
 #else
 # define _(x) ((char *)(x))
-# define ngettext(x, xs, n) (((n) == 1) ? (char *)(x) : (char *)(xs))
+# define NGETTEXT(x, xs, n) (((n) == 1) ? (char *)(x) : (char *)(xs))
 # define N_(x) x
 # ifdef bindtextdomain
 #  undef bindtextdomain
@@ -1762,12 +1763,6 @@ void *vim_memset(void *, int, size_t);
  */
 #define hl_attr(n)	highlight_attr[(int)(n)]
 #define term_str(n)	term_strings[(int)(n)]
-
-/*
- * vim_iswhite() is used for "^" and the like. It differs from isspace()
- * because it doesn't include <CR> and <LF> and the like.
- */
-#define vim_iswhite(x)	((x) == ' ' || (x) == '\t')
 
 /*
  * EXTERN is only defined in main.c.  That's where global variables are

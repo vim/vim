@@ -2608,7 +2608,7 @@ qf_fmt_text(char_u *text, char_u *buf, int bufsize)
 	{
 	    buf[i] = ' ';
 	    while (*++p != NUL)
-		if (!vim_iswhite(*p) && *p != '\n')
+		if (!VIM_ISWHITE(*p) && *p != '\n')
 		    break;
 	}
 	else

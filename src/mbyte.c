@@ -886,7 +886,7 @@ mb_get_class_buf(char_u *p, buf_T *buf)
 {
     if (MB_BYTE2LEN(p[0]) == 1)
     {
-	if (p[0] == NUL || vim_iswhite(p[0]))
+	if (p[0] == NUL || VIM_ISWHITE(p[0]))
 	    return 0;
 	if (vim_iswordc_buf(p[0], buf))
 	    return 2;

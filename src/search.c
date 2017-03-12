@@ -3276,7 +3276,7 @@ find_first_blank(pos_T *posp)
     while (decl(posp) != -1)
     {
 	c = gchar_pos(posp);
-	if (!vim_iswhite(c))
+	if (!VIM_ISWHITE(c))
 	{
 	    incl(posp);
 	    break;
@@ -3515,7 +3515,7 @@ extend:
 	    while (LT_POS(pos, curwin->w_cursor))
 	    {
 		c = gchar_pos(&pos);
-		if (!vim_iswhite(c))
+		if (!VIM_ISWHITE(c))
 		{
 		    at_start_sent = FALSE;
 		    break;
@@ -3538,7 +3538,7 @@ extend:
 		if (at_start_sent)
 		    find_first_blank(&curwin->w_cursor);
 		c = gchar_cursor();
-		if (!at_start_sent || (!include && !vim_iswhite(c)))
+		if (!at_start_sent || (!include && !VIM_ISWHITE(c)))
 		    findsent(BACKWARD, 1L);
 		at_start_sent = !at_start_sent;
 	    }
@@ -3561,7 +3561,7 @@ extend:
 		while (LT_POS(pos, curwin->w_cursor))
 		{
 		    c = gchar_pos(&pos);
-		    if (!vim_iswhite(c))
+		    if (!VIM_ISWHITE(c))
 		    {
 			at_start_sent = TRUE;
 			break;
@@ -3587,7 +3587,7 @@ extend:
      * If the cursor started on a blank, check if it is just before the start
      * of the next sentence.
      */
-    while (c = gchar_pos(&pos), vim_iswhite(c))	/* vim_iswhite() is a macro */
+    while (c = gchar_pos(&pos), VIM_ISWHITE(c))	/* VIM_ISWHITE() is a macro */
 	incl(&pos);
     if (EQUAL_POS(pos, curwin->w_cursor))
     {
@@ -3623,11 +3623,11 @@ extend:
 	if (start_blank)
 	{
 	    find_first_blank(&curwin->w_cursor);
-	    c = gchar_pos(&curwin->w_cursor);	/* vim_iswhite() is a macro */
-	    if (vim_iswhite(c))
+	    c = gchar_pos(&curwin->w_cursor);	/* VIM_ISWHITE() is a macro */
+	    if (VIM_ISWHITE(c))
 		decl(&curwin->w_cursor);
 	}
-	else if (c = gchar_cursor(), !vim_iswhite(c))
+	else if (c = gchar_cursor(), !VIM_ISWHITE(c))
 	    find_first_blank(&start_pos);
     }
 
@@ -3974,7 +3974,7 @@ again:
      */
     inc_cursor();
     p = ml_get_cursor();
-    for (cp = p; *cp != NUL && *cp != '>' && !vim_iswhite(*cp); MB_PTR_ADV(cp))
+    for (cp = p; *cp != NUL && *cp != '>' && !VIM_ISWHITE(*cp); MB_PTR_ADV(cp))
 	;
     len = (int)(cp - p);
     if (len == 0)
@@ -4496,11 +4496,11 @@ current_quote(
      * the starting quote. */
     if (include)
     {
-	if (vim_iswhite(line[col_end + 1]))
-	    while (vim_iswhite(line[col_end + 1]))
+	if (VIM_ISWHITE(line[col_end + 1]))
+	    while (VIM_ISWHITE(line[col_end + 1]))
 		++col_end;
 	else
-	    while (col_start > 0 && vim_iswhite(line[col_start - 1]))
+	    while (col_start > 0 && VIM_ISWHITE(line[col_start - 1]))
 		--col_start;
     }
 

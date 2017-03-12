@@ -2149,7 +2149,7 @@ truncate_spaces(char_u *line)
     int	    i;
 
     /* find start of trailing white space */
-    for (i = (int)STRLEN(line) - 1; i >= 0 && vim_iswhite(line[i]); i--)
+    for (i = (int)STRLEN(line) - 1; i >= 0 && VIM_ISWHITE(line[i]); i--)
     {
 	if (State & REPLACE_FLAG)
 	    replace_join(0);	    /* remove a NUL from the replace stack */
@@ -2358,7 +2358,7 @@ ins_compl_accept_char(int c)
 	case CTRL_X_OMNI:
 	    /* Command line and Omni completion can work with just about any
 	     * printable character, but do stop at white space. */
-	    return vim_isprintc(c) && !vim_iswhite(c);
+	    return vim_isprintc(c) && !VIM_ISWHITE(c);
 
 	case CTRL_X_WHOLE_LINE:
 	    /* For while line completion a space can be part of the line. */
@@ -5989,9 +5989,9 @@ insert_special(
 #endif
 
 #ifdef FEAT_MBYTE
-# define WHITECHAR(cc) (vim_iswhite(cc) && (!enc_utf8 || !utf_iscomposing(utf_ptr2char(ml_get_cursor() + 1))))
+# define WHITECHAR(cc) (VIM_ISWHITE(cc) && (!enc_utf8 || !utf_iscomposing(utf_ptr2char(ml_get_cursor() + 1))))
 #else
-# define WHITECHAR(cc) vim_iswhite(cc)
+# define WHITECHAR(cc) VIM_ISWHITE(cc)
 #endif
 
 /*
@@ -6037,7 +6037,7 @@ insertchar(
      */
     if (textwidth > 0
 	    && (force_format
-		|| (!vim_iswhite(c)
+		|| (!VIM_ISWHITE(c)
 		    && !((State & REPLACE_FLAG)
 #ifdef FEAT_VREPLACE
 			&& !(State & VREPLACE_FLAG)
@@ -6094,7 +6094,7 @@ insertchar(
 		++p;
 	    middle_len = copy_option_part(&p, lead_end, COM_MAX_LEN, ",");
 	    /* Don't count trailing white space for middle_len */
-	    while (middle_len > 0 && vim_iswhite(lead_end[middle_len - 1]))
+	    while (middle_len > 0 && VIM_ISWHITE(lead_end[middle_len - 1]))
 		--middle_len;
 
 	    /* Find the end-comment string */
@@ -6104,7 +6104,7 @@ insertchar(
 
 	    /* Skip white space before the cursor */
 	    i = curwin->w_cursor.col;
-	    while (--i >= 0 && vim_iswhite(line[i]))
+	    while (--i >= 0 && VIM_ISWHITE(line[i]))
 		;
 	    i++;
 
@@ -6293,7 +6293,7 @@ internal_format(
 	    )
     {
 	cc = gchar_cursor();
-	if (vim_iswhite(cc))
+	if (VIM_ISWHITE(cc))
 	{
 	    save_char = cc;
 	    pchar_cursor('x');
@@ -7031,13 +7031,13 @@ stop_insert(
 	    {
 		dec_cursor();
 		cc = gchar_cursor();
-		if (!vim_iswhite(cc))
+		if (!VIM_ISWHITE(cc))
 		    curwin->w_cursor = tpos;
 	    }
 
 	    auto_format(TRUE, FALSE);
 
-	    if (vim_iswhite(cc))
+	    if (VIM_ISWHITE(cc))
 	    {
 		if (gchar_cursor() != NUL)
 		    inc_cursor();
@@ -7073,7 +7073,7 @@ stop_insert(
 		if (gchar_cursor() == NUL && curwin->w_cursor.col > 0)
 		    --curwin->w_cursor.col;
 		cc = gchar_cursor();
-		if (!vim_iswhite(cc))
+		if (!VIM_ISWHITE(cc))
 		    break;
 		if (del_char(TRUE) == FAIL)
 		    break;  /* should not happen */
@@ -7223,7 +7223,7 @@ beginline(int flags)
 	{
 	    char_u  *ptr;
 
-	    for (ptr = ml_get_curline(); vim_iswhite(*ptr)
+	    for (ptr = ml_get_curline(); VIM_ISWHITE(*ptr)
 			       && !((flags & BL_FIX) && ptr[1] == NUL); ++ptr)
 		++curwin->w_cursor.col;
 	}
@@ -9169,7 +9169,7 @@ ins_bs(
 
 	    /* delete characters until we are at or before want_vcol */
 	    while (vcol > want_vcol
-		    && (cc = *(ml_get_cursor() - 1), vim_iswhite(cc)))
+		    && (cc = *(ml_get_cursor() - 1), VIM_ISWHITE(cc)))
 		ins_bs_one(&vcol);
 
 	    /* insert extra spaces until we are at want_vcol */
@@ -10056,7 +10056,7 @@ ins_tab(void)
 
 	/* Find first white before the cursor */
 	fpos = curwin->w_cursor;
-	while (fpos.col > 0 && vim_iswhite(ptr[-1]))
+	while (fpos.col > 0 && VIM_ISWHITE(ptr[-1]))
 	{
 	    --fpos.col;
 	    --ptr;
@@ -10077,7 +10077,7 @@ ins_tab(void)
 
 	/* Use as many TABs as possible.  Beware of 'breakindent', 'showbreak'
 	 * and 'linebreak' adding extra virtual columns. */
-	while (vim_iswhite(*ptr))
+	while (VIM_ISWHITE(*ptr))
 	{
 	    i = lbr_chartabsize(NULL, (char_u *)"\t", vcol);
 	    if (vcol + i > want_vcol)
@@ -10456,7 +10456,7 @@ ins_try_si(int c)
 	    ptr = ml_get(pos->lnum);
 	    i = pos->col;
 	    if (i > 0)		/* skip blanks before '{' */
-		while (--i > 0 && vim_iswhite(ptr[i]))
+		while (--i > 0 && VIM_ISWHITE(ptr[i]))
 		    ;
 	    curwin->w_cursor.lnum = pos->lnum;
 	    curwin->w_cursor.col = i;

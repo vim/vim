@@ -139,7 +139,7 @@ set_indent(
 	    ind_done = 0;
 
 	    /* count as many characters as we can use */
-	    while (todo > 0 && vim_iswhite(*p))
+	    while (todo > 0 && VIM_ISWHITE(*p))
 	    {
 		if (*p == TAB)
 		{
@@ -202,7 +202,7 @@ set_indent(
     }
 
     /* Return if the indent is OK already. */
-    if (!doit && !vim_iswhite(*p) && !(flags & SIN_INSERT))
+    if (!doit && !VIM_ISWHITE(*p) && !(flags & SIN_INSERT))
 	return FALSE;
 
     /* Allocate memory for the new line. */
@@ -234,7 +234,7 @@ set_indent(
 
 	/* Skip over any additional white space (useful when newindent is less
 	 * than old) */
-	while (vim_iswhite(*p))
+	while (VIM_ISWHITE(*p))
 	    ++p;
 
     }
@@ -258,7 +258,7 @@ set_indent(
 	    p = oldline;
 	    ind_done = 0;
 
-	    while (todo > 0 && vim_iswhite(*p))
+	    while (todo > 0 && VIM_ISWHITE(*p))
 	    {
 		if (*p == TAB)
 		{
@@ -357,7 +357,7 @@ copy_indent(int size, char_u *src)
 	s = src;
 
 	/* Count/copy the usable portion of the source line */
-	while (todo > 0 && vim_iswhite(*s))
+	while (todo > 0 && VIM_ISWHITE(*s))
 	{
 	    if (*s == TAB)
 	    {
@@ -820,7 +820,7 @@ open_line(
 		{
 		    /* Find last non-blank in line */
 		    p = ptr + STRLEN(ptr) - 1;
-		    while (p > ptr && vim_iswhite(*p))
+		    while (p > ptr && VIM_ISWHITE(*p))
 			--p;
 		    last_char = *p;
 
@@ -831,7 +831,7 @@ open_line(
 		    {
 			if (p > ptr)
 			    --p;
-			while (p > ptr && vim_iswhite(*p))
+			while (p > ptr && VIM_ISWHITE(*p))
 			    --p;
 		    }
 		    /*
@@ -1020,7 +1020,7 @@ open_line(
 		     * comment leader, then put a space after the middle
 		     * comment leader on the next line.
 		     */
-		    if (!vim_iswhite(saved_line[lead_len - 1])
+		    if (!VIM_ISWHITE(saved_line[lead_len - 1])
 			    && ((p_extra != NULL
 				    && (int)curwin->w_cursor.col == lead_len)
 				|| (p_extra == NULL
@@ -1124,7 +1124,7 @@ open_line(
 		    {
 			/* find last non-white in the leader to line up with */
 			for (p = leader + lead_len - 1; p > leader
-						      && vim_iswhite(*p); --p)
+						      && VIM_ISWHITE(*p); --p)
 			    ;
 			++p;
 
@@ -1180,7 +1180,7 @@ open_line(
 			    }
 			    else
 #endif
-			    if (!vim_iswhite(*p))
+			    if (!VIM_ISWHITE(*p))
 				*p = ' ';
 			}
 		    }
@@ -1217,7 +1217,7 @@ open_line(
 			 * leader by spaces.  Keep Tabs, the indent must
 			 * remain the same. */
 			for (p += lead_repl_len; p < leader + lead_len; ++p)
-			    if (!vim_iswhite(*p))
+			    if (!VIM_ISWHITE(*p))
 			    {
 				/* Don't put a space before a TAB. */
 				if (p + 1 < leader + lead_len && p[1] == TAB)
@@ -1282,7 +1282,7 @@ open_line(
 
 		    /* If the leader ends in white space, don't add an
 		     * extra space */
-		    if (lead_len > 0 && vim_iswhite(leader[lead_len - 1]))
+		    if (lead_len > 0 && VIM_ISWHITE(leader[lead_len - 1]))
 			extra_space = FALSE;
 		    leader[lead_len] = NUL;
 		}
@@ -1305,7 +1305,7 @@ open_line(
 #endif
 					   )
 		{
-		    while (lead_len && vim_iswhite(*leader))
+		    while (lead_len && VIM_ISWHITE(*leader))
 		    {
 			--lead_len;
 			--newcol;
@@ -1680,7 +1680,7 @@ get_leader_len(
     char_u	*saved_flags = NULL;
 
     result = i = 0;
-    while (vim_iswhite(line[i]))    /* leading white space is ignored */
+    while (VIM_ISWHITE(line[i]))    /* leading white space is ignored */
 	++i;
 
     /*
@@ -1725,11 +1725,11 @@ get_leader_len(
 	     * When string starts with white space, must have some white space
 	     * (but the amount does not need to match, there might be a mix of
 	     * TABs and spaces). */
-	    if (vim_iswhite(string[0]))
+	    if (VIM_ISWHITE(string[0]))
 	    {
-		if (i == 0 || !vim_iswhite(line[i - 1]))
+		if (i == 0 || !VIM_ISWHITE(line[i - 1]))
 		    continue;  /* missing white space */
-		while (vim_iswhite(string[0]))
+		while (VIM_ISWHITE(string[0]))
 		    ++string;
 	    }
 	    for (j = 0; string[j] != NUL && string[j] == line[i + j]; ++j)
@@ -1740,7 +1740,7 @@ get_leader_len(
 	    /* When 'b' flag used, there must be white space or an
 	     * end-of-line after the string in the line. */
 	    if (vim_strchr(part_buf, COM_BLANK) != NULL
-			   && !vim_iswhite(line[i + j]) && line[i + j] != NUL)
+			   && !VIM_ISWHITE(line[i + j]) && line[i + j] != NUL)
 		continue;
 
 	    /* We have found a match, stop searching unless this is a middle
@@ -1785,7 +1785,7 @@ get_leader_len(
 	result = i;
 
 	/* Include any trailing white space. */
-	while (vim_iswhite(line[i]))
+	while (VIM_ISWHITE(line[i]))
 	    ++i;
 
 	if (include_space)
@@ -1853,11 +1853,11 @@ get_last_leader_offset(char_u *line, char_u **flags)
 	     * (but the amount does not need to match, there might be a mix of
 	     * TABs and spaces).
 	     */
-	    if (vim_iswhite(string[0]))
+	    if (VIM_ISWHITE(string[0]))
 	    {
-		if (i == 0 || !vim_iswhite(line[i - 1]))
+		if (i == 0 || !VIM_ISWHITE(line[i - 1]))
 		    continue;
-		while (vim_iswhite(string[0]))
+		while (VIM_ISWHITE(string[0]))
 		    ++string;
 	    }
 	    for (j = 0; string[j] != NUL && string[j] == line[i + j]; ++j)
@@ -1870,7 +1870,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
 	     * end-of-line after the string in the line.
 	     */
 	    if (vim_strchr(part_buf, COM_BLANK) != NULL
-		    && !vim_iswhite(line[i + j]) && line[i + j] != NUL)
+		    && !VIM_ISWHITE(line[i + j]) && line[i + j] != NUL)
 	    {
 		continue;
 	    }
@@ -1907,7 +1907,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
 	     * the comment leader correctly.
 	     */
 
-	    while (vim_iswhite(*com_leader))
+	    while (VIM_ISWHITE(*com_leader))
 		++com_leader;
 	    len1 = (int)STRLEN(com_leader);
 
@@ -1920,7 +1920,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
 		    continue;
 		string = vim_strchr(part_buf2, ':');
 		++string;
-		while (vim_iswhite(*string))
+		while (VIM_ISWHITE(*string))
 		    ++string;
 		len2 = (int)STRLEN(string);
 		if (len2 == 0)
@@ -2694,7 +2694,7 @@ inindent(int extra)
     char_u	*ptr;
     colnr_T	col;
 
-    for (col = 0, ptr = ml_get_curline(); vim_iswhite(*ptr); ++col)
+    for (col = 0, ptr = ml_get_curline(); VIM_ISWHITE(*ptr); ++col)
 	++ptr;
     if (col >= curwin->w_cursor.col + extra)
 	return TRUE;
@@ -5777,7 +5777,7 @@ cin_is_cpp_namespace(char_u *s)
 	p = cin_skipcomment(skipwhite(s + 9));
 	while (*p != NUL)
 	{
-	    if (vim_iswhite(*p))
+	    if (VIM_ISWHITE(*p))
 	    {
 		has_name = TRUE; /* found end of a name */
 		p = cin_skipcomment(skipwhite(p));
@@ -5825,7 +5825,7 @@ cin_is_cpp_extern_c(char_u *s)
 	p = cin_skipcomment(skipwhite(s + 6));
 	while (*p != NUL)
 	{
-	    if (vim_iswhite(*p))
+	    if (VIM_ISWHITE(*p))
 	    {
 		p = cin_skipcomment(skipwhite(p));
 	    }
@@ -5976,15 +5976,15 @@ cin_first_id_amount(void)
 	    || (len == 6 && STRNCMP(p, "signed", 6) == 0))
     {
 	s = skipwhite(p + len);
-	if ((STRNCMP(s, "int", 3) == 0 && vim_iswhite(s[3]))
-		|| (STRNCMP(s, "long", 4) == 0 && vim_iswhite(s[4]))
-		|| (STRNCMP(s, "short", 5) == 0 && vim_iswhite(s[5]))
-		|| (STRNCMP(s, "char", 4) == 0 && vim_iswhite(s[4])))
+	if ((STRNCMP(s, "int", 3) == 0 && VIM_ISWHITE(s[3]))
+		|| (STRNCMP(s, "long", 4) == 0 && VIM_ISWHITE(s[4]))
+		|| (STRNCMP(s, "short", 5) == 0 && VIM_ISWHITE(s[5]))
+		|| (STRNCMP(s, "char", 4) == 0 && VIM_ISWHITE(s[4])))
 	    p = s;
     }
     for (len = 0; vim_isIDc(p[len]); ++len)
 	;
-    if (len == 0 || !vim_iswhite(p[len]) || cin_nocode(p))
+    if (len == 0 || !VIM_ISWHITE(p[len]) || cin_nocode(p))
 	return 0;
 
     p = skipwhite(p + len);
@@ -6356,7 +6356,7 @@ cin_is_if_for_while_before_offset(char_u *line, int *poffset)
 
     if (offset-- < 2)
 	return 0;
-    while (offset > 2 && vim_iswhite(line[offset]))
+    while (offset > 2 && VIM_ISWHITE(line[offset]))
 	--offset;
 
     offset -= 1;
@@ -7602,7 +7602,7 @@ get_c_indent(void)
 		    else
 		    {
 			col = our_paren_pos.col + 1;
-			while (vim_iswhite(l[col]))
+			while (VIM_ISWHITE(l[col]))
 			    col++;
 			if (l[col] != NUL)	/* In case of trailing space */
 			    our_paren_pos.col = col;
@@ -9449,7 +9449,7 @@ get_lisp_indent(void)
 		    amount++;
 		    firsttry = amount;
 
-		    while (vim_iswhite(*that))
+		    while (VIM_ISWHITE(*that))
 		    {
 			amount += lbr_chartabsize(line, that, (colnr_T)amount);
 			++that;
@@ -9472,7 +9472,7 @@ get_lisp_indent(void)
 				    && (*that < '0' || *that > '9')))
 			{
 			    while (*that
-				    && (!vim_iswhite(*that)
+				    && (!VIM_ISWHITE(*that)
 					|| quotecount
 					|| parencount)
 				    && (!((*that == '(' || *that == '[')
@@ -9495,7 +9495,7 @@ get_lisp_indent(void)
 						line, &that, (colnr_T)amount);
 			    }
 			}
-			while (vim_iswhite(*that))
+			while (VIM_ISWHITE(*that))
 			{
 			    amount += lbr_chartabsize(
 						 line, that, (colnr_T)amount);

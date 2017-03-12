@@ -4528,7 +4528,7 @@ suggest_trie_walk(
 
 	    fword_ends = (fword[sp->ts_fidx] == NUL
 			   || (soundfold
-			       ? vim_iswhite(fword[sp->ts_fidx])
+			       ? VIM_ISWHITE(fword[sp->ts_fidx])
 			       : !spell_iswordp(fword + sp->ts_fidx, curwin)));
 	    tword[sp->ts_twordlen] = NUL;
 
@@ -6231,7 +6231,7 @@ stp_sal_score(
 	 * sounds like "t h" while "the" sounds like "@".  Avoid that by
 	 * removing the space.  Don't do it when the good word also contains a
 	 * space. */
-	if (vim_iswhite(su->su_badptr[su->su_badlen])
+	if (VIM_ISWHITE(su->su_badptr[su->su_badlen])
 					 && *skiptowhite(stp->st_word) == NUL)
 	    for (p = fword; *(p = skiptowhite(p)) != NUL; )
 		STRMOVE(p, p + 1);
@@ -7106,7 +7106,7 @@ spell_soundfold_sofo(slang_T *slang, char_u *inword, char_u *res)
 	for (s = inword; *s != NUL; )
 	{
 	    c = mb_cptr2char_adv(&s);
-	    if (enc_utf8 ? utf_class(c) == 0 : vim_iswhite(c))
+	    if (enc_utf8 ? utf_class(c) == 0 : VIM_ISWHITE(c))
 		c = ' ';
 	    else if (c < 256)
 		c = slang->sl_sal_first[c];
@@ -7147,7 +7147,7 @@ spell_soundfold_sofo(slang_T *slang, char_u *inword, char_u *res)
 	/* The sl_sal_first[] table contains the translation. */
 	for (s = inword; (c = *s) != NUL; ++s)
 	{
-	    if (vim_iswhite(c))
+	    if (VIM_ISWHITE(c))
 		c = ' ';
 	    else
 		c = slang->sl_sal_first[c];
@@ -7185,7 +7185,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 	t = word;
 	while (*s != NUL)
 	{
-	    if (vim_iswhite(*s))
+	    if (VIM_ISWHITE(*s))
 	    {
 		*t++ = ' ';
 		s = skipwhite(s);
@@ -7409,7 +7409,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 		}
 	    }
 	}
-	else if (vim_iswhite(c))
+	else if (VIM_ISWHITE(c))
 	{
 	    c = ' ';
 	    k = 1;
@@ -7474,7 +7474,7 @@ spell_soundfold_wsal(slang_T *slang, char_u *inword, char_u *res)
 	c = mb_cptr2char_adv(&s);
 	if (slang->sl_rem_accents)
 	{
-	    if (enc_utf8 ? utf_class(c) == 0 : vim_iswhite(c))
+	    if (enc_utf8 ? utf_class(c) == 0 : VIM_ISWHITE(c))
 	    {
 		if (did_white)
 		    continue;
@@ -7715,7 +7715,7 @@ spell_soundfold_wsal(slang_T *slang, char_u *inword, char_u *res)
 		}
 	    }
 	}
-	else if (vim_iswhite(c))
+	else if (VIM_ISWHITE(c))
 	{
 	    c = ' ';
 	    k = 1;

@@ -2005,7 +2005,7 @@ parse_line:
 #endif
 			if (	   fnamencmp(lbuf, tagp.fname, p - lbuf) == 0
 #ifdef FEAT_TAG_ANYWHITE
-				&& vim_iswhite(tagp.fname[p - lbuf])
+				&& VIM_ISWHITE(tagp.fname[p - lbuf])
 #else
 				&& tagp.fname[p - lbuf] == TAB
 #endif
@@ -3932,7 +3932,7 @@ get_tags(list_T *list, char_u *pat)
 		    else if (STRNCMP(p, "file:", 5) == 0)
 			/* skip "file:" (static tag) */
 			p += 4;
-		    else if (!vim_iswhite(*p))
+		    else if (!VIM_ISWHITE(*p))
 		    {
 			char_u	*s, *n;
 			int	len;

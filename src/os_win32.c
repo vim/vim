@@ -4706,7 +4706,7 @@ mch_call_shell(
 	if (*cmdbase == '(')
 	    ++cmdbase;
 
-	if ((STRNICMP(cmdbase, "start", 5) == 0) && vim_iswhite(cmdbase[5]))
+	if ((STRNICMP(cmdbase, "start", 5) == 0) && VIM_ISWHITE(cmdbase[5]))
 	{
 	    STARTUPINFO		si;
 	    PROCESS_INFORMATION	pi;
@@ -4724,14 +4724,14 @@ mch_call_shell(
 
 	    cmdbase = skipwhite(cmdbase + 5);
 	    if ((STRNICMP(cmdbase, "/min", 4) == 0)
-		    && vim_iswhite(cmdbase[4]))
+		    && VIM_ISWHITE(cmdbase[4]))
 	    {
 		cmdbase = skipwhite(cmdbase + 4);
 		si.dwFlags = STARTF_USESHOWWINDOW;
 		si.wShowWindow = SW_SHOWMINNOACTIVE;
 	    }
 	    else if ((STRNICMP(cmdbase, "/b", 2) == 0)
-		    && vim_iswhite(cmdbase[2]))
+		    && VIM_ISWHITE(cmdbase[2]))
 	    {
 		cmdbase = skipwhite(cmdbase + 2);
 		flags = CREATE_NO_WINDOW;

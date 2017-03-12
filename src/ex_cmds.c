@@ -256,7 +256,7 @@ linelen(int *has_tab)
 
     /* find the character after the last non-blank character */
     for (last = first + STRLEN(first);
-				last > first && vim_iswhite(last[-1]); --last)
+				last > first && VIM_ISWHITE(last[-1]); --last)
 	;
     save = *last;
     *last = NUL;
@@ -400,7 +400,7 @@ ex_sort(exarg_T *eap)
 
     for (p = eap->arg; *p != NUL; ++p)
     {
-	if (vim_iswhite(*p))
+	if (VIM_ISWHITE(*p))
 	    ;
 	else if (*p == 'i')
 	    sort_ic = TRUE;
@@ -683,7 +683,7 @@ ex_retab(exarg_T *eap)
 	did_undo = FALSE;
 	for (;;)
 	{
-	    if (vim_iswhite(ptr[col]))
+	    if (VIM_ISWHITE(ptr[col]))
 	    {
 		if (!got_tab && num_spaces == 0)
 		{
@@ -4807,7 +4807,7 @@ do_sub(exarg_T *eap)
 	which_pat = RE_SUBST;	/* use last substitute regexp */
 
 				/* new pattern and substitution */
-    if (eap->cmd[0] == 's' && *cmd != NUL && !vim_iswhite(*cmd)
+    if (eap->cmd[0] == 's' && *cmd != NUL && !VIM_ISWHITE(*cmd)
 		&& vim_strchr((char_u *)"0123456789cegriIp|\"", *cmd) == NULL)
     {
 				/* don't accept alphanumeric for separator */
@@ -6225,7 +6225,7 @@ ex_help(exarg_T *eap)
 
     /* remove trailing blanks */
     p = arg + STRLEN(arg) - 1;
-    while (p > arg && vim_iswhite(*p) && p[-1] != '\\')
+    while (p > arg && VIM_ISWHITE(*p) && p[-1] != '\\')
 	*p-- = NUL;
 
 #ifdef FEAT_MULTI_LANG
@@ -6809,7 +6809,7 @@ fix_help_buffer(void)
 	{
 	    line = ml_get_buf(curbuf, lnum, FALSE);
 	    len = (int)STRLEN(line);
-	    if (in_example && len > 0 && !vim_iswhite(line[0]))
+	    if (in_example && len > 0 && !VIM_ISWHITE(line[0]))
 	    {
 		/* End of example: non-white or '<' in first column. */
 		if (line[0] == '<')
@@ -7421,7 +7421,7 @@ ex_helptags(exarg_T *eap)
     int		add_help_tags = FALSE;
 
     /* Check for ":helptags ++t {dir}". */
-    if (STRNCMP(eap->arg, "++t", 3) == 0 && vim_iswhite(eap->arg[3]))
+    if (STRNCMP(eap->arg, "++t", 3) == 0 && VIM_ISWHITE(eap->arg[3]))
     {
 	add_help_tags = TRUE;
 	eap->arg = skipwhite(eap->arg + 3);
@@ -7754,7 +7754,7 @@ ex_sign(exarg_T *eap)
 	if (VIM_ISDIGIT(*arg))
 	{
 	    id = getdigits(&arg);
-	    if (!vim_iswhite(*arg) && *arg != NUL)
+	    if (!VIM_ISWHITE(*arg) && *arg != NUL)
 	    {
 		id = -1;
 		arg = arg1;

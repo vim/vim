@@ -6027,7 +6027,7 @@ remove_key_from_history(void)
 		if (p == NULL)
 		    break;
 		++p;
-		for (i = 0; p[i] && !vim_iswhite(p[i]); ++i)
+		for (i = 0; p[i] && !VIM_ISWHITE(p[i]); ++i)
 		    if (p[i] == '\\' && p[i + 1])
 			++i;
 		STRMOVE(p, p + i);

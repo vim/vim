@@ -6351,12 +6351,12 @@ nfa_regmatch(
 		break;
 
 	    case NFA_WHITE:	/*  \s	*/
-		result = vim_iswhite(curc);
+		result = VIM_ISWHITE(curc);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NWHITE:	/*  \S	*/
-		result = curc != NUL && !vim_iswhite(curc);
+		result = curc != NUL && !VIM_ISWHITE(curc);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 

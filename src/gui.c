@@ -4967,7 +4967,7 @@ ex_gui(exarg_T *eap)
      */
     if (arg[0] == '-'
 	    && (arg[1] == 'f' || arg[1] == 'b')
-	    && (arg[2] == NUL || vim_iswhite(arg[2])))
+	    && (arg[2] == NUL || VIM_ISWHITE(arg[2])))
     {
 	gui.dofork = (arg[1] == 'b');
 	eap->arg = skipwhite(eap->arg + 2);

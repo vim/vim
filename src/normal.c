@@ -3090,7 +3090,7 @@ do_mouse(
 		 * not a word character, try finding a match and select a (),
 		 * {}, [], #if/#endif, etc. block. */
 		end_visual = curwin->w_cursor;
-		while (gc = gchar_pos(&end_visual), vim_iswhite(gc))
+		while (gc = gchar_pos(&end_visual), VIM_ISWHITE(gc))
 		    inc(&end_visual);
 		if (oap != NULL)
 		    oap->motion_type = MCHAR;
@@ -3467,7 +3467,7 @@ find_ident_at_pos(
 	else
 #endif
 	    while (ptr[col] != NUL
-		    && (i == 0 ? !vim_iswordc(ptr[col]) : vim_iswhite(ptr[col]))
+		    && (i == 0 ? !vim_iswordc(ptr[col]) : VIM_ISWHITE(ptr[col]))
 # if defined(FEAT_BEVAL)
 		    && (!(find_type & FIND_EVAL) || ptr[col] != ']')
 # endif
@@ -3524,7 +3524,7 @@ find_ident_at_pos(
 	    while (col > 0
 		    && ((i == 0
 			    ? vim_iswordc(ptr[col - 1])
-			    : (!vim_iswhite(ptr[col - 1])
+			    : (!VIM_ISWHITE(ptr[col - 1])
 				&& (!(find_type & FIND_IDENT)
 				    || !vim_iswordc(ptr[col - 1]))))
 #if defined(FEAT_BEVAL)
@@ -3588,7 +3588,7 @@ find_ident_at_pos(
     else
 #endif
 	while ((i == 0 ? vim_iswordc(ptr[col])
-		       : (ptr[col] != NUL && !vim_iswhite(ptr[col])))
+		       : (ptr[col] != NUL && !VIM_ISWHITE(ptr[col])))
 # if defined(FEAT_BEVAL)
 		    || ((find_type & FIND_EVAL)
 			&& col <= (int)startcol
@@ -8109,7 +8109,7 @@ nv_g_cmd(cmdarg_T *cap)
 	{
 	    do
 		i = gchar_cursor();
-	    while (vim_iswhite(i) && oneright() == OK);
+	    while (VIM_ISWHITE(i) && oneright() == OK);
 	}
 	curwin->w_set_curswant = TRUE;
 	break;
@@ -8133,7 +8133,7 @@ nv_g_cmd(cmdarg_T *cap)
 
 	    /* Decrease the cursor column until it's on a non-blank. */
 	    while (curwin->w_cursor.col > 0
-				    && vim_iswhite(ptr[curwin->w_cursor.col]))
+				    && VIM_ISWHITE(ptr[curwin->w_cursor.col]))
 		--curwin->w_cursor.col;
 	    curwin->w_set_curswant = TRUE;
 	    adjust_for_sel(cap);
@@ -8716,7 +8716,7 @@ nv_wordcmd(cmdarg_T *cap)
 	n = gchar_cursor();
 	if (n != NUL)			/* not an empty line */
 	{
-	    if (vim_iswhite(n))
+	    if (VIM_ISWHITE(n))
 	    {
 		/*
 		 * Reproduce a funny Vi behaviour: "cw" on a blank only

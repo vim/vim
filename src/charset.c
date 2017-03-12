@@ -1530,7 +1530,7 @@ skipwhite(char_u *q)
 {
     char_u	*p = q;
 
-    while (vim_iswhite(*p)) /* skip to next non-white */
+    while (VIM_ISWHITE(*p)) /* skip to next non-white */
 	++p;
     return p;
 }
