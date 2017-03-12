@@ -1090,7 +1090,7 @@ win_lbr_chartabsize(
      */
     if (wp->w_p_lbr
 	    && VIM_ISBREAK(c)
-	    && !VIM_ISBREAK(s[1])
+	    && !VIM_ISBREAK((int)s[1])
 	    && wp->w_p_wrap
 # ifdef FEAT_WINDOWS
 	    && wp->w_width != 0
@@ -1120,7 +1120,7 @@ win_lbr_chartabsize(
 	    if (!(c != NUL
 		    && (VIM_ISBREAK(c)
 			|| (!VIM_ISBREAK(c)
-			    && (col2 == col || !VIM_ISBREAK(*ps))))))
+			    && (col2 == col || !VIM_ISBREAK((int)*ps))))))
 		break;
 
 	    col2 += win_chartabsize(wp, s, col2);
