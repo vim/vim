@@ -37,6 +37,8 @@ static void cleanup_jumplist(void);
 #ifdef FEAT_VIMINFO
 static void write_one_filemark(FILE *fp, xfmark_T *fm, int c1, int c2);
 #endif
+static void mark_adjust_internal(linenr_T line1, linenr_T line2, long amount,
+    long amount_after, int adjust_folds);
 
 /*
  * Set named mark "c" at current cursor position.
@@ -1029,6 +1031,27 @@ mark_adjust(
     long	amount,
     long	amount_after)
 {
+    mark_adjust_internal(line1, line2, amount, amount_after, TRUE);
+}
+
+    void
+mark_adjust_nofold(
+    linenr_T line1,
+    linenr_T line2,
+    long amount,
+    long amount_after)
+{
+    mark_adjust_internal(line1, line2, amount, amount_after, FALSE);
+}
+
+    static void
+mark_adjust_internal(
+    linenr_T line1,
+    linenr_T line2,
+    long amount,
+    long amount_after,
+    int adjust_folds UNUSED)
+{
     int		i;
     int		fnum = curbuf->b_fnum;
     linenr_T	*lp;
@@ -1174,7 +1197,8 @@ mark_adjust(
 
 #ifdef FEAT_FOLDING
 	    /* adjust folds */
-	    foldMarkAdjust(win, line1, line2, amount, amount_after);
+	    if (adjust_folds)
+		foldMarkAdjust(win, line1, line2, amount, amount_after);
 #endif
 	}
     }
