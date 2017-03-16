@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Mar 05
+*options.txt*	For Vim version 8.0.  Last change: 2017 Mar 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -727,6 +727,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	which can be easier to read at certain sizes on certain displays.
 	Setting this option can sometimes cause problems if 'guifont' is set
 	to its default (empty string).
+	NOTE: This option is reset when 'compatible' is set.
 
 			*'autochdir'* *'acd'* *'noautochdir'* *'noacd'*
 'autochdir' 'acd'	boolean (default off)
@@ -760,6 +761,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- Disable the use of 'keymap' (without changing its value).
 	Note that 'arabicshape' and 'delcombine' are not reset (it is a global
 	option).
+	NOTE: This option is reset when 'compatible' is set.
 	Also see |arabic.txt|.
 
 					*'arabicshape'* *'arshape'*
@@ -781,6 +783,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	form.
 	Arabic is a complex language which requires other settings, for
 	further details see |arabic.txt|.
+	NOTE: This option is set when 'compatible' is set.
 
 			*'autoindent'* *'ai'* *'noautoindent'* *'noai'*
 'autoindent' 'ai'	boolean	(default off)
@@ -993,6 +996,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the system may refuse to do this.  In that case the "auto" value will
 	again not rename the file.
 
+	NOTE: This option is set to the Vi default value when 'compatible' is
+	set and to the Vim default value when 'compatible' is reset.
+
 						*'backupdir'* *'bdir'*
 'backupdir' 'bdir'	string	(default for Amiga: ".,t:",
 				 for MS-DOS and Win32: ".,$TEMP,c:/tmp,c:/temp"
@@ -1139,6 +1145,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	When they are supported "\n" characters will start a new line.  If the
 	expression evaluates to a |List| this is equal to using each List item
 	as a string and putting "\n" in between them.
+	NOTE: This option is set to "" when 'compatible' is set.
 
 						*'belloff'* *'bo'*
 'belloff' 'bo'		string	(default "")
@@ -1176,8 +1183,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	wildmode    More matches in |cmdline-completion| available
 		    (depends on the 'wildmode' setting).
 
-	This is most useful, to fine tune when in insert mode the bell should
-	be rung. For normal mode and ex commands, the bell is often rung to
+	This is most useful to fine tune when in Insert mode the bell should
+	be rung. For Normal mode and Ex commands, the bell is often rung to
 	indicate that an error occurred. It can be silenced by adding the
 	"error" keyword.
 
@@ -1259,6 +1266,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Every wrapped line will continue visually indented (same amount of
 	space as the beginning of that line), thus preserving horizontal blocks
 	of text.
+	NOTE: This option is reset when 'compatible' is set.
 
 						*'breakindentopt'* *'briopt'*
 'breakindentopt' 'briopt' string (default empty)
@@ -1435,6 +1443,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:exe "set cedit=\<Esc>"
 <	|Nvi| also has this option, but it only uses the first character.
 	See |cmdwin|.
+	NOTE: This option is set to the Vim default value when 'compatible'
+	is reset.
 
 				*'charconvert'* *'ccv'* *E202* *E214* *E513*
 'charconvert' 'ccv'	string (default "")
@@ -1743,7 +1753,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   set to its Vim default when 'compatible' is unset.
 	The {effect} column summarises the change when 'compatible' is set.
 
-	option		? set value	effect
+	option		? set value	effect ~
 
 	'allowrevins'	+ off		no CTRL-_ command
 	'antialias'	+ off		don't use antialiased fonts
@@ -1763,7 +1773,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'cscopepathcomp'+ 0		don't show directories in tags list
 	'cscoperelative'+ off		
 	'cscopetag'	+ off		don't use cscope for ":tag"
-	'cscopetagorder'  0		see |cscopetagorder|
+	'cscopetagorder'+ 0		see |cscopetagorder|
 	'cscopeverbose'	+ off		see |cscopeverbose|
 	'delcombine'	+ off		unicode: delete whole char combination
 	'digraph'	+ off		no digraphs
@@ -1813,7 +1823,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'tildeop'	+ off		tilde is not an operator
 	'ttimeout'	+ off		no terminal timeout
 	'undofile'	+ off		don't use an undo file
-	'viminfo'       - {unchanged}	{set vim default only on resetting 'cp'}
+	'viminfo'       - {unchanged}	{set Vim default only on resetting 'cp'}
 	'virtualedit'	+ ""		cursor can only be placed on characters
 	'whichwrap'	& ""		left-right movements don't wrap
 	'wildchar'	& CTRL-E	only when the current value is <Tab>
@@ -1993,7 +2003,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	existing line.  'expandtab' has no effect on these characters, a Tab
 	remains a Tab.  If the new indent is greater than on the existing
 	line, the remaining space is filled in the normal manner.
-	NOTE: 'copyindent' is reset when 'compatible' is set.
+	NOTE: This option is reset when 'compatible' is set.
 	Also see 'preserveindent'.
 
 						*'cpoptions'* *'cpo'* *cpo*
@@ -2354,6 +2364,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Determines how many components of the path to show in a list of tags.
 	See |cscopepathcomp|.
+	NOTE: This option is set to 0 when 'compatible' is set.
 
 						*'cscopeprg'* *'csprg'*
 'cscopeprg' 'csprg'	string	(default "cscope")
@@ -2383,6 +2394,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	In the absence of a prefix (-P) for cscope. setting this option enables
 	to use the basename of cscope.out path as the prefix.
 	See |cscoperelative|.
+	NOTE: This option is reset when 'compatible' is set.
 
 				*'cscopetag'* *'cst'* *'nocscopetag'* *'nocst'*
 'cscopetag' 'cst'	boolean (default off)
@@ -2502,6 +2514,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This is useful for Arabic, Hebrew and many other languages where one
 	may have combining characters overtop of base characters, and want
 	to remove only the combining ones.
+	NOTE: This option is reset when 'compatible' is set.
 
 						*'dictionary'* *'dict'*
 'dictionary' 'dict'	string	(default "")
@@ -3422,6 +3435,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.  That stops the option from working,
 	since changing the buffer text is not allowed.
+	NOTE: This option is set to "" when 'compatible' is set.
 
 					*'formatoptions'* *'fo'*
 'formatoptions' 'fo'	string (Vim default: "tcq", Vi default: "vt")
@@ -4081,31 +4095,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	define one.  The default uses a different group for each occasion.
 	See |highlight-default| for the default highlight groups.
 
-				 *'hlsearch'* *'hls'* *'nohlsearch'* *'nohls'*
-'hlsearch' 'hls'	boolean	(default off)
-			global
-			{not in Vi}
-			{not available when compiled without the
-			|+extra_search| feature}
-	When there is a previous search pattern, highlight all its matches.
-	The type of highlighting used can be set with the 'l' occasion in the
-	'highlight' option.  This uses the "Search" highlight group by
-	default.  Note that only the matching text is highlighted, any offsets
-	are not applied.
-	See also: 'incsearch' and |:match|.
-	When you get bored looking at the highlighted matches, you can turn it
-	off with |:nohlsearch|.  This does not change the option value, as
-	soon as you use a search command, the highlighting comes back.
-	'redrawtime' specifies the maximum time spent on finding matches.
-	When the search pattern can match an end-of-line, Vim will try to
-	highlight all of the matched text.  However, this depends on where the
-	search starts.  This will be the first line in the window or the first
-	line below a closed fold.  A match in a previous line which is not
-	drawn may not continue in a newly drawn line.
-	You can specify whether the highlight status is restored on startup
-	with the 'h' flag in 'viminfo' |viminfo-h|.
-	NOTE: This option is reset when 'compatible' is set.
-
 						*'history'* *'hi'*
 'history' 'hi'		number	(Vim default: 50, Vi default: 0,
 						 set to 200 in |defaults.vim|)
@@ -4138,6 +4127,31 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on, phonetic keyboard mapping is used.  'hkmap' must also be on.
 	This is useful if you have a non-Hebrew keyboard.
 	See |rileft.txt|.
+	NOTE: This option is reset when 'compatible' is set.
+
+				 *'hlsearch'* *'hls'* *'nohlsearch'* *'nohls'*
+'hlsearch' 'hls'	boolean	(default off)
+			global
+			{not in Vi}
+			{not available when compiled without the
+			|+extra_search| feature}
+	When there is a previous search pattern, highlight all its matches.
+	The type of highlighting used can be set with the 'l' occasion in the
+	'highlight' option.  This uses the "Search" highlight group by
+	default.  Note that only the matching text is highlighted, any offsets
+	are not applied.
+	See also: 'incsearch' and |:match|.
+	When you get bored looking at the highlighted matches, you can turn it
+	off with |:nohlsearch|.  This does not change the option value, as
+	soon as you use a search command, the highlighting comes back.
+	'redrawtime' specifies the maximum time spent on finding matches.
+	When the search pattern can match an end-of-line, Vim will try to
+	highlight all of the matched text.  However, this depends on where the
+	search starts.  This will be the first line in the window or the first
+	line below a closed fold.  A match in a previous line which is not
+	drawn may not continue in a newly drawn line.
+	You can specify whether the highlight status is restored on startup
+	with the 'h' flag in 'viminfo' |viminfo-h|.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'icon'* *'noicon'*
@@ -4419,7 +4433,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Error messages will be suppressed, unless the 'debug' option contains
 	"msg".
 	See |indent-expression|.
-	NOTE: This option is made empty when 'compatible' is set.
+	NOTE: This option is set to "" when 'compatible' is set.
 
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
@@ -5410,6 +5424,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	The number of milliseconds between polls for MzScheme threads.
 	Negative or zero value means no thread scheduling.
+	NOTE: This option is set to the Vim default value when 'compatible'
+	is reset.
 
 							*'nrformats'* *'nf'*
 'nrformats' 'nf'	string	(default "bin,octal,hex",
@@ -5475,7 +5491,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	is set. Thus with the Vim default of 4 there is room for a line number
 	up to 999. When the buffer has 1000 lines five columns will be used.
 	The minimum value is 1, the maximum value is 10.
-	NOTE: 'numberwidth' is reset to 8 when 'compatible' is set.
+	NOTE: This option is set to the Vi default value when 'compatible' is
+	set and to the Vim default value when 'compatible' is reset.
 
 						*'omnifunc'* *'ofu'*
 'omnifunc' 'ofu'	string	(default: empty)
@@ -5715,7 +5732,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	a Tab.
 	NOTE: When using ">>" multiple times the resulting indent is a mix of
 	tabs and spaces.  You might not like this.
-	NOTE: 'preserveindent' is reset when 'compatible' is set.
+	NOTE: This option is reset when 'compatible' is set.
 	Also see 'copyindent'.
 	Use |:retab| to clean up white space.
 
@@ -6453,9 +6470,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"-f" is not inside the quotes, because it is not part of the command
 	name.  And Vim automagically recognizes the backslashes that are path
 	separators.
-	For Dos 32 bits (DJGPP), you can set the $DJSYSFLAGS environment
-	variable to change the way external commands are executed.  See the
-	libc.inf file of DJGPP.
 	Under MS-Windows, when the executable ends in ".com" it must be
 	included.  Thus setting the shell to "command.com" or "4dos.com"
 	works, but "command" and "4dos" do not work for all commands (e.g.,
@@ -6595,6 +6609,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'shelltemp' is off.
 	The `system()` function does not respect this option and always uses
 	temp files.
+	NOTE: This option is set to the Vim default value when 'compatible'
+	is reset.
 
 						*'shelltype'* *'st'*
 'shelltype' 'st'	number	(default 0)
@@ -6911,7 +6927,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	mapping: ":inoremap # X^H#", where ^H is entered with CTRL-V CTRL-H.
 	When using the ">>" command, lines starting with '#' are not shifted
 	right.
-	NOTE: 'smartindent' is reset when 'compatible' is set.
+	NOTE: This option is reset when 'compatible' is set.
 	This option is reset when 'paste' is set and restored when 'paste' is
 	reset.
 
@@ -7566,6 +7582,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   ignore	Ignore case
 	   match	Match case
 	   smart	Ignore case unless an upper case letter is used
+	NOTE: This option is set to the Vi default value when 'compatible' is
+	set and to the Vim default value when 'compatible' is reset.
 
 						*'taglength'* *'tl'*
 'taglength' 'tl'	number	(default 0)
@@ -7712,6 +7730,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	compatible terminal.
 	If setting this option does not work (produces a colorless UI)
 	reading |xterm-true-color| might help.
+	NOTE: This option is reset when 'compatible' is set.
 
 						*'terse'* *'noterse'*
 'terse'			boolean	(default off)
@@ -8122,6 +8141,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The undo file is not read when 'undoreload' causes the buffer from
 	before a reload to be saved for undo.
 	When 'undofile' is turned off the undo file is NOT deleted.
+	NOTE: This option is reset when 'compatible' is set.
 
 						*'undolevels'* *'ul'*
 'undolevels' 'ul'	number	(default 100, 1000 for Unix, VMS,
@@ -8377,6 +8397,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
+	NOTE: This option is set to the Vim default value when 'compatible'
+	is reset.
 
 					    *'virtualedit'* *'ve'*
 'virtualedit' 've'	string	(default "")
@@ -8405,6 +8427,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The `g$` command will move to the end of the screen line.
 	It doesn't make sense to combine "all" with "onemore", but you will
 	not get a warning for it.
+	NOTE: This option is set to "" when 'compatible' is set.
 
 			*'visualbell'* *'vb'* *'novisualbell'* *'novb'* *beep*
 'visualbell' 'vb'	boolean	(default off)

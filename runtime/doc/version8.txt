@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2017 Feb 24
+*version8.txt*  For Vim version 8.0.  Last change: 2017 Mar 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -296,7 +296,7 @@ New and extended functions: ~
 |systemlist()|		get the result of a shell command as a list
 |test_alloc_fail()|	make memory allocation fail
 |test_autochdir()|	test 'autochdir' functionality
-|test_disable_char_avail()| test without typeahead
+test_disable_char_avail() test without typeahead (removed later)
 |test_garbagecollect_now()| free memory right now
 |test_null_channel()|	return a null Channel
 |test_null_dict()|	return a null Dict
@@ -426,7 +426,7 @@ When no vimrc file is found, the |defaults.vim| script is loaded to set more
 useful default values for new users.  That includes setting 'nocompatible'.
 Thus Vim no longer starts up in Vi compatible mode.  If you do want that,
 either create a .vimrc file that does "set compatible" or start Vim with
-"Vim -C".
+"vim -C".
 
 
 Support removed ~
@@ -1866,7 +1866,7 @@ Files:	    runtime/doc/eval.txt, src/eval.c, src/testdir/test60.in,
 	    src/testdir/test60.ok
 
 Patch 7.4.237 (after 7.4.236)
-Problem:    When some patches was not included has("patch-7.4.123") may return
+Problem:    When some patches were not included has("patch-7.4.123") may return
 	    true falsely.
 Solution:   Check for the specific patch number.
 Files:	    runtime/doc/eval.txt, src/eval.c

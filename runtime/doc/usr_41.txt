@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.0.  Last change: 2017 Mar 01
+*usr_41.txt*	For Vim version 8.0.  Last change: 2017 Mar 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -922,8 +922,8 @@ Testing:				    *test-functions*
 	assert_fails()		assert that a function call fails
 	test_alloc_fail()	make memory allocation fail
 	test_autochdir()	enable 'autochdir' during startup
-	test_disable_char_avail()	test without typeahead
-	test_garbagecollect_now()	free memory right now
+	test_override()		test with Vim internal overrides
+	test_garbagecollect_now()   free memory right now
 	test_ignore_error()	ignore a specific error message
 	test_null_channel()	return a null Channel
 	test_null_dict()	return a null Dict

@@ -427,6 +427,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'macatsui'	options.txt	/*'macatsui'*
 'magic'	options.txt	/*'magic'*
 'makeef'	options.txt	/*'makeef'*
+'makeencoding'	options.txt	/*'makeencoding'*
 'makeprg'	options.txt	/*'makeprg'*
 'mat'	options.txt	/*'mat'*
 'matchpairs'	options.txt	/*'matchpairs'*
@@ -439,6 +440,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'maxmemtot'	options.txt	/*'maxmemtot'*
 'mco'	options.txt	/*'mco'*
 'mef'	options.txt	/*'mef'*
+'menc'	options.txt	/*'menc'*
 'menuitems'	options.txt	/*'menuitems'*
 'mesg'	vi_diff.txt	/*'mesg'*
 'mfd'	options.txt	/*'mfd'*
@@ -5348,6 +5350,7 @@ cino-:	indent.txt	/*cino-:*
 cino-=	indent.txt	/*cino-=*
 cino->	indent.txt	/*cino->*
 cino-C	indent.txt	/*cino-C*
+cino-E	indent.txt	/*cino-E*
 cino-J	indent.txt	/*cino-J*
 cino-L	indent.txt	/*cino-L*
 cino-M	indent.txt	/*cino-M*
@@ -7887,6 +7890,7 @@ python-bindeval	if_pyth.txt	/*python-bindeval*
 python-bindeval-objects	if_pyth.txt	/*python-bindeval-objects*
 python-buffer	if_pyth.txt	/*python-buffer*
 python-buffers	if_pyth.txt	/*python-buffers*
+python-building	if_pyth.txt	/*python-building*
 python-chdir	if_pyth.txt	/*python-chdir*
 python-command	if_pyth.txt	/*python-command*
 python-commands	if_pyth.txt	/*python-commands*
@@ -8744,7 +8748,6 @@ termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*
 test_alloc_fail()	eval.txt	/*test_alloc_fail()*
 test_autochdir()	eval.txt	/*test_autochdir()*
-test_disable_char_avail()	eval.txt	/*test_disable_char_avail()*
 test_garbagecollect_now()	eval.txt	/*test_garbagecollect_now()*
 test_ignore_error()	eval.txt	/*test_ignore_error()*
 test_null_channel()	eval.txt	/*test_null_channel()*
@@ -8753,6 +8756,7 @@ test_null_job()	eval.txt	/*test_null_job()*
 test_null_list()	eval.txt	/*test_null_list()*
 test_null_partial()	eval.txt	/*test_null_partial()*
 test_null_string()	eval.txt	/*test_null_string()*
+test_override()	eval.txt	/*test_override()*
 test_settime()	eval.txt	/*test_settime()*
 testing	eval.txt	/*testing*
 testing-variable	eval.txt	/*testing-variable*

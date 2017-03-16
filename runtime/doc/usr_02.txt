@@ -1,4 +1,4 @@
-*usr_02.txt*	For Vim version 8.0.  Last change: 2016 Jan 16
+*usr_02.txt*	For Vim version 8.0.  Last change: 2017 Mar 14
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -554,7 +554,7 @@ Summary: 					*help-summary*  >
 8) Ex-commands always start with ":", so to go to the :s command help: >
 	:help :s
 
-9) Commands specifically for debugging start with ">".  To go to to the help
+9) Commands specifically for debugging start with ">".  To go to the help
    for the "cont" debug command: >
 	:help >cont
 

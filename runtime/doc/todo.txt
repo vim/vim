@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Mar 05
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Mar 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,12 @@ entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Using "g<" after ":for x in [1,2,3]|echom x|endfor" looks wrong. (Marcin
+Szamotulski, 2017 Mar 12)
+Also, using Ctrl-C clears the last part.
+
+Test 45 fails on MS-Windows only before resetting 'sw'. Why?
 
 +channel:
 - Try out background make plugin: 
@@ -110,6 +116,14 @@ manager.  Problem with Motif?
 
 Memory leak in test97?  The string is actually freed.  Weird.
 
+Include rust files.  Got all permissions?
+
+dict_add_list and dict_add_dict may free item when failing. (2017 Mar 12,
+Nikolai Pavlov, #1555)
+
+Patch to add buffer name argument to taglist().
+Ordering of tags in result of taglist call. (Duncan McDougall, #1194)
+
 Add a toolbar in the terminal.  Can be global, above all windows, or specific
 for one window.
 Use tb_set(winid, [{'text': 'stop', 'cb': callback, 'hi': 'Green'}])
@@ -121,17 +135,22 @@ What if there is an invalid character?
 
 Json string with trailing \u should be an error. (Lcd)
 
+On MS-Windows with 'clipboard' set to "unnamed" this doesn't work to double
+lines: :g/^/normal yyp   On Unix it works OK.  (Bryce Orgill, 2016 Nov 5)
+Another example 2017 Mar 10.
+
 Multi-byte bug: dv} splits char. (Urtica Dioica, 2017 Jan 9)
 
 When session file has name in argument list but the buffer was deleted, the
 buffer is not deleted when using the session file. (#1393)
 Should add the buffer in hidden state.
 
-When "gf" excludes following ":99", jump to line 99.
-Also when editing a file foo.txt:99 ?
-
 When an item in the quickfix list has a file name that does not exist, behave
 like the item was not a match for :cnext.
+
+Patch to test regexp classes. (Dominique, 2017 Mar 13, #1560)
+Do we need to adjust the implementation?
+Make different classes that depend on the system and that don't.
 
 Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
@@ -146,18 +165,10 @@ already typed. (Dominique, 2017 Jan 26)
 When deleting a mark or register, leave a tombstone, so that it's also deleted
 when writing viminfo (and the delete was the most recent action). #1339
 
-Patch to add 'makeencoding', useful when the system encoding differs from
-Vim's 'encoding' setting. (Ken Takata, 2017 Jan 31)
-
-Patch to adjust marks when adding a new line to the end of buffer in diff
-mode. (James McCoy, 2016 Dec 14, #1329)
-
 Suggestion to improve pt-br spell checking. (Marcelo D Montu, 2016 Dec 15,
 #1330)
 
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
-
-Patch to fix that test87 fails on Arch Linux. (Jesin, 2017 Feb 10)
 
 Completion for :!cmd shows each match twice. #1435
 
@@ -176,14 +187,18 @@ highlighting for both stl and stlnc.  Patch by Ken Hamada (itchyny, 2016 Dec 11)
 Using CTRL-G_U in InsertCharPre causes trouble for redo. (Israel Chauca
 Fuentes, 2017 Feb 12, #1470)
 
+Check for errors E704 and E705 only does VAR_FUNC, should also do VAR_PARTIAL.
+(Nikolai Pavlov, 2017 Mar 13, #1557)
+Make a function to check for function-like type?
+
 Screen updated delayed when using CTRL-O u in Insert mode.
 (Barlik, #1191)  Perhaps because status message?
 
-Patch to add buffer name argument to taglist().
-Ordering of tags in result of taglist call. (Duncan McDougall, #1194)
-
-Patch to fix that b_ind_has_comment is not correctly reset. (Christian
-Brabandt, 2017 Feb 14, closes #1475)
+Implement optional arguments for functions.
+    func Foo(start, count = 1 all = 1)
+    call Foo(12)
+    call Foo(12, all = 0)
+    call Foo(12, 15, 0)
 
 writefile() does not abort as soon as an error is found. (Nikolai Pavlov,
 2017 Feb 14, #1476)
@@ -237,9 +252,6 @@ Useful to restore it.  Is there another solution?
 "ci[" does not look for next [ like ci" does look for next ".
 (J.F. 2017 Jan 7)
 
-On MS-Windows with 'clipboard' set to "unnamed" this doesn't work to double
-lines: :g/^/normal yyp   On Unix it works OK.  (Bryce Orgill, 2016 Nov 5)
-
 Patch for wrong cursor position on wrapped line, involving breakindent.
 (Ozaki Kiichi, 2016 Nov 25)
 Does this also fix #1408 ?
@@ -260,9 +272,6 @@ Patch to make it possible to extend a list with itself.
 (Nikolai Pavlov, 2016 Sep 23)
 
 Patch to add Zstandard compressed file support. (Nick Terrell, 2016 Oct 24)
-
-Patch to add new regexp classes :ident:, :keyword:, :fname:.
-(ichizok, 2016 Jan 12, #1373)
 
 Patch to add trim() function. (Bukn, 2016 Nov 25, #1280)
 
@@ -1060,6 +1069,9 @@ Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 
 Patch to improve equivalence classes in regexp patterns.
 (Christian Brabandt, 2013 Jan 16, update Jan 17)
+
+Patch to add new regexp classes :ident:, :keyword:, :fname:.
+(ichizok, 2016 Jan 12, #1373)
 
 Patch with suggestions for starting.txt. (Tony Mechelynck, 2012 Oct 24)
 But use Gnome instead of GTK?

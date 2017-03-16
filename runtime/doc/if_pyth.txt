@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 8.0.  Last change: 2017 Feb 18
+*if_pyth.txt*   For Vim version 8.0.  Last change: 2017 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -17,6 +17,7 @@ The Python Interface to Vim				*python* *Python*
 9. Dynamic loading				|python-dynamic|
 10. Python 3					|python3|
 11. Python X					|python_x|
+12. Building with Python support		|python-building|
 
 {Vi does not have any of these commands}
 
@@ -878,6 +879,28 @@ If a user prefers Python 2 and want to fallback to Python 3, he needs to set
 	elseif has('python3')
 	  set pyx=3
 	endif
+
+==============================================================================
+12. Building with Python support			*python-building*
+
+A few hints for building with Python 2 or 3 support.
+
+UNIX
+
+See src/Makefile for how to enable including the Python interface.
+
+On Ubuntu you will want to install these packages for Python 2:
+	python
+	python-dev
+For Python 3:
+	python3
+	pytyon3-dev
+For Python 3.6:
+	python3.6
+	pytyon3.6-dev
+
+If you have more than one version of Python 3, you need to link python3 to the
+one you prefer, before running configure.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

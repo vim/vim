@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Mar 04
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Mar 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1904,6 +1904,8 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 
 					*v:testing* *testing-variable*
 v:testing	Must be set before using `test_garbagecollect_now()`.
+		Also, when set certain error messages won't be shown for 2
+		seconds. (e.g. "'dictionary' option is empty") 
 
 				*v:this_session* *this_session-variable*
 v:this_session	Full filename of the last loaded or saved session file.  See
@@ -7797,14 +7799,6 @@ test_autochdir()					*test_autochdir()*
 		Set a flag to enable the effect of 'autochdir' before Vim
 		startup has finished.
 
-						*test_disable_char_avail()*
-test_disable_char_avail({expr})
-		When {expr} is 1 the internal char_avail() function will
-		return |FALSE|.  When {expr} is 0 the char_avail() function will
-		function normally.
-		Only use this for a test where typeahead causes the test not
-		to work.  E.g., to trigger the CursorMovedI autocommand event.
-
 test_garbagecollect_now()			 *test_garbagecollect_now()*
 		Like garbagecollect(), but executed right away.  This must
 		only be called directly to avoid any structure to exist
@@ -7839,6 +7833,18 @@ test_null_partial()					*test_null_partial()*
 
 test_null_string()					*test_null_string()*
 		Return a String that is null. Only useful for testing.
+
+test_override({name}, {val})				*test_override()*
+		Overrides certain parts of Vims internal processing to be able
+		to run tests. Only to be used for testing Vim!
+		The override is enabled when {val} is non-zero and removed
+		when {val} is zero.
+		Current supported values for name are: 
+
+		name	     effect when {val} is non-zero ~
+		redraw       disable the redrawing() function
+		char_avail   disable the char_avail() function
+		ALL	     clear all overrides ({val} is not used)
 
 test_settime({expr})					*test_settime()*
 		Set the time Vim uses internally.  Currently only used for
