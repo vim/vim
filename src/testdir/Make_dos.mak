@@ -44,6 +44,7 @@ $(DOSTMP_INFILES): $(*B).in
 # This moves test99.in to test99.in.bak temporarily.
 $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 	-@if exist test.out DEL test.out
+	-@if exist $(DOSTMP)\$(*B).out DEL $(DOSTMP)\$(*B).out
 	move $(*B).in $(*B).in.bak > nul
 	copy $(DOSTMP)\$(*B).in $(*B).in > nul
 	copy $(*B).ok test.ok > nul
