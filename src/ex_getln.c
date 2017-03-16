@@ -258,6 +258,7 @@ getcmdline(
 	return NULL;			    /* out of memory */
     ccline.cmdlen = ccline.cmdpos = 0;
     ccline.cmdbuff[0] = NUL;
+    sb_text_start_cmdline();
 
     /* autoindent for :insert and :append */
     if (firstc <= 0)
@@ -2083,6 +2084,7 @@ returncmd:
 #ifdef CURSOR_SHAPE
     ui_cursor_shape();		/* may show different cursor shape */
 #endif
+    sb_text_end_cmdline();
 
     {
 	char_u *p = ccline.cmdbuff;

@@ -2146,8 +2146,6 @@ msg_puts_display(
 
 	    inc_msg_scrolled();
 	    need_wait_return = TRUE; /* may need wait_return in main() */
-	    if (must_redraw < VALID)
-		must_redraw = VALID;
 	    redraw_cmdline = TRUE;
 	    if (cmdline_row > 0 && !exmode_active)
 		--cmdline_row;
@@ -2367,6 +2365,8 @@ inc_msg_scrolled(void)
     }
 #endif
     ++msg_scrolled;
+    if (must_redraw < VALID)
+	must_redraw = VALID;
 }
 
 /*
@@ -2389,7 +2389,15 @@ static msgchunk_T *last_msgchunk = NULL; /* last displayed text */
 static msgchunk_T *msg_sb_start(msgchunk_T *mps);
 static msgchunk_T *disp_sb_line(int row, msgchunk_T *smp);
 
-static int do_clear_sb_text = FALSE;	/* clear text on next msg */
+typedef enum {
+    SB_CLEAR_NONE = 0,
+    SB_CLEAR_ALL,
+    SB_CLEAR_CMDLINE_BUSY,
+    SB_CLEAR_CMDLINE_DONE
+} sb_clear_T;
+
+/* When to clear text on next msg. */
+static sb_clear_T do_clear_sb_text = SB_CLEAR_NONE;
 
 /*
  * Store part of a printed message for displaying when scrolling back.
@@ -2404,10 +2412,11 @@ store_sb_text(
 {
     msgchunk_T	*mp;
 
-    if (do_clear_sb_text)
+    if (do_clear_sb_text == SB_CLEAR_ALL
+	    || do_clear_sb_text == SB_CLEAR_CMDLINE_DONE)
     {
-	clear_sb_text();
-	do_clear_sb_text = FALSE;
+	clear_sb_text(do_clear_sb_text == SB_CLEAR_ALL);
+	do_clear_sb_text = SB_CLEAR_NONE;
     }
 
     if (s > *sb_str)
@@ -2447,23 +2456,53 @@ store_sb_text(
     void
 may_clear_sb_text(void)
 {
-    do_clear_sb_text = TRUE;
+    do_clear_sb_text = SB_CLEAR_ALL;
+}
+
+/*
+ * Starting to edit the command line, do not clear messages now.
+ */
+    void
+sb_text_start_cmdline(void)
+{
+    do_clear_sb_text = SB_CLEAR_CMDLINE_BUSY;
+    msg_sb_eol();
+}
+
+/*
+ * Ending to edit the command line.  Clear old lines but the last one later.
+ */
+    void
+sb_text_end_cmdline(void)
+{
+    do_clear_sb_text = SB_CLEAR_CMDLINE_DONE;
 }
 
 /*
  * Clear any text remembered for scrolling back.
+ * When "all" is FALSE keep the last line.
  * Called when redrawing the screen.
  */
     void
-clear_sb_text(void)
+clear_sb_text(int all)
 {
     msgchunk_T	*mp;
+    msgchunk_T	**lastp;
 
-    while (last_msgchunk != NULL)
+    if (all)
+	lastp = &last_msgchunk;
+    else
     {
-	mp = last_msgchunk->sb_prev;
-	vim_free(last_msgchunk);
-	last_msgchunk = mp;
+	if (last_msgchunk == NULL)
+	    return;
+	lastp = &last_msgchunk->sb_prev;
+    }
+
+    while (*lastp != NULL)
+    {
+	mp = (*lastp)->sb_prev;
+	vim_free(*lastp);
+	*lastp = mp;
     }
 }
 
