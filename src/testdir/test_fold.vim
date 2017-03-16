@@ -249,7 +249,7 @@ func! Test_move_folds_around_manual()
   redraw!
   set fdm=manual
   call cursor(2, 1)
-  norm! zR
+  %foldopen
   7,12m0
   let folds=repeat([-1], 18)
   call assert_equal(PrepIndent("b") + PrepIndent("a") + PrepIndent("c"), getline(1, '$'))
@@ -284,6 +284,16 @@ func! Test_move_folds_around_manual()
   call assert_equal(0, foldlevel(6))
   call assert_equal(9, foldclosedend(7))
   call assert_equal([-1, 2, 2, 2, 2, -1, 7, 7, 7, -1], map(range(1, line('$')), 'foldclosed(v:val)'))
+  %d
+  " Ensure moving around the edges still works.
+  call setline(1, PrepIndent("a") + repeat(["a"], 3) + ["\ta"])
+  set fdm=indent foldlevel=0
+  set fdm=manual
+  %foldopen
+  6m$
+  " The first fold has been truncated to the 5'th line.
+  " Second fold has been moved up because the moved line is now below it.
+  call assert_equal([0, 1, 1, 1, 1, 0, 0, 0, 1, 0], map(range(1, line('$')), 'foldlevel(v:val)'))
   bw!
 endfunc
 
@@ -307,7 +317,7 @@ func! Test_move_folds_around_indent()
   call setline(1, PrepIndent("a") + PrepIndent("b") + PrepIndent("c"))
   set fdm=indent
   call cursor(2, 1)
-  norm! zR
+  %foldopen
   7,12m0
   let folds=repeat([-1], 18)
   call assert_equal(PrepIndent("b") + PrepIndent("a") + PrepIndent("c"), getline(1, '$'))
@@ -339,5 +349,14 @@ func! Test_move_folds_around_indent()
   call assert_equal(1, foldlevel(6))
   call assert_equal(9, foldclosedend(7))
   call assert_equal([-1, 2, 2, 2, 2, 2, 2, 2, 2, -1], map(range(1, line('$')), 'foldclosed(v:val)'))
+  " Ensure moving around the edges still works.
+  %d
+  call setline(1, PrepIndent("a") + repeat(["a"], 3) + ["\ta"])
+  set fdm=indent foldlevel=0
+  %foldopen
+  6m$
+  " The first fold has been truncated to the 5'th line.
+  " Second fold has been moved up because the moved line is now below it.
+  call assert_equal([0, 1, 1, 1, 1, 0, 0, 0, 1, 1], map(range(1, line('$')), 'foldlevel(v:val)'))
   bw!
 endfunc

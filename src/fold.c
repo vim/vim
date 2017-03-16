@@ -3021,8 +3021,9 @@ foldReverseOrder(garray_T *gap, linenr_T start, linenr_T end)
     static void
 truncate_fold(fold_T *fp, linenr_T end)
 {
+    end += 1;
     foldRemove(&fp->fd_nested, end - fp->fd_top, MAXLNUM);
-    fp->fd_len = end - fp->fd_top + 1;
+    fp->fd_len = end - fp->fd_top;
 }
 
 #define fold_end(fp) ((fp)->fd_top + (fp)->fd_len - 1)
@@ -3062,7 +3063,7 @@ foldMoveRange(garray_T *gap, linenr_T line1, linenr_T line2, linenr_T dest)
 	}
 	else
 	    /* Case 2 truncate fold, folds after this one must be dealt with. */
-	    truncate_fold(fp, line1);
+	    truncate_fold(fp, line1 - 1);
 
 	/* Look at the next fold, and treat that one as if it were the first
 	 * after  "line1" (because now it is). */
@@ -3078,11 +3079,11 @@ foldMoveRange(garray_T *gap, linenr_T line1, linenr_T line2, linenr_T dest)
     }
     else if (fp->fd_top > line2)
     {
-	for (; valid_fold(fp, gap) && fold_end(fp) < dest; fp++)
+	for (; valid_fold(fp, gap) && fold_end(fp) <= dest; fp++)
 	/* Case 9. (for all case 9's) -- shift up. */
 	    fp->fd_top -= range_len;
 
-	if (valid_fold(fp, gap) && fp->fd_top < dest)
+	if (valid_fold(fp, gap) && fp->fd_top <= dest)
 	{
 	    /* Case 8. -- ensure truncated at dest, shift up */
 	    truncate_fold(fp, dest);
