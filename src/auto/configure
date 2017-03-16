@@ -10101,15 +10101,25 @@ fi
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for /proc/self/exe" >&5
-$as_echo_n "checking for /proc/self/exe... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for /proc link to executable" >&5
+$as_echo_n "checking for /proc link to executable... " >&6; }
 if test -L "/proc/self/exe"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-    $as_echo "#define HAVE_PROC_SELF_EXE 1" >>confdefs.h
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: /proc/self/exe" >&5
+$as_echo "/proc/self/exe" >&6; }
+  $as_echo "#define PROC_EXE_LINK \"/proc/self/exe\"" >>confdefs.h
+
+elif test -L "/proc/self/path/a.out"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: /proc/self/path/a.out" >&5
+$as_echo "/proc/self/path/a.out" >&6; }
+  $as_echo "#define PROC_EXE_LINK \"/proc/self/path/a.out\"" >>confdefs.h
+
+elif test -L "/proc/curproc/file"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: /proc/curproc/file" >&5
+$as_echo "/proc/curproc/file" >&6; }
+  $as_echo "#define PROC_EXE_LINK \"/proc/curproc/file\"" >>confdefs.h
 
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 

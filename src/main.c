@@ -3539,11 +3539,11 @@ set_progpath(char_u *argv0)
 {
     char_u *val = argv0;
 
-# ifdef HAVE_PROC_SELF_EXE
+# ifdef PROC_EXE_LINK
     char    buf[PATH_MAX + 1];
     ssize_t len;
 
-    len = readlink("/proc/self/exe", buf, PATH_MAX);
+    len = readlink(PROC_EXE_LINK, buf, PATH_MAX);
     if (len > 0)
     {
 	buf[len] = NUL;
