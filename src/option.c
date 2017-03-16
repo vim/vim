@@ -8556,8 +8556,8 @@ set_bool_option(
 	    {
 		static char *w_arabic = N_("W17: Arabic requires UTF-8, do ':set encoding=utf-8'");
 
-		msg_source(hl_attr(HLF_W));
-		MSG_ATTR(_(w_arabic), hl_attr(HLF_W));
+		msg_source(HL_ATTR(HLF_W));
+		MSG_ATTR(_(w_arabic), HL_ATTR(HLF_W));
 #ifdef FEAT_EVAL
 		set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_arabic), -1);
 #endif

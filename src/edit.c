@@ -1771,7 +1771,7 @@ edit_putchar(int c, int highlight)
 	update_topline();	/* just in case w_topline isn't valid */
 	validate_cursor();
 	if (highlight)
-	    attr = hl_attr(HLF_8);
+	    attr = HL_ATTR(HLF_8);
 	else
 	    attr = 0;
 	pc_row = W_WINROW(curwin) + curwin->w_wrow;
@@ -2256,7 +2256,7 @@ has_compl_option(int dict_opt)
 	edit_submode = NULL;
 	msg_attr(dict_opt ? (char_u *)_("'dictionary' option is empty")
 			  : (char_u *)_("'thesaurus' option is empty"),
-							      hl_attr(HLF_E));
+							      HL_ATTR(HLF_E));
 	if (emsg_silent == 0)
 	{
 	    vim_beep(BO_COMPL);
@@ -3252,7 +3252,7 @@ ins_compl_files(
 	{
 	    vim_snprintf((char *)IObuff, IOSIZE,
 			      _("Scanning dictionary: %s"), (char *)files[i]);
-	    (void)msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
+	    (void)msg_trunc_attr(IObuff, TRUE, HL_ATTR(HLF_R));
 	}
 
 	if (fp != NULL)
@@ -4344,7 +4344,7 @@ ins_compl_get_exp(pos_T *ini)
 			    : ins_buf->b_sfname == NULL
 				? ins_buf->b_fname
 				: ins_buf->b_sfname);
-		(void)msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
+		(void)msg_trunc_attr(IObuff, TRUE, HL_ATTR(HLF_R));
 	    }
 	    else if (*e_cpt == NUL)
 		break;
@@ -4374,7 +4374,7 @@ ins_compl_get_exp(pos_T *ini)
 		{
 		    type = CTRL_X_TAGS;
 		    vim_snprintf((char *)IObuff, IOSIZE, _("Scanning tags."));
-		    (void)msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
+		    (void)msg_trunc_attr(IObuff, TRUE, HL_ATTR(HLF_R));
 		}
 		else
 		    type = -1;
@@ -5693,7 +5693,7 @@ ins_complete(int c, int enable_pum)
 	    if (!p_smd)
 		msg_attr(edit_submode_extra,
 			edit_submode_highl < HLF_COUNT
-			? hl_attr(edit_submode_highl) : 0);
+			? HL_ATTR(edit_submode_highl) : 0);
 	}
 	else
 	    msg_clr_cmdline();	/* necessary for "noshowmode" */

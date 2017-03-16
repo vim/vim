@@ -5044,7 +5044,7 @@ nofail:
     {
 	int numlen = errnum != NULL ? (int)STRLEN(errnum) : 0;
 
-	attr = hl_attr(HLF_E);	/* set highlight for error messages */
+	attr = HL_ATTR(HLF_E);	/* set highlight for error messages */
 	msg_add_fname(buf,
 #ifndef UNIX
 		sfname
@@ -5300,7 +5300,7 @@ check_mtime(buf_T *buf, stat_T *st)
 	msg_silent = 0;		    /* must give this prompt */
 	/* don't use emsg() here, don't want to flush the buffers */
 	MSG_ATTR(_("WARNING: The file has been changed since reading it!!!"),
-						       hl_attr(HLF_E));
+						       HL_ATTR(HLF_E));
 	if (ask_yesno((char_u *)_("Do you really want to write to it"),
 								 TRUE) == 'n')
 	    return FAIL;
@@ -7011,10 +7011,10 @@ buf_check_timestamp(
 # endif
 		{
 		    msg_start();
-		    msg_puts_attr(tbuf, hl_attr(HLF_E) + MSG_HIST);
+		    msg_puts_attr(tbuf, HL_ATTR(HLF_E) + MSG_HIST);
 		    if (*mesg2 != NUL)
 			msg_puts_attr((char_u *)mesg2,
-						   hl_attr(HLF_W) + MSG_HIST);
+						   HL_ATTR(HLF_W) + MSG_HIST);
 		    msg_clr_eos();
 		    (void)msg_end();
 		    if (emsg_silent == 0)
@@ -7840,12 +7840,12 @@ show_autocmd(AutoPat *ap, event_T event)
 	if (ap->group != AUGROUP_DEFAULT)
 	{
 	    if (AUGROUP_NAME(ap->group) == NULL)
-		msg_puts_attr(get_deleted_augroup(), hl_attr(HLF_E));
+		msg_puts_attr(get_deleted_augroup(), HL_ATTR(HLF_E));
 	    else
-		msg_puts_attr(AUGROUP_NAME(ap->group), hl_attr(HLF_T));
+		msg_puts_attr(AUGROUP_NAME(ap->group), HL_ATTR(HLF_T));
 	    msg_puts((char_u *)"  ");
 	}
-	msg_puts_attr(event_nr2name(event), hl_attr(HLF_T));
+	msg_puts_attr(event_nr2name(event), HL_ATTR(HLF_T));
 	last_event = event;
 	last_group = ap->group;
 	msg_putchar('\n');

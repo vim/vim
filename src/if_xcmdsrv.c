@@ -231,7 +231,7 @@ serverRegisterName(
 	    if (res < -1 || i >= 1000)
 	    {
 		MSG_ATTR(_("Unable to register a command server name"),
-							      hl_attr(HLF_W));
+							      HL_ATTR(HLF_W));
 		return FAIL;
 	    }
 	    if (p == NULL)

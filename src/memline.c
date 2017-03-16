@@ -1136,7 +1136,7 @@ ml_recover(void)
 
     recoverymode = TRUE;
     called_from_main = (curbuf->b_ml.ml_mfp == NULL);
-    attr = hl_attr(HLF_E);
+    attr = HL_ATTR(HLF_E);
 
     /*
      * If the file name ends in ".s[uvw][a-z]" we assume this is the swap file.

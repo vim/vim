@@ -1761,8 +1761,8 @@ void *vim_memset(void *, int, size_t);
 /*
  * Enums need a typecast to be used as array index (for Ultrix).
  */
-#define hl_attr(n)	highlight_attr[(int)(n)]
-#define term_str(n)	term_strings[(int)(n)]
+#define HL_ATTR(n)	highlight_attr[(int)(n)]
+#define TERM_STR(n)	term_strings[(int)(n)]
 
 /*
  * EXTERN is only defined in main.c.  That's where global variables are
@@ -2076,13 +2076,6 @@ typedef struct VimClipboard
 typedef int VimClipboard;	/* This is required for the prototypes. */
 #endif
 
-#ifdef __BORLANDC__
-/* work around a bug in the Borland 'stat' function: */
-# include <io.h>	    /* for access() */
-
-# define stat(a,b) (access(a,0) ? -1 : stat(a,b))
-#endif
-
 /* Use 64-bit stat structure if available. */
 #if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
 # define HAVE_STAT64
@@ -2140,7 +2133,7 @@ typedef enum {
 #include "globals.h"	    /* global variables and messages */
 
 #ifndef FEAT_VIRTUALEDIT
-# define getvvcol(w, p, s, c, e) getvcol(w, p, s, c, e)
+# define getvvcol(w, p, s, c, e) getvcol((w), (p), (s), (c), (e))
 # define virtual_active() FALSE
 # define virtual_op FALSE
 #endif

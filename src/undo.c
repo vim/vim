@@ -3079,7 +3079,7 @@ ex_undolist(exarg_T *eap UNUSED)
 
 	msg_start();
 	msg_puts_attr((char_u *)_("number changes  when               saved"),
-							      hl_attr(HLF_T));
+							      HL_ATTR(HLF_T));
 	for (i = 0; i < ga.ga_len && !got_int; ++i)
 	{
 	    msg_putchar('\n');

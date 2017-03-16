@@ -794,7 +794,7 @@ show_one_mark(
 	    }
 	    if (name != NULL)
 	    {
-		msg_outtrans_attr(name, current ? hl_attr(HLF_D) : 0);
+		msg_outtrans_attr(name, current ? HL_ATTR(HLF_D) : 0);
 		if (mustfree)
 		    vim_free(name);
 	    }
@@ -926,7 +926,7 @@ ex_jumps(exarg_T *eap UNUSED)
 	    msg_outtrans(IObuff);
 	    msg_outtrans_attr(name,
 			    curwin->w_jumplist[i].fmark.fnum == curbuf->b_fnum
-							? hl_attr(HLF_D) : 0);
+							? HL_ATTR(HLF_D) : 0);
 	    vim_free(name);
 	    ui_breakcheck();
 	}
@@ -973,7 +973,7 @@ ex_changes(exarg_T *eap UNUSED)
 	    name = mark_line(&curbuf->b_changelist[i], 17);
 	    if (name == NULL)
 		break;
-	    msg_outtrans_attr(name, hl_attr(HLF_D));
+	    msg_outtrans_attr(name, HL_ATTR(HLF_D));
 	    vim_free(name);
 	    ui_breakcheck();
 	}

@@ -1565,9 +1565,9 @@ set_termname(char_u *term)
 	    /* get output strings */
 		for (i = 0; string_names[i].name != NULL; ++i)
 		{
-		    if (term_str(string_names[i].dest) == NULL
-			    || term_str(string_names[i].dest) == empty_option)
-			term_str(string_names[i].dest) =
+		    if (TERM_STR(string_names[i].dest) == NULL
+			    || TERM_STR(string_names[i].dest) == empty_option)
+			TERM_STR(string_names[i].dest) =
 					   TGETSTR(string_names[i].name, &tp);
 		}
 
@@ -1619,8 +1619,8 @@ set_termname(char_u *term)
 		/*
 		 * Get number of colors (if not done already).
 		 */
-		if (term_str(KS_CCO) == NULL
-			|| term_str(KS_CCO) == empty_option)
+		if (TERM_STR(KS_CCO) == NULL
+			|| TERM_STR(KS_CCO) == empty_option)
 		    set_color_count(tgetnum("Co"));
 
 # ifndef hpux

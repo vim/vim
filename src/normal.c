@@ -3266,7 +3266,7 @@ check_visual_highlight(void)
 
     if (full_screen)
     {
-	if (!did_check && hl_attr(HLF_V) == 0)
+	if (!did_check && HL_ATTR(HLF_V) == 0)
 	    MSG(_("Warning: terminal cannot highlight"));
 	did_check = TRUE;
     }

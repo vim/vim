@@ -4112,7 +4112,7 @@ ex_display(exarg_T *eap)
 
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
-    attr = hl_attr(HLF_8);
+    attr = HL_ATTR(HLF_8);
 
     /* Highlight title */
     MSG_PUTS_TITLE(_("\n--- Registers ---"));

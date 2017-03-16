@@ -2555,7 +2555,7 @@ qf_list(exarg_T *eap)
 		vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
 							    i, (char *)fname);
 	    msg_outtrans_attr(IObuff, i == qi->qf_lists[qi->qf_curlist].qf_index
-					   ? hl_attr(HLF_L) : hl_attr(HLF_D));
+					   ? HL_ATTR(HLF_L) : HL_ATTR(HLF_D));
 	    if (qfp->qf_lnum == 0)
 		IObuff[0] = NUL;
 	    else if (qfp->qf_col == 0)
@@ -2565,7 +2565,7 @@ qf_list(exarg_T *eap)
 						   qfp->qf_lnum, qfp->qf_col);
 	    sprintf((char *)IObuff + STRLEN(IObuff), "%s:",
 				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
-	    msg_puts_attr(IObuff, hl_attr(HLF_N));
+	    msg_puts_attr(IObuff, HL_ATTR(HLF_N));
 	    if (qfp->qf_pattern != NULL)
 	    {
 		qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);

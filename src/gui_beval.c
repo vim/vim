@@ -1054,7 +1054,7 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 #endif
 
 	/* Look up the RGB values of the SpecialKey foreground color. */
-	aep = syn_gui_attr2entry(hl_attr(HLF_8));
+	aep = syn_gui_attr2entry(HL_ATTR(HLF_8));
 	pixel = (aep != NULL) ? aep->ae_u.gui.fg_color : INVALCOLOR;
 	if (pixel != INVALCOLOR)
 # if GTK_CHECK_VERSION(3,0,0)

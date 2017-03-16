@@ -2230,7 +2230,7 @@ buf_write_all(buf_T *buf, int forceit)
 #ifdef FEAT_AUTOCMD
     if (curbuf != old_curbuf)
     {
-	msg_source(hl_attr(HLF_W));
+	msg_source(HL_ATTR(HLF_W));
 	MSG(_("Warning: Entered other buffer unexpectedly (check autocommands)"));
     }
 #endif
@@ -4733,7 +4733,7 @@ get_one_sourceline(struct source_cookie *sp)
 		{
 		    if (!sp->error)
 		    {
-			msg_source(hl_attr(HLF_W));
+			msg_source(HL_ATTR(HLF_W));
 			EMSG(_("W15: Warning: Wrong line separator, ^M may be missing"));
 		    }
 		    sp->error = TRUE;

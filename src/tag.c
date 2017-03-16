@@ -605,10 +605,10 @@ do_tag(
 		if (msg_col == 0)
 		    msg_didout = FALSE;	/* overwrite previous message */
 		msg_start();
-		MSG_PUTS_ATTR(_("  # pri kind tag"), hl_attr(HLF_T));
+		MSG_PUTS_ATTR(_("  # pri kind tag"), HL_ATTR(HLF_T));
 		msg_clr_eos();
 		taglen_advance(taglen);
-		MSG_PUTS_ATTR(_("file\n"), hl_attr(HLF_T));
+		MSG_PUTS_ATTR(_("file\n"), HL_ATTR(HLF_T));
 
 		for (i = 0; i < num_matches && !got_int; ++i)
 		{
@@ -633,7 +633,7 @@ do_tag(
 		    msg_advance(13);
 		    msg_outtrans_len_attr(tagp.tagname,
 				       (int)(tagp.tagname_end - tagp.tagname),
-							      hl_attr(HLF_T));
+							      HL_ATTR(HLF_T));
 		    msg_putchar(' ');
 		    taglen_advance(taglen);
 
@@ -642,7 +642,7 @@ do_tag(
 		    p = tag_full_fname(&tagp);
 		    if (p != NULL)
 		    {
-			msg_puts_long_attr(p, hl_attr(HLF_D));
+			msg_puts_long_attr(p, HL_ATTR(HLF_D));
 			vim_free(p);
 		    }
 		    if (msg_col > 0)
@@ -677,7 +677,7 @@ do_tag(
 				continue;
 			    }
 			    /* print all other extra fields */
-			    attr = hl_attr(HLF_CM);
+			    attr = HL_ATTR(HLF_CM);
 			    while (*p && *p != '\r' && *p != '\n')
 			    {
 				if (msg_col + ptr2cells(p) >= Columns)
@@ -1003,7 +1003,7 @@ do_tag(
 							   && num_matches > 1)
 		{
 		    if (ic)
-			msg_attr(IObuff, hl_attr(HLF_W));
+			msg_attr(IObuff, HL_ATTR(HLF_W));
 		    else
 			msg(IObuff);
 		    msg_scroll = TRUE;	/* don't overwrite this message */
@@ -1140,7 +1140,7 @@ do_tags(exarg_T *eap UNUSED)
 		tagstack[i].fmark.mark.lnum);
 	    msg_outtrans(IObuff);
 	    msg_outtrans_attr(name, tagstack[i].fmark.fnum == curbuf->b_fnum
-							? hl_attr(HLF_D) : 0);
+							? HL_ATTR(HLF_D) : 0);
 	    vim_free(name);
 	}
 	out_flush();		    /* show one line at a time */

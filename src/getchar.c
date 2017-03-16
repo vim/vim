@@ -4022,9 +4022,9 @@ showmap(
     } while (len < 12);
 
     if (mp->m_noremap == REMAP_NONE)
-	msg_puts_attr((char_u *)"*", hl_attr(HLF_8));
+	msg_puts_attr((char_u *)"*", HL_ATTR(HLF_8));
     else if (mp->m_noremap == REMAP_SCRIPT)
-	msg_puts_attr((char_u *)"&", hl_attr(HLF_8));
+	msg_puts_attr((char_u *)"&", HL_ATTR(HLF_8));
     else
 	msg_putchar(' ');
 
@@ -4036,7 +4036,7 @@ showmap(
     /* Use FALSE below if we only want things like <Up> to show up as such on
      * the rhs, and not M-x etc, TRUE gets both -- webb */
     if (*mp->m_str == NUL)
-	msg_puts_attr((char_u *)"<Nop>", hl_attr(HLF_8));
+	msg_puts_attr((char_u *)"<Nop>", HL_ATTR(HLF_8));
     else
     {
 	/* Remove escaping of CSI, because "m_str" is in a format to be used

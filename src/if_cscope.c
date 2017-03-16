@@ -615,7 +615,7 @@ staterr:
 	if (p_csverbose)
 	{
 	    msg_clr_eos();
-	    (void)smsg_attr(hl_attr(HLF_R),
+	    (void)smsg_attr(HL_ATTR(HLF_R),
 			    (char_u *)_("Added cscope database %s"),
 			    csinfo[i].fname);
 	}
@@ -1612,7 +1612,7 @@ cs_kill_execute(
     if (p_csverbose)
     {
 	msg_clr_eos();
-	(void)smsg_attr(hl_attr(HLF_R) | MSG_HIST,
+	(void)smsg_attr(HL_ATTR(HLF_R) | MSG_HIST,
 		(char_u *)_("cscope connection %s closed"), cname);
     }
     cs_release_csp(i, TRUE);
@@ -2020,14 +2020,14 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
     {
 	bufsize = newsize;
 	(void)sprintf(buf, cstag_msg, ptag);
-	MSG_PUTS_ATTR(buf, hl_attr(HLF_T));
+	MSG_PUTS_ATTR(buf, HL_ATTR(HLF_T));
     }
 
     vim_free(tbuf);
 
-    MSG_PUTS_ATTR(_("\n   #   line"), hl_attr(HLF_T));    /* strlen is 7 */
+    MSG_PUTS_ATTR(_("\n   #   line"), HL_ATTR(HLF_T));    /* strlen is 7 */
     msg_advance(msg_col + 2);
-    MSG_PUTS_ATTR(_("filename / context / line\n"), hl_attr(HLF_T));
+    MSG_PUTS_ATTR(_("filename / context / line\n"), HL_ATTR(HLF_T));
 
     num = 1;
     for (i = 0; i < num_matches; i++)
@@ -2071,9 +2071,9 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 	{
 	    /* csfmt_str = "%4d %6s  "; */
 	    (void)sprintf(buf, csfmt_str, num, lno);
-	    MSG_PUTS_ATTR(buf, hl_attr(HLF_CM));
+	    MSG_PUTS_ATTR(buf, HL_ATTR(HLF_CM));
 	}
-	MSG_PUTS_LONG_ATTR(cs_pathcomponents(fname), hl_attr(HLF_CM));
+	MSG_PUTS_LONG_ATTR(cs_pathcomponents(fname), HL_ATTR(HLF_CM));
 
 	/* compute the required space for the context */
 	if (cntxts[idx] != NULL)
@@ -2399,7 +2399,7 @@ cs_reset(exarg_T *eap UNUSED)
 		 * "Added cscope database..."
 		 */
 		sprintf(buf, " (#%d)", i);
-		MSG_PUTS_ATTR(buf, hl_attr(HLF_R));
+		MSG_PUTS_ATTR(buf, HL_ATTR(HLF_R));
 	    }
 	}
 	vim_free(dblist[i]);
@@ -2411,7 +2411,7 @@ cs_reset(exarg_T *eap UNUSED)
     vim_free(fllist);
 
     if (p_csverbose)
-	MSG_ATTR(_("All cscope databases reset"), hl_attr(HLF_R) | MSG_HIST);
+	MSG_ATTR(_("All cscope databases reset"), HL_ATTR(HLF_R) | MSG_HIST);
     return CSCOPE_SUCCESS;
 } /* cs_reset */
 
@@ -2497,7 +2497,7 @@ cs_show(exarg_T *eap UNUSED)
     {
 	MSG_PUTS_ATTR(
 	    _(" # pid    database name                       prepend path\n"),
-	    hl_attr(HLF_T));
+	    HL_ATTR(HLF_T));
 	for (i = 0; i < csinfo_size; i++)
 	{
 	    if (csinfo[i].fname == NULL)
