@@ -1366,6 +1366,9 @@ endfunc
 " Not Quite C
 au BufNewFile,BufRead *.nqc			setf nqc
 
+" NSE
+au BufNewFile,BufRead *.nse			setf lua
+
 " NSIS
 au BufNewFile,BufRead *.nsi,*.nsh		setf nsis
 
