@@ -3137,9 +3137,11 @@ foldMoveRange(garray_T *gap, linenr_T line1, linenr_T line2, linenr_T dest)
      * order. We have to swap folds in the range [move_end, dest_index) with
      * those in the range [move_start, move_end).
      */
-    foldReverseOrder(gap, move_start, dest_index - 1);
-    foldReverseOrder(gap, move_start, move_start + dest_index - move_end - 1);
-    foldReverseOrder(gap, move_start + dest_index - move_end, dest_index - 1);
+    foldReverseOrder(gap, (linenr_T)move_start, (linenr_T)dest_index - 1);
+    foldReverseOrder(gap, (linenr_T)move_start,
+			   (linenr_T)(move_start + dest_index - move_end - 1));
+    foldReverseOrder(gap, (linenr_T)(move_start + dest_index - move_end),
+						   (linenr_T)(dest_index - 1));
 }
 #undef fold_end
 #undef valid_fold
