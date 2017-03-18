@@ -52,6 +52,7 @@ static void f_assert_inrange(typval_T *argvars, typval_T *rettv);
 static void f_assert_match(typval_T *argvars, typval_T *rettv);
 static void f_assert_notequal(typval_T *argvars, typval_T *rettv);
 static void f_assert_notmatch(typval_T *argvars, typval_T *rettv);
+static void f_assert_report(typval_T *argvars, typval_T *rettv);
 static void f_assert_true(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_asin(typval_T *argvars, typval_T *rettv);
@@ -483,6 +484,7 @@ static struct fst
     {"assert_match",	2, 3, f_assert_match},
     {"assert_notequal",	2, 3, f_assert_notequal},
     {"assert_notmatch",	2, 3, f_assert_notmatch},
+    {"assert_report",	1, 1, f_assert_report},
     {"assert_true",	1, 2, f_assert_true},
 #ifdef FEAT_FLOAT
     {"atan",		1, 1, f_atan},
@@ -1311,6 +1313,15 @@ f_assert_match(typval_T *argvars, typval_T *rettv UNUSED)
 f_assert_notmatch(typval_T *argvars, typval_T *rettv UNUSED)
 {
     assert_match_common(argvars, ASSERT_NOTMATCH);
+}
+
+/*
+ * "assert_report(msg)" function
+ */
+    static void
+f_assert_report(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    assert_report(argvars);
 }
 
 /*

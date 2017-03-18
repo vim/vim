@@ -9084,6 +9084,17 @@ assert_bool(typval_T *argvars, int isTrue)
 }
 
     void
+assert_report(typval_T *argvars)
+{
+    garray_T	ga;
+
+    prepare_assert_error(&ga);
+    ga_concat(&ga, get_tv_string(&argvars[0]));
+    assert_error(&ga);
+    ga_clear(&ga);
+}
+
+    void
 assert_exception(typval_T *argvars)
 {
     garray_T	ga;

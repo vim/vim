@@ -2570,6 +2570,9 @@ serverGetReply(HWND server, int *expr_res, int remove, int wait)
 	/* Loop until we receive a reply */
 	while (reply_received == 0)
 	{
+#ifdef FEAT_TIMERS
+	    check_due_timer();
+#endif
 	    /* Wait for a SendMessage() call to us.  This could be the reply
 	     * we are waiting for.  Use a timeout of a second, to catch the
 	     * situation that the server died unexpectedly. */

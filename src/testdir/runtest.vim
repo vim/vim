@@ -86,7 +86,7 @@ function GetAllocId(name)
   return lnum - top - 1
 endfunc
 
-function RunTheTest(test)
+func RunTheTest(test)
   echo 'Executing ' . a:test
 
   " Avoid stopping at the "hit enter" prompt
@@ -142,6 +142,60 @@ function RunTheTest(test)
   set nomodified
 endfunc
 
+func AfterTheTest()
+  if len(v:errors) > 0
+    let s:fail += 1
+    call add(s:errors, 'Found errors in ' . s:test . ':')
+    call extend(s:errors, v:errors)
+    let v:errors = []
+  endif
+endfunc
+
+" This function can be called by a test if it wants to abort testing.
+func FinishTesting()
+  call AfterTheTest()
+
+  " Don't write viminfo on exit.
+  set viminfo=
+
+  if s:fail == 0
+    " Success, create the .res file so that make knows it's done.
+    exe 'split ' . fnamemodify(g:testname, ':r') . '.res'
+    write
+  endif
+
+  if len(s:errors) > 0
+    " Append errors to test.log
+    split test.log
+    call append(line('$'), '')
+    call append(line('$'), 'From ' . g:testname . ':')
+    call append(line('$'), s:errors)
+    write
+  endif
+
+  let message = 'Executed ' . s:done . (s:done > 1 ? ' tests' : ' test')
+  echo message
+  call add(s:messages, message)
+  if s:fail > 0
+    let message = s:fail . ' FAILED:'
+    echo message
+    call add(s:messages, message)
+    call extend(s:messages, s:errors)
+  endif
+
+  " Add SKIPPED messages
+  call extend(s:messages, s:skipped)
+
+  " Append messages to the file "messages"
+  split messages
+  call append(line('$'), '')
+  call append(line('$'), 'From ' . g:testname . ':')
+  call append(line('$'), s:messages)
+  write
+
+  qall!
+endfunc
+
 " Source the test script.  First grab the file name, in case the script
 " navigates away.  g:testname can be used by the tests.
 let g:testname = expand('%')
@@ -164,6 +218,7 @@ endif
 
 " Names of flaky tests.
 let s:flaky = [
+      \ 'Test_client_server()',
       \ 'Test_close_and_exit_cb()',
       \ 'Test_collapse_buffers()',
       \ 'Test_communicate()',
@@ -197,52 +252,9 @@ for s:test in sort(s:tests)
     call RunTheTest(s:test)
   endif
 
-  if len(v:errors) > 0
-    let s:fail += 1
-    call add(s:errors, 'Found errors in ' . s:test . ':')
-    call extend(s:errors, v:errors)
-    let v:errors = []
-  endif
+  call AfterTheTest()
 endfor
 
-" Don't write viminfo on exit.
-set viminfo=
-
-if s:fail == 0
-  " Success, create the .res file so that make knows it's done.
-  exe 'split ' . fnamemodify(g:testname, ':r') . '.res'
-  write
-endif
-
-if len(s:errors) > 0
-  " Append errors to test.log
-  split test.log
-  call append(line('$'), '')
-  call append(line('$'), 'From ' . g:testname . ':')
-  call append(line('$'), s:errors)
-  write
-endif
-
-let message = 'Executed ' . s:done . (s:done > 1 ? ' tests' : ' test')
-echo message
-call add(s:messages, message)
-if s:fail > 0
-  let message = s:fail . ' FAILED:'
-  echo message
-  call add(s:messages, message)
-  call extend(s:messages, s:errors)
-endif
-
-" Add SKIPPED messages
-call extend(s:messages, s:skipped)
-
-" Append messages to the file "messages"
-split messages
-call append(line('$'), '')
-call append(line('$'), 'From ' . g:testname . ':')
-call append(line('$'), s:messages)
-write
-
-qall!
+call FinishTesting()
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -596,6 +596,10 @@ ServerWait(
 	if (seconds >= 0 && (now - start) >= seconds)
 	    break;
 
+#ifdef FEAT_TIMERS
+	check_due_timer();
+#endif
+
 	/* Just look out for the answer without calling back into Vim */
 	if (localLoop)
 	{
