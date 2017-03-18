@@ -2450,6 +2450,10 @@ win_close(win_T *win, int free_buf)
 #endif
 	curbuf = curwin->w_buffer;
 	close_curwin = TRUE;
+
+	/* The cursor position may be invalid if the buffer changed after last
+	 * using the window. */
+	check_cursor();
     }
     if (p_ea && (*p_ead == 'b' || *p_ead == dir))
 	win_equal(curwin, TRUE, dir);
