@@ -81,6 +81,27 @@ func Test_client_server()
   call assert_equal('got it', remote_read(g:myserverid))
   let s:where = 16
 
+  call remote_send(name, ":call server2client(expand('<client>'), 'another')\<CR>", 'g:myserverid')
+  let s:where = 151
+  let peek_result = 'nothing'
+  let r = remote_peek(g:myserverid, 'peek_result')
+  let s:where = 161
+  " unpredictable whether the result is already avaialble.
+  if r > 0
+    call assert_equal('another', peek_result)
+  elseif r == 0
+    call assert_equal('nothing', peek_result)
+  else
+    call assert_report('remote_peek() failed')
+  endif
+  let g:peek_result = 'empty'
+  call WaitFor('remote_peek(g:myserverid, "g:peek_result") > 0')
+  let s:where = 171
+  call assert_equal('another', g:peek_result)
+  let s:where = 181
+  call assert_equal('another', remote_read(g:myserverid))
+  let s:where = 191
+
   call remote_send(name, ":qa!\<CR>")
   let s:where = 17
   call WaitFor('job_status(g:job) == "dead"')
