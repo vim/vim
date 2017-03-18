@@ -1256,14 +1256,14 @@ func Test_script_lines()
                     \ '.',
                     \ ])
     catch
-        call assert_false(1, "Can't define function")
+        call assert_report("Can't define function")
     endtry
     try
         call DefineFunction('T_Append', [
                     \ 'append',
                     \ 'abc',
                     \ ])
-        call assert_false(1, "Shouldn't be able to define function")
+        call assert_report("Shouldn't be able to define function")
     catch
         call assert_exception('Vim(function):E126: Missing :endfunction')
     endtry
@@ -1276,14 +1276,14 @@ func Test_script_lines()
                     \ '.',
                     \ ])
     catch
-        call assert_false(1, "Can't define function")
+        call assert_report("Can't define function")
     endtry
     try
         call DefineFunction('T_Change', [
                     \ 'change',
                     \ 'abc',
                     \ ])
-        call assert_false(1, "Shouldn't be able to define function")
+        call assert_report("Shouldn't be able to define function")
     catch
         call assert_exception('Vim(function):E126: Missing :endfunction')
     endtry
@@ -1296,14 +1296,14 @@ func Test_script_lines()
                     \ '.',
                     \ ])
     catch
-        call assert_false(1, "Can't define function")
+        call assert_report("Can't define function")
     endtry
     try
         call DefineFunction('T_Insert', [
                     \ 'insert',
                     \ 'abc',
                     \ ])
-        call assert_false(1, "Shouldn't be able to define function")
+        call assert_report("Shouldn't be able to define function")
     catch
         call assert_exception('Vim(function):E126: Missing :endfunction')
     endtry

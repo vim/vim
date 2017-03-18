@@ -450,13 +450,13 @@ func Test_viminfo_file_mark_tabclose()
   let lnum = line('.')
   while 1
     if lnum == line('$')
-      call assert_false(1, 'mark not found in Xtestfileintab')
+      call assert_report('mark not found in Xtestfileintab')
       break
     endif
     let lnum += 1
     let line = getline(lnum)
     if line == ''
-      call assert_false(1, 'mark not found in Xtestfileintab')
+      call assert_report('mark not found in Xtestfileintab')
       break
     endif
     if line =~ "^\t\""

@@ -8,9 +8,13 @@ source shared.vim
 
 let s:python = PythonProg()
 if s:python == ''
-  " Can't run this test.
+  " Can't run this test without Python.
   finish
 endif
+
+" Uncomment the next line to see what happens. Output is in
+" src/testdir/channellog.
+" call ch_logfile('channellog', 'w')
 
 let s:chopt = {}
 
@@ -31,7 +35,7 @@ func Ch_communicate(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   unlet s:chopt.drop
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
   if has('job')
@@ -93,7 +97,7 @@ func Ch_communicate(port)
   call ch_sendexpr(handle, 'hello!', {'callback': 'Ch_requestHandler'})
   call WaitFor('exists("g:Ch_responseHandle")')
   if !exists('g:Ch_responseHandle')
-    call assert_false(1, 'g:Ch_responseHandle was not set')
+    call assert_report('g:Ch_responseHandle was not set')
   else
     call assert_equal(handle, g:Ch_responseHandle)
     unlet g:Ch_responseHandle
@@ -104,7 +108,7 @@ func Ch_communicate(port)
   call ch_sendexpr(handle, 'hello!', {'callback': function('Ch_requestHandler')})
   call WaitFor('exists("g:Ch_responseHandle")')
   if !exists('g:Ch_responseHandle')
-    call assert_false(1, 'g:Ch_responseHandle was not set')
+    call assert_report('g:Ch_responseHandle was not set')
   else
     call assert_equal(handle, g:Ch_responseHandle)
     unlet g:Ch_responseHandle
@@ -116,7 +120,7 @@ func Ch_communicate(port)
   call ch_sendexpr(handle, 'hello!', {'callback': {a, b -> Ch_requestHandler(a, b)}})
   call WaitFor('exists("g:Ch_responseHandle")')
   if !exists('g:Ch_responseHandle')
-    call assert_false(1, 'g:Ch_responseHandle was not set')
+    call assert_report('g:Ch_responseHandle was not set')
   else
     call assert_equal(handle, g:Ch_responseHandle)
     unlet g:Ch_responseHandle
@@ -209,7 +213,7 @@ func Ch_two_channels(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   call assert_equal(v:t_channel, type(handle))
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
 
@@ -217,7 +221,7 @@ func Ch_two_channels(port)
 
   let newhandle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(newhandle) == "fail"
-    call assert_false(1, "Can't open second channel")
+    call assert_report("Can't open second channel")
     return
   endif
   call assert_equal('got it', ch_evalexpr(newhandle, 'hello!'))
@@ -238,7 +242,7 @@ endfunc
 func Ch_server_crash(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
 
@@ -263,7 +267,7 @@ endfunc
 func Ch_channel_handler(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
 
@@ -306,7 +310,7 @@ endfunc
 func Ch_channel_zero(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
 
@@ -373,7 +377,7 @@ endfunc
 func Ch_raw_one_time_callback(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
   call ch_setoptions(handle, {'mode': 'raw'})
@@ -429,7 +433,7 @@ func Test_connect_waittime()
     endif
   catch
     if v:exception !~ 'Connection reset by peer'
-      call assert_false(1, "Caught exception: " . v:exception)
+      call assert_report("Caught exception: " . v:exception)
     endif
   endtry
 endfunc
@@ -1343,7 +1347,7 @@ func Ch_open_delay(port)
   let channel = ch_open('localhost:' . a:port, s:chopt)
   unlet s:chopt.waittime
   if ch_status(channel) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
   call assert_equal('got it', ch_evalexpr(channel, 'hello!'))
@@ -1365,7 +1369,7 @@ endfunc
 function Ch_test_call(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
 
@@ -1463,7 +1467,7 @@ endfunc
 function Ch_test_close_callback(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
   call ch_setoptions(handle, {'close_cb': 'MyCloseCb'})
@@ -1481,7 +1485,7 @@ endfunc
 function Ch_test_close_partial(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
   let g:Ch_d = {}
@@ -1631,7 +1635,7 @@ endfunc
 function Ch_test_close_lambda(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
-    call assert_false(1, "Can't open channel")
+    call assert_report("Can't open channel")
     return
   endif
   let g:Ch_close_ret = ''
@@ -1646,6 +1650,3 @@ func Test_close_lambda()
   call ch_log('Test_close_lambda()')
   call s:run_server('Ch_test_close_lambda')
 endfunc
-
-" Uncomment this to see what happens, output is in src/testdir/channellog.
-" call ch_logfile('channellog', 'w')

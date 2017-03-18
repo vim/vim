@@ -132,7 +132,7 @@ func <SID>catch_peval(expr)
   catch
     return v:exception
   endtry
-  call assert_true(0, 'no exception for `perleval("'.a:expr.'")`')
+  call assert_report('no exception for `perleval("'.a:expr.'")`')
   return ''
 endfunc
 

@@ -36,6 +36,12 @@ func Test_assert_notequal()
   call remove(v:errors, 0)
 endfunc
 
+func Test_assert_report()
+  call assert_report('something is wrong')
+  call assert_match('something is wrong', v:errors[0])
+  call remove(v:errors, 0)
+endfunc
+
 func Test_assert_exception()
   try
     nocommand
