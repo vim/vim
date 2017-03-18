@@ -307,6 +307,7 @@ static void f_remote_foreground(typval_T *argvars, typval_T *rettv);
 static void f_remote_peek(typval_T *argvars, typval_T *rettv);
 static void f_remote_read(typval_T *argvars, typval_T *rettv);
 static void f_remote_send(typval_T *argvars, typval_T *rettv);
+static void f_remote_startserver(typval_T *argvars, typval_T *rettv);
 static void f_remove(typval_T *argvars, typval_T *rettv);
 static void f_rename(typval_T *argvars, typval_T *rettv);
 static void f_repeat(typval_T *argvars, typval_T *rettv);
@@ -741,6 +742,7 @@ static struct fst
     {"remote_peek",	1, 2, f_remote_peek},
     {"remote_read",	1, 1, f_remote_read},
     {"remote_send",	2, 3, f_remote_send},
+    {"remote_startserver", 1, 1, f_remote_startserver},
     {"remove",		2, 3, f_remove},
     {"rename",		2, 2, f_rename},
     {"repeat",		2, 2, f_repeat},
@@ -8487,7 +8489,7 @@ check_connection(void)
     make_connection();
     if (X_DISPLAY == NULL)
     {
-	EMSG(_("E240: No connection to Vim server"));
+	EMSG(_("E240: No connection to the X server"));
 	return FAIL;
     }
     return OK;
@@ -8686,6 +8688,33 @@ f_remote_send(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_string = NULL;
 #ifdef FEAT_CLIENTSERVER
     remote_common(argvars, rettv, FALSE);
+#endif
+}
+
+/*
+ * "remote_startserver()" function
+ */
+    static void
+f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_CLIENTSERVER
+    char_u	*server = get_tv_string_chk(&argvars[0]);
+
+    if (server == NULL)
+	return;		/* type error; errmsg already given */
+    if (serverName != NULL)
+	EMSG(_("E941: already started a server"));
+    else
+    {
+# ifdef FEAT_X11
+	if (check_connection() == OK)
+	    serverRegisterName(X_DISPLAY, server);
+# else
+	serverSetName(server);
+# endif
+    }
+#else
+    EMSG(_("E942: +clientserver feature not available"));
 #endif
 }
 

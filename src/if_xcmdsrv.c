@@ -399,27 +399,7 @@ serverSendToVim(
 
     /* Execute locally if no display or target is ourselves */
     if (dpy == NULL || (serverName != NULL && STRICMP(name, serverName) == 0))
-    {
-	if (asExpr)
-	{
-	    char_u *ret;
-
-	    ret = eval_client_expr_to_string(cmd);
-	    if (result != NULL)
-	    {
-		if (ret == NULL)
-		    *result = vim_strsave((char_u *)_(e_invexprmsg));
-		else
-		    *result = ret;
-	    }
-	    else
-		vim_free(ret);
-	    return ret == NULL ? -1 : 0;
-	}
-	else
-	    server_to_input_buf(cmd);
-	return 0;
-    }
+	return sendToLocalVim(cmd, asExpr, result);
 
     /*
      * Bind the server name to a communication window.
@@ -800,6 +780,7 @@ serverSendReply(char_u *name, char_u *str)
 WaitForReply(void *p)
 {
     Window  *w = (Window *) p;
+
     return ServerReplyFind(*w, SROP_Find) != NULL;
 }
 

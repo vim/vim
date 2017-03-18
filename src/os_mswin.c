@@ -2409,6 +2409,10 @@ serverSendToVim(
     int		retcode = 0;
     char_u	altname_buf[MAX_PATH];
 
+    /* Execute locally if no display or target is ourselves */
+    if (serverName != NULL && STRICMP(name, serverName) == 0)
+	return sendToLocalVim(cmd, asExpr, result);
+
     /* If the server name does not end in a digit then we look for an
      * alternate name.  e.g. when "name" is GVIM the we may find GVIM2. */
     if (STRLEN(name) > 1 && !vim_isdigit(name[STRLEN(name) - 1]))
