@@ -1782,36 +1782,33 @@ syn_finish_line(
     stateitem_T	*cur_si;
     colnr_T	prev_current_col;
 
-    if (!current_finished)
+    while (!current_finished)
     {
-	while (!current_finished)
+	(void)syn_current_attr(syncing, FALSE, NULL, FALSE);
+	/*
+	 * When syncing, and found some item, need to check the item.
+	 */
+	if (syncing && current_state.ga_len)
 	{
-	    (void)syn_current_attr(syncing, FALSE, NULL, FALSE);
 	    /*
-	     * When syncing, and found some item, need to check the item.
+	     * Check for match with sync item.
 	     */
-	    if (syncing && current_state.ga_len)
-	    {
-		/*
-		 * Check for match with sync item.
-		 */
-		cur_si = &CUR_STATE(current_state.ga_len - 1);
-		if (cur_si->si_idx >= 0
-			&& (SYN_ITEMS(syn_block)[cur_si->si_idx].sp_flags
-					      & (HL_SYNC_HERE|HL_SYNC_THERE)))
-		    return TRUE;
+	    cur_si = &CUR_STATE(current_state.ga_len - 1);
+	    if (cur_si->si_idx >= 0
+		    && (SYN_ITEMS(syn_block)[cur_si->si_idx].sp_flags
+					  & (HL_SYNC_HERE|HL_SYNC_THERE)))
+		return TRUE;
 
-		/* syn_current_attr() will have skipped the check for an item
-		 * that ends here, need to do that now.  Be careful not to go
-		 * past the NUL. */
-		prev_current_col = current_col;
-		if (syn_getcurline()[current_col] != NUL)
-		    ++current_col;
-		check_state_ends();
-		current_col = prev_current_col;
-	    }
-	    ++current_col;
+	    /* syn_current_attr() will have skipped the check for an item
+	     * that ends here, need to do that now.  Be careful not to go
+	     * past the NUL. */
+	    prev_current_col = current_col;
+	    if (syn_getcurline()[current_col] != NUL)
+		++current_col;
+	    check_state_ends();
+	    current_col = prev_current_col;
 	}
+	++current_col;
     }
     return FALSE;
 }
@@ -3333,7 +3330,7 @@ syn_regexec(
 /*
  * Check one position in a line for a matching keyword.
  * The caller must check if a keyword can start at startcol.
- * Return it's ID if found, 0 otherwise.
+ * Return its ID if found, 0 otherwise.
  */
     static int
 check_keyword_id(
@@ -5495,7 +5492,7 @@ syn_combine_list(short **clstr1, short **clstr2, int list_op)
 }
 
 /*
- * Lookup a syntax cluster name and return it's ID.
+ * Lookup a syntax cluster name and return its ID.
  * If it is not found, 0 is returned.
  */
     static int
@@ -5535,7 +5532,7 @@ syn_scl_namen2id(char_u *linep, int len)
 }
 
 /*
- * Find syntax cluster name in the table and return it's ID.
+ * Find syntax cluster name in the table and return its ID.
  * The argument is a pointer to the name and the length of the name.
  * If it doesn't exist yet, a new entry is created.
  * Return 0 for failure.
@@ -5559,7 +5556,7 @@ syn_check_cluster(char_u *pp, int len)
 }
 
 /*
- * Add new syntax cluster and return it's ID.
+ * Add new syntax cluster and return its ID.
  * "name" must be an allocated string, it will be consumed.
  * Return 0 for failure.
  */
@@ -7752,7 +7749,7 @@ do_highlight(
 		    break;
 		}
 
-		/* Use the _16 table to check if its a valid color name. */
+		/* Use the _16 table to check if it's a valid color name. */
 		color = color_numbers_16[i];
 		if (color >= 0)
 		{
@@ -9346,7 +9343,7 @@ set_hl_attr(
 }
 
 /*
- * Lookup a highlight group name and return it's ID.
+ * Lookup a highlight group name and return its ID.
  * If it is not found, 0 is returned.
  */
     int
@@ -9411,7 +9408,7 @@ syn_namen2id(char_u *linep, int len)
 }
 
 /*
- * Find highlight group name in the table and return it's ID.
+ * Find highlight group name in the table and return its ID.
  * The argument is a pointer to the name and the length of the name.
  * If it doesn't exist yet, a new entry is created.
  * Return 0 for failure.
@@ -9435,7 +9432,7 @@ syn_check_group(char_u *pp, int len)
 }
 
 /*
- * Add new highlight group and return it's ID.
+ * Add new highlight group and return its ID.
  * "name" must be an allocated string, it will be consumed.
  * Return 0 for failure.
  */
