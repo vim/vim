@@ -144,6 +144,7 @@ NEW_TESTS = test_arabic.res \
 	    test_channel.res \
 	    test_charsearch.res \
 	    test_cindent.res \
+	    test_clientserver.res \
 	    test_cmdline.res \
 	    test_command_count.res \
 	    test_crypt.res \

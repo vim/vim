@@ -2105,11 +2105,15 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	    str = serverConvert(client_enc, (char_u *)data->lpData, &tofree);
 	    res = eval_client_expr_to_string(str);
-	    vim_free(tofree);
 
 	    if (res == NULL)
 	    {
-		res = vim_strsave((char_u *)_(e_invexprmsg));
+		char	*err = _(e_invexprmsg);
+		size_t	len = STRLEN(str) + STRLEN(err) + 5;
+
+		res = alloc(len);
+		if (res != NULL)
+		    vim_snprintf((char *)res, len, "%s: \"%s\"", err, str);
 		reply.dwData = COPYDATA_ERROR_RESULT;
 	    }
 	    else
@@ -2120,6 +2124,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	    serverSendEnc(sender);
 	    retval = (int)SendMessage(sender, WM_COPYDATA,
 				    (WPARAM)message_window, (LPARAM)(&reply));
+	    vim_free(tofree);
 	    vim_free(res);
 	    return retval;
 
