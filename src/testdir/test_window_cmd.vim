@@ -116,7 +116,7 @@ endfunc
 
 func Test_window_preview()
   " Open a preview window
-  pedit
+  pedit Xa
   call assert_equal(2, winnr('$'))
   call assert_equal(0, &previewwindow)
 
@@ -134,31 +134,44 @@ endfunc
 
 func Test_window_exchange()
   e Xa
+
+  " Nothing happens with window exchange when there is 1 window
+  wincmd x
+  call assert_equal(1, winnr('$'))
+
   split Xb
   split Xc
+
   call assert_equal('Xc', bufname(winbufnr(1)))
   call assert_equal('Xb', bufname(winbufnr(2)))
   call assert_equal('Xa', bufname(winbufnr(3)))
 
-  " Exchange window with next when at the top window
-  wincmd x
-  call assert_equal('Xb', bufname(winbufnr(1)))
-  call assert_equal('Xc', bufname(winbufnr(2)))
-  call assert_equal('Xa', bufname(winbufnr(3)))
+  " Exchange current window 1 with window 3
+  3wincmd x
+  call assert_equal('Xa', bufname(winbufnr(1)))
+  call assert_equal('Xb', bufname(winbufnr(2)))
+  call assert_equal('Xc', bufname(winbufnr(3)))
 
-  " Exchange window with next when at the middle window
-  wincmd j
+  " Exchange window with next when at the top window
   wincmd x
   call assert_equal('Xb', bufname(winbufnr(1)))
   call assert_equal('Xa', bufname(winbufnr(2)))
   call assert_equal('Xc', bufname(winbufnr(3)))
 
-  " Exchange window with next when at the bottom window
+  " Exchange window with next when at the middle window
   wincmd j
   wincmd x
   call assert_equal('Xb', bufname(winbufnr(1)))
   call assert_equal('Xc', bufname(winbufnr(2)))
   call assert_equal('Xa', bufname(winbufnr(3)))
+
+  " Exchange window with next when at the bottom window.
+  " When there is no next window, it exchanges with the previous window.
+  wincmd j
+  wincmd x
+  call assert_equal('Xb', bufname(winbufnr(1)))
+  call assert_equal('Xa', bufname(winbufnr(2)))
+  call assert_equal('Xc', bufname(winbufnr(3)))
 
   bw!
 endfunc
@@ -203,8 +216,7 @@ func Test_window_height()
   e Xa
   split Xb
 
-  let wh1 = winheight(1)
-  let wh2 = winheight(2)
+  let [wh1, wh2] = [winheight(1), winheight(2)]
   call assert_inrange(wh2, wh2 + 1, wh1)
 
   wincmd -
@@ -223,6 +235,31 @@ func Test_window_height()
   call assert_equal(wh1, winheight(1))
   call assert_equal(wh2, winheight(2))
 
+  2wincmd _
+  set winfixheight
+  split Xc
+  let [wh1, wh2, wh3] = [winheight(1), winheight(2), winheight(3)]
+  call assert_equal(2, winheight(2))
+  call assert_inrange(wh1, wh1 + 1, wh3)
+  3wincmd +
+  call assert_equal(2,       winheight(2))
+  call assert_equal(wh1 + 3, winheight(1))
+  call assert_equal(wh3 - 3, winheight(3))
+  wincmd =
+  call assert_equal(2,   winheight(2))
+  call assert_equal(wh1, winheight(1))
+  call assert_equal(wh3, winheight(3))
+
+  set winfixheight&
+
+  " FIXME: commented out: when resetting winfixheight, I would expect
+  " that ;wincmd =' makes all windows equal height, but the 2nd window
+  " keeps its height of 2!?
+  "wincmd =
+  "let [wh1, wh2, wh3] = [winheight(1), winheight(2), winheight(3)]
+  "call assert_equal(wh2, wh3)
+  "call assert_inrange(wh1, wh1 + 1, wh2)
+
   %bw!
 endfunc
 
@@ -230,8 +267,7 @@ func Test_window_width()
   e Xa
   vsplit Xb
 
-  let ww1 = winwidth(1)
-  let ww2 = winwidth(2)
+  let [ww1, ww2] = [winwidth(1), winwidth(2)]
   call assert_inrange(ww2, ww2 + 1, ww1)
 
   wincmd <
@@ -242,13 +278,69 @@ func Test_window_width()
   call assert_equal(ww1, winwidth(1))
   call assert_equal(ww2, winwidth(2))
 
-  3wincmd |
-  call assert_equal(3, winwidth(1))
-  call assert_equal(ww1 + ww2 - 3, winwidth(2))
+  2wincmd |
+  call assert_equal(2, winwidth(1))
+  call assert_equal(ww1 + ww2 - 2, winwidth(2))
 
   wincmd =
   call assert_equal(ww1, winwidth(1))
   call assert_equal(ww2, winwidth(2))
+
+  2wincmd |
+  set winfixwidth
+  vsplit Xc
+  let [ww1, ww2, ww3] = [winwidth(1), winwidth(2), winwidth(3)]
+  " FIXME: commented out: I would expect the width of 2nd window to 
+  " remain 2 but it's actually 1?!
+  "call assert_equal(2, winwidth(2))
+  call assert_inrange(ww1, ww1 + 1, ww3)
+  3wincmd >
+  " FIXME: commented out: I would expect the width of 2nd window to 
+  " remain 2 but it's actually 1?!
+  "call assert_equal(2,       winwidth(2))
+  call assert_equal(ww1 + 3, winwidth(1))
+  call assert_equal(ww3 - 3, winwidth(3))
+  wincmd =
+  " FIXME: commented out: I would expect the width of 2nd window to 
+  " remain 2 but it's actually 1?!
+  "call assert_equal(2,   winwidth(2))
+  call assert_equal(ww1, winwidth(1))
+  call assert_equal(ww3, winwidth(3))
+
+  set winfixwidth&
+
+  " FIXME: commented out: when resetting winfixwidth, I would expect
+  " that 'wincmd =' makes all windows equal width, but the 2nd window
+  " keeps its width of 2!?
+  "wincmd =
+  "let [ww1, ww2, ww3] = [winwidth(1), winwidth(2), winwidth(3)]
+  "call assert_equal(ww2, ww3)
+  "call assert_inrange(ww1, ww1 + 1, ww2)
+
+  %bw
+endfunc
+
+func Test_window_jump_tag()
+  help
+  /iccf
+  call assert_match('^|iccf|',  getline('.'))
+  call assert_equal(2, winnr('$'))
+  2wincmd }
+  call assert_equal(3, winnr('$'))
+  call assert_match('^|iccf|',  getline('.'))
+  wincmd k
+  call assert_match('\*iccf\*',  getline('.'))
+  call assert_equal(2, winheight(0))
+
+  wincmd z
+  set previewheight=4
+  help
+  /bugs
+  wincmd }
+  wincmd k
+  call assert_match('\*bugs\*',  getline('.'))
+  call assert_equal(4, winheight(0))
+  set previewheight&
 
   %bw
 endfunc
