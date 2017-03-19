@@ -5077,6 +5077,7 @@ ex_helpgrep(exarg_T *eap)
     char_u	*lang;
 #endif
     qf_info_T	*qi = &ql_info;
+    qf_info_T	*save_qi;
     int		new_qi = FALSE;
     win_T	*wp;
 #ifdef FEAT_AUTOCMD
@@ -5129,6 +5130,9 @@ ex_helpgrep(exarg_T *eap)
 	    new_qi = TRUE;
 	}
     }
+
+    /* Autocommands may change the list. Save it for later comparison */
+    save_qi = qi;
 
     regmatch.regprog = vim_regcomp(eap->arg, RE_MAGIC + RE_STRING);
     regmatch.rm_ic = FALSE;
@@ -5262,7 +5266,7 @@ ex_helpgrep(exarg_T *eap)
     {
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
 					       curbuf->b_fname, TRUE, curbuf);
-	if (!new_qi && qi != &ql_info && qf_find_buf(qi) == NULL)
+	if (!new_qi && qi != save_qi && qf_find_buf(qi) == NULL)
 	    /* autocommands made "qi" invalid */
 	    return;
     }
