@@ -8677,14 +8677,15 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
     if (serverid != NULL && !check_restricted() && !check_secure())
     {
 	int timeout = 0;
+# ifdef WIN32
+	/* The server's HWND is encoded in the 'id' parameter */
+	long_u		n = 0;
+# endif
 
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	    timeout = get_tv_number(&argvars[1]);
 
 # ifdef WIN32
-	/* The server's HWND is encoded in the 'id' parameter */
-	long_u		n = 0;
-
 	sscanf((char *)serverid, SCANF_HEX_LONG_U, &n);
 	if (n != 0)
 	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE, timeout);

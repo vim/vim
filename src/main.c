@@ -4194,7 +4194,7 @@ sendToLocalVim(char_u *cmd, int asExpr, char_u **result)
 		size_t	len = STRLEN(cmd) + STRLEN(err) + 5;
 		char_u	*msg;
 
-		msg = alloc(len);
+		msg = alloc((unsigned)len);
 		if (msg != NULL)
 		    vim_snprintf((char *)msg, len, "%s: \"%s\"", err, cmd);
 		*result = msg;

@@ -2111,7 +2111,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		char	*err = _(e_invexprmsg);
 		size_t	len = STRLEN(str) + STRLEN(err) + 5;
 
-		res = alloc(len);
+		res = alloc((unsigned)len);
 		if (res != NULL)
 		    vim_snprintf((char *)res, len, "%s: \"%s\"", err, str);
 		reply.dwData = COPYDATA_ERROR_RESULT;
