@@ -2096,6 +2096,7 @@ test_arglist \
 	test_backspace_opt \
 	test_breakindent \
 	test_bufwintabinfo \
+	test_cd \
 	test_cdo \
 	test_changedtick \
 	test_channel \
