@@ -217,6 +217,8 @@ func Test_window_height()
   split Xb
 
   let [wh1, wh2] = [winheight(1), winheight(2)]
+  " Active window (1) should have the same height or 1 more
+  " than the other window.
   call assert_inrange(wh2, wh2 + 1, wh1)
 
   wincmd -
@@ -250,15 +252,15 @@ func Test_window_height()
   call assert_equal(wh1, winheight(1))
   call assert_equal(wh3, winheight(3))
 
+  wincmd j
   set winfixheight&
 
   wincmd =
-  " FIXME: commented out: when resetting winfixheight, I would expect
-  " that ;wincmd =' makes all windows equal height, but the 2nd window
-  " keeps its height of 2!?
-  "let [wh1, wh2, wh3] = [winheight(1), winheight(2), winheight(3)]
-  "call assert_equal(wh2, wh3)
-  "call assert_inrange(wh2, wh2 + 1, wh1)
+  let [wh1, wh2, wh3] = [winheight(1), winheight(2), winheight(3)]
+  " Current window (2) should have the same height or 1 more
+  " than the other windows.
+  call assert_inrange(wh1, wh1 + 1, wh2)
+  call assert_inrange(wh3, wh3 + 1, wh2)
 
   bw Xa Xb Xc
 endfunc
@@ -268,6 +270,8 @@ func Test_window_width()
   vsplit Xb
 
   let [ww1, ww2] = [winwidth(1), winwidth(2)]
+  " Active window (1) should have the same width or 1 more
+  " than the other window.
   call assert_inrange(ww2, ww2 + 1, ww1)
 
   wincmd <
@@ -307,15 +311,15 @@ func Test_window_width()
   call assert_equal(ww1, winwidth(1))
   call assert_equal(ww3, winwidth(3))
 
+  wincmd l
   set winfixwidth&
 
   wincmd =
-  " FIXME: commented out: when resetting winfixwidth, I would expect
-  " that 'wincmd =' makes all windows equal width, but the 2nd window
-  " keeps its width of 2!?
-  "let [ww1, ww2, ww3] = [winwidth(1), winwidth(2), winwidth(3)]
-  "call assert_equal(ww2, ww3)
-  "call assert_inrange(ww2, ww2 + 1, ww1)
+  let [ww1, ww2, ww3] = [winwidth(1), winwidth(2), winwidth(3)]
+  " Current window (2) should have the same width or 1 more
+  " than the other windows.
+  call assert_inrange(ww1, ww1 + 1, ww2)
+  call assert_inrange(ww3, ww3 + 1, ww2)
 
   bw Xa Xb Xc
 endfunc
