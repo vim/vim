@@ -870,9 +870,9 @@ win_split_ins(
 
 	/* We don't like to take lines for the new window from a
 	 * 'winfixwidth' window.  Take them from a window to the left or right
-	 * instead, if possible. */
+	 * instead, if possible. Add one for the separator. */
 	if (oldwin->w_p_wfw)
-	    win_setwidth_win(oldwin->w_width + new_size, oldwin);
+	    win_setwidth_win(oldwin->w_width + new_size + 1, oldwin);
 
 	/* Only make all windows the same width if one of them (except oldwin)
 	 * is wider than one of the split windows. */
