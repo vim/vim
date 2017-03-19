@@ -9033,6 +9033,11 @@ win_found:
 	win_remove(curwin, NULL);
 	aucmd_win_used = FALSE;
 	last_status(FALSE);	    /* may need to remove last status line */
+
+	if (!valid_tabpage_win(curtab))
+	    /* no valid window in current tabpage */
+	    close_tabpage(curtab);
+
 	restore_snapshot(SNAP_AUCMD_IDX, FALSE);
 	(void)win_comp_pos();   /* recompute window positions */
 	unblock_autocmds();

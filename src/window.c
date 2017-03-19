@@ -2107,7 +2107,7 @@ win_equal_rec(
 }
 
 /*
- * close all windows for buffer 'buf'
+ * Close all windows for buffer "buf".
  */
     void
 close_windows(
@@ -2131,7 +2131,10 @@ close_windows(
 #endif
 		)
 	{
-	    win_close(wp, FALSE);
+	    if (win_close(wp, FALSE) == FAIL)
+		/* If closing the window fails give up, to avoid looping
+		 * forever. */
+		break;
 
 	    /* Start all over, autocommands may change the window layout. */
 	    wp = firstwin;
@@ -3756,6 +3759,58 @@ valid_tabpage(tabpage_T *tpc)
 	if (tp == tpc)
 	    return TRUE;
     return FALSE;
+}
+
+/*
+ * Return TRUE when "tpc" points to a valid tab page and at least one window is
+ * valid.
+ */
+    int
+valid_tabpage_win(tabpage_T *tpc)
+{
+    tabpage_T	*tp;
+    win_T	*wp;
+
+    FOR_ALL_TABPAGES(tp)
+    {
+	if (tp == tpc)
+	{
+	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
+	    {
+		if (win_valid_any_tab(wp))
+		    return TRUE;
+	    }
+	    return FALSE;
+	}
+    }
+    /* shouldn't happen */
+    return FALSE;
+}
+
+/*
+ * Close tabpage "tab", assuming it has no windows in it.
+ * There must be another tabpage or this will crash.
+ */
+    void
+close_tabpage(tabpage_T *tab)
+{
+    tabpage_T	*ptp;
+
+    if (tab == first_tabpage)
+    {
+	first_tabpage = tab->tp_next;
+	ptp = first_tabpage;
+    }
+    else
+    {
+	for (ptp = first_tabpage; ptp != NULL && ptp->tp_next != tab;
+							    ptp = ptp->tp_next)
+	    ;
+	ptp->tp_next = tab->tp_next;
+    }
+
+    goto_tabpage_tp(ptp, FALSE, FALSE);
+    free_tabpage(tab);
 }
 
 /*
