@@ -349,6 +349,9 @@ endfunc
 " Closing a window might cause an endless loop
 " E814 for older Vims
 function Test_autocmd_bufwipe_in_SessLoadPost()
+  if has('win32')
+    throw 'Skipped: test hangs on MS-Windows'
+  endif
   tabnew
   set noswapfile
   let g:bufnr=bufnr('%')
@@ -374,6 +377,9 @@ endfunc
 
 " SEGV occurs in older versions.
 function Test_autocmd_bufwipe_in_SessLoadPost2()
+  if has('win32')
+    throw 'Skipped: test hangs on MS-Windows'
+  endif
   tabnew
   set noswapfile
   let g:bufnr=bufnr('%')
