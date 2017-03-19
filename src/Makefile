@@ -2185,6 +2185,7 @@ test_arglist \
 	test_pyx2 \
 	test_pyx3 \
 	test_quickfix \
+	test_quotestar \
 	test_recover \
 	test_regexp_latin \
 	test_regexp_utf8 \

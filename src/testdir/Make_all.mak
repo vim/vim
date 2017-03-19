@@ -194,6 +194,7 @@ NEW_TESTS = test_arabic.res \
 	    test_pyx2.res \
 	    test_pyx3.res \
 	    test_quickfix.res \
+	    test_quotestar.res \
 	    test_retab.res \
 	    test_ruby.res \
 	    test_search.res \

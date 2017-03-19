@@ -228,6 +228,7 @@ let s:flaky = [
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',
       \ 'Test_quoteplus()',
+      \ 'Test_quotestar()',
       \ 'Test_reltime()',
       \ ]
 
