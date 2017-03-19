@@ -373,6 +373,7 @@ serverSendToVim(
     char_u	**result,		/* Result of eval'ed expression */
     Window	*server,		/* Actual ID of receiving app */
     Bool	asExpr,			/* Interpret as keystrokes or expr ? */
+    int		timeout,		/* seconds to wait or zero */
     Bool	localLoop,		/* Throw away everything but result */
     int		silent)			/* don't complain about no server */
 {
@@ -485,7 +486,8 @@ serverSendToVim(
     pending.nextPtr = pendingCommands;
     pendingCommands = &pending;
 
-    ServerWait(dpy, w, WaitForPend, &pending, localLoop, 600);
+    ServerWait(dpy, w, WaitForPend, &pending, localLoop,
+						  timeout > 0 ? timeout : 600);
 
     /*
      * Unregister the information about the pending command
@@ -790,6 +792,7 @@ WaitForReply(void *p)
 
 /*
  * Wait for replies from id (win)
+ * When "timeout" is non-zero wait up to this many seconds.
  * Return 0 and the malloc'ed string when a reply is available.
  * Return -1 if the window becomes invalid while waiting.
  */
@@ -798,13 +801,15 @@ serverReadReply(
     Display	*dpy,
     Window	win,
     char_u	**str,
-    int		localLoop)
+    int		localLoop,
+    int		timeout)
 {
     int		len;
     char_u	*s;
     struct	ServerReply *p;
 
-    ServerWait(dpy, win, WaitForReply, &win, localLoop, -1);
+    ServerWait(dpy, win, WaitForReply, &win, localLoop,
+						   timeout > 0 ? timeout : -1);
 
     if ((p = ServerReplyFind(win, SROP_Find)) != NULL && p->strings.ga_len > 0)
     {

@@ -3791,10 +3791,10 @@ cmdsrv_main(
 	    }
 	    else
 		ret = serverSendToVim(xterm_dpy, sname, *serverStr,
-						    NULL, &srv, 0, 0, silent);
+						  NULL, &srv, 0, 0, 0, silent);
 # else
 	    /* Win32 always works? */
-	    ret = serverSendToVim(sname, *serverStr, NULL, &srv, 0, silent);
+	    ret = serverSendToVim(sname, *serverStr, NULL, &srv, 0, 0, silent);
 # endif
 	    if (ret < 0)
 	    {
@@ -3854,11 +3854,11 @@ cmdsrv_main(
 		while (memchr(done, 0, numFiles) != NULL)
 		{
 # ifdef WIN32
-		    p = serverGetReply(srv, NULL, TRUE, TRUE);
+		    p = serverGetReply(srv, NULL, TRUE, TRUE, 0);
 		    if (p == NULL)
 			break;
 # else
-		    if (serverReadReply(xterm_dpy, srv, &p, TRUE) < 0)
+		    if (serverReadReply(xterm_dpy, srv, &p, TRUE, -1) < 0)
 			break;
 # endif
 		    j = atoi((char *)p);
@@ -3885,12 +3885,12 @@ cmdsrv_main(
 # ifdef WIN32
 	    /* Win32 always works? */
 	    if (serverSendToVim(sname, (char_u *)argv[i + 1],
-						    &res, NULL, 1, FALSE) < 0)
+						  &res, NULL, 1, 0, FALSE) < 0)
 # else
 	    if (xterm_dpy == NULL)
 		mch_errmsg(_("No display: Send expression failed.\n"));
 	    else if (serverSendToVim(xterm_dpy, sname, (char_u *)argv[i + 1],
-						 &res, NULL, 1, 1, FALSE) < 0)
+					       &res, NULL, 1, 0, 1, FALSE) < 0)
 # endif
 	    {
 		if (res != NULL && *res != NUL)

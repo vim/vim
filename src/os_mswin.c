@@ -2401,6 +2401,7 @@ serverSendToVim(
     char_u	 **result,		/* Result of eval'ed expression */
     void	 *ptarget,		/* HWND of server */
     int		 asExpr,		/* Expression or keys? */
+    int		 timeout,		/* timeout in seconds or zero */
     int		 silent)		/* don't complain about no server */
 {
     HWND	target;
@@ -2444,7 +2445,7 @@ serverSendToVim(
 	return -1;
 
     if (asExpr)
-	retval = serverGetReply(target, &retcode, TRUE, TRUE);
+	retval = serverGetReply(target, &retcode, TRUE, TRUE, timeout);
 
     if (result == NULL)
 	vim_free(retval);
@@ -2521,14 +2522,17 @@ save_reply(HWND server, char_u *reply, int expr)
  * if "wait" is TRUE block until a message arrives (or the server exits).
  */
     char_u *
-serverGetReply(HWND server, int *expr_res, int remove, int wait)
+serverGetReply(HWND server, int *expr_res, int remove, int wait, int timeout)
 {
     int		i;
     char_u	*reply;
     reply_T	*rep;
     int		did_process = FALSE;
+    time_t	start;
+    time_t	now;
 
     /* When waiting, loop until the message waiting for is received. */
+    time(&start);
     for (;;)
     {
 	/* Reset this here, in case a message arrives while we are going
@@ -2584,6 +2588,10 @@ serverGetReply(HWND server, int *expr_res, int remove, int wait)
 #ifdef FEAT_TIMERS
 	    check_due_timer();
 #endif
+	    time(&now);
+	    if (timeout > 0 && (now - start) >= timeout)
+		break;
+
 	    /* Wait for a SendMessage() call to us.  This could be the reply
 	     * we are waiting for.  Use a timeout of a second, to catch the
 	     * situation that the server died unexpectedly. */

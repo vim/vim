@@ -739,10 +739,10 @@ static struct fst
     {"reltimefloat",	1, 1, f_reltimefloat},
 #endif
     {"reltimestr",	1, 1, f_reltimestr},
-    {"remote_expr",	2, 3, f_remote_expr},
+    {"remote_expr",	2, 4, f_remote_expr},
     {"remote_foreground", 1, 1, f_remote_foreground},
     {"remote_peek",	1, 2, f_remote_peek},
-    {"remote_read",	1, 1, f_remote_read},
+    {"remote_read",	1, 2, f_remote_read},
     {"remote_send",	2, 3, f_remote_send},
     {"remote_startserver", 1, 1, f_remote_startserver},
     {"remove",		2, 3, f_remove},
@@ -8515,6 +8515,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
     char_u	*keys;
     char_u	*r = NULL;
     char_u	buf[NUMBUFLEN];
+    int		timeout = 0;
 # ifdef WIN32
     HWND	w;
 # else
@@ -8528,16 +8529,19 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
     if (check_connection() == FAIL)
 	return;
 # endif
+    if (argvars[2].v_type != VAR_UNKNOWN
+	    && argvars[3].v_type != VAR_UNKNOWN)
+	timeout = get_tv_number(&argvars[3]);
 
     server_name = get_tv_string_chk(&argvars[0]);
     if (server_name == NULL)
 	return;		/* type error; errmsg already given */
     keys = get_tv_string_buf(&argvars[1], buf);
 # ifdef WIN32
-    if (serverSendToVim(server_name, keys, &r, &w, expr, TRUE) < 0)
+    if (serverSendToVim(server_name, keys, &r, &w, expr, timeout, TRUE) < 0)
 # else
-    if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, 0, TRUE)
-									  < 0)
+    if (serverSendToVim(X_DISPLAY, server_name, keys, &r, &w, expr, timeout,
+								  0, TRUE) < 0)
 # endif
     {
 	if (r != NULL)
@@ -8555,13 +8559,15 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 	char_u		str[30];
 	char_u		*idvar;
 
-	sprintf((char *)str, PRINTF_HEX_LONG_U, (long_u)w);
-	v.di_tv.v_type = VAR_STRING;
-	v.di_tv.vval.v_string = vim_strsave(str);
 	idvar = get_tv_string_chk(&argvars[2]);
-	if (idvar != NULL)
+	if (idvar != NULL && *idvar != NUL)
+	{
+	    sprintf((char *)str, PRINTF_HEX_LONG_U, (long_u)w);
+	    v.di_tv.v_type = VAR_STRING;
+	    v.di_tv.vval.v_string = vim_strsave(str);
 	    set_var(idvar, &v.di_tv, FALSE);
-	vim_free(v.di_tv.vval.v_string);
+	    vim_free(v.di_tv.vval.v_string);
+	}
     }
 }
 #endif
@@ -8633,7 +8639,7 @@ f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
 	rettv->vval.v_number = -1;
     else
     {
-	s = serverGetReply((HWND)n, FALSE, FALSE, FALSE);
+	s = serverGetReply((HWND)n, FALSE, FALSE, FALSE, 0);
 	rettv->vval.v_number = (s != NULL);
     }
 # else
@@ -8670,17 +8676,23 @@ f_remote_read(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (serverid != NULL && !check_restricted() && !check_secure())
     {
+	int timeout = 0;
+
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	    timeout = get_tv_number(&argvars[1]);
+
 # ifdef WIN32
 	/* The server's HWND is encoded in the 'id' parameter */
 	long_u		n = 0;
 
 	sscanf((char *)serverid, SCANF_HEX_LONG_U, &n);
 	if (n != 0)
-	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE);
+	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE, timeout);
 	if (r == NULL)
 # else
-	if (check_connection() == FAIL || serverReadReply(X_DISPLAY,
-		serverStrToWin(serverid), &r, FALSE) < 0)
+	if (check_connection() == FAIL
+		|| serverReadReply(X_DISPLAY, serverStrToWin(serverid),
+						       &r, FALSE, timeout) < 0)
 # endif
 	    EMSG(_("E277: Unable to read a server reply"));
     }
