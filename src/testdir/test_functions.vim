@@ -460,8 +460,8 @@ func Test_getbufvar()
   let bd = getbufvar(bnr, '',def_num)
   call assert_equal(1, len(bd))
 
-  call assert_equal('', getbufvar(9, ''))
-  call assert_equal(def_num, getbufvar(9, '', def_num))
+  call assert_equal('', getbufvar(9999, ''))
+  call assert_equal(def_num, getbufvar(9999, '', def_num))
   unlet def_num
 
   call assert_equal(0, getbufvar(bnr, '&autoindent'))

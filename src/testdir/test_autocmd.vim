@@ -1,5 +1,7 @@
 " Tests for autocommands
 
+set belloff=all
+
 function! s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
     if bufloaded(bnr) && bufnr('%') != bnr
@@ -318,6 +320,8 @@ func Test_three_windows()
   call assert_equal('Xanother', expand('%'))
 
   au!
+  enew
+  bwipe! Xtestje1
   call delete('Xtestje1')
   call delete('Xtestje2')
   call delete('Xtestje3')

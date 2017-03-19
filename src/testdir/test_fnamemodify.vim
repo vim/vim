@@ -33,8 +33,8 @@ func Test_fnamemodify()
   call assert_equal('''abc"%"def''', fnamemodify('abc"%"def', ':S'))
   call assert_equal('''abc''\'''' ''\''''def''', fnamemodify('abc'' ''def', ':S'))
   call assert_equal('''abc''\''''%''\''''def''', fnamemodify('abc''%''def', ':S'))
-  call assert_equal(expand('%:r:S'), shellescape(expand('%:r')))
   sp test_alot.vim
+  call assert_equal(expand('%:r:S'), shellescape(expand('%:r')))
   call assert_equal('test_alot,''test_alot'',test_alot.vim', join([expand('%:r'), expand('%:r:S'), expand('%')], ','))
   quit
 
