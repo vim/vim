@@ -207,6 +207,7 @@ NEW_TESTS = test_arabic.res \
 	    test_substitute.res \
 	    test_syntax.res \
 	    test_system.res \
+	    test_taglist.res \
 	    test_tcl.res \
 	    test_textobjects.res \
 	    test_undo.res \
