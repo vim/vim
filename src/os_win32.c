@@ -4008,6 +4008,28 @@ vim_create_process(
 }
 
 
+    static HINSTANCE
+vim_shell_execute(
+    char *cmd,
+    INT	 n_show_cmd)
+{
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR *wcmd = enc_to_utf16((char_u *)cmd, NULL);
+	if (wcmd != NULL)
+	{
+	    HINSTANCE ret;
+	    ret = ShellExecuteW(NULL, NULL, wcmd, NULL, NULL, n_show_cmd);
+	    vim_free(wcmd);
+	    return ret;
+	}
+    }
+#endif
+    return ShellExecute(NULL, NULL, cmd, NULL, NULL, n_show_cmd);
+}
+
+
 #if defined(FEAT_GUI_W32) || defined(PROTO)
 
 /*
@@ -4711,6 +4733,7 @@ mch_call_shell(
 	    STARTUPINFO		si;
 	    PROCESS_INFORMATION	pi;
 	    DWORD		flags = CREATE_NEW_CONSOLE;
+	    INT			n_show_cmd = SW_SHOWNORMAL;
 	    char_u		*p;
 
 	    ZeroMemory(&si, sizeof(si));
@@ -4729,6 +4752,7 @@ mch_call_shell(
 		cmdbase = skipwhite(cmdbase + 4);
 		si.dwFlags = STARTF_USESHOWWINDOW;
 		si.wShowWindow = SW_SHOWMINNOACTIVE;
+		n_show_cmd = SW_SHOWMINNOACTIVE;
 	    }
 	    else if ((STRNICMP(cmdbase, "/b", 2) == 0)
 		    && VIM_ISWHITE(cmdbase[2]))
@@ -4799,6 +4823,8 @@ mch_call_shell(
 	     * files if we exit before the spawned process
 	     */
 	    if (vim_create_process((char *)newcmd, FALSE, flags, &si, &pi))
+		x = 0;
+	    else if (vim_shell_execute((char *)newcmd, n_show_cmd) > (HINSTANCE)32)
 		x = 0;
 	    else
 	    {
