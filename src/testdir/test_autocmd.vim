@@ -340,7 +340,10 @@ func Test_BufEnter()
   call mkdir('Xdir')
   split Xdir
   call assert_equal('+++', g:val)
-  bwipe!
+
+  " On MS-Windows we can't edit the directory, make sure we wipe the right
+  " buffer.
+  bwipe! Xdir
 
   call delete('Xdir', 'd')
   au! BufEnter
@@ -349,40 +352,37 @@ endfunc
 " Closing a window might cause an endless loop
 " E814 for older Vims
 function Test_autocmd_bufwipe_in_SessLoadPost()
-  if has('win32')
-    throw 'Skipped: test hangs on MS-Windows'
-  endif
   tabnew
   set noswapfile
-  let g:bufnr=bufnr('%')
   mksession!
 
-  let content=['set nocp noswapfile',
+  let content = ['set nocp noswapfile',
         \ 'let v:swapchoice="e"',
         \ 'augroup test_autocmd_sessionload',
         \ 'autocmd!',
         \ 'autocmd SessionLoadPost * 4bw!',
-        \ 'augroup END'
+        \ 'augroup END',
+	\ '',
+	\ 'func WriteErrors()',
+	\ '  call writefile([execute("messages")], "Xerrors")',
+	\ 'endfunc',
+	\ 'au VimLeave * call WriteErrors()',
         \ ]
   call writefile(content, 'Xvimrc')
-  let a=system(v:progpath. ' -u Xvimrc --noplugins -S Session.vim')
-  call assert_match('E814', a)
+  call system(v:progpath. ' -u Xvimrc --not-a-term --noplugins -S Session.vim -c cq')
+  let errors = join(readfile('Xerrors'))
+  call assert_match('E814', errors)
 
-  unlet! g:bufnr
   set swapfile
-  for file in ['Session.vim', 'Xvimrc']
+  for file in ['Session.vim', 'Xvimrc', 'Xerrors']
     call delete(file)
   endfor
 endfunc
 
 " SEGV occurs in older versions.
 function Test_autocmd_bufwipe_in_SessLoadPost2()
-  if has('win32')
-    throw 'Skipped: test hangs on MS-Windows'
-  endif
   tabnew
   set noswapfile
-  let g:bufnr=bufnr('%')
   mksession!
 
   let content = ['set nocp noswapfile',
@@ -397,20 +397,24 @@ function Test_autocmd_bufwipe_in_SessLoadPost2()
       \ '      exec ''bwipeout '' . b',
       \ '    endif',
       \ '  endfor',
-      \ 'call append("1", "SessionLoadPost DONE")',
+      \ '  echomsg "SessionLoadPost DONE"',
       \ 'endfunction',
-      \ 'au SessionLoadPost * call DeleteInactiveBufs()']
+      \ 'au SessionLoadPost * call DeleteInactiveBufs()',
+      \ '',
+      \ 'func WriteErrors()',
+      \ '  call writefile([execute("messages")], "Xerrors")',
+      \ 'endfunc',
+      \ 'au VimLeave * call WriteErrors()',
+      \ ]
   call writefile(content, 'Xvimrc')
-  let a=system(v:progpath. ' -u Xvimrc --noplugins -S Session.vim')
-  " this probably only matches on unix
-  if has("unix")
-    call assert_notmatch('Caught deadly signal SEGV', a)
-  endif
-  call assert_match('SessionLoadPost DONE', a)
+  call system(v:progpath. ' -u Xvimrc --not-a-term --noplugins -S Session.vim -c cq')
+  let errors = join(readfile('Xerrors'))
+  " This probably only ever matches on unix.
+  call assert_notmatch('Caught deadly signal SEGV', errors)
+  call assert_match('SessionLoadPost DONE', errors)
 
-  unlet! g:bufnr
   set swapfile
-  for file in ['Session.vim', 'Xvimrc']
+  for file in ['Session.vim', 'Xvimrc', 'Xerrors']
     call delete(file)
   endfor
 endfunc
