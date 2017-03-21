@@ -1974,7 +1974,7 @@ collection:
 nfa_do_multibyte:
 		/* plen is length of current char with composing chars */
 		if (enc_utf8 && ((*mb_char2len)(c)
-			    != (plen = (*mb_ptr2len)(old_regparse))
+			    != (plen = utfc_ptr2len(old_regparse))
 						       || utf_iscomposing(c)))
 		{
 		    int i = 0;
