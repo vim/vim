@@ -3806,6 +3806,7 @@ close_tabpage(tabpage_T *tab)
 	for (ptp = first_tabpage; ptp != NULL && ptp->tp_next != tab;
 							    ptp = ptp->tp_next)
 	    ;
+	assert(ptp != NULL);
 	ptp->tp_next = tab->tp_next;
     }
 
