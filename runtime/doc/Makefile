@@ -30,6 +30,7 @@ DOCS = \
 	filetype.txt \
 	fold.txt \
 	ft_ada.txt \
+	ft_rust.txt \
 	ft_sql.txt \
 	gui.txt \
 	gui_w32.txt \
@@ -165,6 +166,7 @@ HTMLS = \
 	filetype.html \
 	fold.html \
 	ft_ada.html \
+	ft_rust.html \
 	ft_sql.html \
 	gui.html \
 	gui_w32.html \

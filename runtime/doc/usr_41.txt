@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.0.  Last change: 2017 Mar 09
+*usr_41.txt*	For Vim version 8.0.  Last change: 2017 Mar 18
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -889,6 +889,7 @@ GUI:						*gui-functions*
 
 Vim server:					*server-functions*
 	serverlist()		return the list of server names
+	remote_startserve()	run a server
 	remote_send()		send command characters to a Vim server
 	remote_expr()		evaluate an expression in a Vim server
 	server2client()		send a reply to a client of a Vim server
@@ -920,6 +921,7 @@ Testing:				    *test-functions*
 	assert_true()		assert that an expression is true
 	assert_exception()	assert that a command throws an exception
 	assert_fails()		assert that a function call fails
+	assert_report()		report a test failure
 	test_alloc_fail()	make memory allocation fail
 	test_autochdir()	enable 'autochdir' during startup
 	test_override()		test with Vim internal overrides

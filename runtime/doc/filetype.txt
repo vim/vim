@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.0.  Last change: 2017 Jan 04
+*filetype.txt*  For Vim version 8.0.  Last change: 2017 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -661,6 +661,12 @@ RPM SPEC						*ft-spec-plugin*
 
 Since the text for this plugin is rather long it has been put in a separate
 file: |pi_spec.txt|.
+
+
+RUST							*ft-rust*
+
+Since the text for this plugin is rather long it has been put in a separate
+file: |ft_rust.txt|.
 
 
 SQL							*ft-sql*
