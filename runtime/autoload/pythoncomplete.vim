@@ -81,62 +81,66 @@ function! pythoncomplete#Complete(findstart, base)
                 break
             endif
         endwhile
-        execute "python vimcomplete('" . cword . "', '" . a:base . "')"
+        silent! execute "python vimcomplete('" . cword . "', '" . a:base . "')"
         return g:pythoncomplete_completions
     endif
 endfunction
 
 function! s:DefPython()
 python << PYTHONEOF
+import vim
 import sys, tokenize, cStringIO, types
 from token import NAME, DEDENT, NEWLINE, STRING
 
 debugstmts=[]
 def dbg(s): debugstmts.append(s)
 def showdbg():
-    for d in debugstmts: print "DBG: %s " % d
+    for d in debugstmts: vim.command("unsilent echom 'DBG: '%r" % d)
 
 def vimcomplete(context,match):
     global debugstmts
     debugstmts = []
     try:
-        import vim
-        def complsort(x,y):
-            try:
-                xa = x['abbr']
-                ya = y['abbr']
-                if xa[0] == '_':
-                    if xa[1] == '_' and ya[0:2] == '__':
-                        return xa > ya
-                    elif ya[0:2] == '__':
-                        return -1
-                    elif y[0] == '_':
-                        return xa > ya
-                    else:
-                        return 1
-                elif ya[0] == '_':
-                    return -1
-                else:
-                   return xa > ya
-            except:
-                return 0
-        cmpl = Completer()
-        cmpl.evalsource('\n'.join(vim.current.buffer),vim.eval("line('.')"))
-        all = cmpl.get_completions(context,match)
-        all.sort(complsort)
-        dictstr = '['
-        # have to do this for double quoting
-        for cmpl in all:
-            dictstr += '{'
-            for x in cmpl: dictstr += '"%s":"%s",' % (x,cmpl[x])
-            dictstr += '"icase":0},'
-        if dictstr[-1] == ',': dictstr = dictstr[:-1]
-        dictstr += ']'
-        #dbg("dict: %s" % dictstr)
-        vim.command("silent let g:pythoncomplete_completions = %s" % dictstr)
-        #dbg("Completion dict:\n%s" % all)
+        vimcomplete_(context, match)
     except vim.error:
         dbg("VIM Error: %s" % vim.error)
+
+def vimcomplete_(context,match):
+    cmpl = Completer()
+    cmpl.evalsource('\n'.join(vim.current.buffer),vim.eval("line('.')"))
+    all = cmpl.get_completions(context,match)
+    all.sort(complsort)
+    dictstr = '['
+    # have to do this for double quoting
+    for cmpl in all:
+        dictstr += '{'
+        for x in cmpl: dictstr += '"%s":"%s",' % (x,cmpl[x])
+        dictstr += '"icase":0},'
+    if dictstr[-1] == ',': dictstr = dictstr[:-1]
+    dictstr += ']'
+    #dbg("dict: %s" % dictstr)
+    vim.command("let g:pythoncomplete_completions = %s" % dictstr)
+    #dbg("Completion dict:\n%s" % all)
+
+def complsort(x,y):
+    try:
+        xa = x['abbr']
+        ya = y['abbr']
+        if xa[0] == '_':
+            if xa[1] == '_' and ya[0:2] == '__':
+                return xa > ya
+            elif ya[0:2] == '__':
+                return -1
+            elif y[0] == '_':
+                return xa > ya
+            else:
+                return 1
+        elif ya[0] == '_':
+            return -1
+        else:
+           return xa > ya
+    except:
+        return 0
 
 class Completer(object):
     def __init__(self):
