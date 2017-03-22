@@ -914,8 +914,10 @@ common_init(mparm_T *paramp)
     TIME_MSG("GUI prepared");
 #endif
 
+#ifdef FEAT_EVAL
     /* Initialize the index for fast lookup of Ex commands. */
     init_cmds_index();
+#endif
 
     /* Init the table of Normal mode commands. */
     init_normal_cmds();
