@@ -496,38 +496,16 @@ static void	ex_folddo(exarg_T *eap);
 #include "ex_cmds.h"
 
 /*
- * Table used to quickly search for a command, based on its first character.
+ * Table used to quickly search for a command, based on its first 2 characters.
+ * The first index in table corresponds to the first letter:
+ * 'a' -> 0, 'b' -> 1, ... 'z' -> 25.
+ * The second index in table corresponds to the second letter
+ * if it is a lower case letter ('a' -> 1, 'b' -> 2 .. 'z' -> 26)
+ * or 0 it is not a lower case (NUL or upper case as in bNext).
+ * 'short' type is used instead CMD_index to save memory.
+ * Table size is 26*27*sizeof(short) = 1404 bytes.
  */
-static cmdidx_T cmdidxs[27] =
-{
-	CMD_append,
-	CMD_buffer,
-	CMD_change,
-	CMD_delete,
-	CMD_edit,
-	CMD_file,
-	CMD_global,
-	CMD_help,
-	CMD_insert,
-	CMD_join,
-	CMD_k,
-	CMD_list,
-	CMD_move,
-	CMD_next,
-	CMD_open,
-	CMD_print,
-	CMD_quit,
-	CMD_read,
-	CMD_substitute,
-	CMD_t,
-	CMD_undo,
-	CMD_vglobal,
-	CMD_write,
-	CMD_xit,
-	CMD_yank,
-	CMD_z,
-	CMD_bang
-};
+static short cmdidxs[26][27];
 
 static char_u dollar_command[2] = {'$', 0};
 
@@ -3208,10 +3186,17 @@ find_command(exarg_T *eap, int *full UNUSED)
 	    }
 	}
 
-	if (ASCII_ISLOWER(*eap->cmd))
-	    eap->cmdidx = cmdidxs[CharOrdLow(*eap->cmd)];
+	if (ASCII_ISLOWER(eap->cmd[0]))
+	{
+	    /* Use a precomputed index cmdidxs[][] for fast look-up in cmdnames[]
+	     * taking into account the first 2 letters of eap->cmd. */
+	    int c1 = eap->cmd[0];
+	    int c2 = ASCII_ISLOWER(eap->cmd[1]) ? eap->cmd[1] : NUL;
+	    eap->cmdidx = (cmdidx_T)(cmdidxs[CharOrdLow(c1)]
+				[(c2 == NUL) ? 0 : (1 + CharOrdLow(c2))]);
+	}
 	else
-	    eap->cmdidx = cmdidxs[26];
+	    eap->cmdidx = CMD_bang;
 
 	for ( ; (int)eap->cmdidx < (int)CMD_SIZE;
 			       eap->cmdidx = (cmdidx_T)((int)eap->cmdidx + 1))
@@ -3393,6 +3378,35 @@ static struct cmdmod
     {"verbose", 4, TRUE},
     {"vertical", 4, FALSE},
 };
+
+/*
+ * Pre-compute an index cmdidxs[][], which is used to quickly
+ * resolve the starting position in cmdnames[] of an Ex
+ * commands from its first 2 letters.
+ */
+    void
+init_cmds_index()
+{
+    int		i, idx1, idx2;
+
+    for (idx1 = 0; idx1 < 26; idx1++)
+	for (idx2 = 0; idx2 < 27; idx2++)
+	    cmdidxs[idx1][idx2] = (short)CMD_bang;
+
+    /* Looping backward is needed to have the correct
+     * values in cmdidxs[][] at the end. */
+    for (i = CMD_z; i >= CMD_append; i--)
+    {
+	int c1 = cmdnames[i].cmd_name[0];
+	int c2 = cmdnames[i].cmd_name[1];
+
+	idx1 = CharOrdLow(c1);
+	idx2 = ASCII_ISLOWER(c2) ? CharOrdLow(c2) + 1 : 0;
+
+	cmdidxs[idx1][idx2] = (short)i;
+	cmdidxs[idx1][0] = (short)i;
+    }
+}
 
 /*
  * Return length of a command modifier (including optional count).

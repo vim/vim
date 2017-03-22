@@ -5,6 +5,7 @@ int do_cmdline(char_u *cmdline, char_u *(*fgetline)(int, void *, int), void *coo
 int getline_equal(char_u *(*fgetline)(int, void *, int), void *cookie, char_u *(*func)(int, void *, int));
 void *getline_cookie(char_u *(*fgetline)(int, void *, int), void *cookie);
 int checkforcmd(char_u **pp, char *cmd, int len);
+void init_cmds_index();
 int modifier_len(char_u *cmd);
 int cmd_exists(char_u *name);
 char_u *set_one_cmd_context(expand_T *xp, char_u *buff);
