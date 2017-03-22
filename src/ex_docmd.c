@@ -592,6 +592,35 @@ restore_dbg_stuff(struct dbg_stuff *dsp)
 }
 #endif
 
+/*
+ * Pre-compute an index cmdidxs[][], which is used to quickly
+ * resolve the starting position in cmdnames[] of an Ex
+ * commands from its first 2 letters.
+ */
+    void
+init_cmds_index()
+{
+    int		i, idx1, idx2;
+
+    for (idx1 = 0; idx1 < 26; idx1++)
+	for (idx2 = 0; idx2 < 27; idx2++)
+	    cmdidxs[idx1][idx2] = (short)CMD_bang;
+
+    /* Looping backward is needed to have the correct
+     * values in cmdidxs[][] at the end. */
+    for (i = CMD_z; i >= CMD_append; i--)
+    {
+	int c1 = cmdnames[i].cmd_name[0];
+	int c2 = cmdnames[i].cmd_name[1];
+
+	idx1 = CharOrdLow(c1);
+	idx2 = ASCII_ISLOWER(c2) ? CharOrdLow(c2) + 1 : 0;
+
+	cmdidxs[idx1][idx2] = (short)i;
+	cmdidxs[idx1][0] = (short)i;
+    }
+}
+
 
 /*
  * do_exmode(): Repeatedly get commands for the "Ex" mode, until the ":vi"
@@ -3378,35 +3407,6 @@ static struct cmdmod
     {"verbose", 4, TRUE},
     {"vertical", 4, FALSE},
 };
-
-/*
- * Pre-compute an index cmdidxs[][], which is used to quickly
- * resolve the starting position in cmdnames[] of an Ex
- * commands from its first 2 letters.
- */
-    void
-init_cmds_index()
-{
-    int		i, idx1, idx2;
-
-    for (idx1 = 0; idx1 < 26; idx1++)
-	for (idx2 = 0; idx2 < 27; idx2++)
-	    cmdidxs[idx1][idx2] = (short)CMD_bang;
-
-    /* Looping backward is needed to have the correct
-     * values in cmdidxs[][] at the end. */
-    for (i = CMD_z; i >= CMD_append; i--)
-    {
-	int c1 = cmdnames[i].cmd_name[0];
-	int c2 = cmdnames[i].cmd_name[1];
-
-	idx1 = CharOrdLow(c1);
-	idx2 = ASCII_ISLOWER(c2) ? CharOrdLow(c2) + 1 : 0;
-
-	cmdidxs[idx1][idx2] = (short)i;
-	cmdidxs[idx1][0] = (short)i;
-    }
-}
 
 /*
  * Return length of a command modifier (including optional count).
