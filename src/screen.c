@@ -10331,7 +10331,7 @@ draw_tabline(void)
 {
     int		tabcount = 0;
     tabpage_T	*tp;
-    int		tabwidth;
+    int		tabwidth = 0;
     int		col = 0;
     int		scol = 0;
     int		attr;
@@ -10397,7 +10397,8 @@ draw_tabline(void)
 	FOR_ALL_TABPAGES(tp)
 	    ++tabcount;
 
-	tabwidth = (Columns - 1 + tabcount / 2) / tabcount;
+	if (tabcount > 0)
+	    tabwidth = (Columns - 1 + tabcount / 2) / tabcount;
 	if (tabwidth < 6)
 	    tabwidth = 6;
 
