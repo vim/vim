@@ -99,5 +99,6 @@ script:
 
 after_success:
   - if [ "$COVERAGE" = "yes" ]; then ~/.local/bin/coveralls -b $SRCDIR -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
+  - if [ "$COVERAGE" = "yes" ]; then  cd $SRCDIR && bash <(curl -s https://codecov.io/bash) ; fi
 
 # vim:set sts=2 sw=2 tw=0 et:
