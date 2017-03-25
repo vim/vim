@@ -511,7 +511,7 @@ mch_inchar(
 		|| interrupted
 #endif
 		|| wait_time > 0
-		|| !did_start_blocking)
+		|| (wtime < 0 && !did_start_blocking))
 	    continue;
 
 	/* no character available or interrupted */
