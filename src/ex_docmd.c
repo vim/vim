@@ -3250,6 +3250,9 @@ find_command(exarg_T *eap, int *full UNUSED)
 
 	if (ASCII_ISLOWER(eap->cmd[0]))
 	{
+	    int c1 = eap->cmd[0];
+	    int c2 = eap->cmd[1];
+
 	    if (command_count != (int)CMD_SIZE)
 	    {
 		iemsg((char_u *)_("E943: Command table needs to be updated, run 'make cmdidxs'"));
@@ -3258,8 +3261,6 @@ find_command(exarg_T *eap, int *full UNUSED)
 
 	    /* Use a precomputed index for fast look-up in cmdnames[]
 	     * taking into account the first 2 letters of eap->cmd. */
-	    int c1 = eap->cmd[0];
-	    int c2 = eap->cmd[1];
 	    eap->cmdidx = cmdidxs1[CharOrdLow(c1)];
 	    if (ASCII_ISLOWER(c2))
 		eap->cmdidx += cmdidxs2[CharOrdLow(c1)][CharOrdLow(c2)];
