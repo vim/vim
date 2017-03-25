@@ -11,6 +11,17 @@ func Test_client_server()
   if cmd == ''
     return
   endif
+  if has('unix')
+    try
+      call remote_send('xxx', '')
+    catch
+      if v:exception =~ 'E240:'
+	" No connection to the X server, give up.
+	return
+      endif
+      " ignore other errors
+    endtry
+  endif
 
   let name = 'XVIMTEST'
   let cmd .= ' --servername ' . name
