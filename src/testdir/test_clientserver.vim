@@ -11,13 +11,15 @@ func Test_client_server()
   if cmd == ''
     return
   endif
-  if has('unix')
+  if has('x11')
+    if empty($DISPLAY)
+      throw 'Skipped: $DISPLAY is not set'
+    endif
     try
       call remote_send('xxx', '')
     catch
       if v:exception =~ 'E240:'
-	" No connection to the X server, give up.
-	return
+	throw 'Skipped: no connection to the X server'
       endif
       " ignore other errors
     endtry
