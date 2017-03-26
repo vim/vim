@@ -9,15 +9,17 @@
 # Script should be run every time new Ex commands are added in Vim,
 # from the src/vim directory, since it reads commands from "ex_cmds.h".
 
+use strict;
+
 # Find the list of Vim commands from cmdnames[] table in ex_cmds.h
 my @cmds;
-my @skipped;
+my $skipped_cmds;
 open(IN, "< ex_cmds.h") or die "can't open ex_cmds.h: $!\n";
 while (<IN>) {
   if (/^EX\(CMD_\S*,\s*"([a-z][^"]*)"/) {
-    push (@cmds, $1);
+    push @cmds, $1;
   } elsif (/^EX\(CMD_/) {
-    push (@skipped, $1);
+    ++$skipped_cmds;
   }
 }
 
@@ -68,7 +70,6 @@ for my $c1 ('a' .. 'z') {
 }
 print "};\n",
       "\n",
-      "static int command_count = ", $#cmds + $#skipped + 2 , ";\n",
+      "static const int command_count = ", scalar(@cmds) + $skipped_cmds, ";\n",
       "\n",
       "/* End of automatically generated code by create_cmdidxs.pl */\n";
-
