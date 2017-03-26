@@ -11746,7 +11746,7 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 		break;
 
 	case 'n':					/* name */
-		p = get_highlight_name(NULL, id - 1);
+		p = get_highlight_name_ext(NULL, id - 1, FALSE);
 		break;
 
 	case 'r':					/* reverse */

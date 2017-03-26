@@ -7962,7 +7962,7 @@ sign_list_defined(sign_T *sp)
     if (sp->sn_line_hl > 0)
     {
 	MSG_PUTS(" linehl=");
-	p = get_highlight_name(NULL, sp->sn_line_hl - 1);
+	p = get_highlight_name_ext(NULL, sp->sn_line_hl - 1, FALSE);
 	if (p == NULL)
 	    MSG_PUTS("NONE");
 	else
@@ -7971,7 +7971,7 @@ sign_list_defined(sign_T *sp)
     if (sp->sn_text_hl > 0)
     {
 	MSG_PUTS(" texthl=");
-	p = get_highlight_name(NULL, sp->sn_text_hl - 1);
+	p = get_highlight_name_ext(NULL, sp->sn_text_hl - 1, FALSE);
 	if (p == NULL)
 	    MSG_PUTS("NONE");
 	else
