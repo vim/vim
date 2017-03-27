@@ -10361,6 +10361,7 @@ ex_normal(exarg_T *eap)
 	    {
 		curwin->w_cursor.lnum = eap->line1++;
 		curwin->w_cursor.col = 0;
+		check_cursor_moved(curwin);
 	    }
 
 	    exec_normal_cmd(
