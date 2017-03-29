@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Mar 21
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -110,8 +110,8 @@ manager.  Problem with Motif?
 
 Memory leak in test97?  The string is actually freed.  Weird.
 
-Patch to make "start" work better: Use ShellExecute in !start (Katsuya Hino,
-#1570)
+Patch for deleting the quickfix lists and a test for it. (Yegappan, 2017 Mar
+21)
 
 Add a toolbar in the terminal.  Can be global, above all windows, or specific
 for one window.
@@ -121,6 +121,8 @@ Use tb_set(winid, [{'text': 'stop', 'cb': callback, 'hi': 'Green'}])
 
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
+
+Patch for broken foldtext. (Christian 2017 Mar 22, #1567, 2nd one)
 
 Json string with trailing \u should be an error. (Lcd)
 
@@ -148,6 +150,9 @@ Another example in #1309
 Patch to change all use of &sw to shiftwidth(). (Tyru, 2017 Feb 19)
 Wait until maintainers integrate it.
 
+Patch to change mb_char2len() to utf_char2len(c) when known to use UTF.
+(Dominique, 2017 Mar 21, #1582)
+
 Completion for user-defined commands does not work if a few characters were
 already typed. (Dominique, 2017 Jan 26)
 
@@ -156,6 +161,9 @@ when writing viminfo (and the delete was the most recent action). #1339
 
 Suggestion to improve pt-br spell checking. (Marcelo D Montu, 2016 Dec 15,
 #1330)
+
+Patch to Modernize GtkForm Implmentation. (Kazuki Kuriyama, 2017 Mar 26)
+Any objections?
 
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 
@@ -341,14 +349,6 @@ Jul 25, #948)
 Patch to fix wrong encoding of error message on Cygwin/MSYS terminal.
 (Ken Takata, 2016 Oct 4)
 
-Patch to introduce 'cmdencoding'. (Ken Takata, Aug 18?)
-Better help Aug 19.
-Problem: applies to too many commands, such as :cbuffer.
-Updated patch with three options, 2016 Sep 8.
-    Win32: When running ":make" and 'encoding' differs from the system locale,
-    the output should be converted.  Esp. when 'encoding' is "utf-8". (Yongwei
-    Wu) Should we use 'termencoding' for this?
-
 Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
 Assume the system converts between the actual encoding of the filesystem to
@@ -421,7 +421,7 @@ When doing "vi buf.md" a BufNew autocommand for *.md is not triggered.
 Because of using the initial buffer? (Dun Peal, 2016 May 12)
 
 Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
-Updated 2016 Jun 10, #858
+Updated 2016 Jun 10, #858  Update 2017 Mar 28: use <buffer>
 
 Add redrawtabline command. (Naruhiko Nishino, 2016 Jun 11)
 

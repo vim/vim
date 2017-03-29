@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Mar 21
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Mar 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7874,6 +7874,7 @@ test_override({name}, {val})				*test_override()*
 
 		name	     effect when {val} is non-zero ~
 		redraw       disable the redrawing() function
+		silent_mode  enable silent mode (like using |-s| after |-e|)
 		char_avail   disable the char_avail() function
 		ALL	     clear all overrides ({val} is not used)
 

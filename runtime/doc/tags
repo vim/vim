@@ -3277,6 +3277,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <Char>	map.txt	/*<Char>*
 <CursorHold>	autocmd.txt	/*<CursorHold>*
 <D-	intro.txt	/*<D-*
+<D-c>	os_mac.txt	/*<D-c>*
+<D-v>	os_mac.txt	/*<D-v>*
+<D-x>	os_mac.txt	/*<D-x>*
 <Del>	change.txt	/*<Del>*
 <Down>	motion.txt	/*<Down>*
 <Drop>	change.txt	/*<Drop>*
@@ -4514,6 +4517,7 @@ E94	windows.txt	/*E94*
 E940	eval.txt	/*E940*
 E941	eval.txt	/*E941*
 E942	eval.txt	/*E942*
+E943	message.txt	/*E943*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
 E97	diff.txt	/*E97*
@@ -6139,7 +6143,6 @@ ft-rst-syntax	syntax.txt	/*ft-rst-syntax*
 ft-ruby-omni	insert.txt	/*ft-ruby-omni*
 ft-ruby-syntax	syntax.txt	/*ft-ruby-syntax*
 ft-rust	filetype.txt	/*ft-rust*
-ft-rust	ft_rust.txt	/*ft-rust*
 ft-scheme-syntax	syntax.txt	/*ft-scheme-syntax*
 ft-sdl-syntax	syntax.txt	/*ft-sdl-syntax*
 ft-sed-syntax	syntax.txt	/*ft-sed-syntax*
@@ -7179,6 +7182,7 @@ mac-compile	os_mac.txt	/*mac-compile*
 mac-faq	os_mac.txt	/*mac-faq*
 mac-filename	os_mac.txt	/*mac-filename*
 mac-lack	os_mac.txt	/*mac-lack*
+mac-standard-mappings	os_mac.txt	/*mac-standard-mappings*
 mac-vimfile	os_mac.txt	/*mac-vimfile*
 macintosh	os_mac.txt	/*macintosh*
 macro	map.txt	/*macro*
@@ -7689,6 +7693,8 @@ nice	todo.txt	/*nice*
 no-eval-feature	eval.txt	/*no-eval-feature*
 no-type-checking	eval.txt	/*no-type-checking*
 no_buffers_menu	gui.txt	/*no_buffers_menu*
+no_mail_maps	filetype.txt	/*no_mail_maps*
+no_plugin_maps	filetype.txt	/*no_plugin_maps*
 non-greedy	pattern.txt	/*non-greedy*
 non-zero-arg	eval.txt	/*non-zero-arg*
 none-variable	eval.txt	/*none-variable*

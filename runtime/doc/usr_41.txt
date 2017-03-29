@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.0.  Last change: 2017 Mar 18
+*usr_41.txt*	For Vim version 8.0.  Last change: 2017 Mar 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -2277,8 +2277,8 @@ plugin for the mail filetype: >
 	endif
 
 Two global variables are used:
-no_plugin_maps		disables mappings for all filetype plugins
-no_mail_maps		disables mappings for a specific filetype
+|no_plugin_maps|	disables mappings for all filetype plugins
+|no_mail_maps|		disables mappings for the "mail" filetype
 
 
 USER COMMANDS

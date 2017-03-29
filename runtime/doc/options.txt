@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Mar 09
+*options.txt*	For Vim version 8.0.  Last change: 2017 Mar 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6489,8 +6489,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Flag passed to the shell to execute "!" and ":!" commands; e.g.,
 	"bash.exe -c ls" or "command.com /c dir".  For the MS-DOS-like
 	systems, the default is set according to the value of 'shell', to
-	reduce the need to set this option by the user.  It's not used for
-	OS/2 (EMX figures this out itself).
+	reduce the need to set this option by the user.
 	On Unix it can have more than one flag.  Each white space separated
 	part is passed as an argument to the shell command.
 	See |option-backslash| about including spaces and backslashes.

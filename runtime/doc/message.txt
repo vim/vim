@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.0.  Last change: 2017 Jan 02
+*message.txt*   For Vim version 8.0.  Last change: 2017 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -767,6 +767,13 @@ Example: >
 
 You tried to execute a command that is neither an Ex command nor
 a user-defined command.
+
+							*E943*  >
+  Command table needs to be updated, run 'make cmdidxs'
+
+This can only happen when changing the source code, when adding a command in
+src/ex_cmds.h.  The lookup table then needs to be updated, by running: >
+	make cmdidxs
 
 ==============================================================================
 3. Messages						*messages*
