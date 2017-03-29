@@ -2697,12 +2697,15 @@ fold_line(
 	    {
 		ScreenLinesUC[off + col] = fill_fold;
 		ScreenLinesC[0][off + col] = 0;
+                ScreenLines[off + col] = 0x80; /* avoid storing zero */
 	    }
 	    else
 		ScreenLinesUC[off + col] = 0;
+	    col++;
 	}
+	else
 #endif
-	ScreenLines[off + col++] = fill_fold;
+	    ScreenLines[off + col++] = fill_fold;
     }
 
     if (text != buf)
