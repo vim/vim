@@ -43,19 +43,7 @@ struct _GtkForm
     GtkContainer container;
 
     GList *children;
-
-#ifndef USE_GTK3
-    guint width;
-    guint height;
-#endif
-
     GdkWindow *bin_window;
-
-#ifndef USE_GTK3
-    GdkVisibilityState visibility;
-    gulong configure_serial;
-#endif
-
     gint freeze_count;
 };
 
