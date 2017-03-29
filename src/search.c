@@ -2851,9 +2851,17 @@ findpar(
     curwin->w_cursor.lnum = curr;
     if (curr == curbuf->b_ml.ml_line_count && what != '}')
     {
-	if ((curwin->w_cursor.col = (colnr_T)STRLEN(ml_get(curr))) != 0)
+	char_u *line = ml_get(curr);
+
+	/* Put the cursor on the last character in the last line and make the
+	 * motion inclusive. */
+	if ((curwin->w_cursor.col = (colnr_T)STRLEN(line)) != 0)
 	{
 	    --curwin->w_cursor.col;
+#ifdef FEAT_MBYTE
+	    curwin->w_cursor.col -=
+			     (*mb_head_off)(line, line + curwin->w_cursor.col);
+#endif
 	    *pincl = TRUE;
 	}
     }

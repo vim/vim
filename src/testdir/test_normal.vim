@@ -2290,3 +2290,15 @@ func Test_normal_large_count()
   normal 6666666666dL
   bwipe!
 endfunc
+
+func Test_delete_until_paragraph()
+  if !has('multi_byte')
+    return
+  endif
+  new
+  normal grádv}
+  call assert_equal('á', getline(1))
+  normal grád}
+  call assert_equal('', getline(1))
+  bwipe!
+endfunc
