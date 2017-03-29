@@ -4732,7 +4732,7 @@ regmatch(
 		    break;
 		}
 		if (enc_utf8)
-		    opndc = mb_ptr2char(opnd);
+		    opndc = utf_ptr2char(opnd);
 		if (enc_utf8 && utf_iscomposing(opndc))
 		{
 		    /* When only a composing char is given match at any
@@ -4741,7 +4741,7 @@ regmatch(
 		    for (i = 0; reginput[i] != NUL;
 						i += utf_ptr2len(reginput + i))
 		    {
-			inpc = mb_ptr2char(reginput + i);
+			inpc = utf_ptr2char(reginput + i);
 			if (!utf_iscomposing(inpc))
 			{
 			    if (i > 0)
@@ -4750,7 +4750,7 @@ regmatch(
 			else if (opndc == inpc)
 			{
 			    /* Include all following composing chars. */
-			    len = i + mb_ptr2len(reginput + i);
+			    len = i + utfc_ptr2len(reginput + i);
 			    status = RA_MATCH;
 			    break;
 			}

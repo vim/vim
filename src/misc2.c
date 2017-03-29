@@ -1874,7 +1874,7 @@ vim_strchr(char_u *string, int c)
     {
 	while (*p != NUL)
 	{
-	    int l = (*mb_ptr2len)(p);
+	    int l = utfc_ptr2len(p);
 
 	    /* Avoid matching an illegal byte here. */
 	    if (utf_ptr2char(p) == c && l > 1)

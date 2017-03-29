@@ -1208,7 +1208,7 @@ can_compound(slang_T *slang, char_u *word, char_u *flags)
 	/* Need to convert the single byte flags to utf8 characters. */
 	p = uflags;
 	for (i = 0; flags[i] != NUL; ++i)
-	    p += mb_char2bytes(flags[i], p);
+	    p += utf_char2bytes(flags[i], p);
 	*p = NUL;
 	p = uflags;
     }
@@ -5117,11 +5117,11 @@ suggest_trie_walk(
 				 * SCORE_SUBCOMP. */
 				if (enc_utf8
 					&& utf_iscomposing(
-					    mb_ptr2char(tword
+					    utf_ptr2char(tword
 						+ sp->ts_twordlen
 							   - sp->ts_tcharlen))
 					&& utf_iscomposing(
-					    mb_ptr2char(fword
+					    utf_ptr2char(fword
 							+ sp->ts_fcharstart)))
 				    sp->ts_score -=
 						  SCORE_SUBST - SCORE_SUBCOMP;
