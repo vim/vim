@@ -6466,7 +6466,7 @@ clip_get_selection(VimClipboard *cbd)
 	VIsual = old_visual;
 	VIsual_mode = old_visual_mode;
     }
-    else
+    else if (!is_clipboard_needs_update())
     {
 	clip_free_selection(cbd);
 
