@@ -717,7 +717,8 @@ qf_get_next_file_line(qfstate_T *state)
 
 #ifdef FEAT_MBYTE
     /* Convert a line if it contains a non-ASCII character. */
-    if (state->vc.vc_type != CONV_NONE && has_non_ascii(state->linebuf)) {
+    if (state->vc.vc_type != CONV_NONE && has_non_ascii(state->linebuf))
+    {
 	char_u	*line;
 
 	line = string_convert(&state->vc, state->linebuf, &state->linelen);
@@ -917,7 +918,8 @@ restofline:
 	    }
 	    if (fmt_ptr->flags == '+' && !qi->qf_multiscan)	/* %+ */
 	    {
-		if (linelen > fields->errmsglen) {
+		if (linelen > fields->errmsglen)
+		{
 		    /* linelen + null terminator */
 		    if ((fields->errmsg = vim_realloc(fields->errmsg,
 				    linelen + 1)) == NULL)
@@ -931,7 +933,8 @@ restofline:
 		if (regmatch.startp[i] == NULL || regmatch.endp[i] == NULL)
 		    continue;
 		len = (int)(regmatch.endp[i] - regmatch.startp[i]);
-		if (len > fields->errmsglen) {
+		if (len > fields->errmsglen)
+		{
 		    /* len + null terminator */
 		    if ((fields->errmsg = vim_realloc(fields->errmsg, len + 1))
 			    == NULL)
@@ -1013,7 +1016,8 @@ restofline:
 	fields->namebuf[0] = NUL;	/* no match found, remove file name */
 	fields->lnum = 0;			/* don't jump to this line */
 	fields->valid = FALSE;
-	if (linelen > fields->errmsglen) {
+	if (linelen > fields->errmsglen)
+	{
 	    /* linelen + null terminator */
 	    if ((fields->errmsg = vim_realloc(fields->errmsg,
 			    linelen + 1)) == NULL)
@@ -4798,7 +4802,8 @@ qf_add_entries(
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = TRUE;
     else
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
-    if (action != 'a') {
+    if (action != 'a')
+    {
 	qi->qf_lists[qi->qf_curlist].qf_ptr =
 	    qi->qf_lists[qi->qf_curlist].qf_start;
 	if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
@@ -4861,6 +4866,18 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action)
     return retval;
 }
 
+    static void
+qf_free_stack(win_T *wp, qf_info_T *qi)
+{
+    qf_free_all(wp);
+    if (wp == NULL)
+    {
+	/* quickfix list */
+	qi->qf_curlist = 0;
+	qi->qf_listcount = 0;
+    }
+}
+
 /*
  * Populate the quickfix list with the items supplied in the list
  * of dictionaries. "title" will be copied to w:quickfix_title.
@@ -4884,7 +4901,12 @@ set_errorlist(
 	    return FAIL;
     }
 
-    if (what != NULL)
+    if (action == 'f')
+    {
+	/* Free the entire quickfix or location list stack */
+	qf_free_stack(wp, qi);
+    }
+    else if (what != NULL)
 	retval = qf_set_properties(qi, what, action);
     else
 	retval = qf_add_entries(qi, list, title, action);
@@ -5187,7 +5209,8 @@ ex_helpgrep(exarg_T *eap)
 			    /* Convert a line if 'encoding' is not utf-8 and
 			     * the line contains a non-ASCII character. */
 			    if (vc.vc_type != CONV_NONE
-						   && has_non_ascii(IObuff)) {
+						   && has_non_ascii(IObuff))
+			    {
 				line = string_convert(&vc, IObuff, NULL);
 				if (line == NULL)
 				    line = IObuff;
