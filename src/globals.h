@@ -932,10 +932,10 @@ EXTERN int	State INIT(= NORMAL);	/* This is the current state of the
 					 * command interpreter. */
 
 EXTERN int	finish_op INIT(= FALSE);/* TRUE while an operator is pending */
-EXTERN int	opcount INIT(= 0);	/* count for pending operator */
+EXTERN long	opcount INIT(= 0);	/* count for pending operator */
 
 /*
- * ex mode (Q) state
+ * Ex mode (Q) state
  */
 EXTERN int exmode_active INIT(= 0);	/* zero, EXMODE_NORMAL or EXMODE_VIM */
 EXTERN int ex_no_reprint INIT(= FALSE); /* no need to print after z or p */
