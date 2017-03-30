@@ -4147,7 +4147,7 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 	got_int = FALSE;	/* only int. the completion, not the cmd line */
 #ifdef FEAT_WILDMENU
     else if (wildmenu)
-	win_redr_status_matches(xp, num_files, files_found, 0, showtail);
+	win_redr_status_matches(xp, num_files, files_found, -1, showtail);
 #endif
     else
     {
