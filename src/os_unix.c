@@ -6006,6 +6006,7 @@ mch_expand_wildcards(
 {
     int		i;
     size_t	len;
+    long	llen;
     char_u	*p;
     int		dir;
 
@@ -6292,9 +6293,13 @@ mch_expand_wildcards(
 	goto notfound;
     }
     fseek(fd, 0L, SEEK_END);
-    len = ftell(fd);			/* get size of temp file */
+    llen = ftell(fd);			/* get size of temp file */
     fseek(fd, 0L, SEEK_SET);
-    buffer = alloc(len + 1);
+    if (llen < 0)
+	/* just in case ftell() would fail */
+	buffer = NULL;
+    else
+	buffer = alloc(llen + 1);
     if (buffer == NULL)
     {
 	/* out of memory */
@@ -6303,6 +6308,7 @@ mch_expand_wildcards(
 	fclose(fd);
 	return FAIL;
     }
+    len = llen;
     i = fread((char *)buffer, 1, len, fd);
     fclose(fd);
     mch_remove(tempname);
