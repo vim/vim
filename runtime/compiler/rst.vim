@@ -11,7 +11,11 @@ let current_compiler = "rst"
 let s:cpo_save = &cpo
 set cpo&vim
 
-setlocal errorformat=
+if exists(":CompilerSet") != 2
+  command -nargs=* CompilerSet setlocal <args>
+endif
+
+CompilerSet errorformat=
       \%f\\:%l:\ %tEBUG:\ %m,
       \%f\\:%l:\ %tNFO:\ %m,
       \%f\\:%l:\ %tARNING:\ %m,
