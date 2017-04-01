@@ -2239,6 +2239,7 @@ test_arglist \
 	test_window_cmd \
 	test_window_id \
 	test_writefile \
+	test_z \
 	test_alot_latin \
 	test_alot_utf8 \
 	test_alot:

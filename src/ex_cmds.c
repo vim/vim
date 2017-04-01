@@ -4564,7 +4564,7 @@ ex_change(exarg_T *eap)
 ex_z(exarg_T *eap)
 {
     char_u	*x;
-    int		bigness;
+    long	bigness;
     char_u	*kind;
     int		minus = 0;
     linenr_T	start, end, curs, i;
@@ -4601,7 +4601,13 @@ ex_z(exarg_T *eap)
 	}
 	else
 	{
-	    bigness = atoi((char *)x);
+	    bigness = atol((char *)x);
+
+	    /* bigness could be < 0 if atol(x) overflows. */
+	    if (bigness > 2*curbuf->b_ml.ml_line_count ||
+						bigness < 0)
+		bigness = 2*curbuf->b_ml.ml_line_count;
+
 	    p_window = bigness;
 	    if (*kind == '=')
 		bigness += 2;
