@@ -4602,6 +4602,9 @@ ex_z(exarg_T *eap)
 	else
 	{
 	    bigness = atol((char *)x);
+	    if (bigness > 2*curbuf->b_ml.ml_line_count)
+		bigness = 2*curbuf->b_ml.ml_line_count;
+
 	    p_window = bigness;
 	    if (*kind == '=')
 		bigness += 2;
