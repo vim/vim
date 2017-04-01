@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2017 Mar 08
+" Last change:	2017 Apr 01
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".
@@ -24,6 +24,16 @@ endif
 " Avoid side effects when it was already reset.
 if &compatible
   set nocompatible
+endif
+
+" When the +eval feature is missing, the set command above will be skipped.
+" Use a trick to reset compatible only when the +eval feature is missing.
+if 1
+  nnoremap : :"
+endif
+silent normal :set nocompatible
+if 1
+  nunmap :
 endif
 
 " Allow backspacing over everything in insert mode.
