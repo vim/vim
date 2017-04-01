@@ -9017,7 +9017,7 @@ ins_bs(
 #endif
 
     /*
-     * delete newline!
+     * Delete newline!
      */
     if (curwin->w_cursor.col == 0)
     {
@@ -9032,7 +9032,7 @@ ins_bs(
 			       (linenr_T)(curwin->w_cursor.lnum + 1)) == FAIL)
 		return FALSE;
 	    --Insstart.lnum;
-	    Insstart.col = MAXCOL;
+	    Insstart.col = STRLEN(ml_get(Insstart.lnum));
 	}
 	/*
 	 * In replace mode:
