@@ -41,7 +41,7 @@ static garray_T funcargs = GA_EMPTY;
 /* pointer to funccal for currently active function */
 funccall_T *current_funccal = NULL;
 
-/* pointer to list of previously used funccal, still around because some
+/* Pointer to list of previously used funccal, still around because some
  * item in it is still being used. */
 funccall_T *previous_funccal = NULL;
 
@@ -628,6 +628,55 @@ free_funccal(
 }
 
 /*
+ * Handle the last part of returning from a function: free the local hashtable.
+ * Unless it is still in use by a closure.
+ */
+    static void
+cleanup_function_call(funccall_T *fc)
+{
+    current_funccal = fc->caller;
+
+    /* If the a:000 list and the l: and a: dicts are not referenced and there
+     * is no closure using it, we can free the funccall_T and what's in it. */
+    if (fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
+	    && fc->l_vars.dv_refcount == DO_NOT_FREE_CNT
+	    && fc->l_avars.dv_refcount == DO_NOT_FREE_CNT
+	    && fc->fc_refcount <= 0)
+    {
+	free_funccal(fc, FALSE);
+    }
+    else
+    {
+	hashitem_T	*hi;
+	listitem_T	*li;
+	int		todo;
+	dictitem_T	*v;
+
+	/* "fc" is still in use.  This can happen when returning "a:000",
+	 * assigning "l:" to a global variable or defining a closure.
+	 * Link "fc" in the list for garbage collection later. */
+	fc->caller = previous_funccal;
+	previous_funccal = fc;
+
+	/* Make a copy of the a: variables, since we didn't do that above. */
+	todo = (int)fc->l_avars.dv_hashtab.ht_used;
+	for (hi = fc->l_avars.dv_hashtab.ht_array; todo > 0; ++hi)
+	{
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		--todo;
+		v = HI2DI(hi);
+		copy_tv(&v->di_tv, &v->di_tv);
+	    }
+	}
+
+	/* Make a copy of the a:000 items, since we didn't do that above. */
+	for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
+	    copy_tv(&li->li_tv, &li->li_tv);
+    }
+}
+
+/*
  * Call a user function.
  */
     static void
@@ -982,46 +1031,9 @@ call_user_func(
     }
 
     did_emsg |= save_did_emsg;
-    current_funccal = fc->caller;
     --depth;
 
-    /* If the a:000 list and the l: and a: dicts are not referenced and there
-     * is no closure using it, we can free the funccall_T and what's in it. */
-    if (fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
-	    && fc->l_vars.dv_refcount == DO_NOT_FREE_CNT
-	    && fc->l_avars.dv_refcount == DO_NOT_FREE_CNT
-	    && fc->fc_refcount <= 0)
-    {
-	free_funccal(fc, FALSE);
-    }
-    else
-    {
-	hashitem_T	*hi;
-	listitem_T	*li;
-	int		todo;
-
-	/* "fc" is still in use.  This can happen when returning "a:000",
-	 * assigning "l:" to a global variable or defining a closure.
-	 * Link "fc" in the list for garbage collection later. */
-	fc->caller = previous_funccal;
-	previous_funccal = fc;
-
-	/* Make a copy of the a: variables, since we didn't do that above. */
-	todo = (int)fc->l_avars.dv_hashtab.ht_used;
-	for (hi = fc->l_avars.dv_hashtab.ht_array; todo > 0; ++hi)
-	{
-	    if (!HASHITEM_EMPTY(hi))
-	    {
-		--todo;
-		v = HI2DI(hi);
-		copy_tv(&v->di_tv, &v->di_tv);
-	    }
-	}
-
-	/* Make a copy of the a:000 items, since we didn't do that above. */
-	for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
-	    copy_tv(&li->li_tv, &li->li_tv);
-    }
+    cleanup_function_call(fc);
 }
 
 /*
@@ -1146,6 +1158,13 @@ free_all_functions(void)
     long_u	skipped = 0;
     long_u	todo = 1;
     long_u	used;
+
+    /* Clean up the call stack. */
+    while (current_funccal != NULL)
+    {
+	clear_tv(current_funccal->rettv);
+	cleanup_function_call(current_funccal);
+    }
 
     /* First clear what the functions contain.  Since this may lower the
      * reference count of a function, it may also free a function and change
