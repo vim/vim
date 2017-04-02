@@ -1,5 +1,6 @@
 " Vim compiler file
-" Compiler:             reStructuredText Documentation Format
+" Compiler:             sphinx >= 1.0.8, http://www.sphinx-doc.org
+" Description:          reStructuredText Documentation Format
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
 " Latest Revision:      2017-03-31
 
