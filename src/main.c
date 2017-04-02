@@ -89,14 +89,15 @@ static char *(main_errors[]) =
 };
 
 #ifndef PROTO		/* don't want a prototype for main() */
+
+/* Various parameters passed between main() and other functions. */
+static mparm_T	params;
+
 #ifndef NO_VIM_MAIN	/* skip this for unittests */
 
 static char_u *start_dir = NULL;	/* current working dir on startup */
 
 static int has_dash_c_arg = FALSE;
-
-/* Various parameters passed between main() and other functions. */
-static mparm_T	params;
 
     int
 # ifdef VIMDLL
