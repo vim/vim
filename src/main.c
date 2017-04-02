@@ -1013,6 +1013,15 @@ common_init(mparm_T *paramp)
 }
 
 /*
+ * Return TRUE when the --not-a-term argument was found.
+ */
+    int
+is_not_a_term()
+{
+    return params.not_a_term;
+}
+
+/*
  * Main loop: Execute Normal mode commands until exiting Vim.
  * Also used to handle commands in the command-line window, until the window
  * is closed.

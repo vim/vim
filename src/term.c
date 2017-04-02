@@ -1705,7 +1705,8 @@ set_termname(char_u *term)
 		{
 		    screen_start();	/* don't know where cursor is now */
 		    out_flush();
-		    ui_delay(2000L, TRUE);
+		    if (!is_not_a_term())
+			ui_delay(2000L, TRUE);
 		}
 		set_string_option_direct((char_u *)"term", -1, term,
 								 OPT_FREE, 0);
