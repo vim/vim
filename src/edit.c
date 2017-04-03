@@ -9032,7 +9032,7 @@ ins_bs(
 			       (linenr_T)(curwin->w_cursor.lnum + 1)) == FAIL)
 		return FALSE;
 	    --Insstart.lnum;
-	    Insstart.col = STRLEN(ml_get(Insstart.lnum));
+	    Insstart.col = (colnr_T)STRLEN(ml_get(Insstart.lnum));
 	}
 	/*
 	 * In replace mode:
