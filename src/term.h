@@ -77,6 +77,7 @@ enum SpecialKey
     KS_TS,	/* set window title start (to status line)*/
     KS_FS,	/* set window title end (from status line) */
     KS_CWP,	/* set window position in pixels */
+    KS_CGP,	/* get window position */
     KS_CWS,	/* set window size in characters */
     KS_CRV,	/* request version string */
     KS_RBG,	/* request background color */
@@ -163,7 +164,8 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_CIE	(TERM_STR(KS_CIE))	/* set icon text end */
 #define T_TS	(TERM_STR(KS_TS))	/* set window title start */
 #define T_FS	(TERM_STR(KS_FS))	/* set window title end */
-#define T_CWP	(TERM_STR(KS_CWP))	/* window position */
+#define T_CWP	(TERM_STR(KS_CWP))	/* set window position */
+#define T_CGP	(TERM_STR(KS_CGP))	/* get window position */
 #define T_CWS	(TERM_STR(KS_CWS))	/* window size */
 #define T_CSI	(TERM_STR(KS_CSI))	/* start insert mode */
 #define T_CEI	(TERM_STR(KS_CEI))	/* end insert mode */

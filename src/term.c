@@ -845,9 +845,11 @@ static struct builtin_term builtin_termcaps[] =
 						  ESC_STR "[8;%p1%d;%p2%dt")},
     {(int)KS_CWP,	IF_EB("\033[3;%p1%d;%p2%dt",
 						  ESC_STR "[3;%p1%d;%p2%dt")},
+    {(int)KS_CGP,	IF_EB("\033[13t", ESC_STR "[13t")},
 #  else
     {(int)KS_CWS,	IF_EB("\033[8;%d;%dt", ESC_STR "[8;%d;%dt")},
     {(int)KS_CWP,	IF_EB("\033[3;%d;%dt", ESC_STR "[3;%d;%dt")},
+    {(int)KS_CGP,	IF_EB("\033[13t", ESC_STR "[13t")},
 #  endif
     {(int)KS_CRV,	IF_EB("\033[>c", ESC_STR "[>c")},
     {(int)KS_RBG,	IF_EB("\033]11;?\007", ESC_STR "]11;?\007")},
@@ -2581,6 +2583,60 @@ term_set_winpos(int x, int y)
     OUT_STR(tgoto((char *)T_CWP, y, x));
 }
 
+# if defined(FEAT_TERMRESPONSE) || defined(PROTO)
+/*
+ * Return TRUE if we can request the terminal for a response.
+ */
+    static int
+can_get_termresponse()
+{
+    return cur_tmode == TMODE_RAW
+	    && termcap_active
+# ifdef UNIX
+	    && (is_not_a_term() || (isatty(1) && isatty(read_cmd_fd)))
+# endif
+	    && p_ek;
+}
+
+static int winpos_x;
+static int winpos_y;
+static int waiting_for_winpos = FALSE;
+
+/*
+ * Try getting the Vim window position from the terminal.
+ * Returns OK or FAIL.
+ */
+    int
+term_get_winpos(int *x, int *y)
+{
+    int count = 0;
+
+    if (*T_CGP == NUL || !can_get_termresponse())
+	return FAIL;
+    winpos_x = -1;
+    winpos_y = -1;
+    waiting_for_winpos = TRUE;
+    OUT_STR(T_CGP);
+    out_flush();
+
+    /* Try reading the result for 100 msec. */
+    while (count++ < 10)
+    {
+	(void)vpeekc_nomap();
+	if (winpos_x >= 0 && winpos_y >= 0)
+	{
+	    *x = winpos_x;
+	    *y = winpos_y;
+	    waiting_for_winpos = FALSE;
+	    return OK;
+	}
+	ui_delay(10, FALSE);
+    }
+    waiting_for_winpos = FALSE;
+    return FALSE;
+}
+# endif
+
     void
 term_set_winsize(int width, int height)
 {
@@ -3229,14 +3285,8 @@ stoptermcap(void)
 may_req_termresponse(void)
 {
     if (crv_status == CRV_GET
-	    && cur_tmode == TMODE_RAW
+	    && can_get_termresponse()
 	    && starting == 0
-	    && termcap_active
-	    && p_ek
-# ifdef UNIX
-	    && isatty(1)
-	    && isatty(read_cmd_fd)
-# endif
 	    && *T_CRV != NUL)
     {
 	LOG_TR("Sending CRV");
@@ -3263,13 +3313,8 @@ may_req_termresponse(void)
 may_req_ambiguous_char_width(void)
 {
     if (u7_status == U7_GET
-	    && cur_tmode == TMODE_RAW
-	    && termcap_active
-	    && p_ek
-#  ifdef UNIX
-	    && isatty(1)
-	    && isatty(read_cmd_fd)
-#  endif
+	    && can_get_termresponse()
+	    && starting == 0
 	    && *T_U7 != NUL
 	    && !option_was_set((char_u *)"ambiwidth"))
     {
@@ -3295,7 +3340,6 @@ may_req_ambiguous_char_width(void)
 }
 # endif
 
-#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * Similar to requesting the version string: Request the terminal background
  * color when it is the right moment.
@@ -3304,13 +3348,8 @@ may_req_ambiguous_char_width(void)
 may_req_bg_color(void)
 {
     if (rbg_status == RBG_GET
-	    && cur_tmode == TMODE_RAW
-	    && termcap_active
-	    && p_ek
-#  ifdef UNIX
-	    && isatty(1)
-	    && isatty(read_cmd_fd)
-#  endif
+	    && can_get_termresponse()
+	    && starting == 0
 	    && *T_RBG != NUL
 	    && !option_was_set((char_u *)"bg"))
     {
@@ -3323,7 +3362,6 @@ may_req_bg_color(void)
 	(void)vpeekc_nomap();
     }
 }
-# endif
 
 # ifdef DEBUG_TERMRESPONSE
     static void
@@ -4136,10 +4174,12 @@ check_termcode(
 	     * - Cursor position report: <Esc>[{row};{col}R
 	     *   The final byte must be 'R'. It is used for checking the
 	     *   ambiguous-width character state.
+	     *
+	     * - window position reply: <Esc>[3;{x};{y}t
 	     */
 	    char_u *argp = tp[0] == ESC ? tp + 2 : tp + 1;
 
-	    if ((*T_CRV != NUL || *T_U7 != NUL)
+	    if ((*T_CRV != NUL || *T_U7 != NUL || waiting_for_winpos)
 			&& ((tp[0] == ESC && len >= 3 && tp[1] == '[')
 			    || (tp[0] == CSI && len >= 2))
 			&& (VIM_ISDIGIT(*argp) || *argp == '>' || *argp == '?'))
@@ -4277,6 +4317,41 @@ check_termcode(
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
+		}
+
+		/*
+		 * Check for a window position response from the terminal:
+		 *       {lead}3;{x}:{y}t
+		 */
+		else if (waiting_for_winpos
+			    && ((len >= 4 && tp[0] == ESC && tp[1] == '[')
+				|| (len >= 3 && tp[0] == CSI))
+			    && tp[(j = 1 + (tp[0] == ESC))] == '3'
+			    && tp[j + 1] == ';')
+		{
+		    j += 2;
+		    for (i = j; i < len && vim_isdigit(tp[i]); ++i)
+			;
+		    if (i < len && tp[i] == ';')
+		    {
+			winpos_x = atoi((char *)tp + j);
+			j = i + 1;
+			for (i = j; i < len && vim_isdigit(tp[i]); ++i)
+			    ;
+			if (i < len && tp[i] == 't')
+			{
+			    winpos_y = atoi((char *)tp + j);
+			    /* got finished code: consume it */
+			    key_name[0] = (int)KS_EXTRA;
+			    key_name[1] = (int)KE_IGNORE;
+			    slen = i + 1;
+			}
+		    }
+		    if (i == len)
+		    {
+			LOG_TR("not enough characters for winpos");
+			return -1;
+		    }
 		}
 	    }
 
