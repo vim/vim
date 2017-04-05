@@ -1324,8 +1324,12 @@ func! Test_edit_rightleft()
 endfunc
 
 func Test_edit_complete_very_long_name()
-  if !has('unix') || has('mac')
+  if !has('unix')
     " Long directory names only work on Unix.
+    return
+  endif
+  let path_max = str2nr(system('getconf PATH_MAX .'))
+  if path_max < 1050
     return
   endif
   " Try to get the Vim window position before setting 'columns'.
