@@ -1927,6 +1927,10 @@ command_line_scan(mparm_T *parmp)
 		    /* already processed, skip */
 		}
 #endif
+		else if (STRNICMP(argv[0] + argv_idx, "nochecktime", 11) == 0)
+		{
+		    no_check_timestamps++;
+		}
 		else
 		{
 		    if (argv[0][argv_idx])
