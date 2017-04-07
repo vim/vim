@@ -515,6 +515,12 @@ struct buffheader
     int		bh_space;	/* space in bh_curr for appending */
 };
 
+typedef struct
+{
+    buffheader_T sr_redobuff;
+    buffheader_T sr_old_redobuff;
+} save_redo_T;
+
 /*
  * used for completion on the command line
  */

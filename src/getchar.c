@@ -42,10 +42,6 @@
 
 static buffheader_T redobuff = {{NULL, {NUL}}, NULL, 0, 0};
 static buffheader_T old_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
-#if defined(FEAT_AUTOCMD) || defined(FEAT_EVAL) || defined(PROTO)
-static buffheader_T save_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
-static buffheader_T save_old_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
-#endif
 static buffheader_T recordbuff = {{NULL, {NUL}}, NULL, 0, 0};
 
 static int typeahead_char = 0;		/* typeahead char that's not flushed */
@@ -521,27 +517,22 @@ CancelRedo(void)
  * Save redobuff and old_redobuff to save_redobuff and save_old_redobuff.
  * Used before executing autocommands and user functions.
  */
-static int save_level = 0;
-
     void
-saveRedobuff(void)
+saveRedobuff(save_redo_T *save_redo)
 {
     char_u	*s;
 
-    if (save_level++ == 0)
-    {
-	save_redobuff = redobuff;
-	redobuff.bh_first.b_next = NULL;
-	save_old_redobuff = old_redobuff;
-	old_redobuff.bh_first.b_next = NULL;
+    save_redo->sr_redobuff = redobuff;
+    redobuff.bh_first.b_next = NULL;
+    save_redo->sr_old_redobuff = old_redobuff;
+    old_redobuff.bh_first.b_next = NULL;
 
-	/* Make a copy, so that ":normal ." in a function works. */
-	s = get_buffcont(&save_redobuff, FALSE);
-	if (s != NULL)
-	{
-	    add_buff(&redobuff, s, -1L);
-	    vim_free(s);
-	}
+    /* Make a copy, so that ":normal ." in a function works. */
+    s = get_buffcont(&save_redo->sr_redobuff, FALSE);
+    if (s != NULL)
+    {
+	add_buff(&redobuff, s, -1L);
+	vim_free(s);
     }
 }
 
@@ -550,15 +541,12 @@ saveRedobuff(void)
  * Used after executing autocommands and user functions.
  */
     void
-restoreRedobuff(void)
+restoreRedobuff(save_redo_T *save_redo)
 {
-    if (--save_level == 0)
-    {
-	free_buff(&redobuff);
-	redobuff = save_redobuff;
-	free_buff(&old_redobuff);
-	old_redobuff = save_old_redobuff;
-    }
+    free_buff(&redobuff);
+    redobuff = save_redo->sr_redobuff;
+    free_buff(&old_redobuff);
+    old_redobuff = save_redo->sr_old_redobuff;
 }
 #endif
 

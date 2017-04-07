@@ -1408,6 +1408,7 @@ call_func(
 		else
 		{
 		    int did_save_redo = FALSE;
+		    save_redo_T	save_redo;
 
 		    /*
 		     * Call the user function.
@@ -1419,7 +1420,7 @@ call_func(
 		    if (!ins_compl_active())
 #endif
 		    {
-			saveRedobuff();
+			saveRedobuff(&save_redo);
 			did_save_redo = TRUE;
 		    }
 		    ++fp->uf_calls;
@@ -1431,7 +1432,7 @@ call_func(
 			 * now. */
 			func_clear_free(fp, FALSE);
 		    if (did_save_redo)
-			restoreRedobuff();
+			restoreRedobuff(&save_redo);
 		    restore_search_patterns();
 		    error = ERROR_NONE;
 		}
