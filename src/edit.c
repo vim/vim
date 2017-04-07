@@ -9524,7 +9524,7 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 #endif
 	    buf[idx++] = c;
 	buf[idx] = NUL;
-	if (end != NUL && STRNCMP(buf, end, idx) == 0)
+	if (end != NULL && STRNCMP(buf, end, idx) == 0)
 	{
 	    if (end[idx] == NUL)
 		break; /* Found the end of paste code. */

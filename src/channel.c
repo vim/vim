@@ -2571,9 +2571,14 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    if (nl == NULL)
 	    {
 		/* Flush remaining message that is missing a NL. */
-		buf = vim_realloc(buf, node->rq_buflen + 1);
-		if (buf == NULL)
+		char_u	*new_buf;
+
+		new_buf = vim_realloc(buf, node->rq_buflen + 1);
+		if (new_buf == NULL)
+		    /* This might fail over and over again, should the message
+		     * be dropped? */
 		    return FALSE;
+		buf = new_buf;
 		node->rq_buffer = buf;
 		nl = buf + node->rq_buflen++;
 		*nl = NUL;
