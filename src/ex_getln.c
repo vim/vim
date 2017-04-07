@@ -127,7 +127,7 @@ static void	clear_hist_entry(histentry_T *hisptr);
 #endif
 
 #ifdef FEAT_CMDWIN
-static int	ex_window(void);
+static int	open_cmdwin(void);
 #endif
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
@@ -773,7 +773,7 @@ getcmdline(
 		/*
 		 * Open a window to edit the command line (and history).
 		 */
-		c = ex_window();
+		c = open_cmdwin();
 		some_key_typed = TRUE;
 	    }
 	}
@@ -1292,7 +1292,7 @@ getcmdline(
 		goto cmdline_not_changed;
 
 	case K_IGNORE:
-		/* Ignore mouse event or ex_window() result. */
+		/* Ignore mouse event or open_cmdwin() result. */
 		goto cmdline_not_changed;
 
 #ifdef FEAT_GUI_W32
@@ -6796,7 +6796,7 @@ cmd_gchar(int offset)
  *	K_IGNORE if editing continues
  */
     static int
-ex_window(void)
+open_cmdwin(void)
 {
     struct cmdline_info	save_ccline;
     bufref_T		old_curbuf;
@@ -6841,6 +6841,7 @@ ex_window(void)
 # endif
     /* don't use a new tab page */
     cmdmod.tab = 0;
+    cmdmod.noswapfile = 1;
 
     /* Create a window for the command-line buffer. */
     if (win_split((int)p_cwh, WSP_BOT) == FAIL)
@@ -6857,7 +6858,6 @@ ex_window(void)
     (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL);
     (void)setfname(curbuf, (char_u *)"[Command Line]", NULL, TRUE);
     set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
-    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
     curbuf->b_p_ma = TRUE;
 #ifdef FEAT_FOLDING
     curwin->w_p_fen = FALSE;
