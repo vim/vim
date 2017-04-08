@@ -920,7 +920,7 @@ init_typebuf(void)
 	typebuf.tb_noremap = noremapbuf_init;
 	typebuf.tb_buflen = TYPELEN_INIT;
 	typebuf.tb_len = 0;
-	typebuf.tb_off = 0;
+	typebuf.tb_off = MAXMAPLEN + 4;
 	typebuf.tb_change_cnt = 1;
     }
 }
@@ -974,11 +974,21 @@ ins_typebuf(
 	typebuf.tb_off -= addlen;
 	mch_memmove(typebuf.tb_buf + typebuf.tb_off, str, (size_t)addlen);
     }
+    else if (typebuf.tb_len == 0 && typebuf.tb_buflen
+					       >= addlen + 3 * (MAXMAPLEN + 4))
+    {
+	/*
+	 * Buffer is empty and string fits in the existing buffer.
+	 * Leave some space before and after, if possible.
+	 */
+	typebuf.tb_off = (typebuf.tb_buflen - addlen - 3 * (MAXMAPLEN + 4)) / 2;
+	mch_memmove(typebuf.tb_buf + typebuf.tb_off, str, (size_t)addlen);
+    }
     else
     {
 	/*
 	 * Need to allocate a new buffer.
-	 * In typebuf.tb_buf there must always be room for 3 * MAXMAPLEN + 4
+	 * In typebuf.tb_buf there must always be room for 3 * (MAXMAPLEN + 4)
 	 * characters.  We add some extra room to avoid having to allocate too
 	 * often.
 	 */
@@ -1291,7 +1301,7 @@ alloc_typebuf(void)
 	return FAIL;
     }
     typebuf.tb_buflen = TYPELEN_INIT;
-    typebuf.tb_off = 0;
+    typebuf.tb_off = MAXMAPLEN + 4;  /* can insert without realloc */
     typebuf.tb_len = 0;
     typebuf.tb_maplen = 0;
     typebuf.tb_silent = 0;
