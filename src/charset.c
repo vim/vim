@@ -1733,6 +1733,8 @@ vim_toupper(int c)
 	if (enc_latin1like)
 	    return latin1upper[c];
     }
+    if (c < 0x80 && (cmp_flags & CMP_KEEPASCII))
+	return TOUPPER_ASC(c);
     return TOUPPER_LOC(c);
 }
 
@@ -1757,6 +1759,8 @@ vim_tolower(int c)
 	if (enc_latin1like)
 	    return latin1lower[c];
     }
+    if (c < 0x80 && (cmp_flags & CMP_KEEPASCII))
+	return TOLOWER_ASC(c);
     return TOLOWER_LOC(c);
 }
 #endif

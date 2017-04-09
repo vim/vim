@@ -1619,6 +1619,17 @@ fun! Test_normal30_changecase()
       call assert_equal("i\u0131", getline(1))
       call assert_equal("i\u0131", tolower("iI"))
 
+      set casemap&
+      call setline(1, 'iI')
+      1normal gUU
+      call assert_equal("II", getline(1))
+      call assert_equal("II", toupper("iI"))
+
+      call setline(1, 'iI')
+      1normal guu
+      call assert_equal("ii", getline(1))
+      call assert_equal("ii", tolower("iI"))
+
       lang en_US.UTF-8
     catch /E197:/
       " can't use Turkish locale
