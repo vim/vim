@@ -92,11 +92,6 @@ static void gtk_form_position_child(GtkForm *form,
 				    gboolean force_allocate);
 static void gtk_form_position_children(GtkForm *form);
 
-#if !GTK_CHECK_VERSION(3,16,0)
-static void gtk_form_set_static_gravity(GdkWindow *window,
-					gboolean use_static);
-#endif
-
 static void gtk_form_send_configure(GtkForm *form);
 
 static void gtk_form_child_map(GtkWidget *widget, gpointer user_data);
@@ -369,10 +364,6 @@ gtk_form_realize(GtkWidget *widget)
 				      &attributes, attributes_mask);
 #endif
     gdk_window_set_user_data(form->bin_window, widget);
-
-#if !GTK_CHECK_VERSION(3,16,0)
-    gtk_form_set_static_gravity(form->bin_window, TRUE);
-#endif
 
 #if GTK_CHECK_VERSION(3,0,0)
     {
@@ -845,9 +836,6 @@ gtk_form_attach_child_window(GtkForm *form, GtkFormChild *child)
 #endif
 
 	gtk_widget_set_parent_window(child->widget, child->window);
-#if !GTK_CHECK_VERSION(3,16,0)
-	gtk_form_set_static_gravity(child->window, TRUE);
-#endif
 	/*
 	 * Install signal handlers to map/unmap child->window
 	 * alongside with the actual widget.
@@ -879,15 +867,6 @@ gtk_form_realize_child(GtkForm *form, GtkFormChild *child)
 {
     gtk_form_attach_child_window(form, child);
     gtk_widget_realize(child->widget);
-
-#if !GTK_CHECK_VERSION(3,16,0)
-    if (child->window == NULL) /* might be already set, see above */
-# if GTK_CHECK_VERSION(3,0,0)
-	gtk_form_set_static_gravity(gtk_widget_get_window(child->widget), TRUE);
-# else
-	gtk_form_set_static_gravity(child->widget->window, TRUE);
-# endif
-#endif
 }
 
     static void
@@ -998,16 +977,6 @@ gtk_form_position_children(GtkForm *form)
     for (tmp_list = form->children; tmp_list; tmp_list = tmp_list->next)
 	gtk_form_position_child(form, tmp_list->data, FALSE);
 }
-
-#if !GTK_CHECK_VERSION(3,16,0)
-    static void
-gtk_form_set_static_gravity(GdkWindow *window, gboolean use_static)
-{
-    /* We don't check if static gravity is actually supported, because it
-     * results in an annoying assertion error message. */
-    gdk_window_set_static_gravities(window, use_static);
-}
-#endif /* !GTK_CHECK_VERSION(3,16,0) */
 
     void
 gtk_form_move_resize(GtkForm *form, GtkWidget *widget,
