@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Mar 29
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Apr 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,8 @@ entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Remove the Farsi code?
 
 +channel:
 - Try out background make plugin: 
@@ -110,9 +112,6 @@ manager.  Problem with Motif?
 
 Memory leak in test97?  The string is actually freed.  Weird.
 
-Patch for deleting the quickfix lists and a test for it. (Yegappan, 2017 Mar
-21)
-
 Add a toolbar in the terminal.  Can be global, above all windows, or specific
 for one window.
 Use tb_set(winid, [{'text': 'stop', 'cb': callback, 'hi': 'Green'}])
@@ -122,15 +121,7 @@ Use tb_set(winid, [{'text': 'stop', 'cb': callback, 'hi': 'Green'}])
 json_encode(): should convert to utf-8. (Nikolai Pavlov, 2016 Jan 23)
 What if there is an invalid character?
 
-Patch for broken foldtext. (Christian 2017 Mar 22, #1567, 2nd one)
-
 Json string with trailing \u should be an error. (Lcd)
-
-On MS-Windows with 'clipboard' set to "unnamed" this doesn't work to double
-lines: :g/^/normal yyp   On Unix it works OK.  (Bryce Orgill, 2016 Nov 5)
-Another example 2017 Mar 10.
-
-Multi-byte bug: dv} splits char. (Urtica Dioica, 2017 Jan 9)
 
 When session file has name in argument list but the buffer was deleted, the
 buffer is not deleted when using the session file. (#1393)
@@ -139,10 +130,6 @@ Should add the buffer in hidden state.
 When an item in the quickfix list has a file name that does not exist, behave
 like the item was not a match for :cnext.
 
-Patch to test regexp classes. (Dominique, 2017 Mar 13, #1560)
-Do we need to adjust the implementation?
-Make different classes that depend on the system and that don't.
-
 Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
 Another example in #1309
@@ -150,20 +137,11 @@ Another example in #1309
 Patch to change all use of &sw to shiftwidth(). (Tyru, 2017 Feb 19)
 Wait until maintainers integrate it.
 
-Patch to change mb_char2len() to utf_char2len(c) when known to use UTF.
-(Dominique, 2017 Mar 21, #1582)
-
-Completion for user-defined commands does not work if a few characters were
-already typed. (Dominique, 2017 Jan 26)
-
 When deleting a mark or register, leave a tombstone, so that it's also deleted
 when writing viminfo (and the delete was the most recent action). #1339
 
 Suggestion to improve pt-br spell checking. (Marcelo D Montu, 2016 Dec 15,
 #1330)
-
-Patch to Modernize GtkForm Implmentation. (Kazuki Kuriyama, 2017 Mar 26)
-Any objections?
 
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 

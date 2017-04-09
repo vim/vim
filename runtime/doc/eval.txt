@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Mar 27
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Apr 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4379,12 +4379,14 @@ getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
 		includes an extra item in the list:
 		    [bufnum, lnum, col, off, curswant] ~
 		The "curswant" number is the preferred column when moving the
-		cursor vertically.
+		cursor vertically.  Also see |getpos()|.
+
 		This can be used to save and restore the cursor position: >
 			let save_cursor = getcurpos()
 			MoveTheCursorAround
 			call setpos('.', save_cursor)
-<
+<		Note that this only works within the window.  See
+		|winrestview()| for restoring more state.
 							*getcwd()*
 getcwd([{winnr} [, {tabnr}]])
 		The result is a String, which is the name of the current
@@ -4682,13 +4684,16 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 <
 							*getwinposx()*
 getwinposx()	The result is a Number, which is the X coordinate in pixels of
-		the left hand side of the GUI Vim window.  The result will be
-		-1 if the information is not available.
+		the left hand side of the GUI Vim window. Also works for an
+		xterm.
+		The result will be -1 if the information is not available.
+		The value can be used with `:winpos`.
 
 							*getwinposy()*
 getwinposy()	The result is a Number, which is the Y coordinate in pixels of
-		the top of the GUI Vim window.  The result will be -1 if the
-		information is not available.
+		the top of the GUI Vim window.  Also works for an xterm.
+		The result will be -1 if the information is not available.
+		The value can be used with `:winpos`.
 
 getwininfo([{winid}])					*getwininfo()*
 		Returns information about windows as a List with Dictionaries.
@@ -5304,13 +5309,29 @@ json_decode({string})					*json_decode()*
 		in Vim values.  See |json_encode()| for the relation between
 		JSON and Vim values.
 		The decoding is permissive:
-		- A trailing comma in an array and object is ignored.
+		- A trailing comma in an array and object is ignored, e.g.
+		  "[1, 2, ]" is the same as "[1, 2]".
 		- More floating point numbers are recognized, e.g. "1." for
-		  "1.0".
-		However, a duplicate key in an object is not allowed. *E938*
-		The result must be a valid Vim type:
-		- An empty object member name is not allowed.
-		- Duplicate object member names are not allowed.
+		  "1.0", or "001.2" for "1.2". Special floating point values
+		  "Infinity" and "NaN" (capitalization ignored) are accepted.
+		- Leading zeroes in integer numbers are ignored, e.g. "012"
+		  for "12" or "-012" for "-12".
+		- Capitalization is ignored in literal names null, true or
+		  false, e.g. "NULL" for "null", "True" for "true".
+		- Control characters U+0000 through U+001F which are not
+		  escaped in strings are accepted, e.g. "	" (tab
+		  character in string) for "\t".
+		- Backslash in an invalid 2-character sequence escape is
+		  ignored, e.g. "\a" is decoded as "a".
+		- A correct surrogate pair in JSON strings should normally be
+		  a 12 character sequence such as "\uD834\uDD1E", but
+		  json_decode() silently accepts truncated surrogate pairs
+		  such as "\uD834" or "\uD834\u"
+								*E938*
+		A duplicate key in an object, valid in rfc7159, is not
+		accepted by json_decode() as the result must be a valid Vim
+		type, e.g. this fails: {"a":"b", "a":"c"}
+
 
 json_encode({expr})					*json_encode()*
 		Encode {expr} as JSON and return this as a string.
@@ -7879,7 +7900,6 @@ test_override({name}, {val})				*test_override()*
 
 		name	     effect when {val} is non-zero ~
 		redraw       disable the redrawing() function
-		silent_mode  enable silent mode (like using |-s| after |-e|)
 		char_avail   disable the char_avail() function
 		ALL	     clear all overrides ({val} is not used)
 
@@ -8473,7 +8493,7 @@ listcmds		Compiled with commands for the buffer list |:files|
 			and the argument list |arglist|.
 localmap		Compiled with local mappings and abbr. |:map-local|
 lua			Compiled with Lua interface |Lua|.
-mac			Any Macintosh version of Vim.
+mac			Any Macintosh version of Vim, but not all OS X.
 macunix			Compiled for OS X, with darwin
 osx			Compiled for OS X, with or without darwin
 menu			Compiled with support for |:menu|.
@@ -10649,6 +10669,22 @@ missing: >
 	:else
 	:  echo "You will _never_ see this message"
 	:endif
+
+To execute a command only when the |+eval| feature is disabled requires a trick,
+as this example shows: >
+	if 1
+	  nnoremap : :"
+	endif
+	normal :set history=111<CR>
+	if 1
+	  nunmap :
+	endif
+
+The "<CR>" here is a real CR character, type CTRL-V Enter to get it.
+
+When the |+eval| feature is available the ":" is remapped to add a double
+quote, which has the effect of commenging-out the command.  without the
+|+eval| feature the nnoremap command is skipped and the command is executed.
 
 ==============================================================================
 11. The sandbox					*eval-sandbox* *sandbox* *E48*
