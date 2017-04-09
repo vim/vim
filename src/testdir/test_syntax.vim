@@ -386,8 +386,8 @@ func Test_ownsyntax_completion()
 endfunc
 
 func Test_highlight_invalid_arg()
-  if has('gui')
-    call assert_fails('hi XXX guisp=xxx', 'E254:')
+  if !has('gui') || has('gui_running')
+    call assert_fails('hi XXX guifg=xxx', 'E254:')
   endif
   call assert_fails('hi DoesNotExist', 'E411:')
   call assert_fails('hi link', 'E412:')
