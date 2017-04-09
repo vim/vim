@@ -1605,7 +1605,7 @@ fun! Test_normal30_changecase()
 
   " Turkish ASCII turns to multi-byte.  On Mac the Turkish locale is available
   " but toupper()/tolower() don't do the right thing.
-  if !has('mac')
+  if !has('mac') && !has('osx')
     try
       lang tr_TR.UTF-8
       set casemap=
