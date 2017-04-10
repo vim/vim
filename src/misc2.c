@@ -2129,7 +2129,7 @@ ga_concat(garray_T *gap, char_u *s)
 {
     int    len;
 
-    if (s == NULL)
+    if (s == NULL || *s == NUL)
 	return;
     len = (int)STRLEN(s);
     if (ga_grow(gap, len) == OK)
