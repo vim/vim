@@ -39,3 +39,14 @@ func Test_with_tilde()
   call delete('Xdir ~ dir', 'd')
   call assert_false(isdirectory('Xdir ~ dir'))
 endfunc
+
+func Test_head()
+  let dir = expand('%:h:p')
+  exe 'cd ' . fnameescape(dir)
+  let dir = getcwd()
+  " go beyond current directory
+  let parentDir = expand('%:h:h')
+  let parentDir_ = split(dir, '/', 1)
+  call remove(parentDir_, len(parentDir_) - 1)
+  call assert_equal(parentDir, join(parentDir_, '/'))
+endfunc
