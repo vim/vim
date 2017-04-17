@@ -2129,6 +2129,9 @@ typedef enum {
 # define number_width(x) 7
 #endif
 
+#ifdef FEAT_FLOAT
+#include <float.h>
+#endif
 
 #include "globals.h"	    /* global variables and messages */
 
