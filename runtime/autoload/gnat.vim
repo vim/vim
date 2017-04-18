@@ -119,7 +119,8 @@ function gnat#New ()						     " {{{1
       \ 'Tags_Command'     : '"gnat xref -P " . self.Project_File . " -v  *.AD*"',
       \ 'Error_Format'     : '%f:%l:%c: %trror: %m,'   .
 			   \ '%f:%l:%c: %tarning: %m,' .
-			   \ '%f:%l:%c: (%ttyle) %m'}
+                           \ '%f:%l:%c: (%ttyle) %m,'  .                                                                                              
+                           \ '%f:%l:%c: %m'}
 
    return l:Retval
 endfunction gnat#New						  " }}}1
