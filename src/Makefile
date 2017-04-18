@@ -1884,15 +1884,10 @@ autoconf:
 	-rm -rf autom4te.cache
 	-rm -f auto/config.status auto/config.cache
 
-# Run Perl to generate the Ex command lookup table.  This only needs to be run
+# Run vim script to generate the Ex command lookup table.  This only needs to be run
 # when a command name has been added or changed.
-# NOTE: Only works when perl and vim executables are available
 cmdidxs: ex_cmds.h
-	if test X`perl -e "print 123"` = "X123"; then \
-	   vim ex_docmd.c -c '/Beginning.*create_cmdidxs/,/End.*create_cmdidxs/! perl create_cmdidxs.pl' -c wq; \
-	else \
-	   echo Cannot run Perl; \
-	fi
+	vim -u NONE -i NONE -X -S create_cmdidxs.vim
 
 # Re-execute this Makefile to include the new auto/config.mk produced by
 # configure Only used when typing "make" with a fresh auto/config.mk.
