@@ -251,10 +251,10 @@ function! GetTeXIndent() " {{{
             let stay = 0
         endif
 
-        let cind = indent(v:lnum)
-        let char = cline[cind]
+        let clast = strlen(cline)-1
+        let char = cline[clast]
         if (char == ']' || char == '}') &&
-                    \ s:CheckPairedIsLastCharacter(v:lnum, cind)
+                    \ s:CheckPairedIsLastCharacter(v:lnum, clast)
             let ind -= &sw
             let stay = 0
         endif
