@@ -3033,6 +3033,17 @@ source_startup_scripts(mparm_T *parmp)
 	    {
 		/* When no .vimrc file was found: source defaults.vim. */
 		do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE);
+
+		/*
+		 * Source system wide defaults again to make them have
+		 * precedence to defaults.vim.
+		 */
+#ifdef SYS_VIMRC_FILE
+		(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, DOSO_NONE);
+#endif
+#ifdef MACOS_X
+		(void)do_source((char_u *)"$VIMRUNTIME/macmap.vim", FALSE, DOSO_NONE);
+#endif
 	    }
 	}
 
