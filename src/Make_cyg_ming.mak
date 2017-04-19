@@ -719,7 +719,6 @@ else
 OBJ += $(OUTDIR)/netbeans.o
 endif
 endif
-endif
 
 ifeq ($(CHANNEL),yes)
 OBJ += $(OUTDIR)/channel.o
