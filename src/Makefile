@@ -2566,7 +2566,7 @@ DESKTOPPATH = $(DESTDIR)$(DATADIR)/applications
 KDEPATH = $(HOME)/.kde/share/icons
 install-icons:
 	if test -n "$(DESTDIR)"; then \
-		$(SHELL) ./mkinstalldirs $(ICON48PATH) $(ICON32PATH) \
+		$(MKDIR_P) $(ICON48PATH) $(ICON32PATH) \
 		$(ICON16PATH) $(DESKTOPPATH); \
 	fi
 
@@ -2607,7 +2607,7 @@ $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) $(DEST_MACRO) \
 		$(DEST_PACK) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
 		$(DEST_AUTO) $(DEST_AUTO)/xml $(DEST_PLUG):
-	-$(SHELL) ./mkinstalldirs $@
+	$(MKDIR_P) $@
 	-chmod $(DIRMOD) $@
 
 # create links from various names to vim.  This is only done when the links
@@ -2787,25 +2787,25 @@ clean celan: testclean
 SHADOWDIR = shadow
 
 shadow:	runtime pixmaps
-	mkdir $(SHADOWDIR)
-	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../vimtutor ../gvimtutor ../mkinstalldirs .
+	$(MKDIR_P) $(SHADOWDIR)
+	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../vimtutor ../gvimtutor ../install-sh .
 	mkdir $(SHADOWDIR)/auto
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
-	mkdir $(SHADOWDIR)/po
+	$(MKDIR_P) $(SHADOWDIR)/po
 	cd $(SHADOWDIR)/po; ln -s ../../po/*.po ../../po/*.mak ../../po/*.vim ../../po/Makefile .
 	cd $(SHADOWDIR); rm -f auto/link.sed
 	cp Makefile configure $(SHADOWDIR)
 	rm -f $(SHADOWDIR)/auto/config.mk $(SHADOWDIR)/config.mk.dist
 	cp config.mk.dist $(SHADOWDIR)/auto/config.mk
 	cp config.mk.dist $(SHADOWDIR)
-	mkdir $(SHADOWDIR)/xxd
+	$(MKDIR_P) $(SHADOWDIR)/xxd
 	cd $(SHADOWDIR)/xxd; ln -s ../../xxd/*.[ch] ../../xxd/Make* .
 	if test -d $(RSRC_DIR); then \
 		cd $(SHADOWDIR); \
 		ln -s ../infplist.xml .; \
 		ln -s ../$(RSRC_DIR) ../os_mac.rsr.hqx ../dehqx.py .; \
 	fi
-	mkdir $(SHADOWDIR)/testdir
+	$(MKDIR_P) $(SHADOWDIR)/testdir
 	cd $(SHADOWDIR)/testdir; ln -s ../../testdir/Makefile \
 				 ../../testdir/Make_all.mak \
 				 ../../testdir/README.txt \
@@ -2942,7 +2942,7 @@ auto/gui_gtk_gresources.h: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
 objects: objects/.dirstamp
 
 objects/.dirstamp:
-	mkdir -p objects
+	$(MKDIR_P) objects
 	touch objects/.dirstamp
 
 # All object files depend on the objects directory, so that parallel make
@@ -3273,8 +3273,7 @@ install_macosx: gui_bundle
 # Generate the help tags file now, it won't work with "make installruntime".
 	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
 # Install the runtime files.  Recursive!
-	-mkdir -p $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
-#	-mkdir $(DESTDIR)$(prefix)/$(APPDIR)/bin
+	$(MKDIR_P) $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
 	srcdir=`pwd`; $(MAKE) -f Makefile installruntime \
 		VIMEXE=$$srcdir/$(VIMTARGET) \
 		prefix=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
@@ -3292,16 +3291,16 @@ gui_bundle: $(RESDIR) bundle-dir bundle-executable bundle-info bundle-resource \
 	bundle-language
 
 $(RESDIR):
-	mkdir -p $@
+	$(MKDIR_P) $@
 
 bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
 # Make a link to the runtime directory, so that we can try out the executable
 # without installing it.
-	mkdir -p $(RESDIR)/vim
+	$(MKDIR_P) $(RESDIR)/vim
 	-ln -s `pwd`/../runtime $(RESDIR)/vim
 
 bundle-executable: $(VIMTARGET)
-	mkdir -p $(APPDIR)/Contents/MacOS
+	$(MKDIR_P) $(APPDIR)/Contents/MacOS
 	cp $(VIMTARGET) $(APPDIR)/Contents/MacOS/$(VIMTARGET)
 
 bundle-info:  bundle-dir
@@ -3332,8 +3331,8 @@ bundle-rsrc: os_mac.rsr.hqx
 bundle-language: bundle-dir
 
 $(APPDIR)/Contents:
-	-$(SHELL) ./mkinstalldirs $(APPDIR)/Contents/MacOS
-	-$(SHELL) ./mkinstalldirs $(RESDIR)/English.lproj
+	$(MKDIR_P) $(APPDIR)/Contents/MacOS
+	$(MKDIR_P) $(RESDIR)/English.lproj
 
 
 ###############################################################################
