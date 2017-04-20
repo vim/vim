@@ -239,7 +239,7 @@ SRC_UNIX =	\
 		src/link.sh \
 		src/installman.sh \
 		src/installml.sh \
-		src/mkinstalldirs \
+		src/install-sh \
 		src/os_unix.c \
 		src/os_unix.h \
 		src/os_unixx.h \

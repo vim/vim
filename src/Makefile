@@ -207,7 +207,7 @@
 #SunOS 4.1.x			     +X11 -GUI		5.1b (J) Bram Moolenaar
 #SunOS 4.1.3_U1 (sun4c) gcc	     +X11 +GUI Athena	5.0w (J) Darren Hiebert
 #SUPER-UX 6.2 (NEC SX-4) cc	     +X11R6 Motif,Athena4.6b (P) Lennart Schultz
-#Tandem/NSK                                                  (c) Matthew Woehlke
+#Tandem/NSK						     (c) Matthew Woehlke
 #Unisys 6035	      cc	     +X11 Motif		5.3  (8) Glauber Ribeiro
 #ESIX V4.2	      cc	     +X11		6.0  (a) Reinhard Wobst
 #Mac OS X 10.[23]     gcc	     Carbon		6.2  (x) Bram Moolenaar
@@ -403,6 +403,7 @@ CClink = $(CC)
 # First one is for static linking, second one for dynamic loading.
 # Use --with-luajit if you want to use LuaJIT instead of Lua.
 # Set PATH environment variable to find lua or luajit executable.
+# This requires at least "normal" features, "tiny" and "small" don't work.
 #CONF_OPT_LUA = --enable-luainterp
 #CONF_OPT_LUA = --enable-luainterp=dynamic
 #CONF_OPT_LUA = --enable-luainterp --with-luajit
@@ -429,16 +430,15 @@ CClink = $(CC)
 # the next line.
 # When you get an error for a missing "perl.exp" file, try creating an empty
 # one: "touch perl.exp".
-# This requires at least "small" features, "tiny" doesn't work.
+# This requires at least "normal" features, "tiny" and "small" don't work.
 #CONF_OPT_PERL = --enable-perlinterp
 #CONF_OPT_PERL = --enable-perlinterp=dynamic
 
 # PYTHON
-# Uncomment this when you want to include the Python interface.
-# Requires small features or better, fails with tiny features.
+# Uncomment lines here when you want to include the Python interface.
+# This requires at least "normal" features, "tiny" and "small" don't work.
 # NOTE: This may cause threading to be enabled, which has side effects (such
 # as using different libraries and debugging becomes more difficult).
-# NOTE: Using this together with Perl may cause a crash in initialization.
 # For Python3 support make a symbolic link in /usr/local/bin:
 #	ln -s python3 python3.1
 # If both python2.x and python3.x are enabled then the linking will be via
@@ -454,6 +454,7 @@ CClink = $(CC)
 # Uncomment this when you want to include the Ruby interface.
 # First one for static linking, second one for loading when used.
 # Note: you need the development package (e.g., ruby1.9.1-dev on Ubuntu).
+# This requires at least "normal" features, "tiny" and "small" don't work.
 #CONF_OPT_RUBY = --enable-rubyinterp
 #CONF_OPT_RUBY = --enable-rubyinterp=dynamic
 #CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby1.9.1
@@ -617,7 +618,7 @@ AUTOCONF = autoconf
 #PURIFY = purify
 
 # VALGRIND - remove the # to use valgrind for memory leaks and access errors.
-#            Used for the unittest targets.
+#	     Used for the unittest targets.
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind.$@
 
 # NBDEBUG - debugging the netbeans interface.
@@ -649,15 +650,15 @@ LINT_OPTIONS = -beprxzF
 # coverage information. (provided by Yegappan Lakshmanan)
 # 1. make clean, run configure and build Vim as usual.
 # 2. Generate the baseline code coverage information:
-#        $ lcov -c -i -b . -d objects -o objects/coverage_base.info
+#	$ lcov -c -i -b . -d objects -o objects/coverage_base.info
 # 3. Run "make test" to run the unit tests.  The code coverage information will
 #    be generated in the src/objects directory.
 # 4. Generate the code coverage information from the tests:
-#        $ lcov -c -b . -d objects/ -o objects/coverage_test.info
+#	$ lcov -c -b . -d objects/ -o objects/coverage_test.info
 # 5. Combine the baseline and test code coverage data:
-#        $ lcov -a objects/coverage_base.info -a objects/coverage_test.info -o objects/coverage_total.info
+#	$ lcov -a objects/coverage_base.info -a objects/coverage_test.info -o objects/coverage_total.info
 # 6. Process the test coverage data and generate a report in html:
-#        $ genhtml objects/coverage_total.info -o objects
+#	$ genhtml objects/coverage_total.info -o objects
 # 7. Open the objects/index.html file in a web browser to view the coverage
 #    information.
 #
@@ -2566,7 +2567,7 @@ DESKTOPPATH = $(DESTDIR)$(DATADIR)/applications
 KDEPATH = $(HOME)/.kde/share/icons
 install-icons:
 	if test -n "$(DESTDIR)"; then \
-		$(SHELL) ./mkinstalldirs $(ICON48PATH) $(ICON32PATH) \
+		$(MKDIR_P) $(ICON48PATH) $(ICON32PATH) \
 		$(ICON16PATH) $(DESKTOPPATH); \
 	fi
 
@@ -2607,7 +2608,7 @@ $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) $(DEST_MACRO) \
 		$(DEST_PACK) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
 		$(DEST_AUTO) $(DEST_AUTO)/xml $(DEST_PLUG):
-	-$(SHELL) ./mkinstalldirs $@
+	$(MKDIR_P) $@
 	-chmod $(DIRMOD) $@
 
 # create links from various names to vim.  This is only done when the links
@@ -2787,25 +2788,25 @@ clean celan: testclean
 SHADOWDIR = shadow
 
 shadow:	runtime pixmaps
-	mkdir $(SHADOWDIR)
-	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../vimtutor ../gvimtutor ../mkinstalldirs .
+	$(MKDIR_P) $(SHADOWDIR)
+	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../vimtutor ../gvimtutor ../install-sh .
 	mkdir $(SHADOWDIR)/auto
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
-	mkdir $(SHADOWDIR)/po
+	$(MKDIR_P) $(SHADOWDIR)/po
 	cd $(SHADOWDIR)/po; ln -s ../../po/*.po ../../po/*.mak ../../po/*.vim ../../po/Makefile .
 	cd $(SHADOWDIR); rm -f auto/link.sed
 	cp Makefile configure $(SHADOWDIR)
 	rm -f $(SHADOWDIR)/auto/config.mk $(SHADOWDIR)/config.mk.dist
 	cp config.mk.dist $(SHADOWDIR)/auto/config.mk
 	cp config.mk.dist $(SHADOWDIR)
-	mkdir $(SHADOWDIR)/xxd
+	$(MKDIR_P) $(SHADOWDIR)/xxd
 	cd $(SHADOWDIR)/xxd; ln -s ../../xxd/*.[ch] ../../xxd/Make* .
 	if test -d $(RSRC_DIR); then \
 		cd $(SHADOWDIR); \
 		ln -s ../infplist.xml .; \
 		ln -s ../$(RSRC_DIR) ../os_mac.rsr.hqx ../dehqx.py .; \
 	fi
-	mkdir $(SHADOWDIR)/testdir
+	$(MKDIR_P) $(SHADOWDIR)/testdir
 	cd $(SHADOWDIR)/testdir; ln -s ../../testdir/Makefile \
 				 ../../testdir/Make_all.mak \
 				 ../../testdir/README.txt \
@@ -2942,7 +2943,7 @@ auto/gui_gtk_gresources.h: gui_gtk_res.xml $(GUI_GTK_RES_INPUTS)
 objects: objects/.dirstamp
 
 objects/.dirstamp:
-	mkdir -p objects
+	$(MKDIR_P) objects
 	touch objects/.dirstamp
 
 # All object files depend on the objects directory, so that parallel make
@@ -3273,8 +3274,7 @@ install_macosx: gui_bundle
 # Generate the help tags file now, it won't work with "make installruntime".
 	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
 # Install the runtime files.  Recursive!
-	-mkdir -p $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
-#	-mkdir $(DESTDIR)$(prefix)/$(APPDIR)/bin
+	$(MKDIR_P) $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
 	srcdir=`pwd`; $(MAKE) -f Makefile installruntime \
 		VIMEXE=$$srcdir/$(VIMTARGET) \
 		prefix=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
@@ -3292,16 +3292,16 @@ gui_bundle: $(RESDIR) bundle-dir bundle-executable bundle-info bundle-resource \
 	bundle-language
 
 $(RESDIR):
-	mkdir -p $@
+	$(MKDIR_P) $@
 
 bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
 # Make a link to the runtime directory, so that we can try out the executable
 # without installing it.
-	mkdir -p $(RESDIR)/vim
+	$(MKDIR_P) $(RESDIR)/vim
 	-ln -s `pwd`/../runtime $(RESDIR)/vim
 
 bundle-executable: $(VIMTARGET)
-	mkdir -p $(APPDIR)/Contents/MacOS
+	$(MKDIR_P) $(APPDIR)/Contents/MacOS
 	cp $(VIMTARGET) $(APPDIR)/Contents/MacOS/$(VIMTARGET)
 
 bundle-info:  bundle-dir
@@ -3332,8 +3332,8 @@ bundle-rsrc: os_mac.rsr.hqx
 bundle-language: bundle-dir
 
 $(APPDIR)/Contents:
-	-$(SHELL) ./mkinstalldirs $(APPDIR)/Contents/MacOS
-	-$(SHELL) ./mkinstalldirs $(RESDIR)/English.lproj
+	$(MKDIR_P) $(APPDIR)/Contents/MacOS
+	$(MKDIR_P) $(RESDIR)/English.lproj
 
 
 ###############################################################################
