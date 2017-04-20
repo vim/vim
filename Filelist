@@ -24,6 +24,7 @@ SRC_ALL =	\
 		src/edit.c \
 		src/eval.c \
 		src/evalfunc.c \
+		src/ex_cmdidxs.h \
 		src/ex_cmds.c \
 		src/ex_cmds.h \
 		src/ex_cmds2.c \
@@ -215,7 +216,7 @@ SRC_UNIX =	\
 		src/config.mk.in \
 		src/configure \
 		src/configure.ac \
-		src/create_cmdidxs.pl \
+		src/create_cmdidxs.vim \
 		src/gui_at_fs.c \
 		src/gui_at_sb.c \
 		src/gui_at_sb.h \
