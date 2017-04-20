@@ -9252,6 +9252,7 @@ find_match(int lookfor, linenr_T ourscope)
 get_expr_indent(void)
 {
     int		indent;
+    char_u	*inde_copy;
     pos_T	save_pos;
     colnr_T	save_curswant;
     int		save_set_curswant;
@@ -9268,7 +9269,16 @@ get_expr_indent(void)
     if (use_sandbox)
 	++sandbox;
     ++textlock;
-    indent = (int)eval_to_number(curbuf->b_p_inde);
+
+    /* Need to make a copy, the 'indentexpr' option could be changed while
+     * evaluating it. */
+    inde_copy = vim_strsave(curbuf->b_p_inde);
+    if (inde_copy != NULL)
+    {
+	indent = (int)eval_to_number(inde_copy);
+	vim_free(inde_copy);
+    }
+
     if (use_sandbox)
 	--sandbox;
     --textlock;
