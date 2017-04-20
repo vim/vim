@@ -690,6 +690,22 @@ func Test_locationlist_cross_tab_jump()
   call delete('loclistbar')
 endfunc
 
+function Test_locationlist_cross_tab_jump()
+  call writefile(['loclistfoo'], 'loclistfoo')
+  call writefile(['loclistbar'], 'loclistbar')
+  set switchbuf=usetab
+
+  edit loclistfoo
+  tabedit loclistbar
+  silent lgrep loclistfoo loclist*
+  call assert_equal(1, tabpagenr())
+
+  enew | only | tabonly
+  set switchbuf&vim
+  call delete('loclistfoo')
+  call delete('loclistbar')
+endfunction
+
 " More tests for 'errorformat'
 func Test_efm1()
     if !has('unix')
