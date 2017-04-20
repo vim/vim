@@ -4371,7 +4371,12 @@ find_decl(
 	    if ((pos = findmatchlimit(NULL, '}', FM_FORWARD,
 		     (int)(old_pos.lnum - curwin->w_cursor.lnum + 1))) != NULL
 		    && pos->lnum < old_pos.lnum)
+	    {
+		/* There can't be a useful match before the end of this block.
+		 * Skip to the end. */
+		curwin->w_cursor = *pos;
 		continue;
+	    }
 	}
 
 	if (t == FAIL)
@@ -8311,6 +8316,7 @@ nv_g_cmd(cmdarg_T *cap)
 	break;
 #endif
 
+    /* "g<": show scrollback text */
     case '<':
 	show_sb_text();
 	break;
