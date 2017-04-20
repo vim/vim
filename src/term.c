@@ -3181,15 +3181,19 @@ settmode(int tmode)
 #endif
 #ifdef FEAT_MOUSE_TTY
 	    if (tmode != TMODE_RAW)
-		mch_setmouse(FALSE);		/* switch mouse off */
+		mch_setmouse(FALSE);	/* switch mouse off */
 #endif
+	    if (tmode != TMODE_RAW)
+		out_str(T_BD);		/* disable bracketed paste mode */
 	    out_flush();
-	    mch_settmode(tmode);    /* machine specific function */
+	    mch_settmode(tmode);	/* machine specific function */
 	    cur_tmode = tmode;
 #ifdef FEAT_MOUSE
 	    if (tmode == TMODE_RAW)
-		setmouse();			/* may switch mouse on */
+		setmouse();		/* may switch mouse on */
 #endif
+	    if (tmode == TMODE_RAW)
+		out_str(T_BE);		/* enable bracketed paste mode */
 	    out_flush();
 	}
 #ifdef FEAT_TERMRESPONSE
