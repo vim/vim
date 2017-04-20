@@ -1892,11 +1892,6 @@ autoconf:
 cmdidxs: ex_cmds.h
 	vim -u NONE -i NONE -X -S create_cmdidxs.vim
 
-# Re-execute this Makefile to include the new auto/config.mk produced by
-# configure Only used when typing "make" with a fresh auto/config.mk.
-myself:
-	$(MAKE) -f Makefile all
-
 
 # The normal command to compile a .c file to its .o file.
 # Without or with ALL_CFLAGS.
@@ -2768,7 +2763,8 @@ uninstall_runtime:
 # Clean up all the files that have been produced, except configure's.
 # We support common typing mistakes for Juergen! :-)
 clean celan: testclean
-	-rm -f *.o objects/* core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
+	-rm -f *.o core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
+	-rm -rf objects
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h
 	-rm -f conftest* *~ auto/link.sed
 	-rm -f testdir/opt_test.vim
