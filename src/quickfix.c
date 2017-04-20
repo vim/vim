@@ -2750,12 +2750,18 @@ qf_free(qf_info_T *qi, int idx)
     vim_free(qi->qf_lists[idx].qf_title);
     qi->qf_lists[idx].qf_title = NULL;
     qi->qf_lists[idx].qf_index = 0;
+    qi->qf_lists[idx].qf_start = NULL;
     qi->qf_lists[idx].qf_last = NULL;
+    qi->qf_lists[idx].qf_ptr = NULL;
+    qi->qf_lists[idx].qf_nonevalid = TRUE;
 
     qf_clean_dir_stack(&qi->qf_dir_stack);
     qi->qf_directory = NULL;
     qf_clean_dir_stack(&qi->qf_file_stack);
     qi->qf_currfile = NULL;
+    qi->qf_multiline = FALSE;
+    qi->qf_multiignore = FALSE;
+    qi->qf_multiscan = FALSE;
 }
 
 /*
@@ -4923,6 +4929,7 @@ qf_free_stack(win_T *wp, qf_info_T *qi)
 	/* If the location list window is open, then create a new empty
 	 * location list */
 	qf_info_T *new_ll = ll_new_list();
+
 	orig_wp->w_llist_ref = new_ll;
 	if (llwin != NULL)
 	{
