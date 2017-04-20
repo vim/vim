@@ -819,6 +819,10 @@ au BufNewFile,BufRead *.gp,.gprc		setf gp
 " GPG
 au BufNewFile,BufRead */.gnupg/options		setf gpg
 au BufNewFile,BufRead */.gnupg/gpg.conf		setf gpg
+if !empty($GNUPGHOME)
+  au BufNewFile,BufRead $GNUPGHOME/options	setf gpg
+  au BufNewFile,BufRead $GNUPGHOME/gpg.conf	setf gpg
+endi
 au BufNewFile,BufRead */usr/*/gnupg/options.skel setf gpg
 if !empty($GNUPGHOME)
   au BufNewFile,BufRead $GNUPGHOME/options	setf gpg
