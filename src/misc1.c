@@ -9251,7 +9251,7 @@ find_match(int lookfor, linenr_T ourscope)
     int
 get_expr_indent(void)
 {
-    int		indent;
+    int		indent = -1;
     char_u	*inde_copy;
     pos_T	save_pos;
     colnr_T	save_curswant;
