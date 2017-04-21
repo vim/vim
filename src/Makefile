@@ -1408,6 +1408,11 @@ PROTO_FLAGS = -d -E"$(CPP)" $(NO_ATTR)
 
 SHELL = /bin/sh
 
+# We would normally use "mkdir -p" but it doesn't work properly everywhere.
+# Using AC_PROG_MKDIR_P in configure.ac has a problem with the "auto"
+# directory.  Always use the install-sh script, it's slower but reliable.
+MKDIR_P = $(SHELL) install-sh -c -d
+
 .SUFFIXES:
 .SUFFIXES: .c .o .pro
 

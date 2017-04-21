@@ -17,7 +17,6 @@ AC_PROGRAM_EGREP	dnl required by AC_EGREP_CPP
 AC_PROG_FGREP		dnl finds working grep -F
 AC_ISC_POSIX		dnl required by AC_C_CROSS
 AC_PROG_AWK		dnl required for "make html" in ../doc
-AC_PROG_MKDIR_P		dnl portable "mkdir -p", also works in parallel
 
 dnl Don't strip if we don't have it
 AC_CHECK_PROG(STRIP, strip, strip, :)

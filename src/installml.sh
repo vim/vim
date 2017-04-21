@@ -49,7 +49,7 @@ eviewname=$9
 if test $what = "install" -a \( -f $destdir/$vimname.1 -o -f $destdir/$vimdiffname.1 -o -f $destdir/$eviewname.1 \); then
    if test ! -d $destdir; then
       echo creating $destdir
-      ./mkinstalldirs $destdir
+      /bin/sh install-sh -c -d $destdir
    fi
 
    # ex
