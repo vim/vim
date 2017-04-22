@@ -4779,6 +4779,10 @@ qf_add_entries(
 	    bufnum = 0;
 	}
 
+	/* If the 'valid' field is present it overrules the detected value. */
+	if ((dict_find(d, (char_u *)"valid", -1)) != NULL)
+	    valid = (int)get_dict_number(d, (char_u *)"valid");
+
 	status =  qf_add_entry(qi,
 			       NULL,	    /* dir */
 			       filename,
