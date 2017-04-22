@@ -360,7 +360,7 @@ func Test_motion_c_comment()
   call assert_equal([1, 1], getpos('.')[1:2])
   norm gg0l%
   call assert_equal([4, 3], getpos('.')[1:2])
-  norm %
+  norm h%
   call assert_equal([1, 1], getpos('.')[1:2])
 
   norm G^
