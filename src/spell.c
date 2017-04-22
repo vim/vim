@@ -3123,7 +3123,7 @@ spell_iswordp(
 
     if (has_mbyte)
     {
-	l = MB_BYTE2LEN(*p);
+	l = MB_PTR2LEN(p);
 	s = p;
 	if (l == 1)
 	{
@@ -3808,6 +3808,10 @@ spell_find_suggest(
     vim_strncpy(su->su_badword, su->su_badptr, su->su_badlen);
     (void)spell_casefold(su->su_badptr, su->su_badlen,
 						    su->su_fbadword, MAXWLEN);
+    /* TODO: make this work if the case-folded text is longer than the original
+     * text. Currently an illegal byte causes wrong pointer computations. */
+    su->su_fbadword[su->su_badlen] = NUL;
+
     /* get caps flags for bad word */
     su->su_badflags = badword_captype(su->su_badptr,
 					       su->su_badptr + su->su_badlen);
@@ -4937,12 +4941,7 @@ suggest_trie_walk(
 			{
 			    int	    l;
 
-#ifdef FEAT_MBYTE
-			    if (has_mbyte)
-				l = MB_BYTE2LEN(fword[sp->ts_fidx]);
-			    else
-#endif
-				l = 1;
+			    l = MB_PTR2LEN(fword + sp->ts_fidx);
 			    if (fword_ends)
 			    {
 				/* Copy the skipped character to preword. */
@@ -5109,9 +5108,8 @@ suggest_trie_walk(
 				/* Correct ts_fidx for the byte length of the
 				 * character (we didn't check that before). */
 				sp->ts_fidx = sp->ts_fcharstart
-					    + MB_BYTE2LEN(
-						    fword[sp->ts_fcharstart]);
-
+					    + MB_PTR2LEN(
+						    fword + sp->ts_fcharstart);
 				/* For changing a composing character adjust
 				 * the score from SCORE_SUBST to
 				 * SCORE_SUBCOMP. */
@@ -5232,7 +5230,7 @@ suggest_trie_walk(
 		if (has_mbyte)
 		{
 		    c = mb_ptr2char(fword + sp->ts_fidx);
-		    stack[depth].ts_fidx += MB_BYTE2LEN(fword[sp->ts_fidx]);
+		    stack[depth].ts_fidx += MB_PTR2LEN(fword + sp->ts_fidx);
 		    if (enc_utf8 && utf_iscomposing(c))
 			stack[depth].ts_score -= SCORE_DEL - SCORE_DELCOMP;
 		    else if (c == mb_ptr2char(fword + stack[depth].ts_fidx))
@@ -5456,9 +5454,9 @@ suggest_trie_walk(
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		n = MB_BYTE2LEN(*p);
+		n = MB_PTR2LEN(p);
 		c = mb_ptr2char(p + n);
-		mch_memmove(p + MB_BYTE2LEN(p[n]), p, n);
+		mch_memmove(p + MB_PTR2LEN(p + n), p, n);
 		mb_char2bytes(c, p);
 	    }
 	    else
@@ -5550,11 +5548,11 @@ suggest_trie_walk(
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		n = MB_BYTE2LEN(*p);
+		n = MB_PTR2LEN(p);
 		c2 = mb_ptr2char(p + n);
-		fl = MB_BYTE2LEN(p[n]);
+		fl = MB_PTR2LEN(p + n);
 		c = mb_ptr2char(p + n + fl);
-		tl = MB_BYTE2LEN(p[n + fl]);
+		tl = MB_PTR2LEN(p + n + fl);
 		mch_memmove(p + fl + tl, p, n);
 		mb_char2bytes(c, p);
 		mb_char2bytes(c2, p + tl);
@@ -5627,10 +5625,10 @@ suggest_trie_walk(
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		n = MB_BYTE2LEN(*p);
-		n += MB_BYTE2LEN(p[n]);
+		n = MB_PTR2LEN(p);
+		n += MB_PTR2LEN(p + n);
 		c = mb_ptr2char(p + n);
-		tl = MB_BYTE2LEN(p[n]);
+		tl = MB_PTR2LEN(p + n);
 		mch_memmove(p + tl, p, n);
 		mb_char2bytes(c, p);
 	    }
@@ -5693,9 +5691,9 @@ suggest_trie_walk(
 	    if (has_mbyte)
 	    {
 		c = mb_ptr2char(p);
-		tl = MB_BYTE2LEN(*p);
-		n = MB_BYTE2LEN(p[tl]);
-		n += MB_BYTE2LEN(p[tl + n]);
+		tl = MB_PTR2LEN(p);
+		n = MB_PTR2LEN(p + tl);
+		n += MB_PTR2LEN(p + tl + n);
 		mch_memmove(p, p + tl, n);
 		mb_char2bytes(c, p + n);
 	    }
