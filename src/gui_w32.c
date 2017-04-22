@@ -2627,7 +2627,9 @@ gui_mch_set_curtab(int nr)
     void
 ex_simalt(exarg_T *eap)
 {
-    char_u *keys = eap->arg;
+    char_u	*keys = eap->arg;
+    int		fill_typebuf = FALSE;
+    char_u	key_name[4];
 
     PostMessage(s_hwnd, WM_SYSCOMMAND, (WPARAM)SC_KEYMENU, (LPARAM)0);
     while (*keys)
@@ -2636,6 +2638,18 @@ ex_simalt(exarg_T *eap)
 	    *keys = ' ';	    /* for showing system menu */
 	PostMessage(s_hwnd, WM_CHAR, (WPARAM)*keys, (LPARAM)0);
 	keys++;
+	fill_typebuf = TRUE;
+    }
+    if (fill_typebuf)
+    {
+	/* Put something in the typeahead buffer so that the message will get
+	 * processed. */
+	key_name[0] = K_SPECIAL;
+	key_name[1] = KS_EXTRA;
+	key_name[2] = KE_IGNORE;
+	key_name[3] = NUL;
+	typebuf_was_filled = TRUE;
+	(void)ins_typebuf(key_name, REMAP_NONE, 0, TRUE, FALSE);
     }
 }
 
