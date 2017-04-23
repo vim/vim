@@ -6,7 +6,7 @@
 #  FIRST AUTHOR  DindinX         <David.Odin@bigfoot.com>     2000.
 # SECOND AUTHOR  Adrien Beau     <version.francaise@free.fr>  2002, 2003.
 #  THIRD AUTHOR  David Blanchet  <david.blanchet@free.fr>     2006, 2008.
-# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2016.
+# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2017.
 #
 # Latest translation available at:
 #   http://dominique.pelle.free.fr/vim-fr.php
@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-26 20:54+0200\n"
-"PO-Revision-Date: 2016-08-26 20:34+0200\n"
+"POT-Creation-Date: 2017-01-16 00:30+0100\n"
+"PO-Revision-Date: 2017-01-16 00:51+0100\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -62,6 +62,9 @@ msgstr ""
 
 msgid "E931: Buffer cannot be registered"
 msgstr "E931: Le tampon ne peut pas être enregistré"
+
+msgid "E937: Attempt to delete a buffer that is in use"
+msgstr "E937: Tentative de suppression d'un tampon en cours d'utilisation"
 
 msgid "E515: No buffers were unloaded"
 msgstr "E515: Aucun tampon n'a été déchargé"
@@ -242,7 +245,7 @@ msgid "E898: socket() in channel_open()"
 msgstr "E898: socket() dans channel_open()"
 
 msgid "E903: received command with non-string argument"
-msgstr "E903: commande reçue avec une argument qui n'est pas une chaîne"
+msgstr "E903: commande reçue avec un argument qui n'est pas une chaîne"
 
 msgid "E904: last argument for expr/call must be a number"
 msgstr "E904: le dernier argument de expr/call doit être un nombre"
@@ -2150,6 +2153,9 @@ msgstr "E462: Impossible de préparer le rechargement de \"%s\""
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: Impossible de recharger \"%s\""
 
+msgid "--Deleted--"
+msgstr "--Effacé--"
+
 #, c-format
 msgid "auto-removing autocommand: %s <buffer=%d>"
 msgstr "Autocommandes marquées pour auto-suppression : %s <tampon=%d>"
@@ -2159,11 +2165,11 @@ msgstr "Autocommandes marquées pour auto-suppression : %s <tampon=%d>"
 msgid "E367: No such group: \"%s\""
 msgstr "E367: Aucun groupe \"%s\""
 
+msgid "E936: Cannot delete the current group"
+msgstr "E936: Impossible de supprimer le groupe courant"
+
 msgid "W19: Deleting augroup that is still in use"
 msgstr "W19: Effacement d'augroup toujours en usage"
-
-msgid "--Deleted--"
-msgstr "--Effacé--"
 
 #, c-format
 msgid "E215: Illegal character after *: %s"
@@ -2854,7 +2860,7 @@ msgid "invalid expression"
 msgstr "expression invalide"
 
 msgid "expressions disabled at compile time"
-msgstr "expressions désactivée lors de la compilation"
+msgstr "expressions désactivées lors de la compilation"
 
 msgid "hidden option"
 msgstr "option cachée"
@@ -3040,6 +3046,10 @@ msgstr "E573: Id utilisé pour le serveur invalide : %s"
 
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: Entrée registre de l'instance de Vim mal formatée. Suppression !"
+
+#, c-format
+msgid "E938: Duplicate key in JSON: \"%s\""
+msgstr "E938: Clé dupliquée dans le document JSON : \"%s\""
 
 #, c-format
 msgid "E696: Missing comma in List: %s"
@@ -3268,6 +3278,10 @@ msgstr "-T <term>\tRégler le type du terminal sur <terminal>"
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr ""
 "--no-a-term\t\tAucun avertissement si l'entrée/sortie n'est pas un terminal"
+
+msgid "--ttyfail\t\tExit if input or output is not a terminal"
+msgstr ""
+"--ttyfail\t\tQuitte si l'entrée ou la sortie ne sont pas un terminal"
 
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <vimrc>\tUtiliser <vimrc> au lieu du vimrc habituel"
@@ -4682,9 +4696,6 @@ msgstr "ERREUR d'E/S"
 msgid "Message"
 msgstr "Message"
 
-msgid "'columns' is not 80, cannot execute external commands"
-msgstr "'columns' ne vaut pas 80, impossible d'exécuter des commandes externes"
-
 msgid "E237: Printer selection failed"
 msgstr "E237: La sélection de l'imprimante a échoué"
 
@@ -5625,7 +5636,7 @@ msgstr ""
 #. This should have been checked when generating the .spl
 #. * file.
 msgid "E783: duplicate char in MAP entry"
-msgstr "E783: caractères dupliqué dans l'entrée MAP"
+msgstr "E783: caractère dupliqué dans l'entrée MAP"
 
 msgid "No Syntax items defined for this buffer"
 msgstr "Aucun élément de syntaxe défini pour ce tampon"
@@ -6264,14 +6275,6 @@ msgstr "E133: :return en dehors d'une fonction"
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Parenthèses manquantes : %s"
 
-#. Only MS VC 4.1 and earlier can do Win32s
-msgid ""
-"\n"
-"MS-Windows 16/32-bit GUI version"
-msgstr ""
-"\n"
-"Version graphique MS-Windows 16/32 bits"
-
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI version"
@@ -6561,12 +6564,6 @@ msgstr "tapez  :help register<Entrée>   pour plus d'informations          "
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "menu  Aide->Sponsor/Enregistrement pour plus d'info"
 
-msgid "WARNING: Windows 95/98/ME detected"
-msgstr "ALERTE: Windows 95/98/ME détecté"
-
-msgid "type  :help windows95<Enter>  for info on this"
-msgstr "tapez  :help windows95<Entrée>  pour plus d'information"
-
 msgid "Already only one window"
 msgstr "Il n'y a déjà plus qu'une fenêtre"
 
@@ -6726,6 +6723,10 @@ msgstr "E236: La police \"%s\" n'a pas une chasse (largeur) fixe"
 
 msgid "E473: Internal error"
 msgstr "E473: Erreur interne"
+
+#, c-format
+msgid "E685: Internal error: %s"
+msgstr "E685: Erreur interne : %s"
 
 msgid "Interrupted"
 msgstr "Interrompu"
@@ -7010,10 +7011,6 @@ msgstr "E463: Cette zone est verrouillée et ne peut pas être modifiée"
 msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr ""
 "E744: NetBeans n'autorise pas la modification des fichiers en lecture seule"
-
-#, c-format
-msgid "E685: Internal error: %s"
-msgstr "E685: Erreur interne : %s"
 
 msgid "E363: pattern uses more memory than 'maxmempattern'"
 msgstr "E363: le motif utilise plus de mémoire que 'maxmempattern'"

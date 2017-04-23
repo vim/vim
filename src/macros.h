@@ -8,49 +8,58 @@
 
 /*
  * macros.h: macro definitions for often used code
+ *
+ * Macros should be ALL_CAPS.  An exception is for where a function is
+ * replaced and an argument is not used more than once.
  */
 
 /*
- * pchar(lp, c) - put character 'c' at position 'lp'
+ * PCHAR(lp, c) - put character 'c' at position 'lp'
  */
-#define pchar(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
+#define PCHAR(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
 
 /*
  * Position comparisons
  */
 #ifdef FEAT_VIRTUALEDIT
-# define lt(a, b) (((a).lnum != (b).lnum) \
+# define LT_POS(a, b) (((a).lnum != (b).lnum) \
 		   ? (a).lnum < (b).lnum \
 		   : (a).col != (b).col \
 		       ? (a).col < (b).col \
 		       : (a).coladd < (b).coladd)
-# define ltp(a, b) (((a)->lnum != (b)->lnum) \
+# define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
 		   ? (a)->lnum < (b)->lnum \
 		   : (a)->col != (b)->col \
 		       ? (a)->col < (b)->col \
 		       : (a)->coladd < (b)->coladd)
-# define equalpos(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
-# define clearpos(a) {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;}
+# define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
+# define CLEAR_POS(a) {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;}
 #else
-# define lt(a, b) (((a).lnum != (b).lnum) \
+# define LT_POS(a, b) (((a).lnum != (b).lnum) \
 		   ? ((a).lnum < (b).lnum) : ((a).col < (b).col))
-# define ltp(a, b) (((a)->lnum != (b)->lnum) \
+# define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
 		   ? ((a)->lnum < (b)->lnum) : ((a)->col < (b)->col))
-# define equalpos(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col))
-# define clearpos(a) {(a)->lnum = 0; (a)->col = 0;}
+# define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col))
+# define CLEAR_POS(a) {(a)->lnum = 0; (a)->col = 0;}
 #endif
 
-#define ltoreq(a, b) (lt(a, b) || equalpos(a, b))
+#define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 
 /*
- * lineempty() - return TRUE if the line is empty
+ * VIM_ISWHITE() is used for "^" and the like. It differs from isspace()
+ * because it doesn't include <CR> and <LF> and the like.
  */
-#define lineempty(p) (*ml_get(p) == NUL)
+#define VIM_ISWHITE(x)	((x) == ' ' || (x) == '\t')
 
 /*
- * bufempty() - return TRUE if the current buffer is empty
+ * LINEEMPTY() - return TRUE if the line is empty
  */
-#define bufempty() (curbuf->b_ml.ml_line_count == 1 && *ml_get((linenr_T)1) == NUL)
+#define LINEEMPTY(p) (*ml_get(p) == NUL)
+
+/*
+ * BUFEMPTY() - return TRUE if the current buffer is empty
+ */
+#define BUFEMPTY() (curbuf->b_ml.ml_line_count == 1 && *ml_get((linenr_T)1) == NUL)
 
 /*
  * toupper() and tolower() that use the current locale.
@@ -161,10 +170,10 @@
 #endif
 
 /*
- * vim_isbreak() is used very often if 'linebreak' is set, use a macro to make
- * it work fast.
+ * VIM_ISBREAK() is used very often if 'linebreak' is set, use a macro to make
+ * it work fast.  Only works for single byte characters!
  */
-#define vim_isbreak(c) (breakat_flags[(char_u)(c)])
+#define VIM_ISBREAK(c) ((c) < 256 && breakat_flags[(char_u)(c)])
 
 /*
  * On VMS file names are different and require a translation.
@@ -190,9 +199,7 @@
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else
 #  ifdef STAT_IGNORES_SLASH
-    /* On Solaris stat() accepts "file/" as if it was "file".  Return -1 if
-     * the name ends in "/" and it's not a directory. */
-#   define mch_stat(n, p)	(illegal_slash(n) ? -1 : stat((n), (p)))
+#   define mch_stat(n, p)	vim_stat((n), (p))
 #  else
 #   define mch_stat(n, p)	stat((n), (p))
 #  endif
@@ -258,22 +265,22 @@
 #endif
 
 /*
- * mb_ptr_adv(): advance a pointer to the next character, taking care of
+ * MB_PTR_ADV(): advance a pointer to the next character, taking care of
  * multi-byte characters if needed.
- * mb_ptr_back(): backup a pointer to the previous character, taking care of
+ * MB_PTR_BACK(): backup a pointer to the previous character, taking care of
  * multi-byte characters if needed.
  * MB_COPY_CHAR(f, t): copy one char from "f" to "t" and advance the pointers.
  * PTR2CHAR(): get character from pointer.
  */
 #ifdef FEAT_MBYTE
 /* Get the length of the character p points to */
-# define MB_PTR2LEN(p)		(has_mbyte ? (*mb_ptr2len)(p) : 1)
+# define MB_PTR2LEN(p)	    (has_mbyte ? (*mb_ptr2len)(p) : 1)
 /* Advance multi-byte pointer, skip over composing chars. */
-# define mb_ptr_adv(p)	    p += has_mbyte ? (*mb_ptr2len)(p) : 1
+# define MB_PTR_ADV(p)	    p += has_mbyte ? (*mb_ptr2len)(p) : 1
 /* Advance multi-byte pointer, do not skip over composing chars. */
-# define mb_cptr_adv(p)	    p += enc_utf8 ? utf_ptr2len(p) : has_mbyte ? (*mb_ptr2len)(p) : 1
+# define MB_CPTR_ADV(p)	    p += enc_utf8 ? utf_ptr2len(p) : has_mbyte ? (*mb_ptr2len)(p) : 1
 /* Backup multi-byte pointer. Only use with "p" > "s" ! */
-# define mb_ptr_back(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
+# define MB_PTR_BACK(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
 /* get length of multi-byte char, not including composing chars */
 # define MB_CPTR2LEN(p)	    (enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p))
 
@@ -284,9 +291,9 @@
 #else
 # define MB_PTR2LEN(p)		1
 # define MB_CPTR2LEN(p)		1
-# define mb_ptr_adv(p)		++p
-# define mb_cptr_adv(p)		++p
-# define mb_ptr_back(s, p)	--p
+# define MB_PTR_ADV(p)		++p
+# define MB_CPTR_ADV(p)		++p
+# define MB_PTR_BACK(s, p)	--p
 # define MB_COPY_CHAR(f, t)	*t++ = *f++
 # define MB_CHARLEN(p)		STRLEN(p)
 # define MB_CHAR2LEN(c)		1

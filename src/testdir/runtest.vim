@@ -49,7 +49,7 @@ source setup.vim
 " This also enables use of line continuation.
 set nocp viminfo+=nviminfo
 
-" Use utf-8 or latin1 be default, instead of whatever the system default
+" Use utf-8 or latin1 by default, instead of whatever the system default
 " happens to be.  Individual tests can overrule this at the top of the file.
 if has('multi_byte')
   set encoding=utf-8
@@ -86,8 +86,19 @@ function GetAllocId(name)
   return lnum - top - 1
 endfunc
 
-function RunTheTest(test)
+func RunTheTest(test)
   echo 'Executing ' . a:test
+
+  " Avoid stopping at the "hit enter" prompt
+  set nomore
+
+  " Avoid a three second wait when a message is about to be overwritten by the
+  " mode message.
+  set noshowmode
+
+  " Clear any overrides.
+  call test_override('ALL', 0)
+
   if exists("*SetUp")
     try
       call SetUp()
@@ -131,6 +142,60 @@ function RunTheTest(test)
   set nomodified
 endfunc
 
+func AfterTheTest()
+  if len(v:errors) > 0
+    let s:fail += 1
+    call add(s:errors, 'Found errors in ' . s:test . ':')
+    call extend(s:errors, v:errors)
+    let v:errors = []
+  endif
+endfunc
+
+" This function can be called by a test if it wants to abort testing.
+func FinishTesting()
+  call AfterTheTest()
+
+  " Don't write viminfo on exit.
+  set viminfo=
+
+  if s:fail == 0
+    " Success, create the .res file so that make knows it's done.
+    exe 'split ' . fnamemodify(g:testname, ':r') . '.res'
+    write
+  endif
+
+  if len(s:errors) > 0
+    " Append errors to test.log
+    split test.log
+    call append(line('$'), '')
+    call append(line('$'), 'From ' . g:testname . ':')
+    call append(line('$'), s:errors)
+    write
+  endif
+
+  let message = 'Executed ' . s:done . (s:done > 1 ? ' tests' : ' test')
+  echo message
+  call add(s:messages, message)
+  if s:fail > 0
+    let message = s:fail . ' FAILED:'
+    echo message
+    call add(s:messages, message)
+    call extend(s:messages, s:errors)
+  endif
+
+  " Add SKIPPED messages
+  call extend(s:messages, s:skipped)
+
+  " Append messages to the file "messages"
+  split messages
+  call append(line('$'), '')
+  call append(line('$'), 'From ' . g:testname . ':')
+  call append(line('$'), s:messages)
+  write
+
+  qall!
+endfunc
+
 " Source the test script.  First grab the file name, in case the script
 " navigates away.  g:testname can be used by the tests.
 let g:testname = expand('%')
@@ -139,7 +204,7 @@ let s:fail = 0
 let s:errors = []
 let s:messages = []
 let s:skipped = []
-if expand('%') =~ 'test_viml.vim'
+if expand('%') =~ 'test_vimscript.vim'
   " this test has intentional s:errors, don't use try/catch.
   source %
 else
@@ -153,15 +218,21 @@ endif
 
 " Names of flaky tests.
 let s:flaky = [
-      \ 'Test_reltime()',
-      \ 'Test_nb_basic()',
+      \ 'Test_client_server()',
+      \ 'Test_close_and_exit_cb()',
+      \ 'Test_collapse_buffers()',
       \ 'Test_communicate()',
+      \ 'Test_exit_callback_interval()',
+      \ 'Test_nb_basic()',
+      \ 'Test_oneshot()',
       \ 'Test_pipe_through_sort_all()',
-      \ 'Test_pipe_through_sort_some()'
+      \ 'Test_pipe_through_sort_some()',
+      \ 'Test_quoteplus()',
+      \ 'Test_quotestar()',
+      \ 'Test_reltime()',
       \ ]
 
 " Locate Test_ functions and execute them.
-set nomore
 redir @q
 silent function /^Test_
 redir END
@@ -177,57 +248,25 @@ for s:test in sort(s:tests)
   call RunTheTest(s:test)
 
   if len(v:errors) > 0 && index(s:flaky, s:test) >= 0
+    call add(s:messages, 'Found errors in ' . s:test . ':')
+    call extend(s:messages, v:errors)
     call add(s:messages, 'Flaky test failed, running it again')
+    let first_run = v:errors
+
     let v:errors = []
     call RunTheTest(s:test)
+    if len(v:errors) > 0
+      let second_run = v:errors
+      let v:errors = ['First run:']
+      call extend(v:errors, first_run)
+      call add(v:errors, 'Second run:')
+      call extend(v:errors, second_run)
+    endif
   endif
 
-  if len(v:errors) > 0
-    let s:fail += 1
-    call add(s:errors, 'Found errors in ' . s:test . ':')
-    call extend(s:errors, v:errors)
-    let v:errors = []
-  endif
+  call AfterTheTest()
 endfor
 
-" Don't write viminfo on exit.
-set viminfo=
-
-if s:fail == 0
-  " Success, create the .res file so that make knows it's done.
-  exe 'split ' . fnamemodify(g:testname, ':r') . '.res'
-  write
-endif
-
-if len(s:errors) > 0
-  " Append errors to test.log
-  split test.log
-  call append(line('$'), '')
-  call append(line('$'), 'From ' . g:testname . ':')
-  call append(line('$'), s:errors)
-  write
-endif
-
-let message = 'Executed ' . s:done . (s:done > 1 ? ' tests' : ' test')
-echo message
-call add(s:messages, message)
-if s:fail > 0
-  let message = s:fail . ' FAILED:'
-  echo message
-  call add(s:messages, message)
-  call extend(s:messages, s:errors)
-endif
-
-" Add SKIPPED messages
-call extend(s:messages, s:skipped)
-
-" Append messages to the file "messages"
-split messages
-call append(line('$'), '')
-call append(line('$'), 'From ' . g:testname . ':')
-call append(line('$'), s:messages)
-write
-
-qall!
+call FinishTesting()
 
 " vim: shiftwidth=2 sts=2 expandtab

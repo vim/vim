@@ -1716,6 +1716,8 @@ ex_luado(exarg_T *eap)
     const char *s = (const char *) eap->arg;
     luaL_Buffer b;
     size_t len;
+    buf_T *was_curbuf = curbuf;
+
     if (lua_init() == FAIL) return;
     if (u_save(eap->line1 - 1, eap->line2 + 1) == FAIL)
     {
@@ -1739,6 +1741,10 @@ ex_luado(exarg_T *eap)
     lua_replace(L, -2); /* function -> body */
     for (l = eap->line1; l <= eap->line2; l++)
     {
+	/* Check the line number, the command my have deleted lines. */
+	if (l > curbuf->b_ml.ml_line_count)
+	    break;
+
 	lua_pushvalue(L, -1); /* function */
 	luaV_pushline(L, curbuf, l); /* current line as arg */
 	lua_pushinteger(L, l); /* current line number as arg */
@@ -1747,6 +1753,9 @@ ex_luado(exarg_T *eap)
 	    luaV_emsg(L);
 	    break;
 	}
+	/* Catch the command switching to another buffer. */
+	if (curbuf != was_curbuf)
+	    break;
 	if (lua_isstring(L, -1)) /* update line? */
 	{
 #ifdef HAVE_SANDBOX

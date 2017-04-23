@@ -84,7 +84,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    result = eval_to_string(bexpr, NULL, TRUE);
 
 	    /* Remove one trailing newline, it is added when the result was a
-	     * list and it's hardly every useful.  If the user really wants a
+	     * list and it's hardly ever useful.  If the user really wants a
 	     * trailing newline he can add two and one remains. */
 	    if (result != NULL)
 	    {
@@ -366,7 +366,7 @@ get_beval_info(
 
 		    if (VIsual_active)
 		    {
-			if (lt(VIsual, curwin->w_cursor))
+			if (LT_POS(VIsual, curwin->w_cursor))
 			{
 			    spos = &VIsual;
 			    epos = &curwin->w_cursor;
@@ -1054,7 +1054,7 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 #endif
 
 	/* Look up the RGB values of the SpecialKey foreground color. */
-	aep = syn_gui_attr2entry(hl_attr(HLF_8));
+	aep = syn_gui_attr2entry(HL_ATTR(HLF_8));
 	pixel = (aep != NULL) ? aep->ae_u.gui.fg_color : INVALCOLOR;
 	if (pixel != INVALCOLOR)
 # if GTK_CHECK_VERSION(3,0,0)

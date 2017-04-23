@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.0.  Last change: 2016 Sep 09
+*filetype.txt*  For Vim version 8.0.  Last change: 2017 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -353,12 +353,12 @@ define yourself.  There are a few ways to avoid this:
    You need to define your own mapping before the plugin is loaded (before
    editing a file of that type).  The plugin will then skip installing the
    default mapping.
-
+						*no_mail_maps*
 3. Disable defining mappings for a specific filetype by setting a variable,
    which contains the name of the filetype.  For the "mail" filetype this
    would be: >
 	:let no_mail_maps = 1
-
+<						*no_plugin_maps*
 4. Disable defining mappings for all filetypes by setting a variable: >
 	:let no_plugin_maps = 1
 <
@@ -573,6 +573,8 @@ Man {number} {name}
 
 Global mapping:
 <Leader>K	Displays the manual page for the word under the cursor.
+<Plug>ManPreGetPage  idem, allows for using a mapping: >
+			nmap <F1> <Plug>ManPreGetPage<CR>
 
 Local mappings:
 CTRL-]		Jump to the manual page for the word under the cursor.
@@ -659,6 +661,12 @@ RPM SPEC						*ft-spec-plugin*
 
 Since the text for this plugin is rather long it has been put in a separate
 file: |pi_spec.txt|.
+
+
+RUST							*ft-rust*
+
+Since the text for this plugin is rather long it has been put in a separate
+file: |ft_rust.txt|.
 
 
 SQL							*ft-sql*

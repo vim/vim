@@ -139,6 +139,23 @@ diff_buf_add(buf_T *buf)
 }
 
 /*
+ * Remove all buffers to make diffs for.
+ */
+    static void
+diff_buf_clear(void)
+{
+    int		i;
+
+    for (i = 0; i < DB_COUNT; ++i)
+	if (curtab->tp_diffbuf[i] != NULL)
+	{
+	    curtab->tp_diffbuf[i] = NULL;
+	    curtab->tp_diff_invalid = TRUE;
+	    diff_redraw(TRUE);
+	}
+}
+
+/*
  * Find buffer "buf" in the list of diff buffers for the current tab page.
  * Return its index or DB_COUNT if not found.
  */
@@ -889,6 +906,7 @@ ex_diffpatch(exarg_T *eap)
     int		browse_flag = cmdmod.browse;
 #endif
     stat_T	st;
+    char_u	*esc_name = NULL;
 
 #ifdef FEAT_BROWSE
     if (cmdmod.browse)
@@ -918,11 +936,14 @@ ex_diffpatch(exarg_T *eap)
     /* Get the absolute path of the patchfile, changing directory below. */
     fullname = FullName_save(eap->arg, FALSE);
 #endif
-    buflen = STRLEN(tmp_orig) + (
+    esc_name = vim_strsave_shellescape(
 # ifdef UNIX
-		    fullname != NULL ? STRLEN(fullname) :
+		    fullname != NULL ? fullname :
 # endif
-		    STRLEN(eap->arg)) + STRLEN(tmp_new) + 16;
+		    eap->arg, TRUE, TRUE);
+    if (esc_name == NULL)
+	goto theend;
+    buflen = STRLEN(tmp_orig) + STRLEN(esc_name) + STRLEN(tmp_new) + 16;
     buf = alloc((unsigned)buflen);
     if (buf == NULL)
 	goto theend;
@@ -960,12 +981,8 @@ ex_diffpatch(exarg_T *eap)
     {
 	/* Build the patch command and execute it.  Ignore errors.  Switch to
 	 * cooked mode to allow the user to respond to prompts. */
-	vim_snprintf((char *)buf, buflen, "patch -o %s %s < \"%s\"",
-		tmp_new, tmp_orig,
-# ifdef UNIX
-		fullname != NULL ? fullname :
-# endif
-		eap->arg);
+	vim_snprintf((char *)buf, buflen, "patch -o %s %s < %s",
+						  tmp_new, tmp_orig, esc_name);
 #ifdef FEAT_AUTOCMD
 	block_autocmds();	/* Avoid ShellCmdPost stuff */
 #endif
@@ -1056,6 +1073,7 @@ theend:
 #ifdef UNIX
     vim_free(fullname);
 #endif
+    vim_free(esc_name);
 #ifdef FEAT_BROWSE
     vim_free(browseFile);
     cmdmod.browse = browse_flag;
@@ -1256,6 +1274,10 @@ ex_diffoff(exarg_T *eap)
 	diffwin |= wp->w_p_diff;
 #endif
     }
+
+    /* Also remove hidden buffers from the list. */
+    if (eap->forceit)
+	diff_buf_clear();
 
 #ifdef FEAT_SCROLLBIND
     /* Remove "hor" from from 'scrollopt' if there are no diff windows left. */
@@ -1645,7 +1667,7 @@ diff_cmp(char_u *s1, char_u *s2)
     p2 = s2;
     while (*p1 != NUL && *p2 != NUL)
     {
-	if (vim_iswhite(*p1) && vim_iswhite(*p2))
+	if (VIM_ISWHITE(*p1) && VIM_ISWHITE(*p2))
 	{
 	    p1 = skipwhite(p1);
 	    p2 = skipwhite(p2);
@@ -1972,8 +1994,8 @@ diff_find_change(
 	    while (line_org[si_org] != NUL)
 	    {
 		if ((diff_flags & DIFF_IWHITE)
-			&& vim_iswhite(line_org[si_org])
-			&& vim_iswhite(line_new[si_new]))
+			&& VIM_ISWHITE(line_org[si_org])
+			&& VIM_ISWHITE(line_new[si_new]))
 		{
 		    si_org = (int)(skipwhite(line_org + si_org) - line_org);
 		    si_new = (int)(skipwhite(line_new + si_new) - line_new);
@@ -2007,14 +2029,14 @@ diff_find_change(
 						&& ei_org >= 0 && ei_new >= 0)
 		{
 		    if ((diff_flags & DIFF_IWHITE)
-			    && vim_iswhite(line_org[ei_org])
-			    && vim_iswhite(line_new[ei_new]))
+			    && VIM_ISWHITE(line_org[ei_org])
+			    && VIM_ISWHITE(line_new[ei_new]))
 		    {
 			while (ei_org >= *startp
-					     && vim_iswhite(line_org[ei_org]))
+					     && VIM_ISWHITE(line_org[ei_org]))
 			    --ei_org;
 			while (ei_new >= si_new
-					     && vim_iswhite(line_new[ei_new]))
+					     && VIM_ISWHITE(line_new[ei_new]))
 			    --ei_new;
 		    }
 		    else
@@ -2180,7 +2202,7 @@ ex_diffgetput(exarg_T *eap)
     {
 	/* Buffer number or pattern given.  Ignore trailing white space. */
 	p = eap->arg + STRLEN(eap->arg);
-	while (p > eap->arg && vim_iswhite(p[-1]))
+	while (p > eap->arg && VIM_ISWHITE(p[-1]))
 	    --p;
 	for (i = 0; vim_isdigit(eap->arg[i]) && eap->arg + i < p; ++i)
 	    ;
@@ -2311,7 +2333,7 @@ ex_diffgetput(exarg_T *eap)
 		    end_skip = 0;
 	    }
 
-	    buf_empty = bufempty();
+	    buf_empty = BUFEMPTY();
 	    added = 0;
 	    for (i = 0; i < count; ++i)
 	    {
@@ -2595,7 +2617,6 @@ diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1)
     return lnum;
 }
 
-#if defined(FEAT_FOLDING) || defined(PROTO)
 /*
  * For line "lnum" in the current window find the equivalent lnum in window
  * "wp", compensating for inserted/deleted lines.
@@ -2635,6 +2656,5 @@ diff_lnum_win(linenr_T lnum, win_T *wp)
 	n = dp->df_lnum[i] + dp->df_count[i];
     return n;
 }
-#endif
 
 #endif	/* FEAT_DIFF */

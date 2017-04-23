@@ -22,7 +22,7 @@ func Test_mksession()
     \   'aä Ä  two multiByte characters',
     \   'Aäöü  three mulTibyte characters'
     \ ])
-  let tmpfile = tempname()
+  let tmpfile = 'Xtemp'
   exec 'w! ' . tmpfile
   /^start:
   set wrap
@@ -63,8 +63,8 @@ func Test_mksession()
   norm! j016|3zl
   split
   call wincol()
-  mksession! test_mks.out
-  let li = filter(readfile('test_mks.out'), 'v:val =~# "\\(^ *normal! 0\\|^ *exe ''normal!\\)"')
+  mksession! Xtest_mks.out
+  let li = filter(readfile('Xtest_mks.out'), 'v:val =~# "\\(^ *normal! 0\\|^ *exe ''normal!\\)"')
   let expected = [
     \   'normal! 016|',
     \   'normal! 016|',
@@ -96,9 +96,30 @@ func Test_mksession()
   call assert_equal(expected, li)
   tabclose!
 
-  call delete('test_mks.out')
+  call delete('Xtest_mks.out')
   call delete(tmpfile)
   let &wrap = wrap_save
 endfunc
+
+func Test_mksession_winheight()
+  new
+  set winheight=10 winminheight=2
+  mksession! Xtest_mks.out
+  source Xtest_mks.out
+
+  call delete('Xtest_mks.out')
+endfunc
+
+func Test_mksession_arglist()
+  argdel *
+  next file1 file2 file3 file4
+  mksession! Xtest_mks.out
+  source Xtest_mks.out
+  call assert_equal(['file1', 'file2', 'file3', 'file4'], argv())
+
+  call delete('Xtest_mks.out')
+  argdel *
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

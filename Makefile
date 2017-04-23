@@ -120,8 +120,9 @@ MINOR = 0
 #
 # MS-Windows:
 # - Run make on Unix to update the ".mo" files.
-# - Get libintl-8.dll and libiconv-2.dll. E.g. from
+# - Get libintl-8.dll, libiconv-2.dll and libgcc_s_sjlj-1.dll. E.g. from
 #   https://mlocati.github.io/gettext-iconv-windows/ .
+#   Use the "shared-32.zip file and extract the archive to get the files.
 #   Put them in the top directory, "make dosrt" uses them.
 # - > make dossrc
 #   > make dosrt
@@ -468,6 +469,7 @@ dosrt_files: dist prepare no_title.vim
 	    done
 	cp libintl-8.dll dist/vim/$(VIMRTDIR)/
 	cp libiconv-2.dll dist/vim/$(VIMRTDIR)/
+	cp libgcc_s_sjlj-1.dll dist/vim/$(VIMRTDIR)/
 
 
 # Used before uploading.  Don't delete the AAPDIR/sign files!

@@ -10,7 +10,7 @@
 /*
  * winclip.c
  *
- * Routines common to both Win16 and Win32 for clipboard handling.
+ * Routines for Win32 clipboard handling.
  * Also used by Cygwin, using os_unix.c.
  */
 
@@ -214,9 +214,8 @@ typedef struct
 /*
  * Make vim the owner of the current selection.  Return OK upon success.
  */
-/*ARGSUSED*/
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(VimClipboard *cbd UNUSED)
 {
     /*
      * Never actually own the clipboard.  If another application sets the
@@ -228,9 +227,8 @@ clip_mch_own_selection(VimClipboard *cbd)
 /*
  * Make vim NOT the owner of the current selection.
  */
-/*ARGSUSED*/
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(VimClipboard *cbd UNUSED)
 {
     /* Nothing needs to be done here */
 }

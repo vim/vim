@@ -1,13 +1,7 @@
 " Tests for cursor().
 
 func Test_wrong_arguments()
-  try
-    call cursor(1. 3)
-    " not reached
-    call assert_false(1)
-  catch
-    call assert_exception('E474:')
-  endtry
+  call assert_fails('call cursor(1. 3)', 'E474:')
 endfunc
 
 func Test_move_cursor()
@@ -44,9 +38,9 @@ func Test_curswant_with_autocommand()
   new
   call setline(1, ['func()', '{', '}', '----'])
   autocmd! CursorMovedI * call s:Highlight_Matching_Pair()
-  call test_disable_char_avail(1)
+  call test_override("char_avail", 1)
   exe "normal! 3Ga\<Down>X\<Esc>"
-  call test_disable_char_avail(0)
+  call test_override("char_avail", 0)
   call assert_equal('-X---', getline(4))
   autocmd! CursorMovedI *
   quit!

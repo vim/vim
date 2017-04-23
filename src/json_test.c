@@ -107,6 +107,12 @@ test_decode_find_end(void)
     reader.js_buf = (char_u *)"  {   ";
     assert(json_find_end(&reader, 0) == MAYBE);
 
+    /* JS object with white space */
+    reader.js_buf = (char_u *)"  {  a  :  123  }  ";
+    assert(json_find_end(&reader, JSON_JS) == OK);
+    reader.js_buf = (char_u *)"  {  a  :   ";
+    assert(json_find_end(&reader, JSON_JS) == MAYBE);
+
     /* array without white space */
     reader.js_buf = (char_u *)"[\"a\",123]";
     assert(json_find_end(&reader, 0) == OK);
@@ -181,7 +187,7 @@ test_fill_called_on_string(void)
     reader.js_buf = (char_u *)" \"foo";
     reader.js_end = reader.js_buf + STRLEN(reader.js_buf);
     reader.js_cookie =        " \"foobar\"  ";
-    assert(json_decode_string(&reader, NULL) == OK);
+    assert(json_decode_string(&reader, NULL, '"') == OK);
 }
 #endif
 

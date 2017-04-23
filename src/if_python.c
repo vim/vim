@@ -1114,6 +1114,9 @@ ex_python(exarg_T *eap)
 {
     char_u *script;
 
+    if (p_pyx == 0)
+	p_pyx = 2;
+
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
@@ -1136,6 +1139,9 @@ ex_pyfile(exarg_T *eap)
     static char buffer[BUFFER_SIZE];
     const char *file = (char *)eap->arg;
     char *p;
+
+    if (p_pyx == 0)
+	p_pyx = 2;
 
     /* Have to do it like this. PyRun_SimpleFile requires you to pass a
      * stdio file pointer, but Vim and the Python DLL are compiled with
@@ -1175,6 +1181,9 @@ ex_pyfile(exarg_T *eap)
     void
 ex_pydo(exarg_T *eap)
 {
+    if (p_pyx == 0)
+	p_pyx = 2;
+
     DoPyCommand((char *)eap->arg,
 	    (rangeinitializer) init_range_cmd,
 	    (runner)run_do,

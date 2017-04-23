@@ -569,7 +569,7 @@ prt_header(
 prt_message(char_u *s)
 {
     screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
-    screen_puts(s, (int)Rows - 1, 0, hl_attr(HLF_R));
+    screen_puts(s, (int)Rows - 1, 0, HL_ATTR(HLF_R));
     out_flush();
 }
 

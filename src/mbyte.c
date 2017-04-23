@@ -886,7 +886,7 @@ mb_get_class_buf(char_u *p, buf_T *buf)
 {
     if (MB_BYTE2LEN(p[0]) == 1)
     {
-	if (p[0] == NUL || vim_iswhite(p[0]))
+	if (p[0] == NUL || VIM_ISWHITE(p[0]))
 	    return 0;
 	if (vim_iswordc_buf(p[0], buf))
 	    return 2;
@@ -895,7 +895,7 @@ mb_get_class_buf(char_u *p, buf_T *buf)
     if (enc_dbcs != 0 && p[0] != NUL && p[1] != NUL)
 	return dbcs_class(p[0], p[1]);
     if (enc_utf8)
-	return utf_class(utf_ptr2char(p));
+	return utf_class_buf(utf_ptr2char(p), buf);
     return 0;
 }
 
@@ -2694,6 +2694,12 @@ static struct interval emoji_all[] =
     int
 utf_class(int c)
 {
+    return utf_class_buf(c, curbuf);
+}
+
+    int
+utf_class_buf(int c, buf_T *buf)
+{
     /* sorted list of non-overlapping intervals */
     static struct clinterval
     {
@@ -2780,7 +2786,7 @@ utf_class(int c)
     {
 	if (c == ' ' || c == '\t' || c == NUL || c == 0xa0)
 	    return 0;	    /* blank */
-	if (vim_iswordc(c))
+	if (vim_iswordc_buf(c, buf))
 	    return 2;	    /* word character */
 	return 1;	    /* punctuation */
     }
@@ -4041,7 +4047,7 @@ mb_prevptr(
     char_u *p)
 {
     if (p > line)
-	mb_ptr_back(line, p);
+	MB_PTR_BACK(line, p);
     return p;
 }
 
@@ -4584,47 +4590,6 @@ static HINSTANCE hMsvcrtDLL = 0;
 #   endif
 
 /*
- * Get the address of 'funcname' which is imported by 'hInst' DLL.
- */
-    static void *
-get_iconv_import_func(HINSTANCE hInst, const char *funcname)
-{
-    PBYTE			pImage = (PBYTE)hInst;
-    PIMAGE_DOS_HEADER		pDOS = (PIMAGE_DOS_HEADER)hInst;
-    PIMAGE_NT_HEADERS		pPE;
-    PIMAGE_IMPORT_DESCRIPTOR	pImpDesc;
-    PIMAGE_THUNK_DATA		pIAT;	    /* Import Address Table */
-    PIMAGE_THUNK_DATA		pINT;	    /* Import Name Table */
-    PIMAGE_IMPORT_BY_NAME	pImpName;
-
-    if (pDOS->e_magic != IMAGE_DOS_SIGNATURE)
-	return NULL;
-    pPE = (PIMAGE_NT_HEADERS)(pImage + pDOS->e_lfanew);
-    if (pPE->Signature != IMAGE_NT_SIGNATURE)
-	return NULL;
-    pImpDesc = (PIMAGE_IMPORT_DESCRIPTOR)(pImage
-	    + pPE->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
-							    .VirtualAddress);
-    for (; pImpDesc->FirstThunk; ++pImpDesc)
-    {
-	if (!pImpDesc->OriginalFirstThunk)
-	    continue;
-	pIAT = (PIMAGE_THUNK_DATA)(pImage + pImpDesc->FirstThunk);
-	pINT = (PIMAGE_THUNK_DATA)(pImage + pImpDesc->OriginalFirstThunk);
-	for (; pIAT->u1.Function; ++pIAT, ++pINT)
-	{
-	    if (IMAGE_SNAP_BY_ORDINAL(pINT->u1.Ordinal))
-		continue;
-	    pImpName = (PIMAGE_IMPORT_BY_NAME)(pImage
-					+ (UINT_PTR)(pINT->u1.AddressOfData));
-	    if (strcmp((char *)pImpName->Name, funcname) == 0)
-		return (void *)pIAT->u1.Function;
-	}
-    }
-    return NULL;
-}
-
-/*
  * Try opening the iconv.dll and return TRUE if iconv() can be used.
  */
     int
@@ -4671,7 +4636,7 @@ iconv_enabled(int verbose)
     iconv_open	= (void *)GetProcAddress(hIconvDLL, "libiconv_open");
     iconv_close	= (void *)GetProcAddress(hIconvDLL, "libiconv_close");
     iconvctl	= (void *)GetProcAddress(hIconvDLL, "libiconvctl");
-    iconv_errno	= get_iconv_import_func(hIconvDLL, "_errno");
+    iconv_errno	= get_dll_import_func(hIconvDLL, "_errno");
     if (iconv_errno == NULL)
 	iconv_errno = (void *)GetProcAddress(hMsvcrtDLL, "_errno");
     if (iconv == NULL || iconv_open == NULL || iconv_close == NULL
@@ -5743,7 +5708,6 @@ static int xim_real_init(Window x11_window, Display *x11_display);
 
 
 #ifdef USE_X11R6_XIM
-static void xim_instantiate_cb(Display *display, XPointer client_data, XPointer	call_data);
 static void xim_destroy_cb(XIM im, XPointer client_data, XPointer call_data);
 
     static void

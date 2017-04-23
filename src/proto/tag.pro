@@ -8,5 +8,5 @@ int get_tagfname(tagname_T *tnp, int first, char_u *buf);
 void tagname_free(tagname_T *tnp);
 void simplify_filename(char_u *filename);
 int expand_tags(int tagnames, char_u *pat, int *num_file, char_u ***file);
-int get_tags(list_T *list, char_u *pat);
+int get_tags(list_T *list, char_u *pat, char_u *buf_fname);
 /* vim: set ft=c : */

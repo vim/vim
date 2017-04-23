@@ -12,14 +12,14 @@
  * Not used for GTK.
  */
 
+#include "vim.h"
+
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 #include <X11/cursorfont.h>
-
-#include "vim.h"
 
 /*
  * For Workshop XpmP.h is preferred, because it makes the signs drawn with a
@@ -1992,14 +1992,40 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the name of font "font" in allocated memory.
- * Don't know how to get the actual name, thus use the provided name.
  */
     char_u *
-gui_mch_get_fontname(GuiFont font UNUSED, char_u *name)
+gui_mch_get_fontname(GuiFont font, char_u *name)
 {
-    if (name == NULL)
-	return NULL;
-    return vim_strsave(name);
+    char_u *ret = NULL;
+
+    if (name != NULL && font == NULL)
+    {
+	/* In this case, there's no way other than doing this. */
+	ret = vim_strsave(name);
+    }
+    else if (font != NULL)
+    {
+	/* In this case, try to retrieve the XLFD corresponding to 'font'->fid;
+	 * if failed, use 'name' unless it's NULL. */
+	unsigned long value = 0L;
+
+	if (XGetFontProperty(font, XA_FONT, &value))
+	{
+	    char *xa_font_name = NULL;
+
+	    xa_font_name = XGetAtomName(gui.dpy, value);
+	    if (xa_font_name != NULL)
+	    {
+		ret = vim_strsave((char_u *)xa_font_name);
+		XFree(xa_font_name);
+	    }
+	    else if (name != NULL)
+		ret = vim_strsave(name);
+	}
+	else if (name != NULL)
+	    ret = vim_strsave(name);
+    }
+    return ret;
 }
 #endif
 

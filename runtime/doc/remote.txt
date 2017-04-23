@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 8.0.  Last change: 2015 Mar 01
+*remote.txt*    For Vim version 8.0.  Last change: 2017 Mar 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -149,6 +149,7 @@ the description in |eval.txt| or use CTRL-] on the function name to jump to
 the full explanation.
 
     synopsis				     explanation ~
+    remote_startserver( name)		     run a server
     remote_expr( server, string, idvar)      send expression
     remote_send( server, string, idvar)      send key sequence
     serverlist()			     get a list of available servers

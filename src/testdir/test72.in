@@ -4,6 +4,7 @@ undo-able pieces.  Do that by setting 'undolevels'.
 
 STARTTEST
 :so small.vim
+:set belloff=all
 :"
 :" Test 'undofile': first a simple one-line change.
 :set nocompatible viminfo+=nviminfo visualbell
@@ -25,7 +26,6 @@ u:.w! test.out
 :set undofile
 :bwipe!
 :e Xtestfile
-:" TODO: this beeps
 u:.w >>test.out
 :"
 :" Test 'undofile', add 10 lines, delete 6 lines, undo 3

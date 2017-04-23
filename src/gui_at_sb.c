@@ -60,11 +60,12 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* created by weissman, Mon Jul  7 13:20:03 1986 */
 /* converted by swick, Thu Aug 27 1987 */
 
+#include "vim.h"
+
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
 #include <X11/Xaw/XawInit.h>
-#include "vim.h"
 #include "gui_at_sb.h"
 
 #include <X11/Xmu/Drawing.h>

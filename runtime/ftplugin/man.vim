@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2016 Jun 20
+" Last Change: 	2017 Jan 18
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -47,6 +47,7 @@ endif
 if exists(":Man") != 2
   com -nargs=+ Man call s:GetPage(<f-args>)
   nmap <Leader>K :call <SID>PreGetPage(0)<CR>
+  nmap <Plug>ManPreGetPage :call <SID>PreGetPage(0)<CR>
 endif
 
 " Define functions only once.
@@ -96,7 +97,7 @@ func <SID>GetCmdArg(sect, page)
 endfunc
 
 func <SID>FindPage(sect, page)
-  let where = system("/usr/bin/man ".s:man_find_arg.' '.s:GetCmdArg(a:sect, a:page))
+  let where = system("man ".s:man_find_arg.' '.s:GetCmdArg(a:sect, a:page))
   if where !~ "^/"
     if matchstr(where, " [^ ]*$") !~ "^ /"
       return 0
@@ -175,7 +176,7 @@ func <SID>GetPage(...)
     let $MANWIDTH = winwidth(0)
     let unsetwidth = 1
   endif
-  silent exec "r!/usr/bin/man ".s:GetCmdArg(sect, page)." | col -b"
+  silent exec "r !man ".s:GetCmdArg(sect, page)." | col -b"
   if unsetwidth
     let $MANWIDTH = ''
   endif

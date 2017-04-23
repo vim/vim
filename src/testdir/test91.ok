@@ -1,20 +1,6 @@
 start:
 'abcd'
 'abcd'
-'1234'
-'1234'
-{'var_num': '1234'}
-{'var_num': '1234'}
-'5678'
-{}
-{}
-''
-'5678'
-0
-0
-dos
-1
-iso-8859-2
 'Dance'
 'Dance'
 {'var_str': 'Dance'}

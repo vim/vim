@@ -1,5 +1,7 @@
 /* os_win32.c */
 HINSTANCE vimLoadLib(char *name);
+HINSTANCE find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname);
+void *get_dll_import_func(HINSTANCE hInst, const char *funcname);
 int dyn_libintl_init(void);
 void dyn_libintl_end(void);
 void PlatformId(void);
@@ -63,4 +65,5 @@ void free_cmd_argsW(void);
 void used_file_arg(char *name, int literal, int full_path, int diff_mode);
 void set_alist_count(void);
 void fix_arg_enc(void);
+int mch_setenv(char *var, char *value, int x);
 /* vim: set ft=c : */

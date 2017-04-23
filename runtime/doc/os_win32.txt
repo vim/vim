@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 8.0.  Last change: 2016 Oct 12
+*os_win32.txt*  For Vim version 8.0.  Last change: 2017 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -212,10 +212,19 @@ A. You can't!  This is a limitation of the NT console.  NT 5.0 is reported to
    be able to set the blink rate for all console windows at the same time.
 
 							*:!start*
-Q. How can I run an external command or program asynchronously?
-A. When using :! to run an external command, you can run it with "start": >
-	:!start winfile.exe<CR>
-<  Using "start" stops Vim switching to another screen, opening a new console,
+Q. How can I asynchronously run an external command or program, or open a
+   document or URL with its default program?
+A. When using :! to run an external command, you can run it with "start". For
+   example, to run notepad: >
+	:!start notepad
+<   To open "image.jpg" with the default image viewer: >
+        :!start image.jpg
+<   To open the folder of the current file in Windows Explorer: >
+        :!start %:h
+<   To open the Vim home page with the default browser: >
+        :!start http://www.vim.org/
+<
+   Using "start" stops Vim switching to another screen, opening a new console,
    or waiting for the program to complete; it indicates that you are running a
    program that does not affect the files you are editing.  Programs begun
    with :!start do not get passed Vim's open file handles, which means they do

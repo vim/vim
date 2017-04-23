@@ -16,6 +16,7 @@ void clip_update_selection(VimClipboard *clip);
 void clip_own_selection(VimClipboard *cbd);
 void clip_lose_selection(VimClipboard *cbd);
 void start_global_changes(void);
+int is_clipboard_needs_update(void);
 void end_global_changes(void);
 void clip_auto_select(void);
 int clip_isautosel_star(void);

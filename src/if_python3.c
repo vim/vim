@@ -1004,6 +1004,9 @@ ex_py3(exarg_T *eap)
 {
     char_u *script;
 
+    if (p_pyx == 0)
+	p_pyx = 3;
+
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
@@ -1027,6 +1030,9 @@ ex_py3file(exarg_T *eap)
     const char *file;
     char *p;
     int i;
+
+    if (p_pyx == 0)
+	p_pyx = 3;
 
     /* Have to do it like this. PyRun_SimpleFile requires you to pass a
      * stdio file pointer, but Vim and the Python DLL are compiled with
@@ -1080,6 +1086,9 @@ ex_py3file(exarg_T *eap)
     void
 ex_py3do(exarg_T *eap)
 {
+    if (p_pyx == 0)
+	p_pyx = 3;
+
     DoPyCommand((char *)eap->arg,
 	    (rangeinitializer)init_range_cmd,
 	    (runner)run_do,

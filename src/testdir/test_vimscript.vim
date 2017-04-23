@@ -1226,7 +1226,7 @@ func Test_num64()
 
     call assert_equal( 9223372036854775807,  1 / 0)
     call assert_equal(-9223372036854775807, -1 / 0)
-    call assert_equal(-9223372036854775808,  0 / 0)
+    call assert_equal(-9223372036854775807 - 1,  0 / 0)
 
     call assert_equal( 0x7FFFffffFFFFffff, float2nr( 1.0e150))
     call assert_equal(-0x7FFFffffFFFFffff, float2nr(-1.0e150))
@@ -1236,6 +1236,88 @@ func Test_num64()
     call assert_equal(0x100000001, max(rng))
     call assert_equal(0xFFFFffff, min(rng))
     call assert_equal(rng, sort(range(0x100000001, 0xFFFFffff, -1), 'N'))
+endfunc
+
+"-------------------------------------------------------------------------------
+" Test 95:  lines of :append, :change, :insert			    {{{1
+"-------------------------------------------------------------------------------
+
+function! DefineFunction(name, body)
+    let func = join(['function! ' . a:name . '()'] + a:body + ['endfunction'], "\n")
+    exec func
+endfunction
+
+func Test_script_lines()
+    " :append
+    try
+        call DefineFunction('T_Append', [
+                    \ 'append',
+                    \ 'py <<EOS',
+                    \ '.',
+                    \ ])
+    catch
+        call assert_report("Can't define function")
+    endtry
+    try
+        call DefineFunction('T_Append', [
+                    \ 'append',
+                    \ 'abc',
+                    \ ])
+        call assert_report("Shouldn't be able to define function")
+    catch
+        call assert_exception('Vim(function):E126: Missing :endfunction')
+    endtry
+
+    " :change
+    try
+        call DefineFunction('T_Change', [
+                    \ 'change',
+                    \ 'py <<EOS',
+                    \ '.',
+                    \ ])
+    catch
+        call assert_report("Can't define function")
+    endtry
+    try
+        call DefineFunction('T_Change', [
+                    \ 'change',
+                    \ 'abc',
+                    \ ])
+        call assert_report("Shouldn't be able to define function")
+    catch
+        call assert_exception('Vim(function):E126: Missing :endfunction')
+    endtry
+
+    " :insert
+    try
+        call DefineFunction('T_Insert', [
+                    \ 'insert',
+                    \ 'py <<EOS',
+                    \ '.',
+                    \ ])
+    catch
+        call assert_report("Can't define function")
+    endtry
+    try
+        call DefineFunction('T_Insert', [
+                    \ 'insert',
+                    \ 'abc',
+                    \ ])
+        call assert_report("Shouldn't be able to define function")
+    catch
+        call assert_exception('Vim(function):E126: Missing :endfunction')
+    endtry
+endfunc
+
+"-------------------------------------------------------------------------------
+" Test 96:  line continuation						    {{{1
+"
+"           Undefined behavior was detected by ubsan with line continuation
+"           after an empty line.
+"-------------------------------------------------------------------------------
+func Test_script_emty_line_continuation()
+
+    \
 endfunc
 
 "-------------------------------------------------------------------------------

@@ -1958,6 +1958,7 @@ ex_tcldo(exarg_T *eap)
     char	var_line[VARNAME_SIZE];
     linenr_T	first_line = 0;
     linenr_T	last_line = 0;
+    buf_T	*was_curbuf = curbuf;
 
     rs = eap->line1;
     re = eap->line2;
@@ -1979,6 +1980,8 @@ ex_tcldo(exarg_T *eap)
     }
     while (err == TCL_OK  &&  rs <= re)
     {
+	if ((linenr_T)rs > curbuf->b_ml.ml_line_count)
+	    break;
 	line = (char *)ml_get_buf(curbuf, (linenr_T)rs, FALSE);
 	if (!line)
 	{
@@ -1994,7 +1997,7 @@ ex_tcldo(exarg_T *eap)
 #if (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 5) || TCL_MAJOR_VERSION > 8
 	    || Tcl_LimitExceeded(tclinfo.interp)
 #endif
-	   )
+	    || curbuf != was_curbuf)
 	    break;
 	line = (char *)Tcl_GetVar(tclinfo.interp, var_line, 0);
 	if (line)

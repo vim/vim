@@ -96,8 +96,6 @@ test_trunc_string(void)
     int
 main(int argc, char **argv)
 {
-    mparm_T params;
-
     vim_memset(&params, 0, sizeof(params));
     params.argc = argc;
     params.argv = argv;

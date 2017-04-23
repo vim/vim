@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.0.  Last change: 2016 Nov 24
+*motion.txt*    For Vim version 8.0.  Last change: 2017 Mar 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -193,7 +193,7 @@ l		or					*l*
 
 							*$* *<End>* *<kEnd>*
 $  or <End>		To the end of the line.  When a count is given also go
-			[count - 1] lines downward |inclusive|.
+			[count - 1] lines downward. |inclusive| motion.
 			In Visual mode the cursor goes to just after the last
 			character in the line.
 			When 'virtualedit' is active, "$" may move the cursor

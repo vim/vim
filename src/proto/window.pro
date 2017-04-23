@@ -26,6 +26,8 @@ int win_new_tabpage(int after);
 int may_open_tabpage(void);
 int make_tabpages(int maxcount);
 int valid_tabpage(tabpage_T *tpc);
+int valid_tabpage_win(tabpage_T *tpc);
+void close_tabpage(tabpage_T *tpc);
 tabpage_T *find_tabpage(int n);
 int tabpage_index(tabpage_T *ftp);
 void goto_tabpage(int n);

@@ -231,7 +231,7 @@ serverRegisterName(
 	    if (res < -1 || i >= 1000)
 	    {
 		MSG_ATTR(_("Unable to register a command server name"),
-							      hl_attr(HLF_W));
+							      HL_ATTR(HLF_W));
 		return FAIL;
 	    }
 	    if (p == NULL)
@@ -373,6 +373,7 @@ serverSendToVim(
     char_u	**result,		/* Result of eval'ed expression */
     Window	*server,		/* Actual ID of receiving app */
     Bool	asExpr,			/* Interpret as keystrokes or expr ? */
+    int		timeout,		/* seconds to wait or zero */
     Bool	localLoop,		/* Throw away everything but result */
     int		silent)			/* don't complain about no server */
 {
@@ -399,27 +400,7 @@ serverSendToVim(
 
     /* Execute locally if no display or target is ourselves */
     if (dpy == NULL || (serverName != NULL && STRICMP(name, serverName) == 0))
-    {
-	if (asExpr)
-	{
-	    char_u *ret;
-
-	    ret = eval_client_expr_to_string(cmd);
-	    if (result != NULL)
-	    {
-		if (ret == NULL)
-		    *result = vim_strsave((char_u *)_(e_invexprmsg));
-		else
-		    *result = ret;
-	    }
-	    else
-		vim_free(ret);
-	    return ret == NULL ? -1 : 0;
-	}
-	else
-	    server_to_input_buf(cmd);
-	return 0;
-    }
+	return sendToLocalVim(cmd, asExpr, result);
 
     /*
      * Bind the server name to a communication window.
@@ -505,7 +486,8 @@ serverSendToVim(
     pending.nextPtr = pendingCommands;
     pendingCommands = &pending;
 
-    ServerWait(dpy, w, WaitForPend, &pending, localLoop, 600);
+    ServerWait(dpy, w, WaitForPend, &pending, localLoop,
+						  timeout > 0 ? timeout : 600);
 
     /*
      * Unregister the information about the pending command
@@ -615,6 +597,10 @@ ServerWait(
 	time(&now);
 	if (seconds >= 0 && (now - start) >= seconds)
 	    break;
+
+#ifdef FEAT_TIMERS
+	check_due_timer();
+#endif
 
 	/* Just look out for the answer without calling back into Vim */
 	if (localLoop)
@@ -800,11 +786,13 @@ serverSendReply(char_u *name, char_u *str)
 WaitForReply(void *p)
 {
     Window  *w = (Window *) p;
+
     return ServerReplyFind(*w, SROP_Find) != NULL;
 }
 
 /*
  * Wait for replies from id (win)
+ * When "timeout" is non-zero wait up to this many seconds.
  * Return 0 and the malloc'ed string when a reply is available.
  * Return -1 if the window becomes invalid while waiting.
  */
@@ -813,13 +801,15 @@ serverReadReply(
     Display	*dpy,
     Window	win,
     char_u	**str,
-    int		localLoop)
+    int		localLoop,
+    int		timeout)
 {
     int		len;
     char_u	*s;
     struct	ServerReply *p;
 
-    ServerWait(dpy, win, WaitForReply, &win, localLoop, -1);
+    ServerWait(dpy, win, WaitForReply, &win, localLoop,
+						   timeout > 0 ? timeout : -1);
 
     if ((p = ServerReplyFind(win, SROP_Find)) != NULL && p->strings.ga_len > 0)
     {
@@ -1449,8 +1439,8 @@ server_parse_message(
 	    char_u	*enc;
 
 	    /*
-	     * This is a (n)otification.  Sent with serverreply_send in VimL.
-	     * Execute any autocommand and save it for later retrieval
+	     * This is a (n)otification.  Sent with serverreply_send in Vim
+	     * script.  Execute any autocommand and save it for later retrieval
 	     */
 	    p += 2;
 	    gotWindow = 0;

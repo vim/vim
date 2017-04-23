@@ -6,6 +6,7 @@ Also test search()
 
 STARTTEST
 :so small.vim
+:set belloff=all
 /Start cursor here
 vaBiBD:?Bug?,/Piece/-2w! test.out
 /^- Bug

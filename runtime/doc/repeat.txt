@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.0.  Last change: 2016 Sep 11
+*repeat.txt*    For Vim version 8.0.  Last change: 2017 Feb 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -305,6 +305,11 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Mark) in utf-8 format Vim will recognize it, no need
 			to use ":scriptencoding utf-8" then.
 
+			If you set the 'encoding' option in your |.vimrc|,
+			`:scriptencoding` must be placed after that. E.g.: >
+				set encoding=utf-8
+				scriptencoding utf-8
+<
 			When compiled without the |+multi_byte| feature this
 			command is ignored.
 			{not in Vi}
