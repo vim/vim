@@ -2928,7 +2928,7 @@ foldRemove(garray_T *gap, linenr_T top, linenr_T bot)
 	{
 	    /* 2: or 3: need to delete nested folds */
 	    foldRemove(&fp->fd_nested, top - fp->fd_top, bot - fp->fd_top);
-	    if (fp->fd_top + fp->fd_len > bot + 1)
+	    if (fp->fd_top + fp->fd_len - 1 > bot)
 	    {
 		/* 3: need to split it. */
 		foldSplit(gap, (int)(fp - (fold_T *)gap->ga_data), top, bot);
@@ -2970,10 +2970,12 @@ foldRemove(garray_T *gap, linenr_T top, linenr_T bot)
 
 /* foldReverseOrder() {{{2 */
     static void
-foldReverseOrder(garray_T *gap, linenr_T start, linenr_T end)
+foldReverseOrder(garray_T *gap, linenr_T start_arg, linenr_T end_arg)
 {
     fold_T *left, *right;
     fold_T tmp;
+    linenr_T start = start_arg;
+    linenr_T end = end_arg;
 
     for (; start < end; start++, end--)
     {
