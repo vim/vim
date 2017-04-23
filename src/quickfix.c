@@ -2246,7 +2246,6 @@ win_found:
 
 	    /*
 	     * Try to find a window that shows the right buffer.
-	     * Default to the window just above the quickfix buffer.
 	     */
 	    win = curwin;
 	    altwin = NULL;
@@ -2262,8 +2261,12 @@ win_found:
 		if (IS_QF_WINDOW(win))
 		{
 		    /* Didn't find it, go to the window before the quickfix
-		     * window. */
-		    if (altwin != NULL)
+		     * window, unless 'switchbuf' contains 'uselast':
+		     * in this case we try to jump to the previously used
+		     * window first. */
+		    if (swb_flags & SWB_USELAST && win_valid(prevwin))
+			win = prevwin;
+		    else if (altwin != NULL)
 			win = altwin;
 		    else if (curwin->w_prev != NULL)
 			win = curwin->w_prev;
