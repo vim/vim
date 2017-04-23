@@ -4934,6 +4934,9 @@ qf_free_stack(win_T *wp, qf_info_T *qi)
 	 * location list */
 	qf_info_T *new_ll = ll_new_list();
 
+	/* first free the list reference in the location list window */
+	ll_free_all(&orig_wp->w_llist_ref);
+
 	orig_wp->w_llist_ref = new_ll;
 	if (llwin != NULL)
 	{
