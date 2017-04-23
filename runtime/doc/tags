@@ -945,6 +945,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_F7'	term.txt	/*'t_F7'*
 't_F8'	term.txt	/*'t_F8'*
 't_F9'	term.txt	/*'t_F9'*
+'t_GP'	term.txt	/*'t_GP'*
 't_IE'	term.txt	/*'t_IE'*
 't_IS'	term.txt	/*'t_IS'*
 't_K1'	term.txt	/*'t_K1'*
@@ -8527,6 +8528,7 @@ t_F6	term.txt	/*t_F6*
 t_F7	term.txt	/*t_F7*
 t_F8	term.txt	/*t_F8*
 t_F9	term.txt	/*t_F9*
+t_GP	term.txt	/*t_GP*
 t_IE	term.txt	/*t_IE*
 t_IS	term.txt	/*t_IS*
 t_K1	term.txt	/*t_K1*

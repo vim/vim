@@ -7805,7 +7805,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'timeout' 'to'		boolean (default on)
 			global
 						*'ttimeout'* *'nottimeout'*
-'ttimeout'		boolean (default off, set in |defaults.vim|))
+'ttimeout'		boolean (default off, set in |defaults.vim|)
 			global
 			{not in Vi}
 	These two options together determine the behavior when part of a
@@ -7840,7 +7840,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in all versions of Vi}
 						*'ttimeoutlen'* *'ttm'*
-'ttimeoutlen' 'ttm'	number	(default -1, set to 100 in |defaults.vim|))
+'ttimeoutlen' 'ttm'	number	(default -1, set to 100 in |defaults.vim|)
 			global
 			{not in Vi}
 	The time in milliseconds that is waited for a key code or mapped key

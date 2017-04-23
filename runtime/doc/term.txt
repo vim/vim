@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.0.  Last change: 2017 Feb 02
+*term.txt*      For Vim version 8.0.  Last change: 2017 Apr 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -314,6 +314,7 @@ Added by Vim (there are no standard codes for these):
 	t_IS	set icon text start				*t_IS* *'t_IS'*
 	t_IE	set icon text end				*t_IE* *'t_IE'*
 	t_WP	set window position (Y, X) in pixels		*t_WP* *'t_WP'*
+	t_GP	get window position (Y, X) in pixels		*t_GP* *'t_GP'*
 	t_WS	set window size (height, width) in characters	*t_WS* *'t_WS'*
 	t_SI	start insert mode (bar cursor shape)		*t_SI* *'t_SI'*
 	t_SR	start replace mode (underline cursor shape)	*t_SR* *'t_SR'*

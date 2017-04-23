@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Apr 09
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Apr 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,10 @@ entered there will not be repeated below, unless there is extra information.
 Remove the Farsi code?
 
 +channel:
+- job_stop() should not always close the channel, e.g. for "int".
+  (Martin Gammelsæter, 2017 Apr 11, #1632)
+  Only assume killed on "kill".
+  Check job->jv_status not to be JOB_ENDED.
 - Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
@@ -111,6 +115,10 @@ Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif?
 
 Memory leak in test97?  The string is actually freed.  Weird.
+
+Patch for flickering redraw. (Hirohito Higashi, 2017 Apr 23, #1637)
+
+New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
 
 Add a toolbar in the terminal.  Can be global, above all windows, or specific
 for one window.
@@ -193,12 +201,17 @@ Patch for restoring wide characters in the console buffer.
 Patch to fix escaping of job arguments. (Yasuhiro Matsumoto, 2016 Oct 5)
 Update Oct 14: https://gist.github.com/mattn/d47e7d3bfe5ade4be86062b565a4bfca
 
+Characters deleted on completion. (Adrià Farrés, 2017 Apr 20, #1645)
+Remarks from Christian Brabandt (Apr 21)
+
 The TermResponse event is not triggered when a plugin has set 'eventignore' to
 "all".  Netrw does this. (Gary Johnson, 2017 Jan 24)
 Postpone the event until 'eventignore' is reset.
 
 Patch to make urxvt mouse work better, recognize Esc[*M termcap code.
 (Maurice Bos, 2017 Feb 17, #1486)
+
+Expanding /**/ is slow.  Idea by Luc Hermitte, 2017 Apr 14.
 
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
@@ -277,10 +290,20 @@ Patch to add "cmdline" completion to getcompletion(). (Shougo, Oct 1, #1140)
 Feature request: Complete members of a dictionary. (Luc Hermitte, 2017 Jan 4,
 #1350)
 
+Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
+3.  Doesn't work properly according to Yukihiro Nakadaira.
+Also see #1635.
+
 Patch for systemlist(), add empty item. (thinca, Sep 30, #1135)
 Add an argument to choose binary or non-binary (like readfile()), when omitted
 use the current behavior.
 Include the test.
+
+Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
+New update 2017 Apr 10, #1628
+
+Unnamed register only contains the last deleted text when appending deleted
+text to a register. (Wolfgang Jeltsch, reproduced by Ben Fritz, 2017 Apr 10)
 
 When 'keywordprg' starts with ":" the argument is still escaped as a shell
 command argument. (Romain Lafourcade, 2016 Oct 16, #1175)
@@ -895,9 +918,6 @@ Patch to handle integer overflow. (Aaron Burrow, 2013 Dec 12)
 Patch to add "ntab" item in 'listchars' to repeat first character. (Nathaniel
 Braun, pragm, 2013 Oct 13)  A better solution 2014 Mar 5.
 
-Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
-3.  Doesn't work properly according to Yukihiro Nakadaira.
-
 /[b-a] gives error E16, should probably be E769.
 
 7   Windows XP: When using "ClearType" for text smoothing, a column of yellow
@@ -1061,8 +1081,6 @@ MS-Windows resizing problems:
 
 Patch to append regexp to tag commands to make it possible to select one out
 of many matches. (Cody Cutler, 2013 Mar 28)
-
-Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
 
 The input map for CTRL-O in mswin.vim causes problems after CTRL-X CTRL-O.
 Suggestion for another map. (Philip Mat, 2012 Jun 18)
