@@ -241,9 +241,8 @@ msgstr " ÎÄ¼şÃû²¹È« (^F^N^P)"
 msgid " Tag completion (^]^N^P)"
 msgstr " Tag ²¹È« (^]^N^P)"
 
-#, fuzzy
-#~ msgid " Path pattern completion (^N^P)"
-#~ msgstr " Â·¾¶Ä£Ê½²¹È« (^N^P)"
+msgid " Path pattern completion (^N^P)"
+msgstr " Í·ÎÄ¼şÄ£Ê½²¹È« (^N^P)"
 
 msgid " Definition completion (^D^N^P)"
 msgstr " ¶¨Òå²¹È« (^D^N^P)"
@@ -2896,7 +2895,7 @@ msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <files>\tÈçÓĞ¿ÉÄÜ£¬ÔÚ Vim ·şÎñÆ÷ÉÏ±à¼­ÎÄ¼ş <files>"
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-silent <files>  Í¬ÉÏ£¬ÕÒ²»µ½·şÎñÆ÷Ê±»±§Ô¹"
+msgstr "--remote-silent <files>  Í¬ÉÏ£¬ÕÒ²»µ½·şÎñÆ÷Ê±²»±§Ô¹"
 
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
@@ -5284,7 +5283,7 @@ msgstr "Vim: ¶Á´íÎó£¬ÍË³öÖĞ...\n"
 
 #. must display the prompt
 msgid "No undo possible; continue anyway"
-msgstr "ÎŞ·¨³·Ïú£»Çë¼ÌĞø"
+msgstr "ÎŞ·¨³·Ïú£»ÈÔÈ»¼ÌĞø"
 
 msgid "Already at oldest change"
 msgstr "ÒÑÎ»ÓÚ×î¾ÉµÄ¸Ä±ä"
@@ -5601,13 +5600,13 @@ msgid "type  :help cp-default<Enter> for info on this"
 msgstr "ÊäÈë  :help cp-default<Enter> ²é¿´Ïà¹ØËµÃ÷    "
 
 msgid "menu  Help->Orphans           for information    "
-msgstr "²Ëµ¥  Help->Orphans           ²é¿´ËµÃ÷           "
+msgstr "²Ëµ¥  °ïÖú->¹Â¶ù           ²é¿´ËµÃ÷           "
 
 msgid "Running modeless, typed text is inserted"
 msgstr "ÎŞÄ£Ê½ÔËĞĞ£¬ÊäÈëÎÄ×Ö¼´²åÈë"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "²Ëµ¥  Edit->Global Settings->Toggle Insert Mode  "
+msgstr "²Ëµ¥  ±à¼­->È«¾ÖÉè¶¨->¿ª/¹Ø²åÈëÄ£Ê½  "
 
 #, fuzzy
 #~ msgid "                              for two modes      "

@@ -24,6 +24,7 @@ SRC_ALL =	\
 		src/edit.c \
 		src/eval.c \
 		src/evalfunc.c \
+		src/ex_cmdidxs.h \
 		src/ex_cmds.c \
 		src/ex_cmds.h \
 		src/ex_cmds2.c \
@@ -45,6 +46,7 @@ SRC_ALL =	\
 		src/hashtab.c \
 		src/json.c \
 		src/json_test.c \
+		src/kword_test.c \
 		src/list.c \
 		src/keymap.h \
 		src/macros.h \
@@ -96,6 +98,7 @@ SRC_ALL =	\
 		src/tee/tee.c \
 		src/xxd/xxd.c \
 		src/main.aap \
+		src/testdir/gen_opt_test.vim \
 		src/testdir/main.aap \
 		src/testdir/README.txt \
 		src/testdir/Make_all.mak \
@@ -104,7 +107,11 @@ SRC_ALL =	\
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/runtest.vim \
 		src/testdir/shared.vim \
+		src/testdir/view_util.vim \
 		src/testdir/setup.vim \
+		src/testdir/gui_init.vim \
+		src/testdir/setup_gui.vim \
+		src/testdir/gui_preinit.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test[0-9]*a.ok \
 		src/testdir/test_[a-z]*.ok \
@@ -122,6 +129,7 @@ SRC_ALL =	\
 		src/testdir/pythonx/topmodule/submodule/subsubmodule/subsubsubmodule.py \
 		src/testdir/python_after/*.py \
 		src/testdir/python_before/*.py \
+		src/testdir/pyxfile/*.py \
 		src/testdir/bench*.in \
 		src/testdir/bench*.vim \
 		src/testdir/samples/*.txt \
@@ -208,6 +216,7 @@ SRC_UNIX =	\
 		src/config.mk.in \
 		src/configure \
 		src/configure.ac \
+		src/create_cmdidxs.vim \
 		src/gui_at_fs.c \
 		src/gui_at_sb.c \
 		src/gui_at_sb.h \
@@ -231,7 +240,7 @@ SRC_UNIX =	\
 		src/link.sh \
 		src/installman.sh \
 		src/installml.sh \
-		src/mkinstalldirs \
+		src/install-sh \
 		src/os_unix.c \
 		src/os_unix.h \
 		src/os_unixx.h \
@@ -717,7 +726,6 @@ EXTRA =		\
 		farsi/README.txt \
 		farsi/fonts/*/far-* \
 		runtime/vimlogo.xpm \
-		src/swis.s \
 		src/tee/Makefile \
 		src/tee/Make_mvc.mak \
 		src/tee/tee.c \

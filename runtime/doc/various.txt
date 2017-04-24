@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.0.  Last change: 2016 Sep 06
+*various.txt*   For Vim version 8.0.  Last change: 2017 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -527,12 +527,14 @@ N  *+X11*		Unix only: can restore window title |X11|
 :redi[r] END		End redirecting messages.  {not in Vi}
 
 							*:filt* *:filter*
-:filt[er] {pat} {command}
-:filt[er] /{pat}/ {command}
-			Restrict the output of {command} to matches with {pat}.
-			For example, to list only xml files: >
+:filt[er][!] {pat} {command}
+:filt[er][!] /{pat}/ {command}
+			Restrict the output of {command} to lines matching
+			with {pat}.  For example, to list only xml files: >
 				:filter /\.xml$/ oldfiles
-<
+<			If the [!] is given, restrict the output of {command}
+			to lines that do NOT match {pat}.
+
 			{pat} is a Vim search pattern.  Instead of enclosing
 			it in / any non-ID character (see |'isident'|) can be
 			used, so long as it does not appear in {pat}.  Without
@@ -634,7 +636,7 @@ K			Run a program to lookup the keyword under the
 			with the command >
 				:!{program} {keyword}
 <			There is an example of a program to use in the tools
-			directory of Vim.  It is called 'ref' and does a
+			directory of Vim.  It is called "ref" and does a
 			simple spelling check.
 			Special cases:
 			- If 'keywordprg' begins with ":" it is invoked as

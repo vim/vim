@@ -177,11 +177,9 @@ update_topline(void)
     int		save_so = p_so;
 #endif
 
-    if (!screen_valid(TRUE))
-	return;
-
-    /* If the window height is zero just use the cursor line. */
-    if (curwin->w_height == 0)
+    /* If there is no valid screen and when the window height is zero just use
+     * the cursor line. */
+    if (!screen_valid(TRUE) || curwin->w_height == 0)
     {
 	curwin->w_topline = curwin->w_cursor.lnum;
 	curwin->w_botline = curwin->w_topline;
@@ -210,7 +208,7 @@ update_topline(void)
     /*
      * If the buffer is empty, always set topline to 1.
      */
-    if (bufempty())		/* special case - file is empty */
+    if (BUFEMPTY())		/* special case - file is empty */
     {
 	if (curwin->w_topline != 1)
 	    redraw_later(NOT_VALID);
@@ -2592,6 +2590,7 @@ halfpage(int flag, linenr_T Prenum)
     n = (curwin->w_p_scr <= curwin->w_height) ?
 				    curwin->w_p_scr : curwin->w_height;
 
+    update_topline();
     validate_botline();
     room = curwin->w_empty_rows;
 #ifdef FEAT_DIFF
@@ -2841,6 +2840,10 @@ do_check_cursorbind(void)
 	    restart_edit_save = restart_edit;
 	    restart_edit = TRUE;
 	    check_cursor();
+# ifdef FEAT_SYN_HL
+	    if (curwin->w_p_cul || curwin->w_p_cuc)
+		validate_cursor();
+# endif
 	    restart_edit = restart_edit_save;
 # ifdef FEAT_MBYTE
 	    /* Correct cursor for multi-byte character. */

@@ -201,6 +201,8 @@ int _stricoll(char *a, char *b)
     void
 mch_exit(int r)
 {
+    exiting = TRUE;
+
     display_errors();
 
     ml_close_all(TRUE);		/* remove all memfiles */
@@ -306,10 +308,8 @@ mch_settitle(
  *  2: Just restore icon (which we don't have)
  *  3: Restore title and icon (which we don't have)
  */
-/*ARGSUSED*/
     void
-mch_restore_title(
-    int which)
+mch_restore_title(int which UNUSED)
 {
 #ifndef FEAT_GUI_MSWIN
     SetConsoleTitle(g_szOrigTitle);
@@ -345,13 +345,12 @@ mch_can_restore_icon(void)
  * When 'shellslash' set do it the other way around.
  * Return OK or FAIL.
  */
-/*ARGSUSED*/
     int
 mch_FullName(
     char_u	*fname,
     char_u	*buf,
     int		len,
-    int		force)
+    int		force UNUSED)
 {
     int		nResult = FAIL;
 
@@ -455,7 +454,7 @@ slash_adjust(char_u *p)
     {
 	if (*p == psepcN)
 	    *p = psepc;
-	mb_ptr_adv(p);
+	MB_PTR_ADV(p);
     }
 }
 
@@ -601,7 +600,7 @@ vim_stat(const char *name, stat_T *stp)
     vim_strncpy((char_u *)buf, (char_u *)name, sizeof(buf) - 1);
     p = buf + STRLEN(buf);
     if (p > buf)
-	mb_ptr_back(buf, p);
+	MB_PTR_BACK(buf, p);
 
     /* Remove trailing '\\' except root path. */
     if (p > buf && (*p == '\\' || *p == '/') && p[-1] != ':')
@@ -636,9 +635,8 @@ vim_stat(const char *name, stat_T *stp)
 }
 
 #if defined(FEAT_GUI_MSWIN) || defined(PROTO)
-/*ARGSUSED*/
     void
-mch_settmode(int tmode)
+mch_settmode(int tmode UNUSED)
 {
     /* nothing to do */
 }
@@ -722,7 +720,7 @@ display_errors(void)
     int
 mch_has_exp_wildcard(char_u *p)
 {
-    for ( ; *p; mb_ptr_adv(p))
+    for ( ; *p; MB_PTR_ADV(p))
     {
 	if (vim_strchr((char_u *)"?*[", *p) != NULL
 		|| (*p == '~' && p[1] != NUL))
@@ -738,7 +736,7 @@ mch_has_exp_wildcard(char_u *p)
     int
 mch_has_wildcard(char_u *p)
 {
-    for ( ; *p; mb_ptr_adv(p))
+    for ( ; *p; MB_PTR_ADV(p))
     {
 	if (vim_strchr((char_u *)
 #  ifdef VIM_BACKTICK
@@ -817,10 +815,8 @@ mch_char_avail(void)
 /*
  * set screen mode, always fails.
  */
-/*ARGSUSED*/
     int
-mch_screenmode(
-    char_u *arg)
+mch_screenmode(char_u *arg UNUSED)
 {
     EMSG(_(e_screenmode));
     return FAIL;
@@ -996,10 +992,8 @@ mch_libcall(
 /*
  * Debugging helper: expose the MCH_WRITE_DUMP stuff to other modules
  */
-/*ARGSUSED*/
     void
-DumpPutS(
-    const char *psz)
+DumpPutS(const char *psz UNUSED)
 {
 # ifdef MCH_WRITE_DUMP
     if (fdDump)
@@ -1173,9 +1167,12 @@ swap_me(COLORREF colorref)
 # define PDP_RETVAL INT_PTR
 #endif
 
-/*ARGSUSED*/
     static PDP_RETVAL CALLBACK
-PrintDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+PrintDlgProc(
+	HWND hDlg,
+	UINT message,
+	WPARAM wParam UNUSED,
+	LPARAM lParam UNUSED)
 {
 #ifdef FEAT_GETTEXT
     NONCLIENTMETRICS nm;
@@ -1236,9 +1233,8 @@ PrintDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-/*ARGSUSED*/
     static BOOL CALLBACK
-AbortProc(HDC hdcPrn, int iCode)
+AbortProc(HDC hdcPrn UNUSED, int iCode UNUSED)
 {
     MSG msg;
 
@@ -1683,9 +1679,8 @@ mch_print_begin(prt_settings_T *psettings)
     return (ret > 0);
 }
 
-/*ARGSUSED*/
     void
-mch_print_end(prt_settings_T *psettings)
+mch_print_end(prt_settings_T *psettings UNUSED)
 {
     EndDoc(prt_dlg.hDC);
     if (!*bUserAbort)
@@ -2110,11 +2105,15 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	    str = serverConvert(client_enc, (char_u *)data->lpData, &tofree);
 	    res = eval_client_expr_to_string(str);
-	    vim_free(tofree);
 
 	    if (res == NULL)
 	    {
-		res = vim_strsave((char_u *)_(e_invexprmsg));
+		char	*err = _(e_invexprmsg);
+		size_t	len = STRLEN(str) + STRLEN(err) + 5;
+
+		res = alloc((unsigned)len);
+		if (res != NULL)
+		    vim_snprintf((char *)res, len, "%s: \"%s\"", err, str);
 		reply.dwData = COPYDATA_ERROR_RESULT;
 	    }
 	    else
@@ -2125,6 +2124,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	    serverSendEnc(sender);
 	    retval = (int)SendMessage(sender, WM_COPYDATA,
 				    (WPARAM)message_window, (LPARAM)(&reply));
+	    vim_free(tofree);
 	    vim_free(res);
 	    return retval;
 
@@ -2401,6 +2401,7 @@ serverSendToVim(
     char_u	 **result,		/* Result of eval'ed expression */
     void	 *ptarget,		/* HWND of server */
     int		 asExpr,		/* Expression or keys? */
+    int		 timeout,		/* timeout in seconds or zero */
     int		 silent)		/* don't complain about no server */
 {
     HWND	target;
@@ -2408,6 +2409,10 @@ serverSendToVim(
     char_u	*retval = NULL;
     int		retcode = 0;
     char_u	altname_buf[MAX_PATH];
+
+    /* Execute locally if no display or target is ourselves */
+    if (serverName != NULL && STRICMP(name, serverName) == 0)
+	return sendToLocalVim(cmd, asExpr, result);
 
     /* If the server name does not end in a digit then we look for an
      * alternate name.  e.g. when "name" is GVIM the we may find GVIM2. */
@@ -2440,7 +2445,7 @@ serverSendToVim(
 	return -1;
 
     if (asExpr)
-	retval = serverGetReply(target, &retcode, TRUE, TRUE);
+	retval = serverGetReply(target, &retcode, TRUE, TRUE, timeout);
 
     if (result == NULL)
 	vim_free(retval);
@@ -2517,13 +2522,17 @@ save_reply(HWND server, char_u *reply, int expr)
  * if "wait" is TRUE block until a message arrives (or the server exits).
  */
     char_u *
-serverGetReply(HWND server, int *expr_res, int remove, int wait)
+serverGetReply(HWND server, int *expr_res, int remove, int wait, int timeout)
 {
     int		i;
     char_u	*reply;
     reply_T	*rep;
+    int		did_process = FALSE;
+    time_t	start;
+    time_t	now;
 
     /* When waiting, loop until the message waiting for is received. */
+    time(&start);
     for (;;)
     {
 	/* Reset this here, in case a message arrives while we are going
@@ -2558,7 +2567,17 @@ serverGetReply(HWND server, int *expr_res, int remove, int wait)
 	/* If we got here, we didn't find a reply. Return immediately if the
 	 * "wait" parameter isn't set.  */
 	if (!wait)
+	{
+	    /* Process pending messages once. Without this, looping on
+	     * remote_peek() would never get the reply. */
+	    if (!did_process)
+	    {
+		did_process = TRUE;
+		serverProcessPendingMessages();
+		continue;
+	    }
 	    break;
+	}
 
 	/* We need to wait for a reply. Enter a message loop until the
 	 * "reply_received" flag gets set. */
@@ -2566,6 +2585,13 @@ serverGetReply(HWND server, int *expr_res, int remove, int wait)
 	/* Loop until we receive a reply */
 	while (reply_received == 0)
 	{
+#ifdef FEAT_TIMERS
+	    check_due_timer();
+#endif
+	    time(&now);
+	    if (timeout > 0 && (now - start) >= timeout)
+		break;
+
 	    /* Wait for a SendMessage() call to us.  This could be the reply
 	     * we are waiting for.  Use a timeout of a second, to catch the
 	     * situation that the server died unexpectedly. */
@@ -2764,12 +2790,11 @@ points_to_pixels(char_u *str, char_u **end, int vertical, long_i pprinter_dc)
     return pixels;
 }
 
-/*ARGSUSED*/
     static int CALLBACK
 font_enumproc(
     ENUMLOGFONT	    *elf,
-    NEWTEXTMETRIC   *ntm,
-    int		    type,
+    NEWTEXTMETRIC   *ntm UNUSED,
+    int		    type UNUSED,
     LPARAM	    lparam)
 {
     /* Return value:

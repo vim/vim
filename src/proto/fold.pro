@@ -31,6 +31,7 @@ void foldInitWin(win_T *new_win);
 int find_wl_entry(win_T *win, linenr_T lnum);
 void foldAdjustVisual(void);
 void foldAdjustCursor(void);
+void foldMoveRange(garray_T *gap, linenr_T line1, linenr_T line2, linenr_T dest);
 void cloneFoldGrowArray(garray_T *from, garray_T *to);
 void deleteFoldRecurse(garray_T *gap);
 void foldMarkAdjust(win_T *wp, linenr_T line1, linenr_T line2, long amount, long amount_after);

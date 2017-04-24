@@ -1,5 +1,5 @@
 /* quickfix.c */
-int qf_init(win_T *wp, char_u *efile, char_u *errorformat, int newlist, char_u *qf_title);
+int qf_init(win_T *wp, char_u *efile, char_u *errorformat, int newlist, char_u *qf_title, char_u *enc);
 void qf_free_all(win_T *wp);
 void copy_loclist(win_T *from, win_T *to);
 void qf_jump(qf_info_T *qi, int dir, int errornr, int forceit);

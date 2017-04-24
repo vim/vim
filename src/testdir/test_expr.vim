@@ -87,7 +87,7 @@ endfunc
 func Test_loop_over_null_list()
   let null_list = test_null_list()
   for i in null_list
-    call assert_true(0, 'should not get here')
+    call assert_report('should not get here')
   endfor
 endfunc
 
@@ -472,4 +472,9 @@ func Test_setmatches()
   endif
   call setmatches(set)
   call assert_equal(exp, getmatches())
+endfunc
+
+func Test_empty_concatenate()
+  call assert_equal('b', 'a'[4:0] . 'b')
+  call assert_equal('b', 'b' . 'a'[4:0])
 endfunc

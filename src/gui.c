@@ -630,7 +630,7 @@ gui_init(void)
      * where Vim was started. */
     emsg_on_display = FALSE;
     msg_scrolled = 0;
-    clear_sb_text();
+    clear_sb_text(TRUE);
     need_wait_return = FALSE;
     msg_didany = FALSE;
 
@@ -1459,6 +1459,8 @@ gui_resize_shell(int pixel_width, int pixel_height)
     }
 
 again:
+    new_pixel_width = 0;
+    new_pixel_height = 0;
     busy = TRUE;
 
     /* Flush pending output before redrawing */
@@ -1468,8 +1470,8 @@ again:
     gui.num_rows = (pixel_height - gui_get_base_height()) / gui.char_height;
 
     gui_position_components(pixel_width);
-
     gui_reset_scroll_region();
+
     /*
      * At the "more" and ":confirm" prompt there is no redraw, put the cursor
      * at the last line here (why does it have to be one row too low?).
@@ -1491,17 +1493,22 @@ again:
 
     busy = FALSE;
 
-    /*
-     * We could have been called again while redrawing the screen.
-     * Need to do it all again with the latest size then.
-     */
+    /* We may have been called again while redrawing the screen.
+     * Need to do it all again with the latest size then.  But only if the size
+     * actually changed. */
     if (new_pixel_height)
     {
-	pixel_width = new_pixel_width;
-	pixel_height = new_pixel_height;
-	new_pixel_width = 0;
-	new_pixel_height = 0;
-	goto again;
+	if (pixel_width == new_pixel_width && pixel_height == new_pixel_height)
+	{
+	    new_pixel_width = 0;
+	    new_pixel_height = 0;
+	}
+	else
+	{
+	    pixel_width = new_pixel_width;
+	    pixel_height = new_pixel_height;
+	    goto again;
+	}
     }
 }
 
@@ -1511,18 +1518,10 @@ again:
     void
 gui_may_resize_shell(void)
 {
-    int		h, w;
-
     if (new_pixel_height)
-    {
 	/* careful: gui_resize_shell() may postpone the resize again if we
 	 * were called indirectly by it */
-	w = new_pixel_width;
-	h = new_pixel_height;
-	new_pixel_width = 0;
-	new_pixel_height = 0;
-	gui_resize_shell(w, h);
-    }
+	gui_resize_shell(new_pixel_width, new_pixel_height);
 }
 
     int
@@ -4477,7 +4476,7 @@ gui_do_scroll(void)
 	pum_redraw();
 #endif
 
-    return (wp == curwin && !equalpos(curwin->w_cursor, old_cursor));
+    return (wp == curwin && !EQUAL_POS(curwin->w_cursor, old_cursor));
 }
 
 
@@ -4501,7 +4500,7 @@ scroll_line_len(linenr_T lnum)
 	for (;;)
 	{
 	    w = chartabsize(p, col);
-	    mb_ptr_adv(p);
+	    MB_PTR_ADV(p);
 	    if (*p == NUL)		/* don't count the last character */
 		break;
 	    col += w;
@@ -4968,7 +4967,7 @@ ex_gui(exarg_T *eap)
      */
     if (arg[0] == '-'
 	    && (arg[1] == 'f' || arg[1] == 'b')
-	    && (arg[2] == NUL || vim_iswhite(arg[2])))
+	    && (arg[2] == NUL || VIM_ISWHITE(arg[2])))
     {
 	gui.dofork = (arg[1] == 'b');
 	eap->arg = skipwhite(eap->arg + 2);
@@ -5119,7 +5118,7 @@ gui_update_screen(void)
 		curwin->w_p_cole > 0
 # endif
 		)
-		     && !equalpos(last_cursormoved, curwin->w_cursor))
+		     && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
     {
 # ifdef FEAT_AUTOCMD
 	if (has_cursormoved())

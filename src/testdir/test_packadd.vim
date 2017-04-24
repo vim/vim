@@ -1,5 +1,7 @@
 " Tests for 'packpath' and :packadd
 
+set belloff=all
+
 func SetUp()
   let s:topdir = expand('%:h') . '/Xdir'
   exe 'set packpath=' . s:topdir
@@ -65,6 +67,41 @@ func Test_packadd_noload()
   let new_rtp = &rtp
   packadd! mytest
   call assert_equal(new_rtp, &rtp)
+endfunc
+
+func Test_packadd_symlink_dir()
+  if !has('unix')
+    return
+  endif
+  let top2_dir = s:topdir . '/Xdir2'
+  let real_dir = s:topdir . '/Xsym'
+  call mkdir(real_dir, 'p')
+  exec "silent !ln -s Xsym"  top2_dir
+  let &rtp = top2_dir . ',' . top2_dir . '/after'
+  let &packpath = &rtp
+
+  let s:plugdir = top2_dir . '/pack/mine/opt/mytest'
+  call mkdir(s:plugdir . '/plugin', 'p')
+
+  exe 'split ' . s:plugdir . '/plugin/test.vim'
+  call setline(1, 'let g:plugin_works = 44')
+  wq
+  let g:plugin_works = 0
+
+  packadd mytest
+
+  " Must have been inserted in the middle, not at the end
+  call assert_true(&rtp =~ '/pack/mine/opt/mytest,')
+  call assert_equal(44, g:plugin_works)
+
+  " No change when doing it again.
+  let rtp_before = &rtp
+  packadd mytest
+  call assert_equal(rtp_before, &rtp)
+
+  set rtp&
+  let rtp = &rtp
+  exec "silent !rm" top2_dir
 endfunc
 
 " Check command-line completion for 'packadd'

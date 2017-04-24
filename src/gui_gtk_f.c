@@ -92,19 +92,6 @@ static void gtk_form_position_child(GtkForm *form,
 				    gboolean force_allocate);
 static void gtk_form_position_children(GtkForm *form);
 
-#if !GTK_CHECK_VERSION(3,0,0)
-static GdkFilterReturn gtk_form_filter(GdkXEvent *gdk_xevent,
-				       GdkEvent *event,
-				       gpointer data);
-static GdkFilterReturn gtk_form_main_filter(GdkXEvent *gdk_xevent,
-					    GdkEvent *event,
-					    gpointer data);
-#endif
-#if !GTK_CHECK_VERSION(3,16,0)
-static void gtk_form_set_static_gravity(GdkWindow *window,
-					gboolean use_static);
-#endif
-
 static void gtk_form_send_configure(GtkForm *form);
 
 static void gtk_form_child_map(GtkWidget *widget, gpointer user_data);
@@ -171,9 +158,6 @@ gtk_form_put(GtkForm	*form,
 	gtk_form_attach_child_window(form, child);
 
     gtk_widget_set_parent(child_widget, GTK_WIDGET(form));
-#if !GTK_CHECK_VERSION(3,0,0)
-    gtk_widget_size_request(child->widget, NULL);
-#endif
 
 #if GTK_CHECK_VERSION(3,0,0)
     if (gtk_widget_get_realized(GTK_WIDGET(form))
@@ -301,19 +285,7 @@ gtk_form_init(GtkForm *form)
     gtk_widget_set_has_window(GTK_WIDGET(form), TRUE);
 #endif
     form->children = NULL;
-
-#if !GTK_CHECK_VERSION(3,0,0)
-    form->width = 1;
-    form->height = 1;
-#endif
-
     form->bin_window = NULL;
-
-#if !GTK_CHECK_VERSION(3,0,0)
-    form->configure_serial = 0;
-    form->visibility = GDK_VISIBILITY_PARTIAL;
-#endif
-
     form->freeze_count = 0;
 }
 
@@ -393,10 +365,6 @@ gtk_form_realize(GtkWidget *widget)
 #endif
     gdk_window_set_user_data(form->bin_window, widget);
 
-#if !GTK_CHECK_VERSION(3,16,0)
-    gtk_form_set_static_gravity(form->bin_window, TRUE);
-#endif
-
 #if GTK_CHECK_VERSION(3,0,0)
     {
 	GtkStyleContext * const sctx = gtk_widget_get_style_context(widget);
@@ -412,11 +380,6 @@ gtk_form_realize(GtkWidget *widget)
     widget->style = gtk_style_attach(widget->style, widget->window);
     gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);
     gtk_style_set_background(widget->style, form->bin_window, GTK_STATE_NORMAL);
-#endif
-
-#if !GTK_CHECK_VERSION(3,0,0)
-    gdk_window_add_filter(widget->window, gtk_form_main_filter, form);
-    gdk_window_add_filter(form->bin_window, gtk_form_filter, form);
 #endif
 
     for (tmp_list = form->children; tmp_list; tmp_list = tmp_list->next)
@@ -540,33 +503,11 @@ gtk_form_unrealize(GtkWidget *widget)
     static void
 gtk_form_size_request(GtkWidget *widget, GtkRequisition *requisition)
 {
-#if !GTK_CHECK_VERSION(3,0,0)
-    GList *tmp_list;
-    GtkForm *form;
-#endif
-
     g_return_if_fail(GTK_IS_FORM(widget));
+    g_return_if_fail(requisition != NULL);
 
-#if !GTK_CHECK_VERSION(3,0,0)
-    form = GTK_FORM(widget);
-#endif
-
-#if GTK_CHECK_VERSION(3,0,0)
     requisition->width = 1;
     requisition->height = 1;
-#else
-    requisition->width = form->width;
-    requisition->height = form->height;
-
-    tmp_list = form->children;
-
-    while (tmp_list)
-    {
-	GtkFormChild *child = tmp_list->data;
-	gtk_widget_size_request(child->widget, NULL);
-	tmp_list = tmp_list->next;
-    }
-#endif
 }
 
 #if GTK_CHECK_VERSION(3,0,0)
@@ -735,28 +676,9 @@ gtk_form_expose(GtkWidget *widget, GdkEventExpose *event)
 	return FALSE;
 
     for (tmp_list = form->children; tmp_list; tmp_list = tmp_list->next)
-    {
-	GtkFormChild	*formchild = tmp_list->data;
-	GtkWidget	*child	   = formchild->widget;
-	/*
-	 * The following chunk of code is taken from gtkcontainer.c.  The
-	 * gtk1.x code synthesized expose events directly on the child widgets,
-	 * which can't be done in gtk2
-	 */
-	if (GTK_WIDGET_DRAWABLE(child) && GTK_WIDGET_NO_WINDOW(child)
-		&& child->window == event->window)
-	{
-	    GdkEventExpose child_event;
-	    child_event = *event;
-
-	    child_event.region = gtk_widget_region_intersect(child, event->region);
-	    if (!gdk_region_empty(child_event.region))
-	    {
-		gdk_region_get_clipbox(child_event.region, &child_event.area);
-		gtk_widget_send_expose(child, (GdkEvent *)&child_event);
-	    }
-	}
-    }
+	gtk_container_propagate_expose(GTK_CONTAINER(widget),
+		GTK_WIDGET(((GtkFormChild *)tmp_list->data)->widget),
+		event);
 
     return FALSE;
 }
@@ -914,9 +836,6 @@ gtk_form_attach_child_window(GtkForm *form, GtkFormChild *child)
 #endif
 
 	gtk_widget_set_parent_window(child->widget, child->window);
-#if !GTK_CHECK_VERSION(3,16,0)
-	gtk_form_set_static_gravity(child->window, TRUE);
-#endif
 	/*
 	 * Install signal handlers to map/unmap child->window
 	 * alongside with the actual widget.
@@ -948,15 +867,6 @@ gtk_form_realize_child(GtkForm *form, GtkFormChild *child)
 {
     gtk_form_attach_child_window(form, child);
     gtk_widget_realize(child->widget);
-
-#if !GTK_CHECK_VERSION(3,16,0)
-    if (child->window == NULL) /* might be already set, see above */
-# if GTK_CHECK_VERSION(3,0,0)
-	gtk_form_set_static_gravity(gtk_widget_get_window(child->widget), TRUE);
-# else
-	gtk_form_set_static_gravity(child->widget->window, TRUE);
-# endif
-#endif
 }
 
     static void
@@ -1067,96 +977,6 @@ gtk_form_position_children(GtkForm *form)
     for (tmp_list = form->children; tmp_list; tmp_list = tmp_list->next)
 	gtk_form_position_child(form, tmp_list->data, FALSE);
 }
-
-/* Callbacks */
-
-/* The main event filter. Actually, we probably don't really need
- * to install this as a filter at all, since we are calling it
- * directly above in the expose-handling hack.
- *
- * This routine identifies expose events that are generated when
- * we've temporarily moved the bin_window_origin, and translates
- * them or discards them, depending on whether we are obscured
- * or not.
- */
-#if !GTK_CHECK_VERSION(3,0,0)
-    static GdkFilterReturn
-gtk_form_filter(GdkXEvent *gdk_xevent, GdkEvent *event UNUSED, gpointer data)
-{
-    XEvent *xevent;
-    GtkForm *form;
-
-    xevent = (XEvent *) gdk_xevent;
-    form = GTK_FORM(data);
-
-    switch (xevent->type)
-    {
-    case Expose:
-	if (xevent->xexpose.serial == form->configure_serial)
-	{
-	    if (form->visibility == GDK_VISIBILITY_UNOBSCURED)
-		return GDK_FILTER_REMOVE;
-	    else
-		break;
-	}
-	break;
-
-    case ConfigureNotify:
-	if ((xevent->xconfigure.x != 0) || (xevent->xconfigure.y != 0))
-	    form->configure_serial = xevent->xconfigure.serial;
-	break;
-    }
-
-    return GDK_FILTER_CONTINUE;
-}
-
-/* Although GDK does have a GDK_VISIBILITY_NOTIFY event,
- * there is no corresponding event in GTK, so we have
- * to get the events from a filter
- */
-    static GdkFilterReturn
-gtk_form_main_filter(GdkXEvent *gdk_xevent,
-		     GdkEvent *event UNUSED,
-		     gpointer data)
-{
-    XEvent *xevent;
-    GtkForm *form;
-
-    xevent = (XEvent *) gdk_xevent;
-    form = GTK_FORM(data);
-
-    if (xevent->type == VisibilityNotify)
-    {
-	switch (xevent->xvisibility.state)
-	{
-	case VisibilityFullyObscured:
-	    form->visibility = GDK_VISIBILITY_FULLY_OBSCURED;
-	    break;
-
-	case VisibilityPartiallyObscured:
-	    form->visibility = GDK_VISIBILITY_PARTIAL;
-	    break;
-
-	case VisibilityUnobscured:
-	    form->visibility = GDK_VISIBILITY_UNOBSCURED;
-	    break;
-	}
-
-	return GDK_FILTER_REMOVE;
-    }
-    return GDK_FILTER_CONTINUE;
-}
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
-
-#if !GTK_CHECK_VERSION(3,16,0)
-    static void
-gtk_form_set_static_gravity(GdkWindow *window, gboolean use_static)
-{
-    /* We don't check if static gravity is actually supported, because it
-     * results in an annoying assertion error message. */
-    gdk_window_set_static_gravities(window, use_static);
-}
-#endif /* !GTK_CHECK_VERSION(3,16,0) */
 
     void
 gtk_form_move_resize(GtkForm *form, GtkWidget *widget,

@@ -2332,7 +2332,8 @@ special_keys(char_u *args)
     char *save_str = nb_unquote(args, NULL);
     char *tok = strtok(save_str, " ");
     char *sep;
-    char keybuf[64];
+#define KEYBUFLEN 64
+    char keybuf[KEYBUFLEN];
     char cmdbuf[256];
 
     while (tok != NULL)
@@ -2359,10 +2360,13 @@ special_keys(char_u *args)
 	    tok++;
 	}
 
-	strcpy(&keybuf[i], tok);
-	vim_snprintf(cmdbuf, sizeof(cmdbuf),
-				"<silent><%s> :nbkey %s<CR>", keybuf, keybuf);
-	do_map(0, (char_u *)cmdbuf, NORMAL, FALSE);
+	if (strlen(tok) + i < KEYBUFLEN)
+	{
+	    strcpy(&keybuf[i], tok);
+	    vim_snprintf(cmdbuf, sizeof(cmdbuf),
+				 "<silent><%s> :nbkey %s<CR>", keybuf, keybuf);
+	    do_map(0, (char_u *)cmdbuf, NORMAL, FALSE);
+	}
 	tok = strtok(NULL, " ");
     }
     vim_free(save_str);

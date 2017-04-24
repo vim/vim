@@ -6,6 +6,10 @@ func Test_argidx()
   call assert_equal(2, argidx())
   %argdelete
   call assert_equal(0, argidx())
+  " doing it again doesn't result in an error
+  %argdelete
+  call assert_equal(0, argidx())
+  call assert_fails('2argdelete', 'E16:')
 
   args a b c
   call assert_equal(0, argidx())
@@ -86,7 +90,7 @@ endfunc
 
 " Test for [count]argument and [count]argdelete commands
 " Ported from the test_argument_count.in test script
-function Test_argument()
+func Test_argument()
   " Clean the argument list
   arga a | %argd
 
@@ -158,11 +162,11 @@ function Test_argument()
 
   %argdelete
   call assert_fails('argument', 'E163:')
-endfunction
+endfunc
 
 " Test for 0argadd and 0argedit
 " Ported from the test_argument_0count.in test script
-function Test_zero_argadd()
+func Test_zero_argadd()
   " Clean the argument list
   arga a | %argd
 
@@ -184,22 +188,22 @@ function Test_zero_argadd()
   2argu
   arga third
   call assert_equal(['edited', 'a', 'third', 'b', 'c', 'd'], argv())
-endfunction
+endfunc
 
-function Reset_arglist()
+func Reset_arglist()
   args a | %argd
-endfunction
+endfunc
 
 " Test for argc()
-function Test_argc()
+func Test_argc()
   call Reset_arglist()
   call assert_equal(0, argc())
   argadd a b
   call assert_equal(2, argc())
-endfunction
+endfunc
 
 " Test for arglistid()
-function Test_arglistid()
+func Test_arglistid()
   call Reset_arglist()
   arga a b
   call assert_equal(0, arglistid())
@@ -214,19 +218,19 @@ function Test_arglistid()
   tabonly | only | enew!
   argglobal
   call assert_equal(0, arglistid())
-endfunction
+endfunc
 
 " Test for argv()
-function Test_argv()
+func Test_argv()
   call Reset_arglist()
   call assert_equal([], argv())
   call assert_equal("", argv(2))
   argadd a b c d
   call assert_equal('c', argv(2))
-endfunction
+endfunc
 
 " Test for the :argedit command
-function Test_argedit()
+func Test_argedit()
   call Reset_arglist()
   argedit a
   call assert_equal(['a'], argv())
@@ -250,10 +254,10 @@ function Test_argedit()
   argedit! y
   call assert_equal(['x', 'y', 'a', 'c', 'b'], argv())
   %argd
-endfunction
+endfunc
 
 " Test for the :argdelete command
-function Test_argdelete()
+func Test_argdelete()
   call Reset_arglist()
   args aa a aaa b bb
   argdelete a*
@@ -265,10 +269,10 @@ function Test_argdelete()
   call assert_fails('argdelete', 'E471:')
   call assert_fails('1,100argdelete', 'E16:')
   %argd
-endfunction
+endfunc
 
 " Tests for the :next, :prev, :first, :last, :rewind commands
-function Test_argpos()
+func Test_argpos()
   call Reset_arglist()
   args a b c d
   last
@@ -286,10 +290,10 @@ function Test_argpos()
   rewind
   call assert_equal(0, argidx())
   %argd
-endfunction
+endfunc
 
 " Test for autocommand that redefines the argument list, when doing ":all".
-function Test_arglist_autocmd()
+func Test_arglist_autocmd()
   autocmd BufReadPost Xxx2 next Xxx2 Xxx1
   call writefile(['test file Xxx1'], 'Xxx1')
   call writefile(['test file Xxx2'], 'Xxx2')
@@ -315,4 +319,11 @@ function Test_arglist_autocmd()
   call delete('Xxx3')
   argdelete Xxx*
   bwipe! Xxx1 Xxx2 Xxx3
-endfunction
+endfunc
+
+func Test_arg_all_expand()
+  call writefile(['test file Xxx1'], 'Xx x')
+  next notexist Xx\ x runtest.vim
+  call assert_equal('notexist Xx\ x runtest.vim', expand('##'))
+  call delete('Xx x')
+endfunc

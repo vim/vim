@@ -1,6 +1,8 @@
 " Test filename modifiers.
 
 func Test_fnamemodify()
+  let save_home = $HOME
+  let save_shell = &shell
   let $HOME = fnamemodify('.', ':p:h:h')
   set shell=sh
 
@@ -31,15 +33,17 @@ func Test_fnamemodify()
   call assert_equal('''abc"%"def''', fnamemodify('abc"%"def', ':S'))
   call assert_equal('''abc''\'''' ''\''''def''', fnamemodify('abc'' ''def', ':S'))
   call assert_equal('''abc''\''''%''\''''def''', fnamemodify('abc''%''def', ':S'))
-  call assert_equal(expand('%:r:S'), shellescape(expand('%:r')))
   sp test_alot.vim
+  call assert_equal(expand('%:r:S'), shellescape(expand('%:r')))
   call assert_equal('test_alot,''test_alot'',test_alot.vim', join([expand('%:r'), expand('%:r:S'), expand('%')], ','))
   quit
 
   call assert_equal("'abc\ndef'", fnamemodify("abc\ndef", ':S'))
   set shell=tcsh
   call assert_equal("'abc\\\ndef'",  fnamemodify("abc\ndef", ':S'))
-  set shell&
+
+  let $HOME = save_home
+  let &shell = save_shell
 endfunc
 
 func Test_expand()

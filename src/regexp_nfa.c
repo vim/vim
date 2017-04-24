@@ -50,7 +50,7 @@ enum
     NFA_CONCAT,			    /* concatenate two previous items (postfix
 				     * only) */
     NFA_OR,			    /* \| (postfix only) */
-    NFA_STAR,			    /* greedy * (posfix only) */
+    NFA_STAR,			    /* greedy * (postfix only) */
     NFA_STAR_NONGREEDY,		    /* non-greedy * (postfix only) */
     NFA_QUEST,			    /* greedy \? (postfix only) */
     NFA_QUEST_NONGREEDY,	    /* non-greedy \? (postfix only) */
@@ -1359,7 +1359,7 @@ nfa_regatom(void)
 		    rc_did_emsg = TRUE;
 		    return FAIL;
 		}
-		EMSGN("INTERNAL: Unknown character class char: %ld", c);
+		IEMSGN("INTERNAL: Unknown character class char: %ld", c);
 		return FAIL;
 	    }
 #ifdef FEAT_MBYTE
@@ -1425,7 +1425,7 @@ nfa_regatom(void)
 		    EMSG(_(e_nopresub));
 		    return FAIL;
 		}
-		for (lp = reg_prev_sub; *lp != NUL; mb_cptr_adv(lp))
+		for (lp = reg_prev_sub; *lp != NUL; MB_CPTR_ADV(lp))
 		{
 		    EMIT(PTR2CHAR(lp));
 		    if (lp != reg_prev_sub)
@@ -1672,7 +1672,7 @@ collection:
 		    else
 			EMIT(result);
 		    regparse = endp;
-		    mb_ptr_adv(regparse);
+		    MB_PTR_ADV(regparse);
 		    return OK;
 		}
 		/*
@@ -1684,7 +1684,7 @@ collection:
 		if (*regparse == '^')			/* negated range */
 		{
 		    negated = TRUE;
-		    mb_ptr_adv(regparse);
+		    MB_PTR_ADV(regparse);
 		    EMIT(NFA_START_NEG_COLL);
 		}
 		else
@@ -1694,7 +1694,7 @@ collection:
 		    startc = '-';
 		    EMIT(startc);
 		    EMIT(NFA_CONCAT);
-		    mb_ptr_adv(regparse);
+		    MB_PTR_ADV(regparse);
 		}
 		/* Emit the OR branches for each character in the [] */
 		emit_range = FALSE;
@@ -1797,7 +1797,7 @@ collection:
 		    {
 			emit_range = TRUE;
 			startc = oldstartc;
-			mb_ptr_adv(regparse);
+			MB_PTR_ADV(regparse);
 			continue;	    /* reading the end of the range */
 		    }
 
@@ -1817,7 +1817,7 @@ collection:
 			    )
 			)
 		    {
-			mb_ptr_adv(regparse);
+			MB_PTR_ADV(regparse);
 
 			if (*regparse == 'n')
 			    startc = reg_string ? NL : NFA_NEWL;
@@ -1832,7 +1832,7 @@ collection:
 				/* TODO(RE) This needs more testing */
 				startc = coll_get_char();
 				got_coll_char = TRUE;
-				mb_ptr_back(old_regparse, regparse);
+				MB_PTR_BACK(old_regparse, regparse);
 			    }
 			    else
 			    {
@@ -1932,10 +1932,10 @@ collection:
 			}
 		    }
 
-		    mb_ptr_adv(regparse);
+		    MB_PTR_ADV(regparse);
 		} /* while (p < endp) */
 
-		mb_ptr_back(old_regparse, regparse);
+		MB_PTR_BACK(old_regparse, regparse);
 		if (*regparse == '-')	    /* if last, '-' is just a char */
 		{
 		    EMIT('-');
@@ -1944,7 +1944,7 @@ collection:
 
 		/* skip the trailing ] */
 		regparse = endp;
-		mb_ptr_adv(regparse);
+		MB_PTR_ADV(regparse);
 
 		/* Mark end of the collection. */
 		if (negated == TRUE)
@@ -1974,7 +1974,7 @@ collection:
 nfa_do_multibyte:
 		/* plen is length of current char with composing chars */
 		if (enc_utf8 && ((*mb_char2len)(c)
-			    != (plen = (*mb_ptr2len)(old_regparse))
+			    != (plen = utfc_ptr2len(old_regparse))
 						       || utf_iscomposing(c)))
 		{
 		    int i = 0;
@@ -2169,7 +2169,7 @@ nfa_regpiece(void)
 	     * maximum is much larger than the minimum and when the maximum is
 	     * large.  Bail out if we can use the other engine. */
 	    if ((nfa_re_flags & RE_AUTO)
-				   && (maxval > minval + 200 || maxval > 500))
+				   && (maxval > 500 || maxval > minval + 200))
 		return FAIL;
 
 	    /* Ignore previous call to nfa_regatom() */
@@ -4871,7 +4871,7 @@ check_char_class(int class, int c)
 		return OK;
 	    break;
 	case NFA_CLASS_CNTRL:
-	    if (c >= 1 && c <= 255 && iscntrl(c))
+	    if (c >= 1 && c <= 127 && iscntrl(c))
 		return OK;
 	    break;
 	case NFA_CLASS_DIGIT:
@@ -4879,7 +4879,7 @@ check_char_class(int class, int c)
 		return OK;
 	    break;
 	case NFA_CLASS_GRAPH:
-	    if (c >= 1 && c <= 255 && isgraph(c))
+	    if (c >= 1 && c <= 127 && isgraph(c))
 		return OK;
 	    break;
 	case NFA_CLASS_LOWER:
@@ -4925,7 +4925,7 @@ check_char_class(int class, int c)
 
 	default:
 	    /* should not be here :P */
-	    EMSGN(_(e_ill_char_class), class);
+	    IEMSGN(_(e_ill_char_class), class);
 	    return FAIL;
     }
     return FAIL;
@@ -6351,12 +6351,12 @@ nfa_regmatch(
 		break;
 
 	    case NFA_WHITE:	/*  \s	*/
-		result = vim_iswhite(curc);
+		result = VIM_ISWHITE(curc);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
 	    case NFA_NWHITE:	/*  \S	*/
-		result = curc != NUL && !vim_iswhite(curc);
+		result = curc != NUL && !VIM_ISWHITE(curc);
 		ADD_STATE_IF_MATCH(t->state);
 		break;
 
@@ -6688,7 +6688,7 @@ nfa_regmatch(
 
 #ifdef DEBUG
 		if (c < 0)
-		    EMSGN("INTERNAL: Negative state char: %ld", c);
+		    IEMSGN("INTERNAL: Negative state char: %ld", c);
 #endif
 		result = (c == curc);
 
@@ -7216,7 +7216,7 @@ nfa_regcomp(char_u *expr, int re_flags)
     {
 	/* TODO: only give this error for debugging? */
 	if (post_ptr >= post_end)
-	    EMSGN("Internal error: estimated max number of states insufficient: %ld", post_end - post_start);
+	    IEMSGN("Internal error: estimated max number of states insufficient: %ld", post_end - post_start);
 	goto fail;	    /* Cascaded (syntax?) error */
     }
 

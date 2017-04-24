@@ -39,7 +39,7 @@ tutorsubloc=$scriptloc/tutor
 if test $what = "install" -o $what = "xxd"; then
    if test ! -d $destdir; then
       echo creating $destdir
-      ./mkinstalldirs $destdir
+      /bin/sh install-sh -c -d $destdir
    fi
 fi
 

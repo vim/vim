@@ -3446,7 +3446,7 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-	ac_ext=c
+		ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -3723,7 +3723,7 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 
 fi
 rm -f conftest*
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fgrep" >&5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for fgrep" >&5
 $as_echo_n "checking for fgrep... " >&6; }
 if ${ac_cv_path_FGREP+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -3789,7 +3789,7 @@ fi
 $as_echo "$ac_cv_path_FGREP" >&6; }
  FGREP="$ac_cv_path_FGREP"
 
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing strerror" >&5
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing strerror" >&5
 $as_echo_n "checking for library containing strerror... " >&6; }
 if ${ac_cv_search_strerror+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -3844,7 +3844,7 @@ if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 fi
-	for ac_prog in gawk mawk nawk awk
+		for ac_prog in gawk mawk nawk awk
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -4114,9 +4114,9 @@ if test "$GCC" = yes; then
   fi
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for recent clang version" >&5
-$as_echo_n "checking for recent clang version... " >&6; }
-CLANG_VERSION_STRING=`$CC --version 2>/dev/null | sed  -n -e 's/^.*clang.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*$/\1/p'`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for clang version" >&5
+$as_echo_n "checking for clang version... " >&6; }
+CLANG_VERSION_STRING=`$CC --version 2>/dev/null | sed  -n -e 's/^.*clang[^0-9]*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*$/\1/p'`
 if test x"$CLANG_VERSION_STRING" != x"" ; then
   CLANG_MAJOR=`echo "$CLANG_VERSION_STRING" | sed -n -e 's/\([0-9][0-9]*\)\.[0-9][0-9]*\.[0-9][0-9]*/\1/p'`
   CLANG_MINOR=`echo "$CLANG_VERSION_STRING" | sed -n -e 's/[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*/\1/p'`
@@ -4124,12 +4124,19 @@ if test x"$CLANG_VERSION_STRING" != x"" ; then
   CLANG_VERSION=`expr $CLANG_MAJOR '*' 1000000 '+' $CLANG_MINOR '*' 1000 '+' $CLANG_REVISION`
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CLANG_VERSION" >&5
 $as_echo "$CLANG_VERSION" >&6; }
-          if test "$CLANG_VERSION" -ge 500002075 ; then
-    CFLAGS=`echo "$CFLAGS" | sed -n -e 's/-fno-strength-reduce/ /p'`
+          { $as_echo "$as_me:${as_lineno-$LINENO}: checking if clang supports -fno-strength-reduce" >&5
+$as_echo_n "checking if clang supports -fno-strength-reduce... " >&6; }
+  if test "$CLANG_VERSION" -ge 500002075 ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    CFLAGS=`echo "$CFLAGS" | sed -e 's/-fno-strength-reduce/ /'`
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
   fi
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: N/A" >&5
+$as_echo "N/A" >&6; }
 fi
 
 CROSS_COMPILING=
@@ -10094,6 +10101,28 @@ fi
 
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for /proc link to executable" >&5
+$as_echo_n "checking for /proc link to executable... " >&6; }
+if test -L "/proc/self/exe"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: /proc/self/exe" >&5
+$as_echo "/proc/self/exe" >&6; }
+  $as_echo "#define PROC_EXE_LINK \"/proc/self/exe\"" >>confdefs.h
+
+elif test -L "/proc/self/path/a.out"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: /proc/self/path/a.out" >&5
+$as_echo "/proc/self/path/a.out" >&6; }
+  $as_echo "#define PROC_EXE_LINK \"/proc/self/path/a.out\"" >>confdefs.h
+
+elif test -L "/proc/curproc/file"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: /proc/curproc/file" >&5
+$as_echo "/proc/curproc/file" >&6; }
+  $as_echo "#define PROC_EXE_LINK \"/proc/curproc/file\"" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CYGWIN or MSYS environment" >&5
 $as_echo_n "checking for CYGWIN or MSYS environment... " >&6; }
 case `uname` in
@@ -12003,7 +12032,7 @@ fi
 for ac_func in fchdir fchown fsync getcwd getpseudotty \
 	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
-	setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
+	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
 	usleep utime utimes

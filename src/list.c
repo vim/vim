@@ -885,7 +885,7 @@ failret:
 }
 
 /*
- * Write list of strings to file
+ * Write "list" of strings to file "fd".
  */
     int
 write_list(FILE *fd, list_T *list, int binary)

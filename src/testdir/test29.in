@@ -103,6 +103,7 @@ if (condition) // Remove the next comment leader!
 
 STARTTEST
 :" Test with backspace set to the non-compatible setting
+:set belloff=all
 /^\d\+ this
 :set cp bs=2
 Avim1

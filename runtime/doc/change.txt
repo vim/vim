@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.0.  Last change: 2016 Nov 19
+*change.txt*    For Vim version 8.0.  Last change: 2017 Feb 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -635,12 +635,14 @@ For other systems the tmpnam() library function is used.
 			For the {pattern} see |pattern|.
 			{string} can be a literal string, or something
 			special; see |sub-replace-special|.
+							*E939*
 			When [range] and [count] are omitted, replace in the
-			current line only.
-			When [count] is given, replace in [count] lines,
-			starting with the last line in [range].  When [range]
-			is omitted start in the current line.
-			Also see |cmdline-ranges|.
+			current line only.  When [count] is given, replace in
+			[count] lines, starting with the last line in [range].
+			When [range] is omitted start in the current line.
+			[count] must be a positive number.  Also see
+			|cmdline-ranges|.
+
 			See |:s_flags| for [flags].
 
 :[range]s[ubstitute] [flags] [count]

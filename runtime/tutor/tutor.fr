@@ -123,7 +123,7 @@ NOTE : En avançant dans ce cours, n'essayez pas de mémoriser, apprenez par
                      Leçon 1.5 : ÉDITION DE TEXTE - AJOUTER
 
 
-                    ** Appuyez  A  pour ajouter du text. **
+                    ** Appuyez  A  pour ajouter du texte. **
 
   1. Déplacez le curseur sur la première ligne ci-dessous marquée --->.
      Peu importe sur quel caractère se trouve le curseur sur cette ligne.
@@ -574,7 +574,7 @@ NOTE : Quand la recherche atteint la fin du fichier, elle reprend au début
 
   2. Puis tapez le caractère  % .
 
-  3. Le curseur se déplacera sur la parenthèse out crochet correspondant.
+  3. Le curseur se déplacera sur la parenthèse ou crochet correspondant.
 
   4. Tapez  %  pour replacer le curseur sur la parenthèse ou crochet
      correspondant.
@@ -854,17 +854,17 @@ NOTE : Le mode Remplacement est comme le mode Insertion, mais tous les
   5. Tapez  p  pour coller le texte. Puis tapez :  un second <Échap> .
 
   6. Utilisez le mode Visuel pour sélectionner "élément", copiez-le avec  y  ,
-     déplacez-vous à la fin de la ligne suivant avec  j$  et collez le texte
+     déplacez-vous à la fin de la ligne suivante avec  j$  et collez le texte
      à cet endroit avec  p .
 
 --->  a) ceci est le premier élément.
       b)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                       Leçon 6.4 : RÉGLAGE DES OPTIONS
+                       Leçon 6.5 : RÉGLAGE DES OPTIONS
 
 
-    ** Réglons une option afin que la recherche et la substitution ignore la
+    ** Réglons une option afin que la recherche et la substitution ignorent la
        casse des caractères. **
 
   1. Recherchez 'ignore' en tapant :   /ignore <Entrée>
@@ -1034,5 +1034,5 @@ NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
   Dernières mises à jour par Dominique Pellé.
 
   E-mail :      dominique.pelle@gmail.com
-  Last Change : 2016 Nov 08
+  Last Change : 2017 Jan 16
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -75,6 +75,10 @@ int do_in_runtimepath(char_u *name, int flags, void (*callback)(char_u *fname, v
 void ex_packloadall(exarg_T *eap);
 void ex_packadd(exarg_T *eap);
 void ex_options(exarg_T *eap);
+void init_pyxversion(void);
+void ex_pyxfile(exarg_T *eap);
+void ex_pyx(exarg_T *eap);
+void ex_pyxdo(exarg_T *eap);
 void ex_source(exarg_T *eap);
 linenr_T *source_breakpoint(void *cookie);
 int *source_dbg_tick(void *cookie);

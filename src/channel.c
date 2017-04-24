@@ -710,7 +710,14 @@ channel_open(
 	channel_free(channel);
 	return NULL;
     }
-    memcpy((char *)&server.sin_addr, host->h_addr, host->h_length);
+    {
+	char		*p;
+
+	/* When using host->h_addr directly ubsan warns for it to not be
+	 * aligned.  First copy the pointer to aviod that. */
+	memcpy(&p, &host->h_addr, sizeof(p));
+	memcpy((char *)&server.sin_addr, p, host->h_length);
+    }
 
     /* On Mac and Solaris a zero timeout almost never works.  At least wait
      * one millisecond. Let's do it for all systems, because we don't know why
@@ -1567,7 +1574,7 @@ invoke_callback(channel_T *channel, char_u *callback, partial_T *partial,
     int		dummy;
 
     if (safe_to_invoke_callback == 0)
-	EMSG("INTERNAL: Invoking callback when it is not safe");
+	IEMSG("INTERNAL: Invoking callback when it is not safe");
 
     argv[0].v_type = VAR_CHANNEL;
     argv[0].vval.v_channel = channel;
@@ -1833,39 +1840,42 @@ channel_save(channel_T *channel, ch_part_T part, char_u *buf, int len,
     return OK;
 }
 
+/*
+ * Try to fill the buffer of "reader".
+ * Returns FALSE when nothing was added.
+ */
     static int
 channel_fill(js_read_T *reader)
 {
     channel_T	*channel = (channel_T *)reader->js_cookie;
     ch_part_T	part = reader->js_cookie_arg;
     char_u	*next = channel_get(channel, part);
-    int		unused;
-    int		len;
+    int		keeplen;
+    int		addlen;
     char_u	*p;
 
     if (next == NULL)
 	return FALSE;
 
-    unused = reader->js_end - reader->js_buf - reader->js_used;
-    if (unused > 0)
+    keeplen = reader->js_end - reader->js_buf;
+    if (keeplen > 0)
     {
 	/* Prepend unused text. */
-	len = (int)STRLEN(next);
-	p = alloc(unused + len + 1);
+	addlen = (int)STRLEN(next);
+	p = alloc(keeplen + addlen + 1);
 	if (p == NULL)
 	{
 	    vim_free(next);
 	    return FALSE;
 	}
-	mch_memmove(p, reader->js_buf + reader->js_used, unused);
-	mch_memmove(p + unused, next, len + 1);
+	mch_memmove(p, reader->js_buf, keeplen);
+	mch_memmove(p + keeplen, next, addlen + 1);
 	vim_free(next);
 	next = p;
     }
 
     vim_free(reader->js_buf);
     reader->js_buf = next;
-    reader->js_used = 0;
     return TRUE;
 }
 
@@ -1896,9 +1906,12 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 
     /* When a message is incomplete we wait for a short while for more to
      * arrive.  After the delay drop the input, otherwise a truncated string
-     * or list will make us hang.  */
+     * or list will make us hang.
+     * Do not generate error messages, they will be written in a channel log. */
+    ++emsg_silent;
     status = json_decode(&reader, &listtv,
 				  chanpart->ch_mode == MODE_JS ? JSON_JS : 0);
+    --emsg_silent;
     if (status == OK)
     {
 	/* Only accept the response when it is a list with at least two
@@ -1942,16 +1955,20 @@ channel_parse_json(channel_T *channel, ch_part_T part)
     }
 
     if (status == OK)
-	chanpart->ch_waiting = FALSE;
+	chanpart->ch_wait_len = 0;
     else if (status == MAYBE)
     {
-	if (!chanpart->ch_waiting)
+	size_t buflen = STRLEN(reader.js_buf);
+
+	if (chanpart->ch_wait_len < buflen)
 	{
-	    /* First time encountering incomplete message, set a deadline of
-	     * 100 msec. */
-	    ch_log(channel, "Incomplete message - wait for more");
+	    /* First time encountering incomplete message or after receiving
+	     * more (but still incomplete): set a deadline of 100 msec. */
+	    ch_logn(channel,
+		    "Incomplete message (%d bytes) - wait 100 msec for more",
+		    (int)buflen);
 	    reader.js_used = 0;
-	    chanpart->ch_waiting = TRUE;
+	    chanpart->ch_wait_len = buflen;
 #ifdef WIN32
 	    chanpart->ch_deadline = GetTickCount() + 100L;
 #else
@@ -1982,7 +1999,8 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 	    if (timeout)
 	    {
 		status = FAIL;
-		chanpart->ch_waiting = FALSE;
+		chanpart->ch_wait_len = 0;
+		ch_log(channel, "timed out");
 	    }
 	    else
 	    {
@@ -1996,7 +2014,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
     {
 	ch_error(channel, "Decoding failed - discarding input");
 	ret = FALSE;
-	chanpart->ch_waiting = FALSE;
+	chanpart->ch_wait_len = 0;
     }
     else if (reader.js_buf[reader.js_used] != NUL)
     {
@@ -2553,9 +2571,14 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    if (nl == NULL)
 	    {
 		/* Flush remaining message that is missing a NL. */
-		buf = vim_realloc(buf, node->rq_buflen + 1);
-		if (buf == NULL)
+		char_u	*new_buf;
+
+		new_buf = vim_realloc(buf, node->rq_buflen + 1);
+		if (new_buf == NULL)
+		    /* This might fail over and over again, should the message
+		     * be dropped? */
 		    return FALSE;
+		buf = new_buf;
 		node->rq_buffer = buf;
 		nl = buf + node->rq_buflen++;
 		*nl = NUL;
@@ -3281,6 +3304,7 @@ channel_read_block(channel_T *channel, ch_part_T part, int timeout)
 	channel_read(channel, part, "channel_read_block");
     }
 
+    /* We have a complete message now. */
     if (mode == MODE_RAW)
     {
 	msg = channel_get_all(channel, part);
@@ -3359,7 +3383,7 @@ channel_read_json_block(
 	    /* Wait for up to the timeout.  If there was an incomplete message
 	     * use the deadline for that. */
 	    timeout = timeout_arg;
-	    if (chanpart->ch_waiting)
+	    if (chanpart->ch_wait_len > 0)
 	    {
 #ifdef WIN32
 		timeout = chanpart->ch_deadline - GetTickCount() + 1;
@@ -3379,7 +3403,7 @@ channel_read_json_block(
 		{
 		    /* Something went wrong, channel_parse_json() didn't
 		     * discard message.  Cancel waiting. */
-		    chanpart->ch_waiting = FALSE;
+		    chanpart->ch_wait_len = 0;
 		    timeout = timeout_arg;
 		}
 		else if (timeout > timeout_arg)

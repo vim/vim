@@ -22,6 +22,7 @@ void term_cursor_right(int i);
 void term_append_lines(int line_count);
 void term_delete_lines(int line_count);
 void term_set_winpos(int x, int y);
+int term_get_winpos(int *x, int *y);
 void term_set_winsize(int width, int height);
 void term_fg_color(int n);
 void term_bg_color(int n);

@@ -1429,7 +1429,7 @@ set_sofo(slang_T *lp, char_u *from, char_u *to)
 	for (p = from, s = to; *p != NUL && *s != NUL; )
 	{
 	    c = mb_cptr2char_adv(&p);
-	    mb_cptr_adv(s);
+	    MB_CPTR_ADV(s);
 	    if (c >= 256)
 		++lp->sl_sal_first[c & 0xff];
 	}
@@ -1585,7 +1585,7 @@ spell_read_tree(
     int		prefixtree,	/* TRUE for the prefix tree */
     int		prefixcnt)	/* when "prefixtree" is TRUE: prefix count */
 {
-    int		len;
+    long	len;
     int		idx;
     char_u	*bp;
     idx_T	*ip;
@@ -1595,6 +1595,9 @@ spell_read_tree(
     len = get4c(fd);
     if (len < 0)
 	return SP_TRUNCERROR;
+    if (len >= LONG_MAX / (long)sizeof(int))
+	/* Invalid length, multiply with sizeof(int) would overflow. */
+	return SP_FORMERROR;
     if (len > 0)
     {
 	/* Allocate the byte array. */
@@ -2799,7 +2802,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 			    {
 				p = aff_entry->ae_add
 						  + STRLEN(aff_entry->ae_add);
-				mb_ptr_back(aff_entry->ae_add, p);
+				MB_PTR_BACK(aff_entry->ae_add, p);
 				if (PTR2CHAR(p) == c_up)
 				{
 				    upper = TRUE;
@@ -2927,10 +2930,10 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		{
 		    /* Replace underscore with space (can't include a space
 		     * directly). */
-		    for (p = items[1]; *p != NUL; mb_ptr_adv(p))
+		    for (p = items[1]; *p != NUL; MB_PTR_ADV(p))
 			if (*p == '_')
 			    *p = ' ';
-		    for (p = items[2]; *p != NUL; mb_ptr_adv(p))
+		    for (p = items[2]; *p != NUL; MB_PTR_ADV(p))
 			if (*p == '_')
 			    *p = ' ';
 		    add_fromto(spin, items[0][3] == 'S'
@@ -3621,7 +3624,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	/* Truncate the word at the "/", set "afflist" to what follows.
 	 * Replace "\/" by "/" and "\\" by "\". */
 	afflist = NULL;
-	for (p = w; *p != NUL; mb_ptr_adv(p))
+	for (p = w; *p != NUL; MB_PTR_ADV(p))
 	{
 	    if (*p == '\\' && (p[1] == '\\' || p[1] == '/'))
 		STRMOVE(p, p + 1);
@@ -3944,7 +3947,7 @@ store_aff_word(
 				{
 				    i = mb_charlen(ae->ae_chop);
 				    for ( ; i > 0; --i)
-					mb_ptr_adv(p);
+					MB_PTR_ADV(p);
 				}
 				else
 #endif
@@ -3962,7 +3965,7 @@ store_aff_word(
 				p = newword + STRLEN(newword);
 				i = (int)MB_CHARLEN(ae->ae_chop);
 				for ( ; i > 0; --i)
-				    mb_ptr_back(newword, p);
+				    MB_PTR_BACK(newword, p);
 				*p = NUL;
 			    }
 			    if (ae->ae_add != NULL)

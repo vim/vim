@@ -1,4 +1,4 @@
-*logiPat.txt*	Logical Patterns				Jun 22, 2015
+*pi_logipat.txt*	Logical Patterns			Jun 22, 2015
 
 Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
 Copyright: (c) 2004-2015 by Charles E. Campbell	*logiPat-copyright*

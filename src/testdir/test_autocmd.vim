@@ -1,5 +1,7 @@
 " Tests for autocommands
 
+set belloff=all
+
 function! s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
     if bufloaded(bnr) && bufnr('%') != bnr
@@ -318,7 +320,101 @@ func Test_three_windows()
   call assert_equal('Xanother', expand('%'))
 
   au!
+  enew
+  bwipe! Xtestje1
   call delete('Xtestje1')
   call delete('Xtestje2')
   call delete('Xtestje3')
+endfunc
+
+func Test_BufEnter()
+  au! BufEnter
+  au Bufenter * let val = val . '+'
+  let g:val = ''
+  split NewFile
+  call assert_equal('+', g:val)
+  bwipe!
+  call assert_equal('++', g:val)
+
+  " Also get BufEnter when editing a directory
+  call mkdir('Xdir')
+  split Xdir
+  call assert_equal('+++', g:val)
+
+  " On MS-Windows we can't edit the directory, make sure we wipe the right
+  " buffer.
+  bwipe! Xdir
+
+  call delete('Xdir', 'd')
+  au! BufEnter
+endfunc
+
+" Closing a window might cause an endless loop
+" E814 for older Vims
+function Test_autocmd_bufwipe_in_SessLoadPost()
+  tabnew
+  set noswapfile
+  mksession!
+
+  let content = ['set nocp noswapfile',
+        \ 'let v:swapchoice="e"',
+        \ 'augroup test_autocmd_sessionload',
+        \ 'autocmd!',
+        \ 'autocmd SessionLoadPost * 4bw!',
+        \ 'augroup END',
+	\ '',
+	\ 'func WriteErrors()',
+	\ '  call writefile([execute("messages")], "Xerrors")',
+	\ 'endfunc',
+	\ 'au VimLeave * call WriteErrors()',
+        \ ]
+  call writefile(content, 'Xvimrc')
+  call system(v:progpath. ' -u Xvimrc --not-a-term --noplugins -S Session.vim -c cq')
+  let errors = join(readfile('Xerrors'))
+  call assert_match('E814', errors)
+
+  set swapfile
+  for file in ['Session.vim', 'Xvimrc', 'Xerrors']
+    call delete(file)
+  endfor
+endfunc
+
+" SEGV occurs in older versions.
+function Test_autocmd_bufwipe_in_SessLoadPost2()
+  tabnew
+  set noswapfile
+  mksession!
+
+  let content = ['set nocp noswapfile',
+      \ 'function! DeleteInactiveBufs()',
+      \ '  tabfirst',
+      \ '  let tabblist = []',
+      \ '  for i in range(1, tabpagenr(''$''))',
+      \ '    call extend(tabblist, tabpagebuflist(i))',
+      \ '  endfor',
+      \ '  for b in range(1, bufnr(''$''))',
+      \ '    if bufexists(b) && buflisted(b) && (index(tabblist, b) == -1 || bufname(b) =~# ''^$'')',
+      \ '      exec ''bwipeout '' . b',
+      \ '    endif',
+      \ '  endfor',
+      \ '  echomsg "SessionLoadPost DONE"',
+      \ 'endfunction',
+      \ 'au SessionLoadPost * call DeleteInactiveBufs()',
+      \ '',
+      \ 'func WriteErrors()',
+      \ '  call writefile([execute("messages")], "Xerrors")',
+      \ 'endfunc',
+      \ 'au VimLeave * call WriteErrors()',
+      \ ]
+  call writefile(content, 'Xvimrc')
+  call system(v:progpath. ' -u Xvimrc --not-a-term --noplugins -S Session.vim -c cq')
+  let errors = join(readfile('Xerrors'))
+  " This probably only ever matches on unix.
+  call assert_notmatch('Caught deadly signal SEGV', errors)
+  call assert_match('SessionLoadPost DONE', errors)
+
+  set swapfile
+  for file in ['Session.vim', 'Xvimrc', 'Xerrors']
+    call delete(file)
+  endfor
 endfunc

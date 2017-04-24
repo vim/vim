@@ -17,6 +17,7 @@ Test cases:
 
 STARTTEST
 :so small.vim
+:set belloff=all
 :set enc=utf-8 nocp viminfo+=nviminfo
 :
 :" User functions

@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.0.  Last change: 2016 Sep 02
+*term.txt*      For Vim version 8.0.  Last change: 2017 Apr 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -88,6 +88,28 @@ into the mode it was before Vim started.  The strings defined with 't_te' and
 an external command (e.g., "!!"), the terminal will be put into Normal mode
 for a moment.  This means that you can stop the output to the screen by
 hitting a printing key.  Output resumes when you hit <BS>.
+
+						*xterm-bracketed-paste*
+When the 't_BE' option is set then 't_BE' will be sent to the
+terminal when entering "raw" mode and 't_BD' when leaving "raw" mode.  The
+terminal is then expected to put 't_PS' before pasted text and 't_PE' after
+pasted text.  This way Vim can separate text that is pasted from characters
+that are typed.  The pasted text is handled like when the middle mouse button
+is used, it is inserted literally and not interpreted as commands.
+
+When the cursor is in the first column, the pasted text will be inserted
+before it.  Otherwise the pasted text is appended after the cursor position.
+This means one cannot paste after the first column.  Unfortunately Vim does
+not have a way to tell where the mouse pointer was.
+
+Note that in some situations Vim will not recognize the bracketed paste and
+you will get the raw text.  In other situations Vim will only get the first
+pasted character and drop the rest, e.g. when using the "r" command.  If you
+have a problem with this, disable bracketed paste by putting this in your
+.vimrc: >
+	set t_BE=
+If this is done while Vim is running the 't_BD' will be sent to the terminal
+to disable bracketed paste.
 
 							*cs7-problem*
 Note: If the terminal settings are changed after running Vim, you might have
@@ -230,7 +252,7 @@ But any non-empty string means that the flag is set.  An empty string means
 that the flag is not set.  't_CS' works like this too, but it isn't a termcap
 flag.
 
-OUTPUT CODES
+OUTPUT CODES						*terminal-output-codes*
 	option	meaning	~
 
 	t_AB	set background color (ANSI)			*t_AB* *'t_AB'*
@@ -292,6 +314,7 @@ Added by Vim (there are no standard codes for these):
 	t_IS	set icon text start				*t_IS* *'t_IS'*
 	t_IE	set icon text end				*t_IE* *'t_IE'*
 	t_WP	set window position (Y, X) in pixels		*t_WP* *'t_WP'*
+	t_GP	get window position (Y, X) in pixels		*t_GP* *'t_GP'*
 	t_WS	set window size (height, width) in characters	*t_WS* *'t_WS'*
 	t_SI	start insert mode (bar cursor shape)		*t_SI* *'t_SI'*
 	t_SR	start replace mode (underline cursor shape)	*t_SR* *'t_SR'*
@@ -306,8 +329,12 @@ Added by Vim (there are no standard codes for these):
 		|xterm-true-color|
 	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
 		|xterm-true-color|
+	t_BE	enable bracketed paste mode			*t_BE* *'t_BE'*
+		|xterm-bracketed-paste|
+	t_BD	disable bracketed paste mode			*t_BD* *'t_BD'*
+		|xterm-bracketed-paste|
 
-KEY CODES
+KEY CODES						*terminal-key-codes*
 Note: Use the <> form if possible
 
 	option	name		meaning	~
@@ -398,6 +425,9 @@ Note: Use the <> form if possible
 	t_KK	<k8>		keypad 8		 *<k8>*	*t_KK* *'t_KK'*
 	t_KL	<k9>		keypad 9		 *<k9>*	*t_KL* *'t_KL'*
 		<Mouse>		leader of mouse code		*<Mouse>*
+								*t_PS* *'t_PS'*
+	t_PS	start of bracketed paste |xterm-bracketed-paste|
+	t_PE	end of bracketed paste |xterm-bracketed-paste|  *t_PE* *'t_PE'*
 
 Note about t_so and t_mr: When the termcap entry "so" is not present the
 entry for "mr" is used.  And vice versa.  The same is done for "se" and "me".

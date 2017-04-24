@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.0.  Last change: 2016 Nov 04
+*quickfix.txt*  For Vim version 8.0.  Last change: 2017 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -45,10 +45,13 @@ The 'errorformat' option should be set to match the error messages from your
 compiler (see |errorformat| below).
 
 						*location-list* *E776*
-A location list is similar to a quickfix list and contains a list of positions
-in files.  A location list is associated with a window and each window can
-have a separate location list.  A location list can be associated with only
-one window.  The location list is independent of the quickfix list.
+A location list is a window-local quickfix list. You get one after commands
+like `:lvimgrep`, `:lgrep`, `:lhelpgrep`, `:lmake`, etc., which create a
+location list instead of a quickfix list as the corresponding `:vimgrep`,
+`:grep`, `:helpgrep`, `:make` do.
+A location list is associated with a window and each window can have a
+separate location list.  A location list can be associated with only one
+window.  The location list is independent of the quickfix list.
 
 When a window with a location list is split, the new window gets a copy of the
 location list.  When there are no longer any references to a location list,
@@ -164,6 +167,9 @@ processing a quickfix or location list command, it will be aborted.
 			keep Vim running while compiling.  If you give the
 			name of the errorfile, the 'errorfile' option will
 			be set to [errorfile].  See |:cc| for [!].
+			If the encoding of the error file differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
 
 							*:lf* *:lfile*
 :lf[ile][!] [errorfile]	Same as ":cfile", except the location list for the
@@ -175,6 +181,9 @@ processing a quickfix or location list command, it will be aborted.
 :cg[etfile] [errorfile]					*:cg* *:cgetfile*
 			Read the error file.  Just like ":cfile" but don't
 			jump to the first error.
+			If the encoding of the error file differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
 
 
 :lg[etfile] [errorfile]					*:lg* *:lgetfile*
@@ -185,6 +194,9 @@ processing a quickfix or location list command, it will be aborted.
 :caddf[ile] [errorfile]	Read the error file and add the errors from the
 			errorfile to the current quickfix list. If a quickfix
 			list is not present, then a new list is created.
+			If the encoding of the error file differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
 
 							*:laddf* *:laddfile*
 :laddf[ile] [errorfile]	Same as ":caddfile", except the location list for the
@@ -320,6 +332,7 @@ use this code: >
 	endfunction
 
 	au QuickfixCmdPost make call QfMakeConv()
+Another option is using 'makeencoding'.
 
 
 EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
@@ -586,6 +599,9 @@ lists, use ":cnewer 99" first.
 			   like |:cnext| and |:cprevious|, see above.
 			This command does not accept a comment, any "
 			characters are considered part of the arguments.
+			If the encoding of the program output differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
 
 							*:lmak* *:lmake*
 :lmak[e][!] [arguments]
@@ -645,6 +661,7 @@ read the error messages: >
 	au QuickfixCmdPost make call QfMakeConv()
 
 (Example by Faque Cheng)
+Another option is using 'makeencoding'.
 
 ==============================================================================
 5. Using :vimgrep and :grep				*grep* *lid*
@@ -759,6 +776,9 @@ id-utils) in a similar way to its compiler integration (see |:make| above).
 			When 'grepprg' is "internal" this works like
 			|:vimgrep|.  Note that the pattern needs to be
 			enclosed in separator characters then.
+			If the encoding of the program output differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
 
 							    *:lgr* *:lgrep*
 :lgr[ep][!] [arguments]	Same as ":grep", except the location list for the
@@ -783,6 +803,10 @@ id-utils) in a similar way to its compiler integration (see |:make| above).
 				  \ | catch /E480:/
 				  \ | endtry"
 <
+			If the encoding of the program output differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
+
 							*:lgrepa* *:lgrepadd*
 :lgrepa[dd][!] [arguments]
 			Same as ":grepadd", except the location list for the
@@ -1399,7 +1423,7 @@ prints information about entering a directory in the form "Making all in dir".
    Making all in dir2		  ./dir1/dir2
 
    This can be solved by printing absolute directories in the "enter directory"
-   message or by printing "leave directory" messages..
+   message or by printing "leave directory" messages.
 
 To avoid this problem, ensure to print absolute directory names and "leave
 directory" messages.

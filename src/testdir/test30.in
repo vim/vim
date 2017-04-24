@@ -4,6 +4,7 @@ Note: This test will fail if "cat" is not available.
 
 STARTTEST
 :so small.vim
+:set belloff=all
 :" first write three test files, one in each format
 :set fileformat=unix
 :set fileformats=

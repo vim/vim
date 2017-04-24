@@ -1519,7 +1519,7 @@ split_button_string(char_u *button_string, int *n_buttons)
 	    else if (*p == DLG_HOTKEY_CHAR)
 		*p++ = '_';
 	    else
-		mb_ptr_adv(p);
+		MB_PTR_ADV(p);
 	}
 	array[count] = NULL; /* currently not relied upon, but doesn't hurt */
     }

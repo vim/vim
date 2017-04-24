@@ -12,11 +12,12 @@ NOTE: This file is a bit outdated.  You might find more useful info here:
 	http://macvim.org/
 
 1. Filename Convention		|mac-filename|
-2. .vimrc an .vim files		|mac-vimfile|
-3. FAQ				|mac-faq|
-4. Known Lack			|mac-lack|
-5. Mac Bug Report		|mac-bug|
-6. Compiling Vim		|mac-compile|
+2. .vimrc and .vim files	|mac-vimfile|
+3. Standard mappings		|mac-standard-mappings|
+4. FAQ				|mac-faq|
+5. Known Lack			|mac-lack|
+6. Mac Bug Report		|mac-bug|
+7. Compiling Vim		|mac-compile|
 
 There was a Mac port for version 3.0 of Vim.  Here are the first few lines
 from the old file:
@@ -72,7 +73,18 @@ the |'nocompatible'| option is set, otherwise it will only handle mac format
 files.
 
 ==============================================================================
-3. Mac FAQ						*mac-faq*
+3. Standard mappings				*mac-standard-mappings*
+
+The following mappings are available for cut/copy/paste from/to clipboard.
+
+key		Normal	Visual	  Insert	Description ~
+Command-v	"*P	"-d"*P    <C-R>*	paste text       *<D-v>*
+Command-c		"*y			copy Visual text *<D-c>*
+Command-x		"*d			cut Visual text  *<D-x>*
+Backspace		"*d			cut Visual text
+
+==============================================================================
+4. Mac FAQ						*mac-faq*
 
 On the internet:  http://macvim.org/OSX/index.php#FAQ
 
@@ -95,13 +107,13 @@ A: The following trick works with most shells.  Put it in your vimrc file.
 	let $PATH = matchstr(s:path, 'VIMPATH\zs.\{-}\ze\n')
 
 ==============================================================================
-4. Mac Lack						*mac-lack*
+5. Mac Lack						*mac-lack*
 
 In a terminal CTRL-^ needs to be entered as Shift-Control-6.  CTRL-@ as
 Shift-Control-2.
 
 ==============================================================================
-5. Mac Bug Report					*mac-bug*
+6. Mac Bug Report					*mac-bug*
 
 When reporting any Mac specific bug or feature change, please use the vim-mac
 maillist |vim-mac|.  However, you need to be subscribed.  An alternative is to
@@ -110,7 +122,7 @@ send a message to the current MacVim maintainers:
 	mac@vim.org
 
 ==============================================================================
-6. Compiling Vim					*mac-compile*
+7. Compiling Vim					*mac-compile*
 
 See the file "src/INSTALLmac.txt" that comes with the source files.
 

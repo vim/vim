@@ -10,6 +10,7 @@ If it isn't available then the test will be skipped.
 
 STARTTEST
 :so small.vim
+:set belloff=all
 :if !executable("cksum")
 : e! test.ok
 : w! test.out

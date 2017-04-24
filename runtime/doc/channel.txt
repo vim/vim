@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.0.  Last change: 2016 Dec 01
+*channel.txt*      For Vim version 8.0.  Last change: 2016 Dec 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -605,11 +605,11 @@ See |job_setoptions()| and |ch_setoptions()|.
 						*job-close_cb*
 "close_cb": handler	Callback for when the channel is closed.  Same as
 			"close_cb" on |ch_open()|, see |close_cb|.
-						*job-exit_cb*
+						*job-drop*
 "drop"			Specifies when to drop messages.  Same as "drop" on
 			|ch_open()|, see |channel-drop|.  For "auto" the
 			exit_cb is not considered.
-
+						*job-exit_cb*
 "exit_cb": handler	Callback for when the job ends.  The arguments are the
 			job and the exit status.
 			Vim checks up to 10 times per second for jobs that

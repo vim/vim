@@ -164,6 +164,22 @@ func s:feedkeys(timer)
   call feedkeys('x', 'nt')
 endfunc
 
+" Get the command to run Vim, with -u NONE and --not-a-term arguments.
+" Returns an empty string on error.
+func GetVimCommand()
+  if !filereadable('vimcmd')
+    return ''
+  endif
+  let cmd = readfile('vimcmd')[0]
+  let cmd = substitute(cmd, '-u \f\+', '-u NONE', '')
+  if cmd !~ '-u NONE'
+    let cmd = cmd . ' -u NONE'
+  endif
+  let cmd .= ' --not-a-term'
+  let cmd = substitute(cmd, 'VIMRUNTIME=.*VIMRUNTIME;', '', '')
+  return cmd
+endfunc
+
 " Run Vim, using the "vimcmd" file and "-u NORC".
 " "before" is a list of Vim commands to be executed before loading plugins.
 " "after" is a list of Vim commands to be executed after loading plugins.
@@ -174,7 +190,8 @@ func RunVim(before, after, arguments)
 endfunc
 
 func RunVimPiped(before, after, arguments, pipecmd)
-  if !filereadable('vimcmd')
+  let cmd = GetVimCommand()
+  if cmd == ''
     return 0
   endif
   let args = ''
@@ -185,17 +202,6 @@ func RunVimPiped(before, after, arguments, pipecmd)
   if len(a:after) > 0
     call writefile(a:after, 'Xafter.vim')
     let args .= ' -S Xafter.vim'
-  endif
-
-  let cmd = readfile('vimcmd')[0]
-  let cmd = substitute(cmd, '-u \f\+', '-u NONE', '')
-  if cmd !~ '-u NONE'
-    let cmd = cmd . ' -u NONE'
-  endif
-
-  " With pipecmd we can't set VIMRUNTIME.
-  if a:pipecmd != ''
-    let cmd = substitute(cmd, 'VIMRUNTIME=.*VIMRUNTIME;', '', '')
   endif
 
   exe "silent !" . a:pipecmd . cmd . args . ' ' . a:arguments

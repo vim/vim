@@ -249,7 +249,7 @@ Windows							    *mzscheme-window*
 5. mzeval() Vim function				    *mzscheme-mzeval*
 
 To facilitate bi-directional interface, you can use |mzeval()| function to
-evaluate MzScheme expressions and pass their values to VimL.
+evaluate MzScheme expressions and pass their values to Vim script.
 
 ==============================================================================
 6. Using Function references				    *mzscheme-funcref*

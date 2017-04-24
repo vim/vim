@@ -29,6 +29,11 @@ if __name__ == "__main__":
         if typed.startswith("echo "):
             print(typed[5:-1])
             sys.stdout.flush()
+        if typed.startswith("echosplit "):
+            for part in typed[10:-1].split('|'):
+                sys.stdout.write(part)
+                sys.stdout.flush()
+                time.sleep(0.05)
         if typed.startswith("double "):
             print(typed[7:-1] + "\nAND " + typed[7:-1])
             sys.stdout.flush()

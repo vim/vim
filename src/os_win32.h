@@ -202,7 +202,9 @@ Trace(char *pszFormat, ...);
 #define ASSERT_NULL_OR_POINTER(p, type) \
     ASSERT(((p) == NULL)  ||  IsValidAddress((p), sizeof(type), FALSE))
 
-#define mch_setenv(name, val, x) setenv(name, val, x)
+#ifndef HAVE_SETENV
+# define HAVE_SETENV
+#endif
 #define mch_getenv(x) (char_u *)getenv((char *)(x))
 #ifdef __BORLANDC__
 # define vim_mkdir(x, y) mkdir(x)

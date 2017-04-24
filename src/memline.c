@@ -1136,7 +1136,7 @@ ml_recover(void)
 
     recoverymode = TRUE;
     called_from_main = (curbuf->b_ml.ml_mfp == NULL);
-    attr = hl_attr(HLF_E);
+    attr = HL_ATTR(HLF_E);
 
     /*
      * If the file name ends in ".s[uvw][a-z]" we assume this is the swap file.
@@ -1148,11 +1148,11 @@ ml_recover(void)
     len = (int)STRLEN(fname);
     if (len >= 4 &&
 #if defined(VMS)
-	    STRNICMP(fname + len - 4, "_s" , 2)
+	    STRNICMP(fname + len - 4, "_s", 2)
 #else
-	    STRNICMP(fname + len - 4, ".s" , 2)
+	    STRNICMP(fname + len - 4, ".s", 2)
 #endif
-		== 0
+						== 0
 		&& vim_strchr((char_u *)"UVWuvw", fname[len - 2]) != NULL
 		&& ASCII_ISALPHA(fname[len - 1]))
     {
@@ -1519,7 +1519,7 @@ ml_recover(void)
 			    line_count = pp->pb_pointer[idx].pe_line_count;
 			    if (readfile(curbuf->b_ffname, NULL, lnum,
 					pp->pb_pointer[idx].pe_old_lnum - 1,
-					line_count, NULL, 0) == FAIL)
+					line_count, NULL, 0) != OK)
 				cannot_open = TRUE;
 			    else
 				lnum += line_count;
@@ -1649,7 +1649,7 @@ ml_recover(void)
 	if (!(curbuf->b_ml.ml_line_count == 2 && *ml_get(1) == NUL))
 	{
 	    changed_int();
-	    ++curbuf->b_changedtick;
+	    ++CHANGEDTICK(curbuf);
 	}
     }
     else
@@ -1663,7 +1663,7 @@ ml_recover(void)
 	    if (i != 0)
 	    {
 		changed_int();
-		++curbuf->b_changedtick;
+		++CHANGEDTICK(curbuf);
 		break;
 	    }
 	}
@@ -1863,8 +1863,10 @@ recover_names(
 	    else
 	    {
 #if defined(UNIX) || defined(WIN3264)
-		p = dir_name + STRLEN(dir_name);
-		if (after_pathsep(dir_name, p) && p[-1] == p[-2])
+		int	len = (int)STRLEN(dir_name);
+
+		p = dir_name + len;
+		if (after_pathsep(dir_name, p) && len > 1 && p[-1] == p[-2])
 		{
 		    /* Ends with '//', Use Full path for swap name */
 		    tail = make_percent_swname(dir_name, fname_res);
@@ -2026,7 +2028,7 @@ make_percent_swname(char_u *dir, char_u *name)
 	if (s != NULL)
 	{
 	    STRCPY(s, f);
-	    for (d = s; *d != NUL; mb_ptr_adv(d))
+	    for (d = s; *d != NUL; MB_PTR_ADV(d))
 		if (vim_ispathsep(*d))
 		    *d = '%';
 	    d = concat_fnames(dir, s, TRUE);
@@ -3922,8 +3924,10 @@ makeswapname(
 #endif
 
 #if defined(UNIX) || defined(WIN3264)  /* Need _very_ long file names */
-    s = dir_name + STRLEN(dir_name);
-    if (after_pathsep(dir_name, s) && s[-1] == s[-2])
+    int		len = (int)STRLEN(dir_name);
+
+    s = dir_name + len;
+    if (after_pathsep(dir_name, s) && len > 1 && s[-1] == s[-2])
     {			       /* Ends with '//', Use Full path */
 	r = NULL;
 	if ((s = make_percent_swname(dir_name, fname)) != NULL)
@@ -4011,7 +4015,7 @@ get_file_in_dir(
 
 #ifdef WIN3264
     if (retval != NULL)
-	for (t = gettail(retval); *t != NUL; mb_ptr_adv(t))
+	for (t = gettail(retval); *t != NUL; MB_PTR_ADV(t))
 	    if (*t == ':')
 		*t = '%';
 #endif
@@ -4150,7 +4154,7 @@ findswapname(
 	if (buf_fname == NULL)
 	    buf_fname = buf->b_fname;
 	else
-	    for (t = gettail(buf_fname); *t != NUL; mb_ptr_adv(t))
+	    for (t = gettail(buf_fname); *t != NUL; MB_PTR_ADV(t))
 		if (*t == ':')
 		    *t = '%';
     }

@@ -1,6 +1,7 @@
 Test for visual mode not being reset causing E315 error.
 STARTTEST
 :so small.vim
+:set belloff=all
 :enew
 :let g:msg="Everything's fine."
 :function! TriggerTheProblem()

@@ -468,7 +468,7 @@ spell_check(
     {
 	do
 	{
-	    mb_ptr_adv(mi.mi_fend);
+	    MB_PTR_ADV(mi.mi_fend);
 	} while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp));
 
 	if (capcol != NULL && *capcol == 0 && wp->w_s->b_cap_prog != NULL)
@@ -494,7 +494,7 @@ spell_check(
     /* case-fold the word with one non-word character, so that we can check
      * for the word end. */
     if (*mi.mi_fend != NUL)
-	mb_ptr_adv(mi.mi_fend);
+	MB_PTR_ADV(mi.mi_fend);
 
     (void)spell_casefold(ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
 							     MAXWLEN + 1);
@@ -582,7 +582,7 @@ spell_check(
 	else if (mi.mi_end == ptr)
 	    /* Always include at least one character.  Required for when there
 	     * is a mixup in "midword". */
-	    mb_ptr_adv(mi.mi_end);
+	    MB_PTR_ADV(mi.mi_end);
 	else if (mi.mi_result == SP_BAD
 		&& LANGP_ENTRY(wp->w_s->b_langp, 0)->lp_slang->sl_nobreak)
 	{
@@ -598,8 +598,8 @@ spell_check(
 		fp = mi.mi_fword;
 		for (;;)
 		{
-		    mb_ptr_adv(p);
-		    mb_ptr_adv(fp);
+		    MB_PTR_ADV(p);
+		    MB_PTR_ADV(fp);
 		    if (p >= mi.mi_end)
 			break;
 		    mi.mi_compoff = (int)(fp - mi.mi_fword);
@@ -827,8 +827,8 @@ find_word(matchinf_T *mip, int mode)
 	    p = mip->mi_word;
 	    if (STRNCMP(ptr, p, wlen) != 0)
 	    {
-		for (s = ptr; s < ptr + wlen; mb_ptr_adv(s))
-		    mb_ptr_adv(p);
+		for (s = ptr; s < ptr + wlen; MB_PTR_ADV(s))
+		    MB_PTR_ADV(p);
 		wlen = (int)(p - mip->mi_word);
 	    }
 	}
@@ -952,8 +952,8 @@ find_word(matchinf_T *mip, int mode)
 		    {
 			/* case folding may have changed the length */
 			p = mip->mi_word;
-			for (s = ptr; s < ptr + mip->mi_compoff; mb_ptr_adv(s))
-			    mb_ptr_adv(p);
+			for (s = ptr; s < ptr + mip->mi_compoff; MB_PTR_ADV(s))
+			    MB_PTR_ADV(p);
 		    }
 		    else
 #endif
@@ -969,7 +969,7 @@ find_word(matchinf_T *mip, int mode)
 			 * character we do not accept a Onecap word.  We do
 			 * accept a no-caps word, even when the dictionary
 			 * word specifies ONECAP. */
-			mb_ptr_back(mip->mi_word, p);
+			MB_PTR_BACK(mip->mi_word, p);
 			if (spell_iswordp_nmw(p, mip->mi_win)
 				? capflags == WF_ONECAP
 				: (flags & WF_ONECAP) != 0
@@ -1038,8 +1038,8 @@ find_word(matchinf_T *mip, int mode)
 		    p = mip->mi_fword;
 		    if (STRNCMP(ptr, p, wlen) != 0)
 		    {
-			for (s = ptr; s < ptr + wlen; mb_ptr_adv(s))
-			    mb_ptr_adv(p);
+			for (s = ptr; s < ptr + wlen; MB_PTR_ADV(s))
+			    MB_PTR_ADV(p);
 			mip->mi_compoff = (int)(p - mip->mi_fword);
 		    }
 		}
@@ -1208,7 +1208,7 @@ can_compound(slang_T *slang, char_u *word, char_u *flags)
 	/* Need to convert the single byte flags to utf8 characters. */
 	p = uflags;
 	for (i = 0; flags[i] != NUL; ++i)
-	    p += mb_char2bytes(flags[i], p);
+	    p += utf_char2bytes(flags[i], p);
 	*p = NUL;
 	p = uflags;
     }
@@ -1506,12 +1506,12 @@ fold_more(matchinf_T *mip)
     p = mip->mi_fend;
     do
     {
-	mb_ptr_adv(mip->mi_fend);
+	MB_PTR_ADV(mip->mi_fend);
     } while (*mip->mi_fend != NUL && spell_iswordp(mip->mi_fend, mip->mi_win));
 
     /* Include the non-word character so that we can check for the word end. */
     if (*mip->mi_fend != NUL)
-	mb_ptr_adv(mip->mi_fend);
+	MB_PTR_ADV(mip->mi_fend);
 
     (void)spell_casefold(p, (int)(mip->mi_fend - p),
 			     mip->mi_fword + mip->mi_fwordlen,
@@ -1603,7 +1603,7 @@ spell_move_to(
      * though...
      */
     lnum = wp->w_cursor.lnum;
-    clearpos(&found_pos);
+    CLEAR_POS(&found_pos);
 
     while (!got_int)
     {
@@ -1734,14 +1734,14 @@ spell_move_to(
 	if (curline)
 	    break;	/* only check cursor line */
 
+	/* If we are back at the starting line and searched it again there
+	 * is no match, give up. */
+	if (lnum == wp->w_cursor.lnum && wrapped)
+	    break;
+
 	/* Advance to next line. */
 	if (dir == BACKWARD)
 	{
-	    /* If we are back at the starting line and searched it again there
-	     * is no match, give up. */
-	    if (lnum == wp->w_cursor.lnum && wrapped)
-		break;
-
 	    if (lnum > 1)
 		--lnum;
 	    else if (!p_ws)
@@ -1775,7 +1775,7 @@ spell_move_to(
 
 	    /* If we are back at the starting line and there is no match then
 	     * give up. */
-	    if (lnum == wp->w_cursor.lnum && (!found_one || wrapped))
+	    if (lnum == wp->w_cursor.lnum && !found_one)
 		break;
 
 	    /* Skip the characters at the start of the next line that were
@@ -2760,7 +2760,7 @@ captype(
     int		past_second = FALSE;	/* past second word char */
 
     /* find first letter */
-    for (p = word; !spell_iswordp_nmw(p, curwin); mb_ptr_adv(p))
+    for (p = word; !spell_iswordp_nmw(p, curwin); MB_PTR_ADV(p))
 	if (end == NULL ? *p == NUL : p >= end)
 	    return 0;	    /* only non-word characters, illegal word */
 #ifdef FEAT_MBYTE
@@ -2775,7 +2775,7 @@ captype(
      * Need to check all letters to find a word with mixed upper/lower.
      * But a word with an upper char only at start is a ONECAP.
      */
-    for ( ; end == NULL ? *p != NUL : p < end; mb_ptr_adv(p))
+    for ( ; end == NULL ? *p != NUL : p < end; MB_PTR_ADV(p))
 	if (spell_iswordp_nmw(p, curwin))
 	{
 	    c = PTR2CHAR(p);
@@ -2818,7 +2818,7 @@ badword_captype(char_u *word, char_u *end)
 	/* Count the number of UPPER and lower case letters. */
 	l = u = 0;
 	first = FALSE;
-	for (p = word; p < end; mb_ptr_adv(p))
+	for (p = word; p < end; MB_PTR_ADV(p))
 	{
 	    c = PTR2CHAR(p);
 	    if (SPELL_ISUPPER(c))
@@ -3123,7 +3123,7 @@ spell_iswordp(
 
     if (has_mbyte)
     {
-	l = MB_BYTE2LEN(*p);
+	l = MB_PTR2LEN(p);
 	s = p;
 	if (l == 1)
 	{
@@ -3385,10 +3385,10 @@ spell_suggest(int count)
 	p = line + curwin->w_cursor.col;
 	/* Backup to before start of word. */
 	while (p > line && spell_iswordp_nmw(p, curwin))
-	    mb_ptr_back(line, p);
+	    MB_PTR_BACK(line, p);
 	/* Forward to start of word. */
 	while (*p != NUL && !spell_iswordp_nmw(p, curwin))
-	    mb_ptr_adv(p);
+	    MB_PTR_ADV(p);
 
 	if (!spell_iswordp_nmw(p, curwin))		/* No word found. */
 	{
@@ -3624,7 +3624,7 @@ check_need_cap(linenr_T lnum, colnr_T col)
 	p = line + endcol;
 	for (;;)
 	{
-	    mb_ptr_back(line, p);
+	    MB_PTR_BACK(line, p);
 	    if (p == line || spell_iswordp_nmw(p, curwin))
 		break;
 	    if (vim_regexec(&regmatch, p, 0)
@@ -3808,6 +3808,10 @@ spell_find_suggest(
     vim_strncpy(su->su_badword, su->su_badptr, su->su_badlen);
     (void)spell_casefold(su->su_badptr, su->su_badlen,
 						    su->su_fbadword, MAXWLEN);
+    /* TODO: make this work if the case-folded text is longer than the original
+     * text. Currently an illegal byte causes wrong pointer computations. */
+    su->su_fbadword[su->su_badlen] = NUL;
+
     /* get caps flags for bad word */
     su->su_badflags = badword_captype(su->su_badptr,
 					       su->su_badptr + su->su_badlen);
@@ -4528,7 +4532,7 @@ suggest_trie_walk(
 
 	    fword_ends = (fword[sp->ts_fidx] == NUL
 			   || (soundfold
-			       ? vim_iswhite(fword[sp->ts_fidx])
+			       ? VIM_ISWHITE(fword[sp->ts_fidx])
 			       : !spell_iswordp(fword + sp->ts_fidx, curwin)));
 	    tword[sp->ts_twordlen] = NUL;
 
@@ -4644,7 +4648,7 @@ suggest_trie_walk(
 
 		    /* Get pointer to last char of previous word. */
 		    p = preword + sp->ts_prewordlen;
-		    mb_ptr_back(preword, p);
+		    MB_PTR_BACK(preword, p);
 		}
 	    }
 
@@ -4746,11 +4750,11 @@ suggest_trie_walk(
 		    /* Give a penalty when changing non-word char to word
 		     * char, e.g., "thes," -> "these". */
 		    p = fword + sp->ts_fidx;
-		    mb_ptr_back(fword, p);
+		    MB_PTR_BACK(fword, p);
 		    if (!spell_iswordp(p, curwin))
 		    {
 			p = preword + STRLEN(preword);
-			mb_ptr_back(preword, p);
+			MB_PTR_BACK(preword, p);
 			if (spell_iswordp(p, curwin))
 			    newscore += SCORE_NONWORD;
 		    }
@@ -4937,12 +4941,7 @@ suggest_trie_walk(
 			{
 			    int	    l;
 
-#ifdef FEAT_MBYTE
-			    if (has_mbyte)
-				l = MB_BYTE2LEN(fword[sp->ts_fidx]);
-			    else
-#endif
-				l = 1;
+			    l = MB_PTR2LEN(fword + sp->ts_fidx);
 			    if (fword_ends)
 			    {
 				/* Copy the skipped character to preword. */
@@ -5109,19 +5108,18 @@ suggest_trie_walk(
 				/* Correct ts_fidx for the byte length of the
 				 * character (we didn't check that before). */
 				sp->ts_fidx = sp->ts_fcharstart
-					    + MB_BYTE2LEN(
-						    fword[sp->ts_fcharstart]);
-
+					    + MB_PTR2LEN(
+						    fword + sp->ts_fcharstart);
 				/* For changing a composing character adjust
 				 * the score from SCORE_SUBST to
 				 * SCORE_SUBCOMP. */
 				if (enc_utf8
 					&& utf_iscomposing(
-					    mb_ptr2char(tword
+					    utf_ptr2char(tword
 						+ sp->ts_twordlen
 							   - sp->ts_tcharlen))
 					&& utf_iscomposing(
-					    mb_ptr2char(fword
+					    utf_ptr2char(fword
 							+ sp->ts_fcharstart)))
 				    sp->ts_score -=
 						  SCORE_SUBST - SCORE_SUBCOMP;
@@ -5157,7 +5155,7 @@ suggest_trie_walk(
 				     * to the score.  Also for the soundfold
 				     * tree (might seem illogical but does
 				     * give better scores). */
-				    mb_ptr_back(tword, p);
+				    MB_PTR_BACK(tword, p);
 				    if (c == mb_ptr2char(p))
 					sp->ts_score -= SCORE_INS
 							       - SCORE_INSDUP;
@@ -5232,7 +5230,7 @@ suggest_trie_walk(
 		if (has_mbyte)
 		{
 		    c = mb_ptr2char(fword + sp->ts_fidx);
-		    stack[depth].ts_fidx += MB_BYTE2LEN(fword[sp->ts_fidx]);
+		    stack[depth].ts_fidx += MB_PTR2LEN(fword + sp->ts_fidx);
 		    if (enc_utf8 && utf_iscomposing(c))
 			stack[depth].ts_score -= SCORE_DEL - SCORE_DELCOMP;
 		    else if (c == mb_ptr2char(fword + stack[depth].ts_fidx))
@@ -5456,9 +5454,9 @@ suggest_trie_walk(
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		n = MB_BYTE2LEN(*p);
+		n = MB_PTR2LEN(p);
 		c = mb_ptr2char(p + n);
-		mch_memmove(p + MB_BYTE2LEN(p[n]), p, n);
+		mch_memmove(p + MB_PTR2LEN(p + n), p, n);
 		mb_char2bytes(c, p);
 	    }
 	    else
@@ -5550,11 +5548,11 @@ suggest_trie_walk(
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		n = MB_BYTE2LEN(*p);
+		n = MB_PTR2LEN(p);
 		c2 = mb_ptr2char(p + n);
-		fl = MB_BYTE2LEN(p[n]);
+		fl = MB_PTR2LEN(p + n);
 		c = mb_ptr2char(p + n + fl);
-		tl = MB_BYTE2LEN(p[n + fl]);
+		tl = MB_PTR2LEN(p + n + fl);
 		mch_memmove(p + fl + tl, p, n);
 		mb_char2bytes(c, p);
 		mb_char2bytes(c2, p + tl);
@@ -5627,10 +5625,10 @@ suggest_trie_walk(
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		n = MB_BYTE2LEN(*p);
-		n += MB_BYTE2LEN(p[n]);
+		n = MB_PTR2LEN(p);
+		n += MB_PTR2LEN(p + n);
 		c = mb_ptr2char(p + n);
-		tl = MB_BYTE2LEN(p[n]);
+		tl = MB_PTR2LEN(p + n);
 		mch_memmove(p + tl, p, n);
 		mb_char2bytes(c, p);
 	    }
@@ -5693,9 +5691,9 @@ suggest_trie_walk(
 	    if (has_mbyte)
 	    {
 		c = mb_ptr2char(p);
-		tl = MB_BYTE2LEN(*p);
-		n = MB_BYTE2LEN(p[tl]);
-		n += MB_BYTE2LEN(p[tl + n]);
+		tl = MB_PTR2LEN(p);
+		n = MB_PTR2LEN(p + tl);
+		n += MB_PTR2LEN(p + tl + n);
 		mch_memmove(p, p + tl, n);
 		mb_char2bytes(c, p + n);
 	    }
@@ -5867,9 +5865,9 @@ nofold_len(char_u *fword, int flen, char_u *word)
     char_u	*p;
     int		i = 0;
 
-    for (p = fword; p < fword + flen; mb_ptr_adv(p))
+    for (p = fword; p < fword + flen; MB_PTR_ADV(p))
 	++i;
-    for (p = word; i > 0; mb_ptr_adv(p))
+    for (p = word; i > 0; MB_PTR_ADV(p))
 	--i;
     return (int)(p - word);
 }
@@ -6231,7 +6229,7 @@ stp_sal_score(
 	 * sounds like "t h" while "the" sounds like "@".  Avoid that by
 	 * removing the space.  Don't do it when the good word also contains a
 	 * space. */
-	if (vim_iswhite(su->su_badptr[su->su_badlen])
+	if (VIM_ISWHITE(su->su_badptr[su->su_badlen])
 					 && *skiptowhite(stp->st_word) == NUL)
 	    for (p = fword; *(p = skiptowhite(p)) != NUL; )
 		STRMOVE(p, p + 1);
@@ -6745,8 +6743,8 @@ add_suggestion(
 	badlen = (int)(pbad - su->su_badptr);
 	if (goodlen <= 0 || badlen <= 0)
 	    break;
-	mb_ptr_back(goodword, pgood);
-	mb_ptr_back(su->su_badptr, pbad);
+	MB_PTR_BACK(goodword, pgood);
+	MB_PTR_BACK(su->su_badptr, pbad);
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
@@ -7106,7 +7104,7 @@ spell_soundfold_sofo(slang_T *slang, char_u *inword, char_u *res)
 	for (s = inword; *s != NUL; )
 	{
 	    c = mb_cptr2char_adv(&s);
-	    if (enc_utf8 ? utf_class(c) == 0 : vim_iswhite(c))
+	    if (enc_utf8 ? utf_class(c) == 0 : VIM_ISWHITE(c))
 		c = ' ';
 	    else if (c < 256)
 		c = slang->sl_sal_first[c];
@@ -7147,7 +7145,7 @@ spell_soundfold_sofo(slang_T *slang, char_u *inword, char_u *res)
 	/* The sl_sal_first[] table contains the translation. */
 	for (s = inword; (c = *s) != NUL; ++s)
 	{
-	    if (vim_iswhite(c))
+	    if (VIM_ISWHITE(c))
 		c = ' ';
 	    else
 		c = slang->sl_sal_first[c];
@@ -7185,7 +7183,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 	t = word;
 	while (*s != NUL)
 	{
-	    if (vim_iswhite(*s))
+	    if (VIM_ISWHITE(*s))
 	    {
 		*t++ = ' ';
 		s = skipwhite(s);
@@ -7409,7 +7407,7 @@ spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res)
 		}
 	    }
 	}
-	else if (vim_iswhite(c))
+	else if (VIM_ISWHITE(c))
 	{
 	    c = ' ';
 	    k = 1;
@@ -7474,7 +7472,7 @@ spell_soundfold_wsal(slang_T *slang, char_u *inword, char_u *res)
 	c = mb_cptr2char_adv(&s);
 	if (slang->sl_rem_accents)
 	{
-	    if (enc_utf8 ? utf_class(c) == 0 : vim_iswhite(c))
+	    if (enc_utf8 ? utf_class(c) == 0 : VIM_ISWHITE(c))
 	    {
 		if (did_white)
 		    continue;
@@ -7715,7 +7713,7 @@ spell_soundfold_wsal(slang_T *slang, char_u *inword, char_u *res)
 		}
 	    }
 	}
-	else if (vim_iswhite(c))
+	else if (VIM_ISWHITE(c))
 	{
 	    c = ' ';
 	    k = 1;
@@ -8545,7 +8543,7 @@ ex_spelldump(exarg_T *eap)
     set_option_value((char_u*)"spl",  dummy, spl, OPT_LOCAL);
     vim_free(spl);
 
-    if (!bufempty())
+    if (!BUFEMPTY())
 	return;
 
     spell_dump_compl(NULL, 0, NULL, eap->forceit ? DUMPFLAG_COUNT : 0);
@@ -8976,7 +8974,7 @@ spell_to_word_end(char_u *start, win_T *win)
     char_u  *p = start;
 
     while (*p != NUL && spell_iswordp(p, win))
-	mb_ptr_adv(p);
+	MB_PTR_ADV(p);
     return p;
 }
 
@@ -9002,7 +9000,7 @@ spell_word_start(int startcol)
     line = ml_get_curline();
     for (p = line + startcol; p > line; )
     {
-	mb_ptr_back(line, p);
+	MB_PTR_BACK(line, p);
 	if (spell_iswordp_nmw(p, curwin))
 	    break;
     }
@@ -9011,7 +9009,7 @@ spell_word_start(int startcol)
     while (p > line)
     {
 	col = (int)(p - line);
-	mb_ptr_back(line, p);
+	MB_PTR_BACK(line, p);
 	if (!spell_iswordp(p, curwin))
 	    break;
 	col = 0;

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2016 Nov 24
+*starting.txt*  For Vim version 8.0.  Last change: 2017 Jan 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -230,6 +230,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		the executable "view" has the same effect as the -R argument.
 		The 'updatecount' option will be set to 10000, meaning that
 		the swap file will not be updated automatically very often.
+		See |-M| for disallowing modifications.
 
 							*-m*
 -m		Modifications not allowed to be written.  The 'write' option
@@ -1219,7 +1220,7 @@ There are several ways to exit Vim:
 - Use `:cquit`.  Also when there are changes.
 
 When using `:cquit` or when there was an error message Vim exits with exit
-code 1.  Errors can be avoided by using `:silent!`.
+code 1.  Errors can be avoided by using `:silent!` or with `:catch`.
 
 ==============================================================================
 8. Saving settings					*save-settings*

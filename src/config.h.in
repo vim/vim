@@ -158,7 +158,9 @@
 #undef HAVE_FCHOWN
 #undef HAVE_FSEEKO
 #undef HAVE_FSYNC
+#undef HAVE_FLOAT_FUNCS
 #undef HAVE_GETCWD
+#undef HAVE_GETPGID
 #undef HAVE_GETPSEUDOTTY
 #undef HAVE_GETPWENT
 #undef HAVE_GETPWNAM
@@ -167,13 +169,12 @@
 #undef HAVE_GETTIMEOFDAY
 #undef HAVE_GETWD
 #undef HAVE_ICONV
-#undef HAVE_NL_LANGINFO_CODESET
 #undef HAVE_LSTAT
 #undef HAVE_MEMSET
 #undef HAVE_MKDTEMP
 #undef HAVE_NANOSLEEP
+#undef HAVE_NL_LANGINFO_CODESET
 #undef HAVE_OPENDIR
-#undef HAVE_FLOAT_FUNCS
 #undef HAVE_PUTENV
 #undef HAVE_QSORT
 #undef HAVE_READLINK
@@ -444,6 +445,9 @@
 
 /* Define if fcntl()'s F_SETFD command knows about FD_CLOEXEC */
 #undef HAVE_FD_CLOEXEC
+
+/* Define if /proc/self/exe or similar can be read */
+#undef PROC_EXE_LINK
 
 /* Define if you want Cygwin to use the WIN32 clipboard, not compatible with X11*/
 #undef FEAT_CYGWIN_WIN32_CLIPBOARD
