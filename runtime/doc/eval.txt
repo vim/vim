@@ -8497,8 +8497,8 @@ listcmds		Compiled with commands for the buffer list |:files|
 localmap		Compiled with local mappings and abbr. |:map-local|
 lua			Compiled with Lua interface |Lua|.
 mac			Any Macintosh version of Vim, but not all OS X.
-macunix			Compiled for OS X, with darwin
-osx			Compiled for OS X, with or without darwin
+macunix			Compiled for OS X, with |mac-darwin-feature|
+osx			Compiled for OS X, with or w/o |mac-darwin-feature|
 menu			Compiled with support for |:menu|.
 mksession		Compiled with support for |:mksession|.
 modify_fname		Compiled with file name modifiers. |filename-modifiers|

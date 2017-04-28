@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Apr 23
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Apr 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -111,10 +111,15 @@ Regexp problems:
 - Difference between two engines: ".*\zs\/\@>\/" on text "///"
   (Chris Paul, 2016 Nov 13)  New engine not greedy enough?
 
+With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
+(Marcin Szewczyk, 2017 Apr 26)
+
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif?
 
 Memory leak in test97?  The string is actually freed.  Weird.
+
+Patch for shellescape(). (Christian Brabandt, 2017 Apr 20, #1590)
 
 Patch for flickering redraw. (Hirohito Higashi, 2017 Apr 23, #1637)
 
@@ -246,6 +251,9 @@ Does this also fix #1408 ?
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
 
+When 'completeopt' has "noselect" does not insert a newline. (Lifepillar, 2017
+Apr 23, #1653)
+
 Window resizing with 'winfixheight': With a vertical split the height changes
 anyway. (Tommy allen, 2017 Feb 21, #1502)
 
@@ -354,6 +362,10 @@ Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
 Assume the system converts between the actual encoding of the filesystem to
 the system encoding (usually utf-8).
+
+Using ":tab drop file" does not trigger BufEnter or TabEnter events.
+(Andy Stewart, 2017 Apr 27, #1660)
+Autocommands blocked in do_arg_all().  Supposed to happen later?
 
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
 

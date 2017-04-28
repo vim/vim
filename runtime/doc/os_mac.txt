@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 8.0.  Last change: 2006 Apr 30
+*os_mac.txt*    For Vim version 8.0.  Last change: 2017 Apr 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -18,6 +18,7 @@ NOTE: This file is a bit outdated.  You might find more useful info here:
 5. Known Lack			|mac-lack|
 6. Mac Bug Report		|mac-bug|
 7. Compiling Vim		|mac-compile|
+8. The darwin feature		|mac-darwin-feature|
 
 There was a Mac port for version 3.0 of Vim.  Here are the first few lines
 from the old file:
@@ -125,6 +126,56 @@ send a message to the current MacVim maintainers:
 7. Compiling Vim					*mac-compile*
 
 See the file "src/INSTALLmac.txt" that comes with the source files.
+
+==============================================================================
+8. The Darwin Feature					*mac-darwin-feature*
+
+If you have a Mac that isn't very old, you will be running OS X, also called
+Darwin.  The last pre-Darwin OS was Mac OS 9.  The darwin feature makes Vim
+use Darwin-specific properties.
+
+What is accomplished with this feature is two-fold:
+
+- Make Vim interoperable with the system clipboard.
+- Incorporate into Vim a converter module that bridges the gap between some
+  character encodings specific to the platform and those known to Vim.
+
+Needless to say, both are not to be missed for any decent text editor to work
+nicely with other applications running on the same desktop environment.
+
+As Vim is not an application dedicated only to macOS, we need an extra feature
+to add in order for it to offer the same user experience that our users on
+other platforms enjoy to people on macOS.
+
+For brevity, the feature is referred to as "darwin" to signify it one of the
+Vim features that are specific to that particular platform.
+
+The feature is a configuration option.  Accordingly, whether it is enabled or
+not is determined at build time; once it is selected to be enabled, it is
+compiled in and hence cannot be disabled at runtime.
+
+The feature is enabled by default.  For most macOS users, that should be
+sufficient unless they have specific needs mentioned briefly below.
+
+If you want to disable it, pass `--disable-darwin` to the configure script: >
+
+    ./configure --disable-darwin <other options>
+
+and then run `make` to build Vim.  The order of the options doesn't matter.
+
+To make sure at runtime whether or not the darwin feature is compiled in, you
+can use `has('macunix')` which returns 1 if the feature is compiled in; 0
+otherwise.
+
+Notable use cases where `--disable-darwin` is turned out to be useful are:
+
+- When you want to use |x11-selection| instead of the system clipboard.
+- When you want to use |x11-clientserver|.
+
+Since both have to make use of X11 inter-client communication for them to work
+properly, and since the communication mechanism can come into conflict with
+the system clipboard, the darwin feature should be disabled to prevent Vim
+from hanging at runtime.
 
 
  vim:tw=78:ts=8:ft=help:norl:
