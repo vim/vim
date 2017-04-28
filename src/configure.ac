@@ -3355,10 +3355,9 @@ if test "x$vim_cv_terminfo" = "xyes" ; then
   AC_DEFINE(TERMINFO)
 fi
 
-if test "x$olibs" != "x$LIBS"; then
-  AC_CACHE_CHECK([what tgetent() returns for an unknown terminal], [vim_cv_tgent],
-    [
-      AC_RUN_IFELSE([AC_LANG_SOURCE([[
+AC_CACHE_CHECK([what tgetent() returns for an unknown terminal], [vim_cv_tgent],
+  [
+    AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
 #ifdef HAVE_TERMCAP_H
 # include <termcap.h>
@@ -3369,18 +3368,17 @@ if test "x$olibs" != "x$LIBS"; then
 #endif
 main()
 {char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist"); exit(res != 0); }
-      ]])],[
-	vim_cv_tgent=zero
-      ],[
-	vim_cv_tgent=non-zero
-      ],[
-	AC_MSG_ERROR(failed to compile test program.)
-      ])
+    ]])],[
+      vim_cv_tgent=zero
+    ],[
+      vim_cv_tgent=non-zero
+    ],[
+      AC_MSG_ERROR(failed to compile test program.)
     ])
-  
-  if test "x$vim_cv_tgent" = "xzero" ; then
-    AC_DEFINE(TGETENT_ZERO_ERR, 0)
-  fi
+  ])
+
+if test "x$vim_cv_tgent" = "xzero" ; then
+  AC_DEFINE(TGETENT_ZERO_ERR, 0)
 fi
 
 AC_MSG_CHECKING(whether termcap.h contains ospeed)
