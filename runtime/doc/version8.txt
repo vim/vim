@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2017 Mar 16
+*version8.txt*  For Vim version 8.0.  Last change: 2017 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14929,5 +14929,3112 @@ Problem:    Compiler warning for self-comparison.
 Solution:   Define ONE_WINDOW and add #ifdef.
 Files:      src/globals.h, src/buffer.c, src/ex_docmd.c, src/move.c,
             src/screen.c, src/quickfix.c, src/window.c
+
+Patch 8.0.0070
+Problem:    Tests referred in Makefile that no longer exist.
+Solution:   Remove test71 and test74 entries. (Michael Soyka)
+Files:      src/testdir/Mak_ming.mak
+
+Patch 8.0.0071
+Problem:    Exit value from a shell command is wrong. (Hexchain Tong)
+Solution:   Do not check for ended jobs while waiting for a shell command.
+            (ichizok, closes #1196)
+Files:      src/os_unix.c
+
+Patch 8.0.0072
+Problem:    MS-Windows: Crash with long font name. (Henry Hu)
+Solution:   Fix comparing with LF_FACESIZE. (Ken Takata, closes #1243)
+Files:      src/os_mswin.c
+
+Patch 8.0.0073 (after 8.0.0069)
+Problem:    More comparisons between firstwin and lastwin.
+Solution:   Use ONE_WINDOW for consistency. (Hirohito Higashi)
+Files:      src/buffer.c, src/ex_cmds.c, src/ex_docmd.c, src/option.c,
+            src/window.c
+
+Patch 8.0.0074
+Problem:    Cannot make Vim fail on an internal error.
+Solution:   Add IEMSG() and IEMSG2(). (Dominique Pelle)  Avoid reporting an
+            internal error without mentioning where.
+Files:      src/globals.h, src/blowfish.c, src/dict.c, src/edit.c, src/eval.c,
+            src/evalfunc.c, src/ex_eval.c, src/getchar.c, src/gui_beval.c,
+            src/gui_w32.c, src/hangulin.c, src/hashtab.c, src/if_cscope.c,
+            src/json.c, src/memfile.c, src/memline.c, src/message.c,
+            src/misc2.c, src/option.c, src/quickfix.c, src/regexp.c,
+            src/spell.c, src/undo.c, src/userfunc.c, src/vim.h, src/window.c,
+            src/proto/misc2.pro, src/proto/message.pro, src/Makefile
+
+Patch 8.0.0075
+Problem:    Using number for exception type lacks type checking.
+Solution:   Use an enum.
+Files:      src/structs.h, src/ex_docmd.c, src/ex_eval.c,
+            src/proto/ex_eval.pro
+
+Patch 8.0.0076
+Problem:    Channel log has double parens ()().
+Solution:   Remove () for write_buf_line. (Yasuhiro Matsumoto)
+Files:      src/channel.c
+
+Patch 8.0.0077
+Problem:    The GUI code is not tested by Travis.
+Solution:   Install the virtual framebuffer.
+Files:      .travis.yml
+
+Patch 8.0.0078
+Problem:    Accessing freed memory in quickfix.
+Solution:   Reset pointer when freeing 'errorformat'. (Dominique Pelle)
+Files:      src/quickfix.c, src/testdir/test_quickfix.vim
+
+Patch 8.0.0079
+Problem:    Accessing freed memory in quickfix. (Dominique Pelle)
+Solution:   Do not free the current list when adding to it.
+Files:      src/quickfix.c, src/testdir/test_quickfix.vim
+
+Patch 8.0.0080
+Problem:    The OS X build fails on Travis.
+Solution:   Skip the virtual framebuffer on OS X.
+Files:      .travis.yml
+
+Patch 8.0.0081
+Problem:    Inconsistent function names.
+Solution:   Rename do_cscope to ex_cscope.  Clean up comments.
+Files:      src/ex_cmds.h, src/if_cscope.c, src/ex_docmd.c,
+            src/proto/if_cscope.pro
+
+Patch 8.0.0082
+Problem:    Extension for configure should be ".ac".
+Solution:   Rename configure.in to configure.ac. (James McCoy, closes #1173)
+Files:      src/configure.in, src/configure.ac, Filelist, src/Makefile,
+            src/blowfish.c, src/channel.c, src/config.h.in, src/main.aap,
+            src/os_unix.c, src/INSTALL, src/mysign
+
+Patch 8.0.0083
+Problem:    Using freed memory with win_getid(). (Dominique Pelle)
+Solution:   For the current tab use curwin.
+Files:      src/window.c, src/testdir/test_window_id.vim
+
+Patch 8.0.0084
+Problem:    Using freed memory when adding to a quickfix list. (Dominique
+            Pelle)
+Solution:   Clear the directory name.
+Files:      src/quickfix.c, src/testdir/test_quickfix.vim
+
+Patch 8.0.0085
+Problem:    Using freed memory with recursive function call. (Dominique Pelle)
+Solution:   Make a copy of the function name.
+Files:      src/eval.c, src/testdir/test_nested_function.vim
+
+Patch 8.0.0086
+Problem:    Cannot add a comment after ":hide". (Norio Takagi)
+Solution:   Make it work, add a test. (Hirohito Higashi)
+Files:      src/Makefile, src/ex_cmds.h, src/ex_docmd.c,
+            src/testdir/Make_all.mak, src/testdir/test_hide.vim
+
+Patch 8.0.0087
+Problem:    When the channel callback gets job info the job may already have
+            been deleted. (lifepillar)
+Solution:   Do not delete the job when the channel is still useful. (ichizok,
+            closes #1242, closes #1245)
+Files:      src/channel.c, src/eval.c, src/os_unix.c, src/os_win32.c,
+            src/structs.h, src/testdir/test_channel.vim
+
+Patch 8.0.0088
+Problem:    When a test fails in Setup or Teardown the problem is not reported.
+Solution:   Add a try/catch. (Hirohito Higashi)
+Files:      src/testdir/runtest.vim
+
+Patch 8.0.0089
+Problem:    Various problems with GTK 3.22.2.
+Solution:   Fix the problems, add #ifdefs. (Kazunobu Kuriyama)
+Files:      src/gui_beval.c, src/gui_gtk.c, src/gui_gtk_x11.c
+
+Patch 8.0.0090
+Problem:    Cursor moved after last character when using 'breakindent'.
+Solution:   Fix the cursor positioning.  Turn the breakindent test into new
+            style.  (Christian Brabandt)
+Files:      src/screen.c, src/testdir/Make_all.mak,
+            src/testdir/test_breakindent.in, src/testdir/test_breakindent.ok,
+            src/testdir/test_breakindent.vim, src/Makefile
+
+Patch 8.0.0091
+Problem:    Test_help_complete sometimes fails in MS-Windows console.
+Solution:   Use getcompletion() instead of feedkeys() and command line
+            completion. (Hirohito Higashi)
+Files:      src/testdir/test_help_tagjump.vim
+
+Patch 8.0.0092
+Problem:    C indenting does not support nested namespaces that C++ 17 has.
+Solution:   Add check that passes double colon inside a name. (Pauli, closes
+            #1214)
+Files:      src/misc1.c, src/testdir/test3.in, src/testdir/test3.ok
+
+Patch 8.0.0093
+Problem:    Not using multiprocess build feature.
+Solution:   Enable multiprocess build with MSVC 10. (Ken Takata)
+Files:      src/Make_mvc.mak
+
+Patch 8.0.0094
+Problem:    When vimrun.exe is not found the error message is not properly
+            encoded.
+Solution:   Use utf-16 and MessageBoxW(). (Ken Takata)
+Files:      src/os_win32.c
+
+Patch 8.0.0095
+Problem:    Problems with GTK 3.22.2 fixed in 3.22.4.
+Solution:   Adjust the #ifdefs. (Kazunobu Kuriyama)
+Files:      src/gui_gtk_x11.c
+
+Patch 8.0.0096
+Problem:    When the input or output is not a tty Vim appears to hang.
+Solution:   Add the --ttyfail argument.  Also add the "ttyin" and "ttyout"
+            features to be able to check in Vim script.
+Files:      src/globals.h, src/structs.h, src/main.c, src/evalfunc.c,
+            runtime/doc/starting.txt, runtime/doc/eval.txt
+
+Patch 8.0.0097
+Problem:    When a channel callback consumes a lot of time Vim becomes
+            unresponsive. (skywind)
+Solution:   Bail out of checking channel readahead after 100 msec.
+Files:      src/os_unix.c, src/misc2.c, src/vim.h, src/os_win32.c,
+            src/channel.c
+
+Patch 8.0.0098 (after 8.0.0097)
+Problem:    Can't build on MS-Windows.
+Solution:   Add missing parenthesis.
+Files:      src/vim.h
+
+Patch 8.0.0099
+Problem:    Popup menu always appears above the cursor when it is in the lower
+            half of the screen. (Matt Gardner)
+Solution:   Compute the available space better. (Hirohito Higashi,
+            closes #1241)
+Files:      src/popupmnu.c
+
+Patch 8.0.0100
+Problem:    Options that are a file name may contain non-filename characters.
+Solution:   Check for more invalid characters.
+Files:      src/option.c
+
+Patch 8.0.0101
+Problem:    Some options are not strictly checked.
+Solution:   Add flags for strickter checks.
+Files:      src/option.c
+
+Patch 8.0.0102 (after 8.0.0101)
+Problem:    Cannot set 'dictionary' to a path.
+Solution:   Allow for slash and backslash.  Add a test (partly by Daisuke
+            Suzuki, closes #1279, closes #1284)
+Files:      src/option.c, src/testdir/test_options.vim
+
+Patch 8.0.0103
+Problem:    May not process channel readahead. (skywind)
+Solution:   If there is readahead don't block on input.
+Files:      src/channel.c, src/proto/channel.pro, src/os_unix.c,
+            src/os_win32.c, src/misc2.c
+
+Patch 8.0.0104
+Problem:    Value of 'thesaurus' option not checked properly.
+Solution:   Add P_NDNAME flag. (Daisuke Suzuki)
+Files:      src/option.c, src/testdir/test_options.vim
+
+Patch 8.0.0105
+Problem:    When using ch_read() with zero timeout, can't tell the difference
+            between reading an empty line and nothing available.
+Solution:   Add ch_canread().
+Files:      src/evalfunc.c, src/channel.c, src/proto/channel.pro,
+            src/testdir/test_channel.vim, src/testdir/shared.vim,
+            runtime/doc/eval.txt, runtime/doc/channel.txt
+
+Patch 8.0.0106 (after 8.0.0100)
+Problem:    Cannot use a semicolon in 'backupext'. (Jeff)
+Solution:   Allow for a few more characters when "secure" isn't set.
+Files:      src/option.c
+
+Patch 8.0.0107
+Problem:    When reading channel output in a timer, messages may go missing.
+            (Skywind)
+Solution:   Add the "drop" option.  Write error messages in the channel log.
+            Don't have ch_canread() check for the channel being open.
+Files:      src/structs.h, src/channel.c, src/message.c, src/evalfunc.c,
+            src/proto/channel.pro, runtime/doc/channel.txt
+
+Patch 8.0.0108 (after 8.0.0107)
+Problem:    The channel "drop" option is not tested.
+Solution:   Add a test.
+Files:      src/testdir/test_channel.vim
+
+Patch 8.0.0109
+Problem:    Still checking if memcmp() exists while every system should have
+            it now.
+Solution:   Remove vim_memcmp().  (James McCoy, closes #1295)
+Files:      src/config.h.in, src/configure.ac, src/misc2.c, src/os_vms_conf.h,
+            src/osdef1.h.in, src/search.c, src/tag.c, src/vim.h
+
+Patch 8.0.0110
+Problem:    Drop command doesn't use existing window.
+Solution:   Check the window width properly. (Hirohito Higashi)
+Files:      src/buffer.c, src/testdir/test_tabpage.vim
+
+Patch 8.0.0111
+Problem:    The :history command is not tested.
+Solution:   Add tests. (Dominique Pelle)
+Files:      runtime/doc/cmdline.txt, src/testdir/test_history.vim
+
+Patch 8.0.0112
+Problem:    Tests 92 and 93 are old style.
+Solution:   Make test92 and test93 new style. (Hirohito Higashi, closes #1289)
+Files:      src/Makefile, src/testdir/Make_all.mak, src/testdir/Make_vms.mms,
+            src/testdir/test92.in, src/testdir/test92.ok,
+            src/testdir/test93.in, src/testdir/test93.ok,
+            src/testdir/test_mksession.vim,
+            src/testdir/test_mksession_utf8.vim
+
+Patch 8.0.0113
+Problem:    MS-Windows: message box to prompt for saving changes may appear on
+            the wrong monitor.
+Solution:   Adjust the CenterWindow function. (Ken Takata)
+Files:      src/gui_w32.c
+
+Patch 8.0.0114
+Problem:    Coding style not optimal.
+Solution:   Add spaces. (Ken Takata)
+Files:      src/gui_w32.c, src/os_mswin.c
+
+Patch 8.0.0115
+Problem:    When building with Cygwin libwinpthread isn't found.
+Solution:   Link winpthread statically. (jmmerz, closes #1255, closes #1256)
+Files:      src/Make_cyg_ming.mak
+
+Patch 8.0.0116
+Problem:    When reading English help and using CTRl-] the language from
+            'helplang' is used.
+Solution:   Make help tag jumps keep the language. (Tatsuki, test by Hirohito
+            Higashi, closes #1249)
+Files:      src/tag.c, src/testdir/test_help_tagjump.vim
+
+Patch 8.0.0117
+Problem:    Parallel make fails. (J. Lewis Muir)
+Solution:   Make sure the objects directory exists. (closes #1259)
+Files:      src/Makefile
+
+Patch 8.0.0118
+Problem:    "make proto" adds extra function prototype.
+Solution:   Add #ifdef.
+Files:      src/misc2.c
+
+Patch 8.0.0119
+Problem:    No test for using CTRL-R on the command line.
+Solution:   Add a test. (Dominique Pelle) And some more.
+Files:      src/testdir/test_cmdline.vim
+
+Patch 8.0.0120
+Problem:    Channel test is still flaky on OS X.
+Solution:   Set the drop argument to "never".
+Files:      src/testdir/test_channel.vim
+
+Patch 8.0.0121
+Problem:    Setting 'cursorline' changes the curswant column. (Daniel Hahler)
+Solution:   Add the P_RWINONLY flag. (closes #1297)
+Files:      src/option.c, src/testdir/test_goto.vim
+
+Patch 8.0.0122
+Problem:    Channel test is still flaky on OS X.
+Solution:   Add a short sleep.
+Files:      src/testdir/test_channel.py
+
+Patch 8.0.0123
+Problem:    Modern Sun compilers define "__sun" instead of "sun".
+Solution:   Use __sun. (closes #1296)
+Files:      src/mbyte.c, src/pty.c, src/os_unixx.h, src/vim.h
+
+Patch 8.0.0124
+Problem:    Internal error for assert_inrange(1, 1).
+Solution:   Adjust number of allowed arguments. (Dominique Pelle)
+Files:      src/evalfunc.c, src/testdir/test_assert.vim
+
+Patch 8.0.0125
+Problem:    Not enough testing for entering Ex commands.
+Solution:   Add test for CTRL-\ e {expr}. (Dominique Pelle)
+Files:      src/testdir/test_cmdline.vim
+
+Patch 8.0.0126
+Problem:    Display problem with 'foldcolumn' and a wide character.
+            (esiegerman)
+Solution:   Don't use "extra" but an allocated buffer. (Christian Brabandt,
+            closes #1310)
+Files:      src/screen.c, src/testdir/Make_all.mak, src/Makefile,
+            src/testdir/test_display.vim
+
+Patch 8.0.0127
+Problem:    Cancelling completion still inserts text when formatting is done 
+            for 'textwidth'. (lacygoill)
+Solution:   Don't format when CTRL-E was typed. (Hirohito Higashi,
+            closes #1312)
+Files:      src/edit.c, src/testdir/test_popup.vim
+
+Patch 8.0.0128 (after 8.0.0126)
+Problem:    Display test fails on MS-Windows.
+Solution:   Set 'isprint' to "@".
+Files:      src/testdir/test_display.vim
+
+Patch 8.0.0129
+Problem:    Parallel make still doesn't work. (Lewis Muir)
+Solution:   Define OBJ_MAIN.
+Files:      src/Makefile
+
+Patch 8.0.0130
+Problem:    Configure uses "ushort" while the Vim code doesn't.
+Solution:   Use "unsigned short" instead. (Fredrik Fornwall, closes #1314)
+Files:      src/configure.ac, src/auto/configure
+
+Patch 8.0.0131
+Problem:    Not enough test coverage for syntax commands.
+Solution:   Add more tests. (Dominique Pelle)
+Files:      src/testdir/test_syntax.vim
+
+Patch 8.0.0132 (after 8.0.0131)
+Problem:    Test fails because of using :finish.
+Solution:   Change to return.
+Files:      src/testdir/test_syntax.vim
+
+Patch 8.0.0133
+Problem:    "2;'(" causes ml_get errors in an empty buffer.  (Dominique Pelle)
+Solution:   Check the cursor line earlier.
+Files:      src/ex_docmd.c, src/testdir/test_cmdline.vim
+
+Patch 8.0.0134
+Problem:    Null pointer access reported by UBsan.
+Solution:   Check curwin->w_buffer is not NULL. (Yegappan Lakshmanan)
+Files:      src/ex_cmds.c
+
+Patch 8.0.0135
+Problem:    An address relative to the current line, ":.,+3y", does not work
+            properly on a closed fold. (Efraim Yawitz)
+Solution:   Correct for including the closed fold. (Christian Brabandt)
+Files:      src/ex_docmd.c, src/testdir/test_fold.vim,
+            src/testdir/Make_all.mak, src/Makefile
+
+Patch 8.0.0136
+Problem:    When using indent folding and changing indent the wrong fold is
+            opened. (Jonathan Fudger)
+Solution:   Open the fold under the cursor a bit later. (Christian Brabandt)
+Files:      src/ops.c, src/testdir/test_fold.vim
+
+Patch 8.0.0137
+Problem:    When 'maxfuncdepth' is set above 200 the nesting is limited to
+            200. (Brett Stahlman)
+Solution:   Allow for Ex command recursion depending on 'maxfuncdepth'.
+Files:      src/ex_docmd.c, src/testdir/test_nested_function.vim
+
+Patch 8.0.0138 (after 8.0.0137)
+Problem:    Small build fails.
+Solution:   Add #ifdef.
+Files:      src/ex_docmd.c
+
+Patch 8.0.0139 (after 8.0.0135)
+Problem:    Warning for unused argument.
+Solution:   Add UNUSED.
+Files:      src/ex_docmd.c
+
+Patch 8.0.0140
+Problem:    Pasting inserted text in Visual mode does not work properly.
+            (Matthew Malcomson)
+Solution:   Stop Visual mode before stuffing the inserted text. (Christian
+            Brabandt, from neovim #5709)
+Files:      src/ops.c, src/testdir/test_visual.vim
+
+Patch 8.0.0141 (after 8.0.0137)
+Problem:    Nested function test fails on AppVeyor.
+Solution:   Disable the test on Windows for now.
+Files:      src/testdir/test_nested_function.vim
+
+Patch 8.0.0142
+Problem:    Normal colors are wrong with 'termguicolors'.
+Solution:   Initialize to INVALCOLOR instead of zero. (Ben Jackson, closes
+            #1344)
+Files:      src/syntax.c
+
+Patch 8.0.0143
+Problem:    Line number of current buffer in getbufinfo() is wrong.
+Solution:   For the current buffer use the current line number. (Ken Takata)
+Files:      src/evalfunc.c
+
+Patch 8.0.0144
+Problem:    When using MSVC the GvimExt directory is cleaned twice.
+Solution:   Remove the lines. (Ken Takata)
+Files:      src/Make_mvc.mak
+
+Patch 8.0.0145
+Problem:    Running tests on MS-Windows is a little bit noisy.
+Solution:   Redirect some output to "nul". (Ken Takata)
+Files:      src/testdir/Make_dos.mak
+
+Patch 8.0.0146
+Problem:    When using 'termguicolors' on MS-Windows the RGB definition causes
+            the colors to be wrong.
+Solution:   Undefined RGB and use our own. (Gabriel Barta)
+Files:      src/term.c
+
+Patch 8.0.0147
+Problem:    searchpair() does not work when 'magic' is off. (Chris Paul)
+Solution:   Add \m in the pattern. (Christian Brabandt, closes #1341)
+Files:      src/evalfunc.c, src/testdir/test_search.vim
+
+Patch 8.0.0148
+Problem:    When a C preprocessor statement has two line continuations the
+            following line does not have the right indent. (Ken Takata)
+Solution:   Add the indent of the previous continuation line. (Hirohito
+            Higashi)
+Files:      src/misc1.c, src/testdir/test3.in, src/testdir/test3.ok
+
+Patch 8.0.0149
+Problem:    ":earlier" and ":later" do not work after startup or reading the
+            undo file.
+Solution:   Use absolute time stamps instead of relative to the Vim start
+            time. (Christian Brabandt, Pavel Juhas, closes #1300, closes
+            #1254)
+Files:      src/testdir/test_undo.vim, src/undo.c
+
+Patch 8.0.0150
+Problem:    When the pattern of :filter does not have a separator then
+            completion of the command fails.
+Solution:   Skip over the pattern. (Ozaki Kiichi, clodes #1299)
+Files:      src/ex_docmd.c, src/testdir/test_filter_cmd.vim
+
+Patch 8.0.0151
+Problem:    To pass buffer content to system() and systemlist() one has to
+            first create a string or list.
+Solution:   Allow passing a buffer number. (LemonBoy, closes #1240)
+Files:      runtime/doc/eval.txt, src/Makefile, src/evalfunc.c,
+            src/testdir/Make_all.mak, src/testdir/test_system.vim
+
+Patch 8.0.0152
+Problem:    Running the channel test creates channellog.
+Solution:   Delete the debug line.
+Files:      src/testdir/test_channel.vim
+
+Patch 8.0.0153 (after 8.0.0151)
+Problem:    system() test fails on MS-Windows.
+Solution:   Deal with extra space and CR.
+Files:      src/testdir/test_system.vim
+
+Patch 8.0.0154 (after 8.0.0151)
+Problem:    system() test fails on OS/X.
+Solution:   Deal with leading spaces.
+Files:      src/testdir/test_system.vim
+
+Patch 8.0.0155
+Problem:    When sorting zero elements a NULL pointer is passed to qsort(),
+            which ubsan warns for.
+Solution:   Don't call qsort() if there are no elements. (Dominique Pelle)
+Files:      src/syntax.c
+
+Patch 8.0.0156
+Problem:    Several float functions are not covered by tests.
+Solution:   Add float tests. (Dominique Pelle)
+Files:      src/Makefile, src/testdir/test_alot.vim,
+            src/testdir/test_float_func.vim
+
+Patch 8.0.0157
+Problem:    No command line completion for ":syntax spell" and ":syntax sync".
+Solution:   Implement the completion. (Dominique Pelle)
+Files:      src/syntax.c, src/testdir/test_syntax.vim
+
+Patch 8.0.0158 (after 8.0.0156)
+Problem:    On MS-Windows some float functions return a different value when
+            passed unusual values.  strtod() doesn't work for "inf" and "nan".
+Solution:   Accept both results.  Fix str2float() for MS-Windows.  Also
+            reorder assert function arguments.
+Files:      src/testdir/test_float_func.vim, src/eval.c
+
+Patch 8.0.0159
+Problem:    Using a NULL pointer when using feedkeys() to trigger drawing a
+            tabline.
+Solution:   Skip drawing a tabline if TabPageIdxs is NULL. (Dominique Pelle)
+            Also fix recursing into getcmdline() from the cmd window.
+Files:      src/screen.c, src/ex_getln.c
+
+Patch 8.0.0160
+Problem:    EMSG() is sometimes used for internal errors.
+Solution:   Change them to IEMSG(). (Dominique Pelle)  And a few more.
+Files:      src/regexp_nfa.c, src/channel.c, src/eval.c
+
+Patch 8.0.0161 (after 8.0.0159)
+Problem:    Build fails when using small features.
+Solution:   Update #ifdef for using save_ccline. (Hirohito Higashi)
+Files:      src/ex_getln.c
+
+Patch 8.0.0162
+Problem:    Build error on Fedora 23 with small features and gnome2.
+Solution:   Undefine ngettext(). (Hirohito Higashi)
+Files:      src/gui_gtk.c, src/gui_gtk_x11.c
+
+Patch 8.0.0163
+Problem:    Ruby 2.4 no longer supports rb_cFixnum.
+Solution:   move rb_cFixnum into an #ifdef. (Kazuki Sakamoto, closes #1365)
+Files:      src/if_ruby.c
+
+Patch 8.0.0164
+Problem:    Outdated and misplaced comments.
+Solution:   Fix the comments.
+Files:      src/charset.c, src/getchar.c, src/list.c, src/misc2.c,
+            src/testdir/README.txt
+
+Patch 8.0.0165
+Problem:    Ubsan warns for integer overflow.
+Solution:   Swap two conditions. (Dominique Pelle)
+Files:      src/regexp_nfa.c
+
+Patch 8.0.0166
+Problem:    JSON with a duplicate key gives an internal error. (Lcd)
+Solution:   Give a normal error.  Avoid an error when parsing JSON from a
+            remote client fails.
+Files:      src/evalfunc.c, src/json.c, src/channel.c,
+            src/testdir/test_json.vim
+
+Patch 8.0.0167
+Problem:    str2nr() and str2float() do not always work with negative values.
+Solution:   Be more flexible about handling signs. (LemonBoy, closes #1332)
+            Add more tests.
+Files:      src/evalfunc.c, src/testdir/test_float_func.vim,
+            src/testdir/test_functions.vim, src/testdir/test_alot.vim,
+            src/Makefile
+
+Patch 8.0.0168
+Problem:    Still some float functionality is not covered by tests.
+Solution:   Add more tests. (Dominique Pelle, closes #1364)
+Files:      src/testdir/test_float_func.vim
+
+Patch 8.0.0169
+Problem:    For complicated string json_decode() may run out of stack space.
+Solution:   Change the recursive solution into an iterative solution.
+Files:      src/json.c
+
+Patch 8.0.0170 (after 8.0.0169)
+Problem:    Channel test fails for using freed memory.
+Solution:   Fix memory use in json_decode().
+Files:      src/json.c
+
+Patch 8.0.0171
+Problem:    JS style JSON does not support single quotes.
+Solution:   Allow for single quotes. (Yasuhiro Matsumoto, closes #1371)
+Files:      src/json.c, src/testdir/test_json.vim, src/json_test.c,
+            runtime/doc/eval.txt
+
+Patch 8.0.0172 (after 8.0.0159)
+Problem:    The command selected in the command line window is not executed.
+            (Andrey Starodubtsev)
+Solution:   Save and restore the command line at a lower level. (closes #1370)
+Files:      src/ex_getln.c, src/testdir/test_history.vim
+
+Patch 8.0.0173
+Problem:    When compiling with EBCDIC defined the build fails. (Yaroslav
+            Kuzmin)
+Solution:   Move sortFunctions() to the right file.  Avoid warning for
+            redefining __SUSV3.
+Files:      src/eval.c, src/evalfunc.c, src/os_unixx.h
+
+Patch 8.0.0174
+Problem:    For completion "locale -a" is executed on MS-Windows, even though
+            it most likely won't work.
+Solution:   Skip executing "locale -a" on MS-Windows. (Ken Takata)
+Files:      src/ex_cmds2.c
+
+Patch 8.0.0175
+Problem:    Setting language in gvim on MS-Windows does not work when
+            libintl.dll is dynamically linked with msvcrt.dll.
+Solution:   Use putenv() from libintl as well. (Ken Takata, closes #1082)
+Files:      src/mbyte.c, src/misc1.c, src/os_win32.c, src/proto/os_win32.pro,
+            src/vim.h
+
+Patch 8.0.0176
+Problem:    Using :change in between :function and :endfunction fails.
+Solution:   Recognize :change inside a function. (ichizok, closes #1374)
+Files:      src/userfunc.c, src/testdir/test_viml.vim
+
+Patch 8.0.0177
+Problem:    When opening a buffer on a directory and inside a try/catch then
+            the BufEnter event is not triggered.
+Solution:   Return NOTDONE from readfile() for a directory and deal with the
+            three possible return values. (Justin M. Keyes, closes #1375,
+            closes #1353)
+Files:      src/buffer.c, src/ex_cmds.c, src/ex_docmd.c, src/fileio.c,
+            src/memline.c
+
+Patch 8.0.0178
+Problem:    test_command_count may fail when a previous test interferes, seen
+            on MS-Windows.
+Solution:   Run it separately.
+Files:      src/testdir/test_alot.vim, src/testdir/Make_all.mak
+
+Patch 8.0.0179
+Problem:    'formatprg' is a global option but the value may depend on the
+            type of buffer. (Sung Pae)
+Solution:   Make 'formatprg' global-local. (closes #1380)
+Files:      src/structs.h, src/option.h, src/option.c, src/normal.c,
+            runtime/doc/options.txt, src/testdir/test_normal.vim
+
+Patch 8.0.0180
+Problem:    Error E937 is used both for duplicate key in JSON and for trying
+            to delete a buffer that is in use.
+Solution:   Rename the JSON error to E938. (Norio Takagi, closes #1376)
+Files:      src/json.c, src/testdir/test_json.vim
+
+Patch 8.0.0181
+Problem:    When 'cursorbind' and 'cursorcolumn' are both on, the column
+            highlignt in non-current windows is wrong.
+Solution:   Add validate_cursor(). (Masanori Misono, closes #1372)
+Files:      src/move.c
+
+Patch 8.0.0182
+Problem:    When 'cursorbind' and 'cursorline' are set, but 'cursorcolumn' is
+            not, then the cursor line highlighting is not updated. (Hirohito
+            Higashi)
+Solution:   Call redraw_later() with NOT_VALID.
+Files:      src/move.c
+
+Patch 8.0.0183
+Problem:    Ubsan warns for using a pointer that is not aligned.
+Solution:   First copy the address. (Yegappan Lakshmanan)
+Files:      src/channel.c
+
+Patch 8.0.0184
+Problem:    When in Ex mode and an error is caught by try-catch, Vim still
+            exits with a non-zero exit code.
+Solution:   Don't set ex_exitval when inside a try-catch. (partly by Christian
+            Brabandt)
+Files:      src/message.c, src/testdir/test_system.vim
+
+Patch 8.0.0185 (after 8.0.0184)
+Problem:    The system() test fails on MS-Windows.
+Solution:   Skip the test on MS-Windows.
+Files:      src/testdir/test_system.vim
+
+Patch 8.0.0186
+Problem:    The error message from assert_notequal() is confusing.
+Solution:   Only mention the expected value.
+Files:      src/eval.c, src/testdir/test_assert.vim
+
+Patch 8.0.0187
+Problem:    Building with a new Ruby version fails.
+Solution:   Use ruby_sysinit() instead of NtInitialize(). (Tomas Volf,
+            closes #1382)
+Files:      src/if_ruby.c
+
+Patch 8.0.0188 (after 8.0.0182)
+Problem:    Using NOT_VALID for redraw_later() to update the cursor
+            line/column highlighting is not efficient.
+Solution:   Call validate_cursor() when 'cul' or 'cuc' is set.
+Files:      src/move.c
+
+Patch 8.0.0189
+Problem:    There are no tests for the :profile command.
+Solution:   Add tests. (Dominique Pelle, closes #1383)
+Files:      src/Makefile, src/testdir/Make_all.mak,
+            src/testdir/test_profile.vim
+
+Patch 8.0.0190
+Problem:    Detecting duplicate tags uses a slow linear search.
+Solution:   Use a much faster hash table solution. (James McCoy, closes #1046)
+            But don't add hi_keylen, it makes hash tables 50% bigger.
+Files:      src/tag.c
+
+Patch 8.0.0191 (after 8.0.0187)
+Problem:    Some systems do not have ruby_sysinit(), causing the build to
+            fail.
+Solution:   Clean up how ruby_sysinit() and NtInitialize() are used. (Taro
+            Muraoka)
+Files:      src/if_ruby.c
+
+Patch 8.0.0192 (after 8.0.0190)
+Problem:    Build fails with tiny features.
+Solution:   Change #ifdef for hash_clear().  Avoid warning for unused
+            argument.
+Files:      src/hashtab.c, src/if_cscope.c
+
+Patch 8.0.0193 (after 8.0.0188)
+Problem:    Accidentally removed #ifdef.
+Solution:   Put it back. (Masanori Misono)
+Files:      src/move.c
+
+Patch 8.0.0194 (after 8.0.0189)
+Problem:    Profile tests fails if total and self time are equal.
+Solution:   Make one time optional.
+Files:      src/testdir/test_profile.vim
+
+Patch 8.0.0195 (after 8.0.0190)
+Problem:    Jumping to a tag that is a static item in the current file fails.
+            (Kazunobu Kuriyama)
+Solution:   Make sure the first byte of the tag key is not NUL. (Suggested by
+            James McCoy, closes #1387)
+Files:      src/tag.c, src/testdir/test_tagjump.vim
+
+Patch 8.0.0196 (after 8.0.0194)
+Problem:    The test for :profile is slow and does not work on MS-Windows.
+Solution:   Use the "-es" argument. (Dominique Pelle)  Swap single and double
+            quotes for system()
+Files:      src/testdir/test_profile.vim
+
+Patch 8.0.0197
+Problem:    On MS-Windows the system() test skips a few parts.
+Solution:   Swap single and double quotes for the command.
+Files:      src/testdir/test_system.vim
+
+Patch 8.0.0198
+Problem:    Some syntax arguments take effect even after "if 0". (Taylor
+            Venable)
+Solution:   Properly skip the syntax statements.  Make "syn case" and "syn
+            conceal" report the current state.  Fix that "syn clear" didn't
+            reset the conceal flag.  Add tests for :syntax skipping properly.
+Files:      src/syntax.c, src/testdir/test_syntax.vim
+
+Patch 8.0.0199
+Problem:    Warning for an unused parameter when the libcall feature is
+            disabled.  Warning for a function type cast when compiling with
+            -pedantic.
+Solution:   Add UNUSED.  Use a different type cast. (Damien Molinier)
+Files:      src/evalfunc.c, src/os_unix.c
+
+Patch 8.0.0200
+Problem:    Some syntax arguments are not tested.
+Solution:   Add more syntax command tests.
+Files:      src/testdir/test_syntax.vim
+
+Patch 8.0.0201
+Problem:    When completing a group name for a highlight or syntax command
+            cleared groups are included.
+Solution:   Skip groups that have been cleared.
+Files:      src/syntax.c, src/testdir/test_syntax.vim
+
+Patch 8.0.0202
+Problem:    No test for invalid syntax group name.
+Solution:   Add a test for group name error and warning.
+Files:      src/testdir/test_syntax.vim
+
+Patch 8.0.0203
+Problem:    Order of complication flags is sometimes wrong.
+Solution:   Put interface-specific flags before ALL_CFLAGS. (idea by Yousong
+            Zhou, closes #1100)
+Files:      src/Makefile
+
+Patch 8.0.0204
+Problem:    Compiler warns for uninitialized variable. (Tony Mechelynck)
+Solution:   When skipping set "id" to -1.
+Files:      src/syntax.c
+
+Patch 8.0.0205
+Problem:    After :undojoin some commands don't work properly, such as :redo.
+            (Matthew Malcomson)
+Solution:   Don't set curbuf->b_u_curhead. (closes #1390)
+Files:      src/undo.c, src/testdir/test_undo.vim
+
+Patch 8.0.0206
+Problem:    Test coverage for :retab insufficient.
+Solution:   Add test for :retab. (Dominique Pelle, closes #1391)
+Files:      src/Makefile, src/testdir/Make_all.mak, src/testdir/test_retab.vim
+
+Patch 8.0.0207
+Problem:    Leaking file descriptor when system() cannot find the buffer.
+            (Coverity)
+Solution:   Close the file descriptor.  (Dominique Pelle, closes #1398)
+Files:      src/evalfunc.c
+
+Patch 8.0.0208
+Problem:    Internally used commands for CTRL-Z and mouse click end up in
+            history. (Matthew Malcomson)
+Solution:   Use do_cmdline_cmd() instead of stuffing them in the readahead
+            buffer. (James McCoy, closes #1395)
+Files:      src/edit.c, src/normal.c
+
+Patch 8.0.0209
+Problem:    When using :substitute with the "c" flag and 'cursorbind' is set
+            the cursor is not updated in other windows.
+Solution:   Call do_check_cursorbind(). (Masanori Misono)
+Files:      src/ex_cmds.c
+
+Patch 8.0.0210
+Problem:    Vim does not support bracketed paste, as implemented by xterm and
+            other terminals.
+Solution:   Add t_BE, t_BD, t_PS and t_PE.
+Files:      src/term.c, src/term.h, src/option.c, src/misc2.c, src/keymap.h,
+            src/edit.c, src/normal.c, src/evalfunc.c, src/getchar.c,
+            src/vim.h, src/proto/edit.pro, runtime/doc/term.txt
+
+Patch 8.0.0211 (after 8.0.0210)
+Problem:    Build fails if the multi-byte feature is disabled.
+Solution:   Change #ifdef around ins_char_bytes.
+Files:      src/misc1.c
+
+Patch 8.0.0212
+Problem:    The buffer used to store a key name theoreticaly could be too
+            small. (Coverity)
+Solution:   Count all possible modifier characters.  Add a check for the
+            length just in case.
+Files:      src/keymap.h, src/misc2.c
+
+Patch 8.0.0213
+Problem:    The Netbeans "specialKeys" command does not check if the argument
+            fits in the buffer. (Coverity)
+Solution:   Add a length check.
+Files:      src/netbeans.c
+
+Patch 8.0.0214
+Problem:    Leaking memory when syntax cluster id is unknown. (Coverity)
+Solution:   Free the memory.
+Files:      src/syntax.c
+
+Patch 8.0.0215
+Problem:    When a Cscope line contains CTRL-L a NULL pointer may be used.
+            (Coverity)
+Solution:   Don't check for an emacs tag in a cscope line.
+Files:      src/tag.c
+
+Patch 8.0.0216
+Problem:    When decoding JSON with a JS style object the JSON test may use a
+            NULL pointer. (Coverity)
+Solution:   Check for a NULL pointer.
+Files:      src/json.c, src/json_test.c
+
+Patch 8.0.0217 (after 8.0.0215)
+Problem:    Build fails without the cscope feature.
+Solution:   Add #ifdef.
+Files:      src/tag.c
+
+Patch 8.0.0218
+Problem:    No command line completion for :cexpr, :cgetexpr, :caddexpr, etc.
+Solution:   Make completion work. (Yegappan Lakshmanan)  Add a test.
+Files:      src/ex_docmd.c, src/testdir/test_cmdline.vim
+
+Patch 8.0.0219
+Problem:    Ubsan reports errors for integer overflow.
+Solution:   Define macros for minimum and maximum values.  Select an
+            expression based on the value. (Mike Williams)
+Files:      src/charset.c, src/eval.c, src/evalfunc.c, src/structs.h,
+            src/testdir/test_viml.vim
+
+Patch 8.0.0220
+Problem:    Completion for :match does not show "none" and other missing
+            highlight names.
+Solution:   Skip over cleared entries before checking the index to be at the
+            end.
+Files:      src/syntax.c, src/testdir/test_cmdline.vim
+
+Patch 8.0.0221
+Problem:    Checking if PROTO is defined inside a function has no effect.
+Solution:   Remove the check for PROTO. (Hirohito Higashi)
+Files:      src/misc1.c
+
+Patch 8.0.0222
+Problem:    When a multi-byte character ends in a zero byte, putting blockwise
+            text puts it before the character instead of after it.
+Solution:   Use int instead of char for the character under the cursor.
+            (Luchr, closes #1403)  Add a test.
+Files:      src/ops.c, src/testdir/test_put.vim, src/Makefile,
+            src/testdir/test_alot.vim
+
+Patch 8.0.0223
+Problem:    Coverity gets confused by the flags passed to find_tags() and
+            warnts for an uninitialized variable.
+Solution:   Disallow using cscope and help tags at the same time.
+Files:      src/tag.c
+
+Patch 8.0.0224
+Problem:    When 'fileformats' is changed in a BufReadPre auto command, it
+            does not take effect in readfile(). (Gary Johnson)
+Solution:   Check the value of 'fileformats' after executing auto commands.
+            (Christian Brabandt)
+Files:      src/fileio.c, src/testdir/test_fileformat.vim
+
+Patch 8.0.0225
+Problem:    When a block is visually selected and put is used on the end of
+            the selection only one line is changed.
+Solution:   Check for the end properly. (Christian Brabandt, neovim issue
+            5781)
+Files:      src/ops.c, src/testdir/test_put.vim
+
+Patch 8.0.0226
+Problem:    The test for patch 8.0.0224 misses the CR characters and passes
+            even without the fix. (Christian Brabandt)
+Solution:   Use double quotes and \<CR>.
+Files:      src/testidr/test_fileformat.vim
+
+Patch 8.0.0227
+Problem:    Crash when 'fileformat' is forced to "dos" and the first line in
+            the file is empty and does not have a CR character.
+Solution:   Don't check for CR before the start of the buffer.
+Files:      src/fileio.c, src/testidr/test_fileformat.vim
+
+Patch 8.0.0228 (after 8.0.0210)
+Problem:    When pasting test in an xterm on the command line it is surrounded
+            by <PasteStart> and <PasteEnd>. (Johannes Kaltenbach)
+Solution:   Add missing changes.
+Files:      src/ex_getln.c, src/term.c
+
+Patch 8.0.0229 (after 8.0.0179)
+Problem:    When freeing a buffer the local value of the 'formatprg' option is
+            not cleared.
+Solution:   Add missing change.
+Files:      src/buffer.c
+
+Patch 8.0.0230 (after 8.0.0210)
+Problem:    When using bracketed paste line breaks are not respected.
+Solution:   Turn CR characters into a line break if the text is being
+            inserted. (closes #1404)
+Files:      src/edit.c
+
+Patch 8.0.0231
+Problem:    There are no tests for bracketed paste mode.
+Solution:   Add a test.  Fix repeating with "normal .".
+Files:      src/edit.c, src/testdir/test_paste.vim, src/Makefile,
+            src/testdir/Make_all.mak
+
+Patch 8.0.0232
+Problem:    Pasting in Insert mode does not work when bracketed paste is used
+            and 'esckeys' is off.
+Solution:   When 'esckeys' is off disable bracketed paste in Insert mode.
+Files:      src/edit.c
+
+Patch 8.0.0233 (after 8.0.0231)
+Problem:    The paste test fails if the GUI is being used.
+Solution:   Skip the test in the GUI.
+Files:      src/testdir/test_paste.vim
+
+Patch 8.0.0234 (after 8.0.0225)
+Problem:    When several lines are visually selected and one of them is short,
+            using put may cause a crash. (Axel Bender)
+Solution:   Check for a short line. (Christian Brabandt)
+Files:      src/ops.c, src/testdir/test_put.vim
+
+Patch 8.0.0235
+Problem:    Memory leak detected when running tests for diff mode.
+Solution:   Free p_extra_free.
+Files:      src/screen.c
+
+Patch 8.0.0236 (after 8.0.0234)
+Problem:    Gcc complains that a variable may be used uninitialized. Confusion
+            between variable and label name. (John Marriott)
+Solution:   Initialize it.  Rename end to end_lnum.
+Files:      src/ops.c
+
+Patch 8.0.0237
+Problem:    When setting wildoptions=tagfile the completion context is not set
+            correctly. (desjardins)
+Solution:   Check for EXPAND_TAGS_LISTFILES. (Christian Brabandt, closes #1399)
+Files:      src/ex_getln.c, src/testdir/test_cmdline.vim
+
+Patch 8.0.0238
+Problem:    When using bracketed paste autoindent causes indent to be
+            increased.
+Solution:   Disable 'ai' and set 'paste' temporarily. (Ken Takata)
+Files:      src/edit.c, src/testdir/test_paste.vim
+
+Patch 8.0.0239
+Problem:    The address sanitizer sometimes finds errors, but it needs to be
+            run manually.
+Solution:   Add an environment to Travis with clang and the address sanitizer.
+            (Christian Brabandt)  Also include changes only on github.
+Files:      .travis.yml
+
+Patch 8.0.0240 (after 8.0.0239)
+Problem:    The clang build on CI fails with one configuration.
+Solution:   Redo a previous patch that was accidentally reverted.
+Files:      .travis.yml
+
+Patch 8.0.0241
+Problem:    Vim defines a mch_memmove() function but it doesn't work, thus is
+            always unused.
+Solution:   Remove the mch_memmove implementation. (suggested by Dominique
+            Pelle)
+Files:      src/os_unix.h, src/misc2.c, src/vim.h
+
+Patch 8.0.0242
+Problem:    Completion of user defined functions is not covered by tests.
+Solution:   Add tests.  Also test various errors of user-defined commands.
+            (Dominique Pelle, closes #1413)
+Files:      src/testdir/test_usercommands.vim
+
+Patch 8.0.0243
+Problem:    When making a character lower case with tolower() changes the byte
+            cound, it is not made lower case.
+Solution:   Add strlow_save(). (Dominique Pelle, closes #1406)
+Files:      src/evalfunc.c, src/misc2.c, src/proto/misc2.pro,
+            src/testdir/test_functions.vim
+
+Patch 8.0.0244
+Problem:    When the user sets t_BE empty after startup to disable bracketed
+            paste, this has no direct effect.
+Solution:   When t_BE is made empty write t_BD.  When t_BE is made non-empty
+            write the new value.
+Files:      src/option.c
+
+Patch 8.0.0245
+Problem:    The generated zh_CN.cp936.po message file is not encoded properly.
+Solution:   Instead of using zh_CN.po as input, use zh_CN.UTF-8.po.
+Files:      src/po/Makefile
+
+Patch 8.0.0246
+Problem:    Compiler warnings for int to pointer conversion.
+Solution:   Fix macro for mch_memmove(). (John Marriott)
+Files:      src/vim.h
+
+Patch 8.0.0247
+Problem:    Under some circumstances, one needs to type Ctrl-N or Ctrl-P twice
+            to have a menu entry selected. (Lifepillar)
+Solution:   call ins_compl_free(). (Christian Brabandt, closes #1411)
+Files:      src/edit.c, src/testdir/test_popup.vim
+
+Patch 8.0.0248
+Problem:    vim_strcat() cannot handle overlapping arguments.
+Solution:   Use mch_memmove() instead of strcpy(). (Justin M Keyes,
+            closes #1415)
+Files:      src/misc2.c
+
+Patch 8.0.0249
+Problem:    When two submits happen quick after each other, the tests for the
+            first one may error out.
+Solution:   Use a git depth of 10 instead of 1. (Christian Brabandt)
+Files:      .travis.yml
+
+Patch 8.0.0250
+Problem:    When virtcol() gets a column that is not the first byte of a
+            multi-byte character the result is unpredictable. (Christian
+            Ludwig)
+Solution:   Correct the column to the first byte of a multi-byte character.
+            Change the utf-8 test to new style.
+Files:      src/charset.c, src/testdir/test_utf8.in, src/testdir/test_utf8.ok,
+            src/testdir/test_utf8.vim, src/Makefile, src/testdir/Make_all.mak,
+            src/testdir/test_alot_utf8.vim
+
+Patch 8.0.0251
+Problem:    It is not so easy to write a script that works with both Python 2
+            and Python 3, even when the Python code works with both.
+Solution:   Add 'pyxversion', :pyx, etc. (Marc Weber, Ken Takata)
+Files:      Filelist, runtime/doc/eval.txt, runtime/doc/if_pyth.txt,
+            runtime/doc/index.txt, runtime/doc/options.txt,
+            runtime/optwin.vim, runtime/doc/quickref.txt,
+            runtime/doc/usr_41.txt, src/Makefile, src/evalfunc.c,
+            src/ex_cmds.h, src/ex_cmds2.c, src/ex_docmd.c, src/if_python.c,
+            src/if_python3.c, src/option.c, src/option.h,
+            src/proto/ex_cmds2.pro, src/testdir/Make_all.mak,
+            src/testdir/pyxfile/py2_magic.py,
+            src/testdir/pyxfile/py2_shebang.py,
+            src/testdir/pyxfile/py3_magic.py,
+            src/testdir/pyxfile/py3_shebang.py, src/testdir/pyxfile/pyx.py,
+            src/testdir/test_pyx2.vim, src/testdir/test_pyx3.vim
+            src/userfunc.c
+
+Patch 8.0.0252
+Problem:    Characters below 256 that are not one byte are not always
+            recognized as word characters.
+Solution:   Make vim_iswordc() and vim_iswordp() work the same way. Add a test
+            for this. (Ozaki Kiichi)
+Files:      src/Makefile, src/charset.c, src/kword_test.c, src/mbyte.c,
+            src/proto/mbyte.pro
+
+Patch 8.0.0253
+Problem:    When creating a session when winminheight is 2 or larger and
+            loading that session gives an error.
+Solution:   Also set winminheight before setting winheight to 1. (Rafael
+            Bodill, neovim #5717)
+Files:      src/ex_docmd.c, src/testdir/test_mksession.vim
+
+Patch 8.0.0254
+Problem:    When using an assert function one can either specify a message or
+            get a message about what failed, not both.
+Solution:   Concatenate the error with the message.
+Files:      src/eval.c, src/testdir/test_assert.vim
+
+Patch 8.0.0255
+Problem:    When calling setpos() with a buffer argument it often is ignored.
+            (Matthew Malcomson)
+Solution:   Make the buffer argument work for all marks local to a buffer.
+            (neovim #5713)  Add more tests.
+Files:      src/mark.c, src/testdir/test_marks.vim, runtime/doc/eval.txt
+
+Patch 8.0.0256 (after 8.0.0255)
+Problem:    Tests fail because some changes were not included.
+Solution:   Add changes to evalfunc.c
+Files:      src/evalfunc.c
+
+Patch 8.0.0257 (after 8.0.0252)
+Problem:    The keyword test file is not included in the archive.
+Solution:   Update the list of files.
+Files:      Filelist
+
+Patch 8.0.0258 (after 8.0.0253)
+Problem:    mksession test leaves file behind.
+Solution:   Delete the file.  Rename files to start with "X".
+Files:      src/testdir/test_mksession.vim
+
+Patch 8.0.0259
+Problem:    Tab commands do not handle count correctly. (Ken Hamada)
+Solution:   Add ADDR_TABS_RELATIVE. (Hirohito Higashi)
+Files:      runtime/doc/tabpage.txt, src/ex_cmds.h, src/ex_docmd.c,
+            src/testdir/test_tabpage.vim
+
+Patch 8.0.0260
+Problem:    Build fails with tiny features.
+Solution:   Move get_tabpage_arg() inside #ifdef.
+Files:      src/ex_docmd.c
+
+Patch 8.0.0261
+Problem:    Not enough test coverage for eval functions.
+Solution:   Add more tests. (Dominique Pelle, closes #1420)
+Files:      src/testdir/test_functions.vim
+
+Patch 8.0.0262
+Problem:    Farsi support is barely tested.
+Solution:   Add more tests for Farsi.  Clean up the code.
+Files:      src/edit.c, src/farsi.c, src/testdir/test_farsi.vim
+
+Patch 8.0.0263
+Problem:    Farsi support is not tested enough.
+Solution:   Add more tests for Farsi.  Clean up the code.
+Files:      src/farsi.c, src/testdir/test_farsi.vim
+
+Patch 8.0.0264
+Problem:    Memory error reported by ubsan, probably for using the string
+            returned by execute().
+Solution:   NUL terminate the result of execute().
+Files:      src/evalfunc.c
+
+Patch 8.0.0265
+Problem:    May get ml_get error when :pydo deletes lines or switches to
+            another buffer. (Nikolai Pavlov, issue #1421)
+Solution:   Check the buffer and line every time.
+Files:      src/if_py_both.h, src/testdir/test_python2.vim,
+            src/testdir/test_python3.vim, src/Makefile,
+            src/testdir/Make_all.mak
+
+Patch 8.0.0266
+Problem:    Compiler warning for using uninitialized variable.
+Solution:   Set tab_number also when there is an error.
+Files:      src/ex_docmd.c
+
+Patch 8.0.0267
+Problem:    A channel test sometimes fails on Mac.
+Solution:   Add the test to the list of flaky tests.
+Files:      src/testdir/runtest.vim
+
+Patch 8.0.0268
+Problem:    May get ml_get error when :luado deletes lines or switches to
+            another buffer. (Nikolai Pavlov, issue #1421)
+Solution:   Check the buffer and line every time.
+Files:      src/if_lua.c, src/testdir/test_lua.vim, src/Makefile,
+            src/testdir/Make_all.mak
+
+Patch 8.0.0269
+Problem:    May get ml_get error when :perldo deletes lines or switches to
+            another buffer. (Nikolai Pavlov, issue #1421)
+Solution:   Check the buffer and line every time.
+Files:      src/if_perl.xs, src/testdir/test_perl.vim
+
+Patch 8.0.0270
+Problem:    May get ml_get error when :rubydo deletes lines or switches to
+            another buffer. (Nikolai Pavlov, issue #1421)
+Solution:   Check the buffer and line every time.
+Files:      src/if_ruby.c, src/testdir/test_ruby.vim
+
+Patch 8.0.0271
+Problem:    May get ml_get error when :tcldo deletes lines or switches to
+            another buffer. (Nikolai Pavlov, closes #1421)
+Solution:   Check the buffer and line every time.
+Files:      src/if_tcl.c, src/testdir/test_tcl.vim, src/Makefile,
+            src/testdir/Make_all.mak
+
+Patch 8.0.0272
+Problem:    Crash on exit is not detected when running tests.
+Solution:   Remove the dash before the command. (Dominique Pelle, closes
+            #1425)
+Files:      src/testdir/Makefile
+
+Patch 8.0.0273
+Problem:    Dead code detected by Coverity when not using gnome.
+Solution:   Rearrange the #ifdefs to avoid dead code.
+Files:      src/gui_gtk_x11.c
+
+Patch 8.0.0274
+Problem:    When update_single_line() is called recursively, or another screen
+            update happens while it is busy, errors may occur.
+Solution:   Check and update updating_screen. (Christian Brabandt)
+Files:      src/screen.c
+
+Patch 8.0.0275
+Problem:    When checking for CTRL-C typed the GUI may detect a screen resize
+            and redraw the screen, causing trouble.
+Solution:   Set updating_screen in ui_breakcheck().
+Files:      src/ui.c
+
+Patch 8.0.0276
+Problem:    Checking for FEAT_GUI_GNOME inside GTK 3 code is unnecessary.
+Solution:   Remove the #ifdef. (Kazunobu Kuriyama)
+Files:      src/gui_gtk_x11.c
+
+Patch 8.0.0277
+Problem:    The GUI test may trigger fontconfig and take a long time.
+Solution:   Set $XDG_CACHE_HOME. (Kazunobu Kuriyama)
+Files:      src/testdir/unix.vim, src/testdir/test_gui.vim
+
+Patch 8.0.0278 (after 8.0.0277)
+Problem:    GUI test fails on MS-Windows.
+Solution:   Check that tester_HOME exists.
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0279
+Problem:    With MSVC 2015 the dll name is vcruntime140.dll.
+Solution:   Check the MSVC version and use the right dll name. (Ken Takata)
+Files:      src/Make_mvc.mak
+
+Patch 8.0.0280
+Problem:    On MS-Windows setting an environment variable with multi-byte
+            strings does not work well.
+Solution:   Use wputenv when possible. (Taro Muraoka, Ken Takata)
+Files:      src/misc1.c, src/os_win32.c, src/os_win32.h,
+            src/proto/os_win32.pro, src/vim.h
+
+Patch 8.0.0281
+Problem:    MS-Windows files are still using ARGSUSED while most other files
+            have UNUSED.
+Solution:   Change ARGSUSED to UNUSED or delete it.
+Files:      src/os_win32.c, src/gui_w32.c, src/os_mswin.c, src/os_w32exe.c,
+            src/winclip.c
+
+Patch 8.0.0282
+Problem:    When doing a Visual selection and using "I" to go to insert mode,
+            CTRL-O needs to be used twice to go to Normal mode. (Coacher)
+Solution:   Check for the return value of edit(). (Christian Brabandt,
+            closes #1290)
+Files:      src/normal.c, src/ops.c
+
+Patch 8.0.0283
+Problem:    The return value of mode() does not indicate that completion is
+            active in Replace and Insert mode. (Zhen-Huan (Kenny) Hu)
+Solution:   Add "c" or "x" for two kinds of completion. (Yegappan Lakshmanan,
+            closes #1397)  Test some more modes.
+Files:      runtime/doc/eval.txt, src/evalfunc.c,
+            src/testdir/test_functions.vim, src/testdir/test_mapping.vim
+
+Patch 8.0.0284
+Problem:    The Test_collapse_buffers() test failed once, looks like it is
+            flaky.
+Solution:   Add it to the list of flaky tests.
+Files:      src/testdir/runtest.vim
+
+Patch 8.0.0285 (after 8.0.0277)
+Problem:    Tests fail with tiny build on Unix.
+Solution:   Only set g:tester_HOME when build with the +eval feature.
+Files:      src/testdir/unix.vim
+
+Patch 8.0.0286
+Problem:    When concealing is active and the screen is resized in the GUI it
+            is not immediately redrawn.
+Solution:   Use update_prepare() and update_finish() from
+            update_single_line().
+Files:      src/screen.c
+
+Patch 8.0.0287
+Problem:    Cannot access the arguments of the current function in debug mode.
+            (Luc Hermitte)
+Solution:   use get_funccal(). (Lemonboy, closes #1432, closes #1352)
+Files:      src/userfunc.c
+
+Patch 8.0.0288 (after 8.0.0284)
+Problem:    Errors reported while running tests.
+Solution:   Put comma in the right place.
+Files:      src/testdir/runtest.vim
+
+Patch 8.0.0289
+Problem:    No test for "ga" and :ascii.
+Solution:   Add a test. (Dominique Pelle, closes #1429)
+Files:      src/Makefile, src/testdir/test_alot.vim, src/testdir/test_ga.vim
+
+Patch 8.0.0290
+Problem:    If a wide character doesn't fit at the end of the screen line, and
+            the line doesn't fit on the screen, then the cursor position may
+            be wrong. (anliting)
+Solution:   Don't skip over wide character. (Christian Brabandt, closes #1408)
+Files:      src/screen.c
+
+Patch 8.0.0291 (after 8.0.0282)
+Problem:    Visual block insertion does not insert in all lines.
+Solution:   Don't bail out of insert too early. Add a test. (Christian
+            Brabandt, closes #1290)
+Files:      src/ops.c, src/testdir/test_visual.vim
+
+Patch 8.0.0292
+Problem:    The stat test is a bit slow.
+Solution:   Remove a couple of sleep comments and reduce another.
+Files:      src/testdir/test_stat.vim
+
+Patch 8.0.0293
+Problem:    Some tests have a one or three second wait.
+Solution:   Reset the 'showmode' option.  Use a test time of one to disable
+            sleep after an error or warning message.
+Files:      src/misc1.c, src/testdir/runtest.vim, src/testdir/test_normal.vim
+
+Patch 8.0.0294
+Problem:    Argument list is not stored correctly in a session file.
+            (lgpasquale)
+Solution:   Use "$argadd" instead of "argadd". (closes #1434)
+Files:      src/ex_docmd.c, src/testdir/test_mksession.vim
+
+Patch 8.0.0295 (after 8.0.0293)
+Problem:    test_viml hangs.
+Solution:   Put resetting 'more' before sourcing the script.
+Files:      src/testdir/runtest.vim
+
+Patch 8.0.0296
+Problem:    Bracketed paste can only append, not insert.
+Solution:   When the cursor is in the first column insert the text.
+Files:      src/normal.c, src/testdir/test_paste.vim, runtime/doc/term.txt
+
+Patch 8.0.0297
+Problem:    Double free on exit when using a closure. (James McCoy)
+Solution:   Split free_al_functions in two parts. (closes #1428)
+Files:      src/userfunc.c, src/structs.h
+
+Patch 8.0.0298
+Problem:    Ex command range with repeated search does not work. (Bruce
+            DeVisser)
+Solution:   Skip over \/, \? and \&.
+Files:      src/ex_docmd.c, src/testdir/test_cmdline.vim
+
+Patch 8.0.0299
+Problem:    When the GUI window is resized Vim does not always take over the
+            new size. (Luchr)
+Solution:   Reset new_p_guifont in gui_resize_shell().  Call
+            gui_may_resize_shell() in the main loop.
+Files:      src/main.c, src/gui.c
+
+Patch 8.0.0300
+Problem:    Cannot stop diffing hidden buffers. (Daniel Hahler)
+Solution:   When using :diffoff! make the whole list if diffed buffers empty.
+            (closes #736)
+Files:      src/diff.c, src/testdir/test_diffmode.vim
+
+Patch 8.0.0301
+Problem:    No tests for ":set completion" and various errors of the :set
+            command.
+Solution:   Add more :set tests. (Dominique Pelle, closes #1440)
+Files:      src/testdir/test_options.vim
+
+Patch 8.0.0302
+Problem:    Cannot set terminal key codes with :let.
+Solution:   Make it work.
+Files:      src/option.c, src/testdir/test_assign.vim
+
+Patch 8.0.0303
+Problem:    Bracketed paste does not work in Visual mode.
+Solution:   Delete the text before pasting
+Files:      src/normal.c, src/ops.c, src/proto/ops.pro,
+            src/testdir/test_paste.vim
+
+Patch 8.0.0304 (after 8.0.0302)
+Problem:    Assign test fails in the GUI.
+Solution:   Skip the test for setting t_k1.
+Files:      src/testdir/test_assign.vim
+
+Patch 8.0.0305
+Problem:    Invalid memory access when option has duplicate flag.
+Solution:   Correct pointer computation. (Dominique Pelle, closes #1442)
+Files:      src/option.c, src/testdir/test_options.vim
+
+Patch 8.0.0306
+Problem:    mode() not sufficiently tested.
+Solution:   Add more tests. (Yegappan Lakshmanan)
+Files:      src/testdir/test_functions.vim
+
+Patch 8.0.0307
+Problem:    Asan detects a memory error when EXITFREE is defined. (Dominique
+            Pelle)
+Solution:   In getvcol() check for ml_get_buf() returning an empty string.
+            Also skip adjusting the scroll position.  Set "exiting" in
+            mch_exit() for all systems.
+Files:      src/charset.c, src/window.c, src/os_mswin.c, src/os_win32.c,
+            src/os_amiga.c
+
+Patch 8.0.0308
+Problem:    When using a symbolic link, the package path will not be inserted
+            at the right position in 'runtimepath'. (Dugan Chen, Norio Takagi)
+Solution:   Resolve symbolic links when finding the right position in
+            'runtimepath'. (Hirohito Higashi)
+Files:      src/ex_cmds2.c, src/testdir/test_packadd.vim
+
+Patch 8.0.0309
+Problem:    Cannot use an empty key in json.
+Solution:   Allow for using an empty key.
+Files:      src/json.c, src/testdir/test_json.vim
+
+Patch 8.0.0310
+Problem:    Not enough testing for GUI functionality.
+Solution:   Add tests for v:windowid and getwinpos[xy](). (Kazunobu Kuriyama)
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0311
+Problem:    Linebreak tests are old style.
+Solution:   Turn the tests into new style. Share utility functions. (Ozaki
+            Kiichi, closes #1444)
+Files:      src/Makefile, src/testdir/Make_all.mak,
+            src/testdir/test_breakindent.vim, src/testdir/test_listlbr.in,
+            src/testdir/test_listlbr.ok, src/testdir/test_listlbr.vim,
+            src/testdir/test_listlbr_utf8.in,
+            src/testdir/test_listlbr_utf8.ok,
+            src/testdir/test_listlbr_utf8.vim, src/testdir/view_util.vim
+
+Patch 8.0.0312
+Problem:    When a json message arrives in pieces, the start is dropped and
+            the decoding fails.
+Solution:   Do not drop the start when it is still needed. (Kay Zheng)  Add a
+            test.  Reset the timeout when something is received.
+Files:      src/channel.c, src/testdir/test_channel.vim, src/structs.h,
+            src/testdir/test_channel_pipe.py
+
+Patch 8.0.0313 (after 8.0.0310)
+Problem:    Not enough testing for GUI functionality.
+Solution:   Add tests for the GUI font. (Kazunobu Kuriyama)
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0314
+Problem:    getcmdtype(), getcmdpos() and getcmdline() are not tested.
+Solution:   Add tests. (Yegappan Lakshmanan)
+Files:      src/testdir/test_cmdline.vim
+
+Patch 8.0.0315
+Problem:    ":help :[range]" does not work. (Tony Mechelynck)
+Solution:   Translate to insert a backslash.
+Files:      src/ex_cmds.c
+
+Patch 8.0.0316
+Problem:    ":help z?" does not work. (Pavol Juhas)
+Solution:   Remove exception for z?.
+Files:      src/ex_cmds.c
+
+Patch 8.0.0317
+Problem:    No test for setting 'guifont'.
+Solution:   Add a test for X11 GUIs. (Kazunobu Kuriyama)
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0318
+Problem:    Small mistake in 7x13 font name.
+Solution:   Use ISO 8859-1 name instead of 10646-1. (Kazunobu Kuriyama)
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0319
+Problem:    Insert mode completion does not respect "start" in 'backspace'.
+Solution:   Check whether backspace can go before where insert started.
+            (Hirohito Higashi)
+Files:      src/edit.c, src/testdir/test_popup.vim
+
+Patch 8.0.0320
+Problem:    Warning for unused variable with small build.
+Solution:   Change #ifdef to exclude FEAT_CMDWIN. (Kazunobu Kuriyama)
+Files:      src/ex_getln.c
+
+Patch 8.0.0321
+Problem:    When using the tiny version trying to load the matchit plugin
+            gives an error. On MS-Windows some default mappings fail.
+Solution:   Add a check if the command used is available. (Christian Brabandt)
+Files:      runtime/mswin.vim, runtime/macros/matchit.vim
+
+Patch 8.0.0322
+Problem:    Possible overflow with spell file where the tree length is
+            corrupted.
+Solution:   Check for an invalid length (suggested by shqking)
+Files:      src/spellfile.c
+
+Patch 8.0.0323
+Problem:    When running the command line tests there is a one second wait.
+Solution:   Change an Esc to Ctrl-C. (Yegappan Lakshmanan)
+Files:      src/testdir/test_cmdline.vim
+
+Patch 8.0.0324
+Problem:    Illegal memory access with "1;y".
+Solution:   Call check_cursor() instead of check_cursor_lnum(). (Dominique
+            Pelle, closes #1455)
+Files:      src/ex_docmd.c, src/testdir/test_cmdline.vim
+
+Patch 8.0.0325
+Problem:    Packadd test does not clean up symlink.
+Solution:   Delete the link. (Hirohito Higashi)
+Files:      src/testdir/test_packadd.vim
+
+Patch 8.0.0326 (after 8.0.0325)
+Problem:    Packadd test uses wrong directory name.
+Solution:   Use the variable name value. (Hirohito Higashi)
+Files:      src/testdir/test_packadd.vim
+
+Patch 8.0.0327
+Problem:    The E11 error message in the command line window is not
+            translated.
+Solution:   use _(). (Hirohito Higashi)
+Files:      src/ex_docmd.c
+
+Patch 8.0.0328
+Problem:    The "zero count" error doesn't have a number. (Hirohito Higashi)
+Solution:   Give it a number and be more specific about the error.
+Files:      src/globals.h
+
+Patch 8.0.0329
+Problem:    Xfontset and guifontwide are not tested.
+Solution:   Add tests. (Kazunobu Kuriyama)
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0330
+Problem:    Illegal memory access after "vapo". (Dominique Pelle)
+Solution:   Fix the cursor column.
+Files:      src/search.c, src/testdir/test_visual.vim
+
+Patch 8.0.0331
+Problem:    Restoring help snapshot accesses freed memory. (Dominique Pelle)
+Solution:   Don't restore a snapshot when the window closes.
+Files:      src/window.c, src/Makefile, src/testdir/Make_all.mak,
+            src/testdir/test_help.vim
+
+Patch 8.0.0332
+Problem:    GUI test fails on some systems.
+Solution:   Try different language settings. (Kazunobu Kuriyama)
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0333
+Problem:    Illegal memory access when 'complete' ends in a backslash.
+Solution:   Check for trailing backslash. (Dominique Pelle, closes #1478)
+Files:      src/option.c, src/testdir/test_options.vim
+
+Patch 8.0.0334
+Problem:    Can't access b:changedtick from a dict reference.
+Solution:   Make changedtick a member of the b: dict. (inspired by neovim
+            #6112)
+Files:      src/structs.h, src/buffer.c, src/edit.c, src/eval.c,
+            src/evalfunc.c, src/ex_docmd.c, src/main.c, src/globals.h,
+            src/fileio.c, src/memline.c, src/misc1.c, src/syntax.c,
+            src/proto/eval.pro, src/testdir/test_changedtick.vim,
+            src/Makefile, src/testdir/test_alot.vim, src/testdir/test91.in,
+            src/testdir/test91.ok, src/testdir/test_functions.vim
+
+Patch 8.0.0335 (after 8.0.0335)
+Problem:    Functions test fails.
+Solution:   Use the right buffer number.
+Files:      src/testdir/test_functions.vim
+
+Patch 8.0.0336
+Problem:    Flags of :substitute not sufficiently tested.
+Solution:   Test up to two letter flag combinations. (James McCoy, closes
+            #1479)
+Files:      src/testdir/test_substitute.vim
+
+Patch 8.0.0337
+Problem:    Invalid memory access in :recover command.
+Solution:   Avoid access before directory name. (Dominique Pelle,
+            closes #1488)
+Files:      src/Makefile, src/memline.c, src/testdir/test_alot.vim,
+            src/testdir/test_recover.vim
+
+Patch 8.0.0338 (after 8.0.0337)
+Problem:    :recover test fails on MS-Windows.
+Solution:   Use non-existing directory on MS-Windows.
+Files:      src/testdir/test_recover.vim
+
+Patch 8.0.0339
+Problem:    Illegal memory access with vi'
+Solution:   For quoted text objects bail out if the Visual area spans more
+            than one line.
+Files:      src/search.c, src/testdir/test_visual.vim
+
+Patch 8.0.0340
+Problem:    Not checking return valud of dict_add(). (Coverity)
+Solution:   Handle a failure.
+Files:      src/buffer.c
+
+Patch 8.0.0341
+Problem:    When using complete() and typing a character undo is saved after
+            the character was inserted. (Shougo)
+Solution:   Save for undo before inserting the character.
+Files:      src/edit.c, src/testdir/test_popup.vim
+
+Patch 8.0.0342
+Problem:    Double free when compiled with EXITFREE and setting 'ttytype'.
+Solution:   Avoid setting P_ALLOCED on 'ttytype'. (Dominique Pelle,
+            closes #1461)
+Files:      src/option.c, src/testdir/test_options.vim
+
+Patch 8.0.0343
+Problem:    b:changedtick can be unlocked, even though it has no effect.
+            (Nikolai Pavlov)
+Solution:   Add a check and error E940. (closes #1496)
+Files:      src/eval.c, src/testdir/test_changedtick.vim, runtime/doc/eval.txt
+
+Patch 8.0.0344
+Problem:    Unlet command leaks memory. (Nikolai Pavlov)
+Solution:   Free the memory on error. (closes #1497)
+Files:      src/eval.c, src/testdir/test_unlet.vim
+
+Patch 8.0.0345
+Problem:    islocked('d.changedtick') does not work.
+Solution:   Make it work.
+Files:      src/buffer.c, src/eval.c, src/evalfunc.c, src/vim.h,
+            src/testdir/test_changedtick.vim,
+
+Patch 8.0.0346
+Problem:    Vim relies on limits.h to be included indirectly, but on Solaris 9
+            it may not be. (Ben Fritz)
+Solution:   Always include limits.h.
+Files:      src/os_unixx.h, src/vim.h
+
+Patch 8.0.0347
+Problem:    When using CTRL-X CTRL-U inside a comment, the use of the comment
+            leader may not work. (Klement)
+Solution:   Save and restore did_ai. (Christian Brabandt, closes #1494)
+Files:      src/edit.c, src/testdir/test_popup.vim
+
+Patch 8.0.0348
+Problem:    When building with a shadow directory on macOS lacks the
+            +clipboard feature.
+Solution:   Link *.m files, specifically os_macosx.m. (Kazunobu Kuriyama)
+Files:      src/Makefile
+
+Patch 8.0.0349
+Problem:    Redrawing errors with GTK 3.
+Solution:   When updating, first clear all rectangles and then draw them.
+            (Kazunobu Kuriyama, Christian Ludwig, closes #848)
+Files:      src/gui_gtk_x11.c
+
+Patch 8.0.0350
+Problem:    Not enough test coverage for Perl.
+Solution:   Add more Perl tests. (Dominique Perl, closes #1500)
+Files:      src/testdir/test_perl.vim
+
+Patch 8.0.0351
+Problem:    No test for concatenating an empty string that results from out of
+            bounds indexing.
+Solution:   Add a simple test.
+Files:      src/testdir/test_expr.vim
+
+Patch 8.0.0352
+Problem:    The condition for when a typval needs to be cleared is too
+            complicated.
+Solution:   Init the type to VAR_UNKNOWN and clear it always.
+Files:      src/eval.c
+
+Patch 8.0.0353
+Problem:    If [RO] in the status line is translated to a longer string, it is
+            trunctted to 4 bytes.
+Solution:   Skip over the resulting string. (Jente Hidskes, closes #1499)
+Files:      src/screen.c
+
+Patch 8.0.0354
+Problem:    Test to check that setting termcap key fails sometimes.
+Solution:   Check for "t_k1" to exist. (Christian Brabandt, closes #1459)
+Files:      src/testdir/test_assign.vim
+
+Patch 8.0.0355
+Problem:    Using uninitialized memory when 'isfname' is empty.
+Solution:   Don't call getpwnam() without an argument. (Dominique Pelle,
+            closes #1464)
+Files:      src/misc1.c, src/testdir/test_options.vim
+
+Patch 8.0.0356 (after 8.0.0342)
+Problem:    Leaking memory when setting 'ttytype'.
+Solution:   Get free_oldval from the right option entry.
+Files:      src/option.c
+
+Patch 8.0.0357
+Problem:    Crash when setting 'guicursor' to weird value.
+Solution:   Avoid negative size. (Dominique Pelle, closes #1465)
+Files:      src/misc2.c, src/testdir/test_options.vim
+
+Patch 8.0.0358
+Problem:    Invalid memory access in C-indent code.
+Solution:   Don't go over end of empty line. (Dominique Pelle, closes #1492)
+Files:      src/edit.c, src/testdir/test_options.vim
+
+Patch 8.0.0359
+Problem:    'number' and 'relativenumber' are not properly tested.
+Solution:   Add tests, change old style to new style tests. (Ozaki Kiichi,
+            closes #1447)
+Files:      src/Makefile, src/testdir/Make_all.mak, src/testdir/Make_vms.mms,
+            src/testdir/test89.in, src/testdir/test89.ok,
+            src/testdir/test_alot.vim, src/testdir/test_findfile.vim,
+            src/testdir/test_number.vim
+
+Patch 8.0.0360
+Problem:    Sometimes VimL is used, which is confusing.
+Solution:   Consistently use "Vim script". (Hirohito Higashi)
+Files:      runtime/doc/if_mzsch.txt, runtime/doc/if_pyth.txt,
+            runtime/doc/syntax.txt, runtime/doc/usr_02.txt,
+            runtime/doc/version7.txt, src/Makefile, src/eval.c,
+            src/ex_getln.c, src/if_py_both.h, src/if_xcmdsrv.c,
+            src/testdir/Make_all.mak, src/testdir/runtest.vim,
+            src/testdir/test49.vim, src/testdir/test_vimscript.vim,
+            src/testdir/test_viml.vim
+
+Patch 8.0.0361
+Problem:    GUI initialisation is not sufficiently tested.
+Solution:   Add the gui_init test. (Kazunobu Kuriyama)
+Files:      src/Makefile, src/testdir/Make_all.mak, src/testdir/Make_dos.mak,
+            src/testdir/Make_ming.mak, src/testdir/Makefile,
+            src/testdir/gui_init.vim, src/testdir/setup_gui.vim,
+            src/testdir/test_gui.vim, src/testdir/test_gui_init.vim, Filelist
+
+Patch 8.0.0362 (after 8.0.0361)
+Problem:    Tests fail on MS-Windows.
+Solution:   Use $*.vim instead of $<.
+Files:      src/testdir/Make_dos.mak
+
+Patch 8.0.0363
+Problem:    Travis is too slow to keep up with patches.
+Solution:   Increase git depth to 20
+Files:      .travis.yml
+
+Patch 8.0.0364
+Problem:    ]s does not move cursor with two spell errors in one line. (Manuel
+            Ortega)
+Solution:   Don't stop search immediately when wrapped, search the line first.
+            (Ken Takata)  Add a test.
+Files:      src/spell.c, src/Makefile, src/testdir/test_spell.vim,
+            src/testdir/Make_all.mak
+
+Patch 8.0.0365
+Problem:    Might free a dict item that wasn't allocated.
+Solution:   Call dictitem_free(). (Nikolai Pavlov)  Use this for
+            b:changedtick.
+Files:      src/dict.c, src/structs.h, src/buffer.c, src/edit.c,
+            src/evalfunc.c, src/ex_docmd.c, src/fileio.c, src/main.c,
+            src/memline.c, src/misc1.c, src/syntax.c
+
+Patch 8.0.0366 (after 8.0.0365)
+Problem:    Build fails with tiny features.
+Solution:   Add #ifdef.
+Files:      src/buffer.c
+
+Patch 8.0.0367
+Problem:    If configure defines _LARGE_FILES some include files are included
+            before it is defined.
+Solution:   Include vim.h first. (Sam Thursfield, closes #1508)
+Files:      src/gui_at_sb.c, src/gui_athena.c, src/gui_motif.c, src/gui_x11.c,
+            src/gui_xmdlg.c
+
+Patch 8.0.0368
+Problem:    Not all options are tested with a range of values.
+Solution:   Generate a test script from the source code.
+Files:      Filelist, src/gen_opt_test.vim, src/testdir/test_options.vim,
+            src/Makefile
+
+Patch 8.0.0369 (after 8.0.0368)
+Problem:    The 'balloondelay', 'ballooneval' and 'balloonexpr' options are
+            not defined without the +balloon_eval feature. Testing that an
+            option value fails does not work for unsupported options.
+Solution:   Make the options defined but not supported.  Don't test if
+            setting unsupported options fails.
+Files:      src/option.c, src/gen_opt_test.vim
+
+Patch 8.0.0370
+Problem:    Invalid memory access when setting wildchar empty.
+Solution:   Avoid going over the end of the option value. (Dominique Pelle,
+            closes #1509)  Make option test check all number options with
+            empty value.
+Files:      src/gen_opt_test.vim, src/option.c, src/testdir/test_options.vim
+
+Patch 8.0.0371 (after 8.0.0365)
+Problem:    Leaking memory when setting v:completed_item.
+Solution:   Or the flags instead of setting them.
+Files:      src/eval.c
+
+Patch 8.0.0372
+Problem:    More options are not always defined.
+Solution:   Consistently define all possible options.
+Files:      src/option.c, src/testdir/test_expand_dllpath.vim
+
+Patch 8.0.0373
+Problem:    Build fails without +folding.
+Solution:   Move misplaced #ifdef.
+Files:      src/option.c
+
+Patch 8.0.0374
+Problem:    Invalid memory access when using :sc in Ex mode. (Dominique Pelle)
+Solution:   Avoid the column being negative.  Also fix a hang in Ex mode.
+Files:      src/ex_getln.c, src/ex_cmds.c, src/testdir/test_substitute.vim
+
+Patch 8.0.0375
+Problem:    The "+ register is not tested.
+Solution:   Add a test using another Vim instance to change the "+ register.
+            (Kazunobu Kuriyama)
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0376
+Problem:    Size computations in spell file reading are not exactly right.
+Solution:   Make "len" a "long" and check with LONG_MAX.
+Files:      src/spellfile.c
+
+Patch 8.0.0377
+Problem:    Possible overflow when reading corrupted undo file.
+Solution:   Check if allocated size is not too big. (King)
+Files:      src/undo.c
+
+Patch 8.0.0378
+Problem:    Another possible overflow when reading corrupted undo file.
+Solution:   Check if allocated size is not too big. (King)
+Files:      src/undo.c
+
+Patch 8.0.0379
+Problem:    CTRL-Z and mouse click use CTRL-O unnecessary.
+Solution:   Remove stuffing CTRL-O. (James McCoy, closes #1453)
+Files:      src/edit.c, src/normal.c
+
+Patch 8.0.0380
+Problem:    With 'linebreak' set and 'breakat' includes ">" a double-wide
+            character results in "<<" displayed.
+Solution:   Check for the character not to be replaced. (Ozaki Kiichi,
+            closes #1456)
+Files:      src/screen.c, src/testdir/test_listlbr_utf8.vim
+
+Patch 8.0.0381
+Problem:    Diff mode is not sufficiently tested.
+Solution:   Add more diff mode tests. (Dominique Pelle, closes #1515)
+Files:      src/testdir/test_diffmode.vim
+
+Patch 8.0.0382 (after 8.0.0380)
+Problem:    Warning in tiny build for unused variable. (Tony Mechelynck)
+Solution:   Add #ifdefs.
+Files:      src/screen.c
+
+Patch 8.0.0383 (after 8.0.0382)
+Problem:    Misplaced #ifdef. (Christ van Willigen)
+Solution:   Split assignment.
+Files:      src/screen.c
+
+Patch 8.0.0384
+Problem:    Timer test failed for no apparent reason.
+Solution:   Mark the test as flaky.
+Files:      src/testdir/runtest.vim
+
+Patch 8.0.0385
+Problem:    No tests for arabic.
+Solution:   Add a first test for arabic. (Dominique Pelle, closes #1518)
+Files:      src/Makefile, src/testdir/Make_all.mak,
+            src/testdir/test_arabic.vim
+
+Patch 8.0.0386
+Problem:    Tiny build has a problem with generating the options test.
+Solution:   Change the "if" to skip over statements.
+Files:      src/gen_opt_test.vim
+
+Patch 8.0.0387
+Problem:    compiler warnings
+Solution:   Add type casts. (Christian Brabandt)
+Files:      src/channel.c, src/memline.c, 
+
+Patch 8.0.0388
+Problem:    filtering lines through "cat", without changing the line count,
+            changes manual folds.
+Solution:   Change how marks and folds are adjusted. (Matthew Malcomson, from
+            neovim #6194.
+Files:      src/fold.c, src/testdir/test_fold.vim
+
+Patch 8.0.0389
+Problem:    Test for arabic does not check what is displayed.
+Solution:   Improve what is asserted. (Dominique Pelle, closes #1523)
+            Add a first shaping test.
+Files:      src/testdir/test_arabic.vim
+
+Patch 8.0.0390
+Problem:    When the window scrolls horizontally when the popup menu is
+            displayed part of it may not be cleared. (Neovim issue #6184)
+Solution:   Remove the menu when the windows scrolled. (closes #1524)
+Files:      src/edit.c
+
+Patch 8.0.0391
+Problem:    Arabic support is verbose and not well tested.
+Solution:   Simplify the code.  Add more tests.
+Files:      src/arabic.c, src/testdir/test_arabic.vim
+
+Patch 8.0.0392
+Problem:    GUI test fails with Athena and Motif.
+Solution:   Add test_ignore_error().  Use it to ignore the "failed to create
+            input context" error.
+Files:      src/message.c, src/proto/message.pro, src/evalfunc.c,
+            src/testdir/test_gui.vim, runtime/doc/eval.txt
+
+Patch 8.0.0393 (after 8.0.0190)
+Problem:    When the same tag appears more than once, the order is
+            unpredictable. (Charles Campbell)
+Solution:   Besides using a dict for finding duplicates, use a grow array for
+            keeping the tags in sequence.
+Files:      src/tag.c, src/testdir/test_tagjump.vim
+
+Patch 8.0.0394
+Problem:    Tabs are not aligned when scrolling horizontally and a Tab doesn't
+            fit. (Axel Bender)
+Solution:   Handle a Tab as a not fitting character. (Christian Brabandt)
+            Also fix that ":redraw" does not scroll horizontally to show the
+            cursor.  And fix the test that depended on the old behavior.
+Files:      src/screen.c, src/ex_docmd.c, src/testdir/test_listlbr.vim,
+            src/testdir/test_listlbr_utf8.vim,
+            src/testdir/test_breakindent.vim
+
+Patch 8.0.0395 (after 8.0.0392)
+Problem:    Testing the + register fails with Motif.
+Solution:   Also ignore the "failed to create input context" error in the
+            second gvim.  Don't use msg() when it would result in a dialog.
+Files:      src/message.c, src/testdir/test_gui.vim, src/testdir/setup_gui.vim
+
+Patch 8.0.0396
+Problem:    'balloonexpr' only works synchronously.
+Solution:   Add balloon_show(). (Jusufadis Bakamovic, closes #1449)
+Files:      runtime/doc/eval.txt, src/evalfunc.c, src/os_unix.c,
+            src/os_win32.c
+
+Patch 8.0.0397 (after 8.0.0392)
+Problem:    Cannot build with the viminfo feature but without the eval
+            feature.
+Solution:   Adjust #ifdef. (John Marriott)
+Files:      src/message.c, src/misc2.c
+
+Patch 8.0.0398
+Problem:    Illegal memory access with "t".
+Solution:   Use strncmp() instead of memcmp(). (Dominique Pelle, closes #1528)
+Files:      src/search.c, src/testdir/test_search.vim
+
+Patch 8.0.0399
+Problem:    Crash when using balloon_show() when not supported. (Hirohito
+            Higashi)
+Solution:   Check for balloonEval not to be NULL. (Ken Takata)
+Files:      src/evalfunc.c, src/testdir/test_functions.vim
+
+Patch 8.0.0400
+Problem:    Some tests have a one second delay.
+Solution:   Add --not-a-term in RunVim().
+Files:      src/testdir/shared.vim
+
+Patch 8.0.0401
+Problem:    Test fails with missing balloon feature.
+Solution:   Add check for balloon feature.
+Files:      src/testdir/test_functions.vim
+
+Patch 8.0.0402
+Problem:    :map completion does not have <special>. (Dominique Pelle)
+Solution:   Recognize <special> in completion.  Add a test.
+Files:      src/getchar.c, src/testdir/test_cmdline.vim
+
+Patch 8.0.0403
+Problem:    GUI tests may fail.
+Solution:   Ignore the E285 error better. (Kazunobu Kuriyama)
+Files:      src/testdir/test_gui.vim, src/testdir/test_gui_init.vim
+
+Patch 8.0.0404
+Problem:    Not enough testing for quickfix.
+Solution:   Add some more tests. (Yegappan Lakshmanan)
+Files:      src/testdir/test_quickfix.vim
+
+Patch 8.0.0405
+Problem:    v:progpath may become invalid after ":cd".
+Solution:   Turn v:progpath into a full path if needed.
+Files:      src/main.c, src/testdir/test_startup.vim, runtime/doc/eval.txt
+
+Patch 8.0.0406
+Problem:    The arabic shaping code is verbose.
+Solution:   Shorten the code without changing the functionality.
+Files:      src/arabic.c
+
+Patch 8.0.0407 (after 8.0.0388)
+Problem:    Filtering folds with marker method not tested.
+Solution:   Also set 'foldmethod' to "marker".
+Files:      src/testdir/test_fold.vim
+
+Patch 8.0.0408
+Problem:    Updating folds does not work properly when inserting a file and a
+            few other situations.
+Solution:   Adjust the way folds are updated. (Matthew Malcomson)
+Files:      src/fold.c, src/testdir/test_fold.vim
+
+Patch 8.0.0409
+Problem:    set_progpath is defined but not always used
+Solution:   Adjust #ifdef.
+Files:      src/main.c
+
+Patch 8.0.0410
+Problem:    Newer gettext/iconv library has extra dll file.
+Solution:   Add the file to the Makefile and nsis script. (Christian Brabandt)
+Files:      Makefile, nsis/gvim.nsi
+
+Patch 8.0.0411
+Problem:    We can't change the case in menu entries, it breaks translations.
+Solution:   Ignore case when looking up a menu translation.
+Files:      src/menu.c, src/testdir/test_menu.vim
+
+Patch 8.0.0412 (after 8.0.0411)
+Problem:    Menu test fails on MS-Windows.
+Solution:   Use a menu entry with only ASCII characters.
+Files:      src/testdir/test_menu.vim
+
+Patch 8.0.0413 (after 8.0.0412)
+Problem:    Menu test fails on MS-Windows using gvim.
+Solution:   First delete the English menus.
+Files:      src/testdir/test_menu.vim
+
+Patch 8.0.0414
+Problem:    Balloon eval is not tested.
+Solution:   Add a few balloon tests. (Kazunobu Kuriyama)
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0415 (after 8.0.0414)
+Problem:    Balloon test fails on MS-Windows.
+Solution:   Test with 0x7fffffff instead of 0xffffffff.
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.0416
+Problem:    Setting v:progpath is not quite right.
+Solution:   On MS-Windows add the extension. On Unix use the full path for a
+            relative directory. (partly by James McCoy, closes #1531)
+Files:      src/main.c, src/os_win32.c, src/os_unix.c
+
+Patch 8.0.0417
+Problem:    Test for the clipboard fails sometimes.
+Solution:   Add it to the flaky tests.
+Files:      src/testdir/runtest.vim
+
+Patch 8.0.0418
+Problem:    ASAN logs are disabled and don't cause a failure.
+Solution:   Enable ASAN logs and fail if not empty. (James McCoy,
+            closes #1425)
+Files:      .travis.yml
+
+Patch 8.0.0419
+Problem:    Test for v:progpath fails on MS-Windows.
+Solution:   Expand to full path.  Also add ".exe" when the path is an absolute
+            path.
+Files:      src/os_win32.c, src/main.c
+
+Patch 8.0.0420
+Problem:    When running :make the output may be in the system encoding,
+            different from 'encoding'.
+Solution:   Add the 'makeencoding' option. (Ken Takata)
+Files:      runtime/doc/options.txt, runtime/doc/quickfix.txt,
+            runtime/doc/quickref.txt, src/Makefile, src/buffer.c,
+            src/if_cscope.c, src/main.c, src/option.c, src/option.h,
+            src/proto/quickfix.pro, src/quickfix.c, src/structs.h,
+            src/testdir/Make_all.mak, src/testdir/test_makeencoding.py,
+            src/testdir/test_makeencoding.vim
+
+Patch 8.0.0421
+Problem:    Diff mode is displayed wrong when adding a line at the end of a
+            buffer.
+Solution:   Adjust marks in diff mode. (James McCoy, closes #1329)
+Files:      src/misc1.c, src/ops.c, src/testdir/test_diffmode.vim
+
+Patch 8.0.0422
+Problem:    Python test fails with Python 3.6.
+Solution:   Convert new exception messages to old ones. (closes #1359)
+Files:      src/testdir/test87.in
+
+Patch 8.0.0423
+Problem:    The effect of adding "#" to 'cinoptions' is not always removed.
+            (David Briscoe)
+Solution:   Reset b_ind_hash_comment. (Christian Brabandt, closes #1475)
+Files:      src/misc1.c, src/Makefile, src/testdir/Make_all.mak,
+            src/testdir/test_cindent.vim, src/testdir/test3.in
+
+Patch 8.0.0424
+Problem:    Compiler warnings on MS-Windows. (Ajit Thakkar)
+Solution:   Add type casts.
+Files:      src/os_win32.c
+
+Patch 8.0.0425
+Problem:    Build errors when building without folding.
+Solution:   Add #ifdefs. (John Marriott)
+Files:      src/diff.c, src/edit.c, src/option.c, src/syntax.c
+
+Patch 8.0.0426
+Problem:    Insufficient testing for statusline.
+Solution:   Add several tests. (Dominique Pelle, closes #1534)
+Files:      src/testdir/test_statusline.vim
+
+Patch 8.0.0427
+Problem:    'makeencoding' missing from the options window.
+Solution:   Add the entry.
+Files:      runtime/optwin.vim
+
+Patch 8.0.0428
+Problem:    Git and hg see new files after running tests. (Manuel Ortega)
+Solution:   Add the generated file to .hgignore (or .gitignore). Delete the
+            resulting verbose file. (Christian Brabandt)  Improve dependency
+            on opt_test.vim.  Reset the 'more' option.
+Files:      .hgignore, src/gen_opt_test.vim, src/testdir/gen_opt_test.vim,
+            src/Makefile, src/testdir/Make_all.mak, src/testdir/Makefile,
+            src/testdir/Make_dos.mak, src/testdir/Make_ming.mak,
+            Filelist
+
+Patch 8.0.0429
+Problem:    Options test does not always test everything.
+Solution:   Fix dependency for opt_test.vim.  Give a message when opt_test.vim
+            was not found.
+Files:      src/testdir/test_options.vim, src/testdir/gen_opt_test.vim,
+            src/testdir/Makefile, src/testdir/Make_all.mak,
+            src/testdir/Make_dos.mak, src/testdir/Make_ming.mak
+
+Patch 8.0.0430
+Problem:    Options test fails or hangs on MS-Windows.
+Solution:   Run it separately instead of part of test_alot.  Use "-S" instead
+            of "-u" to run the script.  Fix failures.
+Files:      src/testdir/Make_all.mak, src/testdir/test_alot.vim,
+            src/testdir/Makefile, src/testdir/Make_dos.mak,
+            src/testdir/Make_ming.mak, src/testdir/gen_opt_test.vim
+
+Patch 8.0.0431
+Problem:    'cinoptions' cannot set indent for extern block.
+Solution:   Add the "E" flag in 'cinoptions'. (Hirohito Higashi)
+Files:      runtime/doc/indent.txt, src/misc1.c, src/structs.h,
+            src/testdir/test_cindent.vim
+
+Patch 8.0.0432
+Problem:    "make shadow" creates an invalid link.
+Solution:   Don't link "*.vim". (Kazunobu Kuriyama)
+Files:      src/Makefile
+
+Patch 8.0.0433
+Problem:    Quite a few beeps when running tests.
+Solution:   Set 'belloff' for these tests. (Christian Brabandt)
+Files:      src/testdir/test103.in, src/testdir/test14.in,
+            src/testdir/test29.in, src/testdir/test30.in,
+            src/testdir/test32.in, src/testdir/test45.in,
+            src/testdir/test72.in, src/testdir/test73.in,
+            src/testdir/test77.in, src/testdir/test78.in,
+            src/testdir/test85.in, src/testdir/test94.in,
+            src/testdir/test_alot.vim, src/testdir/test_alot_utf8.vim,
+            src/testdir/test_close_count.in, src/testdir/test_cmdline.vim,
+            src/testdir/test_diffmode.vim, src/testdir/test_digraph.vim,
+            src/testdir/test_erasebackword.in, src/testdir/test_normal.vim,
+            src/testdir/test_packadd.vim, src/testdir/test_search.vim,
+            src/testdir/test_textobjects.vim, src/testdir/test_undo.vim,
+            src/testdir/test_usercommands.vim, src/testdir/test_visual.vim
+
+Patch 8.0.0434
+Problem:    Clang version not correctly detected.
+Solution:   Adjust the configure script. (Kazunobu Kuriyama)
+Files:      src/configure.ac, src/auto/configure
+
+Patch 8.0.0435
+Problem:    Some functions are not tested.
+Solution:   Add more tests for functions. (Dominique Pelle, closes #1541)
+Files:      src/testdir/test_functions.vim
+
+Patch 8.0.0436
+Problem:    Running the options test sometimes resizes the terminal.
+Solution:   Clear out t_WS.
+Files:      src/testdir/gen_opt_test.vim
+
+Patch 8.0.0437
+Problem:    The packadd test does not create the symlink correctly and does
+            not test the right thing.
+Solution:   Create the directory and symlink correctly.
+Files:      src/testdir/test_packadd.vim
+
+Patch 8.0.0438
+Problem:    The fnamemodify test changes 'shell' in a way later tests may not
+            be able to use system().
+Solution:   Save and restore 'shell'.
+Files:      src/testdir/test_fnamemodify.vim
+
+Patch 8.0.0439
+Problem:    Using ":%argdel" while the argument list is already empty gives an
+            error. (Pavol Juhas)
+Solution:   Don't give an error. (closes #1546)
+Files:      src/ex_cmds2.c, src/testdir/test_arglist.vim
+
+Patch 8.0.0440
+Problem:    Not enough test coverage in Insert mode.
+Solution:   Add lots of tests.  Add test_override(). (Christian Brabandt,
+            closes #1521)
+Files:      runtime/doc/eval.txt, runtime/doc/usr_41.txt, src/edit.c,
+            src/evalfunc.c, src/globals.h,  src/screen.c,
+            src/testdir/Make_all.mak, src/testdir/test_cursor_func.vim,
+            src/testdir/test_edit.vim, src/testdir/test_search.vim,
+            src/testdir/test_assert.vim, src/Makefile, src/testdir/runtest.vim
+
+Patch 8.0.0441
+Problem:    Dead code in #ifdef.
+Solution:   Remove the #ifdef and #else part.
+Files:      src/option.c
+
+Patch 8.0.0442
+Problem:    Patch shell command uses double quotes around the argument, which
+            allows for $HOME to be expanded. (Etienne)
+Solution:   Use single quotes on Unix. (closes #1543)
+Files:      src/diff.c, src/testdir/test_diffmode.vim
+
+Patch 8.0.0443
+Problem:    Terminal width is set to 80 in test3.
+Solution:   Instead of setting 'columns' set 'wrapmargin' depending on
+            'columns.
+Files:      src/testdir/test3.in
+
+Patch 8.0.0444 (after 8.0.0442)
+Problem:    Diffpatch fails when the file name has a quote.
+Solution:   Escape the name properly. (zetzei)
+Files:      src/diff.c, src/testdir/test_diffmode.vim
+
+Patch 8.0.0445
+Problem:    Getpgid is not supported on all systems.
+Solution:   Add a configure check.
+Files:      src/configure.ac, src/auto/configure, src/config.h.in,
+            src/os_unix.c
+
+Patch 8.0.0446
+Problem:    The ";" command does not work after characters with a lower byte
+            that is NUL.
+Solution:   Properly check for not having a previous character. (Hirohito
+            Higashi)
+Files:      src/Makefile, src/search.c, src/testdir/test_alot_utf8.vim,
+            src/testdir/test_charsearch_utf8.vim
+
+Patch 8.0.0447
+Problem:    Getting font name does not work on X11.
+Solution:   Implement gui_mch_get_fontname() for X11.  Add more GUI tests.
+            (Kazunobu Kuriyama)
+Files:      src/gui_x11.c, src/syntax.c, src/testdir/Make_dos.mak,
+            src/testdir/Make_ming.mak, src/testdir/Makefile,
+            src/testdir/gui_init.vim, src/testdir/gui_preinit.vim,
+            src/testdir/test_gui.vim, src/testdir/test_gui_init.vim,
+            Filelist
+
+Patch 8.0.0448
+Problem:    Some macros are in lower case, which can be confusing.
+Solution:   Make a few lower case macros upper case.
+Files:      src/macros.h, src/buffer.c, src/charset.c, src/ops.c, src/diff.c,
+            src/edit.c, src/evalfunc.c, src/ex_cmds.c, src/ex_getln.c,
+            src/fileio.c, src/fold.c, src/gui.c, src/gui_beval.c, src/main.c,
+            src/mark.c, src/misc1.c, src/move.c, src/normal.c,
+            src/option.c, src/popupmnu.c, src/regexp.c, src/screen.c,
+            src/search.c, src/spell.c, src/tag.c, src/ui.c, src/undo.c,
+            src/version.c, src/workshop.c, src/if_perl.xs
+
+Patch 8.0.0449 (after 8.0.0448)
+Problem:    Part of fold patch accidentally included.
+Solution:   Revert that part of the patch.
+Files:      src/ex_cmds.c
+
+Patch 8.0.0450
+Problem:    v:progpath is not reliably set.
+Solution:   Read /proc/self/exe if possible. (idea by Michal Grochmal)
+            Also fixes missing #if.
+Files:      src/main.c, src/config.h.in
+
+Patch 8.0.0451
+Problem:    Some macros are in lower case.
+Solution:   Make a few more macros upper case. Avoid lower case macros use an
+            argument twice.
+Files:      src/macros.h, src/charset.c, src/misc2.c, src/proto/misc2.pro,
+            src/edit.c, src/eval.c, src/ex_cmds.c, src/ex_cmds2.c,
+            src/ex_docmd.c, src/ex_getln.c, src/fileio.c, src/fold.c,
+            src/gui.c, src/gui_gtk.c, src/mark.c, src/memline.c, src/mbyte.c,
+            src/menu.c, src/message.c, src/misc1.c, src/ops.c, src/option.c,
+            src/os_amiga.c, src/os_mswin.c, src/os_unix.c, src/os_win32.c,
+            src/popupmnu.c, src/regexp.c, src/regexp_nfa.c, src/screen.c,
+            src/search.c, src/spell.c, src/spellfile.c, src/syntax.c,
+            src/tag.c, src/ui.c, src/undo.c, src/window.c
+
+Patch 8.0.0452
+Problem:    Some macros are in lower case.
+Solution:   Make a few more macros upper case.
+Files:      src/vim.h, src/macros.h, src/evalfunc.c, src/fold.c,
+            src/gui_gtk.c, src/gui_gtk_x11.c, src/charset.c, src/diff.c,
+            src/edit.c, src/eval.c, src/ex_cmds.c, src/ex_cmds2.c,
+            src/ex_docmd.c, src/ex_getln.c, src/fileio.c, src/getchar.c,
+            src/gui.c, src/gui_w32.c, src/if_cscope.c, src/mbyte.c,
+            src/menu.c, src/message.c, src/misc1.c, src/misc2.c, src/normal.c,
+            src/ops.c, src/option.c, src/os_unix.c, src/os_win32.c,
+            src/quickfix.c, src/regexp.c, src/regexp_nfa.c, src/screen.c,
+            src/search.c, src/spell.c, src/syntax.c, src/tag.c, src/userfunc.c
+
+Patch 8.0.0453
+Problem:    Adding fold marker creates new comment.
+Solution:   Use an existing comment if possible. (LemonBoy, closes #1549)
+Files:      src/ops.c, src/proto/ops.pro, src/fold.c,
+            src/testdir/test_fold.vim
+
+Patch 8.0.0454
+Problem:    Compiler warnings for comparing unsigned char with 256 always
+            being true. (Manuel Ortega)
+Solution:   Add type cast.
+Files:      src/screen.c, src/charset.c
+
+Patch 8.0.0455
+Problem:    The mode test may hang in Test_mode(). (Michael Soyka)
+Solution:   Set 'complete' to only search the current buffer (as suggested by
+            Michael)
+Files:      src/testdir/test_functions.vim
+
+Patch 8.0.0456
+Problem:    Typo in MinGW test makefile.
+Solution:   Change an underscore to a dot. (Michael Soyka)
+Files:      src/testdir/Make_ming.mak
+
+Patch 8.0.0457
+Problem:    Using :move messes up manual folds.
+Solution:   Split adjusting marks and folds.  Add foldMoveRange(). (neovim
+            patch #6221)
+Files:      src/ex_cmds.c, src/fold.c, src/mark.c, src/proto/fold.pro,
+            src/proto/mark.pro src/testdir/test_fold.vim
+
+Patch 8.0.0458
+Problem:    Potential crash if adding list or dict to dict fails.
+Solution:   Make sure the reference count is correct. (Nikolai Pavlov, closes
+            #1555)
+Files:      src/dict.c
+
+Patch 8.0.0459 (after 8.0.0457)
+Problem:    Old fix for :move messing up folding no longer needed, now that we
+            have a proper solution.
+Solution:   Revert patch 7.4.700. (Christian Brabandt)
+Files:      src/ex_cmds.c
+
+Patch 8.0.0460 (after 8.0.0452)
+Problem:    Can't build on HPUX.
+Solution:   Fix argument names in vim_stat(). (John Marriott)
+Files:      src/misc2.c
+
+Patch 8.0.0461 (after 8.0.0457)
+Problem:    Test 45 hangs on MS-Windows.
+Solution:   Reset 'shiftwidth'.  Also remove redundent function.
+Files:      src/fold.c, src/testdir/test45.in
+
+Patch 8.0.0462
+Problem:    If an MS-Windows tests succeeds at first and then fails in a way
+            it does not produce a test.out file it looks like the test
+            succeeded.
+Solution:   Delete the previous output file.
+Files:      src/testdir/Make_dos.mak
+
+Patch 8.0.0463
+Problem:    Resetting 'compatible' in defaults.vim has unexpected side
+            effects. (David Fishburn)
+Solution:   Only reset 'compatible' if it was set.
+Files:      runtime/defaults.vim
+
+Patch 8.0.0464
+Problem:    Can't find executable name on Solaris and FreeBSD.
+Solution:   Check for "/proc/self/path/a.out". (Danek Duvall) And for
+            "/proc/curproc/file".
+Files:      src/config.h.in, src/configure.ac, src/main.c,
+            src/auto/configure
+
+Patch 8.0.0465
+Problem:    Off-by-one error in using :move with folding.
+Solution:   Correct off-by-one mistakes and add more tests. (Matthew
+            Malcomson)
+Files:      src/fold.c, src/testdir/test_fold.vim
+
+Patch 8.0.0466
+Problem:    There are still a few macros that should be all-caps.
+Solution:   Make a few more macros all-caps.
+Files:      src/buffer.c, src/edit.c, src/ex_cmds.c, src/ex_cmds2.c,
+	    src/ex_docmd.c, src/ex_getln.c, src/farsi.c, src/fileio.c,
+	    src/getchar.c, src/gui_beval.c, src/hardcopy.c, src/if_cscope.c,
+	    src/if_xcmdsrv.c, src/mark.c, src/memline.c, src/menu.c,
+	    src/message.c, src/misc1.c, src/normal.c, src/ops.c, src/option.c,
+	    src/quickfix.c, src/screen.c, src/search.c, src/syntax.c,
+	    src/tag.c, src/term.c, src/term.h, src/ui.c, src/undo.c,
+	    src/userfunc.c, src/version.c, src/vim.h
+
+Patch 8.0.0467
+Problem:    Using g< after :for does not show the right output. (Marcin
+            Szamotulski)
+Solution:   Call msg_sb_eol() in :echomsg.
+Files:      src/eval.c
+
+Patch 8.0.0468
+Problem:    After aborting an Ex command g< does not work. (Marcin
+            Szamotulski)
+Solution:   Postpone clearing scrollback messages to until the command line
+            has been entered.  Also fix that the screen isn't redrawn if after
+            g< the command line is cancelled.
+Files:      src/message.c, src/proto/message.pro, src/ex_getln.c, src/misc2.c,
+            src/gui.c
+
+Patch 8.0.0469
+Problem:    Compiler warnings on MS-Windows.
+Solution:   Add type casts. (Christian Brabandt)
+Files:      src/fold.c
+
+Patch 8.0.0470
+Problem:    Not enough testing for help commands.
+Solution:   Add a few more help tests. (Dominique Pelle, closes #1565)
+Files:      src/testdir/test_help.vim, src/testdir/test_help_tagjump.vim
+
+Patch 8.0.0471
+Problem:    Exit callback test sometimes fails.
+Solution:   Add it to the list of flaky tests.
+Files:      src/testdir/runtest.vim
+
+Patch 8.0.0472
+Problem:    When a test fails and test.log is created, Test_edit_CTRL_I
+            matches it instead of test1.in.
+Solution:   Match with runtest.vim instead.
+Files:      src/testdir/test_edit.vim
+
+Patch 8.0.0473
+Problem:    No test covering arg_all().
+Solution:   Add a test expanding ##.
+Files:      src/testdir/test_arglist.vim
+
+Patch 8.0.0474
+Problem:    The client-server feature is not tested.
+Solution:   Add a test.
+Files:      src/Makefile, src/testdir/Make_all.mak, src/testdir/shared.vim,
+            src/testdir/test_clientserver.vim, src/os_mswin.c
+
+Patch 8.0.0475
+Problem:    Not enough testing for the client-server feature.
+Solution:   Add more tests.  Add the remote_startserver() function.  Fix that
+            a locally evaluated expression uses function-local variables.
+Files:      src/if_xcmdsrv.c, src/evalfunc.c, src/os_mswin.c,
+            src/proto/main.pro, src/testdir/test_clientserver.vim,
+            runtime/doc/eval.txt
+
+Patch 8.0.0476 (after 8.0.0475)
+Problem:    Missing change to main.c.
+Solution:   Add new function.
+Files:      src/main.c
+
+Patch 8.0.0477
+Problem:    The client-server test may hang when failing.
+Solution:   Set a timer.  Add assert_report()
+Files:      src/testdir/test_clientserver.vim, src/testdir/runtest.vim,
+            src/eval.c, src/evalfunc.c, src/proto/eval.pro, src/if_xcmdsrv.c,
+            src/os_mswin.c, runtime/doc/eval.txt
+
+Patch 8.0.0478
+Problem:    Tests use assert_true(0) and assert_false(1) to report errors.
+Solution:   Use assert_report().
+Files:      src/testdir/test_cscope.vim, src/testdir/test_expr.vim,
+            src/testdir/test_perl.vim, src/testdir/test_channel.vim,
+            src/testdir/test_cursor_func.vim, src/testdir/test_gui.vim,
+            src/testdir/test_menu.vim, src/testdir/test_popup.vim,
+            src/testdir/test_viminfo.vim, src/testdir/test_vimscript.vim,
+            src/testdir/test_assert.vim
+
+Patch 8.0.0479
+Problem:    remote_peek() is not tested.
+Solution:   Add a test.
+Files:      src/testdir/test_clientserver.vim, src/testdir/runtest.vim
+
+Patch 8.0.0480
+Problem:    The remote_peek() test fails on MS-Windows.
+Solution:   Check for pending messages. Also report errors in the first run if
+            a flaky test fails twice.
+Files:      src/os_mswin.c, src/testdir/runtest.vim
+
+Patch 8.0.0481
+Problem:    Unnecessary if statement.
+Solution:   Remove the statement.  Fix "it's" vs "its" mistakes. (Dominique
+            Pelle, closes #1568)
+Files:      src/syntax.c
+
+Patch 8.0.0482
+Problem:    The setbufvar() function may mess up the window layout. (Kay Z.)
+Solution:   Do not check the window to be valid if it is NULL.
+Files:      src/window.c, src/testdir/test_functions.vim
+
+Patch 8.0.0483
+Problem:    Illegal memory access when using :all. (Dominique Pelle)
+Solution:   Adjust the cursor position right after setting "curwin".
+Files:      src/window.c, src/testdir/test_window_cmd.vim
+
+Patch 8.0.0484
+Problem:    Using :lhelpgrep with an argument that should fail does not
+            produce an error if the previous :helpgrep worked.
+Solution:   Use another way to detect that autocommands made the quickfix info
+            invalid. (Yegappan Lakshmanan)
+Files:      src/quickfix.c, src/testdir/test_quickfix.vim
+
+Patch 8.0.0485
+Problem:    Not all windows commands are tested.
+Solution:   Add more tests for windows commands. (Dominique Pelle,
+            closes #1575) Run test_autocmd separately, it interferes with
+            other tests.  Fix tests that depended on side effects.
+Files:      src/testdir/test_window_cmd.vim, src/testdir/test_alot.vim,
+            src/testdir/test_autocmd.vim, src/testdir/test_fnamemodify.vim,
+            src/testdir/test_functions.vim, src/testdir/test_delete.vim,
+            src/testdir/Make_all.mak
+
+Patch 8.0.0486
+Problem:    Crash and endless loop when closing windows in a SessionLoadPost
+            autocommand.
+Solution:   Check for valid tabpage.  (partly neovim #6308)
+Files:      src/testdir/test_autocmd.vim, src/fileio.c, src/proto/window.pro,
+            src/window.c
+
+Patch 8.0.0487
+Problem:    The autocmd test hangs on MS-Windows.
+Solution:   Skip the hanging tests for now.
+Files:      src/testdir/test_autocmd.vim
+
+Patch 8.0.0488
+Problem:    Running tests leaves an "xxx" file behind.
+Solution:   Delete the 'verbosefile' after resetting the option.
+Files:      src/testdir/gen_opt_test.vim
+
+Patch 8.0.0489
+Problem:    Clipboard and "* register is not tested.
+Solution:   Add a test for Mac and X11. (Kazunobu Kuriyama)
+Files:      src/Makefile, src/testdir/Make_all.mak,
+            src/testdir/test_quotestar.vim, src/testdir/runtest.vim
+
+Patch 8.0.0490
+Problem:    Splitting a 'winfixwidth' window vertically makes it one column
+            smaller. (Dominique Pelle)
+Solution:   Add one to the width for the separator.
+Files:      src/window.c, src/testdir/test_window_cmd.vim
+
+Patch 8.0.0491
+Problem:    The quotestar test fails when a required feature is missing.
+Solution:   Prepend "Skipped" to the thrown exception.
+Files:      src/testdir/test_quotestar.vim
+
+Patch 8.0.0492
+Problem:    A failing client-server request can make Vim hang.
+Solution:   Add a timeout argument to functions that wait.
+Files:      src/evalfunc.c, src/if_xcmdsrv.c, src/proto/if_xcmdsrv.pro,
+            src/main.c, src/os_mswin.c, src/proto/os_mswin.pro,
+            src/vim.h, runtime/doc/eval.txt, src/testdir/test_clientserver.vim
+
+Patch 8.0.0493
+Problem:    Crash with cd command with very long argument.
+Solution:   Check for running out of space. (Dominique pending, closes #1576)
+Files:      src/testdir/test_alot.vim, src/testdir/test_cd.vim, src/Makefile,
+            src/misc2.c
+
+Patch 8.0.0494
+Problem:    Build failure with older compiler on MS-Windows.
+Solution:   Move declaration to start of block.
+Files:      src/evalfunc.c, src/main.c, src/os_mswin.c
+
+Patch 8.0.0495
+Problem:    The quotestar test uses a timer instead of a timeout, thus it
+            cannot be rerun like a flaky test.
+Solution:   Remove the timer and add a timeout. (Kazunobu Kuriyama)
+Files:      src/testdir/test_quotestar.vim
+
+Patch 8.0.0496
+Problem:    Insufficient testing for folding.
+Solution:   Add a couple more fold tests. (Dominique Pelle, closes #1579)
+Files:      src/testdir/test_fold.vim
+
+Patch 8.0.0497
+Problem:    Arabic support is not fully tested.
+Solution:   Add more tests for the untested functions.  Comment out
+            unreachable code.
+Files:      src/arabic.c, src/testdir/test_arabic.vim
+
+Patch 8.0.0498
+Problem:    Two autocmd tests are skipped on MS-Windows.
+Solution:   Make the test pass on MS-Windows. Write the messages in a file
+            instead of getting the output of system().
+Files:      src/testdir/test_autocmd.vim
+
+Patch 8.0.0499
+Problem:    taglist() does not prioritize tags for a buffer.
+Solution:   Add an optional buffer argument. (Duncan McDougall, closes #1194) 
+Files:      runtime/doc/eval.txt, src/evalfunc.c, src/proto/tag.pro,
+            src/Makefile, src/tag.c, src/testdir/test_alot.vim,
+            src/testdir/test_taglist.vim
+
+Patch 8.0.0500
+Problem:    Quotestar test is still a bit flaky.
+Solution:   Add a slower check for v:version.
+Files:      src/testdir/test_quotestar.vim
+
+Patch 8.0.0501
+Problem:    On MS-Windows ":!start" does not work as expected.
+Solution:   When creating a process fails try passing the argument to
+            ShellExecute().  (Katsuya Hino, closes #1570)
+Files:      runtime/doc/os_win32.txt, src/os_win32.c
+
+Patch 8.0.0502
+Problem:    Coverity complains about possible NULL pointer.
+Solution:   Add an assert(), let's see if this works on all systems.
+Files:      src/window.c
+
+Patch 8.0.0503
+Problem:    Endless loop in updating folds with 32 bit ints.
+Solution:   Subtract from LHS instead of add to the RHS. (Matthew Malcomson)
+Files:      src/fold.c
+
+Patch 8.0.0504
+Problem:    Looking up an Ex command is a bit slow.
+Solution:   Instead of just using the first letter, also use the second letter
+            to skip ahead in the list of commands. Generate the table with a
+            Perl script. (Dominique Pelle, closes #1589)
+Files:      src/Makefile, src/create_cmdidxs.pl, src/ex_docmd.c, Filelist
+
+Patch 8.0.0505
+Problem:    Failed window split for :stag not handled. (Coverity CID 99204)
+Solution:   If the split fails skip to the end. (bstaletic, closes #1577)
+Files:      src/tag.c
+
+Patch 8.0.0506 (after 8.0.0504)
+Problem:    Can't build with ANSI C.
+Solution:   Move declarations to start of block.
+Files:      src/ex_docmd.c
+
+Patch 8.0.0507
+Problem:    Client-server tests fail when $DISPLAY is not set.
+Solution:   Check for E240 before running the test.
+Files:      src/testdir/test_quotestar.vim, src/testdir/test_clientserver.vim
+
+Patch 8.0.0508
+Problem:    Coveralls no longer shows per-file coverage.
+Solution:   Add coverage from codecov.io. (Christian Brabandt)
+Files:      .travis.yml
+
+Patch 8.0.0509
+Problem:    No link to codecov.io results.
+Solution:   Add a badge to the readme file.
+Files:      README.md
+
+Patch 8.0.0510 (after 8.0.0509)
+Problem:    Typo in link to codecov.io results.
+Solution:   Remove duplicate https:.
+Files:      README.md
+
+Patch 8.0.0511
+Problem:    Menuage for skipping client-server tests is unclear.
+Solution:   Be more specific about what's missing (Hirohito Higashi, Kazunobu
+            Kuriyama)
+Files:      src/testdir/test_quotestar.vim, src/testdir/test_clientserver.vim
+
+Patch 8.0.0512
+Problem:    Check for available characters takes too long.
+Solution:   Only check did_start_blocking if wtime is negative. (Daisuke
+            Suzuki, closes #1591)
+Files:      src/os_unix.c
+
+Patch 8.0.0513 (after 8.0.0201)
+Problem:    Getting name of cleared highlight group is wrong. (Matt Wozniski)
+Solution:   Only skip over cleared names for completion. (closes #1592)
+            Also fix that a cleared group causes duplicate completions.
+Files:      src/syntax.c, src/proto/syntax.pro, src/evalfunc.c,
+            src/ex_cmds.c, src/testdir/test_syntax.vim,
+            src/testdir/test_cmdline.vim
+
+Patch 8.0.0514
+Problem:    Script for creating cmdidxs can be improved.
+Solution:   Count skipped lines instead of collecting the lines.  Add "const".
+            (Dominique Pelle, closes #1594)
+Files:      src/create_cmdidxs.pl, src/ex_docmd.c
+
+Patch 8.0.0515
+Problem:    ml_get errors in silent Ex mode. (Dominique Pelle)
+Solution:   Clear valid flags when setting the cursor.  Set the topline when
+            not in full screen mode.
+Files:      src/ex_docmd.c, src/move.c, src/testdir/test_startup.vim
+
+Patch 8.0.0516
+Problem:    A large count on a normal command causes trouble. (Dominique
+            Pelle)
+Solution:   Make "opcount" long.
+Files:      src/globals.h, src/testdir/test_normal.vim
+
+Patch 8.0.0517
+Problem:    There is no way to remove quickfix lists (for testing).
+Solution:   Add the 'f' action to setqflist(). Add tests. (Yegappan
+            Lakshmanan)
+Files:      runtime/doc/eval.txt, src/evalfunc.c, src/quickfix.c,
+            src/testdir/test_quickfix.vim
+
+Patch 8.0.0518
+Problem:    Storing a zero byte from a multi-byte character causes fold text
+            to show up wrong.
+Solution:   Avoid putting zero in ScreenLines. (Christian Brabandt,
+            closes #1567)
+Files:      src/screen.c, src/testdir/test_display.vim
+
+Patch 8.0.0519
+Problem:    Character classes are not well tested. They can differ between
+            platforms.
+Solution:   Add tests.  In the documentation make clear which classes depend
+            on what library function.  Only use :cntrl: and :graph: for ASCII.
+            (Kazunobu Kuriyama, Dominique Pelle, closes #1560)
+            Update the documentation.
+Files:      src/regexp.c, src/regexp_nfa.c, runtime/doc/pattern.txt,
+            src/testdir/test_regexp_utf8.vim
+
+Patch 8.0.0520
+Problem:    Using a function pointer instead of the actual function, which we
+            know.
+Solution:   Change mb_ functions to utf_ functions when already checked for
+            Unicode. (Dominique Pelle, closes #1582)
+Files:      src/message.c, src/misc2.c, src/regexp.c, src/regexp_nfa.c,
+            src/screen.c, src/spell.c
+
+Patch 8.0.0521
+Problem:    GtkForm handling is outdated.
+Solution:   Get rid of event filter functions.  Get rid of GtkForm.width and
+            .height.  Eliminate gtk_widget_size_request() calls. (Kazunobu
+            Kuriyama)
+Files:      src/gui_gtk_f.c, src/gui_gtk_f.h
+
+Patch 8.0.0522
+Problem:    MS-Windows: when 'clipboard' is "unnamed" yyp does not work in a
+            :global command.
+Solution:   When setting the clipboard was postponed, do not clear the
+            register.
+Files:      src/ops.c, src/proto/ui.pro, src/ui.c, src/globals.h,
+            src/testdir/test_global.vim, src/Makefile,
+            src/testdir/test_alot.vim
+
+Patch 8.0.0523
+Problem:    dv} deletes part of a multi-byte character. (Urtica Dioica)
+Solution:   Include the whole character.
+Files:      src/search.c, src/testdir/test_normal.vim
+
+Patch 8.0.0524 (after 8.0.0518)
+Problem:    Folds are messed up when 'encodin' is "utf-8".
+Solution:   Also set the fold character when it's not multi-byte.
+Files:      src/screen.c, src/testdir/test_display.vim
+
+Patch 8.0.0525
+Solution:   Completion for user command argument not tested.
+Problem:    Add a test.
+Files:      src/testdir/test_cmdline.vim
+
+Patch 8.0.0526
+Problem:    Coverity complains about possible negative value.
+Solution:   Check return value of ftell() not to be negative.
+Files:      src/os_unix.c
+
+Patch 8.0.0527
+Problem:    RISC OS support was removed long ago, but one file is still
+            included.
+Solution:   Delete the file. (Thomas Dziedzic, closes #1603)
+Files:      Filelist, src/swis.s
+
+Patch 8.0.0528
+Problem:    When 'wildmenu' is set and 'wildmode' has "longest" then the first
+            file name is highlighted, even though the text shows the longest
+            match.
+Solution:   Do not highlight the first match. (LemonBoy, closes #1602)
+Files:      src/ex_getln.c
+
+Patch 8.0.0529
+Problem:    Line in test commented out.
+Solution:   Uncomment the lines for character classes that were failing before
+            8.0.0519. (Dominique Pelle, closes #1599)
+Files:      src/testdir/test_regexp_utf8.vim
+
+Patch 8.0.0530
+Problem:    Buffer overflow when 'columns' is very big. (Nikolai Pavlov)
+Solution:   Correctly compute where to truncate.  Fix translation.
+            (closes #1600)
+Files:      src/edit.c, src/testdir/test_edit.vim
+
+Patch 8.0.0531 (after 8.0.0530)
+Problem:    Test with long directory name fails on non-unix systems.
+Solution:   Skip the test on non-unix systems.
+Files:      src/testdir/test_edit.vim
+
+Patch 8.0.0532 (after 8.0.0531)
+Problem:    Test with long directory name fails on Mac.
+Solution:   Skip the test on Mac systems.
+Files:      src/testdir/test_edit.vim
+
+Patch 8.0.0533
+Problem:    Abbreviation doesn't work after backspacing newline. (Hkonrk)
+Solution:   Set the insert start column. (closes #1609)
+Files:      src/testdir/test_mapping.vim, src/edit.c
+
+Patch 8.0.0534
+Problem:    Defaults.vim does not work well with tiny features. (crd477)
+Solution:   When the +eval feature is not available always reset 'compatible'.
+Files:      runtime/defaults.vim
+
+Patch 8.0.0535
+Problem:    Memory leak when exiting from within a user function.
+Solution:   Clear the function call stack on exit.
+Files:      src/userfunc.c
+
+Patch 8.0.0536
+Problem:    Quickfix window not updated when freeing quickfix stack.
+Solution:   Update the quickfix window. (Yegappan Lakshmanan)
+Files:      src/quickfix.c, src/testdir/test_quickfix.vim
+
+Patch 8.0.0537
+Problem:    Illegal memory access with :z and large count.
+Solution:   Check for number overflow, using long instead of int. (Dominique
+            Pelle, closes #1612)
+Files:      src/Makefile, src/ex_cmds.c, src/testdir/test_alot.vim,
+            src/testdir/test_ex_z.vim
+
+Patch 8.0.0538
+Problem:    No test for falling back to default term value.
+Solution:   Add a test.
+Files:      src/testdir/test_startup.vim
+
+Patch 8.0.0539 (after 8.0.0538)
+Problem:    Startup test fails on Mac.
+Solution:   Use another term name, "unknown" is known. Avoid a 2 second delay.
+Files:      src/testdir/test_startup.vim, src/main.c, src/proto/main.pro,
+            src/term.c
+
+Patch 8.0.0540 (after 8.0.0540)
+Problem:    Building unit tests fails.
+Solution:   Move params outside of #ifdef.
+Files:      src/main.c, src/message_test.c
+
+Patch 8.0.0541
+Problem:    Compiler warning on MS-Windows.
+Solution:   Add a type cast. (Mike Williams)
+Files:      src/edit.c
+
+Patch 8.0.0542
+Problem:    getpos() can return a negative line number. (haya14busa)
+Solution:   Handle a zero topline and botline. (closes #1613)
+Files:      src/eval.c, runtime/doc/eval.txt
+
+Patch 8.0.0543
+Problem:    Test_edit causes older xfce4-terminal to close. (Dominique Pelle)
+Solution:   Reduce number of columns to 2000.  Try to restore the window
+            position.
+Files:      src/testdir/test_edit.vim, src/evalfunc.c, src/term.c,
+            src/proto/term.pro, src/term.h
+
+Patch 8.0.0544
+Problem:    Cppcheck warnings.
+Solution:   Use temp variable. Change NUL to NULL. Swap conditions. (Dominique
+            Pelle)
+Files:      src/channel.c, src/edit.c, src/farsi.c
+
+Patch 8.0.0545
+Problem:    Edit test may fail on some systems.
+Solution:   If creating a directory with a very long path fails, bail out.
+Files:      src/testdir/test_edit.vim
+
+Patch 8.0.0546
+Problem:    Swap file exists briefly when opening the command window.
+Solution:   Set the noswapfile command modifier before splitting the window.
+            (James McCoy, closes #1620)
+Files:      src/ex_getln.c, src/option.c
+
+Patch 8.0.0547
+Problem:    Extra line break in verbosefile when using ":echomsg". (Ingo
+            Karkat)
+Solution:   Don't call msg_start(). (closes #1618)
+Files:      src/eval.c, src/testdir/test_cmdline.vim
+
+Patch 8.0.0548
+Problem:    Saving the redo buffer only works one time, resulting in the "."
+            command not working well for a function call inside another
+            function call. (Ingo Karkat)
+Solution:   Save the redo buffer at every user function call. (closes #1619)
+Files:      src/getchar.c, src/proto/getchar.pro, src/structs.h,
+            src/fileio.c, src/userfunc.c, src/testdir/test_functions.vim
+
+Patch 8.0.0549
+Problem:    No test for the 8g8 command.
+Solution:   Add a test. (Dominique Pelle, closes #1615)
+Files:      src/testdir/test_normal.vim
+
+Patch 8.0.0550
+Problem:    Some etags format tags file use 0x01, breaking the parsing.
+Solution:   Use 0x02 for TAG_SEP. (James McCoy, closes #1614)
+Files:      src/tag.c, src/testdir/test_taglist.vim
+
+Patch 8.0.0551
+Problem:    The typeahead buffer is reallocated too often.
+Solution:   Re-use the existing buffer if possible.
+Files:      src/getchar.c
+
+Patch 8.0.0552
+Problem:    Toupper and tolower don't work properly for Turkish when 'casemap'
+            is empty. (Bjorn Linse)
+Solution:   Check the 'casemap' options when deciding how to upper/lower case.
+Files:      src/charset.c, src/testdir/test_normal.vim
+
+Patch 8.0.0553 (after 8.0.0552)
+Problem:    Toupper/tolower test with Turkish locale fails on Mac.
+Solution:   Skip the test on Mac.
+Files:      src/testdir/test_normal.vim
+
+Patch 8.0.0554 (after 8.0.0552)
+Problem:    Toupper and tolower don't work properly for Turkish when 'casemap'
+            contains "keepascii". (Bjorn Linse)
+Solution:   When 'casemap' contains "keepascii" use ASCII toupper/tolower.
+Files:      src/charset.c, src/testdir/test_normal.vim
+
+Patch 8.0.0555 (after 8.0.0552)
+Problem:    Toupper/tolower test fails on OSX without Darwin.
+Solution:   Skip that part of the test also for OSX. (Kazunobu Kuriyama)
+Files:      src/testdir/test_normal.vim
+
+Patch 8.0.0556
+Problem:    Getting the window position fails if both the GUI and term
+            code is built in.
+Solution:   Return after getting the GUI window position. (Kazunobu Kuriyama)
+Files:      src/evalfunc.c
+
+Patch 8.0.0557
+Problem:    GTK: using static gravities is not useful.
+Solution:   Remove setting static gravities. (Kazunobu Kuriyama)
+Files:      src/gui_gtk_f.c
+
+Patch 8.0.0558
+Problem:    The :ownsyntax command is not tested.
+Solution:   Add a test. (Dominique Pelle, closes #1622)
+Files:      src/testdir/test_syntax.vim
+
+Patch 8.0.0559
+Problem:    Setting ttytype to xxx does not always fail as expected. (Marvin
+            Schmidt)
+Solution:   Catch both possible errors. (closes #1601)
+Files:      src/testdir/test_options.vim
+
+Patch 8.0.0560
+Problem:    :windo allows for ! but it's not supported.
+Solution:   Disallow passing !. (Hirohito Higashi)
+Files:      src/ex_cmds.h
+
+Patch 8.0.0561
+Problem:    Undefined behavior when using backslash after empty line.
+Solution:   Check for an empty line. (Dominique Pelle, closes #1631)
+Files:      src/misc2.c, src/testdir/test_vimscript.vim
+
+Patch 8.0.0562
+Problem:    Not enough test coverage for syntax commands.
+Solution:   Add a few more tests. (Dominique Pelle, closes #1624)
+Files:      src/testdir/test_cmdline.vim, src/testdir/test_syntax.vim
+
+Patch 8.0.0563
+Problem:    Crash when getting the window position in tmux. (Marvin Schmidt)
+Solution:   Add t_GP to the list of terminal options. (closes #1627)
+Files:      src/option.c
+
+Patch 8.0.0564
+Problem:    Cannot detect Bazel BUILD files on some systems.
+Solution:   Check for BUILD after script checks. (Issue #1340)
+Files:      runtime/filetype.vim
+
+Patch 8.0.0565
+Problem:    Using freed memory in :caddbuf after clearing quickfix list.
+            (Dominique Pelle)
+Solution:   Set qf_last to NULL.
+Files:      src/quickfix.c
+
+Patch 8.0.0566
+Problem:    Setting nocompatible for the tiny version moves the cursor.
+Solution:   Use another trick to skip commands when the +eval feature is
+            present. (Christian Brabandt, closes #1630)
+Files:      runtime/defaults.vim
+
+Patch 8.0.0567
+Problem:    Call for requesting color and ambiwidth is too early. (Hirohito
+            Higashi)
+Solution:   Move the call down to below resetting "starting".
+Files:      src/main.c
+
+Patch 8.0.0568
+Problem:    "1gd" may hang.
+Solution:   Don't get stuck in one position. (Christian Brabandt, closes #1643)
+Files:      src/testdir/test_goto.vim, src/normal.c
+
+Patch 8.0.0569
+Problem:    Bracketed paste is still enabled when executing a shell command.
+            (Michael Smith)
+Solution:   Disable brackted paste when going into cooked mode. (closes #1638)
+Files:      src/term.c
+
+Patch 8.0.0570
+Problem:    Can't run make with several jobs, creating directories has a race
+            condition.
+Solution:   Use the MKDIR_P autoconf mechanism. (Eric N. Vander Weele,
+            closes #1639)
+Files:      src/configure.ac, src/auto/configure, src/Makefile,
+            src/config.mk.in, src/install-sh, src/mkinstalldirs, Filelist
+
+Patch 8.0.0571
+Problem:    The cursor line number becomes negative when using :z^ in an empty
+            buffer. (neovim #6557)
+Solution:   Correct the line number.  Also reset the column.
+Files:      src/testdir/test_ex_z.vim, src/ex_cmds.c
+
+Patch 8.0.0572
+Problem:    Building the command table requires Perl.
+Solution:   Use a Vim script solution. (Dominique Pelle, closes #1641)
+Files:      src/Makefile, src/create_cmdidxs.pl, src/create_cmdidxs.vim,
+            src/ex_cmdidxs.h, src/ex_docmd.c, Filelist
+
+Patch 8.0.0573
+Problem:    Running parallel make after distclean fails. (Manuel Ortega)
+Solution:   Instead of using targets "scratch config myself" use "reconfig".
+Files:      src/Makefile, src/config.mk.dist
+
+Patch 8.0.0574
+Problem:    Get only one quickfix list after :caddbuf.
+Solution:   Reset qf_multiline. (Yegappan Lakshmanan)
+Files:      src/quickfix.c, src/testdir/test_quickfix.vim
+
+Patch 8.0.0575
+Problem:    Using freed memory when resetting 'indentexpr' while evaluating
+            it. (Dominique Pelle)
+Solution:   Make a copy of 'indentexpr'.
+Files:      src/misc1.c, src/testdir/test_options.vim
+
+Patch 8.0.0576 (after 8.0.0570 and 8.0.0573)
+Problem:    Can't build when configure choses "install-sh". (Daniel Hahler)
+Solution:   Always use install-sh.  Fix remaining use of mkinstalldirs.
+            (closes #1647)
+Files:      src/installman.sh, src/installml.sh, src/config.mk.in,
+            src/configure.ac, src/auto/configure, src/Makefile
+
+Patch 8.0.0577 (after 8.0.0575)
+Problem:    Warning for uninitialized variable. (John Marriott)
+Solution:   Initialize "indent".
+Files:      src/misc1.c
+
+Patch 8.0.0578
+Problem:    :simalt on MS-Windows does not work properly.
+Solution:   Put something in the typeahead buffer. (Christian Brabandt)
+Files:      src/gui_w32.c
+
+Patch 8.0.0579
+Problem:    Duplicate test case for quickfix.
+Solution:   Remove the function. (Yegappan Lakshmanan)
+Files:      src/testdir/test_quickfix.vim
+
+Patch 8.0.0580
+Problem:    Cannot set the valid flag with setqflist().
+Solution:   Add the "valid" argument. (Yegappan Lakshmanan, closes #1642)
+Files:      runtime/doc/eval.txt, src/quickfix.c,
+            src/testdir/test_quickfix.vim
+
+Patch 8.0.0581
+Problem:    Moving folded text is sometimes not correct.
+Solution:   Bail out when "move_end" is zero. (Matthew Malcomson)
+Files:      src/fold.c, src/testdir/test_fold.vim
+
+Patch 8.0.0582
+Problem:    Illegal memory access with z= command. (Dominique Pelle)
+Solution:   Avoid case folded text to be longer than the original text.  Use
+            MB_PTR2LEN() instead of MB_BYTE2LEN().
+Files:      src/spell.c, src/testdir/test_spell.vim
+
+Patch 8.0.0583
+Problem:    Fold test hangs on MS-Windows.
+Solution:   Avoid overflow in compare.
+Files:      src/fold.c
+
+Patch 8.0.0584
+Problem:    Memory leak when executing quickfix tests.
+Solution:   Free the list reference. (Yegappan Lakshmanan)
+Files:      src/quickfix.c
+
+Patch 8.0.0585
+Problem:    Test_options fails when run in the GUI.
+Solution:   Also check the 'imactivatekey' value when the GUI is not running.
+            Specify test values that work and that fail.
+Files:      src/option.c, src/testdir/gen_opt_test.vim
+
+Patch 8.0.0586
+Problem:    No test for mapping timing out.
+Solution:   Add a test.
+Files:      src/testdir/test_mapping.vim
 
  vim:tw=78:ts=8:ft=help:norl:

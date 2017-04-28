@@ -7180,6 +7180,7 @@ m`	motion.txt	/*m`*
 mac	os_mac.txt	/*mac*
 mac-bug	os_mac.txt	/*mac-bug*
 mac-compile	os_mac.txt	/*mac-compile*
+mac-darwin-feature	os_mac.txt	/*mac-darwin-feature*
 mac-faq	os_mac.txt	/*mac-faq*
 mac-filename	os_mac.txt	/*mac-filename*
 mac-lack	os_mac.txt	/*mac-lack*
