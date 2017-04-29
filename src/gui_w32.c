@@ -2642,11 +2642,11 @@ ex_simalt(exarg_T *eap)
     }
     if (fill_typebuf)
     {
-	/* Put something in the typeahead buffer so that the message will get
+	/* Put a NOP in the typeahead buffer so that the message will get
 	 * processed. */
 	key_name[0] = K_SPECIAL;
 	key_name[1] = KS_EXTRA;
-	key_name[2] = KE_IGNORE;
+	key_name[2] = KE_NOP;
 	key_name[3] = NUL;
 	typebuf_was_filled = TRUE;
 	(void)ins_typebuf(key_name, REMAP_NONE, 0, TRUE, FALSE);
