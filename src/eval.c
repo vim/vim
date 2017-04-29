@@ -5327,6 +5327,10 @@ garbage_collect(int testing)
     abort = abort || set_ref_in_timer(copyID);
 #endif
 
+#ifdef FEAT_QUICKFIX
+    abort = abort || set_ref_in_quickfix(copyID);
+#endif
+
     if (!abort)
     {
 	/*
