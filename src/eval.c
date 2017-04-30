@@ -4665,9 +4665,7 @@ eval_index(
 			item = item->li_next;
 		    }
 		    clear_tv(rettv);
-		    rettv->v_type = VAR_LIST;
-		    rettv->vval.v_list = l;
-		    ++l->lv_refcount;
+		    rettv_list_set(rettv, l);
 		}
 		else
 		{
@@ -8486,9 +8484,7 @@ getwinvar(
 
 		    if (opts != NULL)
 		    {
-			rettv->v_type = VAR_DICT;
-			rettv->vval.v_dict = opts;
-			++opts->dv_refcount;
+			rettv_dict_set(rettv, opts);
 			done = TRUE;
 		    }
 		}
