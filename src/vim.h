@@ -630,6 +630,8 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
  * flags for update_screen()
  * The higher the value, the higher the priority
  */
+#define VALID_NO_UPDATE		 5  /* no new changes, keep the command line if
+				       possible */
 #define VALID			10  /* buffer not changed, or changes marked
 				       with b_mod_* */
 #define INVERTED		20  /* redisplay inverted part that changed */
