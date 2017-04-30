@@ -59,11 +59,21 @@ rettv_dict_alloc(typval_T *rettv)
     if (d == NULL)
 	return FAIL;
 
-    rettv->vval.v_dict = d;
-    rettv->v_type = VAR_DICT;
+    rettv_dict_set(rettv, d);
     rettv->v_lock = 0;
-    ++d->dv_refcount;
     return OK;
+}
+
+/*
+ * Set a dictionary as the return value
+ */
+    void
+rettv_dict_set(typval_T *rettv, dict_T *d)
+{
+    rettv->v_type = VAR_DICT;
+    rettv->vval.v_dict = d;
+    if (d != NULL)
+	++d->dv_refcount;
 }
 
 /*
@@ -646,11 +656,7 @@ failret:
 
     *arg = skipwhite(*arg + 1);
     if (evaluate)
-    {
-	rettv->v_type = VAR_DICT;
-	rettv->vval.v_dict = d;
-	++d->dv_refcount;
-    }
+	rettv_dict_set(rettv, d);
 
     return OK;
 }

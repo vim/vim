@@ -1,6 +1,7 @@
 /* dict.c */
 dict_T *dict_alloc(void);
 int rettv_dict_alloc(typval_T *rettv);
+void rettv_dict_set(typval_T *rettv, dict_T *d);
 void dict_unref(dict_T *d);
 int dict_free_nonref(int copyID);
 void dict_free_items(int copyID);

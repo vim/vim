@@ -97,11 +97,21 @@ rettv_list_alloc(typval_T *rettv)
     if (l == NULL)
 	return FAIL;
 
-    rettv->vval.v_list = l;
-    rettv->v_type = VAR_LIST;
     rettv->v_lock = 0;
-    ++l->lv_refcount;
+    rettv_list_set(rettv, l);
     return OK;
+}
+
+/*
+ * Set a list as the return value
+ */
+    void
+rettv_list_set(typval_T *rettv, list_T *l)
+{
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = l;
+    if (l != NULL)
+	++l->lv_refcount;
 }
 
 /*
@@ -875,11 +885,7 @@ failret:
 
     *arg = skipwhite(*arg + 1);
     if (evaluate)
-    {
-	rettv->v_type = VAR_LIST;
-	rettv->vval.v_list = l;
-	++l->lv_refcount;
-    }
+	rettv_list_set(rettv, l);
 
     return OK;
 }
