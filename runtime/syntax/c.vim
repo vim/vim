@@ -342,6 +342,7 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   " non-POSIX signals
   syn keyword cConstant SIGWINCH SIGINFO
   " Add POSIX errors as well
+  " http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/errno.h.html
   syn keyword cConstant E2BIG EACCES EAGAIN EBADF EBADMSG EBUSY
   syn keyword cConstant ECANCELED ECHILD EDEADLK EDOM EEXIST EFAULT
   syn keyword cConstant EFBIG EILSEQ EINPROGRESS EINTR EINVAL EIO EISDIR
