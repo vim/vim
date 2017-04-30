@@ -19,6 +19,7 @@ char_u *save_cmdline_alloc(void);
 void restore_cmdline_alloc(char_u *p);
 void cmdline_paste_str(char_u *s, int literally);
 void redrawcmdline(void);
+void redrawcmdline_ex(int do_compute_cmdrow);
 void redrawcmd(void);
 void compute_cmdrow(void);
 void gotocmdline(int clr);

@@ -265,6 +265,21 @@ redraw_buf_later(buf_T *buf, int type)
     }
 }
 
+    void
+redraw_buf_and_status_later(buf_T *buf, int type)
+{
+    win_T	*wp;
+
+    FOR_ALL_WINDOWS(wp)
+    {
+	if (wp->w_buffer == buf)
+	{
+	    redraw_win_later(wp, type);
+	    wp->w_redr_status = TRUE;
+	}
+    }
+}
+
 /*
  * Redraw as soon as possible.  When the command line is not scrolled redraw
  * right away and restore what was on the command line.
@@ -421,10 +436,29 @@ redraw_after_callback(void)
     if (State == HITRETURN || State == ASKMORE)
 	; /* do nothing */
     else if (State & CMDLINE)
-	redrawcmdline();
+    {
+	/* Redrawing only works when the screen didn't scroll. */
+	if (msg_scrolled == 0)
+	{
+	    update_screen(0);
+	    compute_cmdrow();
+	}
+	else
+	{
+	    /* Redraw in the same position, so that the user can continue
+	     * editing the command. */
+	    compute_cmdrow();
+	    if (cmdline_row > msg_scrolled)
+		cmdline_row -= msg_scrolled;
+	    else
+		cmdline_row = 0;
+	}
+	redrawcmdline_ex(FALSE);
+    }
     else if (State & (NORMAL | INSERT))
     {
-	update_screen(0);
+	/* keep the command line if possible */
+	update_screen(VALID_NO_UPDATE);
 	setcursor();
     }
     cursor_on();
@@ -476,7 +510,7 @@ redrawWinline(
 }
 
 /*
- * update all windows that are editing the current buffer
+ * Update all windows that are editing the current buffer.
  */
     void
 update_curbuf(int type)
@@ -490,8 +524,9 @@ update_curbuf(int type)
  * of stuff from Filemem to ScreenLines[], and update curwin->w_botline.
  */
     void
-update_screen(int type)
+update_screen(int type_arg)
 {
+    int		type = type_arg;
     win_T	*wp;
     static int	did_intro = FALSE;
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
@@ -502,10 +537,17 @@ update_screen(int type)
     int		gui_cursor_col;
     int		gui_cursor_row;
 #endif
+    int		no_update = FALSE;
 
     /* Don't do anything if the screen structures are (not yet) valid. */
     if (!screen_valid(TRUE))
 	return;
+
+    if (type == VALID_NO_UPDATE)
+    {
+	no_update = TRUE;
+	type = 0;
+    }
 
     if (must_redraw)
     {
@@ -539,6 +581,8 @@ update_screen(int type)
     ++display_tick;	    /* let syntax code know we're in a next round of
 			     * display updating */
 #endif
+    if (no_update)
+	++no_win_do_lines_ins;
 
     /*
      * if the screen was scrolled up when displaying a message, scroll it down
@@ -576,7 +620,8 @@ update_screen(int type)
 		    }
 		}
 	    }
-	    redraw_cmdline = TRUE;
+	    if (!no_update)
+		redraw_cmdline = TRUE;
 #ifdef FEAT_WINDOWS
 	    redraw_tabline = TRUE;
 #endif
@@ -747,6 +792,9 @@ update_screen(int type)
      * mess up the command line. */
     if (clear_cmdline || redraw_cmdline)
 	showmode();
+
+    if (no_update)
+	--no_win_do_lines_ins;
 
     /* May put up an introductory message when not editing a file */
     if (!did_intro)
@@ -9475,6 +9523,11 @@ win_do_lines(
     if (!redrawing() || line_count <= 0)
 	return FAIL;
 
+    /* When inserting lines would result in loss of command output, just redraw
+     * the lines. */
+    if (no_win_do_lines_ins && !del)
+	return FAIL;
+
     /* only a few lines left: redraw is faster */
     if (mayclear && Rows - line_count < 5
 #ifdef FEAT_WINDOWS
@@ -9482,7 +9535,8 @@ win_do_lines(
 #endif
 	    )
     {
-	screenclear();	    /* will set wp->w_lines_valid to 0 */
+	if (!no_win_do_lines_ins)
+	    screenclear();	    /* will set wp->w_lines_valid to 0 */
 	return FAIL;
     }
 
@@ -9498,10 +9552,12 @@ win_do_lines(
     }
 
     /*
-     * when scrolling, the message on the command line should be cleared,
+     * When scrolling, the message on the command line should be cleared,
      * otherwise it will stay there forever.
+     * Don't do this when avoiding to insert lines.
      */
-    clear_cmdline = TRUE;
+    if (!no_win_do_lines_ins)
+	clear_cmdline = TRUE;
 
     /*
      * If the terminal can set a scroll region, use that.
