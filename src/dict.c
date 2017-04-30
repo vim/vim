@@ -67,6 +67,19 @@ rettv_dict_alloc(typval_T *rettv)
 }
 
 /*
+ * Set a dictionary as the return value
+ */
+    void
+rettv_dict_set(typval_T *rettv, dict_T *d)
+{
+    if (d == NULL)
+	return;
+    rettv->v_type = VAR_DICT;
+    rettv->vval.v_dict = d;
+    ++d->dv_refcount;
+}
+
+/*
  * Free a Dictionary, including all non-container items it contains.
  * Ignores the reference count.
  */
