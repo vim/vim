@@ -64,6 +64,10 @@ if has('win32')
   set guioptions-=t
 endif
 
+" Use Y to yank to end of line. Consistent with C and D.
+" Revert with ":unmap Y".
+map Y y$
+
 " Don't use Ex mode, use Q for formatting.
 " Revert with ":unmap Q".
 map Q gq
