@@ -275,7 +275,9 @@ redraw_buf_and_status_later(buf_T *buf, int type)
 	if (wp->w_buffer == buf)
 	{
 	    redraw_win_later(wp, type);
+#ifdef FEAT_WINDOWS
 	    wp->w_redr_status = TRUE;
+#endif
 	}
     }
 }
