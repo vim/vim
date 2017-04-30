@@ -1431,7 +1431,6 @@ f_argc(typval_T *argvars, typval_T *rettv)
     }
 }
 
-
 /*
  * "argidx()" function
  */
@@ -5419,7 +5418,6 @@ getpos_both(
 	rettv->vval.v_number = FALSE;
 }
 
-
 /*
  * "getcurpos()" function
  */
@@ -7042,7 +7040,6 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = selected;
 }
-
 
 static garray_T	    ga_userinput = {0, 0, sizeof(tasave_T), 4, NULL};
 
@@ -12474,7 +12471,6 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 	    modec = 't';
     }
 
-
     switch (TOLOWER_ASC(what[0]))
     {
 	case 'b':
@@ -12885,7 +12881,6 @@ f_tabpagebuflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     }
 }
 
-
 /*
  * "tabpagenr()" function
  */
@@ -12911,7 +12906,6 @@ f_tabpagenr(typval_T *argvars UNUSED, typval_T *rettv)
 	nr = tabpage_index(curtab);
     rettv->vval.v_number = nr;
 }
-
 
 static int get_winnr(tabpage_T *tp, typval_T *argvar);
 
@@ -12978,7 +12972,6 @@ f_tabpagewinnr(typval_T *argvars UNUSED, typval_T *rettv)
 	nr = get_winnr(tp, &argvars[1]);
     rettv->vval.v_number = nr;
 }
-
 
 /*
  * "tagfiles()" function
@@ -14166,6 +14159,5 @@ f_xor(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = get_tv_number_chk(&argvars[0], NULL)
 					^ get_tv_number_chk(&argvars[1], NULL);
 }
-
 
 #endif /* FEAT_EVAL */

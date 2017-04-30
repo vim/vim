@@ -321,7 +321,7 @@ func Test_argv()
   call assert_equal('', argv(1, 100))
   call assert_equal([], argv(-1, 100))
   call assert_equal('', argv(10, -1))
-endfunction
+endfunc
 
 " Test for the :argedit command
 func Test_argedit()
