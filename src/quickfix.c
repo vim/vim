@@ -57,6 +57,7 @@ typedef struct qf_list_S
     int		qf_nonevalid;	/* TRUE if not a single valid entry found */
     char_u	*qf_title;	/* title derived from the command that created
 				 * the error list */
+    typval_T	*qf_ctx;	/* context set by setqflist/setloclist */
 } qf_list_T;
 
 struct qf_info_S
@@ -1596,6 +1597,14 @@ copy_loclist(win_T *from, win_T *to)
 	    to_qfl->qf_title = vim_strsave(from_qfl->qf_title);
 	else
 	    to_qfl->qf_title = NULL;
+	if (from_qfl->qf_ctx != NULL)
+	{
+	    to_qfl->qf_ctx = alloc_tv();
+	    if (to_qfl->qf_ctx != NULL)
+		copy_tv(from_qfl->qf_ctx, to_qfl->qf_ctx);
+	}
+	else
+	    to_qfl->qf_ctx = NULL;
 
 	if (from_qfl->qf_count)
 	{
@@ -2749,6 +2758,8 @@ qf_free(qf_info_T *qi, int idx)
     }
     vim_free(qi->qf_lists[idx].qf_title);
     qi->qf_lists[idx].qf_title = NULL;
+    free_tv(qi->qf_lists[idx].qf_ctx);
+    qi->qf_lists[idx].qf_ctx = NULL;
     qi->qf_lists[idx].qf_index = 0;
     qi->qf_lists[idx].qf_start = NULL;
     qi->qf_lists[idx].qf_last = NULL;
@@ -4629,6 +4640,7 @@ enum {
     QF_GETLIST_ITEMS	= 0x2,
     QF_GETLIST_NR	= 0x4,
     QF_GETLIST_WINID	= 0x8,
+    QF_GETLIST_CONTEXT	= 0x10,
     QF_GETLIST_ALL	= 0xFF
 };
 
@@ -4681,6 +4693,9 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if (dict_find(what, (char_u *)"winid", -1) != NULL)
 	flags |= QF_GETLIST_WINID;
 
+    if (dict_find(what, (char_u *)"context", -1) != NULL)
+	flags |= QF_GETLIST_CONTEXT;
+
     if (flags & QF_GETLIST_TITLE)
     {
 	char_u	*t;
@@ -4697,6 +4712,21 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	win = qf_find_win(qi);
 	if (win != NULL)
 	    status = dict_add_nr_str(retdict, "winid", win->w_id, NULL);
+    }
+
+    if ((status == OK) && (flags & QF_GETLIST_CONTEXT))
+    {
+	if (qi->qf_lists[qf_idx].qf_ctx != NULL)
+	{
+	    di = dictitem_alloc((char_u *)"context");
+	    if (di != NULL)
+	    {
+		copy_tv(qi->qf_lists[qf_idx].qf_ctx, &di->di_tv);
+		dict_add(retdict, di);
+	    }
+	}
+	else
+	    status = dict_add_nr_str(retdict, "context", 0L, (char_u *)"");
     }
 
     return status;
@@ -4874,6 +4904,16 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action)
 	}
     }
 
+    if ((di = dict_find(what, (char_u *)"context", -1)) != NULL)
+    {
+	typval_T	*ctx;
+	free_tv(qi->qf_lists[qi->qf_curlist].qf_ctx);
+	ctx =  alloc_tv();
+	if (ctx != NULL)
+	    copy_tv(&di->di_tv, ctx);
+	qi->qf_lists[qi->qf_curlist].qf_ctx = ctx;
+    }
+
     return retval;
 }
 
@@ -4980,6 +5020,52 @@ set_errorlist(
 	retval = qf_add_entries(qi, list, title, action);
 
     return retval;
+}
+
+    static int
+mark_quickfix_ctx(qf_info_T *qi, int copyID)
+{
+    int		i;
+    int		abort = FALSE;
+    typval_T	*ctx;
+
+    for (i = 0; i < LISTCOUNT && !abort; ++i)
+    {
+	ctx = qi->qf_lists[i].qf_ctx;
+	if (ctx != NULL && ctx->v_type != VAR_NUMBER &&
+		ctx->v_type != VAR_STRING && ctx->v_type != VAR_FLOAT)
+	    abort = set_ref_in_item(ctx, copyID, NULL, NULL);
+    }
+
+    return abort;
+}
+
+/*
+ * Mark the context of the quickfix list and the location lists (if present) as
+ * "in use". So that garabage collection doesn't free the context.
+ */
+    int
+set_ref_in_quickfix(int copyID)
+{
+    int		abort = FALSE;
+    tabpage_T	*tp;
+    win_T	*win;
+
+    abort = mark_quickfix_ctx(&ql_info, copyID);
+    if (abort)
+	return abort;
+
+    FOR_ALL_TAB_WINDOWS(tp, win)
+    {
+	if (win->w_llist != NULL)
+	{
+	    abort = mark_quickfix_ctx(win->w_llist, copyID);
+	    if (abort)
+		return abort;
+	}
+    }
+
+    return abort;
 }
 #endif
 

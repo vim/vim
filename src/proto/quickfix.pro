@@ -29,6 +29,7 @@ void ex_vimgrep(exarg_T *eap);
 int get_errorlist(win_T *wp, int qf_idx, list_T *list);
 int get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict);
 int set_errorlist(win_T *wp, list_T *list, int action, char_u *title, dict_T *what);
+int set_ref_in_quickfix(int copyID);
 void ex_cbuffer(exarg_T *eap);
 void ex_cexpr(exarg_T *eap);
 void ex_helpgrep(exarg_T *eap);
