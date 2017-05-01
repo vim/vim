@@ -4722,7 +4722,8 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	    if (di != NULL)
 	    {
 		copy_tv(qi->qf_lists[qf_idx].qf_ctx, &di->di_tv);
-		dict_add(retdict, di);
+		if (dict_add(retdict, di) == FAIL)
+		    dictitem_free(di);
 	    }
 	}
 	else
