@@ -22,6 +22,7 @@ LANGUAGES = \
 		ja \
 		ko \
 		ko.UTF-8 \
+                lv \
 		nb \
 		nl \
 		no \
@@ -63,6 +64,7 @@ MOFILES = \
 		ja.mo \
 		ko.mo \
 		ko.UTF-8.mo \
+                lv.mo \
 		nb.mo \
 		nl.mo \
 		no.mo \
