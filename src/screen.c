@@ -10066,7 +10066,13 @@ screen_del_lines(
     {
 	windgoto(cursor_end - 1, 0);
 	for (i = line_count; --i >= 0; )
+	{
 	    out_char('\n');		/* cursor will remain on same line */
+	    if (*T_CE)
+		out_str(T_CE);		/* clear line to fix background */
+	}
+	if (*T_CE)
+	    screen_start();
     }
     else
     {
