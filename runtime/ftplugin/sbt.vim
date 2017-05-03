@@ -1,4 +1,4 @@
-" Vim filetype plugin file
+" Vim filetype plugin file for SBT
 " Language:     sbt
 " Maintainer:   Steven Dobay <stevendobay at protonmail.com>
 " License:      Same as Vim
