@@ -1,4 +1,4 @@
-" Vim syntax file for SBT
+" Vim syntax file
 " Language:    sbt
 " Maintainer:  Steven Dobay <stevendobay at protonmail.com>
 " Last Change: 2017.04.30
