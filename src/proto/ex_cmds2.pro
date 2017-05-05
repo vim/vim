@@ -72,6 +72,8 @@ void ex_runtime(exarg_T *eap);
 int source_runtime(char_u *name, int flags);
 int do_in_path(char_u *path, char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);
 int do_in_runtimepath(char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);
+void add_all_pack_dirs(void);
+void load_all_pack(void);
 void ex_packloadall(exarg_T *eap);
 void ex_packadd(exarg_T *eap);
 void ex_options(exarg_T *eap);
