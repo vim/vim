@@ -3204,7 +3204,7 @@ jumpto_tag(
      * open a new tab page. */
     if (postponed_split && (swb_flags & (SWB_USEOPEN | SWB_USETAB)))
     {
-	buf_T *existing_buf = buflist_findname(fname);
+	buf_T *existing_buf = buflist_findname_exp(fname);
 	if (existing_buf != NULL)
 	{
 	    win_T *wp = NULL;
