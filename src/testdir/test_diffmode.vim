@@ -199,9 +199,48 @@ func Test_diffget_diffput()
   call assert_fails('diffget', 'E101:')
 
   windo diffoff
-  bwipe!
-  bwipe!
+  %bwipe!
+endfunc
+
+func Test_dp_do_bufnr()
   enew!
+  let bn1=bufnr('%')
+  let l = range(50)
+  call setline(1, l)
+  diffthis
+
+  new
+  let l[10] = 'one'
+  let l[20] = 'two'
+  let l[30] = 'three'
+  call setline(1, l)
+  diffthis
+
+  " dp and do with invalid buffer number.
+  11
+  call assert_fails('norm 99999dp', 'E102:')
+  call assert_fails('norm 99999do', 'E102:')
+
+  " dp and do with valid buffer number.
+  call assert_equal('one', getline('.'))
+  exe 'norm ' . bn1 . 'do'
+  call assert_equal('10', getline('.'))
+  21
+  exe 'norm ' . bn1 . 'dp'
+  wincmd w
+  21
+  call assert_equal('two', getline('.'))
+
+  " dp and do with buffer number which is not in diff mode.
+  new
+  let bn3=bufnr('%')
+  wincmd w
+  31
+  call assert_fails('exe "norm" . bn3 . "dp"', 'E103:')
+  call assert_fails('exe "norm" . bn3 . "do"', 'E103:')
+
+  windo diffoff
+  %bwipe!
 endfunc
 
 func Test_diffoff()
@@ -219,6 +258,82 @@ func Test_diffoff()
   call assert_equal(normattr, screenattr(1, 1))
   bwipe!
   bwipe!
+endfunc
+
+func Test_diffopt_icase()
+  set diffopt=icase,foldcolumn:0
+
+  e one
+  call setline(1, ['One', 'Two', 'Three', 'Four'])
+  let normattr = screenattr(1, 1)
+  diffthis
+
+  botright vert new two
+  call setline(1, ['one', 'TWO', 'Three ', 'Four'])
+  diffthis
+
+  redraw
+  call assert_equal(normattr, screenattr(1, 1))
+  call assert_equal(normattr, screenattr(2, 1))
+  call assert_notequal(normattr, screenattr(3, 1))
+  call assert_equal(normattr, screenattr(4, 1))
+
+  diffoff!
+  %bwipe!
+  set diffopt&
+endfunc
+
+func Test_diffopt_iwhite()
+  set diffopt=iwhite,foldcolumn:0
+
+  e one
+  " Difference in trailing space should be ignore,
+  " but not other space differences.
+  call setline(1, ["One \t", 'Two', 'Three', 'Four'])
+  let normattr = screenattr(1, 1)
+  diffthis
+
+  botright vert new two
+  call setline(1, ["One\t ", "Two\t ", 'Three', ' Four'])
+  diffthis
+
+  redraw
+  call assert_equal(normattr, screenattr(1, 1))
+  call assert_equal(normattr, screenattr(2, 1))
+  call assert_equal(normattr, screenattr(3, 1))
+  call assert_notequal(normattr, screenattr(4, 1))
+
+  diffoff!
+  %bwipe!
+  set diffopt&
+endfunc
+
+func Test_diffopt_horizontal()
+  set diffopt=horizontal
+  diffsplit
+
+  call assert_equal(&columns, winwidth(1))
+  call assert_equal(&columns, winwidth(2))
+  call assert_equal(&lines, winheight(1) + winheight(2) + 3)
+  call assert_inrange(0, 1, winheight(1) - winheight(2))
+
+  set diffopt&
+  diffoff!
+  %bwipe
+endfunc
+
+func Test_diffopt_vertical()
+  set diffopt=vertical
+  diffsplit
+
+  call assert_equal(&lines - 2, winheight(1))
+  call assert_equal(&lines - 2, winheight(2))
+  call assert_equal(&columns, winwidth(1) + winwidth(2) + 1)
+  call assert_inrange(0, 1, winwidth(1) - winwidth(2))
+
+  set diffopt&
+  diffoff!
+  %bwipe
 endfunc
 
 func Test_diffoff_hidden()
