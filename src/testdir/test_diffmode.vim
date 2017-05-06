@@ -311,6 +311,24 @@ func Test_diffopt_iwhite()
   set diffopt&
 endfunc
 
+func Test_diffopt_context()
+  enew!
+  call setline(1, ['1', '2', '3', '4', '5', '6', '7'])
+  diffthis
+  new
+  call setline(1, ['1', '2', '3', '4', '5x', '6', '7'])
+  diffthis
+
+  set diffopt=context:2
+  call assert_equal('+--  2 lines: 1', foldtextresult(1))
+  set diffopt=context:1
+  call assert_equal('+--  3 lines: 1', foldtextresult(1))
+
+  diffoff!
+  %bwipe!
+  set diffopt&
+endfunc
+
 func Test_diffopt_horizontal()
   set diffopt=horizontal
   diffsplit
