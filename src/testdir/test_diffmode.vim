@@ -246,6 +246,7 @@ endfunc
 func Test_diffoff()
   enew!
   call setline(1, ['Two', 'Three'])
+  redraw
   let normattr = screenattr(1, 1)
   diffthis
   botright vert new
@@ -265,6 +266,7 @@ func Test_diffopt_icase()
 
   e one
   call setline(1, ['One', 'Two', 'Three', 'Four'])
+  redraw
   let normattr = screenattr(1, 1)
   diffthis
 
@@ -287,9 +289,10 @@ func Test_diffopt_iwhite()
   set diffopt=iwhite,foldcolumn:0
 
   e one
-  " Difference in trailing space should be ignore,
+  " Difference in trailing spaces should be ignored,
   " but not other space differences.
   call setline(1, ["One \t", 'Two', 'Three', 'Four'])
+  redraw
   let normattr = screenattr(1, 1)
   diffthis
 
@@ -340,6 +343,7 @@ func Test_diffoff_hidden()
   set diffopt=filler,foldcolumn:0
   e! one
   call setline(1, ['Two', 'Three'])
+  redraw
   let normattr = screenattr(1, 1)
   diffthis
   botright vert new two
@@ -409,6 +413,37 @@ func Test_diff_move_to()
   norm 10[c
   call assert_equal(2, line('.'))
   %bwipe!
+endfunc
+
+func Test_diffexpr()
+  if !executable('diff')
+    return
+  endif
+
+  func DiffExpr()
+    silent exe '!diff ' . v:fname_in . ' ' . v:fname_new . '>' . v:fname_out
+  endfunc
+  set diffexpr=DiffExpr()
+  set diffopt=foldcolumn:0
+
+  enew!
+  call setline(1, ['one', 'two', 'three'])
+  redraw
+  let normattr = screenattr(1, 1)
+  diffthis
+
+  botright vert new
+  call setline(1, ['one', 'two', 'three.'])
+  diffthis
+
+  redraw
+  call assert_equal(normattr, screenattr(1, 1))
+  call assert_equal(normattr, screenattr(2, 1))
+  call assert_notequal(normattr, screenattr(3, 1))
+
+  diffoff!
+  %bwipe!
+  set diffexpr& diffopt&
 endfunc
 
 func Test_diffpatch()
