@@ -202,17 +202,19 @@ func Test_diffget_diffput()
   %bwipe!
 endfunc
 
-func Test_dp_do_bufnr()
-  enew!
+func Test_dp_do_buffer()
+  e! one
   let bn1=bufnr('%')
-  let l = range(50)
+  let l = range(60)
   call setline(1, l)
   diffthis
 
-  new
+  new two
   let l[10] = 'one'
   let l[20] = 'two'
   let l[30] = 'three'
+  let l[40] = 'four'
+  let l[50] = 'five'
   call setline(1, l)
   diffthis
 
@@ -220,24 +222,37 @@ func Test_dp_do_bufnr()
   11
   call assert_fails('norm 99999dp', 'E102:')
   call assert_fails('norm 99999do', 'E102:')
+  call assert_fails('diffput non_existing_buffer', 'E94:')
+  call assert_fails('diffget non_existing_buffer', 'E94:')
 
   " dp and do with valid buffer number.
   call assert_equal('one', getline('.'))
   exe 'norm ' . bn1 . 'do'
   call assert_equal('10', getline('.'))
   21
-  exe 'norm ' . bn1 . 'dp'
-  wincmd w
-  21
   call assert_equal('two', getline('.'))
+  diffget one
+  call assert_equal('20', getline('.'))
 
-  " dp and do with buffer number which is not in diff mode.
-  new
-  let bn3=bufnr('%')
+  31
+  exe 'norm ' . bn1 . 'dp'
+  41
+  diffput one
   wincmd w
   31
+  call assert_equal('three', getline('.'))
+  41
+  call assert_equal('four', getline('.'))
+
+  " dp and do with buffer number which is not in diff mode.
+  new not_in_diff_mode
+  let bn3=bufnr('%')
+  wincmd w
+  51
   call assert_fails('exe "norm" . bn3 . "dp"', 'E103:')
   call assert_fails('exe "norm" . bn3 . "do"', 'E103:')
+  call assert_fails('diffput not_in_diff_mode', 'E94:')
+  call assert_fails('diffget not_in_diff_mode', 'E94:')
 
   windo diffoff
   %bwipe!
