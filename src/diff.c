@@ -1243,8 +1243,11 @@ ex_diffoff(exarg_T *eap)
 		if (!wp->w_p_wrap)
 		    wp->w_p_wrap = wp->w_p_wrap_save;
 #ifdef FEAT_FOLDING
-		free_string_option(wp->w_p_fdm);
-		wp->w_p_fdm = vim_strsave(wp->w_p_fdm_save);
+		if (*wp->w_p_fdm_save)
+		{
+		    free_string_option(wp->w_p_fdm);
+		    wp->w_p_fdm = vim_strsave(wp->w_p_fdm_save);
+		}
 
 		if (wp->w_p_fdc == diff_foldcolumn)
 		    wp->w_p_fdc = wp->w_p_fdc_save;
