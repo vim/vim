@@ -1244,7 +1244,7 @@ ex_diffoff(exarg_T *eap)
 		    wp->w_p_wrap = wp->w_p_wrap_save;
 #ifdef FEAT_FOLDING
 		free_string_option(wp->w_p_fdm);
-		wp->w_p_fdm = wp->w_p_fdm_savevim_strsave(
+		wp->w_p_fdm = vim_strsave(
 		    *wp->w_p_fdm_save ? wp->w_p_fdm_save : (char_u*)"manual");
 
 		if (wp->w_p_fdc == diff_foldcolumn)
