@@ -919,7 +919,7 @@ restofline:
 	    }
 	    if (fmt_ptr->flags == '+' && !qi->qf_multiscan)	/* %+ */
 	    {
-		if (linelen > fields->errmsglen)
+		if (linelen >= fields->errmsglen)
 		{
 		    /* linelen + null terminator */
 		    if ((fields->errmsg = vim_realloc(fields->errmsg,
@@ -934,7 +934,7 @@ restofline:
 		if (regmatch.startp[i] == NULL || regmatch.endp[i] == NULL)
 		    continue;
 		len = (int)(regmatch.endp[i] - regmatch.startp[i]);
-		if (len > fields->errmsglen)
+		if (len >= fields->errmsglen)
 		{
 		    /* len + null terminator */
 		    if ((fields->errmsg = vim_realloc(fields->errmsg, len + 1))
@@ -1017,7 +1017,7 @@ restofline:
 	fields->namebuf[0] = NUL;	/* no match found, remove file name */
 	fields->lnum = 0;			/* don't jump to this line */
 	fields->valid = FALSE;
-	if (linelen > fields->errmsglen)
+	if (linelen >= fields->errmsglen)
 	{
 	    /* linelen + null terminator */
 	    if ((fields->errmsg = vim_realloc(fields->errmsg,
