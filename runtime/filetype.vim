@@ -2765,9 +2765,10 @@ au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
 au BufNewFile,BufRead *.txt,*.text,README	setf text
 
 
-" Use the filetype detect plugins.  They may overrule any of the previously
-" detected filetypes.
+" Use the filetype detect plugins, from normal location and then pack
+" directories.  They may overrule any of the previously detected filetypes.
 runtime! ftdetect/*.vim
+runtime! START ftdetect/*.vim
 
 " NOTE: The above command could have ended the filetypedetect autocmd group
 " and started another one. Let's make sure it has ended to get to a consistent
