@@ -148,7 +148,7 @@ MINOR = 0
 #           xxd/xxd.exe to xxdw32.exe
 #           vim.pdb to vimw32.pdb
 #           install.exe to installw32.exe
-#           uninstal.exe to uninstalw32.exe
+#           uninstall.exe to uninstallw32.exe
 # Win32 GUI version build:
 # - > cd src
 #   > nmake -f Make_mvc.mak GUI=yes
@@ -159,7 +159,7 @@ MINOR = 0
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
 # - Move gvim.pdb to here.
 # - Copy "GvimExt/gvimext.dll" to here.
-# - Delete vimrun.exe, install.exe and uninstal.exe.
+# - Delete vimrun.exe, install.exe and uninstall.exe.
 # Win32 GUI version with OLE, PERL, Ruby, TCL, PYTHON and dynamic IME:
 # - Install the interfaces you want, see src/INSTALLpc.txt
 # - Build:
@@ -172,7 +172,7 @@ MINOR = 0
 #   - check the output.
 # - Rename "gvim.exe" to "gvim_ole.exe".
 # - Rename gvim.pdb to "gvim_ole.pdb".
-# - Delete install.exe and uninstal.exe.
+# - Delete install.exe and uninstall.exe.
 # Create the archives:
 # - Copy all the "*.exe" files to where this Makefile is.
 # - Copy all the "*.pdb" files to where this Makefile is.
@@ -181,7 +181,7 @@ MINOR = 0
 # NSIS self installing exe:
 # - To get NSIS see http://nsis.sourceforge.net
 # - Make sure gvim_ole.exe, vimw32.exe, installw32.exe,
-#   uninstalw32.exe, teew32.exe and xxdw32.exe have been build as mentioned
+#   uninstallw32.exe, teew32.exe and xxdw32.exe have been build as mentioned
 #   above.
 # - copy these files (get them from a binary archive or build them):
 #	gvimext.dll in src/GvimExt
@@ -495,7 +495,7 @@ dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp vimrun.exe dist/vim/$(VIMRTDIR)/vimrun.exe
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
-	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
+	cp uninstallw32.exe dist/vim/$(VIMRTDIR)/uninstall.exe
 	cp gvimext.dll dist/vim/$(VIMRTDIR)/gvimext.dll
 	cd dist && zip -9 -rD -z gvim$(VERSION).zip vim <$(COMMENT_GVIM)
 	cp gvim.pdb dist/gvim$(VERSION).pdb
@@ -513,7 +513,7 @@ dosbin_w32: dist no_title.vim dist/$(COMMENT_W32)
 	cp teew32.exe dist/vim/$(VIMRTDIR)/tee.exe
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
-	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
+	cp uninstallw32.exe dist/vim/$(VIMRTDIR)/uninstall.exe
 	cd dist && zip -9 -rD -z vim$(VERSION)w32.zip vim <$(COMMENT_W32)
 	cp vimw32.pdb dist/vim$(VERSION)w32.pdb
 
@@ -531,7 +531,7 @@ dosbin_ole: dist no_title.vim dist/$(COMMENT_OLE)
 	cp xxdw32.exe dist/vim/$(VIMRTDIR)/xxd.exe
 	cp vimrun.exe dist/vim/$(VIMRTDIR)/vimrun.exe
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
-	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
+	cp uninstallw32.exe dist/vim/$(VIMRTDIR)/uninstall.exe
 	cp gvimext.dll dist/vim/$(VIMRTDIR)/gvimext.dll
 	cp README_ole.txt dist/vim/$(VIMRTDIR)
 	cp src/VisVim/VisVim.dll dist/vim/$(VIMRTDIR)/VisVim.dll

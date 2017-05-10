@@ -1485,7 +1485,7 @@ MS-Windows install program: (Jon Merz)
   created in a directory in $PATH.  Fewer choices to be made.
 - Detect already installed Vim versions and offer to uninstall them first.
 
-Improved the MS-Windows uninstal program.  It now also deletes the entries in
+Improved the MS-Windows uninstall program.  It now also deletes the entries in
 the Start menu, icons from the desktop and the created batch files. (Jon Merz)
 Also made it possible to delete only some of these.  Also unregister gvim for
 OLE.
@@ -2163,7 +2163,7 @@ Updated the Borland C version 5 Makefile: (Dan Sharp)
 - Fixed the Perl build
 - Added python and tcl builds
 - Added dynamic perl and dynamic python builds
-- Added uninstal.exe build
+- Added uninstall.exe build
 - Use "yes" and "no" for the options, like in Make_mvc.mak.
 
 Win32: Merged Make_gvc.mak and Make_ovc.mak into one file: Make_ivc.mak.  It's
@@ -6103,7 +6103,7 @@ New tutor translations:
 	Slovak (Lubos Celko)
 	Greek (Christos Kontas)
 	German (Joachim Hofmann)
-	Norwegian (Øyvind Holm)
+	Norwegian (ï¿½yvind Holm)
 
 New filetype plugins:
 	Occam (Mario Schweigler)
@@ -6121,13 +6121,13 @@ New compiler plugins:
 	Modelsim vcom (Paul Baleme)
 
 New menu translations:
-	Brazilian (José de Paula)
+	Brazilian (Josï¿½ de Paula)
 	British (Mike Williams)
 	Korean in UTF-8. (Nam SungHyun)
-	Norwegian (Øyvind Holm)
+	Norwegian (ï¿½yvind Holm)
 	Serbian (Aleksandar Jelenak)
 
-New message translation for Norwegian. (Øyvind Holm)
+New message translation for Norwegian. (ï¿½yvind Holm)
 
 New color scheme:
 	desert (Hans Fugal)
@@ -6367,7 +6367,7 @@ was not like what other applications do.  (Walter Briscoe)
 Test32 sometimes didn't work, because test11.out was written as TEST11.OUT.
 
 Avoid pointer conversions warnings for Borland C 5.5 in dosinst.c and
-uninstal.c.
+uninstall.c.
 
 More improvements for Make_bc3.mak file. (Walter Briscoe)
 
@@ -10066,7 +10066,7 @@ Files:	    src/os_unix.c
 
 Patch 6.2.019 (lang)
 Problem:    Loading the Portuguese menu causes an error message.
-Solution:   Join two lines.  (Jose Pedro Oliveira, José de Paula)
+Solution:   Join two lines.  (Jose Pedro Oliveira, Josï¿½ de Paula)
 Files:	    runtime/lang/menu_pt_br.vim
 
 Patch 6.2.020
@@ -12418,7 +12418,7 @@ Files:	    src/message.c
 
 Patch 6.2.376
 Problem:    Win32: Ruby interface cannot be dynamically linked with Ruby 1.6.
-Solution:   Add #ifdefs around use of rb_w32_snprintf().  (Benoît Cerrina)
+Solution:   Add #ifdefs around use of rb_w32_snprintf().  (Benoï¿½t Cerrina)
 Files:	    src/if_ruby.c
 
 Patch 6.2.377 (after 6.2.372)
@@ -13413,7 +13413,7 @@ Solution:   Force a reboot if necessary. (Alejandro Lopez-Valencia)  Also use
 	    "CSIDL_COMMON_*" instead of "CSIDL_*" when possible.
 	    Do not specify a working directory in the links.
 	    Add Vim to the "Open With..." menu. (Giuseppe Bilotta)
-Files:	    nsis/gvim.nsi, src/dosinst.c, src/dosinst.h, src/uninstal.c
+Files:	    nsis/gvim.nsi, src/dosinst.c, src/dosinst.h, src/uninstall.c
 
 Patch 6.2.525
 Problem:    When the history contains a very long line ":history" causes a
@@ -14320,7 +14320,7 @@ Files:	    src/edit.c
 Patch 6.3.061
 Problem:    When editing a utf-8 file in an utf-8 xterm and there is a
 	    multi-byte character in the last column, displaying is messed up.
-	    (Joël Rio)
+	    (Joï¿½l Rio)
 Solution:   Check for a multi-byte character, not a multi-column character.
 Files:	    src/screen.c
 

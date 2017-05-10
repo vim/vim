@@ -206,7 +206,7 @@ LINK32_FLAGS=$(LINK32_FLAGS) libcd.lib /subsystem:console /debug /profile /pdb:.
 
 !ENDIF
 
-ALL : .\$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvimext.dll
+ALL : .\$(VIM).exe vimrun.exe install.exe uninstall.exe xxd/xxd.exe GvimExt/gvimext.dll
 
 LINK32_OBJS= \
 	$(EXTRAS) \
@@ -292,8 +292,8 @@ CLEAN :
 	-@if exist Make_ivc.plg erase Make_ivc.plg
 	-@if exist dosinst.obj erase dosinst.obj
 	-@if exist install.exe erase install.exe
-	-@if exist uninstal.exe erase uninstal.exe
-	-@if exist uninstal.obj erase uninstal.obj
+	-@if exist uninstall.exe erase uninstall.exe
+	-@if exist uninstall.obj erase uninstall.obj
 	-@if exist vimrun.exe erase vimrun.exe
 	-@if exist vimrun.obj erase vimrun.obj
 
@@ -301,8 +301,8 @@ CLEAN :
 install.exe: dosinst.c
 	$(CPP) /Fe$@ /nologo /W3 -DNDEBUG -DWIN32 dosinst.c kernel32.lib shell32.lib user32.lib ole32.lib advapi32.lib uuid.lib
 
-uninstal.exe: uninstal.c
-	$(CPP) /nologo /W3 -DNDEBUG -DWIN32 uninstal.c shell32.lib advapi32.lib
+uninstall.exe: uninstall.c
+	$(CPP) /nologo /W3 -DNDEBUG -DWIN32 uninstall.c shell32.lib advapi32.lib
 
 vimrun.exe: vimrun.c
 	$(CPP) /nologo /W3 -DNDEBUG vimrun.c

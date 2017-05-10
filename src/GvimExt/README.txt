@@ -11,7 +11,7 @@ registry entries.
 
 In special situations you might want to make changes by hand.  Check these
 items:
-- The gvimext.dll, gvim.exe and uninstal.exe either need to be in the search
+- The gvimext.dll, gvim.exe and uninstall.exe either need to be in the search
   path, or you have to set the full path in the registry entries.  You could
   move the gvimext.dll to the "windows\system" or "windows\system32"
   directory, where the other DLL files are.
@@ -32,7 +32,7 @@ Vim will find them (also the translated menu items are there).
 UNINSTALLATION
 
 To uninstall the "Edit with Vim" popup menu entry, it is recommended to use
-the "uninstal.exe" program.
+the "uninstall.exe" program.
 
 In special situations you might want to uninstall by hand:
 - Open the registry by running regedit.exe.

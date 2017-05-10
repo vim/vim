@@ -14,7 +14,7 @@ To build the installable .exe:
 	gvim.exe (the OLE version),
 	vimrun.exe,
 	install.exe,
-	uninstal.exe,
+	uninstall.exe,
 	xxd/xxd.exe,
 
 3.  Go to the GvimExt directory and build gvimext.dll (or get it from a binary

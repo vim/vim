@@ -751,7 +751,7 @@ correct directory structure.
   Move the "vim80" subdirectory into the subdirectory where you want Vim
   to be installed.  Typically, this subdirectory will be named "vim".
   If you already have a "vim80" subdirectory in "vim", delete it first
-  by running its uninstal.exe program.
+  by running its uninstall.exe program.
 
   D.  Install Vim
   ---------------

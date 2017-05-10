@@ -2023,7 +2023,7 @@ argument list or opening each file in a separate tab.
 Windows installer: licence text should not use indent, causes bad word wrap.
 (Benjamin Fritz, 2010 Aug 16)
 
-Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
+Dos uninstall may delete vim.bat from the wrong directory (e.g., when someone
 makes his own wrapper).  Add a magic string with the version number to the
 .bat file and check for it in the uninstaller.  E.g.
           # uninstall key: vim7.3*
@@ -3295,7 +3295,7 @@ User Friendlier:
     links, so that command line arguments are passed on unmodified? (Walter
     Briscoe)
 8   Windows install: Be able to associate Vim with a selection of file types?
-8   Windows uninstall: Have uninstal.c delete the vimfiles directories that
+8   Windows uninstall: Have uninstall.c delete the vimfiles directories that
     dosinst.c creates.  List the contents of the directory (recursively) if
     the user asks for it.  Requires an implementation of "rm -rf".
 8   Remember the name of the vimrc file that was used (~/.vimrc, $VIM/_vimrc,

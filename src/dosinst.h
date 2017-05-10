@@ -7,7 +7,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 /*
- * dosinst.h: Common code for dosinst.c and uninstal.c
+ * dosinst.h: Common code for dosinst.c and uninstall.c
  */
 
 /* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
@@ -406,7 +406,7 @@ char *(icon_link_names[ICON_COUNT]) =
 	 "gVim Easy " VIM_VERSION_SHORT ".lnk",
 	 "gVim Read only " VIM_VERSION_SHORT ".lnk"};
 
-/* This is only used for dosinst.c when WIN3264 is defined and for uninstal.c
+/* This is only used for dosinst.c when WIN3264 is defined and for uninstall.c
  * when not being able to directly access registry entries. */
 #if (defined(DOSINST) && defined(WIN3264)) \
 	|| (!defined(DOSINST) && !defined(WIN3264))
