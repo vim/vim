@@ -2470,6 +2470,7 @@ out_char(unsigned c)
 }
 
 static void out_char_nf(unsigned);
+static void out_char_cf(unsigned);
 
 /*
  * out_char_nf(c): like out_char(), but don't flush when p_wd is set
@@ -2486,6 +2487,17 @@ out_char_nf(unsigned c)
 
     if (out_pos >= OUT_SIZE)
 	out_flush();
+}
+
+/*
+ * out_char_cf(c): like out_char(), but flush constantly
+ */
+    static void
+out_char_cf(unsigned c)
+{
+    out_char_to_buf(c);
+
+    out_flush();
 }
 
 #if defined(FEAT_TITLE) || defined(FEAT_MOUSE_TTY) || defined(FEAT_GUI) \
@@ -2512,6 +2524,34 @@ out_str_nf(char_u *s)
 	out_flush();
 }
 #endif
+
+/*
+ * A constantly-flushing out_str, mainly for visualbell.
+ * Note: When use this, terminal strings might be split up.
+ */
+    void
+out_str_cf(char_u *s)
+{
+    if (s != NULL && *s)
+    {
+#ifdef FEAT_GUI
+	/* Don't use tputs() when GUI is used, ncurses crashes. */
+	if (gui.in_use)
+	{
+	    out_str_nf(s);
+	    return;
+	}
+#endif
+	if (out_pos >= OUT_SIZE)
+	    out_flush();
+#ifdef HAVE_TGETENT
+	tputs((char *)s, 1, TPUTSFUNCAST out_char_cf);
+#else
+	while (*s)
+	    out_char_cf(*s++);
+#endif
+    }
+}
 
 /*
  * out_str(s): Put a character string a byte at a time into the output buffer.

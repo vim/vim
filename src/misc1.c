@@ -3692,7 +3692,7 @@ vim_beep(
 		    && !(gui.in_use && gui.starting)
 #endif
 		    )
-		out_str(T_VB);
+		out_str_cf(T_VB);
 	    else
 		out_char(BELL);
 	}
