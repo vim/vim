@@ -242,7 +242,7 @@ Examples:
 	In LaTeX, since "%" is used as the comment character, you can >
 		:let b:match_skip = 'r:%'
 <	Unfortunately, this will skip anything after "\%", an escaped "%".  To
-	allow for this, and also "\\%" (an excaped backslash followed by the
+	allow for this, and also "\\%" (an escaped backslash followed by the
 	comment character) you can >
 		:let b:match_skip = 'r:\(^\|[^\\]\)\(\\\\\)*%'
 <
