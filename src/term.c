@@ -2470,7 +2470,6 @@ out_char(unsigned c)
 }
 
 static void out_char_nf(unsigned);
-static void out_char_cf(unsigned);
 
 /*
  * out_char_nf(c): like out_char(), but don't flush when p_wd is set
@@ -2487,17 +2486,6 @@ out_char_nf(unsigned c)
 
     if (out_pos >= OUT_SIZE)
 	out_flush();
-}
-
-/*
- * out_char_cf(c): like out_char(), but flush constantly
- */
-    static void
-out_char_cf(unsigned c)
-{
-    out_char_to_buf(c);
-
-    out_flush();
 }
 
 #if defined(FEAT_TITLE) || defined(FEAT_MOUSE_TTY) || defined(FEAT_GUI) \
@@ -2526,14 +2514,17 @@ out_str_nf(char_u *s)
 #endif
 
 /*
- * A constantly-flushing out_str, mainly for visualbell.
- * Note: When use this, terminal strings might be split up.
+ * A conditional-flushing out_str, mainly for visualbell.
+ * Note: Only for terminal strings.
+ * When use this, terminal strings might be split up.
  */
     void
 out_str_cf(char_u *s)
 {
     if (s != NULL && *s)
     {
+	char_u *p;
+
 #ifdef FEAT_GUI
 	/* Don't use tputs() when GUI is used, ncurses crashes. */
 	if (gui.in_use)
@@ -2542,14 +2533,32 @@ out_str_cf(char_u *s)
 	    return;
 	}
 #endif
-	if (out_pos >= OUT_SIZE)
+	if (out_pos > OUT_SIZE - 20)
 	    out_flush();
 #ifdef HAVE_TGETENT
-	tputs((char *)s, 1, TPUTSFUNCAST out_char_cf);
+	for (p = s; *s; ++s)
+	{
+	    /* flush just before delay command */
+	    if (*s == '$' && *(s + 1) == '<')
+	    {
+		char_u save_c = *s;
+
+		*s = NUL;
+		tputs((char *)p, 1, TPUTSFUNCAST out_char_nf);
+		*s = save_c;
+		p = s;
+		out_flush();
+	    }
+	}
+	tputs((char *)p, 1, TPUTSFUNCAST out_char_nf);
 #else
 	while (*s)
-	    out_char_cf(*s++);
+	    out_char_nf(*s++);
 #endif
+
+	/* For testing we write one string at a time. */
+	if (p_wd)
+	    out_flush();
     }
 }
 
