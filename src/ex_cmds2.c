@@ -1209,14 +1209,17 @@ check_due_timer(void)
 	this_due = GET_TIMEDIFF(timer, now);
 	if (this_due <= 1)
 	{
+	    int save_timer_busy = timer_busy;
 	    int save_vgetc_busy = vgetc_busy;
 
+	    timer_busy = timer_busy > 0 || vgetc_busy > 0;
 	    vgetc_busy = 0;
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
 	    timer_next = timer->tr_next;
 	    did_one = TRUE;
+	    timer_busy = save_timer_busy;
 	    vgetc_busy = save_vgetc_busy;
 
 	    /* Only fire the timer again if it repeats and stop_timer() wasn't
