@@ -5323,6 +5323,10 @@ win_line(
 #ifdef FEAT_SEARCH_EXTRA
 			/* highlight 'hlsearch' match at end of line */
 			|| (prevcol_hl_flag == TRUE
+# if defined(FEAT_SYN_HL)
+			    && !(wp->w_p_cul && lnum == wp->w_cursor.lnum
+				    && !(wp == curwin && VIsual_active))
+# endif
 # if defined(LINE_ATTR)
 			    && did_line_attr <= 1
 # endif
