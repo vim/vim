@@ -1,0 +1,43 @@
+name: vim # you probably want to 'snapcraft register <name>'
+version: '8.0.0599' # just for humans, typically '1.2+git' or '1.3.2'
+summary: Modal text editor.
+description: |
+  Vim is a greatly improved version of the good old UNIX editor Vi. Many new features have been added: multi-level undo, syntax highlighting, command line history, on-line help, spell checking, filename completion, block operations, script language, etc. There is also a Graphical User Interface (GUI) available. Still, Vi compatibility is maintained, those who have Vi "in the fingers" will feel at home. See runtime/doc/vi_diff.txt for differences with Vi.
+
+  This editor is very useful for editing programs and other plain text files. All commands are given with normal keyboard characters, so those who can type with ten fingers can work very fast. Additionally, function keys can be mapped to commands by the user, and the mouse can be used.
+
+  Vim runs under MS-Windows (NT, 2000, XP, Vista, 7, 8, 10), Macintosh, VMS and almost all flavours of UNIX. Porting to other systems should not be very difficult. Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me, Amiga DOS, Atari MiNT, BeOS, RISC OS and OS/2. These are no longer maintained.
+
+grade: stable # must be 'stable' to release into candidate/stable channels
+confinement: classic # use 'strict' once you have the right plugs and slots
+
+parts:
+  vim:
+    # See 'snapcraft plugins'
+    plugin: make
+    source: ./
+
+apps:
+  vim:
+    command: usr/local/bin/vim
+  
+  ex:
+    command: usr/local/bin/ex
+
+  rvim:
+    command: usr/local/bin/rvim
+
+  vimtutor:
+    command: usr/local/bin/vimtutor
+
+  rview:
+    command: usr/local/bin/rview
+
+  view:
+    command: usr/local/bin/view
+
+  vimdiff:
+    command: usr/local/bin/vimdiff
+
+  xxd:
+    command: usr/local/bin/xxd
