@@ -7850,7 +7850,7 @@ do_highlight(
 			    {
 				set_string_option_direct((char_u *)"bg", -1,
 				    i ? (char_u *)"dark" : (char_u *)"light",
-				    OPT_FREE, SID_NONE);
+				    OPT_FREE, 0);
 				reset_option_was_set((char_u *)"bg");
 			    }
 			}
