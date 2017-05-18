@@ -1,6 +1,8 @@
 " Test for :match, :2match, :3match, clearmatches(), getmatches(), matchadd(),
 " matchaddpos(), matcharg(), matchdelete(), and setmatches().
 
+source view_util.vim
+
 function Test_match()
   highlight MyGroup1 term=bold ctermbg=red guibg=red
   highlight MyGroup2 term=italic ctermbg=green guibg=green
@@ -217,6 +219,92 @@ func Test_matchaddpos_using_negative_priority()
 
   nohl
   set hlsearch&
+endfunc
+
+func Test_matchadd_eol_with_cursorline_1()
+  call NewWindow('topleft 5', 20)
+  call setline(1, 'abcd')
+  call matchadd('Search', '\n')
+
+  let expected = "abcd      "
+  let actual = ScreenLines(1, 10)[0]
+  call assert_equal(expected, actual)
+
+  " expected:
+  " 'abcd      '
+  "  ^^^^ ^^^^^   no highlight
+  "      ^        'Search' highlight
+  let attrs0 = ScreenAttrs(1, 10)[0]
+  call assert_equal(repeat([attrs0[0]], 4), attrs0[0:3])
+  call assert_equal(repeat([attrs0[0]], 5), attrs0[5:9])
+  call assert_notequal(attrs0[0], attrs0[4])
+
+  setlocal cursorline
+  redraw!
+
+  let actual = ScreenLines(1, 10)[0]
+  call assert_equal(expected, actual)
+
+  " expected:
+  " 'abcd      '
+  "  ^^^^         underline
+  "      ^^^^^^   'Search' highlight with underline
+  let attrs = ScreenAttrs(1, 10)[0]
+  call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
+  call assert_equal(repeat([attrs[4]], 6), attrs[4:9])
+  call assert_notequal(attrs[0], attrs[4])
+  call assert_notequal(attrs0[0], attrs[0])
+  call assert_notequal(attrs0[4], attrs[4])
+
+  call CloseWindow()
+endfunc
+
+func Test_matchadd_eol_with_cursorline_2()
+  call NewWindow('topleft 5', 5)
+  call setline(1, 'abcd')
+  call matchadd('Search', '\n')
+
+  let expected = "abcd |abcd     "
+  let actual = ScreenLines(1, 15)[0]
+  call assert_equal(expected, actual)
+
+  " expected:
+  " 'abcd |abcd     '
+  "  ^^^^  ^^^^^^^^^   no highlight
+  "      ^             'Search' highlight
+  "       ^            'VertSplit' highlight
+  let attrs0 = ScreenAttrs(1, 15)[0]
+  call assert_equal(repeat([attrs0[0]], 4), attrs0[0:3])
+  call assert_equal(repeat([attrs0[0]], 9), attrs0[6:14])
+  call assert_notequal(attrs0[0], attrs0[4])
+  call assert_notequal(attrs0[0], attrs0[5])
+  call assert_notequal(attrs0[4], attrs0[5])
+
+  setlocal cursorline
+  redraw!
+
+  let actual = ScreenLines(1, 15)[0]
+  call assert_equal(expected, actual)
+
+  " expected:
+  " 'abcd |abcd     '
+  "  ^^^^              underline
+  "      ^             'Search' highlight with underline
+  "       ^            'VertSplit' highlight
+  "        ^^^^^^^^^   no highlight
+  let attrs = ScreenAttrs(1, 15)[0]
+  call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
+  call assert_equal(repeat([attrs[6]], 9), attrs[6:14])
+  call assert_equal(attrs0[5:14], attrs[5:14])
+  call assert_notequal(attrs[0], attrs[4])
+  call assert_notequal(attrs[0], attrs[5])
+  call assert_notequal(attrs[0], attrs[6])
+  call assert_notequal(attrs[4], attrs[5])
+  call assert_notequal(attrs[5], attrs[6])
+  call assert_notequal(attrs0[0], attrs[0])
+  call assert_notequal(attrs0[4], attrs[4])
+
+  call CloseWindow()
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
