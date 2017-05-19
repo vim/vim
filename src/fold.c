@@ -1894,7 +1894,7 @@ get_foldtext(
 	/* a previous error should not abort evaluating 'foldexpr' */
 	did_emsg = FALSE;
 
-    if (*wp->w_p_fdt != NUL)
+    if (wp && (*wp->w_p_fdt != NUL))
     {
 	char_u	dashes[MAX_LEVEL + 2];
 	win_T	*save_curwin;
