@@ -6250,9 +6250,9 @@ nv_gotofile(cmdarg_T *cap)
 	if (curbufIsChanged() && curbuf->b_nwindows <= 1 && !P_HID(curbuf))
 	    (void)autowrite(curbuf, FALSE);
 	setpcmark();
-	(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LAST,
-				       P_HID(curbuf) ? ECMD_HIDE : 0, curwin);
-	if (cap->nchar == 'F' && lnum >= 0)
+	if (do_ecmd(0, ptr, NULL, NULL, ECMD_LAST,
+				   P_HID(curbuf) ? ECMD_HIDE : 0, curwin) == OK
+		&& cap->nchar == 'F' && lnum >= 0)
 	{
 	    curwin->w_cursor.lnum = lnum;
 	    check_cursor_lnum();
