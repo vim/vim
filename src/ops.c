@@ -7124,6 +7124,8 @@ clear_oparg(oparg_T *oap)
 
 static varnumber_T line_count_info(char_u *line, varnumber_T *wc, varnumber_T *cc, varnumber_T limit, int eol_size);
 
+static int word_detect_utf8(char_u i);
+
 /*
  *  Count the number of bytes, characters and "words" in a line.
  *
@@ -7153,16 +7155,28 @@ line_count_info(
 
     for (i = 0; i < limit && line[i] != NUL; )
     {
+		int word_type = word_detect_utf8(line[i]);
 	if (is_word)
 	{
-	    if (vim_isspace(line[i]))
+	    if (word_type == 0)
 	    {
 		words++;
 		is_word = 0;
-	    }
+	    }else if(is_word == 1){ //english
+			if(word_type != 1){
+				is_word = 2;
+				words++;
+			}
+		}else{ //utf-8
+			if(word_type != 3){
+				is_word = word_type;
+				words++;
+			}
+		}
 	}
-	else if (!vim_isspace(line[i]))
-	    is_word = 1;
+	else if (word_type) {
+		is_word = word_type==1 ? 1 : 2;
+	}
 	++chars;
 #ifdef FEAT_MBYTE
 	i += (*mb_ptr2len)(line + i);
@@ -7183,6 +7197,22 @@ line_count_info(
     }
     *cc += chars;
     return i;
+}
+
+/*
+ * 10xxxxxx = 2nd, 3rd, or 4th byte of multi-byte character
+ * 110xxxxx = 1st byte of 2-byte character
+ * 1110xxxx = 1st byte of 3-byte character
+ * 11110xxx = 1st byte of 4-byte character
+ * */
+static int word_detect_utf8(char_u x) {
+	if((x & 0xe0) == 0xc0 || (x & 0xf0) == 0xe0 || (x & 0xf4) == 0xf0)
+		return 2;
+	if((x & 0xc0) == 0x80)
+		return 3;
+	if((x >= 9 && x <= 13) || x == ' ')
+		return 0;
+	return 1;
 }
 
 /*
