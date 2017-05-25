@@ -342,6 +342,7 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   " non-POSIX signals
   syn keyword cConstant SIGWINCH SIGINFO
   " Add POSIX errors as well
+  " http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/errno.h.html
   syn keyword cConstant E2BIG EACCES EAGAIN EBADF EBADMSG EBUSY
   syn keyword cConstant ECANCELED ECHILD EDEADLK EDOM EEXIST EFAULT
   syn keyword cConstant EFBIG EILSEQ EINPROGRESS EINTR EINVAL EIO EISDIR
@@ -349,6 +350,14 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   syn keyword cConstant ENOENT ENOEXEC ENOLCK ENOMEM ENOSPC ENOSYS
   syn keyword cConstant ENOTDIR ENOTEMPTY ENOTSUP ENOTTY ENXIO EPERM
   syn keyword cConstant EPIPE ERANGE EROFS ESPIPE ESRCH ETIMEDOUT EXDEV
+  syn keyword cConstant EADDRINUSE EADDRNOTAVAIL EAFNOSUPPORT EALREADY
+  syn keyword cConstant ECONNABORTED ECONNREFUSED ECONNRESET EDESTADDRREQ
+  syn keyword cConstant EDQUOT EHOSTUNREACH EIDRM EISCONN ELOOP EMULTIHOP
+  syn keyword cConstant ENETDOWN ENETRESET ENETUNREACH ENOBUFS ENODATA
+  syn keyword cConstant ENOLINK ENOMSG ENOPROTOOPT ENOSR ENOSTR ENOTCONN
+  syn keyword cConstant ENOTRECOVERABLE ENOTSOCK EOPNOTSUPP EOVERFLOW
+  syn keyword cConstant EOWNERDEAD EPROTO EPROTONOSUPPORT EPROTOTYPE
+  syn keyword cConstant ESTALE ETIME ETXTBSY EWOULDBLOCK
   " math.h
   syn keyword cConstant M_E M_LOG2E M_LOG10E M_LN2 M_LN10 M_PI M_PI_2 M_PI_4
   syn keyword cConstant M_1_PI M_2_PI M_2_SQRTPI M_SQRT2 M_SQRT1_2
