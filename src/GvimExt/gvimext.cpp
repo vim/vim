@@ -1025,6 +1025,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 {
     wchar_t	m_szFileUserClickedOn[BUFSIZE];
     wchar_t	*cmdStrW;
+    wchar_t	*cmdStrWtmp;
     size_t	cmdlen;
     size_t	len;
     UINT i;
@@ -1046,7 +1047,16 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	if (len > cmdlen)
 	{
 	    cmdlen = len + BUFSIZE;
-	    cmdStrW = (wchar_t *)realloc(cmdStrW, cmdlen * sizeof(wchar_t));
+	    cmdStrWtmp = (wchar_t *)realloc(cmdStrW, cmdlen * sizeof(wchar_t));
+	    if (cmdStrWtmp != NULL)
+	    {
+	        cmdStrW = cmdStrWtmp;
+	    }
+	    else
+	    {
+	    	free(cmdStrW);
+	    	cmdStrW = NULL;
+	    }
 	}
 	wcscat(cmdStrW, L" \"");
 	wcscat(cmdStrW, m_szFileUserClickedOn);
