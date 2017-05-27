@@ -1117,6 +1117,13 @@ restofline:
 }
 
 /*
+ * Looking up a buffer can be slow if there are many.  Remember the last one
+ * to make this a lot faster if there are multiple matches in the same file.
+ */
+static char_u *qf_last_bufname = NULL;
+static bufref_T  qf_last_bufref = {NULL, 0};
+
+/*
  * Read the errorfile "efile" into memory, line by line, building the error
  * list.
  * Alternative: when "efile" is NULL read errors from buffer "buf".
@@ -1150,6 +1157,8 @@ qf_init_ext(
     static char_u   *last_efm = NULL;
     int		    retval = -1;	/* default: return error flag */
     int		    status;
+
+    qf_last_bufname = NULL;
 
     vim_memset(&state, 0, sizeof(state));
     vim_memset(&fields, 0, sizeof(fields));
@@ -1658,13 +1667,6 @@ copy_loclist(win_T *from, win_T *to)
 
     to->w_llist->qf_curlist = qi->qf_curlist;	/* current list */
 }
-
-/*
- * Looking up a buffer can be slow if there are many.  Remember the last one
- * to make this a lot faster if there are multiple matches in the same file.
- */
-static char_u *qf_last_bufname = NULL;
-static bufref_T  qf_last_bufref = {NULL, 0};
 
 /*
  * Get buffer number for file "directory/fname".
