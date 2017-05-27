@@ -1146,7 +1146,6 @@ qf_init_ext(
     char_u	    *qf_title,
     char_u	    *enc)
 {
-    qf_last_bufname = NULL;
     qfstate_T	    state;
     qffields_T	    fields;
 #ifdef FEAT_WINDOWS
@@ -1158,6 +1157,8 @@ qf_init_ext(
     static char_u   *last_efm = NULL;
     int		    retval = -1;	/* default: return error flag */
     int		    status;
+
+    qf_last_bufname = NULL;
 
     vim_memset(&state, 0, sizeof(state));
     vim_memset(&fields, 0, sizeof(fields));
