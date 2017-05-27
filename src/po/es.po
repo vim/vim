@@ -5330,7 +5330,7 @@ msgstr "E663: Al final de la lista de cambios"
 
 #: normal.c:8734
 msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Escriba \":quit<intro>\" para salir de Vim"
+msgstr "Escriba \":quit|<intro>\" para salir de Vim"
 
 #: ops.c:293
 #, c-format
