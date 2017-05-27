@@ -1117,6 +1117,13 @@ restofline:
 }
 
 /*
+ * Looking up a buffer can be slow if there are many.  Remember the last one
+ * to make this a lot faster if there are multiple matches in the same file.
+ */
+static char_u *qf_last_bufname = NULL;
+static bufref_T  qf_last_bufref = {NULL, 0};
+
+/*
  * Read the errorfile "efile" into memory, line by line, building the error
  * list.
  * Alternative: when "efile" is NULL read errors from buffer "buf".
@@ -1139,6 +1146,7 @@ qf_init_ext(
     char_u	    *qf_title,
     char_u	    *enc)
 {
+    qf_last_bufname = NULL;
     qfstate_T	    state;
     qffields_T	    fields;
 #ifdef FEAT_WINDOWS
@@ -1658,13 +1666,6 @@ copy_loclist(win_T *from, win_T *to)
 
     to->w_llist->qf_curlist = qi->qf_curlist;	/* current list */
 }
-
-/*
- * Looking up a buffer can be slow if there are many.  Remember the last one
- * to make this a lot faster if there are multiple matches in the same file.
- */
-static char_u *qf_last_bufname = NULL;
-static bufref_T  qf_last_bufref = {NULL, 0};
 
 /*
  * Get buffer number for file "directory/fname".
