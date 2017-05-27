@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Apr 29
+*eval.txt*	For Vim version 8.0.  Last change: 2017 May 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10691,12 +10691,6 @@ as this example shows: >
 When the |+eval| feature is available the command is skipped because of the
 "while 0".  Without the |+eval| feature the "while 0" is an error, which is
 silently ignored, and the command is executed.
-
-The "<CR>" here is a real CR character, type CTRL-V Enter to get it.
-
-When the |+eval| feature is available the ":" is remapped to add a double
-quote, which has the effect of commenting-out the command.  Without the
-|+eval| feature the nnoremap command is skipped and the command is executed.
 
 ==============================================================================
 11. The sandbox					*eval-sandbox* *sandbox* *E48*
