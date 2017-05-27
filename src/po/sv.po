@@ -3932,7 +3932,7 @@ msgstr "E662: Vid början av ändringslista"
 msgid "E663: At end of changelist"
 msgstr "E663: Vid slutet av ändringslista"
 
-msgid "Type  :quit<Enter>  to exit Vim"
+msgid "Type  :quit  and press <Enter> to exit Vim"
 msgstr "skriv  :q<Enter>                för att avsluta Vim         "
 
 #, c-format

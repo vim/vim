@@ -3733,7 +3733,7 @@ msgstr "E662: Na zaèiatku zoznamu zmien"
 msgid "E663: At end of changelist"
 msgstr "E663: Na konci zoznamu zmien"
 
-msgid "Type  :quit<Enter>  to exit Vim"
+msgid "Type  :quit  and press <Enter> to exit Vim"
 msgstr "Zadajte  :quit<Enter>  pre ukonèenie programu Vim"
 
 #, c-format
