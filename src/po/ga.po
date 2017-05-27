@@ -4123,7 +4123,7 @@ msgid "E663: At end of changelist"
 msgstr "E663: Ag deireadh liosta na n-athruithe"
 
 msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Clóscríobh  :quit|<Enter>  chun Vim a scor"
+msgstr "Clóscríobh  :quit<Enter>  chun Vim a scor"
 
 # ouch - English -ed ?
 #, c-format

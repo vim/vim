@@ -4043,7 +4043,7 @@ msgid "E663: At end of changelist"
 msgstr "E663: Muutoslistan lopussa"
 
 msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Komento :quit|<Enter> lopettaa Vimin"
+msgstr "Komento :quit<Enter> lopettaa Vimin"
 
 #, c-format
 msgid "1 line %sed 1 time"

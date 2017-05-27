@@ -4117,7 +4117,7 @@ msgid "E663: At end of changelist"
 msgstr "E663: Ĉe fino de ŝanĝlisto"
 
 msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Tajpu \":quit|<Enenklavo>\" por eliri el Vim"
+msgstr "Tajpu \":quit<Enenklavo>\" por eliri el Vim"
 
 #, c-format
 msgid "1 line %sed 1 time"

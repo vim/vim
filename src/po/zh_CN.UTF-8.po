@@ -3858,7 +3858,7 @@ msgid "E663: At end of changelist"
 msgstr "E663: 已在改变列表的末尾处"
 
 msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "输入  :quit|<Enter>  退出 Vim"
+msgstr "输入  :quit<Enter>  退出 Vim"
 
 #, c-format
 msgid "1 line %sed 1 time"

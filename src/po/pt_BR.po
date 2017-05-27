@@ -3973,7 +3973,7 @@ msgid "E663: At end of changelist"
 msgstr "E663: No final da lista de modificações"
 
 msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Digite  :quit|<Enter>  para sair do Vim"
+msgstr "Digite  :quit<Enter>  para sair do Vim"
 
 #, c-format
 msgid "1 line %sed 1 time"
