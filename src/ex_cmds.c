@@ -3214,6 +3214,13 @@ do_write(exarg_T *eap)
 	retval = buf_write(curbuf, ffname, fname, eap->line1, eap->line2,
 				 eap, eap->append, eap->forceit, TRUE, FALSE);
 
+        /* Change directories (if necessary) when the 'acd' option is set.
+         * When running the write command on an unnamed buffer, for
+         * example, hooks such as enter_buffer() and close_buffer() are
+         * not called.
+         */
+        DO_AUTOCHDIR
+
 	/* After ":saveas fname" reset 'readonly'. */
 	if (eap->cmdidx == CMD_saveas)
 	{
