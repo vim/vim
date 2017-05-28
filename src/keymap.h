@@ -55,63 +55,64 @@
 #define KS_SPECIAL		254
 
 /*
- * KS_EXTRA is used for keys that have no termcap name
- *	K_SPECIAL   KS_EXTRA	KE_xxx
- */
-#define KS_EXTRA		253
-
-/*
  * KS_MODIFIER is used when a modifier is given for a (special) key
  *	K_SPECIAL   KS_MODIFIER	bitmask
  */
-#define KS_MODIFIER		252
+#define KS_MODIFIER		253
 
 /*
  * These are used for the GUI
  *	K_SPECIAL   KS_xxx	KE_FILLER
  */
-#define KS_MOUSE		251
-#define KS_MENU			250
-#define KS_VER_SCROLLBAR	249
-#define KS_HOR_SCROLLBAR	248
+#define KS_MOUSE		252
+#define KS_MENU			251
+#define KS_VER_SCROLLBAR	250
+#define KS_HOR_SCROLLBAR	249
 
 /*
  * These are used for DEC mouse
  */
-#define KS_NETTERM_MOUSE	247
-#define KS_DEC_MOUSE		246
+#define KS_NETTERM_MOUSE	248
+#define KS_DEC_MOUSE		247
 
 /*
  * Used for switching Select mode back on after a mapping or menu.
  */
-#define KS_SELECT		245
+#define KS_SELECT		246
 #define K_SELECT_STRING		(char_u *)"\200\365X"
 
 /*
  * Used for tearing off a menu.
  */
-#define KS_TEAROFF		244
+#define KS_TEAROFF		245
 
 /* Used for JSB term mouse. */
-#define KS_JSBTERM_MOUSE	243
+#define KS_JSBTERM_MOUSE	244
 
 /* Used a termcap entry that produces a normal character. */
-#define KS_KEY			242
+#define KS_KEY			243
 
 /* Used for the qnx pterm mouse. */
-#define KS_PTERM_MOUSE		241
+#define KS_PTERM_MOUSE		242
 
 /* Used for click in a tab pages label. */
-#define KS_TABLINE		240
+#define KS_TABLINE		241
 
 /* Used for menu in a tab pages line. */
-#define KS_TABMENU		239
+#define KS_TABMENU		240
 
 /* Used for the urxvt mouse. */
-#define KS_URXVT_MOUSE		238
+#define KS_URXVT_MOUSE		239
 
 /* Used for the sgr mouse. */
-#define KS_SGR_MOUSE		237
+#define KS_SGR_MOUSE		238
+
+/*
+ * KS_EXTRA is used for keys that have no termcap name
+ *	K_SPECIAL   KS_EXTRA	KE_xxx
+ */
+#define KS_EXTRA		237
+
 
 /*
  * Filler used after KS_SPECIAL and others
