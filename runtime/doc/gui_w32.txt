@@ -383,7 +383,7 @@ Note that a menu that starts with ']' will not be displayed.
 7. Command line arguments				*gui-w32-cmdargs*
 
 Analysis of a command line into parameters is not standardised in MS Windows.
-Gvim has to provide logic to analyse a command line.  This logic is likely to
+gvim has to provide logic to analyse a command line.  This logic is likely to
 be different from the default logic provided by a compilation system used to
 build vim.  The differences relate to unusual double quote (") usage.
 The arguments "C:\My Music\freude.txt" and "+/Sch\"iller" are handled in the
@@ -472,7 +472,7 @@ with the Intellimouse driver 2.2 and when "Universal Scrolling" is turned on.
 
 XPM support						*w32-xpm-support*
 
-Gvim can be build on MS-Windows with support for XPM files.  |+xpm_w32|
+gvim can be build on MS-Windows with support for XPM files.  |+xpm_w32|
 See the Make_mvc.mak file for instructions, search for XPM.
 
 To try out if XPM support works do this: >

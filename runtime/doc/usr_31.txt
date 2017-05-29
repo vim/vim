@@ -236,7 +236,7 @@ using the terminal for something else.  The "-f" argument is used here to run
 the GUI in the foreground.  You can also use ":gui -f".
 
 
-THE GVIM STARTUP FILE
+THE gvim STARTUP FILE
 
 When gvim starts, it reads the gvimrc file.  That's similar to the vimrc file
 used when starting Vim.  The gvimrc file can be used for settings and commands

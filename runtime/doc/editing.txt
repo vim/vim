@@ -1040,7 +1040,7 @@ if the system allows it (the directory must be writable).
 							*write-fail*
 If the writing of the new file fails, you have to be careful not to lose
 your changes AND the original file.  If there is no backup file and writing
-the new file failed, you have already lost the original file!  DON'T EXIT VIM
+the new file failed, you have already lost the original file!  DON'T EXIT Vim
 UNTIL YOU WRITE OUT THE FILE!  If a backup was made, it is put back in place
 of the original file (if possible).  If you exit Vim, and lose the changes
 you made, the original file will mostly still be there.  If putting back the
@@ -1455,7 +1455,7 @@ Do this before writing the file.  When reading an encrypted file it will be
 set automatically to the method used when that file was written.  You can
 change 'cryptmethod' before writing that file to change the method.
 
-To set the default method, used for new files, use this in your |vimrc| 
+To set the default method, used for new files, use this in your |vimrc|
 file: >
 	set cm=blowfish2
 Using "blowfish2" is highly recommended.  Only use another method if you

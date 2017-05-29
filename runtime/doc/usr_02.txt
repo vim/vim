@@ -52,7 +52,7 @@ are creating a new file.  The message information is temporary and other
 information overwrites it.
 
 
-THE VIM COMMAND
+THE Vim COMMAND
 
 The gvim command causes the editor to create a new window for editing.  If you
 use this command: >

@@ -297,7 +297,7 @@ using a bold Font, which would imply a certain color.  See |:highlight| and
 Use of $VIM						*$VIM-use*
 -----------
 
-Vim now uses the VIM environment variable to find all Vim system files.  This
+Vim now uses the Vim environment variable to find all Vim system files.  This
 includes the global vimrc, gvimrc, and menu.vim files and all on-line help
 and syntax files.  See |$VIM|.  Starting with version 5.4, |$VIMRUNTIME| can
 also be used.

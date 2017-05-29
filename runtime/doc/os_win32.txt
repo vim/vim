@@ -135,7 +135,7 @@ you will need to get a version older than that.
 6. Running under Windows 3.1				*win32-win3.1*
 
 					*win32s* *windows-3.1* *gui-w32s*
-There was a special version of Gvim that runs under Windows 3.1 and 3.11.
+There was a special version of gvim that runs under Windows 3.1 and 3.11.
 Support was removed in patch 7.4.1363.
 
 ==============================================================================
@@ -195,7 +195,7 @@ A. VisionFS can't handle certain dot (.) three letter extension file names.
    SCO declares this behavior required for backwards compatibility with 16bit
    DOS/Windows environments.  The two commands below demonstrate the behavior:
 >
-	echo Hello > file.bat~ 
+	echo Hello > file.bat~
 	dir > file.bat
 <
    The result is that the "dir" command updates the "file.bat~" file, instead
