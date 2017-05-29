@@ -5119,10 +5119,16 @@ do_set(
 			    saved_origval = vim_strsave(origval);
 #endif
 
+#ifdef FEAT_AUTOCMD
+			curbuf_lock++;
+#endif
 			/* Handle side effects, and set the global value for
 			 * ":set" on local options. */
 			errmsg = did_set_string_option(opt_idx, (char_u **)varp,
 				new_value_alloced, oldval, errbuf, opt_flags);
+#ifdef FEAT_AUTOCMD
+			curbuf_lock--;
+#endif
 
 			/* If error detected, print the error message. */
 			if (errmsg != NULL)
@@ -5946,9 +5952,15 @@ set_string_option(
 		)
 	    saved_oldval = vim_strsave(oldval);
 #endif
+#ifdef FEAT_AUTOCMD
+	curbuf_lock++;
+#endif
 	if ((r = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
 							   opt_flags)) == NULL)
 	    did_set_option(opt_idx, opt_flags, TRUE);
+#ifdef FEAT_AUTOCMD
+	curbuf_lock--;
+#endif
 
 	/* call autocommand after handling side effects */
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
