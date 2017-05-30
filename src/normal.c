@@ -4671,6 +4671,11 @@ nv_mousescroll(cmdarg_T *cap)
 # ifdef FEAT_WINDOWS
     curwin->w_redr_status = TRUE;
 
+#  ifdef FEAT_SCROLLBIND
+    if (curwin->w_p_scb)
+	do_check_scrollbind(TRUE);
+#  endif
+
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
 # endif
