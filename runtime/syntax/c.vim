@@ -86,7 +86,7 @@ if (s:ft ==# "c" && !exists("c_no_c11")) || (s:ft ==# "cpp" && !exists("cpp_no_c
   else
     syn region	cString		start=+\%(U\|u8\=\)"+ skip=+\\\\\|\\"+ end=+"+ contains=cSpecial,cFormat,@Spell extend
   endif
-  syn match	cCharacter	"[Uu]'[^\\]'"
+  syn match	cCharacter	"[Uu]'[^\\]\{1,4}'"
   syn match	cCharacter	"[Uu]'[^']*'" contains=cSpecial
   if exists("c_gnu")
     syn match	cSpecialError	"[Uu]'\\[^'\"?\\abefnrtv]'"
