@@ -2527,7 +2527,7 @@ fun! netrw#NetWrite(...) range
      let url= g:netrw_choice
      call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_http_put_cmd." ".s:ShellEscape(tmpfile,1)." ".s:ShellEscape(url,1) )
     elseif !exists("g:netrw_quiet")
-     call netrw#ErrorMsg(s:ERROR,"can't write to http using <".g:netrw_http_put_cmd".">".",16)
+     call netrw#ErrorMsg(s:ERROR,"can't write to http using <".g:netrw_http_put_cmd.">",16)
     endif
 
    ".........................................
@@ -10849,6 +10849,7 @@ fun! netrw#Access(ilist)
    endif
   elseif a:ilist == 1
    return s:netrwmftgt
+ endif
 endfun
 
 " ---------------------------------------------------------------------
