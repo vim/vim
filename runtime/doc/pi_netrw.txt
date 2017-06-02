@@ -2555,8 +2555,6 @@ your browsing preferences.  (see also: |netrw-settings|)
 				    editing.  It will also use the specified tab
 				    and window numbers to perform editing
 				    (see |clientserver|, |netrw-ctrl-r|)
-				This option does not affect |:Lexplore|
-				windows.
 
 				Related topics:
 				    |g:netrw_alto|	|g:netrw_altv|
