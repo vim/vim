@@ -10983,11 +10983,11 @@ fun! s:ComposePath(base,subdir)
     let ret = a:base.a:subdir
    endif
 
-  elseif a:subdir =~ '^\a:[/\\][^/\\]' && (has("win32") || has("win95") || has("win64") || has("win16"))
+  elseif a:subdir =~ '^\a:[/\\][^/\\]\=' && (has("win32") || has("win95") || has("win64") || has("win16"))
 "   call Decho("windows",'~'.expand("<slnum>"))
    let ret= a:subdir
 
-  elseif a:base =~ '^\a:[/\\][^/\\]' && (has("win32") || has("win95") || has("win64") || has("win16"))
+  elseif a:base =~ '^\a:[/\\][^/\\]\=' && (has("win32") || has("win95") || has("win64") || has("win16"))
 "   call Decho("windows",'~'.expand("<slnum>"))
    if a:base =~ '[/\\]$'
     let ret= a:base.a:subdir
