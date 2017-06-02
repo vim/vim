@@ -13,8 +13,6 @@
 "               in no event will the copyright holder be liable for any damages
 "               resulting from the use of this software.
 "
-"  But be doers of the Word, and not only hearers, deluding your own selves {{{1
-"  (James 1:22 RSV)
 " =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 " Load Once: {{{1
 if &cp || exists("g:loaded_netrwPlugin")

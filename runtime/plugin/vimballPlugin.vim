@@ -6,9 +6,6 @@
 "            No warranty, express or implied.
 "  *** ***   Use At-Your-Own-Risk!   *** ***
 "
-" (Rom 2:1 WEB) Therefore you are without excuse, O man, whoever you are who
-"      judge. For in that which you judge another, you condemn yourself. For
-"      you who judge practice the same things.
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 
 " ---------------------------------------------------------------------

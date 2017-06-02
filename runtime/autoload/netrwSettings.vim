@@ -12,9 +12,6 @@
 "               holder be liable for any damages resulting from the use
 "               of this software.
 "
-" Mat 4:23 (WEB) Jesus went about in all Galilee, teaching in their {{{1
-"                synagogues, preaching the gospel of the kingdom, and healing
-"                every disease and every sickness among the people.
 " Load Once: {{{1
 if exists("g:loaded_netrwSettings") || &cp
   finish

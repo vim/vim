@@ -12,10 +12,6 @@
 "               event will the copyright holder be liable for any damages
 "               resulting from the use of this software.
 "
-" Rom 6:23 (WEB) For the wages of sin is death, but the free gift of God {{{1
-"                is eternal life in Christ Jesus our Lord.
-
-" ---------------------------------------------------------------------
 " Load Once: {{{1
 if exists("g:loaded_netrwFileHandlers") || &cp
  finish

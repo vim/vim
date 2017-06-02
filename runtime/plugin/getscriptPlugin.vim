@@ -7,8 +7,6 @@
 "
 " GetLatestVimScripts: 642 1 :AutoInstall: getscript.vim
 "
-" (Rom 15:11 WEB) Again, "Praise the Lord, all you Gentiles!  Let
-" all the peoples praise Him."
 " ---------------------------------------------------------------------
 " Initialization:	{{{1
 " if you're sourcing this file, surely you can't be

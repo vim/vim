@@ -13,8 +13,6 @@
 "               holder be liable for any damages resulting from the use
 "               of this software.
 "
-" (James 4:8 WEB) Draw near to God, and he will draw near to you.
-" Cleanse your hands, you sinners; and purify your hearts, you double-minded.
 " ---------------------------------------------------------------------
 " Load Once: {{{1
 if &cp || exists("g:loaded_zipPlugin")
