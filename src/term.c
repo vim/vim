@@ -4385,14 +4385,20 @@ check_termcode(
 			if (i - j >= 21 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
 			    && tp[j + 11] == '/' && tp[j + 16] == '/'
 			    && !option_was_set((char_u *)"bg"))
-			{/* TODO: don't set option when already the right value */
+			{
+			    char *newval = (3 * '6' < tp[j+7] + tp[j+12]
+						+ tp[j+17]) ? "light" : "dark";
+
 			    LOG_TR("Received RBG");
 			    rbg_status = RBG_GOT;
-			    set_option_value((char_u *)"bg", 0L, (char_u *)(
-				    (3 * '6' < tp[j+7] + tp[j+12] + tp[j+17])
-				    ? "light" : "dark"), 0);
-			    reset_option_was_set((char_u *)"bg");
-			    redraw_asap(CLEAR);
+			    if (STRCMP(p_bg, newval) != 0)
+			    {
+				/* value differs, apply it */
+				set_option_value((char_u *)"bg", 0L,
+							  (char_u *)newval, 0);
+				reset_option_was_set((char_u *)"bg");
+				redraw_asap(CLEAR);
+			    }
 			}
 
 			/* got finished code: consume it */
