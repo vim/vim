@@ -326,6 +326,8 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 EXTERN scid_T	current_SID INIT(= 0);
 #endif
 
+EXTERN int	did_source_packages INIT(= FALSE);
+
 /* Magic number used for hashitem "hi_key" value indicating a deleted item.
  * Only the address is used. */
 EXTERN char_u	hash_removed;
