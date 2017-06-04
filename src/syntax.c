@@ -7838,14 +7838,21 @@ do_highlight(
 				term_bg_color(color);
 			    if (t_colors < 16)
 				i = (color == 0 || color == 4);
-			    else
+			    /* Limit the heuristic to the standard 16 colors */
+			    else if (color < 16)
 				i = (color < 7 || color == 8);
+			    else
+				i = -1;
 			    /* Set the 'background' option if the value is
-			     * wrong. */
-			    if (i != (*p_bg == 'd'))
-				set_option_value((char_u *)"bg", 0L,
-					i ?  (char_u *)"dark"
-					  : (char_u *)"light", 0);
+			     * wrong, but only if it wasn't explicitly set */
+			    if (i >= 0 && i != (*p_bg == 'd')
+				&& !option_was_set((char_u *)"bg"))
+			    {
+				set_string_option_direct((char_u *)"bg", -1,
+				    i ? (char_u *)"dark" : (char_u *)"light",
+				    OPT_FREE, 0);
+				reset_option_was_set((char_u *)"bg");
+			    }
 			}
 		    }
 		}
