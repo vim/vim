@@ -449,6 +449,7 @@ vim_main2(void)
      */
     if (p_lpl)
     {
+	add_all_pack_dirs();
 # ifdef VMS	/* Somehow VMS doesn't handle the "**". */
 	source_runtime((char_u *)"plugin/*.vim", DIP_ALL | DIP_NOAFTER);
 # else
@@ -456,7 +457,7 @@ vim_main2(void)
 # endif
 	TIME_MSG("loading plugins");
 
-	ex_packloadall(NULL);
+	load_all_pack();
 	TIME_MSG("loading packages");
 
 # ifdef VMS	/* Somehow VMS doesn't handle the "**". */
