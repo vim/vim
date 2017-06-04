@@ -3333,9 +3333,13 @@ may_req_ambiguous_char_width(void)
 	 out_str(T_U7);
 	 u7_status = U7_SENT;
 	 out_flush();
+
+	 /* This overwrites a few characters on the screen, a redraw is needed
+	  * after this. Clear them out for now. */
 	 term_windgoto(1, 0);
 	 out_str((char_u *)"  ");
 	 term_windgoto(0, 0);
+
 	 /* check for the characters now, otherwise they might be eaten by
 	  * get_keystroke() */
 	 out_flush();
