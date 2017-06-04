@@ -118,10 +118,10 @@ struct efm_S
 static efm_T	*fmt_start = NULL; /* cached across qf_parse_line() calls */
 
 static int	qf_init_ext(qf_info_T *qi, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast, char_u *qf_title, char_u *enc);
-static void	qf_store_title(qf_info_T *qi, char_u *title);
+static void	qf_store_title(qf_info_T *qi, int qf_idx, char_u *title);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static void	ll_free_all(qf_info_T **pqi);
-static int	qf_add_entry(qf_info_T *qi, char_u *dir, char_u *fname, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid);
+static int	qf_add_entry(qf_info_T *qi, int qf_idx, char_u *dir, char_u *fname, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid);
 static qf_info_T *ll_new_list(void);
 static void	qf_free(qf_info_T *qi, int idx);
 static char_u	*qf_types(int, int);
@@ -1277,6 +1277,7 @@ qf_init_ext(
 	    continue;
 
 	if (qf_add_entry(qi,
+			qi->qf_curlist,
 			qi->qf_directory,
 			(*fields.namebuf || qi->qf_directory != NULL)
 			    ? fields.namebuf
@@ -1344,13 +1345,13 @@ qf_init_end:
 }
 
     static void
-qf_store_title(qf_info_T *qi, char_u *title)
+qf_store_title(qf_info_T *qi, int qf_idx, char_u *title)
 {
     if (title != NULL)
     {
 	char_u *p = alloc((int)STRLEN(title) + 2);
 
-	qi->qf_lists[qi->qf_curlist].qf_title = p;
+	qi->qf_lists[qf_idx].qf_title = p;
 	if (p != NULL)
 	    sprintf((char *)p, ":%s", (char *)title);
     }
@@ -1386,7 +1387,7 @@ qf_new_list(qf_info_T *qi, char_u *qf_title)
     else
 	qi->qf_curlist = qi->qf_listcount++;
     vim_memset(&qi->qf_lists[qi->qf_curlist], 0, (size_t)(sizeof(qf_list_T)));
-    qf_store_title(qi, qf_title);
+    qf_store_title(qi, qi->qf_curlist, qf_title);
 }
 
 /*
@@ -1438,6 +1439,7 @@ qf_free_all(win_T *wp)
     static int
 qf_add_entry(
     qf_info_T	*qi,		/* quickfix list */
+    int		qf_idx,		/* list index */
     char_u	*dir,		/* optional directory name */
     char_u	*fname,		/* file name or NULL */
     int		bufnum,		/* buffer number or zero */
@@ -1488,13 +1490,13 @@ qf_add_entry(
     qfp->qf_type = type;
     qfp->qf_valid = valid;
 
-    lastp = &qi->qf_lists[qi->qf_curlist].qf_last;
-    if (qi->qf_lists[qi->qf_curlist].qf_count == 0)
+    lastp = &qi->qf_lists[qf_idx].qf_last;
+    if (qi->qf_lists[qf_idx].qf_count == 0)
 				/* first element in the list */
     {
-	qi->qf_lists[qi->qf_curlist].qf_start = qfp;
-	qi->qf_lists[qi->qf_curlist].qf_ptr = qfp;
-	qi->qf_lists[qi->qf_curlist].qf_index = 0;
+	qi->qf_lists[qf_idx].qf_start = qfp;
+	qi->qf_lists[qf_idx].qf_ptr = qfp;
+	qi->qf_lists[qf_idx].qf_index = 0;
 	qfp->qf_prev = NULL;
     }
     else
@@ -1505,13 +1507,13 @@ qf_add_entry(
     qfp->qf_next = NULL;
     qfp->qf_cleared = FALSE;
     *lastp = qfp;
-    ++qi->qf_lists[qi->qf_curlist].qf_count;
-    if (qi->qf_lists[qi->qf_curlist].qf_index == 0 && qfp->qf_valid)
+    ++qi->qf_lists[qf_idx].qf_count;
+    if (qi->qf_lists[qf_idx].qf_index == 0 && qfp->qf_valid)
 				/* first valid entry */
     {
-	qi->qf_lists[qi->qf_curlist].qf_index =
-	    qi->qf_lists[qi->qf_curlist].qf_count;
-	qi->qf_lists[qi->qf_curlist].qf_ptr = qfp;
+	qi->qf_lists[qf_idx].qf_index =
+	    qi->qf_lists[qf_idx].qf_count;
+	qi->qf_lists[qf_idx].qf_ptr = qfp;
     }
 
     return OK;
@@ -1628,6 +1630,7 @@ copy_loclist(win_T *from, win_T *to)
 		    ++i, from_qfp = from_qfp->qf_next)
 	    {
 		if (qf_add_entry(to->w_llist,
+				 to->w_llist->qf_curlist,
 				 NULL,
 				 NULL,
 				 0,
@@ -4240,6 +4243,7 @@ ex_vimgrep(exarg_T *eap)
 		     * dummy buffer, unless duplicate_name is set, then the
 		     * buffer will be wiped out below. */
 		    if (qf_add_entry(qi,
+				qi->qf_curlist,
 				NULL,       /* dir */
 				fname,
 				duplicate_name ? 0 : buf->b_fnum,
@@ -4744,6 +4748,7 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
     static int
 qf_add_entries(
 	qf_info_T	*qi,
+	int		qf_idx,
 	list_T		*list,
 	char_u		*title,
 	int		action)
@@ -4762,18 +4767,21 @@ qf_add_entries(
     int		retval = OK;
     int		did_bufnr_emsg = FALSE;
 
-    if (action == ' ' || qi->qf_curlist == qi->qf_listcount)
+    if (action == ' ' || qf_idx == qi->qf_listcount)
+    {
 	/* make place for a new list */
 	qf_new_list(qi, title);
+	qf_idx = qi->qf_curlist;
+    }
 #ifdef FEAT_WINDOWS
-    else if (action == 'a' && qi->qf_lists[qi->qf_curlist].qf_count > 0)
+    else if (action == 'a' && qi->qf_lists[qf_idx].qf_count > 0)
 	/* Adding to existing list, use last entry. */
-	old_last = qi->qf_lists[qi->qf_curlist].qf_last;
+	old_last = qi->qf_lists[qf_idx].qf_last;
 #endif
     else if (action == 'r')
     {
-	qf_free(qi, qi->qf_curlist);
-	qf_store_title(qi, title);
+	qf_free(qi, qf_idx);
+	qf_store_title(qi, qf_idx, title);
     }
 
     for (li = list->lv_first; li != NULL; li = li->li_next)
@@ -4819,6 +4827,7 @@ qf_add_entries(
 	    valid = (int)get_dict_number(d, (char_u *)"valid");
 
 	status =  qf_add_entry(qi,
+			       qf_idx,
 			       NULL,	    /* dir */
 			       filename,
 			       bufnum,
@@ -4843,17 +4852,17 @@ qf_add_entries(
 	}
     }
 
-    if (qi->qf_lists[qi->qf_curlist].qf_index == 0)
+    if (qi->qf_lists[qf_idx].qf_index == 0)
 	/* no valid entry */
-	qi->qf_lists[qi->qf_curlist].qf_nonevalid = TRUE;
+	qi->qf_lists[qf_idx].qf_nonevalid = TRUE;
     else
-	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
+	qi->qf_lists[qf_idx].qf_nonevalid = FALSE;
     if (action != 'a')
     {
-	qi->qf_lists[qi->qf_curlist].qf_ptr =
-	    qi->qf_lists[qi->qf_curlist].qf_start;
-	if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
-	    qi->qf_lists[qi->qf_curlist].qf_index = 1;
+	qi->qf_lists[qf_idx].qf_ptr =
+	    qi->qf_lists[qf_idx].qf_start;
+	if (qi->qf_lists[qf_idx].qf_count > 0)
+	    qi->qf_lists[qf_idx].qf_index = 1;
     }
 
 #ifdef FEAT_WINDOWS
@@ -5024,7 +5033,7 @@ set_errorlist(
     else if (what != NULL)
 	retval = qf_set_properties(qi, what, action);
     else
-	retval = qf_add_entries(qi, list, title, action);
+	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action);
 
     return retval;
 }
@@ -5387,6 +5396,7 @@ ex_helpgrep(exarg_T *eap)
 				     line[--l] = NUL;
 
 				if (qf_add_entry(qi,
+					    qi->qf_curlist,
 					    NULL,	/* dir */
 					    fnames[fi],
 					    0,
