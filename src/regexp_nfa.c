@@ -634,6 +634,7 @@ nfa_recognize_char_class(char_u *start, char_u *end, int extra_newl)
 			config |= CLASS_o7;
 			break;
 		    }
+		    return FAIL;
 		case 'a':
 		    if (*(p + 2) == 'z')
 		    {
@@ -646,6 +647,7 @@ nfa_recognize_char_class(char_u *start, char_u *end, int extra_newl)
 			config |= CLASS_af;
 			break;
 		    }
+		    return FAIL;
 		case 'A':
 		    if (*(p + 2) == 'Z')
 		    {
@@ -658,7 +660,7 @@ nfa_recognize_char_class(char_u *start, char_u *end, int extra_newl)
 			config |= CLASS_AF;
 			break;
 		    }
-		/* FALLTHROUGH */
+		    return FAIL;
 		default:
 		    return FAIL;
 	    }
