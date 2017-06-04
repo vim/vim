@@ -69,11 +69,13 @@ typedef struct frame_S		frame_T;
 typedef int			scid_T;		/* script ID */
 typedef struct file_buffer	buf_T;  /* forward declaration */
 
-/* Reference to a buffer that stores the value of buf_free_count.
+/*
+ * Reference to a buffer that stores the value of buf_free_count.
  * bufref_valid() only needs to check "buf" when the count differs.
  */
 typedef struct {
     buf_T   *br_buf;
+    int	    br_fnum;
     int	    br_buf_free_count;
 } bufref_T;
 
