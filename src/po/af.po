@@ -3402,7 +3402,7 @@ msgstr "E662: By die begin van die veranderingslys"
 msgid "E663: At end of changelist"
 msgstr "E663: By die einde van die veranderingslys"
 
-msgid "Type  :quit<Enter>  to exit Vim"
+msgid "Type  :quit  and press <Enter> to exit Vim"
 msgstr "Tik   :quit<Enter>  om Vim te verlaat"
 
 # Het te doen met < en >

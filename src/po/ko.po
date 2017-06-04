@@ -4043,7 +4043,7 @@ msgstr "E664: changelist가 비었습니다"
 #~ msgid "E663: At end of changelist"
 #~ msgstr ""
 
-msgid "Type  :quit<Enter>  to exit Vim"
+msgid "Type  :quit  and press <Enter> to exit Vim"
 msgstr "VIM을 마치려면  :quit<Enter>  입력"
 
 #, c-format

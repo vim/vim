@@ -4062,7 +4062,7 @@ msgstr "E662: 変更リストの先頭"
 msgid "E663: At end of changelist"
 msgstr "E663: 変更リストの末尾"
 
-msgid "Type  :quit<Enter>  to exit Vim"
+msgid "Type  :quit  and press <Enter> to exit Vim"
 msgstr "Vimを終了するには :quit<Enter> と入力してください"
 
 #, c-format

@@ -3443,7 +3443,7 @@ msgstr "E662: Ở đầu danh sách những thay đổi"
 msgid "E663: At end of changelist"
 msgstr "E663: Ở cuối danh sách những thay đổi"
 
-msgid "Type  :quit<Enter>  to exit Vim"
+msgid "Type  :quit  and press <Enter> to exit Vim"
 msgstr "Gõ :quit<Enter>  để thoát khỏi Vim"
 
 #, c-format

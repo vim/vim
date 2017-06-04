@@ -3916,8 +3916,8 @@ msgid "E663: At end of changelist"
 msgstr "E663: A l'inici de la llista de canvis"
 
 # amplada 53 caràcters
-msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Feu  :quit<Entrar>  per sortir"
+msgid "Type  :quit  and press <Enter> to exit Vim"
+msgstr "Feu  :quit i llavors 'Entrar/Intro'  per sortir"
 
 #, c-format
 msgid "1 line %sed 1 time"
