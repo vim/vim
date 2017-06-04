@@ -3633,27 +3633,41 @@ theend:
     vim_free(ffname);
 }
 
-static int did_source_packages = FALSE;
+/*
+ * Add all packages in the "start" directory to 'runtimepath'.
+ */
+    void
+add_pack_start_dirs(void)
+{
+    do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
+					       add_pack_plugin, &APP_ADD_DIR);
+}
+
+/*
+ * Load plugins from all packages in the "start" directory.
+ */
+    void
+load_start_packages(void)
+{
+    did_source_packages = TRUE;
+    do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
+						  add_pack_plugin, &APP_LOAD);
+}
 
 /*
  * ":packloadall"
  * Find plugins in the package directories and source them.
- * "eap" is NULL when invoked during startup.
  */
     void
 ex_packloadall(exarg_T *eap)
 {
-    if (!did_source_packages || (eap != NULL && eap->forceit))
+    if (!did_source_packages || eap->forceit)
     {
-	did_source_packages = TRUE;
-
 	/* First do a round to add all directories to 'runtimepath', then load
 	 * the plugins. This allows for plugins to use an autoload directory
 	 * of another plugin. */
-	do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
-					       add_pack_plugin, &APP_ADD_DIR);
-	do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
-						  add_pack_plugin, &APP_LOAD);
+	add_pack_start_dirs();
+	load_start_packages();
     }
 }
 
