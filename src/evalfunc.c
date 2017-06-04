@@ -1506,13 +1506,16 @@ f_argv(typval_T *argvars, typval_T *rettv)
 	if (arglist != NULL && idx >= 0 && idx < argcount)
 	    rettv->vval.v_string = vim_strsave(alist_name(&arglist[idx]));
 	else if (idx == -1 && argvars[1].v_type != VAR_UNKNOWN)
-	    return get_arglist_as_rettv(arglist, argcount, rettv);
+	{
+	    get_arglist_as_rettv(arglist, argcount, rettv);
+	    return;
+	}
 	else
 	    rettv->vval.v_string = NULL;
 	rettv->v_type = VAR_STRING;
     }
     else
-	return get_arglist_as_rettv(ARGLIST, ARGCOUNT, rettv);
+	get_arglist_as_rettv(ARGLIST, ARGCOUNT, rettv);
 }
 
 /*
