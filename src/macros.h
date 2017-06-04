@@ -364,6 +364,9 @@
 #  if !defined(NAN)
 #   define NAN (INFINITY-INFINITY)
 #  endif
+#  if !defined(DBL_EPSILON)
+#   define DBL_EPSILON 2.2204460492503131e-16
+#  endif
 # endif
 #endif
 
