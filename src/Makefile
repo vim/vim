@@ -2133,6 +2133,7 @@ test_arglist \
 	test_feedkeys \
 	test_file_perm \
 	test_fileformat \
+	test_filetype \
 	test_filter_cmd \
 	test_filter_map \
 	test_findfile \

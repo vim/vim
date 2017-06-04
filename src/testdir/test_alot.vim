@@ -16,6 +16,7 @@ source test_expr.vim
 source test_feedkeys.vim
 source test_file_perm.vim
 source test_fileformat.vim
+source test_filetype.vim
 source test_filter_cmd.vim
 source test_filter_map.vim
 source test_findfile.vim
