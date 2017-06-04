@@ -783,6 +783,11 @@ vim_main2(void)
     if (params.n_commands > 0)
 	exe_commands(&params);
 
+#if defined(FEAT_TERMRESPONSE) && defined(FEAT_MBYTE)
+    /* Must be done before redrawing, puts a few characters on the screen. */
+    may_req_ambiguous_char_width();
+#endif
+
     RedrawingDisabled = 0;
     redraw_all_later(NOT_VALID);
     no_wait_return = FALSE;
@@ -796,9 +801,6 @@ vim_main2(void)
      * argument doesn't make it appear in the shell Vim was started from. */
     may_req_termresponse();
 
-# if defined(FEAT_MBYTE)
-    may_req_ambiguous_char_width();
-# endif
     may_req_bg_color();
 #endif
 
