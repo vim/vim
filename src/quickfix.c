@@ -161,8 +161,8 @@ static qf_info_T *ll_get_or_alloc_list(win_T *);
  * Looking up a buffer can be slow if there are many.  Remember the last one
  * to make this a lot faster if there are multiple matches in the same file.
  */
-static char_u *qf_last_bufname = NULL;
-static bufref_T  qf_last_bufref = {NULL, 0};
+static char_u   *qf_last_bufname = NULL;
+static bufref_T  qf_last_bufref = {NULL, 0, 0};
 
 /*
  * Read the errorfile "efile" into memory, line by line, building the error
@@ -2732,7 +2732,7 @@ qf_history(exarg_T *eap)
 }
 
 /*
- * Free error list "idx".
+ * Free all the entries in the error list "idx".
  */
     static void
 qf_free(qf_info_T *qi, int idx)
