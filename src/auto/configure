@@ -8997,11 +8997,6 @@ $as_echo "no" >&6; }
     fi
   fi
   if test "x$GUITYPE" = "xGTK"; then
-    if test "$gtk_minor_version" = 1 -a "0$gtk_micro_version" -ge 1 \
-	|| test "0$gtk_minor_version" -ge 2; then
-      $as_echo "#define HAVE_GTK_MULTIHEAD 1" >>confdefs.h
-
-    fi
                 if test -z "$SKIP_GNOME"; then
     {
 
@@ -9293,8 +9288,6 @@ $as_echo "no" >&6; }
       SKIP_NEXTAW=YES
       SKIP_MOTIF=YES
       GUITYPE=GTK
-
-      $as_echo "#define HAVE_GTK_MULTIHEAD 1" >>confdefs.h
 
       $as_echo "#define USE_GTK3 1" >>confdefs.h
 
