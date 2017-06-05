@@ -2913,8 +2913,16 @@ vgetorpeek(int advance)
     }
 #ifdef FEAT_GUI
     /* may unshow different cursor shape */
-    if (gui.in_use && shape_changed)
-	gui_update_cursor(TRUE, FALSE);
+    if (gui.in_use)
+    {
+	if (cmd_silent)
+	    gui_dont_update_cursor(TRUE);
+	else
+	    gui_can_update_cursor();
+
+	if (shape_changed)
+	    gui_update_cursor(TRUE, FALSE);
+    }
 #endif
 
     --vgetc_busy;
