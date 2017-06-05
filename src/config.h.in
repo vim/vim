@@ -398,9 +398,6 @@
 /* Define if you use KDE and want KDE Toolbar support. */
 #undef FEAT_KDETOOLBAR
 
-/* Define if GTK+ multihead support is available (requires GTK+ >= 2.1.1). */
-#undef HAVE_GTK_MULTIHEAD
-
 /* Define if your X has own locale library */
 #undef X_LOCALE
 
