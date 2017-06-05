@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 May 02
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Jun 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3373,6 +3373,7 @@ did_filetype()	Returns |TRUE| when autocommands are being executed and the
 		FileType event has been triggered at least once.  Can be used
 		to avoid triggering the FileType event again in the scripts
 		that detect the file type. |FileType|
+		Returns |FALSE| when `:setf FALLBACK` was used.
 		When editing another file, the counter is reset, thus this
 		really checks if the FileType event has been triggered for the
 		current buffer.  This allows an autocommand that starts

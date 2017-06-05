@@ -6,7 +6,7 @@
 
 Introduction					*hangul*
 ------------
-It is to input hangul, the Korean language, with VIM GUI version.
+It is to input hangul, the Korean language, with Vim GUI version.
 If you have a XIM program, you can use another |+xim| feature.
 Basically, it is for anybody who has no XIM program.
 
@@ -31,7 +31,7 @@ You should set LANG variable to Korean locale such as ko, ko_KR.eucKR
 or ko_KR.UTF-8.
 If you set LC_ALL variable, it should be set to Korean locale also.
 
-VIM resource
+Vim resource
 ------------
 You may want to set 'encoding' and 'fileencodings'.
 Next are examples: >
@@ -53,12 +53,12 @@ If both are set, VIM_KEYBOARD has higher priority.
 
 Hangul Fonts
 ------------
-If you use GTK version of GVIM, you should set 'guifont' and 'guifontwide'.
+If you use GTK version of gvim, you should set 'guifont' and 'guifontwide'.
 For example: >
     set guifont=Courier\ 12
     set guifontwide=NanumGothicCoding\ 12
 
-If you use Motif or Athena version of GVIM, you should set 'guifontset' in
+If you use Motif or Athena version of gvim, you should set 'guifontset' in
 your vimrc.  You can set fontset in the .Xdefaults file.
 
 $HOME/.gvimrc: >
@@ -77,11 +77,11 @@ $HOME/.Xdefaults: >
 
 attention! the , (comma) or ; (semicolon)
 
-And there should be no ':set guifont'.  If it exists, then Gvim ignores
-':set guifontset'.  It means VIM runs without fontset supporting.
+And there should be no ':set guifont'.  If it exists, then gvim ignores
+':set guifontset'.  It means Vim runs without fontset supporting.
 So, you can see only English.  Hangul does not be correctly displayed.
 
-After "fontset" feature is enabled, VIM does not allow using english
+After "fontset" feature is enabled, Vim does not allow using english
 font only in "font" setting for syntax.
 For example, if you use >
    :set guifontset=eng_font,your_font
@@ -99,7 +99,7 @@ We don't support Johab font.
 We don't support Hanja input.
 And We don't have any plan to support them.
 
-If you really need such features, you can use console version of VIM with a
+If you really need such features, you can use console version of Vim with a
 capable terminal emulator.
 
 Bug or Comment

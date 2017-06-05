@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.0.  Last change: 2017 Mar 10
+*map.txt*       For Vim version 8.0.  Last change: 2017 May 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -185,7 +185,7 @@ that starts with ",".  Then you need to type another character for Vim to know
 whether to use the "," mapping or the longer one.  To avoid this add the
 <nowait> argument.  Then the mapping will be used when it matches, Vim does
 not wait for more characters to be typed.  However, if the characters were
-already type they are used.
+already typed they are used.
 
 						*:map-<silent>* *:map-silent*
 To define a mapping which will not be echoed on the command line, add
@@ -798,7 +798,7 @@ Bear in mind that convert-meta has been reported to have troubles when used in
 UTF-8 locales.  On terminals like xterm, the "metaSendsEscape" resource can be
 toggled on the fly through the "Main Options" menu, by pressing Ctrl-LeftClick
 on the terminal; that's a good last resource in case you want to send ESC when
-using other applications but not when inside VIM.
+using other applications but not when inside Vim.
 
 
 1.11 MAPPING AN OPERATOR				*:map-operator*
