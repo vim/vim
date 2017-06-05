@@ -530,9 +530,9 @@ scenario: >
 	:imap <M-C> foo
 	:set encoding=utf-8
 The mapping for <M-C> is defined with the latin1 encoding, resulting in a 0xc3
-byte.  If you type the character á (0xe1 <M-a>) in UTF-8 encoding this is the
+byte.  If you type the character ï¿½ (0xe1 <M-a>) in UTF-8 encoding this is the
 two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then or
-otherwise it would be impossible to type the á character.
+otherwise it would be impossible to type the ï¿½ character.
 
 					*<Leader>* *mapleader*
 To define a mapping which uses the "mapleader" variable, the special string
@@ -798,7 +798,7 @@ Bear in mind that convert-meta has been reported to have troubles when used in
 UTF-8 locales.  On terminals like xterm, the "metaSendsEscape" resource can be
 toggled on the fly through the "Main Options" menu, by pressing Ctrl-LeftClick
 on the terminal; that's a good last resource in case you want to send ESC when
-using other applications but not when inside VIM.
+using other applications but not when inside Vim.
 
 
 1.11 MAPPING AN OPERATOR				*:map-operator*

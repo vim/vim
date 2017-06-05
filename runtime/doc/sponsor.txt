@@ -5,7 +5,7 @@
 
 
 
-SPONSOR VIM DEVELOPMENT						*sponsor*
+SPONSOR Vim DEVELOPMENT						*sponsor*
 
 Fixing bugs and adding new features takes a lot of time and effort.  To show
 your appreciation for the work and motivate Bram and others to continue
@@ -22,7 +22,7 @@ For the most recent information about sponsoring look on the Vim web site:
 More explanations can be found in the |sponsor-faq|.
 
 
-REGISTERED VIM USER						*register*
+REGISTERED Vim USER						*register*
 
 You can become a registered Vim user by sending at least 10 euro.  This works
 similar to sponsoring Vim, see |sponsor| above.  Registration was made

@@ -1334,7 +1334,7 @@ Associated setting variables:
    |g:netrw_winsize| control initial sizing
 
 
-BROWSING USING A GVIM SERVER			*netrw-ctrl-r* {{{2
+BROWSING USING A gvim SERVER			*netrw-ctrl-r* {{{2
 
 One may keep a browsing gvim separate from the gvim being used to edit.
 Use the <c-r> map on a file (not a directory) in the netrw browser, and it
@@ -2206,7 +2206,7 @@ future I may make it possible to use |regexp|s instead of glob()-style
 expressions (yet-another-option).
 
 
-MARKED FILES, ARBITRARY VIM COMMAND				*netrw-mv*  {{{2
+MARKED FILES, ARBITRARY Vim COMMAND				*netrw-mv*  {{{2
 	    (See |netrw-mf| and |netrw-mr| for how to mark files)
 		      (uses the local marked-file list)
 

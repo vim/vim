@@ -1328,7 +1328,7 @@ Useful commands:
   to automatically detect the encoding of a file.
 
 
-STARTING VIM
+STARTING Vim
 
 If your current locale is in an utf-8 encoding, Vim will automatically start
 in utf-8 mode.

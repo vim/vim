@@ -41,9 +41,9 @@ instance), code similar to the following should be used:
 	$vim = new Win32::OLE 'Vim.Application';
 
 [C#] >
-        // Add a reference to VIM in your project. 
+        // Add a reference to Vim in your project. 
         // Choose the COM tab.
-        // Select "VIM Ole Interface 1.1 Type Library"
+        // Select "Vim Ole Interface 1.1 Type Library"
 	Vim.Vim vimobj = new Vim.Vim();
 
 Vim does not support acting as a "hidden" OLE server, like some other OLE

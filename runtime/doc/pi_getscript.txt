@@ -9,7 +9,7 @@ Copyright: (c) 2004-2012 by Charles E. Campbell	*glvs-copyright*
 	The VIM LICENSE (see |copyright|) applies to the files in this
 	package, including getscriptPlugin.vim, getscript.vim,
 	GetLatestVimScripts.dist, and pi_getscript.txt, except use "getscript"
-	instead of "VIM".  Like anything else that's free, getscript and its
+	instead of "Vim".  Like anything else that's free, getscript and its
 	associated files are provided *as is* and comes with no warranty of
 	any kind, either expressed or implied.  No guarantees of
 	merchantability.  No guarantees of suitability for any purpose.  By
@@ -41,13 +41,13 @@ get the latest versions of scripts listed therein from http://vim.sf.net/.
 2. GetLatestVimScripts -- Getting Started		*getscript-start*
 						*getlatestvimscripts-install*
 
-	VERSION FROM VIM DISTRIBUTION			*glvs-dist-install*
+	VERSION FROM Vim DISTRIBUTION			*glvs-dist-install*
 
 Vim 7.0 does not include the GetLatestVimScripts.dist file which
 serves as an example and a template.  So, you'll need to create
 your own!  See |GetLatestVimScripts_dat|.
 
-	VERSION FROM VIM SF NET				*glvs-install*
+	VERSION FROM Vim SF NET				*glvs-install*
 
 NOTE: The last step, that of renaming/moving the GetLatestVimScripts.dist
 file, is for those who have just downloaded GetLatestVimScripts.tar.bz2 for
@@ -68,7 +68,7 @@ Your computer needs to have wget or curl for GetLatestVimScripts to do its work.
 		mv GetLatestVimScripts.dist GetLatestVimScripts.dat
 		(edit GetLatestVimScripts.dat to install your own personal
 		list of desired plugins -- see |GetLatestVimScripts_dat|)
-	
+
 	3. Windows:
 		vim getscript.vba
 		:so %
