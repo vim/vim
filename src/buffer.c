@@ -2352,8 +2352,8 @@ buflist_getfile(
 #endif
 
     ++RedrawingDisabled;
-    if (getfile(buf->b_fnum, NULL, NULL, (options & GETF_SETMARK),
-							  lnum, forceit) <= 0)
+    if (GETFILE_SUCCESS(getfile(buf->b_fnum, NULL, NULL,
+				     (options & GETF_SETMARK), lnum, forceit)))
     {
 	--RedrawingDisabled;
 
