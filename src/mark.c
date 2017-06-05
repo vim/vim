@@ -708,43 +708,97 @@ mark_line(pos_T *mp, int lead_len)
 }
 
 /*
+ * Given a special mark name return a pointer to the respective pos_T structure
+ * or NULL if no such mark exists.
+ */
+    static pos_T *
+special_mark_to_pos(const char_u mark)
+{
+    switch (mark)
+    {
+	case '"':  return &curbuf->b_last_cursor;
+	case '[':  return &curbuf->b_op_start;
+	case ']':  return &curbuf->b_op_end;
+	case '^':  return &curbuf->b_last_insert;
+	case '.':  return &curbuf->b_last_change;
+	case '<':  return &curbuf->b_visual.vi_start;
+	case '>':  return &curbuf->b_visual.vi_end;
+	case '\'': return &curwin->w_pcmark;
+    }
+
+    EMSG(_(e_invarg));
+    return NULL;
+}
+
+/*
  * print the marks
  */
     void
 do_marks(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
-    int		i;
+    int		i, x;
+    int		from, to;
+    int		lower;
+    int		digit;
     char_u	*name;
+    char_u	*p;
 
-    if (arg != NULL && *arg == NUL)
-	arg = NULL;
+    if (*arg == NUL)
+	arg = (char_u *)"'a-zA-Z0-9\"[]^.<>";
 
-    show_one_mark('\'', arg, &curwin->w_pcmark, NULL, TRUE);
-    for (i = 0; i < NMARKS; ++i)
-	show_one_mark(i + 'a', arg, &curbuf->b_namedm[i], NULL, TRUE);
-    for (i = 0; i < NMARKS + EXTRA_MARKS; ++i)
+    for (p = arg; *p != NUL; ++p)
     {
-	if (namedfm[i].fmark.fnum != 0)
-	    name = fm_getname(&namedfm[i].fmark, 15);
-	else
-	    name = namedfm[i].fname;
-	if (name != NULL)
+	lower = ASCII_ISLOWER(*p);
+	digit = VIM_ISDIGIT(*p);
+	if (lower || digit || ASCII_ISUPPER(*p))
 	{
-	    show_one_mark(i >= NMARKS ? i - NMARKS + '0' : i + 'A',
-		    arg, &namedfm[i].fmark.mark, name,
-		    namedfm[i].fmark.fnum == curbuf->b_fnum);
-	    if (namedfm[i].fmark.fnum != 0)
-		vim_free(name);
+	    if (p[1] == '-')
+	    {
+		/* clear range of marks */
+		from = *p;
+		to = p[2];
+		if (!(lower ? ASCII_ISLOWER(p[2])
+		      : (digit ? VIM_ISDIGIT(p[2])
+			 : ASCII_ISUPPER(p[2])))
+		    || to < from)
+		{
+		    EMSG2(_(e_invarg2), p);
+		    return;
+		}
+		p += 2;
+	    }
+	    else
+		/* clear one lower case mark */
+		from = to = *p;
+
+	    for (i = from; i <= to; ++i)
+	    {
+		/* find the index into the pos_T array */
+		x = digit ?
+			i - '0' + NMARKS:
+			i - (lower ? 'a' : 'A');
+
+		if (lower)
+		    show_one_mark(i, NULL, &curbuf->b_namedm[x], NULL, TRUE);
+		else
+		{
+		    if (namedfm[x].fmark.fnum != 0)
+			name = fm_getname(&namedfm[x].fmark, 15);
+		    else
+			name = namedfm[x].fname;
+
+		    show_one_mark(i, NULL, &namedfm[x].fmark.mark, name,
+				  namedfm[x].fmark.fnum == curbuf->b_fnum);
+
+		    if (namedfm[x].fmark.fnum != 0)
+			vim_free(name);
+		}
+	    }
 	}
+	else if (*p != ' ')
+	    show_one_mark(*p, NULL, special_mark_to_pos(*p), NULL, TRUE);
     }
-    show_one_mark('"', arg, &curbuf->b_last_cursor, NULL, TRUE);
-    show_one_mark('[', arg, &curbuf->b_op_start, NULL, TRUE);
-    show_one_mark(']', arg, &curbuf->b_op_end, NULL, TRUE);
-    show_one_mark('^', arg, &curbuf->b_last_insert, NULL, TRUE);
-    show_one_mark('.', arg, &curbuf->b_last_change, NULL, TRUE);
-    show_one_mark('<', arg, &curbuf->b_visual.vi_start, NULL, TRUE);
-    show_one_mark('>', arg, &curbuf->b_visual.vi_end, NULL, TRUE);
     show_one_mark(-1, arg, NULL, NULL, FALSE);
 }
 
@@ -772,9 +826,7 @@ show_one_mark(
 	}
     }
     /* don't output anything if 'q' typed at --more-- prompt */
-    else if (!got_int
-	    && (arg == NULL || vim_strchr(arg, c) != NULL)
-	    && p->lnum != 0)
+    else if (!got_int && p != NULL && p->lnum != 0)
     {
 	if (!did_title)
 	{
