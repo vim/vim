@@ -4599,7 +4599,7 @@ current_quote(
 
 #endif /* FEAT_TEXTOBJ */
 
-static int is_one_char(char_u *pattern, int move);
+static int is_one_char(char_u *pattern, int move, pos_T *cur);
 
 /*
  * Find next search match under cursor, cursor at end.
@@ -4647,7 +4647,7 @@ current_search(
 	orig_pos = pos = curwin->w_cursor;
 
     /* Is the pattern is zero-width? */
-    one_char = is_one_char(spats[last_idx].pat, TRUE);
+    one_char = is_one_char(spats[last_idx].pat, TRUE, &curwin->w_cursor);
     if (one_char == -1)
     {
 	p_ws = old_p_ws;
@@ -4710,7 +4710,10 @@ current_search(
 
     /* Check again from the current cursor position,
      * since the next match might actually by only one char wide */
-    one_char = is_one_char(spats[last_idx].pat, FALSE);
+    one_char = is_one_char(spats[last_idx].pat, FALSE, &pos);
+    if (one_char < 0)
+	/* search failed, abort */
+	return FAIL;
 
     /* move to match, except for zero-width matches, in which case, we are
      * already on the next match */
@@ -4761,12 +4764,12 @@ current_search(
 
 /*
  * Check if the pattern is one character long or zero-width.
- * If move is TRUE, check from the beginning of the buffer, else from the
- * current cursor position.
+ * If move is TRUE, check from the beginning of the buffer, else from position
+ * "cur".
  * Returns TRUE, FALSE or -1 for failure.
  */
     static int
-is_one_char(char_u *pattern, int move)
+is_one_char(char_u *pattern, int move, pos_T *cur)
 {
     regmmatch_T	regmatch;
     int		nmatched = 0;
@@ -4791,7 +4794,7 @@ is_one_char(char_u *pattern, int move)
     }
     else
     {
-	pos = curwin->w_cursor;
+	pos = *cur;
 	/* accept a match at the cursor position */
 	flag = SEARCH_START;
     }
