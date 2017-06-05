@@ -4364,7 +4364,7 @@ current_quote(
     int		selected_quote = FALSE;	/* Has quote inside selection */
     int		i;
 
-    /* Correct cursor when 'selection' is exclusive */
+    /* Correct cursor when 'selection' is "exclusive". */
     if (VIsual_active)
     {
 	/* this only works within one line */
@@ -4372,8 +4372,19 @@ current_quote(
 	    return FALSE;
 
 	vis_bef_curs = LT_POS(VIsual, curwin->w_cursor);
-	if (*p_sel == 'e' && vis_bef_curs)
+	if (*p_sel == 'e')
+	{
+	    if (!vis_bef_curs)
+	    {
+		/* VIsual needs to be start of Visual selection. */
+		pos_T t = curwin->w_cursor;
+
+		curwin->w_cursor = VIsual;
+		VIsual = t;
+		vis_bef_curs = TRUE;
+	    }
 	    dec_cursor();
+	}
 	vis_empty = EQUAL_POS(VIsual, curwin->w_cursor);
     }
 

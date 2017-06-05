@@ -5,7 +5,7 @@ if !has('textobjects')
 endif
 
 set belloff=all
-function! CpoM(line, useM, expected)
+func CpoM(line, useM, expected)
   new
 
   if a:useM
@@ -29,16 +29,26 @@ function! CpoM(line, useM, expected)
   call assert_equal(getreg('"'), a:expected[2])
 
   q!
-endfunction
+endfunc
 
-function! Test_inner_block_without_cpo_M()
+func Test_inner_block_without_cpo_M()
   call CpoM('(red \(blue) green)', 0, ['red \(blue', 'red \(blue', ''])
-endfunction
+endfunc
 
-function! Test_inner_block_with_cpo_M_left_backslash()
+func Test_inner_block_with_cpo_M_left_backslash()
   call CpoM('(red \(blue) green)', 1, ['red \(blue) green', 'blue', 'red \(blue) green'])
-endfunction
+endfunc
 
-function! Test_inner_block_with_cpo_M_right_backslash()
+func Test_inner_block_with_cpo_M_right_backslash()
   call CpoM('(red (blue\) green)', 1, ['red (blue\) green', 'blue\', 'red (blue\) green'])
-endfunction
+endfunc
+
+func Test_quote_selection_selection_exclusive()
+  new
+  call setline(1, "a 'bcde' f")
+  set selection=exclusive
+  exe "norm! fdvhi'y"
+  call assert_equal('bcde', @")
+  set selection&vim
+  bw!
+endfunc
