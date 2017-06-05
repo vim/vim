@@ -1853,7 +1853,7 @@ collection:
 			endc = startc;
 			startc = oldstartc;
 			if (startc > endc)
-			    EMSG_RET_FAIL(_(e_invrange));
+			    EMSG_RET_FAIL(_(e_reverse_range));
 
 			if (endc > startc + 2)
 			{
