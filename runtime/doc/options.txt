@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 May 08
+*options.txt*	For Vim version 8.0.  Last change: 2017 Jun 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -370,7 +370,7 @@ Note: In the future more global options can be made global-local.  Using
 
 Setting the filetype
 
-:setf[iletype] {filetype}			*:setf* *:setfiletype*
+:setf[iletype] [FALLBACK] {filetype}			*:setf* *:setfiletype*
 			Set the 'filetype' option to {filetype}, but only if
 			not done yet in a sequence of (nested) autocommands.
 			This is short for: >
@@ -380,6 +380,13 @@ Setting the filetype
 <			This command is used in a filetype.vim file to avoid
 			setting the 'filetype' option twice, causing different
 			settings and syntax files to be loaded.
+
+			When the optional FALLBACK argument is present, a
+			later :setfiletype command will override the
+			'filetype'.  This is to used for filetype detections
+			that are just a guess.  |did_filetype()| will return
+			false after this command.
+
 			{not in Vi}
 
 				*option-window* *optwin*
@@ -7735,6 +7742,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	compatible terminal.
 	If setting this option does not work (produces a colorless UI)
 	reading |xterm-true-color| might help.
+	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'terse'* *'noterse'*

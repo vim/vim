@@ -4151,7 +4151,7 @@ Patch 7.0.173
 Problem:    ":call f().TT()" doesn't work.  (Richard Emberson)
 Solution:   When a function returns a Dictionary or another composite continue
 	    evaluating what follows.
-Files:	    src/eval.c    
+Files:	    src/eval.c
 
 Patch 7.0.174
 Problem:    ":mksession" doesn't restore window layout correctly in tab pages
@@ -4265,7 +4265,7 @@ Problem:    When 'swapfile' is switched off in an empty file it is possible
 	    that not all blocks are loaded into memory, causing ml_get errors
 	    later.
 Solution:   Rename "dont_release" to "mf_dont_release" and also use it to
-	    avoid using the cached line and locked block. 
+	    avoid using the cached line and locked block.
 Files:	    src/globals.h, src/memfile.c, src/memline.c
 
 Patch 7.0.193
@@ -6031,7 +6031,7 @@ Solution:   Add type casts. (Ben Schmidt)
 Files:	    src/version.c
 
 Patch 7.1.207
-Problem:    Netbeans: "remove" cannot delete one line. 
+Problem:    Netbeans: "remove" cannot delete one line.
 Solution:   Remove partial lines and whole lines properly.  Avoid a memory
 	    leak.  (Xavier de Gaye)
 Files:	    src/netbeans.c
@@ -7991,7 +7991,7 @@ Files:	    src/ex_cmds.c
 
 Patch 7.2.097
 Problem:    "!xterm&" doesn't work when 'shell' is "bash".
-Solution:   Ignore SIGHUP after calling setsid(). (Simon Schubert) 
+Solution:   Ignore SIGHUP after calling setsid(). (Simon Schubert)
 Files:	    src/os_unix.c
 
 Patch 7.2.098
@@ -8740,7 +8740,7 @@ Files:	    src/gui_gtk_x11.c, src/message.c, src/ops.c, src/proto/ui.pro,
 	    src/ui.c
 
 Patch 7.2.222
-Problem:   ":mksession" doesn't work properly with 'acd' set. 
+Problem:   ":mksession" doesn't work properly with 'acd' set.
 Solution:   Make it work. (Yakov Lerner)
 Files:	    src/ex_docmd.c
 
@@ -9150,7 +9150,7 @@ Solution:   Add the missing "else". (Lech Lorens)
 Files:	    src/ops.c
 
 Patch 7.2.293
-Problem:    When setting 'comments' option it may be used in a wrong way. 
+Problem:    When setting 'comments' option it may be used in a wrong way.
 Solution:   Don't increment after skipping over digits. (Yukihiro Nakadaira)
 Files:	    src/misc1.c
 
@@ -10191,32 +10191,32 @@ More information here: |two-engines|
 Better Python interface				*better-python-interface*
 -----------------------
 
-Added |python-bindeval| function. Unlike |python-eval| this one returns 
-|python-Dictionary|, |python-List| and |python-Function| objects for 
-dictionaries lists and functions respectively in place of their Python 
+Added |python-bindeval| function. Unlike |python-eval| this one returns
+|python-Dictionary|, |python-List| and |python-Function| objects for
+dictionaries lists and functions respectively in place of their Python
 built-in equivalents (or None if we are talking about function references).
-   For simple types this function returns Python built-in types and not only 
-Python `str()` like |python-eval| does. On Python 3 it will return `bytes()` 
+   For simple types this function returns Python built-in types and not only
+Python `str()` like |python-eval| does. On Python 3 it will return `bytes()`
 objects in place of `str()` ones avoiding possibility of UnicodeDecodeError.
    Interface of new objects mimics standard Python `dict()` and `list()`
 interfaces to some extent. Extent will be improved in the future.
 
-Added special |python-vars| objects also available for |python-buffer| and 
+Added special |python-vars| objects also available for |python-buffer| and
 |python-window|. They ease access to Vim script variables from Python.
 
-Now you no longer need to alter `sys.path` to import your module: special 
-hooks are responsible for importing from {rtp}/python2, {rtp}/python3 and 
-{rtp}/pythonx directories (for Python 2, Python 3 and both respectively). 
+Now you no longer need to alter `sys.path` to import your module: special
+hooks are responsible for importing from {rtp}/python2, {rtp}/python3 and
+{rtp}/pythonx directories (for Python 2, Python 3 and both respectively).
 See |python-special-path|.
 
 Added possibility to work with |tabpage|s through |python-tabpage| object.
 
-Added automatic conversion of Vim errors and exceptions to Python 
+Added automatic conversion of Vim errors and exceptions to Python
 exceptions.
 
-Changed the behavior of the |python-buffers| object: it now uses buffer numbers 
-as keys in place of the index of the buffer in the internal buffer list. 
-This should not break anything as the only way to get this index was 
+Changed the behavior of the |python-buffers| object: it now uses buffer numbers
+as keys in place of the index of the buffer in the internal buffer list.
+This should not break anything as the only way to get this index was
 iterating over |python-buffers|.
 
 Added |:pydo| and |:py3do| commands.
@@ -10226,7 +10226,7 @@ Added the |pyeval()| and |py3eval()| functions.
 Now in all places which previously accepted `str()` objects, `str()` and
 `unicode()` (Python 2) or `bytes()` and `str()` (Python 3) are accepted.
 
-|python-window| has gained `.col` and `.row` attributes that are currently 
+|python-window| has gained `.col` and `.row` attributes that are currently
 the only way to get internal window positions.
 
 Added or fixed support for `dir()` in Vim Python objects.
@@ -10235,12 +10235,12 @@ Added or fixed support for `dir()` in Vim Python objects.
 Changed							*changed-7.4*
 -------
 
-Old Python versions (≤2.2) are no longer supported. Building with them did 
+Old Python versions (≤2.2) are no longer supported. Building with them did
 not work anyway.
 
 Options:
-	Added ability to automatically save the selection into the system 
-	clipboard when using non-GUI version of Vim (autoselectplus in 
+	Added ability to automatically save the selection into the system
+	clipboard when using non-GUI version of Vim (autoselectplus in
 	'clipboard'). Also added ability to use the system clipboard as
 	default register (previously only primary selection could be used).
 	(Ivan Krasilnikov, Christian Brabandt, Bram Moolenaar)
@@ -10255,12 +10255,12 @@ Options:
 	'relativenumber'.  (Christian Brabandt)
 
 Commands:
-	|:diffoff| now saves the local values of some settings and restores 
-	them in place of blindly resetting them to the defaults. (Christian 
+	|:diffoff| now saves the local values of some settings and restores
+	them in place of blindly resetting them to the defaults. (Christian
 	Brabandt)
 
 Other:
-	Lua interface now also uses userdata binded to Vim structures. (Taro 
+	Lua interface now also uses userdata binded to Vim structures. (Taro
 	Muraoka, Luis Carvalho)
 
 	glob() and autocommand patterns used to work with the undocumented
@@ -10285,74 +10285,74 @@ Functions:
 
 	Added |wildmenumode()| function. (Christian Brabandt)
 
-	Debugging functions: |screenattr()|, |screenchar()|, |screencol()|, 
+	Debugging functions: |screenattr()|, |screenchar()|, |screencol()|,
 	|screenrow()|. (Simon Ruderich, Bram Moolenaar)
 
-	Added ability to use |Dictionary-function|s for |sort()|ing, via 
+	Added ability to use |Dictionary-function|s for |sort()|ing, via
 	optional third argument. (Nikolay Pavlov)
 
-	Added special |expand()| argument that expands to the current line 
+	Added special |expand()| argument that expands to the current line
 	number.
 
-	Made it possible to force |char2nr()| to always give unicode codepoints 
+	Made it possible to force |char2nr()| to always give unicode codepoints
 	regardless of current encoding. (Yasuhiro Matsumoto)
 
-	Made it possible for functions generating file list generate |List| 
-	and not NL-separated string. (e.g. |glob()|, |expand()|) (Christian 
+	Made it possible for functions generating file list generate |List|
+	and not NL-separated string. (e.g. |glob()|, |expand()|) (Christian
 	Brabandt)
 
-	Functions that obtain variables from the specific window, tabpage or 
-	buffer scope dictionary can now return specified default value in 
-	place of empty string in case variable is not found. (|gettabvar()|, 
+	Functions that obtain variables from the specific window, tabpage or
+	buffer scope dictionary can now return specified default value in
+	place of empty string in case variable is not found. (|gettabvar()|,
 	|getwinvar()|, |getbufvar()|) (Shougo Matsushita, Hirohito Higashi)
 
 Autocommands:
-	Added |InsertCharPre| event launched before inserting character. 
+	Added |InsertCharPre| event launched before inserting character.
 	(Jakson A. Aquino)
 
-	Added |CompleteDone| event launched after finishing completion in 
+	Added |CompleteDone| event launched after finishing completion in
 	insert mode. (idea by Florian Klein)
 
-	Added |QuitPre| event launched when commands that can either close Vim 
+	Added |QuitPre| event launched when commands that can either close Vim
 	or only some window(s) are launched.
 
-	Added |TextChanged| and |TextChangedI| events launched when text is 
+	Added |TextChanged| and |TextChangedI| events launched when text is
 	changed.
 
 Commands:
 	|:syntime| command useful for debugging.
 
-	Made it possible to remove all signs from the current buffer using 
+	Made it possible to remove all signs from the current buffer using
 	|:sign-unplace|. (Christian Brabandt)
 
 	Added |:language| autocompletion. (Dominique Pelle)
 
-	Added more |:command-complete| completion types: |:behave| suboptions, 
-	color schemes, compilers, |:cscope| suboptions, files from 'path', 
-	|:history| suboptions, locale names, |:syntime| suboptions, user 
+	Added more |:command-complete| completion types: |:behave| suboptions,
+	color schemes, compilers, |:cscope| suboptions, files from 'path',
+	|:history| suboptions, locale names, |:syntime| suboptions, user
 	names. (Dominique Pelle)
 
-	Added |:map-nowait| creating mapping which when having lhs that is the 
-	prefix of another mapping’s lhs will not allow Vim to wait for user to 
-	type more characters to resolve ambiguity, forcing Vim to take the 
+	Added |:map-nowait| creating mapping which when having lhs that is the
+	prefix of another mapping’s lhs will not allow Vim to wait for user to
+	type more characters to resolve ambiguity, forcing Vim to take the
 	shorter alternative: one with <nowait>.
 
 Options:
 	Made it possible to ignore case when completing: 'wildignorecase'.
 
-	Added ability to delete comment leader when using |J| by `j` flag in 
+	Added ability to delete comment leader when using |J| by `j` flag in
 	'formatoptions' (|fo-table|). (Lech Lorens)
 
-	Added ability to control indentation inside namespaces: |cino-N|. 
+	Added ability to control indentation inside namespaces: |cino-N|.
 	(Konstantin Lepa)
 
-	Added ability to control alignment inside `if` condition separately 
+	Added ability to control alignment inside `if` condition separately
 	from alignment inside function arguments: |cino-k|. (Lech Lorens)
 
 Other:
 	Improved support for cmd.exe. (Ben Fritz, Bram Moolenaar)
 
-	Added |v:windowid| variable containing current window number in GUI 
+	Added |v:windowid| variable containing current window number in GUI
 	Vim. (Christian J. Robinson, Lech Lorens)
 
 	Added rxvt-unicode and SGR mouse support. (Yiding Jia, Hayaki Saito)
@@ -11923,7 +11923,7 @@ Solution:   Pass the separator character to in_history(). (Taro Muraoka)
 Files:	    src/ex_getln.c
 
 Patch 7.3.266
-Problem:    In Gvim with iBus typing space in Insert mode doesn't work.
+Problem:    In gvim with iBus typing space in Insert mode doesn't work.
 Solution:   Clear xim_expected_char after checking it.
 Files:	    src/mbyte.c
 
@@ -11938,7 +11938,7 @@ Solution:   Use O_NOCTTY both in the master and slave. (Bjorn Winckler)
 Files:	    src/os_unix.c
 
 Patch 7.3.269
-Problem:    'shellcmdflag' only works with one flag. 
+Problem:    'shellcmdflag' only works with one flag.
 Solution:   Split into multiple arguments. (Gary Johnson)
 Files:	    src/os_unix.c
 
@@ -13118,7 +13118,7 @@ Files:	    src/ops.c
 Patch 7.3.477
 Problem:    Using ":echo" to output enough lines to scroll, then using "j" and
 	    "k" at the more prompt, displays the command on top of the output.
-	    (Marcin Szamotulski) 
+	    (Marcin Szamotulski)
 Solution:   Put the output below the command. (Christian Brabandt)
 Files:	    src/eval.c
 
@@ -13371,7 +13371,7 @@ Solution:   Recognize completefunction returning -3.  (Matsushita Shougo)
 Files:	    src/edit.c
 
 Patch 7.3.520
-Problem:    Gvim starts up slow on Ubuntu 12.04.
+Problem:    gvim starts up slow on Ubuntu 12.04.
 Solution:   Move the call to gui_mch_init_check() to after fork(). (Yasuhiro
 	    Matsumoto)  Do check $DISPLAY being set.
 Files:	    src/gui.c, src/gui_gtk_x11.c, src/proto/gui_gtk_x11.pro
@@ -13424,7 +13424,7 @@ Solution:   Make the count select that many characters or lines. (Christian
 Files:	    src/normal.c
 
 Patch 7.3.530 (after 7.3.520)
-Problem:    Gvim does not work when 'guioptions' includes "f". (Davido)
+Problem:    gvim does not work when 'guioptions' includes "f". (Davido)
 Solution:   Call gui_mch_init_check() when running GUI in the foreground.
 	    (Yasuhiro Matsumoto)
 Files:	    src/gui.c
@@ -14287,7 +14287,7 @@ Files:	    Filelist
 Patch 7.3.682 (after 7.3.677)
 Problem:    Compiler complains about incompatible types.
 Solution:   Remove type casts. (hint by Danek Duvall)
-Files:	    src/edit.c 
+Files:	    src/edit.c
 
 Patch 7.3.683
 Problem:    ":python" may crash when vimbindeval() returns None.
@@ -16340,7 +16340,7 @@ Solution:   Avoid negative argument to vim_strncpy(). (Narendran
 Files:	    src/if_cscope.c
 
 Patch 7.3.1039
-Problem:    New regexp engine does not support \%23c, \%<23c and the like. 
+Problem:    New regexp engine does not support \%23c, \%<23c and the like.
 Solution:   Implement them. (partly by Yasuhiro Matsumoto)
 Files:	    src/regexp.h, src/regexp_nfa.c, src/testdir/test64.in,
 	    src/testdir/test64.ok
@@ -17552,9 +17552,9 @@ Solution:   Specify a separate viminfo file.
 Files:	    src/testdir/test61.in
 
 Patch 7.3.1252
-Problem:    Gvim does not find the toolbar bitmap files in ~/vimfiles/bitmaps
+Problem:    gvim does not find the toolbar bitmap files in ~/vimfiles/bitmaps
 	    if the corresponding menu command contains additional characters
-	    like the shortcut marker '&' or if you use a non-english locale.  
+	    like the shortcut marker '&' or if you use a non-english locale.
 Solution:   Use menu->en_dname or menu->dname. (Martin Gieseking)
 Files:	    src/gui_w32.c
 
@@ -18175,7 +18175,7 @@ Files:	    src/window.c
 
 Patch 7.4a.045
 Problem:    Configure does not always find the right library for Lua.  Missing
-	    support for LuaJit. 
+	    support for LuaJit.
 Solution:   Improve the configure detection of Lua. (Hiroshi Shirosaki)
 Files:	    src/Makefile, src/configure.in, src/auto/configure
 

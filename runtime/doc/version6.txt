@@ -9250,7 +9250,7 @@ Files:	    runtime/doc/various.txt, src/ex_cmds.h, src/ex_docmd.c,
 	    src/proto/quickfix.pro, src/quickfix.c
 
 Patch 6.1.424 (extra)
-Problem:    Win32: Gvim compiled with VC++ 7.0 run on Windows 95 does not show
+Problem:    Win32: gvim compiled with VC++ 7.0 run on Windows 95 does not show
 	    menu items.
 Solution:   Define $WINVER to avoid an extra item is added to MENUITEMINFO.
 	    (Muraoka Taro)
@@ -12319,7 +12319,7 @@ Solution:   Don't ignore the WM_SYSKEYUP event when the menu is disabled.
 Files:	    src/gui_w32.c
 
 Patch 6.2.362 (extra, after 6.2.347)
-Problem:    Win32: The manifest causes Gvim not to work. (Dave Roberts)
+Problem:    Win32: The manifest causes gvim not to work. (Dave Roberts)
 Solution:   Change "x86" to "X86". (Serge Pirotte)
 Files:	    src/gvim.exe.mnf
 

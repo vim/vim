@@ -539,7 +539,7 @@ More info under :help hardcopy
 
 8.10 Setting up the symbols
 
-When I use GVIM this way and press CTRL-Y in the parent terminal, gvim exits.
+When I use gvim this way and press CTRL-Y in the parent terminal, gvim exits.
 I now use a different symbol that seems to work OK and fixes the problem.
 I suggest this instead: >
 
@@ -547,7 +547,7 @@ I suggest this instead: >
 
 The /INPUT=NLA0: separates the standard input of the gvim process from the
 parent terminal, to block signals from the parent window.
-Without the -GEOMETRY, the GVIM window size will be minimal and the menu
+Without the -GEOMETRY, the gvim window size will be minimal and the menu
 will be confused after a window-resize.
 
 (Carlo Mekenkamp, Coen Engelbarts, Vim 6.0ac)
@@ -764,14 +764,14 @@ GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/
 
 9. VMS related changes					*vms-changes*
 
-Version 7.4 
-- Undo: VMS can not handle more than one dot in the filenames use "dir/name" -> "dir/_un_name" 
+Version 7.4
+- Undo: VMS can not handle more than one dot in the filenames use "dir/name" -> "dir/_un_name"
   add _un_ at the beginning to keep the extension
 - correct swap file name wildcard handling
 - handle iconv usage correctly
 - do not optimize on vax - otherwise it hangs compiling crypto files
 - fileio.c fix the comment
-- correct RealWaitForChar 
+- correct RealWaitForChar
 - after 7.4-119 use different functions lib$cvtf_to_internal_time because Alpha and VAX have
   G_FLOAT but IA64 uses IEEE float otherwise Vim crashes
 - guard against crashes that are caused by mixed filenames

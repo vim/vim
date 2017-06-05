@@ -7,7 +7,7 @@
 Perl and Vim				*perl* *Perl*
 
 1. Editing Perl files			|perl-editing|
-2. Compiling VIM with Perl interface	|perl-compiling|
+2. Compiling Vim with Perl interface	|perl-compiling|
 3. Using the Perl interface		|perl-using|
 4. Dynamic loading			|perl-dynamic|
 
@@ -33,7 +33,7 @@ Vim in the $VIMRUNTIME/tools directory.  This script has currently more
 features than Exuberant ctags' Perl support.
 
 ==============================================================================
-2. Compiling VIM with Perl interface			*perl-compiling*
+2. Compiling Vim with Perl interface			*perl-compiling*
 
 To compile Vim with Perl interface, you need Perl 5.004 (or later).  Perl must
 be installed before you compile Vim.  Vim's Perl interface does NOT work with

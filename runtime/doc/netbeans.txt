@@ -120,7 +120,7 @@ In case you do not want the NetBeans interface you can disable it by
 uncommenting a line with "--disable-netbeans" in the Makefile.
 
 Currently the NetBeans interface is supported by Vim running in a terminal and
-by GVim when it is run with one of the following GUIs: GTK, GNOME, Windows,
+by gvim when it is run with one of the following GUIs: GTK, GNOME, Windows,
 Athena and Motif.
 
 If Motif support is required the user must supply XPM libraries.  See
@@ -996,7 +996,7 @@ to "Vim".  In the Expert tab make sure the "Vim Command" is correct.
 You should be careful if you change the "Vim Command".  There are command
 line options there which must be there for the connection to be properly
 set up.  You can change the command name but that's about it.  If your gvim
-can be found by your $PATH then the VIM Command can start with "gvim".  If
+can be found by your $PATH then the Vim Command can start with "gvim".  If
 you don't want gvim searched from your $PATH then hard code in the full
 Unix path name.  At this point you should get a gvim for any source file
 you open in NetBeans.
