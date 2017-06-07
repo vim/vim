@@ -7308,7 +7308,7 @@ ex_quit(exarg_T *eap)
 	need_mouse_correct = TRUE;
 # endif
 	/* close window; may free buffer */
-	win_close(wp, !P_HID(wp->w_buffer) || eap->forceit);
+	win_close(wp, !P_HID(wp->w_buffer) && eap->forceit);
 #endif
     }
 }
