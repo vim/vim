@@ -3501,6 +3501,7 @@ source_all_matches(char_u *pat)
 static int APP_ADD_DIR;
 static int APP_LOAD;
 static int APP_BOTH;
+static int APP_BOTH_FTDETECT;
 
     static void
 add_pack_plugin(char_u *fname, void *cookie)
@@ -3610,6 +3611,7 @@ add_pack_plugin(char_u *fname, void *cookie)
 	source_all_matches(pat);
 
 #ifdef FEAT_AUTOCMD
+	if (cookie == &APP_BOTH_FTDETECT)
 	{
 	    char_u *cmd = vim_strsave((char_u *)"g:did_load_filetypes");
 
@@ -3687,7 +3689,7 @@ ex_packadd(exarg_T *eap)
 	return;
     vim_snprintf(pat, len, plugpat, eap->arg);
     do_in_path(p_pp, (char_u *)pat, DIP_ALL + DIP_DIR + DIP_ERR,
-		    add_pack_plugin, eap->forceit ? &APP_ADD_DIR : &APP_BOTH);
+		    add_pack_plugin, eap->forceit ? &APP_ADD_DIR : &APP_BOTH_FTDETECT);
     vim_free(pat);
 }
 
