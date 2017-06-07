@@ -2583,7 +2583,7 @@ vgetorpeek(int advance)
  * get a character: 3. from the user - handle <Esc> in Insert mode
  */
 		/*
-		 * special case: if we get an <ESC> in insert mode and there
+		 * Special case: if we get an <ESC> in insert mode and there
 		 * are no more characters at once, we pretend to go out of
 		 * insert mode.  This prevents the one second delay after
 		 * typing an <ESC>.  If we get something after all, we may
@@ -2617,8 +2617,8 @@ vgetorpeek(int advance)
 			mode_deleted = TRUE;
 		    }
 #ifdef FEAT_GUI
-		    /* may show different cursor shape */
-		    if (gui.in_use)
+		    /* may show a different cursor shape */
+		    if (gui.in_use && State != NORMAL && !cmd_silent)
 		    {
 			int	    save_State;
 
@@ -2913,16 +2913,8 @@ vgetorpeek(int advance)
     }
 #ifdef FEAT_GUI
     /* may unshow different cursor shape */
-    if (gui.in_use)
-    {
-	if (cmd_silent)
-	    gui_dont_update_cursor(TRUE);
-	else
-	    gui_can_update_cursor();
-
-	if (shape_changed)
-	    gui_update_cursor(TRUE, FALSE);
-    }
+    if (gui.in_use && shape_changed)
+	gui_update_cursor(TRUE, FALSE);
 #endif
 
     --vgetc_busy;
