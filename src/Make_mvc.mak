@@ -1045,7 +1045,7 @@ LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 all:	$(VIM).exe \
 	vimrun.exe \
 	install.exe \
-	uninstal.exe \
+	uninstall.exe \
 	xxd/xxd.exe \
 	tee/tee.exe \
 	GvimExt/gvimext.dll
@@ -1072,8 +1072,8 @@ install.exe: dosinst.c
 	- if exist install.exe del install.exe
 	ren dosinst.exe install.exe
 
-uninstal.exe: uninstal.c
-	$(CC) /nologo -DNDEBUG -DWIN32 uninstal.c shell32.lib advapi32.lib
+uninstall.exe: uninstall.c
+	$(CC) /nologo -DNDEBUG -DWIN32 uninstall.c shell32.lib advapi32.lib
 
 vimrun.exe: vimrun.c
 	$(CC) /nologo -DNDEBUG vimrun.c
@@ -1110,7 +1110,7 @@ clean:
 	- if exist $(VIM).ncb del $(VIM).ncb
 	- if exist vimrun.exe del vimrun.exe
 	- if exist install.exe del install.exe
-	- if exist uninstal.exe del uninstal.exe
+	- if exist uninstall.exe del uninstall.exe
 	- if exist if_perl.c del if_perl.c
 	- if exist dimm.h del dimm.h
 	- if exist dimm_i.c del dimm_i.c

@@ -828,7 +828,7 @@ ifeq (yes, $(STATIC_WINPTHREAD))
 LIB += -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic
 endif
 
-all: $(TARGET) vimrun.exe xxd/xxd.exe install.exe uninstal.exe GvimExt/gvimext.dll
+all: $(TARGET) vimrun.exe xxd/xxd.exe install.exe uninstall.exe GvimExt/gvimext.dll
 
 vimrun.exe: vimrun.c
 	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c $(LIB)
@@ -836,8 +836,8 @@ vimrun.exe: vimrun.c
 install.exe: dosinst.c
 	$(CC) $(CFLAGS) -o install.exe dosinst.c $(LIB) -lole32 -luuid
 
-uninstal.exe: uninstal.c
-	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
+uninstall.exe: uninstall.c
+	$(CC) $(CFLAGS) -o uninstall.exe uninstall.c $(LIB)
 
 $(TARGET): $(OUTDIR) $(OBJ)
 	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)

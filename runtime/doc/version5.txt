@@ -5715,7 +5715,7 @@ Solution:   Add uninstall program to remove the registry keys. It is installed
 	    Also: don't set $VIM when the executable is with the runtime files.
 	    Also: Add a text file with a step-by-step description of how to
 	    uninstall Vim for DOS and Windows.
-Files:	    src/uninstal.c, src/dosinst.c, src/Makefile.w32, uninstal.txt
+Files:	    src/uninstall.c, src/dosinst.c, src/Makefile.w32, uninstall.txt
 
 Patch 5.4.x8 (addition to 5.4.45)
 Files:	    many
@@ -6626,9 +6626,9 @@ Patch 5.6a.027 (extra)
 Problem:    Win32 GUI: The "Edit with Vim" popup menu entry causes problems
 	    for the Office toolbar.
 Solution:   Use a shell extension dll. (Tianmiao Hu)
-	    Added it to the install and uninstal programs, replaces the old
+	    Added it to the install and uninstall programs, replaces the old
 	    "Edit with Vim" menu registry entries.
-Files:	    src/dosinst.c, src/uninstal.c, gvimext/*, runtime/doc/gui_w32.txt
+Files:	    src/dosinst.c, src/uninstall.c, gvimext/*, runtime/doc/gui_w32.txt
 
 Patch 5.6a.028 (extra)
 Problem:    Win32 GUI: Dialogs and tear-off menus can't handle multi-byte

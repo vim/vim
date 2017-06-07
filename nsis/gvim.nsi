@@ -186,14 +186,14 @@ Section "Vim executables and runtime files"
 	SetOutPath $0
 	File /oname=gvim.exe ${VIMSRC}\gvim_ole.exe
 	File /oname=install.exe ${VIMSRC}\installw32.exe
-	File /oname=uninstal.exe ${VIMSRC}\uninstalw32.exe
+	File /oname=uninstall.exe ${VIMSRC}\uninstallw32.exe
 	File ${VIMSRC}\vimrun.exe
 	File /oname=tee.exe ${VIMSRC}\teew32.exe
 	File /oname=xxd.exe ${VIMSRC}\xxdw32.exe
 	File ${VIMTOOLS}\diff.exe
 	File ${VIMRT}\vimtutor.bat
 	File ${VIMRT}\README.txt
-	File ..\uninstal.txt
+	File ..\uninstall.txt
 	File ${VIMRT}\*.vim
 	File ${VIMRT}\rgb.txt
 
@@ -414,7 +414,7 @@ Section Uninstall
 	No_VisVim:
 
 	# delete the context menu entry and batch files
-	ExecWait "$0\uninstal.exe -nsis"
+	ExecWait "$0\uninstall.exe -nsis"
 
 	# We may have been put to the background when uninstall did something.
 	BringToFront

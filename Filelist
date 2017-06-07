@@ -361,7 +361,7 @@ SRC_DOS =	\
 		src/testdir/Make_dos.mak \
 		src/testdir/Make_ming.mak \
 		src/testdir/dos.vim \
-		src/uninstal.c \
+		src/uninstall.c \
 		src/vim.def \
 		src/vim.rc \
 		src/vimio.h \
@@ -376,7 +376,7 @@ SRC_DOS =	\
 		nsis/gvim.nsi \
 		nsis/gvim_version.nsh \
 		nsis/README.txt \
-		uninstal.txt \
+		uninstall.txt \
 		src/VisVim/Commands.cpp \
 		src/VisVim/Commands.h \
 		src/VisVim/DSAddIn.cpp \
@@ -688,7 +688,7 @@ BIN_AMI =	\
 # files for DOS binary (also in extra archive)
 BIN_DOS =	\
 		README_bindos.txt \
-		uninstal.txt \
+		uninstall.txt \
 
 # files for Win32 OLE binary (also in extra archive)
 BIN_OLE =	\

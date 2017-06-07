@@ -766,7 +766,7 @@ TARGETS = $(DLLTARGET)
 TARGETS = $(TARGETS) $(TARGET)
 
 # Targets:
-all: vim vimrun.exe install.exe xxd uninstal.exe GvimExt/gvimext.dll
+all: vim vimrun.exe install.exe xxd uninstall.exe GvimExt/gvimext.dll
 
 vim: $(OSTYPE) $(OBJDIR) $(OBJDIR)\bcc.cfg $(TARGETS)
 	@if exist $(OBJDIR)\version.obj del $(OBJDIR)\version.obj
@@ -791,8 +791,8 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 install.exe: dosinst.c $(OBJDIR)\bcc.cfg
 	$(CC) $(CCARG) -WC -DWIN32 -einstall dosinst.c
 
-uninstal.exe: uninstal.c $(OBJDIR)\bcc.cfg
-	$(CC) $(CCARG) -WC -DWIN32 -O2 -euninstal uninstal.c
+uninstall.exe: uninstall.c $(OBJDIR)\bcc.cfg
+	$(CC) $(CCARG) -WC -DWIN32 -O2 -euninstall uninstall.c
 
 clean:
 !if "$(OS)" == "Windows_NT"

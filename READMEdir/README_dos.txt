@@ -121,7 +121,7 @@ Remarks:
 	set VIM=d:\editors\vim
 
 - If you have told the "install.exe" program to add the "Edit with Vim" menu
-  entry, you can remove it by running the "uninstal.exe".  See
+  entry, you can remove it by running the "uninstall.exe".  See
   ":help win32-popup-menu".
 
 - In Windows 95/98/NT you can create a shortcut to Vim.  This works for all

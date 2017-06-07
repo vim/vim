@@ -8814,7 +8814,7 @@ Files:      Filelist, src/Make_bc3.mak, src/Make_bc5.mak, src/Make_djg.mak,
             src/misc1.c, src/misc2.c, src/netbeans.c, src/option.c,
             src/option.h, src/os_msdos.c, src/os_msdos.h, src/proto.h,
             src/proto/os_msdos.pro, src/regexp.c, src/screen.c, src/structs.h,
-            src/syntax.c, src/term.c, src/undo.c, src/uninstal.c,
+            src/syntax.c, src/term.c, src/undo.c, src/uninstall.c,
             src/version.c, src/vim.h, src/window.c, src/xxd/Make_bc3.mak,
             src/xxd/Make_djg.mak
 
@@ -14063,7 +14063,7 @@ Files:      src/alloc.h, src/arabic.c, src/arabic.h, src/ascii.h,
             src/regexp.h, src/regexp_nfa.c, src/screen.c, src/search.c,
             src/sha256.c, src/spell.c, src/spell.h, src/spellfile.c,
             src/structs.h, src/syntax.c, src/tag.c, src/term.c, src/term.h,
-            src/termlib.c, src/ui.c, src/undo.c, src/uninstal.c,
+            src/termlib.c, src/ui.c, src/undo.c, src/uninstall.c,
             src/userfunc.c, src/version.c, src/version.h, src/vim.h,
             src/vim.rc, src/vimio.h, src/vimrun.c, src/winclip.c,
             src/window.c, src/workshop.c, src/workshop.h, src/wsdebug.c,
@@ -14550,7 +14550,7 @@ Files:      src/ex_cmds.h
 Patch 8.0.0007
 Problem:    Vim 7.4 is still mentioned in a few places.
 Solution:   Update to Vim 8.  (Uncle Bill, closes #1094)
-Files:      src/INSTALLpc.txt, src/vimtutor, uninstal.txt
+Files:      src/INSTALLpc.txt, src/vimtutor, uninstall.txt
 
 Patch 8.0.0008
 Problem:    Popup complete test is disabled.
