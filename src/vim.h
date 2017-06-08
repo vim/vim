@@ -1433,7 +1433,7 @@ typedef enum
     , HLF_CUC	    /* 'cursurcolumn' */
     , HLF_CUL	    /* 'cursurline' */
     , HLF_MC	    /* 'colorcolumn' */
-    , HLF_QFC	    /* 'quickfix window current line' */
+    , HLF_QFC	    /* quickfix window current line */
     , HLF_COUNT	    /* MUST be the last one */
 } hlf_T;
 
