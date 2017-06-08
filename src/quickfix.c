@@ -2575,7 +2575,7 @@ qf_list(exarg_T *eap)
 		vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
 							    i, (char *)fname);
 	    msg_outtrans_attr(IObuff, i == qi->qf_lists[qi->qf_curlist].qf_index
-					   ? HL_ATTR(HLF_L) : HL_ATTR(HLF_D));
+					   ? HL_ATTR(HLF_QFC) : HL_ATTR(HLF_D));
 	    if (qfp->qf_lnum == 0)
 		IObuff[0] = NUL;
 	    else if (qfp->qf_col == 0)
