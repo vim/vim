@@ -1159,6 +1159,8 @@ enum
 #endif
     , WV_NU
     , WV_RNU
+    , WV_RA
+    , WV_LA
 #ifdef FEAT_LINEBREAK
     , WV_NUW
 #endif

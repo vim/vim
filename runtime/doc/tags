@@ -397,6 +397,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'km'	options.txt	/*'km'*
 'kmp'	options.txt	/*'kmp'*
 'kp'	options.txt	/*'kp'*
+'la'	options.txt	/*'la'*
+'lalign'	options.txt	/*'lalign'*
 'langmap'	options.txt	/*'langmap'*
 'langmenu'	options.txt	/*'langmenu'*
 'langnoremap'	options.txt	/*'langnoremap'*
@@ -781,6 +783,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'qe'	options.txt	/*'qe'*
 'quote	motion.txt	/*'quote*
 'quoteescape'	options.txt	/*'quoteescape'*
+'ra'	options.txt	/*'ra'*
+'ralign'	options.txt	/*'ralign'*
 'rdt'	options.txt	/*'rdt'*
 're'	options.txt	/*'re'*
 'readonly'	options.txt	/*'readonly'*
