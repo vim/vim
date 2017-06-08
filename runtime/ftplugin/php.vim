@@ -52,7 +52,7 @@ if exists("loaded_matchit")
 		      \ '\<do\>:\<while\>,' .
 		      \ '\<for\>:\<endfor\>,' .
 		      \ '\<foreach\>:\<endforeach\>,' .
-                      \ '(:),[:],{:},' .
+                      \ '(:),\[:\],{:},' .
 		      \ s:match_words
 endif
 " ###
