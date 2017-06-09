@@ -2252,7 +2252,7 @@ func! s:FTtex()
   if firstline =~ '^%&\s*\a\+'
     let format = tolower(matchstr(firstline, '\a\+'))
     let format = substitute(format, 'pdf', '', '')
-    if format == 'tex'
+    if format == 'plaintex'
       let format = 'plain'
     endif
   else
