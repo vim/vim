@@ -5903,6 +5903,17 @@ do_sub_msg(
     return FALSE;
 }
 
+    static void
+global_exe_one(char_u *cmd, linenr_T lnum)
+{
+    curwin->w_cursor.lnum = lnum;
+    curwin->w_cursor.col = 0;
+    if (*cmd == NUL || *cmd == '\n')
+	do_cmdline((char_u *)"p", NULL, NULL, DOCMD_NOWAIT);
+    else
+	do_cmdline(cmd, NULL, NULL, DOCMD_NOWAIT);
+}
+
 /*
  * Execute a global command of the form:
  *
@@ -5933,9 +5944,13 @@ ex_global(exarg_T *eap)
     int		match;
     int		which_pat;
 
-    if (global_busy)
+    /* When nesting the command works on one line.  This allows for
+     * ":g/found/v/notfound/command". */
+    if (global_busy && (eap->line1 != 1
+				  || eap->line2 != curbuf->b_ml.ml_line_count))
     {
-	EMSG(_("E147: Cannot do :global recursive"));	/* will increment global_busy */
+	/* will increment global_busy to break out of the loop */
+	EMSG(_("E147: Cannot do :global recursive with a range"));
 	return;
     }
 
@@ -5993,46 +6008,58 @@ ex_global(exarg_T *eap)
 	return;
     }
 
-    /*
-     * pass 1: set marks for each (not) matching line
-     */
-    for (lnum = eap->line1; lnum <= eap->line2 && !got_int; ++lnum)
+    if (global_busy)
     {
-	/* a match on this line? */
+	lnum = curwin->w_cursor.lnum;
 	match = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
-							    (colnr_T)0, NULL);
+							     (colnr_T)0, NULL);
 	if ((type == 'g' && match) || (type == 'v' && !match))
-	{
-	    ml_setmarked(lnum);
-	    ndone++;
-	}
-	line_breakcheck();
-    }
-
-    /*
-     * pass 2: execute the command for each line that has been marked
-     */
-    if (got_int)
-	MSG(_(e_interr));
-    else if (ndone == 0)
-    {
-	if (type == 'v')
-	    smsg((char_u *)_("Pattern found in every line: %s"), pat);
-	else
-	    smsg((char_u *)_("Pattern not found: %s"), pat);
+	    global_exe_one(cmd, lnum);
     }
     else
     {
+	/*
+	 * pass 1: set marks for each (not) matching line
+	 */
+	for (lnum = eap->line1; lnum <= eap->line2 && !got_int; ++lnum)
+	{
+	    /* a match on this line? */
+	    match = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
+							     (colnr_T)0, NULL);
+	    if ((type == 'g' && match) || (type == 'v' && !match))
+	    {
+		ml_setmarked(lnum);
+		ndone++;
+	    }
+	    line_breakcheck();
+	}
+
+	/*
+	 * pass 2: execute the command for each line that has been marked
+	 */
+	if (got_int)
+	    MSG(_(e_interr));
+	else if (ndone == 0)
+	{
+	    if (type == 'v')
+		smsg((char_u *)_("Pattern found in every line: %s"), pat);
+	    else
+		smsg((char_u *)_("Pattern not found: %s"), pat);
+	}
+	else
+	{
 #ifdef FEAT_CLIPBOARD
-	start_global_changes();
+	    start_global_changes();
 #endif
-	global_exe(cmd);
+	    global_exe(cmd);
 #ifdef FEAT_CLIPBOARD
-	end_global_changes();
+	    end_global_changes();
 #endif
+	}
+
+	ml_clearmarked();	   /* clear rest of the marks */
     }
 
-    ml_clearmarked();	   /* clear rest of the marks */
     vim_regfree(regmatch.regprog);
 }
 
@@ -6063,12 +6090,7 @@ global_exe(char_u *cmd)
     old_lcount = curbuf->b_ml.ml_line_count;
     while (!got_int && (lnum = ml_firstmarked()) != 0 && global_busy == 1)
     {
-	curwin->w_cursor.lnum = lnum;
-	curwin->w_cursor.col = 0;
-	if (*cmd == NUL || *cmd == '\n')
-	    do_cmdline((char_u *)"p", NULL, NULL, DOCMD_NOWAIT);
-	else
-	    do_cmdline(cmd, NULL, NULL, DOCMD_NOWAIT);
+	global_exe_one(cmd, lnum);
 	ui_breakcheck();
     }
 
@@ -8514,4 +8536,3 @@ ex_oldfiles(exarg_T *eap UNUSED)
     }
 }
 #endif
-
