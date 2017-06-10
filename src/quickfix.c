@@ -1534,6 +1534,10 @@ ll_new_list(void)
 	qi->qf_refcount++;
     }
 
+    /* Do not used the cached buffer, it may have been wiped out. */
+    vim_free(qf_last_bufname);
+    qf_last_bufname = NULL;
+
     return qi;
 }
 
