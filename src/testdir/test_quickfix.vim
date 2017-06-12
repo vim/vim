@@ -1650,12 +1650,12 @@ func XbottomTests(cchar)
       call assert_fails('lbottom', 'E776:')
   endif
 
-  call g:Xsetlist([{'filename': 'foo', 'lnum': 42}]) 
+  call g:Xsetlist([{'filename': 'foo', 'lnum': 42}])
   Xopen
   let wid = win_getid()
   call assert_equal(1, line('.'))
   wincmd w
-  call g:Xsetlist([{'filename': 'var', 'lnum': 24}], 'a') 
+  call g:Xsetlist([{'filename': 'var', 'lnum': 24}], 'a')
   Xbottom
   call win_gotoid(wid)
   call assert_equal(2, line('.'))
@@ -1804,6 +1804,37 @@ func Xproperty_tests(cchar)
 	call setloclist(0, [], 'f')
 	call assert_equal({}, getloclist(0, {'context':1}))
     endif
+
+    " Test for changing the context of previous quickfix lists
+    call g:Xsetlist([], 'f')
+    Xexpr "One"
+    Xexpr "Two"
+    Xexpr "Three"
+    call g:Xsetlist([], ' ', {'context' : [1], 'nr' : 1})
+    call g:Xsetlist([], ' ', {'context' : [2], 'nr' : 2})
+    " Also, check for setting the context using quickfix list number zero.
+    call g:Xsetlist([], ' ', {'context' : [3], 'nr' : 0})
+    call test_garbagecollect_now()
+    let l = g:Xgetlist({'nr' : 1, 'context' : 1})
+    call assert_equal([1], l.context)
+    let l = g:Xgetlist({'nr' : 2, 'context' : 1})
+    call assert_equal([2], l.context)
+    let l = g:Xgetlist({'nr' : 3, 'context' : 1})
+    call assert_equal([3], l.context)
+
+    " Test for changing the context through reference and for garbage
+    " collection of quickfix context
+    let l = ["red"]
+    call g:Xsetlist([], ' ', {'context' : l})
+    call add(l, "blue")
+    let x = g:Xgetlist({'context' : 1})
+    call add(x.context, "green")
+    call assert_equal(["red", "blue", "green"], l)
+    call assert_equal(["red", "blue", "green"], x.context)
+    unlet l
+    call test_garbagecollect_now()
+    let m = g:Xgetlist({'context' : 1})
+    call assert_equal(["red", "blue", "green"], m.context)
 endfunc
 
 func Test_qf_property()
@@ -2072,4 +2103,60 @@ endfunc
 func Test_qf_free()
   call XfreeTests('c')
   call XfreeTests('l')
+endfunc
+
+" Test for buffer overflow when parsing lines and adding new entries to
+" the quickfix list.
+func Test_bufoverflow()
+  set efm=%f:%l:%m
+  cgetexpr ['File1:100:' . repeat('x', 1025)]
+
+  set efm=%+GCompiler:\ %.%#,%f:%l:%m
+  cgetexpr ['Compiler: ' . repeat('a', 1015), 'File1:10:Hello World']
+
+  set efm=%DEntering\ directory\ %f,%f:%l:%m
+  cgetexpr ['Entering directory ' . repeat('a', 1006),
+	      \ 'File1:10:Hello World']
+  set efm&vim
+endfunc
+
+func Test_cclose_from_copen()
+    augroup QF_Test
+	au!
+	au FileType qf :cclose
+    augroup END
+    copen
+    augroup QF_Test
+	au!
+    augroup END
+    augroup! QF_Test
+endfunc
+
+" Tests for getting the quickfix stack size
+func XsizeTests(cchar)
+  call s:setup_commands(a:cchar)
+
+  call g:Xsetlist([], 'f')
+  call assert_equal(0, g:Xgetlist({'nr':'$'}).nr)
+  call assert_equal(1, len(g:Xgetlist({'nr':'$', 'all':1})))
+  call assert_equal(0, len(g:Xgetlist({'nr':0})))
+
+  Xexpr "File1:10:Line1"
+  Xexpr "File2:20:Line2"
+  Xexpr "File3:30:Line3"
+  Xolder | Xolder
+  call assert_equal(3, g:Xgetlist({'nr':'$'}).nr)
+  call g:Xsetlist([], 'f')
+
+  Xexpr "File1:10:Line1"
+  Xexpr "File2:20:Line2"
+  Xexpr "File3:30:Line3"
+  Xolder | Xolder
+  call g:Xsetlist([], 'a', {'nr':'$', 'title':'Compiler'})
+  call assert_equal('Compiler', g:Xgetlist({'nr':3, 'all':1}).title)
+endfunc
+
+func Test_Qf_Size()
+  call XsizeTests('c')
+  call XsizeTests('l')
 endfunc

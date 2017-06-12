@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Mar 22
+*options.txt*	For Vim version 8.0.  Last change: 2017 Jun 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -370,7 +370,7 @@ Note: In the future more global options can be made global-local.  Using
 
 Setting the filetype
 
-:setf[iletype] {filetype}			*:setf* *:setfiletype*
+:setf[iletype] [FALLBACK] {filetype}			*:setf* *:setfiletype*
 			Set the 'filetype' option to {filetype}, but only if
 			not done yet in a sequence of (nested) autocommands.
 			This is short for: >
@@ -380,6 +380,13 @@ Setting the filetype
 <			This command is used in a filetype.vim file to avoid
 			setting the 'filetype' option twice, causing different
 			settings and syntax files to be loaded.
+
+			When the optional FALLBACK argument is present, a
+			later :setfiletype command will override the
+			'filetype'.  This is to used for filetype detections
+			that are just a guess.  |did_filetype()| will return
+			false after this command.
+
 			{not in Vi}
 
 				*option-window* *optwin*
@@ -861,6 +868,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set background&
 <	Vim will guess the value.  In the GUI this should work correctly,
 	in other cases Vim might not be able to guess the right value.
+
+	When the t_BG option is set, Vim will use it to request the background
+	color from the terminal.  If the returned RGB value is dark/light and
+	'background' is not dark/light, 'background' will be set and the
+	screen is redrawn.  This may have side effects, make t_BG empty in
+	your .vimrc if you suspect this problem.
 
 	When starting the GUI, the default value for 'background' will be
 	"light".  When the value is not set in the .gvimrc, and Vim detects
@@ -2700,7 +2713,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Makes the 'g' and 'c' flags of the ":substitute" command to be
 	toggled each time the flag is given.  See |complex-change|.  See
 	also 'gdefault' option.
-	Switching this option on is discouraged!
+	Switching this option on may break plugins!
 
 					*'emoji'* *'emo'* *'noemoji'* *'noemo'*
 'emoji' 'emo'	boolean (default: on)
@@ -7729,6 +7742,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	compatible terminal.
 	If setting this option does not work (produces a colorless UI)
 	reading |xterm-true-color| might help.
+	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'terse'* *'noterse'*

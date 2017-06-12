@@ -4311,7 +4311,7 @@ restore_win_for_buf(
     static int
 SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 {
-    bufref_T	save_curbuf = {NULL, 0};
+    bufref_T	save_curbuf = {NULL, 0, 0};
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
 
@@ -4415,7 +4415,7 @@ SetBufferLineList(
 	PyObject *list,
 	PyInt *len_change)
 {
-    bufref_T	save_curbuf = {NULL, 0};
+    bufref_T	save_curbuf = {NULL, 0, 0};
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
 
@@ -4616,7 +4616,7 @@ SetBufferLineList(
     static int
 InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 {
-    bufref_T	save_curbuf = {NULL, 0};
+    bufref_T	save_curbuf = {NULL, 0, 0};
     win_T	*save_curwin = NULL;
     tabpage_T	*save_curtab = NULL;
 

@@ -3352,9 +3352,9 @@ f_float2nr(typval_T *argvars, typval_T *rettv)
 
     if (get_float_arg(argvars, &f) == OK)
     {
-	if (f < -VARNUM_MAX)
+	if (f <= -VARNUM_MAX + DBL_EPSILON)
 	    rettv->vval.v_number = -VARNUM_MAX;
-	else if (f > VARNUM_MAX)
+	else if (f >= VARNUM_MAX - DBL_EPSILON)
 	    rettv->vval.v_number = VARNUM_MAX;
 	else
 	    rettv->vval.v_number = (varnumber_T)f;
@@ -10461,8 +10461,10 @@ f_sha256(typval_T *argvars, typval_T *rettv)
     static void
 f_shellescape(typval_T *argvars, typval_T *rettv)
 {
+    int do_special = non_zero_arg(&argvars[1]);
+
     rettv->vval.v_string = vim_strsave_shellescape(
-		get_tv_string(&argvars[0]), non_zero_arg(&argvars[1]), TRUE);
+			   get_tv_string(&argvars[0]), do_special, do_special);
     rettv->v_type = VAR_STRING;
 }
 

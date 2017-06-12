@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Apr 28
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Jun 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,13 +35,9 @@ entered there will not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Remove the Farsi code?
-
 +channel:
-- job_stop() should not always close the channel, e.g. for "int".
-  (Martin Gammelsæter, 2017 Apr 11, #1632)
-  Only assume killed on "kill".
-  Check job->jv_status not to be JOB_ENDED.
+- When redrawing for the channel buffer, command line completion is cleared.
+  (Ramel Eshed, 2017 May 4)
 - Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
@@ -110,12 +106,90 @@ Regexp problems:
   had_endbrace[] is set but not initialized or used.
 - Difference between two engines: ".*\zs\/\@>\/" on text "///"
   (Chris Paul, 2016 Nov 13)  New engine not greedy enough?
+  Another one: echom matchstr(" sdfsfsf\n sfdsdfsdf",'[^\n]*')
+  (2017 May 15, #1252)
 
 With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
 (Marcin Szewczyk, 2017 Apr 26)
 
+ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
+
+ml_get errors with buggy script. (Dominique, 2017 Apr 30)
+
+Error in emsg with buggy script. (Dominique, 2017 Apr 30)
+
+Add options_default() / options_restore() to set several options to Vim
+defaults for a plugin. Comments from Zyx, 2017 May 10.
+Perhaps use a vimcontext / endvimcontext command block.
+
+Using freed memory with "qf" FileType autocommand that does :cclose.
+(Lemonboy, 2017 May 28, #1730, fix in 1734, with test that doesn't fail, but
+it fails when run manually)  Add "starting" to test_override()?
+
+Problem with three-piece comment. (Michael Lee, 2017 May 11, #1696)
+
+When checking if a bufref is valid, also check the buffer number, to catch the
+case of :bwipe followed by :new.
+
+Files for Latvian language. (Vitolins, 2017 May 3, #1675)
+
+Setting 'clipboard' to "unnamed" makes a global command very slow (Daniel
+Drucker, 2017 May 8).
+This was supposed to be fixed, did it break again somehow?
+Christian cannot reproduce it.
+
+Better TeX indent file. (Christian Brabandt, 2017 May 3)
+
+Openhab syntax file (mueller, #1678)
+
+Use gvimext.dll from the nightly build? (Issue #249)
+
+Patch to remove HAVE_GTK_MULTIHEAD-relevant code. (Kazunobu Kuriyama, 2017 May
+5) Update May 11
+
+'synmaxcol' works with bytes instead of screen cells. (Llandon, 2017 May 31,
+#1736)
+
+Patch to pass quickfix list index to functions. (Yegappan Lakshmanan, 2017 May
+31)
+
+Problem with using :cd when remotely editing a file. (Gerd Wachsmuth, 2017 May
+8, #1690)
+
+'equalalways' only works for one column. (Glacambre, 2017 May 15, #1707)
+
+Include solarized color scheme?
+
+Updates to GTK help. (Kazunobu Kuriyama, 2017 May 4)
+
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif?
+
+Bogus characters inserted when triggering indent while changing text.
+(Vitor Antunes, 2016 Nov 22, #1269)
+
+Patch to have ":stag" respect 'switchbuf'. (Ingo Karkat, 2017 May 5, #1681)
+
+Patch to improve building with MSVC. (Leonardo Manera, #1747)
+
+Wrong selection of quoted text (Guraga, #1687)
+Patch to fix selection of quoted text. (Christian Brabandt, 2017 May 7, #1687)
+
+Patch to use separate error message for regex range. (Itchyny, Ken Hamada,
+2017 May 16)
+
+Segmentation fault with complete(). (Lifepillar, 2017 Apr 29, #1668)
+Check for "pat" to be NULL in search_for_exact_line()?
+How did it get NULL?  Comment by Christian, Apr 30.
+
+Is it possible to keep the complete menu open when calling complete()?
+(Prabir Shrestha, 2017 May 19, #1713)
+
+Calling may_req_ambiguous_char_width() and may_req_bg_color() only after
+executing command line commands may not work properly.
+(Rastislav Barlink, 2017 May 18)
+Set "starting" to 0 earlier, and move the may_req calls above exe_commands()?
+No, that's a problem with using "-c quit", not running Vim interactive.
 
 Memory leak in test97?  The string is actually freed.  Weird.
 
@@ -127,6 +201,33 @@ New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
 
 Add a toolbar in the terminal.  Can be global, above all windows, or specific
 for one window.
+
+Make maparg() also return the raw rhs, so that it doesn't depend on 'cpo'.
+(Brett Stahlman, 2017 May 23)
+Even better: add a way to disable a mapping temporarily and re-enable it
+later.  This is for a sub-mode that is active for a short while (one buffer).
+Still need maplist() to find the mappings.  What can we use to identify a
+mapping?  Something unique would be better than the LHS.
+Perhaps simpler: actually delete the mappings.  Use maplist() to list matching
+mappings (with a lhs prefix, like maparg()), mapdelete() to delete,
+maprestore() to restore (using the output of maplist().
+
+Patch to support chinese wordcount in utf-8. (Rain, 2017 May 24, #1722)
+Or not?
+
+"gn" selects one character instead of the searched text. (keyboardfire, #1683)
+Patch by Christian, 2017 May 7.
+
+Wrong memory access using p_fdm, found in patch to add tests for diff mode
+(#1658) (Dominique Pelle, 2017 May 6)
+
+Patch to improve test coverage for diff mode. (Dominique Pelle, 2017 May 11,
+#1685)
+
+Add an argument to :mkvimrc (or add aother command) to skip mappings from
+plugins (source is a Vim script).  No need to put these in a .vimrc, they will
+be defined when the plugin is loaded.
+
 Use tb_set(winid, [{'text': 'stop', 'cb': callback, 'hi': 'Green'}])
     tb_highlight(winid, 'ToolBar')
     tb_get(winid)
@@ -159,6 +260,10 @@ Suggestion to improve pt-br spell checking. (Marcelo D Montu, 2016 Dec 15,
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 
 Completion for :!cmd shows each match twice. #1435
+
+Patch to change GUI behavior: instead of changing the window size change the
+lines/columns when menu/toolbar/etc. is added/removed. (Ychin, 2016 Mar 20,
+#703)
 
 GTK: When adding a timer from 'balloonexpr' it won't fire, because
 g_main_context_iteration() doesn't return.  Need to trigger an event when the
@@ -193,6 +298,10 @@ writefile() does not abort as soon as an error is found. (Nikolai Pavlov,
 
 Patch to support on-the-spot and over-the-spot input method. (Ken Takata, 2017
 Feb 14).
+
+Change the Farsi code to work with UTF-8.  Possibly combined with the Arabic
+support, or similar.
+Invalid read error in Farsi mode. (Dominique Pelle, 2009 Aug 2)
 
 Add a command to take a range of lines, filter them and put the output
 somewhere else.  :{range}copy {dest} !cmd
@@ -369,14 +478,8 @@ Autocommands blocked in do_arg_all().  Supposed to happen later?
 
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
 
-Patch to add context information to quickfix/location list. (Yegappan
-Lakshmanan, 2016 Aug 25, #1012)
-
 MS-Windows: use WS_HIDE instead of SW_SHOWMINNOACTIVE in os_win32.c?
 Otherwise task flickers in taskbar.
-
-Bogus characters inserted when triggering indent while changing test.
-(Vitor Antunes, 2016 Nov 22, #1269)
 
 Should make ":@r" handle line continuation. (Cesar Romani, 2016 Jun 26)
 Also for ":@.".
@@ -444,6 +547,8 @@ No test, needs some work to include.
 Patch to improve indenting for C++ constructor with initializer list.
 (Hirohito Higashi, 2016 Mar 31)
 
+Zero-out krypt key information when no longer in use. (Ben Fritz, 2017 May 15)
+
 Add stronger encryption.  Could use libsodium (NaCl).
 https://github.com/jedisct1/libsodium/
 Possibly include the needed code so that it can be build everywhere.
@@ -492,10 +597,6 @@ Remove SPACE_IN_FILENAME ? What could possibly go wrong?
 When command names are very long :command output is difficult to read.  Use a
 maximum for the column width?  (#871)
 Patcy by varmanishant, 2016 Jun 18, #876
-
-Patch to change GUI behavior: instead of changing the window size change the
-lines/columns when menu/toolbar/etc. is added/removed. (Ychin, 2016 Mar 20,
-#703)
 
 Installation of .desktop files does not work everywhere.
 It's now fixed, but the target directory probably isn't right.
@@ -615,7 +716,8 @@ Value of virtcol() for '[ and '] depend on multi-byte character.
 (Luchr, #277)
 
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
-'cursorline'/'cursorcolumn' are a lot faster?
+'cursorline'/'cursorcolumn' are a lot faster?  Thus store the attributes
+before combining them.
 
 C highlighting: modern C allows: /* comment */ #ifdef
 and also line continuation after #include.
@@ -1518,8 +1620,6 @@ Disable updating folds while completion is active? (Peter Odding, 2010 Jun 9)
 When a:base in 'completefunc' starts with a number it's passed as a number,
 not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
 string value.
-
-Invalid read error in Farsi mode. (Dominique Pelle, 2009 Aug 2)
 
 For running gvim on a USB stick: avoid the OLE registration.  Use a command
 line argument -noregister.

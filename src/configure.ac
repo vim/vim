@@ -2606,10 +2606,6 @@ if test -z "$SKIP_GTK2"; then
     fi
   fi
   if test "x$GUITYPE" = "xGTK"; then
-    if test "$gtk_minor_version" = 1 -a "0$gtk_micro_version" -ge 1 \
-	|| test "0$gtk_minor_version" -ge 2; then
-      AC_DEFINE(HAVE_GTK_MULTIHEAD)
-    fi
     dnl
     dnl if GTK exists, then check for GNOME.
     dnl
@@ -2658,7 +2654,6 @@ if test -z "$SKIP_GTK3"; then
       SKIP_MOTIF=YES
       GUITYPE=GTK
       AC_SUBST(GTK_LIBNAME)
-      AC_DEFINE(HAVE_GTK_MULTIHEAD)
       AC_DEFINE(USE_GTK3)
     fi
   fi

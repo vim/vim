@@ -15117,7 +15117,7 @@ Files:      src/option.c
 
 Patch 8.0.0101
 Problem:    Some options are not strictly checked.
-Solution:   Add flags for strickter checks.
+Solution:   Add flags for stricter checks.
 Files:      src/option.c
 
 Patch 8.0.0102 (after 8.0.0101)
@@ -15766,7 +15766,7 @@ Solution:   Change #ifdef around ins_char_bytes.
 Files:      src/misc1.c
 
 Patch 8.0.0212
-Problem:    The buffer used to store a key name theoreticaly could be too
+Problem:    The buffer used to store a key name theoretically could be too
             small. (Coverity)
 Solution:   Count all possible modifier characters.  Add a check for the
             length just in case.
@@ -15834,7 +15834,7 @@ Files:      src/ops.c, src/testdir/test_put.vim, src/Makefile,
 
 Patch 8.0.0223
 Problem:    Coverity gets confused by the flags passed to find_tags() and
-            warnts for an uninitialized variable.
+            warns about uninitialized variable.
 Solution:   Disallow using cscope and help tags at the same time.
 Files:      src/tag.c
 
@@ -15955,7 +15955,7 @@ Files:      src/testdir/test_usercommands.vim
 
 Patch 8.0.0243
 Problem:    When making a character lower case with tolower() changes the byte
-            cound, it is not made lower case.
+            count, it is not made lower case.
 Solution:   Add strlow_save(). (Dominique Pelle, closes #1406)
 Files:      src/evalfunc.c, src/misc2.c, src/proto/misc2.pro,
             src/testdir/test_functions.vim
@@ -16032,9 +16032,9 @@ Files:      src/Makefile, src/charset.c, src/kword_test.c, src/mbyte.c,
             src/proto/mbyte.pro
 
 Patch 8.0.0253
-Problem:    When creating a session when winminheight is 2 or larger and
+Problem:    When creating a session when 'winminheight' is 2 or larger and
             loading that session gives an error.
-Solution:   Also set winminheight before setting winheight to 1. (Rafael
+Solution:   Also set 'winminheight' before setting 'winheight' to 1. (Rafael
             Bodill, neovim #5717)
 Files:      src/ex_docmd.c, src/testdir/test_mksession.vim
 
@@ -16541,7 +16541,7 @@ Solution:   For quoted text objects bail out if the Visual area spans more
 Files:      src/search.c, src/testdir/test_visual.vim
 
 Patch 8.0.0340
-Problem:    Not checking return valud of dict_add(). (Coverity)
+Problem:    Not checking return value of dict_add(). (Coverity)
 Solution:   Handle a failure.
 Files:      src/buffer.c
 
@@ -16612,12 +16612,12 @@ Files:      src/testdir/test_expr.vim
 Patch 8.0.0352
 Problem:    The condition for when a typval needs to be cleared is too
             complicated.
-Solution:   Init the type to VAR_UNKNOWN and clear it always.
+Solution:   Init the type to VAR_UNKNOWN and always clear it.
 Files:      src/eval.c
 
 Patch 8.0.0353
 Problem:    If [RO] in the status line is translated to a longer string, it is
-            trunctted to 4 bytes.
+            truncated to 4 bytes.
 Solution:   Skip over the resulting string. (Jente Hidskes, closes #1499)
 Files:      src/screen.c
 
@@ -17294,7 +17294,7 @@ Files:      src/misc2.c
 
 Patch 8.0.0461 (after 8.0.0457)
 Problem:    Test 45 hangs on MS-Windows.
-Solution:   Reset 'shiftwidth'.  Also remove redundent function.
+Solution:   Reset 'shiftwidth'.  Also remove redundant function.
 Files:      src/fold.c, src/testdir/test45.in
 
 Patch 8.0.0462
@@ -17597,7 +17597,7 @@ Solution:   Remove duplicate https:.
 Files:      README.md
 
 Patch 8.0.0511
-Problem:    Menuage for skipping client-server tests is unclear.
+Problem:    Message for skipping client-server tests is unclear.
 Solution:   Be more specific about what's missing (Hirohito Higashi, Kazunobu
             Kuriyama)
 Files:      src/testdir/test_quotestar.vim, src/testdir/test_clientserver.vim
@@ -17688,7 +17688,7 @@ Solution:   Include the whole character.
 Files:      src/search.c, src/testdir/test_normal.vim
 
 Patch 8.0.0524 (after 8.0.0518)
-Problem:    Folds are messed up when 'encodin' is "utf-8".
+Problem:    Folds are messed up when 'encoding' is "utf-8".
 Solution:   Also set the fold character when it's not multi-byte.
 Files:      src/screen.c, src/testdir/test_display.vim
 
@@ -17882,7 +17882,7 @@ Solution:   Add a test. (Dominique Pelle, closes #1622)
 Files:      src/testdir/test_syntax.vim
 
 Patch 8.0.0559
-Problem:    Setting ttytype to xxx does not always fail as expected. (Marvin
+Problem:    Setting 'ttytype' to xxx does not always fail as expected. (Marvin
             Schmidt)
 Solution:   Catch both possible errors. (closes #1601)
 Files:      src/testdir/test_options.vim
@@ -17919,7 +17919,7 @@ Solution:   Set qf_last to NULL.
 Files:      src/quickfix.c
 
 Patch 8.0.0566
-Problem:    Setting nocompatible for the tiny version moves the cursor.
+Problem:    Setting 'nocompatible' for the tiny version moves the cursor.
 Solution:   Use another trick to skip commands when the +eval feature is
             present. (Christian Brabandt, closes #1630)
 Files:      runtime/defaults.vim
@@ -17938,7 +17938,7 @@ Files:      src/testdir/test_goto.vim, src/normal.c
 Patch 8.0.0569
 Problem:    Bracketed paste is still enabled when executing a shell command.
             (Michael Smith)
-Solution:   Disable brackted paste when going into cooked mode. (closes #1638)
+Solution:   Disable bracketed paste when going into cooked mode. (closes #1638)
 Files:      src/term.c
 
 Patch 8.0.0570
@@ -17978,7 +17978,7 @@ Solution:   Make a copy of 'indentexpr'.
 Files:      src/misc1.c, src/testdir/test_options.vim
 
 Patch 8.0.0576 (after 8.0.0570 and 8.0.0573)
-Problem:    Can't build when configure choses "install-sh". (Daniel Hahler)
+Problem:    Can't build when configure chooses "install-sh". (Daniel Hahler)
 Solution:   Always use install-sh.  Fix remaining use of mkinstalldirs.
             (closes #1647)
 Files:      src/installman.sh, src/installml.sh, src/config.mk.in,

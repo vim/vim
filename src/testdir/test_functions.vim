@@ -784,3 +784,28 @@ func Test_redo_in_nested_functions()
   delfunc Operator
   delfunc Apply
 endfunc
+
+func Test_shellescape()
+  let save_shell = &shell
+  set shell=bash
+  call assert_equal("'text'", shellescape('text'))
+  call assert_equal("'te\"xt'", shellescape('te"xt'))
+  call assert_equal("'te'\\''xt'", shellescape("te'xt"))
+
+  call assert_equal("'te%xt'", shellescape("te%xt"))
+  call assert_equal("'te\\%xt'", shellescape("te%xt", 1))
+  call assert_equal("'te#xt'", shellescape("te#xt"))
+  call assert_equal("'te\\#xt'", shellescape("te#xt", 1))
+  call assert_equal("'te!xt'", shellescape("te!xt"))
+  call assert_equal("'te\\!xt'", shellescape("te!xt", 1))
+
+  call assert_equal("'te\nxt'", shellescape("te\nxt"))
+  call assert_equal("'te\\\nxt'", shellescape("te\nxt", 1))
+  set shell=tcsh
+  call assert_equal("'te\\!xt'", shellescape("te!xt"))
+  call assert_equal("'te\\\\!xt'", shellescape("te!xt", 1))
+  call assert_equal("'te\\\nxt'", shellescape("te\nxt"))
+  call assert_equal("'te\\\\\nxt'", shellescape("te\nxt", 1))
+
+  let &shell = save_shell
+endfunc

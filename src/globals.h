@@ -326,6 +326,8 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 EXTERN scid_T	current_SID INIT(= 0);
 #endif
 
+EXTERN int	did_source_packages INIT(= FALSE);
+
 /* Magic number used for hashitem "hi_key" value indicating a deleted item.
  * Only the address is used. */
 EXTERN char_u	hash_removed;
@@ -385,7 +387,7 @@ EXTERN int	keep_filetype INIT(= FALSE);	/* value for did_filetype when
 
 /* When deleting the current buffer, another one must be loaded.  If we know
  * which one is preferred, au_new_curbuf is set to it */
-EXTERN bufref_T	au_new_curbuf INIT(= {NULL COMMA 0});
+EXTERN bufref_T	au_new_curbuf INIT(= {NULL COMMA 0 COMMA 0});
 
 /* When deleting a buffer/window and autocmd_busy is TRUE, do not free the
  * buffer/window. but link it in the list starting with

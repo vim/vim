@@ -5042,6 +5042,7 @@ expand_filename(
 		&& eap->cmdidx != CMD_lgrep
 		&& eap->cmdidx != CMD_grepadd
 		&& eap->cmdidx != CMD_lgrepadd
+		&& eap->cmdidx != CMD_hardcopy
 #ifndef UNIX
 		&& !(eap->argt & NOSPC)
 #endif
@@ -12172,13 +12173,22 @@ ex_filetype(exarg_T *eap)
 }
 
 /*
- * ":setfiletype {name}"
+ * ":setfiletype [FALLBACK] {name}"
  */
     static void
 ex_setfiletype(exarg_T *eap)
 {
     if (!did_filetype)
-	set_option_value((char_u *)"filetype", 0L, eap->arg, OPT_LOCAL);
+    {
+	char_u *arg = eap->arg;
+
+	if (STRNCMP(arg, "FALLBACK ", 9) == 0)
+	    arg += 9;
+
+	set_option_value((char_u *)"filetype", 0L, arg, OPT_LOCAL);
+	if (arg != eap->arg)
+	    did_filetype = FALSE;
+    }
 }
 #endif
 

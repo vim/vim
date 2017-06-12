@@ -628,37 +628,39 @@ nfa_recognize_char_class(char_u *start, char_u *end, int extra_newl)
 			config |= CLASS_o9;
 			break;
 		    }
-		    else
 		    if (*(p + 2) == '7')
 		    {
 			config |= CLASS_o7;
 			break;
 		    }
+		    return FAIL;
+
 		case 'a':
 		    if (*(p + 2) == 'z')
 		    {
 			config |= CLASS_az;
 			break;
 		    }
-		    else
 		    if (*(p + 2) == 'f')
 		    {
 			config |= CLASS_af;
 			break;
 		    }
+		    return FAIL;
+
 		case 'A':
 		    if (*(p + 2) == 'Z')
 		    {
 			config |= CLASS_AZ;
 			break;
 		    }
-		    else
 		    if (*(p + 2) == 'F')
 		    {
 			config |= CLASS_AF;
 			break;
 		    }
-		/* FALLTHROUGH */
+		    return FAIL;
+
 		default:
 		    return FAIL;
 	    }
@@ -1851,7 +1853,7 @@ collection:
 			endc = startc;
 			startc = oldstartc;
 			if (startc > endc)
-			    EMSG_RET_FAIL(_(e_invrange));
+			    EMSG_RET_FAIL(_(e_reverse_range));
 
 			if (endc > startc + 2)
 			{

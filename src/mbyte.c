@@ -5304,17 +5304,12 @@ im_synthesize_keypress(unsigned int keyval, unsigned int state)
 {
     GdkEventKey *event;
 
-#  ifdef HAVE_GTK_MULTIHEAD
     event = (GdkEventKey *)gdk_event_new(GDK_KEY_PRESS);
-#   if GTK_CHECK_VERSION(3,0,0)
+#  if GTK_CHECK_VERSION(3,0,0)
     g_object_ref(gtk_widget_get_window(gui.drawarea));
 					/* unreffed by gdk_event_free() */
-#   else
-    g_object_ref(gui.drawarea->window); /* unreffed by gdk_event_free() */
-#   endif
 #  else
-    event = (GdkEventKey *)g_malloc0((gulong)sizeof(GdkEvent));
-    event->type = GDK_KEY_PRESS;
+    g_object_ref(gui.drawarea->window); /* unreffed by gdk_event_free() */
 #  endif
 #  if GTK_CHECK_VERSION(3,0,0)
     event->window = gtk_widget_get_window(gui.drawarea);
@@ -5337,11 +5332,7 @@ im_synthesize_keypress(unsigned int keyval, unsigned int state)
     event->send_event = FALSE;
     gtk_im_context_filter_keypress(xic, event);
 
-#  ifdef HAVE_GTK_MULTIHEAD
     gdk_event_free((GdkEvent *)event);
-#  else
-    g_free(event);
-#  endif
 }
 
     void
