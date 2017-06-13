@@ -56,7 +56,7 @@ syn keyword htmlTagName contained object optgroup q s tbody tfoot thead
 
 " new html 5 tags
 syn keyword htmlTagName contained article aside audio bdi canvas data
-syn keyword htmlTagName contained datalist details embed figcaption figure
+syn keyword htmlTagName contained datalist details dialog embed figcaption figure
 syn keyword htmlTagName contained footer header hgroup keygen main mark
 syn keyword htmlTagName contained menuitem meter nav output picture
 syn keyword htmlTagName contained progress rb rp rt rtc ruby section
