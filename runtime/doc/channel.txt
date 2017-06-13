@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.0.  Last change: 2016 Dec 02
+*channel.txt*      For Vim version 8.0.  Last change: 2017 Jun 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -488,6 +488,11 @@ handle that separately, add an "err_cb" handler: >
 If you want to handle both stderr and stdout with one handler use the
 "callback" option: >
     let job = job_start(command, {"callback": "MyHandler"}) 
+
+Depending on the system, starting a job can put Vim in the background, the
+started job gets the focus.  To avoid that, use the `foreground()` function.
+This might not always work when called early, put in the callback handler or
+use a timer to call it after the job has started.
 
 You can send a message to the command with ch_evalraw().  If the channel is in
 JSON or JS mode you can use ch_evalexpr().
