@@ -943,6 +943,7 @@ typedef struct attr_entry
 # ifdef FEAT_TERMGUICOLORS
 	    guicolor_T	    fg_rgb;	/* foreground color RGB */
 	    guicolor_T	    bg_rgb;	/* background color RGB */
+	    int		    gui_attr;	/* attributes when in RGB mode */
 # endif
 	} cterm;
 # ifdef FEAT_GUI

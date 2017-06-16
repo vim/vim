@@ -7942,6 +7942,10 @@ screen_start_highlight(int attr)
 		    aep = syn_term_attr2entry(attr);
 		if (aep == NULL)	    /* did ":syntax clear" */
 		    attr = 0;
+#ifdef FEAT_TERMGUICOLORS
+		else if (p_tgc)
+		    attr = aep->ae_u.cterm.gui_attr;
+#endif
 		else
 		    attr = aep->ae_attr;
 	    }
@@ -8064,6 +8068,10 @@ screen_stop_highlight(void)
 		}
 		if (aep == NULL)	    /* did ":syntax clear" */
 		    screen_attr = 0;
+#ifdef FEAT_TERMGUICOLORS
+		else if (p_tgc)
+		    screen_attr = aep->ae_u.cterm.gui_attr;
+#endif
 		else
 		    screen_attr = aep->ae_attr;
 	    }

@@ -8676,6 +8676,8 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 						    == taep->ae_u.cterm.fg_rgb
 			    && aep->ae_u.cterm.bg_rgb
 						    == taep->ae_u.cterm.bg_rgb
+			    && aep->ae_u.cterm.gui_attr
+						    == taep->ae_u.cterm.gui_attr
 #endif
 		       )))
 
@@ -8745,6 +8747,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 #ifdef FEAT_TERMGUICOLORS
 	taep->ae_u.cterm.fg_rgb = aep->ae_u.cterm.fg_rgb;
 	taep->ae_u.cterm.bg_rgb = aep->ae_u.cterm.bg_rgb;
+	taep->ae_u.cterm.gui_attr = aep->ae_u.cterm.gui_attr;
 #endif
     }
     ++table->ga_len;
@@ -8849,6 +8852,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 #ifdef FEAT_TERMGUICOLORS
 	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
 	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.gui_attr = 0;
 #endif
 	    if (char_attr <= HL_ALL)
 		new_en.ae_attr = char_attr;
@@ -8871,6 +8875,8 @@ hl_combine_attr(int char_attr, int prim_attr)
 		    new_en.ae_u.cterm.fg_rgb = spell_aep->ae_u.cterm.fg_rgb;
 		if (spell_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
 		    new_en.ae_u.cterm.bg_rgb = spell_aep->ae_u.cterm.bg_rgb;
+		if (spell_aep->ae_u.cterm.gui_attr != 0)
+		    new_en.ae_u.cterm.gui_attr = spell_aep->ae_u.cterm.gui_attr;
 #endif
 	    }
 	}
@@ -9337,6 +9343,7 @@ set_hl_attr(
 # ifdef FEAT_TERMGUICOLORS
 	    && sgp->sg_gui_fg == INVALCOLOR
 	    && sgp->sg_gui_bg == INVALCOLOR
+	    && sgp->sg_gui == 0
 # endif
 	    )
 	sgp->sg_cterm_attr = sgp->sg_cterm;
@@ -9348,6 +9355,7 @@ set_hl_attr(
 # ifdef FEAT_TERMGUICOLORS
 	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
+	at_en.ae_u.cterm.gui_attr = sgp->sg_gui;
 # endif
 	sgp->sg_cterm_attr = get_attr_entry(&cterm_attr_table, &at_en);
     }
