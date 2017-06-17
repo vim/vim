@@ -1268,7 +1268,7 @@ cs_find_common(
 
 		if (!forceit)
 		{
-		    qf_jump(qi, 0, 0, forceit);
+		    qf_jump(qi, 0, 0, false);
 		}
 	    }
 	}
