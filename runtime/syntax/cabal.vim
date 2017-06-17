@@ -2,7 +2,8 @@
 " Language:	Haskell Cabal Build file
 " Maintainer:	Vincent Berthoux <twinside@gmail.com>
 " File Types:	.cabal
-" Last Change:  2010 May 18
+" Last Change:  2017 June 17
+" v1.4: Add benchmark support, thanks to Simon Meier
 " v1.3: Updated to the last version of cabal
 "       Added more highlighting for cabal function, true/false
 "       and version number. Also added missing comment highlighting.
@@ -23,83 +24,93 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn keyword	cabalCategory	Library library Executable executable Flag flag
-syn keyword	cabalCategory	source-repository Source-Repository
+syn match	cabalCategory	"\c\<executable\>"
+syn match	cabalCategory	"\c\<library\>"
+syn match	cabalCategory	"\c\<benchmark\>"
+syn match	cabalCategory	"\c\<test-suite\>"
+syn match	cabalCategory	"\c\<source-repository\>"
+syn match	cabalCategory	"\c\<flag\>"
+syn match	cabalCategory	"\c\<custom-setup\>"
 
 syn keyword     cabalConditional    if else
 syn match       cabalOperator       "&&\|||\|!\|==\|>=\|<="
 syn keyword     cabalFunction       os arche impl flag
 syn match       cabalComment    /--.*$/
-syn match       cabalVersion    "\d\+\(.\(\d\)\+\)\+"
+syn match       cabalVersion    "\d\+\(\.\(\d\)\+\)\+\(\.\*\)\?"
 
-syn match       cabalTruth      "\ctrue"
-syn match       cabalTruth      "\cfalse"
+syn match       cabalTruth      "\c\<true\>"
+syn match       cabalTruth      "\c\<false\>"
 
-syn match       cabalCompiler   "\cghc"
-syn match       cabalCompiler   "\cnhc"
-syn match       cabalCompiler   "\cyhc"
-syn match       cabalCompiler   "\chugs"
-syn match       cabalCompiler   "\chbc"
-syn match       cabalCompiler   "\chelium"
-syn match       cabalCompiler   "\cjhc"
-syn match       cabalCompiler   "\clhc"
+syn match       cabalCompiler   "\c\<ghc\>"
+syn match       cabalCompiler   "\c\<nhc\>"
+syn match       cabalCompiler   "\c\<yhc\>"
+syn match       cabalCompiler   "\c\<hugs\>"
+syn match       cabalCompiler   "\c\<hbc\>"
+syn match       cabalCompiler   "\c\<helium\>"
+syn match       cabalCompiler   "\c\<jhc\>"
+syn match       cabalCompiler   "\c\<lhc\>"
 
+syn match	cabalStatement	/^\c\s*\<default-language\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<default-extensions\s*:/me=e-1
 
-syn match	cabalStatement	"\cauthor"
-syn match	cabalStatement	"\cbranch"
-syn match	cabalStatement	"\cbug-reports"
-syn match	cabalStatement	"\cbuild-depends"
-syn match	cabalStatement	"\cbuild-tools"
-syn match	cabalStatement	"\cbuild-type"
-syn match	cabalStatement	"\cbuildable"
-syn match	cabalStatement	"\cc-sources"
-syn match	cabalStatement	"\ccabal-version"
-syn match	cabalStatement	"\ccategory"
-syn match	cabalStatement	"\ccc-options"
-syn match	cabalStatement	"\ccopyright"
-syn match       cabalStatement  "\ccpp-options"
-syn match	cabalStatement	"\cdata-dir"
-syn match	cabalStatement	"\cdata-files"
-syn match	cabalStatement	"\cdefault"
-syn match	cabalStatement	"\cdescription"
-syn match	cabalStatement	"\cexecutable"
-syn match	cabalStatement	"\cexposed-modules"
-syn match	cabalStatement	"\cexposed"
-syn match	cabalStatement	"\cextensions"
-syn match	cabalStatement	"\cextra-lib-dirs"
-syn match	cabalStatement	"\cextra-libraries"
-syn match	cabalStatement	"\cextra-source-files"
-syn match	cabalStatement	"\cextra-tmp-files"
-syn match	cabalStatement	"\cfor example"
-syn match	cabalStatement	"\cframeworks"
-syn match	cabalStatement	"\cghc-options"
-syn match	cabalStatement	"\cghc-prof-options"
-syn match	cabalStatement	"\cghc-shared-options"
-syn match	cabalStatement	"\chomepage"
-syn match	cabalStatement	"\chs-source-dirs"
-syn match	cabalStatement	"\chugs-options"
-syn match	cabalStatement	"\cinclude-dirs"
-syn match	cabalStatement	"\cincludes"
-syn match	cabalStatement	"\cinstall-includes"
-syn match	cabalStatement	"\cld-options"
-syn match	cabalStatement	"\clicense-file"
-syn match	cabalStatement	"\clicense"
-syn match	cabalStatement	"\clocation"
-syn match	cabalStatement	"\cmain-is"
-syn match	cabalStatement	"\cmaintainer"
-syn match	cabalStatement	"\cmodule"
-syn match	cabalStatement	"\cname"
-syn match	cabalStatement	"\cnhc98-options"
-syn match	cabalStatement	"\cother-modules"
-syn match	cabalStatement	"\cpackage-url"
-syn match	cabalStatement	"\cpkgconfig-depends"
-syn match	cabalStatement	"\cstability"
-syn match	cabalStatement	"\csubdir"
-syn match	cabalStatement	"\csynopsis"
-syn match	cabalStatement	"\ctag"
-syn match	cabalStatement	"\ctested-with"
-syn match	cabalStatement	"\ctype"
-syn match	cabalStatement	"\cversion"
+syn match	cabalStatement	/^\c\s*\<author\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<branch\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<bug-reports\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<build-depends\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<build-tools\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<build-type\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<buildable\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<c-sources\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<cabal-version\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<category\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<cc-options\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<copyright\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<cpp-options\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<data-dir\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<data-files\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<default\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<description\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<executable\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<exposed-modules\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<exposed\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<extensions\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<extra-doc-files\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<extra-lib-dirs\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<extra-libraries\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<extra-source-files\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<extra-tmp-files\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<for example\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<frameworks\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<ghc-options\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<ghc-prof-options\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<ghc-shared-options\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<homepage\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<hs-source-dirs\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<hugs-options\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<include-dirs\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<includes\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<install-includes\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<ld-options\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<license-file\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<license\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<location\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<main-is\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<maintainer\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<module\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<name\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<nhc98-options\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<other-extensions\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<other-modules\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<package-url\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<pkgconfig-depends\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<setup-depends\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<stability\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<subdir\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<synopsis\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<tag\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<tested-with\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<type\s*:/me=e-1
+syn match	cabalStatement	/^\c\s*\<version\s*:/me=e-1
 
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet
