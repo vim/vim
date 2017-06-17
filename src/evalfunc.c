@@ -9281,7 +9281,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 
     pos = save_cursor = curwin->w_cursor;
     subpatnum = searchit(curwin, curbuf, &pos, dir, pat, 1L,
-				options, RE_SEARCH, (linenr_T)lnum_stop, &tm);
+			   options, RE_SEARCH, (linenr_T)lnum_stop, &tm, NULL);
     if (subpatnum != FAIL)
     {
 	if (flags & SP_SUBPAT)
@@ -9619,7 +9619,7 @@ do_searchpair(
     for (;;)
     {
 	n = searchit(curwin, curbuf, &pos, dir, pat, 1L,
-					   options, RE_SEARCH, lnum_stop, &tm);
+				     options, RE_SEARCH, lnum_stop, &tm, NULL);
 	if (n == FAIL || (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos)))
 	    /* didn't find it or found the first match again: FAIL */
 	    break;

@@ -3479,7 +3479,7 @@ typedef struct regbehind_S
 } regbehind_T;
 
 static char_u	*reg_getline(linenr_T lnum);
-static long	bt_regexec_both(char_u *line, colnr_T col, proftime_T *tm);
+static long	bt_regexec_both(char_u *line, colnr_T col, proftime_T *tm, int *timed_out);
 static long	regtry(bt_regprog_T *prog, colnr_T col);
 static void	cleanup_subexpr(void);
 #ifdef FEAT_SYN_HL
@@ -3722,7 +3722,7 @@ bt_regexec_nl(
 #endif
     rex.reg_maxcol = 0;
 
-    return bt_regexec_both(line, col, NULL);
+    return bt_regexec_both(line, col, NULL, NULL);
 }
 
 /*
@@ -3740,7 +3740,8 @@ bt_regexec_multi(
     buf_T	*buf,		/* buffer in which to search */
     linenr_T	lnum,		/* nr of line to start looking for match */
     colnr_T	col,		/* column to start looking for match */
-    proftime_T	*tm)		/* timeout limit or NULL */
+    proftime_T	*tm,		/* timeout limit or NULL */
+    int		*timed_out)	/* flag set on timeout or NULL */
 {
     rex.reg_match = NULL;
     rex.reg_mmatch = rmp;
@@ -3755,7 +3756,7 @@ bt_regexec_multi(
 #endif
     rex.reg_maxcol = rmp->rmm_maxcol;
 
-    return bt_regexec_both(NULL, col, tm);
+    return bt_regexec_both(NULL, col, tm, timed_out);
 }
 
 /*
@@ -3767,7 +3768,8 @@ bt_regexec_multi(
 bt_regexec_both(
     char_u	*line,
     colnr_T	col,		/* column to start looking for match */
-    proftime_T	*tm UNUSED)	/* timeout limit or NULL */
+    proftime_T	*tm UNUSED,	/* timeout limit or NULL */
+    int		*timed_out UNUSED)	/* flag set on timeout or NULL */
 {
     bt_regprog_T    *prog;
     char_u	    *s;
@@ -3968,7 +3970,11 @@ bt_regexec_both(
 	    {
 		tm_count = 0;
 		if (profile_passed_limit(tm))
+		{
+		    if (timed_out != NULL)
+			*timed_out = TRUE;
 		    break;
+		}
 	    }
 #endif
 	}
@@ -8308,7 +8314,8 @@ vim_regexec_multi(
     buf_T       *buf,           /* buffer in which to search */
     linenr_T    lnum,           /* nr of line to start looking for match */
     colnr_T     col,            /* column to start looking for match */
-    proftime_T	*tm)		/* timeout limit or NULL */
+    proftime_T	*tm,		/* timeout limit or NULL */
+    int		*timed_out)	/* flag is set when timeout limit reached */
 {
     int		result;
     regexec_T	rex_save;
@@ -8319,7 +8326,8 @@ vim_regexec_multi(
 	rex_save = rex;
     rex_in_use = TRUE;
 
-    result = rmp->regprog->engine->regexec_multi(rmp, win, buf, lnum, col, tm);
+    result = rmp->regprog->engine->regexec_multi(
+				      rmp, win, buf, lnum, col, tm, timed_out);
 
     /* NFA engine aborted because it's very slow. */
     if (rmp->regprog->re_engine == AUTOMATIC_ENGINE
@@ -8339,7 +8347,7 @@ vim_regexec_multi(
 	    rmp->regprog = vim_regcomp(pat, re_flags);
 	    if (rmp->regprog != NULL)
 		result = rmp->regprog->engine->regexec_multi(
-						rmp, win, buf, lnum, col, tm);
+				      rmp, win, buf, lnum, col, tm, timed_out);
 	    vim_free(pat);
 	}
 	p_re = save_p_re;

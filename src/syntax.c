@@ -3303,7 +3303,7 @@ syn_regexec(
 #endif
 
     rmp->rmm_maxcol = syn_buf->b_p_smc;
-    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, NULL);
+    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, NULL, NULL);
 
 #ifdef FEAT_PROFILE
     if (syn_time_on)
