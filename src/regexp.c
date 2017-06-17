@@ -3492,7 +3492,7 @@ typedef struct regbehind_S
 
 static char_u	*reg_getline(linenr_T lnum);
 static long	bt_regexec_both(char_u *line, colnr_T col, proftime_T *tm, int *timed_out);
-static long	regtry(bt_regprog_T *prog, colnr_T col);
+static long	regtry(bt_regprog_T *prog, colnr_T col, proftime_T *tm, int *timed_out);
 static void	cleanup_subexpr(void);
 #ifdef FEAT_SYN_HL
 static void	cleanup_zsubexpr(void);
@@ -3519,7 +3519,7 @@ static void	save_se_one(save_se_T *savep, char_u **pp);
 
 static int	re_num_cmp(long_u val, char_u *scan);
 static int	match_with_backref(linenr_T start_lnum, colnr_T start_col, linenr_T end_lnum, colnr_T end_col, int *bytelen);
-static int	regmatch(char_u *prog);
+static int	regmatch(char_u *prog, proftime_T *tm, int *timed_out);
 static int	regrepeat(char_u *p, long maxcount);
 
 #ifdef DEBUG
@@ -3780,8 +3780,8 @@ bt_regexec_multi(
 bt_regexec_both(
     char_u	*line,
     colnr_T	col,		/* column to start looking for match */
-    proftime_T	*tm UNUSED,	/* timeout limit or NULL */
-    int		*timed_out UNUSED)	/* flag set on timeout or NULL */
+    proftime_T	*tm,		/* timeout limit or NULL */
+    int		*timed_out)	/* flag set on timeout or NULL */
 {
     bt_regprog_T    *prog;
     char_u	    *s;
@@ -3919,7 +3919,7 @@ bt_regexec_both(
 			|| (c < 255 && prog->regstart < 255 &&
 #endif
 			    MB_TOLOWER(prog->regstart) == MB_TOLOWER(c)))))
-	    retval = regtry(prog, col);
+	    retval = regtry(prog, col, tm, timed_out);
 	else
 	    retval = 0;
     }
@@ -3958,7 +3958,7 @@ bt_regexec_both(
 		break;
 	    }
 
-	    retval = regtry(prog, col);
+	    retval = regtry(prog, col, tm, timed_out);
 	    if (retval > 0)
 		break;
 
@@ -4059,7 +4059,11 @@ unref_extmatch(reg_extmatch_T *em)
  * Returns 0 for failure, number of lines contained in the match otherwise.
  */
     static long
-regtry(bt_regprog_T *prog, colnr_T col)
+regtry(
+    bt_regprog_T	*prog,
+    colnr_T		col,
+    proftime_T		*tm,		/* timeout limit or NULL */
+    int			*timed_out)	/* flag set on timeout or NULL */
 {
     reginput = regline + col;
     need_clear_subexpr = TRUE;
@@ -4069,7 +4073,7 @@ regtry(bt_regprog_T *prog, colnr_T col)
 	need_clear_zsubexpr = TRUE;
 #endif
 
-    if (regmatch(prog->program + 1) == 0)
+    if (regmatch(prog->program + 1, tm, timed_out) == 0)
 	return 0;
 
     cleanup_subexpr();
@@ -4253,7 +4257,9 @@ static long	bl_maxval;
  */
     static int
 regmatch(
-    char_u	*scan)		/* Current node. */
+    char_u	*scan,		    /* Current node. */
+    proftime_T	*tm UNUSED,	    /* timeout limit or NULL */
+    int		*timed_out UNUSED)  /* flag set on timeout or NULL */
 {
   char_u	*next;		/* Next node. */
   int		op;
@@ -4266,6 +4272,9 @@ regmatch(
 #define RA_BREAK	3	/* break inner loop */
 #define RA_MATCH	4	/* successful match */
 #define RA_NOMATCH	5	/* didn't match */
+#ifdef FEAT_RELTIME
+  int		tm_count = 0;
+#endif
 
   /* Make "regstack" and "backpos" empty.  They are allocated and freed in
    * bt_regexec_both() to reduce malloc()/free() calls. */
@@ -4300,6 +4309,20 @@ regmatch(
 	    status = RA_FAIL;
 	    break;
 	}
+#ifdef FEAT_RELTIME
+	/* Check for timeout once in a 100 times to avoid overhead. */
+	if (tm != NULL && ++tm_count == 100)
+	{
+	    tm_count = 0;
+	    if (profile_passed_limit(tm))
+	    {
+		if (timed_out != NULL)
+		    *timed_out = TRUE;
+		status = RA_FAIL;
+		break;
+	    }
+	}
+#endif
 	status = RA_CONT;
 
 #ifdef DEBUG
