@@ -124,7 +124,7 @@ static void fold_line(win_T *wp, long fold_count, foldinfo_T *foldinfo, linenr_T
 static void fill_foldcolumn(char_u *p, win_T *wp, int closed, linenr_T lnum);
 static void copy_text_attr(int off, char_u *buf, int len, int attr);
 #endif
-static int win_line(win_T *, linenr_T, int, int, int nochange);
+static int win_line(win_T *, linenr_T, int, int, int nochange, proftime_T *syntax_tm);
 static int char_needs_redraw(int off_from, int off_to, int cols);
 #ifdef FEAT_RIGHTLEFT
 static void screen_line(int row, int coloff, int endcol, int clear_width, int rlflag);
@@ -183,6 +183,11 @@ static void win_redr_ruler(win_T *wp, int always);
 #if defined(FEAT_CLIPBOARD) || defined(FEAT_WINDOWS)
 /* Ugly global: overrule attribute used by screen_char() */
 static int screen_char_attr = 0;
+#endif
+
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
+/* Can limit syntax highlight time to 'redrawtime'. */
+# define SYN_TIME_LIMIT 1
 #endif
 
 /*
@@ -923,6 +928,9 @@ update_single_line(win_T *wp, linenr_T lnum)
 {
     int		row;
     int		j;
+#ifdef SYN_TIME_LIMIT
+    proftime_T	syntax_tm;
+#endif
 
     /* Don't do anything if the screen structures are (not yet) valid. */
     if (!screen_valid(TRUE) || updating_screen)
@@ -931,6 +939,10 @@ update_single_line(win_T *wp, linenr_T lnum)
     if (lnum >= wp->w_topline && lnum < wp->w_botline
 				 && foldedCount(wp, lnum, &win_foldinfo) == 0)
     {
+#ifdef SYN_TIME_LIMIT
+	/* Set the time limit to 'redrawtime'. */
+	profile_setlimit(p_rdt, &syntax_tm);
+#endif
 	update_prepare();
 
 	row = 0;
@@ -944,7 +956,13 @@ update_single_line(win_T *wp, linenr_T lnum)
 		start_search_hl();
 		prepare_search_hl(wp, lnum);
 # endif
-		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size, FALSE);
+		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size, FALSE,
+#ifdef SYN_TIME_LIMIT
+			&syntax_tm
+#else
+			NULL
+#endif
+			);
 # if defined(FEAT_SEARCH_EXTRA)
 		end_search_hl();
 # endif
@@ -1139,6 +1157,9 @@ win_update(win_T *wp)
     linenr_T	mod_bot = 0;
 #if defined(FEAT_SYN_HL) || defined(FEAT_SEARCH_EXTRA)
     int		save_got_int;
+#endif
+#ifdef SYN_TIME_LIMIT
+    proftime_T	syntax_tm;
 #endif
 
     type = wp->w_redr_type;
@@ -1792,6 +1813,10 @@ win_update(win_T *wp)
     save_got_int = got_int;
     got_int = 0;
 #endif
+#ifdef SYN_TIME_LIMIT
+    /* Set the time limit to 'redrawtime'. */
+    profile_setlimit(p_rdt, &syntax_tm);
+#endif
 #ifdef FEAT_FOLDING
     win_foldinfo.fi_level = 0;
 #endif
@@ -2086,7 +2111,13 @@ win_update(win_T *wp)
 		/*
 		 * Display one line.
 		 */
-		row = win_line(wp, lnum, srow, wp->w_height, mod_top == 0);
+		row = win_line(wp, lnum, srow, wp->w_height, mod_top == 0,
+#ifdef SYN_TIME_LIMIT
+			&syntax_tm
+#else
+			NULL
+#endif
+			);
 
 #ifdef FEAT_FOLDING
 		wp->w_lines[idx].wl_folded = FALSE;
@@ -2957,7 +2988,8 @@ win_line(
     linenr_T	lnum,
     int		startrow,
     int		endrow,
-    int		nochange UNUSED)	/* not updating for changed text */
+    int		nochange UNUSED,	/* not updating for changed text */
+    proftime_T	*syntax_tm)
 {
     int		col = 0;		/* visual column on screen */
     unsigned	off;			/* offset in ScreenLines/ScreenAttrs */
@@ -3158,20 +3190,29 @@ win_line(
     extra_check = 0;
 #endif
 #ifdef FEAT_SYN_HL
-    if (syntax_present(wp) && !wp->w_s->b_syn_error)
+    if (syntax_present(wp) && !wp->w_s->b_syn_error
+# ifdef SYN_TIME_LIMIT
+	    && !wp->w_s->b_syn_slow
+# endif
+       )
     {
 	/* Prepare for syntax highlighting in this line.  When there is an
 	 * error, stop syntax highlighting. */
 	save_did_emsg = did_emsg;
 	did_emsg = FALSE;
-	syntax_start(wp, lnum);
+	syntax_start(wp, lnum, syntax_tm);
 	if (did_emsg)
 	    wp->w_s->b_syn_error = TRUE;
 	else
 	{
 	    did_emsg = save_did_emsg;
-	    has_syntax = TRUE;
-	    extra_check = TRUE;
+#ifdef SYN_TIME_LIMIT
+	    if (!wp->w_s->b_syn_slow)
+#endif
+	    {
+		has_syntax = TRUE;
+		extra_check = TRUE;
+	    }
 	}
     }
 
@@ -3548,7 +3589,7 @@ win_line(
 # ifdef FEAT_SYN_HL
 	    /* Need to restart syntax highlighting for this line. */
 	    if (has_syntax)
-		syntax_start(wp, lnum);
+		syntax_start(wp, lnum, syntax_tm);
 # endif
 	}
 #endif
@@ -4491,6 +4532,10 @@ win_line(
 		    }
 		    else
 			did_emsg = save_did_emsg;
+#ifdef SYN_TIME_LIMIT
+		    if (wp->w_s->b_syn_slow)
+			has_syntax = FALSE;
+#endif
 
 		    /* Need to get the line again, a multi-line regexp may
 		     * have made it invalid. */

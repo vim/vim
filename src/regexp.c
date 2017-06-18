@@ -5756,8 +5756,6 @@ regmatch(
 	    printf("Premature EOL\n");
 #endif
 	}
-	if (status == RA_FAIL)
-	    got_int = TRUE;
 	return (status == RA_MATCH);
     }
 
@@ -8224,8 +8222,6 @@ report_re_switch(char_u *pat)
 }
 #endif
 
-static int vim_regexec_both(regmatch_T *rmp, char_u *line, colnr_T col, int nl);
-
 /*
  * Match a regexp against a string.
  * "rmp->regprog" is a compiled regexp as returned by vim_regcomp().
@@ -8236,7 +8232,7 @@ static int vim_regexec_both(regmatch_T *rmp, char_u *line, colnr_T col, int nl);
  * Return TRUE if there is a match, FALSE if not.
  */
     static int
-vim_regexec_both(
+vim_regexec_string(
     regmatch_T	*rmp,
     char_u	*line,  /* string to match against */
     colnr_T	col,    /* column to start looking for match */
@@ -8299,12 +8295,12 @@ vim_regexec_prog(
     char_u	*line,
     colnr_T	col)
 {
-    int r;
-    regmatch_T regmatch;
+    int		r;
+    regmatch_T	regmatch;
 
     regmatch.regprog = *prog;
     regmatch.rm_ic = ignore_case;
-    r = vim_regexec_both(&regmatch, line, col, FALSE);
+    r = vim_regexec_string(&regmatch, line, col, FALSE);
     *prog = regmatch.regprog;
     return r;
 }
@@ -8316,7 +8312,7 @@ vim_regexec_prog(
     int
 vim_regexec(regmatch_T *rmp, char_u *line, colnr_T col)
 {
-    return vim_regexec_both(rmp, line, col, FALSE);
+    return vim_regexec_string(rmp, line, col, FALSE);
 }
 
 #if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) \
@@ -8329,7 +8325,7 @@ vim_regexec(regmatch_T *rmp, char_u *line, colnr_T col)
     int
 vim_regexec_nl(regmatch_T *rmp, char_u *line, colnr_T col)
 {
-    return vim_regexec_both(rmp, line, col, TRUE);
+    return vim_regexec_string(rmp, line, col, TRUE);
 }
 #endif
 
