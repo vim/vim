@@ -499,6 +499,7 @@ func Test_conceal()
   call assert_match('16     ', ScreenLines(2, 7)[0])
   call assert_equal([[0, ''], [1, ''], [1, ''], [1, ''], [1, ''], [0, '']], map(range(1, 6), 'synconcealed(2, v:val)[0:1]'))
 
+  syn clear
   set conceallevel&
   bw!
 endfunc
