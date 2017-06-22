@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jun 13
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8764,18 +8764,32 @@ See |:verbose-cmd| for more information.
 			implies that the effect of |:nohlsearch| is undone
 			when the function returns.
 
-					*:endf* *:endfunction* *E126* *E193*
-:endf[unction]		The end of a function definition.  Must be on a line
-			by its own, without other commands.
+				*:endf* *:endfunction* *E126* *E193* *E946*
+:endf[unction] [argument]
+			The end of a function definition.  Best is to put it
+			on a line by its own, without [argument].
+
+			[argument] can be:
+				| command	command to execute next
+				\n command	command to execute next
+				" comment	always ignored
+				anything else	ignored, unless 'verbose' is
+						non-zero
+			The support for a following command was added in Vim
+			8.0.0654, before that any argument was silently
+			ignored.
 
 				*:delf* *:delfunction* *E130* *E131* *E933*
-:delf[unction] {name}	Delete function {name}.
+:delf[unction][!] {name}
+			Delete function {name}.
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >
 				:delfunc dict.init
 <			This will remove the "init" entry from "dict".  The
 			function is deleted if there are no more references to
 			it.
+			With the ! there is no error if the function does not
+			exist.
 							*:retu* *:return* *E133*
 :retu[rn] [expr]	Return from a function.  When "[expr]" is given, it is
 			evaluated and returned as the result of the function.

@@ -2130,6 +2130,14 @@ ex_function(exarg_T *eap)
 	    /* Check for "endfunction". */
 	    if (checkforcmd(&p, "endfunction", 4) && nesting-- == 0)
 	    {
+		if (*p == '|')
+		    /* Another command follows. */
+		    eap->nextcmd = vim_strsave(p + 1);
+		else if (line_arg != NULL && *skipwhite(line_arg) != NUL)
+		    /* Another command follows. */
+		    eap->nextcmd = line_arg;
+		else if (*p != NUL && *p != '"' && p_verbose > 0)
+		    EMSG2((char_u *)_("E946: Text found after :endfunction: %s"), p);
 		if (line_arg == NULL)
 		    vim_free(theline);
 		break;
