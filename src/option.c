@@ -6009,6 +6009,9 @@ did_set_string_option(
     /* set when changing an option that only requires a redraw in the GUI */
     int		redraw_gui_only = FALSE;
 #endif
+#ifdef FEAT_AUTOCMD
+    int		ft_changed = FALSE;
+#endif
 
     /* Get the global option to compare with, otherwise we would have to check
      * two values for all local options. */
@@ -7418,6 +7421,8 @@ did_set_string_option(
     {
 	if (!valid_filetype(*varp))
 	    errmsg = e_invarg;
+	else
+	    ft_changed = STRCMP(oldval, *varp) != 0;
     }
 #endif
 
@@ -7531,10 +7536,15 @@ did_set_string_option(
 # endif
 	else if (varp == &(curbuf->b_p_ft))
 	{
-	    /* 'filetype' is set, trigger the FileType autocommand */
-	    did_filetype = TRUE;
-	    apply_autocmds(EVENT_FILETYPE, curbuf->b_p_ft,
+	    /* 'filetype' is set, trigger the FileType autocommand.
+	     * Skip this when called from a modeline and the filetype was
+	     * already set to this value. */
+	    if (!(opt_flags & OPT_MODELINE) || ft_changed)
+	    {
+		did_filetype = TRUE;
+		apply_autocmds(EVENT_FILETYPE, curbuf->b_p_ft,
 					       curbuf->b_fname, TRUE, curbuf);
+	    }
 	}
 #endif
 #ifdef FEAT_SPELL

@@ -6832,8 +6832,9 @@ fix_help_buffer(void)
     char_u	*rt;
     int		mustfree;
 
-    /* set filetype to "help". */
-    set_option_value((char_u *)"ft", 0L, (char_u *)"help", OPT_LOCAL);
+    /* Set filetype to "help" if still needed. */
+    if (STRCMP(curbuf->b_p_ft, "help") != 0)
+	set_option_value((char_u *)"ft", 0L, (char_u *)"help", OPT_LOCAL);
 
 #ifdef FEAT_SYN_HL
     if (!syntax_present(curwin))
