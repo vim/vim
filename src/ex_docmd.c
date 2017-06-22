@@ -2370,7 +2370,8 @@ do_one_cmd(
 	goto doend;
     }
     /* Check for wrong commands. */
-    if (*p == '!' && ea.cmd[1] == 0151 && ea.cmd[0] == 78)
+    if (*p == '!' && ea.cmd[1] == 0151 && ea.cmd[0] == 78
+	    && !IS_USER_CMDIDX(ea.cmdidx))
     {
 	errormsg = uc_fun_cmd();
 	goto doend;
