@@ -3786,9 +3786,9 @@ add_termcode(char_u *name, char_u *string, int flags)
 }
 
 /*
- * Check termcode "code[len]" for ending in ;*X, <Esc>O*X or <M-O>*X.
+ * Check termcode "code[len]" for ending in ;*X or *X.
  * The "X" can be any character.
- * Return 0 if not found, 2 for ;*X and 1 for O*X and <M-O>*X.
+ * Return 0 if not found, 2 for ;*X and 1 for *X.
  */
     static int
 termcode_star(char_u *code, int len)
@@ -3798,7 +3798,7 @@ termcode_star(char_u *code, int len)
     {
 	if (len >= 5 && code[len - 3] == ';')
 	    return 2;
-	if ((len >= 4 && code[len - 3] == 'O') || code[len - 3] == 'O' + 128)
+	else
 	    return 1;
     }
     return 0;
@@ -3940,6 +3940,7 @@ check_termcode(
     int		offset;
     char_u	key_name[2];
     int		modifiers;
+    char_u	*modifiers_start;
     int		key;
     int		new_slen;
     int		extra;
@@ -4065,6 +4066,7 @@ check_termcode(
 		 * But only when the 'K' flag is in 'cpoptions'.
 		 */
 		slen = termcodes[idx].len;
+		modifiers_start = NULL;
 		if (cpo_koffset && offset && len < slen)
 		    continue;
 		if (STRNCMP(termcodes[idx].code, tp,
@@ -4125,7 +4127,7 @@ check_termcode(
 			{
 			    /* Skip over the digits, the final char must
 			     * follow. */
-			    for (j = slen - 2; j < len && isdigit(tp[j]); ++j)
+			    for (j = slen - 2; j < len && (isdigit(tp[j]) || tp[j] == ';'); ++j)
 				;
 			    ++j;
 			    if (len < j)	/* got a partial sequence */
@@ -4133,8 +4135,10 @@ check_termcode(
 			    if (tp[j - 1] != termcodes[idx].code[slen - 1])
 				continue;	/* no match */
 
+			    modifiers_start = tp + slen - 2;
+
 			    /* Match!  Convert modifier bits. */
-			    n = atoi((char *)tp + slen - 2) - 1;
+			    n = atoi((char *)modifiers_start) - 1;
 			    if (n & 1)
 				modifiers |= MOD_MASK_SHIFT;
 			    if (n & 2)
@@ -4156,7 +4160,7 @@ check_termcode(
 
 #ifdef FEAT_TERMRESPONSE
 	if (key_name[0] == NUL
-	    /* Mouse codes of DEC, pterm, and URXVT start with <ESC>[.  When
+	    /* Mouse codes of DEC and pterm start with <ESC>[.  When
 	     * detecting the start of these mouse codes they might as well be
 	     * another key code or terminal response. */
 # ifdef FEAT_MOUSE_DEC
@@ -4164,9 +4168,6 @@ check_termcode(
 # endif
 # ifdef FEAT_MOUSE_PTERM
 	    || key_name[0] == KS_PTERM_MOUSE
-# endif
-# ifdef FEAT_MOUSE_URXVT
-	    || key_name[0] == KS_URXVT_MOUSE
 # endif
 	   )
 	{
@@ -4509,6 +4510,7 @@ check_termcode(
 # endif
 # ifdef FEAT_MOUSE_SGR
 		|| key_name[0] == KS_SGR_MOUSE
+		|| key_name[0] == KS_SGR_MOUSE_RELEASE
 # endif
 		)
 	{
@@ -4592,7 +4594,8 @@ check_termcode(
 
 # if defined(FEAT_MOUSE_URXVT) || defined(FEAT_MOUSE_SGR)
 	    if (key_name[0] == KS_URXVT_MOUSE
-		|| key_name[0] == KS_SGR_MOUSE)
+		|| key_name[0] == KS_SGR_MOUSE
+		|| key_name[0] == KS_SGR_MOUSE_RELEASE)
 	    {
 		for (;;)
 		{
@@ -4619,56 +4622,32 @@ check_termcode(
 		     *	        ^----- column
 		     *	     ^-------- code
 		     */
-		    p = tp + slen;
+		    p = modifiers_start;
+		    if (p == NULL)
+			return -1;
 
 		    mouse_code = getdigits(&p);
 		    if (*p++ != ';')
 			return -1;
 
 		    /* when mouse reporting is SGR, add 32 to mouse code */
-		    if (key_name[0] == KS_SGR_MOUSE)
+		    if (key_name[0] == KS_SGR_MOUSE
+					|| key_name[0] == KS_SGR_MOUSE_RELEASE)
 			mouse_code += 32;
+
+		    if (key_name[0] == KS_SGR_MOUSE_RELEASE)
+			mouse_code |= MOUSE_RELEASE;
 
 		    mouse_col = getdigits(&p) - 1;
 		    if (*p++ != ';')
 			return -1;
 
 		    mouse_row = getdigits(&p) - 1;
-		    if (key_name[0] == KS_SGR_MOUSE && *p == 'm')
-			mouse_code |= MOUSE_RELEASE;
-		    else if (*p != 'M')
-			return -1;
-		    p++;
 
-		    slen += (int)(p - (tp + slen));
+		    /* The modifiers were the mouse coordinates, not the
+		     * modifier keys (alt/shift/ctrl/meta) state. */
+		    modifiers = 0;
 
-		    /* skip this one if next one has same code (like xterm
-		     * case) */
-		    j = termcodes[idx].len;
-		    if (STRNCMP(tp, tp + slen, (size_t)j) == 0)
-		    {
-			int slen2;
-			int cmd_complete = 0;
-
-			/* check if the command is complete by looking for the
-			 * 'M' */
-			for (slen2 = slen; slen2 < len; slen2++)
-			{
-			    if (tp[slen2] == 'M'
-				    || (key_name[0] == KS_SGR_MOUSE
-							 && tp[slen2] == 'm'))
-			    {
-				cmd_complete = 1;
-				break;
-			    }
-			}
-			p += j;
-			if (cmd_complete && getdigits(&p) == mouse_code)
-			{
-			    slen += j; /* skip the \033[ */
-			    continue;
-			}
-		    }
 		    break;
 		}
 	    }
@@ -4680,6 +4659,7 @@ check_termcode(
 #endif
 #ifdef FEAT_MOUSE_SGR
 	    || key_name[0] == KS_SGR_MOUSE
+	    || key_name[0] == KS_SGR_MOUSE_RELEASE
 #endif
 	    )
 	{

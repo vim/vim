@@ -3771,7 +3771,6 @@ check_mouse_termcode(void)
 	del_mouse_termcode(KS_PTERM_MOUSE);
 # endif
 # ifdef FEAT_MOUSE_URXVT
-    /* same conflict as the dec mouse */
     if (use_xterm_mouse() == 3
 #  ifdef FEAT_GUI
 	    && !gui.in_use
@@ -3779,8 +3778,8 @@ check_mouse_termcode(void)
 	    )
     {
 	set_mouse_termcode(KS_URXVT_MOUSE, (char_u *)(term_is_8bit(T_NAME)
-		    ? IF_EB("\233", CSI_STR)
-		    : IF_EB("\033[", ESC_STR "[")));
+		    ? IF_EB("\233*M", CSI_STR "*M")
+		    : IF_EB("\033[*M", ESC_STR "[*M")));
 
 	if (*p_mouse != NUL)
 	{
@@ -3792,7 +3791,6 @@ check_mouse_termcode(void)
 	del_mouse_termcode(KS_URXVT_MOUSE);
 # endif
 # ifdef FEAT_MOUSE_SGR
-    /* There is no conflict with xterm mouse */
     if (use_xterm_mouse() == 4
 #  ifdef FEAT_GUI
 	    && !gui.in_use
@@ -3800,8 +3798,12 @@ check_mouse_termcode(void)
 	    )
     {
 	set_mouse_termcode(KS_SGR_MOUSE, (char_u *)(term_is_8bit(T_NAME)
-		    ? IF_EB("\233<", CSI_STR "<")
-		    : IF_EB("\033[<", ESC_STR "[<")));
+		    ? IF_EB("\233<*M", CSI_STR "<*M")
+		    : IF_EB("\033[<*M", ESC_STR "[<*M")));
+
+	set_mouse_termcode(KS_SGR_MOUSE_RELEASE, (char_u *)(term_is_8bit(T_NAME)
+		    ? IF_EB("\233<*m", CSI_STR "<*m")
+		    : IF_EB("\033[<*m", ESC_STR "[<*m")));
 
 	if (*p_mouse != NUL)
 	{
@@ -3810,7 +3812,10 @@ check_mouse_termcode(void)
 	}
     }
     else
+    {
 	del_mouse_termcode(KS_SGR_MOUSE);
+	del_mouse_termcode(KS_SGR_MOUSE_RELEASE);
+    }
 # endif
 }
 #endif
