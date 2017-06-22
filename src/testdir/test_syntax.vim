@@ -484,7 +484,7 @@ func Test_conceal()
   " should be a space. But synconcealed() gives an empty string in
   " the 2nd value of the returned list. Bug?
   " So for now, the following line is commented out:
-  "call assert_equal([[0, ''], [1, 'X'], [1, 'X'], [1, ' '], [1, ' '], [0, '']], map(range(1, 6), 'synconcealed(2, v:val)[0:1]'))
+  call assert_equal([[0, ''], [1, 'X'], [1, 'X'], [1, ' '], [1, ' '], [0, '']], map(range(1, 6), 'synconcealed(2, v:val)[0:1]'))
 
   set conceallevel=1
   set listchars=conceal:Y
