@@ -6909,6 +6909,7 @@ static char *(highlight_init_both[]) =
 	"Cursor guibg=fg guifg=bg",
 	"lCursor guibg=fg guifg=bg", /* should be different, but what? */
 #endif
+	"default link QuickFixLine Search",
 	NULL
     };
 
@@ -6997,8 +6998,6 @@ static char *(highlight_init_light[]) =
 #ifdef FEAT_GUI
 	"Normal gui=NONE",
 #endif
-	CENT("QuickFixLine term=reverse ctermbg=Cyan",
-	     "QuickFixLine term=reverse ctermbg=Cyan guibg=Cyan"),
 	NULL
     };
 
@@ -7084,8 +7083,6 @@ static char *(highlight_init_dark[]) =
 	CENT("Conceal ctermbg=DarkGrey ctermfg=LightGrey",
 	     "Conceal ctermbg=DarkGrey ctermfg=LightGrey guibg=DarkGrey guifg=LightGrey"),
 #endif
-	CENT("QuickFixLine term=reverse ctermbg=Cyan",
-	     "QuickFixLine term=reverse ctermbg=Cyan guibg=Cyan"),
 #ifdef FEAT_GUI
 	"Normal gui=NONE",
 #endif
