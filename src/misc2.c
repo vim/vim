@@ -2438,6 +2438,7 @@ static struct key_name_entry
 #endif
 #ifdef FEAT_MOUSE_SGR
     {K_SGR_MOUSE,	(char_u *)"SgrMouse"},
+    {K_SGR_MOUSEREL,	(char_u *)"SgrMouseRel"},
 #endif
     {K_LEFTMOUSE,	(char_u *)"LeftMouse"},
     {K_LEFTMOUSE_NM,	(char_u *)"LeftMouseNM"},
