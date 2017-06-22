@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Jun 12
+" Last Change:	2017 Jun 20
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -47,6 +47,9 @@ func! s:StarSetf(ft)
     exe 'setf ' . a:ft
   endif
 endfunc
+
+" Vim help file
+au BufNewFile,BufRead $VIMRUNTIME/doc/*.txt	setf help
 
 " Abaqus or Trasys
 au BufNewFile,BufRead *.inp			call s:Check_inp()
