@@ -172,5 +172,21 @@ func Test_stop_all_in_callback()
   call assert_equal(0, len(info))
 endfunc
 
+func FeedkeysCb(timer)
+  call feedkeys("hello\<CR>", 'nt')
+endfunc
+
+func InputCb(timer)
+  call timer_start(10, 'FeedkeysCb')
+  let g:val = input('?')
+  call Resume()
+endfunc
+
+func Test_input_in_timer()
+  let g:val = ''
+  call timer_start(10, 'InputCb')
+  call Standby(1000)
+  call assert_equal('hello', g:val)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
