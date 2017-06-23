@@ -3944,7 +3944,7 @@ check_termcode(
     int		offset;
     char_u	key_name[2];
     int		modifiers;
-    char_u	*modifiers_start;
+    char_u	*modifiers_start = NULL;
     int		key;
     int		new_slen;
     int		extra;
