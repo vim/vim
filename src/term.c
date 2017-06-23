@@ -1801,9 +1801,8 @@ set_termname(char_u *term)
      * The termcode for the mouse is added as a side effect in option.c.
      */
     {
-	char_u	*p;
+	char_u	*p = (char_u *)"";
 
-	p = (char_u *)"";
 #  ifdef FEAT_MOUSE_XTERM
 	if (use_xterm_like_mouse(term))
 	{
@@ -1944,6 +1943,7 @@ set_termname(char_u *term)
 #  define HMT_PTERM	16
 #  define HMT_URXVT	32
 #  define HMT_SGR	64
+#  define HMT_SGR_REL	128
 static int has_mouse_termcode = 0;
 # endif
 
@@ -1987,6 +1987,8 @@ set_mouse_termcode(
 #   ifdef FEAT_MOUSE_SGR
     if (n == KS_SGR_MOUSE)
 	has_mouse_termcode |= HMT_SGR;
+    else if (n == KS_SGR_MOUSE_RELEASE)
+	has_mouse_termcode |= HMT_SGR_REL;
     else
 #   endif
 	has_mouse_termcode |= HMT_NORMAL;
@@ -2034,6 +2036,8 @@ del_mouse_termcode(
 #   ifdef FEAT_MOUSE_SGR
     if (n == KS_SGR_MOUSE)
 	has_mouse_termcode &= ~HMT_SGR;
+    else if (n == KS_SGR_MOUSE_RELEASE)
+	has_mouse_termcode &= ~HMT_SGR_REL;
     else
 #   endif
 	has_mouse_termcode &= ~HMT_NORMAL;
