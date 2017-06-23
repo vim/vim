@@ -2137,7 +2137,9 @@ ex_function(exarg_T *eap)
 		    /* Another command follows. */
 		    eap->nextcmd = line_arg;
 		else if (*p != NUL && *p != '"' && p_verbose > 0)
-		    EMSG2((char_u *)_("E946: Text found after :endfunction: %s"), p);
+		    give_warning2(
+			 (char_u *)_("W22: Text found after :endfunction: %s"),
+			 p, TRUE);
 		if (line_arg == NULL)
 		    vim_free(theline);
 		break;
