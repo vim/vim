@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jun 22
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Jun 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5468,9 +5468,9 @@ line({expr})	The result is a Number, which is the line number of the file
 		This autocommand jumps to the last known position in a file
 		just after opening it, if the '" mark is set: >
      :au BufReadPost *
-         \ if line("'\"") > 1 && line("'\"") <= line("$") && &ft !~# 'commit' 
-         \ |   exe "normal! g`\""
-         \ | endif
+	 \ if line("'\"") > 1 && line("'\"") <= line("$") && &ft !~# 'commit' 
+	 \ |   exe "normal! g`\""
+	 \ | endif
 
 line2byte({lnum})					*line2byte()*
 		Return the byte count from the start of the buffer for line
@@ -5892,7 +5892,7 @@ max({expr})	Return the maximum value of all items in {expr}.
 		it returns the maximum of all values in the dictionary.
 		If {expr} is neither a list nor a dictionary, or one of the
 		items in {expr} cannot be used as a Number this results in
-                an error.  An empty |List| or |Dictionary| results in zero.
+		an error.  An empty |List| or |Dictionary| results in zero.
 
 							*min()*
 min({expr})	Return the minimum value of all items in {expr}.
@@ -5900,7 +5900,7 @@ min({expr})	Return the minimum value of all items in {expr}.
 		it returns the minimum of all values in the dictionary.
 		If {expr} is neither a list nor a dictionary, or one of the
 		items in {expr} cannot be used as a Number this results in
-                an error.  An empty |List| or |Dictionary| results in zero.
+		an error.  An empty |List| or |Dictionary| results in zero.
 
 							*mkdir()* *E739*
 mkdir({name} [, {path} [, {prot}]])
@@ -6195,8 +6195,8 @@ printf({fmt}, {expr1} ...)				*printf()*
 			zero the decimal point is omitted.  When the precision
 			is not specified 6 is used.  A really big number
 			(out of range or dividing by zero) results in "inf"
-                        or "-inf" with %f (INF or -INF with %F).
-                        "0.0 / 0.0" results in "nan" with %f (NAN with %F).
+			or "-inf" with %f (INF or -INF with %F).
+			"0.0 / 0.0" results in "nan" with %f (NAN with %F).
 			Example: >
 				echo printf("%.2f", 12.115)
 <				12.12
@@ -8355,8 +8355,8 @@ winwidth({nr})						*winwidth()*
   :if winwidth(0) <= 50
   :  exe "normal 50\<C-W>|"
   :endif
-<               For getting the terminal or screen size, see the 'columns'
-               option.
+<		For getting the terminal or screen size, see the 'columns'
+		option.
 
 
 wordcount()						*wordcount()*
@@ -8374,11 +8374,11 @@ wordcount()						*wordcount()*
 			cursor_words    Number of words before cursor position
 					(not in Visual mode)
 			visual_bytes    Number of bytes visually selected
-			                (only in Visual mode)
+					(only in Visual mode)
 			visual_chars    Number of chars visually selected
-			                (only in Visual mode)
+					(only in Visual mode)
 			visual_words    Number of chars visually selected
-			                (only in Visual mode)
+					(only in Visual mode)
 
 
 							*writefile()*
@@ -8722,6 +8722,9 @@ See |:verbose-cmd| for more information.
 			not used an error message is given.  When [!] is used,
 			an existing function is silently replaced.  Unless it
 			is currently being executed, that is an error.
+			NOTE: Use ! wisely.  If used without care it can cause
+			an existing function to be replaced unexpectedly,
+			which is hard to debug.
 
 			For the {arguments} see |function-argument|.
 
@@ -8771,7 +8774,7 @@ See |:verbose-cmd| for more information.
 			implies that the effect of |:nohlsearch| is undone
 			when the function returns.
 
-				*:endf* *:endfunction* *E126* *E193* *E946*
+				*:endf* *:endfunction* *E126* *E193* *W22*
 :endf[unction] [argument]
 			The end of a function definition.  Best is to put it
 			on a line by its own, without [argument].
@@ -8780,12 +8783,16 @@ See |:verbose-cmd| for more information.
 				| command	command to execute next
 				\n command	command to execute next
 				" comment	always ignored
-				anything else	ignored, unless 'verbose' is
-						non-zero
+				anything else	ignored, warning given when
+						'verbose' is non-zero
 			The support for a following command was added in Vim
 			8.0.0654, before that any argument was silently
 			ignored.
 
+			To be able to define a function inside an `:execute`
+			command, use line breaks instead of |:bar|: >
+				:exe "func Foo()\necho 'foo'\nendfunc"
+<
 				*:delf* *:delfunction* *E130* *E131* *E933*
 :delf[unction][!] {name}
 			Delete function {name}.
