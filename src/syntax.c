@@ -1061,7 +1061,9 @@ syn_start_line(void)
 
     next_match_idx = -1;
     ++current_line_id;
+#ifdef FEAT_CONCEAL
     next_seqnr = 1;
+#endif
 }
 
 /*
