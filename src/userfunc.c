@@ -1780,6 +1780,7 @@ theend:
 ex_function(exarg_T *eap)
 {
     char_u	*theline;
+    char_u	*line_to_free = NULL;
     int		j;
     int		c;
     int		saved_did_emsg;
@@ -2093,10 +2094,15 @@ ex_function(exarg_T *eap)
 		line_arg = p + 1;
 	    }
 	}
-	else if (eap->getline == NULL)
-	    theline = getcmdline(':', 0L, indent);
 	else
-	    theline = eap->getline(':', eap->cookie, indent);
+	{
+	    vim_free(line_to_free);
+	    if (eap->getline == NULL)
+		theline = getcmdline(':', 0L, indent);
+	    else
+		theline = eap->getline(':', eap->cookie, indent);
+	    line_to_free = theline;
+	}
 	if (KeyTyped)
 	    lines_left = Rows - 1;
 	if (theline == NULL)
@@ -2130,18 +2136,29 @@ ex_function(exarg_T *eap)
 	    /* Check for "endfunction". */
 	    if (checkforcmd(&p, "endfunction", 4) && nesting-- == 0)
 	    {
+		char_u *nextcmd = NULL;
+
 		if (*p == '|')
-		    /* Another command follows. */
-		    eap->nextcmd = vim_strsave(p + 1);
+		    nextcmd = p + 1;
 		else if (line_arg != NULL && *skipwhite(line_arg) != NUL)
-		    /* Another command follows. */
-		    eap->nextcmd = line_arg;
+		    nextcmd = line_arg;
 		else if (*p != NUL && *p != '"' && p_verbose > 0)
 		    give_warning2(
 			 (char_u *)_("W22: Text found after :endfunction: %s"),
 			 p, TRUE);
-		if (line_arg == NULL)
-		    vim_free(theline);
+		if (nextcmd != NULL)
+		{
+		    /* Another command follows. If the line came from "eap" we
+		     * can simply point into it, otherwise we need to change
+		     * "eap->cmdlinep". */
+		    eap->nextcmd = nextcmd;
+		    if (line_to_free != NULL)
+		    {
+			vim_free(*eap->cmdlinep);
+			*eap->cmdlinep = line_to_free;
+			line_to_free = NULL;
+		    }
+		}
 		break;
 	    }
 
@@ -2212,24 +2229,15 @@ ex_function(exarg_T *eap)
 
 	/* Add the line to the function. */
 	if (ga_grow(&newlines, 1 + sourcing_lnum_off) == FAIL)
-	{
-	    if (line_arg == NULL)
-		vim_free(theline);
 	    goto erret;
-	}
 
 	/* Copy the line to newly allocated memory.  get_one_sourceline()
 	 * allocates 250 bytes per line, this saves 80% on average.  The cost
 	 * is an extra alloc/free. */
 	p = vim_strsave(theline);
-	if (p != NULL)
-	{
-	    if (line_arg == NULL)
-		vim_free(theline);
-	    theline = p;
-	}
-
-	((char_u **)(newlines.ga_data))[newlines.ga_len++] = theline;
+	if (p == NULL)
+	    goto erret;
+	((char_u **)(newlines.ga_data))[newlines.ga_len++] = p;
 
 	/* Add NULL lines for continuation lines, so that the line count is
 	 * equal to the index in the growarray.   */
@@ -2428,6 +2436,7 @@ errret_2:
     ga_clear_strings(&newlines);
 ret_free:
     vim_free(skip_until);
+    vim_free(line_to_free);
     vim_free(fudi.fd_newkey);
     vim_free(name);
     did_emsg |= saved_did_emsg;
