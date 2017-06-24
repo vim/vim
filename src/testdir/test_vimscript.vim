@@ -1379,6 +1379,11 @@ func Test_endfunction_trailing()
     delfunc Xtest
     unlet done
 
+    " trailing line break
+    exe "func Xtest()\necho 'hello'\nendfunc\n"
+    call assert_true(exists('*Xtest'))
+    delfunc Xtest
+
     set verbose=1
     exe "func Xtest()\necho 'hello'\nendfunc \" garbage"
     call assert_notmatch('W22:', split(execute('1messages'), "\n")[0])
@@ -1390,6 +1395,11 @@ func Test_endfunction_trailing()
     call assert_true(exists('*Xtest'))
     delfunc Xtest
     set verbose=0
+
+    function Foo()
+	echo 'hello'
+    endfunction | echo 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    delfunc Foo
 endfunc
 
 func Test_delfunction_force()
