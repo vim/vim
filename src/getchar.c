@@ -467,6 +467,11 @@ flush_buffers(int flush_typeahead)
 	    ;
 	typebuf.tb_off = MAXMAPLEN;
 	typebuf.tb_len = 0;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+	/* Reset the flag that text received from a client or from feedkeys()
+	 * was inserted in the typeahead buffer. */
+	typebuf_was_filled = FALSE;
+#endif
     }
     else		    /* remove mapped characters at the start only */
     {
