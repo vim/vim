@@ -1061,6 +1061,7 @@ syn_start_line(void)
 
     next_match_idx = -1;
     ++current_line_id;
+    next_seqnr = 1;
 }
 
 /*
@@ -1857,6 +1858,7 @@ get_syntax_attr(
 #endif
 #ifdef FEAT_CONCEAL
 	current_flags = 0;
+	current_seqnr = 0;
 #endif
 	return 0;
     }
@@ -2346,6 +2348,7 @@ syn_current_attr(
 #endif
 #ifdef FEAT_CONCEAL
     current_flags = 0;
+    current_seqnr = 0;
 #endif
     if (cur_si != NULL)
     {
