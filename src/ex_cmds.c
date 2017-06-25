@@ -6835,7 +6835,11 @@ fix_help_buffer(void)
 #ifdef FEAT_AUTOCMD
     /* Set filetype to "help" if still needed. */
     if (STRCMP(curbuf->b_p_ft, "help") != 0)
+    {
+	++curbuf_lock;
 	set_option_value((char_u *)"ft", 0L, (char_u *)"help", OPT_LOCAL);
+	--curbuf_lock;
+    }
 #endif
 
 #ifdef FEAT_SYN_HL

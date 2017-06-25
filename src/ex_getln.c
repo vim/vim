@@ -6878,6 +6878,8 @@ open_cmdwin(void)
 # ifdef FEAT_AUTOCMD
     /* Do execute autocommands for setting the filetype (load syntax). */
     unblock_autocmds();
+    /* But don't allow switching to another buffer. */
+    ++curbuf_lock;
 # endif
 
     /* Showing the prompt may have set need_wait_return, reset it. */
@@ -6893,6 +6895,9 @@ open_cmdwin(void)
 	}
 	set_option_value((char_u *)"ft", 0L, (char_u *)"vim", OPT_LOCAL);
     }
+# ifdef FEAT_AUTOCMD
+    --curbuf_lock;
+# endif
 
     /* Reset 'textwidth' after setting 'filetype' (the Vim filetype plugin
      * sets 'textwidth' to 78). */
