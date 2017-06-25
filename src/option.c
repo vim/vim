@@ -4294,6 +4294,32 @@ set_title_defaults(void)
 }
 #endif
 
+#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+    static void
+trigger_optionsset_string(
+	int	opt_idx,
+	int	opt_flags,
+	char_u *oldval,
+	char_u *newval)
+{
+    if (oldval != NULL && newval != NULL)
+    {
+	char_u buf_type[7];
+
+	sprintf((char *)buf_type, "%s",
+	    (opt_flags & OPT_LOCAL) ? "local" : "global");
+	set_vim_var_string(VV_OPTION_OLD, oldval, -1);
+	set_vim_var_string(VV_OPTION_NEW, newval, -1);
+	set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
+	apply_autocmds(EVENT_OPTIONSET,
+		       (char_u *)options[opt_idx].fullname, NULL, FALSE, NULL);
+	reset_v_option_vars();
+    }
+    vim_free(oldval);
+    vim_free(newval);
+}
+#endif
+
 /*
  * Parse 'arg' for option settings.
  *
@@ -4763,6 +4789,7 @@ do_set(
 			char_u	    *origval = NULL;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 			char_u	    *saved_origval = NULL;
+			char_u	    *saved_newval = NULL;
 #endif
 			unsigned    newlen;
 			int	    comma;
@@ -5114,14 +5141,21 @@ do_set(
 # ifdef FEAT_CRYPT
 				&& options[opt_idx].indir != PV_KEY
 # endif
-							   && origval != NULL)
+					  && origval != NULL && newval != NULL)
+			{
 			    /* origval may be freed by
 			     * did_set_string_option(), make a copy. */
 			    saved_origval = vim_strsave(origval);
+			    /* newval (and varp) may become invalid if the
+			     * buffer is closed by autocommands. */
+			    saved_newval = vim_strsave(newval);
+			}
 #endif
 
 			/* Handle side effects, and set the global value for
-			 * ":set" on local options. */
+			 * ":set" on local options. Note: when setting 'syntax'
+			 * or 'filetype' autocommands may be triggered that can
+			 * cause havoc. */
 			errmsg = did_set_string_option(opt_idx, (char_u **)varp,
 				new_value_alloced, oldval, errbuf, opt_flags);
 
@@ -5130,28 +5164,14 @@ do_set(
 			{
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 			    vim_free(saved_origval);
+			    vim_free(saved_newval);
 #endif
 			    goto skip;
 			}
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-			if (saved_origval != NULL)
-			{
-			    char_u buf_type[7];
-
-			    sprintf((char *)buf_type, "%s",
-				(opt_flags & OPT_LOCAL) ? "local" : "global");
-			    set_vim_var_string(VV_OPTION_NEW,
-							*(char_u **)varp, -1);
-			    set_vim_var_string(VV_OPTION_OLD, saved_origval, -1);
-			    set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
-			    apply_autocmds(EVENT_OPTIONSET,
-					  (char_u *)options[opt_idx].fullname,
-				NULL, FALSE, NULL);
-			    reset_v_option_vars();
-			    vim_free(saved_origval);
-			}
+			trigger_optionsset_string(opt_idx, opt_flags,
+						  saved_origval, saved_newval);
 #endif
-
 		    }
 		    else	    /* key code option */
 		    {
@@ -5922,6 +5942,7 @@ set_string_option(
     char_u	*oldval;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
     char_u	*saved_oldval = NULL;
+    char_u	*saved_newval = NULL;
 #endif
     char_u	*r = NULL;
 
@@ -5945,26 +5966,19 @@ set_string_option(
 		&& options[opt_idx].indir != PV_KEY
 # endif
 		)
+	{
 	    saved_oldval = vim_strsave(oldval);
+	    saved_newval = vim_strsave(s);
+	}
 #endif
 	if ((r = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
 							   opt_flags)) == NULL)
 	    did_set_option(opt_idx, opt_flags, TRUE);
 
-	/* call autocommand after handling side effects */
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-	if (saved_oldval != NULL)
-	{
-	    char_u buf_type[7];
-	    sprintf((char *)buf_type, "%s",
-		(opt_flags & OPT_LOCAL) ? "local" : "global");
-	    set_vim_var_string(VV_OPTION_NEW, *varp, -1);
-	    set_vim_var_string(VV_OPTION_OLD, saved_oldval, -1);
-	    set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
-	    apply_autocmds(EVENT_OPTIONSET, (char_u *)options[opt_idx].fullname, NULL, FALSE, NULL);
-	    reset_v_option_vars();
-	    vim_free(saved_oldval);
-	}
+	/* call autocommand after handling side effects */
+	trigger_optionsset_string(opt_idx, opt_flags,
+						   saved_oldval, saved_newval);
 #endif
     }
     return r;
