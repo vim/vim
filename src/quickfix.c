@@ -3425,6 +3425,9 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 	/* Set the 'filetype' to "qf" each time after filling the buffer.
 	 * This resembles reading a file into a buffer, it's more logical when
 	 * using autocommands. */
+#ifdef FEAT_AUTOCMD
+	++curbuf_lock;
+#endif
 	set_option_value((char_u *)"ft", 0L, (char_u *)"qf", OPT_LOCAL);
 	curbuf->b_p_ma = FALSE;
 
@@ -3435,6 +3438,7 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 	apply_autocmds(EVENT_BUFWINENTER, (char_u *)"quickfix", NULL,
 							       FALSE, curbuf);
 	keep_filetype = FALSE;
+	--curbuf_lock;
 #endif
 	/* make sure it will be redrawn */
 	redraw_curbuf_later(NOT_VALID);
