@@ -5152,12 +5152,18 @@ do_set(
 			}
 #endif
 
+#ifdef FEAT_AUTOCMD
+			curbuf_lock++;
+#endif
 			/* Handle side effects, and set the global value for
 			 * ":set" on local options. Note: when setting 'syntax'
 			 * or 'filetype' autocommands may be triggered that can
 			 * cause havoc. */
 			errmsg = did_set_string_option(opt_idx, (char_u **)varp,
 				new_value_alloced, oldval, errbuf, opt_flags);
+#ifdef FEAT_AUTOCMD
+			curbuf_lock--;
+#endif
 
 			/* If error detected, print the error message. */
 			if (errmsg != NULL)
@@ -5971,9 +5977,15 @@ set_string_option(
 	    saved_newval = vim_strsave(s);
 	}
 #endif
+#ifdef FEAT_AUTOCMD
+	curbuf_lock++;
+#endif
 	if ((r = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
 							   opt_flags)) == NULL)
 	    did_set_option(opt_idx, opt_flags, TRUE);
+#ifdef FEAT_AUTOCMD
+	curbuf_lock--;
+#endif
 
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 	/* call autocommand after handling side effects */
