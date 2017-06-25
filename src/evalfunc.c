@@ -3191,7 +3191,11 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	    ins_typebuf(keys_esc, (remap ? REMAP_YES : REMAP_NONE),
 				  insert ? 0 : typebuf.tb_len, !typed, FALSE);
 	    vim_free(keys_esc);
-	    if (vgetc_busy || timer_busy)
+	    if (vgetc_busy
+#ifdef FEAT_TIMERS
+		    || timer_busy
+#endif
+		    )
 		typebuf_was_filled = TRUE;
 	    if (execute)
 	    {
