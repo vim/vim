@@ -12398,6 +12398,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 {
     char_u *name = (char_u *)"";
     int     val;
+    static int save_starting = -1;
 
     if (argvars[0].v_type != VAR_STRING
 	    || (argvars[1].v_type) != VAR_NUMBER)
@@ -12411,10 +12412,29 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    disable_redraw_for_testing = val;
 	else if (STRCMP(name, (char_u *)"char_avail") == 0)
 	    disable_char_avail_for_testing = val;
+	else if (STRCMP(name, (char_u *)"starting") == 0)
+	{
+	    if (val)
+	    {
+		if (save_starting < 0)
+		    save_starting = starting;
+		starting = 0;
+	    }
+	    else
+	    {
+		starting = save_starting;
+		save_starting = -1;
+	    }
+	}
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
 	{
 	    disable_char_avail_for_testing = FALSE;
 	    disable_redraw_for_testing = FALSE;
+	    if (save_starting >= 0)
+	    {
+		starting = save_starting;
+		save_starting = -1;
+	    }
 	}
 	else
 	    EMSG2(_(e_invarg2), name);

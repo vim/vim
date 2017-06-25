@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jun 24
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7942,7 +7942,18 @@ test_override({name}, {val})				*test_override()*
 		name	     effect when {val} is non-zero ~
 		redraw       disable the redrawing() function
 		char_avail   disable the char_avail() function
+		starting     reset the "starting" variable, see below
 		ALL	     clear all overrides ({val} is not used)
+
+		"starting" is to be used when a test should behave like
+		startup was done.  Since the tests are run by sourcing a
+		script the "starting" variable is non-zero. This is usually a
+		good thing (tests run faster), but sometimes changes behavior
+		in a way that the test doesn't work properly.
+		When using: >
+			call test_override('starting', 1)
+< 		The value of "starting" is saved.  It is restored by: >
+			call test_override('starting', 0)
 
 test_settime({expr})					*test_settime()*
 		Set the time Vim uses internally.  Currently only used for
