@@ -2282,7 +2282,7 @@ win_close(win_T *win, int free_buf)
     int		dir;
     int		help_window = FALSE;
     tabpage_T   *prev_curtab = curtab;
-    frame_T	*win_frame = win->w_frame;
+    frame_T	*win_frame = win->w_frame->fr_parent;
 
     if (last_window())
     {
@@ -2462,8 +2462,7 @@ win_close(win_T *win, int free_buf)
     if (p_ea && (*p_ead == 'b' || *p_ead == dir))
 	/* If the frame of the closed window contains the new current window,
 	 * only resize that frame.  Otherwise resize all windows. */
-	win_equal(curwin,
-		      curwin->w_frame->fr_parent == win_frame->fr_parent, dir);
+	win_equal(curwin, curwin->w_frame->fr_parent == win_frame, dir);
     else
 	win_comp_pos();
     if (close_curwin)
