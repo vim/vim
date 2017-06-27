@@ -26,20 +26,24 @@ func Test_after_comes_later()
 	\ 'set rtp=Xhere,Xafter',
 	\ 'set packpath=Xhere,Xafter',
 	\ 'set nomore',
+	\ 'let g:sequence = ""',
 	\ ]
   let after = [
 	\ 'redir! > Xtestout',
 	\ 'scriptnames',
 	\ 'redir END',
+	\ 'redir! > Xsequence',
+	\ 'echo g:sequence',
+	\ 'redir END',
 	\ 'quit',
 	\ ]
   call mkdir('Xhere/plugin', 'p')
-  call writefile(['let done = 1'], 'Xhere/plugin/here.vim')
+  call writefile(['let g:sequence .= "plugin "'], 'Xhere/plugin/here.vim')
   call mkdir('Xhere/pack/foo/start/foobar/plugin', 'p')
-  call writefile(['let done = 1'], 'Xhere/pack/foo/start/foobar/plugin/foo.vim')
+  call writefile(['let g:sequence .= "pack "'], 'Xhere/pack/foo/start/foobar/plugin/foo.vim')
 
   call mkdir('Xafter/plugin', 'p')
-  call writefile(['let done = 1'], 'Xafter/plugin/later.vim')
+  call writefile(['let g:sequence .= "after "'], 'Xafter/plugin/later.vim')
 
   if RunVim(before, after, '')
 
@@ -56,7 +60,10 @@ func Test_after_comes_later()
     call assert_equal(expected, found)
   endif
 
+  call assert_equal('plugin pack after', substitute(join(readfile('Xsequence', 1), ''), '\s\+$', '', ''))
+
   call delete('Xtestout')
+  call delete('Xsequence')
   call delete('Xhere', 'rf')
   call delete('Xafter', 'rf')
 endfunc
