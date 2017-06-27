@@ -2089,7 +2089,7 @@ test1 \
 	test50 test51 test52 test53 test54 test55 test56 test57 test59 \
 	test60 test64 test66 test67 test68 test69 \
 	test70 test72 test73 test74 test75 test77 test78 test79 \
-	test80 test82 test83 test84 test85 test86 test87 test88 \
+	test80 test83 test84 test85 test86 test87 test88 \
 	test90 test91 test94 test95 test97 test98 test99 \
 	test100 test101 test103 test104 test107 test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
@@ -2233,6 +2233,7 @@ test_arglist \
 	test_unlet \
 	test_usercommands \
 	test_utf8 \
+	test_utf8_comparisons \
 	test_viminfo \
 	test_vimscript \
 	test_visual \
