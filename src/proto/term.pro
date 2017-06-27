@@ -16,6 +16,7 @@ void out_flush_check(void);
 void out_trash(void);
 void out_char(unsigned c);
 void out_str_nf(char_u *s);
+void out_str_cf(char_u *s);
 void out_str(char_u *s);
 void term_windgoto(int row, int col);
 void term_cursor_right(int i);

@@ -3674,6 +3674,24 @@ beep_flush(void)
     }
 }
 
+static void
+do_visualbell(void)
+{
+#ifdef ELAPSED_FUNC
+    static int		did_init = FALSE;
+    static ELAPSED_TYPE	start_tv;
+
+    /* Only put 'T_VB' once per 200 msec, otherwise a sequence of beeps would
+     * freeze Vim. */
+    if (did_init && ELAPSED_FUNC(start_tv) < 200)
+	return;
+
+    did_init = TRUE;
+    ELAPSED_INIT(start_tv);
+#endif
+    out_str_cf(T_VB);
+}
+
 /*
  * Give a warning for an error.
  */
@@ -3692,7 +3710,7 @@ vim_beep(
 		    && !(gui.in_use && gui.starting)
 #endif
 		    )
-		out_str(T_VB);
+		do_visualbell();
 	    else
 		out_char(BELL);
 	}
