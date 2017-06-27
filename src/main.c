@@ -449,18 +449,28 @@ vim_main2(void)
      */
     if (p_lpl)
     {
+	char_u *rtp_copy = NULL;
+
 	/* First add all package directories to 'runtimepath', so that their
 	 * autoload directories can be found.  Only if not done already with a
-	 * :packloadall command. */
+	 * :packloadall command.
+	 * Make a copy of 'runtimepath', so that source_runtime does not use
+	 * the pack directories. */
 	if (!did_source_packages)
+	{
+	    rtp_copy = vim_strsave(p_rtp);
 	    add_pack_start_dirs();
+	}
 
+	source_in_path(rtp_copy == NULL ? p_rtp : rtp_copy,
 # ifdef VMS	/* Somehow VMS doesn't handle the "**". */
-	source_runtime((char_u *)"plugin/*.vim", DIP_ALL | DIP_NOAFTER);
+		(char_u *)"plugin/*.vim",
 # else
-	source_runtime((char_u *)"plugin/**/*.vim", DIP_ALL | DIP_NOAFTER);
+		(char_u *)"plugin/**/*.vim",
 # endif
+		DIP_ALL | DIP_NOAFTER);
 	TIME_MSG("loading plugins");
+	vim_free(rtp_copy);
 
 	/* Only source "start" packages if not done already with a :packloadall
 	 * command. */
