@@ -462,11 +462,9 @@ vim_main2(void)
 # endif
 	TIME_MSG("loading plugins");
 
-	/* Only source "start" packages if not done already with a :packloadall
-	 * command. */
-	if (!did_source_packages)
-	    load_start_packages();
-	TIME_MSG("loading packages");
+	/* As package directories had been added to 'runtimepath', its plugins
+	 * have been loaded by now, too. */
+	did_source_packages = TRUE;
 
 # ifdef VMS	/* Somehow VMS doesn't handle the "**". */
 	source_runtime((char_u *)"plugin/*.vim", DIP_ALL | DIP_AFTER);
