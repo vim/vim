@@ -62,7 +62,6 @@ SCRIPTS_ALL = \
 	test80.out \
 	test84.out \
 	test88.out \
-	test90.out \
 	test91.out \
 	test94.out \
 	test95.out \
