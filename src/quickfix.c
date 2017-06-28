@@ -2574,7 +2574,8 @@ qf_list(exarg_T *eap)
 	    if (got_int)
 		break;
 
-	    if (qfp->qf_module != NULL && STRCMP(qfp->qf_module, "") != 0)
+	    fname = NULL;
+	    if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
 		vim_snprintf((char *)IObuff, IOSIZE, "%2d %s", i, (char *)qfp->qf_module);
 	    else {
 		if (qfp->qf_fnum != 0
