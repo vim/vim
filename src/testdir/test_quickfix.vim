@@ -2199,6 +2199,23 @@ func Test_cclose_from_copen()
     augroup! QF_Test
 endfunc
 
+func Test_resize_from_copen()
+    augroup QF_Test
+	au!
+        au FileType qf resize 5
+    augroup END
+    try
+	" This should succeed without any exception.  No other buffers are
+	" involved in the autocmd.
+	copen
+    finally
+	augroup QF_Test
+	    au!
+	augroup END
+	augroup! QF_Test
+    endtry
+endfunc
+
 " Tests for getting the quickfix stack size
 func XsizeTests(cchar)
   call s:setup_commands(a:cchar)
