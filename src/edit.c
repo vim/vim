@@ -4308,9 +4308,17 @@ ins_compl_get_exp(pos_T *ini)
 	    {
 		ins_buf = curbuf;
 		first_match_pos = *ini;
-		/* So that ^N can match word immediately after cursor */
-		if (ctrl_x_mode == 0)
-		    dec(&first_match_pos);
+		/* Move the cursor back one character so that ^N can match the
+		 * word immediately after the cursor. */
+		if (ctrl_x_mode == 0 && dec(&first_match_pos) < 0)
+		{
+		    /* Move the cursor to after the last character in the
+		     * buffer, so that word at start of buffer is found
+		     * correctly. */
+		    first_match_pos.lnum = ins_buf->b_ml.ml_line_count;
+		    first_match_pos.col =
+				 (colnr_T)STRLEN(ml_get(first_match_pos.lnum));
+		}
 		last_match_pos = first_match_pos;
 		type = 0;
 
@@ -4512,7 +4520,7 @@ ins_compl_get_exp(pos_T *ini)
 		    found_new_match = searchit(NULL, ins_buf, pos,
 							      compl_direction,
 				 compl_pattern, 1L, SEARCH_KEEP + SEARCH_NFMSG,
-						  RE_LAST, (linenr_T)0, NULL);
+					     RE_LAST, (linenr_T)0, NULL, NULL);
 		--msg_silent;
 		if (!compl_started || set_match_pos)
 		{

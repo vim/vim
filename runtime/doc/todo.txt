@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Jun 05
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -113,6 +113,7 @@ With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
 (Marcin Szewczyk, 2017 Apr 26)
 
 ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
+Lemonboy can reproduce (2017 Jun 5)
 
 ml_get errors with buggy script. (Dominique, 2017 Apr 30)
 
@@ -144,14 +145,8 @@ Openhab syntax file (mueller, #1678)
 
 Use gvimext.dll from the nightly build? (Issue #249)
 
-Patch to remove HAVE_GTK_MULTIHEAD-relevant code. (Kazunobu Kuriyama, 2017 May
-5) Update May 11
-
 'synmaxcol' works with bytes instead of screen cells. (Llandon, 2017 May 31,
 #1736)
-
-Patch to pass quickfix list index to functions. (Yegappan Lakshmanan, 2017 May
-31)
 
 Problem with using :cd when remotely editing a file. (Gerd Wachsmuth, 2017 May
 8, #1690)
@@ -168,16 +163,6 @@ manager.  Problem with Motif?
 Bogus characters inserted when triggering indent while changing text.
 (Vitor Antunes, 2016 Nov 22, #1269)
 
-Patch to have ":stag" respect 'switchbuf'. (Ingo Karkat, 2017 May 5, #1681)
-
-Patch to improve building with MSVC. (Leonardo Manera, #1747)
-
-Wrong selection of quoted text (Guraga, #1687)
-Patch to fix selection of quoted text. (Christian Brabandt, 2017 May 7, #1687)
-
-Patch to use separate error message for regex range. (Itchyny, Ken Hamada,
-2017 May 16)
-
 Segmentation fault with complete(). (Lifepillar, 2017 Apr 29, #1668)
 Check for "pat" to be NULL in search_for_exact_line()?
 How did it get NULL?  Comment by Christian, Apr 30.
@@ -185,17 +170,7 @@ How did it get NULL?  Comment by Christian, Apr 30.
 Is it possible to keep the complete menu open when calling complete()?
 (Prabir Shrestha, 2017 May 19, #1713)
 
-Calling may_req_ambiguous_char_width() and may_req_bg_color() only after
-executing command line commands may not work properly.
-(Rastislav Barlink, 2017 May 18)
-Set "starting" to 0 earlier, and move the may_req calls above exe_commands()?
-No, that's a problem with using "-c quit", not running Vim interactive.
-
 Memory leak in test97?  The string is actually freed.  Weird.
-
-Patch for shellescape(). (Christian Brabandt, 2017 Apr 20, #1590)
-
-Patch for flickering redraw. (Hirohito Higashi, 2017 Apr 23, #1637)
 
 New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
 
@@ -211,18 +186,6 @@ mapping?  Something unique would be better than the LHS.
 Perhaps simpler: actually delete the mappings.  Use maplist() to list matching
 mappings (with a lhs prefix, like maparg()), mapdelete() to delete,
 maprestore() to restore (using the output of maplist().
-
-Patch to support chinese wordcount in utf-8. (Rain, 2017 May 24, #1722)
-Or not?
-
-"gn" selects one character instead of the searched text. (keyboardfire, #1683)
-Patch by Christian, 2017 May 7.
-
-Wrong memory access using p_fdm, found in patch to add tests for diff mode
-(#1658) (Dominique Pelle, 2017 May 6)
-
-Patch to improve test coverage for diff mode. (Dominique Pelle, 2017 May 11,
-#1685)
 
 Add an argument to :mkvimrc (or add aother command) to skip mappings from
 plugins (source is a Vim script).  No need to put these in a .vimrc, they will
@@ -249,6 +212,7 @@ Also get E749 on exit.
 Another example in #1309
 
 Patch to change all use of &sw to shiftwidth(). (Tyru, 2017 Feb 19)
+Takuya Fujiwara
 Wait until maintainers integrate it.
 
 When deleting a mark or register, leave a tombstone, so that it's also deleted
@@ -357,6 +321,8 @@ Useful to restore it.  Is there another solution?
 Patch for wrong cursor position on wrapped line, involving breakindent.
 (Ozaki Kiichi, 2016 Nov 25)
 Does this also fix #1408 ?
+
+Patch to add "module" to quickfix entries. (Coot, 2017 Jun 8, #1757)
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
 
@@ -500,9 +466,6 @@ This does not work: :set cscopequickfix=a-
 
 Possibly wrong value for seq_cur. (Florent Fayolle, 2016 May 15, #806)
 
-Patch to add separate highlighting for quickfix current line.
-(anishsane, 2016 Sep 16, #1080)
-
 Filetype plugin for awk. (Doug Kearns, 2016 Sep 5)
 
 Patch to improve map documentation. Issue #799.
@@ -538,6 +501,9 @@ Because of using the initial buffer? (Dun Peal, 2016 May 12)
 
 Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
 Updated 2016 Jun 10, #858  Update 2017 Mar 28: use <buffer>
+
+Patch to fix that an encoding conversion failure results in a corrupted or
+empty file. (Christian Brabandt, #1765, https://github.com/chrisbra/vim-mq-patches/blob/master/conversion_error)
 
 Add redrawtabline command. (Naruhiko Nishino, 2016 Jun 11)
 
@@ -1031,8 +997,6 @@ Patch to handle integer overflow. (Aaron Burrow, 2013 Dec 12)
 
 Patch to add "ntab" item in 'listchars' to repeat first character. (Nathaniel
 Braun, pragm, 2013 Oct 13)  A better solution 2014 Mar 5.
-
-/[b-a] gives error E16, should probably be E769.
 
 7   Windows XP: When using "ClearType" for text smoothing, a column of yellow
     pixels remains when typing spaces in front of a "D" ('guifont' set to

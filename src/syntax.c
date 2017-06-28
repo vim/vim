@@ -367,6 +367,9 @@ static reg_extmatch_T *next_match_extmatch = NULL;
 static win_T	*syn_win;		/* current window for highlighting */
 static buf_T	*syn_buf;		/* current buffer for highlighting */
 static synblock_T *syn_block;		/* current buffer for highlighting */
+#ifdef FEAT_RELTIME
+static proftime_T *syn_tm;
+#endif
 static linenr_T current_lnum = 0;	/* lnum of current state */
 static colnr_T	current_col = 0;	/* column of current state */
 static int	current_state_stored = 0; /* TRUE if stored current state
@@ -494,7 +497,7 @@ static void syn_incl_toplevel(int id, int *flagsp);
  * window.
  */
     void
-syntax_start(win_T *wp, linenr_T lnum)
+syntax_start(win_T *wp, linenr_T lnum, proftime_T *syntax_tm UNUSED)
 {
     synstate_T	*p;
     synstate_T	*last_valid = NULL;
@@ -524,6 +527,9 @@ syntax_start(win_T *wp, linenr_T lnum)
     }
     changedtick = CHANGEDTICK(syn_buf);
     syn_win = wp;
+#ifdef FEAT_RELTIME
+    syn_tm = syntax_tm;
+#endif
 
     /*
      * Allocate syntax stack when needed.
@@ -1055,6 +1061,9 @@ syn_start_line(void)
 
     next_match_idx = -1;
     ++current_line_id;
+#ifdef FEAT_CONCEAL
+    next_seqnr = 1;
+#endif
 }
 
 /*
@@ -1851,6 +1860,7 @@ get_syntax_attr(
 #endif
 #ifdef FEAT_CONCEAL
 	current_flags = 0;
+	current_seqnr = 0;
 #endif
 	return 0;
     }
@@ -2340,6 +2350,7 @@ syn_current_attr(
 #endif
 #ifdef FEAT_CONCEAL
     current_flags = 0;
+    current_seqnr = 0;
 #endif
     if (cur_si != NULL)
     {
@@ -3295,6 +3306,9 @@ syn_regexec(
     syn_time_T  *st UNUSED)
 {
     int r;
+#ifdef FEAT_RELTIME
+    int timed_out = FALSE;
+#endif
 #ifdef FEAT_PROFILE
     proftime_T	pt;
 
@@ -3303,7 +3317,13 @@ syn_regexec(
 #endif
 
     rmp->rmm_maxcol = syn_buf->b_p_smc;
-    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, NULL);
+    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col,
+#ifdef FEAT_RELTIME
+	    syn_tm, &timed_out
+#else
+	    NULL, NULL
+#endif
+	    );
 
 #ifdef FEAT_PROFILE
     if (syn_time_on)
@@ -3316,6 +3336,10 @@ syn_regexec(
 	if (r > 0)
 	    ++st->match;
     }
+#endif
+#ifdef FEAT_RELTIME
+    if (timed_out)
+	syn_win->w_s->b_syn_slow = TRUE;
 #endif
 
     if (r > 0)
@@ -3436,9 +3460,9 @@ syn_cmd_conceal(exarg_T *eap UNUSED, int syncing UNUSED)
     if (*arg == NUL)
     {
 	if (curwin->w_s->b_syn_conceal)
-	    MSG(_("syn conceal on"));
+	    MSG(_("syntax conceal on"));
 	else
-	    MSG(_("syn conceal off"));
+	    MSG(_("syntax conceal off"));
     }
     else if (STRNICMP(arg, "on", 2) == 0 && next - arg == 2)
 	curwin->w_s->b_syn_conceal = TRUE;
@@ -3575,6 +3599,9 @@ syntax_clear(synblock_T *block)
     int i;
 
     block->b_syn_error = FALSE;	    /* clear previous error */
+#ifdef FEAT_RELTIME
+    block->b_syn_slow = FALSE;	    /* clear previous timeout */
+#endif
     block->b_syn_ic = FALSE;	    /* Use case, by default */
     block->b_syn_spell = SYNSPL_DEFAULT; /* default spell checking */
     block->b_syn_containedin = FALSE;
@@ -6542,7 +6569,7 @@ syn_get_id(
     if (wp->w_buffer != syn_buf
 	    || lnum != current_lnum
 	    || col < current_col)
-	syntax_start(wp, lnum);
+	syntax_start(wp, lnum, NULL);
     else if (wp->w_buffer == syn_buf
 	    && lnum == current_lnum
 	    && col > current_col)
@@ -6611,9 +6638,14 @@ syn_get_foldlevel(win_T *wp, long lnum)
     int		i;
 
     /* Return quickly when there are no fold items at all. */
-    if (wp->w_s->b_syn_folditems != 0)
+    if (wp->w_s->b_syn_folditems != 0
+	    && !wp->w_s->b_syn_error
+# ifdef SYN_TIME_LIMIT
+	    && !wp->w_s->b_syn_slow
+# endif
+	    )
     {
-	syntax_start(wp, lnum);
+	syntax_start(wp, lnum, NULL);
 
 	for (i = 0; i < current_state.ga_len; ++i)
 	    if (CUR_STATE(i).si_flags & HL_FOLD)
@@ -6882,6 +6914,7 @@ static char *(highlight_init_both[]) =
 	"Cursor guibg=fg guifg=bg",
 	"lCursor guibg=fg guifg=bg", /* should be different, but what? */
 #endif
+	"default link QuickFixLine Search",
 	NULL
     };
 

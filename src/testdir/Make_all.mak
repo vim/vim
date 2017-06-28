@@ -60,10 +60,8 @@ SCRIPTS_ALL = \
 	test77.out \
 	test79.out \
 	test80.out \
-	test82.out \
 	test84.out \
 	test88.out \
-	test90.out \
 	test91.out \
 	test94.out \
 	test95.out \
@@ -115,7 +113,6 @@ SCRIPTS_MORE4 = \
 	test17.out \
 	test30.out \
 	test32.out \
-	test58.out \
 	test59.out \
 	test72.out \
 	test78.out \

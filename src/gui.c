@@ -5361,7 +5361,7 @@ gui_do_findrepl(
 	    searchflags += SEARCH_START;
 	i = msg_scroll;
 	(void)do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
-							   searchflags, NULL);
+						      searchflags, NULL, NULL);
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */
     }
 

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Jun 04
+*options.txt*	For Vim version 8.0.  Last change: 2017 Jun 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3522,6 +3522,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:s///gg		  subst. all	  subst. one
 
 	NOTE: This option is reset when 'compatible' is set.
+	DEPRECATED: Setting this option may break plugins that are not aware
+	of this option.  Also, many users get confused that adding the /g flag
+	has the opposite effect of that it normally does.
 
 						*'grepformat'* *'gfm'*
 'grepformat' 'gfm'	string	(default "%f:%l:%m,%f:%l%m,%f  %l%m")
@@ -4037,7 +4040,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     D:DiffDelete,T:DiffText,>:SignColumn,
 				     B:SpellBad,P:SpellCap,R:SpellRare,
 				     L:SpellLocal,-:Conceal,+:Pmenu,=:PmenuSel,
-				     x:PmenuSbar,X:PmenuThumb")
+				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
+				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
+				     .:CursorLine,o:ColorColumn,q:QuickFixLine")
 			global
 			{not in Vi}
 	This option can be used to set highlighting mode for various
@@ -5940,10 +5945,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with the |+reltime|
 			feature}
 	The time in milliseconds for redrawing the display.  This applies to
-	searching for patterns for 'hlsearch' and |:match| highlighting.
+	searching for patterns for 'hlsearch', |:match| highlighting an syntax
+	highlighting.
 	When redrawing takes more than this many milliseconds no further
-	matches will be highlighted.  This is used to avoid that Vim hangs
-	when using a very complicated pattern.
+	matches will be highlighted.
+	For syntax highlighting the time applies per window.  When over the
+	limit syntax highlighting is disabled until |CTRL-L| is used.
+	This is used to avoid that Vim hangs when using a very complicated
+	pattern.
 
 						*'regexpengine'* *'re'*
 'regexpengine' 're'	number	(default 0)

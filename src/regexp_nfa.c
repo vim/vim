@@ -311,12 +311,12 @@ static int check_char_class(int class, int c);
 static void nfa_save_listids(nfa_regprog_T *prog, int *list);
 static void nfa_restore_listids(nfa_regprog_T *prog, int *list);
 static int nfa_re_num_cmp(long_u val, int op, long_u pos);
-static long nfa_regtry(nfa_regprog_T *prog, colnr_T col, proftime_T *tm);
-static long nfa_regexec_both(char_u *line, colnr_T col, proftime_T *tm);
+static long nfa_regtry(nfa_regprog_T *prog, colnr_T col, proftime_T *tm, int *timed_out);
+static long nfa_regexec_both(char_u *line, colnr_T col, proftime_T *tm, int *timed_out);
 static regprog_T *nfa_regcomp(char_u *expr, int re_flags);
 static void nfa_regfree(regprog_T *prog);
 static int  nfa_regexec_nl(regmatch_T *rmp, char_u *line, colnr_T col, int line_lbr);
-static long nfa_regexec_multi(regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm);
+static long nfa_regexec_multi(regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm, int *timed_out);
 static int match_follows(nfa_state_T *startstate, int depth);
 static int failure_chance(nfa_state_T *state, int depth);
 
@@ -1446,8 +1446,14 @@ nfa_regatom(void)
 	case Magic('7'):
 	case Magic('8'):
 	case Magic('9'):
-	    EMIT(NFA_BACKREF1 + (no_Magic(c) - '1'));
-	    nfa_has_backref = TRUE;
+	    {
+		int refnum = no_Magic(c) - '1';
+
+		if (!seen_endbrace(refnum + 1))
+		    return FAIL;
+		EMIT(NFA_BACKREF1 + refnum);
+		nfa_has_backref = TRUE;
+	    }
 	    break;
 
 	case Magic('z'):
@@ -3959,6 +3965,7 @@ pim_info(nfa_pim_T *pim)
 static int nfa_match;
 #ifdef FEAT_RELTIME
 static proftime_T  *nfa_time_limit;
+static int	   *nfa_timed_out;
 static int         nfa_time_count;
 #endif
 
@@ -5508,6 +5515,20 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
     return 0L;
 }
 
+#ifdef FEAT_RELTIME
+    static int
+nfa_did_time_out()
+{
+    if (nfa_time_limit != NULL && profile_passed_limit(nfa_time_limit))
+    {
+	if (nfa_timed_out != NULL)
+	    *nfa_timed_out = TRUE;
+	return TRUE;
+    }
+    return FALSE;
+}
+#endif
+
 /*
  * Main matching routine.
  *
@@ -5551,7 +5572,7 @@ nfa_regmatch(
     if (got_int)
 	return FALSE;
 #ifdef FEAT_RELTIME
-    if (nfa_time_limit != NULL && profile_passed_limit(nfa_time_limit))
+    if (nfa_did_time_out())
 	return FALSE;
 #endif
 
@@ -5694,6 +5715,19 @@ nfa_regmatch(
 	/* compute nextlist */
 	for (listidx = 0; listidx < thislist->n; ++listidx)
 	{
+	    /* If the list gets very long there probably is something wrong.
+	     * At least allow interrupting with CTRL-C. */
+	    fast_breakcheck();
+	    if (got_int)
+		break;
+#ifdef FEAT_RELTIME
+	    if (nfa_time_limit != NULL && ++nfa_time_count == 20)
+	    {
+		nfa_time_count = 0;
+		if (nfa_did_time_out())
+		    break;
+	    }
+#endif
 	    t = &thislist->t[listidx];
 
 #ifdef NFA_REGEXP_DEBUG_LOG
@@ -6915,7 +6949,7 @@ nextchar:
 	if (nfa_time_limit != NULL && ++nfa_time_count == 20)
 	{
 	    nfa_time_count = 0;
-	    if (profile_passed_limit(nfa_time_limit))
+	    if (nfa_did_time_out())
 		break;
 	}
 #endif
@@ -6948,7 +6982,8 @@ theend:
 nfa_regtry(
     nfa_regprog_T   *prog,
     colnr_T	    col,
-    proftime_T	    *tm UNUSED)	/* timeout limit or NULL */
+    proftime_T	    *tm UNUSED,	/* timeout limit or NULL */
+    int		    *timed_out UNUSED)	/* flag set on timeout or NULL */
 {
     int		i;
     regsubs_T	subs, m;
@@ -6961,6 +6996,7 @@ nfa_regtry(
     reginput = regline + col;
 #ifdef FEAT_RELTIME
     nfa_time_limit = tm;
+    nfa_timed_out = timed_out;
     nfa_time_count = 0;
 #endif
 
@@ -7087,7 +7123,8 @@ nfa_regtry(
 nfa_regexec_both(
     char_u	*line,
     colnr_T	startcol,	/* column to start looking for match */
-    proftime_T	*tm)		/* timeout limit or NULL */
+    proftime_T	*tm,		/* timeout limit or NULL */
+    int		*timed_out)	/* flag set on timeout or NULL */
 {
     nfa_regprog_T   *prog;
     long	    retval = 0L;
@@ -7181,7 +7218,7 @@ nfa_regexec_both(
 	prog->state[i].lastlist[1] = 0;
     }
 
-    retval = nfa_regtry(prog, col, tm);
+    retval = nfa_regtry(prog, col, tm, timed_out);
 
     nfa_regengine.expr = NULL;
 
@@ -7340,7 +7377,7 @@ nfa_regexec_nl(
     rex.reg_icombine = FALSE;
 #endif
     rex.reg_maxcol = 0;
-    return nfa_regexec_both(line, col, NULL);
+    return nfa_regexec_both(line, col, NULL, NULL);
 }
 
 
@@ -7376,7 +7413,8 @@ nfa_regexec_multi(
     buf_T	*buf,		/* buffer in which to search */
     linenr_T	lnum,		/* nr of line to start looking for match */
     colnr_T	col,		/* column to start looking for match */
-    proftime_T	*tm)		/* timeout limit or NULL */
+    proftime_T	*tm,		/* timeout limit or NULL */
+    int		*timed_out)	/* flag set on timeout or NULL */
 {
     rex.reg_match = NULL;
     rex.reg_mmatch = rmp;
@@ -7391,7 +7429,7 @@ nfa_regexec_multi(
 #endif
     rex.reg_maxcol = rmp->rmm_maxcol;
 
-    return nfa_regexec_both(NULL, col, tm);
+    return nfa_regexec_both(NULL, col, tm, timed_out);
 }
 
 #ifdef DEBUG

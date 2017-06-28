@@ -87,6 +87,7 @@ UninstPage instfiles
 Function .onInit
   MessageBox MB_YESNO|MB_ICONQUESTION \
 	"This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer.$\n Continue?" \
+	/SD IDYES \
 	IDYES NoAbort
 	    Abort ; causes installer to quit.
 	NoAbort:

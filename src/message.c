@@ -3471,6 +3471,13 @@ give_warning(char_u *message, int hl)
     --no_wait_return;
 }
 
+    void
+give_warning2(char_u *message, char_u *a1, int hl)
+{
+    vim_snprintf((char *)IObuff, IOSIZE, (char *)message, a1);
+    give_warning(IObuff, hl);
+}
+
 /*
  * Advance msg cursor to column "col".
  */
