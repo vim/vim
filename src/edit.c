@@ -7329,7 +7329,9 @@ oneleft(void)
 #ifdef FEAT_VIRTUALEDIT
     if (virtual_active())
     {
+# ifdef FEAT_LINEBREAK
 	int width;
+# endif
 	int v = getviscol();
 
 	if (v == 0)
