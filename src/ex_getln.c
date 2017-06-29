@@ -1492,7 +1492,7 @@ getcmdline(
 			    if (c != NUL)
 			    {
 				if (c == firstc || vim_strchr((char_u *)(
-					      p_magic ? "\\^$.*[" : "\\^$"), c)
+					      p_magic ? "\\~^$.*[" : "\\^$"), c)
 								       != NULL)
 				{
 				    /* put a backslash before special
