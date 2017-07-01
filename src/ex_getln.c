@@ -1708,6 +1708,14 @@ getcmdline(
 			    search_start = t;
 			    (void)decl(&search_start);
 			}
+			else if (c == Ctrl_G && firstc == '?')
+			{
+			    /* move just after the current match, so that
+			     * when nv_search finishes the cursor will be
+			     * put back on the match */
+			    search_start = t;
+			    (void)incl(&search_start);
+			}
 			if (LT_POS(t, search_start) && c == Ctrl_G)
 			{
 			    /* wrap around */
