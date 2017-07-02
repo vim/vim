@@ -99,8 +99,7 @@ SCRIPTS_MORE1 = \
 SCRIPTS_MORE2 = \
 	test12.out \
 	test25.out \
-	test49.out \
-	test97.out
+	test49.out
 
 
 # Tests that run on most systems, but not MingW and Cygwin.

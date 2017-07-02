@@ -131,7 +131,7 @@ SCRIPT = test1.out  test3.out  test4.out  test5.out  \
 # test83: ?
 # test85: no Lua interface
 # test89: bug - findfile() does not work on VMS (just in the current directory) 
-# test97, test102: Just ODS-5 supports space and special chars in the filename.
+# test102: Just ODS-5 supports space and special chars in the filename.
 # On ODS-2 tests fail. 
 
 .IFDEF WANT_GUI
@@ -156,7 +156,7 @@ SCRIPT_MZSCH = test70.out
 .ENDIF
 
 .IFDEF HAVE_ODS5                                                                                                                                   
-SCRIPT_ODS5 = test97.out test102.out                                                                                                   
+SCRIPT_ODS5 = test102.out                                                                                                   
 .ENDIF  
 
 .IFDEF HAVE_GZIP
