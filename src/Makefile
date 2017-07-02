@@ -2241,6 +2241,7 @@ test_arglist \
 	test_window_cmd \
 	test_window_id \
 	test_writefile \
+	test_yank \
 	test_alot_latin \
 	test_alot_utf8 \
 	test_alot:
