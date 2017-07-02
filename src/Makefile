@@ -2076,7 +2076,6 @@ test1 \
 	test_erasebackword \
 	test_eval \
 	test_fixeol \
-	test_getcwd \
 	test_insertcount \
 	test_listchars \
 	test_search_mbyte \
@@ -2144,6 +2143,7 @@ test_arglist \
 	test_fold \
 	test_functions \
 	test_ga \
+	test_getcwd \
 	test_gf \
 	test_glob2regpat \
 	test_global \
