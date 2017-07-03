@@ -2072,7 +2072,6 @@ test1 \
 	test_autoformat_join \
 	test_changelist \
 	test_close_count \
-	test_comparators \
 	test_erasebackword \
 	test_eval \
 	test_fixeol \
@@ -2113,6 +2112,7 @@ test_arglist \
 	test_clientserver \
 	test_cmdline \
 	test_command_count \
+	test_comparators \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \

@@ -72,7 +72,6 @@ SCRIPTS_ALL = \
 	test_autoformat_join.out \
 	test_changelist.out \
 	test_close_count.out \
-	test_comparators.out \
 	test_erasebackword.out \
 	test_eval.out \
 	test_fixeol.out \

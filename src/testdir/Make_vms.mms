@@ -101,7 +101,6 @@ SCRIPT = test1.out  test3.out  test4.out  test5.out  \
        test_breakindent.out \
        test_changelist.out \
        test_close_count.out \
-       test_comparators.out \
        test_erasebackword.out \
        test_eval.out \
        test_fixeol.out \
