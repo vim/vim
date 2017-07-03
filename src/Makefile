@@ -2081,7 +2081,7 @@ test1 \
 	test_wordcount \
 	test3 test4 test5 test6 test7 test8 test9 \
 	test11 test12 test14 test15 test17 test18 test19 \
-	test20 test21 test22 test24 test25 test27 test28 test29 \
+	test20 test21 test22 test25 test27 test28 test29 \
 	test30 test31 test32 test33 test34 test36 test37 test38 test39 \
 	test40 test41 test42 test43 test44 test45 test48 test49 \
 	test50 test51 test52 test53 test54 test55 test56 test57 test59 \
@@ -2204,6 +2204,7 @@ test_arglist \
 	test_quickfix \
 	test_quotestar \
 	test_recover \
+	test_regex_char_classes \
 	test_regexp_latin \
 	test_regexp_utf8 \
 	test_reltime \

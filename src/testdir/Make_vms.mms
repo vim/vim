@@ -80,7 +80,6 @@ SCRIPT = test1.out  test3.out  test4.out  test5.out  \
        test7.out  test8.out  test9.out  \
        test14.out test15.out \
        test19.out test20.out test22.out \
-       test24.out \
        test28.out test29.out test30.out test31.out test32.out \
        test33.out test34.out test36.out test37.out \
        test38.out test39.out test40.out test41.out test42.out \
