@@ -1,19 +1,22 @@
 " Vim indent script for HTML
 " Header: "{{{
-" Maintainer:	Bram Moolenaar
+" Maintainer:	Michael Lee <michael.lee@zerustech.com>
 " Original Author: Andy Wokula <anwoku@yahoo.de>
-" Last Change:	2017 Jun 13
-" Version:	1.0
-" Description:	HTML indent script with cached state for faster indenting on a
-"		range of lines.
-"		Supports template systems through hooks.
-"		Supports Closure stylesheets.
+" Last Change:	2017 July 05
+" Version:	2.0
+" Description:	Fix bugs
+"               Refactor code base
+"               Reuse indent/css.vim
+"               Support custom block tags and indent methods
+"               Add detailed comments
 "
 " Credits:
-"	indent/html.vim (2006 Jun 05) from J. Zellner
-"	indent/css.vim (2006 Dec 20) from N. Weibull
+"       indent/html.vim (2016 Mar 30) from Bram Moolenaar
+"	indent/css.vim  (2012 May 30) from Nikolai Weibull
 "
 " History:
+" 2017 Jul 05   (v2.0) overhaul (Michael)
+" 2016 Mar 30   (v1.0) overhaul (Bram)
 " 2014 June	(v1.0) overhaul (Bram)
 " 2012 Oct 21	(v0.9) added support for shiftwidth()
 " 2011 Sep 09	(v0.8) added HTML5 tags (thx to J. Zuckerman)
@@ -25,30 +28,22 @@
 if exists("b:did_indent") "{{{
   finish
 endif
-
-" Load the Javascript indent script first, it defines GetJavascriptIndent().
-" Undo the rest.
-" Load base python indent.
-if !exists('*GetJavascriptIndent')
-  runtime! indent/javascript.vim
-endif
 let b:did_indent = 1
 
-setlocal indentexpr=HtmlIndent()
-setlocal indentkeys=o,O,<Return>,<>>,{,},!^F
-
-" Needed for % to work when finding start/end of a tag.
-setlocal matchpairs+=<:>
-
-let b:undo_indent = "setlocal inde< indk<"
-
-" b:hi_indent keeps state to speed up indenting consecutive lines.
-let b:hi_indent = {"lnum": -1}
-
 """""" Code below this is loaded only once. """""
+"{{{
 if exists("*HtmlIndent") && !exists('g:force_reload_html')
   call HtmlIndent_CheckUserSettings()
   finish
+endif
+
+" shiftwidth() exists since patch 7.3.694
+if exists('*shiftwidth')
+  let s:ShiftWidth = function('shiftwidth')
+else
+  func! s:ShiftWidth()
+    return &shiftwidth
+  endfunc
 endif
 
 " Allow for line continuation below.
@@ -56,10 +51,264 @@ let s:cpo_save = &cpo
 set cpo-=C
 "}}}
 
-" Check and process settings from b:html_indent and g:html_indent... variables.
-" Prefer using buffer-local settings over global settings, so that there can
-" be defaults for all HTML files and exceptions for specific types of HTML
-" files.
+" Initialize script variables
+"{{{
+func! s:GetSID()
+  return matchstr(expand('<sfile>'), '<SNR>\d\+_')
+endfunc
+
+" SID of current script
+let s:SID = s:GetSID()
+delfunc s:GetSID
+
+" The number of spaces for 1 indent.
+let s:indent_unit = s:ShiftWidth()
+
+" Regex pattern for matching an end tag (normal, custom, or block tag), at the
+" start of line.
+" Example:
+" --------
+" ^\s*\%\(<\zs!\[endif\]--\ze>\|<\zs/script\>\|<\zs/style\>\|<\zs/pre\>\|\zs--\ze>\|<\zs/\w\+\(-\w\+\)\+\>\|<\zs/\w\+\>\)
+let s:starts_with_end_tag_pattern = ''
+
+" Regex pattern for matching a block start tag.
+" Example:
+" --------
+" <\zsscript\>\|<\zsstyle\>\|<\zs!--\[\ze\|<\zspre\>\|<\zs!--\ze
+let s:block_start_tag_pattern = ''
+
+" Regex pattern for matching a block end tag.
+" Example:
+" --------
+" <\zs!\[endif\]--\ze>\|<\zs/script\>\|<\zs/style\>\|<\zs/pre\>\|\zs--\ze>
+let s:block_end_tag_pattern = ''
+
+" Regex pattern for matching a normal tag (start or end).
+let s:normal_tag_pattern = '<\zs/\=\w\+\>'
+
+" Regex pattern for matching a normal end tag.
+let s:normal_end_tag_pattern = '<\zs/\w\+\>'
+
+" Regex pattern for matching a full normal end tag.
+let s:normal_end_tag_full_pattern = '</\w\+\s*>'
+
+" Regex pattern for matching a custom tag (start or end).
+let s:custom_tag_pattern = '<\zs/\=\w\+\(-\w\+\)\+\>'
+
+" Regex pattern for matching a custom end tag.
+let s:custom_end_tag_pattern = '<\zs/\w\+\(-\w\+\)\+\>'
+
+" Regex pattern for matching a full custom end tag.
+let s:custom_end_tag_full_pattern = '</\w\+\(-\w\+\)\+\s*>'
+
+" A list that contains tag ids identified by tag names:
+" {
+"     'div' => 1,
+"     '/div' = > -1,
+"     ...
+"     'pre' => 2,
+"     '/pre' => -2,
+"     'script' => 3,
+"     '/script' => -3,
+"     'style' => 4,
+"     '/style' => -4,
+"     '!--' => 5,
+"     '--' => -5,
+"     '!--[' => 6,
+"     '![endif]--' => -6,
+"     ...
+" }
+let s:indent_tags = {}
+
+" Dictionary stores meta data of block tags:
+"
+" {
+"     id => {
+"         'start' => start tag,
+"         'end' => end tag,
+"         'type' => block type,
+"         'brackets' => a:b,c:d,
+"             a - left bracket character of the start tag
+"             b - right bracket character of the start tag
+"             c - left bracket character of the end tag
+"             d - right bracket character of the end tag
+"         'bracket_patterns' => a:b,c:d
+"             a - bracket pattern for matching the left part of the start tag
+"             b - bracket pattern for matching the right part of the start tag
+"             c - bracket pattern for matching the left part of the end tag
+"             d - bracket pattern for matching the right part of the end tag
+"         'indent_alien' => name of the alien method
+"     },
+"     ...
+" }
+let s:block_tags = {}
+
+" The dictionary stores block start tags indexed by the lengths of tag
+" names.
+let s:block_start_tags = {}
+
+" The dictionary stores block end tags indexed by the lengths of tag
+" names.
+let s:block_end_tags = {}
+"}}}
+
+" Initialize buffer variables
+" {{{
+" The context for indenting current line.
+" {
+"     'lnum' => Last indented line: prevnonblank(a:lnum - 1),
+"
+"     'indent' => Indent of current line. Using it or not is up to the indent
+"                 methods. Currently, it is used by s:IndentOfNormalLine()
+"                 method,
+"
+"     'changed_tick' => The number of changes till current line is indented,
+"
+"     'block' => The id of the block, inside which, current line is located,
+"
+"     'block_start_tag_lnum' => line number of block start tag (if block!=0),
+"
+"     'script_type' => type attribute of a script tag (if block==3),
+"
+"     'indent_inside_block' => The fallback indent for all lines inside a
+"                              block.  Using it or not is up to the indent
+"                              methods. Currently, it is used by s:Alien3(),
+"                              s:Alien4(), and s:Alien6() methods, and is
+"                              ignored by other indent methods,
+"
+"     'root_block' => The id of the block that contains everything before the
+"                     cursor in current line,
+"
+"     'state' => A string that indicates the state of current context. The
+"                possible values of this property include 'normal_line',
+"                'line_inside_attribute', 'line_inside_tag', and
+"                'line_inside_block',
+"
+"     'ready' => A flag indicates if b:context has been calculated
+"                successfully,
+" }
+let b:context = {'lnum': 0, 'indent': -1, 'changed_tick': 0,
+                \'block': 0, 'block_start_tag_lnum': 0, 'script_type': '',
+                \'indent_inside_block': -1, 'root_block': 0, 'state': 'normal_line',
+                \'ready': 0}
+
+" A flag indicates if indent has been calculated successfully.
+let b:indent_ready = 0
+
+" The context object for counting tags and indents in a string.
+" {
+"     'root_block' => The initial (root) block when starting the process of
+"                     counting tags in a string,
+"
+"     'block' => Current container block, inside which, offsets are being
+"                calculated. So it can be the root block (0 or 6), or any 2nd
+"                level block inside the root block, but it CAN NOT be any
+"                block in the 3rd level (assume nested conditional comments
+"                are not supported),
+"
+"     'block_stack' => This list stores block start tags when counting tags in
+"                      a string. Initially, the first element of this stack is
+"                      a string constant 'guard' as the guard, and the 2nd
+"                      element is the root block. When a block end tag is
+"                      matched, the last block start tag is popped up from the
+"                      end of this list. And if the original root block is
+"                      reset, the guard is removed as well,
+"
+"     'block_index' => The index of current container block in b:block_stack,
+"
+"     'current_line_offset' => It indicates the number of indent units, caused
+"                              by the end tags in a line, that the line is
+"                              supposed to move backward. This value is no
+"                              greater than 0,
+"
+"     'next_line_offset' => It indicates the number of indent units, caused by
+"                           the start tags in a line, that the next line is
+"                           supposed to move forward. This value is no less
+"                           than 0,
+"
+"     'current_line_offset_stack' => This list stores changes to current line
+"                                    offset within each blocks,
+"
+"     'next_line_offset_stack' => This list stores changes to next line offset
+"                                 within each blocks,
+" }
+"
+let b:tag_counter = {'root_block': 0, 'block': 0, 'block_stack': [],
+                    \'block_index': 0, 'current_line_offset': 0, 'next_line_offset': 0,
+                    \'current_line_offset_stack': [], 'next_line_offset_stack': []}
+
+" This list stores history of cursor positions so that it will be possible to
+" restore to a previous position.
+let b:cursor_stack = []
+" }}}
+
+" Initializes local configuration when current script is loaded for the first
+" time, or restores local configuration after executing external scripts.
+func! s:RestoreLocalConfiguration()
+  "{{{
+
+  " Disables text-wrap for normal text.
+  setlocal formatoptions-=t
+
+  " Enables text-wrap for comments.
+  setlocal formatoptions+=croql
+
+  " Due to issue https://github.com/vim/vim/issues/1696, the middle part of three-piece comments must NOT be blank.
+  setlocal comments=s1:<!--[,m:\ \ \ \ \,ex:]-->,s4:<!--,m://,ex:-->
+
+  setlocal indentexpr=HtmlIndent()
+  setlocal indentkeys=o,O,<Return>,<>>,{,},!^F
+
+  " "j1" is included to make cindent() work better with Javascript.
+  setlocal cino=j1
+
+  " "J1" should be included, but it doen't work properly before 7.4.355.
+  if has("patch-7.4.355") | setlocal cino+=J1 | endif
+
+  " Before patch 7.4.355 indenting after "(function() {" does not work well, add
+  " )2 to limit paren search.
+  if !has("patch-7.4.355") | setlocal cino+=)2 | endif
+
+  " Needed for % to work when finding start/end of a tag.
+  setlocal matchpairs+=<:>
+
+  let b:undo_indent = "setlocal inde< indk< cino<"
+
+endfunc "}}}
+
+" Checks and processes settings from b:html_indent and g:html_indent...
+" variables.  Prefer using buffer-local settings over global settings, so that
+" there can be defaults for all HTML files and exceptions for specific types
+" of HTML files.
+"
+" This method checks the following variables and changes the indent behavior
+" accordingly:
+"
+" - b|g:html_indent_inctags—a string introducing additional, comma separated,
+"   tags
+"
+" - b|g:html_indent_autotags—a string containing tags (comma separated) to be
+"   marked as removed
+"
+" - b|g:html_indent_string_names—a list of syntax names indicating being
+"   inside an attribute value.
+"
+" - b|g:html_indent_tag_names—a list of syntax names indicating being inside a
+"   tag
+"
+" - b|g:html_indent_script1—indent method (zero, auto, or inc) for the first
+"   line inside a <script> tag.
+"
+" - b|g:html_indent_style1—indent method (zero, auto, or inc) for the first
+"   line inside a <style> tag.
+"
+" - b|g:html_indent_line_limit—the maximum number of lines to look backward
+"   for synchronization.
+"
+" - b|g:html_indent_custom_block_tags—a list that contains arguments for
+"   adding custom block tags. Each record of this list is a list of arguments
+"   for adding one custom block tags.
+"
 func! HtmlIndent_CheckUserSettings()
   "{{{
   let inctags = ''
@@ -69,9 +318,7 @@ func! HtmlIndent_CheckUserSettings()
     let inctags = g:html_indent_inctags
   endif
   let b:hi_tags = {}
-  if len(inctags) > 0
-    call s:AddITags(b:hi_tags, split(inctags, ","))
-  endif
+  if len(inctags) > 0 | call s:AddITags(b:hi_tags, split(inctags, ",")) | endif
 
   let autotags = ''
   if exists("b:html_indent_autotags")
@@ -80,9 +327,7 @@ func! HtmlIndent_CheckUserSettings()
     let autotags = g:html_indent_autotags
   endif
   let b:hi_removed_tags = {}
-  if len(autotags) > 0
-    call s:RemoveITags(b:hi_removed_tags, split(autotags, ","))
-  endif
+  if len(autotags) > 0 | call s:RemoveITags(b:hi_removed_tags, split(autotags, ",")) | endif
 
   " Syntax names indicating being inside a string of an attribute value.
   let string_names = []
@@ -93,9 +338,7 @@ func! HtmlIndent_CheckUserSettings()
   endif
   let b:hi_insideStringNames = ['htmlString']
   if len(string_names) > 0
-    for s in string_names
-      call add(b:hi_insideStringNames, s)
-    endfor
+    for s in string_names | call add(b:hi_insideStringNames, s) | endfor
   endif
 
   " Syntax names indicating being inside a tag.
@@ -107,107 +350,292 @@ func! HtmlIndent_CheckUserSettings()
   endif
   let b:hi_insideTagNames = ['htmlTag', 'htmlScriptTag']
   if len(tag_names) > 0
-    for s in tag_names
-      call add(b:hi_insideTagNames, s)
-    endfor
+    for s in tag_names | call add(b:hi_insideTagNames, s) | endfor
   endif
 
   let indone = {"zero": 0
               \,"auto": "indent(prevnonblank(v:lnum-1))"
-              \,"inc": "b:hi_indent.blocktagind + shiftwidth()"}
+              \,"inc": "b:context.indent_inside_block + s:indent_unit"}
 
-  let script1 = ''
+  let script1 = 'inc'
   if exists("b:html_indent_script1")
     let script1 = b:html_indent_script1
   elseif exists("g:html_indent_script1")
     let script1 = g:html_indent_script1
   endif
-  if len(script1) > 0
-    let b:hi_js1indent = get(indone, script1, indone.zero)
-  else
-    let b:hi_js1indent = 0
-  endif
+  let b:hi_js1indent = len(script1) > 0 ? get(indone, script1, indone.zero) : 0
 
-  let style1 = ''
+  let style1 = 'inc'
   if exists("b:html_indent_style1")
     let style1 = b:html_indent_style1
   elseif exists("g:html_indent_style1")
     let style1 = g:html_indent_style1
   endif
-  if len(style1) > 0
-    let b:hi_css1indent = get(indone, style1, indone.zero)
-  else
-    let b:hi_css1indent = 0
-  endif
+  let b:hi_css1indent = len(style1) > 0 ? get(indone, style1, indone.zero) : 0
 
   if !exists('b:html_indent_line_limit')
-    if exists('g:html_indent_line_limit')
-      let b:html_indent_line_limit = g:html_indent_line_limit
-    else
-      let b:html_indent_line_limit = 200
-    endif
+    let b:html_indent_line_limit = exists('g:html_indent_line_limit') ? g:html_indent_line_limit : 200
+  endif
+
+  " Adding custom block tags
+  let custom_block_tags = []
+  if exists("b:html_indent_custom_block_tags")
+    let custom_block_tags = b:html_indent_custom_block_tags
+  elseif exists("g:html_indent_custom_block_tags")
+    let custom_block_tags = g:html_indent_custom_block_tags
+  endif
+  for arguments in custom_block_tags | call call('s:AddBlockTag', arguments) | endfor
+
+endfunc "}}}
+
+" Updates value of the given variable. This is useful for unit testing.
+" @param name The variable name.
+" @param value The variable value.
+func! HtmlIndentSet(name, value)
+  let {a:name} = a:value
+endfunc
+
+" Returns value of the given variable. This is useful for unit testing.
+" @param name The variable name.
+" @return The variable value.
+func! HtmlIndentGet(name)
+  return {a:name}
+endfunc
+
+" Invokes the given function in current script, and returns the result. This
+" is useful for unit testing.
+" @param name The function name.
+" @param arguments The list of arguments.
+" @return The result.
+func! HtmlIndentCall(name, arguments)
+  let name = substitute(a:name, '^s:', s:SID, '')
+  return call(name, a:arguments)
+endfunc
+
+" Saves current cursor position.
+func! s:PushCursor()
+  "{{{
+  call add(b:cursor_stack, [line('.'), col('.')])
+endfunc "}}}
+
+" Restores previously saved cursor position.
+func! s:PopCursor()
+  " {{{
+  if len(b:cursor_stack) > 0
+    let pos = remove(b:cursor_stack, -1)
+    call cursor(pos)
   endif
 endfunc "}}}
 
-" Init Script Vars
-"{{{
-let b:hi_lasttick = 0
-let b:hi_newstate = {}
-let s:countonly = 0
- "}}}
+" Looks backward to find the block that contains the whole line before current
+" cursor position and returns the id of the block:
+" <!--[...]>
+" ^ <- The block that contains the whole line
+"     <pre>
+"        ...
+"     <div></div></pre><div></div>...
+"                                 ^ <- cursor
+"     ^--------------------------^ <- the whole line before the cursor.
+" <![endif]-->
+" @return The block id, or 0 if no container block is found.
+func! s:CurrentBlockId()
+  " {{{
+  let current_line_number = line('.')
+  call s:PushCursor()
+  let block = 0
 
-" Fill the s:indent_tags dict with known tags.
-" The key is "tagname" or "/tagname".  {{{
-" The value is:
-" 1   opening tag
-" 2   "pre"
-" 3   "script"
-" 4   "style"
-" 5   comment start
-" 6   conditional comment start
-" -1  closing tag
-" -2  "/pre"
-" -3  "/script"
-" -4  "/style"
-" -5  comment end
-" -6  conditional comment end
-let s:indent_tags = {}
-let s:endtags = [0,0,0,0,0,0,0]   " long enough for the highest index
-"}}}
+  " Look backward for a block tag: start or end tag.
+  let [current_block_tag, current_block_tag_lnum, current_block_tag_start_col, current_block_tag_end_col] = s:SearchStringPosition(s:BlockTagPattern(), "bW", 0)
 
-" Add a list of tag names for a pair of <tag> </tag> to "tags".
-func! s:AddITags(tags, taglist)
+  if current_block_tag_lnum > 0
+    if s:IsStartTag(current_block_tag) && current_block_tag_lnum < current_line_number
+      " It is a block start tag, and the block start tag is before current
+      " line, so a match has been found.
+      let block = get(s:indent_tags, current_block_tag)
+    else
+      " It is a block end tag, or a block start tag in current line, try to
+      " locate an other block start tag before current line.
+      let index = s:IndexOfBlockTagStartBracket(getline(current_block_tag_lnum), current_block_tag, current_block_tag_start_col - 1)
+      call cursor(current_block_tag_lnum, index + 1)
+      let start_lnum = s:IsStartTag(current_block_tag) ? current_block_tag_lnum : s:FindBlockStartTag(current_block_tag)
+      " If current tag is a block start tag in current line, try to find
+      " another block start tag from its start bracket, otherwise, try to find
+      " another block start tag from its start tag.
+      if start_lnum > 0 | let block = s:CurrentBlockId() | endif
+    endif
+  endif
+
+  " Restore the cursor location.
+  call s:PopCursor()
+
+  return block
+
+endfunc "}}}
+
+" Finds the unclosed block start tag from the current cursor position.
+" The cursor must be on or before a block end tag. After the start tag has
+" been matched, the cursor stops at the start bracket of the block start tag:
+" <div><block-start>
+"      ^ <- cursor stops here
+"     ...
+"     </block-end>
+" @return Line number of the start tag, or 0 on failure.
+func! s:FindBlockStartTag(block_end_tag)
   "{{{
-  for itag in a:taglist
+  let end_pattern = s:EndTagPattern(a:block_end_tag, 0)
+  let start_pattern = s:StartTagPattern(s:StartTag(a:block_end_tag), 0)
+  let start_lnum = searchpair(start_pattern, '', end_pattern, 'bW')
+
+  return start_lnum > 0 ? start_lnum : 0
+
+endfunc "}}}
+
+" Finds and returns the index of the start bracket of the given block tag in a
+" string from the specified position.
+" NOTE: Index starts from 0.
+" Example:
+" -------
+" ...<div>...
+"    ^ <- index of the start bracket
+" @param block_tag_line The string that contains the block tag.
+" @param tag_name The tag name.
+" @param tag_start_index The index of the start of the block tag.
+" @return The index of the block start bracket, or start of the block tag if
+" it does not have a start bracket.
+func! s:IndexOfBlockTagStartBracket(block_tag_line, tag_name, tag_start_index)
+  "{{{
+  let id = s:indent_tags[a:tag_name]
+  let meta = s:block_tags[abs(id)]
+  let bracket_type = id > 0 ? 0 : 1
+  let brackets = split(split(meta.brackets, ',', 1)[bracket_type], ':', 1)
+  let bracket = brackets[0]
+
+  return bracket == '' ? a:tag_start_index : a:tag_start_index - len(bracket)
+
+endfunc "}}}
+
+" Finds and returns the index of the right most bracket character of the given
+" block tag in a string from the specified position.
+" NOTE: index starts from 0.
+" Example:
+" -------
+" ...<div>...
+"        ^ <- index of the end bracket
+" @param block_tag_line The string that contains the block tag.
+" @param tag_name The tag name.
+" @param tag_start_index The index of the start of the block tag.
+" @return The index of the block end bracket, or end of the block tag if it
+" does not have an end bracket.
+func! s:IndexOfBlockTagEndBracket(block_tag_line, tag_name, tag_start_index)
+  "{{{
+  let id = s:indent_tags[a:tag_name]
+  let meta = s:block_tags[abs(id)]
+  let bracket_type = id > 0 ? 0 : 1
+  let brackets = split(split(meta.brackets, ',', 1)[bracket_type], ':', 1)
+  let bracket = brackets[1]
+
+  return bracket == '' ? a:tag_start_index + len(a:tag_name) - 1 : match(a:block_tag_line, escape(bracket, '[]'), a:tag_start_index) + len(bracket) - 1
+
+endfunc "}}}
+
+" Searches for regex pattern from current cursor position, and returns the
+" matched string, the line number, the start column, and the end column.
+" Depends on the flags, the cursor may or may not move to the matched
+" location.
+" @param pattern The regex pattern.
+" @param flag The search flag (:help search() for details).
+" @param stop_line The search stops after the stop line has been scanned.
+" @return [result, line number, start column, end column]
+func! s:SearchStringPosition(pattern, flag, stop_line)
+  "{{{
+  let result = ''
+  let lnum = 0
+  let start_col = 0
+  let end_col = 0
+
+  " Try to match <div\> first to locate the position of the left most bracket.
+  " This is necessary because technically, a tag may have a multi-character
+  " bracket.
+  let pattern_without_zs = substitute(a:pattern, '\\zs', '', 'g')
+  call s:PushCursor()
+  let [lnum, start_col_1] = searchpos(pattern_without_zs, a:flag, a:stop_line)
+
+  " Move cursor to its original position, and try to match <\zsdiv\>, if there
+  " is a \zs, to locate the position of the matched tag name.
+  call s:PopCursor()
+  let [lnum, start_col_2] = searchpos(a:pattern, a:flag, a:stop_line)
+
+  if lnum > 0
+    let text = tolower(getline(lnum))
+    let start_col = start_col_2
+    let result = matchstr(text[start_col_1 - 1:], a:pattern)
+    " <div>
+    "    ^ <- end col
+    "  ^ <- start col
+    let end_col = start_col + len(result) - 1
+  endif
+
+  return [result, lnum, start_col, end_col]
+
+endfunc "}}}
+
+" Adds a list of tag names for a pair of <tag> </tag> to 'tags'.
+" @param tags The dictionary into which tags are to be added
+" @param tag_list The list contains tags to be added
+func! s:AddITags(tags, tag_list)
+  "{{{
+  for itag in a:tag_list
     let a:tags[itag] = 1
     let a:tags['/' . itag] = -1
   endfor
+
 endfunc "}}}
 
-" Take a list of tag name pairs that are not to be used as tag pairs.
-func! s:RemoveITags(tags, taglist)
+" Takes a list of tag name pairs that are not to be used as tag pairs.
+" @param tags The dictionary from which tags are to be removed
+" @param tag_list The list contains tags to be removed
+func! s:RemoveITags(tags, tag_list)
   "{{{
-  for itag in a:taglist
+  for itag in a:tag_list
     let a:tags[itag] = 1
     let a:tags['/' . itag] = 1
   endfor
+
 endfunc "}}}
 
-" Add a block tag, that is a tag with a different kind of indenting.
+" Adds a block tag, that is a tag with a different kind of indenting.
+" @param tag The start tag
+" @param id The id of start tag
+" @param a:1 The end tag
+" @param a:2 The block type: block, comment, and etc.
+" @param a:3 The bracket characters for start and end tags.
+" @param a:4 The bracket patterns for matching boundaries of start and end
+" @param a:5 The method for calculating indent of lines inside this block.
+" tags.
 func! s:AddBlockTag(tag, id, ...)
   "{{{
-  if !(a:id >= 2 && a:id < len(s:endtags))
-    echoerr 'AddBlockTag ' . a:id
-    return
-  endif
-  let s:indent_tags[a:tag] = a:id
-  if a:0 == 0
-    let s:indent_tags['/' . a:tag] = -a:id
-    let s:endtags[a:id] = "</" . a:tag . ">"
-  else
-    let s:indent_tags[a:1] = -a:id
-    let s:endtags[a:id] = a:1
-  endif
+  let start_tag = a:tag
+  let end_tag = a:0 > 0 ? a:1 : '/' . a:tag
+
+  let s:indent_tags[start_tag] = a:id
+  let s:indent_tags[end_tag] = -a:id
+
+  let s:block_tags[a:id] = {}
+  let s:block_tags[a:id]['start'] = start_tag
+  let s:block_tags[a:id]['end'] = end_tag
+  let s:block_tags[a:id]['type'] = a:0 > 1 ? a:2 : 'block'
+  let s:block_tags[a:id]['brackets'] = a:0 > 2 ? a:3 : '<:>,<:>'
+  let s:block_tags[a:id]['bracket_patterns'] = a:0 > 3 ? a:4 : '<\zs:\>,<\zs:\>'
+  let s:block_tags[a:id]['indent_alien'] = a:0 > 4 ? a:5 : 's:Alien' . a:id
+
+  let key = len(start_tag)
+  if !has_key(s:block_start_tags, key) | let s:block_start_tags[key] = [] | endif
+  if match(s:block_start_tags[key], start_tag) == -1 | call add(s:block_start_tags[key], start_tag) | endif
+
+  let key = len(end_tag)
+  if !has_key(s:block_end_tags, key) | let s:block_end_tags[key] = [] | endif
+  if match(s:block_end_tags[key], end_tag) == -1 | call add(s:block_end_tags[key], end_tag) | endif
+
 endfunc "}}}
 
 " Add known tag pairs.
@@ -231,7 +659,7 @@ call s:AddITags(s:indent_tags, [
     \ 'area', 'article', 'aside', 'audio', 'bdi', 'canvas',
     \ 'command', 'data', 'datalist', 'details', 'embed', 'figcaption',
     \ 'figure', 'footer', 'header', 'keygen', 'mark', 'meter', 'nav', 'output',
-    \ 'progress', 'rp', 'rt', 'ruby', 'section', 'source', 'summary', 'svg', 
+    \ 'progress', 'rp', 'rt', 'ruby', 'section', 'source', 'summary', 'svg',
     \ 'time', 'track', 'video', 'wbr'])
 
 " Tags added for web components:
@@ -244,671 +672,1185 @@ call s:AddITags(s:indent_tags, [
 call s:AddBlockTag('pre', 2)
 call s:AddBlockTag('script', 3)
 call s:AddBlockTag('style', 4)
-call s:AddBlockTag('<!--', 5, '-->')
-call s:AddBlockTag('<!--[', 6, '![endif]-->')
+call s:AddBlockTag('!--', 5, '--', 'comment', '<:,:>', '<\zs:\ze,\zs:\ze>')
+call s:AddBlockTag('!--[', 6, '![endif]--', 'comment', '<:>,<:>', '<\zs:\ze,<\zs:\ze>')
 "}}}
 
-" Return non-zero when "tagname" is an opening tag, not being a block tag, for
-" which there should be a closing tag.  Can be used by scripts that include
-" HTML indenting.
-func! HtmlIndent_IsOpenTag(tagname)
+" Checks if the given tag is a start tag.
+" @return 1 if the tag is a start tag, 0 otherwise.
+func! s:IsStartTag(tag_name)
   "{{{
-  if get(s:indent_tags, a:tagname) == 1
+  let id = get(s:indent_tags, a:tag_name)
+
+  return id > 0 || id == 0 && a:tag_name[0] != '/'
+
+endfunc "}}}
+
+" Checks if the given tag is a start tag.
+" @return 1 if the tag is a start tag, 0 otherwise.
+func! s:IsEndTag(tag_name)
+  "{{{
+  let id = get(s:indent_tags, a:tag_name)
+
+  return id < 0 || id == 0 && a:tag_name[0] == '/'
+
+endfunc "}}}
+
+" Generates the regex pattern for matching the given tag as a start tag.
+" Examples:
+" ---------
+" <\zsdiv\>, <\zsstyle\>, <\zs!--\ze, <\zs!--\[
+"
+" @param start_tag The start tag.
+" @param a:1 A flag that indicates if \zs should be included in the pattern, 1
+" by default.
+" @return The regex pattern.
+func! s:StartTagPattern(start_tag, ...)
+  "{{{
+  let left = '<\zs'
+  let right = '\>'
+  let id = get(s:indent_tags, a:start_tag)
+  let include_zs = a:0 == 0 ? 1 : a:1
+
+  if id > 1
+    let meta = s:block_tags[id]
+    let bracket_patterns = split(split(meta.bracket_patterns, ',', 1)[0], ':', 1)
+    let left = bracket_patterns[0]
+    let right = bracket_patterns[1]
+  endif
+
+  let pattern = left . escape(a:start_tag,'[]') . right
+  if !include_zs | let pattern = substitute(pattern, '\\zs', '', '') | endif
+
+  return pattern
+
+endfunc "}}}
+
+" Generates the regex pattern for matching the given tag as an end tag.
+" Examples:
+" ---------
+" <\zs/div\>, <\zs/style\>, <\zs:--\ze>, <\zs!\[endif\]--\ze>
+"
+" @param end_tag The end tag.
+" @param a:1 A flag that indicates if \zs should be included in the pattern, 1
+" by default.
+" @return The regex pattern.
+func! s:EndTagPattern(end_tag, ...)
+  "{{{
+  let left = '<\zs'
+  let right = '\>'
+  let id = abs(get(s:indent_tags, a:end_tag))
+  let include_zs = a:0 == 0 ? 1 : a:1
+
+  if id > 1
+    let meta = s:block_tags[id]
+    let bracket_patterns = split(split(meta.bracket_patterns, ',', 1)[1], ':', 1)
+    let left = bracket_patterns[0]
+    let right = bracket_patterns[1]
+  endif
+
+  let pattern = left . escape(a:end_tag, '[]') . right
+  if !include_zs | let pattern = substitute(pattern, '\\zs', '', '') | endif
+
+  return pattern
+
+endfunc "}}}
+
+" Finds the corresponding start tag of the given end tag.
+" @param end_tag The end tag.
+" @return The start tag.
+func! s:StartTag(end_tag)
+  "{{{
+  let start_tag = a:end_tag[1:]
+  let id = -get(s:indent_tags, a:end_tag)
+  if id >= 2 | let start_tag = s:block_tags[id].start | endif
+
+  return start_tag
+
+endfunc "}}}
+
+" Generates regex pattern for matching an end tag at the start of line.
+" @return The regex pattern.
+func! s:StartsWithEndTagPattern()
+  "{{{
+
+  if s:starts_with_end_tag_pattern == ''
+    for key in reverse(sort(keys(s:block_end_tags), 'N'))
+      for tag_name in s:block_end_tags[key]
+        if s:starts_with_end_tag_pattern != '' | let s:starts_with_end_tag_pattern .= '\|' | endif
+        let s:starts_with_end_tag_pattern .= s:EndTagPattern(tag_name)
+      endfor
+    endfor
+
+    let s:starts_with_end_tag_pattern .= '\|' . s:custom_end_tag_pattern . '\|' . s:normal_end_tag_pattern
+  endif
+
+  return '^\s*\%\(' . s:starts_with_end_tag_pattern .'\)'
+
+endfunc "}}}
+
+" Generates regex pattern for matching a block start tag.
+" @return The regex pattern.
+func! s:BlockStartTagPattern()
+  "{{{
+
+  if s:block_start_tag_pattern != '' | return s:block_start_tag_pattern | endif
+
+  for key in reverse(sort(keys(s:block_start_tags), 'N'))
+    for tag_name in s:block_start_tags[key]
+      if s:block_start_tag_pattern != '' | let s:block_start_tag_pattern .= '\|' | endif
+      let s:block_start_tag_pattern .= s:StartTagPattern(tag_name)
+    endfor
+  endfor
+
+  return s:block_start_tag_pattern
+
+endfunc "}}}
+
+" Generates regex pattern for matching a block end tag.
+" @return The regex pattern.
+func! s:BlockEndTagPattern()
+  "{{{
+  if s:block_end_tag_pattern != '' | return s:block_end_tag_pattern | endif
+
+  for key in reverse(sort(keys(s:block_end_tags), 'N'))
+    for tag_name in s:block_end_tags[key]
+      if s:block_end_tag_pattern != '' | let s:block_end_tag_pattern .= '\|' | endif
+      let s:block_end_tag_pattern .= s:EndTagPattern(tag_name)
+    endfor
+  endfor
+
+  return s:block_end_tag_pattern
+
+endfunc "}}}
+
+" Generates regex pattern for matching a block end or start tag.
+" @return The regex pattern.
+func! s:BlockTagPattern()
+  "{{{
+  return s:BlockEndTagPattern() . '\|' . s:BlockStartTagPattern()
+endfunc "}}}
+
+" Gets the id for a given tag name, taking care of buffer-local tags.
+" @param tag_name The tag name
+" @return Id of the tag, or 0 if no id is found.
+func! s:GetTag(tag_name)
+  "{{{
+  let i = get(s:indent_tags, a:tag_name)
+
+  if (i == 1 || i == -1) && get(b:hi_removed_tags, a:tag_name) != 0 | return 0 | endif
+
+  if i == 0 | let i = get(b:hi_tags, a:tag_name) | endif
+
+  return i
+
+endfunc "}}}
+
+" Counts the numbers of start and end tags in a string, and updates the values
+" of b:tag_counter.current_line_offset and b:tag_counter.next_line_offset
+" accordingly.
+" @param text The line to be checked.
+" @param root_block The id of the block, inside which, the string is being
+" checked, 0 by default (not inside any block).
+func! s:CountITags(text, root_block)
+  "{{{
+  let b:tag_counter.root_block = a:root_block
+  let b:tag_counter.block = a:root_block
+  let b:tag_counter.block_stack = ['guard', a:root_block]
+  let b:tag_counter.block_index = 1
+  let b:tag_counter.current_line_offset = 0
+  let b:tag_counter.next_line_offset = 0
+  let b:tag_counter.current_line_offset_stack = [0]
+  let b:tag_counter.next_line_offset_stack = [0]
+
+  call substitute(a:text, s:BlockTagPattern() . '\|' . s:custom_tag_pattern . '\|' . s:normal_tag_pattern, '\=s:CheckTag(submatch(0))', 'g')
+
+  " Adjust b:tag_counter.current_line_offset
+  call s:UpdateCurrentLineOffset(a:text)
+
+endfunc "}}}
+
+" Checks a single tag and upates the values of
+" b:tag_counter.current_line_offset and b:tag_counter.next_line_offset
+" accordingly. Used by s:CountITags().
+" @param tag The tag to be checked.
+" @return 1 if the tag has been checked, or 0 otherwise.
+func! s:CheckTag(tag)
+  "{{{
+  if (s:CheckCustomTag(a:tag)) | return 1 | endif
+
+  let id = s:GetTag(a:tag)
+
+  if id == -1
+    " end tag
+    " Ignore tag within a block, but tags within a conditional comment
+    " should be counted as if the conditional comment is not a block.
+    if b:tag_counter.block != 0 && b:tag_counter.block != 6 | return 1 | endif
+    if b:tag_counter.next_line_offset == 0
+      let b:tag_counter.current_line_offset_stack[-1] -= 1
+      let b:tag_counter.current_line_offset -= 1
+    else
+      let b:tag_counter.next_line_offset_stack[-1] -= 1
+      let b:tag_counter.next_line_offset -= 1
+    endif
     return 1
   endif
-  return get(b:hi_tags, a:tagname) == 1
+
+  if id == 1
+    " start tag
+    " Ignore tag within a block
+    if b:tag_counter.block != 0 && b:tag_counter.block != 6 | return 1 | endif
+    let b:tag_counter.next_line_offset_stack[-1] += 1
+    let b:tag_counter.next_line_offset += 1
+    return 1
+  endif
+
+  if id != 0
+    " block-tag (start or end)
+    return s:CheckBlockTag(id)
+  endif
+
+  return 0
+
 endfunc "}}}
 
-" Get the value for "tagname", taking care of buffer-local tags.
-func! s:get_tag(tagname)
+" Checks a block tag and updates the values of
+" b:tag_counter.current_line_offset and b:tag_counter.next_line_offset
+" accordingly. Used by s:CheckTag().
+" @param id The block id.
+" @return 1 if tag has been checked, 0 otherwise.
+func! s:CheckBlockTag(id)
   "{{{
-  let i = get(s:indent_tags, a:tagname)
-  if (i == 1 || i == -1) && get(b:hi_removed_tags, a:tagname) != 0
-    return 0
+  if a:id > 0
+    " A block starts here
+    call add(b:tag_counter.block_stack, a:id)
+    call add(b:tag_counter.current_line_offset_stack, 0)
+    call add(b:tag_counter.next_line_offset_stack, 0)
+
+    " If current block supports sub-block, move block index to current block
+    " tag and make it the new current block.
+    if b:tag_counter.block == 0 || b:tag_counter.block == 6
+      let b:tag_counter.block = a:id
+      let b:tag_counter.block_index += 1
+    endif
+
+    return 1
+
   endif
-  if i == 0
-    let i = get(b:hi_tags, a:tagname)
+
+  if a:id < 0
+    " A block ends here.
+
+    " Pop a block tag from the block stack.
+    call remove(b:tag_counter.block_stack, -1)
+
+    " Make sure the block stack is never empty. Extra block end tags may be
+    " included in the string incorrectly, which may cause an empty block
+    " stack.
+    if [] == b:tag_counter.block_stack || ['guard'] == b:tag_counter.block_stack | let b:tag_counter.block_stack = [0] | endif
+
+    " If current block has been reset, move block index to the previous block
+    " tag, and make it the current block.
+    if [0] == b:tag_counter.block_stack || len(b:tag_counter.block_stack) == b:tag_counter.block_index
+      let b:tag_counter.block_index = len(b:tag_counter.block_stack) - 1
+      let b:tag_counter.block = b:tag_counter.block_stack[b:tag_counter.block_index]
+    endif
+
+    " Revert changes to current line offset in current block.
+    let b:tag_counter.current_line_offset -= remove(b:tag_counter.current_line_offset_stack, -1)
+    if [] == b:tag_counter.current_line_offset_stack | let b:tag_counter.current_line_offset_stack = [0] | endif
+
+    " Revert changes to next line offset in current block.
+    let b:tag_counter.next_line_offset -= remove(b:tag_counter.next_line_offset_stack, -1)
+    if [] == b:tag_counter.next_line_offset_stack | let b:tag_counter.next_line_offset_stack = [0] | endif
+
+    return 1
+
   endif
-  return i
+
+  return 0
+
 endfunc "}}}
 
-" Count the number of start and end tags in "text".
-func! s:CountITags(text)
+" Checks a custom tag and updates the values of b:tag_counter.current_line_offset and
+" b:tag_counter.next_line_offset accordingly. Used by s:CheckTag().
+" @param custom_tag The custom tag to be checked.
+" @return 1 if the given tag is a valid custom tag name, 0 otherwise.
+func! s:CheckCustomTag(custom_tag)
   "{{{
-  " Store the result in s:curind and s:nextrel.
-  let s:curind = 0  " relative indent steps for current line [unit &sw]:
-  let s:nextrel = 0  " relative indent steps for next line [unit &sw]:
-  let s:block = 0		" assume starting outside of a block
-  let s:countonly = 1	" don't change state
-  call substitute(a:text, '<\zs/\=\w\+\(-\w\+\)*\>\|<!--\[\|\[endif\]-->\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
-  let s:countonly = 0
-endfunc "}}}
-
-" Count the number of start and end tags in text.
-func! s:CountTagsAndState(text)
-  "{{{
-  " Store the result in s:curind and s:nextrel.  Update b:hi_newstate.block.
-  let s:curind = 0  " relative indent steps for current line [unit &sw]:
-  let s:nextrel = 0  " relative indent steps for next line [unit &sw]:
-
-  let s:block = b:hi_newstate.block
-  let tmp = substitute(a:text, '<\zs/\=\w\+\(-\w\+\)*\>\|<!--\[\|\[endif\]-->\|<!--\|-->', '\=s:CheckTag(submatch(0))', 'g')
-  if s:block == 3
-    let b:hi_newstate.scripttype = s:GetScriptType(matchstr(tmp, '\C.*<SCRIPT\>\zs[^>]*'))
-  endif
-  let b:hi_newstate.block = s:block
-endfunc "}}}
-
-" Used by s:CountITags() and s:CountTagsAndState().
-func! s:CheckTag(itag)
-  "{{{
-  " Returns an empty string or "SCRIPT".
-  " a:itag can be "tag" or "/tag" or "<!--" or "-->"
-  if (s:CheckCustomTag(a:itag))
-    return ""
-  endif
-  let ind = s:get_tag(a:itag)
-  if ind == -1
-    " closing tag
-    if s:block != 0
-      " ignore itag within a block
-      return ""
-    endif
-    if s:nextrel == 0
-      let s:curind -= 1
-    else
-      let s:nextrel -= 1
-    endif
-  elseif ind == 1
-    " opening tag
-    if s:block != 0
-      return ""
-    endif
-    let s:nextrel += 1
-  elseif ind != 0
-    " block-tag (opening or closing)
-    return s:CheckBlockTag(a:itag, ind)
-  " else ind==0 (other tag found): keep indent
-  endif
-  return ""
-endfunc "}}}
-
-" Used by s:CheckTag(). Returns an empty string or "SCRIPT".
-func! s:CheckBlockTag(blocktag, ind)
-  "{{{
-  if a:ind > 0
-    " a block starts here
-    if s:block != 0
-      " already in a block (nesting) - ignore
-      " especially ignore comments after other blocktags
-      return ""
-    endif
-    let s:block = a:ind		" block type
-    if s:countonly
-      return ""
-    endif
-    let b:hi_newstate.blocklnr = v:lnum
-    " save allover indent for the endtag
-    let b:hi_newstate.blocktagind = b:hi_indent.baseindent + (s:nextrel + s:curind) * shiftwidth()
-    if a:ind == 3
-      return "SCRIPT"    " all except this must be lowercase
-      " line is to be checked again for the type attribute
-    endif
-  else
-    let s:block = 0
-    " we get here if starting and closing a block-tag on the same line
-  endif
-  return ""
-endfunc "}}}
-
-" Used by s:CheckTag().
-func! s:CheckCustomTag(ctag)
-  "{{{
-  " Returns 1 if ctag is the tag for a custom element, 0 otherwise.
-  " a:ctag can be "tag" or "/tag" or "<!--" or "-->"
   let pattern = '\%\(\w\+-\)\+\w\+'
-  if match(a:ctag, pattern) == -1
-    return 0
-  endif
-  if matchstr(a:ctag, '\/\ze.\+') == "/"
-    " closing tag
-    if s:block != 0
-      " ignore ctag within a block
-      return 1
-    endif
-    if s:nextrel == 0
-      let s:curind -= 1
+
+  if match(a:custom_tag, pattern) == -1 | return 0 | endif
+
+  if matchstr(a:custom_tag, '\/\ze.\+') == "/"
+    " end tag
+    " ignore custom_tag within a block
+    if b:tag_counter.block != 0 && b:tag_counter.block != 6 | return 1 | endif
+    if b:tag_counter.next_line_offset == 0
+      let b:tag_counter.current_line_offset_stack[-1] -= 1
+      let b:tag_counter.current_line_offset -= 1
     else
-      let s:nextrel -= 1
+      let b:tag_counter.next_line_offset_stack[-1] -= 1
+      let b:tag_counter.next_line_offset -= 1
     endif
   else
-    " opening tag
-    if s:block != 0
-      return 1
-    endif
-    let s:nextrel += 1
+    " start tag
+    if b:tag_counter.block != 0 && b:tag_counter.block != 6 | return 1 | endif
+    let b:tag_counter.next_line_offset_stack[-1] += 1
+    let b:tag_counter.next_line_offset += 1
   endif
+
   return 1
+
 endfunc "}}}
 
-" Return the <script> type: either "javascript" or ""
+" Resolves script type from the given attribute value.
+" @param str The attribute value.
+" @return Empty if no script type is resolved, or 'javascript'.
 func! s:GetScriptType(str)
   "{{{
-  if a:str == "" || a:str =~ "java"
-    return "javascript"
-  else
-    return ""
-  endif
+  return a:str == "" || a:str =~ "java" ? 'javascript' : ''
 endfunc "}}}
 
-" Look back in the file, starting at a:lnum - 1, to compute a state for the
-" start of line a:lnum.  Return the new state.
-func! s:FreshState(lnum)
+" Adjusts the value of b:tag_counter.current_line_offset if the given string starts with a
+" normal end tag and its indent value is used for calculating the indent of
+" the next line, because the given string is aligned to a position that is 1
+" indent unit before the position that would have been if the string did not
+" start with an end tag.
+"
+" Assume current line has been indented, the basic flow for calculating the
+" indent of next line is as following:
+"
+" 1. Count tags of current line and upate values of b:tag_counter.current_line_offset and
+" b:tag_counter.next_line_offset
+"
+" 2. If necessary, adjust b:tag_counter.current_line_offset
+"
+" 3. next_line.indent = indent(current line) + (b:tag_counter.current_line_offset +
+" b:tag_counter.next_line_offset) * unit
+"
+" NOTE: keep it in mind that if current line starts with end tag, its indent
+" would have already reflected the -1 unit caused by the end tag.
+"
+" Example A:
+" ----------
+" Current line is '</div><div>', and next_line.indent = indent(current) +
+" (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) * unit, so
+" b:tag_counter.current_line_offset needs to be adjusted by +1.
+"
+" Example B:
+" ----------
+" Current line is </div><div><script>, and next_line.indent_inside_block =
+" indent(current) + (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) * unit, so
+" b:tag_counter.current_line_offset needs to be adjusted by +1.
+"
+" Example C:
+" ----------
+" Current line is </div><div><script></script><div>, which will be simplified
+" as </div><div><div>, and next_line.indent = indent(current) +
+" (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) * unit, so
+" b:tag_counter.current_line_offset needs to be adjusted.
+"
+" Example D:
+" ----------
+" Current line is </div><div><![endif]--><div>, and next_line.indent =
+" indent(line of <!--[...]>) + (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) *
+" unit, so indent(current) is not used, therefore there is no need to adjust
+" b:tag_counter.current_line_offset.
+" NOTE: In this case, the root block (<!--[...]>) has been reset by the end
+" tag.
+"
+" Example E:
+" ----------
+" <!--[...]> <- root block
+" <div><div>
+"     </div><div><div> <- current line
+"         </div>       <- next line aligns here:
+"                         indent(current) + offset-of(</div><div>),
+"                         so b:tag_counter.current_line_offset needs to be adjusted.
+"     </div>           <- the 2nd line aligns here
+"
+" @param text The string to be checked.
+func! s:UpdateCurrentLineOffset(text)
   "{{{
-  " A state is to know ALL relevant details about the
-  " lines 1..a:lnum-1, initial calculating (here!) can be slow, but updating is
-  " fast (incremental).
-  " TODO: this should be split up in detecting the block type and computing the
-  " indent for the block type, so that when we do not know the indent we do
-  " not need to clear the whole state and re-detect the block type again.
-  " State:
-  "	lnum		last indented line == prevnonblank(a:lnum - 1)
-  "	block = 0	a:lnum located within special tag: 0:none, 2:<pre>,
-  "			3:<script>, 4:<style>, 5:<!--, 6:<!--[
-  "	baseindent	use this indent for line a:lnum as a start - kind of
-  "			autoindent (if block==0)
-  "	scripttype = ''	type attribute of a script tag (if block==3)
-  "	blocktagind	indent for current opening (get) and closing (set)
-  "			blocktag (if block!=0)
-  "	blocklnr	lnum of starting blocktag (if block!=0)
-  "	inattr		line {lnum} starts with attributes of a tag
-  let state = {}
-  let state.lnum = prevnonblank(a:lnum - 1)
-  let state.scripttype = ""
-  let state.blocktagind = -1
-  let state.block = 0
-  let state.baseindent = 0
-  let state.blocklnr = 0
-  let state.inattr = 0
+  let end_tag = matchstr(a:text, s:StartsWithEndTagPattern())
 
-  if state.lnum == 0
-    return state
+  " The string starts with a normal end tag; and
+  " the root block is either 0 (no root block) or 6 (conditional comment); and
+  " the root block has not been reset by any block end tags.
+  if end_tag != '' && (b:tag_counter.root_block == 0 || b:tag_counter.root_block == 6) && 'guard' == '' . b:tag_counter.block_stack[0]
+    " It is not really necessary to update current_line_offset_stack here,
+    " because it will not be used any more. However, it is no harmful to
+    " update it to keep consistent logic and semantics.
+    let b:tag_counter.current_line_offset_stack[0] += 1
+    let b:tag_counter.current_line_offset += 1
   endif
 
-  " Heuristic:
-  " remember startline state.lnum
-  " look back for <pre, </pre, <script, </script, <style, </style tags
-  " remember stopline
-  " if opening tag found,
-  "	assume a:lnum within block
-  " else
-  "	look back in result range (stopline, startline) for comment
-  "	    \ delimiters (<!--, -->)
-  "	if comment opener found,
-  "	    assume a:lnum within comment
-  "	else
-  "	    assume usual html for a:lnum
-  "	    if a:lnum-1 has a closing comment
-  "		look back to get indent of comment opener
-  " FI
-
-  " look back for a blocktag
-  let stopline2 = v:lnum + 1
-  if has_key(b:hi_indent, 'block') && b:hi_indent.block > 5
-    let [stopline2, stopcol2] = searchpos('<!--', 'bnW')
-  endif
-  let [stopline, stopcol] = searchpos('\c<\zs\/\=\%(pre\>\|script\>\|style\>\)', "bnW")
-  if stopline > 0 && stopline < stopline2
-    " ugly ... why isn't there searchstr()
-    let tagline = tolower(getline(stopline))
-    let blocktag = matchstr(tagline, '\/\=\%(pre\>\|script\>\|style\>\)', stopcol - 1)
-    if blocktag[0] != "/"
-      " opening tag found, assume a:lnum within block
-      let state.block = s:indent_tags[blocktag]
-      if state.block == 3
-        let state.scripttype = s:GetScriptType(matchstr(tagline, '\>[^>]*', stopcol))
-      endif
-      let state.blocklnr = stopline
-      " check preceding tags in the line:
-      call s:CountITags(tagline[: stopcol-2])
-      let state.blocktagind = indent(stopline) + (s:curind + s:nextrel) * shiftwidth()
-      return state
-    elseif stopline == state.lnum
-      " handle special case: previous line (= state.lnum) contains a
-      " closing blocktag which is preceded by line-noise;
-      " blocktag == "/..."
-      let swendtag = match(tagline, '^\s*</') >= 0
-      if !swendtag
-        let [bline, bcol] = searchpos('<'.blocktag[1:].'\>', "bnW")
-        call s:CountITags(tolower(getline(bline)[: bcol-2]))
-        let state.baseindent = indent(bline) + (s:curind + s:nextrel) * shiftwidth()
-        return state
-      endif
-    endif
-  endif
-  if stopline > stopline2
-    let stopline = stopline2
-    let stopcol = stopcol2
-  endif
-
-  " else look back for comment
-  let [comlnum, comcol, found] = searchpos('\(<!--\[\)\|\(<!--\)\|-->', 'bpnW', stopline)
-  if found == 2 || found == 3
-    " comment opener found, assume a:lnum within comment
-    let state.block = (found == 3 ? 5 : 6)
-    let state.blocklnr = comlnum
-    " check preceding tags in the line:
-    call s:CountITags(tolower(getline(comlnum)[: comcol-2]))
-    if found == 2
-      let state.baseindent = b:hi_indent.baseindent
-    endif
-    let state.blocktagind = indent(comlnum) + (s:curind + s:nextrel) * shiftwidth()
-    return state
-  endif
-
-  " else within usual HTML
-  let text = tolower(getline(state.lnum))
-
-  " Check a:lnum-1 for closing comment (we need indent from the opening line).
-  " Not when other tags follow (might be --> inside a string).
-  let comcol = stridx(text, '-->')
-  if comcol >= 0 && match(text, '[<>]', comcol) <= 0
-    call cursor(state.lnum, comcol + 1)
-    let [comlnum, comcol] = searchpos('<!--', 'bW')
-    if comlnum == state.lnum
-      let text = text[: comcol-2]
-    else
-      let text = tolower(getline(comlnum)[: comcol-2])
-    endif
-    call s:CountITags(text)
-    let state.baseindent = indent(comlnum) + (s:curind + s:nextrel) * shiftwidth()
-    " TODO check tags that follow "-->"
-    return state
-  endif
-
-  " Check if the previous line starts with end tag.
-  let swendtag = match(text, '^\s*</') >= 0
-
-  " If previous line ended in a closing tag, line up with the opening tag.
-  if !swendtag && text =~ '</\w\+\s*>\s*$'
-    call cursor(state.lnum, 99999)
-    normal! F<
-    let start_lnum = HtmlIndent_FindStartTag()
-    if start_lnum > 0
-      let state.baseindent = indent(start_lnum)
-      if col('.') > 2
-        " check for tags before the matching opening tag.
-        let text = getline(start_lnum)
-        let swendtag = match(text, '^\s*</') >= 0
-        call s:CountITags(text[: col('.') - 2])
-        let state.baseindent += s:nextrel * shiftwidth()
-        if !swendtag
-          let state.baseindent += s:curind * shiftwidth()
-        endif
-      endif
-      return state
-    endif
-  endif
-
-  " Else: no comments. Skip backwards to find the tag we're inside.
-  let [state.lnum, found] = HtmlIndent_FindTagStart(state.lnum)
-  " Check if that line starts with end tag.
-  let text = getline(state.lnum)
-  let swendtag = match(text, '^\s*</') >= 0
-  call s:CountITags(tolower(text))
-  let state.baseindent = indent(state.lnum) + s:nextrel * shiftwidth()
-  if !swendtag
-    let state.baseindent += s:curind * shiftwidth()
-  endif
-  return state
 endfunc "}}}
 
-" Indent inside a <pre> block: Keep indent as-is.
-func! s:Alien2()
+" Checks if current context is still valid and can be reused for calculating
+" indents of current line.
+" @return 1 if current context is valid, 0 otherwise.
+func! s:ValidateContext(state)
+  return 1 == b:context.ready && b:context.state == a:state && prevnonblank(v:lnum - 1) == b:context.lnum && b:context.changed_tick == b:changedtick - 1
+endfunc
+
+" Initializes context if current line is inside an HTML attribute, and its line
+" number is greater than 2.
+"
+" Example A:
+" ----------
+" <div class="container"
+"      style="color: red;
+"      ^ <- aligns to previous line
+"      border: 1px solid #ff0000;" <- current line
+"      >
+"     </div>
+"
+" Example B:
+" ----------
+" <div>
+"     <div class="container" style="color: red;
+"     ^ <- aligns to previous line
+"     border: 1px solid #ff0000; <- current line
+"     ">
+"     </div>
+" </div>
+"
+" @param context Current context.
+" @return The initialized context.
+func! s:InitContextOfLineInsideAttribute(context)
   "{{{
-  return -1
-endfunc "}}}
+  " Check if current context can be reused.
+  if s:ValidateContext('line_inside_attribute') | return b:context | endif
 
-" Return the indent inside a <script> block for javascript.
-func! s:Alien3()
-  "{{{
-  let lnum = prevnonblank(v:lnum - 1)
-  while lnum > 1 && getline(lnum) =~ '^\s*/[/*]'
-    " Skip over comments to avoid that cindent() aligns with the <script> tag
-    let lnum = prevnonblank(lnum - 1)
-  endwhile
-  if lnum == b:hi_indent.blocklnr
-    " indent for the first line after <script>
-    return eval(b:hi_js1indent)
-  endif
-  if b:hi_indent.scripttype == "javascript"
-    return GetJavascriptIndent()
-  else
-    return -1
-  endif
-endfunc "}}}
+  let context = a:context
+  let text = tolower(getline(v:lnum))
 
-" Return the indent inside a <style> block.
-func! s:Alien4()
-  "{{{
-  if prevnonblank(v:lnum-1) == b:hi_indent.blocklnr
-    " indent for first content line
-    return eval(b:hi_css1indent)
-  endif
-  return s:CSSIndent()
-endfunc "}}}
+  if context.lnum <= 1 || text =~ '^\s*<' | return context | endif
 
-" Indending inside a <style> block.  Returns the indent.
-func! s:CSSIndent()
-  "{{{
-  " This handles standard CSS and also Closure stylesheets where special lines
-  " start with @.
-  " When the line starts with '*' or the previous line starts with "/*"
-  " and does not end in "*/", use C indenting to format the comment.
-  " Adopted $VIMRUNTIME/indent/css.vim
-  let curtext = getline(v:lnum)
-  if curtext =~ '^\s*[*]'
-        \ || (v:lnum > 1 && getline(v:lnum - 1) =~ '\s*/\*'
-        \     && getline(v:lnum - 1) !~ '\*/\s*$')
-    return cindent(v:lnum)
-  endif
+  normal! ^
 
-  let min_lnum = b:hi_indent.blocklnr
-  let prev_lnum = s:CssPrevNonComment(v:lnum - 1, min_lnum)
-  let [prev_lnum, found] = HtmlIndent_FindTagStart(prev_lnum)
-  if prev_lnum <= min_lnum
-    " Just below the <style> tag, indent for first content line after comments.
-    return eval(b:hi_css1indent)
-  endif
+  " Assume there are no tabs
+  let stack = synstack(v:lnum, col('.'))
+  if len(stack) > 0 | let stack = reverse(stack) | endif
 
-  " If the current line starts with "}" align with it's match.
-  if curtext =~ '^\s*}'
-    call cursor(v:lnum, 1)
-    try
-      normal! %
-      " Found the matching "{", align with it after skipping unfinished lines.
-      let align_lnum = s:CssFirstUnfinished(line('.'), min_lnum)
-      return indent(align_lnum)
-    catch
-      " can't find it, try something else, but it's most likely going to be
-      " wrong
-    endtry
-  endif
-
-  " add indent after {
-  let brace_counts = HtmlIndent_CountBraces(prev_lnum)
-  let extra = brace_counts.c_open * shiftwidth()
-
-  let prev_text = getline(prev_lnum)
-  let below_end_brace = prev_text =~ '}\s*$'
-
-  " Search back to align with the first line that's unfinished.
-  let align_lnum = s:CssFirstUnfinished(prev_lnum, min_lnum)
-
-  " Handle continuation lines if aligning with previous line and not after a
-  " "}".
-  if extra == 0 && align_lnum == prev_lnum && !below_end_brace
-    let prev_hasfield = prev_text =~ '^\s*[a-zA-Z0-9-]\+:'
-    let prev_special = prev_text =~ '^\s*\(/\*\|@\)'
-    if curtext =~ '^\s*\(/\*\|@\)'
-      " if the current line is not a comment or starts with @ (used by template
-      " systems) reduce indent if previous line is a continuation line
-      if !prev_hasfield && !prev_special
-        let extra = -shiftwidth()
-      endif
-    else
-      let cur_hasfield = curtext =~ '^\s*[a-zA-Z0-9-]\+:'
-      let prev_unfinished = s:CssUnfinished(prev_text)
-      if !cur_hasfield && (prev_hasfield || prev_unfinished)
-        " Continuation line has extra indent if the previous line was not a
-        " continuation line.
-        let extra = shiftwidth()
-        " Align with @if
-        if prev_text =~ '^\s*@if '
-          let extra = 4
-        endif
-      elseif cur_hasfield && !prev_hasfield && !prev_special
-        " less indent below a continuation line
-        let extra = -shiftwidth()
-      endif
-    endif
-  endif
-
-  if below_end_brace
-    " find matching {, if that line starts with @ it's not the start of a rule
-    " but something else from a template system
-    call cursor(prev_lnum, 1)
-    call search('}\s*$')
-    try
-      normal! %
-      " Found the matching "{", align with it.
-      let align_lnum = s:CssFirstUnfinished(line('.'), min_lnum)
-      let special = getline(align_lnum) =~ '^\s*@'
-    catch
-      let special = 0
-    endtry
-    if special
-      " do not reduce indent below @{ ... }
-      if extra < 0
-        let extra += shiftwidth()
-      endif
-    else
-      let extra -= (brace_counts.c_close - (prev_text =~ '^\s*}')) * shiftwidth()
-    endif
-  endif
-
-  " if no extra indent yet...
-  if extra == 0
-    if brace_counts.p_open > brace_counts.p_close
-      " previous line has more ( than ): add a shiftwidth
-      let extra = shiftwidth()
-    elseif brace_counts.p_open < brace_counts.p_close
-      " previous line has more ) than (: subtract a shiftwidth
-      let extra = -shiftwidth()
-    endif
-  endif
-
-  return indent(align_lnum) + extra
-endfunc "}}}
-
-" Inside <style>: Whether a line is unfinished.
-func! s:CssUnfinished(text)
-  "{{{
-  return a:text =~ '\s\(||\|&&\|:\)\s*$'
-endfunc "}}}
-
-" Search back for the first unfinished line above "lnum".
-func! s:CssFirstUnfinished(lnum, min_lnum)
-  "{{{
-  let align_lnum = a:lnum
-  while align_lnum > a:min_lnum && s:CssUnfinished(getline(align_lnum - 1))
-    let align_lnum -= 1
-  endwhile
-  return align_lnum
-endfunc "}}}
-
-" Find the non-empty line at or before "lnum" that is not a comment.
-func! s:CssPrevNonComment(lnum, stopline)
-  "{{{
-  " caller starts from a line a:lnum + 1 that is not a comment
-  let lnum = prevnonblank(a:lnum)
-  while 1
-    let ccol = match(getline(lnum), '\*/')
-    if ccol < 0
-      " No comment end thus it's something else.
-      return lnum
-    endif
-    call cursor(lnum, ccol + 1)
-    " Search back for the /* that starts the comment
-    let lnum = search('/\*', 'bW', a:stopline)
-    if indent(".") == virtcol(".") - 1
-      " The  found /* is at the start of the line. Now go back to the line
-      " above it and again check if it is a comment.
-      let lnum = prevnonblank(lnum - 1)
-    else
-      " /* is after something else, thus it's not a comment line.
-      return lnum
-    endif
-  endwhile
-endfunc "}}}
-
-" Check the number of {} and () in line "lnum". Return a dict with the counts.
-func! HtmlIndent_CountBraces(lnum)
-  "{{{
-  let brs = substitute(getline(a:lnum), '[''"].\{-}[''"]\|/\*.\{-}\*/\|/\*.*$\|[^{}()]', '', 'g')
-  let c_open = 0
-  let c_close = 0
-  let p_open = 0
-  let p_close = 0
-  for brace in split(brs, '\zs')
-    if brace == "{"
-      let c_open += 1
-    elseif brace == "}"
-      if c_open > 0
-        let c_open -= 1
-      else
-        let c_close += 1
-      endif
-    elseif brace == '('
-      let p_open += 1
-    elseif brace == ')'
-      if p_open > 0
-        let p_open -= 1
-      else
-        let p_close += 1
-      endif
+  for synid in stack
+    let name = synIDattr(synid, "name")
+    if index(b:hi_insideStringNames, name) >= 0
+      let context.ready = 1
+      let context.state = 'line_inside_attribute'
+      let context.indent = indent(context.lnum)
+      break
     endif
   endfor
-  return {'c_open': c_open,
-        \ 'c_close': c_close,
-        \ 'p_open': p_open,
-        \ 'p_close': p_close}
+
+  return context
+
 endfunc "}}}
 
-" Return the indent for a comment: <!-- -->
+" Initializes context if current line is inside an HTML tag. In other words, it
+" is an HTML attribute.
+"
+" Example A:
+" ----------
+" <table class="container" width="100%"
+"                          ^ <- aligns to the last attribute.
+"                          style="color: red;" > <- current line
+" </table>
+"
+" Example B:
+" ----------
+" <table class="container" style="..." <- len(this line) > 300
+"        ^ <- aligns to the first attribute
+"        width="100%"> <- current line
+" </table>
+
+" @param context Current context.
+" @return The initialized context.
+func! s:InitContextOfLineInsideTag(context)
+  "{{{
+  " Check if current context can be reused.
+  if s:ValidateContext('line_inside_tag') | return b:context | endif
+
+  let context = a:context
+  let text = tolower(getline(v:lnum))
+
+  if text =~ '^\s*<' | return context | endif
+
+  normal! ^
+
+  " Assume there are no tabs
+  let stack = synstack(v:lnum, col('.'))
+
+  if len(stack) > 0 | let stack = reverse(stack) | endif
+
+  for synid in stack
+    let name = synIDattr(synid, "name")
+    if index(b:hi_insideTagNames, name) >= 0
+      let context.ready = 1
+      let context.state = 'line_inside_tag'
+      " When calcuating indent of an attribute, the b:context.context is not
+      " used, so there is no need to update context.indent here.
+      " But it is no harmful to set this value to keep consistent logic and
+      " semantics for it.
+      let context.indent = b:context.indent
+      break
+    endif
+  endfor
+
+  return context
+
+endfunc "}}}
+
+" Initializes context if current line is inside a block.
+"
+" @param context Current context.
+" @param current_block_start_tag_line The line of the start tag of the block
+" that contains current line.
+" @param current_block_start_tag The start tag of the block that contains
+" current line.
+" @param current_block_start_tag_lnum The line number of the block start tag.
+" @param current_block_start_tag_start_col The start column number of the
+" block start tag.
+" @return The initialized context
+func! s:InitContextOfLineInsideBlock(context, current_block_start_tag_line, current_block_start_tag, current_block_start_tag_lnum, current_block_start_tag_start_col)
+  "{{{
+  " Check if current context can be reused.
+  if s:ValidateContext('line_inside_block') | return b:context | endif
+
+  let context = a:context
+
+  if s:IsStartTag(a:current_block_start_tag) && a:current_block_start_tag_lnum > 0 && a:current_block_start_tag_lnum < v:lnum
+    " Current line is inside a block (between the block start and the block
+    " end tag).
+
+    let context.state = 'line_inside_block'
+
+    " Update the block type in context
+    let context.block = s:indent_tags[a:current_block_start_tag]
+
+    if context.block == 3 | let context.script_type = s:GetScriptType(matchstr(a:current_block_start_tag_line, '\>[^>]*', a:current_block_start_tag_start_col)) | endif
+
+    " Update the block start tag line number in context
+    let context.block_start_tag_lnum = a:current_block_start_tag_lnum
+
+    " Check the preceding tags of the block start tag and update b:tag_counter.current_line_offset and
+    " b:tag_counter.next_line_offset.
+    " String index (starts from 0):
+    " ----------------------------
+    " ...<block>
+    "    ^ <- left_index
+    "   ^  <- left_index - 1
+    let left_index = s:IndexOfBlockTagStartBracket(a:current_block_start_tag_line, a:current_block_start_tag, a:current_block_start_tag_start_col - 1)
+    let left_text = left_index == 0 ? '' : a:current_block_start_tag_line[: left_index - 1]
+
+    let context.indent_inside_block = indent(a:current_block_start_tag_lnum)
+
+    " It wouldn't be necessary to check tags, if left_index <=2, in which
+    " case, the length of left text is less than the length of <a>, which is
+    " the shortest tag.
+    if left_index > 2
+
+      call cursor(a:current_block_start_tag_lnum, left_index + 1)
+
+      let context.root_block = s:CurrentBlockId()
+
+      call s:CountITags(left_text, context.root_block)
+
+      let context.indent_inside_block += (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) * s:indent_unit
+
+    endif
+
+    if context.block == 6 && context.lnum > context.block_start_tag_lnum
+      " Current line is inside a conditional comment; and
+      " is not the first line:
+      "
+      " <!--[...]>
+      " ... <- The first line inside a conditional comment, it is aligned by
+      " Alien6() as a line inside block.
+      " ... <- This is current line, it should be aligned as a normal line, so
+      " context.ready SHOULD NOT be set to 1
+      " <![endif]-->
+    else
+      let context.ready = 1
+
+      " Set the fallback indent of current line. Actually, it is not necessary,
+      " because lines in block are to be indented by Alien{*} methods. However,
+      " it is no harmful to set context.indent here to keep consistent logic
+      " and semantics for it.
+      let context.indent = context.indent_inside_block
+    endif
+  endif
+
+  return context
+
+endfunc "}}}
+
+" Moves cursor to the start tag of the end tag on current cursor position, and
+" initializes context of the prefix before the start tag.
+" This method is used by s:InitContextOfLineStartsWithEndTag() and
+" s:InitContextOfLineAfterEndTag().
+" NOTE: When calling this method, cursor must has been positioned on the start
+" bracket of the end tag:
+" <p><div>
+"     ...
+"     <p></p></div>
+"            ^ <- cursor
+" @param context Current context
+" @return The initialized context.
+func! s:InitContextOfPrefixBeforeStartTag(context)
+
+  let context = a:context
+
+  let context.state = 'normal_line'
+
+  " The pattern does not contain \zs, so cursor is positioned at the left
+  " bracket:
+  " .<div>
+  "  ^   <- cursor positioned here, col('.')
+  " ^    <- col('.') - 1
+  let start_lnum = s:FindStartTag()
+
+  if start_lnum <= 0 | return context | endif
+
+  " Check for the line starting with something inside a tag:
+  " <sometag               <- align here
+  "    attr=val><open>     not here
+  let text = tolower(getline(start_lnum))
+  let bracket = matchstr(text, '[<>]')
+  if bracket == '>'
+    call cursor(start_lnum, 1)
+    normal! f>%
+    let start_lnum = line('.')
+    let text = tolower(getline(start_lnum))
+  endif
+
+  " Now, start_lnum is the line number of an effective start tag:
+  " current start tag or previous start tag, and text is the line that
+  " contains the effective tag.
+
+  " First, align current line to the start of the line of start tag.  This is
+  " just the temporary indent, which has to be adjusted by
+  " b:tag_counter.current_line_offset and b:tag_counter.next_line_offset if
+  " the start tag is preceded by any tags.
+  let context.indent = indent(start_lnum)
+
+  " It wouldn't be necessary to check tags, if col('.') <= 3, in which case,
+  " the length of text is less than the length of <a>, which is the shortest
+  " tag.
+  if col('.') > 3
+    let context.root_block = s:CurrentBlockId()
+    call s:CountITags(tolower(getline(start_lnum)[:col('.') - 2]), context.root_block)
+    let context.indent += (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) * s:indent_unit
+  endif
+
+  let context.ready = 1
+
+  return context
+
+endfunc
+
+" Initializes context if current line starts with an end tag.
+" NOTE: Context can not be reused for a line starts with an end tag.
+" @param context Current context.
+" @return The initialized context.
+func! s:InitContextOfLineStartsWithEndTag(context)
+  "{{{
+  " Does the line start with an end tag?
+  let swendtag = match(tolower(getline(v:lnum)), s:StartsWithEndTagPattern()) >= 0
+
+  if !swendtag | return a:context | endif
+
+  " The current line starts with an end tag.
+  " ...
+  " </a>... <- current line
+  " ...
+  "
+  " Basic flow for indenting current line is as follows:
+  "
+  " 1. Assume current line is </a>...
+  "
+  " 2. Find the previous line that contains the start tag of the end tag:
+  " [preceding tags]<a>...
+  "
+  " 3. Align current line to the start of that line: indent =
+  " indent(start_lnum)
+  "
+  " 4. Calculate b:tag_counter.current_line_offset and
+  " b:tag_counter.next_line_offset of the preceding tags.
+  "
+  " 5. Further indent current line: indent +=
+  " (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) *
+  " shift-unit
+  "
+  " Refer to function checkTag() for the meanings of
+  " b:tag_counter.current_line_offset and b:tag_counter.next_line_offset.
+  "
+  " NOTE: When a leading end tag is present, we always assume that all
+  " tags between it and its start tag have been paired correctly, thus all
+  " the intermediary tags can be ignored without affecting the correct
+  " calculation of the indent:
+  "
+  " <div><a>...
+  "     </a>... <- current line (indent of 1 shift-unit)
+  " </div>
+  "
+  " can be simplified as
+  "
+  " <div><a>
+  "     </a>... <- current line (indent of 1 shift-unit)
+  " </div>
+  "
+  " When calculating the value of b:tag_counter.next_line_offset, the start
+  " tag is excluded (b:tag_counter.next_line_offset is calculated for
+  " preceding tags only), thus the indent of current line is 1 shift-unit less
+  " than what would have been if the end tag were replaced or preceded by any
+  " start tag(s):
+  "
+  " <div><a>    <- <a> is not included when calculating b:tag_counter.next_line_offset
+  "     </a>... <- current line (indent of 1 shift-unit)
+  " </div>
+  "
+  " <div><a>    <- <a> is included when calculating b:tag_counter.next_line_offset
+  "         <span></span></a> <- current line (indent of 2 shift-units)
+  " </div>
+  "
+  " In other words, for any line that starts with an end tag, the 1
+  " shift-unit indent contributed by its start tag would have already been
+  " deducted from its indent.
+  "
+  " As a result, when calculating b:tag_counter.current_line_offset for a line
+  " that starts with an end tag, the -1 shift-unit contributed by the end tag
+  " should be offset (by +1), because it has already been reflected in its
+  " indent:
+  "
+  " <div>
+  "     <a>
+  "     ^ <- Align here (indent of 1 shift-unit).
+  "          The indent contributed by <a> is deducted
+  "     </a><b> <- The b:tag_counter.current_line_offset of </a> is 0: -1 + 1
+  "     </b>    <- Current line (indent of 1 shift-unit: 1 + 0)
+  " </div>
+  "
+  " <div>
+  "     <a>
+  "         ^ <- Align here (indent of 2 shift-units).
+  "              The indent contributed by <a> is NOT deducted
+  "         <span></span></a><b> <- The b:tag_counter.current_line_offset of
+  "                                 '<span></span></a>' is -1
+  "     </b> <- Current line (indent of 1 shift-unit: 2 - 1).
+  " </div>
+  "
+  " This principle is very important for understanding the logic of indent
+  " calculation and it is used widely in this script.
+  call cursor(v:lnum, 1)
+
+  return s:InitContextOfPrefixBeforeStartTag(a:context)
+
+endfunc "}}}
+
+" Initializes context if the previous line ends with an end tag. Adjusts
+" context.indent based on the line of start tag.
+" NOTE: Context can not be reused for a line after an end tag.
+" @param context Current context.
+" @return The initialized context.
+func! s:InitContextOfLineAfterEndTag(context)
+  "{{{
+  let text = tolower(getline(a:context.lnum))
+  let pattern = s:custom_end_tag_full_pattern . '\|' . s:normal_end_tag_full_pattern
+  let pattern = '\(' . pattern . '\)' . '\s*$'
+
+  if text !~ pattern | return a:context | endif
+
+  call cursor(a:context.lnum, 1) | normal! $
+
+  normal! F<
+
+  return s:InitContextOfPrefixBeforeStartTag(a:context)
+
+endfunc "}}}
+
+" Initializes context if the preceding line of current line contains a block
+" end tag. In such case, the block as well as the tags between the block start
+" and end tags are to be ignored, and current line should be aligned to what
+" remains:
+"
+" Example:
+" --------
+" <div><script>
+" ...
+" </script><div></div>
+" ... <- current line
+"
+" The <script> block and its contents are to be ignored, and current line
+" should be indented as following:
+"
+" <div><div></div>
+"     ^   <- Aligns here
+"     ... <- current line
+"
+" NOTE: Context can not be reused for a line after a block.
+" @param context Current context.
+" @param current_block_end_tag_line The line of the block end tag.
+" @param current_block_end_tag The line of the block end tag.
+" @param current_block_end_tag_lnum The line number of the block end tag.
+" @param current_block_end_tag_start_col The start column number of the block end tag.
+" parent block that contains current block, or 0 if there is no parent block.
+" @return The initialized context.
+func! s:InitContextOfLineAfterBlock(context, current_block_end_tag_line, current_block_end_tag, current_block_end_tag_lnum, current_block_end_tag_start_col)
+  "{{{
+  let context = a:context
+
+  if s:IsEndTag(a:current_block_end_tag) && a:current_block_end_tag_lnum > 0 && a:current_block_end_tag_lnum == context.lnum
+    " Current line is preceded by a line that contains a block end tag.
+
+    let context.state = 'normal_line'
+
+    " Find the start tag of current block.
+    let start_tag_pattern = s:StartTagPattern(s:StartTag(a:current_block_end_tag))
+    let [ current_block_start_tag,
+          \ current_block_start_tag_lnum,
+          \ current_block_start_tag_start_col,
+          \ current_block_start_tag_end_col] = s:SearchStringPosition(start_tag_pattern, "bnW", 0)
+
+    let current_block_start_tag_line = getline(current_block_start_tag_lnum)
+
+    " String index (starts from 0):
+    " -----------------------------
+    " ...<block>
+    "    ^  <- left_index
+    "   ^   <- left_index - 1
+    let left_index = s:IndexOfBlockTagStartBracket(current_block_start_tag_line, current_block_start_tag, current_block_start_tag_start_col - 1)
+    let left = left_index == 0 ? '' : current_block_start_tag_line[: left_index - 1]
+
+    " String index (stats from 0):
+    " ----------------------------
+    " </block>.
+    "         ^ <- right_index + 1
+    "        ^  <- right_index
+    let right_index = s:IndexOfBlockTagEndBracket(a:current_block_end_tag_line, a:current_block_end_tag, a:current_block_end_tag_start_col - 1)
+    let right = a:current_block_end_tag_line[right_index + 1:]
+
+    call cursor(a:current_block_end_tag_lnum, 1) | normal! $
+    let context.root_block = s:CurrentBlockId()
+
+    call s:CountITags(tolower(left . right), context.root_block)
+
+    let context.indent = indent(current_block_start_tag_lnum) + (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) * s:indent_unit
+    let context.ready = 1
+  endif
+
+  return context
+
+endfunc "}}}
+
+
+" Initializes context if current line is a normal line: not inside a block,
+" not after a block end line.
+" NOTE: 
+" * The line of a block start tag or an end tag is also a normal line.
+" * A normal line may actually inside a root block:
+" <!--[...]>
+"     <pre>
+"     </pre>
+"     <div></div>
+"     <div></div> <- current line
+" <![endif]-->
+" @param context Current context.
+" @return The initialized context.
+func! s:InitContextOfNormalLine(context)
+  "{{{
+  " Check if current context can be reused.
+  if s:ValidateContext('normal_line') | return b:context | endif
+
+  let context = a:context
+  let context.state = 'normal_line'
+
+  let [context.lnum, found] = s:FindTagStart(context.lnum)
+  let text = getline(context.lnum)
+
+  call cursor(context.lnum, 1) | normal! $
+
+  let context.root_block = s:CurrentBlockId()
+
+  call s:CountITags(tolower(text), context.root_block)
+
+  let context.indent = indent(context.lnum) + (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) * s:indent_unit
+  let context.ready = 1
+
+  return context
+
+endfunc "}}}
+
+" Initializes context for a specific line.
+"
+" A context stores context information that is useful for calculating indent
+" of current line. Two steps are required before the indent of current line
+" can be determined:
+"
+" 1. Initialize context for current line. The value of indent in this context
+" can not be used as the final value yet.
+"
+" 2. Calling the indent method to further adjust indent value based on the
+" context.
+"
+" This method presents the first step.
+"
+" @param lnum The line number to be checked.
+" @return The initialized context.
+func! s:InitContext(lnum)
+  "{{{
+  let context = {}
+  let context.lnum = prevnonblank(a:lnum - 1)
+  let context.indent = -1
+  let context.changed_tick = 0
+  let context.block = 0
+  let context.block_start_tag_lnum = 0
+  let context.script_type = ""
+  let context.indent_inside_block = -1
+  let context.root_block = 0
+  let context.state = 'normal_line'
+  let context.ready = 0
+
+  if context.lnum == 0 | return context | endif
+
+  " Look backward from current line to find a block end or start tag.
+  "
+  " 1. If it is a block end tag:
+  "
+  "       1.1 If it is the previous line, align current line to the line of
+  "       the corresponding block start tag.
+  "
+  "       1.2 If it is not the previous line, current line is aligned to the
+  "       previous line as a normal line.
+  "
+  "       NOTE: If current block is also inside a root block, it won't be
+  "       necessary to indent current line as a line-inside-block, because the
+  "       line of block start tag would have already been indented as a
+  "       line-inside-block (line inside the parent block).
+  "
+  " 2. If it is a block open tag, then current line is inside the block.
+  "
+  " ...<block>
+  "         ^ <- current_block_tag_end_col
+  "     ^     <- current_block_tag_start_col
+  let [current_block_tag, current_block_tag_lnum, current_block_tag_start_col, current_block_tag_end_col] = s:SearchStringPosition(s:BlockTagPattern(), "bnW", 0)
+
+  let current_block_tag_line = tolower(getline(current_block_tag_lnum))
+
+  " Try to initialize context for current line as if it is inside an attribute.
+  let context = s:InitContextOfLineInsideAttribute(context)
+  if context.ready | return context | endif
+
+  " Current line is not inside any attribute, try to initialize context as if it
+  " is inside a tag.
+  let context = s:InitContextOfLineInsideTag(context)
+  if context.ready | return context | endif
+
+  " Current line is not inside any tag, try to initialize context as if it is
+  " inside a block.
+  let context = s:InitContextOfLineInsideBlock(context, current_block_tag_line, current_block_tag, current_block_tag_lnum, current_block_tag_start_col)
+  if context.ready | return context | endif
+
+  " Current line is not inside any block, try to initialize context as if it
+  " starts with an end tag.
+  let context = s:InitContextOfLineStartsWithEndTag(context)
+  if context.ready | return context | endif
+
+  " Current line does not start with any end tag, try to initialize context as
+  " if its previous line ends with an end tag.
+  let context = s:InitContextOfLineAfterEndTag(context)
+  if context.ready | return context | endif
+
+  " The previous line does not end with any end tag, try to initialize context
+  " as if it is after a block.
+  " We should check if current line starts with an end tag, or if its previous
+  " line ends with an end tag before this method, because a line after a block
+  " may starts with or be after an end tag as well.
+  let context = s:InitContextOfLineAfterBlock(context, current_block_tag_line, current_block_tag, current_block_tag_lnum, current_block_tag_start_col)
+  if context.ready | return context | endif
+
+  " Current line is not inside any block, and it does not start with any end
+  " tag, and its previous line does not end with any end tag, and it is not
+  " after any block, so it is just a normal line.
+  let context = s:InitContextOfNormalLine(context)
+  if context.ready | return context | endif
+
+endfunc "}}}
+
+" Indent method for lines inside a <pre> block: keep indent as-is.
+" @return -1
+func! s:Alien2()
+  "{{{
+  let b:indent_ready = 1 | return -1
+endfunc "}}}
+
+" Indent method for lines inside a <script> block.
+" @return The calculated indent.
+func! s:Alien3()
+  "{{{
+  let b:indent_ready = 1
+  let lnum = prevnonblank(v:lnum - 1)
+
+  setlocal comments+=s1:/*,mb:*,ex:*/
+
+  " indent for the first line after <script>
+  if lnum == b:context.block_start_tag_lnum | return eval(b:hi_js1indent) | endif
+
+  let indent = b:context.script_type == "javascript" ? max([cindent(v:lnum), eval(b:hi_js1indent)]) : -1
+
+  return indent
+
+endfunc "}}}
+
+" Indent method of lines inside a <style> block.
+" @return The calculated indent.
+func! s:Alien4()
+  "{{{
+  let b:indent_ready = 1
+  let prev_lnum = prevnonblank(v:lnum - 1)
+
+  setlocal comments+=s1:/*,mb:*,ex:*/
+
+  " indent for first content line
+  if prev_lnum == b:context.block_start_tag_lnum | return eval(b:hi_css1indent) | endif
+
+  " Unlet b:did_indent, so that indent/css.vim can be loaded successfully.
+  unlet b:did_indent
+  runtime! indent/css.vim
+
+  " Calculate indent with the function in indent/css.vim
+  let indent = max([GetCSSIndent(), eval(b:hi_css1indent)])
+
+  " Restore local configuration after calling external scripts.
+  call s:RestoreLocalConfiguration()
+
+  return indent
+
+endfunc "}}}
+
+" Indent method of lines inside a <!-- and --> comment block.
+" @return The calculated indent.
 func! s:Alien5()
   "{{{
-  let curtext = getline(v:lnum)
-  if curtext =~ '^\s*\zs-->'
-    " current line starts with end of comment, line up with comment start.
-    call cursor(v:lnum, 0)
-    let lnum = search('<!--', 'b')
-    if lnum > 0
-      " TODO: what if <!-- is not at the start of the line?
-      return indent(lnum)
-    endif
+  let b:indent_ready = 1
+  let prev_lnum = prevnonblank(v:lnum - 1)
 
-    " Strange, can't find it.
-    return -1
-  endif
+  let indent = prev_lnum == b:context.block_start_tag_lnum ? indent(prev_lnum) + 1 : indent(prev_lnum)
 
-  let prevlnum = prevnonblank(v:lnum - 1)
-  let prevtext = getline(prevlnum)
-  let idx = match(prevtext, '^\s*\zs<!--')
-  if idx >= 0
-    " just below comment start, add a shiftwidth
-    return idx + shiftwidth()
-  endif
+  return indent
 
-  " Some files add 4 spaces just below a TODO line.  It's difficult to detect
-  " the end of the TODO, so let's not do that.
-
-  " Align with the previous non-blank line.
-  return indent(prevlnum)
 endfunc "}}}
 
-" Return the indent for conditional comment: <!--[ ![endif]-->
+" Indent method of lines inside a <!--[...]> and <![endif]--> conditional comment block.
+" @return The calculated indent.
 func! s:Alien6()
   "{{{
-  let curtext = getline(v:lnum)
-  if curtext =~ '\s*\zs<!\[endif\]-->'
-    " current line starts with end of comment, line up with comment start.
-    let lnum = search('<!--', 'bn')
-    if lnum > 0
-      return indent(lnum)
-    endif
-  endif
-  return b:hi_indent.baseindent + shiftwidth()
+  " Mark b:indent_ready to 1 if current line is the first line inside a
+  " conditional comment, 0 otherwise.
+  " So basically, this method is only effective for the first line inside a
+  " conditional comment.
+  let b:indent_ready = b:context.lnum == b:context.block_start_tag_lnum ? 1 : 0
+
+  return b:context.indent_inside_block
+
 endfunc "}}}
 
-" When the "lnum" line ends in ">" find the line containing the matching "<".
-func! HtmlIndent_FindTagStart(lnum)
+" When the 'lnum' line ends in '>', finds the line containing the matching '<'
+" (for start tag) or '</' (for end tag).
+"
+" This method is only called by method s:InitContextOfNormalLine(), which
+" means the line of lnum is neither the block start line, nor the block end
+" line, so it may only contain normal tags. Therefore, it will be good enough
+" to pair tags with '<' and '>'.
+"
+" Example A:
+" ----------
+" <div>
+"     ^ <- tag end
+" ^ <- tag start
+"
+" Example B:
+" ---------
+" <div
+" ^ <- tag start
+"     >
+"     ^ <- tag end
+"
+" Example C:
+" ----------
+" </div>
+"      ^ <- tag end
+" ^ <- tag start
+"
+" Example D:
+" ----------
+" </div
+" ^ <- tag start
+"     >
+"     ^ <- tag end
+"
+" @param lnum The line number of the line to be checked.
+func! s:FindTagStart(lnum)
   "{{{
-  " Avoids using the indent of a continuation line.
-  " Moves the cursor.
-  " Return two values:
-  " - the matching line number or "lnum".
-  " - a flag indicating whether we found the end of a tag.
-  " This method is global so that HTML-like indenters can use it.
-  " To avoid matching " > " or " < " inside a string require that the opening
-  " "<" is followed by a word character and the closing ">" comes after a
-  " non-white character.
-  let idx = match(getline(a:lnum), '\S>\s*$')
+  let lnum = 0
+  let idx = match(tolower(getline(a:lnum)), '\S>[^<>]*$') + 1
+
   if idx > 0
     call cursor(a:lnum, idx)
-    let lnum = searchpair('<\w', '' , '\S>', 'bW', '', max([a:lnum - b:html_indent_line_limit, 0]))
-    if lnum > 0
-      return [lnum, 1]
-    endif
+
+    " Match < or </
+    let lnum = searchpair('<\%\(/\|\w\)', '' , '\S>', 'bW', '', max([a:lnum - b:html_indent_line_limit, 0]))
   endif
-  return [a:lnum, 0]
+
+  return lnum > 0 ? [lnum, 1]: [a:lnum, 0]
+
 endfunc "}}}
 
-" Find the unclosed start tag from the current cursor position.
-func! HtmlIndent_FindStartTag()
+" Finds the unclosed start tag from the current cursor position. The cursor
+" must be on or before an end tag.
+" @return Line number of the start tag, or 0 on failure.
+func! s:FindStartTag()
   "{{{
-  " The cursor must be on or before a closing tag.
-  " If found, positions the cursor at the match and returns the line number.
-  " Otherwise returns 0.
-  let tagname = matchstr(getline('.')[col('.') - 1:], '</\zs\w\+\ze')
-  let start_lnum = searchpair('<' . tagname . '\>', '', '</' . tagname . '\>', 'bW')
-  if start_lnum > 0
-    return start_lnum
-  endif
-  return 0
+  let pattern = s:custom_end_tag_pattern . '\|' . s:BlockEndTagPattern() . '\|' . s:normal_end_tag_pattern
+  let end_tag = matchstr(tolower(getline('.')[col('.') - 1:]), pattern)
+  let end_pattern = s:EndTagPattern(end_tag, 0)
+  let start_pattern = s:StartTagPattern(s:StartTag(end_tag), 0)
+  let start_lnum = searchpair(start_pattern, '', end_pattern, 'bW')
+
+  return start_lnum > 0 ? start_lnum : 0
+
 endfunc "}}}
 
-" Moves the cursor from a "<" to the matching ">".
-func! HtmlIndent_FindTagEnd()
+" Calculates indent of a line that is inside an HTML attribute.
+" @return The calculated indent, or -1 on failure.
+func! s:IndentOfLineInsideAttribute()
   "{{{
-  " Call this with the cursor on the "<" of a start tag.
-  " This will move the cursor to the ">" of the matching end tag or, when it's
-  " a self-closing tag, to the matching ">".
-  " Limited to look up to b:html_indent_line_limit lines away.
-  let text = getline('.')
-  let tagname = matchstr(text, '\w\+\|!--', col('.'))
-  if tagname == '!--'
-    call search('--\zs>')
-  elseif s:get_tag('/' . tagname) != 0
-    " tag with a closing tag, find matching "</tag>"
-    call searchpair('<' . tagname, '', '</' . tagname . '\zs>', 'W', '', line('.') + b:html_indent_line_limit)
-  else
-    " self-closing tag, find the ">"
-    call search('\S\zs>')
+  let indent = -1
+
+  if b:context.state == 'line_inside_attribute' && b:context.lnum > 1
+    let indent = exists('b:html_indent_tag_string_func') ? b:html_indent_tag_string_func(b:context.lnum) : b:context.indent
+    let b:indent_ready = 1
+    " No need to update indent for lines inside an attribute.
+    call s:UpdateContext(0)
   endif
+
+  return indent
+
 endfunc "}}}
 
-" Indenting inside a start tag. Return the correct indent or -1 if unknown.
-func! s:InsideTag(foundHtmlString)
+" Calculates indent of a line that is an HTML attribute.
+" @return The calculated indent, or -1 on failure.
+func! s:IndentOfLineInsideTag()
   "{{{
-  if a:foundHtmlString
-    " Inside an attribute string.
-    " Align with the previous line or use an external function.
-    let lnum = v:lnum - 1
-    if lnum > 1
-      if exists('b:html_indent_tag_string_func')
-        return b:html_indent_tag_string_func(lnum)
-      endif
-      return indent(lnum)
-    endif
-  endif
-
-  " Should be another attribute: " attr="val".  Align with the previous
-  " attribute start.
+  let indent = -1
   let lnum = v:lnum
-  while lnum > 1
+
+  while b:context.state == 'line_inside_tag' && lnum > 1 && indent <= 0
     let lnum -= 1
-    let text = getline(lnum)
+    let text = tolower(getline(lnum))
+
     " Find a match with one of these, align with "attr":
     "       attr=
     "  <tag attr=
@@ -916,132 +1858,117 @@ func! s:InsideTag(foundHtmlString)
     "  <tag>text</tag>text<tag attr=
     " For long lines search for the first match, finding the last match
     " gets very slow.
-    if len(text) < 300
-      let idx = match(text, '.*\s\zs[_a-zA-Z0-9-]\+="')
-    else
-      let idx = match(text, '\s\zs[_a-zA-Z0-9-]\+="')
-    endif
-    if idx > 0
-      " Found the attribute.  TODO: assumes spaces, no Tabs.
-      return idx
-    endif
+    let indent = len(text) < 300 ? match(text, '.*\s\zs[_a-zA-Z0-9-]\+="') : match(text, '\s\zs[_a-zA-Z0-9-]\+="')
   endwhile
-  return -1
+
+  if b:context.state == 'line_inside_tag' && indent >= 0
+    let b:indent_ready = 1
+    let b:context.indent = indent
+    " No need to udpate indent for lines inside a tag.
+    call s:UpdateContext(0)
+  endif
+
+  return indent
+
 endfunc "}}}
 
-" THE MAIN INDENT FUNCTION. Return the amount of indent for v:lnum.
+" Calculates indent of current line if it's inside a block.
+" @return The calculated indent, or -1 on failure.
+func! s:IndentOfLineInsideBlock()
+  "{{{
+  let indent = -1
+
+  if b:context.state == 'line_inside_block'
+    " within block
+    let alien = s:block_tags[b:context.block].indent_alien
+    let indent = {alien}()
+    if b:indent_ready
+      let b:context.indent = indent
+      " No need to update indent for lines inside block.
+      call s:UpdateContext(0)
+    endif
+  endif
+
+  return indent
+
+endfunc "}}}
+
+" Calculates indent of current line if it's a normal line.
+" @return The calculated indent.
+func! s:IndentOfNormalLine()
+  "{{{
+  let indent = b:context.indent
+  let b:indent_ready = 1
+  call s:UpdateContext(1)
+
+  return indent
+
+endfunc "}}}
+
+" After current line has been indented, performs incremental update on
+" b:context, so that it will be suitable for indenting the next line.
+" @param update_indent A flag indicates if indent of current line needs to be
+" recalculated, 1 by default.
+func! s:UpdateContext(update_indent)
+  "{{{
+  let b:context.lnum = v:lnum
+
+  let b:context.changed_tick = b:changedtick
+
+  if a:update_indent
+
+    call cursor(v:lnum, 1) | normal! $
+
+    call s:CountITags(tolower(getline(v:lnum)), b:context.root_block)
+
+    let b:context.indent = b:context.indent + (b:tag_counter.current_line_offset + b:tag_counter.next_line_offset) * s:indent_unit
+
+  endif
+
+endfunc "}}}
+
+" THE MAIN INDENT FUNCTION.
+" @return The amount of indent for v:lnum.
 func! HtmlIndent()
   "{{{
-  if prevnonblank(v:lnum - 1) < 1
-    " First non-blank line has no indent.
-    return 0
-  endif
+  let b:indent_ready = 0
 
-  let curtext = tolower(getline(v:lnum))
-  let indentunit = shiftwidth()
+  " Remove JavaScript and CSS style comments.
+  setlocal comments-=s1:/*,mb:*,ex:*/
 
-  let b:hi_newstate = {}
-  let b:hi_newstate.lnum = v:lnum
+  " First non-blank line has no indent.
+  if prevnonblank(v:lnum - 1) < 1 | return 0 | endif
 
-  " When syntax HL is enabled, detect we are inside a tag.  Indenting inside
-  " a tag works very differently. Do not do this when the line starts with
-  " "<", it gets the "htmlTag" ID but we are not inside a tag then.
-  if curtext !~ '^\s*<'
-    normal! ^
-    let stack = synstack(v:lnum, col('.'))  " assumes there are no tabs
-    let foundHtmlString = 0
-    for synid in reverse(stack)
-      let name = synIDattr(synid, "name")
-      if index(b:hi_insideStringNames, name) >= 0
-        let foundHtmlString = 1
-      elseif index(b:hi_insideTagNames, name) >= 0
-        " Yes, we are inside a tag.
-        let indent = s:InsideTag(foundHtmlString)
-        if indent >= 0
-          " Do not keep the state. TODO: could keep the block type.
-          let b:hi_indent.lnum = 0
-          return indent
-        endif
-      endif
-    endfor
-  endif
+  " Initialize a new context or reuse the previous context if it can be
+  " cached.
+  let b:context = s:InitContext(v:lnum)
 
-  " does the line start with a closing tag?
-  let swendtag = match(curtext, '^\s*</') >= 0
+  " Check if current line is within an attribute value, and calculate indent
+  " accordingly.
+  let indent = s:IndentOfLineInsideAttribute()
+  if b:indent_ready | return indent | endif
 
-  if prevnonblank(v:lnum - 1) == b:hi_indent.lnum && b:hi_lasttick == b:changedtick - 1
-    " use state (continue from previous line)
-  else
-    " start over (know nothing)
-    let b:hi_indent = s:FreshState(v:lnum)
-  endif
+  " Current line is not within an attribute, now check if it is an attribute
+  " and calculate indent accordingly.
+  let indent = s:IndentOfLineInsideTag()
+  if b:indent_ready | return indent | endif
 
-  if b:hi_indent.block >= 2
-    " within block
-    let endtag = s:endtags[b:hi_indent.block]
-    let blockend = stridx(curtext, endtag)
-    if blockend >= 0
-      " block ends here
-      let b:hi_newstate.block = 0
-      " calc indent for REST OF LINE (may start more blocks):
-      call s:CountTagsAndState(strpart(curtext, blockend + strlen(endtag)))
-      if swendtag && b:hi_indent.block != 5
-        let indent = b:hi_indent.blocktagind + s:curind * indentunit
-        let b:hi_newstate.baseindent = indent + s:nextrel * indentunit
-      else
-        let indent = s:Alien{b:hi_indent.block}()
-        let b:hi_newstate.baseindent = b:hi_indent.blocktagind + s:nextrel * indentunit
-      endif
-    else
-      " block continues
-      " indent this line with alien method
-      let indent = s:Alien{b:hi_indent.block}()
-    endif
-  else
-    " not within a block - within usual html
-    let b:hi_newstate.block = b:hi_indent.block
-    if swendtag
-      " The current line starts with an end tag, align with its start tag.
-      call cursor(v:lnum, 1)
-      let start_lnum = HtmlIndent_FindStartTag()
-      if start_lnum > 0
-        " check for the line starting with something inside a tag:
-        " <sometag               <- align here
-        "    attr=val><open>     not here
-        let text = getline(start_lnum)
-        let angle = matchstr(text, '[<>]')
-        if angle == '>'
-          call cursor(start_lnum, 1)
-          normal! f>%
-          let start_lnum = line('.')
-          let text = getline(start_lnum)
-        endif
+  " Current line is not an attribute, now Check if it is inside a block tag
+  " (block start and block end are not included), and calculate indent
+  " accordingly.
+  let indent = s:IndentOfLineInsideBlock()
+  if b:indent_ready | return indent | endif
 
-        let indent = indent(start_lnum)
-        if col('.') > 2
-          let swendtag = match(text, '^\s*</') >= 0
-          call s:CountITags(text[: col('.') - 2])
-          let indent += s:nextrel * shiftwidth()
-          if !swendtag
-            let indent += s:curind * shiftwidth()
-          endif
-        endif
-      else
-        " not sure what to do
-        let indent = b:hi_indent.baseindent
-      endif
-      let b:hi_newstate.baseindent = indent
-    else
-      call s:CountTagsAndState(curtext)
-      let indent = b:hi_indent.baseindent
-      let b:hi_newstate.baseindent = indent + (s:curind + s:nextrel) * indentunit
-    endif
-  endif
+  " Current line is a normal line: not an attribute, not inside any tags, and
+  " not inside any blocks. But it may starts with an end tag, after an end
+  " tag, after a block, or just a simple line.
+  let indent = s:IndentOfNormalLine()
+  if b:indent_ready | return indent | endif
 
-  let b:hi_lasttick = b:changedtick
-  call extend(b:hi_indent, b:hi_newstate, "force")
-  return indent
 endfunc "}}}
+
+" Initialize local configuration
+call s:RestoreLocalConfiguration()
 
 " Check user settings when loading this script the first time.
 call HtmlIndent_CheckUserSettings()
