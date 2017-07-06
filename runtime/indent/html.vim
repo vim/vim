@@ -2,7 +2,7 @@
 " Header: "{{{
 " Maintainer:	Michael Lee <michael.lee@zerustech.com>
 " Original Author: Andy Wokula <anwoku@yahoo.de>
-" Last Change:	2017 July 05
+" Last Change:	2017 July 06
 " Version:	2.0
 " Description:	Fix bugs
 "               Refactor code base
@@ -15,7 +15,7 @@
 "	indent/css.vim  (2012 May 30) from Nikolai Weibull
 "
 " History:
-" 2017 Jul 05   (v2.0) overhaul (Michael)
+" 2017 Jul 06   (v2.0) overhaul (Michael)
 " 2016 Mar 30   (v1.0) overhaul (Bram)
 " 2014 June	(v1.0) overhaul (Bram)
 " 2012 Oct 21	(v0.9) added support for shiftwidth()
@@ -432,7 +432,7 @@ func! s:CurrentBlockId()
       let block = get(s:indent_tags, current_block_tag)
     else
       " It is a block end tag, or a block start tag in current line, try to
-      " locate an other block start tag before current line.
+      " locate another block start tag before current line.
       let index = s:IndexOfBlockTagStartBracket(getline(current_block_tag_lnum), current_block_tag, current_block_tag_start_col - 1)
       call cursor(current_block_tag_lnum, index + 1)
       let start_lnum = s:IsStartTag(current_block_tag) ? current_block_tag_lnum : s:FindBlockStartTag(current_block_tag)
@@ -1058,7 +1058,7 @@ func! s:UpdateCurrentLineOffset(text)
   " the root block has not been reset by any block end tags.
   if end_tag != '' && (b:tag_counter.root_block == 0 || b:tag_counter.root_block == 6) && 'guard' == '' . b:tag_counter.block_stack[0]
     " It is not really necessary to update current_line_offset_stack here,
-    " because it will not be used any more. However, it is no harmful to
+    " because it will not be used any more. However, it is not harmful to
     " update it to keep consistent logic and semantics.
     let b:tag_counter.current_line_offset_stack[0] += 1
     let b:tag_counter.current_line_offset += 1
@@ -1170,7 +1170,7 @@ func! s:InitContextOfLineInsideTag(context)
       let context.state = 'line_inside_tag'
       " When calcuating indent of an attribute, the b:context.context is not
       " used, so there is no need to update context.indent here.
-      " But it is no harmful to set this value to keep consistent logic and
+      " But it is not harmful to set this value to keep consistent logic and
       " semantics for it.
       let context.indent = b:context.indent
       break
@@ -1255,7 +1255,7 @@ func! s:InitContextOfLineInsideBlock(context, current_block_start_tag_line, curr
 
       " Set the fallback indent of current line. Actually, it is not necessary,
       " because lines in block are to be indented by Alien{*} methods. However,
-      " it is no harmful to set context.indent here to keep consistent logic
+      " it is not harmful to set context.indent here to keep consistent logic
       " and semantics for it.
       let context.indent = context.indent_inside_block
     endif
@@ -1645,7 +1645,7 @@ func! s:InitContext(lnum)
   " as if it is after a block.
   " We should check if current line starts with an end tag, or if its previous
   " line ends with an end tag before this method, because a line after a block
-  " may starts with or be after an end tag as well.
+  " may start with or be after an end tag as well.
   let context = s:InitContextOfLineAfterBlock(context, current_block_tag_line, current_block_tag, current_block_tag_lnum, current_block_tag_start_col)
   if context.ready | return context | endif
 
@@ -1952,7 +1952,7 @@ func! HtmlIndent()
   if b:indent_ready | return indent | endif
 
   " Current line is a normal line: not an attribute, not inside any tags, and
-  " not inside any blocks. But it may starts with an end tag, after an end
+  " not inside any blocks. But it may start with an end tag, after an end
   " tag, after a block, or just a simple line.
   let indent = s:IndentOfNormalLine()
   if b:indent_ready | return indent | endif
