@@ -16,7 +16,7 @@ setlocal matchpairs+=<:>
 setlocal commentstring=<!--%s-->
 " Due to issue https://github.com/vim/vim/issues/1696, the middle part of
 " three-piece comments must NOT be blank.
-setlocal comments=s1:<!--[,m:\ \ \ \ ,ex:]-->,s4:<!--,m://,ex:-->
+setlocal comments=s1:<!--[,m:\ \ \ \ ,ex:]-->,s1:<!--,m://,ex:-->
 
 if exists("g:ft_html_autocomment") && (g:ft_html_autocomment == 1)
     setlocal formatoptions-=t formatoptions+=croql
