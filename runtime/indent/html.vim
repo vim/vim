@@ -37,14 +37,14 @@ if exists("*HtmlIndent") && !exists('g:force_reload_html')
   finish
 endif
 
-" shiftwidth() exists since patch 7.3.694
-if exists('*shiftwidth')
-  let s:ShiftWidth = function('shiftwidth')
-else
-  func! s:ShiftWidth()
-    return &shiftwidth
-  endfunc
-endif
+" Disables text-wrap for normal text.
+setlocal formatoptions-=t
+
+" Enables text-wrap for comments.
+setlocal formatoptions+=croql
+
+" Due to issue https://github.com/vim/vim/issues/1696, the middle part of three-piece comments must NOT be blank.
+setlocal comments=s1:<!--[,m:\ \ \ \ \,ex:]-->,s4:<!--,m://,ex:-->
 
 " Allow for line continuation below.
 let s:cpo_save = &cpo
@@ -62,7 +62,7 @@ let s:SID = s:GetSID()
 delfunc s:GetSID
 
 " The number of spaces for 1 indent.
-let s:indent_unit = s:ShiftWidth()
+let s:indent_unit = shiftwidth()
 
 " Regex pattern for matching an end tag (normal, custom, or block tag), at the
 " start of line.
@@ -246,34 +246,12 @@ let b:cursor_stack = []
 " time, or restores local configuration after executing external scripts.
 func! s:RestoreLocalConfiguration()
   "{{{
-
-  " Disables text-wrap for normal text.
-  setlocal formatoptions-=t
-
-  " Enables text-wrap for comments.
-  setlocal formatoptions+=croql
-
-  " Due to issue https://github.com/vim/vim/issues/1696, the middle part of three-piece comments must NOT be blank.
-  setlocal comments=s1:<!--[,m:\ \ \ \ \,ex:]-->,s4:<!--,m://,ex:-->
-
   setlocal indentexpr=HtmlIndent()
   setlocal indentkeys=o,O,<Return>,<>>,{,},!^F
-
-  " "j1" is included to make cindent() work better with Javascript.
-  setlocal cino=j1
-
-  " "J1" should be included, but it doen't work properly before 7.4.355.
-  if has("patch-7.4.355") | setlocal cino+=J1 | endif
-
-  " Before patch 7.4.355 indenting after "(function() {" does not work well, add
-  " )2 to limit paren search.
-  if !has("patch-7.4.355") | setlocal cino+=)2 | endif
-
   " Needed for % to work when finding start/end of a tag.
   setlocal matchpairs+=<:>
-
-  let b:undo_indent = "setlocal inde< indk< cino<"
-
+  let b:current_syntax = 'html'
+  let b:undo_indent = "setlocal inde< indk<"
 endfunc "}}}
 
 " Checks and processes settings from b:html_indent and g:html_indent...
@@ -355,7 +333,7 @@ func! HtmlIndent_CheckUserSettings()
 
   let indone = {"zero": 0
               \,"auto": "indent(prevnonblank(v:lnum-1))"
-              \,"inc": "b:context.indent_inside_block + s:indent_unit"}
+              \,"inc": "b:context.indent_inside_block + shiftwidth()"}
 
   let script1 = 'inc'
   if exists("b:html_indent_script1")
@@ -1693,12 +1671,23 @@ func! s:Alien3()
   let b:indent_ready = 1
   let lnum = prevnonblank(v:lnum - 1)
 
-  setlocal comments+=s1:/*,mb:*,ex:*/
-
   " indent for the first line after <script>
   if lnum == b:context.block_start_tag_lnum | return eval(b:hi_js1indent) | endif
 
-  let indent = b:context.script_type == "javascript" ? max([cindent(v:lnum), eval(b:hi_js1indent)]) : -1
+  let indent = -1
+
+  if b:context.script_type == "javascript"
+    setlocal comments+=s1:/*,mb:*,ex:*/
+
+    if exists("b:did_indent") | unlet b:did_indent | endif
+    runtime! indent/javascript.vim
+
+    if exists("b:current_syntax") | unlet b:current_syntax | endif
+    runtime! syntax/javascript.vim
+
+    let indent = max([GetJavascriptIndent(), eval(b:hi_js1indent)])
+    call s:RestoreLocalConfiguration()
+  endif
 
   return indent
 
@@ -1717,8 +1706,11 @@ func! s:Alien4()
   if prev_lnum == b:context.block_start_tag_lnum | return eval(b:hi_css1indent) | endif
 
   " Unlet b:did_indent, so that indent/css.vim can be loaded successfully.
-  unlet b:did_indent
+  if exists("b:did_indent") | unlet b:did_indent | endif
   runtime! indent/css.vim
+
+  if exists("b:current_syntax") | unlet b:current_syntax | endif
+  runtime! syntax/css.vim
 
   " Calculate indent with the function in indent/css.vim
   let indent = max([GetCSSIndent(), eval(b:hi_css1indent)])
