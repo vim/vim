@@ -37,15 +37,6 @@ if exists("*HtmlIndent") && !exists('g:force_reload_html')
   finish
 endif
 
-" Disables text-wrap for normal text.
-setlocal formatoptions-=t
-
-" Enables text-wrap for comments.
-setlocal formatoptions+=croql
-
-" Due to issue https://github.com/vim/vim/issues/1696, the middle part of three-piece comments must NOT be blank.
-setlocal comments=s1:<!--[,m:\ \ \ \ \,ex:]-->,s4:<!--,m://,ex:-->
-
 " Allow for line continuation below.
 let s:cpo_save = &cpo
 set cpo-=C
@@ -1671,14 +1662,14 @@ func! s:Alien3()
   let b:indent_ready = 1
   let lnum = prevnonblank(v:lnum - 1)
 
+  if b:context.script_type == "javascript" | setlocal comments+=s1:/*,mb:*,ex:*/ | endif
+
   " indent for the first line after <script>
   if lnum == b:context.block_start_tag_lnum | return eval(b:hi_js1indent) | endif
 
   let indent = -1
 
   if b:context.script_type == "javascript"
-    setlocal comments+=s1:/*,mb:*,ex:*/
-
     if exists("b:did_indent") | unlet b:did_indent | endif
     runtime! indent/javascript.vim
 
