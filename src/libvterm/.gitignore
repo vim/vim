@@ -4,7 +4,6 @@
 tags
 src/*.o
 src/*.lo
-src/encoding/*.inc
 
 libvterm.la
 bin/unterm
