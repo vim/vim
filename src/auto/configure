@@ -655,6 +655,8 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
+TERM_OBJ
+TERM_SRC
 CHANNEL_OBJ
 CHANNEL_SRC
 NETBEANS_OBJ
@@ -814,6 +816,7 @@ enable_cscope
 enable_workshop
 enable_netbeans
 enable_channel
+enable_terminal
 enable_multibyte
 enable_hangulinput
 enable_xim
@@ -1491,6 +1494,7 @@ Optional Features:
   --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
   --disable-channel      Disable process communication support.
+  --enable-terminal     Disable terminal emulation support.
   --enable-multibyte      Include multibyte editing support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
@@ -7461,6 +7465,35 @@ if test "$enable_channel" = "yes"; then
   CHANNEL_SRC="channel.c"
 
   CHANNEL_OBJ="objects/channel.o"
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-terminal argument" >&5
+$as_echo_n "checking --enable-terminal argument... " >&6; }
+# Check whether --enable-terminal was given.
+if test "${enable_terminal+set}" = set; then :
+  enableval=$enable_terminal; enable_terminal="yes"
+fi
+
+if test "$enable_terminal" = "yes"; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use terminal emulator with tiny or small features" >&5
+$as_echo "cannot use terminal emulator with tiny or small features" >&6; }
+    enable_terminal="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  fi
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+if test "$enable_terminal" = "yes"; then
+  $as_echo "#define FEAT_TERMINAL 1" >>confdefs.h
+
+  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/screen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
+
+  TERM_OBJ="objects/term_encoding.o objects/term_keyboard.o objects/term_mouse.o objects/term_parser.o objects/term_pen.o objects/term_screen.o objects/term_state.o objects/term_unicode.o objects/term_vterm.o"
 
 fi
 

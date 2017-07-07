@@ -1,0 +1,90 @@
+INIT
+WANTSTATE
+WANTSCREEN
+
+!Resize wider preserves cells
+RESET
+RESIZE 25,80
+PUSH "AB\r\nCD"
+  ?screen_chars 0,0,1,80 = 0x41,0x42
+  ?screen_chars 1,0,2,80 = 0x43,0x44
+RESIZE 25,100
+  ?screen_chars 0,0,1,100 = 0x41,0x42
+  ?screen_chars 1,0,2,100 = 0x43,0x44
+
+!Resize wider allows print in new area
+RESET
+RESIZE 25,80
+PUSH "AB\e[79GCD"
+  ?screen_chars 0,0,1,2 = 0x41,0x42
+  ?screen_chars 0,78,1,80 = 0x43,0x44
+RESIZE 25,100
+  ?screen_chars 0,0,1,2 = 0x41,0x42
+  ?screen_chars 0,78,1,80 = 0x43,0x44
+PUSH "E"
+  ?screen_chars 0,78,1,81 = 0x43,0x44,0x45
+
+!Resize shorter with blanks just truncates
+RESET
+RESIZE 25,80
+PUSH "Top\e[10HLine 10"
+  ?screen_chars 0,0,1,80 = 0x54,0x6f,0x70
+  ?screen_chars 9,0,10,80 = 0x4c,0x69,0x6e,0x65,0x20,0x31,0x30
+  ?cursor = 9,7
+RESIZE 20,80
+  ?screen_chars 0,0,1,80 = 0x54,0x6f,0x70
+  ?screen_chars 9,0,10,80 = 0x4c,0x69,0x6e,0x65,0x20,0x31,0x30
+  ?cursor = 9,7
+
+!Resize shorter with content must scroll
+RESET
+RESIZE 25,80
+PUSH "Top\e[25HLine 25\e[15H"
+  ?screen_chars 0,0,1,80 = 0x54,0x6f,0x70
+  ?screen_chars 24,0,25,80 = 0x4c,0x69,0x6e,0x65,0x20,0x32,0x35
+  ?cursor = 14,0
+WANTSCREEN b
+RESIZE 20,80
+  sb_pushline 80 = 54 6F 70
+  sb_pushline 80 =
+  sb_pushline 80 =
+  sb_pushline 80 =
+  sb_pushline 80 =
+  ?screen_chars 0,0,1,80 = 
+  ?screen_chars 19,0,20,80 = 0x4c,0x69,0x6e,0x65,0x20,0x32,0x35
+  ?cursor = 9,0
+
+!Resize shorter does not lose line with cursor
+# See also https://github.com/neovim/libvterm/commit/1b745d29d45623aa8d22a7b9288c7b0e331c7088
+RESET
+WANTSCREEN -b
+RESIZE 25,80
+WANTSCREEN b
+PUSH "\e[24HLine 24\r\nLine 25\r\n"
+  sb_pushline 80 =
+  ?screen_chars 23,0,24,10 = 0x4c,0x69,0x6e,0x65,0x20,0x32,0x35
+  ?cursor = 24,0
+RESIZE 24,80
+  sb_pushline 80 =
+  ?screen_chars 22,0,23,10 = 0x4c,0x69,0x6e,0x65,0x20,0x32,0x35
+  ?cursor = 23,0
+
+!Resize taller attempts to pop scrollback
+RESET
+WANTSCREEN -b
+RESIZE 25,80
+PUSH "Line 1\e[25HBottom\e[15H"
+  ?screen_chars 0,0,1,80 = 0x4c,0x69,0x6e,0x65,0x20,0x31
+  ?screen_chars 24,0,25,80 = 0x42,0x6f,0x74,0x74,0x6f,0x6d
+  ?cursor = 14,0
+WANTSCREEN b
+RESIZE 30,80
+  sb_popline 80
+  sb_popline 80
+  sb_popline 80
+  sb_popline 80
+  sb_popline 80
+  ?screen_chars 0,0,1,80 = 0x41,0x42,0x43,0x44,0x45
+  ?screen_chars 5,0,6,80 = 0x4c,0x69,0x6e,0x65,0x20,0x31
+  ?screen_chars 29,0,30,80 = 0x42,0x6f,0x74,0x74,0x6f,0x6d
+  ?cursor = 19,0

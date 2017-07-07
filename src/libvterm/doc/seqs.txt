@@ -1,0 +1,226 @@
+Sequences documented in parens are implicit ones from parser.c, which move
+between states.
+
+1 = VT100
+2 = VT220
+3 = VT320
+
+   C0 controls
+
+123   0x00             = NUL
+123   0x07             = BEL
+123   0x08             = BS
+123   0x09             = HT
+123   0x0A             = LF
+123   0x0B             = VT
+123   0x0C             = FF
+123   0x0D             = CR
+123   0x0E             = LS1
+123   0x0F             = LS0
+     (0x18             = CAN)
+     (0x1A             = SUB)
+     (0x1B             = ESC)
+
+123   0x7f             = DEL (ignored)
+
+   C1 controls
+
+123   0x84             = IND
+123   0x85             = NEL
+123   0x88             = HTS
+123   0x8D             = RI
+ 23   0x8e             = SS2
+ 23   0x8f             = SS3
+     (0x90             = DCS)
+     (0x9B             = CSI)
+     (0x9C             = ST)
+     (0x9D             = OSC)
+
+   Escape sequences
+    - excluding sequences that are C1 aliases
+
+123   ESC ()           = SCS, select character set (G0, G1)
+ 23   ESC *+           = SCS, select character set (G2, G3)
+123   ESC 7            = DECSC - save cursor
+123   ESC 8            = DECRC - restore cursor
+123   ESC # 3          = DECDHL, double-height line (top half)
+123   ESC # 4          = DECDHL, double-height line (bottom half)
+123   ESC # 5          = DECSWL, single-width single-height line
+123   ESC # 6          = DECDWL, double-width single-height line
+123   ESC # 8          = DECALN
+123   ESC <            = Ignored (used by VT100 to exit VT52 mode)
+123   ESC =            = DECKPAM, keypad application mode
+123   ESC >            = DECKPNM, keypad numeric mode
+ 23   ESC Sp F         = S7C1T
+ 23   ESC Sp G         = S8C1T
+     (ESC P            = DCS)
+     (ESC [            = CSI)
+     (ESC \            = ST)
+     (ESC ]            = OSC)
+123   ESC c            = RIS, reset initial state
+  3   ESC n            = LS2
+  3   ESC o            = LS3
+  3   ESC ~            = LS1R
+  3   ESC }            = LS2R
+  3   ESC |            = LS3R
+
+   DCSes
+
+  3   DCS $ q      ST  = DECRQSS
+  3           m        =   Request SGR
+              Sp q     =   Request DECSCUSR
+  3           " q      =   Request DECSCA
+  3           r        =   Request DECSTBM
+              s        =   Request DECSLRM
+
+   CSIs
+ 23   CSI @            = ICH
+123   CSI A            = CUU
+123   CSI B            = CUD
+123   CSI C            = CUF
+123   CSI D            = CUB
+      CSI E            = CNL
+      CSI F            = CPL
+      CSI G            = CHA
+123   CSI H            = CUP
+      CSI I            = CHT
+123   CSI J            = ED
+ 23   CSI ? J          = DECSED, selective erase in display
+123   CSI K            = EL
+ 23   CSI ? K          = DECSEL, selective erase in line
+ 23   CSI L            = IL
+ 23   CSI M            = DL
+ 23   CSI P            = DCH
+      CSI S            = SU
+      CSI T            = SD
+ 23   CSI X            = ECH
+      CSI Z            = CBT
+      CSI `            = HPA
+      CSI a            = HPR
+123   CSI   c          = DA, device attributes
+123       0            =   DA
+ 23   CSI >   c        = DECSDA
+ 23         0          =   SDA
+      CSI d            = VPA
+      CSI e            = VPR
+123   CSI f            = HVP
+123   CSI g            = TBC
+123   CSI h            = SM, Set mode
+123   CSI ? h          = DECSM, DEC set mode
+      CSI j            = HPB
+      CSI k            = VPB
+123   CSI l            = RM, Reset mode
+123   CSI ? l          = DECRM, DEC reset mode
+123   CSI m            = SGR, Set Graphic Rendition
+123   CSI   n          = DSR, Device Status Report
+ 23       5            =   operating status
+ 23       6            =   CPR = cursor position
+ 23   CSI ? n          = DECDSR; behaves as DSR but uses CSI ? instead of CSI to respond
+ 23   CSI ! p          = DECSTR, soft terminal reset
+  3   CSI ? $ p        = DECRQM, request mode
+      CSI   Sp q       = DECSCUSR (odd numbers blink, even numbers solid)
+          1 or 2       =   block
+          3 or 4       =   underline
+          5 or 6       =   I-beam to left
+ 23   CSI " q          = DECSCA, select character attributes
+123   CSI r            = DECSTBM
+      CSI s            = DECSLRM
+      CSI ' }          = DECIC
+      CSI ' ~          = DECDC
+
+   OSCs
+
+      OSC 0;           = Set icon name and title
+      OSC 1;           = Set icon name
+      OSC 2;           = Set title
+
+   Standard modes
+
+ 23   SM 4             = IRM
+123   SM 20            = NLM, linefeed/newline
+
+   DEC modes
+
+123   DECSM 1          = DECCKM, cursor keys
+123   DECSM 5          = DECSCNM, screen
+123   DECSM 6          = DECOM, origin
+123   DECSM 7          = DECAWM, autowrap
+      DECSM 12         = Cursor blink
+ 23   DECSM 25         = DECTCEM, text cursor enable
+      DECSM 69         = DECVSSM, vertical screen split
+      DECSM 1000       = Mouse click/release tracking
+      DECSM 1002       = Mouse click/release/drag tracking
+      DECSM 1003       = Mouse all movements tracking
+      DECSM 1005       = Mouse protocol extended (UTF-8) - not recommended
+      DECSM 1006       = Mouse protocol SGR
+      DECSM 1015       = Mouse protocol rxvt
+      DECSM 1047       = Altscreen
+      DECSM 1048       = Save cursor
+      DECSM 1049       = 1047 + 1048
+      DECSM 2004       = Bracketed paste
+
+   Graphic Renditions
+
+123   SGR 0            = Reset
+123   SGR 1            = Bold on
+      SGR 3            = Italic on
+123   SGR 4            = Underline single
+123   SGR 5            = Blink on
+123   SGR 7            = Reverse on
+      SGR 9            = Strikethrough on
+      SGR 10-19        = Select font
+      SGR 21           = Underline double
+ 23   SGR 22           = Bold off
+      SGR 23           = Italic off
+ 23   SGR 24           = Underline off
+ 23   SGR 25           = Blink off
+ 23   SGR 27           = Reverse off
+      SGR 29           = Strikethrough off
+      SGR 30-37        = Foreground ANSI
+      SGR 38           = Foreground alternative palette
+      SGR 39           = Foreground default
+      SGR 40-47        = Background ANSI
+      SGR 48           = Background alternative palette
+      SGR 49           = Background default
+      SGR 90-97        = Foreground ANSI high-intensity
+      SGR 100-107      = Background ANSI high-intensity
+
+The state storage used by ESC 7 and DECSM 1048/1049 is shared.
+
+   Unimplemented sequences:
+
+The following sequences are not recognised by libvterm.
+
+123   0x05             = ENQ
+  3   0x11             = DC1 (XON)
+  3   0x13             = DC3 (XOFF)
+12    ESC Z            = DECID, identify terminal
+      DCS $ q          = [DECRQSS]
+  3           " p      =   Request DECSCL
+  3           $ }      =   Request DECSASD
+  3           $ ~      =   Request DECSSDT
+ 23   DCS {            = DECDLD, down-line-loadable character set
+ 23   DCS |            = DECUDK, user-defined key
+ 23   CSI i            = DEC printer control
+ 23   CSI " p          = DECSCL, set compatibility level
+1     CSI q            = DECLL, load LEDs
+  3   CSI   $ u        = DECRQTSR, request terminal state report
+  3       1            =   terminal state report
+  3   CSI & u          = DECRQUPSS, request user-preferred supplemental set
+  3   CSI   $ w        = DECRQPSR, request presentation state report
+  3       1            =   cursor information report
+  3       2            =   tab stop report
+1     CSI x            = DECREQTPARM, request terminal parameters
+123   CSI y            = DECTST, invoke confidence test
+  3   CSI $ }          = DECSASD, select active status display
+  3   CSI $ ~          = DECSSDT, select status line type
+ 23   SM 2             = KAM, keyboard action
+123   SM 12            = SRM, send/receive
+123   DECSM 2          = DECANM, ANSI/VT52
+123   DECSM 3          = DECCOLM, 132 column
+123   DECSM 4          = DECSCLM, scrolling
+123   DECSM 8          = DECARM, auto-repeat
+12    DECSM 9          = DECINLM, interlace
+ 23   DECSM 18         = DECPFF, print form feed
+ 23   DECSM 19         = DECPEX, print extent
+ 23   DECSM 42         = DECNRCM, national/multinational character
