@@ -733,8 +733,8 @@ get_py3_exceptions(void)
 #endif /* DYNAMIC_PYTHON3 */
 
 static int py3initialised = 0;
-
 #define PYINITIALISED py3initialised
+static int python_end_called = FALSE;
 
 #define DESTRUCTOR_FINISH(self) Py_TYPE(self)->tp_free((PyObject*)self)
 
@@ -817,6 +817,7 @@ python3_end(void)
     if (recurse != 0)
 	return;
 
+    python_end_called = TRUE;
     ++recurse;
 
 #ifdef DYNAMIC_PYTHON3
@@ -937,6 +938,9 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     PyObject		*cmdstr;
     PyObject		*cmdbytes;
     PyGILState_STATE	pygilstate;
+
+    if (python_end_called)
+	goto theend;
 
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
     GetPort(&oldPort);

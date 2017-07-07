@@ -1183,6 +1183,7 @@ timer_callback(timer_T *timer)
 /*
  * Call timers that are due.
  * Return the time in msec until the next timer is due.
+ * Returns -1 if there are no pending timers.
  */
     long
 check_due_timer(void)
@@ -1196,6 +1197,10 @@ check_due_timer(void)
     long	current_id = last_timer_id;
 # ifdef WIN3264
     LARGE_INTEGER   fr;
+
+    /* Don't run any timers while exiting. */
+    if (exiting)
+	return next_due;
 
     QueryPerformanceFrequency(&fr);
 # endif
