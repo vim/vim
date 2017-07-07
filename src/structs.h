@@ -68,6 +68,7 @@ typedef struct wininfo_S	wininfo_T;
 typedef struct frame_S		frame_T;
 typedef int			scid_T;		/* script ID */
 typedef struct file_buffer	buf_T;  /* forward declaration */
+typedef struct terminal_S	term_T;
 
 /*
  * Reference to a buffer that stores the value of buf_free_count.
@@ -267,6 +268,10 @@ typedef struct
 #ifdef FEAT_SIGNS
     char_u	*wo_scl;
 # define w_p_scl w_onebuf_opt.wo_scl	/* 'signcolumn' */
+#endif
+#ifdef FEAT_TERMINAL
+    char_u	*wo_tms;
+#define w_p_tms w_onebuf_opt.wo_tms	/* 'termsize' */
 #endif
 
 #ifdef FEAT_EVAL
@@ -2350,6 +2355,11 @@ struct file_buffer
 				 * the file. NULL when not using encryption. */
 #endif
     int		b_mapped_ctrl_c; /* modes where CTRL-C is mapped */
+
+#ifdef FEAT_TERMINAL
+    term_T	*b_term;	/* When not NULL this buffer is for a terminal
+				 * window. */
+#endif
 
 }; /* file_buffer */
 

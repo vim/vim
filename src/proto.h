@@ -162,6 +162,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"
+# ifdef FEAT_TERMINAL
+#  include "terminal.pro"
+# endif
 # if defined(HAVE_TGETENT) && (defined(AMIGA) || defined(VMS))
 #  include "termlib.pro"
 # endif

@@ -5870,6 +5870,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_TERMGUICOLORS
 	"termguicolors",
 #endif
+#ifdef FEAT_TERMINAL
+	"terminal",
+#endif
 #ifdef TERMINFO
 	"terminfo",
 #endif

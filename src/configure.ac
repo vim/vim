@@ -2028,6 +2028,28 @@ if test "$enable_channel" = "yes"; then
   AC_SUBST(CHANNEL_OBJ)
 fi
 
+AC_MSG_CHECKING(--enable-terminal argument)
+AC_ARG_ENABLE(terminal,
+	[  --enable-terminal     Disable terminal emulation support.],
+	[enable_terminal="yes"], )
+if test "$enable_terminal" = "yes"; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    AC_MSG_RESULT([cannot use terminal emulator with tiny or small features])
+    enable_terminal="no"
+  else
+    AC_MSG_RESULT(yes)
+  fi
+else
+  AC_MSG_RESULT(no)
+fi
+if test "$enable_terminal" = "yes"; then
+  AC_DEFINE(FEAT_TERMINAL)
+  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/screen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
+  AC_SUBST(TERM_SRC)
+  TERM_OBJ="objects/term_encoding.o objects/term_keyboard.o objects/term_mouse.o objects/term_parser.o objects/term_pen.o objects/term_screen.o objects/term_state.o objects/term_unicode.o objects/term_vterm.o"
+  AC_SUBST(TERM_OBJ)
+fi
+
 AC_MSG_CHECKING(--enable-multibyte argument)
 AC_ARG_ENABLE(multibyte,
 	[  --enable-multibyte      Include multibyte editing support.], ,

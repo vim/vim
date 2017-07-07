@@ -1,0 +1,130 @@
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 04
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+
+
+Terminal window support					*terminal*
+
+
+WARNING: THIS IS ONLY PARTLY IMPLEMENTED, ANYTHING CAN STILL CHANGE
+
+
+1. Basic use			|terminal-use|
+2. Remote testing		|terminal-testing|
+3. Debugging			|terminal-debug|
+
+{Vi does not have any of these commands}
+
+==============================================================================
+1. Basic use						*terminal-use*
+
+This feature is for running a terminal emulator in a Vim window.  A job can be
+started connected to the terminal emulator. For example, to run a shell: >
+     :term bash
+
+Or to run a debugger: >
+     :term gdb vim
+
+The job runs asynchronously from Vim, the window will be updated to show
+output from the job, also  while editing in any other window.
+
+When the keyboard focus is in the terminal window, typed keys will be send to
+the job.  This uses a pty when possible.
+
+Navigate between windows with CTRL-W commands (and mouse).
+E.g. CTRL-W CTRL-W moves focus to the next window.
+
+Option 'termkey'
+Specify key for Vim command in terminal window.  local to window.
+Default is CTRL-W.
+
+Option 'termsize'
+Specify terminal size. Local to window.
+When empty the terminal gets the size from the window.
+When set (e.g., "24x80") the terminal size is fixed.  If the window is smaller
+only the top-left part is displayed.  (TODO: scrolling?)
+
+Syntax ~
+						*:ter* *:terminal*
+:terminal[!] [command]	Open a new terminal window.
+
+			If [command] is provided run it as a job and connect
+			the input and output to the terminal.
+			If [command] is not given the 'shell' option is used.
+
+			A new buffer will be created, using [command] or
+			'shell' as the name.  If a buffer by this name already
+			exists a number is added in parenthesis.
+			E.g. if "gdb" exists the second terminal buffer will
+			use "gdb (1)".
+
+			The window can be closed, in which case the buffer
+			becomes hidden.  The command will not be stopped.  The
+			`:buffer` command can be used to turn the current
+			window into a terminal window, using the existing
+			buffer.  If there are unsaved changes this fails, use
+			! to force, as usual.
+
+Resizing ~
+
+The size of the terminal can be in one of three modes:
+
+1. The 'termsize' option is empty: The terminal size follows the window size.
+   The minimal size is 2 screen lines with 10 cells.
+
+2. The 'termsize' option is "rows*cols", where "rows" is the minimal number of
+   screen rows and "cols" is the minial number of cells.
+
+3. The 'termsize' option is "rowsXcols" (where the x is upper or lower case).
+   The terminal size is fixed to the specified number of screen lines and
+   cells.  If the window is bigger there will be unused empty space.
+
+If the window is smaller than the terminal size, only part of the terminal can
+be seen (the lower-left part).
+
+The |term_getsize()| function can be used to get the current size of the
+terminal.  |term_setsize()| can be used only when in the first or second mode,
+not when 'termsize' is "rowsXcols".
+
+==============================================================================
+2. Remote testing					*terminal-testing*
+
+Most Vim tests execute a script inside Vim.  For some tests this does not
+work, running the test interferes with the code being tested.  To avoid this
+Vim is executed in a terminal window.  The test sends keystrokes to it and
+inspects the resulting screen state.
+
+Functions ~
+
+term_sendkeys()		send keystrokes to a terminal
+term_wait()		wait for screen to be updated
+term_scrape()		inspect terminal screen
+
+
+==============================================================================
+3. Debugging					*terminal-debug*
+
+The Terminal debugging plugin can be used to debug a program with gdb and view
+the source code in a Vim window. For example: >
+
+	:TermDebug vim
+
+This opens three windows:
+- A terminal window in which "gdb vim" is executed.  Here you can directly
+  interact with gdb.
+- A terminal window for the executed program.  When "run" is used in gdb the
+  program I/O will happen in this window, so that it does not interfere with
+  controlling gdb.
+- A normal Vim window used to show the source code.  When gdb jumps to a
+  source file location this window will display the code, if possible.  Values
+  of variables can be inspected, breakpoints set and cleared, etc.
+
+This uses two terminal windows.  To open the gdb window: >
+	:term gdb [arguments]
+To open the terminal to run the tested program |term_open()| is used.
+
+TODO
+
+
+ vim:tw=78:ts=8:ft=help:norl:
