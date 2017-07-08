@@ -1197,11 +1197,13 @@ check_due_timer(void)
     long	current_id = last_timer_id;
 # ifdef WIN3264
     LARGE_INTEGER   fr;
+# endif
 
-    /* Don't run any timers while exiting. */
-    if (exiting)
+    /* Don't run any timers while exiting or dealing with an error. */
+    if (exiting || aborting())
 	return next_due;
 
+# ifdef WIN3264
     QueryPerformanceFrequency(&fr);
 # endif
     profile_start(&now);
@@ -1216,9 +1218,13 @@ check_due_timer(void)
 	{
 	    int save_timer_busy = timer_busy;
 	    int save_vgetc_busy = vgetc_busy;
+	    int did_emsg_save = did_emsg;
+	    int called_emsg_save = called_emsg;
+	    int did_throw_save = did_throw;
 
 	    timer_busy = timer_busy > 0 || vgetc_busy > 0;
 	    vgetc_busy = 0;
+	    called_emsg = FALSE;
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
@@ -1226,10 +1232,19 @@ check_due_timer(void)
 	    did_one = TRUE;
 	    timer_busy = save_timer_busy;
 	    vgetc_busy = save_vgetc_busy;
+	    if (called_emsg)
+	    {
+		++timer->tr_emsg_count;
+		if (!did_throw_save && current_exception != NULL)
+		    discard_current_exception();
+	    }
+	    did_emsg = did_emsg_save;
+	    called_emsg = called_emsg_save;
 
 	    /* Only fire the timer again if it repeats and stop_timer() wasn't
 	     * called while inside the callback (tr_id == -1). */
-	    if (timer->tr_repeat != 0 && timer->tr_id != -1)
+	    if (timer->tr_repeat != 0 && timer->tr_id != -1
+		    && timer->tr_emsg_count < 3)
 	    {
 		profile_setlimit(timer->tr_interval, &timer->tr_due);
 		this_due = GET_TIMEDIFF(timer, now);
