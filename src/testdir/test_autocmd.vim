@@ -418,3 +418,7 @@ function Test_autocmd_bufwipe_in_SessLoadPost2()
     call delete(file)
   endfor
 endfunc
+
+func Test_empty_doau()
+  doau \|
+endfunc
