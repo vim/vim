@@ -7570,6 +7570,9 @@ did_set_string_option(
 		did_filetype = TRUE;
 		apply_autocmds(EVENT_FILETYPE, curbuf->b_p_ft,
 					       curbuf->b_fname, TRUE, curbuf);
+		/* Just in case the old "curbuf" is now invalid. */
+		if (varp != &(curbuf->b_p_ft))
+		    varp = NULL;
 	    }
 	}
 #endif
