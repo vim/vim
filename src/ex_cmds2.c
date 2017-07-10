@@ -1235,7 +1235,7 @@ check_due_timer(void)
 	    if (called_emsg)
 	    {
 		++timer->tr_emsg_count;
-		if (!did_throw_save && current_exception != NULL)
+		if (!did_throw_save && did_throw && current_exception != NULL)
 		    discard_current_exception();
 	    }
 	    did_emsg = did_emsg_save;
