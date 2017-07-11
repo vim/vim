@@ -3284,7 +3284,7 @@ objects/channel.o: channel.c
 Makefile:
 	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
 
-CCCTERM = $(CCC) -Ilibvterm/include -DINLINE=""
+CCCTERM = $(CCC) -Ilibvterm/include -DINLINE="" -DVSNPRINTF=vim_vsnprintf
 objects/term_encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/encoding.c
 

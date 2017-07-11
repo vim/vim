@@ -8043,14 +8043,15 @@ f_printf(typval_T *argvars, typval_T *rettv)
     /* Get the required length, allocate the buffer and do it for real. */
     did_emsg = FALSE;
     fmt = (char *)get_tv_string_buf(&argvars[0], buf);
-    len = vim_vsnprintf(NULL, 0, fmt, ap, argvars + 1);
+    len = vim_vsnprintf_typval(NULL, 0, fmt, ap, argvars + 1);
     if (!did_emsg)
     {
 	s = alloc(len + 1);
 	if (s != NULL)
 	{
 	    rettv->vval.v_string = s;
-	    (void)vim_vsnprintf((char *)s, len + 1, fmt, ap, argvars + 1);
+	    (void)vim_vsnprintf_typval((char *)s, len + 1, fmt,
+							      ap, argvars + 1);
 	}
     }
     did_emsg |= saved_did_emsg;

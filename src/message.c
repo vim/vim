@@ -382,7 +382,7 @@ smsg(char_u *s, ...)
     va_list arglist;
 
     va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist, NULL);
+    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
     va_end(arglist);
     return msg(IObuff);
 }
@@ -396,7 +396,7 @@ smsg_attr(int attr, char_u *s, ...)
     va_list arglist;
 
     va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist, NULL);
+    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
     va_end(arglist);
     return msg_attr(IObuff, attr);
 }
@@ -4232,7 +4232,7 @@ infinity_str(int positive,
 /*
  * When va_list is not supported we only define vim_snprintf().
  *
- * vim_vsnprintf() can be invoked with either "va_list" or a list of
+ * vim_vsnprintf_typval() can be invoked with either "va_list" or a list of
  * "typval_T".  When the latter is not used it must be NULL.
  */
 
@@ -4254,7 +4254,7 @@ vim_snprintf_add(char *str, size_t str_m, char *fmt, ...)
     else
 	space = str_m - len;
     va_start(ap, fmt);
-    str_l = vim_vsnprintf(str + len, space, fmt, ap, NULL);
+    str_l = vim_vsnprintf(str + len, space, fmt, ap);
     va_end(ap);
     return str_l;
 }
@@ -4266,13 +4266,23 @@ vim_snprintf(char *str, size_t str_m, char *fmt, ...)
     int		str_l;
 
     va_start(ap, fmt);
-    str_l = vim_vsnprintf(str, str_m, fmt, ap, NULL);
+    str_l = vim_vsnprintf(str, str_m, fmt, ap);
     va_end(ap);
     return str_l;
 }
 
     int
 vim_vsnprintf(
+    char	*str,
+    size_t	str_m,
+    char	*fmt,
+    va_list	ap)
+{
+    return vim_vsnprintf_typval(str, str_m, fmt, ap, NULL);
+}
+
+    int
+vim_vsnprintf_typval(
     char	*str,
     size_t	str_m,
     char	*fmt,

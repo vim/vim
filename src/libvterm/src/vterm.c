@@ -130,16 +130,42 @@ static int outbuffer_is_full(VTerm *vt)
   return vt->outbuffer_cur >= vt->outbuffer_len - 1;
 }
 
+#if _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _BSD_SOURCE
+# undef VSNPRINTF
+# define VSNPRINTF vsnprintf
+#else
+# ifdef VSNPRINTF
+/* Use a provided vsnprintf() function. */
+int VSNPRINTF(char *str, size_t str_m, const char *fmt, va_list ap);
+# endif
+#endif
+
+
 INTERNAL void vterm_push_output_vsprintf(VTerm *vt, const char *format, va_list args)
 {
   int written;
+#ifndef VSNPRINTF
+  /* When vsnprintf() is not available (C90) fall back to vsprintf(). */
   char buffer[1024]; /* 1Kbyte is enough for everybody, right? */
+#endif
 
   if(outbuffer_is_full(vt)) {
     DEBUG_LOG("vterm_push_output(): buffer overflow; truncating output\n");
     return;
   }
 
+#ifdef VSNPRINTF
+  written = VSNPRINTF(vt->outbuffer + vt->outbuffer_cur,
+      vt->outbuffer_len - vt->outbuffer_cur,
+      format, args);
+
+  if(written == (int)(vt->outbuffer_len - vt->outbuffer_cur)) {
+    /* output was truncated */
+    vt->outbuffer_cur = vt->outbuffer_len - 1;
+  }
+  else
+    vt->outbuffer_cur += written;
+#else
   written = vsprintf(buffer, format, args);
 
   if(written >= (int)(vt->outbuffer_len - vt->outbuffer_cur)) {
@@ -151,6 +177,7 @@ INTERNAL void vterm_push_output_vsprintf(VTerm *vt, const char *format, va_list 
     strncpy(vt->outbuffer + vt->outbuffer_cur, buffer, written + 1);
     vt->outbuffer_cur += written;
   }
+#endif
 }
 
 INTERNAL void vterm_push_output_sprintf(VTerm *vt, const char *format, ...)
