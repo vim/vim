@@ -807,6 +807,7 @@ static const struct
     { VK_NEXT,	TRUE,	'Q',	'\322',	'v',	    '\323', }, /*PgDn*/
     { VK_INSERT,TRUE,	'R',	'\324',	'\325',	    '\326', },
     { VK_DELETE,TRUE,	'S',	'\327',	'\330',	    '\331', },
+    { VK_BACK, TRUE,	'\x7f',	0,	0,	    0, },
 
     { VK_SNAPSHOT,TRUE,	0,	0,	0,	    'r', }, /*PrtScrn*/
 
