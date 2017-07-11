@@ -7042,7 +7042,13 @@ open_cmdwin(void)
 	else
 	    ccline.cmdbuff = vim_strsave(ml_get_curline());
 	if (ccline.cmdbuff == NULL)
+	{
+	    ccline.cmdbuff = vim_strsave((char_u *)"");
+	    ccline.cmdlen = 0;
+	    ccline.cmdbufflen = 1;
+	    ccline.cmdpos = 0;
 	    cmdwin_result = Ctrl_C;
+	}
 	else
 	{
 	    ccline.cmdlen = (int)STRLEN(ccline.cmdbuff);
