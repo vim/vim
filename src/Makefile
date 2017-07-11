@@ -2092,25 +2092,23 @@ test1 \
 	test_autoformat_join \
 	test_changelist \
 	test_close_count \
-	test_comparators \
 	test_erasebackword \
 	test_eval \
 	test_fixeol \
-	test_getcwd \
 	test_insertcount \
 	test_listchars \
 	test_search_mbyte \
 	test_wordcount \
 	test3 test4 test5 test6 test7 test8 test9 \
 	test11 test12 test14 test15 test17 test18 test19 \
-	test20 test21 test22 test23 test24 test25 test26 test27 test28 test29 \
+	test20 test21 test22 test25 test27 test28 test29 \
 	test30 test31 test32 test33 test34 test36 test37 test38 test39 \
 	test40 test41 test42 test43 test44 test45 test48 test49 \
 	test50 test51 test52 test53 test54 test55 test56 test57 test59 \
-	test60 test64 test66 test67 test68 test69 \
-	test70 test72 test73 test74 test75 test77 test78 test79 \
+	test60 test64 test66 test68 test69 \
+	test70 test72 test73 test74 test77 test78 test79 \
 	test80 test83 test84 test85 test86 test87 test88 \
-	test91 test94 test95 test97 test98 test99 \
+	test91 test94 test95 test98 test99 \
 	test100 test101 test103 test104 test107 test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
@@ -2134,6 +2132,7 @@ test_arglist \
 	test_clientserver \
 	test_cmdline \
 	test_command_count \
+	test_comparators \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
@@ -2142,9 +2141,12 @@ test_arglist \
 	test_digraph \
 	test_display \
 	test_edit \
+	test_escaped_glob \
 	test_ex_undo \
 	test_ex_z \
+	test_exec_while_if \
 	test_execute_func \
+	test_exists_autocmd \
 	test_expand \
 	test_expand_dllpath \
 	test_expr \
@@ -2163,6 +2165,7 @@ test_arglist \
 	test_fold \
 	test_functions \
 	test_ga \
+	test_getcwd \
 	test_gf \
 	test_glob2regpat \
 	test_global \
@@ -2191,6 +2194,7 @@ test_arglist \
 	test_lua \
 	test_makeencoding \
 	test_man \
+	test_maparg \
 	test_mapping \
 	test_marks \
 	test_match \
@@ -2209,6 +2213,7 @@ test_arglist \
 	test_partial \
 	test_paste \
 	test_perl \
+	test_plus_arg_edit \
 	test_popup \
 	test_profile \
 	test_put \
@@ -2219,6 +2224,7 @@ test_arglist \
 	test_quickfix \
 	test_quotestar \
 	test_recover \
+	test_regex_char_classes \
 	test_regexp_latin \
 	test_regexp_utf8 \
 	test_reltime \

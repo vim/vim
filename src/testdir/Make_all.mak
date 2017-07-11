@@ -24,9 +24,6 @@ SCRIPTS_ALL = \
 	test19.out \
 	test20.out \
 	test22.out \
-	test23.out \
-	test24.out \
-	test26.out \
 	test28.out \
 	test29.out \
 	test31.out \
@@ -51,12 +48,10 @@ SCRIPTS_ALL = \
 	test60.out \
 	test64.out \
 	test66.out \
-	test67.out \
 	test68.out \
 	test69.out \
 	test70.out \
 	test73.out \
-	test75.out \
 	test77.out \
 	test79.out \
 	test80.out \
@@ -75,11 +70,9 @@ SCRIPTS_ALL = \
 	test_autoformat_join.out \
 	test_changelist.out \
 	test_close_count.out \
-	test_comparators.out \
 	test_erasebackword.out \
 	test_eval.out \
 	test_fixeol.out \
-	test_getcwd.out \
 	test_insertcount.out \
 	test_listchars.out \
 	test_search_mbyte.out \
@@ -99,8 +92,7 @@ SCRIPTS_MORE1 = \
 SCRIPTS_MORE2 = \
 	test12.out \
 	test25.out \
-	test49.out \
-	test97.out
+	test49.out
 
 
 # Tests that run on most systems, but not MingW and Cygwin.
