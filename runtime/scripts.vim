@@ -306,7 +306,9 @@ else
     set ft=virata
 
     " Strace
-  elseif s:line1 =~# '^\(\[pid \d\+\] \)\=[0-9:.]* *execve(' || s:line1 =~# '^__libc_start_main'
+  elseif s:line1 =~# '^\(\[pid \d\+\] \)\=[0-9:.]* *execve('
+    \ || s:line1 =~# '^__libc_start_main'
+    \ || s:line1 =~# 'execve(.*)\s\+= \d\+'
     set ft=strace
 
     " VSE JCL
