@@ -275,10 +275,12 @@ redraw_buf_and_status_later(buf_T *buf, int type)
 {
     win_T	*wp;
 
+#ifdef FEAT_WILDMENU
     if (wild_menu_showing != 0)
 	/* Don't redraw while the command line completion is displayed, it
 	 * would disappear. */
 	return;
+#endif
     FOR_ALL_WINDOWS(wp)
     {
 	if (wp->w_buffer == buf)
@@ -450,7 +452,11 @@ redraw_after_callback(void)
     {
 	/* Redrawing only works when the screen didn't scroll. Don't clear
 	 * wildmenu entries. */
-	if (msg_scrolled == 0 && wild_menu_showing == 0)
+	if (msg_scrolled == 0
+#ifdef FEAT_WILDMENU
+		&& wild_menu_showing == 0
+#endif
+		)
 	    update_screen(0);
 	/* Redraw in the same position, so that the user can continue
 	 * editing the command. */
