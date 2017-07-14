@@ -5067,7 +5067,7 @@ win_line(
 		    ++did_line_attr;
 
 		    /* don't do search HL for the rest of the line */
-		    if (line_attr != 0 && char_attr == search_attr && col > 0)
+		    if (line_attr != 0 && char_attr == search_attr && col > v)
 			char_attr = line_attr;
 # ifdef FEAT_DIFF
 		    if (diff_hlf == HLF_TXD)
