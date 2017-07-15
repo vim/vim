@@ -24,7 +24,6 @@
  * This will result in screen updates.
  *
  * TODO:
- * - +terminal in features[] in version.c
  * - free b_term when closing terminal.
  * - remove term from first_term list when closing terminal.
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
