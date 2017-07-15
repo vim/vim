@@ -1131,6 +1131,7 @@ enum
     , WV_COLE
 #endif
 #ifdef FEAT_TERMINAL
+    , WV_TK
     , WV_TMS
 #endif
 #ifdef FEAT_CURSORBIND
