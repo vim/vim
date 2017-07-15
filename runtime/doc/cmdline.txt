@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.0.  Last change: 2016 Sep 27
+*cmdline.txt*   For Vim version 8.0.  Last change: 2017 Jul 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -454,6 +454,9 @@ a previous version <Esc> was used).  In the pattern standard wildcards '*' and
 matches exactly one character.
 
 The 'wildignorecase' option can be set to ignore case in filenames.
+
+The 'wildmenu' option can be set to show the matches just above the command
+line.
 
 If you like tcsh's autolist completion, you can use this mapping:
 	:cnoremap X <C-L><C-D>

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jul 08
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2369,6 +2369,12 @@ tagfiles()			List	tags files used
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
+term_getsize()			Dict	get the size of a terminal
+term_open()			Job	open a terminal window and run a job
+term_scrape()			List	inspect terminal screen
+term_sendkeys()			Number	send keystrokes to a terminal
+term_setsize()			Number	set the size of a terminal
+term_wait()			Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
@@ -7887,6 +7893,23 @@ tempname()					*tempname()* *temp-file-name*
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
 
+term_getsize()						*term_getsize()*
+		Get the size of a terminal. NOT IMPLEMENTED YET
+
+term_open()						*term_open()*
+		Open a terminal window and run a job. NOT IMPLEMENTED YET
+
+term_scrape()						*term_scrape()*
+		Inspect terminal screen. NOT IMPLEMENTED YET
+
+term_sendkeys()						*term_sendkeys()*
+		Send keystrokes to a terminal. NOT IMPLEMENTED YET
+
+term_setsize()						*term_setsize()*
+		Set the size of a terminal. NOT IMPLEMENTED YET
+
+term_wait()						*term_wait()*
+		Wait for screen to be updated. NOT IMPLEMENTED YET
 
 test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 		This is for testing: If the memory allocation with {id} is

@@ -518,7 +518,7 @@ By default this reads the whole buffer.  This can be changed with the "in_top"
 and "in_bot" options.
 
 A special mode is when "in_top" is set to zero and "in_bot" is not set: Every
-time a line is added to the buffer, the last-but-one line will be send to the
+time a line is added to the buffer, the last-but-one line will be sent to the
 job stdin.  This allows for editing the last line and sending it when pressing
 Enter.
 							*channel-close-in*

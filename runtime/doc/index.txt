@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.0.  Last change: 2017 Apr 22
+*index.txt*     For Vim version 8.0.  Last change: 2017 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1573,6 +1573,7 @@ tag	      command	      action ~
 |:tcldo|	:tcld[o]	execute Tcl command for each line
 |:tclfile|	:tclf[ile]	execute Tcl script file
 |:tearoff|	:te[aroff]	tear-off a menu
+|:terminal|	:ter[minal]	open a terminal window
 |:tfirst|	:tf[irst]	jump to first matching tag
 |:throw|	:th[row]	throw an exception
 |:tjump|	:tj[ump]	like ":tselect", but jump directly when there
