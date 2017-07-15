@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 8.0.  Last change: 2012 Feb 11
+*debug.txt*     For Vim version 8.0.  Last change: 2017 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -53,7 +53,7 @@ Use this command to start Vim:
 	valgrind --log-file=valgrind.log --leak-check=full ./vim
 
 Note: Vim will run much slower.  If your .vimrc is big or you have several
-plugins you need to be patient for startup, or run with the "-u NONE"
+plugins you need to be patient for startup, or run with the "--clean"
 argument.
 
 There are often a few leaks from libraries, such as getpwuid() and

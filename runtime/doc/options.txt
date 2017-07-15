@@ -4966,8 +4966,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on the plugin scripts are loaded when starting up |load-plugins|.
 	This option can be reset in your |vimrc| file to disable the loading
 	of plugins.
-	Note that using the "-u NONE" and "--noplugin" command line arguments
-	reset this option. |-u| |--noplugin|
+	Note that using the "-u NONE", "-u DEFAULTS" and "--noplugin" command
+	line arguments reset this option.  See |-u| and |--noplugin|.
 
 						*'luadll'*
 'luadll'		string	(default depends on the build)
@@ -7330,7 +7330,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	Watch out for errors in expressions.  They may render Vim unusable!
 	If you are stuck, hold down ':' or 'Q' to get a prompt, then quit and
-	edit your .vimrc or whatever with "vim -u NONE" to get it right.
+	edit your .vimrc or whatever with "vim --clean" to get it right.
 
 	Examples:
 	Emulate standard status line with 'ruler' set >
@@ -7755,7 +7755,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'termkey'* *'tk'*
-'termkey' 'tk'	string	(default "CTRL-W")
+'termkey' 'tk'		string	(default "CTRL-W")
 			local to window
 			{not in Vi}
 	The key that precedes a Vim command in a terminal window.  Other keys
@@ -8333,13 +8333,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+viminfo|
 			feature}
 	When non-empty, the viminfo file is read upon startup and written
-	when exiting Vim (see |viminfo-file|).  The string should be a comma
-	separated list of parameters, each consisting of a single character
-	identifying the particular parameter, followed by a number or string
-	which specifies the value of that parameter.  If a particular
-	character is left out, then the default value is used for that
-	parameter.  The following is a list of the identifying characters and
-	the effect of their value.
+	when exiting Vim (see |viminfo-file|). Except when 'viminfofile' is
+	"NONE".
+	The string should be a comma separated list of parameters, each
+	consisting of a single character identifying the particular parameter,
+	followed by a number or string which specifies the value of that
+	parameter.  If a particular character is left out, then the default
+	value is used for that parameter.  The following is a list of the
+	identifying characters and the effect of their value.
 	CHAR	VALUE	~
 							*viminfo-!*
 	!	When included, save and restore global variables that start
@@ -8399,9 +8400,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		has been used since the last search command.
 							*viminfo-n*
 	n	Name of the viminfo file.  The name must immediately follow
-		the 'n'.  Must be at the end of the option!  If the "-i"
-		argument was given when starting Vim, that file name overrides
-		the one given here with 'viminfo'.  Environment variables are
+		the 'n'.  Must be at the end of the option!  If the
+		'viminfofile' option is set, that file name overrides the one
+		given here with 'viminfo'.  Environment variables are
 		expanded when opening the file, not when setting the option.
 							*viminfo-r*
 	r	Removable media.  The argument is a string (up to the next
@@ -8441,6 +8442,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 	NOTE: This option is set to the Vim default value when 'compatible'
 	is reset.
+
+				*'viminfofile'* *'vif'*
+'viminfofile' 'vif'	string	(default: "")
+			global
+			{not in Vi}
+			{not available when compiled without the |+viminfo|
+			feature}
+	When non-empty, overrides the file name used for viminfo.
+	When equal to "NONE" no viminfo file will be read or written.
+	This option can be set with the |-i| command line flag.  The |--clean|
+	command line flag sets it to "NONE".
 
 					    *'virtualedit'* *'ve'*
 'virtualedit' 've'	string	(default "")
