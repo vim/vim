@@ -1438,6 +1438,7 @@ channel_write_in(channel_T *channel)
     if (!bufref_valid(&in_part->ch_bufref) || buf->b_ml.ml_mfp == NULL)
     {
 	/* buffer was wiped out or unloaded */
+	ch_log(channel, "input buffer has been wiped out");
 	in_part->ch_bufref.br_buf = NULL;
 	return;
     }
@@ -2338,7 +2339,7 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
     int		save_write_to = buffer->b_write_to_channel;
     chanpart_T  *ch_part = &channel->ch_part[part];
     int		save_p_ma = buffer->b_p_ma;
-    int		empty = (buffer->b_ml.ml_flags & ML_EMPTY);
+    int		empty = (buffer->b_ml.ml_flags & ML_EMPTY) ? 1 : 0;
 
     if (!buffer->b_p_ma && !ch_part->ch_nomodifiable)
     {
@@ -2359,13 +2360,14 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
     }
 
     /* Append to the buffer */
-    ch_logn(channel, "appending line %d to buffer", (int)lnum + 1);
+    ch_logn(channel, "appending line %d to buffer", (int)lnum + 1 - empty);
 
     buffer->b_p_ma = TRUE;
     curbuf = buffer;
+    curwin->w_buffer = curbuf;
     u_sync(TRUE);
     /* ignore undo failure, undo is not very useful here */
-    ignored = u_save(lnum, lnum + 1 + (empty ? 1 : 0));
+    ignored = u_save(lnum - empty, lnum + 1);
 
     if (empty)
     {
@@ -2377,6 +2379,7 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 	ml_append(lnum, msg, 0, FALSE);
     appended_lines_mark(lnum, 1L);
     curbuf = save_curbuf;
+    curwin->w_buffer = curbuf;
     if (ch_part->ch_nomodifiable)
 	buffer->b_p_ma = FALSE;
     else
@@ -2483,9 +2486,11 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
     }
 
     buffer = ch_part->ch_bufref.br_buf;
-    if (buffer != NULL && !bufref_valid(&ch_part->ch_bufref))
+    if (buffer != NULL && (!bufref_valid(&ch_part->ch_bufref)
+					       || buffer->b_ml.ml_mfp == NULL))
     {
-	/* buffer was wiped out */
+	/* buffer was wiped out or unloaded */
+	ch_logs(channel, "%s buffer has been wiped out", part_names[part]);
 	ch_part->ch_bufref.br_buf = NULL;
 	buffer = NULL;
     }

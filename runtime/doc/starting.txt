@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2017 Jan 15
+*starting.txt*  For Vim version 8.0.  Last change: 2017 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -140,11 +140,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --noplugin	Skip loading plugins.  Resets the 'loadplugins' option.
 		{not in Vi}
 		Note that the |-u| argument may also disable loading plugins:
-			argument	load vimrc files	load plugins ~
-			(nothing)		yes		    yes
-			-u NONE			no		    no
-			-u NORC			no		    yes
-			--noplugin		yes		    no
+			argument   load: vimrc files  plugins  defaults.vim ~
+			(nothing)	     yes	yes	  yes
+			-u NONE		     no		no	  no
+			-u DEFAULTS	     no		no	  yes
+			-u NORC		     no		yes	  no
+			--noplugin	     yes	no	  yes
 
 --startuptime {fname}					*--startuptime*
 		During startup write timing messages to the file {fname}.
@@ -465,21 +466,30 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --nofork	GUI: Do not fork.  Same as |-f|.
 							*-u* *E282*
 -u {vimrc}	The file {vimrc} is read for initializations.  Most other
-		initializations are skipped; see |initialization|.  This can
-		be used to start Vim in a special mode, with special
+		initializations are skipped; see |initialization|.
+
+		This can be used to start Vim in a special mode, with special
 		mappings and settings.  A shell alias can be used to make
 		this easy to use.  For example: >
 			alias vimc vim -u ~/.c_vimrc !*
 <		Also consider using autocommands; see |autocommand|.
+
 		When {vimrc} is equal to "NONE" (all uppercase), all
 		initializations from files and environment variables are
 		skipped, including reading the |gvimrc| file when the GUI
 		starts.  Loading plugins is also skipped.
+
 		When {vimrc} is equal to "NORC" (all uppercase), this has the
 		same effect as "NONE", but loading plugins is not skipped.
-		Using the "-u" argument has the side effect that the
-		'compatible' option will be on by default.  This can have
-		unexpected effects.  See |'compatible'|.
+
+		When {vimrc} is equal to "DEFAULTS" (all uppercase), this has
+		the same effect as "NONE", but the |defaults.vim| script is
+		loaded, which will also set 'nocompatible'.
+
+		Using the "-u" argument with another argument than DEFAULTS
+		has the side effect that the 'compatible' option will be on by
+		default.  This can have unexpected effects.  See
+		|'compatible'|.
 		{not in Vi}
 
 							*-U* *E230*
@@ -497,6 +507,13 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		":rv" or ":wv" are used.  See also |viminfo-file|.
 		{not in Vi}
 
+							*--clean*
+--clean		Equal to "-u DEFAULTS -i NONE":
+		- initializations from files and environment variables is
+		  skipped
+		- the |defaults.vim| script is loaded, which implies
+		  'nocompatible': use Vim defaults
+		- no viminfo file is read or written
 							*-x*
 -x		Use encryption to read/write files.  Will prompt for a key,
 		which is then stored in the 'key' option.  All writes will
@@ -868,6 +885,7 @@ accordingly.  Vim proceeds in this order:
 	Loading plugins won't be done when:
 	- The 'loadplugins' option was reset in a vimrc file.
 	- The |--noplugin| command line argument is used.
+	- The |--clean| command line argument is used.
 	- The "-u NONE" command line argument is used |-u|.
 	- When Vim was compiled without the |+eval| feature.
 	Note that using "-c 'set noloadplugins'" doesn't work, because the
@@ -990,6 +1008,7 @@ starts its initializations.  But as soon as:
 - a vimrc file in the current directory, or
 - the "VIMINIT" environment variable is set, or
 - the "-N" command line argument is given, or
+- the "--clean" command line argument is given, or
   even when no vimrc file exists.
 - the |defaults.vim| script is loaded, or
 - gvimrc file was found,
