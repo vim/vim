@@ -270,6 +270,8 @@ typedef struct
 # define w_p_scl w_onebuf_opt.wo_scl	/* 'signcolumn' */
 #endif
 #ifdef FEAT_TERMINAL
+    char_u	*wo_tk;
+#define w_p_tk w_onebuf_opt.wo_tk	/* 'termkey' */
     char_u	*wo_tms;
 #define w_p_tms w_onebuf_opt.wo_tms	/* 'termsize' */
 #endif

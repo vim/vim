@@ -258,6 +258,7 @@
 # define PV_COLE	OPT_WIN(WV_COLE)
 #endif
 #ifdef FEAT_TERMINAL
+# define PV_TK		OPT_WIN(WV_TK)
 # define PV_TMS		OPT_WIN(WV_TMS)
 #endif
 #ifdef FEAT_SIGNS
@@ -2779,6 +2780,15 @@ static struct vimoption options[] =
 #else
 			    (char_u*)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)FALSE}
+#endif
+			    SCRIPTID_INIT},
+    {"termkey", "tk",	    P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
+#ifdef FEAT_TERMINAL
+			    (char_u *)VAR_WIN, PV_TK,
+			    {(char_u *)"\x17", (char_u *)NULL}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
     {"termsize", "tms",	    P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
@@ -10681,6 +10691,7 @@ get_varp(struct vimoption *p)
 	case PV_COLE:   return (char_u *)&(curwin->w_p_cole);
 #endif
 #ifdef FEAT_TERMINAL
+	case PV_TK:     return (char_u *)&(curwin->w_p_tk);
 	case PV_TMS:    return (char_u *)&(curwin->w_p_tms);
 #endif
 
