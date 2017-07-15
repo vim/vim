@@ -10901,6 +10901,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_cole = from->wo_cole;
 #endif
 #ifdef FEAT_TERMINAL
+    to->wo_tk = vim_strsave(from->wo_tk);
     to->wo_tms = vim_strsave(from->wo_tms);
 #endif
 #ifdef FEAT_FOLDING
@@ -10970,6 +10971,7 @@ check_winopt(winopt_T *wop UNUSED)
     check_string_option(&wop->wo_cocu);
 #endif
 #ifdef FEAT_TERMINAL
+    check_string_option(&wop->wo_tk);
     check_string_option(&wop->wo_tms);
 #endif
 #ifdef FEAT_LINEBREAK
@@ -11012,6 +11014,7 @@ clear_winopt(winopt_T *wop UNUSED)
     clear_string_option(&wop->wo_cocu);
 #endif
 #ifdef FEAT_TERMINAL
+    clear_string_option(&wop->wo_tk);
     clear_string_option(&wop->wo_tms);
 #endif
 }
