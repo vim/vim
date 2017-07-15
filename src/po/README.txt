@@ -102,6 +102,10 @@ language.
 
 (4) Check:
 
+    While editing the .po file:
+        :source check.vim
+
+    From the command line:
 	vim -S check.vim xx.po
 	make xx.mo
 

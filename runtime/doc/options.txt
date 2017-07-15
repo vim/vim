@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Jun 18
+*options.txt*	For Vim version 8.0.  Last change: 2017 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7754,6 +7754,26 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 
+						*'termkey'* *'tk'*
+'termkey' 'tk'	string	(default "CTRL-W")
+			local to window
+			{not in Vi}
+	The key that precedes a Vim command in a terminal window.  Other keys
+	are sent to the job running in the window.
+	The string must be one key stroke.
+	NOT IMPLEMENTED YET
+
+
+						*'thesaurus'* *'tsr'*
+'termsize' 'tms'	string	(default "")
+			local to window
+			{not in Vi}
+	Size of the |terminal| window.  Format: {rows}x{columns}.
+	- When empty the terminal gets the size from the window.
+	- When set (e.g., "24x80") the terminal size is fixed.  If the window
+	  is smaller only the top-left part is displayed.
+	NOT IMPLEMENTED YET
+
 						*'terse'* *'noterse'*
 'terse'			boolean	(default off)
 			global
@@ -8455,14 +8475,27 @@ A jump table for the options with a short description can be found at |Q_op|.
 'visualbell' 'vb'	boolean	(default off)
 			global
 			{not in Vi}
-	Use visual bell instead of beeping.  The terminal code to display the
+	Use a visual bell instead of beeping.  The terminal code to display the
 	visual bell is given with 't_vb'.  When no beep or flash is wanted,
-	use ":set vb t_vb=".
-	Note: When the GUI starts, 't_vb' is reset to its default value.  You
-	might want to set it again in your |gvimrc|.
+	use: >
+		:set vb t_vb=
+<	If you want a short flash, you can use this on many terminals: >
+		:set vb t_vb=[?5h$<100>[?5l
+<	Here $<100> specifies the time, you can use a smaller or bigger value
+	to get a shorter or longer flash.
+
+	Note: Vim will limit the bell to once per half a second.  This avoids
+	having to wait for the flashing to finish when there are lots of
+	bells, e.g. on key repeat.  This also happens without 'visualbell'
+	set.
+
 	In the GUI, 't_vb' defaults to "<Esc>|f", which inverts the display
 	for 20 msec.  If you want to use a different time, use "<Esc>|40f",
 	where 40 is the time in msec.
+
+	Note: When the GUI starts, 't_vb' is reset to its default value.  You
+	might want to set it again in your |gvimrc|.
+
 	Does not work on the Amiga, you always get a screen flash.
 	Also see 'errorbells'.
 

@@ -3098,6 +3098,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tclfile	if_tcl.txt	/*:tclfile*
 :te	gui_w32.txt	/*:te*
 :tearoff	gui_w32.txt	/*:tearoff*
+:ter	terminal.txt	/*:ter*
+:terminal	terminal.txt	/*:terminal*
 :tf	tagsrch.txt	/*:tf*
 :tfirst	tagsrch.txt	/*:tfirst*
 :th	eval.txt	/*:th*
@@ -4802,6 +4804,7 @@ W18	syntax.txt	/*W18*
 W19	autocmd.txt	/*W19*
 W20	if_pyth.txt	/*W20*
 W21	if_pyth.txt	/*W21*
+W22	eval.txt	/*W22*
 WORD	motion.txt	/*WORD*
 WWW	intro.txt	/*WWW*
 Win32	os_win32.txt	/*Win32*
@@ -6571,6 +6574,7 @@ gs	various.txt	/*gs*
 gsp.vim	syntax.txt	/*gsp.vim*
 gstar	pattern.txt	/*gstar*
 gt	tabpage.txt	/*gt*
+gtk-css	gui_x11.txt	/*gtk-css*
 gtk-tooltip-colors	gui_x11.txt	/*gtk-tooltip-colors*
 gu	change.txt	/*gu*
 gugu	change.txt	/*gugu*
@@ -6740,6 +6744,7 @@ hl-PmenuSbar	syntax.txt	/*hl-PmenuSbar*
 hl-PmenuSel	syntax.txt	/*hl-PmenuSel*
 hl-PmenuThumb	syntax.txt	/*hl-PmenuThumb*
 hl-Question	syntax.txt	/*hl-Question*
+hl-QuickFixLine	syntax.txt	/*hl-QuickFixLine*
 hl-Scrollbar	syntax.txt	/*hl-Scrollbar*
 hl-Search	syntax.txt	/*hl-Search*
 hl-SignColumn	syntax.txt	/*hl-SignColumn*
@@ -8778,6 +8783,12 @@ tempname()	eval.txt	/*tempname()*
 term-dependent-settings	term.txt	/*term-dependent-settings*
 term-list	syntax.txt	/*term-list*
 term.txt	term.txt	/*term.txt*
+term_getsize()	eval.txt	/*term_getsize()*
+term_open()	eval.txt	/*term_open()*
+term_scrape()	eval.txt	/*term_scrape()*
+term_sendkeys()	eval.txt	/*term_sendkeys()*
+term_setsize()	eval.txt	/*term_setsize()*
+term_wait()	eval.txt	/*term_wait()*
 termcap	term.txt	/*termcap*
 termcap-changed	version4.txt	/*termcap-changed*
 termcap-colors	term.txt	/*termcap-colors*
@@ -8785,11 +8796,16 @@ termcap-cursor-color	term.txt	/*termcap-cursor-color*
 termcap-cursor-shape	term.txt	/*termcap-cursor-shape*
 termcap-options	term.txt	/*termcap-options*
 termcap-title	term.txt	/*termcap-title*
+terminal	terminal.txt	/*terminal*
 terminal-colors	os_unix.txt	/*terminal-colors*
+terminal-debug	terminal.txt	/*terminal-debug*
 terminal-info	term.txt	/*terminal-info*
 terminal-key-codes	term.txt	/*terminal-key-codes*
 terminal-options	term.txt	/*terminal-options*
 terminal-output-codes	term.txt	/*terminal-output-codes*
+terminal-testing	terminal.txt	/*terminal-testing*
+terminal-use	terminal.txt	/*terminal-use*
+terminal.txt	terminal.txt	/*terminal.txt*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*

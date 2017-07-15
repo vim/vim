@@ -904,7 +904,7 @@ NOTA:  Se quiser ignorar a diferença entre maiúsculas e minúsculas em apenas
          :e $VIM/_vimrc           para MS-Windows
 
   2. Agora, leia o conteúdo do arquivo "vimrc" de exemplo:
-         :r $VIM/vimrc_example.vim
+	 :r $VIMRUNTIME/vimrc_example.vim
 
   3. Salve o arquivo com:
          :w

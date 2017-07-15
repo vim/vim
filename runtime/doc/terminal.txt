@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 04
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,15 +35,11 @@ the job.  This uses a pty when possible.
 Navigate between windows with CTRL-W commands (and mouse).
 E.g. CTRL-W CTRL-W moves focus to the next window.
 
-Option 'termkey'
-Specify key for Vim command in terminal window.  local to window.
+See option 'termkey' for specifying the key that precedes a Vim command.
 Default is CTRL-W.
 
-Option 'termsize'
-Specify terminal size. Local to window.
-When empty the terminal gets the size from the window.
-When set (e.g., "24x80") the terminal size is fixed.  If the window is smaller
-only the top-left part is displayed.  (TODO: scrolling?)
+See option 'termsize' for controlling the size of the terminal window.
+(TODO: scrolling when the terminal is larger than the window)
 
 Syntax ~
 						*:ter* *:terminal*

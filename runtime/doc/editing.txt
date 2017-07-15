@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.0.  Last change: 2017 Apr 10
+*editing.txt*   For Vim version 8.0.  Last change: 2017 Jun 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1328,9 +1328,11 @@ present in 'cpoptions' and "!" is not used in the command.
 :chd[ir][!] [path]	Same as |:cd|.
 
 							*:lc* *:lcd*
-:lc[d][!] {path}	Like |:cd|, but only set the current directory for the
-			current window.  The current directory for other
-			windows is not changed. {not in Vi}
+:lc[d][!] {path}	Like |:cd|, but only set the current directory when
+			the cursor is in the current window.  The current
+			directory for other windows is not changed, switching
+			to another window will stop using {path}.
+			{not in Vi}
 
 							*:lch* *:lchdir*
 :lch[dir][!]		Same as |:lcd|. {not in Vi}
