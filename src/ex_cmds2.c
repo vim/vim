@@ -2801,34 +2801,20 @@ ex_next(exarg_T *eap)
     void
 ex_argedit(exarg_T *eap)
 {
-    int		fnum;
-    int		i;
-    char_u	*s;
+    int i = eap->addr_count ? (int)eap->line2 : curwin->w_arg_idx + 1;
 
-    /* Add the argument to the buffer list and get the buffer number. */
-    fnum = buflist_add(eap->arg, BLN_LISTED);
+    if (do_arglist(eap->arg, AL_ADD, i) == FAIL)
+	return;
+#ifdef FEAT_TITLE
+    maketitle();
+#endif
 
-    /* Check if this argument is already in the argument list. */
-    for (i = 0; i < ARGCOUNT; ++i)
-	if (ARGLIST[i].ae_fnum == fnum)
-	    break;
-    if (i == ARGCOUNT)
-    {
-	/* Can't find it, add it to the argument list. */
-	s = vim_strsave(eap->arg);
-	if (s == NULL)
-	    return;
-	i = alist_add_list(1, &s,
-	       eap->addr_count > 0 ? (int)eap->line2 : curwin->w_arg_idx + 1);
-	if (i < 0)
-	    return;
-	curwin->w_arg_idx = i;
-    }
-
-    alist_check_arg_idx();
-
+    if (curwin->w_arg_idx == 0 && (curbuf->b_ml.ml_flags & ML_EMPTY)
+	    && curbuf->b_ffname == NULL)
+	i = 0;
     /* Edit the argument. */
-    do_argfile(eap, i);
+    if (i < ARGCOUNT)
+	do_argfile(eap, i);
 }
 
 /*

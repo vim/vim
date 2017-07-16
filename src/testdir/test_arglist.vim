@@ -188,6 +188,11 @@ func Test_zero_argadd()
   2argu
   arga third
   call assert_equal(['edited', 'a', 'third', 'b', 'c', 'd'], argv())
+
+  2argu
+  argedit file\ with\ spaces another file
+  call assert_equal(['edited', 'a', 'file with spaces', 'another', 'file', 'third', 'b', 'c', 'd'], argv())
+  call assert_equal('file with spaces', expand('%'))
 endfunc
 
 func Reset_arglist()
@@ -239,20 +244,19 @@ func Test_argedit()
   call assert_equal(['a', 'b'], argv())
   call assert_equal('b', expand('%:t'))
   argedit a
-  call assert_equal(['a', 'b'], argv())
+  call assert_equal(['a', 'b', 'a'], argv())
   call assert_equal('a', expand('%:t'))
-  if has('unix')
-    " on MS-Windows this would edit file "a b"
-    call assert_fails('argedit a b', 'E172:')
-  endif
+  argedit C D
+  call assert_equal('C', expand('%:t'))
+  call assert_equal(['a', 'b', 'a', 'C', 'D'], argv())
   argedit c
-  call assert_equal(['a', 'c', 'b'], argv())
+  call assert_equal(['a', 'b', 'a', 'C', 'c', 'D'], argv())
   0argedit x
-  call assert_equal(['x', 'a', 'c', 'b'], argv())
+  call assert_equal(['x', 'a', 'b', 'a', 'C', 'c', 'D'], argv())
   enew! | set modified
   call assert_fails('argedit y', 'E37:')
   argedit! y
-  call assert_equal(['x', 'y', 'a', 'c', 'b'], argv())
+  call assert_equal(['x', 'y', 'y', 'a', 'b', 'a', 'C', 'c', 'D'], argv())
   %argd
 endfunc
 
