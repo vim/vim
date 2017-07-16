@@ -183,6 +183,12 @@ static int screen_char_attr = 0;
 # define SYN_TIME_LIMIT 1
 #endif
 
+#ifdef FEAT_RIGHTLEFT
+# define HAS_RIGHTLEFT(x) x
+#else
+# define HAS_RIGHTLEFT(x) FALSE
+#endif
+
 /*
  * Redraw the current window later, with update_screen(type).
  * Set must_redraw only if not already set to a higher value.
@@ -4001,7 +4007,7 @@ win_line(
 		)
 	{
 	    screen_line(screen_row, W_WINCOL(wp), col, -(int)W_WIDTH(wp),
-								  wp->w_p_rl);
+						    HAS_RIGHTLEFT(wp->w_p_rl));
 	    /* Pretend we have finished updating the window.  Except when
 	     * 'cursorcolumn' is set. */
 #ifdef FEAT_SYN_HL
@@ -5448,7 +5454,7 @@ win_line(
 #endif
 
 	    screen_line(screen_row, W_WINCOL(wp), col,
-						(int)W_WIDTH(wp), wp->w_p_rl);
+				  (int)W_WIDTH(wp), HAS_RIGHTLEFT(wp->w_p_rl));
 	    row++;
 
 	    /*
@@ -5754,11 +5760,11 @@ win_line(
 	{
 #ifdef FEAT_CONCEAL
 	    screen_line(screen_row, W_WINCOL(wp), col - boguscols,
-						(int)W_WIDTH(wp), wp->w_p_rl);
+				  (int)W_WIDTH(wp), HAS_RIGHTLEFT(wp->w_p_rl));
 	    boguscols = 0;
 #else
 	    screen_line(screen_row, W_WINCOL(wp), col,
-						(int)W_WIDTH(wp), wp->w_p_rl);
+				  (int)W_WIDTH(wp), HAS_RIGHTLEFT(wp->w_p_rl));
 #endif
 	    ++row;
 	    ++screen_row;

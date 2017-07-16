@@ -2657,9 +2657,11 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 		msg = json_encode(listtv, ch_mode);
 	    if (msg != NULL)
 	    {
+#ifdef FEAT_TERMINAL
 		if (buffer->b_term != NULL)
 		    write_to_term(buffer, msg, channel);
 		else
+#endif
 		    append_to_buffer(buffer, msg, channel, part);
 	    }
 	}
