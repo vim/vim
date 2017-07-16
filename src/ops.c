@@ -3173,7 +3173,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 		*namebuf = NUL;
 	    else
 		vim_snprintf(namebuf, sizeof(namebuf),
-						   " into \"%c", oap->regname);
+						_(" into \"%c"), oap->regname);
 
 	    /* redisplay now, so message is not deleted */
 	    update_topline_redraw();
