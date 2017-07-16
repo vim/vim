@@ -184,6 +184,7 @@ NEW_TESTS = test_arabic.res \
 	    test_quickfix.res \
 	    test_quotestar.res \
 	    test_retab.res \
+	    test_registers.res \
 	    test_ruby.res \
 	    test_search.res \
 	    test_signs.res \
