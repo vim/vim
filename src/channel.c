@@ -171,7 +171,7 @@ ch_log(channel_T *ch, char *msg)
     }
 }
 
-    static void
+    void
 ch_logn(channel_T *ch, char *msg, int nr)
 {
     if (log_fd != NULL)
@@ -2656,7 +2656,12 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 		/* JSON or JS mode: re-encode the message. */
 		msg = json_encode(listtv, ch_mode);
 	    if (msg != NULL)
-		append_to_buffer(buffer, msg, channel, part);
+	    {
+		if (buffer->b_term != NULL)
+		    write_to_term(buffer, msg, channel);
+		else
+		    append_to_buffer(buffer, msg, channel, part);
+	    }
 	}
 
 	if (callback != NULL)
@@ -4889,7 +4894,7 @@ job_check_ended(void)
  * "job_start()" function
  */
     job_T *
-job_start(typval_T *argvars)
+job_start(typval_T *argvars, jobopt_T *opt_arg)
 {
     job_T	*job;
     char_u	*cmd = NULL;
@@ -4912,13 +4917,18 @@ job_start(typval_T *argvars)
     ga_init2(&ga, (int)sizeof(char*), 20);
 #endif
 
-    /* Default mode is NL. */
-    clear_job_options(&opt);
-    opt.jo_mode = MODE_NL;
-    if (get_job_options(&argvars[1], &opt,
+    if (opt_arg != NULL)
+	opt = *opt_arg;
+    else
+    {
+	/* Default mode is NL. */
+	clear_job_options(&opt);
+	opt.jo_mode = MODE_NL;
+	if (get_job_options(&argvars[1], &opt,
 	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL + JO_STOPONEXIT
 			   + JO_EXIT_CB + JO_OUT_IO + JO_BLOCK_WRITE) == FAIL)
 	goto theend;
+    }
 
     /* Check that when io is "file" that there is a file name. */
     for (part = PART_OUT; part < PART_COUNT; ++part)

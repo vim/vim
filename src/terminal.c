@@ -28,6 +28,8 @@
  * - remove term from first_term list when closing terminal.
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
  * - set buffer name to command, add (1) to avoid duplicates.
+ * - if buffer is wiped, cleanup terminal, may stop job.
+ * - if the job ends, write "-- JOB ENDED --" in the terminal
  * - command line completion (command name)
  * - support fixed size when 'termsize' is "rowsXcols".
  * - support minimal size when 'termsize' is "rows*cols".
@@ -40,6 +42,7 @@
  * - implement term_scrape()		inspect terminal screen
  * - implement term_open()		open terminal window
  * - implement term_getjob()
+ * - implement 'termkey'
  */
 
 #include "vim.h"
@@ -54,6 +57,7 @@ struct terminal_S {
 
     VTerm	*tl_vterm;
     job_T	*tl_job;
+    buf_T	*tl_buffer;
 
     /* Range of screen rows to update.  Zero based. */
     int		tl_dirty_row_start; /* -1 if nothing dirty */
@@ -99,6 +103,7 @@ ex_terminal(exarg_T *eap)
     term_T	*term;
     VTerm	*vterm;
     VTermScreen *screen;
+    jobopt_T	opt;
 
     if (check_restricted() || check_secure())
 	return;
@@ -120,6 +125,7 @@ ex_terminal(exarg_T *eap)
 	vim_free(term);
 	return;
     }
+    term->tl_buffer = curbuf;
 
     curbuf->b_term = term;
     term->tl_next = first_term;
@@ -145,14 +151,94 @@ ex_terminal(exarg_T *eap)
     term->tl_vterm = vterm;
     screen = vterm_obtain_screen(vterm);
     vterm_screen_set_callbacks(screen, &screen_callbacks, term);
+    /* TODO: depends on 'encoding'. */
+    vterm_set_utf8(vterm, 1);
+    /* Required to initialize most things. */
+    vterm_screen_reset(screen, 1 /* hard */);
+
+    /* By default NL means CR-NL. */
+    vterm_input_write(vterm, "\x1b[20h", 5);
 
     argvars[0].v_type = VAR_STRING;
     argvars[0].vval.v_string = eap->arg;
-    argvars[1].v_type = VAR_UNKNOWN;
-    term->tl_job = job_start(argvars);
 
-    /* TODO: setup channels to/from job */
+    clear_job_options(&opt);
+    opt.jo_mode = MODE_RAW;
+    opt.jo_out_mode = MODE_RAW;
+    opt.jo_err_mode = MODE_RAW;
+    opt.jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
+    opt.jo_io[PART_OUT] = JIO_BUFFER;
+    opt.jo_io[PART_ERR] = JIO_BUFFER;
+    opt.jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
+    opt.jo_io_buf[PART_OUT] = curbuf->b_fnum;
+    opt.jo_io_buf[PART_ERR] = curbuf->b_fnum;
+    opt.jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
+
+    term->tl_job = job_start(argvars, &opt);
+
+    /* TODO: setup channel to job */
     /* Setup pty, see mch_call_shell(). */
+}
+
+/*
+ * Invoked when "msg" output from a job was received.  Write it to the terminal
+ * of "buffer".
+ */
+    void
+write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
+{
+    size_t	len = STRLEN(msg);
+    VTerm	*vterm = buffer->b_term->tl_vterm;
+
+    ch_logn(channel, "writing %d bytes to terminal", (int)len);
+    vterm_input_write(vterm, (char *)msg, len);
+    vterm_screen_flush_damage(vterm_obtain_screen(vterm));
+
+    /* TODO: only update once in a while. */
+    update_screen(0);
+    setcursor();
+    out_flush();
+}
+
+/*
+ * Called to update the window that contains the terminal.
+ */
+    void
+term_update_window(win_T *wp)
+{
+    int vterm_rows;
+    int vterm_cols;
+    VTerm *vterm = wp->w_buffer->b_term->tl_vterm;
+    VTermScreen *screen = vterm_obtain_screen(vterm);
+    VTermPos pos;
+
+    vterm_get_size(vterm, &vterm_rows, &vterm_cols);
+
+    /* TODO: Only redraw what changed. */
+    for (pos.row = 0; pos.row < wp->w_height; ++pos.row)
+    {
+	int off = screen_get_current_line_off();
+
+	if (pos.row < vterm_rows)
+	    for (pos.col = 0; pos.col < wp->w_width && pos.col < vterm_cols;
+								     ++pos.col)
+	    {
+		VTermScreenCell cell;
+		int c;
+
+		vterm_screen_get_cell(screen, pos, &cell);
+		/* TODO: use cell.attrs and colors */
+		/* TODO: use cell.width */
+		/* TODO: multi-byte chars */
+		c = cell.chars[0];
+		ScreenLines[off] = c == NUL ? ' ' : c;
+		ScreenAttrs[off] = 0;
+		++off;
+	    }
+
+	screen_line(wp->w_winrow + pos.row, wp->w_wincol, pos.col, wp->w_width,
+									FALSE);
+    }
 }
 
     static int
@@ -162,27 +248,55 @@ handle_damage(VTermRect rect, void *user)
 
     term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, rect.start_row);
     term->tl_dirty_row_end = MAX(term->tl_dirty_row_end, rect.end_row);
+    redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
 
     static int
 handle_moverect(VTermRect dest, VTermRect src, void *user)
 {
+    term_T	*term = (term_T *)user;
+
     /* TODO */
+    redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
 
   static int
 handle_movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
 {
-    /* TODO: handle moving the cursor. */
+    term_T	*term = (term_T *)user;
+    win_T	*wp;
+    int		is_current = FALSE;
+
+    FOR_ALL_WINDOWS(wp)
+    {
+	if (wp->w_buffer == term->tl_buffer)
+	{
+	    /* TODO: limit to window size? */
+	    wp->w_wrow = pos.row;
+	    wp->w_wcol = pos.col;
+	    if (wp == curwin)
+		is_current = TRUE;
+	}
+    }
+
+    if (is_current)
+    {
+	setcursor();
+	out_flush();
+    }
+
     return 1;
 }
 
     static int
 handle_resize(int rows, int cols, void *user)
 {
+    term_T	*term = (term_T *)user;
+
     /* TODO: handle terminal resize. */
+    redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
 
@@ -199,12 +313,6 @@ handle_resize(int rows, int cols, void *user)
  * - Write keys to vterm: vterm_keyboard_key()
  * - read the output (xterm escape sequences): vterm_output_read()
  * - Write output to channel.
- */
-
-/* TODO: function to read job output from the channel.
- * write to vterm: vterm_input_write()
- * This will invoke screen callbacks.
- * call vterm_screen_flush_damage()
  */
 
 #endif /* FEAT_TERMINAL */
