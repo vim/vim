@@ -3167,19 +3167,24 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	/* Some versions of Vi use ">=" here, some don't...  */
 	if (yanklines > p_report)
 	{
+	    const char regname = oap->regname ? oap->regname : '0';
 	    /* redisplay now, so message is not deleted */
 	    update_topline_redraw();
+
 	    if (yanklines == 1)
 	    {
 		if (oap->block_mode)
-		    MSG(_("block of 1 line yanked"));
+		    smsg((char_u *)_("block of 1 line yanked into \"%c"),
+			 regname);
 		else
-		    MSG(_("1 line yanked"));
+		    smsg((char_u *)_("1 line yanked into \"%c"), regname);
 	    }
 	    else if (oap->block_mode)
-		smsg((char_u *)_("block of %ld lines yanked"), yanklines);
+		smsg((char_u *)_("block of %ld lines yanked into \"%c"),
+		     yanklines, regname);
 	    else
-		smsg((char_u *)_("%ld lines yanked"), yanklines);
+		smsg((char_u *)_("%ld lines yanked into \"%c"), yanklines,
+		     regname);
 	}
     }
 

@@ -204,6 +204,7 @@ NEW_TESTS = test_arabic.res \
 	    test_visual.res \
 	    test_window_id.res \
 	    test_writefile.res \
+	    test_yank.res \
 	    test_alot_latin.res \
 	    test_alot_utf8.res \
 	    test_alot.res
