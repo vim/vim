@@ -16,6 +16,8 @@ void conceal_check_cursur_line(void);
 void update_single_line(win_T *wp, linenr_T lnum);
 void update_debug_sign(buf_T *buf, linenr_T lnum);
 void updateWindow(win_T *wp);
+int screen_get_current_line_off(void);
+void screen_line(int row, int coloff, int endcol, int clear_width, int rlflag);
 void rl_mirror(char_u *str);
 void status_redraw_all(void);
 void status_redraw_curbuf(void);

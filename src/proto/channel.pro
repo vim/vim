@@ -2,6 +2,7 @@
 void ch_logfile(char_u *fname, char_u *opt);
 int ch_log_active(void);
 void ch_log(channel_T *ch, char *msg);
+void ch_logn(channel_T *ch, char *msg, int nr);
 void ch_logs(channel_T *ch, char *msg, char *name);
 channel_T *add_channel(void);
 int has_any_channel(void);
@@ -63,7 +64,7 @@ void job_set_options(job_T *job, jobopt_T *opt);
 void job_stop_on_exit(void);
 int has_pending_job(void);
 void job_check_ended(void);
-job_T *job_start(typval_T *argvars);
+job_T *job_start(typval_T *argvars, jobopt_T *opt_arg);
 char *job_status(job_T *job);
 void job_info(job_T *job, dict_T *dict);
 int job_stop(job_T *job, typval_T *argvars);
