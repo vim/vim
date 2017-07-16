@@ -2227,6 +2227,7 @@ test_arglist \
 	test_regex_char_classes \
 	test_regexp_latin \
 	test_regexp_utf8 \
+	test_registers \
 	test_reltime \
 	test_retab \
 	test_ruby \
