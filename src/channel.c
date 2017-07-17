@@ -4893,7 +4893,9 @@ job_check_ended(void)
 }
 
 /*
- * "job_start()" function
+ * Create a job and return it.  Implements job_start().
+ * The returned job has a refcount of one.
+ * Returns NULL when out of memory.
  */
     job_T *
 job_start(typval_T *argvars, jobopt_T *opt_arg)
@@ -5149,12 +5151,19 @@ job_info(job_T *job, dict_T *dict)
     dict_add_nr_str(dict, "stoponexit", 0L, job->jv_stoponexit);
 }
 
+/*
+ * Send a signal to "job".  Implements job_stop().
+ * When "type" is not NULL use this for the type.
+ * Otherwise use argvars[1] for the type.
+ */
     int
-job_stop(job_T *job, typval_T *argvars)
+job_stop(job_T *job, typval_T *argvars, char *type)
 {
     char_u *arg;
 
-    if (argvars[1].v_type == VAR_UNKNOWN)
+    if (type != NULL)
+	arg = (char_u *)type;
+    else if (argvars[1].v_type == VAR_UNKNOWN)
 	arg = (char_u *)"";
     else
     {

@@ -859,6 +859,9 @@ free_buffer(buf_T *buf)
 #ifdef FEAT_JOB_CHANNEL
     channel_buffer_free(buf);
 #endif
+#ifdef FEAT_TERMINAL
+    free_terminal(buf->b_term);
+#endif
 
     buf_hashtab_remove(buf);
 
@@ -1771,7 +1774,7 @@ enter_buffer(buf_T *buf)
 #endif
 
 #ifdef FEAT_SYN_HL
-    curwin->w_s = &(buf->b_s);
+    curwin->w_s = &(curbuf->b_s);
 #endif
 
     /* Cursor on first line by default. */

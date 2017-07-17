@@ -6772,7 +6772,7 @@ f_job_stop(typval_T *argvars, typval_T *rettv)
     job_T	*job = get_job_arg(&argvars[0]);
 
     if (job != NULL)
-	rettv->vval.v_number = job_stop(job, argvars);
+	rettv->vval.v_number = job_stop(job, argvars, NULL);
 }
 #endif
 

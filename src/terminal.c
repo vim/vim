@@ -25,11 +25,10 @@
  *
  * TODO:
  * - pressing Enter sends two CR and/or NL characters to "bash -i"?
- * - free b_term when closing terminal.
- * - remove term from first_term list when closing terminal.
+ *   Passing Enter as NL seems to work.
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
  * - set buffer name to command, add (1) to avoid duplicates.
- * - if buffer is wiped, cleanup terminal, may stop job.
+ * - If [command] is not given the 'shell' option is used.
  * - if the job ends, write "-- JOB ENDED --" in the terminal
  * - when closing window and job ended, delete the terminal
  * - when closing window and job has not ended, make terminal hidden?
@@ -43,13 +42,14 @@
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty.
  * - implement ":buf {term-buf-name}"
- * - implement term_getsize()
- * - implement term_setsize()
- * - implement term_sendkeys()		send keystrokes to a terminal
- * - implement term_wait()		wait for screen to be updated
- * - implement term_scrape()		inspect terminal screen
- * - implement term_open()		open terminal window
- * - implement term_getjob()
+ * - implement term_list()			list of buffers with a terminal
+ * - implement term_getsize(buf)
+ * - implement term_setsize(buf)
+ * - implement term_sendkeys(buf, keys)		send keystrokes to a terminal
+ * - implement term_wait(buf)			wait for screen to be updated
+ * - implement term_scrape(buf, row)		inspect terminal screen
+ * - implement term_open(command, options)	open terminal window
+ * - implement term_getjob(buf)
  * - implement 'termkey'
  */
 
@@ -165,7 +165,6 @@ ex_terminal(exarg_T *eap)
     vterm_screen_reset(screen, 1 /* hard */);
 
     /* By default NL means CR-NL. */
-    /* TODO: this causes two prompts when using ":term bash -i". */
     vterm_input_write(vterm, "\x1b[20h", 5);
 
     argvars[0].v_type = VAR_STRING;
@@ -185,8 +184,44 @@ ex_terminal(exarg_T *eap)
 
     term->tl_job = job_start(argvars, &opt);
 
-    /* TODO: setup channel to job */
+    if (term->tl_job == NULL)
+	/* Wiping out the buffer will also close the window. */
+	do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
+
     /* Setup pty, see mch_call_shell(). */
+}
+
+/*
+ * Free a terminal and everything it refers to.
+ * Kills the job if there is one.
+ * Called when wiping out a buffer.
+ */
+    void
+free_terminal(term_T *term)
+{
+    term_T	*tp;
+
+    if (term == NULL)
+	return;
+    if (first_term == term)
+	first_term = term->tl_next;
+    else
+	for (tp = first_term; tp->tl_next != NULL; tp = tp->tl_next)
+	    if (tp->tl_next == term)
+	    {
+		tp->tl_next = term->tl_next;
+		break;
+	    }
+
+    if (term->tl_job != NULL)
+    {
+	if (term->tl_job->jv_status != JOB_ENDED)
+	    job_stop(term->tl_job, NULL, "kill");
+	job_unref(term->tl_job);
+    }
+
+    vterm_free(term->tl_vterm);
+    vim_free(term);
 }
 
 /*
@@ -340,7 +375,12 @@ terminal_loop(void)
 		stuffcharReadbuff(Ctrl_W);
 		return;
 
+	    /* TODO: which of these two should be used? */
+#if 0
 	    case CAR:		key = VTERM_KEY_ENTER; break;
+#else
+	    case CAR:		c = NL; break;
+#endif
 	    case ESC:		key = VTERM_KEY_ESCAPE; break;
 	    case K_BS:		key = VTERM_KEY_BACKSPACE; break;
 	    case K_DEL:		key = VTERM_KEY_DEL; break;
