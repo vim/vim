@@ -1494,7 +1494,7 @@ Optional Features:
   --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
   --disable-channel      Disable process communication support.
-  --enable-terminal     Disable terminal emulation support.
+  --enable-terminal       Enable terminal emulation support.
   --enable-multibyte      Include multibyte editing support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
