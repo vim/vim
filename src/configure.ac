@@ -492,7 +492,7 @@ fi
 dnl Check for Lua feature.
 AC_MSG_CHECKING(--enable-luainterp argument)
 AC_ARG_ENABLE(luainterp,
-	[  --enable-luainterp[=OPTS]     Include Lua interpreter.  [default=no] [OPTS=no/yes/dynamic]], ,
+	[  --enable-luainterp[=OPTS]      Include Lua interpreter.  [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_luainterp="no"])
 AC_MSG_RESULT($enable_luainterp)
 
@@ -690,7 +690,7 @@ fi
 dnl Check for MzScheme feature.
 AC_MSG_CHECKING(--enable-mzschemeinterp argument)
 AC_ARG_ENABLE(mzschemeinterp,
-	[  --enable-mzschemeinterp   Include MzScheme interpreter.], ,
+	[  --enable-mzschemeinterp      Include MzScheme interpreter.], ,
 	[enable_mzschemeinterp="no"])
 AC_MSG_RESULT($enable_mzschemeinterp)
 
@@ -1332,7 +1332,7 @@ AC_SUBST(PYTHON_OBJ)
 
 AC_MSG_CHECKING(--enable-python3interp argument)
 AC_ARG_ENABLE(python3interp,
-	[  --enable-python3interp[=OPTS]   Include Python3 interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
+	[  --enable-python3interp[=OPTS]  Include Python3 interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_python3interp="no"])
 AC_MSG_RESULT($enable_python3interp)
 if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
@@ -1963,7 +1963,7 @@ fi
 
 AC_MSG_CHECKING(--disable-channel argument)
 AC_ARG_ENABLE(channel,
-	[  --disable-channel      Disable process communication support.],
+	[  --disable-channel       Disable process communication support.],
 	, [enable_channel="yes"])
 if test "$enable_channel" = "yes"; then
   if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
@@ -2030,7 +2030,7 @@ fi
 
 AC_MSG_CHECKING(--enable-terminal argument)
 AC_ARG_ENABLE(terminal,
-	[  --enable-terminal     Disable terminal emulation support.],
+	[  --enable-terminal       Enable terminal emulation support.],
 	[enable_terminal="yes"], )
 if test "$enable_terminal" = "yes"; then
   if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
@@ -2214,7 +2214,7 @@ test "x$with_x" = xno -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
- [  --enable-gui[=OPTS]     X11 GUI [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon]], , enable_gui="auto")
+ [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon]], , enable_gui="auto")
 
 dnl Canonicalize the --enable-gui= argument so that it can be easily compared.
 dnl Do not use character classes for portability with old tools.
@@ -2782,7 +2782,7 @@ dnl files, to avoid a mixup if several versions are present
 if test -z "$SKIP_MOTIF"; then
   AC_MSG_CHECKING(--with-motif-lib argument)
   AC_ARG_WITH(motif-lib,
-  [  --with-motif-lib=STRING   Library for Motif ],
+  [  --with-motif-lib=STRING Library for Motif ],
   [ MOTIF_LIBNAME="${withval}" ] )
 
   if test -n "$MOTIF_LIBNAME"; then
@@ -3874,7 +3874,7 @@ fi
 
 AC_MSG_CHECKING(--disable-sysmouse argument)
 AC_ARG_ENABLE(sysmouse,
-	[  --disable-sysmouse    Don't use sysmouse (mouse in *BSD console).], ,
+	[  --disable-sysmouse      Don't use sysmouse (mouse in *BSD console).], ,
 	[enable_sysmouse="yes"])
 
 if test "$enable_sysmouse" = "yes"; then
