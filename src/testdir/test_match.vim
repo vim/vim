@@ -245,16 +245,31 @@ func Test_matchadd_eol_with_cursorline_1()
   let actual = ScreenLines(1, 10)[0]
   call assert_equal(expected, actual)
 
-  " expected:
-  " 'abcd      '
-  "  ^^^^         underline
-  "      ^^^^^^   'Search' highlight with underline
   let attrs = ScreenAttrs(1, 10)[0]
-  call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
-  call assert_equal(repeat([attrs[4]], 6), attrs[4:9])
-  call assert_notequal(attrs[0], attrs[4])
-  call assert_notequal(attrs0[0], attrs[0])
-  call assert_notequal(attrs0[4], attrs[4])
+  if has('gui_running')
+    " expected:
+    " 'abcd      '
+    "  ^^^^         guibg of 'CursorLine'
+    "      ^        'Search' highlight
+    "       ^^^^^   guibg of 'CursorLine'
+    call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
+    call assert_equal(repeat([attrs[5]], 5), attrs[5:9])
+    call assert_equal(attrs0[4], attrs[4])
+    call assert_notequal(attrs[0], attrs[4])
+    call assert_notequal(attrs[4], attrs[5])
+    call assert_notequal(attrs0[0], attrs[0])
+    call assert_notequal(attrs0[5], attrs[5])
+  else
+    " expected:
+    " 'abcd      '
+    "  ^^^^         underline
+    "      ^^^^^^   'Search' highlight with underline
+    call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
+    call assert_equal(repeat([attrs[4]], 6), attrs[4:9])
+    call assert_notequal(attrs[0], attrs[4])
+    call assert_notequal(attrs0[0], attrs[0])
+    call assert_notequal(attrs0[4], attrs[4])
+  endif
 
   call CloseWindow()
 endfunc
@@ -302,7 +317,11 @@ func Test_matchadd_eol_with_cursorline_2()
   call assert_notequal(attrs[4], attrs[5])
   call assert_notequal(attrs[5], attrs[6])
   call assert_notequal(attrs0[0], attrs[0])
-  call assert_notequal(attrs0[4], attrs[4])
+  if has('gui_running')
+    call assert_equal(attrs0[4], attrs[4])
+  else
+    call assert_notequal(attrs0[4], attrs[4])
+  endif
 
   call CloseWindow()
 endfunc
