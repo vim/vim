@@ -1483,23 +1483,23 @@ Optional Features:
   --disable-selinux	  Do not check for SELinux support.
   --disable-xsmp          Disable XSMP session management
   --disable-xsmp-interact Disable XSMP interaction
-  --enable-luainterp=OPTS     Include Lua interpreter.  default=no OPTS=no/yes/dynamic
-  --enable-mzschemeinterp   Include MzScheme interpreter.
+  --enable-luainterp=OPTS      Include Lua interpreter.  default=no OPTS=no/yes/dynamic
+  --enable-mzschemeinterp      Include MzScheme interpreter.
   --enable-perlinterp=OPTS     Include Perl interpreter.  default=no OPTS=no/yes/dynamic
   --enable-pythoninterp=OPTS   Include Python interpreter. default=no OPTS=no/yes/dynamic
-  --enable-python3interp=OPTS   Include Python3 interpreter. default=no OPTS=no/yes/dynamic
+  --enable-python3interp=OPTS  Include Python3 interpreter. default=no OPTS=no/yes/dynamic
   --enable-tclinterp=OPTS      Include Tcl interpreter. default=no OPTS=no/yes/dynamic
   --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
   --enable-cscope         Include cscope interface.
   --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
-  --disable-channel      Disable process communication support.
-  --enable-terminal     Disable terminal emulation support.
+  --disable-channel       Disable process communication support.
+  --enable-terminal       Enable terminal emulation support.
   --enable-multibyte      Include multibyte editing support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
-  --enable-gui=OPTS     X11 GUI default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon
+  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
   --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 default=yes
@@ -1513,7 +1513,7 @@ Optional Features:
   --disable-largefile     omit support for large files
   --disable-acl           Don't check for ACL support.
   --disable-gpm           Don't use gpm (Linux mouse daemon).
-  --disable-sysmouse    Don't use sysmouse (mouse in *BSD console).
+  --disable-sysmouse      Don't use sysmouse (mouse in *BSD console).
   --disable-nls           Don't support NLS (gettext()).
 
 Optional Packages:
@@ -1541,7 +1541,7 @@ Optional Packages:
   --with-gnome-includes=DIR Specify location of GNOME headers
   --with-gnome-libs=DIR   Specify location of GNOME libs
   --with-gnome            Specify prefix for GNOME files
-  --with-motif-lib=STRING   Library for Motif
+  --with-motif-lib=STRING Library for Motif
   --with-tlib=library     terminal library to be used
 
 Some influential environment variables:
