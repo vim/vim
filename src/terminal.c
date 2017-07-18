@@ -10,18 +10,23 @@
 /*
  * Terminal window support, see ":help :terminal".
  *
- * For a terminal one VTerm is constructed.  This uses libvterm.  A copy of
- * that library is in the libvterm directory.
+ * There are three parts:
+ * 1. Generic code for all systems.
+ * 2. The MS-Windows implementation.
+ *    Uses a hidden console for the terminal emulator.
+ * 3. The Unix-like implementation.
+ *    Uses libvterm for the terminal emulator.
  *
- * The VTerm invokes callbacks when its screen contents changes.  The line
- * range is stored in tl_dirty_row_start and tl_dirty_row_end.  Once in a
- * while, if the terminal window is visible, the screen contents is drawn.
+ * When a terminal window is opened, a job is started that will be connected to
+ * the terminal emulator.
  *
  * If the terminal window has keyboard focus, typed keys are converted to the
  * terminal encoding and writting to the job over a channel.
  *
- * If the job produces output, it is written to the VTerm.
- * This will result in screen updates.
+ * If the job produces output, it is written to the terminal emulator.  The
+ * terminal emulator invokes callbacks when its screen content changes.  The
+ * line range is stored in tl_dirty_row_start and tl_dirty_row_end.  Once in a
+ * while, if the terminal window is visible, the screen contents is drawn.
  *
  * TODO:
  * - pressing Enter sends two CR and/or NL characters to "bash -i"?
@@ -29,14 +34,21 @@
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
  * - set buffer name to command, add (1) to avoid duplicates.
  * - If [command] is not given the 'shell' option is used.
- * - if the job ends, write "-- JOB ENDED --" in the terminal
- * - when closing window and job ended, delete the terminal
+ * - Add a scrollback buffer (contains lines to scroll off the top).
+ *   Can use the buf_T lines, store attributes somewhere else?
+ * - When the job ends:
+ *   - Write "-- JOB ENDED --" in the terminal.
+ *   - Put the terminal contents in the scrollback buffer.
+ *   - Free the terminal emulator.
+ *   - Display the scrollback buffer (but with attributes).
+ *     Make the buffer not modifiable, drop attributes when making changes.
  * - when closing window and job has not ended, make terminal hidden?
  * - Use a pty for I/O with the job.
  * - Windows implementation:
  *   (WiP): https://github.com/mattn/vim/tree/terminal
  *	src/os_win32.c  mch_open_terminal()
-     Using winpty ?
+ *   Using winpty ?
+ * - use win_del_lines() to make scroll-up efficient.
  * - command line completion for :terminal
  * - support fixed size when 'termsize' is "rowsXcols".
  * - support minimal size when 'termsize' is "rows*cols".
@@ -57,13 +69,22 @@
 
 #ifdef FEAT_TERMINAL
 
-#include "libvterm/include/vterm.h"
+#ifdef WIN3264
+/* MS-Windows: use a native console. */
+#else
+/* Unix-like: use libvterm. */
+# include "libvterm/include/vterm.h"
+#endif
 
 /* typedef term_T in structs.h */
 struct terminal_S {
     term_T	*tl_next;
 
+#ifdef WIN3264
+    /* console handle? */
+#else
     VTerm	*tl_vterm;
+#endif
     job_T	*tl_job;
     buf_T	*tl_buffer;
 
@@ -75,27 +96,23 @@ struct terminal_S {
 };
 
 #define MAX_ROW 999999	    /* used for tl_dirty_row_end to update all rows */
+#define KEY_BUF_LEN 200
+
+/* Functions implemented for MS-Windows and Unix-like systems. */
+static int term_init(term_T *term, int rows, int cols);
+static void term_free(term_T *term);
+static void term_write_job_output(term_T *term, char_u *msg, size_t len);
+static int term_convert_key(int c, char *buf);
+static void term_update_lines(win_T *wp);
 
 /*
  * List of all active terminals.
  */
 static term_T *first_term = NULL;
 
-static int handle_damage(VTermRect rect, void *user);
-static int handle_moverect(VTermRect dest, VTermRect src, void *user);
-static int handle_movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user);
-static int handle_resize(int rows, int cols, void *user);
-
-static VTermScreenCallbacks screen_callbacks = {
-  handle_damage,	/* damage */
-  handle_moverect,	/* moverect */
-  handle_movecursor,	/* movecursor */
-  NULL,			/* settermprop */
-  NULL,			/* bell */
-  handle_resize,	/* resize */
-  NULL,			/* sb_pushline */
-  NULL			/* sb_popline */
-};
+/**************************************
+ * 1. Generic code for all systems.
+ */
 
 /*
  * ":terminal": open a terminal window and execute a job in it.
@@ -109,8 +126,6 @@ ex_terminal(exarg_T *eap)
     win_T	*old_curwin = curwin;
     typval_T	argvars[2];
     term_T	*term;
-    VTerm	*vterm;
-    VTermScreen *screen;
     jobopt_T	opt;
 
     if (check_restricted() || check_secure())
@@ -155,40 +170,31 @@ ex_terminal(exarg_T *eap)
 	cols = curwin->w_width;
     }
 
-    vterm = vterm_new(rows, cols);
-    term->tl_vterm = vterm;
-    screen = vterm_obtain_screen(vterm);
-    vterm_screen_set_callbacks(screen, &screen_callbacks, term);
-    /* TODO: depends on 'encoding'. */
-    vterm_set_utf8(vterm, 1);
-    /* Required to initialize most things. */
-    vterm_screen_reset(screen, 1 /* hard */);
+    if (term_init(term, rows, cols) == OK)
+    {
+	argvars[0].v_type = VAR_STRING;
+	argvars[0].vval.v_string = eap->arg;
 
-    /* By default NL means CR-NL. */
-    vterm_input_write(vterm, "\x1b[20h", 5);
+	clear_job_options(&opt);
+	opt.jo_mode = MODE_RAW;
+	opt.jo_out_mode = MODE_RAW;
+	opt.jo_err_mode = MODE_RAW;
+	opt.jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
+	opt.jo_io[PART_OUT] = JIO_BUFFER;
+	opt.jo_io[PART_ERR] = JIO_BUFFER;
+	opt.jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
+	opt.jo_io_buf[PART_OUT] = curbuf->b_fnum;
+	opt.jo_io_buf[PART_ERR] = curbuf->b_fnum;
+	opt.jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
 
-    argvars[0].v_type = VAR_STRING;
-    argvars[0].vval.v_string = eap->arg;
-
-    clear_job_options(&opt);
-    opt.jo_mode = MODE_RAW;
-    opt.jo_out_mode = MODE_RAW;
-    opt.jo_err_mode = MODE_RAW;
-    opt.jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
-    opt.jo_io[PART_OUT] = JIO_BUFFER;
-    opt.jo_io[PART_ERR] = JIO_BUFFER;
-    opt.jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
-    opt.jo_io_buf[PART_OUT] = curbuf->b_fnum;
-    opt.jo_io_buf[PART_ERR] = curbuf->b_fnum;
-    opt.jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
-
-    term->tl_job = job_start(argvars, &opt);
+	term->tl_job = job_start(argvars, &opt);
+    }
 
     if (term->tl_job == NULL)
 	/* Wiping out the buffer will also close the window. */
 	do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
 
-    /* Setup pty, see mch_call_shell(). */
+    /* TODO: Setup pty, see mch_call_shell(). */
 }
 
 /*
@@ -220,7 +226,7 @@ free_terminal(term_T *term)
 	job_unref(term->tl_job);
     }
 
-    vterm_free(term->tl_vterm);
+    term_free(term);
     vim_free(term);
 }
 
@@ -232,11 +238,10 @@ free_terminal(term_T *term)
 write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 {
     size_t	len = STRLEN(msg);
-    VTerm	*vterm = buffer->b_term->tl_vterm;
+    term_T	*term = buffer->b_term;
 
     ch_logn(channel, "writing %d bytes to terminal", (int)len);
-    vterm_input_write(vterm, (char *)msg, len);
-    vterm_screen_flush_damage(vterm_obtain_screen(vterm));
+    term_write_job_output(term, msg, len);
 
     /* TODO: only update once in a while. */
     update_screen(0);
@@ -245,44 +250,173 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 }
 
 /*
+ * Wait for input and send it to the job.
+ * Return when a CTRL-W command is typed that moves to another window.
+ */
+    void
+terminal_loop(void)
+{
+    char	buf[KEY_BUF_LEN];
+    int		c;
+    size_t	len;
+
+    for (;;)
+    {
+	/* TODO: skip screen update when handling a sequence of keys. */
+	update_screen(0);
+	setcursor();
+	out_flush();
+	c = vgetc();
+
+	if (c == Ctrl_W)
+	{
+	    stuffcharReadbuff(Ctrl_W);
+	    return;
+	}
+
+	/* Convert the typed key to a sequence of bytes for the job. */
+	len = term_convert_key(c, buf);
+	if (len > 0)
+	    /* TODO: if FAIL is returned, stop? */
+	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
+						     (char_u *)buf, len, NULL);
+    }
+}
+
+/*
  * Called to update the window that contains the terminal.
  */
     void
 term_update_window(win_T *wp)
 {
-    int vterm_rows;
-    int vterm_cols;
-    VTerm *vterm = wp->w_buffer->b_term->tl_vterm;
-    VTermScreen *screen = vterm_obtain_screen(vterm);
-    VTermPos pos;
+    term_update_lines(wp);
+}
 
-    vterm_get_size(vterm, &vterm_rows, &vterm_cols);
+#ifdef WIN3264
 
-    /* TODO: Only redraw what changed. */
-    for (pos.row = 0; pos.row < wp->w_height; ++pos.row)
-    {
-	int off = screen_get_current_line_off();
+/**************************************
+ * 2. MS-Windows implementation.
+ */
 
-	if (pos.row < vterm_rows)
-	    for (pos.col = 0; pos.col < wp->w_width && pos.col < vterm_cols;
-								     ++pos.col)
-	    {
-		VTermScreenCell cell;
-		int c;
+/*
+ * Create a new terminal of "rows" by "cols" cells.
+ * Store a reference in "term".
+ * Return OK or FAIL.
+ */
+    static int
+term_init(term_T *term, int rows, int cols)
+{
+    /* TODO: Create a hidden console */
+    return FAIL;
+}
 
-		vterm_screen_get_cell(screen, pos, &cell);
-		/* TODO: use cell.attrs and colors */
-		/* TODO: use cell.width */
-		/* TODO: multi-byte chars */
-		c = cell.chars[0];
-		ScreenLines[off] = c == NUL ? ' ' : c;
-		ScreenAttrs[off] = 0;
-		++off;
-	    }
+/*
+ * Free the terminal emulator part of "term".
+ */
+    static void
+term_free(term_T *term)
+{
+    /* TODO */
+}
 
-	screen_line(wp->w_winrow + pos.row, wp->w_wincol, pos.col, wp->w_width,
-									FALSE);
-    }
+/*
+ * Write job output "msg[len]" to the terminal.
+ */
+    static void
+term_write_job_output(term_T *term, char_u *msg, size_t len)
+{
+    /* TODO */
+}
+
+/*
+ * Convert typed key "c" into bytes to send to the job.
+ * Return the number of bytes in "buf".
+ */
+    static int
+term_convert_key(int c, char *buf)
+{
+    /* TODO */
+    return 0;
+}
+
+/*
+ * Called to update the window that contains the terminal.
+ */
+    static void
+term_update_lines(win_T *wp)
+{
+    /* TODO */
+}
+
+#else
+
+/**************************************
+ * 3. Unix-like implementation.
+ *
+ * For a terminal one VTerm is constructed.  This uses libvterm.  A copy of
+ * that library is in the libvterm directory.
+ */
+
+static int handle_damage(VTermRect rect, void *user);
+static int handle_moverect(VTermRect dest, VTermRect src, void *user);
+static int handle_movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user);
+static int handle_resize(int rows, int cols, void *user);
+
+static VTermScreenCallbacks screen_callbacks = {
+  handle_damage,	/* damage */
+  handle_moverect,	/* moverect */
+  handle_movecursor,	/* movecursor */
+  NULL,			/* settermprop */
+  NULL,			/* bell */
+  handle_resize,	/* resize */
+  NULL,			/* sb_pushline */
+  NULL			/* sb_popline */
+};
+
+/*
+ * Create a new terminal of "rows" by "cols" cells.
+ * Store a reference in "term".
+ * Return OK or FAIL.
+ */
+    static int
+term_init(term_T *term, int rows, int cols)
+{
+    VTerm *vterm = vterm_new(rows, cols);
+    VTermScreen *screen;
+
+    term->tl_vterm = vterm;
+    screen = vterm_obtain_screen(vterm);
+    vterm_screen_set_callbacks(screen, &screen_callbacks, term);
+    /* TODO: depends on 'encoding'. */
+    vterm_set_utf8(vterm, 1);
+    /* Required to initialize most things. */
+    vterm_screen_reset(screen, 1 /* hard */);
+
+    /* By default NL means CR-NL. */
+    vterm_input_write(vterm, "\x1b[20h", 5);
+
+    return OK;
+}
+
+/*
+ * Free the terminal emulator part of "term".
+ */
+    static void
+term_free(term_T *term)
+{
+    vterm_free(term->tl_vterm);
+}
+
+/*
+ * Write job output "msg[len]" to the terminal.
+ */
+    static void
+term_write_job_output(term_T *term, char_u *msg, size_t len)
+{
+    VTerm	*vterm = term->tl_vterm;
+
+    vterm_input_write(vterm, (char *)msg, len);
+    vterm_screen_flush_damage(vterm_obtain_screen(vterm));
 }
 
     static int
@@ -344,111 +478,131 @@ handle_resize(int rows, int cols, void *user)
     return 1;
 }
 
-/* TODO: Use win_del_lines() to make scroll up efficient. */
+/*
+ * Convert typed key "c" into bytes to send to the job.
+ * Return the number of bytes in "buf".
+ */
+    static int
+term_convert_key(int c, char *buf)
+{
+    VTerm	    *vterm = curbuf->b_term->tl_vterm;
+    VTermKey	    key = VTERM_KEY_NONE;
+    VTermModifier   mod = VTERM_MOD_NONE;
 
+    switch (c)
+    {
+	/* TODO: which of these two should be used? */
+#if 0
+	case CAR:		key = VTERM_KEY_ENTER; break;
+#else
+	case CAR:		c = NL; break;
+#endif
+	case ESC:		key = VTERM_KEY_ESCAPE; break;
+	case K_BS:		key = VTERM_KEY_BACKSPACE; break;
+	case K_DEL:		key = VTERM_KEY_DEL; break;
+	case K_DOWN:		key = VTERM_KEY_DOWN; break;
+	case K_END:		key = VTERM_KEY_END; break;
+	case K_F10:		key = VTERM_KEY_FUNCTION(10); break;
+	case K_F11:		key = VTERM_KEY_FUNCTION(11); break;
+	case K_F12:		key = VTERM_KEY_FUNCTION(12); break;
+	case K_F1:		key = VTERM_KEY_FUNCTION(1); break;
+	case K_F2:		key = VTERM_KEY_FUNCTION(2); break;
+	case K_F3:		key = VTERM_KEY_FUNCTION(3); break;
+	case K_F4:		key = VTERM_KEY_FUNCTION(4); break;
+	case K_F5:		key = VTERM_KEY_FUNCTION(5); break;
+	case K_F6:		key = VTERM_KEY_FUNCTION(6); break;
+	case K_F7:		key = VTERM_KEY_FUNCTION(7); break;
+	case K_F8:		key = VTERM_KEY_FUNCTION(8); break;
+	case K_F9:		key = VTERM_KEY_FUNCTION(9); break;
+	case K_HOME:		key = VTERM_KEY_HOME; break;
+	case K_INS:		key = VTERM_KEY_INS; break;
+	case K_K0:		key = VTERM_KEY_KP_0; break;
+	case K_K1:		key = VTERM_KEY_KP_1; break;
+	case K_K2:		key = VTERM_KEY_KP_2; break;
+	case K_K3:		key = VTERM_KEY_KP_3; break;
+	case K_K4:		key = VTERM_KEY_KP_4; break;
+	case K_K5:		key = VTERM_KEY_KP_5; break;
+	case K_K6:		key = VTERM_KEY_KP_6; break;
+	case K_K7:		key = VTERM_KEY_KP_7; break;
+	case K_K8:		key = VTERM_KEY_KP_8; break;
+	case K_K9:		key = VTERM_KEY_KP_9; break;
+	case K_KDEL:		key = VTERM_KEY_DEL; break; /* TODO */
+	case K_KDIVIDE:		key = VTERM_KEY_KP_DIVIDE; break;
+	case K_KEND:		key = VTERM_KEY_KP_1; break; /* TODO */
+	case K_KENTER:		key = VTERM_KEY_KP_ENTER; break;
+	case K_KHOME:		key = VTERM_KEY_KP_7; break; /* TODO */
+	case K_KINS:		key = VTERM_KEY_KP_0; break; /* TODO */
+	case K_KMINUS:		key = VTERM_KEY_KP_MINUS; break;
+	case K_KMULTIPLY:	key = VTERM_KEY_KP_MULT; break;
+	case K_KPAGEDOWN:	key = VTERM_KEY_KP_3; break; /* TODO */
+	case K_KPAGEUP:		key = VTERM_KEY_KP_9; break; /* TODO */
+	case K_KPLUS:		key = VTERM_KEY_KP_PLUS; break;
+	case K_KPOINT:		key = VTERM_KEY_KP_PERIOD; break;
+	case K_LEFT:		key = VTERM_KEY_LEFT; break;
+	case K_PAGEDOWN:	key = VTERM_KEY_PAGEDOWN; break;
+	case K_PAGEUP:		key = VTERM_KEY_PAGEUP; break;
+	case K_RIGHT:		key = VTERM_KEY_RIGHT; break;
+	case K_UP:		key = VTERM_KEY_UP; break;
+	case TAB:		key = VTERM_KEY_TAB; break;
+    }
+
+    /*
+     * Convert special keys to vterm keys:
+     * - Write keys to vterm: vterm_keyboard_key()
+     * - Write output to channel.
+     */
+    if (key != VTERM_KEY_NONE)
+	/* Special key, let vterm convert it. */
+	vterm_keyboard_key(vterm, key, mod);
+    else
+	/* Normal character, let vterm convert it. */
+	vterm_keyboard_unichar(vterm, c, mod);
+
+    /* Read back the converted escape sequence. */
+    return vterm_output_read(vterm, buf, KEY_BUF_LEN);
+}
 
 /*
- * Wait for input and send it to the job.
- * Return when a CTRL-W command is typed that moves to another window.
+ * Called to update the window that contains the terminal.
  */
-    void
-terminal_loop(void)
+    static void
+term_update_lines(win_T *wp)
 {
-    VTerm   *vterm = curbuf->b_term->tl_vterm;
-    char    buf[200];
+    int		vterm_rows;
+    int		vterm_cols;
+    VTerm	*vterm = wp->w_buffer->b_term->tl_vterm;
+    VTermScreen *screen = vterm_obtain_screen(vterm);
+    VTermPos	pos;
 
-    for (;;)
+    vterm_get_size(vterm, &vterm_rows, &vterm_cols);
+
+    /* TODO: Only redraw what changed. */
+    for (pos.row = 0; pos.row < wp->w_height; ++pos.row)
     {
-	int c;
-	VTermKey key = VTERM_KEY_NONE;
-	VTermModifier mod = VTERM_MOD_NONE;
-	size_t len;
+	int off = screen_get_current_line_off();
 
-	update_screen(0);
-	setcursor();
-	out_flush();
+	if (pos.row < vterm_rows)
+	    for (pos.col = 0; pos.col < wp->w_width && pos.col < vterm_cols;
+								     ++pos.col)
+	    {
+		VTermScreenCell cell;
+		int c;
 
-	c = vgetc();
-	switch (c)
-	{
-	    case Ctrl_W:
-		stuffcharReadbuff(Ctrl_W);
-		return;
+		vterm_screen_get_cell(screen, pos, &cell);
+		/* TODO: use cell.attrs and colors */
+		/* TODO: use cell.width */
+		/* TODO: multi-byte chars */
+		c = cell.chars[0];
+		ScreenLines[off] = c == NUL ? ' ' : c;
+		ScreenAttrs[off] = 0;
+		++off;
+	    }
 
-	    /* TODO: which of these two should be used? */
-#if 0
-	    case CAR:		key = VTERM_KEY_ENTER; break;
-#else
-	    case CAR:		c = NL; break;
-#endif
-	    case ESC:		key = VTERM_KEY_ESCAPE; break;
-	    case K_BS:		key = VTERM_KEY_BACKSPACE; break;
-	    case K_DEL:		key = VTERM_KEY_DEL; break;
-	    case K_DOWN:	key = VTERM_KEY_DOWN; break;
-	    case K_END:		key = VTERM_KEY_END; break;
-	    case K_F10:		key = VTERM_KEY_FUNCTION(10); break;
-	    case K_F11:		key = VTERM_KEY_FUNCTION(11); break;
-	    case K_F12:		key = VTERM_KEY_FUNCTION(12); break;
-	    case K_F1:		key = VTERM_KEY_FUNCTION(1); break;
-	    case K_F2:		key = VTERM_KEY_FUNCTION(2); break;
-	    case K_F3:		key = VTERM_KEY_FUNCTION(3); break;
-	    case K_F4:		key = VTERM_KEY_FUNCTION(4); break;
-	    case K_F5:		key = VTERM_KEY_FUNCTION(5); break;
-	    case K_F6:		key = VTERM_KEY_FUNCTION(6); break;
-	    case K_F7:		key = VTERM_KEY_FUNCTION(7); break;
-	    case K_F8:		key = VTERM_KEY_FUNCTION(8); break;
-	    case K_F9:		key = VTERM_KEY_FUNCTION(9); break;
-	    case K_HOME:	key = VTERM_KEY_HOME; break;
-	    case K_INS:		key = VTERM_KEY_INS; break;
-	    case K_K0:		key = VTERM_KEY_KP_0; break;
-	    case K_K1:		key = VTERM_KEY_KP_1; break;
-	    case K_K2:		key = VTERM_KEY_KP_2; break;
-	    case K_K3:		key = VTERM_KEY_KP_3; break;
-	    case K_K4:		key = VTERM_KEY_KP_4; break;
-	    case K_K5:		key = VTERM_KEY_KP_5; break;
-	    case K_K6:		key = VTERM_KEY_KP_6; break;
-	    case K_K7:		key = VTERM_KEY_KP_7; break;
-	    case K_K8:		key = VTERM_KEY_KP_8; break;
-	    case K_K9:		key = VTERM_KEY_KP_9; break;
-	    case K_KDEL:	key = VTERM_KEY_DEL; break; /* TODO */
-	    case K_KDIVIDE:	key = VTERM_KEY_KP_DIVIDE; break;
-	    case K_KEND:	key = VTERM_KEY_KP_1; break; /* TODO */
-	    case K_KENTER:	key = VTERM_KEY_KP_ENTER; break;
-	    case K_KHOME:	key = VTERM_KEY_KP_7; break; /* TODO */
-	    case K_KINS:	key = VTERM_KEY_KP_0; break; /* TODO */
-	    case K_KMINUS:	key = VTERM_KEY_KP_MINUS; break;
-	    case K_KMULTIPLY:	key = VTERM_KEY_KP_MULT; break;
-	    case K_KPAGEDOWN:	key = VTERM_KEY_KP_3; break; /* TODO */
-	    case K_KPAGEUP:	key = VTERM_KEY_KP_9; break; /* TODO */
-	    case K_KPLUS:	key = VTERM_KEY_KP_PLUS; break;
-	    case K_KPOINT:	key = VTERM_KEY_KP_PERIOD; break;
-	    case K_LEFT:	key = VTERM_KEY_LEFT; break;
-	    case K_PAGEDOWN:	key = VTERM_KEY_PAGEDOWN; break;
-	    case K_PAGEUP:	key = VTERM_KEY_PAGEUP; break;
-	    case K_RIGHT:	key = VTERM_KEY_RIGHT; break;
-	    case K_UP:		key = VTERM_KEY_UP; break;
-	    case TAB:		key = VTERM_KEY_TAB; break;
-	}
-
-	/*
-	 * Convert special keys to vterm keys:
-	 * - Write keys to vterm: vterm_keyboard_key()
-	 * - Write output to channel.
-	 */
-	if (key != VTERM_KEY_NONE)
-	    /* Special key, let vterm convert it. */
-	    vterm_keyboard_key(vterm, key, mod);
-	else
-	    /* Normal character, let vterm convert it. */
-	    vterm_keyboard_unichar(vterm, c, mod);
-
-	/* Read back the converted escape sequence. */
-	len = vterm_output_read(vterm, buf, sizeof(buf));
-
-	/* TODO: if FAIL is returned, stop? */
-	channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
-						     (char_u *)buf, len, NULL);
+	screen_line(wp->w_winrow + pos.row, wp->w_wincol, pos.col, wp->w_width,
+									FALSE);
     }
 }
+
+#endif
 
 #endif /* FEAT_TERMINAL */
