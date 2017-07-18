@@ -2030,7 +2030,7 @@ fi
 
 AC_MSG_CHECKING(--enable-terminal argument)
 AC_ARG_ENABLE(terminal,
-	[  --enable-terminal     Disable terminal emulation support.],
+	[  --enable-terminal     Enable terminal emulation support.],
 	[enable_terminal="yes"], )
 if test "$enable_terminal" = "yes"; then
   if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
