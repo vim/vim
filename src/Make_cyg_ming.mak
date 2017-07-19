@@ -73,6 +73,7 @@ CHANNEL=yes
 else
 CHANNEL=$(GUI)
 endif
+TERMINAL=no
 
 
 # Link against the shared version of libstdc++ by default.  Set
@@ -557,6 +558,10 @@ ifeq ($(CHANNEL),yes)
 DEFINES += -DFEAT_JOB_CHANNEL
 endif
 
+ifeq ($(TERMINAL),yes)
+DEFINES += -DFEAT_TERMINAL
+endif
+
 # DirectWrite (DirectX)
 ifeq ($(DIRECTX),yes)
 # Only allow DirectWrite for a GUI build.
@@ -741,6 +746,10 @@ OBJ += $(OUTDIR)/xpm_w32.o
 # You'll need libXpm.a from http://gnuwin32.sf.net
 LIB += -L$(XPM)/lib -lXpm
 endif
+endif
+
+ifeq ($(TERMINAL),yes)
+OBJ += $(OUTDIR)/terminal.o
 endif
 
 
