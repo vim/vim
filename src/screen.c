@@ -112,6 +112,10 @@ static foldinfo_T win_foldinfo;	/* info for 'foldcolumn' */
 static int compute_foldcolumn(win_T *wp, int col);
 #endif
 
+/* Flag that is set when drawing for a callback, not from the main command
+ * loop. */
+static int redrawing_for_callback = 0;
+
 /*
  * Buffer for one screen line (characters and attributes).
  */
@@ -445,6 +449,8 @@ redraw_asap(int type)
     void
 redraw_after_callback(void)
 {
+    ++redrawing_for_callback;
+
     if (State == HITRETURN || State == ASKMORE)
 	; /* do nothing */
     else if (State & CMDLINE)
@@ -479,6 +485,8 @@ redraw_after_callback(void)
 	gui_mch_flush();
     }
 #endif
+
+    --redrawing_for_callback;
 }
 
 /*
@@ -9742,8 +9750,14 @@ screen_ins_lines(
      * - the screen has to be redrawn completely
      * - the line count is less than one
      * - the line count is more than 'ttyscroll'
+     * - redrawing for a callback and there is a modeless selection
      */
-    if (!screen_valid(TRUE) || line_count <= 0 || line_count > p_ttyscroll)
+     if (!screen_valid(TRUE) || line_count <= 0 || line_count > p_ttyscroll
+#ifdef FEAT_CLIPBOARD
+	     || (clip_star.state != SELECT_CLEARED
+						 && redrawing_for_callback > 0)
+#endif
+	     )
 	return FAIL;
 
     /*
@@ -9959,9 +9973,15 @@ screen_del_lines(
      * - the screen has to be redrawn completely
      * - the line count is less than one
      * - the line count is more than 'ttyscroll'
+     * - redrawing for a callback and there is a modeless selection
      */
-    if (!screen_valid(TRUE) || line_count <= 0 ||
-					 (!force && line_count > p_ttyscroll))
+    if (!screen_valid(TRUE) || line_count <= 0
+					|| (!force && line_count > p_ttyscroll)
+#ifdef FEAT_CLIPBOARD
+	     || (clip_star.state != SELECT_CLEARED
+						 && redrawing_for_callback > 0)
+#endif
+       )
 	return FAIL;
 
     /*
