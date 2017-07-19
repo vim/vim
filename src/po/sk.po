@@ -3203,6 +3203,7 @@ msgid ""
 "Delete the .swp file afterwards.\n"
 "\n"
 msgstr "Potom vyma¾te odkladací súbor s príponou .swp.\n"
+"\n"
 
 #. use msg() to start the scrolling properly
 msgid "Swap files found:"
@@ -3673,7 +3674,7 @@ msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
 "followed by '%s'."
 msgstr ""
-"E343: Chybná cesta: '**[èíslo] musí by» buï na konci cesty, alebo musí by»\n"
+"E343: Chybná cesta: '**[èíslo] musí by» buï na konci cesty, alebo musí by» "
 "nasledované '%s. Viï :help path."
 
 #, c-format

@@ -2827,7 +2827,7 @@ msgstr ""
 
 msgid "where case is ignored prepend / to make flag upper case"
 msgstr ""
-"der bokstavstørrelse ignoreres, legg til / i begynnelsen for\n"
+"der bokstavstørrelse ignoreres, legg til / i begynnelsen for "
 "å gjøre flagget om til stor bokstav"
 
 msgid ""

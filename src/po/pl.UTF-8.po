@@ -3153,7 +3153,7 @@ msgstr "--servername <nazwa>\t\tOdsyłaj do/stań się serwerem Vim <nazwa>"
 
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr ""
-"--startuptime <plik>\n"
+"--startuptime <plik> "
 "Zapisz wiadomości o długości startu do <plik>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"

@@ -7,17 +7,23 @@
 #
 # Style Guide:
 # o English spelling!
+# o Colour, not color
 # o -ise, not -ize.
 # o No contractions.
 # o Cannot, not can not.
 # o Backward (no s) when used as an adjective.
+# o Consistent capitalisation for first word after Ennn:
+# o Consistent capitalisation of NetBeans
 # o TBC ...
+#
+# As with all guides, they should be followed unless there is a reason why they
+# should not be for a particular message.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim(UK English)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-07-19 18:03+0100\n"
+"POT-Creation-Date: 2017-07-16 13:34+0100\n"
 "PO-Revision-Date: 2003-02-25 11:05+0000\n"
 "Last-Translator: Mike Williams <mrw@eandem.co.uk>\n"
 "Language-Team: Mike Williams <mrw@eandem.co.uk>\n"
@@ -25,9 +31,36 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO_8859-1\n"
 "Content-Transfer-Encoding: 7bit\n"
 
+
+msgid "E903: received command with non-string argument"
+msgstr "E903: Received command with non-string argument"
+
+msgid "E904: last argument for expr/call must be a number"
+msgstr "E904: Last argument for expr/call must be a number"
+
+msgid "E904: third argument for call must be a list"
+msgstr "E904: Third argument for call must be a list"
+
 #, c-format
-msgid "E96: Can not diff more than %ld buffers"
-msgstr "E96: Cannot diff more than %ld buffers"
+msgid "E905: received unknown command: %s"
+msgstr "E905: Received unknown command: %s"
+
+
+msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+msgstr "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+
+msgid "E906: not an open channel"
+msgstr "E906: Not an open channel"
+
+
+#, c-format
+msgid "E918: buffer must be loaded: %s"
+msgstr "E918: Buffer must be loaded: %s"
+
+
+msgid "Keys don't match!"
+msgstr "Keys do not match!"
+
 
 msgid "E101: More than two buffers in diff mode, don't know which one to use"
 msgstr "E101: More than two buffers in diff mode, do not know which one to use"
@@ -36,13 +69,71 @@ msgstr "E101: More than two buffers in diff mode, do not know which one to use"
 msgid "E102: Can't find buffer \"%s\""
 msgstr "E102: Cannot find buffer \"%s\""
 
+
+msgid "E806: using Float as a String"
+msgstr "E806: Using Float as a String"
+
+
 #, c-format
 msgid "E738: Can't list variables for %s"
 msgstr "E738: Cannot list variables for %s"
 
+
+msgid "E743: variable nested too deep for (un)lock"
+msgstr "E743: Variable nested too deep for (un)lock"
+
+
+msgid "E724: variable nested too deep for displaying"
+msgstr "E724: Variable nested too deep for displaying"
+
+
+msgid "E729: using Funcref as a String"
+msgstr "E729: Using Funcref as a String"
+
+msgid "E730: using List as a String"
+msgstr "E730: Using List as a String"
+
+msgid "E731: using Dictionary as a String"
+msgstr "E731: Using Dictionary as a String"
+
+msgid "E908: using an invalid value as a String"
+msgstr "E908: Using an invalid value as a String"
+
+
+msgid "E698: variable nested too deep for making a copy"
+msgstr "E698: Variable nested too deep for making a copy"
+
+
+msgid "E785: complete() can only be used in Insert mode"
+msgstr "E785: Complete() can only be used in Insert mode"
+
+
+msgid "E922: expected a dict"
+msgstr "E922: Expected a dict"
+
+
+msgid "E916: not a valid job"
+msgstr "E916: Not a valid job"
+
+
+msgid "E941: already started a server"
+msgstr "E941: Already started a server"
+
+
+#, c-format
+msgid "E935: invalid submatch number: %d"
+msgstr "E935: Invalid submatch number: %d"
+
+
 #, c-format
 msgid "E138: Can't write viminfo file %s!"
 msgstr "E138: Cannot write viminfo file %s!"
+
+
+#, c-format
+msgid "E886: Can't rename viminfo file to %s!"
+msgstr "E886: Cannot rename viminfo file to %s!"
+
 
 msgid ""
 "# You may edit it if you're careful!\n"
@@ -51,8 +142,19 @@ msgstr ""
 "# You may edit it if you are careful!\n"
 "\n"
 
+
+msgid "E144: non-numeric argument to :z"
+msgstr "E144: Non-numeric argument to :z"
+
+
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Regular expressions cannot be delimited by letters"
+
+
+#, c-format
+msgid "E666: compiler not supported: %s"
+msgstr "E666: Compiler not supported: %s"
+
 
 msgid "E493: Backwards range given"
 msgstr "E493: Backward range given"
@@ -60,27 +162,69 @@ msgstr "E493: Backward range given"
 msgid "Backwards range given, OK to swap"
 msgstr "Backward range given, OK to swap"
 
+
+msgid "E179: argument required for -complete"
+msgstr "E179: Argument required for -complete"
+
+msgid "E179: argument required for -addr"
+msgstr "E179: Argument required for -addr"
+
+
 #, c-format
-msgid "E185: Cannot find color scheme %s"
-msgstr "E185: Cannot find colour scheme %s"
+msgid "E185: Cannot find color scheme '%s'"
+msgstr "E185: Cannot find colour scheme '%s'"
+
+
+msgid "E495: no autocommand file name to substitute for \"<afile>\""
+msgstr "E495: No autocommand file name to substitute for \"<afile>\""
+
+msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+msgstr "E496: No autocommand buffer number to substitute for \"<abuf>\""
+
+msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+msgstr "E497: No autocommand match name to substitute for \"<amatch>\""
+
+msgid "E498: no :source file name to substitute for \"<sfile>\""
+msgstr "E498: No :source file name to substitute for \"<sfile>\""
+
+msgid "E842: no line number to use for \"<slnum>\""
+msgstr "E842: No line number to use for \"<slnum>\""
+
+#, no-c-format
+
+
+msgid "E583: multiple :else"
+msgstr "E583: Multiple :else"
+
+
+#. Give up for a multiple ":finally" and ignore it.
+msgid "E607: multiple :finally"
+msgstr "E607: Multiple :finally"
+
 
 msgid "Can't find temp file for conversion"
 msgstr "Cannot find temp file for conversion"
 
+
 msgid "can't read output of 'charconvert'"
 msgstr "cannot read output of 'charconvert'"
+
 
 msgid "E506: Can't write to backup file (add ! to override)"
 msgstr "E506: Cannot write to backup file (add ! to override)"
 
+
 msgid "E508: Can't read file for backup (add ! to override)"
 msgstr "E508: Cannot read file for backup (add ! to override)"
+
 
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Cannot make backup file (add ! to override)"
 
+
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Cannot find temp file for writing"
+
 
 msgid "E166: Can't open linked file for writing"
 msgstr "E166: Cannot open linked file for writing"
@@ -88,46 +232,62 @@ msgstr "E166: Cannot open linked file for writing"
 msgid "E212: Can't open file for writing"
 msgstr "E212: Cannot open file for writing"
 
+
+msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+msgstr "E513: Write error, conversion failed (make 'fenc' empty to override)"
+
+#, c-format
+msgid ""
+"E513: write error, conversion failed in line %ld (make 'fenc' empty to "
+"override)"
+msgstr "E513: Write error, conversion failed in line %ld (make 'fenc' empty to override)"
+
+msgid "E514: write error (file system full?)"
+msgstr "E514: Write error (file system full?)"
+
+
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: Patchmode: cannot save original file"
 
 msgid "E206: patchmode: can't touch empty original file"
-msgstr "E206: patchmode: cannot touch empty original file"
+msgstr "E206: Patchmode: cannot touch empty original file"
 
 msgid "E207: Can't delete backup file"
 msgstr "E207: Cannot delete backup file"
 
+
 msgid "don't quit the editor until the file is successfully written!"
 msgstr "do not quit the editor until the file is successfully written!"
+
 
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Cannot execute autocommands for ALL events"
 
-#, c-format
-msgid "E482: Can't create file %s"
-msgstr "E482: Cannot create file %s"
 
-msgid "E483: Can't get temp file name"
-msgstr "E483: Cannot get temp file name"
+msgid "E223: recursive mapping"
+msgstr "E223: Recursive mapping"
 
 #, c-format
-msgid "E484: Can't open file %s"
-msgstr "E484: Cannot open file %s"
+msgid "E224: global abbreviation already exists for %s"
+msgstr "E224: Global abbreviation already exists for %s"
 
 #, c-format
-msgid "E485: Can't read file %s"
-msgstr "E485: Cannot read file %s"
+msgid "E225: global mapping already exists for %s"
+msgstr "E225: Global mapping already exists for %s"
 
 #, c-format
-msgid "E40: Can't open errorfile %s"
-msgstr "E40: Cannot open errorfile %s"
+msgid "E226: abbreviation already exists for %s"
+msgstr "E226: Abbreviation already exists for %s"
 
-msgid "E255: Couldn't read in sign data!"
-msgstr "E255: Could not read in sign data!"
+#, c-format
+msgid "E227: mapping already exists for %s"
+msgstr "E227: Mapping already exists for %s"
+
 
 #, c-format
 msgid "E254: Cannot allocate color %s"
 msgstr "E254: Cannot allocate colour %s"
+
 
 #, c-format
 msgid "E616: vim_SelFile: can't get font %s"
@@ -136,12 +296,19 @@ msgstr "E616: vim_SelFile: cannot get font %s"
 msgid "E614: vim_SelFile: can't return to current directory"
 msgstr "E614: vim_SelFile: cannot return to current directory"
 
+
 msgid "E615: vim_SelFile: can't get current directory"
 msgstr "E615: vim_SelFile: cannot get current directory"
+
 
 msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr ""
 "Vim E458: Cannot allocate colourmap entry, some colours may be incorrect"
+
+
+msgid "E552: digit expected"
+msgstr "E552: Digit expected"
+
 
 #, c-format
 msgid "E624: Can't open file \"%s\""
@@ -150,6 +317,15 @@ msgstr "E624: Cannot open file \"%s\""
 #, c-format
 msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Cannot read PostScript resource file \"%s\""
+
+#, c-format
+msgid "E618: file \"%s\" is not a PostScript resource file"
+msgstr "E618: File \"%s\" is not a PostScript resource file"
+
+#, c-format
+msgid "E619: file \"%s\" is not a supported PostScript resource file"
+msgstr "E619: File \"%s\" is not a supported PostScript resource file"
+
 
 msgid "E324: Can't open PostScript output file"
 msgstr "E324: Cannot open PostScript output file"
@@ -168,31 +344,104 @@ msgstr "E456: Cannot find PostScript resource file \"cidfont.ps\""
 msgid "E456: Can't find PostScript resource file \"%s.ps\""
 msgstr "E456: Cannot find PostScript resource file \"%s.ps\""
 
+
+#, c-format
+msgid "E262: error reading cscope connection %ld"
+msgstr "E262: Error reading cscope connection %ld"
+
+msgid "E561: unknown cscope search type"
+msgstr "E561: Unknown cscope search type"
+
+
+msgid "E567: no cscope connections"
+msgstr "E567: No cscope connections"
+
+#, c-format
+msgid "E469: invalid cscopequickfix flag %c for %c"
+msgstr "E469: Invalid cscopequickfix flag %c for %c"
+
+#, c-format
+msgid "E259: no matches found for cscope query %s of %s"
+msgstr "E259: No matches found for cscope query %s of %s"
+
+
+#, c-format
+msgid "E625: cannot open cscope database: %s"
+msgstr "E625: Cannot open cscope database: %s"
+
+msgid "E626: cannot get cscope database information"
+msgstr "E626: Cannot get cscope database information"
+
+msgid "E568: duplicate cscope database not added"
+msgstr "E568: Duplicate cscope database not added"
+
+
+#. should not reach here
+msgid "E570: fatal error in cs_manage_matches"
+msgstr "E570: Fatal error in cs_manage_matches"
+
+
 msgid "couldn't open buffer"
 msgstr "could not open buffer"
 
-msgid "can't delete OutputObject attributes"
-msgstr "cannot delete OutputObject attributes"
+
+msgid "E267: unexpected return"
+msgstr "E267: Unexpected return"
+
+msgid "E268: unexpected next"
+msgstr "E268: Unexpected next"
+
+msgid "E269: unexpected break"
+msgstr "E269: Unexpected break"
+
+msgid "E270: unexpected redo"
+msgstr "E270: Unexpected redo"
+
+msgid "E271: retry outside of rescue clause"
+msgstr "E271: Retry outside of rescue clause"
+
+msgid "E272: unhandled exception"
+msgstr "E272: Unhandled exception"
+
+#, c-format
+msgid "E273: unknown longjmp status %d"
+msgstr "E273: Unknown longjmp status %d"
+
+
+#, c-format
+msgid "E572: exit code %d"
+msgstr "E572: Exit code %d"
+
+
+msgid "netbeans is not supported with this GUI\n"
+msgstr "NetBeans is not supported with this GUI\n"
+
 
 msgid "--literal\t\tDon't expand wildcards"
 msgstr "--literal\t\tDo not expand wildcards"
 
+
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
 msgstr "-f  or  --nofork\tForeground: Do not fork when starting GUI"
+
 
 msgid "-f\t\t\tDon't use newcli to open window"
 msgstr "-f\t\t\tDo not use newcli to open window"
 
+
 msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\tDo not load plugin scripts"
 
+
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-silent <files>  Same, do not complain if there is no server"
+
 
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr ""
 "--remote-wait-silent <files>  Same, do not complain if there is no server"
+
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <colour>\tUse <colour> for the background (also: -bg)"
@@ -200,14 +449,20 @@ msgstr "-background <colour>\tUse <colour> for the background (also: -bg)"
 msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
 msgstr "-foreground <colour>\tUse <colour> for normal text (also: -fg)"
 
+
 msgid "+reverse\t\tDon't use reverse video (also: +rv)"
 msgstr "+reverse\t\tDo not use reverse video (also: +rv)"
 
+
 msgid "E288: input method doesn't support any style"
-msgstr "E288: input method does not support any style"
+msgstr "E288: Input method does not support any style"
 
 msgid "E289: input method doesn't support my preedit type"
-msgstr "E289: input method does not support my preedit type"
+msgstr "E289: Input method does not support my preedit type"
+
+msgid "E293: block was not locked"
+msgstr "E293: Block was not locked"
+
 
 msgid "E298: Didn't get block nr 0?"
 msgstr "E298: Did not get block nr 0?"
@@ -218,14 +473,47 @@ msgstr "E298: Did not get block nr 1?"
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Did not get block nr 2?"
 
+
 msgid "E304: ml_upd_block0(): Didn't get block 0??"
 msgstr "E304: ml_upd_block0(): Did not get block 0??"
+
+
+msgid "E317: pointer block id wrong 3"
+msgstr "E317: Pointer block id wrong 3"
+
+
+msgid "E317: pointer block id wrong 4"
+msgstr "E317: Pointer block id wrong 4"
+
+
+msgid "E317: pointer block id wrong"
+msgstr "E317: Pointer block id wrong"
+
+
+#, c-format
+msgid "E322: line number out of range: %ld past the end"
+msgstr "E322: Line number out of range: %ld past the end"
+
+#, c-format
+msgid "E323: line count wrong in block %ld"
+msgstr "E323: Line count wrong in block %ld"
+
+
+msgid "E317: pointer block id wrong 2"
+msgstr "E317: Pointer block id wrong 2"
+
 
 msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
 msgstr "Messages maintainer: Mike Williams <mrw@eandem.co.uk>"
 
-msgid "Keys don't match!"
-msgstr "Keys do not match!"
+
+msgid "E548: digit expected"
+msgstr "E548: Digit expected"
+
+
+msgid "E854: path too long for completion"
+msgstr "E854: Path too long for completion"
+
 
 #, c-format
 msgid "E344: Can't find directory \"%s\" in cdpath"
@@ -235,14 +523,78 @@ msgstr "E344: Cannot find directory \"%s\" in cdpath"
 msgid "E345: Can't find file \"%s\" in path"
 msgstr "E345: Cannot find file \"%s\" in path"
 
+
+msgid "E838: netbeans is not supported with this GUI"
+msgstr "E838: NetBeans is not supported with this GUI"
+
+msgid "E511: netbeans already connected"
+msgstr "E511: NetBeans already connected"
+
+
+msgid "E664: changelist is empty"
+msgstr "E664: Changelist is empty"
+
+
+msgid ""
+"E883: search pattern and expression register may not contain two or more "
+"lines"
+msgstr "E883: Search pattern and expression register may not contain two or more lines"
+
+
+msgid "E595: contains unprintable or wide character"
+msgstr "E595: Contains unprintable or wide character"
+
+
 msgid "E597: can't select fontset"
-msgstr "E597: cannot select fontset"
+msgstr "E597: Cannot select fontset"
+
 
 msgid "E533: can't select wide font"
-msgstr "E533: cannot select wide font"
+msgstr "E533: Cannot select wide font"
+
+
+msgid "E536: comma required"
+msgstr "E536: Comma required"
+
+
+msgid "E541: too many items"
+msgstr "E541: Too many items"
+
+msgid "E542: unbalanced groups"
+msgstr "E542: Unbalanced groups"
+
 
 msgid "VIM: Can't open window!\n"
 msgstr "VIM: Cannot open window!\n"
+
+
+#, c-format
+msgid "E369: invalid item in %s%%[]"
+msgstr "E369: Invalid item in %s%%[]"
+
+
+#, c-format
+msgid "E59: invalid character after %s@"
+msgstr "E59: Invalid character after %s@"
+
+
+msgid "E63: invalid use of \\_"
+msgstr "E63: Invalid use of \\_"
+
+
+#. Can't have a multi follow a multi.
+msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
+msgstr "E871: (NFA regexp) Cannot have a multi follow a multi !"
+
+
+#, c-format
+msgid "E384: search hit TOP without match for: %s"
+msgstr "E384: Search hit TOP without match for: %s"
+
+#, c-format
+msgid "E385: search hit BOTTOM without match for: %s"
+msgstr "E385: Search hit BOTTOM without match for: %s"
+
 
 msgid "E388: Couldn't find definition"
 msgstr "E388: Could not find definition"
@@ -250,21 +602,68 @@ msgstr "E388: Could not find definition"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: Could not find pattern"
 
-#, c-format
-msgid "Unrecognized or duplicate item in %s line %d: %s"
-msgstr "Unrecognised or duplicate item in %s line %d: %s"
-
-#, c-format
-msgid "Unrecognized flags in %s line %d: %s"
-msgstr "Unrecognised flags in %s line %d: %s"
 
 #, c-format
 msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: .sug file does not match .spl file: %s"
 
 #, c-format
+msgid "E782: error while reading .sug file: %s"
+msgstr "E782: Error while reading .sug file: %s"
+
+
+#, c-format
+msgid "Unrecognized or duplicate item in %s line %d: %s"
+msgstr "Unrecognised or duplicate item in %s line %d: %s"
+
+
+#, c-format
+msgid "Unrecognized flags in %s line %d: %s"
+msgstr "Unrecognised flags in %s line %d: %s"
+
+
+#. * file.
+msgid "E783: duplicate char in MAP entry"
+msgstr "E783: Duplicate char in MAP entry"
+
+
+msgid "E395: contains argument not accepted here"
+msgstr "E395: Contains argument not accepted here"
+
+msgid "E844: invalid cchar value"
+msgstr "E844: Invalid cchar value"
+
+
+#, c-format
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: Did not find region item for %s"
+
+
+#, c-format
+msgid "E890: trailing char after ']': %s]%s"
+msgstr "E890: Trailing char after ']': %s]%s"
+
+
+msgid "E679: recursive loop loading syncolor.vim"
+msgstr "E679: Recursive loop loading syncolor.vim"
+
+#, c-format
+msgid "E411: highlight group not found: %s"
+msgstr "E411: Highlight group not found: %s"
+
+
+#, c-format
+msgid "E415: unexpected equal sign: %s"
+msgstr "E415: Unexpected equal sign: %s"
+
+#, c-format
+msgid "E416: missing equal sign: %s"
+msgstr "E416: Missing equal sign: %s"
+
+#, c-format
+msgid "E417: missing argument: %s"
+msgstr "E417: Missing argument: %s"
+
 
 msgid "E419: FG color unknown"
 msgstr "E419: FG colour unknown"
@@ -276,15 +675,93 @@ msgstr "E420: BG colour unknown"
 msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Colour name or number not recognised: %s"
 
+#, c-format
+msgid "E422: terminal code too long: %s"
+msgstr "E422: Terminal code too long: %s"
+
+
+msgid "E555: at bottom of tag stack"
+msgstr "E555: At bottom of tag stack"
+
+msgid "E556: at top of tag stack"
+msgstr "E556: At top of tag stack"
+
+
+#, c-format
+msgid "E426: tag not found: %s"
+msgstr "E426: Tag not found: %s"
+
+
 msgid "E434: Can't find tag pattern"
 msgstr "E434: Cannot find tag pattern"
 
 msgid "E435: Couldn't find tag, just guessing!"
 msgstr "E435: Could not find tag, just guessing!"
 
+
+msgid "E437: terminal capability \"cm\" required"
+msgstr "E437: Terminal capability \"cm\" required"
+
+
+#, c-format
+msgid "E829: write error in undo file: %s"
+msgstr "E829: Write error in undo file: %s"
+
+
 msgid "E442: Can't split topleft and botright at the same time"
 msgstr "E442: Cannot split topleft and botright at the same time"
+
 
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Cannot find file \"%s\" in path"
+
+
+#, c-format
+msgid "E247: no registered server named \"%s\""
+msgstr "E247: No registered server named \"%s\""
+
+#, c-format
+msgid "E482: Can't create file %s"
+msgstr "E482: Cannot create file %s"
+
+msgid "E483: Can't get temp file name"
+msgstr "E483: Cannot get temp file name"
+
+#, c-format
+msgid "E484: Can't open file %s"
+msgstr "E484: Cannot open file %s"
+
+#, c-format
+msgid "E485: Can't read file %s"
+msgstr "E485: Cannot read file %s"
+
+
+#, c-format
+msgid "E40: Can't open errorfile %s"
+msgstr "E40: Cannot open errorfile %s"
+
+msgid "E233: cannot open display"
+msgstr "E233: Cannot open display"
+
+
+#, c-format
+msgid "E684: list index out of range: %ld"
+msgstr "E684: List index out of range: %ld"
+
+
+msgid "E255: Couldn't read in sign data!"
+msgstr "E255: Could not read in sign data!"
+
+
+msgid "E363: pattern uses more memory than 'maxmempattern'"
+msgstr "E363: Pattern uses more memory than 'maxmempattern'"
+
+msgid "E749: empty buffer"
+msgstr "E749: Empty buffer"
+
+
+msgid "can't delete OutputObject attributes"
+msgstr "cannot delete OutputObject attributes"
+
+

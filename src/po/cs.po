@@ -2655,11 +2655,6 @@ msgstr ""
 msgid "and run diff with the original file to check for changes)\n"
 msgstr "a kontrolu zmìn pomocí programu diff.)\n"
 
-msgid ""
-"Delete the .swp file afterwards.\n"
-"\n"
-msgstr "Poté sma¾te odkládací soubor.\n"
-
 #. use msg() to start the scrolling properly
 msgid "Swap files found:"
 msgstr "Nalezené odkládací soubory:"
@@ -3120,7 +3115,7 @@ msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
 "followed by '%s'."
 msgstr ""
-"E343: Chybná cesta: '**[èíslo] musí být buï na konci cesty, nebo musí být\n"
+"E343: Chybná cesta: '**[èíslo] musí být buï na konci cesty, nebo musí být "
 "následováno'%s. Viz :help path."
 
 #, c-format
@@ -3606,7 +3601,8 @@ msgid ""
 "See  :help win32-vimrun  for more information."
 msgstr ""
 "VIMRUN.EXE se nevyskytuje ve Va¹í $PATH.\n"
-"Externí pøíkazy nebudou "
+"Externí pøíkazy nebudou\n"
+"See  :help win32-vimrun  for more information."
 
 msgid "Vim Warning"
 msgstr "Varování"
