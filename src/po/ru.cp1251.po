@@ -2976,8 +2976,7 @@ msgstr "-t метка    редактирование файла с указанной меткой"
 # \n\t\t.. для умещения в 80 столбцов
 msgid "-q [errorfile]  edit file with first error"
 msgstr ""
-"-q [файл-ошибок]\n"
-"\t\t\t\t    редактирование файла с первой ошибкой"
+"-q [файл-ошибок] редактирование файла с первой ошибкой"
 
 msgid ""
 "\n"
@@ -3077,8 +3076,8 @@ msgstr "-N\t\t\tРежим неполной совместимости с Vi: 'nocompatible'"
 # \n\t\t.. для умещения в 80 столбцов
 msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
 msgstr ""
-"-V[N][файл]\t\tВыводить дополнительные сообщения\n"
-"\t\t\t\t[уровень N] [записывать в файл]"
+"-V[N][файл]\t\tВыводить дополнительные сообщения "
+"[уровень N] [записывать в файл]"
 
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\tРежим отладки"
@@ -3125,14 +3124,12 @@ msgstr "--noplugin\t\tНе загружать сценарии модулей"
 # \n\t\t.. для умещения в 80 столбцов
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
 msgstr ""
-"-p[N]\t\tОткрыть N вкладок (по умолчанию: по одной\n"
-"\t\t\t\tна каждый файл)"
+"-p[N]\t\tОткрыть N вкладок (по умолчанию: по одной на каждый файл)"
 
 # \n\t\t.. для умещения в 80 столбцов
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr ""
-"-o[N]\t\tОткрыть N окон (по умолчанию: по одному\n"
-"\t\t\t\tна каждый файл)"
+"-o[N]\t\tОткрыть N окон (по умолчанию: по одному на каждый файл)"
 
 msgid "-O[N]\t\tLike -o but split vertically"
 msgstr "-O[N]\t\tТо же, что и -o, но с вертикальным разделением окон"
@@ -3152,14 +3149,13 @@ msgstr "-c <команда>\t\tВыполнить <команду> после загрузки первого файла"
 # \n\t\t.. для умещения в 80 столбцов
 msgid "-S <session>\t\tSource file <session> after loading the first file"
 msgstr ""
-"-S <сеанс>\t\tПрочитать сценарий <сеанса> после загрузки\n"
-"\t\t\t\tпервого файла"
+"-S <сеанс>\t\tПрочитать сценарий <сеанса> после загрузки "
+"первого файла"
 
 # \n\t\t.. для умещения в 80 столбцов
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
 msgstr ""
-"-s <сценарий>\tПрочитать команды Обычного режима из\n"
-"\t\t\t\tфайла <сценария>"
+"-s <сценарий>\tПрочитать команды Обычного режима из файла <сценария>"
 
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
 msgstr "-w <сценарий>\tДобавлять все введённые команды в файл <сценария>"
@@ -3820,7 +3816,6 @@ msgstr ""
 # Сообщение разделено, " \n" добавлено т.к. строка не помещается.
 msgid "  Quit, or continue with caution.\n"
 msgstr ""
-" \n"
 "    Завершите работу или продолжайте с осторожностью.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
