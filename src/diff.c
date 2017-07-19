@@ -1137,6 +1137,20 @@ ex_diffthis(exarg_T *eap UNUSED)
     diff_win_options(curwin, TRUE);
 }
 
+    static void
+set_diff_option(win_T *wp, int value)
+{
+    win_T *old_curwin = curwin;
+
+    curwin = wp;
+    curbuf = curwin->w_buffer;
+    ++curbuf_lock;
+    set_option_value((char_u *)"diff", (long)value, NULL, OPT_LOCAL);
+    --curbuf_lock;
+    curwin = old_curwin;
+    curbuf = curwin->w_buffer;
+}
+
 /*
  * Set options in window "wp" for diff mode.
  */
@@ -1198,10 +1212,10 @@ diff_win_options(
     if (vim_strchr(p_sbo, 'h') == NULL)
 	do_cmdline_cmd((char_u *)"set sbo+=hor");
 #endif
-    /* Saved the current values, to be restored in ex_diffoff(). */
+    /* Save the current values, to be restored in ex_diffoff(). */
     wp->w_p_diff_saved = TRUE;
 
-    wp->w_p_diff = TRUE;
+    set_diff_option(wp, TRUE);
 
     if (addbuf)
 	diff_buf_add(wp->w_buffer);
@@ -1227,7 +1241,7 @@ ex_diffoff(exarg_T *eap)
 	    /* Set 'diff' off. If option values were saved in
 	     * diff_win_options(), restore the ones whose settings seem to have
 	     * been left over from diff mode.  */
-	    wp->w_p_diff = FALSE;
+	    set_diff_option(wp, FALSE);
 
 	    if (wp->w_p_diff_saved)
 	    {

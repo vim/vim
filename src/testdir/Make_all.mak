@@ -66,7 +66,6 @@ SCRIPTS_ALL = \
 	test104.out \
 	test107.out \
 	test108.out \
-	test_autocmd_option.out \
 	test_autoformat_join.out \
 	test_changelist.out \
 	test_close_count.out \
