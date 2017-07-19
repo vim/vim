@@ -2088,7 +2088,6 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 
 # Run individual OLD style test, assuming that Vim was already compiled.
 test1 \
-	test_autocmd_option \
 	test_autoformat_join \
 	test_changelist \
 	test_close_count \
