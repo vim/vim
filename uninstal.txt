@@ -5,7 +5,7 @@ There are three ways to remove Vim:
 1. With the GUI uninstaller.
    This is only available when Vim was installed with the self-installing
    executable.  This has a minimal number of questions.  It can delete
-   everything that was installed.  This also unregisters the VisVim.dll
+   everything that was installed.  This also unregisters the VisVim.dll.
 
 2. With uninstal.exe.
    This removes most installed items, but does not delete the files you
