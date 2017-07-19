@@ -3286,6 +3286,7 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
 	qf_update_win_titlevar(qi);
 
 	qf_fill_buffer(qi, buf, old_last);
+	++CHANGEDTICK(buf);
 
 	if (old_last == NULL)
 	{
