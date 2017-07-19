@@ -29,8 +29,6 @@
  * while, if the terminal window is visible, the screen contents is drawn.
  *
  * TODO:
- * - pressing Enter sends two CR and/or NL characters to "bash -i"?
- *   Passing Enter as NL seems to work.
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
  * - set buffer name to command, add (1) to avoid duplicates.
  * - If [command] is not given the 'shell' option is used.
@@ -251,7 +249,8 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 
 /*
  * Wait for input and send it to the job.
- * Return when a CTRL-W command is typed that moves to another window.
+ * Return when the start of a CTRL-W command is typed or anything else that
+ * should be handled as a Normal mode command.
  */
     void
 terminal_loop(void)
@@ -259,6 +258,8 @@ terminal_loop(void)
     char	buf[KEY_BUF_LEN];
     int		c;
     size_t	len;
+    static int	mouse_was_outside = FALSE;
+    int		dragging_outside = FALSE;
 
     for (;;)
     {
@@ -268,11 +269,49 @@ terminal_loop(void)
 	out_flush();
 	c = vgetc();
 
-	if (c == Ctrl_W)
+	/* Catch keys that need to be handled as in Normal mode. */
+	switch (c)
 	{
-	    stuffcharReadbuff(Ctrl_W);
-	    return;
+	    case Ctrl_W:
+	    case NUL:
+	    case K_ZERO:
+		stuffcharReadbuff(c);
+		return;
+
+	    case K_IGNORE: continue;
+
+	    case K_LEFTDRAG:
+	    case K_MIDDLEDRAG:
+	    case K_RIGHTDRAG:
+	    case K_X1DRAG:
+	    case K_X2DRAG:
+		dragging_outside = mouse_was_outside;
+		/* FALLTHROUGH */
+	    case K_LEFTMOUSE:
+	    case K_LEFTMOUSE_NM:
+	    case K_LEFTRELEASE:
+	    case K_LEFTRELEASE_NM:
+	    case K_MIDDLEMOUSE:
+	    case K_MIDDLERELEASE:
+	    case K_RIGHTMOUSE:
+	    case K_RIGHTRELEASE:
+	    case K_X1MOUSE:
+	    case K_X1RELEASE:
+	    case K_X2MOUSE:
+	    case K_X2RELEASE:
+		if (mouse_row < W_WINROW(curwin)
+			|| mouse_row >= (W_WINROW(curwin) + curwin->w_height)
+			|| mouse_col < W_WINCOL(curwin)
+			|| mouse_col >= W_ENDCOL(curwin)
+			|| dragging_outside)
+		{
+		    /* click outside the current window */
+		    stuffcharReadbuff(c);
+		    mouse_was_outside = TRUE;
+		    return;
+		}
 	}
+	mouse_was_outside = FALSE;
 
 	/* Convert the typed key to a sequence of bytes for the job. */
 	len = term_convert_key(c, buf);
@@ -392,9 +431,6 @@ term_init(term_T *term, int rows, int cols)
     /* Required to initialize most things. */
     vterm_screen_reset(screen, 1 /* hard */);
 
-    /* By default NL means CR-NL. */
-    vterm_input_write(vterm, "\x1b[20h", 5);
-
     return OK;
 }
 
@@ -414,8 +450,27 @@ term_free(term_T *term)
 term_write_job_output(term_T *term, char_u *msg, size_t len)
 {
     VTerm	*vterm = term->tl_vterm;
+    char_u	*p;
+    size_t	done;
+    size_t	len_now;
 
-    vterm_input_write(vterm, (char *)msg, len);
+    for (done = 0; done < len; done += len_now)
+    {
+	for (p = msg + done; p < msg + len; )
+	{
+	    if (*p == NL)
+		break;
+	    p += mb_ptr2len_len(p, len - (p - msg));
+	}
+	len_now = p - msg - done;
+	vterm_input_write(vterm, (char *)msg + done, len_now);
+	if (p < msg + len && *p == NL)
+	{
+	    /* Convert NL to CR-NL, that appears to work best. */
+	    vterm_input_write(vterm, "\r\n", 2);
+	    ++len_now;
+	}
+    }
     vterm_screen_flush_damage(vterm_obtain_screen(vterm));
 }
 
@@ -491,12 +546,7 @@ term_convert_key(int c, char *buf)
 
     switch (c)
     {
-	/* TODO: which of these two should be used? */
-#if 0
 	case CAR:		key = VTERM_KEY_ENTER; break;
-#else
-	case CAR:		c = NL; break;
-#endif
 	case ESC:		key = VTERM_KEY_ESCAPE; break;
 	case K_BS:		key = VTERM_KEY_BACKSPACE; break;
 	case K_DEL:		key = VTERM_KEY_DEL; break;
@@ -544,6 +594,32 @@ term_convert_key(int c, char *buf)
 	case K_RIGHT:		key = VTERM_KEY_RIGHT; break;
 	case K_UP:		key = VTERM_KEY_UP; break;
 	case TAB:		key = VTERM_KEY_TAB; break;
+
+	case K_MOUSEUP:		/* TODO */ break;
+	case K_MOUSEDOWN:	/* TODO */ break;
+	case K_MOUSELEFT:	/* TODO */ break;
+	case K_MOUSERIGHT:	/* TODO */ break;
+
+	case K_LEFTMOUSE:	/* TODO */ break;
+	case K_LEFTMOUSE_NM:	/* TODO */ break;
+	case K_LEFTDRAG:	/* TODO */ break;
+	case K_LEFTRELEASE:	/* TODO */ break;
+	case K_LEFTRELEASE_NM:	/* TODO */ break;
+	case K_MIDDLEMOUSE:	/* TODO */ break;
+	case K_MIDDLEDRAG:	/* TODO */ break;
+	case K_MIDDLERELEASE:	/* TODO */ break;
+	case K_RIGHTMOUSE:	/* TODO */ break;
+	case K_RIGHTDRAG:	/* TODO */ break;
+	case K_RIGHTRELEASE:	/* TODO */ break;
+	case K_X1MOUSE:		/* TODO */ break;
+	case K_X1DRAG:		/* TODO */ break;
+	case K_X1RELEASE:	/* TODO */ break;
+	case K_X2MOUSE:		/* TODO */ break;
+	case K_X2DRAG:		/* TODO */ break;
+	case K_X2RELEASE:	/* TODO */ break;
+
+        /* TODO: handle all special keys and modifiers that terminal_loop()
+	 * does not handle. */
     }
 
     /*
@@ -597,6 +673,8 @@ term_update_lines(win_T *wp)
 		ScreenAttrs[off] = 0;
 		++off;
 	    }
+	else
+	    pos.col = 0;
 
 	screen_line(wp->w_winrow + pos.row, wp->w_wincol, pos.col, wp->w_width,
 									FALSE);
