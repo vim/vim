@@ -67,6 +67,14 @@ typedef struct qf_list_S
     char_u	*qf_title;	/* title derived from the command that created
 				 * the error list or set by setqflist */
     typval_T	*qf_ctx;	/* context set by setqflist/setloclist */
+
+    struct dir_stack_T	*qf_dir_stack;
+    char_u		*qf_directory;
+    struct dir_stack_T	*qf_file_stack;
+    char_u		*qf_currfile;
+    int			qf_multiline;
+    int			qf_multiignore;
+    int			qf_multiscan;
 } qf_list_T;
 
 /*
@@ -85,15 +93,6 @@ struct qf_info_S
     int		qf_listcount;	    /* current number of lists */
     int		qf_curlist;	    /* current error list */
     qf_list_T	qf_lists[LISTCOUNT];
-
-    int			  qf_dir_curlist;    /* error list for qf_dir_stack */
-    struct dir_stack_T   *qf_dir_stack;
-    char_u		 *qf_directory;
-    struct dir_stack_T   *qf_file_stack;
-    char_u		 *qf_currfile;
-    int			  qf_multiline;
-    int			  qf_multiignore;
-    int			  qf_multiscan;
 };
 
 static qf_info_T ql_info;	/* global quickfix list */
@@ -130,7 +129,7 @@ struct efm_S
 
 static efm_T	*fmt_start = NULL; /* cached across qf_parse_line() calls */
 
-static int	qf_init_ext(qf_info_T *qi, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast, char_u *qf_title, char_u *enc);
+static int	qf_init_ext(qf_info_T *qi, int qf_idx, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast, char_u *qf_title, char_u *enc);
 static void	qf_store_title(qf_info_T *qi, int qf_idx, char_u *title);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static void	ll_free_all(qf_info_T **pqi);
@@ -138,10 +137,10 @@ static int	qf_add_entry(qf_info_T *qi, int qf_idx, char_u *dir, char_u *fname, i
 static qf_info_T *ll_new_list(void);
 static void	qf_free(qf_info_T *qi, int idx);
 static char_u	*qf_types(int, int);
-static int	qf_get_fnum(qf_info_T *qi, char_u *, char_u *);
+static int	qf_get_fnum(qf_info_T *qi, int qf_idx, char_u *, char_u *);
 static char_u	*qf_push_dir(char_u *, struct dir_stack_T **, int is_file_stack);
 static char_u	*qf_pop_dir(struct dir_stack_T **);
-static char_u	*qf_guess_filepath(qf_info_T *qi, char_u *);
+static char_u	*qf_guess_filepath(qf_info_T *qi, int qf_idx, char_u *);
 static void	qf_fmt_text(char_u *text, char_u *buf, int bufsize);
 static void	qf_clean_dir_stack(struct dir_stack_T **);
 #ifdef FEAT_WINDOWS
@@ -200,9 +199,8 @@ qf_init(
 	    return FAIL;
     }
 
-    return qf_init_ext(qi, efile, curbuf, NULL, errorformat, newlist,
-						    (linenr_T)0, (linenr_T)0,
-						    qf_title, enc);
+    return qf_init_ext(qi, qi->qf_curlist, efile, curbuf, NULL, errorformat,
+	    newlist, (linenr_T)0, (linenr_T)0, qf_title, enc);
 }
 
 /*
@@ -831,6 +829,7 @@ typedef struct {
     static int
 qf_parse_line(
 	qf_info_T	*qi,
+	int		qf_idx,
 	char_u		*linebuf,
 	int		linelen,
 	efm_T		*fmt_first,
@@ -843,6 +842,7 @@ qf_parse_line(
     int			idx = 0;
     char_u		*tail = NULL;
     regmatch_T		regmatch;
+    qf_list_T		*qfl = &qi->qf_lists[qf_idx];
 
     /* Always ignore case when looking for a matching error. */
     regmatch.rm_ic = TRUE;
@@ -867,11 +867,11 @@ restofline:
 	int r;
 
 	idx = fmt_ptr->prefix;
-	if (qi->qf_multiscan && vim_strchr((char_u *)"OPQ", idx) == NULL)
+	if (qfl->qf_multiscan && vim_strchr((char_u *)"OPQ", idx) == NULL)
 	    continue;
 	fields->namebuf[0] = NUL;
 	fields->pattern[0] = NUL;
-	if (!qi->qf_multiscan)
+	if (!qfl->qf_multiscan)
 	    fields->errmsg[0] = NUL;
 	fields->lnum = 0;
 	fields->col = 0;
@@ -885,7 +885,7 @@ restofline:
 	fmt_ptr->prog = regmatch.regprog;
 	if (r)
 	{
-	    if ((idx == 'C' || idx == 'Z') && !qi->qf_multiline)
+	    if ((idx == 'C' || idx == 'Z') && !qfl->qf_multiline)
 		continue;
 	    if (vim_strchr((char_u *)"EWI", idx) != NULL)
 		fields->type = idx;
@@ -937,7 +937,7 @@ restofline:
 		    continue;
 		fields->type = *regmatch.startp[i];
 	    }
-	    if (fmt_ptr->flags == '+' && !qi->qf_multiscan)	/* %+ */
+	    if (fmt_ptr->flags == '+' && !qfl->qf_multiscan)	/* %+ */
 	    {
 		if (linelen >= fields->errmsglen)
 		{
@@ -1013,7 +1013,7 @@ restofline:
 	    break;
 	}
     }
-    qi->qf_multiscan = FALSE;
+    qfl->qf_multiscan = FALSE;
 
     if (fmt_ptr == NULL || idx == 'D' || idx == 'X')
     {
@@ -1026,13 +1026,13 @@ restofline:
 		    EMSG(_("E379: Missing or empty directory name"));
 		    return QF_FAIL;
 		}
-		qi->qf_directory =
-		    qf_push_dir(fields->namebuf, &qi->qf_dir_stack, FALSE);
-		if (qi->qf_directory == NULL)
+		qfl->qf_directory =
+		    qf_push_dir(fields->namebuf, &qfl->qf_dir_stack, FALSE);
+		if (qfl->qf_directory == NULL)
 		    return QF_FAIL;
 	    }
 	    else if (idx == 'X')			/* leave directory */
-		qi->qf_directory = qf_pop_dir(&qi->qf_dir_stack);
+		qfl->qf_directory = qf_pop_dir(&qfl->qf_dir_stack);
 	}
 	fields->namebuf[0] = NUL;	/* no match found, remove file name */
 	fields->lnum = 0;			/* don't jump to this line */
@@ -1048,7 +1048,7 @@ restofline:
 	/* copy whole line to error message */
 	vim_strncpy(fields->errmsg, linebuf, linelen);
 	if (fmt_ptr == NULL)
-	    qi->qf_multiline = qi->qf_multiignore = FALSE;
+	    qfl->qf_multiline = qfl->qf_multiignore = FALSE;
     }
     else if (fmt_ptr != NULL)
     {
@@ -1058,18 +1058,18 @@ restofline:
 
 	if (vim_strchr((char_u *)"AEWI", idx) != NULL)
 	{
-	    qi->qf_multiline = TRUE;	/* start of a multi-line message */
-	    qi->qf_multiignore = FALSE;	/* reset continuation */
+	    qfl->qf_multiline = TRUE;	/* start of a multi-line message */
+	    qfl->qf_multiignore = FALSE;/* reset continuation */
 	}
 	else if (vim_strchr((char_u *)"CZ", idx) != NULL)
 	{				/* continuation of multi-line msg */
-	    if (!qi->qf_multiignore)
+	    if (!qfl->qf_multiignore)
 	    {
-		qfline_T *qfprev = qi->qf_lists[qi->qf_curlist].qf_last;
+		qfline_T *qfprev = qfl->qf_last;
 
 		if (qfprev == NULL)
 		    return QF_FAIL;
-		if (*fields->errmsg && !qi->qf_multiignore)
+		if (*fields->errmsg && !qfl->qf_multiignore)
 		{
 		    len = (int)STRLEN(qfprev->qf_text);
 		    if ((ptr = alloc((unsigned)(len + STRLEN(fields->errmsg) + 2)))
@@ -1093,14 +1093,15 @@ restofline:
 		    qfprev->qf_col = fields->col;
 		qfprev->qf_viscol = fields->use_viscol;
 		if (!qfprev->qf_fnum)
-		    qfprev->qf_fnum = qf_get_fnum(qi, qi->qf_directory,
-			    *fields->namebuf || qi->qf_directory != NULL
+		    qfprev->qf_fnum = qf_get_fnum(qi, qf_idx,
+			    qfl->qf_directory,
+			    *fields->namebuf || qfl->qf_directory != NULL
 			    ? fields->namebuf
-			    : qi->qf_currfile != NULL && fields->valid
-			    ? qi->qf_currfile : 0);
+			    : qfl->qf_currfile != NULL && fields->valid
+			    ? qfl->qf_currfile : 0);
 	    }
 	    if (idx == 'Z')
-		qi->qf_multiline = qi->qf_multiignore = FALSE;
+		qfl->qf_multiline = qfl->qf_multiignore = FALSE;
 	    line_breakcheck();
 	    return QF_IGNORE_LINE;
 	}
@@ -1111,24 +1112,24 @@ restofline:
 	    if (*fields->namebuf == NUL || mch_getperm(fields->namebuf) >= 0)
 	    {
 		if (*fields->namebuf && idx == 'P')
-		    qi->qf_currfile =
-			qf_push_dir(fields->namebuf, &qi->qf_file_stack, TRUE);
+		    qfl->qf_currfile =
+			qf_push_dir(fields->namebuf, &qfl->qf_file_stack, TRUE);
 		else if (idx == 'Q')
-		    qi->qf_currfile = qf_pop_dir(&qi->qf_file_stack);
+		    qfl->qf_currfile = qf_pop_dir(&qfl->qf_file_stack);
 		*fields->namebuf = NUL;
 		if (tail && *tail)
 		{
 		    STRMOVE(IObuff, skipwhite(tail));
-		    qi->qf_multiscan = TRUE;
+		    qfl->qf_multiscan = TRUE;
 		    goto restofline;
 		}
 	    }
 	}
 	if (fmt_ptr->flags == '-')	/* generally exclude this line */
 	{
-	    if (qi->qf_multiline)
+	    if (qfl->qf_multiline)
 		/* also exclude continuation lines */
-		qi->qf_multiignore = TRUE;
+		qfl->qf_multiignore = TRUE;
 	    return QF_IGNORE_LINE;
 	}
     }
@@ -1149,6 +1150,7 @@ restofline:
     static int
 qf_init_ext(
     qf_info_T	    *qi,
+    int		    qf_idx,
     char_u	    *efile,
     buf_T	    *buf,
     typval_T	    *tv,
@@ -1159,6 +1161,7 @@ qf_init_ext(
     char_u	    *qf_title,
     char_u	    *enc)
 {
+    qf_list_T	    *qfl;
     qfstate_T	    state;
     qffields_T	    fields;
 #ifdef FEAT_WINDOWS
@@ -1196,39 +1199,29 @@ qf_init_ext(
 	goto qf_init_end;
     }
 
-    if (newlist || qi->qf_curlist == qi->qf_listcount)
+    if (newlist || qf_idx == qi->qf_listcount)
+    {
 	/* make place for a new list */
 	qf_new_list(qi, qf_title);
+	qf_idx = qi->qf_curlist;
+    }
     else
     {
 	/* Adding to existing list, use last entry. */
 	adding = TRUE;
 #ifdef FEAT_WINDOWS
-	if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
-	    old_last = qi->qf_lists[qi->qf_curlist].qf_last;
+	if (qi->qf_lists[qf_idx].qf_count > 0)
+	    old_last = qi->qf_lists[qf_idx].qf_last;
 #endif
     }
+
+    qfl = &qi->qf_lists[qf_idx];
 
     /* Use the local value of 'errorformat' if it's set. */
     if (errorformat == p_efm && tv == NULL && *buf->b_p_efm != NUL)
 	efm = buf->b_p_efm;
     else
 	efm = errorformat;
-
-    /*
-     * If we are not adding or adding to another list: clear the state.
-     */
-    if (newlist || qi->qf_curlist != qi->qf_dir_curlist)
-    {
-	qi->qf_dir_curlist = qi->qf_curlist;
-	qf_clean_dir_stack(&qi->qf_dir_stack);
-	qi->qf_directory = NULL;
-	qf_clean_dir_stack(&qi->qf_file_stack);
-	qi->qf_currfile = NULL;
-	qi->qf_multiline = FALSE;
-	qi->qf_multiignore = FALSE;
-	qi->qf_multiscan = FALSE;
-    }
 
     /*
      * If the errorformat didn't change between calls, then reuse the
@@ -1281,8 +1274,8 @@ qf_init_ext(
 	if (status == QF_END_OF_INPUT)	/* end of input */
 	    break;
 
-	status = qf_parse_line(qi, state.linebuf, state.linelen, fmt_first,
-								      &fields);
+	status = qf_parse_line(qi, qf_idx, state.linebuf, state.linelen,
+							fmt_first, &fields);
 	if (status == QF_FAIL)
 	    goto error2;
 	if (status == QF_NOMEM)
@@ -1291,12 +1284,12 @@ qf_init_ext(
 	    continue;
 
 	if (qf_add_entry(qi,
-			qi->qf_curlist,
-			qi->qf_directory,
-			(*fields.namebuf || qi->qf_directory != NULL)
+			qf_idx,
+			qfl->qf_directory,
+			(*fields.namebuf || qfl->qf_directory != NULL)
 			    ? fields.namebuf
-			    : ((qi->qf_currfile != NULL && fields.valid)
-				? qi->qf_currfile : (char_u *)NULL),
+			    : ((qfl->qf_currfile != NULL && fields.valid)
+				? qfl->qf_currfile : (char_u *)NULL),
 			0,
 			fields.errmsg,
 			fields.lnum,
@@ -1311,29 +1304,28 @@ qf_init_ext(
     }
     if (state.fd == NULL || !ferror(state.fd))
     {
-	if (qi->qf_lists[qi->qf_curlist].qf_index == 0)
+	if (qfl->qf_index == 0)
 	{
 	    /* no valid entry found */
-	    qi->qf_lists[qi->qf_curlist].qf_ptr =
-		qi->qf_lists[qi->qf_curlist].qf_start;
-	    qi->qf_lists[qi->qf_curlist].qf_index = 1;
-	    qi->qf_lists[qi->qf_curlist].qf_nonevalid = TRUE;
+	    qfl->qf_ptr = qfl->qf_start;
+	    qfl->qf_index = 1;
+	    qfl->qf_nonevalid = TRUE;
 	}
 	else
 	{
-	    qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
-	    if (qi->qf_lists[qi->qf_curlist].qf_ptr == NULL)
-		qi->qf_lists[qi->qf_curlist].qf_ptr =
-		    qi->qf_lists[qi->qf_curlist].qf_start;
+	    qfl->qf_nonevalid = FALSE;
+	    if (qfl->qf_ptr == NULL)
+		qfl->qf_ptr = qfl->qf_start;
 	}
 	/* return number of matches */
-	retval = qi->qf_lists[qi->qf_curlist].qf_count;
+	retval = qfl->qf_count;
 	goto qf_init_end;
     }
     EMSG(_(e_readerrf));
 error2:
     if (!adding)
     {
+	/* Error when creating a new list. Free the new list */
 	qf_free(qi, qi->qf_curlist);
 	qi->qf_listcount--;
 	if (qi->qf_curlist > 0)
@@ -1348,7 +1340,8 @@ qf_init_end:
     vim_free(state.growbuf);
 
 #ifdef FEAT_WINDOWS
-    qf_update_buffer(qi, old_last);
+    if (qf_idx == qi->qf_curlist)
+	qf_update_buffer(qi, old_last);
 #endif
 #ifdef FEAT_MBYTE
     if (state.vc.vc_type != CONV_NONE)
@@ -1484,7 +1477,7 @@ qf_add_entry(
 		(qi == &ql_info) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
     }
     else
-	qfp->qf_fnum = qf_get_fnum(qi, dir, fname);
+	qfp->qf_fnum = qf_get_fnum(qi, qf_idx, dir, fname);
     if ((qfp->qf_text = vim_strsave(mesg)) == NULL)
     {
 	vim_free(qfp);
@@ -1695,7 +1688,7 @@ copy_loclist(win_T *from, win_T *to)
  * Also sets the b_has_qf_entry flag.
  */
     static int
-qf_get_fnum(qf_info_T *qi, char_u *directory, char_u *fname)
+qf_get_fnum(qf_info_T *qi, int qf_idx, char_u *directory, char_u *fname)
 {
     char_u	*ptr = NULL;
     buf_T	*buf;
@@ -1724,7 +1717,7 @@ qf_get_fnum(qf_info_T *qi, char_u *directory, char_u *fname)
 	if (mch_getperm(ptr) < 0)
 	{
 	    vim_free(ptr);
-	    directory = qf_guess_filepath(qi, fname);
+	    directory = qf_guess_filepath(qi, qf_idx, fname);
 	    if (directory)
 		ptr = concat_fnames(directory, fname, TRUE);
 	    else
@@ -1893,17 +1886,18 @@ qf_clean_dir_stack(struct dir_stack_T **stackptr)
  * qf_guess_filepath will return NULL.
  */
     static char_u *
-qf_guess_filepath(qf_info_T *qi, char_u *filename)
+qf_guess_filepath(qf_info_T *qi, int qf_idx, char_u *filename)
 {
     struct dir_stack_T     *ds_ptr;
     struct dir_stack_T     *ds_tmp;
     char_u		   *fullname;
+    qf_list_T		   *qfl = &qi->qf_lists[qf_idx];
 
     /* no dirs on the stack - there's nothing we can do */
-    if (qi->qf_dir_stack == NULL)
+    if (qfl->qf_dir_stack == NULL)
 	return NULL;
 
-    ds_ptr = qi->qf_dir_stack->next;
+    ds_ptr = qfl->qf_dir_stack->next;
     fullname = NULL;
     while (ds_ptr)
     {
@@ -1922,10 +1916,10 @@ qf_guess_filepath(qf_info_T *qi, char_u *filename)
     vim_free(fullname);
 
     /* clean up all dirs we already left */
-    while (qi->qf_dir_stack->next != ds_ptr)
+    while (qfl->qf_dir_stack->next != ds_ptr)
     {
-	ds_tmp = qi->qf_dir_stack->next;
-	qi->qf_dir_stack->next = qi->qf_dir_stack->next->next;
+	ds_tmp = qfl->qf_dir_stack->next;
+	qfl->qf_dir_stack->next = qfl->qf_dir_stack->next->next;
 	vim_free(ds_tmp->dirname);
 	vim_free(ds_tmp);
     }
@@ -2761,12 +2755,13 @@ qf_free_items(qf_info_T *qi, int idx)
     qfline_T	*qfp;
     qfline_T	*qfpnext;
     int		stop = FALSE;
+    qf_list_T	*qfl = &qi->qf_lists[idx];
 
-    while (qi->qf_lists[idx].qf_count && qi->qf_lists[idx].qf_start != NULL)
+    while (qfl->qf_count && qfl->qf_start != NULL)
     {
-	qfp = qi->qf_lists[idx].qf_start;
+	qfp = qfl->qf_start;
 	qfpnext = qfp->qf_next;
-	if (qi->qf_lists[idx].qf_title != NULL && !stop)
+	if (qfl->qf_title != NULL && !stop)
 	{
 	    vim_free(qfp->qf_text);
 	    stop = (qfp == qfpnext);
@@ -2776,25 +2771,25 @@ qf_free_items(qf_info_T *qi, int idx)
 		/* Somehow qf_count may have an incorrect value, set it to 1
 		 * to avoid crashing when it's wrong.
 		 * TODO: Avoid qf_count being incorrect. */
-		qi->qf_lists[idx].qf_count = 1;
+		qfl->qf_count = 1;
 	}
-	qi->qf_lists[idx].qf_start = qfpnext;
-	--qi->qf_lists[idx].qf_count;
+	qfl->qf_start = qfpnext;
+	--qfl->qf_count;
     }
 
-    qi->qf_lists[idx].qf_index = 0;
-    qi->qf_lists[idx].qf_start = NULL;
-    qi->qf_lists[idx].qf_last = NULL;
-    qi->qf_lists[idx].qf_ptr = NULL;
-    qi->qf_lists[idx].qf_nonevalid = TRUE;
+    qfl->qf_index = 0;
+    qfl->qf_start = NULL;
+    qfl->qf_last = NULL;
+    qfl->qf_ptr = NULL;
+    qfl->qf_nonevalid = TRUE;
 
-    qf_clean_dir_stack(&qi->qf_dir_stack);
-    qi->qf_directory = NULL;
-    qf_clean_dir_stack(&qi->qf_file_stack);
-    qi->qf_currfile = NULL;
-    qi->qf_multiline = FALSE;
-    qi->qf_multiignore = FALSE;
-    qi->qf_multiscan = FALSE;
+    qf_clean_dir_stack(&qfl->qf_dir_stack);
+    qfl->qf_directory = NULL;
+    qf_clean_dir_stack(&qfl->qf_file_stack);
+    qfl->qf_currfile = NULL;
+    qfl->qf_multiline = FALSE;
+    qfl->qf_multiignore = FALSE;
+    qfl->qf_multiscan = FALSE;
 }
 
 /*
@@ -2804,12 +2799,14 @@ qf_free_items(qf_info_T *qi, int idx)
     static void
 qf_free(qf_info_T *qi, int idx)
 {
+    qf_list_T	*qfl = &qi->qf_lists[idx];
+
     qf_free_items(qi, idx);
 
-    vim_free(qi->qf_lists[idx].qf_title);
-    qi->qf_lists[idx].qf_title = NULL;
-    free_tv(qi->qf_lists[idx].qf_ctx);
-    qi->qf_lists[idx].qf_ctx = NULL;
+    vim_free(qfl->qf_title);
+    qfl->qf_title = NULL;
+    free_tv(qfl->qf_ctx);
+    qfl->qf_ctx = NULL;
 }
 
 /*
@@ -5259,7 +5256,7 @@ ex_cbuffer(exarg_T *eap)
 		qf_title = IObuff;
 	    }
 
-	    if (qf_init_ext(qi, NULL, buf, NULL, p_efm,
+	    if (qf_init_ext(qi, qi->qf_curlist, NULL, buf, NULL, p_efm,
 			    (eap->cmdidx != CMD_caddbuffer
 			     && eap->cmdidx != CMD_laddbuffer),
 						   eap->line1, eap->line2,
@@ -5328,7 +5325,7 @@ ex_cexpr(exarg_T *eap)
 	if ((tv->v_type == VAR_STRING && tv->vval.v_string != NULL)
 		|| (tv->v_type == VAR_LIST && tv->vval.v_list != NULL))
 	{
-	    if (qf_init_ext(qi, NULL, NULL, tv, p_efm,
+	    if (qf_init_ext(qi, qi->qf_curlist, NULL, NULL, tv, p_efm,
 			    (eap->cmdidx != CMD_caddexpr
 			     && eap->cmdidx != CMD_laddexpr),
 				 (linenr_T)0, (linenr_T)0, *eap->cmdlinep,
