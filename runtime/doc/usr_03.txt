@@ -352,7 +352,7 @@ The "?" command works like "/" but searches backwards: >
 	?word
 
 The "N" command repeats the last search the opposite direction.  Thus using
-"N" after a "/" command search backwards, using "N" after "?" searches
+"N" after a "/" command searches backwards, using "N" after "?" searches
 forward.
 
 
