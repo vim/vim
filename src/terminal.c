@@ -184,6 +184,8 @@ ex_terminal(exarg_T *eap)
 	opt.jo_io_buf[PART_OUT] = curbuf->b_fnum;
 	opt.jo_io_buf[PART_ERR] = curbuf->b_fnum;
 	opt.jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
+	opt.jo_term_rows = rows;
+	opt.jo_term_cols = cols;
 
 	term->tl_job = job_start(argvars, &opt);
     }
@@ -267,7 +269,11 @@ terminal_loop(void)
 	update_screen(0);
 	setcursor();
 	out_flush();
+	++no_mapping;
+	++allow_keys;
 	c = vgetc();
+	--no_mapping;
+	--allow_keys;
 
 	/* Catch keys that need to be handled as in Normal mode. */
 	switch (c)
@@ -329,6 +335,13 @@ terminal_loop(void)
 term_update_window(win_T *wp)
 {
     term_update_lines(wp);
+}
+
+    static void
+position_cursor(win_T *wp, VTermPos *pos)
+{
+    wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
+    wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
 }
 
 #ifdef WIN3264
@@ -486,7 +499,7 @@ handle_damage(VTermRect rect, void *user)
 }
 
     static int
-handle_moverect(VTermRect dest, VTermRect src, void *user)
+handle_moverect(VTermRect dest UNUSED, VTermRect src UNUSED, void *user)
 {
     term_T	*term = (term_T *)user;
 
@@ -496,7 +509,11 @@ handle_moverect(VTermRect dest, VTermRect src, void *user)
 }
 
   static int
-handle_movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
+handle_movecursor(
+	VTermPos pos,
+	VTermPos oldpos UNUSED,
+	int visible UNUSED,
+	void *user)
 {
     term_T	*term = (term_T *)user;
     win_T	*wp;
@@ -506,9 +523,7 @@ handle_movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
     {
 	if (wp->w_buffer == term->tl_buffer)
 	{
-	    /* TODO: limit to window size? */
-	    wp->w_wrow = pos.row;
-	    wp->w_wcol = pos.col;
+	    position_cursor(wp, &pos);
 	    if (wp == curwin)
 		is_current = TRUE;
 	}
@@ -527,8 +542,17 @@ handle_movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
 handle_resize(int rows, int cols, void *user)
 {
     term_T	*term = (term_T *)user;
+    win_T	*wp;
 
-    /* TODO: handle terminal resize. */
+    FOR_ALL_WINDOWS(wp)
+    {
+	if (wp->w_buffer == term->tl_buffer)
+	{
+	    win_setheight_win(rows, wp);
+	    win_setwidth_win(cols, wp);
+	}
+    }
+
     redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
@@ -648,9 +672,22 @@ term_update_lines(win_T *wp)
     int		vterm_cols;
     VTerm	*vterm = wp->w_buffer->b_term->tl_vterm;
     VTermScreen *screen = vterm_obtain_screen(vterm);
+    VTermState	*state = vterm_obtain_state(vterm);
     VTermPos	pos;
 
     vterm_get_size(vterm, &vterm_rows, &vterm_cols);
+
+    if (*wp->w_p_tms == NUL
+		  && (vterm_rows != wp->w_height || vterm_cols != wp->w_width))
+    {
+	vterm_set_size(vterm, wp->w_height, wp->w_width);
+	/* Get the size again, in case setting the didn't work. */
+	vterm_get_size(vterm, &vterm_rows, &vterm_cols);
+    }
+
+    /* The cursor may have been moved when resizing. */
+    vterm_state_get_cursorpos(state, &pos);
+    position_cursor(wp, &pos);
 
     /* TODO: Only redraw what changed. */
     for (pos.row = 0; pos.row < wp->w_height; ++pos.row)
