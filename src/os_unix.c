@@ -4054,37 +4054,47 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 
 #if !defined(USE_SYSTEM) || defined(FEAT_JOB_CHANNEL)
     static void
-set_child_environment(void)
+set_child_environment(long rows, long columns, char *term)
 {
 # ifdef HAVE_SETENV
     char	envbuf[50];
 # else
+    static char	envbuf_TERM[30];
     static char	envbuf_Rows[20];
+    static char	envbuf_Lines[20];
     static char	envbuf_Columns[20];
 # endif
 
     /* Simulate to have a dumb terminal (for now) */
 # ifdef HAVE_SETENV
-    setenv("TERM", "dumb", 1);
-    sprintf((char *)envbuf, "%ld", Rows);
+    setenv("TERM", term, 1);
+    sprintf((char *)envbuf, "%ld", rows);
     setenv("ROWS", (char *)envbuf, 1);
-    sprintf((char *)envbuf, "%ld", Rows);
+    sprintf((char *)envbuf, "%ld", rows);
     setenv("LINES", (char *)envbuf, 1);
-    sprintf((char *)envbuf, "%ld", Columns);
+    sprintf((char *)envbuf, "%ld", columns);
     setenv("COLUMNS", (char *)envbuf, 1);
 # else
     /*
      * Putenv does not copy the string, it has to remain valid.
      * Use a static array to avoid losing allocated memory.
      */
-    putenv("TERM=dumb");
-    sprintf(envbuf_Rows, "ROWS=%ld", Rows);
+    vim_snprintf(envbuf_Term, sizeof(envbuf_Term), "TERM=%s", term);
+    putenv(envbuf_Term);
+    vim_snprintf(envbuf_Rows, sizeof(envbuf_Rows), "ROWS=%ld", rows);
     putenv(envbuf_Rows);
-    sprintf(envbuf_Rows, "LINES=%ld", Rows);
-    putenv(envbuf_Rows);
-    sprintf(envbuf_Columns, "COLUMNS=%ld", Columns);
+    vim_snprintf(envbuf_Lines, sizeof(envbuf_Lines), "LINES=%ld", rows);
+    putenv(envbuf_Lines);
+    vim_snprintf(envbuf_Columns, sizeof(envbuf_Columns),
+						       "COLUMNS=%ld", columns);
     putenv(envbuf_Columns);
 # endif
+}
+
+    static void
+set_default_child_environment(void)
+{
+    set_child_environment(Rows, Columns, "dumb");
 }
 #endif
 
@@ -4417,7 +4427,7 @@ mch_call_shell(
 #  endif
 		}
 # endif
-		set_child_environment();
+		set_default_child_environment();
 
 		/*
 		 * stderr is only redirected when using the GUI, so that a
@@ -5090,7 +5100,7 @@ error:
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
     void
-mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
+mch_start_job(char **argv, job_T *job, jobopt_T *options)
 {
     pid_t	pid;
     int		fd_in[2];	/* for stdin */
@@ -5200,7 +5210,15 @@ mch_start_job(char **argv, job_T *job, jobopt_T *options UNUSED)
 	(void)setsid();
 # endif
 
-	set_child_environment();
+# ifdef FEAT_TERMINAL
+	if (options->jo_term_rows > 0)
+	    set_child_environment(
+		    (long)options->jo_term_rows,
+		    (long)options->jo_term_cols,
+		    "xterm");
+	else
+# endif
+	    set_default_child_environment();
 
 	if (use_null_for_in || use_null_for_out || use_null_for_err)
 	    null_fd = open("/dev/null", O_RDWR | O_EXTRA, 0);
