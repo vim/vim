@@ -608,6 +608,22 @@ term_convert_key(int c, char *buf)
     return vterm_output_read(vterm, buf, KEY_BUF_LEN);
 }
 
+    static void
+setup_job_options(jobopt_T *opt)
+{
+    clear_job_options(opt);
+    opt->jo_mode = MODE_RAW;
+    opt->jo_out_mode = MODE_RAW;
+    opt->jo_err_mode = MODE_RAW;
+    opt->jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
+    opt->jo_io[PART_OUT] = JIO_BUFFER;
+    opt->jo_io[PART_ERR] = JIO_BUFFER;
+    opt->jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
+    opt->jo_io_buf[PART_OUT] = curbuf->b_fnum;
+    opt->jo_io_buf[PART_ERR] = curbuf->b_fnum;
+    opt->jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
+}
+
 #ifdef WIN3264
 
 #define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
@@ -784,17 +800,7 @@ term_init(term_T *term, int rows, int cols, char_u *cmd)
     /* Required to initialize most things. */
     vterm_screen_reset(screen, 1 /* hard */);
 
-    clear_job_options(&opt);
-    opt.jo_mode = MODE_RAW;
-    opt.jo_out_mode = MODE_RAW;
-    opt.jo_err_mode = MODE_RAW;
-    opt.jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
-    opt.jo_io[PART_OUT] = JIO_BUFFER;
-    opt.jo_io[PART_ERR] = JIO_BUFFER;
-    opt.jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
-    opt.jo_io_buf[PART_OUT] = curbuf->b_fnum;
-    opt.jo_io_buf[PART_ERR] = curbuf->b_fnum;
-    opt.jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
+    setup_job_options(&opt);
     channel_set_job(channel, job, &opt);
 
     job->jv_channel = channel;
@@ -869,18 +875,7 @@ term_init(term_T *term, int rows, int cols, char_u *cmd)
     argvars[0].v_type = VAR_STRING;
     argvars[0].vval.v_string = cmd;
 
-    clear_job_options(&opt);
-    opt.jo_mode = MODE_RAW;
-    opt.jo_out_mode = MODE_RAW;
-    opt.jo_err_mode = MODE_RAW;
-    opt.jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
-    opt.jo_io[PART_OUT] = JIO_BUFFER;
-    opt.jo_io[PART_ERR] = JIO_BUFFER;
-    opt.jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
-    opt.jo_io_buf[PART_OUT] = curbuf->b_fnum;
-    opt.jo_io_buf[PART_ERR] = curbuf->b_fnum;
-    opt.jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
-
+    setup_job_options(&opt);
     term->tl_job = job_start(argvars, &opt);
 
     return term->tl_job != NULL ? OK : FAIL;
