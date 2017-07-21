@@ -170,8 +170,12 @@ ex_terminal(exarg_T *eap)
     term_init(term, rows, cols, eap->arg);
 
     if (term->tl_job == NULL)
+    {
+	first_term = term->tl_next;
+	curbuf->b_term = NULL;
 	/* Wiping out the buffer will also close the window. */
 	do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
+    }
 
     /* TODO: Setup pty, see mch_call_shell(). */
 }
@@ -662,12 +666,7 @@ dyn_winpty_init(void)
     hWinPtyDLL = vimLoadLib(WINPTY_DLL);
     if (!hWinPtyDLL)
     {
-	if (p_verbose > 0)
-	{
-	    verbose_enter();
-	    EMSG2(_(e_loadlib), WINPTY_DLL);
-	    verbose_leave();
-	}
+	EMSG2(_(e_loadlib), WINPTY_DLL);
 	return 0;
     }
     for (i = 0; winpty_entry[i].name != NULL
@@ -676,12 +675,7 @@ dyn_winpty_init(void)
 	if ((*winpty_entry[i].ptr = (FARPROC)GetProcAddress(hWinPtyDLL,
 					      winpty_entry[i].name)) == NULL)
 	{
-	    if (p_verbose > 0)
-	    {
-		verbose_enter();
-		EMSG2(_(e_loadfunc), winpty_entry[i].name);
-		verbose_leave();
-	    }
+	    EMSG2(_(e_loadfunc), winpty_entry[i].name);
 	    return 0;
 	}
     }
