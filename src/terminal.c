@@ -625,6 +625,7 @@ void (*winpty_free)(void*);
 void (*winpty_config_free)(void*);
 void (*winpty_spawn_config_free)(void*);
 void (*winpty_error_free)(void*);
+LPCWSTR (*winpty_error_msg)(void*);
 
 /**************************************
  * 2. MS-Windows implementation.
@@ -656,6 +657,7 @@ dyn_winpty_init(void)
 	{"winpty_spawn", (FARPROC*)&winpty_spawn},
 	{"winpty_spawn_config_free", (FARPROC*)&winpty_spawn_config_free},
 	{"winpty_spawn_config_new", (FARPROC*)&winpty_spawn_config_new},
+	{"winpty_error_msg", (FARPROC*)&winpty_error_msg},
 	{NULL, NULL}
     };
 
@@ -816,7 +818,11 @@ failed:
     if (term->wp_config)
 	winpty_config_free(term->wp_config);
     if (err)
+    {
+	char_u* msg = utf16_to_enc((short_u*) winpty_error_msg(err), NULL);
+	EMSG(msg);
 	winpty_error_free(err);
+    }
     return FAIL;
 }
 
