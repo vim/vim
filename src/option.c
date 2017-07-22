@@ -7479,6 +7479,19 @@ did_set_string_option(
     }
 #endif
 
+#ifdef FEAT_TERMINAL
+    /* 'termsize' */
+    else if (varp == &curwin->w_p_tms)
+    {
+	if (*curwin->w_p_tms != NUL)
+	{
+	    p = skipdigits(curwin->w_p_tms);
+	    if (p == curwin->w_p_tms || *p != 'x' || *skipdigits(p + 1) != NUL)
+		errmsg = e_invarg;
+	}
+    }
+#endif
+
     /* Options that are a list of flags. */
     else
     {
