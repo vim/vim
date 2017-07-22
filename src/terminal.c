@@ -629,9 +629,15 @@ term_update_window(win_T *wp)
 		{
 #if defined(FEAT_MBYTE)
 		    if (enc_utf8 && c >= 0x80)
+		    {
 			ScreenLinesUC[off] = c;
+			ScreenLines[off] = ' ';
+		    }
 		    else
+		    {
 			ScreenLines[off] = c;
+			ScreenLinesUC[off] = NUL;
+		    }
 #else
 		    ScreenLines[off] = c;
 #endif
@@ -643,7 +649,7 @@ term_update_window(win_T *wp)
 		++off;
 		if (cell.width == 2)
 		{
-		    ScreenLines[off] = ' ';
+		    ScreenLines[off] = NUL;
 		    ScreenLinesUC[off] = NUL;
 		    ++pos.col;
 		    ++off;
