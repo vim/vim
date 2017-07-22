@@ -4063,7 +4063,13 @@ set_child_environment(long rows, long columns, char *term)
     static char	envbuf_Rows[20];
     static char	envbuf_Lines[20];
     static char	envbuf_Columns[20];
+    static char	envbuf_Colors[20];
 # endif
+    long	colors =
+#  ifdef FEAT_GUI
+	    gui.in_use ? 256*256*256 :
+#  endif
+	    t_colors;
 
     /* Simulate to have a dumb terminal (for now) */
 # ifdef HAVE_SETENV
@@ -4074,6 +4080,8 @@ set_child_environment(long rows, long columns, char *term)
     setenv("LINES", (char *)envbuf, 1);
     sprintf((char *)envbuf, "%ld", columns);
     setenv("COLUMNS", (char *)envbuf, 1);
+    sprintf((char *)envbuf, "%ld", colors);
+    setenv("COLORS", (char *)envbuf, 1);
 # else
     /*
      * Putenv does not copy the string, it has to remain valid.
@@ -4088,6 +4096,8 @@ set_child_environment(long rows, long columns, char *term)
     vim_snprintf(envbuf_Columns, sizeof(envbuf_Columns),
 						       "COLUMNS=%ld", columns);
     putenv(envbuf_Columns);
+    vim_snprintf(envbuf_Colors, sizeof(envbuf_Colors), "COLORS=%ld", colors);
+    putenv(envbuf_Colors);
 # endif
 }
 
