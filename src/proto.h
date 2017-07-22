@@ -212,15 +212,18 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 #  include "channel.pro"
 # endif
 
-# ifdef FEAT_GUI
-#  include "gui.pro"
+# if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
 #  if defined(UNIX) || defined(MACOS)
 #   include "pty.pro"
 #  endif
+# endif
+
+# ifdef FEAT_GUI
+#  include "gui.pro"
 #  if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) && !defined(VMS)
-extern int putenv(const char *string);		/* from pty.c */
+extern int putenv(const char *string);			/* in misc2.c */
 #   ifdef USE_VIMPTY_GETENV
-extern char_u *vimpty_getenv(const char_u *string);	/* from pty.c */
+extern char_u *vimpty_getenv(const char_u *string);	/* in misc2.c */
 #   endif
 #  endif
 #  ifdef FEAT_GUI_W32
