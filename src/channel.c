@@ -1013,7 +1013,16 @@ ch_close_part(channel_T *channel, ch_part_T part)
 	if (part == PART_SOCK)
 	    sock_close(*fd);
 	else
-	    fd_close(*fd);
+	{
+	    /* When using a pty the same FD is set on multiple parts, only
+	     * close it when the last reference is closed. */
+	    if ((part == PART_IN || channel->ch_part[PART_IN].ch_fd != *fd)
+		    && (part == PART_OUT
+				    || channel->ch_part[PART_OUT].ch_fd != *fd)
+		    && (part == PART_ERR
+				   || channel->ch_part[PART_ERR].ch_fd != *fd))
+		fd_close(*fd);
+	}
 	*fd = INVALID_FD;
 
 	channel->ch_to_be_closed &= ~(1 << part);
@@ -4280,6 +4289,12 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		opt->jo_io_name[part] =
 		       get_tv_string_buf_chk(item, opt->jo_io_name_buf[part]);
 	    }
+	    else if (STRCMP(hi->hi_key, "pty") == 0)
+	    {
+		if (!(supported & JO_MODE))
+		    break;
+		opt->jo_pty = get_tv_number(item);
+	    }
 	    else if (STRCMP(hi->hi_key, "in_buf") == 0
 		    || STRCMP(hi->hi_key, "out_buf") == 0
 		    || STRCMP(hi->hi_key, "err_buf") == 0)
@@ -5074,10 +5089,10 @@ job_start(typval_T *argvars, jobopt_T *opt_arg)
 	ch_logs(NULL, "Starting job: %s", (char *)ga.ga_data);
 	ga_clear(&ga);
     }
-    mch_start_job(argv, job, &opt);
+    mch_job_start(argv, job, &opt);
 #else
     ch_logs(NULL, "Starting job: %s", (char *)cmd);
-    mch_start_job((char *)cmd, job, &opt);
+    mch_job_start((char *)cmd, job, &opt);
 #endif
 
     /* If the channel is reading from a buffer, write lines now. */
