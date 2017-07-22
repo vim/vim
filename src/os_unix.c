@@ -5475,7 +5475,9 @@ mch_stop_job(job_T *job, char_u *how)
 	job_pid = -job_pid;
 #endif
 
-    kill(job_pid, sig);
+    /* Never kill ourselves! */
+    if (job_pid != 0)
+	kill(job_pid, sig);
 
     return OK;
 }
