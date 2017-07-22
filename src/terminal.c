@@ -203,6 +203,9 @@ ex_terminal(exarg_T *eap)
     }
     else
     {
+	first_term = term->tl_next;
+	curbuf->b_term = NULL;
+
 	/* Wiping out the buffer will also close the window and call
 	 * free_terminal(). */
 	do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
