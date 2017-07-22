@@ -2536,6 +2536,9 @@ list_version(void)
     MSG_PUTS(_("with X11-Athena GUI."));
 #    endif
 #   else
+#    ifdef FEAT_GUI_HAIKU
+    MSG_PUTS(_("with Haiku GUI."));
+#    else
 #     ifdef FEAT_GUI_PHOTON
     MSG_PUTS(_("with Photon GUI."));
 #     else
@@ -2553,6 +2556,7 @@ list_version(void)
 #	  endif
 #	 endif
 #	endif
+#       endif
 #      endif
 #    endif
 #   endif

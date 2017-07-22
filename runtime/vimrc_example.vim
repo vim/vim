@@ -8,6 +8,7 @@
 "	      for Amiga:  s:.vimrc
 "  for MS-DOS and Win32:  $VIM\_vimrc
 "	    for OpenVMS:  sys$login:.vimrc
+"	   for Haiku OS:  ~/config/settings/vim/vimrc
 
 " When started as "evim", evim.vim will already have done these settings.
 if v:progname =~? "evim"

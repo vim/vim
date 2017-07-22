@@ -118,6 +118,12 @@ case `uname` in
     *)		BEOS=no; AC_MSG_RESULT(no);;
 esac
 
+AC_MSG_CHECKING(for Haiku)
+case `uname` in
+    Haiku)	HAIKU=yes; AC_MSG_RESULT(yes);;
+    *)		HAIKU=no; AC_MSG_RESULT(no);;
+esac
+
 dnl If QNX is found, assume we don't want to use Xphoton
 dnl unless it was specifically asked for (--with-x)
 AC_MSG_CHECKING(for QNX)
@@ -1983,7 +1989,11 @@ fi
 
 if test "$enable_channel" = "yes"; then
   dnl On Solaris we need the socket and nsl library.
-  AC_CHECK_LIB(socket, socket)
+  if test "x$HAIKU" = "xyes"; then
+    AC_CHECK_LIB(network, socket)
+  else
+    AC_CHECK_LIB(socket, socket)
+  fi
   AC_CHECK_LIB(nsl, gethostbyname)
   AC_MSG_CHECKING(whether compiling with process communication is possible)
   AC_TRY_LINK([
@@ -2210,11 +2220,11 @@ else
   fi
 fi
 
-test "x$with_x" = xno -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
+test "x$with_x" = xno -a "x$HAIKU" != "xyes" -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
- [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon]], , enable_gui="auto")
+ [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/haiku/photon/carbon]], , enable_gui="auto")
 
 dnl Canonicalize the --enable-gui= argument so that it can be easily compared.
 dnl Do not use character classes for portability with old tools.
@@ -2229,10 +2239,23 @@ SKIP_MOTIF=YES
 SKIP_ATHENA=YES
 SKIP_NEXTAW=YES
 SKIP_PHOTON=YES
+SKIP_HAIKU=YES
 SKIP_CARBON=YES
 GUITYPE=NONE
 
-if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
+if test "x$HAIKU" = "xyes"; then
+  SKIP_HAIKU=
+  case "$enable_gui_canon" in
+    no)		AC_MSG_RESULT(no GUI support)
+		SKIP_HAIKU=YES ;;
+    yes|"")	AC_MSG_RESULT(yes - automatic GUI support) ;;
+    auto)	AC_MSG_RESULT(auto - automatic GUI support) ;;
+    haiku)	AC_MSG_RESULT(Haiku GUI support) ;;
+    *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported])
+		SKIP_HAIKU=YES ;;
+  esac
+
+elif test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
   SKIP_PHOTON=
   case "$enable_gui_canon" in
     no)		AC_MSG_RESULT(no GUI support)
@@ -2396,6 +2419,7 @@ if test "x$MACOSX" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
   SKIP_ATHENA=YES;
   SKIP_NEXTAW=YES;
   SKIP_PHOTON=YES;
+  SKIP_HAIKU=YES;
   SKIP_CARBON=YES
 fi
 
@@ -3009,6 +3033,11 @@ fi
 if test "x$GUITYPE:$enable_fontset" = "xGTK:yes"; then
   AC_MSG_RESULT(GTK+ 2 GUI selected; fontset has been disabled)
   enable_fontset="no"
+fi
+
+dnl There is no test for the Haiku GUI, if it's selected it's used
+if test -z "$SKIP_HAIKU"; then
+  GUITYPE=HAIKUGUI
 fi
 
 if test -z "$SKIP_PHOTON"; then

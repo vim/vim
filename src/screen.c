@@ -89,6 +89,15 @@
 
 #include "vim.h"
 
+#ifdef __HAIKU__
+// FIXME!!!
+    int
+gui_mch_is_blink_off(void)
+{
+    return FALSE;
+}
+#endif
+
 #define MB_FILLER_CHAR '<'  /* character used when a double-width character
 			     * doesn't fit. */
 
@@ -8722,6 +8731,10 @@ retry:
 
     win_new_shellsize();    /* fit the windows in the new sized shell */
 
+#ifdef FEAT_GUI_HAIKU
+    vim_lock_screen();  /* be safe, put it here */
+#endif
+
     comp_col();		/* recompute columns for shown command and ruler */
 
     /*
@@ -8963,6 +8976,10 @@ give_up:
 	if (msg_col >= Columns)		/* Columns got smaller */
 	    msg_col = Columns - 1;	/* put cursor at last column */
     }
+#endif
+
+#ifdef FEAT_GUI_HAIKU
+    vim_unlock_screen();
 #endif
 
     entered = FALSE;
@@ -9837,6 +9854,10 @@ screen_ins_lines(
 	clip_scroll_selection(-line_count);
 #endif
 
+#ifdef FEAT_GUI_HAIKU
+    vim_lock_screen();
+#endif
+
 #ifdef FEAT_GUI
     /* Don't update the GUI cursor here, ScreenLines[] is invalid until the
      * scrolling is actually carried out. */
@@ -9888,6 +9909,10 @@ screen_ins_lines(
 		lineinvalid(temp, (int)Columns);
 	}
     }
+
+#ifdef FEAT_GUI_HAIKU
+    vim_unlock_screen();
+#endif
 
     screen_stop_highlight();
     windgoto(cursor_row, 0);
@@ -10064,6 +10089,10 @@ screen_del_lines(
 	clip_scroll_selection(line_count);
 #endif
 
+#ifdef FEAT_GUI_HAIKU
+    vim_lock_screen();
+#endif
+
 #ifdef FEAT_GUI
     /* Don't update the GUI cursor here, ScreenLines[] is invalid until the
      * scrolling is actually carried out. */
@@ -10123,6 +10152,10 @@ screen_del_lines(
 		lineinvalid(temp, (int)Columns);
 	}
     }
+
+#ifdef FEAT_GUI_HAIKU
+    vim_unlock_screen();
+#endif
 
     screen_stop_highlight();
 

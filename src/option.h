@@ -10,6 +10,8 @@
  * option.h: definition of global variables for settable options
  */
 
+#ifndef _OPTION_H_
+#define _OPTION_H_
 /*
  * Default values for 'errorformat'.
  * The "%f|%l| %m" one is used for when the contents of the quickfix window is
@@ -1199,6 +1201,8 @@ enum
 #endif
     , WV_COUNT	    /* must be the last one */
 };
+
+#endif //_OPTION_H_
 
 /* Value for b_p_ul indicating the global value must be used. */
 #define NO_LOCAL_UNDOLEVEL -123456

@@ -10,6 +10,7 @@
 "	      for Amiga:  s:.gvimrc
 "  for MS-DOS and Win32:  $VIM\_gvimrc
 "	    for OpenVMS:  sys$login:.gvimrc
+"	   for Haiku OS:  ~/config/settings/vim/gvimrc
 
 " Make external commands work through a pipe instead of a pseudo-tty
 "set noguipty

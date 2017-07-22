@@ -240,6 +240,9 @@ extern char_u *vimpty_getenv(const char_u *string);	/* from pty.c */
 extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*show_entry)(), int x, int y, guicolor_T fg, guicolor_T bg, guicolor_T scroll_fg, guicolor_T scroll_bg);
 #   endif
 #  endif
+#  ifdef FEAT_GUI_HAIKU
+#   include "gui_haiku.pro"
+#  endif
 #  ifdef FEAT_GUI_MAC
 #   include "gui_mac.pro"
 #  endif

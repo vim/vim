@@ -4578,6 +4578,7 @@ GetLatestVimScripts-copyright	pi_getscript.txt	/*GetLatestVimScripts-copyright*
 GetLatestVimScripts_dat	pi_getscript.txt	/*GetLatestVimScripts_dat*
 Gnome	gui_x11.txt	/*Gnome*
 H	motion.txt	/*H*
+Haiku	os_haiku.txt	/*Haiku*
 I	insert.txt	/*I*
 ICCF	uganda.txt	/*ICCF*
 IM-server	mbyte.txt	/*IM-server*
@@ -6654,6 +6655,20 @@ g~	change.txt	/*g~*
 g~g~	change.txt	/*g~g~*
 g~~	change.txt	/*g~~*
 h	motion.txt	/*h*
+haiku-bugs	os_haiku.txt	/*haiku-bugs*
+haiku-colors	os_haiku.txt	/*haiku-colors*
+haiku-compiling	os_haiku.txt	/*haiku-compiling*
+haiku-dragndrop	os_haiku.txt	/*haiku-dragndrop*
+haiku-fonts	os_haiku.txt	/*haiku-fonts*
+haiku-general	os_haiku.txt	/*haiku-general*
+haiku-gui	os_haiku.txt	/*haiku-gui*
+haiku-launch	os_haiku.txt	/*haiku-launch*
+haiku-meta	os_haiku.txt	/*haiku-meta*
+haiku-mouse	os_haiku.txt	/*haiku-mouse*
+haiku-support-credits	os_haiku.txt	/*haiku-support-credits*
+haiku-toolbar-images	os_haiku.txt	/*haiku-toolbar-images*
+haiku-user-settings-dir	os_haiku.txt	/*haiku-user-settings-dir*
+haiku-vimdir	os_haiku.txt	/*haiku-vimdir*
 hangul	hangulin.txt	/*hangul*
 hangulin.txt	hangulin.txt	/*hangulin.txt*
 has()	eval.txt	/*has()*
@@ -7762,6 +7777,7 @@ os_390.txt	os_390.txt	/*os_390.txt*
 os_amiga.txt	os_amiga.txt	/*os_amiga.txt*
 os_beos.txt	os_beos.txt	/*os_beos.txt*
 os_dos.txt	os_dos.txt	/*os_dos.txt*
+os_haiku.txt	os_haiku.txt	/*os_haiku.txt*
 os_mac.txt	os_mac.txt	/*os_mac.txt*
 os_mint.txt	os_mint.txt	/*os_mint.txt*
 os_msdos.txt	os_msdos.txt	/*os_msdos.txt*

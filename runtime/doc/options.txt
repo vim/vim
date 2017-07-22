@@ -3860,7 +3860,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		'guitablabel' can be used to change the text in the labels.
 		When 'e' is missing a non-GUI tab pages line may be used.
 		The GUI tabs are only supported on some systems, currently
-		GTK, Motif, Mac OS/X and MS-Windows.
+		GTK, Motif, Mac OS/X, Haiku and MS-Windows.
 								*'go-f'*
 	  'f'	Foreground: Don't use fork() to detach the GUI from the shell
 		where it was started.  Use this for programs that wait for the
@@ -6223,7 +6223,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 						$VIM/vimfiles,
 						$VIMRUNTIME,
 						$VIM/vimfiles/after,
-						sys$login:vimfiles/after")
+						sys$login:vimfiles/after"
+					Haiku: "$BE_USER_SETTINGS/vim,
+						$VIM/vimfiles,
+						$VIMRUNTIME,
+						$VIM/vimfiles/after,
+						$BE_USER_SETTINGS/vim/after")
 			global
 			{not in Vi}
 	This is a list of directories which will be searched for runtime
@@ -7681,6 +7686,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 					 on MiNT: "vt52"
 				       on MS-DOS: "pcterm"
 					 on OS/2: "os2ansi"
+					on Haiku: "xterm"
 					 on Unix: "ansi"
 					  on VMS: "ansi"
 				       on Win 32: "win32")

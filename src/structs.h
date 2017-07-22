@@ -3095,6 +3095,13 @@ struct VimMenu
     HMENU	submenu_id;	    /* If this is submenu, add children here */
     HWND	tearoff_handle;	    /* hWnd of tearoff if created */
 #endif
+#if FEAT_GUI_HAIKU
+    BMenuItem	*id;		    /* Id of menu item */
+    BMenu	*submenu_id;	    /* If this is submenu, add children here */
+# ifdef FEAT_TOOLBAR
+	BPictureButton *button;
+# endif
+#endif
 #ifdef FEAT_GUI_MAC
 /*  MenuHandle	id; */
 /*  short	index;	*/	    /* the item index within the father menu */

@@ -14,6 +14,11 @@
 #include "vim.h"
 #include "version.h"
 
+#ifdef __HAIKU__
+#include <sys/stat.h>
+#include <string.h>
+#endif
+
 #ifdef FEAT_FLOAT
 # include <float.h>
 #endif
@@ -1837,12 +1842,31 @@ write_viminfo(char_u *file, int forceit)
     int		hidden = FALSE;
 #endif
 
+#ifdef __HAIKU__
+char* filenameSeparatorPos;
+#endif
+
     if (no_viminfo())
 	return;
 
     fname = viminfo_filename(file);	/* may set to default if NULL */
     if (fname == NULL)
 	return;
+
+#ifdef __HAIKU__
+	/* Ensure that configuration folder(for viminfo) exist */
+	filenameSeparatorPos = strrchr(fname, '/');
+	if(filenameSeparatorPos != NULL &&
+		filenameSeparatorPos - (char*)fname > 1) {
+		// > 1 because root directory always exists anyway
+		*filenameSeparatorPos = '\0';
+			//<fname, filenameSparatorPos) is directory path
+		mkdir(fname, S_IRWXU);
+
+		*filenameSeparatorPos = '/';
+			//restore original filename
+	}
+#endif
 
     fp_in = mch_fopen((char *)fname, READBIN);
     if (fp_in == NULL)
