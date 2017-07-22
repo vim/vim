@@ -34,7 +34,6 @@
  * TODO:
  * - When 'termsize' is set and dragging the separator the terminal gets messed
  *   up.
- * - Use a pty for I/O with the job.
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
  * - set buffer name to command, add (1) to avoid duplicates.
  * - If [command] is not given the 'shell' option is used.
@@ -52,6 +51,8 @@
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
+ * - implement "term" for job_start(): more job options when starting a
+ *   terminal.
  * - implement ":buf {term-buf-name}"
  * - implement term_list()			list of buffers with a terminal
  * - implement term_getsize(buf)
@@ -673,6 +674,7 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
     opt->jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
     opt->jo_io_buf[PART_OUT] = curbuf->b_fnum;
     opt->jo_io_buf[PART_ERR] = curbuf->b_fnum;
+    opt->jo_pty = TRUE;
     opt->jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
     opt->jo_term_rows = rows;
     opt->jo_term_cols = cols;

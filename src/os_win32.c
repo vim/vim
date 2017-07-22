@@ -4964,7 +4964,7 @@ job_io_file_open(
 }
 
     void
-mch_start_job(char *cmd, job_T *job, jobopt_T *options)
+mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 {
     STARTUPINFO		si;
     PROCESS_INFORMATION	pi;

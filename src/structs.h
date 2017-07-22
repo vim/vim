@@ -1705,6 +1705,7 @@ typedef struct
     char_u	jo_io_name_buf[4][NUMBUFLEN];
     char_u	*jo_io_name[4];	/* not allocated! */
     int		jo_io_buf[4];
+    int		jo_pty;
     int		jo_modifiable[4];
     int		jo_message[4];
     channel_T	*jo_channel;
