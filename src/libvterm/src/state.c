@@ -9,6 +9,8 @@
 # define DEBUG_GLYPH_COMBINE
 #endif
 
+static int on_resize(int rows, int cols, void *user);
+
 /* Some convenient wrappers to make callback functions easier */
 
 static void putglyph(VTermState *state, const uint32_t chars[], int width, VTermPos pos)
@@ -1396,6 +1398,14 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
 
     break;
 
+  case 0x74:
+    switch(CSI_ARG(args[0])) {
+      case 8: /* CSI 8 ; rows ; cols t  set size */
+	if (argcount == 3)
+	  on_resize(CSI_ARG(args[1]), CSI_ARG(args[2]), state);
+    }
+    break;
+
   case INTERMED('\'', 0x7D): /* DECIC */
     count = CSI_ARG_COUNT(args[0]);
 
@@ -1534,7 +1544,7 @@ static void request_status_string(VTermState *state, const char *command, size_t
       switch(state->mode.cursor_shape) {
         case VTERM_PROP_CURSORSHAPE_BLOCK:     reply = 2; break;
         case VTERM_PROP_CURSORSHAPE_UNDERLINE: reply = 4; break;
-        case VTERM_PROP_CURSORSHAPE_BAR_LEFT:  reply = 6; break;
+	default: /* VTERM_PROP_CURSORSHAPE_BAR_LEFT */  reply = 6; break;
       }
       if(state->mode.cursor_blink)
         reply--;

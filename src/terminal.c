@@ -518,7 +518,8 @@ term_convert_key(int c, char *buf)
     {
 	case CAR:		key = VTERM_KEY_ENTER; break;
 	case ESC:		key = VTERM_KEY_ESCAPE; break;
-	case K_BS:		key = VTERM_KEY_BACKSPACE; break;
+				/* VTERM_KEY_BACKSPACE becomes 0x7f DEL */
+	case K_BS:		c = BS; break;
 	case K_DEL:		key = VTERM_KEY_DEL; break;
 	case K_DOWN:		key = VTERM_KEY_DOWN; break;
 	case K_END:		key = VTERM_KEY_END; break;
