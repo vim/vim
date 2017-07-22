@@ -15,7 +15,10 @@
  * 2. The MS-Windows implementation.
  *    Uses a hidden console for the terminal emulator.
  * 3. The Unix-like implementation.
- *    Uses libvterm for the terminal emulator.
+ *    Uses libvterm for the terminal emulator directly.
+ *
+ * For each terminal one VTerm is constructed.  This uses libvterm.  A copy of
+ * that library is in the libvterm directory.
  *
  * When a terminal window is opened, a job is started that will be connected to
  * the terminal emulator.
@@ -29,6 +32,9 @@
  * while, if the terminal window is visible, the screen contents is drawn.
  *
  * TODO:
+ * - When 'termsize' is set and dragging the separator the terminal gets messed
+ *   up.
+ * - Use a pty for I/O with the job.
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
  * - set buffer name to command, add (1) to avoid duplicates.
  * - If [command] is not given the 'shell' option is used.
@@ -41,16 +47,11 @@
  *   - Display the scrollback buffer (but with attributes).
  *     Make the buffer not modifiable, drop attributes when making changes.
  * - when closing window and job has not ended, make terminal hidden?
- * - Use a pty for I/O with the job.
- * - Windows implementation:
- *   (WiP): https://github.com/mattn/vim/tree/terminal
- *	src/os_win32.c  mch_open_terminal()
- *   Using winpty ?
  * - use win_del_lines() to make scroll-up efficient.
  * - command line completion for :terminal
- * - support fixed size when 'termsize' is "rowsXcols".
+ * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
- * - support minimal size when 'termsize' is empty.
+ * - support minimal size when 'termsize' is empty?
  * - implement ":buf {term-buf-name}"
  * - implement term_list()			list of buffers with a terminal
  * - implement term_getsize(buf)
@@ -61,6 +62,8 @@
  * - implement term_open(command, options)	open terminal window
  * - implement term_getjob(buf)
  * - implement 'termkey'
+ * - when 'encoding' is not utf-8, or the job is using another encoding, setup
+ *   conversions.
  */
 
 #include "vim.h"
@@ -68,23 +71,30 @@
 #ifdef FEAT_TERMINAL
 
 #ifdef WIN3264
-/* MS-Windows: use a native console. */
-#else
-/* Unix-like: use libvterm. */
-# include "libvterm/include/vterm.h"
+# define MIN(x,y) (x < y ? x : y)
+# define MAX(x,y) (x > y ? x : y)
 #endif
+
+#include "libvterm/include/vterm.h"
 
 /* typedef term_T in structs.h */
 struct terminal_S {
     term_T	*tl_next;
 
 #ifdef WIN3264
-    /* console handle? */
-#else
-    VTerm	*tl_vterm;
+    void	*tl_winpty_config;
+    void	*tl_winpty;
 #endif
+    VTerm	*tl_vterm;
     job_T	*tl_job;
     buf_T	*tl_buffer;
+
+    /* last known vterm size */
+    int		tl_rows;
+    int		tl_cols;
+    /* vterm size does not follow window size */
+    int		tl_rows_fixed;
+    int		tl_cols_fixed;
 
     /* Range of screen rows to update.  Zero based. */
     int		tl_dirty_row_start; /* -1 if nothing dirty */
@@ -93,24 +103,54 @@ struct terminal_S {
     pos_T	tl_cursor;
 };
 
-#define MAX_ROW 999999	    /* used for tl_dirty_row_end to update all rows */
-#define KEY_BUF_LEN 200
-
-/* Functions implemented for MS-Windows and Unix-like systems. */
-static int term_init(term_T *term, int rows, int cols);
-static void term_free(term_T *term);
-static void term_write_job_output(term_T *term, char_u *msg, size_t len);
-static int term_convert_key(int c, char *buf);
-static void term_update_lines(win_T *wp);
-
 /*
  * List of all active terminals.
  */
 static term_T *first_term = NULL;
 
+
+#define MAX_ROW 999999	    /* used for tl_dirty_row_end to update all rows */
+#define KEY_BUF_LEN 200
+
+/*
+ * Functions with separate implementation for MS-Windows and Unix-like systems.
+ */
+static int term_and_job_init(term_T *term, int rows, int cols, char_u *cmd);
+static void term_free(term_T *term);
+
 /**************************************
  * 1. Generic code for all systems.
  */
+
+/*
+ * Determine the terminal size from 'termsize' and the current window.
+ * Assumes term->tl_rows and term->tl_cols are zero.
+ */
+    static void
+set_term_and_win_size(term_T *term)
+{
+    if (*curwin->w_p_tms != NUL)
+    {
+	char_u *p = vim_strchr(curwin->w_p_tms, 'x') + 1;
+
+	term->tl_rows = atoi((char *)curwin->w_p_tms);
+	term->tl_cols = atoi((char *)p);
+    }
+    if (term->tl_rows == 0)
+	term->tl_rows = curwin->w_height;
+    else
+    {
+	win_setheight_win(term->tl_rows, curwin);
+	term->tl_rows_fixed = TRUE;
+    }
+    if (term->tl_cols == 0)
+	term->tl_cols = curwin->w_width;
+    else
+    {
+	win_setwidth_win(term->tl_cols, curwin);
+	term->tl_cols_fixed = TRUE;
+    }
+}
 
 /*
  * ":terminal": open a terminal window and execute a job in it.
@@ -118,13 +158,9 @@ static term_T *first_term = NULL;
     void
 ex_terminal(exarg_T *eap)
 {
-    int		rows;
-    int		cols;
     exarg_T	split_ea;
     win_T	*old_curwin = curwin;
-    typval_T	argvars[2];
     term_T	*term;
-    jobopt_T	opt;
 
     if (check_restricted() || check_secure())
 	return;
@@ -147,52 +183,28 @@ ex_terminal(exarg_T *eap)
 	return;
     }
     term->tl_buffer = curbuf;
-
     curbuf->b_term = term;
+
+    /* Link the new terminal in the list of active terminals. */
     term->tl_next = first_term;
     first_term = term;
 
     /* TODO: set buffer type, hidden, etc. */
 
-    if (*curwin->w_p_tms != NUL)
-    {
-	char_u *p = vim_strchr(curwin->w_p_tms, 'x') + 1;
+    set_term_and_win_size(term);
 
-	rows = atoi((char *)curwin->w_p_tms);
-	cols = atoi((char *)p);
-	/* TODO: resize window if possible. */
+    /* System dependent: setup the vterm and start the job in it. */
+    if (term_and_job_init(term, term->tl_rows, term->tl_cols, eap->arg) == OK)
+    {
+	/* store the size we ended up with */
+	vterm_get_size(term->tl_vterm, &term->tl_rows, &term->tl_cols);
     }
     else
     {
-	rows = curwin->w_height;
-	cols = curwin->w_width;
-    }
-
-    if (term_init(term, rows, cols) == OK)
-    {
-	argvars[0].v_type = VAR_STRING;
-	argvars[0].vval.v_string = eap->arg;
-
-	clear_job_options(&opt);
-	opt.jo_mode = MODE_RAW;
-	opt.jo_out_mode = MODE_RAW;
-	opt.jo_err_mode = MODE_RAW;
-	opt.jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
-	opt.jo_io[PART_OUT] = JIO_BUFFER;
-	opt.jo_io[PART_ERR] = JIO_BUFFER;
-	opt.jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
-	opt.jo_io_buf[PART_OUT] = curbuf->b_fnum;
-	opt.jo_io_buf[PART_ERR] = curbuf->b_fnum;
-	opt.jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
-	opt.jo_term_rows = rows;
-	opt.jo_term_cols = cols;
-
-	term->tl_job = job_start(argvars, &opt);
-    }
-
-    if (term->tl_job == NULL)
-	/* Wiping out the buffer will also close the window. */
+	/* Wiping out the buffer will also close the window and call
+	 * free_terminal(). */
 	do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
+    }
 
     /* TODO: Setup pty, see mch_call_shell(). */
 }
@@ -231,6 +243,39 @@ free_terminal(term_T *term)
 }
 
 /*
+ * Write job output "msg[len]" to the vterm.
+ */
+    static void
+term_write_job_output(term_T *term, char_u *msg, size_t len)
+{
+    VTerm	*vterm = term->tl_vterm;
+    char_u	*p;
+    size_t	done;
+    size_t	len_now;
+
+    for (done = 0; done < len; done += len_now)
+    {
+	for (p = msg + done; p < msg + len; )
+	{
+	    if (*p == NL)
+		break;
+	    p += utf_ptr2len_len(p, len - (p - msg));
+	}
+	len_now = p - msg - done;
+	vterm_input_write(vterm, (char *)msg + done, len_now);
+	if (p < msg + len && *p == NL)
+	{
+	    /* Convert NL to CR-NL, that appears to work best. */
+	    vterm_input_write(vterm, "\r\n", 2);
+	    ++len_now;
+	}
+    }
+
+    /* this invokes the damage callbacks */
+    vterm_screen_flush_damage(vterm_obtain_screen(vterm));
+}
+
+/*
  * Invoked when "msg" output from a job was received.  Write it to the terminal
  * of "buffer".
  */
@@ -247,314 +292,6 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
     update_screen(0);
     setcursor();
     out_flush();
-}
-
-/*
- * Wait for input and send it to the job.
- * Return when the start of a CTRL-W command is typed or anything else that
- * should be handled as a Normal mode command.
- */
-    void
-terminal_loop(void)
-{
-    char	buf[KEY_BUF_LEN];
-    int		c;
-    size_t	len;
-    static int	mouse_was_outside = FALSE;
-    int		dragging_outside = FALSE;
-
-    for (;;)
-    {
-	/* TODO: skip screen update when handling a sequence of keys. */
-	update_screen(0);
-	setcursor();
-	out_flush();
-	++no_mapping;
-	++allow_keys;
-	c = vgetc();
-	--no_mapping;
-	--allow_keys;
-
-	/* Catch keys that need to be handled as in Normal mode. */
-	switch (c)
-	{
-	    case Ctrl_W:
-	    case NUL:
-	    case K_ZERO:
-		stuffcharReadbuff(c);
-		return;
-
-	    case K_IGNORE: continue;
-
-	    case K_LEFTDRAG:
-	    case K_MIDDLEDRAG:
-	    case K_RIGHTDRAG:
-	    case K_X1DRAG:
-	    case K_X2DRAG:
-		dragging_outside = mouse_was_outside;
-		/* FALLTHROUGH */
-	    case K_LEFTMOUSE:
-	    case K_LEFTMOUSE_NM:
-	    case K_LEFTRELEASE:
-	    case K_LEFTRELEASE_NM:
-	    case K_MIDDLEMOUSE:
-	    case K_MIDDLERELEASE:
-	    case K_RIGHTMOUSE:
-	    case K_RIGHTRELEASE:
-	    case K_X1MOUSE:
-	    case K_X1RELEASE:
-	    case K_X2MOUSE:
-	    case K_X2RELEASE:
-		if (mouse_row < W_WINROW(curwin)
-			|| mouse_row >= (W_WINROW(curwin) + curwin->w_height)
-			|| mouse_col < W_WINCOL(curwin)
-			|| mouse_col >= W_ENDCOL(curwin)
-			|| dragging_outside)
-		{
-		    /* click outside the current window */
-		    stuffcharReadbuff(c);
-		    mouse_was_outside = TRUE;
-		    return;
-		}
-	}
-	mouse_was_outside = FALSE;
-
-	/* Convert the typed key to a sequence of bytes for the job. */
-	len = term_convert_key(c, buf);
-	if (len > 0)
-	    /* TODO: if FAIL is returned, stop? */
-	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
-						     (char_u *)buf, len, NULL);
-    }
-}
-
-/*
- * Called to update the window that contains the terminal.
- */
-    void
-term_update_window(win_T *wp)
-{
-    term_update_lines(wp);
-}
-
-    static void
-position_cursor(win_T *wp, VTermPos *pos)
-{
-    wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
-    wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
-}
-
-#ifdef WIN3264
-
-/**************************************
- * 2. MS-Windows implementation.
- */
-
-/*
- * Create a new terminal of "rows" by "cols" cells.
- * Store a reference in "term".
- * Return OK or FAIL.
- */
-    static int
-term_init(term_T *term, int rows, int cols)
-{
-    /* TODO: Create a hidden console */
-    return FAIL;
-}
-
-/*
- * Free the terminal emulator part of "term".
- */
-    static void
-term_free(term_T *term)
-{
-    /* TODO */
-}
-
-/*
- * Write job output "msg[len]" to the terminal.
- */
-    static void
-term_write_job_output(term_T *term, char_u *msg, size_t len)
-{
-    /* TODO */
-}
-
-/*
- * Convert typed key "c" into bytes to send to the job.
- * Return the number of bytes in "buf".
- */
-    static int
-term_convert_key(int c, char *buf)
-{
-    /* TODO */
-    return 0;
-}
-
-/*
- * Called to update the window that contains the terminal.
- */
-    static void
-term_update_lines(win_T *wp)
-{
-    /* TODO */
-}
-
-#else
-
-/**************************************
- * 3. Unix-like implementation.
- *
- * For a terminal one VTerm is constructed.  This uses libvterm.  A copy of
- * that library is in the libvterm directory.
- */
-
-static int handle_damage(VTermRect rect, void *user);
-static int handle_moverect(VTermRect dest, VTermRect src, void *user);
-static int handle_movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user);
-static int handle_resize(int rows, int cols, void *user);
-
-static VTermScreenCallbacks screen_callbacks = {
-  handle_damage,	/* damage */
-  handle_moverect,	/* moverect */
-  handle_movecursor,	/* movecursor */
-  NULL,			/* settermprop */
-  NULL,			/* bell */
-  handle_resize,	/* resize */
-  NULL,			/* sb_pushline */
-  NULL			/* sb_popline */
-};
-
-/*
- * Create a new terminal of "rows" by "cols" cells.
- * Store a reference in "term".
- * Return OK or FAIL.
- */
-    static int
-term_init(term_T *term, int rows, int cols)
-{
-    VTerm *vterm = vterm_new(rows, cols);
-    VTermScreen *screen;
-
-    term->tl_vterm = vterm;
-    screen = vterm_obtain_screen(vterm);
-    vterm_screen_set_callbacks(screen, &screen_callbacks, term);
-    /* TODO: depends on 'encoding'. */
-    vterm_set_utf8(vterm, 1);
-    /* Required to initialize most things. */
-    vterm_screen_reset(screen, 1 /* hard */);
-
-    return OK;
-}
-
-/*
- * Free the terminal emulator part of "term".
- */
-    static void
-term_free(term_T *term)
-{
-    vterm_free(term->tl_vterm);
-}
-
-/*
- * Write job output "msg[len]" to the terminal.
- */
-    static void
-term_write_job_output(term_T *term, char_u *msg, size_t len)
-{
-    VTerm	*vterm = term->tl_vterm;
-    char_u	*p;
-    size_t	done;
-    size_t	len_now;
-
-    for (done = 0; done < len; done += len_now)
-    {
-	for (p = msg + done; p < msg + len; )
-	{
-	    if (*p == NL)
-		break;
-	    p += mb_ptr2len_len(p, len - (p - msg));
-	}
-	len_now = p - msg - done;
-	vterm_input_write(vterm, (char *)msg + done, len_now);
-	if (p < msg + len && *p == NL)
-	{
-	    /* Convert NL to CR-NL, that appears to work best. */
-	    vterm_input_write(vterm, "\r\n", 2);
-	    ++len_now;
-	}
-    }
-    vterm_screen_flush_damage(vterm_obtain_screen(vterm));
-}
-
-    static int
-handle_damage(VTermRect rect, void *user)
-{
-    term_T *term = (term_T *)user;
-
-    term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, rect.start_row);
-    term->tl_dirty_row_end = MAX(term->tl_dirty_row_end, rect.end_row);
-    redraw_buf_later(term->tl_buffer, NOT_VALID);
-    return 1;
-}
-
-    static int
-handle_moverect(VTermRect dest UNUSED, VTermRect src UNUSED, void *user)
-{
-    term_T	*term = (term_T *)user;
-
-    /* TODO */
-    redraw_buf_later(term->tl_buffer, NOT_VALID);
-    return 1;
-}
-
-  static int
-handle_movecursor(
-	VTermPos pos,
-	VTermPos oldpos UNUSED,
-	int visible UNUSED,
-	void *user)
-{
-    term_T	*term = (term_T *)user;
-    win_T	*wp;
-    int		is_current = FALSE;
-
-    FOR_ALL_WINDOWS(wp)
-    {
-	if (wp->w_buffer == term->tl_buffer)
-	{
-	    position_cursor(wp, &pos);
-	    if (wp == curwin)
-		is_current = TRUE;
-	}
-    }
-
-    if (is_current)
-    {
-	setcursor();
-	out_flush();
-    }
-
-    return 1;
-}
-
-    static int
-handle_resize(int rows, int cols, void *user)
-{
-    term_T	*term = (term_T *)user;
-    win_T	*wp;
-
-    FOR_ALL_WINDOWS(wp)
-    {
-	if (wp->w_buffer == term->tl_buffer)
-	{
-	    win_setheight_win(rows, wp);
-	    win_setwidth_win(cols, wp);
-	}
-    }
-
-    redraw_buf_later(term->tl_buffer, NOT_VALID);
-    return 1;
 }
 
 /*
@@ -664,27 +401,204 @@ term_convert_key(int c, char *buf)
 }
 
 /*
+ * Wait for input and send it to the job.
+ * Return when the start of a CTRL-W command is typed or anything else that
+ * should be handled as a Normal mode command.
+ */
+    void
+terminal_loop(void)
+{
+    char	buf[KEY_BUF_LEN];
+    int		c;
+    size_t	len;
+    static int	mouse_was_outside = FALSE;
+    int		dragging_outside = FALSE;
+
+    for (;;)
+    {
+	/* TODO: skip screen update when handling a sequence of keys. */
+	update_screen(0);
+	setcursor();
+	out_flush();
+	++no_mapping;
+	++allow_keys;
+	got_int = FALSE;
+	c = vgetc();
+	--no_mapping;
+	--allow_keys;
+
+	/* Catch keys that need to be handled as in Normal mode. */
+	switch (c)
+	{
+	    case Ctrl_W:
+	    case NUL:
+	    case K_ZERO:
+		stuffcharReadbuff(c);
+		return;
+
+	    case K_IGNORE: continue;
+
+	    case K_LEFTDRAG:
+	    case K_MIDDLEDRAG:
+	    case K_RIGHTDRAG:
+	    case K_X1DRAG:
+	    case K_X2DRAG:
+		dragging_outside = mouse_was_outside;
+		/* FALLTHROUGH */
+	    case K_LEFTMOUSE:
+	    case K_LEFTMOUSE_NM:
+	    case K_LEFTRELEASE:
+	    case K_LEFTRELEASE_NM:
+	    case K_MIDDLEMOUSE:
+	    case K_MIDDLERELEASE:
+	    case K_RIGHTMOUSE:
+	    case K_RIGHTRELEASE:
+	    case K_X1MOUSE:
+	    case K_X1RELEASE:
+	    case K_X2MOUSE:
+	    case K_X2RELEASE:
+		if (mouse_row < W_WINROW(curwin)
+			|| mouse_row >= (W_WINROW(curwin) + curwin->w_height)
+			|| mouse_col < W_WINCOL(curwin)
+			|| mouse_col >= W_ENDCOL(curwin)
+			|| dragging_outside)
+		{
+		    /* click outside the current window */
+		    stuffcharReadbuff(c);
+		    mouse_was_outside = TRUE;
+		    return;
+		}
+	}
+	mouse_was_outside = FALSE;
+
+	/* Convert the typed key to a sequence of bytes for the job. */
+	len = term_convert_key(c, buf);
+	if (len > 0)
+	    /* TODO: if FAIL is returned, stop? */
+	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
+						     (char_u *)buf, len, NULL);
+    }
+}
+
+    static void
+position_cursor(win_T *wp, VTermPos *pos)
+{
+    wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
+    wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
+}
+
+static int handle_damage(VTermRect rect, void *user);
+static int handle_moverect(VTermRect dest, VTermRect src, void *user);
+static int handle_movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user);
+static int handle_resize(int rows, int cols, void *user);
+
+static VTermScreenCallbacks screen_callbacks = {
+  handle_damage,	/* damage */
+  handle_moverect,	/* moverect */
+  handle_movecursor,	/* movecursor */
+  NULL,			/* settermprop */
+  NULL,			/* bell */
+  handle_resize,	/* resize */
+  NULL,			/* sb_pushline */
+  NULL			/* sb_popline */
+};
+
+    static int
+handle_damage(VTermRect rect, void *user)
+{
+    term_T *term = (term_T *)user;
+
+    term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, rect.start_row);
+    term->tl_dirty_row_end = MAX(term->tl_dirty_row_end, rect.end_row);
+    redraw_buf_later(term->tl_buffer, NOT_VALID);
+    return 1;
+}
+
+    static int
+handle_moverect(VTermRect dest UNUSED, VTermRect src UNUSED, void *user)
+{
+    term_T	*term = (term_T *)user;
+
+    /* TODO */
+    redraw_buf_later(term->tl_buffer, NOT_VALID);
+    return 1;
+}
+
+    static int
+handle_movecursor(
+	VTermPos pos,
+	VTermPos oldpos UNUSED,
+	int visible UNUSED,
+	void *user)
+{
+    term_T	*term = (term_T *)user;
+    win_T	*wp;
+    int		is_current = FALSE;
+
+    FOR_ALL_WINDOWS(wp)
+    {
+	if (wp->w_buffer == term->tl_buffer)
+	{
+	    position_cursor(wp, &pos);
+	    if (wp == curwin)
+		is_current = TRUE;
+	}
+    }
+
+    if (is_current)
+    {
+	setcursor();
+	out_flush();
+    }
+
+    return 1;
+}
+
+/*
+ * The job running in the terminal resized the terminal.
+ */
+    static int
+handle_resize(int rows, int cols, void *user)
+{
+    term_T	*term = (term_T *)user;
+    win_T	*wp;
+
+    term->tl_rows = rows;
+    term->tl_cols = cols;
+    FOR_ALL_WINDOWS(wp)
+    {
+	if (wp->w_buffer == term->tl_buffer)
+	{
+	    win_setheight_win(rows, wp);
+	    win_setwidth_win(cols, wp);
+	}
+    }
+
+    redraw_buf_later(term->tl_buffer, NOT_VALID);
+    return 1;
+}
+
+/*
  * Called to update the window that contains the terminal.
  */
-    static void
-term_update_lines(win_T *wp)
+    void
+term_update_window(win_T *wp)
 {
-    int		vterm_rows;
-    int		vterm_cols;
-    VTerm	*vterm = wp->w_buffer->b_term->tl_vterm;
+    term_T	*term = wp->w_buffer->b_term;
+    VTerm	*vterm = term->tl_vterm;
     VTermScreen *screen = vterm_obtain_screen(vterm);
     VTermState	*state = vterm_obtain_state(vterm);
     VTermPos	pos;
 
-    vterm_get_size(vterm, &vterm_rows, &vterm_cols);
-
-    if (*wp->w_p_tms == NUL
-		  && (vterm_rows != wp->w_height || vterm_cols != wp->w_width))
-    {
-	vterm_set_size(vterm, wp->w_height, wp->w_width);
-	/* Get the size again, in case setting the didn't work. */
-	vterm_get_size(vterm, &vterm_rows, &vterm_cols);
-    }
+    /*
+     * If the window was resized a redraw will be triggered and we get here.
+     * Adjust the size of the vterm unless 'termsize' specifies a fixed size.
+     */
+    if ((!term->tl_rows_fixed && term->tl_rows != wp->w_height)
+	    || (!term->tl_cols_fixed && term->tl_cols != wp->w_width))
+	vterm_set_size(vterm,
+		term->tl_rows_fixed ? term->tl_rows : wp->w_height,
+		term->tl_cols_fixed ? term->tl_cols : wp->w_width);
 
     /* The cursor may have been moved when resizing. */
     vterm_state_get_cursorpos(state, &pos);
@@ -694,31 +608,341 @@ term_update_lines(win_T *wp)
     for (pos.row = 0; pos.row < wp->w_height; ++pos.row)
     {
 	int off = screen_get_current_line_off();
+	int max_col = MIN(wp->w_width, term->tl_cols);
 
-	if (pos.row < vterm_rows)
-	    for (pos.col = 0; pos.col < wp->w_width && pos.col < vterm_cols;
-								     ++pos.col)
+	if (pos.row < term->tl_rows)
+	{
+	    for (pos.col = 0; pos.col < max_col; )
 	    {
 		VTermScreenCell cell;
-		int c;
+		int		c;
 
 		vterm_screen_get_cell(screen, pos, &cell);
-		/* TODO: use cell.attrs and colors */
-		/* TODO: use cell.width */
-		/* TODO: multi-byte chars */
 		c = cell.chars[0];
-		ScreenLines[off] = c == NUL ? ' ' : c;
+		if (c == NUL)
+		{
+		    ScreenLines[off] = ' ';
+		    ScreenLinesUC[off] = NUL;
+		}
+		else
+		{
+#if defined(FEAT_MBYTE)
+		    if (enc_utf8 && c >= 0x80)
+			ScreenLinesUC[off] = c;
+		    else
+			ScreenLines[off] = c;
+#else
+		    ScreenLines[off] = c;
+#endif
+		}
+		/* TODO: use cell.attrs and colors */
 		ScreenAttrs[off] = 0;
+
+		++pos.col;
 		++off;
+		if (cell.width == 2)
+		{
+		    ScreenLines[off] = ' ';
+		    ScreenLinesUC[off] = NUL;
+		    ++pos.col;
+		    ++off;
+		}
 	    }
+	}
 	else
 	    pos.col = 0;
 
-	screen_line(wp->w_winrow + pos.row, wp->w_wincol, pos.col, wp->w_width,
-									FALSE);
+	screen_line(wp->w_winrow + pos.row, wp->w_wincol,
+						  pos.col, wp->w_width, FALSE);
     }
 }
 
-#endif
+/*
+ * Set job options common for Unix and MS-Windows.
+ */
+    static void
+setup_job_options(jobopt_T *opt, int rows, int cols)
+{
+    clear_job_options(opt);
+    opt->jo_mode = MODE_RAW;
+    opt->jo_out_mode = MODE_RAW;
+    opt->jo_err_mode = MODE_RAW;
+    opt->jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
+    opt->jo_io[PART_OUT] = JIO_BUFFER;
+    opt->jo_io[PART_ERR] = JIO_BUFFER;
+    opt->jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
+    opt->jo_io_buf[PART_OUT] = curbuf->b_fnum;
+    opt->jo_io_buf[PART_ERR] = curbuf->b_fnum;
+    opt->jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
+    opt->jo_term_rows = rows;
+    opt->jo_term_cols = cols;
+}
+
+/*
+ * Create a new vterm and initialize it.
+ */
+    static void
+create_vterm(term_T *term, int rows, int cols)
+{
+    VTerm	    *vterm;
+    VTermScreen	    *screen;
+
+    vterm = vterm_new(rows, cols);
+    term->tl_vterm = vterm;
+    screen = vterm_obtain_screen(vterm);
+    vterm_screen_set_callbacks(screen, &screen_callbacks, term);
+    /* TODO: depends on 'encoding'. */
+    vterm_set_utf8(vterm, 1);
+    /* Required to initialize most things. */
+    vterm_screen_reset(screen, 1 /* hard */);
+}
+
+# ifdef WIN3264
+
+#define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
+#define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
+
+void* (*winpty_config_new)(int, void*);
+void* (*winpty_open)(void*, void*);
+void* (*winpty_spawn_config_new)(int, void*, LPCWSTR, void*, void*, void*);
+BOOL (*winpty_spawn)(void*, void*, HANDLE*, HANDLE*, DWORD*, void*);
+void (*winpty_config_set_initial_size)(void*, int, int);
+LPCWSTR (*winpty_conin_name)(void*);
+LPCWSTR (*winpty_conout_name)(void*);
+LPCWSTR (*winpty_conerr_name)(void*);
+void (*winpty_free)(void*);
+void (*winpty_config_free)(void*);
+void (*winpty_spawn_config_free)(void*);
+void (*winpty_error_free)(void*);
+LPCWSTR (*winpty_error_msg)(void*);
+
+/**************************************
+ * 2. MS-Windows implementation.
+ */
+
+#define WINPTY_DLL "winpty.dll"
+
+static HINSTANCE hWinPtyDLL = NULL;
+
+    int
+dyn_winpty_init(void)
+{
+    int i;
+    static struct
+    {
+	char	    *name;
+	FARPROC	    *ptr;
+    } winpty_entry[] =
+    {
+	{"winpty_conerr_name", (FARPROC*)&winpty_conerr_name},
+	{"winpty_config_free", (FARPROC*)&winpty_config_free},
+	{"winpty_config_new", (FARPROC*)&winpty_config_new},
+	{"winpty_config_set_initial_size", (FARPROC*)&winpty_config_set_initial_size},
+	{"winpty_conin_name", (FARPROC*)&winpty_conin_name},
+	{"winpty_conout_name", (FARPROC*)&winpty_conout_name},
+	{"winpty_error_free", (FARPROC*)&winpty_error_free},
+	{"winpty_free", (FARPROC*)&winpty_free},
+	{"winpty_open", (FARPROC*)&winpty_open},
+	{"winpty_spawn", (FARPROC*)&winpty_spawn},
+	{"winpty_spawn_config_free", (FARPROC*)&winpty_spawn_config_free},
+	{"winpty_spawn_config_new", (FARPROC*)&winpty_spawn_config_new},
+	{"winpty_error_msg", (FARPROC*)&winpty_error_msg},
+	{NULL, NULL}
+    };
+
+    /* No need to initialize twice. */
+    if (hWinPtyDLL)
+	return 1;
+    /* Load winpty.dll */
+    hWinPtyDLL = vimLoadLib(WINPTY_DLL);
+    if (!hWinPtyDLL)
+    {
+	EMSG2(_(e_loadlib), WINPTY_DLL);
+	return 0;
+    }
+    for (i = 0; winpty_entry[i].name != NULL
+					 && winpty_entry[i].ptr != NULL; ++i)
+    {
+	if ((*winpty_entry[i].ptr = (FARPROC)GetProcAddress(hWinPtyDLL,
+					      winpty_entry[i].name)) == NULL)
+	{
+	    EMSG2(_(e_loadfunc), winpty_entry[i].name);
+	    return 0;
+	}
+    }
+
+    return 1;
+}
+
+/*
+ * Create a new terminal of "rows" by "cols" cells.
+ * Store a reference in "term".
+ * Return OK or FAIL.
+ */
+    static int
+term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
+{
+    WCHAR	    *p = enc_to_utf16(cmd, NULL);
+    channel_T	    *channel = NULL;
+    job_T	    *job = NULL;
+    jobopt_T	    opt;
+    DWORD	    error;
+    HANDLE	    jo = NULL, child_process_handle, child_thread_handle;
+    void	    *winpty_err;
+    void	    *spawn_config;
+
+    if (!dyn_winpty_init())
+	return FAIL;
+
+    if (p == NULL)
+	return FAIL;
+
+    job = job_alloc();
+    if (job == NULL)
+	goto failed;
+
+    channel = add_channel();
+    if (channel == NULL)
+	goto failed;
+
+    term->tl_winpty_config = winpty_config_new(0, &winpty_err);
+    if (term->tl_winpty_config == NULL)
+	goto failed;
+
+    winpty_config_set_initial_size(term->tl_winpty_config, cols, rows);
+    term->tl_winpty = winpty_open(term->tl_winpty_config, &winpty_err);
+    if (term->tl_winpty == NULL)
+	goto failed;
+
+    spawn_config = winpty_spawn_config_new(
+	    WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN |
+		WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN,
+	    NULL,
+	    p,
+	    NULL,
+	    NULL,
+	    &winpty_err);
+    if (spawn_config == NULL)
+	goto failed;
+
+    channel = add_channel();
+    if (channel == NULL)
+	goto failed;
+
+    job = job_alloc();
+    if (job == NULL)
+	goto failed;
+
+    if (!winpty_spawn(term->tl_winpty, spawn_config, &child_process_handle,
+	    &child_thread_handle, &error, &winpty_err))
+	goto failed;
+
+    channel_set_pipes(channel,
+	(sock_T) CreateFileW(
+	    winpty_conin_name(term->tl_winpty),
+	    GENERIC_WRITE, 0, NULL,
+	    OPEN_EXISTING, 0, NULL),
+	(sock_T) CreateFileW(
+	    winpty_conout_name(term->tl_winpty),
+	    GENERIC_READ, 0, NULL,
+	    OPEN_EXISTING, 0, NULL),
+	(sock_T) CreateFileW(
+	    winpty_conerr_name(term->tl_winpty),
+	    GENERIC_READ, 0, NULL,
+	    OPEN_EXISTING, 0, NULL));
+
+    jo = CreateJobObject(NULL, NULL);
+    if (jo == NULL)
+	goto failed;
+
+    if (!AssignProcessToJobObject(jo, child_process_handle))
+	goto failed;
+
+    winpty_spawn_config_free(spawn_config);
+
+    create_vterm(term, rows, cols);
+
+    setup_job_options(&opt, rows, cols);
+    channel_set_job(channel, job, &opt);
+
+    job->jv_channel = channel;
+    job->jv_proc_info.hProcess = child_process_handle;
+    job->jv_proc_info.dwProcessId = GetProcessId(child_process_handle);
+    job->jv_job_object = jo;
+    job->jv_status = JOB_STARTED;
+    term->tl_job = job;
+
+    return OK;
+
+failed:
+    if (channel != NULL)
+	channel_clear(channel);
+    if (job != NULL)
+	job_cleanup(job);
+    if (jo != NULL)
+	CloseHandle(jo);
+    if (term->tl_winpty != NULL)
+	winpty_free(term->tl_winpty);
+    if (term->tl_winpty_config != NULL)
+	winpty_config_free(term->tl_winpty_config);
+    if (winpty_err != NULL)
+    {
+	char_u *msg = utf16_to_enc(
+				(short_u *)winpty_error_msg(winpty_err), NULL);
+
+	EMSG(msg);
+	winpty_error_free(winpty_err);
+    }
+    return FAIL;
+}
+
+/*
+ * Free the terminal emulator part of "term".
+ */
+    static void
+term_free(term_T *term)
+{
+    winpty_free(term->tl_winpty);
+    winpty_config_free(term->tl_winpty_config);
+    vterm_free(term->tl_vterm);
+}
+
+# else
+
+/**************************************
+ * 3. Unix-like implementation.
+ */
+
+/*
+ * Create a new terminal of "rows" by "cols" cells.
+ * Start job for "cmd".
+ * Store the pointers in "term".
+ * Return OK or FAIL.
+ */
+    static int
+term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
+{
+    typval_T	argvars[2];
+    jobopt_T	opt;
+
+    create_vterm(term, rows, cols);
+
+    argvars[0].v_type = VAR_STRING;
+    argvars[0].vval.v_string = cmd;
+    setup_job_options(&opt, rows, cols);
+    term->tl_job = job_start(argvars, &opt);
+
+    return term->tl_job != NULL ? OK : FAIL;
+}
+
+/*
+ * Free the terminal emulator part of "term".
+ */
+    static void
+term_free(term_T *term)
+{
+    vterm_free(term->tl_vterm);
+}
+# endif
 
 #endif /* FEAT_TERMINAL */
