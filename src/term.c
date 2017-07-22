@@ -1428,8 +1428,6 @@ parse_builtin_tcap(char_u *term)
     }
 }
 #if defined(HAVE_TGETENT) || defined(FEAT_TERMRESPONSE)
-static void set_color_count(int nr);
-
 /*
  * Set number of colors.
  * Store it as a number in t_colors.
@@ -1446,6 +1444,35 @@ set_color_count(int nr)
     else
 	*nr_colors = NUL;
     set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE, 0);
+}
+
+/*
+ * Set the color count to "val" and redraw if it changed.
+ */
+    static void
+may_adjust_color_count(int val)
+{
+    if (val != t_colors)
+    {
+	/* Nr of colors changed, initialize highlighting and
+	 * redraw everything.  This causes a redraw, which usually
+	 * clears the message.  Try keeping the message if it
+	 * might work. */
+	set_keep_msg_from_hist();
+	set_color_count(val);
+	init_highlight(TRUE, FALSE);
+# ifdef DEBUG_TERMRESPONSE
+	{
+	    char buf[100];
+	    int  r = redraw_asap(CLEAR);
+
+	    sprintf(buf, "Received t_Co, redraw_asap(): %d", r);
+	    log_tr(buf);
+	}
+# else
+	redraw_asap(CLEAR);
+# endif
+    }
 }
 #endif
 
@@ -2713,9 +2740,9 @@ term_get_winpos(int *x, int *y)
 # endif
 
     void
-term_set_winsize(int width, int height)
+term_set_winsize(int height, int width)
 {
-    OUT_STR(tgoto((char *)T_CWS, height, width));
+    OUT_STR(tgoto((char *)T_CWS, width, height));
 }
 #endif
 
@@ -2823,6 +2850,8 @@ term_settitle(char_u *title)
     void
 ttest(int pairs)
 {
+    char_u *env_colors;
+
     check_options();		    /* make sure no options are NULL */
 
     /*
@@ -2909,8 +2938,16 @@ ttest(int pairs)
     }
     need_gather = TRUE;
 
-    /* Set t_colors to the value of t_Co. */
+    /* Set t_colors to the value of $COLORS or t_Co. */
     t_colors = atoi((char *)T_CCO);
+    env_colors = mch_getenv((char_u *)"COLORS");
+    if (env_colors != NULL && isdigit(*env_colors))
+    {
+	int colors = atoi((char *)env_colors);
+
+	if (colors != t_colors)
+	    set_color_count(colors);
+    }
 }
 
 #if (defined(FEAT_GUI) && (defined(FEAT_MENU) || !defined(USE_ON_FLY_SCROLL))) \
@@ -4250,6 +4287,7 @@ check_termcode(
 	     * "<Esc>[" or CSI:
 	     *
 	     * - Xterm version string: <Esc>[>{x};{vers};{y}c
+	     *   Libvterm returns {x} == 0, {vers} == 100, {y} == 0.
 	     *   Also eat other possible responses to t_RV, rxvt returns
 	     *   "<Esc>[?1;2c". Also accept CSI instead of <Esc>[.
 	     *   mrxvt has been reported to have "+" in the version. Assume
@@ -4359,10 +4397,8 @@ check_termcode(
 		    /* rxvt sends its version number: "20703" is 2.7.3.
 		     * Ignore it for when the user has set 'term' to xterm,
 		     * even though it's an rxvt. */
-		    if (extra > 0)
-			extra = atoi((char *)tp + extra);
-		    if (extra > 20000)
-			extra = 0;
+		    if (col > 20000)
+			col = 0;
 
 		    if (tp[1 + (tp[0] != CSI)] == '>' && j == 2)
 		    {
@@ -4371,24 +4407,35 @@ check_termcode(
 			if (!option_was_set((char_u *)"ttym"))
 			{
 # ifdef TTYM_SGR
-			    if (extra >= 277)
+			    if (col >= 277)
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
 			    else
 # endif
 			    /* if xterm version >= 95 use mouse dragging */
-			    if (extra >= 95)
+			    if (col >= 95)
 				set_option_value((char_u *)"ttym", 0L,
 						       (char_u *)"xterm2", 0);
 			}
 
 			/* if xterm version >= 141 try to get termcap codes */
-			if (extra >= 141)
+			if (col >= 141)
 			{
 			    LOG_TR("Enable checking for XT codes");
 			    check_for_codes = TRUE;
 			    need_gather = TRUE;
 			    req_codes_from_term();
+			}
+
+			/* libvterm sends 0;100;0 */
+			if (col == 100
+				&& STRNCMP(tp + extra - 2, ">0;100;0c", 9) == 0)
+			{
+			    /* If run from Vim $COLORS is set to the number of
+			     * colors the terminal supports.  Otherwise assume
+			     * 256, libvterm supports even more. */
+			    if (mch_getenv((char_u *)"COLORS") == NULL)
+				may_adjust_color_count(256);
 			}
 		    }
 # ifdef FEAT_EVAL
@@ -5993,27 +6040,7 @@ got_code_from_term(char_u *code, int len)
 	    {
 		/* Color count is not a key code. */
 		i = atoi((char *)str);
-		if (i != t_colors)
-		{
-		    /* Nr of colors changed, initialize highlighting and
-		     * redraw everything.  This causes a redraw, which usually
-		     * clears the message.  Try keeping the message if it
-		     * might work. */
-		    set_keep_msg_from_hist();
-		    set_color_count(i);
-		    init_highlight(TRUE, FALSE);
-#ifdef DEBUG_TERMRESPONSE
-		    {
-			char buf[100];
-			int  r = redraw_asap(CLEAR);
-
-			sprintf(buf, "Received t_Co, redraw_asap(): %d", r);
-			log_tr(buf);
-		    }
-#else
-		    redraw_asap(CLEAR);
-#endif
-		}
+		may_adjust_color_count(i);
 	    }
 	    else
 	    {
