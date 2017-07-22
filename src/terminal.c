@@ -108,6 +108,16 @@ struct terminal_S {
  */
 static term_T *first_term = NULL;
 
+static char *colors[] = {
+    "black",
+    "red",
+    "blue",
+    "green",
+    "yellow",
+    "magenta",
+    "cyan",
+    "white",
+};
 
 #define MAX_ROW 999999	    /* used for tl_dirty_row_end to update all rows */
 #define KEY_BUF_LEN 200
@@ -121,6 +131,26 @@ static void term_free(term_T *term);
 /**************************************
  * 1. Generic code for all systems.
  */
+
+/*
+ * Make highlight for terminal colors.
+ */
+    static void
+setup_term_colors()
+{
+    int	    i, j;
+    for (i = 0; i < 8; i++)
+    {
+	for (j = 0; j < 8; j++)
+	{
+	    char buf[80];
+	    sprintf(buf, "term%d%d ctermfg=%s ctermbg=%s guifg=%s guibg=%s",
+		    i, j, colors[i], colors[j], colors[i], colors[j]);
+	    do_highlight((char_u *)buf, FALSE, FALSE);
+	}
+    }
+    highlight_changed();
+}
 
 /*
  * Determine the terminal size from 'termsize' and the current window.
@@ -190,6 +220,8 @@ ex_terminal(exarg_T *eap)
     first_term = term;
 
     /* TODO: set buffer type, hidden, etc. */
+
+    setup_term_colors();
 
     set_term_and_win_size(term);
 
@@ -616,6 +648,8 @@ term_update_window(win_T *wp)
 	    {
 		VTermScreenCell cell;
 		int		c;
+		int		fg, bg;
+		char		cbuf[16];
 
 		vterm_screen_get_cell(screen, pos, &cell);
 		c = cell.chars[0];
@@ -635,8 +669,14 @@ term_update_window(win_T *wp)
 		    ScreenLines[off] = c;
 #endif
 		}
-		/* TODO: use cell.attrs and colors */
-		ScreenAttrs[off] = 0;
+		fg = (cell.fg.blue > 127 ? 4 : 0) |
+		    (cell.fg.green > 127 ? 2 : 0) |
+		    (cell.fg.red > 127 ? 1 : 0);
+		bg = (cell.bg.blue > 127 ? 4 : 0) |
+		    (cell.bg.green > 127 ? 2 : 0) |
+		    (cell.bg.red > 127 ? 1 : 0);
+		sprintf(cbuf, "term%d%d", fg, bg);
+		ScreenAttrs[off] = syn_id2attr(syn_name2id((char_u*)cbuf));
 
 		++pos.col;
 		++off;
