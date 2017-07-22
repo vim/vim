@@ -97,12 +97,27 @@ struct terminal_S {
 #define MAX_ROW 999999	    /* used for tl_dirty_row_end to update all rows */
 #define KEY_BUF_LEN 200
 
+/* #define ENABLE_TERMINAL_COLOR */
+
 /* Functions implemented for MS-Windows and Unix-like systems. */
 static int term_init(term_T *term, int rows, int cols, char_u *cmd);
 static void term_free(term_T *term);
 static void term_write_job_output(term_T *term, char_u *msg, size_t len);
 static int term_convert_key(int c, char *buf);
 static void term_update_lines(win_T *wp);
+
+#ifdef ENABLE_TERMINAL_COLOR
+const char *colors[] = {
+    "black",
+    "red",
+    "blue",
+    "green",
+    "yellow",
+    "magenta",
+    "cyan",
+    "white",
+};
+#endif
 
 /*
  * List of all active terminals.
@@ -124,6 +139,9 @@ ex_terminal(exarg_T *eap)
     exarg_T	split_ea;
     win_T	*old_curwin = curwin;
     term_T	*term;
+#ifdef ENABLE_TERMINAL_COLOR
+    int		i, j;
+#endif
 
     if (check_restricted() || check_secure())
 	return;
@@ -166,6 +184,20 @@ ex_terminal(exarg_T *eap)
 	rows = curwin->w_height;
 	cols = curwin->w_width;
     }
+
+#ifdef ENABLE_TERMINAL_COLOR
+    for (i = 0; i < 8; i++)
+    {
+	for (j = 0; j < 8; j++)
+	{
+	    char buf[80];
+	    sprintf(buf, "term%d%d ctermfg=%s ctermbg=%s guifg=%s guibg=%s",
+		    i, j, colors[i], colors[j], colors[i], colors[j]);
+	    do_highlight((char_u *)buf, FALSE, FALSE);
+	}
+    }
+    highlight_changed();
+#endif
 
     term_init(term, rows, cols, eap->arg);
 
@@ -464,18 +496,16 @@ term_update_lines(win_T *wp)
     {
 	int off = screen_get_current_line_off();
 
-	for (pos.col = 0; pos.col < wp->w_width && pos.col < vterm_cols; ++pos.col)
-	{
-	    ScreenLines[off + pos.col] = ' ';
-	    ScreenLinesUC[off + pos.col] = 0x00;
-	}
-
 	if (pos.row < vterm_rows)
 	{
 	    for (pos.col = 0; pos.col < wp->w_width && pos.col < vterm_cols;)
 	    {
 		VTermScreenCell cell;
 		int c;
+#ifdef ENABLE_TERMINAL_COLOR
+		int fg, bg;
+		char cbuf[16];
+#endif
 
 		vterm_screen_get_cell(screen, pos, &cell);
 		/* TODO: use cell.attrs and colors */
@@ -484,14 +514,43 @@ term_update_lines(win_T *wp)
 		{
 #if defined(FEAT_MBYTE)
 		    if (enc_utf8 && c >= 0x80)
+		    {
+			int i;
 			ScreenLinesUC[off] = c;
+			ScreenLines[off] = ' ';
+			for (i = 1; i < cell.width; i++)
+			{
+			    ScreenLinesUC[off+i] = NUL;
+			    ScreenLines[off+i] = NUL;
+			}
+		    }
 		    else
+		    {
 			ScreenLines[off] = c;
+			ScreenLinesUC[off] = NUL;
+		    }
 #else
 		    ScreenLines[off] = c;
 #endif
-		    ScreenAttrs[off] = 0;
 		}
+		else
+		{
+		    ScreenLines[off] = ' ';
+		    ScreenLinesUC[off] = NUL;
+		}
+
+#ifdef ENABLE_TERMINAL_COLOR
+		fg = (cell.fg.blue > 127 ? 4 : 0) |
+		    (cell.fg.green > 127 ? 2 : 0) |
+		    (cell.fg.red > 127 ? 1 : 0);
+		bg = (cell.bg.blue > 127 ? 4 : 0) |
+		    (cell.bg.green > 127 ? 2 : 0) |
+		    (cell.bg.red > 127 ? 1 : 0);
+		sprintf(cbuf, "term%d%d", fg, bg);
+		ScreenAttrs[off] = syn_id2attr(syn_name2id((char_u*)cbuf));
+#else
+		ScreenAttrs[off] = 0;
+#endif
 
 		pos.col += cell.width;
 		off += cell.width;
