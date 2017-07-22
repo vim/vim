@@ -5189,6 +5189,11 @@ job_stop(job_T *job, typval_T *argvars, char *type)
 	    return 0;
 	}
     }
+    if (job->jv_status == JOB_FAILED)
+    {
+	ch_log(job->jv_channel, "Job failed to start, job_stop() skipped");
+	return 0;
+    }
     if (job->jv_status == JOB_ENDED)
     {
 	ch_log(job->jv_channel, "Job has already ended, job_stop() skipped");

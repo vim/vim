@@ -203,6 +203,9 @@ ex_terminal(exarg_T *eap)
     }
     else
     {
+	free_terminal(term);
+	curbuf->b_term = NULL;
+
 	/* Wiping out the buffer will also close the window and call
 	 * free_terminal(). */
 	do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
@@ -235,7 +238,8 @@ free_terminal(term_T *term)
 
     if (term->tl_job != NULL)
     {
-	if (term->tl_job->jv_status != JOB_ENDED)
+	if (term->tl_job->jv_status != JOB_ENDED
+				      && term->tl_job->jv_status != JOB_FAILED)
 	    job_stop(term->tl_job, NULL, "kill");
 	job_unref(term->tl_job);
     }
@@ -941,7 +945,9 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     setup_job_options(&opt, rows, cols);
     term->tl_job = job_start(argvars, &opt);
 
-    return term->tl_job != NULL ? OK : FAIL;
+    return term->tl_job != NULL
+	&& term->tl_job->jv_channel != NULL
+	&& term->tl_job->jv_status != JOB_FAILED ? OK : FAIL;
 }
 
 /*
