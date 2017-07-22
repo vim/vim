@@ -36,7 +36,6 @@
  *   up.
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
  * - set buffer name to command, add (1) to avoid duplicates.
- * - If [command] is not given the 'shell' option is used.
  * - Add a scrollback buffer (contains lines to scroll off the top).
  *   Can use the buf_T lines, store attributes somewhere else?
  * - When the job ends:
@@ -163,6 +162,7 @@ ex_terminal(exarg_T *eap)
     exarg_T	split_ea;
     win_T	*old_curwin = curwin;
     term_T	*term;
+    char_u	*cmd = eap->arg;
 
     if (check_restricted() || check_secure())
 	return;
@@ -195,8 +195,11 @@ ex_terminal(exarg_T *eap)
 
     set_term_and_win_size(term);
 
+    if (cmd == NULL || *cmd == NUL)
+	cmd = p_sh;
+
     /* System dependent: setup the vterm and start the job in it. */
-    if (term_and_job_init(term, term->tl_rows, term->tl_cols, eap->arg) == OK)
+    if (term_and_job_init(term, term->tl_rows, term->tl_cols, cmd) == OK)
     {
 	/* store the size we ended up with */
 	vterm_get_size(term->tl_vterm, &term->tl_rows, &term->tl_cols);
