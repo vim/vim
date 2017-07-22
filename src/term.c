@@ -1427,7 +1427,7 @@ parse_builtin_tcap(char_u *term)
 	}
     }
 }
-#if defined(HAVE_TGETENT) || defined(FEAT_TERMRESPONSE)
+
 /*
  * Set number of colors.
  * Store it as a number in t_colors.
@@ -1446,6 +1446,7 @@ set_color_count(int nr)
     set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE, 0);
 }
 
+#if defined(FEAT_TERMRESPONSE)
 /*
  * Set the color count to "val" and redraw if it changed.
  */
