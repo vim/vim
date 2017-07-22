@@ -4643,7 +4643,7 @@ job_still_useful(job_T *job)
  * changed to JOB_ENDED (i.e. after job_status() returned "dead" first or
  * mch_detect_ended_job() returned non-NULL).
  */
-    static void
+    void
 job_cleanup(job_T *job)
 {
     if (job->jv_status != JOB_ENDED)
@@ -4773,7 +4773,7 @@ free_unused_jobs(int copyID, int mask)
 /*
  * Allocate a job.  Sets the refcount to one and sets options default.
  */
-    static job_T *
+    job_T *
 job_alloc(void)
 {
     job_T *job;
