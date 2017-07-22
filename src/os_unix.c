@@ -4059,7 +4059,7 @@ set_child_environment(long rows, long columns, char *term)
 # ifdef HAVE_SETENV
     char	envbuf[50];
 # else
-    static char	envbuf_TERM[30];
+    static char	envbuf_Term[30];
     static char	envbuf_Rows[20];
     static char	envbuf_Lines[20];
     static char	envbuf_Columns[20];
