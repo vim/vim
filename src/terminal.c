@@ -46,6 +46,7 @@
  *   - Display the scrollback buffer (but with attributes).
  *     Make the buffer not modifiable, drop attributes when making changes.
  * - when closing window and job has not ended, make terminal hidden?
+ * - don't allow exiting Vim when a terminal is still running a job
  * - use win_del_lines() to make scroll-up efficient.
  * - command line completion for :terminal
  * - add test for giving error for invalid 'termsize' value.
@@ -629,9 +630,15 @@ term_update_window(win_T *wp)
 		{
 #if defined(FEAT_MBYTE)
 		    if (enc_utf8 && c >= 0x80)
+		    {
+			ScreenLines[off] = ' ';
 			ScreenLinesUC[off] = c;
+		    }
 		    else
+		    {
 			ScreenLines[off] = c;
+			ScreenLinesUC[off] = NUL;
+		    }
 #else
 		    ScreenLines[off] = c;
 #endif
@@ -643,7 +650,7 @@ term_update_window(win_T *wp)
 		++off;
 		if (cell.width == 2)
 		{
-		    ScreenLines[off] = ' ';
+		    ScreenLines[off] = NUL;
 		    ScreenLinesUC[off] = NUL;
 		    ++pos.col;
 		    ++off;
