@@ -43,7 +43,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMINAL)
+#if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
 
 #include <signal.h>
 
