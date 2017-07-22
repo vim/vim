@@ -1249,10 +1249,10 @@ LINKIT = @echo >/dev/null
 NONE_INSTALL = install_normal
 
 ### GTK GUI
-GTK_SRC		= gui.c gui_gtk.c gui_gtk_x11.c pty.c gui_gtk_f.c \
+GTK_SRC		= gui.c gui_gtk.c gui_gtk_x11.c gui_gtk_f.c \
 			gui_beval.c $(GRESOURCE_SRC)
 GTK_OBJ		= objects/gui.o objects/gui_gtk.o objects/gui_gtk_x11.o \
-			objects/pty.o objects/gui_gtk_f.o \
+			objects/gui_gtk_f.o \
 			objects/gui_beval.o $(GRESOURCE_OBJ)
 GTK_DEFS	= -DFEAT_GUI_GTK $(NARROW_PROTO)
 GTK_IPATH	= $(GUI_INC_LOC)
@@ -1266,10 +1266,10 @@ GTK_TESTTARGET  = gui
 GTK_BUNDLE	=
 
 ### Motif GUI
-MOTIF_SRC	= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c \
+MOTIF_SRC	= gui.c gui_motif.c gui_x11.c gui_beval.c \
 			gui_xmdlg.c gui_xmebw.c
 MOTIF_OBJ	= objects/gui.o objects/gui_motif.o objects/gui_x11.o \
-			objects/pty.o objects/gui_beval.o \
+			objects/gui_beval.o \
 			objects/gui_xmdlg.o objects/gui_xmebw.o
 MOTIF_DEFS	= -DFEAT_GUI_MOTIF $(NARROW_PROTO)
 MOTIF_IPATH	= $(GUI_INC_LOC)
@@ -1289,16 +1289,16 @@ XAW_LIB = -lXaw
 
 ### When using Xaw3d, uncomment/comment the following lines to also get the
 ### scrollbars from Xaw3d.
-#ATHENA_SRC	= gui.c gui_athena.c gui_x11.c pty.c gui_beval.c gui_at_fs.c
+#ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
 #ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-#			objects/pty.o objects/gui_beval.o objects/gui_at_fs.o
+#			objects/gui_beval.o objects/gui_at_fs.o
 #ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO) \
 #		    -Dvim_scrollbarWidgetClass=scrollbarWidgetClass \
 #		    -Dvim_XawScrollbarSetThumb=XawScrollbarSetThumb
-ATHENA_SRC	= gui.c gui_athena.c gui_x11.c pty.c gui_beval.c \
+ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c \
 			gui_at_sb.c gui_at_fs.c
 ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/pty.o objects/gui_beval.o \
+			objects/gui_beval.o \
 			objects/gui_at_sb.o objects/gui_at_fs.o
 ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO)
 
@@ -1315,9 +1315,9 @@ ATHENA_BUNDLE	=
 ### neXtaw GUI
 NEXTAW_LIB = -lneXtaw
 
-NEXTAW_SRC	= gui.c gui_athena.c gui_x11.c pty.c gui_beval.c gui_at_fs.c
+NEXTAW_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
 NEXTAW_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/pty.o objects/gui_beval.o objects/gui_at_fs.o
+			objects/gui_beval.o objects/gui_at_fs.o
 NEXTAW_DEFS	= -DFEAT_GUI_ATHENA -DFEAT_GUI_NEXTAW $(NARROW_PROTO)
 
 NEXTAW_IPATH	= $(GUI_INC_LOC)
@@ -1342,8 +1342,8 @@ NEXTAW_BUNDLE	=
 #EXTRA_LIBS = /usr/openwin/lib/libXmu.sa -lm
 
 # PHOTON GUI
-PHOTONGUI_SRC	= gui.c gui_photon.c pty.c
-PHOTONGUI_OBJ	= objects/gui.o objects/gui_photon.o objects/pty.o
+PHOTONGUI_SRC	= gui.c gui_photon.c
+PHOTONGUI_OBJ	= objects/gui.o objects/gui_photon.o
 PHOTONGUI_DEFS	= -DFEAT_GUI_PHOTON
 PHOTONGUI_IPATH	=
 PHOTONGUI_LIBS_DIR =
@@ -1357,7 +1357,7 @@ PHOTONGUI_BUNDLE =
 
 # CARBON GUI
 CARBONGUI_SRC	= gui.c gui_mac.c
-CARBONGUI_OBJ	= objects/gui.o objects/gui_mac.o objects/pty.o
+CARBONGUI_OBJ	= objects/gui.o objects/gui_mac.o
 CARBONGUI_DEFS	= -DFEAT_GUI_MAC -fno-common -fpascal-strings \
 		  -Wall -Wno-unknown-pragmas \
 		  -mdynamic-no-pic -pipe
@@ -1374,7 +1374,7 @@ APPDIR = $(VIMNAME).app
 CARBONGUI_TESTARG = VIMPROG=../$(APPDIR)/Contents/MacOS/$(VIMTARGET)
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c
 ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro
 
 # }}}
@@ -1565,6 +1565,7 @@ BASIC_SRC = \
 	os_unix.c \
 	auto/pathdef.c \
 	popupmnu.c \
+	pty.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -1672,6 +1673,7 @@ OBJ_COMMON = \
 	objects/os_unix.o \
 	objects/pathdef.o \
 	objects/popupmnu.o \
+	objects/pty.o \
 	objects/quickfix.o \
 	objects/regexp.o \
 	objects/screen.o \
@@ -3218,11 +3220,11 @@ objects/winclip.o: winclip.c
 objects/pathdef.o: auto/pathdef.c
 	$(CCC) -o $@ auto/pathdef.c
 
-objects/pty.o: pty.c
-	$(CCC) -o $@ pty.c
-
 objects/popupmnu.o: popupmnu.c
 	$(CCC) -o $@ popupmnu.c
+
+objects/pty.o: pty.c
+	$(CCC) -o $@ pty.c
 
 objects/quickfix.o: quickfix.c
 	$(CCC) -o $@ quickfix.c
