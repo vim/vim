@@ -53,6 +53,7 @@ void mch_setmouse(int on);
 void check_mouse_termcode(void);
 int mch_screenmode(char_u *arg);
 int mch_get_shellsize(void);
+int mch_report_winsize(int fd, int rows, int cols);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 int mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc);
