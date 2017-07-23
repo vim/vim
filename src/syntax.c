@@ -8796,6 +8796,24 @@ get_cterm_attr_idx(int attr, int fg, int bg)
     return get_attr_entry(&cterm_attr_table, &at_en);
 }
 
+#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+/*
+ * Get an attribute index for a 'termguicolors' entry.
+ * Uses an existing entry when possible or adds one when needed.
+ */
+    int
+get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
+{
+    attrentry_T		at_en;
+
+    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    at_en.ae_attr = attr;
+    at_en.ae_u.cterm.fg_rgb = fg;
+    at_en.ae_u.cterm.bg_rgb = bg;
+    return get_attr_entry(&cterm_attr_table, &at_en);
+}
+#endif
+
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
  * Get an attribute index for a cterm entry.
