@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 15
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8,6 +8,10 @@ Terminal window support					*terminal*
 
 
 WARNING: THIS IS ONLY PARTLY IMPLEMENTED, ANYTHING CAN STILL CHANGE
+
+The terminal feature is optional, use this to check if your Vim has it: >
+	echo has('terminal')
+If the result is "1" you have it.
 
 
 1. Basic use			|terminal-use|
@@ -34,6 +38,7 @@ the job.  This uses a pty when possible.
 
 Navigate between windows with CTRL-W commands (and mouse).
 E.g. CTRL-W CTRL-W moves focus to the next window.
+Use "CTRL-W :" to edit an Ex command.
 
 See option 'termkey' for specifying the key that precedes a Vim command.
 Default is CTRL-W.
@@ -62,6 +67,10 @@ Syntax ~
 			buffer.  If there are unsaved changes this fails, use
 			! to force, as usual.
 
+When the buffer associated with the terminal is wiped out the job is killed,
+similar to calling `job_stop(job, "kill")`
+
+
 Resizing ~
 
 The size of the terminal can be in one of three modes:
@@ -82,6 +91,19 @@ be seen (the lower-left part).
 The |term_getsize()| function can be used to get the current size of the
 terminal.  |term_setsize()| can be used only when in the first or second mode,
 not when 'termsize' is "rowsXcols".
+
+
+Unix ~
+
+On Unix a pty is used to make it possible to run all kinds of commands.  You
+can even run Vim in the terminal!  That's used for debugging, see below.
+
+
+MS-Windows ~
+
+On MS-Windows a hidden console is used to run the command in.  This should
+work well for all kind of commands.  Obviously, they must be commands that run
+in a terminal, not open their own window.
 
 ==============================================================================
 2. Remote testing					*terminal-testing*
