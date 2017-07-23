@@ -8548,7 +8548,7 @@ ex_resize(exarg_T *eap)
     {
 	if (*eap->arg == '-' || *eap->arg == '+')
 	    n += curwin->w_height;
-	else if (n == 0 && eap->arg[0] == NUL)	/* default is very wide */
+	else if (n == 0 && eap->arg[0] == NUL)	/* default is very high */
 	    n = 9999;
 	win_setheight_win((int)n, wp);
     }
@@ -11679,10 +11679,7 @@ put_view(
      */
     if ((*flagp & SSOP_FOLDS)
 	    && wp->w_buffer->b_ffname != NULL
-# ifdef FEAT_QUICKFIX
-	    && (*wp->w_buffer->b_p_bt == NUL || wp->w_buffer->b_help)
-# endif
-	    )
+	    && (*wp->w_buffer->b_p_bt == NUL || wp->w_buffer->b_help))
     {
 	if (put_folds(fd, wp) == FAIL)
 	    return FAIL;

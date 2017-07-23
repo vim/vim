@@ -468,7 +468,6 @@ close_buffer(
     int		del_buf = (action == DOBUF_DEL || action == DOBUF_WIPE);
     int		wipe_buf = (action == DOBUF_WIPE);
 
-#ifdef FEAT_QUICKFIX
     /*
      * Force unloading or deleting when 'bufhidden' says so.
      * The caller must take care of NOT deleting/freeing when 'bufhidden' is
@@ -487,7 +486,6 @@ close_buffer(
     }
     else if (buf->b_p_bh[0] == 'u')	/* 'bufhidden' == "unload" */
 	unload_buf = TRUE;
-#endif
 
 #ifdef FEAT_AUTOCMD
     /* Disallow deleting the buffer when it is locked (already being closed or
@@ -1982,16 +1980,14 @@ buflist_new(
 	    return NULL;
 # endif
 #endif
-#ifdef FEAT_QUICKFIX
-# ifdef FEAT_AUTOCMD
+#ifdef FEAT_AUTOCMD
 	if (buf == curbuf)
-# endif
+#endif
 	{
 	    /* Make sure 'bufhidden' and 'buftype' are empty */
 	    clear_string_option(&buf->b_p_bh);
 	    clear_string_option(&buf->b_p_bt);
 	}
-#endif
     }
     if (buf != curbuf || curbuf == NULL)
     {
@@ -2165,10 +2161,8 @@ free_buf_options(
 	clear_string_option(&buf->b_p_fenc);
 #endif
 	clear_string_option(&buf->b_p_ff);
-#ifdef FEAT_QUICKFIX
 	clear_string_option(&buf->b_p_bh);
 	clear_string_option(&buf->b_p_bt);
-#endif
     }
 #ifdef FEAT_FIND_ID
     clear_string_option(&buf->b_p_def);
@@ -3668,9 +3662,21 @@ maketitle(void)
 		/* remove the file name */
 		p = gettail_sep(buf + off);
 		if (p == buf + off)
-		    /* must be a help buffer */
-		    vim_strncpy(buf + off, (char_u *)_("help"),
+		{
+		    char *txt;
+
+#ifdef FEAT_TERMINAL
+		    if (curbuf->b_term != NULL)
+			txt = term_job_running(curbuf)
+						? _("running") : _("finished");
+		    else
+#endif
+			txt = _("help");
+
+		    /* must be a help or terminal buffer */
+		    vim_strncpy(buf + off, (char_u *)txt,
 					   (size_t)(SPACE_FOR_DIR - off - 1));
+		}
 		else
 		    *p = NUL;
 
