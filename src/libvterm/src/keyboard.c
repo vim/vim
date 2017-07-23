@@ -68,6 +68,7 @@ typedef struct {
   int csinum;
 } keycodes_s;
 
+/* Order here must be exactly the same as VTermKey enum! */
 static keycodes_s keycodes[] = {
   { KEYCODE_NONE,       0, 0 }, /* NONE */
 
