@@ -916,13 +916,19 @@ failed:
     if (channel != NULL)
 	channel_clear(channel);
     if (job != NULL)
+    {
+	job->jv_channel = NULL;
 	job_cleanup(job);
+    }
+    term->tl_job = NULL;
     if (jo != NULL)
 	CloseHandle(jo);
     if (term->tl_winpty != NULL)
 	winpty_free(term->tl_winpty);
+    term->tl_winpty = NULL;
     if (term->tl_winpty_config != NULL)
 	winpty_config_free(term->tl_winpty_config);
+    term->tl_winpty_config = NULL;
     if (winpty_err != NULL)
     {
 	char_u *msg = utf16_to_enc(
@@ -940,9 +946,12 @@ failed:
     static void
 term_free(term_T *term)
 {
-    winpty_free(term->tl_winpty);
-    winpty_config_free(term->tl_winpty_config);
-    vterm_free(term->tl_vterm);
+    if (term->tl_winpty != NULL)
+	winpty_free(term->tl_winpty);
+    if (term->tl_winpty_config != NULL)
+	winpty_config_free(term->tl_winpty_config);
+    if (term->tl_vterm != NULL)
+	vterm_free(term->tl_vterm);
 }
 
 # else
