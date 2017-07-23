@@ -31,6 +31,7 @@ char_u *hl_get_font_name(void);
 void hl_set_font_name(char_u *font_name);
 void hl_set_bg_color_name(char_u *name);
 void hl_set_fg_color_name(char_u *name);
+int get_cterm_attr_idx(int attr, int fg, int bg);
 void clear_hl_tables(void);
 int hl_combine_attr(int char_attr, int prim_attr);
 attrentry_T *syn_gui_attr2entry(int attr);
