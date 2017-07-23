@@ -1,0 +1,30 @@
+OBJS = \
+	src\encoding.c \
+	src\keyboard.c \
+	src\mouse.c \
+	src\parser.c \
+	src\pen.c \
+	src\screen.c \
+	src\state.c \
+	src\unicode.c \
+	src\vterm.c
+
+OBJS = \
+	src\encoding.obj \
+	src\keyboard.obj \
+	src\mouse.obj \
+	src\parser.obj \
+	src\pen.obj \
+	src\screen.obj \
+	src\state.obj \
+	src\unicode.obj \
+	src\vterm.obj
+
+all : vterm.lib
+
+
+.c.obj :
+	cl /DINLINE= /Iinclude /Fo$@ /c $<
+
+vterm.lib : $(OBJS)
+	lib /OUT:$@ $(OBJS)
