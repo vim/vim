@@ -33,6 +33,9 @@
  * while, if the terminal window is visible, the screen contents is drawn.
  *
  * TODO:
+ * - color for GUI
+ * - color for 'termguicolors'
+ * - cursor flickers when moving the cursor
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
  * - set buffer name to command, add (1) to avoid duplicates.
  * - Add a scrollback buffer (contains lines to scroll off the top).
@@ -587,6 +590,154 @@ handle_resize(int rows, int cols, void *user)
 }
 
 /*
+ * Reverse engineer the RGB value into a cterm color index.
+ * First color is 1.  Return 0 if no match found.
+ */
+    static int
+color2index(VTermColor *color)
+{
+    int red = color->red;
+    int blue = color->blue;
+    int green = color->green;
+
+    if (red == 0)
+    {
+	if (green == 0)
+	{
+	    if (blue == 0)
+		return 1; /* black */
+	    if (blue == 224)
+		return 5; /* blue */
+	}
+	else if (green == 224)
+	{
+	    if (blue == 0)
+		return 3; /* green */
+	    if (blue == 224)
+		return 7; /* cyan */
+	}
+    }
+    else if (red == 224)
+    {
+	if (green == 0)
+	{
+	    if (blue == 0)
+		return 2; /* red */
+	    if (blue == 224)
+		return 6; /* magenta */
+	}
+	else if (green == 224)
+	{
+	    if (blue == 0)
+		return 4; /* yellow */
+	    if (blue == 224)
+		return 8; /* white */
+	}
+    }
+    else if (red == 128)
+    {
+	if (green == 128 && blue == 128)
+	    return 9; /* high intensity bladk */
+    }
+    else if (red == 255)
+    {
+	if (green == 64)
+	{
+	    if (blue == 64)
+		return 10;  /* high intensity red */
+	    if (blue == 255)
+		return 14;  /* high intensity magenta */
+	}
+	else if (green == 255)
+	{
+	    if (blue == 64)
+		return 12;  /* high intensity yellow */
+	    if (blue == 255)
+		return 16;  /* high intensity white */
+	}
+    }
+    else if (red == 64)
+    {
+	if (green == 64)
+	{
+	    if (blue == 255)
+		return 13;  /* high intensity blue */
+	}
+	else if (green == 255)
+	{
+	    if (blue == 64)
+		return 11;  /* high intensity green */
+	    if (blue == 255)
+		return 15;  /* high intensity cyan */
+	}
+    }
+    if (t_colors >= 256)
+    {
+	if (red == blue && red == green)
+	{
+	    /* 24-color greyscale */
+	    static int cutoff[23] = {
+		0x05, 0x10, 0x1B, 0x26, 0x31, 0x3C, 0x47, 0x52,
+		0x5D, 0x68, 0x73, 0x7F, 0x8A, 0x95, 0xA0, 0xAB,
+		0xB6, 0xC1, 0xCC, 0xD7, 0xE2, 0xED, 0xF9};
+	    int i;
+
+	    for (i = 0; i < 23; ++i)
+		if (red < cutoff[i])
+		    return i + 233;
+	    return 256;
+	}
+
+	/* 216-color cube */
+	return 17 + ((red + 25) / 0x33) * 36
+	          + ((green + 25) / 0x33) * 6
+		  + (blue + 25) / 0x33;
+    }
+    return 0;
+}
+
+/*
+ * Convert the attributes of a vterm cell into an attribute index.
+ */
+    static int
+cell2attr(VTermScreenCell *cell)
+{
+    int attr = 0;
+
+    if (cell->attrs.bold)
+	attr |= HL_BOLD;
+    if (cell->attrs.underline)
+	attr |= HL_UNDERLINE;
+    if (cell->attrs.italic)
+	attr |= HL_ITALIC;
+    if (cell->attrs.strike)
+	attr |= HL_STANDOUT;
+    if (cell->attrs.reverse)
+	attr |= HL_INVERSE;
+    if (cell->attrs.strike)
+	attr |= HL_UNDERLINE;
+
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	/* TODO */
+    }
+    else
+#endif
+#ifdef FEAT_TERMGUICOLORS
+    if (p_tgc)
+    {
+	/* TODO */
+    }
+#endif
+    {
+	return get_cterm_attr_idx(attr, color2index(&cell->fg),
+						       color2index(&cell->bg));
+    }
+    return 0;
+}
+
+/*
  * Called to update the window that contains the terminal.
  */
     void
@@ -648,7 +799,10 @@ term_update_window(win_T *wp)
 		VTermScreenCell cell;
 		int		c;
 
-		vterm_screen_get_cell(screen, pos, &cell);
+		if (vterm_screen_get_cell(screen, pos, &cell) == 0)
+		    vim_memset(&cell, 0, sizeof(cell));
+
+		/* TODO: composing chars */
 		c = cell.chars[0];
 		if (c == NUL)
 		{
@@ -672,8 +826,7 @@ term_update_window(win_T *wp)
 		    ScreenLines[off] = c;
 #endif
 		}
-		/* TODO: use cell.attrs and colors */
-		ScreenAttrs[off] = 0;
+		ScreenAttrs[off] = cell2attr(&cell);
 
 		++pos.col;
 		++off;
@@ -731,6 +884,18 @@ create_vterm(term_T *term, int rows, int cols)
     vterm_screen_set_callbacks(screen, &screen_callbacks, term);
     /* TODO: depends on 'encoding'. */
     vterm_set_utf8(vterm, 1);
+
+    /* Vterm uses a default black background.  Set it to white when
+     * 'background' is "light". */
+    if (*p_bg == 'l')
+    {
+	VTermColor	fg, bg;
+
+	fg.red = fg.green = fg.blue = 0;
+	bg.red = bg.green = bg.blue = 255;
+	vterm_state_set_default_colors(vterm_obtain_state(vterm), &fg, &bg);
+    }
+
     /* Required to initialize most things. */
     vterm_screen_reset(screen, 1 /* hard */);
 }

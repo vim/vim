@@ -8781,6 +8781,21 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 }
 
 /*
+ * Get an attribute index for a cterm entry.
+ * Uses an existing entry when possible or adds one when needed.
+ */
+    int
+get_cterm_attr_idx(int attr, int fg, int bg)
+{
+    attrentry_T		at_en;
+
+    at_en.ae_attr = attr;
+    at_en.ae_u.cterm.fg_color = fg;
+    at_en.ae_u.cterm.bg_color = bg;
+    return get_attr_entry(&cterm_attr_table, &at_en);
+}
+
+/*
  * Clear all highlight tables.
  */
     void
