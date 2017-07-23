@@ -60,9 +60,9 @@
  * - implement term_scrape(buf, row)		inspect terminal screen
  * - implement term_open(command, options)	open terminal window
  * - implement term_getjob(buf)
- * - implement 'termkey'
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
+ * - In the GUI use a terminal emulator for :!cmd.
  */
 
 #include "vim.h"
@@ -445,6 +445,10 @@ terminal_loop(void)
     size_t	len;
     static int	mouse_was_outside = FALSE;
     int		dragging_outside = FALSE;
+    int		termkey = 0;
+
+    if (*curwin->w_p_tk != NUL)
+	termkey = string_to_key(curwin->w_p_tk, TRUE);
 
     for (;;)
     {
@@ -459,10 +463,15 @@ terminal_loop(void)
 	--no_mapping;
 	--allow_keys;
 
+	if (c == (termkey == 0 ? Ctrl_W : termkey))
+	{
+	    stuffcharReadbuff(Ctrl_W);
+	    return;
+	}
+
 	/* Catch keys that need to be handled as in Normal mode. */
 	switch (c)
 	{
-	    case Ctrl_W:
 	    case NUL:
 	    case K_ZERO:
 		stuffcharReadbuff(c);
