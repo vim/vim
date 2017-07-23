@@ -5425,7 +5425,7 @@ search_line:
 			if (g_do_tagpreview != 0)
 			{
 			    if (!GETFILE_SUCCESS(getfile(
-					    0, curwin_save->w_buffer->b_fname,
+					   curwin_save->w_buffer->b_fnum, NULL,
 						     NULL, TRUE, lnum, FALSE)))
 				break;	/* failed to jump to file */
 			}
@@ -5433,6 +5433,7 @@ search_line:
 #endif
 			    setpcmark();
 			curwin->w_cursor.lnum = lnum;
+			check_cursor();
 		    }
 		    else
 		    {

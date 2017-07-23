@@ -175,6 +175,7 @@ NEW_TESTS = test_arabic.res \
 	    test_packadd.res \
 	    test_paste.res \
 	    test_perl.res \
+	    test_preview.res \
 	    test_profile.res \
 	    test_python2.res \
 	    test_python3.res \
