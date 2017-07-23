@@ -3766,6 +3766,45 @@ AC_TRY_LINK([
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_ISNAN),
 	AC_MSG_RESULT(no))
 
+dnl Right-to-Left language support for vim will only be compiled if
+dnl ENABLE_RIGHTLEFT is defined.
+AC_MSG_CHECKING(--disable-rightleft argument)
+AC_ARG_ENABLE(rightleft,
+	[  --disable-rightleft     Don't include Right-to-Left language support.],
+	, [enable_rightleft="yes"])
+if test "$enable_rightleft" = "yes"; then
+	AC_MSG_RESULT(no)
+	AC_DEFINE(ENABLE_RIGHTLEFT)
+else
+  AC_MSG_RESULT(yes)
+fi
+
+dnl Arabic language support for vim will only be compiled if
+dnl ENABLE_ARABIC is defined.
+AC_MSG_CHECKING(--disable-arabic argument)
+AC_ARG_ENABLE(arabic,
+	[  --disable-arabic        Don't include Arabic language support.],
+	, [enable_arabic="yes"])
+if test "$enable_arabic" = "yes"; then
+	AC_MSG_RESULT(no)
+	AC_DEFINE(ENABLE_ARABIC)
+else
+  AC_MSG_RESULT(yes)
+fi
+
+dnl Farsi language support for vim will only be compiled if
+dnl ENABLE_FARSI is defined.
+AC_MSG_CHECKING(--disable-farsi argument)
+AC_ARG_ENABLE(farsi,
+	[  --disable-farsi         Don't include Farsi language support.],
+	, [enable_farsi="yes"])
+if test "$enable_farsi" = "yes"; then
+	AC_MSG_RESULT(no)
+	AC_DEFINE(ENABLE_ARABIC)
+else
+  AC_MSG_RESULT(yes)
+fi
+
 dnl Link with -lposix1e for ACL stuff; if not found, try -lacl for SGI
 dnl when -lacl works, also try to use -lattr (required for Debian).
 dnl On Solaris, use the acl_get/set functions in libsec, if present.

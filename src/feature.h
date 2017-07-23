@@ -281,7 +281,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && defined(ENABLE_RIGHTLEFT) && !defined(EBCDIC)
 # define FEAT_RIGHTLEFT
 #endif
 
@@ -291,7 +291,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && defined(ENABLE_FARSI) && !defined(EBCDIC)
 # define FEAT_FKMAP
 #endif
 #ifdef FEAT_FKMAP
@@ -306,7 +306,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
+#if defined(FEAT_BIG) && defined(ENABLE_ARABIC) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
