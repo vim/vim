@@ -4696,6 +4696,10 @@ job_cleanup(job_T *job)
 	 * not use "job" after this! */
 	job_free(job);
     }
+
+#ifdef FEAT_TERMINAL
+    term_job_ended(job);
+#endif
 }
 
 /*

@@ -33,9 +33,8 @@
  * while, if the terminal window is visible, the screen contents is drawn.
  *
  * TODO:
- * - cursor flickers when moving the cursor
- * - set buffer options to be scratch, hidden, nomodifiable, etc.
- * - set buffer name to command, add (1) to avoid duplicates.
+ * - do not store terminal buffer in viminfo
+ * - put terminal title in the statusline
  * - Add a scrollback buffer (contains lines to scroll off the top).
  *   Can use the buf_T lines, store attributes somewhere else?
  * - When the job ends:
@@ -53,7 +52,6 @@
  * - support minimal size when 'termsize' is empty?
  * - implement "term" for job_start(): more job options when starting a
  *   terminal.
- * - implement ":buf {term-buf-name}"
  * - implement term_list()			list of buffers with a terminal
  * - implement term_getsize(buf)
  * - implement term_setsize(buf)
@@ -192,7 +190,31 @@ ex_terminal(exarg_T *eap)
     term->tl_next = first_term;
     first_term = term;
 
-    /* TODO: set buffer type, hidden, etc. */
+    if (buflist_findname(cmd) == NULL)
+	curbuf->b_ffname = vim_strsave(cmd);
+    else
+    {
+	int	i;
+	size_t	len = STRLEN(cmd) + 10;
+	char_u	*p = alloc(len);
+
+	for (i = 1; p != NULL; ++i)
+	{
+	    vim_snprintf((char *)p, len, "%s (%d)", cmd, i);
+	    if (buflist_findname(p) == NULL)
+	    {
+		curbuf->b_ffname = p;
+		break;
+	    }
+	}
+    }
+    curbuf->b_fname = curbuf->b_ffname;
+
+    /* Mark the buffer as changed, so that it's not easy to abandon the job. */
+    curbuf->b_changed = TRUE;
+    curbuf->b_p_ma = FALSE;
+    set_string_option_direct((char_u *)"buftype", -1,
+				  (char_u *)"terminal", OPT_FREE|OPT_LOCAL, 0);
 
     set_term_and_win_size(term);
 
@@ -488,6 +510,26 @@ terminal_loop(void)
 	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
 						     (char_u *)buf, len, NULL);
     }
+}
+
+/*
+ * Called when a job has finished.
+ */
+    void
+term_job_ended(job_T *job)
+{
+    if (curbuf->b_term != NULL && curbuf->b_term->tl_job == job)
+	maketitle();
+}
+
+/*
+ * Return TRUE if the job for "buf" is still running.
+ */
+    int
+term_job_running(buf_T *buf)
+{
+    return buf->b_term != NULL && buf->b_term->tl_job != NULL
+	&& buf->b_term->tl_job->jv_status == JOB_STARTED;
 }
 
     static void
@@ -850,13 +892,20 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
     opt->jo_out_mode = MODE_RAW;
     opt->jo_err_mode = MODE_RAW;
     opt->jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
+
     opt->jo_io[PART_OUT] = JIO_BUFFER;
     opt->jo_io[PART_ERR] = JIO_BUFFER;
-    opt->jo_set |= JO_OUT_IO + (JO_OUT_IO << (PART_ERR - PART_OUT));
+    opt->jo_set |= JO_OUT_IO + JO_ERR_IO;
+
+    opt->jo_modifiable[PART_OUT] = 0;
+    opt->jo_modifiable[PART_ERR] = 0;
+    opt->jo_set |= JO_OUT_MODIFIABLE + JO_ERR_MODIFIABLE;
+
     opt->jo_io_buf[PART_OUT] = curbuf->b_fnum;
     opt->jo_io_buf[PART_ERR] = curbuf->b_fnum;
     opt->jo_pty = TRUE;
-    opt->jo_set |= JO_OUT_BUF + (JO_OUT_BUF << (PART_ERR - PART_OUT));
+    opt->jo_set |= JO_OUT_BUF + JO_ERR_BUF;
+
     opt->jo_term_rows = rows;
     opt->jo_term_cols = cols;
 }
