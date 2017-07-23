@@ -6399,4 +6399,14 @@ gui_get_color_cmn(char_u *name)
 
     return INVALCOLOR;
 }
+
+    guicolor_T
+gui_get_rgb_color_cmn(int r, int g, int b)
+{
+    guicolor_T  color = RGB(r, g, b);
+
+    if (color > 0xffffff)
+	return INVALCOLOR;
+    return color;
+}
 #endif

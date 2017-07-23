@@ -47,6 +47,7 @@ void gui_mch_set_font(GuiFont font);
 int gui_mch_same_font(GuiFont f1, GuiFont f2);
 void gui_mch_free_font(GuiFont font);
 guicolor_T gui_mch_get_color(char_u *name);
+guicolor_T gui_mch_get_rgb_color(int r, int g, int b);
 void gui_mch_set_fg_color(guicolor_T color);
 void gui_mch_set_bg_color(guicolor_T color);
 void gui_mch_set_sp_color(guicolor_T color);
