@@ -36,6 +36,8 @@
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
 #
+#       Terminal support: TERMINAL=yes (default is no)
+#
 #	Lua interface:
 #	  LUA=[Path to Lua directory]
 #	  DYNAMIC_LUA=yes (to load the Lua DLL dynamically)
@@ -354,7 +356,8 @@ CSCOPE_DEFS  = -DFEAT_CSCOPE
 !if "$(TERMINAL)" == "yes"
 TERMINAL_OBJ   = $(OBJDIR)/terminal.obj
 TERMINAL_DEFS  = -DFEAT_TERMINAL
-TERMINAL_SRC	= terminal.c
+TERMINAL_SRC   = terminal.c
+VTERM_LIB      = libvterm/vterm.lib
 !endif
 
 !ifndef NETBEANS
@@ -1130,7 +1133,7 @@ conflags = $(conflags) /map /mapinfo:lines
 LINKARGS1 = $(linkdebug) $(conflags)
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
-		$(TCL_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
+		$(TCL_LIB) $(NETBEANS_LIB) $(VTERM_LIB) $(XPM_LIB) $(LINK_PDB)
 
 # Report link time code generation progress if used. 
 !ifdef NODEBUG
@@ -1544,5 +1547,9 @@ proto.h: \
 .c.i:
 	$(CC) $(CFLAGS) /P /C $<
 
+libvterm/vterm.lib :
+	cd libvterm
+	$(MAKE) /NOLOGO -f Makefile.msc
+	cd ..
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0:
