@@ -33,7 +33,6 @@
  * while, if the terminal window is visible, the screen contents is drawn.
  *
  * TODO:
- * - color for GUI
  * - color for 'termguicolors'
  * - cursor flickers when moving the cursor
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
@@ -720,7 +719,11 @@ cell2attr(VTermScreenCell *cell)
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
-	/* TODO */
+	guicolor_T fg, bg;
+
+	fg = gui_mch_get_rgb_color(cell->fg.red, cell->fg.green, cell->fg.blue);
+	bg = gui_mch_get_rgb_color(cell->bg.red, cell->bg.green, cell->bg.blue);
+	return get_gui_attr_idx(attr, fg, bg);
     }
     else
 #endif
