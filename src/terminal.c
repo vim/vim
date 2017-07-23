@@ -33,7 +33,6 @@
  * while, if the terminal window is visible, the screen contents is drawn.
  *
  * TODO:
- * - color for 'termguicolors'
  * - cursor flickers when moving the cursor
  * - set buffer options to be scratch, hidden, nomodifiable, etc.
  * - set buffer name to command, add (1) to avoid duplicates.
@@ -731,8 +730,14 @@ cell2attr(VTermScreenCell *cell)
 #ifdef FEAT_TERMGUICOLORS
     if (p_tgc)
     {
-	/* TODO */
+	guicolor_T fg, bg;
+
+	fg = gui_get_rgb_color_cmn(cell->fg.red, cell->fg.green, cell->fg.blue);
+	bg = gui_get_rgb_color_cmn(cell->bg.red, cell->bg.green, cell->bg.blue);
+
+	return get_tgc_attr_idx(attr, fg, bg);
     }
+    else
 #endif
     {
 	return get_cterm_attr_idx(attr, color2index(&cell->fg),
