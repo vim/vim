@@ -1194,6 +1194,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     break;
 
   case LEADER('>', 0x63): /* DEC secondary Device Attributes */
+    /* This returns xterm version number 100. */
     vterm_push_output_sprintf_ctrl(state->vt, C1_CSI, ">%d;%d;%dc", 0, 100, 0);
     break;
 
