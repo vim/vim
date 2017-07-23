@@ -118,6 +118,7 @@ static term_T *first_term = NULL;
  * Functions with separate implementation for MS-Windows and Unix-like systems.
  */
 static int term_and_job_init(term_T *term, int rows, int cols, char_u *cmd);
+static void term_report_winsize(term_T *term, int rows, int cols);
 static void term_free(term_T *term);
 
 /**************************************
@@ -766,23 +767,7 @@ term_update_window(win_T *wp)
 	ch_logn(term->tl_job->jv_channel, "Resizing terminal to %d lines",
 									 rows);
 
-#if defined(UNIX)
-	/* Use an ioctl() to report the new window size to the job. */
-	if (term->tl_job != NULL && term->tl_job->jv_channel != NULL)
-	{
-	    int fd = -1;
-	    int part;
-
-	    for (part = PART_OUT; part < PART_COUNT; ++part)
-	    {
-		fd = term->tl_job->jv_channel->ch_part[part].ch_fd;
-		if (isatty(fd))
-		    break;
-	    }
-	    if (part < PART_COUNT && mch_report_winsize(fd, rows, cols) == OK)
-		mch_stop_job(term->tl_job, (char_u *)"winch");
-	}
-#endif
+	term_report_winsize(term, rows, cols);
     }
 
     /* The cursor may have been moved when resizing. */
@@ -921,6 +906,7 @@ void (*winpty_config_free)(void*);
 void (*winpty_spawn_config_free)(void*);
 void (*winpty_error_free)(void*);
 LPCWSTR (*winpty_error_msg)(void*);
+BOOL (*winpty_set_size)(void*, int, int, void*);
 
 /**************************************
  * 2. MS-Windows implementation.
@@ -953,6 +939,7 @@ dyn_winpty_init(void)
 	{"winpty_spawn_config_free", (FARPROC*)&winpty_spawn_config_free},
 	{"winpty_spawn_config_new", (FARPROC*)&winpty_spawn_config_new},
 	{"winpty_error_msg", (FARPROC*)&winpty_error_msg},
+	{"winpty_set_size", (FARPROC*)&winpty_set_size},
 	{NULL, NULL}
     };
 
@@ -1113,6 +1100,15 @@ term_free(term_T *term)
     vterm_free(term->tl_vterm);
 }
 
+/*
+ * Request size to terminal.
+ */
+    static void
+term_report_winsize(term_T *term, int rows, int cols)
+{
+    winpty_set_size(term->tl_winpty, cols, rows, NULL);
+}
+
 # else
 
 /**************************************
@@ -1151,6 +1147,30 @@ term_free(term_T *term)
 {
     vterm_free(term->tl_vterm);
 }
+
+/*
+ * Request size to terminal.
+ */
+    static void
+term_report_winsize(term_T *term, int rows, int cols)
+{
+    /* Use an ioctl() to report the new window size to the job. */
+    if (term->tl_job != NULL && term->tl_job->jv_channel != NULL)
+    {
+	int fd = -1;
+	int part;
+
+	for (part = PART_OUT; part < PART_COUNT; ++part)
+	{
+	    fd = term->tl_job->jv_channel->ch_part[part].ch_fd;
+	    if (isatty(fd))
+		break;
+	}
+	if (part < PART_COUNT && mch_report_winsize(fd, rows, cols) == OK)
+	    mch_stop_job(term->tl_job, (char_u *)"winch");
+    }
+}
+
 # endif
 
 #endif /* FEAT_TERMINAL */
