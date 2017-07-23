@@ -57,9 +57,9 @@
 #define PV_AI		OPT_BUF(BV_AI)
 #define PV_AR		OPT_BOTH(OPT_BUF(BV_AR))
 #define PV_BKC		OPT_BOTH(OPT_BUF(BV_BKC))
+#define PV_BH		OPT_BUF(BV_BH)
+#define PV_BT		OPT_BUF(BV_BT)
 #ifdef FEAT_QUICKFIX
-# define PV_BH		OPT_BUF(BV_BH)
-# define PV_BT		OPT_BUF(BV_BT)
 # define PV_EFM		OPT_BOTH(OPT_BUF(BV_EFM))
 # define PV_GP		OPT_BOTH(OPT_BUF(BV_GP))
 # define PV_MP		OPT_BOTH(OPT_BUF(BV_MP))

@@ -988,12 +988,10 @@ enum
 {
     BV_AI = 0
     , BV_AR
-#ifdef FEAT_QUICKFIX
     , BV_BH
-#endif
     , BV_BKC
-#ifdef FEAT_QUICKFIX
     , BV_BT
+#ifdef FEAT_QUICKFIX
     , BV_EFM
     , BV_GP
     , BV_MP
