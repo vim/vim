@@ -200,6 +200,7 @@ SRC_ALL =	\
 		src/libvterm/.gitignore \
 		src/libvterm/LICENSE \
 		src/libvterm/Makefile \
+		src/libvterm/Makefile.msc \
 		src/libvterm/README \
 		src/libvterm/tbl2inc_c.pl \
 		src/libvterm/vterm.pc.in \
