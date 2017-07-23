@@ -1064,6 +1064,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'termbidi'	options.txt	/*'termbidi'*
 'termencoding'	options.txt	/*'termencoding'*
 'termguicolors'	options.txt	/*'termguicolors'*
+'termkey'	options.txt	/*'termkey'*
+'termsize'	options.txt	/*'termsize'*
 'terse'	options.txt	/*'terse'*
 'textauto'	options.txt	/*'textauto'*
 'textmode'	options.txt	/*'textmode'*
@@ -1079,8 +1081,10 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'titlelen'	options.txt	/*'titlelen'*
 'titleold'	options.txt	/*'titleold'*
 'titlestring'	options.txt	/*'titlestring'*
+'tk'	options.txt	/*'tk'*
 'tl'	options.txt	/*'tl'*
 'tm'	options.txt	/*'tm'*
+'tms'	options.txt	/*'tms'*
 'to'	options.txt	/*'to'*
 'toolbar'	options.txt	/*'toolbar'*
 'toolbariconsize'	options.txt	/*'toolbariconsize'*
@@ -1124,7 +1128,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'vi'	options.txt	/*'vi'*
 'viewdir'	options.txt	/*'viewdir'*
 'viewoptions'	options.txt	/*'viewoptions'*
+'vif'	options.txt	/*'vif'*
 'viminfo'	options.txt	/*'viminfo'*
+'viminfofile'	options.txt	/*'viminfofile'*
 'virtualedit'	options.txt	/*'virtualedit'*
 'visualbell'	options.txt	/*'visualbell'*
 'vop'	options.txt	/*'vop'*
@@ -1344,6 +1350,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 -+rv	gui_x11.txt	/*-+rv*
 --	starting.txt	/*--*
 ---	starting.txt	/*---*
+--clean	starting.txt	/*--clean*
 --cmd	starting.txt	/*--cmd*
 --echo-wid	starting.txt	/*--echo-wid*
 --help	starting.txt	/*--help*
@@ -3528,6 +3535,7 @@ CTRL-V-alternative	gui_w32.txt	/*CTRL-V-alternative*
 CTRL-W	index.txt	/*CTRL-W*
 CTRL-W_+	windows.txt	/*CTRL-W_+*
 CTRL-W_-	windows.txt	/*CTRL-W_-*
+CTRL-W_:	windows.txt	/*CTRL-W_:*
 CTRL-W_<	windows.txt	/*CTRL-W_<*
 CTRL-W_<BS>	windows.txt	/*CTRL-W_<BS>*
 CTRL-W_<CR>	quickfix.txt	/*CTRL-W_<CR>*

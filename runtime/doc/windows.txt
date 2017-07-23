@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.0.  Last change: 2016 Dec 01
+*windows.txt*   For Vim version 8.0.  Last change: 2017 Jul 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -221,6 +221,11 @@ CTRL-W CTRL-^					*CTRL-W_CTRL-^* *CTRL-W_^*
 CTRL-W ^	Does ":split #", split window in two and edit alternate file.
 		When a count is given, it becomes ":split #N", split window
 		and edit buffer N.
+
+						*CTRL-W_:*
+CTRL-W :	Does the same as typing |:| : edit a command line.  Useful in a
+		terminal window, where all Vim commands must be preceded with
+		CTRL-W or 'termkey'.
 
 Note that the 'splitbelow' and 'splitright' options influence where a new
 window will appear.
@@ -1271,6 +1276,9 @@ help		Contains a help file.  Will only be created with the |:help|
 		command.  The flag that indicates a help buffer is internal
 		and can't be changed.  The 'buflisted' option will be reset
 		for a help buffer.
+
+terminal	A terminal window buffer, see |terminal|. The contents cannot
+		be read or changed until the job ends.
 
 directory	Displays directory contents.  Can be used by a file explorer
 		plugin.  The buffer is created with these settings: >
