@@ -3269,7 +3269,6 @@ static void set_options_default(int opt_flags);
 static char_u *term_bg_default(void);
 static void did_set_option(int opt_idx, int opt_flags, int new_value);
 static char_u *illegal_char(char_u *, int);
-static int string_to_key(char_u *arg);
 #ifdef FEAT_CMDWIN
 static char_u *check_cedit(void);
 #endif
@@ -4763,7 +4762,7 @@ do_set(
 					&& (!arg[1] || VIM_ISWHITE(arg[1]))
 					&& !VIM_ISDIGIT(*arg))))
 			{
-			    value = string_to_key(arg);
+			    value = string_to_key(arg, FALSE);
 			    if (value == 0 && (long *)varp != &p_wcm)
 			    {
 				errmsg = e_invarg;
@@ -5320,14 +5319,17 @@ illegal_char(char_u *errbuf, int c)
 /*
  * Convert a key name or string into a key value.
  * Used for 'wildchar' and 'cedit' options.
+ * When "multi_byte" is TRUE allow for multi-byte characters.
  */
-    static int
-string_to_key(char_u *arg)
+    int
+string_to_key(char_u *arg, int multi_byte)
 {
     if (*arg == '<')
 	return find_key_option(arg + 1);
     if (*arg == '^')
 	return Ctrl_chr(arg[1]);
+    if (multi_byte)
+	return PTR2CHAR(arg);
     return *arg;
 }
 
@@ -5345,7 +5347,7 @@ check_cedit(void)
 	cedit_key = -1;
     else
     {
-	n = string_to_key(p_cedit);
+	n = string_to_key(p_cedit, FALSE);
 	if (vim_isprintc(n))
 	    return e_invarg;
 	cedit_key = n;
@@ -7462,6 +7464,12 @@ did_set_string_option(
 #endif
 
 #ifdef FEAT_TERMINAL
+    /* 'termkey' */
+    else if (varp == &curwin->w_p_tms)
+    {
+	if (*curwin->w_p_tk != NUL && string_to_key(curwin->w_p_tk, TRUE) == 0)
+	    errmsg = e_invarg;
+    }
     /* 'termsize' */
     else if (varp == &curwin->w_p_tms)
     {
