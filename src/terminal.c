@@ -33,7 +33,8 @@
  * while, if the terminal window is visible, the screen contents is drawn.
  *
  * TODO:
- * - do not store terminal buffer in viminfo
+ * - include functions from #1871
+ * - do not store terminal buffer in viminfo.  Or prefix term:// ?
  * - Add a scrollback buffer (contains lines to scroll off the top).
  *   Can use the buf_T lines, store attributes somewhere else?
  * - When the job ends:
@@ -314,6 +315,18 @@ term_write_job_output(term_T *term, char_u *msg, size_t len)
     vterm_screen_flush_damage(vterm_obtain_screen(vterm));
 }
 
+    static void
+update_cursor()
+{
+    /* TODO: this should not always be needed */
+    setcursor();
+    out_flush();
+#ifdef FEAT_GUI
+    if (gui.in_use)
+	gui_update_cursor(FALSE, FALSE);
+#endif
+}
+
 /*
  * Invoked when "msg" output from a job was received.  Write it to the terminal
  * of "buffer".
@@ -329,8 +342,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 
     /* TODO: only update once in a while. */
     update_screen(0);
-    setcursor();
-    out_flush();
+    update_cursor();
 }
 
 /*
@@ -461,8 +473,7 @@ terminal_loop(void)
     {
 	/* TODO: skip screen update when handling a sequence of keys. */
 	update_screen(0);
-	setcursor();
-	out_flush();
+	update_cursor();
 	++no_mapping;
 	++allow_keys;
 	got_int = FALSE;
@@ -550,8 +561,7 @@ term_job_ended(job_T *job)
     if (did_one)
     {
 	redraw_statuslines();
-	setcursor();
-	out_flush();
+	update_cursor();
     }
     if (curbuf->b_term != NULL && curbuf->b_term->tl_job == job)
 	maketitle();
@@ -616,10 +626,7 @@ handle_movecursor(
     }
 
     if (is_current)
-    {
-	setcursor();
-	out_flush();
-    }
+	update_cursor();
 
     return 1;
 }
