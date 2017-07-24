@@ -1466,7 +1466,37 @@ f_term_open(typval_T *argvars, typval_T *rettv)
     void
 f_term_scrape(typval_T *argvars, typval_T *rettv)
 {
-    /* TODO */
+    buf_T	    *buf;
+    VTermScreen	    *screen;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+    if (buf != NULL && buf->b_term != NULL)
+    {
+	varnumber_T row = get_tv_number(&argvars[1]);
+
+	char_u *s = alloc(buf->b_term->tl_cols + 1);
+	if (s != NULL)
+	{
+	    size_t ret;
+	    VTermRect rect;
+
+	    rettv->vval.v_string = s;
+	    rect.start_row = (int) row;
+	    rect.end_row = (int) row + 1;
+	    rect.start_col = 0;
+	    rect.end_col = buf->b_term->tl_cols;
+	    screen = vterm_obtain_screen(buf->b_term->tl_vterm);
+	    ret = vterm_screen_get_text(screen,
+		    (char*)s, buf->b_term->tl_cols, rect);
+	    s[ret] = 0;
+	}
+    }
 }
 
 /*
