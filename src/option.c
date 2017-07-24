@@ -7465,7 +7465,7 @@ did_set_string_option(
 
 #ifdef FEAT_TERMINAL
     /* 'termkey' */
-    else if (varp == &curwin->w_p_tms)
+    else if (varp == &curwin->w_p_tk)
     {
 	if (*curwin->w_p_tk != NUL && string_to_key(curwin->w_p_tk, TRUE) == 0)
 	    errmsg = e_invarg;
