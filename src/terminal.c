@@ -331,6 +331,10 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
     update_screen(0);
     setcursor();
     out_flush();
+#ifdef FEAT_GUI
+    if (gui.in_use)
+	gui_update_cursor(FALSE, TRUE);
+#endif
 }
 
 /*
