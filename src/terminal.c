@@ -34,7 +34,6 @@
  *
  * TODO:
  * - do not store terminal buffer in viminfo
- * - put terminal title in the statusline
  * - Add a scrollback buffer (contains lines to scroll off the top).
  *   Can use the buf_T lines, store attributes somewhere else?
  * - When the job ends:
@@ -43,6 +42,9 @@
  *   - Free the terminal emulator.
  *   - Display the scrollback buffer (but with attributes).
  *     Make the buffer not modifiable, drop attributes when making changes.
+ *   - Need an option or argument to drop the window+buffer right away, to be
+ *     used for a shell or Vim.
+ * - add a character in :ls output
  * - when closing window and job has not ended, make terminal hidden?
  * - don't allow exiting Vim when a terminal is still running a job
  * - use win_del_lines() to make scroll-up efficient.
@@ -94,6 +96,9 @@ struct terminal_S {
     /* vterm size does not follow window size */
     int		tl_rows_fixed;
     int		tl_cols_fixed;
+
+    char_u	*tl_title; /* NULL or allocated */
+    char_u	*tl_status_text; /* NULL or allocated */
 
     /* Range of screen rows to update.  Zero based. */
     int		tl_dirty_row_start; /* -1 if nothing dirty */
@@ -271,6 +276,8 @@ free_terminal(term_T *term)
     }
 
     term_free(term);
+    vim_free(term->tl_title);
+    vim_free(term->tl_status_text);
     vim_free(term);
 }
 
@@ -527,6 +534,25 @@ terminal_loop(void)
     void
 term_job_ended(job_T *job)
 {
+    term_T *term;
+    int	    did_one = FALSE;
+
+    for (term = first_term; term != NULL; term = term->tl_next)
+	if (term->tl_job == job)
+	{
+	    vim_free(term->tl_title);
+	    term->tl_title = NULL;
+	    vim_free(term->tl_status_text);
+	    term->tl_status_text = NULL;
+	    redraw_buf_and_status_later(term->tl_buffer, VALID);
+	    did_one = TRUE;
+	}
+    if (did_one)
+    {
+	redraw_statuslines();
+	setcursor();
+	out_flush();
+    }
     if (curbuf->b_term != NULL && curbuf->b_term->tl_job == job)
 	maketitle();
 }
@@ -534,11 +560,10 @@ term_job_ended(job_T *job)
 /*
  * Return TRUE if the job for "buf" is still running.
  */
-    int
-term_job_running(buf_T *buf)
+    static int
+term_job_running(term_T *term)
 {
-    return buf->b_term != NULL && buf->b_term->tl_job != NULL
-	&& buf->b_term->tl_job->jv_status == JOB_STARTED;
+    return term->tl_job != NULL && term->tl_job->jv_status == JOB_STARTED;
 }
 
     static void
@@ -547,22 +572,6 @@ position_cursor(win_T *wp, VTermPos *pos)
     wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
     wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
 }
-
-static int handle_damage(VTermRect rect, void *user);
-static int handle_moverect(VTermRect dest, VTermRect src, void *user);
-static int handle_movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user);
-static int handle_resize(int rows, int cols, void *user);
-
-static VTermScreenCallbacks screen_callbacks = {
-  handle_damage,	/* damage */
-  handle_moverect,	/* moverect */
-  handle_movecursor,	/* movecursor */
-  NULL,			/* settermprop */
-  NULL,			/* bell */
-  handle_resize,	/* resize */
-  NULL,			/* sb_pushline */
-  NULL			/* sb_popline */
-};
 
     static int
 handle_damage(VTermRect rect, void *user)
@@ -615,6 +624,30 @@ handle_movecursor(
     return 1;
 }
 
+    static int
+handle_settermprop(
+	VTermProp prop,
+	VTermValue *value,
+	void *user)
+{
+    term_T	*term = (term_T *)user;
+
+    switch (prop)
+    {
+	case VTERM_PROP_TITLE:
+	    vim_free(term->tl_title);
+	    term->tl_title = vim_strsave((char_u *)value->string);
+	    vim_free(term->tl_status_text);
+	    term->tl_status_text = NULL;
+	    if (term == curbuf->b_term)
+		maketitle();
+	    return 1;
+	default:
+	    break;
+    }
+    return 0;
+}
+
 /*
  * The job running in the terminal resized the terminal.
  */
@@ -638,6 +671,17 @@ handle_resize(int rows, int cols, void *user)
     redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
+
+static VTermScreenCallbacks screen_callbacks = {
+  handle_damage,	/* damage */
+  handle_moverect,	/* moverect */
+  handle_movecursor,	/* movecursor */
+  handle_settermprop,	/* settermprop */
+  NULL,			/* bell */
+  handle_resize,	/* resize */
+  NULL,			/* sb_pushline */
+  NULL			/* sb_popline */
+};
 
 /*
  * Reverse engineer the RGB value into a cterm color index.
@@ -948,6 +992,32 @@ create_vterm(term_T *term, int rows, int cols)
 
     /* Required to initialize most things. */
     vterm_screen_reset(screen, 1 /* hard */);
+}
+
+/*
+ * Return the text to show for the buffer name and status.
+ */
+    char_u *
+term_get_status_text(term_T *term)
+{
+    if (term->tl_status_text == NULL)
+    {
+	char_u *txt;
+	size_t len;
+
+	if (term->tl_title != NULL)
+	    txt = term->tl_title;
+	else if (term_job_running(term))
+	    txt = (char_u *)_("running");
+	else
+	    txt = (char_u *)_("finished");
+	len = 9 + STRLEN(term->tl_buffer->b_fname) + STRLEN(txt);
+	term->tl_status_text = alloc(len);
+	if (term->tl_status_text != NULL)
+	    vim_snprintf((char *)term->tl_status_text, len, "%s [%s]",
+						term->tl_buffer->b_fname, txt);
+    }
+    return term->tl_status_text;
 }
 
 # ifdef WIN3264
