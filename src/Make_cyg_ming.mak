@@ -73,6 +73,7 @@ CHANNEL=yes
 else
 CHANNEL=$(GUI)
 endif
+# Set to yes to enable terminal support.
 TERMINAL=no
 
 

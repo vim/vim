@@ -25,7 +25,7 @@
  * the terminal emulator.
  *
  * If the terminal window has keyboard focus, typed keys are converted to the
- * terminal encoding and writting to the job over a channel.
+ * terminal encoding and writing to the job over a channel.
  *
  * If the job produces output, it is written to the terminal emulator.  The
  * terminal emulator invokes callbacks when its screen content changes.  The
@@ -731,7 +731,7 @@ color2index(VTermColor *color)
     else if (red == 128)
     {
 	if (green == 128 && blue == 128)
-	    return 9; /* high intensity bladk */
+	    return 9; /* high intensity black */
     }
     else if (red == 255)
     {
@@ -894,7 +894,10 @@ term_update_window(win_T *wp)
 		if (c == NUL)
 		{
 		    ScreenLines[off] = ' ';
-		    ScreenLinesUC[off] = NUL;
+#if defined(FEAT_MBYTE)
+		    if (enc_utf8)
+			ScreenLinesUC[off] = NUL;
+#endif
 		}
 		else
 		{
@@ -907,7 +910,8 @@ term_update_window(win_T *wp)
 		    else
 		    {
 			ScreenLines[off] = c;
-			ScreenLinesUC[off] = NUL;
+			if (enc_utf8)
+			    ScreenLinesUC[off] = NUL;
 		    }
 #else
 		    ScreenLines[off] = c;
@@ -920,7 +924,10 @@ term_update_window(win_T *wp)
 		if (cell.width == 2)
 		{
 		    ScreenLines[off] = NUL;
-		    ScreenLinesUC[off] = NUL;
+#if defined(FEAT_MBYTE)
+		    if (enc_utf8)
+			ScreenLinesUC[off] = NUL;
+#endif
 		    ++pos.col;
 		    ++off;
 		}
@@ -1025,9 +1032,9 @@ term_get_status_text(term_T *term)
 #define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
 #define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
 
-void* (*winpty_config_new)(int, void*);
+void* (*winpty_config_new)(UINT64, void*);
 void* (*winpty_open)(void*, void*);
-void* (*winpty_spawn_config_new)(int, void*, LPCWSTR, void*, void*, void*);
+void* (*winpty_spawn_config_new)(UINT64, void*, LPCWSTR, void*, void*, void*);
 BOOL (*winpty_spawn)(void*, void*, HANDLE*, HANDLE*, DWORD*, void*);
 void (*winpty_config_set_initial_size)(void*, int, int);
 LPCWSTR (*winpty_conin_name)(void*);

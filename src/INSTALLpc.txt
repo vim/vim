@@ -706,20 +706,17 @@ Or when using MinGW (as one line):
 13. Building with Terminal support
 ==================================
 
-Vim with Terminal support can be built with either MSVC, or MinGW or Cygwin.
+Vim with Terminal support can be built with either MSVC, MinGW or Cygwin.
 This uses the included libvterm and winpty.  No extra header files or
-libraries are needed for building.
+libraries are needed for building.  Just set TERMINAL to yes.
 
-Running Vim with terminal support requires the following two winpty files:
+E.g. When using MSVC:
 
-    winpty.dll
-    winpty-agent.dll
+    nmake -f Make_mvc.mak TERMINAL=yes
 
-You can download them from the following page:
+Or when using MinGW (as one line):
 
-    https://github.com/rprichard/winpty
-
-Just put the DLL files somewhere in your PATH.
+    mingw32-make -f Make_mingw.mak TERMINAL=yes
 
 
 14. Windows 3.1x

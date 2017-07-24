@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 19
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -47,8 +47,9 @@ See option 'termsize' for controlling the size of the terminal window.
 (TODO: scrolling when the terminal is larger than the window)
 
 Syntax ~
-						*:ter* *:terminal*
-:terminal[!] [command]	Open a new terminal window.
+
+:ter[minal][!] [command]			*:ter* *:terminal*
+			Open a new terminal window.
 
 			If [command] is provided run it as a job and connect
 			the input and output to the terminal.
@@ -79,7 +80,7 @@ The size of the terminal can be in one of three modes:
    The minimal size is 2 screen lines with 10 cells.
 
 2. The 'termsize' option is "rows*cols", where "rows" is the minimal number of
-   screen rows and "cols" is the minial number of cells.
+   screen rows and "cols" is the minimal number of cells.
 
 3. The 'termsize' option is "rowsXcols" (where the x is upper or lower case).
    The terminal size is fixed to the specified number of screen lines and
@@ -101,9 +102,20 @@ can even run Vim in the terminal!  That's used for debugging, see below.
 
 MS-Windows ~
 
-On MS-Windows a hidden console is used to run the command in.  This should
-work well for all kind of commands.  Obviously, they must be commands that run
-in a terminal, not open their own window.
+On MS-Windows winpty is used to make it possible to run all kind of commands.
+Obviously, they must be commands that run in a terminal, not open their own
+window.
+
+You need the following two files from winpty:
+
+    winpty.dll
+    winpty-agent.exe
+
+You can download them from the following page:
+
+    https://github.com/rprichard/winpty
+
+Just put the files somewhere in your PATH.
 
 ==============================================================================
 2. Remote testing					*terminal-testing*
