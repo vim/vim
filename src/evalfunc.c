@@ -834,10 +834,10 @@ static struct fst
     {"term_getjob",	1, 1, f_term_getjob},
     {"term_getsize",	1, 1, f_term_getsize},
     {"term_list",	0, 0, f_term_list},
-    {"term_open",	1, 2, f_term_open},
     {"term_scrape",	2, 2, f_term_scrape},
     {"term_sendkeys",	2, 2, f_term_sendkeys},
     {"term_setsize",	2, 2, f_term_setsize},
+    {"term_start",	1, 2, f_term_start},
     {"term_wait",	2, 2, f_term_wait},
 #endif
     {"test_alloc_fail",	3, 3, f_test_alloc_fail},

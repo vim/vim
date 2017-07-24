@@ -60,7 +60,7 @@
  * - implement term_sendkeys(buf, keys)		send keystrokes to a terminal
  * - implement term_wait(buf)			wait for screen to be updated
  * - implement term_scrape(buf, row)		inspect terminal screen
- * - implement term_open(command, options)	open terminal window
+ * - implement term_start(command, options)	open terminal window
  * - implement term_getjob(buf)
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
@@ -1448,10 +1448,10 @@ f_term_list(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "term_open(command, options)" function
+ * "term_start(command, options)" function
  */
     void
-f_term_open(typval_T *argvars, typval_T *rettv)
+f_term_start(typval_T *argvars, typval_T *rettv)
 {
     char_u	*msg = get_tv_string_chk(&argvars[0]);
     exarg_T	ea;

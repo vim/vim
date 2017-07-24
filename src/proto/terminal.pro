@@ -14,9 +14,9 @@ int set_ref_in_term(int copyID);
 void f_term_getjob(typval_T *argvars, typval_T *rettv);
 void f_term_getsize(typval_T *argvars, typval_T *rettv);
 void f_term_list(typval_T *argvars, typval_T *rettv);
-void f_term_open(typval_T *argvars, typval_T *rettv);
 void f_term_scrape(typval_T *argvars, typval_T *rettv);
 void f_term_sendkeys(typval_T *argvars, typval_T *rettv);
 void f_term_setsize(typval_T *argvars, typval_T *rettv);
+void f_term_start(typval_T *argvars, typval_T *rettv);
 void f_term_wait(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */
