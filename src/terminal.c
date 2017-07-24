@@ -1376,6 +1376,144 @@ set_ref_in_term(int copyID)
     return abort;
 }
 
+/*
+ * "term_getjob(buf)" function
+ */
+    void
+f_term_getjob(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    rettv->v_type = VAR_JOB;
+    if (buf != NULL && buf->b_term != NULL)
+    {
+	rettv->vval.v_job = buf->b_term->tl_job;
+	if (rettv->vval.v_job != NULL)
+	    ++rettv->vval.v_job->jv_refcount;
+    }
+    else
+	rettv->vval.v_job = NULL;
+}
+
+/*
+ * "term_getsize(buf)" function
+ */
+    void
+f_term_getsize(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    buf_T	*buf;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    l = rettv->vval.v_list;
+    if (buf != NULL && buf->b_term != NULL)
+    {
+	list_append_number(l, buf->b_term->tl_cols);
+	list_append_number(l, buf->b_term->tl_rows);
+    }
+}
+
+/*
+ * "term_list()" function
+ */
+    void
+f_term_list(typval_T *argvars, typval_T *rettv)
+{
+    term_T	*tp;
+    list_T	*l;
+
+    if (rettv_list_alloc(rettv) == FAIL || first_term == NULL)
+	return;
+
+    l = rettv->vval.v_list;
+    for (tp = first_term; tp != NULL; tp = tp->tl_next)
+	if (tp != NULL && tp->tl_buffer != NULL)
+	{
+	    if (list_append_number(l,
+			(varnumber_T)tp->tl_buffer->b_fnum) == FAIL)
+		return;
+	}
+}
+
+/*
+ * "term_open(command, options)" function
+ */
+    void
+f_term_open(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*msg = get_tv_string_chk(&argvars[0]);
+    exarg_T	ea;
+
+    ea.arg = msg;
+    ex_terminal(&ea);
+}
+
+/*
+ * "term_scrape(buf, row)" function
+ */
+    void
+f_term_scrape(typval_T *argvars, typval_T *rettv)
+{
+    /* TODO */
+}
+
+/*
+ * "term_sendkeys(buf, keys)" function
+ */
+    void
+f_term_sendkeys(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    rettv->v_type = VAR_UNKNOWN;
+    if (buf != NULL && buf->b_term != NULL)
+    {
+	char_u	*msg = get_tv_string_chk(&argvars[1]);
+	channel_send(buf->b_term->tl_job->jv_channel, PART_IN,
+					     (char_u *)msg, STRLEN(msg), NULL);
+
+	/* TODO: only update once in a while. */
+	update_screen(0);
+	setcursor();
+	out_flush();
+    }
+}
+
+/*
+ * "term_setsize" function
+ */
+    void
+f_term_setsize(typval_T *argvars, typval_T *rettv)
+{
+    /* TODO */
+}
+
+/*
+ * "term_wait" function
+ */
+    void
+f_term_wait(typval_T *argvars, typval_T *rettv)
+{
+    /* TODO */
+}
+
 # ifdef WIN3264
 
 #define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
