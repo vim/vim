@@ -2270,8 +2270,6 @@ fontset_ascent(XFontSet fs)
 gui_mch_get_color(char_u *name)
 {
     guicolor_T  requested;
-    XColor      available;
-    Colormap	colormap;
 
     /* can't do this when GUI not running */
     if (!gui.in_use || name == NULL || *name == NUL)
@@ -2295,6 +2293,8 @@ gui_mch_get_color(char_u *name)
 gui_mch_get_rgb_color(int r, int g, int b)
 {
     char        spec[8]; /* space enough to hold "#RRGGBB" */
+    XColor      available;
+    Colormap	colormap;
 
     vim_snprintf(spec, sizeof(spec), "#%.2x%.2x%.2x", r, g, b);
     colormap = DefaultColormap(gui.dpy, DefaultScreen(gui.dpy));
