@@ -1,11 +1,17 @@
-" Language:	xml
-" Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	2017 Jun 13
-" Notes:	1) does not indent pure non-xml code (e.g. embedded scripts)
-"		2) will be confused by unbalanced tags in comments
-"		or CDATA sections.
-"		2009-05-26 patch by Nikolai Weibull
-" TODO: 	implement pre-like tags, see xml_indent_open / xml_indent_close
+" Language:		xml
+" Maintainer:		Antonio Ospite <ao2@ao2.it>
+" Previous Maintainer:	Johannes Zellner <johannes@zellner.org>
+" Last Change:		2017 Jul 24
+" Notes:
+"	1) does not indent pure non-xml code (e.g. embedded scripts)
+"	2) will be confused by unbalanced tags in comments
+"	   or CDATA sections.
+" Changelog:
+"	2016-07-22 patch by Antonio Ospite (tags can start with a colon)
+"	2016-07-15 patch by Antonio Ospite (tags can start with underscore)
+"	2009-05-26 patch by Nikolai Weibull
+" TODO:
+"	implement pre-like tags, see xml_indent_open / xml_indent_close
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -20,7 +26,7 @@ setlocal indentexpr=XmlIndentGet(v:lnum,1)
 setlocal indentkeys=o,O,*<Return>,<>>,<<>,/,{,}
 
 if !exists('b:xml_indent_open')
-    let b:xml_indent_open = '.\{-}<\a'
+    let b:xml_indent_open = '.\{-}<[:A-Z_a-z]'
     " pre tag, e.g. <address>
     " let b:xml_indent_open = '.\{-}<[/]\@!\(address\)\@!'
 endif
