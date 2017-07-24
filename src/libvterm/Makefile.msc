@@ -1,3 +1,5 @@
+CFLAGS = /DINLINE= /Iinclude
+
 OBJS = \
 	src\encoding.c \
 	src\keyboard.c \
@@ -24,7 +26,10 @@ all : vterm.lib
 
 
 .c.obj :
-	cl /DINLINE= /Iinclude /Fo$@ /c $<
+	cl $(CFLAGS) /Fo$@ /c $<
 
 vterm.lib : $(OBJS)
 	lib /OUT:$@ $(OBJS)
+
+clean:
+	del $(OBJS) vterm.lib
