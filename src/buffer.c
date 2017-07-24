@@ -5677,6 +5677,8 @@ buf_spname(buf_T *buf)
     {
 	if (buf->b_sfname != NULL)
 	    return buf->b_sfname;
+	if (buf->b_term != NULL)
+	    return (char_u *)_("[Terminal]");
 	return (char_u *)_("[Scratch]");
     }
 #endif
