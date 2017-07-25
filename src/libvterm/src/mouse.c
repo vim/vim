@@ -70,7 +70,7 @@ void vterm_mouse_move(VTerm *vt, int row, int col, VTermModifier mod)
   }
 }
 
-void vterm_mouse_button(VTerm *vt, int button, bool pressed, VTermModifier mod)
+void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod)
 {
   VTermState *state = vt->state;
 
