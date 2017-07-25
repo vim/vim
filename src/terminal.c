@@ -1458,12 +1458,12 @@ f_term_getsize(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
+    if (buf == NULL || buf->b_term == NULL)
+	return;
+
     l = rettv->vval.v_list;
-    if (buf != NULL && buf->b_term != NULL)
-    {
-	list_append_number(l, buf->b_term->tl_cols);
-	list_append_number(l, buf->b_term->tl_rows);
-    }
+    list_append_number(l, buf->b_term->tl_cols);
+    list_append_number(l, buf->b_term->tl_rows);
 }
 
 /*
@@ -1517,6 +1517,9 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 {
     buf_T	    *buf;
     VTermScreen	    *screen;
+    VTermPos	    pos;
+    list_T	    *l;
+    term_T	    *term;
 
     (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
     ++emsg_off;
@@ -1526,33 +1529,30 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    if (buf != NULL && buf->b_term != NULL)
+    if (buf == NULL || buf->b_term == NULL)
+	return;
+
+    term = buf->b_term;
+    screen = vterm_obtain_screen(term->tl_vterm);
+
+    l = rettv->vval.v_list;
+    pos.row = (int) get_tv_number(&argvars[1]);
+    for (pos.col = 0; pos.col < term->tl_cols; )
     {
-	VTermPos    pos;
-	list_T	    *l;
-	term_T	    *term = buf->b_term;
-	VTermScreen *screen = vterm_obtain_screen(term->tl_vterm);
+	dict_T *d;
+	VTermScreenCell cell;
 
-	l = rettv->vval.v_list;
+	if (vterm_screen_get_cell(screen, pos, &cell) == 0)
+	    break;
 
-	pos.row = (int) get_tv_number(&argvars[1]);
-	for (pos.col = 0; pos.col < term->tl_cols; )
-	{
-	    dict_T *d;
-	    VTermScreenCell cell;
+	d = dict_alloc();
+	dict_add_nr_str(d, "char", cell.chars[0], NULL);
+	dict_add_nr_str(d, "attr", cell2attr(&cell), NULL);
+	list_append_dict(l, d);
 
-	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
-		break;
-
-	    d = dict_alloc();
-	    dict_add_nr_str(d, "char", cell.chars[0], NULL);
-	    dict_add_nr_str(d, "attr", cell2attr(&cell), NULL);
-	    list_append_dict(l, d);
-
+	++pos.col;
+	if (cell.width == 2)
 	    ++pos.col;
-	    if (cell.width == 2)
-		++pos.col;
-	}
     }
 }
 
@@ -1563,6 +1563,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 f_term_sendkeys(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf;
+    char_u	*msg;
 
     (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
     ++emsg_off;
@@ -1570,25 +1571,28 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
     --emsg_off;
 
     rettv->v_type = VAR_UNKNOWN;
-    if (buf != NULL && buf->b_term != NULL)
-    {
-	char_u	*msg = get_tv_string_chk(&argvars[1]);
-	while (*msg)
-	{
-#ifdef FEAT_MBYTE
-	    send_keys_to_term(buf->b_term, utf_ptr2char(msg));
-	    msg += utf_ptr2len(msg);
-#else
-	    send_keys_to_term(buf->b_term, (int) *msg);
-	    ++msg;
-#endif
-	}
+    if (buf == NULL || buf->b_term == NULL)
+	return;
 
-	/* TODO: only update once in a while. */
-	update_screen(0);
-	setcursor();
-	out_flush();
+    msg = get_tv_string_chk(&argvars[1]);
+    if (msg == NULL)
+	return;
+
+    while (*msg)
+    {
+#ifdef FEAT_MBYTE
+	send_keys_to_term(buf->b_term, utf_ptr2char(msg));
+	msg += utf_ptr2len(msg);
+#else
+	send_keys_to_term(buf->b_term, (int) *msg);
+	++msg;
+#endif
     }
+
+    /* TODO: only update once in a while. */
+    update_screen(0);
+    setcursor();
+    out_flush();
 }
 
 /*
