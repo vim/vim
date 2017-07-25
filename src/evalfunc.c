@@ -836,7 +836,6 @@ static struct fst
     {"term_list",	0, 0, f_term_list},
     {"term_scrape",	2, 2, f_term_scrape},
     {"term_sendkeys",	2, 2, f_term_sendkeys},
-    {"term_setsize",	2, 2, f_term_setsize},
     {"term_start",	1, 2, f_term_start},
     {"term_wait",	2, 2, f_term_wait},
 #endif

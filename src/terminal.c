@@ -56,7 +56,6 @@
  *   terminal.
  * - implement term_list()			list of buffers with a terminal
  * - implement term_getsize(buf)
- * - implement term_setsize(buf)
  * - implement term_sendkeys(buf, keys)		send keystrokes to a terminal
  * - implement term_wait(buf)			wait for screen to be updated
  * - implement term_scrape(buf, row)		inspect terminal screen
@@ -1574,15 +1573,6 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
 	setcursor();
 	out_flush();
     }
-}
-
-/*
- * "term_setsize" function
- */
-    void
-f_term_setsize(typval_T *argvars, typval_T *rettv)
-{
-    /* TODO */
 }
 
 /*
