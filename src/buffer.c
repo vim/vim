@@ -5650,6 +5650,73 @@ write_viminfo_bufferlist(FILE *fp)
 }
 #endif
 
+/*
+ * Return TRUE if "buf" is the quickfix buffer.
+ */
+    int
+bt_quickfix(buf_T *buf)
+{
+    return buf != NULL && buf->b_p_bt[0] == 'q';
+}
+
+/*
+ * Return TRUE if "buf" is a terminal buffer.
+ */
+    int
+bt_terminal(buf_T *buf)
+{
+    return buf != NULL && buf->b_p_bt[0] == 't';
+}
+
+/*
+ * Return TRUE if "buf" is a "nofile", "acwrite" or "terminal" buffer.
+ * This means the buffer name is not a file name.
+ */
+    int
+bt_nofile(buf_T *buf)
+{
+    return buf != NULL && ((buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f')
+	    || buf->b_p_bt[0] == 'a'
+	    || buf->b_p_bt[0] == 't');
+}
+
+/*
+ * Return TRUE if "buf" is a "nowrite", "nofile" or "terminal" buffer.
+ */
+    int
+bt_dontwrite(buf_T *buf)
+{
+    return buf != NULL && (buf->b_p_bt[0] == 'n' || buf->b_p_bt[0] == 't');
+}
+
+    int
+bt_dontwrite_msg(buf_T *buf)
+{
+    if (bt_dontwrite(buf))
+    {
+	EMSG(_("E382: Cannot write, 'buftype' option is set"));
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Return TRUE if the buffer should be hidden, according to 'hidden', ":hide"
+ * and 'bufhidden'.
+ */
+    int
+buf_hide(buf_T *buf)
+{
+    /* 'bufhidden' overrules 'hidden' and ":hide", check it first */
+    switch (buf->b_p_bh[0])
+    {
+	case 'u':		    /* "unload" */
+	case 'w':		    /* "wipe" */
+	case 'd': return FALSE;	    /* "delete" */
+	case 'h': return TRUE;	    /* "hide" */
+    }
+    return (p_hid || cmdmod.hide);
+}
 
 /*
  * Return special buffer name.
