@@ -384,9 +384,9 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
  * Return the number of bytes in "buf".
  */
     static int
-term_convert_key(int c, char *buf)
+term_convert_key(term_T *term, int c, char *buf)
 {
-    VTerm	    *vterm = curbuf->b_term->tl_vterm;
+    VTerm	    *vterm = term->tl_vterm;
     VTermKey	    key = VTERM_KEY_NONE;
     VTermModifier   mod = VTERM_MOD_NONE;
 
@@ -513,6 +513,71 @@ term_vgetc()
 }
 
 /*
+ * Send keys to terminal.
+ */
+    static int
+send_keys_to_term(term_T *term, int c)
+{
+    char	msg[KEY_BUF_LEN];
+    size_t	len;
+    static int	mouse_was_outside = FALSE;
+    int		dragging_outside = FALSE;
+
+    /* Catch keys that need to be handled as in Normal mode. */
+    switch (c)
+    {
+	case NUL:
+	case K_ZERO:
+	    stuffcharReadbuff(c);
+	    return FAIL;
+
+	case K_IGNORE:
+	    return FAIL;
+
+	case K_LEFTDRAG:
+	case K_MIDDLEDRAG:
+	case K_RIGHTDRAG:
+	case K_X1DRAG:
+	case K_X2DRAG:
+	    dragging_outside = mouse_was_outside;
+	    /* FALLTHROUGH */
+	case K_LEFTMOUSE:
+	case K_LEFTMOUSE_NM:
+	case K_LEFTRELEASE:
+	case K_LEFTRELEASE_NM:
+	case K_MIDDLEMOUSE:
+	case K_MIDDLERELEASE:
+	case K_RIGHTMOUSE:
+	case K_RIGHTRELEASE:
+	case K_X1MOUSE:
+	case K_X1RELEASE:
+	case K_X2MOUSE:
+	case K_X2RELEASE:
+	    if (mouse_row < W_WINROW(curwin)
+		    || mouse_row >= (W_WINROW(curwin) + curwin->w_height)
+		    || mouse_col < W_WINCOL(curwin)
+		    || mouse_col >= W_ENDCOL(curwin)
+		    || dragging_outside)
+	    {
+		/* click outside the current window */
+		stuffcharReadbuff(c);
+		mouse_was_outside = TRUE;
+		return FAIL;
+	    }
+    }
+    mouse_was_outside = FALSE;
+
+    /* Convert the typed key to a sequence of bytes for the job. */
+    len = term_convert_key(curbuf->b_term, c, msg);
+    if (len > 0)
+	/* TODO: if FAIL is returned, stop? */
+	channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
+						 (char_u *)msg, (int)len, NULL);
+
+    return OK;
+}
+
+/*
  * Wait for input and send it to the job.
  * Return when the start of a CTRL-W command is typed or anything else that
  * should be handled as a Normal mode command.
@@ -522,11 +587,7 @@ term_vgetc()
     int
 terminal_loop(void)
 {
-    char	buf[KEY_BUF_LEN];
     int		c;
-    size_t	len;
-    static int	mouse_was_outside = FALSE;
-    int		dragging_outside = FALSE;
     int		termkey = 0;
 
     if (curbuf->b_term->tl_vterm == NULL || !term_job_running(curbuf->b_term))
@@ -572,58 +633,39 @@ terminal_loop(void)
 		return OK;
 	    }
 	}
-
-	/* Catch keys that need to be handled as in Normal mode. */
-	switch (c)
-	{
-	    case NUL:
-	    case K_ZERO:
-		stuffcharReadbuff(c);
-		return OK;
-
-	    case K_IGNORE: continue;
-
-	    case K_LEFTDRAG:
-	    case K_MIDDLEDRAG:
-	    case K_RIGHTDRAG:
-	    case K_X1DRAG:
-	    case K_X2DRAG:
-		dragging_outside = mouse_was_outside;
-		/* FALLTHROUGH */
-	    case K_LEFTMOUSE:
-	    case K_LEFTMOUSE_NM:
-	    case K_LEFTRELEASE:
-	    case K_LEFTRELEASE_NM:
-	    case K_MIDDLEMOUSE:
-	    case K_MIDDLERELEASE:
-	    case K_RIGHTMOUSE:
-	    case K_RIGHTRELEASE:
-	    case K_X1MOUSE:
-	    case K_X1RELEASE:
-	    case K_X2MOUSE:
-	    case K_X2RELEASE:
-		if (mouse_row < W_WINROW(curwin)
-			|| mouse_row >= (W_WINROW(curwin) + curwin->w_height)
-			|| mouse_col < W_WINCOL(curwin)
-			|| mouse_col >= W_ENDCOL(curwin)
-			|| dragging_outside)
-		{
-		    /* click outside the current window */
-		    stuffcharReadbuff(c);
-		    mouse_was_outside = TRUE;
-		    return OK;
-		}
-	}
-	mouse_was_outside = FALSE;
-
-	/* Convert the typed key to a sequence of bytes for the job. */
-	len = term_convert_key(c, buf);
-	if (len > 0)
-	    /* TODO: if FAIL is returned, stop? */
-	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
-						(char_u *)buf, (int)len, NULL);
+	if (send_keys_to_term(curbuf->b_term, c) != OK)
+	    return OK;
     }
     return FAIL;
+}
+
+/*
+ * Called when a job has finished.
+ */
+    void
+term_job_ended(job_T *job)
+{
+    term_T *term;
+    int	    did_one = FALSE;
+
+    for (term = first_term; term != NULL; term = term->tl_next)
+	if (term->tl_job == job)
+	{
+	    vim_free(term->tl_title);
+	    term->tl_title = NULL;
+	    vim_free(term->tl_status_text);
+	    term->tl_status_text = NULL;
+	    redraw_buf_and_status_later(term->tl_buffer, VALID);
+	    did_one = TRUE;
+	}
+    if (did_one)
+	redraw_statuslines();
+    if (curbuf->b_term != NULL)
+    {
+	if (curbuf->b_term->tl_job == job)
+	    maketitle();
+	update_cursor(curbuf->b_term, TRUE);
+    }
 }
 
     static void
@@ -1516,8 +1558,16 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
     if (buf != NULL && buf->b_term != NULL)
     {
 	char_u	*msg = get_tv_string_chk(&argvars[1]);
-	channel_send(buf->b_term->tl_job->jv_channel, PART_IN,
-					     (char_u *)msg, STRLEN(msg), NULL);
+	while (*msg)
+	{
+#ifdef FEAT_MBYTE
+	    send_keys_to_term(buf->b_term, utf_ptr2char(msg));
+	    msg += utf_ptr2len(msg);
+#else
+	    send_keys_to_term(buf->b_term, (int) *msg);
+	    ++msg;
+#endif
+	}
 
 	/* TODO: only update once in a while. */
 	update_screen(0);
