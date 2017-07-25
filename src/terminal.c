@@ -106,6 +106,7 @@ struct terminal_S {
     int		tl_dirty_row_end;   /* row below last one to update */
 
     pos_T	tl_cursor;
+    int		tl_cursor_visible;
 };
 
 /*
@@ -176,6 +177,7 @@ ex_terminal(exarg_T *eap)
     if (term == NULL)
 	return;
     term->tl_dirty_row_end = MAX_ROW;
+    term->tl_cursor_visible = TRUE;
 
     /* Open a new window or tab. */
     vim_memset(&split_ea, 0, sizeof(split_ea));
@@ -316,15 +318,18 @@ term_write_job_output(term_T *term, char_u *msg, size_t len)
 }
 
     static void
-update_cursor()
+update_cursor(term_T *term, int redraw)
 {
     /* TODO: this should not always be needed */
     setcursor();
-    out_flush();
+    if (redraw && term->tl_buffer == curbuf && term->tl_cursor_visible)
+    {
+	out_flush();
 #ifdef FEAT_GUI
-    if (gui.in_use)
-	gui_update_cursor(FALSE, FALSE);
+	if (gui.in_use)
+	    gui_update_cursor(FALSE, FALSE);
 #endif
+    }
 }
 
 /*
@@ -342,7 +347,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 
     /* TODO: only update once in a while. */
     update_screen(0);
-    update_cursor();
+    update_cursor(term, TRUE);
 }
 
 /*
@@ -473,7 +478,7 @@ terminal_loop(void)
     {
 	/* TODO: skip screen update when handling a sequence of keys. */
 	update_screen(0);
-	update_cursor();
+	update_cursor(curbuf->b_term, FALSE);
 	++no_mapping;
 	++allow_keys;
 	got_int = FALSE;
@@ -559,12 +564,13 @@ term_job_ended(job_T *job)
 	    did_one = TRUE;
 	}
     if (did_one)
-    {
 	redraw_statuslines();
-	update_cursor();
+    if (curbuf->b_term != NULL)
+    {
+	if (curbuf->b_term->tl_job == job)
+	    maketitle();
+	update_cursor(curbuf->b_term, TRUE);
     }
-    if (curbuf->b_term != NULL && curbuf->b_term->tl_job == job)
-	maketitle();
 }
 
 /*
@@ -581,6 +587,18 @@ position_cursor(win_T *wp, VTermPos *pos)
 {
     wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
     wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
+}
+
+    static void
+may_toggle_cursor(term_T *term)
+{
+    if (curbuf == term->tl_buffer)
+    {
+	if (term->tl_cursor_visible)
+	    cursor_on();
+	else
+	    cursor_off();
+    }
 }
 
     static int
@@ -608,7 +626,7 @@ handle_moverect(VTermRect dest UNUSED, VTermRect src UNUSED, void *user)
 handle_movecursor(
 	VTermPos pos,
 	VTermPos oldpos UNUSED,
-	int visible UNUSED,
+	int visible,
 	void *user)
 {
     term_T	*term = (term_T *)user;
@@ -625,8 +643,12 @@ handle_movecursor(
 	}
     }
 
+    term->tl_cursor_visible = visible;
     if (is_current)
-	update_cursor();
+    {
+	may_toggle_cursor(term);
+	update_cursor(term, TRUE);
+    }
 
     return 1;
 }
@@ -648,11 +670,19 @@ handle_settermprop(
 	    term->tl_status_text = NULL;
 	    if (term == curbuf->b_term)
 		maketitle();
-	    return 1;
+	    break;
+
+	case VTERM_PROP_CURSORVISIBLE:
+	    term->tl_cursor_visible = value->boolean;
+	    may_toggle_cursor(term);
+	    out_flush();
+	    break;
+
 	default:
 	    break;
     }
-    return 0;
+    /* Always return 1, otherwise vterm doesn't store the value internally. */
+    return 1;
 }
 
 /*
