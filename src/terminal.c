@@ -1499,6 +1499,14 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 
     ea.arg = msg;
     ex_terminal(&ea);
+
+    rettv->v_type = VAR_JOB;
+    rettv->vval.v_job = NULL;
+    if (curbuf->b_term != NULL)
+    {
+	rettv->vval.v_job = curbuf->b_term->tl_job;
+	++rettv->vval.v_job->jv_refcount;
+    }
 }
 
 /*
@@ -1515,27 +1523,35 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     buf = get_buf_tv(&argvars[0], FALSE);
     --emsg_off;
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
     if (buf != NULL && buf->b_term != NULL)
     {
-	varnumber_T row = get_tv_number(&argvars[1]);
+	VTermPos    pos;
+	list_T	    *l;
+	term_T	    *term = buf->b_term;
+	VTermScreen *screen = vterm_obtain_screen(term->tl_vterm);
 
-	char_u *s = alloc(buf->b_term->tl_cols + 1);
-	if (s != NULL)
+	l = rettv->vval.v_list;
+
+	pos.row = (int) get_tv_number(&argvars[1]);
+	for (pos.col = 0; pos.col < term->tl_cols; )
 	{
-	    size_t ret;
-	    VTermRect rect;
+	    dict_T *d;
+	    VTermScreenCell cell;
 
-	    rettv->vval.v_string = s;
-	    rect.start_row = (int) row;
-	    rect.end_row = (int) row + 1;
-	    rect.start_col = 0;
-	    rect.end_col = buf->b_term->tl_cols;
-	    screen = vterm_obtain_screen(buf->b_term->tl_vterm);
-	    ret = vterm_screen_get_text(screen,
-		    (char*)s, buf->b_term->tl_cols, rect);
-	    s[ret] = 0;
+	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
+		break;
+
+	    d = dict_alloc();
+	    dict_add_nr_str(d, "char", cell.chars[0], NULL);
+	    dict_add_nr_str(d, "attr", cell2attr(&cell), NULL);
+	    list_append_dict(l, d);
+
+	    ++pos.col;
+	    if (cell.width == 2)
+		++pos.col;
 	}
     }
 }
