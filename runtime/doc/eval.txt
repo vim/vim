@@ -2369,11 +2369,12 @@ tagfiles()			List	tags files used
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
-term_getsize()			Dict	get the size of a terminal
-term_open()			Job	open a terminal window and run a job
+term_getsize(buf)		List	get the size of a terminal
+term_getjob()			Job	get the job associated with terminal
+term_list()			List	get the list of terminal buffers
+term_start()			Job	open a terminal window and run a job
 term_scrape()			List	inspect terminal screen
-term_sendkeys()			Number	send keystrokes to a terminal
-term_setsize()			Number	set the size of a terminal
+term_sendkeys()			none	send keystrokes to a terminal
 term_wait()			Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
@@ -7898,20 +7899,22 @@ tempname()					*tempname()* *temp-file-name*
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
 
-term_getsize()						*term_getsize()*
-		Get the size of a terminal. NOT IMPLEMENTED YET
+term_getsize(buf)					*term_getsize()*
+		Get the size of a terminal. It return list [rows, cols].
 
-term_open()						*term_open()*
+term_start(cmd, options)				*term_start()*
 		Open a terminal window and run a job. NOT IMPLEMENTED YET
 
-term_scrape()						*term_scrape()*
-		Inspect terminal screen. NOT IMPLEMENTED YET
+term_scrape(buf, row)					*term_scrape()*
+		Inspect terminal screen of {buf}. It return the list of dict
+		which contains following entries for line {row}:
 
-term_sendkeys()						*term_sendkeys()*
-		Send keystrokes to a terminal. NOT IMPLEMENTED YET
+		    char	character at the cell
+		    attr	attribute at the cell
 
-term_setsize()						*term_setsize()*
-		Set the size of a terminal. NOT IMPLEMENTED YET
+term_sendkeys(buf, keys)				*term_sendkeys()*
+		Send keystrokes to a terminal. {keys} are translated as
+		key sequences. For example, "\<c-x>" mean CTRL_x.
 
 term_wait()						*term_wait()*
 		Wait for screen to be updated. NOT IMPLEMENTED YET
