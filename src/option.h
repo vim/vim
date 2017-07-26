@@ -1202,7 +1202,7 @@ enum
     , WV_COUNT	    /* must be the last one */
 };
 
-#endif //_OPTION_H_
+#endif /* _OPTION_H_ */
 
 /* Value for b_p_ul indicating the global value must be used. */
 #define NO_LOCAL_UNDOLEVEL -123456
