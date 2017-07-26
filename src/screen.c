@@ -90,7 +90,7 @@
 #include "vim.h"
 
 #ifdef __HAIKU__
-// FIXME!!!
+/* FIXME!!! */
     int
 gui_mch_is_blink_off(void)
 {
