@@ -1858,13 +1858,13 @@ char* filenameSeparatorPos;
 	filenameSeparatorPos = strrchr(fname, '/');
 	if(filenameSeparatorPos != NULL &&
 		filenameSeparatorPos - (char*)fname > 1) {
-		// > 1 because root directory always exists anyway
+		/* > 1 because root directory always exists anyway */
 		*filenameSeparatorPos = '\0';
-			//<fname, filenameSparatorPos) is directory path
+			/*<fname, filenameSparatorPos) is directory path*/
 		mkdir(fname, S_IRWXU);
 
 		*filenameSeparatorPos = '/';
-			//restore original filename
+			/*restore original filename*/
 	}
 #endif
 
