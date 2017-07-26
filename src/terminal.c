@@ -199,6 +199,9 @@ ex_terminal(exarg_T *eap)
     term->tl_next = first_term;
     first_term = term;
 
+    if (cmd == NULL || *cmd == NUL)
+	cmd = p_sh;
+
     if (buflist_findname(cmd) == NULL)
 	curbuf->b_ffname = vim_strsave(cmd);
     else
@@ -226,9 +229,6 @@ ex_terminal(exarg_T *eap)
 				  (char_u *)"terminal", OPT_FREE|OPT_LOCAL, 0);
 
     set_term_and_win_size(term);
-
-    if (cmd == NULL || *cmd == NUL)
-	cmd = p_sh;
 
     /* System dependent: setup the vterm and start the job in it. */
     if (term_and_job_init(term, term->tl_rows, term->tl_cols, cmd) == OK)
