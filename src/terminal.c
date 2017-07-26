@@ -1113,8 +1113,6 @@ cell2attr(VTermScreenCell *cell)
 	attr |= HL_STANDOUT;
     if (cell->attrs.reverse)
 	attr |= HL_INVERSE;
-    if (cell->attrs.strike)
-	attr |= HL_UNDERLINE;
 
 #ifdef FEAT_GUI
     if (gui.in_use)
@@ -1418,6 +1416,40 @@ set_ref_in_term(int copyID)
 }
 
 /*
+ * "term_getattr(buf, row)" function
+ */
+    void
+f_term_getattr(typval_T *argvars, typval_T *rettv)
+{
+    int	    attr, i;
+    char_u  *key;
+
+    static struct
+    {
+	char	    *key;
+	int	    attr;
+    } attrs[] =
+    {
+	{"bold", HL_BOLD},
+	{"italic", HL_ITALIC},
+	{"underline", HL_UNDERLINE},
+	{"strike", HL_STANDOUT},
+	{"reverse", HL_INVERSE},
+    };
+
+    attr = get_tv_number(&argvars[0]);
+    key = get_tv_string_chk(&argvars[1]);
+
+    rettv->v_type = VAR_NUMBER;
+    for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
+	if (!STRCMP(key, attrs[i].key))
+	{
+	    rettv->vval.v_number = (attr & attrs[i].attr) != 0 ? 1 : 0;
+	    break;
+	}
+}
+
+/*
  * "term_getjob(buf)" function
  */
     void
@@ -1431,14 +1463,13 @@ f_term_getjob(typval_T *argvars, typval_T *rettv)
     --emsg_off;
 
     rettv->v_type = VAR_JOB;
-    if (buf != NULL && buf->b_term != NULL)
-    {
-	rettv->vval.v_job = buf->b_term->tl_job;
-	if (rettv->vval.v_job != NULL)
-	    ++rettv->vval.v_job->jv_refcount;
-    }
-    else
-	rettv->vval.v_job = NULL;
+    rettv->vval.v_job = NULL;
+    if (buf == NULL || buf->b_term == NULL)
+	return;
+
+    rettv->vval.v_job = buf->b_term->tl_job;
+    if (rettv->vval.v_job != NULL)
+	++rettv->vval.v_job->jv_refcount;
 }
 
 /*
@@ -1583,8 +1614,9 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     pos.row = (int) get_tv_number(&argvars[1]);
     for (pos.col = 0; pos.col < term->tl_cols; )
     {
-	dict_T		*dcell, *drgb, *dattr;
+	dict_T		*dcell;
 	VTermScreenCell cell;
+	char_u		rgb[8];
 	char_u		mb[NUMBUFLEN];
 
 	if (vterm_screen_get_cell(screen, pos, &cell) == 0)
@@ -1595,28 +1627,12 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 
 	dict_add_nr_str(dcell, "char", 0, mb);
 
-	drgb = dict_alloc();
-	dict_add_nr_str(drgb, "red", (varnumber_T)cell.fg.red, NULL);
-	dict_add_nr_str(drgb, "green", (varnumber_T)cell.fg.green, NULL);
-	dict_add_nr_str(drgb, "blue", (varnumber_T)cell.fg.blue, NULL);
-	dict_add_dict(dcell, "fg", drgb);
+	vim_snprintf((char *)rgb, 8, "#%02d%02d%02d", cell.fg.red, cell.fg.green, cell.fg.blue);
+	dict_add_nr_str(dcell, "fg", 0, rgb);
+	vim_snprintf((char *)rgb, 8, "#%02d%02d%02d", cell.bg.red, cell.bg.green, cell.bg.blue);
+	dict_add_nr_str(dcell, "bg", 0, rgb);
 
-	drgb = dict_alloc();
-	dict_add_nr_str(drgb, "red", (varnumber_T)cell.bg.red, NULL);
-	dict_add_nr_str(drgb, "green", (varnumber_T)cell.bg.green, NULL);
-	dict_add_nr_str(drgb, "blue", (varnumber_T)cell.bg.blue, NULL);
-	dict_add_dict(dcell, "bg", drgb);
-
-	dattr = dict_alloc();
-	dict_add_nr_str(dattr, "bold", (varnumber_T)cell.attrs.bold, NULL);
-	dict_add_nr_str(dattr, "underline", (varnumber_T)cell.attrs.underline, NULL);
-	dict_add_nr_str(dattr, "italic", (varnumber_T)cell.attrs.italic, NULL);
-	dict_add_nr_str(dattr, "blink", (varnumber_T)cell.attrs.blink, NULL);
-	dict_add_nr_str(dattr, "reverse", (varnumber_T)cell.attrs.reverse, NULL);
-	dict_add_nr_str(dattr, "strike", (varnumber_T)cell.attrs.strike, NULL);
-	dict_add_nr_str(dattr, "font", (varnumber_T)cell.attrs.font, NULL);
-	dict_add_nr_str(dattr, "dwl", (varnumber_T)cell.attrs.dwl, NULL);
-	dict_add_nr_str(dattr, "dhl", (varnumber_T)cell.attrs.dhl, NULL);
+	dict_add_nr_str(dcell, "attr", cell2attr(&cell), NULL);
 	list_append_dict(l, dcell);
 
 	++pos.col;
