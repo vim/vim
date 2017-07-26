@@ -321,13 +321,14 @@ term_write_job_output(term_T *term, char_u *msg, size_t len)
     static void
 update_cursor(term_T *term, int redraw)
 {
-    /* TODO: this should not always be needed */
     setcursor();
-    if (redraw && term->tl_buffer == curbuf && term->tl_cursor_visible)
+    if (redraw && term->tl_buffer == curbuf)
     {
+	if (term->tl_cursor_visible)
+	    cursor_on();
 	out_flush();
 #ifdef FEAT_GUI
-	if (gui.in_use)
+	if (gui.in_use && term->tl_cursor_visible)
 	    gui_update_cursor(FALSE, FALSE);
 #endif
     }
