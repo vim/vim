@@ -1416,17 +1416,17 @@ set_ref_in_term(int copyID)
 }
 
 /*
- * "term_getattr(buf, row)" function
+ * "term_getattr(attr, name)" function
  */
     void
 f_term_getattr(typval_T *argvars, typval_T *rettv)
 {
     int	    attr, i;
-    char_u  *key;
+    char_u  *name;
 
     static struct
     {
-	char	    *key;
+	char	    *name;
 	int	    attr;
     } attrs[] =
     {
@@ -1438,11 +1438,11 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
     };
 
     attr = get_tv_number(&argvars[0]);
-    key = get_tv_string_chk(&argvars[1]);
+    name = get_tv_string_chk(&argvars[1]);
 
     rettv->v_type = VAR_NUMBER;
     for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
-	if (!STRCMP(key, attrs[i].key))
+	if (!STRCMP(name, attrs[i].name))
 	{
 	    rettv->vval.v_number = (attr & attrs[i].attr) != 0 ? 1 : 0;
 	    break;
