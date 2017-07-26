@@ -258,7 +258,6 @@
 
 #ifdef __HAIKU__
 # include "os_haiku.h"
-# define __ARGS(x)  x
 #endif
 
 #if (defined(UNIX) || defined(VMS)) \
