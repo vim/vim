@@ -258,7 +258,7 @@ static int on_text(const char bytes[], size_t len, void *user)
                              &state->encoding[state->gr_set];
 
   (*encoding->enc->decode)(encoding->enc, encoding->data,
-      codepoints, &npoints, state->gsingle_set ? 1 : len,
+      codepoints, &npoints, state->gsingle_set ? 1 : (int)len,
       bytes, &eaten, len);
 
   /* There's a chance an encoding (e.g. UTF-8) hasn't found enough bytes yet
@@ -411,7 +411,7 @@ static int on_text(const char bytes[], size_t len, void *user)
 #endif
 
   vterm_allocator_free(state->vt, codepoints);
-  return eaten;
+  return (int)eaten;
 }
 
 static int on_control(unsigned char control, void *user)
@@ -1680,7 +1680,7 @@ VTermState *vterm_obtain_state(VTerm *vt)
   state->lineinfo = vterm_allocator_malloc(state->vt, state->rows * sizeof(VTermLineInfo));
 
   state->encoding_utf8.enc = vterm_lookup_encoding(ENC_UTF8, 'u');
-  if(*state->encoding_utf8.enc->init)
+  if(*state->encoding_utf8.enc->init != NULL)
     (*state->encoding_utf8.enc->init)(state->encoding_utf8.enc, state->encoding_utf8.data);
 
   vterm_parser_set_callbacks(vt, &parser_callbacks, state);

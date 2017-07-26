@@ -80,9 +80,9 @@ static int lookup_colour(const VTermState *state, int palette, const long args[]
     if(argcount < 3)
       return argcount;
 
-    col->red   = CSI_ARG(args[0]);
-    col->green = CSI_ARG(args[1]);
-    col->blue  = CSI_ARG(args[2]);
+    col->red   = (uint8_t)CSI_ARG(args[0]);
+    col->green = (uint8_t)CSI_ARG(args[1]);
+    col->blue  = (uint8_t)CSI_ARG(args[2]);
 
     return 3;
 
