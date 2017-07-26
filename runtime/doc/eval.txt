@@ -7909,8 +7909,25 @@ term_scrape(buf, row)					*term_scrape()*
 		Inspect terminal screen of {buf}. It return the list of dict
 		which contains following entries for line {row}:
 
-		    char	character at the cell
-		    attr	attribute at the cell
+		    "char"	character at the cell
+		    "fg"		foreground color
+		    	"red"
+		    	"green"
+		    	"blue"
+		    "bg"		background color
+		    	"red"
+		    	"green"
+		    	"blue"
+		    "attr"	attribute at the cell
+			"bold"		"1" if bold
+			"underline"	"1" if underlined
+			"italic"	"1" if italic
+			"blink"		"1" if blink
+			"reverse"	"1" if reverse
+			"strike"	"1" if inverse (= reverse)
+			"font"		0 to 9
+			"dwl"		On a DECDWL or DECDHL line
+			"dwl"		On a DECDHL line (1=top 2=bottom)
 
 term_sendkeys(buf, keys)				*term_sendkeys()*
 		Send keystrokes to a terminal. {keys} are translated as

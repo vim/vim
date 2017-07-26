@@ -1442,6 +1442,50 @@ f_term_getjob(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "term_getline(buf)" function
+ */
+    void
+f_term_getline(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	    *buf;
+    VTermScreen	    *screen;
+    term_T	    *term;
+    VTermRect	    rect;
+    int		    row;
+    char_u	    *p;
+    int		    len;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (buf == NULL || buf->b_term == NULL)
+	return;
+
+    term = buf->b_term;
+    screen = vterm_obtain_screen(term->tl_vterm);
+
+    len = term->tl_cols * MB_MAXBYTES + 1;
+    p = alloc(len);
+    if (p == NULL)
+	return;
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = p;
+
+    row = (int) get_tv_number(&argvars[1]);
+
+    rect.start_col = 0;
+    rect.end_col = term->tl_cols;
+    rect.start_row = row;
+    rect.end_row = row + 1;
+    p[vterm_screen_get_text(screen, (char*) p, len, rect)] = NUL;
+}
+
+/*
  * "term_getsize(buf)" function
  */
     void
@@ -1539,16 +1583,41 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     pos.row = (int) get_tv_number(&argvars[1]);
     for (pos.col = 0; pos.col < term->tl_cols; )
     {
-	dict_T *d;
+	dict_T		*dcell, *drgb, *dattr;
 	VTermScreenCell cell;
+	char_u		mb[NUMBUFLEN];
 
 	if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 	    break;
 
-	d = dict_alloc();
-	dict_add_nr_str(d, "char", cell.chars[0], NULL);
-	dict_add_nr_str(d, "attr", cell2attr(&cell), NULL);
-	list_append_dict(l, d);
+	dcell = dict_alloc();
+	mb[(*utf_char2bytes)((int)cell.chars[0], mb)] = NUL;
+
+	dict_add_nr_str(dcell, "char", 0, mb);
+
+	drgb = dict_alloc();
+	dict_add_nr_str(drgb, "red", (varnumber_T)cell.fg.red, NULL);
+	dict_add_nr_str(drgb, "green", (varnumber_T)cell.fg.green, NULL);
+	dict_add_nr_str(drgb, "blue", (varnumber_T)cell.fg.blue, NULL);
+	dict_add_dict(dcell, "fg", drgb);
+
+	drgb = dict_alloc();
+	dict_add_nr_str(drgb, "red", (varnumber_T)cell.bg.red, NULL);
+	dict_add_nr_str(drgb, "green", (varnumber_T)cell.bg.green, NULL);
+	dict_add_nr_str(drgb, "blue", (varnumber_T)cell.bg.blue, NULL);
+	dict_add_dict(dcell, "bg", drgb);
+
+	dattr = dict_alloc();
+	dict_add_nr_str(dattr, "bold", (varnumber_T)cell.attrs.bold, NULL);
+	dict_add_nr_str(dattr, "underline", (varnumber_T)cell.attrs.underline, NULL);
+	dict_add_nr_str(dattr, "italic", (varnumber_T)cell.attrs.italic, NULL);
+	dict_add_nr_str(dattr, "blink", (varnumber_T)cell.attrs.blink, NULL);
+	dict_add_nr_str(dattr, "reverse", (varnumber_T)cell.attrs.reverse, NULL);
+	dict_add_nr_str(dattr, "strike", (varnumber_T)cell.attrs.strike, NULL);
+	dict_add_nr_str(dattr, "font", (varnumber_T)cell.attrs.font, NULL);
+	dict_add_nr_str(dattr, "dwl", (varnumber_T)cell.attrs.dwl, NULL);
+	dict_add_nr_str(dattr, "dhl", (varnumber_T)cell.attrs.dhl, NULL);
+	list_append_dict(l, dcell);
 
 	++pos.col;
 	if (cell.width == 2)
