@@ -1439,6 +1439,8 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
 
     attr = get_tv_number(&argvars[0]);
     name = get_tv_string_chk(&argvars[1]);
+    if (!name)
+	return;
 
     rettv->v_type = VAR_NUMBER;
     for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
@@ -1569,10 +1571,12 @@ f_term_list(typval_T *argvars, typval_T *rettv)
     void
 f_term_start(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*msg = get_tv_string_chk(&argvars[0]);
+    char_u	*cmd = get_tv_string_chk(&argvars[0]);
     exarg_T	ea;
 
-    ea.arg = msg;
+    if (!cmd)
+	return;
+    ea.arg = cmd;
     ex_terminal(&ea);
 
     rettv->v_type = VAR_JOB;
@@ -1617,15 +1621,24 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	dict_T		*dcell;
 	VTermScreenCell cell;
 	char_u		rgb[8];
-	char_u		mb[NUMBUFLEN];
+	char_u		mbs[NUMBUFLEN];
+	int		i;
 
 	if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 	    break;
 
 	dcell = dict_alloc();
-	mb[(*utf_char2bytes)((int)cell.chars[0], mb)] = NUL;
 
-	dict_add_nr_str(dcell, "char", 0, mb);
+	mbs[0] = NUL;
+	for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
+	{
+	    char_u	mb[MB_MAXBYTES+1];
+	    if (cell.chars[i] == 0)
+		break;
+	    mb[(*utf_char2bytes)((int)cell.chars[i], mb)] = NUL;
+	    STRCAT(mbs, mb);
+	}
+	dict_add_nr_str(dcell, "chars", 0, mbs);
 
 	vim_snprintf((char *)rgb, 8, "#%02d%02d%02d", cell.fg.red, cell.fg.green, cell.fg.blue);
 	dict_add_nr_str(dcell, "fg", 0, rgb);
