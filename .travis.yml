@@ -1,4 +1,5 @@
 language: c
+dist: trusty
 
 os:
   - osx
@@ -70,8 +71,9 @@ addons:
       - libperl-dev
       - python-dev
       - python3-dev
-      - liblua5.1-0-dev
-      - lua5.1
+      - liblua5.2-dev
+      - lua5.2
+      - ruby-dev
       - cscope
 
 before_install:
