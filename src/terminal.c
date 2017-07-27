@@ -1371,6 +1371,26 @@ term_report_winsize(term_T *term, int rows, int cols)
     }
 }
 
+/*
+ * Mark references in jobs of terminals.
+ */
+    int
+set_ref_in_term(int copyID)
+{
+    int		abort = FALSE;
+    term_T	*term;
+    typval_T	tv;
+
+    for (term = first_term; term != NULL; term = term->tl_next)
+	if (term->tl_job != NULL)
+	{
+	    tv.v_type = VAR_JOB;
+	    tv.vval.v_job = term->tl_job;
+	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+	}
+    return abort;
+}
+
 # endif
 
 #endif /* FEAT_TERMINAL */
