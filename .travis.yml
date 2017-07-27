@@ -73,6 +73,8 @@ addons:
       - liblua5.1-0-dev
       - lua5.1
       - cscope
+      - ruby
+      - ruby-dev
 
 before_install:
   - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls; fi
