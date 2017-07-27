@@ -604,7 +604,7 @@ this chapter.
 
 APPENDING TO A FILE
 
-In the first section of this chapter was explained how to collect a number of
+In the first section of this chapter it was explained how to collect a number of
 lines into a register.  The same can be done to collect lines in a file.
 Write the first line with this command: >
 
