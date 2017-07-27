@@ -901,7 +901,16 @@ term_update_window(win_T *wp)
     {
 	int rows = term->tl_rows_fixed ? term->tl_rows : wp->w_height;
 	int cols = term->tl_cols_fixed ? term->tl_cols : wp->w_width;
+	win_T	*twp;
 
+	FOR_ALL_WINDOWS(twp)
+	{
+	    if (twp->w_buffer == term->tl_buffer)
+	    {
+		if (twp->w_width < cols) cols = twp->w_width;
+		if (twp->w_height < rows) rows = twp->w_height;
+	    }
+	}
 	vterm_set_size(vterm, rows, cols);
 	ch_logn(term->tl_job->jv_channel, "Resizing terminal to %d lines",
 									 rows);
