@@ -1247,6 +1247,7 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     job->jv_proc_info.dwProcessId = GetProcessId(child_process_handle);
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
+    ++job->jv_refcount;
     term->tl_job = job;
 
     return OK;
@@ -1329,6 +1330,8 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     argvars[0].vval.v_string = cmd;
     setup_job_options(&opt, rows, cols);
     term->tl_job = job_start(argvars, &opt);
+    if (term->tl_job != NULL)
+	++term->tl_job->jv_refcount;
 
     return term->tl_job != NULL
 	&& term->tl_job->jv_channel != NULL
