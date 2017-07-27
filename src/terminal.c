@@ -1153,18 +1153,19 @@ dyn_winpty_init(void)
     static int
 term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
 {
-    WCHAR	    *p = enc_to_utf16(cmd, NULL);
+    WCHAR	    *p;
     channel_T	    *channel = NULL;
     job_T	    *job = NULL;
     jobopt_T	    opt;
     DWORD	    error;
     HANDLE	    jo = NULL, child_process_handle, child_thread_handle;
     void	    *winpty_err;
-    void	    *spawn_config;
+    void	    *spawn_config = NULL;
 
     if (!dyn_winpty_init())
 	return FAIL;
 
+    p = enc_to_utf16(cmd, NULL);
     if (p == NULL)
 	return FAIL;
 
@@ -1227,9 +1228,14 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
 	goto failed;
 
     if (!AssignProcessToJobObject(jo, child_process_handle))
-	goto failed;
+    {
+	/* Failed, switch the way to terminate process with TerminateProcess. */
+	CloseHandle(jo);
+	jo = NULL;
+    }
 
     winpty_spawn_config_free(spawn_config);
+    vim_free(p);
 
     create_vterm(term, rows, cols);
 
@@ -1246,6 +1252,9 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     return OK;
 
 failed:
+    if (spawn_config != NULL)
+	winpty_spawn_config_free(spawn_config);
+    vim_free(p);
     if (channel != NULL)
 	channel_clear(channel);
     if (job != NULL)
