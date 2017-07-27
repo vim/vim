@@ -69,6 +69,7 @@ addons:
       - autoconf
       - lcov
       - libperl-dev
+      - pkg-config
       - python-dev
       - python3-dev
       - liblua5.2-dev
