@@ -6314,7 +6314,7 @@ ex_help(exarg_T *eap)
      * Re-use an existing help window or open a new one.
      * Always open a new one for ":tab help".
      */
-    if (!curwin->w_buffer->b_help
+    if (!bt_help(curwin->w_buffer)
 #ifdef FEAT_WINDOWS
 	    || cmdmod.tab != 0
 #endif
@@ -6325,7 +6325,7 @@ ex_help(exarg_T *eap)
 	    wp = NULL;
 	else
 	    FOR_ALL_WINDOWS(wp)
-		if (wp->w_buffer != NULL && wp->w_buffer->b_help)
+		if (bt_help(wp->w_buffer))
 		    break;
 	if (wp != NULL && wp->w_buffer->b_nwindows > 0)
 	    win_enter(wp, TRUE);
@@ -6425,7 +6425,7 @@ ex_helpclose(exarg_T *eap UNUSED)
 
     FOR_ALL_WINDOWS(win)
     {
-	if (win->w_buffer->b_help)
+	if (bt_help(win->w_buffer))
 	{
 	    win_close(win, FALSE);
 	    return;
