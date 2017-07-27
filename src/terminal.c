@@ -1242,6 +1242,7 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
     term->tl_job = job;
+    ++job->jv_refcount;
 
     return OK;
 
@@ -1320,6 +1321,7 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     argvars[0].vval.v_string = cmd;
     setup_job_options(&opt, rows, cols);
     term->tl_job = job_start(argvars, &opt);
+    ++term->tl_job->jv_refcount;
 
     return term->tl_job != NULL
 	&& term->tl_job->jv_channel != NULL
