@@ -249,7 +249,7 @@ open_buffer(
 	netbeansFireChanges = oldFire;
 #endif
 	/* Help buffer is filtered. */
-	if (curbuf->b_help)
+	if (bt_help(curbuf))
 	    fix_help_buffer();
     }
     else if (read_stdin)
@@ -5666,6 +5666,15 @@ bt_quickfix(buf_T *buf)
 bt_terminal(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 't';
+}
+
+/*
+ * Return TRUE if "buf" is a help buffer.
+ */
+    int
+bt_help(buf_T *buf)
+{
+    return buf != NULL && buf->b_help;
 }
 
 /*
