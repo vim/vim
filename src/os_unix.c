@@ -5276,7 +5276,8 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	    set_child_environment(
 		    (long)options->jo_term_rows,
 		    (long)options->jo_term_cols,
-		    "xterm");
+		    STRNCMP(T_NAME, "xterm", 5) == 0
+						   ? (char *)T_NAME : "xterm");
 	else
 # endif
 	    set_default_child_environment();
