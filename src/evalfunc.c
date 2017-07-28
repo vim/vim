@@ -2314,8 +2314,45 @@ f_count(typval_T *argvars, typval_T *rettv)
 {
     long	n = 0;
     int		ic = FALSE;
+    int		error = FALSE;
 
-    if (argvars[0].v_type == VAR_LIST)
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	ic = (int)get_tv_number_chk(&argvars[2], &error);
+
+    if (argvars[0].v_type == VAR_STRING)
+    {
+	char_u *expr = get_tv_string_chk(&argvars[1]);
+	char_u *p = argvars[0].vval.v_string;
+	char_u *next;
+
+	if (!error && expr != NULL && p != NULL)
+	{
+	    if (ic)
+	    {
+		size_t len = STRLEN(expr);
+
+		while (*p != NUL)
+		{
+		    if (MB_STRNICMP(p, expr, len) == 0)
+		    {
+			++n;
+			p += len;
+		    }
+		    else
+			MB_PTR_ADV(p);
+		}
+	    }
+	    else
+		while ((next = (char_u *)strstr((char *)p, (char *)expr))
+								       != NULL)
+		{
+		    ++n;
+		    p = next + STRLEN(expr);
+		}
+	}
+
+    }
+    else if (argvars[0].v_type == VAR_LIST)
     {
 	listitem_T	*li;
 	list_T		*l;
@@ -2326,9 +2363,6 @@ f_count(typval_T *argvars, typval_T *rettv)
 	    li = l->lv_first;
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
-		int error = FALSE;
-
-		ic = (int)get_tv_number_chk(&argvars[2], &error);
 		if (argvars[3].v_type != VAR_UNKNOWN)
 		{
 		    idx = (long)get_tv_number_chk(&argvars[3], &error);
@@ -2356,11 +2390,8 @@ f_count(typval_T *argvars, typval_T *rettv)
 
 	if ((d = argvars[0].vval.v_dict) != NULL)
 	{
-	    int error = FALSE;
-
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
-		ic = (int)get_tv_number_chk(&argvars[2], &error);
 		if (argvars[3].v_type != VAR_UNKNOWN)
 		    EMSG(_(e_invarg));
 	    }

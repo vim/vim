@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jul 22
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3255,10 +3255,15 @@ cosh({expr})						*cosh()*
 		
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		Return the number of times an item with value {expr} appears
-		in |List| or |Dictionary| {comp}.
+		in |String|, |List| or |Dictionary| {comp}.
+
 		If {start} is given then start with the item with this index.
 		{start} can only be used with a |List|.
+
 		When {ic} is given and it's |TRUE| then case is ignored.
+
+		When {comp} is a string then the number of not overlapping
+		occurences of {expr} is returned.
 
 
 							*cscope_connection()*
