@@ -5620,11 +5620,11 @@ Various improvements:
 -   Support %name% expansion for "gf" on Windows.
 -   Make "gf" work on "file://c:/path/name".  "file:/c:/" and "file:///c:/"
     should also work?
--   Add 'urlpath', used like 'path' for when "gf" used on an URL?
+-   Add 'urlpath', used like 'path' for when "gf" used on a URL?
 8   When using "gf" on an absolute file name, while editing a remote file
     (starts with scp:// or http://) should prepend the method and machine
     name.
--   When finding an URL or file name, and it doesn't exist, try removing a
+-   When finding a URL or file name, and it doesn't exist, try removing a
     trailing '.'.
 -   Add ":path" command modifier.  Should work for every command that takes a
     file name argument, to search for the file name in 'path'.	Use
