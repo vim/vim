@@ -30,7 +30,6 @@ sudo: false
 # instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
 # exclude some builds on mac os x and linux
 # linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
-# Note: coverage currently does not work with clang, "setup.py install for cryptography" fails
 matrix:
   exclude:
     - os: osx
@@ -51,10 +50,6 @@ matrix:
       env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
             FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
             "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
-    - os: linux
-      compiler: clang
-      env: BUILD=yes TEST=scripttests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-           "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
     - os: linux
       compiler: clang
       env: BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
@@ -82,7 +77,7 @@ addons:
       - cscope
 
 before_install:
-  - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls; fi
+  - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls==0.3.12; fi
     # needed for https support for coveralls
     # building cffi only works with gcc, not with clang
   - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
