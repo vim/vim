@@ -1200,11 +1200,10 @@ win_update(win_T *wp)
 #endif
 
 #ifdef FEAT_TERMINAL
-    if (wp->w_buffer->b_term != NULL)
+    /* If this window contains a terminal, redraw works completely differently.
+     */
+    if (term_update_window(wp) == OK)
     {
-	/* This window contains a terminal, redraw works completely
-	 * differently. */
-	term_update_window(wp);
 	wp->w_redr_type = 0;
 	return;
     }
@@ -6849,14 +6848,14 @@ win_redr_status(win_T *wp)
 	p = NameBuff;
 	len = (int)STRLEN(p);
 
-	if (wp->w_buffer->b_help
+	if (bt_help(wp->w_buffer)
 #ifdef FEAT_QUICKFIX
 		|| wp->w_p_pvw
 #endif
 		|| bufIsChanged(wp->w_buffer)
 		|| wp->w_buffer->b_p_ro)
 	    *(p + len++) = ' ';
-	if (wp->w_buffer->b_help)
+	if (bt_help(wp->w_buffer))
 	{
 	    STRCPY(p + len, _("[Help]"));
 	    len += (int)STRLEN(p + len);
