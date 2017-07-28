@@ -74,7 +74,6 @@ addons:
       - python3-dev
       - liblua5.2-dev
       - lua5.2
-      - ruby-dev
       - cscope
 
 before_install:
