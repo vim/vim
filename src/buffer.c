@@ -858,7 +858,7 @@ free_buffer(buf_T *buf)
     channel_buffer_free(buf);
 #endif
 #ifdef FEAT_TERMINAL
-    free_terminal(buf->b_term);
+    free_terminal(buf);
 #endif
 
     buf_hashtab_remove(buf);
