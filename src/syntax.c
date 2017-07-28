@@ -7221,6 +7221,116 @@ load_colors(char_u *name)
     return retval;
 }
 
+static char *(color_names[28]) = {
+	    "Black", "DarkBlue", "DarkGreen", "DarkCyan",
+	    "DarkRed", "DarkMagenta", "Brown", "DarkYellow",
+	    "Gray", "Grey", "LightGray", "LightGrey",
+	    "DarkGray", "DarkGrey",
+	    "Blue", "LightBlue", "Green", "LightGreen",
+	    "Cyan", "LightCyan", "Red", "LightRed", "Magenta",
+	    "LightMagenta", "Yellow", "LightYellow", "White", "NONE"};
+	    /* indices:
+	     * 0, 1, 2, 3,
+	     * 4, 5, 6, 7,
+	     * 8, 9, 10, 11,
+	     * 12, 13,
+	     * 14, 15, 16, 17,
+	     * 18, 19, 20, 21, 22,
+	     * 23, 24, 25, 26, 27 */
+static int color_numbers_16[28] = {0, 1, 2, 3,
+				 4, 5, 6, 6,
+				 7, 7, 7, 7,
+				 8, 8,
+				 9, 9, 10, 10,
+				 11, 11, 12, 12, 13,
+				 13, 14, 14, 15, -1};
+/* for xterm with 88 colors... */
+static int color_numbers_88[28] = {0, 4, 2, 6,
+				 1, 5, 32, 72,
+				 84, 84, 7, 7,
+				 82, 82,
+				 12, 43, 10, 61,
+				 14, 63, 9, 74, 13,
+				 75, 11, 78, 15, -1};
+/* for xterm with 256 colors... */
+static int color_numbers_256[28] = {0, 4, 2, 6,
+				 1, 5, 130, 130,
+				 248, 248, 7, 7,
+				 242, 242,
+				 12, 81, 10, 121,
+				 14, 159, 9, 224, 13,
+				 225, 11, 229, 15, -1};
+/* for terminals with less than 16 colors... */
+static int color_numbers_8[28] = {0, 4, 2, 6,
+				 1, 5, 3, 3,
+				 7, 7, 7, 7,
+				 0+8, 0+8,
+				 4+8, 4+8, 2+8, 2+8,
+				 6+8, 6+8, 1+8, 1+8, 5+8,
+				 5+8, 3+8, 3+8, 7+8, -1};
+
+/*
+ * Lookup the "cterm" value to be used for color with index "idx" in
+ * color_names[].
+ */
+    int
+lookup_color(int idx, int foreground)
+{
+    int		color = color_numbers_16[idx];
+    char_u	*p;
+
+    /* Use the _16 table to check if it's a valid color name. */
+    if (color < 0)
+	return -1;
+
+    if (t_colors == 8)
+    {
+	/* t_Co is 8: use the 8 colors table */
+#if defined(__QNXNTO__)
+	color = color_numbers_8_qansi[idx];
+#else
+	color = color_numbers_8[idx];
+#endif
+	if (foreground)
+	{
+	    /* set/reset bold attribute to get light foreground
+	     * colors (on some terminals, e.g. "linux") */
+	    if (color & 8)
+	    {
+		HL_TABLE()[idx].sg_cterm |= HL_BOLD;
+		HL_TABLE()[idx].sg_cterm_bold = TRUE;
+	    }
+	    else
+		HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
+	}
+	color &= 7;	/* truncate to 8 colors */
+    }
+    else if (t_colors == 16 || t_colors == 88
+					   || t_colors >= 256)
+    {
+	/*
+	 * Guess: if the termcap entry ends in 'm', it is
+	 * probably an xterm-like terminal.  Use the changed
+	 * order for colors.
+	 */
+	if (*T_CAF != NUL)
+	    p = T_CAF;
+	else
+	    p = T_CSF;
+	if (*p != NUL && (t_colors > 256
+			      || *(p + STRLEN(p) - 1) == 'm'))
+	{
+	    if (t_colors == 88)
+		color = color_numbers_88[idx];
+	    else if (t_colors >= 256)
+		color = color_numbers_256[idx];
+	    else
+		color = color_numbers_8[idx];
+	}
+    }
+    return color;
+}
+
 /*
  * Handle the ":highlight .." command.
  * When using ":hi clear" this is called recursively for each group with
@@ -7723,45 +7833,6 @@ do_highlight(
 	    }
 	    else
 	    {
-		static char *(color_names[28]) = {
-			    "Black", "DarkBlue", "DarkGreen", "DarkCyan",
-			    "DarkRed", "DarkMagenta", "Brown", "DarkYellow",
-			    "Gray", "Grey",
-			    "LightGray", "LightGrey", "DarkGray", "DarkGrey",
-			    "Blue", "LightBlue", "Green", "LightGreen",
-			    "Cyan", "LightCyan", "Red", "LightRed", "Magenta",
-			    "LightMagenta", "Yellow", "LightYellow", "White", "NONE"};
-		static int color_numbers_16[28] = {0, 1, 2, 3,
-						 4, 5, 6, 6,
-						 7, 7,
-						 7, 7, 8, 8,
-						 9, 9, 10, 10,
-						 11, 11, 12, 12, 13,
-						 13, 14, 14, 15, -1};
-		/* for xterm with 88 colors... */
-		static int color_numbers_88[28] = {0, 4, 2, 6,
-						 1, 5, 32, 72,
-						 84, 84,
-						 7, 7, 82, 82,
-						 12, 43, 10, 61,
-						 14, 63, 9, 74, 13,
-						 75, 11, 78, 15, -1};
-		/* for xterm with 256 colors... */
-		static int color_numbers_256[28] = {0, 4, 2, 6,
-						 1, 5, 130, 130,
-						 248, 248,
-						 7, 7, 242, 242,
-						 12, 81, 10, 121,
-						 14, 159, 9, 224, 13,
-						 225, 11, 229, 15, -1};
-		/* for terminals with less than 16 colors... */
-		static int color_numbers_8[28] = {0, 4, 2, 6,
-						 1, 5, 3, 3,
-						 7, 7,
-						 7, 7, 0+8, 0+8,
-						 4+8, 4+8, 2+8, 2+8,
-						 6+8, 6+8, 1+8, 1+8, 5+8,
-						 5+8, 3+8, 3+8, 7+8, -1};
 #if defined(__QNXNTO__)
 		static int *color_numbers_8_qansi = color_numbers_8;
 		/* On qnx, the 8 & 16 color arrays are the same */
@@ -7782,57 +7853,9 @@ do_highlight(
 		    break;
 		}
 
-		/* Use the _16 table to check if it's a valid color name. */
-		color = color_numbers_16[i];
-		if (color >= 0)
-		{
-		    if (t_colors == 8)
-		    {
-			/* t_Co is 8: use the 8 colors table */
-#if defined(__QNXNTO__)
-			color = color_numbers_8_qansi[i];
-#else
-			color = color_numbers_8[i];
-#endif
-			if (key[5] == 'F')
-			{
-			    /* set/reset bold attribute to get light foreground
-			     * colors (on some terminals, e.g. "linux") */
-			    if (color & 8)
-			    {
-				HL_TABLE()[idx].sg_cterm |= HL_BOLD;
-				HL_TABLE()[idx].sg_cterm_bold = TRUE;
-			    }
-			    else
-				HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
-			}
-			color &= 7;	/* truncate to 8 colors */
-		    }
-		    else if (t_colors == 16 || t_colors == 88
-							   || t_colors >= 256)
-		    {
-			/*
-			 * Guess: if the termcap entry ends in 'm', it is
-			 * probably an xterm-like terminal.  Use the changed
-			 * order for colors.
-			 */
-			if (*T_CAF != NUL)
-			    p = T_CAF;
-			else
-			    p = T_CSF;
-			if (*p != NUL && (t_colors > 256
-					      || *(p + STRLEN(p) - 1) == 'm'))
-			{
-			    if (t_colors == 88)
-				color = color_numbers_88[i];
-			    else if (t_colors >= 256)
-				color = color_numbers_256[i];
-			    else
-				color = color_numbers_8[i];
-			}
-		    }
-		}
+		color = lookup_color(i, key[5] == 'F');
 	    }
+
 	    /* Add one to the argument, to avoid zero.  Zero is used for
 	     * "NONE", then "color" is -1. */
 	    if (key[5] == 'F')
