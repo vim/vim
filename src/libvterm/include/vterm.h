@@ -8,13 +8,16 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
 #include <stdlib.h>
 
 #include "vterm_keycodes.h"
 
 #define TRUE 1
 #define FALSE 0
+
+/* from stdint.h */
+typedef unsigned char		uint8_t;
+typedef unsigned int		uint32_t;
 
 typedef struct VTerm VTerm;
 typedef struct VTermState VTermState;
