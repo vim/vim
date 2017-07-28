@@ -927,8 +927,22 @@ term_update_window(win_T *wp)
     if ((!term->tl_rows_fixed && term->tl_rows != wp->w_height)
 	    || (!term->tl_cols_fixed && term->tl_cols != wp->w_width))
     {
-	int rows = term->tl_rows_fixed ? term->tl_rows : wp->w_height;
-	int cols = term->tl_cols_fixed ? term->tl_cols : wp->w_width;
+	int	rows = term->tl_rows_fixed ? term->tl_rows : wp->w_height;
+	int	cols = term->tl_cols_fixed ? term->tl_cols : wp->w_width;
+	win_T	*twp;
+
+	FOR_ALL_WINDOWS(twp)
+	{
+	    /* When more than one window shows the same terminal, use the
+	     * smallest size. */
+	    if (twp->w_buffer == term->tl_buffer)
+	    {
+		if (!term->tl_rows_fixed && rows > twp->w_height)
+		    rows = twp->w_height;
+		if (!term->tl_cols_fixed && cols > twp->w_width)
+		    cols = twp->w_width;
+	    }
+	}
 
 	vterm_set_size(vterm, rows, cols);
 	ch_logn(term->tl_job->jv_channel, "Resizing terminal to %d lines",
