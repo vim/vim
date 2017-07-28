@@ -738,7 +738,7 @@ Nread as shown in |netrw-transparent| (ie. simply use >
   :r url
   :w url
 instead, as appropriate) -- see |netrw-urls|.  In the explanations
-below, a {netfile} is an url to a remote file.
+below, a {netfile} is a url to a remote file.
 
 						*:Nwrite*  *:Nw*
 :[range]Nw[rite]	Write the specified lines to the current
@@ -3796,7 +3796,7 @@ netrw:
 				  tell me how they're useful and should be
 				  retained?
 		Nov 20, 2015	* Added |netrw-ma| and |netrw-mA| support
-		Nov 20, 2015	* gx (|netrw-gx|) on an url downloaded the
+		Nov 20, 2015	* gx (|netrw-gx|) on a url downloaded the
 				  file in addition to simply bringing up the
 				  url in a browser.  Fixed.
 		Nov 23, 2015	* Added |g:netrw_sizestyle| support
