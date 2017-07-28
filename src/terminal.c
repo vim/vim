@@ -761,6 +761,12 @@ color2index(VTermColor *color)
     int blue = color->blue;
     int green = color->green;
 
+#if defined(WIN3264) && !defined(FEAT_GUI)
+    int	tmp = red;
+    red = blue;
+    blue = tmp;
+#endif
+
     if (red == 0)
     {
 	if (green == 0)
