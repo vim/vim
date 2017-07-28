@@ -1,5 +1,6 @@
 language: c
-dist: trusty
+# trusty still has a few problems, use precise until they are solved.
+dist: precise
 
 os:
   - osx
