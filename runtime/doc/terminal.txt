@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 24
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,22 +33,27 @@ Or to run a debugger: >
 The job runs asynchronously from Vim, the window will be updated to show
 output from the job, also  while editing in any other window.
 
+Typing ~
+
 When the keyboard focus is in the terminal window, typed keys will be send to
-the job.  This uses a pty when possible.
+the job.  This uses a pty when possible.  You can click outside of the
+terminal window to move keyboard focus elsewhere.
 
-Navigate between windows with CTRL-W commands (and mouse).
-E.g. CTRL-W CTRL-W moves focus to the next window.
-Use "CTRL-W :" to edit an Ex command.
+Navigate between windows with CTRL-W commands.  E.g. CTRL-W CTRL-W moves focus
+to the next window.  Use "CTRL-W :" to edit an Ex command.  Use "CTRL-W ." to
+send a CTRL-W to the job in the terminal.
 
-See option 'termkey' for specifying the key that precedes a Vim command.
-Default is CTRL-W.
+See option 'termkey' for specifying another key that precedes a Vim command.
+Typing 'termkey' twice sends 'termkey' to the job.
+
+Size ~
 
 See option 'termsize' for controlling the size of the terminal window.
 (TODO: scrolling when the terminal is larger than the window)
 
 Syntax ~
 
-:ter[minal][!] [command]			*:ter* *:terminal*
+:ter[minal] [command]				*:ter* *:terminal*
 			Open a new terminal window.
 
 			If [command] is provided run it as a job and connect
