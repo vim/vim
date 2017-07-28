@@ -19,7 +19,7 @@
  *    Uses pseudo-tty's (pty's).
  *
  * For each terminal one VTerm is constructed.  This uses libvterm.  A copy of
- * that library is in the libvterm directory.
+ * this library is in the libvterm directory.
  *
  * When a terminal window is opened, a job is started that will be connected to
  * the terminal emulator.
@@ -32,16 +32,17 @@
  * line range is stored in tl_dirty_row_start and tl_dirty_row_end.  Once in a
  * while, if the terminal window is visible, the screen contents is drawn.
  *
+ * When the job ends the text is put in a buffer.  Redrawing then happens from
+ * that buffer, attributes come from the scrollback buffer tl_scrollback.
+ *
  * TODO:
+ * - Patch for functions: Yasuhiro Matsumoto, #1871
  * - For the scrollback buffer store lines in the buffer, only attributes in
  *   tl_scrollback.
  * - When the job ends:
- *   - Display the scrollback buffer (but with attributes).
- *     Make the buffer not modifiable, drop attributes when making changes.
  *   - Need an option or argument to drop the window+buffer right away, to be
  *     used for a shell or Vim.
  * - To set BS correctly, check get_stty(); Pass the fd of the pty.
- * - Patch for functions: Yasuhiro Matsumoto, #1871
  * - do not store terminal buffer in viminfo.  Or prefix term:// ?
  * - add a character in :ls output
  * - when closing window and job has not ended, make terminal hidden?
@@ -254,6 +255,19 @@ ex_terminal(exarg_T *eap)
 }
 
 /*
+ * Free the scrollback buffer for "term".
+ */
+    static void
+free_scrollback(term_T *term)
+{
+    int i;
+
+    for (i = 0; i < term->tl_scrollback.ga_len; ++i)
+	vim_free(((sb_line_T *)term->tl_scrollback.ga_data + i)->sb_cells);
+    ga_clear(&term->tl_scrollback);
+}
+
+/*
  * Free a terminal and everything it refers to.
  * Kills the job if there is one.
  * Called when wiping out a buffer.
@@ -263,7 +277,6 @@ free_terminal(buf_T *buf)
 {
     term_T	*term = buf->b_term;
     term_T	*tp;
-    int		i;
 
     if (term == NULL)
 	return;
@@ -285,9 +298,7 @@ free_terminal(buf_T *buf)
 	job_unref(term->tl_job);
     }
 
-    for (i = 0; i < term->tl_scrollback.ga_len; ++i)
-	vim_free(((sb_line_T *)term->tl_scrollback.ga_data + i) ->sb_cells);
-    ga_clear(&term->tl_scrollback);
+    free_scrollback(term);
 
     term_free_vterm(term);
     vim_free(term->tl_title);
@@ -1215,6 +1226,48 @@ term_update_window(win_T *wp)
     }
 
     return OK;
+}
+
+/*
+ * Return TRUE if "wp" is a terminal window where the job has finished.
+ */
+    int
+term_is_finished(buf_T *buf)
+{
+    return buf->b_term != NULL && buf->b_term->tl_vterm == NULL;
+}
+
+/*
+ * The current buffer is going to be changed.  If there is terminal
+ * highlighting remove it now.
+ */
+    void
+term_change_in_curbuf(void)
+{
+    term_T *term = curbuf->b_term;
+
+    if (term_is_finished(curbuf) && term->tl_scrollback.ga_len > 0)
+    {
+	free_scrollback(term);
+	redraw_buf_later(term->tl_buffer, NOT_VALID);
+    }
+}
+
+/*
+ * Get the screen attribute for a position in the buffer.
+ */
+    int
+term_get_attr(buf_T *buf, linenr_T lnum, int col)
+{
+    term_T *term = buf->b_term;
+    sb_line_T *line;
+
+    if (lnum >= term->tl_scrollback.ga_len)
+	return 0;
+    line = (sb_line_T *)term->tl_scrollback.ga_data + lnum - 1;
+    if (col >= line->sb_cols)
+	return 0;
+    return cell2attr(line->sb_cells + col);
 }
 
 /*

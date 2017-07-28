@@ -3130,6 +3130,9 @@ win_line(
 #if defined(LINE_ATTR)
     int		did_line_attr = 0;
 #endif
+#ifdef FEAT_TERMINAL
+    int		get_term_attr = FALSE;
+#endif
 
     /* draw_state: items that are drawn in sequence: */
 #define WL_START	0		/* nothing done yet */
@@ -3239,6 +3242,14 @@ win_line(
     color_cols = wp->w_p_cc_cols;
     if (color_cols != NULL)
 	draw_color_col = advance_color_col(VCOL_HLC, &color_cols);
+#endif
+
+#ifdef FEAT_TERMINAL
+    if (term_is_finished(wp->w_buffer))
+    {
+	extra_check = TRUE;
+	get_term_attr = TRUE;
+    }
 #endif
 
 #ifdef FEAT_SPELL
@@ -4525,6 +4536,18 @@ win_line(
 	    {
 #ifdef FEAT_SPELL
 		int	can_spell = TRUE;
+#endif
+
+#ifdef FEAT_TERMINAL
+		if (get_term_attr)
+		{
+		    syntax_attr = term_get_attr(wp->w_buffer, lnum, col);
+
+		    if (!attr_pri)
+			char_attr = syntax_attr;
+		    else
+			char_attr = hl_combine_attr(syntax_attr, char_attr);
+		}
 #endif
 
 #ifdef FEAT_SYN_HL
