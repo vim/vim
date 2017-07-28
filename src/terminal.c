@@ -1607,7 +1607,7 @@ term_free_vterm(term_T *term)
     term->tl_winpty_config = NULL;
     if (term->tl_vterm != NULL)
 	vterm_free(term->tl_vterm);
-    term->tl_vterm = NULL
+    term->tl_vterm = NULL;
 }
 
 /*
