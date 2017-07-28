@@ -1341,7 +1341,7 @@ $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 
 if_perl.c : if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
-		-typemap typemap if_perl.xs > if_perl.c
+		-typemap typemap if_perl.xs -output if_perl.c
 
 $(OUTDIR)/if_perl.obj: $(OUTDIR) if_perl.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) if_perl.c
@@ -1470,7 +1470,7 @@ $(OUTDIR)/dimm_i.obj: $(OUTDIR) dimm_i.c $(INCL)
 $(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
 
 
-CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" -DVSNPRINTF=vim_vsnprintf
+CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" -DVSNPRINTF=vim_vsnprintf -D_CRT_SECURE_NO_WARNINGS
 $(OUTDIR)/term_encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/encoding.c
 
