@@ -419,6 +419,10 @@ u_savecommon(
 	    }
 	}
 #endif
+#ifdef FEAT_TERMINAL
+	/* A change in a terminal buffer removes the highlighting. */
+	term_change_in_curbuf();
+#endif
 
 #ifdef FEAT_AUTOCMD
 	/*
