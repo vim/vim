@@ -33,9 +33,9 @@
  * while, if the terminal window is visible, the screen contents is drawn.
  *
  * TODO:
+ * - To set BS correctly, check get_stty(); Pass the fd of the pty.
  * - include functions from #1871
  * - do not store terminal buffer in viminfo.  Or prefix term:// ?
- * - Make CTRL-W . send CTRL-W to terminal?
  * - Add a scrollback buffer (contains lines to scroll off the top).
  *   Can use the buf_T lines, store attributes somewhere else?
  * - When the job ends:
@@ -50,7 +50,6 @@
  * - when closing window and job has not ended, make terminal hidden?
  * - don't allow exiting Vim when a terminal is still running a job
  * - use win_del_lines() to make scroll-up efficient.
- * - command line completion for :terminal
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
@@ -459,6 +458,24 @@ term_convert_key(int c, char *buf)
 }
 
 /*
+ * Get a key from the user without mapping.
+ * TODO: use terminal mode mappings.
+ */
+    static int
+term_vgetc()
+{
+    int c;
+
+    ++no_mapping;
+    ++allow_keys;
+    got_int = FALSE;
+    c = vgetc();
+    --no_mapping;
+    --allow_keys;
+    return c;
+}
+
+/*
  * Wait for input and send it to the job.
  * Return when the start of a CTRL-W command is typed or anything else that
  * should be handled as a Normal mode command.
@@ -481,17 +498,28 @@ terminal_loop(void)
 	/* TODO: skip screen update when handling a sequence of keys. */
 	update_screen(0);
 	update_cursor(curbuf->b_term, FALSE);
-	++no_mapping;
-	++allow_keys;
-	got_int = FALSE;
-	c = vgetc();
-	--no_mapping;
-	--allow_keys;
+	c = term_vgetc();
 
 	if (c == (termkey == 0 ? Ctrl_W : termkey))
 	{
-	    stuffcharReadbuff(Ctrl_W);
-	    return;
+#ifdef FEAT_CMDL_INFO
+	    if (add_to_showcmd(c))
+		out_flush();
+#endif
+	    c = term_vgetc();
+#ifdef FEAT_CMDL_INFO
+	    clear_showcmd();
+#endif
+
+	    if (termkey == 0 && c == '.')
+		/* "CTRL-W .": send CTRL-W to the job */
+		c = Ctrl_W;
+	    else if (termkey == 0 || c != termkey)
+	    {
+		stuffcharReadbuff(Ctrl_W);
+		stuffcharReadbuff(c);
+		return;
+	    }
 	}
 
 	/* Catch keys that need to be handled as in Normal mode. */
