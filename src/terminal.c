@@ -350,7 +350,7 @@ update_cursor(term_T *term, int redraw)
 	    cursor_on();
 	out_flush();
 #ifdef FEAT_GUI
-	if (gui.in_use && term->tl_cursor_visible)
+	if (gui.in_use)
 	    gui_update_cursor(FALSE, FALSE);
 #endif
     }
@@ -691,7 +691,7 @@ handle_movecursor(
     if (is_current)
     {
 	may_toggle_cursor(term);
-	update_cursor(term, TRUE);
+	update_cursor(term, term->tl_cursor_visible);
     }
 
     return 1;
@@ -941,11 +941,11 @@ term_channel_closed(channel_T *ch)
 	/* Need to break out of vgetc(). */
 	ins_char_typebuf(K_IGNORE);
 
-	if (curbuf->b_term != NULL)
+	if ((term = curbuf->b_term) != NULL)
 	{
-	    if (curbuf->b_term->tl_job == ch->ch_job)
+	    if (term->tl_job == ch->ch_job)
 		maketitle();
-	    update_cursor(curbuf->b_term, TRUE);
+	    update_cursor(term, term->tl_cursor_visible);
 	}
     }
 }
