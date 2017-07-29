@@ -765,26 +765,26 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
     /* TODO: put the text in the buffer. */
     if (ga_grow(&term->tl_scrollback, 1) == OK)
     {
-	VTermScreenCell *p;
-	int len;
-	int i;
+	VTermScreenCell *p = NULL;
+	int		len = 0;
+	int		i;
+	sb_line_T	*line;
 
 	/* do not store empty cells at the end */
 	for (i = 0; i < cols; ++i)
 	    if (cells[i].chars[0] != 0)
 		len = i + 1;
 
-	p = (VTermScreenCell *)alloc((int)sizeof(VTermScreenCell) * len);
+	if (len > 0)
+	    p = (VTermScreenCell *)alloc((int)sizeof(VTermScreenCell) * len);
 	if (p != NULL)
-	{
-	    sb_line_T *line = (sb_line_T *)term->tl_scrollback.ga_data
-						  + term->tl_scrollback.ga_len;
-
 	    mch_memmove(p, cells, sizeof(VTermScreenCell) * len);
-	    line->sb_cols = len;
-	    line->sb_cells = p;
-	    ++term->tl_scrollback.ga_len;
-	}
+
+	line = (sb_line_T *)term->tl_scrollback.ga_data
+						  + term->tl_scrollback.ga_len;
+	line->sb_cols = len;
+	line->sb_cells = p;
+	++term->tl_scrollback.ga_len;
     }
     return 0; /* ignored */
 }
@@ -818,7 +818,9 @@ move_scrollback_to_buffer(term_T *term)
 						       && cell.chars[0] != NUL)
 		len = pos.col + 1;
 
-	if (len > 0)
+	if (len == 0)
+	    ++lines_skipped;
+	else
 	{
 	    while (lines_skipped > 0)
 	    {
@@ -865,13 +867,15 @@ move_scrollback_to_buffer(term_T *term)
 
 	ga.ga_len = 0;
 	for (col = 0; col < line->sb_cols; ++col)
-	    for (i = 0; (c = line->sb_cells[col].chars[i]) != 0 || i == 0; ++i)
-	    {
-		if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
-		    goto failed;
+	{
+	    if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
+		goto failed;
+	    for (i = 0; (c = line->sb_cells[col].chars[i]) > 0 || i == 0; ++i)
 		ga.ga_len += mb_char2bytes(c == NUL ? ' ' : c,
 					     (char_u *)ga.ga_data + ga.ga_len);
-	    }
+	}
+	if (ga_grow(&ga, 1) == FAIL)
+	    goto failed;
 	*((char_u *)ga.ga_data + ga.ga_len) = NUL;
 	ml_append_buf(term->tl_buffer, lnum, ga.ga_data, ga.ga_len + 1, FALSE);
     }
