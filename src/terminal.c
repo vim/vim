@@ -491,7 +491,11 @@ term_convert_key(int c, char *buf)
     static int
 term_job_running(term_T *term)
 {
-    return term->tl_job != NULL && term->tl_job->jv_status == JOB_STARTED;
+    /* Also consider the job finished when the channel is closed, to avoid a
+     * race condition when updating the title. */
+    return term->tl_job != NULL
+	&& term->tl_job->jv_status == JOB_STARTED
+	&& channel_is_open(term->tl_job->jv_channel);
 }
 
 /*
