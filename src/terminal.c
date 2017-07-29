@@ -36,7 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - Patch for functions: Yasuhiro Matsumoto, #1871
  * - For the scrollback buffer store lines in the buffer, only attributes in
  *   tl_scrollback.
  * - When the job ends:
@@ -373,6 +372,20 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 }
 
 /*
+ * Send a mouse position and click to the vterm
+ */
+    static int
+term_send_mouse(VTerm *vterm, int button, int pressed)
+{
+    VTermModifier   mod = VTERM_MOD_NONE;
+
+    vterm_mouse_move(vterm, mouse_row - W_WINROW(curwin),
+					    mouse_col - W_WINCOL(curwin), mod);
+    vterm_mouse_button(vterm, button, pressed, mod);
+    return TRUE;
+}
+
+/*
  * Convert typed key "c" into bytes to send to the job.
  * Return the number of bytes in "buf".
  */
@@ -382,6 +395,7 @@ term_convert_key(term_T *term, int c, char *buf)
     VTerm	    *vterm = term->tl_vterm;
     VTermKey	    key = VTERM_KEY_NONE;
     VTermModifier   mod = VTERM_MOD_NONE;
+    int		    mouse = FALSE;
 
     switch (c)
     {
@@ -391,7 +405,13 @@ term_convert_key(term_T *term, int c, char *buf)
 	case K_BS:		c = BS; break;
 	case K_DEL:		key = VTERM_KEY_DEL; break;
 	case K_DOWN:		key = VTERM_KEY_DOWN; break;
+	case K_S_DOWN:		mod = VTERM_MOD_SHIFT;
+				key = VTERM_KEY_DOWN; break;
 	case K_END:		key = VTERM_KEY_END; break;
+	case K_S_END:		mod = VTERM_MOD_SHIFT;
+				key = VTERM_KEY_END; break;
+	case K_C_END:		mod = VTERM_MOD_CTRL;
+				key = VTERM_KEY_END; break;
 	case K_F10:		key = VTERM_KEY_FUNCTION(10); break;
 	case K_F11:		key = VTERM_KEY_FUNCTION(11); break;
 	case K_F12:		key = VTERM_KEY_FUNCTION(12); break;
@@ -405,6 +425,10 @@ term_convert_key(term_T *term, int c, char *buf)
 	case K_F8:		key = VTERM_KEY_FUNCTION(8); break;
 	case K_F9:		key = VTERM_KEY_FUNCTION(9); break;
 	case K_HOME:		key = VTERM_KEY_HOME; break;
+	case K_S_HOME:		mod = VTERM_MOD_SHIFT;
+				key = VTERM_KEY_HOME; break;
+	case K_C_HOME:		mod = VTERM_MOD_CTRL;
+				key = VTERM_KEY_HOME; break;
 	case K_INS:		key = VTERM_KEY_INS; break;
 	case K_K0:		key = VTERM_KEY_KP_0; break;
 	case K_K1:		key = VTERM_KEY_KP_1; break;
@@ -429,48 +453,85 @@ term_convert_key(term_T *term, int c, char *buf)
 	case K_KPLUS:		key = VTERM_KEY_KP_PLUS; break;
 	case K_KPOINT:		key = VTERM_KEY_KP_PERIOD; break;
 	case K_LEFT:		key = VTERM_KEY_LEFT; break;
+	case K_S_LEFT:		mod = VTERM_MOD_SHIFT;
+				key = VTERM_KEY_LEFT; break;
+	case K_C_LEFT:		mod = VTERM_MOD_CTRL;
+				key = VTERM_KEY_LEFT; break;
 	case K_PAGEDOWN:	key = VTERM_KEY_PAGEDOWN; break;
 	case K_PAGEUP:		key = VTERM_KEY_PAGEUP; break;
 	case K_RIGHT:		key = VTERM_KEY_RIGHT; break;
+	case K_S_RIGHT:		mod = VTERM_MOD_SHIFT;
+				key = VTERM_KEY_RIGHT; break;
+	case K_C_RIGHT:		mod = VTERM_MOD_CTRL;
+				key = VTERM_KEY_RIGHT; break;
 	case K_UP:		key = VTERM_KEY_UP; break;
+	case K_S_UP:		mod = VTERM_MOD_SHIFT;
+				key = VTERM_KEY_UP; break;
 	case TAB:		key = VTERM_KEY_TAB; break;
 
-	case K_MOUSEUP:		/* TODO */ break;
-	case K_MOUSEDOWN:	/* TODO */ break;
-	case K_MOUSELEFT:	/* TODO */ break;
-	case K_MOUSERIGHT:	/* TODO */ break;
+	case K_MOUSEUP:		mouse = term_send_mouse(vterm, 5, 1); break;
+	case K_MOUSEDOWN:	mouse = term_send_mouse(vterm, 4, 1); break;
+	case K_MOUSELEFT:	/* TODO */ return 0;
+	case K_MOUSERIGHT:	/* TODO */ return 0;
 
-	case K_LEFTMOUSE:	/* TODO */ break;
-	case K_LEFTMOUSE_NM:	/* TODO */ break;
-	case K_LEFTDRAG:	/* TODO */ break;
-	case K_LEFTRELEASE:	/* TODO */ break;
-	case K_LEFTRELEASE_NM:	/* TODO */ break;
-	case K_MIDDLEMOUSE:	/* TODO */ break;
-	case K_MIDDLEDRAG:	/* TODO */ break;
-	case K_MIDDLERELEASE:	/* TODO */ break;
-	case K_RIGHTMOUSE:	/* TODO */ break;
-	case K_RIGHTDRAG:	/* TODO */ break;
-	case K_RIGHTRELEASE:	/* TODO */ break;
-	case K_X1MOUSE:		/* TODO */ break;
-	case K_X1DRAG:		/* TODO */ break;
-	case K_X1RELEASE:	/* TODO */ break;
-	case K_X2MOUSE:		/* TODO */ break;
-	case K_X2DRAG:		/* TODO */ break;
-	case K_X2RELEASE:	/* TODO */ break;
+	case K_LEFTMOUSE:
+	case K_LEFTMOUSE_NM:	mouse = term_send_mouse(vterm, 1, 1); break;
+	case K_LEFTDRAG:	mouse = term_send_mouse(vterm, 1, 1); break;
+	case K_LEFTRELEASE:
+	case K_LEFTRELEASE_NM:	mouse = term_send_mouse(vterm, 1, 0); break;
+	case K_MIDDLEMOUSE:	mouse = term_send_mouse(vterm, 2, 1); break;
+	case K_MIDDLEDRAG:	mouse = term_send_mouse(vterm, 2, 1); break;
+	case K_MIDDLERELEASE:	mouse = term_send_mouse(vterm, 2, 0); break;
+	case K_RIGHTMOUSE:	mouse = term_send_mouse(vterm, 3, 1); break;
+	case K_RIGHTDRAG:	mouse = term_send_mouse(vterm, 3, 1); break;
+	case K_RIGHTRELEASE:	mouse = term_send_mouse(vterm, 3, 0); break;
+	case K_X1MOUSE:		/* TODO */ return 0;
+	case K_X1DRAG:		/* TODO */ return 0;
+	case K_X1RELEASE:	/* TODO */ return 0;
+	case K_X2MOUSE:		/* TODO */ return 0;
+	case K_X2DRAG:		/* TODO */ return 0;
+	case K_X2RELEASE:	/* TODO */ return 0;
 
-        /* TODO: handle all special keys and modifiers that terminal_loop()
-	 * does not handle. */
+	case K_IGNORE:		return 0;
+	case K_NOP:		return 0;
+	case K_UNDO:		return 0;
+	case K_HELP:		return 0;
+	case K_XF1:		key = VTERM_KEY_FUNCTION(1); break;
+	case K_XF2:		key = VTERM_KEY_FUNCTION(2); break;
+	case K_XF3:		key = VTERM_KEY_FUNCTION(3); break;
+	case K_XF4:		key = VTERM_KEY_FUNCTION(4); break;
+	case K_SELECT:		return 0;
+#ifdef FEAT_GUI
+	case K_VER_SCROLLBAR:	return 0;
+	case K_HOR_SCROLLBAR:	return 0;
+#endif
+#ifdef FEAT_GUI_TABLINE
+	case K_TABLINE:		return 0;
+	case K_TABMENU:		return 0;
+#endif
+#ifdef FEAT_NETBEANS_INTG
+	case K_F21:		key = VTERM_KEY_FUNCTION(21); break;
+#endif
+#ifdef FEAT_DND
+	case K_DROP:		return 0;
+#endif
+#ifdef FEAT_AUTOCMD
+	case K_CURSORHOLD:	return 0;
+#endif
+	case K_PS:		vterm_keyboard_start_paste(vterm); return 0;
+	case K_PE:		vterm_keyboard_end_paste(vterm); return 0;
     }
 
     /*
      * Convert special keys to vterm keys:
      * - Write keys to vterm: vterm_keyboard_key()
      * - Write output to channel.
+     * TODO: use mod_mask
      */
     if (key != VTERM_KEY_NONE)
 	/* Special key, let vterm convert it. */
 	vterm_keyboard_key(vterm, key, mod);
-    else
+    else if (!mouse)
 	/* Normal character, let vterm convert it. */
 	vterm_keyboard_unichar(vterm, c, mod);
 
