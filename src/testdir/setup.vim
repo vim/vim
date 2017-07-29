@@ -1,5 +1,13 @@
 " Common preparations for running tests.
 
+" Only load this once.
+if 1
+  if exists('s:did_load')
+    finish
+  endif
+  let s:did_load = 1
+endif
+
 " Make sure 'runtimepath' and 'packpath' does not include $HOME.
 set rtp=$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after
 if has('packages')
