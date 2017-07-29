@@ -106,7 +106,7 @@ static void setpenattr(VTermState *state, VTermAttr attr, VTermValueType type UN
 {
 #ifdef DEBUG
   if(type != vterm_get_attr_type(attr)) {
-    DEBUG_LOG("Cannot set attr %d as it has type %d, not type %d\n",
+    DEBUG_LOG3("Cannot set attr %d as it has type %d, not type %d\n",
         attr, vterm_get_attr_type(attr), type);
     return;
   }
