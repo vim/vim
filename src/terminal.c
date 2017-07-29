@@ -766,13 +766,15 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
     if (ga_grow(&term->tl_scrollback, 1) == OK)
     {
 	VTermScreenCell *p;
-	int len;
+	int len = 0;
 	int i;
 
 	/* do not store empty cells at the end */
 	for (i = 0; i < cols; ++i)
 	    if (cells[i].chars[0] != 0)
 		len = i + 1;
+	if (len == 0)
+	    return 0;
 
 	p = (VTermScreenCell *)alloc((int)sizeof(VTermScreenCell) * len);
 	if (p != NULL)
@@ -865,13 +867,13 @@ move_scrollback_to_buffer(term_T *term)
 
 	ga.ga_len = 0;
 	for (col = 0; col < line->sb_cols; ++col)
-	    for (i = 0; (c = line->sb_cells[col].chars[i]) != 0 || i == 0; ++i)
-	    {
-		if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
-		    goto failed;
+	{
+	    if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
+		goto failed;
+	    for (i = 0; (c = line->sb_cells[col].chars[i]) > 0; ++i)
 		ga.ga_len += mb_char2bytes(c == NUL ? ' ' : c,
 					     (char_u *)ga.ga_data + ga.ga_len);
-	    }
+	}
 	*((char_u *)ga.ga_data + ga.ga_len) = NUL;
 	ml_append_buf(term->tl_buffer, lnum, ga.ga_data, ga.ga_len + 1, FALSE);
     }
