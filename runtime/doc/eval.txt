@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jul 28
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Jul 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2369,12 +2369,15 @@ tagfiles()			List	tags files used
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
-term_getsize()			Dict	get the size of a terminal
-term_open()			Job	open a terminal window and run a job
-term_scrape()			List	inspect terminal screen
-term_sendkeys()			Number	send keystrokes to a terminal
-term_setsize()			Number	set the size of a terminal
-term_wait()			Number  wait for screen to be updated
+term_getattr({attr}, {what}	Number	get the value of attribute {what}
+term_getjob({buf})		Job	get the job associated with a terminal
+term_getline({buf}, {row})	String	get a line of text from a terminal
+term_getsize({buf})		List	get the size of a terminal
+term_list()			List	get the list of terminal buffers
+term_scrape({buf}, {row})	List	get row of a terminal screen
+term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_start({cmd}, {options})	Job	open a terminal window and run a job
+term_wait({buf})		Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
@@ -7898,23 +7901,72 @@ tempname()					*tempname()* *temp-file-name*
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
 
-term_getsize()						*term_getsize()*
-		Get the size of a terminal. NOT IMPLEMENTED YET
+term_getattr({attr}, {what})				*term_getattr()*
+		Given {attr}, a value returned by term_scrape() in the "attr"
+		item, return whether {what} is on.  {what} can be one of:
+			bold
+			italic
+			underline
+			strike
+			reverse
 
-term_open()						*term_open()*
-		Open a terminal window and run a job. NOT IMPLEMENTED YET
+term_getjob({buf})					*term_getjob()*
+		Get the Job associated with terminal window {buf}.
+		{buf} is used as with |term_getsize()|.
 
-term_scrape()						*term_scrape()*
-		Inspect terminal screen. NOT IMPLEMENTED YET
+term_getline({buf}, {row})				*term_getline()*
+		Get a line of text from the terminal window of {buf}.
+		{buf} is used as with |term_getsize()|.
 
-term_sendkeys()						*term_sendkeys()*
-		Send keystrokes to a terminal. NOT IMPLEMENTED YET
+		The first line has {row} zero.  When {row} is invalid an empty
+		string is returned.
 
-term_setsize()						*term_setsize()*
-		Set the size of a terminal. NOT IMPLEMENTED YET
+term_getsize({buf})					*term_getsize()*
+		Get the size of terminal {buf}. Returns a list with two
+		numbers: [rows, cols].  This is the size of the terminal, not
+		the window containing the terminal.
 
-term_wait()						*term_wait()*
-		Wait for screen to be updated. NOT IMPLEMENTED YET
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		list is returned.
+
+term_list(})						*term_list()*
+		Return a list with the buffer numbers of all buffers for
+		terminal windows.
+
+term_scrape({buf}, {row})				*term_scrape()*
+		Get the contents of {row} of terminal screen of {buf}.
+		For {buf} see |term_getsize()|.
+
+		The first {row} is zero.  When {row} is invalid an empty list
+		is returned.
+		
+		Return a List containing a Dict for each screen cell: 
+		    "chars"	character(s) at the cell
+		    "fg"	foreground color as #rrggbb
+		    "bg"	background color as #rrggbb
+		    "attr"	attributes of the cell, use term_getattr()
+		    		to get the individual flags
+		    "width"	cell width: 1 or 2
+
+term_sendkeys({buf}, {keys})				*term_sendkeys()*
+		Send keystrokes {keys} to terminal {buf}.
+		{buf} is used as with |term_getsize()|.
+
+		{keys} are translated as key sequences. For example, "\<c-x>"
+		means the character CTRL-X.
+
+term_start({cmd}, {options})				*term_start()*
+		Open a terminal window and run {cmd} in it.
+
+		Returns the buffer number of the terminal window.
+		When opening the window fails zero is returned.
+
+		{options} are not implemented yet.
+
+term_wait({buf})						*term_wait()*
+		Wait for pending updates of {buf} to be handled.
+		{buf} is used as with |term_getsize()|.
 
 test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 		This is for testing: If the memory allocation with {id} is
