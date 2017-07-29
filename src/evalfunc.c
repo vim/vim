@@ -830,6 +830,17 @@ static struct fst
     {"tanh",		1, 1, f_tanh},
 #endif
     {"tempname",	0, 0, f_tempname},
+#ifdef FEAT_TERMINAL
+    {"term_getattr",	2, 2, f_term_getattr},
+    {"term_getjob",	1, 1, f_term_getjob},
+    {"term_getline",	2, 2, f_term_getline},
+    {"term_getsize",	1, 1, f_term_getsize},
+    {"term_list",	0, 0, f_term_list},
+    {"term_scrape",	2, 2, f_term_scrape},
+    {"term_sendkeys",	2, 2, f_term_sendkeys},
+    {"term_start",	1, 2, f_term_start},
+    {"term_wait",	2, 2, f_term_wait},
+#endif
     {"test_alloc_fail",	3, 3, f_test_alloc_fail},
     {"test_autochdir",	0, 0, f_test_autochdir},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
@@ -1540,7 +1551,7 @@ buflist_find_by_name(char_u *name, int curtab_only)
 /*
  * Get buffer by number or pattern.
  */
-    static buf_T *
+    buf_T *
 get_buf_tv(typval_T *tv, int curtab_only)
 {
     char_u	*name = tv->vval.v_string;

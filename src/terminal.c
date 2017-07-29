@@ -56,11 +56,10 @@
  *   terminal.
  * - implement term_list()			list of buffers with a terminal
  * - implement term_getsize(buf)
- * - implement term_setsize(buf)
  * - implement term_sendkeys(buf, keys)		send keystrokes to a terminal
  * - implement term_wait(buf)			wait for screen to be updated
  * - implement term_scrape(buf, row)		inspect terminal screen
- * - implement term_open(command, options)	open terminal window
+ * - implement term_start(command, options)	open terminal window
  * - implement term_getjob(buf)
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
@@ -384,9 +383,9 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
  * Return the number of bytes in "buf".
  */
     static int
-term_convert_key(int c, char *buf)
+term_convert_key(term_T *term, int c, char *buf)
 {
-    VTerm	    *vterm = curbuf->b_term->tl_vterm;
+    VTerm	    *vterm = term->tl_vterm;
     VTermKey	    key = VTERM_KEY_NONE;
     VTermModifier   mod = VTERM_MOD_NONE;
 
@@ -517,6 +516,71 @@ term_vgetc()
 }
 
 /*
+ * Send keys to terminal.
+ */
+    static int
+send_keys_to_term(term_T *term, int c)
+{
+    char	msg[KEY_BUF_LEN];
+    size_t	len;
+    static int	mouse_was_outside = FALSE;
+    int		dragging_outside = FALSE;
+
+    /* Catch keys that need to be handled as in Normal mode. */
+    switch (c)
+    {
+	case NUL:
+	case K_ZERO:
+	    stuffcharReadbuff(c);
+	    return FAIL;
+
+	case K_IGNORE:
+	    return FAIL;
+
+	case K_LEFTDRAG:
+	case K_MIDDLEDRAG:
+	case K_RIGHTDRAG:
+	case K_X1DRAG:
+	case K_X2DRAG:
+	    dragging_outside = mouse_was_outside;
+	    /* FALLTHROUGH */
+	case K_LEFTMOUSE:
+	case K_LEFTMOUSE_NM:
+	case K_LEFTRELEASE:
+	case K_LEFTRELEASE_NM:
+	case K_MIDDLEMOUSE:
+	case K_MIDDLERELEASE:
+	case K_RIGHTMOUSE:
+	case K_RIGHTRELEASE:
+	case K_X1MOUSE:
+	case K_X1RELEASE:
+	case K_X2MOUSE:
+	case K_X2RELEASE:
+	    if (mouse_row < W_WINROW(curwin)
+		    || mouse_row >= (W_WINROW(curwin) + curwin->w_height)
+		    || mouse_col < W_WINCOL(curwin)
+		    || mouse_col >= W_ENDCOL(curwin)
+		    || dragging_outside)
+	    {
+		/* click outside the current window */
+		stuffcharReadbuff(c);
+		mouse_was_outside = TRUE;
+		return FAIL;
+	    }
+    }
+    mouse_was_outside = FALSE;
+
+    /* Convert the typed key to a sequence of bytes for the job. */
+    len = term_convert_key(curbuf->b_term, c, msg);
+    if (len > 0)
+	/* TODO: if FAIL is returned, stop? */
+	channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
+						 (char_u *)msg, (int)len, NULL);
+
+    return OK;
+}
+
+/*
  * Wait for input and send it to the job.
  * Return when the start of a CTRL-W command is typed or anything else that
  * should be handled as a Normal mode command.
@@ -526,11 +590,7 @@ term_vgetc()
     int
 terminal_loop(void)
 {
-    char	buf[KEY_BUF_LEN];
     int		c;
-    size_t	len;
-    static int	mouse_was_outside = FALSE;
-    int		dragging_outside = FALSE;
     int		termkey = 0;
 
     if (curbuf->b_term->tl_vterm == NULL || !term_job_running(curbuf->b_term))
@@ -576,58 +636,39 @@ terminal_loop(void)
 		return OK;
 	    }
 	}
-
-	/* Catch keys that need to be handled as in Normal mode. */
-	switch (c)
-	{
-	    case NUL:
-	    case K_ZERO:
-		stuffcharReadbuff(c);
-		return OK;
-
-	    case K_IGNORE: continue;
-
-	    case K_LEFTDRAG:
-	    case K_MIDDLEDRAG:
-	    case K_RIGHTDRAG:
-	    case K_X1DRAG:
-	    case K_X2DRAG:
-		dragging_outside = mouse_was_outside;
-		/* FALLTHROUGH */
-	    case K_LEFTMOUSE:
-	    case K_LEFTMOUSE_NM:
-	    case K_LEFTRELEASE:
-	    case K_LEFTRELEASE_NM:
-	    case K_MIDDLEMOUSE:
-	    case K_MIDDLERELEASE:
-	    case K_RIGHTMOUSE:
-	    case K_RIGHTRELEASE:
-	    case K_X1MOUSE:
-	    case K_X1RELEASE:
-	    case K_X2MOUSE:
-	    case K_X2RELEASE:
-		if (mouse_row < W_WINROW(curwin)
-			|| mouse_row >= (W_WINROW(curwin) + curwin->w_height)
-			|| mouse_col < W_WINCOL(curwin)
-			|| mouse_col >= W_ENDCOL(curwin)
-			|| dragging_outside)
-		{
-		    /* click outside the current window */
-		    stuffcharReadbuff(c);
-		    mouse_was_outside = TRUE;
-		    return OK;
-		}
-	}
-	mouse_was_outside = FALSE;
-
-	/* Convert the typed key to a sequence of bytes for the job. */
-	len = term_convert_key(c, buf);
-	if (len > 0)
-	    /* TODO: if FAIL is returned, stop? */
-	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
-						(char_u *)buf, (int)len, NULL);
+	if (send_keys_to_term(curbuf->b_term, c) != OK)
+	    return OK;
     }
     return FAIL;
+}
+
+/*
+ * Called when a job has finished.
+ */
+    void
+term_job_ended(job_T *job)
+{
+    term_T *term;
+    int	    did_one = FALSE;
+
+    for (term = first_term; term != NULL; term = term->tl_next)
+	if (term->tl_job == job)
+	{
+	    vim_free(term->tl_title);
+	    term->tl_title = NULL;
+	    vim_free(term->tl_status_text);
+	    term->tl_status_text = NULL;
+	    redraw_buf_and_status_later(term->tl_buffer, VALID);
+	    did_one = TRUE;
+	}
+    if (did_one)
+	redraw_statuslines();
+    if (curbuf->b_term != NULL)
+    {
+	if (curbuf->b_term->tl_job == job)
+	    maketitle();
+	update_cursor(curbuf->b_term, TRUE);
+    }
 }
 
     static void
@@ -1080,8 +1121,6 @@ cell2attr(VTermScreenCell *cell)
 	attr |= HL_STANDOUT;
     if (cell->attrs.reverse)
 	attr |= HL_INVERSE;
-    if (cell->attrs.strike)
-	attr |= HL_UNDERLINE;
 
 #ifdef FEAT_GUI
     if (gui.in_use)
@@ -1382,6 +1421,293 @@ set_ref_in_term(int copyID)
 	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
 	}
     return abort;
+}
+
+/*
+ * "term_getattr(attr, name)" function
+ */
+    void
+f_term_getattr(typval_T *argvars, typval_T *rettv)
+{
+    int	    attr, i;
+    char_u  *name;
+
+    static struct
+    {
+	char	    *name;
+	int	    attr;
+    } attrs[] =
+    {
+	{"bold", HL_BOLD},
+	{"italic", HL_ITALIC},
+	{"underline", HL_UNDERLINE},
+	{"strike", HL_STANDOUT},
+	{"reverse", HL_INVERSE},
+    };
+
+    attr = get_tv_number(&argvars[0]);
+    name = get_tv_string_chk(&argvars[1]);
+    if (!name)
+	return;
+
+    rettv->v_type = VAR_NUMBER;
+    for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
+	if (!STRCMP(name, attrs[i].name))
+	{
+	    rettv->vval.v_number = (attr & attrs[i].attr) != 0 ? 1 : 0;
+	    break;
+	}
+}
+
+/*
+ * "term_getjob(buf)" function
+ */
+    void
+f_term_getjob(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    rettv->v_type = VAR_JOB;
+    rettv->vval.v_job = NULL;
+    if (buf == NULL || buf->b_term == NULL)
+	return;
+
+    rettv->vval.v_job = buf->b_term->tl_job;
+    if (rettv->vval.v_job != NULL)
+	++rettv->vval.v_job->jv_refcount;
+}
+
+/*
+ * "term_getline(buf)" function
+ */
+    void
+f_term_getline(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	    *buf;
+    VTermScreen	    *screen;
+    term_T	    *term;
+    VTermRect	    rect;
+    int		    row;
+    char_u	    *p;
+    int		    len;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (buf == NULL || buf->b_term == NULL)
+	return;
+
+    term = buf->b_term;
+    screen = vterm_obtain_screen(term->tl_vterm);
+
+    len = term->tl_cols * MB_MAXBYTES + 1;
+    p = alloc(len);
+    if (p == NULL)
+	return;
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = p;
+
+    row = (int) get_tv_number(&argvars[1]);
+
+    rect.start_col = 0;
+    rect.end_col = term->tl_cols;
+    rect.start_row = row;
+    rect.end_row = row + 1;
+    p[vterm_screen_get_text(screen, (char*) p, len, rect)] = NUL;
+}
+
+/*
+ * "term_getsize(buf)" function
+ */
+    void
+f_term_getsize(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    buf_T	*buf;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (buf == NULL || buf->b_term == NULL)
+	return;
+
+    l = rettv->vval.v_list;
+    list_append_number(l, buf->b_term->tl_cols);
+    list_append_number(l, buf->b_term->tl_rows);
+}
+
+/*
+ * "term_list()" function
+ */
+    void
+f_term_list(typval_T *argvars, typval_T *rettv)
+{
+    term_T	*tp;
+    list_T	*l;
+
+    if (rettv_list_alloc(rettv) == FAIL || first_term == NULL)
+	return;
+
+    l = rettv->vval.v_list;
+    for (tp = first_term; tp != NULL; tp = tp->tl_next)
+	if (tp != NULL && tp->tl_buffer != NULL)
+	{
+	    if (list_append_number(l,
+			(varnumber_T)tp->tl_buffer->b_fnum) == FAIL)
+		return;
+	}
+}
+
+/*
+ * "term_start(command, options)" function
+ */
+    void
+f_term_start(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*cmd = get_tv_string_chk(&argvars[0]);
+    exarg_T	ea;
+
+    if (!cmd)
+	return;
+    ea.arg = cmd;
+    ex_terminal(&ea);
+
+    rettv->v_type = VAR_JOB;
+    rettv->vval.v_job = NULL;
+    if (curbuf->b_term != NULL)
+    {
+	rettv->vval.v_job = curbuf->b_term->tl_job;
+	++rettv->vval.v_job->jv_refcount;
+    }
+}
+
+/*
+ * "term_scrape(buf, row)" function
+ */
+    void
+f_term_scrape(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	    *buf;
+    VTermScreen	    *screen;
+    VTermPos	    pos;
+    list_T	    *l;
+    term_T	    *term;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (buf == NULL || buf->b_term == NULL)
+	return;
+
+    term = buf->b_term;
+    screen = vterm_obtain_screen(term->tl_vterm);
+
+    l = rettv->vval.v_list;
+    pos.row = (int) get_tv_number(&argvars[1]);
+    for (pos.col = 0; pos.col < term->tl_cols; )
+    {
+	dict_T		*dcell;
+	VTermScreenCell cell;
+	char_u		rgb[8];
+	char_u		mbs[NUMBUFLEN];
+	int		i;
+
+	if (vterm_screen_get_cell(screen, pos, &cell) == 0)
+	    break;
+
+	dcell = dict_alloc();
+
+	mbs[0] = NUL;
+	for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
+	{
+	    char_u	mb[MB_MAXBYTES+1];
+	    if (cell.chars[i] == 0)
+		break;
+	    mb[(*utf_char2bytes)((int)cell.chars[i], mb)] = NUL;
+	    STRCAT(mbs, mb);
+	}
+	dict_add_nr_str(dcell, "chars", 0, mbs);
+
+	vim_snprintf((char *)rgb, 8, "#%02d%02d%02d", cell.fg.red, cell.fg.green, cell.fg.blue);
+	dict_add_nr_str(dcell, "fg", 0, rgb);
+	vim_snprintf((char *)rgb, 8, "#%02d%02d%02d", cell.bg.red, cell.bg.green, cell.bg.blue);
+	dict_add_nr_str(dcell, "bg", 0, rgb);
+
+	dict_add_nr_str(dcell, "attr", cell2attr(&cell), NULL);
+	list_append_dict(l, dcell);
+
+	++pos.col;
+	if (cell.width == 2)
+	    ++pos.col;
+    }
+}
+
+/*
+ * "term_sendkeys(buf, keys)" function
+ */
+    void
+f_term_sendkeys(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf;
+    char_u	*msg;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+
+    rettv->v_type = VAR_UNKNOWN;
+    if (buf == NULL || buf->b_term == NULL)
+	return;
+
+    msg = get_tv_string_chk(&argvars[1]);
+    if (msg == NULL)
+	return;
+
+    while (*msg)
+    {
+#ifdef FEAT_MBYTE
+	send_keys_to_term(buf->b_term, utf_ptr2char(msg));
+	msg += utf_ptr2len(msg);
+#else
+	send_keys_to_term(buf->b_term, (int) *msg);
+	++msg;
+#endif
+    }
+
+    /* TODO: only update once in a while. */
+    update_screen(0);
+    setcursor();
+    out_flush();
+}
+
+/*
+ * "term_wait" function
+ */
+    void
+f_term_wait(typval_T *argvars, typval_T *rettv)
+{
+    /* TODO */
 }
 
 # ifdef WIN3264
