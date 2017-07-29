@@ -14,5 +14,7 @@ if 1
   endif
 
   " Make sure $HOME does not get read or written.
-  let $HOME = '/does/not/exist'
+  " It must exist, gnome tries to create $HOME/.gnome2
+  let $HOME = getcwd() . '/XfakeHOME'
+  call mkdir($HOME)
 endif
