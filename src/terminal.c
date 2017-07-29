@@ -1270,7 +1270,7 @@ term_get_attr(buf_T *buf, linenr_T lnum, int col)
     term_T *term = buf->b_term;
     sb_line_T *line;
 
-    if (lnum >= term->tl_scrollback.ga_len)
+    if (lnum > term->tl_scrollback.ga_len)
 	return 0;
     line = (sb_line_T *)term->tl_scrollback.ga_data + lnum - 1;
     if (col >= line->sb_cols)
