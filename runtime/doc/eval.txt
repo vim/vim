@@ -7914,12 +7914,13 @@ term_getjob({buf})					*term_getjob()*
 		Get the Job associated with terminal window {buf}.
 		{buf} is used as with |term_getsize()|.
 
-term_getline({buf}, {row})				*term_getline()*
+term_getline({buf} [, {row}])				*term_getline()*
 		Get a line of text from the terminal window of {buf}.
 		{buf} is used as with |term_getsize()|.
 
 		The first line has {row} zero.  When {row} is invalid an empty
-		string is returned.
+		string is returned. When {row} is omitted, return line cursor
+		located.
 
 term_getsize({buf})					*term_getsize()*
 		Get the size of terminal {buf}. Returns a list with two
@@ -7930,17 +7931,18 @@ term_getsize({buf})					*term_getsize()*
 		buffer does not exist or is not a terminal window, an empty
 		list is returned.
 
-term_list(})						*term_list()*
+term_list()						*term_list()*
 		Return a list with the buffer numbers of all buffers for
 		terminal windows.
 
-term_scrape({buf}, {row})				*term_scrape()*
+term_scrape({buf} [, {row}])				*term_scrape()*
 		Get the contents of {row} of terminal screen of {buf}.
 		For {buf} see |term_getsize()|.
 
 		The first {row} is zero.  When {row} is invalid an empty list
-		is returned.
-		
+		is returned. When {row} is omitted, return line cursor
+		located.
+
 		Return a List containing a Dict for each screen cell: 
 		    "chars"	character(s) at the cell
 		    "fg"	foreground color as #rrggbb
