@@ -54,6 +54,9 @@ func Test_terminal_scrape()
   call assert_equal(1, len(termlist))
   call assert_equal(buf, termlist[0])
 
+  " Nothing happens with invalid buffer number
+  call term_wait(1234)
+
   call term_wait(buf)
   call Check_123(buf)
 
@@ -64,4 +67,5 @@ func Test_terminal_scrape()
   call Check_123(buf)
 
   exe buf . 'bwipe'
+  call delete('Xtext')
 endfunc
