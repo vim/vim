@@ -593,9 +593,9 @@ Insert Normal mode	Entered when CTRL-O given in Insert mode.  This is
 			shown at the bottom of the window.
 
 Insert Visual mode	Entered when starting a Visual selection from Insert
-			mode, e.g., by using CTRL-O and then "v", "V" or
-			CTRL-V.  When the Visual selection ends, Vim returns
-			to Insert mode.
+			Normal mode, e.g., by using CTRL-O in Insert mode and
+			then "v", "V" or CTRL-V.  When the Visual selection
+			ends, Vim returns to Insert mode.
 			If the 'showmode' option is on "-- (insert) VISUAL --"
 			is shown at the bottom of the window.
 
