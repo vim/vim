@@ -2374,6 +2374,8 @@ term_getcursor({buf})		List	get the cursor position of a terminal
 term_getjob({buf})		Job	get the job associated with a terminal
 term_getline({buf}[, {row}])	String	get a line of text from a terminal
 term_getsize({buf})		List	get the size of a terminal
+term_getstatus({buf})		String	get the status of a terminal
+term_gettitle({buf})		String	get the title of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}[, {row}])	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
@@ -7944,6 +7946,26 @@ term_getsize({buf})					*term_getsize()*
 		{buf} must be the buffer number of a terminal window. If the
 		buffer does not exist or is not a terminal window, an empty
 		list is returned.
+
+term_getstatus({buf})					*term_getstatus()*
+		Get the status of terminal {buf}. This returns a comma
+		separated list of these items:
+			running		job is running
+			finished	job has finished
+			terminal	in Terminal-Normal mode
+		One of "running" or "finished" is always present.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		string is returned.
+
+term_gettitle({buf})					*term_gettitle()*
+		Get the title of terminal {buf}. This is the title that the
+		job in the terminal has set.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		string is returned.
 
 term_list()						*term_list()*
 		Return a list with the buffer numbers of all buffers for

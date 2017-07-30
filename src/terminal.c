@@ -36,15 +36,11 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - Problem with statusline (Zyx, Christian)
  * - Make CTRL-W "" paste register content to the job?
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
  * - For the scrollback buffer store lines in the buffer, only attributes in
  *   tl_scrollback.
- * - Add term_status(): "" if not a terminal, "running" if job running,
- *   "finished" if finished, "running,vim" when job is running and in
- *   Terminal mode, "running,vim,pending" when job output is pending.
  * - When the job ends:
  *   - Need an option or argument to drop the window+buffer right away, to be
  *     used for a shell or Vim. 'termfinish'; "close", "open" (open window when
@@ -560,7 +556,7 @@ term_convert_key(term_T *term, int c, char *buf)
 }
 
 /*
- * Return TRUE if the job for "buf" is still running.
+ * Return TRUE if the job for "term" is still running.
  */
     static int
 term_job_running(term_T *term)
@@ -1796,6 +1792,46 @@ f_term_getsize(typval_T *argvars, typval_T *rettv)
     l = rettv->vval.v_list;
     list_append_number(l, buf->b_term->tl_rows);
     list_append_number(l, buf->b_term->tl_cols);
+}
+
+/*
+ * "term_getstatus(buf)" function
+ */
+    void
+f_term_getstatus(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf = term_get_buf(argvars);
+    term_T	*term;
+    char_u	val[100];
+
+    rettv->v_type = VAR_STRING;
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+
+    if (term_job_running(term))
+	STRCPY(val, "running");
+    else
+	STRCPY(val, "finished");
+    if (term->tl_terminal_mode)
+	STRCAT(val, ",terminal");
+    rettv->vval.v_string = vim_strsave(val);
+}
+
+/*
+ * "term_gettitle(buf)" function
+ */
+    void
+f_term_gettitle(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf = term_get_buf(argvars);
+
+    rettv->v_type = VAR_STRING;
+    if (buf == NULL)
+	return;
+
+    if (buf->b_term->tl_title != NULL)
+	rettv->vval.v_string = vim_strsave(buf->b_term->tl_title);
 }
 
 /*
