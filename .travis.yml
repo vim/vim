@@ -1,6 +1,6 @@
 language: c
 # trusty still has a few problems, use precise until they are solved.
-dist: precise
+dist: trusty
 
 os:
   - osx
@@ -74,9 +74,11 @@ addons:
       - python3-dev
       - liblua5.2-dev
       - lua5.2
+      - ruby-dev
       - cscope
 
 before_install:
+  - rvm reset
   - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls==0.3.12; fi
     # needed for https support for coveralls
     # building cffi only works with gcc, not with clang
