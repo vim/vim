@@ -1723,7 +1723,22 @@ f_term_getline(typval_T *argvars, typval_T *rettv)
     if (buf == NULL)
 	return;
     term = buf->b_term;
-    row = (int)get_tv_number(&argvars[1]);
+    if (argvars[1].v_type == VAR_UNKNOWN)
+    {
+	win_T	*wp;
+
+	row = 0;
+	FOR_ALL_WINDOWS(wp)
+	{
+	    if (wp->w_buffer == term->tl_buffer)
+	    {
+		row = wp->w_wrow;
+		break;
+	    }
+	}
+    }
+    else
+	row = (int)get_tv_number(&argvars[1]);
 
     if (term->tl_vterm == NULL)
     {
@@ -1814,7 +1829,22 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	screen = vterm_obtain_screen(term->tl_vterm);
 
     l = rettv->vval.v_list;
-    pos.row = (int)get_tv_number(&argvars[1]);
+    if (argvars[1].v_type == VAR_UNKNOWN)
+    {
+	win_T	*wp;
+
+	pos.row = 0;
+	FOR_ALL_WINDOWS(wp)
+	{
+	    if (wp->w_buffer == term->tl_buffer)
+	    {
+		pos.row = wp->w_wrow;
+		break;
+	    }
+	}
+    }
+    else
+	pos.row = (int)get_tv_number(&argvars[1]);
     for (pos.col = 0; pos.col < term->tl_cols; )
     {
 	dict_T		*dcell;
