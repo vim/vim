@@ -54,6 +54,7 @@
  * - To set BS correctly, check get_stty(); Pass the fd of the pty.
  * - do not store terminal window in viminfo.  Or prefix term:// ?
  * - add a character in :ls output
+ * - add 't' to mode()
  * - when closing window and job has not ended, make terminal hidden?
  * - when closing window and job has ended, make buffer hidden?
  * - don't allow exiting Vim when a terminal is still running a job
@@ -780,6 +781,7 @@ term_vgetc()
     ++allow_keys;
     got_int = FALSE;
     c = vgetc();
+    got_int = FALSE;
     --no_mapping;
     --allow_keys;
     return c;
@@ -889,7 +891,9 @@ terminal_loop(void)
     for (;;)
     {
 	/* TODO: skip screen update when handling a sequence of keys. */
-	update_screen(0);
+	/* Repeat redrawing in case a message is received while redrawing. */
+	while (curwin->w_redr_type != 0)
+	    update_screen(0);
 	update_cursor(curbuf->b_term, FALSE);
 
 	c = term_vgetc();
