@@ -20,6 +20,8 @@ void f_term_getcursor(typval_T *argvars, typval_T *rettv);
 void f_term_getjob(typval_T *argvars, typval_T *rettv);
 void f_term_getline(typval_T *argvars, typval_T *rettv);
 void f_term_getsize(typval_T *argvars, typval_T *rettv);
+void f_term_getstatus(typval_T *argvars, typval_T *rettv);
+void f_term_gettitle(typval_T *argvars, typval_T *rettv);
 void f_term_list(typval_T *argvars, typval_T *rettv);
 void f_term_scrape(typval_T *argvars, typval_T *rettv);
 void f_term_sendkeys(typval_T *argvars, typval_T *rettv);
