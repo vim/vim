@@ -1068,6 +1068,20 @@ color2index(VTermColor *color, int foreground)
     int blue = color->blue;
     int green = color->green;
 
+    if (t_colors >= 256 && (red == blue && red == green))
+    {
+	/* 24-color greyscale */
+	static int cutoff[24] = {
+	    0x04, 0x0E, 0x18, 0x22, 0x2C, 0x36, 0x40, 0x4A,
+	    0x54, 0x5E, 0x68, 0x72, 0x7C, 0x86, 0x90, 0x9A,
+	    0xA4, 0xAE, 0xB8, 0xC2, 0xCC, 0xD6, 0xEA, 0xF6};
+	int i;
+
+	for (i = 0; i < 24; ++i)
+	    if (red < cutoff[i])
+		return i + 233;
+	return 256;
+    }
     /* The argument for lookup_color() is for the color_names[] table. */
     if (red == 0)
     {
@@ -1098,7 +1112,7 @@ color2index(VTermColor *color, int foreground)
 	else if (green == 224)
 	{
 	    if (blue == 0)
-		return lookup_color(6, foreground) + 1; /* dark yellow / brown */
+		return lookup_color(7, foreground) + 1; /* dark yellow */
 	    if (blue == 224)
 		return lookup_color(8, foreground) + 1; /* white / light grey */
 	}
@@ -1142,25 +1156,20 @@ color2index(VTermColor *color, int foreground)
     }
     if (t_colors >= 256)
     {
-	if (red == blue && red == green)
-	{
-	    /* 24-color greyscale */
-	    static int cutoff[23] = {
-		0x05, 0x10, 0x1B, 0x26, 0x31, 0x3C, 0x47, 0x52,
-		0x5D, 0x68, 0x73, 0x7F, 0x8A, 0x95, 0xA0, 0xAB,
-		0xB6, 0xC1, 0xCC, 0xD7, 0xE2, 0xED, 0xF9};
-	    int i;
-
-	    for (i = 0; i < 23; ++i)
-		if (red < cutoff[i])
-		    return i + 233;
-	    return 256;
-	}
+	int r, g, b;
 
 	/* 216-color cube */
-	return 17 + ((red + 25) / 0x33) * 36
-	          + ((green + 25) / 0x33) * 6
-		  + (blue + 25) / 0x33;
+	r = (red - 35) / 40;
+	if (r <= 0)
+	    r = (red < 48) ? 0 : 1;
+	g = (green - 35) / 40;
+	if (g <= 0)
+	    g = (green < 48) ? 0 : 1;
+	b = (blue - 35) / 40;
+	if (b <= 0)
+	    b = (blue < 48) ? 0 : 1;
+
+	return 17 + r * 36 + g * 6 + b;
     }
     return 0;
 }
