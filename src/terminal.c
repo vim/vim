@@ -53,6 +53,7 @@
  *      :term <24x80> <close> vim notes.txt
  * - To set BS correctly, check get_stty(); Pass the fd of the pty.
  * - do not store terminal window in viminfo.  Or prefix term:// ?
+ * - add term_getcursor() - return cursor position: [row, col, visible]
  * - add a character in :ls output
  * - add 't' to mode()
  * - when closing window and job has not ended, make terminal hidden?
@@ -120,7 +121,7 @@ struct terminal_S {
     garray_T	tl_scrollback;
     int		tl_scrollback_scrolled;
 
-    pos_T	tl_cursor;
+    VTermPos	tl_cursor_pos;
     int		tl_cursor_visible;
 };
 
@@ -1020,20 +1021,16 @@ handle_movecursor(
 {
     term_T	*term = (term_T *)user;
     win_T	*wp;
-    int		is_current = FALSE;
+
+    term->tl_cursor_pos = pos;
+    term->tl_cursor_visible = visible;
 
     FOR_ALL_WINDOWS(wp)
     {
 	if (wp->w_buffer == term->tl_buffer)
-	{
 	    position_cursor(wp, &pos);
-	    if (wp == curwin)
-		is_current = TRUE;
-	}
     }
-
-    term->tl_cursor_visible = visible;
-    if (is_current)
+    if (term->tl_buffer == curbuf)
     {
 	may_toggle_cursor(term);
 	update_cursor(term, TRUE);
@@ -1723,7 +1720,10 @@ f_term_getline(typval_T *argvars, typval_T *rettv)
     if (buf == NULL)
 	return;
     term = buf->b_term;
-    row = (int)get_tv_number(&argvars[1]);
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	row = term->tl_cursor_pos.row;
+    else
+	row = (int)get_tv_number(&argvars[1]);
 
     if (term->tl_vterm == NULL)
     {
@@ -1814,7 +1814,10 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	screen = vterm_obtain_screen(term->tl_vterm);
 
     l = rettv->vval.v_list;
-    pos.row = (int)get_tv_number(&argvars[1]);
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	pos.row = term->tl_cursor_pos.row;
+    else
+	pos.row = (int)get_tv_number(&argvars[1]);
     for (pos.col = 0; pos.col < term->tl_cols; )
     {
 	dict_T		*dcell;
