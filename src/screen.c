@@ -4541,7 +4541,7 @@ win_line(
 #ifdef FEAT_TERMINAL
 		if (get_term_attr)
 		{
-		    syntax_attr = term_get_attr(wp->w_buffer, lnum, col);
+		    syntax_attr = term_get_attr(wp->w_buffer, lnum, vcol);
 
 		    if (!attr_pri)
 			char_attr = syntax_attr;
