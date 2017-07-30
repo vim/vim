@@ -24,5 +24,7 @@ if 1
   " Make sure $HOME does not get read or written.
   " It must exist, gnome tries to create $HOME/.gnome2
   let $HOME = getcwd() . '/XfakeHOME'
-  call mkdir($HOME)
+  if !isdirectory($HOME)
+    call mkdir($HOME)
+  endif
 endif
