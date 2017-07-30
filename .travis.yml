@@ -76,6 +76,7 @@ addons:
       - lua5.2
       - ruby-dev
       - cscope
+      - libgtk2.0-dev
 
 before_install:
   - rvm reset
