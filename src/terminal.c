@@ -36,7 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - Make CTRL-W "" paste register content to the job?
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
  * - For the scrollback buffer store lines in the buffer, only attributes in
@@ -67,6 +66,7 @@
  *   mouse in the Terminal window for copy/paste.
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
+ * - update ":help function-list" for terminal functions.
  * - In the GUI use a terminal emulator for :!cmd.
  */
 
@@ -865,6 +865,50 @@ position_cursor(win_T *wp, VTermPos *pos)
 }
 
 /*
+ * Handle CTRL-W "": send register contents to the job.
+ */
+    static void
+term_paste_register(int prev_c UNUSED)
+{
+    int		c;
+    list_T	*l;
+    listitem_T	*item;
+    long	reglen = 0;
+    int		type;
+
+#ifdef FEAT_CMDL_INFO
+    if (add_to_showcmd(prev_c))
+    if (add_to_showcmd('"'))
+	out_flush();
+#endif
+    c = term_vgetc();
+#ifdef FEAT_CMDL_INFO
+    clear_showcmd();
+#endif
+
+    /* CTRL-W "= prompt for expression to evaluate. */
+    if (c == '=' && get_expr_register() != '=')
+	return;
+
+    l = (list_T *)get_reg_contents(c, GREG_LIST);
+    if (l != NULL)
+    {
+	type = get_reg_type(c, &reglen);
+	for (item = l->lv_first; item != NULL; item = item->li_next)
+	{
+	    char_u *s = get_tv_string(&item->li_tv);
+
+	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
+							   s, STRLEN(s), NULL);
+	    if (item->li_next != NULL || type == MLINE)
+		channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
+						      (char_u *)"\r", 1, NULL);
+	}
+	list_free(l);
+    }
+}
+
+/*
  * Returns TRUE if the current window contains a terminal and we are sending
  * keys to the job.
  */
@@ -912,6 +956,8 @@ terminal_loop(void)
 
 	if (c == (termkey == 0 ? Ctrl_W : termkey))
 	{
+	    int	    prev_c = c;
+
 #ifdef FEAT_CMDL_INFO
 	    if (add_to_showcmd(c))
 		out_flush();
@@ -930,10 +976,15 @@ terminal_loop(void)
 		/* "CTRL-W .": send CTRL-W to the job */
 		c = Ctrl_W;
 	    }
-	    else if (termkey == 0 && c == 'N')
+	    else if (c == 'N')
 	    {
 		term_enter_terminal_mode();
 		return FAIL;
+	    }
+	    else if (c == '"')
+	    {
+		term_paste_register(prev_c);
+		continue;
 	    }
 	    else if (termkey == 0 || c != termkey)
 	    {
