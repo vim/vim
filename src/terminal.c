@@ -1682,7 +1682,7 @@ term_get_buf(typval_T *argvars)
     ++emsg_off;
     buf = get_buf_tv(&argvars[0], FALSE);
     --emsg_off;
-    if (buf->b_term == NULL)
+    if (buf == NULL || buf->b_term == NULL)
 	return NULL;
     return buf;
 }
