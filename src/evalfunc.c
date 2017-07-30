@@ -832,6 +832,7 @@ static struct fst
     {"tempname",	0, 0, f_tempname},
 #ifdef FEAT_TERMINAL
     {"term_getattr",	2, 2, f_term_getattr},
+    {"term_getcursor",	1, 1, f_term_getcursor},
     {"term_getjob",	1, 1, f_term_getjob},
     {"term_getline",	1, 2, f_term_getline},
     {"term_getsize",	1, 1, f_term_getsize},
