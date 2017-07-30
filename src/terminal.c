@@ -53,7 +53,6 @@
  *      :term <24x80> <close> vim notes.txt
  * - To set BS correctly, check get_stty(); Pass the fd of the pty.
  * - do not store terminal window in viminfo.  Or prefix term:// ?
- * - add term_getcursor() - return cursor position: [row, col, visible]
  * - add a character in :ls output
  * - add 't' to mode()
  * - when closing window and job has not ended, make terminal hidden?
@@ -1637,6 +1636,24 @@ set_ref_in_term(int copyID)
 }
 
 /*
+ * Get the buffer from the first argument in "argvars".
+ * Returns NULL when the buffer is not for a terminal window.
+ */
+    static buf_T *
+term_get_buf(typval_T *argvars)
+{
+    buf_T *buf;
+
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
+    if (buf == NULL || buf->b_term == NULL)
+	return NULL;
+    return buf;
+}
+
+/*
  * "term_getattr(attr, name)" function
  */
     void
@@ -1671,21 +1688,23 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Get the buffer from the first argument in "argvars".
- * Returns NULL when the buffer is not for a terminal window.
+ * "term_getcursor(buf)" function
  */
-    static buf_T *
-term_get_buf(typval_T *argvars)
+    void
+f_term_getcursor(typval_T *argvars, typval_T *rettv)
 {
-    buf_T *buf;
+    buf_T	*buf = term_get_buf(argvars);
+    list_T	*l;
 
-    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
-    ++emsg_off;
-    buf = get_buf_tv(&argvars[0], FALSE);
-    --emsg_off;
-    if (buf == NULL || buf->b_term == NULL)
-	return NULL;
-    return buf;
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (buf == NULL)
+	return;
+
+    l = rettv->vval.v_list;
+    list_append_number(l, buf->b_term->tl_cursor_pos.row);
+    list_append_number(l, buf->b_term->tl_cursor_pos.col);
+    list_append_number(l, buf->b_term->tl_cursor_visible);
 }
 
 /*

@@ -2370,6 +2370,7 @@ tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
 term_getattr({attr}, {what}	Number	get the value of attribute {what}
+term_getcursor({buf})		List	get the cursor position of a terminal
 term_getjob({buf})		Job	get the job associated with a terminal
 term_getline({buf}[, {row}])	String	get a line of text from a terminal
 term_getsize({buf})		List	get the size of a terminal
@@ -7909,6 +7910,19 @@ term_getattr({attr}, {what})				*term_getattr()*
 			underline
 			strike
 			reverse
+
+term_getcursor({buf})					*term_getcursor()*
+		Get the cusor position of terminal {buf}. Returns a list with
+		three numbers: [rows, cols, visible].  "rows" and "cols" are
+		zero based.  "visible" is one when the cursor is visible, zero
+		when it is hidden.
+		
+		This is the cursor position of the terminal itself, not of the
+		Vim window.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		list is returned.
 
 term_getjob({buf})					*term_getjob()*
 		Get the Job associated with terminal window {buf}.
