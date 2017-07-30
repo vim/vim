@@ -833,10 +833,10 @@ static struct fst
 #ifdef FEAT_TERMINAL
     {"term_getattr",	2, 2, f_term_getattr},
     {"term_getjob",	1, 1, f_term_getjob},
-    {"term_getline",	2, 2, f_term_getline},
+    {"term_getline",	1, 2, f_term_getline},
     {"term_getsize",	1, 1, f_term_getsize},
     {"term_list",	0, 0, f_term_list},
-    {"term_scrape",	2, 2, f_term_scrape},
+    {"term_scrape",	1, 2, f_term_scrape},
     {"term_sendkeys",	2, 2, f_term_sendkeys},
     {"term_start",	1, 2, f_term_start},
     {"term_wait",	1, 1, f_term_wait},
