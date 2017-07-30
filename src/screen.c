@@ -3245,7 +3245,7 @@ win_line(
 #endif
 
 #ifdef FEAT_TERMINAL
-    if (term_is_finished(wp->w_buffer))
+    if (term_show_buffer(wp->w_buffer))
     {
 	extra_check = TRUE;
 	get_term_attr = TRUE;
