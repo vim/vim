@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 28
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Jul 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,23 +33,38 @@ Or to run a debugger: >
 The job runs asynchronously from Vim, the window will be updated to show
 output from the job, also  while editing in any other window.
 
+
 Typing ~
 
 When the keyboard focus is in the terminal window, typed keys will be send to
 the job.  This uses a pty when possible.  You can click outside of the
 terminal window to move keyboard focus elsewhere.
 
-Navigate between windows with CTRL-W commands.  E.g. CTRL-W CTRL-W moves focus
-to the next window.  Use "CTRL-W :" to edit an Ex command.  Use "CTRL-W ." to
-send a CTRL-W to the job in the terminal.
+CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
+	CTRL-W CTRL-W 	move focus to the next window
+	CTRL-W :	enter an Ex command
+See |CTRL-W| for more commands.
 
-See option 'termkey' for specifying another key that precedes a Vim command.
-Typing 'termkey' twice sends 'termkey' to the job.
+Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N* 
+	CTRL-W .	send a CTRL-W to the job in the terminal
+	CTRL-W N	go to Terminal Normal mode, see |Terminal-mode|
+
+See option 'termkey' for specifying another key instead of CTRL-W that
+will work like CTRL-W.  However, typing 'termkey' twice sends 'termkey' to
+the job.  For example:
+	'termkey' CTRL-W    move focus to the next window
+	'termkey' :	    enter an Ex command
+	'termkey' 'termkey' send 'termkey' to the job in the terminal
+	'termkey' .	    send a CTRL-W to the job in the terminal
+	'termkey' N  	    go to terminal Normal mode, see below
+	'termkey' CTRL-N    same as CTRL-W N
+
 
 Size ~
 
 See option 'termsize' for controlling the size of the terminal window.
 (TODO: scrolling when the terminal is larger than the window)
+
 
 Syntax ~
 
@@ -97,6 +112,25 @@ be seen (the lower-left part).
 The |term_getsize()| function can be used to get the current size of the
 terminal.  |term_setsize()| can be used only when in the first or second mode,
 not when 'termsize' is "rowsXcols".
+
+
+Terminal Normal mode ~
+							*Terminal-mode*
+When the job is running the contents of the terminal is under control of the
+job.  That includes the cursor position.  The terminal contents can change at
+any time.
+
+Use CTRL-W N (or 'termkey' N) to go to Terminal Normal mode.  Now the contents
+of the terminal window is under control of Vim, the job output is suspended.
+							*E946*
+In this mode you can move the cursor around with the usual Vim commands,
+Visually mark text, yank text, etc.  But you cannot change the contents of the
+buffer.  The commands that would start insert mode, such as 'i' and 'a',
+return control of the window to the job.  Any pending output will now be
+displayed.
+
+In Terminal mode the statusline and window title show "(Terminal)".  If the
+job ends while in Terminal mode this changes to "(Terminal-finished)".
 
 
 Unix ~

@@ -8222,12 +8222,22 @@ set_bool_option(
     }
 #endif
 
-#ifdef FEAT_TITLE
     /* when 'modifiable' is changed, redraw the window title */
     else if ((int *)varp == &curbuf->b_p_ma)
     {
+# ifdef FEAT_TERMINAL
+	/* Cannot set 'modifiable' when in Terminal mode. */
+	if (term_in_terminal_mode())
+	{
+	    curbuf->b_p_ma = FALSE;
+	    return (char_u *)N_("E946: Cannot make a terminal with running job modifiable");
+	}
+# endif
+# ifdef FEAT_TITLE
 	redraw_titles();
+# endif
     }
+#ifdef FEAT_TITLE
     /* when 'endofline' is changed, redraw the window title */
     else if ((int *)varp == &curbuf->b_p_eol)
     {
