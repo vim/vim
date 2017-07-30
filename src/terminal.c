@@ -857,6 +857,14 @@ send_keys_to_term(term_T *term, int c, int typed)
     return OK;
 }
 
+    static void
+position_cursor(win_T *wp, VTermPos *pos)
+{
+    wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
+    wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
+    wp->w_valid |= (VALID_WCOL|VALID_WROW);
+}
+
 /*
  * Returns TRUE if the current window contains a terminal and we are sending
  * keys to the job.
@@ -887,6 +895,7 @@ terminal_loop(void)
 
     if (*curwin->w_p_tk != NUL)
 	termkey = string_to_key(curwin->w_p_tk, TRUE);
+    position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
 
     for (;;)
     {
@@ -969,13 +978,6 @@ term_job_ended(job_T *job)
 	    maketitle();
 	update_cursor(curbuf->b_term, TRUE);
     }
-}
-
-    static void
-position_cursor(win_T *wp, VTermPos *pos)
-{
-    wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
-    wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
 }
 
     static void
