@@ -165,7 +165,7 @@ static void recording_mode(int attr);
 static void draw_tabline(void);
 #endif
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT)
-static int fillchar_status(int *attr, int is_curwin);
+static int fillchar_status(int *attr, win_T *wp);
 #endif
 #ifdef FEAT_WINDOWS
 static int fillchar_vsep(int *attr);
@@ -6686,7 +6686,7 @@ win_redr_status_matches(
 	    --first_match;
 	}
 
-    fillchar = fillchar_status(&attr, TRUE);
+    fillchar = fillchar_status(&attr, curwin);
 
     if (first_match == 0)
     {
@@ -6865,7 +6865,7 @@ win_redr_status(win_T *wp)
 #endif
     else
     {
-	fillchar = fillchar_status(&attr, wp == curwin);
+	fillchar = fillchar_status(&attr, wp);
 
 	get_trans_bufname(wp->w_buffer);
 	p = NameBuff;
@@ -6962,7 +6962,7 @@ win_redr_status(win_T *wp)
     if (wp->w_vsep_width != 0 && wp->w_status_height != 0 && redrawing())
     {
 	if (stl_connected(wp))
-	    fillchar = fillchar_status(&attr, wp == curwin);
+	    fillchar = fillchar_status(&attr, wp);
 	else
 	    fillchar = fillchar_vsep(&attr);
 	screen_putchar(fillchar, W_WINROW(wp) + wp->w_height, W_ENDCOL(wp),
@@ -7136,7 +7136,7 @@ win_redr_custom(
     else
     {
 	row = W_WINROW(wp) + wp->w_height;
-	fillchar = fillchar_status(&attr, wp == curwin);
+	fillchar = fillchar_status(&attr, wp);
 	maxwidth = W_WIDTH(wp);
 
 	if (draw_ruler)
@@ -10705,10 +10705,22 @@ get_trans_bufname(buf_T *buf)
  * Get the character to use in a status line.  Get its attributes in "*attr".
  */
     static int
-fillchar_status(int *attr, int is_curwin)
+fillchar_status(int *attr, win_T *wp)
 {
     int fill;
-    if (is_curwin)
+
+#ifdef FEAT_TERMINAL
+    if (bt_terminal(wp->w_buffer))
+    {
+	*attr = HL_ATTR(HLF_ST);
+	if (wp == curwin)
+	    fill = fill_stl;
+	else
+	    fill = fill_stlnc;
+    }
+    else
+#endif
+    if (wp == curwin)
     {
 	*attr = HL_ATTR(HLF_S);
 	fill = fill_stl;
@@ -10722,10 +10734,10 @@ fillchar_status(int *attr, int is_curwin)
      * window differs, or the fillchars differ, or this is not the
      * current window */
     if (*attr != 0 && ((HL_ATTR(HLF_S) != HL_ATTR(HLF_SNC)
-			|| !is_curwin || ONE_WINDOW)
+			|| wp != curwin || ONE_WINDOW)
 		    || (fill_stl != fill_stlnc)))
 	return fill;
-    if (is_curwin)
+    if (wp == curwin)
 	return '^';
     return '=';
 }
@@ -10913,7 +10925,7 @@ win_redr_ruler(win_T *wp, int always)
 	if (wp->w_status_height)
 	{
 	    row = W_WINROW(wp) + wp->w_height;
-	    fillchar = fillchar_status(&attr, wp == curwin);
+	    fillchar = fillchar_status(&attr, wp);
 	    off = W_WINCOL(wp);
 	    width = W_WIDTH(wp);
 	}
