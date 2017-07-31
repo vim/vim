@@ -143,13 +143,6 @@ and its environment.
 
 VIM IS... NOT						*design-not*
 
-- Vim is not a shell or an Operating System.  You will not be able to run a
-  shell inside Vim or use it to control a debugger.  This should work the
-  other way around: Use Vim as a component from a shell or in an IDE.
-  A satirical way to say this: "Unlike Emacs, Vim does not attempt to include
-  everything but the kitchen sink, but some people say that you can clean one
-  with it.  ;-)"
-  To use Vim with gdb see: http://www.agide.org and http://clewn.sf.net.
 - Vim is not a fancy GUI editor that tries to look nice at the cost of
   being less consistent over all platforms.  But functional GUI features are
   welcomed.
