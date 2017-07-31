@@ -9040,7 +9040,18 @@ nv_edit(cmdarg_T *cap)
 #ifdef FEAT_TERMINAL
     if (term_in_terminal_mode())
     {
-	term_leave_terminal_mode();
+	/* in Visual mode and after an operator "a" and "i" are for text objects */
+	if ((cap->cmdchar == 'a' || cap->cmdchar == 'i')
+		&& (cap->oap->op_type != OP_NOP || VIsual_active))
+	{
+#ifdef FEAT_TEXTOBJ
+	    nv_object(cap);
+#else
+	    clearopbeep(cap->oap);
+#endif
+	}
+	else
+	    term_leave_terminal_mode();
 	return;
     }
 #endif
