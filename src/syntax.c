@@ -6887,6 +6887,10 @@ static char *(highlight_init_both[]) =
 	     "StatusLine term=reverse,bold cterm=reverse,bold gui=reverse,bold"),
 	CENT("StatusLineNC term=reverse cterm=reverse",
 	     "StatusLineNC term=reverse cterm=reverse gui=reverse"),
+#ifdef FEAT_TERMINAL
+	CENT("StatusLineTerm term=reverse cterm=reverse ctermFg=DarkGreen",
+	     "StatusLineTerm term=reverse cterm=reverse ctermFg=DarkGreen gui=reverse guifg=DarkGreen"),
+#endif
 	"default link EndOfBuffer NonText",
 #ifdef FEAT_WINDOWS
 	CENT("VertSplit term=reverse cterm=reverse",
