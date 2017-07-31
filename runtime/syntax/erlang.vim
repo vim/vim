@@ -116,14 +116,14 @@ syn keyword erlangBIF garbage_collect get get_keys group_leader contained
 syn keyword erlangBIF halt hd integer_to_binary integer_to_list contained
 syn keyword erlangBIF iolist_to_binary iolist_size is_alive contained
 syn keyword erlangBIF is_atom is_binary is_bitstring is_boolean contained
-syn keyword erlangBIF is_float is_function is_integer is_list contained
+syn keyword erlangBIF is_float is_function is_integer is_list is_map contained
 syn keyword erlangBIF is_number is_pid is_port is_process_alive contained
 syn keyword erlangBIF is_record is_reference is_tuple length link contained
 syn keyword erlangBIF list_to_atom list_to_binary contained
 syn keyword erlangBIF list_to_bitstring list_to_existing_atom contained
 syn keyword erlangBIF list_to_float list_to_integer list_to_pid contained
-syn keyword erlangBIF list_to_tuple load_module make_ref max min contained
-syn keyword erlangBIF module_loaded monitor monitor_node node contained
+syn keyword erlangBIF list_to_tuple load_module make_ref map_size max contained
+syn keyword erlangBIF min module_loaded monitor monitor_node node contained
 syn keyword erlangBIF nodes now open_port pid_to_list port_close contained
 syn keyword erlangBIF port_command port_connect pre_loaded contained
 syn keyword erlangBIF process_flag process_flag process_info contained
