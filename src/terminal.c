@@ -36,6 +36,9 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
+ * - Use "." for current line instead of optional.
+ * - make row and cols one-based instead of zero-based in term_ functions.
+ * - Add StatusLineTerm highlighting
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
  * - For the scrollback buffer store lines in the buffer, only attributes in
@@ -351,6 +354,8 @@ term_write_job_output(term_T *term, char_u *msg, size_t len)
     static void
 update_cursor(term_T *term, int redraw)
 {
+    if (term->tl_terminal_mode)
+	return;
     setcursor();
     if (redraw && term->tl_buffer == curbuf)
     {
@@ -382,9 +387,12 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
     ch_logn(channel, "writing %d bytes to terminal", (int)len);
     term_write_job_output(term, msg, len);
 
-    /* TODO: only update once in a while. */
-    update_screen(0);
-    update_cursor(term, TRUE);
+    if (!term->tl_terminal_mode)
+    {
+	/* TODO: only update once in a while. */
+	update_screen(0);
+	update_cursor(term, TRUE);
+    }
 }
 
 /*
@@ -1081,7 +1089,7 @@ handle_movecursor(
 	if (wp->w_buffer == term->tl_buffer)
 	    position_cursor(wp, &pos);
     }
-    if (term->tl_buffer == curbuf)
+    if (term->tl_buffer == curbuf && !term->tl_terminal_mode)
     {
 	may_toggle_cursor(term);
 	update_cursor(term, term->tl_cursor_visible);
@@ -2009,10 +2017,13 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
 	msg += MB_PTR2LEN(msg);
     }
 
-    /* TODO: only update once in a while. */
-    update_screen(0);
-    if (buf == curbuf)
-	update_cursor(term, TRUE);
+    if (!term->tl_terminal_mode)
+    {
+	/* TODO: only update once in a while. */
+	update_screen(0);
+	if (buf == curbuf)
+	    update_cursor(term, TRUE);
+    }
 }
 
 /*
