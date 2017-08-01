@@ -6,6 +6,8 @@ endif
 
 source shared.vim
 
+" Open a terminal with a shell, assign the job to g:job and return the buffer
+" number.
 func Run_shell_in_terminal()
   let buf = term_start(&shell)
 
@@ -16,22 +18,31 @@ func Run_shell_in_terminal()
   let g:job = term_getjob(buf)
   call assert_equal(v:t_job, type(g:job))
 
-  call term_sendkeys(buf, "exit\r")
+  return buf
+endfunc
+
+" Stops the shell started by Run_shell_in_terminal().
+func Stop_shell_in_terminal(buf)
+  call term_sendkeys(a:buf, "exit\r")
   call WaitFor('job_status(g:job) == "dead"')
   call assert_equal('dead', job_status(g:job))
-
-  return buf
 endfunc
 
 func Test_terminal_basic()
   let buf = Run_shell_in_terminal()
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
 
-  exe buf . 'bwipe'
+  " closing window wipes out the terminal buffer a with finished job
+  close
+  call assert_equal("", bufname(buf))
+
   unlet g:job
 endfunc
 
 func Test_terminal_make_change()
   let buf = Run_shell_in_terminal()
+  call Stop_shell_in_terminal(buf)
   call term_wait(buf)
 
   setlocal modifiable
@@ -40,6 +51,32 @@ func Test_terminal_make_change()
   undo
 
   exe buf . 'bwipe'
+  unlet g:job
+endfunc
+
+func Test_terminal_wipe_buffer()
+  let buf = Run_shell_in_terminal()
+  exe buf . 'bwipe'
+  call WaitFor('job_status(g:job) == "dead"')
+  call assert_equal('dead', job_status(g:job))
+  call assert_equal("", bufname(buf))
+
+  unlet g:job
+endfunc
+
+func Test_terminal_hide_buffer()
+  let buf = Run_shell_in_terminal()
+  quit
+  for nr in range(1, winnr('$'))
+    call assert_notequal(winbufnr(nr), buf)
+  endfor
+  call assert_true(bufloaded(buf))
+  call assert_true(buflisted(buf))
+
+  exe 'split ' . buf . 'buf'
+  call Stop_shell_in_terminal(buf)
+  exe buf . 'bwipe'
+
   unlet g:job
 endfunc
 

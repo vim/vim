@@ -2,6 +2,7 @@
 void ex_terminal(exarg_T *eap);
 void free_terminal(buf_T *buf);
 void write_to_term(buf_T *buffer, char_u *msg, channel_T *channel);
+int term_job_running(term_T *term);
 int term_in_terminal_mode(void);
 void term_leave_terminal_mode(void);
 int term_use_loop(void);

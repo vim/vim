@@ -36,10 +36,7 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - When closing a window with a terminal buffer where the job has ended, wipe
- *   out the buffer.  Like 'bufhidden' is "wipe".
- * - When a buffer with a terminal is wiped out, kill the job and close the
- *   channel.
+ * - don't allow exiting Vim when a terminal is still running a job
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
  * - typing CTRL-C is not sent to the terminal.  need to setup controlling tty?
@@ -59,12 +56,8 @@
  * - do not store terminal window in viminfo.  Or prefix term:// ?
  * - add a character in :ls output
  * - add 't' to mode()
- * - When making a change after the job has ended, make the buffer a normal
- *   buffer; needs to be written.
- * - when closing window and job has not ended, make terminal hidden?
- * - when closing window and job has ended, make buffer hidden?
- * - don't allow exiting Vim when a terminal is still running a job
  * - use win_del_lines() to make scroll-up efficient.
+ * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
@@ -573,7 +566,7 @@ term_convert_key(term_T *term, int c, char *buf)
 /*
  * Return TRUE if the job for "term" is still running.
  */
-    static int
+    int
 term_job_running(term_T *term)
 {
     /* Also consider the job finished when the channel is closed, to avoid a

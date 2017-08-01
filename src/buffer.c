@@ -468,6 +468,31 @@ close_buffer(
     int		del_buf = (action == DOBUF_DEL || action == DOBUF_WIPE);
     int		wipe_buf = (action == DOBUF_WIPE);
 
+#ifdef FEAT_TERMINAL
+    if (bt_terminal(buf))
+    {
+	if (term_job_running(buf->b_term))
+	{
+	    if (wipe_buf)
+		/* Wiping out a terminal buffer kills the job. */
+		free_terminal(buf);
+	    else
+	    {
+		/* The job keeps running, hide the buffer. */
+		del_buf = FALSE;
+		unload_buf = FALSE;
+	    }
+	}
+	else
+	{
+	    /* A terminal buffer is wiped out if the job has finished. */
+	    del_buf = TRUE;
+	    unload_buf = TRUE;
+	    wipe_buf = TRUE;
+	}
+    }
+    else
+#endif
     /*
      * Force unloading or deleting when 'bufhidden' says so.
      * The caller must take care of NOT deleting/freeing when 'bufhidden' is
