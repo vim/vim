@@ -39,8 +39,6 @@
  * - don't allow exiting Vim when a terminal is still running a job
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
- * - typing CTRL-C is not sent to the terminal.  need to setup controlling tty?
- *	#1910
  * - For the scrollback buffer store lines in the buffer, only attributes in
  *   tl_scrollback.
  * - When the job ends:
@@ -961,6 +959,17 @@ terminal_loop(void)
 					  || !term_job_running(curbuf->b_term))
 	    /* job finished while waiting for a character */
 	    break;
+
+#ifdef UNIX
+	may_send_sigint(c, curbuf->b_term->tl_job->jv_pid, 0);
+#endif
+#ifdef WIN3264
+	if (c == Ctrl_C)
+	    /* We don't know if the job can handle CTRL-C itself or not, this
+	     * may kill the shell instead of killing the command running in the
+	     * shell. */
+	    mch_stop_job(curbuf->b_term->tl_job, "quit")
+#endif
 
 	if (c == (termkey == 0 ? Ctrl_W : termkey))
 	{

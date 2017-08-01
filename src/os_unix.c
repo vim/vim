@@ -4194,6 +4194,26 @@ open_pty(int *pty_master_fd, int *pty_slave_fd)
 }
 #endif
 
+/*
+ * Send SIGINT to a child process if "c" is an interrupt character.
+ */
+    void
+may_send_sigint(int c UNUSED, pid_t pid UNUSED, pid_t wpid UNUSED)
+{
+# ifdef SIGINT
+    if (c == Ctrl_C || c == intr_char)
+    {
+#  ifdef HAVE_SETSID
+	kill(-pid, SIGINT);
+#  else
+	kill(0, SIGINT);
+#  endif
+	if (wpid > 0)
+	    kill(wpid, SIGINT);
+    }
+# endif
+}
+
     int
 mch_call_shell(
     char_u	*cmd,
@@ -4765,23 +4785,12 @@ mch_call_shell(
 			 */
 			if (len == 1 && (pty_master_fd < 0 || cmd != NULL))
 			{
-# ifdef SIGINT
 			    /*
 			     * Send SIGINT to the child's group or all
 			     * processes in our group.
 			     */
-			    if (ta_buf[ta_len] == Ctrl_C
-					       || ta_buf[ta_len] == intr_char)
-			    {
-#  ifdef HAVE_SETSID
-				kill(-pid, SIGINT);
-#  else
-				kill(0, SIGINT);
-#  endif
-				if (wpid > 0)
-				    kill(wpid, SIGINT);
-			    }
-# endif
+			    may_send_sigint(ta_buf[ta_len], pid, wpid);
+
 			    if (pty_master_fd < 0 && toshell_fd >= 0
 					       && ta_buf[ta_len] == Ctrl_D)
 			    {
@@ -5360,15 +5369,26 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	if (null_fd >= 0)
 	    close(null_fd);
 
+	if (pty_slave_fd >= 0)
+	{
+	    /* push stream discipline modules */
+	    SetupSlavePTY(pty_slave_fd);
+#  ifdef TIOCSCTTY
+	    /* Try to become controlling tty (probably doesn't work,
+	     * unless run by root) */
+	    ioctl(pty_slave_fd, TIOCSCTTY, (char *)NULL);
+#  endif
+	}
+
 	/* See above for type of argv. */
 	execvp(argv[0], argv);
 
 	if (stderr_works)
 	    perror("executing job failed");
-#ifdef EXITFREE
+# ifdef EXITFREE
 	/* calling free_all_mem() here causes problems. Ignore valgrind
 	 * reporting possibly leaked memory. */
-#endif
+# endif
 	_exit(EXEC_FAILED);	    /* exec failed, return failure code */
     }
 
