@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 8.0.  Last change: 2017 Jun 27
+*gui_x11.txt*   For Vim version 8.0.  Last change: 2017 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -673,7 +673,7 @@ Of these three, Vim uses PRIMARY when reading and writing the "* register
 register.  Vim does not access the SECONDARY selection.
 
 Examples: (assuming the default option values)
-- Select an URL in Visual mode in Vim.  Go to your browser and click the
+- Select a URL in Visual mode in Vim.  Go to your browser and click the
   middle mouse button in the URL text field.  The selected text will be
   inserted (hopefully!).  Note: in Firefox you can set the
   middlemouse.contentLoadURL preference to true in about:config, then the

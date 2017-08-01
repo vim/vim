@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Jul 15
+" Last Change:	2017 Aug 01
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -1304,6 +1304,8 @@ endif
 if has("viminfo")
   call append("$", "viminfo\tlist that specifies what to write in the viminfo file")
   call <SID>OptionG("vi", &vi)
+  call append("$", "viminfofile\tfile name used for the viminfo file")
+  call <SID>OptionG("vif", &vif)
 endif
 if has("quickfix")
   call append("$", "bufhidden\twhat happens with a buffer when it's no longer in a window")
