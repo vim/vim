@@ -36,8 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - Use "." for current line instead of optional argument.
- * - make row and cols one-based instead of zero-based in term_ functions.
  * - Add StatusLineTerm highlighting
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
@@ -1773,8 +1771,8 @@ f_term_getcursor(typval_T *argvars, typval_T *rettv)
 	return;
 
     l = rettv->vval.v_list;
-    list_append_number(l, buf->b_term->tl_cursor_pos.row);
-    list_append_number(l, buf->b_term->tl_cursor_pos.col);
+    list_append_number(l, buf->b_term->tl_cursor_pos.row + 1);
+    list_append_number(l, buf->b_term->tl_cursor_pos.col + 1);
     list_append_number(l, buf->b_term->tl_cursor_visible);
 }
 
@@ -1796,6 +1794,16 @@ f_term_getjob(typval_T *argvars, typval_T *rettv)
 	++rettv->vval.v_job->jv_refcount;
 }
 
+    static int
+get_row_number(typval_T *tv, term_T *term)
+{
+    if (tv->v_type == VAR_STRING
+	    && tv->vval.v_string != NULL
+	    && STRCMP(tv->vval.v_string, ".") == 0)
+	return term->tl_cursor_pos.row;
+    return (int)get_tv_number(tv) - 1;
+}
+
 /*
  * "term_getline(buf, row)" function
  */
@@ -1810,10 +1818,7 @@ f_term_getline(typval_T *argvars, typval_T *rettv)
     if (buf == NULL)
 	return;
     term = buf->b_term;
-    if (argvars[1].v_type == VAR_UNKNOWN)
-	row = term->tl_cursor_pos.row;
-    else
-	row = (int)get_tv_number(&argvars[1]);
+    row = get_row_number(&argvars[1], term);
 
     if (term->tl_vterm == NULL)
     {
@@ -1944,10 +1949,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	screen = vterm_obtain_screen(term->tl_vterm);
 
     l = rettv->vval.v_list;
-    if (argvars[1].v_type == VAR_UNKNOWN)
-	pos.row = term->tl_cursor_pos.row;
-    else
-	pos.row = (int)get_tv_number(&argvars[1]);
+    pos.row = get_row_number(&argvars[1], term);
     for (pos.col = 0; pos.col < term->tl_cols; )
     {
 	dict_T		*dcell;

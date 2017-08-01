@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jul 30
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Aug 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1815,7 +1815,7 @@ v:scrollstart	String describing the script or function that caused the
 		hit-enter prompt.
 
 					*v:servername* *servername-variable*
-v:servername	The resulting registered |x11-clientserver| name if any.
+v:servername	The resulting registered |client-server-name| if any.
 		Read-only.
 
 		
@@ -2372,12 +2372,12 @@ tempname()			String	name for a temporary file
 term_getattr({attr}, {what}	Number	get the value of attribute {what}
 term_getcursor({buf})		List	get the cursor position of a terminal
 term_getjob({buf})		Job	get the job associated with a terminal
-term_getline({buf}[, {row}])	String	get a line of text from a terminal
+term_getline({buf}, {row})	String	get a line of text from a terminal
 term_getsize({buf})		List	get the size of a terminal
 term_getstatus({buf})		String	get the status of a terminal
 term_gettitle({buf})		String	get the title of a terminal
 term_list()			List	get the list of terminal buffers
-term_scrape({buf}[, {row}])	List	get row of a terminal screen
+term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
 term_wait({buf})		Number  wait for screen to be updated
@@ -7916,8 +7916,9 @@ term_getattr({attr}, {what})				*term_getattr()*
 term_getcursor({buf})					*term_getcursor()*
 		Get the cusor position of terminal {buf}. Returns a list with
 		three numbers: [rows, cols, visible].  "rows" and "cols" are
-		zero based.  "visible" is one when the cursor is visible, zero
-		when it is hidden.
+		one based, the first sceen cell is row 1, column 1.
+		"visible" is one when the cursor is visible, zero when it is
+		hidden.
 		
 		This is the cursor position of the terminal itself, not of the
 		Vim window.
@@ -7930,13 +7931,12 @@ term_getjob({buf})					*term_getjob()*
 		Get the Job associated with terminal window {buf}.
 		{buf} is used as with |term_getsize()|.
 
-term_getline({buf} [, {row}])				*term_getline()*
+term_getline({buf}, {row})				*term_getline()*
 		Get a line of text from the terminal window of {buf}.
 		{buf} is used as with |term_getsize()|.
 
-		The first line has {row} zero.  When {row} is invalid an empty
-		string is returned. When {row} is omitted, the cursor line is
-		used.
+		The first line has {row} one.  When {row} "." the cursor line
+		is used.  When {row} is invalid an empty string is returned.
 
 term_getsize({buf})					*term_getsize()*
 		Get the size of terminal {buf}. Returns a list with two
@@ -7971,12 +7971,12 @@ term_list()						*term_list()*
 		Return a list with the buffer numbers of all buffers for
 		terminal windows.
 
-term_scrape({buf} [, {row}])				*term_scrape()*
+term_scrape({buf}, {row})				*term_scrape()*
 		Get the contents of {row} of terminal screen of {buf}.
 		For {buf} see |term_getsize()|.
 
-		The first {row} is zero.  When {row} is invalid an empty list
-		is returned. When {row} is omitted the cursor line is used.
+		The first line has {row} one.  When {row} "." the cursor line
+		is used.  When {row} is invalid an empty string is returned.
 
 		Return a List containing a Dict for each screen cell: 
 		    "chars"	character(s) at the cell
@@ -8728,6 +8728,7 @@ tag_any_white		Compiled with support for any white characters in tags
 			files |tag-any-white|.
 tcl			Compiled with Tcl interface.
 termguicolors		Compiled with true color in terminal support.
+terminal		Compiled with |terminal| support.
 terminfo		Compiled with terminfo instead of termcap.
 termresponse		Compiled with support for |t_RV| and |v:termresponse|.
 textobjects		Compiled with support for |text-objects|.
