@@ -4150,6 +4150,11 @@ set_default_child_environment(void)
 #endif
 
 #if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
+/*
+ * Open a PTY, with FD for the master and slave side.
+ * When failing "pty_master_fd" and "pty_slave_fd" are -1.
+ * When successful both file descriptors are stored.
+ */
     static void
 open_pty(int *pty_master_fd, int *pty_slave_fd)
 {
@@ -5379,6 +5384,17 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 		use_out_for_err || use_file_for_err || use_null_for_err
 		     ? INVALID_FD : fd_err[0] < 0 ? pty_master_fd : fd_err[0]);
 	channel_set_job(channel, job, options);
+    }
+    else
+    {
+	if (fd_in[1] >= 0)
+	    close(fd_in[1]);
+	if (fd_out[0] >= 0)
+	    close(fd_out[0]);
+	if (fd_err[0] >= 0)
+	    close(fd_err[0]);
+	if (pty_master_fd >= 0)
+	    close(pty_master_fd);
     }
 
     /* success! */
