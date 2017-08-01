@@ -381,10 +381,10 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 
     if (term->tl_vterm == NULL)
     {
-	ch_logn(channel, "NOT writing %d bytes to terminal", (int)len);
+	ch_log(channel, "NOT writing %d bytes to terminal", (int)len);
 	return;
     }
-    ch_logn(channel, "writing %d bytes to terminal", (int)len);
+    ch_log(channel, "writing %d bytes to terminal", (int)len);
     term_write_job_output(term, msg, len);
 
     if (!term->tl_terminal_mode)
@@ -1467,7 +1467,7 @@ term_update_window(win_T *wp)
 	}
 
 	vterm_set_size(vterm, rows, cols);
-	ch_logn(term->tl_job->jv_channel, "Resizing terminal to %d lines",
+	ch_log(term->tl_job->jv_channel, "Resizing terminal to %d lines",
 									 rows);
 	term_report_winsize(term, rows, cols);
     }

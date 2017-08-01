@@ -173,7 +173,7 @@ msg_attr_keep(
     if (emsg_to_channel_log)
     {
 	/* Write message in the channel log. */
-	ch_logs(NULL, "ERROR: %s", (char *)s);
+	ch_log(NULL, "ERROR: %s", (char *)s);
     }
 #endif
 
@@ -667,7 +667,7 @@ emsg(char_u *s)
 		redir_write(s, -1);
 	    }
 #ifdef FEAT_JOB_CHANNEL
-	    ch_logs(NULL, "ERROR: %s", (char *)s);
+	    ch_log(NULL, "ERROR: %s", (char *)s);
 #endif
 	    return TRUE;
 	}
