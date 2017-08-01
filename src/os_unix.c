@@ -4108,7 +4108,9 @@ set_child_environment(long rows, long columns, char *term)
     static char	envbuf_Lines[20];
     static char	envbuf_Columns[20];
     static char	envbuf_Colors[20];
+#  ifdef FEAT_CLIENTSERVER
     static char	envbuf_Servername[60];
+#  endif
 # endif
     long	colors =
 #  ifdef FEAT_GUI
@@ -4126,7 +4128,9 @@ set_child_environment(long rows, long columns, char *term)
     setenv("COLUMNS", (char *)envbuf, 1);
     sprintf((char *)envbuf, "%ld", colors);
     setenv("COLORS", (char *)envbuf, 1);
+#  ifdef FEAT_CLIENTSERVER
     setenv("VIM_SERVERNAME", serverName == NULL ? "" : (char *)serverName, 1);
+#  endif
 # else
     /*
      * Putenv does not copy the string, it has to remain valid.
@@ -4144,9 +4148,11 @@ set_child_environment(long rows, long columns, char *term)
     putenv(envbuf_Columns);
     vim_snprintf(envbuf_Colors, sizeof(envbuf_Colors), "COLORS=%ld", colors);
     putenv(envbuf_Colors);
+#  ifdef FEAT_CLIENTSERVER
     vim_snprintf(envbuf_Servername, sizeof(envbuf_Servername),
 	    "VIM_SERVERNAME=%s", serverName == NULL ? "" : (char *)serverName);
     putenv(envbuf_Servername);
+#  endif
 # endif
 }
 
