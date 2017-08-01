@@ -25,7 +25,7 @@ func Test_terminal_basic()
 endfunc
 
 func Check_123(buf)
-  let l = term_scrape(a:buf, 0)
+  let l = term_scrape(a:buf, 1)
   call assert_true(len(l) > 0)
   call assert_equal('1', l[0].chars)
   call assert_equal('2', l[1].chars)
@@ -37,7 +37,7 @@ func Check_123(buf)
     call assert_equal('#000000', l[0].bg)
   endif
 
-  let l = term_getline(a:buf, 0)
+  let l = term_getline(a:buf, 1)
   call assert_equal('123', l)
 endfunc
 
