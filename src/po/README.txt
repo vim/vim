@@ -106,7 +106,7 @@ language.
     messed up by changes in line numbers and show the actual changes in the
     text.
 
-(4) Check:
+(5) Check:
 
     While editing the .po file:
         :source check.vim

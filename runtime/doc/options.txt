@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Jul 23
+*options.txt*	For Vim version 8.0.  Last change: 2017 Jul 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4040,7 +4040,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     L:SpellLocal,-:Conceal,+:Pmenu,=:PmenuSel,
 				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
 				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
-				     .:CursorLine,o:ColorColumn,q:QuickFixLine")
+				     .:CursorLine,o:ColorColumn,q:QuickFixLine,
+				     $:StatusLineTerm")
 			global
 			{not in Vi}
 	This option can be used to set highlighting mode for various
@@ -7753,14 +7754,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'termkey'* *'tk'*
-'termkey' 'tk'		string	(default "CTRL-W")
+'termkey' 'tk'		string	(default "")
 			local to window
 			{not in Vi}
-	The key that precedes a Vim command in a terminal window.  Other keys
+	The key that starts a CTRL-W command in a terminal window.  Other keys
 	are sent to the job running in the window.
-	The string must be one key stroke but can be multiple bytes.
-	NOT IMPLEMENTED YET
-
+	The <> notation can be used, e.g.: >
+		:set termkey=<C-L>
+<	The string must be one key stroke but can be multiple bytes.
+	When not set CTRL-W is used, so that CTRL-W : gets you to the command
+	line.  If 'termkey' is set to CTRL-L then CTRL-L : gets you to the
+	command line.
 
 						*'termsize'* *'tms'*
 'termsize' 'tms'	string	(default "")

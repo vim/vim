@@ -481,7 +481,10 @@ You need to set the following variables:
     MZSCHEME:          Where Racket is installed.
                        E.g. C:\Program Files (x86)\Racket
     DYNAMIC_MZSCHEME:  Whether dynamic linking is used. Usually, set to yes.
-    MZSCHEME_VER:      Racket DLL version. E.g. 3m_9z0ds0 for Racket 6.3.
+    MZSCHEME_VER:      Racket DLL version which is used for the file name.
+                       E.g. 3m_9z0ds0 for Racket 6.3.
+                       The DLL can be found under the lib directory. E.g.
+                       C:\Program Files (x86)\Racket\lib\libracket3m_XXXXXX.dll
     MZSCHEME_COLLECTS: (Optional) Path of the collects directory used at
                        runtime. Default: $(MZSCHEME)\collects
                        User can override this with the PLTCOLLECTS environment

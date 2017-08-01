@@ -1,4 +1,4 @@
-*pi_getscript.txt*  For Vim version 7.0.  Last change: 2013 Nov 29
+*pi_getscript.txt*  For Vim version 7.0.  Last change: 2017 Aug 01
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell
 <
@@ -389,7 +389,7 @@ v36 Apr 22, 2013 : * (glts) suggested use of plugin/**/*.vim instead of
 		     plugin/*.vim in globpath() call.
 		   * (Andy Wokula) got warning message when setting
 		     g:loaded_getscriptPlugin
-v35 Apr 07, 2012 : * (MengHuan Yu) pointed out that the script url has
+v35 Apr 07, 2012 : * (MengHuan Yu) pointed out that the script URL has
 		     changed (somewhat).  However, it doesn't work, and
 		     the original one does (under Linux). I'll make it
 		     yet-another-option.

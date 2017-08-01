@@ -1,7 +1,7 @@
 " Menu translations for Catalan
 "
 " Maintainer:	Ernest Adrogué <eadrogue@gmx.net>
-" Last Change:	6 Jun 2008
+" Last Change:	26 Jul 2017
 "
 
 " Quit when menu translations have already been done.
@@ -70,9 +70,9 @@ menutrans Settings\ &Window		Fin&estra\ d'opcions
 menutrans Startup\ &Settings    Opcions\ i&nicials
 menutrans &Global\ Settings		Opcions\ &globals
 " submenú Edita/Opcions Globals
-  menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Ressalt\ de\ &patrons<Tab>:set\ hls!
+  menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Ressaltat\ de\ &patrons<Tab>:set\ hls!
   menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Sensibilitat\ a\ les\ ma&júscules<Tab>:set\ ic!
-  menutrans Toggle\ &Showmatch<Tab>:set\ sm!		&Ressalt\ de\ coincidències<Tab>:set\ sm!
+  menutrans Toggle\ &Showmatch<Tab>:set\ sm!		&Ressaltat\ de\ coincidències<Tab>:set\ sm!
   menutrans &Context\ lines				Línies\ de\ co&ntext
   menutrans &Virtual\ Edit				Edició\ &virtual
 " submenú Edita/Opcions Globals/Edició virtual
@@ -191,7 +191,7 @@ menutrans &Diff				&Diferències
     menutrans &Update			&Actualitza
     menutrans &Get\ Block		&Obtingues\ un\ bloc
     menutrans &Put\ Block		&Posa\ un\ bloc
-menutrans &Make<Tab>:make		Crida\ a\ &make<Tab>:make
+menutrans &Make<Tab>:make		Crida\ &make<Tab>:make
 menutrans &List\ Errors<Tab>:cl		Llista\ d'&errors<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!	&Llista\ de\ missatges<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn		Error\ se&güent<Tab>:cn
@@ -203,8 +203,7 @@ menutrans Error\ &Window		F&inestra\ d'errors
   menutrans &Update<Tab>:cwin		&Actualitza<Tab>:cwin
   menutrans &Open<Tab>:copen		&Obre<Tab>:copen
   menutrans &Close<Tab>:cclose		&Tanca<Tab>:cclose
-menutrans &Set\ Compiler		&Compilador
-menutrans &SeT\ Compiler        &Compilador
+menutrans Se&t\ Compiler		&Compilador
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Converteix\ a\ &HEX<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Torna\ al\ format\ &original<Tab>:%!xxd\ -r
 
@@ -303,14 +302,14 @@ menutrans &Syntax			&Sintaxi
 menutrans &Manual			&Manual
 menutrans A&utomatic			A&utomàtica
 menutrans on/off\ for\ &This\ file	Activa/Desactiva\ en\ &aquest\ fitxer
-menutrans &Show\ filetypes\ in\ menu	Mostra\ tots\ els\ &tipus\ al\ menú
+menutrans &Show\ File\ Types\ in\ Menu	Mostra\ tots\ els\ &tipus\ al\ menú
 menutrans &Off				&Desactiva
 menutrans Co&lor\ test			Prova\ dels\ &colors
-menutrans &Highlight\ test		Prova\ del\ &ressalt
+menutrans &Highlight\ test		Prova\ del\ &ressaltat
 menutrans &Convert\ to\ HTML		Converteix\ a\ &HTML
 menutrans Assembly			Ensamblador
 menutrans Config			Configuració
-menutrans Set\ '&syntax'\ only		Només\ el\ ressalt\ de\ sintaxi
+menutrans Set\ '&syntax'\ only		Només\ el\ ressaltat\ de\ sintaxi
 menutrans Set\ '&filetype'\ too		Carrega\ també\ els\ plugins
 
 let &cpo = s:keepcpo
