@@ -36,9 +36,14 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - Add StatusLineTerm highlighting
+ * - When closing a window with a terminal buffer where the job has ended, wipe
+ *   out the buffer.  Like 'bufhidden' is "wipe".
+ * - When a buffer with a terminal is wiped out, kill the job and close the
+ *   channel.
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
+ * - typing CTRL-C is not sent to the terminal.  need to setup controlling tty?
+ *	#1910
  * - For the scrollback buffer store lines in the buffer, only attributes in
  *   tl_scrollback.
  * - When the job ends:
@@ -221,17 +226,19 @@ ex_terminal(exarg_T *eap)
     if (cmd == NULL || *cmd == NUL)
 	cmd = p_sh;
 
-    if (buflist_findname(cmd) == NULL)
-	curbuf->b_ffname = vim_strsave(cmd);
-    else
     {
 	int	i;
 	size_t	len = STRLEN(cmd) + 10;
 	char_u	*p = alloc((int)len);
 
-	for (i = 1; p != NULL; ++i)
+	for (i = 0; p != NULL; ++i)
 	{
-	    vim_snprintf((char *)p, len, "%s (%d)", cmd, i);
+	    /* Prepend a ! to the command name to avoid the buffer name equals
+	     * the executable, otherwise ":w!" would overwrite it. */
+	    if (i == 0)
+		vim_snprintf((char *)p, len, "!%s", cmd);
+	    else
+		vim_snprintf((char *)p, len, "!%s (%d)", cmd, i);
 	    if (buflist_findname(p) == NULL)
 	    {
 		curbuf->b_ffname = p;
@@ -241,8 +248,8 @@ ex_terminal(exarg_T *eap)
     }
     curbuf->b_fname = curbuf->b_ffname;
 
-    /* Mark the buffer as changed, so that it's not easy to abandon the job. */
-    curbuf->b_changed = TRUE;
+    /* Mark the buffer as not modifiable. It can only be made modifiable after
+     * the job finished. */
     curbuf->b_p_ma = FALSE;
     set_string_option_direct((char_u *)"buftype", -1,
 				  (char_u *)"terminal", OPT_FREE|OPT_LOCAL, 0);
@@ -263,8 +270,6 @@ ex_terminal(exarg_T *eap)
 	 * free_terminal(). */
 	do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
     }
-
-    /* TODO: Setup pty, see mch_call_shell(). */
 }
 
 /*
@@ -1571,6 +1576,11 @@ term_change_in_curbuf(void)
     {
 	free_scrollback(term);
 	redraw_buf_later(term->tl_buffer, NOT_VALID);
+
+	/* The buffer is now like a normal buffer, it cannot be easily
+	 * abandoned when changed. */
+	set_string_option_direct((char_u *)"buftype", -1,
+					  (char_u *)"", OPT_FREE|OPT_LOCAL, 0);
     }
 }
 

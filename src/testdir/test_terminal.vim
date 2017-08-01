@@ -6,7 +6,7 @@ endif
 
 source shared.vim
 
-func Test_terminal_basic()
+func Run_shell_in_terminal()
   let buf = term_start(&shell)
 
   let termlist = term_list()
@@ -19,6 +19,25 @@ func Test_terminal_basic()
   call term_sendkeys(buf, "exit\r")
   call WaitFor('job_status(g:job) == "dead"')
   call assert_equal('dead', job_status(g:job))
+
+  return buf
+endfunc
+
+func Test_terminal_basic()
+  let buf = Run_shell_in_terminal()
+
+  exe buf . 'bwipe'
+  unlet g:job
+endfunc
+
+func Test_terminal_make_change()
+  let buf = Run_shell_in_terminal()
+  call term_wait(buf)
+
+  setlocal modifiable
+  exe "normal Axxx\<Esc>"
+  call assert_fails(buf . 'bwipe', 'E517')
+  undo
 
   exe buf . 'bwipe'
   unlet g:job
