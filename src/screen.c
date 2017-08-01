@@ -1019,8 +1019,11 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
     }
 
     /* Return when there is nothing to do, screen updating is already
-     * happening (recursive call) or still starting up. */
+     * happening (recursive call), messages on the screen or still starting up.
+     */
     if (!doit || updating_screen
+	    || State == ASKMORE || State == HITRETURN
+	    || msg_scrolled
 #ifdef FEAT_GUI
 	    || gui.starting
 #endif
