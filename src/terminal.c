@@ -36,7 +36,7 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - Use "." for current line instead of optional.
+ * - Use "." for current line instead of optional argument.
  * - make row and cols one-based instead of zero-based in term_ functions.
  * - Add StatusLineTerm highlighting
  * - in bash mouse clicks are inserting characters.
@@ -56,6 +56,8 @@
  * - do not store terminal window in viminfo.  Or prefix term:// ?
  * - add a character in :ls output
  * - add 't' to mode()
+ * - When making a change after the job has ended, make the buffer a normal
+ *   buffer; needs to be written.
  * - when closing window and job has not ended, make terminal hidden?
  * - when closing window and job has ended, make buffer hidden?
  * - don't allow exiting Vim when a terminal is still running a job
@@ -71,6 +73,8 @@
  *   conversions.
  * - update ":help function-list" for terminal functions.
  * - In the GUI use a terminal emulator for :!cmd.
+ * - Copy text in the vterm to the Vim buffer once in a while, so that
+ *   completion works.
  */
 
 #include "vim.h"
@@ -1253,7 +1257,7 @@ term_channel_closed(channel_T *ch)
  * First color is 1.  Return 0 if no match found.
  */
     static int
-color2index(VTermColor *color, int foreground)
+color2index(VTermColor *color, int fg, int *boldp)
 {
     int red = color->red;
     int blue = color->blue;
@@ -1265,16 +1269,16 @@ color2index(VTermColor *color, int foreground)
 	if (green == 0)
 	{
 	    if (blue == 0)
-		return lookup_color(0, foreground) + 1; /* black */
+		return lookup_color(0, fg, boldp) + 1; /* black */
 	    if (blue == 224)
-		return lookup_color(1, foreground) + 1; /* dark blue */
+		return lookup_color(1, fg, boldp) + 1; /* dark blue */
 	}
 	else if (green == 224)
 	{
 	    if (blue == 0)
-		return lookup_color(2, foreground) + 1; /* dark green */
+		return lookup_color(2, fg, boldp) + 1; /* dark green */
 	    if (blue == 224)
-		return lookup_color(3, foreground) + 1; /* dark cyan */
+		return lookup_color(3, fg, boldp) + 1; /* dark cyan */
 	}
     }
     else if (red == 224)
@@ -1282,38 +1286,38 @@ color2index(VTermColor *color, int foreground)
 	if (green == 0)
 	{
 	    if (blue == 0)
-		return lookup_color(4, foreground) + 1; /* dark red */
+		return lookup_color(4, fg, boldp) + 1; /* dark red */
 	    if (blue == 224)
-		return lookup_color(5, foreground) + 1; /* dark magenta */
+		return lookup_color(5, fg, boldp) + 1; /* dark magenta */
 	}
 	else if (green == 224)
 	{
 	    if (blue == 0)
-		return lookup_color(6, foreground) + 1; /* dark yellow / brown */
+		return lookup_color(6, fg, boldp) + 1; /* dark yellow / brown */
 	    if (blue == 224)
-		return lookup_color(8, foreground) + 1; /* white / light grey */
+		return lookup_color(8, fg, boldp) + 1; /* white / light grey */
 	}
     }
     else if (red == 128)
     {
 	if (green == 128 && blue == 128)
-	    return lookup_color(12, foreground) + 1; /* high intensity black / dark grey */
+	    return lookup_color(12, fg, boldp) + 1; /* high intensity black / dark grey */
     }
     else if (red == 255)
     {
 	if (green == 64)
 	{
 	    if (blue == 64)
-		return lookup_color(20, foreground) + 1;  /* light red */
+		return lookup_color(20, fg, boldp) + 1;  /* light red */
 	    if (blue == 255)
-		return lookup_color(22, foreground) + 1;  /* light magenta */
+		return lookup_color(22, fg, boldp) + 1;  /* light magenta */
 	}
 	else if (green == 255)
 	{
 	    if (blue == 64)
-		return lookup_color(24, foreground) + 1;  /* yellow */
+		return lookup_color(24, fg, boldp) + 1;  /* yellow */
 	    if (blue == 255)
-		return lookup_color(26, foreground) + 1;  /* white */
+		return lookup_color(26, fg, boldp) + 1;  /* white */
 	}
     }
     else if (red == 64)
@@ -1321,14 +1325,14 @@ color2index(VTermColor *color, int foreground)
 	if (green == 64)
 	{
 	    if (blue == 255)
-		return lookup_color(14, foreground) + 1;  /* light blue */
+		return lookup_color(14, fg, boldp) + 1;  /* light blue */
 	}
 	else if (green == 255)
 	{
 	    if (blue == 64)
-		return lookup_color(16, foreground) + 1;  /* light green */
+		return lookup_color(16, fg, boldp) + 1;  /* light green */
 	    if (blue == 255)
-		return lookup_color(18, foreground) + 1;  /* light cyan */
+		return lookup_color(18, fg, boldp) + 1;  /* light cyan */
 	}
     }
     if (t_colors >= 256)
@@ -1399,8 +1403,14 @@ cell2attr(VTermScreenCell *cell)
     else
 #endif
     {
-	return get_cterm_attr_idx(attr, color2index(&cell->fg, TRUE),
-						color2index(&cell->bg, FALSE));
+	int bold = MAYBE;
+	int fg = color2index(&cell->fg, TRUE, &bold);
+	int bg = color2index(&cell->bg, FALSE, &bold);
+
+	/* with 8 colors set the bold attribute to get a bright foreground */
+	if (bold == TRUE)
+	    attr |= HL_BOLD;
+	return get_cterm_attr_idx(attr, fg, bg);
     }
     return 0;
 }
