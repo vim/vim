@@ -7276,9 +7276,11 @@ static int color_numbers_8[28] = {0, 4, 2, 6,
 /*
  * Lookup the "cterm" value to be used for color with index "idx" in
  * color_names[].
+ * "boldp" will be set to TRUE or FALSE for a foreground color when using 8
+ * colors, otherwise it will be unchanged.
  */
     int
-lookup_color(int idx, int foreground)
+lookup_color(int idx, int foreground, int *boldp)
 {
     int		color = color_numbers_16[idx];
     char_u	*p;
@@ -7300,12 +7302,9 @@ lookup_color(int idx, int foreground)
 	    /* set/reset bold attribute to get light foreground
 	     * colors (on some terminals, e.g. "linux") */
 	    if (color & 8)
-	    {
-		HL_TABLE()[idx].sg_cterm |= HL_BOLD;
-		HL_TABLE()[idx].sg_cterm_bold = TRUE;
-	    }
+		*boldp = TRUE;
 	    else
-		HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
+		*boldp = FALSE;
 	}
 	color &= 7;	/* truncate to 8 colors */
     }
@@ -7837,6 +7836,8 @@ do_highlight(
 	    }
 	    else
 	    {
+		int bold = MAYBE;
+
 #if defined(__QNXNTO__)
 		static int *color_numbers_8_qansi = color_numbers_8;
 		/* On qnx, the 8 & 16 color arrays are the same */
@@ -7857,7 +7858,17 @@ do_highlight(
 		    break;
 		}
 
-		color = lookup_color(i, key[5] == 'F');
+		color = lookup_color(i, key[5] == 'F', &bold);
+
+		/* set/reset bold attribute to get light foreground
+		 * colors (on some terminals, e.g. "linux") */
+		if (bold == TRUE)
+		{
+		    HL_TABLE()[idx].sg_cterm |= HL_BOLD;
+		    HL_TABLE()[idx].sg_cterm_bold = TRUE;
+		}
+		else if (bold == FALSE)
+		    HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
 	    }
 
 	    /* Add one to the argument, to avoid zero.  Zero is used for
