@@ -2141,6 +2141,11 @@ typedef enum {
 # define number_width(x) 7
 #endif
 
+/* This must come after including proto.h */
+#if !(defined(FEAT_MBYTE) && defined(WIN3264))
+# define mch_open(n, m, p)	open((n), (m), (p))
+# define mch_fopen(n, p)	fopen((n), (p))
+#endif
 
 #include "globals.h"	    /* global variables and messages */
 
