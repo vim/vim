@@ -4,8 +4,6 @@ HINSTANCE find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname
 void *get_dll_import_func(HINSTANCE hInst, const char *funcname);
 int dyn_libintl_init(void);
 void dyn_libintl_end(void);
-int null_libintl_putenv(const char *envstring);
-int null_libintl_wputenv(const wchar_t *envstring);
 void PlatformId(void);
 void mch_setmouse(int on);
 void mch_update_cursor(void);
