@@ -1847,6 +1847,8 @@ f_term_getline(typval_T *argvars, typval_T *rettv)
 	int		len;
 	char_u		*p;
 
+	if (row < 0 || row >= term->tl_rows)
+	    return;
 	len = term->tl_cols * MB_MAXBYTES + 1;
 	p = alloc(len);
 	if (p == NULL)
