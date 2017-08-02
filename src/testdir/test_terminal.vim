@@ -1889,3 +1889,28 @@ func Test_terminal_statusline()
   au! BufLeave
   set statusline=
 endfunc
+
+func Test_terminal_get_runcmd()
+  let buf = Run_shell_in_terminal()
+
+  if has('win32')
+    let cmd = $windir . '\system32\timeout.exe'
+  else
+    let cmd = 'sleep'
+  endif
+
+  call term_sendkeys(buf, cmd . " 1\r")
+  sleep 100m
+
+  let info = term_getruncmd(buf)
+  call assert_true(has_key(info, 'process'))
+  call assert_true(has_key(info, 'command'))
+  call assert_notequal(-1, info.process)
+  call assert_equal(cmd, info.command)
+
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  close
+
+  unlet g:job
+endfunc
