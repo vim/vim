@@ -39,6 +39,7 @@ void f_term_getattr(typval_T *argvars, typval_T *rettv);
 void f_term_getcursor(typval_T *argvars, typval_T *rettv);
 void f_term_getjob(typval_T *argvars, typval_T *rettv);
 void f_term_getline(typval_T *argvars, typval_T *rettv);
+void f_term_getruncmd(typval_T *argvars, typval_T *rettv);
 void f_term_getscrolled(typval_T *argvars, typval_T *rettv);
 void f_term_getsize(typval_T *argvars, typval_T *rettv);
 void f_term_setsize(typval_T *argvars, typval_T *rettv);
