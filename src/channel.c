@@ -1016,11 +1016,9 @@ ch_close_part(channel_T *channel, ch_part_T part)
 	{
 	    /* When using a pty the same FD is set on multiple parts, only
 	     * close it when the last reference is closed. */
-	    if ((part == PART_IN || channel->ch_part[PART_IN].ch_fd != *fd)
-		    && (part == PART_OUT
-				    || channel->ch_part[PART_OUT].ch_fd != *fd)
-		    && (part == PART_ERR
-				   || channel->ch_part[PART_ERR].ch_fd != *fd))
+	    if ((part == PART_IN || channel->CH_IN_FD != *fd)
+		    && (part == PART_OUT || channel->CH_OUT_FD != *fd)
+		    && (part == PART_ERR || channel->CH_ERR_FD != *fd))
 		fd_close(*fd);
 	}
 	*fd = INVALID_FD;

@@ -5192,9 +5192,9 @@ error:
 mch_job_start(char **argv, job_T *job, jobopt_T *options)
 {
     pid_t	pid;
-    int		fd_in[2];	/* for stdin */
-    int		fd_out[2];	/* for stdout */
-    int		fd_err[2];	/* for stderr */
+    int		fd_in[2] = {-1, -1};	/* for stdin */
+    int		fd_out[2] = {-1, -1};	/* for stdout */
+    int		fd_err[2] = {-1, -1};	/* for stderr */
     int		pty_master_fd = -1;
     int		pty_slave_fd = -1;
     channel_T	*channel = NULL;
@@ -5212,12 +5212,6 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 
     /* default is to fail */
     job->jv_status = JOB_FAILED;
-    fd_in[0] = -1;
-    fd_in[1] = -1;
-    fd_out[0] = -1;
-    fd_out[1] = -1;
-    fd_err[0] = -1;
-    fd_err[1] = -1;
 
     if (options->jo_pty)
 	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_ctty);
