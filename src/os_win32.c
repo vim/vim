@@ -6503,7 +6503,7 @@ getout:
  * Version of open() that may use UTF-16 file name.
  */
     int
-mch_open(char *name, int flags, int mode)
+mch_open(const char *name, int flags, int mode)
 {
     /* _wopen() does not work with Borland C 5.5: creates a read-only file. */
 # ifndef __BORLANDC__
@@ -6536,7 +6536,7 @@ mch_open(char *name, int flags, int mode)
  * Version of fopen() that may use UTF-16 file name.
  */
     FILE *
-mch_fopen(char *name, char *mode)
+mch_fopen(const char *name, const char *mode)
 {
     WCHAR	*wn, *wm;
     FILE	*f = NULL;
