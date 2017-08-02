@@ -159,7 +159,7 @@ ch_log_lead(char *what, channel_T *ch)
 static int did_log_msg = TRUE;
 
     void
-ch_log(channel_T *ch, char *fmt, ...)
+ch_log(channel_T *ch, const char *fmt, ...)
 {
     if (log_fd != NULL)
     {
@@ -176,7 +176,7 @@ ch_log(channel_T *ch, char *fmt, ...)
 }
 
     static void
-ch_error(channel_T *ch, char *fmt, ...)
+ch_error(channel_T *ch, const char *fmt, ...)
 {
     if (log_fd != NULL)
     {
