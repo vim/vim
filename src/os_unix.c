@@ -5316,6 +5316,17 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	if (use_null_for_in || use_null_for_out || use_null_for_err)
 	    null_fd = open("/dev/null", O_RDWR | O_EXTRA, 0);
 
+	if (pty_slave_fd >= 0)
+	{
+	    /* push stream discipline modules */
+	    SetupSlavePTY(pty_slave_fd);
+#  ifdef TIOCSCTTY
+	    /* Try to become controlling tty (probably doesn't work,
+	     * unless run by root) */
+	    ioctl(pty_slave_fd, TIOCSCTTY, (char *)NULL);
+#  endif
+	}
+
 	/* set up stdin for the child */
 	close(0);
 	if (use_null_for_in && null_fd >= 0)
@@ -5362,23 +5373,12 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	    close(fd_err[1]);
 	if (pty_master_fd >= 0)
 	{
-	    close(pty_master_fd); /* not used */
-	    close(pty_slave_fd); /* duped above */
+	    close(pty_master_fd); /* not used in the child */
+	    close(pty_slave_fd);  /* was duped above */
 	}
 
 	if (null_fd >= 0)
 	    close(null_fd);
-
-	if (pty_slave_fd >= 0)
-	{
-	    /* push stream discipline modules */
-	    SetupSlavePTY(pty_slave_fd);
-#  ifdef TIOCSCTTY
-	    /* Try to become controlling tty (probably doesn't work,
-	     * unless run by root) */
-	    ioctl(pty_slave_fd, TIOCSCTTY, (char *)NULL);
-#  endif
-	}
 
 	/* See above for type of argv. */
 	execvp(argv[0], argv);
