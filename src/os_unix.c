@@ -4036,24 +4036,23 @@ mch_report_winsize(int fd, int rows, int cols)
 /**
  * Try to get process information run on terminal.
  */
-void mch_get_runcmd(job_T *job, dict_T *dict)
+int mch_get_runcmd(job_T *job, dict_T *dict)
 {
     channel_T	*ch = job->jv_channel;
     int		fd;
     pid_t	pid;
+    int		retval = FAIL;
 
     if (ch == NULL)
-	return;
+	return FAIL;
 
     fd = (int)ch->CH_IN_FD;
     if (fd == INVALID_FD)
-	return;
+	return FAIL;
 
     pid = tcgetpgrp(fd);
     if (pid <= 0)
-	return;
-
-    dict_add_nr_str(dict, "process", pid, NULL);
+	return FAIL;
 
 # if defined(__linux__)
     {
@@ -4107,6 +4106,7 @@ void mch_get_runcmd(job_T *job, dict_T *dict)
 	}
     }
 # endif
+    return retval;
 }
 #endif
 

@@ -7374,7 +7374,7 @@ resize_console_buf(void)
 /**
  * Try to get process information run on terminal.
  */
-void mch_get_runcmd(job_T *job, dict_T *dict)
+int mch_get_runcmd(job_T *job, dict_T *dict)
 {
     PROCESSENTRY32	pe;
     HANDLE		h;
@@ -7384,7 +7384,7 @@ void mch_get_runcmd(job_T *job, dict_T *dict)
     h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     pe.dwSize = sizeof(PROCESSENTRY32);
     if (!Process32First(h, &pe))
-	return;
+	return FAIL;
 
     fname[0] = NUL;
 

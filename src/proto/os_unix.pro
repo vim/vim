@@ -55,7 +55,7 @@ void check_mouse_termcode(void);
 int mch_screenmode(char_u *arg);
 int mch_get_shellsize(void);
 int mch_report_winsize(int fd, int rows, int cols);
-void mch_get_runcmd(job_T *job, dict_T *dict);
+int mch_get_runcmd(job_T *job, dict_T *dict);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 void may_send_sigint(int c, pid_t pid, pid_t wpid);

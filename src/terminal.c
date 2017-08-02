@@ -5077,6 +5077,7 @@ f_term_getruncmd(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf = term_get_buf(argvars, "term_getruncmd()");
     term_T	*term;
+    dict_T	*dict;
 
     if (rettv_dict_alloc(rettv) == FAIL)
 	return;
@@ -5084,8 +5085,7 @@ f_term_getruncmd(typval_T *argvars, typval_T *rettv)
 	return;
 
     term = buf->b_term;
-    if (!term_job_running(term))
-	return;
+    dict = rettv->vval.v_dict;
 
     if (!term_job_running(term) || mch_get_runcmd(term->tl_job, dict) == FAIL)
     {
