@@ -4033,7 +4033,7 @@ mch_report_winsize(int fd, int rows, int cols)
 #  include <sys/procfs.h>
 # endif
 
-/**
+/*
  * Try to get process information run on terminal.
  */
 int mch_get_runcmd(job_T *job, dict_T *dict)
@@ -4105,6 +4105,10 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
 	    fclose(fp);
 	}
     }
+# else
+    /*
+     * Not yet implemented for other platforms.
+     */
 # endif
     return retval;
 }
