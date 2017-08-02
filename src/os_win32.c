@@ -7367,3 +7367,39 @@ resize_console_buf(void)
     }
 }
 #endif
+
+#if defined(FEAT_TERMINAL) || defined(PROTO)
+# include <tlhelp32.h>
+
+/**
+ * Try to get process information run on terminal.
+ */
+void mch_get_runcmd(job_T *job, dict_T *dict)
+{
+    PROCESSENTRY32	pe;
+    HANDLE		h;
+    char_u		fname[MAX_PATH];
+    DWORD		pid = -1;
+
+    h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    pe.dwSize = sizeof(PROCESSENTRY32);
+    if (!Process32First(h, &pe))
+	return;
+
+    fname[0] = NUL;
+
+    /* Get last process in process list. */
+    do
+    {
+	if (pe.th32ParentProcessID == job->jv_proc_info.dwProcessId)
+	{
+	    pid = pe.th32ProcessID;
+	    STRCPY(fname, pe.szExeFile);
+	}
+    } while (Process32Next(h, &pe));
+
+    dict_add_number(dict, "process", pid);
+    dict_add_string(dict, "command", fname);
+    return OK;
+}
+#endif

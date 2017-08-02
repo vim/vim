@@ -4025,6 +4025,89 @@ mch_report_winsize(int fd, int rows, int cols)
     }
     return retval == 0 ? OK : FAIL;
 }
+
+# if defined(__APPLE__) || defined(BSD)
+#  include <sys/types.h>
+#  include <sys/sysctl.h>
+# elif defined(SUN_SYSTEM)
+#  include <sys/procfs.h>
+# endif
+
+/**
+ * Try to get process information run on terminal.
+ */
+void mch_get_runcmd(job_T *job, dict_T *dict)
+{
+    channel_T	*ch = job->jv_channel;
+    int		fd;
+    pid_t	pid;
+
+    if (ch == NULL)
+	return;
+
+    fd = (int)ch->CH_IN_FD;
+    if (fd == INVALID_FD)
+	return;
+
+    pid = tcgetpgrp(fd);
+    if (pid <= 0)
+	return;
+
+    dict_add_nr_str(dict, "process", pid, NULL);
+
+# if defined(__linux__)
+    {
+	char fname[MAXPATHL];
+	char cmdline[IOSIZE];
+	FILE *fp;
+
+	vim_snprintf(fname, MAXPATHL, "/proc/%ld/cmdline", (long)pid);
+	fp = mch_fopen(fname, "r");
+	if (fp != NULL)
+	{
+	    if (fread(cmdline, 1, IOSIZE, fp) > 0)
+	    {
+		dict_add_number(dict, "process", pid);
+		dict_add_string(dict, "command", (char_u *)cmdline);
+		retval = OK;
+	    }
+	    fclose(fp);
+	}
+    }
+# elif defined(__APPLE__) || defined(BSD)
+    {
+	int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
+	struct kinfo_proc kp;
+	size_t size = sizeof(kp);
+
+	if (proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &bi, sizeof(bi)) > 0)
+	{
+	    dict_add_number(dict, "process", pid);
+	    dict_add_string(dict, "command", (char_u *)bi.pbi_comm);
+	    retval = OK;
+	}
+    }
+# elif defined(SUN_SYSTEM)
+    {
+	char fname[MAXPATHL];
+	psinfo_t pi;
+	FILE *fp;
+
+	vim_snprintf(fname, MAXPATHL, "/proc/%ld/psinfo", (long)pid);
+	fp = mch_fopen(fname, "r");
+	if (fp != NULL)
+	{
+	    if (fread(&pi, 1, sizeof(pi), fp) == sizeof(pi))
+	    {
+		dict_add_number(dict, "process", pid);
+		dict_add_string(dict, "command", (char_u *)pi.pr_fname);
+		retval = OK;
+	    }
+	    fclose(fp);
+	}
+    }
+# endif
+}
 #endif
 
 /*

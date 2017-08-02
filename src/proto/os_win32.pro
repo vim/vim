@@ -76,4 +76,5 @@ int has_vtp_working(void);
 int has_conpty_working(void);
 int is_conpty_stable(void);
 void resize_console_buf(void);
+void mch_get_runcmd(job_T *job, dict_T *dict);
 /* vim: set ft=c : */

@@ -40,14 +40,6 @@
 
 #include "vim.h"
 
-#if defined(__APPLE__)
-# include <sys/types.h>
-# include <sys/sysctl.h>
-#endif
-#if defined(_WIN32)
-# include <tlhelp32.h>
-#endif
-
 #if defined(FEAT_TERMINAL) || defined(PROTO)
 
 #ifndef MIN
@@ -5083,96 +5075,23 @@ f_term_getline(typval_T *argvars, typval_T *rettv)
     void
 f_term_getruncmd(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
-    channel_T	*ch;
-#ifdef _WIN32
-    PROCESSENTRY32 pe;
-    HANDLE	h;
-#else
-    pid_t	pid;
-#endif
+    buf_T	*buf = term_get_buf(argvars, "term_getruncmd()");
+    term_T	*term;
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
     if (buf == NULL)
 	return;
 
-    if (buf->b_term->tl_job == NULL)
+    term = buf->b_term;
+    if (!term_job_running(term))
 	return;
 
-    ch = buf->b_term->tl_job->jv_channel;
-    if (ch == NULL || ch->CH_IN_FD == -1)
-	return;
-
-#ifdef _WIN32
-    h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    pe.dwSize = sizeof(PROCESSENTRY32);
-    if (Process32First(h, &pe))
+    if (!term_job_running(term) || mch_get_runcmd(term->tl_job, dict) == FAIL)
     {
-	char_u	fname[MAX_PATH];
-	fname[0] = NUL;
-	/* Get last process in process list. */
-	do
-	{
-	    if (pe.th32ParentProcessID !=
-		    buf->b_term->tl_job->jv_proc_info.dwProcessId)
-	      continue;
-	    STRCPY(fname, pe.szExeFile);
-	} while (Process32Next(h, &pe));
-
-	if (STRLEN(fname))
-	{
-	    rettv->vval.v_string = vim_strsave(fname);
-	    return;
-	}
+	dict_add_number(dict, "process", -1L);
+	dict_add_string(dict, "command", (char_u *)"");
     }
-#else
-    pid = tcgetpgrp(ch->CH_IN_FD);
-    if (pid <= 0)
-	return;
-
-# if defined(__linux__)
-    {
-	struct stat st;
-	char fname[MAXPATHL];
-	char *cmdline = NULL;
-	FILE *fp;
-	size_t bytes_read;
-	size_t i;
-
-	vim_snprintf(fname, MAXPATHL, "/proc/%ld/cmdline", pid);
-	fp = mch_fopen(fname, "r");
-	if (fp == NULL)
-	    return;
-
-	cmdline = alloc(IOSIZE);
-	if (cmdline != NULL)
-	{
-	    bytes_read = fread(cmdline, 1, IOSIZE, fp);
-
-	    for (i = 0; i < bytes_read; ++i)
-		if (cmdline[i] == NUL)
-		    cmdline[i] = ' ';
-	    cmdline[bytes_read - 1] = NUL;
-
-	    rettv->vval.v_string = cmdline;
-	}
-
-	fclose(fp);
-    }
-# elif defined(__APPLE__)
-    {
-	int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
-	struct kinfo_proc kp;
-	size_t size = sizeof(kp);
-
-	if (sysctl(mib, 4, &kp, &size, NULL, 0) == -1)
-	    return;
-
-	rettv->vval.v_string = vim_strsave((char_u *)kp.kp_proc.p_comm);
-    }
-# endif
-#endif
 }
 
 /*
