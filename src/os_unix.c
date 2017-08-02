@@ -4170,7 +4170,7 @@ set_default_child_environment(void)
  * When successful both file descriptors are stored.
  */
     static void
-open_pty(int *pty_master_fd, int *pty_slave_fd)
+open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **ttyn)
 {
     char	*tty_name;
 
@@ -4190,6 +4190,9 @@ open_pty(int *pty_master_fd, int *pty_slave_fd)
 	    close(*pty_master_fd);
 	    *pty_master_fd = -1;
 	}
+
+	if (ttyn != NULL)
+	    *ttyn = vim_strsave((char_u *)tty_name);
     }
 }
 #endif
@@ -4384,7 +4387,7 @@ mch_call_shell(
 	 * If the slave can't be opened, close the master pty.
 	 */
 	if (p_guipty && !(options & (SHELL_READ|SHELL_WRITE)))
-	    open_pty(&pty_master_fd, &pty_slave_fd);
+	    open_pty(&pty_master_fd, &pty_slave_fd, NULL);
 	/*
 	 * If not opening a pty or it didn't work, try using pipes.
 	 */
@@ -5217,7 +5220,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
     fd_err[1] = -1;
 
     if (options->jo_pty)
-	open_pty(&pty_master_fd, &pty_slave_fd);
+	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_ctty);
 
     /* TODO: without the channel feature connect the child to /dev/null? */
     /* Open pipes for stdin, stdout, stderr. */

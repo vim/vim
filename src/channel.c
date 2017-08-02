@@ -4592,6 +4592,7 @@ job_free_contents(job_T *job)
     }
     mch_clear_job(job);
 
+    vim_free(job->jv_ctty);
     vim_free(job->jv_stoponexit);
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
 }
@@ -5164,6 +5165,8 @@ job_info(job_T *job, dict_T *dict)
     nr = job->jv_proc_info.dwProcessId;
 #endif
     dict_add_nr_str(dict, "process", nr, NULL);
+    dict_add_nr_str(dict, "tty", 0L,
+			job->jv_ctty != NULL ? job->jv_ctty : (char_u *)"");
 
     dict_add_nr_str(dict, "exitval", job->jv_exitval, NULL);
     dict_add_nr_str(dict, "exit_cb", 0L, job->jv_exit_cb);
