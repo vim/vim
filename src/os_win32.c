@@ -111,6 +111,7 @@ typedef int HICON;
 typedef int HINSTANCE;
 typedef int HWND;
 typedef int INPUT_RECORD;
+typedef int INT;
 typedef int KEY_EVENT_RECORD;
 typedef int LOGFONT;
 typedef int LPBOOL;
@@ -657,13 +658,13 @@ null_libintl_textdomain(const char *domainname UNUSED)
     return NULL;
 }
 
-    int
+    static int
 null_libintl_putenv(const char *envstring UNUSED)
 {
     return 0;
 }
 
-    int
+    static int
 null_libintl_wputenv(const wchar_t *envstring UNUSED)
 {
     return 0;
