@@ -2657,6 +2657,8 @@ term_getattr({attr}, {what})	Number	get the value of attribute {what}
 term_getcursor({buf})		List	get the cursor position of a terminal
 term_getjob({buf})		Job	get the job associated with a terminal
 term_getline({buf}, {row})	String	get a line of text from a terminal
+term_getruncmd({buf})		Dict	get information of the process running
+					on a terminal
 term_getscrolled({buf})		Number	get the scroll count of a terminal
 term_getsize({buf})		List	get the size of a terminal
 term_getstatus({buf})		String	get the status of a terminal
@@ -9396,6 +9398,12 @@ term_getline({buf}, {row})				*term_getline()*
 
 		To get attributes of each character use |term_scrape()|.
 		{only available when compiled with the |+terminal| feature}
+
+term_getruncmd({buf})					*term_getruncmd()*
+		Get information of the process running on the shell of
+		terminal {buf}.  This returns a Dictionary:
+		   "process"	process ID
+		   "command"	command name (i.e. argv[0])
 
 term_getscrolled({buf})					*term_getscrolled()*
 		Return the number of lines that scrolled to above the top of
