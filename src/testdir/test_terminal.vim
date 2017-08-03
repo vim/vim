@@ -34,7 +34,8 @@ func Test_terminal_basic()
     call assert_match("^/dev/", job_info(g:job).tty)
     call assert_match("^/dev/", term_gettty(''))
   else
-    call assert_equal("", job_info(g:job).tty)
+    call assert_match("^winpty://", job_info(g:job).tty)
+    call assert_match("^winpty://", term_gettty(''))
   endif
   call Stop_shell_in_terminal(buf)
   call term_wait(buf)
