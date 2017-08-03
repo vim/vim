@@ -4160,7 +4160,6 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
     hashitem_T	*hi;
     ch_part_T	part;
 
-    opt->jo_set = 0;
     if (tv->v_type == VAR_UNKNOWN)
 	return OK;
     if (tv->v_type != VAR_DICT)
@@ -4616,6 +4615,7 @@ job_cleanup(job_T *job)
 	int		dummy;
 
 	/* Invoke the exit callback. Make sure the refcount is > 0. */
+	ch_log(job->jv_channel, "Invoking exit callback %s", job->jv_exit_cb);
 	++job->jv_refcount;
 	argv[0].v_type = VAR_JOB;
 	argv[0].vval.v_job = job;
@@ -4888,7 +4888,7 @@ job_start(typval_T *argvars, jobopt_T *opt_arg)
 	if (get_job_options(&argvars[1], &opt,
 	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL + JO_STOPONEXIT
 			   + JO_EXIT_CB + JO_OUT_IO + JO_BLOCK_WRITE) == FAIL)
-	goto theend;
+	    goto theend;
     }
 
     /* Check that when io is "file" that there is a file name. */
