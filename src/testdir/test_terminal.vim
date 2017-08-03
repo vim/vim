@@ -152,6 +152,10 @@ func Test_terminal_scrape()
   call term_wait(1234)
 
   call term_wait(buf)
+  if has('win32')
+    " TODO: this should not be needed
+    sleep 100m
+  endif
   call Check_123(buf)
 
   " Must still work after the job ended.
