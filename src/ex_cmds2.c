@@ -2320,8 +2320,8 @@ do_one_arg(char_u *str)
  * Separate the arguments in "str" and return a list of pointers in the
  * growarray "gap".
  */
-    int
-get_arglist(garray_T *gap, char_u *str)
+    static int
+get_arglist(garray_T *gap, char_u *str, int escaped)
 {
     ga_init2(gap, (int)sizeof(char_u *), 20);
     while (*str != NUL)
@@ -2332,6 +2332,10 @@ get_arglist(garray_T *gap, char_u *str)
 	    return FAIL;
 	}
 	((char_u **)gap->ga_data)[gap->ga_len++] = str;
+
+	/* If str is escaped, don't handle backslashes or spaces */
+	if (!escaped)
+	    return OK;
 
 	/* Isolate one argument, change it in-place, put a NUL after it. */
 	str = do_one_arg(str);
@@ -2355,7 +2359,7 @@ get_arglist_exp(
     garray_T	ga;
     int		i;
 
-    if (get_arglist(&ga, str) == FAIL)
+    if (get_arglist(&ga, str, TRUE) == FAIL)
 	return FAIL;
     if (wig == TRUE)
 	i = expand_wildcards(ga.ga_len, (char_u **)ga.ga_data,
@@ -2401,6 +2405,7 @@ do_arglist(
     char_u	*p;
     int		match;
 #endif
+    int		arg_escaped = TRUE;
 
     /*
      * Set default argument for ":argadd" command.
@@ -2410,12 +2415,13 @@ do_arglist(
 	if (curbuf->b_ffname == NULL)
 	    return FAIL;
 	str = curbuf->b_fname;
+	arg_escaped = FALSE;
     }
 
     /*
      * Collect all file name arguments in "new_ga".
      */
-    if (get_arglist(&new_ga, str) == FAIL)
+    if (get_arglist(&new_ga, str, arg_escaped) == FAIL)
 	return FAIL;
 
 #ifdef FEAT_LISTCMDS

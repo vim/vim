@@ -52,7 +52,6 @@ int can_abandon(buf_T *buf, int forceit);
 int check_changed_any(int hidden, int unload);
 int check_fname(void);
 int buf_write_all(buf_T *buf, int forceit);
-int get_arglist(garray_T *gap, char_u *str);
 int get_arglist_exp(char_u *str, int *fcountp, char_u ***fnamesp, int wig);
 void set_arglist(char_u *str);
 void check_arg_idx(win_T *win);
