@@ -627,6 +627,9 @@ open_line(
 # ifdef FEAT_CINDENT
 					&& !curbuf->b_p_cin
 # endif
+# ifdef FEAT_EVAL
+					&& *curbuf->b_p_inde == NUL
+# endif
 			);
     int		no_si = FALSE;		/* reset did_si afterwards */
     int		first_char = NUL;	/* init for GCC */
