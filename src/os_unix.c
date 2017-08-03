@@ -4170,7 +4170,7 @@ set_default_child_environment(void)
  * When successful both file descriptors are stored.
  */
     static void
-open_pty(int *pty_master_fd, int *pty_slave_fd)
+open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **ttyn)
 {
     char	*tty_name;
 
@@ -4190,6 +4190,9 @@ open_pty(int *pty_master_fd, int *pty_slave_fd)
 	    close(*pty_master_fd);
 	    *pty_master_fd = -1;
 	}
+
+	if (ttyn != NULL)
+	    *ttyn = vim_strsave((char_u *)tty_name);
     }
 }
 #endif
@@ -4384,7 +4387,7 @@ mch_call_shell(
 	 * If the slave can't be opened, close the master pty.
 	 */
 	if (p_guipty && !(options & (SHELL_READ|SHELL_WRITE)))
-	    open_pty(&pty_master_fd, &pty_slave_fd);
+	    open_pty(&pty_master_fd, &pty_slave_fd, NULL);
 	/*
 	 * If not opening a pty or it didn't work, try using pipes.
 	 */
@@ -5189,9 +5192,9 @@ error:
 mch_job_start(char **argv, job_T *job, jobopt_T *options)
 {
     pid_t	pid;
-    int		fd_in[2];	/* for stdin */
-    int		fd_out[2];	/* for stdout */
-    int		fd_err[2];	/* for stderr */
+    int		fd_in[2] = {-1, -1};	/* for stdin */
+    int		fd_out[2] = {-1, -1};	/* for stdout */
+    int		fd_err[2] = {-1, -1};	/* for stderr */
     int		pty_master_fd = -1;
     int		pty_slave_fd = -1;
     channel_T	*channel = NULL;
@@ -5209,15 +5212,9 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 
     /* default is to fail */
     job->jv_status = JOB_FAILED;
-    fd_in[0] = -1;
-    fd_in[1] = -1;
-    fd_out[0] = -1;
-    fd_out[1] = -1;
-    fd_err[0] = -1;
-    fd_err[1] = -1;
 
     if (options->jo_pty)
-	open_pty(&pty_master_fd, &pty_slave_fd);
+	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_ctty);
 
     /* TODO: without the channel feature connect the child to /dev/null? */
     /* Open pipes for stdin, stdout, stderr. */

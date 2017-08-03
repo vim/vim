@@ -5192,6 +5192,8 @@ job_info({job})						*job_info()*
 		Returns a Dictionary with information about {job}:
 		   "status"	what |job_status()| returns
 		   "channel"	what |job_getchannel()| returns
+		   "process"	process ID
+		   "tty"	controlling terminal (if exists)
 		   "exitval"	only valid when "status" is "dead"
 		   "exit_cb"	function to be called on exit
 		   "stoponexit"	|job-stoponexit|
