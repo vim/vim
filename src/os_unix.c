@@ -175,8 +175,8 @@ typedef int waitstatus;
 #endif
 static pid_t wait4pid(pid_t, waitstatus *);
 
-static int  WaitForChar(long msec, int *interrupted);
-static int  WaitForCharOrMouse(long msec, int *interrupted);
+static int  WaitForChar(long msec, int *interrupted, int ignore_input);
+static int  WaitForCharOrMouse(long msec, int *interrupted, int ignore_input);
 #if defined(__BEOS__) || defined(VMS)
 int  RealWaitForChar(int, long, int *, int *interrupted);
 #else
@@ -481,7 +481,7 @@ mch_inchar(
 	 * We want to be interrupted by the winch signal
 	 * or by an event on the monitored file descriptors.
 	 */
-	if (WaitForChar(wait_time, &interrupted))
+	if (WaitForChar(wait_time, &interrupted, FALSE))
 	{
 	    /* If input was put directly in typeahead buffer bail out here. */
 	    if (typebuf_changed(tb_change_cnt))
@@ -536,8 +536,19 @@ handle_resize(void)
     int
 mch_char_avail(void)
 {
-    return WaitForChar(0L, NULL);
+    return WaitForChar(0L, NULL, FALSE);
 }
+
+#if defined(FEAT_TERMINAL) || defined(PROTO)
+/*
+ * Check for any pending input or messages.
+ */
+    int
+mch_check_messages(void)
+{
+    return WaitForChar(0L, NULL, TRUE);
+}
+#endif
 
 #if defined(HAVE_TOTAL_MEM) || defined(PROTO)
 # ifdef HAVE_SYS_RESOURCE_H
@@ -718,7 +729,7 @@ mch_delay(long msec, int ignoreinput)
 	in_mch_delay = FALSE;
     }
     else
-	WaitForChar(msec, NULL);
+	WaitForChar(msec, NULL, FALSE);
 }
 
 #if defined(HAVE_STACK_LIMIT) \
@@ -5616,13 +5627,15 @@ mch_breakcheck(int force)
  * from inbuf[].
  * "msec" == -1 will block forever.
  * Invokes timer callbacks when needed.
+ * When "ignore_input" is TRUE even check for pending input when input is
+ * already available.
  * "interrupted" (if not NULL) is set to TRUE when no character is available
  * but something else needs to be done.
  * Returns TRUE when a character is available.
  * When a GUI is being used, this will never get called -- webb
  */
     static int
-WaitForChar(long msec, int *interrupted)
+WaitForChar(long msec, int *interrupted, int ignore_input)
 {
 #ifdef FEAT_TIMERS
     long    due_time;
@@ -5631,7 +5644,7 @@ WaitForChar(long msec, int *interrupted)
 
     /* When waiting very briefly don't trigger timers. */
     if (msec >= 0 && msec < 10L)
-	return WaitForCharOrMouse(msec, NULL);
+	return WaitForCharOrMouse(msec, NULL, ignore_input);
 
     while (msec < 0 || remaining > 0)
     {
@@ -5645,7 +5658,7 @@ WaitForChar(long msec, int *interrupted)
 	}
 	if (due_time <= 0 || (msec > 0 && due_time > remaining))
 	    due_time = remaining;
-	if (WaitForCharOrMouse(due_time, interrupted))
+	if (WaitForCharOrMouse(due_time, interrupted, ignore_input))
 	    return TRUE;
 	if (interrupted != NULL && *interrupted)
 	    /* Nothing available, but need to return so that side effects get
@@ -5656,7 +5669,7 @@ WaitForChar(long msec, int *interrupted)
     }
     return FALSE;
 #else
-    return WaitForCharOrMouse(msec, interrupted);
+    return WaitForCharOrMouse(msec, interrupted, ignore_input);
 #endif
 }
 
@@ -5664,12 +5677,13 @@ WaitForChar(long msec, int *interrupted)
  * Wait "msec" msec until a character is available from the mouse or keyboard
  * or from inbuf[].
  * "msec" == -1 will block forever.
+ * for "ignore_input" see WaitForCharOr().
  * "interrupted" (if not NULL) is set to TRUE when no character is available
  * but something else needs to be done.
  * When a GUI is being used, this will never get called -- webb
  */
     static int
-WaitForCharOrMouse(long msec, int *interrupted)
+WaitForCharOrMouse(long msec, int *interrupted, int ignore_input)
 {
 #ifdef FEAT_MOUSE_GPM
     int		gpm_process_wanted;
@@ -5679,7 +5693,7 @@ WaitForCharOrMouse(long msec, int *interrupted)
 #endif
     int		avail;
 
-    if (input_available())	    /* something in inbuf[] */
+    if (!ignore_input && input_available())	    /* something in inbuf[] */
 	return 1;
 
 #if defined(FEAT_MOUSE_DEC)
@@ -5722,7 +5736,7 @@ WaitForCharOrMouse(long msec, int *interrupted)
 # endif
 	if (!avail)
 	{
-	    if (input_available())
+	    if (!ignore_input && input_available())
 		return 1;
 # ifdef FEAT_XCLIPBOARD
 	    if (rest == 0 || !do_xterm_trace())
