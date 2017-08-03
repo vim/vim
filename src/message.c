@@ -171,10 +171,8 @@ msg_attr_keep(
 
 #ifdef FEAT_JOB_CHANNEL
     if (emsg_to_channel_log)
-    {
 	/* Write message in the channel log. */
-	ch_logs(NULL, "ERROR: %s", (char *)s);
-    }
+	ch_log(NULL, "ERROR: %s", (char *)s);
 #endif
 
     /* When displaying keep_msg, don't let msg_start() free it, caller must do
@@ -667,7 +665,7 @@ emsg(char_u *s)
 		redir_write(s, -1);
 	    }
 #ifdef FEAT_JOB_CHANNEL
-	    ch_logs(NULL, "ERROR: %s", (char *)s);
+	    ch_log(NULL, "ERROR: %s", (char *)s);
 #endif
 	    return TRUE;
 	}
@@ -5145,7 +5143,7 @@ vim_vsnprintf_typval(
 		{
 		    if (str_l < str_m)
 		    {
-			size_t avail = str_m-str_l;
+			size_t avail = str_m - str_l;
 
 			vim_memset(str + str_l, '0',
 					     (size_t)zn > avail ? avail
