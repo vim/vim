@@ -965,7 +965,7 @@ terminal_loop(void)
 	update_cursor(curbuf->b_term, FALSE);
 
 	c = term_vgetc();
-	if (curbuf->b_term->tl_vterm == NULL
+	if (curbuf->b_term == NULL || curbuf->b_term->tl_vterm == NULL
 					  || !term_job_running(curbuf->b_term))
 	    /* job finished while waiting for a character */
 	    break;
