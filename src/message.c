@@ -2639,13 +2639,14 @@ msg_puts_printf(char_u *str, int maxlen)
 # if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
     if (enc_codepage >= 0 && (int)GetConsoleCP() != enc_codepage)
     {
-	int	len;
-	WCHAR	*widestr = (WCHAR *)enc_to_utf16(str, &len);
+	int	inlen = STRLEN(str);
+	int	outlen;
+	WCHAR	*widestr = (WCHAR *)enc_to_utf16(str, &inlen);
 
 	if (widestr != NULL)
 	{
-	    WideCharToMultiByte_alloc(GetConsoleCP(), 0, widestr, len,
-						    (LPSTR *)&ccp, &len, 0, 0);
+	    WideCharToMultiByte_alloc(GetConsoleCP(), 0, widestr, inlen,
+						 (LPSTR *)&ccp, &outlen, 0, 0);
 	    vim_free(widestr);
 	    s = str = ccp;
 	}
