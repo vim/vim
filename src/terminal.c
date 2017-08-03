@@ -968,7 +968,7 @@ terminal_loop(void)
 	    /* We don't know if the job can handle CTRL-C itself or not, this
 	     * may kill the shell instead of killing the command running in the
 	     * shell. */
-	    mch_stop_job(curbuf->b_term->tl_job, (char_u *)"quit")
+	    mch_stop_job(curbuf->b_term->tl_job, (char_u *)"quit");
 #endif
 
 	if (c == (termkey == 0 ? Ctrl_W : termkey))
