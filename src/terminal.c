@@ -1305,6 +1305,7 @@ term_channel_closed(channel_T *ch)
 
 	/* Need to break out of vgetc(). */
 	ins_char_typebuf(K_IGNORE);
+	typebuf_was_filled = TRUE;
 
 	term = curbuf->b_term;
 	if (term != NULL)
@@ -2140,31 +2141,36 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	ch_log(NULL, "term_wait(): invalid argument");
 	return;
     }
+    if (buf->b_term->tl_job == NULL)
+    {
+	ch_log(NULL, "term_wait(): no job to wait for");
+	return;
+    }
 
     /* Get the job status, this will detect a job that finished. */
-    if (buf->b_term->tl_job == NULL
-	    || STRCMP(job_status(buf->b_term->tl_job), "dead") == 0)
+    if (STRCMP(job_status(buf->b_term->tl_job), "dead") == 0)
     {
 	/* The job is dead, keep reading channel I/O until the channel is
 	 * closed. */
+	ch_log(NULL, "term_wait(): waiting for channel to close");
 	while (buf->b_term != NULL && !buf->b_term->tl_channel_closed)
 	{
-	    mch_char_avail();
+	    mch_check_messages();
 	    parse_queued_messages();
 	    ui_delay(10L, FALSE);
 	}
-	mch_char_avail();
+	mch_check_messages();
 	parse_queued_messages();
     }
     else
     {
-	mch_char_avail();
+	mch_check_messages();
 	parse_queued_messages();
 
 	/* Wait for 10 msec for any channel I/O. */
 	/* TODO: use delay from optional argument */
 	ui_delay(10L, TRUE);
-	mch_char_avail();
+	mch_check_messages();
 
 	/* Flushing messages on channels is hopefully sufficient.
 	 * TODO: is there a better way? */

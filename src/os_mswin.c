@@ -809,6 +809,18 @@ mch_char_avail(void)
     /* never used */
     return TRUE;
 }
+
+# if defined(FEAT_TERMINAL) || defined(PROTO)
+/*
+ * Check for any pending input or messages.
+ */
+    int
+mch_check_messages(void)
+{
+    /* TODO: check for messages */
+    return TRUE;
+}
+# endif
 #endif
 
 

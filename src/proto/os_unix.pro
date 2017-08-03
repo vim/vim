@@ -3,6 +3,7 @@ int mch_chdir(char *path);
 void mch_write(char_u *s, int len);
 int mch_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);
 int mch_char_avail(void);
+int mch_check_messages(void);
 long_u mch_total_mem(int special);
 void mch_delay(long msec, int ignoreinput);
 int mch_stackcheck(char *p);
