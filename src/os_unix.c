@@ -4026,7 +4026,7 @@ mch_report_winsize(int fd, int rows, int cols)
     return retval == 0 ? OK : FAIL;
 }
 
-# if defined(__APPLE__) || defined(BSD)
+# if defined(__APPLE__)
 #  include <sys/types.h>
 #  include <sys/sysctl.h>
 # elif defined(SUN_SYSTEM)
@@ -4073,7 +4073,7 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
 	    fclose(fp);
 	}
     }
-# elif defined(__APPLE__) || defined(BSD)
+# elif defined(__APPLE__)
     {
 	int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
 	struct kinfo_proc kp;
