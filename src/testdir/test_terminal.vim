@@ -30,6 +30,12 @@ endfunc
 
 func Test_terminal_basic()
   let buf = Run_shell_in_terminal()
+  if has("unix")
+    call assert_match("^/dev/", job_info(g:job).tty)
+    call assert_match("^/dev/", term_gettty(''))
+  else
+    call assert_equal("", job_info(g:job).tty)
+  endif
   call Stop_shell_in_terminal(buf)
   call term_wait(buf)
 

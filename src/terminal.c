@@ -57,12 +57,16 @@
  * - add 't' to mode()
  * - set 'filetype' to "terminal"?
  * - use win_del_lines() to make scroll-up efficient.
+ * - Make StatusLineTerm adjust UserN highlighting like StatusLineNC does, see
+ *   use of hightlight_stlnc[].
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
  * - implement "term" for job_start(): more job options when starting a
  *   terminal.
+ * - support ":term NONE" to open a terminal with a pty but not running a job
+ *   in it.  The pty can be passed to gdb to run the executable in.
  * - if the job in the terminal does not support the mouse, we can use the
  *   mouse in the Terminal window for copy/paste.
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
@@ -96,6 +100,10 @@ struct terminal_S {
     VTerm	*tl_vterm;
     job_T	*tl_job;
     buf_T	*tl_buffer;
+
+    /* used when tl_job is NULL and only a pty was created */
+    int		tl_tty_fd;
+    char_u	*tl_tty_name;
 
     int		tl_terminal_mode;
     int		tl_channel_closed;
@@ -1925,6 +1933,26 @@ f_term_gettitle(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "term_gettty(buf)" function
+ */
+    void
+f_term_gettty(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf = term_get_buf(argvars);
+    char_u	*p;
+
+    rettv->v_type = VAR_STRING;
+    if (buf == NULL)
+	return;
+    if (buf->b_term->tl_job != NULL)
+	p = buf->b_term->tl_job->jv_tty_name;
+    else
+	p = buf->b_term->tl_tty_name;
+    if (p != NULL)
+	rettv->vval.v_string = vim_strsave(p);
+}
+
+/*
  * "term_list()" function
  */
     void
@@ -2216,6 +2244,7 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     if (term->tl_winpty == NULL)
 	goto failed;
 
+    /* TODO: if the command is "NONE" only create a pty. */
     spawn_config = winpty_spawn_config_new(
 	    WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN |
 		WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN,
@@ -2359,6 +2388,7 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
 
     create_vterm(term, rows, cols);
 
+    /* TODO: if the command is "NONE" only create a pty. */
     argvars[0].v_type = VAR_STRING;
     argvars[0].vval.v_string = cmd;
     setup_job_options(&opt, rows, cols);

@@ -1016,11 +1016,9 @@ ch_close_part(channel_T *channel, ch_part_T part)
 	{
 	    /* When using a pty the same FD is set on multiple parts, only
 	     * close it when the last reference is closed. */
-	    if ((part == PART_IN || channel->ch_part[PART_IN].ch_fd != *fd)
-		    && (part == PART_OUT
-				    || channel->ch_part[PART_OUT].ch_fd != *fd)
-		    && (part == PART_ERR
-				   || channel->ch_part[PART_ERR].ch_fd != *fd))
+	    if ((part == PART_IN || channel->CH_IN_FD != *fd)
+		    && (part == PART_OUT || channel->CH_OUT_FD != *fd)
+		    && (part == PART_ERR || channel->CH_ERR_FD != *fd))
 		fd_close(*fd);
 	}
 	*fd = INVALID_FD;
@@ -4592,6 +4590,7 @@ job_free_contents(job_T *job)
     }
     mch_clear_job(job);
 
+    vim_free(job->jv_tty_name);
     vim_free(job->jv_stoponexit);
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
 }
@@ -5164,6 +5163,8 @@ job_info(job_T *job, dict_T *dict)
     nr = job->jv_proc_info.dwProcessId;
 #endif
     dict_add_nr_str(dict, "process", nr, NULL);
+    dict_add_nr_str(dict, "tty", 0L,
+		   job->jv_tty_name != NULL ? job->jv_tty_name : (char_u *)"");
 
     dict_add_nr_str(dict, "exitval", job->jv_exitval, NULL);
     dict_add_nr_str(dict, "exit_cb", 0L, job->jv_exit_cb);
