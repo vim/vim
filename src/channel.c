@@ -159,38 +159,16 @@ ch_log_lead(char *what, channel_T *ch)
 static int did_log_msg = TRUE;
 
     void
-ch_log(channel_T *ch, char *msg)
+ch_log(channel_T *ch, const char *fmt, ...)
 {
     if (log_fd != NULL)
     {
-	ch_log_lead("", ch);
-	fputs(msg, log_fd);
-	fputc('\n', log_fd);
-	fflush(log_fd);
-	did_log_msg = TRUE;
-    }
-}
+	va_list ap;
 
-    void
-ch_logn(channel_T *ch, char *msg, int nr)
-{
-    if (log_fd != NULL)
-    {
 	ch_log_lead("", ch);
-	fprintf(log_fd, msg, nr);
-	fputc('\n', log_fd);
-	fflush(log_fd);
-	did_log_msg = TRUE;
-    }
-}
-
-    void
-ch_logs(channel_T *ch, char *msg, char *name)
-{
-    if (log_fd != NULL)
-    {
-	ch_log_lead("", ch);
-	fprintf(log_fd, msg, name);
+	va_start(ap, fmt);
+	vfprintf(log_fd, fmt, ap);
+	va_end(ap);
 	fputc('\n', log_fd);
 	fflush(log_fd);
 	did_log_msg = TRUE;
@@ -198,51 +176,16 @@ ch_logs(channel_T *ch, char *msg, char *name)
 }
 
     static void
-ch_logsn(channel_T *ch, char *msg, char *name, int nr)
+ch_error(channel_T *ch, const char *fmt, ...)
 {
     if (log_fd != NULL)
     {
-	ch_log_lead("", ch);
-	fprintf(log_fd, msg, name, nr);
-	fputc('\n', log_fd);
-	fflush(log_fd);
-	did_log_msg = TRUE;
-    }
-}
+	va_list ap;
 
-    static void
-ch_error(channel_T *ch, char *msg)
-{
-    if (log_fd != NULL)
-    {
 	ch_log_lead("ERR ", ch);
-	fputs(msg, log_fd);
-	fputc('\n', log_fd);
-	fflush(log_fd);
-	did_log_msg = TRUE;
-    }
-}
-
-    static void
-ch_errorn(channel_T *ch, char *msg, int nr)
-{
-    if (log_fd != NULL)
-    {
-	ch_log_lead("ERR ", ch);
-	fprintf(log_fd, msg, nr);
-	fputc('\n', log_fd);
-	fflush(log_fd);
-	did_log_msg = TRUE;
-    }
-}
-
-    static void
-ch_errors(channel_T *ch, char *msg, char *arg)
-{
-    if (log_fd != NULL)
-    {
-	ch_log_lead("ERR ", ch);
-	fprintf(log_fd, msg, arg);
+	va_start(ap, fmt);
+	vfprintf(log_fd, fmt, ap);
+	va_end(ap);
 	fputc('\n', log_fd);
 	fflush(log_fd);
 	did_log_msg = TRUE;
@@ -513,7 +456,7 @@ channel_read_fd(int fd)
 
     channel = channel_fd2channel(fd, &part);
     if (channel == NULL)
-	ch_errorn(NULL, "Channel for fd %d not found", fd);
+	ch_error(NULL, "Channel for fd %d not found", fd);
     else
 	channel_read(channel, part, "channel_read_fd");
 }
@@ -757,7 +700,7 @@ channel_open(
 	       )
 	    {
 		SOCK_ERRNO;
-		ch_errorn(channel,
+		ch_error(channel,
 			 "channel_open: Connect failed with errno %d", errno);
 		sock_close(sd);
 		channel_free(channel);
@@ -766,7 +709,7 @@ channel_open(
 	}
 
 	/* Try connecting to the server. */
-	ch_logsn(channel, "Connecting to %s port %d", hostname, port);
+	ch_log(channel, "Connecting to %s port %d", hostname, port);
 	ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
 
 	if (ret == 0)
@@ -781,7 +724,7 @@ channel_open(
 #endif
 		))
 	{
-	    ch_errorn(channel,
+	    ch_error(channel,
 			 "channel_open: Connect failed with errno %d", errno);
 	    PERROR(_(e_cannot_connect));
 	    sock_close(sd);
@@ -818,14 +761,14 @@ channel_open(
 #ifndef WIN32
 	    gettimeofday(&start_tv, NULL);
 #endif
-	    ch_logn(channel,
+	    ch_log(channel,
 		    "Waiting for connection (waiting %d msec)...", waitnow);
 	    ret = select((int)sd + 1, &rfds, &wfds, NULL, &tv);
 
 	    if (ret < 0)
 	    {
 		SOCK_ERRNO;
-		ch_errorn(channel,
+		ch_error(channel,
 			"channel_open: Connect failed with errno %d", errno);
 		PERROR(_(e_cannot_connect));
 		sock_close(sd);
@@ -864,7 +807,7 @@ channel_open(
 # endif
 			))
 		{
-		    ch_errorn(channel,
+		    ch_error(channel,
 			    "channel_open: Connect failed with errno %d",
 			    so_error);
 		    PERROR(_(e_cannot_connect));
@@ -1077,7 +1020,7 @@ channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
 	chanpart_T *in_part = &channel->ch_part[PART_IN];
 
 	set_bufref(&in_part->ch_bufref, job->jv_in_buf);
-	ch_logs(channel, "reading from buffer '%s'",
+	ch_log(channel, "reading from buffer '%s'",
 				 (char *)in_part->ch_bufref.br_buf->b_ffname);
 	if (options->jo_set & JO_IN_TOP)
 	{
@@ -1244,7 +1187,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	    }
 	    else
 	    {
-		ch_logs(channel, "writing out to buffer '%s'",
+		ch_log(channel, "writing out to buffer '%s'",
 						       (char *)buf->b_ffname);
 		set_bufref(&channel->ch_part[PART_OUT].ch_bufref, buf);
 	    }
@@ -1287,7 +1230,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	    }
 	    else
 	    {
-		ch_logs(channel, "writing err to buffer '%s'",
+		ch_log(channel, "writing err to buffer '%s'",
 						       (char *)buf->b_ffname);
 		set_bufref(&channel->ch_part[PART_ERR].ch_bufref, buf);
 	    }
@@ -1460,9 +1403,9 @@ channel_write_in(channel_T *channel)
     }
 
     if (written == 1)
-	ch_logn(channel, "written line %d to channel", (int)lnum - 1);
+	ch_log(channel, "written line %d to channel", (int)lnum - 1);
     else if (written > 1)
-	ch_logn(channel, "written %d lines to channel", written);
+	ch_log(channel, "written %d lines to channel", written);
 
     in_part->ch_buf_top = lnum;
     if (lnum > buf->b_ml.ml_line_count || lnum > in_part->ch_buf_bot)
@@ -1475,7 +1418,7 @@ channel_write_in(channel_T *channel)
 	ch_close_part(channel, PART_IN);
     }
     else
-	ch_logn(channel, "Still %d more lines to write",
+	ch_log(channel, "Still %d more lines to write",
 					  buf->b_ml.ml_line_count - lnum + 1);
 }
 
@@ -1495,7 +1438,7 @@ channel_buffer_free(buf_T *buf)
 
 	    if (ch_part->ch_bufref.br_buf == buf)
 	    {
-		ch_logs(channel, "%s buffer has been wiped out",
+		ch_log(channel, "%s buffer has been wiped out",
 							    part_names[part]);
 		ch_part->ch_bufref.br_buf = NULL;
 	    }
@@ -1556,11 +1499,11 @@ channel_write_new_lines(buf_T *buf)
 	    }
 
 	    if (written == 1)
-		ch_logn(channel, "written line %d to channel", (int)lnum - 1);
+		ch_log(channel, "written line %d to channel", (int)lnum - 1);
 	    else if (written > 1)
-		ch_logn(channel, "written %d lines to channel", written);
+		ch_log(channel, "written %d lines to channel", written);
 	    if (lnum < buf->b_ml.ml_line_count)
-		ch_logn(channel, "Still %d more lines to write",
+		ch_log(channel, "Still %d more lines to write",
 					      buf->b_ml.ml_line_count - lnum);
 
 	    in_part->ch_buf_bot = lnum;
@@ -1929,7 +1872,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 	    if (listtv.v_type != VAR_LIST)
 		ch_error(channel, "Did not receive a list, discarding");
 	    else
-		ch_errorn(channel, "Expected list with two items, got %d",
+		ch_error(channel, "Expected list with two items, got %d",
 						  listtv.vval.v_list->lv_len);
 	    clear_tv(&listtv);
 	}
@@ -1972,7 +1915,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 	{
 	    /* First time encountering incomplete message or after receiving
 	     * more (but still incomplete): set a deadline of 100 msec. */
-	    ch_logn(channel,
+	    ch_log(channel,
 		    "Incomplete message (%d bytes) - wait 100 msec for more",
 		    (int)buflen);
 	    reader.js_used = 0;
@@ -2106,7 +2049,7 @@ channel_get_json(
 	{
 	    *rettv = item->jq_value;
 	    if (tv->v_type == VAR_NUMBER)
-		ch_logn(channel, "Getting JSON message %d", tv->vval.v_number);
+		ch_log(channel, "Getting JSON message %d", tv->vval.v_number);
 	    remove_json_node(head, item);
 	    return OK;
 	}
@@ -2204,12 +2147,12 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	int save_called_emsg = called_emsg;
 
 	called_emsg = FALSE;
-	ch_logs(channel, "Executing ex command '%s'", (char *)arg);
+	ch_log(channel, "Executing ex command '%s'", (char *)arg);
 	++emsg_silent;
 	do_cmdline_cmd(arg);
 	--emsg_silent;
 	if (called_emsg)
-	    ch_logs(channel, "Ex command error: '%s'",
+	    ch_log(channel, "Ex command error: '%s'",
 					  (char *)get_vim_var_str(VV_ERRMSG));
 	called_emsg = save_called_emsg;
     }
@@ -2217,7 +2160,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     {
 	exarg_T ea;
 
-	ch_logs(channel, "Executing normal command '%s'", (char *)arg);
+	ch_log(channel, "Executing normal command '%s'", (char *)arg);
 	ea.arg = arg;
 	ea.addr_count = 0;
 	ea.forceit = TRUE; /* no mapping */
@@ -2270,12 +2213,12 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	    ++emsg_skip;
 	    if (!is_call)
 	    {
-		ch_logs(channel, "Evaluating expression '%s'", (char *)arg);
+		ch_log(channel, "Evaluating expression '%s'", (char *)arg);
 		tv = eval_expr(arg, NULL);
 	    }
 	    else
 	    {
-		ch_logs(channel, "Calling '%s'", (char *)arg);
+		ch_log(channel, "Calling '%s'", (char *)arg);
 		if (func_call(arg, &argv[2], NULL, NULL, &res_tv) == OK)
 		    tv = &res_tv;
 	    }
@@ -2312,7 +2255,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     }
     else if (p_verbose > 2)
     {
-	ch_errors(channel, "Received unknown command: %s", (char *)cmd);
+	ch_error(channel, "Received unknown command: %s", (char *)cmd);
 	EMSG2(_("E905: received unknown command: %s"), cmd);
     }
 }
@@ -2328,7 +2271,7 @@ invoke_one_time_callback(
 	cbq_T	    *item,
 	typval_T    *argv)
 {
-    ch_logs(channel, "Invoking one-time callback %s",
+    ch_log(channel, "Invoking one-time callback %s",
 						   (char *)item->cq_callback);
     /* Remove the item from the list first, if the callback
      * invokes ch_close() the list will be cleared. */
@@ -2367,7 +2310,7 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
     }
 
     /* Append to the buffer */
-    ch_logn(channel, "appending line %d to buffer", (int)lnum + 1 - empty);
+    ch_log(channel, "appending line %d to buffer", (int)lnum + 1 - empty);
 
     buffer->b_p_ma = TRUE;
     curbuf = buffer;
@@ -2442,7 +2385,7 @@ drop_messages(channel_T *channel, ch_part_T part)
 
     while ((msg = channel_get(channel, part)) != NULL)
     {
-	ch_logs(channel, "Dropping message '%s'", (char *)msg);
+	ch_log(channel, "Dropping message '%s'", (char *)msg);
 	vim_free(msg);
     }
 }
@@ -2497,7 +2440,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 					       || buffer->b_ml.ml_mfp == NULL))
     {
 	/* buffer was wiped out or unloaded */
-	ch_logs(channel, "%s buffer has been wiped out", part_names[part]);
+	ch_log(channel, "%s buffer has been wiped out", part_names[part]);
 	ch_part->ch_bufref.br_buf = NULL;
 	buffer = NULL;
     }
@@ -2651,7 +2594,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 		listtv = NULL;
 	    }
 	    else
-		ch_logn(channel, "Dropping message %d without callback",
+		ch_log(channel, "Dropping message %d without callback",
 								       seq_nr);
 	}
     }
@@ -2680,14 +2623,14 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    else
 	    {
 		/* invoke the channel callback */
-		ch_logs(channel, "Invoking channel callback %s",
+		ch_log(channel, "Invoking channel callback %s",
 							    (char *)callback);
 		invoke_callback(channel, callback, partial, argv);
 	    }
 	}
     }
     else
-	ch_logn(channel, "Dropping message %d", seq_nr);
+	ch_log(channel, "Dropping message %d", seq_nr);
 
     if (listtv != NULL)
 	free_tv(listtv);
@@ -2888,7 +2831,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	  /* Invoke the close callback, if still set. */
 	  if (channel->ch_close_cb != NULL)
 	  {
-	      ch_logs(channel, "Invoking close callback %s",
+	      ch_log(channel, "Invoking close callback %s",
 						(char *)channel->ch_close_cb);
 	      argv[0].v_type = VAR_CHANNEL;
 	      argv[0].vval.v_channel = channel;
@@ -3074,7 +3017,7 @@ typedef enum {
 channel_wait(channel_T *channel, sock_T fd, int timeout)
 {
     if (timeout > 0)
-	ch_logn(channel, "Waiting for up to %d msec", timeout);
+	ch_log(channel, "Waiting for up to %d msec", timeout);
 
 # ifdef WIN32
     if (fd != channel->CH_SOCK_FD)
@@ -3175,17 +3118,13 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 ch_close_part_on_error(
 	channel_T *channel, ch_part_T part, int is_err, char *func)
 {
-    char	msgbuf[80];
-
-    vim_snprintf(msgbuf, sizeof(msgbuf),
-	    "%%s(): Read %s from ch_part[%d], closing",
-					    (is_err ? "error" : "EOF"), part);
+    char	msg[] = "%s(): Read %s from ch_part[%d], closing";
 
     if (is_err)
 	/* Do not call emsg(), most likely the other end just exited. */
-	ch_errors(channel, msgbuf, func);
+	ch_error(channel, msg, func, "error", part);
     else
-	ch_logs(channel, msgbuf, func);
+	ch_log(channel, msg, func, "EOF", part);
 
     /* Queue a "DETACH" netbeans message in the command queue in order to
      * terminate the netbeans session later. Do not end the session here
@@ -3238,7 +3177,7 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
     fd = channel->ch_part[part].ch_fd;
     if (fd == INVALID_FD)
     {
-	ch_errors(channel, "channel_read() called while %s part is closed",
+	ch_error(channel, "channel_read() called while %s part is closed",
 							    part_names[part]);
 	return;
     }
@@ -3300,7 +3239,7 @@ channel_read_block(channel_T *channel, ch_part_T part, int timeout)
     char_u	*nl;
     readq_T	*node;
 
-    ch_logsn(channel, "Blocking %s read, timeout: %d msec",
+    ch_log(channel, "Blocking %s read, timeout: %d msec",
 				    mode == MODE_RAW ? "RAW" : "NL", timeout);
 
     while (TRUE)
@@ -3359,7 +3298,7 @@ channel_read_block(channel_T *channel, ch_part_T part, int timeout)
 	}
     }
     if (log_fd != NULL)
-	ch_logn(channel, "Returning %d bytes", (int)STRLEN(msg));
+	ch_log(channel, "Returning %d bytes", (int)STRLEN(msg));
     return msg;
 }
 
@@ -3591,7 +3530,7 @@ channel_send(
     {
 	if (!channel->ch_error && fun != NULL)
 	{
-	    ch_errors(channel, "%s(): write while not connected", fun);
+	    ch_error(channel, "%s(): write while not connected", fun);
 	    EMSG2(_("E630: %s(): write while not connected"), fun);
 	}
 	channel->ch_error = TRUE;
@@ -3616,7 +3555,7 @@ channel_send(
     {
 	if (!channel->ch_error && fun != NULL)
 	{
-	    ch_errors(channel, "%s(): write failed", fun);
+	    ch_error(channel, "%s(): write failed", fun);
 	    EMSG2(_("E631: %s(): write failed"), fun);
 	}
 	channel->ch_error = TRUE;
@@ -5089,12 +5028,12 @@ job_start(typval_T *argvars, jobopt_T *opt_arg)
 		ga_concat(&ga, (char_u *)"  ");
 	    ga_concat(&ga, (char_u *)argv[i]);
 	}
-	ch_logs(NULL, "Starting job: %s", (char *)ga.ga_data);
+	ch_log(NULL, "Starting job: %s", (char *)ga.ga_data);
 	ga_clear(&ga);
     }
     mch_job_start(argv, job, &opt);
 #else
-    ch_logs(NULL, "Starting job: %s", (char *)cmd);
+    ch_log(NULL, "Starting job: %s", (char *)cmd);
     mch_job_start((char *)cmd, job, &opt);
 #endif
 
@@ -5204,7 +5143,7 @@ job_stop(job_T *job, typval_T *argvars, char *type)
 	ch_log(job->jv_channel, "Job has already ended, job_stop() skipped");
 	return 0;
     }
-    ch_logs(job->jv_channel, "Stopping job with '%s'", (char *)arg);
+    ch_log(job->jv_channel, "Stopping job with '%s'", (char *)arg);
     if (mch_stop_job(job, arg) == FAIL)
 	return 0;
 
