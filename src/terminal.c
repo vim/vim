@@ -2368,6 +2368,8 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd, jobopt_T *opt)
     ++job->jv_refcount;
     term->tl_job = job;
 
+    job_set_options(job, opt);
+
     return OK;
 
 failed:
