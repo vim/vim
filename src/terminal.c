@@ -36,7 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - don't allow exiting Vim when a terminal is still running a job
  * - MS-Windows: no redraw for 'updatetime'  #1915
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
@@ -284,11 +283,16 @@ term_start(char_u *cmd, jobopt_T *opt)
     }
     curbuf->b_fname = curbuf->b_ffname;
 
+    set_string_option_direct((char_u *)"buftype", -1,
+				  (char_u *)"terminal", OPT_FREE|OPT_LOCAL, 0);
+
     /* Mark the buffer as not modifiable. It can only be made modifiable after
      * the job finished. */
     curbuf->b_p_ma = FALSE;
-    set_string_option_direct((char_u *)"buftype", -1,
-				  (char_u *)"terminal", OPT_FREE|OPT_LOCAL, 0);
+
+    /* Set 'bufhidden' to "hide": allow closing the window. */
+    set_string_option_direct((char_u *)"bufhidden", -1,
+				      (char_u *)"hide", OPT_FREE|OPT_LOCAL, 0);
 
     set_term_and_win_size(term);
     setup_job_options(opt, term->tl_rows, term->tl_cols);

@@ -3522,21 +3522,18 @@ u_save_line(linenr_T lnum)
     int
 bufIsChanged(buf_T *buf)
 {
-    return
-#ifdef FEAT_QUICKFIX
-	    !bt_dontwrite(buf) &&
+#ifdef FEAT_TERMINAL
+    if (term_job_running(buf->b_term))
+	return TRUE;
 #endif
-	    (buf->b_changed || file_ff_differs(buf, TRUE));
+    return !bt_dontwrite(buf)
+	&& (buf->b_changed || file_ff_differs(buf, TRUE));
 }
 
     int
 curbufIsChanged(void)
 {
-    return
-#ifdef FEAT_QUICKFIX
-	!bt_dontwrite(curbuf) &&
-#endif
-	(curbuf->b_changed || file_ff_differs(curbuf, TRUE));
+    return bufIsChanged(curbuf);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)

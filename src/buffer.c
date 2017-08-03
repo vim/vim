@@ -1736,7 +1736,7 @@ set_curbuf(buf_T *buf, int action)
 		u_sync(FALSE);
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
-			&& !P_HID(prevbuf)
+			&& !buf_hide(prevbuf)
 			&& !bufIsChanged(prevbuf)) ? DOBUF_UNLOAD : 0, FALSE);
 #ifdef FEAT_WINDOWS
 	    if (curwin != previouswin && win_valid(previouswin))
@@ -4986,12 +4986,12 @@ do_arg_all(
 
 	    if (i == opened_len && !keep_tabs)/* close this window */
 	    {
-		if (P_HID(buf) || forceit || buf->b_nwindows > 1
+		if (buf_hide(buf) || forceit || buf->b_nwindows > 1
 							|| !bufIsChanged(buf))
 		{
 		    /* If the buffer was changed, and we would like to hide it,
 		     * try autowriting. */
-		    if (!P_HID(buf) && buf->b_nwindows <= 1
+		    if (!buf_hide(buf) && buf->b_nwindows <= 1
 							 && bufIsChanged(buf))
 		    {
 #ifdef FEAT_AUTOCMD
@@ -5018,7 +5018,7 @@ do_arg_all(
 #ifdef FEAT_WINDOWS
 		    else
 		    {
-			win_close(wp, !P_HID(buf) && !bufIsChanged(buf));
+			win_close(wp, !buf_hide(buf) && !bufIsChanged(buf));
 # ifdef FEAT_AUTOCMD
 			/* check if autocommands removed the next window */
 			if (!win_valid(wpnext))
@@ -5117,7 +5117,7 @@ do_arg_all(
 	    }
 	    (void)do_ecmd(0, alist_name(&AARGLIST(alist)[i]), NULL, NULL,
 		      ECMD_ONE,
-		      ((P_HID(curwin->w_buffer)
+		      ((buf_hide(curwin->w_buffer)
 			   || bufIsChanged(curwin->w_buffer)) ? ECMD_HIDE : 0)
 						       + ECMD_OLDBUF, curwin);
 #ifdef FEAT_AUTOCMD
@@ -5372,7 +5372,7 @@ ex_buffer_all(exarg_T *eap)
      */
     for (wp = lastwin; open_wins > count; )
     {
-	r = (P_HID(wp->w_buffer) || !bufIsChanged(wp->w_buffer)
+	r = (buf_hide(wp->w_buffer) || !bufIsChanged(wp->w_buffer)
 				     || autowrite(wp->w_buffer, FALSE) == OK);
 #ifdef FEAT_AUTOCMD
 	if (!win_valid(wp))
@@ -5384,7 +5384,7 @@ ex_buffer_all(exarg_T *eap)
 #endif
 	    if (r)
 	{
-	    win_close(wp, !P_HID(wp->w_buffer));
+	    win_close(wp, !buf_hide(wp->w_buffer));
 	    --open_wins;
 	    wp = lastwin;
 	}

@@ -63,7 +63,8 @@ endfunc
 
 func Test_terminal_wipe_buffer()
   let buf = Run_shell_in_terminal()
-  exe buf . 'bwipe'
+  call assert_fails(buf . 'bwipe', 'E517')
+  exe buf . 'bwipe!'
   call WaitFor('job_status(g:job) == "dead"')
   call assert_equal('dead', job_status(g:job))
   call assert_equal("", bufname(buf))
