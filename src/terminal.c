@@ -1243,6 +1243,7 @@ term_channel_closed(channel_T *ch)
     if (did_one)
     {
 	redraw_statuslines();
+	typebuf_was_filled = TRUE;
 
 	/* Need to break out of vgetc(). */
 	ins_char_typebuf(K_IGNORE);
