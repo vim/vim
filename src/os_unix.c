@@ -4030,6 +4030,7 @@ mch_report_winsize(int fd, int rows, int cols)
 #  include <sys/types.h>
 #  include <sys/sysctl.h>
 # elif defined(SUN_SYSTEM)
+#  define _STRUCTURED_PROC 1
 #  include <sys/procfs.h>
 # endif
 
@@ -4038,10 +4039,24 @@ mch_report_winsize(int fd, int rows, int cols)
  */
 int mch_get_runcmd(job_T *job, dict_T *dict)
 {
-    channel_T	*ch = job->jv_channel;
+    pid_t	pid = -1;
     int		fd;
-    pid_t	pid;
     int		retval = FAIL;
+
+# if defined(SUN_SYSTEM)
+    if (job->jv_tty_name == NULL)
+	return FAIL;
+
+    fd = open(job->jv_tty_name, O_RDONLY);
+    if (fd == INVALID_FD)
+	return FAIL;
+
+    if (ioctl(fd, TIOCGPGRP, &pid) == -1)
+	pid = -1;
+
+    close(fd);
+# else
+    channel_T	*ch = job->jv_channel;
 
     if (ch == NULL)
 	return FAIL;
@@ -4051,6 +4066,7 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
 	return FAIL;
 
     pid = tcgetpgrp(fd);
+# endif
     if (pid <= 0)
 	return FAIL;
 
