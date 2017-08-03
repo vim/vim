@@ -2147,6 +2147,7 @@ void (*winpty_spawn_config_free)(void*);
 void (*winpty_error_free)(void*);
 LPCWSTR (*winpty_error_msg)(void*);
 BOOL (*winpty_set_size)(void*, int, int, void*);
+HANDLE (*winpty_agent_process)(void*);
 
 #define WINPTY_DLL "winpty.dll"
 
@@ -2176,6 +2177,7 @@ dyn_winpty_init(void)
 	{"winpty_spawn_config_new", (FARPROC*)&winpty_spawn_config_new},
 	{"winpty_error_msg", (FARPROC*)&winpty_error_msg},
 	{"winpty_set_size", (FARPROC*)&winpty_set_size},
+	{"winpty_agent_process", (FARPROC*)&winpty_agent_process},
 	{NULL, NULL}
     };
 
@@ -2219,6 +2221,7 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     HANDLE	    jo = NULL, child_process_handle, child_thread_handle;
     void	    *winpty_err;
     void	    *spawn_config = NULL;
+    char	    buf[MAX_PATH];
 
     if (!dyn_winpty_init())
 	return FAIL;
@@ -2306,8 +2309,9 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     job->jv_proc_info.dwProcessId = GetProcessId(child_process_handle);
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
-    job->jv_tty_name = utf16_to_enc(
-	    (short_u*)winpty_conout_name(term->tl_winpty), NULL);
+    sprintf(buf, "winpty://%lu",
+	    GetProcessId(winpty_agent_process(term->tl_winpty)));
+    job->jv_tty_name = vim_strsave((char_u*)buf);
     ++job->jv_refcount;
     term->tl_job = job;
 
