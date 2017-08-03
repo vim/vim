@@ -2355,6 +2355,7 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd, jobopt_T *opt)
     create_vterm(term, rows, cols);
 
     channel_set_job(channel, job, opt);
+    job_set_options(job, opt);
 
     job->jv_channel = channel;
     job->jv_proc_info.hProcess = child_process_handle;
