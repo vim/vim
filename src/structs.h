@@ -1478,6 +1478,7 @@ struct jobvar_S
     PROCESS_INFORMATION	jv_proc_info;
     HANDLE		jv_job_object;
 #endif
+    char_u	*jv_tty_name;	/* controlling tty, allocated */
     jobstatus_T	jv_status;
     char_u	*jv_stoponexit; /* allocated */
     int		jv_exitval;
@@ -1537,18 +1538,20 @@ typedef enum {
     JIO_OUT
 } job_io_T;
 
+#define CH_PART_FD(part)	ch_part[part].ch_fd
+
 /* Ordering matters, it is used in for loops: IN is last, only SOCK/OUT/ERR
  * are polled. */
 typedef enum {
     PART_SOCK = 0,
-#define CH_SOCK_FD	ch_part[PART_SOCK].ch_fd
+#define CH_SOCK_FD	CH_PART_FD(PART_SOCK)
 #ifdef FEAT_JOB_CHANNEL
     PART_OUT,
-# define CH_OUT_FD	ch_part[PART_OUT].ch_fd
+# define CH_OUT_FD	CH_PART_FD(PART_OUT)
     PART_ERR,
-# define CH_ERR_FD	ch_part[PART_ERR].ch_fd
+# define CH_ERR_FD	CH_PART_FD(PART_ERR)
     PART_IN,
-# define CH_IN_FD	ch_part[PART_IN].ch_fd
+# define CH_IN_FD	CH_PART_FD(PART_IN)
 #endif
     PART_COUNT
 } ch_part_T;
