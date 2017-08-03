@@ -86,6 +86,23 @@ func Test_terminal_hide_buffer()
   unlet g:job
 endfunc
 
+func! s:Nasty_exit_cb(job, st)
+  exe g:buf . 'bwipe!'
+  let g:buf = 0
+endfunc
+
+func Test_terminal_nasty_cb()
+  let cmd = Get_cat_cmd()
+  let g:buf = term_start(cmd, {'exit_cb': function('s:Nasty_exit_cb')})
+  let g:job = term_getjob(g:buf)
+
+  call WaitFor('job_status(g:job) == "dead"')
+  call WaitFor('g:buf == 0')
+  unlet g:buf
+  unlet g:job
+  call delete('Xtext')
+endfunc
+
 func Check_123(buf)
   let l = term_scrape(a:buf, 0)
   call assert_true(len(l) == 0)
@@ -113,13 +130,17 @@ func Check_123(buf)
   call assert_equal('123', l)
 endfunc
 
-func Test_terminal_scrape()
+func Get_cat_cmd()
   if has('win32')
-    let cmd = 'cmd /c "cls && color 2 && echo 123"'
+    return 'cmd /c "cls && color 2 && echo 123"'
   else
     call writefile(["\<Esc>[32m123"], 'Xtext')
-    let cmd = "cat Xtext"
+    return "cat Xtext"
   endif
+endfunc
+
+func Test_terminal_scrape()
+  let cmd = Get_cat_cmd()
   let buf = term_start(cmd)
 
   let termlist = term_list()
