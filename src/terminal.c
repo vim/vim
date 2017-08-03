@@ -2306,6 +2306,8 @@ term_and_job_init(term_T *term, int rows, int cols, char_u *cmd)
     job->jv_proc_info.dwProcessId = GetProcessId(child_process_handle);
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
+    job->jv_tty_name = utf16_to_enc(
+	    (short_u*)winpty_conout_name(term->tl_winpty), NULL);
     ++job->jv_refcount;
     term->tl_job = job;
 
