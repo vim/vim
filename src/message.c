@@ -2628,10 +2628,29 @@ msg_puts_printf(char_u *str, int maxlen)
     char_u	*s = str;
     char_u	buf[4];
     char_u	*p;
-
 #ifdef WIN3264
+# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+    char_u	*ccp = NULL;
+
+# endif
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_COOK);	/* handle '\r' and '\n' correctly */
+
+# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+    if (enc_codepage >= 0 && (int)GetConsoleCP() != enc_codepage)
+    {
+	int	len;
+	WCHAR	*widestr = (WCHAR *)enc_to_utf16(str, &len);
+
+	if (widestr != NULL)
+	{
+	    WideCharToMultiByte_alloc(GetConsoleCP(), 0, widestr, len,
+						    (LPSTR *)&ccp, &len, 0, 0);
+	    vim_free(widestr);
+	    s = str = ccp;
+	}
+    }
+# endif
 #endif
     while ((maxlen < 0 || (int)(s - str) < maxlen) && *s != NUL)
     {
@@ -2675,6 +2694,9 @@ msg_puts_printf(char_u *str, int maxlen)
     msg_didout = TRUE;	    /* assume that line is not empty */
 
 #ifdef WIN3264
+# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+    vim_free(ccp);
+# endif
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_RAW);
 #endif
