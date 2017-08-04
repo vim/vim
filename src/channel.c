@@ -2284,12 +2284,16 @@ invoke_one_time_callback(
     static void
 append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 {
-    buf_T	*save_curbuf = curbuf;
+    bufref_T	save_curbuf = {NULL, 0, 0};
+    win_T	*save_curwin = NULL;
+    tabpage_T	*save_curtab = NULL;
     linenr_T    lnum = buffer->b_ml.ml_line_count;
     int		save_write_to = buffer->b_write_to_channel;
     chanpart_T  *ch_part = &channel->ch_part[part];
     int		save_p_ma = buffer->b_p_ma;
     int		empty = (buffer->b_ml.ml_flags & ML_EMPTY) ? 1 : 0;
+    win_T	*wp;
+    tabpage_T	*tp;
 
     if (!buffer->b_p_ma && !ch_part->ch_nomodifiable)
     {
@@ -2313,8 +2317,16 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
     ch_log(channel, "appending line %d to buffer", (int)lnum + 1 - empty);
 
     buffer->b_p_ma = TRUE;
-    curbuf = buffer;
-    curwin->w_buffer = curbuf;
+
+    /* Save curbuf/curwin/curtab */
+    if (find_win_for_buf(buffer, &wp, &tp) == FAIL)
+	switch_buffer(&save_curbuf, buffer);
+    else if (switch_win(&save_curwin, &save_curtab, wp, tp, TRUE) == FAIL)
+    {
+	restore_win(save_curwin, save_curtab, TRUE);
+	switch_buffer(&save_curbuf, buffer);
+    }
+
     u_sync(TRUE);
     /* ignore undo failure, undo is not very useful here */
     ignored = u_save(lnum - empty, lnum + 1);
@@ -2328,8 +2340,13 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
     else
 	ml_append(lnum, msg, 0, FALSE);
     appended_lines_mark(lnum, 1L);
-    curbuf = save_curbuf;
-    curwin->w_buffer = curbuf;
+
+    /* Restore curbuf/curwin/curtab */
+    if (save_curbuf.br_buf == NULL)
+	restore_win(save_curwin, save_curtab, TRUE);
+    else
+	restore_buffer(&save_curbuf);
+
     if (ch_part->ch_nomodifiable)
 	buffer->b_p_ma = FALSE;
     else
@@ -2337,9 +2354,6 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 
     if (buffer->b_nwindows > 0)
     {
-	win_T	*wp;
-	win_T	*save_curwin;
-
 	FOR_ALL_WINDOWS(wp)
 	{
 	    if (wp->w_buffer == buffer
