@@ -1272,7 +1272,10 @@ check_due_timer(void)
     }
 
     if (did_one)
+    {
 	redraw_after_callback(need_update_screen);
+	typebuf_was_filled = TRUE;
+    }
 
     return current_id != last_timer_id ? 1 : next_due;
 }
