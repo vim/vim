@@ -5794,8 +5794,51 @@ buf_spname(buf_T *buf)
     return NULL;
 }
 
-#if (defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)) \
+#if defined(FEAT_JOB_CHANNEL) \
 	|| defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
+	|| defined(PROTO)
+# define SWITCH_TO_WIN
+
+/*
+ * Find a window that contains "buf" and switch to it.
+ * If there is no such window, use the current window and change "curbuf".
+ * Caller must initialize save_curbuf to NULL.
+ * restore_win_for_buf() MUST be called later!
+ */
+    void
+switch_to_win_for_buf(
+    buf_T	*buf,
+    win_T	**save_curwinp,
+    tabpage_T	**save_curtabp,
+    bufref_T	*save_curbuf)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    if (find_win_for_buf(buf, &wp, &tp) == FAIL)
+	switch_buffer(save_curbuf, buf);
+    else if (switch_win(save_curwinp, save_curtabp, wp, tp, TRUE) == FAIL)
+    {
+	restore_win(*save_curwinp, *save_curtabp, TRUE);
+	switch_buffer(save_curbuf, buf);
+    }
+}
+
+    void
+restore_win_for_buf(
+    win_T	*save_curwin,
+    tabpage_T	*save_curtab,
+    bufref_T	*save_curbuf)
+{
+    if (save_curbuf->br_buf == NULL)
+	restore_win(save_curwin, save_curtab, TRUE);
+    else
+	restore_buffer(save_curbuf);
+}
+#endif
+
+#if (defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)) \
+	|| defined(SWITCH_TO_WIN) \
 	|| defined(PROTO)
 /*
  * Find a window for buffer "buf".

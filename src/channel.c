@@ -2284,7 +2284,9 @@ invoke_one_time_callback(
     static void
 append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 {
-    buf_T	*save_curbuf = curbuf;
+    bufref_T	save_curbuf = {NULL, 0, 0};
+    win_T	*save_curwin = NULL;
+    tabpage_T	*save_curtab = NULL;
     linenr_T    lnum = buffer->b_ml.ml_line_count;
     int		save_write_to = buffer->b_write_to_channel;
     chanpart_T  *ch_part = &channel->ch_part[part];
@@ -2313,8 +2315,10 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
     ch_log(channel, "appending line %d to buffer", (int)lnum + 1 - empty);
 
     buffer->b_p_ma = TRUE;
-    curbuf = buffer;
-    curwin->w_buffer = curbuf;
+
+    /* Save curbuf/curwin/curtab and make "buffer" the current buffer. */
+    switch_to_win_for_buf(buffer, &save_curwin, &save_curtab, &save_curbuf);
+
     u_sync(TRUE);
     /* ignore undo failure, undo is not very useful here */
     ignored = u_save(lnum - empty, lnum + 1);
@@ -2328,8 +2332,10 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
     else
 	ml_append(lnum, msg, 0, FALSE);
     appended_lines_mark(lnum, 1L);
-    curbuf = save_curbuf;
-    curwin->w_buffer = curbuf;
+
+    /* Restore curbuf/curwin/curtab */
+    restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+
     if (ch_part->ch_nomodifiable)
 	buffer->b_p_ma = FALSE;
     else
@@ -2338,7 +2344,6 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
     if (buffer->b_nwindows > 0)
     {
 	win_T	*wp;
-	win_T	*save_curwin;
 
 	FOR_ALL_WINDOWS(wp)
 	{
