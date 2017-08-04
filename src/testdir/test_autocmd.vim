@@ -613,3 +613,22 @@ func Test_OptionSet_diffmode_close()
   call test_override('starting', 0)
   "delfunc! AutoCommandOptionSet
 endfunc
+
+" Test for Bufleave autocommand that deletes the buffer we are about to edit.
+func Test_BufleaveWithDelete()
+  new | edit Xfile1
+
+  augroup test_bufleavewithdelete
+      autocmd!
+      autocmd BufLeave Xfile1 bwipe Xfile2
+  augroup END
+
+  call assert_fails('edit Xfile2', 'E143:')
+  call assert_equal('Xfile1', bufname('%'))
+
+  autocmd! test_bufleavewithdelete BufLeave Xfile1
+  augroup! test_bufleavewithdelete
+
+  new
+  bwipe! Xfile1
+endfunc

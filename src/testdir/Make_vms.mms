@@ -54,9 +54,6 @@
 # Comment out if you have GNU compatible diff on your system
 # HAVE_GDIFF = YES
 
-# Comment out if you have GNU compatible cksum on your system
-# HAVE_CKSUM = YES
-
 # Comment out if you have ICONV support
 # HAVE_ICONV = YES
 
@@ -77,9 +74,9 @@ VIMPROG = <->vim.exe
 .SUFFIXES : .out .in
 
 SCRIPT = test1.out  test3.out  test4.out  test5.out  \
-       test7.out  test8.out  test9.out  \
+       test7.out  test8.out  \
        test14.out test15.out \
-       test19.out test20.out test22.out \
+       test19.out test20.out \
        test28.out test29.out test30.out test31.out test32.out \
        test33.out test34.out test36.out test37.out \
        test38.out test39.out test40.out test41.out test42.out \
@@ -90,10 +87,10 @@ SCRIPT = test1.out  test3.out  test4.out  test5.out  \
        test66.out test68.out test69.out \
        test72.out \
        test77a.out test78.out test79.out test80.out \
-       test84.out test88.out \
+       test88.out \
        test91.out test94.out \
-       test95.out test98.out test99.out \
-       test103.out test104.out \
+       test95.out test99.out \
+       test103.out \
        test107.out test108.out\
        test_autocmd_option.out \
        test_autoformat_join.out \
@@ -164,10 +161,6 @@ SCRIPT_GZIP = test11.out
 SCRIPT_GDIFF = test47.out
 .ENDIF
 
-.IFDEF HAVE_CKSUM
-SCRIPT_CKSUM = test77.out
-.ENDIF
-
 .IFDEF HAVE_ICONV
 SCRIPT_ICONV = test83.out
 .ENDIF
@@ -201,7 +194,7 @@ SCRIPT_PYTHON = test86.out test87.out
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
 all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) $(SCRIPT_GZIP) \
-    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_CKSUM) $(SCRIPT_ICONV) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
+    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_ICONV) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                All done"
@@ -232,7 +225,6 @@ nolog :
 	-@ write sys$output "   HAVE_ODS5  = ""$(HAVE_ODS5)"" "
 	-@ write sys$output "   HAVE_GZIP  = ""$(HAVE_GZIP)"" "
 	-@ write sys$output "   HAVE_GDIFF = ""$(HAVE_GDIFF)"" "
-	-@ write sys$output "   HAVE_CKSUM = ""$(HAVE_CKSUM)"" "	  
 	-@ write sys$output "   HAVE_ICONV = ""$(HAVE_ICONV)"" "
 	-@ write sys$output "   HAVE_LUA   = ""$(HAVE_LUA)"" "
 	-@ write sys$output "   HAVE_PYTHON= ""$(HAVE_PYTHON)"" "
