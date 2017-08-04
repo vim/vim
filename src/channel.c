@@ -4386,6 +4386,18 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
+	    else if (STRCMP(hi->hi_key, "term_name") == 0)
+	    {
+		if (!(supported & JO2_TERM_NAME))
+		    break;
+		opt->jo_set2 |= JO2_TERM_NAME;
+		opt->jo_term_name = get_tv_string_chk(item);
+		if (opt->jo_term_name == NULL)
+		{
+		    EMSG2(_(e_invarg2), "term_name");
+		    return FAIL;
+		}
+	    }
 	    else if (STRCMP(hi->hi_key, "waittime") == 0)
 	    {
 		if (!(supported & JO_WAITTIME))
