@@ -11,17 +11,18 @@ func Test_File_Size()
   if !executable('cksum')
       return
   endif
-  set belloff=all fileformat=unix undolevels=-1
 
   new
+  set belloff=all fileformat=unix undolevels=-1
   for i in range(1, 2000000, 100)
       call append(i, range(i, i + 99))
   endfor
 
   1delete
   w! Xtest
-  let l = systemlist('cksum Xtest')
-  call assert_equal('3678979763 14888896 Xtest', l[0])
+  let res = systemlist('cksum Xtest')[0]
+  let res = substitute(res, "\r", "", "")
+  call assert_equal('3678979763 14888896 Xtest', res)
 
   enew!
   call delete('Xtest')
