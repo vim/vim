@@ -691,8 +691,11 @@ move_terminal_to_buffer(term_T *term)
     VTermPos	    pos;
     VTermScreenCell cell;
     VTermScreenCell *p;
-    VTermScreen	    *screen = vterm_obtain_screen(term->tl_vterm);
+    VTermScreen	    *screen;
 
+    if (term->tl_vterm == NULL)
+	return;
+    screen = vterm_obtain_screen(term->tl_vterm);
     for (pos.row = 0; pos.row < term->tl_rows; ++pos.row)
     {
 	len = 0;
