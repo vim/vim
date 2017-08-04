@@ -8008,7 +8008,9 @@ term_start({cmd}, {options})				*term_start()*
 		Returns the buffer number of the terminal window.
 		When opening the window fails zero is returned.
 
-		{options} are not implemented yet.
+		{options} are able to change for {job} in terminal.
+		Below is additional options for terminal:
+		   "term_name"	terminal name used instead of command name.
 
 term_wait({buf})						*term_wait()*
 		Wait for pending updates of {buf} to be handled.

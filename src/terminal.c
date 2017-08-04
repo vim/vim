@@ -261,6 +261,9 @@ term_start(char_u *cmd, jobopt_T *opt)
     if (cmd == NULL || *cmd == NUL)
 	cmd = p_sh;
 
+    if (opt->jo_term_name != NULL)
+	curbuf->b_ffname = vim_strsave(opt->jo_term_name);
+    else
     {
 	int	i;
 	size_t	len = STRLEN(cmd) + 10;
@@ -2126,7 +2129,8 @@ f_term_start(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type != VAR_UNKNOWN
 	    && get_job_options(&argvars[1], &opt,
 		JO_TIMEOUT_ALL + JO_STOPONEXIT
-		+ JO_EXIT_CB + JO_CLOSE_CALLBACK) == FAIL)
+		+ JO_EXIT_CB + + JO_CLOSE_CALLBACK
+		+ JO2_TERM_NAME) == FAIL)
 	return;
 
     term_start(cmd, &opt);
