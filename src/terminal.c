@@ -257,6 +257,11 @@ term_start(char_u *cmd, jobopt_T *opt)
     split_ea.cmdidx = CMD_new;
     split_ea.cmd = (char_u *)"new";
     split_ea.arg = (char_u *)"";
+    if (opt->jo_term_rows > 0)
+    {
+	split_ea.line2 = opt->jo_term_rows;
+	split_ea.addr_count = 1;
+    }
     ex_splitview(&split_ea);
     if (curwin == old_curwin)
     {
@@ -339,6 +344,9 @@ ex_terminal(exarg_T *eap)
 
     init_job_options(&opt);
     /* TODO: get options from before the command */
+
+    if (eap->addr_count > 0)
+	opt.jo_term_rows = eap->line2;
 
     term_start(eap->arg, &opt);
 }
