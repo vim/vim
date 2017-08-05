@@ -4638,6 +4638,11 @@ nv_mousescroll(cmdarg_T *cap)
 
     if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
     {
+# ifdef FEAT_TERMINAL
+	if (term_use_loop())
+	    send_keys_to_term(curbuf->b_term, cap->cmdchar, TRUE);
+	else
+# endif
 	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
 	{
 	    (void)onepage(cap->arg ? FORWARD : BACKWARD, 1L);

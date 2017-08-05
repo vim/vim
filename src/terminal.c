@@ -37,7 +37,6 @@
  *
  * TODO:
  * - MS-Windows: no redraw for 'updatetime'  #1915
- * - mouse scroll: when over other window, scroll that window.
  * - add argument to term_wait() for waiting time.
  * - For the scrollback buffer store lines in the buffer, only attributes in
  *   tl_scrollback.
@@ -909,7 +908,7 @@ term_vgetc()
  * Return FAIL when the key needs to be handled in Normal mode.
  * Return OK when the key was dropped or sent to the terminal.
  */
-    static int
+    int
 send_keys_to_term(term_T *term, int c, int typed)
 {
     char	msg[KEY_BUF_LEN];
@@ -948,13 +947,18 @@ send_keys_to_term(term_T *term, int c, int typed)
 	case K_X1RELEASE:
 	case K_X2MOUSE:
 	case K_X2RELEASE:
+
+	case K_MOUSEUP:
+	case K_MOUSEDOWN:
+	case K_MOUSELEFT:
+	case K_MOUSERIGHT:
 	    if (mouse_row < W_WINROW(curwin)
 		    || mouse_row >= (W_WINROW(curwin) + curwin->w_height)
 		    || mouse_col < W_WINCOL(curwin)
 		    || mouse_col >= W_ENDCOL(curwin)
 		    || dragging_outside)
 	    {
-		/* click outside the current window */
+		/* click or scroll outside the current window */
 		if (typed)
 		{
 		    stuffcharReadbuff(c);
