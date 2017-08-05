@@ -7004,6 +7004,8 @@ fix_arg_enc(void)
 	str = utf16_to_enc(ArglistW[idx], NULL);
 	if (str != NULL)
 	{
+	    int literal = used_file_literal;
+
 #ifdef FEAT_DIFF
 	    /* When using diff mode may need to concatenate file name to
 	     * directory name.  Just like it's done in main(). */
@@ -7025,7 +7027,15 @@ fix_arg_enc(void)
 	    if (used_file_literal)
 		buf_set_name(fnum_list[i], str);
 
-	    alist_add(&global_alist, str, used_file_literal ? 2 : 0);
+	    /* Check backtick literal. backtick literal is already expanded in
+	     * main.c, so this part add str as literal. */
+	    if (literal == FALSE)
+	    {
+		int len = STRLEN(str);
+		if (len > 2 && *str == '`' && *(str + len - 1) == '`')
+		    literal = TRUE;
+	    }
+	    alist_add(&global_alist, str, literal ? 2 : 0);
 	}
     }
 
