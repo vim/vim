@@ -79,7 +79,7 @@ addons:
 
 before_install:
   - rvm reset
-  - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls==0.3.12; fi
+  - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls; fi
     # needed for https support for coveralls
     # building cffi only works with gcc, not with clang
   - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
