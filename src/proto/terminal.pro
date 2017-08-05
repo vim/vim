@@ -5,6 +5,7 @@ void write_to_term(buf_T *buffer, char_u *msg, channel_T *channel);
 int term_job_running(term_T *term);
 int term_in_terminal_mode(void);
 void term_leave_terminal_mode(void);
+int send_keys_to_term(term_T *term, int c, int typed);
 int term_use_loop(void);
 int terminal_loop(void);
 void term_job_ended(job_T *job);
