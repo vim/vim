@@ -1356,7 +1356,9 @@ main_loop(
 	else
 	{
 #ifdef FEAT_TERMINAL
-	    if (term_use_loop() && oa.op_type == OP_NOP && oa.regname == NUL)
+	    if (term_use_loop(TRUE)
+		    && oa.op_type == OP_NOP && oa.regname == NUL
+		    && !VIsual_active)
 	    {
 		/* If terminal_loop() returns OK we got a key that is handled
 		 * in Normal model.  With FAIL the terminal was closed and the
