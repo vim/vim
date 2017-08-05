@@ -171,3 +171,29 @@ func Test_terminal_scrape()
   exe buf . 'bwipe'
   call delete('Xtext')
 endfunc
+
+func Test_terminal_size()
+  let cmd = Get_cat_cmd()
+
+  exe '5terminal ' . cmd
+  let size = term_getsize('')
+  bwipe!
+  call assert_equal(5, size[0])
+
+  vsplit
+  exe '5,33terminal ' . cmd
+  let size = term_getsize('')
+  bwipe!
+  call assert_equal([5, 33], size)
+
+  exe 'vertical 20terminal ' . cmd
+  let size = term_getsize('')
+  bwipe!
+  call assert_equal(20, size[1])
+
+  split
+  exe 'vertical 6,20terminal ' . cmd
+  let size = term_getsize('')
+  bwipe!
+  call assert_equal([6, 20], size)
+endfunc

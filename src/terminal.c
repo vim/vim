@@ -257,6 +257,17 @@ term_start(char_u *cmd, jobopt_T *opt)
     split_ea.cmdidx = CMD_new;
     split_ea.cmd = (char_u *)"new";
     split_ea.arg = (char_u *)"";
+    if (opt->jo_term_rows > 0 && !(cmdmod.split & WSP_VERT))
+    {
+	split_ea.line2 = opt->jo_term_rows;
+	split_ea.addr_count = 1;
+    }
+    if (opt->jo_term_cols > 0 && (cmdmod.split & WSP_VERT))
+    {
+	split_ea.line2 = opt->jo_term_cols;
+	split_ea.addr_count = 1;
+    }
+
     ex_splitview(&split_ea);
     if (curwin == old_curwin)
     {
@@ -266,6 +277,12 @@ term_start(char_u *cmd, jobopt_T *opt)
     }
     term->tl_buffer = curbuf;
     curbuf->b_term = term;
+
+    /* only one size was taken care of with :new, do the other one */
+    if (opt->jo_term_rows > 0 && (cmdmod.split & WSP_VERT))
+	win_setheight(opt->jo_term_rows);
+    if (opt->jo_term_cols > 0 && !(cmdmod.split & WSP_VERT))
+	win_setwidth(opt->jo_term_cols);
 
     /* Link the new terminal in the list of active terminals. */
     term->tl_next = first_term;
@@ -338,7 +355,20 @@ ex_terminal(exarg_T *eap)
     jobopt_T opt;
 
     init_job_options(&opt);
-    /* TODO: get options from before the command */
+
+    if (eap->addr_count == 2)
+    {
+	opt.jo_term_rows = eap->line1;
+	opt.jo_term_cols = eap->line2;
+    }
+    else if (eap->addr_count == 1)
+    {
+	if (cmdmod.split & WSP_VERT)
+	    opt.jo_term_cols = eap->line2;
+	else
+	    opt.jo_term_rows = eap->line2;
+    }
+    /* TODO: get more options from before the command */
 
     term_start(eap->arg, &opt);
 }
