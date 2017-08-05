@@ -227,7 +227,7 @@ main
 
     if (GARGCOUNT > 0)
     {
-#ifdef EXPAND_FILENAMES
+#if defined(EXPAND_FILENAMES) && !(defined(FEAT_MBYTE) && defined(WIN32))
 	/*
 	 * Expand wildcards in file names.
 	 */
