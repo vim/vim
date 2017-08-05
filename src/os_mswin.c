@@ -450,6 +450,15 @@ slash_adjust(char_u *p)
 {
     if (path_with_url(p))
 	return;
+
+    if (*p == '`')
+    {
+	/* don't replace backslash in backtick quoted strings */
+	int len = STRLEN(p);
+	if (len > 2 && *(p + len - 1) == '`')
+	    return;
+    }
+
     while (*p)
     {
 	if (*p == psepcN)
