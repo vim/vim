@@ -36,7 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - job_start('ls') sometimes does not work.
  * - MS-Windows: no redraw for 'updatetime'  #1915
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
