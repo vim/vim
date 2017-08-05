@@ -2817,25 +2817,40 @@ channel_close(channel_T *channel, int invoke_close_cb)
     ch_close_part(channel, PART_OUT);
     ch_close_part(channel, PART_ERR);
 
-    if (invoke_close_cb && channel->ch_close_cb != NULL)
+    if (invoke_close_cb)
     {
-	  typval_T	argv[1];
-	  typval_T	rettv;
-	  int		dummy;
-	  ch_part_T	part;
+	ch_part_T	part;
 
-	  /* Invoke callbacks before the close callback, since it's weird to
-	   * first invoke the close callback.  Increment the refcount to avoid
-	   * the channel being freed halfway. */
-	  ++channel->ch_refcount;
-	  ch_log(channel, "Invoking callbacks before closing");
-	  for (part = PART_SOCK; part < PART_IN; ++part)
-	      while (may_invoke_callback(channel, part))
-		  ;
+	/* Invoke callbacks and flush buffers before the close callback. */
+	if (channel->ch_close_cb != NULL)
+	    ch_log(channel,
+		     "Invoking callbacks and flushing buffers before closing");
+	for (part = PART_SOCK; part < PART_IN; ++part)
+	{
+	    if (channel->ch_close_cb != NULL
+			    || channel->ch_part[part].ch_bufref.br_buf != NULL)
+	    {
+		/* Increment the refcount to avoid the channel being freed
+		 * halfway. */
+		++channel->ch_refcount;
+		if (channel->ch_close_cb == NULL)
+		    ch_log(channel, "flushing %s buffers before closing",
+							     part_names[part]);
+		while (may_invoke_callback(channel, part))
+		    ;
+		--channel->ch_refcount;
+	    }
+	}
 
-	  /* Invoke the close callback, if still set. */
-	  if (channel->ch_close_cb != NULL)
-	  {
+	if (channel->ch_close_cb != NULL)
+	{
+	      typval_T	argv[1];
+	      typval_T	rettv;
+	      int		dummy;
+
+	      /* Increment the refcount to avoid the channel being freed
+	       * halfway. */
+	      ++channel->ch_refcount;
 	      ch_log(channel, "Invoking close callback %s",
 						(char *)channel->ch_close_cb);
 	      argv[0].v_type = VAR_CHANNEL;
@@ -2845,25 +2860,25 @@ channel_close(channel_T *channel, int invoke_close_cb)
 			   channel->ch_close_partial, NULL);
 	      clear_tv(&rettv);
 	      channel_need_redraw = TRUE;
-	  }
 
-	  /* the callback is only called once */
-	  free_callback(channel->ch_close_cb, channel->ch_close_partial);
-	  channel->ch_close_cb = NULL;
-	  channel->ch_close_partial = NULL;
+	      /* the callback is only called once */
+	      free_callback(channel->ch_close_cb, channel->ch_close_partial);
+	      channel->ch_close_cb = NULL;
+	      channel->ch_close_partial = NULL;
 
-	  --channel->ch_refcount;
+	      --channel->ch_refcount;
 
-	  if (channel_need_redraw)
-	  {
-	      channel_need_redraw = FALSE;
-	      redraw_after_callback();
-	  }
+	      if (channel_need_redraw)
+	      {
+		  channel_need_redraw = FALSE;
+		  redraw_after_callback();
+	      }
 
-	  if (!channel->ch_drop_never)
-	      /* any remaining messages are useless now */
-	      for (part = PART_SOCK; part < PART_IN; ++part)
-		  drop_messages(channel, part);
+	      if (!channel->ch_drop_never)
+		  /* any remaining messages are useless now */
+		  for (part = PART_SOCK; part < PART_IN; ++part)
+		      drop_messages(channel, part);
+	}
     }
 
     channel->ch_nb_close_cb = NULL;
