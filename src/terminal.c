@@ -92,9 +92,11 @@
 
 #if defined(FEAT_TERMINAL) || defined(PROTO)
 
-#ifdef WIN3264
-# define MIN(x,y) (x < y ? x : y)
-# define MAX(x,y) (x > y ? x : y)
+#ifndef MIN
+# define MIN(x,y) ((x) < (y) ? (x) : (y))
+#endif
+#ifndef MAX
+# define MAX(x,y) ((x) > (y) ? (x) : (y))
 #endif
 
 #include "libvterm/include/vterm.h"
