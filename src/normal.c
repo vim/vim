@@ -4639,7 +4639,7 @@ nv_mousescroll(cmdarg_T *cap)
     if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
     {
 # ifdef FEAT_TERMINAL
-	if (term_use_loop())
+	if (term_use_loop(FALSE))
 	    send_keys_to_term(curbuf->b_term, cap->cmdchar, TRUE);
 	else
 # endif
