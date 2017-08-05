@@ -36,6 +36,7 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
+ * - job_start('ls') sometimes does not work.
  * - MS-Windows: no redraw for 'updatetime'  #1915
  * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
@@ -67,8 +68,14 @@
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
  * - implement "term" for job_start(): more job options when starting a
- *   terminal.  Might allow reading stdin from a file or buffer, sending stderr
- *   to a file or /dev/null, but something must be connected to the terminal.
+ *   terminal.  Allow:
+ *	"in_io", "in_top", "in_bot", "in_name", "in_buf"
+	"out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
+	"err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
+ *   Check that something is connected to the terminal.
+ *   Test: "cat" reading from a file or buffer
+ *         "ls" writing stdout to a file or buffer
+ *         shell writing stderr to a file or buffer
  * - support ":term NONE" to open a terminal with a pty but not running a job
  *   in it.  The pty can be passed to gdb to run the executable in.
  * - if the job in the terminal does not support the mouse, we can use the
@@ -265,6 +272,9 @@ term_start(char_u *cmd, jobopt_T *opt)
     if (cmd == NULL || *cmd == NUL)
 	cmd = p_sh;
 
+    if (opt->jo_term_name != NULL)
+	curbuf->b_ffname = vim_strsave(opt->jo_term_name);
+    else
     {
 	int	i;
 	size_t	len = STRLEN(cmd) + 10;
@@ -2140,7 +2150,8 @@ f_term_start(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type != VAR_UNKNOWN
 	    && get_job_options(&argvars[1], &opt,
 		JO_TIMEOUT_ALL + JO_STOPONEXIT
-		+ JO_EXIT_CB + JO_CLOSE_CALLBACK) == FAIL)
+		+ JO_EXIT_CB + JO_CLOSE_CALLBACK
+		+ JO2_TERM_NAME) == FAIL)
 	return;
 
     term_start(cmd, &opt);
