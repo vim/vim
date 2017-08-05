@@ -1656,7 +1656,7 @@ struct channel_S {
 #define JO_CALLBACK	    0x0010	/* channel callback */
 #define JO_OUT_CALLBACK	    0x0020	/* stdout callback */
 #define JO_ERR_CALLBACK	    0x0040	/* stderr callback */
-#define JO_CLOSE_CALLBACK   0x0080	/* close callback */
+#define JO_CLOSE_CALLBACK   0x0080	/* "close_cb" */
 #define JO_WAITTIME	    0x0100	/* only for ch_open() */
 #define JO_TIMEOUT	    0x0200	/* all timeouts */
 #define JO_OUT_TIMEOUT	    0x0400	/* stdout timeouts */
@@ -1684,7 +1684,8 @@ struct channel_S {
 
 #define JO2_OUT_MSG	    0x0001	/* "out_msg" */
 #define JO2_ERR_MSG	    0x0002	/* "err_msg" (JO_OUT_ << 1) */
-#define JO2_ALL		    0x0003
+#define JO2_TERM_NAME	    0x0004	/* "term_name" */
+#define JO2_ALL		    0x0007
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1741,6 +1742,7 @@ typedef struct
     /* when non-zero run the job in a terminal window of this size */
     int		jo_term_rows;
     int		jo_term_cols;
+    char_u	*jo_term_name;
 #endif
 } jobopt_T;
 
