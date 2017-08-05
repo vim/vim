@@ -8165,9 +8165,6 @@ alist_add(
 {
     if (fname == NULL)		/* don't add NULL file names */
 	return;
-#ifdef BACKSLASH_IN_FILENAME
-    slash_adjust(fname);
-#endif
     AARGLIST(al)[al->al_ga.ga_len].ae_fname = fname;
     if (set_fnum > 0)
 	AARGLIST(al)[al->al_ga.ga_len].ae_fnum =
