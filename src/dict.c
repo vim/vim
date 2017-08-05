@@ -525,7 +525,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 	    }
 	    ga_concat(&ga, (char_u *)": ");
 	    s = echo_string_core(&HI2DI(hi)->di_tv, &tofree, numbuf, copyID,
-						 FALSE, restore_copyID, TRUE);
+					 FALSE, restore_copyID, TRUE, FALSE);
 	    if (s != NULL)
 		ga_concat(&ga, s);
 	    vim_free(tofree);

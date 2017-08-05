@@ -5683,8 +5683,8 @@ get_var_special_name(int nr)
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
  * When "copyID" is not NULL replace recursive lists and dicts with "...".
- * When both "echo_style" and "dict_val" are FALSE, put quotes around stings as
- * "string()", otherwise does not put quotes around strings, as ":echo"
+ * When both "echo_style" and "literal_val" are FALSE, put quotes around stings
+ * as "string()", otherwise does not put quotes around strings, as ":echo"
  * displays values.
  * When "restore_copyID" is FALSE, repeated items in dictionaries and lists
  * are replaced with "...".
@@ -5698,7 +5698,8 @@ echo_string_core(
     int		copyID,
     int		echo_style,
     int		restore_copyID,
-    int		dict_val)
+    int		dict_val,
+    int		list_val)
 {
     static int	recurse = 0;
     char_u	*r = NULL;
@@ -5841,10 +5842,19 @@ echo_string_core(
 
 	case VAR_NUMBER:
 	case VAR_UNKNOWN:
+	    *tofree = NULL;
+	    r = get_tv_string_buf(tv, numbuf);
+	    break;
+
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	    *tofree = NULL;
 	    r = get_tv_string_buf(tv, numbuf);
+	    if (dict_val || list_val)
+	    {
+		*tofree = string_quote(r, FALSE);
+		r = *tofree;
+	    }
 	    break;
 
 	case VAR_FLOAT:
@@ -5881,7 +5891,7 @@ echo_string(
     char_u	*numbuf,
     int		copyID)
 {
-    return echo_string_core(tv, tofree, numbuf, copyID, TRUE, FALSE, FALSE);
+    return echo_string_core(tv, tofree, numbuf, copyID, TRUE, FALSE, FALSE, FALSE);
 }
 
 /*
@@ -5898,7 +5908,7 @@ tv2string(
     char_u	*numbuf,
     int		copyID)
 {
-    return echo_string_core(tv, tofree, numbuf, copyID, FALSE, TRUE, FALSE);
+    return echo_string_core(tv, tofree, numbuf, copyID, FALSE, TRUE, FALSE, FALSE);
 }
 
 /*
