@@ -61,6 +61,11 @@ the job.  For example:
 	'termkey' .	    send a CTRL-W to the job in the terminal
 	'termkey' N  	    go to terminal Normal mode, see below
 	'termkey' CTRL-N    same as CTRL-W N
+							*t_CTRL-\_CTRL-N*
+The special key combination CTRL-\ CTRL-N can be used to prefix one Normal
+mode command.  This is especially useful for remote commands, when you don't
+know whether Vim currently has focus in a terminal window.  Note that only one
+Normal mode command can be used.
 
 
 Size ~
@@ -141,6 +146,23 @@ displayed.
 
 In Terminal mode the statusline and window title show "(Terminal)".  If the
 job ends while in Terminal mode this changes to "(Terminal-finished)".
+
+Environment variables are used to pass information to the running job:
+    TERM		name of the terminal, 'term'
+    ROWS		number of rows in the terminal initially
+    LINES		same as ROWS
+    COLUMNS		number of columns in the terminal initially
+    COLORS		number of colors, 't_Co' (256*256*256 in the GUI)
+    VIM_SERVERNAME	v:servername
+
+The |client-server| feature can be used to communicate with the Vim instance
+where the job was started.  This only works when v:servername is not empty.
+If needed you can set it with: >
+	call remote_startserver('vim-server')
+
+In the job you can then do something like: >
+	vim --servername $VIM_SERVERNAME --remote +123 some_file.c
+This will open the file "some_file.c" and put the cursor on line 123.
 
 
 Unix ~
