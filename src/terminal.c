@@ -37,7 +37,6 @@
  *
  * TODO:
  * - MS-Windows: no redraw for 'updatetime'  #1915
- * - in bash mouse clicks are inserting characters.
  * - mouse scroll: when over other window, scroll that window.
  * - add argument to term_wait() for waiting time.
  * - For the scrollback buffer store lines in the buffer, only attributes in
