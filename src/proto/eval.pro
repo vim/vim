@@ -47,7 +47,7 @@ int garbage_collect(int testing);
 int set_ref_in_ht(hashtab_T *ht, int copyID, list_stack_T **list_stack);
 int set_ref_in_list(list_T *l, int copyID, ht_stack_T **ht_stack);
 int set_ref_in_item(typval_T *tv, int copyID, ht_stack_T **ht_stack, list_stack_T **list_stack);
-char_u *echo_string_core(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID, int echo_style, int restore_copyID, int dict_val);
+char_u *echo_string_core(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID, int echo_style, int restore_copyID, int dict_val, int list_val);
 char_u *echo_string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
 char_u *tv2string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
 char_u *string_quote(char_u *str, int function);

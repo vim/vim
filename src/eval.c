@@ -5698,7 +5698,8 @@ echo_string_core(
     int		copyID,
     int		echo_style,
     int		restore_copyID,
-    int		literal_val)
+    int		dict_val,
+    int		list_val)
 {
     static int	recurse = 0;
     char_u	*r = NULL;
@@ -5721,7 +5722,7 @@ echo_string_core(
     switch (tv->v_type)
     {
 	case VAR_STRING:
-	    if (echo_style && !literal_val)
+	    if (echo_style && !dict_val)
 	    {
 		*tofree = NULL;
 		r = get_tv_string_buf(tv, numbuf);
@@ -5849,7 +5850,7 @@ echo_string_core(
 	case VAR_CHANNEL:
 	    *tofree = NULL;
 	    r = get_tv_string_buf(tv, numbuf);
-	    if (literal_val)
+	    if (dict_val || list_val)
 	    {
 		*tofree = string_quote(r, FALSE);
 		r = *tofree;
@@ -5890,7 +5891,7 @@ echo_string(
     char_u	*numbuf,
     int		copyID)
 {
-    return echo_string_core(tv, tofree, numbuf, copyID, TRUE, FALSE, FALSE);
+    return echo_string_core(tv, tofree, numbuf, copyID, TRUE, FALSE, FALSE, FALSE);
 }
 
 /*
@@ -5907,7 +5908,7 @@ tv2string(
     char_u	*numbuf,
     int		copyID)
 {
-    return echo_string_core(tv, tofree, numbuf, copyID, FALSE, TRUE, FALSE);
+    return echo_string_core(tv, tofree, numbuf, copyID, FALSE, TRUE, FALSE, FALSE);
 }
 
 /*

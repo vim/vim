@@ -740,7 +740,7 @@ list_join_inner(
     for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
 	s = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
-					   echo_style, restore_copyID, TRUE);
+				   echo_style, restore_copyID, FALSE, TRUE);
 	if (s == NULL)
 	    return FAIL;
 
