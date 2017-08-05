@@ -4641,7 +4641,7 @@ home_replace(
      */
     if (buf != NULL && buf->b_help)
     {
-	STRCPY(dst, gettail(src));
+	vim_snprintf((char *)dst, dstlen, "%s", gettail(src));
 	return;
     }
 
