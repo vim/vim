@@ -52,6 +52,9 @@
  * - make term_getcursor() return type (none/block/bar/underline) and
  *   attributes (color, blink, etc.)
  * - To set BS correctly, check get_stty(); Pass the fd of the pty.
+ *   For the GUI fill termios with default values, perhaps like pangoterm:
+ *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
+ *   Also get the NL behavior from there.
  * - do not store terminal window in viminfo.  Or prefix term:// ?
  * - add a character in :ls output
  * - add 't' to mode()
@@ -64,7 +67,8 @@
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
  * - implement "term" for job_start(): more job options when starting a
- *   terminal.
+ *   terminal.  Might allow reading stdin from a file or buffer, sending stderr
+ *   to a file or /dev/null, but something must be connected to the terminal.
  * - support ":term NONE" to open a terminal with a pty but not running a job
  *   in it.  The pty can be passed to gdb to run the executable in.
  * - if the job in the terminal does not support the mouse, we can use the
@@ -862,6 +866,8 @@ term_vgetc()
 
 /*
  * Send keys to terminal.
+ * Return FAIL when the key needs to be handled in Normal mode.
+ * Return OK when the key was dropped or sent to the terminal.
  */
     static int
 send_keys_to_term(term_T *term, int c, int typed)
@@ -1038,7 +1044,7 @@ terminal_loop(void)
 	    mch_stop_job(curbuf->b_term->tl_job, (char_u *)"quit");
 #endif
 
-	if (c == (termkey == 0 ? Ctrl_W : termkey))
+	if (c == (termkey == 0 ? Ctrl_W : termkey) || c == Ctrl_BSL)
 	{
 	    int	    prev_c = c;
 
@@ -1054,7 +1060,15 @@ terminal_loop(void)
 		/* job finished while waiting for a character */
 		break;
 
-	    if (termkey == 0 && c == '.')
+	    if (prev_c == Ctrl_BSL)
+	    {
+		if (c == Ctrl_N)
+		    /* CTRL-\ CTRL-N : execute one Normal mode command. */
+		    return OK;
+		/* Send both keys to the terminal. */
+		send_keys_to_term(curbuf->b_term, prev_c, TRUE);
+	    }
+	    else if (termkey == 0 && c == '.')
 	    {
 		/* "CTRL-W .": send CTRL-W to the job */
 		c = Ctrl_W;
