@@ -18,6 +18,9 @@ func Run_shell_in_terminal()
   let g:job = term_getjob(buf)
   call assert_equal(v:t_job, type(g:job))
 
+  let string = string({'job': term_getjob(buf)})
+  call assert_match("{'job': 'process \\d\\+ run'}", string)
+
   return buf
 endfunc
 
