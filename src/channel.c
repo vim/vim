@@ -4391,6 +4391,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
+#ifdef FEAT_TERMINAL
 	    else if (STRCMP(hi->hi_key, "term_name") == 0)
 	    {
 		if (!(supported & JO2_TERM_NAME))
@@ -4403,6 +4404,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
+#endif
 	    else if (STRCMP(hi->hi_key, "waittime") == 0)
 	    {
 		if (!(supported & JO_WAITTIME))
