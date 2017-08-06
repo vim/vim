@@ -67,6 +67,7 @@ addons:
   apt:
     packages:
       - autoconf
+      - ggcov
       - lcov
       - libperl-dev
       - python-dev
