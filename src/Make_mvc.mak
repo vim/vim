@@ -15,7 +15,8 @@
 # This will build the console version of Vim with no additional interfaces.
 # To add features, define any of the following:
 #
-# 	For MSVC 11 you need to specify where the Win32.mak file is, e.g.:
+# 	For MSVC 11, if you want to include Win32.mak, you need to specify
+# 	where the file is, e.g.:
 # 	   SDK_INCLUDE_DIR="C:\Program Files\Microsoft SDKs\Windows\v7.1\Include"
 #
 #	!!!!  After changing features do "nmake clean" first  !!!!
@@ -212,7 +213,7 @@ OBJDIR = $(OBJDIR)Z
 OBJDIR = $(OBJDIR)d
 !endif
 
-# Win32.mak requires that CPU be set appropriately.
+# If you include Win32.mak, it requires that CPU be set appropriately.
 # To cross-compile for Win64, set CPU=AMD64 or CPU=IA64.
 
 !ifdef PROCESSOR_ARCHITECTURE
@@ -253,12 +254,15 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 !endif
 
 
-# Get all sorts of useful, standard macros from the Platform SDK.
+# Get all sorts of useful, standard macros from the Platform SDK,
+# if SDK_INCLUDE_DIR is set or USE_WIN32MAK is set to "yes".
 
 !ifdef SDK_INCLUDE_DIR
 !include $(SDK_INCLUDE_DIR)\Win32.mak
-!else
+!elseif "$(USE_WIN32MAK)"=="yes"
 !include <Win32.mak>
+!else
+link = link
 !endif
 
 
