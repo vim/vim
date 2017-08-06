@@ -79,8 +79,9 @@ addons:
 
 before_install:
   - rvm reset
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$(echo $PATH | sed -e "s#$(echo $(which python3) | sed -e 's#/python3$##'):##"); fi
-  - echo $PATH
+    # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
+    # ("pyenv global system" doesn't seem to work.)
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && which python3 | grep '/opt/python/' > /dev/null; then export PATH=$(echo $PATH | sed -e "s#$(echo $(which python3) | sed -e 's#/python3$##'):##"); fi
   - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls; fi
     # needed for https support for coveralls
     # building cffi only works with gcc, not with clang
