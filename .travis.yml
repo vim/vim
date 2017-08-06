@@ -86,6 +86,9 @@ before_install:
   - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
     # Lua is not installed on Travis OSX
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install lua; export LUA_PREFIX=/usr/local; fi
+  - echo $PATH
+  - which gcov
+  - gcov --version
 
 # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
 before_script:
