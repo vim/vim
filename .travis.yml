@@ -79,7 +79,7 @@ addons:
 
 before_install:
   - rvm reset
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$(echo $PATH | sed -e "s#$(echo $(which python3) | sed -e 's#/python3\$##'):##"); fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$(echo $PATH | sed -e "s#$(echo $(which python3) | sed -e 's#/python3$##'):##"); fi
   - echo $PATH
   - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls; fi
     # needed for https support for coveralls
