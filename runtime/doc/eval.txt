@@ -2381,7 +2381,7 @@ term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
-term_wait({buf})		Number  wait for screen to be updated
+term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
@@ -8041,9 +8041,11 @@ term_start({cmd}, {options})				*term_start()*
 				 the command name.
 		{only available when compiled with the |+terminal| feature}
 
-term_wait({buf})						*term_wait()*
+term_wait({buf} [, {time}])					*term_wait()*
 		Wait for pending updates of {buf} to be handled.
 		{buf} is used as with |term_getsize()|.
+		{time} is how long to wait for updates to arrive in msec.  If
+		not set then 10 msec will be used.
 		{only available when compiled with the |+terminal| feature}
 
 test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*

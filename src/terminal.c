@@ -36,7 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - Add argument to term_wait() for waiting time.
  * - For the scrollback buffer store lines in the buffer, only attributes in
  *   tl_scrollback.
  * - When the job ends:
@@ -2248,12 +2247,15 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
     }
     else
     {
+	long wait = 10L;
+
 	mch_check_messages();
 	parse_queued_messages();
 
-	/* Wait for 10 msec for any channel I/O. */
-	/* TODO: use delay from optional argument */
-	ui_delay(10L, TRUE);
+	/* Wait for some time for any channel I/O. */
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	    wait = get_tv_number(&argvars[1]);
+	ui_delay(wait, TRUE);
 	mch_check_messages();
 
 	/* Flushing messages on channels is hopefully sufficient.
