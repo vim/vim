@@ -1696,6 +1696,9 @@ func Test_cwd()
   call WaitFor('"" != s:envstr')
   let expect = substitute(expect, '[/\\]$', '', '')
   let s:envstr = substitute(s:envstr, '[/\\]$', '', '')
+  if $CI != '' && stridx(s:envstr, '/private/') == 0
+    let s:envstr = s:envstr[8:]
+  endif
   call assert_equal(expect, s:envstr)
   unlet s:envstr
 endfunc
