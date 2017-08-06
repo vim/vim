@@ -5312,9 +5312,10 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 # ifdef FEAT_JOB_CHANNEL
 	if (options->jo_env != NULL)
 	{
+	    dict_T	*jo_env = options->jo_env;
 	    hashitem_T	*hi;
-	    int		todo = (int)env->dv_hashtab.ht_used;
-	    for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
+	    int		todo = (int)jo_env->dv_hashtab.ht_used;
+	    for (hi = jo_env->dv_hashtab.ht_array; todo > 0; ++hi)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{
