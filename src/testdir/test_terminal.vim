@@ -97,7 +97,7 @@ func! s:Nasty_exit_cb(job, st)
 endfunc
 
 func Test_terminal_nasty_cb()
-  let cmd = Get_cat_cmd()
+  let cmd = Get_cat_123_cmd()
   let g:buf = term_start(cmd, {'exit_cb': function('s:Nasty_exit_cb')})
   let g:job = term_getjob(g:buf)
 
@@ -135,7 +135,7 @@ func Check_123(buf)
   call assert_equal('123', l)
 endfunc
 
-func Get_cat_cmd()
+func Get_cat_123_cmd()
   if has('win32')
     return 'cmd /c "cls && color 2 && echo 123"'
   else
@@ -144,8 +144,8 @@ func Get_cat_cmd()
   endif
 endfunc
 
-func Test_terminal_scrape()
-  let cmd = Get_cat_cmd()
+func Test_terminal_scrape_123()
+  let cmd = Get_cat_123_cmd()
   let buf = term_start(cmd)
 
   let termlist = term_list()
@@ -172,8 +172,46 @@ func Test_terminal_scrape()
   call delete('Xtext')
 endfunc
 
+func Test_terminal_scrape_multibyte()
+  if !has('multi_byte')
+    return
+  endif
+  call writefile(["léttまrs"], 'Xtext')
+  if has('win32')
+    let cmd = 'cmd /c "type Xtext"'
+  else
+    let cmd = "cat Xtext"
+  endif
+  let buf = term_start(cmd)
+
+  call term_wait(buf)
+  if has('win32')
+    " TODO: this should not be needed
+    sleep 100m
+  endif
+
+  let l = term_scrape(buf, 1)
+  call assert_true(len(l) >= 7)
+  call assert_equal('l', l[0].chars)
+  call assert_equal('é', l[1].chars)
+  call assert_equal(1, l[1].width)
+  call assert_equal('t', l[2].chars)
+  call assert_equal('t', l[3].chars)
+  call assert_equal('ま', l[4].chars)
+  call assert_equal(2, l[4].width)
+  call assert_equal('r', l[5].chars)
+  call assert_equal('s', l[6].chars)
+
+  let g:job = term_getjob(buf)
+  call WaitFor('job_status(g:job) == "dead"')
+  call term_wait(buf)
+
+  exe buf . 'bwipe'
+  call delete('Xtext')
+endfunc
+
 func Test_terminal_size()
-  let cmd = Get_cat_cmd()
+  let cmd = Get_cat_123_cmd()
 
   exe '5terminal ' . cmd
   let size = term_getsize('')

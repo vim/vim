@@ -36,8 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - For the scrollback buffer store lines in the buffer, only attributes in
- *   tl_scrollback.
  * - When the job ends:
  *   - Need an option or argument to drop the window+buffer right away, to be
  *     used for a shell or Vim. 'termfinish'; "close", "open" (open window when
@@ -97,9 +95,16 @@
 
 #include "libvterm/include/vterm.h"
 
+/* This is VTermScreenCell without the characters, thus much smaller. */
+typedef struct {
+  VTermScreenCellAttrs	attrs;
+  char			width;
+  VTermColor		fg, bg;
+} cellattr_T;
+
 typedef struct sb_line_S {
-    int		    sb_cols;	/* can differ per line */
-    VTermScreenCell *sb_cells;	/* allocated */
+    int		sb_cols;	/* can differ per line */
+    cellattr_T	*sb_cells;	/* allocated */
 } sb_line_T;
 
 /* typedef term_T in structs.h */
@@ -688,29 +693,11 @@ term_job_running(term_T *term)
  * Add the last line of the scrollback buffer to the buffer in the window.
  */
     static void
-add_scrollback_line_to_buffer(term_T *term)
+add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
 {
     linenr_T	    lnum = term->tl_scrollback.ga_len - 1;
-    sb_line_T	    *line = (sb_line_T *)term->tl_scrollback.ga_data + lnum;
-    garray_T	    ga;
-    int		    c;
-    int		    col;
-    int		    i;
 
-    ga_init2(&ga, 1, 100);
-    for (col = 0; col < line->sb_cols; col += line->sb_cells[col].width)
-    {
-	if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
-	    goto failed;
-	for (i = 0; (c = line->sb_cells[col].chars[i]) > 0 || i == 0; ++i)
-	    ga.ga_len += mb_char2bytes(c == NUL ? ' ' : c,
-					 (char_u *)ga.ga_data + ga.ga_len);
-    }
-    if (ga_grow(&ga, 1) == FAIL)
-	goto failed;
-    *((char_u *)ga.ga_data + ga.ga_len) = NUL;
-    ml_append_buf(term->tl_buffer, lnum, ga.ga_data, ga.ga_len + 1, FALSE);
-
+    ml_append_buf(term->tl_buffer, lnum, text, len + 1, FALSE);
     if (lnum == 0)
     {
 	/* Delete the empty line that was in the empty buffer. */
@@ -718,14 +705,11 @@ add_scrollback_line_to_buffer(term_T *term)
 	ml_delete(2, FALSE);
 	curbuf = curwin->w_buffer;
     }
-
-failed:
-    ga_clear(&ga);
 }
 
 /*
  * Add the current lines of the terminal to scrollback and to the buffer.
- * Called after the job has ended and when switching to Terminal mode.
+ * Called after the job has ended and when switching to Terminal-Normal mode.
  */
     static void
 move_terminal_to_buffer(term_T *term)
@@ -735,7 +719,7 @@ move_terminal_to_buffer(term_T *term)
     int		    lines_skipped = 0;
     VTermPos	    pos;
     VTermScreenCell cell;
-    VTermScreenCell *p;
+    cellattr_T	    *p;
     VTermScreen	    *screen;
 
     if (term->tl_vterm == NULL)
@@ -766,28 +750,61 @@ move_terminal_to_buffer(term_T *term)
 		    line->sb_cells = NULL;
 		    ++term->tl_scrollback.ga_len;
 
-		    add_scrollback_line_to_buffer(term);
+		    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
 		}
 	    }
 
-	    p = (VTermScreenCell *)alloc((int)sizeof(VTermScreenCell) * len);
+	    p = (cellattr_T *)alloc((int)sizeof(cellattr_T) * len);
 	    if (p != NULL && ga_grow(&term->tl_scrollback, 1) == OK)
 	    {
-		sb_line_T *line = (sb_line_T *)term->tl_scrollback.ga_data
+		garray_T    ga;
+		int	    width;
+		sb_line_T   *line = (sb_line_T *)term->tl_scrollback.ga_data
 						  + term->tl_scrollback.ga_len;
 
-		for (pos.col = 0; pos.col < len; ++pos.col)
+		ga_init2(&ga, 1, 100);
+		for (pos.col = 0; pos.col < len; pos.col += width)
 		{
 		    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
-			vim_memset(p + pos.col, 0, sizeof(cell));
+		    {
+			width = 1;
+			vim_memset(p + pos.col, 0, sizeof(cellattr_T));
+			if (ga_grow(&ga, 1) == OK)
+			    ga.ga_len += mb_char2bytes(' ',
+					     (char_u *)ga.ga_data + ga.ga_len);
+		    }
 		    else
-			p[pos.col] = cell;
+		    {
+			width = cell.width;
+
+			p[pos.col].width = cell.width;
+			p[pos.col].attrs = cell.attrs;
+			p[pos.col].fg = cell.fg;
+			p[pos.col].bg = cell.bg;
+
+			if (ga_grow(&ga, MB_MAXBYTES) == OK)
+			{
+			    int	    i;
+			    int	    c;
+
+			    for (i = 0; (c = cell.chars[i]) > 0 || i == 0; ++i)
+				ga.ga_len += mb_char2bytes(c == NUL ? ' ' : c,
+					     (char_u *)ga.ga_data + ga.ga_len);
+			}
+		    }
 		}
 		line->sb_cols = len;
 		line->sb_cells = p;
 		++term->tl_scrollback.ga_len;
 
-		add_scrollback_line_to_buffer(term);
+		if (ga_grow(&ga, 1) == FAIL)
+		    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
+		else
+		{
+		    *((char_u *)ga.ga_data + ga.ga_len) = NUL;
+		    add_scrollback_line_to_buffer(term, ga.ga_data, ga.ga_len);
+		}
+		ga_clear(&ga);
 	    }
 	    else
 		vim_free(p);
@@ -1312,13 +1329,15 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
     term_T	*term = (term_T *)user;
 
     /* TODO: Limit the number of lines that are stored. */
-    /* TODO: put the text in the buffer. */
     if (ga_grow(&term->tl_scrollback, 1) == OK)
     {
-	VTermScreenCell *p = NULL;
+	cellattr_T	*p = NULL;
 	int		len = 0;
 	int		i;
+	int		c;
+	int		col;
 	sb_line_T	*line;
+	garray_T	ga;
 
 	/* do not store empty cells at the end */
 	for (i = 0; i < cols; ++i)
@@ -1326,9 +1345,34 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 		len = i + 1;
 
 	if (len > 0)
-	    p = (VTermScreenCell *)alloc((int)sizeof(VTermScreenCell) * len);
+	    p = (cellattr_T *)alloc((int)sizeof(cellattr_T) * len);
 	if (p != NULL)
-	    mch_memmove(p, cells, sizeof(VTermScreenCell) * len);
+	{
+	    ga_init2(&ga, 1, 100);
+	    for (col = 0; col < len; col += cells[col].width)
+	    {
+		if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
+		{
+		    ga.ga_len = 0;
+		    break;
+		}
+		for (i = 0; (c = cells[col].chars[i]) > 0 || i == 0; ++i)
+		    ga.ga_len += mb_char2bytes(c == NUL ? ' ' : c,
+					     (char_u *)ga.ga_data + ga.ga_len);
+		p[col].width = cells[col].width;
+		p[col].attrs = cells[col].attrs;
+		p[col].fg = cells[col].fg;
+		p[col].bg = cells[col].bg;
+	    }
+	}
+	if (ga_grow(&ga, 1) == FAIL)
+	    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
+	else
+	{
+	    *((char_u *)ga.ga_data + ga.ga_len) = NUL;
+	    add_scrollback_line_to_buffer(term, ga.ga_data, ga.ga_len);
+	}
+	ga_clear(&ga);
 
 	line = (sb_line_T *)term->tl_scrollback.ga_data
 						  + term->tl_scrollback.ga_len;
@@ -1336,8 +1380,6 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	line->sb_cells = p;
 	++term->tl_scrollback.ga_len;
 	++term->tl_scrollback_scrolled;
-
-	add_scrollback_line_to_buffer(term);
     }
     return 0; /* ignored */
 }
@@ -1510,19 +1552,19 @@ color2index(VTermColor *color, int fg, int *boldp)
  * Convert the attributes of a vterm cell into an attribute index.
  */
     static int
-cell2attr(VTermScreenCell *cell)
+cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
 {
     int attr = 0;
 
-    if (cell->attrs.bold)
+    if (cellattrs.bold)
 	attr |= HL_BOLD;
-    if (cell->attrs.underline)
+    if (cellattrs.underline)
 	attr |= HL_UNDERLINE;
-    if (cell->attrs.italic)
+    if (cellattrs.italic)
 	attr |= HL_ITALIC;
-    if (cell->attrs.strike)
+    if (cellattrs.strike)
 	attr |= HL_STANDOUT;
-    if (cell->attrs.reverse)
+    if (cellattrs.reverse)
 	attr |= HL_INVERSE;
 
 #ifdef FEAT_GUI
@@ -1530,8 +1572,8 @@ cell2attr(VTermScreenCell *cell)
     {
 	guicolor_T fg, bg;
 
-	fg = gui_mch_get_rgb_color(cell->fg.red, cell->fg.green, cell->fg.blue);
-	bg = gui_mch_get_rgb_color(cell->bg.red, cell->bg.green, cell->bg.blue);
+	fg = gui_mch_get_rgb_color(cellfg.red, cellfg.green, cellfg.blue);
+	bg = gui_mch_get_rgb_color(cellbg.red, cellbg.green, cellbg.blue);
 	return get_gui_attr_idx(attr, fg, bg);
     }
     else
@@ -1541,8 +1583,8 @@ cell2attr(VTermScreenCell *cell)
     {
 	guicolor_T fg, bg;
 
-	fg = gui_get_rgb_color_cmn(cell->fg.red, cell->fg.green, cell->fg.blue);
-	bg = gui_get_rgb_color_cmn(cell->bg.red, cell->bg.green, cell->bg.blue);
+	fg = gui_get_rgb_color_cmn(cellfg.red, cellfg.green, cellfg.blue);
+	bg = gui_get_rgb_color_cmn(cellbg.red, cellbg.green, cellbg.blue);
 
 	return get_tgc_attr_idx(attr, fg, bg);
     }
@@ -1550,8 +1592,8 @@ cell2attr(VTermScreenCell *cell)
 #endif
     {
 	int bold = MAYBE;
-	int fg = color2index(&cell->fg, TRUE, &bold);
-	int bg = color2index(&cell->bg, FALSE, &bold);
+	int fg = color2index(&cellfg, TRUE, &bold);
+	int bg = color2index(&cellbg, FALSE, &bold);
 
 	/* with 8 colors set the bold attribute to get a bright foreground */
 	if (bold == TRUE)
@@ -1660,7 +1702,7 @@ term_update_window(win_T *wp)
 		    ScreenLines[off] = c;
 #endif
 		}
-		ScreenAttrs[off] = cell2attr(&cell);
+		ScreenAttrs[off] = cell2attr(cell.attrs, cell.fg, cell.bg);
 
 		++pos.col;
 		++off;
@@ -1734,15 +1776,17 @@ term_change_in_curbuf(void)
     int
 term_get_attr(buf_T *buf, linenr_T lnum, int col)
 {
-    term_T *term = buf->b_term;
-    sb_line_T *line;
+    term_T	*term = buf->b_term;
+    sb_line_T	*line;
+    cellattr_T	*cellattr;
 
     if (lnum > term->tl_scrollback.ga_len)
 	return 0;
     line = (sb_line_T *)term->tl_scrollback.ga_data + lnum - 1;
     if (col >= line->sb_cols)
 	return 0;
-    return cell2attr(line->sb_cells + col);
+    cellattr = line->sb_cells + col;
+    return cell2attr(cellattr->attrs, cellattr->fg, cellattr->bg);
 }
 
 /*
@@ -2086,21 +2130,36 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     VTermPos	    pos;
     list_T	    *l;
     term_T	    *term;
+    char_u	    *p;
+    sb_line_T	    *line;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     if (buf == NULL)
 	return;
     term = buf->b_term;
-    if (term->tl_vterm != NULL)
-	screen = vterm_obtain_screen(term->tl_vterm);
 
     l = rettv->vval.v_list;
     pos.row = get_row_number(&argvars[1], term);
+
+    if (term->tl_vterm != NULL)
+	screen = vterm_obtain_screen(term->tl_vterm);
+    else
+    {
+	linenr_T	lnum = pos.row + term->tl_scrollback_scrolled;
+
+	if (lnum < 0 || lnum >= term->tl_scrollback.ga_len)
+	    return;
+	p = ml_get_buf(buf, lnum + 1, FALSE);
+	line = (sb_line_T *)term->tl_scrollback.ga_data + lnum;
+    }
+
     for (pos.col = 0; pos.col < term->tl_cols; )
     {
 	dict_T		*dcell;
-	VTermScreenCell cell;
+	int		width;
+	VTermScreenCellAttrs attrs;
+	VTermColor	fg, bg;
 	char_u		rgb[8];
 	char_u		mbs[MB_MAXBYTES * VTERM_MAX_CHARS_PER_CELL + 1];
 	int		off = 0;
@@ -2108,43 +2167,57 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 
 	if (screen == NULL)
 	{
-	    linenr_T lnum = pos.row + term->tl_scrollback_scrolled;
-	    sb_line_T *line;
+	    cellattr_T	*cellattr;
+	    int		len;
 
 	    /* vterm has finished, get the cell from scrollback */
-	    if (lnum < 0 || lnum >= term->tl_scrollback.ga_len)
-		break;
-	    line = (sb_line_T *)term->tl_scrollback.ga_data + lnum;
 	    if (pos.col >= line->sb_cols)
 		break;
-	    cell = line->sb_cells[pos.col];
+	    cellattr = line->sb_cells + pos.col;
+	    width = cellattr->width;
+	    attrs = cellattr->attrs;
+	    fg = cellattr->fg;
+	    bg = cellattr->bg;
+	    len = MB_PTR2LEN(p);
+	    mch_memmove(mbs, p, len);
+	    mbs[len] = NUL;
+	    p += len;
 	}
-	else if (vterm_screen_get_cell(screen, pos, &cell) == 0)
-	    break;
+	else
+	{
+	    VTermScreenCell cell;
+	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
+		break;
+	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
+	    {
+		if (cell.chars[i] == 0)
+		    break;
+		off += (*utf_char2bytes)((int)cell.chars[i], mbs + off);
+	    }
+	    mbs[off] = NUL;
+	    width = cell.width;
+	    attrs = cell.attrs;
+	    fg = cell.fg;
+	    bg = cell.bg;
+	}
 	dcell = dict_alloc();
 	list_append_dict(l, dcell);
 
-	for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
-	{
-	    if (cell.chars[i] == 0)
-		break;
-	    off += (*utf_char2bytes)((int)cell.chars[i], mbs + off);
-	}
-	mbs[off] = NUL;
 	dict_add_nr_str(dcell, "chars", 0, mbs);
 
 	vim_snprintf((char *)rgb, 8, "#%02x%02x%02x",
-				     cell.fg.red, cell.fg.green, cell.fg.blue);
+				     fg.red, fg.green, fg.blue);
 	dict_add_nr_str(dcell, "fg", 0, rgb);
 	vim_snprintf((char *)rgb, 8, "#%02x%02x%02x",
-				     cell.bg.red, cell.bg.green, cell.bg.blue);
+				     bg.red, bg.green, bg.blue);
 	dict_add_nr_str(dcell, "bg", 0, rgb);
 
-	dict_add_nr_str(dcell, "attr", cell2attr(&cell), NULL);
-	dict_add_nr_str(dcell, "width", cell.width, NULL);
+	dict_add_nr_str(dcell, "attr",
+				cell2attr(attrs, fg, bg), NULL);
+	dict_add_nr_str(dcell, "width", width, NULL);
 
 	++pos.col;
-	if (cell.width == 2)
+	if (width == 2)
 	    ++pos.col;
     }
 }
