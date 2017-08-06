@@ -843,7 +843,7 @@ static struct fst
     {"term_scrape",	2, 2, f_term_scrape},
     {"term_sendkeys",	2, 2, f_term_sendkeys},
     {"term_start",	1, 2, f_term_start},
-    {"term_wait",	1, 1, f_term_wait},
+    {"term_wait",	1, 2, f_term_wait},
 #endif
     {"test_alloc_fail",	3, 3, f_test_alloc_fail},
     {"test_autochdir",	0, 0, f_test_autochdir},
