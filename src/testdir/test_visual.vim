@@ -18,6 +18,12 @@ func Test_block_shift_multibyte()
   q!
 endfunc
 
+func Test_block_shift_overflow()
+  " This used to cause a multiplication overflow followed by a crash.
+  normal ii
+  exe "normal \<C-V>876543210>"
+endfunc
+
 func Test_dotregister_paste()
   new
   exe "norm! ihello world\<esc>"

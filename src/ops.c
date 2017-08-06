@@ -396,7 +396,10 @@ shift_block(oparg_T *oap, int amount)
 	return;
 
     /* total is number of screen columns to be inserted/removed */
-    total = amount * p_sw;
+    total = (int)((unsigned)amount * (unsigned)p_sw);
+    if ((total / p_sw) != amount)
+	return; /* amount * p_sw multiplication overflows */
+
     oldp = ml_get_curline();
 
     if (!left)
