@@ -5405,8 +5405,10 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	if (null_fd >= 0)
 	    close(null_fd);
 
+# ifdef FEAT_JOB_CHANNEL
 	if (options->cwd != NULL)
 	    chdir(options->cwd);
+# endif
 
 	/* See above for type of argv. */
 	execvp(argv[0], argv);
