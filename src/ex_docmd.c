@@ -4223,6 +4223,19 @@ set_one_cmd_context(
 	case CMD_xunmap:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
 						      FALSE, TRUE, ea.cmdidx);
+	case CMD_mapclear:
+	case CMD_nmapclear:
+	case CMD_vmapclear:
+	case CMD_omapclear:
+	case CMD_imapclear:
+	case CMD_cmapclear:
+	case CMD_lmapclear:
+	case CMD_smapclear:
+	case CMD_xmapclear:
+	    xp->xp_context = EXPAND_MAPCLEAR;
+	    xp->xp_pattern = arg;
+	    break;
+
 	case CMD_abbreviate:	case CMD_noreabbrev:
 	case CMD_cabbrev:	case CMD_cnoreabbrev:
 	case CMD_iabbrev:	case CMD_inoreabbrev:
@@ -5964,6 +5977,7 @@ static struct
 	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
     {EXPAND_LOCALES, "locale"},
 #endif
+    {EXPAND_MAPCLEAR, "mapclear"},
     {EXPAND_MAPPINGS, "mapping"},
     {EXPAND_MENUS, "menu"},
     {EXPAND_MESSAGES, "messages"},
@@ -12082,6 +12096,14 @@ get_messages_arg(expand_T *xp UNUSED, int idx)
     return NULL;
 }
 #endif
+
+    char_u *
+get_mapclear_arg(expand_T *xp UNUSED, int idx)
+{
+    if (idx == 0)
+	return (char_u *)"<buffer>";
+    return NULL;
+}
 
 #ifdef FEAT_AUTOCMD
 static int filetype_detect = FALSE;
