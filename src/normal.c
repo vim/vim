@@ -4639,7 +4639,7 @@ nv_mousescroll(cmdarg_T *cap)
     if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
     {
 # ifdef FEAT_TERMINAL
-	if (term_use_loop(FALSE))
+	if (term_use_loop())
 	    send_keys_to_term(curbuf->b_term, cap->cmdchar, TRUE);
 	else
 # endif
@@ -9061,10 +9061,10 @@ nv_edit(cmdarg_T *cap)
 #endif
     }
 #ifdef FEAT_TERMINAL
-    else if (term_in_terminal_mode())
+    else if (term_in_normal_mode())
     {
 	clearop(cap->oap);
-	term_leave_terminal_mode();
+	term_enter_job_mode();
 	return;
     }
 #endif
