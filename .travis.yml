@@ -85,7 +85,7 @@ before_install:
   - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
     # Lua is not installed on Travis OSX
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install lua; export LUA_PREFIX=/usr/local; fi
-  - if [ "$CC" = "clang" ]; then ln -sf `which llvm-cov` /home/travis/bin/gcov; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CC" = "clang" ]; then ln -sf $(which llvm-cov) /home/travis/bin/gcov; fi
   - echo $PATH
   - which gcov
   - gcov --version
