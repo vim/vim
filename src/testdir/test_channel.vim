@@ -1694,6 +1694,7 @@ func Test_cwd()
     call job_start(['pwd'], {'callback': {ch,msg->execute(":let s:envstr .= msg")}, 'cwd': expect})
   endif
   call WaitFor('"" != s:envstr')
+  let expect = substitute(expect, '[/\\]$', '', '')
   let s:envstr = substitute(s:envstr, '[/\\]$', '', '')
   call assert_equal(expect, s:envstr)
   unlet s:envstr
