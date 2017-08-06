@@ -89,6 +89,8 @@ before_install:
   - echo $PATH
   - which gcov
   - gcov --version
+  - which llvm-cov
+  - llvm-cov --version
 
 # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
 before_script:
