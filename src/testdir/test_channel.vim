@@ -1690,10 +1690,7 @@ func Test_cwd()
     let expect = $TEMP
     call job_start(['cmd', '/c', 'echo %CD%'], {'callback': {ch,msg->execute(":let s:envstr .= msg")}, 'cwd': expect})
   else
-    let expect = $TMPDIR
-    if expect == ''
-      let expect = $TMP
-    endif
+    let expect = $HOME
     call job_start(['pwd'], {'callback': {ch,msg->execute(":let s:envstr .= msg")}, 'cwd': expect})
   endif
   call WaitFor('"" != s:envstr')
