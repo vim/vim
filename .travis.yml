@@ -79,7 +79,7 @@ addons:
 
 before_install:
   - rvm reset
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then pyenv global system; pyenv versions; python --version; python3 --version; pyenv rehash; python --version; python3 --version; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then pyenv global system; pyenv versions; pyenv local; pyenv shell; python --version; python3 --version; pyenv rehash; python --version; python3 --version; fi
   - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls; fi
     # needed for https support for coveralls
     # building cffi only works with gcc, not with clang
