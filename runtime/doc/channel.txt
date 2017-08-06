@@ -427,8 +427,8 @@ When no message was available then the result is v:none for a JSON or JS mode
 channels, an empty string for a RAW or NL channel.  You can use |ch_canread()|
 to check if there is something to read.
 
-Note that when there is no callback message are dropped.  To avoid that add a
-close callback to the channel.
+Note that when there is no callback messages are dropped.  To avoid that add
+a close callback to the channel.
 
 To read all output from a RAW channel that is available: >
 	let output = ch_readraw(channel)
@@ -730,10 +730,6 @@ change the buffer.
 The "out_msg" option can be used to specify whether a new buffer will have the
 first line set to "Reading from channel output...".  The default is to add the
 message.  "err_msg" does the same for channel error.
-
-'modifiable' option off, or write to a buffer that has 'modifiable' off.  That
-means that lines will be appended to the buffer, but the user can't easily
-change the buffer.
 
 When an existing buffer is to be written where 'modifiable' is off and the
 "out_modifiable" or "err_modifiable" options is not zero, an error is given
