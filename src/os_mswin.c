@@ -453,8 +453,9 @@ slash_adjust(char_u *p)
 
     if (*p == '`')
     {
+	size_t len = STRLEN(p);
+
 	/* don't replace backslash in backtick quoted strings */
-	int len = STRLEN(p);
 	if (len > 2 && *(p + len - 1) == '`')
 	    return;
     }

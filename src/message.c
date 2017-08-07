@@ -2639,7 +2639,7 @@ msg_puts_printf(char_u *str, int maxlen)
 # if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
     if (enc_codepage >= 0 && (int)GetConsoleCP() != enc_codepage)
     {
-	int	inlen = STRLEN(str);
+	int	inlen = (int)STRLEN(str);
 	int	outlen;
 	WCHAR	*widestr = (WCHAR *)enc_to_utf16(str, &inlen);
 

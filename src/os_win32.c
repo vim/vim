@@ -7031,7 +7031,8 @@ fix_arg_enc(void)
 	     * main.c, so this part add str as literal. */
 	    if (literal == FALSE)
 	    {
-		int len = STRLEN(str);
+		size_t len = STRLEN(str);
+
 		if (len > 2 && *str == '`' && *(str + len - 1) == '`')
 		    literal = TRUE;
 	    }
