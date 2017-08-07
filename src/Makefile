@@ -2169,6 +2169,7 @@ test_arglist \
 	test_functions \
 	test_ga \
 	test_getcwd \
+	test_getvar \
 	test_gf \
 	test_glob2regpat \
 	test_global \
@@ -2180,6 +2181,7 @@ test_arglist \
 	test_help \
 	test_help_tagjump \
 	test_hide \
+	test_highlight \
 	test_history \
 	test_hlsearch \
 	test_increment \
