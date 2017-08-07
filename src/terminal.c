@@ -1346,11 +1346,11 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	    if (cells[i].chars[0] != 0)
 		len = i + 1;
 
+	ga_init2(&ga, 1, 100);
 	if (len > 0)
 	    p = (cellattr_T *)alloc((int)sizeof(cellattr_T) * len);
 	if (p != NULL)
 	{
-	    ga_init2(&ga, 1, 100);
 	    for (col = 0; col < len; col += cells[col].width)
 	    {
 		if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
