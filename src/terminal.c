@@ -2145,7 +2145,11 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     pos.row = get_row_number(&argvars[1], term);
 
     if (term->tl_vterm != NULL)
+    {
 	screen = vterm_obtain_screen(term->tl_vterm);
+	p = NULL;
+	line = NULL;
+    }
     else
     {
 	linenr_T	lnum = pos.row + term->tl_scrollback_scrolled;
