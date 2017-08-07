@@ -695,14 +695,16 @@ term_job_running(term_T *term)
     static void
 add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
 {
-    linenr_T	    lnum = term->tl_scrollback.ga_len - 1;
+    buf_T	*buf = term->tl_buffer;
+    int		empty = (buf->b_ml.ml_flags & ML_EMPTY);
+    linenr_T	lnum = buf->b_ml.ml_line_count;
 
     ml_append_buf(term->tl_buffer, lnum, text, len + 1, FALSE);
-    if (lnum == 0)
+    if (empty)
     {
 	/* Delete the empty line that was in the empty buffer. */
-	curbuf = term->tl_buffer;
-	ml_delete(2, FALSE);
+	curbuf = buf;
+	ml_delete(1, FALSE);
 	curbuf = curwin->w_buffer;
     }
 }
