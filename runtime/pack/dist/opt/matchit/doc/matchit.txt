@@ -389,12 +389,6 @@ try to respond to reports of bugs that cause real problems.  If it does not
 cause serious problems, or if there is a work-around, a bug may sit there for
 a while.  Moral:  if a bug (known or not) bothers you, let me know.
 
-The various |:vmap|s defined in the script (%, |g%|, |[%|, |]%|, |a%|) may
-have undesired effects in Select mode |Select-mode-mapping|.  At least, if you
-want to replace the selection with any character in "ag%[]" there will be a
-pause of |'updatetime'| first. E.g., "yV%" would normally work linewise, but
-the plugin mapping makes it characterwise.
-
 It would be nice if "\0" were recognized as the entire pattern.  That is, it
 would be nice if "foo:\end\0" had the same effect as "\(foo\):\end\1".  I may
 try to implement this in a future version.  (This is not so easy to arrange as
