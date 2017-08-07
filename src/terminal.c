@@ -695,7 +695,7 @@ term_job_running(term_T *term)
     static void
 add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
 {
-    linenr_T	    lnum = term->tl_scrollback.ga_len - 1;
+    linenr_T	    lnum = term->tl_scrollback.ga_len;
 
     ml_append_buf(term->tl_buffer, lnum, text, len + 1, FALSE);
     if (lnum == 0)
@@ -1346,9 +1346,9 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 
 	if (len > 0)
 	    p = (cellattr_T *)alloc((int)sizeof(cellattr_T) * len);
+	ga_init2(&ga, 1, 100);
 	if (p != NULL)
 	{
-	    ga_init2(&ga, 1, 100);
 	    for (col = 0; col < len; col += cells[col].width)
 	    {
 		if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
@@ -2130,8 +2130,8 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     VTermPos	    pos;
     list_T	    *l;
     term_T	    *term;
-    char_u	    *p;
-    sb_line_T	    *line;
+    char_u	    *p = NULL;
+    sb_line_T	    *line = NULL;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
