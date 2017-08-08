@@ -227,9 +227,13 @@ func Test_terminal_scroll()
     sleep 100m
   endif
 
+  let scrolled = term_getscrolled(buf)
   call assert_equal('1', getline(1))
+  call assert_equal('1', term_getline(buf, 1 - scrolled))
   call assert_equal('49', getline(49))
+  call assert_equal('49', term_getline(buf, 49 - scrolled))
   call assert_equal('200', getline(200))
+  call assert_equal('200', term_getline(buf, 200 - scrolled))
 
   exe buf . 'bwipe'
   call delete('Xtext')
