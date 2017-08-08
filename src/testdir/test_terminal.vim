@@ -260,3 +260,17 @@ func Test_terminal_size()
   bwipe!
   call assert_equal([6, 20], size)
 endfunc
+
+func Test_autoclose()
+  let buf = bufnr('')
+  if has('win32')
+    let cmd = $windir . '\system32\timeout.exe 1'
+  else
+    let cmd = 'sleep 1'
+  endif
+  exe 'terminal' '++autoclose' cmd
+
+  wincmd p
+  sleep 2
+  call assert_equal(buf, bufnr(''))
+endfunc
