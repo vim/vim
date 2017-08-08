@@ -2373,6 +2373,7 @@ term_getattr({attr}, {what})	Number	get the value of attribute {what}
 term_getcursor({buf})		List	get the cursor position of a terminal
 term_getjob({buf})		Job	get the job associated with a terminal
 term_getline({buf}, {row})	String	get a line of text from a terminal
+term_getscrolled({buf})		Number	get the scroll count of a terminal
 term_getsize({buf})		List	get the size of a terminal
 term_getstatus({buf})		String	get the status of a terminal
 term_gettitle({buf})		String	get the title of a terminal
@@ -2983,6 +2984,11 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 
 		The file is flushed after every message, on Unix you can use
 		"tail -f" to see what is going on in real time.
+
+		This function is not available in the |sandbox|.
+		NOTE: the channel communication is stored in the file, be
+		aware that this may contain confidential and privacy sensitive
+		information, e.g. a password you type in a terminal window.
 
 
 ch_open({address} [, {options}])				*ch_open()*
@@ -7946,6 +7952,18 @@ term_getline({buf}, {row})				*term_getline()*
 		The first line has {row} one.  When {row} is "." the cursor
 		line is used.  When {row} is invalid an empty string is
 		returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_getscrolled({buf})					*term_getscrolled()*
+		Return the number of lines that scrolled to above the top of
+		terminal {buf}.  This is the offset between the row number
+		used for |term_getline()| and |getline()|, so that: >
+			term_getline(buf, N)
+<		is equal to: >
+			`getline(N + term_getscrolled(buf))
+<		(if that line exists).
+
+		{buf} is used as with |term_getsize()|.
 		{only available when compiled with the |+terminal| feature}
 
 term_getsize({buf})					*term_getsize()*
