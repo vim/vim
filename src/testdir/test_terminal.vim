@@ -273,4 +273,9 @@ func Test_autoclose()
   wincmd p
   sleep 2
   call assert_equal(buf, bufnr(''))
+
+  call term_start(cmd, {'term_autoclose': 1})
+  wincmd p
+  sleep 2
+  call assert_equal(buf, bufnr(''))
 endfunc
