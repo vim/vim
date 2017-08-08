@@ -2,7 +2,7 @@
 " Language:    N1QL / Couchbase Server
 " Maintainer:  Eugene Ciurana <n1ql AT cime.net>
 " Version:     1.0
-" Source:      https://github.com/pr3d4t0r/n1sql-vim-syntax
+" Source:      https://github.com/pr3d4t0r/n1ql-vim-syntax
 "
 " License:     Vim is Charityware.  n1ql.vim syntax is Charityware.
 "              (c) Copyright 2017 by Eugene Ciurana / pr3d4t0r.  Licensed
