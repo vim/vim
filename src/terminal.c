@@ -43,9 +43,11 @@
  * - add option values to the command:
  *      :term <24x80> <close> vim notes.txt
  * - support different cursor shapes, colors and attributes
- * - MS-Windows: no redraw for 'updatetime'  #1915
  * - make term_getcursor() return type (none/block/bar/underline) and
  *   attributes (color, blink, etc.)
+ * - MS-Windows: no redraw for 'updatetime'  #1915
+ * - term_getline() and term_scrape() don't work once the job exited. Use the
+ *   buffer and scrollback, remembering the topline from when the job exited.
  * - To set BS correctly, check get_stty(); Pass the fd of the pty.
  *   For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
@@ -337,8 +339,9 @@ term_start(char_u *cmd, jobopt_T *opt)
     /* System dependent: setup the vterm and start the job in it. */
     if (term_and_job_init(term, term->tl_rows, term->tl_cols, cmd, opt) == OK)
     {
-	/* store the size we ended up with */
+	/* Get and remember the size we ended up with.  Update the pty. */
 	vterm_get_size(term->tl_vterm, &term->tl_rows, &term->tl_cols);
+	term_report_winsize(term, term->tl_rows, term->tl_cols);
     }
     else
     {
