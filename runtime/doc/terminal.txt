@@ -89,8 +89,8 @@ Syntax ~
 			parenthesis.  E.g. if "gdb" exists the second terminal
 			buffer will use "!gdb (1)".
 
-			If {++autoclose} is provided, the terminal close
-			automatically when the job terminated.
+			If {++autoclose} is provided, the terminal will close
+			automatically when the job terminates.
 
 When the buffer associated with the terminal is wiped out the job is killed,
 similar to calling `job_stop(job, "kill")`
