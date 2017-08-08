@@ -121,6 +121,7 @@ struct terminal_S {
 
     int		tl_normal_mode; /* TRUE: Terminal-Normal mode */
     int		tl_channel_closed;
+    int		tl_autoclose;
 
 #ifdef WIN3264
     void	*tl_winpty_config;
@@ -254,6 +255,7 @@ term_start(char_u *cmd, jobopt_T *opt)
 	return;
     term->tl_dirty_row_end = MAX_ROW;
     term->tl_cursor_visible = TRUE;
+    term->tl_autoclose = opt->jo_term_autoclose;
     ga_init2(&term->tl_scrollback, sizeof(sb_line_T), 300);
 
     /* Open a new window or tab. */
@@ -356,9 +358,28 @@ term_start(char_u *cmd, jobopt_T *opt)
     void
 ex_terminal(exarg_T *eap)
 {
-    jobopt_T opt;
+    jobopt_T	opt;
+    char_u	*cmd;
 
     init_job_options(&opt);
+
+    cmd = eap->arg;
+    while (*cmd && *cmd == '+' && *(cmd + 1) == '+')
+    {
+	cmd += 2;
+	if (STRNICMP(cmd, "autoclose", 9) == 0)
+	    opt.jo_term_autoclose = 1;
+	else
+	{
+	    char_u  *p = skiptowhite(cmd);
+	    if (*p)
+		*p = NUL;
+	    EMSG2(_("E181: Invalid attribute: %s"), cmd);
+	    return;
+	}
+	cmd = skiptowhite(cmd);
+	cmd = skipwhite(cmd);
+    }
 
     if (eap->addr_count == 2)
     {
@@ -374,7 +395,7 @@ ex_terminal(exarg_T *eap)
     }
     /* TODO: get more options from before the command */
 
-    term_start(eap->arg, &opt);
+    term_start(cmd, &opt);
 }
 
 /*
@@ -842,7 +863,8 @@ set_terminal_mode(term_T *term, int normal_mode)
     static void
 cleanup_vterm(term_T *term)
 {
-    move_terminal_to_buffer(term);
+    if (term->tl_autoclose == 0)
+	move_terminal_to_buffer(term);
     term_free_vterm(term);
     set_terminal_mode(term, FALSE);
 }
@@ -1419,7 +1441,18 @@ term_channel_closed(channel_T *ch)
 
 	    /* Unless in Terminal-Normal mode: clear the vterm. */
 	    if (!term->tl_normal_mode)
+	    {
 		cleanup_vterm(term);
+
+		if (term->tl_autoclose != 0)
+		{
+		    curbuf = term->tl_buffer;
+		    do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
+		    ins_char_typebuf(K_IGNORE);
+		    typebuf_was_filled = TRUE;
+		    return;
+		}
+	    }
 
 	    redraw_buf_and_status_later(term->tl_buffer, NOT_VALID);
 	    did_one = TRUE;

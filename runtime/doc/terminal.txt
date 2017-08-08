@@ -76,7 +76,7 @@ See option 'termsize' for controlling the size of the terminal window.
 
 Syntax ~
 
-:ter[minal] [command]				*:ter* *:terminal*
+:ter[minal] {++autoclose} [command]		*:ter* *:terminal*
 			Open a new terminal window.
 
 			If [command] is provided run it as a job and connect
@@ -88,6 +88,9 @@ Syntax ~
 			by this name already exists a number is added in
 			parenthesis.  E.g. if "gdb" exists the second terminal
 			buffer will use "!gdb (1)".
+
+			If {++autoclose} is provided, the terminal close
+			automatically when the job terminated.
 
 When the buffer associated with the terminal is wiped out the job is killed,
 similar to calling `job_stop(job, "kill")`

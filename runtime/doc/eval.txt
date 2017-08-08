@@ -8037,8 +8037,9 @@ term_start({cmd}, {options})				*term_start()*
 		terminal then the callback function for that part is not used.
 
 		There is one extra option:
-		   "term_name"   name to use for the buffer name, instead of
-				 the command name.
+		   "term_name"       name to use for the buffer name, instead
+		                     of the command name.
+		   "term_autoclose"  close terminal automatically.
 		{only available when compiled with the |+terminal| feature}
 
 term_wait({buf} [, {time}])					*term_wait()*
