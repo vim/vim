@@ -1446,8 +1446,11 @@ term_channel_closed(channel_T *ch)
 
 		if (term->tl_autoclose != 0)
 		{
+		    buf_T   *save_curbuf = curbuf == term->tl_buffer ? NULL : curbuf;
 		    curbuf = term->tl_buffer;
 		    do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
+		    if (save_curbuf)
+			curbuf = save_curbuf;
 		    ins_char_typebuf(K_IGNORE);
 		    typebuf_was_filled = TRUE;
 		    return;
