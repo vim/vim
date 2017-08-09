@@ -4419,6 +4419,13 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
+	    else if (STRCMP(hi->hi_key, "term_autoclose") == 0)
+	    {
+		if (!(supported & JO2_TERM_AUTOCLOSE))
+		    break;
+		opt->jo_set2 |= JO2_TERM_AUTOCLOSE;
+		opt->jo_term_autoclose = get_tv_number(item);
+	    }
 #endif
 	    else if (STRCMP(hi->hi_key, "waittime") == 0)
 	    {
