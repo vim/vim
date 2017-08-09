@@ -367,7 +367,7 @@ ex_terminal(exarg_T *eap)
     while (*cmd && *cmd == '+' && *(cmd + 1) == '+')
     {
 	cmd += 2;
-	if (STRNICMP(cmd, "autoclose", 9) == 0)
+	if (STRNICMP(cmd, "close", 5) == 0)
 	    opt.jo_term_autoclose = 1;
 	else
 	{

@@ -268,7 +268,7 @@ func Test_autoclose()
   else
     let cmd = 'sleep 1'
   endif
-  exe 'terminal' '++autoclose' cmd
+  exe 'terminal' '++close' cmd
 
   wincmd p
   sleep 2
