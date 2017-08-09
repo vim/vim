@@ -5226,6 +5226,14 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
     if (options->jo_pty)
 	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_name);
 
+# ifdef FEAT_JOB_CHANNEL
+    if (options->jo_cwd != NULL && mch_isdir(get_tv_string(&argvars[0])) == 0)
+    {
+	EMSG(_(e_failed));
+	return;
+    }
+# endif
+
     /* TODO: without the channel feature connect the child to /dev/null? */
     /* Open pipes for stdin, stdout, stderr. */
     if (use_file_for_in)
@@ -5407,8 +5415,8 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	    close(null_fd);
 
 # ifdef FEAT_JOB_CHANNEL
-	if (options->jo_cwd != NULL)
-	    chdir(options->jo_cwd);
+	if (options->jo_cwd != NULL && mch_chdir(options->jo_cwd) != 0)
+	    _exit(EXEC_FAILED);
 # endif
 
 	/* See above for type of argv. */
