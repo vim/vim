@@ -5227,7 +5227,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_name);
 
 # ifdef FEAT_JOB_CHANNEL
-    if (options->jo_cwd != NULL && mch_isdir(get_tv_string(&argvars[0])) == 0)
+    if (options->jo_cwd != NULL && mch_isdir(options->jo_cwd) == 0)
     {
 	EMSG(_(e_failed));
 	return;
