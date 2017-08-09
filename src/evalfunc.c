@@ -731,7 +731,6 @@ static struct fst
 #ifdef FEAT_PYTHON
     {"pyeval",		1, 1, f_pyeval},
 #endif
-<<<<<<< HEAD
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
     {"pyxeval",		1, 1, f_pyxeval},
 #endif
