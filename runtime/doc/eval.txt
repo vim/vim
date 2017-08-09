@@ -8036,7 +8036,7 @@ term_start({cmd}, {options})				*term_start()*
 		connected to the terminal.  When I/O is connected to the
 		terminal then the callback function for that part is not used.
 
-		There is two extra options:
+		There are two extra options:
 		   "term_name"       name to use for the buffer name, instead
 		                     of the command name.
 		   "term_autoclose"  close terminal automatically.
