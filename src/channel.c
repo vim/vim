@@ -4734,7 +4734,7 @@ escape_arg(char_u *arg)
     dlen = slen;
     for (s = arg; *s != NUL; MB_PTR_ADV(s))
     {
-	if (*s == '"' || *s == '\\' || *s == '^')
+	if (*s == '"' || *s == '\\')
 	    ++dlen;
 	if (*s == ' ' || *s == '\t')
 	    has_spaces = TRUE;
@@ -4766,11 +4766,6 @@ escape_arg(char_u *arg)
 		    *d++ = '\\';
 		escaping = 0;
 		*d++ = '\\';
-		*d++ = *s++;
-		break;
-	    case '^':
-		if (has_spaces)
-		    *d++ = *s++;
 		*d++ = *s++;
 		break;
 	    case '\\':
