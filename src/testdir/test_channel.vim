@@ -1636,12 +1636,7 @@ func Test_read_nonl_line()
   endif
 
   let g:linecount = 0
-  if has('win32')
-    " workaround: 'shellescape' does improper escaping double quotes
-    let arg = 'import sys;sys.stdout.write(\"1\n2\n3\")'
-  else
-    let arg = 'import sys;sys.stdout.write("1\n2\n3")'
-  endif
+  let arg = 'import sys;sys.stdout.write("1\n2\n3")'
   call job_start([s:python, '-c', arg], {'callback': 'MyLineCountCb'})
   call WaitFor('3 <= g:linecount')
   call assert_equal(3, g:linecount)
@@ -1720,4 +1715,52 @@ endfunc
 func Test_close_lambda()
   call ch_log('Test_close_lambda()')
   call s:run_server('Ch_test_close_lambda')
+endfunc
+
+func s:test_list_args(cmd, out, remove_lf)
+  try
+    let s:out = ''
+    call job_start([s:python, '-c', a:cmd], {'callback': {ch,msg->execute('let s:out.=msg')}, 'out_mode': 'raw'})
+    call WaitFor('"" != s:out')
+    if has('win32')
+      let s:out = substitute(s:out, '\r', '', 'g')
+    endif
+    if a:remove_lf
+      let s:out = substitute(s:out, '\n$', '', 'g')
+    endif
+    call assert_equal(a:out, s:out)
+  finally
+    unlet s:out
+  endtry
+endfunc
+
+func Test_list_args()
+  if !has('job')
+    return
+  endif
+
+  call s:test_list_args('import sys;sys.stdout.write("hello world")', "hello world", 0)
+  call s:test_list_args('import sys;sys.stdout.write("hello\nworld")', "hello\nworld", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello\nworld'')', "hello\nworld", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello"world'')', "hello\"world", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello^world'')', "hello^world", 0)
+  call s:test_list_args('import sys;sys.stdout.write("hello&&world")', "hello&&world", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello\\world'')', "hello\\world", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello\\\\world'')', "hello\\\\world", 0)
+  call s:test_list_args('import sys;sys.stdout.write("hello\"world\"")', 'hello"world"', 0)
+  call s:test_list_args('import sys;sys.stdout.write("h\"ello worl\"d")', 'h"ello worl"d', 0)
+  call s:test_list_args('import sys;sys.stdout.write("h\"e\\\"llo wor\\\"l\"d")', 'h"e\"llo wor\"l"d', 0)
+  call s:test_list_args('import sys;sys.stdout.write("h\"e\\\"llo world")', 'h"e\"llo world', 0)
+  call s:test_list_args('import sys;sys.stdout.write("hello\tworld")', "hello\tworld", 0)
+
+  " tests which not contain spaces in the argument
+  call s:test_list_args('print("hello\nworld")', "hello\nworld", 1)
+  call s:test_list_args('print(''hello\nworld'')', "hello\nworld", 1)
+  call s:test_list_args('print(''hello"world'')', "hello\"world", 1)
+  call s:test_list_args('print(''hello^world'')', "hello^world", 1)
+  call s:test_list_args('print("hello&&world")', "hello&&world", 1)
+  call s:test_list_args('print(''hello\\world'')', "hello\\world", 1)
+  call s:test_list_args('print(''hello\\\\world'')', "hello\\\\world", 1)
+  call s:test_list_args('print("hello\"world\"")', 'hello"world"', 1)
+  call s:test_list_args('print("hello\tworld")', "hello\tworld", 1)
 endfunc
