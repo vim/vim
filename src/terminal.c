@@ -340,6 +340,8 @@ term_start(char_u *cmd, jobopt_T *opt)
     /* System dependent: setup the vterm and start the job in it. */
     if (term_and_job_init(term, term->tl_rows, term->tl_cols, cmd, opt) == OK)
     {
+	vterm_screen_enable_altscreen(vterm_obtain_screen(term->tl_vterm), 1);
+
 	/* Get and remember the size we ended up with.  Update the pty. */
 	vterm_get_size(term->tl_vterm, &term->tl_rows, &term->tl_cols);
 	term_report_winsize(term, term->tl_rows, term->tl_cols);
