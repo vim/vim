@@ -4419,6 +4419,19 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		    return FAIL;
 		}
 	    }
+	    else if (STRCMP(hi->hi_key, "term_finish") == 0)
+	    {
+		if (!(supported & JO2_TERM_FINISH))
+		    break;
+		val = get_tv_string(item);
+		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0)
+		{
+		    EMSG2(_(e_invarg2), "drop");
+		    return FAIL;
+		}
+		opt->jo_set2 |= JO2_TERM_FINISH;
+		opt->jo_term_finish = *val;
+	    }
 #endif
 	    else if (STRCMP(hi->hi_key, "waittime") == 0)
 	    {
