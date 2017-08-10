@@ -1685,7 +1685,8 @@ struct channel_S {
 #define JO2_OUT_MSG	    0x0001	/* "out_msg" */
 #define JO2_ERR_MSG	    0x0002	/* "err_msg" (JO_OUT_ << 1) */
 #define JO2_TERM_NAME	    0x0004	/* "term_name" */
-#define JO2_ALL		    0x0007
+#define JO2_TERM_FINISH	    0x0008	/* "term_finish" */
+#define JO2_ALL		    0x000F
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1743,6 +1744,7 @@ typedef struct
     int		jo_term_rows;
     int		jo_term_cols;
     char_u	*jo_term_name;
+    int		jo_term_finish;
 #endif
 } jobopt_T;
 

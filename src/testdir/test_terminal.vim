@@ -264,3 +264,43 @@ func Test_terminal_size()
   bwipe!
   call assert_equal([6, 20], size)
 endfunc
+
+func Test_finish_close()
+  call assert_equal(1, winnr('$'))
+
+  " TODO: use something that takes much less than a whole second
+  if has('win32')
+    let cmd = $windir . '\system32\timeout.exe 1'
+  else
+    let cmd = 'sleep 1'
+  endif
+  exe 'terminal ++close ' . cmd
+  let buf = bufnr('')
+  call assert_equal(2, winnr('$'))
+
+  wincmd p
+  sleep 1200 msec
+  call assert_equal(1, winnr('$'))
+
+  call term_start(cmd, {'term_finish': 'close'})
+  call assert_equal(2, winnr('$'))
+  let buf = bufnr('')
+  wincmd p
+  sleep 1200 msec
+  call assert_equal(1, winnr('$'))
+
+  exe 'terminal ++open ' . cmd
+  let buf = bufnr('')
+  close
+  sleep 1200 msec
+  call assert_equal(2, winnr('$'))
+  bwipe
+
+  call term_start(cmd, {'term_finish': 'open'})
+  let buf = bufnr('')
+  close
+  sleep 1200 msec
+  call assert_equal(2, winnr('$'))
+
+  bwipe
+endfunc
