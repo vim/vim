@@ -1648,12 +1648,7 @@ func Test_read_from_terminated_job()
   endif
 
   let g:linecount = 0
-  if has('win32')
-    " workaround: 'shellescape' does improper escaping double quotes 
-    let arg = 'import os,sys;os.close(1);sys.stderr.write(\"test\n\")'
-  else
-    let arg = 'import os,sys;os.close(1);sys.stderr.write("test\n")'
-  endif
+  let arg = 'import os,sys;os.close(1);sys.stderr.write("test\n")'
   call job_start([s:python, '-c', arg], {'callback': 'MyLineCountCb'})
   call WaitFor('1 <= g:linecount')
   call assert_equal(1, g:linecount)
