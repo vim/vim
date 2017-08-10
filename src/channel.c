@@ -4722,7 +4722,7 @@ job_still_useful(job_T *job)
 
 #ifndef USE_ARGV
     char_u *
-escape_arg(char_u *arg)
+win32_escape_arg(char_u *arg)
 {
     int		slen, dlen, escaping = 0, i;
     char_u	*s, *d;
@@ -5182,8 +5182,7 @@ job_start(typval_T *argvars, jobopt_T *opt_arg)
 #ifdef USE_ARGV
 	    argv[argc++] = (char *)s;
 #else
-
-	    s = escape_arg(s);
+	    s = win32_escape_arg(s);
 	    if (s == NULL)
 		goto theend;
 	    ga_concat(&ga, s);
