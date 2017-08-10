@@ -696,6 +696,9 @@ See |job_setoptions()| and |ch_setoptions()|.
 "block_write": number	only for testing: pretend every other write to stdin
 			will block
 
+"env": dict		environment variables for new process
+"cwd": "/path/to/dir"	current working directory for new process
+
 
 Writing to a buffer ~
 							*out_io-buffer*

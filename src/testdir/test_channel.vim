@@ -1664,6 +1664,45 @@ func Test_read_from_terminated_job()
   call assert_equal(1, g:linecount)
 endfunc
 
+func Test_env()
+  if !has('job')
+    return
+  endif
+
+  let s:envstr = ''
+  if has('win32')
+    call job_start(['cmd', '/c', 'echo %FOO%'], {'callback': {ch,msg->execute(":let s:envstr .= msg")}, 'env':{'FOO': 'bar'}})
+  else
+    call job_start([&shell, &shellcmdflag, 'echo $FOO'], {'callback': {ch,msg->execute(":let s:envstr .= msg")}, 'env':{'FOO': 'bar'}})
+  endif
+  call WaitFor('"" != s:envstr')
+  call assert_equal("bar", s:envstr)
+  unlet s:envstr
+endfunc
+
+func Test_cwd()
+  if !has('job')
+    return
+  endif
+
+  let s:envstr = ''
+  if has('win32')
+    let expect = $TEMP
+    call job_start(['cmd', '/c', 'echo %CD%'], {'callback': {ch,msg->execute(":let s:envstr .= msg")}, 'cwd': expect})
+  else
+    let expect = $HOME
+    call job_start(['pwd'], {'callback': {ch,msg->execute(":let s:envstr .= msg")}, 'cwd': expect})
+  endif
+  call WaitFor('"" != s:envstr')
+  let expect = substitute(expect, '[/\\]$', '', '')
+  let s:envstr = substitute(s:envstr, '[/\\]$', '', '')
+  if $CI != '' && stridx(s:envstr, '/private/') == 0
+    let s:envstr = s:envstr[8:]
+  endif
+  call assert_equal(expect, s:envstr)
+  unlet s:envstr
+endfunc
+
 function Ch_test_close_lambda(port)
   let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"

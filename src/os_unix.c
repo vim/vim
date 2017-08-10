@@ -5226,6 +5226,14 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
     if (options->jo_pty)
 	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_name);
 
+# ifdef FEAT_JOB_CHANNEL
+    if (options->jo_cwd != NULL && mch_isdir(options->jo_cwd) == 0)
+    {
+	EMSG(_(e_failed));
+	return;
+    }
+# endif
+
     /* TODO: without the channel feature connect the child to /dev/null? */
     /* Open pipes for stdin, stdout, stderr. */
     if (use_file_for_in)
@@ -5309,6 +5317,24 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	(void)setsid();
 # endif
 
+# ifdef FEAT_JOB_CHANNEL
+	if (options->jo_env != NULL)
+	{
+	    dict_T	*jo_env = options->jo_env;
+	    hashitem_T	*hi;
+	    int		todo = (int)jo_env->dv_hashtab.ht_used;
+	    for (hi = jo_env->dv_hashtab.ht_array; todo > 0; ++hi)
+	    {
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    typval_T *item = &dict_lookup(hi)->di_tv;
+		    vim_setenv((char_u*)hi->hi_key, get_tv_string(item));
+		    --todo;
+		}
+	    }
+	}
+# endif
+
 # ifdef FEAT_TERMINAL
 	if (options->jo_term_rows > 0)
 	    set_child_environment(
@@ -5319,6 +5345,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	else
 # endif
 	    set_default_child_environment();
+
 
 	if (use_null_for_in || use_null_for_out || use_null_for_err)
 	    null_fd = open("/dev/null", O_RDWR | O_EXTRA, 0);
@@ -5386,6 +5413,11 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 
 	if (null_fd >= 0)
 	    close(null_fd);
+
+# ifdef FEAT_JOB_CHANNEL
+	if (options->jo_cwd != NULL && mch_chdir(options->jo_cwd) != 0)
+	    _exit(EXEC_FAILED);
+# endif
 
 	/* See above for type of argv. */
 	execvp(argv[0], argv);

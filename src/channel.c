@@ -4153,6 +4153,8 @@ free_job_options(jobopt_T *opt)
 	partial_unref(opt->jo_exit_partial);
     else if (opt->jo_exit_cb != NULL)
 	func_unref(opt->jo_exit_cb);
+    if (opt->jo_env != NULL)
+	dict_unref(opt->jo_env);
 }
 
 /*
@@ -4420,6 +4422,21 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		}
 	    }
 #endif
+	    else if (STRCMP(hi->hi_key, "env") == 0)
+	    {
+		if (!(supported & JO2_ENV))
+		    break;
+		opt->jo_set |= JO2_ENV;
+		opt->jo_env = item->vval.v_dict;
+		++item->vval.v_dict->dv_refcount;
+	    }
+	    else if (STRCMP(hi->hi_key, "cwd") == 0)
+	    {
+		if (!(supported & JO2_CWD))
+		    break;
+		opt->jo_set |= JO2_CWD;
+		opt->jo_cwd = get_tv_string(item);
+	    }
 	    else if (STRCMP(hi->hi_key, "waittime") == 0)
 	    {
 		if (!(supported & JO_WAITTIME))
