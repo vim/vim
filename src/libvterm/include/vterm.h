@@ -188,6 +188,8 @@ void vterm_keyboard_start_paste(VTerm *vt);
 void vterm_keyboard_end_paste(VTerm *vt);
 
 void vterm_mouse_move(VTerm *vt, int row, int col, VTermModifier mod);
+/* "button" is 1 for left, 2 for middle, 3 for right.
+ * Button 4 is scroll wheel down, button 5 is scroll wheel up. */
 void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod);
 
 /* ------------
@@ -302,6 +304,9 @@ typedef struct {
   int (*settermprop)(VTermProp prop, VTermValue *val, void *user);
   int (*bell)(void *user);
   int (*resize)(int rows, int cols, void *user);
+  /* A line was pushed off the top of the window.
+   * "cells[cols]" contains the cells of that line.
+   * Return value is unused. */
   int (*sb_pushline)(int cols, const VTermScreenCell *cells, void *user);
   int (*sb_popline)(int cols, VTermScreenCell *cells, void *user);
 } VTermScreenCallbacks;
@@ -320,6 +325,9 @@ void *vterm_screen_get_cbdata(VTermScreen *screen);
 void  vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermParserCallbacks *fallbacks, void *user);
 void *vterm_screen_get_unrecognised_fbdata(VTermScreen *screen);
 
+/* Enable support for using the alternate screen if "altscreen" is non-zero.
+ * Before that switching to the alternate screen won't work.
+ * Calling with "altscreen" zero has no effect. */
 void vterm_screen_enable_altscreen(VTermScreen *screen, int altscreen);
 
 typedef enum {

@@ -2369,6 +2369,7 @@ tagfiles()			List	tags files used
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
+term_getaltscreen({buf})	Number	get the alternate screen flag
 term_getattr({attr}, {what})	Number	get the value of attribute {what}
 term_getcursor({buf})		List	get the cursor position of a terminal
 term_getjob({buf})		Job	get the job associated with a terminal
@@ -7913,6 +7914,12 @@ tempname()					*tempname()* *temp-file-name*
 <		For Unix, the file will be in a private directory |tempfile|.
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
+
+term_getaltscreen({buf})				*term_getaltscreen()*
+		Returns 1 if the terminal of {buf} is using the alternate
+		screen.
+		{buf} is used as with |term_getsize()|.
+		{only available when compiled with the |+terminal| feature}
 
 term_getattr({attr}, {what})				*term_getattr()*
 		Given {attr}, a value returned by term_scrape() in the "attr"

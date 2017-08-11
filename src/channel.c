@@ -4426,7 +4426,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported)
 		val = get_tv_string(item);
 		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0)
 		{
-		    EMSG2(_(e_invarg2), "drop");
+		    EMSG2(_(e_invarg2), val);
 		    return FAIL;
 		}
 		opt->jo_set2 |= JO2_TERM_FINISH;
@@ -4844,7 +4844,7 @@ job_stop_on_exit(void)
 
     for (job = first_job; job != NULL; job = job->jv_next)
 	if (job->jv_status == JOB_STARTED && job->jv_stoponexit != NULL)
-	    mch_stop_job(job, job->jv_stoponexit);
+	    mch_signal_job(job, job->jv_stoponexit);
 }
 
 /*
@@ -5191,7 +5191,7 @@ job_stop(job_T *job, typval_T *argvars, char *type)
 	return 0;
     }
     ch_log(job->jv_channel, "Stopping job with '%s'", (char *)arg);
-    if (mch_stop_job(job, arg) == FAIL)
+    if (mch_signal_job(job, arg) == FAIL)
 	return 0;
 
     /* Assume that only "kill" will kill the job. */

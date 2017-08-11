@@ -5248,7 +5248,7 @@ theend:
  * Return FAIL if it didn't work.
  */
     int
-mch_stop_job(job_T *job, char_u *how)
+mch_signal_job(job_T *job, char_u *how)
 {
     int ret;
 
