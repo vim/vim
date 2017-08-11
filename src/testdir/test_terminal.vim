@@ -6,6 +6,8 @@ endif
 
 source shared.vim
 
+let s:python = PythonProg()
+
 " Open a terminal with a shell, assign the job to g:job and return the buffer
 " number.
 func Run_shell_in_terminal(options)
@@ -319,41 +321,46 @@ func Test_terminal_curwin()
 endfunc
 
 func Test_finish_close()
-  " TODO: use something that takes much less than a whole second
-  echo 'This will take five seconds...'
   call assert_equal(1, winnr('$'))
 
-  if has('win32')
-    let cmd = $windir . '\system32\timeout.exe 1'
+  if s:python != ''
+    let cmd = s:python . " test_short_sleep.py"
+    let waittime = 500
   else
-    let cmd = 'sleep 1'
+    echo 'This will take five seconds...'
+    let waittime = 2000
+    if has('win32')
+      let cmd = $windir . '\system32\timeout.exe 1'
+    else
+      let cmd = 'sleep 1'
+    endif
   endif
+
   exe 'terminal ++close ' . cmd
   let buf = bufnr('')
   call assert_equal(2, winnr('$'))
-
   wincmd p
-  sleep 1200 msec
+  call WaitFor("winnr('$') == 1", waittime)
   call assert_equal(1, winnr('$'))
 
   call term_start(cmd, {'term_finish': 'close'})
   call assert_equal(2, winnr('$'))
   let buf = bufnr('')
   wincmd p
-  sleep 1200 msec
+  call WaitFor("winnr('$') == 1", waittime)
   call assert_equal(1, winnr('$'))
 
   exe 'terminal ++open ' . cmd
   let buf = bufnr('')
   close
-  sleep 1200 msec
+  call WaitFor("winnr('$') == 2", waittime)
   call assert_equal(2, winnr('$'))
   bwipe
 
   call term_start(cmd, {'term_finish': 'open'})
   let buf = bufnr('')
   close
-  sleep 1200 msec
+  call WaitFor("winnr('$') == 2", waittime)
   call assert_equal(2, winnr('$'))
 
   bwipe
