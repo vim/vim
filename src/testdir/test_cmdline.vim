@@ -359,10 +359,13 @@ endfunc
 
 func Test_cmdline_complete_user_cmd()
   command! -complete=color -nargs=1 Foo :
+  let all_colorschemes = glob('$VIMRUNTIME/colors/*.vim', 1, 1)
+  let first_colorscheme = fnamemodify(all_colorschemes[0], ":t:r")
   call feedkeys(":Foo \<Tab>\<Home>\"\<cr>", 'tx')
-  call assert_equal('"Foo blue', @:)
+  call assert_equal('"Foo ' . first_colorscheme, @:)
+  let first_colorscheme_starting_with_b = fnamemodify(filter(all_colorschemes, 'fnamemodify(v:val, ":t:r") =~ "^b"')[0], ":t:r")
   call feedkeys(":Foo b\<Tab>\<Home>\"\<cr>", 'tx')
-  call assert_equal('"Foo blue', @:)
+  call assert_equal('"Foo ' . first_colorscheme_starting_with_b, @:)
   delcommand Foo
 endfunc
 
