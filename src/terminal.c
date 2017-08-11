@@ -1137,11 +1137,13 @@ terminal_loop(void)
 	may_send_sigint(c, curbuf->b_term->tl_job->jv_pid, 0);
 #endif
 #ifdef WIN3264
-	if (c == Ctrl_C)
-	    /* We don't know if the job can handle CTRL-C itself or not, this
-	     * may kill the shell instead of killing the command running in the
-	     * shell. */
+	if (c == Ctrl_C && (GetKeyState(VK_SHIFT) & 0x8000) != 0)
+	{
+	    /* We don't know if the job can handle CTRL-C itself or not,
+	     * this may kill the shell instead of killing the command
+	     * running in the shell. */
 	    mch_stop_job(curbuf->b_term->tl_job, (char_u *)"quit");
+	}
 #endif
 
 	if (c == (termkey == 0 ? Ctrl_W : termkey) || c == Ctrl_BSL)
