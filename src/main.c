@@ -1356,11 +1356,19 @@ main_loop(
 	else
 	{
 #ifdef FEAT_TERMINAL
-	    if (curbuf->b_term != NULL && oa.op_type == OP_NOP
-							  && oa.regname == NUL)
-		terminal_loop();
+	    if (term_use_loop()
+		    && oa.op_type == OP_NOP && oa.regname == NUL
+		    && !VIsual_active)
+	    {
+		/* If terminal_loop() returns OK we got a key that is handled
+		 * in Normal model.  With FAIL we first need to position the
+		 * cursor and the screen needs to be redrawn. */
+		if (terminal_loop() == OK)
+		    normal_cmd(&oa, TRUE);
+	    }
+	    else
 #endif
-	    normal_cmd(&oa, TRUE);
+		normal_cmd(&oa, TRUE);
 	}
     }
 }

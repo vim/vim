@@ -190,7 +190,7 @@ static size_t do_string(VTerm *vt, const char *str_frag, size_t len)
 size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
 {
   size_t pos = 0;
-  const char *string_start;
+  const char *string_start = NULL;  /* init to avoid gcc warning */
 
   switch(vt->parser_state) {
   case NORMAL:

@@ -33,17 +33,17 @@ static int ramp24[] = {
   0x85, 0x90, 0x9B, 0xA6, 0xB1, 0xBC, 0xC7, 0xD2, 0xDD, 0xE8, 0xF3, 0xFF,
 };
 
-static bool lookup_colour_ansi(const VTermState *state, long index, VTermColor *col)
+static int lookup_colour_ansi(const VTermState *state, long index, VTermColor *col)
 {
   if(index >= 0 && index < 16) {
     *col = state->colors[index];
-    return true;
+    return TRUE;
   }
 
-  return false;
+  return FALSE;
 }
 
-static bool lookup_colour_palette(const VTermState *state, long index, VTermColor *col)
+static int lookup_colour_palette(const VTermState *state, long index, VTermColor *col)
 {
   if(index >= 0 && index < 16) {
     /* Normal 8 colours or high intensity - parse as palette 0 */
@@ -57,7 +57,7 @@ static bool lookup_colour_palette(const VTermState *state, long index, VTermColo
     col->green = ramp6[index/6   % 6];
     col->red   = ramp6[index/6/6 % 6];
 
-    return true;
+    return TRUE;
   }
   else if(index >= 232 && index < 256) {
     /* 24 greyscales */
@@ -67,10 +67,10 @@ static bool lookup_colour_palette(const VTermState *state, long index, VTermColo
     col->green = ramp24[index];
     col->red   = ramp24[index];
 
-    return true;
+    return TRUE;
   }
 
-  return false;
+  return FALSE;
 }
 
 static int lookup_colour(const VTermState *state, int palette, const long args[], int argcount, VTermColor *col, int *index)
@@ -80,9 +80,9 @@ static int lookup_colour(const VTermState *state, int palette, const long args[]
     if(argcount < 3)
       return argcount;
 
-    col->red   = CSI_ARG(args[0]);
-    col->green = CSI_ARG(args[1]);
-    col->blue  = CSI_ARG(args[2]);
+    col->red   = (uint8_t)CSI_ARG(args[0]);
+    col->green = (uint8_t)CSI_ARG(args[1]);
+    col->blue  = (uint8_t)CSI_ARG(args[2]);
 
     return 3;
 
@@ -106,7 +106,7 @@ static void setpenattr(VTermState *state, VTermAttr attr, VTermValueType type UN
 {
 #ifdef DEBUG
   if(type != vterm_get_attr_type(attr)) {
-    DEBUG_LOG("Cannot set attr %d as it has type %d, not type %d\n",
+    DEBUG_LOG3("Cannot set attr %d as it has type %d, not type %d\n",
         attr, vterm_get_attr_type(attr), type);
     return;
   }

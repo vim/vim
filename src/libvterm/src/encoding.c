@@ -218,7 +218,7 @@ encodings[] = {
   { ENC_SINGLE_94, '0', (VTermEncoding*)&encoding_DECdrawing },
   { ENC_SINGLE_94, 'A', (VTermEncoding*)&encoding_uk },
   { ENC_SINGLE_94, 'B', &encoding_usascii },
-  { 0 },
+  { 0, 0, NULL },
 };
 
 /* This ought to be INTERNAL but isn't because it's used by unit testing */

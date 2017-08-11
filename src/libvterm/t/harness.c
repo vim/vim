@@ -351,7 +351,7 @@ static int screen_damage(VTermRect rect, void *user)
       rect.start_row, rect.end_row, rect.start_col, rect.end_col);
 
   if(want_screen_damage_cells) {
-    bool equals = false;
+    int equals = FALSE;
     int row;
     int col;
 
@@ -373,7 +373,7 @@ static int screen_damage(VTermRect rect, void *user)
         break;
 
       if(!equals)
-        printf(" ="), equals = true;
+        printf(" ="), equals = TRUE;
 
       printf(" %d<", row);
       for(col = rect.start_col; col < eol; col++) {

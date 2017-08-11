@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jul 15
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Aug 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1815,7 +1815,7 @@ v:scrollstart	String describing the script or function that caused the
 		hit-enter prompt.
 
 					*v:servername* *servername-variable*
-v:servername	The resulting registered |x11-clientserver| name if any.
+v:servername	The resulting registered |client-server-name| if any.
 		Read-only.
 
 		
@@ -2179,7 +2179,7 @@ index({list}, {expr} [, {start} [, {ic}]])
 				Number	index in {list} where {expr} appears
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
-inputdialog({prompt} [, {text} [, {completion}]]])
+inputdialog({prompt} [, {text} [, {completion}]])
 				String	like input() but in a GUI dialog
 inputlist({textlist})		Number	let the user pick from a choice list
 inputrestore()			Number	restore typeahead
@@ -2369,12 +2369,20 @@ tagfiles()			List	tags files used
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
-term_getsize()			Dict	get the size of a terminal
-term_open()			Job	open a terminal window and run a job
-term_scrape()			List	inspect terminal screen
-term_sendkeys()			Number	send keystrokes to a terminal
-term_setsize()			Number	set the size of a terminal
-term_wait()			Number  wait for screen to be updated
+term_getattr({attr}, {what})	Number	get the value of attribute {what}
+term_getcursor({buf})		List	get the cursor position of a terminal
+term_getjob({buf})		Job	get the job associated with a terminal
+term_getline({buf}, {row})	String	get a line of text from a terminal
+term_getscrolled({buf})		Number	get the scroll count of a terminal
+term_getsize({buf})		List	get the size of a terminal
+term_getstatus({buf})		String	get the status of a terminal
+term_gettitle({buf})		String	get the title of a terminal
+term_gettty({buf})		String	get the tty name of a terminal
+term_list()			List	get the list of terminal buffers
+term_scrape({buf}, {row})	List	get row of a terminal screen
+term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_start({cmd}, {options})	Job	open a terminal window and run a job
+term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
@@ -2977,6 +2985,11 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		The file is flushed after every message, on Unix you can use
 		"tail -f" to see what is going on in real time.
 
+		This function is not available in the |sandbox|.
+		NOTE: the channel communication is stored in the file, be
+		aware that this may contain confidential and privacy sensitive
+		information, e.g. a password you type in a terminal window.
+
 
 ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
@@ -3255,10 +3268,15 @@ cosh({expr})						*cosh()*
 		
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		Return the number of times an item with value {expr} appears
-		in |List| or |Dictionary| {comp}.
+		in |String|, |List| or |Dictionary| {comp}.
+
 		If {start} is given then start with the item with this index.
 		{start} can only be used with a |List|.
+
 		When {ic} is given and it's |TRUE| then case is ignored.
+
+		When {comp} is a string then the number of not overlapping
+		occurences of {expr} is returned.
 
 
 							*cscope_connection()*
@@ -4356,6 +4374,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		highlight	highlight groups
 		history		:history suboptions
 		locale		locale names (as output of locale -a)
+		mapclear        buffer argument
 		mapping		mapping name
 		menu		menus
 		messages	|:messages| suboptions
@@ -5181,6 +5200,8 @@ job_info({job})						*job_info()*
 		Returns a Dictionary with information about {job}:
 		   "status"	what |job_status()| returns
 		   "channel"	what |job_getchannel()| returns
+		   "process"	process ID
+		   "tty"	controlling terminal name, empty when none
 		   "exitval"	only valid when "status" is "dead"
 		   "exit_cb"	function to be called on exit
 		   "stoponexit"	|job-stoponexit|
@@ -7893,23 +7914,162 @@ tempname()					*tempname()* *temp-file-name*
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
 
-term_getsize()						*term_getsize()*
-		Get the size of a terminal. NOT IMPLEMENTED YET
+term_getattr({attr}, {what})				*term_getattr()*
+		Given {attr}, a value returned by term_scrape() in the "attr"
+		item, return whether {what} is on.  {what} can be one of:
+			bold
+			italic
+			underline
+			strike
+			reverse
+		{only available when compiled with the |+terminal| feature}
 
-term_open()						*term_open()*
-		Open a terminal window and run a job. NOT IMPLEMENTED YET
+term_getcursor({buf})					*term_getcursor()*
+		Get the cursor position of terminal {buf}. Returns a list with
+		three numbers: [rows, cols, visible].  "rows" and "cols" are
+		one based, the first screen cell is row 1, column 1.
+		"visible" is one when the cursor is visible, zero when it is
+		hidden.
 
-term_scrape()						*term_scrape()*
-		Inspect terminal screen. NOT IMPLEMENTED YET
+		This is the cursor position of the terminal itself, not of the
+		Vim window.
 
-term_sendkeys()						*term_sendkeys()*
-		Send keystrokes to a terminal. NOT IMPLEMENTED YET
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		list is returned.
+		{only available when compiled with the |+terminal| feature}
 
-term_setsize()						*term_setsize()*
-		Set the size of a terminal. NOT IMPLEMENTED YET
+term_getjob({buf})					*term_getjob()*
+		Get the Job associated with terminal window {buf}.
+		{buf} is used as with |term_getsize()|.
+		Returns |v:null| when there is no job.
+		{only available when compiled with the |+terminal| feature}
 
-term_wait()						*term_wait()*
-		Wait for screen to be updated. NOT IMPLEMENTED YET
+term_getline({buf}, {row})				*term_getline()*
+		Get a line of text from the terminal window of {buf}.
+		{buf} is used as with |term_getsize()|.
+
+		The first line has {row} one.  When {row} is "." the cursor
+		line is used.  When {row} is invalid an empty string is
+		returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_getscrolled({buf})					*term_getscrolled()*
+		Return the number of lines that scrolled to above the top of
+		terminal {buf}.  This is the offset between the row number
+		used for |term_getline()| and |getline()|, so that: >
+			term_getline(buf, N)
+<		is equal to: >
+			`getline(N + term_getscrolled(buf))
+<		(if that line exists).
+
+		{buf} is used as with |term_getsize()|.
+		{only available when compiled with the |+terminal| feature}
+
+term_getsize({buf})					*term_getsize()*
+		Get the size of terminal {buf}. Returns a list with two
+		numbers: [rows, cols].  This is the size of the terminal, not
+		the window containing the terminal.
+
+		{buf} must be the buffer number of a terminal window.  Use an
+		empty string for the current buffer.  If the buffer does not
+		exist or is not a terminal window, an empty list is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_getstatus({buf})					*term_getstatus()*
+		Get the status of terminal {buf}. This returns a comma
+		separated list of these items:
+			running		job is running
+			finished	job has finished
+			normal		in Terminal-Normal mode
+		One of "running" or "finished" is always present.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		string is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_gettitle({buf})					*term_gettitle()*
+		Get the title of terminal {buf}. This is the title that the
+		job in the terminal has set.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		string is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_gettty({buf})					*term_gettty()*
+		Get the name of the controlling terminal associated with
+		terminal window {buf}.
+		{buf} is used as with |term_getsize()|.
+		{only available when compiled with the |+terminal| feature}
+
+term_list()						*term_list()*
+		Return a list with the buffer numbers of all buffers for
+		terminal windows.
+		{only available when compiled with the |+terminal| feature}
+
+term_scrape({buf}, {row})				*term_scrape()*
+		Get the contents of {row} of terminal screen of {buf}.
+		For {buf} see |term_getsize()|.
+
+		The first line has {row} one.  When {row} is "." the cursor
+		line is used.  When {row} is invalid an empty string is
+		returned.
+
+		Return a List containing a Dict for each screen cell: 
+		    "chars"	character(s) at the cell
+		    "fg"	foreground color as #rrggbb
+		    "bg"	background color as #rrggbb
+		    "attr"	attributes of the cell, use |term_getattr()|
+		    		to get the individual flags
+		    "width"	cell width: 1 or 2
+		{only available when compiled with the |+terminal| feature}
+
+term_sendkeys({buf}, {keys})				*term_sendkeys()*
+		Send keystrokes {keys} to terminal {buf}.
+		{buf} is used as with |term_getsize()|.
+
+		{keys} are translated as key sequences. For example, "\<c-x>"
+		means the character CTRL-X.
+		{only available when compiled with the |+terminal| feature}
+
+term_start({cmd}, {options})				*term_start()*
+		Open a terminal window and run {cmd} in it.
+
+		Returns the buffer number of the terminal window.
+		When opening the window fails zero is returned.
+
+		{options} are similar to what is used for |job_start()|, see
+		|job-options|.  However, not all options can be used.  These
+		are supported:
+		   all timeout options
+		   "stoponexit"
+		   "out_cb", "err_cb"
+		   "exit_cb", "close_cb"
+		   "in_io", "in_top", "in_bot", "in_name", "in_buf"
+		   "out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
+		   "err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
+		However, at least one of stdin, stdout or stderr must be
+		connected to the terminal.  When I/O is connected to the
+		terminal then the callback function for that part is not used.
+
+		There are two extra options:
+		   "term_name"	     name to use for the buffer name, instead
+				     of the command name.
+		   "term_finish"     What todo when the job is finished:
+					"close": close any windows
+					"open": open window if needed
+				     Note that "open" can be interruptive.
+				     See |term++close| and |term++open|.
+		{only available when compiled with the |+terminal| feature}
+
+term_wait({buf} [, {time}])					*term_wait()*
+		Wait for pending updates of {buf} to be handled.
+		{buf} is used as with |term_getsize()|.
+		{time} is how long to wait for updates to arrive in msec.  If
+		not set then 10 msec will be used.
+		{only available when compiled with the |+terminal| feature}
 
 test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 		This is for testing: If the memory allocation with {id} is
@@ -8634,6 +8794,7 @@ tag_any_white		Compiled with support for any white characters in tags
 			files |tag-any-white|.
 tcl			Compiled with Tcl interface.
 termguicolors		Compiled with true color in terminal support.
+terminal		Compiled with |terminal| support.
 terminfo		Compiled with terminfo instead of termcap.
 termresponse		Compiled with support for |t_RV| and |v:termresponse|.
 textobjects		Compiled with support for |text-objects|.

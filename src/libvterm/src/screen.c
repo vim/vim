@@ -819,14 +819,9 @@ int vterm_screen_is_eol(const VTermScreen *screen, VTermPos pos)
 
 VTermScreen *vterm_obtain_screen(VTerm *vt)
 {
-  VTermScreen *screen;
-  if(vt->screen)
-    return vt->screen;
-
-  screen = screen_new(vt);
-  vt->screen = screen;
-
-  return screen;
+  if(!vt->screen)
+    vt->screen = screen_new(vt);
+  return vt->screen;
 }
 
 void vterm_screen_enable_altscreen(VTermScreen *screen, int altscreen)

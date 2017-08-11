@@ -1064,6 +1064,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'termbidi'	options.txt	/*'termbidi'*
 'termencoding'	options.txt	/*'termencoding'*
 'termguicolors'	options.txt	/*'termguicolors'*
+'termkey'	options.txt	/*'termkey'*
+'termsize'	options.txt	/*'termsize'*
 'terse'	options.txt	/*'terse'*
 'textauto'	options.txt	/*'textauto'*
 'textmode'	options.txt	/*'textmode'*
@@ -1079,8 +1081,10 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'titlelen'	options.txt	/*'titlelen'*
 'titleold'	options.txt	/*'titleold'*
 'titlestring'	options.txt	/*'titlestring'*
+'tk'	options.txt	/*'tk'*
 'tl'	options.txt	/*'tl'*
 'tm'	options.txt	/*'tm'*
+'tms'	options.txt	/*'tms'*
 'to'	options.txt	/*'to'*
 'toolbar'	options.txt	/*'toolbar'*
 'toolbariconsize'	options.txt	/*'toolbariconsize'*
@@ -1124,7 +1128,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'vi'	options.txt	/*'vi'*
 'viewdir'	options.txt	/*'viewdir'*
 'viewoptions'	options.txt	/*'viewoptions'*
+'vif'	options.txt	/*'vif'*
 'viminfo'	options.txt	/*'viminfo'*
+'viminfofile'	options.txt	/*'viminfofile'*
 'virtualedit'	options.txt	/*'virtualedit'*
 'visualbell'	options.txt	/*'visualbell'*
 'vop'	options.txt	/*'vop'*
@@ -1344,6 +1350,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 -+rv	gui_x11.txt	/*-+rv*
 --	starting.txt	/*--*
 ---	starting.txt	/*---*
+--clean	starting.txt	/*--clean*
 --cmd	starting.txt	/*--cmd*
 --echo-wid	starting.txt	/*--echo-wid*
 --help	starting.txt	/*--help*
@@ -3528,6 +3535,8 @@ CTRL-V-alternative	gui_w32.txt	/*CTRL-V-alternative*
 CTRL-W	index.txt	/*CTRL-W*
 CTRL-W_+	windows.txt	/*CTRL-W_+*
 CTRL-W_-	windows.txt	/*CTRL-W_-*
+CTRL-W_.	terminal.txt	/*CTRL-W_.*
+CTRL-W_:	windows.txt	/*CTRL-W_:*
 CTRL-W_<	windows.txt	/*CTRL-W_<*
 CTRL-W_<BS>	windows.txt	/*CTRL-W_<BS>*
 CTRL-W_<CR>	quickfix.txt	/*CTRL-W_<CR>*
@@ -3566,6 +3575,7 @@ CTRL-W_H	windows.txt	/*CTRL-W_H*
 CTRL-W_J	windows.txt	/*CTRL-W_J*
 CTRL-W_K	windows.txt	/*CTRL-W_K*
 CTRL-W_L	windows.txt	/*CTRL-W_L*
+CTRL-W_N	terminal.txt	/*CTRL-W_N*
 CTRL-W_P	windows.txt	/*CTRL-W_P*
 CTRL-W_R	windows.txt	/*CTRL-W_R*
 CTRL-W_S	windows.txt	/*CTRL-W_S*
@@ -3593,6 +3603,7 @@ CTRL-W_n	windows.txt	/*CTRL-W_n*
 CTRL-W_o	windows.txt	/*CTRL-W_o*
 CTRL-W_p	windows.txt	/*CTRL-W_p*
 CTRL-W_q	windows.txt	/*CTRL-W_q*
+CTRL-W_quote	terminal.txt	/*CTRL-W_quote*
 CTRL-W_r	windows.txt	/*CTRL-W_r*
 CTRL-W_s	windows.txt	/*CTRL-W_s*
 CTRL-W_t	windows.txt	/*CTRL-W_t*
@@ -4523,6 +4534,7 @@ E942	eval.txt	/*E942*
 E943	message.txt	/*E943*
 E944	pattern.txt	/*E944*
 E945	pattern.txt	/*E945*
+E946	terminal.txt	/*E946*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
 E97	diff.txt	/*E97*
@@ -4764,6 +4776,7 @@ TabNew	autocmd.txt	/*TabNew*
 Tcl	if_tcl.txt	/*Tcl*
 TermChanged	autocmd.txt	/*TermChanged*
 TermResponse	autocmd.txt	/*TermResponse*
+Terminal-mode	terminal.txt	/*Terminal-mode*
 TextChanged	autocmd.txt	/*TextChanged*
 TextChangedI	autocmd.txt	/*TextChangedI*
 Transact-SQL	ft_sql.txt	/*Transact-SQL*
@@ -5401,6 +5414,7 @@ cinoptions-values	indent.txt	/*cinoptions-values*
 clear-undo	undo.txt	/*clear-undo*
 clearmatches()	eval.txt	/*clearmatches()*
 client-server	remote.txt	/*client-server*
+client-server-name	remote.txt	/*client-server-name*
 clientserver	remote.txt	/*clientserver*
 clipboard	gui.txt	/*clipboard*
 clipboard-autoselect	options.txt	/*clipboard-autoselect*
@@ -8783,11 +8797,17 @@ tempname()	eval.txt	/*tempname()*
 term-dependent-settings	term.txt	/*term-dependent-settings*
 term-list	syntax.txt	/*term-list*
 term.txt	term.txt	/*term.txt*
+term_getattr()	eval.txt	/*term_getattr()*
+term_getcursor()	eval.txt	/*term_getcursor()*
+term_getjob()	eval.txt	/*term_getjob()*
+term_getline()	eval.txt	/*term_getline()*
 term_getsize()	eval.txt	/*term_getsize()*
-term_open()	eval.txt	/*term_open()*
+term_getstatus()	eval.txt	/*term_getstatus()*
+term_gettitle()	eval.txt	/*term_gettitle()*
+term_list()	eval.txt	/*term_list()*
 term_scrape()	eval.txt	/*term_scrape()*
 term_sendkeys()	eval.txt	/*term_sendkeys()*
-term_setsize()	eval.txt	/*term_setsize()*
+term_start()	eval.txt	/*term_start()*
 term_wait()	eval.txt	/*term_wait()*
 termcap	term.txt	/*termcap*
 termcap-changed	version4.txt	/*termcap-changed*

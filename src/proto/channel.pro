@@ -1,9 +1,7 @@
 /* channel.c */
 void ch_logfile(char_u *fname, char_u *opt);
 int ch_log_active(void);
-void ch_log(channel_T *ch, char *msg);
-void ch_logn(channel_T *ch, char *msg, int nr);
-void ch_logs(channel_T *ch, char *msg, char *name);
+void ch_log(channel_T *ch, const char *fmt, ...);
 channel_T *add_channel(void);
 int has_any_channel(void);
 int channel_unref(channel_T *channel);
@@ -55,6 +53,8 @@ void clear_job_options(jobopt_T *opt);
 void free_job_options(jobopt_T *opt);
 int get_job_options(typval_T *tv, jobopt_T *opt, int supported);
 channel_T *get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part);
+job_T *job_alloc(void);
+void job_cleanup(job_T *job);
 void job_free_all(void);
 int set_ref_in_job(int copyID);
 void job_unref(job_T *job);

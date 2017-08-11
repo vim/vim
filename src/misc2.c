@@ -6050,6 +6050,9 @@ moreenv(void)
 }
 
 # ifdef USE_VIMPTY_GETENV
+/*
+ * Used for mch_getenv() for Mac.
+ */
     char_u *
 vimpty_getenv(const char_u *string)
 {

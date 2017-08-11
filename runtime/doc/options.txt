@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Jul 15
+*options.txt*	For Vim version 8.0.  Last change: 2017 Jul 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1319,8 +1319,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'bufhidden' 'bh'	string (default: "")
 			local to buffer
 			{not in Vi}
-			{not available when compiled without the |+quickfix|
-			feature}
 	This option specifies what happens when a buffer is no longer
 	displayed in a window:
 	  <empty>	follow the global 'hidden' option
@@ -1355,8 +1353,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'buftype' 'bt'		string (default: "")
 			local to buffer
 			{not in Vi}
-			{not available when compiled without the |+quickfix|
-			feature}
 	The value of this option specifies the type of a buffer:
 	  <empty>	normal buffer
 	  nofile	buffer which is not related to a file and will not be
@@ -1369,6 +1365,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			or list of locations |:lwindow|
 	  help		help buffer (you are not supposed to set this
 			manually)
+	  terminal	buffer for a |terminal| (you are not supposed to set
+			this manually)
 
 	This option is used together with 'bufhidden' and 'swapfile' to
 	specify special kinds of buffers.   See |special-buffers|.
@@ -4042,7 +4040,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     L:SpellLocal,-:Conceal,+:Pmenu,=:PmenuSel,
 				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
 				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
-				     .:CursorLine,o:ColorColumn,q:QuickFixLine")
+				     .:CursorLine,o:ColorColumn,q:QuickFixLine,
+				     $:StatusLineTerm")
 			global
 			{not in Vi}
 	This option can be used to set highlighting mode for various
@@ -7755,24 +7754,34 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'termkey'* *'tk'*
-'termkey' 'tk'		string	(default "CTRL-W")
+'termkey' 'tk'		string	(default "")
 			local to window
 			{not in Vi}
-	The key that precedes a Vim command in a terminal window.  Other keys
+	The key that starts a CTRL-W command in a terminal window.  Other keys
 	are sent to the job running in the window.
-	The string must be one key stroke.
-	NOT IMPLEMENTED YET
+	The <> notation can be used, e.g.: >
+		:set termkey=<C-L>
+<	The string must be one key stroke but can be multiple bytes.
+	When not set CTRL-W is used, so that CTRL-W : gets you to the command
+	line.  If 'termkey' is set to CTRL-L then CTRL-L : gets you to the
+	command line.
 
-
-						*'thesaurus'* *'tsr'*
+						*'termsize'* *'tms'*
 'termsize' 'tms'	string	(default "")
 			local to window
 			{not in Vi}
 	Size of the |terminal| window.  Format: {rows}x{columns}.
 	- When empty the terminal gets the size from the window.
-	- When set (e.g., "24x80") the terminal size is fixed.  If the window
-	  is smaller only the top-left part is displayed.
-	NOT IMPLEMENTED YET
+	- When set (e.g., "24x80") the terminal size is not adjusted to the
+	  window size.  If the window is smaller only the top-left part is
+	  displayed.
+	  When rows is zero then use the height of the window.
+	  When columns is zero then use the width of the window.
+	  For example: "30x0" uses 30 rows with the current window width.
+	  Using "0x0" is the same as empty.
+	Note that the command running in the terminal window may still change
+	the size of the terminal.  In that case the Vim window will be
+	adjusted to that size, if possible.
 
 						*'terse'* *'noterse'*
 'terse'			boolean	(default off)

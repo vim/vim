@@ -65,13 +65,19 @@ func Test_argadd()
   %argd
   edit d
   arga
-  call assert_equal(len(argv()), 1)
-  call assert_equal(get(argv(), 0, ''), 'd')
+  call assert_equal(1, len(argv()))
+  call assert_equal('d', get(argv(), 0, ''))
+
+  %argd
+  edit some\ file
+  arga
+  call assert_equal(1, len(argv()))
+  call assert_equal('some file', get(argv(), 0, ''))
 
   %argd
   new
   arga
-  call assert_equal(len(argv()), 0)
+  call assert_equal(0, len(argv()))
 endfunc
 
 func Init_abc()

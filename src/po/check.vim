@@ -114,14 +114,12 @@ endif
 func! CountNl(first, last)
   let nl = 0
   for lnum in range(a:first, a:last)
-    if getline(lnum) =~ '\\n'
-      let nl += 1
-    endif
+    let nl += count(getline(lnum), "\n")
   endfor
   return nl
 endfunc
 
-" Check that the \n at the end of the msid line is also present in the msgstr
+" Check that the \n at the end of the msgid line is also present in the msgstr
 " line.  Skip over the header.
 /^"MIME-Version:
 while 1
@@ -138,12 +136,22 @@ while 1
   let transcount = CountNl(strlnum, end - 1)
   " Allow for a few more or less line breaks when there are 2 or more
   if origcount != transcount && (origcount <= 2 || transcount <= 2)
-    echomsg 'Mismatching "\\n" in line ' . line('.')
+    echomsg 'Mismatching "\n" in line ' . line('.')
     if error == 0
       let error = lnum
     endif
   endif
 endwhile
+
+" Check that the file is well formed according to msgfmts understanding
+if executable("msgfmt")
+  let filename = expand("%")
+  let a = system("msgfmt --statistics OLD_PO_FILE_INPUT=yes " . filename)
+  if v:shell_error != 0
+    let error = matchstr(a, filename.':\zs\d\+\ze:')+0
+    for line in split(a, '\n') | echomsg line | endfor
+  endif
+endif
 
 if error == 0
   " If all was OK restore the view.

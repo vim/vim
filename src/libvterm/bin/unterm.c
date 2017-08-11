@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
   }
 
   vt = vterm_new(rows, cols);
-  vterm_set_utf8(vt, true);
+  vterm_set_utf8(vt, TRUE);
 
   vts = vterm_obtain_screen(vt);
   vterm_screen_set_callbacks(vts, &cb_screen, NULL);

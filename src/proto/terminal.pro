@@ -1,7 +1,34 @@
 /* terminal.c */
 void ex_terminal(exarg_T *eap);
-void free_terminal(term_T *term);
+void free_terminal(buf_T *buf);
 void write_to_term(buf_T *buffer, char_u *msg, channel_T *channel);
-void term_update_window(win_T *wp);
-void terminal_loop(void);
+int term_job_running(term_T *term);
+int term_in_normal_mode(void);
+void term_enter_job_mode(void);
+int send_keys_to_term(term_T *term, int c, int typed);
+int term_use_loop(void);
+int terminal_loop(void);
+void term_job_ended(job_T *job);
+void term_channel_closed(channel_T *ch);
+int term_update_window(win_T *wp);
+int term_is_finished(buf_T *buf);
+int term_show_buffer(buf_T *buf);
+void term_change_in_curbuf(void);
+int term_get_attr(buf_T *buf, linenr_T lnum, int col);
+char_u *term_get_status_text(term_T *term);
+int set_ref_in_term(int copyID);
+void f_term_getattr(typval_T *argvars, typval_T *rettv);
+void f_term_getcursor(typval_T *argvars, typval_T *rettv);
+void f_term_getjob(typval_T *argvars, typval_T *rettv);
+void f_term_getline(typval_T *argvars, typval_T *rettv);
+void f_term_getscrolled(typval_T *argvars, typval_T *rettv);
+void f_term_getsize(typval_T *argvars, typval_T *rettv);
+void f_term_getstatus(typval_T *argvars, typval_T *rettv);
+void f_term_gettitle(typval_T *argvars, typval_T *rettv);
+void f_term_gettty(typval_T *argvars, typval_T *rettv);
+void f_term_list(typval_T *argvars, typval_T *rettv);
+void f_term_scrape(typval_T *argvars, typval_T *rettv);
+void f_term_sendkeys(typval_T *argvars, typval_T *rettv);
+void f_term_start(typval_T *argvars, typval_T *rettv);
+void f_term_wait(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

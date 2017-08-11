@@ -8,11 +8,16 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include "vterm_keycodes.h"
+
+#define TRUE 1
+#define FALSE 0
+
+/* from stdint.h */
+typedef unsigned char		uint8_t;
+typedef unsigned int		uint32_t;
 
 typedef struct VTerm VTerm;
 typedef struct VTermState VTermState;
@@ -160,7 +165,9 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
 /* Free and cleanup a terminal and all its data. */
 void   vterm_free(VTerm* vt);
 
+/* Get the current size of the terminal and store in "rowsp" and "colsp". */
 void vterm_get_size(const VTerm *vt, int *rowsp, int *colsp);
+
 void vterm_set_size(VTerm *vt, int rows, int cols);
 
 int  vterm_get_utf8(const VTerm *vt);
@@ -181,7 +188,7 @@ void vterm_keyboard_start_paste(VTerm *vt);
 void vterm_keyboard_end_paste(VTerm *vt);
 
 void vterm_mouse_move(VTerm *vt, int row, int col, VTermModifier mod);
-void vterm_mouse_button(VTerm *vt, int button, bool pressed, VTermModifier mod);
+void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod);
 
 /* ------------
  * Parser layer
@@ -195,14 +202,14 @@ void vterm_mouse_button(VTerm *vt, int button, bool pressed, VTermModifier mod);
  *
  * Don't confuse this with the final byte of the CSI escape; 'a' in this case.
  */
-#define CSI_ARG_FLAG_MORE (1<<31)
-#define CSI_ARG_MASK      (~(1<<31))
+#define CSI_ARG_FLAG_MORE (1<<30)
+#define CSI_ARG_MASK      (~(1<<30))
 
 #define CSI_ARG_HAS_MORE(a) ((a) & CSI_ARG_FLAG_MORE)
 #define CSI_ARG(a)          ((a) & CSI_ARG_MASK)
 
 /* Can't use -1 to indicate a missing argument; use this instead */
-#define CSI_ARG_MISSING ((1UL<<31)-1)
+#define CSI_ARG_MISSING ((1<<30)-1)
 
 #define CSI_ARG_IS_MISSING(a) (CSI_ARG(a) == CSI_ARG_MISSING)
 #define CSI_ARG_OR(a,def)     (CSI_ARG(a) == CSI_ARG_MISSING ? (def) : CSI_ARG(a))
@@ -233,6 +240,8 @@ typedef struct {
   int (*erase)(VTermRect rect, int selective, void *user);
   int (*initpen)(void *user);
   int (*setpenattr)(VTermAttr attr, VTermValue *val, void *user);
+  /* Callback for setting various properties.  Must return 1 if the property
+   * was accepted, 0 otherwise. */
   int (*settermprop)(VTermProp prop, VTermValue *val, void *user);
   int (*bell)(void *user);
   int (*resize)(int rows, int cols, VTermPos *delta, void *user);
@@ -248,7 +257,9 @@ void *vterm_state_get_cbdata(VTermState *state);
 void  vterm_state_set_unrecognised_fallbacks(VTermState *state, const VTermParserCallbacks *fallbacks, void *user);
 void *vterm_state_get_unrecognised_fbdata(VTermState *state);
 
+/* Initialize the state. */
 void vterm_state_reset(VTermState *state, int hard);
+
 void vterm_state_get_cursorpos(const VTermState *state, VTermPos *cursorpos);
 void vterm_state_get_default_colors(const VTermState *state, VTermColor *default_fg, VTermColor *default_bg);
 void vterm_state_get_palette_color(const VTermState *state, int index, VTermColor *col);
@@ -295,6 +306,7 @@ typedef struct {
   int (*sb_popline)(int cols, VTermScreenCell *cells, void *user);
 } VTermScreenCallbacks;
 
+/* Return the screen of the vterm. */
 VTermScreen *vterm_obtain_screen(VTerm *vt);
 
 /*
@@ -317,9 +329,15 @@ typedef enum {
   VTERM_DAMAGE_SCROLL   /* entire screen + scrollrect */
 } VTermDamageSize;
 
+/* Invoke the relevant callbacks to update the screen. */
 void vterm_screen_flush_damage(VTermScreen *screen);
+
 void vterm_screen_set_damage_merge(VTermScreen *screen, VTermDamageSize size);
 
+/*
+ * Reset the screen.  Also invokes vterm_state_reset().
+ * Must be called before the terminal can be used.
+ */
 void   vterm_screen_reset(VTermScreen *screen, int hard);
 
 /* Neither of these functions NUL-terminate the buffer */

@@ -171,10 +171,8 @@ msg_attr_keep(
 
 #ifdef FEAT_JOB_CHANNEL
     if (emsg_to_channel_log)
-    {
 	/* Write message in the channel log. */
-	ch_logs(NULL, "ERROR: %s", (char *)s);
-    }
+	ch_log(NULL, "ERROR: %s", (char *)s);
 #endif
 
     /* When displaying keep_msg, don't let msg_start() free it, caller must do
@@ -667,7 +665,7 @@ emsg(char_u *s)
 		redir_write(s, -1);
 	    }
 #ifdef FEAT_JOB_CHANNEL
-	    ch_logs(NULL, "ERROR: %s", (char *)s);
+	    ch_log(NULL, "ERROR: %s", (char *)s);
 #endif
 	    return TRUE;
 	}
@@ -2630,10 +2628,30 @@ msg_puts_printf(char_u *str, int maxlen)
     char_u	*s = str;
     char_u	buf[4];
     char_u	*p;
-
 #ifdef WIN3264
+# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+    char_u	*ccp = NULL;
+
+# endif
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_COOK);	/* handle '\r' and '\n' correctly */
+
+# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+    if (enc_codepage >= 0 && (int)GetConsoleCP() != enc_codepage)
+    {
+	int	inlen = (int)STRLEN(str);
+	int	outlen;
+	WCHAR	*widestr = (WCHAR *)enc_to_utf16(str, &inlen);
+
+	if (widestr != NULL)
+	{
+	    WideCharToMultiByte_alloc(GetConsoleCP(), 0, widestr, inlen,
+						 (LPSTR *)&ccp, &outlen, 0, 0);
+	    vim_free(widestr);
+	    s = str = ccp;
+	}
+    }
+# endif
 #endif
     while ((maxlen < 0 || (int)(s - str) < maxlen) && *s != NUL)
     {
@@ -2677,6 +2695,9 @@ msg_puts_printf(char_u *str, int maxlen)
     msg_didout = TRUE;	    /* assume that line is not empty */
 
 #ifdef WIN3264
+# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+    vim_free(ccp);
+# endif
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_RAW);
 #endif
@@ -5145,7 +5166,7 @@ vim_vsnprintf_typval(
 		{
 		    if (str_l < str_m)
 		    {
-			size_t avail = str_m-str_l;
+			size_t avail = str_m - str_l;
 
 			vim_memset(str + str_l, '0',
 					     (size_t)zn > avail ? avail
