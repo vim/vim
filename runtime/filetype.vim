@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Aug 09
+" Last Change:	2017 Aug 11
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1341,6 +1341,9 @@ au BufNewFile,BufRead *.mush			setf mush
 
 " Mutt setup file (also for Muttng)
 au BufNewFile,BufRead Mutt{ng,}rc		setf muttrc
+
+" N1QL
+au BufRead,BufNewfile *.n1ql,*.nql		setf n1ql
 
 " Nano
 au BufNewFile,BufRead */etc/nanorc,*.nanorc  	setf nanorc
