@@ -2965,7 +2965,9 @@ get_logfont(
 	int	did_replace = FALSE;
 
 	for (i = 0; lf->lfFaceName[i]; ++i)
-	    if (lf->lfFaceName[i] == '_')
+	    if (IsDBCSLeadByte(lf->lfFaceName[i]))
+		++i;
+	    else if (lf->lfFaceName[i] == '_')
 	    {
 		lf->lfFaceName[i] = ' ';
 		did_replace = TRUE;
