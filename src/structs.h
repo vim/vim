@@ -1688,7 +1688,10 @@ struct channel_S {
 #define JO2_TERM_FINISH	    0x0008	/* "term_finish" */
 #define JO2_ENV		    0x0010	/* "env" */
 #define JO2_CWD		    0x0020	/* "cwd" */
-#define JO2_ALL		    0x003F
+#define JO2_TERM_ROWS	    0x0040	/* "term_rows" */
+#define JO2_TERM_COLS	    0x0080	/* "term_cols" */
+#define JO2_VERTICAL	    0x0100	/* "vertical" */
+#define JO2_ALL		    0x01FF
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1748,6 +1751,7 @@ typedef struct
     /* when non-zero run the job in a terminal window of this size */
     int		jo_term_rows;
     int		jo_term_cols;
+    int		jo_vertical;
     char_u	*jo_term_name;
     int		jo_term_finish;
 #endif

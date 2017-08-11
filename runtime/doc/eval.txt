@@ -8050,8 +8050,10 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 term_start({cmd}, {options})				*term_start()*
 		Open a terminal window and run {cmd} in it.
 
-		Returns the buffer number of the terminal window.
-		When opening the window fails zero is returned.
+		Returns the buffer number of the terminal window.  If {cmd}
+		cannot be executed the window does open and shows an error
+		message.
+		If opening the window fails zero is returned.
 
 		{options} are similar to what is used for |job_start()|, see
 		|job-options|.  However, not all options can be used.  These
@@ -8067,10 +8069,15 @@ term_start({cmd}, {options})				*term_start()*
 		connected to the terminal.  When I/O is connected to the
 		terminal then the callback function for that part is not used.
 
-		There are two extra options:
+		There are extra options:
 		   "term_name"	     name to use for the buffer name, instead
 				     of the command name.
-		   "term_finish"     What todo when the job is finished:
+		   "term_rows"	     vertical size to use for the terminal,
+				     instead of using 'termsize'
+		   "term_cols"	     horizontal size to use for the terminal,
+		   		     instead of using 'termsize'
+		   "vertical"	     split the window vertically
+		   "term_finish"     What to do when the job is finished:
 					"close": close any windows
 					"open": open window if needed
 				     Note that "open" can be interruptive.

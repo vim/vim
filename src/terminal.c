@@ -237,8 +237,10 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
     opt->jo_io_buf[PART_OUT] = curbuf->b_fnum;
     opt->jo_io_buf[PART_ERR] = curbuf->b_fnum;
     opt->jo_pty = TRUE;
-    opt->jo_term_rows = rows;
-    opt->jo_term_cols = cols;
+    if ((opt->jo_set2 & JO2_TERM_ROWS) == 0)
+	opt->jo_term_rows = rows;
+    if ((opt->jo_set2 & JO2_TERM_COLS) == 0)
+	opt->jo_term_cols = cols;
 }
 
     static void
@@ -2361,11 +2363,14 @@ f_term_start(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type != VAR_UNKNOWN
 	    && get_job_options(&argvars[1], &opt,
 		JO_TIMEOUT_ALL + JO_STOPONEXIT
-		+ JO_EXIT_CB + JO_CLOSE_CALLBACK
-		+ JO2_TERM_NAME + JO2_TERM_FINISH
-		+ JO2_CWD + JO2_ENV) == FAIL)
+		    + JO_EXIT_CB + JO_CLOSE_CALLBACK,
+		JO2_TERM_NAME + JO2_TERM_FINISH
+		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL
+		    + JO2_CWD + JO2_ENV) == FAIL)
 	return;
 
+    if (opt.jo_vertical)
+	cmdmod.split = WSP_VERT;
     term_start(cmd, &opt);
 
     if (curbuf->b_term != NULL)

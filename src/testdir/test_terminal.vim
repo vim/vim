@@ -247,22 +247,43 @@ func Test_terminal_size()
   bwipe!
   call assert_equal(5, size[0])
 
+  call term_start(cmd, {'term_rows': 6})
+  let size = term_getsize('')
+  bwipe!
+  call assert_equal(6, size[0])
+
   vsplit
   exe '5,33terminal ' . cmd
   let size = term_getsize('')
   bwipe!
   call assert_equal([5, 33], size)
 
+  call term_start(cmd, {'term_rows': 6, 'term_cols': 36})
+  let size = term_getsize('')
+  bwipe!
+  call assert_equal([6, 36], size)
+
   exe 'vertical 20terminal ' . cmd
   let size = term_getsize('')
   bwipe!
   call assert_equal(20, size[1])
+
+  call term_start(cmd, {'vertical': 1, 'term_cols': 26})
+  let size = term_getsize('')
+  bwipe!
+  call assert_equal(26, size[1])
 
   split
   exe 'vertical 6,20terminal ' . cmd
   let size = term_getsize('')
   bwipe!
   call assert_equal([6, 20], size)
+
+  call term_start(cmd, {'vertical': 1, 'term_rows': 7, 'term_cols': 27})
+  let size = term_getsize('')
+  bwipe!
+  call assert_equal([7, 27], size)
+
 endfunc
 
 func Test_finish_close()
