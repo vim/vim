@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.0.  Last change: 2017 Jul 22
+*channel.txt*      For Vim version 8.0.  Last change: 2017 Aug 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -475,6 +475,11 @@ it like this: >
 Without the handler you need to read the output with |ch_read()| or
 |ch_readraw()|. You can do this in the close callback, see |read-in-close-cb|.
 
+Note that if the job exits before you read the output, the output may be lost.
+This depends on the system (on Unix this happens because closing the write end
+of a pipe causes the read end to get EOF).  To avoid this make the job sleep
+for a short while before it exits.
+
 The handler defined for "out_cb" will not receive stderr.  If you want to
 handle that separately, add an "err_cb" handler: >
     let job = job_start(command, {"out_cb": "MyHandler",
@@ -483,11 +488,6 @@ handle that separately, add an "err_cb" handler: >
 If you want to handle both stderr and stdout with one handler use the
 "callback" option: >
     let job = job_start(command, {"callback": "MyHandler"}) 
-
-Depending on the system, starting a job can put Vim in the background, the
-started job gets the focus.  To avoid that, use the `foreground()` function.
-This might not always work when called early, put in the callback handler or
-use a timer to call it after the job has started.
 
 Depending on the system, starting a job can put Vim in the background, the
 started job gets the focus.  To avoid that, use the `foreground()` function.
