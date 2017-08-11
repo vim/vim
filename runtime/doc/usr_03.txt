@@ -445,7 +445,7 @@ command.  If you only want to remove the highlighting, use this command: >
 
 This doesn't reset the option.  Instead, it disables the highlighting.  As
 soon as you execute a search command, the highlighting will be used again.
-Also for the "n" and "N" commands.
+Also valid for the "n" and "N" commands.
 
 
 TUNING SEARCHES
