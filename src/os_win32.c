@@ -2192,6 +2192,8 @@ typedef struct ConsoleBufferStruct
     CONSOLE_SCREEN_BUFFER_INFO	Info;
     PCHAR_INFO			Buffer;
     COORD			BufferSize;
+    PSMALL_RECT			Regions;
+    int				NumRegions;
 } ConsoleBuffer;
 
 /*
@@ -2212,6 +2214,7 @@ SaveConsoleBuffer(
     COORD BufferCoord;
     SMALL_RECT ReadRegion;
     WORD Y, Y_incr;
+    int i, numregions;
 
     if (cb == NULL)
 	return FALSE;
@@ -2254,7 +2257,22 @@ SaveConsoleBuffer(
     ReadRegion.Left = 0;
     ReadRegion.Right = cb->Info.dwSize.X - 1;
     Y_incr = 12000 / cb->Info.dwSize.X;
-    for (Y = 0; Y < cb->BufferSize.Y; Y += Y_incr)
+
+    numregions = (cb->Info.dwSize.Y + Y_incr - 1) / Y_incr;
+    if (cb->Regions == NULL || numregions != cb->NumRegions)
+    {
+	cb->NumRegions = numregions;
+	vim_free(cb->Regions);
+	cb->Regions = (PSMALL_RECT)alloc(cb->NumRegions * sizeof(SMALL_RECT));
+	if (cb->Regions == NULL)
+	{
+	    vim_free(cb->Buffer);
+	    cb->Buffer = NULL;
+	    return FALSE;
+	}
+    }
+
+    for (i = 0, Y = 0; i < cb->NumRegions; i++, Y += Y_incr)
     {
 	/*
 	 * Read into position (0, Y) in our buffer.
@@ -2268,7 +2286,7 @@ SaveConsoleBuffer(
 	 */
 	ReadRegion.Top = Y;
 	ReadRegion.Bottom = Y + Y_incr - 1;
-	if (!ReadConsoleOutput(g_hConOut,	/* output handle */
+	if (!ReadConsoleOutputW(g_hConOut,	/* output handle */
 		cb->Buffer,			/* our buffer */
 		cb->BufferSize,			/* dimensions of our buffer */
 		BufferCoord,			/* offset in our buffer */
@@ -2276,8 +2294,11 @@ SaveConsoleBuffer(
 	{
 	    vim_free(cb->Buffer);
 	    cb->Buffer = NULL;
+	    vim_free(cb->Regions);
+	    cb->Regions = NULL;
 	    return FALSE;
 	}
+	cb->Regions[i] = ReadRegion;
     }
 
     return TRUE;
@@ -2299,6 +2320,7 @@ RestoreConsoleBuffer(
 {
     COORD BufferCoord;
     SMALL_RECT WriteRegion;
+    int i;
 
     if (cb == NULL || !cb->IsValid)
 	return FALSE;
@@ -2335,19 +2357,19 @@ RestoreConsoleBuffer(
      */
     if (cb->Buffer != NULL)
     {
-	BufferCoord.X = 0;
-	BufferCoord.Y = 0;
-	WriteRegion.Left = 0;
-	WriteRegion.Top = 0;
-	WriteRegion.Right = cb->Info.dwSize.X - 1;
-	WriteRegion.Bottom = cb->Info.dwSize.Y - 1;
-	if (!WriteConsoleOutput(g_hConOut,	/* output handle */
-		cb->Buffer,			/* our buffer */
-		cb->BufferSize,			/* dimensions of our buffer */
-		BufferCoord,			/* offset in our buffer */
-		&WriteRegion))			/* region to restore */
+	for (i = 0; i < cb->NumRegions; i++)
 	{
-	    return FALSE;
+	    BufferCoord.X = cb->Regions[i].Left;
+	    BufferCoord.Y = cb->Regions[i].Top;
+	    WriteRegion = cb->Regions[i];
+	    if (!WriteConsoleOutputW(g_hConOut,	/* output handle */
+			cb->Buffer,		/* our buffer */
+			cb->BufferSize,		/* dimensions of our buffer */
+			BufferCoord,		/* offset in our buffer */
+			&WriteRegion))		/* region to restore */
+	    {
+		return FALSE;
+	    }
 	}
     }
 
