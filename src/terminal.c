@@ -1143,7 +1143,7 @@ terminal_loop(void)
 	    /* We don't know if the job can handle CTRL-C itself or not, this
 	     * may kill the shell instead of killing the command running in the
 	     * shell. */
-	    mch_stop_job(curbuf->b_term->tl_job, (char_u *)"quit");
+	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"quit");
 #endif
 
 	if (c == (termkey == 0 ? Ctrl_W : termkey) || c == Ctrl_BSL)
@@ -2735,7 +2735,7 @@ term_report_winsize(term_T *term, int rows, int cols)
 		break;
 	}
 	if (part < PART_COUNT && mch_report_winsize(fd, rows, cols) == OK)
-	    mch_stop_job(term->tl_job, (char_u *)"winch");
+	    mch_signal_job(term->tl_job, (char_u *)"winch");
     }
 }
 

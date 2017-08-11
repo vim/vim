@@ -4844,7 +4844,7 @@ job_stop_on_exit(void)
 
     for (job = first_job; job != NULL; job = job->jv_next)
 	if (job->jv_status == JOB_STARTED && job->jv_stoponexit != NULL)
-	    mch_stop_job(job, job->jv_stoponexit);
+	    mch_signal_job(job, job->jv_stoponexit);
 }
 
 /*
@@ -5191,7 +5191,7 @@ job_stop(job_T *job, typval_T *argvars, char *type)
 	return 0;
     }
     ch_log(job->jv_channel, "Stopping job with '%s'", (char *)arg);
-    if (mch_stop_job(job, arg) == FAIL)
+    if (mch_signal_job(job, arg) == FAIL)
 	return 0;
 
     /* Assume that only "kill" will kill the job. */

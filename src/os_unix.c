@@ -5557,7 +5557,7 @@ mch_detect_ended_job(job_T *job_list)
  * Return FAIL if "how" is not a valid name.
  */
     int
-mch_stop_job(job_T *job, char_u *how)
+mch_signal_job(job_T *job, char_u *how)
 {
     int	    sig = -1;
     pid_t   job_pid;
