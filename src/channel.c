@@ -4976,8 +4976,9 @@ job_start(typval_T *argvars, jobopt_T *opt_arg)
 	clear_job_options(&opt);
 	opt.jo_mode = MODE_NL;
 	if (get_job_options(&argvars[1], &opt,
-	    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL + JO_STOPONEXIT
-			 + JO_EXIT_CB + JO_OUT_IO + JO_BLOCK_WRITE, 0) == FAIL)
+		    JO_MODE_ALL + JO_CB_ALL + JO_TIMEOUT_ALL + JO_STOPONEXIT
+			 + JO_EXIT_CB + JO_OUT_IO + JO_BLOCK_WRITE,
+		     JO2_ENV + JO2_CWD) == FAIL)
 	    goto theend;
     }
 
