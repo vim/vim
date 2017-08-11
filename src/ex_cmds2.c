@@ -3749,6 +3749,7 @@ ex_packadd(exarg_T *eap)
 ex_options(
     exarg_T	*eap UNUSED)
 {
+    vim_setenv((char_u *)"OPTWIN_CMD", (char_u *)(cmdmod.tab ? "tab" : ""));
     cmd_source((char_u *)SYS_OPTWIN_FILE, NULL);
 }
 #endif
