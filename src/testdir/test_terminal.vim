@@ -266,7 +266,6 @@ func Test_terminal_size()
 endfunc
 
 func Test_finish_close()
-  return
   " TODO: use something that takes much less than a whole second
   echo 'This will take five seconds...'
   call assert_equal(1, winnr('$'))
