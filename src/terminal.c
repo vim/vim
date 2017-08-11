@@ -1865,6 +1865,10 @@ create_vterm(term_T *term, int rows, int cols)
 
     /* Required to initialize most things. */
     vterm_screen_reset(screen, 1 /* hard */);
+
+    /* Enable alt-screen. */
+    vterm_screen_enable_altscreen(screen, 1);
+
 }
 
 /*
