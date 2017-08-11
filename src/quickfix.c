@@ -4885,7 +4885,7 @@ qf_add_entries(
 }
 
     static int
-qf_set_properties(qf_info_T *qi, dict_T *what, int action)
+qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 {
     dictitem_T	*di;
     int		retval = FAIL;
@@ -4929,7 +4929,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action)
 
     if (newlist)
     {
-	qf_new_list(qi, NULL);
+	qf_new_list(qi, title);
 	qf_idx = qi->qf_curlist;
     }
 
@@ -4955,6 +4955,23 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action)
 		    title_save, action == ' ' ? 'a' : action);
 	    vim_free(title_save);
 	}
+    }
+
+    if ((di = dict_find(what, (char_u *)"text", -1)) != NULL)
+    {
+	/* Only string and list values are supported */
+	if ((di->di_tv.v_type == VAR_STRING && di->di_tv.vval.v_string != NULL)
+		|| (di->di_tv.v_type == VAR_LIST
+					     && di->di_tv.vval.v_list != NULL))
+	{
+	    if (action == 'r')
+		qf_free_items(qi, qf_idx);
+	    if (qf_init_ext(qi, qf_idx, NULL, NULL, &di->di_tv, p_efm,
+			FALSE, (linenr_T)0, (linenr_T)0, NULL, NULL) > 0)
+		retval = OK;
+	}
+	else
+	    return FAIL;
     }
 
     if ((di = dict_find(what, (char_u *)"context", -1)) != NULL)
@@ -5070,7 +5087,7 @@ set_errorlist(
 	qf_free_stack(wp, qi);
     }
     else if (what != NULL)
-	retval = qf_set_properties(qi, what, action);
+	retval = qf_set_properties(qi, what, action, title);
     else
 	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action);
 
