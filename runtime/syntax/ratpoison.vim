@@ -93,6 +93,8 @@ syn keyword ratpoisonSetArg	bgcolor
 syn keyword ratpoisonSetArg	border		contained nextgroup=ratpoisonNumberArg
 syn keyword ratpoisonSetArg	fgcolor
 syn keyword ratpoisonSetArg	fwcolor
+syn keyword ratpoisonSetArg	framemsgwait	contained nextgroup=ratpoisonNumberArg
+syn keyword ratpoisonSetArg	gravity 	contained nextgroup=ratpoisonGravityArg
 syn keyword ratpoisonSetArg	bwcolor
 syn keyword ratpoisonSetArg	historysize
 syn keyword ratpoisonSetArg	historycompaction
@@ -103,8 +105,10 @@ syn keyword ratpoisonSetArg	font
 syn keyword ratpoisonSetArg	framesels
 syn keyword ratpoisonSetArg	inputwidth	contained nextgroup=ratpoisonNumberArg
 syn keyword ratpoisonSetArg	maxsizegravity	contained nextgroup=ratpoisonGravityArg
+syn keyword ratpoisonSetArg	msgwait	        contained nextgroup=ratpoisonNumberArg
 syn keyword ratpoisonSetArg	padding		contained nextgroup=ratpoisonNumberArg
 syn keyword ratpoisonSetArg	resizeunit	contained nextgroup=ratpoisonNumberArg
+syn keyword ratpoisonSetArg	startup_message
 syn keyword ratpoisonSetArg	transgravity	contained nextgroup=ratpoisonGravityArg
 syn keyword ratpoisonSetArg	waitcursor	contained nextgroup=ratpoisonNumberArg
 syn keyword ratpoisonSetArg	winfmt		contained nextgroup=ratpoisonWinFmtArg
