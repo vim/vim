@@ -8,8 +8,8 @@ source shared.vim
 
 " Open a terminal with a shell, assign the job to g:job and return the buffer
 " number.
-func Run_shell_in_terminal()
-  let buf = term_start(&shell)
+func Run_shell_in_terminal(options)
+  let buf = term_start(&shell, a:options)
 
   let termlist = term_list()
   call assert_equal(1, len(termlist))
@@ -32,7 +32,7 @@ func Stop_shell_in_terminal(buf)
 endfunc
 
 func Test_terminal_basic()
-  let buf = Run_shell_in_terminal()
+  let buf = Run_shell_in_terminal({})
   if has("unix")
     call assert_match("^/dev/", job_info(g:job).tty)
     call assert_match("^/dev/", term_gettty(''))
@@ -51,7 +51,7 @@ func Test_terminal_basic()
 endfunc
 
 func Test_terminal_make_change()
-  let buf = Run_shell_in_terminal()
+  let buf = Run_shell_in_terminal({})
   call Stop_shell_in_terminal(buf)
   call term_wait(buf)
 
@@ -65,7 +65,7 @@ func Test_terminal_make_change()
 endfunc
 
 func Test_terminal_wipe_buffer()
-  let buf = Run_shell_in_terminal()
+  let buf = Run_shell_in_terminal({})
   call assert_fails(buf . 'bwipe', 'E517')
   exe buf . 'bwipe!'
   call WaitFor('job_status(g:job) == "dead"')
@@ -76,7 +76,7 @@ func Test_terminal_wipe_buffer()
 endfunc
 
 func Test_terminal_hide_buffer()
-  let buf = Run_shell_in_terminal()
+  let buf = Run_shell_in_terminal({})
   quit
   for nr in range(1, winnr('$'))
     call assert_notequal(winbufnr(nr), buf)
@@ -266,9 +266,11 @@ func Test_terminal_size()
 endfunc
 
 func Test_finish_close()
+  return
+  " TODO: use something that takes much less than a whole second
+  echo 'This will take five seconds...'
   call assert_equal(1, winnr('$'))
 
-  " TODO: use something that takes much less than a whole second
   if has('win32')
     let cmd = $windir . '\system32\timeout.exe 1'
   else
@@ -303,4 +305,33 @@ func Test_finish_close()
   call assert_equal(2, winnr('$'))
 
   bwipe
+endfunc
+
+func Test_terminal_cwd()
+  if !has('unix')
+    return
+  endif
+  call mkdir('Xdir')
+  let buf = term_start('pwd', {'cwd': 'Xdir'})
+  sleep 100m
+  call term_wait(buf)
+  call assert_equal(getcwd() . '/Xdir', getline(1))
+
+  exe buf . 'bwipe'
+  call delete('Xdir', 'rf')
+endfunc
+
+func Test_terminal_env()
+  if !has('unix')
+    return
+  endif
+  let buf = Run_shell_in_terminal({'env': {'TESTENV': 'correct'}})
+  call term_wait(buf)
+  call term_sendkeys(buf, "echo $TESTENV\r")
+  call term_wait(buf)
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  call assert_equal('correct', getline(2))
+
+  exe buf . 'bwipe'
 endfunc

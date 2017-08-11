@@ -2362,7 +2362,8 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 	    && get_job_options(&argvars[1], &opt,
 		JO_TIMEOUT_ALL + JO_STOPONEXIT
 		+ JO_EXIT_CB + JO_CLOSE_CALLBACK
-		+ JO2_TERM_NAME + JO2_TERM_FINISH) == FAIL)
+		+ JO2_TERM_NAME + JO2_TERM_FINISH
+		+ JO2_CWD + JO2_ENV) == FAIL)
 	return;
 
     term_start(cmd, &opt);

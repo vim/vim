@@ -3981,31 +3981,46 @@ vim_create_process(
     BOOL		inherit_handles,
     DWORD		flags,
     STARTUPINFO		*si,
-    PROCESS_INFORMATION *pi)
+    PROCESS_INFORMATION *pi,
+    LPVOID		*env,
+    char		*cwd)
 {
 #ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
-	WCHAR	*wcmd = enc_to_utf16((char_u *)cmd, NULL);
+	BOOL	ret;
+	WCHAR	*wcmd, *wcwd = NULL;
 
-	if (wcmd != NULL)
+	wcmd = enc_to_utf16((char_u *)cmd, NULL);
+	if (wcmd == NULL)
+	    goto fallback;
+	if (cwd != NULL)
 	{
-	    BOOL ret;
-	    ret = CreateProcessW(
-		NULL,			/* Executable name */
-		wcmd,			/* Command to execute */
-		NULL,			/* Process security attributes */
-		NULL,			/* Thread security attributes */
-		inherit_handles,	/* Inherit handles */
-		flags,			/* Creation flags */
-		NULL,			/* Environment */
-		NULL,			/* Current directory */
-		(LPSTARTUPINFOW)si,	/* Startup information */
-		pi);			/* Process information */
-	    vim_free(wcmd);
-	    return ret;
+	    wcwd = enc_to_utf16((char_u *)cwd, NULL);
+	    if (wcwd == NULL)
+	    {
+		vim_free(wcmd);
+		goto fallback;
+	    }
 	}
+
+	ret = CreateProcessW(
+	    NULL,			/* Executable name */
+	    wcmd,			/* Command to execute */
+	    NULL,			/* Process security attributes */
+	    NULL,			/* Thread security attributes */
+	    inherit_handles,	/* Inherit handles */
+	    flags,			/* Creation flags */
+	    env,			/* Environment */
+	    wcwd,			/* Current directory */
+	    (LPSTARTUPINFOW)si,	/* Startup information */
+	    pi);			/* Process information */
+	vim_free(wcmd);
+	if (wcwd != NULL)
+	    vim_free(wcwd);
+	return ret;
     }
+fallback:
 #endif
     return CreateProcess(
 	NULL,			/* Executable name */
@@ -4014,8 +4029,8 @@ vim_create_process(
 	NULL,			/* Thread security attributes */
 	inherit_handles,	/* Inherit handles */
 	flags,			/* Creation flags */
-	NULL,			/* Environment */
-	NULL,			/* Current directory */
+	env,			/* Environment */
+	cwd,			/* Current directory */
 	si,			/* Startup information */
 	pi);			/* Process information */
 }
@@ -4079,7 +4094,8 @@ mch_system_classic(char *cmd, int options)
 
     /* Now, run the command */
     vim_create_process(cmd, FALSE,
-	    CREATE_DEFAULT_ERROR_MODE |	CREATE_NEW_CONSOLE, &si, &pi);
+	    CREATE_DEFAULT_ERROR_MODE |	CREATE_NEW_CONSOLE,
+	    &si, &pi, NULL, NULL);
 
     /* Wait for the command to terminate before continuing */
     {
@@ -4398,7 +4414,8 @@ mch_system_piped(char *cmd, int options)
      * About "Inherit handles" being TRUE: this command can be litigious,
      * handle inheritance was deactivated for pending temp file, but, if we
      * deactivate it, the pipes don't work for some reason. */
-     vim_create_process(p, TRUE, CREATE_DEFAULT_ERROR_MODE, &si, &pi);
+     vim_create_process(p, TRUE, CREATE_DEFAULT_ERROR_MODE,
+	     &si, &pi, NULL, NULL);
 
     if (p != cmd)
 	vim_free(p);
@@ -4835,7 +4852,8 @@ mch_call_shell(
 	     * inherit our handles which causes unpleasant dangling swap
 	     * files if we exit before the spawned process
 	     */
-	    if (vim_create_process((char *)newcmd, FALSE, flags, &si, &pi))
+	    if (vim_create_process((char *)newcmd, FALSE, flags,
+			&si, &pi, NULL, NULL))
 		x = 0;
 	    else if (vim_shell_execute((char *)newcmd, n_show_cmd)
 							       > (HINSTANCE)32)
@@ -4976,6 +4994,67 @@ job_io_file_open(
     return h;
 }
 
+/*
+ * Turn the dictionary "env" into a NUL separated list that can be used as the
+ * environment argument of vim_create_process().
+ */
+    static void
+make_job_env(garray_T *gap, dict_T *env)
+{
+    hashitem_T	*hi;
+    int		todo = (int)env->dv_hashtab.ht_used;
+    LPVOID	base = GetEnvironmentStringsW();
+
+    /* for last \0 */
+    if (ga_grow(gap, 1) == FAIL)
+	return;
+
+    if (base)
+    {
+	WCHAR	*p = (WCHAR*) base;
+
+	/* for last \0 */
+	if (ga_grow(gap, 1) == FAIL)
+	    return;
+
+	while (*p != 0 || *(p + 1) != 0)
+	{
+	    if (ga_grow(gap, 1) == OK)
+		*((WCHAR*)gap->ga_data + gap->ga_len++) = *p;
+	    p++;
+	}
+	FreeEnvironmentStrings(base);
+	*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+    }
+
+    for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    typval_T *item = &dict_lookup(hi)->di_tv;
+	    WCHAR   *wkey = enc_to_utf16((char_u *)hi->hi_key, NULL);
+	    WCHAR   *wval = enc_to_utf16(get_tv_string(item), NULL);
+	    --todo;
+	    if (wkey != NULL && wval != NULL)
+	    {
+		int n, lkey = wcslen(wkey), lval = wcslen(wval);
+		if (ga_grow(gap, lkey + lval + 2) != OK)
+		    continue;
+		for (n = 0; n < lkey; n++)
+		    *((WCHAR*)gap->ga_data + gap->ga_len++) = wkey[n];
+		*((WCHAR*)gap->ga_data + gap->ga_len++) = L'=';
+		for (n = 0; n < lval; n++)
+		    *((WCHAR*)gap->ga_data + gap->ga_len++) = wval[n];
+		*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+	    }
+	    if (wkey != NULL) vim_free(wkey);
+	    if (wval != NULL) vim_free(wval);
+	}
+    }
+
+    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+}
+
     void
 mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 {
@@ -4987,6 +5066,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     HANDLE		ifd[2];
     HANDLE		ofd[2];
     HANDLE		efd[2];
+    garray_T		ga;
 
     int		use_null_for_in = options->jo_io[PART_IN] == JIO_NULL;
     int		use_null_for_out = options->jo_io[PART_OUT] == JIO_NULL;
@@ -5005,6 +5085,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     ofd[1] = INVALID_HANDLE_VALUE;
     efd[0] = INVALID_HANDLE_VALUE;
     efd[1] = INVALID_HANDLE_VALUE;
+    ga_init2(&ga, (int)sizeof(wchar_t), 500);
 
     jo = CreateJobObject(NULL, NULL);
     if (jo == NULL)
@@ -5012,6 +5093,9 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 	job->jv_status = JOB_FAILED;
 	goto failed;
     }
+
+    if (options->jo_env != NULL)
+	make_job_env(&ga, options->jo_env);
 
     ZeroMemory(&pi, sizeof(pi));
     ZeroMemory(&si, sizeof(si));
@@ -5100,13 +5184,18 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 	    CREATE_SUSPENDED |
 	    CREATE_DEFAULT_ERROR_MODE |
 	    CREATE_NEW_PROCESS_GROUP |
+	    CREATE_UNICODE_ENVIRONMENT |
 	    CREATE_NEW_CONSOLE,
-	    &si, &pi))
+	    &si, &pi,
+	    ga.ga_data,
+	    (char *)options->jo_cwd))
     {
 	CloseHandle(jo);
 	job->jv_status = JOB_FAILED;
 	goto failed;
     }
+
+    ga_clear(&ga);
 
     if (!AssignProcessToJobObject(jo, pi.hProcess))
     {
@@ -5148,6 +5237,7 @@ failed:
     CloseHandle(ofd[1]);
     CloseHandle(efd[1]);
     channel_unref(channel);
+    ga_clear(&ga);
 }
 
     char *
