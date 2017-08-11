@@ -8077,6 +8077,9 @@ term_start({cmd}, {options})				*term_start()*
 		   "term_cols"	     horizontal size to use for the terminal,
 		   		     instead of using 'termsize'
 		   "vertical"	     split the window vertically
+		   "curwin"	     use the current window, do not split the
+				     window; fails if the current buffer
+				     cannot be |abandon|ed
 		   "term_finish"     What to do when the job is finished:
 					"close": close any windows
 					"open": open window if needed

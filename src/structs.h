@@ -1691,7 +1691,8 @@ struct channel_S {
 #define JO2_TERM_ROWS	    0x0040	/* "term_rows" */
 #define JO2_TERM_COLS	    0x0080	/* "term_cols" */
 #define JO2_VERTICAL	    0x0100	/* "vertical" */
-#define JO2_ALL		    0x01FF
+#define JO2_CURWIN	    0x0200	/* "curwin" */
+#define JO2_ALL		    0x03FF
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1752,6 +1753,7 @@ typedef struct
     int		jo_term_rows;
     int		jo_term_cols;
     int		jo_vertical;
+    int		jo_curwin;
     char_u	*jo_term_name;
     int		jo_term_finish;
 #endif

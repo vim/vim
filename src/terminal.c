@@ -244,7 +244,7 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
 }
 
     static void
-term_start(char_u *cmd, jobopt_T *opt)
+term_start(char_u *cmd, jobopt_T *opt, int forceit)
 {
     exarg_T	split_ea;
     win_T	*old_curwin = curwin;
@@ -261,28 +261,43 @@ term_start(char_u *cmd, jobopt_T *opt)
     term->tl_finish = opt->jo_term_finish;
     ga_init2(&term->tl_scrollback, sizeof(sb_line_T), 300);
 
-    /* Open a new window or tab. */
     vim_memset(&split_ea, 0, sizeof(split_ea));
-    split_ea.cmdidx = CMD_new;
-    split_ea.cmd = (char_u *)"new";
-    split_ea.arg = (char_u *)"";
-    if (opt->jo_term_rows > 0 && !(cmdmod.split & WSP_VERT))
+    if (opt->jo_curwin)
     {
-	split_ea.line2 = opt->jo_term_rows;
-	split_ea.addr_count = 1;
+	/* Create a new buffer in the current window. */
+	if (!can_abandon(curbuf, forceit))
+	{
+	    EMSG(_(e_nowrtmsg));
+	    return;
+	}
+	if (do_ecmd(0, NULL, NULL, &split_ea, ECMD_ONE,
+		     ECMD_HIDE + (forceit ? ECMD_FORCEIT : 0), curwin) == FAIL)
+	    return;
     }
-    if (opt->jo_term_cols > 0 && (cmdmod.split & WSP_VERT))
+    else
     {
-	split_ea.line2 = opt->jo_term_cols;
-	split_ea.addr_count = 1;
-    }
+	/* Open a new window or tab. */
+	split_ea.cmdidx = CMD_new;
+	split_ea.cmd = (char_u *)"new";
+	split_ea.arg = (char_u *)"";
+	if (opt->jo_term_rows > 0 && !(cmdmod.split & WSP_VERT))
+	{
+	    split_ea.line2 = opt->jo_term_rows;
+	    split_ea.addr_count = 1;
+	}
+	if (opt->jo_term_cols > 0 && (cmdmod.split & WSP_VERT))
+	{
+	    split_ea.line2 = opt->jo_term_cols;
+	    split_ea.addr_count = 1;
+	}
 
-    ex_splitview(&split_ea);
-    if (curwin == old_curwin)
-    {
-	/* split failed */
-	vim_free(term);
-	return;
+	ex_splitview(&split_ea);
+	if (curwin == old_curwin)
+	{
+	    /* split failed */
+	    vim_free(term);
+	    return;
+	}
     }
     term->tl_buffer = curbuf;
     curbuf->b_term = term;
@@ -378,6 +393,8 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_term_finish = 'c';
 	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "open", 4) == 0)
 	    opt.jo_term_finish = 'o';
+	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "curwin", 6) == 0)
+	    opt.jo_curwin = 1;
 	else
 	{
 	    if (*p)
@@ -400,9 +417,8 @@ ex_terminal(exarg_T *eap)
 	else
 	    opt.jo_term_rows = eap->line2;
     }
-    /* TODO: get more options from before the command */
 
-    term_start(cmd, &opt);
+    term_start(cmd, &opt, eap->forceit);
 }
 
 /*
@@ -2365,13 +2381,13 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		JO_TIMEOUT_ALL + JO_STOPONEXIT
 		    + JO_EXIT_CB + JO_CLOSE_CALLBACK,
 		JO2_TERM_NAME + JO2_TERM_FINISH
-		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL
+		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV) == FAIL)
 	return;
 
     if (opt.jo_vertical)
 	cmdmod.split = WSP_VERT;
-    term_start(cmd, &opt);
+    term_start(cmd, &opt, FALSE);
 
     if (curbuf->b_term != NULL)
 	rettv->vval.v_number = curbuf->b_fnum;

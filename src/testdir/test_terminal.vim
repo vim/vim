@@ -283,6 +283,38 @@ func Test_terminal_size()
   let size = term_getsize('')
   bwipe!
   call assert_equal([7, 27], size)
+endfunc
+
+func Test_terminal_curwin()
+  let cmd = Get_cat_123_cmd()
+  call assert_equal(1, winnr('$'))
+
+  split dummy
+  exe 'terminal ++curwin ' . cmd
+  call assert_equal(2, winnr('$'))
+  bwipe!
+
+  split dummy
+  call term_start(cmd, {'curwin': 1})
+  call assert_equal(2, winnr('$'))
+  bwipe!
+
+  split dummy
+  call setline(1, 'change')
+  call assert_fails('terminal ++curwin ' . cmd, 'E37:')
+  call assert_equal(2, winnr('$'))
+  exe 'terminal! ++curwin ' . cmd
+  call assert_equal(2, winnr('$'))
+  bwipe!
+
+  split dummy
+  call setline(1, 'change')
+  call assert_fails("call term_start(cmd, {'curwin': 1})", 'E37:')
+  call assert_equal(2, winnr('$'))
+  bwipe!
+
+  split dummy
+  bwipe!
 
 endfunc
 

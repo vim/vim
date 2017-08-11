@@ -4455,6 +4455,13 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set |= JO2_VERTICAL;
 		opt->jo_vertical = get_tv_number(item);
 	    }
+	    else if (STRCMP(hi->hi_key, "curwin") == 0)
+	    {
+		if (!(supported2 & JO2_CURWIN))
+		    break;
+		opt->jo_set |= JO2_CURWIN;
+		opt->jo_curwin = get_tv_number(item);
+	    }
 #endif
 	    else if (STRCMP(hi->hi_key, "env") == 0)
 	    {
