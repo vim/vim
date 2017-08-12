@@ -6,6 +6,8 @@ int term_job_running(term_T *term);
 int term_in_normal_mode(void);
 void term_enter_job_mode(void);
 int send_keys_to_term(term_T *term, int c, int typed);
+int use_terminal_cursor(void);
+cursorentry_T *term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg);
 int term_use_loop(void);
 int terminal_loop(void);
 void term_job_ended(job_T *job);
