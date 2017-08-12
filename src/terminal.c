@@ -1208,8 +1208,6 @@ terminal_loop(void)
 	 * or not.  Therefore CTRL-C only sends a CTRL_C_EVENT to avoid killing
 	 * the shell instead of a command running in the shell.
 	 * Use CTRL-BREAK to kill the job. */
-	if (c == Ctrl_C)
-	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"int");
 	if (ctrl_break_was_pressed)
 	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 #endif
