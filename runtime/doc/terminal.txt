@@ -66,6 +66,9 @@ the job.  For example:
 The special key combination CTRL-\ CTRL-N can be used to switch to Normal
 mode, just like this works in any other mode.
 
+							*t_CTRL-C*
+When |CTRL-C| in the terminal, interrupt signal will be sent to the job.
+If you use Windows, |CTRL-C| with shift key terminate the job.
 
 Size ~
 
