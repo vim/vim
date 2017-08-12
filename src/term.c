@@ -3670,7 +3670,7 @@ cursor_off(void)
     void
 term_cursor_mode(int forced)
 {
-    static int showing_mode = NORMAL;
+    static int showing_mode = -1;
     char_u *p;
 
     /* Only do something when redrawing the screen and we can restore the
