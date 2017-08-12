@@ -1942,14 +1942,14 @@ read_error_exit(void)
  * May update the shape of the cursor.
  */
     void
-ui_cursor_shape(void)
+ui_cursor_shape_forced(int forced)
 {
 # ifdef FEAT_GUI
     if (gui.in_use)
 	gui_update_cursor_later();
     else
 # endif
-	term_cursor_shape();
+	term_cursor_mode(forced);
 
 # ifdef MCH_CURSOR_SHAPE
     mch_update_cursor();
@@ -1958,6 +1958,12 @@ ui_cursor_shape(void)
 # ifdef FEAT_CONCEAL
     conceal_check_cursur_line();
 # endif
+}
+
+    void
+ui_cursor_shape(void)
+{
+    ui_cursor_shape_forced(FALSE);
 }
 #endif
 

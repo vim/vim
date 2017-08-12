@@ -36,9 +36,7 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - support different cursor shapes, colors and attributes
- * - make term_getcursor() return type (none/block/bar/underline) and
- *   attributes (color, blink, etc.)
+ * - cursor shape/color/blink in the GUI
  * - Make argument list work on MS-Windows. #1954
  * - MS-Windows: no redraw for 'updatetime'  #1915
  * - To set BS correctly, check get_stty(); Pass the fd of the pty.
@@ -143,6 +141,9 @@ struct terminal_S {
 
     VTermPos	tl_cursor_pos;
     int		tl_cursor_visible;
+    int		tl_cursor_blink;
+    int		tl_cursor_shape;  /* 1: block, 2: underline, 3: bar */
+    char_u	*tl_cursor_color; /* NULL or allocated */
 
     int		tl_using_altscreen;
 };
@@ -155,6 +156,8 @@ struct terminal_S {
  */
 static term_T *first_term = NULL;
 
+/* Terminal active in terminal_loop(). */
+static term_T *in_terminal_loop = NULL;
 
 #define MAX_ROW 999999	    /* used for tl_dirty_row_end to update all rows */
 #define KEY_BUF_LEN 200
@@ -256,6 +259,7 @@ term_start(char_u *cmd, jobopt_T *opt, int forceit)
 	return;
     term->tl_dirty_row_end = MAX_ROW;
     term->tl_cursor_visible = TRUE;
+    term->tl_cursor_shape = VTERM_PROP_CURSORSHAPE_BLOCK;
     term->tl_finish = opt->jo_term_finish;
     ga_init2(&term->tl_scrollback, sizeof(sb_line_T), 300);
 
@@ -517,6 +521,7 @@ free_terminal(buf_T *buf)
     vim_free(term->tl_title);
     vim_free(term->tl_status_text);
     vim_free(term->tl_opencmd);
+    vim_free(term->tl_cursor_color);
     vim_free(term);
     buf->b_term = NULL;
 }
@@ -1158,6 +1163,35 @@ term_paste_register(int prev_c UNUSED)
     }
 }
 
+static int did_change_cursor = FALSE;
+
+    static void
+may_set_cursor_props(term_T *term)
+{
+    if (in_terminal_loop == term)
+    {
+	if (term->tl_cursor_color != NULL)
+	    term_cursor_color(term->tl_cursor_color);
+	else
+	    term_cursor_color((char_u *)"");
+	/* do both blink and shape+blink, in case setting shape does not work */
+	term_cursor_blink(term->tl_cursor_blink);
+	term_cursor_shape(term->tl_cursor_shape, term->tl_cursor_blink);
+    }
+}
+
+    static void
+may_restore_cursor_props(void)
+{
+    if (did_change_cursor)
+    {
+	did_change_cursor = FALSE;
+	ui_cursor_shape_forced(TRUE);
+	term_cursor_color((char_u *)"");
+	term_cursor_blink(FALSE);
+    }
+}
+
 /*
  * Returns TRUE if the current window contains a terminal and we are sending
  * keys to the job.
@@ -1185,10 +1219,14 @@ terminal_loop(void)
 {
     int		c;
     int		termkey = 0;
+    int		ret;
+
+    in_terminal_loop = curbuf->b_term;
 
     if (*curwin->w_p_tk != NUL)
 	termkey = string_to_key(curwin->w_p_tk, TRUE);
     position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
+    may_set_cursor_props(curbuf->b_term);
 
     for (;;)
     {
@@ -1235,7 +1273,8 @@ terminal_loop(void)
 		{
 		    /* CTRL-\ CTRL-N : go to Terminal-Normal mode. */
 		    term_enter_normal_mode();
-		    return FAIL;
+		    ret = FAIL;
+		    goto theend;
 		}
 		/* Send both keys to the terminal. */
 		send_keys_to_term(curbuf->b_term, prev_c, TRUE);
@@ -1249,7 +1288,8 @@ terminal_loop(void)
 	    {
 		/* CTRL-W N : go to Terminal-Normal mode. */
 		term_enter_normal_mode();
-		return FAIL;
+		ret = FAIL;
+		goto theend;
 	    }
 	    else if (c == '"')
 	    {
@@ -1260,13 +1300,22 @@ terminal_loop(void)
 	    {
 		stuffcharReadbuff(Ctrl_W);
 		stuffcharReadbuff(c);
-		return OK;
+		ret = OK;
+		goto theend;
 	    }
 	}
 	if (send_keys_to_term(curbuf->b_term, c, TRUE) != OK)
-	    return OK;
+	{
+	    ret = OK;
+	    goto theend;
+	}
     }
-    return FAIL;
+    ret = FAIL;
+
+theend:
+    in_terminal_loop = NULL;
+    may_restore_cursor_props();
+    return ret;
 }
 
 /*
@@ -1303,7 +1352,7 @@ term_job_ended(job_T *job)
     static void
 may_toggle_cursor(term_T *term)
 {
-    if (curbuf == term->tl_buffer)
+    if (in_terminal_loop == term)
     {
 	if (term->tl_cursor_visible)
 	    cursor_on();
@@ -1383,6 +1432,22 @@ handle_settermprop(
 	    term->tl_cursor_visible = value->boolean;
 	    may_toggle_cursor(term);
 	    out_flush();
+	    break;
+
+	case VTERM_PROP_CURSORBLINK:
+	    term->tl_cursor_blink = value->boolean;
+	    may_set_cursor_props(term);
+	    break;
+
+	case VTERM_PROP_CURSORSHAPE:
+	    term->tl_cursor_shape = value->number;
+	    may_set_cursor_props(term);
+	    break;
+
+	case VTERM_PROP_CURSORCOLOR:
+	    vim_free(term->tl_cursor_color);
+	    term->tl_cursor_color = vim_strsave((char_u *)value->string);
+	    may_set_cursor_props(term);
 	    break;
 
 	case VTERM_PROP_ALTSCREEN:
@@ -2076,17 +2141,30 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
 f_term_getcursor(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf = term_get_buf(argvars);
+    term_T	*term;
     list_T	*l;
+    dict_T	*d;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     if (buf == NULL)
 	return;
+    term = buf->b_term;
 
     l = rettv->vval.v_list;
-    list_append_number(l, buf->b_term->tl_cursor_pos.row + 1);
-    list_append_number(l, buf->b_term->tl_cursor_pos.col + 1);
-    list_append_number(l, buf->b_term->tl_cursor_visible);
+    list_append_number(l, term->tl_cursor_pos.row + 1);
+    list_append_number(l, term->tl_cursor_pos.col + 1);
+
+    d = dict_alloc();
+    if (d != NULL)
+    {
+	dict_add_nr_str(d, "visible", term->tl_cursor_visible, NULL);
+	dict_add_nr_str(d, "blink", term->tl_cursor_blink, NULL);
+	dict_add_nr_str(d, "shape", term->tl_cursor_shape, NULL);
+	dict_add_nr_str(d, "color", 0L, term->tl_cursor_color == NULL
+				       ? (char_u *)"" : term->tl_cursor_color);
+	list_append_dict(l, d);
+    }
 }
 
 /*

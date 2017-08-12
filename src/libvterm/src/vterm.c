@@ -294,6 +294,7 @@ VTermValueType vterm_get_prop_type(VTermProp prop)
     case VTERM_PROP_REVERSE:       return VTERM_VALUETYPE_BOOL;
     case VTERM_PROP_CURSORSHAPE:   return VTERM_VALUETYPE_INT;
     case VTERM_PROP_MOUSE:         return VTERM_VALUETYPE_INT;
+    case VTERM_PROP_CURSORCOLOR:   return VTERM_VALUETYPE_STRING;
   }
   return 0; /* UNREACHABLE */
 }

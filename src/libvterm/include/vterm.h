@@ -120,7 +120,8 @@ typedef enum {
   VTERM_PROP_ICONNAME,          /* string */
   VTERM_PROP_REVERSE,           /* bool */
   VTERM_PROP_CURSORSHAPE,       /* number */
-  VTERM_PROP_MOUSE              /* number */
+  VTERM_PROP_MOUSE,             /* number */
+  VTERM_PROP_CURSORCOLOR        /* string */
 } VTermProp;
 
 enum {
