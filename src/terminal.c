@@ -1207,12 +1207,8 @@ terminal_loop(void)
 	may_send_sigint(c, curbuf->b_term->tl_job->jv_pid, 0);
 #endif
 #ifdef WIN3264
-	/* On Windows we do not know whether the job can handle CTRL-C itself
-	 * or not.  Therefore CTRL-C only sends a CTRL_C_EVENT to avoid killing
-	 * the shell instead of a command running in the shell.
+	/* On Windows winpty handles CTRL-C, don't send a CTRL_C_EVENT.
 	 * Use CTRL-BREAK to kill the job. */
-	if (c == Ctrl_C)
-	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"int");
 	if (ctrl_break_was_pressed)
 	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 #endif
@@ -1544,7 +1540,8 @@ term_channel_closed(channel_T *ch)
 		    ch_log(NULL, "terminal job finished, opening window");
 		    vim_snprintf(buf, sizeof(buf),
 			    term->tl_opencmd == NULL
-				? "botright sbuf %d" : term->tl_opencmd, fnum);
+				    ? "botright sbuf %d"
+				    : (char *)term->tl_opencmd, fnum);
 		    do_cmdline_cmd((char_u *)buf);
 		}
 		else
