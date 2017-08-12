@@ -36,8 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - add option values to the command:
- *      :term ++24x80 ++close vim notes.txt
  * - When using term_finish "open" have a way to specify how the window is to
  *   be opened.  E.g. term_opencmd "10split buffer %d".
  * - support different cursor shapes, colors and attributes
@@ -249,6 +247,7 @@ term_start(char_u *cmd, jobopt_T *opt, int forceit)
     exarg_T	split_ea;
     win_T	*old_curwin = curwin;
     term_T	*term;
+    buf_T	*old_curbuf = NULL;
 
     if (check_restricted() || check_secure())
 	return;
@@ -268,11 +267,34 @@ term_start(char_u *cmd, jobopt_T *opt, int forceit)
 	if (!can_abandon(curbuf, forceit))
 	{
 	    EMSG(_(e_nowrtmsg));
+	    vim_free(term);
 	    return;
 	}
 	if (do_ecmd(0, NULL, NULL, &split_ea, ECMD_ONE,
 		     ECMD_HIDE + (forceit ? ECMD_FORCEIT : 0), curwin) == FAIL)
+	{
+	    vim_free(term);
 	    return;
+	}
+    }
+    else if (opt->jo_hidden)
+    {
+	buf_T *buf;
+
+	/* Create a new buffer without a window. Make it the current buffer for
+	 * a moment to be able to do the initialisations. */
+	buf = buflist_new((char_u *)"", NULL, (linenr_T)0,
+							 BLN_NEW | BLN_LISTED);
+	if (buf == NULL || ml_open(buf) == FAIL)
+	{
+	    vim_free(term);
+	    return;
+	}
+	old_curbuf = curbuf;
+	--curbuf->b_nwindows;
+	curbuf = buf;
+	curwin->w_buffer = buf;
+	++curbuf->b_nwindows;
     }
     else
     {
@@ -302,11 +324,14 @@ term_start(char_u *cmd, jobopt_T *opt, int forceit)
     term->tl_buffer = curbuf;
     curbuf->b_term = term;
 
-    /* only one size was taken care of with :new, do the other one */
-    if (opt->jo_term_rows > 0 && (cmdmod.split & WSP_VERT))
-	win_setheight(opt->jo_term_rows);
-    if (opt->jo_term_cols > 0 && !(cmdmod.split & WSP_VERT))
-	win_setwidth(opt->jo_term_cols);
+    if (!opt->jo_hidden)
+    {
+	/* only one size was taken care of with :new, do the other one */
+	if (opt->jo_term_rows > 0 && (cmdmod.split & WSP_VERT))
+	    win_setheight(opt->jo_term_rows);
+	if (opt->jo_term_cols > 0 && !(cmdmod.split & WSP_VERT))
+	    win_setwidth(opt->jo_term_cols);
+    }
 
     /* Link the new terminal in the list of active terminals. */
     term->tl_next = first_term;
@@ -360,14 +385,31 @@ term_start(char_u *cmd, jobopt_T *opt, int forceit)
 	/* Get and remember the size we ended up with.  Update the pty. */
 	vterm_get_size(term->tl_vterm, &term->tl_rows, &term->tl_cols);
 	term_report_winsize(term, term->tl_rows, term->tl_cols);
+
+	if (old_curbuf != NULL)
+	{
+	    --curbuf->b_nwindows;
+	    curbuf = old_curbuf;
+	    curwin->w_buffer = curbuf;
+	    ++curbuf->b_nwindows;
+	}
     }
     else
     {
+	buf_T *buf = curbuf;
+
 	free_terminal(curbuf);
+	if (old_curbuf != NULL)
+	{
+	    --curbuf->b_nwindows;
+	    curbuf = old_curbuf;
+	    curwin->w_buffer = curbuf;
+	    ++curbuf->b_nwindows;
+	}
 
 	/* Wiping out the buffer will also close the window and call
 	 * free_terminal(). */
-	do_buffer(DOBUF_WIPE, DOBUF_CURRENT, FORWARD, 0, TRUE);
+	do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
     }
 }
 
@@ -395,6 +437,8 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_term_finish = 'o';
 	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "curwin", 6) == 0)
 	    opt.jo_curwin = 1;
+	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "hidden", 6) == 0)
+	    opt.jo_hidden = 1;
 	else
 	{
 	    if (*p)
@@ -886,7 +930,7 @@ set_terminal_mode(term_T *term, int normal_mode)
     static void
 cleanup_vterm(term_T *term)
 {
-    if (term->tl_finish == 0)
+    if (term->tl_finish != 'c')
 	move_terminal_to_buffer(term);
     term_free_vterm(term);
     set_terminal_mode(term, FALSE);
@@ -1222,7 +1266,7 @@ terminal_loop(void)
 
 /*
  * Called when a job has finished.
- * This updates the title and status, but does not close the vter, because
+ * This updates the title and status, but does not close the vterm, because
  * there might still be pending output in the channel.
  */
     void
@@ -1478,6 +1522,7 @@ term_channel_closed(channel_T *ch)
 		if (term->tl_finish == 'c')
 		{
 		    /* ++close or term_finish == "close" */
+		    ch_log(NULL, "terminal job finished, closing window");
 		    curbuf = term->tl_buffer;
 		    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
 		    break;
@@ -1487,9 +1532,12 @@ term_channel_closed(channel_T *ch)
 		    char buf[50];
 
 		    /* TODO: use term_opencmd */
+		    ch_log(NULL, "terminal job finished, opening window");
 		    vim_snprintf(buf, sizeof(buf), "botright sbuf %d", fnum);
 		    do_cmdline_cmd((char_u *)buf);
 		}
+		else
+		    ch_log(NULL, "terminal job finished");
 	    }
 
 	    redraw_buf_and_status_later(term->tl_buffer, NOT_VALID);
@@ -2380,7 +2428,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 	    && get_job_options(&argvars[1], &opt,
 		JO_TIMEOUT_ALL + JO_STOPONEXIT
 		    + JO_EXIT_CB + JO_CLOSE_CALLBACK,
-		JO2_TERM_NAME + JO2_TERM_FINISH
+		JO2_TERM_NAME + JO2_TERM_FINISH + JO2_HIDDEN
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV) == FAIL)
 	return;
