@@ -1016,6 +1016,9 @@ term_vgetc()
     ++no_mapping;
     ++allow_keys;
     got_int = FALSE;
+#ifdef WIN3264
+    ctrl_break_was_pressed = FALSE;
+#endif
     c = vgetc();
     got_int = FALSE;
     --no_mapping;
@@ -1201,11 +1204,14 @@ terminal_loop(void)
 	may_send_sigint(c, curbuf->b_term->tl_job->jv_pid, 0);
 #endif
 #ifdef WIN3264
+	/* On Windows we do not know whether the job can handle CTRL-C itself
+	 * or not.  Therefore CTRL-C only sends a CTRL_C_EVENT to avoid killing
+	 * the shell instead of a command running in the shell.
+	 * Use CTRL-BREAK to kill the job. */
 	if (c == Ctrl_C)
-	    /* We don't know if the job can handle CTRL-C itself or not, this
-	     * may kill the shell instead of killing the command running in the
-	     * shell. */
-	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"quit");
+	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"int");
+	if (ctrl_break_was_pressed)
+	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 #endif
 
 	if (c == (termkey == 0 ? Ctrl_W : termkey) || c == Ctrl_BSL)

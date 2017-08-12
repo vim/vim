@@ -1840,6 +1840,7 @@ process_message(void)
 	{
 	    trash_input_buf();
 	    got_int = TRUE;
+	    ctrl_break_was_pressed = TRUE;
 	    string[0] = Ctrl_C;
 	    add_to_input_buf(string, 1);
 	}

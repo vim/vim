@@ -1671,6 +1671,10 @@ EXTERN int  did_echo_string_emsg INIT(= FALSE);
 EXTERN int *eval_lavars_used INIT(= NULL);
 #endif
 
+#ifdef WIN3264
+EXTERN int ctrl_break_was_pressed = FALSE;
+#endif
+
 /*
  * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.
  */
