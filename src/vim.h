@@ -680,7 +680,8 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #define HL_UNDERLINE		0x08
 #define HL_UNDERCURL		0x10
 #define HL_STANDOUT		0x20
-#define HL_ALL			0x3f
+#define HL_NOCOMBINE		0x40
+#define HL_ALL			0x7f
 
 /* special attribute addition: Put message in history */
 #define MSG_HIST		0x1000
