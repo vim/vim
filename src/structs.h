@@ -1693,7 +1693,8 @@ struct channel_S {
 #define JO2_VERTICAL	    0x0100	/* "vertical" */
 #define JO2_CURWIN	    0x0200	/* "curwin" */
 #define JO2_HIDDEN	    0x0400	/* "hidden" */
-#define JO2_ALL		    0x07FF
+#define JO2_TERM_OPENCMD    0x0800	/* "term_opencmd" */
+#define JO2_ALL		    0x0FFF
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1757,6 +1758,7 @@ typedef struct
     int		jo_curwin;
     int		jo_hidden;
     char_u	*jo_term_name;
+    char_u	*jo_term_opencmd;
     int		jo_term_finish;
 #endif
 } jobopt_T;

@@ -8085,6 +8085,12 @@ term_start({cmd}, {options})				*term_start()*
 					"open": open window if needed
 				     Note that "open" can be interruptive.
 				     See |term++close| and |term++open|.
+		   "term_opencmd"    command to use for opening the window when
+				     "open" is used for "term_finish"; must
+				     have "%d" where the buffer number goes,
+				     e.g. "10split|buffer %d"; when not
+				     specified "botright sbuf %d" is used
+
 		{only available when compiled with the |+terminal| feature}
 
 term_wait({buf} [, {time}])					*term_wait()*
