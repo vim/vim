@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 10
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -103,8 +103,17 @@ Syntax ~
 			++close		The terminal window will close
 					automatically when the job terminates.
 			++open		When the job terminates and no window
-					show it, a window will be opened.
+					shows it, a window will be opened.
 					Note that this can be interruptive.
+			++curwin	Open the terminal in the current
+					window, do not split the current
+					window.  Fails if the current buffer
+					cannot be |abandon|ed.
+			++hidden	Open the terminal in a hidden buffer,
+					no window will be used.
+
+			If you want to use more options use the |term_start()|
+			function.
 
 When the buffer associated with the terminal is wiped out the job is killed,
 similar to calling `job_stop(job, "kill")`
@@ -114,6 +123,13 @@ So long as the job is running: If the window is closed the buffer becomes
 hidden.  The command will not be stopped.  The `:buffer` command can be used
 to turn the current window into a terminal window.  If there are unsaved
 changes this fails, use ! to force, as usual.
+
+To have a background job run without a window, and open the window when it's
+done, use options like this: >
+	:term ++hidden ++open make
+Note that the window will open at an unexpected moment, this will interrupt
+what you are doing.
+
 							*E947*
 So long as the job is running, the buffer is considered modified and Vim
 cannot be quit easily, see |abandon|.
