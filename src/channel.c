@@ -4434,6 +4434,28 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set2 |= JO2_TERM_FINISH;
 		opt->jo_term_finish = *val;
 	    }
+	    else if (STRCMP(hi->hi_key, "term_opencmd") == 0)
+	    {
+		char_u *p;
+
+		if (!(supported2 & JO2_TERM_OPENCMD))
+		    break;
+		opt->jo_set2 |= JO2_TERM_OPENCMD;
+		p = opt->jo_term_opencmd = get_tv_string_chk(item);
+		if (p != NULL)
+		{
+		    /* Must have %d and no other %. */
+		    p = vim_strchr(p, '%');
+		    if (p != NULL && (p[1] != 'd'
+					    || vim_strchr(p + 2, '%') != NULL))
+			p = NULL;
+		}
+		if (p == NULL)
+		{
+		    EMSG2(_(e_invarg2), "term_opencmd");
+		    return FAIL;
+		}
+	    }
 	    else if (STRCMP(hi->hi_key, "term_rows") == 0)
 	    {
 		if (!(supported2 & JO2_TERM_ROWS))

@@ -36,8 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  *
  * TODO:
- * - When using term_finish "open" have a way to specify how the window is to
- *   be opened.  E.g. term_opencmd "10split buffer %d".
  * - support different cursor shapes, colors and attributes
  * - make term_getcursor() return type (none/block/bar/underline) and
  *   attributes (color, blink, etc.)
@@ -119,6 +117,7 @@ struct terminal_S {
     int		tl_normal_mode; /* TRUE: Terminal-Normal mode */
     int		tl_channel_closed;
     int		tl_finish;	/* 'c' for ++close, 'o' for ++open */
+    char_u	*tl_opencmd;
 
 #ifdef WIN3264
     void	*tl_winpty_config;
@@ -365,6 +364,9 @@ term_start(char_u *cmd, jobopt_T *opt, int forceit)
     }
     curbuf->b_fname = curbuf->b_ffname;
 
+    if (opt->jo_term_opencmd != NULL)
+	term->tl_opencmd = vim_strsave(opt->jo_term_opencmd);
+
     set_string_option_direct((char_u *)"buftype", -1,
 				  (char_u *)"terminal", OPT_FREE|OPT_LOCAL, 0);
 
@@ -514,6 +516,7 @@ free_terminal(buf_T *buf)
     term_free_vterm(term);
     vim_free(term->tl_title);
     vim_free(term->tl_status_text);
+    vim_free(term->tl_opencmd);
     vim_free(term);
     buf->b_term = NULL;
 }
@@ -1539,7 +1542,9 @@ term_channel_closed(channel_T *ch)
 
 		    /* TODO: use term_opencmd */
 		    ch_log(NULL, "terminal job finished, opening window");
-		    vim_snprintf(buf, sizeof(buf), "botright sbuf %d", fnum);
+		    vim_snprintf(buf, sizeof(buf),
+			    term->tl_opencmd == NULL
+				? "botright sbuf %d" : term->tl_opencmd, fnum);
 		    do_cmdline_cmd((char_u *)buf);
 		}
 		else
@@ -2434,7 +2439,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 	    && get_job_options(&argvars[1], &opt,
 		JO_TIMEOUT_ALL + JO_STOPONEXIT
 		    + JO_EXIT_CB + JO_CLOSE_CALLBACK,
-		JO2_TERM_NAME + JO2_TERM_FINISH + JO2_HIDDEN
+		JO2_TERM_NAME + JO2_TERM_FINISH + JO2_HIDDEN + JO2_TERM_OPENCMD
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV) == FAIL)
 	return;
