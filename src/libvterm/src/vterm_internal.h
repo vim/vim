@@ -144,8 +144,8 @@ struct VTermState
     struct VTermPen pen;
 
     struct {
-      int cursor_visible:1;
-      int cursor_blink:1;
+      unsigned int cursor_visible:1;
+      unsigned int cursor_blink:1;
       unsigned int cursor_shape:2;
     } mode;
   } saved;
