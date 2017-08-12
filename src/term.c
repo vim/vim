@@ -817,6 +817,14 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},
     {(int)KS_LE,	"\b"},
+    {(int)KS_VI,	IF_EB("\033[?25l", ESC_STR "[?25l")},
+    {(int)KS_VE,	IF_EB("\033[?25h", ESC_STR "[?25h")},
+    {(int)KS_VS,	IF_EB("\033[?12h", ESC_STR "[?12h")},
+#  ifdef TERMINFO
+    {(int)KS_CSH,	IF_EB("\033[%p1%d q", ESC_STR "[%p1%d q")},
+#  else
+    {(int)KS_CSH,	IF_EB("\033[%d q", ESC_STR "[%d q")},
+#  endif
 #  ifdef TERMINFO
     {(int)KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
 						  ESC_STR "[%i%p1%d;%p2%dH")},
@@ -840,6 +848,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CIE,	"\007"},
     {(int)KS_TS,	IF_EB("\033]2;", ESC_STR "]2;")},
     {(int)KS_FS,	"\007"},
+    {(int)KS_CSC,	IF_EB("\033]12;", ESC_STR "]12;")},
+    {(int)KS_CEC,	"\007"},
 #  ifdef TERMINFO
     {(int)KS_CWS,	IF_EB("\033[8;%p1%d;%p2%dt",
 						  ESC_STR "[8;%p1%d;%p2%dt")},
@@ -1142,6 +1152,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_TE,	"[TE]"},
     {(int)KS_CIS,	"[CIS]"},
     {(int)KS_CIE,	"[CIE]"},
+    {(int)KS_CSC,	"[CSC]"},
+    {(int)KS_CEC,	"[CEC]"},
     {(int)KS_TS,	"[TS]"},
     {(int)KS_FS,	"[FS]"},
 #  ifdef TERMINFO
@@ -1569,6 +1581,7 @@ set_termname(char_u *term)
 				{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_LE, "le"},
 				{KS_ND, "nd"}, {KS_OP, "op"}, {KS_CRV, "RV"},
 				{KS_CIS, "IS"}, {KS_CIE, "IE"},
+				{KS_CSC, "SC"}, {KS_CEC, "EC"},
 				{KS_TS, "ts"}, {KS_FS, "fs"},
 				{KS_CWP, "WP"}, {KS_CWS, "WS"},
 				{KS_CSI, "SI"}, {KS_CEI, "EI"},
@@ -2283,8 +2296,8 @@ term_is_8bit(char_u *name)
 
 /*
  * Translate terminal control chars from 7-bit to 8-bit:
- * <Esc>[ -> CSI
- * <Esc>] -> <M-C-]>
+ * <Esc>[ -> CSI  <M_C_[>
+ * <Esc>] -> OSC  <M-C-]>
  * <Esc>O -> <M-C-O>
  */
     static int
@@ -3655,7 +3668,7 @@ cursor_off(void)
  * Set cursor shape to match Insert or Replace mode.
  */
     void
-term_cursor_shape(void)
+term_cursor_mode(int forced)
 {
     static int showing_mode = NORMAL;
     char_u *p;
@@ -3667,7 +3680,7 @@ term_cursor_shape(void)
 
     if ((State & REPLACE) == REPLACE)
     {
-	if (showing_mode != REPLACE)
+	if (forced || showing_mode != REPLACE)
 	{
 	    if (*T_CSR != NUL)
 		p = T_CSR;	/* Replace mode cursor */
@@ -3682,18 +3695,55 @@ term_cursor_shape(void)
     }
     else if (State & INSERT)
     {
-	if (showing_mode != INSERT && *T_CSI != NUL)
+	if ((forced || showing_mode != INSERT) && *T_CSI != NUL)
 	{
 	    out_str(T_CSI);	    /* Insert mode cursor */
 	    showing_mode = INSERT;
 	}
     }
-    else if (showing_mode != NORMAL)
+    else if (forced || showing_mode != NORMAL)
     {
 	out_str(T_CEI);		    /* non-Insert mode cursor */
 	showing_mode = NORMAL;
     }
 }
+
+# if defined(FEAT_TERMINAL) || defined(PROTO)
+    void
+term_cursor_color(char_u *color)
+{
+    if (*T_CSC != NUL)
+    {
+	out_str(T_CSC);			/* set cursor color start */
+	out_str_nf(color);
+	out_str(T_CEC);			/* set cursor color end */
+	out_flush();
+    }
+}
+
+    void
+term_cursor_blink(int blink)
+{
+    if (blink)
+	out_str(T_VS);
+    else
+	out_str(T_VE);
+    out_flush();
+}
+
+/*
+ * "shape" == 1: block, "shape" == 2: underline, "shape" == 3: vertical bar
+ */
+    void
+term_cursor_shape(int shape, int blink)
+{
+    if (*T_CSH != NUL)
+    {
+	OUT_STR(tgoto((char *)T_CSH, 0, shape * 2 - blink));
+	out_flush();
+    }
+}
+# endif
 #endif
 
 /*

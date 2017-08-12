@@ -1504,6 +1504,10 @@ static int on_osc(const char *command, size_t cmdlen, void *user)
     settermprop_string(state, VTERM_PROP_TITLE, command + 2, cmdlen - 2);
     return 1;
   }
+  else if(strneq(command, "12;", 3)) {
+    settermprop_string(state, VTERM_PROP_CURSORCOLOR, command + 3, cmdlen - 3);
+    return 1;
+  }
   else if(state->fallbacks && state->fallbacks->osc)
     if((*state->fallbacks->osc)(command, cmdlen, state->fbdata))
       return 1;
@@ -1819,6 +1823,7 @@ int vterm_state_set_termprop(VTermState *state, VTermProp prop, VTermValue *val)
   switch(prop) {
   case VTERM_PROP_TITLE:
   case VTERM_PROP_ICONNAME:
+  case VTERM_PROP_CURSORCOLOR:
     /* we don't store these, just transparently pass through */
     return 1;
   case VTERM_PROP_CURSORVISIBLE:

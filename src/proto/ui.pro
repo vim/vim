@@ -47,6 +47,7 @@ void trash_input_buf(void);
 int read_from_input_buf(char_u *buf, long maxlen);
 void fill_input_buf(int exit_on_error);
 void read_error_exit(void);
+void ui_cursor_shape_forced(int forced);
 void ui_cursor_shape(void);
 int check_col(int col);
 int check_row(int row);
