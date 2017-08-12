@@ -1163,11 +1163,57 @@ term_paste_register(int prev_c UNUSED)
     }
 }
 
+#if defined(FEAT_GUI) || defined(PROTO)
+/*
+ * Return TRUE when the cursor of the terminal should be displayed.
+ */
+    int
+use_terminal_cursor()
+{
+    return in_terminal_loop != NULL;
+}
+
+    cursorentry_T *
+term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg)
+{
+    term_T		 *term = in_terminal_loop;
+    static cursorentry_T entry;
+
+    vim_memset(&entry, 0, sizeof(entry));
+    entry.shape = entry.mshape =
+	term->tl_cursor_shape == VTERM_PROP_CURSORSHAPE_UNDERLINE ? SHAPE_HOR :
+	term->tl_cursor_shape == VTERM_PROP_CURSORSHAPE_BAR_LEFT ? SHAPE_VER :
+	SHAPE_BLOCK;
+    entry.percentage = 20;
+    if (term->tl_cursor_blink)
+    {
+	entry.blinkwait = 700;
+	entry.blinkon = 400;
+	entry.blinkon = 250;
+    }
+    *fg = gui.back_pixel;
+    if (term->tl_cursor_color == NULL)
+	*bg = gui.norm_pixel;
+    else
+	*bg = color_name2handle(term->tl_cursor_color);
+    entry.name = "n";
+    entry.used_for = SHAPE_CURSOR;
+
+    return &entry;
+}
+#endif
+
 static int did_change_cursor = FALSE;
 
     static void
 may_set_cursor_props(term_T *term)
 {
+#ifdef FEAT_GUI
+    /* For the GUI the cursor properties are obtained with
+     * term_get_cursor_shape(). */
+    if (gui.in_use)
+	return;
+#endif
     if (in_terminal_loop == term)
     {
 	did_change_cursor = TRUE;
@@ -1184,6 +1230,10 @@ may_set_cursor_props(term_T *term)
     static void
 may_restore_cursor_props(void)
 {
+#ifdef FEAT_GUI
+    if (gui.in_use)
+	return;
+#endif
     if (did_change_cursor)
     {
 	did_change_cursor = FALSE;
@@ -1241,6 +1291,8 @@ terminal_loop(void)
 	if (!term_use_loop())
 	    /* job finished while waiting for a character */
 	    break;
+	if (c == K_IGNORE)
+	    continue;
 
 #ifdef UNIX
 	may_send_sigint(c, curbuf->b_term->tl_job->jv_pid, 0);
@@ -1447,7 +1499,10 @@ handle_settermprop(
 
 	case VTERM_PROP_CURSORCOLOR:
 	    vim_free(term->tl_cursor_color);
-	    term->tl_cursor_color = vim_strsave((char_u *)value->string);
+	    if (*value->string == NUL)
+		term->tl_cursor_color = NULL;
+	    else
+		term->tl_cursor_color = vim_strsave((char_u *)value->string);
 	    may_set_cursor_props(term);
 	    break;
 

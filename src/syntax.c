@@ -103,7 +103,6 @@ static void highlight_clear(int idx);
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 static void gui_do_one_color(int idx, int do_menu, int do_tooltip);
-static guicolor_T color_name2handle(char_u *name);
 #endif
 #ifdef FEAT_GUI
 static int  set_group_colors(char_u *name, guicolor_T *fgp, guicolor_T *bgp, int do_menu, int use_norm, int do_tooltip);
@@ -8622,7 +8621,7 @@ hl_do_font(
  * Return the handle for a color name.
  * Returns INVALCOLOR when failed.
  */
-    static guicolor_T
+    guicolor_T
 color_name2handle(char_u *name)
 {
     if (STRCMP(name, "NONE") == 0)

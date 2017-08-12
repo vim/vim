@@ -32,6 +32,7 @@ char_u *hl_get_font_name(void);
 void hl_set_font_name(char_u *font_name);
 void hl_set_bg_color_name(char_u *name);
 void hl_set_fg_color_name(char_u *name);
+guicolor_T color_name2handle(char_u *name);
 int get_cterm_attr_idx(int attr, int fg, int bg);
 int get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg);
 int get_gui_attr_idx(int attr, guicolor_T fg, guicolor_T bg);
