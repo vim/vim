@@ -1170,6 +1170,7 @@ may_set_cursor_props(term_T *term)
 {
     if (in_terminal_loop == term)
     {
+	did_change_cursor = TRUE;
 	if (term->tl_cursor_color != NULL)
 	    term_cursor_color(term->tl_cursor_color);
 	else
