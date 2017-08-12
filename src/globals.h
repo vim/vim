@@ -1672,7 +1672,7 @@ EXTERN int *eval_lavars_used INIT(= NULL);
 #endif
 
 #ifdef WIN3264
-EXTERN int ctrl_break_was_pressed = FALSE;
+EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 #endif
 
 /*
