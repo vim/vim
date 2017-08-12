@@ -86,9 +86,10 @@ static int include_link = 0;	/* when 2 include "link" and "clear" */
  */
 static char *(hl_name_table[]) =
     {"bold", "standout", "underline", "undercurl",
-				      "italic", "reverse", "inverse", "NONE"};
+				      "italic", "reverse", "inverse", "nocombine", "NONE"};
 static int hl_attr_table[] =
-    {HL_BOLD, HL_STANDOUT, HL_UNDERLINE, HL_UNDERCURL, HL_ITALIC, HL_INVERSE, HL_INVERSE, 0};
+    {HL_BOLD, HL_STANDOUT, HL_UNDERLINE, HL_UNDERCURL, HL_ITALIC, HL_INVERSE, HL_INVERSE, HL_NOCOMBINE, 0};
+#define ATTR_COMBINE(attr_a,attr_b) (((attr_b) & HL_NOCOMBINE ? 0 : (attr_a)) | (attr_b))
 
 static int get_attr_entry(garray_T *table, attrentry_T *aep);
 static void syn_unadd_group(void);
@@ -8912,7 +8913,7 @@ hl_combine_attr(int char_attr, int prim_attr)
     if (char_attr == 0)
 	return prim_attr;
     if (char_attr <= HL_ALL && prim_attr <= HL_ALL)
-	return char_attr | prim_attr;
+	return ATTR_COMBINE(char_attr, prim_attr);
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
@@ -8931,13 +8932,13 @@ hl_combine_attr(int char_attr, int prim_attr)
 	}
 
 	if (prim_attr <= HL_ALL)
-	    new_en.ae_attr |= prim_attr;
+	    new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, prim_attr);
 	else
 	{
 	    spell_aep = syn_gui_attr2entry(prim_attr);
 	    if (spell_aep != NULL)
 	    {
-		new_en.ae_attr |= spell_aep->ae_attr;
+		new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, spell_aep->ae_attr);
 		if (spell_aep->ae_u.gui.fg_color != INVALCOLOR)
 		    new_en.ae_u.gui.fg_color = spell_aep->ae_u.gui.fg_color;
 		if (spell_aep->ae_u.gui.bg_color != INVALCOLOR)
@@ -8974,13 +8975,13 @@ hl_combine_attr(int char_attr, int prim_attr)
 	}
 
 	if (prim_attr <= HL_ALL)
-	    new_en.ae_attr |= prim_attr;
+		new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, prim_attr);
 	else
 	{
 	    spell_aep = syn_cterm_attr2entry(prim_attr);
 	    if (spell_aep != NULL)
 	    {
-		new_en.ae_attr |= spell_aep->ae_attr;
+		new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, spell_aep->ae_attr);
 		if (spell_aep->ae_u.cterm.fg_color > 0)
 		    new_en.ae_u.cterm.fg_color = spell_aep->ae_u.cterm.fg_color;
 		if (spell_aep->ae_u.cterm.bg_color > 0)
@@ -9008,13 +9009,13 @@ hl_combine_attr(int char_attr, int prim_attr)
     }
 
     if (prim_attr <= HL_ALL)
-	new_en.ae_attr |= prim_attr;
+	new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, prim_attr);
     else
     {
 	spell_aep = syn_term_attr2entry(prim_attr);
 	if (spell_aep != NULL)
 	{
-	    new_en.ae_attr |= spell_aep->ae_attr;
+	    new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, spell_aep->ae_attr);
 	    if (spell_aep->ae_u.term.start != NULL)
 	    {
 		new_en.ae_u.term.start = spell_aep->ae_u.term.start;
