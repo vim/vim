@@ -6296,6 +6296,7 @@ mch_breakcheck(int force)
 #ifndef FEAT_GUI_W32	    /* never used */
     if (g_fCtrlCPressed || g_fCBrkPressed)
     {
+	ctrl_break_was_pressed = g_fCBrkPressed;
 	g_fCtrlCPressed = g_fCBrkPressed = FALSE;
 	got_int = TRUE;
     }
