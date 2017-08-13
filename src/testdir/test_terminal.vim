@@ -434,3 +434,10 @@ func Test_zz_terminal_in_gui()
 
   unlet g:job
 endfunc
+
+func Test_terminal_list_args()
+  let buf = term_start([&shell, &shellcmdflag, 'echo "123"'])
+  call assert_fails(buf . 'bwipe', 'E517')
+  exe buf . 'bwipe!'
+  call assert_equal("", bufname(buf))
+endfunction
