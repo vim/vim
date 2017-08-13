@@ -465,6 +465,9 @@ ex_terminal(exarg_T *eap)
 	cmd = skipwhite(p);
     }
 
+    if (cmd == NULL || *cmd == NUL)
+	cmd = p_sh;
+
     if (eap->addr_count == 2)
     {
 	opt.jo_term_rows = eap->line1;
