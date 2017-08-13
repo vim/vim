@@ -365,6 +365,11 @@ mch_chdir(char *path)
 # endif
 }
 
+/* Why is NeXT excluded here (and not in os_unixx.h)? */
+#if defined(ECHOE) && defined(ICANON) && (defined(HAVE_TERMIO_H) || defined(HAVE_TERMIOS_H)) && !defined(__NeXT__)
+# define NEW_TTY_SYSTEM
+#endif
+
 /*
  * Write s[len] to the screen.
  */
@@ -3385,11 +3390,7 @@ mch_settmode(int tmode)
 {
     static int first = TRUE;
 
-    /* Why is NeXT excluded here (and not in os_unixx.h)? */
-#if defined(ECHOE) && defined(ICANON) && (defined(HAVE_TERMIO_H) || defined(HAVE_TERMIOS_H)) && !defined(__NeXT__)
-    /*
-     * for "new" tty systems
-     */
+#ifdef NEW_TTY_SYSTEM
 # ifdef HAVE_TERMIOS_H
     static struct termios told;
 	   struct termios tnew;
@@ -3451,7 +3452,6 @@ mch_settmode(int tmode)
 # endif
 
 #else
-
     /*
      * for "old" tty systems
      */
@@ -3492,48 +3492,72 @@ mch_settmode(int tmode)
     void
 get_stty(void)
 {
-    char_u  buf[2];
-    char_u  *p;
+    ttyinfo_T	info;
+    char_u	buf[2];
+    char_u	*p;
 
-    /* Why is NeXT excluded here (and not in os_unixx.h)? */
-#if defined(ECHOE) && defined(ICANON) && (defined(HAVE_TERMIO_H) || defined(HAVE_TERMIOS_H)) && !defined(__NeXT__)
-    /* for "new" tty systems */
+    if (get_tty_info(read_cmd_fd, &info) == OK)
+    {
+	intr_char = info.interrupt;
+	buf[0] = info.backspace;
+	buf[1] = NUL;
+	add_termcode((char_u *)"kb", buf, FALSE);
+
+	/* If <BS> and <DEL> are now the same, redefine <DEL>. */
+	p = find_termcode((char_u *)"kD");
+	if (p != NULL && p[0] == buf[0] && p[1] == buf[1])
+	    do_fixdel(NULL);
+    }
+}
+
+/*
+ * Obtain the characters that Backspace and Enter produce on "fd".
+ * Returns OK or FAIL.
+ */
+    int
+get_tty_info(int fd, ttyinfo_T *info)
+{
+#ifdef NEW_TTY_SYSTEM
 # ifdef HAVE_TERMIOS_H
     struct termios keys;
 # else
     struct termio keys;
 # endif
 
+    if (
 # if defined(HAVE_TERMIOS_H)
-    if (tcgetattr(read_cmd_fd, &keys) != -1)
+	    tcgetattr(fd, &keys) != -1
 # else
-    if (ioctl(read_cmd_fd, TCGETA, &keys) != -1)
+	    ioctl(fd, TCGETA, &keys) != -1
 # endif
+       )
     {
-	buf[0] = keys.c_cc[VERASE];
-	intr_char = keys.c_cc[VINTR];
+	info->backspace = keys.c_cc[VERASE];
+	info->interrupt = keys.c_cc[VINTR];
+	if (keys.c_iflag & ICRNL)
+	    info->enter = NL;
+	else
+	    info->enter = CAR;
+	if (keys.c_oflag & ONLCR)
+	    info->nl_does_cr = TRUE;
+	else
+	    info->nl_does_cr = FALSE;
+	return OK;
+    }
 #else
     /* for "old" tty systems */
     struct sgttyb keys;
 
-    if (ioctl(read_cmd_fd, TIOCGETP, &keys) != -1)
+    if (ioctl(fd, TIOCGETP, &keys) != -1)
     {
-	buf[0] = keys.sg_erase;
-	intr_char = keys.sg_kill;
-#endif
-	buf[1] = NUL;
-	add_termcode((char_u *)"kb", buf, FALSE);
-
-	/*
-	 * If <BS> and <DEL> are now the same, redefine <DEL>.
-	 */
-	p = find_termcode((char_u *)"kD");
-	if (p != NULL && p[0] == buf[0] && p[1] == buf[1])
-	    do_fixdel(NULL);
+	info->backspace = keys.sg_erase;
+	info->interrupt = keys.sg_kill;
+	info->enter = CAR;
+	info->nl_does_cr = TRUE;
+	return OK;
     }
-#if 0
-    }	    /* to keep cindent happy */
 #endif
+    return FAIL;
 }
 
 #endif /* VMS  */
