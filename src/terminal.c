@@ -437,6 +437,7 @@ ex_terminal(exarg_T *eap)
 {
     typval_T	argvar;
     jobopt_T	opt;
+    char_u	*cmd;
 
     init_job_options(&opt);
 
