@@ -34,9 +34,10 @@
  *
  * When the job ends the text is put in a buffer.  Redrawing then happens from
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
+ * When the buffer is changed it is turned into a normal buffer, the attributes
+ * in tl_scrollback are no longer used.
  *
  * TODO:
- * - cursor shape/color/blink in the GUI
  * - Make argument list work on MS-Windows. #1954
  * - MS-Windows: no redraw for 'updatetime'  #1915
  * - To set BS correctly, check get_stty(); Pass the fd of the pty.
@@ -524,6 +525,8 @@ free_terminal(buf_T *buf)
     vim_free(term->tl_cursor_color);
     vim_free(term);
     buf->b_term = NULL;
+    if (in_terminal_loop == term)
+	in_terminal_loop = NULL;
 }
 
 /*
@@ -1014,6 +1017,8 @@ term_enter_job_mode()
 
 /*
  * Get a key from the user without mapping.
+ * Note: while waiting a terminal may be closed and freed if the channel is
+ * closed and ++close was used.
  * TODO: use terminal mode mappings.
  */
     static int
@@ -1140,9 +1145,15 @@ term_paste_register(int prev_c UNUSED)
 #ifdef FEAT_CMDL_INFO
     clear_showcmd();
 #endif
+    if (!term_use_loop())
+	/* job finished while waiting for a character */
+	return;
 
     /* CTRL-W "= prompt for expression to evaluate. */
     if (c == '=' && get_expr_register() != '=')
+	return;
+    if (!term_use_loop())
+	/* job finished while waiting for a character */
 	return;
 
     l = (list_T *)get_reg_contents(c, GREG_LIST);
@@ -1272,6 +1283,10 @@ terminal_loop(void)
     int		termkey = 0;
     int		ret;
 
+    /* Remember the terminal we are sending keys to.  However, the terminal
+     * might be closed while waiting for a character, e.g. typing "exit" in a
+     * shell and ++close was used.  Therefore use curbuf->b_term instead of a
+     * stored reference. */
     in_terminal_loop = curbuf->b_term;
 
     if (*curwin->w_p_tk != NUL)

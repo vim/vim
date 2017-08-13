@@ -414,3 +414,23 @@ func Test_terminal_env()
 
   exe buf . 'bwipe'
 endfunc
+
+" must be last, we can't go back from GUI to terminal
+func Test_zz_terminal_in_gui()
+  if !has('gui')
+    return
+  endif
+  gui -f
+
+  call assert_equal(1, winnr('$'))
+  let buf = Run_shell_in_terminal({'term_finish': 'close'})
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+
+  " closing window wipes out the terminal buffer a with finished job
+  call WaitFor("winnr('$') == 1")
+  call assert_equal(1, winnr('$'))
+  call assert_equal("", bufname(buf))
+
+  unlet g:job
+endfunc
