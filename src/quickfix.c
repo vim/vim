@@ -1189,8 +1189,7 @@ qf_init_ext(
     fields.errmsglen = CMDBUFFSIZE + 1;
     fields.errmsg = alloc_id(fields.errmsglen, aid_qf_errmsg);
     fields.pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
-    if (fields.namebuf == NULL || fields.errmsg == NULL ||
-	    fields.pattern == NULL)
+    if (fields.namebuf == NULL || fields.errmsg == NULL || fields.pattern == NULL)
 	goto qf_init_end;
 
     if (efile != NULL && (state.fd = mch_fopen((char *)efile, "r")) == NULL)
@@ -1368,7 +1367,9 @@ qf_store_title(qf_info_T *qi, int qf_idx, char_u *title)
 }
 
 /*
- * Prepare for adding a new quickfix list.
+ * Prepare for adding a new quickfix list. If the current list is in the
+ * middle of the stack, then all the following lists are freed and then
+ * the new list is added.
  */
     static void
 qf_new_list(qf_info_T *qi, char_u *qf_title)
@@ -3830,8 +3831,8 @@ ex_cc(exarg_T *eap)
     /* For cdo and ldo commands, jump to the nth valid error.
      * For cfdo and lfdo commands, jump to the nth valid file entry.
      */
-    if (eap->cmdidx == CMD_cdo || eap->cmdidx == CMD_ldo ||
-	    eap->cmdidx == CMD_cfdo || eap->cmdidx == CMD_lfdo)
+    if (eap->cmdidx == CMD_cdo || eap->cmdidx == CMD_ldo
+	    || eap->cmdidx == CMD_cfdo || eap->cmdidx == CMD_lfdo)
 	errornr = qf_get_nth_valid_entry(qi,
 		eap->addr_count > 0 ? (int)eap->line1 : 1,
 		eap->cmdidx == CMD_cfdo || eap->cmdidx == CMD_lfdo);
@@ -3867,9 +3868,9 @@ ex_cnext(exarg_T *eap)
 	}
     }
 
-    if (eap->addr_count > 0 &&
-	    (eap->cmdidx != CMD_cdo && eap->cmdidx != CMD_ldo &&
-	     eap->cmdidx != CMD_cfdo && eap->cmdidx != CMD_lfdo))
+    if (eap->addr_count > 0
+	    && (eap->cmdidx != CMD_cdo && eap->cmdidx != CMD_ldo
+		&& eap->cmdidx != CMD_cfdo && eap->cmdidx != CMD_lfdo))
 	errornr = (int)eap->line2;
     else
 	errornr = 1;
@@ -4086,8 +4087,8 @@ ex_vimgrep(exarg_T *eap)
 	goto theend;
     }
 
-    if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_lgrepadd &&
-	 eap->cmdidx != CMD_vimgrepadd && eap->cmdidx != CMD_lvimgrepadd)
+    if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_lgrepadd
+		&& eap->cmdidx != CMD_vimgrepadd && eap->cmdidx != CMD_lvimgrepadd)
 					|| qi->qf_curlist == qi->qf_listcount)
 	/* make place for a new list */
 	qf_new_list(qi, title != NULL ? title : *eap->cmdlinep);
@@ -4646,10 +4647,10 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	if (qi == NULL)
 	{
 	    /* If querying for the size of the location list, return 0 */
-	    if (((di = dict_find(what, (char_u *)"nr", -1)) != NULL) &&
-		    (di->di_tv.v_type == VAR_STRING) &&
-		    (STRCMP(di->di_tv.vval.v_string, "$") == 0))
-		    return dict_add_nr_str(retdict, "nr", 0, NULL);
+	    if (((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
+		    && (di->di_tv.v_type == VAR_STRING)
+		    && (STRCMP(di->di_tv.vval.v_string, "$") == 0))
+		return dict_add_nr_str(retdict, "nr", 0, NULL);
 	    return FAIL;
 	}
     }
@@ -4666,11 +4667,13 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
 		qf_idx = di->di_tv.vval.v_number - 1;
 		if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
 		    return FAIL;
-	    } else if (qi->qf_listcount == 0)	    /* stack is empty */
+	    }
+	    else if (qi->qf_listcount == 0)	    /* stack is empty */
 		return FAIL;
 	    flags |= QF_GETLIST_NR;
-	} else if ((di->di_tv.v_type == VAR_STRING) &&
-		(STRCMP(di->di_tv.vval.v_string, "$") == 0))
+	}
+	else if ((di->di_tv.v_type == VAR_STRING)
+		&& (STRCMP(di->di_tv.vval.v_string, "$") == 0))
 	{
 	    /* Get the last quickfix list number */
 	    if (qi->qf_listcount > 0)
@@ -4905,23 +4908,30 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	    if (di->di_tv.vval.v_number != 0)
 		qf_idx = di->di_tv.vval.v_number - 1;
 
-	    if ((action == ' ' || action == 'a') &&
-		    qf_idx == qi->qf_listcount)
+	    if ((action == ' ' || action == 'a') && qf_idx == qi->qf_listcount)
+	    {
 		/*
 		 * When creating a new list, accept qf_idx pointing to the next
-		 * non-available list
+		 * non-available list and add the new list at the end of the
+		 * stack.
 		 */
 		newlist = TRUE;
+		qf_idx = qi->qf_listcount - 1;
+	    }
 	    else if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
 		return FAIL;
-	    else
+	    else if (action != ' ')
 		newlist = FALSE;	/* use the specified list */
-	} else if (di->di_tv.v_type == VAR_STRING &&
-		STRCMP(di->di_tv.vval.v_string, "$") == 0 &&
-		qi->qf_listcount > 0)
+	}
+	else if (di->di_tv.v_type == VAR_STRING
+		&& STRCMP(di->di_tv.vval.v_string, "$") == 0)
 	{
-	    qf_idx = qi->qf_listcount - 1;
-	    newlist = FALSE;
+	    if (qi->qf_listcount > 0)
+		qf_idx = qi->qf_listcount - 1;
+	    else if (newlist)
+		qf_idx = 0;
+	    else
+		return FAIL;
 	}
 	else
 	    return FAIL;
@@ -4929,6 +4939,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 
     if (newlist)
     {
+	qi->qf_curlist = qf_idx;
 	qf_new_list(qi, title);
 	qf_idx = qi->qf_curlist;
     }
@@ -5104,8 +5115,8 @@ mark_quickfix_ctx(qf_info_T *qi, int copyID)
     for (i = 0; i < LISTCOUNT && !abort; ++i)
     {
 	ctx = qi->qf_lists[i].qf_ctx;
-	if (ctx != NULL && ctx->v_type != VAR_NUMBER &&
-		ctx->v_type != VAR_STRING && ctx->v_type != VAR_FLOAT)
+	if (ctx != NULL && ctx->v_type != VAR_NUMBER
+		&& ctx->v_type != VAR_STRING && ctx->v_type != VAR_FLOAT)
 	    abort = set_ref_in_item(ctx, copyID, NULL, NULL);
     }
 
