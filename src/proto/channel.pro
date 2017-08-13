@@ -54,6 +54,7 @@ void free_job_options(jobopt_T *opt);
 int get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2);
 channel_T *get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part);
 void job_free_all(void);
+int win32_build_cmd(list_T *l, garray_T *gap);
 void job_cleanup(job_T *job);
 int set_ref_in_job(int copyID);
 void job_unref(job_T *job);
