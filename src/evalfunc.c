@@ -7849,6 +7849,10 @@ f_mode(typval_T *argvars, typval_T *rettv)
 	buf[0] = 'x';
 	buf[1] = '!';
     }
+#ifdef FEAT_TERMINAL
+    else if (term_use_loop())
+	buf[0] = 't';
+#endif
     else if (VIsual_active)
     {
 	if (VIsual_select)
