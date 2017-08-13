@@ -926,6 +926,13 @@ move_terminal_to_buffer(term_T *term)
 	    wp->w_cursor.lnum = term->tl_buffer->b_ml.ml_line_count;
 	    wp->w_cursor.col = 0;
 	    wp->w_valid = 0;
+	    if (wp->w_cursor.lnum >= wp->w_height)
+	    {
+		linenr_T min_topline = wp->w_cursor.lnum - wp->w_height + 1;
+
+		if (wp->w_topline < min_topline)
+		    wp->w_topline = min_topline;
+	    }
 	    redraw_win_later(wp, NOT_VALID);
 	}
     }
