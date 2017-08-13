@@ -417,7 +417,7 @@ endfunc
 
 " must be last, we can't go back from GUI to terminal
 func Test_zz_terminal_in_gui()
-  if !has('gui')
+  if !CanRunGui()
     return
   endif
   gui -f
