@@ -1455,6 +1455,14 @@ struct partial_S
     dict_T	*pt_dict;	/* dict for "self" */
 };
 
+/* Information returned by get_tty_info(). */
+typedef struct {
+    int backspace;	/* what the Backspace key produces */
+    int enter;		/* what the Enter key produces */
+    int interrupt;	/* interrupt character */
+    int nl_does_cr;	/* TRUE when a NL is expanded to CR-NL on output */
+} ttyinfo_T;
+
 /* Status of a job.  Order matters! */
 typedef enum
 {
