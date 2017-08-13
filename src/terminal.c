@@ -1503,7 +1503,12 @@ handle_settermprop(
     {
 	case VTERM_PROP_TITLE:
 	    vim_free(term->tl_title);
-	    term->tl_title = vim_strsave((char_u *)value->string);
+	    /* a blank title isn't useful, make it empty, so that "running" is
+	     * displayed */
+	    if (*skipwhite((char_u *)value->string) == NUL)
+		term->tl_title = NULL;
+	    else
+		term->tl_title = vim_strsave((char_u *)value->string);
 	    vim_free(term->tl_status_text);
 	    term->tl_status_text = NULL;
 	    if (term == curbuf->b_term)
