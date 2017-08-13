@@ -47,7 +47,6 @@
  * - do not store terminal window in viminfo.  Or prefix term:// ?
  * - add a character in :ls output
  * - add 't' to mode()
- * - set 'filetype' to "terminal"?
  * - use win_del_lines() to make scroll-up efficient.
  * - Make StatusLineTerm adjust UserN highlighting like StatusLineNC does, see
  *   use of hightlight_stlnc[].
@@ -568,9 +567,9 @@ update_cursor(term_T *term, int redraw)
     if (term->tl_normal_mode)
 	return;
     setcursor();
-    if (redraw && term->tl_buffer == curbuf)
+    if (redraw)
     {
-	if (term->tl_cursor_visible)
+	if (term->tl_buffer == curbuf && term->tl_cursor_visible)
 	    cursor_on();
 	out_flush();
 #ifdef FEAT_GUI
@@ -598,11 +597,19 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
     ch_log(channel, "writing %d bytes to terminal", (int)len);
     term_write_job_output(term, msg, len);
 
+    /* In Terminal-Normal mode we are displaying the buffer, not the terminal
+     * contents, thus no screen update is needed. */
     if (!term->tl_normal_mode)
     {
 	/* TODO: only update once in a while. */
-	update_screen(0);
-	update_cursor(term, TRUE);
+	ch_log(term->tl_job->jv_channel, "updating screen");
+	if (buffer == curbuf)
+	{
+	    update_screen(0);
+	    update_cursor(term, TRUE);
+	}
+	else
+	    redraw_after_callback();
     }
 }
 
@@ -2557,14 +2564,6 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
     {
 	send_keys_to_term(term, PTR2CHAR(msg), FALSE);
 	msg += MB_PTR2LEN(msg);
-    }
-
-    if (!term->tl_normal_mode)
-    {
-	/* TODO: only update once in a while. */
-	update_screen(0);
-	if (buf == curbuf)
-	    update_cursor(term, TRUE);
     }
 }
 
