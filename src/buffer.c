@@ -3034,6 +3034,8 @@ buflist_list(exarg_T *eap)
     buf_T	*buf;
     int		len;
     int		i;
+    int		ro_char;
+    int		changed_char;
 
     for (buf = firstbuf; buf != NULL && !got_int; buf = buf->b_next)
     {
@@ -3060,6 +3062,21 @@ buflist_list(exarg_T *eap)
 	if (message_filtered(NameBuff))
 	    continue;
 
+	changed_char = (buf->b_flags & BF_READERR) ? 'x'
+					     : (bufIsChanged(buf) ? '+' : ' ');
+#ifdef FEAT_TERMINAL
+	if (term_job_running(buf->b_term))
+	{
+	    ro_char = 'R';
+	    changed_char = ' ';  /* bufIsChanged() returns TRUE to avoid
+				  * closing, but it's not actually changed. */
+	}
+	else if (buf->b_term != NULL)
+	    ro_char = 'F';
+	else
+#endif
+	    ro_char = !buf->b_p_ma ? '-' : (buf->b_p_ro ? '=' : ' ');
+
 	msg_putchar('\n');
 	len = vim_snprintf((char *)IObuff, IOSIZE - 20, "%3d%c%c%c%c%c \"%s\"",
 		buf->b_fnum,
@@ -3068,9 +3085,8 @@ buflist_list(exarg_T *eap)
 			(curwin->w_alt_fnum == buf->b_fnum ? '#' : ' '),
 		buf->b_ml.ml_mfp == NULL ? ' ' :
 			(buf->b_nwindows == 0 ? 'h' : 'a'),
-		!buf->b_p_ma ? '-' : (buf->b_p_ro ? '=' : ' '),
-		(buf->b_flags & BF_READERR) ? 'x'
-					    : (bufIsChanged(buf) ? '+' : ' '),
+		ro_char,
+		changed_char,
 		NameBuff);
 	if (len > IOSIZE - 20)
 	    len = IOSIZE - 20;
