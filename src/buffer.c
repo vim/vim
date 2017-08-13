@@ -5659,6 +5659,9 @@ write_viminfo_bufferlist(FILE *fp)
 #ifdef FEAT_QUICKFIX
 		|| bt_quickfix(buf)
 #endif
+#ifdef FEAT_TERMINAL
+		|| bt_terminal(buf)
+#endif
 		|| removable(buf->b_ffname))
 	    continue;
 
