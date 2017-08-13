@@ -417,7 +417,7 @@ endfunc
 
 " must be last, we can't go back from GUI to terminal
 func Test_zz_terminal_in_gui()
-  if !has('gui')
+  if !has('gui') || ($DISPLAY == "" && !has('gui_running'))
     return
   endif
   gui -f
