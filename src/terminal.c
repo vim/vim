@@ -38,11 +38,6 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - To set BS correctly, check get_stty(); Pass the fd of the pty.
- *   For the GUI fill termios with default values, perhaps like pangoterm:
- *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
- *   Also get the NL behavior from there.
- * - do not store terminal window in viminfo.  Or prefix term:// ?
  * - add a character in :ls output
  * - add 't' to mode()
  * - use win_del_lines() to make scroll-up efficient.
@@ -52,8 +47,7 @@
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
- * - implement "term" for job_start(): more job options when starting a
- *   terminal.  Allow:
+ * - implement job options when starting a terminal.  Allow:
  *	"in_io", "in_top", "in_bot", "in_name", "in_buf"
 	"out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
 	"err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
@@ -61,6 +55,8 @@
  *   Test: "cat" reading from a file or buffer
  *         "ls" writing stdout to a file or buffer
  *         shell writing stderr to a file or buffer
+ * - For the GUI fill termios with default values, perhaps like pangoterm:
+ *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
  * - support ":term NONE" to open a terminal with a pty but not running a job
  *   in it.  The pty can be passed to gdb to run the executable in.
  * - if the job in the terminal does not support the mouse, we can use the
@@ -167,6 +163,13 @@ static int term_and_job_init(term_T *term, int rows, int cols,
 					      typval_T *argvar, jobopt_T *opt);
 static void term_report_winsize(term_T *term, int rows, int cols);
 static void term_free_vterm(term_T *term);
+
+/* The characters that we know (or assume) that the terminal expects for the
+ * backspace and enter keys. */
+static int term_backspace_char = BS;
+static int term_enter_char = CAR;
+static int term_nl_does_cr = FALSE;
+
 
 /**************************************
  * 1. Generic code for all systems.
@@ -552,23 +555,26 @@ term_write_job_output(term_T *term, char_u *msg, size_t len)
     size_t	done;
     size_t	len_now;
 
-    for (done = 0; done < len; done += len_now)
-    {
-	for (p = msg + done; p < msg + len; )
+    if (term_nl_does_cr)
+	vterm_input_write(vterm, (char *)msg, len);
+    else
+	/* need to convert NL to CR-NL */
+	for (done = 0; done < len; done += len_now)
 	{
-	    if (*p == NL)
-		break;
-	    p += utf_ptr2len_len(p, (int)(len - (p - msg)));
+	    for (p = msg + done; p < msg + len; )
+	    {
+		if (*p == NL)
+		    break;
+		p += utf_ptr2len_len(p, (int)(len - (p - msg)));
+	    }
+	    len_now = p - msg - done;
+	    vterm_input_write(vterm, (char *)msg + done, len_now);
+	    if (p < msg + len && *p == NL)
+	    {
+		vterm_input_write(vterm, "\r\n", 2);
+		++len_now;
+	    }
 	}
-	len_now = p - msg - done;
-	vterm_input_write(vterm, (char *)msg + done, len_now);
-	if (p < msg + len && *p == NL)
-	{
-	    /* Convert NL to CR-NL, that appears to work best. */
-	    vterm_input_write(vterm, "\r\n", 2);
-	    ++len_now;
-	}
-    }
 
     /* this invokes the damage callbacks */
     vterm_screen_flush_damage(vterm_obtain_screen(vterm));
@@ -654,10 +660,12 @@ term_convert_key(term_T *term, int c, char *buf)
 
     switch (c)
     {
-	case CAR:		key = VTERM_KEY_ENTER; break;
+	case CAR:		c = term_enter_char; break;
+				/* don't use VTERM_KEY_BACKSPACE, it always
+				 * becomes 0x7f DEL */
+	case K_BS:		c = term_backspace_char; break;
+
 	case ESC:		key = VTERM_KEY_ESCAPE; break;
-				/* VTERM_KEY_BACKSPACE becomes 0x7f DEL */
-	case K_BS:		c = BS; break;
 	case K_DEL:		key = VTERM_KEY_DEL; break;
 	case K_DOWN:		key = VTERM_KEY_DOWN; break;
 	case K_S_DOWN:		mod = VTERM_MOD_SHIFT;
@@ -1320,6 +1328,25 @@ terminal_loop(void)
 	termkey = string_to_key(curwin->w_p_tk, TRUE);
     position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
+
+#ifdef UNIX
+    {
+	int fd = curbuf->b_term->tl_job->jv_channel->ch_part[PART_IN].ch_fd;
+
+	if (isatty(fd))
+	{
+	    ttyinfo_T info;
+
+	    /* Get the current backspace and enter characters of the pty. */
+	    if (get_tty_info(fd, &info) == OK)
+	    {
+		term_backspace_char = info.backspace;
+		term_enter_char = info.enter;
+		term_nl_does_cr = info.nl_does_cr;
+	    }
+	}
+    }
+#endif
 
     for (;;)
     {
