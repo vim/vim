@@ -38,11 +38,6 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - add a character in :ls output
- * - add 't' to mode()
- * - use win_del_lines() to make scroll-up efficient.
- * - Make StatusLineTerm adjust UserN highlighting like StatusLineNC does, see
- *   use of hightlight_stlnc[].
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -1495,11 +1490,21 @@ handle_damage(VTermRect rect, void *user)
 }
 
     static int
-handle_moverect(VTermRect dest UNUSED, VTermRect src UNUSED, void *user)
+handle_moverect(VTermRect dest, VTermRect src, void *user)
 {
     term_T	*term = (term_T *)user;
+    win_T	*wp;
 
-    /* TODO */
+    if (dest.start_col == src.start_col
+	    && dest.end_col == src.end_col
+	    && dest.start_row < src.start_row)
+	FOR_ALL_WINDOWS(wp)
+	{
+	    if (wp->w_buffer == term->tl_buffer)
+		/* scrolling up is much more efficient when deleting lines */
+		win_del_lines(wp, dest.start_row,
+				 src.start_row - dest.start_row, FALSE, FALSE);
+	}
     redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
