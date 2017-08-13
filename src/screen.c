@@ -7257,6 +7257,11 @@ win_redr_custom(
 	else if (hltab[n].userhl < 0)
 	    curattr = syn_id2attr(-hltab[n].userhl);
 #ifdef FEAT_WINDOWS
+# ifdef FEAT_TERMINAL
+	else if (wp != NULL && bt_terminal(wp->w_buffer)
+						   && wp->w_status_height != 0)
+	    curattr = highlight_stlterm[hltab[n].userhl - 1];
+# endif
 	else if (wp != NULL && wp != curwin && wp->w_status_height != 0)
 	    curattr = highlight_stlnc[hltab[n].userhl - 1];
 #endif
