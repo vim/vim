@@ -9786,6 +9786,73 @@ gui_do_one_color(
 }
 #endif
 
+#if defined(USER_HIGHLIGHT) && defined(FEAT_STL_OPT)
+/*
+ * Apply difference between User[1-9] and HLF_S to HLF_SNC or HLF_ST.
+ */
+    static void
+combine_stl_hlt(
+	int id,
+	int id_S,
+	int id_alt,
+	int hlcnt,
+	int i,
+	int hlf,
+	int *table)
+{
+    struct hl_group *hlt = HL_TABLE();
+
+    if (id_alt == 0)
+    {
+	vim_memset(&hlt[hlcnt + i], 0, sizeof(struct hl_group));
+	hlt[hlcnt + i].sg_term = highlight_attr[hlf];
+	hlt[hlcnt + i].sg_cterm = highlight_attr[hlf];
+#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
+	hlt[hlcnt + i].sg_gui = highlight_attr[hlf];
+#  endif
+    }
+    else
+	mch_memmove(&hlt[hlcnt + i],
+		    &hlt[id_alt - 1],
+		    sizeof(struct hl_group));
+    hlt[hlcnt + i].sg_link = 0;
+
+    hlt[hlcnt + i].sg_term ^=
+	hlt[id - 1].sg_term ^ hlt[id_S - 1].sg_term;
+    if (hlt[id - 1].sg_start != hlt[id_S - 1].sg_start)
+	hlt[hlcnt + i].sg_start = hlt[id - 1].sg_start;
+    if (hlt[id - 1].sg_stop != hlt[id_S - 1].sg_stop)
+	hlt[hlcnt + i].sg_stop = hlt[id - 1].sg_stop;
+    hlt[hlcnt + i].sg_cterm ^=
+	hlt[id - 1].sg_cterm ^ hlt[id_S - 1].sg_cterm;
+    if (hlt[id - 1].sg_cterm_fg != hlt[id_S - 1].sg_cterm_fg)
+	hlt[hlcnt + i].sg_cterm_fg = hlt[id - 1].sg_cterm_fg;
+    if (hlt[id - 1].sg_cterm_bg != hlt[id_S - 1].sg_cterm_bg)
+	hlt[hlcnt + i].sg_cterm_bg = hlt[id - 1].sg_cterm_bg;
+#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
+    hlt[hlcnt + i].sg_gui ^=
+	hlt[id - 1].sg_gui ^ hlt[id_S - 1].sg_gui;
+#  endif
+#  ifdef FEAT_GUI
+    if (hlt[id - 1].sg_gui_fg != hlt[id_S - 1].sg_gui_fg)
+	hlt[hlcnt + i].sg_gui_fg = hlt[id - 1].sg_gui_fg;
+    if (hlt[id - 1].sg_gui_bg != hlt[id_S - 1].sg_gui_bg)
+	hlt[hlcnt + i].sg_gui_bg = hlt[id - 1].sg_gui_bg;
+    if (hlt[id - 1].sg_gui_sp != hlt[id_S - 1].sg_gui_sp)
+	hlt[hlcnt + i].sg_gui_sp = hlt[id - 1].sg_gui_sp;
+    if (hlt[id - 1].sg_font != hlt[id_S - 1].sg_font)
+	hlt[hlcnt + i].sg_font = hlt[id - 1].sg_font;
+#   ifdef FEAT_XFONTSET
+    if (hlt[id - 1].sg_fontset != hlt[id_S - 1].sg_fontset)
+	hlt[hlcnt + i].sg_fontset = hlt[id - 1].sg_fontset;
+#   endif
+#  endif
+    highlight_ga.ga_len = hlcnt + i + 1;
+    set_hl_attr(hlcnt + i);	/* At long last we can apply */
+    table[i] = syn_id2attr(hlcnt + i + 1);
+}
+#endif
+
 /*
  * Translate the 'highlight' option into attributes in highlight_attr[] and
  * set up the user highlights User1..9.  If FEAT_STL_OPT is in use, a set of
@@ -9808,6 +9875,9 @@ highlight_changed(void)
 # ifdef FEAT_STL_OPT
     int		id_SNC = -1;
     int		id_S = -1;
+#  ifdef FEAT_TERMINAL
+    int		id_ST = -1;
+#  endif
     int		hlcnt;
 # endif
 #endif
@@ -9887,6 +9957,10 @@ highlight_changed(void)
 #if defined(FEAT_STL_OPT) && defined(USER_HIGHLIGHT)
 				if (hlf == (int)HLF_SNC)
 				    id_SNC = syn_get_final_id(id);
+# ifdef FEAT_TERMINAL
+				else if (hlf == (int)HLF_ST)
+				    id_ST = syn_get_final_id(id);
+# endif
 				else if (hlf == (int)HLF_S)
 				    id_S = syn_get_final_id(id);
 #endif
@@ -9903,18 +9977,24 @@ highlight_changed(void)
 #ifdef USER_HIGHLIGHT
     /* Setup the user highlights
      *
-     * Temporarily  utilize 10 more hl entries.  Have to be in there
-     * simultaneously in case of table overflows in get_attr_entry()
+     * Temporarily utilize 19 more hl entries:
+     * 9 for User1-User9 combined with StatusLineNC
+     * 9 for User1-User9 combined with StatusLineTerm
+     * 1 for StatusLine default
+     * Have to be in there simultaneously in case of table overflows in
+     * get_attr_entry()
      */
 # ifdef FEAT_STL_OPT
-    if (ga_grow(&highlight_ga, 10) == FAIL)
+    if (ga_grow(&highlight_ga, 19) == FAIL)
 	return FAIL;
     hlcnt = highlight_ga.ga_len;
     if (id_S == 0)
-    {		    /* Make sure id_S is always valid to simplify code below */
-	vim_memset(&HL_TABLE()[hlcnt + 9], 0, sizeof(struct hl_group));
-	HL_TABLE()[hlcnt + 9].sg_term = highlight_attr[HLF_S];
-	id_S = hlcnt + 10;
+    {
+	/* Make sure id_S is always valid to simplify code below. Use the last
+	 * entry. */
+	vim_memset(&HL_TABLE()[hlcnt + 18], 0, sizeof(struct hl_group));
+	HL_TABLE()[hlcnt + 18].sg_term = highlight_attr[HLF_S];
+	id_S = hlcnt + 19;
     }
 # endif
     for (i = 0; i < 9; i++)
@@ -9926,65 +10006,21 @@ highlight_changed(void)
 	    highlight_user[i] = 0;
 # ifdef FEAT_STL_OPT
 	    highlight_stlnc[i] = 0;
+#  ifdef FEAT_TERMINAL
+	    highlight_stlterm[i] = 0;
+#  endif
 # endif
 	}
 	else
 	{
-# ifdef FEAT_STL_OPT
-	    struct hl_group *hlt = HL_TABLE();
-# endif
-
 	    highlight_user[i] = syn_id2attr(id);
 # ifdef FEAT_STL_OPT
-	    if (id_SNC == 0)
-	    {
-		vim_memset(&hlt[hlcnt + i], 0, sizeof(struct hl_group));
-		hlt[hlcnt + i].sg_term = highlight_attr[HLF_SNC];
-		hlt[hlcnt + i].sg_cterm = highlight_attr[HLF_SNC];
-#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
-		hlt[hlcnt + i].sg_gui = highlight_attr[HLF_SNC];
+	    combine_stl_hlt(id, id_S, id_SNC, hlcnt, i,
+						     HLF_SNC, highlight_stlnc);
+#  ifdef FEAT_TERMINAL
+	    combine_stl_hlt(id, id_S, id_ST, hlcnt + 9, i,
+						    HLF_ST, highlight_stlterm);
 #  endif
-	    }
-	    else
-		mch_memmove(&hlt[hlcnt + i],
-			    &hlt[id_SNC - 1],
-			    sizeof(struct hl_group));
-	    hlt[hlcnt + i].sg_link = 0;
-
-	    /* Apply difference between UserX and HLF_S to HLF_SNC */
-	    hlt[hlcnt + i].sg_term ^=
-		hlt[id - 1].sg_term ^ hlt[id_S - 1].sg_term;
-	    if (hlt[id - 1].sg_start != hlt[id_S - 1].sg_start)
-		hlt[hlcnt + i].sg_start = hlt[id - 1].sg_start;
-	    if (hlt[id - 1].sg_stop != hlt[id_S - 1].sg_stop)
-		hlt[hlcnt + i].sg_stop = hlt[id - 1].sg_stop;
-	    hlt[hlcnt + i].sg_cterm ^=
-		hlt[id - 1].sg_cterm ^ hlt[id_S - 1].sg_cterm;
-	    if (hlt[id - 1].sg_cterm_fg != hlt[id_S - 1].sg_cterm_fg)
-		hlt[hlcnt + i].sg_cterm_fg = hlt[id - 1].sg_cterm_fg;
-	    if (hlt[id - 1].sg_cterm_bg != hlt[id_S - 1].sg_cterm_bg)
-		hlt[hlcnt + i].sg_cterm_bg = hlt[id - 1].sg_cterm_bg;
-#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
-	    hlt[hlcnt + i].sg_gui ^=
-		hlt[id - 1].sg_gui ^ hlt[id_S - 1].sg_gui;
-#  endif
-#  ifdef FEAT_GUI
-	    if (hlt[id - 1].sg_gui_fg != hlt[id_S - 1].sg_gui_fg)
-		hlt[hlcnt + i].sg_gui_fg = hlt[id - 1].sg_gui_fg;
-	    if (hlt[id - 1].sg_gui_bg != hlt[id_S - 1].sg_gui_bg)
-		hlt[hlcnt + i].sg_gui_bg = hlt[id - 1].sg_gui_bg;
-	    if (hlt[id - 1].sg_gui_sp != hlt[id_S - 1].sg_gui_sp)
-		hlt[hlcnt + i].sg_gui_sp = hlt[id - 1].sg_gui_sp;
-	    if (hlt[id - 1].sg_font != hlt[id_S - 1].sg_font)
-		hlt[hlcnt + i].sg_font = hlt[id - 1].sg_font;
-#   ifdef FEAT_XFONTSET
-	    if (hlt[id - 1].sg_fontset != hlt[id_S - 1].sg_fontset)
-		hlt[hlcnt + i].sg_fontset = hlt[id - 1].sg_fontset;
-#   endif
-#  endif
-	    highlight_ga.ga_len = hlcnt + i + 1;
-	    set_hl_attr(hlcnt + i);	/* At long last we can apply */
-	    highlight_stlnc[i] = syn_id2attr(hlcnt + i + 1);
 # endif
 	}
     }
