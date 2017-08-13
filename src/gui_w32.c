@@ -2073,20 +2073,23 @@ gui_mch_wait_for_chars(int wtime)
 	did_add_timer = FALSE;
 #endif
 #ifdef MESSAGE_QUEUE
-	/* Check channel while waiting message. */
+	/* Check channel I/O while waiting for a message. */
 	for (;;)
 	{
 	    MSG msg;
 
 	    parse_queued_messages();
 
-	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)
-		|| MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
-								!= WAIT_TIMEOUT)
+	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+	    {
+		process_message();
+		break;
+	    }
+	    else if (MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
+							       != WAIT_TIMEOUT)
 		break;
 	}
-#endif
-
+#else
 	/*
 	 * Don't use gui_mch_update() because then we will spin-lock until a
 	 * char arrives, instead we use GetMessage() to hang until an
@@ -2094,6 +2097,7 @@ gui_mch_wait_for_chars(int wtime)
 	 * returning as soon as it contains a single char -- webb
 	 */
 	process_message();
+#endif
 
 	if (input_available())
 	{
