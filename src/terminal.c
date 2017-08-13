@@ -38,7 +38,6 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - Make argument list work on MS-Windows. #1954
  * - To set BS correctly, check get_stty(); Pass the fd of the pty.
  *   For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
@@ -464,6 +463,8 @@ ex_terminal(exarg_T *eap)
 	}
 	cmd = skipwhite(p);
     }
+    if (cmd == NULL || *cmd == NUL)
+	cmd = p_sh;
 
     if (eap->addr_count == 2)
     {
