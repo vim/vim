@@ -2473,10 +2473,10 @@ scripterror:
 	     */
 	    if (vim_strpbrk(p, "\\:") != NULL && !path_with_url(p))
 	    {
-		char posix_path[PATH_MAX];
+		char posix_path[MAXPATHL];
 
 # if CYGWIN_VERSION_DLL_MAJOR >= 1007
-		cygwin_conv_path(CCP_WIN_A_TO_POSIX, p, posix_path, PATH_MAX);
+		cygwin_conv_path(CCP_WIN_A_TO_POSIX, p, posix_path, MAXPATHL);
 # else
 		cygwin_conv_to_posix_path(p, posix_path);
 # endif
@@ -3598,10 +3598,10 @@ set_progpath(char_u *argv0)
     char_u *val = argv0;
 
 # ifdef PROC_EXE_LINK
-    char    buf[PATH_MAX + 1];
+    char    buf[MAXPATHL + 1];
     ssize_t len;
 
-    len = readlink(PROC_EXE_LINK, buf, PATH_MAX);
+    len = readlink(PROC_EXE_LINK, buf, MAXPATHL);
     if (len > 0)
     {
 	buf[len] = NUL;
