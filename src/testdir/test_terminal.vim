@@ -185,14 +185,19 @@ func Test_terminal_scrape_multibyte()
   endif
   call writefile(["léttまrs"], 'Xtext')
   if has('win32')
-    let cmd = 'cmd /c "type Xtext"'
+    " Start cmd with UTF-8 codepage to make the type command successfully prints
+    " multibyte characters.
+    let g:buf = term_start("cmd /K chcp 65001")
+    call term_sendkeys(g:buf, "type Xtext\<CR>")
+    call term_sendkeys(g:buf, "exit\<CR>")
+    let g:line = 4
   else
-    let cmd = "cat Xtext"
+    let g:buf = term_start("cat Xtext")
+    let g:line = 1
   endif
-  let g:buf = term_start(cmd)
 
-  call WaitFor('term_scrape(g:buf, 1)[0].chars == "l"')
-  let l = term_scrape(g:buf, 1)
+  call WaitFor('term_scrape(g:buf, g:line)[0].chars == "l"')
+  let l = term_scrape(g:buf, g:line)
   call assert_true(len(l) >= 7)
   call assert_equal('l', l[0].chars)
   call assert_equal('é', l[1].chars)
@@ -210,6 +215,7 @@ func Test_terminal_scrape_multibyte()
 
   exe g:buf . 'bwipe'
   unlet g:buf
+  unlet g:line
   call delete('Xtext')
 endfunc
 
