@@ -410,11 +410,12 @@ func Test_terminal_env()
     return
   endif
   let buf = Run_shell_in_terminal({'env': {'TESTENV': 'correct'}})
-  call term_wait(buf)
+  " Wait for the shell to display a prompt
+  call WaitFor('term_getline(1) != ""')
   call term_sendkeys(buf, "echo $TESTENV\r")
   call term_wait(buf)
   call Stop_shell_in_terminal(buf)
-  call term_wait(buf)
+  call WaitFor('getline(2) == "correct"')
   call assert_equal('correct', getline(2))
 
   exe buf . 'bwipe'
