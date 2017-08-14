@@ -5072,8 +5072,11 @@ make_job_env(garray_T *gap, dict_T *env)
 	    --todo;
 	    if (wkey != NULL && wval != NULL)
 	    {
-		int n, lkey = wcslen(wkey), lval = wcslen(wval);
-		if (ga_grow(gap, lkey + lval + 2) != OK)
+		int	n;
+		size_t	lkey = wcslen(wkey);
+		size_t	lval = wcslen(wval);
+
+		if (ga_grow(gap, (int)(lkey + lval + 2)) != OK)
 		    continue;
 		for (n = 0; n < lkey; n++)
 		    *((WCHAR*)gap->ga_data + gap->ga_len++) = wkey[n];
