@@ -392,7 +392,8 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     setup_job_options(opt, term->tl_rows, term->tl_cols);
 
     /* System dependent: setup the vterm and start the job in it. */
-    if (term_and_job_init(term, term->tl_rows, term->tl_cols, argvar, opt) == OK)
+    if (term_and_job_init(term, term->tl_rows, term->tl_cols, argvar, opt)
+									 == OK)
     {
 	/* Get and remember the size we ended up with.  Update the pty. */
 	vterm_get_size(term->tl_vterm, &term->tl_rows, &term->tl_cols);
@@ -434,6 +435,7 @@ ex_terminal(exarg_T *eap)
     typval_T	argvar;
     jobopt_T	opt;
     char_u	*cmd;
+    char_u	*tofree = NULL;
 
     init_job_options(&opt);
 
@@ -462,7 +464,8 @@ ex_terminal(exarg_T *eap)
 	cmd = skipwhite(p);
     }
     if (cmd == NULL || *cmd == NUL)
-	cmd = p_sh;
+	/* Make a copy, an autocommand may set 'shell'. */
+	tofree = cmd = vim_strsave(p_sh);
 
     if (eap->addr_count == 2)
     {
@@ -480,6 +483,7 @@ ex_terminal(exarg_T *eap)
     argvar.v_type = VAR_STRING;
     argvar.vval.v_string = cmd;
     term_start(&argvar, &opt, eap->forceit);
+    vim_free(tofree);
 }
 
 /*
