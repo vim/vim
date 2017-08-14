@@ -7258,6 +7258,9 @@ win_redr_custom(
 	    curattr = syn_id2attr(-hltab[n].userhl);
 #ifdef FEAT_WINDOWS
 # ifdef FEAT_TERMINAL
+	else if (wp != NULL && wp != curwin && bt_terminal(wp->w_buffer)
+						   && wp->w_status_height != 0)
+	    curattr = highlight_stltermnc[hltab[n].userhl - 1];
 	else if (wp != NULL && bt_terminal(wp->w_buffer)
 						   && wp->w_status_height != 0)
 	    curattr = highlight_stlterm[hltab[n].userhl - 1];
@@ -10724,11 +10727,16 @@ fillchar_status(int *attr, win_T *wp)
 #ifdef FEAT_TERMINAL
     if (bt_terminal(wp->w_buffer))
     {
-	*attr = HL_ATTR(HLF_ST);
 	if (wp == curwin)
+	{
+	    *attr = HL_ATTR(HLF_ST);
 	    fill = fill_stl;
+	}
 	else
+	{
+	    *attr = HL_ATTR(HLF_STNC);
 	    fill = fill_stlnc;
+	}
     }
     else
 #endif
