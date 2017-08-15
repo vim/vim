@@ -454,18 +454,38 @@ static unsigned char etoa64[] =
     0070,0071,0372,0373,0374,0375,0376,0377
 };
 
+typedef struct {
+  long length;
+  int columns;
+  int ebcdic;
+  int hextype;
+  int octets_per_group;
+  int autoskip;
+  int seek;
+  int off;
+  int relseek;
+  int negseek;
+  int group_length;
+  int revert;
+  int nonzero;
+} xxd_opts_t;
+
   int
 main(int argc, char *argv[])
 {
   FILE *fp, *fpo;
-  int c, e, p = 0, relseek = 1, negseek = 0, revert = 0;
-  int cols = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL;
-  int ebcdic = 0;
-  int octspergrp = -1;	/* number of octets grouped in output */
-  int grplen;		/* total chars per octet group */
-  long length = -1, n = 0, seekoff = 0, displayoff = 0;
+  int c, e, p = 0;
+  long n = 0;
   static char l[LLEN+1];  /* static because it may be too big for stack */
   char *pp;
+
+  xxd_opts_t o;
+  xxd_opts_t *opts = &o;
+  memset(opts, 0, sizeof(*opts));
+  opts->hextype = HEX_NORMAL;
+  opts->octets_per_group = -1;      /* number of octets grouped in output */
+  opts->relseek = 1;
+  opts->length = -1;
 
 #ifdef AMIGA
   /* This program doesn't work when started from the Workbench */
@@ -489,14 +509,14 @@ main(int argc, char *argv[])
   while (argc >= 2)
     {
       pp = argv[1] + (!STRNCMP(argv[1], "--", 2) && argv[1][2]);
-	   if (!STRNCMP(pp, "-a", 2)) autoskip = 1 - autoskip;
-      else if (!STRNCMP(pp, "-b", 2)) hextype = HEX_BITS;
-      else if (!STRNCMP(pp, "-e", 2)) hextype = HEX_LITTLEENDIAN;
+	   if (!STRNCMP(pp, "-a", 2)) opts->autoskip = 1 - opts->autoskip;
+      else if (!STRNCMP(pp, "-b", 2)) opts->hextype = HEX_BITS;
+      else if (!STRNCMP(pp, "-e", 2)) opts->hextype = HEX_LITTLEENDIAN;
       else if (!STRNCMP(pp, "-u", 2)) hexx = hexxa + 16;
-      else if (!STRNCMP(pp, "-p", 2)) hextype = HEX_POSTSCRIPT;
-      else if (!STRNCMP(pp, "-i", 2)) hextype = HEX_CINCLUDE;
-      else if (!STRNCMP(pp, "-r", 2)) revert++;
-      else if (!STRNCMP(pp, "-E", 2)) ebcdic++;
+      else if (!STRNCMP(pp, "-p", 2)) opts->hextype = HEX_POSTSCRIPT;
+      else if (!STRNCMP(pp, "-i", 2)) opts->hextype = HEX_CINCLUDE;
+      else if (!STRNCMP(pp, "-r", 2)) opts->revert++;
+      else if (!STRNCMP(pp, "-E", 2)) opts->ebcdic++;
       else if (!STRNCMP(pp, "-v", 2))
 	{
 	  fprintf(stderr, "%s%s\n", version, osver);
@@ -505,12 +525,12 @@ main(int argc, char *argv[])
       else if (!STRNCMP(pp, "-c", 2))
 	{
 	  if (pp[2] && STRNCMP("ols", pp + 2, 3))
-	    cols = (int)strtol(pp + 2, NULL, 0);
+	    opts->columns = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {
 	      if (!argv[2])
 		exit_with_usage();
-	      cols = (int)strtol(argv[2], NULL, 0);
+	      opts->columns = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -518,12 +538,12 @@ main(int argc, char *argv[])
       else if (!STRNCMP(pp, "-g", 2))
 	{
 	  if (pp[2] && STRNCMP("group", pp + 2, 5))
-	    octspergrp = (int)strtol(pp + 2, NULL, 0);
+	    opts->octets_per_group = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {
 	      if (!argv[2])
 		exit_with_usage();
-	      octspergrp = (int)strtol(argv[2], NULL, 0);
+	      opts->octets_per_group = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -531,29 +551,29 @@ main(int argc, char *argv[])
       else if (!STRNCMP(pp, "-o", 2))
 	{
 	  if (pp[2] && STRNCMP("ffset", pp + 2, 5))
-	    displayoff = (int)strtol(pp + 2, NULL, 0);
+	    opts->off = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {
 	      if (!argv[2])
 		exit_with_usage();
-	      displayoff = (int)strtol(argv[2], NULL, 0);
+	      opts->off = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
 	    }
 	}
       else if (!STRNCMP(pp, "-s", 2))
 	{
-	  relseek = 0;
-	  negseek = 0;
+	  opts->relseek = 0;
+	  opts->negseek = 0;
 	  if (pp[2] && STRNCMP("kip", pp+2, 3) && STRNCMP("eek", pp+2, 3))
 	    {
 #ifdef TRY_SEEK
 	      if (pp[2] == '+')
-		relseek++;
-	      if (pp[2+relseek] == '-')
-		negseek++;
+		opts->relseek++;
+	      if (pp[2+opts->relseek] == '-')
+		opts->negseek++;
 #endif
-	      seekoff = strtol(pp + 2+relseek+negseek, (char **)NULL, 0);
+	      opts->seek = strtol(pp + 2+opts->relseek+opts->negseek, (char **)NULL, 0);
 	    }
 	  else
 	    {
@@ -561,11 +581,11 @@ main(int argc, char *argv[])
 		exit_with_usage();
 #ifdef TRY_SEEK
 	      if (argv[2][0] == '+')
-		relseek++;
-	      if (argv[2][relseek] == '-')
-		negseek++;
+		opts->relseek++;
+	      if (argv[2][opts->relseek] == '-')
+		opts->negseek++;
 #endif
-	      seekoff = strtol(argv[2] + relseek+negseek, (char **)NULL, 0);
+	      opts->seek = strtol(argv[2] + opts->relseek+opts->negseek, (char **)NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -573,12 +593,12 @@ main(int argc, char *argv[])
       else if (!STRNCMP(pp, "-l", 2))
 	{
 	  if (pp[2] && STRNCMP("en", pp + 2, 2))
-	    length = strtol(pp + 2, (char **)NULL, 0);
+	    opts->length = strtol(pp + 2, (char **)NULL, 0);
 	  else
 	    {
 	      if (!argv[2])
 		exit_with_usage();
-	      length = strtol(argv[2], (char **)NULL, 0);
+	      opts->length = strtol(argv[2], (char **)NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -598,38 +618,38 @@ main(int argc, char *argv[])
       argc--;
     }
 
-  if (!cols)
-    switch (hextype)
+  if (!opts->columns)
+    switch (opts->hextype)
       {
-      case HEX_POSTSCRIPT:	cols = 30; break;
-      case HEX_CINCLUDE:	cols = 12; break;
-      case HEX_BITS:		cols = 6; break;
+      case HEX_POSTSCRIPT:	opts->columns = 30; break;
+      case HEX_CINCLUDE:	opts->columns = 12; break;
+      case HEX_BITS:		opts->columns = 6; break;
       case HEX_NORMAL:
       case HEX_LITTLEENDIAN:
-      default:			cols = 16; break;
+      default:			opts->columns = 16; break;
       }
 
-  if (octspergrp < 0)
-    switch (hextype)
+  if (opts->octets_per_group < 0)
+    switch (opts->hextype)
       {
-      case HEX_BITS:		octspergrp = 1; break;
-      case HEX_NORMAL:		octspergrp = 2; break;
-      case HEX_LITTLEENDIAN:	octspergrp = 4; break;
+      case HEX_BITS:		opts->octets_per_group = 1; break;
+      case HEX_NORMAL:		opts->octets_per_group = 2; break;
+      case HEX_LITTLEENDIAN:	opts->octets_per_group = 4; break;
       case HEX_POSTSCRIPT:
       case HEX_CINCLUDE:
-      default:			octspergrp = 0; break;
+      default:			opts->octets_per_group = 0; break;
       }
 
-  if (cols < 1 || ((hextype == HEX_NORMAL || hextype == HEX_BITS || hextype == HEX_LITTLEENDIAN)
-							    && (cols > COLS)))
+  if (opts->columns < 1 || ((opts->hextype == HEX_NORMAL || opts->hextype == HEX_BITS || opts->hextype == HEX_LITTLEENDIAN)
+							    && (opts->columns > COLS)))
     {
       fprintf(stderr, "%s: invalid number of columns (max. %d).\n", pname, COLS);
       exit(1);
     }
 
-  if (octspergrp < 1 || octspergrp > cols)
-    octspergrp = cols;
-  else if (hextype == HEX_LITTLEENDIAN && (octspergrp & (octspergrp-1)))
+  if (opts->octets_per_group < 1 || opts->octets_per_group > opts->columns)
+    opts->octets_per_group = opts->columns;
+  else if (opts->hextype == HEX_LITTLEENDIAN && (opts->octets_per_group & (opts->octets_per_group-1)))
     {
       fprintf(stderr,
 	      "%s: number of octets per group must be a power of 2 with -e.\n",
@@ -641,10 +661,10 @@ main(int argc, char *argv[])
     exit_with_usage();
 
   if (argc == 1 || (argv[1][0] == '-' && !argv[1][1]))
-    BIN_ASSIGN(fp = stdin, !revert);
+    BIN_ASSIGN(fp = stdin, !opts->revert);
   else
     {
-      if ((fp = fopen(argv[1], BIN_READ(!revert))) == NULL)
+      if ((fp = fopen(argv[1], BIN_READ(!opts->revert))) == NULL)
 	{
 	  fprintf(stderr,"%s: ", pname);
 	  perror(argv[1]);
@@ -653,14 +673,14 @@ main(int argc, char *argv[])
     }
 
   if (argc < 3 || (argv[2][0] == '-' && !argv[2][1]))
-    BIN_ASSIGN(fpo = stdout, revert);
+    BIN_ASSIGN(fpo = stdout, opts->revert);
   else
     {
       int fd;
-      int mode = revert ? O_WRONLY : (O_TRUNC|O_WRONLY);
+      int mode = opts->revert ? O_WRONLY : (O_TRUNC|O_WRONLY);
 
-      if (((fd = OPEN(argv[2], mode | BIN_CREAT(revert), 0666)) < 0) ||
-	  (fpo = fdopen(fd, BIN_WRITE(revert))) == NULL)
+      if (((fd = OPEN(argv[2], mode | BIN_CREAT(opts->revert), 0666)) < 0) ||
+	  (fpo = fdopen(fd, BIN_WRITE(opts->revert))) == NULL)
 	{
 	  fprintf(stderr, "%s: ", pname);
 	  perror(argv[2]);
@@ -669,35 +689,35 @@ main(int argc, char *argv[])
       rewind(fpo);
     }
 
-  if (revert)
+  if (opts->revert)
     {
-      if (hextype && (hextype != HEX_POSTSCRIPT))
+      if (opts->hextype && (opts->hextype != HEX_POSTSCRIPT))
 	{
 	  fprintf(stderr, "%s: sorry, cannot revert this type of hexdump\n", pname);
 	  return -1;
 	}
-      return huntype(fp, fpo, stderr, cols, hextype,
-		negseek ? -seekoff : seekoff);
+      return huntype(fp, fpo, stderr, opts->columns, opts->hextype,
+		opts->negseek ? -opts->seek : opts->seek);
     }
 
-  if (seekoff || negseek || !relseek)
+  if (opts->seek || opts->negseek || !opts->relseek)
     {
 #ifdef TRY_SEEK
-      if (relseek)
-	e = fseek(fp, negseek ? -seekoff : seekoff, 1);
+      if (opts->relseek)
+	e = fseek(fp, opts->negseek ? -opts->seek : opts->seek, 1);
       else
-	e = fseek(fp, negseek ? -seekoff : seekoff, negseek ? 2 : 0);
-      if (e < 0 && negseek)
+	e = fseek(fp, opts->negseek ? -opts->seek : opts->seek, opts->negseek ? 2 : 0);
+      if (e < 0 && opts->negseek)
 	{
 	  fprintf(stderr, "%s: sorry cannot seek.\n", pname);
 	  return 4;
 	}
       if (e >= 0)
-	seekoff = ftell(fp);
+	opts->seek = ftell(fp);
       else
 #endif
 	{
-	  long s = seekoff;
+	  long s = opts->seek;
 
 	  while (s--)
 	    if (getc(fp) == EOF)
@@ -715,7 +735,7 @@ main(int argc, char *argv[])
 	}
     }
 
-  if (hextype == HEX_CINCLUDE)
+  if (opts->hextype == HEX_CINCLUDE)
     {
       if (fp != stdin)
 	{
@@ -730,10 +750,10 @@ main(int argc, char *argv[])
 
       p = 0;
       c = 0;
-      while ((length < 0 || p < length) && (c = getc(fp)) != EOF)
+      while ((opts->length < 0 || p < opts->length) && (c = getc(fp)) != EOF)
 	{
 	  if (fprintf(fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
-		(p % cols) ? ", " : &",\n  "[2*!p],  c) < 0)
+		(p % opts->columns) ? ", " : &",\n  "[2*!p],  c) < 0)
 	    die(3);
 	  p++;
 	}
@@ -763,11 +783,11 @@ main(int argc, char *argv[])
       return 0;
     }
 
-  if (hextype == HEX_POSTSCRIPT)
+  if (opts->hextype == HEX_POSTSCRIPT)
     {
-      p = cols;
+      p = opts->columns;
       e = 0;
-      while ((length < 0 || n < length) && (e = getc(fp)) != EOF)
+      while ((opts->length < 0 || n < opts->length) && (e = getc(fp)) != EOF)
 	{
 	  if (putc(hexx[(e >> 4) & 0xf], fpo) == EOF
 		  || putc(hexx[e & 0xf], fpo) == EOF)
@@ -777,12 +797,12 @@ main(int argc, char *argv[])
 	    {
 	      if (putc('\n', fpo) == EOF)
 		die(3);
-	      p = cols;
+	      p = opts->columns;
 	    }
 	}
       if (e == EOF && ferror(fp))
 	die(2);
-      if (p < cols)
+      if (p < opts->columns)
 	if (putc('\n', fpo) == EOF)
 	  die(3);
       if (fclose(fp))
@@ -792,45 +812,45 @@ main(int argc, char *argv[])
       return 0;
     }
 
-  /* hextype: HEX_NORMAL or HEX_BITS or HEX_LITTLEENDIAN */
+  /* opts->hextype: HEX_NORMAL or HEX_BITS or HEX_LITTLEENDIAN */
 
-  if (hextype != HEX_BITS)
-    grplen = octspergrp + octspergrp + 1;	/* chars per octet group */
-  else	/* hextype == HEX_BITS */
-    grplen = 8 * octspergrp + 1;
+  if (opts->hextype != HEX_BITS)
+    opts->group_length = opts->octets_per_group + opts->octets_per_group + 1;	/* chars per octet group */
+  else	/* opts->hextype == HEX_BITS */
+    opts->group_length = 8 * opts->octets_per_group + 1;
 
   e = 0;
-  while ((length < 0 || n < length) && (e = getc(fp)) != EOF)
+  while ((opts->length < 0 || n < opts->length) && (e = getc(fp)) != EOF)
     {
       if (p == 0)
 	{
 	  sprintf(l, "%08lx:",
-	    ((unsigned long)(n + seekoff + displayoff)) & 0xffffffff);
+	    ((unsigned long)(n + opts->seek + opts->off)) & 0xffffffff);
 	  for (c = 9; c < LLEN; l[c++] = ' ');
 	}
-      if (hextype == HEX_NORMAL)
+      if (opts->hextype == HEX_NORMAL)
 	{
-	  l[c = (10 + (grplen * p) / octspergrp)] = hexx[(e >> 4) & 0xf];
+	  l[c = (10 + (opts->group_length * p) / opts->octets_per_group)] = hexx[(e >> 4) & 0xf];
 	  l[++c]				  = hexx[ e       & 0xf];
 	}
-      else if (hextype == HEX_LITTLEENDIAN)
+      else if (opts->hextype == HEX_LITTLEENDIAN)
 	{
-	  int x = p ^ (octspergrp-1);
-	  l[c = (10 + (grplen * x) / octspergrp)] = hexx[(e >> 4) & 0xf];
+	  int x = p ^ (opts->octets_per_group-1);
+	  l[c = (10 + (opts->group_length * x) / opts->octets_per_group)] = hexx[(e >> 4) & 0xf];
 	  l[++c]				  = hexx[ e       & 0xf];
 	}
-      else /* hextype == HEX_BITS */
+      else /* opts->hextype == HEX_BITS */
 	{
 	  int i;
 
-	  c = (10 + (grplen * p) / octspergrp) - 1;
+	  c = (10 + (opts->group_length * p) / opts->octets_per_group) - 1;
 	  for (i = 7; i >= 0; i--)
 	    l[++c] = (e & (1 << i)) ? '1' : '0';
 	}
-      if (ebcdic)
+      if (opts->ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
-      l[12 + (grplen * cols - 1)/octspergrp + p] =
+      l[12 + (opts->group_length * opts->columns - 1)/opts->octets_per_group + p] =
 #ifdef __MVS__
 	  (e >= 64)
 #else
@@ -838,13 +858,13 @@ main(int argc, char *argv[])
 #endif
 	  ? e : '.';
       if (e)
-	nonzero++;
+	opts->nonzero++;
       n++;
-      if (++p == cols)
+      if (++p == opts->columns)
 	{
-	  l[c = (12 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
-	  xxdline(fpo, l, autoskip ? nonzero : 1);
-	  nonzero = 0;
+	  l[c = (12 + (opts->group_length * opts->columns - 1)/opts->octets_per_group + p)] = '\n'; l[++c] = '\0';
+	  xxdline(fpo, l, opts->autoskip ? opts->nonzero : 1);
+	  opts->nonzero = 0;
 	  p = 0;
 	}
     }
@@ -852,10 +872,10 @@ main(int argc, char *argv[])
     die(2);
   if (p)
     {
-      l[c = (12 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
+      l[c = (12 + (opts->group_length * opts->columns - 1)/opts->octets_per_group + p)] = '\n'; l[++c] = '\0';
       xxdline(fpo, l, 1);
     }
-  else if (autoskip)
+  else if (opts->autoskip)
     xxdline(fpo, l, -1);	/* last chance to flush out suppressed lines */
 
   if (fclose(fp))
