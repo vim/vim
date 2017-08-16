@@ -4948,6 +4948,8 @@ xy2win(int x UNUSED, int y UNUSED)
     if (row < 0 || col < 0)		/* before first window */
 	return NULL;
     wp = mouse_find_win(&row, &col);
+    if (wp == NULL)
+	return NULL;
 # ifdef FEAT_MOUSESHAPE
     if (State == HITRETURN || State == ASKMORE)
     {

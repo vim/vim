@@ -9418,7 +9418,7 @@ ins_mousescroll(int dir)
 {
     pos_T	tpos;
 # if defined(FEAT_WINDOWS)
-    win_T	*old_curwin = curwin;
+    win_T	*old_curwin = curwin, *wp;
 # endif
 # ifdef FEAT_INS_EXPAND
     int		did_scroll = FALSE;
@@ -9435,7 +9435,10 @@ ins_mousescroll(int dir)
 	col = mouse_col;
 
 	/* find the window at the pointer coordinates */
-	curwin = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col);
+	if (wp == NULL)
+	    return;
+	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
     if (curwin == old_curwin)
