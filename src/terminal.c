@@ -38,6 +38,7 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
+ * - make [range]terminal pipe [range] lines to the terminal
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -2768,11 +2769,15 @@ dyn_winpty_init(void)
     /* No need to initialize twice. */
     if (hWinPtyDLL)
 	return 1;
-    /* Load winpty.dll */
-    hWinPtyDLL = vimLoadLib(WINPTY_DLL);
+    /* Load winpty.dll, prefer using the 'winptydll' option, fall back to just
+     * winpty.dll. */
+    if (*p_winptydll != NUL)
+	hWinPtyDLL = vimLoadLib((char *)p_winptydll);
+    if (!hWinPtyDLL)
+	hWinPtyDLL = vimLoadLib(WINPTY_DLL);
     if (!hWinPtyDLL)
     {
-	EMSG2(_(e_loadlib), WINPTY_DLL);
+	EMSG2(_(e_loadlib), *p_winptydll != NUL ? p_winptydll : WINPTY_DLL);
 	return 0;
     }
     for (i = 0; winpty_entry[i].name != NULL

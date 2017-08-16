@@ -8831,6 +8831,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	large number, it will cause errors when opening more than a few
 	windows.  A value of 0 to 12 is reasonable.
 
+						*'winptydll'*
+'winptydll'		string	(default "winpty32.dll" or "winpty64.dll")
+			global
+			{not in Vi}
+			{only available when compiled with the |terminal|
+			feature on MS-Windows}
+	Specifies the name of the winpty shared library, used for the
+	|:terminal| command. The default depends on whether was build as a
+	32-bit or 64-bit executable.  If not found, "win32pty.dll" is tried as
+	a fallback.
+	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
 						*'winwidth'* *'wiw'* *E592*
 'winwidth' 'wiw'	number	(default 20)
 			global
