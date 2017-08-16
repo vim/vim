@@ -966,6 +966,9 @@ EXTERN long	p_wmh;		/* 'winminheight' */
 EXTERN long	p_wmw;		/* 'winminwidth' */
 EXTERN long	p_wiw;		/* 'winwidth' */
 #endif
+#if defined(WIN3264) && defined(TERMINAL)
+EXTERN char_u	*p_winptydll;	/* 'winptydll' */
+#endif
 EXTERN int	p_ws;		/* 'wrapscan' */
 EXTERN int	p_write;	/* 'write' */
 EXTERN int	p_wa;		/* 'writeany' */

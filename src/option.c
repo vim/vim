@@ -3098,6 +3098,20 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)1L, (char_u *)0L} SCRIPTID_INIT},
+    {"winptydll", NULL,	    P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
+#if defined(WIN3264) && defined(TERMINAL)
+			    (char_u *)&p_winptydll, PV_NONE, {
+# ifdef _WIN64
+			    (char_u *)"winpty64.dll",
+# else
+			    (char_u *)"winpty32.dll",
+# endif
+				(char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCRIPTID_INIT},
     {"winwidth",   "wiw",   P_NUM|P_VI_DEF,
 #ifdef FEAT_WINDOWS
 			    (char_u *)&p_wiw, PV_NONE,
