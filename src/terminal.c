@@ -2769,7 +2769,12 @@ dyn_winpty_init(void)
     if (hWinPtyDLL)
 	return 1;
     /* Load winpty.dll */
-    hWinPtyDLL = vimLoadLib(WINPTY_DLL);
+#ifdef _WIN64
+    hWinPtyDLL = vimLoadLib("winpty64.dll");
+#else
+    hWinPtyDLL = vimLoadLib("winpty32.dll");
+#endif
+    if (!hWinPtyDLL) hWinPtyDLL = vimLoadLib(WINPTY_DLL);
     if (!hWinPtyDLL)
     {
 	EMSG2(_(e_loadlib), WINPTY_DLL);
