@@ -1308,6 +1308,12 @@ normal_end:
     }
 #endif
 
+#ifdef FEAT_TERMINAL
+    /* don't go to Insert mode from Terminal-Job mode */
+    if (term_use_loop())
+	restart_edit = 0;
+#endif
+
     /*
      * May restart edit(), if we got here with CTRL-O in Insert mode (but not
      * if still inside a mapping that started in Visual mode).
