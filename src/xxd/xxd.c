@@ -468,15 +468,22 @@ typedef struct {
   int group_length;
   int revert;
   int nonzero;
+  FILE *fp;
+  FILE *fpo;
+  char *input_filename;
 } xxd_opts_t;
+
+
+typedef enum {
+    XXD_OK,
+    XXD_ERROR
+} xxd_rc;
+
+xxd_rc xxd(xxd_opts_t *opts);
 
   int
 main(int argc, char *argv[])
 {
-  FILE *fp, *fpo;
-  int c, e, p = 0;
-  long n = 0;
-  static char l[LLEN+1];  /* static because it may be too big for stack */
   char *pp;
 
   xxd_opts_t o;
@@ -661,32 +668,36 @@ main(int argc, char *argv[])
     exit_with_usage();
 
   if (argc == 1 || (argv[1][0] == '-' && !argv[1][1]))
-    BIN_ASSIGN(fp = stdin, !opts->revert);
+    {
+      BIN_ASSIGN(opts->fp = stdin, !opts->revert);
+      opts->input_filename = "stdin";
+    }
   else
     {
-      if ((fp = fopen(argv[1], BIN_READ(!opts->revert))) == NULL)
+      opts->input_filename = argv[1];
+      if ((opts->fp = fopen(opts->input_filename, BIN_READ(!opts->revert))) == NULL)
 	{
 	  fprintf(stderr,"%s: ", pname);
-	  perror(argv[1]);
+	  perror(opts->input_filename);
 	  return 2;
 	}
     }
 
   if (argc < 3 || (argv[2][0] == '-' && !argv[2][1]))
-    BIN_ASSIGN(fpo = stdout, opts->revert);
+    BIN_ASSIGN(opts->fpo = stdout, opts->revert);
   else
     {
       int fd;
       int mode = opts->revert ? O_WRONLY : (O_TRUNC|O_WRONLY);
 
       if (((fd = OPEN(argv[2], mode | BIN_CREAT(opts->revert), 0666)) < 0) ||
-	  (fpo = fdopen(fd, BIN_WRITE(opts->revert))) == NULL)
+	  (opts->fpo = fdopen(fd, BIN_WRITE(opts->revert))) == NULL)
 	{
 	  fprintf(stderr, "%s: ", pname);
 	  perror(argv[2]);
 	  return 3;
 	}
-      rewind(fpo);
+      rewind(opts->fpo);
     }
 
   if (opts->revert)
@@ -696,33 +707,41 @@ main(int argc, char *argv[])
 	  fprintf(stderr, "%s: sorry, cannot revert this type of hexdump\n", pname);
 	  return -1;
 	}
-      return huntype(fp, fpo, stderr, opts->columns, opts->hextype,
+      return huntype(opts->fp, opts->fpo, stderr, opts->columns, opts->hextype,
 		opts->negseek ? -opts->seek : opts->seek);
     }
+
+  xxd(opts);
+}
+
+xxd_rc xxd(xxd_opts_t *opts) {
+  int c, e, p = 0;
+  long n = 0;
+  static char l[LLEN+1];  /* static because it may be too big for stack */
 
   if (opts->seek || opts->negseek || !opts->relseek)
     {
 #ifdef TRY_SEEK
       if (opts->relseek)
-	e = fseek(fp, opts->negseek ? -opts->seek : opts->seek, 1);
+	e = fseek(opts->fp, opts->negseek ? -opts->seek : opts->seek, 1);
       else
-	e = fseek(fp, opts->negseek ? -opts->seek : opts->seek, opts->negseek ? 2 : 0);
+	e = fseek(opts->fp, opts->negseek ? -opts->seek : opts->seek, opts->negseek ? 2 : 0);
       if (e < 0 && opts->negseek)
 	{
 	  fprintf(stderr, "%s: sorry cannot seek.\n", pname);
 	  return 4;
 	}
       if (e >= 0)
-	opts->seek = ftell(fp);
+	opts->seek = ftell(opts->fp);
       else
 #endif
 	{
 	  long s = opts->seek;
 
 	  while (s--)
-	    if (getc(fp) == EOF)
+	    if (getc(opts->fp) == EOF)
 	    {
-	      if (ferror(fp))
+	      if (ferror(opts->fp))
 		{
 		  die(2);
 		}
@@ -737,48 +756,48 @@ main(int argc, char *argv[])
 
   if (opts->hextype == HEX_CINCLUDE)
     {
-      if (fp != stdin)
+      if (opts->fp != stdin)
 	{
-	  if (fprintf(fpo, "unsigned char %s", isdigit((int)argv[1][0]) ? "__" : "") < 0)
+	  if (fprintf(opts->fpo, "unsigned char %s", isdigit((int)opts->input_filename[0]) ? "__" : "") < 0)
 	    die(3);
-	  for (e = 0; (c = argv[1][e]) != 0; e++)
-	    if (putc(isalnum(c) ? c : '_', fpo) == EOF)
+	  for (e = 0; (c = opts->input_filename[e]) != 0; e++)
+	    if (putc(isalnum(c) ? c : '_', opts->fpo) == EOF)
 	      die(3);
-	  if (fputs("[] = {\n", fpo) == EOF)
+	  if (fputs("[] = {\n", opts->fpo) == EOF)
 	    die(3);
 	}
 
       p = 0;
       c = 0;
-      while ((opts->length < 0 || p < opts->length) && (c = getc(fp)) != EOF)
+      while ((opts->length < 0 || p < opts->length) && (c = getc(opts->fp)) != EOF)
 	{
-	  if (fprintf(fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
+	  if (fprintf(opts->fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
 		(p % opts->columns) ? ", " : &",\n  "[2*!p],  c) < 0)
 	    die(3);
 	  p++;
 	}
-      if (c == EOF && ferror(fp))
+      if (c == EOF && ferror(opts->fp))
 	die(2);
 
-      if (p && fputs("\n", fpo) == EOF)
+      if (p && fputs("\n", opts->fpo) == EOF)
 	die(3);
-      if (fputs(&"};\n"[3 * (fp == stdin)], fpo) == EOF)
+      if (fputs(&"};\n"[3 * (opts->fp == stdin)], opts->fpo) == EOF)
 	die(3);
 
-      if (fp != stdin)
+      if (opts->fp != stdin)
 	{
-	  if (fprintf(fpo, "unsigned int %s", isdigit((int)argv[1][0]) ? "__" : "") < 0)
+	  if (fprintf(opts->fpo, "unsigned int %s", isdigit((int)opts->input_filename[0]) ? "__" : "") < 0)
 	    die(3);
-	  for (e = 0; (c = argv[1][e]) != 0; e++)
-	    if (putc(isalnum(c) ? c : '_', fpo) == EOF)
+	  for (e = 0; (c = opts->input_filename[e]) != 0; e++)
+	    if (putc(isalnum(c) ? c : '_', opts->fpo) == EOF)
 	      die(3);
-	  if (fprintf(fpo, "_len = %d;\n", p) < 0)
+	  if (fprintf(opts->fpo, "_len = %d;\n", p) < 0)
 	    die(3);
 	}
 
-      if (fclose(fp))
+      if (fclose(opts->fp))
 	die(2);
-      if (fclose(fpo))
+      if (fclose(opts->fpo))
 	die(3);
       return 0;
     }
@@ -787,27 +806,27 @@ main(int argc, char *argv[])
     {
       p = opts->columns;
       e = 0;
-      while ((opts->length < 0 || n < opts->length) && (e = getc(fp)) != EOF)
+      while ((opts->length < 0 || n < opts->length) && (e = getc(opts->fp)) != EOF)
 	{
-	  if (putc(hexx[(e >> 4) & 0xf], fpo) == EOF
-		  || putc(hexx[e & 0xf], fpo) == EOF)
+	  if (putc(hexx[(e >> 4) & 0xf], opts->fpo) == EOF
+		  || putc(hexx[e & 0xf], opts->fpo) == EOF)
 	    die(3);
 	  n++;
 	  if (!--p)
 	    {
-	      if (putc('\n', fpo) == EOF)
+	      if (putc('\n', opts->fpo) == EOF)
 		die(3);
 	      p = opts->columns;
 	    }
 	}
-      if (e == EOF && ferror(fp))
+      if (e == EOF && ferror(opts->fp))
 	die(2);
       if (p < opts->columns)
-	if (putc('\n', fpo) == EOF)
+	if (putc('\n', opts->fpo) == EOF)
 	  die(3);
-      if (fclose(fp))
+      if (fclose(opts->fp))
 	die(2);
-      if (fclose(fpo))
+      if (fclose(opts->fpo))
 	die(3);
       return 0;
     }
@@ -820,7 +839,7 @@ main(int argc, char *argv[])
     opts->group_length = 8 * opts->octets_per_group + 1;
 
   e = 0;
-  while ((opts->length < 0 || n < opts->length) && (e = getc(fp)) != EOF)
+  while ((opts->length < 0 || n < opts->length) && (e = getc(opts->fp)) != EOF)
     {
       if (p == 0)
 	{
@@ -863,24 +882,24 @@ main(int argc, char *argv[])
       if (++p == opts->columns)
 	{
 	  l[c = (12 + (opts->group_length * opts->columns - 1)/opts->octets_per_group + p)] = '\n'; l[++c] = '\0';
-	  xxdline(fpo, l, opts->autoskip ? opts->nonzero : 1);
+	  xxdline(opts->fpo, l, opts->autoskip ? opts->nonzero : 1);
 	  opts->nonzero = 0;
 	  p = 0;
 	}
     }
-  if (e == EOF && ferror(fp))
+  if (e == EOF && ferror(opts->fp))
     die(2);
   if (p)
     {
       l[c = (12 + (opts->group_length * opts->columns - 1)/opts->octets_per_group + p)] = '\n'; l[++c] = '\0';
-      xxdline(fpo, l, 1);
+      xxdline(opts->fpo, l, 1);
     }
   else if (opts->autoskip)
-    xxdline(fpo, l, -1);	/* last chance to flush out suppressed lines */
+    xxdline(opts->fpo, l, -1);	/* last chance to flush out suppressed lines */
 
-  if (fclose(fp))
+  if (fclose(opts->fp))
     die(2);
-  if (fclose(fpo))
+  if (fclose(opts->fpo))
     die(3);
   return 0;
 }
