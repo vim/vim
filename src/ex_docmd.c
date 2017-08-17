@@ -7468,7 +7468,7 @@ ex_win_close(
 	else
 # endif
 	{
-	    EMSG(_(e_nowrtmsg));
+	    no_write_message();
 	    return;
 	}
     }

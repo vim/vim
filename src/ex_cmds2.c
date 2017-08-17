@@ -1934,9 +1934,9 @@ check_changed(buf_T *buf, int flags)
 	}
 #endif
 	if (flags & CCGD_EXCMD)
-	    EMSG(_(e_nowrtmsg));
+	    no_write_message();
 	else
-	    EMSG(_(e_nowrtmsg_nobang));
+	    no_write_message_nobang();
 	return TRUE;
     }
     return FALSE;

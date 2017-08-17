@@ -2327,7 +2327,7 @@ win_found:
 	     * set b_p_ro flag). */
 	    if (!can_abandon(curbuf, forceit))
 	    {
-		EMSG(_(e_nowrtmsg));
+		no_write_message();
 		ok = FALSE;
 	    }
 	    else
