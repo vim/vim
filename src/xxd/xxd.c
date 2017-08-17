@@ -74,6 +74,8 @@
 # define CYGWIN
 #endif
 
+#define STR(X) #X
+
 #include <stdio.h>
 #include "xxd.h"
 #ifdef VAXC
@@ -140,11 +142,10 @@ extern void perror __P((char *));
 extern long int strtol();
 extern long int ftell();
 
-char version[] = "xxd V1.10 27oct98 by Juergen Weigert";
 #ifdef WIN32
-char osver[] = " (Win32)";
+char version[] = "xxd V1.10 27oct98 by Juergen Weigert (Win32)";
 #else
-char osver[] = "";
+char version[] = "xxd V1.10 27oct98 by Juergen Weigert";
 #endif
 
 #if defined(WIN32)
@@ -199,10 +200,9 @@ char osver[] = "";
 
 /* Let's collect some prototypes */
 /* CodeWarrior is really picky about missing prototypes */
-static void exit_with_usage __P((void));
-static void die __P((int));
-static int huntype __P((xxd_ctx *, FILE *, FILE *, int, int, long));
-static void xxdline __P((FILE *, char *, int));
+static void exit_with_usage __P((char *));
+static xxd_rc huntype __P((xxd_ctx *, FILE *, FILE *, int, int, long));
+static xxd_rc xxdline __P((xxd_ctx *, FILE *, char *, int));
 
 #define TRY_SEEK	/* attempt to use lseek, or skip forward by reading */
 #define COLS 256	/* change here, if you ever need more columns */
@@ -217,10 +217,8 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 #define HEX_BITS 3		/* not hex a dump, but bits: 01111001 */
 #define HEX_LITTLEENDIAN 4
 
-static char *pname;
-
   static void
-exit_with_usage(void)
+exit_with_usage(char *pname)
 {
   fprintf(stderr, "Usage:\n       %s [options] [infile [outfile]]\n", pname);
   fprintf(stderr, "    or\n       %s -r [-s [-]offset] [-c cols] [-ps] [infile [outfile]]\n", pname);
@@ -245,16 +243,8 @@ exit_with_usage(void)
 	  "", "");
 #endif
   fprintf(stderr, "    -u          use upper case hex letters.\n");
-  fprintf(stderr, "    -v          show version: \"%s%s\".\n", version, osver);
+  fprintf(stderr, "    -v          show version: \"%s\".\n", version);
   exit(1);
-}
-
-  static void
-die(int ret)
-{
-  fprintf(stderr, "%s: ", pname);
-  perror(NULL);
-  exit(ret);
 }
 
 static xxd_rc xxd_strerror(xxd_ctx *ctx, xxd_rc exit_code) {
@@ -270,7 +260,7 @@ static xxd_rc xxd_strerror(xxd_ctx *ctx, xxd_rc exit_code) {
  *
  * The name is historic and came from 'undo type opt h'.
  */
-  static int
+  static xxd_rc
 huntype(
   xxd_ctx *ctx,
   FILE *fpi,
@@ -332,7 +322,7 @@ huntype(
       if (base_off + want_off != have_off)
 	{
 	  if (fflush(fpo) != 0)
-	    die(3);
+	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
 #ifdef TRY_SEEK
 	  c = fseek(fpo, base_off + want_off - have_off, 1);
 	  if (c >= 0)
@@ -340,8 +330,9 @@ huntype(
 #endif
 	  if (base_off + want_off < have_off)
 	    {
-	      ctx->error = "sorry, cannot seek backwards.\n";
-              return XXD_HUNTYPE_ERROR;
+	      ctx->error = "sorry, cannot seek backwards";
+              ctx->exit_code = XXD_HUNTYPE_ERROR;
+              return XXD_ERROR;
 	    }
 	  for (; have_off < base_off + want_off; have_off++)
 	    if (putc(0, fpo) == EOF)
@@ -387,7 +378,7 @@ huntype(
     return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
   if (fclose(fpi) != 0)
     return xxd_strerror(ctx, XXD_INPUT_ERROR);
-  return 0;
+  return XXD_OK;
 }
 
 /*
@@ -402,8 +393,8 @@ huntype(
  *
  * If nz is always positive, lines are never suppressed.
  */
-  static void
-xxdline(FILE *fp, char *l, int nz)
+  static xxd_rc
+xxdline(xxd_ctx *ctx, FILE *fp, char *l, int nz)
 {
   static char z[LLEN+1];
   static int zero_seen = 0;
@@ -419,17 +410,18 @@ xxdline(FILE *fp, char *l, int nz)
 	    zero_seen--;
 	  if (zero_seen == 2)
 	    if (fputs(z, fp) == EOF)
-	      die(3);
+	      return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
 	  if (zero_seen > 2)
 	    if (fputs("*\n", fp) == EOF)
-	      die(3);
+              return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
 	}
       if (nz >= 0 || zero_seen > 0)
 	if (fputs(l, fp) == EOF)
-	  die(3);
+          return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
       if (nz)
 	zero_seen = 0;
     }
+  return XXD_OK;
 }
 
 /* This is an EBCDIC to ASCII conversion table */
@@ -462,37 +454,17 @@ static unsigned char etoa64[] =
     0070,0071,0372,0373,0374,0375,0376,0377
 };
 
-  int
-main(int argc, char *argv[])
-{
-  char *pp;
-
-  xxd_ctx o;
-  xxd_ctx *ctx = &o;
+void xxd_init(xxd_ctx *ctx) {
   memset(ctx, 0, sizeof(*ctx));
   ctx->hextype = HEX_NORMAL;
   ctx->octets_per_group = -1;      /* number of octets grouped in output */
   ctx->relseek = 1;
   ctx->length = -1;
+  ctx->exit_code = 1;
+}
 
-#ifdef AMIGA
-  /* This program doesn't work when started from the Workbench */
-  if (argc == 0)
-    exit(1);
-#endif
-
-  pname = argv[0];
-  for (pp = pname; *pp; )
-    if (*pp++ == PATH_SEP)
-      pname = pp;
-#ifdef FILE_SEP
-  for (pp = pname; *pp; pp++)
-    if (*pp == FILE_SEP)
-      {
-	*pp = '\0';
-	break;
-      }
-#endif
+xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv) {
+  char *pp;
 
   while (argc >= 2)
     {
@@ -507,8 +479,8 @@ main(int argc, char *argv[])
       else if (!STRNCMP(pp, "-E", 2)) ctx->ebcdic++;
       else if (!STRNCMP(pp, "-v", 2))
 	{
-	  fprintf(stderr, "%s%s\n", version, osver);
-	  exit(0);
+          ctx->error = version;
+          return XXD_ERROR;
 	}
       else if (!STRNCMP(pp, "-c", 2))
 	{
@@ -517,7 +489,7 @@ main(int argc, char *argv[])
 	  else
 	    {
 	      if (!argv[2])
-		exit_with_usage();
+                return XXD_USAGE_ERROR;
 	      ctx->columns = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
@@ -530,7 +502,7 @@ main(int argc, char *argv[])
 	  else
 	    {
 	      if (!argv[2])
-		exit_with_usage();
+		return XXD_USAGE_ERROR;
 	      ctx->octets_per_group = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
@@ -543,7 +515,7 @@ main(int argc, char *argv[])
 	  else
 	    {
 	      if (!argv[2])
-		exit_with_usage();
+		return XXD_USAGE_ERROR;
 	      ctx->off = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
@@ -566,7 +538,7 @@ main(int argc, char *argv[])
 	  else
 	    {
 	      if (!argv[2])
-		exit_with_usage();
+		return XXD_USAGE_ERROR;
 #ifdef TRY_SEEK
 	      if (argv[2][0] == '+')
 		ctx->relseek++;
@@ -585,7 +557,7 @@ main(int argc, char *argv[])
 	  else
 	    {
 	      if (!argv[2])
-		exit_with_usage();
+		return XXD_USAGE_ERROR;
 	      ctx->length = strtol(argv[2], (char **)NULL, 0);
 	      argv++;
 	      argc--;
@@ -598,7 +570,7 @@ main(int argc, char *argv[])
 	  break;
 	}
       else if (pp[0] == '-' && pp[1])	/* unknown option */
-	exit_with_usage();
+	return XXD_USAGE_ERROR;
       else
 	break;				/* not an option */
 
@@ -606,6 +578,10 @@ main(int argc, char *argv[])
       argc--;
     }
 
+  return XXD_OK;
+}
+
+xxd_rc xxd_validate(xxd_ctx *ctx) {
   if (!ctx->columns)
     switch (ctx->hextype)
       {
@@ -631,34 +607,78 @@ main(int argc, char *argv[])
   if (ctx->columns < 1 || ((ctx->hextype == HEX_NORMAL || ctx->hextype == HEX_BITS || ctx->hextype == HEX_LITTLEENDIAN)
 							    && (ctx->columns > COLS)))
     {
-      fprintf(stderr, "%s: invalid number of columns (max. %d).\n", pname, COLS);
-      exit(1);
+      ctx->error = "invalid number of columns (max. " STR(COLS) ")";
+      return XXD_ERROR;
     }
 
   if (ctx->octets_per_group < 1 || ctx->octets_per_group > ctx->columns)
     ctx->octets_per_group = ctx->columns;
   else if (ctx->hextype == HEX_LITTLEENDIAN && (ctx->octets_per_group & (ctx->octets_per_group-1)))
     {
-      fprintf(stderr,
-	      "%s: number of octets per group must be a power of 2 with -e.\n",
-	      pname);
-      exit(1);
+      ctx->error = "number of octets per group must be a power of 2 with -e";
+      return XXD_ERROR;
     }
+}
+
+static char *pname(char **argv) {
+  char *pname, *pp;
+
+  pname = argv[0];
+  for (pp = pname; *pp; )
+    if (*pp++ == PATH_SEP)
+      pname = pp;
+#ifdef FILE_SEP
+  for (pp = pname; *pp; pp++)
+    if (*pp == FILE_SEP)
+      {
+	*pp = '\0';
+	break;
+      }
+#endif
+
+  return pname;
+}
+
+static int xxd_handle_error(xxd_ctx *ctx, char **argv, xxd_rc rc) {
+  if (rc == XXD_USAGE_ERROR) {
+    exit_with_usage(pname(argv));
+  } else if (rc != XXD_OK) {
+    fprintf(stderr, "%s: %s\n", pname(argv), ctx->error);
+    exit(ctx->exit_code);
+  }
+  return EXIT_SUCCESS;
+}
+
+  int
+main(int argc, char *argv[])
+{
+  xxd_rc rc;
+  xxd_ctx o;
+  xxd_ctx *ctx = &o;
+
+#ifdef AMIGA
+  /* This program doesn't work when started from the Workbench */
+  if (argc == 0)
+    exit(1);
+#endif
+
+  xxd_init(ctx);
+
+  xxd_handle_error(ctx, argv, xxd_parse_cmd_line(ctx, argc, argv));
+
+  xxd_handle_error(ctx, argv, xxd_validate(ctx));
 
   if (argc > 3)
-    exit_with_usage();
+    exit_with_usage(pname(argv));
 
   if (argc == 1 || (argv[1][0] == '-' && !argv[1][1]))
-    {
-      BIN_ASSIGN(ctx->fp = stdin, !ctx->revert);
-      ctx->input_filename = "stdin";
-    }
+    BIN_ASSIGN(ctx->fp = stdin, !ctx->revert);
   else
     {
       ctx->input_filename = argv[1];
       if ((ctx->fp = fopen(ctx->input_filename, BIN_READ(!ctx->revert))) == NULL)
 	{
-	  fprintf(stderr,"%s: ", pname);
+	  fprintf(stderr,"%s: ", pname(argv));
 	  perror(ctx->input_filename);
 	  return 2;
 	}
@@ -674,17 +694,18 @@ main(int argc, char *argv[])
       if (((fd = OPEN(argv[2], mode | BIN_CREAT(ctx->revert), 0666)) < 0) ||
 	  (ctx->fpo = fdopen(fd, BIN_WRITE(ctx->revert))) == NULL)
 	{
-	  fprintf(stderr, "%s: ", pname);
+	  fprintf(stderr, "%s: ", pname(argv));
 	  perror(argv[2]);
 	  return 3;
 	}
       rewind(ctx->fpo);
     }
 
-  xxd(ctx);
+  return xxd_handle_error(ctx, argv, xxd(ctx));
 }
 
 xxd_rc xxd(xxd_ctx *ctx) {
+  xxd_rc rc;
   int c, e, p = 0;
   long n = 0;
   static char l[LLEN+1];  /* static because it may be too big for stack */
@@ -693,7 +714,7 @@ xxd_rc xxd(xxd_ctx *ctx) {
     {
       if (ctx->hextype && (ctx->hextype != HEX_POSTSCRIPT))
 	{
-	  ctx->error = "sorry, cannot revert this type of hexdump\n";
+	  ctx->error = "sorry, cannot revert this type of hexdump";
 	  return XXD_ERROR;
 	}
       return huntype(ctx, ctx->fp, ctx->fpo, ctx->columns, ctx->hextype,
@@ -709,7 +730,7 @@ xxd_rc xxd(xxd_ctx *ctx) {
 	e = fseek(ctx->fp, ctx->negseek ? -ctx->seek : ctx->seek, ctx->negseek ? 2 : 0);
       if (e < 0 && ctx->negseek)
 	{
-	  ctx->error = "sorry cannot seek.\n";
+	  ctx->error = "sorry cannot seek";
 	  return XXD_ERROR;
 	}
       if (e >= 0)
@@ -728,7 +749,7 @@ xxd_rc xxd(xxd_ctx *ctx) {
 		}
 	      else
 		{
-		  ctx->error = "sorry cannot seek.\n";
+		  ctx->error = "sorry cannot seek";
 		  return XXD_ERROR;
 		}
 	    }
@@ -863,7 +884,10 @@ xxd_rc xxd(xxd_ctx *ctx) {
       if (++p == ctx->columns)
 	{
 	  l[c = (12 + (ctx->group_length * ctx->columns - 1)/ctx->octets_per_group + p)] = '\n'; l[++c] = '\0';
-	  xxdline(ctx->fpo, l, ctx->autoskip ? ctx->nonzero : 1);
+	  rc = xxdline(ctx, ctx->fpo, l, ctx->autoskip ? ctx->nonzero : 1);
+          if (rc != XXD_OK) {
+            return rc;
+          }
 	  ctx->nonzero = 0;
 	  p = 0;
 	}
@@ -876,10 +900,16 @@ xxd_rc xxd(xxd_ctx *ctx) {
   if (p)
     {
       l[c = (12 + (ctx->group_length * ctx->columns - 1)/ctx->octets_per_group + p)] = '\n'; l[++c] = '\0';
-      xxdline(ctx->fpo, l, 1);
+      rc = xxdline(ctx, ctx->fpo, l, 1);
+      if (rc != XXD_OK) {
+        return rc;
+      }
     }
   else if (ctx->autoskip)
-    xxdline(ctx->fpo, l, -1);	/* last chance to flush out suppressed lines */
+    rc = xxdline(ctx, ctx->fpo, l, -1);	/* last chance to flush out suppressed lines */
+    if (rc != XXD_OK) {
+      return rc;
+    }
 
   if (fclose(ctx->fp))
     return xxd_strerror(ctx, XXD_INPUT_ERROR);

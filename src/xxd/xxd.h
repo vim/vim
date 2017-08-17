@@ -24,10 +24,11 @@ typedef enum {
   XXD_ERROR,
   XXD_INPUT_ERROR,
   XXD_OUTPUT_ERROR,
-  XXD_HUNTYPE_ERROR
+  XXD_HUNTYPE_ERROR,
+  XXD_USAGE_ERROR
 } xxd_rc;
 
-xxd_rc xxd_init(xxd_ctx *ctx);
+void xxd_init(xxd_ctx *ctx);
 xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv);
 xxd_rc xxd_validate(xxd_ctx *ctx);
 xxd_rc xxd(xxd_ctx *ctx);
