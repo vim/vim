@@ -34,4 +34,5 @@ void f_term_scrape(typval_T *argvars, typval_T *rettv);
 void f_term_sendkeys(typval_T *argvars, typval_T *rettv);
 void f_term_start(typval_T *argvars, typval_T *rettv);
 void f_term_wait(typval_T *argvars, typval_T *rettv);
+int terminal_enabled(void);
 /* vim: set ft=c : */

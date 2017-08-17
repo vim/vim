@@ -2709,11 +2709,13 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
     }
 }
 
-# ifdef WIN3264
+# if defined(WIN3264) || defined(PROTO)
 
 /**************************************
  * 2. MS-Windows implementation.
  */
+
+#  ifndef PROTO
 
 #define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
 #define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
@@ -2737,9 +2739,10 @@ HANDLE (*winpty_agent_process)(void*);
 #define WINPTY_DLL "winpty.dll"
 
 static HINSTANCE hWinPtyDLL = NULL;
+#  endif
 
-    int
-dyn_winpty_init(void)
+    static int
+dyn_winpty_init(int verbose)
 {
     int i;
     static struct
@@ -2768,7 +2771,7 @@ dyn_winpty_init(void)
 
     /* No need to initialize twice. */
     if (hWinPtyDLL)
-	return 1;
+	return OK;
     /* Load winpty.dll, prefer using the 'winptydll' option, fall back to just
      * winpty.dll. */
     if (*p_winptydll != NUL)
@@ -2777,8 +2780,10 @@ dyn_winpty_init(void)
 	hWinPtyDLL = vimLoadLib(WINPTY_DLL);
     if (!hWinPtyDLL)
     {
-	EMSG2(_(e_loadlib), *p_winptydll != NUL ? p_winptydll : WINPTY_DLL);
-	return 0;
+	if (verbose)
+	    EMSG2(_(e_loadlib), *p_winptydll != NUL ? p_winptydll
+						       : (char_u *)WINPTY_DLL);
+	return FAIL;
     }
     for (i = 0; winpty_entry[i].name != NULL
 					 && winpty_entry[i].ptr != NULL; ++i)
@@ -2786,12 +2791,13 @@ dyn_winpty_init(void)
 	if ((*winpty_entry[i].ptr = (FARPROC)GetProcAddress(hWinPtyDLL,
 					      winpty_entry[i].name)) == NULL)
 	{
-	    EMSG2(_(e_loadfunc), winpty_entry[i].name);
-	    return 0;
+	    if (verbose)
+		EMSG2(_(e_loadfunc), winpty_entry[i].name);
+	    return FAIL;
 	}
     }
 
-    return 1;
+    return OK;
 }
 
 /*
@@ -2813,7 +2819,7 @@ term_and_job_init(term_T *term, int rows, int cols, typval_T *argvar, jobopt_T *
     garray_T	    ga;
     char_u	    *cmd;
 
-    if (!dyn_winpty_init())
+    if (dyn_winpty_init(TRUE) == FAIL)
 	return FAIL;
 
     if (argvar->v_type == VAR_STRING)
@@ -2976,6 +2982,13 @@ term_report_winsize(term_T *term, int rows, int cols)
 {
     winpty_set_size(term->tl_winpty, cols, rows, NULL);
 }
+
+    int
+terminal_enabled(void)
+{
+    return dyn_winpty_init(FALSE) == OK;
+}
+
 
 # else
 
