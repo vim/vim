@@ -4,9 +4,11 @@ func Test_existent_file()
   let fname = 'Xtest.tmp'
 
   let ts = localtime()
+  sleep 1
   let fl = ['Hello World!']
   call writefile(fl, fname)
   let tf = getftime(fname)
+  sleep 1
   let te = localtime()
 
   call assert_true(ts <= tf && tf <= te)
