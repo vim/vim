@@ -5,7 +5,7 @@ typedef struct {
   int hextype;
   int octets_per_group;
   int autoskip;
-  int seek;
+  int seekoff;
   int off;
   int relseek;
   int negseek;
@@ -24,13 +24,16 @@ typedef enum {
   XXD_ERROR,
   XXD_INPUT_ERROR,
   XXD_OUTPUT_ERROR,
+  XXD_SEEK_ERROR,
   XXD_HUNTYPE_ERROR,
-  XXD_USAGE_ERROR
+  XXD_USAGE_ERROR,
+  XXD_ERROR_UNKNOWN
 } xxd_rc;
 
 void xxd_init(xxd_ctx *ctx);
 xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv);
 xxd_rc xxd_validate(xxd_ctx *ctx);
 xxd_rc xxd(xxd_ctx *ctx);
+char *xxd_rc_str(xxd_rc rc);
 
 /* vi:set ts=8 sw=4 sts=2 cino+={2 cino+=n-2 : */

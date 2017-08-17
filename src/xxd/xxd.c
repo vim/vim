@@ -480,6 +480,7 @@ xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv) {
       else if (!STRNCMP(pp, "-v", 2))
 	{
           ctx->error = version;
+          ctx->exit_code = 0;
           return XXD_ERROR;
 	}
       else if (!STRNCMP(pp, "-c", 2))
@@ -533,7 +534,7 @@ xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv) {
 	      if (pp[2+ctx->relseek] == '-')
 		ctx->negseek++;
 #endif
-	      ctx->seek = strtol(pp + 2+ctx->relseek+ctx->negseek, (char **)NULL, 0);
+	      ctx->seekoff = strtol(pp + 2+ctx->relseek+ctx->negseek, (char **)NULL, 0);
 	    }
 	  else
 	    {
@@ -545,7 +546,7 @@ xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv) {
 	      if (argv[2][ctx->relseek] == '-')
 		ctx->negseek++;
 #endif
-	      ctx->seek = strtol(argv[2] + ctx->relseek+ctx->negseek, (char **)NULL, 0);
+	      ctx->seekoff = strtol(argv[2] + ctx->relseek+ctx->negseek, (char **)NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -704,6 +705,24 @@ main(int argc, char *argv[])
   return xxd_handle_error(ctx, argv, xxd(ctx));
 }
 
+static char XXD_ERROR_STRINGS[][20] = {
+    "okay",
+    "error",
+    "input error",
+    "output error",
+    "seek error",
+    "huntype error",
+    "usage error",
+    "unknown error"
+};
+
+char *xxd_rc_str(xxd_rc rc) {
+  if (rc >= XXD_ERROR_UNKNOWN) {
+    return XXD_ERROR_STRINGS[XXD_ERROR_UNKNOWN];
+  }
+  return XXD_ERROR_STRINGS[rc];
+}
+
 xxd_rc xxd(xxd_ctx *ctx) {
   xxd_rc rc;
   int c, e, p = 0;
@@ -715,30 +734,32 @@ xxd_rc xxd(xxd_ctx *ctx) {
       if (ctx->hextype && (ctx->hextype != HEX_POSTSCRIPT))
 	{
 	  ctx->error = "sorry, cannot revert this type of hexdump";
+          ctx->exit_code = -1;
 	  return XXD_ERROR;
 	}
       return huntype(ctx, ctx->fp, ctx->fpo, ctx->columns, ctx->hextype,
-		ctx->negseek ? -ctx->seek : ctx->seek);
+		ctx->negseek ? -ctx->seekoff : ctx->seekoff);
     }
 
-  if (ctx->seek || ctx->negseek || !ctx->relseek)
+  if (ctx->seekoff || ctx->negseek || !ctx->relseek)
     {
 #ifdef TRY_SEEK
       if (ctx->relseek)
-	e = fseek(ctx->fp, ctx->negseek ? -ctx->seek : ctx->seek, 1);
+	e = fseek(ctx->fp, ctx->negseek ? -ctx->seekoff : ctx->seekoff, 1);
       else
-	e = fseek(ctx->fp, ctx->negseek ? -ctx->seek : ctx->seek, ctx->negseek ? 2 : 0);
+	e = fseek(ctx->fp, ctx->negseek ? -ctx->seekoff : ctx->seekoff, ctx->negseek ? 2 : 0);
       if (e < 0 && ctx->negseek)
 	{
-	  ctx->error = "sorry cannot seek";
+	  ctx->error = "sorry cannot seek.";
+          ctx->exit_code = XXD_SEEK_ERROR;
 	  return XXD_ERROR;
 	}
       if (e >= 0)
-	ctx->seek = ftell(ctx->fp);
+	ctx->seekoff = ftell(ctx->fp);
       else
 #endif
 	{
-	  long s = ctx->seek;
+	  long s = ctx->seekoff;
 
 	  while (s--)
 	    if (getc(ctx->fp) == EOF)
@@ -749,7 +770,8 @@ xxd_rc xxd(xxd_ctx *ctx) {
 		}
 	      else
 		{
-		  ctx->error = "sorry cannot seek";
+		  ctx->error = "sorry cannot seek.";
+                  ctx->exit_code = XXD_SEEK_ERROR;
 		  return XXD_ERROR;
 		}
 	    }
@@ -846,7 +868,7 @@ xxd_rc xxd(xxd_ctx *ctx) {
       if (p == 0)
 	{
 	  sprintf(l, "%08lx:",
-	    ((unsigned long)(n + ctx->seek + ctx->off)) & 0xffffffff);
+	    ((unsigned long)(n + ctx->seekoff + ctx->off)) & 0xffffffff);
 	  for (c = 9; c < LLEN; l[c++] = ' ');
 	}
       if (ctx->hextype == HEX_NORMAL)
