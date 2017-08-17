@@ -1,0 +1,9 @@
+prefix=@PREFIX@
+libdir=@LIBDIR@
+includedir=${prefix}/include
+
+Name: xxd
+Description: Hex dump library
+Version: @VERSION@
+Libs: -L${libdir} -lxxd
+Cflags: -I${includedir}
