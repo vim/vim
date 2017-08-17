@@ -609,6 +609,7 @@ xxd_rc xxd_validate(xxd_ctx *ctx) {
 							    && (ctx->cols > COLS)))
     {
       ctx->error = "invalid number of columns (max. " STR(COLS) ")";
+      ctx->exit_code = 1;
       return XXD_ERROR;
     }
 
@@ -915,10 +916,7 @@ xxd_rc xxd(xxd_ctx *ctx) {
 	}
     }
   if (e == EOF && ferror(ctx->fp))
-    {
-      ctx->error = strerror(errno);
-      return XXD_ERROR;
-    }
+    return xxd_strerror(ctx, XXD_INPUT_ERROR);
   if (p)
     {
       l[c = (12 + (ctx->grplen * ctx->cols - 1)/ctx->octspergrp + p)] = '\n'; l[++c] = '\0';
