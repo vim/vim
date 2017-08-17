@@ -3099,7 +3099,7 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)1L, (char_u *)0L} SCRIPTID_INIT},
     {"winptydll", NULL,	    P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
-#if defined(WIN3264) && defined(TERMINAL)
+#if defined(WIN3264) && defined(FEAT_TERMINAL)
 			    (char_u *)&p_winptydll, PV_NONE, {
 # ifdef _WIN64
 			    (char_u *)"winpty64.dll",
