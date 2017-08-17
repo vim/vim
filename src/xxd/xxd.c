@@ -91,7 +91,6 @@
 # endif
 #endif
 #include <stdlib.h>
-#include <string.h>	/* for strncmp() and strerror() */
 #include <errno.h>	/* for errno */
 #include <ctype.h>	/* for isalnum() */
 #if __MWERKS__ && !defined(BEBOX)
@@ -184,12 +183,6 @@ char version[] = "xxd V1.10 27oct98 by Juergen Weigert";
 # define OPEN(name, mode, umask) open(name, mode, umask)
 #endif
 
-#ifdef AMIGA
-# define STRNCMP(s1, s2, l) strncmp(s1, s2, (size_t)l)
-#else
-# define STRNCMP(s1, s2, l) strncmp(s1, s2, l)
-#endif
-
 #ifndef __P
 # if defined(__STDC__) || defined(WIN32) || defined(__BORLANDC__)
 #  define __P(a) a
@@ -201,21 +194,8 @@ char version[] = "xxd V1.10 27oct98 by Juergen Weigert";
 /* Let's collect some prototypes */
 /* CodeWarrior is really picky about missing prototypes */
 static void exit_with_usage __P((char *));
-static xxd_rc huntype __P((xxd_ctx *, FILE *, FILE *, int, int, long));
-static xxd_rc xxdline __P((xxd_ctx *, FILE *, char *, int));
 
 #define TRY_SEEK	/* attempt to use lseek, or skip forward by reading */
-#define COLS 256	/* change here, if you ever need more columns */
-#define LLEN (12 + (9*COLS-1) + COLS + 2)
-
-char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
-
-/* the different hextypes known by this program: */
-#define HEX_NORMAL 0
-#define HEX_POSTSCRIPT 1
-#define HEX_CINCLUDE 2
-#define HEX_BITS 3		/* not hex a dump, but bits: 01111001 */
-#define HEX_LITTLEENDIAN 4
 
   static void
 exit_with_usage(char *pname)
@@ -247,381 +227,6 @@ exit_with_usage(char *pname)
   exit(1);
 }
 
-static xxd_rc xxd_strerror(xxd_ctx *ctx, xxd_rc exit_code) {
-  ctx->error = strerror(errno);
-  ctx->exit_code = exit_code;
-  return XXD_ERROR;
-}
-
-/*
- * Max. cols binary characters are decoded from the input stream per line.
- * Two adjacent garbage characters after evaluated data delimit valid data.
- * Everything up to the next newline is discarded.
- *
- * The name is historic and came from 'undo type opt h'.
- */
-  static xxd_rc
-huntype(
-  xxd_ctx *ctx,
-  FILE *fpi,
-  FILE *fpo,
-  int cols,
-  int hextype,
-  long base_off)
-{
-  int c, ign_garb = 1, n1 = -1, n2 = 0, n3, p = cols;
-  long have_off = 0, want_off = 0;
-
-  rewind(fpi);
-
-  while ((c = getc(fpi)) != EOF)
-    {
-      if (c == '\r')	/* Doze style input file? */
-	continue;
-
-      /* Allow multiple spaces.  This doesn't work when there is normal text
-       * after the hex codes in the last line that looks like hex, thus only
-       * use it for PostScript format. */
-      if (hextype == HEX_POSTSCRIPT && (c == ' ' || c == '\n' || c == '\t'))
-	continue;
-
-      n3 = n2;
-      n2 = n1;
-
-      if (c >= '0' && c <= '9')
-	n1 = c - '0';
-      else if (c >= 'a' && c <= 'f')
-	n1 = c - 'a' + 10;
-      else if (c >= 'A' && c <= 'F')
-	n1 = c - 'A' + 10;
-      else
-	{
-	  n1 = -1;
-	  if (ign_garb)
-	    continue;
-	}
-
-      ign_garb = 0;
-
-      if (p >= cols)
-	{
-	  if (!hextype)
-	    {
-	      if (n1 < 0)
-		{
-		  p = 0;
-		  continue;
-		}
-	      want_off = (want_off << 4) | n1;
-	      continue;
-	    }
-	  else
-	    p = 0;
-	}
-
-      if (base_off + want_off != have_off)
-	{
-	  if (fflush(fpo) != 0)
-	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-#ifdef TRY_SEEK
-	  c = fseek(fpo, base_off + want_off - have_off, 1);
-	  if (c >= 0)
-	    have_off = base_off + want_off;
-#endif
-	  if (base_off + want_off < have_off)
-	    {
-	      ctx->error = "sorry, cannot seek backwards";
-              ctx->exit_code = XXD_HUNTYPE_ERROR;
-              return XXD_ERROR;
-	    }
-	  for (; have_off < base_off + want_off; have_off++)
-	    if (putc(0, fpo) == EOF)
-              return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	}
-
-      if (n2 >= 0 && n1 >= 0)
-	{
-	  if (putc((n2 << 4) | n1, fpo) == EOF)
-	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	  have_off++;
-	  want_off++;
-	  n1 = -1;
-	  if ((++p >= cols) && !hextype)
-	    {
-	      /* skip rest of line as garbage */
-	      want_off = 0;
-	      while ((c = getc(fpi)) != '\n' && c != EOF)
-		;
-	      if (c == EOF && ferror(fpi))
-		return xxd_strerror(ctx, XXD_INPUT_ERROR);
-	      ign_garb = 1;
-	    }
-	}
-      else if (n1 < 0 && n2 < 0 && n3 < 0)
-	{
-	  /* already stumbled into garbage, skip line, wait and see */
-	  if (!hextype)
-	    want_off = 0;
-	  while ((c = getc(fpi)) != '\n' && c != EOF)
-	    ;
-	  if (c == EOF && ferror(fpi))
-	    return xxd_strerror(ctx, XXD_INPUT_ERROR);
-	  ign_garb = 1;
-	}
-    }
-  if (fflush(fpo) != 0)
-    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-#ifdef TRY_SEEK
-  fseek(fpo, 0L, 2);
-#endif
-  if (fclose(fpo) != 0)
-    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-  if (fclose(fpi) != 0)
-    return xxd_strerror(ctx, XXD_INPUT_ERROR);
-  return XXD_OK;
-}
-
-/*
- * Print line l. If nz is false, xxdline regards the line a line of
- * zeroes. If there are three or more consecutive lines of zeroes,
- * they are replaced by a single '*' character.
- *
- * If the output ends with more than two lines of zeroes, you
- * should call xxdline again with l being the last line and nz
- * negative. This ensures that the last line is shown even when
- * it is all zeroes.
- *
- * If nz is always positive, lines are never suppressed.
- */
-  static xxd_rc
-xxdline(xxd_ctx *ctx, FILE *fp, char *l, int nz)
-{
-  static char z[LLEN+1];
-  static int zero_seen = 0;
-
-  if (!nz && zero_seen == 1)
-    strcpy(z, l);
-
-  if (nz || !zero_seen++)
-    {
-      if (nz)
-	{
-	  if (nz < 0)
-	    zero_seen--;
-	  if (zero_seen == 2)
-	    if (fputs(z, fp) == EOF)
-	      return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	  if (zero_seen > 2)
-	    if (fputs("*\n", fp) == EOF)
-              return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	}
-      if (nz >= 0 || zero_seen > 0)
-	if (fputs(l, fp) == EOF)
-          return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-      if (nz)
-	zero_seen = 0;
-    }
-  return XXD_OK;
-}
-
-/* This is an EBCDIC to ASCII conversion table */
-/* from a proposed BTL standard April 16, 1979 */
-static unsigned char etoa64[] =
-{
-    0040,0240,0241,0242,0243,0244,0245,0246,
-    0247,0250,0325,0056,0074,0050,0053,0174,
-    0046,0251,0252,0253,0254,0255,0256,0257,
-    0260,0261,0041,0044,0052,0051,0073,0176,
-    0055,0057,0262,0263,0264,0265,0266,0267,
-    0270,0271,0313,0054,0045,0137,0076,0077,
-    0272,0273,0274,0275,0276,0277,0300,0301,
-    0302,0140,0072,0043,0100,0047,0075,0042,
-    0303,0141,0142,0143,0144,0145,0146,0147,
-    0150,0151,0304,0305,0306,0307,0310,0311,
-    0312,0152,0153,0154,0155,0156,0157,0160,
-    0161,0162,0136,0314,0315,0316,0317,0320,
-    0321,0345,0163,0164,0165,0166,0167,0170,
-    0171,0172,0322,0323,0324,0133,0326,0327,
-    0330,0331,0332,0333,0334,0335,0336,0337,
-    0340,0341,0342,0343,0344,0135,0346,0347,
-    0173,0101,0102,0103,0104,0105,0106,0107,
-    0110,0111,0350,0351,0352,0353,0354,0355,
-    0175,0112,0113,0114,0115,0116,0117,0120,
-    0121,0122,0356,0357,0360,0361,0362,0363,
-    0134,0237,0123,0124,0125,0126,0127,0130,
-    0131,0132,0364,0365,0366,0367,0370,0371,
-    0060,0061,0062,0063,0064,0065,0066,0067,
-    0070,0071,0372,0373,0374,0375,0376,0377
-};
-
-void xxd_init(xxd_ctx *ctx) {
-  memset(ctx, 0, sizeof(*ctx));
-  ctx->hextype = HEX_NORMAL;
-  ctx->octspergrp = -1;      /* number of octets grouped in output */
-  ctx->relseek = 1;
-  ctx->length = -1;
-  ctx->exit_code = 1;
-}
-
-xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv) {
-  char *pp;
-
-  while (argc >= 2)
-    {
-      pp = argv[1] + (!STRNCMP(argv[1], "--", 2) && argv[1][2]);
-	   if (!STRNCMP(pp, "-a", 2)) ctx->autoskip = 1 - ctx->autoskip;
-      else if (!STRNCMP(pp, "-b", 2)) ctx->hextype = HEX_BITS;
-      else if (!STRNCMP(pp, "-e", 2)) ctx->hextype = HEX_LITTLEENDIAN;
-      else if (!STRNCMP(pp, "-u", 2)) hexx = hexxa + 16;
-      else if (!STRNCMP(pp, "-p", 2)) ctx->hextype = HEX_POSTSCRIPT;
-      else if (!STRNCMP(pp, "-i", 2)) ctx->hextype = HEX_CINCLUDE;
-      else if (!STRNCMP(pp, "-r", 2)) ctx->revert++;
-      else if (!STRNCMP(pp, "-E", 2)) ctx->ebcdic++;
-      else if (!STRNCMP(pp, "-v", 2))
-	{
-          ctx->error = version;
-          ctx->exit_code = 0;
-          return XXD_ERROR;
-	}
-      else if (!STRNCMP(pp, "-c", 2))
-	{
-	  if (pp[2] && STRNCMP("ols", pp + 2, 3))
-	    ctx->cols = (int)strtol(pp + 2, NULL, 0);
-	  else
-	    {
-	      if (!argv[2])
-                return XXD_USAGE_ERROR;
-	      ctx->cols = (int)strtol(argv[2], NULL, 0);
-	      argv++;
-	      argc--;
-	    }
-	}
-      else if (!STRNCMP(pp, "-g", 2))
-	{
-	  if (pp[2] && STRNCMP("group", pp + 2, 5))
-	    ctx->octspergrp = (int)strtol(pp + 2, NULL, 0);
-	  else
-	    {
-	      if (!argv[2])
-		return XXD_USAGE_ERROR;
-	      ctx->octspergrp = (int)strtol(argv[2], NULL, 0);
-	      argv++;
-	      argc--;
-	    }
-	}
-      else if (!STRNCMP(pp, "-o", 2))
-	{
-	  if (pp[2] && STRNCMP("ffset", pp + 2, 5))
-	    ctx->displayoff = (int)strtol(pp + 2, NULL, 0);
-	  else
-	    {
-	      if (!argv[2])
-		return XXD_USAGE_ERROR;
-	      ctx->displayoff = (int)strtol(argv[2], NULL, 0);
-	      argv++;
-	      argc--;
-	    }
-	}
-      else if (!STRNCMP(pp, "-s", 2))
-	{
-	  ctx->relseek = 0;
-	  ctx->negseek = 0;
-	  if (pp[2] && STRNCMP("kip", pp+2, 3) && STRNCMP("eek", pp+2, 3))
-	    {
-#ifdef TRY_SEEK
-	      if (pp[2] == '+')
-		ctx->relseek++;
-	      if (pp[2+ctx->relseek] == '-')
-		ctx->negseek++;
-#endif
-	      ctx->seekoff = strtol(pp + 2+ctx->relseek+ctx->negseek, (char **)NULL, 0);
-	    }
-	  else
-	    {
-	      if (!argv[2])
-		return XXD_USAGE_ERROR;
-#ifdef TRY_SEEK
-	      if (argv[2][0] == '+')
-		ctx->relseek++;
-	      if (argv[2][ctx->relseek] == '-')
-		ctx->negseek++;
-#endif
-	      ctx->seekoff = strtol(argv[2] + ctx->relseek+ctx->negseek, (char **)NULL, 0);
-	      argv++;
-	      argc--;
-	    }
-	}
-      else if (!STRNCMP(pp, "-l", 2))
-	{
-	  if (pp[2] && STRNCMP("en", pp + 2, 2))
-	    ctx->length = strtol(pp + 2, (char **)NULL, 0);
-	  else
-	    {
-	      if (!argv[2])
-		return XXD_USAGE_ERROR;
-	      ctx->length = strtol(argv[2], (char **)NULL, 0);
-	      argv++;
-	      argc--;
-	    }
-	}
-      else if (!strcmp(pp, "--"))	/* end of options */
-	{
-	  argv++;
-	  argc--;
-	  break;
-	}
-      else if (pp[0] == '-' && pp[1])	/* unknown option */
-	return XXD_USAGE_ERROR;
-      else
-	break;				/* not an option */
-
-      argv++;				/* advance to next argument */
-      argc--;
-    }
-
-  return XXD_OK;
-}
-
-xxd_rc xxd_validate(xxd_ctx *ctx) {
-  if (!ctx->cols)
-    switch (ctx->hextype)
-      {
-      case HEX_POSTSCRIPT:	ctx->cols = 30; break;
-      case HEX_CINCLUDE:	ctx->cols = 12; break;
-      case HEX_BITS:		ctx->cols = 6; break;
-      case HEX_NORMAL:
-      case HEX_LITTLEENDIAN:
-      default:			ctx->cols = 16; break;
-      }
-
-  if (ctx->octspergrp < 0)
-    switch (ctx->hextype)
-      {
-      case HEX_BITS:		ctx->octspergrp = 1; break;
-      case HEX_NORMAL:		ctx->octspergrp = 2; break;
-      case HEX_LITTLEENDIAN:	ctx->octspergrp = 4; break;
-      case HEX_POSTSCRIPT:
-      case HEX_CINCLUDE:
-      default:			ctx->octspergrp = 0; break;
-      }
-
-  if (ctx->cols < 1 || ((ctx->hextype == HEX_NORMAL || ctx->hextype == HEX_BITS || ctx->hextype == HEX_LITTLEENDIAN)
-							    && (ctx->cols > COLS)))
-    {
-      ctx->error = "invalid number of columns (max. " STR(COLS) ")";
-      ctx->exit_code = 1;
-      return XXD_ERROR;
-    }
-
-  if (ctx->octspergrp < 1 || ctx->octspergrp > ctx->cols)
-    ctx->octspergrp = ctx->cols;
-  else if (ctx->hextype == HEX_LITTLEENDIAN && (ctx->octspergrp & (ctx->octspergrp-1)))
-    {
-      ctx->error = "number of octets per group must be a power of 2 with -e";
-      return XXD_ERROR;
-    }
-}
-
 static char *pname(char **argv) {
   char *pname, *pp;
 
@@ -641,7 +246,7 @@ static char *pname(char **argv) {
   return pname;
 }
 
-static int xxd_handle_error(xxd_ctx *ctx, char **argv, xxd_rc rc) {
+static int handle_error(xxd_ctx *ctx, char **argv, xxd_rc rc) {
   if (rc == XXD_USAGE_ERROR) {
     exit_with_usage(pname(argv));
   } else if (rc != XXD_OK) {
@@ -654,9 +259,7 @@ static int xxd_handle_error(xxd_ctx *ctx, char **argv, xxd_rc rc) {
   int
 main(int argc, char *argv[])
 {
-  xxd_rc rc;
-  xxd_ctx o;
-  xxd_ctx *ctx = &o;
+  xxd_ctx ctx;
 
 #ifdef AMIGA
   /* This program doesn't work when started from the Workbench */
@@ -664,278 +267,46 @@ main(int argc, char *argv[])
     exit(1);
 #endif
 
-  xxd_init(ctx);
+  xxd_init(&ctx);
 
-  xxd_handle_error(ctx, argv, xxd_parse_cmd_line(ctx, argc, argv));
+  handle_error(&ctx, argv, xxd_parse_cmd_line(&ctx, argc, argv));
 
-  xxd_handle_error(ctx, argv, xxd_validate(ctx));
+  handle_error(&ctx, argv, xxd_validate(&ctx));
 
   if (argc > 3)
     exit_with_usage(pname(argv));
 
   if (argc == 1 || (argv[1][0] == '-' && !argv[1][1]))
-    BIN_ASSIGN(ctx->fp = stdin, !ctx->revert);
+    BIN_ASSIGN(ctx.fp = stdin, !ctx.revert);
   else
     {
-      ctx->input_filename = argv[1];
-      if ((ctx->fp = fopen(ctx->input_filename, BIN_READ(!ctx->revert))) == NULL)
+      ctx.input_filename = argv[1];
+      if ((ctx.fp = fopen(ctx.input_filename, BIN_READ(!ctx.revert))) == NULL)
 	{
 	  fprintf(stderr,"%s: ", pname(argv));
-	  perror(ctx->input_filename);
+	  perror(ctx.input_filename);
 	  return 2;
 	}
     }
 
   if (argc < 3 || (argv[2][0] == '-' && !argv[2][1]))
-    BIN_ASSIGN(ctx->fpo = stdout, ctx->revert);
+    BIN_ASSIGN(ctx.fpo = stdout, ctx.revert);
   else
     {
       int fd;
-      int mode = ctx->revert ? O_WRONLY : (O_TRUNC|O_WRONLY);
+      int mode = ctx.revert ? O_WRONLY : (O_TRUNC|O_WRONLY);
 
-      if (((fd = OPEN(argv[2], mode | BIN_CREAT(ctx->revert), 0666)) < 0) ||
-	  (ctx->fpo = fdopen(fd, BIN_WRITE(ctx->revert))) == NULL)
+      if (((fd = OPEN(argv[2], mode | BIN_CREAT(ctx.revert), 0666)) < 0) ||
+	  (ctx.fpo = fdopen(fd, BIN_WRITE(ctx.revert))) == NULL)
 	{
 	  fprintf(stderr, "%s: ", pname(argv));
 	  perror(argv[2]);
 	  return 3;
 	}
-      rewind(ctx->fpo);
+      rewind(ctx.fpo);
     }
 
-  return xxd_handle_error(ctx, argv, xxd(ctx));
-}
-
-static char XXD_ERROR_STRINGS[][20] = {
-    "okay",
-    "error",
-    "input error",
-    "output error",
-    "seek error",
-    "huntype error",
-    "usage error",
-    "unknown error"
-};
-
-char *xxd_rc_str(xxd_rc rc) {
-  if (rc >= XXD_ERROR_UNKNOWN) {
-    return XXD_ERROR_STRINGS[XXD_ERROR_UNKNOWN];
-  }
-  return XXD_ERROR_STRINGS[rc];
-}
-
-xxd_rc xxd(xxd_ctx *ctx) {
-  xxd_rc rc;
-  int c, e, p = 0;
-  long n = 0;
-  static char l[LLEN+1];  /* static because it may be too big for stack */
-
-  if (ctx->revert)
-    {
-      if (ctx->hextype && (ctx->hextype != HEX_POSTSCRIPT))
-	{
-	  ctx->error = "sorry, cannot revert this type of hexdump";
-          ctx->exit_code = -1;
-	  return XXD_ERROR;
-	}
-      return huntype(ctx, ctx->fp, ctx->fpo, ctx->cols, ctx->hextype,
-		ctx->negseek ? -ctx->seekoff : ctx->seekoff);
-    }
-
-  if (ctx->seekoff || ctx->negseek || !ctx->relseek)
-    {
-#ifdef TRY_SEEK
-      if (ctx->relseek)
-	e = fseek(ctx->fp, ctx->negseek ? -ctx->seekoff : ctx->seekoff, 1);
-      else
-	e = fseek(ctx->fp, ctx->negseek ? -ctx->seekoff : ctx->seekoff, ctx->negseek ? 2 : 0);
-      if (e < 0 && ctx->negseek)
-	{
-	  ctx->error = "sorry cannot seek.";
-          ctx->exit_code = XXD_SEEK_ERROR;
-	  return XXD_ERROR;
-	}
-      if (e >= 0)
-	ctx->seekoff = ftell(ctx->fp);
-      else
-#endif
-	{
-	  long s = ctx->seekoff;
-
-	  while (s--)
-	    if (getc(ctx->fp) == EOF)
-	    {
-	      if (ferror(ctx->fp))
-		{
-		  return xxd_strerror(ctx, XXD_INPUT_ERROR);
-		}
-	      else
-		{
-		  ctx->error = "sorry cannot seek.";
-                  ctx->exit_code = XXD_SEEK_ERROR;
-		  return XXD_ERROR;
-		}
-	    }
-	}
-    }
-
-  if (ctx->hextype == HEX_CINCLUDE)
-    {
-      if (ctx->fp != stdin)
-	{
-	  if (fprintf(ctx->fpo, "unsigned char %s", isdigit((int)ctx->input_filename[0]) ? "__" : "") < 0)
-	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	  for (e = 0; (c = ctx->input_filename[e]) != 0; e++)
-	    if (putc(isalnum(c) ? c : '_', ctx->fpo) == EOF)
-	      return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	  if (fputs("[] = {\n", ctx->fpo) == EOF)
-	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	}
-
-      p = 0;
-      c = 0;
-      while ((ctx->length < 0 || p < ctx->length) && (c = getc(ctx->fp)) != EOF)
-	{
-	  if (fprintf(ctx->fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
-		(p % ctx->cols) ? ", " : &",\n  "[2*!p],  c) < 0)
-	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	  p++;
-	}
-      if (c == EOF && ferror(ctx->fp))
-	return xxd_strerror(ctx, XXD_INPUT_ERROR);
-
-      if (p && fputs("\n", ctx->fpo) == EOF)
-	return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-      if (fputs(&"};\n"[3 * (ctx->fp == stdin)], ctx->fpo) == EOF)
-	return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-
-      if (ctx->fp != stdin)
-	{
-	  if (fprintf(ctx->fpo, "unsigned int %s", isdigit((int)ctx->input_filename[0]) ? "__" : "") < 0)
-	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	  for (e = 0; (c = ctx->input_filename[e]) != 0; e++)
-	    if (putc(isalnum(c) ? c : '_', ctx->fpo) == EOF)
-	      return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	  if (fprintf(ctx->fpo, "_len = %d;\n", p) < 0)
-	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	}
-
-      if (fclose(ctx->fp))
-	return xxd_strerror(ctx, XXD_INPUT_ERROR);
-      if (fclose(ctx->fpo))
-	return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-      return 0;
-    }
-
-  if (ctx->hextype == HEX_POSTSCRIPT)
-    {
-      p = ctx->cols;
-      e = 0;
-      while ((ctx->length < 0 || n < ctx->length) && (e = getc(ctx->fp)) != EOF)
-	{
-	  if (putc(hexx[(e >> 4) & 0xf], ctx->fpo) == EOF
-		  || putc(hexx[e & 0xf], ctx->fpo) == EOF)
-	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	  n++;
-	  if (!--p)
-	    {
-	      if (putc('\n', ctx->fpo) == EOF)
-		return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	      p = ctx->cols;
-	    }
-	}
-      if (e == EOF && ferror(ctx->fp))
-	return xxd_strerror(ctx, XXD_INPUT_ERROR);
-      if (p < ctx->cols)
-	if (putc('\n', ctx->fpo) == EOF)
-	  return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-      if (fclose(ctx->fp))
-	return xxd_strerror(ctx, XXD_INPUT_ERROR);
-      if (fclose(ctx->fpo))
-	return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-      return 0;
-    }
-
-  /* ctx->hextype: HEX_NORMAL or HEX_BITS or HEX_LITTLEENDIAN */
-
-  if (ctx->hextype != HEX_BITS)
-    ctx->grplen = ctx->octspergrp + ctx->octspergrp + 1;	/* chars per octet group */
-  else	/* ctx->hextype == HEX_BITS */
-    ctx->grplen = 8 * ctx->octspergrp + 1;
-
-  e = 0;
-  while ((ctx->length < 0 || n < ctx->length) && (e = getc(ctx->fp)) != EOF)
-    {
-      if (p == 0)
-	{
-	  sprintf(l, "%08lx:",
-	    ((unsigned long)(n + ctx->seekoff + ctx->displayoff)) & 0xffffffff);
-	  for (c = 9; c < LLEN; l[c++] = ' ');
-	}
-      if (ctx->hextype == HEX_NORMAL)
-	{
-	  l[c = (10 + (ctx->grplen * p) / ctx->octspergrp)] = hexx[(e >> 4) & 0xf];
-	  l[++c]				  = hexx[ e       & 0xf];
-	}
-      else if (ctx->hextype == HEX_LITTLEENDIAN)
-	{
-	  int x = p ^ (ctx->octspergrp-1);
-	  l[c = (10 + (ctx->grplen * x) / ctx->octspergrp)] = hexx[(e >> 4) & 0xf];
-	  l[++c]				  = hexx[ e       & 0xf];
-	}
-      else /* ctx->hextype == HEX_BITS */
-	{
-	  int i;
-
-	  c = (10 + (ctx->grplen * p) / ctx->octspergrp) - 1;
-	  for (i = 7; i >= 0; i--)
-	    l[++c] = (e & (1 << i)) ? '1' : '0';
-	}
-      if (ctx->ebcdic)
-	e = (e < 64) ? '.' : etoa64[e-64];
-      /* When changing this update definition of LLEN above. */
-      l[12 + (ctx->grplen * ctx->cols - 1)/ctx->octspergrp + p] =
-#ifdef __MVS__
-	  (e >= 64)
-#else
-	  (e > 31 && e < 127)
-#endif
-	  ? e : '.';
-      if (e)
-	ctx->nonzero++;
-      n++;
-      if (++p == ctx->cols)
-	{
-	  l[c = (12 + (ctx->grplen * ctx->cols - 1)/ctx->octspergrp + p)] = '\n'; l[++c] = '\0';
-	  rc = xxdline(ctx, ctx->fpo, l, ctx->autoskip ? ctx->nonzero : 1);
-          if (rc != XXD_OK) {
-            return rc;
-          }
-	  ctx->nonzero = 0;
-	  p = 0;
-	}
-    }
-  if (e == EOF && ferror(ctx->fp))
-    return xxd_strerror(ctx, XXD_INPUT_ERROR);
-  if (p)
-    {
-      l[c = (12 + (ctx->grplen * ctx->cols - 1)/ctx->octspergrp + p)] = '\n'; l[++c] = '\0';
-      rc = xxdline(ctx, ctx->fpo, l, 1);
-      if (rc != XXD_OK) {
-        return rc;
-      }
-    }
-  else if (ctx->autoskip)
-    rc = xxdline(ctx, ctx->fpo, l, -1);	/* last chance to flush out suppressed lines */
-    if (rc != XXD_OK) {
-      return rc;
-    }
-
-  if (fclose(ctx->fp))
-    return xxd_strerror(ctx, XXD_INPUT_ERROR);
-  if (fclose(ctx->fpo))
-    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-  return XXD_OK;
+  return handle_error(&ctx, argv, xxd(&ctx));
 }
 
 /* vi:set ts=8 sw=4 sts=2 cino+={2 cino+=n-2 : */

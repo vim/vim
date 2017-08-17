@@ -1,0 +1,11 @@
+*~
+*.swp
+
+tags
+*.o
+*.lo
+
+libxxd.la
+xxd
+
+.libs/
