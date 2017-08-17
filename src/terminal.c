@@ -2771,7 +2771,7 @@ dyn_winpty_init(void)
 	return 1;
     /* Load winpty.dll, prefer using the 'winptydll' option, fall back to just
      * winpty.dll. */
-    if (p_winptydll != NUL)
+    if (p_winptydll != NULL && *p_winptydll != NUL)
 	hWinPtyDLL = vimLoadLib((char *)p_winptydll);
     if (!hWinPtyDLL)
 	hWinPtyDLL = vimLoadLib(WINPTY_DLL);
