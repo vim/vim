@@ -457,7 +457,7 @@ static unsigned char etoa64[] =
 void xxd_init(xxd_ctx *ctx) {
   memset(ctx, 0, sizeof(*ctx));
   ctx->hextype = HEX_NORMAL;
-  ctx->octets_per_group = -1;      /* number of octets grouped in output */
+  ctx->octspergrp = -1;      /* number of octets grouped in output */
   ctx->relseek = 1;
   ctx->length = -1;
   ctx->exit_code = 1;
@@ -486,12 +486,12 @@ xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv) {
       else if (!STRNCMP(pp, "-c", 2))
 	{
 	  if (pp[2] && STRNCMP("ols", pp + 2, 3))
-	    ctx->columns = (int)strtol(pp + 2, NULL, 0);
+	    ctx->cols = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {
 	      if (!argv[2])
                 return XXD_USAGE_ERROR;
-	      ctx->columns = (int)strtol(argv[2], NULL, 0);
+	      ctx->cols = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -499,12 +499,12 @@ xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv) {
       else if (!STRNCMP(pp, "-g", 2))
 	{
 	  if (pp[2] && STRNCMP("group", pp + 2, 5))
-	    ctx->octets_per_group = (int)strtol(pp + 2, NULL, 0);
+	    ctx->octspergrp = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {
 	      if (!argv[2])
 		return XXD_USAGE_ERROR;
-	      ctx->octets_per_group = (int)strtol(argv[2], NULL, 0);
+	      ctx->octspergrp = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -512,12 +512,12 @@ xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv) {
       else if (!STRNCMP(pp, "-o", 2))
 	{
 	  if (pp[2] && STRNCMP("ffset", pp + 2, 5))
-	    ctx->off = (int)strtol(pp + 2, NULL, 0);
+	    ctx->displayoff = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {
 	      if (!argv[2])
 		return XXD_USAGE_ERROR;
-	      ctx->off = (int)strtol(argv[2], NULL, 0);
+	      ctx->displayoff = (int)strtol(argv[2], NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -583,38 +583,38 @@ xxd_rc xxd_parse_cmd_line(xxd_ctx *ctx, int argc, char **argv) {
 }
 
 xxd_rc xxd_validate(xxd_ctx *ctx) {
-  if (!ctx->columns)
+  if (!ctx->cols)
     switch (ctx->hextype)
       {
-      case HEX_POSTSCRIPT:	ctx->columns = 30; break;
-      case HEX_CINCLUDE:	ctx->columns = 12; break;
-      case HEX_BITS:		ctx->columns = 6; break;
+      case HEX_POSTSCRIPT:	ctx->cols = 30; break;
+      case HEX_CINCLUDE:	ctx->cols = 12; break;
+      case HEX_BITS:		ctx->cols = 6; break;
       case HEX_NORMAL:
       case HEX_LITTLEENDIAN:
-      default:			ctx->columns = 16; break;
+      default:			ctx->cols = 16; break;
       }
 
-  if (ctx->octets_per_group < 0)
+  if (ctx->octspergrp < 0)
     switch (ctx->hextype)
       {
-      case HEX_BITS:		ctx->octets_per_group = 1; break;
-      case HEX_NORMAL:		ctx->octets_per_group = 2; break;
-      case HEX_LITTLEENDIAN:	ctx->octets_per_group = 4; break;
+      case HEX_BITS:		ctx->octspergrp = 1; break;
+      case HEX_NORMAL:		ctx->octspergrp = 2; break;
+      case HEX_LITTLEENDIAN:	ctx->octspergrp = 4; break;
       case HEX_POSTSCRIPT:
       case HEX_CINCLUDE:
-      default:			ctx->octets_per_group = 0; break;
+      default:			ctx->octspergrp = 0; break;
       }
 
-  if (ctx->columns < 1 || ((ctx->hextype == HEX_NORMAL || ctx->hextype == HEX_BITS || ctx->hextype == HEX_LITTLEENDIAN)
-							    && (ctx->columns > COLS)))
+  if (ctx->cols < 1 || ((ctx->hextype == HEX_NORMAL || ctx->hextype == HEX_BITS || ctx->hextype == HEX_LITTLEENDIAN)
+							    && (ctx->cols > COLS)))
     {
       ctx->error = "invalid number of columns (max. " STR(COLS) ")";
       return XXD_ERROR;
     }
 
-  if (ctx->octets_per_group < 1 || ctx->octets_per_group > ctx->columns)
-    ctx->octets_per_group = ctx->columns;
-  else if (ctx->hextype == HEX_LITTLEENDIAN && (ctx->octets_per_group & (ctx->octets_per_group-1)))
+  if (ctx->octspergrp < 1 || ctx->octspergrp > ctx->cols)
+    ctx->octspergrp = ctx->cols;
+  else if (ctx->hextype == HEX_LITTLEENDIAN && (ctx->octspergrp & (ctx->octspergrp-1)))
     {
       ctx->error = "number of octets per group must be a power of 2 with -e";
       return XXD_ERROR;
@@ -737,7 +737,7 @@ xxd_rc xxd(xxd_ctx *ctx) {
           ctx->exit_code = -1;
 	  return XXD_ERROR;
 	}
-      return huntype(ctx, ctx->fp, ctx->fpo, ctx->columns, ctx->hextype,
+      return huntype(ctx, ctx->fp, ctx->fpo, ctx->cols, ctx->hextype,
 		ctx->negseek ? -ctx->seekoff : ctx->seekoff);
     }
 
@@ -796,7 +796,7 @@ xxd_rc xxd(xxd_ctx *ctx) {
       while ((ctx->length < 0 || p < ctx->length) && (c = getc(ctx->fp)) != EOF)
 	{
 	  if (fprintf(ctx->fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
-		(p % ctx->columns) ? ", " : &",\n  "[2*!p],  c) < 0)
+		(p % ctx->cols) ? ", " : &",\n  "[2*!p],  c) < 0)
 	    return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
 	  p++;
 	}
@@ -828,7 +828,7 @@ xxd_rc xxd(xxd_ctx *ctx) {
 
   if (ctx->hextype == HEX_POSTSCRIPT)
     {
-      p = ctx->columns;
+      p = ctx->cols;
       e = 0;
       while ((ctx->length < 0 || n < ctx->length) && (e = getc(ctx->fp)) != EOF)
 	{
@@ -840,12 +840,12 @@ xxd_rc xxd(xxd_ctx *ctx) {
 	    {
 	      if (putc('\n', ctx->fpo) == EOF)
 		return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
-	      p = ctx->columns;
+	      p = ctx->cols;
 	    }
 	}
       if (e == EOF && ferror(ctx->fp))
 	return xxd_strerror(ctx, XXD_INPUT_ERROR);
-      if (p < ctx->columns)
+      if (p < ctx->cols)
 	if (putc('\n', ctx->fpo) == EOF)
 	  return xxd_strerror(ctx, XXD_OUTPUT_ERROR);
       if (fclose(ctx->fp))
@@ -858,9 +858,9 @@ xxd_rc xxd(xxd_ctx *ctx) {
   /* ctx->hextype: HEX_NORMAL or HEX_BITS or HEX_LITTLEENDIAN */
 
   if (ctx->hextype != HEX_BITS)
-    ctx->group_length = ctx->octets_per_group + ctx->octets_per_group + 1;	/* chars per octet group */
+    ctx->grplen = ctx->octspergrp + ctx->octspergrp + 1;	/* chars per octet group */
   else	/* ctx->hextype == HEX_BITS */
-    ctx->group_length = 8 * ctx->octets_per_group + 1;
+    ctx->grplen = 8 * ctx->octspergrp + 1;
 
   e = 0;
   while ((ctx->length < 0 || n < ctx->length) && (e = getc(ctx->fp)) != EOF)
@@ -868,32 +868,32 @@ xxd_rc xxd(xxd_ctx *ctx) {
       if (p == 0)
 	{
 	  sprintf(l, "%08lx:",
-	    ((unsigned long)(n + ctx->seekoff + ctx->off)) & 0xffffffff);
+	    ((unsigned long)(n + ctx->seekoff + ctx->displayoff)) & 0xffffffff);
 	  for (c = 9; c < LLEN; l[c++] = ' ');
 	}
       if (ctx->hextype == HEX_NORMAL)
 	{
-	  l[c = (10 + (ctx->group_length * p) / ctx->octets_per_group)] = hexx[(e >> 4) & 0xf];
+	  l[c = (10 + (ctx->grplen * p) / ctx->octspergrp)] = hexx[(e >> 4) & 0xf];
 	  l[++c]				  = hexx[ e       & 0xf];
 	}
       else if (ctx->hextype == HEX_LITTLEENDIAN)
 	{
-	  int x = p ^ (ctx->octets_per_group-1);
-	  l[c = (10 + (ctx->group_length * x) / ctx->octets_per_group)] = hexx[(e >> 4) & 0xf];
+	  int x = p ^ (ctx->octspergrp-1);
+	  l[c = (10 + (ctx->grplen * x) / ctx->octspergrp)] = hexx[(e >> 4) & 0xf];
 	  l[++c]				  = hexx[ e       & 0xf];
 	}
       else /* ctx->hextype == HEX_BITS */
 	{
 	  int i;
 
-	  c = (10 + (ctx->group_length * p) / ctx->octets_per_group) - 1;
+	  c = (10 + (ctx->grplen * p) / ctx->octspergrp) - 1;
 	  for (i = 7; i >= 0; i--)
 	    l[++c] = (e & (1 << i)) ? '1' : '0';
 	}
       if (ctx->ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
-      l[12 + (ctx->group_length * ctx->columns - 1)/ctx->octets_per_group + p] =
+      l[12 + (ctx->grplen * ctx->cols - 1)/ctx->octspergrp + p] =
 #ifdef __MVS__
 	  (e >= 64)
 #else
@@ -903,9 +903,9 @@ xxd_rc xxd(xxd_ctx *ctx) {
       if (e)
 	ctx->nonzero++;
       n++;
-      if (++p == ctx->columns)
+      if (++p == ctx->cols)
 	{
-	  l[c = (12 + (ctx->group_length * ctx->columns - 1)/ctx->octets_per_group + p)] = '\n'; l[++c] = '\0';
+	  l[c = (12 + (ctx->grplen * ctx->cols - 1)/ctx->octspergrp + p)] = '\n'; l[++c] = '\0';
 	  rc = xxdline(ctx, ctx->fpo, l, ctx->autoskip ? ctx->nonzero : 1);
           if (rc != XXD_OK) {
             return rc;
@@ -921,7 +921,7 @@ xxd_rc xxd(xxd_ctx *ctx) {
     }
   if (p)
     {
-      l[c = (12 + (ctx->group_length * ctx->columns - 1)/ctx->octets_per_group + p)] = '\n'; l[++c] = '\0';
+      l[c = (12 + (ctx->grplen * ctx->cols - 1)/ctx->octspergrp + p)] = '\n'; l[++c] = '\0';
       rc = xxdline(ctx, ctx->fpo, l, 1);
       if (rc != XXD_OK) {
         return rc;

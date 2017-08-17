@@ -1,15 +1,15 @@
 typedef struct {
   long length;
-  int columns;
+  int cols;
   int ebcdic;
   int hextype;
-  int octets_per_group;
+  int octspergrp;
   int autoskip;
   int seekoff;
-  int off;
+  int displayoff;
   int relseek;
   int negseek;
-  int group_length;
+  int grplen;
   int revert;
   int nonzero;
   int exit_code;
