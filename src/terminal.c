@@ -2771,13 +2771,14 @@ dyn_winpty_init(void)
 	return 1;
     /* Load winpty.dll, prefer using the 'winptydll' option, fall back to just
      * winpty.dll. */
-    if (*p_winptydll != NUL)
+    if (p_winptydll != NUL)
 	hWinPtyDLL = vimLoadLib((char *)p_winptydll);
     if (!hWinPtyDLL)
 	hWinPtyDLL = vimLoadLib(WINPTY_DLL);
     if (!hWinPtyDLL)
     {
-	EMSG2(_(e_loadlib), *p_winptydll != NUL ? p_winptydll : WINPTY_DLL);
+	EMSG2(_(e_loadlib), *p_winptydll != NUL ?
+		p_winptydll : (char_u*)WINPTY_DLL);
 	return 0;
     }
     for (i = 0; winpty_entry[i].name != NULL
