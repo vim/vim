@@ -267,7 +267,7 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 	/* Create a new buffer in the current window. */
 	if (!can_abandon(curbuf, forceit))
 	{
-	    EMSG(_(e_nowrtmsg));
+	    no_write_message();
 	    vim_free(term);
 	    return;
 	}

@@ -473,8 +473,8 @@ close_buffer(
     {
 	if (term_job_running(buf->b_term))
 	{
-	    if (wipe_buf)
-		/* Wiping out a terminal buffer kills the job. */
+	    if (wipe_buf || unload_buf)
+		/* Wiping out or unloading a terminal buffer kills the job. */
 		free_terminal(buf);
 	    else
 	    {
@@ -1648,7 +1648,7 @@ do_buffer(
 	if (bufIsChanged(curbuf))
 #endif
 	{
-	    EMSG(_(e_nowrtmsg));
+	    no_write_message();
 	    return FAIL;
 	}
     }
@@ -1896,6 +1896,28 @@ do_autochdir(void)
 	shorten_fnames(TRUE);
 }
 #endif
+
+    void
+no_write_message(void)
+{
+#ifdef FEAT_TERMINAL
+    if (term_job_running(curbuf->b_term))
+	EMSG(_("E948: Job still running (add ! to end the job)"));
+    else
+#endif
+	EMSG(_("E37: No write since last change (add ! to override)"));
+}
+
+    void
+no_write_message_nobang(void)
+{
+#ifdef FEAT_TERMINAL
+    if (term_job_running(curbuf->b_term))
+	EMSG(_("E948: Job still running"));
+    else
+#endif
+	EMSG(_("E37: No write since last change"));
+}
 
 /*
  * functions for dealing with the buffer list
