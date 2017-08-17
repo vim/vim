@@ -5072,7 +5072,7 @@ make_job_env(garray_T *gap, dict_T *env)
 	    --todo;
 	    if (wkey != NULL && wval != NULL)
 	    {
-		int	n;
+		size_t	n;
 		size_t	lkey = wcslen(wkey);
 		size_t	lval = wcslen(wval);
 
