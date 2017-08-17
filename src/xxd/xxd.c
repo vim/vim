@@ -74,10 +74,8 @@
 # define CYGWIN
 #endif
 
-#define STR(X) #X
-
+#include <xxd.h>
 #include <stdio.h>
-#include "xxd.h"
 #ifdef VAXC
 # include <file.h>
 #else

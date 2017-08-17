@@ -8,6 +8,8 @@ ifneq ($(VERBOSE),1)
   LIBTOOL +=--quiet
 endif
 
+override CFLAGS +=-I.
+
 ifeq ($(shell uname),SunOS)
   override CFLAGS +=-D__EXTENSIONS__ -D_XPG6 -D__XOPEN_OR_POSIX
 endif
