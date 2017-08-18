@@ -1367,9 +1367,6 @@ terminal_loop(void)
 	if (c == K_IGNORE)
 	    continue;
 
-#ifdef UNIX
-	may_send_sigint(c, curbuf->b_term->tl_job->jv_pid, 0);
-#endif
 #ifdef WIN3264
 	/* On Windows winpty handles CTRL-C, don't send a CTRL_C_EVENT.
 	 * Use CTRL-BREAK to kill the job. */
@@ -1404,6 +1401,11 @@ terminal_loop(void)
 		}
 		/* Send both keys to the terminal. */
 		send_keys_to_term(curbuf->b_term, prev_c, TRUE);
+	    }
+	    else if (c == Ctrl_C)
+	    {
+		/* "CTRL-W CTRL-C" or 'termkey' CTRL-C: end the job */
+		mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 	    }
 	    else if (termkey == 0 && c == '.')
 	    {
