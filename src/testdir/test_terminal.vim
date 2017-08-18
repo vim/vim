@@ -1,6 +1,6 @@
 " Tests for the terminal window.
 
-if !exists('*term_start')
+if !has('terminal')
   finish
 endif
 
