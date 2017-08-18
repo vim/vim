@@ -1196,6 +1196,7 @@ typedef struct partial_S partial_T;
 
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
+typedef struct writeq_S writeq_T;
 typedef struct jsonq_S jsonq_T;
 typedef struct cbq_S cbq_T;
 typedef struct channel_S channel_T;
@@ -1512,6 +1513,13 @@ struct readq_S
     readq_T	*rq_prev;
 };
 
+struct writeq_S
+{
+    garray_T	wq_ga;
+    writeq_T	*wq_next;
+    writeq_T	*wq_prev;
+};
+
 struct jsonq_S
 {
     typval_T	*jq_value;
@@ -1601,6 +1609,8 @@ typedef struct {
 #endif
     int		ch_block_write;	/* for testing: 0 when not used, -1 when write
 				 * does not block, 1 simulate blocking */
+    int		ch_nonblocking;	/* write() is non-blocking */
+    writeq_T	ch_writeque;	/* header for write queue */
 
     cbq_T	ch_cb_head;	/* dummy node for per-request callbacks */
     char_u	*ch_callback;	/* call when a msg is not handled */

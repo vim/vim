@@ -400,6 +400,10 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 	vterm_get_size(term->tl_vterm, &term->tl_rows, &term->tl_cols);
 	term_report_winsize(term, term->tl_rows, term->tl_cols);
 
+	/* Make sure we don't get stuck on sending keys to the job, it leads to
+	 * a deadlock if the job is waiting for Vim to read. */
+	channel_set_nonblock(term->tl_job->jv_channel, PART_IN);
+
 	if (old_curbuf != NULL)
 	{
 	    --curbuf->b_nwindows;
