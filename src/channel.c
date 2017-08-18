@@ -3542,6 +3542,7 @@ channel_handle_events(void)
 
 /*
  * Set "channel"/"part" to non-blocking.
+ * Only works for sockets and pipes.
  */
     void
 channel_set_nonblock(channel_T *channel, ch_part_T part)
@@ -3552,15 +3553,12 @@ channel_set_nonblock(channel_T *channel, ch_part_T part)
     if (fd != INVALID_FD)
     {
 #ifdef _WIN32
-	if (part == PART_SOCK)
-	{
-	    u_long	val = 1;
+	u_long	val = 1;
 
-	    ioctlsocket(fd, FIONBIO, &val);
-	}
-	else
+	ioctlsocket(fd, FIONBIO, &val);
+#else
+	fcntl(fd, F_SETFL, O_NONBLOCK);
 #endif
-	    fcntl(fd, F_SETFL, O_NONBLOCK);
 	ch_part->ch_nonblocking = TRUE;
     }
 }
@@ -3706,7 +3704,6 @@ channel_send(
 
 		    if (last != NULL)
 		    {
-		ch_log(channel, "Creating new entry");
 			last->wq_prev = wq->wq_prev;
 			last->wq_next = NULL;
 			if (wq->wq_prev == NULL)
