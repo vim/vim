@@ -450,3 +450,16 @@ func Test_terminal_list_args()
   exe buf . 'bwipe!'
   call assert_equal("", bufname(buf))
 endfunction
+
+func Test_terminal_noblock()
+  let buf = term_start(&shell)
+
+  for c in ['a','b','c','d','e','f','g','h','i','j','k']
+    call term_sendkeys(buf, 'echo ' . repeat(c, 5000) . "\<cr>")
+  endfor
+
+  let g:job = term_getjob(buf)
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  bwipe
+endfunc
