@@ -55,4 +55,5 @@ source test_taglist.vim
 source test_timers.vim
 source test_true_false.vim
 source test_unlet.vim
+source test_virtualedit.vim
 source test_window_cmd.vim
