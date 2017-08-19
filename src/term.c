@@ -161,11 +161,13 @@ static char_u *vim_tgetstr(char *s, char_u **pp);
 
 static int  detected_8bit = FALSE;	/* detected 8-bit terminal */
 
+#ifdef FEAT_TERMRESPONSE
 /* When the cursor shape was detected these values are used:
  * 1: block, 2: underline, 3: vertical bar
  * initial_cursor_blink is only valid when initial_cursor_shape is not zero. */
 static int initial_cursor_shape = 0;
 static int initial_cursor_blink = FALSE;
+#endif
 
 static struct builtin_term builtin_termcaps[] =
 {
@@ -3714,9 +3716,11 @@ term_cursor_mode(int forced)
      * mode. */
     if (!full_screen || *T_CEI == NUL)
     {
+# ifdef FEAT_TERMRESPONSE
 	if (forced && initial_cursor_shape > 0)
 	    /* Restore to initial values. */
 	    term_cursor_shape(initial_cursor_shape, initial_cursor_blink);
+# endif
 	return;
     }
 
