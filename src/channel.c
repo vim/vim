@@ -3559,7 +3559,7 @@ channel_set_nonblock(channel_T *channel, ch_part_T part)
 
 	ioctlsocket(fd, FIONBIO, &val);
 #else
-	fcntl(fd, F_SETFL, O_NONBLOCK);
+	(void)fcntl(fd, F_SETFL, O_NONBLOCK);
 #endif
 	ch_part->ch_nonblocking = TRUE;
     }
