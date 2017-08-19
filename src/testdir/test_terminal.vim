@@ -452,14 +452,21 @@ func Test_terminal_list_args()
 endfunction
 
 func Test_terminal_noblock()
-  let buf = term_start(&shell)
+  let g:buf = term_start(&shell)
 
   for c in ['a','b','c','d','e','f','g','h','i','j','k']
-    call term_sendkeys(buf, 'echo ' . repeat(c, 5000) . "\<cr>")
+    call term_sendkeys(g:buf, 'echo ' . repeat(c, 5000) . "\<cr>")
   endfor
+  call term_sendkeys(g:buf, "echo done\<cr>")
+  let g:lnum = term_getsize(g:buf)[0] - 1
+  call WaitFor('term_getline(g:buf, g:lnum) =~ "done"', 3000)
+  call assert_match('done', term_getline(g:buf, g:lnum))
 
-  let g:job = term_getjob(buf)
-  call Stop_shell_in_terminal(buf)
-  call term_wait(buf)
+  let g:job = term_getjob(g:buf)
+  call Stop_shell_in_terminal(g:buf)
+  call term_wait(g:buf)
+  unlet g:buf
+  unlet g:job
+  unlet g:lnum
   bwipe
 endfunc
