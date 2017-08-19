@@ -38,6 +38,7 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
+ * - help index for winptydll, optwin entry for winptydll
  * - make [range]terminal pipe [range] lines to the terminal
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
@@ -1287,9 +1288,10 @@ may_restore_cursor_props(void)
     if (did_change_cursor)
     {
 	did_change_cursor = FALSE;
-	ui_cursor_shape_forced(TRUE);
 	term_cursor_color((char_u *)"");
 	term_cursor_blink(FALSE);
+	/* this will restore the initial cursor style, if possible */
+	ui_cursor_shape_forced(TRUE);
     }
 }
 

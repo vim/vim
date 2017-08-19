@@ -41,6 +41,7 @@ enum SpecialKey
     KS_VE,	/* cursor visible */
     KS_VS,	/* cursor very visible */
     KS_CSH,	/* cursor shape */
+    KS_CRS,	/* request cursor shape */
     KS_ME,	/* normal mode */
     KS_MR,	/* reverse mode */
     KS_MD,	/* bold mode */
@@ -132,6 +133,7 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_VE	(TERM_STR(KS_VE))	/* cursor visible */
 #define T_VS	(TERM_STR(KS_VS))	/* cursor very visible */
 #define T_CSH	(TERM_STR(KS_CSH))	/* cursor shape */
+#define T_CRS	(TERM_STR(KS_CRS))	/* request cursor shape */
 #define T_ME	(TERM_STR(KS_ME))	/* normal mode */
 #define T_MR	(TERM_STR(KS_MR))	/* reverse mode */
 #define T_MD	(TERM_STR(KS_MD))	/* bold mode */
