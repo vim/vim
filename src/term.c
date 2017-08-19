@@ -826,10 +826,11 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_LE,	"\b"},
     {(int)KS_VI,	IF_EB("\033[?25l", ESC_STR "[?25l")},
     {(int)KS_VE,	IF_EB("\033[?25h", ESC_STR "[?25h")},
-    {(int)KS_VS,	IF_EB("\033[?12h", ESC_STR "[?12h")},
 #if 0
     /* This is currently disabled, because we cannot reliably restore the
-     * cursor because of what appears to be an xterm bug. */
+     * cursor style because of what appears to be an xterm bug. */
+    {(int)KS_VE,	IF_EB("\033[?25h\033[?12l", ESC_STR "[?25h" ESC_STR "[?12l")},
+    {(int)KS_VS,	IF_EB("\033[?12h", ESC_STR "[?12h")},
 #  ifdef TERMINFO
     {(int)KS_CSH,	IF_EB("\033[%p1%d q", ESC_STR "[%p1%d q")},
 #  else
