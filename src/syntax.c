@@ -9999,7 +9999,7 @@ highlight_changed(void)
     if (ga_grow(&highlight_ga, 28) == FAIL)
 	return FAIL;
     hlcnt = highlight_ga.ga_len;
-    if (id_S == 0)
+    if (id_S == -1)
     {
 	/* Make sure id_S is always valid to simplify code below. Use the last
 	 * entry. */
