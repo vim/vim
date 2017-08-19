@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Aug 11
+" Last Change:	2017 Aug 19
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -510,6 +510,10 @@ if has("terminal")
   call append("$", "termkey\tkey that precedes Vim commands in a terminal window")
   call append("$", "\t(local to window)")
   call <SID>OptionL("tk")
+  if exists("&winptydll")
+    call append("$", "winptydll\tname of the winpty dynamic library")
+    call <SID>OptionG("winptydll", &winptydll)
+  endif
 endif
 
 
