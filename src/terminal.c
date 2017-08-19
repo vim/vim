@@ -1037,14 +1037,13 @@ term_enter_job_mode()
 
     /* Remove the terminal contents from the scrollback and the buffer. */
     gap = &term->tl_scrollback;
-    while (curbuf->b_ml.ml_line_count > term->tl_scrollback_scrolled)
+    while (curbuf->b_ml.ml_line_count > term->tl_scrollback_scrolled
+							    && gap->ga_len > 0)
     {
 	ml_delete(curbuf->b_ml.ml_line_count, FALSE);
 	line = (sb_line_T *)gap->ga_data + gap->ga_len - 1;
 	vim_free(line->sb_cells);
 	--gap->ga_len;
-	if (gap->ga_len == 0)
-	    break;
     }
     check_cursor();
 
