@@ -3771,6 +3771,7 @@ term_cursor_blink(int blink)
 	out_str(T_VE);
     out_flush();
 }
+# endif
 
 /*
  * "shape" == 1: block, "shape" == 2: underline, "shape" == 3: vertical bar
@@ -3784,7 +3785,6 @@ term_cursor_shape(int shape, int blink)
 	out_flush();
     }
 }
-# endif
 #endif
 
 /*
