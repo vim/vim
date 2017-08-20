@@ -458,9 +458,16 @@ func Test_terminal_noblock()
     call term_sendkeys(g:buf, 'echo ' . repeat(c, 5000) . "\<cr>")
   endfor
   call term_sendkeys(g:buf, "echo done\<cr>")
+
+  " On MS-Windows there is an extra empty line below "done".  Find "done" in
+  " the last-but-one or the last-but-two line.
   let g:lnum = term_getsize(g:buf)[0] - 1
-  call WaitFor('term_getline(g:buf, g:lnum) =~ "done"', 3000)
-  call assert_match('done', term_getline(g:buf, g:lnum))
+  call WaitFor('term_getline(g:buf, g:lnum) =~ "done" || term_getline(g:buf, g:lnum - 1) =~ "done"', 3000)
+  let line = term_getline(g:buf, g:lnum)
+  if line !~ 'done'
+    let line = term_getline(g:buf, g:lnum - 1)
+  endif
+  call assert_match('done', line)
 
   let g:job = term_getjob(g:buf)
   call Stop_shell_in_terminal(g:buf)
