@@ -251,7 +251,7 @@ endfunc
 func Test_terminal_size()
   let cmd = Get_cat_123_cmd()
 
-  exe '5terminal ' . cmd
+  exe 'terminal ++rows=5 ' . cmd
   let size = term_getsize('')
   bwipe!
   call assert_equal(5, size[0])
@@ -262,7 +262,7 @@ func Test_terminal_size()
   call assert_equal(6, size[0])
 
   vsplit
-  exe '5,33terminal ' . cmd
+  exe 'terminal ++rows=5 ++cols=33 ' . cmd
   let size = term_getsize('')
   bwipe!
   call assert_equal([5, 33], size)
@@ -272,7 +272,7 @@ func Test_terminal_size()
   bwipe!
   call assert_equal([6, 36], size)
 
-  exe 'vertical 20terminal ' . cmd
+  exe 'vertical terminal ++cols=20 ' . cmd
   let size = term_getsize('')
   bwipe!
   call assert_equal(20, size[1])
@@ -283,7 +283,7 @@ func Test_terminal_size()
   call assert_equal(26, size[1])
 
   split
-  exe 'vertical 6,20terminal ' . cmd
+  exe 'vertical terminal ++rows=6 ++cols=20 ' . cmd
   let size = term_getsize('')
   bwipe!
   call assert_equal([6, 20], size)

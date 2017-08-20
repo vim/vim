@@ -38,7 +38,7 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - make [range]terminal pipe [range] lines to the terminal
+ * - test writing lines to terminal job when implemented for MS-Windows
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -447,10 +447,14 @@ ex_terminal(exarg_T *eap)
     cmd = eap->arg;
     while (*cmd && *cmd == '+' && *(cmd + 1) == '+')
     {
-	char_u  *p;
+	char_u  *p, *ep;
 
 	cmd += 2;
 	p = skiptowhite(cmd);
+	ep = vim_strchr(cmd, '=');
+	if (ep != NULL && ep < p)
+	    p = ep;
+
 	if ((int)(p - cmd) == 5 && STRNICMP(cmd, "close", 5) == 0)
 	    opt.jo_term_finish = 'c';
 	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "open", 4) == 0)
@@ -459,6 +463,20 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_curwin = 1;
 	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "hidden", 6) == 0)
 	    opt.jo_hidden = 1;
+	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "rows", 4) == 0
+		&& ep != NULL && isdigit(ep[1]))
+	{
+	    opt.jo_set2 |= JO2_TERM_ROWS;
+	    opt.jo_term_rows = atoi((char *)ep + 1);
+	    p = skiptowhite(cmd);
+	}
+	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "cols", 4) == 0
+		&& ep != NULL && isdigit(ep[1]))
+	{
+	    opt.jo_set2 |= JO2_TERM_COLS;
+	    opt.jo_term_cols = atoi((char *)ep + 1);
+	    p = skiptowhite(cmd);
+	}
 	else
 	{
 	    if (*p)
@@ -472,17 +490,14 @@ ex_terminal(exarg_T *eap)
 	/* Make a copy, an autocommand may set 'shell'. */
 	tofree = cmd = vim_strsave(p_sh);
 
-    if (eap->addr_count == 2)
+    if (eap->addr_count > 0)
     {
-	opt.jo_term_rows = eap->line1;
-	opt.jo_term_cols = eap->line2;
-    }
-    else if (eap->addr_count == 1)
-    {
-	if (cmdmod.split & WSP_VERT)
-	    opt.jo_term_cols = eap->line2;
-	else
-	    opt.jo_term_rows = eap->line2;
+	/* Write lines from current buffer to the job. */
+	opt.jo_set |= JO_IN_IO | JO_IN_BUF | JO_IN_TOP | JO_IN_BOT;
+	opt.jo_io[PART_IN] = JIO_BUFFER;
+	opt.jo_io_buf[PART_IN] = curbuf->b_fnum;
+	opt.jo_in_top = eap->line1;
+	opt.jo_in_bot = eap->line2;
     }
 
     argvar.v_type = VAR_STRING;
@@ -1078,6 +1093,29 @@ term_vgetc()
 }
 
 /*
+ * Get the part that is connected to the tty. Normally this is PART_IN, but
+ * when writing buffer lines to the job it can be another.  This makes it
+ * possible to do "1,5term vim -".
+ */
+    static ch_part_T
+get_tty_part(term_T *term)
+{
+#ifdef UNIX
+    ch_part_T	parts[3] = {PART_IN, PART_OUT, PART_ERR};
+    int		i;
+
+    for (i = 0; i < 3; ++i)
+    {
+	int fd = term->tl_job->jv_channel->ch_part[parts[i]].ch_fd;
+
+	if (isatty(fd))
+	    return parts[i];
+    }
+#endif
+    return PART_IN;
+}
+
+/*
  * Send keys to terminal.
  * Return FAIL when the key needs to be handled in Normal mode.
  * Return OK when the key was dropped or sent to the terminal.
@@ -1148,8 +1186,8 @@ send_keys_to_term(term_T *term, int c, int typed)
     len = term_convert_key(term, c, msg);
     if (len > 0)
 	/* TODO: if FAIL is returned, stop? */
-	channel_send(term->tl_job->jv_channel, PART_IN,
-						 (char_u *)msg, (int)len, NULL);
+	channel_send(term->tl_job->jv_channel, get_tty_part(term),
+						(char_u *)msg, (int)len, NULL);
 
     return OK;
 }
@@ -1332,7 +1370,8 @@ terminal_loop(void)
 
 #ifdef UNIX
     {
-	int fd = curbuf->b_term->tl_job->jv_channel->ch_part[PART_IN].ch_fd;
+	int part = get_tty_part(curbuf->b_term);
+	int fd = curbuf->b_term->tl_job->jv_channel->ch_part[part].ch_fd;
 
 	if (isatty(fd))
 	{
@@ -2823,7 +2862,12 @@ dyn_winpty_init(int verbose)
  * Return OK or FAIL.
  */
     static int
-term_and_job_init(term_T *term, int rows, int cols, typval_T *argvar, jobopt_T *opt)
+term_and_job_init(
+	term_T	    *term,
+	int	    rows,
+	int	    cols,
+	typval_T    *argvar,
+	jobopt_T    *opt)
 {
     WCHAR	    *p = NULL;
     channel_T	    *channel = NULL;
@@ -3020,7 +3064,12 @@ terminal_enabled(void)
  * Return OK or FAIL.
  */
     static int
-term_and_job_init(term_T *term, int rows, int cols, typval_T *argvar, jobopt_T *opt)
+term_and_job_init(
+	term_T	    *term,
+	int	    rows,
+	int	    cols,
+	typval_T    *argvar,
+	jobopt_T    *opt)
 {
     create_vterm(term, rows, cols);
 
