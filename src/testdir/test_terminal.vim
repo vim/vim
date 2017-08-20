@@ -470,3 +470,26 @@ func Test_terminal_noblock()
   unlet g:lnum
   bwipe
 endfunc
+
+func Test_terminal_write_stdin()
+  " Todo: make this work on all systems.
+  if !has('unix')
+    return
+  endif
+  new
+  call setline(1, ['one', 'two', 'three'])
+  %term wc
+  call WaitFor('getline(1) != ""')
+  let nrs = split(getline(1))
+  call assert_equal(['3', '3', '14'], nrs)
+  bwipe
+
+  call setline(1, ['one', 'two', 'three', 'four'])
+  2,3term wc
+  call WaitFor('getline(1) != ""')
+  let nrs = split(getline(1))
+  call assert_equal(['2', '2', '10'], nrs)
+  bwipe
+
+  bwipe!
+endfunc
