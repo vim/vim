@@ -5238,6 +5238,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
     int		use_file_for_in = options->jo_io[PART_IN] == JIO_FILE;
     int		use_file_for_out = options->jo_io[PART_OUT] == JIO_FILE;
     int		use_file_for_err = options->jo_io[PART_ERR] == JIO_FILE;
+    int		use_buffer_for_in = options->jo_io[PART_IN] == JIO_BUFFER;
     int		use_out_for_err = options->jo_io[PART_ERR] == JIO_OUT;
     SIGSET_DECL(curset)
 
@@ -5247,7 +5248,10 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
     /* default is to fail */
     job->jv_status = JOB_FAILED;
 
-    if (options->jo_pty)
+    if (options->jo_pty
+	    && (!(use_file_for_in || use_null_for_in)
+		|| !(use_file_for_in || use_null_for_out)
+		|| !(use_out_for_err || use_file_for_err || use_null_for_err)))
 	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_name);
 
     /* TODO: without the channel feature connect the child to /dev/null? */
@@ -5263,8 +5267,12 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	    goto failed;
 	}
     }
-    else if (!use_null_for_in && pty_master_fd < 0 && pipe(fd_in) < 0)
-	goto failed;
+    else
+	/* When writing buffer lines to the input don't use the pty, so that
+	 * the pipe can be closed when all lines were written. */
+	if (!use_null_for_in && (pty_master_fd < 0 || use_buffer_for_in)
+							    && pipe(fd_in) < 0)
+	    goto failed;
 
     if (use_file_for_out)
     {

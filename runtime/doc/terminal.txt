@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 12
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -102,10 +102,9 @@ Syntax ~
 			parentheses.  E.g. if "gdb" exists the second terminal
 			buffer will use "!gdb (1)".
 
-			If [range] is given it is used for the terminal size.
-			One number specifies the number of rows.  Unless the
-			"vertical" modifier is used, then it is the number of
-			columns.
+			If [range] is given the specified lines are used as
+			input for the job.  It will not be possible to type
+			keys in the terminal window.
 
 			Two comma separated numbers are used as "rows,cols".
 			E.g. `:24,80gdb` opens a terminal with 24 rows and 80
@@ -125,6 +124,10 @@ Syntax ~
 					cannot be |abandon|ed.
 			++hidden	Open the terminal in a hidden buffer,
 					no window will be used.
+			++rows={height} Use {height} for the terminal window
+					height.
+			++cols={width}  Use {width} for the terminal window
+					width.
 
 			If you want to use more options use the |term_start()|
 			function.
