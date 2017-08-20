@@ -39,7 +39,8 @@ enum SpecialKey
     KS_DB,	/* text may be scrolled up from down */
     KS_VI,	/* cursor invisible */
     KS_VE,	/* cursor visible */
-    KS_VS,	/* cursor very visible */
+    KS_VS,	/* cursor very visible (blink) */
+    KS_CVS,	/* cursor normally visible (no blink) */
     KS_CSH,	/* cursor shape */
     KS_CRS,	/* request cursor shape */
     KS_ME,	/* normal mode */
@@ -131,7 +132,8 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_DB	(TERM_STR(KS_DB))	/* text may be scrolled up from down */
 #define T_VI	(TERM_STR(KS_VI))	/* cursor invisible */
 #define T_VE	(TERM_STR(KS_VE))	/* cursor visible */
-#define T_VS	(TERM_STR(KS_VS))	/* cursor very visible */
+#define T_VS	(TERM_STR(KS_VS))	/* cursor very visible (blink) */
+#define T_CVS	(TERM_STR(KS_CVS))	/* cursor normally visible (no blink) */
 #define T_CSH	(TERM_STR(KS_CSH))	/* cursor shape */
 #define T_CRS	(TERM_STR(KS_CRS))	/* request cursor shape */
 #define T_ME	(TERM_STR(KS_ME))	/* normal mode */

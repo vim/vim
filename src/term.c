@@ -828,17 +828,13 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_LE,	"\b"},
     {(int)KS_VI,	IF_EB("\033[?25l", ESC_STR "[?25l")},
     {(int)KS_VE,	IF_EB("\033[?25h", ESC_STR "[?25h")},
-#if 0
-    /* This is currently disabled, because we cannot reliably restore the
-     * cursor style because of what appears to be an xterm bug. */
-    {(int)KS_VE,	IF_EB("\033[?25h\033[?12l", ESC_STR "[?25h" ESC_STR "[?12l")},
     {(int)KS_VS,	IF_EB("\033[?12h", ESC_STR "[?12h")},
+    {(int)KS_CVS,	IF_EB("\033[?12l", ESC_STR "[?12l")},
 #  ifdef TERMINFO
     {(int)KS_CSH,	IF_EB("\033[%p1%d q", ESC_STR "[%p1%d q")},
 #  else
     {(int)KS_CSH,	IF_EB("\033[%d q", ESC_STR "[%d q")},
 #  endif
-#endif
     {(int)KS_CRS,	IF_EB("\033P$q q\033\\", ESC_STR "P$q q" ESC_STR "\\")},
 #  ifdef TERMINFO
     {(int)KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
@@ -1585,7 +1581,7 @@ set_termname(char_u *term)
 				{KS_DL, "dl"}, {KS_CDL,"DL"}, {KS_CS, "cs"},
 				{KS_CL, "cl"}, {KS_CD, "cd"},
 				{KS_VI, "vi"}, {KS_VE, "ve"}, {KS_MB, "mb"},
-				{KS_VS, "vs"}, {KS_ME, "me"}, {KS_MR, "mr"},
+				{KS_ME, "me"}, {KS_MR, "mr"},
 				{KS_MD, "md"}, {KS_SE, "se"}, {KS_SO, "so"},
 				{KS_CZH,"ZH"}, {KS_CZR,"ZR"}, {KS_UE, "ue"},
 				{KS_US, "us"}, {KS_UCE, "Ce"}, {KS_UCS, "Cs"},
@@ -1595,6 +1591,7 @@ set_termname(char_u *term)
 				{KS_BC, "bc"}, {KS_CSB,"Sb"}, {KS_CSF,"Sf"},
 				{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_LE, "le"},
 				{KS_ND, "nd"}, {KS_OP, "op"}, {KS_CRV, "RV"},
+				{KS_VS, "vs"}, {KS_CVS, "VS"},
 				{KS_CIS, "IS"}, {KS_CIE, "IE"},
 				{KS_CSC, "SC"}, {KS_CEC, "EC"},
 				{KS_TS, "ts"}, {KS_FS, "fs"},
@@ -3665,11 +3662,11 @@ mouse_model_popup(void)
     void
 scroll_start(void)
 {
-    if (*T_VS != NUL)
+    if (*T_VS != NUL && *T_CVS != NUL)
     {
 	out_str(T_VS);
-	out_str(T_VE);
-	screen_start();			/* don't know where cursor is now */
+	out_str(T_CVS);
+	screen_start();		/* don't know where cursor is now */
     }
 }
 
@@ -3694,10 +3691,9 @@ cursor_on(void)
     void
 cursor_off(void)
 {
-    if (full_screen)
+    if (full_screen && !cursor_is_off)
     {
-	if (!cursor_is_off)
-	    out_str(T_VI);	    /* disable cursor */
+	out_str(T_VI);	    /* disable cursor */
 	cursor_is_off = TRUE;
     }
 }
@@ -3766,20 +3762,10 @@ term_cursor_color(char_u *color)
 	out_flush();
     }
 }
-
-    void
-term_cursor_blink(int blink)
-{
-    if (blink)
-	out_str(T_VS);
-    else
-	out_str(T_VE);
-    out_flush();
-}
 # endif
 
 /*
- * "shape" == 1: block, "shape" == 2: underline, "shape" == 3: vertical bar
+ * "shape": 1 = block, 2 = underline, 3 = vertical bar
  */
     void
 term_cursor_shape(int shape, int blink)
@@ -3787,6 +3773,17 @@ term_cursor_shape(int shape, int blink)
     if (*T_CSH != NUL)
     {
 	OUT_STR(tgoto((char *)T_CSH, 0, shape * 2 - blink));
+	out_flush();
+    }
+    /* When t_SH is not set try setting just the blink state. */
+    else if (blink && *T_VS != NUL)
+    {
+	out_str(T_VS);
+	out_flush();
+    }
+    else if (!blink && *T_CVS != NUL)
+    {
+	out_str(T_CVS);
 	out_flush();
     }
 }
@@ -4693,7 +4690,9 @@ check_termcode(
 			 * 5 = vertical bar blink, 6 = vertical bar */
 			number = number == 0 ? 1 : number;
 			initial_cursor_shape = (number + 1) / 2;
-			initial_cursor_blink = (number & 1) ? TRUE : FALSE;
+			/* The blink flag is actually inverted, compared to
+			 * the value set with T_SH. */
+			initial_cursor_blink = (number & 1) ? FALSE : TRUE;
 			rcm_status = STATUS_GOT;
 			LOG_TR("Received cursor shape response");
 
