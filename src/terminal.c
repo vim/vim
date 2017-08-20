@@ -2869,11 +2869,13 @@ term_and_job_init(
 	typval_T    *argvar,
 	jobopt_T    *opt)
 {
-    WCHAR	    *p = NULL;
+    WCHAR	    *cmd_wchar = NULL;
     channel_T	    *channel = NULL;
     job_T	    *job = NULL;
     DWORD	    error;
-    HANDLE	    jo = NULL, child_process_handle, child_thread_handle;
+    HANDLE	    jo = NULL;
+    HANDLE	    child_process_handle;
+    HANDLE	    child_thread_handle;
     void	    *winpty_err;
     void	    *spawn_config = NULL;
     char	    buf[MAX_PATH];
@@ -2893,8 +2895,8 @@ term_and_job_init(
 	cmd = ga.ga_data;
     }
 
-    p = enc_to_utf16(cmd, NULL);
-    if (p == NULL)
+    cmd_wchar = enc_to_utf16(cmd, NULL);
+    if (cmd_wchar == NULL)
 	return FAIL;
 
     job = job_alloc();
@@ -2919,7 +2921,7 @@ term_and_job_init(
 	    WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN |
 		WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN,
 	    NULL,
-	    p,
+	    cmd_wchar,
 	    NULL,
 	    NULL,
 	    &winpty_err);
@@ -2934,20 +2936,25 @@ term_and_job_init(
     if (job == NULL)
 	goto failed;
 
+    /* TODO: when all lines are written and the fd is closed, the command
+     * doesn't get EOF and hangs. */
+    if (opt->jo_set & JO_IN_BUF)
+	job->jv_in_buf = buflist_findnr(opt->jo_io_buf[PART_IN]);
+
     if (!winpty_spawn(term->tl_winpty, spawn_config, &child_process_handle,
 	    &child_thread_handle, &error, &winpty_err))
 	goto failed;
 
     channel_set_pipes(channel,
-	(sock_T) CreateFileW(
+	(sock_T)CreateFileW(
 	    winpty_conin_name(term->tl_winpty),
 	    GENERIC_WRITE, 0, NULL,
 	    OPEN_EXISTING, 0, NULL),
-	(sock_T) CreateFileW(
+	(sock_T)CreateFileW(
 	    winpty_conout_name(term->tl_winpty),
 	    GENERIC_READ, 0, NULL,
 	    OPEN_EXISTING, 0, NULL),
-	(sock_T) CreateFileW(
+	(sock_T)CreateFileW(
 	    winpty_conerr_name(term->tl_winpty),
 	    GENERIC_READ, 0, NULL,
 	    OPEN_EXISTING, 0, NULL));
@@ -2964,7 +2971,7 @@ term_and_job_init(
     }
 
     winpty_spawn_config_free(spawn_config);
-    vim_free(p);
+    vim_free(cmd_wchar);
 
     create_vterm(term, rows, cols);
 
@@ -2987,8 +2994,8 @@ term_and_job_init(
 failed:
     if (argvar->v_type == VAR_LIST)
 	vim_free(ga.ga_data);
-    if (p != NULL)
-	vim_free(p);
+    if (cmd_wchar != NULL)
+	vim_free(cmd_wchar);
     if (spawn_config != NULL)
 	winpty_spawn_config_free(spawn_config);
     if (channel != NULL)
