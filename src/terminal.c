@@ -38,7 +38,7 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - test writing lines to terminal job when implemented for MS-Windows
+ * - test for writing lines to terminal job does not work on MS-Windows
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -2186,6 +2186,7 @@ create_vterm(term_T *term, int rows, int cols)
 {
     VTerm	    *vterm;
     VTermScreen	    *screen;
+    VTermValue	    value;
 
     vterm = vterm_new(rows, cols);
     term->tl_vterm = vterm;
@@ -2210,6 +2211,11 @@ create_vterm(term_T *term, int rows, int cols)
 
     /* Allow using alternate screen. */
     vterm_screen_enable_altscreen(screen, 1);
+
+    /* We do not want a blinking cursor by default. */
+    value.boolean = 0;
+    vterm_state_set_termprop(vterm_obtain_state(vterm),
+					       VTERM_PROP_CURSORBLINK, &value);
 }
 
 /*
