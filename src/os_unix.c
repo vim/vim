@@ -4340,6 +4340,7 @@ mch_call_shell(
 
 # define EXEC_FAILED 122    /* Exit code when shell didn't execute.  Don't use
 			       127, some shells use that already */
+# define OPEN_NULL_FAILED 123 /* Exit code if /dev/null can't be opened */
 
     char_u	*newcmd;
     pid_t	pid;
@@ -5369,7 +5370,14 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	}
 
 	if (use_null_for_in || use_null_for_out || use_null_for_err)
+	{
 	    null_fd = open("/dev/null", O_RDWR | O_EXTRA, 0);
+	    if (null_fd < 0)
+	    {
+		perror("opening /dev/null failed");
+		_exit(OPEN_NULL_FAILED);
+	    }
+	}
 
 	if (pty_slave_fd >= 0)
 	{
