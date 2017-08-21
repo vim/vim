@@ -49,8 +49,8 @@
 	"err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
  *   Check that something is connected to the terminal.
  *   Test: "cat" reading from a file or buffer
- *         "ls" writing stdout to a file or buffer
- *         shell writing stderr to a file or buffer
+ *	   "ls" writing stdout to a file or buffer
+ *	   shell writing stderr to a file or buffer
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
  * - support ":term NONE" to open a terminal with a pty but not running a job
@@ -845,7 +845,26 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
     int		empty = (buf->b_ml.ml_flags & ML_EMPTY);
     linenr_T	lnum = buf->b_ml.ml_line_count;
 
-    ml_append_buf(term->tl_buffer, lnum, text, len + 1, FALSE);
+#ifdef _WIN32
+    if (!enc_utf8 && enc_codepage > 0)
+    {
+	WCHAR   *ret = NULL;
+	int	length = 0;
+
+	MultiByteToWideChar_alloc(CP_UTF8, 0, (char*)text, len + 1,
+							   &ret, &length);
+	if (ret != NULL)
+	{
+	    WideCharToMultiByte_alloc(enc_codepage, 0,
+				      ret, length, (char **)&text, &len, 0, 0);
+	    vim_free(ret);
+	    ml_append_buf(term->tl_buffer, lnum, text, len, FALSE);
+	    vim_free(text);
+	}
+    }
+    else
+#endif
+	ml_append_buf(term->tl_buffer, lnum, text, len + 1, FALSE);
     if (empty)
     {
 	/* Delete the empty line that was in the empty buffer. */
@@ -936,7 +955,7 @@ move_terminal_to_buffer(term_T *term)
 			    int	    c;
 
 			    for (i = 0; (c = cell.chars[i]) > 0 || i == 0; ++i)
-				ga.ga_len += mb_char2bytes(c == NUL ? ' ' : c,
+				ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
 					     (char_u *)ga.ga_data + ga.ga_len);
 			}
 		    }
@@ -1468,6 +1487,18 @@ terminal_loop(void)
 		goto theend;
 	    }
 	}
+# ifdef _WIN32
+	if (!enc_utf8 && has_mbyte && c >= 0x80)
+	{
+	    WCHAR   wc;
+	    char_u  mb[3];
+
+	    mb[0] = (unsigned)c >> 8;
+	    mb[1] = c;
+	    if (MultiByteToWideChar(GetACP(), 0, (char*)mb, 2, &wc, 1) > 0)
+		c = wc;
+	}
+# endif
 	if (send_keys_to_term(curbuf->b_term, c, TRUE) != OK)
 	{
 	    ret = OK;
@@ -1627,7 +1658,7 @@ color2index(VTermColor *color, int fg, int *boldp)
 
 	/* 216-color cube */
 	return 17 + ((red + 25) / 0x33) * 36
-	          + ((green + 25) / 0x33) * 6
+		  + ((green + 25) / 0x33) * 6
 		  + (blue + 25) / 0x33;
     }
     return 0;
@@ -2076,20 +2107,39 @@ term_update_window(win_T *wp)
 		else
 		{
 #if defined(FEAT_MBYTE)
-		    if (enc_utf8 && c >= 0x80)
+		    if (enc_utf8)
 		    {
-			ScreenLines[off] = ' ';
-			ScreenLinesUC[off] = c;
-		    }
-		    else
-		    {
-			ScreenLines[off] = c;
-			if (enc_utf8)
+			if (c >= 0x80)
+			{
+			    ScreenLines[off] = ' ';
+			    ScreenLinesUC[off] = c;
+			}
+			else
+			{
+			    ScreenLines[off] = c;
 			    ScreenLinesUC[off] = NUL;
+			}
 		    }
-#else
-		    ScreenLines[off] = c;
+# ifdef _WIN32
+		    else if (has_mbyte && c >= 0x80)
+		    {
+			char_u	mb[MB_MAXBYTES+1];
+			WCHAR	wc = c;
+
+			if (WideCharToMultiByte(GetACP(), 0, &wc, 1,
+						       (char*)mb, 2, 0, 0) > 1)
+			{
+			    ScreenLines[off] = mb[0];
+			    ScreenLines[off+1] = mb[1];
+			    cell.width = mb_ptr2cells(mb);
+			}
+			else
+			    ScreenLines[off] = c;
+		    }
+# endif
+		    else
 #endif
+			ScreenLines[off] = c;
 		}
 		ScreenAttrs[off] = cell2attr(cell.attrs, cell.fg, cell.bg);
 
@@ -2097,11 +2147,12 @@ term_update_window(win_T *wp)
 		++off;
 		if (cell.width == 2)
 		{
-		    ScreenLines[off] = NUL;
 #if defined(FEAT_MBYTE)
 		    if (enc_utf8)
 			ScreenLinesUC[off] = NUL;
+		    else if (!has_mbyte)
 #endif
+			ScreenLines[off] = NUL;
 		    ++pos.col;
 		    ++off;
 		}
