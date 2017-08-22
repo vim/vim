@@ -68,6 +68,7 @@
  * Latest version: http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
  */
 
+#if !defined(IS_COMBINING_FUNCTION) || !defined(WCWIDTH_FUNCTION)
 struct interval {
   int first;
   int last;
@@ -126,7 +127,6 @@ static const struct interval combining[] = {
   { 0xE0100, 0xE01EF }
 };
 
-
 /* auxiliary function for binary search in interval table */
 static int bisearch(uint32_t ucs, const struct interval *table, int max) {
   int min = 0;
@@ -146,6 +146,7 @@ static int bisearch(uint32_t ucs, const struct interval *table, int max) {
 
   return 0;
 }
+#endif
 
 
 /* The following two functions define the column width of an ISO 10646
@@ -180,6 +181,11 @@ static int bisearch(uint32_t ucs, const struct interval *table, int max) {
  * in ISO 10646.
  */
 
+#ifdef WCWIDTH_FUNCTION
+/* use a provided wcwidth() function */
+int WCWIDTH_FUNCTION(uint32_t ucs);
+#else
+# define WCWIDTH_FUNCTION mk_wcwidth
 
 static int mk_wcwidth(uint32_t ucs)
 {
@@ -196,7 +202,7 @@ static int mk_wcwidth(uint32_t ucs)
 
   /* if we arrive here, ucs is not a combining or C0/C1 control character */
 
-  return 1 + 
+  return 1 +
     (ucs >= 0x1100 &&
      (ucs <= 0x115f ||                    /* Hangul Jamo init. consonants */
       ucs == 0x2329 || ucs == 0x232a ||
@@ -211,6 +217,7 @@ static int mk_wcwidth(uint32_t ucs)
       (ucs >= 0x20000 && ucs <= 0x2fffd) ||
       (ucs >= 0x30000 && ucs <= 0x3fffd)));
 }
+#endif
 
 #if 0 /* unused */
 static int mk_wcswidth(const uint32_t *pwcs, size_t n)
@@ -317,15 +324,28 @@ static int mk_wcswidth_cjk(const uint32_t *pwcs, size_t n)
 }
 #endif
 
+#ifdef IS_COMBINING_FUNCTION
+/* Use a provided is_combining() function. */
+int IS_COMBINING_FUNCTION(uint32_t codepoint);
+#else
+# define IS_COMBINING_FUNCTION vterm_is_combining
+	static int
+vterm_is_combining(uint32_t codepoint)
+{
+  return bisearch(codepoint, combining, sizeof(combining) / sizeof(struct interval) - 1);
+}
+#endif
+
+
 /* ################################
  * ### The rest added by Paul Evans */
 
 INTERNAL int vterm_unicode_width(uint32_t codepoint)
 {
-  return mk_wcwidth(codepoint);
+  return WCWIDTH_FUNCTION(codepoint);
 }
 
 INTERNAL int vterm_unicode_is_combining(uint32_t codepoint)
 {
-  return bisearch(codepoint, combining, sizeof(combining) / sizeof(struct interval) - 1);
+  return IS_COMBINING_FUNCTION(codepoint);
 }

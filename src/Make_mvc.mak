@@ -1474,7 +1474,12 @@ $(OUTDIR)/dimm_i.obj: $(OUTDIR) dimm_i.c $(INCL)
 $(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
 
 
-CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" -DVSNPRINTF=vim_vsnprintf -D_CRT_SECURE_NO_WARNINGS
+CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
+	-DVSNPRINTF=vim_vsnprintf \
+	-DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
+	-DWCWIDTH_FUNCTION=utf_uint2cells \
+	-D_CRT_SECURE_NO_WARNINGS
+
 $(OUTDIR)/term_encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/encoding.c
 
