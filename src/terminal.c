@@ -63,7 +63,6 @@
  *   mouse in the Terminal window for copy/paste.
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
- * - update ":help function-list" for terminal functions.
  * - In the GUI use a terminal emulator for :!cmd.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
@@ -2103,14 +2102,11 @@ term_update_window(win_T *wp)
 		if (c == NUL)
 		{
 		    ScreenLines[off] = ' ';
-#if defined(FEAT_MBYTE)
 		    if (enc_utf8)
 			ScreenLinesUC[off] = NUL;
-#endif
 		}
 		else
 		{
-#if defined(FEAT_MBYTE)
 		    if (enc_utf8)
 		    {
 			if (c >= 0x80)
@@ -2124,7 +2120,7 @@ term_update_window(win_T *wp)
 			    ScreenLinesUC[off] = NUL;
 			}
 		    }
-# ifdef WIN3264
+#ifdef WIN3264
 		    else if (has_mbyte && c >= 0x80)
 		    {
 			char_u	mb[MB_MAXBYTES+1];
@@ -2140,9 +2136,8 @@ term_update_window(win_T *wp)
 			else
 			    ScreenLines[off] = c;
 		    }
-# endif
-		    else
 #endif
+		    else
 			ScreenLines[off] = c;
 		}
 		ScreenAttrs[off] = cell2attr(cell.attrs, cell.fg, cell.bg);
@@ -2151,11 +2146,9 @@ term_update_window(win_T *wp)
 		++off;
 		if (cell.width == 2)
 		{
-#if defined(FEAT_MBYTE)
 		    if (enc_utf8)
 			ScreenLinesUC[off] = NUL;
 		    else if (!has_mbyte)
-#endif
 			ScreenLines[off] = NUL;
 		    ++pos.col;
 		    ++off;
