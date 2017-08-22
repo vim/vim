@@ -971,7 +971,11 @@ $(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)
 	$(CC) -c $(CFLAGS) terminal.c -o $(OUTDIR)/terminal.o
 
 
-CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" -DVSNPRINTF=vim_vsnprintf
+CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
+	  -DVSNPRINTF=vim_vsnprintf \
+	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
+	  -DWCWIDTH_FUNCTION=utf_uint2cells
+
 $(OUTDIR)/term_encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/encoding.c -o $@
 
