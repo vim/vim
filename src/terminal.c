@@ -2130,7 +2130,7 @@ term_update_window(win_T *wp)
 						       (char*)mb, 2, 0, 0) > 1)
 			{
 			    ScreenLines[off] = mb[0];
-			    ScreenLines[off+1] = mb[1];
+			    ScreenLines[off + 1] = mb[1];
 			    cell.width = mb_ptr2cells(mb);
 			}
 			else
@@ -2148,8 +2148,12 @@ term_update_window(win_T *wp)
 		{
 		    if (enc_utf8)
 			ScreenLinesUC[off] = NUL;
-		    else if (!has_mbyte)
+
+		    /* don't set the second byte to NUL for a DBCS encoding, it
+		     * has been set above */
+		    if (enc_utf8 || !has_mbyte)
 			ScreenLines[off] = NUL;
+
 		    ++pos.col;
 		    ++off;
 		}
