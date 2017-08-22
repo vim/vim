@@ -43,6 +43,10 @@
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
+ * - do not set bufhidden to "hide"?  works like a buffer with changes.
+ *   document that CTRL-W :hide can be used.
+ * - command argument with spaces doesn't work #1999
+ *       :terminal ls dir\ with\ spaces
  * - implement job options when starting a terminal.  Allow:
  *	"in_io", "in_top", "in_bot", "in_name", "in_buf"
 	"out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
@@ -845,7 +849,7 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
     int		empty = (buf->b_ml.ml_flags & ML_EMPTY);
     linenr_T	lnum = buf->b_ml.ml_line_count;
 
-#ifdef _WIN32
+#ifdef WIN3264
     if (!enc_utf8 && enc_codepage > 0)
     {
 	WCHAR   *ret = NULL;
@@ -1295,7 +1299,7 @@ term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg)
     {
 	entry.blinkwait = 700;
 	entry.blinkon = 400;
-	entry.blinkon = 250;
+	entry.blinkoff = 250;
     }
     *fg = gui.back_pixel;
     if (term->tl_cursor_color == NULL)
@@ -1487,7 +1491,7 @@ terminal_loop(void)
 		goto theend;
 	    }
 	}
-# ifdef _WIN32
+# ifdef WIN3264
 	if (!enc_utf8 && has_mbyte && c >= 0x80)
 	{
 	    WCHAR   wc;
@@ -2120,7 +2124,7 @@ term_update_window(win_T *wp)
 			    ScreenLinesUC[off] = NUL;
 			}
 		    }
-# ifdef _WIN32
+# ifdef WIN3264
 		    else if (has_mbyte && c >= 0x80)
 		    {
 			char_u	mb[MB_MAXBYTES+1];
@@ -2263,8 +2267,15 @@ create_vterm(term_T *term, int rows, int cols)
     /* Allow using alternate screen. */
     vterm_screen_enable_altscreen(screen, 1);
 
-    /* We do not want a blinking cursor by default. */
+    /* For unix do not use a blinking cursor.  In an xterm this causes the
+     * cursor to blink if it's blinking in the xterm.
+     * We do want a blinking cursor by default on Windows, since that's what
+     * the default is for a console. */
+#ifdef WIN3264
+    value.boolean = 1;
+#else
     value.boolean = 0;
+#endif
     vterm_state_set_termprop(vterm_obtain_state(vterm),
 					       VTERM_PROP_CURSORBLINK, &value);
 }
