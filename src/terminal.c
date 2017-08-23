@@ -1837,6 +1837,24 @@ handle_settermprop(
 	     * displayed */
 	    if (*skipwhite((char_u *)value->string) == NUL)
 		term->tl_title = NULL;
+#ifdef WIN3264
+	    else if (!enc_utf8 && enc_codepage > 0)
+	    {
+		WCHAR   *ret = NULL;
+		int	length = 0;
+
+		MultiByteToWideChar_alloc(CP_UTF8, 0,
+			(char*)value->string, STRLEN(value->string),
+								&ret, &length);
+		if (ret != NULL)
+		{
+		    WideCharToMultiByte_alloc(enc_codepage, 0,
+					ret, length, (char**)&term->tl_title,
+					&length, 0, 0);
+		    vim_free(ret);
+		}
+	    }
+#endif
 	    else
 		term->tl_title = vim_strsave((char_u *)value->string);
 	    vim_free(term->tl_status_text);
