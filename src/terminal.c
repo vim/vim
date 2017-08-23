@@ -940,7 +940,7 @@ move_terminal_to_buffer(term_T *term)
 			width = 1;
 			vim_memset(p + pos.col, 0, sizeof(cellattr_T));
 			if (ga_grow(&ga, 1) == OK)
-			    ga.ga_len += mb_char2bytes(' ',
+			    ga.ga_len += utf_char2bytes(' ',
 					     (char_u *)ga.ga_data + ga.ga_len);
 		    }
 		    else
@@ -1916,7 +1916,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 		    break;
 		}
 		for (i = 0; (c = cells[col].chars[i]) > 0 || i == 0; ++i)
-		    ga.ga_len += mb_char2bytes(c == NUL ? ' ' : c,
+		    ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
 					     (char_u *)ga.ga_data + ga.ga_len);
 		p[col].width = cells[col].width;
 		p[col].attrs = cells[col].attrs;
