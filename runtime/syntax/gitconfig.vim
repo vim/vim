@@ -13,7 +13,7 @@ setlocal iskeyword-=_
 syn case ignore
 syn sync minlines=10
 
-syn match   gitconfigComment	"[#;].*"
+syn match   gitconfigComment	"[#;].*" contains=@Spell
 syn match   gitconfigSection	"\%(^\s*\)\@<=\[[a-z0-9.-]\+\]"
 syn match   gitconfigSection	'\%(^\s*\)\@<=\[[a-z0-9.-]\+ \+\"\%([^\\"]\|\\.\)*"\]'
 syn match   gitconfigVariable	 "\%(^\s*\)\@<=\a\k*\%(\s*\%([=#;]\|$\)\)\@=" nextgroup=gitconfigAssignment skipwhite
