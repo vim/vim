@@ -84,6 +84,7 @@
 #	  TCL_VER=[Tcl version, e.g. 80, 83]  (default is 86)
 #	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.6)
 #	    You must set TCL_VER_LONG when you set TCL_VER.
+#	  TCL_DLL=[Tcl dll name, e.g. tcl86.dll]  (default is tcl86.dll)
 #
 #	Cscope support: CSCOPE=yes
 #
@@ -832,7 +833,9 @@ TCL_VER_LONG = 8.6
 !message Tcl requested (version $(TCL_VER)) - root dir is "$(TCL)"
 !if "$(DYNAMIC_TCL)" == "yes"
 !message Tcl DLL will be loaded dynamically
+!ifndef TCL_DLL
 TCL_DLL = tcl$(TCL_VER).dll
+!endif
 CFLAGS  = $(CFLAGS) -DFEAT_TCL -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"$(TCL_DLL)\" \
 		-DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
 TCL_OBJ	= $(OUTDIR)\if_tcl.obj
