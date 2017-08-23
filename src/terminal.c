@@ -169,6 +169,7 @@ static int term_backspace_char = BS;
 static int term_enter_char = CAR;
 static int term_nl_does_cr = FALSE;
 
+
 /**************************************
  * 1. Generic code for all systems.
  */
@@ -1809,9 +1810,8 @@ handle_settermprop(
 	     * displayed */
 	    if (*skipwhite((char_u *)value->string) == NUL)
 		term->tl_title = NULL;
-	    else
 #ifdef WIN3264
-	    if (!enc_utf8 && enc_codepage > 0)
+	    else if (!enc_utf8 && enc_codepage > 0)
 	    {
 		WCHAR   *ret = NULL;
 		int	length = 0;
@@ -1827,8 +1827,8 @@ handle_settermprop(
 		    vim_free(ret);
 		}
 	    }
-	    else
 #endif
+	    else
 		term->tl_title = vim_strsave((char_u *)value->string);
 	    vim_free(term->tl_status_text);
 	    term->tl_status_text = NULL;
