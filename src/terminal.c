@@ -1260,10 +1260,31 @@ term_paste_register(int prev_c UNUSED)
 	type = get_reg_type(c, &reglen);
 	for (item = l->lv_first; item != NULL; item = item->li_next)
 	{
-	    char_u *s = get_tv_string(&item->li_tv);
+	    char_u *s = get_tv_string(&item->li_tv), *tmp = s;
+#ifdef WIN3264
+	    if (!enc_utf8 && enc_codepage > 0)
+	    {
+		WCHAR   *ret = NULL;
+		int	length = 0;
+
+		MultiByteToWideChar_alloc(enc_codepage, 0, (char*)s, STRLEN(s),
+							   &ret, &length);
+		if (ret != NULL)
+		{
+		    WideCharToMultiByte_alloc(CP_UTF8, 0,
+				    ret, length, (char **)&s, &length, 0, 0);
+		    vim_free(ret);
+		}
+	    }
+#endif
 
 	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
 							   s, STRLEN(s), NULL);
+#ifdef WIN3264
+	    if (tmp != s)
+		vim_free(s);
+#endif
+
 	    if (item->li_next != NULL || type == MLINE)
 		channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
 						      (char_u *)"\r", 1, NULL);
