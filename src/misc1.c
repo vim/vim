@@ -3744,8 +3744,10 @@ init_homedir(void)
     vim_free(homedir);
     homedir = NULL;
 
-#ifdef VMS
+#if defined(VMS)
     var = mch_getenv((char_u *)"SYS$LOGIN");
+#elif defined(WIN3264)
+    var = mch_getenv((char_u *)"USERPROFILE");
 #else
     var = mch_getenv((char_u *)"HOME");
 #endif
@@ -3753,61 +3755,7 @@ init_homedir(void)
     if (var != NULL && *var == NUL)	/* empty is same as not set */
 	var = NULL;
 
-#ifdef WIN3264
-    /*
-     * Weird but true: $HOME may contain an indirect reference to another
-     * variable, esp. "%USERPROFILE%".  Happens when $USERPROFILE isn't set
-     * when $HOME is being set.
-     */
-    if (var != NULL && *var == '%')
-    {
-	char_u	*p;
-	char_u	*exp;
-
-	p = vim_strchr(var + 1, '%');
-	if (p != NULL)
-	{
-	    vim_strncpy(NameBuff, var + 1, p - (var + 1));
-	    exp = mch_getenv(NameBuff);
-	    if (exp != NULL && *exp != NUL
-					&& STRLEN(exp) + STRLEN(p) < MAXPATHL)
-	    {
-		vim_snprintf((char *)NameBuff, MAXPATHL, "%s%s", exp, p + 1);
-		var = NameBuff;
-		/* Also set $HOME, it's needed for _viminfo. */
-		vim_setenv((char_u *)"HOME", NameBuff);
-	    }
-	}
-    }
-
-    /*
-     * Typically, $HOME is not defined on Windows, unless the user has
-     * specifically defined it for Vim's sake.  However, on Windows NT
-     * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
-     * each user.  Try constructing $HOME from these.
-     */
-    if (var == NULL)
-    {
-	char_u *homedrive, *homepath;
-
-	homedrive = mch_getenv((char_u *)"HOMEDRIVE");
-	homepath = mch_getenv((char_u *)"HOMEPATH");
-	if (homepath == NULL || *homepath == NUL)
-	    homepath = (char_u *)"\\";
-	if (homedrive != NULL
-			   && STRLEN(homedrive) + STRLEN(homepath) < MAXPATHL)
-	{
-	    sprintf((char *)NameBuff, "%s%s", homedrive, homepath);
-	    if (NameBuff[0] != NUL)
-	    {
-		var = NameBuff;
-		/* Also set $HOME, it's needed for _viminfo. */
-		vim_setenv((char_u *)"HOME", NameBuff);
-	    }
-	}
-    }
-
-# if defined(FEAT_MBYTE)
+#if defined(WIN3264) && defined(FEAT_MBYTE)
     if (enc_utf8 && var != NULL)
     {
 	int	len;
@@ -3822,7 +3770,6 @@ init_homedir(void)
 	    return;
 	}
     }
-# endif
 #endif
 
 #if defined(MSWIN)
