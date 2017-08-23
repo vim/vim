@@ -1755,6 +1755,7 @@ handle_moverect(VTermRect dest, VTermRect src, void *user)
 	vim_memset(&attr, 0, sizeof(attr));
 	clear_attr = cell2attr(attr, fg, bg);
 
+	++RedrawingDisabled;
 	FOR_ALL_WINDOWS(wp)
 	{
 	    if (wp->w_buffer == term->tl_buffer)
@@ -1762,7 +1763,10 @@ handle_moverect(VTermRect dest, VTermRect src, void *user)
 				 src.start_row - dest.start_row, FALSE, FALSE,
 				 clear_attr);
 	}
+	--RedrawingDisabled;
     }
+
+
     redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
