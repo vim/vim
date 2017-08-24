@@ -4027,8 +4027,7 @@ mch_report_winsize(int fd, int rows, int cols)
 }
 
 # if defined(__APPLE__)
-#  include <sys/types.h>
-#  include <sys/sysctl.h>
+#  include <libproc.h>
 # elif defined(SUN_SYSTEM)
 #  define _STRUCTURED_PROC 1
 #  include <sys/procfs.h>
@@ -4091,9 +4090,7 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
     }
 # elif defined(__APPLE__)
     {
-	int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
-	struct kinfo_proc kp;
-	size_t size = sizeof(kp);
+	struct proc_bsdinfo bi;
 
 	if (proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &bi, sizeof(bi)) > 0)
 	{
