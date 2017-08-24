@@ -793,6 +793,10 @@ job_getchannel({job})					 *job_getchannel()*
 			if string(job_getchannel()) == 'channel fail'
 <
 
+job_getcwd({job})					*job_getcwd()*
+		Returns the current working directory path of {job}.
+
+
 job_info([{job}])					*job_info()*
 		Returns a Dictionary with information about {job}:
 		   "status"	what |job_status()| returns
