@@ -1980,3 +1980,21 @@ func Test_zz_ch_log()
   call assert_match("%s%s", text[2])
   call delete('Xlog')
 endfunc
+
+func Test_job_getcwd()
+  if has('win32')
+    let dir = $TEMP
+    let cmd = ['cmd', '/C', 'start /wait ' . $windir . '\system32\timeout /T 3 /NOBREAK']
+  else
+    let dir = $HOME
+    let cmd = ['sleep', '3']
+  endif
+  let job = job_start(cmd, {'cwd': dir})
+  call WaitFor({-> job_status(job) == "run"})
+  call WaitFor({-> job_getcwd(job) != getcwd(-1)})
+  let cwd = job_getcwd(job)
+  let dir = substitute(dir, '[/\\]*$', '', '')
+  let cwd = substitute(cwd, '[/\\]*$', '', '')
+  call assert_equal(dir, cwd)
+  call job_stop(job)
+endfunc
