@@ -2311,10 +2311,12 @@ create_vterm(term_T *term, int rows, int cols)
 
     /* For unix do not use a blinking cursor.  In an xterm this causes the
      * cursor to blink if it's blinking in the xterm.
-     * We do want a blinking cursor by default on Windows, since that's what
-     * the default is for a console. */
+     * For Windows we respect the system wide setting. */
 #ifdef WIN3264
-    value.boolean = 1;
+    if (GetCaretBlinkTime() == INFINITE)
+	value.boolean = 0;
+    else
+	value.boolean = 1;
 #else
     value.boolean = 0;
 #endif
