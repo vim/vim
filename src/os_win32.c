@@ -5432,6 +5432,117 @@ mch_clear_job(job_T *job)
 	CloseHandle(job->jv_proc_info.hProcess);
     }
 }
+
+typedef NTSTATUS (NTAPI *NtQueryInformationProcess_T)(
+    HANDLE	ProcessHandle,
+    DWORD	ProcessInformationClass,
+    PVOID	ProcessInformation,
+    DWORD	ProcessInformationLength,
+    PDWORD	ReturnLength);
+
+typedef struct
+{
+    PVOID	Reserved1;
+    PVOID	PebBaseAddress;
+    PVOID	Reserved2[4];
+} PROCESS_BASIC_INFORMATION;
+
+    static PVOID
+GetPebAddress(HANDLE ProcessHandle)
+{
+    static NtQueryInformationProcess_T NtQueryInformationProcess;
+    PROCESS_BASIC_INFORMATION pbi;
+
+    if (NtQueryInformationProcess == NULL)
+    {
+	NtQueryInformationProcess =
+	    (NtQueryInformationProcess_T)GetProcAddress(
+		GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
+	if (NtQueryInformationProcess == NULL)
+	    return NULL;
+    }
+
+    NtQueryInformationProcess(ProcessHandle, 0, &pbi, sizeof(pbi), NULL);
+    return pbi.PebBaseAddress;
+}
+
+typedef struct
+{
+    USHORT	Length;
+    USHORT	MaximumLength;
+    WCHAR	*Buffer;
+} UNICODE_STRING;
+
+typedef struct
+{
+    BOOLEAN	Reserved1[4];
+    PVOID	Reserved2[3];
+    PVOID	ProcessParameters;
+} PEB;
+
+typedef struct
+{
+    ULONG		Reserved1[4];
+    PVOID		Reserved2;
+    ULONG		Reserved3;
+    PVOID		Reserved4[3];
+    UNICODE_STRING	CurrentDirectory;
+} RTL_USER_PROCESS_PARAMETERS;
+
+# define PEB_OFFSET	offsetof(PEB, ProcessParameters)
+# define RTL_OFFSET	offsetof(RTL_USER_PROCESS_PARAMETERS, CurrentDirectory)
+
+/*
+ * Get the working directory of "job".
+ */
+int
+mch_get_job_cwd(job_T *job, char_u **cwd)
+{
+    DWORD		pid = job->jv_proc_info.dwProcessId;
+    HANDLE		hProcess = NULL;
+    PVOID		baseAddress;
+    UNICODE_STRING	currentDirectory;
+    WCHAR		*currentDirectoryContents = NULL;
+    int			len;
+    int			ret = FAIL;
+
+    hProcess = OpenProcess(
+		    PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
+    if (hProcess == NULL)
+	return FAIL;
+
+    baseAddress = GetPebAddress(hProcess);
+    if (baseAddress == NULL)
+	goto theend;
+
+    if (ReadProcessMemory(hProcess, (PCHAR)baseAddress + PEB_OFFSET,
+			&baseAddress, sizeof(PVOID), NULL) == 0)
+	goto theend;
+
+    if (ReadProcessMemory(hProcess, (PCHAR)baseAddress + RTL_OFFSET,
+			&currentDirectory, sizeof(UNICODE_STRING), NULL) == 0)
+	goto theend;
+
+    len = currentDirectory.Length / sizeof(WCHAR) + 1;
+    currentDirectoryContents = (WCHAR *)alloc(len * sizeof(WCHAR));
+    if (currentDirectoryContents == NULL)
+	goto theend;
+
+    if (ReadProcessMemory(hProcess, currentDirectory.Buffer,
+		currentDirectoryContents, currentDirectory.Length, NULL) == 0)
+	goto theend;
+
+    currentDirectoryContents[len - 1] = 0;
+    *cwd = utf16_to_enc(currentDirectoryContents, &len);
+    if (*cwd != NULL)
+	ret = OK;
+
+theend:
+    if (hProcess != NULL)
+	CloseHandle(hProcess);
+    vim_free(currentDirectoryContents);
+    return ret;
+}
 #endif
 
 
