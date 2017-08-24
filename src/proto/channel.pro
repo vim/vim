@@ -91,6 +91,7 @@ void f_ch_sendraw(typval_T *argvars, typval_T *rettv);
 void f_ch_setoptions(typval_T *argvars, typval_T *rettv);
 void f_ch_status(typval_T *argvars, typval_T *rettv);
 void f_job_getchannel(typval_T *argvars, typval_T *rettv);
+void f_job_getcwd(typval_T *argvars, typval_T *rettv);
 void f_job_info(typval_T *argvars, typval_T *rettv);
 void f_job_setoptions(typval_T *argvars, typval_T *rettv);
 void f_job_start(typval_T *argvars, typval_T *rettv);

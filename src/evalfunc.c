@@ -655,6 +655,7 @@ static funcentry_T global_functions[] =
     {"items",		1, 1, FEARG_1,	  f_items},
 #ifdef FEAT_JOB_CHANNEL
     {"job_getchannel",	1, 1, 0,	  f_job_getchannel},
+    {"job_getcwd",	1, 1, 0,	  f_job_getcwd},
     {"job_info",	0, 1, 0,	  f_job_info},
     {"job_setoptions",	2, 2, 0,	  f_job_setoptions},
     {"job_start",	1, 2, 0,	  f_job_start},

@@ -6436,6 +6436,22 @@ f_job_getchannel(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "job_getcwd()" function
+ */
+    void
+f_job_getcwd(typval_T *argvars, typval_T *rettv)
+{
+    job_T	*job = get_job_arg(&argvars[0]);
+
+    if (job != NULL)
+    {
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = NULL;
+	mch_get_job_cwd(job, &rettv->vval.v_string);
+    }
+}
+
+/*
  * Implementation of job_info().
  */
     static void
