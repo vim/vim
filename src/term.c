@@ -4626,6 +4626,10 @@ check_termcode(
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
+			if (tp[i] == 0x07 && i + 1 < len && tp[i + 1] == 0x18)
+			    /* Sometimes the 0x07 is followed by 0x18, unclear
+			     * when this happens. */
+			    ++slen;
 			break;
 		    }
 		if (i == len)
