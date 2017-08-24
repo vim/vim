@@ -5372,6 +5372,10 @@ mch_call_shell(
 }
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+# if defined(MACOS_X) && defined(MAC_OS_X_VERSION_10_5)
+#  include <libproc.h>
+# endif
+
     void
 mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 {
@@ -5874,6 +5878,54 @@ mch_clear_job(job_T *job)
 # else
     (void)waitpid(job->jv_pid, NULL, WNOHANG);
 # endif
+}
+
+/*
+ * Get the working directory of "job".
+ */
+    int
+mch_get_job_cwd(job_T *job, char_u **cwd)
+{
+    pid_t	pid = job->jv_pid;
+
+# if defined(MACOS_X) && defined(MAC_OS_X_VERSION_10_5)
+    {
+	struct proc_vnodepathinfo vpi;
+
+	if (proc_pidinfo(pid, PROC_PIDVNODEPATHINFO, 0, &vpi, sizeof(vpi)) > 0)
+	{
+	    *cwd = vim_strsave((char_u *)vpi.pvi_cdir.vip_path);
+	    return OK;
+	}
+    }
+# elif defined(HAVE_READLINK)
+#  if defined(SUN_SYSTEM)
+#   define PROCWD_PATH	"/proc/%d/path/cwd"
+#  else
+#   define PROCWD_PATH	"/proc/%d/cwd"
+#  endif
+    {
+	char procwd[32];
+	char path[MAXPATHL];
+	ssize_t len;
+
+	vim_snprintf(procwd, sizeof(procwd), PROCWD_PATH, pid);
+	if (mch_isdir(procwd))
+	{
+	    len = readlink(procwd, path, sizeof(path));
+	    if (len > 0)
+	    {
+		*cwd = vim_strnsave((char_u *)path, len);
+		return OK;
+	    }
+	}
+    }
+# else
+    /*
+     * Not implemented yet. Is there any other method?
+     */
+# endif
+    return FAIL;
 }
 #endif
 

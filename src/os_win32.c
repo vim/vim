@@ -5495,7 +5495,7 @@ typedef struct
 /*
  * Get the working directory of "job".
  */
-int
+    int
 mch_get_job_cwd(job_T *job, char_u **cwd)
 {
     DWORD		pid = job->jv_proc_info.dwProcessId;
