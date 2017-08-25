@@ -388,6 +388,7 @@ NEW_TESTS_RES = \
 	test_scriptnames.res \
 	test_scrollbind.res \
 	test_search.res \
+	test_search_stat.res \
 	test_shortpathname.res \
 	test_signals.res \
 	test_signs.res \

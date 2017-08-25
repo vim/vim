@@ -2449,7 +2449,7 @@ static struct vimoption options[] =
 			    {(char_u *)8L, (char_u *)0L} SCTX_INIT},
     {"shortmess",   "shm",  P_STRING|P_VIM|P_FLAGLIST,
 			    (char_u *)&p_shm, PV_NONE,
-			    {(char_u *)"", (char_u *)"filnxtToO"}
+			    {(char_u *)"S", (char_u *)"filnxtToOS"}
 			    SCTX_INIT},
     {"shortname",   "sn",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_sn, PV_SN,
@@ -3311,7 +3311,7 @@ set_init_1(int clean_arg)
     if (mch_getenv((char_u *)"VIM_POSIX") != NULL)
     {
 	set_string_default("cpo", (char_u *)CPO_ALL);
-	set_string_default("shm", (char_u *)"A");
+	set_string_default("shm", (char_u *)SHM_POSIX);
     }
 
     /*
