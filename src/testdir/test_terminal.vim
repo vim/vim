@@ -456,6 +456,11 @@ func Test_terminal_noblock()
 
   for c in ['a','b','c','d','e','f','g','h','i','j','k']
     call term_sendkeys(g:buf, 'echo ' . repeat(c, 5000) . "\<cr>")
+    if has('mac')
+      " TODO: this should not be needed, but without it sending keys blocks
+      " after 8000 chars or so.
+      sleep 100m
+    endif
   endfor
   call term_sendkeys(g:buf, "echo done\<cr>")
 
