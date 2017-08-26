@@ -6321,7 +6321,7 @@ parse_queued_messages(void)
 {
     /* For Win32 mch_breakcheck() does not check for input, do it here. */
 # if defined(WIN32) && defined(FEAT_JOB_CHANNEL)
-    channel_handle_events();
+    channel_handle_events(FALSE);
 # endif
 
 # ifdef FEAT_NETBEANS_INTG
