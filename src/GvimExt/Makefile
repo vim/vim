@@ -1,11 +1,14 @@
 # Makefile for GvimExt, using MSVC
 # Options:
 #   DEBUG=yes		Build debug version (for VC7 and maybe later)
+#   CPUARG=		/arch:IA32/AVX/etc, call from main makefile to set
+#   			automatically from CPUNR
 #
 
-TARGETOS=WINNT
+TARGETOS = WINNT
+
 !ifndef APPVER
-APPVER=5.0
+APPVER = 5.01
 !endif
 
 !if "$(DEBUG)" != "yes"
@@ -33,9 +36,20 @@ CPU = i386
 
 !ifdef SDK_INCLUDE_DIR
 !include $(SDK_INCLUDE_DIR)\Win32.mak
-!else
+!elseif "$(USE_WIN32MAK)"=="yes"
 !include <Win32.mak>
+!else
+cc = cl
+link = link
+rc = rc
+cflags = -nologo -c
+lflags = -incremental:no -nologo
+rcflags = /r
+olelibsdll = ole32.lib uuid.lib oleaut32.lib user32.lib gdi32.lib advapi32.lib
 !endif
+
+# include CPUARG
+cflags = $(cflags) $(CPUARG)
 
 all: gvimext.dll
 

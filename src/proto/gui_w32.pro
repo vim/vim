@@ -21,6 +21,7 @@ GuiFont gui_mch_get_font(char_u *name, int giveErrorIfMissing);
 char_u *gui_mch_get_fontname(GuiFont font, char_u *name);
 void gui_mch_free_font(GuiFont font);
 guicolor_T gui_mch_get_color(char_u *name);
+guicolor_T gui_mch_get_rgb_color(int r, int g, int b);
 int gui_mch_haskey(char_u *name);
 void gui_mch_beep(void);
 void gui_mch_invert_rectangle(int r, int c, int nr, int nc);

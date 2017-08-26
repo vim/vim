@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 8.0.  Last change: 2011 Jun 12
+*if_cscop.txt*  For Vim version 8.0.  Last change: 2017 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -91,9 +91,10 @@ suggested use.)
 2. Cscope related commands				*cscope-commands*
 
 		*:cscope* *:cs* *:scs* *:scscope* *E259* *E262* *E561* *E560*
-All cscope commands are accessed through suboptions to the main cscope
-command ":cscope".  The shortest abbreviation is ":cs".  The ":scscope"
-command does the same and also splits the window (short: "scs").
+All cscope commands are accessed through suboptions to the cscope commands.
+	`:cscope` or `:cs` is the main command
+	`:scscope` or `:scs` does the same and splits the window
+	`:lcscope` or `:lcs` uses the location list, see |:lcscope|
 
 The available subcommands are:
 

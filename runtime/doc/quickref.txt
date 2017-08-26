@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.0.  Last change: 2016 Dec 16
+*quickref.txt*  For Vim version 8.0.  Last change: 2017 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -920,6 +920,8 @@ Short explanation of each option:		*option-list*
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
 'termguicolors'	  'tgc'     use GUI colors for the terminal
+'termkey'	  'tk'	    key that precedes a Vim command in a terminal
+'termsize'	  'tms'	    size of a terminal window
 'terse'			    shorten some messages
 'textauto'	  'ta'	    obsolete, use 'fileformats'
 'textmode'	  'tx'	    obsolete, use 'fileformat'
@@ -952,6 +954,7 @@ Short explanation of each option:		*option-list*
 'viewdir'	  'vdir'    directory where to store files with :mkview
 'viewoptions'	  'vop'     specifies what to save for :mkview
 'viminfo'	  'vi'	    use .viminfo file upon startup and exiting
+'viminfofile'	  'vif'	    file name used for the viminfo file
 'virtualedit'	  've'	    when to use virtual editing
 'visualbell'	  'vb'	    use visual bell instead of beeping
 'warn'			    warn for shell command when buffer was changed
@@ -1309,6 +1312,7 @@ Context-sensitive completion on the command-line:
 
 |:sfind|	:sf[ind] {file}		split window, find {file} in 'path'
 					   and edit it
+|:terminal|	:terminal {cmd}		open a terminal window
 |CTRL-W_]|	CTRL-W ]		split window and jump to tag under
 					   cursor
 |CTRL-W_f|	CTRL-W f		split window and edit file name under

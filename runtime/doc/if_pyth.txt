@@ -894,10 +894,10 @@ On Ubuntu you will want to install these packages for Python 2:
 	python-dev
 For Python 3:
 	python3
-	pytyon3-dev
+	python3-dev
 For Python 3.6:
 	python3.6
-	pytyon3.6-dev
+	python3.6-dev
 
 If you have more than one version of Python 3, you need to link python3 to the
 one you prefer, before running configure.

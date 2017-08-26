@@ -127,7 +127,8 @@ _RTLENTRYF
 #  endif
 vim_snprintf(char *, size_t, char *, ...);
 
-int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
+int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap);
+int vim_vsnprintf_typval(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
 
 # include "message.pro"
 # include "misc1.pro"
@@ -162,6 +163,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"
+# ifdef FEAT_TERMINAL
+#  include "terminal.pro"
+# endif
 # if defined(HAVE_TGETENT) && (defined(AMIGA) || defined(VMS))
 #  include "termlib.pro"
 # endif
@@ -208,15 +212,18 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 #  include "channel.pro"
 # endif
 
-# ifdef FEAT_GUI
-#  include "gui.pro"
+# if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
 #  if defined(UNIX) || defined(MACOS)
 #   include "pty.pro"
 #  endif
+# endif
+
+# ifdef FEAT_GUI
+#  include "gui.pro"
 #  if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) && !defined(VMS)
-extern int putenv(const char *string);		/* from pty.c */
+extern int putenv(const char *string);			/* in misc2.c */
 #   ifdef USE_VIMPTY_GETENV
-extern char_u *vimpty_getenv(const char_u *string);	/* from pty.c */
+extern char_u *vimpty_getenv(const char_u *string);	/* in misc2.c */
 #   endif
 #  endif
 #  ifdef FEAT_GUI_W32

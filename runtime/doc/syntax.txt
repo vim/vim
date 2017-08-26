@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.0.  Last change: 2017 Jun 04
+*syntax.txt*	For Vim version 8.0.  Last change: 2017 Jul 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4689,6 +4689,7 @@ the same syntax file on all terminals, and use the optimal highlighting.
 
 					*bold* *underline* *undercurl*
 					*inverse* *italic* *standout*
+					*nocombine*
 term={attr-list}			*attr-list* *highlight-term* *E418*
 	attr-list is a comma separated list (without spaces) of the
 	following items (in any order):
@@ -4699,6 +4700,7 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 		inverse		same as reverse
 		italic
 		standout
+		nocombine	override attributes instead of combining them
 		NONE		no attributes used (used to reset it)
 
 	Note that "bold" can be used here and by using a bold font.  They
@@ -4982,10 +4984,11 @@ PmenuSbar	Popup menu: scrollbar.
 PmenuThumb	Popup menu: Thumb of the scrollbar.
 							*hl-Question*
 Question	|hit-enter| prompt and yes/no questions
+							*hl-QuickFixLine*
+QuickFixLine	Current |quickfix| item in the quickfix window.
 							*hl-Search*
 Search		Last search pattern highlighting (see 'hlsearch').
-		Also used for highlighting the current line in the quickfix
-		window and similar items that need to stand out.
+		Also used for similar items that need to stand out.
 							*hl-SpecialKey*
 SpecialKey	Meta and special keys listed with ":map", also for text used
 		to show unprintable characters in the text, 'listchars'.

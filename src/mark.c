@@ -1649,6 +1649,19 @@ handle_viminfo_mark(garray_T *values, int force)
     }
 }
 
+/*
+ * Return TRUE if marks for "buf" should not be written.
+ */
+    static int
+skip_for_viminfo(buf_T *buf)
+{
+    return
+#ifdef FEAT_TERMINAL
+	    bt_terminal(buf) ||
+#endif
+	    removable(buf->b_ffname);
+}
+
     void
 write_viminfo_filemarks(FILE *fp)
 {
@@ -1681,7 +1694,7 @@ write_viminfo_filemarks(FILE *fp)
      * Move '0 to '1, '1 to '2, etc. until the matching one or '9
      * Set the '0 mark to current cursor position.
      */
-    if (curbuf->b_ffname != NULL && !removable(curbuf->b_ffname))
+    if (curbuf->b_ffname != NULL && !skip_for_viminfo(curbuf))
     {
 	name = buflist_nr2name(curbuf->b_fnum, TRUE, FALSE);
 	for (i = NMARKS; i < NMARKS + EXTRA_MARKS - 1; ++i)
@@ -1757,7 +1770,7 @@ write_viminfo_filemarks(FILE *fp)
 	    --idx;
 	if (fm->fmark.fnum == 0
 		|| ((buf = buflist_findnr(fm->fmark.fnum)) != NULL
-		    && !removable(buf->b_ffname)))
+		    && !skip_for_viminfo(buf)))
 	    write_one_filemark(fp, fm, '-', '\'');
     }
 #endif
@@ -1917,7 +1930,8 @@ write_viminfo_marks(FILE *fp_out, garray_T *buflist)
 		    }
 	    }
 	    if (is_mark_set && buf->b_ffname != NULL
-		      && buf->b_ffname[0] != NUL && !removable(buf->b_ffname))
+		      && buf->b_ffname[0] != NUL
+		      && !skip_for_viminfo(buf))
 	    {
 		if (buflist == NULL)
 		    write_buffer_marks(buf, fp_out);

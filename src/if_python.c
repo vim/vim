@@ -779,6 +779,7 @@ get_exceptions(void)
 
 static int initialised = 0;
 #define PYINITIALISED initialised
+static int python_end_called = FALSE;
 
 #define DESTRUCTOR_FINISH(self) self->ob_type->tp_free((PyObject*)self);
 
@@ -878,6 +879,7 @@ python_end(void)
     if (recurse != 0)
 	return;
 
+    python_end_called = TRUE;
     ++recurse;
 
 #ifdef DYNAMIC_PYTHON
@@ -1040,6 +1042,8 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     }
     ++recursive;
 #endif
+    if (python_end_called)
+	return;
 
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
     GetPort(&oldPort);
@@ -1568,7 +1572,7 @@ do_pyeval (char_u *str, typval_T *rettv)
 	    (rangeinitializer) init_range_eval,
 	    (runner) run_eval,
 	    (void *) rettv);
-    switch(rettv->v_type)
+    switch (rettv->v_type)
     {
 	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
 	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;

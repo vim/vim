@@ -1268,6 +1268,18 @@
 #endif
 
 /*
+ * +terminal		":terminal" command.  Runs a terminal in a window.
+ *			requires +channel and +multibyte
+ */
+#if defined(FEAT_TERMINAL) && \
+	!(defined(FEAT_JOB_CHANNEL) && defined(FEAT_MBYTE))
+# undef FEAT_TERMINAL
+#endif
+#if defined(FEAT_TERMINAL) && !defined(CURSOR_SHAPE)
+# define CURSOR_SHAPE
+#endif
+
+/*
  * +signs		Allow signs to be displayed to the left of text lines.
  *			Adds the ":sign" command.
  */

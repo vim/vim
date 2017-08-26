@@ -9,7 +9,7 @@
 #   Edyfox <edyfox@gmail.com>
 #   Yuheng Xie <elephant@linux.net.cn>
 #
-# Generated from zh_CN.po, DO NOT EDIT.
+# Generated from zh_CN.UTF-8.po, DO NOT EDIT.
 #
 msgid ""
 msgstr ""
@@ -17,8 +17,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2006-04-21 15:16+0800\n"
 "PO-Revision-Date: 2006-04-21 14:00+0800\n"
-"Last-Translator: Yuheng Xie <elephant@linux.net.cn>\n"
-"Language-Team: Simplified Chinese <i18n-translation@lists.linux.net.cn>\n"
+"Last-Translator: Yuheng Xie\n"
+"Language-Team: Simplified Chinese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=gbk\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -2894,7 +2894,8 @@ msgstr "-X\t\t\t不连接到 X Server"
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <files>\t如有可能，在 Vim 服务器上编辑文件 <files>"
 
-msgid "--remote-silent <files>  Same, don't complain if there is no server"
+msgid ""
+"--remote-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-silent <files>  同上，找不到服务器时不抱怨"
 
 msgid ""

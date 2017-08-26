@@ -52,6 +52,10 @@ static int	cmd_showtail;		/* Only show path tail in lists ? */
 static int	new_cmdpos;	/* position set by set_cmdline_pos() */
 #endif
 
+static int	extra_char = NUL;  /* extra character to display when redrawing
+				    * the command line */
+static int	extra_char_shift;
+
 #ifdef FEAT_CMDHIST
 typedef struct hist_entry
 {
@@ -1179,6 +1183,7 @@ getcmdline(
 		    i = Ctrl_R;		/* CTRL-R CTRL-O == CTRL-R CTRL-R */
 		if (i == Ctrl_R)
 		    c = plain_vgetc();	/* CTRL-R CTRL-R <char> */
+		extra_char = NUL;
 		--no_mapping;
 #ifdef FEAT_EVAL
 		/*
@@ -1492,7 +1497,7 @@ getcmdline(
 			    if (c != NUL)
 			    {
 				if (c == firstc || vim_strchr((char_u *)(
-					      p_magic ? "\\^$.*[" : "\\^$"), c)
+					      p_magic ? "\\~^$.*[" : "\\^$"), c)
 								       != NULL)
 				{
 				    /* put a backslash before special
@@ -1693,7 +1698,7 @@ getcmdline(
 		    i = searchit(curwin, curbuf, &t,
 				 c == Ctrl_G ? FORWARD : BACKWARD,
 				 ccline.cmdbuff, count, search_flags,
-				 RE_SEARCH, 0, NULL);
+				 RE_SEARCH, 0, NULL, NULL);
 		    --emsg_off;
 		    if (i)
 		    {
@@ -1707,6 +1712,14 @@ getcmdline(
 			     * put back on the match */
 			    search_start = t;
 			    (void)decl(&search_start);
+			}
+			else if (c == Ctrl_G && firstc == '?')
+			{
+			    /* move just after the current match, so that
+			     * when nv_search finishes the cursor will be
+			     * put back on the match */
+			    search_start = t;
+			    (void)incl(&search_start);
 			}
 			if (LT_POS(t, search_start) && c == Ctrl_G)
 			{
@@ -1749,6 +1762,7 @@ getcmdline(
 		putcmdline('^', TRUE);
 		c = get_literal();	    /* get next (two) character(s) */
 		do_abbr = FALSE;	    /* don't do abbreviation now */
+		extra_char = NUL;
 #ifdef FEAT_MBYTE
 		/* may need to remove ^ when composing char was typed */
 		if (enc_utf8 && utf_iscomposing(c) && !cmd_silent)
@@ -1770,6 +1784,7 @@ getcmdline(
 		dont_scroll = TRUE;	    /* disallow scrolling here */
 #endif
 		c = get_digraph(TRUE);
+		extra_char = NUL;
 		if (c != NUL)
 		    break;
 
@@ -1903,9 +1918,9 @@ cmdline_changed:
 		i = do_search(NULL, firstc, ccline.cmdbuff, count,
 			SEARCH_KEEP + SEARCH_OPT + SEARCH_NOOF + SEARCH_PEEK,
 #ifdef FEAT_RELTIME
-			&tm
+			&tm, NULL
 #else
-			NULL
+			NULL, NULL
 #endif
 			);
 		--emsg_off;
@@ -2929,6 +2944,8 @@ putcmdline(int c, int shift)
 	draw_cmdline(ccline.cmdpos, ccline.cmdlen - ccline.cmdpos);
     msg_no_more = FALSE;
     cursorcmd();
+    extra_char = c;
+    extra_char_shift = shift;
 }
 
 /*
@@ -2951,6 +2968,7 @@ unputcmdline(void)
 	draw_cmdline(ccline.cmdpos, 1);
     msg_no_more = FALSE;
     cursorcmd();
+    extra_char = NUL;
 }
 
 /*
@@ -3401,6 +3419,8 @@ redrawcmd(void)
     msg_no_more = FALSE;
 
     set_cmdspos_cursor();
+    if (extra_char != NUL)
+	putcmdline(extra_char, extra_char_shift);
 
     /*
      * An emsg() before may have set msg_scroll. This is used in normal mode,
@@ -4859,6 +4879,7 @@ ExpandFromContext(
 	{
 	    {EXPAND_COMMANDS, get_command_name, FALSE, TRUE},
 	    {EXPAND_BEHAVE, get_behave_arg, TRUE, TRUE},
+	    {EXPAND_MAPCLEAR, get_mapclear_arg, TRUE, TRUE},
 	    {EXPAND_MESSAGES, get_messages_arg, TRUE, TRUE},
 #ifdef FEAT_CMDHIST
 	    {EXPAND_HISTORY, get_history_arg, TRUE, TRUE},
@@ -6878,6 +6899,8 @@ open_cmdwin(void)
 # ifdef FEAT_AUTOCMD
     /* Do execute autocommands for setting the filetype (load syntax). */
     unblock_autocmds();
+    /* But don't allow switching to another buffer. */
+    ++curbuf_lock;
 # endif
 
     /* Showing the prompt may have set need_wait_return, reset it. */
@@ -6893,6 +6916,9 @@ open_cmdwin(void)
 	}
 	set_option_value((char_u *)"ft", 0L, (char_u *)"vim", OPT_LOCAL);
     }
+# ifdef FEAT_AUTOCMD
+    --curbuf_lock;
+# endif
 
     /* Reset 'textwidth' after setting 'filetype' (the Vim filetype plugin
      * sets 'textwidth' to 78). */
@@ -7029,7 +7055,13 @@ open_cmdwin(void)
 	else
 	    ccline.cmdbuff = vim_strsave(ml_get_curline());
 	if (ccline.cmdbuff == NULL)
+	{
+	    ccline.cmdbuff = vim_strsave((char_u *)"");
+	    ccline.cmdlen = 0;
+	    ccline.cmdbufflen = 1;
+	    ccline.cmdpos = 0;
 	    cmdwin_result = Ctrl_C;
+	}
 	else
 	{
 	    ccline.cmdlen = (int)STRLEN(ccline.cmdbuff);

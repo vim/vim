@@ -433,7 +433,9 @@ vim_main2(void)
 #ifndef NO_VIM_MAIN
     /* Reset 'loadplugins' for "-u NONE" before "--cmd" arguments.
      * Allows for setting 'loadplugins' there. */
-    if (params.use_vimrc != NULL && STRCMP(params.use_vimrc, "NONE") == 0)
+    if (params.use_vimrc != NULL
+	    && (STRCMP(params.use_vimrc, "NONE") == 0
+		|| STRCMP(params.use_vimrc, "DEFAULTS") == 0))
 	p_lpl = FALSE;
 
     /* Execute --cmd arguments. */
@@ -449,18 +451,28 @@ vim_main2(void)
      */
     if (p_lpl)
     {
+	char_u *rtp_copy = NULL;
+
 	/* First add all package directories to 'runtimepath', so that their
 	 * autoload directories can be found.  Only if not done already with a
-	 * :packloadall command. */
+	 * :packloadall command.
+	 * Make a copy of 'runtimepath', so that source_runtime does not use
+	 * the pack directories. */
 	if (!did_source_packages)
+	{
+	    rtp_copy = vim_strsave(p_rtp);
 	    add_pack_start_dirs();
+	}
 
+	source_in_path(rtp_copy == NULL ? p_rtp : rtp_copy,
 # ifdef VMS	/* Somehow VMS doesn't handle the "**". */
-	source_runtime((char_u *)"plugin/*.vim", DIP_ALL | DIP_NOAFTER);
+		(char_u *)"plugin/*.vim",
 # else
-	source_runtime((char_u *)"plugin/**/*.vim", DIP_ALL | DIP_NOAFTER);
+		(char_u *)"plugin/**/*.vim",
 # endif
+		DIP_ALL | DIP_NOAFTER);
 	TIME_MSG("loading plugins");
+	vim_free(rtp_copy);
 
 	/* Only source "start" packages if not done already with a :packloadall
 	 * command. */
@@ -792,6 +804,9 @@ vim_main2(void)
     if (params.n_commands > 0)
 	exe_commands(&params);
 
+    /* Must come before the may_req_ calls. */
+    starting = 0;
+
 #if defined(FEAT_TERMRESPONSE) && defined(FEAT_MBYTE)
     /* Must be done before redrawing, puts a few characters on the screen. */
     may_req_ambiguous_char_width();
@@ -800,7 +815,6 @@ vim_main2(void)
     RedrawingDisabled = 0;
     redraw_all_later(NOT_VALID);
     no_wait_return = FALSE;
-    starting = 0;
 
     /* 'autochdir' has been postponed */
     DO_AUTOCHDIR
@@ -1340,7 +1354,22 @@ main_loop(
 	    do_exmode(exmode_active == EXMODE_VIM);
 	}
 	else
-	    normal_cmd(&oa, TRUE);
+	{
+#ifdef FEAT_TERMINAL
+	    if (term_use_loop()
+		    && oa.op_type == OP_NOP && oa.regname == NUL
+		    && !VIsual_active)
+	    {
+		/* If terminal_loop() returns OK we got a key that is handled
+		 * in Normal model.  With FAIL we first need to position the
+		 * cursor and the screen needs to be redrawn. */
+		if (terminal_loop() == OK)
+		    normal_cmd(&oa, TRUE);
+	    }
+	    else
+#endif
+		normal_cmd(&oa, TRUE);
+	}
     }
 }
 
@@ -1857,6 +1886,7 @@ command_line_scan(mparm_T *parmp)
 	    case '-':		/* "--" don't take any more option arguments */
 				/* "--help" give help message */
 				/* "--version" give version message */
+				/* "--clean" clean context */
 				/* "--literal" take files literally */
 				/* "--nofork" don't fork */
 				/* "--not-a-term" don't warn for not a term */
@@ -1873,6 +1903,11 @@ command_line_scan(mparm_T *parmp)
 		    msg_putchar('\n');
 		    msg_didout = FALSE;
 		    mch_exit(0);
+		}
+		else if (STRNICMP(argv[0] + argv_idx, "clean", 5) == 0)
+		{
+		    parmp->use_vimrc = (char_u *)"DEFAULTS";
+		    set_option_value((char_u *)"vif", 0L, (char_u *)"NONE", 0);
 		}
 		else if (STRNICMP(argv[0] + argv_idx, "literal", 7) == 0)
 		{
@@ -2306,7 +2341,7 @@ command_line_scan(mparm_T *parmp)
 #endif
 
 		case 'i':	/* "-i {viminfo}" use for viminfo */
-		    use_viminfo = (char_u *)argv[0];
+		    set_option_value((char_u *)"vif", 0L, (char_u *)argv[0], 0);
 		    break;
 
 		case 's':	/* "-s {scriptin}" read from script file */
@@ -2438,10 +2473,10 @@ scripterror:
 	     */
 	    if (vim_strpbrk(p, "\\:") != NULL && !path_with_url(p))
 	    {
-		char posix_path[PATH_MAX];
+		char posix_path[MAXPATHL];
 
 # if CYGWIN_VERSION_DLL_MAJOR >= 1007
-		cygwin_conv_path(CCP_WIN_A_TO_POSIX, p, posix_path, PATH_MAX);
+		cygwin_conv_path(CCP_WIN_A_TO_POSIX, p, posix_path, MAXPATHL);
 # else
 		cygwin_conv_to_posix_path(p, posix_path);
 # endif
@@ -2976,7 +3011,9 @@ source_startup_scripts(mparm_T *parmp)
      */
     if (parmp->use_vimrc != NULL)
     {
-	if (STRCMP(parmp->use_vimrc, "NONE") == 0
+	if (STRCMP(parmp->use_vimrc, "DEFAULTS") == 0)
+	    do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE);
+	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
 				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
 	{
 #ifdef FEAT_GUI
@@ -3371,6 +3408,7 @@ usage(void)
 #ifdef FEAT_VIMINFO
     main_msg(_("-i <viminfo>\t\tUse <viminfo> instead of .viminfo"));
 #endif
+    main_msg(_("--clean\t\t'nocompatible', Vim defaults, no plugins, no viminfo"));
     main_msg(_("-h  or  --help\tPrint Help (this message) and exit"));
     main_msg(_("--version\t\tPrint version information and exit"));
 
@@ -3559,36 +3597,35 @@ set_progpath(char_u *argv0)
 {
     char_u *val = argv0;
 
-# ifdef PROC_EXE_LINK
-    char    buf[PATH_MAX + 1];
-    ssize_t len;
-
-    len = readlink(PROC_EXE_LINK, buf, PATH_MAX);
-    if (len > 0)
-    {
-	buf[len] = NUL;
-	val = (char_u *)buf;
-    }
-# else
+# if defined(WIN32)
     /* A relative path containing a "/" will become invalid when using ":cd",
      * turn it into a full path.
      * On MS-Windows "vim" should be expanded to "vim.exe", thus always do
      * this. */
-#  ifdef WIN32
     char_u *path = NULL;
 
     if (mch_can_exe(argv0, &path, FALSE) && path != NULL)
 	val = path;
-#  else
-    char_u buf[MAXPATHL];
+# else
+    char_u	buf[MAXPATHL + 1];
+#  ifdef PROC_EXE_LINK
+    char	linkbuf[MAXPATHL + 1];
+    ssize_t	len;
 
-    if (!mch_isFullName(argv0))
+    len = readlink(PROC_EXE_LINK, linkbuf, MAXPATHL);
+    if (len > 0)
     {
-	if (gettail(argv0) != argv0
-			   && vim_FullName(argv0, buf, MAXPATHL, TRUE) != FAIL)
-	    val = buf;
+	linkbuf[len] = NUL;
+	val = (char_u *)linkbuf;
     }
 #  endif
+
+    if (!mch_isFullName(val))
+    {
+	if (gettail(val) != val
+			   && vim_FullName(val, buf, MAXPATHL, TRUE) != FAIL)
+	    val = buf;
+    }
 # endif
 
     set_vim_var_string(VV_PROGPATH, val, -1);

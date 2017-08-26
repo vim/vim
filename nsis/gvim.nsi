@@ -87,6 +87,7 @@ UninstPage instfiles
 Function .onInit
   MessageBox MB_YESNO|MB_ICONQUESTION \
 	"This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer.$\n Continue?" \
+	/SD IDYES \
 	IDYES NoAbort
 	    Abort ; causes installer to quit.
 	NoAbort:
@@ -190,12 +191,15 @@ Section "Vim executables and runtime files"
 	File ${VIMSRC}\vimrun.exe
 	File /oname=tee.exe ${VIMSRC}\teew32.exe
 	File /oname=xxd.exe ${VIMSRC}\xxdw32.exe
-	File ${VIMTOOLS}\diff.exe
 	File ${VIMRT}\vimtutor.bat
 	File ${VIMRT}\README.txt
 	File ..\uninstal.txt
 	File ${VIMRT}\*.vim
 	File ${VIMRT}\rgb.txt
+
+	File ${VIMTOOLS}\diff.exe
+	File ${VIMTOOLS}\winpty32.dll
+	File ${VIMTOOLS}\winpty-agent.exe
 
 	SetOutPath $0\colors
 	File ${VIMRT}\colors\*.*

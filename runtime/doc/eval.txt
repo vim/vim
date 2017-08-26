@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Jun 04
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Aug 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1815,7 +1815,7 @@ v:scrollstart	String describing the script or function that caused the
 		hit-enter prompt.
 
 					*v:servername* *servername-variable*
-v:servername	The resulting registered |x11-clientserver| name if any.
+v:servername	The resulting registered |client-server-name| if any.
 		Read-only.
 
 		
@@ -2179,7 +2179,7 @@ index({list}, {expr} [, {start} [, {ic}]])
 				Number	index in {list} where {expr} appears
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
-inputdialog({prompt} [, {text} [, {completion}]]])
+inputdialog({prompt} [, {text} [, {completion}]])
 				String	like input() but in a GUI dialog
 inputlist({textlist})		Number	let the user pick from a choice list
 inputrestore()			Number	restore typeahead
@@ -2369,6 +2369,21 @@ tagfiles()			List	tags files used
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
+term_getaltscreen({buf})	Number	get the alternate screen flag
+term_getattr({attr}, {what})	Number	get the value of attribute {what}
+term_getcursor({buf})		List	get the cursor position of a terminal
+term_getjob({buf})		Job	get the job associated with a terminal
+term_getline({buf}, {row})	String	get a line of text from a terminal
+term_getscrolled({buf})		Number	get the scroll count of a terminal
+term_getsize({buf})		List	get the size of a terminal
+term_getstatus({buf})		String	get the status of a terminal
+term_gettitle({buf})		String	get the title of a terminal
+term_gettty({buf})		String	get the tty name of a terminal
+term_list()			List	get the list of terminal buffers
+term_scrape({buf}, {row})	List	get row of a terminal screen
+term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_start({cmd}, {options})	Job	open a terminal window and run a job
+term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
@@ -2971,6 +2986,11 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		The file is flushed after every message, on Unix you can use
 		"tail -f" to see what is going on in real time.
 
+		This function is not available in the |sandbox|.
+		NOTE: the channel communication is stored in the file, be
+		aware that this may contain confidential and privacy sensitive
+		information, e.g. a password you type in a terminal window.
+
 
 ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
@@ -3249,10 +3269,15 @@ cosh({expr})						*cosh()*
 		
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		Return the number of times an item with value {expr} appears
-		in |List| or |Dictionary| {comp}.
+		in |String|, |List| or |Dictionary| {comp}.
+
 		If {start} is given then start with the item with this index.
 		{start} can only be used with a |List|.
+
 		When {ic} is given and it's |TRUE| then case is ignored.
+
+		When {comp} is a string then the number of not overlapping
+		occurences of {expr} is returned.
 
 
 							*cscope_connection()*
@@ -4189,14 +4214,14 @@ getchar([expr])						*getchar()*
 			not consumed.  Return zero if no character available.
 
 		Without [expr] and when [expr] is 0 a whole character or
-		special key is returned.  If it is an 8-bit character, the
+		special key is returned.  If it is a single character, the
 		result is a number.  Use nr2char() to convert it to a String.
 		Otherwise a String is returned with the encoded character.
-		For a special key it's a sequence of bytes starting with 0x80
-		(decimal: 128).  This is the same value as the string
-		"\<Key>", e.g., "\<Left>".  The returned value is also a
-		String when a modifier (shift, control, alt) was used that is
-		not included in the character.
+		For a special key it's a String with a sequence of bytes
+		starting with 0x80 (decimal: 128).  This is the same value as
+		the String "\<Key>", e.g., "\<Left>".  The returned value is
+		also a String when a modifier (shift, control, alt) was used
+		that is not included in the character.
 
 		When [expr] is 0 and Esc is typed, there will be a short delay
 		while Vim waits to see if this is the start of an escape
@@ -4350,6 +4375,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		highlight	highlight groups
 		history		:history suboptions
 		locale		locale names (as output of locale -a)
+		mapclear        buffer argument
 		mapping		mapping name
 		menu		menus
 		messages	|:messages| suboptions
@@ -4586,18 +4612,24 @@ getqflist([{what}])					*getqflist()*
 		returns only the items listed in {what} as a dictionary. The
 		following string items are supported in {what}:
 			context	get the context stored with |setqflist()|
+			items	quickfix list entries
 			nr	get information for this quickfix list; zero
-				means the current quickfix list
+				means the current quickfix list and '$' means
+				the last quickfix list
 			title	get the list title
 			winid	get the |window-ID| (if opened)
 			all	all of the above quickfix properties
 		Non-string items in {what} are ignored.
 		If "nr" is not present then the current quickfix list is used.
+		To get the number of lists in the quickfix stack, set 'nr' to
+		'$' in {what}. The 'nr' value in the returned dictionary
+		contains the quickfix stack size.
 		In case of error processing {what}, an empty dictionary is
 		returned.
 
 		The returned dictionary contains the following entries:
 			context	context information stored with |setqflist()|
+			items	quickfix list entries
 			nr	quickfix list number
 			title	quickfix list title text
 			winid	quickfix |window-ID| (if opened)
@@ -4715,6 +4747,8 @@ getwininfo([{winid}])					*getwininfo()*
 					{only with the +quickfix feature}
 			quickfix	1 if quickfix or location list window
 					{only with the +quickfix feature}
+			terminal	1 if a terminal window
+					{only with the +terminal feature}
 			tabnr		tab page number
 			variables	a reference to the dictionary with
 					window-local variables
@@ -5169,6 +5203,8 @@ job_info({job})						*job_info()*
 		Returns a Dictionary with information about {job}:
 		   "status"	what |job_status()| returns
 		   "channel"	what |job_getchannel()| returns
+		   "process"	process ID
+		   "tty"	controlling terminal name, empty when none
 		   "exitval"	only valid when "status" is "dead"
 		   "exit_cb"	function to be called on exit
 		   "stoponexit"	|job-stoponexit|
@@ -5461,7 +5497,10 @@ line({expr})	The result is a Number, which is the line number of the file
 <							*last-position-jump*
 		This autocommand jumps to the last known position in a file
 		just after opening it, if the '" mark is set: >
-	:au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
+     :au BufReadPost *
+	 \ if line("'\"") > 1 && line("'\"") <= line("$") && &ft !~# 'commit' 
+	 \ |   exe "normal! g`\""
+	 \ | endif
 
 line2byte({lnum})					*line2byte()*
 		Return the byte count from the start of the buffer for line
@@ -5883,7 +5922,7 @@ max({expr})	Return the maximum value of all items in {expr}.
 		it returns the maximum of all values in the dictionary.
 		If {expr} is neither a list nor a dictionary, or one of the
 		items in {expr} cannot be used as a Number this results in
-                an error.  An empty |List| or |Dictionary| results in zero.
+		an error.  An empty |List| or |Dictionary| results in zero.
 
 							*min()*
 min({expr})	Return the minimum value of all items in {expr}.
@@ -5891,7 +5930,7 @@ min({expr})	Return the minimum value of all items in {expr}.
 		it returns the minimum of all values in the dictionary.
 		If {expr} is neither a list nor a dictionary, or one of the
 		items in {expr} cannot be used as a Number this results in
-                an error.  An empty |List| or |Dictionary| results in zero.
+		an error.  An empty |List| or |Dictionary| results in zero.
 
 							*mkdir()* *E739*
 mkdir({name} [, {path} [, {prot}]])
@@ -6186,8 +6225,8 @@ printf({fmt}, {expr1} ...)				*printf()*
 			zero the decimal point is omitted.  When the precision
 			is not specified 6 is used.  A really big number
 			(out of range or dividing by zero) results in "inf"
-                        or "-inf" with %f (INF or -INF with %F).
-                        "0.0 / 0.0" results in "nan" with %f (NAN with %F).
+			or "-inf" with %f (INF or -INF with %F).
+			"0.0 / 0.0" results in "nan" with %f (NAN with %F).
 			Example: >
 				echo printf("%.2f", 12.115)
 <				12.12
@@ -6936,10 +6975,12 @@ setpos({expr}, {list})
 		|winrestview()|.
 
 setqflist({list} [, {action}[, {what}]])		*setqflist()*
-		Create or replace or add to the quickfix list using the items
-		in {list}.  Each item in {list} is a dictionary.
-		Non-dictionary items in {list} are ignored.  Each dictionary
-		item can contain the following entries:
+		Create or replace or add to the quickfix list.
+		
+		When {what} is not present, use the items in {list}.  Each
+		item must be a dictionary.  Non-dictionary items in {list} are
+		ignored.  Each dictionary item can contain the following
+		entries:
 
 		    bufnr	buffer number; must be the number of a valid
 				buffer
@@ -6986,18 +7027,30 @@ setqflist({list} [, {action}[, {what}]])		*setqflist()*
 			freed.
 
 		If {action} is not present or is set to ' ', then a new list
-		is created.
+		is created. The new quickfix list is added after the current
+		quickfix list in the stack and all the following lists are
+		freed. To add a new quickfix list at the end of the stack,
+		set "nr" in {what} to '$'.
 
 		If the optional {what} dictionary argument is supplied, then
 		only the items listed in {what} are set. The first {list}
 		argument is ignored.  The following items can be specified in
 		{what}:
 		    context	any Vim type can be stored as a context
-		    nr		list number in the quickfix stack
+		    text	use 'errorformat' to extract items from the
+				text and add the resulting entries to the
+				quickfix list {nr}.  The value can be a string
+				with one line or a list with multiple lines.
+		    items	list of quickfix entries. Same as the {list}
+				argument.
+		    nr		list number in the quickfix stack; zero
+				means the current quickfix list and '$' means
+				the last quickfix list
 		    title	quickfix list title text
 		Unsupported keys in {what} are ignored.
 		If the "nr" item is not present, then the current quickfix list
-		is modified.
+		is modified. When creating a new quickfix list, "nr" can be
+		set to a value one greater than the quickfix stack size.
 
 		Examples: >
 			:call setqflist([], 'r', {'title': 'My search'})
@@ -7097,18 +7150,22 @@ shellescape({string} [, {special}])			*shellescape()*
 		quotes within {string}.
 		Otherwise it will enclose {string} in single quotes and
 		replace all "'" with "'\''".
+
 		When the {special} argument is present and it's a non-zero
 		Number or a non-empty String (|non-zero-arg|), then special
 		items such as "!", "%", "#" and "<cword>" will be preceded by
 		a backslash.  This backslash will be removed again by the |:!|
 		command.
+
 		The "!" character will be escaped (again with a |non-zero-arg|
 		{special}) when 'shell' contains "csh" in the tail.  That is
 		because for csh and tcsh "!" is used for history replacement
 		even when inside single quotes.
-		The <NL> character is also escaped.  With a |non-zero-arg|
-		{special} and 'shell' containing "csh" in the tail it's
+
+		With a |non-zero-arg| {special} the <NL> character is also
+		escaped.  When 'shell' containing "csh" in the tail it's
 		escaped a second time.
+
 		Example of use with a |:!| command: >
 		    :exe '!dir ' . shellescape(expand('<cfile>'), 1)
 <		This results in a directory listing for the file under the
@@ -7640,17 +7697,29 @@ synIDtrans({synID})					*synIDtrans()*
 		":highlight link" are followed.
 
 synconcealed({lnum}, {col})				*synconcealed()*
-		The result is a List. The first item in the list is 0 if the
-		character at the position {lnum} and {col} is not part of a
-		concealable region, 1 if it is. The second item in the list is
-		a string. If the first item is 1, the second item contains the
-		text which will be displayed in place of the concealed text,
-		depending on the current setting of 'conceallevel'. The third
-		and final item in the list is a unique number representing the
-		specific syntax region matched. This allows detection of the
-		beginning of a new concealable region if there are two
-		consecutive regions with the same replacement character.
-		For an example use see $VIMRUNTIME/syntax/2html.vim .
+		The result is a List with currently three items:
+		1. The first item in the list is 0 if the character at the
+		   position {lnum} and {col} is not part of a concealable
+		   region, 1 if it is.
+		2. The second item in the list is a string. If the first item
+		   is 1, the second item contains the text which will be
+		   displayed in place of the concealed text, depending on the
+		   current setting of 'conceallevel' and 'listchars'.
+		3. The third and final item in the list is a number
+		   representing the specific syntax region matched in the
+		   line. When the character is not concealed the value is
+		   zero. This allows detection of the beginning of a new
+		   concealable region if there are two consecutive regions
+		   with the same replacement character.  For an example, if
+		   the text is "123456" and both "23" and "45" are concealed
+		   and replace by the character "X", then:
+			call			returns ~
+		   	synconcealed(lnum, 1)   [0, '', 0]
+		   	synconcealed(lnum, 2)   [1, 'X', 1]
+		   	synconcealed(lnum, 3)   [1, 'X', 1]
+		   	synconcealed(lnum, 4)   [1, 'X', 2]
+		   	synconcealed(lnum, 5)   [1, 'X', 2]
+		   	synconcealed(lnum, 6)   [0, '', 0]
 
 
 synstack({lnum}, {col})					*synstack()*
@@ -7859,6 +7928,190 @@ tempname()					*tempname()* *temp-file-name*
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
 
+term_getaltscreen({buf})				*term_getaltscreen()*
+		Returns 1 if the terminal of {buf} is using the alternate
+		screen.
+		{buf} is used as with |term_getsize()|.
+		{only available when compiled with the |+terminal| feature}
+
+term_getattr({attr}, {what})				*term_getattr()*
+		Given {attr}, a value returned by term_scrape() in the "attr"
+		item, return whether {what} is on.  {what} can be one of:
+			bold
+			italic
+			underline
+			strike
+			reverse
+		{only available when compiled with the |+terminal| feature}
+
+term_getcursor({buf})					*term_getcursor()*
+		Get the cursor position of terminal {buf}. Returns a list with
+		two numbers and a dictionary: [rows, cols, dict].
+
+		"rows" and "cols" are one based, the first screen cell is row
+		1, column 1.  This is the cursor position of the terminal
+		itself, not of the Vim window.
+
+		"dict" can have these members:
+		   "visible"	one when the cursor is visible, zero when it
+				is hidden.
+		   "blink"	one when the cursor is visible, zero when it
+				is hidden.
+		   "shape"	1 for a block cursor, 2 for underline and 3
+				for a vertical bar.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		list is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_getjob({buf})					*term_getjob()*
+		Get the Job associated with terminal window {buf}.
+		{buf} is used as with |term_getsize()|.
+		Returns |v:null| when there is no job.
+		{only available when compiled with the |+terminal| feature}
+
+term_getline({buf}, {row})				*term_getline()*
+		Get a line of text from the terminal window of {buf}.
+		{buf} is used as with |term_getsize()|.
+
+		The first line has {row} one.  When {row} is "." the cursor
+		line is used.  When {row} is invalid an empty string is
+		returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_getscrolled({buf})					*term_getscrolled()*
+		Return the number of lines that scrolled to above the top of
+		terminal {buf}.  This is the offset between the row number
+		used for |term_getline()| and |getline()|, so that: >
+			term_getline(buf, N)
+<		is equal to: >
+			`getline(N + term_getscrolled(buf))
+<		(if that line exists).
+
+		{buf} is used as with |term_getsize()|.
+		{only available when compiled with the |+terminal| feature}
+
+term_getsize({buf})					*term_getsize()*
+		Get the size of terminal {buf}. Returns a list with two
+		numbers: [rows, cols].  This is the size of the terminal, not
+		the window containing the terminal.
+
+		{buf} must be the buffer number of a terminal window.  Use an
+		empty string for the current buffer.  If the buffer does not
+		exist or is not a terminal window, an empty list is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_getstatus({buf})					*term_getstatus()*
+		Get the status of terminal {buf}. This returns a comma
+		separated list of these items:
+			running		job is running
+			finished	job has finished
+			normal		in Terminal-Normal mode
+		One of "running" or "finished" is always present.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		string is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_gettitle({buf})					*term_gettitle()*
+		Get the title of terminal {buf}. This is the title that the
+		job in the terminal has set.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		string is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_gettty({buf})					*term_gettty()*
+		Get the name of the controlling terminal associated with
+		terminal window {buf}.
+		{buf} is used as with |term_getsize()|.
+		{only available when compiled with the |+terminal| feature}
+
+term_list()						*term_list()*
+		Return a list with the buffer numbers of all buffers for
+		terminal windows.
+		{only available when compiled with the |+terminal| feature}
+
+term_scrape({buf}, {row})				*term_scrape()*
+		Get the contents of {row} of terminal screen of {buf}.
+		For {buf} see |term_getsize()|.
+
+		The first line has {row} one.  When {row} is "." the cursor
+		line is used.  When {row} is invalid an empty string is
+		returned.
+
+		Return a List containing a Dict for each screen cell: 
+		    "chars"	character(s) at the cell
+		    "fg"	foreground color as #rrggbb
+		    "bg"	background color as #rrggbb
+		    "attr"	attributes of the cell, use |term_getattr()|
+				to get the individual flags
+		    "width"	cell width: 1 or 2
+		{only available when compiled with the |+terminal| feature}
+
+term_sendkeys({buf}, {keys})				*term_sendkeys()*
+		Send keystrokes {keys} to terminal {buf}.
+		{buf} is used as with |term_getsize()|.
+
+		{keys} are translated as key sequences. For example, "\<c-x>"
+		means the character CTRL-X.
+		{only available when compiled with the |+terminal| feature}
+
+term_start({cmd}, {options})				*term_start()*
+		Open a terminal window and run {cmd} in it.
+
+		Returns the buffer number of the terminal window.  If {cmd}
+		cannot be executed the window does open and shows an error
+		message.
+		If opening the window fails zero is returned.
+
+		{options} are similar to what is used for |job_start()|, see
+		|job-options|.  However, not all options can be used.  These
+		are supported:
+		   all timeout options
+		   "stoponexit"
+		   "out_cb", "err_cb"
+		   "exit_cb", "close_cb"
+		   "in_io", "in_top", "in_bot", "in_name", "in_buf"
+		   "out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
+		   "err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
+		However, at least one of stdin, stdout or stderr must be
+		connected to the terminal.  When I/O is connected to the
+		terminal then the callback function for that part is not used.
+
+		There are extra options:
+		   "term_name"	     name to use for the buffer name, instead
+				     of the command name.
+		   "term_rows"	     vertical size to use for the terminal,
+				     instead of using 'termsize'
+		   "term_cols"	     horizontal size to use for the terminal,
+				     instead of using 'termsize'
+		   "vertical"	     split the window vertically
+		   "curwin"	     use the current window, do not split the
+				     window; fails if the current buffer
+				     cannot be |abandon|ed
+		   "term_finish"     What to do when the job is finished:
+					"close": close any windows
+					"open": open window if needed
+				     Note that "open" can be interruptive.
+				     See |term++close| and |term++open|.
+		   "term_opencmd"    command to use for opening the window when
+				     "open" is used for "term_finish"; must
+				     have "%d" where the buffer number goes,
+				     e.g. "10split|buffer %d"; when not
+				     specified "botright sbuf %d" is used
+
+		{only available when compiled with the |+terminal| feature}
+
+term_wait({buf} [, {time}])					*term_wait()*
+		Wait for pending updates of {buf} to be handled.
+		{buf} is used as with |term_getsize()|.
+		{time} is how long to wait for updates to arrive in msec.  If
+		not set then 10 msec will be used.
+		{only available when compiled with the |+terminal| feature}
 
 test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 		This is for testing: If the memory allocation with {id} is
@@ -7915,7 +8168,18 @@ test_override({name}, {val})				*test_override()*
 		name	     effect when {val} is non-zero ~
 		redraw       disable the redrawing() function
 		char_avail   disable the char_avail() function
+		starting     reset the "starting" variable, see below
 		ALL	     clear all overrides ({val} is not used)
+
+		"starting" is to be used when a test should behave like
+		startup was done.  Since the tests are run by sourcing a
+		script the "starting" variable is non-zero. This is usually a
+		good thing (tests run faster), but sometimes changes behavior
+		in a way that the test doesn't work properly.
+		When using: >
+			call test_override('starting', 1)
+<		The value of "starting" is saved.  It is restored by: >
+			call test_override('starting', 0)
 
 test_settime({expr})					*test_settime()*
 		Set the time Vim uses internally.  Currently only used for
@@ -7978,6 +8242,10 @@ timer_start({time}, {callback} [, {options}])
 		   "repeat"	Number of times to repeat calling the
 				callback.  -1 means forever.  When not present
 				the callback will be called once.
+				If the timer causes an error three times in a
+				row the repeat is cancelled.  This avoids that
+				Vim becomes unusable because of all the error
+				messages.
 
 		Example: >
 			func MyHandler(timer)
@@ -8337,8 +8605,8 @@ winwidth({nr})						*winwidth()*
   :if winwidth(0) <= 50
   :  exe "normal 50\<C-W>|"
   :endif
-<               For getting the terminal or screen size, see the 'columns'
-               option.
+<		For getting the terminal or screen size, see the 'columns'
+		option.
 
 
 wordcount()						*wordcount()*
@@ -8356,11 +8624,11 @@ wordcount()						*wordcount()*
 			cursor_words    Number of words before cursor position
 					(not in Visual mode)
 			visual_bytes    Number of bytes visually selected
-			                (only in Visual mode)
+					(only in Visual mode)
 			visual_chars    Number of chars visually selected
-			                (only in Visual mode)
+					(only in Visual mode)
 			visual_words    Number of chars visually selected
-			                (only in Visual mode)
+					(only in Visual mode)
 
 
 							*writefile()*
@@ -8568,6 +8836,7 @@ tag_any_white		Compiled with support for any white characters in tags
 			files |tag-any-white|.
 tcl			Compiled with Tcl interface.
 termguicolors		Compiled with true color in terminal support.
+terminal		Compiled with |terminal| support.
 terminfo		Compiled with terminfo instead of termcap.
 termresponse		Compiled with support for |t_RV| and |v:termresponse|.
 textobjects		Compiled with support for |text-objects|.
@@ -8704,6 +8973,9 @@ See |:verbose-cmd| for more information.
 			not used an error message is given.  When [!] is used,
 			an existing function is silently replaced.  Unless it
 			is currently being executed, that is an error.
+			NOTE: Use ! wisely.  If used without care it can cause
+			an existing function to be replaced unexpectedly,
+			which is hard to debug.
 
 			For the {arguments} see |function-argument|.
 
@@ -8753,18 +9025,36 @@ See |:verbose-cmd| for more information.
 			implies that the effect of |:nohlsearch| is undone
 			when the function returns.
 
-					*:endf* *:endfunction* *E126* *E193*
-:endf[unction]		The end of a function definition.  Must be on a line
-			by its own, without other commands.
+				*:endf* *:endfunction* *E126* *E193* *W22*
+:endf[unction] [argument]
+			The end of a function definition.  Best is to put it
+			on a line by its own, without [argument].
 
+			[argument] can be:
+				| command	command to execute next
+				\n command	command to execute next
+				" comment	always ignored
+				anything else	ignored, warning given when
+						'verbose' is non-zero
+			The support for a following command was added in Vim
+			8.0.0654, before that any argument was silently
+			ignored.
+
+			To be able to define a function inside an `:execute`
+			command, use line breaks instead of |:bar|: >
+				:exe "func Foo()\necho 'foo'\nendfunc"
+<
 				*:delf* *:delfunction* *E130* *E131* *E933*
-:delf[unction] {name}	Delete function {name}.
+:delf[unction][!] {name}
+			Delete function {name}.
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >
 				:delfunc dict.init
 <			This will remove the "init" entry from "dict".  The
 			function is deleted if there are no more references to
 			it.
+			With the ! there is no error if the function does not
+			exist.
 							*:retu* *:return* *E133*
 :retu[rn] [expr]	Return from a function.  When "[expr]" is given, it is
 			evaluated and returned as the result of the function.

@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.0.  Last change: 2017 Apr 10
+*editing.txt*   For Vim version 8.0.  Last change: 2017 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -617,16 +617,16 @@ list of the current window.
 			Also see |++opt| and |+cmd|.
 			{Vi: no ++opt}
 
-:[count]arge[dit][!] [++opt] [+cmd] {name}		*:arge* *:argedit*
-			Add {name} to the argument list and edit it.
+:[count]arge[dit][!] [++opt] [+cmd] {name} ..		*:arge* *:argedit*
+			Add {name}s to the argument list and edit it.
 			When {name} already exists in the argument list, this
 			entry is edited.
 			This is like using |:argadd| and then |:edit|.
-			Note that only one file name is allowed, and spaces
-			inside the file name are allowed, like with |:edit|.
+			Spaces in filenames have to be escaped with "\".
 			[count] is used like with |:argadd|.
-			[!] is required if the current file cannot be
-			|abandon|ed.
+			If the current file cannot be |abandon|ed {name}s will
+			still be added to the argument list, but won't be
+			edited. No check for duplicates is done.
 			Also see |++opt| and |+cmd|.
 			{not in Vi}
 
@@ -1328,9 +1328,11 @@ present in 'cpoptions' and "!" is not used in the command.
 :chd[ir][!] [path]	Same as |:cd|.
 
 							*:lc* *:lcd*
-:lc[d][!] {path}	Like |:cd|, but only set the current directory for the
-			current window.  The current directory for other
-			windows is not changed. {not in Vi}
+:lc[d][!] {path}	Like |:cd|, but only set the current directory when
+			the cursor is in the current window.  The current
+			directory for other windows is not changed, switching
+			to another window will stop using {path}.
+			{not in Vi}
 
 							*:lch* *:lchdir*
 :lch[dir][!]		Same as |:lcd|. {not in Vi}
@@ -1735,7 +1737,7 @@ There are three different types of searching:
    This searches the same directories, but in a different order.
 
    Note that completion for ":find", ":sfind", and ":tabfind" commands do not
-   currently work with 'path' items that contain a url or use the double star
+   currently work with 'path' items that contain a URL or use the double star
    with depth limiter (/usr/**2) or upward search (;) notations.
 
  vim:tw=78:ts=8:ft=help:norl:

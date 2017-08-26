@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 8.0.  Last change: 2016 Sep 12
+*gui_x11.txt*   For Vim version 8.0.  Last change: 2017 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -279,8 +279,9 @@ For CDE "dtwm" (a derivative of Motif) add this line in the .Xdefaults: >
 For "mwm" (Motif window manager) the line would be: >
    Mwm*Vim*iconImage: /usr/local/share/vim/vim32x32.xpm
 
-Mouse Pointers Available in X11				*X11_mouse_shapes*
 
+Mouse Pointers Available in X11 ~
+						*X11_mouse_shapes*
 By using the |'mouseshape'| option, the mouse pointer can be automatically
 changed whenever Vim enters one of its various modes (e.g., Insert or
 Command).  Currently, the available pointers are:
@@ -354,7 +355,9 @@ to the GTK documentation, however little there is, on how to do this.
 See http://developer.gnome.org/doc/API/2.0/gtk/gtk-Resource-Files.html
 for more information.
 
-						*gtk-tooltip-colors*
+
+Tooltip Colors ~
+							*gtk-tooltip-colors*
 Example, which sets the tooltip colors to black on light-yellow: >
 
 	style "tooltips"
@@ -372,15 +375,122 @@ distribution.
 For GTK+ 3, an effect similar to the above can be obtained by adding the
 following snippet of CSS code to $XDG_HOME_DIR/gtk-3.0/gtk.css (usually,
 $HOME/.config/gtk-3.0/gtk.css):
- >
+
+For GTK+ 3 < 3.20: >
+
 	.tooltip {
 		background-color: #ffffcc;
 		color: #000000;
 	}
 <
+For GTK+ 3 >= 3.20: >
 
-Using Vim as a GTK+ plugin				*gui-gtk-socketid*
+	tooltip {
+	    background-color: #ffffcc;
+	    text-shadow: none;
+	}
 
+	tooltip label {
+	    color: #2e3436;
+	}
+<
+
+A Quick Look at GTK+ CSS ~
+							*gtk-css*
+The contents of this subsection apply to GTK+ 3.20 or later which provides
+stable support for GTK+ CSS:
+
+	https://developer.gnome.org/gtk3/stable/theming.html
+
+GTK+ uses CSS for styling and layout of widgets.  In this subsection, we'll
+have a quick look at GTK+ CSS through simple, illustrative examples.
+
+Example 1.  Empty Space Adjustment ~
+
+By default, the toolbar and the tabline of the GTK+ 3 GUI are somewhat larger
+than those of the GTK+ 2 GUI.  Some people may want to make them look similar
+to the GTK+ 2 GUI in size.
+
+To do that, we'll try reducing empty space around icons and labels that looks
+apparently superfluous.
+
+Add the following lines to $XDG_HOME_DIR/gtk-3.0/gtk.css (usually,
+$HOME/.config/gtk-3.0/gtk.css): >
+
+	toolbar button {
+	    margin-top: -2px;
+	    margin-right: 0px;
+	    margin-bottom: -2px;
+	    margin-left: 0px;
+
+	    padding-top: 0px;
+	    padding-right: 0px;
+	    padding-bottom: 0px;
+	    padding-left: 0px
+	}
+
+	notebook tab {
+	    margin-top: -1px;
+	    margin-right: 3px;
+	    margin-bottom: -1px;
+	    margin-left: 3px;
+
+	    padding-top: 0px;
+	    padding-right: 0px;
+	    padding-bottom: 0px;
+	    padding-left: 0px
+	}
+<
+Since it's a CSS, they can be rewritten using shorthand: >
+
+	toolbar button {
+	    margin: -2px 0px;
+	    padding: 0px;
+	}
+
+	notebook tab {
+	    margin: -1px 3px;
+	    padding: 0px
+	}
+<
+Note: You might want to use 'toolbariconsize' to adjust the icon size, too.
+
+Note: Depending on the icon theme and/or the font in use, some extra tweaks
+may be needed for a satisfactory result.
+
+Note: In addition to margin and padding, you can use border.  For details,
+refer to the box model of CSS, e.g.,
+
+	https://www.w3schools.com/css/css_boxmodel.asp
+
+Example 2.  More Than Just Colors ~
+
+GTK+ CSS supports gradients as well: >
+
+	tooltip {
+	    background-image: -gtk-gradient(linear,
+					    0 0, 0 1,
+					    color-stop(0, #344752),
+					    color-stop(0.5, #546772),
+					    color-stop(1, #243742));
+	}
+
+	tooltip label {
+	    color: #f3f3f3;
+	}
+<
+Gradients can be used to make a GUI element visually distinguishable from
+others without relying on high contrast. Accordingly, effective use of them is
+a useful technique to give a theme a sense of unity in color and luminance.
+
+Note: Theming can be difficult since it must make every application look
+equally good; making a single application more charming often gets others
+unexpectedly less attractive or even deteriorates their usability.  Keep this
+in mind always when you try improving a theme.
+
+
+Using Vim as a GTK+ plugin ~
+							*gui-gtk-socketid*
 When the GTK+ version of Vim starts up normally, it creates its own top level
 window (technically, a 'GtkWindow').  GTK+ provides an embedding facility with
 its GtkSocket and GtkPlug widgets.  If one GTK+ application creates a
@@ -425,8 +535,8 @@ Note: Avoid use of --enable-gnome-check with GTK+ 3 GUI build.  The
 functionality mentioned above is consolidated in GTK+ 3.
 
 
-GNOME session support			*gui-gnome-session* *gnome-session*
-
+GNOME session support ~
+					*gui-gnome-session* *gnome-session*
 On logout, Vim shows the well-known exit confirmation dialog if any buffers
 are modified.  Clicking [Cancel] will stop the logout process.  Otherwise the
 current session is stored to disk by using the |:mksession| command, and
@@ -563,7 +673,7 @@ Of these three, Vim uses PRIMARY when reading and writing the "* register
 register.  Vim does not access the SECONDARY selection.
 
 Examples: (assuming the default option values)
-- Select an URL in Visual mode in Vim.  Go to your browser and click the
+- Select a URL in Visual mode in Vim.  Go to your browser and click the
   middle mouse button in the URL text field.  The selected text will be
   inserted (hopefully!).  Note: in Firefox you can set the
   middlemouse.contentLoadURL preference to true in about:config, then the

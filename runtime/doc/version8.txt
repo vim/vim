@@ -16827,7 +16827,7 @@ Patch 8.0.0388
 Problem:    filtering lines through "cat", without changing the line count,
             changes manual folds.
 Solution:   Change how marks and folds are adjusted. (Matthew Malcomson, from
-            neovim #6194.
+            neovim #6194).
 Files:      src/fold.c, src/testdir/test_fold.vim
 
 Patch 8.0.0389
@@ -17499,7 +17499,7 @@ Files:      src/evalfunc.c, src/if_xcmdsrv.c, src/proto/if_xcmdsrv.pro,
 
 Patch 8.0.0493
 Problem:    Crash with cd command with very long argument.
-Solution:   Check for running out of space. (Dominique pending, closes #1576)
+Solution:   Check for running out of space. (Dominique Pelle, closes #1576)
 Files:      src/testdir/test_alot.vim, src/testdir/test_cd.vim, src/Makefile,
             src/misc2.c
 

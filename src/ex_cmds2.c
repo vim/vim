@@ -1183,6 +1183,7 @@ timer_callback(timer_T *timer)
 /*
  * Call timers that are due.
  * Return the time in msec until the next timer is due.
+ * Returns -1 if there are no pending timers.
  */
     long
 check_due_timer(void)
@@ -1196,7 +1197,13 @@ check_due_timer(void)
     long	current_id = last_timer_id;
 # ifdef WIN3264
     LARGE_INTEGER   fr;
+# endif
 
+    /* Don't run any timers while exiting or dealing with an error. */
+    if (exiting || aborting())
+	return next_due;
+
+# ifdef WIN3264
     QueryPerformanceFrequency(&fr);
 # endif
     profile_start(&now);
@@ -1209,15 +1216,35 @@ check_due_timer(void)
 	this_due = GET_TIMEDIFF(timer, now);
 	if (this_due <= 1)
 	{
+	    int save_timer_busy = timer_busy;
+	    int save_vgetc_busy = vgetc_busy;
+	    int did_emsg_save = did_emsg;
+	    int called_emsg_save = called_emsg;
+	    int did_throw_save = did_throw;
+
+	    timer_busy = timer_busy > 0 || vgetc_busy > 0;
+	    vgetc_busy = 0;
+	    called_emsg = FALSE;
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
 	    timer_next = timer->tr_next;
 	    did_one = TRUE;
+	    timer_busy = save_timer_busy;
+	    vgetc_busy = save_vgetc_busy;
+	    if (called_emsg)
+	    {
+		++timer->tr_emsg_count;
+		if (!did_throw_save && did_throw && current_exception != NULL)
+		    discard_current_exception();
+	    }
+	    did_emsg = did_emsg_save;
+	    called_emsg = called_emsg_save;
 
 	    /* Only fire the timer again if it repeats and stop_timer() wasn't
 	     * called while inside the callback (tr_id == -1). */
-	    if (timer->tr_repeat != 0 && timer->tr_id != -1)
+	    if (timer->tr_repeat != 0 && timer->tr_id != -1
+		    && timer->tr_emsg_count < 3)
 	    {
 		profile_setlimit(timer->tr_interval, &timer->tr_due);
 		this_due = GET_TIMEDIFF(timer, now);
@@ -1907,9 +1934,9 @@ check_changed(buf_T *buf, int flags)
 	}
 #endif
 	if (flags & CCGD_EXCMD)
-	    EMSG(_(e_nowrtmsg));
+	    no_write_message();
 	else
-	    EMSG(_(e_nowrtmsg_nobang));
+	    no_write_message_nobang();
 	return TRUE;
     }
     return FALSE;
@@ -1954,9 +1981,7 @@ dialog_changed(
     buf_T	*buf2;
     exarg_T     ea;
 
-    dialog_msg(buff, _("Save changes to \"%s\"?"),
-			(buf->b_fname != NULL) ?
-			buf->b_fname : (char_u *)_("Untitled"));
+    dialog_msg(buff, _("Save changes to \"%s\"?"), buf->b_fname);
     if (checkall)
 	ret = vim_dialog_yesnoallcancel(VIM_QUESTION, NULL, buff, 1);
     else
@@ -2037,7 +2062,7 @@ dialog_changed(
     int
 can_abandon(buf_T *buf, int forceit)
 {
-    return (	   P_HID(buf)
+    return (	   buf_hide(buf)
 		|| !bufIsChanged(buf)
 		|| buf->b_nwindows > 1
 		|| autowrite(buf, forceit) == OK
@@ -2153,7 +2178,14 @@ check_changed_any(
 	    msg_col = 0;
 	    msg_didout = FALSE;
 	}
-	if (EMSG2(_("E162: No write since last change for buffer \"%s\""),
+	if (
+#ifdef FEAT_TERMINAL
+		term_job_running(buf->b_term)
+		    ? EMSG2(_("E947: Job still running in buffer \"%s\""),
+								  buf->b_fname)
+		    :
+#endif
+		EMSG2(_("E162: No write since last change for buffer \"%s\""),
 		    buf_spname(buf) != NULL ? buf_spname(buf) : buf->b_fname))
 	{
 	    save = no_wait_return;
@@ -2293,8 +2325,8 @@ do_one_arg(char_u *str)
  * Separate the arguments in "str" and return a list of pointers in the
  * growarray "gap".
  */
-    int
-get_arglist(garray_T *gap, char_u *str)
+    static int
+get_arglist(garray_T *gap, char_u *str, int escaped)
 {
     ga_init2(gap, (int)sizeof(char_u *), 20);
     while (*str != NUL)
@@ -2305,6 +2337,10 @@ get_arglist(garray_T *gap, char_u *str)
 	    return FAIL;
 	}
 	((char_u **)gap->ga_data)[gap->ga_len++] = str;
+
+	/* If str is escaped, don't handle backslashes or spaces */
+	if (!escaped)
+	    return OK;
 
 	/* Isolate one argument, change it in-place, put a NUL after it. */
 	str = do_one_arg(str);
@@ -2328,7 +2364,7 @@ get_arglist_exp(
     garray_T	ga;
     int		i;
 
-    if (get_arglist(&ga, str) == FAIL)
+    if (get_arglist(&ga, str, TRUE) == FAIL)
 	return FAIL;
     if (wig == TRUE)
 	i = expand_wildcards(ga.ga_len, (char_u **)ga.ga_data,
@@ -2374,6 +2410,7 @@ do_arglist(
     char_u	*p;
     int		match;
 #endif
+    int		arg_escaped = TRUE;
 
     /*
      * Set default argument for ":argadd" command.
@@ -2383,12 +2420,13 @@ do_arglist(
 	if (curbuf->b_ffname == NULL)
 	    return FAIL;
 	str = curbuf->b_fname;
+	arg_escaped = FALSE;
     }
 
     /*
      * Collect all file name arguments in "new_ga".
      */
-    if (get_arglist(&new_ga, str) == FAIL)
+    if (get_arglist(&new_ga, str, arg_escaped) == FAIL)
 	return FAIL;
 
 #ifdef FEAT_LISTCMDS
@@ -2701,13 +2739,13 @@ do_argfile(exarg_T *eap, int argn)
 	     * the same buffer
 	     */
 	    other = TRUE;
-	    if (P_HID(curbuf))
+	    if (buf_hide(curbuf))
 	    {
 		p = fix_fname(alist_name(&ARGLIST[argn]));
 		other = otherfile(p);
 		vim_free(p);
 	    }
-	    if ((!P_HID(curbuf) || !other)
+	    if ((!buf_hide(curbuf) || !other)
 		  && check_changed(curbuf, CCGD_AW
 					 | (other ? 0 : CCGD_MULTWIN)
 					 | (eap->forceit ? CCGD_FORCEIT : 0)
@@ -2728,7 +2766,7 @@ do_argfile(exarg_T *eap, int argn)
 	 * argument index. */
 	if (do_ecmd(0, alist_name(&ARGLIST[curwin->w_arg_idx]), NULL,
 		      eap, ECMD_LAST,
-		      (P_HID(curwin->w_buffer) ? ECMD_HIDE : 0)
+		      (buf_hide(curwin->w_buffer) ? ECMD_HIDE : 0)
 			 + (eap->forceit ? ECMD_FORCEIT : 0), curwin) == FAIL)
 	    curwin->w_arg_idx = old_arg_idx;
 	/* like Vi: set the mark where the cursor is in the file. */
@@ -2749,7 +2787,7 @@ ex_next(exarg_T *eap)
      * check for changed buffer now, if this fails the argument list is not
      * redefined.
      */
-    if (       P_HID(curbuf)
+    if (       buf_hide(curbuf)
 	    || eap->cmdidx == CMD_snext
 	    || !check_changed(curbuf, CCGD_AW
 				    | (eap->forceit ? CCGD_FORCEIT : 0)
@@ -2774,34 +2812,20 @@ ex_next(exarg_T *eap)
     void
 ex_argedit(exarg_T *eap)
 {
-    int		fnum;
-    int		i;
-    char_u	*s;
+    int i = eap->addr_count ? (int)eap->line2 : curwin->w_arg_idx + 1;
 
-    /* Add the argument to the buffer list and get the buffer number. */
-    fnum = buflist_add(eap->arg, BLN_LISTED);
+    if (do_arglist(eap->arg, AL_ADD, i) == FAIL)
+	return;
+#ifdef FEAT_TITLE
+    maketitle();
+#endif
 
-    /* Check if this argument is already in the argument list. */
-    for (i = 0; i < ARGCOUNT; ++i)
-	if (ARGLIST[i].ae_fnum == fnum)
-	    break;
-    if (i == ARGCOUNT)
-    {
-	/* Can't find it, add it to the argument list. */
-	s = vim_strsave(eap->arg);
-	if (s == NULL)
-	    return;
-	i = alist_add_list(1, &s,
-	       eap->addr_count > 0 ? (int)eap->line2 : curwin->w_arg_idx + 1);
-	if (i < 0)
-	    return;
-	curwin->w_arg_idx = i;
-    }
-
-    alist_check_arg_idx();
-
+    if (curwin->w_arg_idx == 0 && (curbuf->b_ml.ml_flags & ML_EMPTY)
+	    && curbuf->b_ffname == NULL)
+	i = 0;
     /* Edit the argument. */
-    do_argfile(eap, i);
+    if (i < ARGCOUNT)
+	do_argfile(eap, i);
 }
 
 /*
@@ -2918,7 +2942,7 @@ ex_listdo(exarg_T *eap)
 
     if (eap->cmdidx == CMD_windo
 	    || eap->cmdidx == CMD_tabdo
-	    || P_HID(curbuf)
+	    || buf_hide(curbuf)
 	    || !check_changed(curbuf, CCGD_AW
 				    | (eap->forceit ? CCGD_FORCEIT : 0)
 				    | CCGD_EXCMD))
@@ -3279,19 +3303,6 @@ source_callback(char_u *fname, void *cookie UNUSED)
 }
 
 /*
- * Source the file "name" from all directories in 'runtimepath'.
- * "name" can contain wildcards.
- * When "flags" has DIP_ALL: source all files, otherwise only the first one.
- *
- * return FAIL when no file could be sourced, OK otherwise.
- */
-    int
-source_runtime(char_u *name, int flags)
-{
-    return do_in_runtimepath(name, flags, source_callback, NULL);
-}
-
-/*
  * Find the file "name" in all directories in "path" and invoke
  * "callback(fname, cookie)".
  * "name" can contain wildcards.
@@ -3428,18 +3439,19 @@ do_in_path(
 }
 
 /*
- * Find "name" in 'runtimepath'.  When found, invoke the callback function for
+ * Find "name" in "path".  When found, invoke the callback function for
  * it: callback(fname, "cookie")
  * When "flags" has DIP_ALL repeat for all matches, otherwise only the first
  * one is used.
  * Returns OK when at least one match found, FAIL otherwise.
  *
- * If "name" is NULL calls callback for each entry in runtimepath. Cookie is
+ * If "name" is NULL calls callback for each entry in "path". Cookie is
  * passed by reference in this case, setting it to NULL indicates that callback
  * has done its job.
  */
-    int
-do_in_runtimepath(
+    static int
+do_in_path_and_pp(
+    char_u	*path,
     char_u	*name,
     int		flags,
     void	(*callback)(char_u *fname, void *ck),
@@ -3452,7 +3464,7 @@ do_in_runtimepath(
     char	*opt_dir = "pack/*/opt/*/%s";
 
     if ((flags & DIP_NORTP) == 0)
-	done = do_in_path(p_rtp, name, flags, callback, cookie);
+	done = do_in_path(path, name, flags, callback, cookie);
 
     if ((done == FAIL || (flags & DIP_ALL)) && (flags & DIP_START))
     {
@@ -3478,6 +3490,42 @@ do_in_runtimepath(
 
     return done;
 }
+
+/*
+ * Just like do_in_path_and_pp(), using 'runtimepath' for "path".
+ */
+    int
+do_in_runtimepath(
+    char_u	*name,
+    int		flags,
+    void	(*callback)(char_u *fname, void *ck),
+    void	*cookie)
+{
+    return do_in_path_and_pp(p_rtp, name, flags, callback, cookie);
+}
+
+/*
+ * Source the file "name" from all directories in 'runtimepath'.
+ * "name" can contain wildcards.
+ * When "flags" has DIP_ALL: source all files, otherwise only the first one.
+ *
+ * return FAIL when no file could be sourced, OK otherwise.
+ */
+    int
+source_runtime(char_u *name, int flags)
+{
+    return source_in_path(p_rtp, name, flags);
+}
+
+/*
+ * Just like source_runtime(), but use "path" instead of 'runtimepath'.
+ */
+    int
+source_in_path(char_u *path, char_u *name, int flags)
+{
+    return do_in_path_and_pp(path, name, flags, source_callback, NULL);
+}
+
 
 /*
  * Expand wildcards in "pat" and invoke do_source() for each match.
@@ -3699,6 +3747,7 @@ ex_packadd(exarg_T *eap)
 ex_options(
     exarg_T	*eap UNUSED)
 {
+    vim_setenv((char_u *)"OPTWIN_CMD", (char_u *)(cmdmod.tab ? "tab" : ""));
     cmd_source((char_u *)SYS_OPTWIN_FILE, NULL);
 }
 #endif

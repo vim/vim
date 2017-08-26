@@ -68,6 +68,7 @@ typedef struct wininfo_S	wininfo_T;
 typedef struct frame_S		frame_T;
 typedef int			scid_T;		/* script ID */
 typedef struct file_buffer	buf_T;  /* forward declaration */
+typedef struct terminal_S	term_T;
 
 /*
  * Reference to a buffer that stores the value of buf_free_count.
@@ -267,6 +268,12 @@ typedef struct
 #ifdef FEAT_SIGNS
     char_u	*wo_scl;
 # define w_p_scl w_onebuf_opt.wo_scl	/* 'signcolumn' */
+#endif
+#ifdef FEAT_TERMINAL
+    char_u	*wo_tk;
+#define w_p_tk w_onebuf_opt.wo_tk	/* 'termkey' */
+    char_u	*wo_tms;
+#define w_p_tms w_onebuf_opt.wo_tms	/* 'termsize' */
 #endif
 
 #ifdef FEAT_EVAL
@@ -1189,6 +1196,7 @@ typedef struct partial_S partial_T;
 
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
+typedef struct writeq_S writeq_T;
 typedef struct jsonq_S jsonq_T;
 typedef struct cbq_S cbq_T;
 typedef struct channel_S channel_T;
@@ -1448,6 +1456,14 @@ struct partial_S
     dict_T	*pt_dict;	/* dict for "self" */
 };
 
+/* Information returned by get_tty_info(). */
+typedef struct {
+    int backspace;	/* what the Backspace key produces */
+    int enter;		/* what the Enter key produces */
+    int interrupt;	/* interrupt character */
+    int nl_does_cr;	/* TRUE when a NL is expanded to CR-NL on output */
+} ttyinfo_T;
+
 /* Status of a job.  Order matters! */
 typedef enum
 {
@@ -1471,6 +1487,7 @@ struct jobvar_S
     PROCESS_INFORMATION	jv_proc_info;
     HANDLE		jv_job_object;
 #endif
+    char_u	*jv_tty_name;	/* controlling tty, allocated */
     jobstatus_T	jv_status;
     char_u	*jv_stoponexit; /* allocated */
     int		jv_exitval;
@@ -1494,6 +1511,13 @@ struct readq_S
     long_u	rq_buflen;
     readq_T	*rq_next;
     readq_T	*rq_prev;
+};
+
+struct writeq_S
+{
+    garray_T	wq_ga;
+    writeq_T	*wq_next;
+    writeq_T	*wq_prev;
 };
 
 struct jsonq_S
@@ -1530,18 +1554,20 @@ typedef enum {
     JIO_OUT
 } job_io_T;
 
+#define CH_PART_FD(part)	ch_part[part].ch_fd
+
 /* Ordering matters, it is used in for loops: IN is last, only SOCK/OUT/ERR
  * are polled. */
 typedef enum {
     PART_SOCK = 0,
-#define CH_SOCK_FD	ch_part[PART_SOCK].ch_fd
+#define CH_SOCK_FD	CH_PART_FD(PART_SOCK)
 #ifdef FEAT_JOB_CHANNEL
     PART_OUT,
-# define CH_OUT_FD	ch_part[PART_OUT].ch_fd
+# define CH_OUT_FD	CH_PART_FD(PART_OUT)
     PART_ERR,
-# define CH_ERR_FD	ch_part[PART_ERR].ch_fd
+# define CH_ERR_FD	CH_PART_FD(PART_ERR)
     PART_IN,
-# define CH_IN_FD	ch_part[PART_IN].ch_fd
+# define CH_IN_FD	CH_PART_FD(PART_IN)
 #endif
     PART_COUNT
 } ch_part_T;
@@ -1583,6 +1609,8 @@ typedef struct {
 #endif
     int		ch_block_write;	/* for testing: 0 when not used, -1 when write
 				 * does not block, 1 simulate blocking */
+    int		ch_nonblocking;	/* write() is non-blocking */
+    writeq_T	ch_writeque;	/* header for write queue */
 
     cbq_T	ch_cb_head;	/* dummy node for per-request callbacks */
     char_u	*ch_callback;	/* call when a msg is not handled */
@@ -1646,7 +1674,7 @@ struct channel_S {
 #define JO_CALLBACK	    0x0010	/* channel callback */
 #define JO_OUT_CALLBACK	    0x0020	/* stdout callback */
 #define JO_ERR_CALLBACK	    0x0040	/* stderr callback */
-#define JO_CLOSE_CALLBACK   0x0080	/* close callback */
+#define JO_CLOSE_CALLBACK   0x0080	/* "close_cb" */
 #define JO_WAITTIME	    0x0100	/* only for ch_open() */
 #define JO_TIMEOUT	    0x0200	/* all timeouts */
 #define JO_OUT_TIMEOUT	    0x0400	/* stdout timeouts */
@@ -1674,7 +1702,17 @@ struct channel_S {
 
 #define JO2_OUT_MSG	    0x0001	/* "out_msg" */
 #define JO2_ERR_MSG	    0x0002	/* "err_msg" (JO_OUT_ << 1) */
-#define JO2_ALL		    0x0003
+#define JO2_TERM_NAME	    0x0004	/* "term_name" */
+#define JO2_TERM_FINISH	    0x0008	/* "term_finish" */
+#define JO2_ENV		    0x0010	/* "env" */
+#define JO2_CWD		    0x0020	/* "cwd" */
+#define JO2_TERM_ROWS	    0x0040	/* "term_rows" */
+#define JO2_TERM_COLS	    0x0080	/* "term_cols" */
+#define JO2_VERTICAL	    0x0100	/* "vertical" */
+#define JO2_CURWIN	    0x0200	/* "curwin" */
+#define JO2_HIDDEN	    0x0400	/* "hidden" */
+#define JO2_TERM_OPENCMD    0x0800	/* "term_opencmd" */
+#define JO2_ALL		    0x0FFF
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1698,6 +1736,7 @@ typedef struct
     char_u	jo_io_name_buf[4][NUMBUFLEN];
     char_u	*jo_io_name[4];	/* not allocated! */
     int		jo_io_buf[4];
+    int		jo_pty;
     int		jo_modifiable[4];
     int		jo_message[4];
     channel_T	*jo_channel;
@@ -1725,6 +1764,21 @@ typedef struct
     int		jo_id;
     char_u	jo_soe_buf[NUMBUFLEN];
     char_u	*jo_stoponexit;
+    dict_T	*jo_env;	/* environment variables */
+    char_u	jo_cwd_buf[NUMBUFLEN];
+    char_u	*jo_cwd;
+
+#ifdef FEAT_TERMINAL
+    /* when non-zero run the job in a terminal window of this size */
+    int		jo_term_rows;
+    int		jo_term_cols;
+    int		jo_vertical;
+    int		jo_curwin;
+    int		jo_hidden;
+    char_u	*jo_term_name;
+    char_u	*jo_term_opencmd;
+    int		jo_term_finish;
+#endif
 } jobopt_T;
 
 
@@ -1797,6 +1851,9 @@ typedef struct {
     hashtab_T	b_keywtab;		/* syntax keywords hash table */
     hashtab_T	b_keywtab_ic;		/* idem, ignore case */
     int		b_syn_error;		/* TRUE when error occurred in HL */
+# ifdef FEAT_RELTIME
+    int		b_syn_slow;		/* TRUE when 'redrawtime' reached */
+# endif
     int		b_syn_ic;		/* ignore case for :syn cmds */
     int		b_syn_spell;		/* SYNSPL_ values */
     garray_T	b_syn_patterns;		/* table for syntax patterns */
@@ -2071,9 +2128,9 @@ struct file_buffer
 #ifdef FEAT_MBYTE
     int		b_p_bomb;	/* 'bomb' */
 #endif
-#ifdef FEAT_QUICKFIX
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
+#ifdef FEAT_QUICKFIX
 #define BUF_HAS_QF_ENTRY 1
 #define BUF_HAS_LL_ENTRY 2
     int		b_has_qf_entry;
@@ -2347,6 +2404,11 @@ struct file_buffer
 				 * the file. NULL when not using encryption. */
 #endif
     int		b_mapped_ctrl_c; /* modes where CTRL-C is mapped */
+
+#ifdef FEAT_TERMINAL
+    term_T	*b_term;	/* When not NULL this buffer is for a terminal
+				 * window. */
+#endif
 
 }; /* file_buffer */
 
@@ -3230,6 +3292,7 @@ struct timer_S
     long	tr_interval;	    /* msec */
     char_u	*tr_callback;	    /* allocated */
     partial_T	*tr_partial;
+    int		tr_emsg_count;
 #endif
 };
 

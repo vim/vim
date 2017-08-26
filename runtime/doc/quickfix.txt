@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.0.  Last change: 2017 Mar 06
+*quickfix.txt*  For Vim version 8.0.  Last change: 2017 Jun 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -425,7 +425,9 @@ EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
 			which will indicate the command that produced the
 			quickfix list. This can be used to compose a custom
 			status line if the value of 'statusline' is adjusted
-			properly.
+			properly. Whenever this buffer is modified by a
+			quickfix command or function, the |b:changedtick|
+			variable is incremented.
 
 							*:lop* *:lopen*
 :lop[en] [height]	Open a window to show the location list for the
@@ -472,7 +474,11 @@ keep its height, ignoring 'winheight' and 'equalalways'.  You can change the
 height manually (e.g., by dragging the status line above it with the mouse).
 
 In the quickfix window, each line is one error.  The line number is equal to
-the error number.  You can use ":.cc" to jump to the error under the cursor.
+the error number.  The current entry is highlighted with the QuickFixLine
+highlighting.  You can change it to your liking, e.g.: >
+	:hi QuickFixLine ctermbg=Yellow guibg=Yellow
+
+You can use ":.cc" to jump to the error under the cursor.
 Hitting the <Enter> key or double-clicking the mouse on a line has the same
 effect.  The file containing the error is opened in the window above the
 quickfix window.  If there already is a window for that file, it is used

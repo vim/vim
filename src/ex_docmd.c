@@ -488,6 +488,9 @@ static void	ex_folddo(exarg_T *eap);
 #ifndef FEAT_PROFILE
 # define ex_profile		ex_ni
 #endif
+#ifndef FEAT_TERMINAL
+# define ex_terminal		ex_ni
+#endif
 
 /*
  * Declare cmdnames[].
@@ -2370,7 +2373,8 @@ do_one_cmd(
 	goto doend;
     }
     /* Check for wrong commands. */
-    if (*p == '!' && ea.cmd[1] == 0151 && ea.cmd[0] == 78)
+    if (*p == '!' && ea.cmd[1] == 0151 && ea.cmd[0] == 78
+	    && !IS_USER_CMDIDX(ea.cmdidx))
     {
 	errormsg = uc_fun_cmd();
 	goto doend;
@@ -2628,6 +2632,7 @@ do_one_cmd(
      * Any others?
      */
     else if (ea.cmdidx == CMD_bang
+	    || ea.cmdidx == CMD_terminal
 	    || ea.cmdidx == CMD_global
 	    || ea.cmdidx == CMD_vglobal
 	    || ea.usefilter)
@@ -3784,7 +3789,7 @@ set_one_cmd_context(
 	xp->xp_context = EXPAND_FILES;
 
 	/* For a shell command more chars need to be escaped. */
-	if (usefilter || ea.cmdidx == CMD_bang)
+	if (usefilter || ea.cmdidx == CMD_bang || ea.cmdidx == CMD_terminal)
 	{
 #ifndef BACKSLASH_IN_FILENAME
 	    xp->xp_shell = TRUE;
@@ -4218,6 +4223,19 @@ set_one_cmd_context(
 	case CMD_xunmap:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
 						      FALSE, TRUE, ea.cmdidx);
+	case CMD_mapclear:
+	case CMD_nmapclear:
+	case CMD_vmapclear:
+	case CMD_omapclear:
+	case CMD_imapclear:
+	case CMD_cmapclear:
+	case CMD_lmapclear:
+	case CMD_smapclear:
+	case CMD_xmapclear:
+	    xp->xp_context = EXPAND_MAPCLEAR;
+	    xp->xp_pattern = arg;
+	    break;
+
 	case CMD_abbreviate:	case CMD_noreabbrev:
 	case CMD_cabbrev:	case CMD_cnoreabbrev:
 	case CMD_iabbrev:	case CMD_inoreabbrev:
@@ -4556,7 +4574,7 @@ get_address(
 			curwin->w_cursor.col = 0;
 		    searchcmdlen = 0;
 		    if (!do_search(NULL, c, cmd, 1L,
-				       SEARCH_HIS | SEARCH_MSG, NULL))
+					  SEARCH_HIS | SEARCH_MSG, NULL, NULL))
 		    {
 			curwin->w_cursor = pos;
 			cmd = NULL;
@@ -4613,7 +4631,7 @@ get_address(
 		    if (searchit(curwin, curbuf, &pos,
 				*cmd == '?' ? BACKWARD : FORWARD,
 				(char_u *)"", 1L, SEARCH_MSG,
-					i, (linenr_T)0, NULL) != FAIL)
+					i, (linenr_T)0, NULL, NULL) != FAIL)
 			lnum = pos.lnum;
 		    else
 		    {
@@ -5036,13 +5054,14 @@ expand_filename(
 	if (!eap->usefilter
 		&& !escaped
 		&& eap->cmdidx != CMD_bang
-		&& eap->cmdidx != CMD_make
-		&& eap->cmdidx != CMD_lmake
 		&& eap->cmdidx != CMD_grep
-		&& eap->cmdidx != CMD_lgrep
 		&& eap->cmdidx != CMD_grepadd
-		&& eap->cmdidx != CMD_lgrepadd
 		&& eap->cmdidx != CMD_hardcopy
+		&& eap->cmdidx != CMD_lgrep
+		&& eap->cmdidx != CMD_lgrepadd
+		&& eap->cmdidx != CMD_lmake
+		&& eap->cmdidx != CMD_make
+		&& eap->cmdidx != CMD_terminal
 #ifndef UNIX
 		&& !(eap->argt & NOSPC)
 #endif
@@ -5072,7 +5091,8 @@ expand_filename(
 	}
 
 	/* For a shell command a '!' must be escaped. */
-	if ((eap->usefilter || eap->cmdidx == CMD_bang)
+	if ((eap->usefilter || eap->cmdidx == CMD_bang
+						|| eap->cmdidx == CMD_terminal)
 			    && vim_strpbrk(repl, (char_u *)"!") != NULL)
 	{
 	    char_u	*l;
@@ -5957,6 +5977,7 @@ static struct
 	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
     {EXPAND_LOCALES, "locale"},
 #endif
+    {EXPAND_MAPCLEAR, "mapclear"},
     {EXPAND_MAPPINGS, "mapping"},
     {EXPAND_MENUS, "menu"},
     {EXPAND_MESSAGES, "messages"},
@@ -7267,8 +7288,11 @@ ex_quit(exarg_T *eap)
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
     /* Refuse to quit when locked or when the buffer in the last window is
      * being closed (can only happen in autocommands). */
-    if (curbuf_locked() || (wp->w_buffer->b_nwindows == 1
-						&& wp->w_buffer->b_locked > 0))
+    if (curbuf_locked()
+# ifdef FEAT_WINDOWS
+	    || !win_valid(wp)
+# endif
+	    || (wp->w_buffer->b_nwindows == 1 && wp->w_buffer->b_locked > 0))
 	return;
 #endif
 
@@ -7281,7 +7305,7 @@ ex_quit(exarg_T *eap)
      */
     if (check_more(FALSE, eap->forceit) == OK && only_one_window())
 	exiting = TRUE;
-    if ((!P_HID(curbuf)
+    if ((!buf_hide(curbuf)
 		&& check_changed(curbuf, (p_awa ? CCGD_AW : 0)
 				       | (eap->forceit ? CCGD_FORCEIT : 0)
 				       | CCGD_EXCMD))
@@ -7308,7 +7332,7 @@ ex_quit(exarg_T *eap)
 	need_mouse_correct = TRUE;
 # endif
 	/* close window; may free buffer */
-	win_close(wp, !P_HID(wp->w_buffer) || eap->forceit);
+	win_close(wp, !buf_hide(wp->w_buffer) || eap->forceit);
 #endif
     }
 }
@@ -7428,7 +7452,7 @@ ex_win_close(
     buf_T	*buf = win->w_buffer;
 
     need_hide = (bufIsChanged(buf) && buf->b_nwindows <= 1);
-    if (need_hide && !P_HID(buf) && !forceit)
+    if (need_hide && !buf_hide(buf) && !forceit)
     {
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || cmdmod.confirm) && p_write)
@@ -7444,7 +7468,7 @@ ex_win_close(
 	else
 # endif
 	{
-	    EMSG(_(e_nowrtmsg));
+	    no_write_message();
 	    return;
 	}
     }
@@ -7455,9 +7479,9 @@ ex_win_close(
 
     /* free buffer when not hiding it or when it's a scratch buffer */
     if (tp == NULL)
-	win_close(win, !need_hide && !P_HID(buf));
+	win_close(win, !need_hide && !buf_hide(buf));
     else
-	win_close_othertab(win, !need_hide && !P_HID(buf), tp);
+	win_close_othertab(win, !need_hide && !buf_hide(buf), tp);
 }
 
 /*
@@ -7854,7 +7878,7 @@ ex_exit(exarg_T *eap)
 	need_mouse_correct = TRUE;
 # endif
 	/* Quit current window, may free the buffer. */
-	win_close(curwin, !P_HID(curwin->w_buffer));
+	win_close(curwin, !buf_hide(curwin->w_buffer));
 #endif
     }
 }
@@ -7950,7 +7974,7 @@ handle_drop(
      * We don't need to check if the 'hidden' option is set, as in this
      * case the buffer won't be lost.
      */
-    if (!P_HID(curbuf) && !split)
+    if (!buf_hide(curbuf) && !split)
     {
 	++emsg_off;
 	split = check_changed(curbuf, CCGD_AW);
@@ -8541,7 +8565,7 @@ ex_resize(exarg_T *eap)
     {
 	if (*eap->arg == '-' || *eap->arg == '+')
 	    n += curwin->w_height;
-	else if (n == 0 && eap->arg[0] == NUL)	/* default is very wide */
+	else if (n == 0 && eap->arg[0] == NUL)	/* default is very high */
 	    n = 9999;
 	win_setheight_win((int)n, wp);
     }
@@ -8737,7 +8761,7 @@ do_exedit(
 		    (*eap->arg == NUL && eap->do_ecmd_lnum == 0
 				      && vim_strchr(p_cpo, CPO_GOTO1) != NULL)
 					       ? ECMD_ONE : eap->do_ecmd_lnum,
-		    (P_HID(curbuf) ? ECMD_HIDE : 0)
+		    (buf_hide(curbuf) ? ECMD_HIDE : 0)
 		    + (eap->forceit ? ECMD_FORCEIT : 0)
 		      /* after a split we can use an existing buffer */
 		    + (old_curwin != NULL ? ECMD_OLDBUF : 0)
@@ -8751,7 +8775,7 @@ do_exedit(
 	    if (old_curwin != NULL)
 	    {
 		need_hide = (curbufIsChanged() && curbuf->b_nwindows <= 1);
-		if (!need_hide || P_HID(curbuf))
+		if (!need_hide || buf_hide(curbuf))
 		{
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 		    cleanup_T   cs;
@@ -8763,7 +8787,7 @@ do_exedit(
 # ifdef FEAT_GUI
 		    need_mouse_correct = TRUE;
 # endif
-		    win_close(curwin, !need_hide && !P_HID(curbuf));
+		    win_close(curwin, !need_hide && !buf_hide(curbuf));
 
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 		    /* Restore the error/interrupt/exception state if not
@@ -10509,7 +10533,7 @@ ex_pedit(exarg_T *eap)
 
     g_do_tagpreview = p_pvh;
     prepare_tagpreview(TRUE);
-    keep_help_flag = curwin_save->w_buffer->b_help;
+    keep_help_flag = bt_help(curwin_save->w_buffer);
     do_exedit(eap, NULL);
     keep_help_flag = FALSE;
     if (curwin != curwin_save && win_valid(curwin_save))
@@ -11258,7 +11282,7 @@ makeopens(
 	{
 	    if (ses_do_win(wp)
 		    && wp->w_buffer->b_ffname != NULL
-		    && !wp->w_buffer->b_help
+		    && !bt_help(wp->w_buffer)
 #ifdef FEAT_QUICKFIX
 		    && !bt_nofile(wp->w_buffer)
 #endif
@@ -11542,7 +11566,7 @@ ses_do_win(win_T *wp)
 #endif
        )
 	return (ssop_flags & SSOP_BLANK);
-    if (wp->w_buffer->b_help)
+    if (bt_help(wp->w_buffer))
 	return (ssop_flags & SSOP_HELP);
     return TRUE;
 }
@@ -11672,10 +11696,7 @@ put_view(
      */
     if ((*flagp & SSOP_FOLDS)
 	    && wp->w_buffer->b_ffname != NULL
-# ifdef FEAT_QUICKFIX
-	    && (*wp->w_buffer->b_p_bt == NUL || wp->w_buffer->b_help)
-# endif
-	    )
+	    && (*wp->w_buffer->b_p_bt == NUL || bt_help(wp->w_buffer)))
     {
 	if (put_folds(fd, wp) == FAIL)
 	    return FAIL;
@@ -12075,6 +12096,14 @@ get_messages_arg(expand_T *xp UNUSED, int idx)
     return NULL;
 }
 #endif
+
+    char_u *
+get_mapclear_arg(expand_T *xp UNUSED, int idx)
+{
+    if (idx == 0)
+	return (char_u *)"<buffer>";
+    return NULL;
+}
 
 #ifdef FEAT_AUTOCMD
 static int filetype_detect = FALSE;

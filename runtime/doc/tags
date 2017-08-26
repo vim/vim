@@ -1064,6 +1064,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'termbidi'	options.txt	/*'termbidi'*
 'termencoding'	options.txt	/*'termencoding'*
 'termguicolors'	options.txt	/*'termguicolors'*
+'termkey'	options.txt	/*'termkey'*
+'termsize'	options.txt	/*'termsize'*
 'terse'	options.txt	/*'terse'*
 'textauto'	options.txt	/*'textauto'*
 'textmode'	options.txt	/*'textmode'*
@@ -1079,8 +1081,10 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'titlelen'	options.txt	/*'titlelen'*
 'titleold'	options.txt	/*'titleold'*
 'titlestring'	options.txt	/*'titlestring'*
+'tk'	options.txt	/*'tk'*
 'tl'	options.txt	/*'tl'*
 'tm'	options.txt	/*'tm'*
+'tms'	options.txt	/*'tms'*
 'to'	options.txt	/*'to'*
 'toolbar'	options.txt	/*'toolbar'*
 'toolbariconsize'	options.txt	/*'toolbariconsize'*
@@ -1124,7 +1128,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'vi'	options.txt	/*'vi'*
 'viewdir'	options.txt	/*'viewdir'*
 'viewoptions'	options.txt	/*'viewoptions'*
+'vif'	options.txt	/*'vif'*
 'viminfo'	options.txt	/*'viminfo'*
+'viminfofile'	options.txt	/*'viminfofile'*
 'virtualedit'	options.txt	/*'virtualedit'*
 'visualbell'	options.txt	/*'visualbell'*
 'vop'	options.txt	/*'vop'*
@@ -1309,6 +1315,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +tcl	various.txt	/*+tcl*
 +tcl/dyn	various.txt	/*+tcl\/dyn*
 +termguicolors	various.txt	/*+termguicolors*
++terminal	various.txt	/*+terminal*
 +terminfo	various.txt	/*+terminfo*
 +termresponse	various.txt	/*+termresponse*
 +textobjects	various.txt	/*+textobjects*
@@ -1344,6 +1351,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 -+rv	gui_x11.txt	/*-+rv*
 --	starting.txt	/*--*
 ---	starting.txt	/*---*
+--clean	starting.txt	/*--clean*
 --cmd	starting.txt	/*--cmd*
 --echo-wid	starting.txt	/*--echo-wid*
 --help	starting.txt	/*--help*
@@ -3098,6 +3106,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tclfile	if_tcl.txt	/*:tclfile*
 :te	gui_w32.txt	/*:te*
 :tearoff	gui_w32.txt	/*:tearoff*
+:ter	terminal.txt	/*:ter*
+:terminal	terminal.txt	/*:terminal*
 :tf	tagsrch.txt	/*:tf*
 :tfirst	tagsrch.txt	/*:tfirst*
 :th	eval.txt	/*:th*
@@ -3526,6 +3536,8 @@ CTRL-V-alternative	gui_w32.txt	/*CTRL-V-alternative*
 CTRL-W	index.txt	/*CTRL-W*
 CTRL-W_+	windows.txt	/*CTRL-W_+*
 CTRL-W_-	windows.txt	/*CTRL-W_-*
+CTRL-W_.	terminal.txt	/*CTRL-W_.*
+CTRL-W_:	windows.txt	/*CTRL-W_:*
 CTRL-W_<	windows.txt	/*CTRL-W_<*
 CTRL-W_<BS>	windows.txt	/*CTRL-W_<BS>*
 CTRL-W_<CR>	quickfix.txt	/*CTRL-W_<CR>*
@@ -3564,6 +3576,7 @@ CTRL-W_H	windows.txt	/*CTRL-W_H*
 CTRL-W_J	windows.txt	/*CTRL-W_J*
 CTRL-W_K	windows.txt	/*CTRL-W_K*
 CTRL-W_L	windows.txt	/*CTRL-W_L*
+CTRL-W_N	terminal.txt	/*CTRL-W_N*
 CTRL-W_P	windows.txt	/*CTRL-W_P*
 CTRL-W_R	windows.txt	/*CTRL-W_R*
 CTRL-W_S	windows.txt	/*CTRL-W_S*
@@ -3591,6 +3604,7 @@ CTRL-W_n	windows.txt	/*CTRL-W_n*
 CTRL-W_o	windows.txt	/*CTRL-W_o*
 CTRL-W_p	windows.txt	/*CTRL-W_p*
 CTRL-W_q	windows.txt	/*CTRL-W_q*
+CTRL-W_quote	terminal.txt	/*CTRL-W_quote*
 CTRL-W_r	windows.txt	/*CTRL-W_r*
 CTRL-W_s	windows.txt	/*CTRL-W_s*
 CTRL-W_t	windows.txt	/*CTRL-W_t*
@@ -4519,6 +4533,10 @@ E940	eval.txt	/*E940*
 E941	eval.txt	/*E941*
 E942	eval.txt	/*E942*
 E943	message.txt	/*E943*
+E944	pattern.txt	/*E944*
+E945	pattern.txt	/*E945*
+E946	terminal.txt	/*E946*
+E947	terminal.txt	/*E947*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
 E97	diff.txt	/*E97*
@@ -4760,6 +4778,7 @@ TabNew	autocmd.txt	/*TabNew*
 Tcl	if_tcl.txt	/*Tcl*
 TermChanged	autocmd.txt	/*TermChanged*
 TermResponse	autocmd.txt	/*TermResponse*
+Terminal-mode	terminal.txt	/*Terminal-mode*
 TextChanged	autocmd.txt	/*TextChanged*
 TextChangedI	autocmd.txt	/*TextChangedI*
 Transact-SQL	ft_sql.txt	/*Transact-SQL*
@@ -4800,6 +4819,7 @@ W18	syntax.txt	/*W18*
 W19	autocmd.txt	/*W19*
 W20	if_pyth.txt	/*W20*
 W21	if_pyth.txt	/*W21*
+W22	eval.txt	/*W22*
 WORD	motion.txt	/*WORD*
 WWW	intro.txt	/*WWW*
 Win32	os_win32.txt	/*Win32*
@@ -5396,6 +5416,7 @@ cinoptions-values	indent.txt	/*cinoptions-values*
 clear-undo	undo.txt	/*clear-undo*
 clearmatches()	eval.txt	/*clearmatches()*
 client-server	remote.txt	/*client-server*
+client-server-name	remote.txt	/*client-server-name*
 clientserver	remote.txt	/*clientserver*
 clipboard	gui.txt	/*clipboard*
 clipboard-autoselect	options.txt	/*clipboard-autoselect*
@@ -6569,6 +6590,7 @@ gs	various.txt	/*gs*
 gsp.vim	syntax.txt	/*gsp.vim*
 gstar	pattern.txt	/*gstar*
 gt	tabpage.txt	/*gt*
+gtk-css	gui_x11.txt	/*gtk-css*
 gtk-tooltip-colors	gui_x11.txt	/*gtk-tooltip-colors*
 gu	change.txt	/*gu*
 gugu	change.txt	/*gugu*
@@ -6738,6 +6760,7 @@ hl-PmenuSbar	syntax.txt	/*hl-PmenuSbar*
 hl-PmenuSel	syntax.txt	/*hl-PmenuSel*
 hl-PmenuThumb	syntax.txt	/*hl-PmenuThumb*
 hl-Question	syntax.txt	/*hl-Question*
+hl-QuickFixLine	syntax.txt	/*hl-QuickFixLine*
 hl-Scrollbar	syntax.txt	/*hl-Scrollbar*
 hl-Search	syntax.txt	/*hl-Search*
 hl-SignColumn	syntax.txt	/*hl-SignColumn*
@@ -8514,6 +8537,7 @@ t_AL	term.txt	/*t_AL*
 t_BD	term.txt	/*t_BD*
 t_BE	term.txt	/*t_BE*
 t_CS	term.txt	/*t_CS*
+t_CTRL-\_CTRL-N	terminal.txt	/*t_CTRL-\\_CTRL-N*
 t_CV	term.txt	/*t_CV*
 t_Ce	term.txt	/*t_Ce*
 t_Co	term.txt	/*t_Co*
@@ -8773,9 +8797,26 @@ temp-file-name	eval.txt	/*temp-file-name*
 tempfile	change.txt	/*tempfile*
 template	autocmd.txt	/*template*
 tempname()	eval.txt	/*tempname()*
+term++close	terminal.txt	/*term++close*
+term++open	terminal.txt	/*term++open*
 term-dependent-settings	term.txt	/*term-dependent-settings*
 term-list	syntax.txt	/*term-list*
 term.txt	term.txt	/*term.txt*
+term_getaltscreen()	eval.txt	/*term_getaltscreen()*
+term_getattr()	eval.txt	/*term_getattr()*
+term_getcursor()	eval.txt	/*term_getcursor()*
+term_getjob()	eval.txt	/*term_getjob()*
+term_getline()	eval.txt	/*term_getline()*
+term_getscrolled()	eval.txt	/*term_getscrolled()*
+term_getsize()	eval.txt	/*term_getsize()*
+term_getstatus()	eval.txt	/*term_getstatus()*
+term_gettitle()	eval.txt	/*term_gettitle()*
+term_gettty()	eval.txt	/*term_gettty()*
+term_list()	eval.txt	/*term_list()*
+term_scrape()	eval.txt	/*term_scrape()*
+term_sendkeys()	eval.txt	/*term_sendkeys()*
+term_start()	eval.txt	/*term_start()*
+term_wait()	eval.txt	/*term_wait()*
 termcap	term.txt	/*termcap*
 termcap-changed	version4.txt	/*termcap-changed*
 termcap-colors	term.txt	/*termcap-colors*
@@ -8783,11 +8824,16 @@ termcap-cursor-color	term.txt	/*termcap-cursor-color*
 termcap-cursor-shape	term.txt	/*termcap-cursor-shape*
 termcap-options	term.txt	/*termcap-options*
 termcap-title	term.txt	/*termcap-title*
+terminal	terminal.txt	/*terminal*
 terminal-colors	os_unix.txt	/*terminal-colors*
+terminal-debug	terminal.txt	/*terminal-debug*
 terminal-info	term.txt	/*terminal-info*
 terminal-key-codes	term.txt	/*terminal-key-codes*
 terminal-options	term.txt	/*terminal-options*
 terminal-output-codes	term.txt	/*terminal-output-codes*
+terminal-testing	terminal.txt	/*terminal-testing*
+terminal-use	terminal.txt	/*terminal-use*
+terminal.txt	terminal.txt	/*terminal.txt*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*

@@ -39,7 +39,10 @@ enum SpecialKey
     KS_DB,	/* text may be scrolled up from down */
     KS_VI,	/* cursor invisible */
     KS_VE,	/* cursor visible */
-    KS_VS,	/* cursor very visible */
+    KS_VS,	/* cursor very visible (blink) */
+    KS_CVS,	/* cursor normally visible (no blink) */
+    KS_CSH,	/* cursor shape */
+    KS_CRS,	/* request cursor shape */
     KS_ME,	/* normal mode */
     KS_MR,	/* reverse mode */
     KS_MD,	/* bold mode */
@@ -74,6 +77,8 @@ enum SpecialKey
     KS_ND,	/* cursor right */
     KS_CIS,	/* set icon text start */
     KS_CIE,	/* set icon text end */
+    KS_CSC,	/* set cursor color start */
+    KS_CEC,	/* set cursor color end */
     KS_TS,	/* set window title start (to status line)*/
     KS_FS,	/* set window title end (from status line) */
     KS_CWP,	/* set window position in pixels */
@@ -127,7 +132,10 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_DB	(TERM_STR(KS_DB))	/* text may be scrolled up from down */
 #define T_VI	(TERM_STR(KS_VI))	/* cursor invisible */
 #define T_VE	(TERM_STR(KS_VE))	/* cursor visible */
-#define T_VS	(TERM_STR(KS_VS))	/* cursor very visible */
+#define T_VS	(TERM_STR(KS_VS))	/* cursor very visible (blink) */
+#define T_CVS	(TERM_STR(KS_CVS))	/* cursor normally visible (no blink) */
+#define T_CSH	(TERM_STR(KS_CSH))	/* cursor shape */
+#define T_CRS	(TERM_STR(KS_CRS))	/* request cursor shape */
 #define T_ME	(TERM_STR(KS_ME))	/* normal mode */
 #define T_MR	(TERM_STR(KS_MR))	/* reverse mode */
 #define T_MD	(TERM_STR(KS_MD))	/* bold mode */
@@ -164,6 +172,8 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_CIE	(TERM_STR(KS_CIE))	/* set icon text end */
 #define T_TS	(TERM_STR(KS_TS))	/* set window title start */
 #define T_FS	(TERM_STR(KS_FS))	/* set window title end */
+#define T_CSC	(TERM_STR(KS_CSC))	/* set cursor color start */
+#define T_CEC	(TERM_STR(KS_CEC))	/* set cursor color end */
 #define T_CWP	(TERM_STR(KS_CWP))	/* set window position */
 #define T_CGP	(TERM_STR(KS_CGP))	/* get window position */
 #define T_CWS	(TERM_STR(KS_CWS))	/* window size */

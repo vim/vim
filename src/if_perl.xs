@@ -633,6 +633,30 @@ S_SvREFCNT_dec(pTHX_ SV *sv)
 }
 # endif
 
+/* perl-5.26 also needs S_TOPMARK and S_POPMARK. */
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 26)
+PERL_STATIC_INLINE I32
+S_TOPMARK(pTHX)
+{
+    DEBUG_s(DEBUG_v(PerlIO_printf(Perl_debug_log,
+				 "MARK top  %p %" IVdf "\n",
+				  PL_markstack_ptr,
+				  (IV)*PL_markstack_ptr)));
+    return *PL_markstack_ptr;
+}
+
+PERL_STATIC_INLINE I32
+S_POPMARK(pTHX)
+{
+    DEBUG_s(DEBUG_v(PerlIO_printf(Perl_debug_log,
+				 "MARK pop  %p %" IVdf "\n",
+				  (PL_markstack_ptr-1),
+				  (IV)*(PL_markstack_ptr-1))));
+    assert((PL_markstack_ptr > PL_markstack) || !"MARK underflow");
+    return *PL_markstack_ptr--;
+}
+# endif
+
 /*
  * Make all runtime-links of perl.
  *

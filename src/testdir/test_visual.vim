@@ -18,6 +18,14 @@ func Test_block_shift_multibyte()
   q!
 endfunc
 
+func Test_block_shift_overflow()
+  " This used to cause a multiplication overflow followed by a crash.
+  new
+  normal ii
+  exe "normal \<C-V>876543210>"
+  q!
+endfunc
+
 func Test_dotregister_paste()
   new
   exe "norm! ihello world\<esc>"
@@ -51,4 +59,35 @@ func Test_Visual_inner_quote()
   normal oxX
   normal vki'
   bwipe!
+endfunc
+
+" Test for Visual mode not being reset causing E315 error.
+func TriggerTheProblem()
+  " At this point there is no visual selection because :call reset it.
+  " Let's restore the selection:
+  normal gv
+  '<,'>del _
+  try
+      exe "normal \<Esc>"
+  catch /^Vim\%((\a\+)\)\=:E315/
+      echom 'Snap! E315 error!'
+      let g:msg='Snap! E315 error!'
+  endtry
+endfunc
+
+func Test_visual_mode_reset()
+  set belloff=all
+  enew
+  let g:msg="Everything's fine."
+  enew
+  setl buftype=nofile
+  call append(line('$'), 'Delete this line.')
+
+  " NOTE: this has to be done by a call to a function because executing :del
+  " the ex-way will require the colon operator which resets the visual mode
+  " thus preventing the problem:
+  exe "normal! GV:call TriggerTheProblem()\<CR>"
+  call assert_equal("Everything's fine.", g:msg)
+
+  set belloff&
 endfunc

@@ -3,6 +3,7 @@
 " http://www.unicode.org/Public/5.1.0/ucd/UCD.html
 " For the other files see the header.
 "
+" Might need to update the URL to the emoji-data.txt
 " Usage: Vim -S <this-file>
 "
 " Author: Bram Moolenaar
@@ -382,8 +383,9 @@ let s:ambitable = []
 call BuildWidthTable('A', 'ambiguous')
 
 " Edit the emoji text file.  Requires the netrw plugin.
-edit http://www.unicode.org/Public/emoji/3.0/emoji-data.txt
+edit http://unicode.org/Public/emoji/5.0/emoji-data.txt
+"edit http://www.unicode.org/Public/emoji/latest/emoji-data.txt
 
 " Build the emoji table. Ver. 1.0 - 6.0
 " Must come after the "ambiguous" table
-call BuildEmojiTable('; Emoji\s\+# [1-6]\.[0-9]', 'emoji')
+call BuildEmojiTable('; Emoji\s\+#\s\+\d\+\.\d', 'emoji')

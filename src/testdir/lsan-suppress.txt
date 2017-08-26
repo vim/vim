@@ -1,0 +1,3 @@
+# Suppress leaks from X libraries on Ubuntu trusty.
+leak:libX11.so.6
+leak:libXt.so.6

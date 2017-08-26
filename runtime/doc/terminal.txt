@@ -1,0 +1,293 @@
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 20
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+
+
+Terminal window support					*terminal*
+
+
+WARNING: THIS IS ONLY PARTLY IMPLEMENTED, ANYTHING CAN STILL CHANGE
+
+The terminal feature is optional, use this to check if your Vim has it: >
+	echo has('terminal')
+If the result is "1" you have it.
+
+
+1. Basic use			|terminal-use|
+2. Remote testing		|terminal-testing|
+3. Debugging			|terminal-debug|
+
+{Vi does not have any of these commands}
+
+==============================================================================
+1. Basic use						*terminal-use*
+
+This feature is for running a terminal emulator in a Vim window.  A job can be
+started connected to the terminal emulator. For example, to run a shell: >
+     :term bash
+
+Or to run a debugger: >
+     :term gdb vim
+
+The job runs asynchronously from Vim, the window will be updated to show
+output from the job, also  while editing in any other window.
+
+
+Typing ~
+
+When the keyboard focus is in the terminal window, typed keys will be sent to
+the job.  This uses a pty when possible.  You can click outside of the
+terminal window to move keyboard focus elsewhere.
+
+CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
+	CTRL-W CTRL-W 	move focus to the next window
+	CTRL-W :	enter an Ex command
+See |CTRL-W| for more commands.
+
+Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N* 
+	CTRL-W .	send a CTRL-W to the job in the terminal
+	CTRL-W N	go to Terminal-Normal mode, see |Terminal-mode|
+	CTRL-\ CTRL-N   go to Terminal-Normal mode, see |Terminal-mode|
+	CTRL-W " {reg}  paste register {reg}		*CTRL-W_quote*
+			Also works with the = register to insert the result of
+			evaluating an expression.
+	CTRL-W CTRL-C	ends the job, see below |t_CTRL-W_CTRL-C|
+
+See option 'termkey' for specifying another key instead of CTRL-W that
+will work like CTRL-W.  However, typing 'termkey' twice sends 'termkey' to
+the job.  For example:
+	'termkey' CTRL-W    move focus to the next window
+	'termkey' :	    enter an Ex command
+	'termkey' 'termkey' send 'termkey' to the job in the terminal
+	'termkey' .	    send a CTRL-W to the job in the terminal
+	'termkey' N  	    go to terminal Normal mode, see below
+	'termkey' CTRL-N    same as CTRL-W N
+	'termkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
+							*t_CTRL-\_CTRL-N*
+The special key combination CTRL-\ CTRL-N can be used to switch to Normal
+mode, just like this works in any other mode.
+							*t_CTRL-W_CTRL-C*
+CTRL-W CTRL-C can be typed to forcefully end the job.  On MS-Windows a
+CTRL-BREAK will also kill the job.
+
+If you type CTRL-C the effect depends on what the pty has been configured to
+do.  For simple commands this causes a SIGINT to be sent to the job, which
+would end it.  Other commands may ignore the SIGINT or handle the CTRL-C
+themselves (like Vim does).
+
+
+Size and color ~
+
+See option 'termsize' for controlling the size of the terminal window.
+(TODO: scrolling when the terminal is larger than the window)
+
+The terminal uses the 'background' option to decide whether the terminal
+window will start with a white or black background.  The job running in the
+terminal can change the colors.
+
+
+Syntax ~
+
+:[range]ter[minal] [options] [command]			*:ter* *:terminal*
+			Open a new terminal window.
+
+			If [command] is provided run it as a job and connect
+			the input and output to the terminal.
+			If [command] is not given the 'shell' option is used.
+
+			A new buffer will be created, using [command] or
+			'shell' as the name, prefixed with a "!".  If a buffer
+			by this name already exists a number is added in
+			parentheses.  E.g. if "gdb" exists the second terminal
+			buffer will use "!gdb (1)".
+
+			If [range] is given the specified lines are used as
+			input for the job.  It will not be possible to type
+			keys in the terminal window.
+
+			Two comma separated numbers are used as "rows,cols".
+			E.g. `:24,80gdb` opens a terminal with 24 rows and 80
+			columns.  However, if the terminal window spans the
+			Vim window with, there is no vertical split, the Vim
+			window width is used.
+						*term++close* *term++open*
+			Supported [options] are:
+			++close		The terminal window will close
+					automatically when the job terminates.
+			++open		When the job terminates and no window
+					shows it, a window will be opened.
+					Note that this can be interruptive.
+			++curwin	Open the terminal in the current
+					window, do not split the current
+					window.  Fails if the current buffer
+					cannot be |abandon|ed.
+			++hidden	Open the terminal in a hidden buffer,
+					no window will be used.
+			++rows={height} Use {height} for the terminal window
+					height.
+			++cols={width}  Use {width} for the terminal window
+					width.
+
+			If you want to use more options use the |term_start()|
+			function.
+
+When the buffer associated with the terminal is unloaded or wiped out the job
+is killed, similar to calling `job_stop(job, "kill")`
+
+By default the 'bufhidden' option of the buffer will be set to "hide".
+So long as the job is running: If the window is closed the buffer becomes
+hidden.  The command will not be stopped.  The `:buffer` command can be used
+to turn the current window into a terminal window.  If there are unsaved
+changes this fails, use ! to force, as usual.
+
+To have a background job run without a window, and open the window when it's
+done, use options like this: >
+	:term ++hidden ++open make
+Note that the window will open at an unexpected moment, this will interrupt
+what you are doing.
+
+							*E947* *E948*
+So long as the job is running, the buffer is considered modified and Vim
+cannot be quit easily, see |abandon|.
+
+When the job has finished and no changes were made to the buffer: closing the
+window will wipe out the buffer.
+
+Before changes can be made to a terminal buffer, the 'modifiable' option must
+be set.  This is only possible when the job has finished.  At the first change
+the buffer will become a normal buffer and the highlighting is removed.
+You may want to change the buffer name with |:file| to be able to write, since
+the buffer name will still be set to the command.
+
+
+Resizing ~
+
+The size of the terminal can be in one of three modes:
+
+1. The 'termsize' option is empty: The terminal size follows the window size.
+   The minimal size is 2 screen lines with 10 cells.
+
+2. The 'termsize' option is "rows*cols", where "rows" is the minimal number of
+   screen rows and "cols" is the minimal number of cells.
+
+3. The 'termsize' option is "rowsXcols" (where the x is upper or lower case).
+   The terminal size is fixed to the specified number of screen lines and
+   cells.  If the window is bigger there will be unused empty space.
+
+If the window is smaller than the terminal size, only part of the terminal can
+be seen (the lower-left part).
+
+The |term_getsize()| function can be used to get the current size of the
+terminal.  |term_setsize()| can be used only when in the first or second mode,
+not when 'termsize' is "rowsXcols".
+
+
+Terminal-Job and Terminal-Normal mode ~
+							*Terminal-mode*
+When the job is running the contents of the terminal is under control of the
+job.  That includes the cursor position.  Typed keys are sent to the job.
+The terminal contents can change at any time.  This is called Terminal-Job
+mode.
+
+Use CTRL-W N (or 'termkey' N) to switch to Terminal-Normal mode.  Now the
+contents of the terminal window is under control of Vim, the job output is
+suspended.  CTRL-\ CTRL-N does the same.
+							*E946*
+In Terminal-Normal mode you can move the cursor around with the usual Vim
+commands, Visually mark text, yank text, etc.  But you cannot change the
+contents of the buffer.  The commands that would start insert mode, such as
+'i' and 'a', return to Terminal-Job mode.  The window will be updated to show
+the contents of the terminal.
+
+In Terminal-Normal mode the statusline and window title show "(Terminal)".  If
+the job ends while in Terminal-Normal mode this changes to
+"(Terminal-finished)".
+
+It is not possible to enter Insert mode from Terminal-Job mode.
+
+
+Unix ~
+
+On Unix a pty is used to make it possible to run all kinds of commands.  You
+can even run Vim in the terminal!  That's used for debugging, see below.
+
+Environment variables are used to pass information to the running job:
+    TERM		name of the terminal, 'term'
+    ROWS		number of rows in the terminal initially
+    LINES		same as ROWS
+    COLUMNS		number of columns in the terminal initially
+    COLORS		number of colors, 't_Co' (256*256*256 in the GUI)
+    VIM_SERVERNAME	v:servername
+
+The |client-server| feature can be used to communicate with the Vim instance
+where the job was started.  This only works when v:servername is not empty.
+If needed you can set it with: >
+	call remote_startserver('vim-server')
+
+In the job you can then do something like: >
+	vim --servername $VIM_SERVERNAME --remote +123 some_file.c
+This will open the file "some_file.c" and put the cursor on line 123.
+
+
+MS-Windows ~
+
+On MS-Windows winpty is used to make it possible to run all kind of commands.
+Obviously, they must be commands that run in a terminal, not open their own
+window.
+
+You need the following two files from winpty:
+
+    winpty.dll
+    winpty-agent.exe
+
+You can download them from the following page:
+
+    https://github.com/rprichard/winpty
+
+Just put the files somewhere in your PATH.  You can set the 'winptydll' option
+to point to the right file, if needed.  If you have both the 32-bit and 64-bit
+version, rename to winpty32.dll and winpty64.dll to match the way Vim was
+build.
+
+==============================================================================
+2. Remote testing					*terminal-testing*
+
+Most Vim tests execute a script inside Vim.  For some tests this does not
+work, running the test interferes with the code being tested.  To avoid this
+Vim is executed in a terminal window.  The test sends keystrokes to it and
+inspects the resulting screen state.
+
+Functions ~
+
+term_sendkeys()		send keystrokes to a terminal
+term_wait()		wait for screen to be updated
+term_scrape()		inspect terminal screen
+
+
+==============================================================================
+3. Debugging					*terminal-debug*
+
+The Terminal debugging plugin can be used to debug a program with gdb and view
+the source code in a Vim window. For example: >
+
+	:TermDebug vim
+
+This opens three windows:
+- A terminal window in which "gdb vim" is executed.  Here you can directly
+  interact with gdb.
+- A terminal window for the executed program.  When "run" is used in gdb the
+  program I/O will happen in this window, so that it does not interfere with
+  controlling gdb.
+- A normal Vim window used to show the source code.  When gdb jumps to a
+  source file location this window will display the code, if possible.  Values
+  of variables can be inspected, breakpoints set and cleared, etc.
+
+This uses two terminal windows.  To open the gdb window: >
+	:term gdb [arguments]
+To open the terminal to run the tested program |term_start()| is used.
+
+TODO
+
+
+ vim:tw=78:ts=8:ft=help:norl:

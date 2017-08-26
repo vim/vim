@@ -652,9 +652,11 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     parent_widget = (parent != NULL) ? parent->submenu_id : gui.menubar;
     menu_item_new(menu, parent_widget);
 
+# if !GTK_CHECK_VERSION(3,4,0)
     /* since the tearoff should always appear first, increment idx */
     if (parent != NULL && !menu_is_popup(parent->name))
 	++idx;
+# endif
 
     gtk_menu_shell_insert(GTK_MENU_SHELL(parent_widget), menu->id, idx);
 
@@ -773,10 +775,12 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	if (parent == NULL || parent->submenu_id == NULL)
 	    return;
 
+# if !GTK_CHECK_VERSION(3,4,0)
 	/* Make place for the possible tearoff handle item.  Not in the popup
 	 * menu, it doesn't have a tearoff item. */
 	if (!menu_is_popup(parent->name))
 	    ++idx;
+# endif
 
 	if (menu_is_separator(menu->name))
 	{

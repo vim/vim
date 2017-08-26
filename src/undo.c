@@ -419,6 +419,10 @@ u_savecommon(
 	    }
 	}
 #endif
+#ifdef FEAT_TERMINAL
+	/* A change in a terminal buffer removes the highlighting. */
+	term_change_in_curbuf();
+#endif
 
 #ifdef FEAT_AUTOCMD
 	/*
@@ -917,7 +921,7 @@ undo_write(bufinfo_T *bi, char_u *ptr, size_t len)
     static int
 undo_flush(bufinfo_T *bi)
 {
-    if (bi->bi_buffer != NULL && bi->bi_used > 0)
+    if (bi->bi_buffer != NULL && bi->bi_state != NULL && bi->bi_used > 0)
     {
 	crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used);
 	if (fwrite(bi->bi_buffer, bi->bi_used, (size_t)1, bi->bi_fp) != 1)
@@ -1063,6 +1067,8 @@ undo_read_time(bufinfo_T *bi)
     static int
 undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 {
+    int retval = OK;
+
 #ifdef FEAT_CRYPT
     if (bi->bi_buffer != NULL)
     {
@@ -1078,10 +1084,8 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 		n = fread(bi->bi_buffer, 1, (size_t)CRYPT_BUF_SIZE, bi->bi_fp);
 		if (n == 0)
 		{
-		    /* Error may be checked for only later.  Fill with zeros,
-		     * so that the reader won't use garbage. */
-		    vim_memset(p, 0, size_todo);
-		    return FAIL;
+		    retval = FAIL;
+		    break;
 		}
 		bi->bi_avail = n;
 		bi->bi_used = 0;
@@ -1095,12 +1099,17 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
 	    size_todo -= (int)n;
 	    p += n;
 	}
-	return OK;
     }
+    else
 #endif
     if (fread(buffer, (size_t)size, 1, bi->bi_fp) != 1)
-	return FAIL;
-    return OK;
+	retval = FAIL;
+
+    if (retval == FAIL)
+	/* Error may be checked for only later.  Fill with zeros,
+	 * so that the reader won't use garbage. */
+	vim_memset(buffer, 0, size);
+    return retval;
 }
 
 /*
@@ -3513,21 +3522,18 @@ u_save_line(linenr_T lnum)
     int
 bufIsChanged(buf_T *buf)
 {
-    return
-#ifdef FEAT_QUICKFIX
-	    !bt_dontwrite(buf) &&
+#ifdef FEAT_TERMINAL
+    if (term_job_running(buf->b_term))
+	return TRUE;
 #endif
-	    (buf->b_changed || file_ff_differs(buf, TRUE));
+    return !bt_dontwrite(buf)
+	&& (buf->b_changed || file_ff_differs(buf, TRUE));
 }
 
     int
 curbufIsChanged(void)
 {
-    return
-#ifdef FEAT_QUICKFIX
-	!bt_dontwrite(curbuf) &&
-#endif
-	(curbuf->b_changed || file_ff_differs(curbuf, TRUE));
+    return bufIsChanged(curbuf);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
