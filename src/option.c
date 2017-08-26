@@ -2196,7 +2196,9 @@ static struct vimoption options[] =
     {"printheader", "pheader",  P_STRING|P_VI_DEF|P_GETTEXT,
 #ifdef FEAT_PRINTER
 			    (char_u *)&p_header, PV_NONE,
-			    {(char_u *)N_("%<%f%h%m%=Page %N"), (char_u *)0L}
+			    /* untranslated to avoid problems when 'encoding'
+			     * is changed */
+			    {(char_u *)"%<%f%h%m%=Page %N", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)NULL, (char_u *)0L}
