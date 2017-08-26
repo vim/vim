@@ -98,7 +98,7 @@ struct qf_info_S
 
 static qf_info_T ql_info;	/* global quickfix list */
 
-#define FMT_PATTERNS 10		/* maximum number of % recognized */
+#define FMT_PATTERNS 11		/* maximum number of % recognized */
 
 /*
  * Structure used to hold the info of one part of 'errorformat'
@@ -224,7 +224,8 @@ static struct fmtpattern
 		    {'r', ".*"},
 		    {'p', "[- 	.]*"},
 		    {'v', "\\d\\+"},
-		    {'s', ".\\+"}
+		    {'s', ".\\+"},
+		    {'o', ".\\+"}
 		};
 
 /*
@@ -812,6 +813,7 @@ qf_get_nextline(qfstate_T *state)
 
 typedef struct {
     char_u	*namebuf;
+    char_u	*module;
     char_u	*errmsg;
     int		errmsglen;
     long	lnum;
@@ -871,6 +873,7 @@ restofline:
 	if (qfl->qf_multiscan && vim_strchr((char_u *)"OPQ", idx) == NULL)
 	    continue;
 	fields->namebuf[0] = NUL;
+	fields->module[0] = NUL;
 	fields->pattern[0] = NUL;
 	if (!qfl->qf_multiscan)
 	    fields->errmsg[0] = NUL;
@@ -1010,6 +1013,21 @@ restofline:
 		fields->pattern[len + 3] = '\\';
 		fields->pattern[len + 4] = '$';
 		fields->pattern[len + 5] = NUL;
+	    }
+	    if ((i = (int)fmt_ptr->addr[10]) > 0)		/* %o */
+	    {
+		if (regmatch.startp[i] == NULL)
+		    continue;
+		len = (int)(regmatch.endp[i] - regmatch.startp[i]);
+		if (len >= fields->errmsglen)
+		{
+		    /* len + null terminator */
+		    if ((fields->errmsg = vim_realloc(fields->errmsg, len + 1))
+			    == NULL)
+			return QF_NOMEM;
+		    fields->errmsglen = len + 1;
+		}
+		vim_strncpy(fields->module, regmatch.startp[i], len);
 	    }
 	    break;
 	}
@@ -1187,10 +1205,11 @@ qf_init_ext(
 	convert_setup(&state.vc, enc, p_enc);
 #endif
     fields.namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
+    fields.module = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
     fields.errmsglen = CMDBUFFSIZE + 1;
     fields.errmsg = alloc_id(fields.errmsglen, aid_qf_errmsg);
     fields.pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
-    if (fields.namebuf == NULL || fields.errmsg == NULL || fields.pattern == NULL)
+    if (fields.namebuf == NULL || fields.errmsg == NULL || fields.pattern == NULL || fields.module == NULL)
 	goto qf_init_end;
 
     if (efile != NULL && (state.fd = mch_fopen((char *)efile, "r")) == NULL)
@@ -1290,7 +1309,7 @@ qf_init_ext(
 			    ? fields.namebuf
 			    : ((qfl->qf_currfile != NULL && fields.valid)
 				? qfl->qf_currfile : (char_u *)NULL),
-			(char_u *)NULL,
+			fields.module,
 			0,
 			fields.errmsg,
 			fields.lnum,
@@ -1336,6 +1355,7 @@ qf_init_end:
     if (state.fd != NULL)
 	fclose(state.fd);
     vim_free(fields.namebuf);
+    vim_free(fields.module);
     vim_free(fields.errmsg);
     vim_free(fields.pattern);
     vim_free(state.growbuf);
@@ -2581,6 +2601,7 @@ qf_list(exarg_T *eap)
     for (i = 1; !got_int && i <= qi->qf_lists[qi->qf_curlist].qf_count; )
     {
 	if ((qfp->qf_valid || all) && idx1 <= i && i <= idx2)
+
 	{
 	    msg_putchar('\n');
 	    if (got_int)
@@ -4834,8 +4855,6 @@ qf_add_entries(
 
 	filename = get_dict_string(d, (char_u *)"filename", TRUE);
 	module = get_dict_string(d, (char_u *)"module", TRUE);
-	if (module == NULL)
-	    module = vim_strsave((char_u *)"");
 	bufnum = (int)get_dict_number(d, (char_u *)"bufnr");
 	lnum = (int)get_dict_number(d, (char_u *)"lnum");
 	col = (int)get_dict_number(d, (char_u *)"col");
