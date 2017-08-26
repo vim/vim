@@ -1360,6 +1360,9 @@ static int	need_gather = FALSE;	    /* need to fill termleader[] */
 static char_u	termleader[256 + 1];	    /* for check_termcode() */
 #ifdef FEAT_TERMRESPONSE
 static int	check_for_codes = FALSE;    /* check for key code response */
+# ifdef MACOS
+static int	is_terminal_app = FALSE;    /* recognized Terminal.app */
+# endif
 #endif
 
     static struct builtin_term *
@@ -3497,8 +3500,6 @@ may_req_ambiguous_char_width(void)
     void
 may_req_bg_color(void)
 {
-    int done = FALSE;
-
     if (can_get_termresponse() && starting == 0)
     {
 	/* Only request background if t_RB is set and 'background' wasn't
@@ -3510,26 +3511,12 @@ may_req_bg_color(void)
 	    LOG_TR("Sending BG request");
 	    out_str(T_RBG);
 	    rbg_status = STATUS_SENT;
-	    done = TRUE;
-	}
 
-	/* Only request the cursor shape if t_SH and t_RS are set. */
-	if (rcm_status == STATUS_GET
-		&& *T_CSH != NUL
-		&& *T_CRS != NUL)
-	{
-	    LOG_TR("Sending cursor shape request");
-	    out_str(T_CRS);
-	    rcm_status = STATUS_SENT;
-	    done = TRUE;
+	    /* check for the characters now, otherwise they might be eaten by
+	     * get_keystroke() */
+	    out_flush();
+	    (void)vpeekc_nomap();
 	}
-    }
-    if (done)
-    {
-	/* check for the characters now, otherwise they might be eaten by
-	 * get_keystroke() */
-	out_flush();
-	(void)vpeekc_nomap();
     }
 }
 
@@ -4530,6 +4517,33 @@ check_termcode(
 			     * 256, libvterm supports even more. */
 			    if (mch_getenv((char_u *)"COLORS") == NULL)
 				may_adjust_color_count(256);
+			}
+
+#  ifdef MACOS
+			/* Mac Terminal.app sends 1;95;0 */
+			if (col == 95
+				&& STRNCMP(tp + extra - 2, ">1;95;0c", 9) == 0)
+			{
+			    /* Terminal.app sets $TERM to "xterm-256colors",
+			     * but it's not fully xterm compatible. */
+			    is_terminal_app = TRUE;
+			}
+#  endif
+
+			/* Only request the cursor style if t_SH and t_RS are
+			 * set. Not for Terminal.app, it can't handle t_RS, it
+			 * echoes the characters to the screen. */
+			if (rcm_status == STATUS_GET
+#  ifdef MACOS
+				&& !is_terminal_app
+#  endif
+				&& *T_CSH != NUL
+				&& *T_CRS != NUL)
+			{
+			    LOG_TR("Sending cursor style request");
+			    out_str(T_CRS);
+			    rcm_status = STATUS_SENT;
+			    out_flush();
 			}
 		    }
 # ifdef FEAT_EVAL
