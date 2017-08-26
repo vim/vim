@@ -66,6 +66,7 @@ char *mch_job_status(job_T *job);
 job_T *mch_detect_ended_job(job_T *job_list);
 int mch_signal_job(job_T *job, char_u *how);
 void mch_clear_job(job_T *job);
+int mch_create_pty_channel(job_T *job, jobopt_T *options);
 void mch_breakcheck(int force);
 int mch_expandpath(garray_T *gap, char_u *path, int flags);
 int mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, int flags);

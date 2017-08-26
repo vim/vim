@@ -6643,6 +6643,12 @@ gui_mch_wait_for_chars(long wtime)
 	    focus = gui.in_focus;
 	}
 
+# if defined(FEAT_JOB_CHANNEL)
+	/* Using an event handler for a channel that may be disconnected does
+	 * not work, it hangs.  Instead poll for messages. */
+	channel_handle_events(TRUE);
+# endif
+
 #ifdef MESSAGE_QUEUE
 # ifdef FEAT_TIMERS
 	did_add_timer = FALSE;

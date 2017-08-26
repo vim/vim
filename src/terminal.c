@@ -38,6 +38,7 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
+ * - ":term NONE" does not work in MS-Windows.
  * - better check for blinking - reply from Thomas Dickey Aug 22
  * - test for writing lines to terminal job does not work on MS-Windows
  * - implement term_setsize()
@@ -47,6 +48,7 @@
  * - do not set bufhidden to "hide"?  works like a buffer with changes.
  *   document that CTRL-W :hide can be used.
  * - GUI: when using tabs, focus in terminal, click on tab does not work.
+ * - When $HOME was set by Vim (MS-Windows), do not pass it to the job.
  * - GUI: when 'confirm' is set and trying to exit Vim, dialog offers to save
  *   changes to "!shell".
  *   (justrajdeep, 2017 Aug 22)
@@ -62,8 +64,6 @@
  *	   shell writing stderr to a file or buffer
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
- * - support ":term NONE" to open a terminal with a pty but not running a job
- *   in it.  The pty can be passed to gdb to run the executable in.
  * - if the job in the terminal does not support the mouse, we can use the
  *   mouse in the Terminal window for copy/paste.
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
@@ -163,8 +163,8 @@ static term_T *in_terminal_loop = NULL;
 /*
  * Functions with separate implementation for MS-Windows and Unix-like systems.
  */
-static int term_and_job_init(term_T *term, int rows, int cols,
-					      typval_T *argvar, jobopt_T *opt);
+static int term_and_job_init(term_T *term, typval_T *argvar, jobopt_T *opt);
+static int create_pty_only(term_T *term, jobopt_T *opt);
 static void term_report_winsize(term_T *term, int rows, int cols);
 static void term_free_vterm(term_T *term);
 
@@ -256,6 +256,7 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     win_T	*old_curwin = curwin;
     term_T	*term;
     buf_T	*old_curbuf = NULL;
+    int		res;
 
     if (check_restricted() || check_secure())
 	return;
@@ -355,7 +356,13 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 	char_u	*cmd, *p;
 
 	if (argvar->v_type == VAR_STRING)
+	{
 	    cmd = argvar->vval.v_string;
+	    if (cmd == NULL)
+		cmd = (char_u *)"";
+	    else if (STRCMP(cmd, "NONE") == 0)
+		cmd = (char_u *)"pty";
+	}
 	else if (argvar->v_type != VAR_LIST
 		|| argvar->vval.v_list == NULL
 		|| argvar->vval.v_list->lv_len < 1)
@@ -400,9 +407,15 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     set_term_and_win_size(term);
     setup_job_options(opt, term->tl_rows, term->tl_cols);
 
-    /* System dependent: setup the vterm and start the job in it. */
-    if (term_and_job_init(term, term->tl_rows, term->tl_cols, argvar, opt)
-									 == OK)
+    /* System dependent: setup the vterm and maybe start the job in it. */
+    if (argvar->v_type == VAR_STRING
+	    && argvar->vval.v_string != NULL
+	    && STRCMP(argvar->vval.v_string, "NONE") == 0)
+	res = create_pty_only(term, opt);
+    else
+	res = term_and_job_init(term, argvar, opt);
+
+    if (res == OK)
     {
 	/* Get and remember the size we ended up with.  Update the pty. */
 	vterm_get_size(term->tl_vterm, &term->tl_rows, &term->tl_cols);
@@ -553,7 +566,8 @@ free_terminal(buf_T *buf)
     if (term->tl_job != NULL)
     {
 	if (term->tl_job->jv_status != JOB_ENDED
-				      && term->tl_job->jv_status != JOB_FAILED)
+		&& term->tl_job->jv_status != JOB_FINISHED
+	        && term->tl_job->jv_status != JOB_FAILED)
 	    job_stop(term->tl_job, NULL, "kill");
 	job_unref(term->tl_job);
     }
@@ -839,8 +853,9 @@ term_job_running(term_T *term)
      * race condition when updating the title. */
     return term != NULL
 	&& term->tl_job != NULL
-	&& term->tl_job->jv_status == JOB_STARTED
-	&& channel_is_open(term->tl_job->jv_channel);
+	&& channel_is_open(term->tl_job->jv_channel)
+	&& (term->tl_job->jv_status == JOB_STARTED
+		|| term->tl_job->jv_channel->ch_keep_open);
 }
 
 /*
@@ -2842,9 +2857,14 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	ch_log(NULL, "term_wait(): no job to wait for");
 	return;
     }
+    if (buf->b_term->tl_job->jv_channel == NULL)
+	/* channel is closed, nothing to do */
+	return;
 
     /* Get the job status, this will detect a job that finished. */
-    if (STRCMP(job_status(buf->b_term->tl_job), "dead") == 0)
+    if ((buf->b_term->tl_job->jv_channel == NULL
+			     || !buf->b_term->tl_job->jv_channel->ch_keep_open)
+	    && STRCMP(job_status(buf->b_term->tl_job), "dead") == 0)
     {
 	/* The job is dead, keep reading channel I/O until the channel is
 	 * closed. */
@@ -2976,8 +2996,6 @@ dyn_winpty_init(int verbose)
     static int
 term_and_job_init(
 	term_T	    *term,
-	int	    rows,
-	int	    cols,
 	typval_T    *argvar,
 	jobopt_T    *opt)
 {
@@ -3023,7 +3041,8 @@ term_and_job_init(
     if (term->tl_winpty_config == NULL)
 	goto failed;
 
-    winpty_config_set_initial_size(term->tl_winpty_config, cols, rows);
+    winpty_config_set_initial_size(term->tl_winpty_config,
+						 term->tl_cols, term->tl_rows);
     term->tl_winpty = winpty_open(term->tl_winpty_config, &winpty_err);
     if (term->tl_winpty == NULL)
 	goto failed;
@@ -3085,7 +3104,7 @@ term_and_job_init(
     winpty_spawn_config_free(spawn_config);
     vim_free(cmd_wchar);
 
-    create_vterm(term, rows, cols);
+    create_vterm(term, term->tl_rows, term->tl_cols);
 
     channel_set_job(channel, job, opt);
     job_set_options(job, opt);
@@ -3137,6 +3156,13 @@ failed:
     return FAIL;
 }
 
+    static int
+create_pty_only(term_T *term, jobopt_T *opt)
+{
+    /* TODO: implement this */
+    return FAIL;
+}
+
 /*
  * Free the terminal emulator part of "term".
  */
@@ -3185,12 +3211,10 @@ terminal_enabled(void)
     static int
 term_and_job_init(
 	term_T	    *term,
-	int	    rows,
-	int	    cols,
 	typval_T    *argvar,
 	jobopt_T    *opt)
 {
-    create_vterm(term, rows, cols);
+    create_vterm(term, term->tl_rows, term->tl_cols);
 
     /* TODO: if the command is "NONE" only create a pty. */
     term->tl_job = job_start(argvar, opt);
@@ -3200,6 +3224,26 @@ term_and_job_init(
     return term->tl_job != NULL
 	&& term->tl_job->jv_channel != NULL
 	&& term->tl_job->jv_status != JOB_FAILED ? OK : FAIL;
+}
+
+    static int
+create_pty_only(term_T *term, jobopt_T *opt)
+{
+    int ret;
+
+    create_vterm(term, term->tl_rows, term->tl_cols);
+
+    term->tl_job = job_alloc();
+    if (term->tl_job == NULL)
+	return FAIL;
+    ++term->tl_job->jv_refcount;
+
+    /* behave like the job is already finished */
+    term->tl_job->jv_status = JOB_FINISHED;
+
+    ret = mch_create_pty_channel(term->tl_job, opt);
+
+    return ret;
 }
 
 /*

@@ -505,3 +505,23 @@ func Test_terminal_write_stdin()
 
   bwipe!
 endfunc
+
+func Test_terminal_no_cmd()
+  " Todo: make this work on all systems.
+  if !has('unix')
+    return
+  endif
+  " Todo: make this work in the GUI
+  if !has('gui_running')
+    return
+  endif
+  let buf = term_start('NONE', {})
+  call assert_notequal(0, buf)
+
+  let pty = job_info(term_getjob(buf))['tty']
+  call assert_notequal('', pty)
+  call system('echo "look here" > ' . pty)
+  call term_wait(buf)
+  call assert_equal('look here', term_getline(buf, 1))
+  bwipe!
+endfunc
