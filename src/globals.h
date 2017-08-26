@@ -362,6 +362,10 @@ EXTERN int	highlight_attr[HLF_COUNT];  /* Highl. attr for each context. */
 EXTERN int	highlight_user[9];		/* User[1-9] attributes */
 # ifdef FEAT_STL_OPT
 EXTERN int	highlight_stlnc[9];		/* On top of user */
+#  ifdef FEAT_TERMINAL
+EXTERN int	highlight_stlterm[9];		/* On top of user */
+EXTERN int	highlight_stltermnc[9];		/* On top of user */
+#  endif
 # endif
 #endif
 #ifdef FEAT_GUI
@@ -1036,7 +1040,6 @@ EXTERN int	skip_redraw INIT(= FALSE);  /* skip redraw once */
 EXTERN int	do_redraw INIT(= FALSE);    /* extra redraw once */
 
 EXTERN int	need_highlight_changed INIT(= TRUE);
-EXTERN char_u	*use_viminfo INIT(= NULL);  /* name of viminfo file to use */
 
 #define NSCRIPT 15
 EXTERN FILE	*scriptin[NSCRIPT];	    /* streams to read script from */
@@ -1513,8 +1516,6 @@ EXTERN char_u e_notcreate[]	INIT(= N_("E482: Can't create file %s"));
 EXTERN char_u e_notmp[]		INIT(= N_("E483: Can't get temp file name"));
 EXTERN char_u e_notopen[]	INIT(= N_("E484: Can't open file %s"));
 EXTERN char_u e_notread[]	INIT(= N_("E485: Can't read file %s"));
-EXTERN char_u e_nowrtmsg[]	INIT(= N_("E37: No write since last change (add ! to override)"));
-EXTERN char_u e_nowrtmsg_nobang[]   INIT(= N_("E37: No write since last change"));
 EXTERN char_u e_null[]		INIT(= N_("E38: Null argument"));
 #if defined(FEAT_DIGRAPHS) || defined(FEAT_TIMERS)
 EXTERN char_u e_number_exp[]	INIT(= N_("E39: Number expected"));
@@ -1670,6 +1671,10 @@ EXTERN int  did_echo_string_emsg INIT(= FALSE);
 
 /* Used for checking if local variables or arguments used in a lambda. */
 EXTERN int *eval_lavars_used INIT(= NULL);
+#endif
+
+#ifdef WIN3264
+EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 #endif
 
 /*

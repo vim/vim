@@ -51,7 +51,9 @@
 #define BUFUNL	      0x20000L	/* accepts unlisted buffer too */
 #define ARGOPT	      0x40000L	/* allow "++opt=val" argument */
 #define SBOXOK	      0x80000L	/* allowed in the sandbox */
-#define CMDWIN	     0x100000L	/* allowed in cmdline window */
+#define CMDWIN	     0x100000L	/* allowed in cmdline window; when missing
+				 * disallows editing another buffer when
+				 * curbuf_lock is set */
 #define MODIFY       0x200000L	/* forbidden in non-'modifiable' buffer */
 #define EXFLAGS      0x400000L	/* allow flags after count in argument */
 #define FILES	(XFILE | EXTRA)	/* multiple extra files allowed */
@@ -135,7 +137,7 @@ EX(CMD_argdo,		"argdo",	ex_listdo,
 			BANG|NEEDARG|EXTRA|NOTRLCOM|RANGE|NOTADR|DFLALL,
 			ADDR_ARGUMENTS),
 EX(CMD_argedit,		"argedit",	ex_argedit,
-			BANG|NEEDARG|RANGE|NOTADR|ZEROR|FILE1|EDITCMD|ARGOPT|TRLBAR,
+			BANG|NEEDARG|RANGE|NOTADR|ZEROR|FILES|EDITCMD|ARGOPT|TRLBAR,
 			ADDR_ARGUMENTS),
 EX(CMD_argglobal,	"argglobal",	ex_args,
 			BANG|FILES|EDITCMD|ARGOPT|TRLBAR,
@@ -1176,7 +1178,7 @@ EX(CMD_registers,	"registers",	ex_display,
 			EXTRA|NOTRLCOM|TRLBAR|CMDWIN,
 			ADDR_LINES),
 EX(CMD_resize,		"resize",	ex_resize,
-			RANGE|NOTADR|TRLBAR|WORD1,
+			RANGE|NOTADR|TRLBAR|WORD1|CMDWIN,
 			ADDR_LINES),
 EX(CMD_retab,		"retab",	ex_retab,
 			TRLBAR|RANGE|WHOLEFOLD|DFLALL|BANG|WORD1|CMDWIN|MODIFY,
@@ -1481,6 +1483,9 @@ EX(CMD_tclfile,		"tclfile",	ex_tclfile,
 EX(CMD_tearoff,		"tearoff",	ex_tearoff,
 			NEEDARG|EXTRA|TRLBAR|NOTRLCOM|CMDWIN,
 			ADDR_LINES),
+EX(CMD_terminal,	"terminal",	ex_terminal,
+			RANGE|BANG|FILES|TRLBAR|CMDWIN,
+			ADDR_LINES),
 EX(CMD_tfirst,		"tfirst",	ex_tag,
 			RANGE|NOTADR|BANG|TRLBAR|ZEROR,
 			ADDR_LINES),
@@ -1620,7 +1625,7 @@ EX(CMD_winsize,		"winsize",	ex_winsize,
 			EXTRA|NEEDARG|TRLBAR,
 			ADDR_LINES),
 EX(CMD_wincmd,		"wincmd",	ex_wincmd,
-			NEEDARG|WORD1|RANGE|NOTADR,
+			NEEDARG|WORD1|RANGE|NOTADR|CMDWIN,
 			ADDR_WINDOWS),
 EX(CMD_windo,		"windo",	ex_listdo,
 			NEEDARG|EXTRA|NOTRLCOM|RANGE|NOTADR|DFLALL,

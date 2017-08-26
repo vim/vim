@@ -2270,10 +2270,6 @@ fontset_ascent(XFontSet fs)
 gui_mch_get_color(char_u *name)
 {
     guicolor_T  requested;
-    XColor      available;
-    Colormap	colormap;
-#define COLORSPECBUFSIZE 8 /* space enough to hold "#RRGGBB" */
-    char        spec[COLORSPECBUFSIZE];
 
     /* can't do this when GUI not running */
     if (!gui.in_use || name == NULL || *name == NUL)
@@ -2283,11 +2279,24 @@ gui_mch_get_color(char_u *name)
     if (requested == INVALCOLOR)
 	return INVALCOLOR;
 
-    vim_snprintf(spec, COLORSPECBUFSIZE, "#%.2x%.2x%.2x",
+    return gui_mch_get_rgb_color(
 	    (requested & 0xff0000) >> 16,
 	    (requested & 0xff00) >> 8,
 	    requested & 0xff);
-#undef COLORSPECBUFSIZE
+}
+
+/*
+ * Return the Pixel value (color) for the given RGB values.
+ * Return INVALCOLOR for error.
+ */
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    char        spec[8]; /* space enough to hold "#RRGGBB" */
+    XColor      available;
+    Colormap	colormap;
+
+    vim_snprintf(spec, sizeof(spec), "#%.2x%.2x%.2x", r, g, b);
     colormap = DefaultColormap(gui.dpy, DefaultScreen(gui.dpy));
     if (XParseColor(gui.dpy, colormap, (char *)spec, &available) != 0
 	    && XAllocColor(gui.dpy, colormap, &available) != 0)

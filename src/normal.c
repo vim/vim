@@ -1308,6 +1308,12 @@ normal_end:
     }
 #endif
 
+#ifdef FEAT_TERMINAL
+    /* don't go to Insert mode from Terminal-Job mode */
+    if (term_use_loop())
+	restart_edit = 0;
+#endif
+
     /*
      * May restart edit(), if we got here with CTRL-O in Insert mode (but not
      * if still inside a mapping that started in Visual mode).
@@ -1565,7 +1571,12 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 
 	    oap->start = VIsual;
 	    if (VIsual_mode == 'V')
+	    {
 		oap->start.col = 0;
+# ifdef FEAT_VIRTUALEDIT
+		oap->start.coladd = 0;
+# endif
+	    }
 	}
 
 	/*
@@ -4621,7 +4632,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 nv_mousescroll(cmdarg_T *cap)
 {
 # ifdef FEAT_WINDOWS
-    win_T *old_curwin = curwin;
+    win_T *old_curwin = curwin, *wp;
 
     if (mouse_row >= 0 && mouse_col >= 0)
     {
@@ -4631,13 +4642,21 @@ nv_mousescroll(cmdarg_T *cap)
 	col = mouse_col;
 
 	/* find the window at the pointer coordinates */
-	curwin = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col);
+	if (wp == NULL)
+	    return;
+	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
 # endif
 
     if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
     {
+# ifdef FEAT_TERMINAL
+	if (term_use_loop())
+	    send_keys_to_term(curbuf->b_term, cap->cmdchar, TRUE);
+	else
+# endif
 	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
 	{
 	    (void)onepage(cap->arg ? FORWARD : BACKWARD, 1L);
@@ -6255,11 +6274,11 @@ nv_gotofile(cmdarg_T *cap)
     if (ptr != NULL)
     {
 	/* do autowrite if necessary */
-	if (curbufIsChanged() && curbuf->b_nwindows <= 1 && !P_HID(curbuf))
+	if (curbufIsChanged() && curbuf->b_nwindows <= 1 && !buf_hide(curbuf))
 	    (void)autowrite(curbuf, FALSE);
 	setpcmark();
 	if (do_ecmd(0, ptr, NULL, NULL, ECMD_LAST,
-				   P_HID(curbuf) ? ECMD_HIDE : 0, curwin) == OK
+				buf_hide(curbuf) ? ECMD_HIDE : 0, curwin) == OK
 		&& cap->nchar == 'F' && lnum >= 0)
 	{
 	    curwin->w_cursor.lnum = lnum;
@@ -7566,6 +7585,7 @@ nv_gomark(cmdarg_T *cap)
     if (!virtual_active())
 	curwin->w_cursor.coladd = 0;
 #endif
+    check_cursor_col();
 #ifdef FEAT_FOLDING
     if (cap->oap->op_type == OP_NOP
 	    && pos != NULL
@@ -7846,7 +7866,10 @@ n_start_visual_mode(int c)
 nv_window(cmdarg_T *cap)
 {
 #ifdef FEAT_WINDOWS
-    if (!checkclearop(cap->oap))
+    if (cap->nchar == ':')
+	/* "CTRL-W :" is the same as typing ":"; useful in a terminal window */
+	nv_colon(cap);
+    else if (!checkclearop(cap->oap))
 	do_window(cap->nchar, cap->count0, NUL); /* everything is in window.c */
 #else
     (void)checkclearop(cap->oap);
@@ -9052,6 +9075,14 @@ nv_edit(cmdarg_T *cap)
 	clearopbeep(cap->oap);
 #endif
     }
+#ifdef FEAT_TERMINAL
+    else if (term_in_normal_mode())
+    {
+	clearop(cap->oap);
+	term_enter_job_mode();
+	return;
+    }
+#endif
     else if (!curbuf->b_p_ma && !p_im)
     {
 	/* Only give this error when 'insertmode' is off. */

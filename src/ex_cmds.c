@@ -1743,7 +1743,7 @@ static int  viminfo_errcnt;
 no_viminfo(void)
 {
     /* "vim -i NONE" does not read or write a viminfo file */
-    return (use_viminfo != NULL && STRCMP(use_viminfo, "NONE") == 0);
+    return STRCMP(p_viminfofile, "NONE") == 0;
 }
 
 /*
@@ -2093,8 +2093,8 @@ viminfo_filename(char_u *file)
 {
     if (file == NULL || *file == NUL)
     {
-	if (use_viminfo != NULL)
-	    file = use_viminfo;
+	if (*p_viminfofile != NUL)
+	    file = p_viminfofile;
 	else if ((file = find_viminfo_parameter('n')) == NULL || *file == NUL)
 	{
 #ifdef VIMINFO_FILE2
@@ -3561,7 +3561,7 @@ getfile(
 
     if (other)
 	++no_wait_return;	    /* don't wait for autowrite message */
-    if (other && !forceit && curbuf->b_nwindows == 1 && !P_HID(curbuf)
+    if (other && !forceit && curbuf->b_nwindows == 1 && !buf_hide(curbuf)
 		   && curbufIsChanged() && autowrite(curbuf, forceit) == FAIL)
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -3572,7 +3572,7 @@ getfile(
 	{
 	    if (other)
 		--no_wait_return;
-	    EMSG(_(e_nowrtmsg));
+	    no_write_message();
 	    retval = GETFILE_NOT_WRITTEN;	/* file has been changed */
 	    goto theend;
 	}
@@ -3590,7 +3590,7 @@ getfile(
 	retval = GETFILE_SAME_FILE;	/* it's in the same file */
     }
     else if (do_ecmd(fnum, ffname, sfname, NULL, lnum,
-		(P_HID(curbuf) ? ECMD_HIDE : 0) + (forceit ? ECMD_FORCEIT : 0),
+	     (buf_hide(curbuf) ? ECMD_HIDE : 0) + (forceit ? ECMD_FORCEIT : 0),
 		curwin) == OK)
 	retval = GETFILE_OPEN_OTHER;	/* opened another file */
     else
@@ -3968,8 +3968,8 @@ do_ecmd(
 		     * <VN> We could instead free the synblock
 		     * and re-attach to buffer, perhaps.
 		     */
-		    if (curwin->w_buffer != NULL
-			    && curwin->w_s == &(curwin->w_buffer->b_s))
+		    if (curwin->w_buffer == NULL
+			    || curwin->w_s == &(curwin->w_buffer->b_s))
 			curwin->w_s = &(buf->b_s);
 #endif
 		    curwin->w_buffer = buf;
@@ -6314,7 +6314,7 @@ ex_help(exarg_T *eap)
      * Re-use an existing help window or open a new one.
      * Always open a new one for ":tab help".
      */
-    if (!curwin->w_buffer->b_help
+    if (!bt_help(curwin->w_buffer)
 #ifdef FEAT_WINDOWS
 	    || cmdmod.tab != 0
 #endif
@@ -6325,7 +6325,7 @@ ex_help(exarg_T *eap)
 	    wp = NULL;
 	else
 	    FOR_ALL_WINDOWS(wp)
-		if (wp->w_buffer != NULL && wp->w_buffer->b_help)
+		if (bt_help(wp->w_buffer))
 		    break;
 	if (wp != NULL && wp->w_buffer->b_nwindows > 0)
 	    win_enter(wp, TRUE);
@@ -6425,7 +6425,7 @@ ex_helpclose(exarg_T *eap UNUSED)
 
     FOR_ALL_WINDOWS(win)
     {
-	if (win->w_buffer->b_help)
+	if (bt_help(win->w_buffer))
 	{
 	    win_close(win, FALSE);
 	    return;
@@ -8401,7 +8401,7 @@ ex_drop(exarg_T *eap)
 	 * Skip the check if the 'hidden' option is set, as in this case the
 	 * buffer won't be lost.
 	 */
-	if (!P_HID(curbuf))
+	if (!buf_hide(curbuf))
 	{
 # ifdef FEAT_WINDOWS
 	    ++emsg_off;

@@ -2314,7 +2314,7 @@ win_close(win_T *win, int free_buf)
 
     /* When closing the help window, try restoring a snapshot after closing
      * the window.  Otherwise clear the snapshot, it's now invalid. */
-    if (win->w_buffer != NULL && win->w_buffer->b_help)
+    if (bt_help(win->w_buffer))
 	help_window = TRUE;
     else
 	clear_snapshot(curtab, SNAP_HELP_IDX);
@@ -2397,7 +2397,7 @@ win_close(win_T *win, int free_buf)
 	    && (last_window() || curtab != prev_curtab
 		|| close_last_window_tabpage(win, free_buf, prev_curtab)))
     {
-	/* Autocommands have close all windows, quit now.  Restore
+	/* Autocommands have closed all windows, quit now.  Restore
 	 * curwin->w_buffer, otherwise writing viminfo may fail. */
 	if (curwin->w_buffer == NULL)
 	    curwin->w_buffer = curbuf;
@@ -3379,7 +3379,8 @@ close_others(
 #endif
 		    continue;
 	    }
-	    win_close(wp, !P_HID(wp->w_buffer) && !bufIsChanged(wp->w_buffer));
+	    win_close(wp, !buf_hide(wp->w_buffer)
+					       && !bufIsChanged(wp->w_buffer));
 	}
     }
 
@@ -6479,7 +6480,7 @@ only_one_window(void)
 
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer != NULL
-		&& (!((wp->w_buffer->b_help && !curbuf->b_help)
+		&& (!((bt_help(wp->w_buffer) && !bt_help(curbuf))
 # ifdef FEAT_QUICKFIX
 		    || wp->w_p_pvw
 # endif

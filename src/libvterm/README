@@ -1,0 +1,12 @@
+This is a MODIFIED version of libvterm.
+
+The original can be found:
+- on the original site (tar archive and Bazaar repository):
+	http://www.leonerd.org.uk/code/libvterm/
+- cloned on Github:
+	https://github.com/neovim/libvterm
+
+Modifications:
+- Add a .gitignore file.
+- Convert from C99 to C90.
+- Other changes to support embedding in Vim.

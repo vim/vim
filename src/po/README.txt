@@ -84,7 +84,13 @@ language.
     You should include your name and E-mail address instead, for example:
 	msgstr "Berichten übersetzt bei: John Doe <john@doe.org>"
 
-(3) Clean up
+(3) Remove unused messages (optional)
+    Remove messages that have been marked as obsolete. 
+    Such messages start with "#~".
+
+    The cleanup script will also do that (see next step).
+
+(4) Clean up
     This is very important to make sure the translation works on all systems.
     Comment-out all non-translated strings.  There are two types:
     - items marked with "#, fuzzy"
@@ -100,8 +106,12 @@ language.
     messed up by changes in line numbers and show the actual changes in the
     text.
 
-(4) Check:
+(5) Check:
 
+    While editing the .po file:
+        :source check.vim
+
+    From the command line:
 	vim -S check.vim xx.po
 	make xx.mo
 

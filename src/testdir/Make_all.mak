@@ -18,15 +18,10 @@ SCRIPTS_ALL = \
 	test5.out \
 	test7.out \
 	test8.out \
-	test9.out \
 	test14.out \
 	test15.out \
 	test19.out \
 	test20.out \
-	test22.out \
-	test23.out \
-	test24.out \
-	test26.out \
 	test28.out \
 	test29.out \
 	test31.out \
@@ -43,7 +38,6 @@ SCRIPTS_ALL = \
 	test44.out \
 	test45.out \
 	test48.out \
-	test51.out \
 	test53.out \
 	test55.out \
 	test56.out \
@@ -51,35 +45,23 @@ SCRIPTS_ALL = \
 	test60.out \
 	test64.out \
 	test66.out \
-	test67.out \
 	test68.out \
 	test69.out \
 	test70.out \
 	test73.out \
-	test75.out \
-	test77.out \
 	test79.out \
 	test80.out \
-	test84.out \
 	test88.out \
-	test91.out \
 	test94.out \
 	test95.out \
-	test98.out \
 	test99.out \
-	test103.out \
-	test104.out \
-	test107.out \
 	test108.out \
-	test_autocmd_option.out \
 	test_autoformat_join.out \
 	test_changelist.out \
 	test_close_count.out \
-	test_comparators.out \
 	test_erasebackword.out \
 	test_eval.out \
 	test_fixeol.out \
-	test_getcwd.out \
 	test_insertcount.out \
 	test_listchars.out \
 	test_search_mbyte.out \
@@ -99,8 +81,7 @@ SCRIPTS_MORE1 = \
 SCRIPTS_MORE2 = \
 	test12.out \
 	test25.out \
-	test49.out \
-	test97.out
+	test49.out
 
 
 # Tests that run on most systems, but not MingW and Cygwin.
@@ -146,13 +127,16 @@ NEW_TESTS = test_arabic.res \
 	    test_command_count.res \
 	    test_crypt.res \
 	    test_cscope.res \
+	    test_curswant.res \
 	    test_diffmode.res \
 	    test_digraph.res \
 	    test_display.res \
 	    test_edit.res \
 	    test_farsi.res \
+	    test_file_size.res \
 	    test_fnameescape.res \
 	    test_fold.res \
+	    test_getvar.res \
 	    test_gf.res \
 	    test_gn.res \
 	    test_gui.res \
@@ -160,6 +144,7 @@ NEW_TESTS = test_arabic.res \
 	    test_hardcopy.res \
 	    test_help.res \
 	    test_hide.res \
+	    test_highlight.res \
 	    test_history.res \
 	    test_hlsearch.res \
 	    test_increment.res \
@@ -167,6 +152,8 @@ NEW_TESTS = test_arabic.res \
 	    test_job_fails.res \
 	    test_json.res \
 	    test_langmap.res \
+	    test_let.res \
+	    test_lineending.res \
 	    test_listlbr.res \
 	    test_listlbr_utf8.res \
 	    test_lua.res \
@@ -184,6 +171,7 @@ NEW_TESTS = test_arabic.res \
 	    test_packadd.res \
 	    test_paste.res \
 	    test_perl.res \
+	    test_preview.res \
 	    test_profile.res \
 	    test_python2.res \
 	    test_python3.res \
@@ -192,7 +180,9 @@ NEW_TESTS = test_arabic.res \
 	    test_quickfix.res \
 	    test_quotestar.res \
 	    test_retab.res \
+	    test_registers.res \
 	    test_ruby.res \
+	    test_scrollbind.res \
 	    test_search.res \
 	    test_signs.res \
 	    test_smartindent.res \
@@ -204,6 +194,7 @@ NEW_TESTS = test_arabic.res \
 	    test_syntax.res \
 	    test_system.res \
 	    test_tcl.res \
+	    test_terminal.res \
 	    test_textobjects.res \
 	    test_undo.res \
 	    test_usercommands.res \

@@ -54,6 +54,7 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 	-@if exist test.ok del test.ok
 	-@if exist Xdir1 rd /s /q Xdir1
 	-@if exist Xfind rd /s /q Xfind
+	-@if exist XfakeHOME rd /s /q XfakeHOME
 	-@del X*
 	-@if exist viminfo del viminfo
 	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.out|wq" \
@@ -89,6 +90,7 @@ clean:
 	-if exist lua.vim del lua.vim
 	-if exist Xdir1 rd /s /q Xdir1
 	-if exist Xfind rd /s /q Xfind
+	-if exist XfakeHOME rd /s /q XfakeHOME
 	-del X*
 	-for /d %i in (X*) do @rmdir /s/q %i
 	-if exist viminfo del viminfo

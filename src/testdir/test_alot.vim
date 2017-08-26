@@ -44,6 +44,7 @@ source test_reltime.vim
 source test_searchpos.vim
 source test_set.vim
 source test_sort.vim
+source test_sha256.vim
 source test_statusline.vim
 source test_syn_attr.vim
 source test_tabline.vim
@@ -54,4 +55,5 @@ source test_taglist.vim
 source test_timers.vim
 source test_true_false.vim
 source test_unlet.vim
+source test_virtualedit.vim
 source test_window_cmd.vim

@@ -1,20 +1,17 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Mar 06
+" Last Change:	2017 Aug 19
 
 " If there already is an option window, jump to that one.
-if bufwinnr("option-window") > 0
-  let s:thiswin = winnr()
-  while 1
-    if @% == "option-window"
+let buf = bufnr('option-window')
+if buf >= 0
+  let winids = win_findbuf(buf)
+  if len(winids) > 0
+    if win_gotoid(winids[0]) == 1
       finish
     endif
-    wincmd w
-    if s:thiswin == winnr()
-      break
-    endif
-  endwhile
+  endif
 endif
 
 " Make sure the '<' flag is not included in 'cpoptions', otherwise <CR> would
@@ -141,8 +138,8 @@ while exists("b:current_syntax") && b:current_syntax == "help"
   endif
 endwhile
 
-" Open the window
-new option-window
+" Open the window.  $OPTWIN_CMD is set to "tab" for ":tab options".
+exe $OPTWIN_CMD . ' new option-window'
 setlocal ts=15 tw=0 noro buftype=nofile
 
 " Insert help and a "set" command for each option.
@@ -505,6 +502,18 @@ if has("cursorbind")
   call append("$", "cursorbind\tthis window's cursor moves together with other bound windows")
   call append("$", "\t(local to window)")
   call <SID>BinOptionL("crb")
+endif
+if has("terminal")
+  call append("$", "termsize\tsize of a terminal window")
+  call append("$", "\t(local to window)")
+  call <SID>OptionL("tms")
+  call append("$", "termkey\tkey that precedes Vim commands in a terminal window")
+  call append("$", "\t(local to window)")
+  call <SID>OptionL("tk")
+  if exists("&winptydll")
+    call append("$", "winptydll\tname of the winpty dynamic library")
+    call <SID>OptionG("winptydll", &winptydll)
+  endif
 endif
 
 
@@ -1296,6 +1305,8 @@ endif
 if has("viminfo")
   call append("$", "viminfo\tlist that specifies what to write in the viminfo file")
   call <SID>OptionG("vi", &vi)
+  call append("$", "viminfofile\tfile name used for the viminfo file")
+  call <SID>OptionG("vif", &vif)
 endif
 if has("quickfix")
   call append("$", "bufhidden\twhat happens with a buffer when it's no longer in a window")

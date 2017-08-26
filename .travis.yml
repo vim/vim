@@ -1,4 +1,5 @@
 language: c
+dist: trusty
 
 os:
   - osx
@@ -20,7 +21,7 @@ env:
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
     # ASAN build
   - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
-    FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+    FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
 
 sudo: false
@@ -41,12 +42,12 @@ matrix:
             "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp'"
     - os: osx
       env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
-            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
             "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
     - os: linux
-      compiler: gcc
+      compiler: clang
       env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
-            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
             "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp'"
     - os: linux
       compiler: clang
@@ -70,17 +71,25 @@ addons:
       - libperl-dev
       - python-dev
       - python3-dev
-      - liblua5.1-0-dev
-      - lua5.1
+      - liblua5.2-dev
+      - lua5.2
+      - ruby-dev
       - cscope
+      - libgtk2.0-dev
 
 before_install:
+  - rvm reset
+    # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
+    # ("pyenv global system" doesn't seem to work.)
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && which python3 | grep '/opt/python/' > /dev/null; then export PATH=$(echo $PATH | sed -e "s#$(echo $(which python3) | sed -e 's#/python3$##'):##"); fi
   - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls; fi
     # needed for https support for coveralls
     # building cffi only works with gcc, not with clang
   - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
     # Lua is not installed on Travis OSX
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install lua; export LUA_PREFIX=/usr/local; fi
+    # Use llvm-cov instead of gcov when compiler is clang.
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CC" = "clang" ]; then ln -sf $(which llvm-cov) /home/travis/bin/gcov; fi
 
 # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
 before_script:
@@ -91,7 +100,8 @@ script:
   - if [ "$CHECK_AUTOCONF" = "yes" -a "$CC" = "gcc" ]; then make -C src autoconf; fi
   - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi
   - (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && if [ "$BUILD" = "yes" ]; then make -j$NPROC; fi)
-  - if [ "$BUILD" = "yes" ]; then ${SRCDIR}/vim --version; fi
+    # Show Vim version and also if_xx versions.
+  - if [ "$BUILD" = "yes" ]; then ${SRCDIR}/vim --version; ${SRCDIR}/vim --not-a-term -u NONE -S ${SRCDIR}/testdir/if_ver-1.vim -c quit > /dev/null; ${SRCDIR}/vim --not-a-term -u NONE -S ${SRCDIR}/testdir/if_ver-2.vim -c quit > /dev/null; cat if_ver.txt; fi
   - if [ -n "$ASAN_OPTIONS" ]; then export PATH=/usr/lib/llvm-$(clang -v 2>&1 | sed -n 's/.*version \([1-9]\.[0-9][0-9]*\).*/\1/p')/bin:$PATH; fi
   - make $SHADOWOPT $TEST
   - if [ -n "$ASAN_OPTIONS" ]; then for log in $(find -type f -name 'asan.*' -size +0); do cat "$log"; err=1; done; fi

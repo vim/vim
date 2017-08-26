@@ -1,0 +1,55 @@
+INIT
+WANTSCREEN
+
+RESET
+
+!Plain
+PUSH "A"
+  ?screen_cell 0,0 = {0x41} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
+
+!Bold
+PUSH "\e[1mB"
+  ?screen_cell 0,1 = {0x42} width=1 attrs={B} fg=rgb(240,240,240) bg=rgb(0,0,0)
+
+!Italic
+PUSH "\e[3mC"
+  ?screen_cell 0,2 = {0x43} width=1 attrs={BI} fg=rgb(240,240,240) bg=rgb(0,0,0)
+
+!Underline
+PUSH "\e[4mD"
+  ?screen_cell 0,3 = {0x44} width=1 attrs={BU1I} fg=rgb(240,240,240) bg=rgb(0,0,0)
+
+!Reset
+PUSH "\e[mE"
+  ?screen_cell 0,4 = {0x45} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
+
+!Font
+PUSH "\e[11mF\e[m"
+  ?screen_cell 0,5 = {0x46} width=1 attrs={F1} fg=rgb(240,240,240) bg=rgb(0,0,0)
+
+!Foreground
+PUSH "\e[31mG\e[m"
+  ?screen_cell 0,6 = {0x47} width=1 attrs={} fg=rgb(224,0,0) bg=rgb(0,0,0)
+
+!Background
+PUSH "\e[42mH\e[m"
+  ?screen_cell 0,7 = {0x48} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,224,0)
+
+!EL sets reverse and colours to end of line
+PUSH "\e[H\e[7;33;44m\e[K"
+  ?screen_cell 0,0  = {} width=1 attrs={R} fg=rgb(224,224,0) bg=rgb(0,0,224)
+  ?screen_cell 0,79 = {} width=1 attrs={R} fg=rgb(224,224,0) bg=rgb(0,0,224)
+
+!DECSCNM xors reverse for entire screen
+PUSH "\e[?5h"
+  ?screen_cell 0,0  = {} width=1 attrs={} fg=rgb(224,224,0) bg=rgb(0,0,224)
+  ?screen_cell 0,79 = {} width=1 attrs={} fg=rgb(224,224,0) bg=rgb(0,0,224)
+  ?screen_cell 1,0  = {} width=1 attrs={R} fg=rgb(240,240,240) bg=rgb(0,0,0)
+PUSH "\e[?5\$p"
+  output "\e[?5;1\$y"
+PUSH "\e[?5l"
+  ?screen_cell 0,0  = {} width=1 attrs={R} fg=rgb(224,224,0) bg=rgb(0,0,224)
+  ?screen_cell 0,79 = {} width=1 attrs={R} fg=rgb(224,224,0) bg=rgb(0,0,224)
+  ?screen_cell 1,0  = {} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
+PUSH "\e[?5\$p"
+  output "\e[?5;2\$y"

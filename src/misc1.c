@@ -627,6 +627,9 @@ open_line(
 # ifdef FEAT_CINDENT
 					&& !curbuf->b_p_cin
 # endif
+# ifdef FEAT_EVAL
+					&& *curbuf->b_p_inde == NUL
+# endif
 			);
     int		no_si = FALSE;		/* reset did_si afterwards */
     int		first_char = NUL;	/* init for GCC */
@@ -3592,7 +3595,7 @@ prompt_for_number(int *mouse_used)
     save_cmdline_row = cmdline_row;
     cmdline_row = 0;
     save_State = State;
-    State = CMDLINE;
+    State = ASKMORE;	/* prevents a screen update when using a timer */
 
     i = get_number(TRUE, mouse_used);
     if (KeyTyped)
@@ -4177,13 +4180,18 @@ expand_env_esc(
 	    }
 	    else if ((src[0] == ' ' || src[0] == ',') && !one)
 		at_start = TRUE;
-	    *dst++ = *src++;
-	    --dstlen;
+	    if (dstlen > 0)
+	    {
+		*dst++ = *src++;
+		--dstlen;
 
-	    if (startstr != NULL && src - startstr_len >= srcp
-		    && STRNCMP(src - startstr_len, startstr, startstr_len) == 0)
-		at_start = TRUE;
+		if (startstr != NULL && src - startstr_len >= srcp
+			&& STRNCMP(src - startstr_len, startstr,
+							    startstr_len) == 0)
+		    at_start = TRUE;
+	    }
 	}
+
     }
     *dst = NUL;
 }
@@ -4638,7 +4646,7 @@ home_replace(
      */
     if (buf != NULL && buf->b_help)
     {
-	STRCPY(dst, gettail(src));
+	vim_snprintf((char *)dst, dstlen, "%s", gettail(src));
 	return;
     }
 

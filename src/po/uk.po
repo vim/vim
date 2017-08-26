@@ -1,6 +1,8 @@
 #
 # Ukrainian Vim translation [uk]
 #
+# Original translations
+#
 # Copyright (C) 2001 Bohdan Vlasyuk <bohdan@vstu.edu.ua>
 # Bohdan donated this work to be distributed with Vim under the Vim license.
 #
@@ -12,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-12 18:50+0300\n"
+"POT-Creation-Date: 2017-07-12 12:22+0300\n"
 "PO-Revision-Date: 2010-06-18 21:53+0300\n"
 "Last-Translator: Анатолій Сахнік <sakhnik@gmail.com>\n"
 "Language-Team: Bohdan Vlasyuk <bohdan@vstu.edu.ua>\n"
@@ -241,7 +243,8 @@ msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: Не можна використати зворотній виклик у %s()"
 
 msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
-msgstr "E912: не можна використати ch_evalexpr()/ch_sendexpr() з raw чи nl каналом"
+msgstr ""
+"E912: не можна використати ch_evalexpr()/ch_sendexpr() з raw чи nl каналом"
 
 msgid "E906: not an open channel"
 msgstr "E906: не відкритий канал"
@@ -433,6 +436,9 @@ msgstr "Пошук у: %s"
 msgid "Scanning tags."
 msgstr "Пошук серед міток."
 
+msgid "match in file"
+msgstr "збіг у файлі"
+
 msgid " Adding"
 msgstr " Додається"
 
@@ -522,6 +528,12 @@ msgstr "E690: Пропущено «in» після :for"
 #, c-format
 msgid "E108: No such variable: \"%s\""
 msgstr "E108: Змінної немає: «%s»"
+
+#. For historic reasons this error is not given for a list or dict.
+#. * E.g., the b: dict could be locked/unlocked.
+#, c-format
+msgid "E940: Cannot lock or unlock variable %s"
+msgstr "E940: Неможливо заблокувати чи розблокувати змінну %s"
 
 msgid "E743: variable nested too deep for (un)lock"
 msgstr "E743: Змінна має забагато вкладень щоб бути за-/відкритою."
@@ -708,12 +720,6 @@ msgid "&Ok"
 msgstr "&O:Гаразд"
 
 #, c-format
-msgid "+-%s%3ld line: "
-msgid_plural "+-%s%3ld lines: "
-msgstr[0] "+-%s%3ld рядків: "
-msgstr[1] "+-%s%3ld рядків: "
-
-#, c-format
 msgid "E700: Unknown function: %s"
 msgstr "E700: Невідома функція: %s"
 
@@ -761,8 +767,8 @@ msgstr "E727: Початок за кінцем"
 msgid "<empty>"
 msgstr "<нічого>"
 
-msgid "E240: No connection to Vim server"
-msgstr "E240: Немає з'єднання із сервером Vim"
+msgid "E240: No connection to the X server"
+msgstr "E240: Немає з'єднання із сервером X"
 
 #, c-format
 msgid "E241: Unable to send to %s"
@@ -770,6 +776,12 @@ msgstr "E241: Не вдалося відіслати до %s"
 
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Не вдалося прочитати відповідь сервера"
+
+msgid "E941: already started a server"
+msgstr "E941: сервер вже запущено"
+
+msgid "E942: +clientserver feature not available"
+msgstr "E942: можливість +clientserver відсутня"
 
 # msgstr "E14: "
 msgid "remove() argument"
@@ -898,6 +910,14 @@ msgstr "Пошук «%s»"
 #, c-format
 msgid "not found in '%s': \"%s\""
 msgstr "не знайдено у '%s': «%s»"
+
+#, c-format
+msgid "W20: Required python version 2.x not supported, ignoring file: %s"
+msgstr "W20: Потрібна версія python 2.x не підтримується, ігнорується файл: %s"
+
+#, c-format
+msgid "W21: Required python version 3.x not supported, ignoring file: %s"
+msgstr "W21: Потрібна версія python 3.x не підтримується, ігнорується файл: %s"
 
 msgid "Source Vim script"
 msgstr "Прочитати скрипт Vim"
@@ -1157,8 +1177,9 @@ msgstr " в одному рядку"
 msgid " on %ld lines"
 msgstr " в %ld рядках"
 
-msgid "E147: Cannot do :global recursive"
-msgstr "E147: :global не можна вживати рекурсивно"
+#. will increment global_busy to break out of the loop
+msgid "E147: Cannot do :global recursive with a range"
+msgstr "E147: :global не можна вживати рекурсивно з діапазоном"
 
 msgid "E148: Regular expression missing from global"
 msgstr "E148: У global бракує зразка"
@@ -1300,6 +1321,9 @@ msgstr "Інтервал задано навиворіт, щоб помінят�
 
 msgid "E494: Use w or w>>"
 msgstr "E494: Спробуйте w або w>>"
+
+msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
+msgstr "E943: Таблицю команд потрібно поновити, запустіть 'make cmdidxs'"
 
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Вибачте, цієї команди немає у цій версії"
@@ -2084,12 +2108,6 @@ msgstr "E350: Не вдалося створити згортку методом
 
 msgid "E351: Cannot delete fold with current 'foldmethod'"
 msgstr "E351: Не вдалося знищити згортку методом 'foldmethod'"
-
-#, c-format
-msgid "+--%3ld line folded "
-msgid_plural "+--%3ld lines folded "
-msgstr[0] "+--%3ld рядків згорнуто "
-msgstr[1] "+--%3ld рядків згорнуто "
 
 msgid "E222: Add to read buffer"
 msgstr "E222: Додати до буфера читання"
@@ -2893,6 +2911,10 @@ msgstr "E573: Використано некоректний ідентифіка
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: Реквізит реєстру зразку VIM сформований неправильно.  Знищено!"
 
+#, c-format
+msgid "E938: Duplicate key in JSON: \"%s\""
+msgstr "E938: Повторення ключа в JSON: «%s»"
+
 # msgstr "E404: "
 #, c-format
 msgid "E696: Missing comma in List: %s"
@@ -3117,6 +3139,9 @@ msgstr "-T <термінал>\tВстановити тип терміналу у
 
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr "--not-a-term\t\tПропустити попередження вводу/виводу не в термінал"
+
+msgid "--ttyfail\t\tExit if input or output is not a terminal"
+msgstr "--ttyfail\t\tВийти, якщо введення/виведення не в термінал"
 
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <vimrc>\t\tВикористати поданий файл замість .vimrc"
@@ -3827,7 +3852,8 @@ msgstr ""
 "\n"
 "(1) Можливо, інша програма вже редагує цей самий файл. Якщо це так,\n"
 "    будьте обережні, щоб не залишилися два різні екземпляри\n"
-"    одного й того самого файлу після змін.  Вийдіть чи продовжуйте з обережністю.\n"
+"    одного й того самого файлу після змін.  Вийдіть чи продовжуйте з "
+"обережністю.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
 msgstr "(2) Сеанс редагування цього файлу зазнав краху.\n"
@@ -3851,7 +3877,6 @@ msgid ""
 msgstr ""
 "»,\n"
 "    щоб позбутися цього повідомлення.\n"
-"\n"
 
 msgid "Swap file \""
 msgstr "Файл обміну «"
@@ -4197,8 +4222,8 @@ msgstr "E662: Початок списку змін"
 msgid "E663: At end of changelist"
 msgstr "E663: Кінець списку змін"
 
-msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Уведіть :quit<Enter>  щоб вийти з Vim"
+msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
+msgstr "Уведіть  :qa!  і натисніть <Enter>, щоб відкинути всі зміни і вийти з Vim"
 
 #, c-format
 msgid "1 line %sed 1 time"
@@ -4306,8 +4331,8 @@ msgid ""
 "Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of "
 "%lld Bytes"
 msgstr ""
-"Вибрано %s%ld з %ld рядків; %lld з %lld слів; %lld of %lld символів; %lld з %lld "
-"байтів"
+"Вибрано %s%ld з %ld рядків; %lld з %lld слів; %lld of %lld символів; %lld з "
+"%lld байтів"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Byte %lld of %lld"
@@ -4318,8 +4343,8 @@ msgid ""
 "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte "
 "%lld of %lld"
 msgstr ""
-"Колонка %s з %s; рядок %ld з %ld; слово %lld з %lld; символ %lld of %lld; байт "
-"%lld з %lld"
+"Колонка %s з %s; рядок %ld з %ld; слово %lld з %lld; символ %lld of %lld; "
+"байт %lld з %lld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -4556,9 +4581,6 @@ msgstr "Помилка вводу/виводу"
 
 msgid "Message"
 msgstr "Повідомлення"
-
-msgid "'columns' is not 80, cannot execute external commands"
-msgstr "'columns' не 80, не можна виконувати зовнішні команди"
 
 # msgstr "E364: "
 msgid "E237: Printer selection failed"
@@ -4839,6 +4861,12 @@ msgstr "E369: Некоректний елемент у %s%%[]"
 msgid "E769: Missing ] after %s["
 msgstr "E769: Бракує ] після %s["
 
+msgid "E944: Reverse range in character class"
+msgstr "E944: Зворотній діапазон у класі символів"
+
+msgid "E945: Range too large in character class"
+msgstr "E945: Завеликий діапазон у класі символів"
+
 #, c-format
 msgid "E53: Unmatched %s%%("
 msgstr "E53: Немає пари %s%%("
@@ -4866,6 +4894,9 @@ msgstr "E69: Пропущено ] після %s%%["
 #, c-format
 msgid "E70: Empty %s%%[]"
 msgstr "E70: %s%%[] порожній"
+
+msgid "E65: Illegal back reference"
+msgstr "E65: Некоректне зворотне посилання"
 
 # msgstr "E382: "
 msgid "E339: Pattern too long"
@@ -4906,9 +4937,6 @@ msgstr "E63: Некоректно вжито \\_"
 #, c-format
 msgid "E64: %s%c follows nothing"
 msgstr "E64: Після %s%c нічого немає"
-
-msgid "E65: Illegal back reference"
-msgstr "E65: Некоректне зворотне посилання"
 
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Неправильний символ після \\z"
@@ -5520,9 +5548,30 @@ msgstr "E783: Повторено символ у елементі MAP"
 msgid "No Syntax items defined for this buffer"
 msgstr "Для буфера не визначено елементів синтаксису"
 
+msgid "syntax conceal on"
+msgstr "маскування синтаксису увімк"
+
+msgid "syntax conceal off"
+msgstr "маскування синтаксису вимк"
+
 #, c-format
 msgid "E390: Illegal argument: %s"
 msgstr "E390: Неправильний аргумент: %s"
+
+msgid "syntax case ignore"
+msgstr "синтаксис ігнорувати регістр"
+
+msgid "syntax case match"
+msgstr "синтаксис дотримуватися регістру"
+
+msgid "syntax spell toplevel"
+msgstr "синтаксис перевіряти всюди"
+
+msgid "syntax spell notoplevel"
+msgstr "синтаксис не перевіряти"
+
+msgid "syntax spell default"
+msgstr "синтаксис початково"
 
 msgid "syntax iskeyword "
 msgstr "синтаксис iskeyword "
@@ -6140,6 +6189,10 @@ msgid "E126: Missing :endfunction"
 msgstr "E126: Бракує :endfunction"
 
 #, c-format
+msgid "W22: Text found after :endfunction: %s"
+msgstr "W22: Трапився текст після :endfunction: %s"
+
+#, c-format
 msgid "E707: Function name conflicts with variable: %s"
 msgstr "E707: Назва функції співпадає зі змінною: %s"
 
@@ -6161,16 +6214,6 @@ msgstr "E133: :return поза межами функції"
 #, c-format
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Пропущено дужки: %s"
-
-# msgstr "E440: "
-# ---------------------------------------
-#. Only MS VC 4.1 and earlier can do Win32s
-msgid ""
-"\n"
-"MS-Windows 16/32-bit GUI version"
-msgstr ""
-"\n"
-"Версія з GUI для 16/32-розрядної Windows"
 
 msgid ""
 "\n"
@@ -6455,12 +6498,6 @@ msgstr ":help register<Enter>     подальша інформація      "
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "меню  Допомога->Спонсор/Реєстрація  подробиці      "
 
-msgid "WARNING: Windows 95/98/ME detected"
-msgstr "ЗАСТЕРЕЖЕННЯ: Ви користуєтеся Windows 95/98/ME"
-
-msgid "type  :help windows95<Enter>  for info on this"
-msgstr ":help windows95<Enter>    інформація про це        "
-
 # msgstr "E444: "
 msgid "Already only one window"
 msgstr "Це вже єдине вікно"
@@ -6625,6 +6662,10 @@ msgstr "E236: Шрифт «%s» не моноширинний"
 
 msgid "E473: Internal error"
 msgstr "E473: Внутрішня помилка"
+
+#, c-format
+msgid "E685: Internal error: %s"
+msgstr "E685: Внутрішня помилка: %s"
 
 msgid "Interrupted"
 msgstr "Перервано"
@@ -6915,8 +6956,9 @@ msgstr "E592: 'winwidth' не може бути меншим за 'winminwidth'"
 msgid "E80: Error while writing"
 msgstr "E80: Помилка під час запису"
 
-msgid "Zero count"
-msgstr "Нульова кількість"
+# msgstr "E396: "
+msgid "E939: Positive count required"
+msgstr "E939: Потрібна додатна кількість"
 
 msgid "E81: Using <SID> not in a script context"
 msgstr "E81: <SID> використовується не в контексті скрипту"
@@ -6929,10 +6971,6 @@ msgstr "E463: Не можна змінити захищений регіон"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr "E744: NetBeans не дозволяє змінювати захищені від запису файли"
-
-#, c-format
-msgid "E685: Internal error: %s"
-msgstr "E685: Внутрішня помилка: %s"
 
 msgid "E363: pattern uses more memory than 'maxmempattern'"
 msgstr "E363: Зразок використовує більше, ніж 'maxmempattern', пам'яті"

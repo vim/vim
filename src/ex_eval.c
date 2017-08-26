@@ -640,8 +640,11 @@ discard_exception(except_T *excp, int was_finished)
     void
 discard_current_exception(void)
 {
-    discard_exception(current_exception, FALSE);
-    current_exception = NULL;
+    if (current_exception != NULL)
+    {
+	discard_exception(current_exception, FALSE);
+	current_exception = NULL;
+    }
     did_throw = FALSE;
     need_rethrow = FALSE;
 }
@@ -1978,7 +1981,10 @@ enter_cleanup(cleanup_T *csp)
 	 * there is an extra instance for every call of do_cmdline(), anyway.
 	 */
 	if (did_throw || need_rethrow)
+	{
 	    csp->exception = current_exception;
+	    current_exception = NULL;
+	}
 	else
 	{
 	    csp->exception = NULL;

@@ -65,13 +65,19 @@ func Test_argadd()
   %argd
   edit d
   arga
-  call assert_equal(len(argv()), 1)
-  call assert_equal(get(argv(), 0, ''), 'd')
+  call assert_equal(1, len(argv()))
+  call assert_equal('d', get(argv(), 0, ''))
+
+  %argd
+  edit some\ file
+  arga
+  call assert_equal(1, len(argv()))
+  call assert_equal('some file', get(argv(), 0, ''))
 
   %argd
   new
   arga
-  call assert_equal(len(argv()), 0)
+  call assert_equal(0, len(argv()))
 endfunc
 
 func Init_abc()
@@ -188,6 +194,11 @@ func Test_zero_argadd()
   2argu
   arga third
   call assert_equal(['edited', 'a', 'third', 'b', 'c', 'd'], argv())
+
+  2argu
+  argedit file\ with\ spaces another file
+  call assert_equal(['edited', 'a', 'file with spaces', 'another', 'file', 'third', 'b', 'c', 'd'], argv())
+  call assert_equal('file with spaces', expand('%'))
 endfunc
 
 func Reset_arglist()
@@ -239,21 +250,39 @@ func Test_argedit()
   call assert_equal(['a', 'b'], argv())
   call assert_equal('b', expand('%:t'))
   argedit a
-  call assert_equal(['a', 'b'], argv())
+  call assert_equal(['a', 'b', 'a'], argv())
   call assert_equal('a', expand('%:t'))
-  if has('unix')
-    " on MS-Windows this would edit file "a b"
-    call assert_fails('argedit a b', 'E172:')
-  endif
+  " When file name case is ignored, an existing buffer with only case
+  " difference is re-used.  Make sure they don't exist so the case is
+  " preserved.
+  bwipe! c
+  bwipe! d
+  argedit C D
+  call assert_equal('C', expand('%:t'))
+  call assert_equal(['a', 'b', 'a', 'C', 'D'], argv())
   argedit c
-  call assert_equal(['a', 'c', 'b'], argv())
+  if has('fname_case')
+    call assert_equal(['a', 'b', 'a', 'C', 'c', 'D'], argv())
+  else
+    call assert_equal(['a', 'b', 'a', 'C', 'C', 'D'], argv())
+  endif
   0argedit x
-  call assert_equal(['x', 'a', 'c', 'b'], argv())
+  if has('fname_case')
+    call assert_equal(['x', 'a', 'b', 'a', 'C', 'c', 'D'], argv())
+  else
+    call assert_equal(['x', 'a', 'b', 'a', 'C', 'C', 'D'], argv())
+  endif
   enew! | set modified
   call assert_fails('argedit y', 'E37:')
   argedit! y
-  call assert_equal(['x', 'y', 'a', 'c', 'b'], argv())
+  if has('fname_case')
+    call assert_equal(['x', 'y', 'y', 'a', 'b', 'a', 'C', 'c', 'D'], argv())
+  else
+    call assert_equal(['x', 'y', 'y', 'a', 'b', 'a', 'C', 'C', 'D'], argv())
+  endif
   %argd
+  bwipe! C
+  bwipe! D
 endfunc
 
 " Test for the :argdelete command

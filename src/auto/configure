@@ -655,6 +655,8 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
+TERM_OBJ
+TERM_SRC
 CHANNEL_OBJ
 CHANNEL_SRC
 NETBEANS_OBJ
@@ -814,6 +816,7 @@ enable_cscope
 enable_workshop
 enable_netbeans
 enable_channel
+enable_terminal
 enable_multibyte
 enable_hangulinput
 enable_xim
@@ -1480,22 +1483,23 @@ Optional Features:
   --disable-selinux	  Do not check for SELinux support.
   --disable-xsmp          Disable XSMP session management
   --disable-xsmp-interact Disable XSMP interaction
-  --enable-luainterp=OPTS     Include Lua interpreter.  default=no OPTS=no/yes/dynamic
-  --enable-mzschemeinterp   Include MzScheme interpreter.
+  --enable-luainterp=OPTS      Include Lua interpreter.  default=no OPTS=no/yes/dynamic
+  --enable-mzschemeinterp      Include MzScheme interpreter.
   --enable-perlinterp=OPTS     Include Perl interpreter.  default=no OPTS=no/yes/dynamic
   --enable-pythoninterp=OPTS   Include Python interpreter. default=no OPTS=no/yes/dynamic
-  --enable-python3interp=OPTS   Include Python3 interpreter. default=no OPTS=no/yes/dynamic
+  --enable-python3interp=OPTS  Include Python3 interpreter. default=no OPTS=no/yes/dynamic
   --enable-tclinterp=OPTS      Include Tcl interpreter. default=no OPTS=no/yes/dynamic
   --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
   --enable-cscope         Include cscope interface.
   --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
-  --disable-channel      Disable process communication support.
+  --disable-channel       Disable process communication support.
+  --enable-terminal       Enable terminal emulation support.
   --enable-multibyte      Include multibyte editing support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
-  --enable-gui=OPTS     X11 GUI default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon
+  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
   --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 default=yes
@@ -1509,7 +1513,7 @@ Optional Features:
   --disable-largefile     omit support for large files
   --disable-acl           Don't check for ACL support.
   --disable-gpm           Don't use gpm (Linux mouse daemon).
-  --disable-sysmouse    Don't use sysmouse (mouse in *BSD console).
+  --disable-sysmouse      Don't use sysmouse (mouse in *BSD console).
   --disable-nls           Don't support NLS (gettext()).
 
 Optional Packages:
@@ -1537,7 +1541,7 @@ Optional Packages:
   --with-gnome-includes=DIR Specify location of GNOME headers
   --with-gnome-libs=DIR   Specify location of GNOME libs
   --with-gnome            Specify prefix for GNOME files
-  --with-motif-lib=STRING   Library for Motif
+  --with-motif-lib=STRING Library for Motif
   --with-tlib=library     terminal library to be used
 
 Some influential environment variables:
@@ -7461,6 +7465,35 @@ if test "$enable_channel" = "yes"; then
   CHANNEL_SRC="channel.c"
 
   CHANNEL_OBJ="objects/channel.o"
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-terminal argument" >&5
+$as_echo_n "checking --enable-terminal argument... " >&6; }
+# Check whether --enable-terminal was given.
+if test "${enable_terminal+set}" = set; then :
+  enableval=$enable_terminal; enable_terminal="yes"
+fi
+
+if test "$enable_terminal" = "yes"; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use terminal emulator with tiny or small features" >&5
+$as_echo "cannot use terminal emulator with tiny or small features" >&6; }
+    enable_terminal="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  fi
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+if test "$enable_terminal" = "yes"; then
+  $as_echo "#define FEAT_TERMINAL 1" >>confdefs.h
+
+  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/screen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
+
+  TERM_OBJ="objects/term_encoding.o objects/term_keyboard.o objects/term_mouse.o objects/term_parser.o objects/term_pen.o objects/term_screen.o objects/term_state.o objects/term_unicode.o objects/term_vterm.o"
 
 fi
 

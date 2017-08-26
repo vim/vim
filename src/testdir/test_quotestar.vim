@@ -88,6 +88,18 @@ func Do_test_quotestar_for_x11()
   call WaitFor('@* == "yes"')
   call assert_equal('yes', @*)
 
+  " Handle the large selection over 262040 byte.
+  let length = 262044
+  let sample = 'a' . repeat('b', length - 2) . 'c'
+  let @* = sample
+  call WaitFor('remote_expr("' . name . '", "len(@*) >= ' . length . '", "", 1)', 3000)
+  let res = remote_expr(name, "@*", "", 2)
+  call assert_equal(length, len(res))
+  " Check length to prevent a large amount of output at assertion failure.
+  if length == len(res)
+    call assert_equal(sample, res)
+  endif
+
   if has('unix') && has('gui') && !has('gui_running')
     let @* = ''
 

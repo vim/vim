@@ -49,12 +49,12 @@ endfunction
 
 function! Test_system_exmode()
   if has('unix') " echo $? only works on Unix
-    let cmd = ' -es -u NONE -c "source Xscript" +q; echo $?'
+    let cmd = ' -es -u NONE -c "source Xscript" +q; echo "result=$?"'
     " Need to put this in a script, "catch" isn't found after an unknown
     " function.
     call writefile(['try', 'call doesnotexist()', 'catch', 'endtry'], 'Xscript')
     let a = system(v:progpath . cmd)
-    call assert_equal('0', a[0])
+    call assert_match('result=0', a)
     call assert_equal(0, v:shell_error)
   endif
 

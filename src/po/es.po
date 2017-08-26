@@ -1126,7 +1126,7 @@ msgstr "E141: No existe un nombre de archivo para el búfer %ld"
 #: ex_cmds.c:2940
 msgid "E142: File not written: Writing is disabled by 'write' option"
 msgstr ""
-"E142: No se ha escrito el archivo: escritura desactivada por \n"
+"E142: No se ha escrito el archivo: escritura desactivada por "
 "la opción 'write'"
 
 #: ex_cmds.c:2970
@@ -2159,7 +2159,7 @@ msgstr "es de solo lectura (añada ! para sobreescribir)"
 #: fileio.c:3761
 msgid "E506: Can't write to backup file (add ! to override)"
 msgstr ""
-"E506: No se pudo escribir en el archivo de recuperación\n"
+"E506: No se pudo escribir en el archivo de recuperación "
 "(añada ! para forzar la orden)"
 
 #: fileio.c:3773
@@ -2888,7 +2888,7 @@ msgstr "Tipo de letra de impresión 1: %s\n"
 #, c-format
 msgid "Font%ld width is not twice that of font0\n"
 msgstr ""
-"La anchura del tipo de letra de impresión %ld no es el doble de la \n"
+"La anchura del tipo de letra de impresión %ld no es el doble de la "
 "de la tipografía de impresión 0\n"
 
 #: gui_x11.c:2205
@@ -3031,7 +3031,7 @@ msgstr ""
 #: hardcopy.c:2578
 msgid "E675: No default font specified for multi-byte printing."
 msgstr ""
-"E675: No se ha definido un tipo de letra predeterminado para impresión\n"
+"E675: No se ha definido un tipo de letra predeterminado para impresión "
 "multi-byte"
 
 #: hardcopy.c:2771
@@ -3364,7 +3364,7 @@ msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
 msgstr ""
-"E263: Lo siento, esta orden está desactivada, no se pudo cargar la \n"
+"E263: Lo siento, esta orden está desactivada, no se pudo cargar la "
 "biblioteca de Python"
 
 #: if_python.c:583
@@ -3451,7 +3451,7 @@ msgstr "E265: $_ debe ser una instancia de \"String\""
 msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr ""
-"E266: Lo siento, esta orden está desactivada, no se pudo cargar\n"
+"E266: Lo siento, esta orden está desactivada, no se pudo cargar "
 "la biblioteca de Ruby"
 
 #: if_ruby.c:455
@@ -3560,7 +3560,7 @@ msgid ""
 "Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
 "$PATH).\n"
 msgstr ""
-"No se pudo conectar a SNiFF+. Verifique el entorno (\"sniffemacs\" debe\n"
+"No se pudo conectar a SNiFF+. Verifique el entorno (\"sniffemacs\" debe "
 "estar en \"$PATH\").\n"
 
 #: if_sniff.c:422
@@ -3651,7 +3651,7 @@ msgstr "No se pudo crear la orden de búfer/ventana: el objeto se suprimirá"
 msgid ""
 "cannot register callback command: buffer/window is already being deleted"
 msgstr ""
-"No se pudo registrar el orden \"callback\": El búfer o la ventana ya se \n"
+"No se pudo registrar el orden \"callback\": El búfer o la ventana ya se "
 "eliminó"
 
 # This should never happen.  Famous last word?
@@ -3661,27 +3661,27 @@ msgid ""
 "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
 "org"
 msgstr ""
-"E280: ERROR FATAL DE TCL: ¿¡\"reflist\" dañada!? Por favor, informe de \n"
+"E280: ERROR FATAL DE TCL: ¿¡\"reflist\" dañada!? Por favor, informe de "
 "esto a vim-dev@vim.org"
 
 #: if_tcl.c:1570
 msgid "cannot register callback command: buffer/window reference not found"
 msgstr ""
-"No se pudo registrar la orden de retorno de llamada: No se pudo encontrar\n"
+"No se pudo registrar la orden de retorno de llamada: No se pudo encontrar "
 "la referencia al búfer o la ventana"
 
 #: if_tcl.c:1742
 msgid ""
 "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
 msgstr ""
-"E571: Lo siento, esta orden está desactivada pues no se pudo\n"
+"E571: Lo siento, esta orden está desactivada pues no se pudo "
 "cargar la biblioteca de Tcl"
 
 #: if_tcl.c:1904
 msgid ""
 "E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
 msgstr ""
-"E281: ERROR DE TCL: ¿¡el código de salida no es \"int\"!? Por favor\n"
+"E281: ERROR DE TCL: ¿¡el código de salida no es \"int\"!? Por favor "
 "informe a vim-dev@vim.org"
 
 #: if_tcl.c:1909
@@ -3729,7 +3729,7 @@ msgstr "Basura después de la opción"
 #: main.c:146
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
 msgstr ""
-"Demasiados argumentos tales como: \"+orden\", \"-c orden\" \n"
+"Demasiados argumentos tales como: \"+orden\", \"-c orden\" "
 "o \"--cmd orden\""
 
 #: main.c:148
@@ -3836,7 +3836,7 @@ msgid ""
 "Where case is ignored prepend / to make flag upper case"
 msgstr ""
 "\n"
-"Cuando mayúscula y minúscula son ignoradas añada \"/\" para \n"
+"Cuando mayúscula y minúscula son ignoradas añada \"/\" para "
 "cambiar la marca (\"flag\") a mayúscula"
 
 #: main.c:3061
@@ -3872,8 +3872,8 @@ msgstr "-g\t\t\tEjecutar usando el GUI (como \"gvim\")"
 #: main.c:3072
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
 msgstr ""
-"-f  o  --nofork\tPrimer plano: No separarse (\"fork\") cuando se\n"
-"                      \tinicia la interfaz gráfica (GUI)"
+"-f  o  --nofork\tPrimer plano: No separarse (\"fork\") cuando se "
+"inicia la interfaz gráfica (GUI)"
 
 #: main.c:3074
 msgid "-v\t\t\tVi mode (like \"vi\")"
@@ -4020,26 +4020,26 @@ msgstr "-c <orden>\t\tEjecutar <orden> después de cargar el primer archivo"
 #: main.c:3127
 msgid "-S <session>\t\tSource file <session> after loading the first file"
 msgstr ""
-"-S <sesión>\t\tEjecutar las órdenes del archivo <sesión> después\n"
-"           \t\tde cargar el primer archivo"
+"-S <sesión>\t\tEjecutar las órdenes del archivo <sesión> después "
+"de cargar el primer archivo"
 
 #: main.c:3128
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
 msgstr ""
-"-s <scriptin>\tLeer las órdenes en modo Normal del archivo\n"
-"                    \t\"módulo de expansión\" de entrada>"
+"-s <scriptin>\tLeer las órdenes en modo Normal del archivo "
+"\"módulo de expansión\" de entrada>"
 
 #: main.c:3129
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
 msgstr ""
-"-w <scriptout>\tAñadir todas las órdenes escritas al archivo\n"
-"                     \t\"módulo de expansión\" de salida"
+"-w <scriptout>\tAñadir todas las órdenes escritas al archivo "
+"\"módulo de expansión\" de salida"
 
 #: main.c:3130
 msgid "-W <scriptout>\tWrite all typed commands to file <scriptout>"
 msgstr ""
-"-W <scriptout>\tGrabar todas las órdenes escritas al archivo\n"
-"                     \t\"módulo de expansión\" de salida"
+"-W <scriptout>\tGrabar todas las órdenes escritas al archivo "
+"\"módulo de expansión\" de salida"
 
 #: main.c:3132
 msgid "-x\t\t\tEdit encrypted files"
@@ -4061,22 +4061,22 @@ msgstr ""
 #: main.c:3142
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr ""
-"--remote-silent \"archivos\"\tLo mismo pero no se queja si no existe un\n"
-"                                   \tservidor disponible"
+"--remote-silent \"archivos\"\tLo mismo pero no se queja si no existe un "
+"servidor disponible"
 
 #: main.c:3143
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr ""
-"--remote-wait \"archivos\"\tComo --remote pero espera a que los archivos\n"
-"                                 \tterminen de editarse"
+"--remote-wait \"archivos\"\tComo --remote pero espera a que los archivos "
+"terminen de editarse"
 
 #: main.c:3144
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr ""
-"--remote-wait-silent \"archivos\"\tLo mismo pero no se queja si no hay un\n"
-"                                        \tservidor disponible"
+"--remote-wait-silent \"archivos\"\tLo mismo pero no se queja si no hay un "
+"servidor disponible"
 
 #: main.c:3146
 msgid ""
@@ -4173,19 +4173,19 @@ msgstr "-foreground <color>\tUsa <color> para el texto normal (también: -fg)"
 #: main.c:3182 main.c:3202
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
 msgstr ""
-"-font <tipo>\t\tUse <tipo de letra de impresión> para el texto normal\n"
+"-font <tipo>\t\tUse <tipo de letra de impresión> para el texto normal "
 "(también: -fn)"
 
 #: main.c:3183
 msgid "-boldfont <font>\tUse <font> for bold text"
 msgstr ""
-"-boldfont <tipo>\tUsa <tipo de letra de impresión> para texto en\n"
+"-boldfont <tipo>\tUsa <tipo de letra de impresión> para texto en "
 "negrita"
 
 #: main.c:3184
 msgid "-italicfont <font>\tUse <font> for italic text"
 msgstr ""
-"-italicfont <tipo>\tUse <tipo de letra de impresión> para texto\n"
+"-italicfont <tipo>\tUse <tipo de letra de impresión> para texto "
 "en cursiva"
 
 #: main.c:3185 main.c:3203
@@ -4200,8 +4200,8 @@ msgstr "-borderwidth <ancho>\tUsa un ancho de borde de <ancho> (también: -bw)"
 #: main.c:3187
 msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
 msgstr ""
-"-scrollbarwidth <ancho>\tUsa una barra de desplazamiento de ancho <ancho>\n"
-"                              \t(también: -sw)"
+"-scrollbarwidth <ancho>\tUsa una barra de desplazamiento de ancho <ancho> "
+"(también: -sw)"
 
 #: main.c:3189
 msgid "-menuheight <height>\tUse a menu bar height of <height> (also: -mh)"
@@ -4280,7 +4280,7 @@ msgstr ": Falló el envío.\n"
 #: main.c:3578
 msgid ": Send failed. Trying to execute locally\n"
 msgstr ""
-": Falló el inicio de sesión remota (\"send\"). Intentado una\n"
+": Falló el inicio de sesión remota (\"send\"). Intentado una "
 "ejecución local\n"
 
 #: main.c:3616 main.c:3637
@@ -4388,7 +4388,7 @@ msgstr "E286: Falló la apertura del método de entrada"
 #: mbyte.c:5175
 msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr ""
-"E287: Advertencia: No pude crear una llamada de retorno\n"
+"E287: Advertencia: No pude crear una llamada de retorno "
 "de destrucción al IM"
 
 #: mbyte.c:5181
@@ -4406,7 +4406,7 @@ msgstr "E290: El estilo \"sobre el punto\" requiere del uso de un \"fontset\""
 #: mbyte.c:5352
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr ""
-"E291: Su versión de GTK+ es anterior a 1.2.3. Área de estado\n"
+"E291: Su versión de GTK+ es anterior a 1.2.3. Área de estado "
 "desactivada"
 
 #: mbyte.c:5663
@@ -4464,7 +4464,7 @@ msgstr "E302: No pude cambiar el nombre del archivo de intercambio"
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr ""
-"E303: Incapaz de abrir el archivo de intercambio para %s,\n"
+"E303: Incapaz de abrir el archivo de intercambio para %s, "
 "recuperación imposible"
 
 #: memline.c:703
@@ -4582,7 +4582,7 @@ msgstr "??? desde aquí hasta ???FIN las líneas pueden estar desordenadas"
 #: memline.c:1286
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr ""
-"??? desde aquí hasta ???FIN las líneas pueden haber sido\n"
+"??? desde aquí hasta ???FIN las líneas pueden haber sido "
 "insertadas/borradas"
 
 #: memline.c:1306
@@ -4597,7 +4597,7 @@ msgstr "E311: Recuperación interrumpida"
 msgid ""
 "E312: Errors detected while recovering; look for lines starting with ???"
 msgstr ""
-"E312: Se han detectado errores al recuperar; busque líneas que\n"
+"E312: Se han detectado errores al recuperar; busque líneas que "
 "empiecen con ???"
 
 #: memline.c:1340
@@ -5241,7 +5241,7 @@ msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
 "followed by '%s'."
 msgstr ""
-"E343: Ruta no válida: '**[número]' debe estar al final de la ruta\n"
+"E343: Ruta no válida: '**[número]' debe estar al final de la ruta "
 "o seguido de %s."
 
 #: misc2.c:5585
@@ -5787,14 +5787,14 @@ msgstr "Imprimiendo %s"
 #, c-format
 msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
 msgstr ""
-"E244: El nombre del conjunto de caracteres \"%s\" no es válido en el\n"
+"E244: El nombre del conjunto de caracteres \"%s\" no es válido en el "
 "nombre del tipo de letra de impresión \"%s\""
 
 #: os_mswin.c:3471
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr ""
-"E245: Carácter '%c' ilegal en el nombre del tipo de letra de\n"
+"E245: Carácter '%c' ilegal en el nombre del tipo de letra de "
 "impresión %s"
 
 #: os_unix.c:1065
@@ -6383,7 +6383,7 @@ msgstr "E756: La corrección ortográfica está desactivada"
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
 msgstr ""
-"Advertencia: No se pudo hallar la lista de palabras \"%s.%s.spl\" \n"
+"Advertencia: No se pudo hallar la lista de palabras \"%s.%s.spl\" "
 "or \"%s.ascii.spl\""
 
 #: spell.c:2776
@@ -6449,8 +6449,7 @@ msgid ""
 "%d"
 msgstr ""
 "Definir COMPOUNDFORBIDFLAG después de un elemento PFX puede dar resultados "
-"erróneos\n"
-"en %s línea %d"
+"erróneos en %s línea %d"
 
 #: spell.c:5533
 #, c-format
@@ -6459,8 +6458,7 @@ msgid ""
 "%d"
 msgstr ""
 "Definir COMPOUNDPERMITFLAG después de un ítem PFX puede dar resultados "
-"erróneos\n"
-"en %s línea %d"
+"erróneos en %s línea %d"
 
 #: spell.c:5554
 #, c-format
@@ -6491,7 +6489,7 @@ msgstr "Valor equivocado de CHECKCOMPOUNDPATTERN en %s línea %d: %s"
 #, c-format
 msgid "Different combining flag in continued affix block in %s line %d: %s"
 msgstr ""
-"Marca de combinación diferente en el bloque de afijos continuo\n"
+"Marca de combinación diferente en el bloque de afijos continuo "
 "en %s línea %d: %s"
 
 #: spell.c:5688
@@ -6506,8 +6504,7 @@ msgid ""
 "line %d: %s"
 msgstr ""
 "Afijo usado también para BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST "
-"en\n"
-"%s línea %d: %s"
+"en %s línea %d: %s"
 
 #: spell.c:5734
 #, c-format
@@ -6938,7 +6935,7 @@ msgstr "E402: Basura después del patrón: %s"
 #: syntax.c:5537
 msgid "E403: syntax sync: line continuations pattern specified twice"
 msgstr ""
-"E403: Sincronización de sintaxis: Se especificó dos veces un\n"
+"E403: Sincronización de sintaxis: Se especificó dos veces un "
 "patrón de continuación de línea"
 
 #: syntax.c:5594
@@ -7743,7 +7740,7 @@ msgstr "E813: No se puede cerrar la ventana de autocmd"
 #: window.c:2125
 msgid "E814: Cannot close window, only autocmd window would remain"
 msgstr ""
-"E814: No se pudo cerrar la última ventana, solo quedará\n"
+"E814: No se pudo cerrar la última ventana, solo quedará "
 "la ventana de autocmd"
 
 #: window.c:3188
@@ -7771,7 +7768,7 @@ msgstr "Esta orden está desactivada, no se pudo cargar la biblioteca de Perl"
 #: if_perl.xs:726
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr ""
-"E299: No se permite la evaluación de código Perl en la caja de\n"
+"E299: No se permite la evaluación de código Perl en la caja de "
 "arena sin el uso del módulo \"Safe\""
 
 #: GvimExt/gvimext.cpp:587
@@ -7846,7 +7843,7 @@ msgstr ""
 #: globals.h:1380
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
-"E12: Orden no permitida desde exrc/vimrc en el directorio \n"
+"E12: Orden no permitida desde exrc/vimrc en el directorio "
 "en uso o al buscar etiquetas"
 
 #: globals.h:1382

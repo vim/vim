@@ -5329,6 +5329,10 @@ garbage_collect(int testing)
     abort = abort || set_ref_in_quickfix(copyID);
 #endif
 
+#ifdef FEAT_TERMINAL
+    abort = abort || set_ref_in_term(copyID);
+#endif
+
     if (!abort)
     {
 	/*
@@ -5679,9 +5683,9 @@ get_var_special_name(int nr)
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
  * When "copyID" is not NULL replace recursive lists and dicts with "...".
- * When both "echo_style" and "dict_val" are FALSE, put quotes around stings as
- * "string()", otherwise does not put quotes around strings, as ":echo"
- * displays values.
+ * When both "echo_style" and "composite_val" are FALSE, put quotes around
+ * stings as "string()", otherwise does not put quotes around strings, as
+ * ":echo" displays values.
  * When "restore_copyID" is FALSE, repeated items in dictionaries and lists
  * are replaced with "...".
  * May return NULL.
@@ -5694,7 +5698,7 @@ echo_string_core(
     int		copyID,
     int		echo_style,
     int		restore_copyID,
-    int		dict_val)
+    int		composite_val)
 {
     static int	recurse = 0;
     char_u	*r = NULL;
@@ -5717,10 +5721,12 @@ echo_string_core(
     switch (tv->v_type)
     {
 	case VAR_STRING:
-	    if (echo_style && !dict_val)
+	    if (echo_style && !composite_val)
 	    {
 		*tofree = NULL;
-		r = get_tv_string_buf(tv, numbuf);
+		r = tv->vval.v_string;
+		if (r == NULL)
+		    r = (char_u *)"";
 	    }
 	    else
 	    {
@@ -5837,10 +5843,19 @@ echo_string_core(
 
 	case VAR_NUMBER:
 	case VAR_UNKNOWN:
+	    *tofree = NULL;
+	    r = get_tv_string_buf(tv, numbuf);
+	    break;
+
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	    *tofree = NULL;
 	    r = get_tv_string_buf(tv, numbuf);
+	    if (composite_val)
+	    {
+		*tofree = string_quote(r, FALSE);
+		r = *tofree;
+	    }
 	    break;
 
 	case VAR_FLOAT:
@@ -8066,8 +8081,9 @@ get_user_input(
     rettv->vval.v_string = NULL;
 
 #ifdef NO_CONSOLE_INPUT
-    /* While starting up, there is no place to enter text. */
-    if (no_console_input())
+    /* While starting up, there is no place to enter text. When running tests
+     * with --not-a-term we assume feedkeys() will be used. */
+    if (no_console_input() && !is_not_a_term())
 	return;
 #endif
 
