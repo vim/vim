@@ -4510,7 +4510,7 @@ check_termcode(
 
 			/* libvterm sends 0;100;0 */
 			if (col == 100
-				&& STRNCMP(tp + extra - 2, ">0;100;0c", 9) == 0)
+				&& STRNCMP(tp + extra - 2, "0;100;0c", 8) == 0)
 			{
 			    /* If run from Vim $COLORS is set to the number of
 			     * colors the terminal supports.  Otherwise assume
@@ -4522,7 +4522,7 @@ check_termcode(
 #  ifdef MACOS
 			/* Mac Terminal.app sends 1;95;0 */
 			if (col == 95
-				&& STRNCMP(tp + extra - 2, ">1;95;0c", 9) == 0)
+				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
 			{
 			    /* Terminal.app sets $TERM to "xterm-256colors",
 			     * but it's not fully xterm compatible. */
