@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Aug 11
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Aug 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5225,6 +5225,7 @@ job_setoptions({job}, {options})			*job_setoptions()*
 job_start({command} [, {options}])			*job_start()*
 		Start a job and return a Job object.  Unlike |system()| and
 		|:!cmd| this does not wait for the job to finish.
+		To start a job in a terminal window see |term_start()|.
 
 		{command} can be a String.  This works best on MS-Windows.  On
 		Unix it is split up in white-separated parts to be passed to
@@ -5963,7 +5964,7 @@ mode([expr])	Return a string that indicates the current mode.
 		a non-empty String (|non-zero-arg|), then the full mode is
 		returned, otherwise only the first letter is returned.
 
-			n	Normal
+			n	Normal, Terminal-Normal
 			no	Operator-pending
 			v	Visual by character
 			V	Visual by line
@@ -5985,6 +5986,7 @@ mode([expr])	Return a string that indicates the current mode.
 			rm	The -- more -- prompt
 			r?	A |:confirm| query of some sort
 			!	Shell or external command is executing
+			t	Terminal-Job mode: keys go to the job
 		This is useful in the 'statusline' option or when used
 		with |remote_expr()| In most other places it always returns
 		"c" or "n".
@@ -7720,12 +7722,12 @@ synconcealed({lnum}, {col})				*synconcealed()*
 		   the text is "123456" and both "23" and "45" are concealed
 		   and replace by the character "X", then:
 			call			returns ~
-		   	synconcealed(lnum, 1)   [0, '', 0]
-		   	synconcealed(lnum, 2)   [1, 'X', 1]
-		   	synconcealed(lnum, 3)   [1, 'X', 1]
-		   	synconcealed(lnum, 4)   [1, 'X', 2]
-		   	synconcealed(lnum, 5)   [1, 'X', 2]
-		   	synconcealed(lnum, 6)   [0, '', 0]
+			synconcealed(lnum, 1)   [0, '', 0]
+			synconcealed(lnum, 2)   [1, 'X', 1]
+			synconcealed(lnum, 3)   [1, 'X', 1]
+			synconcealed(lnum, 4)   [1, 'X', 2]
+			synconcealed(lnum, 5)   [1, 'X', 2]
+			synconcealed(lnum, 6)   [0, '', 0]
 
 
 synstack({lnum}, {col})					*synstack()*
@@ -8633,7 +8635,7 @@ wordcount()						*wordcount()*
 					(only in Visual mode)
 			visual_chars    Number of chars visually selected
 					(only in Visual mode)
-			visual_words    Number of chars visually selected
+			visual_words    Number of words visually selected
 					(only in Visual mode)
 
 

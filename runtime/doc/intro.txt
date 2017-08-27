@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.0.  Last change: 2017 Aug 05
+*intro.txt*     For Vim version 8.0.  Last change: 2017 Aug 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -839,10 +839,12 @@ by Vim.  {Vi: not ok}
 ==============================================================================
 8. Definitions						*definitions*
 
+  buffer		Contains lines of text, usually read from a file.
   screen		The whole area that Vim uses to work in.  This can be
 			a terminal emulator window.  Also called "the Vim
 			window".
-  window		A view on a buffer.
+  window		A view on a buffer.  There can be multiple windows for
+			one buffer.
 
 A screen contains one or more windows, separated by status lines and with the
 command line at the bottom.

@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 20
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -19,6 +19,9 @@ If the result is "1" you have it.
 3. Debugging			|terminal-debug|
 
 {Vi does not have any of these commands}
+{only available when compiled with the |+terminal| feature}
+
+The terminal feature requires the |+multi_byte|, |+job| and |+channel| features.
 
 ==============================================================================
 1. Basic use						*terminal-use*
@@ -95,6 +98,8 @@ Syntax ~
 			If [command] is provided run it as a job and connect
 			the input and output to the terminal.
 			If [command] is not given the 'shell' option is used.
+			if [command] is NONE no job is started, the pty of the
+			terminal can be used by a command like gdb.
 
 			A new buffer will be created, using [command] or
 			'shell' as the name, prefixed with a "!".  If a buffer
@@ -207,6 +212,19 @@ the job ends while in Terminal-Normal mode this changes to
 It is not possible to enter Insert mode from Terminal-Job mode.
 
 
+Cursor style ~
+
+By default the cursor in the terminal window uses a not blinking block.  The
+normal xterm escape sequences can be used to change the blinking state and the
+shape.  Once focus leaves the terminal window Vim will restore the original
+cursor.
+
+An exception is when xterm is started with the "-bc" argument, or another way
+that causes the cursor to blink.  This actually means that the blinking flag
+is inverted.  Since Vim cannot detect this, the terminal window cursor
+blinking will also be inverted.
+
+
 Unix ~
 
 On Unix a pty is used to make it possible to run all kinds of commands.  You
@@ -269,23 +287,31 @@ term_scrape()		inspect terminal screen
 3. Debugging					*terminal-debug*
 
 The Terminal debugging plugin can be used to debug a program with gdb and view
-the source code in a Vim window. For example: >
+the source code in a Vim window.
 
+Load the plugin with this command: >
+	packadd termdebug
+
+To start debugging use `:TermDebug` folowed by the command name, for example: >
 	:TermDebug vim
 
-This opens three windows:
+This opens two windows:
 - A terminal window in which "gdb vim" is executed.  Here you can directly
   interact with gdb.
 - A terminal window for the executed program.  When "run" is used in gdb the
   program I/O will happen in this window, so that it does not interfere with
   controlling gdb.
-- A normal Vim window used to show the source code.  When gdb jumps to a
-  source file location this window will display the code, if possible.  Values
-  of variables can be inspected, breakpoints set and cleared, etc.
+The current window is used to show the source code.  When gdb jumps to a
+source file location this window will display the code, if possible.  Values
+of variables can be inspected, breakpoints set and cleared, etc.
 
-This uses two terminal windows.  To open the gdb window: >
-	:term gdb [arguments]
-To open the terminal to run the tested program |term_start()| is used.
+When the debugger ends the two opened windows are closed.
+
+
+Customizing ~
+
+g:debugger	The debugger command.  Default "gdb".
+
 
 TODO
 
