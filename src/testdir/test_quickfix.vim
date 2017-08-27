@@ -1087,13 +1087,18 @@ func Test_efm2()
 
   " Test for %o
   set efm=%f(%o):%l\ %m
-  cgetexpr ['src/Language/PureScript/Types.hs(Language.PureScript.Types):20 Error']
+  cgetexpr ['Xtestfile(Language.PureScript.Types):20 Error']
+  call writefile(['Line1'], 'Xtestfile')
   let l = getqflist()
   call assert_equal(1, len(l), string(l))
   call assert_equal('Language.PureScript.Types', l[0].module)
   copen
   call assert_equal('Language.PureScript.Types|20| Error', getline(1))
+  call feedkeys("\<CR>", 'xn')
+  call assert_equal('Xtestfile', expand('%:t'))
   cclose
+  bd
+  call delete("Xtestfile")
 
   " The following sequence of commands used to crash Vim
   set efm=%W%m

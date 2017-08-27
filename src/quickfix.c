@@ -1019,15 +1019,9 @@ restofline:
 		if (regmatch.startp[i] == NULL)
 		    continue;
 		len = (int)(regmatch.endp[i] - regmatch.startp[i]);
-		if (len >= fields->errmsglen)
-		{
-		    /* len + null terminator */
-		    if ((fields->errmsg = vim_realloc(fields->errmsg, len + 1))
-			    == NULL)
-			return QF_NOMEM;
-		    fields->errmsglen = len + 1;
-		}
-		vim_strncpy(fields->module, regmatch.startp[i], len);
+		if (len > CMDBUFFSIZE)
+		    len = CMDBUFFSIZE;
+		STRNCAT(fields->module, regmatch.startp[i], len);
 	    }
 	    break;
 	}
@@ -1205,7 +1199,7 @@ qf_init_ext(
 	convert_setup(&state.vc, enc, p_enc);
 #endif
     fields.namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
-    fields.module = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
+    fields.module = alloc_id(CMDBUFFSIZE + 1, aid_qf_module);
     fields.errmsglen = CMDBUFFSIZE + 1;
     fields.errmsg = alloc_id(fields.errmsglen, aid_qf_errmsg);
     fields.pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
@@ -2601,7 +2595,6 @@ qf_list(exarg_T *eap)
     for (i = 1; !got_int && i <= qi->qf_lists[qi->qf_curlist].qf_count; )
     {
 	if ((qfp->qf_valid || all) && idx1 <= i && i <= idx2)
-
 	{
 	    msg_putchar('\n');
 	    if (got_int)
