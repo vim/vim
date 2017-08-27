@@ -4890,7 +4890,7 @@ win32_escape_arg(char_u *arg)
     int		has_spaces = FALSE;
 
     /* First count the number of extra bytes required. */
-    slen = STRLEN(arg);
+    slen = (int)STRLEN(arg);
     dlen = slen;
     for (s = arg; *s != NUL; MB_PTR_ADV(s))
     {
