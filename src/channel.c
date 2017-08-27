@@ -3555,6 +3555,22 @@ channel_handle_events(int only_keep_open)
 }
 # endif
 
+# if defined(FEAT_GUI) || defined(PROTO)
+/*
+ * Return TRUE when there is any channel with a keep_open flag.
+ */
+    int
+channel_any_keep_open()
+{
+    channel_T	*channel;
+
+    for (channel = first_channel; channel != NULL; channel = channel->ch_next)
+	if (channel->ch_keep_open)
+	    return TRUE;
+    return FALSE;
+}
+# endif
+
 /*
  * Set "channel"/"part" to non-blocking.
  * Only works for sockets and pipes.

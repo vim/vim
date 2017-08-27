@@ -35,6 +35,7 @@ char_u *channel_read_block(channel_T *channel, ch_part_T part, int timeout);
 void common_channel_read(typval_T *argvars, typval_T *rettv, int raw);
 channel_T *channel_fd2channel(sock_T fd, ch_part_T *partp);
 void channel_handle_events(int only_keep_open);
+int channel_any_keep_open(void);
 void channel_set_nonblock(channel_T *channel, ch_part_T part);
 int channel_send(channel_T *channel, ch_part_T part, char_u *buf_arg, int len_arg, char *fun);
 void ch_expr_common(typval_T *argvars, typval_T *rettv, int eval);
