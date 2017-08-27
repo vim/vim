@@ -1107,7 +1107,9 @@ output.  Like the output of the "grep" shell command.
 When the pattern is present the line number will not be used.
 
 The "%o" conversion will set up module name in quickfix list.  If present it
-will be used in quickfix error window instead of the filename.
+will be used in quickfix error window instead of the filename.  The module
+name is used only for displaying purposes and file name is used when jumping
+to the file.
 
 Changing directory
 
