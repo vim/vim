@@ -1086,11 +1086,14 @@ func Test_efm2()
   call assert_equal('unittests/dbfacadeTest.py', bufname(l[4].bufnr))
 
   " Test for %o
-  set efm=%f(%o)%l\ %m
+  set efm=%f(%o):%l\ %m
   cgetexpr ['src/Language/PureScript/Types.hs(Language.PureScript.Types):20 Error']
-  l = getqflist()
+  let l = getqflist()
   call assert_equal(1, len(l), string(l))
   call assert_equal('Language.PureScript.Types', l[0].module)
+  copen
+  call assert_equal('Language.PureScript.Types|20| Error', getline(1))
+  cclose
 
   " The following sequence of commands used to crash Vim
   set efm=%W%m
