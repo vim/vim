@@ -7250,10 +7250,17 @@ f_mapcheck(typval_T *argvars, typval_T *rettv)
     get_maparg(argvars, rettv, FALSE);
 }
 
-static void find_some_match(typval_T *argvars, typval_T *rettv, int start);
+typedef enum
+{
+    MATCH_END,	    /* matchend() */
+    MATCH_MATCH,    /* match() */
+    MATCH_STR,	    /* matchstr() */
+    MATCH_LIST,	    /* matchlist() */
+    MATCH_POS	    /* matchstrpos() */
+} matchtype_T;
 
     static void
-find_some_match(typval_T *argvars, typval_T *rettv, int type)
+find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 {
     char_u	*str = NULL;
     long	len = 0;
@@ -7277,13 +7284,13 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
     p_cpo = (char_u *)"";
 
     rettv->vval.v_number = -1;
-    if (type == 3 || type == 4)
+    if (type == MATCH_LIST || type == MATCH_POS)
     {
-	/* type 3: return empty list when there are no matches.
-	 * type 4: return ["", -1, -1, -1] */
+	/* type MATCH_LIST: return empty list when there are no matches.
+	 * type MATCH_POS: return ["", -1, -1, -1] */
 	if (rettv_list_alloc(rettv) == FAIL)
 	    goto theend;
-	if (type == 4
+	if (type == MATCH_POS
 		&& (list_append_string(rettv->vval.v_list,
 					    (char_u *)"", 0) == FAIL
 		    || list_append_number(rettv->vval.v_list,
@@ -7298,7 +7305,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 		goto theend;
 	}
     }
-    else if (type == 2)
+    else if (type == MATCH_STR)
     {
 	rettv->v_type = VAR_STRING;
 	rettv->vval.v_string = NULL;
@@ -7410,7 +7417,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 
 	if (match)
 	{
-	    if (type == 4)
+	    if (type == MATCH_POS)
 	    {
 		listitem_T *li1 = rettv->vval.v_list->lv_first;
 		listitem_T *li2 = li1->li_next;
@@ -7427,7 +7434,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 		if (l != NULL)
 		    li2->li_tv.vval.v_number = (varnumber_T)idx;
 	    }
-	    else if (type == 3)
+	    else if (type == MATCH_LIST)
 	    {
 		int i;
 
@@ -7447,7 +7454,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 			break;
 		}
 	    }
-	    else if (type == 2)
+	    else if (type == MATCH_STR)
 	    {
 		/* return matched string */
 		if (l != NULL)
@@ -7460,7 +7467,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 		rettv->vval.v_number = idx;
 	    else
 	    {
-		if (type != 0)
+		if (type != MATCH_END)
 		    rettv->vval.v_number =
 				      (varnumber_T)(regmatch.startp[0] - str);
 		else
@@ -7472,12 +7479,11 @@ find_some_match(typval_T *argvars, typval_T *rettv, int type)
 	vim_regfree(regmatch.regprog);
     }
 
-    if (type == 4 && l == NULL)
+theend:
+    if (type == MATCH_POS && l == NULL && rettv->vval.v_list != NULL)
 	/* matchstrpos() without a list: drop the second item. */
 	listitem_remove(rettv->vval.v_list,
 				       rettv->vval.v_list->lv_first->li_next);
-
-theend:
     vim_free(tofree);
     p_cpo = save_cpo;
 }
@@ -7488,7 +7494,7 @@ theend:
     static void
 f_match(typval_T *argvars, typval_T *rettv)
 {
-    find_some_match(argvars, rettv, 1);
+    find_some_match(argvars, rettv, MATCH_MATCH);
 }
 
 /*
@@ -7656,7 +7662,7 @@ f_matchdelete(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static void
 f_matchend(typval_T *argvars, typval_T *rettv)
 {
-    find_some_match(argvars, rettv, 0);
+    find_some_match(argvars, rettv, MATCH_END);
 }
 
 /*
@@ -7665,7 +7671,7 @@ f_matchend(typval_T *argvars, typval_T *rettv)
     static void
 f_matchlist(typval_T *argvars, typval_T *rettv)
 {
-    find_some_match(argvars, rettv, 3);
+    find_some_match(argvars, rettv, MATCH_LIST);
 }
 
 /*
@@ -7674,7 +7680,7 @@ f_matchlist(typval_T *argvars, typval_T *rettv)
     static void
 f_matchstr(typval_T *argvars, typval_T *rettv)
 {
-    find_some_match(argvars, rettv, 2);
+    find_some_match(argvars, rettv, MATCH_STR);
 }
 
 /*
@@ -7683,7 +7689,7 @@ f_matchstr(typval_T *argvars, typval_T *rettv)
     static void
 f_matchstrpos(typval_T *argvars, typval_T *rettv)
 {
-    find_some_match(argvars, rettv, 4);
+    find_some_match(argvars, rettv, MATCH_POS);
 }
 
 static void max_min(typval_T *argvars, typval_T *rettv, int domax);
