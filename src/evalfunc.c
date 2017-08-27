@@ -4810,7 +4810,7 @@ get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
     {
 	if (rettv_list_alloc(rettv) == OK)
 	    if (is_qf || wp != NULL)
-		(void)get_errorlist(wp, -1, rettv->vval.v_list);
+		(void)get_errorlist(NULL, wp, -1, rettv->vval.v_list);
     }
     else
     {

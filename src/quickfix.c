@@ -2762,7 +2762,7 @@ qf_free_items(qf_info_T *qi, int idx)
     {
 	qfp = qfl->qf_start;
 	qfpnext = qfp->qf_next;
-	if (qfl->qf_title != NULL && !stop)
+	if (!stop)
 	{
 	    vim_free(qfp->qf_text);
 	    stop = (qfp == qfpnext);
@@ -4556,20 +4556,24 @@ unload_dummy_buffer(buf_T *buf, char_u *dirname_start)
  * If qf_idx is -1, use the current list. Otherwise, use the specified list.
  */
     int
-get_errorlist(win_T *wp, int qf_idx, list_T *list)
+get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list)
 {
-    qf_info_T	*qi = &ql_info;
+    qf_info_T	*qi = qi_arg;
     dict_T	*dict;
     char_u	buf[2];
     qfline_T	*qfp;
     int		i;
     int		bufnum;
 
-    if (wp != NULL)
+    if (qi == NULL)
     {
-	qi = GET_LOC_LIST(wp);
-	if (qi == NULL)
-	    return FAIL;
+	qi = &ql_info;
+	if (wp != NULL)
+	{
+	    qi = GET_LOC_LIST(wp);
+	    if (qi == NULL)
+		return FAIL;
+	}
     }
 
     if (qf_idx == -1)
@@ -4628,6 +4632,45 @@ enum {
 };
 
 /*
+ * Parse text from 'di' and return the quickfix list items
+ */
+    static int
+qf_get_list_from_text(dictitem_T *di, dict_T *retdict)
+{
+    int		status = FAIL;
+    qf_info_T	*qi;
+
+    /* Only string and list values are supported */
+    if ((di->di_tv.v_type == VAR_STRING && di->di_tv.vval.v_string != NULL)
+	    || (di->di_tv.v_type == VAR_LIST
+		&& di->di_tv.vval.v_list != NULL))
+    {
+	qi = (qf_info_T *)alloc((unsigned)sizeof(qf_info_T));
+	if (qi != NULL)
+	{
+	    vim_memset(qi, 0, (size_t)(sizeof(qf_info_T)));
+	    qi->qf_refcount++;
+
+	    if (qf_init_ext(qi, 0, NULL, NULL, &di->di_tv, p_efm,
+			TRUE, (linenr_T)0, (linenr_T)0, NULL, NULL) > 0)
+	    {
+		list_T	*l = list_alloc();
+		if (l != NULL)
+		{
+		    (void)get_errorlist(qi, NULL, 0, l);
+		    dict_add_list(retdict, "items", l);
+		    status = OK;
+		}
+		qf_free(qi, 0);
+	    }
+	    free(qi);
+	}
+    }
+
+    return status;
+}
+
+/*
  * Return quickfix/location list details (title) as a
  * dictionary. 'what' contains the details to return. If 'list_idx' is -1,
  * then current list is used. Otherwise the specified list is used.
@@ -4640,6 +4683,9 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
     int		qf_idx;
     dictitem_T	*di;
     int		flags = QF_GETLIST_NONE;
+
+    if ((di = dict_find(what, (char_u *)"text", -1)) != NULL)
+	return qf_get_list_from_text(di, retdict);
 
     if (wp != NULL)
     {
@@ -4726,7 +4772,7 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	list_T	*l = list_alloc();
 	if (l != NULL)
 	{
-	    (void)get_errorlist(wp, qf_idx, l);
+	    (void)get_errorlist(qi, NULL, qf_idx, l);
 	    dict_add_list(retdict, "items", l);
 	}
 	else
