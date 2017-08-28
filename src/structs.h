@@ -2162,6 +2162,9 @@ struct file_buffer
     int		b_p_et;		/* 'expandtab' */
     int		b_p_et_nobin;	/* b_p_et saved for binary mode */
     int	        b_p_et_nopaste; /* b_p_et saved for paste mode */
+#ifdef FEAT_FAST_WINCMD
+    int         b_p_fwcmd;      /* 'fastwincmd' */
+#endif
 #ifdef FEAT_MBYTE
     char_u	*b_p_fenc;	/* 'fileencoding' */
 #endif

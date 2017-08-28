@@ -101,6 +101,9 @@
 #define PV_FIXEOL	OPT_BUF(BV_FIXEOL)
 #define PV_EP		OPT_BOTH(OPT_BUF(BV_EP))
 #define PV_ET		OPT_BUF(BV_ET)
+#ifdef FEAT_FAST_WINCMD
+#define PV_FWCMD        OPT_BUF(BV_FWCMD)
+#endif
 #ifdef FEAT_MBYTE
 # define PV_FENC	OPT_BUF(BV_FENC)
 #endif
@@ -315,6 +318,9 @@ static char_u	*p_ofu;
 static int	p_eol;
 static int	p_fixeol;
 static int	p_et;
+#ifdef FEAT_FAST_WINCMD
+static int      p_fwcmd;
+#endif
 #ifdef FEAT_MBYTE
 static char_u	*p_fenc;
 #endif
@@ -1144,6 +1150,15 @@ static struct vimoption options[] =
     {"exrc",	    "ex",   P_BOOL|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_exrc, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
+    {"fastwincmd", "fwcmd", P_BOOL|P_VIM,
+#ifdef FEAT_FAST_WINCMD
+	                    (char_u *)&p_fwcmd, PV_NONE,
+	                    {(char_u *)FALSE, (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+                            SCRIPTID_INIT},
     {"fileencoding","fenc", P_STRING|P_ALLOCED|P_VI_DEF|P_RSTAT|P_RBUF
 								   |P_NO_MKRC,
 #ifdef FEAT_MBYTE
@@ -10774,6 +10789,9 @@ get_varp(struct vimoption *p)
 	case PV_EOL:	return (char_u *)&(curbuf->b_p_eol);
 	case PV_FIXEOL:	return (char_u *)&(curbuf->b_p_fixeol);
 	case PV_ET:	return (char_u *)&(curbuf->b_p_et);
+#ifdef FEAT_FAST_WINCMD
+	case PV_FWCMD:  return (char_u *)&(curbuf->b_p_fwcmd);
+#endif
 #ifdef FEAT_MBYTE
 	case PV_FENC:	return (char_u *)&(curbuf->b_p_fenc);
 #endif
@@ -11162,6 +11180,7 @@ buf_copy_options(buf_T *buf, int flags)
 #endif
 	    buf->b_p_fixeol = p_fixeol;
 	    buf->b_p_et = p_et;
+	    buf->b_p_fwcmd = p_fwcmd;
 	    buf->b_p_et_nobin = p_et_nobin;
 	    buf->b_p_et_nopaste = p_et_nopaste;
 	    buf->b_p_ml = p_ml;
