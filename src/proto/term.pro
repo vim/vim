@@ -53,6 +53,7 @@ void cursor_on(void);
 void cursor_off(void);
 void term_cursor_mode(int forced);
 void term_cursor_color(char_u *color);
+int blink_state_is_inverted(void);
 void term_cursor_shape(int shape, int blink);
 void scroll_region_set(win_T *wp, int off);
 void scroll_region_reset(void);
