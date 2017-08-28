@@ -128,8 +128,11 @@ static int u7_status = STATUS_GET;
 /* Request background color report: */
 static int rbg_status = STATUS_GET;
 
-/* Request cursor mode report: */
-static int rcm_status = STATUS_GET;
+/* Request cursor blinking mode report: */
+static int rbm_status = STATUS_GET;
+
+/* Request cursor style report: */
+static int rcs_status = STATUS_GET;
 # endif
 
 /*
@@ -163,9 +166,14 @@ static int  detected_8bit = FALSE;	/* detected 8-bit terminal */
 
 #ifdef FEAT_TERMRESPONSE
 /* When the cursor shape was detected these values are used:
- * 1: block, 2: underline, 3: vertical bar
- * initial_cursor_blink is only valid when initial_cursor_shape is not zero. */
+ * 1: block, 2: underline, 3: vertical bar */
 static int initial_cursor_shape = 0;
+
+/* The blink flag from the style response may be inverted from the actual
+ * blinking state, xterm XORs the flags. */
+static int initial_cursor_shape_blink = FALSE;
+
+/* The blink flag from the blinking-cursor mode response */
 static int initial_cursor_blink = FALSE;
 #endif
 
@@ -835,6 +843,7 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CSH,	IF_EB("\033[%d q", ESC_STR "[%d q")},
 #  endif
+    {(int)KS_CRC,	IF_EB("\033[?12$p", ESC_STR "[?12$p")},
     {(int)KS_CRS,	IF_EB("\033P$q q\033\\", ESC_STR "P$q q" ESC_STR "\\")},
 #  ifdef TERMINFO
     {(int)KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
@@ -3316,7 +3325,8 @@ settmode(int tmode)
 		if (tmode != TMODE_RAW && (crv_status == STATUS_SENT
 					 || u7_status == STATUS_SENT
 					 || rbg_status == STATUS_SENT
-					 || rcm_status == STATUS_SENT))
+					 || rbm_status == STATUS_SENT
+					 || rcs_status == STATUS_SENT))
 		    (void)vpeekc_nomap();
 		check_for_codes_from_term();
 	    }
@@ -3386,7 +3396,8 @@ stoptermcap(void)
 	    if (crv_status == STATUS_SENT
 		    || u7_status == STATUS_SENT
 		    || rbg_status == STATUS_SENT
-		    || rcm_status == STATUS_SENT)
+		    || rbm_status == STATUS_SENT
+		    || rcs_status == STATUS_SENT)
 	    {
 # ifdef UNIX
 		/* Give the terminal a chance to respond. */
@@ -3500,6 +3511,8 @@ may_req_ambiguous_char_width(void)
     void
 may_req_bg_color(void)
 {
+    int	    did_one = FALSE;
+
     if (can_get_termresponse() && starting == 0)
     {
 	/* Only request background if t_RB is set and 'background' wasn't
@@ -3511,7 +3524,20 @@ may_req_bg_color(void)
 	    LOG_TR("Sending BG request");
 	    out_str(T_RBG);
 	    rbg_status = STATUS_SENT;
+	    did_one = TRUE;
+	}
 
+	/* Only request cursor blinking mode if t_RC is set. */
+	if (rbm_status == STATUS_GET && *T_CRC != NUL)
+	{
+	    LOG_TR("Sending BC request");
+	    out_str(T_CRC);
+	    rbm_status = STATUS_SENT;
+	    did_one = TRUE;
+	}
+
+	if (did_one)
+	{
 	    /* check for the characters now, otherwise they might be eaten by
 	     * get_keystroke() */
 	    out_flush();
@@ -3751,6 +3777,13 @@ term_cursor_color(char_u *color)
 }
 # endif
 
+    int
+blink_state_is_inverted()
+{
+    return rbm_status == STATUS_GOT && rcs_status == STATUS_GOT
+		&& initial_cursor_blink != initial_cursor_shape_blink;
+}
+
 /*
  * "shape": 1 = block, 2 = underline, 3 = vertical bar
  */
@@ -3762,16 +3795,26 @@ term_cursor_shape(int shape, int blink)
 	OUT_STR(tgoto((char *)T_CSH, 0, shape * 2 - blink));
 	out_flush();
     }
-    /* When t_SH is not set try setting just the blink state. */
-    else if (blink && *T_VS != NUL)
+    else
     {
-	out_str(T_VS);
-	out_flush();
-    }
-    else if (!blink && *T_CVS != NUL)
-    {
-	out_str(T_CVS);
-	out_flush();
+	int do_blink = blink;
+
+	/* t_SH is empty: try setting just the blink state.
+	 * The blink flags are XORed together, if the initial blinking from
+	 * style and shape differs, we need to invert the flag here. */
+	if (blink_state_is_inverted())
+	    do_blink = !blink;
+
+	if (do_blink && *T_VS != NUL)
+	{
+	    out_str(T_VS);
+	    out_flush();
+	}
+	else if (!do_blink && *T_CVS != NUL)
+	{
+	    out_str(T_CVS);
+	    out_flush();
+	}
     }
 }
 #endif
@@ -4533,7 +4576,7 @@ check_termcode(
 			/* Only request the cursor style if t_SH and t_RS are
 			 * set. Not for Terminal.app, it can't handle t_RS, it
 			 * echoes the characters to the screen. */
-			if (rcm_status == STATUS_GET
+			if (rcs_status == STATUS_GET
 #  ifdef MACOS
 				&& !is_terminal_app
 #  endif
@@ -4542,7 +4585,7 @@ check_termcode(
 			{
 			    LOG_TR("Sending cursor style request");
 			    out_str(T_CRS);
-			    rcm_status = STATUS_SENT;
+			    rcs_status = STATUS_SENT;
 			    out_flush();
 			}
 		    }
@@ -4553,6 +4596,29 @@ check_termcode(
 		    apply_autocmds(EVENT_TERMRESPONSE,
 						   NULL, NULL, FALSE, curbuf);
 # endif
+		    key_name[0] = (int)KS_EXTRA;
+		    key_name[1] = (int)KE_IGNORE;
+		    slen = i + 1;
+		}
+
+		/* Check blinking cursor from xterm:
+		 * {lead}?12;1$y       set
+		 * {lead}?12;2$y       not set
+		 *
+		 * {lead} can be <Esc>[ or CSI
+		 */
+		else if (rbm_status == STATUS_SENT
+			&& tp[(j = 1 + (tp[0] == ESC))] == '?'
+			&& i == j + 6
+			&& tp[j + 1] == '1'
+			&& tp[j + 2] == '2'
+			&& tp[j + 3] == ';'
+			&& tp[i - 1] == '$'
+			&& tp[i] == 'y')
+		{
+		    initial_cursor_blink = (tp[j + 4] == '1');
+		    rbm_status = STATUS_GOT;
+		    LOG_TR("Received cursor blinking mode response");
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
@@ -4668,7 +4734,7 @@ check_termcode(
 	     *
 	     * Consume any code that starts with "{lead}.+r" or "{lead}.$r".
 	     */
-	    else if ((check_for_codes || rcm_status == STATUS_SENT)
+	    else if ((check_for_codes || rcs_status == STATUS_SENT)
 		    && ((tp[0] == ESC && len >= 2 && tp[1] == 'P')
 			|| tp[0] == DCS))
 	    {
@@ -4710,8 +4776,9 @@ check_termcode(
 			initial_cursor_shape = (number + 1) / 2;
 			/* The blink flag is actually inverted, compared to
 			 * the value set with T_SH. */
-			initial_cursor_blink = (number & 1) ? FALSE : TRUE;
-			rcm_status = STATUS_GOT;
+			initial_cursor_shape_blink =
+						   (number & 1) ? FALSE : TRUE;
+			rcs_status = STATUS_GOT;
 			LOG_TR("Received cursor shape response");
 
 			key_name[0] = (int)KS_EXTRA;

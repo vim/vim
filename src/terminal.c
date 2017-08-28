@@ -39,7 +39,6 @@
  *
  * TODO:
  * - ":term NONE" does not work in MS-Windows.
- * - better check for blinking - reply from Thomas Dickey Aug 22
  * - test for writing lines to terminal job does not work on MS-Windows
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
@@ -2482,7 +2481,8 @@ f_term_getcursor(typval_T *argvars, typval_T *rettv)
     if (d != NULL)
     {
 	dict_add_nr_str(d, "visible", term->tl_cursor_visible, NULL);
-	dict_add_nr_str(d, "blink", term->tl_cursor_blink, NULL);
+	dict_add_nr_str(d, "blink", blink_state_is_inverted()
+		       ? !term->tl_cursor_blink : term->tl_cursor_blink, NULL);
 	dict_add_nr_str(d, "shape", term->tl_cursor_shape, NULL);
 	dict_add_nr_str(d, "color", 0L, term->tl_cursor_color == NULL
 				       ? (char_u *)"" : term->tl_cursor_color);
