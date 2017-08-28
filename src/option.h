@@ -1029,6 +1029,7 @@ enum
     , BV_FIXEOL
     , BV_EP
     , BV_ET
+    , BV_FWCMD
     , BV_FENC
     , BV_FP
 #ifdef FEAT_EVAL

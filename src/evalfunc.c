@@ -5671,6 +5671,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_FKMAP
 	"farsi",
 #endif
+#ifdef FEAT_FAST_WINCMD
+	"fastwincmd",
+#endif
 #ifdef FEAT_SEARCHPATH
 	"file_in_path",
 #endif
