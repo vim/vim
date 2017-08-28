@@ -11182,7 +11182,9 @@ buf_copy_options(buf_T *buf, int flags)
 #endif
 	    buf->b_p_fixeol = p_fixeol;
 	    buf->b_p_et = p_et;
+#ifdef FEAT_FAST_WINCMD
 	    buf->b_p_fwcmd = p_fwcmd;
+#endif
 	    buf->b_p_et_nobin = p_et_nobin;
 	    buf->b_p_et_nopaste = p_et_nopaste;
 	    buf->b_p_ml = p_ml;
