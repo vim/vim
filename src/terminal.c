@@ -38,28 +38,36 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - test writing lines to terminal job when implemented for MS-Windows
+ * - ":term NONE" does not work in MS-Windows.
+ * - better check for blinking - reply from Thomas Dickey Aug 22
+ * - test for writing lines to terminal job does not work on MS-Windows
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
+ * - do not set bufhidden to "hide"?  works like a buffer with changes.
+ *   document that CTRL-W :hide can be used.
+ * - GUI: when using tabs, focus in terminal, click on tab does not work.
+ * - When $HOME was set by Vim (MS-Windows), do not pass it to the job.
+ * - GUI: when 'confirm' is set and trying to exit Vim, dialog offers to save
+ *   changes to "!shell".
+ *   (justrajdeep, 2017 Aug 22)
+ * - command argument with spaces doesn't work #1999
+ *       :terminal ls dir\ with\ spaces
  * - implement job options when starting a terminal.  Allow:
  *	"in_io", "in_top", "in_bot", "in_name", "in_buf"
 	"out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
 	"err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
  *   Check that something is connected to the terminal.
  *   Test: "cat" reading from a file or buffer
- *         "ls" writing stdout to a file or buffer
- *         shell writing stderr to a file or buffer
+ *	   "ls" writing stdout to a file or buffer
+ *	   shell writing stderr to a file or buffer
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
- * - support ":term NONE" to open a terminal with a pty but not running a job
- *   in it.  The pty can be passed to gdb to run the executable in.
  * - if the job in the terminal does not support the mouse, we can use the
  *   mouse in the Terminal window for copy/paste.
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
- * - update ":help function-list" for terminal functions.
  * - In the GUI use a terminal emulator for :!cmd.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
@@ -155,8 +163,8 @@ static term_T *in_terminal_loop = NULL;
 /*
  * Functions with separate implementation for MS-Windows and Unix-like systems.
  */
-static int term_and_job_init(term_T *term, int rows, int cols,
-					      typval_T *argvar, jobopt_T *opt);
+static int term_and_job_init(term_T *term, typval_T *argvar, jobopt_T *opt);
+static int create_pty_only(term_T *term, jobopt_T *opt);
 static void term_report_winsize(term_T *term, int rows, int cols);
 static void term_free_vterm(term_T *term);
 
@@ -248,6 +256,7 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     win_T	*old_curwin = curwin;
     term_T	*term;
     buf_T	*old_curbuf = NULL;
+    int		res;
 
     if (check_restricted() || check_secure())
 	return;
@@ -347,7 +356,13 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 	char_u	*cmd, *p;
 
 	if (argvar->v_type == VAR_STRING)
+	{
 	    cmd = argvar->vval.v_string;
+	    if (cmd == NULL)
+		cmd = (char_u *)"";
+	    else if (STRCMP(cmd, "NONE") == 0)
+		cmd = (char_u *)"pty";
+	}
 	else if (argvar->v_type != VAR_LIST
 		|| argvar->vval.v_list == NULL
 		|| argvar->vval.v_list->lv_len < 1)
@@ -392,9 +407,15 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     set_term_and_win_size(term);
     setup_job_options(opt, term->tl_rows, term->tl_cols);
 
-    /* System dependent: setup the vterm and start the job in it. */
-    if (term_and_job_init(term, term->tl_rows, term->tl_cols, argvar, opt)
-									 == OK)
+    /* System dependent: setup the vterm and maybe start the job in it. */
+    if (argvar->v_type == VAR_STRING
+	    && argvar->vval.v_string != NULL
+	    && STRCMP(argvar->vval.v_string, "NONE") == 0)
+	res = create_pty_only(term, opt);
+    else
+	res = term_and_job_init(term, argvar, opt);
+
+    if (res == OK)
     {
 	/* Get and remember the size we ended up with.  Update the pty. */
 	vterm_get_size(term->tl_vterm, &term->tl_rows, &term->tl_cols);
@@ -545,7 +566,8 @@ free_terminal(buf_T *buf)
     if (term->tl_job != NULL)
     {
 	if (term->tl_job->jv_status != JOB_ENDED
-				      && term->tl_job->jv_status != JOB_FAILED)
+		&& term->tl_job->jv_status != JOB_FINISHED
+	        && term->tl_job->jv_status != JOB_FAILED)
 	    job_stop(term->tl_job, NULL, "kill");
 	job_unref(term->tl_job);
     }
@@ -647,7 +669,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	    update_cursor(term, TRUE);
 	}
 	else
-	    redraw_after_callback();
+	    redraw_after_callback(TRUE);
     }
 }
 
@@ -831,8 +853,9 @@ term_job_running(term_T *term)
      * race condition when updating the title. */
     return term != NULL
 	&& term->tl_job != NULL
-	&& term->tl_job->jv_status == JOB_STARTED
-	&& channel_is_open(term->tl_job->jv_channel);
+	&& channel_is_open(term->tl_job->jv_channel)
+	&& (term->tl_job->jv_status == JOB_STARTED
+		|| term->tl_job->jv_channel->ch_keep_open);
 }
 
 /*
@@ -845,7 +868,26 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
     int		empty = (buf->b_ml.ml_flags & ML_EMPTY);
     linenr_T	lnum = buf->b_ml.ml_line_count;
 
-    ml_append_buf(term->tl_buffer, lnum, text, len + 1, FALSE);
+#ifdef WIN3264
+    if (!enc_utf8 && enc_codepage > 0)
+    {
+	WCHAR   *ret = NULL;
+	int	length = 0;
+
+	MultiByteToWideChar_alloc(CP_UTF8, 0, (char*)text, len + 1,
+							   &ret, &length);
+	if (ret != NULL)
+	{
+	    WideCharToMultiByte_alloc(enc_codepage, 0,
+				      ret, length, (char **)&text, &len, 0, 0);
+	    vim_free(ret);
+	    ml_append_buf(term->tl_buffer, lnum, text, len, FALSE);
+	    vim_free(text);
+	}
+    }
+    else
+#endif
+	ml_append_buf(term->tl_buffer, lnum, text, len + 1, FALSE);
     if (empty)
     {
 	/* Delete the empty line that was in the empty buffer. */
@@ -918,7 +960,7 @@ move_terminal_to_buffer(term_T *term)
 			width = 1;
 			vim_memset(p + pos.col, 0, sizeof(cellattr_T));
 			if (ga_grow(&ga, 1) == OK)
-			    ga.ga_len += mb_char2bytes(' ',
+			    ga.ga_len += utf_char2bytes(' ',
 					     (char_u *)ga.ga_data + ga.ga_len);
 		    }
 		    else
@@ -936,7 +978,7 @@ move_terminal_to_buffer(term_T *term)
 			    int	    c;
 
 			    for (i = 0; (c = cell.chars[i]) > 0 || i == 0; ++i)
-				ga.ga_len += mb_char2bytes(c == NUL ? ' ' : c,
+				ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
 					     (char_u *)ga.ga_data + ga.ga_len);
 			}
 		    }
@@ -1239,9 +1281,31 @@ term_paste_register(int prev_c UNUSED)
 	for (item = l->lv_first; item != NULL; item = item->li_next)
 	{
 	    char_u *s = get_tv_string(&item->li_tv);
+#ifdef WIN3264
+	    char_u *tmp = s;
 
+	    if (!enc_utf8 && enc_codepage > 0)
+	    {
+		WCHAR   *ret = NULL;
+		int	length = 0;
+
+		MultiByteToWideChar_alloc(enc_codepage, 0, (char*)s, STRLEN(s),
+							   &ret, &length);
+		if (ret != NULL)
+		{
+		    WideCharToMultiByte_alloc(CP_UTF8, 0,
+				    ret, length, (char **)&s, &length, 0, 0);
+		    vim_free(ret);
+		}
+	    }
+#endif
 	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
 							   s, STRLEN(s), NULL);
+#ifdef WIN3264
+	    if (tmp != s)
+		vim_free(s);
+#endif
+
 	    if (item->li_next != NULL || type == MLINE)
 		channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
 						      (char_u *)"\r", 1, NULL);
@@ -1276,7 +1340,7 @@ term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg)
     {
 	entry.blinkwait = 700;
 	entry.blinkon = 400;
-	entry.blinkon = 250;
+	entry.blinkoff = 250;
     }
     *fg = gui.back_pixel;
     if (term->tl_cursor_color == NULL)
@@ -1511,6 +1575,18 @@ terminal_loop(void)
 		goto theend;
 	    }
 	}
+# ifdef WIN3264
+	if (!enc_utf8 && has_mbyte && c >= 0x80)
+	{
+	    WCHAR   wc;
+	    char_u  mb[3];
+
+	    mb[0] = (unsigned)c >> 8;
+	    mb[1] = c;
+	    if (MultiByteToWideChar(GetACP(), 0, (char*)mb, 2, &wc, 1) > 0)
+		c = wc;
+	}
+# endif
 	if (send_keys_to_term(curbuf->b_term, c, TRUE) != OK)
 	{
 	    ret = OK;
@@ -1670,7 +1746,7 @@ color2index(VTermColor *color, int fg, int *boldp)
 
 	/* 216-color cube */
 	return 17 + ((red + 25) / 0x33) * 36
-	          + ((green + 25) / 0x33) * 6
+		  + ((green + 25) / 0x33) * 6
 		  + (blue + 25) / 0x33;
     }
     return 0;
@@ -1819,6 +1895,24 @@ handle_settermprop(
 	     * displayed */
 	    if (*skipwhite((char_u *)value->string) == NUL)
 		term->tl_title = NULL;
+#ifdef WIN3264
+	    else if (!enc_utf8 && enc_codepage > 0)
+	    {
+		WCHAR   *ret = NULL;
+		int	length = 0;
+
+		MultiByteToWideChar_alloc(CP_UTF8, 0,
+			(char*)value->string, STRLEN(value->string),
+								&ret, &length);
+		if (ret != NULL)
+		{
+		    WideCharToMultiByte_alloc(enc_codepage, 0,
+					ret, length, (char**)&term->tl_title,
+					&length, 0, 0);
+		    vim_free(ret);
+		}
+	    }
+#endif
 	    else
 		term->tl_title = vim_strsave((char_u *)value->string);
 	    vim_free(term->tl_status_text);
@@ -1925,7 +2019,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 		    break;
 		}
 		for (i = 0; (c = cells[col].chars[i]) > 0 || i == 0; ++i)
-		    ga.ga_len += mb_char2bytes(c == NUL ? ' ' : c,
+		    ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
 					     (char_u *)ga.ga_data + ga.ga_len);
 		p[col].width = cells[col].width;
 		p[col].attrs = cells[col].attrs;
@@ -2111,28 +2205,43 @@ term_update_window(win_T *wp)
 		if (c == NUL)
 		{
 		    ScreenLines[off] = ' ';
-#if defined(FEAT_MBYTE)
 		    if (enc_utf8)
 			ScreenLinesUC[off] = NUL;
-#endif
 		}
 		else
 		{
-#if defined(FEAT_MBYTE)
-		    if (enc_utf8 && c >= 0x80)
+		    if (enc_utf8)
 		    {
-			ScreenLines[off] = ' ';
-			ScreenLinesUC[off] = c;
-		    }
-		    else
-		    {
-			ScreenLines[off] = c;
-			if (enc_utf8)
+			if (c >= 0x80)
+			{
+			    ScreenLines[off] = ' ';
+			    ScreenLinesUC[off] = c;
+			}
+			else
+			{
+			    ScreenLines[off] = c;
 			    ScreenLinesUC[off] = NUL;
+			}
 		    }
-#else
-		    ScreenLines[off] = c;
+#ifdef WIN3264
+		    else if (has_mbyte && c >= 0x80)
+		    {
+			char_u	mb[MB_MAXBYTES+1];
+			WCHAR	wc = c;
+
+			if (WideCharToMultiByte(GetACP(), 0, &wc, 1,
+						       (char*)mb, 2, 0, 0) > 1)
+			{
+			    ScreenLines[off] = mb[0];
+			    ScreenLines[off + 1] = mb[1];
+			    cell.width = mb_ptr2cells(mb);
+			}
+			else
+			    ScreenLines[off] = c;
+		    }
 #endif
+		    else
+			ScreenLines[off] = c;
 		}
 		ScreenAttrs[off] = cell2attr(cell.attrs, cell.fg, cell.bg);
 
@@ -2140,11 +2249,14 @@ term_update_window(win_T *wp)
 		++off;
 		if (cell.width == 2)
 		{
-		    ScreenLines[off] = NUL;
-#if defined(FEAT_MBYTE)
 		    if (enc_utf8)
 			ScreenLinesUC[off] = NUL;
-#endif
+
+		    /* don't set the second byte to NUL for a DBCS encoding, it
+		     * has been set above */
+		    if (enc_utf8 || !has_mbyte)
+			ScreenLines[off] = NUL;
+
 		    ++pos.col;
 		    ++off;
 		}
@@ -2229,6 +2341,7 @@ create_vterm(term_T *term, int rows, int cols)
 {
     VTerm	    *vterm;
     VTermScreen	    *screen;
+    VTermValue	    value;
 
     vterm = vterm_new(rows, cols);
     term->tl_vterm = vterm;
@@ -2253,6 +2366,20 @@ create_vterm(term_T *term, int rows, int cols)
 
     /* Allow using alternate screen. */
     vterm_screen_enable_altscreen(screen, 1);
+
+    /* For unix do not use a blinking cursor.  In an xterm this causes the
+     * cursor to blink if it's blinking in the xterm.
+     * For Windows we respect the system wide setting. */
+#ifdef WIN3264
+    if (GetCaretBlinkTime() == INFINITE)
+	value.boolean = 0;
+    else
+	value.boolean = 1;
+#else
+    value.boolean = 0;
+#endif
+    vterm_state_set_termprop(vterm_obtain_state(vterm),
+					       VTERM_PROP_CURSORBLINK, &value);
 }
 
 /*
@@ -2773,9 +2900,14 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	ch_log(NULL, "term_wait(): no job to wait for");
 	return;
     }
+    if (buf->b_term->tl_job->jv_channel == NULL)
+	/* channel is closed, nothing to do */
+	return;
 
     /* Get the job status, this will detect a job that finished. */
-    if (STRCMP(job_status(buf->b_term->tl_job), "dead") == 0)
+    if ((buf->b_term->tl_job->jv_channel == NULL
+			     || !buf->b_term->tl_job->jv_channel->ch_keep_open)
+	    && STRCMP(job_status(buf->b_term->tl_job), "dead") == 0)
     {
 	/* The job is dead, keep reading channel I/O until the channel is
 	 * closed. */
@@ -2907,8 +3039,6 @@ dyn_winpty_init(int verbose)
     static int
 term_and_job_init(
 	term_T	    *term,
-	int	    rows,
-	int	    cols,
 	typval_T    *argvar,
 	jobopt_T    *opt)
 {
@@ -2954,7 +3084,8 @@ term_and_job_init(
     if (term->tl_winpty_config == NULL)
 	goto failed;
 
-    winpty_config_set_initial_size(term->tl_winpty_config, cols, rows);
+    winpty_config_set_initial_size(term->tl_winpty_config,
+						 term->tl_cols, term->tl_rows);
     term->tl_winpty = winpty_open(term->tl_winpty_config, &winpty_err);
     if (term->tl_winpty == NULL)
 	goto failed;
@@ -3016,7 +3147,7 @@ term_and_job_init(
     winpty_spawn_config_free(spawn_config);
     vim_free(cmd_wchar);
 
-    create_vterm(term, rows, cols);
+    create_vterm(term, term->tl_rows, term->tl_cols);
 
     channel_set_job(channel, job, opt);
     job_set_options(job, opt);
@@ -3068,6 +3199,13 @@ failed:
     return FAIL;
 }
 
+    static int
+create_pty_only(term_T *term, jobopt_T *opt)
+{
+    /* TODO: implement this */
+    return FAIL;
+}
+
 /*
  * Free the terminal emulator part of "term".
  */
@@ -3116,12 +3254,10 @@ terminal_enabled(void)
     static int
 term_and_job_init(
 	term_T	    *term,
-	int	    rows,
-	int	    cols,
 	typval_T    *argvar,
 	jobopt_T    *opt)
 {
-    create_vterm(term, rows, cols);
+    create_vterm(term, term->tl_rows, term->tl_cols);
 
     /* TODO: if the command is "NONE" only create a pty. */
     term->tl_job = job_start(argvar, opt);
@@ -3131,6 +3267,26 @@ term_and_job_init(
     return term->tl_job != NULL
 	&& term->tl_job->jv_channel != NULL
 	&& term->tl_job->jv_status != JOB_FAILED ? OK : FAIL;
+}
+
+    static int
+create_pty_only(term_T *term, jobopt_T *opt)
+{
+    int ret;
+
+    create_vterm(term, term->tl_rows, term->tl_cols);
+
+    term->tl_job = job_alloc();
+    if (term->tl_job == NULL)
+	return FAIL;
+    ++term->tl_job->jv_refcount;
+
+    /* behave like the job is already finished */
+    term->tl_job->jv_status = JOB_FINISHED;
+
+    ret = mch_create_pty_channel(term->tl_job, opt);
+
+    return ret;
 }
 
 /*

@@ -746,7 +746,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'path'	options.txt	/*'path'*
 'pdev'	options.txt	/*'pdev'*
 'penc'	options.txt	/*'penc'*
-'perldll'	options.txt	/*'perldll'*
 'pex'	options.txt	/*'pex'*
 'pexpr'	options.txt	/*'pexpr'*
 'pfn'	options.txt	/*'pfn'*
@@ -935,6 +934,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_Co'	term.txt	/*'t_Co'*
 't_Cs'	term.txt	/*'t_Cs'*
 't_DL'	term.txt	/*'t_DL'*
+'t_EC'	term.txt	/*'t_EC'*
 't_EI'	term.txt	/*'t_EI'*
 't_F1'	term.txt	/*'t_F1'*
 't_F2'	term.txt	/*'t_F2'*
@@ -972,11 +972,15 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_PS'	term.txt	/*'t_PS'*
 't_RB'	term.txt	/*'t_RB'*
 't_RI'	term.txt	/*'t_RI'*
+'t_RS'	term.txt	/*'t_RS'*
 't_RV'	term.txt	/*'t_RV'*
+'t_SC'	term.txt	/*'t_SC'*
+'t_SH'	term.txt	/*'t_SH'*
 't_SI'	term.txt	/*'t_SI'*
 't_SR'	term.txt	/*'t_SR'*
 't_Sb'	term.txt	/*'t_Sb'*
 't_Sf'	term.txt	/*'t_Sf'*
+'t_VS'	term.txt	/*'t_VS'*
 't_WP'	term.txt	/*'t_WP'*
 't_WS'	term.txt	/*'t_WS'*
 't_ZH'	term.txt	/*'t_ZH'*
@@ -1167,6 +1171,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'winheight'	options.txt	/*'winheight'*
 'winminheight'	options.txt	/*'winminheight'*
 'winminwidth'	options.txt	/*'winminwidth'*
+'winptydll'	options.txt	/*'winptydll'*
 'winwidth'	options.txt	/*'winwidth'*
 'wiv'	options.txt	/*'wiv'*
 'wiw'	options.txt	/*'wiw'*
@@ -4537,6 +4542,7 @@ E944	pattern.txt	/*E944*
 E945	pattern.txt	/*E945*
 E946	terminal.txt	/*E946*
 E947	terminal.txt	/*E947*
+E948	terminal.txt	/*E948*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
 E97	diff.txt	/*E97*
@@ -6134,6 +6140,7 @@ ft-mathematica-syntax	syntax.txt	/*ft-mathematica-syntax*
 ft-mma-syntax	syntax.txt	/*ft-mma-syntax*
 ft-moo-syntax	syntax.txt	/*ft-moo-syntax*
 ft-msql-syntax	syntax.txt	/*ft-msql-syntax*
+ft-n1ql-syntax	syntax.txt	/*ft-n1ql-syntax*
 ft-nasm-syntax	syntax.txt	/*ft-nasm-syntax*
 ft-ncf-syntax	syntax.txt	/*ft-ncf-syntax*
 ft-nroff-syntax	syntax.txt	/*ft-nroff-syntax*
@@ -7377,6 +7384,7 @@ mzscheme-vim	if_mzsch.txt	/*mzscheme-vim*
 mzscheme-vimext	if_mzsch.txt	/*mzscheme-vimext*
 mzscheme-window	if_mzsch.txt	/*mzscheme-window*
 n	pattern.txt	/*n*
+n1ql.vim	syntax.txt	/*n1ql.vim*
 nasm.vim	syntax.txt	/*nasm.vim*
 navigation	motion.txt	/*navigation*
 nb-commands	netbeans.txt	/*nb-commands*
@@ -7720,6 +7728,7 @@ no-type-checking	eval.txt	/*no-type-checking*
 no_buffers_menu	gui.txt	/*no_buffers_menu*
 no_mail_maps	filetype.txt	/*no_mail_maps*
 no_plugin_maps	filetype.txt	/*no_plugin_maps*
+nocombine	syntax.txt	/*nocombine*
 non-greedy	pattern.txt	/*non-greedy*
 non-zero-arg	eval.txt	/*non-zero-arg*
 none-variable	eval.txt	/*none-variable*
@@ -8537,12 +8546,14 @@ t_AL	term.txt	/*t_AL*
 t_BD	term.txt	/*t_BD*
 t_BE	term.txt	/*t_BE*
 t_CS	term.txt	/*t_CS*
+t_CTRL-W_CTRL-C	terminal.txt	/*t_CTRL-W_CTRL-C*
 t_CTRL-\_CTRL-N	terminal.txt	/*t_CTRL-\\_CTRL-N*
 t_CV	term.txt	/*t_CV*
 t_Ce	term.txt	/*t_Ce*
 t_Co	term.txt	/*t_Co*
 t_Cs	term.txt	/*t_Cs*
 t_DL	term.txt	/*t_DL*
+t_EC	term.txt	/*t_EC*
 t_EI	term.txt	/*t_EI*
 t_F1	term.txt	/*t_F1*
 t_F2	term.txt	/*t_F2*
@@ -8580,11 +8591,15 @@ t_PE	term.txt	/*t_PE*
 t_PS	term.txt	/*t_PS*
 t_RB	term.txt	/*t_RB*
 t_RI	term.txt	/*t_RI*
+t_RS	term.txt	/*t_RS*
 t_RV	term.txt	/*t_RV*
+t_SC	term.txt	/*t_SC*
+t_SH	term.txt	/*t_SH*
 t_SI	term.txt	/*t_SI*
 t_SR	term.txt	/*t_SR*
 t_Sb	term.txt	/*t_Sb*
 t_Sf	term.txt	/*t_Sf*
+t_VS	term.txt	/*t_VS*
 t_WP	term.txt	/*t_WP*
 t_WS	term.txt	/*t_WS*
 t_ZH	term.txt	/*t_ZH*
@@ -8827,6 +8842,7 @@ termcap-title	term.txt	/*termcap-title*
 terminal	terminal.txt	/*terminal*
 terminal-colors	os_unix.txt	/*terminal-colors*
 terminal-debug	terminal.txt	/*terminal-debug*
+terminal-functions	usr_41.txt	/*terminal-functions*
 terminal-info	term.txt	/*terminal-info*
 terminal-key-codes	term.txt	/*terminal-key-codes*
 terminal-options	term.txt	/*terminal-options*

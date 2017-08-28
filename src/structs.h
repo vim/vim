@@ -1656,6 +1656,7 @@ struct channel_S {
     char_u	*ch_close_cb;	/* call when channel is closed */
     partial_T	*ch_close_partial;
     int		ch_drop_never;
+    int		ch_keep_open;	/* do not close on read error */
 
     job_T	*ch_job;	/* Job that uses this channel; this does not
 				 * count as a reference to avoid a circular

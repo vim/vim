@@ -4340,6 +4340,7 @@ mch_call_shell(
 
 # define EXEC_FAILED 122    /* Exit code when shell didn't execute.  Don't use
 			       127, some shells use that already */
+# define OPEN_NULL_FAILED 123 /* Exit code if /dev/null can't be opened */
 
     char_u	*newcmd;
     pid_t	pid;
@@ -5369,7 +5370,14 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	}
 
 	if (use_null_for_in || use_null_for_out || use_null_for_err)
+	{
 	    null_fd = open("/dev/null", O_RDWR | O_EXTRA, 0);
+	    if (null_fd < 0)
+	    {
+		perror("opening /dev/null failed");
+		_exit(OPEN_NULL_FAILED);
+	    }
+	}
 
 	if (pty_slave_fd >= 0)
 	{
@@ -5458,7 +5466,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
     job->jv_channel = channel;  /* ch_refcount was set above */
 
     if (pty_master_fd >= 0)
-	close(pty_slave_fd); /* duped above */
+	close(pty_slave_fd); /* not used in the parent */
     /* close child stdin, stdout and stderr */
     if (!use_file_for_in && fd_in[0] >= 0)
 	close(fd_in[0]);
@@ -5658,6 +5666,29 @@ mch_clear_job(job_T *job)
 # else
     (void)waitpid(job->jv_pid, NULL, WNOHANG);
 # endif
+}
+#endif
+
+#if defined(FEAT_TERMINAL) || defined(PROTO)
+    int
+mch_create_pty_channel(job_T *job, jobopt_T *options)
+{
+    int		pty_master_fd = -1;
+    int		pty_slave_fd = -1;
+    channel_T	*channel;
+
+    open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_name);
+    close(pty_slave_fd);
+
+    channel = add_channel();
+    if (channel == NULL)
+	return FAIL;
+    job->jv_channel = channel;  /* ch_refcount was set by add_channel() */
+    channel->ch_keep_open = TRUE;
+
+    channel_set_pipes(channel, pty_master_fd, pty_master_fd, pty_master_fd);
+    channel_set_job(channel, job, options);
+    return OK;
 }
 #endif
 

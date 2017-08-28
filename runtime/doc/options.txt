@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Jul 31
+*options.txt*	For Vim version 8.0.  Last change: 2017 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -417,11 +417,12 @@ On Unix systems the form "${HOME}" can be used too.  The name between {} can
 contain non-id characters then.  Note that if you want to use this for the
 "gf" command, you need to add the '{' and '}' characters to 'isfname'.
 
-On MS-Windows, if $HOME is not defined as an environment variable, then
-at runtime Vim will set it to the expansion of $HOMEDRIVE$HOMEPATH.
-
 NOTE: expanding environment variables and "~/" is only done with the ":set"
 command, not when assigning a value to an option with ":let".
+
+							*$HOME-windows*
+On MS-Windows, if $HOME is not defined as an environment variable, then
+at runtime Vim will set it to the expansion of $HOMEDRIVE$HOMEPATH.
 
 
 Note the maximum length of an expanded option is limited.  How much depends on
@@ -888,6 +889,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For other systems "dark" is used when 'term' is "linux",
 	"screen.linux", "cygwin" or "putty", or $COLORFGBG suggests a dark
 	background.  Otherwise the default is "light".
+
+	The |:terminal| command and the |term_start()| function use the
+	'background' value to decide whether the terminal window will start
+	with a white or black background.
 
 	Normally this option would be set in the .vimrc file.  Possibly
 	depending on the terminal name.  Example: >
@@ -4041,7 +4046,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
 				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
 				     .:CursorLine,o:ColorColumn,q:QuickFixLine,
-				     $:StatusLineTerm")
+				     z:StatusLineTerm,Z:StatusLineTermNC")
 			global
 			{not in Vi}
 	This option can be used to set highlighting mode for various
@@ -5722,18 +5727,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:let &path = &path . "," . substitute($INCL, ';', ',', 'g')
 <	Replace the ';' with a ':' or whatever separator is used.  Note that
 	this doesn't work when $INCL contains a comma or white space.
-
-						*'perldll'*
-'perldll'		string	(default depends on the build)
-			global
-			{not in Vi}
-			{only available when compiled with the |+perl/dyn|
-			feature}
-	Specifies the name of the Perl shared library. The default is
-	DYNAMIC_PERL_DLL, which was specified at compile time.
-	Environment variables are expanded |:set_env|.
-	This option cannot be set from a |modeline| or in the |sandbox|, for
-	security reasons.
 
 			*'preserveindent'* *'pi'* *'nopreserveindent'* *'nopi'*
 'preserveindent' 'pi'	boolean	(default off)
@@ -8839,7 +8832,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature on MS-Windows}
 	Specifies the name of the winpty shared library, used for the
 	|:terminal| command. The default depends on whether was build as a
-	32-bit or 64-bit executable.  If not found, "win32pty.dll" is tried as
+	32-bit or 64-bit executable.  If not found, "winpty.dll" is tried as
 	a fallback.
 	Environment variables are expanded |:set_env|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for

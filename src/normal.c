@@ -5648,6 +5648,11 @@ nv_ident(cmdarg_T *cap)
     kp = (*curbuf->b_p_kp == NUL ? p_kp : curbuf->b_p_kp);
     kp_help = (*kp == NUL || STRCMP(kp, ":he") == 0
 						 || STRCMP(kp, ":help") == 0);
+    if (kp_help && *skipwhite(ptr) == NUL)
+    {
+	EMSG(_(e_noident));	 /* found white space only */
+	return;
+    }
     kp_ex = (*kp == ':');
     buflen = (unsigned)(n * 2 + 30 + STRLEN(kp));
     buf = alloc(buflen);

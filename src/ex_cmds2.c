@@ -1194,6 +1194,7 @@ check_due_timer(void)
     long	next_due = -1;
     proftime_T	now;
     int		did_one = FALSE;
+    int		need_update_screen = FALSE;
     long	current_id = last_timer_id;
 # ifdef WIN3264
     LARGE_INTEGER   fr;
@@ -1221,10 +1222,12 @@ check_due_timer(void)
 	    int did_emsg_save = did_emsg;
 	    int called_emsg_save = called_emsg;
 	    int did_throw_save = did_throw;
+	    int	save_must_redraw = must_redraw;
 
 	    timer_busy = timer_busy > 0 || vgetc_busy > 0;
 	    vgetc_busy = 0;
 	    called_emsg = FALSE;
+	    must_redraw = 0;
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
@@ -1240,6 +1243,10 @@ check_due_timer(void)
 	    }
 	    did_emsg = did_emsg_save;
 	    called_emsg = called_emsg_save;
+	    if (must_redraw != 0)
+		need_update_screen = TRUE;
+	    must_redraw = must_redraw > save_must_redraw
+					      ? must_redraw : save_must_redraw;
 
 	    /* Only fire the timer again if it repeats and stop_timer() wasn't
 	     * called while inside the callback (tr_id == -1). */
@@ -1265,7 +1272,7 @@ check_due_timer(void)
     }
 
     if (did_one)
-	redraw_after_callback();
+	redraw_after_callback(need_update_screen);
 
     return current_id != last_timer_id ? 1 : next_due;
 }
@@ -1981,9 +1988,7 @@ dialog_changed(
     buf_T	*buf2;
     exarg_T     ea;
 
-    dialog_msg(buff, _("Save changes to \"%s\"?"),
-			(buf->b_fname != NULL) ?
-			buf->b_fname : (char_u *)_("Untitled"));
+    dialog_msg(buff, _("Save changes to \"%s\"?"), buf->b_fname);
     if (checkall)
 	ret = vim_dialog_yesnoallcancel(VIM_QUESTION, NULL, buff, 1);
     else

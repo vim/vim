@@ -5221,7 +5221,7 @@ FullName_save(
 
 static char_u	*skip_string(char_u *p);
 static pos_T *ind_find_start_comment(void);
-static pos_T *ind_find_start_CORS(void);
+static pos_T *ind_find_start_CORS(linenr_T *is_raw);
 static pos_T *find_start_rawstring(int ind_maxcomment);
 
 /*
@@ -5272,11 +5272,12 @@ find_start_comment(int ind_maxcomment)	/* XXX */
  * Find the start of a comment or raw string, not knowing if we are in a
  * comment or raw string right now.
  * Search starts at w_cursor.lnum and goes backwards.
+ * If is_raw is given and returns start of raw_string, sets it to true.
  * Return NULL when not inside a comment or raw string.
  * "CORS" -> Comment Or Raw String
  */
     static pos_T *
-ind_find_start_CORS(void)	    /* XXX */
+ind_find_start_CORS(linenr_T *is_raw)	    /* XXX */
 {
     static pos_T comment_pos_copy;
     pos_T	*comment_pos;
@@ -5296,7 +5297,11 @@ ind_find_start_CORS(void)	    /* XXX */
      * If rs_pos is before comment_pos the comment is inside the raw string. */
     if (comment_pos == NULL || (rs_pos != NULL
 					     && LT_POS(*rs_pos, *comment_pos)))
+    {
+	if (is_raw != NULL && rs_pos != NULL)
+	    *is_raw = rs_pos->lnum;
 	return rs_pos;
+    }
     return comment_pos;
 }
 
@@ -5641,7 +5646,7 @@ cin_islabel(void)		/* XXX */
 	     * it.
 	     */
 	    curwin->w_cursor.col = 0;
-	    if ((trypos = ind_find_start_CORS()) != NULL) /* XXX */
+	    if ((trypos = ind_find_start_CORS(NULL)) != NULL) /* XXX */
 		curwin->w_cursor = *trypos;
 
 	    line = ml_get_curline();
@@ -6768,7 +6773,7 @@ find_start_brace(void)	    /* XXX */
 	pos = NULL;
 	/* ignore the { if it's in a // or / *  * / comment */
 	if ((colnr_T)cin_skip2pos(trypos) == trypos->col
-		       && (pos = ind_find_start_CORS()) == NULL) /* XXX */
+		       && (pos = ind_find_start_CORS(NULL)) == NULL) /* XXX */
 	    break;
 	if (pos != NULL)
 	    curwin->w_cursor.lnum = pos->lnum;
@@ -6819,7 +6824,7 @@ retry:
 	    pos_copy = *trypos;	    /* copy trypos, findmatch will change it */
 	    trypos = &pos_copy;
 	    curwin->w_cursor = *trypos;
-	    if ((trypos_wk = ind_find_start_CORS()) != NULL) /* XXX */
+	    if ((trypos_wk = ind_find_start_CORS(NULL)) != NULL) /* XXX */
 	    {
 		ind_maxp_wk = ind_maxparen - (int)(cursor_save.lnum
 			- trypos_wk->lnum);
@@ -7189,6 +7194,7 @@ get_c_indent(void)
     int		original_line_islabel;
     int		added_to_amount = 0;
     int		js_cur_has_key = 0;
+    linenr_T	raw_string_start = 0;
     cpp_baseclass_cache_T cache_cpp_baseclass = { FALSE, { MAXLNUM, 0 } };
 
     /* make a copy, value is changed below */
@@ -7491,7 +7497,7 @@ get_c_indent(void)
 		curwin->w_cursor.lnum = lnum;
 
 		/* Skip a comment or raw string. XXX */
-		if ((trypos = ind_find_start_CORS()) != NULL)
+		if ((trypos = ind_find_start_CORS(NULL)) != NULL)
 		{
 		    lnum = trypos->lnum + 1;
 		    continue;
@@ -7932,7 +7938,7 @@ get_c_indent(void)
 			 * If we're in a comment or raw string now, skip to
 			 * the start of it.
 			 */
-			trypos = ind_find_start_CORS();
+			trypos = ind_find_start_CORS(NULL);
 			if (trypos != NULL)
 			{
 			    curwin->w_cursor.lnum = trypos->lnum + 1;
@@ -8052,7 +8058,7 @@ get_c_indent(void)
 
 			    /* If we're in a comment or raw string now, skip
 			     * to the start of it. */
-			    trypos = ind_find_start_CORS();
+			    trypos = ind_find_start_CORS(NULL);
 			    if (trypos != NULL)
 			    {
 				curwin->w_cursor.lnum = trypos->lnum + 1;
@@ -8090,7 +8096,7 @@ get_c_indent(void)
 		 * If we're in a comment or raw string now, skip to the start
 		 * of it.
 		 */					    /* XXX */
-		if ((trypos = ind_find_start_CORS()) != NULL)
+		if ((trypos = ind_find_start_CORS(&raw_string_start)) != NULL)
 		{
 		    curwin->w_cursor.lnum = trypos->lnum + 1;
 		    curwin->w_cursor.col = 0;
@@ -8657,7 +8663,8 @@ get_c_indent(void)
 						       curwin->w_cursor.lnum);
 				if (lookfor != LOOKFOR_TERM
 						&& lookfor != LOOKFOR_JS_KEY
-						&& lookfor != LOOKFOR_COMMA)
+						&& lookfor != LOOKFOR_COMMA
+						&& raw_string_start != curwin->w_cursor.lnum)
 				    lookfor = LOOKFOR_UNTERM;
 			    }
 			}
@@ -8938,7 +8945,7 @@ term_again:
 	 * If we're in a comment or raw string now, skip to the start
 	 * of it.
 	 */						/* XXX */
-	if ((trypos = ind_find_start_CORS()) != NULL)
+	if ((trypos = ind_find_start_CORS(NULL)) != NULL)
 	{
 	    curwin->w_cursor.lnum = trypos->lnum + 1;
 	    curwin->w_cursor.col = 0;

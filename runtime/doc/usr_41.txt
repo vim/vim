@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.0.  Last change: 2017 Jul 19
+*usr_41.txt*	For Vim version 8.0.  Last change: 2017 Aug 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -965,6 +965,23 @@ Jobs:		    			        *job-functions*
 	job_getchannel()	get the channel used by a job
 	job_info()		get information about a job
 	job_setoptions()	set options for a job
+
+Terminal window:				*terminal-functions*
+	term_start()		open a terminal window and run a job
+	term_list()		get the list of terminal buffers
+	term_sendkeys()		send keystrokes to a terminal
+	term_wait()		wait for screen to be updated
+	term_getjob()		get the job associated with a terminal
+	term_scrape()		get row of a terminal screen
+	term_getline()		get a line of text from a terminal
+	term_getattr()		get the value of attribute {what}
+	term_getcursor()	get the cursor position of a terminal
+	term_getscrolled()	get the scroll count of a terminal
+	term_getaltscreen()	get the alternate screen flag
+	term_getsize()		get the size of a terminal
+	term_getstatus()	get the status of a terminal
+	term_gettitle()		get the title of a terminal
+	term_gettty()		get the tty name of a terminal
 
 Timers:						*timer-functions*
 	timer_start()		create a timer

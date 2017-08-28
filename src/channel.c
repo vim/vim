@@ -503,6 +503,10 @@ channel_gui_register_one(channel_T *channel, ch_part_T part)
     if (!CH_HAS_GUI)
 	return;
 
+    /* gets stuck in handling events for a not connected channel */
+    if (channel->ch_keep_open)
+	return;
+
 # ifdef FEAT_GUI_X11
     /* Tell notifier we are interested in being called
      * when there is input on the editor connection socket. */
@@ -548,9 +552,12 @@ channel_gui_register(channel_T *channel)
 {
     if (channel->CH_SOCK_FD != INVALID_FD)
 	channel_gui_register_one(channel, PART_SOCK);
-    if (channel->CH_OUT_FD != INVALID_FD)
+    if (channel->CH_OUT_FD != INVALID_FD
+	    && channel->CH_OUT_FD != channel->CH_SOCK_FD)
 	channel_gui_register_one(channel, PART_OUT);
-    if (channel->CH_ERR_FD != INVALID_FD)
+    if (channel->CH_ERR_FD != INVALID_FD
+	    && channel->CH_ERR_FD != channel->CH_SOCK_FD
+	    && channel->CH_ERR_FD != channel->CH_OUT_FD)
 	channel_gui_register_one(channel, PART_ERR);
 }
 
@@ -2880,7 +2887,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	      if (channel_need_redraw)
 	      {
 		  channel_need_redraw = FALSE;
-		  redraw_after_callback();
+		  redraw_after_callback(TRUE);
 	      }
 
 	      if (!channel->ch_drop_never)
@@ -3247,11 +3254,13 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 
     /* Reading a disconnection (readlen == 0), or an error. */
     if (readlen <= 0)
-	ch_close_part_on_error(channel, part, (len < 0), func);
-
+    {
+	if (!channel->ch_keep_open)
+	    ch_close_part_on_error(channel, part, (len < 0), func);
+    }
 #if defined(CH_HAS_GUI) && defined(FEAT_GUI_GTK)
-    /* signal the main loop that there is something to read */
-    if (CH_HAS_GUI && gtk_main_level() > 0)
+    else if (CH_HAS_GUI && gtk_main_level() > 0)
+	/* signal the main loop that there is something to read */
 	gtk_main_quit();
 #endif
 }
@@ -3509,13 +3518,14 @@ channel_fd2channel(sock_T fd, ch_part_T *partp)
 }
 # endif
 
-# if defined(WIN32) || defined(PROTO)
+# if defined(WIN32) || defined(FEAT_GUI) || defined(PROTO)
 /*
  * Check the channels for anything that is ready to be read.
  * The data is put in the read queue.
+ * if "only_keep_open" is TRUE only check channels where ch_keep_open is set.
  */
     void
-channel_handle_events(void)
+channel_handle_events(int only_keep_open)
 {
     channel_T	*channel;
     ch_part_T	part;
@@ -3523,6 +3533,9 @@ channel_handle_events(void)
 
     for (channel = first_channel; channel != NULL; channel = channel->ch_next)
     {
+	if (only_keep_open && !channel->ch_keep_open)
+	    continue;
+
 	/* check the socket and pipes */
 	for (part = PART_SOCK; part < PART_IN; ++part)
 	{
@@ -3539,6 +3552,22 @@ channel_handle_events(void)
 	    }
 	}
     }
+}
+# endif
+
+# if defined(FEAT_GUI) || defined(PROTO)
+/*
+ * Return TRUE when there is any channel with a keep_open flag.
+ */
+    int
+channel_any_keep_open()
+{
+    channel_T	*channel;
+
+    for (channel = first_channel; channel != NULL; channel = channel->ch_next)
+	if (channel->ch_keep_open)
+	    return TRUE;
+    return FALSE;
 }
 # endif
 
@@ -4117,7 +4146,7 @@ channel_parse_messages(void)
     if (channel_need_redraw)
     {
 	channel_need_redraw = FALSE;
-	redraw_after_callback();
+	redraw_after_callback(TRUE);
     }
 
     --safe_to_invoke_callback;
@@ -4877,7 +4906,7 @@ win32_escape_arg(char_u *arg)
     int		has_spaces = FALSE;
 
     /* First count the number of extra bytes required. */
-    slen = STRLEN(arg);
+    slen = (int)STRLEN(arg);
     dlen = slen;
     for (s = arg; *s != NUL; MB_PTR_ADV(s))
     {
@@ -5217,7 +5246,7 @@ job_check_ended(void)
     if (channel_need_redraw)
     {
 	channel_need_redraw = FALSE;
-	redraw_after_callback();
+	redraw_after_callback(TRUE);
     }
 }
 

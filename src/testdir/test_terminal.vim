@@ -456,6 +456,11 @@ func Test_terminal_noblock()
 
   for c in ['a','b','c','d','e','f','g','h','i','j','k']
     call term_sendkeys(g:buf, 'echo ' . repeat(c, 5000) . "\<cr>")
+    if has('mac')
+      " TODO: this should not be needed, but without it sending keys blocks
+      " after 8000 chars or so.
+      sleep 100m
+    endif
   endfor
   call term_sendkeys(g:buf, "echo done\<cr>")
 
@@ -498,5 +503,25 @@ func Test_terminal_write_stdin()
   call assert_equal(['2', '2', '10'], nrs)
   bwipe
 
+  bwipe!
+endfunc
+
+func Test_terminal_no_cmd()
+  " Todo: make this work on all systems.
+  if !has('unix')
+    return
+  endif
+  " Todo: make this work in the GUI
+  if !has('gui_running')
+    return
+  endif
+  let buf = term_start('NONE', {})
+  call assert_notequal(0, buf)
+
+  let pty = job_info(term_getjob(buf))['tty']
+  call assert_notequal('', pty)
+  call system('echo "look here" > ' . pty)
+  call term_wait(buf)
+  call assert_equal('look here', term_getline(buf, 1))
   bwipe!
 endfunc
