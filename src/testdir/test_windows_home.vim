@@ -30,10 +30,10 @@ func Test_windows_home()
     call assert_equal('c:\WindowS\sysTem32\foo', expand('~/foo'))
     call assert_equal('c:\WindowS\sysTem32\foo', expand('$HOME/foo'))
     call assert_equal($HOME, s:home())
+
+    let $HOME = ''
+    call assert_notequal('', $HOME)
   finally
     let $HOME = oldhome
   endtry
-
-  let $HOME = ''
-  call assert_notequal('', $HOME)
 endfunc
