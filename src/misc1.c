@@ -3751,14 +3751,60 @@ init_homedir(void)
 #endif
 
 #ifdef WIN3264
+    /*
+     * Typically, $HOME is not defined on Windows, unless the user has
+     * specifically defined it for Vim's sake.  However, on Windows NT
+     * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
+     * each user.  Try constructing $HOME from these.
+     */
+    if (var == NULL)
+    {
+	char_u *homedrive, *homepath;
+
+	homedrive = mch_getenv((char_u *)"HOMEDRIVE");
+	homepath = mch_getenv((char_u *)"HOMEPATH");
+	if (homepath == NULL || *homepath == NUL)
+	    homepath = (char_u *)"\\";
+	if (homedrive != NULL
+			   && STRLEN(homedrive) + STRLEN(homepath) < MAXPATHL)
+	{
+	    sprintf((char *)NameBuff, "%s%s", homedrive, homepath);
+	    if (NameBuff[0] != NUL)
+		var = NameBuff;
+	}
+    }
+
     if (var == NULL)
 	var = mch_getenv((char_u *)"USERPROFILE");
-#endif
+
+    /*
+     * Weird but true: $HOME may contain an indirect reference to another
+     * variable, esp. "%USERPROFILE%".  Happens when $USERPROFILE isn't set
+     * when $HOME is being set.
+     */
+    if (var != NULL && *var == '%')
+    {
+	char_u	*p;
+	char_u	*exp;
+
+	p = vim_strchr(var + 1, '%');
+	if (p != NULL)
+	{
+	    vim_strncpy(NameBuff, var + 1, p - (var + 1));
+	    exp = mch_getenv(NameBuff);
+	    if (exp != NULL && *exp != NUL
+					&& STRLEN(exp) + STRLEN(p) < MAXPATHL)
+	    {
+		vim_snprintf((char *)NameBuff, MAXPATHL, "%s%s", exp, p + 1);
+		var = NameBuff;
+	    }
+	}
+    }
 
     if (var != NULL && *var == NUL)	/* empty is same as not set */
 	var = NULL;
 
-#if defined(WIN3264) && defined(FEAT_MBYTE)
+# ifdef FEAT_MBYTE
     if (enc_utf8 && var != NULL)
     {
 	int	len;
@@ -3773,9 +3819,8 @@ init_homedir(void)
 	    return;
 	}
     }
-#endif
+# endif
 
-#if defined(MSWIN)
     /*
      * Default home dir is C:/
      * Best assumption we can make in such a situation.
@@ -3783,6 +3828,7 @@ init_homedir(void)
     if (var == NULL)
 	var = (char_u *)"C:/";
 #endif
+
     if (var != NULL)
     {
 #ifdef UNIX
