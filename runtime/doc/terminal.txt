@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 26
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -140,11 +140,17 @@ Syntax ~
 When the buffer associated with the terminal is unloaded or wiped out the job
 is killed, similar to calling `job_stop(job, "kill")`
 
-By default the 'bufhidden' option of the buffer will be set to "hide".
-So long as the job is running: If the window is closed the buffer becomes
-hidden.  The command will not be stopped.  The `:buffer` command can be used
-to turn the current window into a terminal window.  If there are unsaved
-changes this fails, use ! to force, as usual.
+So long as the job is running the window behaves like it contains a modified
+buffer.  Trying to close the window with `CTRL-W :close` or `CTRL-W :hide`
+fails, unless "!" is added, in which case the job is ended.  The text in the
+window is lost.  The buffer still exists, but getting it in a window with
+`:buffer` will show an
+empty buffer.
+
+You can use `CTRL-W :hide` to close the terminal window and make the buffer
+hidden, the job keeps running.  The `:buffer` command can be used to turn the
+current window into a terminal window.  If there are unsaved changes this
+fails, use !  to force, as usual.
 
 To have a background job run without a window, and open the window when it's
 done, use options like this: >
