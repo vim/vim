@@ -34,6 +34,7 @@ func Test_windows_home()
   finally
     let $HOME = oldhome
   endtry
-endfunc
 
-call Test_windows_home()
+  let $HOME = ''
+  call assert_notequal('', $HOME)
+endfunc
