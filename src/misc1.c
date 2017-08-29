@@ -3744,12 +3744,15 @@ init_homedir(void)
     vim_free(homedir);
     homedir = NULL;
 
-#if defined(VMS)
+#ifdef VMS
     var = mch_getenv((char_u *)"SYS$LOGIN");
-#elif defined(WIN3264)
-    var = mch_getenv((char_u *)"USERPROFILE");
 #else
     var = mch_getenv((char_u *)"HOME");
+#endif
+
+#ifdef WIN3264
+    if (var == NULL)
+	var = mch_getenv((char_u *)"USERPROFILE");
 #endif
 
     if (var != NULL && *var == NUL)	/* empty is same as not set */
@@ -4608,6 +4611,10 @@ home_replace(
     homedir_env_orig = homedir_env = mch_getenv((char_u *)"SYS$LOGIN");
 #else
     homedir_env_orig = homedir_env = mch_getenv((char_u *)"HOME");
+#endif
+#ifdef WIN3264
+    if (homedir_env == NULL)
+	homedir_env_orig = homedir_env = mch_getenv((char_u *)"USERPROFILE");
 #endif
     /* Empty is the same as not set. */
     if (homedir_env != NULL && *homedir_env == NUL)
