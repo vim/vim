@@ -2278,6 +2278,7 @@ test_arglist \
 	test_visual \
 	test_window_cmd \
 	test_window_id \
+	test_windows_home \
 	test_writefile \
 	test_alot_latin \
 	test_alot_utf8 \
