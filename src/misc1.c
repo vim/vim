@@ -3757,7 +3757,7 @@ init_homedir(void)
      * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
      * each user.  Try constructing $HOME from these.
      */
-    if (var == NULL || *var == NULL)
+    if (var == NULL || *var == NUL)
     {
 	char_u *homedrive, *homepath;
 
