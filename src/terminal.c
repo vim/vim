@@ -1318,7 +1318,7 @@ term_paste_register(int prev_c UNUSED)
  * Return TRUE when the cursor of the terminal should be displayed.
  */
     int
-use_terminal_cursor()
+terminal_is_active()
 {
     return in_terminal_loop != NULL;
 }
