@@ -86,7 +86,7 @@ SCRIPT = test1.out  test3.out  test4.out  test5.out  \
        test64.out \
        test66.out test68.out test69.out \
        test72.out \
-       test77a.out test78.out test79.out test80.out \
+       test77a.out test78.out test79.out \
        test88.out \
        test94.out \
        test95.out test99.out \
