@@ -581,6 +581,9 @@ EXTERN int	p_ic;		/* 'ignorecase' */
 EXTERN char_u	*p_imak;	/* 'imactivatekey' */
 EXTERN char_u	*p_imaf;	/* 'imactivatefunc' */
 EXTERN char_u	*p_imsf;	/* 'imstatusfunc' */
+EXTERN long	p_imst;		/* 'imstyle' */
+# define IM_ON_THE_SPOT		0L
+# define IM_OVER_THE_SPOT	1L
 #endif
 #ifdef USE_IM_CONTROL
 EXTERN int	p_imcmdline;	/* 'imcmdline' */

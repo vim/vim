@@ -4356,6 +4356,23 @@ A jump table for the options with a short description can be found at |Q_op|.
 <
 	NOTE: This function is invoked very often.  Keep it fast.
 
+						*'imstyle'* *'imst'*
+'imstyle' 'imst'	number (default 1)
+			global
+			{not in Vi}
+			{only available when compiled with |+xim| and
+			|+GUI_GTK|}
+	This option specifies the input style of Input Method.
+	Set to zero if you want to use on-the-spot style.
+	Set to one if you want to use over-the-spot style.
+	See: |xim-input-style|
+
+	For a long time on-the-spot sytle had been used in GTK version of vim,
+	however, it is known that it causes troubles when using mappings,
+	|single-repeat|, etc.  Therefore over-the-spot style becomes the
+	default now.  This should work fine for most people, however if you
+	have any problem with it, try using on-the-spot style.
+
 						*'include'* *'inc'*
 'include' 'inc'		string	(default "^\s*#\s*include")
 			global or local to buffer |global-local|

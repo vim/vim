@@ -832,6 +832,9 @@ Use the RPM or port for your system.
 
   Currently, GUI Vim supports three styles, |OverTheSpot|, |OffTheSpot| and
   |Root|.
+  When compiled with |+GUI_GTK| feature, GUI Vim supports two styles,
+  |OnTheSpot| and |OverTheSpot|.  You can select the style with the 'imstyle'
+  option.
 
 *.  on-the-spot						*OnTheSpot*
     Preedit Area and Status Area are performed by the client application in
