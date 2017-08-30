@@ -2730,12 +2730,15 @@ skip_to_option_part(char_u *p)
 changed(void)
 {
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-    /* The text of the preediting area is inserted, but this doesn't
-     * mean a change of the buffer yet.  That is delayed until the
-     * text is committed. (this means preedit becomes empty) */
-    if (im_is_preediting() && !xim_changed_while_preediting)
-	return;
-    xim_changed_while_preediting = FALSE;
+    if (p_imst == IM_ON_THE_SPOT)
+    {
+	/* The text of the preediting area is inserted, but this doesn't
+	 * mean a change of the buffer yet.  That is delayed until the
+	 * text is committed. (this means preedit becomes empty) */
+	if (im_is_preediting() && !xim_changed_while_preediting)
+	    return;
+	xim_changed_while_preediting = FALSE;
+    }
 #endif
 
     if (!curbuf->b_changed)

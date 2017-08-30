@@ -9683,7 +9683,7 @@ ins_left(
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	/* Only call start_arrow() when not busy with preediting, it will
 	 * break undo.  K_LEFT is inserted in im_correct_cursor(). */
-	if (!im_is_preediting())
+	if (p_imst == IM_OVER_THE_SPOT || !im_is_preediting())
 #endif
 	{
 	    start_arrow_with_change(&tpos, end_change);
