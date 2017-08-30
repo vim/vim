@@ -1902,6 +1902,26 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		always 95 or bigger).  Pc is always zero.
 		{only when compiled with |+termresponse| feature}
 
+						*v:termblinkresp*
+v:termblinkresp	The escape sequence returned by the terminal for the |t_RC|
+		termcap entry.  This is used to find out whether the terminal
+		cursor is blinking. This is used by |term_getcursor()|.
+
+						*v:termstyleresp*
+v:termstyleresp	The escape sequence returned by the terminal for the |t_RS|
+		termcap entry.  This is used to find out what the shape of the
+		cursor is.  This is used by |term_getcursor()|.
+
+						*v:termrgbresp*
+v:termrgbresp	The escape sequence returned by the terminal for the |t_RB|
+		termcap entry.  This is used to find out what the terminal
+		background color is, see 'background'.
+
+						*v:termu7resp*
+v:termu7resp	The escape sequence returned by the terminal for the |t_u7|
+		termcap entry.  This is used to find out what the terminal
+		does with ambiguous width characters, see 'ambiwidth'.
+
 					*v:testing* *testing-variable*
 v:testing	Must be set before using `test_garbagecollect_now()`.
 		Also, when set certain error messages won't be shown for 2
