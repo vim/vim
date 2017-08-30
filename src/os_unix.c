@@ -2280,6 +2280,7 @@ vim_is_xterm(char_u *name)
 		|| STRNICMP(name, "kterm", 5) == 0
 		|| STRNICMP(name, "mlterm", 6) == 0
 		|| STRNICMP(name, "rxvt", 4) == 0
+		|| STRNICMP(name, "screen.xterm", 12) == 0
 		|| STRCMP(name, "builtin_xterm") == 0);
 }
 
