@@ -1369,9 +1369,7 @@ static int	need_gather = FALSE;	    /* need to fill termleader[] */
 static char_u	termleader[256 + 1];	    /* for check_termcode() */
 #ifdef FEAT_TERMRESPONSE
 static int	check_for_codes = FALSE;    /* check for key code response */
-# ifdef MACOS
-static int	is_terminal_app = FALSE;    /* recognized Terminal.app */
-# endif
+static int	is_not_xterm = FALSE;	    /* recognized not-really-xterm */
 #endif
 
     static struct builtin_term *
@@ -3506,13 +3504,10 @@ may_req_ambiguous_char_width(void)
 /*
  * Similar to requesting the version string: Request the terminal background
  * color when it is the right moment.
- * Also request the cursor shape, if possible.
  */
     void
 may_req_bg_color(void)
 {
-    int	    did_one = FALSE;
-
     if (can_get_termresponse() && starting == 0)
     {
 	/* Only request background if t_RB is set and 'background' wasn't
@@ -3524,20 +3519,7 @@ may_req_bg_color(void)
 	    LOG_TR("Sending BG request");
 	    out_str(T_RBG);
 	    rbg_status = STATUS_SENT;
-	    did_one = TRUE;
-	}
 
-	/* Only request cursor blinking mode if t_RC is set. */
-	if (rbm_status == STATUS_GET && *T_CRC != NUL)
-	{
-	    LOG_TR("Sending BC request");
-	    out_str(T_CRC);
-	    rbm_status = STATUS_SENT;
-	    did_one = TRUE;
-	}
-
-	if (did_one)
-	{
 	    /* check for the characters now, otherwise they might be eaten by
 	     * get_keystroke() */
 	    out_flush();
@@ -4505,6 +4487,9 @@ check_termcode(
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
+# ifdef FEAT_EVAL
+		    set_vim_var_string(VV_TERMU7RESP, tp, slen);
+# endif
 		}
 		else
 #endif
@@ -4530,6 +4515,8 @@ check_termcode(
 
 		    if (tp[1 + (tp[0] != CSI)] == '>' && semicols == 2)
 		    {
+			int need_flush = FALSE;
+
 			/* Only set 'ttymouse' automatically if it was not set
 			 * by the user already. */
 			if (!option_was_set((char_u *)"ttym"))
@@ -4566,35 +4553,53 @@ check_termcode(
 				may_adjust_color_count(256);
 			}
 
+			/* Detect terminals that set $TERM to something like
+			 * "xterm-256colors"  but are not fully xterm
+			 * compatible. */
 #  ifdef MACOS
 			/* Mac Terminal.app sends 1;95;0 */
 			if (col == 95
 				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
-			{
-			    /* Terminal.app sets $TERM to "xterm-256colors",
-			     * but it's not fully xterm compatible. */
-			    is_terminal_app = TRUE;
-			}
+			    is_not_xterm = TRUE;
 #  endif
+			/* Gnome Terminal.app sends 1;4402;0, assuming any
+			 * version number over 4000 is not an xterm. */
+			if (col >= 4000)
+			    is_not_xterm = TRUE;
 
 			/* Only request the cursor style if t_SH and t_RS are
 			 * set. Not for Terminal.app, it can't handle t_RS, it
 			 * echoes the characters to the screen. */
 			if (rcs_status == STATUS_GET
-#  ifdef MACOS
-				&& !is_terminal_app
-#  endif
+				&& !is_not_xterm
 				&& *T_CSH != NUL
 				&& *T_CRS != NUL)
 			{
 			    LOG_TR("Sending cursor style request");
 			    out_str(T_CRS);
 			    rcs_status = STATUS_SENT;
-			    out_flush();
+			    need_flush = TRUE;
 			}
+
+			/* Only request the cursor blink mode if t_RC set. Not
+			 * for Gnome terminal, it can't handle t_RC, it
+			 * echoes the characters to the screen. */
+			if (rbm_status == STATUS_GET
+				&& !is_not_xterm
+				&& *T_CRC != NUL)
+			{
+			    LOG_TR("Sending cursor blink mode request");
+			    out_str(T_CRC);
+			    rbm_status = STATUS_SENT;
+			    need_flush = TRUE;
+			}
+
+			if (need_flush)
+			    out_flush();
 		    }
+		    slen = i + 1;
 # ifdef FEAT_EVAL
-		    set_vim_var_string(VV_TERMRESPONSE, tp, i + 1);
+		    set_vim_var_string(VV_TERMRESPONSE, tp, slen);
 # endif
 # ifdef FEAT_AUTOCMD
 		    apply_autocmds(EVENT_TERMRESPONSE,
@@ -4602,7 +4607,6 @@ check_termcode(
 # endif
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
-		    slen = i + 1;
 		}
 
 		/* Check blinking cursor from xterm:
@@ -4626,6 +4630,9 @@ check_termcode(
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
+# ifdef FEAT_EVAL
+		    set_vim_var_string(VV_TERMBLINKRESP, tp, slen);
+# endif
 		}
 
 		/*
@@ -4714,6 +4721,9 @@ check_termcode(
 			    /* Sometimes the 0x07 is followed by 0x18, unclear
 			     * when this happens. */
 			    ++slen;
+# ifdef FEAT_EVAL
+			set_vim_var_string(VV_TERMRGBRESP, tp, slen);
+# endif
 			break;
 		    }
 		if (i == len)
@@ -4788,6 +4798,9 @@ check_termcode(
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
+# ifdef FEAT_EVAL
+			set_vim_var_string(VV_TERMSTYLERESP, tp, slen);
+# endif
 		    }
 		}
 

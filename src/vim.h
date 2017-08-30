@@ -2012,7 +2012,11 @@ typedef int sock_T;
 #define VV_TYPE_NONE	78
 #define VV_TYPE_JOB	79
 #define VV_TYPE_CHANNEL	80
-#define VV_LEN		81	/* number of v: vars */
+#define VV_TERMRGBRESP	81
+#define VV_TERMU7RESP	82
+#define VV_TERMSTYLERESP 83
+#define VV_TERMBLINKRESP 84
+#define VV_LEN		85	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L
