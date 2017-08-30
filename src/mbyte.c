@@ -1400,7 +1400,7 @@ static struct interval ambiguous[] =
  * utf_char2cells() with different argument type for libvterm.
  */
     int
-utf_uint2cells(uint32_t c)
+utf_uint2cells(UINT32_T c)
 {
     return utf_char2cells((int)c);
 }
@@ -2312,7 +2312,7 @@ utf_char2bytes(int c, char_u *buf)
  * utf_iscomposing() with different argument type for libvterm.
  */
     int
-utf_iscomposing_uint(uint32_t c)
+utf_iscomposing_uint(UINT32_T c)
 {
     return utf_iscomposing((int)c);
 }
