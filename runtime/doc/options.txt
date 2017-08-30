@@ -422,8 +422,13 @@ command, not when assigning a value to an option with ":let".
 
 							*$HOME-windows*
 On MS-Windows, if $HOME is not defined as an environment variable, then
-at runtime Vim will set it to the expansion of $HOMEDRIVE$HOMEPATH.
-
+at runtime Vim will set it to the expansion of $HOMEDRIVE$HOMEPATH. If
+$HOMEDRIVE and $HOMEPATH is not set, $USERPROFILE is used. This is an internal
+value. So the value is not passed into external programs. For example, below
+should return empty result: >
+		:echo system('set | findstr ^HOME=')
+<
+But if you set $HOME in your vimrc or plugins, it will be passed.
 
 Note the maximum length of an expanded option is limited.  How much depends on
 the system, mostly it is something like 256 or 1024 characters.
