@@ -147,7 +147,6 @@ func Test_mksession_one_buffer_two_windows()
 
   close
   bwipe!
-  !cp Xtest_mks.out /tmp
   call delete('Xtest_mks.out')
 endfunc
 
