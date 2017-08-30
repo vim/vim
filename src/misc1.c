@@ -3750,10 +3750,33 @@ init_homedir(void)
     var = mch_getenv((char_u *)"HOME");
 #endif
 
-    if (var != NULL && *var == NUL)	/* empty is same as not set */
-	var = NULL;
-
 #ifdef WIN3264
+    /*
+     * Typically, $HOME is not defined on Windows, unless the user has
+     * specifically defined it for Vim's sake.  However, on Windows NT
+     * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
+     * each user.  Try constructing $HOME from these.
+     */
+    if (var == NULL || *var == NULL)
+    {
+	char_u *homedrive, *homepath;
+
+	homedrive = mch_getenv((char_u *)"HOMEDRIVE");
+	homepath = mch_getenv((char_u *)"HOMEPATH");
+	if (homepath == NULL || *homepath == NUL)
+	    homepath = (char_u *)"\\";
+	if (homedrive != NULL
+			   && STRLEN(homedrive) + STRLEN(homepath) < MAXPATHL)
+	{
+	    sprintf((char *)NameBuff, "%s%s", homedrive, homepath);
+	    if (NameBuff[0] != NUL)
+		var = NameBuff;
+	}
+    }
+
+    if (var == NULL)
+	var = mch_getenv((char_u *)"USERPROFILE");
+
     /*
      * Weird but true: $HOME may contain an indirect reference to another
      * variable, esp. "%USERPROFILE%".  Happens when $USERPROFILE isn't set
@@ -3774,40 +3797,14 @@ init_homedir(void)
 	    {
 		vim_snprintf((char *)NameBuff, MAXPATHL, "%s%s", exp, p + 1);
 		var = NameBuff;
-		/* Also set $HOME, it's needed for _viminfo. */
-		vim_setenv((char_u *)"HOME", NameBuff);
 	    }
 	}
     }
 
-    /*
-     * Typically, $HOME is not defined on Windows, unless the user has
-     * specifically defined it for Vim's sake.  However, on Windows NT
-     * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
-     * each user.  Try constructing $HOME from these.
-     */
-    if (var == NULL)
-    {
-	char_u *homedrive, *homepath;
+    if (var != NULL && *var == NUL)	/* empty is same as not set */
+	var = NULL;
 
-	homedrive = mch_getenv((char_u *)"HOMEDRIVE");
-	homepath = mch_getenv((char_u *)"HOMEPATH");
-	if (homepath == NULL || *homepath == NUL)
-	    homepath = (char_u *)"\\";
-	if (homedrive != NULL
-			   && STRLEN(homedrive) + STRLEN(homepath) < MAXPATHL)
-	{
-	    sprintf((char *)NameBuff, "%s%s", homedrive, homepath);
-	    if (NameBuff[0] != NUL)
-	    {
-		var = NameBuff;
-		/* Also set $HOME, it's needed for _viminfo. */
-		vim_setenv((char_u *)"HOME", NameBuff);
-	    }
-	}
-    }
-
-# if defined(FEAT_MBYTE)
+# ifdef FEAT_MBYTE
     if (enc_utf8 && var != NULL)
     {
 	int	len;
@@ -3823,9 +3820,7 @@ init_homedir(void)
 	}
     }
 # endif
-#endif
 
-#if defined(MSWIN)
     /*
      * Default home dir is C:/
      * Best assumption we can make in such a situation.
@@ -3833,6 +3828,7 @@ init_homedir(void)
     if (var == NULL)
 	var = (char_u *)"C:/";
 #endif
+
     if (var != NULL)
     {
 #ifdef UNIX
@@ -4661,6 +4657,10 @@ home_replace(
     homedir_env_orig = homedir_env = mch_getenv((char_u *)"SYS$LOGIN");
 #else
     homedir_env_orig = homedir_env = mch_getenv((char_u *)"HOME");
+#endif
+#ifdef WIN3264
+    if (homedir_env == NULL)
+	homedir_env_orig = homedir_env = mch_getenv((char_u *)"USERPROFILE");
 #endif
     /* Empty is the same as not set. */
     if (homedir_env != NULL && *homedir_env == NUL)

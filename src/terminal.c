@@ -44,10 +44,7 @@
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
- * - do not set bufhidden to "hide"?  works like a buffer with changes.
- *   document that CTRL-W :hide can be used.
  * - GUI: when using tabs, focus in terminal, click on tab does not work.
- * - When $HOME was set by Vim (MS-Windows), do not pass it to the job.
  * - GUI: when 'confirm' is set and trying to exit Vim, dialog offers to save
  *   changes to "!shell".
  *   (justrajdeep, 2017 Aug 22)
@@ -398,10 +395,6 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     /* Mark the buffer as not modifiable. It can only be made modifiable after
      * the job finished. */
     curbuf->b_p_ma = FALSE;
-
-    /* Set 'bufhidden' to "hide": allow closing the window. */
-    set_string_option_direct((char_u *)"bufhidden", -1,
-				      (char_u *)"hide", OPT_FREE|OPT_LOCAL, 0);
 
     set_term_and_win_size(term);
     setup_job_options(opt, term->tl_rows, term->tl_cols);

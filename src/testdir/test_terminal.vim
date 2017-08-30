@@ -429,6 +429,10 @@ func Test_zz_terminal_in_gui()
   if !CanRunGui()
     return
   endif
+
+  " Ignore the "failed to create input context" error.
+  call test_ignore_error('E285:')
+
   gui -f
 
   call assert_equal(1, winnr('$'))
