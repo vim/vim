@@ -421,9 +421,15 @@ NOTE: expanding environment variables and "~/" is only done with the ":set"
 command, not when assigning a value to an option with ":let".
 
 							*$HOME-windows*
-On MS-Windows, if $HOME is not defined as an environment variable, then
-at runtime Vim will set it to the expansion of $HOMEDRIVE$HOMEPATH.
-
+On Windows, if $HOME is not present in environment, $HOME expands to either
+$USERPROFILE or $HOMEDRIVE.(empty($HOMEPATH)?'\':$HOMEPATH). The expansion
+value is not exported to the environment: >
+		:echo system('set | findstr ^HOME=')
+or >
+                :echo luaeval('os.getenv("HOME")')
+should echo nothing (an empty string) despite exists('$HOME') being true. But
+issuing let $HOME = '...' will create an actual environment variable, exported
+to the subprocesses.
 
 Note the maximum length of an expanded option is limited.  How much depends on
 the system, mostly it is something like 256 or 1024 characters.
