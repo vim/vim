@@ -4653,6 +4653,11 @@ qf_get_list_from_text(dictitem_T *di, dict_T *retdict)
 	    || (di->di_tv.v_type == VAR_LIST
 		&& di->di_tv.vval.v_list != NULL))
     {
+	list_T	*l = list_alloc();
+
+	if (l == NULL)
+	    return FAIL;
+
 	qi = (qf_info_T *)alloc((unsigned)sizeof(qf_info_T));
 	if (qi != NULL)
 	{
@@ -4662,17 +4667,13 @@ qf_get_list_from_text(dictitem_T *di, dict_T *retdict)
 	    if (qf_init_ext(qi, 0, NULL, NULL, &di->di_tv, p_efm,
 			TRUE, (linenr_T)0, (linenr_T)0, NULL, NULL) > 0)
 	    {
-		list_T	*l = list_alloc();
-		if (l != NULL)
-		{
-		    (void)get_errorlist(qi, NULL, 0, l);
-		    dict_add_list(retdict, "items", l);
-		    status = OK;
-		}
+		(void)get_errorlist(qi, NULL, 0, l);
 		qf_free(qi, 0);
 	    }
 	    free(qi);
 	}
+	dict_add_list(retdict, "items", l);
+	status = OK;
     }
 
     return status;
