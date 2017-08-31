@@ -4562,10 +4562,21 @@ check_termcode(
 				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
 			    is_not_xterm = TRUE;
 #  endif
-			/* Gnome Terminal.app sends 1;3801;0 or 1;4402;0,
-			 * assuming any version number over 3000 is not an
+			/* Gnome terminal sends 1;3801;0 or 1;4402;0.
+			 * xfce4-terminal sends 1;2802;0.
+			 * Assuming any version number over 2800 is not an
 			 * xterm. */
-			if (col >= 3000)
+			if (col >= 2800)
+			    is_not_xterm = TRUE;
+
+			/* PuTTY sends 0;136;0 */
+			if (col == 136
+				&& STRNCMP(tp + extra - 2, "0;136;0c", 8) == 0)
+			    is_not_xterm = TRUE;
+
+			/* Konsole sends 0;115;0 */
+			if (col == 115
+				&& STRNCMP(tp + extra - 2, "0;115;0c", 8) == 0)
 			    is_not_xterm = TRUE;
 
 			/* Only request the cursor style if t_SH and t_RS are
