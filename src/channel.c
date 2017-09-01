@@ -1417,6 +1417,13 @@ channel_write_in(channel_T *channel)
     in_part->ch_buf_top = lnum;
     if (lnum > buf->b_ml.ml_line_count || lnum > in_part->ch_buf_bot)
     {
+#ifdef WIN32
+	/* TODO(mattn): Send CTRL-D to close stdin on Windows. Windows console
+	 * application doesn't treat closing stdin like pipe on UNIX. */
+	if (channel->ch_job != NULL)
+	    channel_send(channel, PART_IN, (char_u*) "\004\r\n", 3, NULL);
+#endif
+
 	/* Writing is done, no longer need the buffer. */
 	in_part->ch_bufref.br_buf = NULL;
 	ch_log(channel, "Finished writing all lines to channel");
