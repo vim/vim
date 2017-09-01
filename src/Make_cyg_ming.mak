@@ -76,6 +76,10 @@ endif
 # Set to yes to enable terminal support.
 TERMINAL=no
 
+ifndef CTAGS
+# this assumes ctags is Exuberant ctags
+CTAGS = ctags -I INIT+ --fields=+S
+endif
 
 # Link against the shared version of libstdc++ by default.  Set
 # STATIC_STDCPLUS to "yes" to link against static version instead.
@@ -884,6 +888,12 @@ xxd/xxd.exe: xxd/xxd.c
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE) CXX='$(CXX)' STATIC_STDCPLUS=$(STATIC_STDCPLUS)
+
+tags: notags
+	$(CTAGS) *.c *.cpp *.h if_perl.xs
+
+notags:
+	-$(DEL) tags
 
 clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o
