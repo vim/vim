@@ -3189,7 +3189,7 @@ terminal_enabled(void)
 }
 
     void
-term_close_stdin(channel_T *ch)
+term_send_eof(channel_T *ch)
 {
     term_T	*term;
     for (term = first_term; term != NULL; term = term->tl_next)
