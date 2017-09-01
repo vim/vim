@@ -1651,11 +1651,6 @@ set_input_buf(char_u *p)
     }
 }
 
-#if defined(FEAT_GUI) \
-	|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE) \
-	|| defined(FEAT_XCLIPBOARD) || defined(VMS) \
-	|| defined(FEAT_CLIENTSERVER) \
-	|| defined(PROTO)
 /*
  * Add the given bytes to the input buffer
  * Special keys start with CSI.  A real CSI must have been translated to
@@ -1676,15 +1671,7 @@ add_to_input_buf(char_u *s, int len)
     while (len--)
 	inbuf[inbufcount++] = *s++;
 }
-#endif
 
-#if ((defined(FEAT_XIM) || defined(FEAT_DND)) && defined(FEAT_GUI_GTK)) \
-	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_MAC) \
-	|| (defined(FEAT_MBYTE) && defined(FEAT_MBYTE_IME)) \
-	|| (defined(FEAT_GUI) && (!defined(USE_ON_FLY_SCROLL) \
-		|| defined(FEAT_MENU))) \
-	|| defined(PROTO)
 /*
  * Add "str[len]" to the input buffer while escaping CSI bytes.
  */
@@ -1706,7 +1693,6 @@ add_to_input_buf_csi(char_u *str, int len)
 	}
     }
 }
-#endif
 
 #if defined(FEAT_HANGULIN) || defined(PROTO)
     void
