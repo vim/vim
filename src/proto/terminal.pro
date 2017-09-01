@@ -16,6 +16,7 @@ int term_update_window(win_T *wp);
 int term_is_finished(buf_T *buf);
 int term_show_buffer(buf_T *buf);
 void term_change_in_curbuf(void);
+void term_close_stdin(channel_T *ch);
 int term_get_attr(buf_T *buf, linenr_T lnum, int col);
 char_u *term_get_status_text(term_T *term);
 int set_ref_in_term(int copyID);

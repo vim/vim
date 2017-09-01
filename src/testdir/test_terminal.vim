@@ -490,6 +490,7 @@ endfunc
 
 func Test_terminal_write_stdin()
   if !executable('wc')
+    call ch_log('Test_terminal_write_stdin() is skipped because system doesn''t have wc command')
     return
   endif
   new

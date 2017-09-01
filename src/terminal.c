@@ -3188,6 +3188,14 @@ terminal_enabled(void)
     return dyn_winpty_init(FALSE) == OK;
 }
 
+    void
+term_close_stdin(channel_T *ch)
+{
+    term_T	*term;
+    for (term = first_term; term != NULL; term = term->tl_next)
+	if (term->tl_job == ch->ch_job)
+	    channel_send(ch, PART_IN, (char_u*) "\004\r\n", 3, NULL);
+}
 
 # else
 

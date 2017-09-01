@@ -1421,7 +1421,7 @@ channel_write_in(channel_T *channel)
 	/* TODO(mattn): Send CTRL-D to close stdin on Windows. Windows console
 	 * application doesn't treat closing stdin like pipe on UNIX. */
 	if (channel->ch_job != NULL)
-	    channel_send(channel, PART_IN, (char_u*) "\004\r\n", 3, NULL);
+	    term_close_stdin(channel);
 #endif
 
 	/* Writing is done, no longer need the buffer. */
