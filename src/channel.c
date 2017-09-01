@@ -1417,7 +1417,7 @@ channel_write_in(channel_T *channel)
     in_part->ch_buf_top = lnum;
     if (lnum > buf->b_ml.ml_line_count || lnum > in_part->ch_buf_bot)
     {
-#ifdef WIN32
+#if defined(WIN32) && defined(FEAT_TERMINAL)
 	/* TODO(mattn): Send CTRL-D to close stdin on Windows. Windows console
 	 * application doesn't treat closing stdin like pipe on UNIX. */
 	if (channel->ch_job != NULL)
