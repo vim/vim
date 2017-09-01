@@ -819,6 +819,11 @@ vim_main2(void)
     may_req_ambiguous_char_width();
 #endif
 
+#if defined(FEAT_TERMRESPONSE)
+    /* Must be done before redrawing, puts a few characters on the screen. */
+    may_req_xterm_compat_test();
+#endif
+
     RedrawingDisabled = 0;
     redraw_all_later(NOT_VALID);
     no_wait_return = FALSE;

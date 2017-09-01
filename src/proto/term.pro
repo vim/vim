@@ -44,6 +44,7 @@ void starttermcap(void);
 void stoptermcap(void);
 void may_req_termresponse(void);
 void may_req_ambiguous_char_width(void);
+void may_req_xterm_compat_test(void);
 void may_req_bg_color(void);
 int swapping_screen(void);
 void setmouse(void);

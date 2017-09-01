@@ -146,6 +146,9 @@ static int rcs_status = STATUS_GET;
 
 /* Request windos position report: */
 static int winpos_status = STATUS_GET;
+
+/* xterm compatibility check: */
+static int xcc_status = STATUS_GET;
 # endif
 
 /*
@@ -3552,34 +3555,81 @@ may_req_ambiguous_char_width(void)
 	    && *T_U7 != NUL
 	    && !option_was_set((char_u *)"ambiwidth"))
     {
-	 char_u	buf[16];
+	char_u	buf[16];
 
-	 LOG_TR(("Sending U7 request"));
-	 /* Do this in the second row.  In the first row the returned sequence
-	  * may be CSI 1;2R, which is the same as <S-F3>. */
-	 term_windgoto(1, 0);
-	 buf[mb_char2bytes(0x25bd, buf)] = 0;
-	 out_str(buf);
-	 out_str(T_U7);
-	 u7_status = STATUS_SENT;
-	 out_flush();
+	LOG_TR(("Sending U7 request"));
+	/* Do this in the second row.  In the first row the returned sequence
+	 * may be CSI 1;2R, which is the same as <S-F3>. */
+	term_windgoto(1, 0);
+	buf[mb_char2bytes(0x25bd, buf)] = 0;
+	out_str(buf);
+	out_str(T_U7);
+	u7_status = STATUS_SENT;
+	out_flush();
 
-	 /* This overwrites a few characters on the screen, a redraw is needed
-	  * after this. Clear them out for now. */
-	 term_windgoto(1, 0);
-	 out_str((char_u *)"  ");
-	 term_windgoto(0, 0);
+	/* This overwrites a few characters on the screen, a redraw is needed
+	 * after this. Clear them out for now. */
+	term_windgoto(1, 0);
+	out_str((char_u *)"  ");
+	term_windgoto(0, 0);
 
-	 /* Need to reset the known cursor position. */
-	 screen_start();
+	/* Need to reset the known cursor position. */
+	screen_start();
 
-	 /* check for the characters now, otherwise they might be eaten by
-	  * get_keystroke() */
-	 out_flush();
-	 (void)vpeekc_nomap();
+	/* check for the characters now, otherwise they might be eaten by
+	 * get_keystroke() */
+	out_flush();
+	(void)vpeekc_nomap();
     }
 }
 # endif
+
+/*
+ * Check the terminal is xterm compatible.
+ * First, we move the cursor to (2, 0) and print a test sequence and query
+ * current cursor position.
+ * If the terminal properly handles unknown DCS string and CSI sequence with
+ * intermediate byte, test sequence is ignored and the cursor does not move,
+ * or the terminal handles test sequence incorrectly, a garbage string is
+ * displayed and the cursor moves.
+ * This function has the side effect that changes cursor position, so
+ * it must be called immediately after entering termcap mode.
+ */
+    void
+may_req_xterm_compat_test(void)
+{
+    if (xcc_status == STATUS_GET
+	    && can_get_termresponse()
+	    && starting == 0
+	    && *T_U7 != NUL)
+    {
+	LOG_TR(("Sending xterm compatibility test sequence."));
+	/* Do this in the third row.  Second row is used by ambiguous
+	 * chararacter width check. */
+	term_windgoto(2, 0);
+	/* send the test DCS string. */
+	out_str((char_u *)"\033Pzz\033\\");
+	/* send the test CSI sequence with intermediate byte. */
+	out_str((char_u *)"\033[0%m");
+	out_str(T_U7);
+	xcc_status = STATUS_SENT;
+	out_flush();
+
+	/* If the terminal handles test sequence incorrectly, garbage
+	 * string is displayed. Clear them out for now. */
+	term_windgoto(2, 0);
+	out_str((char_u *)"           ");
+	term_windgoto(0, 0);
+
+	/* Need to reset the known cursor position. */
+	screen_start();
+
+	/* check for the characters now, otherwise they might be eaten by
+	 * get_keystroke() */
+	out_flush();
+	(void)vpeekc_nomap();
+    }
+}
 
 /*
  * Similar to requesting the version string: Request the terminal background
@@ -4571,6 +4621,15 @@ check_termcode(
 # endif
 			}
 		    }
+		    /* Third row is xterm compatibility test */
+		    else if (row_char == '3') {
+			if (col != 1) {
+			    /* Cursor is not on a first column. Then terminal
+			     * is not xterm compatible. */
+			    is_not_xterm = TRUE;
+			}
+			xcc_status = STATUS_GOT;
+		    }
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
@@ -4671,23 +4730,13 @@ check_termcode(
 			 * "xterm-256colors"  but are not fully xterm
 			 * compatible. */
 
-			/* Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
-			 * xfce4-terminal sends 1;2802;0.
-			 * screen sends 83;40500;0
-			 * Assuming any version number over 2500 is not an
-			 * xterm (without the limit for rxvt and screen). */
-			if (col >= 2500)
-			    is_not_xterm = TRUE;
-
-			/* PuTTY sends 0;136;0
-			 * vandyke SecureCRT sends 1;136;0 */
-			if (version == 136
-				&& STRNCMP(tp + extra - 1, ";136;0c", 7) == 0)
-			    is_not_xterm = TRUE;
-
-			/* Konsole sends 0;115;0 */
-			if (version == 115
-				&& STRNCMP(tp + extra - 2, "0;115;0c", 8) == 0)
+			/* GNU screen sends 83;30600;0. 30600 is a version
+			 * number of GNU screen. DA2 support is added on 3.6.
+			 * DCS string has a special meaning to GNU screen,
+			 * but xterm compatibility checking does not detect
+			 * GNU screen. */
+			if (col >= 30600
+				&& STRNCMP(tp + extra - 3, "83;", 3) == 0)
 			    is_not_xterm = TRUE;
 
 			/* Only request the cursor style if t_SH and t_RS are
