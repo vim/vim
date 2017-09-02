@@ -2507,6 +2507,7 @@ op_insert(oparg_T *oap, long count1)
 {
     long		ins_len, pre_textlen = 0;
     char_u		*firstline, *ins_text;
+    colnr_T		ind_pre, ind_post;
     struct block_def	bd;
     int			i;
     pos_T		t1;
@@ -2541,7 +2542,10 @@ op_insert(oparg_T *oap, long count1)
 #endif
 	/* Get the info about the block before entering the text */
 	block_prep(oap, &bd, oap->start.lnum, TRUE);
+	/* Get indent information */
+	ind_pre = (colnr_T)getwhitecols_curline();
 	firstline = ml_get(oap->start.lnum) + bd.textcol;
+
 	if (oap->op_type == OP_APPEND)
 	    firstline += bd.textlen;
 	pre_textlen = (long)STRLEN(firstline);
@@ -2593,6 +2597,14 @@ op_insert(oparg_T *oap, long count1)
 	    && LT_POS(curbuf->b_op_start_orig, t1))
 	oap->start = curbuf->b_op_start_orig;
 
+    /* if indent kicked in, the firstline might have changed
+     * but only do that, if the indent actually increased */
+    ind_post = (colnr_T)getwhitecols_curline();
+    if (curbuf->b_op_start.col > ind_pre && ind_post > ind_pre)
+    {
+	bd.textcol += ind_post - ind_pre;
+	bd.start_vcol += ind_post - ind_pre;
+    }
     /* If user has moved off this line, we don't know what to do, so do
      * nothing.
      * Also don't repeat the insert when Insert mode ended with CTRL-C. */
@@ -2754,7 +2766,7 @@ op_change(oparg_T *oap)
 # endif
 	firstline = ml_get(oap->start.lnum);
 	pre_textlen = (long)STRLEN(firstline);
-	pre_indent = (long)(skipwhite(firstline) - firstline);
+	pre_indent = (long)getwhitecols(firstline);
 	bd.textcol = curwin->w_cursor.col;
     }
 #endif
@@ -2779,7 +2791,7 @@ op_change(oparg_T *oap)
 	firstline = ml_get(oap->start.lnum);
 	if (bd.textcol > (colnr_T)pre_indent)
 	{
-	    long new_indent = (long)(skipwhite(firstline) - firstline);
+	    long new_indent = (long)getwhitecols(firstline);
 
 	    pre_textlen += new_indent - pre_indent;
 	    bd.textcol += new_indent - pre_indent;
@@ -5065,8 +5077,7 @@ format_lines(
 #endif
 		    if (second_indent > 0)  /* the "leader" for FO_Q_SECOND */
 		{
-		    char_u *p = ml_get_curline();
-		    int indent = (int)(skipwhite(p) - p);
+		    int indent = getwhitecols_curline();
 
 		    if (indent > 0)
 		    {
