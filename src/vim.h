@@ -435,13 +435,8 @@ typedef off_t off_T;
  * The characters and attributes cached for the screen.
  */
 typedef char_u schar_T;
-#ifdef FEAT_SYN_HL
 typedef unsigned short sattr_T;
-# define MAX_TYPENR 65535
-#else
-typedef unsigned char sattr_T;
-# define MAX_TYPENR 255
-#endif
+#define MAX_TYPENR 65535
 
 /*
  * The u8char_T can hold one decoded UTF-8 character.
