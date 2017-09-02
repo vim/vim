@@ -4643,16 +4643,29 @@ enum {
  * Parse text from 'di' and return the quickfix list items
  */
     static int
-qf_get_list_from_lines(dictitem_T *di, dict_T *retdict)
+qf_get_list_from_lines(dict_T *what, dictitem_T *di, dict_T *retdict)
 {
     int		status = FAIL;
     qf_info_T	*qi;
+    char_u	*errorformat = p_efm;
+    dictitem_T	*efm_di;
+    list_T	*l;
 
     /* Only a List value is supported */
     if (di->di_tv.v_type == VAR_LIST && di->di_tv.vval.v_list != NULL)
     {
-	list_T	*l = list_alloc();
+	/* If errorformat is supplied then use it, otherwise use the 'efm'
+	 * option setting
+	 */
+	if ((efm_di = dict_find(what, (char_u *)"efm", -1)) != NULL)
+	{
+	    if (efm_di->di_tv.v_type != VAR_STRING ||
+		    efm_di->di_tv.vval.v_string == NULL)
+		return FAIL;
+	    errorformat = efm_di->di_tv.vval.v_string;
+	}
 
+	l = list_alloc();
 	if (l == NULL)
 	    return FAIL;
 
@@ -4662,7 +4675,7 @@ qf_get_list_from_lines(dictitem_T *di, dict_T *retdict)
 	    vim_memset(qi, 0, (size_t)(sizeof(qf_info_T)));
 	    qi->qf_refcount++;
 
-	    if (qf_init_ext(qi, 0, NULL, NULL, &di->di_tv, p_efm,
+	    if (qf_init_ext(qi, 0, NULL, NULL, &di->di_tv, errorformat,
 			TRUE, (linenr_T)0, (linenr_T)0, NULL, NULL) > 0)
 	    {
 		(void)get_errorlist(qi, NULL, 0, l);
@@ -4692,7 +4705,7 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
     int		flags = QF_GETLIST_NONE;
 
     if ((di = dict_find(what, (char_u *)"lines", -1)) != NULL)
-	return qf_get_list_from_lines(di, retdict);
+	return qf_get_list_from_lines(what, di, retdict);
 
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
@@ -4962,6 +4975,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
     int		retval = FAIL;
     int		qf_idx;
     int		newlist = FALSE;
+    char_u	*errorformat = p_efm;
 
     if (action == ' ' || qi->qf_curlist == qi->qf_listcount)
 	newlist = TRUE;
@@ -5039,6 +5053,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	    retval = OK;
 	}
     }
+
     if ((di = dict_find(what, (char_u *)"items", -1)) != NULL)
     {
 	if (di->di_tv.v_type == VAR_LIST)
@@ -5051,6 +5066,13 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	}
     }
 
+    if ((di = dict_find(what, (char_u *)"efm", -1)) != NULL)
+    {
+	if (di->di_tv.v_type != VAR_STRING || di->di_tv.vval.v_string == NULL)
+	    return FAIL;
+	errorformat = di->di_tv.vval.v_string;
+    }
+
     if ((di = dict_find(what, (char_u *)"lines", -1)) != NULL)
     {
 	/* Only a List value is supported */
@@ -5058,7 +5080,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	{
 	    if (action == 'r')
 		qf_free_items(qi, qf_idx);
-	    if (qf_init_ext(qi, qf_idx, NULL, NULL, &di->di_tv, p_efm,
+	    if (qf_init_ext(qi, qf_idx, NULL, NULL, &di->di_tv, errorformat,
 			FALSE, (linenr_T)0, (linenr_T)0, NULL, NULL) > 0)
 		retval = OK;
 	}
