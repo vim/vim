@@ -1735,7 +1735,7 @@ cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
     if (cellattrs.italic)
 	attr |= HL_ITALIC;
     if (cellattrs.strike)
-	attr |= HL_STANDOUT;
+	attr |= HL_STRIKETHROUGH;
     if (cellattrs.reverse)
 	attr |= HL_INVERSE;
 
@@ -2451,7 +2451,7 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
 	{"bold",      HL_BOLD},
 	{"italic",    HL_ITALIC},
 	{"underline", HL_UNDERLINE},
-	{"strike",    HL_STANDOUT},
+	{"strike",    HL_STRIKETHROUGH},
 	{"reverse",   HL_INVERSE},
     };
 

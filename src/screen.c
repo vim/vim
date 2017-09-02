@@ -235,7 +235,7 @@ redraw_later_clear(void)
     else
 #endif
 	/* Use attributes that is very unlikely to appear in text. */
-	screen_attr = HL_BOLD | HL_UNDERLINE | HL_INVERSE;
+	screen_attr = HL_BOLD | HL_UNDERLINE | HL_INVERSE | HL_STRIKETHROUGH;
 }
 
 /*
@@ -8086,6 +8086,8 @@ screen_start_highlight(int attr)
 		out_str(T_CZH);
 	    if ((attr & HL_INVERSE) && T_MR != NULL)	/* inverse (reverse) */
 		out_str(T_MR);
+	    if ((attr & HL_STRIKETHROUGH) && T_STS != NULL)	/* strike */
+		out_str(T_STS);
 
 	    /*
 	     * Output the color or start string after bold etc., in case the
@@ -8209,6 +8211,13 @@ screen_stop_highlight(void)
 		    do_ME = TRUE;
 		else
 		    out_str(T_CZR);
+	    }
+	    if (screen_attr & HL_STRIKETHROUGH)
+	    {
+		if (STRCMP(T_STE, T_ME) == 0)
+		    do_ME = TRUE;
+		else
+		    out_str(T_STE);
 	    }
 	    if (do_ME || (screen_attr & (HL_BOLD | HL_INVERSE)))
 		out_str(T_ME);

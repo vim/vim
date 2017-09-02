@@ -217,6 +217,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_US,	IF_EB("\033|8h", ESC_STR "|8h")},   /* HL_UNDERLINE */
     {(int)KS_UCE,	IF_EB("\033|8C", ESC_STR "|8C")},   /* HL_UNDERCURL */
     {(int)KS_UCS,	IF_EB("\033|8c", ESC_STR "|8c")},   /* HL_UNDERCURL */
+    {(int)KS_STE,	IF_EB("\033|4C", ESC_STR "|4C")},   /* HL_STRIKETHROUGH */
+    {(int)KS_STS,	IF_EB("\033|4c", ESC_STR "|4c")},   /* HL_STRIKETHROUGH */
     {(int)KS_CZR,	IF_EB("\033|4H", ESC_STR "|4H")},   /* HL_ITALIC */
     {(int)KS_CZH,	IF_EB("\033|4h", ESC_STR "|4h")},   /* HL_ITALIC */
     {(int)KS_VB,	IF_EB("\033|f", ESC_STR "|f")},
@@ -831,6 +833,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_MD,	IF_EB("\033[1m", ESC_STR "[1m")},
     {(int)KS_UE,	IF_EB("\033[m", ESC_STR "[m")},
     {(int)KS_US,	IF_EB("\033[4m", ESC_STR "[4m")},
+    {(int)KS_STE,	IF_EB("\033[29m", ESC_STR "[29m")},
+    {(int)KS_STS,	IF_EB("\033[9m", ESC_STR "[9m")},
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},
     {(int)KS_LE,	"\b"},
@@ -1151,6 +1155,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_US,	"[US]"},
     {(int)KS_UCE,	"[UCE]"},
     {(int)KS_UCS,	"[UCS]"},
+    {(int)KS_STE,	"[STE]"},
+    {(int)KS_STS,	"[STS]"},
     {(int)KS_MS,	"[MS]"},
     {(int)KS_UT,	"[UT]"},
     {(int)KS_XN,	"[XN]"},
@@ -1595,6 +1601,7 @@ set_termname(char_u *term)
 				{KS_MD, "md"}, {KS_SE, "se"}, {KS_SO, "so"},
 				{KS_CZH,"ZH"}, {KS_CZR,"ZR"}, {KS_UE, "ue"},
 				{KS_US, "us"}, {KS_UCE, "Ce"}, {KS_UCS, "Cs"},
+				{KS_STE,"Te"}, {KS_STS,"Ts"},
 				{KS_CM, "cm"}, {KS_SR, "sr"},
 				{KS_CRI,"RI"}, {KS_VB, "vb"}, {KS_KS, "ks"},
 				{KS_KE, "ke"}, {KS_TI, "ti"}, {KS_TE, "te"},

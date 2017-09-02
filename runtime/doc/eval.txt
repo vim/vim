@@ -7723,6 +7723,7 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		"standout"	"1" if standout
 		"underline"	"1" if underlined
 		"undercurl"	"1" if undercurled
+		"strike"	"1" if strikethrough
 
 		Example (echoes the color of the syntax item under the
 		cursor): >
