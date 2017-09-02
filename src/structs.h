@@ -1632,6 +1632,7 @@ struct channel_S {
     int		ch_last_msg_id;	/* ID of the last message */
 
     chanpart_T	ch_part[PART_COUNT]; /* info for socket, out, err and in */
+    int		ch_write_text_mode; /* write buffer lines with CR, not NL */
 
     char	*ch_hostname;	/* only for socket, allocated */
     int		ch_port;	/* only for socket */

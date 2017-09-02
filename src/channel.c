@@ -1300,11 +1300,16 @@ write_buf_line(buf_T *buf, linenr_T lnum, channel_T *channel)
 	return;
     memcpy((char *)p, (char *)line, len);
 
-    for (i = 0; i < len; ++i)
-	if (p[i] == NL)
-	    p[i] = NUL;
+    if (channel->ch_write_text_mode)
+	p[len] = CAR;
+    else
+    {
+	for (i = 0; i < len; ++i)
+	    if (p[i] == NL)
+		p[i] = NUL;
 
-    p[len] = NL;
+	p[len] = NL;
+    }
     p[len + 1] = NUL;
     channel_send(channel, PART_IN, p, len + 1, "write_buf_line");
     vim_free(p);
