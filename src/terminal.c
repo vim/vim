@@ -496,6 +496,24 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_term_cols = atoi((char *)ep + 1);
 	    p = skiptowhite(cmd);
 	}
+	else if ((int)(p - cmd) == 3 && STRNICMP(cmd, "eof", 3) == 0
+								 && ep != NULL)
+	{
+# ifdef WIN3264
+	    char_u *buf = NULL;
+	    char_u *keys;
+
+	    p = skiptowhite(cmd);
+	    *p = NUL;
+	    keys = replace_termcodes(ep + 1, &buf, TRUE, TRUE, TRUE);
+	    opt.jo_set2 |= JO2_EOF_CHARS;
+	    opt.jo_eof_chars = vim_strsave(keys);
+	    vim_free(buf);
+	    *p = ' ';
+# else
+	    p = skiptowhite(cmd);
+# endif
+	}
 	else
 	{
 	    if (*p)
@@ -3069,8 +3087,6 @@ term_and_job_init(
     if (job == NULL)
 	goto failed;
 
-    /* TODO: when all lines are written and the fd is closed, the command
-     * doesn't get EOF and hangs. */
     if (opt->jo_set & JO_IN_BUF)
 	job->jv_in_buf = buflist_findnr(opt->jo_io_buf[PART_IN]);
 
@@ -3091,6 +3107,9 @@ term_and_job_init(
 	    winpty_conerr_name(term->tl_winpty),
 	    GENERIC_READ, 0, NULL,
 	    OPEN_EXISTING, 0, NULL));
+
+    /* Write lines with CR instead of NL. */
+    channel->ch_write_text_mode = TRUE;
 
     jo = CreateJobObject(NULL, NULL);
     if (jo == NULL)
@@ -3208,8 +3227,15 @@ term_send_eof(channel_T *ch)
 
     for (term = first_term; term != NULL; term = term->tl_next)
 	if (term->tl_job == ch->ch_job)
-	    channel_send(ch, PART_IN, term->tl_eof_chars != NULL
-			 ? term->tl_eof_chars : (char_u *)"\004\r\n", 3, NULL);
+	{
+	    if (term->tl_eof_chars != NULL)
+		channel_send(ch, PART_IN, term->tl_eof_chars,
+					(int)STRLEN(term->tl_eof_chars), NULL);
+	    else
+		/* Default: CTRL-D */
+		channel_send(ch, PART_IN, (char_u *)"\004", 1, NULL);
+	    channel_send(ch, PART_IN, (char_u *)"\r", 1, NULL);
+	}
 }
 
 # else

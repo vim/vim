@@ -8141,6 +8141,12 @@ term_start({cmd}, {options})				*term_start()*
 				     have "%d" where the buffer number goes,
 				     e.g. "10split|buffer %d"; when not
 				     specified "botright sbuf %d" is used
+		   "eof_chars"	     Text to send after all buffer lines were
+				     written to the terminal.  When not set
+				     CTRL-D is used. For Python use CTRL-Z or
+				     "exit()". For a shell use "exit".  A CR
+				     is always added.
+				     {only on MS-Windows}
 
 		{only available when compiled with the |+terminal| feature}
 
