@@ -1781,9 +1781,7 @@ typedef struct
     char_u	*jo_term_name;
     char_u	*jo_term_opencmd;
     int		jo_term_finish;
-# ifdef WIN3264
     char_u	*jo_eof_chars;
-# endif
 #endif
 } jobopt_T;
 
