@@ -1713,7 +1713,8 @@ struct channel_S {
 #define JO2_CURWIN	    0x0200	/* "curwin" */
 #define JO2_HIDDEN	    0x0400	/* "hidden" */
 #define JO2_TERM_OPENCMD    0x0800	/* "term_opencmd" */
-#define JO2_ALL		    0x0FFF
+#define JO2_EOF_CHARS	    0x1000	/* "eof_chars" */
+#define JO2_ALL		    0x1FFF
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1779,6 +1780,9 @@ typedef struct
     char_u	*jo_term_name;
     char_u	*jo_term_opencmd;
     int		jo_term_finish;
+# ifdef WIN3264
+    char_u	*jo_eof_chars;
+# endif
 #endif
 } jobopt_T;
 
