@@ -490,23 +490,46 @@ endfunc
 
 func Test_terminal_write_stdin()
   if !executable('wc')
-    call ch_log('Test_terminal_write_stdin() is skipped because system doesn''t have wc command')
-    return
+    throw 'skipped: wc command not available'
   endif
   new
   call setline(1, ['one', 'two', 'three'])
   %term wc
-  call WaitFor('getline(1) != ""')
+  call WaitFor('getline("$") =~ "3"')
   let nrs = split(getline('$'))
   call assert_equal(['3', '3', '14'], nrs)
   bwipe
 
+  new
   call setline(1, ['one', 'two', 'three', 'four'])
   2,3term wc
-  call WaitFor('getline(1) != ""')
+  call WaitFor('getline("$") =~ "2"')
   let nrs = split(getline('$'))
   call assert_equal(['2', '2', '10'], nrs)
   bwipe
+
+  if executable('python')
+    new
+    call setline(1, ['print("hello")'])
+    1term ++eof=exit() python
+    " MS-Windows echoes the input, Unix doesn't.
+    call WaitFor('getline("$") =~ "exit" || getline(1) =~ "hello"')
+    if getline(1) =~ 'hello'
+      call assert_equal('hello', getline(1))
+    else
+      call assert_equal('hello', getline(line('$') - 1))
+    endif
+    bwipe
+
+    if has('win32')
+      new
+      call setline(1, ['print("hello")'])
+      1term ++eof=<C-Z> python
+      call WaitFor('getline("$") =~ "Z"')
+      call assert_equal('hello', getline(line('$') - 1))
+      bwipe
+    endif
+  endif
 
   bwipe!
 endfunc

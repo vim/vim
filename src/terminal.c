@@ -110,11 +110,11 @@ struct terminal_S {
     int		tl_channel_closed;
     int		tl_finish;	/* 'c' for ++close, 'o' for ++open */
     char_u	*tl_opencmd;
+    char_u	*tl_eof_chars;
 
 #ifdef WIN3264
     void	*tl_winpty_config;
     void	*tl_winpty;
-    char_u	*tl_eof_chars;
 #endif
 
     /* last known vterm size */
@@ -390,10 +390,8 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     if (opt->jo_term_opencmd != NULL)
 	term->tl_opencmd = vim_strsave(opt->jo_term_opencmd);
 
-# ifdef WIN3264
     if (opt->jo_eof_chars != NULL)
 	term->tl_eof_chars = vim_strsave(opt->jo_eof_chars);
-# endif
 
     set_string_option_direct((char_u *)"buftype", -1,
 				  (char_u *)"terminal", OPT_FREE|OPT_LOCAL, 0);
@@ -499,7 +497,6 @@ ex_terminal(exarg_T *eap)
 	else if ((int)(p - cmd) == 3 && STRNICMP(cmd, "eof", 3) == 0
 								 && ep != NULL)
 	{
-# ifdef WIN3264
 	    char_u *buf = NULL;
 	    char_u *keys;
 
@@ -510,9 +507,6 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_eof_chars = vim_strsave(keys);
 	    vim_free(buf);
 	    *p = ' ';
-# else
-	    p = skiptowhite(cmd);
-# endif
 	}
 	else
 	{
@@ -594,9 +588,7 @@ free_terminal(buf_T *buf)
     vim_free(term->tl_title);
     vim_free(term->tl_status_text);
     vim_free(term->tl_opencmd);
-# ifdef WIN3264
     vim_free(term->tl_eof_chars);
-# endif
     vim_free(term->tl_cursor_color);
     vim_free(term);
     buf->b_term = NULL;
@@ -2917,6 +2909,32 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
     }
 }
 
+/*
+ * Called when a channel has sent all the lines to a terminal.
+ * Send a CTRL-D to mark the end of the text.
+ */
+    void
+term_send_eof(channel_T *ch)
+{
+    term_T	*term;
+
+    for (term = first_term; term != NULL; term = term->tl_next)
+	if (term->tl_job == ch->ch_job)
+	{
+	    if (term->tl_eof_chars != NULL)
+	    {
+		channel_send(ch, PART_IN, term->tl_eof_chars,
+					(int)STRLEN(term->tl_eof_chars), NULL);
+		channel_send(ch, PART_IN, (char_u *)"\r", 1, NULL);
+	    }
+# ifdef WIN3264
+	    else
+		/* Default: CTRL-D */
+		channel_send(ch, PART_IN, (char_u *)"\004\r", 2, NULL);
+# endif
+	}
+}
+
 # if defined(WIN3264) || defined(PROTO)
 
 /**************************************
@@ -3214,28 +3232,6 @@ term_report_winsize(term_T *term, int rows, int cols)
 terminal_enabled(void)
 {
     return dyn_winpty_init(FALSE) == OK;
-}
-
-/*
- * Called when a channel has sent all the lines to a terminal.
- * Send a CTRL-D to mark the end of the text.
- */
-    void
-term_send_eof(channel_T *ch)
-{
-    term_T	*term;
-
-    for (term = first_term; term != NULL; term = term->tl_next)
-	if (term->tl_job == ch->ch_job)
-	{
-	    if (term->tl_eof_chars != NULL)
-		channel_send(ch, PART_IN, term->tl_eof_chars,
-					(int)STRLEN(term->tl_eof_chars), NULL);
-	    else
-		/* Default: CTRL-D */
-		channel_send(ch, PART_IN, (char_u *)"\004", 1, NULL);
-	    channel_send(ch, PART_IN, (char_u *)"\r", 1, NULL);
-	}
 }
 
 # else

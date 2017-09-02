@@ -1422,9 +1422,8 @@ channel_write_in(channel_T *channel)
     in_part->ch_buf_top = lnum;
     if (lnum > buf->b_ml.ml_line_count || lnum > in_part->ch_buf_bot)
     {
-#if defined(WIN32) && defined(FEAT_TERMINAL)
-	/* Send CTRL-D or "eof_chars" to close stdin on Windows. A console
-	 * application doesn't treat closing stdin like UNIX. */
+#if defined(FEAT_TERMINAL)
+	/* Send CTRL-D or "eof_chars" to close stdin on MS-Windows. */
 	if (channel->ch_job != NULL)
 	    term_send_eof(channel);
 #endif
@@ -4640,7 +4639,6 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	    }
 	    else if (STRCMP(hi->hi_key, "eof_chars") == 0)
 	    {
-# ifdef WIN3264
 		char_u *p;
 
 		if (!(supported2 & JO2_EOF_CHARS))
@@ -4652,7 +4650,6 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    EMSG2(_(e_invarg2), "term_opencmd");
 		    return FAIL;
 		}
-# endif
 	    }
 	    else if (STRCMP(hi->hi_key, "term_rows") == 0)
 	    {
