@@ -2407,6 +2407,7 @@ term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
+test_feedinput()		none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
 test_ignore_error({expr})	none	ignore a specific error
 test_null_channel()		Channel	null value for testing
@@ -8160,6 +8161,11 @@ test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 test_autochdir()					*test_autochdir()*
 		Set a flag to enable the effect of 'autochdir' before Vim
 		startup has finished.
+
+test_feedinput({string})				*test_feedinput()*
+		Characters in {string} are queued for processing as if they
+		were typed by the user.
+		This function works only when with |+unix| or GUI is running.
 
 test_garbagecollect_now()			 *test_garbagecollect_now()*
 		Like garbagecollect(), but executed right away.  This must
