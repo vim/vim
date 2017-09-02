@@ -1589,8 +1589,7 @@ open_line(
 	    && curbuf->b_p_ai)
     {
 	fixthisline(get_lisp_indent);
-	p = ml_get_curline();
-	ai_col = (colnr_T)(skipwhite(p) - p);
+	ai_col = (colnr_T)getwhitecols_curline();
     }
 #endif
 #ifdef FEAT_CINDENT
@@ -1608,8 +1607,7 @@ open_line(
 		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum)))
     {
 	do_c_expr_indent();
-	p = ml_get_curline();
-	ai_col = (colnr_T)(skipwhite(p) - p);
+	ai_col = (colnr_T)getwhitecols_curline();
     }
 #endif
 #if defined(FEAT_VREPLACE) && (defined(FEAT_LISP) || defined(FEAT_CINDENT))

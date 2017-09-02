@@ -1536,6 +1536,22 @@ skipwhite(char_u *q)
 }
 
 /*
+ * getwhitecols: return the number of whitespace
+ * columns (bytes) at the start of a given line
+ */
+    int
+getwhitecols_curline()
+{
+    return getwhitecols(ml_get_curline());
+}
+
+    int
+getwhitecols(char_u *p)
+{
+    return skipwhite(p) - p;
+}
+
+/*
  * skip over digits
  */
     char_u *
