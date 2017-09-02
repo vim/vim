@@ -2597,14 +2597,6 @@ op_insert(oparg_T *oap, long count1)
 	    && LT_POS(curbuf->b_op_start_orig, t1))
 	oap->start = curbuf->b_op_start_orig;
 
-    /* if indent kicked in, the firstline might have changed
-     * but only do that, if the indent actually increased */
-    ind_post = (colnr_T)getwhitecols_curline();
-    if (curbuf->b_op_start.col > ind_pre && ind_post > ind_pre)
-    {
-	bd.textcol += ind_post - ind_pre;
-	bd.start_vcol += ind_post - ind_pre;
-    }
     /* If user has moved off this line, we don't know what to do, so do
      * nothing.
      * Also don't repeat the insert when Insert mode ended with CTRL-C. */
@@ -2614,6 +2606,15 @@ op_insert(oparg_T *oap, long count1)
     if (oap->block_mode)
     {
 	struct block_def	bd2;
+
+	/* If indent kicked in, the firstline might have changed
+	 * but only do that, if the indent actually increased. */
+	ind_post = (colnr_T)getwhitecols_curline();
+	if (curbuf->b_op_start.col > ind_pre && ind_post > ind_pre)
+	{
+	    bd.textcol += ind_post - ind_pre;
+	    bd.start_vcol += ind_post - ind_pre;
+	}
 
 	/* The user may have moved the cursor before inserting something, try
 	 * to adjust the block for that. */
