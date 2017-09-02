@@ -6427,6 +6427,18 @@ gui_mch_draw_string(
 	DeleteObject(SelectObject(s_hdc, old_pen));
     }
 
+    /* Strikethrough */
+    if (flags & DRAW_STRIKE)
+    {
+	hpen = CreatePen(PS_SOLID, 1, gui.currSpColor);
+	old_pen = SelectObject(s_hdc, hpen);
+	y = FILL_Y(row + 1) - gui.char_height/2;
+	MoveToEx(s_hdc, FILL_X(col), y, NULL);
+	/* Note: LineTo() excludes the last pixel in the line. */
+	LineTo(s_hdc, FILL_X(col + len), y);
+	DeleteObject(SelectObject(s_hdc, old_pen));
+    }
+
     /* Undercurl */
     if (flags & DRAW_UNDERC)
     {

@@ -11843,6 +11843,10 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 	case 's':
 		if (TOLOWER_ASC(what[1]) == 'p')	/* sp[#] */
 		    p = highlight_color(id, what, modec);
+							/* strikeout */
+		else if (TOLOWER_ASC(what[1]) == 't' &&
+			TOLOWER_ASC(what[2]) == 'r')
+		    p = highlight_has_attr(id, HL_STRIKETHROUGH, modec);
 		else					/* standout */
 		    p = highlight_has_attr(id, HL_STANDOUT, modec);
 		break;
