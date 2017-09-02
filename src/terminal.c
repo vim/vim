@@ -114,6 +114,7 @@ struct terminal_S {
 #ifdef WIN3264
     void	*tl_winpty_config;
     void	*tl_winpty;
+    char_u	*tl_eof_chars;
 #endif
 
     /* last known vterm size */
@@ -389,6 +390,11 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     if (opt->jo_term_opencmd != NULL)
 	term->tl_opencmd = vim_strsave(opt->jo_term_opencmd);
 
+# ifdef WIN3264
+    if (opt->jo_eof_chars != NULL)
+	term->tl_eof_chars = vim_strsave(opt->jo_eof_chars);
+# endif
+
     set_string_option_direct((char_u *)"buftype", -1,
 				  (char_u *)"terminal", OPT_FREE|OPT_LOCAL, 0);
 
@@ -570,6 +576,9 @@ free_terminal(buf_T *buf)
     vim_free(term->tl_title);
     vim_free(term->tl_status_text);
     vim_free(term->tl_opencmd);
+# ifdef WIN3264
+    vim_free(term->tl_eof_chars);
+# endif
     vim_free(term->tl_cursor_color);
     vim_free(term);
     buf->b_term = NULL;
@@ -2821,7 +2830,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		    + JO_EXIT_CB + JO_CLOSE_CALLBACK,
 		JO2_TERM_NAME + JO2_TERM_FINISH + JO2_HIDDEN + JO2_TERM_OPENCMD
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
-		    + JO2_CWD + JO2_ENV) == FAIL)
+		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS) == FAIL)
 	return;
 
     if (opt.jo_vertical)
@@ -3188,6 +3197,20 @@ terminal_enabled(void)
     return dyn_winpty_init(FALSE) == OK;
 }
 
+/*
+ * Called when a channel has sent all the lines to a terminal.
+ * Send a CTRL-D to mark the end of the text.
+ */
+    void
+term_send_eof(channel_T *ch)
+{
+    term_T	*term;
+
+    for (term = first_term; term != NULL; term = term->tl_next)
+	if (term->tl_job == ch->ch_job)
+	    channel_send(ch, PART_IN, term->tl_eof_chars != NULL
+			 ? term->tl_eof_chars : (char_u *)"\004\r\n", 3, NULL);
+}
 
 # else
 
