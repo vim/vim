@@ -93,6 +93,8 @@ fd_close(sock_T fd)
 {
     HANDLE h = (HANDLE)fd;
 
+    if (GetFileType(h) == FILE_TYPE_PIPE)
+	DisconnectNamedPipe((HANDLE)fd);
     CloseHandle(h);
 }
 #endif
@@ -3086,7 +3088,18 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    if (r && nread > 0)
 		return CW_READY;
 	    if (r == 0)
-		return CW_ERROR;
+	    {
+		if (GetFileType((HANDLE)fd) == FILE_TYPE_PIPE)
+		{
+		    DWORD err = GetLastError();
+		    if (err != ERROR_BAD_PIPE && err != ERROR_BROKEN_PIPE)
+			return CW_ERROR;
+		    DisconnectNamedPipe((HANDLE)fd);
+		    ConnectNamedPipe((HANDLE)fd, NULL);
+		}
+		else
+		    return CW_ERROR;
+	    }
 
 	    /* perhaps write some buffer lines */
 	    channel_write_any_lines();
@@ -4849,7 +4862,8 @@ job_free_contents(job_T *job)
     }
     mch_clear_job(job);
 
-    vim_free(job->jv_tty_name);
+    vim_free(job->jv_tty_in);
+    vim_free(job->jv_tty_out);
     vim_free(job->jv_stoponexit);
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
 }
@@ -5503,8 +5517,10 @@ job_info(job_T *job, dict_T *dict)
     nr = job->jv_proc_info.dwProcessId;
 #endif
     dict_add_nr_str(dict, "process", nr, NULL);
-    dict_add_nr_str(dict, "tty", 0L,
-		   job->jv_tty_name != NULL ? job->jv_tty_name : (char_u *)"");
+    dict_add_nr_str(dict, "tty_in", 0L,
+		   job->jv_tty_in != NULL ? job->jv_tty_in : (char_u *)"");
+    dict_add_nr_str(dict, "tty_out", 0L,
+		   job->jv_tty_out != NULL ? job->jv_tty_out : (char_u *)"");
 
     dict_add_nr_str(dict, "exitval", job->jv_exitval, NULL);
     dict_add_nr_str(dict, "exit_cb", 0L, job->jv_exit_cb);

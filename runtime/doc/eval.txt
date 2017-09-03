@@ -5245,7 +5245,8 @@ job_info({job})						*job_info()*
 		   "status"	what |job_status()| returns
 		   "channel"	what |job_getchannel()| returns
 		   "process"	process ID
-		   "tty"	controlling terminal name, empty when none
+		   "tty_in"	terminal input name, empty when none
+		   "tty_out"	terminal output name, empty when none
 		   "exitval"	only valid when "status" is "dead"
 		   "exit_cb"	function to be called on exit
 		   "stoponexit"	|job-stoponexit|
@@ -8092,10 +8093,12 @@ term_gettitle({buf})					*term_gettitle()*
 		string is returned.
 		{only available when compiled with the |+terminal| feature}
 
-term_gettty({buf})					*term_gettty()*
+term_gettty({buf} [, {inout}])				*term_gettty()*
 		Get the name of the controlling terminal associated with
 		terminal window {buf}.
 		{buf} is used as with |term_getsize()|.
+		When {inout} is omitted or 0, return name for write, 1 for
+		read. On UNIX, both return same name.
 		{only available when compiled with the |+terminal| feature}
 
 term_list()						*term_list()*

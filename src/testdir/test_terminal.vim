@@ -539,10 +539,6 @@ func Test_terminal_write_stdin()
 endfunc
 
 func Test_terminal_no_cmd()
-  " Todo: make this work on all systems.
-  if !has('unix')
-    return
-  endif
   " Todo: make this work in the GUI
   if !has('gui_running')
     return
@@ -550,12 +546,21 @@ func Test_terminal_no_cmd()
   let buf = term_start('NONE', {})
   call assert_notequal(0, buf)
 
-  let pty = job_info(term_getjob(buf))['tty']
+  let pty = job_info(term_getjob(buf))['tty_out']
   call assert_notequal('', pty)
-  call system('echo "look here" > ' . pty)
+  if has('win32')
+    silent exe '!cmd /c "echo look here > ' . pty . '"'
+  else
+    call system('echo "look here" > ' . pty)
+  endif
   call term_wait(buf)
-  call assert_equal('look here', term_getline(buf, 1))
-  bwipe!
+
+  let result = term_getline(buf, 1)
+  if has('win32')
+    let result = substitute(result, '\s\+$', '', '')
+  endif
+  call assert_equal('look here', result)
+  "bwipe!
 endfunc
 
 func Test_terminal_special_chars()

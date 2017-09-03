@@ -5263,7 +5263,11 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	    && (!(use_file_for_in || use_null_for_in)
 		|| !(use_file_for_in || use_null_for_out)
 		|| !(use_out_for_err || use_file_for_err || use_null_for_err)))
-	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_name);
+    {
+	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_out);
+	if (job->jv_tty_out != NULL)
+	    job->jv_tty_in = vim_strdup(job->jv_tty_out);
+    }
 
     /* TODO: without the channel feature connect the child to /dev/null? */
     /* Open pipes for stdin, stdout, stderr. */
@@ -5687,7 +5691,9 @@ mch_create_pty_channel(job_T *job, jobopt_T *options)
     int		pty_slave_fd = -1;
     channel_T	*channel;
 
-    open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_name);
+    open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_out);
+    if (job->jv_tty_out != NULL)
+	job->jv_tty_in = vim_strdup(job->jv_tty_out);
     close(pty_slave_fd);
 
     channel = add_channel();

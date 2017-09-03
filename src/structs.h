@@ -1487,7 +1487,8 @@ struct jobvar_S
     PROCESS_INFORMATION	jv_proc_info;
     HANDLE		jv_job_object;
 #endif
-    char_u	*jv_tty_name;	/* controlling tty, allocated */
+    char_u	*jv_tty_in;	/* controlling tty input, allocated */
+    char_u	*jv_tty_out;	/* controlling tty output, allocated */
     jobstatus_T	jv_status;
     char_u	*jv_stoponexit; /* allocated */
     int		jv_exitval;
