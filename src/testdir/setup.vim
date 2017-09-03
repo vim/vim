@@ -21,6 +21,9 @@ if 1
     let $XAUTHORITY = $HOME . '/.Xauthority'
   endif
 
+  " Avoid storing shell history.
+  let $HISTFILE = ""
+
   " Make sure $HOME does not get read or written.
   " It must exist, gnome tries to create $HOME/.gnome2
   let $HOME = getcwd() . '/XfakeHOME'
