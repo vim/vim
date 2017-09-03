@@ -458,14 +458,16 @@ endfunction
 
 func Test_terminal_noblock()
   let g:buf = term_start(&shell)
+  if has('mac')
+    " The shell or something else has a problem dealing with more than 1000
+    " characters at the same time.
+    let len = 1000
+  else
+    let len = 5000
+  endif
 
   for c in ['a','b','c','d','e','f','g','h','i','j','k']
-    call term_sendkeys(g:buf, 'echo ' . repeat(c, 5000) . "\<cr>")
-    if has('mac')
-      " TODO: this should not be needed, but without it sending keys blocks
-      " after 8000 chars or so.
-      sleep 100m
-    endif
+    call term_sendkeys(g:buf, 'echo ' . repeat(c, len) . "\<cr>")
   endfor
   call term_sendkeys(g:buf, "echo done\<cr>")
 
