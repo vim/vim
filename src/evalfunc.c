@@ -393,6 +393,7 @@ static void f_tagfiles(typval_T *argvars, typval_T *rettv);
 static void f_tempname(typval_T *argvars, typval_T *rettv);
 static void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
 static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
+static void f_test_feedinput(typval_T *argvars, typval_T *rettv);
 static void f_test_override(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
@@ -851,6 +852,7 @@ static struct fst
 #endif
     {"test_alloc_fail",	3, 3, f_test_alloc_fail},
     {"test_autochdir",	0, 0, f_test_autochdir},
+    {"test_feedinput",	1, 1, f_test_feedinput},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
     {"test_ignore_error",	1, 1, f_test_ignore_error},
 #ifdef FEAT_JOB_CHANNEL
@@ -12514,6 +12516,23 @@ f_test_autochdir(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #if defined(FEAT_AUTOCHDIR)
     test_autochdir = TRUE;
+#endif
+}
+
+/*
+ * "test_feedinput()"
+ */
+    static void
+f_test_feedinput(typval_T *argvars, typval_T *rettv UNUSED)
+{
+#ifdef USE_INPUT_BUF
+    char_u	*val = get_tv_string_chk(&argvars[0]);
+
+    if (val != NULL)
+    {
+	trash_input_buf();
+	add_to_input_buf_csi(val, (int)STRLEN(val));
+    }
 #endif
 }
 
