@@ -164,10 +164,8 @@ func Test_terminal_scrape_123()
   call term_wait(1234)
 
   call term_wait(buf)
-  if has('win32')
-    " TODO: this should not be needed
-    sleep 100m
-  endif
+  let g:buf = buf
+  call WaitFor('len(term_scrape(g:buf, 1)) > 0')
   call Check_123(buf)
 
   " Must still work after the job ended.
@@ -572,4 +570,46 @@ func Test_terminal_special_chars()
 
   call delete('Xdir with spaces', 'rf')
   bwipe
+endfunc
+
+func Test_terminal_wrong_options()
+  call assert_fails('call term_start(&shell, {
+	\ "in_io": "file",
+	\ "in_name": "xxx",
+	\ "out_io": "file",
+	\ "out_name": "xxx",
+	\ "err_io": "file",
+	\ "err_name": "xxx"
+	\ })', 'E474:')
+  call assert_fails('call term_start(&shell, {
+	\ "out_buf": bufnr("%")
+	\ })', 'E474:')
+  call assert_fails('call term_start(&shell, {
+	\ "err_buf": bufnr("%")
+	\ })', 'E474:')
+endfunc
+
+func Test_terminal_redir_file()
+  let cmd = Get_cat_123_cmd()
+  let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
+  call term_wait(buf)
+  call WaitFor('len(readfile("Xfile")) > 0')
+  call assert_match('123', readfile('Xfile')[0])
+  call delete('Xfile')
+
+  if has('unix')
+    let buf = term_start('xyzabc', {'err_io': 'file', 'err_name': 'Xfile'})
+    call term_wait(buf)
+    call WaitFor('len(readfile("Xfile")) > 0')
+    call assert_match('executing job failed', readfile('Xfile')[0])
+    call delete('Xfile')
+
+    call writefile(['one line'], 'Xfile')
+    let buf = term_start('cat', {'in_io': 'file', 'in_name': 'Xfile'})
+    call term_wait(buf)
+    call WaitFor('term_getline(' . buf . ', 1) == "one line"')
+    call assert_equal('one line', term_getline(buf, 1))
+    bwipe
+    call delete('Xfile')
+  endif
 endfunc
