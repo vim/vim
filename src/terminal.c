@@ -39,7 +39,6 @@
  *
  * TODO:
  * - ":term NONE" does not work in MS-Windows.
- * - test for writing lines to terminal job does not work on MS-Windows
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -48,16 +47,6 @@
  * - GUI: when 'confirm' is set and trying to exit Vim, dialog offers to save
  *   changes to "!shell".
  *   (justrajdeep, 2017 Aug 22)
- * - command argument with spaces doesn't work #1999
- *       :terminal ls dir\ with\ spaces
- * - implement job options when starting a terminal.  Allow:
- *	"in_io", "in_top", "in_bot", "in_name", "in_buf"
-	"out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
-	"err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
- *   Check that something is connected to the terminal.
- *   Test: "cat" reading from a file or buffer
- *	   "ls" writing stdout to a file or buffer
- *	   shell writing stderr to a file or buffer
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
  * - if the job in the terminal does not support the mouse, we can use the
@@ -219,16 +208,6 @@ init_job_options(jobopt_T *opt)
     opt->jo_out_mode = MODE_RAW;
     opt->jo_err_mode = MODE_RAW;
     opt->jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
-
-    opt->jo_io[PART_OUT] = JIO_BUFFER;
-    opt->jo_io[PART_ERR] = JIO_BUFFER;
-    opt->jo_set |= JO_OUT_IO + JO_ERR_IO;
-
-    opt->jo_modifiable[PART_OUT] = 0;
-    opt->jo_modifiable[PART_ERR] = 0;
-    opt->jo_set |= JO_OUT_MODIFIABLE + JO_ERR_MODIFIABLE;
-
-    opt->jo_set |= JO_OUT_BUF + JO_ERR_BUF;
 }
 
 /*
@@ -237,8 +216,24 @@ init_job_options(jobopt_T *opt)
     static void
 setup_job_options(jobopt_T *opt, int rows, int cols)
 {
-    opt->jo_io_buf[PART_OUT] = curbuf->b_fnum;
-    opt->jo_io_buf[PART_ERR] = curbuf->b_fnum;
+    if (!(opt->jo_set & JO_OUT_IO))
+    {
+	/* Connect stdout to the terminal. */
+	opt->jo_io[PART_OUT] = JIO_BUFFER;
+	opt->jo_io_buf[PART_OUT] = curbuf->b_fnum;
+	opt->jo_modifiable[PART_OUT] = 0;
+	opt->jo_set |= JO_OUT_IO + JO_OUT_BUF + JO_OUT_MODIFIABLE;
+    }
+
+    if (!(opt->jo_set & JO_ERR_IO))
+    {
+	/* Connect stderr to the terminal. */
+	opt->jo_io[PART_ERR] = JIO_BUFFER;
+	opt->jo_io_buf[PART_ERR] = curbuf->b_fnum;
+	opt->jo_modifiable[PART_ERR] = 0;
+	opt->jo_set |= JO_ERR_IO + JO_ERR_BUF + JO_ERR_MODIFIABLE;
+    }
+
     opt->jo_pty = TRUE;
     if ((opt->jo_set2 & JO2_TERM_ROWS) == 0)
 	opt->jo_term_rows = rows;
@@ -257,6 +252,15 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 
     if (check_restricted() || check_secure())
 	return;
+
+    if ((opt->jo_set & (JO_IN_IO + JO_OUT_IO + JO_ERR_IO))
+					 == (JO_IN_IO + JO_OUT_IO + JO_ERR_IO)
+	|| (!(opt->jo_set & JO_OUT_IO) && (opt->jo_set & JO_OUT_BUF))
+	|| (!(opt->jo_set & JO_ERR_IO) && (opt->jo_set & JO_ERR_BUF)))
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
 
     term = (term_T *)alloc_clear(sizeof(term_T));
     if (term == NULL)
@@ -2833,11 +2837,10 @@ f_term_start(typval_T *argvars, typval_T *rettv)
     jobopt_T	opt;
 
     init_job_options(&opt);
-    /* TODO: allow more job options */
     if (argvars[1].v_type != VAR_UNKNOWN
 	    && get_job_options(&argvars[1], &opt,
 		JO_TIMEOUT_ALL + JO_STOPONEXIT
-		    + JO_EXIT_CB + JO_CLOSE_CALLBACK,
+		    + JO_EXIT_CB + JO_CLOSE_CALLBACK + JO_OUT_IO,
 		JO2_TERM_NAME + JO2_TERM_FINISH + JO2_HIDDEN + JO2_TERM_OPENCMD
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS) == FAIL)
@@ -3254,7 +3257,6 @@ term_and_job_init(
 {
     create_vterm(term, term->tl_rows, term->tl_cols);
 
-    /* TODO: if the command is "NONE" only create a pty. */
     term->tl_job = job_start(argvar, opt);
     if (term->tl_job != NULL)
 	++term->tl_job->jv_refcount;
