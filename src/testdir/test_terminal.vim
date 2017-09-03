@@ -293,6 +293,8 @@ func Test_terminal_size()
   let size = term_getsize('')
   bwipe!
   call assert_equal([7, 27], size)
+
+  call delete('Xtext')
 endfunc
 
 func Test_terminal_curwin()
@@ -325,7 +327,7 @@ func Test_terminal_curwin()
 
   split dummy
   bwipe!
-
+  call delete('Xtext')
 endfunc
 
 func Test_finish_open_close()
@@ -554,4 +556,20 @@ func Test_terminal_no_cmd()
   call term_wait(buf)
   call assert_equal('look here', term_getline(buf, 1))
   bwipe!
+endfunc
+
+func Test_terminal_special_chars()
+  " this file name only works on Unix
+  if !has('unix')
+    return
+  endif
+  call mkdir('Xdir with spaces')
+  call writefile(['x'], 'Xdir with spaces/quoted"file')
+  term ls Xdir\ with\ spaces/quoted\"file
+  call WaitFor('term_getline("", 1) =~ "quoted"')
+  call assert_match('quoted"file', term_getline('', 1))
+  call term_wait('')
+
+  call delete('Xdir with spaces', 'rf')
+  bwipe
 endfunc
