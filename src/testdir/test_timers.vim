@@ -1,7 +1,5 @@
 " Test for timers
 
-source shared.vim
-
 if !has('timers')
   finish
 endif
