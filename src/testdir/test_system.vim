@@ -40,7 +40,7 @@ function! Test_System()
     call assert_equal(['asdf', "pw\<NL>er", 'xxxx'],  out)
   else
     let out = systemlist('more', bufnr('%'))
-    call assert_equal(['asdf\r', 'pw\r', 'er\r', 'xxxx\r'],  out)
+    call assert_equal(["asdf\r", "pw\r", "er\r", "xxxx\r"],  out)
   endif
   bwipe!
 
