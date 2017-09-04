@@ -1650,35 +1650,51 @@ make_filter_cmd(
 	STRCAT(buf, itmp);
     }
 #else
-    /*
-     * For shells that don't understand braces around commands, at least allow
-     * the use of commands in a pipe.
-     */
-    STRCPY(buf, cmd);
-    if (itmp != NULL)
+    if (*p_sxe != NUL && STRCMP(p_sxq, "(") == 0)
     {
-	char_u	*p;
-
-	/*
-	 * If there is a pipe, we have to put the '<' in front of it.
-	 * Don't do this when 'shellquote' is not empty, otherwise the
-	 * redirection would be inside the quotes.
-	 */
-	if (*p_shq == NUL)
+	if (itmp != NULL || otmp != NULL)
+	    vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+	else
+	    STRCPY(buf, cmd);
+	if (itmp != NULL)
 	{
-	    p = vim_strchr(buf, '|');
-	    if (p != NULL)
-		*p = NUL;
+	    STRCAT(buf, " < ");
+	    STRCAT(buf, itmp);
 	}
-	STRCAT(buf, " <");	/* " < " causes problems on Amiga */
-	STRCAT(buf, itmp);
-	if (*p_shq == NUL)
+    }
+    else
+    {
+	/*
+	 * For shells that don't understand braces around commands, at least
+	 * allow the use of commands in a pipe.
+	 */
+	STRCPY(buf, cmd);
+	if (itmp != NULL)
 	{
-	    p = vim_strchr(cmd, '|');
-	    if (p != NULL)
+	    char_u	*p;
+
+	    /*
+	     * If there is a pipe, we have to put the '<' in front of it.
+	     * Don't do this when 'shellquote' is not empty, otherwise the
+	     * redirection would be inside the quotes.
+	     */
+	    if (*p_shq == NUL)
 	    {
-		STRCAT(buf, " ");   /* insert a space before the '|' for DOS */
-		STRCAT(buf, p);
+		p = vim_strchr(buf, '|');
+		if (p != NULL)
+		    *p = NUL;
+	    }
+	    STRCAT(buf, " <");	/* " < " causes problems on Amiga */
+	    STRCAT(buf, itmp);
+	    if (*p_shq == NUL)
+	    {
+		p = vim_strchr(cmd, '|');
+		if (p != NULL)
+		{
+		    /* insert a space before the '|' for DOS */
+		    STRCAT(buf, " ");
+		    STRCAT(buf, p);
+		}
 	    }
 	}
     }
