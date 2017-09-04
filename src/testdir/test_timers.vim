@@ -4,6 +4,10 @@ if !has('timers')
   finish
 endif
 
+if !exists('*WaitFor')
+  source shared.vim
+endif
+
 func MyHandler(timer)
   let g:val += 1
 endfunc
