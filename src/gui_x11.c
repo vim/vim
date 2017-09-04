@@ -2542,6 +2542,16 @@ gui_mch_draw_string(
 		y, FILL_X(col + cells) - 1, y);
     }
 
+    if (flags & DRAW_STRIKE)
+    {
+	int	y = FILL_Y(row + 1) - gui.char_height/2;
+
+	XSetForeground(gui.dpy, gui.text_gc, prev_sp_color);
+	XDrawLine(gui.dpy, gui.wid, gui.text_gc, FILL_X(col),
+		y, FILL_X(col + cells) - 1, y);
+	XSetForeground(gui.dpy, gui.text_gc, prev_fg_color);
+    }
+
 #ifdef FEAT_XFONTSET
     if (current_fontset != NULL)
 	XSetClipMask(gui.dpy, gui.text_gc, None);

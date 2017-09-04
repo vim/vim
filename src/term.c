@@ -217,6 +217,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_US,	IF_EB("\033|8h", ESC_STR "|8h")},   /* HL_UNDERLINE */
     {(int)KS_UCE,	IF_EB("\033|8C", ESC_STR "|8C")},   /* HL_UNDERCURL */
     {(int)KS_UCS,	IF_EB("\033|8c", ESC_STR "|8c")},   /* HL_UNDERCURL */
+    {(int)KS_STE,	IF_EB("\033|4C", ESC_STR "|4C")},   /* HL_STRIKETHROUGH */
+    {(int)KS_STS,	IF_EB("\033|4c", ESC_STR "|4c")},   /* HL_STRIKETHROUGH */
     {(int)KS_CZR,	IF_EB("\033|4H", ESC_STR "|4H")},   /* HL_ITALIC */
     {(int)KS_CZH,	IF_EB("\033|4h", ESC_STR "|4h")},   /* HL_ITALIC */
     {(int)KS_VB,	IF_EB("\033|f", ESC_STR "|f")},
@@ -831,6 +833,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_MD,	IF_EB("\033[1m", ESC_STR "[1m")},
     {(int)KS_UE,	IF_EB("\033[m", ESC_STR "[m")},
     {(int)KS_US,	IF_EB("\033[4m", ESC_STR "[4m")},
+    {(int)KS_STE,	IF_EB("\033[29m", ESC_STR "[29m")},
+    {(int)KS_STS,	IF_EB("\033[9m", ESC_STR "[9m")},
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},
     {(int)KS_LE,	"\b"},
@@ -1151,6 +1155,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_US,	"[US]"},
     {(int)KS_UCE,	"[UCE]"},
     {(int)KS_UCS,	"[UCS]"},
+    {(int)KS_STE,	"[STE]"},
+    {(int)KS_STS,	"[STS]"},
     {(int)KS_MS,	"[MS]"},
     {(int)KS_UT,	"[UT]"},
     {(int)KS_XN,	"[XN]"},
@@ -1369,9 +1375,7 @@ static int	need_gather = FALSE;	    /* need to fill termleader[] */
 static char_u	termleader[256 + 1];	    /* for check_termcode() */
 #ifdef FEAT_TERMRESPONSE
 static int	check_for_codes = FALSE;    /* check for key code response */
-# ifdef MACOS
-static int	is_terminal_app = FALSE;    /* recognized Terminal.app */
-# endif
+static int	is_not_xterm = FALSE;	    /* recognized not-really-xterm */
 #endif
 
     static struct builtin_term *
@@ -1597,6 +1601,7 @@ set_termname(char_u *term)
 				{KS_MD, "md"}, {KS_SE, "se"}, {KS_SO, "so"},
 				{KS_CZH,"ZH"}, {KS_CZR,"ZR"}, {KS_UE, "ue"},
 				{KS_US, "us"}, {KS_UCE, "Ce"}, {KS_UCS, "Cs"},
+				{KS_STE,"Te"}, {KS_STS,"Ts"},
 				{KS_CM, "cm"}, {KS_SR, "sr"},
 				{KS_CRI,"RI"}, {KS_VB, "vb"}, {KS_KS, "ks"},
 				{KS_KE, "ke"}, {KS_TI, "ti"}, {KS_TE, "te"},
@@ -3506,13 +3511,10 @@ may_req_ambiguous_char_width(void)
 /*
  * Similar to requesting the version string: Request the terminal background
  * color when it is the right moment.
- * Also request the cursor shape, if possible.
  */
     void
 may_req_bg_color(void)
 {
-    int	    did_one = FALSE;
-
     if (can_get_termresponse() && starting == 0)
     {
 	/* Only request background if t_RB is set and 'background' wasn't
@@ -3524,20 +3526,7 @@ may_req_bg_color(void)
 	    LOG_TR("Sending BG request");
 	    out_str(T_RBG);
 	    rbg_status = STATUS_SENT;
-	    did_one = TRUE;
-	}
 
-	/* Only request cursor blinking mode if t_RC is set. */
-	if (rbm_status == STATUS_GET && *T_CRC != NUL)
-	{
-	    LOG_TR("Sending BC request");
-	    out_str(T_CRC);
-	    rbm_status = STATUS_SENT;
-	    did_one = TRUE;
-	}
-
-	if (did_one)
-	{
 	    /* check for the characters now, otherwise they might be eaten by
 	     * get_keystroke() */
 	    out_flush();
@@ -4505,12 +4494,17 @@ check_termcode(
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
+# ifdef FEAT_EVAL
+		    set_vim_var_string(VV_TERMU7RESP, tp, slen);
+# endif
 		}
 		else
 #endif
 		/* eat it when at least one digit and ending in 'c' */
 		if (*T_CRV != NUL && i > 2 + (tp[0] != CSI) && tp[i] == 'c')
 		{
+		    int version = col;
+
 		    LOG_TR("Received CRV response");
 		    crv_status = STATUS_GOT;
 # ifdef FEAT_AUTOCMD
@@ -4523,31 +4517,34 @@ check_termcode(
 			switch_to_8bit();
 
 		    /* rxvt sends its version number: "20703" is 2.7.3.
+		     * Screen sends 40500.
 		     * Ignore it for when the user has set 'term' to xterm,
 		     * even though it's an rxvt. */
-		    if (col > 20000)
-			col = 0;
+		    if (version > 20000)
+			version = 0;
 
 		    if (tp[1 + (tp[0] != CSI)] == '>' && semicols == 2)
 		    {
+			int need_flush = FALSE;
+
 			/* Only set 'ttymouse' automatically if it was not set
 			 * by the user already. */
 			if (!option_was_set((char_u *)"ttym"))
 			{
 # ifdef TTYM_SGR
-			    if (col >= 277)
+			    if (version >= 277)
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
 			    else
 # endif
 			    /* if xterm version >= 95 use mouse dragging */
-			    if (col >= 95)
+			    if (version >= 95)
 				set_option_value((char_u *)"ttym", 0L,
 						       (char_u *)"xterm2", 0);
 			}
 
 			/* if xterm version >= 141 try to get termcap codes */
-			if (col >= 141)
+			if (version >= 141)
 			{
 			    LOG_TR("Enable checking for XT codes");
 			    check_for_codes = TRUE;
@@ -4556,7 +4553,7 @@ check_termcode(
 			}
 
 			/* libvterm sends 0;100;0 */
-			if (col == 100
+			if (version == 100
 				&& STRNCMP(tp + extra - 2, "0;100;0c", 8) == 0)
 			{
 			    /* If run from Vim $COLORS is set to the number of
@@ -4566,35 +4563,66 @@ check_termcode(
 				may_adjust_color_count(256);
 			}
 
+			/* Detect terminals that set $TERM to something like
+			 * "xterm-256colors"  but are not fully xterm
+			 * compatible. */
 #  ifdef MACOS
 			/* Mac Terminal.app sends 1;95;0 */
-			if (col == 95
+			if (version == 95
 				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
-			{
-			    /* Terminal.app sets $TERM to "xterm-256colors",
-			     * but it's not fully xterm compatible. */
-			    is_terminal_app = TRUE;
-			}
+			    is_not_xterm = TRUE;
 #  endif
+			/* Gnome terminal sends 1;3801;0 or 1;4402;0.
+			 * xfce4-terminal sends 1;2802;0.
+			 * screen sends 83;40500;0
+			 * Assuming any version number over 2800 is not an
+			 * xterm (without the limit for rxvt and screen). */
+			if (col >= 2800)
+			    is_not_xterm = TRUE;
+
+			/* PuTTY sends 0;136;0 */
+			if (version == 136
+				&& STRNCMP(tp + extra - 2, "0;136;0c", 8) == 0)
+			    is_not_xterm = TRUE;
+
+			/* Konsole sends 0;115;0 */
+			if (version == 115
+				&& STRNCMP(tp + extra - 2, "0;115;0c", 8) == 0)
+			    is_not_xterm = TRUE;
 
 			/* Only request the cursor style if t_SH and t_RS are
 			 * set. Not for Terminal.app, it can't handle t_RS, it
 			 * echoes the characters to the screen. */
 			if (rcs_status == STATUS_GET
-#  ifdef MACOS
-				&& !is_terminal_app
-#  endif
+				&& !is_not_xterm
 				&& *T_CSH != NUL
 				&& *T_CRS != NUL)
 			{
 			    LOG_TR("Sending cursor style request");
 			    out_str(T_CRS);
 			    rcs_status = STATUS_SENT;
-			    out_flush();
+			    need_flush = TRUE;
 			}
+
+			/* Only request the cursor blink mode if t_RC set. Not
+			 * for Gnome terminal, it can't handle t_RC, it
+			 * echoes the characters to the screen. */
+			if (rbm_status == STATUS_GET
+				&& !is_not_xterm
+				&& *T_CRC != NUL)
+			{
+			    LOG_TR("Sending cursor blink mode request");
+			    out_str(T_CRC);
+			    rbm_status = STATUS_SENT;
+			    need_flush = TRUE;
+			}
+
+			if (need_flush)
+			    out_flush();
 		    }
+		    slen = i + 1;
 # ifdef FEAT_EVAL
-		    set_vim_var_string(VV_TERMRESPONSE, tp, i + 1);
+		    set_vim_var_string(VV_TERMRESPONSE, tp, slen);
 # endif
 # ifdef FEAT_AUTOCMD
 		    apply_autocmds(EVENT_TERMRESPONSE,
@@ -4602,7 +4630,6 @@ check_termcode(
 # endif
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
-		    slen = i + 1;
 		}
 
 		/* Check blinking cursor from xterm:
@@ -4626,6 +4653,9 @@ check_termcode(
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
+# ifdef FEAT_EVAL
+		    set_vim_var_string(VV_TERMBLINKRESP, tp, slen);
+# endif
 		}
 
 		/*
@@ -4714,6 +4744,9 @@ check_termcode(
 			    /* Sometimes the 0x07 is followed by 0x18, unclear
 			     * when this happens. */
 			    ++slen;
+# ifdef FEAT_EVAL
+			set_vim_var_string(VV_TERMRGBRESP, tp, slen);
+# endif
 			break;
 		    }
 		if (i == len)
@@ -4788,6 +4821,9 @@ check_termcode(
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
+# ifdef FEAT_EVAL
+			set_vim_var_string(VV_TERMSTYLERESP, tp, slen);
+# endif
 		    }
 		}
 

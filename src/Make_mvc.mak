@@ -344,7 +344,8 @@ FEATURES = HUGE
 !endif
 
 !ifndef CTAGS
-CTAGS = ctags
+# this assumes ctags is Exuberant ctags
+CTAGS = ctags -I INIT+ --fields=+S
 !endif
 
 !ifndef CSCOPE
@@ -1220,7 +1221,7 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 
 
 tags: notags
-	$(CTAGS) *.c *.cpp *.h if_perl.xs proto\*.pro
+	$(CTAGS) *.c *.cpp *.h if_perl.xs
 
 notags:
 	- if exist tags del tags

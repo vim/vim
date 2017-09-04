@@ -1902,6 +1902,26 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		always 95 or bigger).  Pc is always zero.
 		{only when compiled with |+termresponse| feature}
 
+						*v:termblinkresp*
+v:termblinkresp	The escape sequence returned by the terminal for the |t_RC|
+		termcap entry.  This is used to find out whether the terminal
+		cursor is blinking. This is used by |term_getcursor()|.
+
+						*v:termstyleresp*
+v:termstyleresp	The escape sequence returned by the terminal for the |t_RS|
+		termcap entry.  This is used to find out what the shape of the
+		cursor is.  This is used by |term_getcursor()|.
+
+						*v:termrgbresp*
+v:termrgbresp	The escape sequence returned by the terminal for the |t_RB|
+		termcap entry.  This is used to find out what the terminal
+		background color is, see 'background'.
+
+						*v:termu7resp*
+v:termu7resp	The escape sequence returned by the terminal for the |t_u7|
+		termcap entry.  This is used to find out what the terminal
+		does with ambiguous width characters, see 'ambiwidth'.
+
 					*v:testing* *testing-variable*
 v:testing	Must be set before using `test_garbagecollect_now()`.
 		Also, when set certain error messages won't be shown for 2
@@ -2296,6 +2316,9 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])
 server2client({clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
+setbufline( {expr}, {lnum}, {line})
+				Number	set line {lnum} to {line} in buffer
+					{expr}
 setbufvar({expr}, {varname}, {val})
 				none	set {varname} in buffer {expr} to {val}
 setcharsearch({dict})		Dict	set character search from {dict}
@@ -2387,6 +2410,7 @@ term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
+test_feedinput()		none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
 test_ignore_error({expr})	none	ignore a specific error
 test_null_channel()		Channel	null value for testing
@@ -4612,20 +4636,27 @@ getqflist([{what}])					*getqflist()*
 		returns only the items listed in {what} as a dictionary. The
 		following string items are supported in {what}:
 			context	get the context stored with |setqflist()|
+			efm	errorformat to use when parsing "lines". If
+				not present, then the 'erroformat' option
+				value is used.
+			id	get information for the quickfix list with
+				|quickfix-ID|; zero means the id for the
+				current list or the list specifed by "nr"
 			items	quickfix list entries
+			lines	use 'errorformat' to extract items from a list
+				of lines and return the resulting entries.
+				Only a |List| type is accepted.  The current
+				quickfix list is not modified.
 			nr	get information for this quickfix list; zero
-				means the current quickfix list and '$' means
+				means the current quickfix list and "$" means
 				the last quickfix list
-			text	use 'errorformat' to extract items from the
-				text and return the resulting entries. The
-				value can be a string with one line or a list
-				with multiple lines. The current quickfix list
-				is not modified.
 			title	get the list title
 			winid	get the |window-ID| (if opened)
 			all	all of the above quickfix properties
 		Non-string items in {what} are ignored.
 		If "nr" is not present then the current quickfix list is used.
+		If both "nr" and a non-zero "id" are specified, then the list
+		specified by "id" is used.
 		To get the number of lists in the quickfix stack, set 'nr' to
 		'$' in {what}. The 'nr' value in the returned dictionary
 		contains the quickfix stack size.
@@ -4637,6 +4668,7 @@ getqflist([{what}])					*getqflist()*
 
 		The returned dictionary contains the following entries:
 			context	context information stored with |setqflist()|
+			id	quickfix list ID |quickfix-ID|
 			items	quickfix list entries
 			nr	quickfix list number
 			title	quickfix list title text
@@ -4645,6 +4677,7 @@ getqflist([{what}])					*getqflist()*
 		Examples: >
 			:echo getqflist({'all': 1})
 			:echo getqflist({'nr': 2, 'title': 1})
+			:echo getqflist({'lines' : ["F1:10:L10"]})
 <
 
 getreg([{regname} [, 1 [, {list}]]])			*getreg()*
@@ -6832,6 +6865,19 @@ serverlist()					*serverlist()*
 		Example: >
 			:echo serverlist()
 <
+setbufline({expr}, {lnum}, {text})			*setbufline()*
+		Set line {lnum} to {text} in buffer {expr}.  To insert
+		lines use |append()|.
+
+		For the use of {expr}, see |bufname()| above.
+
+		{lnum} is used like with |setline()|.
+		This works like |setline()| for the specified buffer.
+		On success 0 is returned, on failure 1 is returned.
+
+		If {expr} is not a valid buffer or {lnum} is not valid, an
+		error message is given.
+
 setbufvar({expr}, {varname}, {val})			*setbufvar()*
 		Set option or local variable {varname} in buffer {expr} to
 		{val}.
@@ -6900,13 +6946,19 @@ setfperm({fname}, {mode})				*setfperm()* *chmod*
 
 setline({lnum}, {text})					*setline()*
 		Set line {lnum} of the current buffer to {text}.  To insert
-		lines use |append()|.
+		lines use |append()|. To set lines in another buffer use
+		|setbufline()|.
+
 		{lnum} is used like with |getline()|.
 		When {lnum} is just below the last line the {text} will be
 		added as a new line.
+
 		If this succeeds, 0 is returned.  If this fails (most likely
-		because {lnum} is invalid) 1 is returned.  Example: >
+		because {lnum} is invalid) 1 is returned.
+
+		Example: >
 			:call setline(5, strftime("%c"))
+
 <		When {text} is a |List| then line {lnum} and following lines
 		will be set to the items in the list.  Example: >
 			:call setline(5, ['aaa', 'bbb', 'ccc'])
@@ -7038,31 +7090,38 @@ setqflist({list} [, {action}[, {what}]])		*setqflist()*
 		is created. The new quickfix list is added after the current
 		quickfix list in the stack and all the following lists are
 		freed. To add a new quickfix list at the end of the stack,
-		set "nr" in {what} to '$'.
+		set "nr" in {what} to "$".
 
 		If the optional {what} dictionary argument is supplied, then
 		only the items listed in {what} are set. The first {list}
 		argument is ignored.  The following items can be specified in
 		{what}:
 		    context	any Vim type can be stored as a context
-		    text	use 'errorformat' to extract items from the
-				text and add the resulting entries to the
-				quickfix list {nr}.  The value can be a string
-				with one line or a list with multiple lines.
+		    efm		errorformat to use when parsing text from
+				"lines". If this is not present, then the
+				'errorformat' option value is used.
+		    id		quickfix list identifier |quickfix-ID|
 		    items	list of quickfix entries. Same as the {list}
 				argument.
+		    lines	use 'errorformat' to parse a list of lines and
+				add the resulting entries to the quickfix list
+				{nr} or {id}.  Only a |List| value is supported.
 		    nr		list number in the quickfix stack; zero
-				means the current quickfix list and '$' means
+				means the current quickfix list and "$" means
 				the last quickfix list
 		    title	quickfix list title text
 		Unsupported keys in {what} are ignored.
 		If the "nr" item is not present, then the current quickfix list
 		is modified. When creating a new quickfix list, "nr" can be
 		set to a value one greater than the quickfix stack size.
+		When modifying a quickfix list, to guarantee that the correct
+		list is modified, "id" should be used instead of "nr" to
+		specify the list.
 
 		Examples: >
-			:call setqflist([], 'r', {'title': 'My search'})
-			:call setqflist([], 'r', {'nr': 2, 'title': 'Errors'})
+		   :call setqflist([], 'r', {'title': 'My search'})
+		   :call setqflist([], 'r', {'nr': 2, 'title': 'Errors'})
+		   :call setqflist([], 'a', {'id':myid, 'lines':["F1:10:L10"]})
 <
 		Returns zero for success, -1 for failure.
 
@@ -7693,6 +7752,7 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		"standout"	"1" if standout
 		"underline"	"1" if underlined
 		"undercurl"	"1" if undercurled
+		"strike"	"1" if strikethrough
 
 		Example (echoes the color of the syntax item under the
 		cursor): >
@@ -8111,6 +8171,12 @@ term_start({cmd}, {options})				*term_start()*
 				     have "%d" where the buffer number goes,
 				     e.g. "10split|buffer %d"; when not
 				     specified "botright sbuf %d" is used
+		   "eof_chars"	     Text to send after all buffer lines were
+				     written to the terminal.  When not set
+				     CTRL-D is used. For Python use CTRL-Z or
+				     "exit()". For a shell use "exit".  A CR
+				     is always added.
+				     {only on MS-Windows}
 
 		{only available when compiled with the |+terminal| feature}
 
@@ -8130,6 +8196,11 @@ test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 test_autochdir()					*test_autochdir()*
 		Set a flag to enable the effect of 'autochdir' before Vim
 		startup has finished.
+
+test_feedinput({string})				*test_feedinput()*
+		Characters in {string} are queued for processing as if they
+		were typed by the user. This uses a low level input buffer.
+		This function works only when with |+unix| or GUI is running.
 
 test_garbagecollect_now()			 *test_garbagecollect_now()*
 		Like garbagecollect(), but executed right away.  This must

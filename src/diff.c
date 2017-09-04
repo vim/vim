@@ -1661,6 +1661,40 @@ diff_equal_entry(diff_T *dp, int idx1, int idx2)
 }
 
 /*
+ * Compare the characters at "p1" and "p2".  If they are equal (possibly
+ * ignoring case) return TRUE and set "len" to the number of bytes.
+ */
+    static int
+diff_equal_char(char_u *p1, char_u *p2, int *len)
+{
+#ifdef FEAT_MBYTE
+    int l  = (*mb_ptr2len)(p1);
+
+    if (l != (*mb_ptr2len)(p2))
+	return FALSE;
+    if (l > 1)
+    {
+	if (STRNCMP(p1, p2, l) != 0
+		&& (!enc_utf8
+		    || !(diff_flags & DIFF_ICASE)
+		    || utf_fold(utf_ptr2char(p1))
+						!= utf_fold(utf_ptr2char(p2))))
+	    return FALSE;
+	*len = l;
+    }
+    else
+#endif
+    {
+	if ((*p1 != *p2)
+		&& (!(diff_flags & DIFF_ICASE)
+		    || TOLOWER_LOC(*p1) != TOLOWER_LOC(*p2)))
+	    return FALSE;
+	*len = 1;
+    }
+    return TRUE;
+}
+
+/*
  * Compare strings "s1" and "s2" according to 'diffopt'.
  * Return non-zero when they are different.
  */
@@ -1689,30 +1723,10 @@ diff_cmp(char_u *s1, char_u *s2)
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
-	    l  = (*mb_ptr2len)(p1);
-	    if (l != (*mb_ptr2len)(p2))
+	    if (!diff_equal_char(p1, p2, &l))
 		break;
-	    if (l > 1)
-	    {
-		if (STRNCMP(p1, p2, l) != 0
-			&& (!enc_utf8
-			    || !(diff_flags & DIFF_ICASE)
-			    || utf_fold(utf_ptr2char(p1))
-					       != utf_fold(utf_ptr2char(p2))))
-		    break;
-		p1 += l;
-		p2 += l;
-	    }
-	    else
-#endif
-	    {
-		if (*p1 != *p2 && (!(diff_flags & DIFF_ICASE)
-				     || TOLOWER_LOC(*p1) != TOLOWER_LOC(*p2)))
-		    break;
-		++p1;
-		++p2;
-	    }
+	    p1 += l;
+	    p2 += l;
 	}
     }
 
@@ -1969,6 +1983,10 @@ diff_find_change(
     int		idx;
     int		off;
     int		added = TRUE;
+#ifdef FEAT_MBYTE
+    char_u	*p1, *p2;
+    int		l;
+#endif
 
     /* Make a copy of the line, the next ml_get() will invalidate it. */
     line_org = vim_strsave(ml_get_buf(wp->w_buffer, lnum, FALSE));
@@ -2017,10 +2035,11 @@ diff_find_change(
 		}
 		else
 		{
-		    if (line_org[si_org] != line_new[si_new])
+		    if (!diff_equal_char(line_org + si_org, line_new + si_new,
+									   &l))
 			break;
-		    ++si_org;
-		    ++si_new;
+		    si_org += l;
+		    si_new += l;
 		}
 	    }
 #ifdef FEAT_MBYTE
@@ -2056,10 +2075,16 @@ diff_find_change(
 		    }
 		    else
 		    {
-			if (line_org[ei_org] != line_new[ei_new])
+			p1 = line_org + ei_org;
+			p2 = line_new + ei_new;
+#ifdef FEAT_MBYTE
+			p1 -= (*mb_head_off)(line_org, p1);
+			p2 -= (*mb_head_off)(line_new, p2);
+#endif
+			if (!diff_equal_char(p1, p2, &l))
 			    break;
-			--ei_org;
-			--ei_new;
+			ei_org -= l;
+			ei_new -= l;
 		    }
 		}
 		if (*endp < ei_org)

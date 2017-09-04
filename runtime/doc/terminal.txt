@@ -133,6 +133,14 @@ Syntax ~
 					height.
 			++cols={width}  Use {width} for the terminal window
 					width.
+			++eof={text}	when using [range], text to send after
+					the last line was written. The default
+					is to send CTRL-D.  A CR is appended.
+					E.g. for a shell use "++eof=exit" and
+					for Python "++eof=exit()".  Special
+					codes can be used like with `:map`,
+					e.g. "<C-Z>" for CTRL-Z.
+					{only on MS-Windows}
 
 			If you want to use more options use the |term_start()|
 			function.
@@ -141,11 +149,13 @@ When the buffer associated with the terminal is unloaded or wiped out the job
 is killed, similar to calling `job_stop(job, "kill")`
 
 So long as the job is running the window behaves like it contains a modified
-buffer.  Trying to close the window with `CTRL-W :close` or `CTRL-W :hide`
-fails, unless "!" is added, in which case the job is ended.  The text in the
-window is lost.  The buffer still exists, but getting it in a window with
-`:buffer` will show an
-empty buffer.
+buffer.  Trying to close the window with `CTRL-W :quit` fails.  When using
+`CTRL-W :quit!` the job is ended.  The text in the window is lost.  The buffer
+still exists, but getting it in a window with `:buffer` will show an empty
+buffer.
+
+Trying to close the window with `CTRL-W :close` also fails.   Using
+`CTRL-W :close!` will close the window and make the buffer hidden.
 
 You can use `CTRL-W :hide` to close the terminal window and make the buffer
 hidden, the job keeps running.  The `:buffer` command can be used to turn the

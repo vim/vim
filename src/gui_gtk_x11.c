@@ -5908,6 +5908,27 @@ draw_under(int flags, int row, int col, int cells)
 #endif
     }
 
+    /* Draw a strikethrough line */
+    if (flags & DRAW_STRIKE)
+    {
+#if GTK_CHECK_VERSION(3,0,0)
+	cairo_set_line_width(cr, 1.0);
+	cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+	cairo_set_source_rgba(cr,
+		gui.spcolor->red, gui.spcolor->green, gui.spcolor->blue,
+		gui.spcolor->alpha);
+	cairo_move_to(cr, FILL_X(col), y + 1 - gui.char_height/2 + 0.5);
+	cairo_line_to(cr, FILL_X(col + cells), y + 1 - gui.char_height/2 + 0.5);
+	cairo_stroke(cr);
+#else
+	gdk_gc_set_foreground(gui.text_gc, gui.spcolor);
+	gdk_draw_line(gui.drawarea->window, gui.text_gc,
+		      FILL_X(col), y + 1 - gui.char_height/2,
+		      FILL_X(col + cells), y + 1 - gui.char_height/2);
+	gdk_gc_set_foreground(gui.text_gc, gui.fgcolor);
+#endif
+    }
+
     /* Underline: draw a line at the bottom of the character cell. */
     if (flags & DRAW_UNDERL)
     {
@@ -5916,16 +5937,14 @@ draw_under(int flags, int row, int col, int cells)
 	if (p_linespace > 1)
 	    y -= p_linespace - 1;
 #if GTK_CHECK_VERSION(3,0,0)
-	{
-	    cairo_set_line_width(cr, 1.0);
-	    cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
-	    cairo_set_source_rgba(cr,
-		    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
-		    gui.fgcolor->alpha);
-	    cairo_move_to(cr, FILL_X(col), y + 0.5);
-	    cairo_line_to(cr, FILL_X(col + cells), y + 0.5);
-	    cairo_stroke(cr);
-	}
+	cairo_set_line_width(cr, 1.0);
+	cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+	cairo_set_source_rgba(cr,
+		gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+		gui.fgcolor->alpha);
+	cairo_move_to(cr, FILL_X(col), y + 0.5);
+	cairo_line_to(cr, FILL_X(col + cells), y + 0.5);
+	cairo_stroke(cr);
 #else
 	gdk_draw_line(gui.drawarea->window, gui.text_gc,
 		      FILL_X(col), y,

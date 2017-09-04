@@ -84,6 +84,7 @@ endfunc
 
 func Test_terminal_hide_buffer()
   let buf = Run_shell_in_terminal({})
+  setlocal bufhidden=hide
   quit
   for nr in range(1, winnr('$'))
     call assert_notequal(winbufnr(nr), buf)
@@ -163,10 +164,8 @@ func Test_terminal_scrape_123()
   call term_wait(1234)
 
   call term_wait(buf)
-  if has('win32')
-    " TODO: this should not be needed
-    sleep 100m
-  endif
+  let g:buf = buf
+  call WaitFor('len(term_scrape(g:buf, 1)) > 0')
   call Check_123(buf)
 
   " Must still work after the job ended.
@@ -292,6 +291,8 @@ func Test_terminal_size()
   let size = term_getsize('')
   bwipe!
   call assert_equal([7, 27], size)
+
+  call delete('Xtext')
 endfunc
 
 func Test_terminal_curwin()
@@ -324,7 +325,7 @@ func Test_terminal_curwin()
 
   split dummy
   bwipe!
-
+  call delete('Xtext')
 endfunc
 
 func Test_finish_open_close()
@@ -356,13 +357,13 @@ func Test_finish_open_close()
   call assert_equal(1, winnr('$'))
 
   exe 'terminal ++open ' . cmd
-  close
+  close!
   call WaitFor("winnr('$') == 2", waittime)
   call assert_equal(2, winnr('$'))
   bwipe
 
   call term_start(cmd, {'term_finish': 'open'})
-  close
+  close!
   call WaitFor("winnr('$') == 2", waittime)
   call assert_equal(2, winnr('$'))
   bwipe
@@ -385,7 +386,7 @@ func Test_finish_open_close()
   call assert_fails("call term_start(cmd, {'term_opencmd': 'split % and %d'})", 'E475:')
 
   call term_start(cmd, {'term_finish': 'open', 'term_opencmd': '4split | buffer %d'})
-  close
+  close!
   call WaitFor("winnr('$') == 2", waittime)
   call assert_equal(2, winnr('$'))
   call assert_equal(4, winheight(0))
@@ -457,14 +458,16 @@ endfunction
 
 func Test_terminal_noblock()
   let g:buf = term_start(&shell)
+  if has('mac')
+    " The shell or something else has a problem dealing with more than 1000
+    " characters at the same time.
+    let len = 1000
+  else
+    let len = 5000
+  endif
 
   for c in ['a','b','c','d','e','f','g','h','i','j','k']
-    call term_sendkeys(g:buf, 'echo ' . repeat(c, 5000) . "\<cr>")
-    if has('mac')
-      " TODO: this should not be needed, but without it sending keys blocks
-      " after 8000 chars or so.
-      sleep 100m
-    endif
+    call term_sendkeys(g:buf, 'echo ' . repeat(c, len) . "\<cr>")
   endfor
   call term_sendkeys(g:buf, "echo done\<cr>")
 
@@ -488,24 +491,47 @@ func Test_terminal_noblock()
 endfunc
 
 func Test_terminal_write_stdin()
-  " Todo: make this work on all systems.
-  if !has('unix')
-    return
+  if !executable('wc')
+    throw 'skipped: wc command not available'
   endif
   new
   call setline(1, ['one', 'two', 'three'])
   %term wc
-  call WaitFor('getline(1) != ""')
-  let nrs = split(getline(1))
+  call WaitFor('getline("$") =~ "3"')
+  let nrs = split(getline('$'))
   call assert_equal(['3', '3', '14'], nrs)
   bwipe
 
+  new
   call setline(1, ['one', 'two', 'three', 'four'])
   2,3term wc
-  call WaitFor('getline(1) != ""')
-  let nrs = split(getline(1))
+  call WaitFor('getline("$") =~ "2"')
+  let nrs = split(getline('$'))
   call assert_equal(['2', '2', '10'], nrs)
   bwipe
+
+  if executable('python')
+    new
+    call setline(1, ['print("hello")'])
+    1term ++eof=exit() python
+    " MS-Windows echoes the input, Unix doesn't.
+    call WaitFor('getline("$") =~ "exit" || getline(1) =~ "hello"')
+    if getline(1) =~ 'hello'
+      call assert_equal('hello', getline(1))
+    else
+      call assert_equal('hello', getline(line('$') - 1))
+    endif
+    bwipe
+
+    if has('win32')
+      new
+      call setline(1, ['print("hello")'])
+      1term ++eof=<C-Z> python
+      call WaitFor('getline("$") =~ "Z"')
+      call assert_equal('hello', getline(line('$') - 1))
+      bwipe
+    endif
+  endif
 
   bwipe!
 endfunc
@@ -528,4 +554,62 @@ func Test_terminal_no_cmd()
   call term_wait(buf)
   call assert_equal('look here', term_getline(buf, 1))
   bwipe!
+endfunc
+
+func Test_terminal_special_chars()
+  " this file name only works on Unix
+  if !has('unix')
+    return
+  endif
+  call mkdir('Xdir with spaces')
+  call writefile(['x'], 'Xdir with spaces/quoted"file')
+  term ls Xdir\ with\ spaces/quoted\"file
+  call WaitFor('term_getline("", 1) =~ "quoted"')
+  call assert_match('quoted"file', term_getline('', 1))
+  call term_wait('')
+
+  call delete('Xdir with spaces', 'rf')
+  bwipe
+endfunc
+
+func Test_terminal_wrong_options()
+  call assert_fails('call term_start(&shell, {
+	\ "in_io": "file",
+	\ "in_name": "xxx",
+	\ "out_io": "file",
+	\ "out_name": "xxx",
+	\ "err_io": "file",
+	\ "err_name": "xxx"
+	\ })', 'E474:')
+  call assert_fails('call term_start(&shell, {
+	\ "out_buf": bufnr("%")
+	\ })', 'E474:')
+  call assert_fails('call term_start(&shell, {
+	\ "err_buf": bufnr("%")
+	\ })', 'E474:')
+endfunc
+
+func Test_terminal_redir_file()
+  let cmd = Get_cat_123_cmd()
+  let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
+  call term_wait(buf)
+  call WaitFor('len(readfile("Xfile")) > 0')
+  call assert_match('123', readfile('Xfile')[0])
+  call delete('Xfile')
+
+  if has('unix')
+    let buf = term_start('xyzabc', {'err_io': 'file', 'err_name': 'Xfile'})
+    call term_wait(buf)
+    call WaitFor('len(readfile("Xfile")) > 0')
+    call assert_match('executing job failed', readfile('Xfile')[0])
+    call delete('Xfile')
+
+    call writefile(['one line'], 'Xfile')
+    let buf = term_start('cat', {'in_io': 'file', 'in_name': 'Xfile'})
+    call term_wait(buf)
+    call WaitFor('term_getline(' . buf . ', 1) == "one line"')
+    call assert_equal('one line', term_getline(buf, 1))
+    bwipe
+    call delete('Xfile')
+  endif
 endfunc

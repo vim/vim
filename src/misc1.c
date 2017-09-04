@@ -1589,8 +1589,7 @@ open_line(
 	    && curbuf->b_p_ai)
     {
 	fixthisline(get_lisp_indent);
-	p = ml_get_curline();
-	ai_col = (colnr_T)(skipwhite(p) - p);
+	ai_col = (colnr_T)getwhitecols_curline();
     }
 #endif
 #ifdef FEAT_CINDENT
@@ -1608,8 +1607,7 @@ open_line(
 		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum)))
     {
 	do_c_expr_indent();
-	p = ml_get_curline();
-	ai_col = (colnr_T)(skipwhite(p) - p);
+	ai_col = (colnr_T)getwhitecols_curline();
     }
 #endif
 #if defined(FEAT_VREPLACE) && (defined(FEAT_LISP) || defined(FEAT_CINDENT))
@@ -2730,12 +2728,15 @@ skip_to_option_part(char_u *p)
 changed(void)
 {
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-    /* The text of the preediting area is inserted, but this doesn't
-     * mean a change of the buffer yet.  That is delayed until the
-     * text is committed. (this means preedit becomes empty) */
-    if (im_is_preediting() && !xim_changed_while_preediting)
-	return;
-    xim_changed_while_preediting = FALSE;
+    if (p_imst == IM_ON_THE_SPOT)
+    {
+	/* The text of the preediting area is inserted, but this doesn't
+	 * mean a change of the buffer yet.  That is delayed until the
+	 * text is committed. (this means preedit becomes empty) */
+	if (im_is_preediting() && !xim_changed_while_preediting)
+	    return;
+	xim_changed_while_preediting = FALSE;
+    }
 #endif
 
     if (!curbuf->b_changed)
@@ -3757,7 +3758,7 @@ init_homedir(void)
      * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
      * each user.  Try constructing $HOME from these.
      */
-    if (var == NULL || *var == NULL)
+    if (var == NULL || *var == NUL)
     {
 	char_u *homedrive, *homepath;
 

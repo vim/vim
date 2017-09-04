@@ -2098,11 +2098,16 @@ viminfo_filename(char_u *file)
 	else if ((file = find_viminfo_parameter('n')) == NULL || *file == NUL)
 	{
 #ifdef VIMINFO_FILE2
-	    /* don't use $HOME when not defined (turned into "c:/"!). */
 # ifdef VMS
 	    if (mch_getenv((char_u *)"SYS$LOGIN") == NULL)
 # else
+#  ifdef MSWIN
+	    /* Use $VIM only if $HOME is the default "C:/". */
+	    if (STRCMP(vim_getenv((char_u *)"HOME", NULL), "C:/") == 0
+		    && mch_getenv((char_u *)"HOME") == NULL)
+#  else
 	    if (mch_getenv((char_u *)"HOME") == NULL)
+#  endif
 # endif
 	    {
 		/* don't use $VIM when not available. */
