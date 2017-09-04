@@ -1,25 +1,23 @@
 " Tests for system() and systemlist()
 
 function! Test_System()
-  if !executable('echo') || !executable('cat') || !executable('wc')
+  if !has('win32')
+    call assert_equal("123\n", system('echo 123'))
+    call assert_equal(['123'], systemlist('echo 123'))
+    call assert_equal('123',   system('cat', '123'))
+    call assert_equal(['123'], systemlist('cat', '123'))
+    call assert_equal(["as\<NL>df"], systemlist('cat', ["as\<NL>df"]))
+  else
+    call assert_equal("123\n", system('cmd /c echo 123'))
+    call assert_equal(["123\r"], systemlist('cmd /c echo 123'))
+    call assert_equal("123\n",   system('cmd /c more', '123'))
+    call assert_equal(["123\r"], systemlist('cmd /c more', '123'))
+    call assert_equal(["as\r", "df\r"], systemlist('cmd /c more', ["as\<NL>df"]))
+  endif
+
+  if executable('wc')
     return
   endif
-  let out = system('echo 123')
-  " On Windows we may get a trailing space.
-  if out != "123 \n"
-    call assert_equal("123\n", out)
-  endif
-
-  let out = systemlist('echo 123')
-  " On Windows we may get a trailing space and CR.
-  if out != ["123 \r"]
-    call assert_equal(['123'], out)
-  endif
-
-  call assert_equal('123',   system('cat', '123'))
-  call assert_equal(['123'], systemlist('cat', '123'))
-  call assert_equal(["as\<NL>df"], systemlist('cat', ["as\<NL>df"]))
-
   new Xdummy
   call setline(1, ['asdf', "pw\<NL>er", 'xxxx'])
   let out = system('wc -l', bufnr('%'))
@@ -37,7 +35,11 @@ function! Test_System()
     call assert_equal(['3'],  out)
   endif
 
-  let out = systemlist('cat', bufnr('%'))
+  if !has('win32')
+    let out = systemlist('cat', bufnr('%'))
+  else
+    let out = systemlist('more', bufnr('%'))
+  endif
   " On Windows we may get a trailing CR.
   if out != ["asdf\r", "pw\<NL>er\r", "xxxx\r"]
     call assert_equal(['asdf', "pw\<NL>er", 'xxxx'],  out)
