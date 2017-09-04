@@ -1650,7 +1650,7 @@ make_filter_cmd(
 	STRCAT(buf, itmp);
     }
 #else
-    if (*p_sxe != NUL && STRCMP(p_sxq, "(") == 0)
+    if (*p_sxe != NUL && *p_sxq == '(')
     {
 	if (itmp != NULL || otmp != NULL)
 	    vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);

@@ -3250,7 +3250,7 @@ call_shell(char_u *cmd, int opt)
 	{
 	    char_u *ecmd = cmd;
 
-	    if (*p_sxe != NUL && STRCMP(p_sxq, "(") == 0)
+	    if (*p_sxe != NUL && *p_sxq == '(')
 	    {
 		ecmd = vim_strsave_escaped_ext(cmd, p_sxe, '^', FALSE);
 		if (ecmd == NULL)
@@ -3263,9 +3263,9 @@ call_shell(char_u *cmd, int opt)
 		STRCAT(ncmd, ecmd);
 		/* When 'shellxquote' is ( append ).
 		 * When 'shellxquote' is "( append )". */
-		STRCAT(ncmd, STRCMP(p_sxq, "(") == 0 ? (char_u *)")"
-			   : STRCMP(p_sxq, "\"(") == 0 ? (char_u *)")\""
-			   : p_sxq);
+		STRCAT(ncmd, *p_sxq == '(' ? (char_u *)")"
+		    : *p_sxq == '"' && *(p_sxq+1) == '(' ? (char_u *)")\""
+		    : p_sxq);
 		retval = mch_call_shell(ncmd, opt);
 		vim_free(ncmd);
 	    }
