@@ -37,12 +37,10 @@ function! Test_System()
 
   if !has('win32')
     let out = systemlist('cat', bufnr('%'))
+    call assert_equal(['asdf', "pw\<NL>er", 'xxxx'],  out)
   else
     let out = systemlist('more', bufnr('%'))
-  endif
-  " On Windows we may get a trailing CR.
-  if out != ["asdf\r", "pw\<NL>er\r", "xxxx\r"]
-    call assert_equal(['asdf', "pw\<NL>er", 'xxxx'],  out)
+    call assert_equal(['asdf\r', 'pw\r', 'er\r', 'xxxx\r'],  out)
   endif
   bwipe!
 
