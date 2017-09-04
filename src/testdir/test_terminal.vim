@@ -165,7 +165,9 @@ func Test_terminal_scrape_123()
 
   call term_wait(buf)
   let g:buf = buf
-  call WaitFor('len(term_scrape(g:buf, 1)) > 0')
+  " On MS-Windows we first get a startup message of two lines, wait for the
+  " "cls" to happen, after that we have one line.
+  call WaitFor('len(term_scrape(g:buf, 1)) == 1')
   call Check_123(buf)
 
   " Must still work after the job ended.
@@ -590,12 +592,15 @@ func Test_terminal_wrong_options()
 endfunc
 
 func Test_terminal_redir_file()
-  let cmd = Get_cat_123_cmd()
-  let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
-  call term_wait(buf)
-  call WaitFor('len(readfile("Xfile")) > 0')
-  call assert_match('123', readfile('Xfile')[0])
-  call delete('Xfile')
+  " TODO: this should work on MS-Window
+  if has('unix')
+    let cmd = Get_cat_123_cmd()
+    let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
+    call term_wait(buf)
+    call WaitFor('len(readfile("Xfile")) > 0')
+    call assert_match('123', readfile('Xfile')[0])
+    call delete('Xfile')
+  endif
 
   if has('unix')
     let buf = term_start('xyzabc', {'err_io': 'file', 'err_name': 'Xfile'})
