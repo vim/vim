@@ -1733,8 +1733,10 @@ append_redir(
     }
     if (p != NULL)
     {
-	*end = ' '; /* not really needed? Not with sh, ksh or bash */
-	vim_snprintf((char *)end + 1, (size_t)(buflen - (end + 1 - buf)),
+#ifdef WIN3264
+	*end++ = ' '; /* not really needed? Not with sh, ksh or bash */
+#endif
+	vim_snprintf((char *)end, (size_t)(buflen - (end - buf)),
 						  (char *)opt, (char *)fname);
     }
     else
