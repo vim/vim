@@ -165,7 +165,7 @@ func Test_terminal_scrape_123()
 
   call term_wait(buf)
   let g:buf = buf
-  call WaitFor('len(term_scrape(g:buf, 1)) > 0')
+  call WaitFor('term_scrape(g:buf, 1)[0].chars == "1"')
   call Check_123(buf)
 
   " Must still work after the job ended.
