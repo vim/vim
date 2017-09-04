@@ -1702,9 +1702,7 @@ diff_equal_char(char_u *p1, char_u *p2, int *len)
 diff_cmp(char_u *s1, char_u *s2)
 {
     char_u	*p1, *p2;
-#ifdef FEAT_MBYTE
     int		l;
-#endif
 
     if ((diff_flags & (DIFF_ICASE | DIFF_IWHITE)) == 0)
 	return STRCMP(s1, s2);
@@ -1983,10 +1981,8 @@ diff_find_change(
     int		idx;
     int		off;
     int		added = TRUE;
-#ifdef FEAT_MBYTE
     char_u	*p1, *p2;
     int		l;
-#endif
 
     /* Make a copy of the line, the next ml_get() will invalidate it. */
     line_org = vim_strsave(ml_get_buf(wp->w_buffer, lnum, FALSE));
