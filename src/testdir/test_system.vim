@@ -8,14 +8,14 @@ function! Test_System()
     call assert_equal(['123'], systemlist('cat', '123'))
     call assert_equal(["as\<NL>df"], systemlist('cat', ["as\<NL>df"]))
   else
-    call assert_equal("123\n", system('cmd /c echo 123'))
-    call assert_equal(["123\r"], systemlist('cmd /c echo 123'))
-    call assert_equal("123\n",   system('cmd /c more', '123'))
-    call assert_equal(["123\r"], systemlist('cmd /c more', '123'))
-    call assert_equal(["as\r", "df\r"], systemlist('cmd /c more', ["as\<NL>df"]))
+    call assert_equal("123\n", system('echo 123'))
+    call assert_equal(["123\r"], systemlist('echo 123'))
+    call assert_equal("123\n",   system('more', '123'))
+    call assert_equal(["123\r"], systemlist('more', '123'))
+    call assert_equal(["as\r", "df\r"], systemlist('more', ["as\<NL>df"]))
   endif
 
-  if executable('wc')
+  if !executable('wc') || !executable('cat')
     return
   endif
   new Xdummy
