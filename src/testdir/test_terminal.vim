@@ -166,8 +166,8 @@ func Test_terminal_scrape_123()
   call term_wait(buf)
   let g:buf = buf
   " On MS-Windows we first get a startup message of two lines, wait for the
-  " "cls" to happen, after that we have one line.
-  call WaitFor('len(term_scrape(g:buf, 1)) == 1')
+  " "cls" to happen, after that we have one line with three characters.
+  call WaitFor('len(term_scrape(g:buf, 1)) == 3')
   call Check_123(buf)
 
   " Must still work after the job ended.
