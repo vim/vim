@@ -614,6 +614,8 @@ func Test_terminal_redir_file()
     call term_wait(buf)
     call WaitFor('term_getline(' . buf . ', 1) == "one line"')
     call assert_equal('one line', term_getline(buf, 1))
+    let g:job = term_getjob(buf)
+    call WaitFor('job_status(g:job) == "dead"')
     bwipe
     call delete('Xfile')
   endif
