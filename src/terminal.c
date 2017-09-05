@@ -462,7 +462,7 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     void
 ex_terminal(exarg_T *eap)
 {
-    typval_T	argvar;
+    typval_T	argvar[2];
     jobopt_T	opt;
     char_u	*cmd;
     char_u	*tofree = NULL;
@@ -525,8 +525,8 @@ ex_terminal(exarg_T *eap)
 	}
 	cmd = skipwhite(p);
     }
-    if (cmd == NULL || *cmd == NUL)
-	/* Make a copy, an autocommand may set 'shell'. */
+    if (*cmd == NUL)
+	/* Make a copy of 'shell', an autocommand may change the option. */
 	tofree = cmd = vim_strsave(p_sh);
 
     if (eap->addr_count > 0)
@@ -539,9 +539,10 @@ ex_terminal(exarg_T *eap)
 	opt.jo_in_bot = eap->line2;
     }
 
-    argvar.v_type = VAR_STRING;
-    argvar.vval.v_string = cmd;
-    term_start(&argvar, &opt, eap->forceit);
+    argvar[0].v_type = VAR_STRING;
+    argvar[0].vval.v_string = cmd;
+    argvar[1].v_type = VAR_UNKNOWN;
+    term_start(argvar, &opt, eap->forceit);
     vim_free(tofree);
 }
 
@@ -2886,7 +2887,8 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	    && STRCMP(job_status(buf->b_term->tl_job), "dead") == 0)
     {
 	/* The job is dead, keep reading channel I/O until the channel is
-	 * closed. */
+	 * closed. buf->b_term may become NULL if the terminal was closed while
+	 * waiting. */
 	ch_log(NULL, "term_wait(): waiting for channel to close");
 	while (buf->b_term != NULL && !buf->b_term->tl_channel_closed)
 	{
