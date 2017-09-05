@@ -211,24 +211,6 @@ the job ends while in Terminal-Normal mode this changes to
 
 It is not possible to enter Insert mode from Terminal-Job mode.
 
-Fast Wincmd entry for Terminal Window Navigation~
-							*'fastwincmd'*
-
-The fastwincmd feature is optional. To enable it only if the feature has been
-compiled into Vim use: >
-
-	if has('fastwincmd')
-	  set fastwincmd
-        endif
-
-When enabled, it turns on the following control sequences for new buffer
-windows.
-
-Special in the terminal window:	            *CTRL-H* *CTRL-J* *CTRL-K* *CTRL-L*
-        CTRL-H          apply CTRL-W ('termkey') H; move to the window left
-        CTRL-J          apply CTRL-W ('termkey') J; move to the window below
-        CTRL-K          apply CTRL-W ('termkey') K; move to the window above
-        CTRL-L          apply CTRL-W ('termkey') L; move to the window right
 
 Cursor style ~
 
@@ -241,6 +223,7 @@ An exception is when xterm is started with the "-bc" argument, or another way
 that causes the cursor to blink.  This actually means that the blinking flag
 is inverted.  Since Vim cannot detect this, the terminal window cursor
 blinking will also be inverted.
+
 
 Unix ~
 

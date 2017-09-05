@@ -1474,27 +1474,6 @@ terminal_loop(void)
 	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 #endif
 
-#ifdef FEAT_FAST_WINCMD
-	if (curbuf->b_p_fwcmd) /* 'fastwincmd' */
-	{
-	    char fast_wincmd = '\0';
-	    switch (c)
-	    {
-		case Ctrl_H: fast_wincmd = 'h'; break;
-		case Ctrl_J: fast_wincmd = 'j'; break;
-		case Ctrl_K: fast_wincmd = 'k'; break;
-		case Ctrl_L: fast_wincmd = 'l'; break;
-	    }
-	    if (fast_wincmd)
-	    {
-		stuffcharReadbuff(Ctrl_W);
-		stuffcharReadbuff(fast_wincmd);
-		ret = OK;
-		goto theend;
-	    }
-	}
-#endif
-
 	if (c == (termkey == 0 ? Ctrl_W : termkey) || c == Ctrl_BSL)
 	{
 	    int	    prev_c = c;
@@ -1528,28 +1507,6 @@ terminal_loop(void)
 		/* "CTRL-W CTRL-C" or 'termkey' CTRL-C: end the job */
 		mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 	    }
-#ifdef FEAT_FAST_WINCMD
-	    else if (termkey == 0 && c == Ctrl_H)
-	    {
-		/* "CTRL-W CTRL-H": send CTRL-H to the job */
-		c = Ctrl_H;
-	    }
-	    else if (termkey == 0 && c == Ctrl_J)
-	    {
-		/* "CTRL-W CTRL-H": send CTRL-J to the job */
-		c = Ctrl_J;
-	    }
-	    else if (termkey == 0 && c == Ctrl_K)
-	    {
-		/* "CTRL-W CTRL-H": send CTRL-K to the job */
-		c = Ctrl_K;
-	    }
-	    else if (termkey == 0 && c == Ctrl_L)
-	    {
-		/* "CTRL-W CTRL-H": send CTRL-L to the job */
-		c = Ctrl_L;
-	    }
-#endif
 	    else if (termkey == 0 && c == '.')
 	    {
 		/* "CTRL-W .": send CTRL-W to the job */
