@@ -5692,7 +5692,10 @@ mch_create_pty_channel(job_T *job, jobopt_T *options)
 
     channel = add_channel();
     if (channel == NULL)
+    {
+	close(pty_master_fd);
 	return FAIL;
+    }
     job->jv_channel = channel;  /* ch_refcount was set by add_channel() */
     channel->ch_keep_open = TRUE;
 
