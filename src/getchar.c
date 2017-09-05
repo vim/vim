@@ -1598,8 +1598,13 @@ vgetc(void)
       {
 	int did_inc = FALSE;
 
-	if (mod_mask)		/* no mapping after modifier has been read */
+	if (mod_mask
+#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
+	    || im_is_preediting()
+#endif
+		)
 	{
+	    /* no mapping after modifier has been read */
 	    ++no_mapping;
 	    ++allow_keys;
 	    did_inc = TRUE;	/* mod_mask may change value */
