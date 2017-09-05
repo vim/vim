@@ -9885,7 +9885,10 @@ set_buffer_lines(buf_T *buf, linenr_T lnum, typval_T *lines, typval_T *rettv)
     buf_T	*curbuf_save;
     int		is_curbuf = buf == curbuf;
 
-    if (buf == NULL || buf->b_ml.ml_mfp == NULL || lnum < 1)
+    /* When using the current buffer ml_mfp will be set if needed.  Useful when
+     * setline() is used on startup.  For other buffers the buffer must be
+     * loaded. */
+    if (buf == NULL || (!is_curbuf && buf->b_ml.ml_mfp == NULL) || lnum < 1)
     {
 	rettv->vval.v_number = 1;	/* FAIL */
 	return;

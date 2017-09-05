@@ -1,5 +1,9 @@
 " Tests for setbufline() and getbufline()
 
+if !exists('*GetVimCommand')
+  source shared.vim
+endif
+
 func Test_setbufline_getbufline()
   new
   let b = bufnr('%')
@@ -23,4 +27,17 @@ func Test_setbufline_getbufline()
   call assert_equal(['e'], getbufline(b, 5))
   call assert_equal([], getbufline(b, 6))
   exe "bwipe! " . b
+endfunc
+
+func Test_setline_startup()
+  let cmd = GetVimCommand('Xscript')
+  if cmd == ''
+    return
+  endif
+  call writefile(['call setline(1, "Hello")', 'silent w Xtest', 'q!'], 'Xscript')
+  call system(cmd)
+  call assert_equal(['Hello'], readfile('Xtest'))
+
+  call delete('Xscript')
+  call delete('Xtest')
 endfunc

@@ -1,9 +1,11 @@
 " Test for timers
 
-source shared.vim
-
 if !has('timers')
   finish
+endif
+
+if !exists('*WaitFor')
+  source shared.vim
 endif
 
 func MyHandler(timer)
