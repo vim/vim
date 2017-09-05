@@ -4572,12 +4572,12 @@ check_termcode(
 				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
 			    is_not_xterm = TRUE;
 #  endif
-			/* Gnome terminal sends 1;3801;0 or 1;4402;0.
+			/* Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
 			 * xfce4-terminal sends 1;2802;0.
 			 * screen sends 83;40500;0
-			 * Assuming any version number over 2800 is not an
+			 * Assuming any version number over 2500 is not an
 			 * xterm (without the limit for rxvt and screen). */
-			if (col >= 2800)
+			if (col >= 2500)
 			    is_not_xterm = TRUE;
 
 			/* PuTTY sends 0;136;0 */
