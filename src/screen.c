@@ -235,7 +235,7 @@ redraw_later_clear(void)
     else
 #endif
 	/* Use attributes that is very unlikely to appear in text. */
-	screen_attr = HL_BOLD | HL_UNDERLINE | HL_INVERSE;
+	screen_attr = HL_BOLD | HL_UNDERLINE | HL_INVERSE | HL_STRIKETHROUGH;
 }
 
 /*
@@ -3463,7 +3463,7 @@ win_line(
     {
 	/* For checking first word with a capital skip white space. */
 	if (cap_col == 0)
-	    cap_col = (int)(skipwhite(line) - line);
+	    cap_col = getwhitecols(line);
 
 	/* To be able to spell-check over line boundaries copy the end of the
 	 * current line into nextline[].  Above the start of the next line was
@@ -5197,7 +5197,8 @@ win_line(
 	/* XIM don't send preedit_start and preedit_end, but they send
 	 * preedit_changed and commit.  Thus Vim can't set "im_is_active", use
 	 * im_is_preediting() here. */
-	if (xic != NULL
+	if (p_imst == IM_ON_THE_SPOT
+		&& xic != NULL
 		&& lnum == wp->w_cursor.lnum
 		&& (State & INSERT)
 		&& !p_imdisable
@@ -8085,6 +8086,8 @@ screen_start_highlight(int attr)
 		out_str(T_CZH);
 	    if ((attr & HL_INVERSE) && T_MR != NULL)	/* inverse (reverse) */
 		out_str(T_MR);
+	    if ((attr & HL_STRIKETHROUGH) && T_STS != NULL)	/* strike */
+		out_str(T_STS);
 
 	    /*
 	     * Output the color or start string after bold etc., in case the
@@ -8208,6 +8211,13 @@ screen_stop_highlight(void)
 		    do_ME = TRUE;
 		else
 		    out_str(T_CZR);
+	    }
+	    if (screen_attr & HL_STRIKETHROUGH)
+	    {
+		if (STRCMP(T_STE, T_ME) == 0)
+		    do_ME = TRUE;
+		else
+		    out_str(T_STE);
 	    }
 	    if (do_ME || (screen_attr & (HL_BOLD | HL_INVERSE)))
 		out_str(T_ME);

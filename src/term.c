@@ -128,8 +128,11 @@ static int u7_status = STATUS_GET;
 /* Request background color report: */
 static int rbg_status = STATUS_GET;
 
-/* Request cursor mode report: */
-static int rcm_status = STATUS_GET;
+/* Request cursor blinking mode report: */
+static int rbm_status = STATUS_GET;
+
+/* Request cursor style report: */
+static int rcs_status = STATUS_GET;
 # endif
 
 /*
@@ -163,9 +166,14 @@ static int  detected_8bit = FALSE;	/* detected 8-bit terminal */
 
 #ifdef FEAT_TERMRESPONSE
 /* When the cursor shape was detected these values are used:
- * 1: block, 2: underline, 3: vertical bar
- * initial_cursor_blink is only valid when initial_cursor_shape is not zero. */
+ * 1: block, 2: underline, 3: vertical bar */
 static int initial_cursor_shape = 0;
+
+/* The blink flag from the style response may be inverted from the actual
+ * blinking state, xterm XORs the flags. */
+static int initial_cursor_shape_blink = FALSE;
+
+/* The blink flag from the blinking-cursor mode response */
 static int initial_cursor_blink = FALSE;
 #endif
 
@@ -209,6 +217,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_US,	IF_EB("\033|8h", ESC_STR "|8h")},   /* HL_UNDERLINE */
     {(int)KS_UCE,	IF_EB("\033|8C", ESC_STR "|8C")},   /* HL_UNDERCURL */
     {(int)KS_UCS,	IF_EB("\033|8c", ESC_STR "|8c")},   /* HL_UNDERCURL */
+    {(int)KS_STE,	IF_EB("\033|4C", ESC_STR "|4C")},   /* HL_STRIKETHROUGH */
+    {(int)KS_STS,	IF_EB("\033|4c", ESC_STR "|4c")},   /* HL_STRIKETHROUGH */
     {(int)KS_CZR,	IF_EB("\033|4H", ESC_STR "|4H")},   /* HL_ITALIC */
     {(int)KS_CZH,	IF_EB("\033|4h", ESC_STR "|4h")},   /* HL_ITALIC */
     {(int)KS_VB,	IF_EB("\033|f", ESC_STR "|f")},
@@ -823,6 +833,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_MD,	IF_EB("\033[1m", ESC_STR "[1m")},
     {(int)KS_UE,	IF_EB("\033[m", ESC_STR "[m")},
     {(int)KS_US,	IF_EB("\033[4m", ESC_STR "[4m")},
+    {(int)KS_STE,	IF_EB("\033[29m", ESC_STR "[29m")},
+    {(int)KS_STS,	IF_EB("\033[9m", ESC_STR "[9m")},
     {(int)KS_MS,	"y"},
     {(int)KS_UT,	"y"},
     {(int)KS_LE,	"\b"},
@@ -835,6 +847,7 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CSH,	IF_EB("\033[%d q", ESC_STR "[%d q")},
 #  endif
+    {(int)KS_CRC,	IF_EB("\033[?12$p", ESC_STR "[?12$p")},
     {(int)KS_CRS,	IF_EB("\033P$q q\033\\", ESC_STR "P$q q" ESC_STR "\\")},
 #  ifdef TERMINFO
     {(int)KS_CM,	IF_EB("\033[%i%p1%d;%p2%dH",
@@ -1142,6 +1155,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_US,	"[US]"},
     {(int)KS_UCE,	"[UCE]"},
     {(int)KS_UCS,	"[UCS]"},
+    {(int)KS_STE,	"[STE]"},
+    {(int)KS_STS,	"[STS]"},
     {(int)KS_MS,	"[MS]"},
     {(int)KS_UT,	"[UT]"},
     {(int)KS_XN,	"[XN]"},
@@ -1360,9 +1375,7 @@ static int	need_gather = FALSE;	    /* need to fill termleader[] */
 static char_u	termleader[256 + 1];	    /* for check_termcode() */
 #ifdef FEAT_TERMRESPONSE
 static int	check_for_codes = FALSE;    /* check for key code response */
-# ifdef MACOS
-static int	is_terminal_app = FALSE;    /* recognized Terminal.app */
-# endif
+static int	is_not_xterm = FALSE;	    /* recognized not-really-xterm */
 #endif
 
     static struct builtin_term *
@@ -1588,6 +1601,7 @@ set_termname(char_u *term)
 				{KS_MD, "md"}, {KS_SE, "se"}, {KS_SO, "so"},
 				{KS_CZH,"ZH"}, {KS_CZR,"ZR"}, {KS_UE, "ue"},
 				{KS_US, "us"}, {KS_UCE, "Ce"}, {KS_UCS, "Cs"},
+				{KS_STE,"Te"}, {KS_STS,"Ts"},
 				{KS_CM, "cm"}, {KS_SR, "sr"},
 				{KS_CRI,"RI"}, {KS_VB, "vb"}, {KS_KS, "ks"},
 				{KS_KE, "ke"}, {KS_TI, "ti"}, {KS_TE, "te"},
@@ -3316,7 +3330,8 @@ settmode(int tmode)
 		if (tmode != TMODE_RAW && (crv_status == STATUS_SENT
 					 || u7_status == STATUS_SENT
 					 || rbg_status == STATUS_SENT
-					 || rcm_status == STATUS_SENT))
+					 || rbm_status == STATUS_SENT
+					 || rcs_status == STATUS_SENT))
 		    (void)vpeekc_nomap();
 		check_for_codes_from_term();
 	    }
@@ -3386,7 +3401,8 @@ stoptermcap(void)
 	    if (crv_status == STATUS_SENT
 		    || u7_status == STATUS_SENT
 		    || rbg_status == STATUS_SENT
-		    || rcm_status == STATUS_SENT)
+		    || rbm_status == STATUS_SENT
+		    || rcs_status == STATUS_SENT)
 	    {
 # ifdef UNIX
 		/* Give the terminal a chance to respond. */
@@ -3495,7 +3511,6 @@ may_req_ambiguous_char_width(void)
 /*
  * Similar to requesting the version string: Request the terminal background
  * color when it is the right moment.
- * Also request the cursor shape, if possible.
  */
     void
 may_req_bg_color(void)
@@ -3751,6 +3766,17 @@ term_cursor_color(char_u *color)
 }
 # endif
 
+    int
+blink_state_is_inverted()
+{
+#ifdef FEAT_TERMRESPONSE
+    return rbm_status == STATUS_GOT && rcs_status == STATUS_GOT
+		&& initial_cursor_blink != initial_cursor_shape_blink;
+#else
+    return FALSE;
+#endif
+}
+
 /*
  * "shape": 1 = block, 2 = underline, 3 = vertical bar
  */
@@ -3762,16 +3788,26 @@ term_cursor_shape(int shape, int blink)
 	OUT_STR(tgoto((char *)T_CSH, 0, shape * 2 - blink));
 	out_flush();
     }
-    /* When t_SH is not set try setting just the blink state. */
-    else if (blink && *T_VS != NUL)
+    else
     {
-	out_str(T_VS);
-	out_flush();
-    }
-    else if (!blink && *T_CVS != NUL)
-    {
-	out_str(T_CVS);
-	out_flush();
+	int do_blink = blink;
+
+	/* t_SH is empty: try setting just the blink state.
+	 * The blink flags are XORed together, if the initial blinking from
+	 * style and shape differs, we need to invert the flag here. */
+	if (blink_state_is_inverted())
+	    do_blink = !blink;
+
+	if (do_blink && *T_VS != NUL)
+	{
+	    out_str(T_VS);
+	    out_flush();
+	}
+	else if (!do_blink && *T_CVS != NUL)
+	{
+	    out_str(T_CVS);
+	    out_flush();
+	}
     }
 }
 #endif
@@ -4458,12 +4494,17 @@ check_termcode(
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
+# ifdef FEAT_EVAL
+		    set_vim_var_string(VV_TERMU7RESP, tp, slen);
+# endif
 		}
 		else
 #endif
 		/* eat it when at least one digit and ending in 'c' */
 		if (*T_CRV != NUL && i > 2 + (tp[0] != CSI) && tp[i] == 'c')
 		{
+		    int version = col;
+
 		    LOG_TR("Received CRV response");
 		    crv_status = STATUS_GOT;
 # ifdef FEAT_AUTOCMD
@@ -4476,31 +4517,34 @@ check_termcode(
 			switch_to_8bit();
 
 		    /* rxvt sends its version number: "20703" is 2.7.3.
+		     * Screen sends 40500.
 		     * Ignore it for when the user has set 'term' to xterm,
 		     * even though it's an rxvt. */
-		    if (col > 20000)
-			col = 0;
+		    if (version > 20000)
+			version = 0;
 
 		    if (tp[1 + (tp[0] != CSI)] == '>' && semicols == 2)
 		    {
+			int need_flush = FALSE;
+
 			/* Only set 'ttymouse' automatically if it was not set
 			 * by the user already. */
 			if (!option_was_set((char_u *)"ttym"))
 			{
 # ifdef TTYM_SGR
-			    if (col >= 277)
+			    if (version >= 277)
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
 			    else
 # endif
 			    /* if xterm version >= 95 use mouse dragging */
-			    if (col >= 95)
+			    if (version >= 95)
 				set_option_value((char_u *)"ttym", 0L,
 						       (char_u *)"xterm2", 0);
 			}
 
 			/* if xterm version >= 141 try to get termcap codes */
-			if (col >= 141)
+			if (version >= 141)
 			{
 			    LOG_TR("Enable checking for XT codes");
 			    check_for_codes = TRUE;
@@ -4509,7 +4553,7 @@ check_termcode(
 			}
 
 			/* libvterm sends 0;100;0 */
-			if (col == 100
+			if (version == 100
 				&& STRNCMP(tp + extra - 2, "0;100;0c", 8) == 0)
 			{
 			    /* If run from Vim $COLORS is set to the number of
@@ -4519,35 +4563,66 @@ check_termcode(
 				may_adjust_color_count(256);
 			}
 
+			/* Detect terminals that set $TERM to something like
+			 * "xterm-256colors"  but are not fully xterm
+			 * compatible. */
 #  ifdef MACOS
 			/* Mac Terminal.app sends 1;95;0 */
-			if (col == 95
+			if (version == 95
 				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
-			{
-			    /* Terminal.app sets $TERM to "xterm-256colors",
-			     * but it's not fully xterm compatible. */
-			    is_terminal_app = TRUE;
-			}
+			    is_not_xterm = TRUE;
 #  endif
+			/* Gnome terminal sends 1;3801;0 or 1;4402;0.
+			 * xfce4-terminal sends 1;2802;0.
+			 * screen sends 83;40500;0
+			 * Assuming any version number over 2800 is not an
+			 * xterm (without the limit for rxvt and screen). */
+			if (col >= 2800)
+			    is_not_xterm = TRUE;
+
+			/* PuTTY sends 0;136;0 */
+			if (version == 136
+				&& STRNCMP(tp + extra - 2, "0;136;0c", 8) == 0)
+			    is_not_xterm = TRUE;
+
+			/* Konsole sends 0;115;0 */
+			if (version == 115
+				&& STRNCMP(tp + extra - 2, "0;115;0c", 8) == 0)
+			    is_not_xterm = TRUE;
 
 			/* Only request the cursor style if t_SH and t_RS are
 			 * set. Not for Terminal.app, it can't handle t_RS, it
 			 * echoes the characters to the screen. */
-			if (rcm_status == STATUS_GET
-#  ifdef MACOS
-				&& !is_terminal_app
-#  endif
+			if (rcs_status == STATUS_GET
+				&& !is_not_xterm
 				&& *T_CSH != NUL
 				&& *T_CRS != NUL)
 			{
 			    LOG_TR("Sending cursor style request");
 			    out_str(T_CRS);
-			    rcm_status = STATUS_SENT;
-			    out_flush();
+			    rcs_status = STATUS_SENT;
+			    need_flush = TRUE;
 			}
+
+			/* Only request the cursor blink mode if t_RC set. Not
+			 * for Gnome terminal, it can't handle t_RC, it
+			 * echoes the characters to the screen. */
+			if (rbm_status == STATUS_GET
+				&& !is_not_xterm
+				&& *T_CRC != NUL)
+			{
+			    LOG_TR("Sending cursor blink mode request");
+			    out_str(T_CRC);
+			    rbm_status = STATUS_SENT;
+			    need_flush = TRUE;
+			}
+
+			if (need_flush)
+			    out_flush();
 		    }
+		    slen = i + 1;
 # ifdef FEAT_EVAL
-		    set_vim_var_string(VV_TERMRESPONSE, tp, i + 1);
+		    set_vim_var_string(VV_TERMRESPONSE, tp, slen);
 # endif
 # ifdef FEAT_AUTOCMD
 		    apply_autocmds(EVENT_TERMRESPONSE,
@@ -4555,7 +4630,32 @@ check_termcode(
 # endif
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
+		}
+
+		/* Check blinking cursor from xterm:
+		 * {lead}?12;1$y       set
+		 * {lead}?12;2$y       not set
+		 *
+		 * {lead} can be <Esc>[ or CSI
+		 */
+		else if (rbm_status == STATUS_SENT
+			&& tp[(j = 1 + (tp[0] == ESC))] == '?'
+			&& i == j + 6
+			&& tp[j + 1] == '1'
+			&& tp[j + 2] == '2'
+			&& tp[j + 3] == ';'
+			&& tp[i - 1] == '$'
+			&& tp[i] == 'y')
+		{
+		    initial_cursor_blink = (tp[j + 4] == '1');
+		    rbm_status = STATUS_GOT;
+		    LOG_TR("Received cursor blinking mode response");
+		    key_name[0] = (int)KS_EXTRA;
+		    key_name[1] = (int)KE_IGNORE;
 		    slen = i + 1;
+# ifdef FEAT_EVAL
+		    set_vim_var_string(VV_TERMBLINKRESP, tp, slen);
+# endif
 		}
 
 		/*
@@ -4644,6 +4744,9 @@ check_termcode(
 			    /* Sometimes the 0x07 is followed by 0x18, unclear
 			     * when this happens. */
 			    ++slen;
+# ifdef FEAT_EVAL
+			set_vim_var_string(VV_TERMRGBRESP, tp, slen);
+# endif
 			break;
 		    }
 		if (i == len)
@@ -4668,7 +4771,7 @@ check_termcode(
 	     *
 	     * Consume any code that starts with "{lead}.+r" or "{lead}.$r".
 	     */
-	    else if ((check_for_codes || rcm_status == STATUS_SENT)
+	    else if ((check_for_codes || rcs_status == STATUS_SENT)
 		    && ((tp[0] == ESC && len >= 2 && tp[1] == 'P')
 			|| tp[0] == DCS))
 	    {
@@ -4710,13 +4813,17 @@ check_termcode(
 			initial_cursor_shape = (number + 1) / 2;
 			/* The blink flag is actually inverted, compared to
 			 * the value set with T_SH. */
-			initial_cursor_blink = (number & 1) ? FALSE : TRUE;
-			rcm_status = STATUS_GOT;
+			initial_cursor_shape_blink =
+						   (number & 1) ? FALSE : TRUE;
+			rcs_status = STATUS_GOT;
 			LOG_TR("Received cursor shape response");
 
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
+# ifdef FEAT_EVAL
+			set_vim_var_string(VV_TERMSTYLERESP, tp, slen);
+# endif
 		    }
 		}
 

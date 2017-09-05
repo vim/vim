@@ -1300,11 +1300,16 @@ write_buf_line(buf_T *buf, linenr_T lnum, channel_T *channel)
 	return;
     memcpy((char *)p, (char *)line, len);
 
-    for (i = 0; i < len; ++i)
-	if (p[i] == NL)
-	    p[i] = NUL;
+    if (channel->ch_write_text_mode)
+	p[len] = CAR;
+    else
+    {
+	for (i = 0; i < len; ++i)
+	    if (p[i] == NL)
+		p[i] = NUL;
 
-    p[len] = NL;
+	p[len] = NL;
+    }
     p[len + 1] = NUL;
     channel_send(channel, PART_IN, p, len + 1, "write_buf_line");
     vim_free(p);
@@ -1417,6 +1422,12 @@ channel_write_in(channel_T *channel)
     in_part->ch_buf_top = lnum;
     if (lnum > buf->b_ml.ml_line_count || lnum > in_part->ch_buf_bot)
     {
+#if defined(FEAT_TERMINAL)
+	/* Send CTRL-D or "eof_chars" to close stdin on MS-Windows. */
+	if (channel->ch_job != NULL)
+	    term_send_eof(channel);
+#endif
+
 	/* Writing is done, no longer need the buffer. */
 	in_part->ch_bufref.br_buf = NULL;
 	ch_log(channel, "Finished writing all lines to channel");
@@ -4620,6 +4631,20 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 					    || vim_strchr(p + 2, '%') != NULL))
 			p = NULL;
 		}
+		if (p == NULL)
+		{
+		    EMSG2(_(e_invarg2), "term_opencmd");
+		    return FAIL;
+		}
+	    }
+	    else if (STRCMP(hi->hi_key, "eof_chars") == 0)
+	    {
+		char_u *p;
+
+		if (!(supported2 & JO2_EOF_CHARS))
+		    break;
+		opt->jo_set2 |= JO2_EOF_CHARS;
+		p = opt->jo_eof_chars = get_tv_string_chk(item);
 		if (p == NULL)
 		{
 		    EMSG2(_(e_invarg2), "term_opencmd");

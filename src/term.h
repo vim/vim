@@ -42,7 +42,8 @@ enum SpecialKey
     KS_VS,	/* cursor very visible (blink) */
     KS_CVS,	/* cursor normally visible (no blink) */
     KS_CSH,	/* cursor shape */
-    KS_CRS,	/* request cursor shape */
+    KS_CRC,	/* request cursor blinking */
+    KS_CRS,	/* request cursor style */
     KS_ME,	/* normal mode */
     KS_MR,	/* reverse mode */
     KS_MD,	/* bold mode */
@@ -54,6 +55,8 @@ enum SpecialKey
     KS_US,	/* underscore (underline) mode */
     KS_UCE,	/* exit undercurl mode */
     KS_UCS,	/* undercurl mode */
+    KS_STE,	/* exit strikethrough mode */
+    KS_STS,	/* strikethrough mode */
     KS_MS,	/* save to move cur in reverse mode */
     KS_CM,	/* cursor motion */
     KS_SR,	/* scroll reverse (backward) */
@@ -135,7 +138,8 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_VS	(TERM_STR(KS_VS))	/* cursor very visible (blink) */
 #define T_CVS	(TERM_STR(KS_CVS))	/* cursor normally visible (no blink) */
 #define T_CSH	(TERM_STR(KS_CSH))	/* cursor shape */
-#define T_CRS	(TERM_STR(KS_CRS))	/* request cursor shape */
+#define T_CRC	(TERM_STR(KS_CRC))	/* request cursor blinking */
+#define T_CRS	(TERM_STR(KS_CRS))	/* request cursor style */
 #define T_ME	(TERM_STR(KS_ME))	/* normal mode */
 #define T_MR	(TERM_STR(KS_MR))	/* reverse mode */
 #define T_MD	(TERM_STR(KS_MD))	/* bold mode */
@@ -147,6 +151,8 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_US	(TERM_STR(KS_US))	/* underscore (underline) mode */
 #define T_UCE	(TERM_STR(KS_UCE))	/* exit undercurl mode */
 #define T_UCS	(TERM_STR(KS_UCS))	/* undercurl mode */
+#define T_STE	(TERM_STR(KS_STE))	/* exit strikethrough mode */
+#define T_STS	(TERM_STR(KS_STS))	/* strikethrough mode */
 #define T_MS	(TERM_STR(KS_MS))	/* save to move cur in reverse mode */
 #define T_CM	(TERM_STR(KS_CM))	/* cursor motion */
 #define T_SR	(TERM_STR(KS_SR))	/* scroll reverse (backward) */

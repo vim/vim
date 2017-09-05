@@ -1,4 +1,5 @@
 /* misc1.c */
+int get_whitespace_line_start(linenr_T lnum);
 int get_indent(void);
 int get_indent_lnum(linenr_T lnum);
 int get_indent_buf(buf_T *buf, linenr_T lnum);

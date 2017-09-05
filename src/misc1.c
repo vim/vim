@@ -1589,8 +1589,7 @@ open_line(
 	    && curbuf->b_p_ai)
     {
 	fixthisline(get_lisp_indent);
-	p = ml_get_curline();
-	ai_col = (colnr_T)(skipwhite(p) - p);
+	ai_col = (colnr_T)getwhitecols_curline();
     }
 #endif
 #ifdef FEAT_CINDENT
@@ -1608,8 +1607,7 @@ open_line(
 		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum)))
     {
 	do_c_expr_indent();
-	p = ml_get_curline();
-	ai_col = (colnr_T)(skipwhite(p) - p);
+	ai_col = (colnr_T)getwhitecols_curline();
     }
 #endif
 #if defined(FEAT_VREPLACE) && (defined(FEAT_LISP) || defined(FEAT_CINDENT))
@@ -2730,12 +2728,15 @@ skip_to_option_part(char_u *p)
 changed(void)
 {
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-    /* The text of the preediting area is inserted, but this doesn't
-     * mean a change of the buffer yet.  That is delayed until the
-     * text is committed. (this means preedit becomes empty) */
-    if (im_is_preediting() && !xim_changed_while_preediting)
-	return;
-    xim_changed_while_preediting = FALSE;
+    if (p_imst == IM_ON_THE_SPOT)
+    {
+	/* The text of the preediting area is inserted, but this doesn't
+	 * mean a change of the buffer yet.  That is delayed until the
+	 * text is committed. (this means preedit becomes empty) */
+	if (im_is_preediting() && !xim_changed_while_preediting)
+	    return;
+	xim_changed_while_preediting = FALSE;
+    }
 #endif
 
     if (!curbuf->b_changed)
@@ -3750,10 +3751,33 @@ init_homedir(void)
     var = mch_getenv((char_u *)"HOME");
 #endif
 
-    if (var != NULL && *var == NUL)	/* empty is same as not set */
-	var = NULL;
-
 #ifdef WIN3264
+    /*
+     * Typically, $HOME is not defined on Windows, unless the user has
+     * specifically defined it for Vim's sake.  However, on Windows NT
+     * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
+     * each user.  Try constructing $HOME from these.
+     */
+    if (var == NULL || *var == NUL)
+    {
+	char_u *homedrive, *homepath;
+
+	homedrive = mch_getenv((char_u *)"HOMEDRIVE");
+	homepath = mch_getenv((char_u *)"HOMEPATH");
+	if (homepath == NULL || *homepath == NUL)
+	    homepath = (char_u *)"\\";
+	if (homedrive != NULL
+			   && STRLEN(homedrive) + STRLEN(homepath) < MAXPATHL)
+	{
+	    sprintf((char *)NameBuff, "%s%s", homedrive, homepath);
+	    if (NameBuff[0] != NUL)
+		var = NameBuff;
+	}
+    }
+
+    if (var == NULL)
+	var = mch_getenv((char_u *)"USERPROFILE");
+
     /*
      * Weird but true: $HOME may contain an indirect reference to another
      * variable, esp. "%USERPROFILE%".  Happens when $USERPROFILE isn't set
@@ -3774,40 +3798,14 @@ init_homedir(void)
 	    {
 		vim_snprintf((char *)NameBuff, MAXPATHL, "%s%s", exp, p + 1);
 		var = NameBuff;
-		/* Also set $HOME, it's needed for _viminfo. */
-		vim_setenv((char_u *)"HOME", NameBuff);
 	    }
 	}
     }
 
-    /*
-     * Typically, $HOME is not defined on Windows, unless the user has
-     * specifically defined it for Vim's sake.  However, on Windows NT
-     * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
-     * each user.  Try constructing $HOME from these.
-     */
-    if (var == NULL)
-    {
-	char_u *homedrive, *homepath;
+    if (var != NULL && *var == NUL)	/* empty is same as not set */
+	var = NULL;
 
-	homedrive = mch_getenv((char_u *)"HOMEDRIVE");
-	homepath = mch_getenv((char_u *)"HOMEPATH");
-	if (homepath == NULL || *homepath == NUL)
-	    homepath = (char_u *)"\\";
-	if (homedrive != NULL
-			   && STRLEN(homedrive) + STRLEN(homepath) < MAXPATHL)
-	{
-	    sprintf((char *)NameBuff, "%s%s", homedrive, homepath);
-	    if (NameBuff[0] != NUL)
-	    {
-		var = NameBuff;
-		/* Also set $HOME, it's needed for _viminfo. */
-		vim_setenv((char_u *)"HOME", NameBuff);
-	    }
-	}
-    }
-
-# if defined(FEAT_MBYTE)
+# ifdef FEAT_MBYTE
     if (enc_utf8 && var != NULL)
     {
 	int	len;
@@ -3823,9 +3821,7 @@ init_homedir(void)
 	}
     }
 # endif
-#endif
 
-#if defined(MSWIN)
     /*
      * Default home dir is C:/
      * Best assumption we can make in such a situation.
@@ -3833,6 +3829,7 @@ init_homedir(void)
     if (var == NULL)
 	var = (char_u *)"C:/";
 #endif
+
     if (var != NULL)
     {
 #ifdef UNIX
@@ -4661,6 +4658,10 @@ home_replace(
     homedir_env_orig = homedir_env = mch_getenv((char_u *)"SYS$LOGIN");
 #else
     homedir_env_orig = homedir_env = mch_getenv((char_u *)"HOME");
+#endif
+#ifdef WIN3264
+    if (homedir_env == NULL)
+	homedir_env_orig = homedir_env = mch_getenv((char_u *)"USERPROFILE");
 #endif
     /* Empty is the same as not set. */
     if (homedir_env != NULL && *homedir_env == NUL)

@@ -984,7 +984,7 @@ static VALUE vim_message(VALUE self UNUSED, VALUE str)
     if (RSTRING_LEN(str) > 0)
     {
 	/* Only do this when the string isn't empty, alloc(0) causes trouble. */
-	buff = ALLOCA_N(char, RSTRING_LEN(str));
+	buff = ALLOCA_N(char, RSTRING_LEN(str) + 1);
 	strcpy(buff, RSTRING_PTR(str));
 	p = strchr(buff, '\n');
 	if (p) *p = '\0';

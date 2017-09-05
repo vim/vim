@@ -5825,8 +5825,8 @@ buf_spname(buf_T *buf)
 	if (buf->b_term != NULL)
 	    return term_get_status_text(buf->b_term);
 #endif
-	if (buf->b_sfname != NULL)
-	    return buf->b_sfname;
+	if (buf->b_fname != NULL)
+	    return buf->b_fname;
 	return (char_u *)_("[Scratch]");
     }
 

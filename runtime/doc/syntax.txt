@@ -4699,13 +4699,14 @@ the same syntax file on all terminals, and use the optimal highlighting.
 
 					*bold* *underline* *undercurl*
 					*inverse* *italic* *standout*
-					*nocombine*
+					*nocombine* *strikethrough*
 term={attr-list}			*attr-list* *highlight-term* *E418*
 	attr-list is a comma separated list (without spaces) of the
 	following items (in any order):
 		bold
 		underline
 		undercurl	not always available
+		strikethrough	not always available
 		reverse
 		inverse		same as reverse
 		italic
@@ -4716,8 +4717,8 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 	Note that "bold" can be used here and by using a bold font.  They
 	have the same effect.
 	"undercurl" is a curly underline.  When "undercurl" is not possible
-	then "underline" is used.  In general "undercurl" is only available in
-	the GUI.  The color is set with |highlight-guisp|.
+	then "underline" is used.  In general "undercurl" and "strikethrough"
+	is only available in the GUI.  The color is set with |highlight-guisp|.
 
 start={term-list}				*highlight-start* *E422*
 stop={term-list}				*term-list* *highlight-stop*
@@ -4882,7 +4883,8 @@ guifg={color-name}					*highlight-guifg*
 guibg={color-name}					*highlight-guibg*
 guisp={color-name}					*highlight-guisp*
 	These give the foreground (guifg), background (guibg) and special
-	(guisp) color to use in the GUI.  "guisp" is used for undercurl.
+	(guisp) color to use in the GUI.  "guisp" is used for undercurl and
+	strikethrough.
 	There are a few special names:
 		NONE		no color (transparent)
 		bg		use normal background color
