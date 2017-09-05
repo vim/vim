@@ -214,7 +214,7 @@ static int moverect_internal(VTermRect dest, VTermRect src, void *user)
     VTermPos pos;
     for(pos.row = 0; pos.row < src.start_row; pos.row++) {
       for(pos.col = 0; pos.col < screen->cols; pos.col++)
-        vterm_screen_get_cell(screen, pos, screen->sb_buffer + pos.col);
+        (void)vterm_screen_get_cell(screen, pos, screen->sb_buffer + pos.col);
 
       (screen->callbacks->sb_pushline)(screen->cols, screen->sb_buffer, screen->cbdata);
     }
