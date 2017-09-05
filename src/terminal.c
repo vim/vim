@@ -38,7 +38,9 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - ":term NONE" does not work in MS-Windows.
+ * - ":term NONE" does not work on MS-Windows.
+ *   https://github.com/vim/vim/pull/2056
+ * - Redirecting output does not work on MS-Windows.
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -56,6 +58,8 @@
  * - In the GUI use a terminal emulator for :!cmd.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
+ * - add an optional limit for the scrollback size.  When reaching it remove
+ *   10% at the start.
  */
 
 #include "vim.h"
@@ -366,10 +370,10 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 	}
 	else if (argvar->v_type != VAR_LIST
 		|| argvar->vval.v_list == NULL
-		|| argvar->vval.v_list->lv_len < 1)
+		|| argvar->vval.v_list->lv_len < 1
+		|| (cmd = get_tv_string_chk(
+			       &argvar->vval.v_list->lv_first->li_tv)) == NULL)
 	    cmd = (char_u*)"";
-	else
-	    cmd = get_tv_string_chk(&argvar->vval.v_list->lv_first->li_tv);
 
 	len = STRLEN(cmd) + 10;
 	p = alloc((int)len);
