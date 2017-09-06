@@ -620,13 +620,14 @@ func Test_terminal_redir_file()
 endfunc
 
 func Test_terminal_tmap()
-  let g:buf = Run_shell_in_terminal({})
+  let g:buf = term_start(&shell, {})
   let g:job = term_getjob(g:buf)
 
   " Create a tmap, ensure it's used.
   tmap asdf exit<CR>
+  " call feedkeys("asdf")
   call term_sendkeys(g:buf, "asdf")
-  call WaitFor('job_status(g:job) == "dead"', 2000)
+  call WaitFor('job_status(g:job) == "dead"')
   call assert_equal('dead', job_status(g:job))
 
   tunmap asdf
@@ -636,14 +637,14 @@ func Test_terminal_tmap()
 endfunc
 
 func Test_terminal_tremap()
-  let g:buf = Run_shell_in_terminal({})
+  let g:buf = term_start(&shell, {})
   let g:job = term_getjob(g:buf)
 
   " Create a tmap with remapping, ensure it's remapped.
   tmap fdsa exit<CR>
   tmap asdf fdsa
   call term_sendkeys(g:buf, "asdf")
-  call WaitFor('job_status(g:job) == "dead"', 2000)
+  call WaitFor('job_status(g:job) == "dead"')
   call assert_equal('dead', job_status(g:job))
 
   tunmap asdf
@@ -654,14 +655,14 @@ func Test_terminal_tremap()
 endfunc
 
 func Test_terminal_tnoremap()
-  let g:buf = Run_shell_in_terminal({})
+  let g:buf = term_start(&shell, {})
   let g:job = term_getjob(g:buf)
 
   " Create a tmap without remapping, ensure no remapping occurs.
   tmap exit fdsa
   tnoremap asdf exit<CR>
   call term_sendkeys(g:buf, "asdf")
-  call WaitFor('job_status(g:job) == "dead"', 2000)
+  call WaitFor('job_status(g:job) == "dead"')
   call assert_equal('dead', job_status(g:job))
 
   tunmap asdf
@@ -672,14 +673,14 @@ func Test_terminal_tnoremap()
 endfunc
 
 func Test_terminal_tunmap()
-  let g:buf = Run_shell_in_terminal({})
+  let g:buf = term_start(&shell, {})
   let g:job = term_getjob(g:buf)
 
   " Create a tmap, then unmap. Ensure the map is no longer used.
   tmap asdf exit<CR>
   tunmap asdf
   call term_sendkeys(g:buf, "asdf")
-  call WaitFor('job_status(g:job) == "dead"', 2000)
+  call WaitFor('job_status(g:job) == "dead"')
   call assert_equal('dead', job_status(g:job))
 
   unlet g:job
