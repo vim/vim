@@ -3089,11 +3089,15 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 		return CW_READY;
 	    if (r == 0)
 	    {
-		if (GetFileType((HANDLE)fd) == FILE_TYPE_PIPE)
+		DWORD err = GetLastError();
+		DWORD flags = 0;
+
+		if (err != ERROR_BAD_PIPE && err != ERROR_BROKEN_PIPE)
+		    return CW_ERROR;
+
+		if (GetNamedPipeInfo((HANDLE)fd, &flags, NULL, NULL, NULL)
+			&& (flags & PIPE_TYPE_BYTE) != 0)
 		{
-		    DWORD err = GetLastError();
-		    if (err != ERROR_BAD_PIPE && err != ERROR_BROKEN_PIPE)
-			return CW_ERROR;
 		    DisconnectNamedPipe((HANDLE)fd);
 		    ConnectNamedPipe((HANDLE)fd, NULL);
 		}
