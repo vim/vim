@@ -1219,30 +1219,40 @@ check_due_timer(void)
 	{
 	    int save_timer_busy = timer_busy;
 	    int save_vgetc_busy = vgetc_busy;
-	    int did_emsg_save = did_emsg;
-	    int called_emsg_save = called_emsg;
-	    int did_throw_save = did_throw;
+	    int save_did_emsg = did_emsg;
+	    int save_called_emsg = called_emsg;
 	    int	save_must_redraw = must_redraw;
+	    int	save_trylevel = trylevel;
+	    int save_did_throw = did_throw;
+	    except_T *save_current_exception = current_exception;
 
+	    /* Create a scope for running the timer callback, ignoring most of
+	     * the current scope, such as being inside a try/catch. */
 	    timer_busy = timer_busy > 0 || vgetc_busy > 0;
 	    vgetc_busy = 0;
 	    called_emsg = FALSE;
+	    did_emsg = FALSE;
+	    did_uncaught_emsg = FALSE;
 	    must_redraw = 0;
+	    trylevel = 0;
+	    did_throw = FALSE;
+	    current_exception = NULL;
+
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
+
 	    timer_next = timer->tr_next;
 	    did_one = TRUE;
 	    timer_busy = save_timer_busy;
 	    vgetc_busy = save_vgetc_busy;
-	    if (called_emsg)
-	    {
+	    if (did_uncaught_emsg)
 		++timer->tr_emsg_count;
-		if (!did_throw_save && did_throw && current_exception != NULL)
-		    discard_current_exception();
-	    }
-	    did_emsg = did_emsg_save;
-	    called_emsg = called_emsg_save;
+	    did_emsg = save_did_emsg;
+	    called_emsg = save_called_emsg;
+	    trylevel = save_trylevel;
+	    did_throw = save_did_throw;
+	    current_exception = save_current_exception;
 	    if (must_redraw != 0)
 		need_update_screen = TRUE;
 	    must_redraw = must_redraw > save_must_redraw

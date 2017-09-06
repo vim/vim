@@ -182,6 +182,10 @@ EXTERN dict_T	globvardict;		    /* Dictionary with g: variables */
 #endif
 EXTERN int	did_emsg;		    /* set by emsg() when the message
 					       is displayed or thrown */
+#ifdef FEAT_EVAL
+EXTERN int	did_uncaught_emsg;	    /* emsg() was called and did not
+					       cause an exception */
+#endif
 EXTERN int	did_emsg_syntax;	    /* did_emsg set because of a
 					       syntax error */
 EXTERN int	called_emsg;		    /* always set by emsg() */
