@@ -4741,9 +4741,10 @@ check_termcode(
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
-			if (tp[i] == 0x07 && i + 1 < len && tp[i + 1] == 0x18)
-			    /* Sometimes the 0x07 is followed by 0x18, unclear
-			     * when this happens. */
+			if (rcs_status == STATUS_SENT
+					     && slen < len && tp[slen] == 0x18)
+			    /* Some older xterm send 0x18 for the T_RS request,
+			     * skip it here. */
 			    ++slen;
 # ifdef FEAT_EVAL
 			set_vim_var_string(VV_TERMRGBRESP, tp, slen);
@@ -4793,6 +4794,11 @@ check_termcode(
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
+			if (rcs_status == STATUS_SENT
+					     && slen < len && tp[slen] == 0x18)
+			    /* Some older xterm send 0x18 for the T_RS request,
+			     * skip it here. */
+			    ++slen;
 			break;
 		    }
 		  }
