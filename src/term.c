@@ -4583,7 +4583,7 @@ check_termcode(
 			/* PuTTY sends 0;136;0
 			 * vandyke SecureCRT sends 1;136;0 */
 			if (version == 136
-				&& STRNCMP(tp + extra - 3, ";136;0c", 8) == 0)
+				&& STRNCMP(tp + extra - 1, ";136;0c", 7) == 0)
 			    is_not_xterm = TRUE;
 
 			/* Konsole sends 0;115;0 */
