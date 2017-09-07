@@ -1794,7 +1794,7 @@ fun! Test_normal33_g_cmd2()
 
   " Test for gI
   norm! gIfoo
-  call assert_equal(['', '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'], getline(1,'$'))
+  call assert_equal(['', 'foo0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'], getline(1,'$'))
 
   " Test for gi
   wincmd c
