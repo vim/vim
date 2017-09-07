@@ -233,6 +233,7 @@ let s:flaky = [
       \ 'Test_quoteplus()',
       \ 'Test_quotestar()',
       \ 'Test_reltime()',
+      \ 'Test_terminal_noblock()',
       \ 'Test_with_partial_callback()',
       \ ]
 
