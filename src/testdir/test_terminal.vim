@@ -36,10 +36,10 @@ endfunc
 func Test_terminal_basic()
   let buf = Run_shell_in_terminal({})
   if has("unix")
-    call assert_match("^/dev/", job_info(g:job).tty)
+    call assert_match("^/dev/", job_info(g:job).tty_out)
     call assert_match("^/dev/", term_gettty(''))
   else
-    call assert_match("^winpty://", job_info(g:job).tty)
+    call assert_match("^winpty://", job_info(g:job).tty_out)
     call assert_match("^winpty://", term_gettty(''))
   endif
   call assert_equal('t', mode())
