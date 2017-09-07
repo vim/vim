@@ -3234,7 +3234,7 @@ create_pty_only(term_T *term, jobopt_T *options)
 	    GetCurrentProcessId(),
 	    curbuf->b_fnum);
     hPipeIn = CreateNamedPipe(in_name, PIPE_ACCESS_OUTBOUND,
-	    PIPE_TYPE_BYTE | PIPE_NOWAIT, 2,
+	    PIPE_TYPE_BYTE | PIPE_NOWAIT, PIPE_UNLIMITED_INSTANCES,
 	    0, 0, 0, NULL);
     if (hPipeIn == INVALID_HANDLE_VALUE)
 	goto failed;
@@ -3264,6 +3264,7 @@ create_pty_only(term_T *term, jobopt_T *options)
 	goto failed;
     term->tl_job->jv_channel = channel;
     channel->ch_keep_open = TRUE;
+    channel->named_pipe = TRUE;
 
     channel_set_pipes(channel,
 	(sock_T)hPipeIn,

@@ -1653,6 +1653,9 @@ struct channel_S {
 				/* callback for Netbeans when channel is
 				 * closed */
 
+#ifdef WIN32
+    int		named_pipe;	/* named pipe */
+#endif
     char_u	*ch_callback;	/* call when any msg is not handled */
     partial_T	*ch_partial;
     char_u	*ch_close_cb;	/* call when channel is closed */

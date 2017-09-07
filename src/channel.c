@@ -93,8 +93,6 @@ fd_close(sock_T fd)
 {
     HANDLE h = (HANDLE)fd;
 
-    if (GetFileType(h) == FILE_TYPE_PIPE)
-	DisconnectNamedPipe((HANDLE)fd);
     CloseHandle(h);
 }
 #endif
@@ -971,7 +969,13 @@ ch_close_part(channel_T *channel, ch_part_T part)
 	    if ((part == PART_IN || channel->CH_IN_FD != *fd)
 		    && (part == PART_OUT || channel->CH_OUT_FD != *fd)
 		    && (part == PART_ERR || channel->CH_ERR_FD != *fd))
+	    {
+#ifdef WIN32
+		if (channel->named_pipe)
+		    DisconnectNamedPipe((HANDLE)fd);
+#endif
 		fd_close(*fd);
+	    }
 	}
 	*fd = INVALID_FD;
 
@@ -3090,13 +3094,11 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    if (r == 0)
 	    {
 		DWORD err = GetLastError();
-		DWORD flags = 0;
 
 		if (err != ERROR_BAD_PIPE && err != ERROR_BROKEN_PIPE)
 		    return CW_ERROR;
 
-		if (GetNamedPipeInfo((HANDLE)fd, &flags, NULL, NULL, NULL)
-			&& (flags & PIPE_SERVER_END) != 0)
+		if (channel->named_pipe)
 		{
 		    DisconnectNamedPipe((HANDLE)fd);
 		    ConnectNamedPipe((HANDLE)fd, NULL);
@@ -3687,7 +3689,17 @@ channel_send(
 	if (part == PART_SOCK)
 	    res = sock_write(fd, (char *)buf, len);
 	else
+	{
 	    res = fd_write(fd, (char *)buf, len);
+#ifdef WIN32
+	    if (channel->named_pipe)
+	    {
+		FlushFileBuffers((HANDLE)fd);
+		DisconnectNamedPipe((HANDLE)fd);
+		ConnectNamedPipe((HANDLE)fd, NULL);
+	    }
+#endif
+	}
 	if (res < 0 && (errno == EWOULDBLOCK
 #ifdef EAGAIN
 			|| errno == EAGAIN
