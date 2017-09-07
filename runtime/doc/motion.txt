@@ -223,9 +223,9 @@ g^			When lines wrap ('wrap' on): To the first non-blank
 			character of the line is not on the screen.  {not in
 			Vi}
 
-							*gm*
-gm			Like "g0", but half a screenwidth to the right (or as
-			much as possible). {not in Vi}
+							*gm* *gM*
+gm or gM		Like "g0", but half a screenwidth to the right (or as
+			much as possible). gM is half of line. {not in Vi}
 
 							*g$* *g<End>*
 g$ or g<End>		When lines wrap ('wrap' on): To the last character of
