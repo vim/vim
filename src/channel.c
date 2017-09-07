@@ -3096,7 +3096,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 		    return CW_ERROR;
 
 		if (GetNamedPipeInfo((HANDLE)fd, &flags, NULL, NULL, NULL)
-			&& (flags & PIPE_TYPE_BYTE) != 0)
+			&& (flags & PIPE_SERVER_END) != 0)
 		{
 		    DisconnectNamedPipe((HANDLE)fd);
 		    ConnectNamedPipe((HANDLE)fd, NULL);
