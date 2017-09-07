@@ -36,11 +36,11 @@ endfunc
 func Test_terminal_basic()
   let buf = Run_shell_in_terminal({})
   if has("unix")
-    call assert_match("^/dev/", job_info(g:job).tty_out)
-    call assert_match("^/dev/", term_gettty(''))
+    call assert_match('^/dev/', job_info(g:job).tty_out)
+    call assert_match('^/dev/', term_gettty(''))
   else
-    call assert_match("^winpty://", job_info(g:job).tty_out)
-    call assert_match("^winpty://", term_gettty(''))
+    call assert_match('^\\\\.\\pipe\\', job_info(g:job).tty_out)
+    call assert_match('^\\\\.\\pipe\\', term_gettty(''))
   endif
   call assert_equal('t', mode())
   call assert_match('%aR[^\n]*running]', execute('ls'))
@@ -560,7 +560,7 @@ func Test_terminal_no_cmd()
     let result = substitute(result, '\s\+$', '', '')
   endif
   call assert_equal('look here', result)
-  "bwipe!
+  bwipe!
 endfunc
 
 func Test_terminal_special_chars()

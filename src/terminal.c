@@ -3076,6 +3076,7 @@ term_and_job_init(
     void	    *spawn_config = NULL;
     garray_T	    ga;
     char_u	    *cmd;
+    char_u	    *name;
 
     if (dyn_winpty_init(TRUE) == FAIL)
 	return FAIL;
@@ -3179,8 +3180,8 @@ term_and_job_init(
     job->jv_proc_info.dwProcessId = GetProcessId(child_process_handle);
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
-    job->jv_tty_in = vim_strsave((char_u*)winpty_conin_name(term->tl_winpty));
-    job->jv_tty_out = vim_strsave((char_u*)winpty_conout_name(term->tl_winpty));
+    job->jv_tty_in = utf16_to_enc(winpty_conin_name(term->tl_winpty), NULL);
+    job->jv_tty_out = utf16_to_enc(winpty_conout_name(term->tl_winpty), NULL);
     ++job->jv_refcount;
     term->tl_job = job;
 
