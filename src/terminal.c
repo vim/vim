@@ -2667,11 +2667,15 @@ f_term_gettty(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf = term_get_buf(argvars);
     char_u	*p;
+    int		num = 0;
 
     rettv->v_type = VAR_STRING;
     if (buf == NULL)
 	return;
-    switch (get_tv_number(&argvars[1]))
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	num = get_tv_number(&argvars[1]);
+
+    switch (num)
     {
 	case 0:
 	    if (buf->b_term->tl_job != NULL)
