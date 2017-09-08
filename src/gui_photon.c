@@ -1986,6 +1986,12 @@ gui_mch_get_color(char_u *name)
     return gui_get_color_cmn(name);
 }
 
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    return gui_get_rgb_color_cmn(r, g, b);
+}
+
     void
 gui_mch_set_fg_color(guicolor_T color)
 {

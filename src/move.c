@@ -1163,7 +1163,7 @@ curs_columns(
 	if (extra > 0)
 	    win_ins_lines(curwin, 0, extra, FALSE, FALSE);
 	else if (extra < 0)
-	    win_del_lines(curwin, 0, -extra, FALSE, FALSE);
+	    win_del_lines(curwin, 0, -extra, FALSE, FALSE, 0);
     }
     else
 	curwin->w_skipcol = 0;

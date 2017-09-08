@@ -73,8 +73,13 @@ CHANNEL=yes
 else
 CHANNEL=$(GUI)
 endif
+# Set to yes to enable terminal support.
 TERMINAL=no
 
+ifndef CTAGS
+# this assumes ctags is Exuberant ctags
+CTAGS = ctags -I INIT+ --fields=+S
+endif
 
 # Link against the shared version of libstdc++ by default.  Set
 # STATIC_STDCPLUS to "yes" to link against static version instead.
@@ -339,6 +344,7 @@ endif
 #	  TCL_VER=[TCL version, eg 83, 84] (default is 86)
 #	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.6)
 #	    You must set TCL_VER_LONG when you set TCL_VER.
+#	  TCL_DLL=[TCL dll name, eg tcl86.dll] (default is tcl86.dll)
 ifdef TCL
 ifndef DYNAMIC_TCL
 DYNAMIC_TCL=yes
@@ -348,6 +354,9 @@ TCL_VER = 86
 endif
 ifndef TCL_VER_LONG
 TCL_VER_LONG = 8.6
+endif
+ifndef TCL_DLL
+TCL_DLL = tcl$(TCL_VER).dll
 endif
 TCLINC += -I$(TCL)/include
 endif
@@ -525,7 +534,7 @@ endif
 ifdef TCL
 CFLAGS += -DFEAT_TCL $(TCLINC)
 ifeq (yes, $(DYNAMIC_TCL))
-CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"tcl$(TCL_VER).dll\" -DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
+CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"$(TCL_DLL)\" -DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
 endif
 endif
 
@@ -560,6 +569,12 @@ endif
 
 ifeq ($(TERMINAL),yes)
 DEFINES += -DFEAT_TERMINAL
+TERM_DEPS = \
+	libvterm/include/vterm.h \
+	libvterm/include/vterm_keycodes.h \
+	libvterm/src/rect.h \
+	libvterm/src/utf8.h \
+	libvterm/src/vterm_internal.h
 endif
 
 # DirectWrite (DirectX)
@@ -749,7 +764,16 @@ endif
 endif
 
 ifeq ($(TERMINAL),yes)
-OBJ += $(OUTDIR)/terminal.o
+OBJ += $(OUTDIR)/terminal.o \
+	$(OUTDIR)/term_encoding.o \
+	$(OUTDIR)/term_keyboard.o \
+	$(OUTDIR)/term_mouse.o \
+	$(OUTDIR)/term_parser.o \
+	$(OUTDIR)/term_pen.o \
+	$(OUTDIR)/term_screen.o \
+	$(OUTDIR)/term_state.o \
+	$(OUTDIR)/term_unicode.o \
+	$(OUTDIR)/term_vterm.o
 endif
 
 
@@ -865,6 +889,12 @@ xxd/xxd.exe: xxd/xxd.c
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE) CXX='$(CXX)' STATIC_STDCPLUS=$(STATIC_STDCPLUS)
 
+tags: notags
+	$(CTAGS) *.c *.cpp *.h if_perl.xs
+
+notags:
+	-$(DEL) tags
+
 clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.res
@@ -902,33 +932,42 @@ $(OUTDIR)/vimrc.o: vim.rc version.h gui_w32_rc.h
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
 
+$(OUTDIR)/channel.o:	channel.c $(INCL)
+	$(CC) -c $(CFLAGS) channel.c -o $(OUTDIR)/channel.o
+
 $(OUTDIR)/ex_docmd.o:	ex_docmd.c $(INCL) ex_cmds.h
 	$(CC) -c $(CFLAGS) ex_docmd.c -o $(OUTDIR)/ex_docmd.o
 
 $(OUTDIR)/ex_eval.o:	ex_eval.c $(INCL) ex_cmds.h
 	$(CC) -c $(CFLAGS) ex_eval.c -o $(OUTDIR)/ex_eval.o
 
-$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL)
-	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
-
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
 	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
 
+$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL)
+	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
+
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
 	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
+
+$(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) if_mzsch.h $(MZ_EXTRA_DEP)
+	$(CC) -c $(CFLAGS) if_mzsch.c -o $(OUTDIR)/if_mzsch.o
+
+mzscheme_base.c:
+	$(MZSCHEME)/mzc --c-mods mzscheme_base.c ++lib scheme/base
 
 # Remove -D__IID_DEFINED__ for newer versions of the w32api
 $(OUTDIR)/if_ole.o: if_ole.cpp $(INCL)
 	$(CC) $(CFLAGS) $(CXXFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
 
+if_perl.c: if_perl.xs typemap
+	$(XSUBPP) -prototypes -typemap \
+	     $(PERLTYPEMAP) if_perl.xs -output $@
+
 $(OUTDIR)/if_ruby.o: if_ruby.c $(INCL)
 ifeq (16, $(RUBY))
 	$(CC) $(CFLAGS) -U_WIN32 -c -o $(OUTDIR)/if_ruby.o if_ruby.c
 endif
-
-if_perl.c: if_perl.xs typemap
-	$(XSUBPP) -prototypes -typemap \
-	     $(PERLTYPEMAP) if_perl.xs > $@
 
 $(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
 	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
@@ -939,17 +978,45 @@ $(OUTDIR)/main.o:		main.c $(INCL) $(CUI_INCL)
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
 
-$(OUTDIR)/channel.o:	channel.c $(INCL)
-	$(CC) -c $(CFLAGS) channel.c -o $(OUTDIR)/channel.o
-
 $(OUTDIR)/regexp.o:		regexp.c regexp_nfa.c $(INCL)
 	$(CC) -c $(CFLAGS) regexp.c -o $(OUTDIR)/regexp.o
 
-$(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) if_mzsch.h $(MZ_EXTRA_DEP)
-	$(CC) -c $(CFLAGS) if_mzsch.c -o $(OUTDIR)/if_mzsch.o
+$(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)
+	$(CC) -c $(CFLAGS) terminal.c -o $(OUTDIR)/terminal.o
 
-mzscheme_base.c:
-	$(MZSCHEME)/mzc --c-mods mzscheme_base.c ++lib scheme/base
+
+CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
+	  -DVSNPRINTF=vim_vsnprintf \
+	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
+	  -DWCWIDTH_FUNCTION=utf_uint2cells
+
+$(OUTDIR)/term_encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/encoding.c -o $@
+
+$(OUTDIR)/term_keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/keyboard.c -o $@
+
+$(OUTDIR)/term_mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/mouse.c -o $@
+
+$(OUTDIR)/term_parser.o: libvterm/src/parser.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/parser.c -o $@
+
+$(OUTDIR)/term_pen.o: libvterm/src/pen.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/pen.c -o $@
+
+$(OUTDIR)/term_screen.o: libvterm/src/screen.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/screen.c -o $@
+
+$(OUTDIR)/term_state.o: libvterm/src/state.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/state.c -o $@
+
+$(OUTDIR)/term_unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/unicode.c -o $@
+
+$(OUTDIR)/term_vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/vterm.c -o $@
+
 
 pathdef.c: $(INCL)
 ifneq (sh.exe, $(SHELL))

@@ -1636,12 +1636,7 @@ func Test_read_nonl_line()
   endif
 
   let g:linecount = 0
-  if has('win32')
-    " workaround: 'shellescape' does improper escaping double quotes
-    let arg = 'import sys;sys.stdout.write(\"1\n2\n3\")'
-  else
-    let arg = 'import sys;sys.stdout.write("1\n2\n3")'
-  endif
+  let arg = 'import sys;sys.stdout.write("1\n2\n3")'
   call job_start([s:python, '-c', arg], {'callback': 'MyLineCountCb'})
   call WaitFor('3 <= g:linecount')
   call assert_equal(3, g:linecount)
@@ -1653,15 +1648,49 @@ func Test_read_from_terminated_job()
   endif
 
   let g:linecount = 0
-  if has('win32')
-    " workaround: 'shellescape' does improper escaping double quotes 
-    let arg = 'import os,sys;os.close(1);sys.stderr.write(\"test\n\")'
-  else
-    let arg = 'import os,sys;os.close(1);sys.stderr.write("test\n")'
-  endif
+  let arg = 'import os,sys;os.close(1);sys.stderr.write("test\n")'
   call job_start([s:python, '-c', arg], {'callback': 'MyLineCountCb'})
   call WaitFor('1 <= g:linecount')
   call assert_equal(1, g:linecount)
+endfunc
+
+func Test_env()
+  if !has('job')
+    return
+  endif
+
+  let g:envstr = ''
+  if has('win32')
+    call job_start(['cmd', '/c', 'echo %FOO%'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'env':{'FOO': 'bar'}})
+  else
+    call job_start([&shell, &shellcmdflag, 'echo $FOO'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'env':{'FOO': 'bar'}})
+  endif
+  call WaitFor('"" != g:envstr')
+  call assert_equal("bar", g:envstr)
+  unlet g:envstr
+endfunc
+
+func Test_cwd()
+  if !has('job')
+    return
+  endif
+
+  let g:envstr = ''
+  if has('win32')
+    let expect = $TEMP
+    call job_start(['cmd', '/c', 'echo %CD%'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
+  else
+    let expect = $HOME
+    call job_start(['pwd'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
+  endif
+  call WaitFor('"" != g:envstr')
+  let expect = substitute(expect, '[/\\]$', '', '')
+  let g:envstr = substitute(g:envstr, '[/\\]$', '', '')
+  if $CI != '' && stridx(g:envstr, '/private/') == 0
+    let g:envstr = g:envstr[8:]
+  endif
+  call assert_equal(expect, g:envstr)
+  unlet g:envstr
 endfunc
 
 function Ch_test_close_lambda(port)
@@ -1681,4 +1710,52 @@ endfunc
 func Test_close_lambda()
   call ch_log('Test_close_lambda()')
   call s:run_server('Ch_test_close_lambda')
+endfunc
+
+func s:test_list_args(cmd, out, remove_lf)
+  try
+    let g:out = ''
+    call job_start([s:python, '-c', a:cmd], {'callback': {ch, msg -> execute('let g:out .= msg')}, 'out_mode': 'raw'})
+    call WaitFor('"" != g:out')
+    if has('win32')
+      let g:out = substitute(g:out, '\r', '', 'g')
+    endif
+    if a:remove_lf
+      let g:out = substitute(g:out, '\n$', '', 'g')
+    endif
+    call assert_equal(a:out, g:out)
+  finally
+    unlet g:out
+  endtry
+endfunc
+
+func Test_list_args()
+  if !has('job')
+    return
+  endif
+
+  call s:test_list_args('import sys;sys.stdout.write("hello world")', "hello world", 0)
+  call s:test_list_args('import sys;sys.stdout.write("hello\nworld")', "hello\nworld", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello\nworld'')', "hello\nworld", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello"world'')', "hello\"world", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello^world'')', "hello^world", 0)
+  call s:test_list_args('import sys;sys.stdout.write("hello&&world")', "hello&&world", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello\\world'')', "hello\\world", 0)
+  call s:test_list_args('import sys;sys.stdout.write(''hello\\\\world'')', "hello\\\\world", 0)
+  call s:test_list_args('import sys;sys.stdout.write("hello\"world\"")', 'hello"world"', 0)
+  call s:test_list_args('import sys;sys.stdout.write("h\"ello worl\"d")', 'h"ello worl"d', 0)
+  call s:test_list_args('import sys;sys.stdout.write("h\"e\\\"llo wor\\\"l\"d")', 'h"e\"llo wor\"l"d', 0)
+  call s:test_list_args('import sys;sys.stdout.write("h\"e\\\"llo world")', 'h"e\"llo world', 0)
+  call s:test_list_args('import sys;sys.stdout.write("hello\tworld")', "hello\tworld", 0)
+
+  " tests which not contain spaces in the argument
+  call s:test_list_args('print("hello\nworld")', "hello\nworld", 1)
+  call s:test_list_args('print(''hello\nworld'')', "hello\nworld", 1)
+  call s:test_list_args('print(''hello"world'')', "hello\"world", 1)
+  call s:test_list_args('print(''hello^world'')', "hello^world", 1)
+  call s:test_list_args('print("hello&&world")', "hello&&world", 1)
+  call s:test_list_args('print(''hello\\world'')', "hello\\world", 1)
+  call s:test_list_args('print(''hello\\\\world'')', "hello\\\\world", 1)
+  call s:test_list_args('print("hello\"world\"")', 'hello"world"', 1)
+  call s:test_list_args('print("hello\tworld")', "hello\tworld", 1)
 endfunc

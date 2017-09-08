@@ -1,8 +1,11 @@
 " A series of tests that can run in one Vim invocation.
 " This makes testing go faster, since Vim doesn't need to restart.
 
+source shared.vim
+
 set belloff=all
 source test_assign.vim
+source test_bufline.vim
 source test_cd.vim
 source test_changedtick.vim
 source test_cursor_func.vim
@@ -55,4 +58,5 @@ source test_taglist.vim
 source test_timers.vim
 source test_true_false.vim
 source test_unlet.vim
+source test_virtualedit.vim
 source test_window_cmd.vim

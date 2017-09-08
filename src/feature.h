@@ -1282,9 +1282,14 @@
 
 /*
  * +terminal		":terminal" command.  Runs a terminal in a window.
+ *			requires +channel and +multibyte
  */
-#if !defined(FEAT_JOB_CHANNEL) && defined(FEAT_TERMINAL)
+#if defined(FEAT_TERMINAL) && \
+	!(defined(FEAT_JOB_CHANNEL) && defined(FEAT_MBYTE))
 # undef FEAT_TERMINAL
+#endif
+#if defined(FEAT_TERMINAL) && !defined(CURSOR_SHAPE)
+# define CURSOR_SHAPE
 #endif
 
 /*

@@ -166,15 +166,21 @@ func s:feedkeys(timer)
 endfunc
 
 " Get the command to run Vim, with -u NONE and --not-a-term arguments.
+" If there is an argument use it instead of "NONE".
 " Returns an empty string on error.
-func GetVimCommand()
+func GetVimCommand(...)
   if !filereadable('vimcmd')
     return ''
   endif
+  if a:0 == 0
+    let name = 'NONE'
+  else
+    let name = a:1
+  endif
   let cmd = readfile('vimcmd')[0]
-  let cmd = substitute(cmd, '-u \f\+', '-u NONE', '')
-  if cmd !~ '-u NONE'
-    let cmd = cmd . ' -u NONE'
+  let cmd = substitute(cmd, '-u \f\+', '-u ' . name, '')
+  if cmd !~ '-u '. name
+    let cmd = cmd . ' -u ' . name
   endif
   let cmd .= ' --not-a-term'
   let cmd = substitute(cmd, 'VIMRUNTIME=.*VIMRUNTIME;', '', '')
@@ -214,4 +220,8 @@ func RunVimPiped(before, after, arguments, pipecmd)
     call delete('Xafter.vim')
   endif
   return 1
+endfunc
+
+func CanRunGui()
+  return has('gui') && ($DISPLAY != "" || has('gui_running'))
 endfunc

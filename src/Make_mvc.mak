@@ -15,7 +15,8 @@
 # This will build the console version of Vim with no additional interfaces.
 # To add features, define any of the following:
 #
-# 	For MSVC 11 you need to specify where the Win32.mak file is, e.g.:
+# 	For MSVC 11, if you want to include Win32.mak, you need to specify
+# 	where the file is, e.g.:
 # 	   SDK_INCLUDE_DIR="C:\Program Files\Microsoft SDKs\Windows\v7.1\Include"
 #
 #	!!!!  After changing features do "nmake clean" first  !!!!
@@ -35,6 +36,8 @@
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
+#
+#       Terminal support: TERMINAL=yes (default is no)
 #
 #	Lua interface:
 #	  LUA=[Path to Lua directory]
@@ -81,6 +84,7 @@
 #	  TCL_VER=[Tcl version, e.g. 80, 83]  (default is 86)
 #	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.6)
 #	    You must set TCL_VER_LONG when you set TCL_VER.
+#	  TCL_DLL=[Tcl dll name, e.g. tcl86.dll]  (default is tcl86.dll)
 #
 #	Cscope support: CSCOPE=yes
 #
@@ -210,7 +214,7 @@ OBJDIR = $(OBJDIR)Z
 OBJDIR = $(OBJDIR)d
 !endif
 
-# Win32.mak requires that CPU be set appropriately.
+# If you include Win32.mak, it requires that CPU be set appropriately.
 # To cross-compile for Win64, set CPU=AMD64 or CPU=IA64.
 
 !ifdef PROCESSOR_ARCHITECTURE
@@ -251,12 +255,15 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 !endif
 
 
-# Get all sorts of useful, standard macros from the Platform SDK.
+# Get all sorts of useful, standard macros from the Platform SDK,
+# if SDK_INCLUDE_DIR is set or USE_WIN32MAK is set to "yes".
 
 !ifdef SDK_INCLUDE_DIR
 !include $(SDK_INCLUDE_DIR)\Win32.mak
-!else
+!elseif "$(USE_WIN32MAK)"=="yes"
 !include <Win32.mak>
+!else
+link = link
 !endif
 
 
@@ -337,7 +344,8 @@ FEATURES = HUGE
 !endif
 
 !ifndef CTAGS
-CTAGS = ctags
+# this assumes ctags is Exuberant ctags
+CTAGS = ctags -I INIT+ --fields=+S
 !endif
 
 !ifndef CSCOPE
@@ -352,9 +360,24 @@ CSCOPE_DEFS  = -DFEAT_CSCOPE
 !endif
 
 !if "$(TERMINAL)" == "yes"
-TERMINAL_OBJ   = $(OBJDIR)/terminal.obj
-TERMINAL_DEFS  = -DFEAT_TERMINAL
-TERMINAL_SRC	= terminal.c
+TERM_OBJ = \
+	$(OBJDIR)/terminal.obj \
+	$(OBJDIR)/term_encoding.obj \
+	$(OBJDIR)/term_keyboard.obj \
+	$(OBJDIR)/term_mouse.obj \
+	$(OBJDIR)/term_parser.obj \
+	$(OBJDIR)/term_pen.obj \
+	$(OBJDIR)/term_screen.obj \
+	$(OBJDIR)/term_state.obj \
+	$(OBJDIR)/term_unicode.obj \
+	$(OBJDIR)/term_vterm.obj
+TERM_DEFS = -DFEAT_TERMINAL
+TERM_DEPS = \
+	libvterm/include/vterm.h \
+	libvterm/include/vterm_keycodes.h \
+	libvterm/src/rect.h \
+	libvterm/src/utf8.h \
+	libvterm/src/vterm_internal.h
 !endif
 
 !ifndef NETBEANS
@@ -464,10 +487,9 @@ WINVER = 0x0501
 #VIMRUNTIMEDIR = somewhere
 
 CFLAGS = -c /W3 /nologo $(CVARS) -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
-		$(CSCOPE_DEFS) $(TERMINAL_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
+		$(CSCOPE_DEFS) $(TERM_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
 		$(NBDEBUG_DEFS) $(XPM_DEFS) \
-		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
-		/Fo$(OUTDIR)/ 
+		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
 
 #>>>>> end of choices
 ###########################################################################
@@ -812,7 +834,9 @@ TCL_VER_LONG = 8.6
 !message Tcl requested (version $(TCL_VER)) - root dir is "$(TCL)"
 !if "$(DYNAMIC_TCL)" == "yes"
 !message Tcl DLL will be loaded dynamically
+!ifndef TCL_DLL
 TCL_DLL = tcl$(TCL_VER).dll
+!endif
 CFLAGS  = $(CFLAGS) -DFEAT_TCL -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"$(TCL_DLL)\" \
 		-DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
 TCL_OBJ	= $(OUTDIR)\if_tcl.obj
@@ -1115,6 +1139,9 @@ LINK_PDB = /PDB:$(VIM).pdb -debug
 #
 !message
 
+# CFLAGS with /Fo$(OUTDIR)/
+CFLAGS_OUTDIR=$(CFLAGS) /Fo$(OUTDIR)/
+
 conflags = /nologo /subsystem:$(SUBSYSTEM)
 
 PATHDEF_SRC = $(OUTDIR)\pathdef.c
@@ -1151,12 +1178,12 @@ all:	$(VIM).exe \
 
 $(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
-		$(CSCOPE_OBJ) $(TERMINAL_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
+		$(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
-	$(CC) $(CFLAGS) version.c
+	$(CC) $(CFLAGS_OUTDIR) version.c
 	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) \
 		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
-		$(TCL_OBJ) $(CSCOPE_OBJ) $(TERMINAL_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
+		$(TCL_OBJ) $(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
 		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
 
@@ -1194,7 +1221,7 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 
 
 tags: notags
-	$(CTAGS) *.c *.cpp *.h if_perl.xs proto\*.pro
+	$(CTAGS) *.c *.cpp *.h if_perl.xs
 
 notags:
 	- if exist tags del tags
@@ -1250,7 +1277,7 @@ testclean:
 !ELSE
 .c{$(OUTDIR)/}.obj::
 !ENDIF
-	$(CC) $(CFLAGS) $<
+	$(CC) $(CFLAGS_OUTDIR) $<
 
 # Create a default rule for transforming .cpp files to .obj files in $(OUTDIR)
 # Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
@@ -1259,7 +1286,7 @@ testclean:
 !ELSE
 .cpp{$(OUTDIR)/}.obj::
 !ENDIF
-	$(CC) $(CFLAGS) $<
+	$(CC) $(CFLAGS_OUTDIR) $<
 
 $(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
 
@@ -1318,41 +1345,41 @@ $(OUTDIR)/gui_dwrite.obj:	$(OUTDIR) gui_dwrite.cpp $(INCL) $(GUI_INCL)
 $(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL)
 
 $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
-	$(CC) $(CFLAGS) $(LUA_INC) if_lua.c
+	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
 
 if_perl.c : if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
-		-typemap typemap if_perl.xs > if_perl.c
+		-typemap typemap if_perl.xs -output if_perl.c
 
 $(OUTDIR)/if_perl.obj: $(OUTDIR) if_perl.c  $(INCL)
-	$(CC) $(CFLAGS) $(PERL_INC) if_perl.c
+	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) if_perl.c
 
 $(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c  $(INCL)
-	$(CC) $(CFLAGS) $(PERL_INC) if_perlsfio.c
+	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) if_perlsfio.c
 
 $(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c if_mzsch.h $(INCL) $(MZSCHEME_EXTRA_DEP)
-	$(CC) $(CFLAGS) if_mzsch.c \
+	$(CC) $(CFLAGS_OUTDIR) if_mzsch.c \
 		-DMZSCHEME_COLLECTS="\"$(MZSCHEME_COLLECTS:\=\\)\""
 
 lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib:
 	lib /DEF:"$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).def"
 
 $(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c if_py_both.h $(INCL)
-	$(CC) $(CFLAGS) $(PYTHON_INC) if_python.c
+	$(CC) $(CFLAGS_OUTDIR) $(PYTHON_INC) if_python.c
 
 $(OUTDIR)/if_python3.obj: $(OUTDIR) if_python3.c if_py_both.h $(INCL)
-	$(CC) $(CFLAGS) $(PYTHON3_INC) if_python3.c
+	$(CC) $(CFLAGS_OUTDIR) $(PYTHON3_INC) if_python3.c
 
 $(OUTDIR)/if_ole.obj: $(OUTDIR) if_ole.cpp  $(INCL) if_ole.h
 
 $(OUTDIR)/if_ruby.obj: $(OUTDIR) if_ruby.c  $(INCL)
-	$(CC) $(CFLAGS) $(RUBY_INC) if_ruby.c
+	$(CC) $(CFLAGS_OUTDIR) $(RUBY_INC) if_ruby.c
 
 $(OUTDIR)/if_tcl.obj: $(OUTDIR) if_tcl.c  $(INCL)
-	$(CC) $(CFLAGS) $(TCL_INC) if_tcl.c
+	$(CC) $(CFLAGS_OUTDIR) $(TCL_INC) if_tcl.c
 
 $(OUTDIR)/iscygpty.obj:	$(OUTDIR) iscygpty.c $(CUI_INCL)
-	$(CC) $(CFLAGS) iscygpty.c -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
+	$(CC) $(CFLAGS_OUTDIR) iscygpty.c -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
 
 $(OUTDIR)/json.obj:	$(OUTDIR) json.c  $(INCL)
 
@@ -1390,7 +1417,7 @@ $(OUTDIR)/ops.obj:	$(OUTDIR) ops.c  $(INCL)
 
 $(OUTDIR)/os_mswin.obj:	$(OUTDIR) os_mswin.c  $(INCL)
 
-$(OUTDIR)/terminal.obj:	$(OUTDIR) terminal.c  $(INCL)
+$(OUTDIR)/terminal.obj:	$(OUTDIR) terminal.c  $(INCL) $(TERM_DEPS)
 
 $(OUTDIR)/winclip.obj:	$(OUTDIR) winclip.c  $(INCL)
 
@@ -1399,7 +1426,7 @@ $(OUTDIR)/os_win32.obj:	$(OUTDIR) os_win32.c  $(INCL) os_win32.h
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
-	$(CC) $(CFLAGS) $(PATHDEF_SRC)
+	$(CC) $(CFLAGS_OUTDIR) $(PATHDEF_SRC)
 
 $(OUTDIR)/popupmnu.obj:	$(OUTDIR) popupmnu.c  $(INCL)
 
@@ -1432,7 +1459,7 @@ $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
 
 $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
-	$(CC) $(CFLAGS) $(XPM_INC) xpm_w32.c
+	$(CC) $(CFLAGS_OUTDIR) $(XPM_INC) xpm_w32.c
 
 $(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h tools.bmp \
 				tearoff.bmp vim.ico vim_error.ico \
@@ -1449,6 +1476,41 @@ dimm.h dimm_i.c: dimm.idl
 $(OUTDIR)/dimm_i.obj: $(OUTDIR) dimm_i.c $(INCL)
 
 $(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
+
+
+CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
+	-DVSNPRINTF=vim_vsnprintf \
+	-DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
+	-DWCWIDTH_FUNCTION=utf_uint2cells \
+	-D_CRT_SECURE_NO_WARNINGS
+
+$(OUTDIR)/term_encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/encoding.c
+
+$(OUTDIR)/term_keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/keyboard.c
+
+$(OUTDIR)/term_mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/mouse.c
+
+$(OUTDIR)/term_parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/parser.c
+
+$(OUTDIR)/term_pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/pen.c
+
+$(OUTDIR)/term_screen.obj: $(OUTDIR) libvterm/src/screen.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/screen.c
+
+$(OUTDIR)/term_state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/state.c
+
+$(OUTDIR)/term_unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/unicode.c
+
+$(OUTDIR)/term_vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/vterm.c
+
 
 # $CFLAGS may contain backslashes and double quotes, escape them both.
 E0_CFLAGS = $(CFLAGS:\=\\)
@@ -1543,6 +1605,5 @@ proto.h: \
 # Generate foo.i (preprocessor listing) from foo.c via "nmake foo.i"
 .c.i:
 	$(CC) $(CFLAGS) /P /C $<
-
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0:

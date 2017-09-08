@@ -105,6 +105,7 @@ SRC_ALL =	\
 		src/testdir/Make_all.mak \
 		src/testdir/*.in \
 		src/testdir/*.py \
+		src/testdir/lsan-suppress.txt \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/runtest.vim \
 		src/testdir/shared.vim \
@@ -134,6 +135,7 @@ SRC_ALL =	\
 		src/testdir/bench*.in \
 		src/testdir/bench*.vim \
 		src/testdir/samples/*.txt \
+		src/testdir/if_ver*.vim \
 		src/proto.h \
 		src/proto/arabic.pro \
 		src/proto/blowfish.pro \

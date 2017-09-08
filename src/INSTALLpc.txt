@@ -29,10 +29,11 @@ Contents:
 10. Building with Perl support
 11. Building with Ruby support
 12. Building with Tcl support
-13. Windows 3.1
-14. MS-DOS
+13. Building with Terminal support
+14. Windows 3.1
+15. MS-DOS
 
-15. Installing after building from sources
+16. Installing after building from sources
 
 
 The currently preferred method is using the free Visual C++ Toolkit 2008
@@ -480,7 +481,10 @@ You need to set the following variables:
     MZSCHEME:          Where Racket is installed.
                        E.g. C:\Program Files (x86)\Racket
     DYNAMIC_MZSCHEME:  Whether dynamic linking is used. Usually, set to yes.
-    MZSCHEME_VER:      Racket DLL version. E.g. 3m_9z0ds0 for Racket 6.3.
+    MZSCHEME_VER:      Racket DLL version which is used for the file name.
+                       E.g. 3m_9z0ds0 for Racket 6.3.
+                       The DLL can be found under the lib directory. E.g.
+                       C:\Program Files (x86)\Racket\lib\libracket3m_XXXXXX.dll
     MZSCHEME_COLLECTS: (Optional) Path of the collects directory used at
                        runtime. Default: $(MZSCHEME)\collects
                        User can override this with the PLTCOLLECTS environment
@@ -702,19 +706,35 @@ Or when using MinGW (as one line):
         TCL=C:\Tcl86 DYNAMIC_TCL=yes TCL_VER=86 TCL_VER_LONG=8.6
 
 
-13. Windows 3.1x
+13. Building with Terminal support
+==================================
+
+Vim with Terminal support can be built with either MSVC, MinGW or Cygwin.
+This uses the included libvterm and winpty.  No extra header files or
+libraries are needed for building.  Just set TERMINAL to yes.
+
+E.g. When using MSVC:
+
+    nmake -f Make_mvc.mak TERMINAL=yes
+
+Or when using MinGW (as one line):
+
+    mingw32-make -f Make_mingw.mak TERMINAL=yes
+
+
+14. Windows 3.1x
 ================
 
 The Windows 3.1x support was removed in patch 7.4.1364.
 
 
-14. MS-DOS
+15. MS-DOS
 ==========
 
 The MS-DOS support was removed in patch 7.4.1399.
 
 
-15. Installing after building from sources
+16. Installing after building from sources
 ==========================================
 
 [provided by Michael Soyka]

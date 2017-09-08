@@ -258,7 +258,7 @@ static int on_text(const char bytes[], size_t len, void *user)
                              &state->encoding[state->gr_set];
 
   (*encoding->enc->decode)(encoding->enc, encoding->data,
-      codepoints, &npoints, state->gsingle_set ? 1 : len,
+      codepoints, &npoints, state->gsingle_set ? 1 : (int)len,
       bytes, &eaten, len);
 
   /* There's a chance an encoding (e.g. UTF-8) hasn't found enough bytes yet
@@ -411,7 +411,7 @@ static int on_text(const char bytes[], size_t len, void *user)
 #endif
 
   vterm_allocator_free(state->vt, codepoints);
-  return eaten;
+  return (int)eaten;
 }
 
 static int on_control(unsigned char control, void *user)
@@ -878,6 +878,7 @@ static void request_dec_mode(VTermState *state, int num)
 
     case 2004:
       reply = state->mode.bracketpaste;
+      break;
 
     default:
       vterm_push_output_sprintf_ctrl(state->vt, C1_CSI, "?%d;%d$y", num, 0);
@@ -1194,6 +1195,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     break;
 
   case LEADER('>', 0x63): /* DEC secondary Device Attributes */
+    /* This returns xterm version number 100. */
     vterm_push_output_sprintf_ctrl(state->vt, C1_CSI, ">%d;%d;%dc", 0, 100, 0);
     break;
 
@@ -1503,6 +1505,10 @@ static int on_osc(const char *command, size_t cmdlen, void *user)
     settermprop_string(state, VTERM_PROP_TITLE, command + 2, cmdlen - 2);
     return 1;
   }
+  else if(strneq(command, "12;", 3)) {
+    settermprop_string(state, VTERM_PROP_CURSORCOLOR, command + 3, cmdlen - 3);
+    return 1;
+  }
   else if(state->fallbacks && state->fallbacks->osc)
     if((*state->fallbacks->osc)(command, cmdlen, state->fbdata))
       return 1;
@@ -1679,7 +1685,7 @@ VTermState *vterm_obtain_state(VTerm *vt)
   state->lineinfo = vterm_allocator_malloc(state->vt, state->rows * sizeof(VTermLineInfo));
 
   state->encoding_utf8.enc = vterm_lookup_encoding(ENC_UTF8, 'u');
-  if(*state->encoding_utf8.enc->init)
+  if(*state->encoding_utf8.enc->init != NULL)
     (*state->encoding_utf8.enc->init)(state->encoding_utf8.enc, state->encoding_utf8.data);
 
   vterm_parser_set_callbacks(vt, &parser_callbacks, state);
@@ -1818,6 +1824,7 @@ int vterm_state_set_termprop(VTermState *state, VTermProp prop, VTermValue *val)
   switch(prop) {
   case VTERM_PROP_TITLE:
   case VTERM_PROP_ICONNAME:
+  case VTERM_PROP_CURSORCOLOR:
     /* we don't store these, just transparently pass through */
     return 1;
   case VTERM_PROP_CURSORVISIBLE:

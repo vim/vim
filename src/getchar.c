@@ -125,7 +125,7 @@ static int	vgetorpeek(int);
 static void	map_free(mapblock_T **);
 static void	validate_maphash(void);
 static void	showmap(mapblock_T *mp, int local);
-static int	inchar(char_u *buf, int maxlen, long wait_time, int tb_change_cnt);
+static int	inchar(char_u *buf, int maxlen, long wait_time);
 #ifdef FEAT_EVAL
 static char_u	*eval_map_expr(char_u *str, int c);
 #endif
@@ -462,8 +462,7 @@ flush_buffers(int flush_typeahead)
 	 * of an escape sequence.
 	 * In an xterm we get one char at a time and we have to get them all.
 	 */
-	while (inchar(typebuf.tb_buf, typebuf.tb_buflen - 1, 10L,
-						  typebuf.tb_change_cnt) != 0)
+	while (inchar(typebuf.tb_buf, typebuf.tb_buflen - 1, 10L) != 0)
 	    ;
 	typebuf.tb_off = MAXMAPLEN;
 	typebuf.tb_len = 0;
@@ -1599,8 +1598,13 @@ vgetc(void)
       {
 	int did_inc = FALSE;
 
-	if (mod_mask)		/* no mapping after modifier has been read */
+	if (mod_mask
+#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
+	    || im_is_preediting()
+#endif
+		)
 	{
+	    /* no mapping after modifier has been read */
 	    ++no_mapping;
 	    ++allow_keys;
 	    did_inc = TRUE;	/* mod_mask may change value */
@@ -2046,8 +2050,7 @@ vgetorpeek(int advance)
 		if (got_int)
 		{
 		    /* flush all input */
-		    c = inchar(typebuf.tb_buf, typebuf.tb_buflen - 1, 0L,
-						       typebuf.tb_change_cnt);
+		    c = inchar(typebuf.tb_buf, typebuf.tb_buflen - 1, 0L);
 		    /*
 		     * If inchar() returns TRUE (script file was active) or we
 		     * are inside a mapping, get out of insert mode.
@@ -2610,8 +2613,7 @@ vgetorpeek(int advance)
 			&& (p_timeout
 			    || (keylen == KEYLEN_PART_KEY && p_ttimeout))
 			&& (c = inchar(typebuf.tb_buf + typebuf.tb_off
-						     + typebuf.tb_len, 3, 25L,
-						 typebuf.tb_change_cnt)) == 0)
+					       + typebuf.tb_len, 3, 25L)) == 0)
 		{
 		    colnr_T	col = 0, vcol;
 		    char_u	*ptr;
@@ -2848,7 +2850,7 @@ vgetorpeek(int advance)
 				    ? -1L
 				    : ((keylen == KEYLEN_PART_KEY && p_ttm >= 0)
 					    ? p_ttm
-					    : p_tm)), typebuf.tb_change_cnt);
+					    : p_tm)));
 
 #ifdef FEAT_CMDL_INFO
 		if (i != 0)
@@ -2954,12 +2956,12 @@ vgetorpeek(int advance)
 inchar(
     char_u	*buf,
     int		maxlen,
-    long	wait_time,	    /* milli seconds */
-    int		tb_change_cnt)
+    long	wait_time)	    /* milli seconds */
 {
     int		len = 0;	    /* init for GCC */
     int		retesc = FALSE;	    /* return ESC with gotint */
     int		script_char;
+    int		tb_change_cnt = typebuf.tb_change_cnt;
 
     if (wait_time == -1L || wait_time > 100L)  /* flush output before waiting */
     {
@@ -3065,8 +3067,16 @@ inchar(
 	len = ui_inchar(buf, maxlen / 3, wait_time, tb_change_cnt);
     }
 
+    /* If the typebuf was changed further down, it is like nothing was added by
+     * this call. */
     if (typebuf_changed(tb_change_cnt))
 	return 0;
+
+    /* Note the change in the typeahead buffer, this matters for when
+     * vgetorpeek() is called recursively, e.g. using getchar(1) in a timer
+     * function. */
+    if (len > 0 && ++typebuf.tb_change_cnt == 0)
+	typebuf.tb_change_cnt = 1;
 
     return fix_input_buffer(buf, len);
 }

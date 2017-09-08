@@ -84,6 +84,7 @@ clean:
 	-@if exist lua.vim $(DEL) lua.vim
 	-@if exist Xdir1 $(DELDIR) Xdir1
 	-@if exist Xfind $(DELDIR) Xfind
+	-@if exist XfakeHOME $(DELDIR) XfakeHOME
 	-@if exist X* $(DEL) X*
 	-@if exist viminfo $(DEL) viminfo
 	-@if exist test.log $(DEL) test.log
@@ -98,6 +99,7 @@ clean:
 	@$(MV) test.out $*.out
 	-@if exist Xdir1 $(DELDIR) Xdir1
 	-@if exist Xfind $(DELDIR) Xfind
+	-@if exist XfakeHOME $(DELDIR) XfakeHOME
 	-@if exist X* $(DEL) X*
 	-@if exist test.ok $(DEL) test.ok
 	-@if exist viminfo $(DEL) viminfo

@@ -789,6 +789,37 @@ property_event(GtkWidget *widget,
 #endif /* defined(FEAT_CLIENTSERVER) */
 
 
+#if GTK_CHECK_VERSION(3,0,0)
+typedef gboolean timeout_cb_type;
+#else
+typedef gint timeout_cb_type;
+#endif
+
+/*
+ * Start a timer that will invoke the specified callback.
+ * Returns the ID of the timer.
+ */
+    static guint
+timeout_add(int time, timeout_cb_type (*callback)(gpointer), int *flagp)
+{
+#if GTK_CHECK_VERSION(3,0,0)
+    return g_timeout_add((guint)time, (GSourceFunc)callback, flagp);
+#else
+    return gtk_timeout_add((guint32)time, (GtkFunction)callback, flagp);
+#endif
+}
+
+    static void
+timeout_remove(guint timer)
+{
+#if GTK_CHECK_VERSION(3,0,0)
+    g_source_remove(timer);
+#else
+    gtk_timeout_remove(timer);
+#endif
+}
+
+
 /****************************************************************************
  * Focus handlers:
  */
@@ -866,11 +897,7 @@ gui_mch_stop_blink(void)
 {
     if (blink_timer)
     {
-#if GTK_CHECK_VERSION(3,0,0)
-	g_source_remove(blink_timer);
-#else
-	gtk_timeout_remove(blink_timer);
-#endif
+	timeout_remove(blink_timer);
 	blink_timer = 0;
     }
     if (blink_state == BLINK_OFF)
@@ -881,36 +908,20 @@ gui_mch_stop_blink(void)
     blink_state = BLINK_NONE;
 }
 
-#if GTK_CHECK_VERSION(3,0,0)
-    static gboolean
-#else
-    static gint
-#endif
+    static timeout_cb_type
 blink_cb(gpointer data UNUSED)
 {
     if (blink_state == BLINK_ON)
     {
 	gui_undraw_cursor();
 	blink_state = BLINK_OFF;
-#if GTK_CHECK_VERSION(3,0,0)
-	blink_timer = g_timeout_add((guint)blink_offtime,
-				   (GSourceFunc) blink_cb, NULL);
-#else
-	blink_timer = gtk_timeout_add((guint32)blink_offtime,
-				   (GtkFunction) blink_cb, NULL);
-#endif
+	blink_timer = timeout_add(blink_offtime, blink_cb, NULL);
     }
     else
     {
 	gui_update_cursor(TRUE, FALSE);
 	blink_state = BLINK_ON;
-#if GTK_CHECK_VERSION(3,0,0)
-	blink_timer = g_timeout_add((guint)blink_ontime,
-				   (GSourceFunc) blink_cb, NULL);
-#else
-	blink_timer = gtk_timeout_add((guint32)blink_ontime,
-				   (GtkFunction) blink_cb, NULL);
-#endif
+	blink_timer = timeout_add(blink_ontime, blink_cb, NULL);
     }
     gui_mch_flush();
 
@@ -926,23 +937,13 @@ gui_mch_start_blink(void)
 {
     if (blink_timer)
     {
-#if GTK_CHECK_VERSION(3,0,0)
-	g_source_remove(blink_timer);
-#else
-	gtk_timeout_remove(blink_timer);
-#endif
+	timeout_remove(blink_timer);
 	blink_timer = 0;
     }
     /* Only switch blinking on if none of the times is zero */
     if (blink_waittime && blink_ontime && blink_offtime && gui.in_focus)
     {
-#if GTK_CHECK_VERSION(3,0,0)
-	blink_timer = g_timeout_add((guint)blink_waittime,
-				   (GSourceFunc) blink_cb, NULL);
-#else
-	blink_timer = gtk_timeout_add((guint32)blink_waittime,
-				   (GtkFunction) blink_cb, NULL);
-#endif
+	blink_timer = timeout_add(blink_waittime, blink_cb, NULL);
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
 	gui_mch_flush();
@@ -1733,7 +1734,6 @@ gui_mch_init_check(void)
     return OK;
 }
 
-
 /****************************************************************************
  * Mouse handling callbacks
  */
@@ -1745,11 +1745,7 @@ static int mouse_timed_out = TRUE;
 /*
  * Timer used to recognize multiple clicks of the mouse button
  */
-#if GTK_CHECK_VERSION(3,0,0)
-    static gboolean
-#else
-    static gint
-#endif
+    static timeout_cb_type
 mouse_click_timer_cb(gpointer data)
 {
     /* we don't use this information currently */
@@ -1759,13 +1755,9 @@ mouse_click_timer_cb(gpointer data)
     return FALSE;		/* don't happen again */
 }
 
-static guint motion_repeat_timer  = 0;
-static int   motion_repeat_offset = FALSE;
-#ifdef GTK_DEST_DEFAULT_ALL
-static gboolean  motion_repeat_timer_cb(gpointer);
-#else
-static gint  motion_repeat_timer_cb(gpointer);
-#endif
+static guint		motion_repeat_timer  = 0;
+static int		motion_repeat_offset = FALSE;
+static timeout_cb_type	motion_repeat_timer_cb(gpointer);
 
     static void
 process_motion_notify(int x, int y, GdkModifierType state)
@@ -1853,13 +1845,8 @@ process_motion_notify(int x, int y, GdkModifierType state)
 
 	/* shoot again */
 	if (!motion_repeat_timer)
-#if GTK_CHECK_VERSION(3,0,0)
-	    motion_repeat_timer = g_timeout_add((guint)delay,
-						motion_repeat_timer_cb, NULL);
-#else
-	    motion_repeat_timer = gtk_timeout_add((guint32)delay,
-						motion_repeat_timer_cb, NULL);
-#endif
+	    motion_repeat_timer = timeout_add(delay, motion_repeat_timer_cb,
+									 NULL);
     }
 }
 
@@ -1904,11 +1891,7 @@ gui_gtk_window_at_position(GtkWidget *widget,
 /*
  * Timer used to recognize multiple clicks of the mouse button.
  */
-#if GTK_CHECK_VERSION(3,0,0)
-    static gboolean
-#else
-    static gint
-#endif
+    static timeout_cb_type
 motion_repeat_timer_cb(gpointer data UNUSED)
 {
     int		    x;
@@ -2019,23 +2002,14 @@ button_press_event(GtkWidget *widget,
     /* Handle multiple clicks */
     if (!mouse_timed_out && mouse_click_timer)
     {
-#if GTK_CHECK_VERSION(3,0,0)
-	g_source_remove(mouse_click_timer);
-#else
-	gtk_timeout_remove(mouse_click_timer);
-#endif
+	timeout_remove(mouse_click_timer);
 	mouse_click_timer = 0;
 	repeated_click = TRUE;
     }
 
     mouse_timed_out = FALSE;
-#if GTK_CHECK_VERSION(3,0,0)
-    mouse_click_timer = g_timeout_add((guint)p_mouset,
-				  mouse_click_timer_cb, &mouse_timed_out);
-#else
-    mouse_click_timer = gtk_timeout_add((guint32)p_mouset,
-				  mouse_click_timer_cb, &mouse_timed_out);
-#endif
+    mouse_click_timer = timeout_add(p_mouset, mouse_click_timer_cb,
+							     &mouse_timed_out);
 
     switch (event->button)
     {
@@ -2129,11 +2103,7 @@ button_release_event(GtkWidget *widget UNUSED,
        area .*/
     if (motion_repeat_timer)
     {
-#if GTK_CHECK_VERSION(3,0,0)
-	g_source_remove(motion_repeat_timer);
-#else
-	gtk_timeout_remove(motion_repeat_timer);
-#endif
+	timeout_remove(motion_repeat_timer);
 	motion_repeat_timer = 0;
     }
 
@@ -4578,7 +4548,7 @@ mainwin_destroy_cb(GtkObject *object UNUSED, gpointer data UNUSED)
  * scrollbar init.), actually do the standard hints and stop the timer.
  * We'll not let the default hints be set while this timer's active.
  */
-    static gboolean
+    static timeout_cb_type
 check_startup_plug_hints(gpointer data UNUSED)
 {
     if (init_window_hints_state == 1)
@@ -4681,7 +4651,7 @@ gui_mch_open(void)
 	{
 	    update_window_manager_hints(pixel_width, pixel_height);
 	    init_window_hints_state = 1;
-	    g_timeout_add(1000, check_startup_plug_hints, NULL);
+	    timeout_add(1000, check_startup_plug_hints, NULL);
 	}
     }
 
@@ -5606,16 +5576,34 @@ gui_mch_get_color(char_u *name)
     return name != NULL ? gui_get_color_cmn(name) : INVALCOLOR;
 #else
     guicolor_T color;
-    GdkColor gcolor;
-    int ret;
 
     color = (name != NULL) ? gui_get_color_cmn(name) : INVALCOLOR;
     if (color == INVALCOLOR)
 	return INVALCOLOR;
 
-    gcolor.red = (guint16)(((color & 0xff0000) >> 16) / 255.0 * 65535 + 0.5);
-    gcolor.green = (guint16)(((color & 0xff00) >> 8) / 255.0 * 65535 + 0.5);
-    gcolor.blue = (guint16)((color & 0xff) / 255.0 * 65535 + 0.5);
+    return gui_mch_get_rgb_color(
+	    (color & 0xff0000) >> 16,
+	    (color & 0xff00) >> 8,
+	    color & 0xff);
+#endif
+}
+
+/*
+ * Return the Pixel value (color) for the given RGB values.
+ * Return INVALCOLOR for error.
+ */
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+#if GTK_CHECK_VERSION(3,0,0)
+    return gui_get_rgb_color_cmn(r, g, b);
+#else
+    GdkColor gcolor;
+    int ret;
+
+    gcolor.red = (guint16)(r / 255.0 * 65535 + 0.5);
+    gcolor.green = (guint16)(g / 255.0 * 65535 + 0.5);
+    gcolor.blue = (guint16)(b / 255.0 * 65535 + 0.5);
 
     ret = gdk_colormap_alloc_color(gtk_widget_get_colormap(gui.drawarea),
 	    &gcolor, FALSE, TRUE);
@@ -5920,6 +5908,27 @@ draw_under(int flags, int row, int col, int cells)
 #endif
     }
 
+    /* Draw a strikethrough line */
+    if (flags & DRAW_STRIKE)
+    {
+#if GTK_CHECK_VERSION(3,0,0)
+	cairo_set_line_width(cr, 1.0);
+	cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+	cairo_set_source_rgba(cr,
+		gui.spcolor->red, gui.spcolor->green, gui.spcolor->blue,
+		gui.spcolor->alpha);
+	cairo_move_to(cr, FILL_X(col), y + 1 - gui.char_height/2 + 0.5);
+	cairo_line_to(cr, FILL_X(col + cells), y + 1 - gui.char_height/2 + 0.5);
+	cairo_stroke(cr);
+#else
+	gdk_gc_set_foreground(gui.text_gc, gui.spcolor);
+	gdk_draw_line(gui.drawarea->window, gui.text_gc,
+		      FILL_X(col), y + 1 - gui.char_height/2,
+		      FILL_X(col + cells), y + 1 - gui.char_height/2);
+	gdk_gc_set_foreground(gui.text_gc, gui.fgcolor);
+#endif
+    }
+
     /* Underline: draw a line at the bottom of the character cell. */
     if (flags & DRAW_UNDERL)
     {
@@ -5928,16 +5937,14 @@ draw_under(int flags, int row, int col, int cells)
 	if (p_linespace > 1)
 	    y -= p_linespace - 1;
 #if GTK_CHECK_VERSION(3,0,0)
-	{
-	    cairo_set_line_width(cr, 1.0);
-	    cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
-	    cairo_set_source_rgba(cr,
-		    gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
-		    gui.fgcolor->alpha);
-	    cairo_move_to(cr, FILL_X(col), y + 0.5);
-	    cairo_line_to(cr, FILL_X(col + cells), y + 0.5);
-	    cairo_stroke(cr);
-	}
+	cairo_set_line_width(cr, 1.0);
+	cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+	cairo_set_source_rgba(cr,
+		gui.fgcolor->red, gui.fgcolor->green, gui.fgcolor->blue,
+		gui.fgcolor->alpha);
+	cairo_move_to(cr, FILL_X(col), y + 0.5);
+	cairo_line_to(cr, FILL_X(col + cells), y + 0.5);
+	cairo_stroke(cr);
 #else
 	gdk_draw_line(gui.drawarea->window, gui.text_gc,
 		      FILL_X(col), y,
@@ -6566,11 +6573,7 @@ gui_mch_update(void)
 	g_main_context_iteration(NULL, TRUE);
 }
 
-#if GTK_CHECK_VERSION(3,0,0)
-    static gboolean
-#else
-    static gint
-#endif
+    static timeout_cb_type
 input_timer_cb(gpointer data)
 {
     int *timed_out = (int *) data;
@@ -6580,6 +6583,19 @@ input_timer_cb(gpointer data)
 
     return FALSE;		/* don't happen again */
 }
+
+#ifdef FEAT_JOB_CHANNEL
+    static timeout_cb_type
+channel_poll_cb(gpointer data UNUSED)
+{
+    /* Using an event handler for a channel that may be disconnected does
+     * not work, it hangs.  Instead poll for messages. */
+    channel_handle_events(TRUE);
+    parse_queued_messages();
+
+    return TRUE;		/* repeat */
+}
+#endif
 
 /*
  * GUI input routine called by gui_wait_for_chars().  Waits for a character
@@ -6597,19 +6613,25 @@ gui_mch_wait_for_chars(long wtime)
     guint	timer;
     static int	timed_out;
     int		retval = FAIL;
+#ifdef FEAT_JOB_CHANNEL
+    guint	channel_timer = 0;
+#endif
 
     timed_out = FALSE;
 
     /* this timeout makes sure that we will return if no characters arrived in
      * time */
     if (wtime > 0)
-#if GTK_CHECK_VERSION(3,0,0)
-	timer = g_timeout_add((guint)wtime, input_timer_cb, &timed_out);
-#else
-	timer = gtk_timeout_add((guint32)wtime, input_timer_cb, &timed_out);
-#endif
+	timer = timeout_add(wtime, input_timer_cb, &timed_out);
     else
 	timer = 0;
+
+#ifdef FEAT_JOB_CHANNEL
+    /* If there is a channel with the keep_open flag we need to poll for input
+     * on them. */
+    if (channel_any_keep_open())
+	channel_timer = timeout_add(20, channel_poll_cb, NULL);
+#endif
 
     focus = gui.in_focus;
 
@@ -6660,10 +6682,10 @@ gui_mch_wait_for_chars(long wtime)
 
 theend:
     if (timer != 0 && !timed_out)
-#if GTK_CHECK_VERSION(3,0,0)
-	g_source_remove(timer);
-#else
-	gtk_timeout_remove(timer);
+	timeout_remove(timer);
+#ifdef FEAT_JOB_CHANNEL
+    if (channel_timer != 0)
+	timeout_remove(channel_timer);
 #endif
 
     return retval;

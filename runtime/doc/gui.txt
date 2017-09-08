@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.0.  Last change: 2014 Mar 08
+*gui.txt*       For Vim version 8.0.  Last change: 2017 Aug 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -67,7 +67,7 @@ When the GUI starts up initializations are carried out, in this order:
     executed as an Ex command.
   - If the user gvimrc file exists, it is sourced.  The name of this file is
     normally "$HOME/.gvimrc".  You can check this with ":version".
-  - For Win32, when $HOME is not set, "$VIM\_gvimrc" is used.
+  - For Win32, $HOME is set by Vim if needed, see |$HOME-windows|.
   - When a "_gvimrc" file is not found, ".gvimrc" is tried too.  And vice
     versa.
   The name of the first file found is stored in $MYGVIMRC, unless it was
@@ -79,7 +79,8 @@ When the GUI starts up initializations are carried out, in this order:
   and DOS/Win32 "_gvimrc" is tried first.
 
 NOTE: All but the first one are not carried out if Vim was started with
-"-u NONE" and no "-U" argument was given, or when started with "-U NONE".
+"-u NONE" or "-u DEFAULTS" and no "-U" argument was given, or when started
+with "-U NONE".
 
 All this happens AFTER the normal Vim initializations, like reading your
 .vimrc file.  See |initialization|.

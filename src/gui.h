@@ -146,6 +146,7 @@
 # define DRAW_ITALIC		0x10	/* draw italic text */
 #endif
 #define DRAW_CURSOR		0x20	/* drawing block cursor (win32) */
+#define DRAW_STRIKE		0x40	/* strikethrough */
 
 /* For our own tearoff menu item */
 #define TEAR_STRING		"-->Detach"

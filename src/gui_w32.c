@@ -1597,6 +1597,12 @@ gui_mch_get_color(char_u *name)
     return gui_get_color_cmn(name);
 }
 
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    return gui_get_rgb_color_cmn(r, g, b);
+}
+
 /*
  * Return OK if the key with the termcap name "name" is supported.
  */
@@ -1834,6 +1840,7 @@ process_message(void)
 	{
 	    trash_input_buf();
 	    got_int = TRUE;
+	    ctrl_break_was_pressed = TRUE;
 	    string[0] = Ctrl_C;
 	    add_to_input_buf(string, 1);
 	}
@@ -2066,20 +2073,23 @@ gui_mch_wait_for_chars(int wtime)
 	did_add_timer = FALSE;
 #endif
 #ifdef MESSAGE_QUEUE
-	/* Check channel while waiting message. */
+	/* Check channel I/O while waiting for a message. */
 	for (;;)
 	{
 	    MSG msg;
 
 	    parse_queued_messages();
 
-	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)
-		|| MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
-								!= WAIT_TIMEOUT)
+	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+	    {
+		process_message();
+		break;
+	    }
+	    else if (MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
+							       != WAIT_TIMEOUT)
 		break;
 	}
-#endif
-
+#else
 	/*
 	 * Don't use gui_mch_update() because then we will spin-lock until a
 	 * char arrives, instead we use GetMessage() to hang until an
@@ -2087,6 +2097,7 @@ gui_mch_wait_for_chars(int wtime)
 	 * returning as soon as it contains a single char -- webb
 	 */
 	process_message();
+#endif
 
 	if (input_available())
 	{
@@ -6410,6 +6421,18 @@ gui_mch_draw_string(
 	y = FILL_Y(row + 1) - 1;
 	if (p_linespace > 1)
 	    y -= p_linespace - 1;
+	MoveToEx(s_hdc, FILL_X(col), y, NULL);
+	/* Note: LineTo() excludes the last pixel in the line. */
+	LineTo(s_hdc, FILL_X(col + len), y);
+	DeleteObject(SelectObject(s_hdc, old_pen));
+    }
+
+    /* Strikethrough */
+    if (flags & DRAW_STRIKE)
+    {
+	hpen = CreatePen(PS_SOLID, 1, gui.currSpColor);
+	old_pen = SelectObject(s_hdc, hpen);
+	y = FILL_Y(row + 1) - gui.char_height/2;
 	MoveToEx(s_hdc, FILL_X(col), y, NULL);
 	/* Note: LineTo() excludes the last pixel in the line. */
 	LineTo(s_hdc, FILL_X(col + len), y);

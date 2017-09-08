@@ -1194,6 +1194,7 @@ check_due_timer(void)
     long	next_due = -1;
     proftime_T	now;
     int		did_one = FALSE;
+    int		need_update_screen = FALSE;
     long	current_id = last_timer_id;
 # ifdef WIN3264
     LARGE_INTEGER   fr;
@@ -1218,28 +1219,44 @@ check_due_timer(void)
 	{
 	    int save_timer_busy = timer_busy;
 	    int save_vgetc_busy = vgetc_busy;
-	    int did_emsg_save = did_emsg;
-	    int called_emsg_save = called_emsg;
-	    int did_throw_save = did_throw;
+	    int save_did_emsg = did_emsg;
+	    int save_called_emsg = called_emsg;
+	    int	save_must_redraw = must_redraw;
+	    int	save_trylevel = trylevel;
+	    int save_did_throw = did_throw;
+	    except_T *save_current_exception = current_exception;
 
+	    /* Create a scope for running the timer callback, ignoring most of
+	     * the current scope, such as being inside a try/catch. */
 	    timer_busy = timer_busy > 0 || vgetc_busy > 0;
 	    vgetc_busy = 0;
 	    called_emsg = FALSE;
+	    did_emsg = FALSE;
+	    did_uncaught_emsg = FALSE;
+	    must_redraw = 0;
+	    trylevel = 0;
+	    did_throw = FALSE;
+	    current_exception = NULL;
+
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
+
 	    timer_next = timer->tr_next;
 	    did_one = TRUE;
 	    timer_busy = save_timer_busy;
 	    vgetc_busy = save_vgetc_busy;
-	    if (called_emsg)
-	    {
+	    if (did_uncaught_emsg)
 		++timer->tr_emsg_count;
-		if (!did_throw_save && did_throw && current_exception != NULL)
-		    discard_current_exception();
-	    }
-	    did_emsg = did_emsg_save;
-	    called_emsg = called_emsg_save;
+	    did_emsg = save_did_emsg;
+	    called_emsg = save_called_emsg;
+	    trylevel = save_trylevel;
+	    did_throw = save_did_throw;
+	    current_exception = save_current_exception;
+	    if (must_redraw != 0)
+		need_update_screen = TRUE;
+	    must_redraw = must_redraw > save_must_redraw
+					      ? must_redraw : save_must_redraw;
 
 	    /* Only fire the timer again if it repeats and stop_timer() wasn't
 	     * called while inside the callback (tr_id == -1). */
@@ -1265,7 +1282,7 @@ check_due_timer(void)
     }
 
     if (did_one)
-	redraw_after_callback();
+	redraw_after_callback(need_update_screen);
 
     return current_id != last_timer_id ? 1 : next_due;
 }
@@ -1934,9 +1951,9 @@ check_changed(buf_T *buf, int flags)
 	}
 #endif
 	if (flags & CCGD_EXCMD)
-	    EMSG(_(e_nowrtmsg));
+	    no_write_message();
 	else
-	    EMSG(_(e_nowrtmsg_nobang));
+	    no_write_message_nobang();
 	return TRUE;
     }
     return FALSE;
@@ -1981,9 +1998,7 @@ dialog_changed(
     buf_T	*buf2;
     exarg_T     ea;
 
-    dialog_msg(buff, _("Save changes to \"%s\"?"),
-			(buf->b_fname != NULL) ?
-			buf->b_fname : (char_u *)_("Untitled"));
+    dialog_msg(buff, _("Save changes to \"%s\"?"), buf->b_fname);
     if (checkall)
 	ret = vim_dialog_yesnoallcancel(VIM_QUESTION, NULL, buff, 1);
     else
@@ -2064,7 +2079,7 @@ dialog_changed(
     int
 can_abandon(buf_T *buf, int forceit)
 {
-    return (	   P_HID(buf)
+    return (	   buf_hide(buf)
 		|| !bufIsChanged(buf)
 		|| buf->b_nwindows > 1
 		|| autowrite(buf, forceit) == OK
@@ -2180,7 +2195,14 @@ check_changed_any(
 	    msg_col = 0;
 	    msg_didout = FALSE;
 	}
-	if (EMSG2(_("E162: No write since last change for buffer \"%s\""),
+	if (
+#ifdef FEAT_TERMINAL
+		term_job_running(buf->b_term)
+		    ? EMSG2(_("E947: Job still running in buffer \"%s\""),
+								  buf->b_fname)
+		    :
+#endif
+		EMSG2(_("E162: No write since last change for buffer \"%s\""),
 		    buf_spname(buf) != NULL ? buf_spname(buf) : buf->b_fname))
 	{
 	    save = no_wait_return;
@@ -2320,8 +2342,8 @@ do_one_arg(char_u *str)
  * Separate the arguments in "str" and return a list of pointers in the
  * growarray "gap".
  */
-    int
-get_arglist(garray_T *gap, char_u *str)
+    static int
+get_arglist(garray_T *gap, char_u *str, int escaped)
 {
     ga_init2(gap, (int)sizeof(char_u *), 20);
     while (*str != NUL)
@@ -2332,6 +2354,10 @@ get_arglist(garray_T *gap, char_u *str)
 	    return FAIL;
 	}
 	((char_u **)gap->ga_data)[gap->ga_len++] = str;
+
+	/* If str is escaped, don't handle backslashes or spaces */
+	if (!escaped)
+	    return OK;
 
 	/* Isolate one argument, change it in-place, put a NUL after it. */
 	str = do_one_arg(str);
@@ -2355,7 +2381,7 @@ get_arglist_exp(
     garray_T	ga;
     int		i;
 
-    if (get_arglist(&ga, str) == FAIL)
+    if (get_arglist(&ga, str, TRUE) == FAIL)
 	return FAIL;
     if (wig == TRUE)
 	i = expand_wildcards(ga.ga_len, (char_u **)ga.ga_data,
@@ -2401,6 +2427,7 @@ do_arglist(
     char_u	*p;
     int		match;
 #endif
+    int		arg_escaped = TRUE;
 
     /*
      * Set default argument for ":argadd" command.
@@ -2410,12 +2437,13 @@ do_arglist(
 	if (curbuf->b_ffname == NULL)
 	    return FAIL;
 	str = curbuf->b_fname;
+	arg_escaped = FALSE;
     }
 
     /*
      * Collect all file name arguments in "new_ga".
      */
-    if (get_arglist(&new_ga, str) == FAIL)
+    if (get_arglist(&new_ga, str, arg_escaped) == FAIL)
 	return FAIL;
 
 #ifdef FEAT_LISTCMDS
@@ -2728,13 +2756,13 @@ do_argfile(exarg_T *eap, int argn)
 	     * the same buffer
 	     */
 	    other = TRUE;
-	    if (P_HID(curbuf))
+	    if (buf_hide(curbuf))
 	    {
 		p = fix_fname(alist_name(&ARGLIST[argn]));
 		other = otherfile(p);
 		vim_free(p);
 	    }
-	    if ((!P_HID(curbuf) || !other)
+	    if ((!buf_hide(curbuf) || !other)
 		  && check_changed(curbuf, CCGD_AW
 					 | (other ? 0 : CCGD_MULTWIN)
 					 | (eap->forceit ? CCGD_FORCEIT : 0)
@@ -2755,7 +2783,7 @@ do_argfile(exarg_T *eap, int argn)
 	 * argument index. */
 	if (do_ecmd(0, alist_name(&ARGLIST[curwin->w_arg_idx]), NULL,
 		      eap, ECMD_LAST,
-		      (P_HID(curwin->w_buffer) ? ECMD_HIDE : 0)
+		      (buf_hide(curwin->w_buffer) ? ECMD_HIDE : 0)
 			 + (eap->forceit ? ECMD_FORCEIT : 0), curwin) == FAIL)
 	    curwin->w_arg_idx = old_arg_idx;
 	/* like Vi: set the mark where the cursor is in the file. */
@@ -2776,7 +2804,7 @@ ex_next(exarg_T *eap)
      * check for changed buffer now, if this fails the argument list is not
      * redefined.
      */
-    if (       P_HID(curbuf)
+    if (       buf_hide(curbuf)
 	    || eap->cmdidx == CMD_snext
 	    || !check_changed(curbuf, CCGD_AW
 				    | (eap->forceit ? CCGD_FORCEIT : 0)
@@ -2931,7 +2959,7 @@ ex_listdo(exarg_T *eap)
 
     if (eap->cmdidx == CMD_windo
 	    || eap->cmdidx == CMD_tabdo
-	    || P_HID(curbuf)
+	    || buf_hide(curbuf)
 	    || !check_changed(curbuf, CCGD_AW
 				    | (eap->forceit ? CCGD_FORCEIT : 0)
 				    | CCGD_EXCMD))
@@ -3736,6 +3764,7 @@ ex_packadd(exarg_T *eap)
 ex_options(
     exarg_T	*eap UNUSED)
 {
+    vim_setenv((char_u *)"OPTWIN_CMD", (char_u *)(cmdmod.tab ? "tab" : ""));
     cmd_source((char_u *)SYS_OPTWIN_FILE, NULL);
 }
 #endif

@@ -3,7 +3,7 @@ VIM(1)                      General Commands Manual                     VIM(1)
 
 
 NAME
-       vim - Vi IMproved, a programmers text editor
+       vim - Vi IMproved, a programmer's text editor
 
 SYNOPSIS
        vim [options] [file ..]

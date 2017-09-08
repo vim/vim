@@ -9,6 +9,7 @@ void set_helplang_default(char_u *lang);
 void init_gui_options(void);
 void set_title_defaults(void);
 int do_set(char_u *arg, int opt_flags);
+int string_to_key(char_u *arg, int multi_byte);
 void set_options_bin(int oldval, int newval, int opt_flags);
 int get_viminfo_parameter(int type);
 char_u *find_viminfo_parameter(int type);

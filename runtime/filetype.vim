@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Jul 11
+" Last Change:	2017 Aug 11
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1027,7 +1027,7 @@ au BufNewFile,BufRead *.java,*.jav		setf java
 au BufNewFile,BufRead *.jj,*.jjt		setf javacc
 
 " JavaScript, ECMAScript
-au BufNewFile,BufRead *.js,*.javascript,*.es,*.jsx   setf javascript
+au BufNewFile,BufRead *.js,*.javascript,*.es,*.jsx,*.mjs   setf javascript
 
 " Java Server Pages
 au BufNewFile,BufRead *.jsp			setf jsp
@@ -1341,6 +1341,9 @@ au BufNewFile,BufRead *.mush			setf mush
 
 " Mutt setup file (also for Muttng)
 au BufNewFile,BufRead Mutt{ng,}rc		setf muttrc
+
+" N1QL
+au BufRead,BufNewfile *.n1ql,*.nql		setf n1ql
 
 " Nano
 au BufNewFile,BufRead */etc/nanorc,*.nanorc  	setf nanorc
@@ -2267,6 +2270,8 @@ func! s:FTtex()
     elseif format == 'plaintex'
       let format = 'plain'
     endif
+  elseif expand('%') =~ 'tex/context/.*/.*.tex'
+    let format = 'context'
   else
     " Default value, may be changed later:
     let format = exists("g:tex_flavor") ? g:tex_flavor : 'plain'
@@ -2308,7 +2313,7 @@ func! s:FTtex()
 endfunc
 
 " ConTeXt
-au BufNewFile,BufRead tex/context/*/*.tex,*.mkii,*.mkiv,*.mkvi   setf context
+au BufNewFile,BufRead *.mkii,*.mkiv,*.mkvi   setf context
 
 " Texinfo
 au BufNewFile,BufRead *.texinfo,*.texi,*.txi	setf texinfo

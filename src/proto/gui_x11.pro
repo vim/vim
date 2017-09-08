@@ -25,6 +25,7 @@ GuiFontset gui_mch_get_fontset(char_u *name, int giveErrorIfMissing, int fixed_w
 int fontset_height(XFontSet fs);
 int fontset_height2(XFontSet fs);
 guicolor_T gui_mch_get_color(char_u *name);
+guicolor_T gui_mch_get_rgb_color(int r, int g, int b);
 void gui_mch_set_fg_color(guicolor_T color);
 void gui_mch_set_bg_color(guicolor_T color);
 void gui_mch_set_sp_color(guicolor_T color);

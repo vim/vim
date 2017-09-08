@@ -560,13 +560,6 @@ EXTERN long	p_hh;		/* 'helpheight' */
 EXTERN char_u	*p_hlg;		/* 'helplang' */
 #endif
 EXTERN int	p_hid;		/* 'hidden' */
-/* Use P_HID to check if a buffer is to be hidden when it is no longer
- * visible in a window. */
-#ifndef FEAT_QUICKFIX
-# define P_HID(dummy) (p_hid || cmdmod.hide)
-#else
-# define P_HID(buf) (buf_hide(buf))
-#endif
 EXTERN char_u	*p_hl;		/* 'highlight' */
 EXTERN int	p_hls;		/* 'hlsearch' */
 EXTERN long	p_hi;		/* 'history' */
@@ -590,6 +583,9 @@ EXTERN int	p_ic;		/* 'ignorecase' */
 EXTERN char_u	*p_imak;	/* 'imactivatekey' */
 EXTERN char_u	*p_imaf;	/* 'imactivatefunc' */
 EXTERN char_u	*p_imsf;	/* 'imstatusfunc' */
+EXTERN long	p_imst;		/* 'imstyle' */
+# define IM_ON_THE_SPOT		0L
+# define IM_OVER_THE_SPOT	1L
 #endif
 #ifdef USE_IM_CONTROL
 EXTERN int	p_imcmdline;	/* 'imcmdline' */
@@ -975,6 +971,9 @@ EXTERN long	p_wmh;		/* 'winminheight' */
 EXTERN long	p_wmw;		/* 'winminwidth' */
 EXTERN long	p_wiw;		/* 'winwidth' */
 #endif
+#if defined(WIN3264) && defined(FEAT_TERMINAL)
+EXTERN char_u	*p_winptydll;	/* 'winptydll' */
+#endif
 EXTERN int	p_ws;		/* 'wrapscan' */
 EXTERN int	p_write;	/* 'write' */
 EXTERN int	p_wa;		/* 'writeany' */
@@ -990,12 +989,10 @@ enum
 {
     BV_AI = 0
     , BV_AR
-#ifdef FEAT_QUICKFIX
     , BV_BH
-#endif
     , BV_BKC
-#ifdef FEAT_QUICKFIX
     , BV_BT
+#ifdef FEAT_QUICKFIX
     , BV_EFM
     , BV_GP
     , BV_MP

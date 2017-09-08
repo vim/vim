@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.0.  Last change: 2017 Jul 14
+*syntax.txt*	For Vim version 8.0.  Last change: 2017 Aug 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2136,6 +2136,16 @@ For syncing, minlines defaults to 100.	If you prefer another value, you can
 set "msql_minlines" to the value you desire.  Example: >
 
 	:let msql_minlines = 200
+
+
+N1QL						*n1ql.vim* *ft-n1ql-syntax*
+
+N1QL is a SQL-like declarative language for manipulating JSON documents in
+Couchbase Server databases.
+
+Vim syntax highlights N1QL statements, keywords, operators, types, comments,
+and special values.  Vim ignores syntactical elements specific to SQL or its
+many dialects, like COLUMN or CHAR, that don't exist in N1QL.
 
 
 NCF						*ncf.vim* *ft-ncf-syntax*
@@ -4689,23 +4699,26 @@ the same syntax file on all terminals, and use the optimal highlighting.
 
 					*bold* *underline* *undercurl*
 					*inverse* *italic* *standout*
+					*nocombine* *strikethrough*
 term={attr-list}			*attr-list* *highlight-term* *E418*
 	attr-list is a comma separated list (without spaces) of the
 	following items (in any order):
 		bold
 		underline
 		undercurl	not always available
+		strikethrough	not always available
 		reverse
 		inverse		same as reverse
 		italic
 		standout
+		nocombine	override attributes instead of combining them
 		NONE		no attributes used (used to reset it)
 
 	Note that "bold" can be used here and by using a bold font.  They
 	have the same effect.
 	"undercurl" is a curly underline.  When "undercurl" is not possible
-	then "underline" is used.  In general "undercurl" is only available in
-	the GUI.  The color is set with |highlight-guisp|.
+	then "underline" is used.  In general "undercurl" and "strikethrough"
+	is only available in the GUI.  The color is set with |highlight-guisp|.
 
 start={term-list}				*highlight-start* *E422*
 stop={term-list}				*term-list* *highlight-stop*
@@ -4870,7 +4883,8 @@ guifg={color-name}					*highlight-guifg*
 guibg={color-name}					*highlight-guibg*
 guisp={color-name}					*highlight-guisp*
 	These give the foreground (guifg), background (guibg) and special
-	(guisp) color to use in the GUI.  "guisp" is used for undercurl.
+	(guisp) color to use in the GUI.  "guisp" is used for undercurl and
+	strikethrough.
 	There are a few special names:
 		NONE		no color (transparent)
 		bg		use normal background color

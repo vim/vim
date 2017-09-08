@@ -5182,7 +5182,7 @@ ins_complete(int c, int enable_pum)
 		     * first non_blank in the line, if it is not a wordchar
 		     * include it to get a better pattern, but then we don't
 		     * want the "\\<" prefix, check it bellow */
-		    compl_col = (colnr_T)(skipwhite(line) - line);
+		    compl_col = (colnr_T)getwhitecols(line);
 		    compl_startpos.col = compl_col;
 		    compl_startpos.lnum = curwin->w_cursor.lnum;
 		    compl_cont_status &= ~CONT_SOL;   /* clear SOL if present */
@@ -5348,7 +5348,7 @@ ins_complete(int c, int enable_pum)
 	}
 	else if (CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode))
 	{
-	    compl_col = (colnr_T)(skipwhite(line) - line);
+	    compl_col = (colnr_T)getwhitecols(line);
 	    compl_length = (int)curs_col - (int)compl_col;
 	    if (compl_length < 0)	/* cursor in indent: empty pattern */
 		compl_length = 0;
@@ -8208,8 +8208,7 @@ in_cinkeys(
 		{
 		    /* "0=word": Check if there are only blanks before the
 		     * word. */
-		    line = ml_get_curline();
-		    if ((int)(skipwhite(line) - line) !=
+		    if (getwhitecols(line) !=
 				     (int)(curwin->w_cursor.col - (p - look)))
 			match = FALSE;
 		}
@@ -9418,7 +9417,7 @@ ins_mousescroll(int dir)
 {
     pos_T	tpos;
 # if defined(FEAT_WINDOWS)
-    win_T	*old_curwin = curwin;
+    win_T	*old_curwin = curwin, *wp;
 # endif
 # ifdef FEAT_INS_EXPAND
     int		did_scroll = FALSE;
@@ -9435,7 +9434,10 @@ ins_mousescroll(int dir)
 	col = mouse_col;
 
 	/* find the window at the pointer coordinates */
-	curwin = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col);
+	if (wp == NULL)
+	    return;
+	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
     if (curwin == old_curwin)
@@ -9680,7 +9682,7 @@ ins_left(
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	/* Only call start_arrow() when not busy with preediting, it will
 	 * break undo.  K_LEFT is inserted in im_correct_cursor(). */
-	if (!im_is_preediting())
+	if (p_imst == IM_OVER_THE_SPOT || !im_is_preediting())
 #endif
 	{
 	    start_arrow_with_change(&tpos, end_change);

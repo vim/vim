@@ -3468,7 +3468,8 @@ cursorcmd(void)
 
     windgoto(msg_row, msg_col);
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-    redrawcmd_preedit();
+    if (p_imst == IM_ON_THE_SPOT)
+	redrawcmd_preedit();
 #endif
 #ifdef MCH_CURSOR_SHAPE
     mch_update_cursor();
@@ -4879,6 +4880,7 @@ ExpandFromContext(
 	{
 	    {EXPAND_COMMANDS, get_command_name, FALSE, TRUE},
 	    {EXPAND_BEHAVE, get_behave_arg, TRUE, TRUE},
+	    {EXPAND_MAPCLEAR, get_mapclear_arg, TRUE, TRUE},
 	    {EXPAND_MESSAGES, get_messages_arg, TRUE, TRUE},
 #ifdef FEAT_CMDHIST
 	    {EXPAND_HISTORY, get_history_arg, TRUE, TRUE},

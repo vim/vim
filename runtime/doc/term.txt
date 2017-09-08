@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.0.  Last change: 2017 Apr 11
+*term.txt*      For Vim version 8.0.  Last change: 2017 Aug 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -301,7 +301,7 @@ OUTPUT CODES						*terminal-output-codes*
 	t_vb	visual bell					*t_vb* *'t_vb'*
 	t_ve	cursor visible					*t_ve* *'t_ve'*
 	t_vi	cursor invisible				*t_vi* *'t_vi'*
-	t_vs	cursor very visible				*t_vs* *'t_vs'*
+	t_vs	cursor very visible (blink)			*t_vs* *'t_vs'*
 								*t_xs* *'t_xs'*
 	t_xs	if non-empty, standout not erased by overwriting (hpterm)
 								*t_xn* *'t_xn'*
@@ -315,7 +315,8 @@ Added by Vim (there are no standard codes for these):
 	t_IE	set icon text end				*t_IE* *'t_IE'*
 	t_WP	set window position (Y, X) in pixels		*t_WP* *'t_WP'*
 	t_GP	get window position (Y, X) in pixels		*t_GP* *'t_GP'*
-	t_WS	set window size (height, width) in characters	*t_WS* *'t_WS'*
+	t_WS	set window size (height, width in cells)	*t_WS* *'t_WS'*
+	t_VS	cursor normally visible (no blink)		*t_VS* *'t_VS'*
 	t_SI	start insert mode (bar cursor shape)		*t_SI* *'t_SI'*
 	t_SR	start replace mode (underline cursor shape)	*t_SR* *'t_SR'*
 	t_EI	end insert or replace mode (block cursor shape)	*t_EI* *'t_EI'*
@@ -333,6 +334,28 @@ Added by Vim (there are no standard codes for these):
 		|xterm-bracketed-paste|
 	t_BD	disable bracketed paste mode			*t_BD* *'t_BD'*
 		|xterm-bracketed-paste|
+	t_SC	set cursor color start				*t_SC* *'t_SC'*
+	t_EC	set cursor color end				*t_EC* *'t_EC'*
+	t_SH	set cursor shape				*t_SH* *'t_SH'*
+	t_RS	request terminal cursor style			*t_RS* *'t_RS'*
+
+Some codes have a start, middle and end part.  The start and end are defined
+by the termcap option, the middle part is text.
+	set title text:     t_ts {title text} t_fs
+	set icon text:      t_IS {icon text} t_IE
+	set cursor color:   t_SC  {color name}  t_EC
+
+t_SH must take one argument:
+	0, 1 or none  	blinking block cursor
+	2	      	block cursor
+	3		blinking underline cursor
+	4		underline cursor
+	5		blinking vertical bar cursor
+	6		vertical bar cursor
+
+t_RS is sent only if the response to t_RV has been received.  It is not used
+on Mac OS when Terminal.app could be recognized from the termresponse.
+
 
 KEY CODES						*terminal-key-codes*
 Note: Use the <> form if possible

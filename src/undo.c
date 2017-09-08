@@ -419,6 +419,10 @@ u_savecommon(
 	    }
 	}
 #endif
+#ifdef FEAT_TERMINAL
+	/* A change in a terminal buffer removes the highlighting. */
+	term_change_in_curbuf();
+#endif
 
 #ifdef FEAT_AUTOCMD
 	/*
@@ -917,7 +921,7 @@ undo_write(bufinfo_T *bi, char_u *ptr, size_t len)
     static int
 undo_flush(bufinfo_T *bi)
 {
-    if (bi->bi_buffer != NULL && bi->bi_used > 0)
+    if (bi->bi_buffer != NULL && bi->bi_state != NULL && bi->bi_used > 0)
     {
 	crypt_encode_inplace(bi->bi_state, bi->bi_buffer, bi->bi_used);
 	if (fwrite(bi->bi_buffer, bi->bi_used, (size_t)1, bi->bi_fp) != 1)
@@ -2980,7 +2984,7 @@ u_sync(
     if (curbuf->b_u_synced || (!force && no_u_sync > 0))
 	return;
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-    if (im_is_preediting())
+    if (p_imst == IM_ON_THE_SPOT && im_is_preediting())
 	return;		    /* XIM is busy, don't break an undo sequence */
 #endif
     if (get_undolevel() < 0)
@@ -3518,21 +3522,18 @@ u_save_line(linenr_T lnum)
     int
 bufIsChanged(buf_T *buf)
 {
-    return
-#ifdef FEAT_QUICKFIX
-	    !bt_dontwrite(buf) &&
+#ifdef FEAT_TERMINAL
+    if (term_job_running(buf->b_term))
+	return TRUE;
 #endif
-	    (buf->b_changed || file_ff_differs(buf, TRUE));
+    return !bt_dontwrite(buf)
+	&& (buf->b_changed || file_ff_differs(buf, TRUE));
 }
 
     int
 curbufIsChanged(void)
 {
-    return
-#ifdef FEAT_QUICKFIX
-	!bt_dontwrite(curbuf) &&
-#endif
-	(curbuf->b_changed || file_ff_differs(curbuf, TRUE));
+    return bufIsChanged(curbuf);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)

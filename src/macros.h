@@ -191,9 +191,6 @@
 # ifndef WIN32
 #   define mch_access(n, p)	access((n), (p))
 # endif
-# if !(defined(FEAT_MBYTE) && defined(WIN3264))
-#  define mch_fopen(n, p)	fopen((n), (p))
-# endif
 # define mch_fstat(n, p)	fstat((n), (p))
 # ifdef MSWIN	/* has it's own mch_stat() function */
 #  define mch_stat(n, p)	vim_stat((n), (p))
@@ -223,10 +220,6 @@
  * but it is not recommended, because it can destroy indexes etc.
  */
 #  define mch_open(n, m, p)	open(vms_fixfilename(n), (m), (p))
-# else
-#  if !(defined(FEAT_MBYTE) && defined(WIN3264))
-#   define mch_open(n, m, p)	open((n), (m), (p))
-#  endif
 # endif
 #endif
 

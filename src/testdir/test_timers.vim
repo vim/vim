@@ -1,9 +1,11 @@
 " Test for timers
 
-source shared.vim
-
 if !has('timers')
   finish
+endif
+
+if !exists('*WaitFor')
+  source shared.vim
 endif
 
 func MyHandler(timer)
@@ -206,5 +208,42 @@ func Test_timer_errors()
   call assert_equal(3, g:call_count)
 endfunc
 
+func FuncWithCaughtError(timer)
+  let g:call_count += 1
+  try
+    doesnotexist
+  catch
+    " nop
+  endtry
+endfunc
+
+func Test_timer_catch_error()
+  let g:call_count = 0
+  let timer = timer_start(10, 'FuncWithCaughtError', {'repeat': 4})
+  " Timer will not be stopped.
+  call WaitFor('g:call_count == 4')
+  sleep 50m
+  call assert_equal(4, g:call_count)
+endfunc
+
+func FeedAndPeek(timer)
+  call test_feedinput('a')
+  call getchar(1)
+endfunc
+
+func Interrupt(timer)
+  call test_feedinput("\<C-C>")
+endfunc
+
+func Test_peek_and_get_char()
+  if !has('unix') && !has('gui_running')
+    return
+  endif
+  call timer_start(0, 'FeedAndPeek')
+  let intr = timer_start(100, 'Interrupt')
+  let c = getchar()
+  call assert_equal(char2nr('a'), c)
+  call timer_stop(intr)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

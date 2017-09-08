@@ -1249,10 +1249,10 @@ LINKIT = @echo >/dev/null
 NONE_INSTALL = install_normal
 
 ### GTK GUI
-GTK_SRC		= gui.c gui_gtk.c gui_gtk_x11.c pty.c gui_gtk_f.c \
+GTK_SRC		= gui.c gui_gtk.c gui_gtk_x11.c gui_gtk_f.c \
 			gui_beval.c $(GRESOURCE_SRC)
 GTK_OBJ		= objects/gui.o objects/gui_gtk.o objects/gui_gtk_x11.o \
-			objects/pty.o objects/gui_gtk_f.o \
+			objects/gui_gtk_f.o \
 			objects/gui_beval.o $(GRESOURCE_OBJ)
 GTK_DEFS	= -DFEAT_GUI_GTK $(NARROW_PROTO)
 GTK_IPATH	= $(GUI_INC_LOC)
@@ -1266,10 +1266,10 @@ GTK_TESTTARGET  = gui
 GTK_BUNDLE	=
 
 ### Motif GUI
-MOTIF_SRC	= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c \
+MOTIF_SRC	= gui.c gui_motif.c gui_x11.c gui_beval.c \
 			gui_xmdlg.c gui_xmebw.c
 MOTIF_OBJ	= objects/gui.o objects/gui_motif.o objects/gui_x11.o \
-			objects/pty.o objects/gui_beval.o \
+			objects/gui_beval.o \
 			objects/gui_xmdlg.o objects/gui_xmebw.o
 MOTIF_DEFS	= -DFEAT_GUI_MOTIF $(NARROW_PROTO)
 MOTIF_IPATH	= $(GUI_INC_LOC)
@@ -1289,16 +1289,16 @@ XAW_LIB = -lXaw
 
 ### When using Xaw3d, uncomment/comment the following lines to also get the
 ### scrollbars from Xaw3d.
-#ATHENA_SRC	= gui.c gui_athena.c gui_x11.c pty.c gui_beval.c gui_at_fs.c
+#ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
 #ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-#			objects/pty.o objects/gui_beval.o objects/gui_at_fs.o
+#			objects/gui_beval.o objects/gui_at_fs.o
 #ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO) \
 #		    -Dvim_scrollbarWidgetClass=scrollbarWidgetClass \
 #		    -Dvim_XawScrollbarSetThumb=XawScrollbarSetThumb
-ATHENA_SRC	= gui.c gui_athena.c gui_x11.c pty.c gui_beval.c \
+ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c \
 			gui_at_sb.c gui_at_fs.c
 ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/pty.o objects/gui_beval.o \
+			objects/gui_beval.o \
 			objects/gui_at_sb.o objects/gui_at_fs.o
 ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO)
 
@@ -1315,9 +1315,9 @@ ATHENA_BUNDLE	=
 ### neXtaw GUI
 NEXTAW_LIB = -lneXtaw
 
-NEXTAW_SRC	= gui.c gui_athena.c gui_x11.c pty.c gui_beval.c gui_at_fs.c
+NEXTAW_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
 NEXTAW_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/pty.o objects/gui_beval.o objects/gui_at_fs.o
+			objects/gui_beval.o objects/gui_at_fs.o
 NEXTAW_DEFS	= -DFEAT_GUI_ATHENA -DFEAT_GUI_NEXTAW $(NARROW_PROTO)
 
 NEXTAW_IPATH	= $(GUI_INC_LOC)
@@ -1342,8 +1342,8 @@ NEXTAW_BUNDLE	=
 #EXTRA_LIBS = /usr/openwin/lib/libXmu.sa -lm
 
 # PHOTON GUI
-PHOTONGUI_SRC	= gui.c gui_photon.c pty.c
-PHOTONGUI_OBJ	= objects/gui.o objects/gui_photon.o objects/pty.o
+PHOTONGUI_SRC	= gui.c gui_photon.c
+PHOTONGUI_OBJ	= objects/gui.o objects/gui_photon.o
 PHOTONGUI_DEFS	= -DFEAT_GUI_PHOTON
 PHOTONGUI_IPATH	=
 PHOTONGUI_LIBS_DIR =
@@ -1357,7 +1357,7 @@ PHOTONGUI_BUNDLE =
 
 # CARBON GUI
 CARBONGUI_SRC	= gui.c gui_mac.c
-CARBONGUI_OBJ	= objects/gui.o objects/gui_mac.o objects/pty.o
+CARBONGUI_OBJ	= objects/gui.o objects/gui_mac.o
 CARBONGUI_DEFS	= -DFEAT_GUI_MAC -fno-common -fpascal-strings \
 		  -Wall -Wno-unknown-pragmas \
 		  -mdynamic-no-pic -pipe
@@ -1391,7 +1391,7 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c pty.c
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c
 ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro
 
 # }}}
@@ -1582,6 +1582,7 @@ BASIC_SRC = \
 	os_unix.c \
 	auto/pathdef.c \
 	popupmnu.c \
+	pty.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -1689,6 +1690,7 @@ OBJ_COMMON = \
 	objects/os_unix.o \
 	objects/pathdef.o \
 	objects/popupmnu.o \
+	objects/pty.o \
 	objects/quickfix.o \
 	objects/regexp.o \
 	objects/screen.o \
@@ -2115,17 +2117,17 @@ test1 \
 	test_listchars \
 	test_search_mbyte \
 	test_wordcount \
-	test3 test4 test5 test6 test7 test8 test9 \
-	test11 test12 test14 test15 test17 test18 test19 \
-	test20 test21 test22 test25 test27 test28 test29 \
+	test3 test4 test5 test7 test8 \
+	test11 test12 test14 test15 test17 test19 \
+	test20 test25 test28 test29 \
 	test30 test31 test32 test33 test34 test36 test37 test38 test39 \
 	test40 test41 test42 test43 test44 test45 test48 test49 \
-	test50 test51 test52 test53 test54 test55 test56 test57 test59 \
+	test50 test52 test53 test54 test55 test56 test57 test59 \
 	test60 test64 test66 test68 test69 \
-	test70 test72 test73 test74 test77 test78 test79 \
-	test80 test83 test84 test85 test86 test87 test88 \
-	test91 test94 test95 test98 test99 \
-	test100 test101 test103 test104 test107 test108:
+	test70 test72 test73 test77 test78 test79 \
+	test83 test85 test86 test87 test88 \
+	test94 test95 test99 \
+	test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test, assuming that Vim was already compiled.
@@ -2137,6 +2139,7 @@ test_arglist \
 	test_autocmd \
 	test_backspace_opt \
 	test_breakindent \
+	test_bufline \
 	test_bufwintabinfo \
 	test_cd \
 	test_cdo \
@@ -2152,6 +2155,7 @@ test_arglist \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
+	test_curswant \
 	test_delete \
 	test_diffmode \
 	test_digraph \
@@ -2170,6 +2174,7 @@ test_arglist \
 	test_farsi \
 	test_feedkeys \
 	test_file_perm \
+	test_file_size \
 	test_fileformat \
 	test_filetype \
 	test_filter_cmd \
@@ -2182,6 +2187,7 @@ test_arglist \
 	test_functions \
 	test_ga \
 	test_getcwd \
+	test_getvar \
 	test_gf \
 	test_glob2regpat \
 	test_global \
@@ -2193,6 +2199,7 @@ test_arglist \
 	test_help \
 	test_help_tagjump \
 	test_hide \
+	test_highlight \
 	test_history \
 	test_hlsearch \
 	test_increment \
@@ -2204,6 +2211,8 @@ test_arglist \
 	test_lambda \
 	test_langmap \
 	test_largefile \
+	test_let \
+	test_lineending \
 	test_lispwords \
 	test_listlbr \
 	test_listlbr_utf8 \
@@ -2231,6 +2240,7 @@ test_arglist \
 	test_perl \
 	test_plus_arg_edit \
 	test_popup \
+	test_preview \
 	test_profile \
 	test_put \
 	test_python2 \
@@ -2247,6 +2257,7 @@ test_arglist \
 	test_reltime \
 	test_retab \
 	test_ruby \
+	test_scrollbind \
 	test_search \
 	test_searchpos \
 	test_set \
@@ -2270,6 +2281,7 @@ test_arglist \
 	test_tagjump \
 	test_taglist \
 	test_tcl \
+	test_terminal \
 	test_textobjects \
 	test_timers \
 	test_true_false \
@@ -2280,9 +2292,11 @@ test_arglist \
 	test_utf8_comparisons \
 	test_viminfo \
 	test_vimscript \
+	test_virtualedit \
 	test_visual \
 	test_window_cmd \
 	test_window_id \
+	test_windows_home \
 	test_writefile \
 	test_alot_latin \
 	test_alot_utf8 \
@@ -3241,11 +3255,11 @@ objects/winclip.o: winclip.c
 objects/pathdef.o: auto/pathdef.c
 	$(CCC) -o $@ auto/pathdef.c
 
-objects/pty.o: pty.c
-	$(CCC) -o $@ pty.c
-
 objects/popupmnu.o: popupmnu.c
 	$(CCC) -o $@ popupmnu.c
+
+objects/pty.o: pty.c
+	$(CCC) -o $@ pty.c
 
 objects/quickfix.o: quickfix.c
 	$(CCC) -o $@ quickfix.c
@@ -3307,7 +3321,11 @@ objects/channel.o: channel.c
 Makefile:
 	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
 
-CCCTERM = $(CCC) -Ilibvterm/include -DINLINE="" -DVSNPRINTF=vim_vsnprintf
+CCCTERM = $(CCC) -Ilibvterm/include -DINLINE="" \
+	  -DVSNPRINTF=vim_vsnprintf \
+	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
+	  -DWCWIDTH_FUNCTION=utf_uint2cells
+
 objects/term_encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/encoding.c
 

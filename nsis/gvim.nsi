@@ -191,12 +191,15 @@ Section "Vim executables and runtime files"
 	File ${VIMSRC}\vimrun.exe
 	File /oname=tee.exe ${VIMSRC}\teew32.exe
 	File /oname=xxd.exe ${VIMSRC}\xxdw32.exe
-	File ${VIMTOOLS}\diff.exe
 	File ${VIMRT}\vimtutor.bat
 	File ${VIMRT}\README.txt
 	File ..\uninstal.txt
 	File ${VIMRT}\*.vim
 	File ${VIMRT}\rgb.txt
+
+	File ${VIMTOOLS}\diff.exe
+	File ${VIMTOOLS}\winpty32.dll
+	File ${VIMTOOLS}\winpty-agent.exe
 
 	SetOutPath $0\colors
 	File ${VIMRT}\colors\*.*
@@ -216,6 +219,14 @@ Section "Vim executables and runtime files"
 
 	SetOutPath $0\macros
 	File ${VIMRT}\macros\*.*
+	SetOutPath $0\macros\hanoi
+	File ${VIMRT}\macros\hanoi\*.*
+	SetOutPath $0\macros\life
+	File ${VIMRT}\macros\life\*.*
+	SetOutPath $0\macros\maze
+	File ${VIMRT}\macros\maze\*.*
+	SetOutPath $0\macros\urm
+	File ${VIMRT}\macros\urm\*.*
 
 	SetOutPath $0\pack\dist\opt\dvorak\dvorak
 	File ${VIMRT}\pack\dist\opt\dvorak\dvorak\*.*
