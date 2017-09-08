@@ -3692,13 +3692,10 @@ channel_send(
 	{
 	    res = fd_write(fd, (char *)buf, len);
 #ifdef WIN32
-	    if (channel->ch_named_pipe)
+	    if (channel->ch_named_pipe && res < 0)
 	    {
-		if (res < 0)
-		{
-		    DisconnectNamedPipe((HANDLE)fd);
-		    ConnectNamedPipe((HANDLE)fd, NULL);
-		}
+		DisconnectNamedPipe((HANDLE)fd);
+		ConnectNamedPipe((HANDLE)fd, NULL);
 	    }
 #endif
 
@@ -4084,6 +4081,7 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
 	    if (ret > 0 && fd != INVALID_FD && FD_ISSET(fd, rfds))
 	    {
 		channel_read(channel, part, "channel_select_check");
+		FD_CLR(fd, rfds);
 		--ret;
 	    }
 	}
@@ -4093,6 +4091,7 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
 					    && FD_ISSET(in_part->ch_fd, wfds))
 	{
 	    channel_write_input(channel);
+	    FD_CLR(in_part->ch_fd, wfds);
 	    --ret;
 	}
     }
