@@ -3694,11 +3694,14 @@ channel_send(
 #ifdef WIN32
 	    if (channel->named_pipe)
 	    {
-		FlushFileBuffers((HANDLE)fd);
-		DisconnectNamedPipe((HANDLE)fd);
-		ConnectNamedPipe((HANDLE)fd, NULL);
+		if (res < 0)
+		{
+		    DisconnectNamedPipe((HANDLE)fd);
+		    ConnectNamedPipe((HANDLE)fd, NULL);
+		}
 	    }
 #endif
+
 	}
 	if (res < 0 && (errno == EWOULDBLOCK
 #ifdef EAGAIN

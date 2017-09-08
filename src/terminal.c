@@ -3076,7 +3076,6 @@ term_and_job_init(
     void	    *spawn_config = NULL;
     garray_T	    ga;
     char_u	    *cmd;
-    char_u	    *name;
 
     if (dyn_winpty_init(TRUE) == FAIL)
 	return FAIL;
@@ -3180,8 +3179,10 @@ term_and_job_init(
     job->jv_proc_info.dwProcessId = GetProcessId(child_process_handle);
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
-    job->jv_tty_in = utf16_to_enc(winpty_conin_name(term->tl_winpty), NULL);
-    job->jv_tty_out = utf16_to_enc(winpty_conout_name(term->tl_winpty), NULL);
+    job->jv_tty_in = utf16_to_enc(
+	    (short_u*)winpty_conin_name(term->tl_winpty), NULL);
+    job->jv_tty_out = utf16_to_enc(
+	    (short_u*)winpty_conout_name(term->tl_winpty), NULL);
     ++job->jv_refcount;
     term->tl_job = job;
 
@@ -3235,8 +3236,9 @@ create_pty_only(term_T *term, jobopt_T *options)
 	    GetCurrentProcessId(),
 	    curbuf->b_fnum);
     hPipeIn = CreateNamedPipe(in_name, PIPE_ACCESS_OUTBOUND,
-	    PIPE_TYPE_BYTE | PIPE_NOWAIT, PIPE_UNLIMITED_INSTANCES,
-	    0, 0, 0, NULL);
+	    PIPE_TYPE_MESSAGE | PIPE_NOWAIT,
+	    PIPE_UNLIMITED_INSTANCES,
+	    0, 0, NMPWAIT_NOWAIT, NULL);
     if (hPipeIn == INVALID_HANDLE_VALUE)
 	goto failed;
 
@@ -3244,8 +3246,9 @@ create_pty_only(term_T *term, jobopt_T *options)
 	    GetCurrentProcessId(),
 	    curbuf->b_fnum);
     hPipeOut = CreateNamedPipe(out_name, PIPE_ACCESS_INBOUND,
-	    PIPE_TYPE_BYTE | PIPE_NOWAIT, 2,
-	    5000, 5000, 0, NULL);
+	    PIPE_TYPE_MESSAGE | PIPE_NOWAIT,
+	    PIPE_UNLIMITED_INSTANCES,
+	    0, 0, 0, NULL);
     if (hPipeOut == INVALID_HANDLE_VALUE)
 	goto failed;
 
