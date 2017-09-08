@@ -620,70 +620,59 @@ func Test_terminal_redir_file()
 endfunc
 
 func Test_terminal_tmap()
-  let g:buf = term_start(&shell, {})
-  let g:job = term_getjob(g:buf)
+  func s:ExitTmap(job, st) closure
+    " TODO: determine why remapping doesn't occur until after the function in
+    " which feedkeys() is called ends.
+    call assert_equal(l:job, a:job)
+  endfunc
 
-  " Create a tmap, ensure it's used.
-  tmap asdf exit<CR>
-  " call feedkeys("asdf")
-  call term_sendkeys(g:buf, "asdf")
-  call WaitFor('job_status(g:job) == "dead"')
-  call assert_equal('dead', job_status(g:job))
+  tmap asdf exit
 
-  tunmap asdf
-  unlet g:job
-  unlet g:buf
-  bwipe!
+  let l:buf = term_start(&shell, {'exit_cb': function('s:ExitTmap')})
+  let l:job = term_getjob(l:buf)
+
+  " TODO: do remapping in term_sendkeys() and replace test_feedinput() here.
+  call feedkeys("asdf\<CR>")
 endfunc
 
 func Test_terminal_tremap()
-  let g:buf = term_start(&shell, {})
-  let g:job = term_getjob(g:buf)
+  func s:ExitRemap(job, st) closure
+    call assert_equal(l:job, a:job)
+  endfunc
 
-  " Create a tmap with remapping, ensure it's remapped.
-  tmap fdsa exit<CR>
+  tmap fdsa exit
   tmap asdf fdsa
-  call term_sendkeys(g:buf, "asdf")
-  call WaitFor('job_status(g:job) == "dead"')
-  call assert_equal('dead', job_status(g:job))
 
-  tunmap asdf
-  tunmap fdsa
-  unlet g:job
-  unlet g:buf
-  bwipe!
+  let l:buf = term_start(&shell, {'exit_cb': function('s:ExitRemap')})
+  let l:job = term_getjob(l:buf)
+
+  call feedkeys("asdf\<CR>")
 endfunc
 
 func Test_terminal_tnoremap()
-  let g:buf = term_start(&shell, {})
-  let g:job = term_getjob(g:buf)
+  func s:ExitNoremap(job, st) closure
+    call assert_equal(l:job, a:job)
+  endfunc
 
-  " Create a tmap without remapping, ensure no remapping occurs.
   tmap exit fdsa
-  tnoremap asdf exit<CR>
-  call term_sendkeys(g:buf, "asdf")
-  call WaitFor('job_status(g:job) == "dead"')
-  call assert_equal('dead', job_status(g:job))
+  tnoremap asdf exit
 
-  tunmap asdf
-  tunmap exit
-  unlet g:job
-  unlet g:buf
-  bwipe!
+  let l:buf = term_start(&shell, {'exit_cb': function('s:ExitNoremap')})
+  let l:job = term_getjob(l:buf)
+
+  call feedkeys("asdf\<CR>")
 endfunc
 
 func Test_terminal_tunmap()
-  let g:buf = term_start(&shell, {})
-  let g:job = term_getjob(g:buf)
+  func s:ExitTunmap(job, st) closure
+    call assert_equal(l:job, a:job)
+  endfunc
 
-  " Create a tmap, then unmap. Ensure the map is no longer used.
-  tmap asdf exit<CR>
+  tmap exit asdf
   tunmap asdf
-  call term_sendkeys(g:buf, "asdf")
-  call WaitFor('job_status(g:job) == "dead"')
-  call assert_equal('dead', job_status(g:job))
 
-  unlet g:job
-  unlet g:buf
-  bwipe!
+  let l:buf = term_start(&shell, {'exit_cb': function('s:ExitTunmap')})
+  let l:job = term_getjob(l:buf)
+
+  call feedkeys("asdf\<CR>")
 endfunc
