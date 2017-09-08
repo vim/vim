@@ -8168,10 +8168,9 @@ nv_g_cmd(cmdarg_T *cap)
 #endif
 		i = (int)STRLEN(ptr);
 	    if (cap->count0 == 0)
-		i /= 2;
-	    else
-		i = i * cap->count0 / 100;
-	    coladvance((colnr_T)i);
+		coladvance((colnr_T)(i / 2));
+	    else if (cap->count0 <= 100)
+		coladvance((colnr_T)(i * cap->count0 / 100));
 	    curwin->w_set_curswant = TRUE;
 	}
 	break;
