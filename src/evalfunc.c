@@ -843,7 +843,7 @@ static struct fst
     {"term_getsize",	1, 1, f_term_getsize},
     {"term_getstatus",	1, 1, f_term_getstatus},
     {"term_gettitle",	1, 1, f_term_gettitle},
-    {"term_gettty",	1, 1, f_term_gettty},
+    {"term_gettty",	1, 2, f_term_gettty},
     {"term_list",	0, 0, f_term_list},
     {"term_scrape",	2, 2, f_term_scrape},
     {"term_sendkeys",	2, 2, f_term_sendkeys},

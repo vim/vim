@@ -19,7 +19,7 @@ endif
 func s:StartDebug(cmd)
   " Open a terminal window without a job, to run the debugged program
   let s:ptybuf = term_start('NONE', {})
-  let pty = job_info(term_getjob(s:ptybuf))['tty']
+  let pty = job_info(term_getjob(s:ptybuf))['tty_out']
 
   " Open a terminal window to run the debugger.
   let cmd = [g:debugger, '-tty', pty, a:cmd]

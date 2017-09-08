@@ -1487,7 +1487,8 @@ struct jobvar_S
     PROCESS_INFORMATION	jv_proc_info;
     HANDLE		jv_job_object;
 #endif
-    char_u	*jv_tty_name;	/* controlling tty, allocated */
+    char_u	*jv_tty_in;	/* controlling tty input, allocated */
+    char_u	*jv_tty_out;	/* controlling tty output, allocated */
     jobstatus_T	jv_status;
     char_u	*jv_stoponexit; /* allocated */
     int		jv_exitval;
@@ -1652,6 +1653,9 @@ struct channel_S {
 				/* callback for Netbeans when channel is
 				 * closed */
 
+#ifdef WIN32
+    int		named_pipe;	/* named pipe */
+#endif
     char_u	*ch_callback;	/* call when any msg is not handled */
     partial_T	*ch_partial;
     char_u	*ch_close_cb;	/* call when channel is closed */
