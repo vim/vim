@@ -3915,8 +3915,8 @@ build_stl_str_hl(
     char_u	*t;
     int		byteval;
 #ifdef FEAT_EVAL
-    win_T	*o_curwin;
-    buf_T	*o_curbuf;
+    win_T	*save_curwin;
+    buf_T	*save_curbuf;
 #endif
     int		empty_line;
     colnr_T	virtcol;
@@ -3958,6 +3958,9 @@ build_stl_str_hl(
     char_u	tmp[TMPLEN];
     char_u	*usefmt = fmt;
     struct stl_hlrec *sp;
+    int		save_must_redraw = must_redraw;
+    int		save_redr_type = curwin->w_redr_type;
+    int		save_highlight_shcnaged = need_highlight_changed;
 
 #ifdef FEAT_EVAL
     /*
@@ -4267,15 +4270,15 @@ build_stl_str_hl(
 	    vim_snprintf((char *)tmp, sizeof(tmp), "%d", curbuf->b_fnum);
 	    set_internal_string_var((char_u *)"actual_curbuf", tmp);
 
-	    o_curbuf = curbuf;
-	    o_curwin = curwin;
+	    save_curbuf = curbuf;
+	    save_curwin = curwin;
 	    curwin = wp;
 	    curbuf = wp->w_buffer;
 
 	    str = eval_to_string_safe(p, &t, use_sandbox);
 
-	    curwin = o_curwin;
-	    curbuf = o_curbuf;
+	    curwin = save_curwin;
+	    curbuf = save_curbuf;
 	    do_unlet((char_u *)"g:actual_curbuf", TRUE);
 
 	    if (str != NULL && *str != 0)
@@ -4729,6 +4732,13 @@ build_stl_str_hl(
 	sp->start = NULL;
 	sp->userhl = 0;
     }
+
+    /* We do not want redrawing a stausline, ruler, title, etc. to trigger
+     * another redraw, it may cause an endless loop.  This happens when a
+     * statusline changes a highlight group. */
+    must_redraw = save_must_redraw;
+    curwin->w_redr_type = save_redr_type;
+    need_highlight_changed = save_highlight_shcnaged;
 
     return width;
 }
