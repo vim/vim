@@ -2972,11 +2972,13 @@ term_send_eof(channel_T *ch)
 
 #define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
 #define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
+#define WINPTY_MOUSE_MODE_FORCE         2
 
 void* (*winpty_config_new)(UINT64, void*);
 void* (*winpty_open)(void*, void*);
 void* (*winpty_spawn_config_new)(UINT64, void*, LPCWSTR, void*, void*, void*);
 BOOL (*winpty_spawn)(void*, void*, HANDLE*, HANDLE*, DWORD*, void*);
+void (*winpty_config_set_mouse_mode)(void*, int);
 void (*winpty_config_set_initial_size)(void*, int, int);
 LPCWSTR (*winpty_conin_name)(void*);
 LPCWSTR (*winpty_conout_name)(void*);
@@ -3007,7 +3009,10 @@ dyn_winpty_init(int verbose)
 	{"winpty_conerr_name", (FARPROC*)&winpty_conerr_name},
 	{"winpty_config_free", (FARPROC*)&winpty_config_free},
 	{"winpty_config_new", (FARPROC*)&winpty_config_new},
-	{"winpty_config_set_initial_size", (FARPROC*)&winpty_config_set_initial_size},
+	{"winpty_config_set_mouse_mode",
+				      (FARPROC*)&winpty_config_set_mouse_mode},
+	{"winpty_config_set_initial_size",
+				    (FARPROC*)&winpty_config_set_initial_size},
 	{"winpty_conin_name", (FARPROC*)&winpty_conin_name},
 	{"winpty_conout_name", (FARPROC*)&winpty_conout_name},
 	{"winpty_error_free", (FARPROC*)&winpty_error_free},
@@ -3105,6 +3110,8 @@ term_and_job_init(
     if (term->tl_winpty_config == NULL)
 	goto failed;
 
+    winpty_config_set_mouse_mode(term->tl_winpty_config,
+						    WINPTY_MOUSE_MODE_FORCE);
     winpty_config_set_initial_size(term->tl_winpty_config,
 						 term->tl_cols, term->tl_rows);
     term->tl_winpty = winpty_open(term->tl_winpty_config, &winpty_err);
