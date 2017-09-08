@@ -208,6 +208,8 @@ Haiku port is based on work done for BeOS version by many people
  - Those who contributed, not listed above but not forgotten;
  - Haiku support by Siarzhuk Zharski <imker@gmx.li> Apr-Mai 2009.
 
+All the changes and patches released under vim-license.
+
 Thank you, all!
 
 
