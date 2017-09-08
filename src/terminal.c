@@ -38,7 +38,8 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - ":term NONE" does not work in MS-Windows.
+ * - patch to use GUI or cterm colors for vterm. Yasuhiro, #2067
+ * - Redirecting output does not work on MS-Windows.
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -56,6 +57,8 @@
  * - In the GUI use a terminal emulator for :!cmd.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
+ * - add an optional limit for the scrollback size.  When reaching it remove
+ *   10% at the start.
  */
 
 #include "vim.h"
@@ -93,7 +96,8 @@ struct terminal_S {
 
     /* used when tl_job is NULL and only a pty was created */
     int		tl_tty_fd;
-    char_u	*tl_tty_name;
+    char_u	*tl_tty_in;
+    char_u	*tl_tty_out;
 
     int		tl_normal_mode; /* TRUE: Terminal-Normal mode */
     int		tl_channel_closed;
@@ -366,10 +370,10 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 	}
 	else if (argvar->v_type != VAR_LIST
 		|| argvar->vval.v_list == NULL
-		|| argvar->vval.v_list->lv_len < 1)
+		|| argvar->vval.v_list->lv_len < 1
+		|| (cmd = get_tv_string_chk(
+			       &argvar->vval.v_list->lv_first->li_tv)) == NULL)
 	    cmd = (char_u*)"";
-	else
-	    cmd = get_tv_string_chk(&argvar->vval.v_list->lv_first->li_tv);
 
 	len = STRLEN(cmd) + 10;
 	p = alloc((int)len);
@@ -458,7 +462,7 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     void
 ex_terminal(exarg_T *eap)
 {
-    typval_T	argvar;
+    typval_T	argvar[2];
     jobopt_T	opt;
     char_u	*cmd;
     char_u	*tofree = NULL;
@@ -521,8 +525,8 @@ ex_terminal(exarg_T *eap)
 	}
 	cmd = skipwhite(p);
     }
-    if (cmd == NULL || *cmd == NUL)
-	/* Make a copy, an autocommand may set 'shell'. */
+    if (*cmd == NUL)
+	/* Make a copy of 'shell', an autocommand may change the option. */
 	tofree = cmd = vim_strsave(p_sh);
 
     if (eap->addr_count > 0)
@@ -535,9 +539,10 @@ ex_terminal(exarg_T *eap)
 	opt.jo_in_bot = eap->line2;
     }
 
-    argvar.v_type = VAR_STRING;
-    argvar.vval.v_string = cmd;
-    term_start(&argvar, &opt, eap->forceit);
+    argvar[0].v_type = VAR_STRING;
+    argvar[0].vval.v_string = cmd;
+    argvar[1].v_type = VAR_UNKNOWN;
+    term_start(argvar, &opt, eap->forceit);
     vim_free(tofree);
 }
 
@@ -2662,14 +2667,32 @@ f_term_gettty(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf = term_get_buf(argvars);
     char_u	*p;
+    int		num = 0;
 
     rettv->v_type = VAR_STRING;
     if (buf == NULL)
 	return;
-    if (buf->b_term->tl_job != NULL)
-	p = buf->b_term->tl_job->jv_tty_name;
-    else
-	p = buf->b_term->tl_tty_name;
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	num = get_tv_number(&argvars[1]);
+
+    switch (num)
+    {
+	case 0:
+	    if (buf->b_term->tl_job != NULL)
+		p = buf->b_term->tl_job->jv_tty_out;
+	    else
+		p = buf->b_term->tl_tty_out;
+	    break;
+	case 1:
+	    if (buf->b_term->tl_job != NULL)
+		p = buf->b_term->tl_job->jv_tty_in;
+	    else
+		p = buf->b_term->tl_tty_in;
+	    break;
+	default:
+	    EMSG2(_(e_invarg2), get_tv_string(&argvars[1]));
+	    return;
+    }
     if (p != NULL)
 	rettv->vval.v_string = vim_strsave(p);
 }
@@ -2883,7 +2906,8 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	    && STRCMP(job_status(buf->b_term->tl_job), "dead") == 0)
     {
 	/* The job is dead, keep reading channel I/O until the channel is
-	 * closed. */
+	 * closed. buf->b_term may become NULL if the terminal was closed while
+	 * waiting. */
 	ch_log(NULL, "term_wait(): waiting for channel to close");
 	while (buf->b_term != NULL && !buf->b_term->tl_channel_closed)
 	{
@@ -3050,7 +3074,6 @@ term_and_job_init(
     HANDLE	    child_thread_handle;
     void	    *winpty_err;
     void	    *spawn_config = NULL;
-    char	    buf[MAX_PATH];
     garray_T	    ga;
     char_u	    *cmd;
 
@@ -3089,7 +3112,6 @@ term_and_job_init(
     if (term->tl_winpty == NULL)
 	goto failed;
 
-    /* TODO: if the command is "NONE" only create a pty. */
     spawn_config = winpty_spawn_config_new(
 	    WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN |
 		WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN,
@@ -3157,9 +3179,10 @@ term_and_job_init(
     job->jv_proc_info.dwProcessId = GetProcessId(child_process_handle);
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
-    sprintf(buf, "winpty://%lu",
-	    GetProcessId(winpty_agent_process(term->tl_winpty)));
-    job->jv_tty_name = vim_strsave((char_u*)buf);
+    job->jv_tty_in = utf16_to_enc(
+	    (short_u*)winpty_conin_name(term->tl_winpty), NULL);
+    job->jv_tty_out = utf16_to_enc(
+	    (short_u*)winpty_conout_name(term->tl_winpty), NULL);
     ++job->jv_refcount;
     term->tl_job = job;
 
@@ -3200,9 +3223,68 @@ failed:
 }
 
     static int
-create_pty_only(term_T *term, jobopt_T *opt)
+create_pty_only(term_T *term, jobopt_T *options)
 {
-    /* TODO: implement this */
+    HANDLE	    hPipeIn = INVALID_HANDLE_VALUE;
+    HANDLE	    hPipeOut = INVALID_HANDLE_VALUE;
+    char	    in_name[80], out_name[80];
+    channel_T	    *channel = NULL;
+
+    create_vterm(term, term->tl_rows, term->tl_cols);
+
+    vim_snprintf(in_name, sizeof(in_name), "\\\\.\\pipe\\vim-%d-in-%d",
+	    GetCurrentProcessId(),
+	    curbuf->b_fnum);
+    hPipeIn = CreateNamedPipe(in_name, PIPE_ACCESS_OUTBOUND,
+	    PIPE_TYPE_MESSAGE | PIPE_NOWAIT,
+	    PIPE_UNLIMITED_INSTANCES,
+	    0, 0, NMPWAIT_NOWAIT, NULL);
+    if (hPipeIn == INVALID_HANDLE_VALUE)
+	goto failed;
+
+    vim_snprintf(out_name, sizeof(out_name), "\\\\.\\pipe\\vim-%d-out-%d",
+	    GetCurrentProcessId(),
+	    curbuf->b_fnum);
+    hPipeOut = CreateNamedPipe(out_name, PIPE_ACCESS_INBOUND,
+	    PIPE_TYPE_MESSAGE | PIPE_NOWAIT,
+	    PIPE_UNLIMITED_INSTANCES,
+	    0, 0, 0, NULL);
+    if (hPipeOut == INVALID_HANDLE_VALUE)
+	goto failed;
+
+    ConnectNamedPipe(hPipeIn, NULL);
+    ConnectNamedPipe(hPipeOut, NULL);
+
+    term->tl_job = job_alloc();
+    if (term->tl_job == NULL)
+	goto failed;
+    ++term->tl_job->jv_refcount;
+
+    /* behave like the job is already finished */
+    term->tl_job->jv_status = JOB_FINISHED;
+
+    channel = add_channel();
+    if (channel == NULL)
+	goto failed;
+    term->tl_job->jv_channel = channel;
+    channel->ch_keep_open = TRUE;
+    channel->ch_named_pipe = TRUE;
+
+    channel_set_pipes(channel,
+	(sock_T)hPipeIn,
+	(sock_T)hPipeOut,
+	(sock_T)hPipeOut);
+    channel_set_job(channel, term->tl_job, options);
+    term->tl_job->jv_tty_in = vim_strsave((char_u*)in_name);
+    term->tl_job->jv_tty_out = vim_strsave((char_u*)out_name);
+
+    return OK;
+
+failed:
+    if (hPipeIn != NULL)
+	CloseHandle(hPipeIn);
+    if (hPipeOut != NULL)
+	CloseHandle(hPipeOut);
     return FAIL;
 }
 
@@ -3229,7 +3311,8 @@ term_free_vterm(term_T *term)
     static void
 term_report_winsize(term_T *term, int rows, int cols)
 {
-    winpty_set_size(term->tl_winpty, cols, rows, NULL);
+    if (term->tl_winpty)
+	winpty_set_size(term->tl_winpty, cols, rows, NULL);
 }
 
     int

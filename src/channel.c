@@ -969,7 +969,13 @@ ch_close_part(channel_T *channel, ch_part_T part)
 	    if ((part == PART_IN || channel->CH_IN_FD != *fd)
 		    && (part == PART_OUT || channel->CH_OUT_FD != *fd)
 		    && (part == PART_ERR || channel->CH_ERR_FD != *fd))
+	    {
+#ifdef WIN32
+		if (channel->ch_named_pipe)
+		    DisconnectNamedPipe((HANDLE)fd);
+#endif
 		fd_close(*fd);
+	    }
 	}
 	*fd = INVALID_FD;
 
@@ -3086,7 +3092,20 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    if (r && nread > 0)
 		return CW_READY;
 	    if (r == 0)
-		return CW_ERROR;
+	    {
+		DWORD err = GetLastError();
+
+		if (err != ERROR_BAD_PIPE && err != ERROR_BROKEN_PIPE)
+		    return CW_ERROR;
+
+		if (channel->ch_named_pipe)
+		{
+		    DisconnectNamedPipe((HANDLE)fd);
+		    ConnectNamedPipe((HANDLE)fd, NULL);
+		}
+		else
+		    return CW_ERROR;
+	    }
 
 	    /* perhaps write some buffer lines */
 	    channel_write_any_lines();
@@ -3670,7 +3689,20 @@ channel_send(
 	if (part == PART_SOCK)
 	    res = sock_write(fd, (char *)buf, len);
 	else
+	{
 	    res = fd_write(fd, (char *)buf, len);
+#ifdef WIN32
+	    if (channel->ch_named_pipe)
+	    {
+		if (res < 0)
+		{
+		    DisconnectNamedPipe((HANDLE)fd);
+		    ConnectNamedPipe((HANDLE)fd, NULL);
+		}
+	    }
+#endif
+
+	}
 	if (res < 0 && (errno == EWOULDBLOCK
 #ifdef EAGAIN
 			|| errno == EAGAIN
@@ -4849,7 +4881,8 @@ job_free_contents(job_T *job)
     }
     mch_clear_job(job);
 
-    vim_free(job->jv_tty_name);
+    vim_free(job->jv_tty_in);
+    vim_free(job->jv_tty_out);
     vim_free(job->jv_stoponexit);
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
 }
@@ -5503,8 +5536,10 @@ job_info(job_T *job, dict_T *dict)
     nr = job->jv_proc_info.dwProcessId;
 #endif
     dict_add_nr_str(dict, "process", nr, NULL);
-    dict_add_nr_str(dict, "tty", 0L,
-		   job->jv_tty_name != NULL ? job->jv_tty_name : (char_u *)"");
+    dict_add_nr_str(dict, "tty_in", 0L,
+		   job->jv_tty_in != NULL ? job->jv_tty_in : (char_u *)"");
+    dict_add_nr_str(dict, "tty_out", 0L,
+		   job->jv_tty_out != NULL ? job->jv_tty_out : (char_u *)"");
 
     dict_add_nr_str(dict, "exitval", job->jv_exitval, NULL);
     dict_add_nr_str(dict, "exit_cb", 0L, job->jv_exit_cb);

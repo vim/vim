@@ -878,6 +878,7 @@ static void request_dec_mode(VTermState *state, int num)
 
     case 2004:
       reply = state->mode.bracketpaste;
+      break;
 
     default:
       vterm_push_output_sprintf_ctrl(state->vt, C1_CSI, "?%d;%d$y", num, 0);

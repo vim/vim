@@ -2401,7 +2401,7 @@ term_getscrolled({buf})		Number	get the scroll count of a terminal
 term_getsize({buf})		List	get the size of a terminal
 term_getstatus({buf})		String	get the status of a terminal
 term_gettitle({buf})		String	get the title of a terminal
-term_gettty({buf})		String	get the tty name of a terminal
+term_getttty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
@@ -5245,7 +5245,8 @@ job_info({job})						*job_info()*
 		   "status"	what |job_status()| returns
 		   "channel"	what |job_getchannel()| returns
 		   "process"	process ID
-		   "tty"	controlling terminal name, empty when none
+		   "tty_in"	terminal input name, empty when none
+		   "tty_out"	terminal output name, empty when none
 		   "exitval"	only valid when "status" is "dead"
 		   "exit_cb"	function to be called on exit
 		   "stoponexit"	|job-stoponexit|
@@ -8092,10 +8093,13 @@ term_gettitle({buf})					*term_gettitle()*
 		string is returned.
 		{only available when compiled with the |+terminal| feature}
 
-term_gettty({buf})					*term_gettty()*
+term_gettty({buf} [, {input}])				*term_gettty()*
 		Get the name of the controlling terminal associated with
-		terminal window {buf}.
-		{buf} is used as with |term_getsize()|.
+		terminal window {buf}.  {buf} is used as with |term_getsize()|.
+
+		When {input} is omitted or 0, return the name for writing
+		(stdout). When {input} is 1 return the name for reading
+		(stdin). On UNIX, both return same name.
 		{only available when compiled with the |+terminal| feature}
 
 term_list()						*term_list()*
@@ -8173,10 +8177,9 @@ term_start({cmd}, {options})				*term_start()*
 				     specified "botright sbuf %d" is used
 		   "eof_chars"	     Text to send after all buffer lines were
 				     written to the terminal.  When not set
-				     CTRL-D is used. For Python use CTRL-Z or
-				     "exit()". For a shell use "exit".  A CR
-				     is always added.
-				     {only on MS-Windows}
+				     CTRL-D is used on MS-Windows. For Python
+				     use CTRL-Z or "exit()". For a shell use
+				     "exit".  A CR is always added.
 
 		{only available when compiled with the |+terminal| feature}
 

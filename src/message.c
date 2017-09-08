@@ -609,11 +609,9 @@ emsg(char_u *s)
 
     called_emsg = TRUE;
 
-    /*
-     * If "emsg_severe" is TRUE: When an error exception is to be thrown,
-     * prefer this message over previous messages for the same command.
-     */
 #ifdef FEAT_EVAL
+    /* If "emsg_severe" is TRUE: When an error exception is to be thrown,
+     * prefer this message over previous messages for the same command. */
     severe = emsg_severe;
     emsg_severe = FALSE;
 #endif
@@ -684,6 +682,9 @@ emsg(char_u *s)
 	else
 	    flush_buffers(FALSE);	/* flush internal buffers */
 	did_emsg = TRUE;		/* flag for DoOneCmd() */
+#ifdef FEAT_EVAL
+	did_uncaught_emsg = TRUE;
+#endif
     }
 
     emsg_on_display = TRUE;	/* remember there is an error message */
