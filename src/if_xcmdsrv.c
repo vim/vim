@@ -420,6 +420,7 @@ serverSendToVim(
 	    {
 		LookupName(dpy, loosename ? loosename : name,
 			   /*DELETE=*/TRUE, NULL);
+		vim_free(loosename);
 		continue;
 	    }
 	}
