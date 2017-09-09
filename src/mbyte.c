@@ -4871,8 +4871,7 @@ im_preedit_window_set_position(void)
     if (preedit_window == NULL)
 	return;
 
-    sw = gdk_screen_get_width(gtk_widget_get_screen(preedit_window));
-    sh = gdk_screen_get_height(gtk_widget_get_screen(preedit_window));
+    gui_gtk_get_screen_size_of_win(preedit_window, &sw, &sh);
 #if GTK_CHECK_VERSION(3,0,0)
     gdk_window_get_origin(gtk_widget_get_window(gui.drawarea), &x, &y);
 #else
