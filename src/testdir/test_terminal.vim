@@ -634,16 +634,16 @@ func Test_terminal_tmap()
     return
   endif
 
-  func s:ExitTmap(job, st) closure
+  func s:OutCB(job, msg) closure
     " TODO: determine why remapping doesn't occur until after the function in
     " which feedkeys() is called ends.
     call assert_equal(l:job, a:job)
-    call assert_equal(0, a:st)
+    call assert_equal('abcde', a:msg)
   endfunc
 
   tmap 12 abcde
   let l:cmd = "read -n 4"
-  let l:buf = term_start(l:cmd, {'exit_cb': function('s:ExitTmap')})
+  let l:buf = term_start(l:cmd, {'out_cb': function('s:OutCB')})
   let l:job = term_getjob(l:buf)
 
   " TODO: do remapping in term_sendkeys() and replace test_feedinput() here.
