@@ -214,6 +214,10 @@ mode.
 Use CTRL-W N (or 'termkey' N) to switch to Terminal-Normal mode.  Now the
 contents of the terminal window is under control of Vim, the job output is
 suspended.  CTRL-\ CTRL-N does the same.
+
+Terminal-Job mode is where |tmap| mappings are applied. Keys sent by
+|term_sendkeys()| are not subject to tmap, but keys from |feedkeys()| are.
+
 							*E946*
 In Terminal-Normal mode you can move the cursor around with the usual Vim
 commands, Visually mark text, yank text, etc.  But you cannot change the
@@ -294,7 +298,7 @@ inspects the resulting screen state.
 
 Functions ~
 
-term_sendkeys()		send keystrokes to a terminal
+term_sendkeys()		send keystrokes to a terminal (not subject to remap)
 term_wait()		wait for screen to be updated
 term_scrape()		inspect terminal screen
 
