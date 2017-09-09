@@ -104,6 +104,15 @@ func! s:Nasty_exit_cb(job, st)
   let g:buf = 0
 endfunc
 
+func Get_cat_123_cmd()
+  if has('win32')
+    return 'cmd /c "cls && color 2 && echo 123"'
+  else
+    call writefile(["\<Esc>[32m123"], 'Xtext')
+    return "cat Xtext"
+  endif
+endfunc
+
 func Test_terminal_nasty_cb()
   let cmd = Get_cat_123_cmd()
   let g:buf = term_start(cmd, {'exit_cb': function('s:Nasty_exit_cb')})
@@ -141,15 +150,6 @@ func Check_123(buf)
   call assert_equal('', l)
   let l = term_getline(a:buf, 1)
   call assert_equal('123', l)
-endfunc
-
-func Get_cat_123_cmd()
-  if has('win32')
-    return 'cmd /c "cls && color 2 && echo 123"'
-  else
-    call writefile(["\<Esc>[32m123"], 'Xtext')
-    return "cat Xtext"
-  endif
 endfunc
 
 func Test_terminal_scrape_123()
@@ -393,7 +393,6 @@ func Test_finish_open_close()
   call assert_equal(2, winnr('$'))
   call assert_equal(4, winheight(0))
   bwipe
-
 endfunc
 
 func Test_terminal_cwd()
@@ -613,6 +612,7 @@ func Test_terminal_redir_file()
     call term_wait(buf)
     call WaitFor('len(readfile("Xfile")) > 0')
     call assert_match('executing job failed', readfile('Xfile')[0])
+    call WaitFor('!&modified')
     call delete('Xfile')
     bwipe
 
