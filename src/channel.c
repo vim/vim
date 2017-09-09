@@ -2939,6 +2939,7 @@ remove_from_writeque(writeq_T *wq, writeq_T *entry)
 	wq->wq_prev = NULL;
     else
 	wq->wq_next->wq_prev = NULL;
+    vim_free(entry);
 }
 
 /*
@@ -2990,7 +2991,7 @@ channel_clear(channel_T *channel)
     channel_clear_one(channel, PART_SOCK);
     channel_clear_one(channel, PART_OUT);
     channel_clear_one(channel, PART_ERR);
-    /* there is no callback or queue for PART_IN */
+    channel_clear_one(channel, PART_IN);
     free_callback(channel->ch_callback, channel->ch_partial);
     channel->ch_callback = NULL;
     channel->ch_partial = NULL;
