@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Aug 29
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,11 +30,11 @@ This feature is for running a terminal emulator in a Vim window.  A job can be
 started connected to the terminal emulator. For example, to run a shell: >
      :term bash
 
-Or to run a debugger: >
-     :term gdb vim
+Or to run build command: >
+     :term make myprogram
 
 The job runs asynchronously from Vim, the window will be updated to show
-output from the job, also  while editing in any other window.
+output from the job, also while editing in another window.
 
 
 Typing ~
@@ -109,7 +109,8 @@ Syntax ~
 
 			If [range] is given the specified lines are used as
 			input for the job.  It will not be possible to type
-			keys in the terminal window.
+			keys in the terminal window.  For MS-Windows see the
+			++eof argument below.
 
 			Two comma separated numbers are used as "rows,cols".
 			E.g. `:24,80gdb` opens a terminal with 24 rows and 80
@@ -133,14 +134,15 @@ Syntax ~
 					height.
 			++cols={width}  Use {width} for the terminal window
 					width.
-			++eof={text}	when using [range], text to send after
-					the last line was written. The default
-					is to send CTRL-D.  A CR is appended.
+			++eof={text}	when using [range]: text to send after
+					the last line was written. Cannot
+					contain white space.  A CR is
+					appended.  For MS-Windows the default
+					is to send CTRL-D.
 					E.g. for a shell use "++eof=exit" and
 					for Python "++eof=exit()".  Special
 					codes can be used like with `:map`,
 					e.g. "<C-Z>" for CTRL-Z.
-					{only on MS-Windows}
 
 			If you want to use more options use the |term_start()|
 			function.
@@ -303,33 +305,90 @@ term_scrape()		inspect terminal screen
 3. Debugging					*terminal-debug*
 
 The Terminal debugging plugin can be used to debug a program with gdb and view
-the source code in a Vim window.
+the source code in a Vim window.  Since this is completely contained inside
+Vim this also works remotely over an ssh connection.
+
+
+Starting ~
 
 Load the plugin with this command: >
 	packadd termdebug
-
+<							*:Termdebug*
 To start debugging use `:TermDebug` folowed by the command name, for example: >
 	:TermDebug vim
 
 This opens two windows:
 - A terminal window in which "gdb vim" is executed.  Here you can directly
-  interact with gdb.
+  interact with gdb.  The buffer name is "!gdb".
 - A terminal window for the executed program.  When "run" is used in gdb the
   program I/O will happen in this window, so that it does not interfere with
-  controlling gdb.
-The current window is used to show the source code.  When gdb jumps to a
-source file location this window will display the code, if possible.  Values
-of variables can be inspected, breakpoints set and cleared, etc.
+  controlling gdb.  The buffer name is "gdb program".
+
+The current window is used to show the source code.  When gdb pauses the
+source file location will be displayed, if possible.  A sign is used to
+highlight the current position (using highlight group debugPC).	 
+
+If the buffer in the current window is modified, another window will be opened
+to display the current gdb position.
+
+Focus the terminal of the executed program to interact with it.  This works
+the same as any command running in a terminal window.
 
 When the debugger ends the two opened windows are closed.
 
 
+Stepping through code ~
+
+Put focus on the gdb window to type commands there.  Some common ones are:
+- CTRL-C    interrupt the program
+- next      execute the current line and stop at the next line
+- step      execute the current line and stop at the next statement, entering
+	    functions
+- finish    execute until leaving the current function
+- where     show the stack
+- frame N   go to the Nth stack frame
+- continue  continue execution
+
+In the window showing the source code some commands can passed to gdb:
+- Break     set a breakpoint at the current line; a sign will be displayed
+- Delete    delete a breakpoint at the current line
+- Step	    execute the gdb "step" command
+- NNext	    execute the gdb "next" command (:Next is a Vim command)
+- Finish    execute the gdb "finish" command
+- Continue  execute the gdb "continue" command
+
+
+Communication ~
+
+There is another, hidden, buffer, which is used for Vim to communicate with
+gdb.  The buffer name is "gdb communication".  Do not delete this buffer, it
+will break the debugger.
+
+
 Customizing ~
 
-g:debugger	The debugger command.  Default "gdb".
+To change the name of the gdb command, set the "termdebugger" variable before
+invoking `:Termdebug`: >
+	let termdebugger = "mygdb"
+Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
+interface.
+
+The color of the signs can be adjusted with these highlight groups:
+- debugPC		the current position
+- debugBreakpoint	a breakpoint
+
+The defaults are, when 'background' is "light":
+  hi debugPC term=reverse ctermbg=lightblue guibg=lightblue
+  hi debugBreakpoint term=reverse ctermbg=red guibg=red
+
+When 'background' is "dark":
+  hi debugPC term=reverse ctermbg=darkblue guibg=darkblue
+  hi debugBreakpoint term=reverse ctermbg=red guibg=red
 
 
-TODO
+NOT WORKING YET: ~
+
+Values of variables can be inspected, etc.
 
 
  vim:tw=78:ts=8:ft=help:norl:
