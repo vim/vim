@@ -629,59 +629,23 @@ func Test_terminal_redir_file()
 endfunc
 
 func Test_terminal_tmap()
+  " TODO: Find an equivalent for win32
+  if !has('unix')
+    return
+  endif
+
   func s:ExitTmap(job, st) closure
     " TODO: determine why remapping doesn't occur until after the function in
     " which feedkeys() is called ends.
     call assert_equal(l:job, a:job)
+    call assert_equal(0, a:st)
   endfunc
 
-  tmap asdf exit
-
-  let l:buf = term_start(&shell, {'exit_cb': function('s:ExitTmap')})
+  tmap 12 abcde
+  let l:cmd = "read -n 4"
+  let l:buf = term_start(l:cmd, {'exit_cb': function('s:ExitTmap')})
   let l:job = term_getjob(l:buf)
 
   " TODO: do remapping in term_sendkeys() and replace test_feedinput() here.
-  call feedkeys("asdf\<CR>")
-endfunc
-
-func Test_terminal_tremap()
-  func s:ExitRemap(job, st) closure
-    call assert_equal(l:job, a:job)
-  endfunc
-
-  tmap fdsa exit
-  tmap asdf fdsa
-
-  let l:buf = term_start(&shell, {'exit_cb': function('s:ExitRemap')})
-  let l:job = term_getjob(l:buf)
-
-  call feedkeys("asdf\<CR>")
-endfunc
-
-func Test_terminal_tnoremap()
-  func s:ExitNoremap(job, st) closure
-    call assert_equal(l:job, a:job)
-  endfunc
-
-  tmap exit fdsa
-  tnoremap asdf exit
-
-  let l:buf = term_start(&shell, {'exit_cb': function('s:ExitNoremap')})
-  let l:job = term_getjob(l:buf)
-
-  call feedkeys("asdf\<CR>")
-endfunc
-
-func Test_terminal_tunmap()
-  func s:ExitTunmap(job, st) closure
-    call assert_equal(l:job, a:job)
-  endfunc
-
-  tmap exit asdf
-  tunmap asdf
-
-  let l:buf = term_start(&shell, {'exit_cb': function('s:ExitTunmap')})
-  let l:job = term_getjob(l:buf)
-
-  call feedkeys("asdf\<CR>")
+  call feedkeys("12")
 endfunc
