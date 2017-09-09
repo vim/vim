@@ -4942,11 +4942,11 @@ gui_mch_set_shellsize(int width, int height,
 }
 
     void
-gui_gtk_get_screen_size_of_win(GtkWidget *win, int *width, int *height)
+gui_gtk_get_screen_size_of_win(GtkWidget *wid, int *width, int *height)
 {
 #if GTK_CHECK_VERSION(3,22,0)
-    GdkDisplay *dpy = gtk_widget_get_display(win);
-    GdkWindow *win = gtk_widget_get_window(win);
+    GdkDisplay *dpy = gtk_widget_get_display(wid);
+    GdkWindow *win = gtk_widget_get_window(wid);
     GdkMonitor *monitor = gdk_display_get_monitor_at_window(dpy, win);
     GdkRectangle geometry;
 
@@ -4956,8 +4956,8 @@ gui_gtk_get_screen_size_of_win(GtkWidget *win, int *width, int *height)
 #else
     GdkScreen* screen;
 
-    if (win != NULL && gtk_widget_has_screen(win))
-	screen = gtk_widget_get_screen(win);
+    if (wid != NULL && gtk_widget_has_screen(wid))
+	screen = gtk_widget_get_screen(wid);
     else
 	screen = gdk_screen_get_default();
     *width = gdk_screen_get_width(screen);
