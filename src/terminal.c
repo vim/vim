@@ -1163,7 +1163,7 @@ term_vgetc()
 {
     int c;
 
-    int prev_State = State;
+    int save_State = State;
     State = TERMINAL;
     ++allow_keys;
     got_int = FALSE;
@@ -1173,7 +1173,7 @@ term_vgetc()
     c = vgetc();
     got_int = FALSE;
     --allow_keys;
-    State = prev_State;
+    State = save_State;
     return c;
 }
 
