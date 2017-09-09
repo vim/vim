@@ -608,14 +608,6 @@ func Test_terminal_redir_file()
   endif
 
   if has('unix')
-    let buf = term_start('xyzabc', {'err_io': 'file', 'err_name': 'Xfile'})
-    call term_wait(buf)
-    call WaitFor('len(readfile("Xfile")) > 0')
-    call assert_match('executing job failed', readfile('Xfile')[0])
-    call WaitFor('!&modified')
-    call delete('Xfile')
-    bwipe
-
     call writefile(['one line'], 'Xfile')
     let buf = term_start('cat', {'in_io': 'file', 'in_name': 'Xfile'})
     call term_wait(buf)
