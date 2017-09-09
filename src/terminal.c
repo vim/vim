@@ -38,6 +38,7 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
+ * - check for memory leaks
  * - patch to use GUI or cterm colors for vterm. Yasuhiro, #2067
  * - Redirecting output does not work on MS-Windows.
  * - implement term_setsize()
@@ -393,6 +394,7 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 		vim_snprintf((char *)p, len, "!%s (%d)", cmd, i);
 	    if (buflist_findname(p) == NULL)
 	    {
+		vim_free(curbuf->b_ffname);
 		curbuf->b_ffname = p;
 		break;
 	    }
@@ -552,6 +554,7 @@ ex_terminal(exarg_T *eap)
     argvar[1].v_type = VAR_UNKNOWN;
     term_start(argvar, &opt, eap->forceit);
     vim_free(tofree);
+    vim_free(opt.jo_eof_chars);
 }
 
 /*
