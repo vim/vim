@@ -7381,6 +7381,9 @@ do_highlight(
 # define is_menu_group 0
 # define is_tooltip_group 0
 #endif
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    int		did_highlight_changed = FALSE;
+#endif
 
     /*
      * If no argument, list current highlighting.
@@ -7568,8 +7571,9 @@ do_highlight(
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	    if (USE_24BIT)
 		highlight_gui_started();
+	    else
 #endif
-	    highlight_changed();
+		highlight_changed();
 	    redraw_later_clear();
 	    return;
 	}
@@ -8174,7 +8178,12 @@ do_highlight(
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	    if (USE_24BIT)
+	    {
 		highlight_gui_started();
+		item = &HL_TABLE()[idx]; /* table may have changed */
+		did_highlight_changed = TRUE;
+		redraw_all_later(NOT_VALID);
+	    }
 #endif
 	}
 #ifdef FEAT_GUI_X11
@@ -8210,7 +8219,11 @@ do_highlight(
 
     /* Only call highlight_changed() once, after a sequence of highlight
      * commands, and only if an attribute actually changed. */
-    if (memcmp(item, &item_before, sizeof(item_before)) != 0)
+    if (memcmp(item, &item_before, sizeof(item_before)) != 0
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	    && !did_highlight_changed
+#endif
+       )
     {
 	redraw_all_later(NOT_VALID);
 	need_highlight_changed = TRUE;
