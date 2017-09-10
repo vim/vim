@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 09
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -318,11 +318,12 @@ To start debugging use `:TermDebug` folowed by the command name, for example: >
 	:TermDebug vim
 
 This opens two windows:
-- A terminal window in which "gdb vim" is executed.  Here you can directly
-  interact with gdb.  The buffer name is "!gdb".
-- A terminal window for the executed program.  When "run" is used in gdb the
-  program I/O will happen in this window, so that it does not interfere with
-  controlling gdb.  The buffer name is "gdb program".
+gdb window	A terminal window in which "gdb vim" is executed.  Here you
+		can directly interact with gdb.  The buffer name is "!gdb".
+program window	A terminal window for the executed program.  When "run" is
+		used in gdb the program I/O will happen in this window, so
+		that it does not interfere with controlling gdb.  The buffer
+		name is "gdb program".
 
 The current window is used to show the source code.  When gdb pauses the
 source file location will be displayed, if possible.  A sign is used to
@@ -334,7 +335,8 @@ to display the current gdb position.
 Focus the terminal of the executed program to interact with it.  This works
 the same as any command running in a terminal window.
 
-When the debugger ends the two opened windows are closed.
+When the debugger ends, typically by typing "quit" in the gdb window, the two
+opened windows are closed.
 
 
 Stepping through code ~
@@ -349,13 +351,29 @@ Put focus on the gdb window to type commands there.  Some common ones are:
 - frame N   go to the Nth stack frame
 - continue  continue execution
 
-In the window showing the source code some commands can passed to gdb:
-- Break     set a breakpoint at the current line; a sign will be displayed
-- Delete    delete a breakpoint at the current line
-- Step	    execute the gdb "step" command
-- NNext	    execute the gdb "next" command (:Next is a Vim command)
-- Finish    execute the gdb "finish" command
-- Continue  execute the gdb "continue" command
+In the window showing the source code some commands can used to control gdb:
+ :Break     set a breakpoint at the current line; a sign will be displayed
+ :Delete    delete a breakpoint at the current line
+ :Step	    execute the gdb "step" command
+ :Over      execute the gdb "next" command (:Next is a Vim command)
+ :Finish    execute the gdb "finish" command
+ :Continue  execute the gdb "continue" command
+
+
+Inspecting variables ~
+
+ :Evaluate	    evaluate the expression under the cursor
+ K		    same
+ :Evaluate {expr}   evaluate {expr}
+ :'<,'>Evaluate	    evaluate the Visually selected text
+
+This is similar to using "print" in the gdb window.
+
+
+Other commands ~
+
+ :Gdb	       jump to the gdb window
+ :Program      jump to the window with the running program
 
 
 Communication ~
@@ -385,10 +403,6 @@ When 'background' is "dark":
   hi debugPC term=reverse ctermbg=darkblue guibg=darkblue
   hi debugBreakpoint term=reverse ctermbg=red guibg=red
 
-
-NOT WORKING YET: ~
-
-Values of variables can be inspected, etc.
 
 
  vim:tw=78:ts=8:ft=help:norl:
