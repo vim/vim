@@ -396,14 +396,13 @@ func Test_finish_open_close()
 endfunc
 
 func Test_terminal_cwd()
-  if !has('unix')
+  if !executable('pwd')
     return
   endif
   call mkdir('Xdir')
   let buf = term_start('pwd', {'cwd': 'Xdir'})
-  sleep 100m
-  call term_wait(buf)
-  call assert_equal(getcwd() . '/Xdir', getline(1))
+  call WaitFor('"Xdir" == fnamemodify(getline(1), ":t")')
+  call assert_equal('Xdir', fnamemodify(getline(1), ":t"))
 
   exe buf . 'bwipe'
   call delete('Xdir', 'rf')
@@ -603,6 +602,8 @@ func Test_terminal_redir_file()
     call term_wait(buf)
     call WaitFor('len(readfile("Xfile")) > 0')
     call assert_match('123', readfile('Xfile')[0])
+    let g:job = term_getjob(buf)
+    call WaitFor('job_status(g:job) == "dead"')
     call delete('Xfile')
     bwipe
   endif
