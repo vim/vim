@@ -8638,7 +8638,10 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 # endif
     {
 	if (r != NULL)
+	{
 	    EMSG(r);		/* sending worked but evaluation failed */
+	    vim_free(r);
+	}
 	else
 	    EMSG2(_("E241: Unable to send to %s"), server_name);
 	return;
@@ -8698,6 +8701,8 @@ f_remote_foreground(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     argvars[1].v_type = VAR_STRING;
     argvars[1].vval.v_string = vim_strsave((char_u *)"foreground()");
     argvars[2].v_type = VAR_UNKNOWN;
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
     remote_common(argvars, rettv, TRUE);
     vim_free(argvars[1].vval.v_string);
 # endif

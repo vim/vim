@@ -39,6 +39,10 @@
  *
  * TODO:
  * - patch to use GUI or cterm colors for vterm. Yasuhiro, #2067
+ * - when Normal background is not white or black, going to Terminal-Normal
+ *   mode does not clear correctly.  Use the terminal background color to erase
+ *   the background.
+ * - patch to add tmap, jakalope (Jacob Askeland) #2073
  * - Redirecting output does not work on MS-Windows.
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
@@ -393,6 +397,7 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 		vim_snprintf((char *)p, len, "!%s (%d)", cmd, i);
 	    if (buflist_findname(p) == NULL)
 	    {
+		vim_free(curbuf->b_ffname);
 		curbuf->b_ffname = p;
 		break;
 	    }
@@ -552,6 +557,7 @@ ex_terminal(exarg_T *eap)
     argvar[1].v_type = VAR_UNKNOWN;
     term_start(argvar, &opt, eap->forceit);
     vim_free(tofree);
+    vim_free(opt.jo_eof_chars);
 }
 
 /*
@@ -3097,6 +3103,7 @@ term_and_job_init(
 	jobopt_T    *opt)
 {
     WCHAR	    *cmd_wchar = NULL;
+    WCHAR	    *cwd_wchar = NULL;
     channel_T	    *channel = NULL;
     job_T	    *job = NULL;
     DWORD	    error;
@@ -3124,6 +3131,8 @@ term_and_job_init(
     cmd_wchar = enc_to_utf16(cmd, NULL);
     if (cmd_wchar == NULL)
 	return FAIL;
+    if (opt->jo_cwd != NULL)
+	cwd_wchar = enc_to_utf16(opt->jo_cwd, NULL);
 
     job = job_alloc();
     if (job == NULL)
@@ -3150,7 +3159,7 @@ term_and_job_init(
 		WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN,
 	    NULL,
 	    cmd_wchar,
-	    NULL,
+	    cwd_wchar,
 	    NULL,
 	    &winpty_err);
     if (spawn_config == NULL)
@@ -3201,6 +3210,7 @@ term_and_job_init(
 
     winpty_spawn_config_free(spawn_config);
     vim_free(cmd_wchar);
+    vim_free(cwd_wchar);
 
     create_vterm(term, term->tl_rows, term->tl_cols);
 
@@ -3224,8 +3234,8 @@ term_and_job_init(
 failed:
     if (argvar->v_type == VAR_LIST)
 	vim_free(ga.ga_data);
-    if (cmd_wchar != NULL)
-	vim_free(cmd_wchar);
+    vim_free(cmd_wchar);
+    vim_free(cwd_wchar);
     if (spawn_config != NULL)
 	winpty_spawn_config_free(spawn_config);
     if (channel != NULL)

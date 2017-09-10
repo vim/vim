@@ -3354,9 +3354,6 @@ reset_VIsual(void)
     }
 }
 
-#if defined(FEAT_BEVAL)
-static int find_is_eval_item(char_u *ptr, int *colp, int *nbp, int dir);
-
 /*
  * Check for a balloon-eval special item to include when searching for an
  * identifier.  When "dir" is BACKWARD "ptr[-1]" must be valid!
@@ -3395,7 +3392,6 @@ find_is_eval_item(
     }
     return FALSE;
 }
-#endif
 
 /*
  * Find the identifier under or to the right of the cursor.
@@ -3445,9 +3441,7 @@ find_ident_at_pos(
     int		prev_class;
     int		prevcol;
 #endif
-#if defined(FEAT_BEVAL)
     int		bn = 0;	    /* bracket nesting */
-#endif
 
     /*
      * if i == 0: try to find an identifier
@@ -3465,11 +3459,9 @@ find_ident_at_pos(
 	{
 	    while (ptr[col] != NUL)
 	    {
-# if defined(FEAT_BEVAL)
 		/* Stop at a ']' to evaluate "a[x]". */
 		if ((find_type & FIND_EVAL) && ptr[col] == ']')
 		    break;
-# endif
 		this_class = mb_get_class(ptr + col);
 		if (this_class != 0 && (i == 1 || this_class != 1))
 		    break;
@@ -3480,16 +3472,12 @@ find_ident_at_pos(
 #endif
 	    while (ptr[col] != NUL
 		    && (i == 0 ? !vim_iswordc(ptr[col]) : VIM_ISWHITE(ptr[col]))
-# if defined(FEAT_BEVAL)
 		    && (!(find_type & FIND_EVAL) || ptr[col] != ']')
-# endif
 		    )
 		++col;
 
-#if defined(FEAT_BEVAL)
 	/* When starting on a ']' count it, so that we include the '['. */
 	bn = ptr[col] == ']';
-#endif
 
 	/*
 	 * 2. Back up to start of identifier/string.
@@ -3498,11 +3486,9 @@ find_ident_at_pos(
 	if (has_mbyte)
 	{
 	    /* Remember class of character under cursor. */
-# if defined(FEAT_BEVAL)
 	    if ((find_type & FIND_EVAL) && ptr[col] == ']')
 		this_class = mb_get_class((char_u *)"a");
 	    else
-# endif
 		this_class = mb_get_class(ptr + col);
 	    while (col > 0 && this_class != 0)
 	    {
@@ -3512,12 +3498,10 @@ find_ident_at_pos(
 			&& (i == 0
 			    || prev_class == 0
 			    || (find_type & FIND_IDENT))
-# if defined(FEAT_BEVAL)
 			&& (!(find_type & FIND_EVAL)
 			    || prevcol == 0
 			    || !find_is_eval_item(ptr + prevcol, &prevcol,
 							       &bn, BACKWARD))
-# endif
 			)
 		    break;
 		col = prevcol;
@@ -3539,12 +3523,10 @@ find_ident_at_pos(
 			    : (!VIM_ISWHITE(ptr[col - 1])
 				&& (!(find_type & FIND_IDENT)
 				    || !vim_iswordc(ptr[col - 1]))))
-#if defined(FEAT_BEVAL)
 			|| ((find_type & FIND_EVAL)
 			    && col > 1
 			    && find_is_eval_item(ptr + col - 1, &col,
 							       &bn, BACKWARD))
-#endif
 			))
 		--col;
 
@@ -3576,10 +3558,8 @@ find_ident_at_pos(
     /*
      * 3. Find the end if the identifier/string.
      */
-#if defined(FEAT_BEVAL)
     bn = 0;
     startcol -= col;
-#endif
     col = 0;
 #ifdef FEAT_MBYTE
     if (has_mbyte)
@@ -3589,11 +3569,9 @@ find_ident_at_pos(
 	while (ptr[col] != NUL
 		&& ((i == 0 ? mb_get_class(ptr + col) == this_class
 			    : mb_get_class(ptr + col) != 0)
-# if defined(FEAT_BEVAL)
 		    || ((find_type & FIND_EVAL)
 			&& col <= (int)startcol
 			&& find_is_eval_item(ptr + col, &col, &bn, FORWARD))
-# endif
 		))
 	    col += (*mb_ptr2len)(ptr + col);
     }
@@ -3601,11 +3579,9 @@ find_ident_at_pos(
 #endif
 	while ((i == 0 ? vim_iswordc(ptr[col])
 		       : (ptr[col] != NUL && !VIM_ISWHITE(ptr[col])))
-# if defined(FEAT_BEVAL)
 		    || ((find_type & FIND_EVAL)
 			&& col <= (int)startcol
 			&& find_is_eval_item(ptr + col, &col, &bn, FORWARD))
-# endif
 		)
 	{
 	    ++col;

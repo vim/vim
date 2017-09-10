@@ -6334,7 +6334,8 @@ ex_command(exarg_T *eap)
     {
 	++p;
 	end = skiptowhite(p);
-	if (uc_scan_attr(p, end - p, &argt, &def, &flags, &compl, &compl_arg, &addr_type_arg)
+	if (uc_scan_attr(p, end - p, &argt, &def, &flags, &compl,
+						    &compl_arg, &addr_type_arg)
 		== FAIL)
 	    return;
 	p = skipwhite(end);
@@ -6375,7 +6376,7 @@ ex_command(exarg_T *eap)
     }
     else
 	uc_add_command(name, end - name, p, argt, def, flags, compl, compl_arg,
-								addr_type_arg, eap->forceit);
+						  addr_type_arg, eap->forceit);
 }
 
 /*
@@ -6595,8 +6596,18 @@ uc_check_code(
     char_u	*p = code + 1;
     size_t	l = len - 2;
     int		quote = 0;
-    enum { ct_ARGS, ct_BANG, ct_COUNT, ct_LINE1, ct_LINE2, ct_MODS,
-	ct_REGISTER, ct_LT, ct_NONE } type = ct_NONE;
+    enum {
+	ct_ARGS,
+	ct_BANG,
+	ct_COUNT,
+	ct_LINE1,
+	ct_LINE2,
+	ct_RANGE,
+	ct_MODS,
+	ct_REGISTER,
+	ct_LT,
+	ct_NONE
+    } type = ct_NONE;
 
     if ((vim_strchr((char_u *)"qQfF", *p) != NULL) && p[1] == '-')
     {
@@ -6618,6 +6629,8 @@ uc_check_code(
 	type = ct_LINE1;
     else if (STRNICMP(p, "line2>", l) == 0)
 	type = ct_LINE2;
+    else if (STRNICMP(p, "range>", l) == 0)
+	type = ct_RANGE;
     else if (STRNICMP(p, "lt>", l) == 0)
 	type = ct_LT;
     else if (STRNICMP(p, "reg>", l) == 0 || STRNICMP(p, "register>", l) == 0)
@@ -6719,11 +6732,13 @@ uc_check_code(
 
     case ct_LINE1:
     case ct_LINE2:
+    case ct_RANGE:
     case ct_COUNT:
     {
 	char num_buf[20];
 	long num = (type == ct_LINE1) ? eap->line1 :
 		   (type == ct_LINE2) ? eap->line2 :
+		   (type == ct_RANGE) ? eap->addr_count :
 		   (eap->addr_count > 0) ? eap->line2 : cmd->uc_def;
 	size_t num_len;
 
@@ -10638,31 +10653,33 @@ find_cmdline_var(char_u *src, int *usedlen)
 		    "%",
 #define SPEC_PERC   0
 		    "#",
-#define SPEC_HASH   1
+#define SPEC_HASH   (SPEC_PERC + 1)
 		    "<cword>",		/* cursor word */
-#define SPEC_CWORD  2
+#define SPEC_CWORD  (SPEC_HASH + 1)
 		    "<cWORD>",		/* cursor WORD */
-#define SPEC_CCWORD 3
+#define SPEC_CCWORD (SPEC_CWORD + 1)
+		    "<cexpr>",		/* expr under cursor */
+#define SPEC_CEXPR  (SPEC_CCWORD + 1)
 		    "<cfile>",		/* cursor path name */
-#define SPEC_CFILE  4
+#define SPEC_CFILE  (SPEC_CEXPR + 1)
 		    "<sfile>",		/* ":so" file name */
-#define SPEC_SFILE  5
+#define SPEC_SFILE  (SPEC_CFILE + 1)
 		    "<slnum>",		/* ":so" file line number */
-#define SPEC_SLNUM  6
+#define SPEC_SLNUM  (SPEC_SFILE + 1)
 #ifdef FEAT_AUTOCMD
 		    "<afile>",		/* autocommand file name */
-# define SPEC_AFILE 7
+# define SPEC_AFILE (SPEC_SLNUM + 1)
 		    "<abuf>",		/* autocommand buffer number */
-# define SPEC_ABUF  8
+# define SPEC_ABUF  (SPEC_AFILE + 1)
 		    "<amatch>",		/* autocommand match name */
-# define SPEC_AMATCH 9
+# define SPEC_AMATCH (SPEC_ABUF + 1)
 #endif
 #ifdef FEAT_CLIENTSERVER
 		    "<client>"
 # ifdef FEAT_AUTOCMD
-#  define SPEC_CLIENT 10
+#  define SPEC_CLIENT (SPEC_AMATCH + 1)
 # else
-#  define SPEC_CLIENT 7
+#  define SPEC_CLIENT (SPEC_SLNUM + 1)
 # endif
 #endif
     };
@@ -10750,10 +10767,13 @@ eval_vars(
     /*
      * word or WORD under cursor
      */
-    if (spec_idx == SPEC_CWORD || spec_idx == SPEC_CCWORD)
+    if (spec_idx == SPEC_CWORD || spec_idx == SPEC_CCWORD
+						     || spec_idx == SPEC_CEXPR)
     {
-	resultlen = find_ident_under_cursor(&result, spec_idx == SPEC_CWORD ?
-				      (FIND_IDENT|FIND_STRING) : FIND_STRING);
+	resultlen = find_ident_under_cursor(&result,
+		spec_idx == SPEC_CWORD ? (FIND_IDENT | FIND_STRING)
+	      : spec_idx == SPEC_CEXPR ? (FIND_IDENT | FIND_STRING | FIND_EVAL)
+	      : FIND_STRING);
 	if (resultlen == 0)
 	{
 	    *errormsg = (char_u *)"";
