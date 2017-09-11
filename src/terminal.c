@@ -1542,7 +1542,7 @@ terminal_loop(void)
     {
 	/* TODO: skip screen update when handling a sequence of keys. */
 	/* Repeat redrawing in case a message is received while redrawing. */
-	while (curwin->w_redr_type != 0 && !need_highlight_changed)
+	while (curwin->w_redr_type != 0)
 	    update_screen(0);
 	update_cursor(curbuf->b_term, FALSE);
 
@@ -2392,7 +2392,6 @@ create_vterm(term_T *term, int rows, int cols)
     VTermScreen	    *screen;
     VTermValue	    value;
     VTermColor	    *fg, *bg;
-    int		    fgval, bgval;
     VTermState	    *state;
 
     vterm = vterm_new(rows, cols);
@@ -2406,6 +2405,8 @@ create_vterm(term_T *term, int rows, int cols)
      * 'background' is "light". */
     vim_memset(&term->tl_default_color.attrs, 0, sizeof(VTermScreenCellAttrs));
     term->tl_default_color.width = 1;
+    fg = &term->tl_default_color.fg;
+    bg = &term->tl_default_color.bg;
 
     /* Vterm uses a default black background. */
     state = vterm_obtain_state(vterm);
