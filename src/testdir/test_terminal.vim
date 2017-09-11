@@ -197,7 +197,7 @@ func Test_terminal_scrape_multibyte()
     let g:line = 1
   endif
 
-  call WaitFor('term_scrape(g:buf, g:line)[0].chars == "l"')
+  call WaitFor('len(term_scrape(g:buf, g:line)) >= 7 && term_scrape(g:buf, g:line)[0].chars == "l"')
   let l = term_scrape(g:buf, g:line)
   call assert_true(len(l) >= 7)
   call assert_equal('l', l[0].chars)
