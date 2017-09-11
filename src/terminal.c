@@ -39,9 +39,6 @@
  *
  * TODO:
  * - patch to use GUI or cterm colors for vterm. Yasuhiro, #2067
- * - when Normal background is not white or black, going to Terminal-Normal
- *   mode does not clear correctly.  Use the terminal background color to erase
- *   the background.
  * - patch to add tmap, jakalope (Jacob Askeland) #2073
  * - Redirecting output does not work on MS-Windows.
  * - implement term_setsize()
@@ -130,6 +127,7 @@ struct terminal_S {
 
     garray_T	tl_scrollback;
     int		tl_scrollback_scrolled;
+    cellattr_T	tl_default_color;
 
     VTermPos	tl_cursor_pos;
     int		tl_cursor_visible;
@@ -2321,6 +2319,7 @@ term_change_in_curbuf(void)
 
 /*
  * Get the screen attribute for a position in the buffer.
+ * Use a zero "lnum" to get the default background color.
  */
     int
 term_get_attr(buf_T *buf, linenr_T lnum, int col)
@@ -2329,12 +2328,16 @@ term_get_attr(buf_T *buf, linenr_T lnum, int col)
     sb_line_T	*line;
     cellattr_T	*cellattr;
 
-    if (lnum > term->tl_scrollback.ga_len)
-	return 0;
-    line = (sb_line_T *)term->tl_scrollback.ga_data + lnum - 1;
-    if (col >= line->sb_cols)
-	return 0;
-    cellattr = line->sb_cells + col;
+    if (lnum == 0 || lnum > term->tl_scrollback.ga_len)
+	cellattr = &term->tl_default_color;
+    else
+    {
+	line = (sb_line_T *)term->tl_scrollback.ga_data + lnum - 1;
+	if (col >= line->sb_cols)
+	    cellattr = &term->tl_default_color;
+	else
+	    cellattr = line->sb_cells + col;
+    }
     return cell2attr(cellattr->attrs, cellattr->fg, cellattr->bg);
 }
 
@@ -2347,6 +2350,8 @@ create_vterm(term_T *term, int rows, int cols)
     VTerm	    *vterm;
     VTermScreen	    *screen;
     VTermValue	    value;
+    VTermColor	    *fg, *bg;
+    int		    fgval, bgval;
 
     vterm = vterm_new(rows, cols);
     term->tl_vterm = vterm;
@@ -2357,14 +2362,23 @@ create_vterm(term_T *term, int rows, int cols)
 
     /* Vterm uses a default black background.  Set it to white when
      * 'background' is "light". */
+    vim_memset(&term->tl_default_color.attrs, 0, sizeof(VTermScreenCellAttrs));
+    term->tl_default_color.width = 1;
+    fg = &term->tl_default_color.fg;
+    bg = &term->tl_default_color.bg;
     if (*p_bg == 'l')
     {
-	VTermColor	fg, bg;
-
-	fg.red = fg.green = fg.blue = 0;
-	bg.red = bg.green = bg.blue = 255;
-	vterm_state_set_default_colors(vterm_obtain_state(vterm), &fg, &bg);
+	fgval = 0;
+	bgval = 255;
     }
+    else
+    {
+	fgval = 255;
+	bgval = 0;
+    }
+    fg->red = fg->green = fg->blue = fgval;
+    bg->red = bg->green = bg->blue = bgval;
+    vterm_state_set_default_colors(vterm_obtain_state(vterm), fg, bg);
 
     /* Required to initialize most things. */
     vterm_screen_reset(screen, 1 /* hard */);
