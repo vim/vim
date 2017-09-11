@@ -1847,9 +1847,18 @@ plain_vgetc(void)
     int
 vpeekc(void)
 {
+    int		c;
+
     if (old_char != -1)
 	return old_char;
-    return vgetorpeek(FALSE);
+#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_TIMERS)
+    ++dont_invoke_callback;
+#endif
+    c = vgetorpeek(FALSE);
+#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_TIMERS)
+    --dont_invoke_callback;
+#endif
+    return c;
 }
 
 #if defined(FEAT_TERMRESPONSE) || defined(FEAT_TERMINAL) || defined(PROTO)

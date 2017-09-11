@@ -1323,7 +1323,7 @@ check_due_timer(void)
     long	current_id = last_timer_id;
 
     /* Don't run any timers while exiting or dealing with an error. */
-    if (exiting || aborting())
+    if (exiting || aborting() || dont_invoke_callback > 0)
 	return next_due;
 
     profile_start(&now);

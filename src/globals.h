@@ -1643,6 +1643,10 @@ EXTERN int  bevalexpr_due_set INIT(= FALSE);
 EXTERN proftime_T bevalexpr_due;
 #endif
 
+#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_TIMERS)
+EXTERN int  dont_invoke_callback INIT(= 0);
+#endif
+
 #ifdef FEAT_EVAL
 EXTERN time_T time_for_testing INIT(= 0);
 
