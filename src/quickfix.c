@@ -4691,12 +4691,27 @@ qf_get_list_from_lines(dict_T *what, dictitem_T *di, dict_T *retdict)
 }
 
 /*
+ * Return the quickfix/location list number with the given identifier.
+ * Returns -1 if list is not found.
+ */
+    static int
+qf_id2nr(qf_info_T *qi, int_u qfid)
+{
+    int		qf_idx;
+
+    for (qf_idx = 0; qf_idx < qi->qf_listcount; qf_idx++)
+	if (qi->qf_lists[qf_idx].qf_id == qfid)
+	    return qf_idx;
+    return -1;
+}
+
+/*
  * Return quickfix/location list details (title) as a
  * dictionary. 'what' contains the details to return. If 'list_idx' is -1,
  * then current list is used. Otherwise the specified list is used.
  */
     int
-get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
+qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 {
     qf_info_T	*qi = &ql_info;
     int		status = OK;
@@ -4752,12 +4767,8 @@ get_errorlist_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	    /* For zero, use the current list or the list specifed by 'nr' */
 	    if (di->di_tv.vval.v_number != 0)
 	    {
-		for (qf_idx = 0; qf_idx < qi->qf_listcount; qf_idx++)
-		{
-		    if (qi->qf_lists[qf_idx].qf_id == di->di_tv.vval.v_number)
-			break;
-		}
-		if (qf_idx == qi->qf_listcount)
+		qf_idx = qf_id2nr(qi, di->di_tv.vval.v_number);
+		if (qf_idx == -1)
 		    return FAIL;	    /* List not found */
 	    }
 	    flags |= QF_GETLIST_ID;
@@ -5024,10 +5035,8 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	/* Use the quickfix/location list with the specified id */
 	if (di->di_tv.v_type == VAR_NUMBER)
 	{
-	    for (qf_idx = 0; qf_idx < qi->qf_listcount; qf_idx++)
-		if (qi->qf_lists[qf_idx].qf_id == di->di_tv.vval.v_number)
-		    break;
-	    if (qf_idx == qi->qf_listcount)
+	    qf_idx = qf_id2nr(qi, di->di_tv.vval.v_number);
+	    if (qf_idx == -1)
 		return FAIL;	    /* List not found */
 	}
 	else
@@ -5062,6 +5071,16 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 
 	    retval = qf_add_entries(qi, qf_idx, di->di_tv.vval.v_list,
 		    title_save, action == ' ' ? 'a' : action);
+	    if (action == 'r')
+	    {
+		/*
+		 * When replacing the quickfix list entries using
+		 * qf_add_entries(), the title is set with a ':' prefix.
+		 * Restore the title with the saved title.
+		 */
+		vim_free(qi->qf_lists[qf_idx].qf_title);
+		qi->qf_lists[qf_idx].qf_title = vim_strsave(title_save);
+	    }
 	    vim_free(title_save);
 	}
     }
