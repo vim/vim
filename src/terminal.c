@@ -85,6 +85,7 @@ typedef struct {
 typedef struct sb_line_S {
     int		sb_cols;	/* can differ per line */
     cellattr_T	*sb_cells;	/* allocated */
+    cellattr_T	sb_fill_attr;	/* for short line */
 } sb_line_T;
 
 /* typedef term_T in structs.h */
@@ -943,6 +944,28 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
     }
 }
 
+    static void
+cell2cellattr(const VTermScreenCell *cell, cellattr_T *attr)
+{
+    attr->width = cell->width;
+    attr->attrs = cell->attrs;
+    attr->fg = cell->fg;
+    attr->bg = cell->bg;
+}
+
+    static int
+equal_celattr(cellattr_T *a, cellattr_T *b)
+{
+    /* Comparing the colors should be sufficient. */
+    return a->fg.red == b->fg.red
+	&& a->fg.green == b->fg.green
+	&& a->fg.blue == b->fg.blue
+	&& a->bg.red == b->bg.red
+	&& a->bg.green == b->bg.green
+	&& a->bg.blue == b->bg.blue;
+}
+
+
 /*
  * Add the current lines of the terminal to scrollback and to the buffer.
  * Called after the job has ended and when switching to Terminal-Normal mode.
@@ -955,21 +978,30 @@ move_terminal_to_buffer(term_T *term)
     int		    lines_skipped = 0;
     VTermPos	    pos;
     VTermScreenCell cell;
+    cellattr_T	    fill_attr, new_fill_attr;
     cellattr_T	    *p;
     VTermScreen	    *screen;
 
     if (term->tl_vterm == NULL)
 	return;
     screen = vterm_obtain_screen(term->tl_vterm);
+    fill_attr = new_fill_attr = term->tl_default_color;
+
     for (pos.row = 0; pos.row < term->tl_rows; ++pos.row)
     {
 	len = 0;
 	for (pos.col = 0; pos.col < term->tl_cols; ++pos.col)
 	    if (vterm_screen_get_cell(screen, pos, &cell) != 0
 						       && cell.chars[0] != NUL)
+	    {
 		len = pos.col + 1;
+		new_fill_attr = term->tl_default_color;
+	    }
+	    else
+		/* Assume the last attr is the filler attr. */
+		cell2cellattr(&cell, &new_fill_attr);
 
-	if (len == 0)
+	if (len == 0 && equal_celattr(&new_fill_attr, &fill_attr))
 	    ++lines_skipped;
 	else
 	{
@@ -984,14 +1016,19 @@ move_terminal_to_buffer(term_T *term)
 
 		    line->sb_cols = 0;
 		    line->sb_cells = NULL;
+		    line->sb_fill_attr = fill_attr;
 		    ++term->tl_scrollback.ga_len;
 
 		    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
 		}
 	    }
 
-	    p = (cellattr_T *)alloc((int)sizeof(cellattr_T) * len);
-	    if (p != NULL && ga_grow(&term->tl_scrollback, 1) == OK)
+	    if (len == 0)
+		p = NULL;
+	    else
+		p = (cellattr_T *)alloc((int)sizeof(cellattr_T) * len);
+	    if ((p != NULL || len == 0)
+				     && ga_grow(&term->tl_scrollback, 1) == OK)
 	    {
 		garray_T    ga;
 		int	    width;
@@ -1013,10 +1050,7 @@ move_terminal_to_buffer(term_T *term)
 		    {
 			width = cell.width;
 
-			p[pos.col].width = cell.width;
-			p[pos.col].attrs = cell.attrs;
-			p[pos.col].fg = cell.fg;
-			p[pos.col].bg = cell.bg;
+			cell2cellattr(&cell, &p[pos.col]);
 
 			if (ga_grow(&ga, MB_MAXBYTES) == OK)
 			{
@@ -1031,6 +1065,8 @@ move_terminal_to_buffer(term_T *term)
 		}
 		line->sb_cols = len;
 		line->sb_cells = p;
+		line->sb_fill_attr = new_fill_attr;
+		fill_attr = new_fill_attr;
 		++term->tl_scrollback.ga_len;
 
 		if (ga_grow(&ga, 1) == FAIL)
@@ -1046,6 +1082,10 @@ move_terminal_to_buffer(term_T *term)
 		vim_free(p);
 	}
     }
+
+    /* Obtain the current background color. */
+    vterm_state_get_default_colors(vterm_obtain_state(term->tl_vterm),
+		       &term->tl_default_color.fg, &term->tl_default_color.bg);
 
     FOR_ALL_WINDOWS(wp)
     {
@@ -2003,11 +2043,14 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	int		col;
 	sb_line_T	*line;
 	garray_T	ga;
+	cellattr_T	fill_attr = term->tl_default_color;
 
 	/* do not store empty cells at the end */
 	for (i = 0; i < cols; ++i)
 	    if (cells[i].chars[0] != 0)
 		len = i + 1;
+	    else
+		cell2cellattr(&cells[i], &fill_attr);
 
 	ga_init2(&ga, 1, 100);
 	if (len > 0)
@@ -2024,10 +2067,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 		for (i = 0; (c = cells[col].chars[i]) > 0 || i == 0; ++i)
 		    ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
 					     (char_u *)ga.ga_data + ga.ga_len);
-		p[col].width = cells[col].width;
-		p[col].attrs = cells[col].attrs;
-		p[col].fg = cells[col].fg;
-		p[col].bg = cells[col].bg;
+		cell2cellattr(&cells[col], &p[col]);
 	    }
 	}
 	if (ga_grow(&ga, 1) == FAIL)
@@ -2043,6 +2083,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 						  + term->tl_scrollback.ga_len;
 	line->sb_cols = len;
 	line->sb_cells = p;
+	line->sb_fill_attr = fill_attr;
 	++term->tl_scrollback.ga_len;
 	++term->tl_scrollback_scrolled;
     }
@@ -2319,7 +2360,7 @@ term_change_in_curbuf(void)
 
 /*
  * Get the screen attribute for a position in the buffer.
- * Use a zero "lnum" to get the default background color.
+ * Use a negative "col" to get the filler background color.
  */
     int
 term_get_attr(buf_T *buf, linenr_T lnum, int col)
@@ -2328,13 +2369,13 @@ term_get_attr(buf_T *buf, linenr_T lnum, int col)
     sb_line_T	*line;
     cellattr_T	*cellattr;
 
-    if (lnum == 0 || lnum > term->tl_scrollback.ga_len)
+    if (lnum > term->tl_scrollback.ga_len)
 	cellattr = &term->tl_default_color;
     else
     {
 	line = (sb_line_T *)term->tl_scrollback.ga_data + lnum - 1;
-	if (col >= line->sb_cols)
-	    cellattr = &term->tl_default_color;
+	if (col < 0 || col >= line->sb_cols)
+	    cellattr = &line->sb_fill_attr;
 	else
 	    cellattr = line->sb_cells + col;
     }

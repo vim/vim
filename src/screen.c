@@ -3257,7 +3257,7 @@ win_line(
     {
 	extra_check = TRUE;
 	get_term_attr = TRUE;
-	term_attr = term_get_attr(wp->w_buffer, 0, 0);
+	term_attr = term_get_attr(wp->w_buffer, lnum, -1);
     }
 #endif
 
