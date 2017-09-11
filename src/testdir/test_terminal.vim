@@ -635,7 +635,7 @@ func Test_terminal_tmap()
   endfunc
 
   tmap 12 abcde
-  let l:cmd = "read -n 4"
+  let l:cmd = "bash -c 'read -n 4'"
   let l:buf = term_start(l:cmd, {'out_cb': function('s:OutCB')})
   let l:job = term_getjob(l:buf)
 
