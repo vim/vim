@@ -4566,12 +4566,12 @@ check_termcode(
 			/* Detect terminals that set $TERM to something like
 			 * "xterm-256colors"  but are not fully xterm
 			 * compatible. */
-#  ifdef MACOS
+
 			/* Mac Terminal.app sends 1;95;0 */
 			if (version == 95
 				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
 			    is_not_xterm = TRUE;
-#  endif
+
 			/* Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
 			 * xfce4-terminal sends 1;2802;0.
 			 * screen sends 83;40500;0
