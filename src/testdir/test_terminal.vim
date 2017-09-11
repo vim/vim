@@ -627,7 +627,7 @@ func Test_terminal_tmap()
     return
   endif
 
-  func s:OutCB(job, msg) closure
+  func s:TMapOutCB(job, msg) closure
     " TODO: determine why remapping doesn't occur until after the function in
     " which feedkeys() is called ends.
     call assert_equal(l:job, a:job)
@@ -636,9 +636,50 @@ func Test_terminal_tmap()
 
   tmap 12 abcde
   let l:cmd = "bash -c 'read -n 4'"
-  let l:buf = term_start(l:cmd, {'out_cb': function('s:OutCB')})
+  let l:buf = term_start(l:cmd, {'out_cb': function('s:TMapOutCB')})
   let l:job = term_getjob(l:buf)
 
   " TODO: do remapping in term_sendkeys() and replace test_feedinput() here.
+  call feedkeys("12")
+endfunc
+
+func Test_terminal_tunmap()
+  " TODO: Find an equivalent for win32
+  if !has('unix')
+    return
+  endif
+
+  func s:TUnMapOutCB(job, msg) closure
+    call assert_equal(l:job, a:job)
+    call assert_equal('abcde', a:msg)
+  endfunc
+
+  tmap 12 abcde
+  tmap abcde tv
+  tunmap abcde
+  let l:cmd = "bash -c 'read -n 4'"
+  let l:buf = term_start(l:cmd, {'out_cb': function('s:TUnMapOutCB')})
+  let l:job = term_getjob(l:buf)
+
+  call feedkeys("12")
+endfunc
+
+func Test_terminal_tnoremap()
+  " TODO: Find an equivalent for win32
+  if !has('unix')
+    return
+  endif
+
+  func s:TNoReMapOutCB(job, msg) closure
+    call assert_equal(l:job, a:job)
+    call assert_equal('abcde', a:msg)
+  endfunc
+
+  tnoremap 12 abcde
+  tmap abcde tv
+  let l:cmd = "bash -c 'read -n 4'"
+  let l:buf = term_start(l:cmd, {'out_cb': function('s:TNoReMapOutCB')})
+  let l:job = term_getjob(l:buf)
+
   call feedkeys("12")
 endfunc
