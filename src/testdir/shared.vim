@@ -162,7 +162,7 @@ func Resume()
 endfunc
 
 func s:feedkeys(timer)
-  call feedkeys('x', 'nt')
+  call feedkeys("\<c-c>", 'nt')
 endfunc
 
 " Get the command to run Vim, with -u NONE and --not-a-term arguments.
