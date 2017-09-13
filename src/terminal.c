@@ -38,7 +38,6 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - patch to use GUI or cterm colors for vterm. Yasuhiro, #2067
  * - patch to add tmap, jakalope (Jacob Askeland) #2073
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
@@ -1739,7 +1738,7 @@ color2index(VTermColor *color, int fg, int *boldp)
     else if (red == 128)
     {
 	if (green == 128 && blue == 128)
-	    return lookup_color(12, fg, boldp) + 1; /* high intensity black / dark grey */
+	    return lookup_color(12, fg, boldp) + 1; /* dark grey */
     }
     else if (red == 255)
     {
@@ -2385,6 +2384,65 @@ term_get_attr(buf_T *buf, linenr_T lnum, int col)
     return cell2attr(cellattr->attrs, cellattr->fg, cellattr->bg);
 }
 
+static VTermColor ansi_table[16] = {
+  {  0,   0,   0}, /* black */
+  {224,   0,   0}, /* dark red */
+  {  0, 224,   0}, /* dark green */
+  {224, 224,   0}, /* dark yellow / brown */
+  {  0,   0, 224}, /* dark blue */
+  {224,   0, 224}, /* dark magenta */
+  {  0, 224, 224}, /* dark cyan */
+  {224, 224, 224}, /* light grey */
+
+  {128, 128, 128}, /* dark grey */
+  {255,  64,  64}, /* light red */
+  { 64, 255,  64}, /* light green */
+  {255, 255,  64}, /* yellow */
+  { 64,  64, 255}, /* light blue */
+  {255,  64, 255}, /* light magenta */
+  { 64, 255, 255}, /* light cyan */
+  {255, 255, 255}, /* white */
+};
+
+static int cube_value[] = {
+    0x00, 0x33, 0x66, 0x99, 0xCC, 0xFF,
+};
+
+static int grey_ramp[] = {
+    0x00, 0x0B, 0x16, 0x21, 0x2C, 0x37, 0x42, 0x4D, 0x58, 0x63, 0x6E, 0x79,
+    0x85, 0x90, 0x9B, 0xA6, 0xB1, 0xBC, 0xC7, 0xD2, 0xDD, 0xE8, 0xF3, 0xFF,
+};
+
+/*
+ * Convert a cterm color number 0 - 255 to RGB.
+ */
+    static void
+cterm_color2rgb(int nr, VTermColor *rgb)
+{
+    int idx;
+
+    if (nr < 16)
+    {
+	*rgb = ansi_table[nr];
+    }
+    else if (nr < 232)
+    {
+	/* 216 color cube */
+	idx = nr - 16;
+	rgb->blue  = cube_value[idx      % 6];
+	rgb->green = cube_value[idx / 6  % 6];
+	rgb->red   = cube_value[idx / 36 % 6];
+    }
+    else if (nr < 256)
+    {
+	/* 24 grey scale ramp */
+	idx = nr - 232;
+	rgb->blue  = grey_ramp[nr];
+	rgb->green = grey_ramp[nr];
+	rgb->red   = grey_ramp[nr];
+    }
+}
+
 /*
  * Create a new vterm and initialize it.
  */
@@ -2396,6 +2454,7 @@ create_vterm(term_T *term, int rows, int cols)
     VTermValue	    value;
     VTermColor	    *fg, *bg;
     int		    fgval, bgval;
+    int		    id;
 
     vterm = vterm_new(rows, cols);
     term->tl_vterm = vterm;
@@ -2404,12 +2463,13 @@ create_vterm(term_T *term, int rows, int cols)
     /* TODO: depends on 'encoding'. */
     vterm_set_utf8(vterm, 1);
 
-    /* Vterm uses a default black background.  Set it to white when
-     * 'background' is "light". */
     vim_memset(&term->tl_default_color.attrs, 0, sizeof(VTermScreenCellAttrs));
     term->tl_default_color.width = 1;
     fg = &term->tl_default_color.fg;
     bg = &term->tl_default_color.bg;
+
+    /* Vterm uses a default black background.  Set it to white when
+     * 'background' is "light". */
     if (*p_bg == 'l')
     {
 	fgval = 0;
@@ -2422,6 +2482,76 @@ create_vterm(term_T *term, int rows, int cols)
     }
     fg->red = fg->green = fg->blue = fgval;
     bg->red = bg->green = bg->blue = bgval;
+
+    /* The "Terminal" highlight group overrules the defaults. */
+    id = syn_name2id((char_u *)"Terminal");
+
+    /* Use the actual color for the GUI and when 'guitermcolors' is set. */
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    if (0
+# ifdef FEAT_GUI
+	    || gui.in_use
+# endif
+# ifdef FEAT_TERMGUICOLORS
+	    || p_tgc
+# endif
+       )
+    {
+	guicolor_T	    fg_rgb, bg_rgb;
+
+	if (id != 0)
+	    syn_id2colors(id, &fg_rgb, &bg_rgb);
+
+# ifdef FEAT_GUI
+	if (gui.in_use)
+	{
+	    if (fg_rgb == INVALCOLOR)
+		fg_rgb = gui.norm_pixel;
+	    if (bg_rgb == INVALCOLOR)
+		bg_rgb = gui.back_pixel;
+	}
+#  ifdef FEAT_TERMGUICOLORS
+	else
+#  endif
+# endif
+# ifdef FEAT_TERMGUICOLORS
+	{
+	    if (fg_rgb == INVALCOLOR)
+		fg_rgb = cterm_normal_fg_gui_color;
+	    if (bg_rgb == INVALCOLOR)
+		bg_rgb = cterm_normal_bg_gui_color;
+	}
+# endif
+	if (fg_rgb != INVALCOLOR)
+	{
+	    long_u rgb = GUI_MCH_GET_RGB(fg_rgb);
+
+	    fg->red = (unsigned)(rgb >> 16);
+	    fg->green = (unsigned)(rgb >> 8) & 255;
+	    fg->blue = (unsigned)rgb & 255;
+	}
+	if (bg_rgb != INVALCOLOR)
+	{
+	    long_u rgb = GUI_MCH_GET_RGB(bg_rgb);
+
+	    bg->red = (unsigned)(rgb >> 16);
+	    bg->green = (unsigned)(rgb >> 8) & 255;
+	    bg->blue = (unsigned)rgb & 255;
+	}
+    }
+    else
+#endif
+    if (id != 0 && t_colors >= 16)
+    {
+	int cterm_fg, cterm_bg;
+
+	syn_id2cterm_bg(id, &cterm_fg, &cterm_bg);
+	if (cterm_fg >= 0)
+	    cterm_color2rgb(cterm_fg, fg);
+	if (cterm_bg >= 0)
+	    cterm_color2rgb(cterm_bg, bg);
+    }
+
     vterm_state_set_default_colors(vterm_obtain_state(vterm), fg, bg);
 
     /* Required to initialize most things. */
