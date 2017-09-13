@@ -9709,7 +9709,7 @@ syn_id2attr(int hl_id)
     return attr;
 }
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS) || defined(PROTO)
 /*
  * Get the GUI colors and attributes for a group ID.
  * NOTE: the colors will be INVALCOLOR when not set, the color otherwise.
@@ -9725,6 +9725,19 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
     *fgp = sgp->sg_gui_fg;
     *bgp = sgp->sg_gui_bg;
     return sgp->sg_gui;
+}
+#endif
+
+#if defined(FEAT_TERMINAL) || defined(PROT)
+    void
+syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)
+{
+    struct hl_group	*sgp;
+
+    hl_id = syn_get_final_id(hl_id);
+    sgp = &HL_TABLE()[hl_id - 1];	    /* index is ID minus one */
+    *fgp = sgp->sg_cterm_fg - 1;
+    *bgp = sgp->sg_cterm_bg - 1;
 }
 #endif
 
