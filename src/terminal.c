@@ -1542,7 +1542,7 @@ terminal_loop(void)
     {
 	/* TODO: skip screen update when handling a sequence of keys. */
 	/* Repeat redrawing in case a message is received while redrawing. */
-	while (curwin->w_redr_type != 0)
+	while (curwin->w_redr_type != 0 && redrawing())
 	    update_screen(0);
 	update_cursor(curbuf->b_term, FALSE);
 
