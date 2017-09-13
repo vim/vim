@@ -2395,7 +2395,7 @@ create_vterm(term_T *term, int rows, int cols)
     VTermScreen	    *screen;
     VTermValue	    value;
     VTermColor	    *fg, *bg;
-    int		    fgval, bgval;
+    VTermState	    *state;
 
     vterm = vterm_new(rows, cols);
     term->tl_vterm = vterm;
@@ -2410,19 +2410,57 @@ create_vterm(term_T *term, int rows, int cols)
     term->tl_default_color.width = 1;
     fg = &term->tl_default_color.fg;
     bg = &term->tl_default_color.bg;
+
+    /* Vterm uses a default black background. */
+    state = vterm_obtain_state(vterm);
+#ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	long_u	    rgb;
+
+	rgb = GUI_MCH_GET_RGB(gui.norm_pixel);
+	fg->red = (unsigned)(rgb >> 16);
+	fg->green = (unsigned)(rgb >> 8) & 255;
+	fg->blue = (unsigned)rgb & 255;
+	rgb = GUI_MCH_GET_RGB(gui.back_pixel);
+	bg->red = (unsigned)(rgb >> 16);
+	bg->green = (unsigned)(rgb >> 8) & 255;
+	bg->blue = (unsigned)rgb & 255;
+	vterm_state_set_default_colors(state, fg, bg);
+    }
+    else
+#endif
+#ifdef FEAT_TERMGUICOLORS
+    if (p_tgc)
+    {
+	long_u	    rgb;
+
+	rgb = GUI_MCH_GET_RGB(cterm_normal_fg_gui_color);
+	fg->red = (unsigned)(rgb >> 16);
+	fg->green = (unsigned)(rgb >> 8) & 255;
+	fg->blue = (unsigned)rgb & 255;
+	rgb = GUI_MCH_GET_RGB(cterm_normal_bg_gui_color);
+	bg->red = (unsigned)(rgb >> 16);
+	bg->green = (unsigned)(rgb >> 8) & 255;
+	bg->blue = (unsigned)rgb & 255;
+	vterm_state_set_default_colors(state, fg, bg);
+    }
+    else
+#endif
     if (*p_bg == 'l')
     {
-	fgval = 0;
-	bgval = 255;
+	/* Vterm uses a default black background.  Set it to white when
+	 * 'background' is "light". */
+	fg->red = fg->green = fg->blue = 0;
+	bg->red = bg->green = bg->blue = 255;
+	vterm_state_set_default_colors(state, fg, bg);
     }
     else
     {
-	fgval = 255;
-	bgval = 0;
+	fg->red = fg->green = fg->blue = 255;
+	bg->red = bg->green = bg->blue = 0;
+	vterm_state_set_default_colors(state, fg, bg);
     }
-    fg->red = fg->green = fg->blue = fgval;
-    bg->red = bg->green = bg->blue = bgval;
-    vterm_state_set_default_colors(vterm_obtain_state(vterm), fg, bg);
 
     /* Required to initialize most things. */
     vterm_screen_reset(screen, 1 /* hard */);
