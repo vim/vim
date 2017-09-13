@@ -5059,6 +5059,10 @@ win_line(
 # endif
 					    < W_WIDTH(wp))))
 		{
+		    long n = (v - (wp->w_p_wrap
+					    ? wp->w_skipcol
+					    : wp->w_leftcol)) % W_WIDTH(wp);
+
 		    /* Highlight until the right side of the window */
 		    c = ' ';
 		    --ptr;	    /* put it back at the NUL */
@@ -5069,9 +5073,9 @@ win_line(
 		    /* don't do search HL for the rest of the line */
 		    if (line_attr != 0 && char_attr == search_attr && (
 # ifdef FEAT_RIGHTLEFT
-			    wp->w_p_rl ? W_WIDTH(wp) - col > v + 1 :
+			    wp->w_p_rl ? W_WIDTH(wp) - col > n + 1 :
 # endif
-			    col > v))
+			    col > n))
 			char_attr = line_attr;
 # ifdef FEAT_DIFF
 		    if (diff_hlf == HLF_TXD)
