@@ -40,7 +40,9 @@
  * TODO:
  * - patch to use GUI or cterm colors for vterm. Yasuhiro, #2067
  * - patch to add tmap, jakalope (Jacob Askeland) #2073
- * - Redirecting output does not work on MS-Windows.
+ * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
+ *   is disabled.
+ * - test_terminal_no_cmd hangs (Christian)
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -1543,7 +1545,8 @@ terminal_loop(void)
 	/* TODO: skip screen update when handling a sequence of keys. */
 	/* Repeat redrawing in case a message is received while redrawing. */
 	while (curwin->w_redr_type != 0)
-	    update_screen(0);
+	    if (update_screen(0) == FAIL)
+		break;
 	update_cursor(curbuf->b_term, FALSE);
 
 	c = term_vgetc();

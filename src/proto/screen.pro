@@ -10,7 +10,7 @@ int redraw_asap(int type);
 void redraw_after_callback(int call_update_screen);
 void redrawWinline(linenr_T lnum, int invalid);
 void update_curbuf(int type);
-void update_screen(int type_arg);
+int update_screen(int type_arg);
 int conceal_cursor_line(win_T *wp);
 void conceal_check_cursur_line(void);
 void update_single_line(win_T *wp, linenr_T lnum);

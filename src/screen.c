@@ -538,8 +538,9 @@ update_curbuf(int type)
 /*
  * Based on the current value of curwin->w_topline, transfer a screenfull
  * of stuff from Filemem to ScreenLines[], and update curwin->w_botline.
+ * Return OK when the screen was updated, FAIL if it was not done.
  */
-    void
+    int
 update_screen(int type_arg)
 {
     int		type = type_arg;
@@ -557,7 +558,7 @@ update_screen(int type_arg)
 
     /* Don't do anything if the screen structures are (not yet) valid. */
     if (!screen_valid(TRUE))
-	return;
+	return FAIL;
 
     if (type == VALID_NO_UPDATE)
     {
@@ -589,7 +590,7 @@ update_screen(int type_arg)
 	must_redraw = type;
 	if (type > INVERTED_ALL)
 	    curwin->w_lines_valid = 0;	/* don't use w_lines[].wl_size now */
-	return;
+	return FAIL;
     }
 
     updating_screen = TRUE;
@@ -842,6 +843,7 @@ update_screen(int type_arg)
 	gui_update_scrollbars(FALSE);
     }
 #endif
+    return OK;
 }
 
 #if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL)
