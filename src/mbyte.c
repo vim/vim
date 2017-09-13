@@ -4891,19 +4891,92 @@ im_preedit_window_set_position(void)
 im_preedit_window_open()
 {
     char *preedit_string;
+#if !GTK_CHECK_VERSION(3,16,0)
     char buf[8];
+#endif
     PangoAttrList *attr_list;
     PangoLayout *layout;
+#if GTK_CHECK_VERSION(3,0,0)
+# if !GTK_CHECK_VERSION(3,16,0)
+    GdkRGBA color;
+# endif
+#else
     GdkColor color;
+#endif
     gint w, h;
 
     if (preedit_window == NULL)
     {
 	preedit_window = gtk_window_new(GTK_WINDOW_POPUP);
+	gtk_window_set_transient_for(GTK_WINDOW(preedit_window),
+						     GTK_WINDOW(gui.mainwin));
 	preedit_label = gtk_label_new("");
+	gtk_widget_set_name(preedit_label, "vim-gui-preedit-area");
 	gtk_container_add(GTK_CONTAINER(preedit_window), preedit_label);
     }
 
+#if GTK_CHECK_VERSION(3,16,0)
+    {
+	GtkStyleContext * const context
+				  = gtk_widget_get_style_context(gui.drawarea);
+	GtkCssProvider * const provider = gtk_css_provider_new();
+	gchar		   *css = NULL;
+	const char * const fontname
+			   = pango_font_description_get_family(gui.norm_font);
+	gint	fontsize
+		= pango_font_description_get_size(gui.norm_font) / PANGO_SCALE;
+	gchar	*fontsize_propval = NULL;
+
+	if (!pango_font_description_get_size_is_absolute(gui.norm_font))
+	{
+	    /* fontsize was given in points.  Convert it into that in pixels
+	     * to use with CSS. */
+	    GdkScreen * const screen
+		  = gdk_window_get_screen(gtk_widget_get_window(gui.mainwin));
+	    const gdouble dpi = gdk_screen_get_resolution(screen);
+	    fontsize = dpi * fontsize / 72;
+	}
+	if (fontsize > 0)
+	    fontsize_propval = g_strdup_printf("%dpx", fontsize);
+	else
+	    fontsize_propval = g_strdup_printf("inherit");
+
+	css = g_strdup_printf(
+		"widget#vim-gui-preedit-area {\n"
+		"  font-family: %s,monospace;\n"
+		"  font-size: %s;\n"
+		"  color: #%.2lx%.2lx%.2lx;\n"
+		"  background-color: #%.2lx%.2lx%.2lx;\n"
+		"}\n",
+		fontname != NULL ? fontname : "inherit",
+		fontsize_propval,
+		(gui.norm_pixel >> 16) & 0xff,
+		(gui.norm_pixel >> 8) & 0xff,
+		gui.norm_pixel & 0xff,
+		(gui.back_pixel >> 16) & 0xff,
+		(gui.back_pixel >> 8) & 0xff,
+		gui.back_pixel & 0xff);
+
+	gtk_css_provider_load_from_data(provider, css, -1, NULL);
+	gtk_style_context_add_provider(context,
+				     GTK_STYLE_PROVIDER(provider), G_MAXUINT);
+
+	g_free(css);
+	g_free(fontsize_propval);
+	g_object_unref(provider);
+    }
+#elif GTK_CHECK_VERSION(3,0,0)
+    gtk_widget_override_font(preedit_label, gui.norm_font);
+
+    vim_snprintf(buf, sizeof(buf), "#%06X", gui.norm_pixel);
+    gdk_rgba_parse(&color, buf);
+    gtk_widget_override_color(preedit_label, GTK_STATE_FLAG_NORMAL, &color);
+
+    vim_snprintf(buf, sizeof(buf), "#%06X", gui.back_pixel);
+    gdk_rgba_parse(&color, buf);
+    gtk_widget_override_background_color(preedit_label, GTK_STATE_FLAG_NORMAL,
+								      &color);
+#else
     gtk_widget_modify_font(preedit_label, gui.norm_font);
 
     vim_snprintf(buf, sizeof(buf), "#%06X", gui.norm_pixel);
@@ -4913,6 +4986,7 @@ im_preedit_window_open()
     vim_snprintf(buf, sizeof(buf), "#%06X", gui.back_pixel);
     gdk_color_parse(buf, &color);
     gtk_widget_modify_bg(preedit_window, GTK_STATE_NORMAL, &color);
+#endif
 
     gtk_im_context_get_preedit_string(xic, &preedit_string, &attr_list, NULL);
 
