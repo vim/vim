@@ -1891,7 +1891,7 @@ func Test_terminal_statusline()
 endfunc
 
 func Test_terminal_get_runcmd()
-  let buf = Run_shell_in_terminal()
+  let buf = Run_shell_in_terminal({})
 
   if has('win32')
     let cmd = $windir . '\system32\timeout.exe'
@@ -1900,7 +1900,7 @@ func Test_terminal_get_runcmd()
   endif
 
   call term_sendkeys(buf, cmd . " 1\r")
-  sleep 100m
+  call term_wait(buf)
 
   let info = term_getruncmd(buf)
   call assert_true(has_key(info, 'process'))
@@ -1910,7 +1910,6 @@ func Test_terminal_get_runcmd()
 
   call Stop_shell_in_terminal(buf)
   call term_wait(buf)
-  close
-
   unlet g:job
+  bwipe!
 endfunc
