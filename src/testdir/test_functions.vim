@@ -528,7 +528,7 @@ func Test_strridx()
   call assert_equal(-1, strridx('hello', 'hello world'))
 endfunc
 
-func Test_match()
+func Test_match_func()
   call assert_equal(4,  match('testing', 'ing'))
   call assert_equal(4,  match('testing', 'ing', 2))
   call assert_equal(-1, match('testing', 'ing', 5))
