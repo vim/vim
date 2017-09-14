@@ -79,7 +79,6 @@ func Test_highlight_eol_with_cursorline()
 
   " underline
   exe hi_ul
-  redraw!
 
   " expected:
   " 'abcd      '
@@ -95,7 +94,6 @@ func Test_highlight_eol_with_cursorline()
   if IsColorable()
     " bg-color
     exe hi_bg
-    redraw!
 
     " expected:
     " 'abcd      '
@@ -154,7 +152,6 @@ func Test_highlight_eol_with_cursorline_vertsplit()
 
   " underline
   exe hi_ul
-  redraw!
 
   let actual = ScreenLines(1, 15)[0]
   call assert_equal(expected, actual)
@@ -174,7 +171,6 @@ func Test_highlight_eol_with_cursorline_vertsplit()
   if IsColorable()
     " bg-color
     exe hi_bg
-    redraw!
 
     let actual = ScreenLines(1, 15)[0]
     call assert_equal(expected, actual)
@@ -213,7 +209,6 @@ func Test_highlight_eol_with_cursorline_rightleft()
 
   " underline
   exe hi_ul
-  redraw!
 
   " expected:
   " '      dcba'
@@ -229,7 +224,6 @@ func Test_highlight_eol_with_cursorline_rightleft()
   if IsColorable()
     " bg-color
     exe hi_bg
-    redraw!
 
     " expected:
     " '      dcba'
@@ -259,13 +253,11 @@ func Test_highlight_eol_with_cursorline_linewrap()
 
   setlocal wrap
   normal! gg$
-  redraw!
   let attrs0 = ScreenAttrs(5, 10)[0]
   setlocal cursorline
 
   " underline
   exe hi_ul
-  redraw!
 
   " expected:
   " 'abcd      '
@@ -281,7 +273,6 @@ func Test_highlight_eol_with_cursorline_linewrap()
   if IsColorable()
     " bg-color
     exe hi_bg
-    redraw!
 
     " expected:
     " 'abcd      '
@@ -300,13 +291,11 @@ func Test_highlight_eol_with_cursorline_linewrap()
 
   setlocal nocursorline nowrap
   normal! gg$
-  redraw!
   let attrs0 = ScreenAttrs(1, 10)[0]
   setlocal cursorline
 
   " underline
   exe hi_ul
-  redraw!
 
   " expected:
   " 'aaabcd    '
@@ -322,7 +311,6 @@ func Test_highlight_eol_with_cursorline_linewrap()
   if IsColorable()
     " bg-color
     exe hi_bg
-    redraw!
 
     " expected:
     " 'aaabcd    '
@@ -361,7 +349,6 @@ func Test_highlight_eol_with_cursorline_sign()
 
   " underline
   exe hi_ul
-  redraw!
 
   " expected:
   " '>>abcd    '
@@ -378,7 +365,6 @@ func Test_highlight_eol_with_cursorline_sign()
   if IsColorable()
     " bg-color
     exe hi_bg
-    redraw!
 
     " expected:
     " '>>abcd    '
@@ -417,7 +403,6 @@ func Test_highlight_eol_with_cursorline_breakindent()
 
   " underline
   exe hi_ul
-  redraw!
 
   " expected:
   " '  >bcd    '
@@ -439,7 +424,6 @@ func Test_highlight_eol_with_cursorline_breakindent()
   if IsColorable()
     " bg-color
     exe hi_bg
-    redraw!
 
     " expected:
     " '  >bcd    '
