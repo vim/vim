@@ -2501,6 +2501,11 @@ create_vterm(term_T *term, int rows, int cols)
 
 	if (id != 0)
 	    syn_id2colors(id, &fg_rgb, &bg_rgb);
+	else
+	{
+	    fg_rgb = INVALCOLOR;
+	    bg_rgb = INVALCOLOR;
+	}
 
 # ifdef FEAT_GUI
 	if (gui.in_use)
