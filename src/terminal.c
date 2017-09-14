@@ -2437,9 +2437,9 @@ cterm_color2rgb(int nr, VTermColor *rgb)
     {
 	/* 24 grey scale ramp */
 	idx = nr - 232;
-	rgb->blue  = grey_ramp[nr];
-	rgb->green = grey_ramp[nr];
-	rgb->red   = grey_ramp[nr];
+	rgb->blue  = grey_ramp[idx];
+	rgb->green = grey_ramp[idx];
+	rgb->red   = grey_ramp[idx];
     }
 }
 
