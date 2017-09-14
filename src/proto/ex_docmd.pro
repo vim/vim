@@ -63,4 +63,6 @@ void dialog_msg(char_u *buff, char *format, char_u *fname);
 char_u *get_behave_arg(expand_T *xp, int idx);
 char_u *get_messages_arg(expand_T *xp, int idx);
 char_u *get_mapclear_arg(expand_T *xp, int idx);
+int get_pressedreturn(void);
+void set_pressedreturn(int val);
 /* vim: set ft=c : */
