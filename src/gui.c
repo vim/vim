@@ -1101,7 +1101,7 @@ gui_update_cursor(
 	 * When in a terminal window use the shape/color specified there.
 	 */
 #ifdef FEAT_TERMINAL
-	if (use_terminal_cursor())
+	if (terminal_is_active())
 	    shape = term_get_cursor_shape(&shape_fg, &shape_bg);
 	else
 #endif

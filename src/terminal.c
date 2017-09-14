@@ -1201,14 +1201,15 @@ term_enter_job_mode()
  * Get a key from the user without mapping.
  * Note: while waiting a terminal may be closed and freed if the channel is
  * closed and ++close was used.
- * TODO: use terminal mode mappings.
+ * Use terminal mode mappings.
  */
     static int
 term_vgetc()
 {
     int c;
 
-    ++no_mapping;
+    int save_State = State;
+    State = TERMINAL;
     ++allow_keys;
     got_int = FALSE;
 #ifdef WIN3264
@@ -1216,8 +1217,8 @@ term_vgetc()
 #endif
     c = vgetc();
     got_int = FALSE;
-    --no_mapping;
     --allow_keys;
+    State = save_State;
     return c;
 }
 
@@ -1406,7 +1407,7 @@ term_paste_register(int prev_c UNUSED)
  * Return TRUE when the cursor of the terminal should be displayed.
  */
     int
-use_terminal_cursor()
+terminal_is_active()
 {
     return in_terminal_loop != NULL;
 }
@@ -1561,7 +1562,7 @@ terminal_loop(void)
 	if (ctrl_break_was_pressed)
 	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 #endif
-
+	/* Was either CTRL-W (termkey) or CTRL-\ pressed? */
 	if (c == (termkey == 0 ? Ctrl_W : termkey) || c == Ctrl_BSL)
 	{
 	    int	    prev_c = c;
