@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 13
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,7 +38,7 @@ output from the job, also while editing in another window.
 
 
 Typing ~
-
+							*terminal-typing*
 When the keyboard focus is in the terminal window, typed keys will be sent to
 the job.  This uses a pty when possible.  You can click outside of the
 terminal window to move keyboard focus elsewhere.
@@ -78,6 +78,10 @@ If you type CTRL-C the effect depends on what the pty has been configured to
 do.  For simple commands this causes a SIGINT to be sent to the job, which
 would end it.  Other commands may ignore the SIGINT or handle the CTRL-C
 themselves (like Vim does).
+
+To change the keys you type use terminal mode mappings, see |:tmap|.
+These are defined like any mapping, but apply only when typing keys that are
+sent to the job running in the terminal.
 
 
 Size and color ~
@@ -221,6 +225,10 @@ mode.
 Use CTRL-W N (or 'termkey' N) to switch to Terminal-Normal mode.  Now the
 contents of the terminal window is under control of Vim, the job output is
 suspended.  CTRL-\ CTRL-N does the same.
+
+Terminal-Job mode is where |tmap| mappings are applied. Keys sent by
+|term_sendkeys()| are not subject to tmap, but keys from |feedkeys()| are.
+
 							*E946*
 In Terminal-Normal mode you can move the cursor around with the usual Vim
 commands, Visually mark text, yank text, etc.  But you cannot change the
@@ -301,7 +309,7 @@ inspects the resulting screen state.
 
 Functions ~
 
-term_sendkeys()		send keystrokes to a terminal
+term_sendkeys()		send keystrokes to a terminal (not subject to tmap)
 term_wait()		wait for screen to be updated
 term_scrape()		inspect terminal screen
 
