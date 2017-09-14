@@ -184,13 +184,12 @@ static bufref_T  qf_last_bufref = {NULL, 0, 0};
  * Return -1 for error, number of errors for success.
  */
     int
-qf_init(
-    win_T	    *wp,
-    char_u	    *efile,
-    char_u	    *errorformat,
-    int		    newlist,		/* TRUE: start a new error list */
-    char_u	    *qf_title,
-    char_u	    *enc)
+qf_init(win_T	    *wp,
+	char_u	    *efile,
+	char_u	    *errorformat,
+	int	    newlist,		/* TRUE: start a new error list */
+	char_u	    *qf_title,
+	char_u	    *enc)
 {
     qf_info_T	    *qi = &ql_info;
 
@@ -233,11 +232,11 @@ static struct fmtpattern
  */
     static int
 efm_to_regpat(
-    char_u	*efm,
-    int		len,
-    efm_T	*fmt_ptr,
-    char_u	*regpat,
-    char_u	*errmsg)
+	char_u	*efm,
+	int		len,
+	efm_T	*fmt_ptr,
+	char_u	*regpat,
+	char_u	*errmsg)
 {
     char_u	*ptr;
     char_u	*efmp;
@@ -1962,6 +1961,201 @@ is_qf_entry_present(qf_info_T *qi, qfline_T *qf_ptr)
 }
 
 /*
+ * Get the next valid entry in the current quickfix/location list. The search
+ * starts from the current entry. If next_file is TRUE, then return the next
+ * valid entry in the next file in the list. Returns NULL on failure.
+ */
+    static qfline_T *
+get_next_valid_entry(
+	qf_info_T	*qi,
+	qfline_T	*qf_ptr,
+	int		*qf_index,
+	int		dir)
+{
+    int			idx;
+    int			old_qf_fnum;
+
+    idx = *qf_index;
+    old_qf_fnum = qf_ptr->qf_fnum;
+
+    do
+    {
+	if (idx == qi->qf_lists[qi->qf_curlist].qf_count
+		|| qf_ptr->qf_next == NULL)
+	    return NULL;
+	++idx;
+	qf_ptr = qf_ptr->qf_next;
+    } while ((!qi->qf_lists[qi->qf_curlist].qf_nonevalid
+		&& !qf_ptr->qf_valid)
+	    || (dir == FORWARD_FILE && qf_ptr->qf_fnum == old_qf_fnum));
+
+    *qf_index = idx;
+    return qf_ptr;
+}
+
+/*
+ * Get the previous valid entry in the current quickfix/location list. The
+ * search starts from the current entry. If prev_file is TRUE, then return the
+ * previous valid entry in the previous file in the list. Returns NULL on
+ * failure.
+ */
+    static qfline_T *
+get_prev_valid_entry(
+	qf_info_T	*qi,
+	qfline_T	*qf_ptr,
+	int		*qf_index,
+	int		dir)
+{
+    int			idx;
+    int			old_qf_fnum;
+
+    idx = *qf_index;
+    old_qf_fnum = qf_ptr->qf_fnum;
+
+    do
+    {
+	if (idx == 1 || qf_ptr->qf_prev == NULL)
+	    return NULL;
+	--idx;
+	qf_ptr = qf_ptr->qf_prev;
+    } while ((!qi->qf_lists[qi->qf_curlist].qf_nonevalid
+		&& !qf_ptr->qf_valid)
+	    || (dir == BACKWARD_FILE && qf_ptr->qf_fnum == old_qf_fnum));
+
+    *qf_index = idx;
+    return qf_ptr;
+}
+
+/*
+ * Get the n'th (errornr) previous/next valid entry from the current entry in
+ * the quickfix list.
+ *   dir == FORWARD or FORWARD_FILE: next valid entry
+ *   dir == BACKWARD or BACKWARD_FILE: previous valid entry
+ */
+    static qfline_T *
+get_nth_valid_entry(
+	qf_info_T	*qi,
+	int		errornr,
+	qfline_T	*qf_ptr,
+	int		*qf_index,
+	int		dir)
+{
+    qfline_T		*prev_qf_ptr;
+    int			prev_index;
+    static char_u	*e_no_more_items = (char_u *)N_("E553: No more items");
+    char_u		*err = e_no_more_items;
+
+    while (errornr--)
+    {
+	prev_qf_ptr = qf_ptr;
+	prev_index = *qf_index;
+
+	if (dir == FORWARD || dir == FORWARD_FILE)
+	    qf_ptr = get_next_valid_entry(qi, qf_ptr, qf_index, dir);
+	else
+	    qf_ptr = get_prev_valid_entry(qi, qf_ptr, qf_index, dir);
+	if (qf_ptr == NULL)
+	{
+	    qf_ptr = prev_qf_ptr;
+	    *qf_index = prev_index;
+	    if (err != NULL)
+	    {
+		EMSG(_(err));
+		return NULL;
+	    }
+	    break;
+	}
+
+	err = NULL;
+    }
+
+    return qf_ptr;
+}
+
+/*
+ * Get n'th quickfix entry
+ */
+    static qfline_T *
+get_nth_entry(
+	qf_info_T	*qi,
+	int		errornr,
+	qfline_T	*qf_ptr,
+	int		*qf_index)
+{
+    int		qf_idx = *qf_index;
+
+    while (errornr < qf_idx && qf_idx > 1 && qf_ptr->qf_prev != NULL)
+    {
+	--qf_idx;
+	qf_ptr = qf_ptr->qf_prev;
+    }
+    while (errornr > qf_idx &&
+	    qf_idx < qi->qf_lists[qi->qf_curlist].qf_count &&
+	    qf_ptr->qf_next != NULL)
+    {
+	++qf_idx;
+	qf_ptr = qf_ptr->qf_next;
+    }
+
+    *qf_index = qf_idx;
+    return qf_ptr;
+}
+
+#ifdef FEAT_WINDOWS
+/*
+ * Find a help window or open one.
+ */
+    static int
+jump_to_help_window(qf_info_T *qi, int *opened_window)
+{
+    win_T	*wp;
+    int		flags;
+
+    if (cmdmod.tab != 0)
+	wp = NULL;
+    else
+	FOR_ALL_WINDOWS(wp)
+	    if (bt_help(wp->w_buffer))
+		break;
+    if (wp != NULL && wp->w_buffer->b_nwindows > 0)
+	win_enter(wp, TRUE);
+    else
+    {
+	/*
+	 * Split off help window; put it at far top if no position
+	 * specified, the current window is vertically split and narrow.
+	 */
+	flags = WSP_HELP;
+	if (cmdmod.split == 0 && curwin->w_width != Columns
+		&& curwin->w_width < 80)
+	    flags |= WSP_TOP;
+	if (qi != &ql_info)
+	    flags |= WSP_NEWLOC;  /* don't copy the location list */
+
+	if (win_split(0, flags) == FAIL)
+	    return FAIL;
+
+	*opened_window = TRUE;
+
+	if (curwin->w_height < p_hh)
+	    win_setheight((int)p_hh);
+
+	if (qi != &ql_info)	    /* not a quickfix list */
+	{
+	    /* The new window should use the supplied location list */
+	    curwin->w_llist = qi;
+	    qi->qf_refcount++;
+	}
+    }
+
+    if (!p_im)
+	restart_edit = 0;	    /* don't want insert mode in help file */
+
+    return OK;
+}
+#endif
+
+/*
  * jump to a quickfix line
  * if dir == FORWARD go "errornr" valid entries forward
  * if dir == BACKWARD go "errornr" valid entries backward
@@ -1971,21 +2165,16 @@ is_qf_entry_present(qf_info_T *qi, qfline_T *qf_ptr)
  * else go to entry "errornr"
  */
     void
-qf_jump(
-    qf_info_T	*qi,
-    int		dir,
-    int		errornr,
-    int		forceit)
+qf_jump(qf_info_T	*qi,
+	int		dir,
+	int		errornr,
+	int		forceit)
 {
     qf_info_T		*ll_ref;
     qfline_T		*qf_ptr;
     qfline_T		*old_qf_ptr;
     int			qf_index;
-    int			old_qf_fnum;
     int			old_qf_index;
-    int			prev_index;
-    static char_u	*e_no_more_items = (char_u *)N_("E553: No more items");
-    char_u		*err = e_no_more_items;
     linenr_T		i;
     buf_T		*old_curbuf;
     linenr_T		old_lnum;
@@ -2023,80 +2212,19 @@ qf_jump(
     old_qf_ptr = qf_ptr;
     qf_index = qi->qf_lists[qi->qf_curlist].qf_index;
     old_qf_index = qf_index;
-    if (dir == FORWARD || dir == FORWARD_FILE)	    /* next valid entry */
+    if (dir == FORWARD || dir == FORWARD_FILE ||
+	dir == BACKWARD || dir == BACKWARD_FILE)    /* next/prev valid entry */
     {
-	while (errornr--)
+	qf_ptr = get_nth_valid_entry(qi, errornr, qf_ptr, &qf_index, dir);
+	if (qf_ptr == NULL)
 	{
-	    old_qf_ptr = qf_ptr;
-	    prev_index = qf_index;
-	    old_qf_fnum = qf_ptr->qf_fnum;
-	    do
-	    {
-		if (qf_index == qi->qf_lists[qi->qf_curlist].qf_count
-						   || qf_ptr->qf_next == NULL)
-		{
-		    qf_ptr = old_qf_ptr;
-		    qf_index = prev_index;
-		    if (err != NULL)
-		    {
-			EMSG(_(err));
-			goto theend;
-		    }
-		    errornr = 0;
-		    break;
-		}
-		++qf_index;
-		qf_ptr = qf_ptr->qf_next;
-	    } while ((!qi->qf_lists[qi->qf_curlist].qf_nonevalid
-		      && !qf_ptr->qf_valid)
-		  || (dir == FORWARD_FILE && qf_ptr->qf_fnum == old_qf_fnum));
-	    err = NULL;
-	}
-    }
-    else if (dir == BACKWARD || dir == BACKWARD_FILE)  /* prev. valid entry */
-    {
-	while (errornr--)
-	{
-	    old_qf_ptr = qf_ptr;
-	    prev_index = qf_index;
-	    old_qf_fnum = qf_ptr->qf_fnum;
-	    do
-	    {
-		if (qf_index == 1 || qf_ptr->qf_prev == NULL)
-		{
-		    qf_ptr = old_qf_ptr;
-		    qf_index = prev_index;
-		    if (err != NULL)
-		    {
-			EMSG(_(err));
-			goto theend;
-		    }
-		    errornr = 0;
-		    break;
-		}
-		--qf_index;
-		qf_ptr = qf_ptr->qf_prev;
-	    } while ((!qi->qf_lists[qi->qf_curlist].qf_nonevalid
-		      && !qf_ptr->qf_valid)
-		  || (dir == BACKWARD_FILE && qf_ptr->qf_fnum == old_qf_fnum));
-	    err = NULL;
+	    qf_ptr = old_qf_ptr;
+	    qf_index = old_qf_index;
+	    goto theend;
 	}
     }
     else if (errornr != 0)	/* go to specified number */
-    {
-	while (errornr < qf_index && qf_index > 1 && qf_ptr->qf_prev != NULL)
-	{
-	    --qf_index;
-	    qf_ptr = qf_ptr->qf_prev;
-	}
-	while (errornr > qf_index && qf_index <
-				    qi->qf_lists[qi->qf_curlist].qf_count
-						   && qf_ptr->qf_next != NULL)
-	{
-	    ++qf_index;
-	    qf_ptr = qf_ptr->qf_next;
-	}
-    }
+	qf_ptr = get_nth_entry(qi, errornr, qf_ptr, &qf_index);
 
 #ifdef FEAT_WINDOWS
     qi->qf_lists[qi->qf_curlist].qf_index = qf_index;
@@ -2110,46 +2238,8 @@ qf_jump(
      */
     if (qf_ptr->qf_type == 1 && (!bt_help(curwin->w_buffer) || cmdmod.tab != 0))
     {
-	win_T	*wp;
-
-	if (cmdmod.tab != 0)
-	    wp = NULL;
-	else
-	    FOR_ALL_WINDOWS(wp)
-		if (bt_help(wp->w_buffer))
-		    break;
-	if (wp != NULL && wp->w_buffer->b_nwindows > 0)
-	    win_enter(wp, TRUE);
-	else
-	{
-	    /*
-	     * Split off help window; put it at far top if no position
-	     * specified, the current window is vertically split and narrow.
-	     */
-	    flags = WSP_HELP;
-	    if (cmdmod.split == 0 && curwin->w_width != Columns
-						      && curwin->w_width < 80)
-		flags |= WSP_TOP;
-	    if (qi != &ql_info)
-		flags |= WSP_NEWLOC;  /* don't copy the location list */
-
-	    if (win_split(0, flags) == FAIL)
-		goto theend;
-	    opened_window = TRUE;	/* close it when fail */
-
-	    if (curwin->w_height < p_hh)
-		win_setheight((int)p_hh);
-
-	    if (qi != &ql_info)	    /* not a quickfix list */
-	    {
-		/* The new window should use the supplied location list */
-		curwin->w_llist = qi;
-		qi->qf_refcount++;
-	    }
-	}
-
-	if (!p_im)
-	    restart_edit = 0;	    /* don't want insert mode in help file */
+	if (jump_to_help_window(qi, &opened_window) == FAIL)
+	    goto theend;
     }
 
     /*
@@ -2822,11 +2912,11 @@ qf_free(qf_info_T *qi, int idx)
  */
    void
 qf_mark_adjust(
-    win_T	*wp,
-    linenr_T	line1,
-    linenr_T	line2,
-    long	amount,
-    long	amount_after)
+	win_T	*wp,
+	linenr_T	line1,
+	linenr_T	line2,
+	long	amount,
+	long	amount_after)
 {
     int		i;
     qfline_T	*qfp;
@@ -2847,8 +2937,8 @@ qf_mark_adjust(
     for (idx = 0; idx < qi->qf_listcount; ++idx)
 	if (qi->qf_lists[idx].qf_count)
 	    for (i = 0, qfp = qi->qf_lists[idx].qf_start;
-		       i < qi->qf_lists[idx].qf_count && qfp != NULL;
-		       ++i, qfp = qfp->qf_next)
+			i < qi->qf_lists[idx].qf_count && qfp != NULL;
+			++i, qfp = qfp->qf_next)
 		if (qfp->qf_fnum == curbuf->b_fnum)
 		{
 		    found_one = TRUE;
