@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 10
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -85,9 +85,14 @@ Size and color ~
 See option 'termsize' for controlling the size of the terminal window.
 (TODO: scrolling when the terminal is larger than the window)
 
-The terminal uses the 'background' option to decide whether the terminal
-window will start with a white or black background.  The job running in the
-terminal can change the colors.
+The job running in the terminal can change the colors.  The default foreground
+and background colors are taken from Vim, the Normal highlight group.
+
+For a color terminal the 'background' option is used to decide whether the
+terminal window will start with a white or black background.
+
+To use a different color the Terminal highlight group can be used: >
+    hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
 
 
 Syntax ~
@@ -402,6 +407,12 @@ The defaults are, when 'background' is "light":
 When 'background' is "dark":
   hi debugPC term=reverse ctermbg=darkblue guibg=darkblue
   hi debugBreakpoint term=reverse ctermbg=red guibg=red
+
+To change the width of the Vim window when debugging starts, and use a
+vertical split: >
+  let g:termdebug_wide = 163
+This will set &columns to 163 when :Termdebug is used.  The value is restored
+when quitting the debugger.
 
 
 
