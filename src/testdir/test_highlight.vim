@@ -42,13 +42,18 @@ function! HighlightArgs(name)
   return 'hi ' . substitute(split(execute('hi ' . a:name), '\n')[0], '\<xxx\>', '', '')
 endfunction
 
+function! IsColorable()
+  return has('gui_running') || str2nr(&t_Co) >= 8
+endfunction
+
 function! HiCursorLine()
   let hiCursorLine = HighlightArgs('CursorLine')
   if has('gui_running')
+    let guibg = matchstr(hiCursorLine, 'guibg=\w\+')
     let hi_ul = 'hi CursorLine gui=underline guibg=NONE'
-    let hi_bg = hiCursorLine
+    let hi_bg = 'hi CursorLine gui=NONE ' . guibg
   else
-    let hi_ul = hiCursorLine
+    let hi_ul = 'hi CursorLine cterm=underline ctermbg=NONE'
     let hi_bg = 'hi CursorLine cterm=NONE ctermbg=Gray'
   endif
   return [hiCursorLine, hi_ul, hi_bg]
@@ -94,26 +99,28 @@ func Test_highlight_eol_with_cursorline()
   call assert_notequal(attrs0[0], attrs[0])
   call assert_notequal(attrs0[4], attrs[4])
 
-  " bg-color
-  exe hi_bg
-  redraw!
+  if IsColorable()
+    " bg-color
+    exe hi_bg
+    redraw!
 
-  let actual = ScreenLines(1, 10)[0]
-  call assert_equal(expected, actual)
-  let attrs = ScreenAttrs(1, 10)[0]
+    let actual = ScreenLines(1, 10)[0]
+    call assert_equal(expected, actual)
+    let attrs = ScreenAttrs(1, 10)[0]
 
-  " expected:
-  " 'abcd      '
-  "  ^^^^         bg-color of 'CursorLine'
-  "      ^        'Search' highlight
-  "       ^^^^^   bg-color of 'CursorLine'
-  call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
-  call assert_equal(repeat([attrs[5]], 5), attrs[5:9])
-  call assert_equal(attrs0[4], attrs[4])
-  call assert_notequal(attrs[0], attrs[4])
-  call assert_notequal(attrs[4], attrs[5])
-  call assert_notequal(attrs0[0], attrs[0])
-  call assert_notequal(attrs0[5], attrs[5])
+    " expected:
+    " 'abcd      '
+    "  ^^^^         bg-color of 'CursorLine'
+    "      ^        'Search' highlight
+    "       ^^^^^   bg-color of 'CursorLine'
+    call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
+    call assert_equal(repeat([attrs[5]], 5), attrs[5:9])
+    call assert_equal(attrs0[4], attrs[4])
+    call assert_notequal(attrs[0], attrs[4])
+    call assert_notequal(attrs[4], attrs[5])
+    call assert_notequal(attrs0[0], attrs[0])
+    call assert_notequal(attrs0[5], attrs[5])
+  endif
 
   call CloseWindow()
   exe hiCursorLine
@@ -174,24 +181,26 @@ func Test_highlight_eol_with_cursorline_vertsplit()
   call assert_notequal(attrs0[0], attrs[0])
   call assert_notequal(attrs0[4], attrs[4])
 
-  " bg-color
-  exe hi_bg
-  redraw!
+  if IsColorable()
+    " bg-color
+    exe hi_bg
+    redraw!
 
-  let actual = ScreenLines(1, 15)[0]
-  call assert_equal(expected, actual)
+    let actual = ScreenLines(1, 15)[0]
+    call assert_equal(expected, actual)
 
-  let attrs = ScreenAttrs(1, 15)[0]
-  call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
-  call assert_equal(repeat([attrs[6]], 9), attrs[6:14])
-  call assert_equal(attrs0[5:14], attrs[5:14])
-  call assert_notequal(attrs[0], attrs[4])
-  call assert_notequal(attrs[0], attrs[5])
-  call assert_notequal(attrs[0], attrs[6])
-  call assert_notequal(attrs[4], attrs[5])
-  call assert_notequal(attrs[5], attrs[6])
-  call assert_notequal(attrs0[0], attrs[0])
-  call assert_equal(attrs0[4], attrs[4])
+    let attrs = ScreenAttrs(1, 15)[0]
+    call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
+    call assert_equal(repeat([attrs[6]], 9), attrs[6:14])
+    call assert_equal(attrs0[5:14], attrs[5:14])
+    call assert_notequal(attrs[0], attrs[4])
+    call assert_notequal(attrs[0], attrs[5])
+    call assert_notequal(attrs[0], attrs[6])
+    call assert_notequal(attrs[4], attrs[5])
+    call assert_notequal(attrs[5], attrs[6])
+    call assert_notequal(attrs0[0], attrs[0])
+    call assert_equal(attrs0[4], attrs[4])
+  endif
 
   call CloseWindow()
   exe hiCursorLine
@@ -227,23 +236,25 @@ func Test_highlight_eol_with_cursorline_rightleft()
   call assert_notequal(attrs0[9], attrs[9])
   call assert_notequal(attrs0[5], attrs[5])
 
-  " bg-color
-  exe hi_bg
-  redraw!
+  if IsColorable()
+    " bg-color
+    exe hi_bg
+    redraw!
 
-  " expected:
-  " '      dcba'
-  "        ^^^^   bg-color of 'CursorLine'
-  "       ^       'Search' highlight
-  "  ^^^^^        bg-color of 'CursorLine'
-  let attrs = ScreenAttrs(1, 10)[0]
-  call assert_equal(repeat([attrs[9]], 4), attrs[6:9])
-  call assert_equal(repeat([attrs[4]], 5), attrs[0:4])
-  call assert_equal(attrs0[5], attrs[5])
-  call assert_notequal(attrs[9], attrs[5])
-  call assert_notequal(attrs[5], attrs[4])
-  call assert_notequal(attrs0[9], attrs[9])
-  call assert_notequal(attrs0[4], attrs[4])
+    " expected:
+    " '      dcba'
+    "        ^^^^   bg-color of 'CursorLine'
+    "       ^       'Search' highlight
+    "  ^^^^^        bg-color of 'CursorLine'
+    let attrs = ScreenAttrs(1, 10)[0]
+    call assert_equal(repeat([attrs[9]], 4), attrs[6:9])
+    call assert_equal(repeat([attrs[4]], 5), attrs[0:4])
+    call assert_equal(attrs0[5], attrs[5])
+    call assert_notequal(attrs[9], attrs[5])
+    call assert_notequal(attrs[5], attrs[4])
+    call assert_notequal(attrs0[9], attrs[9])
+    call assert_notequal(attrs0[4], attrs[4])
+  endif
 
   call CloseWindow()
   exe hiCursorLine
