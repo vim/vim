@@ -2437,9 +2437,9 @@ cterm_color2rgb(int nr, VTermColor *rgb)
     {
 	/* 24 grey scale ramp */
 	idx = nr - 232;
-	rgb->blue  = grey_ramp[nr];
-	rgb->green = grey_ramp[nr];
-	rgb->red   = grey_ramp[nr];
+	rgb->blue  = grey_ramp[idx];
+	rgb->green = grey_ramp[idx];
+	rgb->red   = grey_ramp[idx];
     }
 }
 
@@ -2501,6 +2501,11 @@ create_vterm(term_T *term, int rows, int cols)
 
 	if (id != 0)
 	    syn_id2colors(id, &fg_rgb, &bg_rgb);
+	else
+	{
+	    fg_rgb = INVALCOLOR;
+	    bg_rgb = INVALCOLOR;
+	}
 
 # ifdef FEAT_GUI
 	if (gui.in_use)
