@@ -2497,7 +2497,8 @@ create_vterm(term_T *term, int rows, int cols)
 # endif
        )
     {
-	guicolor_T	    fg_rgb, bg_rgb;
+	guicolor_T	fg_rgb = INVALCOLOR;
+	guicolor_T	bg_rgb = INVALCOLOR;
 
 	if (id != 0)
 	    syn_id2colors(id, &fg_rgb, &bg_rgb);
@@ -2551,6 +2552,28 @@ create_vterm(term_T *term, int rows, int cols)
 	if (cterm_bg >= 0)
 	    cterm_color2rgb(cterm_bg, bg);
     }
+#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+    else
+    {
+	int tmp;
+
+	/* In an MS-Windows console we know the normal colors. */
+	if (cterm_normal_fg_color > 0)
+	{
+	    cterm_color2rgb(cterm_normal_fg_color - 1, fg);
+	    tmp = fg->red;
+	    fg->red = fg->blue;
+	    fg->blue = tmp;
+	}
+	if (cterm_normal_bg_color > 0)
+	{
+	    cterm_color2rgb(cterm_normal_bg_color - 1, bg);
+	    tmp = bg->red;
+	    bg->red = bg->blue;
+	    bg->blue = tmp;
+	}
+    }
+#endif
 
     vterm_state_set_default_colors(vterm_obtain_state(vterm), fg, bg);
 
