@@ -1224,6 +1224,7 @@ check_due_timer(void)
 	    int	save_must_redraw = must_redraw;
 	    int	save_trylevel = trylevel;
 	    int save_did_throw = did_throw;
+	    int save_ex_pressedreturn = get_pressedreturn();
 	    except_T *save_current_exception = current_exception;
 
 	    /* Create a scope for running the timer callback, ignoring most of
@@ -1257,6 +1258,7 @@ check_due_timer(void)
 		need_update_screen = TRUE;
 	    must_redraw = must_redraw > save_must_redraw
 					      ? must_redraw : save_must_redraw;
+	    set_pressedreturn(save_ex_pressedreturn);
 
 	    /* Only fire the timer again if it repeats and stop_timer() wasn't
 	     * called while inside the callback (tr_id == -1). */

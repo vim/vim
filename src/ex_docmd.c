@@ -12418,3 +12418,17 @@ ex_folddo(exarg_T *eap)
 #endif
 }
 #endif
+
+# if defined(FEAT_TIMERS) || defined(PROTO)
+    int
+get_pressedreturn(void)
+{
+    return ex_pressedreturn;
+}
+
+    void
+set_pressedreturn(int val)
+{
+     ex_pressedreturn = val;
+}
+#endif
