@@ -66,10 +66,6 @@ func Test_highlight_eol_with_cursorline()
   call setline(1, 'abcd')
   call matchadd('Search', '\n')
 
-  let expected = "abcd      "
-  let actual = ScreenLines(1, 10)[0]
-  call assert_equal(expected, actual)
-
   " expected:
   " 'abcd      '
   "  ^^^^ ^^^^^   no highlight
@@ -85,14 +81,11 @@ func Test_highlight_eol_with_cursorline()
   exe hi_ul
   redraw!
 
-  let actual = ScreenLines(1, 10)[0]
-  call assert_equal(expected, actual)
-  let attrs = ScreenAttrs(1, 10)[0]
-
   " expected:
   " 'abcd      '
   "  ^^^^         underline
   "      ^^^^^^   'Search' highlight with underline
+  let attrs = ScreenAttrs(1, 10)[0]
   call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
   call assert_equal(repeat([attrs[4]], 6), attrs[4:9])
   call assert_notequal(attrs[0], attrs[4])
@@ -104,15 +97,12 @@ func Test_highlight_eol_with_cursorline()
     exe hi_bg
     redraw!
 
-    let actual = ScreenLines(1, 10)[0]
-    call assert_equal(expected, actual)
-    let attrs = ScreenAttrs(1, 10)[0]
-
     " expected:
     " 'abcd      '
     "  ^^^^         bg-color of 'CursorLine'
     "      ^        'Search' highlight
     "       ^^^^^   bg-color of 'CursorLine'
+    let attrs = ScreenAttrs(1, 10)[0]
     call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
     call assert_equal(repeat([attrs[5]], 5), attrs[5:9])
     call assert_equal(attrs0[4], attrs[4])
@@ -254,6 +244,99 @@ func Test_highlight_eol_with_cursorline_rightleft()
     call assert_notequal(attrs[5], attrs[4])
     call assert_notequal(attrs0[9], attrs[9])
     call assert_notequal(attrs0[4], attrs[4])
+  endif
+
+  call CloseWindow()
+  exe hiCursorLine
+endfunc
+
+func Test_highlight_eol_with_cursorline_linewrap()
+  let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
+
+  call NewWindow('topleft 5', 10)
+  call setline(1, [repeat('a', 51) . 'bcd', ''])
+  call matchadd('Search', '\n')
+
+  setlocal wrap
+  normal! gg$
+  redraw!
+  let attrs0 = ScreenAttrs(5, 10)[0]
+  setlocal cursorline
+
+  " underline
+  exe hi_ul
+  redraw!
+
+  " expected:
+  " 'abcd      '
+  "  ^^^^         underline
+  "      ^^^^^^   'Search' highlight with underline
+  let attrs = ScreenAttrs(5, 10)[0]
+  call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
+  call assert_equal(repeat([attrs[4]], 6), attrs[4:9])
+  call assert_notequal(attrs[0], attrs[4])
+  call assert_notequal(attrs0[0], attrs[0])
+  call assert_notequal(attrs0[4], attrs[4])
+
+  if IsColorable()
+    " bg-color
+    exe hi_bg
+    redraw!
+
+    " expected:
+    " 'abcd      '
+    "  ^^^^         bg-color of 'CursorLine'
+    "      ^        'Search' highlight
+    "       ^^^^^   bg-color of 'CursorLine'
+    let attrs = ScreenAttrs(5, 10)[0]
+    call assert_equal(repeat([attrs[0]], 4), attrs[0:3])
+    call assert_equal(repeat([attrs[5]], 5), attrs[5:9])
+    call assert_equal(attrs0[4], attrs[4])
+    call assert_notequal(attrs[0], attrs[4])
+    call assert_notequal(attrs[4], attrs[5])
+    call assert_notequal(attrs0[0], attrs[0])
+    call assert_notequal(attrs0[5], attrs[5])
+  endif
+
+  setlocal nocursorline nowrap
+  normal! gg$
+  redraw!
+  let attrs0 = ScreenAttrs(1, 10)[0]
+  setlocal cursorline
+
+  " underline
+  exe hi_ul
+  redraw!
+
+  " expected:
+  " 'aaabcd    '
+  "  ^^^^^^       underline
+  "        ^^^^   'Search' highlight with underline
+  let attrs = ScreenAttrs(1, 10)[0]
+  call assert_equal(repeat([attrs[0]], 6), attrs[0:5])
+  call assert_equal(repeat([attrs[6]], 4), attrs[6:9])
+  call assert_notequal(attrs[0], attrs[6])
+  call assert_notequal(attrs0[0], attrs[0])
+  call assert_notequal(attrs0[6], attrs[6])
+
+  if IsColorable()
+    " bg-color
+    exe hi_bg
+    redraw!
+
+    " expected:
+    " 'aaabcd    '
+    "  ^^^^^^       bg-color of 'CursorLine'
+    "        ^      'Search' highlight
+    "         ^^^   bg-color of 'CursorLine'
+    let attrs = ScreenAttrs(1, 10)[0]
+    call assert_equal(repeat([attrs[0]], 6), attrs[0:5])
+    call assert_equal(repeat([attrs[7]], 3), attrs[7:9])
+    call assert_equal(attrs0[6], attrs[6])
+    call assert_notequal(attrs[0], attrs[6])
+    call assert_notequal(attrs[6], attrs[7])
+    call assert_notequal(attrs0[0], attrs[0])
+    call assert_notequal(attrs0[7], attrs[7])
   endif
 
   call CloseWindow()
