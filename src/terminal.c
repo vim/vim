@@ -2551,6 +2551,26 @@ create_vterm(term_T *term, int rows, int cols)
 	if (cterm_bg >= 0)
 	    cterm_color2rgb(cterm_bg, bg);
     }
+#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+    else
+    {
+	int tmp;
+	if (cterm_normal_fg_color > 0)
+	{
+	    cterm_color2rgb(cterm_normal_fg_color-1, fg);
+	    tmp = fg->red;
+	    fg->red = fg->blue;
+	    fg->blue = tmp;
+	}
+	if (cterm_normal_bg_color > 0)
+	{
+	    cterm_color2rgb(cterm_normal_bg_color-1, bg);
+	    tmp = bg->red;
+	    bg->red = bg->blue;
+	    bg->blue = tmp;
+	}
+    }
+#endif
 
     vterm_state_set_default_colors(vterm_obtain_state(vterm), fg, bg);
 
