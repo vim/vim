@@ -196,3 +196,55 @@ func Test_highlight_eol_with_cursorline_vertsplit()
   call CloseWindow()
   exe hiCursorLine
 endfunc
+
+func Test_highlight_eol_with_cursorline_rightleft()
+  if !has('rightleft')
+    return
+  endif
+
+  let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
+
+  call NewWindow('topleft 5', 10)
+  setlocal rightleft
+  call setline(1, 'abcd')
+  call matchadd('Search', '\n')
+  let attrs0 = ScreenAttrs(1, 10)[0]
+
+  setlocal cursorline
+
+  " underline
+  exe hi_ul
+  redraw!
+
+  " expected:
+  " '      dcba'
+  "        ^^^^   underline
+  "  ^^^^^^       'Search' highlight with underline
+  let attrs = ScreenAttrs(1, 10)[0]
+  call assert_equal(repeat([attrs[9]], 4), attrs[6:9])
+  call assert_equal(repeat([attrs[5]], 6), attrs[0:5])
+  call assert_notequal(attrs[9], attrs[5])
+  call assert_notequal(attrs0[9], attrs[9])
+  call assert_notequal(attrs0[5], attrs[5])
+
+  " bg-color
+  exe hi_bg
+  redraw!
+
+  " expected:
+  " '      dcba'
+  "        ^^^^   bg-color of 'CursorLine'
+  "       ^       'Search' highlight
+  "  ^^^^^        bg-color of 'CursorLine'
+  let attrs = ScreenAttrs(1, 10)[0]
+  call assert_equal(repeat([attrs[9]], 4), attrs[6:9])
+  call assert_equal(repeat([attrs[4]], 5), attrs[0:4])
+  call assert_equal(attrs0[5], attrs[5])
+  call assert_notequal(attrs[9], attrs[5])
+  call assert_notequal(attrs[5], attrs[4])
+  call assert_notequal(attrs0[9], attrs[9])
+  call assert_notequal(attrs0[4], attrs[4])
+
+  call CloseWindow()
+  exe hiCursorLine
+endfunc
