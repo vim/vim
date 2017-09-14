@@ -342,3 +342,127 @@ func Test_highlight_eol_with_cursorline_linewrap()
   call CloseWindow()
   exe hiCursorLine
 endfunc
+
+func Test_highlight_eol_with_cursorline_sign()
+  if !has('signs')
+    return
+  endif
+
+  let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
+
+  call NewWindow('topleft 5', 10)
+  call setline(1, 'abcd')
+  call matchadd('Search', '\n')
+
+  sign define Sign text=>>
+  exe 'sign place 1 line=1 name=Sign buffer=' . bufnr('')
+  let attrs0 = ScreenAttrs(1, 10)[0]
+  setlocal cursorline
+
+  " underline
+  exe hi_ul
+  redraw!
+
+  " expected:
+  " '>>abcd    '
+  "  ^^           sign
+  "    ^^^^       underline
+  "        ^^^^   'Search' highlight with underline
+  let attrs = ScreenAttrs(1, 10)[0]
+  call assert_equal(repeat([attrs[2]], 4), attrs[2:5])
+  call assert_equal(repeat([attrs[6]], 4), attrs[6:9])
+  call assert_notequal(attrs[2], attrs[6])
+  call assert_notequal(attrs0[2], attrs[2])
+  call assert_notequal(attrs0[6], attrs[6])
+
+  if IsColorable()
+    " bg-color
+    exe hi_bg
+    redraw!
+
+    " expected:
+    " '>>abcd    '
+    "  ^^           sign
+    "    ^^^^       bg-color of 'CursorLine'
+    "        ^      'Search' highlight
+    "         ^^^   bg-color of 'CursorLine'
+    let attrs = ScreenAttrs(1, 10)[0]
+    call assert_equal(repeat([attrs[2]], 4), attrs[2:5])
+    call assert_equal(repeat([attrs[7]], 3), attrs[7:9])
+    call assert_equal(attrs0[6], attrs[6])
+    call assert_notequal(attrs[2], attrs[6])
+    call assert_notequal(attrs[6], attrs[7])
+    call assert_notequal(attrs0[2], attrs[2])
+    call assert_notequal(attrs0[7], attrs[7])
+  endif
+
+  sign unplace 1
+  call CloseWindow()
+  exe hiCursorLine
+endfunc
+
+func Test_highlight_eol_with_cursorline_breakindent()
+  if !has('linebreak')
+    return
+  endif
+
+  let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
+
+  call NewWindow('topleft 5', 10)
+  setlocal breakindent breakindentopt=min:0,shift:1 showbreak=>
+  call setline(1, ' ' . repeat('a', 9) . 'bcd')
+  call matchadd('Search', '\n')
+  let attrs0 = ScreenAttrs(2, 10)[0]
+  setlocal cursorline
+
+  " underline
+  exe hi_ul
+  redraw!
+
+  " expected:
+  " '  >bcd    '
+  "  ^^^          breakindent and showbreak
+  "     ^^^       underline
+  "        ^^^^   'Search' highlight with underline
+  let attrs = ScreenAttrs(2, 10)[0]
+  call assert_equal(repeat([attrs[0]], 2), attrs[0:1])
+  call assert_equal(repeat([attrs[3]], 3), attrs[3:5])
+  call assert_equal(repeat([attrs[6]], 4), attrs[6:9])
+  call assert_equal(attrs0[0], attrs[0])
+  call assert_notequal(attrs[0], attrs[2])
+  call assert_notequal(attrs[2], attrs[3])
+  call assert_notequal(attrs[3], attrs[6])
+  call assert_notequal(attrs0[2], attrs[2])
+  call assert_notequal(attrs0[3], attrs[3])
+  call assert_notequal(attrs0[6], attrs[6])
+
+  if IsColorable()
+    " bg-color
+    exe hi_bg
+    redraw!
+
+    " expected:
+    " '  >bcd    '
+    "  ^^^          breakindent and showbreak
+    "     ^^^       bg-color of 'CursorLine'
+    "        ^      'Search' highlight
+    "         ^^^   bg-color of 'CursorLine'
+    let attrs = ScreenAttrs(2, 10)[0]
+    call assert_equal(repeat([attrs[0]], 2), attrs[0:1])
+    call assert_equal(repeat([attrs[3]], 3), attrs[3:5])
+    call assert_equal(repeat([attrs[7]], 3), attrs[7:9])
+    call assert_equal(attrs0[0], attrs[0])
+    call assert_equal(attrs0[6], attrs[6])
+    call assert_notequal(attrs[0], attrs[2])
+    call assert_notequal(attrs[2], attrs[3])
+    call assert_notequal(attrs[3], attrs[6])
+    call assert_notequal(attrs[6], attrs[7])
+    call assert_notequal(attrs0[2], attrs[2])
+    call assert_notequal(attrs0[3], attrs[3])
+    call assert_notequal(attrs0[7], attrs[7])
+  endif
+
+  call CloseWindow()
+  set showbreak=
+  exe hiCursorLine
+endfunc
