@@ -620,3 +620,40 @@ func Test_terminal_redir_file()
     call delete('Xfile')
   endif
 endfunc
+
+func TerminalTmap(remap)
+  let buf = Run_shell_in_terminal({})
+  call assert_equal('t', mode())
+
+  if a:remap
+    tmap 123 456
+  else
+    tnoremap 123 456
+  endif
+  tmap 456 abcde
+  call assert_equal('456', maparg('123', 't'))
+  call assert_equal('abcde', maparg('456', 't'))
+  call feedkeys("123", 'tx')
+  call term_wait(buf)
+  let lnum = term_getcursor(buf)[0]
+  if a:remap
+    call assert_match('abcde', term_getline(buf, lnum))
+  else
+    call assert_match('456', term_getline(buf, lnum))
+  endif
+
+  call term_sendkeys(buf, "\r")
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+
+  tunmap 123
+  tunmap 456
+  call assert_equal('', maparg('123', 't'))
+  close
+  unlet g:job
+endfunc
+
+func Test_terminal_tmap()
+  call TerminalTmap(1)
+  call TerminalTmap(0)
+endfunc

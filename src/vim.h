@@ -716,9 +716,10 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #define SHOWMATCH	(0x700 + INSERT) /* show matching paren */
 #define CONFIRM		0x800	/* ":confirm" prompt */
 #define SELECTMODE	0x1000	/* Select mode, only for mappings */
+#define TERMINAL        0x2000  /* Terminal mode */
 
-#define MAP_ALL_MODES	(0x3f | SELECTMODE)	/* all mode bits used for
-						 * mapping */
+/* all mode bits used for mapping */
+#define MAP_ALL_MODES	(0x3f | SELECTMODE | TERMINAL)
 
 /* directions */
 #define FORWARD			1
