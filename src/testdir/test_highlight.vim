@@ -450,3 +450,30 @@ func Test_highlight_eol_with_cursorline_breakindent()
   set showbreak=
   exe hiCursorLine
 endfunc
+
+func Test_highlight_eol_on_diff()
+  call setline(1, ['abcd', ''])
+  call matchadd('Search', '\n')
+  let attrs0 = ScreenAttrs(1, 10)[0]
+
+  diffthis
+  botright new
+  diffthis
+
+  " expected:
+  " '  abcd    '
+  "  ^^           sign
+  "    ^^^^ ^^^   'DiffAdd' highlight
+  "        ^      'Search' highlight
+  let attrs = ScreenAttrs(1, 10)[0]
+  call assert_equal(repeat([attrs[0]], 2), attrs[0:1])
+  call assert_equal(repeat([attrs[2]], 4), attrs[2:5])
+  call assert_equal(repeat([attrs[2]], 3), attrs[7:9])
+  call assert_equal(attrs0[4], attrs[6])
+  call assert_notequal(attrs[0], attrs[2])
+  call assert_notequal(attrs[0], attrs[6])
+  call assert_notequal(attrs[2], attrs[6])
+
+  bwipe!
+  diffoff
+endfunc
