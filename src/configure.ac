@@ -1009,7 +1009,7 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
       perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
 		-e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[[^ ]]*//' \
 		-e 's/-fdebug-prefix-map[[^ ]]*//g' \
-		-e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=.//g`
+		-e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=.//g'`
       dnl Remove "-lc", it breaks on FreeBSD when using "-pthread".
       perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
 		sed -e '/Warning/d' -e '/Note (probably harmless)/d' \
