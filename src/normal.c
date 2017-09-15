@@ -1310,7 +1310,7 @@ normal_end:
 
 #ifdef FEAT_TERMINAL
     /* don't go to Insert mode from Terminal-Job mode */
-    if (term_use_loop())
+    if (term_use_loop() || term_in_normal_mode())
 	restart_edit = 0;
 #endif
 
