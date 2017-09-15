@@ -4642,6 +4642,7 @@ getqflist([{what}])					*getqflist()*
 			id	get information for the quickfix list with
 				|quickfix-ID|; zero means the id for the
 				current list or the list specifed by "nr"
+			idx	index of the current entry in the list
 			items	quickfix list entries
 			lines	use 'errorformat' to extract items from a list
 				of lines and return the resulting entries.
@@ -4650,6 +4651,7 @@ getqflist([{what}])					*getqflist()*
 			nr	get information for this quickfix list; zero
 				means the current quickfix list and "$" means
 				the last quickfix list
+			size	number of entries in the quickfix list
 			title	get the list title
 			winid	get the |window-ID| (if opened)
 			all	all of the above quickfix properties
@@ -4669,8 +4671,10 @@ getqflist([{what}])					*getqflist()*
 		The returned dictionary contains the following entries:
 			context	context information stored with |setqflist()|
 			id	quickfix list ID |quickfix-ID|
+			idx	index of the current entry in the list
 			items	quickfix list entries
 			nr	quickfix list number
+			size	number of entries in the quickfix list
 			title	quickfix list title text
 			winid	quickfix |window-ID| (if opened)
 
