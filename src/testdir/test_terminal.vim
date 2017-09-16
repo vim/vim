@@ -547,17 +547,14 @@ func Test_terminal_no_cmd()
   let pty = job_info(term_getjob(buf))['tty_out']
   call assert_notequal('', pty)
   if has('win32')
-    silent exe '!cmd /c "echo look here > ' . pty . '"'
+    silent exe '!start cmd /c "echo look here > ' . pty . '"'
   else
     call system('echo "look here" > ' . pty)
   endif
-  call term_wait(buf)
+  let g:buf = buf
+  call WaitFor('term_getline(g:buf, 1) =~ "look here"')
 
-  let result = term_getline(buf, 1)
-  if has('win32')
-    let result = substitute(result, '\s\+$', '', '')
-  endif
-  call assert_equal('look here', result)
+  call assert_match('look here', term_getline(buf, 1))
   bwipe!
 endfunc
 
