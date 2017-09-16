@@ -634,7 +634,8 @@ func TerminalTmap(remap)
   call assert_equal('456', maparg('123', 't'))
   call assert_equal('abcde', maparg('456', 't'))
   call feedkeys("123", 'tx')
-  call term_wait(buf)
+  let g:buf = buf
+  call WaitFor("term_getline(g:buf,term_getcursor(g:buf)[0]) =~ 'abcde\\|456'")
   let lnum = term_getcursor(buf)[0]
   if a:remap
     call assert_match('abcde', term_getline(buf, lnum))
