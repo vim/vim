@@ -145,10 +145,8 @@ static Scheme_Object *get_window_num(void *, int, Scheme_Object **);
 static Scheme_Object *get_window_buffer(void *, int, Scheme_Object **);
 static Scheme_Object *get_window_height(void *, int, Scheme_Object **);
 static Scheme_Object *set_window_height(void *, int, Scheme_Object **);
-#ifdef FEAT_WINDOWS
 static Scheme_Object *get_window_width(void *, int, Scheme_Object **);
 static Scheme_Object *set_window_width(void *, int, Scheme_Object **);
-#endif
 static Scheme_Object *get_cursor(void *, int, Scheme_Object **);
 static Scheme_Object *set_cursor(void *, int, Scheme_Object **);
 static Scheme_Object *get_window_list(void *, int, Scheme_Object **);
@@ -1913,11 +1911,9 @@ get_curr_win(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 get_window_count(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     int	    n = 0;
-#ifdef FEAT_WINDOWS
     win_T   *w;
 
     FOR_ALL_WINDOWS(w)
-#endif
 	++n;
     return scheme_make_integer(n);
 }
@@ -1934,9 +1930,7 @@ get_window_list(void *data, int argc, Scheme_Object **argv)
     buf = get_buffer_arg(prim->name, 0, argc, argv);
     list = scheme_null;
 
-#ifdef FEAT_WINDOWS
     for ( ; w != NULL; w = w->w_next)
-#endif
 	if (w->w_buffer == buf->buf)
 	{
 	    list = scheme_make_pair(window_new(w), list);
@@ -1988,13 +1982,11 @@ window_new(win_T *win)
 get_window_num(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     int		nr = 1;
-#ifdef FEAT_WINDOWS
     Vim_Prim	*prim = (Vim_Prim *)data;
     win_T	*win = get_window_arg(prim->name, 0, argc, argv)->win;
     win_T	*wp;
 
     for (wp = firstwin; wp != win; wp = wp->w_next)
-#endif
 	++nr;
 
     return scheme_make_integer(nr);
@@ -2012,9 +2004,7 @@ get_window_by_num(void *data, int argc, Scheme_Object **argv)
     if (fnum < 1)
 	scheme_signal_error(_("window index is out of range"));
 
-#ifdef FEAT_WINDOWS
     for ( ; win != NULL; win = win->w_next, --fnum)
-#endif
 	if (fnum == 1)	    /* to be 1-based */
 	    return window_new(win);
 
@@ -2066,7 +2056,6 @@ set_window_height(void *data, int argc, Scheme_Object **argv)
     return scheme_void;
 }
 
-#ifdef FEAT_WINDOWS
 /* (get-win-width [window]) */
     static Scheme_Object *
 get_window_width(void *data, int argc, Scheme_Object **argv)
@@ -2101,7 +2090,6 @@ set_window_width(void *data, int argc, Scheme_Object **argv)
     raise_if_error();
     return scheme_void;
 }
-#endif
 
 /* (get-cursor [window]) -> (line . col) */
     static Scheme_Object *
@@ -3744,10 +3732,8 @@ static Vim_Prim prims[]=
     {get_window_buffer, "get-win-buffer", 0, 1},
     {get_window_height, "get-win-height", 0, 1},
     {set_window_height, "set-win-height", 1, 2},
-#ifdef FEAT_WINDOWS
     {get_window_width, "get-win-width", 0, 1},
     {set_window_width, "set-win-width", 1, 2},
-#endif
     {get_cursor, "get-cursor", 0, 1},
     {set_cursor, "set-cursor", 1, 2},
     {get_window_list, "get-win-list", 0, 1},

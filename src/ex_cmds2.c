@@ -2123,10 +2123,8 @@ check_changed_any(
     int		bufnum = 0;
     int		bufcount = 0;
     int		*bufnrs;
-#ifdef FEAT_WINDOWS
     tabpage_T   *tp;
     win_T	*wp;
-#endif
 
     FOR_ALL_BUFFERS(buf)
 	++bufcount;
@@ -2140,7 +2138,6 @@ check_changed_any(
 
     /* curbuf */
     bufnrs[bufnum++] = curbuf->b_fnum;
-#ifdef FEAT_WINDOWS
     /* buf in curtab */
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer != curbuf)
@@ -2151,7 +2148,6 @@ check_changed_any(
 	if (tp != curtab)
 	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
 		add_bufnum(bufnrs, &bufnum, wp->w_buffer->b_fnum);
-#endif
     /* any other buf */
     FOR_ALL_BUFFERS(buf)
 	add_bufnum(bufnrs, &bufnum, buf->b_fnum);
@@ -2214,29 +2210,27 @@ check_changed_any(
 	}
     }
 
-#ifdef FEAT_WINDOWS
     /* Try to find a window that contains the buffer. */
     if (buf != curbuf)
 	FOR_ALL_TAB_WINDOWS(tp, wp)
 	    if (wp->w_buffer == buf)
 	    {
-# ifdef FEAT_AUTOCMD
+#ifdef FEAT_AUTOCMD
 		bufref_T bufref;
 
 		set_bufref(&bufref, buf);
-# endif
+#endif
 		goto_tabpage_win(tp, wp);
-# ifdef FEAT_AUTOCMD
+#ifdef FEAT_AUTOCMD
 		/* Paranoia: did autocms wipe out the buffer with changes? */
 		if (!bufref_valid(&bufref))
 		{
 		    goto theend;
 		}
-# endif
+#endif
 		goto buf_found;
 	    }
 buf_found:
-#endif
 
     /* Open the changed buffer in the current window. */
     if (buf != curbuf)
@@ -2528,16 +2522,12 @@ do_arglist(
     static void
 alist_check_arg_idx(void)
 {
-#ifdef FEAT_WINDOWS
     win_T	*win;
     tabpage_T	*tp;
 
     FOR_ALL_TAB_WINDOWS(tp, win)
 	if (win->w_alist == curwin->w_alist)
 	    check_arg_idx(win);
-#else
-    check_arg_idx(curwin);
-#endif
 }
 
 /*
@@ -2569,9 +2559,7 @@ check_arg_idx(win_T *win)
 	win->w_arg_idx_invalid = TRUE;
 	if (win->w_arg_idx != WARGCOUNT(win) - 1
 		&& arg_had_last == FALSE
-#ifdef FEAT_WINDOWS
 		&& ALIST(win) == &global_alist
-#endif
 		&& GARGCOUNT > 0
 		&& win->w_arg_idx < GARGCOUNT
 		&& (win->w_buffer->b_fnum == GARGLIST[GARGCOUNT - 1].ae_fnum
@@ -2586,10 +2574,7 @@ check_arg_idx(win_T *win)
 	 * Set "arg_had_last" if it's also the last one */
 	win->w_arg_idx_invalid = FALSE;
 	if (win->w_arg_idx == WARGCOUNT(win) - 1
-#ifdef FEAT_WINDOWS
-		&& win->w_alist == &global_alist
-#endif
-		)
+					      && win->w_alist == &global_alist)
 	    arg_had_last = TRUE;
     }
 }
@@ -2604,7 +2589,7 @@ ex_args(exarg_T *eap)
 
     if (eap->cmdidx != CMD_args)
     {
-#if defined(FEAT_WINDOWS) && defined(FEAT_LISTCMDS)
+#if defined(FEAT_LISTCMDS)
 	alist_unlink(ALIST(curwin));
 	if (eap->cmdidx == CMD_argglobal)
 	    ALIST(curwin) = &global_alist;
@@ -2625,7 +2610,7 @@ ex_args(exarg_T *eap)
 	ex_next(eap);
     }
     else
-#if defined(FEAT_WINDOWS) && defined(FEAT_LISTCMDS)
+#if defined(FEAT_LISTCMDS)
 	if (eap->cmdidx == CMD_args)
 #endif
     {
@@ -2648,7 +2633,7 @@ ex_args(exarg_T *eap)
 	    }
 	}
     }
-#if defined(FEAT_WINDOWS) && defined(FEAT_LISTCMDS)
+#if defined(FEAT_LISTCMDS)
     else if (eap->cmdidx == CMD_arglocal)
     {
 	garray_T	*gap = &curwin->w_alist->al_ga;
@@ -2742,7 +2727,6 @@ do_argfile(exarg_T *eap, int argn)
 	need_mouse_correct = TRUE;
 #endif
 
-#ifdef FEAT_WINDOWS
 	/* split window or create new tab page first */
 	if (*eap->cmd == 's' || cmdmod.tab != 0)
 	{
@@ -2751,7 +2735,6 @@ do_argfile(exarg_T *eap, int argn)
 	    RESET_BINDING(curwin);
 	}
 	else
-#endif
 	{
 	    /*
 	     * if 'hidden' set, only check for changed file when re-editing
@@ -2773,11 +2756,7 @@ do_argfile(exarg_T *eap, int argn)
 	}
 
 	curwin->w_arg_idx = argn;
-	if (argn == ARGCOUNT - 1
-#ifdef FEAT_WINDOWS
-		&& curwin->w_alist == &global_alist
-#endif
-	   )
+	if (argn == ARGCOUNT - 1 && curwin->w_alist == &global_alist)
 	    arg_had_last = TRUE;
 
 	/* Edit the file; always use the last known line number.
@@ -2917,10 +2896,8 @@ ex_argdelete(exarg_T *eap)
 ex_listdo(exarg_T *eap)
 {
     int		i;
-#ifdef FEAT_WINDOWS
     win_T	*wp;
     tabpage_T	*tp;
-#endif
     buf_T	*buf = curbuf;
     int		next_fnum = 0;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
@@ -2930,14 +2907,6 @@ ex_listdo(exarg_T *eap)
 #ifdef FEAT_QUICKFIX
     int		qf_size = 0;
     int		qf_idx;
-#endif
-
-#ifndef FEAT_WINDOWS
-    if (eap->cmdidx == CMD_windo)
-    {
-	ex_ni(eap);
-	return;
-    }
 #endif
 
 #ifndef FEAT_QUICKFIX
@@ -2968,13 +2937,10 @@ ex_listdo(exarg_T *eap)
     {
 	i = 0;
 	/* start at the eap->line1 argument/window/buffer */
-#ifdef FEAT_WINDOWS
 	wp = firstwin;
 	tp = first_tabpage;
-#endif
 	switch (eap->cmdidx)
 	{
-#ifdef FEAT_WINDOWS
 	    case CMD_windo:
 		for ( ; wp != NULL && i + 1 < eap->line1; wp = wp->w_next)
 		    i++;
@@ -2983,7 +2949,6 @@ ex_listdo(exarg_T *eap)
 		for( ; tp != NULL && i + 1 < eap->line1; tp = tp->tp_next)
 		    i++;
 		break;
-#endif
 	    case CMD_argdo:
 		i = eap->line1 - 1;
 		break;
@@ -3049,7 +3014,6 @@ ex_listdo(exarg_T *eap)
 		if (curwin->w_arg_idx != i)
 		    break;
 	    }
-#ifdef FEAT_WINDOWS
 	    else if (eap->cmdidx == CMD_windo)
 	    {
 		/* go to window "wp" */
@@ -3068,7 +3032,6 @@ ex_listdo(exarg_T *eap)
 		goto_tabpage_tp(tp, TRUE, TRUE);
 		tp = tp->tp_next;
 	    }
-#endif
 	    else if (eap->cmdidx == CMD_bufdo)
 	    {
 		/* Remember the number of the next listed buffer, in case
@@ -3140,11 +3103,9 @@ ex_listdo(exarg_T *eap)
 #endif
 	    }
 
-#ifdef FEAT_WINDOWS
 	    if (eap->cmdidx == CMD_windo || eap->cmdidx == CMD_tabdo)
 		if (i+1 > eap->line2)
 		    break;
-#endif
 	    if (eap->cmdidx == CMD_argdo && i >= eap->line2)
 		break;
 	}

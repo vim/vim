@@ -80,7 +80,7 @@ static char_u *topmsg = (char_u *)N_("E556: at top of tag stack");
 
 static char_u	*tagmatchname = NULL;	/* name of last used tag */
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 /*
  * Tag for preview window is remembered separately, to avoid messing up the
  * normal tagstack.
@@ -188,7 +188,7 @@ do_tag(
     {
 	use_tagstack = FALSE;
 	new_tag = TRUE;
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	if (g_do_tagpreview != 0)
 	{
 	    vim_free(ptag_entry.tagname);
@@ -199,7 +199,7 @@ do_tag(
     }
     else
     {
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	if (g_do_tagpreview != 0)
 	    use_tagstack = FALSE;
 	else
@@ -217,7 +217,7 @@ do_tag(
 #endif
 		    ))
 	{
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	    if (g_do_tagpreview != 0)
 	    {
 		if (ptag_entry.tagname != NULL
@@ -273,7 +273,7 @@ do_tag(
 	else
 	{
 	    if (
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 		    g_do_tagpreview != 0 ? ptag_entry.tagname == NULL :
 #endif
 		    tagstacklen == 0)
@@ -356,7 +356,7 @@ do_tag(
 #endif
 	       )
 	    {
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 		if (g_do_tagpreview != 0)
 		{
 		    cur_match = ptag_entry.cur_match;
@@ -394,7 +394,7 @@ do_tag(
 		/* Save index for when selection is cancelled. */
 		prevtagstackidx = tagstackidx;
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 		if (g_do_tagpreview != 0)
 		{
 		    cur_match = ptag_entry.cur_match;
@@ -432,7 +432,7 @@ do_tag(
 	    }
 	}
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	if (g_do_tagpreview != 0)
 	{
 	    if (type != DT_SELECT && type != DT_JUMP)
@@ -487,7 +487,7 @@ do_tag(
 	 */
 	if (use_tagstack)
 	    name = tagstack[tagstackidx].tagname;
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	else if (g_do_tagpreview != 0)
 	    name = ptag_entry.tagname;
 #endif
@@ -567,7 +567,7 @@ do_tag(
 	{
 	    if (verbose)
 		EMSG2(_("E426: tag not found: %s"), name);
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	    g_do_tagpreview = 0;
 #endif
 	}
@@ -614,7 +614,7 @@ do_tag(
 		{
 		    parse_match(matches[i], &tagp);
 		    if (!new_tag && (
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 				(g_do_tagpreview != 0
 				 && i == ptag_entry.cur_match) ||
 #endif
@@ -968,7 +968,7 @@ do_tag(
 		tagstack[tagstackidx].cur_fnum = cur_fnum;
 		++tagstackidx;
 	    }
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	    else if (g_do_tagpreview != 0)
 	    {
 		ptag_entry.cur_match = cur_match;
@@ -1073,12 +1073,10 @@ end_do_tag:
     /* Only store the new index when using the tagstack and it's valid. */
     if (use_tagstack && tagstackidx <= curwin->w_tagstacklen)
 	curwin->w_tagstackidx = tagstackidx;
-#ifdef FEAT_WINDOWS
     postponed_split = 0;	/* don't split next time */
 # ifdef FEAT_QUICKFIX
     g_do_tagpreview = 0;	/* don't do tag preview next time */
 # endif
-#endif
 
 #ifdef FEAT_CSCOPE
     return jumped_to_tag;
@@ -1952,6 +1950,7 @@ parse_line:
 #endif
 					)
 	    {
+		vim_memset(&tagp, 0, sizeof(tagp));
 		tagp.tagname = lbuf;
 #ifdef FEAT_TAG_ANYWHITE
 		tagp.tagname_end = skiptowhite(lbuf);
@@ -1998,17 +1997,17 @@ parse_line:
 		    if (*p == ':')
 		    {
 			if (tagp.fname == NULL)
-#ifdef FEAT_TAG_ANYWHITE
+# ifdef FEAT_TAG_ANYWHITE
 			    tagp.fname = skipwhite(tagp.tagname_end);
-#else
+# else
 			    tagp.fname = tagp.tagname_end + 1;
-#endif
+# endif
 			if (	   fnamencmp(lbuf, tagp.fname, p - lbuf) == 0
-#ifdef FEAT_TAG_ANYWHITE
+# ifdef FEAT_TAG_ANYWHITE
 				&& VIM_ISWHITE(tagp.fname[p - lbuf])
-#else
+# else
 				&& tagp.fname[p - lbuf] == TAB
-#endif
+# endif
 				    )
 			{
 			    /* found one */
@@ -2619,7 +2618,7 @@ free_tag_stuff(void)
     do_tag(NULL, DT_FREE, 0, 0, 0);
     tag_freematch();
 
-# if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+# if defined(FEAT_QUICKFIX)
     if (ptag_entry.tagname)
     {
 	vim_free(ptag_entry.tagname);
@@ -3093,7 +3092,7 @@ jumpto_tag(
 #ifdef FEAT_SEARCH_EXTRA
     int		save_no_hlsearch;
 #endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     win_T	*curwin_save = NULL;
 #endif
     char_u	*full_fname = NULL;
@@ -3176,7 +3175,7 @@ jumpto_tag(
     need_mouse_correct = TRUE;
 #endif
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     if (g_do_tagpreview != 0)
     {
 	postponed_split = 0;	/* don't split again below */
@@ -3240,9 +3239,9 @@ jumpto_tag(
     {
 	/* A :ta from a help file will keep the b_help flag set.  For ":ptag"
 	 * we need to use the flag from the window where we came from. */
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	if (g_do_tagpreview != 0)
-	    keep_help_flag = curwin_save->w_buffer->b_help;
+	    keep_help_flag = bt_help(curwin_save->w_buffer);
 	else
 #endif
 	    keep_help_flag = curbuf->b_help;
@@ -3254,9 +3253,7 @@ jumpto_tag(
     if (GETFILE_SUCCESS(getfile_result))	/* got to the right file */
     {
 	curwin->w_set_curswant = TRUE;
-#ifdef FEAT_WINDOWS
 	postponed_split = 0;
-#endif
 
 	save_secure = secure;
 	secure = 1;
@@ -3417,7 +3414,7 @@ jumpto_tag(
 #endif
 	}
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	if (g_do_tagpreview != 0
 			   && curwin != curwin_save && win_valid(curwin_save))
 	{
@@ -3433,17 +3430,15 @@ jumpto_tag(
     else
     {
 	--RedrawingDisabled;
-#ifdef FEAT_WINDOWS
 	if (postponed_split)		/* close the window */
 	{
 	    win_close(curwin, FALSE);
 	    postponed_split = 0;
 	}
-#endif
     }
 
 erret:
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     g_do_tagpreview = 0; /* For next time */
 #endif
     if (tagp.fname_end != NULL)

@@ -63,7 +63,6 @@ EXTERN int	Screen_mco INIT(= 0);		/* value of p_mco used when
 EXTERN schar_T	*ScreenLines2 INIT(= NULL);
 #endif
 
-#ifdef FEAT_WINDOWS
 /*
  * Indexes for tab page line:
  *	N > 0 for label of tab page N
@@ -72,7 +71,6 @@ EXTERN schar_T	*ScreenLines2 INIT(= NULL);
  *	N == -999 for closing current tab page
  */
 EXTERN short	*TabPageIdxs INIT(= NULL);
-#endif
 
 EXTERN int	screen_Rows INIT(= 0);	    /* actual size of ScreenLines[] */
 EXTERN int	screen_Columns INIT(= 0);   /* actual size of ScreenLines[] */
@@ -440,9 +438,7 @@ EXTERN int	gui_prev_topfill INIT(= 0);
 EXTERN int	drag_status_line INIT(= FALSE);	/* dragging the status line */
 EXTERN int	postponed_mouseshape INIT(= FALSE); /* postponed updating the
 						       mouse pointer shape */
-#  ifdef FEAT_WINDOWS
 EXTERN int	drag_sep_line INIT(= FALSE);	/* dragging vert separator */
-#  endif
 # endif
 
 #endif
@@ -550,9 +546,7 @@ EXTERN int	clip_unnamed_saved INIT(= 0);
  * All windows are linked in a list. firstwin points to the first entry,
  * lastwin to the last entry (can be the same as firstwin) and curwin to the
  * currently active window.
- * Without the FEAT_WINDOWS they are all equal.
  */
-#ifdef FEAT_WINDOWS
 EXTERN win_T	*firstwin;		/* first window */
 EXTERN win_T	*lastwin;		/* last window */
 EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
@@ -571,16 +565,6 @@ EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
     for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next) \
 	for ((wp) = ((tp) == curtab) \
 		? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
-#else
-# define firstwin curwin
-# define lastwin curwin
-# define ONE_WINDOW 1
-# define W_NEXT(wp) NULL
-# define FOR_ALL_WINDOWS(wp) wp = curwin;
-# define FOR_ALL_TABPAGES(tp) for (;FALSE;)
-# define FOR_ALL_WINDOWS_IN_TAB(tp, wp) wp = curwin;
-# define FOR_ALL_TAB_WINDOWS(tp, wp) wp = curwin;
-#endif
 
 EXTERN win_T	*curwin;	/* currently active window */
 
@@ -595,7 +579,6 @@ EXTERN int	aucmd_win_used INIT(= FALSE);	/* aucmd_win is being used */
  */
 EXTERN frame_T	*topframe;	/* top of the window frame tree */
 
-#ifdef FEAT_WINDOWS
 /*
  * Tab pages are alternative topframes.  "first_tabpage" points to the first
  * one in the list, "curtab" is the current one.
@@ -603,7 +586,6 @@ EXTERN frame_T	*topframe;	/* top of the window frame tree */
 EXTERN tabpage_T    *first_tabpage;
 EXTERN tabpage_T    *curtab;
 EXTERN int	    redraw_tabline INIT(= FALSE);  /* need to redraw tabline */
-#endif
 
 /*
  * All buffers are linked in a list. 'firstbuf' points to the first entry,
@@ -1101,14 +1083,12 @@ EXTERN varnumber_T last_changedtick INIT(= 0);   /* for TextChanged event */
 EXTERN buf_T	*last_changedtick_buf INIT(= NULL);
 #endif
 
-#ifdef FEAT_WINDOWS
 EXTERN int	postponed_split INIT(= 0);  /* for CTRL-W CTRL-] command */
 EXTERN int	postponed_split_flags INIT(= 0);  /* args for win_split() */
 EXTERN int	postponed_split_tab INIT(= 0);  /* cmdmod.tab */
-# ifdef FEAT_QUICKFIX
+#ifdef FEAT_QUICKFIX
 EXTERN int	g_do_tagpreview INIT(= 0);  /* for tag preview commands:
 					       height of preview window */
-# endif
 #endif
 EXTERN int	replace_offset INIT(= 0);   /* offset for replace_push() */
 
@@ -1196,17 +1176,12 @@ EXTERN int	lcs_trail INIT(= NUL);
 EXTERN int	lcs_conceal INIT(= ' ');
 #endif
 
-#if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT) \
-	|| defined(FEAT_FOLDING)
 /* Characters from 'fillchars' option */
 EXTERN int	fill_stl INIT(= ' ');
 EXTERN int	fill_stlnc INIT(= ' ');
-#endif
-#if defined(FEAT_WINDOWS) || defined(FEAT_FOLDING)
 EXTERN int	fill_vert INIT(= ' ');
 EXTERN int	fill_fold INIT(= '-');
 EXTERN int	fill_diff INIT(= '-');
-#endif
 
 #ifdef FEAT_FOLDING
 EXTERN int	disable_fold_update INIT(= 0);
@@ -1510,9 +1485,7 @@ EXTERN char_u e_nopresub[]	INIT(= N_("E33: No previous substitute regular expres
 EXTERN char_u e_noprev[]	INIT(= N_("E34: No previous command"));
 EXTERN char_u e_noprevre[]	INIT(= N_("E35: No previous regular expression"));
 EXTERN char_u e_norange[]	INIT(= N_("E481: No range allowed"));
-#ifdef FEAT_WINDOWS
 EXTERN char_u e_noroom[]	INIT(= N_("E36: Not enough room"));
-#endif
 #ifdef FEAT_CLIENTSERVER
 EXTERN char_u e_noserver[]	INIT(= N_("E247: no registered server named \"%s\""));
 #endif
@@ -1583,10 +1556,8 @@ EXTERN char_u e_toomany[]	INIT(= N_("E77: Too many file names"));
 EXTERN char_u e_trailing[]	INIT(= N_("E488: Trailing characters"));
 EXTERN char_u e_umark[]		INIT(= N_("E78: Unknown mark"));
 EXTERN char_u e_wildexpand[]	INIT(= N_("E79: Cannot expand wildcards"));
-#ifdef FEAT_WINDOWS
 EXTERN char_u e_winheight[]	INIT(= N_("E591: 'winheight' cannot be smaller than 'winminheight'"));
 EXTERN char_u e_winwidth[]	INIT(= N_("E592: 'winwidth' cannot be smaller than 'winminwidth'"));
-#endif
 EXTERN char_u e_write[]		INIT(= N_("E80: Error while writing"));
 EXTERN char_u e_zerocount[]	INIT(= N_("E939: Positive count required"));
 #ifdef FEAT_EVAL

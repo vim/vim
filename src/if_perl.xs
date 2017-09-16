@@ -1451,24 +1451,6 @@ vim_IOLayer_init(void)
 }
 #endif /* PERLIO_LAYERS && !USE_SFIO */
 
-#ifndef FEAT_WINDOWS
-    int
-win_valid(win_T *w)
-{
-    return TRUE;
-}
-    int
-win_count(void)
-{
-    return 1;
-}
-    win_T *
-win_find_nr(int n)
-{
-    return curwin;
-}
-#endif
-
 XS(boot_VIM);
 
     static void

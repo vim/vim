@@ -196,15 +196,11 @@ static struct builtin_term builtin_termcaps[] =
 # ifdef TERMINFO
     {(int)KS_CDL,	IF_EB("\033|%p1%dD", ESC_STR "|%p1%dD")},
     {(int)KS_CS,	IF_EB("\033|%p1%d;%p2%dR", ESC_STR "|%p1%d;%p2%dR")},
-#  ifdef FEAT_WINDOWS
     {(int)KS_CSV,	IF_EB("\033|%p1%d;%p2%dV", ESC_STR "|%p1%d;%p2%dV")},
-#  endif
 # else
     {(int)KS_CDL,	IF_EB("\033|%dD", ESC_STR "|%dD")},
     {(int)KS_CS,	IF_EB("\033|%d;%dR", ESC_STR "|%d;%dR")},
-#  ifdef FEAT_WINDOWS
     {(int)KS_CSV,	IF_EB("\033|%d;%dV", ESC_STR "|%d;%dV")},
-#  endif
 # endif
     {(int)KS_CL,	IF_EB("\033|C", ESC_STR "|C")},
 			/* attributes switched on with 'h', off with * 'H' */
@@ -1121,12 +1117,10 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CS,	"[%dCS%d]"},
 #  endif
-#  ifdef FEAT_WINDOWS
-#   ifdef TERMINFO
+#  ifdef TERMINFO
     {(int)KS_CSV,	"[%p1%dCSV%p2%d]"},
-#   else
+#  else
     {(int)KS_CSV,	"[%dCSV%d]"},
-#   endif
 #  endif
 #  ifdef TERMINFO
     {(int)KS_CAB,	"[CAB%p1%d]"},
@@ -3134,9 +3128,7 @@ win_new_shellsize(void)
     if (old_Columns != Columns)
     {
 	old_Columns = Columns;
-#ifdef FEAT_WINDOWS
 	shell_new_columns();	/* update window sizes */
-#endif
     }
 }
 
@@ -3823,11 +3815,9 @@ scroll_region_set(win_T *wp, int off)
 {
     OUT_STR(tgoto((char *)T_CS, W_WINROW(wp) + wp->w_height - 1,
 							 W_WINROW(wp) + off));
-#ifdef FEAT_WINDOWS
     if (*T_CSV != NUL && wp->w_width != Columns)
 	OUT_STR(tgoto((char *)T_CSV, W_WINCOL(wp) + wp->w_width - 1,
 							       W_WINCOL(wp)));
-#endif
     screen_start();		    /* don't know where cursor is now */
 }
 
@@ -3838,10 +3828,8 @@ scroll_region_set(win_T *wp, int off)
 scroll_region_reset(void)
 {
     OUT_STR(tgoto((char *)T_CS, (int)Rows - 1, 0));
-#ifdef FEAT_WINDOWS
     if (*T_CSV != NUL)
 	OUT_STR(tgoto((char *)T_CSV, (int)Columns - 1, 0));
-#endif
     screen_start();		    /* don't know where cursor is now */
 }
 
@@ -4120,7 +4108,7 @@ static linenr_T orig_topline = 0;
 static int orig_topfill = 0;
 # endif
 #endif
-#if (defined(FEAT_WINDOWS) && defined(CHECK_DOUBLE_CLICK)) || defined(PROTO)
+#if defined(CHECK_DOUBLE_CLICK) || defined(PROTO)
 /*
  * Checking for double clicks ourselves.
  * "orig_topline" is used to avoid detecting a double-click when the window
@@ -5507,12 +5495,9 @@ check_termcode(
 				    && orig_topfill == curwin->w_topfill
 #endif
 				)
-#ifdef FEAT_WINDOWS
 				/* Double click in tab pages line also works
 				 * when window contents changes. */
-				|| (mouse_row == 0 && firstwin->w_winrow > 0)
-#endif
-			       )
+				|| (mouse_row == 0 && firstwin->w_winrow > 0))
 			    )
 			++orig_num_clicks;
 		    else

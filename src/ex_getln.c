@@ -1125,7 +1125,7 @@ getcmdline(
 #ifdef CURSOR_SHAPE
 		ui_cursor_shape();	/* may show different cursor shape */
 #endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_KEYMAP)
+#if defined(FEAT_KEYMAP)
 		/* Show/unshow value of 'keymap' in status lines later. */
 		status_redraw_curbuf();
 #endif
@@ -1966,11 +1966,9 @@ cmdline_changed:
 		end_pos = curwin->w_cursor; /* shutup gcc 4 */
 
 	    validate_cursor();
-# ifdef FEAT_WINDOWS
 	    /* May redraw the status line to show the cursor position. */
 	    if (p_ru && curwin->w_status_height > 0)
 		curwin->w_redr_status = TRUE;
-# endif
 
 	    save_cmdline(&save_ccline);
 	    update_screen(SOME_VALID);

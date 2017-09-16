@@ -145,7 +145,6 @@ static char_u	*qf_pop_dir(struct dir_stack_T **);
 static char_u	*qf_guess_filepath(qf_info_T *qi, int qf_idx, char_u *);
 static void	qf_fmt_text(char_u *text, char_u *buf, int bufsize);
 static void	qf_clean_dir_stack(struct dir_stack_T **);
-#ifdef FEAT_WINDOWS
 static int	qf_win_pos_update(qf_info_T *qi, int old_qf_index);
 static int	is_qf_win(win_T *win, qf_info_T *qi);
 static win_T	*qf_find_win(qf_info_T *qi);
@@ -153,7 +152,6 @@ static buf_T	*qf_find_buf(qf_info_T *qi);
 static void	qf_update_buffer(qf_info_T *qi, qfline_T *old_last);
 static void	qf_set_title_var(qf_info_T *qi);
 static void	qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last);
-#endif
 static char_u	*get_mef_name(void);
 static void	restore_start_dir(char_u *dirname_start);
 static buf_T	*load_dummy_buffer(char_u *fname, char_u *dirname_start, char_u *resulting_dir);
@@ -1165,9 +1163,7 @@ qf_init_ext(
     qf_list_T	    *qfl;
     qfstate_T	    state;
     qffields_T	    fields;
-#ifdef FEAT_WINDOWS
     qfline_T	    *old_last = NULL;
-#endif
     int		    adding = FALSE;
     static efm_T    *fmt_first = NULL;
     char_u	    *efm;
@@ -1209,10 +1205,8 @@ qf_init_ext(
     {
 	/* Adding to existing list, use last entry. */
 	adding = TRUE;
-#ifdef FEAT_WINDOWS
 	if (qi->qf_lists[qf_idx].qf_count > 0)
 	    old_last = qi->qf_lists[qf_idx].qf_last;
-#endif
     }
 
     qfl = &qi->qf_lists[qf_idx];
@@ -1339,10 +1333,8 @@ qf_init_end:
     vim_free(fields.pattern);
     vim_free(state.growbuf);
 
-#ifdef FEAT_WINDOWS
     if (qf_idx == qi->qf_curlist)
 	qf_update_buffer(qi, old_last);
-#endif
 #ifdef FEAT_MBYTE
     if (state.vc.vc_type != CONV_NONE)
 	convert_setup(&state.vc, NULL, NULL);
@@ -2101,7 +2093,6 @@ get_nth_entry(
     return qf_ptr;
 }
 
-#ifdef FEAT_WINDOWS
 /*
  * Find a help window or open one.
  */
@@ -2153,7 +2144,6 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
 
     return OK;
 }
-#endif
 
 /*
  * jump to a quickfix line
@@ -2181,14 +2171,12 @@ qf_jump(qf_info_T	*qi,
     colnr_T		screen_col;
     colnr_T		char_col;
     char_u		*line;
-#ifdef FEAT_WINDOWS
     char_u		*old_swb = p_swb;
     unsigned		old_swb_flags = swb_flags;
     int			opened_window = FALSE;
     win_T		*win;
     win_T		*altwin;
     int			flags;
-#endif
     win_T		*oldwin = curwin;
     int			print_message = TRUE;
     int			len;
@@ -2225,7 +2213,6 @@ qf_jump(qf_info_T	*qi,
     else if (errornr != 0)	/* go to specified number */
 	qf_ptr = get_nth_entry(qi, errornr, qf_ptr, &qf_index);
 
-#ifdef FEAT_WINDOWS
     qi->qf_lists[qi->qf_curlist].qf_index = qf_index;
     if (qf_win_pos_update(qi, old_qf_index))
 	/* No need to print the error message if it's visible in the error
@@ -2405,7 +2392,6 @@ win_found:
 	    }
 	}
     }
-#endif
 
     /*
      * If there is a file name,
@@ -2558,19 +2544,15 @@ win_found:
     }
     else
     {
-#ifdef FEAT_WINDOWS
 	if (opened_window)
 	    win_close(curwin, TRUE);    /* Close opened window */
-#endif
 	if (qf_ptr != NULL && qf_ptr->qf_fnum != 0)
 	{
 	    /*
 	     * Couldn't open file, so put index back where it was.  This could
 	     * happen if the file was readonly and we changed something.
 	     */
-#ifdef FEAT_WINDOWS
 failed:
-#endif
 	    qf_ptr = old_qf_ptr;
 	    qf_index = old_qf_index;
 	}
@@ -2581,7 +2563,6 @@ theend:
 	qi->qf_lists[qi->qf_curlist].qf_ptr = qf_ptr;
 	qi->qf_lists[qi->qf_curlist].qf_index = qf_index;
     }
-#ifdef FEAT_WINDOWS
     if (p_swb != old_swb && opened_window)
     {
 	/* Restore old 'switchbuf' value, but not when an autocommand or
@@ -2594,7 +2575,6 @@ theend:
 	else
 	    free_string_option(old_swb);
     }
-#endif
 }
 
 /*
@@ -2820,9 +2800,7 @@ qf_age(exarg_T *eap)
 	}
     }
     qf_msg(qi, qi->qf_curlist, "");
-#ifdef FEAT_WINDOWS
     qf_update_buffer(qi, NULL);
-#endif
 }
 
     void
@@ -3001,7 +2979,6 @@ qf_types(int c, int nr)
     return buf;
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * ":cwindow": open the quickfix window if we have errors to display,
  *	       close it if not.
@@ -3543,8 +3520,6 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
     /* Restore KeyTyped, setting 'filetype' may reset it. */
     KeyTyped = old_KeyTyped;
 }
-
-#endif /* FEAT_WINDOWS */
 
 /*
  * Return TRUE when using ":vimgrep" for ":grep".
@@ -4421,9 +4396,7 @@ ex_vimgrep(exarg_T *eap)
     qi->qf_lists[qi->qf_curlist].qf_ptr = qi->qf_lists[qi->qf_curlist].qf_start;
     qi->qf_lists[qi->qf_curlist].qf_index = 1;
 
-#ifdef FEAT_WINDOWS
     qf_update_buffer(qi, NULL);
-#endif
 
 #ifdef FEAT_AUTOCMD
     if (au_name != NULL)
@@ -4976,9 +4949,7 @@ qf_add_entries(
     long	lnum;
     int		col, nr;
     int		vcol;
-#ifdef FEAT_WINDOWS
     qfline_T	*old_last = NULL;
-#endif
     int		valid, status;
     int		retval = OK;
     int		did_bufnr_emsg = FALSE;
@@ -4989,11 +4960,9 @@ qf_add_entries(
 	qf_new_list(qi, title);
 	qf_idx = qi->qf_curlist;
     }
-#ifdef FEAT_WINDOWS
     else if (action == 'a' && qi->qf_lists[qf_idx].qf_count > 0)
 	/* Adding to existing list, use last entry. */
 	old_last = qi->qf_lists[qf_idx].qf_last;
-#endif
     else if (action == 'r')
     {
 	qf_free_items(qi, qf_idx);
@@ -5081,10 +5050,8 @@ qf_add_entries(
 	    qi->qf_lists[qf_idx].qf_index = 1;
     }
 
-#ifdef FEAT_WINDOWS
     /* Don't update the cursor in quickfix window when appending entries */
     qf_update_buffer(qi, old_last);
-#endif
 
     return retval;
 }
@@ -5754,9 +5721,7 @@ ex_helpgrep(exarg_T *eap)
 	/* Darn, some plugin changed the value. */
 	free_string_option(save_cpo);
 
-#ifdef FEAT_WINDOWS
     qf_update_buffer(qi, NULL);
-#endif
 
 #ifdef FEAT_AUTOCMD
     if (au_name != NULL)
