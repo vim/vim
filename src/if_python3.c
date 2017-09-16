@@ -1571,7 +1571,6 @@ python3_buffer_free(buf_T *buf)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 python3_window_free(win_T *win)
 {
@@ -1593,7 +1592,6 @@ python3_tabpage_free(tabpage_T *tab)
 	TAB_PYTHON_REF(tab) = NULL;
     }
 }
-#endif
 
     static PyObject *
 Py3Init_vim(void)

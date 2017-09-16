@@ -667,11 +667,7 @@ static char *(features[]) =
 #else
 	"-user_commands",
 #endif
-#ifdef FEAT_WINDOWS
 	"+vertsplit",
-#else
-	"-vertsplit",
-#endif
 #ifdef FEAT_VIRTUALEDIT
 	"+virtualedit",
 #else
@@ -703,11 +699,7 @@ static char *(features[]) =
 #else
 	"-wildmenu",
 #endif
-#ifdef FEAT_WINDOWS
 	"+windows",
-#else
-	"-windows",
-#endif
 #ifdef FEAT_WRITEBACKUP
 	"+writebackup",
 #else
@@ -769,6 +761,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1118,
 /**/
     1117,
 /**/
@@ -3436,9 +3430,7 @@ maybe_intro_message(void)
 {
     if (BUFEMPTY()
 	    && curbuf->b_fname == NULL
-#ifdef FEAT_WINDOWS
 	    && firstwin->w_next == NULL
-#endif
 	    && vim_strchr(p_shm, SHM_INTRO) == NULL)
 	intro_message(FALSE);
 }
@@ -3511,11 +3503,9 @@ intro_message(
     if (!p_cp)
 	blanklines += 4;  /* add 4 for not showing "Vi compatible" message */
 
-#ifdef FEAT_WINDOWS
     /* Don't overwrite a statusline.  Depends on 'cmdheight'. */
     if (p_ls > 1)
 	blanklines -= Rows - topframe->fr_height;
-#endif
     if (blanklines < 0)
 	blanklines = 0;
 

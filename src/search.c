@@ -4906,7 +4906,7 @@ find_pattern_in_path(
     char_u	*already = NULL;
     char_u	*startp = NULL;
     char_u	*inc_opt = NULL;
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     win_T	*curwin_save = NULL;
 #endif
 
@@ -5385,7 +5385,7 @@ search_line:
 	    {
 		found = TRUE;
 		if (depth == -1 && lnum == curwin->w_cursor.lnum
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 						      && g_do_tagpreview == 0
 #endif
 						      )
@@ -5402,7 +5402,7 @@ search_line:
 #ifdef FEAT_GUI
 		    need_mouse_correct = TRUE;
 #endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 		    /* ":psearch" uses the preview window */
 		    if (g_do_tagpreview != 0)
 		    {
@@ -5412,16 +5412,14 @@ search_line:
 #endif
 		    if (action == ACTION_SPLIT)
 		    {
-#ifdef FEAT_WINDOWS
 			if (win_split(0, 0) == FAIL)
-#endif
 			    break;
 			RESET_BINDING(curwin);
 		    }
 		    if (depth == -1)
 		    {
 			/* match in current file */
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 			if (g_do_tagpreview != 0)
 			{
 			    if (!GETFILE_SUCCESS(getfile(
@@ -5452,7 +5450,7 @@ search_line:
 		    curwin->w_set_curswant = TRUE;
 		}
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 		if (g_do_tagpreview != 0
 			   && curwin != curwin_save && win_valid(curwin_save))
 		{

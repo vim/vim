@@ -2610,9 +2610,7 @@ jump_to_mouse(
     int		which_button)	/* MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE */
 {
     static int	on_status_line = 0;	/* #lines below bottom of window */
-#ifdef FEAT_WINDOWS
     static int	on_sep_line = 0;	/* on separator right of window */
-#endif
     static int	prev_row = -1;
     static int	prev_col = -1;
     static win_T *dragwin = NULL;	/* window being dragged */
@@ -2650,10 +2648,8 @@ retnomove:
 	 * line, stop Visual mode */
 	if (on_status_line)
 	    return IN_STATUS_LINE;
-#ifdef FEAT_WINDOWS
 	if (on_sep_line)
 	    return IN_SEP_LINE;
-#endif
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
 	    end_visual_mode();
@@ -2691,14 +2687,10 @@ retnomove:
 	if (row < 0 || col < 0)			/* check if it makes sense */
 	    return IN_UNKNOWN;
 
-#ifdef FEAT_WINDOWS
 	/* find the window where the row is in */
 	wp = mouse_find_win(&row, &col);
 	if (wp == NULL)
 	    return IN_UNKNOWN;
-#else
-	wp = firstwin;
-#endif
 	dragwin = NULL;
 	/*
 	 * winpos and height may change in win_enter()!
@@ -2710,7 +2702,6 @@ retnomove:
 	}
 	else
 	    on_status_line = 0;
-#ifdef FEAT_WINDOWS
 	if (col >= wp->w_width)		/* In separator line */
 	{
 	    on_sep_line = col - wp->w_width + 1;
@@ -2728,16 +2719,12 @@ retnomove:
 	    else
 		on_status_line = 0;
 	}
-#endif
 
 	/* Before jumping to another buffer, or moving the cursor for a left
 	 * click, stop Visual mode. */
 	if (VIsual_active
 		&& (wp->w_buffer != curwin->w_buffer
-		    || (!on_status_line
-#ifdef FEAT_WINDOWS
-			&& !on_sep_line
-#endif
+		    || (!on_status_line && !on_sep_line
 #ifdef FEAT_FOLDING
 			&& (
 # ifdef FEAT_RIGHTLEFT
@@ -2771,17 +2758,15 @@ retnomove:
 # endif
 	}
 #endif
-#ifdef FEAT_WINDOWS
 	/* Only change window focus when not clicking on or dragging the
 	 * status line.  Do change focus when releasing the mouse button
 	 * (MOUSE_FOCUS was set above if we dragged first). */
 	if (dragwin == NULL || (flags & MOUSE_RELEASED))
 	    win_enter(wp, TRUE);		/* can make wp invalid! */
-# ifdef CHECK_DOUBLE_CLICK
+#ifdef CHECK_DOUBLE_CLICK
 	/* set topline, to be able to check for double click ourselves */
 	if (curwin != old_curwin)
 	    set_mouse_topline(curwin);
-# endif
 #endif
 	if (on_status_line)			/* In (or below) status line */
 	{
@@ -2791,7 +2776,6 @@ retnomove:
 	    else
 		return IN_STATUS_LINE | CURSOR_MOVED;
 	}
-#ifdef FEAT_WINDOWS
 	if (on_sep_line)			/* In (or below) status line */
 	{
 	    /* Don't use start_arrow() if we're in the same window */
@@ -2800,7 +2784,6 @@ retnomove:
 	    else
 		return IN_SEP_LINE | CURSOR_MOVED;
 	}
-#endif
 
 	curwin->w_cursor.lnum = curwin->w_topline;
 #ifdef FEAT_GUI
@@ -2813,7 +2796,6 @@ retnomove:
     }
     else if (on_status_line && which_button == MOUSE_LEFT)
     {
-#ifdef FEAT_WINDOWS
 	if (dragwin != NULL)
 	{
 	    /* Drag the status line */
@@ -2822,10 +2804,8 @@ retnomove:
 	    win_drag_status_line(dragwin, count);
 	    did_drag |= count;
 	}
-#endif
 	return IN_STATUS_LINE;			/* Cursor didn't move */
     }
-#ifdef FEAT_WINDOWS
     else if (on_sep_line && which_button == MOUSE_LEFT)
     {
 	if (dragwin != NULL)
@@ -2838,7 +2818,6 @@ retnomove:
 	}
 	return IN_SEP_LINE;			/* Cursor didn't move */
     }
-#endif
     else /* keep_window_focus must be TRUE */
     {
 	/* before moving the cursor for a left click, stop Visual mode */
@@ -2855,9 +2834,7 @@ retnomove:
 #endif
 
 	row -= W_WINROW(curwin);
-#ifdef FEAT_WINDOWS
 	col -= W_WINCOL(curwin);
-#endif
 
 	/*
 	 * When clicking beyond the end of the window, scroll the screen.
@@ -3100,7 +3077,6 @@ mouse_comp_pos(
     return retval;
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Find the window at screen position "*rowp" and "*colp".  The positions are
  * updated to become relative to the top-left of the window.
@@ -3144,7 +3120,6 @@ mouse_find_win(int *rowp, int *colp UNUSED)
 	    return wp;
     return NULL;
 }
-#endif
 
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
 	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
@@ -3162,23 +3137,17 @@ get_fpos_of_mouse(pos_T *mpos)
     if (row < 0 || col < 0)		/* check if it makes sense */
 	return IN_UNKNOWN;
 
-#ifdef FEAT_WINDOWS
     /* find the window where the row is in */
     wp = mouse_find_win(&row, &col);
     if (wp == NULL)
 	return IN_UNKNOWN;
-#else
-    wp = firstwin;
-#endif
     /*
      * winpos and height may change in win_enter()!
      */
     if (row >= wp->w_height)	/* In (or below) status line */
 	return IN_STATUS_LINE;
-#ifdef FEAT_WINDOWS
     if (col >= wp->w_width)	/* In vertical separator line */
 	return IN_SEP_LINE;
-#endif
 
     if (wp != curwin)
 	return IN_UNKNOWN;

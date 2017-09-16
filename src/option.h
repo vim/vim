@@ -460,9 +460,7 @@ static char *(p_dy_values[]) = {"lastline", "truncate", "uhex", NULL};
 #define DY_TRUNCATE		0x002
 #define DY_UHEX			0x004
 EXTERN int	p_ed;		/* 'edcompatible' */
-#ifdef FEAT_WINDOWS
 EXTERN char_u	*p_ead;		/* 'eadirection' */
-#endif
 EXTERN int	p_ea;		/* 'equalalways' */
 EXTERN char_u	*p_ep;		/* 'equalprg' */
 EXTERN int	p_eb;		/* 'errorbells' */
@@ -551,9 +549,7 @@ EXTERN char_u	*p_gtl;		/* 'guitablabel' */
 EXTERN char_u	*p_gtt;		/* 'guitabtooltip' */
 #endif
 EXTERN char_u	*p_hf;		/* 'helpfile' */
-#ifdef FEAT_WINDOWS
 EXTERN long	p_hh;		/* 'helpheight' */
-#endif
 #ifdef FEAT_MULTI_LANG
 EXTERN char_u	*p_hlg;		/* 'helplang' */
 #endif
@@ -611,10 +607,8 @@ EXTERN long	p_linespace;	/* 'linespace' */
 #ifdef FEAT_LISP
 EXTERN char_u	*p_lispwords;	/* 'lispwords' */
 #endif
-#ifdef FEAT_WINDOWS
 EXTERN long	p_ls;		/* 'laststatus' */
 EXTERN long	p_stal;		/* 'showtabline' */
-#endif
 EXTERN char_u	*p_lcs;		/* 'listchars' */
 
 EXTERN int	p_lz;		/* 'lazyredraw' */
@@ -705,7 +699,7 @@ EXTERN long	p_re;		/* 'regexpengine' */
 EXTERN char_u	*p_rop;		/* 'renderoptions' */
 #endif
 EXTERN long	p_report;	/* 'report' */
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 EXTERN long	p_pvh;		/* 'previewheight' */
 #endif
 #ifdef WIN3264
@@ -795,19 +789,15 @@ EXTERN long	p_ss;		/* 'sidescroll' */
 EXTERN long	p_siso;		/* 'sidescrolloff' */
 EXTERN int	p_scs;		/* 'smartcase' */
 EXTERN int	p_sta;		/* 'smarttab' */
-#ifdef FEAT_WINDOWS
 EXTERN int	p_sb;		/* 'splitbelow' */
 EXTERN long	p_tpm;		/* 'tabpagemax' */
 # if defined(FEAT_STL_OPT)
 EXTERN char_u	*p_tal;		/* 'tabline' */
 # endif
-#endif
 #ifdef FEAT_SPELL
 EXTERN char_u	*p_sps;		/* 'spellsuggest' */
 #endif
-#ifdef FEAT_WINDOWS
 EXTERN int	p_spr;		/* 'splitright' */
-#endif
 EXTERN int	p_sol;		/* 'startofline' */
 EXTERN char_u	*p_su;		/* 'suffixes' */
 EXTERN char_u	*p_sws;		/* 'swapsync' */
@@ -911,9 +901,7 @@ EXTERN long	p_ul;		/* 'undolevels' */
 EXTERN long	p_ur;		/* 'undoreload' */
 EXTERN long	p_uc;		/* 'updatecount' */
 EXTERN long	p_ut;		/* 'updatetime' */
-#if defined(FEAT_WINDOWS) || defined(FEAT_FOLDING)
 EXTERN char_u	*p_fcs;		/* 'fillchar' */
-#endif
 #ifdef FEAT_VIMINFO
 EXTERN char_u	*p_viminfo;	/* 'viminfo' */
 EXTERN char_u	*p_viminfofile;	/* 'viminfofile' */
@@ -963,12 +951,10 @@ EXTERN char_u	*p_wim;		/* 'wildmode' */
 #ifdef FEAT_WILDMENU
 EXTERN int	p_wmnu;		/* 'wildmenu' */
 #endif
-#ifdef FEAT_WINDOWS
 EXTERN long	p_wh;		/* 'winheight' */
 EXTERN long	p_wmh;		/* 'winminheight' */
 EXTERN long	p_wmw;		/* 'winminwidth' */
 EXTERN long	p_wiw;		/* 'winwidth' */
-#endif
 #if defined(WIN3264) && defined(FEAT_TERMINAL)
 EXTERN char_u	*p_winptydll;	/* 'winptydll' */
 #endif
@@ -1164,7 +1150,7 @@ enum
 #ifdef FEAT_LINEBREAK
     , WV_NUW
 #endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     , WV_PVW
 #endif
 #ifdef FEAT_RIGHTLEFT
@@ -1186,10 +1172,8 @@ enum
 #ifdef FEAT_STL_OPT
     , WV_STL
 #endif
-#ifdef FEAT_WINDOWS
     , WV_WFH
     , WV_WFW
-#endif
     , WV_WRAP
 #ifdef FEAT_SIGNS
     , WV_SCL

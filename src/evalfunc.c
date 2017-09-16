@@ -1638,16 +1638,13 @@ f_bufnr(typval_T *argvars, typval_T *rettv)
     static void
 buf_win_common(typval_T *argvars, typval_T *rettv, int get_nr)
 {
-#ifdef FEAT_WINDOWS
     win_T	*wp;
     int		winnr = 0;
-#endif
     buf_T	*buf;
 
     (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
     ++emsg_off;
     buf = get_buf_tv(&argvars[0], TRUE);
-#ifdef FEAT_WINDOWS
     FOR_ALL_WINDOWS(wp)
     {
 	++winnr;
@@ -1655,10 +1652,6 @@ buf_win_common(typval_T *argvars, typval_T *rettv, int get_nr)
 	    break;
     }
     rettv->vval.v_number = (wp != NULL ? (get_nr ? winnr : wp->w_id) : -1);
-#else
-    rettv->vval.v_number = (curwin->w_buffer == buf
-					  ? (get_nr ? 1 : curwin->w_id) : -1);
-#endif
     --emsg_off;
 }
 
@@ -4390,9 +4383,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 	    int		col = mouse_col;
 	    win_T	*win;
 	    linenr_T	lnum;
-# ifdef FEAT_WINDOWS
 	    win_T	*wp;
-# endif
 	    int		winnr = 1;
 
 	    if (row >= 0 && col >= 0)
@@ -4403,10 +4394,8 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		if (win == NULL)
 		    return;
 		(void)mouse_comp_pos(win, &row, &col, &lnum);
-# ifdef FEAT_WINDOWS
 		for (wp = firstwin; wp != win; wp = wp->w_next)
 		    ++winnr;
-# endif
 		set_vim_var_nr(VV_MOUSE_WIN, winnr);
 		set_vim_var_nr(VV_MOUSE_WINID, win->w_id);
 		set_vim_var_nr(VV_MOUSE_LNUM, lnum);
@@ -5105,7 +5094,6 @@ f_getregtype(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = vim_strsave(buf);
 }
 
-#ifdef FEAT_WINDOWS
 /*
  * Returns information (variables, options, etc.) about a tab page
  * as a dictionary.
@@ -5137,7 +5125,6 @@ get_tabpage_info(tabpage_T *tp, int tp_idx)
 
     return dict;
 }
-#endif
 
 /*
  * "gettabinfo()" function
@@ -5145,7 +5132,6 @@ get_tabpage_info(tabpage_T *tp, int tp_idx)
     static void
 f_gettabinfo(typval_T *argvars, typval_T *rettv)
 {
-#ifdef FEAT_WINDOWS
     tabpage_T	*tp, *tparg = NULL;
     dict_T	*d;
     int		tpnr = 0;
@@ -5173,7 +5159,6 @@ f_gettabinfo(typval_T *argvars, typval_T *rettv)
 	if (tparg != NULL)
 	    return;
     }
-#endif
 }
 
 /*
@@ -5228,7 +5213,6 @@ f_gettabwinvar(typval_T *argvars, typval_T *rettv)
     getwinvar(argvars, rettv, 1);
 }
 
-#ifdef FEAT_WINDOWS
 /*
  * Returns information about a window as a dictionary.
  */
@@ -5262,7 +5246,6 @@ get_win_info(win_T *wp, short tpnr, short winnr)
 
     return dict;
 }
-#endif
 
 /*
  * "getwininfo()" function
@@ -5270,17 +5253,14 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     static void
 f_getwininfo(typval_T *argvars, typval_T *rettv)
 {
-#ifdef FEAT_WINDOWS
     tabpage_T	*tp;
     win_T	*wp = NULL, *wparg = NULL;
     dict_T	*d;
     short	tabnr = 0, winnr;
-#endif
 
     if (rettv_list_alloc(rettv) != OK)
 	return;
 
-#ifdef FEAT_WINDOWS
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	wparg = win_id2wp(argvars);
@@ -5308,7 +5288,6 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
 		return;
 	}
     }
-#endif
 }
 
 /*
@@ -5978,9 +5957,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_VIMINFO
 	"viminfo",
 #endif
-#ifdef FEAT_WINDOWS
 	"vertsplit",
-#endif
 #ifdef FEAT_VIRTUALEDIT
 	"virtualedit",
 #endif
@@ -5997,9 +5974,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_WILDMENU
 	"wildmenu",
 #endif
-#ifdef FEAT_WINDOWS
 	"windows",
-#endif
 #ifdef FEAT_WAK
 	"winaltkeys",
 #endif
@@ -10526,10 +10501,8 @@ free_lstval:
     static void
 f_settabvar(typval_T *argvars, typval_T *rettv)
 {
-#ifdef FEAT_WINDOWS
     tabpage_T	*save_curtab;
     tabpage_T	*tp;
-#endif
     char_u	*varname, *tabvarname;
     typval_T	*varp;
 
@@ -10538,22 +10511,14 @@ f_settabvar(typval_T *argvars, typval_T *rettv)
     if (check_restricted() || check_secure())
 	return;
 
-#ifdef FEAT_WINDOWS
     tp = find_tabpage((int)get_tv_number_chk(&argvars[0], NULL));
-#endif
     varname = get_tv_string_chk(&argvars[1]);
     varp = &argvars[2];
 
-    if (varname != NULL && varp != NULL
-#ifdef FEAT_WINDOWS
-	    && tp != NULL
-#endif
-	    )
+    if (varname != NULL && varp != NULL && tp != NULL)
     {
-#ifdef FEAT_WINDOWS
 	save_curtab = curtab;
 	goto_tabpage_tp(tp, FALSE, FALSE);
-#endif
 
 	tabvarname = alloc((unsigned)STRLEN(varname) + 3);
 	if (tabvarname != NULL)
@@ -10564,11 +10529,9 @@ f_settabvar(typval_T *argvars, typval_T *rettv)
 	    vim_free(tabvarname);
 	}
 
-#ifdef FEAT_WINDOWS
 	/* Restore current tabpage */
 	if (valid_tabpage(save_curtab))
 	    goto_tabpage_tp(save_curtab, FALSE, FALSE);
-#endif
     }
 }
 
@@ -12274,7 +12237,6 @@ f_systemlist(typval_T *argvars, typval_T *rettv)
     static void
 f_tabpagebuflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_WINDOWS
     tabpage_T	*tp;
     win_T	*wp = NULL;
 
@@ -12293,7 +12255,6 @@ f_tabpagebuflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 						wp->w_buffer->b_fnum) == FAIL)
 		break;
     }
-#endif
 }
 
 
@@ -12304,7 +12265,6 @@ f_tabpagebuflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 f_tabpagenr(typval_T *argvars UNUSED, typval_T *rettv)
 {
     int		nr = 1;
-#ifdef FEAT_WINDOWS
     char_u	*arg;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
@@ -12321,12 +12281,10 @@ f_tabpagenr(typval_T *argvars UNUSED, typval_T *rettv)
     }
     else
 	nr = tabpage_index(curtab);
-#endif
     rettv->vval.v_number = nr;
 }
 
 
-#ifdef FEAT_WINDOWS
 static int get_winnr(tabpage_T *tp, typval_T *argvar);
 
 /*
@@ -12375,7 +12333,6 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 	}
     return nr;
 }
-#endif
 
 /*
  * "tabpagewinnr()" function
@@ -12384,7 +12341,6 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 f_tabpagewinnr(typval_T *argvars UNUSED, typval_T *rettv)
 {
     int		nr = 1;
-#ifdef FEAT_WINDOWS
     tabpage_T	*tp;
 
     tp = find_tabpage((int)get_tv_number(&argvars[0]));
@@ -12392,7 +12348,6 @@ f_tabpagewinnr(typval_T *argvars UNUSED, typval_T *rettv)
 	nr = 0;
     else
 	nr = get_winnr(tp, &argvars[1]);
-#endif
     rettv->vval.v_number = nr;
 }
 
@@ -13211,9 +13166,7 @@ f_winnr(typval_T *argvars UNUSED, typval_T *rettv)
 {
     int		nr = 1;
 
-#ifdef FEAT_WINDOWS
     nr = get_winnr(curtab, &argvars[0]);
-#endif
     rettv->vval.v_number = nr;
 }
 
@@ -13223,7 +13176,6 @@ f_winnr(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 f_winrestcmd(typval_T *argvars UNUSED, typval_T *rettv)
 {
-#ifdef FEAT_WINDOWS
     win_T	*wp;
     int		winnr = 1;
     garray_T	ga;
@@ -13241,9 +13193,6 @@ f_winrestcmd(typval_T *argvars UNUSED, typval_T *rettv)
     ga_append(&ga, NUL);
 
     rettv->vval.v_string = ga.ga_data;
-#else
-    rettv->vval.v_string = NULL;
-#endif
     rettv->v_type = VAR_STRING;
 }
 
@@ -13287,9 +13236,7 @@ f_winrestview(typval_T *argvars, typval_T *rettv UNUSED)
 
 	check_cursor();
 	win_new_height(curwin, curwin->w_height);
-# ifdef FEAT_WINDOWS
 	win_new_width(curwin, W_WIDTH(curwin));
-# endif
 	changed_window_setting();
 
 	if (curwin->w_topline <= 0)
@@ -13342,11 +13289,7 @@ f_winwidth(typval_T *argvars, typval_T *rettv)
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
-#ifdef FEAT_WINDOWS
 	rettv->vval.v_number = wp->w_width;
-#else
-	rettv->vval.v_number = Columns;
-#endif
 }
 
 /*

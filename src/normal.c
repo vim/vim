@@ -2327,10 +2327,8 @@ do_mouse(
     pos_T	start_visual;
     int		moved;		/* Has cursor moved? */
     int		in_status_line;	/* mouse in status line */
-#ifdef FEAT_WINDOWS
     static int	in_tab_line = FALSE; /* mouse clicked in tab line */
     int		in_sep_line;	/* mouse in vertical separator line */
-#endif
     int		c1, c2;
 #if defined(FEAT_FOLDING)
     pos_T	save_cursor;
@@ -2424,13 +2422,11 @@ do_mouse(
 	if (!is_drag)			/* release, reset got_click */
 	{
 	    got_click = FALSE;
-#ifdef FEAT_WINDOWS
 	    if (in_tab_line)
 	    {
 		in_tab_line = FALSE;
 		return FALSE;
 	    }
-#endif
 	}
     }
 
@@ -2570,7 +2566,6 @@ do_mouse(
 
     start_visual.lnum = 0;
 
-#ifdef FEAT_WINDOWS
     /* Check for clicking in the tab page line. */
     if (mouse_row == 0 && firstwin->w_winrow > 0)
     {
@@ -2640,8 +2635,6 @@ do_mouse(
 	tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
 	return FALSE;
     }
-
-#endif
 
     /*
      * When 'mousemodel' is "popup" or "popup_setpos", translate mouse events:
@@ -2803,9 +2796,7 @@ do_mouse(
 			oap == NULL ? NULL : &(oap->inclusive), which_button);
     moved = (jump_flags & CURSOR_MOVED);
     in_status_line = (jump_flags & IN_STATUS_LINE);
-#ifdef FEAT_WINDOWS
     in_sep_line = (jump_flags & IN_SEP_LINE);
-#endif
 
 #ifdef FEAT_NETBEANS_INTG
     if (isNetbeansBuffer(curbuf)
@@ -2984,7 +2975,7 @@ do_mouse(
 	do_put(regname, dir, count, fixindent | PUT_CURSEND);
     }
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     /*
      * Ctrl-Mouse click or double click in a quickfix window jumps to the
      * error under the mouse pointer.
@@ -3039,18 +3030,16 @@ do_mouse(
 	}
 #endif
     }
-#ifdef FEAT_WINDOWS
     else if (in_sep_line)
     {
-# ifdef FEAT_MOUSESHAPE
+#ifdef FEAT_MOUSESHAPE
 	if ((is_drag || is_click) && !drag_sep_line)
 	{
 	    drag_sep_line = TRUE;
 	    update_mouseshape(-1);
 	}
-# endif
-    }
 #endif
+    }
     else if ((mod_mask & MOD_MASK_MULTI_CLICK) && (State & (NORMAL | INSERT))
 	     && mouse_has(MOUSE_VISUAL))
     {
@@ -4105,9 +4094,7 @@ check_scrollbind(linenr_T topline_diff, long leftcol_diff)
 
 		redraw_later(VALID);
 		cursor_correct();
-#ifdef FEAT_WINDOWS
 		curwin->w_redr_status = TRUE;
-#endif
 	    }
 
 	    /*
@@ -4197,7 +4184,6 @@ nv_page(cmdarg_T *cap)
 {
     if (!checkclearop(cap->oap))
     {
-#ifdef FEAT_WINDOWS
 	if (mod_mask & MOD_MASK_CTRL)
 	{
 	    /* <C-PageUp>: tab page back; <C-PageDown>: tab page forward */
@@ -4207,8 +4193,7 @@ nv_page(cmdarg_T *cap)
 		goto_tabpage((int)cap->count0);
 	}
 	else
-#endif
-	(void)onepage(cap->arg, cap->count1);
+	    (void)onepage(cap->arg, cap->count1);
     }
 }
 
@@ -4468,9 +4453,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
     if (width2 == 0)
 	width2 = 1; /* avoid divide by zero */
 
-#ifdef FEAT_WINDOWS
     if (curwin->w_width != 0)
-#endif
     {
       /*
        * Instead of sticking at the last character of the buffer line we
@@ -4607,7 +4590,6 @@ nv_screengo(oparg_T *oap, int dir, long dist)
     static void
 nv_mousescroll(cmdarg_T *cap)
 {
-# ifdef FEAT_WINDOWS
     win_T *old_curwin = curwin, *wp;
 
     if (mouse_row >= 0 && mouse_col >= 0)
@@ -4624,7 +4606,6 @@ nv_mousescroll(cmdarg_T *cap)
 	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
-# endif
 
     if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
     {
@@ -4663,12 +4644,10 @@ nv_mousescroll(cmdarg_T *cap)
     }
 # endif
 
-# ifdef FEAT_WINDOWS
     curwin->w_redr_status = TRUE;
 
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
-# endif
 }
 
 /*
@@ -5539,7 +5518,6 @@ nv_Zet(cmdarg_T *cap)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Call nv_ident() as if "c1" was used, with "c2" as next character.
  */
@@ -5556,7 +5534,6 @@ do_nv_ident(int c1, int c2)
     ca.nchar = c2;
     nv_ident(&ca);
 }
-#endif
 
 /*
  * Handle the commands that use the word under the cursor.
@@ -6198,7 +6175,7 @@ nv_down(cmdarg_T *cap)
 	nv_page(cap);
     }
     else
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     /* In a quickfix window a <CR> jumps to the error under the cursor. */
     if (bt_quickfix(curbuf) && cap->cmdchar == CAR)
     {
@@ -7846,15 +7823,11 @@ n_start_visual_mode(int c)
     static void
 nv_window(cmdarg_T *cap)
 {
-#ifdef FEAT_WINDOWS
     if (cap->nchar == ':')
 	/* "CTRL-W :" is the same as typing ":"; useful in a terminal window */
 	nv_colon(cap);
     else if (!checkclearop(cap->oap))
 	do_window(cap->nchar, cap->count0, NUL); /* everything is in window.c */
-#else
-    (void)checkclearop(cap->oap);
-#endif
 }
 
 /*
@@ -8098,11 +8071,7 @@ nv_g_cmd(cmdarg_T *cap)
     case K_KHOME:
 	oap->motion_type = MCHAR;
 	oap->inclusive = FALSE;
-	if (curwin->w_p_wrap
-#ifdef FEAT_WINDOWS
-		&& curwin->w_width != 0
-#endif
-		)
+	if (curwin->w_p_wrap && curwin->w_width != 0)
 	{
 	    int		width1 = W_WIDTH(curwin) - curwin_col_off();
 	    int		width2 = width1 + curwin_col_off2();
@@ -8165,11 +8134,7 @@ nv_g_cmd(cmdarg_T *cap)
 
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = TRUE;
-	    if (curwin->w_p_wrap
-#ifdef FEAT_WINDOWS
-		    && curwin->w_width != 0
-#endif
-	       )
+	    if (curwin->w_p_wrap && curwin->w_width != 0)
 	    {
 		curwin->w_curswant = MAXCOL;    /* so we stay at the end */
 		if (cap->count1 == 1)
@@ -8440,7 +8405,6 @@ nv_g_cmd(cmdarg_T *cap)
 	break;
 #endif
 
-#ifdef FEAT_WINDOWS
     case 't':
 	if (!checkclearop(oap))
 	    goto_tabpage((int)cap->count0);
@@ -8449,7 +8413,6 @@ nv_g_cmd(cmdarg_T *cap)
 	if (!checkclearop(oap))
 	    goto_tabpage(-(int)cap->count1);
 	break;
-#endif
 
     case '+':
     case '-': /* "g+" and "g-": undo or redo along the timeline */

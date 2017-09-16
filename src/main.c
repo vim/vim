@@ -47,9 +47,7 @@ static void command_line_scan(mparm_T *parmp);
 static void check_tty(mparm_T *parmp);
 static void read_stdin(void);
 static void create_windows(mparm_T *parmp);
-# ifdef FEAT_WINDOWS
 static void edit_buffers(mparm_T *parmp, char_u *cwd);
-# endif
 static void exe_pre_commands(mparm_T *parmp);
 static void exe_commands(mparm_T *parmp);
 static void source_startup_scripts(mparm_T *parmp);
@@ -141,9 +139,7 @@ main
 #ifdef FEAT_EVAL
     params.use_debug_break_level = -1;
 #endif
-#ifdef FEAT_WINDOWS
     params.window_count = -1;
-#endif
 
 #ifdef FEAT_RUBY
     {
@@ -754,13 +750,11 @@ vim_main2(void)
     }
 #endif
 
-#ifdef FEAT_WINDOWS
     /*
      * If opened more than one window, start editing files in the other
      * windows.
      */
     edit_buffers(&params, start_dir);
-#endif
     vim_free(start_dir);
 
 #ifdef FEAT_DIFF
@@ -867,7 +861,7 @@ vim_main2(void)
     mch_set_winsize_now();	    /* Allow winsize changes from now on */
 #endif
 
-#if defined(FEAT_GUI) && defined(FEAT_WINDOWS)
+#if defined(FEAT_GUI)
     /* When tab pages were created, may need to update the tab pages line and
      * scrollbars.  This is skipped while creating them. */
     if (first_tabpage->tp_next != NULL)
@@ -1257,9 +1251,7 @@ main_loop(
 		update_screen(0);
 	    else if (redraw_cmdline || clear_cmdline)
 		showmode();
-#ifdef FEAT_WINDOWS
 	    redraw_statuslines();
-#endif
 #ifdef FEAT_TITLE
 	    if (need_maketitle)
 		maketitle();
@@ -1435,7 +1427,6 @@ getout(int exitval)
     if (get_vim_var_nr(VV_DYING) <= 1)
     {
 	/* Trigger BufWinLeave for all windows, but only once per buffer. */
-# if defined FEAT_WINDOWS
 	for (tp = first_tabpage; tp != NULL; tp = next_tp)
 	{
 	    next_tp = tp->tp_next;
@@ -1456,10 +1447,6 @@ getout(int exitval)
 		}
 	    }
 	}
-# else
-	apply_autocmds(EVENT_BUFWINLEAVE, curbuf, curbuf->b_fname,
-							       FALSE, curbuf);
-# endif
 
 	/* Trigger BufUnload for buffers that are loaded */
 	FOR_ALL_BUFFERS(buf)
@@ -2102,30 +2089,24 @@ command_line_scan(mparm_T *parmp)
 		    break;
 		}
 #endif
-#ifdef FEAT_WINDOWS
 		/* default is 0: open window for each file */
 		parmp->window_count = get_number_arg((char_u *)argv[0],
 								&argv_idx, 0);
 		parmp->window_layout = WIN_TABS;
-#endif
 		break;
 
 	    case 'o':		/* "-o[N]" open N horizontal split windows */
-#ifdef FEAT_WINDOWS
 		/* default is 0: open window for each file */
 		parmp->window_count = get_number_arg((char_u *)argv[0],
 								&argv_idx, 0);
 		parmp->window_layout = WIN_HOR;
-#endif
 		break;
 
 		case 'O':	/* "-O[N]" open N vertical split windows */
-#ifdef FEAT_WINDOWS
 		/* default is 0: open window for each file */
 		parmp->window_count = get_number_arg((char_u *)argv[0],
 								&argv_idx, 0);
 		parmp->window_layout = WIN_VER;
-#endif
 		break;
 
 #ifdef FEAT_QUICKFIX
@@ -2640,7 +2621,6 @@ read_stdin(void)
     static void
 create_windows(mparm_T *parmp UNUSED)
 {
-#ifdef FEAT_WINDOWS
     int		dorewind;
     int		done = 0;
 
@@ -2673,7 +2653,6 @@ create_windows(mparm_T *parmp UNUSED)
     }
     else
 	parmp->window_count = 1;
-#endif
 
     if (recoverymode)			/* do recover */
     {
@@ -2697,7 +2676,6 @@ create_windows(mparm_T *parmp UNUSED)
 	++autocmd_no_enter;
 	++autocmd_no_leave;
 #endif
-#ifdef FEAT_WINDOWS
 	dorewind = TRUE;
 	while (done++ < 1000)
 	{
@@ -2721,7 +2699,6 @@ create_windows(mparm_T *parmp UNUSED)
 		curwin = curwin->w_next;
 	    }
 	    dorewind = FALSE;
-#endif
 	    curbuf = curwin->w_buffer;
 	    if (curbuf->b_ml.ml_mfp == NULL)
 	    {
@@ -2762,7 +2739,6 @@ create_windows(mparm_T *parmp UNUSED)
 		dorewind = TRUE;		/* start again */
 #endif
 	    }
-#ifdef FEAT_WINDOWS
 	    ui_breakcheck();
 	    if (got_int)
 	    {
@@ -2770,14 +2746,11 @@ create_windows(mparm_T *parmp UNUSED)
 		break;
 	    }
 	}
-#endif
-#ifdef FEAT_WINDOWS
 	if (parmp->window_layout == WIN_TABS)
 	    goto_tabpage(1);
 	else
 	    curwin = firstwin;
 	curbuf = curwin->w_buffer;
-#endif
 #ifdef FEAT_AUTOCMD
 	--autocmd_no_enter;
 	--autocmd_no_leave;
@@ -2785,7 +2758,6 @@ create_windows(mparm_T *parmp UNUSED)
     }
 }
 
-#ifdef FEAT_WINDOWS
     /*
      * If opened more than one window, start editing files in the other
      * windows.  make_windows() has already opened the windows.
@@ -2893,7 +2865,7 @@ edit_buffers(
 
     /* make the first window the current window */
     win = firstwin;
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     /* Avoid making a preview window the current window. */
     while (win->w_p_pvw)
     {
@@ -2907,14 +2879,13 @@ edit_buffers(
 #endif
     win_enter(win, FALSE);
 
-# ifdef FEAT_AUTOCMD
+#ifdef FEAT_AUTOCMD
     --autocmd_no_leave;
-# endif
+#endif
     TIME_MSG("editing files in windows");
     if (parmp->window_count > 1 && parmp->window_layout != WIN_TABS)
 	win_equal(curwin, FALSE, 'b');	/* adjust heights */
 }
-#endif /* FEAT_WINDOWS */
 
 /*
  * Execute the commands from --cmd arguments "cmds[cnt]".
@@ -3367,11 +3338,9 @@ usage(void)
     main_msg(_("-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"));
 #endif
     main_msg(_("--noplugin\t\tDon't load plugin scripts"));
-#ifdef FEAT_WINDOWS
     main_msg(_("-p[N]\t\tOpen N tab pages (default: one for each file)"));
     main_msg(_("-o[N]\t\tOpen N windows (default: one for each file)"));
     main_msg(_("-O[N]\t\tLike -o but split vertically"));
-#endif
     main_msg(_("+\t\t\tStart at end of file"));
     main_msg(_("+<lnum>\t\tStart at line <lnum>"));
     main_msg(_("--cmd <command>\tExecute <command> before loading any vimrc file"));
@@ -3394,9 +3363,7 @@ usage(void)
     main_msg(_("--remote-silent <files>  Same, don't complain if there is no server"));
     main_msg(_("--remote-wait <files>  As --remote but wait for files to have been edited"));
     main_msg(_("--remote-wait-silent <files>  Same, don't complain if there is no server"));
-# ifdef FEAT_WINDOWS
     main_msg(_("--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"));
-# endif
     main_msg(_("--remote-send <keys>\tSend <keys> to a Vim server and exit"));
     main_msg(_("--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"));
     main_msg(_("--serverlist\t\tList available Vim server names and exit"));

@@ -1056,9 +1056,7 @@ mark_adjust_internal(
     int		fnum = curbuf->b_fnum;
     linenr_T	*lp;
     win_T	*win;
-#ifdef FEAT_WINDOWS
     tabpage_T	*tab;
-#endif
     static pos_T initpos = INIT_POS_T(1, 0, 0);
 
     if (line2 < line1 && amount_after == 0L)	    /* nothing to do */
@@ -1340,7 +1338,6 @@ cleanup_jumplist(void)
     curwin->w_jumplistlen = to;
 }
 
-# if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Copy the jumplist from window "from" to window "to".
  */
@@ -1370,7 +1367,6 @@ free_jumplist(win_T *wp)
     for (i = 0; i < wp->w_jumplistlen; ++i)
 	vim_free(wp->w_jumplist[i].fname);
 }
-# endif
 #endif /* FEAT_JUMPLIST */
 
     void
@@ -1895,7 +1891,6 @@ write_viminfo_marks(FILE *fp_out, garray_T *buflist)
     buf_T	*buf;
     int		is_mark_set;
     int		i;
-#ifdef FEAT_WINDOWS
     win_T	*win;
     tabpage_T	*tp;
 
@@ -1904,9 +1899,6 @@ write_viminfo_marks(FILE *fp_out, garray_T *buflist)
      */
     FOR_ALL_TAB_WINDOWS(tp, win)
 	set_last_cursor(win);
-#else
-	set_last_cursor(curwin);
-#endif
 
     fputs(_("\n# History of marks within files (newest to oldest):\n"), fp_out);
     FOR_ALL_BUFFERS(buf)

@@ -6887,10 +6887,8 @@ static char *(highlight_init_both[]) = {
     CENT("StatusLineNC term=reverse cterm=reverse",
 	 "StatusLineNC term=reverse cterm=reverse gui=reverse"),
     "default link EndOfBuffer NonText",
-#ifdef FEAT_WINDOWS
     CENT("VertSplit term=reverse cterm=reverse",
 	 "VertSplit term=reverse cterm=reverse gui=reverse"),
-#endif
 #ifdef FEAT_CLIPBOARD
     CENT("VisualNOS term=underline,bold cterm=underline,bold",
 	 "VisualNOS term=underline,bold cterm=underline,bold gui=underline,bold"),
@@ -6903,12 +6901,10 @@ static char *(highlight_init_both[]) = {
     CENT("PmenuSbar ctermbg=Grey",
 	 "PmenuSbar ctermbg=Grey guibg=Grey"),
 #endif
-#ifdef FEAT_WINDOWS
     CENT("TabLineSel term=bold cterm=bold",
 	 "TabLineSel term=bold cterm=bold gui=bold"),
     CENT("TabLineFill term=reverse cterm=reverse",
 	 "TabLineFill term=reverse cterm=reverse gui=reverse"),
-#endif
 #ifdef FEAT_GUI
     "Cursor guibg=fg guifg=bg",
     "lCursor guibg=fg guifg=bg", /* should be different, but what? */
@@ -6979,10 +6975,8 @@ static char *(highlight_init_light[]) = {
     CENT("DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan",
 	 "DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan gui=bold guifg=Blue guibg=LightCyan"),
 #endif
-#ifdef FEAT_WINDOWS
     CENT("TabLine term=underline cterm=underline ctermfg=black ctermbg=LightGrey",
 	 "TabLine term=underline cterm=underline ctermfg=black ctermbg=LightGrey gui=underline guibg=LightGrey"),
-#endif
 #ifdef FEAT_SYN_HL
     CENT("CursorColumn term=reverse ctermbg=LightGrey",
 	 "CursorColumn term=reverse ctermbg=LightGrey guibg=Grey90"),
@@ -7073,10 +7067,8 @@ static char *(highlight_init_dark[]) = {
     CENT("DiffDelete term=bold ctermfg=Blue ctermbg=DarkCyan",
 	 "DiffDelete term=bold ctermfg=Blue ctermbg=DarkCyan gui=bold guifg=Blue guibg=DarkCyan"),
 #endif
-#ifdef FEAT_WINDOWS
     CENT("TabLine term=underline cterm=underline ctermfg=white ctermbg=DarkGrey",
 	 "TabLine term=underline cterm=underline ctermfg=white ctermbg=DarkGrey gui=underline guibg=DarkGrey"),
-#endif
 #ifdef FEAT_SYN_HL
     CENT("CursorColumn term=reverse ctermbg=DarkGrey",
 	 "CursorColumn term=reverse ctermbg=DarkGrey guibg=Grey40"),

@@ -3872,14 +3872,12 @@ WindowAttr(WindowObject *self, char *name)
     }
     else if (strcmp(name, "height") == 0)
 	return PyLong_FromLong((long)(self->win->w_height));
-#ifdef FEAT_WINDOWS
     else if (strcmp(name, "row") == 0)
 	return PyLong_FromLong((long)(self->win->w_winrow));
     else if (strcmp(name, "width") == 0)
 	return PyLong_FromLong((long)(W_WIDTH(self->win)));
     else if (strcmp(name, "col") == 0)
 	return PyLong_FromLong((long)(W_WINCOL(self->win)));
-#endif
     else if (strcmp(name, "vars") == 0)
 	return NEW_DICTIONARY(self->win->w_vars);
     else if (strcmp(name, "options") == 0)
@@ -3965,7 +3963,6 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 
 	return 0;
     }
-#ifdef FEAT_WINDOWS
     else if (strcmp(name, "width") == 0)
     {
 	long	width;
@@ -3988,7 +3985,6 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 
 	return 0;
     }
-#endif
     else
     {
 	PyErr_SetString(PyExc_AttributeError, name);

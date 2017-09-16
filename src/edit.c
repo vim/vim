@@ -1360,7 +1360,7 @@ doESCkey:
 	    /* FALLTHROUGH */
 	case CAR:
 	case NL:
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	    /* In a quickfix window a <CR> jumps to the error under the
 	     * cursor. */
 	    if (bt_quickfix(curbuf) && c == CAR)
@@ -4045,22 +4045,16 @@ ins_compl_fixRedoBufForLeader(char_u *ptr_arg)
     static buf_T *
 ins_compl_next_buf(buf_T *buf, int flag)
 {
-#ifdef FEAT_WINDOWS
     static win_T *wp;
-#endif
 
     if (flag == 'w')		/* just windows */
     {
-#ifdef FEAT_WINDOWS
 	if (buf == curbuf)	/* first call for this flag/expansion */
 	    wp = curwin;
 	while ((wp = (wp->w_next != NULL ? wp->w_next : firstwin)) != curwin
 		&& wp->w_buffer->b_scanned)
 	    ;
 	buf = wp->w_buffer;
-#else
-	buf = curbuf;
-#endif
     }
     else
 	/* 'b' (just loaded buffers), 'u' (just non-loaded buffers) or 'U'
@@ -8540,7 +8534,7 @@ ins_ctrl_hat(void)
     if (gui.in_use)
 	gui_update_cursor(TRUE, FALSE);
 #endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_KEYMAP)
+#if defined(FEAT_KEYMAP)
     /* Show/unshow value of 'keymap' in status lines. */
     status_redraw_curbuf();
 #endif
@@ -9382,7 +9376,6 @@ ins_mouse(int c)
     tpos = curwin->w_cursor;
     if (do_mouse(NULL, c, BACKWARD, 1L, 0))
     {
-#ifdef FEAT_WINDOWS
 	win_T	*new_curwin = curwin;
 
 	if (curwin != old_curwin && win_valid(old_curwin))
@@ -9392,40 +9385,32 @@ ins_mouse(int c)
 	    curwin = old_curwin;
 	    curbuf = curwin->w_buffer;
 	}
-#endif
 	start_arrow(curwin == old_curwin ? &tpos : NULL);
-#ifdef FEAT_WINDOWS
 	if (curwin != new_curwin && win_valid(new_curwin))
 	{
 	    curwin = new_curwin;
 	    curbuf = curwin->w_buffer;
 	}
-#endif
 # ifdef FEAT_CINDENT
 	can_cindent = TRUE;
 # endif
     }
 
-#ifdef FEAT_WINDOWS
     /* redraw status lines (in case another window became active) */
     redraw_statuslines();
-#endif
 }
 
     static void
 ins_mousescroll(int dir)
 {
     pos_T	tpos;
-# if defined(FEAT_WINDOWS)
     win_T	*old_curwin = curwin, *wp;
-# endif
 # ifdef FEAT_INS_EXPAND
     int		did_scroll = FALSE;
 # endif
 
     tpos = curwin->w_cursor;
 
-# ifdef FEAT_WINDOWS
     if (mouse_row >= 0 && mouse_col >= 0)
     {
 	int row, col;
@@ -9441,16 +9426,11 @@ ins_mousescroll(int dir)
 	curbuf = curwin->w_buffer;
     }
     if (curwin == old_curwin)
-# endif
 	undisplay_dollar();
 
 # ifdef FEAT_INS_EXPAND
     /* Don't scroll the window in which completion is being done. */
-    if (!pum_visible()
-#  if defined(FEAT_WINDOWS)
-	    || curwin != old_curwin
-#  endif
-	    )
+    if (!pum_visible() || curwin != old_curwin)
 # endif
     {
 	if (dir == MSCR_DOWN || dir == MSCR_UP)
@@ -9479,12 +9459,10 @@ ins_mousescroll(int dir)
 # endif
     }
 
-# ifdef FEAT_WINDOWS
     curwin->w_redr_status = TRUE;
 
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
-# endif
 
 # ifdef FEAT_INS_EXPAND
     /* The popup menu may overlay the window, need to redraw it.
@@ -9883,7 +9861,6 @@ ins_pageup(void)
 
     undisplay_dollar();
 
-#ifdef FEAT_WINDOWS
     if (mod_mask & MOD_MASK_CTRL)
     {
 	/* <C-PageUp>: tab page back */
@@ -9894,7 +9871,6 @@ ins_pageup(void)
 	}
 	return;
     }
-#endif
 
     tpos = curwin->w_cursor;
     if (onepage(BACKWARD, 1L) == OK)
@@ -9946,7 +9922,6 @@ ins_pagedown(void)
 
     undisplay_dollar();
 
-#ifdef FEAT_WINDOWS
     if (mod_mask & MOD_MASK_CTRL)
     {
 	/* <C-PageDown>: tab page forward */
@@ -9957,7 +9932,6 @@ ins_pagedown(void)
 	}
 	return;
     }
-#endif
 
     tpos = curwin->w_cursor;
     if (onepage(FORWARD, 1L) == OK)

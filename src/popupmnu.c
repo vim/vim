@@ -60,7 +60,7 @@ pum_display(
     int		above_row;
     int		below_row;
     int		redo_count = 0;
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     win_T	*pvwin;
 #endif
 
@@ -80,7 +80,7 @@ redo:
 
     row = curwin->w_wrow + W_WINROW(curwin);
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     FOR_ALL_WINDOWS(pvwin)
 	if (pvwin->w_p_pvw)
 	    break;
@@ -156,7 +156,7 @@ redo:
     if (pum_height < 1 || (pum_height == 1 && size > 1))
 	return;
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     /* If there is a preview window at the above avoid drawing over it. */
     if (pvwin != NULL && pum_row < above_row && pum_height > above_row)
     {
@@ -551,7 +551,7 @@ pum_set_selected(int n, int repeat)
 	    }
 	}
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	/*
 	 * Show extra info in the preview window if there is something and
 	 * 'completeopt' contains "preview".
@@ -715,9 +715,7 @@ pum_undisplay(void)
 {
     pum_array = NULL;
     redraw_all_later(SOME_VALID);
-#ifdef FEAT_WINDOWS
     redraw_tabline = TRUE;
-#endif
     status_redraw_all();
 }
 

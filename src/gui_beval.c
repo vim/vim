@@ -29,9 +29,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
     char_u	*bexpr;
     buf_T	*save_curbuf;
     size_t	len;
-# ifdef FEAT_WINDOWS
     win_T	*cw;
-# endif
 #endif
     static int	recursive = FALSE;
 
@@ -53,11 +51,9 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 						    : wp->w_buffer->b_p_bexpr;
 	if (*bexpr != NUL)
 	{
-# ifdef FEAT_WINDOWS
 	    /* Convert window pointer to number. */
 	    for (cw = firstwin; cw != wp; cw = cw->w_next)
 		++winnr;
-# endif
 
 	    set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
 	    set_vim_var_nr(VV_BEVAL_WINNR, winnr);
@@ -341,11 +337,7 @@ get_beval_info(
     *textp = NULL;
     row = Y_2_ROW(beval->y);
     col = X_2_COL(beval->x);
-#ifdef FEAT_WINDOWS
     wp = mouse_find_win(&row, &col);
-#else
-    wp = firstwin;
-#endif
     if (wp != NULL && row < wp->w_height && col < W_WIDTH(wp))
     {
 	/* Found a window and the cursor is in the text.  Now find the line

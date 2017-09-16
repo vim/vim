@@ -1879,14 +1879,12 @@ gui_mch_create_scrollbar(
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 gui_mch_destroy_scrollbar(scrollbar_T *sb)
 {
     if (sb->id != (Widget)0)
 	XtDestroyWidget(sb->id);
 }
-#endif
 
     void
 gui_mch_set_scrollbar_colors(scrollbar_T *sb)

@@ -2920,9 +2920,7 @@ spell_reload(void)
 		if (wp->w_p_spell)
 		{
 		    (void)did_set_spelllang(wp);
-# ifdef FEAT_WINDOWS
 		    break;
-# endif
 		}
 	}
     }

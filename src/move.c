@@ -982,11 +982,7 @@ curs_columns(
 	curwin->w_wcol = W_WIDTH(curwin) - 1;
 	curwin->w_wrow = curwin->w_height - 1;
     }
-    else if (curwin->w_p_wrap
-#ifdef FEAT_WINDOWS
-	    && curwin->w_width != 0
-#endif
-	    )
+    else if (curwin->w_p_wrap && curwin->w_width != 0)
     {
 	width = textwidth + curwin_col_off2();
 
@@ -1089,10 +1085,7 @@ curs_columns(
 	    && curwin->w_height != 0
 	    && curwin->w_cursor.lnum == curwin->w_topline
 	    && width > 0
-#ifdef FEAT_WINDOWS
-	    && curwin->w_width != 0
-#endif
-	    )
+	    && curwin->w_width != 0)
     {
 	/* Cursor past end of screen.  Happens with a single line that does
 	 * not fit on screen.  Find a skipcol to show the text around the
@@ -1251,11 +1244,7 @@ scrolldown(
      * and move the cursor onto the displayed part of the window.
      */
     wrow = curwin->w_wrow;
-    if (curwin->w_p_wrap
-#ifdef FEAT_WINDOWS
-		&& curwin->w_width != 0
-#endif
-	    )
+    if (curwin->w_p_wrap && curwin->w_width != 0)
     {
 	validate_virtcol();
 	validate_cheight();
@@ -1460,11 +1449,7 @@ scrolldown_clamp(void)
 #else
     end_row += plines(curwin->w_topline - 1);
 #endif
-    if (curwin->w_p_wrap
-#ifdef FEAT_WINDOWS
-		&& curwin->w_width != 0
-#endif
-	    )
+    if (curwin->w_p_wrap && curwin->w_width != 0)
     {
 	validate_cheight();
 	validate_virtcol();
@@ -1524,11 +1509,7 @@ scrollup_clamp(void)
 #else
     start_row = curwin->w_wrow - plines(curwin->w_topline);
 #endif
-    if (curwin->w_p_wrap
-#ifdef FEAT_WINDOWS
-		&& curwin->w_width != 0
-#endif
-	    )
+    if (curwin->w_p_wrap && curwin->w_width != 0)
     {
 	validate_virtcol();
 	start_row -= curwin->w_virtcol / W_WIDTH(curwin);
@@ -2855,9 +2836,7 @@ do_check_cursorbind(void)
 	    /* Only scroll when 'scrollbind' hasn't done this. */
 	    if (!curwin->w_p_scb)
 		update_topline();
-# ifdef FEAT_WINDOWS
 	    curwin->w_redr_status = TRUE;
-# endif
 	}
     }
 

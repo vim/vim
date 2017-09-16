@@ -1160,7 +1160,6 @@ gui_mch_create_scrollbar(scrollbar_T *sb, int orient)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 gui_mch_destroy_scrollbar(scrollbar_T *sb)
 {
@@ -1171,7 +1170,6 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
     }
     gui_mch_update();
 }
-#endif
 
 #if defined(FEAT_BROWSE) || defined(PROTO)
 /*

@@ -10,7 +10,6 @@
 #include "vim.h"
 
 static int path_is_url(char_u *p);
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 static void cmd_with_count(char *cmd, char_u *bufp, size_t bufsize, long Prenum);
 static void win_init(win_T *newp, win_T *oldp, int flags);
 static void win_init_some(win_T *newp, win_T *oldp);
@@ -36,10 +35,8 @@ static void frame_new_width(frame_T *topfrp, int width, int leftfirst, int wfw);
 static void frame_add_vsep(frame_T *frp);
 static int frame_minwidth(frame_T *topfrp, win_T *next_curwin);
 static void frame_fix_width(win_T *wp);
-#endif
 static int win_alloc_firstwin(win_T *oldwin);
 static void new_frame(win_T *wp);
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 static tabpage_T *alloc_tabpage(void);
 static int leave_tabpage(buf_T *new_curbuf, int trigger_leave_autocmds);
 static void enter_tabpage(tabpage_T *tp, buf_T *old_curbuf, int trigger_enter_autocmds, int trigger_leave_autocmds);
@@ -64,8 +61,6 @@ static win_T *restore_snapshot_rec(frame_T *sn, frame_T *fr);
 static int frame_check_height(frame_T *topfrp, int height);
 static int frame_check_width(frame_T *topfrp, int width);
 
-#endif /* FEAT_WINDOWS */
-
 static win_T *win_alloc(win_T *after, int hidden);
 
 #define URL_SLASH	1		/* path_is_url() has found "://" */
@@ -73,13 +68,7 @@ static win_T *win_alloc(win_T *after, int hidden);
 
 #define NOWIN		(win_T *)-1	/* non-existing window */
 
-#ifdef FEAT_WINDOWS
-# define ROWS_AVAIL (Rows - p_ch - tabline_height())
-#else
-# define ROWS_AVAIL (Rows - p_ch)
-#endif
-
-#if defined(FEAT_WINDOWS) || defined(PROTO)
+#define ROWS_AVAIL (Rows - p_ch - tabline_height())
 
 static char *m_onlyone = N_("Already only one window");
 
@@ -198,7 +187,7 @@ newwindow:
 		do_cmdline_cmd(cbuf);
 		break;
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 /* close preview window */
     case Ctrl_Z:
     case 'z':
@@ -1354,9 +1343,7 @@ win_init_some(win_T *newp, win_T *oldp)
     win_copy_options(oldp, newp);
 }
 
-#endif /* FEAT_WINDOWS */
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Check if "win" is a pointer to an existing window in the current tab page.
  */
@@ -2596,10 +2583,8 @@ win_free_all(void)
 {
     int		dummy;
 
-# ifdef FEAT_WINDOWS
     while (first_tabpage->tp_next != NULL)
 	tabpage_close(TRUE);
-# endif
 
 # ifdef FEAT_AUTOCMD
     if (aucmd_win != NULL)
@@ -3388,8 +3373,6 @@ close_others(
 	EMSG(_("E445: Other window contains changes"));
 }
 
-#endif /* FEAT_WINDOWS */
-
 /*
  * Init the current window "curwin".
  * Called when a new file is being edited.
@@ -3441,13 +3424,11 @@ win_alloc_first(void)
     if (win_alloc_firstwin(NULL) == FAIL)
 	return FAIL;
 
-#ifdef FEAT_WINDOWS
     first_tabpage = alloc_tabpage();
     if (first_tabpage == NULL)
 	return FAIL;
     first_tabpage->tp_topframe = topframe;
     curtab = first_tabpage;
-#endif
 
     return OK;
 }
@@ -3473,8 +3454,7 @@ win_alloc_aucmd_win(void)
 /*
  * Allocate the first window or the first window in a new tab page.
  * When "oldwin" is NULL create an empty buffer for it.
- * When "oldwin" is not NULL copy info from it to the new window (only with
- * FEAT_WINDOWS).
+ * When "oldwin" is not NULL copy info from it to the new window.
  * Return FAIL when something goes wrong (out of memory).
  */
     static int
@@ -3493,12 +3473,9 @@ win_alloc_firstwin(win_T *oldwin)
 	curwin->w_s = &(curbuf->b_s);
 #endif
 	curbuf->b_nwindows = 1;	/* there is one window */
-#ifdef FEAT_WINDOWS
 	curwin->w_alist = &global_alist;
-#endif
 	curwin_init();		/* init current window */
     }
-#ifdef FEAT_WINDOWS
     else
     {
 	/* First window in new tab page, initialize it from "oldwin". */
@@ -3507,15 +3484,12 @@ win_alloc_firstwin(win_T *oldwin)
 	/* We don't want cursor- and scroll-binding in the first window. */
 	RESET_BINDING(curwin);
     }
-#endif
 
     new_frame(curwin);
     if (curwin->w_frame == NULL)
 	return FAIL;
     topframe = curwin->w_frame;
-#ifdef FEAT_WINDOWS
     topframe->fr_width = Columns;
-#endif
     topframe->fr_height = Rows - p_ch;
     topframe->fr_win = curwin;
 
@@ -3546,13 +3520,9 @@ win_init_size(void)
 {
     firstwin->w_height = ROWS_AVAIL;
     topframe->fr_height = ROWS_AVAIL;
-#ifdef FEAT_WINDOWS
     firstwin->w_width = Columns;
     topframe->fr_width = Columns;
-#endif
 }
-
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 
 /*
  * Allocate a new tabpage_T and init the values.
@@ -4185,19 +4155,14 @@ win_find_nr(int winnr)
 {
     win_T	*wp;
 
-# ifdef FEAT_WINDOWS
     FOR_ALL_WINDOWS(wp)
 	if (--winnr == 0)
 	    break;
     return wp;
-# else
-    return curwin;
-# endif
 }
 #endif
 
-#if (defined(FEAT_WINDOWS) && (defined(FEAT_PYTHON) || defined(FEAT_PYTHON3))) \
-	|| defined(PROTO)
+#if ((defined(FEAT_PYTHON) || defined(FEAT_PYTHON3))) || defined(PROTO)
 /*
  * Find the tabpage for window "win".
  */
@@ -4481,9 +4446,7 @@ win_enter_ext(
     DO_AUTOCHDIR
 }
 
-#endif /* FEAT_WINDOWS */
 
-#if defined(FEAT_WINDOWS) || defined(FEAT_SIGNS) || defined(PROTO)
 /*
  * Jump to the first open window that contains buffer "buf", if one exists.
  * Returns a pointer to the window found, otherwise NULL.
@@ -4495,14 +4458,12 @@ buf_jump_open_win(buf_T *buf)
 
     if (curwin->w_buffer == buf)
 	wp = curwin;
-# ifdef FEAT_WINDOWS
     else
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_buffer == buf)
 		break;
     if (wp != NULL)
 	win_enter(wp, FALSE);
-# endif
     return wp;
 }
 
@@ -4515,7 +4476,6 @@ buf_jump_open_win(buf_T *buf)
 buf_jump_open_tab(buf_T *buf)
 {
     win_T	*wp = buf_jump_open_win(buf);
-# ifdef FEAT_WINDOWS
     tabpage_T	*tp;
 
     if (wp != NULL)
@@ -4535,10 +4495,8 @@ buf_jump_open_tab(buf_T *buf)
 		break;
 	    }
 	}
-# endif
     return wp;
 }
-#endif
 
 static int last_win_id = LOWEST_WIN_ID - 1;
 
@@ -4587,12 +4545,10 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
     /*
      * link the window in the window list
      */
-#ifdef FEAT_WINDOWS
     if (!hidden)
 	win_append(after, new_wp);
     new_wp->w_wincol = 0;
     new_wp->w_width = Columns;
-#endif
 
     /* position the display and the cursor at the top of the file. */
     new_wp->w_topline = 1;
@@ -4630,8 +4586,6 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
 #endif
     return new_wp;
 }
-
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 
 /*
  * Remove window 'wp' from the window list and free the structure.
@@ -4850,8 +4804,6 @@ frame_remove(frame_T *frp)
 	frp->fr_next->fr_prev = frp->fr_prev;
 }
 
-#endif /* FEAT_WINDOWS */
-
 /*
  * Allocate w_lines[] for window "wp".
  * Return FAIL for failure, OK for success.
@@ -4891,7 +4843,6 @@ shell_new_rows(void)
 
     if (firstwin == NULL)	/* not initialized yet */
 	return;
-#ifdef FEAT_WINDOWS
     if (h < frame_minheight(topframe, NULL))
 	h = frame_minheight(topframe, NULL);
 
@@ -4902,15 +4853,8 @@ shell_new_rows(void)
 	frame_new_height(topframe, h, FALSE, FALSE);
 
     (void)win_comp_pos();		/* recompute w_winrow and w_wincol */
-#else
-    if (h < 1)
-	h = 1;
-    win_new_height(firstwin, h);
-#endif
     compute_cmdrow();
-#ifdef FEAT_WINDOWS
     curtab->tp_ch_used = p_ch;
-#endif
 
 #if 0
     /* Disabled: don't want making the screen smaller make a window larger. */
@@ -4919,7 +4863,6 @@ shell_new_rows(void)
 #endif
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Called from win_new_shellsize() after Columns changed.
  */
@@ -4942,7 +4885,6 @@ shell_new_columns(void)
 	win_equal(curwin, FALSE, 'h');
 #endif
 }
-#endif
 
 #if defined(FEAT_CMDWIN) || defined(PROTO)
 /*
@@ -4993,7 +4935,6 @@ win_size_restore(garray_T *gap)
 }
 #endif /* FEAT_CMDWIN */
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Update the position for all windows, using the width and height of the
  * frames.
@@ -5052,8 +4993,6 @@ frame_comp_pos(frame_T *topfrp, int *row, int *col)
     }
 }
 
-#endif /* FEAT_WINDOWS */
-
 /*
  * Set current window height and take care of repositioning other windows to
  * fit around it.
@@ -5077,25 +5016,16 @@ win_setheight_win(int height, win_T *win)
     {
 	/* Always keep current window at least one line high, even when
 	 * 'winminheight' is zero. */
-#ifdef FEAT_WINDOWS
 	if (height < p_wmh)
 	    height = p_wmh;
-#endif
 	if (height == 0)
 	    height = 1;
     }
 
-#ifdef FEAT_WINDOWS
     frame_setheight(win->w_frame, height + win->w_status_height);
 
     /* recompute the window positions */
     row = win_comp_pos();
-#else
-    if (height > topframe->fr_height)
-	height = topframe->fr_height;
-    win->w_height = height;
-    row = height;
-#endif
 
     /*
      * If there is extra space created between the last window and the command
@@ -5109,8 +5039,6 @@ win_setheight_win(int height, win_T *win)
 
     redraw_all_later(NOT_VALID);
 }
-
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 
 /*
  * Set the height of a frame to "height" and take care that all frames and
@@ -5725,8 +5653,6 @@ win_drag_vsep_line(win_T *dragwin, int offset)
 }
 #endif /* FEAT_MOUSE */
 
-#endif /* FEAT_WINDOWS */
-
 #define FRACTION_MULT	16384L
 
 /*
@@ -5898,13 +5824,10 @@ scroll_to_fraction(win_T *wp, int prev_height)
 
     win_comp_scroll(wp);
     redraw_win_later(wp, SOME_VALID);
-#ifdef FEAT_WINDOWS
     wp->w_redr_status = TRUE;
-#endif
     invalidate_botline_win(wp);
 }
 
-#ifdef FEAT_WINDOWS
 /*
  * Set the width of a window.
  */
@@ -5923,7 +5846,6 @@ win_new_width(win_T *wp, int width)
     redraw_win_later(wp, NOT_VALID);
     wp->w_redr_status = TRUE;
 }
-#endif
 
     void
 win_comp_scroll(win_T *wp)
@@ -5939,7 +5861,6 @@ win_comp_scroll(win_T *wp)
     void
 command_height(void)
 {
-#ifdef FEAT_WINDOWS
     int		h;
     frame_T	*frp;
     int		old_p_ch = curtab->tp_ch_used;
@@ -6004,13 +5925,8 @@ command_height(void)
     /* Recompute window positions. */
     if (frp != lastwin->w_frame)
 	(void)win_comp_pos();
-#else
-    cmdline_row = Rows - p_ch;
-    win_setheight(cmdline_row);
-#endif
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Resize frame "frp" to be "n" lines higher (negative for less high).
  * Also resize the frames it is contained in.
@@ -6121,8 +6037,6 @@ tabline_height(void)
     }
     return 1;
 }
-
-#endif /* FEAT_WINDOWS */
 
 #if defined(FEAT_SEARCHPATH) || defined(PROTO)
 /*
@@ -6438,15 +6352,12 @@ vim_FullName(
 min_rows(void)
 {
     int		total;
-#ifdef FEAT_WINDOWS
     tabpage_T	*tp;
     int		n;
-#endif
 
     if (firstwin == NULL)	/* not initialized yet */
 	return MIN_LINES;
 
-#ifdef FEAT_WINDOWS
     total = 0;
     FOR_ALL_TABPAGES(tp)
     {
@@ -6455,9 +6366,6 @@ min_rows(void)
 	    total = n;
     }
     total += tabline_height();
-#else
-    total = 1;		/* at least one window should have a line! */
-#endif
     total += 1;		/* count the room for the command line */
     return total;
 }
@@ -6470,7 +6378,6 @@ min_rows(void)
     int
 only_one_window(void)
 {
-#ifdef FEAT_WINDOWS
     int		count = 0;
     win_T	*wp;
 
@@ -6491,12 +6398,8 @@ only_one_window(void)
 	   )
 	    ++count;
     return (count <= 1);
-#else
-    return TRUE;
-#endif
 }
 
-#if defined(FEAT_WINDOWS) || defined(FEAT_AUTOCMD) || defined(PROTO)
 /*
  * Correct the cursor line number in other windows.  Used after changing the
  * current buffer, and before applying autocommands.
@@ -6506,16 +6409,10 @@ only_one_window(void)
 check_lnums(int do_curwin)
 {
     win_T	*wp;
-
-#ifdef FEAT_WINDOWS
     tabpage_T	*tp;
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if ((do_curwin || wp != curwin) && wp->w_buffer == curbuf)
-#else
-    wp = curwin;
-    if (do_curwin)
-#endif
 	{
 	    if (wp->w_cursor.lnum > curbuf->b_ml.ml_line_count)
 		wp->w_cursor.lnum = curbuf->b_ml.ml_line_count;
@@ -6523,9 +6420,6 @@ check_lnums(int do_curwin)
 		wp->w_topline = curbuf->b_ml.ml_line_count;
 	}
 }
-#endif
-
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 
 /*
  * A snapshot of the window sizes, to restore them after closing the help
@@ -6666,8 +6560,6 @@ restore_snapshot_rec(frame_T *sn, frame_T *fr)
     return wp;
 }
 
-#endif
-
 #if defined(FEAT_EVAL) || defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
 	|| defined(PROTO)
 /*
@@ -6689,7 +6581,6 @@ switch_win(
 # ifdef FEAT_AUTOCMD
     block_autocmds();
 # endif
-# ifdef FEAT_WINDOWS
     *save_curwin = curwin;
     if (tp != NULL)
     {
@@ -6709,7 +6600,6 @@ switch_win(
 	return FAIL;
     curwin = win;
     curbuf = curwin->w_buffer;
-# endif
     return OK;
 }
 
@@ -6724,7 +6614,6 @@ restore_win(
     tabpage_T	*save_curtab UNUSED,
     int		no_display UNUSED)
 {
-# ifdef FEAT_WINDOWS
     if (save_curtab != NULL && valid_tabpage(save_curtab))
     {
 	if (no_display)
@@ -6743,7 +6632,6 @@ restore_win(
 	curwin = save_curwin;
 	curbuf = curwin->w_buffer;
     }
-# endif
 # ifdef FEAT_AUTOCMD
     unblock_autocmds();
 # endif
@@ -6786,7 +6674,7 @@ restore_buffer(bufref_T *save_curbuf)
 }
 #endif
 
-#if (defined(FEAT_GUI) && defined(FEAT_WINDOWS)) || defined(PROTO)
+#if defined(FEAT_GUI) || defined(PROTO)
 /*
  * Return TRUE if there is any vertically split window.
  */
@@ -7121,7 +7009,6 @@ get_win_number(win_T *wp, win_T *first_win)
 get_tab_number(tabpage_T *tp UNUSED)
 {
     int		i = 1;
-# ifdef FEAT_WINDOWS
     tabpage_T	*t;
 
     for (t = first_tabpage; t != NULL && t != tp; t = t->tp_next)
@@ -7130,12 +7017,10 @@ get_tab_number(tabpage_T *tp UNUSED)
     if (t == NULL)
 	return 0;
     else
-# endif
 	return i;
 }
 #endif
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Return TRUE if "topfrp" and its children are at the right height.
  */
@@ -7154,9 +7039,7 @@ frame_check_height(frame_T *topfrp, int height)
 
     return TRUE;
 }
-#endif
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Return TRUE if "topfrp" and its children are at the right width.
  */
@@ -7175,7 +7058,6 @@ frame_check_width(frame_T *topfrp, int width)
 
     return TRUE;
 }
-#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
     int

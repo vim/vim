@@ -59,7 +59,7 @@ static void	clear_wininfo(buf_T *buf);
 static void insert_sign(buf_T *buf, signlist_T *prev, signlist_T *next, int id, linenr_T lnum, int typenr);
 #endif
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 static char *msg_loclist = N_("[Location List]");
 static char *msg_qflist = N_("[Quickfix List]");
 #endif
@@ -458,11 +458,9 @@ close_buffer(
     int		is_curbuf;
     int		nwindows;
     bufref_T	bufref;
-# ifdef FEAT_WINDOWS
     int		is_curwin = (curwin != NULL && curwin->w_buffer == buf);
     win_T	*the_curwin = curwin;
     tabpage_T	*the_curtab = curtab;
-# endif
 #endif
     int		unload_buf = (action != 0);
     int		del_buf = (action == DOBUF_DEL || action == DOBUF_WIPE);
@@ -522,11 +520,8 @@ close_buffer(
     }
 #endif
 
-    if (win != NULL
-#ifdef FEAT_WINDOWS
-	&& win_valid_any_tab(win) /* in case autocommands closed the window */
-#endif
-	    )
+    /* check no autocommands closed the window */
+    if (win != NULL && win_valid_any_tab(win))
     {
 	/* Set b_last_cursor when closing the last window for the buffer.
 	 * Remember the last cursor position and window options of the buffer.
@@ -581,7 +576,6 @@ aucmd_abort:
 # endif
     }
 
-# ifdef FEAT_WINDOWS
     /* If the buffer was in curwin and the window has changed, go back to that
      * window, if it still exists.  This avoids that ":edit x" triggering a
      * "tabnext" BufUnload autocmd leaves a window behind without a buffer. */
@@ -591,7 +585,6 @@ aucmd_abort:
 	goto_tabpage_win(the_curtab, the_curwin);
 	unblock_autocmds();
     }
-# endif
 
     nwindows = buf->b_nwindows;
 #endif
@@ -650,13 +643,7 @@ aucmd_abort:
     if (buf == curbuf && !is_curbuf)
 	return;
 
-    if (
-#ifdef FEAT_WINDOWS
-	win_valid_any_tab(win) &&
-#else
-	win != NULL &&
-#endif
-			  win->w_buffer == buf)
+    if (win_valid_any_tab(win) && win->w_buffer == buf)
 	win->w_buffer = NULL;  /* make sure we don't use the buffer now */
 
     /* Autocommands may have opened or closed windows for this buffer.
@@ -746,11 +733,9 @@ buf_freeall(buf_T *buf, int flags)
 #ifdef FEAT_AUTOCMD
     int		is_curbuf = (buf == curbuf);
     bufref_T	bufref;
-# ifdef FEAT_WINDOWS
     int		is_curwin = (curwin != NULL && curwin->w_buffer == buf);
     win_T	*the_curwin = curwin;
     tabpage_T	*the_curtab = curtab;
-# endif
 
     /* Make sure the buffer isn't closed by autocommands. */
     ++buf->b_locked;
@@ -781,7 +766,6 @@ buf_freeall(buf_T *buf, int flags)
     }
     --buf->b_locked;
 
-# ifdef FEAT_WINDOWS
     /* If the buffer was in curwin and the window has changed, go back to that
      * window, if it still exists.  This avoids that ":edit x" triggering a
      * "tabnext" BufUnload autocmd leaves a window behind without a buffer. */
@@ -791,7 +775,6 @@ buf_freeall(buf_T *buf, int flags)
 	goto_tabpage_win(the_curtab, the_curwin);
 	unblock_autocmds();
     }
-# endif
 
 # ifdef FEAT_EVAL
     if (aborting())	    /* autocmds may abort script processing */
@@ -818,7 +801,6 @@ buf_freeall(buf_T *buf, int flags)
 
 #ifdef FEAT_FOLDING
     /* No folds in an empty buffer. */
-# ifdef FEAT_WINDOWS
     {
 	win_T		*win;
 	tabpage_T	*tp;
@@ -827,10 +809,6 @@ buf_freeall(buf_T *buf, int flags)
 	    if (win->w_buffer == buf)
 		clearFolding(win);
     }
-# else
-    if (curwin != NULL && curwin->w_buffer == buf)
-	clearFolding(curwin);
-# endif
 #endif
 
 #ifdef FEAT_TCL
@@ -1001,7 +979,7 @@ goto_buffer(
     int		dir,
     int		count)
 {
-# if defined(FEAT_WINDOWS) && defined(HAS_SWAP_EXISTS_ACTION)
+# if defined(HAS_SWAP_EXISTS_ACTION)
     bufref_T	old_curbuf;
 
     set_bufref(&old_curbuf, curbuf);
@@ -1010,7 +988,7 @@ goto_buffer(
 # endif
     (void)do_buffer(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO,
 					     start, dir, count, eap->forceit);
-# if defined(FEAT_WINDOWS) && defined(HAS_SWAP_EXISTS_ACTION)
+# if defined(HAS_SWAP_EXISTS_ACTION)
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
     {
 #  if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
@@ -1269,11 +1247,9 @@ empty_curbuf(
     }
 
     set_bufref(&bufref, buf);
-#ifdef FEAT_WINDOWS
     if (close_others)
 	/* Close any other windows on this buffer, then make it empty. */
 	close_windows(buf, TRUE);
-#endif
 
     setpcmark();
     retval = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE,
@@ -1410,11 +1386,9 @@ do_buffer(
     if (unload)
     {
 	int	forward;
-# if defined(FEAT_AUTOCMD) || defined(FEAT_WINDOWS)
 	bufref_T bufref;
 
 	set_bufref(&bufref, buf);
-# endif
 
 	/* When unloading or deleting a buffer that's already unloaded and
 	 * unlisted: fail silently. */
@@ -1461,33 +1435,28 @@ do_buffer(
 	if (bp == NULL && buf == curbuf)
 	    return empty_curbuf(TRUE, forceit, action);
 
-#ifdef FEAT_WINDOWS
 	/*
 	 * If the deleted buffer is the current one, close the current window
 	 * (unless it's the only window).  Repeat this so long as we end up in
 	 * a window with this buffer.
 	 */
 	while (buf == curbuf
-# ifdef FEAT_AUTOCMD
+#ifdef FEAT_AUTOCMD
 		   && !(curwin->w_closing || curwin->w_buffer->b_locked > 0)
-# endif
+#endif
 		   && (!ONE_WINDOW || first_tabpage->tp_next != NULL))
 	{
 	    if (win_close(curwin, FALSE) == FAIL)
 		break;
 	}
-#endif
 
 	/*
 	 * If the buffer to be deleted is not the current one, delete it here.
 	 */
 	if (buf != curbuf)
 	{
-#ifdef FEAT_WINDOWS
 	    close_windows(buf, FALSE);
-	    if (buf != curbuf && bufref_valid(&bufref))
-#endif
-		if (buf->b_nwindows <= 0)
+	    if (buf != curbuf && bufref_valid(&bufref) && buf->b_nwindows <= 0)
 		    close_buffer(NULL, buf, action, FALSE);
 	    return OK;
 	}
@@ -1606,7 +1575,6 @@ do_buffer(
      */
     if (action == DOBUF_SPLIT)	    /* split window first */
     {
-# ifdef FEAT_WINDOWS
 	/* If 'switchbuf' contains "useopen": jump to first window containing
 	 * "buf" if one exists */
 	if ((swb_flags & SWB_USEOPEN) && buf_jump_open_win(buf))
@@ -1616,7 +1584,6 @@ do_buffer(
 	if ((swb_flags & SWB_USETAB) && buf_jump_open_tab(buf))
 	    return OK;
 	if (win_split(0, 0) == FAIL)
-# endif
 	    return FAIL;
     }
 #endif
@@ -1719,30 +1686,24 @@ set_curbuf(buf_T *buf, int action)
 	if (prevbuf == curwin->w_buffer)
 	    reset_synblock(curwin);
 #endif
-#ifdef FEAT_WINDOWS
 	if (unload)
 	    close_windows(prevbuf, FALSE);
-#endif
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 	if (bufref_valid(&bufref) && !aborting())
 #else
 	if (bufref_valid(&bufref))
 #endif
 	{
-#ifdef FEAT_WINDOWS
 	    win_T  *previouswin = curwin;
-#endif
 	    if (prevbuf == curbuf)
 		u_sync(FALSE);
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
 			&& !buf_hide(prevbuf)
 			&& !bufIsChanged(prevbuf)) ? DOBUF_UNLOAD : 0, FALSE);
-#ifdef FEAT_WINDOWS
 	    if (curwin != previouswin && win_valid(previouswin))
 	      /* autocommands changed curwin, Grr! */
 	      curwin = previouswin;
-#endif
 	}
     }
 #ifdef FEAT_AUTOCMD
@@ -1751,12 +1712,9 @@ set_curbuf(buf_T *buf, int action)
      * If curwin->w_buffer is null, enter_buffer() will make it valid again */
     if ((buf_valid(buf) && buf != curbuf
 # ifdef FEAT_EVAL
-	    && !aborting()
+		&& !aborting()
 # endif
-# ifdef FEAT_WINDOWS
-	 ) || curwin->w_buffer == NULL
-# endif
-       )
+	) || curwin->w_buffer == NULL)
 #endif
     {
 	enter_buffer(buf);
@@ -2327,9 +2285,7 @@ buflist_getfile(
     int		forceit)
 {
     buf_T	*buf;
-#ifdef FEAT_WINDOWS
     win_T	*wp = NULL;
-#endif
     pos_T	*fpos;
     colnr_T	col;
 
@@ -2367,7 +2323,6 @@ buflist_getfile(
     else
 	col = 0;
 
-#ifdef FEAT_WINDOWS
     if (options & GETF_SWITCH)
     {
 	/* If 'switchbuf' contains "useopen": jump to first window containing
@@ -2393,7 +2348,6 @@ buflist_getfile(
 	    RESET_BINDING(curwin);
 	}
     }
-#endif
 
     ++RedrawingDisabled;
     if (GETFILE_SUCCESS(getfile(buf->b_fnum, NULL, NULL,
@@ -2598,7 +2552,6 @@ buflist_findpat(
 			{
 			    /* Ignore the match if the buffer is not open in
 			     * the current tab. */
-#ifdef FEAT_WINDOWS
 			    win_T	*wp;
 
 			    FOR_ALL_WINDOWS(wp)
@@ -2606,10 +2559,6 @@ buflist_findpat(
 				    break;
 			    if (wp == NULL)
 				continue;
-#else
-			    if (curwin->w_buffer != buf)
-				continue;
-#endif
 			}
 			if (match >= 0)		/* already found a match */
 			{
@@ -3089,7 +3038,10 @@ buflist_list(exarg_T *eap)
 #ifdef FEAT_TERMINAL
 	if (term_job_running(buf->b_term))
 	{
-	    ro_char = 'R';
+	    if (term_none_open(buf->b_term))
+		ro_char = '?';
+	    else
+		ro_char = 'R';
 	    changed_char = ' ';  /* bufIsChanged() returns TRUE to avoid
 				  * closing, but it's not actually changed. */
 	}
@@ -3292,9 +3244,7 @@ buf_name_changed(buf_T *buf)
 #ifdef FEAT_TITLE
     maketitle();		/* set window title */
 #endif
-#ifdef FEAT_WINDOWS
     status_redraw_all();	/* status lines need to be redrawn */
-#endif
     fmarks_check_names(buf);	/* check named file marks */
     ml_timestamp(buf);		/* reset timestamp */
 }
@@ -4422,7 +4372,7 @@ build_stl_str_hl(
 	    break;
 #endif
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	case STL_PREVIEWFLAG:
 	case STL_PREVIEWFLAG_ALT:
 	    itemisflag = TRUE;
@@ -4908,7 +4858,6 @@ alist_name(aentry_T *aep)
     return bp->b_fname;
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * do_arg_all(): Open up to 'count' windows, one for each argument.
  */
@@ -5057,23 +5006,19 @@ do_arg_all(
 			}
 #endif
 		    }
-#ifdef FEAT_WINDOWS
 		    /* don't close last window */
 		    if (ONE_WINDOW
 			    && (first_tabpage->tp_next == NULL || !had_tab))
-#endif
 			use_firstwin = TRUE;
-#ifdef FEAT_WINDOWS
 		    else
 		    {
 			win_close(wp, !buf_hide(buf) && !bufIsChanged(buf));
-# ifdef FEAT_AUTOCMD
+#ifdef FEAT_AUTOCMD
 			/* check if autocommands removed the next window */
 			if (!win_valid(wpnext))
 			    wpnext = firstwin;	/* start all over... */
-# endif
-		    }
 #endif
+		    }
 		}
 	    }
 	}
@@ -5105,13 +5050,11 @@ do_arg_all(
     last_curwin = curwin;
     last_curtab = curtab;
     win_enter(lastwin, FALSE);
-#ifdef FEAT_WINDOWS
     /* ":drop all" should re-use an empty window to avoid "--remote-tab"
      * leaving an empty tab page when executed locally. */
     if (keep_tabs && BUFEMPTY() && curbuf->b_nwindows == 1
 			    && curbuf->b_ffname == NULL && !curbuf->b_changed)
 	use_firstwin = TRUE;
-#endif
 
     for (i = 0; i < count && i < opened_len && !got_int; ++i)
     {
@@ -5222,10 +5165,8 @@ ex_buffer_all(exarg_T *eap)
     int		r;
     int		count;		/* Maximum number of windows to open. */
     int		all;		/* When TRUE also load inactive buffers. */
-#ifdef FEAT_WINDOWS
     int		had_tab = cmdmod.tab;
     tabpage_T	*tpnext;
-#endif
 
     if (eap->addr_count == 0)	/* make as many windows as possible */
 	count = 9999;
@@ -5246,25 +5187,20 @@ ex_buffer_all(exarg_T *eap)
      * Close superfluous windows (two windows for the same buffer).
      * Also close windows that are not full-width.
      */
-#ifdef FEAT_WINDOWS
     if (had_tab > 0)
 	goto_tabpage_tp(first_tabpage, TRUE, TRUE);
     for (;;)
     {
-#endif
 	tpnext = curtab->tp_next;
 	for (wp = firstwin; wp != NULL; wp = wpnext)
 	{
 	    wpnext = wp->w_next;
 	    if ((wp->w_buffer->b_nwindows > 1
-#ifdef FEAT_WINDOWS
 		    || ((cmdmod.split & WSP_VERT)
 			? wp->w_height + wp->w_status_height < Rows - p_ch
 							    - tabline_height()
 			: wp->w_width != Columns)
-		    || (had_tab > 0 && wp != firstwin)
-#endif
-		    ) && !ONE_WINDOW
+		    || (had_tab > 0 && wp != firstwin)) && !ONE_WINDOW
 #ifdef FEAT_AUTOCMD
 		    && !(wp->w_closing || wp->w_buffer->b_locked > 0)
 #endif
@@ -5282,13 +5218,11 @@ ex_buffer_all(exarg_T *eap)
 		++open_wins;
 	}
 
-#ifdef FEAT_WINDOWS
 	/* Without the ":tab" modifier only do the current tab page. */
 	if (had_tab == 0 || tpnext == NULL)
 	    break;
 	goto_tabpage_tp(tpnext, TRUE, TRUE);
     }
-#endif
 
     /*
      * Go through the buffer list.  When a buffer doesn't have a window yet,
@@ -5309,7 +5243,6 @@ ex_buffer_all(exarg_T *eap)
 	if ((!all && buf->b_ml.ml_mfp == NULL) || !buf->b_p_bl)
 	    continue;
 
-#ifdef FEAT_WINDOWS
 	if (had_tab != 0)
 	{
 	    /* With the ":tab" modifier don't move the window. */
@@ -5319,7 +5252,6 @@ ex_buffer_all(exarg_T *eap)
 		wp = NULL;
 	}
 	else
-#endif
 	{
 	    /* Check if this buffer already has a window */
 	    FOR_ALL_WINDOWS(wp)
@@ -5401,11 +5333,9 @@ ex_buffer_all(exarg_T *eap)
 	if (aborting())
 	    break;
 #endif
-#ifdef FEAT_WINDOWS
 	/* When ":tab" was used open a new tab for a new window repeatedly. */
 	if (had_tab > 0 && tabpage_index(NULL) <= p_tpm)
 	    cmdmod.tab = 9999;
-#endif
     }
 #ifdef FEAT_AUTOCMD
     --autocmd_no_enter;
@@ -5446,7 +5376,6 @@ ex_buffer_all(exarg_T *eap)
 }
 # endif /* FEAT_LISTCMDS */
 
-#endif /* FEAT_WINDOWS */
 
 static int  chk_modeline(linenr_T, int);
 
@@ -5673,10 +5602,8 @@ read_viminfo_bufferlist(
 write_viminfo_bufferlist(FILE *fp)
 {
     buf_T	*buf;
-#ifdef FEAT_WINDOWS
     win_T	*win;
     tabpage_T	*tp;
-#endif
     char_u	*line;
     int		max_buffers;
 
@@ -5692,12 +5619,8 @@ write_viminfo_bufferlist(FILE *fp)
     if (line == NULL)
 	return;
 
-#ifdef FEAT_WINDOWS
     FOR_ALL_TAB_WINDOWS(tp, win)
 	set_last_cursor(win);
-#else
-    set_last_cursor(curwin);
-#endif
 
     fputs(_("\n# Buffer list:\n"), fp);
     FOR_ALL_BUFFERS(buf)
@@ -5810,7 +5733,7 @@ buf_hide(buf_T *buf)
     char_u *
 buf_spname(buf_T *buf)
 {
-#if defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)
+#if defined(FEAT_QUICKFIX)
     if (bt_quickfix(buf))
     {
 	win_T	    *win;
@@ -5888,9 +5811,7 @@ restore_win_for_buf(
 }
 #endif
 
-#if (defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)) \
-	|| defined(SWITCH_TO_WIN) \
-	|| defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(SWITCH_TO_WIN) || defined(PROTO)
 /*
  * Find a window for buffer "buf".
  * If found OK is returned and "wp" and "tp" are set to the window and tabpage.
