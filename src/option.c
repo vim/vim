@@ -1591,19 +1591,11 @@ static struct vimoption options[] =
 			    SCRIPTID_INIT},
     {"iminsert",    "imi",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_iminsert, PV_IMI,
-#ifdef B_IMODE_IM
-			    {(char_u *)B_IMODE_IM, (char_u *)0L}
-#else
 			    {(char_u *)B_IMODE_NONE, (char_u *)0L}
-#endif
 			    SCRIPTID_INIT},
     {"imsearch",    "ims",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_imsearch, PV_IMS,
-#ifdef B_IMODE_IM
-			    {(char_u *)B_IMODE_IM, (char_u *)0L}
-#else
-			    {(char_u *)B_IMODE_NONE, (char_u *)0L}
-#endif
+			    {(char_u *)B_IMODE_USE_INSERT, (char_u *)0L}
 			    SCRIPTID_INIT},
     {"imstatusfunc","imsf",P_STRING|P_VI_DEF|P_SECURE,
 #if defined(FEAT_EVAL) && defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
