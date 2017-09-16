@@ -1309,8 +1309,8 @@ normal_end:
 #endif
 
 #ifdef FEAT_TERMINAL
-    /* don't go to Insert mode from Terminal-Job mode */
-    if (term_use_loop())
+    /* don't go to Insert mode if a terminal has a running job */
+    if (term_job_running(curbuf->b_term))
 	restart_edit = 0;
 #endif
 
@@ -9044,7 +9044,18 @@ nv_edit(cmdarg_T *cap)
 
     /* in Visual mode "A" and "I" are an operator */
     if (VIsual_active && (cap->cmdchar == 'A' || cap->cmdchar == 'I'))
+    {
+#ifdef FEAT_TERMINAL
+	if (term_in_normal_mode())
+	{
+	    end_visual_mode();
+	    clearop(cap->oap);
+	    term_enter_job_mode();
+	    return;
+	}
+#endif
 	v_visop(cap);
+    }
 
     /* in Visual mode and after an operator "a" and "i" are for text objects */
     else if ((cap->cmdchar == 'a' || cap->cmdchar == 'i')
