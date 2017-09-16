@@ -3642,11 +3642,16 @@ f_foldtextresult(typval_T *argvars UNUSED, typval_T *rettv)
     char_u	buf[FOLD_TEXT_LEN];
     foldinfo_T  foldinfo;
     int		fold_count;
+    static int	entered = FALSE;
 #endif
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 #ifdef FEAT_FOLDING
+    if (entered)
+	return; /* reject recursive use */
+    entered = TRUE;
+
     lnum = get_tv_lnum(argvars);
     /* treat illegal types and illegal string values for {lnum} the same */
     if (lnum < 0)
@@ -3660,6 +3665,8 @@ f_foldtextresult(typval_T *argvars UNUSED, typval_T *rettv)
 	    text = vim_strsave(text);
 	rettv->vval.v_string = text;
     }
+
+    entered = FALSE;
 #endif
 }
 
