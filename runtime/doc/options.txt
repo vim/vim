@@ -4299,7 +4299,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	may change in later releases.
 
 						*'iminsert'* *'imi'*
-'iminsert' 'imi'	number (default 0, 2 when an input method is supported)
+'iminsert' 'imi'	number (default 0)
 			local to buffer
 			{not in Vi}
 	Specifies whether :lmap or an Input Method (IM) is to be used in
@@ -4322,7 +4322,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	methods.  Use 'imdisable' to disable XIM then.
 
 						*'imsearch'* *'ims'*
-'imsearch' 'ims'	number (default 0, 2 when an input method is supported)
+'imsearch' 'ims'	number (default -1)
 			local to buffer
 			{not in Vi}
 	Specifies whether :lmap or an Input Method (IM) is to be used when
