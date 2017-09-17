@@ -47,11 +47,11 @@ GOTO end
 
 :use_vim
 :: The script tutor.vim tells Vim which file to copy
-vim -u NONE -c "so $VIMRUNTIME/tutor/tutor.vim"
+call vim -u NONE -c "so $VIMRUNTIME/tutor/tutor.vim"
 IF ERRORLEVEL 1 GOTO no_executable
 
 :: Start vim without any .vimrc, set 'nocompatible'
-vim -u NONE -c "set nocp" %TUTORCOPY%
+call vim -u NONE -c "set nocp" %TUTORCOPY%
 
 GOTO end
 
