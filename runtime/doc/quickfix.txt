@@ -47,11 +47,6 @@ compiler (see |errorformat| below).
 							*quickfix-ID*
 Each quickfix list has a unique identifier called the quickfix ID and this
 number will not change within a Vim session. The getqflist() function can be
-used to get the identifier assigned to a list.
-
-							*quickfix-ID*
-Each quickfix list has a unique identifier called the quickfix ID and this
-number will not change within a Vim session. The getqflist() function can be
 used to get the identifier assigned to a list. There is also a quickfix list
 number which may change whenever more than ten lists are added to a quickfix
 stack.

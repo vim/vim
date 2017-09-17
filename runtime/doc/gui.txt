@@ -895,14 +895,14 @@ the <CR> key.  |<>|)
 
 See section |42.4| in the user manual.
 
-							*:tmenu* *:tm*
-:tm[enu] {menupath} {rhs}	Define a tip for a menu or tool.  {only in
+							*:tmenu* *:tme*
+:tme[nu] {menupath} {rhs}	Define a tip for a menu or tool.  {only in
 				X11 and Win32 GUI}
 
-:tm[enu] [menupath]		List menu tips. {only in X11 and Win32 GUI}
+:tme[nu] [menupath]		List menu tips. {only in X11 and Win32 GUI}
 
-							*:tunmenu* *:tu*
-:tu[nmenu] {menupath}		Remove a tip for a menu or tool.
+							*:tunmenu* *:tunme*
+:tunme[nu] {menupath}		Remove a tip for a menu or tool.
 				{only in X11 and Win32 GUI}
 
 When a tip is defined for a menu item, it appears in the command-line area
