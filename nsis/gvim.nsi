@@ -179,7 +179,7 @@ FunctionEnd
 
 ##########################################################
 Section "Vim executables and runtime files"
-	SectionIn 1 2 3
+	SectionIn 1 2 3 RO
 
 	# we need also this here if the user changes the instdir
 	StrCpy $0 "$INSTDIR\vim${VER_MAJOR}${VER_MINOR}"
