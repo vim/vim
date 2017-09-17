@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.0.  Last change: 2017 Aug 27
+*gui.txt*       For Vim version 8.0.  Last change: 2017 Sep 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -784,10 +784,31 @@ In the Win32 and GTK+ GUI, starting a menu name with ']' excludes that menu
 from the main menu bar.  You must then use the |:popup| or |:tearoff| command
 to display it.
 
+							*window-toolbar*
+Each window can have a local toolbar.  This uses the first line of the window,
+thus reduces the space for the text by one line.
+
+Only text can be used.  When using Unicode special characters can be used to
+make the items look like icons.
+
+If the items do not fit then the last ones cannot be used.  The toolbar does
+not wrap.
+
+Example for debugger tools: >
+	amenu 1.10 WinBar.Step :Step<CR>
+	amenu 1.20 WinBar.Next :Next<CR>
+	amenu 1.30 WinBar.Finish :Finish<CR>
+	amenu 1.40 WinBar.Cont :Continue<CR>
+<
+The window toolbar uses the ToolbarLine and ToolbarButton highlight groups.
+
 							*popup-menu*
 In the Win32, GTK+, Motif, Athena and Photon GUI, you can define the
 special menu "PopUp".  This is the menu that is displayed when the right mouse
 button is pressed, if 'mousemodel' is set to popup or popup_setpos.
+Example: >
+    nnoremenu 1.40 PopUp.&Paste	"+gP
+    menu PopUp
 
 
 5.3 Showing What Menus Are Mapped To			*showing-menus*

@@ -8252,13 +8252,7 @@ ex_echo(exarg_T *eap)
     void
 ex_echohl(exarg_T *eap)
 {
-    int		id;
-
-    id = syn_name2id(eap->arg);
-    if (id == 0)
-	echo_attr = 0;
-    else
-	echo_attr = syn_id2attr(id);
+    echo_attr = syn_name2attr(eap->arg);
 }
 
 /*

@@ -2657,7 +2657,7 @@ retnomove:
 	}
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	/* Continue a modeless selection in another window. */
-	if (cmdwin_type != 0 && row < W_WINROW(curwin))
+	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
 	return IN_BUFFER;
@@ -2692,6 +2692,17 @@ retnomove:
 	if (wp == NULL)
 	    return IN_UNKNOWN;
 	dragwin = NULL;
+
+#ifdef FEAT_MENU
+	if (row == -1)
+	{
+	    /* A click in the window toolbar does not enter another window or
+	     * change Visual highlighting. */
+	    winbar_click(wp, col);
+	    return IN_OTHER_WIN;
+	}
+#endif
+
 	/*
 	 * winpos and height may change in win_enter()!
 	 */
@@ -2829,7 +2840,7 @@ retnomove:
 
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	/* Continue a modeless selection in another window. */
-	if (cmdwin_type != 0 && row < W_WINROW(curwin))
+	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
 
@@ -3117,7 +3128,12 @@ mouse_find_win(int *rowp, int *colp UNUSED)
      * exist. */
     FOR_ALL_WINDOWS(wp)
 	if (wp == fp->fr_win)
+	{
+#ifdef FEAT_MENU
+	    *rowp -= wp->w_winbar_height;
+#endif
 	    return wp;
+	}
     return NULL;
 }
 

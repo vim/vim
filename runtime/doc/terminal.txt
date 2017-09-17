@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 14
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -226,7 +226,7 @@ Use CTRL-W N (or 'termkey' N) to switch to Terminal-Normal mode.  Now the
 contents of the terminal window is under control of Vim, the job output is
 suspended.  CTRL-\ CTRL-N does the same.
 
-Terminal-Job mode is where |tmap| mappings are applied. Keys sent by
+Terminal-Job mode is where |:tmap| mappings are applied. Keys sent by
 |term_sendkeys()| are not subject to tmap, but keys from |feedkeys()| are.
 
 							*E946*
@@ -234,7 +234,7 @@ In Terminal-Normal mode you can move the cursor around with the usual Vim
 commands, Visually mark text, yank text, etc.  But you cannot change the
 contents of the buffer.  The commands that would start insert mode, such as
 'i' and 'a', return to Terminal-Job mode.  The window will be updated to show
-the contents of the terminal.
+the contents of the terminal. |:startinsert| is ineffective.
 
 In Terminal-Normal mode the statusline and window title show "(Terminal)".  If
 the job ends while in Terminal-Normal mode this changes to
@@ -371,6 +371,14 @@ In the window showing the source code some commands can used to control gdb:
  :Over      execute the gdb "next" command (:Next is a Vim command)
  :Finish    execute the gdb "finish" command
  :Continue  execute the gdb "continue" command
+
+The plugin adds a window toolbar with these entries:
+  Step	    :Step
+  Next	    :Over
+  Finish    :Finish
+  Cont	    :Continue
+  Eval	    :Evaluate
+This way you can use the mouse to perform the most common commands.
 
 
 Inspecting variables ~

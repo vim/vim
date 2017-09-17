@@ -1,5 +1,7 @@
 /* menu.c */
+int winbar_height(win_T *wp);
 void ex_menu(exarg_T *eap);
+void remove_winbar(win_T *wp);
 char_u *set_context_in_menu_cmd(expand_T *xp, char_u *cmd, char_u *arg, int forceit);
 char_u *get_menu_name(expand_T *xp, int idx);
 char_u *get_menu_names(expand_T *xp, int idx);
@@ -17,6 +19,7 @@ int gui_is_menu_shortcut(int key);
 void gui_show_popupmenu(void);
 void gui_mch_toggle_tearoffs(int enable);
 void ex_emenu(exarg_T *eap);
+void winbar_click(win_T *wp, int col);
 vimmenu_T *gui_find_menu(char_u *path_name);
 void ex_menutranslate(exarg_T *eap);
 /* vim: set ft=c : */

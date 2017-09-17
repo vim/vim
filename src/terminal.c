@@ -38,7 +38,8 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - test_terminal_no_cmd hangs (Christian)
+ * - Shift-Tab does not work.
+ * - click in Window toolbar of other window: save/restore Insert and Visual
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
  * - implement term_setsize()
@@ -703,7 +704,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	    update_screen(0);
 	    update_cursor(term, TRUE);
 	}
-	else if (buffer->b_nwindows > 0)
+	else
 	    redraw_after_callback(TRUE);
     }
 }
@@ -1545,7 +1546,7 @@ terminal_loop(int blocking)
     {
 	/* TODO: skip screen update when handling a sequence of keys. */
 	/* Repeat redrawing in case a message is received while redrawing. */
-	while (curwin->w_redr_type != 0)
+	while (must_redraw != 0)
 	    if (update_screen(0) == FAIL)
 		break;
 	update_cursor(curbuf->b_term, FALSE);

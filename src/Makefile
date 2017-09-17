@@ -2278,6 +2278,7 @@ test_arglist \
 	test_vimscript \
 	test_virtualedit \
 	test_visual \
+	test_winbar \
 	test_window_cmd \
 	test_window_id \
 	test_windows_home \

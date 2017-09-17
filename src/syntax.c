@@ -7002,6 +7002,12 @@ static char *(highlight_init_light[]) = {
     CENT("StatusLineTermNC term=reverse ctermfg=White ctermbg=DarkGreen",
 	 "StatusLineTermNC term=reverse ctermfg=White ctermbg=DarkGreen guifg=bg guibg=DarkGreen"),
 #endif
+#ifdef FEAT_MENU
+    CENT("ToolbarLine term=underline ctermbg=LightGrey",
+	 "ToolbarLine term=underline ctermbg=LightGrey guibg=LightGrey"),
+    CENT("ToolbarButton cterm=bold ctermfg=White ctermbg=DarkGrey",
+	 "ToolbarButton cterm=bold ctermfg=White ctermbg=DarkGrey gui=bold guifg=White guibg=DarkGrey"),
+#endif
     NULL
 };
 
@@ -7093,6 +7099,12 @@ static char *(highlight_init_dark[]) = {
 	 "StatusLineTerm term=reverse,bold cterm=bold ctermfg=Black ctermbg=LightGreen gui=bold guifg=bg guibg=LightGreen"),
     CENT("StatusLineTermNC term=reverse ctermfg=Black ctermbg=LightGreen",
 	 "StatusLineTermNC term=reverse ctermfg=Black ctermbg=LightGreen guifg=bg guibg=LightGreen"),
+#endif
+#ifdef FEAT_MENU
+    CENT("ToolbarLine term=underline ctermbg=DarkGrey",
+	 "ToolbarLine term=underline ctermbg=DarkGrey guibg=DarkGrey"),
+    CENT("ToolbarButton cterm=bold ctermfg=Black ctermbg=LightGrey",
+	 "ToolbarButton cterm=bold ctermfg=Black ctermbg=LightGrey gui=bold guifg=Black guibg=LightGrey"),
 #endif
     NULL
 };
@@ -9523,6 +9535,20 @@ syn_name2id(char_u *name)
 		&& STRCMP(name_u, HL_TABLE()[i].sg_name_u) == 0)
 	    break;
     return i + 1;
+}
+
+/*
+ * Lookup a highlight group name and return its attributes.
+ * Return zero if not found.
+ */
+    int
+syn_name2attr(char_u *name)
+{
+    int id = syn_name2id(name);
+
+    if (id != 0)
+	return syn_id2attr(syn_get_final_id(id));
+    return 0;
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
