@@ -585,7 +585,7 @@ free_terminal(buf_T *buf)
     term_T	*term = buf->b_term;
     term_T	*tp;
 
-    if (term == NULL)
+    if (term == NULL || buf->b_nwindows > 0)
 	return;
     if (first_term == term)
 	first_term = term->tl_next;
