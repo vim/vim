@@ -82,6 +82,23 @@ func Test_terminal_wipe_buffer()
   unlet g:job
 endfunc
 
+func Test_terminal_split_quit()
+  let buf = Run_shell_in_terminal({})
+  call term_wait(buf)
+  split
+  quit!
+  call term_wait(buf)
+  sleep 50m
+  call assert_equal('run', job_status(g:job))
+
+  quit!
+  call WaitFor('job_status(g:job) == "dead"')
+  call assert_equal('dead', job_status(g:job))
+
+  exe buf . 'bwipe'
+  unlet g:job
+endfunc
+
 func Test_terminal_hide_buffer()
   let buf = Run_shell_in_terminal({})
   setlocal bufhidden=hide
