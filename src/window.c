@@ -4692,6 +4692,10 @@ win_free(
     }
 #endif /* FEAT_GUI */
 
+#ifdef FEAT_MENU
+    remove_winbar(wp);
+#endif
+
 #ifdef FEAT_SYN_HL
     vim_free(wp->w_p_cc_cols);
 #endif
@@ -5667,6 +5671,7 @@ set_fraction(win_T *wp)
 
 /*
  * Set the height of a window.
+ * "height" excludes any window toolbar.
  * This takes care of the things inside the window, not what happens to the
  * window position, the frame or to other windows.
  */

@@ -2679,9 +2679,9 @@ do_mouse(
 			 * selection or the current window (might have false
 			 * negative here)
 			 */
-			if (mouse_row < W_WINROW(curwin)
+			if (mouse_row < curwin->w_winrow
 			     || mouse_row
-				      > (W_WINROW(curwin) + curwin->w_height))
+				      > (curwin->w_winrow + curwin->w_height))
 			    jump_flags = MOUSE_MAY_STOP_VIS;
 			else if (get_fpos_of_mouse(&m_pos) != IN_BUFFER)
 			    jump_flags = MOUSE_MAY_STOP_VIS;
