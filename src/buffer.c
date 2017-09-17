@@ -466,8 +466,27 @@ close_buffer(
     int		del_buf = (action == DOBUF_DEL || action == DOBUF_WIPE);
     int		wipe_buf = (action == DOBUF_WIPE);
 
+    /*
+     * Force unloading or deleting when 'bufhidden' says so.
+     * The caller must take care of NOT deleting/freeing when 'bufhidden' is
+     * "hide" (otherwise we could never free or delete a buffer).
+     */
+    if (buf->b_p_bh[0] == 'd')		/* 'bufhidden' == "delete" */
+    {
+	del_buf = TRUE;
+	unload_buf = TRUE;
+    }
+    else if (buf->b_p_bh[0] == 'w')	/* 'bufhidden' == "wipe" */
+    {
+	del_buf = TRUE;
+	unload_buf = TRUE;
+	wipe_buf = TRUE;
+    }
+    else if (buf->b_p_bh[0] == 'u')	/* 'bufhidden' == "unload" */
+	unload_buf = TRUE;
+
 #ifdef FEAT_TERMINAL
-    if (bt_terminal(buf))
+    if (bt_terminal(buf) && (buf->b_nwindows == 1 || del_buf))
     {
 	if (term_job_running(buf->b_term))
 	{
@@ -489,26 +508,7 @@ close_buffer(
 	    wipe_buf = TRUE;
 	}
     }
-    else
 #endif
-    /*
-     * Force unloading or deleting when 'bufhidden' says so.
-     * The caller must take care of NOT deleting/freeing when 'bufhidden' is
-     * "hide" (otherwise we could never free or delete a buffer).
-     */
-    if (buf->b_p_bh[0] == 'd')		/* 'bufhidden' == "delete" */
-    {
-	del_buf = TRUE;
-	unload_buf = TRUE;
-    }
-    else if (buf->b_p_bh[0] == 'w')	/* 'bufhidden' == "wipe" */
-    {
-	del_buf = TRUE;
-	unload_buf = TRUE;
-	wipe_buf = TRUE;
-    }
-    else if (buf->b_p_bh[0] == 'u')	/* 'bufhidden' == "unload" */
-	unload_buf = TRUE;
 
 #ifdef FEAT_AUTOCMD
     /* Disallow deleting the buffer when it is locked (already being closed or
