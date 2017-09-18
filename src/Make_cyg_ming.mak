@@ -221,6 +221,8 @@ endif
 #	  MZSCHEME=[Path to MzScheme directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLL dynamically)
 #	  MZSCHEME_VER=[MzScheme version] (default is 3m_a0solc (6.6))
+#	  	Used for the DLL file name. E.g.:
+#	  	C:\Program Files (x86)\Racket\lib\libracket3m_XXXXXX.dll
 #	  MZSCHEME_DEBUG=no
 ifdef MZSCHEME
 ifndef DYNAMIC_MZSCHEME

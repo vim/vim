@@ -47,7 +47,9 @@
 #	MzScheme interface:
 #	  MZSCHEME=[Path to MzScheme directory]
 #	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLLs dynamically)
-#	  MZSCHEME_VER=[version, 205_000, ...] (default is 3m_a0solc (6.6))
+#	  MZSCHEME_VER=[MzScheme version] (default is 3m_a0solc (6.6))
+#	  	Used for the DLL file name. E.g.:
+#	  	C:\Program Files (x86)\Racket\lib\libracket3m_XXXXXX.dll
 #	  MZSCHEME_DEBUG=no
 #
 #	Perl interface:
