@@ -14,7 +14,6 @@ if exists("b:did_indent")
 endif
 let b:did_indent = 1
 
-setlocal et
 setlocal indentexpr=CMakeGetIndent(v:lnum)
 setlocal indentkeys+==ENDIF(,ENDFOREACH(,ENDMACRO(,ELSE(,ELSEIF(,ENDWHILE(
 
