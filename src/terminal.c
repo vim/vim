@@ -99,6 +99,9 @@ struct terminal_S {
     job_T	*tl_job;
     buf_T	*tl_buffer;
 
+    /* Set when setting the size of a vterm, reset after redrawing. */
+    int		tl_vterm_size_changed;
+
     /* used when tl_job is NULL and only a pty was created */
     int		tl_tty_fd;
     char_u	*tl_tty_in;
@@ -2017,16 +2020,21 @@ handle_resize(int rows, int cols, void *user)
 
     term->tl_rows = rows;
     term->tl_cols = cols;
-    FOR_ALL_WINDOWS(wp)
+    if (term->tl_vterm_size_changed)
+	/* Size was set by vterm_set_size(), don't set the window size. */
+	term->tl_vterm_size_changed = FALSE;
+    else
     {
-	if (wp->w_buffer == term->tl_buffer)
+	FOR_ALL_WINDOWS(wp)
 	{
-	    win_setheight_win(rows, wp);
-	    win_setwidth_win(cols, wp);
+	    if (wp->w_buffer == term->tl_buffer)
+	    {
+		win_setheight_win(rows, wp);
+		win_setwidth_win(cols, wp);
+	    }
 	}
+	redraw_buf_later(term->tl_buffer, NOT_VALID);
     }
-
-    redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
 
@@ -2223,6 +2231,7 @@ term_update_window(win_T *wp)
 	    }
 	}
 
+	term->tl_vterm_size_changed = TRUE;
 	vterm_set_size(vterm, rows, cols);
 	ch_log(term->tl_job->jv_channel, "Resizing terminal to %d lines",
 									 rows);
