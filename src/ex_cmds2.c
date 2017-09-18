@@ -1090,15 +1090,24 @@ profile_zero(proftime_T *tm)
 static timer_T	*first_timer = NULL;
 static long	last_timer_id = 0;
 
-# ifdef WIN3264
-#  define GET_TIMEDIFF(timer, now) \
-	(long)(((double)(timer->tr_due.QuadPart - now.QuadPart) \
-					   / (double)fr.QuadPart) * 1000)
-# else
-#  define GET_TIMEDIFF(timer, now) \
-	(timer->tr_due.tv_sec - now.tv_sec) * 1000 \
-			   + (timer->tr_due.tv_usec - now.tv_usec) / 1000
-# endif
+    static long
+timer_time_left(timer_T *timer, proftime_T *now)
+{
+#  ifdef WIN3264
+    LARGE_INTEGER fr;
+
+    if (now->QuadPart > timer->tr_due.QuadPart)
+	return 0;
+    QueryPerformanceFrequency(&fr);
+    return (long)(((double)(timer->tr_due.QuadPart - now->QuadPart)
+		   / (double)fr.QuadPart) * 1000);
+#  else
+    if (now->tv_sec > timer->tr_due.tv_sec)
+	return 0;
+    return (timer->tr_due.tv_sec - now->tv_sec) * 1000
+	+ (timer->tr_due.tv_usec - now->tv_usec) / 1000;
+#  endif
+}
 
 /*
  * Insert a timer in the list of timers.
@@ -1196,17 +1205,11 @@ check_due_timer(void)
     int		did_one = FALSE;
     int		need_update_screen = FALSE;
     long	current_id = last_timer_id;
-# ifdef WIN3264
-    LARGE_INTEGER   fr;
-# endif
 
     /* Don't run any timers while exiting or dealing with an error. */
     if (exiting || aborting())
 	return next_due;
 
-# ifdef WIN3264
-    QueryPerformanceFrequency(&fr);
-# endif
     profile_start(&now);
     for (timer = first_timer; timer != NULL && !got_int; timer = timer_next)
     {
@@ -1214,7 +1217,7 @@ check_due_timer(void)
 
 	if (timer->tr_id == -1 || timer->tr_firing || timer->tr_paused)
 	    continue;
-	this_due = GET_TIMEDIFF(timer, now);
+	this_due = timer_time_left(timer, &now);
 	if (this_due <= 1)
 	{
 	    int save_timer_busy = timer_busy;
@@ -1266,7 +1269,7 @@ check_due_timer(void)
 		    && timer->tr_emsg_count < 3)
 	    {
 		profile_setlimit(timer->tr_interval, &timer->tr_due);
-		this_due = GET_TIMEDIFF(timer, now);
+		this_due = timer_time_left(timer, &now);
 		if (this_due < 1)
 		    this_due = 1;
 		if (timer->tr_repeat > 0)
@@ -1344,9 +1347,6 @@ add_timer_info(typval_T *rettv, timer_T *timer)
     dictitem_T	*di;
     long	remaining;
     proftime_T	now;
-# ifdef WIN3264
-    LARGE_INTEGER   fr;
-#endif
 
     if (dict == NULL)
 	return;
@@ -1356,10 +1356,7 @@ add_timer_info(typval_T *rettv, timer_T *timer)
     dict_add_nr_str(dict, "time", (long)timer->tr_interval, NULL);
 
     profile_start(&now);
-# ifdef WIN3264
-    QueryPerformanceFrequency(&fr);
-# endif
-    remaining = GET_TIMEDIFF(timer, now);
+    remaining = timer_time_left(timer, &now);
     dict_add_nr_str(dict, "remaining", (long)remaining, NULL);
 
     dict_add_nr_str(dict, "repeat",
