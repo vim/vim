@@ -4580,9 +4580,12 @@ check_termcode(
 			    is_not_xterm = TRUE;
 
 			/* Only request the cursor style if t_SH and t_RS are
-			 * set. Not for Terminal.app, it can't handle t_RS, it
+			 * set. Only supported properly by xterm since version
+			 * 279 (otherwise it returns 0x18).
+			 * Not for Terminal.app, it can't handle t_RS, it
 			 * echoes the characters to the screen. */
 			if (rcs_status == STATUS_GET
+				&& version >= 279
 				&& !is_not_xterm
 				&& *T_CSH != NUL
 				&& *T_CRS != NUL)
@@ -4729,11 +4732,6 @@ check_termcode(
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
-			if (rcs_status == STATUS_SENT
-					     && slen < len && tp[slen] == 0x18)
-			    /* Some older xterm send 0x18 for the T_RS request,
-			     * skip it here. */
-			    ++slen;
 # ifdef FEAT_EVAL
 			set_vim_var_string(VV_TERMRGBRESP, tp, slen);
 # endif
@@ -4782,11 +4780,6 @@ check_termcode(
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
-			if (rcs_status == STATUS_SENT
-					     && slen < len && tp[slen] == 0x18)
-			    /* Some older xterm send 0x18 for the T_RS request,
-			     * skip it here. */
-			    ++slen;
 			break;
 		    }
 		  }
@@ -5470,19 +5463,19 @@ check_termcode(
 			/*
 			 * Avoid computing the difference between mouse_time
 			 * and orig_mouse_time for the first click, as the
-			 * difference would be huge and would cause multiplication
-			 * overflow.
+			 * difference would be huge and would cause
+			 * multiplication overflow.
 			 */
 			timediff = p_mouset;
 		    }
 		    else
 		    {
 			timediff = (mouse_time.tv_usec
-						- orig_mouse_time.tv_usec) / 1000;
+					     - orig_mouse_time.tv_usec) / 1000;
 			if (timediff < 0)
 			    --orig_mouse_time.tv_sec;
 			timediff += (mouse_time.tv_sec
-						 - orig_mouse_time.tv_sec) * 1000;
+					      - orig_mouse_time.tv_sec) * 1000;
 		    }
 		    orig_mouse_time = mouse_time;
 		    if (mouse_code == orig_mouse_code
