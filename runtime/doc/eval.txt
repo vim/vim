@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Sep 11
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Sep 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4787,7 +4787,9 @@ getwininfo([{winid}])					*getwininfo()*
 
 		Each List item is a Dictionary with the following entries:
 			bufnr		number of buffer in the window
-			height		window height
+			height		window height (excluding winbar)
+			winbar		1 if the window has a toolbar, 0
+					otherwise
 			loclist		1 if showing a location list
 					{only with the +quickfix feature}
 			quickfix	1 if quickfix or location list window
@@ -5676,6 +5678,7 @@ maparg({name}[, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 			"s"	Select
 			"x"	Visual
 			"l"	langmap |language-mapping|
+			"t"	Terminal-Job
 			""	Normal, Visual and Operator-pending
 		When {mode} is omitted, the modes for "" are used.
 
@@ -8021,9 +8024,9 @@ term_getattr({attr}, {what})				*term_getattr()*
 
 term_getcursor({buf})					*term_getcursor()*
 		Get the cursor position of terminal {buf}. Returns a list with
-		two numbers and a dictionary: [rows, cols, dict].
+		two numbers and a dictionary: [row, col, dict].
 
-		"rows" and "cols" are one based, the first screen cell is row
+		"row" and "col" are one based, the first screen cell is row
 		1, column 1.  This is the cursor position of the terminal
 		itself, not of the Vim window.
 
@@ -8136,6 +8139,10 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 
 		{keys} are translated as key sequences. For example, "\<c-x>"
 		means the character CTRL-X.
+		{only available when compiled with the |+terminal| feature}
+
+term_setsize({buf}, {expr})				*term_setsize()*
+		Not implemented yet.
 		{only available when compiled with the |+terminal| feature}
 
 term_start({cmd}, {options})				*term_start()*
@@ -8609,6 +8616,7 @@ winheight({nr})						*winheight()*
 		When {nr} is zero, the height of the current window is
 		returned.  When window {nr} doesn't exist, -1 is returned.
 		An existing window always has a height of zero or more.
+		This excludes any window toolbar line.
 		Examples: >
   :echo "The current window has " . winheight(0) . " lines."
 <
@@ -8936,7 +8944,7 @@ title			Compiled with window title support |'title'|.
 toolbar			Compiled with support for |gui-toolbar|.
 ttyin			input is a terminal (tty)
 ttyout			output is a terminal (tty)
-unix			Unix version of Vim.
+unix			Unix version of Vim. *+unix*
 unnamedplus		Compiled with support for "unnamedplus" in 'clipboard'
 user_commands		User-defined commands.
 vertsplit		Compiled with vertically split windows |:vsplit|.
