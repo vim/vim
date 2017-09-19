@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.0.  Last change: 2017 Aug 26
+*term.txt*      For Vim version 8.0.  Last change: 2017 Aug 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -295,8 +295,6 @@ OUTPUT CODES						*terminal-output-codes*
 	t_ts	set window title start (to status line)		*t_ts* *'t_ts'*
 	t_ue	underline end					*t_ue* *'t_ue'*
 	t_us	underline mode					*t_us* *'t_us'*
-	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
-	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
 	t_ut	clearing uses the current background color	*t_ut* *'t_ut'*
 	t_vb	visual bell					*t_vb* *'t_vb'*
 	t_ve	cursor visible					*t_ve* *'t_ve'*
@@ -311,6 +309,10 @@ OUTPUT CODES						*terminal-output-codes*
 	t_ZR	italics end					*t_ZR* *'t_ZR'*
 
 Added by Vim (there are no standard codes for these):
+	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
+	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
+	t_Te	strikethrough end				*t_Te* *'t_Te'*
+	t_Ts	strikethrough mode				*t_Ts* *'t_Ts'*
 	t_IS	set icon text start				*t_IS* *'t_IS'*
 	t_IE	set icon text end				*t_IE* *'t_IE'*
 	t_WP	set window position (Y, X) in pixels		*t_WP* *'t_WP'*
@@ -337,6 +339,7 @@ Added by Vim (there are no standard codes for these):
 	t_SC	set cursor color start				*t_SC* *'t_SC'*
 	t_EC	set cursor color end				*t_EC* *'t_EC'*
 	t_SH	set cursor shape				*t_SH* *'t_SH'*
+	t_RC	request terminal cursor blinking		*t_RC* *'t_RC'*
 	t_RS	request terminal cursor style			*t_RS* *'t_RS'*
 
 Some codes have a start, middle and end part.  The start and end are defined

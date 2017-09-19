@@ -15,6 +15,11 @@
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
 
+" In case this gets loaded twice.
+if exists(':Termdebug')
+  finish
+endif
+
 " The command that starts debugging, e.g. ":Termdebug vim".
 " To end type "quit" in the gdb window.
 command -nargs=* -complete=file Termdebug call s:StartDebug(<q-args>)

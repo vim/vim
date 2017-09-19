@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.0.  Last change: 2017 Sep 16
+*gui.txt*       For Vim version 8.0.  Last change: 2017 Sep 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -784,11 +784,12 @@ In the Win32 and GTK+ GUI, starting a menu name with ']' excludes that menu
 from the main menu bar.  You must then use the |:popup| or |:tearoff| command
 to display it.
 
-							*window-toolbar*
+					*window-toolbar* *WinBar*
 Each window can have a local toolbar.  This uses the first line of the window,
-thus reduces the space for the text by one line.
+thus reduces the space for the text by one line.  The items in the toolbar
+must start with "WinBar".
 
-Only text can be used.  When using Unicode special characters can be used to
+Only text can be used.  When using Unicode, special characters can be used to
 make the items look like icons.
 
 If the items do not fit then the last ones cannot be used.  The toolbar does
@@ -801,6 +802,8 @@ Example for debugger tools: >
 	amenu 1.40 WinBar.Cont :Continue<CR>
 <
 The window toolbar uses the ToolbarLine and ToolbarButton highlight groups.
+
+When splitting the window the window toolbar is not copied to the new window.
 
 							*popup-menu*
 In the Win32, GTK+, Motif, Athena and Photon GUI, you can define the
