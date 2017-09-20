@@ -54,5 +54,5 @@ endif " has("autocmd")
 " The matchit plugin makes the % command work better, but it is not backwards
 " compatible.
 if has('syntax') && has('eval')
-  packadd matchit
+  packadd! matchit
 endif
