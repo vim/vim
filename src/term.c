@@ -3400,6 +3400,7 @@ settmode(int tmode)
 					 || rbg_status == STATUS_SENT
 					 || rbm_status == STATUS_SENT
 					 || rcs_status == STATUS_SENT
+					 || xcc_status == STATUS_SENT
 					 || winpos_status == STATUS_SENT))
 		    (void)vpeekc_nomap();
 		check_for_codes_from_term();
@@ -3475,6 +3476,7 @@ stoptermcap(void)
 		    || rbg_status == STATUS_SENT
 		    || rbm_status == STATUS_SENT
 		    || rcs_status == STATUS_SENT
+		    || xcc_status == STATUS_SENT
 		    || winpos_status == STATUS_SENT)
 	    {
 # ifdef UNIX
@@ -3536,55 +3538,17 @@ may_req_termresponse(void)
     }
 }
 
-# if defined(FEAT_MBYTE) || defined(PROTO)
 /*
+ * Check the following behaviors of terminal.
+ *
+ * 1. Ambiguous character width
  * Check how the terminal treats ambiguous character width (UAX #11).
  * First, we move the cursor to (1, 0) and print a test ambiguous character
  * \u25bd (WHITE DOWN-POINTING TRIANGLE) and query current cursor position.
  * If the terminal treats \u25bd as single width, the position is (1, 1),
  * or if it is treated as double width, that will be (1, 2).
- * This function has the side effect that changes cursor position, so
- * it must be called immediately after entering termcap mode.
- */
-    void
-may_req_ambiguous_char_width(void)
-{
-    if (u7_status == STATUS_GET
-	    && can_get_termresponse()
-	    && starting == 0
-	    && *T_U7 != NUL
-	    && !option_was_set((char_u *)"ambiwidth"))
-    {
-	char_u	buf[16];
-
-	LOG_TR(("Sending U7 request"));
-	/* Do this in the second row.  In the first row the returned sequence
-	 * may be CSI 1;2R, which is the same as <S-F3>. */
-	term_windgoto(1, 0);
-	buf[mb_char2bytes(0x25bd, buf)] = 0;
-	out_str(buf);
-	out_str(T_U7);
-	u7_status = STATUS_SENT;
-	out_flush();
-
-	/* This overwrites a few characters on the screen, a redraw is needed
-	 * after this. Clear them out for now. */
-	term_windgoto(1, 0);
-	out_str((char_u *)"  ");
-	term_windgoto(0, 0);
-
-	/* Need to reset the known cursor position. */
-	screen_start();
-
-	/* check for the characters now, otherwise they might be eaten by
-	 * get_keystroke() */
-	out_flush();
-	(void)vpeekc_nomap();
-    }
-}
-# endif
-
-/*
+ *
+ * 2. compatible with xterm.
  * Check the terminal is xterm compatible.
  * First, we move the cursor to (2, 0) and print a test sequence and query
  * current cursor position.
@@ -3592,33 +3556,62 @@ may_req_ambiguous_char_width(void)
  * intermediate byte, test sequence is ignored and the cursor does not move,
  * or the terminal handles test sequence incorrectly, a garbage string is
  * displayed and the cursor moves.
+ *
  * This function has the side effect that changes cursor position, so
  * it must be called immediately after entering termcap mode.
  */
     void
-may_req_xterm_compat_test(void)
+check_terminal_behavior(void)
 {
-    if (xcc_status == STATUS_GET
+    if ((u7_status == STATUS_GET || xcc_status == STATUS_GET)
 	    && can_get_termresponse()
 	    && starting == 0
 	    && *T_U7 != NUL)
     {
-	LOG_TR(("Sending xterm compatibility test sequence."));
-	/* Do this in the third row.  Second row is used by ambiguous
-	 * chararacter width check. */
-	term_windgoto(2, 0);
-	/* send the test DCS string. */
-	out_str((char_u *)"\033Pzz\033\\");
-	/* send the test CSI sequence with intermediate byte. */
-	out_str((char_u *)"\033[0%m");
-	out_str(T_U7);
-	xcc_status = STATUS_SENT;
-	out_flush();
+# if defined(FEAT_MBYTE) || defined(PROTO)
+	/* Ambiguous character width check */
+	if (u7_status == STATUS_GET
+		&& !option_was_set((char_u *)"ambiwidth"))
+	{
+	    char_u	buf[16];
 
-	/* If the terminal handles test sequence incorrectly, garbage
-	 * string is displayed. Clear them out for now. */
-	term_windgoto(2, 0);
-	out_str((char_u *)"           ");
+	    LOG_TR("Sending U7 request");
+	    /* Do this in the second row.  In the first row the returned sequence
+	     * may be CSI 1;2R, which is the same as <S-F3>. */
+	    term_windgoto(1, 0);
+	    buf[mb_char2bytes(0x25bd, buf)] = 0;
+	    out_str(buf);
+	    out_str(T_U7);
+	    u7_status = STATUS_SENT;
+	    out_flush();
+
+	    /* This overwrites a few characters on the screen, a redraw is needed
+	     * after this. Clear them out for now. */
+	    term_windgoto(1, 0);
+	    out_str((char_u *)"  ");
+	}
+# endif
+
+	/* xterm compatibility test */
+	if (xcc_status == STATUS_GET)
+	{
+	    LOG_TR(("Sending xterm compatibility test sequence."));
+	    /* Do this in the third row.  Second row is used by ambiguous
+	     * chararacter width check. */
+	    term_windgoto(2, 0);
+	    /* send the test DCS string. */
+	    out_str((char_u *)"\033Pzz\033\\");
+	    /* send the test CSI sequence with intermediate byte. */
+	    out_str((char_u *)"\033[0%m");
+	    out_str(T_U7);
+	    xcc_status = STATUS_SENT;
+	    out_flush();
+
+	    /* If the terminal handles test sequence incorrectly, garbage
+	     * string is displayed. Clear them out for now. */
+	    term_windgoto(2, 0);
+	    out_str((char_u *)"           ");
+	}
 	term_windgoto(0, 0);
 
 	/* Need to reset the known cursor position. */

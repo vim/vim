@@ -814,14 +814,9 @@ vim_main2(void)
     /* Must come before the may_req_ calls. */
     starting = 0;
 
-#if defined(FEAT_TERMRESPONSE) && defined(FEAT_MBYTE)
-    /* Must be done before redrawing, puts a few characters on the screen. */
-    may_req_ambiguous_char_width();
-#endif
-
 #if defined(FEAT_TERMRESPONSE)
     /* Must be done before redrawing, puts a few characters on the screen. */
-    may_req_xterm_compat_test();
+    check_terminal_behavior();
 #endif
 
     RedrawingDisabled = 0;
