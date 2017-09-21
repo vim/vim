@@ -130,7 +130,8 @@ static int outbuffer_is_full(VTerm *vt)
   return vt->outbuffer_cur >= vt->outbuffer_len - 1;
 }
 
-#if _XOPEN_SOURCE >= 500 || _ISOC99_SOURCE || _BSD_SOURCE
+#if (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 500) \
+	|| defined(_ISOC99_SOURCE) || defined(_BSD_SOURCE)
 # undef VSNPRINTF
 # define VSNPRINTF vsnprintf
 #else
