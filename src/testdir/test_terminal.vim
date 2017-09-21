@@ -34,7 +34,9 @@ func Stop_shell_in_terminal(buf)
 endfunc
 
 func Test_terminal_basic()
+  au BufWinEnter * if &buftype == 'terminal' | let b:done = 'yes' | endif
   let buf = Run_shell_in_terminal({})
+
   if has("unix")
     call assert_match('^/dev/', job_info(g:job).tty_out)
     call assert_match('^/dev/', term_gettty(''))
@@ -43,6 +45,7 @@ func Test_terminal_basic()
     call assert_match('^\\\\.\\pipe\\', term_gettty(''))
   endif
   call assert_equal('t', mode())
+  call assert_equal('yes', b:done)
   call assert_match('%aR[^\n]*running]', execute('ls'))
 
   call Stop_shell_in_terminal(buf)
@@ -54,6 +57,7 @@ func Test_terminal_basic()
   close
   call assert_equal("", bufname(buf))
 
+  au! BufWinEnter
   unlet g:job
 endfunc
 
