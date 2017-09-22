@@ -2845,7 +2845,7 @@ retnomove:
 #endif
 
 	row -= W_WINROW(curwin);
-	col -= W_WINCOL(curwin);
+	col -= curwin->w_wincol;
 
 	/*
 	 * When clicking beyond the end of the window, scroll the screen.

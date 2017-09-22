@@ -2724,7 +2724,7 @@ winframe_remove(
     if (frp2 == frp_close->fr_next)
     {
 	int row = win->w_winrow;
-	int col = W_WINCOL(win);
+	int col = win->w_wincol;
 
 	frame_comp_pos(frp2, &row, &col);
     }

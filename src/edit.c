@@ -1776,7 +1776,7 @@ edit_putchar(int c, int highlight)
 	else
 	    attr = 0;
 	pc_row = W_WINROW(curwin) + curwin->w_wrow;
-	pc_col = W_WINCOL(curwin);
+	pc_col = curwin->w_wincol;
 #if defined(FEAT_RIGHTLEFT) || defined(FEAT_MBYTE)
 	pc_status = PC_STATUS_UNSET;
 #endif
