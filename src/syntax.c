@@ -489,6 +489,12 @@ static int get_id_list(char_u **arg, int keylen, short **list, int skip);
 static void syn_combine_list(short **clstr1, short **clstr2, int list_op);
 static void syn_incl_toplevel(int id, int *flagsp);
 
+    void
+syn_reset_timeout(proftime_T *tm)
+{
+    syn_tm = tm;
+}
+
 /*
  * Start the syntax recognition for a line.  This function is normally called
  * from the screen updating, once for each displayed line.
@@ -497,7 +503,7 @@ static void syn_incl_toplevel(int id, int *flagsp);
  * window.
  */
     void
-syntax_start(win_T *wp, linenr_T lnum, proftime_T *syntax_tm UNUSED)
+syntax_start(win_T *wp, linenr_T lnum)
 {
     synstate_T	*p;
     synstate_T	*last_valid = NULL;
@@ -527,9 +533,6 @@ syntax_start(win_T *wp, linenr_T lnum, proftime_T *syntax_tm UNUSED)
     }
     changedtick = CHANGEDTICK(syn_buf);
     syn_win = wp;
-#ifdef FEAT_RELTIME
-    syn_tm = syntax_tm;
-#endif
 
     /*
      * Allocate syntax stack when needed.
@@ -6569,7 +6572,7 @@ syn_get_id(
     if (wp->w_buffer != syn_buf
 	    || lnum != current_lnum
 	    || col < current_col)
-	syntax_start(wp, lnum, NULL);
+	syntax_start(wp, lnum);
     else if (wp->w_buffer == syn_buf
 	    && lnum == current_lnum
 	    && col > current_col)
@@ -6645,7 +6648,7 @@ syn_get_foldlevel(win_T *wp, long lnum)
 # endif
 	    )
     {
-	syntax_start(wp, lnum, NULL);
+	syntax_start(wp, lnum);
 
 	for (i = 0; i < current_state.ga_len; ++i)
 	    if (CUR_STATE(i).si_flags & HL_FOLD)
