@@ -9556,7 +9556,7 @@ syn_name2attr(char_u *name)
     int id = syn_name2id(name);
 
     if (id != 0)
-	return syn_id2attr(syn_get_final_id(id));
+	return syn_id2attr(id);
     return 0;
 }
 
