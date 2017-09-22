@@ -190,7 +190,7 @@ redo:
     /* Calculate column */
 #ifdef FEAT_RIGHTLEFT
     if (curwin->w_p_rl)
-	col = curwin->w_wincol + W_WIDTH(curwin) - curwin->w_wcol - 1;
+	col = curwin->w_wincol + curwin->w_width - curwin->w_wcol - 1;
     else
 #endif
 	col = curwin->w_wincol + curwin->w_wcol;
@@ -312,7 +312,7 @@ pum_redraw(void)
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl)
 	{
-	    if (pum_col < curwin->w_wincol + W_WIDTH(curwin) - 1)
+	    if (pum_col < curwin->w_wincol + curwin->w_width - 1)
 		screen_putchar(' ', row, pum_col + 1, attr);
 	}
 	else

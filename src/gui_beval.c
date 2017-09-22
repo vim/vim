@@ -338,7 +338,7 @@ get_beval_info(
     row = Y_2_ROW(beval->y);
     col = X_2_COL(beval->x);
     wp = mouse_find_win(&row, &col);
-    if (wp != NULL && row < wp->w_height && col < W_WIDTH(wp))
+    if (wp != NULL && row < wp->w_height && col < wp->w_width)
     {
 	/* Found a window and the cursor is in the text.  Now find the line
 	 * number. */

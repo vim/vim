@@ -495,7 +495,7 @@ get_breakindent_win(
     static varnumber_T prev_tick = 0;   /* changedtick of cached value */
     int		    bri = 0;
     /* window width minus window margin space, i.e. what rests for text */
-    const int	    eff_wwidth = W_WIDTH(wp)
+    const int	    eff_wwidth = wp->w_width
 			    - ((wp->w_p_nu || wp->w_p_rnu)
 				&& (vim_strchr(p_cpo, CPO_NUMCOL) == NULL)
 						? number_width(wp) + 1 : 0);
@@ -2026,7 +2026,7 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
     /*
      * Add column offset for 'number', 'relativenumber' and 'foldcolumn'.
      */
-    width = W_WIDTH(wp) - win_col_off(wp);
+    width = wp->w_width - win_col_off(wp);
     if (width <= 0)
 	return 32000;
     if (col <= width)
@@ -2083,7 +2083,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     /*
      * Add column offset for 'number', 'relativenumber', 'foldcolumn', etc.
      */
-    width = W_WIDTH(wp) - win_col_off(wp);
+    width = wp->w_width - win_col_off(wp);
     if (width <= 0)
 	return 9999;
 

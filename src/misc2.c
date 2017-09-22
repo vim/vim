@@ -165,7 +165,7 @@ coladvance2(
     else
     {
 #ifdef FEAT_VIRTUALEDIT
-	int width = W_WIDTH(curwin) - win_col_off(curwin);
+	int width = curwin->w_width - win_col_off(curwin);
 
 	if (finetune
 		&& curwin->w_p_wrap
@@ -310,7 +310,7 @@ coladvance2(
 	    int b = (int)wcol - (int)col;
 
 	    /* The difference between wcol and col is used to set coladd. */
-	    if (b > 0 && b < (MAXCOL - 2 * W_WIDTH(curwin)))
+	    if (b > 0 && b < (MAXCOL - 2 * curwin->w_width))
 		pos->coladd = b;
 
 	    col += b;
@@ -662,7 +662,7 @@ leftcol_changed(void)
     int		retval = FALSE;
 
     changed_cline_bef_curs();
-    lastcol = curwin->w_leftcol + W_WIDTH(curwin) - curwin_col_off() - 1;
+    lastcol = curwin->w_leftcol + curwin->w_width - curwin_col_off() - 1;
     validate_virtcol();
 
     /*

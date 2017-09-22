@@ -8486,7 +8486,7 @@ ex_resize(exarg_T *eap)
     if (cmdmod.split & WSP_VERT)
     {
 	if (*eap->arg == '-' || *eap->arg == '+')
-	    n += W_WIDTH(curwin);
+	    n += curwin->w_width;
 	else if (n == 0 && eap->arg[0] == NUL)	/* default is very wide */
 	    n = 9999;
 	win_setwidth_win((int)n, wp);
