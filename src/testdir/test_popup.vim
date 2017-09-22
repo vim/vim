@@ -1,5 +1,9 @@
 " Test for completion menu
 
+if !exists('*WaitFor')
+  source shared.vim
+endif
+
 let g:months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 let g:setting = ''
 
@@ -624,6 +628,31 @@ func Test_complete_CTRLN_startofbuffer()
         \ 'railing.moralize(3,9);']
   call feedkeys("qai\<c-n>\<c-n>.\<esc>3wdW\<cr>q3@a", 'tx')
   call assert_equal(expected, getline(1,'$'))
+  bwipe!
+endfunc
+
+func Test_popup_and_window_resize()
+  if !has('terminal') || has('gui_running')
+    return
+  endif
+  let h = winheight(0)
+  if h < 15
+    return
+  endif
+  let buf = term_start([$VIMPROG, '--clean', '-c', 'set noswapfile'], {'term_rows': h / 3})
+  call term_sendkeys(buf, (h / 3 - 1)."o\<esc>G")
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "i\<c-x>")
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "\<c-v>")
+  call term_wait(buf, 100)
+  call assert_match('^!\s*$', term_getline(buf, 1))
+  exe 'resize +' . (h - 1)
+  call term_wait(buf, 100)
+  redraw!
+  call WaitFor('"" == term_getline(buf, 1)')
+  call assert_equal('', term_getline(buf, 1))
+  call assert_match('^!\s*$', term_getline(buf, term_getcursor(buf)[0] + 1))
   bwipe!
 endfunc
 
