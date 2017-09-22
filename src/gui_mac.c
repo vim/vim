@@ -1612,7 +1612,7 @@ gui_mac_scroll_action(ControlHandle theControl, short partCode)
     else			/* Bottom scrollbar */
     {
 	sb_info = sb;
-	page = W_WIDTH(curwin) - 5;
+	page = curwin->w_width - 5;
     }
 
     switch (partCode)

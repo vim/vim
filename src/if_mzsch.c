@@ -2063,7 +2063,7 @@ get_window_width(void *data, int argc, Scheme_Object **argv)
     Vim_Prim	    *prim = (Vim_Prim *)data;
     vim_mz_window   *win = get_window_arg(prim->name, 0, argc, argv);
 
-    return scheme_make_integer(W_WIDTH(win->win));
+    return scheme_make_integer(win->win->w_width);
 }
 
 /* (set-win-width {width} [window]) */

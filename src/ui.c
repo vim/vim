@@ -2739,7 +2739,7 @@ retnomove:
 #ifdef FEAT_FOLDING
 			&& (
 # ifdef FEAT_RIGHTLEFT
-			    wp->w_p_rl ? col < W_WIDTH(wp) - wp->w_p_fdc :
+			    wp->w_p_rl ? col < wp->w_width - wp->w_p_fdc :
 # endif
 			    col >= wp->w_p_fdc
 # ifdef FEAT_CMDWIN
@@ -2945,7 +2945,7 @@ retnomove:
     /* Check for position outside of the fold column. */
     if (
 # ifdef FEAT_RIGHTLEFT
-	    curwin->w_p_rl ? col < W_WIDTH(curwin) - curwin->w_p_fdc :
+	    curwin->w_p_rl ? col < curwin->w_width - curwin->w_p_fdc :
 # endif
 	    col >= curwin->w_p_fdc
 #  ifdef FEAT_CMDWIN
@@ -3020,7 +3020,7 @@ mouse_comp_pos(
 
 #ifdef FEAT_RIGHTLEFT
     if (win->w_p_rl)
-	col = W_WIDTH(win) - 1 - col;
+	col = win->w_width - 1 - col;
 #endif
 
     lnum = win->w_topline;
@@ -3064,7 +3064,7 @@ mouse_comp_pos(
 	off = win_col_off(win) - win_col_off2(win);
 	if (col < off)
 	    col = off;
-	col += row * (W_WIDTH(win) - off);
+	col += row * (win->w_width - off);
 	/* add skip column (for long wrapping line) */
 	col += win->w_skipcol;
     }

@@ -3148,7 +3148,7 @@ ex_copen(exarg_T *eap)
 	{
 	    if (cmdmod.split & WSP_VERT)
 	    {
-		if (height != W_WIDTH(win))
+		if (height != win->w_width)
 		    win_setwidth(height);
 	    }
 	    else if (height != win->w_height)

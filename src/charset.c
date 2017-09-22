@@ -1100,7 +1100,7 @@ win_lbr_chartabsize(
 	 */
 	numberextra = win_col_off(wp);
 	col2 = col;
-	colmax = (colnr_T)(W_WIDTH(wp) - numberextra - col_adj);
+	colmax = (colnr_T)(wp->w_width - numberextra - col_adj);
 	if (col >= colmax)
 	{
 	    colmax += col_adj;
@@ -1151,10 +1151,10 @@ win_lbr_chartabsize(
 
 	numberextra = numberwidth;
 	col += numberextra + mb_added;
-	if (col >= (colnr_T)W_WIDTH(wp))
+	if (col >= (colnr_T)wp->w_width)
 	{
-	    col -= W_WIDTH(wp);
-	    numberextra = W_WIDTH(wp) - (numberextra - win_col_off2(wp));
+	    col -= wp->w_width;
+	    numberextra = wp->w_width - (numberextra - win_col_off2(wp));
 	    if (col >= numberextra && numberextra > 0)
 		col %= numberextra;
 	    if (*p_sbr != NUL)
@@ -1170,18 +1170,18 @@ win_lbr_chartabsize(
 
 	    numberwidth -= win_col_off2(wp);
 	}
-	if (col == 0 || col + size + sbrlen > (colnr_T)W_WIDTH(wp))
+	if (col == 0 || col + size + sbrlen > (colnr_T)wp->w_width)
 	{
 	    added = 0;
 	    if (*p_sbr != NUL)
 	    {
-		if (size + sbrlen + numberwidth > (colnr_T)W_WIDTH(wp))
+		if (size + sbrlen + numberwidth > (colnr_T)wp->w_width)
 		{
 		    /* calculate effective window width */
-		    int width = (colnr_T)W_WIDTH(wp) - sbrlen - numberwidth;
-		    int prev_width = col ? ((colnr_T)W_WIDTH(wp) - (sbrlen + col)) : 0;
+		    int width = (colnr_T)wp->w_width - sbrlen - numberwidth;
+		    int prev_width = col ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
 		    if (width == 0)
-			width = (colnr_T)W_WIDTH(wp);
+			width = (colnr_T)wp->w_width;
 		    added += ((size - prev_width) / width) * vim_strsize(p_sbr);
 		    if ((size - prev_width) % width)
 			/* wrapped, add another length of 'sbr' */
@@ -1248,7 +1248,7 @@ in_win_border(win_T *wp, colnr_T vcol)
 
     if (wp->w_width == 0)	/* there is no border */
 	return FALSE;
-    width1 = W_WIDTH(wp) - win_col_off(wp);
+    width1 = wp->w_width - win_col_off(wp);
     if ((int)vcol < width1 - 1)
 	return FALSE;
     if ((int)vcol == width1 - 1)

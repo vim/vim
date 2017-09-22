@@ -4564,14 +4564,14 @@ gui_update_horiz_scrollbar(int force)
 	return;
     }
 
-    size = W_WIDTH(curwin);
+    size = curwin->w_width;
     if (curwin->w_p_wrap)
     {
 	value = 0;
 #ifdef SCROLL_PAST_END
 	max = 0;
 #else
-	max = W_WIDTH(curwin) - 1;
+	max = curwin->w_width - 1;
 #endif
     }
     else
@@ -4591,7 +4591,7 @@ gui_update_horiz_scrollbar(int force)
 #endif
 
 #ifndef SCROLL_PAST_END
-	max += W_WIDTH(curwin) - 1;
+	max += curwin->w_width - 1;
 #endif
 	/* The line number isn't scrolled, thus there is less space when
 	 * 'number' or 'relativenumber' is set (also for 'foldcolumn'). */
