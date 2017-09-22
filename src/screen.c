@@ -131,7 +131,7 @@ static void fold_line(win_T *wp, long fold_count, foldinfo_T *foldinfo, linenr_T
 static void fill_foldcolumn(char_u *p, win_T *wp, int closed, linenr_T lnum);
 static void copy_text_attr(int off, char_u *buf, int len, int attr);
 #endif
-static int win_line(win_T *, linenr_T, int, int, int nochange, proftime_T *syntax_tm);
+static int win_line(win_T *, linenr_T, int, int, int nochange);
 static int char_needs_redraw(int off_from, int off_to, int cols);
 static void draw_vsep_win(win_T *wp, int row);
 #ifdef FEAT_STL_OPT
@@ -930,6 +930,7 @@ update_single_line(win_T *wp, linenr_T lnum)
 #ifdef SYN_TIME_LIMIT
 	/* Set the time limit to 'redrawtime'. */
 	profile_setlimit(p_rdt, &syntax_tm);
+	syn_set_timeout(&syntax_tm);
 #endif
 	update_prepare();
 
@@ -944,13 +945,7 @@ update_single_line(win_T *wp, linenr_T lnum)
 		start_search_hl();
 		prepare_search_hl(wp, lnum);
 # endif
-		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size, FALSE,
-#ifdef SYN_TIME_LIMIT
-			&syntax_tm
-#else
-			NULL
-#endif
-			);
+		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size, FALSE);
 # if defined(FEAT_SEARCH_EXTRA)
 		end_search_hl();
 # endif
@@ -960,6 +955,10 @@ update_single_line(win_T *wp, linenr_T lnum)
 	}
 
 	update_finish();
+
+#ifdef SYN_TIME_LIMIT
+	syn_set_timeout(NULL);
+#endif
     }
     need_cursor_line_redraw = FALSE;
 }
@@ -1805,6 +1804,7 @@ win_update(win_T *wp)
 #ifdef SYN_TIME_LIMIT
     /* Set the time limit to 'redrawtime'. */
     profile_setlimit(p_rdt, &syntax_tm);
+    syn_set_timeout(&syntax_tm);
 #endif
 #ifdef FEAT_FOLDING
     win_foldinfo.fi_level = 0;
@@ -2109,13 +2109,7 @@ win_update(win_T *wp)
 		/*
 		 * Display one line.
 		 */
-		row = win_line(wp, lnum, srow, wp->w_height, mod_top == 0,
-#ifdef SYN_TIME_LIMIT
-			&syntax_tm
-#else
-			NULL
-#endif
-			);
+		row = win_line(wp, lnum, srow, wp->w_height, mod_top == 0);
 
 #ifdef FEAT_FOLDING
 		wp->w_lines[idx].wl_folded = FALSE;
@@ -2274,6 +2268,10 @@ win_update(win_T *wp)
 	/* put '~'s on rows that aren't part of the file. */
 	win_draw_end(wp, '~', ' ', row, wp->w_height, HLF_EOB);
     }
+
+#ifdef SYN_TIME_LIMIT
+    syn_set_timeout(NULL);
+#endif
 
     /* Reset the type of redrawing required, the window has been updated. */
     wp->w_redr_type = 0;
@@ -3000,8 +2998,7 @@ win_line(
     linenr_T	lnum,
     int		startrow,
     int		endrow,
-    int		nochange UNUSED,	/* not updating for changed text */
-    proftime_T	*syntax_tm UNUSED)
+    int		nochange UNUSED)	/* not updating for changed text */
 {
     int		col = 0;		/* visual column on screen */
     unsigned	off;			/* offset in ScreenLines/ScreenAttrs */
@@ -3216,7 +3213,7 @@ win_line(
 	 * error, stop syntax highlighting. */
 	save_did_emsg = did_emsg;
 	did_emsg = FALSE;
-	syntax_start(wp, lnum, syntax_tm);
+	syntax_start(wp, lnum);
 	if (did_emsg)
 	    wp->w_s->b_syn_error = TRUE;
 	else
@@ -3614,7 +3611,7 @@ win_line(
 # ifdef FEAT_SYN_HL
 	    /* Need to restart syntax highlighting for this line. */
 	    if (has_syntax)
-		syntax_start(wp, lnum, syntax_tm);
+		syntax_start(wp, lnum);
 # endif
 	}
 #endif
