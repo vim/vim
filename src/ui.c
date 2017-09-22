@@ -2699,7 +2699,7 @@ retnomove:
 	    /* A click in the window toolbar does not enter another window or
 	     * change Visual highlighting. */
 	    winbar_click(wp, col);
-	    return IN_OTHER_WIN;
+	    return IN_UNKNOWN;
 	}
 #endif
 
