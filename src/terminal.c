@@ -730,7 +730,7 @@ term_send_mouse(VTerm *vterm, int button, int pressed)
     VTermModifier   mod = VTERM_MOD_NONE;
 
     vterm_mouse_move(vterm, mouse_row - W_WINROW(curwin),
-					    mouse_col - W_WINCOL(curwin), mod);
+					    mouse_col - curwin->w_wincol, mod);
     vterm_mouse_button(vterm, button, pressed, mod);
     return TRUE;
 }
@@ -1308,7 +1308,7 @@ send_keys_to_term(term_T *term, int c, int typed)
 	case K_MOUSERIGHT:
 	    if (mouse_row < W_WINROW(curwin)
 		    || mouse_row >= (W_WINROW(curwin) + curwin->w_height)
-		    || mouse_col < W_WINCOL(curwin)
+		    || mouse_col < curwin->w_wincol
 		    || mouse_col >= W_ENDCOL(curwin)
 		    || dragging_outside)
 	    {

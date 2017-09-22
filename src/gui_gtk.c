@@ -1954,7 +1954,7 @@ popup_menu_position_func(GtkMenu *menu UNUSED,
 # endif
     {
 	/* Find the cursor position in the current window */
-	*x += FILL_X(W_WINCOL(curwin) + curwin->w_wcol + 1) + 1;
+	*x += FILL_X(curwin->w_wincol + curwin->w_wcol + 1) + 1;
 	*y += FILL_Y(W_WINROW(curwin) + curwin->w_wrow + 1) + 1;
     }
 }
