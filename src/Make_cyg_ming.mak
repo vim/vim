@@ -913,60 +913,58 @@ endif
 	$(MAKE) -C xxd -f Make_ming.mak clean
 
 ###########################################################################
-INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
-	structs.h regexp.h option.h ex_cmds.h proto.h globals.h farsi.h \
-	gui.h
+INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
+	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
+	spell.h structs.h term.h $(NBDEBUG_INCL)
+GUI_INCL = gui.h gui_beval.h
 CUI_INCL = iscygpty.h
 
-$(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
+$(OUTDIR)/if_python.o:	if_python.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
 
-$(OUTDIR)/if_python3.o : if_python3.c if_py_both.h $(INCL)
+$(OUTDIR)/if_python3.o:	if_python3.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHON3INC) $(PYTHON3_HOME_DEF) $< -o $@
 
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(OUTDIR)/vimrc.o: vim.rc version.h gui_w32_rc.h
+$(OUTDIR)/vimrc.o:	vim.rc version.h gui_w32_rc.h
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
 
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
 
-$(OUTDIR)/channel.o:	channel.c $(INCL)
-	$(CC) -c $(CFLAGS) channel.c -o $(OUTDIR)/channel.o
-
-$(OUTDIR)/ex_docmd.o:	ex_docmd.c $(INCL) ex_cmds.h
-	$(CC) -c $(CFLAGS) ex_docmd.c -o $(OUTDIR)/ex_docmd.o
-
-$(OUTDIR)/ex_eval.o:	ex_eval.c $(INCL) ex_cmds.h
-	$(CC) -c $(CFLAGS) ex_eval.c -o $(OUTDIR)/ex_eval.o
-
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
 	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
 
-$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL)
+$(OUTDIR)/gui.o:	gui.c $(INCL) $(GUI_INCL)
+	$(CC) -c $(CFLAGS) gui.c -o $(OUTDIR)/gui.o
+
+$(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
+	$(CC) -c $(CFLAGS) gui_beval.c -o $(OUTDIR)/gui_beval.o
+
+$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL)
 	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
 
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
 	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
 
-$(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) if_mzsch.h $(MZ_EXTRA_DEP)
+$(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) $(MZSCHEME_INCL) $(MZ_EXTRA_DEP)
 	$(CC) -c $(CFLAGS) if_mzsch.c -o $(OUTDIR)/if_mzsch.o
 
 mzscheme_base.c:
 	$(MZSCHEME)/mzc --c-mods mzscheme_base.c ++lib scheme/base
 
 # Remove -D__IID_DEFINED__ for newer versions of the w32api
-$(OUTDIR)/if_ole.o: if_ole.cpp $(INCL)
+$(OUTDIR)/if_ole.o:	if_ole.cpp $(INCL) if_ole.h
 	$(CC) $(CFLAGS) $(CXXFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
 
-if_perl.c: if_perl.xs typemap
+if_perl.c:		if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap \
 	     $(PERLTYPEMAP) if_perl.xs -output $@
 
-$(OUTDIR)/if_ruby.o: if_ruby.c $(INCL)
+$(OUTDIR)/if_ruby.o:	if_ruby.c $(INCL)
 ifeq (16, $(RUBY))
 	$(CC) $(CFLAGS) -U_WIN32 -c -o $(OUTDIR)/if_ruby.o if_ruby.c
 endif
@@ -974,13 +972,16 @@ endif
 $(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
 	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
 
-$(OUTDIR)/main.o:		main.c $(INCL) $(CUI_INCL)
+$(OUTDIR)/main.o:	main.c $(INCL) $(CUI_INCL)
 	$(CC) -c $(CFLAGS) main.c -o $(OUTDIR)/main.o
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
 
-$(OUTDIR)/regexp.o:		regexp.c regexp_nfa.c $(INCL)
+$(OUTDIR)/os_win32.o:	os_win32.c $(INCL) $(MZSCHEME_INCL)
+	$(CC) -c $(CFLAGS) os_win32.c -o $(OUTDIR)/os_win32.o
+
+$(OUTDIR)/regexp.o:	regexp.c regexp_nfa.c $(INCL)
 	$(CC) -c $(CFLAGS) regexp.c -o $(OUTDIR)/regexp.o
 
 $(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)
@@ -1042,3 +1043,5 @@ else
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> pathdef.c
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> pathdef.c
 endif
+
+# vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0:
