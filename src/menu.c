@@ -88,7 +88,7 @@ static const char *toolbar_names[] =
     static int
 menu_is_winbar(char_u *name)
 {
-    return (STRNCMP(name, "WinBar", 5) == 0);
+    return (STRNCMP(name, "WinBar", 6) == 0);
 }
 
     int
@@ -1802,6 +1802,7 @@ menu_is_menubar(char_u *name)
 {
     return (!menu_is_popup(name)
 	    && !menu_is_toolbar(name)
+	    && !menu_is_winbar(name)
 	    && *name != MNU_HIDDEN_CHAR);
 }
 
