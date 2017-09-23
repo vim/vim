@@ -134,6 +134,7 @@ dnl are a lot of other things we need to change besides GUI stuff
 AC_MSG_CHECKING([for Darwin (Mac OS X)])
 if test "`(uname) 2>/dev/null`" = Darwin; then
   AC_MSG_RESULT(yes)
+  MACOS_X=yes
 
   AC_MSG_CHECKING(--disable-darwin argument)
   AC_ARG_ENABLE(darwin,
@@ -208,7 +209,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
   fi
 
   if test "$enable_darwin" = "yes"; then
-    MACOSX=yes
+    MACOS_X_UNIX=yes
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
     dnl TODO: use -arch i386 on Intel machines
@@ -626,7 +627,7 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
       if test -f "${vi_cv_path_lua_pfx}/bin/cyglua-${vi_cv_version_lua}.dll"; then
 	vi_cv_dll_name_lua="cyglua-${vi_cv_version_lua}.dll"
       else
-	if test "x$MACOSX" = "xyes"; then
+	if test "x$MACOS_X" = "xyes"; then
 	  ext="dylib"
 	  indexes=""
 	else
@@ -670,7 +671,7 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
       LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"${vi_cv_dll_name_lua}\\\" $LUA_CFLAGS"
     fi
     if test "X$LUA_CFLAGS$LUA_LIBS" != "X" && \
-       test "x$MACOSX" = "xyes" && test "x$vi_cv_with_luajit" != "xno" && \
+       test "x$MACOS_X" = "xyes" && test "x$vi_cv_with_luajit" != "xno" && \
        test "`(uname -m) 2>/dev/null`" = "x86_64"; then
       dnl OSX/x64 requires these flags. See http://luajit.org/install.html
       LUA_LIBS="-pagezero_size 10000 -image_base 100000000 $LUA_LIBS"
@@ -802,7 +803,7 @@ if test "$enable_mzschemeinterp" = "yes"; then
 
     for path in "${vi_cv_path_mzscheme_pfx}/lib" "${SCHEME_LIB}"; do
       if test "X$path" != "X"; then
-	if test "x$MACOSX" = "xyes"; then
+	if test "x$MACOS_X" = "xyes"; then
 	  MZSCHEME_LIBS="-framework Racket"
 	  MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
 	elif test -f "${path}/libmzscheme3m.a"; then
@@ -1059,7 +1060,7 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
     fi
   fi
 
-  if test "x$MACOSX" = "xyes"; then
+  if test "x$MACOS_X" = "xyes"; then
     dnl Mac OS X 10.2 or later
     dir=/System/Library/Perl
     darwindir=$dir/darwin
@@ -1201,7 +1202,7 @@ eof
 	    dnl -- delete the lines from make about Entering/Leaving directory
 	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
 	    rm -f -- "${tmp_mkf}"
-	    if test "x$MACOSX" = "xyes" && test -n "${python_PYTHONFRAMEWORK}" && ${vi_cv_path_python} -c \
+	    if test "x$MACOS_X" = "xyes" && test -n "${python_PYTHONFRAMEWORK}" && ${vi_cv_path_python} -c \
 		"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"; then
 	      vi_cv_path_python_plibs="-framework Python"
 	      if test "x${vi_cv_path_python}" != "x/usr/bin/python" && test -n "${python_PYTHONFRAMEWORKPREFIX}"; then
@@ -1269,7 +1270,7 @@ eof
 	AC_MSG_CHECKING([if -pthread should be used])
 	threadsafe_flag=
 	thread_lib=
-	dnl if test "x$MACOSX" != "xyes"; then
+	dnl if test "x$MACOS_X" != "xyes"; then
         if test "`(uname) 2>/dev/null`" != Darwin; then
 	  test "$GCC" = yes && threadsafe_flag="-pthread"
 	  if test "`(uname) 2>/dev/null`" = FreeBSD; then
@@ -1474,7 +1475,7 @@ eof
         AC_MSG_CHECKING([if -pthread should be used])
         threadsafe_flag=
         thread_lib=
-        dnl if test "x$MACOSX" != "xyes"; then
+        dnl if test "x$MACOS_X" != "xyes"; then
         if test "`(uname) 2>/dev/null`" != Darwin; then
           test "$GCC" = yes && threadsafe_flag="-pthread"
           if test "`(uname) 2>/dev/null`" = FreeBSD; then
@@ -1729,7 +1730,7 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
       tcldll=`echo 'puts libtcl[[info tclversion]][[info sharedlibextension]]' | $vi_cv_path_tcl -`
 
       AC_MSG_CHECKING(for location of Tcl include)
-      if test "x$MACOSX" != "xyes"; then
+      if test "x$MACOS_X" != "xyes"; then
 	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include /usr/local/include/tcl$tclver /usr/include /usr/include/tcl$tclver"
       else
 	dnl For Mac OS X 10.3, use the OS-provided framework location
@@ -1749,7 +1750,7 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
       fi
       if test -z "$SKIP_TCL"; then
 	AC_MSG_CHECKING(for location of tclConfig.sh script)
-	if test "x$MACOSX" != "xyes"; then
+	if test "x$MACOS_X" != "xyes"; then
 	  tclcnf=`echo $tclinc | sed s/include/lib/g`
 	  tclcnf="$tclcnf `echo $tclinc | sed s/include/lib64/g`"
 	else
@@ -2093,7 +2094,7 @@ AC_MSG_RESULT($enable_fontset)
 dnl defining FEAT_XFONTSET is delayed, so that it can be disabled for no GUI
 
 test -z "$with_x" && with_x=yes
-test "${enable_gui-yes}" != no -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
+test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
 if test "$with_x" = no; then
   AC_MSG_RESULT(defaulting to: don't HAVE_X11)
 else
@@ -2224,7 +2225,7 @@ else
   fi
 fi
 
-test "x$with_x" = xno -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
+test "x$with_x" = xno -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
@@ -2258,7 +2259,7 @@ if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
 		SKIP_PHOTON=YES ;;
   esac
 
-elif test "x$MACOSX" = "xyes" -a "x$with_x" = "xno" ; then
+elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
   SKIP_CARBON=
   case "$enable_gui_canon" in
     no)		AC_MSG_RESULT(no GUI support)
@@ -2380,7 +2381,7 @@ if test "x$SKIP_CARBON" != "xYES" -a "$enable_gui_canon" != "carbon"; then
 fi
 
 
-if test "x$MACOSX" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
+if test "x$MACOS_X" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
   AC_MSG_CHECKING(for Carbon GUI)
   dnl already did the check, just give the message
   AC_MSG_RESULT(yes);
@@ -3188,7 +3189,7 @@ AC_TRY_COMPILE([
 	      AC_MSG_RESULT(no))
 
 AC_CHECK_HEADERS(strings.h)
-if test "x$MACOSX" = "xyes"; then
+if test "x$MACOS_X" = "xyes"; then
   dnl The strings.h file on OS/X contains a warning and nothing useful.
   AC_DEFINE(NO_STRINGS_WITH_STRING_H)
 else
@@ -4277,7 +4278,7 @@ elif test x${DLL} = xdl.h; then
 fi
 AC_CHECK_HEADERS(setjmp.h)
 
-if test "x$MACOSX" = "xyes" -a -n "$PERL"; then
+if test "x$MACOS_X" = "xyes" -a -n "$PERL"; then
   dnl -ldl must come after DynaLoader.a
   if echo $LIBS | grep -e '-ldl' >/dev/null; then
     LIBS=`echo $LIBS | sed s/-ldl//`
@@ -4285,7 +4286,7 @@ if test "x$MACOSX" = "xyes" -a -n "$PERL"; then
   fi
 fi
 
-if test "x$MACOSX" = "xyes"; then
+if test "x$MACOS_X_UNIX" = "xyes"; then
   AC_MSG_CHECKING(whether we need -framework Cocoa)
   dnl Cocoa is needed with FEAT_CLIPBOARD or FEAT_MBYTE (the former is
   dnl disabled during tiny build)
