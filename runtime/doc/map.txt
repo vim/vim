@@ -29,7 +29,7 @@ manual.
 1. Key mapping				*key-mapping* *mapping* *macro*
 
 Key mapping is used to change the meaning of typed keys.  The most common use
-is to define a sequence commands for a function key.  Example: >
+is to define a sequence of commands for a function key.  Example: >
 
 	:map <F2> a<C-R>=strftime("%c")<CR><Esc>
 
@@ -542,9 +542,9 @@ scenario: >
 	:imap <M-C> foo
 	:set encoding=utf-8
 The mapping for <M-C> is defined with the latin1 encoding, resulting in a 0xc3
-byte.  If you type the character แ (0xe1 <M-a>) in UTF-8 encoding this is the
+byte.  If you type the character รก (0xe1 <M-a>) in UTF-8 encoding this is the
 two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then or
-otherwise it would be impossible to type the แ character.
+otherwise it would be impossible to type the รก character.
 
 					*<Leader>* *mapleader*
 To define a mapping which uses the "mapleader" variable, the special string
