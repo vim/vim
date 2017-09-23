@@ -3405,3 +3405,16 @@ typedef struct lval_S
     dictitem_T	*ll_di;		/* The dictitem or NULL */
     char_u	*ll_newkey;	/* New key for Dict in alloc. mem or NULL. */
 } lval_T;
+
+/* Structure used to save the current state.  Used when executing Normal mode
+ * commands while in any other mode. */
+typedef struct {
+    int		save_msg_scroll;
+    int		save_restart_edit;
+    int		save_msg_didout;
+    int		save_State;
+    int		save_insertmode;
+    int		save_finish_op;
+    int		save_opcount;
+    tasave_T	tabuf;
+} save_state_T;
