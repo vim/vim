@@ -5711,7 +5711,7 @@ $as_echo "OK" >&6; }
 		-e 's/-fdebug-prefix-map[^ ]*//g' \
 		-e 's/-pipe //' \
 		-e 's/-W[^ ]*//g' \
-                -e 's/-D_FORTIFY_SOURCE=.//g'`
+		-e 's/-D_FORTIFY_SOURCE=.//g'`
             perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
 		sed -e '/Warning/d' -e '/Note (probably harmless)/d' \
 			-e 's/-bE:perl.exp//' -e 's/-lc //'`
@@ -14095,20 +14095,43 @@ if test "x$MACOS_X" = "xyes" -a -n "$PERL"; then
   fi
 fi
 
-if test "x$MACOS_X_UNIX" = "xyes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we need -framework Cocoa" >&5
-$as_echo_n "checking whether we need -framework Cocoa... " >&6; }
-      if test "x$features" != "xtiny" || test "x$enable_multibyte" = "xyes"; then
-    LIBS=$"$LIBS -framework Cocoa"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+if test "$MACOS_X" = "yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we need macOS frameworks" >&5
+$as_echo_n "checking whether we need macOS frameworks... " >&6; }
+  if test "$GUITYPE" = "CARBONGUI"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need Carbon" >&5
+$as_echo "yes, we need Carbon" >&6; }
+    LIBS="$LIBS -framework Carbon"
+  elif test "$MACOS_X_UNIX" = "yes"; then
+    if test "$features" = "tiny"; then
+            OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
+      OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
+      if test "$enable_multibyte" = "yes"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need CoreServices" >&5
+$as_echo "yes, we need CoreServices" >&6; }
+        LIBS="$LIBS -framework CoreServices"
+      else
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+        OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
+        OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
+        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_UNIX++'`
+      fi
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need AppKit" >&5
+$as_echo "yes, we need AppKit" >&6; }
+      LIBS="$LIBS -framework AppKit"
+      if test "$features" = "small" -a "$enable_multibyte" = "no"; then
+                                { $as_echo "$as_me:${as_lineno-$LINENO}: +multi_byte will be set in favor of +clipboard" >&5
+$as_echo "$as_me: +multi_byte will be set in favor of +clipboard" >&6;}
+        enable_multibyte=yes
+        $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
+
+      fi
+    fi
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-  fi
-        if test "x$features" = "xtiny"; then
-    OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
-    OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
   fi
 fi
 if test "x$MACARCH" = "xboth" && test "x$GUITYPE" = "xCARBONGUI"; then

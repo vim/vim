@@ -4286,22 +4286,40 @@ if test "x$MACOS_X" = "xyes" -a -n "$PERL"; then
   fi
 fi
 
-if test "x$MACOS_X_UNIX" = "xyes"; then
-  AC_MSG_CHECKING(whether we need -framework Cocoa)
-  dnl Cocoa is needed with FEAT_CLIPBOARD or FEAT_MBYTE (the former is
-  dnl disabled during tiny build)
-  if test "x$features" != "xtiny" || test "x$enable_multibyte" = "xyes"; then
-    LIBS=$"$LIBS -framework Cocoa"
-    AC_MSG_RESULT(yes)
+if test "$MACOS_X" = "yes"; then
+  AC_MSG_CHECKING([whether we need macOS frameworks])
+  if test "$GUITYPE" = "CARBONGUI"; then
+    AC_MSG_RESULT([yes, we need Carbon])
+    LIBS="$LIBS -framework Carbon"
+  elif test "$MACOS_X_UNIX" = "yes"; then
+    if test "$features" = "tiny"; then
+      dnl Since no FEAT_CLIPBOARD, no longer need for os_macosx.m.
+      OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
+      OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
+      if test "$enable_multibyte" = "yes"; then
+        AC_MSG_RESULT([yes, we need CoreServices])
+        LIBS="$LIBS -framework CoreServices"
+      else
+        dnl Since no FEAT_MBYTE, no longer need for os_mac_conv.c.
+        AC_MSG_RESULT([no])
+        OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
+        OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
+        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_UNIX++'`
+      fi
+    else
+      AC_MSG_RESULT([yes, we need AppKit])
+      LIBS="$LIBS -framework AppKit"
+      if test "$features" = "small" -a "$enable_multibyte" = "no"; then
+        dnl Since FEAT_CLIPBOARD is to be defined in vim.h for FEAT_SMALL, define
+        dnl FEAT_MBYTE in order not to compromise the interoperability of the
+        dnl clipboard.
+        AC_MSG_NOTICE([+multi_byte will be set in favor of +clipboard])
+        enable_multibyte=yes
+        AC_DEFINE(FEAT_MBYTE)
+      fi
+    fi
   else
-    AC_MSG_RESULT(no)
-  fi
-  dnl As mentioned above, tiny build implies os_macosx.m isn't needed.  
-  dnl Exclude it from OS_EXTRA_SRC so that linker won't complain about
-  dnl missing Objective-C symbols.
-  if test "x$features" = "xtiny"; then
-    OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
-    OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
+    AC_MSG_RESULT([no])
   fi
 fi
 if test "x$MACARCH" = "xboth" && test "x$GUITYPE" = "xCARBONGUI"; then

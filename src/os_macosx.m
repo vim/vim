@@ -21,7 +21,7 @@
 #define BalloonEval int   /* used in header files */
 
 #include "vim.h"
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 
 /*
