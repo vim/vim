@@ -2242,7 +2242,7 @@ gui_destroy_tearoffs_recurse(vimmenu_T *menu)
 execute_menu(exarg_T *eap, vimmenu_T *menu)
 {
     char_u	*mode;
-    int		idx;
+    int		idx = -1;
 
     /* Use the Insert mode entry when returning to Insert mode. */
     if (restart_edit
@@ -2306,7 +2306,9 @@ execute_menu(exarg_T *eap, vimmenu_T *menu)
 	if (*p_sel == 'e' && gchar_cursor() != NUL)
 	    ++curwin->w_cursor.col;
     }
-    else
+
+    /* For the WinBar menu always use the Normal mode menu. */
+    if (idx == -1 || eap == NULL)
     {
 	mode = (char_u *)"Normal";
 	idx = MENU_INDEX_NORMAL;
@@ -2322,8 +2324,16 @@ execute_menu(exarg_T *eap, vimmenu_T *menu)
 		|| current_SID != 0
 #endif
 	   )
-	    exec_normal_cmd(menu->strings[idx], menu->noremap[idx],
+	{
+	    save_state_T save_state;
+
+	    ++ex_normal_busy;
+	    if (save_current_state(&save_state))
+		exec_normal_cmd(menu->strings[idx], menu->noremap[idx],
 							   menu->silent[idx]);
+	    restore_current_state(&save_state);
+	    --ex_normal_busy;
+	}
 	else
 	    ins_typebuf(menu->strings[idx], menu->noremap[idx], 0,
 						     TRUE, menu->silent[idx]);
@@ -2406,12 +2416,18 @@ winbar_click(win_T *wp, int col)
 	if (col >= item->wb_startcol && col <= item->wb_endcol)
 	{
 	    win_T *save_curwin = NULL;
+	    pos_T   save_visual = VIsual;
+	    int	    save_visual_active = VIsual_active;
+	    int	    save_visual_select = VIsual_select;
+	    int	    save_visual_reselect = VIsual_reselect;
+	    int	    save_visual_mode = VIsual_mode;
 
 	    if (wp != curwin)
 	    {
 		/* Clicking in the window toolbar of a not-current window.
-		 * Make that window the current one and go to Normal mode. */
+		 * Make that window the current one and save Visual mode. */
 		save_curwin = curwin;
+		VIsual_active = FALSE;
 		curwin = wp;
 		curbuf = curwin->w_buffer;
 		check_cursor();
@@ -2423,6 +2439,11 @@ winbar_click(win_T *wp, int col)
 	    {
 		curwin = save_curwin;
 		curbuf = curwin->w_buffer;
+		VIsual = save_visual;
+		VIsual_active = save_visual_active;
+		VIsual_select = save_visual_select;
+		VIsual_reselect = save_visual_reselect;
+		VIsual_mode = save_visual_mode;
 	    }
 	}
     }
