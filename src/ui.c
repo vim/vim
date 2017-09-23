@@ -2611,6 +2611,9 @@ jump_to_mouse(
 {
     static int	on_status_line = 0;	/* #lines below bottom of window */
     static int	on_sep_line = 0;	/* on separator right of window */
+#ifdef FEAT_MENU
+    static int  in_winbar = FALSE;
+#endif
     static int	prev_row = -1;
     static int	prev_col = -1;
     static win_T *dragwin = NULL;	/* window being dragged */
@@ -2699,8 +2702,10 @@ retnomove:
 	    /* A click in the window toolbar does not enter another window or
 	     * change Visual highlighting. */
 	    winbar_click(wp, col);
-	    return IN_OTHER_WIN;
+	    in_winbar = TRUE;
+	    return IN_OTHER_WIN | MOUSE_WINBAR;
 	}
+	in_winbar = FALSE;
 #endif
 
 	/*
@@ -2829,6 +2834,13 @@ retnomove:
 	}
 	return IN_SEP_LINE;			/* Cursor didn't move */
     }
+#ifdef FEAT_MENU
+    else if (in_winbar)
+    {
+	/* After a click on the window toolbar don't start Visual mode. */
+	return IN_OTHER_WIN | MOUSE_WINBAR;
+    }
+#endif
     else /* keep_window_focus must be TRUE */
     {
 	/* before moving the cursor for a left click, stop Visual mode */
