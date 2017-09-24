@@ -8872,9 +8872,8 @@ listcmds		Compiled with commands for the buffer list |:files|
 			and the argument list |arglist|.
 localmap		Compiled with local mappings and abbr. |:map-local|
 lua			Compiled with Lua interface |Lua|.
-mac			Any Macintosh version of Vim, but not all OS X.
-macunix			Compiled for OS X, with |mac-darwin-feature|
-osx			Compiled for OS X, with or w/o |mac-darwin-feature|
+mac			Any Macintosh version of Vim  cf. osx
+macunix			Synonym for osxdarwin
 menu			Compiled with support for |:menu|.
 mksession		Compiled with support for |:mksession|.
 modify_fname		Compiled with file name modifiers. |filename-modifiers|
@@ -8897,6 +8896,8 @@ netbeans_enabled	Compiled with support for |netbeans| and connected.
 netbeans_intg		Compiled with support for |netbeans|.
 num64			Compiled with 64-bit |Number| support.
 ole			Compiled with OLE automation support for Win32.
+osx			Compiled for macOS  cf. mac
+osxdarwin		Compiled for macOS, with |mac-darwin-feature|
 packages		Compiled with |packages| support.
 path_extra		Compiled with up/downwards search in 'path' and 'tags'
 perl			Compiled with Perl interface.

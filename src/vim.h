@@ -86,15 +86,17 @@
 
 /*
  * MACOS_CLASSIC compiling for MacOS prior to MacOS X
- * MACOS_X_UNIX  compiling for MacOS X (using os_unix.c)
- * MACOS_X       compiling for MacOS X (using os_unix.c)
+ * MACOS_X       compiling for MacOS X
+ * MACOS_X_UNIX  compiling for MacOS X with the darwin feature
  * MACOS	 compiling for either one
  */
 #if defined(macintosh) && !defined(MACOS_CLASSIC)
 # define MACOS_CLASSIC
 #endif
-#if defined(MACOS_X_UNIX)
+#if defined(MACOS_X_UNIX) && !defined(MACOS_X)
 # define MACOS_X
+#endif
+#if defined(MACOS_X)
 # ifndef HAVE_CONFIG_H
 #  define UNIX
 # endif

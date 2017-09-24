@@ -3266,14 +3266,12 @@ list_version(void)
 # endif
 #endif
 #ifdef MACOS
-# ifdef MACOS_X
-#  ifdef MACOS_X_UNIX
-    MSG_PUTS(_("\nMacOS X (unix) version"));
-#  else
-    MSG_PUTS(_("\nMacOS X version"));
-#  endif
-#else
-    MSG_PUTS(_("\nMacOS version"));
+# if defined(MACOS_X_UNIX)
+    MSG_PUTS(_("\nmacOS version"));
+# elif defined(MACOS_X)
+    MSG_PUTS(_("\nmacOS version w/o darwin feat."));
+# else
+    MSG_PUTS(_("\nMac OS Classic version"));
 # endif
 #endif
 

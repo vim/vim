@@ -135,6 +135,7 @@ AC_MSG_CHECKING([for Darwin (Mac OS X)])
 if test "`(uname) 2>/dev/null`" = Darwin; then
   AC_MSG_RESULT(yes)
   MACOS_X=yes
+  CPPFLAGS="$CPPFLAGS -DMACOS_X"
 
   AC_MSG_CHECKING(--disable-darwin argument)
   AC_ARG_ENABLE(darwin,

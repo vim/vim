@@ -5540,13 +5540,14 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"beos",
 #endif
 #ifdef MACOS
-	"mac",
-#endif
-#if defined(MACOS_X_UNIX)
-	"macunix",  /* built with 'darwin' enabled */
-#endif
-#if defined(__APPLE__) && __APPLE__ == 1
-	"osx",	    /* built with or without 'darwin' enabled */
+	"mac",		/* Mac OS Classic or Mac OS X */
+# ifdef MACOS_X
+	"osx",		/* Mac OS X */
+#  ifdef MACOS_X_UNIX
+	"macunix",	/* Mac OS X, with the darwin feature */
+	"osxdarwin",	/* synonym for macunix */
+#  endif
+# endif
 #endif
 #ifdef __QNX__
 	"qnx",
