@@ -99,7 +99,7 @@
 				   original case, as "os_mac.c" */
 #define BINARY_FILE_IO
 #define EOL_DEFAULT EOL_MAC
-#ifndef MACOS_X_UNIX		/* I hope that switching these two lines */
+#ifndef MACOS_X			/* I hope that switching these two lines */
 # define USE_CR			/* does what I want -- BNF */
 # define NO_CONSOLE		/* don't include console mode */
 #endif
@@ -226,7 +226,7 @@
  */
 #define CMDBUFFSIZE 1024	/* size of the command processing buffer */
 
-#if !defined(MACOS_X_UNIX)
+#if !defined(MACOS_X)
 # define MAXPATHL	256		/* Limited by the Pascal Strings */
 # define BASENAMELEN	(32-5-1)	/* length of base of filename */
 #endif
@@ -275,7 +275,7 @@
  * of ./configure for console MacOS X.
  */
 
-#ifdef MACOS_X_UNIX
+#ifdef MACOS_X
 # ifndef SIGPROTOARG
 #  define SIGPROTOARG	(int)
 # endif
