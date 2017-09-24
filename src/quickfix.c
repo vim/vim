@@ -443,8 +443,8 @@ parse_efm_option(char_u *efm)
     i = (FMT_PATTERNS * 3) + ((int)STRLEN(efm) << 2);
     for (round = FMT_PATTERNS; round > 0; )
 	i += (int)STRLEN(fmt_pat[--round].pattern);
-#ifdef COLON_IN_FILENAME
-    i += 12; /* "%f" can become twelve chars longer */
+#ifdef BACKSLASH_IN_FILENAME
+    i += 12; /* "%f" can become twelve chars longer (see efm_to_regpat) */
 #else
     i += 2; /* "%f" can become two chars longer */
 #endif
