@@ -3438,7 +3438,7 @@ compute_cmdrow(void)
 	cmdline_row = Rows - 1;
     else
 	cmdline_row = W_WINROW(lastwin) + lastwin->w_height
-						   + W_STATUS_HEIGHT(lastwin);
+						    + lastwin->w_status_height;
 }
 
     static void

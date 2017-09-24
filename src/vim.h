@@ -860,8 +860,6 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #define FINDFILE_BOTH	2	/* files and directories */
 
 #define W_ENDCOL(wp)	(wp->w_wincol + wp->w_width)
-#define W_VSEP_WIDTH(wp) (wp->w_vsep_width)
-#define W_STATUS_HEIGHT(wp) (wp->w_status_height)
 #ifdef FEAT_MENU
 # define W_WINROW(wp)	(wp->w_winrow + wp->w_winbar_height)
 #else
