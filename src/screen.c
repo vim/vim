@@ -622,8 +622,8 @@ update_screen(int type_arg)
 		    else
 		    {
 			wp->w_redr_type = NOT_VALID;
-			if (W_WINROW(wp) + wp->w_height + W_STATUS_HEIGHT(wp)
-				<= msg_scrolled)
+			if (W_WINROW(wp) + wp->w_height + wp->w_status_height
+							       <= msg_scrolled)
 			    wp->w_redr_status = TRUE;
 		    }
 		}
@@ -9490,7 +9490,7 @@ win_ins_lines(
     {
 	wp->w_redr_status = TRUE;
 	redraw_cmdline = TRUE;
-	nextrow = W_WINROW(wp) + wp->w_height + W_STATUS_HEIGHT(wp);
+	nextrow = W_WINROW(wp) + wp->w_height + wp->w_status_height;
 	lastrow = nextrow + line_count;
 	if (lastrow > Rows)
 	    lastrow = Rows;
