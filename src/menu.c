@@ -83,6 +83,31 @@ static const char *toolbar_names[] =
 #endif
 
 /*
+ * Return TRUE if "name" is a window toolbar menu name.
+ */
+    static int
+menu_is_winbar(char_u *name)
+{
+    return (STRNCMP(name, "WinBar", 6) == 0);
+}
+
+    int
+winbar_height(win_T *wp)
+{
+    if (wp->w_winbar != NULL && wp->w_winbar->children != NULL)
+	return 1;
+    return 0;
+}
+
+    static vimmenu_T **
+get_root_menu(char_u *name)
+{
+    if (menu_is_winbar(name))
+	return &curwin->w_winbar;
+    return &root_menu;
+}
+
+/*
  * Do the :menu command and relatives.
  */
     void
@@ -113,6 +138,7 @@ ex_menu(
     char_u	*icon = NULL;
 #endif
     vimmenu_T	menuarg;
+    vimmenu_T	**root_menu_ptr;
 
     modes = get_menu_cmd_modes(eap->cmd, eap->forceit, &noremap, &unmenu);
     arg = eap->arg;
@@ -279,6 +305,11 @@ ex_menu(
 # endif
 #endif
 
+    root_menu_ptr = get_root_menu(menu_path);
+    if (root_menu_ptr == &curwin->w_winbar)
+	/* Assume the window toolbar menu will change. */
+	redraw_later(NOT_VALID);
+
     if (enable != MAYBE)
     {
 	/*
@@ -297,13 +328,13 @@ ex_menu(
 		    p = popup_mode_name(menu_path, i);
 		    if (p != NULL)
 		    {
-			menu_nable_recurse(root_menu, p, MENU_ALL_MODES,
+			menu_nable_recurse(*root_menu_ptr, p, MENU_ALL_MODES,
 								      enable);
 			vim_free(p);
 		    }
 		}
 	}
-	menu_nable_recurse(root_menu, menu_path, modes, enable);
+	menu_nable_recurse(*root_menu_ptr, menu_path, modes, enable);
     }
     else if (unmenu)
     {
@@ -324,14 +355,14 @@ ex_menu(
 		    p = popup_mode_name(menu_path, i);
 		    if (p != NULL)
 		    {
-			remove_menu(&root_menu, p, MENU_ALL_MODES, TRUE);
+			remove_menu(root_menu_ptr, p, MENU_ALL_MODES, TRUE);
 			vim_free(p);
 		    }
 		}
 	}
 
 	/* Careful: remove_menu() changes menu_path */
-	remove_menu(&root_menu, menu_path, modes, FALSE);
+	remove_menu(root_menu_ptr, menu_path, modes, FALSE);
     }
     else
     {
@@ -401,6 +432,19 @@ ex_menu(
 	    ))
 	gui_set_shellsize(FALSE, FALSE, RESIZE_VERT);
 #endif
+    if (root_menu_ptr == &curwin->w_winbar)
+    {
+	int h = winbar_height(curwin);
+
+	if (h != curwin->w_winbar_height)
+	{
+	    if (h == 0)
+		++curwin->w_height;
+	    else if (curwin->w_height > 0)
+		--curwin->w_height;
+	    curwin->w_winbar_height = h;
+	}
+    }
 
 theend:
     ;
@@ -445,12 +489,14 @@ add_menu_path(
     char_u	*en_name;
     char_u	*map_to = NULL;
 #endif
+    vimmenu_T	**root_menu_ptr;
 
     /* Make a copy so we can stuff around with it, since it could be const */
     path_name = vim_strsave(menu_path);
     if (path_name == NULL)
 	return FAIL;
-    menup = &root_menu;
+    root_menu_ptr = get_root_menu(menu_path);
+    menup = root_menu_ptr;
     parent = NULL;
     name = path_name;
     while (*name)
@@ -786,7 +832,7 @@ erret:
     while (parent != NULL && parent->children == NULL)
     {
 	if (parent->parent == NULL)
-	    menup = &root_menu;
+	    menup = root_menu_ptr;
 	else
 	    menup = &parent->parent->children;
 	for ( ; *menup != NULL && *menup != parent; menup = &((*menup)->next))
@@ -986,6 +1032,16 @@ remove_menu(
 }
 
 /*
+ * Remove the WinBar menu from window "wp".
+ */
+    void
+remove_winbar(win_T *wp)
+{
+    remove_menu(&wp->w_winbar, (char_u *)"", MENU_ALL_MODES, TRUE);
+    vim_free(wp->w_winbar_items);
+}
+
+/*
  * Free the given menu structure and remove it from the linked list.
  */
     static void
@@ -1057,10 +1113,10 @@ show_menus(char_u *path_name, int modes)
     vimmenu_T	*menu;
     vimmenu_T	*parent = NULL;
 
-    menu = root_menu;
     name = path_name = vim_strsave(path_name);
     if (path_name == NULL)
 	return FAIL;
+    menu = *get_root_menu(path_name);
 
     /* First, find the (sub)menu with the given name */
     while (*name)
@@ -1190,6 +1246,7 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
  * Used when expanding menu names.
  */
 static vimmenu_T	*expand_menu = NULL;
+static vimmenu_T	*expand_menu_alt = NULL;
 static int		expand_modes = 0x0;
 static int		expand_emenu;	/* TRUE for ":emenu" command */
 
@@ -1251,6 +1308,8 @@ set_context_in_menu_cmd(
 	return NULL;	/* TODO: check for next command? */
     if (*p == NUL)		/* Complete the menu name */
     {
+	int try_alt_menu = TRUE;
+
 	/*
 	 * With :unmenu, you only want to match menus for the appropriate mode.
 	 * With :menu though you might want to add a menu with the same name as
@@ -1290,6 +1349,11 @@ set_context_in_menu_cmd(
 		    break;
 		}
 		menu = menu->next;
+		if (menu == NULL && try_alt_menu)
+		{
+		    menu = curwin->w_winbar;
+		    try_alt_menu = FALSE;
+		}
 	    }
 	    if (menu == NULL)
 	    {
@@ -1299,12 +1363,17 @@ set_context_in_menu_cmd(
 	    }
 	    name = p;
 	    menu = menu->children;
+	    try_alt_menu = FALSE;
 	}
 	vim_free(path_name);
 
 	xp->xp_context = expand_menus ? EXPAND_MENUNAMES : EXPAND_MENUS;
 	xp->xp_pattern = after_dot;
 	expand_menu = menu;
+	if (expand_menu == root_menu)
+	    expand_menu_alt = curwin->w_winbar;
+	else
+	    expand_menu_alt = NULL;
     }
     else			/* We're in the mapping part */
 	xp->xp_context = EXPAND_NOTHING;
@@ -1319,6 +1388,7 @@ set_context_in_menu_cmd(
 get_menu_name(expand_T *xp UNUSED, int idx)
 {
     static vimmenu_T	*menu = NULL;
+    static int		did_alt_menu = FALSE;
     char_u		*str;
 #ifdef FEAT_MULTI_LANG
     static  int		should_advance = FALSE;
@@ -1327,6 +1397,7 @@ get_menu_name(expand_T *xp UNUSED, int idx)
     if (idx == 0)	    /* first call: start at first item */
     {
 	menu = expand_menu;
+	did_alt_menu = FALSE;
 #ifdef FEAT_MULTI_LANG
 	should_advance = FALSE;
 #endif
@@ -1337,7 +1408,14 @@ get_menu_name(expand_T *xp UNUSED, int idx)
 	    || menu_is_separator(menu->dname)
 	    || menu_is_tearoff(menu->dname)
 	    || menu->children == NULL))
+    {
 	menu = menu->next;
+	if (menu == NULL && !did_alt_menu)
+	{
+	    menu = expand_menu_alt;
+	    did_alt_menu = TRUE;
+	}
+    }
 
     if (menu == NULL)	    /* at end of linked list */
 	return NULL;
@@ -1361,8 +1439,15 @@ get_menu_name(expand_T *xp UNUSED, int idx)
 #ifdef FEAT_MULTI_LANG
     if (should_advance)
 #endif
+    {
 	/* Advance to next menu entry. */
 	menu = menu->next;
+	if (menu == NULL && !did_alt_menu)
+	{
+	    menu = expand_menu_alt;
+	    did_alt_menu = TRUE;
+	}
+    }
 
 #ifdef FEAT_MULTI_LANG
     should_advance = !should_advance;
@@ -1379,6 +1464,7 @@ get_menu_name(expand_T *xp UNUSED, int idx)
 get_menu_names(expand_T *xp UNUSED, int idx)
 {
     static vimmenu_T	*menu = NULL;
+    static int		did_alt_menu = FALSE;
 #define TBUFFER_LEN 256
     static char_u	tbuffer[TBUFFER_LEN]; /*hack*/
     char_u		*str;
@@ -1389,6 +1475,7 @@ get_menu_names(expand_T *xp UNUSED, int idx)
     if (idx == 0)	    /* first call: start at first item */
     {
 	menu = expand_menu;
+	did_alt_menu = FALSE;
 #ifdef FEAT_MULTI_LANG
 	should_advance = FALSE;
 #endif
@@ -1403,7 +1490,14 @@ get_menu_names(expand_T *xp UNUSED, int idx)
 		|| menu->dname[STRLEN(menu->dname) - 1] == '.'
 #endif
 	       ))
+    {
 	menu = menu->next;
+	if (menu == NULL && !did_alt_menu)
+	{
+	    menu = expand_menu_alt;
+	    did_alt_menu = TRUE;
+	}
+    }
 
     if (menu == NULL)	    /* at end of linked list */
 	return NULL;
@@ -1451,8 +1545,15 @@ get_menu_names(expand_T *xp UNUSED, int idx)
 #ifdef FEAT_MULTI_LANG
     if (should_advance)
 #endif
+    {
 	/* Advance to next menu entry. */
 	menu = menu->next;
+	if (menu == NULL && !did_alt_menu)
+	{
+	    menu = expand_menu_alt;
+	    did_alt_menu = TRUE;
+	}
+    }
 
 #ifdef FEAT_MULTI_LANG
     should_advance = !should_advance;
@@ -1701,6 +1802,7 @@ menu_is_menubar(char_u *name)
 {
     return (!menu_is_popup(name)
 	    && !menu_is_toolbar(name)
+	    && !menu_is_winbar(name)
 	    && *name != MNU_HIDDEN_CHAR);
 }
 
@@ -2134,62 +2236,16 @@ gui_destroy_tearoffs_recurse(vimmenu_T *menu)
 #endif /* FEAT_GUI_W32 && FEAT_TEAROFF */
 
 /*
- * Given a menu descriptor, e.g. "File.New", find it in the menu hierarchy and
- * execute it.
+ * Execute "menu".  Use by ":emenu" and the window toolbar.
+ * "eap" is NULL for the window toolbar.
  */
-    void
-ex_emenu(exarg_T *eap)
+    static void
+execute_menu(exarg_T *eap, vimmenu_T *menu)
 {
-    vimmenu_T	*menu;
-    char_u	*name;
-    char_u	*saved_name;
-    char_u	*p;
-    int		idx;
     char_u	*mode;
+    int		idx = -1;
 
-    saved_name = vim_strsave(eap->arg);
-    if (saved_name == NULL)
-	return;
-
-    menu = root_menu;
-    name = saved_name;
-    while (*name)
-    {
-	/* Find in the menu hierarchy */
-	p = menu_name_skip(name);
-
-	while (menu != NULL)
-	{
-	    if (menu_name_equal(name, menu))
-	    {
-		if (*p == NUL && menu->children != NULL)
-		{
-		    EMSG(_("E333: Menu path must lead to a menu item"));
-		    menu = NULL;
-		}
-		else if (*p != NUL && menu->children == NULL)
-		{
-		    EMSG(_(e_notsubmenu));
-		    menu = NULL;
-		}
-		break;
-	    }
-	    menu = menu->next;
-	}
-	if (menu == NULL || *p == NUL)
-	    break;
-	menu = menu->children;
-	name = p;
-    }
-    vim_free(saved_name);
-    if (menu == NULL)
-    {
-	EMSG2(_("E334: Menu not found: %s"), eap->arg);
-	return;
-    }
-
-    /* Found the menu, so execute.
-     * Use the Insert mode entry when returning to Insert mode. */
+    /* Use the Insert mode entry when returning to Insert mode. */
     if (restart_edit
 #ifdef FEAT_EVAL
 	    && !current_SID
@@ -2199,7 +2255,12 @@ ex_emenu(exarg_T *eap)
 	mode = (char_u *)"Insert";
 	idx = MENU_INDEX_INSERT;
     }
-    else if (eap->addr_count)
+    else if (VIsual_active)
+    {
+	mode = (char_u *)"Visual";
+	idx = MENU_INDEX_VISUAL;
+    }
+    else if (eap != NULL && eap->addr_count)
     {
 	pos_T	tpos;
 
@@ -2246,7 +2307,9 @@ ex_emenu(exarg_T *eap)
 	if (*p_sel == 'e' && gchar_cursor() != NUL)
 	    ++curwin->w_cursor.col;
     }
-    else
+
+    /* For the WinBar menu always use the Normal mode menu. */
+    if (idx == -1 || eap == NULL)
     {
 	mode = (char_u *)"Normal";
 	idx = MENU_INDEX_NORMAL;
@@ -2255,22 +2318,139 @@ ex_emenu(exarg_T *eap)
     if (idx != MENU_INDEX_INVALID && menu->strings[idx] != NULL)
     {
 	/* When executing a script or function execute the commands right now.
+	 * Also for the window toolbar.
 	 * Otherwise put them in the typeahead buffer. */
+	if (eap == NULL
 #ifdef FEAT_EVAL
-	if (current_SID != 0)
-	    exec_normal_cmd(menu->strings[idx], menu->noremap[idx],
-							   menu->silent[idx]);
-	else
+		|| current_SID != 0
 #endif
+	   )
+	{
+	    save_state_T save_state;
+
+	    ++ex_normal_busy;
+	    if (save_current_state(&save_state))
+		exec_normal_cmd(menu->strings[idx], menu->noremap[idx],
+							   menu->silent[idx]);
+	    restore_current_state(&save_state);
+	    --ex_normal_busy;
+	}
+	else
 	    ins_typebuf(menu->strings[idx], menu->noremap[idx], 0,
 						     TRUE, menu->silent[idx]);
     }
-    else
+    else if (eap != NULL)
 	EMSG2(_("E335: Menu not defined for %s mode"), mode);
 }
 
-#if defined(FEAT_GUI_MSWIN) \
-	|| (defined(FEAT_GUI_GTK) && defined(FEAT_MENU)) \
+/*
+ * Given a menu descriptor, e.g. "File.New", find it in the menu hierarchy and
+ * execute it.
+ */
+    void
+ex_emenu(exarg_T *eap)
+{
+    vimmenu_T	*menu;
+    char_u	*name;
+    char_u	*saved_name;
+    char_u	*p;
+
+    saved_name = vim_strsave(eap->arg);
+    if (saved_name == NULL)
+	return;
+
+    menu = *get_root_menu(saved_name);
+    name = saved_name;
+    while (*name)
+    {
+	/* Find in the menu hierarchy */
+	p = menu_name_skip(name);
+
+	while (menu != NULL)
+	{
+	    if (menu_name_equal(name, menu))
+	    {
+		if (*p == NUL && menu->children != NULL)
+		{
+		    EMSG(_("E333: Menu path must lead to a menu item"));
+		    menu = NULL;
+		}
+		else if (*p != NUL && menu->children == NULL)
+		{
+		    EMSG(_(e_notsubmenu));
+		    menu = NULL;
+		}
+		break;
+	    }
+	    menu = menu->next;
+	}
+	if (menu == NULL || *p == NUL)
+	    break;
+	menu = menu->children;
+	name = p;
+    }
+    vim_free(saved_name);
+    if (menu == NULL)
+    {
+	EMSG2(_("E334: Menu not found: %s"), eap->arg);
+	return;
+    }
+
+    /* Found the menu, so execute. */
+    execute_menu(eap, menu);
+}
+
+/*
+ * Handle a click in the window toolbar of "wp" at column "col".
+ */
+    void
+winbar_click(win_T *wp, int col)
+{
+    int		idx;
+
+    if (wp->w_winbar_items == NULL)
+	return;
+    for (idx = 0; wp->w_winbar_items[idx].wb_menu != NULL; ++idx)
+    {
+	winbar_item_T *item = &wp->w_winbar_items[idx];
+
+	if (col >= item->wb_startcol && col <= item->wb_endcol)
+	{
+	    win_T *save_curwin = NULL;
+	    pos_T   save_visual = VIsual;
+	    int	    save_visual_active = VIsual_active;
+	    int	    save_visual_select = VIsual_select;
+	    int	    save_visual_reselect = VIsual_reselect;
+	    int	    save_visual_mode = VIsual_mode;
+
+	    if (wp != curwin)
+	    {
+		/* Clicking in the window toolbar of a not-current window.
+		 * Make that window the current one and save Visual mode. */
+		save_curwin = curwin;
+		VIsual_active = FALSE;
+		curwin = wp;
+		curbuf = curwin->w_buffer;
+		check_cursor();
+	    }
+
+	    execute_menu(NULL, item->wb_menu);
+
+	    if (save_curwin != NULL)
+	    {
+		curwin = save_curwin;
+		curbuf = curwin->w_buffer;
+		VIsual = save_visual;
+		VIsual_active = save_visual_active;
+		VIsual_select = save_visual_select;
+		VIsual_reselect = save_visual_reselect;
+		VIsual_mode = save_visual_mode;
+	    }
+	}
+    }
+}
+
+#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_BEVAL_TIP) || defined(PROTO)
 /*
  * Given a menu descriptor, e.g. "File.New", find it in the menu hierarchy.
@@ -2283,7 +2463,7 @@ gui_find_menu(char_u *path_name)
     char_u	*saved_name;
     char_u	*p;
 
-    menu = root_menu;
+    menu = *get_root_menu(path_name);
 
     saved_name = vim_strsave(path_name);
     if (saved_name == NULL)

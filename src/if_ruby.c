@@ -1470,7 +1470,7 @@ static VALUE window_set_height(VALUE self, VALUE height)
 
 static VALUE window_width(VALUE self UNUSED)
 {
-    return INT2NUM(W_WIDTH(get_win(self)));
+    return INT2NUM(get_win(self)->w_width);
 }
 
 static VALUE window_set_width(VALUE self UNUSED, VALUE width)

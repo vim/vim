@@ -51,6 +51,8 @@ void ex_redraw(exarg_T *eap);
 int vim_mkdir_emsg(char_u *name, int prot);
 FILE *open_exfile(char_u *fname, int forceit, char *mode);
 void update_topline_cursor(void);
+int save_current_state(save_state_T *sst);
+void restore_current_state(save_state_T *sst);
 void ex_normal(exarg_T *eap);
 void exec_normal_cmd(char_u *cmd, int remap, int silent);
 void exec_normal(int was_typed);

@@ -2679,9 +2679,9 @@ do_mouse(
 			 * selection or the current window (might have false
 			 * negative here)
 			 */
-			if (mouse_row < W_WINROW(curwin)
+			if (mouse_row < curwin->w_winrow
 			     || mouse_row
-				      > (W_WINROW(curwin) + curwin->w_height))
+				      > (curwin->w_winrow + curwin->w_height))
 			    jump_flags = MOUSE_MAY_STOP_VIS;
 			else if (get_fpos_of_mouse(&m_pos) != IN_BUFFER)
 			    jump_flags = MOUSE_MAY_STOP_VIS;
@@ -2794,6 +2794,12 @@ do_mouse(
      */
     jump_flags = jump_to_mouse(jump_flags,
 			oap == NULL ? NULL : &(oap->inclusive), which_button);
+
+#ifdef FEAT_MENU
+    /* A click in the window toolbar has no side effects. */
+    if (jump_flags & MOUSE_WINBAR)
+	return FALSE;
+#endif
     moved = (jump_flags & CURSOR_MOVED);
     in_status_line = (jump_flags & IN_STATUS_LINE);
     in_sep_line = (jump_flags & IN_SEP_LINE);
@@ -4448,8 +4454,8 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 
     col_off1 = curwin_col_off();
     col_off2 = col_off1 - curwin_col_off2();
-    width1 = W_WIDTH(curwin) - col_off1;
-    width2 = W_WIDTH(curwin) - col_off2;
+    width1 = curwin->w_width - col_off1;
+    width2 = curwin->w_width - col_off2;
     if (width2 == 0)
 	width2 = 1; /* avoid divide by zero */
 
@@ -4634,7 +4640,7 @@ nv_mousescroll(cmdarg_T *cap)
 	    int val, step = 6;
 
 	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-		step = W_WIDTH(curwin);
+		step = curwin->w_width;
 	    val = curwin->w_leftcol + (cap->arg == MSCR_RIGHT ? -step : +step);
 	    if (val < 0)
 		val = 0;
@@ -4886,7 +4892,7 @@ dozet:
 
 		/* "zH" - scroll screen right half-page */
     case 'H':
-		cap->count1 *= W_WIDTH(curwin) / 2;
+		cap->count1 *= curwin->w_width / 2;
 		/* FALLTHROUGH */
 
 		/* "zh" - scroll screen to the right */
@@ -4903,7 +4909,7 @@ dozet:
 		break;
 
 		/* "zL" - scroll screen left half-page */
-    case 'L':	cap->count1 *= W_WIDTH(curwin) / 2;
+    case 'L':	cap->count1 *= curwin->w_width / 2;
 		/* FALLTHROUGH */
 
 		/* "zl" - scroll screen to the left */
@@ -4947,7 +4953,7 @@ dozet:
 		    else
 #endif
 		    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &col);
-		    n = W_WIDTH(curwin) - curwin_col_off();
+		    n = curwin->w_width - curwin_col_off();
 		    if ((long)col + p_siso < n)
 			col = 0;
 		    else
@@ -8073,7 +8079,7 @@ nv_g_cmd(cmdarg_T *cap)
 	oap->inclusive = FALSE;
 	if (curwin->w_p_wrap && curwin->w_width != 0)
 	{
-	    int		width1 = W_WIDTH(curwin) - curwin_col_off();
+	    int		width1 = curwin->w_width - curwin_col_off();
 	    int		width2 = width1 + curwin_col_off2();
 
 	    validate_virtcol();
@@ -8087,7 +8093,7 @@ nv_g_cmd(cmdarg_T *cap)
 	 * 'relativenumber' is on and lines are wrapping the middle can be more
 	 * to the left. */
 	if (cap->nchar == 'm')
-	    i += (W_WIDTH(curwin) - curwin_col_off()
+	    i += (curwin->w_width - curwin_col_off()
 		    + ((curwin->w_p_wrap && i > 0)
 			? curwin_col_off2() : 0)) / 2;
 	coladvance((colnr_T)i);
@@ -8139,7 +8145,7 @@ nv_g_cmd(cmdarg_T *cap)
 		curwin->w_curswant = MAXCOL;    /* so we stay at the end */
 		if (cap->count1 == 1)
 		{
-		    int		width1 = W_WIDTH(curwin) - col_off;
+		    int		width1 = curwin->w_width - col_off;
 		    int		width2 = width1 + curwin_col_off2();
 
 		    validate_virtcol();
@@ -8171,7 +8177,7 @@ nv_g_cmd(cmdarg_T *cap)
 	    }
 	    else
 	    {
-		i = curwin->w_leftcol + W_WIDTH(curwin) - col_off - 1;
+		i = curwin->w_leftcol + curwin->w_width - col_off - 1;
 		coladvance((colnr_T)i);
 
 		/* Make sure we stick in this column. */
@@ -9565,7 +9571,7 @@ get_op_vcol(
     colnr_T	    start, end;
 
     if (VIsual_mode != Ctrl_V
-	    || (!initial && oap->end.col < W_WIDTH(curwin)))
+	    || (!initial && oap->end.col < curwin->w_width))
 	return;
 
     oap->block_mode = TRUE;

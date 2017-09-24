@@ -5229,6 +5229,9 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict_add_nr_str(dict, "winnr", winnr, NULL);
     dict_add_nr_str(dict, "winid", wp->w_id, NULL);
     dict_add_nr_str(dict, "height", wp->w_height, NULL);
+#ifdef FEAT_MENU
+    dict_add_nr_str(dict, "winbar", wp->w_winbar_height, NULL);
+#endif
     dict_add_nr_str(dict, "width", wp->w_width, NULL);
     dict_add_nr_str(dict, "bufnr", wp->w_buffer->b_fnum, NULL);
 
@@ -13236,7 +13239,7 @@ f_winrestview(typval_T *argvars, typval_T *rettv UNUSED)
 
 	check_cursor();
 	win_new_height(curwin, curwin->w_height);
-	win_new_width(curwin, W_WIDTH(curwin));
+	win_new_width(curwin, curwin->w_width);
 	changed_window_setting();
 
 	if (curwin->w_topline <= 0)

@@ -6608,7 +6608,7 @@ gui_make_popup(char_u *path_name, int mouse_pos)
 	}
 	else if (curwin != NULL)
 	{
-	    p.x += TEXT_X(W_WINCOL(curwin) + curwin->w_wcol + 1);
+	    p.x += TEXT_X(curwin->w_wincol + curwin->w_wcol + 1);
 	    p.y += TEXT_Y(W_WINROW(curwin) + curwin->w_wrow + 1);
 	}
 	msg_scroll = FALSE;

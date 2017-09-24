@@ -2105,7 +2105,7 @@ test1 \
 	test20 test25 test28 test29 \
 	test30 test31 test32 test33 test34 test36 test37 test38 test39 \
 	test40 test41 test42 test43 test44 test45 test48 test49 \
-	test50 test52 test53 test54 test55 test56 test57 test59 \
+	test50 test52 test53 test54 test55 test59 \
 	test60 test64 test66 test68 test69 \
 	test70 test72 test73 test77 test78 test79 \
 	test83 test85 test86 test87 test88 \
@@ -2278,6 +2278,7 @@ test_arglist \
 	test_vimscript \
 	test_virtualedit \
 	test_visual \
+	test_winbar \
 	test_window_cmd \
 	test_window_id \
 	test_windows_home \

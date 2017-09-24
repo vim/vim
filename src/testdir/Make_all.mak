@@ -40,8 +40,6 @@ SCRIPTS_ALL = \
 	test48.out \
 	test53.out \
 	test55.out \
-	test56.out \
-	test57.out \
 	test60.out \
 	test64.out \
 	test66.out \
@@ -201,12 +199,13 @@ NEW_TESTS = test_arabic.res \
 	    test_viminfo.res \
 	    test_vimscript.res \
 	    test_visual.res \
+	    test_winbar.res \
 	    test_window_id.res \
+	    test_windows_home.res \
 	    test_writefile.res \
 	    test_alot_latin.res \
 	    test_alot_utf8.res \
-	    test_alot.res \
-	    test_windows_home.res
+	    test_alot.res
 
 
 # Explicit dependencies.

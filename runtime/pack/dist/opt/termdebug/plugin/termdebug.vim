@@ -15,6 +15,11 @@
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
 
+" In case this gets loaded twice.
+if exists(':Termdebug')
+  finish
+endif
+
 " The command that starts debugging, e.g. ":Termdebug vim".
 " To end type "quit" in the gdb window.
 command -nargs=* -complete=file Termdebug call s:StartDebug(<q-args>)
@@ -104,6 +109,11 @@ func s:StartDebug(cmd)
   call win_gotoid(s:gdbwin)
 
   let s:breakpoints = {}
+
+  augroup TermDebug
+    au BufRead * call s:BufRead()
+    au BufUnload * call s:BufUnloaded()
+  augroup END
 endfunc
 
 func s:EndDebug(job, status)
@@ -120,6 +130,8 @@ func s:EndDebug(job, status)
   if s:save_columns > 0
     let &columns = s:save_columns
   endif
+
+  au! TermDebug
 endfunc
 
 " Handle a message received from gdb on the GDB/MI interface.
@@ -132,7 +144,7 @@ func s:CommOutput(chan, msg)
       let msg = msg[1:]
     endif
     if msg != ''
-      if msg =~ '^\*\(stopped\|running\)'
+      if msg =~ '^\(\*stopped\|\*running\|=thread-selected\)'
 	call s:HandleCursor(msg)
       elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,'
 	call s:HandleNewBreakpoint(msg)
@@ -161,6 +173,14 @@ func s:InstallCommands()
 
   " TODO: can the K mapping be restored?
   nnoremap K :Evaluate<CR>
+
+  if has('menu')
+    amenu WinBar.Step :Step<CR>
+    amenu WinBar.Next :Over<CR>
+    amenu WinBar.Finish :Finish<CR>
+    amenu WinBar.Cont :Continue<CR>
+    amenu WinBar.Eval :Evaluate<CR>
+  endif
 endfunc
 
 " Delete installed debugger commands in the current window.
@@ -176,6 +196,15 @@ func s:DeleteCommands()
   delcommand Program
 
   nunmap K
+
+  if has('menu')
+    aunmenu WinBar.Step
+    aunmenu WinBar.Next
+    aunmenu WinBar.Finish
+    aunmenu WinBar.Cont
+    aunmenu WinBar.Eval
+  endif
+
   exe 'sign unplace ' . s:pc_id
   for key in keys(s:breakpoints)
     exe 'sign unplace ' . (s:break_id + key)
@@ -232,7 +261,15 @@ endfunc
 
 " Handle the result of data-evaluate-expression
 func s:HandleEvaluate(msg)
-  echomsg '"' . s:evalexpr . '": ' . substitute(a:msg, '.*value="\(.*\)"', '\1', '')
+  let value = substitute(a:msg, '.*value="\(.*\)"', '\1', '')
+  let value = substitute(value, '\\"', '"', 'g')
+  echomsg '"' . s:evalexpr . '": ' . value
+
+  if s:evalexpr[0] != '*' && value =~ '^0x' && value !~ '"$'
+    " Looks like a pointer, also display what it points to.
+    let s:evalexpr = '*' . s:evalexpr
+    call term_sendkeys(s:commbuf, '-data-evaluate-expression "' . s:evalexpr . "\"\r")
+  endif
 endfunc
 
 " Handle an error.
@@ -247,10 +284,10 @@ func s:HandleCursor(msg)
 
   if win_gotoid(s:startwin)
     let fname = substitute(a:msg, '.*fullname="\([^"]*\)".*', '\1', '')
-    if a:msg =~ '^\*stopped' && filereadable(fname)
+    if a:msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
       let lnum = substitute(a:msg, '.*line="\([^"]*\)".*', '\1', '')
       if lnum =~ '^[0-9]*$'
-	if expand('%:h') != fname
+	if expand('%:p') != fnamemodify(fname, ':p')
 	  if &modified
 	    " TODO: find existing window
 	    exe 'split ' . fnameescape(fname)
@@ -260,7 +297,7 @@ func s:HandleCursor(msg)
 	  endif
 	endif
 	exe lnum
-	exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fnameescape(fname)
+	exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fname
 	setlocal signcolumn=yes
       endif
     else
@@ -288,11 +325,17 @@ func s:HandleNewBreakpoint(msg)
 
   let fname = substitute(a:msg, '.*fullname="\([^"]*\)".*', '\1', '')
   let lnum = substitute(a:msg, '.*line="\([^"]*\)".*', '\1', '')
-
-  exe 'sign place ' . (s:break_id + nr) . ' line=' . lnum . ' name=debugBreakpoint file=' . fnameescape(fname)
-
   let entry['fname'] = fname
   let entry['lnum'] = lnum
+
+  if bufloaded(fname)
+    call s:PlaceSign(nr, entry)
+  endif
+endfunc
+
+func s:PlaceSign(nr, entry)
+  exe 'sign place ' . (s:break_id + a:nr) . ' line=' . a:entry['lnum'] . ' name=debugBreakpoint file=' . a:entry['fname']
+  let a:entry['placed'] = 1
 endfunc
 
 " Handle deleting a breakpoint
@@ -302,6 +345,33 @@ func s:HandleBreakpointDelete(msg)
   if nr == 0
     return
   endif
-  exe 'sign unplace ' . (s:break_id + nr)
-  unlet s:breakpoints[nr]
+  if has_key(s:breakpoints, nr)
+    let entry = s:breakpoints[nr]
+    if has_key(entry, 'placed')
+      exe 'sign unplace ' . (s:break_id + nr)
+      unlet entry['placed']
+    endif
+    unlet s:breakpoints[nr]
+  endif
 endfunc
+
+" Handle a BufRead autocommand event: place any signs.
+func s:BufRead()
+  let fname = expand('<afile>:p')
+  for [nr, entry] in items(s:breakpoints)
+    if entry['fname'] == fname
+      call s:PlaceSign(nr, entry)
+    endif
+  endfor
+endfunc
+
+" Handle a BufUnloaded autocommand event: unplace any signs.
+func s:BufUnloaded()
+  let fname = expand('<afile>:p')
+  for [nr, entry] in items(s:breakpoints)
+    if entry['fname'] == fname
+      let entry['placed'] = 0
+    endif
+  endfor
+endfunc
+

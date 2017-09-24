@@ -2611,6 +2611,9 @@ jump_to_mouse(
 {
     static int	on_status_line = 0;	/* #lines below bottom of window */
     static int	on_sep_line = 0;	/* on separator right of window */
+#ifdef FEAT_MENU
+    static int  in_winbar = FALSE;
+#endif
     static int	prev_row = -1;
     static int	prev_col = -1;
     static win_T *dragwin = NULL;	/* window being dragged */
@@ -2657,7 +2660,7 @@ retnomove:
 	}
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	/* Continue a modeless selection in another window. */
-	if (cmdwin_type != 0 && row < W_WINROW(curwin))
+	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
 	return IN_BUFFER;
@@ -2692,6 +2695,19 @@ retnomove:
 	if (wp == NULL)
 	    return IN_UNKNOWN;
 	dragwin = NULL;
+
+#ifdef FEAT_MENU
+	if (row == -1)
+	{
+	    /* A click in the window toolbar does not enter another window or
+	     * change Visual highlighting. */
+	    winbar_click(wp, col);
+	    in_winbar = TRUE;
+	    return IN_OTHER_WIN | MOUSE_WINBAR;
+	}
+	in_winbar = FALSE;
+#endif
+
 	/*
 	 * winpos and height may change in win_enter()!
 	 */
@@ -2728,7 +2744,7 @@ retnomove:
 #ifdef FEAT_FOLDING
 			&& (
 # ifdef FEAT_RIGHTLEFT
-			    wp->w_p_rl ? col < W_WIDTH(wp) - wp->w_p_fdc :
+			    wp->w_p_rl ? col < wp->w_width - wp->w_p_fdc :
 # endif
 			    col >= wp->w_p_fdc
 # ifdef FEAT_CMDWIN
@@ -2818,6 +2834,13 @@ retnomove:
 	}
 	return IN_SEP_LINE;			/* Cursor didn't move */
     }
+#ifdef FEAT_MENU
+    else if (in_winbar)
+    {
+	/* After a click on the window toolbar don't start Visual mode. */
+	return IN_OTHER_WIN | MOUSE_WINBAR;
+    }
+#endif
     else /* keep_window_focus must be TRUE */
     {
 	/* before moving the cursor for a left click, stop Visual mode */
@@ -2829,12 +2852,12 @@ retnomove:
 
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	/* Continue a modeless selection in another window. */
-	if (cmdwin_type != 0 && row < W_WINROW(curwin))
+	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
 
 	row -= W_WINROW(curwin);
-	col -= W_WINCOL(curwin);
+	col -= curwin->w_wincol;
 
 	/*
 	 * When clicking beyond the end of the window, scroll the screen.
@@ -2934,7 +2957,7 @@ retnomove:
     /* Check for position outside of the fold column. */
     if (
 # ifdef FEAT_RIGHTLEFT
-	    curwin->w_p_rl ? col < W_WIDTH(curwin) - curwin->w_p_fdc :
+	    curwin->w_p_rl ? col < curwin->w_width - curwin->w_p_fdc :
 # endif
 	    col >= curwin->w_p_fdc
 #  ifdef FEAT_CMDWIN
@@ -3009,7 +3032,7 @@ mouse_comp_pos(
 
 #ifdef FEAT_RIGHTLEFT
     if (win->w_p_rl)
-	col = W_WIDTH(win) - 1 - col;
+	col = win->w_width - 1 - col;
 #endif
 
     lnum = win->w_topline;
@@ -3053,7 +3076,7 @@ mouse_comp_pos(
 	off = win_col_off(win) - win_col_off2(win);
 	if (col < off)
 	    col = off;
-	col += row * (W_WIDTH(win) - off);
+	col += row * (win->w_width - off);
 	/* add skip column (for long wrapping line) */
 	col += win->w_skipcol;
     }
@@ -3117,7 +3140,12 @@ mouse_find_win(int *rowp, int *colp UNUSED)
      * exist. */
     FOR_ALL_WINDOWS(wp)
 	if (wp == fp->fr_win)
+	{
+#ifdef FEAT_MENU
+	    *rowp -= wp->w_winbar_height;
+#endif
 	    return wp;
+	}
     return NULL;
 }
 
