@@ -21,8 +21,6 @@
  */
 
 #include "vim.h"
-#include <VersionHelpers.h>
-
 
 #ifdef FEAT_MZSCHEME
 # include "if_mzsch.h"
@@ -229,56 +227,64 @@ read_console_input(
 	IRSIZE = 10
     };
     static INPUT_RECORD s_irCache[IRSIZE];
-    static DWORD s_dwIndex;
-    static DWORD s_dwUnreadEvents;
+    static DWORD s_dwIndex = 0;
+    static DWORD s_dwMax = 0;
     DWORD dwEvents;
     int head;
     int tail;
     int i;
 
     if (nLength == -2)
-		return (s_dwUnreadEvents > 0) ? TRUE : FALSE;
+	return (s_dwMax > 0) ? TRUE : FALSE;
 
-	if (nLength == -1) // Peek request
+    if (!win8_or_later)
+    {
+	if (nLength == -1)
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	return ReadConsoleInputW(hInput, lpBuffer, 1, &dwEvents);
+    }
+
+    if (s_dwMax == 0)
+    {
+	if (nLength == -1)
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	if (!ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents))
+	    return FALSE;
+	s_dwIndex = 0;
+	s_dwMax = dwEvents;
+	if (dwEvents == 0)
 	{
-		if (!win8_or_later || !s_dwUnreadEvents)
-			return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents); //1,3 - if Buf is empty or old Win then (Peek)
+	    *lpEvents = 0;
+	    return TRUE;
 	}
-	else // Read request
+
+	if (s_dwMax > 1)
+	{
+	    head = 0;
+	    tail = s_dwMax - 1;
+	    while (head != tail)
+	    {
+		if (s_irCache[head].EventType == WINDOW_BUFFER_SIZE_EVENT
+			&& s_irCache[head + 1].EventType
+						  == WINDOW_BUFFER_SIZE_EVENT)
 		{
-		if (!win8_or_later)
-			return ReadConsoleInputW(hInput, lpBuffer, 1, &dwEvents); //2 if old Win then (Read)
-		if (!s_dwUnreadEvents--)  //4 if Buf is empty - Try (Read) 
-		{
-			s_dwIndex = 0;
-			if (!ReadConsoleInputW(hInput, s_irCache, IRSIZE, &s_dwUnreadEvents))
-				return s_dwUnreadEvents = 0; // FALSE;
-			if (!s_dwUnreadEvents)
-			{
-				*lpEvents = 0;
-				return TRUE;
-			}
-			tail = s_dwUnreadEvents - 1;
-				for (head = 0;head < tail; head++)
-				{
-					if (s_irCache[head].EventType == WINDOW_BUFFER_SIZE_EVENT
-					&& s_irCache[head + 1].EventType
-					== WINDOW_BUFFER_SIZE_EVENT)
-					{
-						/* Remove duplicate event to avoid flicker. */
-						for (i = head; i < tail; i++)
-							s_irCache[i] = s_irCache[i + 1];
-						--tail;
-					}
-				}
-			s_dwUnreadEvents = tail; // Always UnreadEvents-1 because return 1 Event now
+		    /* Remove duplicate event to avoid flicker. */
+		    for (i = head; i < tail; ++i)
+			s_irCache[i] = s_irCache[i + 1];
+		    --tail;
+		    continue;
 		}
-		else 
-			s_dwIndex++; // 5 Buf is no empty, return next element of buf (virtual Peek)
+		head++;
+	    }
+	    s_dwMax = tail + 1;
 	}
-	*lpBuffer = s_irCache[s_dwIndex];
-	*lpEvents = 1;
-	return TRUE;
+    }
+
+    *lpBuffer = s_irCache[s_dwIndex];
+    if (!(nLength == -1 || nLength == -2) && ++s_dwIndex >= s_dwMax)
+	s_dwMax = 0;
+    *lpEvents = 1;
+    return TRUE;
 }
 
 /*
@@ -343,7 +349,7 @@ get_exe_name(void)
     if (exe_path == NULL && exe_name != NULL)
     {
 	exe_path = vim_strnsave(exe_name,
-				     (int)(gettail_sep(exe_name) - (int)exe_name));
+				     (int)(gettail_sep(exe_name) - exe_name));
 	if (exe_path != NULL)
 	{
 	    /* Append our starting directory to $PATH, so that when doing
@@ -672,7 +678,7 @@ null_libintl_wputenv(const wchar_t *envstring UNUSED)
 # define VER_PLATFORM_WIN32_WINDOWS 1
 #endif
 
-DWORD g_PlatformId = VER_PLATFORM_WIN32s;
+DWORD g_PlatformId;
 
 #ifdef HAVE_ACL
 # ifndef PROTO
@@ -727,23 +733,19 @@ win32_enable_privilege(LPTSTR lpszPrivilege, BOOL bEnable)
 PlatformId(void)
 {
     static int done = FALSE;
-	
 
     if (!done)
     {
-	/* LPOSVERSIONINFOW ovi;
-	
-	ovi->dwOSVersionInfoSize = sizeof(LPOSVERSIONINFOW);
+	OSVERSIONINFO ovi;
+
+	ovi.dwOSVersionInfoSize = sizeof(ovi);
 	GetVersionEx(&ovi);
 
-	g_PlatformId = ovi->dwPlatformId; */
+	g_PlatformId = ovi.dwPlatformId;
 
-	if (IsWindowsXPOrGreater()) 
-		g_PlatformId = VER_PLATFORM_WIN32_NT; // for compatibility 
-	/*if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
-		|| ovi.dwMajorVersion > 6)*/
-	if (!IsWindows8OrGreater())
-		win8_or_later = TRUE;
+	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
+		|| ovi.dwMajorVersion > 6)
+	    win8_or_later = TRUE;
 
 #ifdef HAVE_ACL
 	/* Enable privilege for getting or setting SACLs. */
@@ -1408,7 +1410,6 @@ WaitForChar(long msec, int ignore_input)
     INPUT_RECORD    ir;
     DWORD	    cRecords;
     WCHAR	    ch, ch2;
-
 #ifdef FEAT_TIMERS
     int		    tb_change_cnt = typebuf.tb_change_cnt;
 #endif
@@ -1455,11 +1456,11 @@ WaitForChar(long msec, int ignore_input)
 	}
 	if (msec != 0)
 	{
-		DWORD dwWaitTime = dwEndTime - dwNow;
+	    DWORD dwWaitTime = dwEndTime - dwNow;
+
 #ifdef FEAT_JOB_CHANNEL
-		
 	    /* Check channel while waiting for input. */
-	    if (dwWaitTime > 100) 
+	    if (dwWaitTime > 100)
 	    {
 		dwWaitTime = 100;
 		/* If there is readahead then parse_queued_messages() timed out
@@ -1534,9 +1535,7 @@ WaitForChar(long msec, int ignore_input)
 
 	if (cRecords > 0)
 	{
-	    
-		
-		if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
+	    if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
 	    {
 #ifdef FEAT_MBYTE_IME
 		/* Windows IME sends two '\n's with only one 'ENTER'.  First:
@@ -1553,12 +1552,12 @@ WaitForChar(long msec, int ignore_input)
 		    return TRUE;
 	    }
 
-		read_console_input(g_hConIn, &ir, 1, &cRecords);
+	    read_console_input(g_hConIn, &ir, 1, &cRecords);
 
-		if (ir.EventType == FOCUS_EVENT)
-			handle_focus_event(ir);
-		else if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
-			shell_resized_check();  // shell_resized() - run if real change size only
+	    if (ir.EventType == FOCUS_EVENT)
+		handle_focus_event(ir);
+	    else if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
+		shell_resized();
 #ifdef FEAT_MOUSE
 	    else if (ir.EventType == MOUSE_EVENT
 		    && decode_mouse_event(&ir.Event.MouseEvent))
@@ -1567,8 +1566,7 @@ WaitForChar(long msec, int ignore_input)
 	}
 	else if (msec == 0)
 	    break;
-    } 
-// End loop until the end of the time period
+    }
 
 #ifdef FEAT_CLIENTSERVER
     /* Something might have been received while we were waiting. */
@@ -1636,7 +1634,7 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	    return 0;
 # endif
 #endif
-	if (!read_console_input(g_hConIn, &ir, 1, &cRecords))
+	if (read_console_input(g_hConIn, &ir, 1, &cRecords) == 0)
 	{
 	    if (did_create_conin)
 		read_error_exit();
@@ -1653,7 +1651,7 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	else if (ir.EventType == FOCUS_EVENT)
 	    handle_focus_event(ir);
 	else if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
-		shell_resized_check();  // shell_resized() - run if real change size only
+	    shell_resized();
 #ifdef FEAT_MOUSE
 	else if (ir.EventType == MOUSE_EVENT)
 	{
@@ -5470,9 +5468,6 @@ termcap_mode_start(void)
     SetConsoleMode(g_hConIn, cmodein);
 
     redraw_later_clear();
-
-	//FlushConsoleInputBuffer(g_hConIn);
-
     g_fTermcapMode = TRUE;
 }
 
