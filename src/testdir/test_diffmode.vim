@@ -577,7 +577,7 @@ func Test_diff_filler()
   call setline(1, [1, 2, 3, 'x', 4])
   diffthis
   vnew
-  call setline(1, ['1', 2, 'y', 'y', 3, 4])
+  call setline(1, [1, 2, 'y', 'y', 3, 4])
   diffthis
   redraw
 
