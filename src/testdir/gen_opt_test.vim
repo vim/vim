@@ -129,6 +129,7 @@ let test_values = {
       \ 'switchbuf': [['', 'useopen', 'split,newtab'], ['xxx']],
       \ 'tagcase': [['smart', 'match'], ['', 'xxx', 'smart,match']],
       \ 'term': [[], []],
+      \ 'termguicolors': [[], []],
       \ 'termsize': [['', '24x80', '0x80', '32x0', '0x0'], ['xxx', '80', '8ax9', '24x80b']],
       \ 'termencoding': [has('gui_gtk') ? [] : ['', 'utf-8'], ['xxx']],
       \ 'toolbar': [['', 'icons', 'text'], ['xxx']],

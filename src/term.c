@@ -560,20 +560,15 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_VI,	"\033|v"},	/* cursor invisible */
     {(int)KS_VE,	"\033|V"},	/* cursor visible */
 
-    {(int)KS_ME,	"\033|0m"},	/* normal */
-    {(int)KS_MR,	"\033|112m"},	/* reverse: black on lightgray */
-    {(int)KS_MD,	"\033|15m"},	/* bold: white on black */
-#if 1
-    {(int)KS_SO,	"\033|31m"},	/* standout: white on blue */
-    {(int)KS_SE,	"\033|0m"},	/* standout end */
-#else
-    {(int)KS_SO,	"\033|F"},	/* standout: high intensity */
+    {(int)KS_ME,	"\033|0B"},	/* normal */
+    {(int)KS_MR,	"\033|1B"},	/* reverse */
+    {(int)KS_MD,	"\033|2B"},	/* bold */
+    {(int)KS_SO,	"\033|F"},	/* standout */
     {(int)KS_SE,	"\033|f"},	/* standout end */
-#endif
-    {(int)KS_CZH,	"\033|225m"},	/* italic: blue text on yellow */
+    {(int)KS_CZH,	"\033|3B"},	/* italic */
     {(int)KS_CZR,	"\033|0m"},	/* italic end */
-    {(int)KS_US,	"\033|67m"},	/* underscore: cyan text on red */
-    {(int)KS_UE,	"\033|0m"},	/* underscore end */
+    {(int)KS_US,	"\033|4B"},	/* underscore */
+    {(int)KS_UE,	"\033|24m"},	/* underscore end */
     {(int)KS_CCO,	"16"},		/* allow 16 colors */
 #  ifdef TERMINFO
     {(int)KS_CAB,	"\033|%p1%db"},	/* set background color */
@@ -599,6 +594,10 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"},/* scroll region */
 #  else
     {(int)KS_CS,	"\033|%i%d;%dr"},/* scroll region */
+#  endif
+#  ifdef FEAT_TERMGUICOLORS
+    {(int)KS_8F,	"\033|38;2;%lu;%lu;%lum"},
+    {(int)KS_8B,	"\033|48;2;%lu;%lu;%lum"},
 #  endif
 
     {K_UP,		"\316H"},
@@ -2005,6 +2004,11 @@ set_termname(char_u *term)
 
 #ifdef FEAT_TERMRESPONSE
     may_req_termresponse();
+#endif
+
+#if defined(WIN3264) && !defined(FEAT_GUI) && defined(FEAT_TERMGUICOLORS)
+    if (STRCMP(term, "win32") == 0)
+	set_color_count((p_tgc) ? 256 : 16);
 #endif
 
     return OK;
@@ -6559,39 +6563,6 @@ translate_mapping(
     }
     ga_append(&ga, NUL);
     return (char_u *)(ga.ga_data);
-}
-#endif
-
-#if (defined(WIN3264) && !defined(FEAT_GUI)) || defined(PROTO)
-static char ksme_str[20];
-static char ksmr_str[20];
-static char ksmd_str[20];
-
-/*
- * For Win32 console: update termcap codes for existing console attributes.
- */
-    void
-update_tcap(int attr)
-{
-    struct builtin_term *p;
-
-    p = find_builtin_term(DEFAULT_TERM);
-    sprintf(ksme_str, IF_EB("\033|%dm", ESC_STR "|%dm"), attr);
-    sprintf(ksmd_str, IF_EB("\033|%dm", ESC_STR "|%dm"),
-				     attr | 0x08);  /* FOREGROUND_INTENSITY */
-    sprintf(ksmr_str, IF_EB("\033|%dm", ESC_STR "|%dm"),
-				 ((attr & 0x0F) << 4) | ((attr & 0xF0) >> 4));
-
-    while (p->bt_string != NULL)
-    {
-      if (p->bt_entry == (int)KS_ME)
-	  p->bt_string = &ksme_str[0];
-      else if (p->bt_entry == (int)KS_MR)
-	  p->bt_string = &ksmr_str[0];
-      else if (p->bt_entry == (int)KS_MD)
-	  p->bt_string = &ksmd_str[0];
-      ++p;
-    }
 }
 #endif
 

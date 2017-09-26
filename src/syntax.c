@@ -8939,6 +8939,10 @@ get_cterm_attr_idx(int attr, int fg, int bg)
     attrentry_T		at_en;
 
     vim_memset(&at_en, 0, sizeof(attrentry_T));
+#ifdef FEAT_TERMGUICOLORS
+    at_en.ae_u.cterm.fg_rgb = INVALCOLOR;
+    at_en.ae_u.cterm.bg_rgb = INVALCOLOR;
+#endif
     at_en.ae_attr = attr;
     at_en.ae_u.cterm.fg_color = fg;
     at_en.ae_u.cterm.bg_color = bg;
@@ -9578,6 +9582,23 @@ set_hl_attr(
 	at_en.ae_u.cterm.fg_color = sgp->sg_cterm_fg;
 	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
 # ifdef FEAT_TERMGUICOLORS
+#  ifdef WIN3264
+	{
+	    int id;
+	    guicolor_T fg, bg;
+
+	    id = syn_name2id((char_u *)"Normal");
+	    if (id > 0)
+	    {
+		syn_id2colors(id, &fg, &bg);
+		if (sgp->sg_gui_fg == INVALCOLOR)
+		    sgp->sg_gui_fg = fg;
+		if (sgp->sg_gui_bg == INVALCOLOR)
+		    sgp->sg_gui_bg = bg;
+	    }
+
+	}
+#  endif
 	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
 # endif

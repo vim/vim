@@ -3701,7 +3701,22 @@ vim_beep(
 			&& !(gui.in_use && gui.starting)
 #endif
 			)
+		{
 		    out_str_cf(T_VB);
+#if defined(WIN3264) && !defined(FEAT_GUI)
+		    /* No restore color information, refresh the screen. */
+		    if (vtp_get_stat() != 0
+# ifdef FEAT_TERMGUICOLORS
+			    && p_tgc
+# endif
+			)
+		    {
+			redraw_later(CLEAR);
+			update_screen(0);
+			redrawcmd();
+		    }
+#endif
+		}
 		else
 		    out_char(BELL);
 #ifdef ELAPSED_FUNC

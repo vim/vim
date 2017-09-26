@@ -182,6 +182,11 @@ static void delete_lines(unsigned cLines);
 static void gotoxy(unsigned x, unsigned y);
 static void normvideo(void);
 static void textattr(WORD wAttr);
+static void textattr_normal(void);
+static void textattr_reverse(void);
+static void textattr_bold(void);
+static void textattr_italic(void);
+static void textattr_underscore(void);
 static void textcolor(WORD wAttr);
 static void textbackground(WORD wAttr);
 static void standout(void);
@@ -203,6 +208,32 @@ static int win32_setattrs(char_u *name, int attrs);
 static int win32_set_archive(char_u *name);
 
 #ifndef FEAT_GUI_W32
+static int has_vtp = 0;
+static void vtp_init();
+static void vtp_exit();
+static int vtp_printf(char *format, ...);
+static void vtp_sgr_bulk(int arg);
+static void vtp_sgr_bulks(int argc, int *argv);
+
+static guicolor_T save_console_bg_rgb;
+static guicolor_T save_console_fg_rgb;
+
+# ifdef FEAT_TERMGUICOLORS
+#  define USE_VTP		(has_vtp && p_tgc)
+# else
+#  define USE_VTP		0
+# endif
+
+static void set_console_color_rgb(void);
+static void reset_console_color_rgb(void);
+#endif
+
+/* This flag is newly created from Windows 10 */
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+# define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
+
+#ifndef FEAT_GUI_W32
 static int suppress_winsize = 1;	/* don't fiddle with console */
 #endif
 
@@ -211,6 +242,54 @@ static char_u *exe_path = NULL;
 static BOOL win8_or_later = FALSE;
 
 #ifndef FEAT_GUI_W32
+/* Dynamic loading for portability */
+typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
+{
+    ULONG cbSize;
+    COORD dwSize;
+    COORD dwCursorPosition;
+    WORD wAttributes;
+    SMALL_RECT srWindow;
+    COORD dwMaximumWindowSize;
+    WORD wPopupAttributes;
+    BOOL bFullscreenSupported;
+    COLORREF ColorTable[16];
+} DYN_CONSOLE_SCREEN_BUFFER_INFOEX, *PDYN_CONSOLE_SCREEN_BUFFER_INFOEX;
+typedef BOOL (WINAPI *PfnGetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
+static PfnGetConsoleScreenBufferInfoEx pGetConsoleScreenBufferInfoEx;
+typedef BOOL (WINAPI *PfnSetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
+static PfnSetConsoleScreenBufferInfoEx pSetConsoleScreenBufferInfoEx;
+static BOOL has_csbiex = FALSE;
+
+/*
+ * Get version number including build number
+ */
+typedef BOOL (WINAPI *PfnRtlGetVersion)(LPOSVERSIONINFOW);
+# define MAKE_VER(major, minor, build) \
+    (((major) << 24) | ((minor) << 16) | (build))
+
+    static DWORD
+get_build_number(void)
+{
+    OSVERSIONINFOW	osver = {sizeof(OSVERSIONINFOW)};
+    HMODULE		hNtdll;
+    PfnRtlGetVersion	pRtlGetVersion;
+    DWORD		ver = MAKE_VER(0, 0, 0);
+
+    hNtdll = GetModuleHandle("ntdll.dll");
+    if (hNtdll != NULL)
+    {
+	pRtlGetVersion =
+	    (PfnRtlGetVersion)GetProcAddress(hNtdll, "RtlGetVersion");
+	pRtlGetVersion(&osver);
+	ver = MAKE_VER(min(osver.dwMajorVersion, 255),
+		       min(osver.dwMinorVersion, 255),
+		       min(osver.dwBuildNumber, 32767));
+    }
+    return ver;
+}
+
+
 /*
  * Version of ReadConsoleInput() that works with IME.
  * Works around problems on Windows 8.
@@ -2532,9 +2611,6 @@ mch_init(void)
     if (cterm_normal_bg_color == 0)
 	cterm_normal_bg_color = ((g_attrCurrent >> 4) & 0xf) + 1;
 
-    /* set termcap codes to current text attributes */
-    update_tcap(g_attrCurrent);
-
     GetConsoleCursorInfo(g_hConOut, &g_cci);
     GetConsoleMode(g_hConIn,  &g_cmodein);
     GetConsoleMode(g_hConOut, &g_cmodeout);
@@ -2574,6 +2650,8 @@ mch_init(void)
 #ifdef FEAT_CLIPBOARD
     win_clip_init();
 #endif
+
+    vtp_init();
 }
 
 /*
@@ -2585,6 +2663,8 @@ mch_init(void)
 mch_exit(int r)
 {
     exiting = TRUE;
+
+    vtp_exit();
 
     stoptermcap();
     if (g_fWindInitCalled)
@@ -3798,7 +3878,15 @@ mch_settmode(int tmode)
 	if (g_fMouseActive)
 	    cmodein |= ENABLE_MOUSE_INPUT;
 #endif
-	cmodeout &= ~(ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT);
+	cmodeout &= ~(
+#ifdef FEAT_TERMGUICOLORS
+	    /* Do not turn off the ENABLE_PROCESSRD_OUTPUT flag when using
+	     * VTP. */
+	    ((has_vtp) ? 0 : ENABLE_PROCESSED_OUTPUT) |
+#else
+	    ENABLE_PROCESSED_OUTPUT |
+#endif
+	    ENABLE_WRAP_AT_EOL_OUTPUT);
 	bEnableHandler = TRUE;
     }
     else /* cooked */
@@ -5445,6 +5533,7 @@ termcap_mode_start(void)
 	 * to restore the actual contents of the buffer.
 	 */
 	RestoreConsoleBuffer(&g_cbTermcap, FALSE);
+	reset_console_color_rgb();
 	SetConsoleWindowInfo(g_hConOut, TRUE, &g_cbTermcap.Info.srWindow);
 	Rows = g_cbTermcap.Info.dwSize.Y;
 	Columns = g_cbTermcap.Info.dwSize.X;
@@ -5457,6 +5546,7 @@ termcap_mode_start(void)
 	 * size.  We will use this as the size of our editing environment.
 	 */
 	ClearConsoleBuffer(g_attrCurrent);
+	set_console_color_rgb();
 	ResizeConBufAndWindow(g_hConOut, Columns, Rows);
     }
 
@@ -5505,6 +5595,7 @@ termcap_mode_end(void)
     cb = &g_cbNonTermcap;
 #endif
     RestoreConsoleBuffer(cb, p_rs);
+    reset_console_color_rgb();
     SetConsoleCursorInfo(g_hConOut, &g_cci);
 
     if (p_rs || exiting)
@@ -5559,7 +5650,11 @@ clear_chars(
     DWORD dwDummy;
 
     FillConsoleOutputCharacter(g_hConOut, ' ', n, coord, &dwDummy);
-    FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord, &dwDummy);
+
+    if (!USE_VTP)
+	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord, &dwDummy);
+    else
+	FillConsoleOutputAttribute(g_hConOut, 0, n, coord, &dwDummy);
 }
 
 
@@ -5570,7 +5665,15 @@ clear_chars(
 clear_screen(void)
 {
     g_coord.X = g_coord.Y = 0;
-    clear_chars(g_coord, Rows * Columns);
+
+    if (!USE_VTP)
+	clear_chars(g_coord, Rows * Columns);
+    else
+    {
+	set_console_color_rgb();
+	gotoxy(1, 1);
+	vtp_printf("\033[2J");
+    }
 }
 
 
@@ -5580,8 +5683,20 @@ clear_screen(void)
     static void
 clear_to_end_of_display(void)
 {
-    clear_chars(g_coord, (Rows - g_coord.Y - 1)
+    COORD save = g_coord;
+
+    if (!USE_VTP)
+	clear_chars(g_coord, (Rows - g_coord.Y - 1)
 					   * Columns + (Columns - g_coord.X));
+    else
+    {
+	set_console_color_rgb();
+	gotoxy(g_coord.X + 1, g_coord.Y + 1);
+	vtp_printf("\033[0J");
+
+	gotoxy(save.X + 1, save.Y + 1);
+	g_coord = save;
+    }
 }
 
 
@@ -5591,7 +5706,19 @@ clear_to_end_of_display(void)
     static void
 clear_to_end_of_line(void)
 {
-    clear_chars(g_coord, Columns - g_coord.X);
+    COORD save = g_coord;
+
+    if (!USE_VTP)
+	clear_chars(g_coord, Columns - g_coord.X);
+    else
+    {
+	set_console_color_rgb();
+	gotoxy(g_coord.X + 1, g_coord.Y + 1);
+	vtp_printf("\033[0K");
+
+	gotoxy(save.X + 1, save.Y + 1);
+	g_coord = save;
+    }
 }
 
 
@@ -5630,6 +5757,9 @@ set_scroll_region(
     g_srScrollRegion.Top =    top;
     g_srScrollRegion.Right =  right;
     g_srScrollRegion.Bottom = bottom;
+
+    if (USE_VTP)
+	vtp_printf("\033[%d;%dr", top + 1, bottom + 1);
 }
 
 
@@ -5651,10 +5781,20 @@ insert_lines(unsigned cLines)
     source.Right  = g_srScrollRegion.Right;
     source.Bottom = g_srScrollRegion.Bottom - cLines;
 
-    fill.Char.AsciiChar = ' ';
-    fill.Attributes = g_attrCurrent;
+    if (!USE_VTP)
+    {
+	fill.Char.AsciiChar = ' ';
+	fill.Attributes = g_attrCurrent;
 
-    ScrollConsoleScreenBuffer(g_hConOut, &source, NULL, dest, &fill);
+	ScrollConsoleScreenBuffer(g_hConOut, &source, NULL, dest, &fill);
+    }
+    else
+    {
+	set_console_color_rgb();
+
+	gotoxy(1, source.Top + 1);
+	vtp_printf("\033[%dT", cLines);
+    }
 
     /* Here we have to deal with a win32 console flake: If the scroll
      * region looks like abc and we scroll c to a and fill with d we get
@@ -5693,10 +5833,20 @@ delete_lines(unsigned cLines)
     source.Right  = g_srScrollRegion.Right;
     source.Bottom = g_srScrollRegion.Bottom;
 
-    fill.Char.AsciiChar = ' ';
-    fill.Attributes = g_attrCurrent;
+    if (!USE_VTP)
+    {
+	fill.Char.AsciiChar = ' ';
+	fill.Attributes = g_attrCurrent;
 
-    ScrollConsoleScreenBuffer(g_hConOut, &source, NULL, dest, &fill);
+	ScrollConsoleScreenBuffer(g_hConOut, &source, NULL, dest, &fill);
+    }
+    else
+    {
+	set_console_color_rgb();
+
+	gotoxy(1, source.Top + 1);
+	vtp_printf("\033[%dS", cLines);
+    }
 
     /* Here we have to deal with a win32 console flake: If the scroll
      * region looks like abc and we scroll c to a and fill with d we get
@@ -5732,7 +5882,11 @@ gotoxy(
     /* external cursor coords are 1-based; internal are 0-based */
     g_coord.X = x - 1;
     g_coord.Y = y - 1;
-    SetConsoleCursorPosition(g_hConOut, g_coord);
+
+    if (!USE_VTP)
+	SetConsoleCursorPosition(g_hConOut, g_coord);
+    else
+	vtp_printf("\033[%d;%dH", y, x);
 }
 
 
@@ -5750,11 +5904,73 @@ textattr(WORD wAttr)
 
 
     static void
+textattr_normal(void)
+{
+    if (!USE_VTP)
+	SetConsoleTextAttribute(g_hConOut, g_attrCurrent & 0xff);
+    else
+	vtp_printf("\033[0m");	    /* default color */
+}
+
+
+    static void
+textattr_reverse(void)
+{
+    g_attrCurrent = (((g_attrCurrent & 0x0f) << 4)
+	    | ((g_attrCurrent & 0xf0) >> 4)) & 0xff;
+
+    if (!USE_VTP)
+	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
+    else
+	vtp_printf("\033[7m");	    /* reverse */
+}
+
+
+    static void
+textattr_bold(void)
+{
+    g_attrCurrent = (g_attrCurrent | 0x08) & 0xff;  /* FOREGROUND_INTENSITY */
+
+    if (!USE_VTP)
+	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
+    else
+	vtp_printf("\033[1m");	    /* bold */
+}
+
+
+    static void
+textattr_italic(void)
+{
+    g_attrCurrent = 225;	/* blue text on yellow */
+
+    if (!USE_VTP)
+	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
+    else
+	vtp_printf("\033[95m");    /* bright magenta text */
+}
+
+
+    static void
+textattr_underscore(void)
+{
+    g_attrCurrent = 67;	    /* cyan text on red */
+
+    if (!USE_VTP)
+	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
+    else
+	vtp_printf("\033[4m");	    /* underscore */
+}
+
+
+    static void
 textcolor(WORD wAttr)
 {
     g_attrCurrent = (g_attrCurrent & 0xf0) + (wAttr & 0x0f);
 
-    SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
+    if (!USE_VTP)
+	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
+    else
+	vtp_sgr_bulk(wAttr);
 }
 
 
@@ -5763,7 +5979,10 @@ textbackground(WORD wAttr)
 {
     g_attrCurrent = (g_attrCurrent & 0x0f) + ((wAttr & 0x0f) << 4);
 
-    SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
+    if (!USE_VTP)
+	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
+    else
+	vtp_sgr_bulk(wAttr);
 }
 
 
@@ -5773,7 +5992,10 @@ textbackground(WORD wAttr)
     static void
 normvideo(void)
 {
-    textattr(g_attrDefault);
+    if (!USE_VTP)
+	textattr(g_attrDefault);
+    else
+	vtp_sgr_bulk(0);
 }
 
 
@@ -5786,7 +6008,11 @@ static WORD g_attrPreStandout = 0;
 standout(void)
 {
     g_attrPreStandout = g_attrCurrent;
-    textattr((WORD) (g_attrCurrent|FOREGROUND_INTENSITY|BACKGROUND_INTENSITY));
+
+    if (!USE_VTP)
+	textattr((WORD) (g_attrCurrent|FOREGROUND_INTENSITY|BACKGROUND_INTENSITY));
+    else
+	vtp_printf("\033[91m");	/* bright red text */
 }
 
 
@@ -5796,35 +6022,30 @@ standout(void)
     static void
 standend(void)
 {
-    if (g_attrPreStandout)
+    if (!USE_VTP)
     {
-	textattr(g_attrPreStandout);
-	g_attrPreStandout = 0;
+	if (g_attrPreStandout)
+	    textattr(g_attrPreStandout);
     }
+    else
+	vtp_printf("\033[39m");	/* default color */
+
+    g_attrPreStandout = 0;
 }
 
 
 /*
- * Set normal fg/bg color, based on T_ME.  Called when t_me has been set.
+ * Set normal fg/bg color
  */
     void
 mch_set_normal_colors(void)
 {
-    char_u	*p;
-    int		n;
-
-    cterm_normal_fg_color = (g_attrDefault & 0xf) + 1;
-    cterm_normal_bg_color = ((g_attrDefault >> 4) & 0xf) + 1;
-    if (T_ME[0] == ESC && T_ME[1] == '|')
-    {
-	p = T_ME + 2;
-	n = getdigits(&p);
-	if (*p == 'm' && n > 0)
-	{
-	    cterm_normal_fg_color = (n & 0xf) + 1;
-	    cterm_normal_bg_color = ((n >> 4) & 0xf) + 1;
-	}
-    }
+    cterm_normal_fg_color = (g_attrDefault & 0x0f) + 1;
+    cterm_normal_bg_color = ((g_attrDefault >> 4) & 0x0f) + 1;
+#ifdef FEAT_TERMGUICOLORS
+    cterm_normal_fg_gui_color = INVALCOLOR;
+    cterm_normal_bg_gui_color = INVALCOLOR;
+#endif
 }
 
 
@@ -5848,7 +6069,8 @@ visual_bell(void)
 			       coordOrigin, &dwDummy);
 
     Sleep(15);	    /* wait for 15 msec */
-    WriteConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
+    if (!USE_VTP)
+	WriteConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 				coordOrigin, &dwDummy);
     vim_free(oldattrs);
 }
@@ -5898,14 +6120,24 @@ write_chars(
 			    unicodebuf, unibuflen);
 
 	cells = mb_string2cells(pchBuf, cbToWrite);
-	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, cells,
-				    coord, &written);
-	/* When writing fails or didn't write a single character, pretend one
-	 * character was written, otherwise we get stuck. */
-	if (WriteConsoleOutputCharacterW(g_hConOut, unicodebuf, length,
-		    coord, &cchwritten) == 0
-		|| cchwritten == 0)
-	    cchwritten = 1;
+
+	if (!USE_VTP)
+	{
+	    FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, cells,
+					coord, &written);
+	    /* When writing fails or didn't write a single character, pretend one
+	     * character was written, otherwise we get stuck. */
+	    if (WriteConsoleOutputCharacterW(g_hConOut, unicodebuf, length,
+			coord, &cchwritten) == 0
+		    || cchwritten == 0)
+		cchwritten = 1;
+	}
+	else
+	{
+	    if (WriteConsoleW(g_hConOut, unicodebuf, length, &cchwritten,
+		    NULL) == 0 || cchwritten == 0)
+		cchwritten = 1;
+	}
 
 	if (cchwritten == length)
 	{
@@ -5924,14 +6156,23 @@ write_chars(
     else
 #endif
     {
-	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, cbToWrite,
-				    coord, &written);
-	/* When writing fails or didn't write a single character, pretend one
-	 * character was written, otherwise we get stuck. */
-	if (WriteConsoleOutputCharacter(g_hConOut, (LPCSTR)pchBuf, cbToWrite,
-		    coord, &written) == 0
-		|| written == 0)
-	    written = 1;
+	if (!USE_VTP)
+	{
+	    FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, cbToWrite,
+					coord, &written);
+	    /* When writing fails or didn't write a single character, pretend one
+	     * character was written, otherwise we get stuck. */
+	    if (WriteConsoleOutputCharacter(g_hConOut, (LPCSTR)pchBuf, cbToWrite,
+			coord, &written) == 0
+		    || written == 0)
+		written = 1;
+	}
+	else
+	{
+	    if (WriteConsole(g_hConOut, (LPCSTR)pchBuf, cbToWrite, &written,
+		    NULL) == 0 || written == 0)
+		written = 1;
+	}
 
 	g_coord.X += (SHORT) written;
     }
@@ -6057,67 +6298,94 @@ mch_write(
 	    char_u  *old_s = s;
 #endif
 	    char_u  *p;
-	    int	    arg1 = 0, arg2 = 0;
+	    int	    arg1 = 0, arg2 = 0, argc = 0, args[16];
 
 	    switch (s[2])
 	    {
-	    /* one or two numeric arguments, separated by ';' */
-
 	    case '0': case '1': case '2': case '3': case '4':
 	    case '5': case '6': case '7': case '8': case '9':
-		p = s + 2;
-		arg1 = getdigits(&p);	    /* no check for length! */
+		p = s + 1;
+		do
+		{
+		    ++p;
+		    args[argc] = getdigits(&p);
+		    argc += (argc < 15) ? 1 : 0;
+		    if (p > s + len)
+			break;
+		} while (*p == ';');
+
 		if (p > s + len)
 		    break;
 
-		if (*p == ';')
+		arg1 = args[0];
+		arg2 = args[1];
+		if (*p == 'm')
 		{
-		    ++p;
-		    arg2 = getdigits(&p);   /* no check for length! */
-		    if (p > s + len)
-			break;
-
-		    if (*p == 'H')
-			gotoxy(arg2, arg1);
-		    else if (*p == 'r')
-			set_scroll_region(0, arg1 - 1, Columns - 1, arg2 - 1);
+		    if (argc == 1 && args[0] == 0)
+			normvideo();
+		    else if (argc == 1)
+			textcolor((WORD) arg1);
+		    else if (USE_VTP)
+			vtp_sgr_bulks(argc, args);
 		}
-		else if (*p == 'A')
+		else if (argc == 2 && *p == 'H')
 		{
-		    /* move cursor up arg1 lines in same column */
+		    gotoxy(arg2, arg1);
+		}
+		else if (argc == 2 && *p == 'r')
+		{
+		    set_scroll_region(0, arg1 - 1, Columns - 1, arg2 - 1);
+		}
+		else if (argc == 1 && *p == 'A')
+		{
 		    gotoxy(g_coord.X + 1,
 			   max(g_srScrollRegion.Top, g_coord.Y - arg1) + 1);
 		}
-		else if (*p == 'C')
+		else if (argc == 1 && *p == 'B')
 		{
-		    /* move cursor right arg1 columns in same line */
-		    gotoxy(min(g_srScrollRegion.Right, g_coord.X + arg1) + 1,
-			   g_coord.Y + 1);
+		    if (args[0] == 0)
+		    {
+			textattr_normal();
+		    }
+		    else if (args[0] == 1)
+		    {
+			textattr_reverse();
+		    }
+		    else if (args[0] == 2)
+		    {
+			textattr_bold();
+		    }
+		    else if (args[0] == 3)
+		    {
+			textattr_italic();
+		    }
+		    else if (args[0] == 4)
+		    {
+			textattr_underscore();
+		    }
 		}
-		else if (*p == 'H')
-		{
-		    gotoxy(1, arg1);
-		}
-		else if (*p == 'L')
-		{
-		    insert_lines(arg1);
-		}
-		else if (*p == 'm')
-		{
-		    if (arg1 == 0)
-			normvideo();
-		    else
-			textattr((WORD) arg1);
-		}
-		else if (*p == 'f')
-		{
-		    textcolor((WORD) arg1);
-		}
-		else if (*p == 'b')
+		else if (argc == 1 && *p == 'b')
 		{
 		    textbackground((WORD) arg1);
 		}
-		else if (*p == 'M')
+		else if (argc == 1 && *p == 'C')
+		{
+		    gotoxy(min(g_srScrollRegion.Right, g_coord.X + arg1) + 1,
+			   g_coord.Y + 1);
+		}
+		else if (argc == 1 && *p == 'f')
+		{
+		    textcolor((WORD) arg1);
+		}
+		else if (argc == 1 && *p == 'H')
+		{
+		    gotoxy(1, arg1);
+		}
+		else if (argc == 1 && *p == 'L')
+		{
+		    insert_lines(arg1);
+		}
+		else if (argc == 1 && *p == 'M')
 		{
 		    delete_lines(arg1);
 		}
@@ -6126,11 +6394,7 @@ mch_write(
 		s = p + 1;
 		break;
 
-
-	    /* Three-character escape sequences */
-
 	    case 'A':
-		/* move cursor up one line in same column */
 		gotoxy(g_coord.X + 1,
 		       max(g_srScrollRegion.Top, g_coord.Y - 1) + 1);
 		goto got3;
@@ -6140,7 +6404,6 @@ mch_write(
 		goto got3;
 
 	    case 'C':
-		/* move cursor right one column in same line */
 		gotoxy(min(g_srScrollRegion.Right, g_coord.X + 1) + 1,
 		       g_coord.Y + 1);
 		goto got3;
@@ -7239,3 +7502,184 @@ mch_setenv(char *var, char *value, int x)
 
     return 0;
 }
+
+#ifndef FEAT_GUI_W32
+
+/* Support for 256 colors and 24-bit colors was added in Windows 10
+ * version 1703 (Creators update). */
+# define VTP_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 15063)
+
+    static void
+vtp_init(void)
+{
+    DWORD   ver, mode;
+    HMODULE hKerneldll;
+    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
+    ver = get_build_number();
+    has_vtp = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
+    GetConsoleMode(g_hConOut, &mode);
+    mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    if (SetConsoleMode(g_hConOut, mode) == 0)
+	has_vtp = 0;
+
+    /* Use functions supported from Vista */
+    hKerneldll = GetModuleHandle("kernel32.dll");
+    if (hKerneldll != NULL)
+    {
+	pGetConsoleScreenBufferInfoEx =
+		(PfnGetConsoleScreenBufferInfoEx)GetProcAddress(
+		hKerneldll, "GetConsoleScreenBufferInfoEx");
+	pSetConsoleScreenBufferInfoEx =
+		(PfnSetConsoleScreenBufferInfoEx)GetProcAddress(
+		hKerneldll, "SetConsoleScreenBufferInfoEx");
+	if (pGetConsoleScreenBufferInfoEx != NULL
+		&& pSetConsoleScreenBufferInfoEx != NULL)
+	    has_csbiex = TRUE;
+    }
+
+    csbi.cbSize = sizeof(csbi);
+    if (has_csbiex)
+	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    save_console_bg_rgb = (guicolor_T)csbi.ColorTable[0];
+    save_console_fg_rgb = (guicolor_T)csbi.ColorTable[7];
+
+    set_console_color_rgb();
+}
+
+    static void
+vtp_exit(void)
+{
+    reset_console_color_rgb();
+}
+
+    static int
+vtp_printf(
+    char *format,
+    ...)
+{
+    char_u  buf[100];
+    va_list list;
+    DWORD   result;
+
+    va_start(list, format);
+    vim_vsnprintf((char *)buf, 100, (char *)format, list);
+    va_end(list);
+    WriteConsoleA(g_hConOut, buf, (DWORD)STRLEN(buf), &result, NULL);
+    return (int)result;
+}
+
+    static void
+vtp_sgr_bulk(
+    int arg)
+{
+    int args[1];
+
+    args[0] = arg;
+    vtp_sgr_bulks(1, args);
+}
+
+    static void
+vtp_sgr_bulks(
+    int argc,
+    int *args
+)
+{
+    /* 2('\033[') + 4('255.') * 16 + NUL */
+    char_u buf[2 + (4 * 16) + 1];
+    char_u *p;
+    int    i;
+
+    p = buf;
+    *p++ = '\033';
+    *p++ = '[';
+
+    for (i = 0; i < argc; ++i)
+    {
+	p += vim_snprintf((char *)p, 4, "%d", args[i] & 0xff);
+	*p++ = ';';
+    }
+    p--;
+    *p++ = 'm';
+    *p = NUL;
+    vtp_printf((char *)buf);
+}
+
+    static void
+set_console_color_rgb(void)
+{
+# ifdef FEAT_TERMGUICOLORS
+    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    int id;
+    guicolor_T fg = INVALCOLOR;
+    guicolor_T bg = INVALCOLOR;
+
+    if (!USE_VTP)
+	return;
+
+    id = syn_name2id((char_u *)"Normal");
+    if (id > 0)
+	syn_id2colors(id, &fg, &bg);
+    if (fg == INVALCOLOR)
+	fg = 0xc0c0c0;	    /* white text */
+    if (bg == INVALCOLOR)
+	bg = 0x000000;	    /* black background */
+    fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
+    bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
+
+    csbi.cbSize = sizeof(csbi);
+    if (has_csbiex)
+	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+
+    csbi.cbSize = sizeof(csbi);
+    csbi.srWindow.Right += 1;
+    csbi.srWindow.Bottom += 1;
+    csbi.ColorTable[0] = (COLORREF)bg;
+    csbi.ColorTable[7] = (COLORREF)fg;
+    if (has_csbiex)
+	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+# endif
+}
+
+    static void
+reset_console_color_rgb(void)
+{
+# ifdef FEAT_TERMGUICOLORS
+    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
+    csbi.cbSize = sizeof(csbi);
+    if (has_csbiex)
+	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+
+    csbi.cbSize = sizeof(csbi);
+    csbi.srWindow.Right += 1;
+    csbi.srWindow.Bottom += 1;
+    csbi.ColorTable[0] = (COLORREF)save_console_bg_rgb;
+    csbi.ColorTable[7] = (COLORREF)save_console_fg_rgb;
+    if (has_csbiex)
+	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+# endif
+}
+
+    void
+control_console_color_rgb(void)
+{
+    if (USE_VTP)
+	set_console_color_rgb();
+    else
+	reset_console_color_rgb();
+}
+
+    int
+vtp_get_stat(void)
+{
+    return has_vtp;
+}
+
+    int
+vtp_use_stat(void)
+{
+    return (USE_VTP);
+}
+
+#endif
