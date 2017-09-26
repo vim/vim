@@ -882,7 +882,7 @@ static int ensure_ruby_initialized(void)
 #ifdef RUBY19_OR_LATER
 	    {
 		int dummy_argc = 2;
-		char *dummy_argv[] = {"vim-ruby", "-e0"};
+		char *dummy_argv[] = {"vim-ruby", "-e_=0"};
 		ruby_options(dummy_argc, dummy_argv);
 	    }
 	    ruby_script("vim-ruby");
