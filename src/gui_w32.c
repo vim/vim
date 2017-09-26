@@ -7304,7 +7304,7 @@ gui_mch_dialog(
 #endif
 	{
 	    *p++ = DLG_FONT_POINT_SIZE;		// point size
-	    nchar = nCopyAnsiToWideChar(p, TEXT(DLG_FONT_NAME), FALSE);
+	    nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
 	}
 	p += nchar;
     }
@@ -7873,7 +7873,7 @@ gui_mch_tearoff(
 #endif
 	{
 	    *p++ = DLG_FONT_POINT_SIZE;		// point size
-	    nchar = nCopyAnsiToWideChar(p, TEXT(DLG_FONT_NAME), FALSE);
+	    nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
 	}
 	p += nchar;
     }
