@@ -8202,7 +8202,7 @@ in_cinkeys(
 		{
 		    /* "0=word": Check if there are only blanks before the
 		     * word. */
-		    if (getwhitecols(line) !=
+		    if (getwhitecols_curline() !=
 				     (int)(curwin->w_cursor.col - (p - look)))
 			match = FALSE;
 		}
