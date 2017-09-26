@@ -7969,9 +7969,9 @@ do_highlight(
 	}
 	else if (STRCMP(key, "GUIFG") == 0)
 	{
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    char_u **namep = &HL_TABLE()[idx].sg_gui_fg_name;
 
-#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
 	    {
 		if (!init)
@@ -8019,9 +8019,9 @@ do_highlight(
 	}
 	else if (STRCMP(key, "GUIBG") == 0)
 	{
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    char_u **namep = &HL_TABLE()[idx].sg_gui_bg_name;
 
-#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
 	    {
 		if (!init)
@@ -8069,9 +8069,9 @@ do_highlight(
 	}
 	else if (STRCMP(key, "GUISP") == 0)
 	{
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    char_u **namep = &HL_TABLE()[idx].sg_gui_sp_name;
 
-#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
 	    {
 		if (!init)
