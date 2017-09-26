@@ -74,7 +74,7 @@
 
 #include <Python.h>
 
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
+#if defined(MACOS) && !defined(MACOS_X)
 # include "macglue.h"
 # include <CodeFragments.h>
 #endif
@@ -871,7 +871,7 @@ Python3_Init(void)
 
 	PyImport_AppendInittab("vim", Py3Init_vim);
 
-#if !defined(MACOS) || defined(MACOS_X_UNIX)
+#if !defined(MACOS) || defined(MACOS_X)
 	Py_Initialize();
 #else
 	PyMac_Initialize();
@@ -929,7 +929,7 @@ fail:
     static void
 DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 {
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
+#if defined(MACOS) && !defined(MACOS_X)
     GrafPtr		oldPort;
 #endif
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
@@ -942,7 +942,7 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     if (python_end_called)
 	goto theend;
 
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
+#if defined(MACOS) && !defined(MACOS_X)
     GetPort(&oldPort);
     /* Check if the Python library is available */
     if ((Ptr)PyMac_Initialize == (Ptr)kUnresolvedCFragSymbolAddress)
@@ -992,7 +992,7 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 
     Python_Lock_Vim();		    /* enter vim */
     PythonIO_Flush();
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
+#if defined(MACOS) && !defined(MACOS_X)
     SetPort(oldPort);
 #endif
 
