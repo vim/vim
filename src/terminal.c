@@ -41,10 +41,12 @@
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
  * - Shift-Tab does not work.
- * - click in Window toolbar of other window: save/restore Insert and Visual
+ * - double click in Window toolbar starts Visual mode.
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
+ * - cursor blinks in terminal on widows with a timer. (xtal8, #2142)
  * - implement term_setsize()
+ * - MS-Windows GUI: WinBar has  tearoff item
  * - MS-Windows GUI: still need to type a key after shell exits?  #1924
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -1791,23 +1793,38 @@ color2index(VTermColor *color, int fg, int *boldp)
     {
 	if (red == blue && red == green)
 	{
-	    /* 24-color greyscale */
+	    /* 24-color greyscale plus white and black */
 	    static int cutoff[23] = {
-		0x05, 0x10, 0x1B, 0x26, 0x31, 0x3C, 0x47, 0x52,
-		0x5D, 0x68, 0x73, 0x7F, 0x8A, 0x95, 0xA0, 0xAB,
-		0xB6, 0xC1, 0xCC, 0xD7, 0xE2, 0xED, 0xF9};
+		    0x0D, 0x17, 0x21, 0x2B, 0x35, 0x3F, 0x49, 0x53, 0x5D, 0x67,
+		    0x71, 0x7B, 0x85, 0x8F, 0x99, 0xA3, 0xAD, 0xB7, 0xC1, 0xCB,
+		    0xD5, 0xDF, 0xE9};
 	    int i;
 
+	    if (red < 5)
+		return 17; /* 00/00/00 */
+	    if (red > 245) /* ff/ff/ff */
+		return 232;
 	    for (i = 0; i < 23; ++i)
 		if (red < cutoff[i])
 		    return i + 233;
 	    return 256;
 	}
+	{
+	    static int cutoff[5] = {0x2F, 0x73, 0x9B, 0xC3, 0xEB};
+	    int ri, gi, bi;
 
-	/* 216-color cube */
-	return 17 + ((red + 25) / 0x33) * 36
-		  + ((green + 25) / 0x33) * 6
-		  + (blue + 25) / 0x33;
+	    /* 216-color cube */
+	    for (ri = 0; ri < 5; ++ri)
+		if (red < cutoff[ri])
+		    break;
+	    for (gi = 0; gi < 5; ++gi)
+		if (green < cutoff[gi])
+		    break;
+	    for (bi = 0; bi < 5; ++bi)
+		if (blue < cutoff[bi])
+		    break;
+	    return 17 + ri * 36 + gi * 6 + bi;
+	}
     }
     return 0;
 }
@@ -2426,16 +2443,17 @@ static VTermColor ansi_table[16] = {
 };
 
 static int cube_value[] = {
-    0x00, 0x33, 0x66, 0x99, 0xCC, 0xFF,
+    0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF
 };
 
 static int grey_ramp[] = {
-    0x00, 0x0B, 0x16, 0x21, 0x2C, 0x37, 0x42, 0x4D, 0x58, 0x63, 0x6E, 0x79,
-    0x85, 0x90, 0x9B, 0xA6, 0xB1, 0xBC, 0xC7, 0xD2, 0xDD, 0xE8, 0xF3, 0xFF,
+    0x08, 0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
+    0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
 };
 
 /*
  * Convert a cterm color number 0 - 255 to RGB.
+ * This is compatible with xterm.
  */
     static void
 cterm_color2rgb(int nr, VTermColor *rgb)
