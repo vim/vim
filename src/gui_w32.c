@@ -7517,7 +7517,8 @@ lpwAlign(
  * parameter as wide character (16-bits / char) string, and returns integer
  * number of wide characters (words) in string (including the trailing wide
  * char NULL).  Partly taken from the Win32SDK samples.
- */
+ * If enc is TRUE, 'encoding' is used for lpAnsiIn. If FALSE, current ACP is
+ * used for lpAnsiIn. */
     static int
 nCopyAnsiToWideChar(
     LPWORD lpWCStr,
