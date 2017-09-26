@@ -10294,6 +10294,9 @@ ex_startinsert(exarg_T *eap)
 {
     if (eap->forceit)
     {
+	/* cursor line can be zero on startup */
+	if (!curwin->w_cursor.lnum)
+	    curwin->w_cursor.lnum = 1;
 	coladvance((colnr_T)MAXCOL);
 	curwin->w_curswant = MAXCOL;
 	curwin->w_set_curswant = FALSE;
