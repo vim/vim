@@ -71,6 +71,7 @@ int mb_lefthalve(int row, int col);
 int mb_fix_col(int col, int row);
 char_u *enc_skip(char_u *p);
 char_u *enc_canonize(char_u *enc);
+char_u *enc_locale_env(char *locale);
 char_u *enc_locale(void);
 int encname2codepage(char_u *name);
 void *my_iconv_open(char_u *to, char_u *from);
