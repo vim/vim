@@ -3909,8 +3909,7 @@ build_stl_str_hl(
     char_u	*usefmt = fmt;
     struct stl_hlrec *sp;
     int		save_must_redraw = must_redraw;
-    int		save_redr_type = curwin->w_redr_type;
-    int		save_highlight_shcnaged = need_highlight_changed;
+    int		save_redr_type = wp->w_redr_type;
 
 #ifdef FEAT_EVAL
     /*
@@ -4683,12 +4682,14 @@ build_stl_str_hl(
 	sp->userhl = 0;
     }
 
-    /* We do not want redrawing a stausline, ruler, title, etc. to trigger
-     * another redraw, it may cause an endless loop.  This happens when a
-     * statusline changes a highlight group. */
-    must_redraw = save_must_redraw;
-    curwin->w_redr_type = save_redr_type;
-    need_highlight_changed = save_highlight_shcnaged;
+    if (updating_screen)
+    {
+	/* We do not want redrawing a stausline, ruler, title, etc. to trigger
+	 * another redraw, it may cause an endless loop.  This happens when a
+	 * statusline changes a highlight group. */
+	must_redraw = save_must_redraw;
+	wp->w_redr_type = save_redr_type;
+    }
 
     return width;
 }
