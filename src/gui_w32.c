@@ -4384,7 +4384,7 @@ add_dialog_element(
 	WORD clss,
 	const char *caption);
 static LPWORD lpwAlign(LPWORD);
-static int nCopyAnsiToWideChar(LPWORD, LPSTR);
+static int nCopyAnsiToWideChar(LPWORD, LPSTR, BOOL);
 #if defined(FEAT_MENU) && defined(FEAT_TEAROFF)
 static void gui_mch_tearoff(char_u *title, vimmenu_T *menu, int initX, int initY);
 #endif
@@ -7284,9 +7284,8 @@ gui_mch_dialog(
     add_word(0);	// Class
 
     /* copy the title of the dialog */
-    nchar = nCopyAnsiToWideChar(p, (title ?
-				    (LPSTR)title :
-				    (LPSTR)("Vim "VIM_VERSION_MEDIUM)));
+    nchar = nCopyAnsiToWideChar(p, (title ? (LPSTR)title
+				   : (LPSTR)("Vim "VIM_VERSION_MEDIUM)), TRUE);
     p += nchar;
 
     if (s_usenewlook)
@@ -7298,13 +7297,13 @@ gui_mch_dialog(
 	    /* point size */
 	    *p++ = -MulDiv(lfSysmenu.lfHeight, 72,
 		    GetDeviceCaps(hdc, LOGPIXELSY));
-	    nchar = nCopyAnsiToWideChar(p, TEXT(lfSysmenu.lfFaceName));
+	    nchar = nCopyAnsiToWideChar(p, lfSysmenu.lfFaceName, FALSE);
 	}
 	else
 #endif
 	{
 	    *p++ = DLG_FONT_POINT_SIZE;		// point size
-	    nchar = nCopyAnsiToWideChar(p, TEXT(DLG_FONT_NAME));
+	    nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
 	}
 	p += nchar;
     }
@@ -7485,7 +7484,7 @@ add_dialog_element(
     *p++ = (WORD)0xffff;
     *p++ = clss;			//2 more here
 
-    nchar = nCopyAnsiToWideChar(p, (LPSTR)caption); //strlen(caption)+1
+    nchar = nCopyAnsiToWideChar(p, (LPSTR)caption, TRUE); //strlen(caption)+1
     p += nchar;
 
     *p++ = 0;  // advance pointer over nExtraStuff WORD   - 2 more
@@ -7517,11 +7516,13 @@ lpwAlign(
  * parameter as wide character (16-bits / char) string, and returns integer
  * number of wide characters (words) in string (including the trailing wide
  * char NULL).  Partly taken from the Win32SDK samples.
- */
+ * If "use_enc" is TRUE, 'encoding' is used for "lpAnsiIn". If FALSE, current
+ * ACP is used for "lpAnsiIn". */
     static int
 nCopyAnsiToWideChar(
     LPWORD lpWCStr,
-    LPSTR lpAnsiIn)
+    LPSTR lpAnsiIn,
+    BOOL use_enc)
 {
     int		nChar = 0;
 #ifdef FEAT_MBYTE
@@ -7529,7 +7530,7 @@ nCopyAnsiToWideChar(
     int		i;
     WCHAR	*wn;
 
-    if (enc_codepage == 0 && (int)GetACP() != enc_codepage)
+    if (use_enc && enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	/* Not a codepage, use our own conversion function. */
 	wn = enc_to_utf16((char_u *)lpAnsiIn, NULL);
@@ -7852,8 +7853,8 @@ gui_mch_tearoff(
 
     /* copy the title of the dialog */
     nchar = nCopyAnsiToWideChar(p, ((*title)
-				    ? (LPSTR)title
-				    : (LPSTR)("Vim "VIM_VERSION_MEDIUM)));
+			    ? (LPSTR)title
+			    : (LPSTR)("Vim "VIM_VERSION_MEDIUM)), TRUE);
     p += nchar;
 
     if (s_usenewlook)
@@ -7865,13 +7866,13 @@ gui_mch_tearoff(
 	    /* point size */
 	    *p++ = -MulDiv(lfSysmenu.lfHeight, 72,
 		    GetDeviceCaps(hdc, LOGPIXELSY));
-	    nchar = nCopyAnsiToWideChar(p, TEXT(lfSysmenu.lfFaceName));
+	    nchar = nCopyAnsiToWideChar(p, lfSysmenu.lfFaceName, FALSE);
 	}
 	else
 #endif
 	{
 	    *p++ = DLG_FONT_POINT_SIZE;		// point size
-	    nchar = nCopyAnsiToWideChar (p, TEXT(DLG_FONT_NAME));
+	    nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
 	}
 	p += nchar;
     }
