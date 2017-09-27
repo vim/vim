@@ -185,6 +185,9 @@ mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
+    char	*(ptsname(int));
+    int		unlockpt(int);
+    int		grantpt(int);
     RETSIGTYPE (*sigcld) SIGPROTOARG;
     /* used for opening a new pty-pair: */
     static char TtyName[32];
