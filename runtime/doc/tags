@@ -8465,6 +8465,7 @@ star	pattern.txt	/*star*
 starstar	editing.txt	/*starstar*
 starstar-wildcard	editing.txt	/*starstar-wildcard*
 start-of-file	pattern.txt	/*start-of-file*
+start-vimdiff	diff.txt	/*start-vimdiff*
 starting	starting.txt	/*starting*
 starting-amiga	starting.txt	/*starting-amiga*
 starting.txt	starting.txt	/*starting.txt*

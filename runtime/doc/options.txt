@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Sep 16
+*options.txt*	For Vim version 8.0.  Last change: 2017 Sep 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4380,8 +4380,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	1   over-the-spot style
 	See: |xim-input-style|
 
-	For a long time on-the-spot sytle had been used in GTK version of vim,
-	however, it is known that it causes troubles when using mappings,
+	For a long time on-the-spot style had been used in the GTK version of
+	vim, however, it is known that it causes troubles when using mappings,
 	|single-repeat|, etc.  Therefore over-the-spot style becomes the
 	default now.  This should work fine for most people, however if you
 	have any problem with it, try using on-the-spot style.
@@ -8259,7 +8259,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Save the whole buffer for undo when reloading it.  This applies to the
 	":e!" command and reloading for when the buffer changed outside of
 	Vim. |FileChangedShell|
-	The save only happens when this options is negative or when the number
+	The save only happens when this option is negative or when the number
 	of lines is smaller than the value of this option.
 	Set this option to zero to disable undo for a reload.
 

@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 17
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -81,7 +81,14 @@ themselves (like Vim does).
 
 To change the keys you type use terminal mode mappings, see |:tmap|.
 These are defined like any mapping, but apply only when typing keys that are
-sent to the job running in the terminal.
+sent to the job running in the terminal.  For example, to make Escape switch
+to Terminal-Normal mode: >
+   tnoremap <Esc> <C-W>N
+
+After opening the terminal window and setting 'buftype' to "terminal" the
+BufWinEnter autocommand event is triggered.  This makes it possible to set
+options specifically for the window and buffer.  Example: >
+   au BufWinEnter * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
 
 
 Size and color ~
@@ -328,7 +335,7 @@ Load the plugin with this command: >
 	packadd termdebug
 <							*:Termdebug*
 To start debugging use `:TermDebug` folowed by the command name, for example: >
-	:TermDebug vim
+	:Termdebug vim
 
 This opens two windows:
 gdb window	A terminal window in which "gdb vim" is executed.  Here you
@@ -350,6 +357,62 @@ the same as any command running in a terminal window.
 
 When the debugger ends, typically by typing "quit" in the gdb window, the two
 opened windows are closed.
+
+
+Example session ~
+
+Start in the Vim "src" directory and build Vim: >
+	% make
+Start Vim: >
+	% ./vim
+Load the termdebug plugin and start debugging Vim: >
+	:packadd termdebug
+	:Termdebug vim
+You should now have three windows:
+    source  - where you started, has a window toolbar with buttons
+    gdb	    - you can type gdb commands here
+    program - the executed program will use this window
+You can use CTRL-W CTRL-W or the mouse to move focus between windows.
+Put focus on the gdb window and type: >
+	break ex_help
+	run
+Vim will start running in the program window. Put focus there and type: >
+	:help gui
+Gdb will run into the ex_help breakpoint.  The source window now shows the 
+ex_cmds.c file.  A ">>" marker will appear where the breakpoint was set.  The
+line where the debugger stopped is highlighted.  You can now step through the
+program.  Let's use the mouse: click on the "Next" button in the window
+toolbar.  You will see the highlighting move as the debugger executes a line
+of source code.
+
+Click "Next" a few times until the for loop is highlighted.  Put the cursor on
+the end of "eap->arg", then click "Eval" in the toolbar.  You will see this
+displayed:
+	"eap->arg": 0x555555e68855 "gui" ~
+This way you can inspect the value of local variables.  You can also focus the
+gdb window and use a "print" command, e.g.: >
+	print *eap
+
+Now go back to the source window and put the cursor on the first line after
+the for loop, then type: >
+	:Break
+You will see a ">>" marker appear, this indicates the new breakpoint.  Now
+click "Cont" in the toolbar and the code until the breakpoint will be
+executed.
+
+You can type more advanced commands in the gdb window.  For example, type: >
+	watch curbuf
+Now click "Cont" in the toolbar (or type "cont" in the gdb window). Execution
+will now continue until the value of "curbuf" changes, which is in do_ecmd().
+To remove this watchpoint again type in the gdb window: >
+	delete 3
+
+You can see the stack by typing in the gdb window: >
+	where
+Move through the stack frames, e.g. with: >
+	frame 3
+The source window will show the code, at the point where the call was made to
+a deeper level.
 
 
 Stepping through code ~
@@ -410,7 +473,7 @@ To change the name of the gdb command, set the "termdebugger" variable before
 invoking `:Termdebug`: >
 	let termdebugger = "mygdb"
 Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
-interface.
+interface.  This probably requires gdb version 7.12.
 
 The color of the signs can be adjusted with these highlight groups:
 - debugPC		the current position
@@ -429,6 +492,10 @@ vertical split: >
   let g:termdebug_wide = 163
 This will set &columns to 163 when :Termdebug is used.  The value is restored
 when quitting the debugger.
+If g:termdebug_wide is set and &Columns is already  larger than
+g:termdebug_wide then a vertical split will be used without changing &columns.
+Set it to 1 to get a vertical split without every changing &columns (useful
+for when the terminal can't be resized by Vim).
 
 
 

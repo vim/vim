@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.0.  Last change: 2017 Sep 19
+*gui.txt*       For Vim version 8.0.  Last change: 2017 Sep 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -795,11 +795,17 @@ make the items look like icons.
 If the items do not fit then the last ones cannot be used.  The toolbar does
 not wrap.
 
+Note that Vim may be in any mode when executing these commands.  The menu
+should be defined for Normal mode and will be executed without changing the
+current mode. Thus if the current window is in Visual mode and the menu
+command does not intentionally change the mode, Vim will remain in Visual
+mode.  Best is to use `:nnoremenu` to avoid side effects.
+
 Example for debugger tools: >
-	amenu 1.10 WinBar.Step :Step<CR>
-	amenu 1.20 WinBar.Next :Next<CR>
-	amenu 1.30 WinBar.Finish :Finish<CR>
-	amenu 1.40 WinBar.Cont :Continue<CR>
+	nnoremenu 1.10 WinBar.Step :Step<CR>
+	nnoremenu 1.20 WinBar.Next :Next<CR>
+	nnoremenu 1.30 WinBar.Finish :Finish<CR>
+	nnoremenu 1.40 WinBar.Cont :Continue<CR>
 <
 The window toolbar uses the ToolbarLine and ToolbarButton highlight groups.
 
