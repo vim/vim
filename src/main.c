@@ -2573,7 +2573,7 @@ check_tty(mparm_T *parmp)
 	     * Note that the message is shown on a Cygwin terminal (e.g.
 	     * mintty) which encoding is based on $LC_ALL or etc., not the
 	     * current codepage used by normal Win32 console programs. */
-	    tofree = s = enc_locale_env(NULL);
+	    tofree = s = (char *)enc_locale_env(NULL);
 	    if (s == NULL)
 		s = "utf-8";	/* Use "utf-8" by default. */
 	    (void)bind_textdomain_codeset(VIMPACKAGE, s);
