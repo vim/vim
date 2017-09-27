@@ -1006,10 +1006,13 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
       dnl Remove "-fno-something", it breaks using cproto.
       dnl Remove "-fdebug-prefix-map", it isn't supported by clang.
       dnl Remove "FORTIFY_SOURCE", it will be defined twice.
+      dnl remove -pipe and -Wxxx, it confuses cproto
       perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
 		-e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[[^ ]]*//' \
 		-e 's/-fdebug-prefix-map[[^ ]]*//g' \
-		-e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=.//g'`
+		-e 's/-pipe //' \
+		-e 's/-W[[^ ]]*//g' \
+		-e 's/-D_FORTIFY_SOURCE=.//g'`
       dnl Remove "-lc", it breaks on FreeBSD when using "-pthread".
       perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
 		sed -e '/Warning/d' -e '/Note (probably harmless)/d' \
@@ -1037,8 +1040,7 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
       LDFLAGS=$ldflags_save
       if test $perl_ok = yes; then
 	if test "X$perlcppflags" != "X"; then
-	  dnl remove -pipe and -Wxxx, it confuses cproto
-	  PERL_CFLAGS=`echo "$perlcppflags" | sed -e 's/-pipe //' -e 's/-W[[^ ]]*//'`
+	  PERL_CFLAGS=$perlcppflags
 	fi
 	if test "X$perlldflags" != "X"; then
 	  if test "X`echo \"$LDFLAGS\" | $FGREP -e \"$perlldflags\"`" = "X"; then
