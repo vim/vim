@@ -5717,10 +5717,12 @@ $as_echo "OK" >&6; }
 	fi
       done
 
-                        perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
+                              perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
 		-e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[^ ]*//' \
 		-e 's/-fdebug-prefix-map[^ ]*//g' \
-		-e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=.//g'`
+		-e 's/-pipe //' \
+		-e 's/-W[^ ]*//g' \
+                -e 's/-D_FORTIFY_SOURCE=.//g'`
             perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
 		sed -e '/Warning/d' -e '/Note (probably harmless)/d' \
 			-e 's/-bE:perl.exp//' -e 's/-lc //'`
@@ -5761,7 +5763,7 @@ rm -f core conftest.err conftest.$ac_objext \
       LDFLAGS=$ldflags_save
       if test $perl_ok = yes; then
 	if test "X$perlcppflags" != "X"; then
-	  	  PERL_CFLAGS=`echo "$perlcppflags" | sed -e 's/-pipe //' -e 's/-W[^ ]*//'`
+	  PERL_CFLAGS=$perlcppflags
 	fi
 	if test "X$perlldflags" != "X"; then
 	  if test "X`echo \"$LDFLAGS\" | $FGREP -e \"$perlldflags\"`" = "X"; then
