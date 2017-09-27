@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.0.  Last change: 2017 Sep 17
+*map.txt*       For Vim version 8.0.  Last change: 2017 Sep 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,7 +29,7 @@ manual.
 1. Key mapping				*key-mapping* *mapping* *macro*
 
 Key mapping is used to change the meaning of typed keys.  The most common use
-is to define a sequence commands for a function key.  Example: >
+is to define a sequence of commands for a function key.  Example: >
 
 	:map <F2> a<C-R>=strftime("%c")<CR><Esc>
 

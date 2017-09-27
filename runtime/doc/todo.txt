@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Sep 19
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Sep 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,17 +35,16 @@ entered there will not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+MS-Windows build and installer improvements:
+- Switch to VC2015 for building. (Ken Takata, 2017 Sep 21)
+  Check resulting binary on XP.
+- Patch to install 32 and 64 bit Gvimext and related dll files. (Ken Takata,
+  2017 Sep 23, #2144)
+
 :term hangs in Athena and Motif. (Kazunobu Kuriyama, 2017 Sep 17)
 
-Always use FEAT_WINDOWS:
-May get rid of:
-    #define W_WINCOL(wp)	(wp->w_wincol)
-    #define W_WIDTH(wp)	(wp->w_width)
-    #define W_ENDCOL(wp)	(wp->w_wincol + wp->w_width)
-    #define W_VSEP_WIDTH(wp) (wp->w_vsep_width)
-    #define W_STATUS_HEIGHT(wp) (wp->w_status_height)
-    #define W_WINROW(wp)	(wp->w_winrow)
-# define ALIST(win) (win)->w_alist
+Universal solution to detect if t_RS is working, using cursor position.
+Koichi Iwamoto, #2126
 
 No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
@@ -70,6 +69,8 @@ Terminal emulator window:
   with the expected screenshot.  Set t_Co to 256.
 
 +channel:
+- Add a separate timeout for opening a socket.  Currently it's fixed at 50
+  msec, which is too small for a remote connection. (tverniquet, #2130)
 - Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
@@ -94,6 +95,8 @@ Terminal emulator window:
     Although user could use "xterm -e 'cmd arg'".
 
 Regexp problems:
+- [:space:] only matches ASCII spaces.  Add [:white:] for all space-like
+  characters, esp. including 0xa0.  Use character class zero.
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
   (Manuel Ortega, 2016 Apr 24)
   Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
@@ -149,13 +152,10 @@ Use names that indicate their appearnce (Christian Brabandt, 2017 Aug 3)
 Suggested by Hiroki Kokubun:
 - [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
 - [hybrid](https://github.com/w0ng/vim-hybrid)
-
-Patch to update Brazilian translations. (Eduardo Dobay, 2017 Sep 10, #2077)
+Include solarized color scheme?
 
 When starting with --clean packages under "start" are not loaded.  Make this
 work:  :packadd START {name}  similar to :runtime START name
-
-Patch to refactor qf_jump(). (Yegappan, 2017 Sep 17)
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
@@ -175,13 +175,18 @@ Patch for not profiling the first line of a script. (Lemonboy, 2017 Sep 17,
 Mac Terminal.app: ctermbg=15 gives light grey instead of white.
 ctermbg=256 breaks clearing till end of the line.  Both work fine in xterm.
 
+Patch to avoid `rb_load_protect` as a workaround not to crash (#2147)
+
+Patch for drag&drop reordering of GUI tab pages reordering.
+(Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
+Now on Git: https://gist.github.com/nocd5/165286495c782b815b94
+Update 2016 Aug 10.
+
 Using ":hi" causes a redraw, but a redraw may update the status line, which
 may trigger a ":hi" command.
 
 Last line not in profile if it is a continuation line. (LemonBoy, 2017 Sep 17,
 #2112)
-
-"vim -c startinsert!" doesn't append. (#2117)
 
 With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
 (Marcin Szewczyk, 2017 Apr 26)
@@ -203,6 +208,7 @@ Patch to make ":set scroll&" work properly. (Ozaki Kiichi, 2017 Sep 17, #2104)
 
 mswin.vim should not map CTRL-F in the console (#2093)
 Patch from Christian, 2017 Sep 15.
+Installer patch from Ken Takata, link on #2093.
 
 Default install on MS-Windows should source defaults.vim.
 Ask whether to use Windows or Vim key behavior?
@@ -323,8 +329,6 @@ Use gvimext.dll from the nightly build? (Issue #249)
 
 Problem with using :cd when remotely editing a file. (Gerd Wachsmuth, 2017 May
 8, #1690)
-
-Include solarized color scheme?
 
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif?
@@ -659,11 +663,6 @@ Filetype plugin for awk. (Doug Kearns, 2016 Sep 5)
 Patch to improve map documentation. Issue #799.
 
 Patch for syntax folding optimization. (Shougo, 2016 Sep 6, #1045)
-
-Patch for drag&drop reordering of GUI tab pages reordering.
-(Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
-Now on Git: https://gist.github.com/nocd5/165286495c782b815b94
-Update 2016 Aug 10.
 
 We can use '. to go to the last change in the current buffer, but how about
 the last change in any buffer?  Can we use ', (, is next to .)?
@@ -2235,9 +2234,6 @@ Netbeans problem.  Use "nc -l 127.0.0.1 55555" for the server, then run gvim
 with "gvim -nb:localhost:55555:foo".  From nc do: '1:editFile!0 "foo"'.  Then
 go to Insert mode and add a few lines.  Then backspacing every other time
 moves the cursor instead of deleting. (Chris Kaiser, 2007 Sep 25)
-
-Windows installer should install 32-bit version of right-click handler also on
-64-bit systems. (Brian Cunningham, 2011 Dec 28)
 
 Windows installer could add a "open in new tab of existing Vim" menu entry.
 Gvimext: patch to add "Edit with single Vim &tabbed" menu entry.
