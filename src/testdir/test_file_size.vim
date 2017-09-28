@@ -28,3 +28,31 @@ func Test_File_Size()
   call delete('Xtest')
   set belloff& fileformat& undolevels&
 endfunc
+
+" Test for writing and reading a file of over 100 Kbyte
+func Test_File_Read_Write()
+  enew!
+
+  " Create a file with the following contents
+  " 1 line: "This is the start"
+  " 3001 lines: "This is the leader"
+  " 1 line: "This is the middle"
+  " 3001 lines: "This is the trailer"
+  " 1 line: "This is the end"
+  call append(0, "This is the start")
+  call append(1, repeat(["This is the leader"], 3001))
+  call append(3002, "This is the middle")
+  call append(3003, repeat(["This is the trailer"], 3001))
+  call append(6004, "This is the end")
+
+  write! Xtest
+  enew!
+  edit! Xtest
+
+  call assert_equal("This is the start", getline(1))
+  call assert_equal("This is the middle", getline(3003))
+  call assert_equal("This is the end", getline(6005))
+
+  enew!
+  call delete("Xtest")
+endfunc
