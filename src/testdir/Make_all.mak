@@ -25,20 +25,16 @@ SCRIPTS_ALL = \
 	test28.out \
 	test29.out \
 	test31.out \
-	test33.out \
 	test34.out \
 	test36.out \
 	test37.out \
 	test38.out \
 	test39.out \
 	test40.out \
-	test41.out \
 	test42.out \
-	test43.out \
 	test44.out \
 	test45.out \
 	test48.out \
-	test53.out \
 	test55.out \
 	test60.out \
 	test64.out \
