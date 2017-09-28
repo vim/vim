@@ -1723,7 +1723,7 @@ parse_command_name(mparm_T *parmp)
 
     initstr = gettail((char_u *)parmp->argv[0]);
 
-#ifdef MACOS_X_UNIX
+#ifdef FEAT_GUI_MAC
     /* An issue has been seen when launching Vim in such a way that
      * $PWD/$ARGV[0] or $ARGV[0] is not the absolute path to the
      * executable or a symbolic link of it. Until this issue is resolved
