@@ -5543,7 +5543,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"mac",		/* Mac OS Classic or Mac OS X */
 # ifdef MACOS_X
 	"osx",		/* Mac OS X */
-#  ifdef MACOS_X_UNIX
+#  ifdef MACOS_X_DARWIN
 	"macunix",	/* Mac OS X, with the darwin feature */
 	"osxdarwin",	/* synonym for macunix */
 #  endif

@@ -286,7 +286,7 @@ extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*s
 #ifdef MACOS_CONVERT
 # include "os_mac_conv.pro"
 #endif
-#if defined(MACOS_X_UNIX) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
+#if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
 /* functions in os_macosx.m */
 void clip_mch_lose_selection(VimClipboard *cbd);
 int clip_mch_own_selection(VimClipboard *cbd);

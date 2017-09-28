@@ -11,7 +11,7 @@
  * os_macosx.m -- Mac specific things for Mac OS/X.
  */
 
-#ifndef MACOS_X_UNIX
+#ifndef MACOS_X_DARWIN
     Error: MACOS 9 is no longer supported in Vim 7
 #endif
 

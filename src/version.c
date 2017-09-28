@@ -3266,7 +3266,7 @@ list_version(void)
 # endif
 #endif
 #ifdef MACOS
-# if defined(MACOS_X_UNIX)
+# if defined(MACOS_X_DARWIN)
     MSG_PUTS(_("\nmacOS version"));
 # elif defined(MACOS_X)
     MSG_PUTS(_("\nmacOS version w/o darwin feat."));

@@ -299,7 +299,7 @@ main
 	params.want_full_screen = FALSE;
 #endif
 
-#if defined(FEAT_GUI_MAC) && defined(MACOS_X_UNIX)
+#if defined(FEAT_GUI_MAC) && defined(MACOS_X_DARWIN)
     /* When the GUI is started from Finder, need to display messages in a
      * message box.  isatty(2) returns TRUE anyway, thus we need to check the
      * name to know we're not started from a terminal. */

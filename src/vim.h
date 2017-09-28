@@ -85,15 +85,15 @@
 #endif
 
 /*
- * MACOS_CLASSIC compiling for MacOS prior to MacOS X
- * MACOS_X       compiling for MacOS X
- * MACOS_X_UNIX  compiling for MacOS X with the darwin feature
- * MACOS	 compiling for either one
+ * MACOS_CLASSIC    compiling for MacOS prior to MacOS X
+ * MACOS_X	    compiling for MacOS X
+ * MACOS_X_DARWIN   compiling with the darwin feature for MacOS X
+ * MACOS	    compiling for either one
  */
 #if defined(macintosh) && !defined(MACOS_CLASSIC)
 # define MACOS_CLASSIC
 #endif
-#if defined(MACOS_X_UNIX) && !defined(MACOS_X)
+#if defined(MACOS_X_DARWIN) && !defined(MACOS_X)
 # define MACOS_X
 #endif
 #if defined(MACOS_X)
@@ -182,7 +182,7 @@
  */
 #include "feature.h"
 
-#if defined(MACOS_X_UNIX)
+#if defined(MACOS_X_DARWIN)
 # if defined(FEAT_SMALL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
 # endif
@@ -229,7 +229,7 @@
 #endif
 
 /* The Mac conversion stuff doesn't work under X11. */
-#if defined(FEAT_MBYTE) && defined(MACOS_X_UNIX)
+#if defined(FEAT_MBYTE) && defined(MACOS_X_DARWIN)
 # define MACOS_CONVERT
 #endif
 

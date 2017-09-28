@@ -4347,10 +4347,10 @@ rm -f core conftest.err conftest.$ac_objext \
   fi
 
   if test "$enable_darwin" = "yes"; then
-    MACOS_X_UNIX=yes
+    MACOS_X_DARWIN=yes
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
-            CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX"
+            CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
 
                 # On IRIX 5.3, sys/types and inttypes.h are conflicting.
 for ac_header in sys/types.h sys/stat.h stdlib.h string.h memory.h strings.h \
@@ -14103,7 +14103,7 @@ $as_echo_n "checking whether we need macOS frameworks... " >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need Carbon" >&5
 $as_echo "yes, we need Carbon" >&6; }
     LIBS="$LIBS -framework Carbon"
-  elif test "$MACOS_X_UNIX" = "yes"; then
+  elif test "$MACOS_X_DARWIN" = "yes"; then
     if test "$features" = "tiny"; then
             OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
       OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
@@ -14116,7 +14116,7 @@ $as_echo "yes, we need CoreServices" >&6; }
 $as_echo "no" >&6; }
         OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
         OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
-        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_UNIX++'`
+        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_DARWIN++'`
       fi
     else
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need AppKit" >&5
