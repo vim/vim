@@ -969,7 +969,9 @@ typedef struct attr_entry
 # else
 #  if defined(MACOS_X)
 #   include <sys/errno.h>
-#   define EILSEQ ENOENT /* MacOS X does not have EILSEQ */
+#   ifndef EILSEQ
+#    define EILSEQ ENOENT /* Early MacOS X does not have EILSEQ */
+#   endif
 typedef struct _iconv_t *iconv_t;
 #  else
 #   if defined(MACOS_CLASSIC)
