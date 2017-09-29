@@ -2,7 +2,7 @@
 " Language:	BibTeX (bibliographic database format for (La)TeX)
 " Maintainer:	Bernd Feige <Bernd.Feige@gmx.net>
 " Filenames:	*.bib
-" Last Change:	2016 Sep 13
+" Last Change:	2017 Sep 29
 
 " Thanks to those who pointed out problems with this file or supplied fixes!
 
@@ -81,7 +81,7 @@ syn match bibUnescapedSpecial contained /[^\\][%&]/hs=s+1
 syn match bibKey contained /\s*[^ \t}="]\+,/hs=s,he=e-1 nextgroup=bibField
 syn match bibVariable contained /[^{}," \t=]/
 syn region bibComment start=/./ end=/^\s*@/me=e-1 contains=@bibCommentContents nextgroup=bibEntry
-syn region bibMath contained start=/\$/ end=/\$/ skip=/\(\\\$\)/
+syn region bibMath contained start=/\(\\\)\@<!\$/ end=/\$/ skip=/\(\\\$\)/
 syn region bibQuote contained start=/"/ end=/"/ skip=/\(\\"\)/ contains=@bibVarContents
 syn region bibBrace contained start=/{/ end=/}/ skip=/\(\\[{}]\)/ contains=@bibVarContents
 syn region bibParen contained start=/(/ end=/)/ skip=/\(\\[()]\)/ contains=@bibVarContents
