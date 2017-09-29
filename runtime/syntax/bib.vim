@@ -2,7 +2,7 @@
 " Language:	BibTeX (bibliographic database format for (La)TeX)
 " Maintainer:	Bernd Feige <Bernd.Feige@gmx.net>
 " Filenames:	*.bib
-" Last Change:	2016 Sep 12
+" Last Change:	2016 Sep 13
 
 " Thanks to those who pointed out problems with this file or supplied fixes!
 
@@ -86,11 +86,13 @@ syn region bibQuote contained start=/"/ end=/"/ skip=/\(\\"\)/ contains=@bibVarC
 syn region bibBrace contained start=/{/ end=/}/ skip=/\(\\[{}]\)/ contains=@bibVarContents
 syn region bibParen contained start=/(/ end=/)/ skip=/\(\\[()]\)/ contains=@bibVarContents
 syn region bibField contained start="\S\+\s*=\s*" end=/[}),]/me=e-1 contains=bibEntryKw,bibNSEntryKw,bibBrace,bibParen,bibQuote,bibVariable
-syn region bibEntryData contained start=/[{(]/ms=e+1 end=/[})]/me=e-1 contains=bibKey,bibField
+syn region bibEntryData contained start=/[{(]/ms=e+1 end=/[})]/me=e-1 contains=bibKey,bibField,bibComment3
 " Actually, 5.8 <= Vim < 6.0 would ignore the `fold' keyword anyway, but Vim<5.8 would produce
 " an error, so we explicitly distinguish versions with and without folding functionality:
 syn region bibEntry start=/@\S\+\s*[{(]/ end=/^\s*[})]/ transparent fold contains=bibType,bibEntryData nextgroup=bibComment
 syn region bibComment2 start=/@Comment\s*[{(]/ end=/^\s*[})]/me=e-1 contains=@bibCommentContents nextgroup=bibEntry
+" biblatex style comments inside a bibEntry
+syn match bibComment3 "%.*"
 
 " Synchronization
 " ===============
@@ -111,6 +113,7 @@ hi def link bibVariable	Constant
 hi def link bibUnescapedSpecial	Error
 hi def link bibComment	Comment
 hi def link bibComment2	Comment
+hi def link bibComment3	Comment
 
 let b:current_syntax = "bib"
 
