@@ -34,6 +34,7 @@ syn region  javaScriptComment	       start="/\*"  end="\*/" contains=@Spell,java
 syn match   javaScriptSpecial	       "\\\d\d\d\|\\."
 syn region  javaScriptStringD	       start=+"+  skip=+\\\\\|\\"+  end=+"\|$+	contains=javaScriptSpecial,@htmlPreproc
 syn region  javaScriptStringS	       start=+'+  skip=+\\\\\|\\'+  end=+'\|$+	contains=javaScriptSpecial,@htmlPreproc
+syn region  javaScriptStringT         start=+`+  skip=+\\\\\|\\'+  end=+`\|$+  contains=javaScriptSpecial,@htmlPreproc
 
 syn match   javaScriptSpecialCharacter "'\\.'"
 syn match   javaScriptNumber	       "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
@@ -44,7 +45,7 @@ syn keyword javaScriptRepeat		while for do in
 syn keyword javaScriptBranch		break continue
 syn keyword javaScriptOperator		new delete instanceof typeof
 syn keyword javaScriptType		Array Boolean Date Function Number Object String RegExp
-syn keyword javaScriptStatement		return with
+syn keyword javaScriptStatement		return with await
 syn keyword javaScriptBoolean		true false
 syn keyword javaScriptNull		null undefined
 syn keyword javaScriptIdentifier	arguments this var let
@@ -59,6 +60,7 @@ syn keyword javaScriptReserved		abstract boolean byte char class const debugger 
 if exists("javaScript_fold")
     syn match	javaScriptFunction	"\<function\>"
     syn region	javaScriptFunctionFold	start="\<function\>.*[^};]$" end="^\z1}.*$" transparent fold keepend
+    syn keyword javaScriptFunction	async
 
     syn sync match javaScriptSync	grouphere javaScriptFunctionFold "\<function\>"
     syn sync match javaScriptSync	grouphere NONE "^}"
@@ -66,7 +68,7 @@ if exists("javaScript_fold")
     setlocal foldmethod=syntax
     setlocal foldtext=getline(v:foldstart)
 else
-    syn keyword javaScriptFunction	function
+    syn keyword javaScriptFunction	function async
     syn match	javaScriptBraces	   "[{}\[\]]"
     syn match	javaScriptParens	   "[()]"
 endif
@@ -86,6 +88,7 @@ hi def link javaScriptCommentTodo		Todo
 hi def link javaScriptSpecial		Special
 hi def link javaScriptStringS		String
 hi def link javaScriptStringD		String
+hi def link javaScriptStringT		String
 hi def link javaScriptCharacter		Character
 hi def link javaScriptSpecialCharacter	javaScriptSpecial
 hi def link javaScriptNumber		javaScriptValue
