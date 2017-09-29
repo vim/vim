@@ -1,5 +1,10 @@
 " Functions shared by several tests.
 
+" Only load this script once.
+if exists('*WaitFor')
+  finish
+endif
+
 " Get the name of the Python executable.
 " Also keeps it in s:python.
 func PythonProg()
