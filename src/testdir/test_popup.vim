@@ -1,5 +1,7 @@
 " Test for completion menu
 
+source shared.vim
+
 let g:months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 let g:setting = ''
 
@@ -36,6 +38,7 @@ endfu
 func! Test_popup_complete()
   new
   inoremap <f5> <c-r>=ListMonths()<cr>
+  set belloff=all
 
   " <C-E> - select original typed text before the completion started
   call feedkeys("aJu\<f5>\<down>\<c-e>\<esc>", 'tx')
@@ -212,6 +215,7 @@ func! Test_popup_complete()
   call feedkeys("aM\<f5>\<enter>\<esc>", 'tx')
   call assert_equal(["March", "M", "March"], getline(1,4))
   %d
+  set belloff&
 endfu
 
 
@@ -513,6 +517,7 @@ endfunc
 
 func Test_completion_respect_bs_option()
   new
+  set belloff=all
   let li = ["aaa", "aaa12345", "aaaabcdef", "aaaABC"]
 
   set bs=indent,eol
@@ -528,6 +533,7 @@ func Test_completion_respect_bs_option()
   call feedkeys("A\<C-X>\<C-N>\<C-P>\<BS>\<BS>\<BS>\<Esc>", "tx")
   call assert_equal('', getline(1))
 
+  set belloff&
   bw!
 endfunc
 
@@ -614,6 +620,7 @@ endfunc
 
 func Test_complete_CTRLN_startofbuffer()
   new
+  set belloff=all
   call setline(1, [ 'organize(cupboard, 3, 2);',
         \ 'prioritize(bureau, 8, 7);',
         \ 'realize(bannister, 4, 4);',
@@ -624,6 +631,33 @@ func Test_complete_CTRLN_startofbuffer()
         \ 'railing.moralize(3,9);']
   call feedkeys("qai\<c-n>\<c-n>.\<esc>3wdW\<cr>q3@a", 'tx')
   call assert_equal(expected, getline(1,'$'))
+  set belloff&
+  bwipe!
+endfunc
+
+func Test_popup_and_window_resize()
+  if !has('terminal') || has('gui_running')
+    return
+  endif
+  let h = winheight(0)
+  if h < 15
+    return
+  endif
+  let g:buf = term_start([$VIMPROG, '--clean', '-c', 'set noswapfile'], {'term_rows': h / 3})
+  call term_sendkeys(g:buf, (h / 3 - 1)."o\<esc>G")
+  call term_sendkeys(g:buf, "i\<c-x>")
+  call term_wait(g:buf, 100)
+  call term_sendkeys(g:buf, "\<c-v>")
+  call term_wait(g:buf, 100)
+  call assert_match('^!\s*$', term_getline(g:buf, 1))
+  exe 'resize +' . (h - 1)
+  call term_wait(g:buf, 100)
+  redraw!
+  call WaitFor('"" == term_getline(g:buf, 1)')
+  call assert_equal('', term_getline(g:buf, 1))
+  sleep 100m
+  call WaitFor('"^!" =~ term_getline(g:buf, term_getcursor(g:buf)[0] + 1)')
+  call assert_match('^!\s*$', term_getline(g:buf, term_getcursor(g:buf)[0] + 1))
   bwipe!
 endfunc
 
