@@ -74,10 +74,6 @@
 
 #include <Python.h>
 
-#if defined(MACOS) && !defined(MACOS_X)
-# include "macglue.h"
-# include <CodeFragments.h>
-#endif
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
 
@@ -871,10 +867,8 @@ Python3_Init(void)
 
 	PyImport_AppendInittab("vim", Py3Init_vim);
 
-#if !defined(MACOS) || defined(MACOS_X)
+#if defined(MACOS_X)
 	Py_Initialize();
-#else
-	PyMac_Initialize();
 #endif
 	/* Initialise threads, and below save the state using
 	 * PyEval_SaveThread.  Without the call to PyEval_SaveThread, thread
@@ -929,9 +923,6 @@ fail:
     static void
 DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 {
-#if defined(MACOS) && !defined(MACOS_X)
-    GrafPtr		oldPort;
-#endif
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     char		*saved_locale;
 #endif
@@ -942,12 +933,6 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     if (python_end_called)
 	goto theend;
 
-#if defined(MACOS) && !defined(MACOS_X)
-    GetPort(&oldPort);
-    /* Check if the Python library is available */
-    if ((Ptr)PyMac_Initialize == (Ptr)kUnresolvedCFragSymbolAddress)
-	goto theend;
-#endif
     if (Python3_Init())
 	goto theend;
 
@@ -992,9 +977,6 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 
     Python_Lock_Vim();		    /* enter vim */
     PythonIO_Flush();
-#if defined(MACOS) && !defined(MACOS_X)
-    SetPort(oldPort);
-#endif
 
 theend:
     return;	    /* keeps lint happy */

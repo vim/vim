@@ -85,9 +85,15 @@
 #endif
 
 /*
- * MACOS_X	    compiling for MacOS X
- * MACOS_X_DARWIN   compiling with the darwin feature for MacOS X
- * MACOS	    compiling for either one
+ * MACOS	    compiling for any of Macintosh operating systems
+ * MACOS_X	    compiling for Mac OS X
+ * MACOS_X_DARWIN   compiling with the darwin feature for Mac OS X
+ *
+ * - MACOS stands for all Mac OSs, not macOS alone.
+ * - MACOS_X_DARWIN always implies MACOS_X, and not vice versa.
+ *
+ *   Similarly, be careful not to confuse "MacOS" in our documents with
+ *   "macOS".
  */
 #if defined(MACOS_X_DARWIN) && !defined(MACOS_X)
 # define MACOS_X
