@@ -1,8 +1,6 @@
 " Tests for setbufline() and getbufline()
 
-if !exists('*GetVimCommand')
-  source shared.vim
-endif
+source shared.vim
 
 func Test_setbufline_getbufline()
   new

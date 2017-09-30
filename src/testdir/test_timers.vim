@@ -4,9 +4,7 @@ if !has('timers')
   finish
 endif
 
-if !exists('*WaitFor')
-  source shared.vim
-endif
+source shared.vim
 
 func MyHandler(timer)
   let g:val += 1
