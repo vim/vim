@@ -41,6 +41,7 @@
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
  * - Shift-Tab does not work.
+ * - after resizing windows overlap. (Boris Staletic, #2164)
  * - double click in Window toolbar starts Visual mode.
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
@@ -134,7 +135,7 @@ struct terminal_S {
     char_u	*tl_status_text; /* NULL or allocated */
 
     /* Range of screen rows to update.  Zero based. */
-    int		tl_dirty_row_start; /* -1 if nothing dirty */
+    int		tl_dirty_row_start; /* MAX_ROW if nothing dirty */
     int		tl_dirty_row_end;   /* row below last one to update */
 
     garray_T	tl_scrollback;
@@ -1925,6 +1926,10 @@ handle_moverect(VTermRect dest, VTermRect src, void *user)
 				 clear_attr);
 	}
     }
+
+    term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, dest.start_row);
+    term->tl_dirty_row_end = MIN(term->tl_dirty_row_end, dest.end_row);
+
     redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
@@ -2268,8 +2273,8 @@ term_update_window(win_T *wp)
     vterm_state_get_cursorpos(state, &pos);
     position_cursor(wp, &pos);
 
-    /* TODO: Only redraw what changed. */
-    for (pos.row = 0; pos.row < wp->w_height; ++pos.row)
+    for (pos.row = term->tl_dirty_row_start; pos.row < term->tl_dirty_row_end
+					  && pos.row < wp->w_height; ++pos.row)
     {
 	int off = screen_get_current_line_off();
 	int max_col = MIN(wp->w_width, term->tl_cols);
@@ -2352,6 +2357,8 @@ term_update_window(win_T *wp)
 	screen_line(wp->w_winrow + pos.row, wp->w_wincol,
 						  pos.col, wp->w_width, FALSE);
     }
+    term->tl_dirty_row_start = MAX_ROW;
+    term->tl_dirty_row_end = 0;
 
     return OK;
 }
