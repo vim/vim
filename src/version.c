@@ -3270,8 +3270,6 @@ list_version(void)
     MSG_PUTS(_("\nmacOS version"));
 # elif defined(MACOS_X)
     MSG_PUTS(_("\nmacOS version w/o darwin feat."));
-# else
-    MSG_PUTS(_("\nMac OS Classic version"));
 # endif
 #endif
 
@@ -3404,9 +3402,6 @@ list_version(void)
 #	 if defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX
     MSG_PUTS(_("with Cocoa GUI."));
 #	 else
-#	  if defined(MACOS)
-    MSG_PUTS(_("with (classic) GUI."));
-#	  endif
 #	 endif
 #	endif
 #      endif

@@ -85,14 +85,10 @@
 #endif
 
 /*
- * MACOS_CLASSIC    compiling for MacOS prior to MacOS X
  * MACOS_X	    compiling for MacOS X
  * MACOS_X_DARWIN   compiling with the darwin feature for MacOS X
  * MACOS	    compiling for either one
  */
-#if defined(macintosh) && !defined(MACOS_CLASSIC)
-# define MACOS_CLASSIC
-#endif
 #if defined(MACOS_X_DARWIN) && !defined(MACOS_X)
 # define MACOS_X
 #endif
@@ -101,11 +97,8 @@
 #  define UNIX
 # endif
 #endif
-#if defined(MACOS_X) || defined(MACOS_CLASSIC)
+#if defined(MACOS_X)
 # define MACOS
-#endif
-#if defined(MACOS_X) && defined(MACOS_CLASSIC)
-    Error: To compile for both MACOS X and Classic use a Classic Carbon
 #endif
 /* Unless made through the Makefile enforce GUI on Mac */
 #if defined(MACOS) && !defined(HAVE_CONFIG_H)

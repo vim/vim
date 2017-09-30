@@ -4200,20 +4200,6 @@ buf_write(
 	}
     }
 
-#ifdef MACOS_CLASSIC /* TODO: Is it need for MACOS_X? (Dany) */
-    /*
-     * Before risking to lose the original file verify if there's
-     * a resource fork to preserve, and if cannot be done warn
-     * the users. This happens when overwriting without backups.
-     */
-    if (backup == NULL && overwriting && !append)
-	if (mch_has_resource_fork(fname))
-	{
-	    errmsg = (char_u *)_("E460: The resource fork would be lost (add ! to override)");
-	    goto restore_backup;
-	}
-#endif
-
 #ifdef VMS
     vms_remove_version(fname); /* remove version */
 #endif
@@ -4474,13 +4460,7 @@ restore_backup:
 	    }
 	    write_info.bw_fd = fd;
 
-#if defined(MACOS_CLASSIC) || defined(WIN3264)
-	    /* TODO: Is it need for MACOS_X? (Dany) */
-	    /*
-	     * On macintosh copy the original files attributes (i.e. the backup)
-	     * This is done in order to preserve the resource fork and the
-	     * Finder attribute (label, comments, custom icons, file creator)
-	     */
+#if defined(WIN3264)
 	    if (backup != NULL && overwriting && !append)
 	    {
 		if (backup_copy)
@@ -5199,10 +5179,6 @@ nofail:
 
     got_int |= prev_got_int;
 
-#ifdef MACOS_CLASSIC /* TODO: Is it need for MACOS_X? (Dany) */
-    /* Update machine specific information. */
-    mch_post_buffer_write(buf);
-#endif
     return retval;
 }
 

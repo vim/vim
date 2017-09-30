@@ -5931,10 +5931,7 @@ pathcmp(const char *p, const char *q, int maxlen)
 #define EXTRASIZE 5		/* increment to add to env. size */
 
 static int  envsize = -1;	/* current size of environment */
-#ifndef MACOS_CLASSIC
-extern
-#endif
-       char **environ;		/* the global which is your env. */
+extern char **environ;		/* the global which is your env. */
 
 static int  findenv(char *name); /* look for a name in the env. */
 static int  newenv(void);	/* copy env. from stack to heap */
@@ -6091,7 +6088,6 @@ filewritable(char_u *fname)
 #if defined(UNIX) || defined(VMS)
     perm = mch_getperm(fname);
 #endif
-#ifndef MACOS_CLASSIC /* TODO: get either mch_writable or mch_access */
     if (
 # ifdef WIN3264
 	    mch_writable(fname) &&
@@ -6102,7 +6098,6 @@ filewritable(char_u *fname)
 # endif
 	    mch_access((char *)fname, W_OK) == 0
        )
-#endif
     {
 	++retval;
 	if (mch_isdir(fname))

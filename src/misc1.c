@@ -4333,12 +4333,8 @@ vim_getenv(char_u *name, int *mustfree)
 	    }
 
 	    /* remove trailing path separator */
-#ifndef MACOS_CLASSIC
-	    /* With MacOS path (with  colons) the final colon is required */
-	    /* to avoid confusion between absolute and relative path */
 	    if (pend > p && after_pathsep(p, pend))
 		--pend;
-#endif
 
 #ifdef MACOS_X
 	    if (p == exe_name || p == p_hf)
@@ -10995,9 +10991,6 @@ gen_expand_wildcards(
 	{
 	    char_u	*t = backslash_halve_save(p);
 
-#if defined(MACOS_CLASSIC)
-	    slash_to_colon(t);
-#endif
 	    /* When EW_NOTFOUND is used, always add files and dirs.  Makes
 	     * "vim c:/" work. */
 	    if (flags & EW_NOTFOUND)

@@ -926,13 +926,6 @@ common_init(mparm_T *paramp)
     qnx_init();		/* PhAttach() for clipboard, (and gui) */
 #endif
 
-#ifdef MAC_OS_CLASSIC
-    /* Prepare for possibly starting GUI sometime */
-    /* Macintosh needs this before any memory is allocated. */
-    gui_prepare(&paramp->argc, paramp->argv);
-    TIME_MSG("GUI prepared");
-#endif
-
     /* Init the table of Normal mode commands. */
     init_normal_cmds();
 
@@ -983,7 +976,7 @@ common_init(mparm_T *paramp)
 #ifdef FEAT_SUN_WORKSHOP
     findYourself(paramp->argv[0]);
 #endif
-#if defined(FEAT_GUI) && !defined(MAC_OS_CLASSIC)
+#if defined(FEAT_GUI)
     /* Prepare for possibly starting GUI sometime */
     gui_prepare(&paramp->argc, paramp->argv);
     TIME_MSG("GUI prepared");

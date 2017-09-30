@@ -5540,7 +5540,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"beos",
 #endif
 #ifdef MACOS
-	"mac",		/* Mac OS Classic or Mac OS X */
+	"mac",		/* Mac OS X (and, once, Mac OS Classic) */
 # ifdef MACOS_X
 	"osx",		/* Mac OS X */
 #  ifdef MACOS_X_DARWIN
