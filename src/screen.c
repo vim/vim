@@ -5064,7 +5064,9 @@ win_line(
 		    ++did_line_attr;
 
 		    /* don't do search HL for the rest of the line */
-		    if (line_attr != 0 && char_attr == search_attr && col > 0)
+		    if (line_attr != 0 && char_attr == search_attr
+					&& (did_line_attr > 1
+					    || (wp->w_p_list && lcs_eol > 0)))
 			char_attr = line_attr;
 # ifdef FEAT_DIFF
 		    if (diff_hlf == HLF_TXD)
@@ -5320,6 +5322,13 @@ win_line(
 #ifdef FEAT_SEARCH_EXTRA
 			/* highlight 'hlsearch' match at end of line */
 			|| (prevcol_hl_flag == TRUE
+# ifdef FEAT_SYN_HL
+			    && !(wp->w_p_cul && lnum == wp->w_cursor.lnum
+				    && !(wp == curwin && VIsual_active))
+# endif
+# ifdef FEAT_DIFF
+			    && diff_hlf == (hlf_T)0
+# endif
 # if defined(LINE_ATTR)
 			    && did_line_attr <= 1
 # endif
