@@ -7354,6 +7354,18 @@ lookup_color(int idx, int foreground, int *boldp)
     return color;
 }
 
+    static void
+update_str_safe(char_u **str, char_u *arg)
+{
+    char_u	*p = *str;
+
+    /* Free old address after allocate new one so as to avoid new address
+     * becomes same as old one. This is to check equality of new and old values
+     * by comparing addresses. */
+    *str = arg != NULL ? vim_strsave(arg) : NULL;
+    vim_free(p);
+}
+
 /*
  * Handle the ":highlight .." command.
  * When using ":hi clear" this is called recursively for each group with
@@ -7785,8 +7797,7 @@ do_highlight(
 	    else if (!gui.shell_created)
 	    {
 		/* GUI not started yet, always accept the name. */
-		vim_free(HL_TABLE()[idx].sg_font_name);
-		HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
+		update_str_safe(&HL_TABLE()[idx].sg_font_name, arg);
 	    }
 	    else
 	    {
@@ -7813,8 +7824,7 @@ do_highlight(
 		    /* New fontset was accepted. Free the old one, if there
 		     * was one. */
 		    gui_mch_free_fontset(temp_sg_fontset);
-		    vim_free(HL_TABLE()[idx].sg_font_name);
-		    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
+		    update_str_safe(&HL_TABLE()[idx].sg_font_name, arg);
 		}
 		else
 		    HL_TABLE()[idx].sg_fontset = temp_sg_fontset;
@@ -7824,8 +7834,7 @@ do_highlight(
 		    /* New font was accepted. Free the old one, if there was
 		     * one. */
 		    gui_mch_free_font(temp_sg_font);
-		    vim_free(HL_TABLE()[idx].sg_font_name);
-		    HL_TABLE()[idx].sg_font_name = vim_strsave(arg);
+		    update_str_safe(&HL_TABLE()[idx].sg_font_name, arg);
 		}
 		else
 		    HL_TABLE()[idx].sg_font = temp_sg_font;
@@ -7985,13 +7994,8 @@ do_highlight(
 		    HL_TABLE()[idx].sg_gui_fg = i;
 # endif
 		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
-		    {
-			vim_free(*namep);
-			if (STRCMP(arg, "NONE") != 0)
-			    *namep = vim_strsave(arg);
-			else
-			    *namep = NULL;
-		    }
+			update_str_safe(namep,
+					STRCMP(arg, "NONE") != 0 ? arg : NULL);
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 #  ifdef FEAT_GUI_X11
 		    if (is_menu_group && gui.menu_fg_pixel != i)
@@ -8035,13 +8039,8 @@ do_highlight(
 		    HL_TABLE()[idx].sg_gui_bg = i;
 # endif
 		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
-		    {
-			vim_free(*namep);
-			if (STRCMP(arg, "NONE") != 0)
-			    *namep = vim_strsave(arg);
-			else
-			    *namep = NULL;
-		    }
+			update_str_safe(namep,
+					STRCMP(arg, "NONE") != 0 ? arg : NULL);
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 #  ifdef FEAT_GUI_X11
 		    if (is_menu_group && gui.menu_bg_pixel != i)
@@ -8084,13 +8083,8 @@ do_highlight(
 		    HL_TABLE()[idx].sg_gui_sp = i;
 # endif
 		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
-		    {
-			vim_free(*namep);
-			if (STRCMP(arg, "NONE") != 0)
-			    *namep = vim_strsave(arg);
-			else
-			    *namep = NULL;
-		    }
+			update_str_safe(namep,
+					STRCMP(arg, "NONE") != 0 ? arg : NULL);
 # ifdef FEAT_GUI
 		}
 # endif
@@ -8101,6 +8095,7 @@ do_highlight(
 	{
 	    char_u	buf[100];
 	    char_u	*tname;
+	    char_u	**namep;
 
 	    if (!init)
 		HL_TABLE()[idx].sg_set |= SG_TERM;
@@ -8164,20 +8159,12 @@ do_highlight(
 	    if (error)
 		break;
 
-	    if (STRCMP(buf, "NONE") == 0)	/* resetting the value */
-		p = NULL;
-	    else
-		p = vim_strsave(buf);
 	    if (key[2] == 'A')
-	    {
-		vim_free(HL_TABLE()[idx].sg_start);
-		HL_TABLE()[idx].sg_start = p;
-	    }
+		namep = &HL_TABLE()[idx].sg_start;
 	    else
-	    {
-		vim_free(HL_TABLE()[idx].sg_stop);
-		HL_TABLE()[idx].sg_stop = p;
-	    }
+		namep = &HL_TABLE()[idx].sg_stop;
+	    if (*namep == NULL || STRCMP(*namep, buf) != 0)
+		update_str_safe(namep, STRCMP(buf, "NONE") != 0 ? buf : NULL);
 	}
 	else
 	{
@@ -8523,12 +8510,14 @@ hl_get_font_name(void)
 hl_set_font_name(char_u *font_name)
 {
     int	    id;
+    char_u  **namep;
 
     id = syn_name2id((char_u *)"Normal");
     if (id > 0)
     {
-	vim_free(HL_TABLE()[id - 1].sg_font_name);
-	HL_TABLE()[id - 1].sg_font_name = vim_strsave(font_name);
+	namep = &HL_TABLE()[id - 1].sg_font_name;
+	if (*namep == NULL || STRCMP(*namep, font_name) != 0)
+	    update_str_safe(namep, font_name);
     }
 }
 
