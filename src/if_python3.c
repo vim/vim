@@ -867,9 +867,8 @@ Python3_Init(void)
 
 	PyImport_AppendInittab("vim", Py3Init_vim);
 
-#if defined(MACOS_X)
 	Py_Initialize();
-#endif
+
 	/* Initialise threads, and below save the state using
 	 * PyEval_SaveThread.  Without the call to PyEval_SaveThread, thread
 	 * specific state (such as the system trace hook), will be lost

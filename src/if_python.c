@@ -944,9 +944,7 @@ Python_Init(void)
 	Py_NoSiteFlag++;
 #endif
 
-#if defined(MACOS_X)
 	Py_Initialize();
-#endif
 
 #if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
 	/* 'import site' explicitly. */
