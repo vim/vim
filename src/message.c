@@ -1036,6 +1036,9 @@ wait_return(int redraw)
     if (msg_silent != 0)
 	return;
 
+    if (!mch_input_isatty())
+	return;
+
     /*
      * When inside vgetc(), we can't wait for a typed character at all.
      * With the global command (and some others) we only need one return at
