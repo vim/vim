@@ -56,6 +56,7 @@
  * - GUI: when 'confirm' is set and trying to exit Vim, dialog offers to save
  *   changes to "!shell".
  *   (justrajdeep, 2017 Aug 22)
+ * - Redrawing is slow with Athena and Motif.
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
  * - if the job in the terminal does not support the mouse, we can use the
@@ -2237,6 +2238,12 @@ term_update_window(win_T *wp)
     vterm = term->tl_vterm;
     screen = vterm_obtain_screen(vterm);
     state = vterm_obtain_state(vterm);
+
+    if (wp->w_redr_type >= NOT_VALID)
+    {
+	term->tl_dirty_row_start = 0;
+	term->tl_dirty_row_end = MAX_ROW;
+    }
 
     /*
      * If the window was resized a redraw will be triggered and we get here.
