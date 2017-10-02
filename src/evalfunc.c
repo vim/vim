@@ -829,7 +829,7 @@ static struct fst
     {"round",		1, 1, f_round},
 #endif
     {"screenattr",	2, 2, f_screenattr},
-    {"screenchar",	2, 2, f_screenchar},
+    {"screenchar",	2, 3, f_screenchar},
     {"screencol",	0, 0, f_screencol},
     {"screenrow",	0, 0, f_screenrow},
     {"search",		1, 4, f_search},
@@ -10364,21 +10364,42 @@ f_screenchar(typval_T *argvars, typval_T *rettv)
     int		col;
     int		off;
     int		c;
+    int		retlist = 0;
+
+    rettv->vval.v_number = -1;
 
     row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
     col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
-    if (row < 0 || row >= screen_Rows
-	    || col < 0 || col >= screen_Columns)
-	c = -1;
-    else
+    if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	off = LineOffset[row] + col;
-	if (enc_utf8 && ScreenLinesUC[off] != 0)
-	    c = ScreenLinesUC[off];
-	else
-	    c = ScreenLines[off];
+	retlist = (int)tv_get_number_chk(&argvars[2], NULL);
+	if (retlist && rettv_list_alloc(rettv) == FAIL)
+	    return;
     }
-    rettv->vval.v_number = c;
+
+    if (row < 0 || row >= screen_Rows || col < 0 || col >= screen_Columns)
+	return;
+
+    off = LineOffset[row] + col;
+    if (enc_utf8 && ScreenLinesUC[off] != 0)
+	c = ScreenLinesUC[off];
+    else
+	c = ScreenLines[off];
+
+    if (retlist)
+    {
+	list_append_number(rettv->vval.v_list, (varnumber_T)c);
+	if (enc_utf8)
+	{
+	    int i;
+
+	    for (i = 0; i < Screen_mco && ScreenLinesC[i][off] != 0; ++i)
+		list_append_number(rettv->vval.v_list,
+					   (varnumber_T)ScreenLinesC[i][off]);
+	}
+    }
+    else
+	rettv->vval.v_number = c;
 }
 
 /*
