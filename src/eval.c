@@ -1704,7 +1704,10 @@ ex_let_one(
 						       &stringval, opt_flags);
 		if ((opt_type == 1 && *op == '.')
 			|| (opt_type == 0 && *op != '.'))
+		{
 		    EMSG2(_(e_letwrong), op);
+		    s = NULL;  /* don't set the value */
+		}
 		else
 		{
 		    if (opt_type == 1)  /* number */
