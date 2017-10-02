@@ -3151,7 +3151,7 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
     while (*msg != NUL)
     {
 	send_keys_to_term(term, PTR2CHAR(msg), FALSE);
-	msg += MB_PTR2LEN(msg);
+	msg += MB_CPTR2LEN(msg);
     }
 }
 
