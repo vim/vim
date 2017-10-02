@@ -6003,19 +6003,14 @@ newenv(void)
     char    **env, *elem;
     int	    i, esize;
 
-#ifdef MACOS
-    /* for Mac a new, empty environment is created */
-    i = 0;
-#else
     for (i = 0; environ[i]; i++)
 	;
-#endif
+
     esize = i + EXTRASIZE + 1;
     env = (char **)alloc((unsigned)(esize * sizeof (elem)));
     if (env == NULL)
 	return -1;
 
-#ifndef MACOS
     for (i = 0; environ[i]; i++)
     {
 	elem = (char *)alloc((unsigned)(strlen(environ[i]) + 1));
@@ -6024,7 +6019,6 @@ newenv(void)
 	env[i] = elem;
 	strcpy(elem, environ[i]);
     }
-#endif
 
     env[i] = 0;
     environ = env;
