@@ -676,3 +676,51 @@ func Test_terminal_tmap()
   call TerminalTmap(1)
   call TerminalTmap(0)
 endfunc
+
+func Test_terminal_composing_unicode()
+  if has('win32')
+    let cmd = "cmd /K chcp 65001"
+  else
+    let cmd = &shell
+  endif
+  let buf = term_start(cmd)
+  let job = term_getjob(buf)
+  call term_wait(buf)
+
+  " ascii + composing
+  let txt = "a\u0308bc"
+  call term_sendkeys(buf, "echo " . txt . "\r")
+  call term_wait(buf)
+  call assert_match("echo " . txt, term_getline(buf, 1))
+  call assert_equal(txt, term_getline(buf, 2))
+  let l = term_scrape(buf, 2)
+  call assert_equal("a\u0308", l[0].chars)
+  call assert_equal("b", l[1].chars)
+  call assert_equal("c", l[2].chars)
+
+  " multibyte + composing
+  let txt = "\u304b\u3099\u304e\u304f\u3099\u3052\u3053\u3099"
+  call term_sendkeys(buf, "echo " . txt . "\r")
+  call term_wait(buf)
+  call assert_match("echo " . txt, term_getline(buf, 3))
+  call assert_equal(txt, term_getline(buf, 4))
+  let l = term_scrape(buf, 4)
+  call assert_equal("\u304b\u3099", l[0].chars)
+  call assert_equal("\u304e", l[1].chars)
+  call assert_equal("\u304f\u3099", l[2].chars)
+  call assert_equal("\u3052", l[3].chars)
+  call assert_equal("\u3053\u3099", l[4].chars)
+
+  " \u00a0 + composing
+  let txt = "abc\u00a0\u0308"
+  call term_sendkeys(buf, "echo " . txt . "\r")
+  call term_wait(buf)
+  call assert_match("echo " . txt, term_getline(buf, 5))
+  call assert_equal(txt, term_getline(buf, 6))
+  let l = term_scrape(buf, 6)
+  call assert_equal("\u00a0\u0308", l[3].chars)
+
+  call term_sendkeys(buf, "exit\r")
+  call WaitFor('job_status(job) == "dead"')
+  call assert_equal('dead', job_status(job))
+endfunc
