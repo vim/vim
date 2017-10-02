@@ -2309,7 +2309,16 @@ term_update_window(win_T *wp)
 		    {
 			int i;
 
-			if (c >= 0x80)
+			/* composing chars */
+			for (i = 0; i < Screen_mco
+				      && i + 1 < VTERM_MAX_CHARS_PER_CELL; ++i)
+			{
+			    ScreenLinesC[i][off] = cell.chars[i + 1];
+			    if (cell.chars[i + 1] == 0)
+				break;
+			}
+			if (c >= 0x80 || (Screen_mco > 0
+						 && ScreenLinesC[0][off] != 0))
 			{
 			    ScreenLines[off] = ' ';
 			    ScreenLinesUC[off] = c;
@@ -2319,10 +2328,6 @@ term_update_window(win_T *wp)
 			    ScreenLines[off] = c;
 			    ScreenLinesUC[off] = NUL;
 			}
-			/* composing chars */
-			for (i = 0; i < Screen_mco
-				      && i + 1 < VTERM_MAX_CHARS_PER_CELL; ++i)
-			    ScreenLinesC[i][off] = cell.chars[i + 1];
 		    }
 #ifdef WIN3264
 		    else if (has_mbyte && c >= 0x80)
