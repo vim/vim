@@ -2296,7 +2296,6 @@ term_update_window(win_T *wp)
 		if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 		    vim_memset(&cell, 0, sizeof(cell));
 
-		/* TODO: composing chars */
 		c = cell.chars[0];
 		if (c == NUL)
 		{
@@ -2308,6 +2307,8 @@ term_update_window(win_T *wp)
 		{
 		    if (enc_utf8)
 		    {
+			int i;
+
 			if (c >= 0x80)
 			{
 			    ScreenLines[off] = ' ';
@@ -2318,6 +2319,10 @@ term_update_window(win_T *wp)
 			    ScreenLines[off] = c;
 			    ScreenLinesUC[off] = NUL;
 			}
+			/* composing chars */
+			for (i = 0; i < Screen_mco
+				      && i + 1 < VTERM_MAX_CHARS_PER_CELL; ++i)
+			    ScreenLinesC[i][off] = cell.chars[i + 1];
 		    }
 #ifdef WIN3264
 		    else if (has_mbyte && c >= 0x80)
