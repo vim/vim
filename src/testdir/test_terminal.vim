@@ -680,20 +680,22 @@ endfunc
 func Test_terminal_composing_unicode()
   if has('win32')
     let cmd = "cmd /K chcp 65001"
+    let lnum = [3, 6, 9]
   else
     let cmd = &shell
+    let lnum = [1, 3, 5]
   endif
   let buf = term_start(cmd)
   let job = term_getjob(buf)
-  call term_wait(buf)
+  call term_wait(buf, 50)
 
   " ascii + composing
   let txt = "a\u0308bc"
   call term_sendkeys(buf, "echo " . txt . "\r")
-  call term_wait(buf)
-  call assert_match("echo " . txt, term_getline(buf, 1))
-  call assert_equal(txt, term_getline(buf, 2))
-  let l = term_scrape(buf, 2)
+  call term_wait(buf, 50)
+  call assert_match("echo " . txt, term_getline(buf, lnum[0]))
+  call assert_equal(txt, term_getline(buf, lnum[0] + 1))
+  let l = term_scrape(buf, lnum[0] + 1)
   call assert_equal("a\u0308", l[0].chars)
   call assert_equal("b", l[1].chars)
   call assert_equal("c", l[2].chars)
@@ -701,10 +703,10 @@ func Test_terminal_composing_unicode()
   " multibyte + composing
   let txt = "\u304b\u3099\u304e\u304f\u3099\u3052\u3053\u3099"
   call term_sendkeys(buf, "echo " . txt . "\r")
-  call term_wait(buf)
-  call assert_match("echo " . txt, term_getline(buf, 3))
-  call assert_equal(txt, term_getline(buf, 4))
-  let l = term_scrape(buf, 4)
+  call term_wait(buf, 50)
+  call assert_match("echo " . txt, term_getline(buf, lnum[1]))
+  call assert_equal(txt, term_getline(buf, lnum[1] + 1))
+  let l = term_scrape(buf, lnum[1] + 1)
   call assert_equal("\u304b\u3099", l[0].chars)
   call assert_equal("\u304e", l[1].chars)
   call assert_equal("\u304f\u3099", l[2].chars)
@@ -714,10 +716,10 @@ func Test_terminal_composing_unicode()
   " \u00a0 + composing
   let txt = "abc\u00a0\u0308"
   call term_sendkeys(buf, "echo " . txt . "\r")
-  call term_wait(buf)
-  call assert_match("echo " . txt, term_getline(buf, 5))
-  call assert_equal(txt, term_getline(buf, 6))
-  let l = term_scrape(buf, 6)
+  call term_wait(buf, 50)
+  call assert_match("echo " . txt, term_getline(buf, lnum[2]))
+  call assert_equal(txt, term_getline(buf, lnum[2] + 1))
+  let l = term_scrape(buf, lnum[2] + 1)
   call assert_equal("\u00a0\u0308", l[3].chars)
 
   call term_sendkeys(buf, "exit\r")
