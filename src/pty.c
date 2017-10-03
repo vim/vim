@@ -383,13 +383,11 @@ OpenPTY(char **ttyn)
 		continue;
 	    q[0] = *l;
 	    q[1] = *d;
-#ifndef MACOS /* XXX  is this MACOS meant for Mac OS X? */
 	    if (geteuid() != ROOT_UID && mch_access(TtyName, R_OK | W_OK))
 	    {
 		close(f);
 		continue;
 	    }
-#endif
 #if defined(SUN_SYSTEM) && defined(TIOCGPGRP) && !defined(SUNOS3)
 	    /* Hack to ensure that the slave side of the pty is
 	     * unused. May not work in anything other than SunOS4.1
