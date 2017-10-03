@@ -678,6 +678,9 @@ func Test_terminal_tmap()
 endfunc
 
 func Test_terminal_composing_unicode()
+  if &encoding !~? 'utf-8'
+    return
+  endif
   if has('win32')
     let cmd = "cmd /K chcp 65001"
     let lnum = [3, 6, 9]
@@ -685,7 +688,8 @@ func Test_terminal_composing_unicode()
     let cmd = &shell
     let lnum = [1, 3, 5]
   endif
-  let buf = term_start(cmd)
+  enew
+  let buf = term_start(cmd, {'curwin': bufnr('')})
   let job = term_getjob(buf)
   call term_wait(buf, 50)
 
@@ -725,4 +729,5 @@ func Test_terminal_composing_unicode()
   call term_sendkeys(buf, "exit\r")
   call WaitFor('job_status(job) == "dead"')
   call assert_equal('dead', job_status(job))
+  bwipe!
 endfunc
