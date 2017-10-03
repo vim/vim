@@ -2350,9 +2350,10 @@ typedef enum {
 # ifdef instr
 #  undef instr
 # endif
-  /* bool may cause trouble on MACOS but is required on a few other systems
-   * and for Perl */
-# if defined(bool) && defined(MACOS) && !defined(FEAT_PERL)
+  /* bool may cause trouble on some old versions of Mac OS X but is required
+   * on a few other systems and for Perl */
+# if (defined(MACOS_X) && !defined(MAC_OS_X_VERSION_10_6)) \
+				       && defined(bool) && !defined(FEAT_PERL)
 #  undef bool
 # endif
 
