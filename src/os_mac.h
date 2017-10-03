@@ -245,12 +245,8 @@
 #define mch_rename(src, dst) rename(src, dst)
 #define mch_remove(x) unlink((char *)(x))
 #ifndef mch_getenv
-# if defined(__MRC__) || defined(__SC__)
+# if defined(__APPLE_CC__)
 #  define mch_getenv(name)  ((char_u *)getenv((char *)(name)))
-#  define mch_setenv(name, val, x) setenv((name), (val))
-# elif defined(__APPLE_CC__)
-#  define mch_getenv(name)  ((char_u *)getenv((char *)(name)))
-/*# define mch_setenv(name, val, x) setenv((name), (val)) */ /* Obsoleted by Dany on Oct 30, 2001 */
 #  define mch_setenv(name, val, x) setenv(name, val, x)
 # else
   /* vim_getenv() is in pty.c */

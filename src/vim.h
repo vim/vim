@@ -164,7 +164,7 @@
 #endif
 #ifdef MACOS
 # if defined(__POWERPC__) || defined(MACOS_X) || defined(__fourbyteints__) \
-  || defined(__MRC__) || defined(__SC__) || defined(__APPLE_CC__)/* MPW Compilers */
+						      || defined(__APPLE_CC__)
 #  define VIM_SIZEOF_INT 4
 # else
 #  define VIM_SIZEOF_INT 2
@@ -296,9 +296,6 @@
 #endif
 
 #if defined(MACOS)
-# if defined(__MRC__) || defined(__SC__) /* MPW Compilers */
-#  define HAVE_SETENV
-# endif
 # include "os_mac.h"
 #endif
 

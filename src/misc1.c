@@ -4494,9 +4494,9 @@ get_env_name(
     expand_T	*xp UNUSED,
     int		idx)
 {
-# if defined(AMIGA) || defined(__MRC__) || defined(__SC__)
+# if defined(AMIGA)
     /*
-     * No environ[] on the Amiga and on the Mac (using MPW).
+     * No environ[] on the Amiga.
      */
     return NULL;
 # else
