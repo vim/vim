@@ -7350,6 +7350,10 @@ lookup_color(int idx, int foreground, int *boldp)
 	    else
 		color = color_numbers_8[idx];
 	}
+	if (t_colors >= 256 && color == 15 && is_mac_terminal)
+	    /* Terminal.app has a bug: 15 is light grey. Use white
+	     * from the color cube instead. */
+	    color = 231;
     }
     return color;
 }
