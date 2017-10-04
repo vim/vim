@@ -213,7 +213,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 
 # if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
-#  if defined(UNIX) || defined(MACOS)
+#  if defined(UNIX) || defined(MACOS_X)
 #   include "pty.pro"
 #  endif
 # endif

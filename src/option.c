@@ -1988,7 +1988,7 @@ static struct vimoption options[] =
 #if defined(MSWIN)
 				(char_u *)"popup",
 #else
-# if defined(MACOS)
+# if defined(MACOS_X)
 				(char_u *)"popup_setpos",
 # else
 				(char_u *)"extend",
@@ -3630,7 +3630,7 @@ set_init_1(void)
 		options[opt_idx].flags |= P_DEF_ALLOCED;
 	    }
 
-#if defined(MSWIN) || defined(MACOS) || defined(VMS)
+#if defined(MSWIN) || defined(MACOS_X) || defined(VMS)
 	    if (STRCMP(p_enc, "latin1") == 0
 # ifdef FEAT_MBYTE
 		    || enc_utf8

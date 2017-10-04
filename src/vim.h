@@ -85,26 +85,15 @@
 #endif
 
 /*
- * MACOS	    compiling for Macintosh hardware
  * MACOS_X	    compiling for Mac OS X
- * MACOS_X_DARWIN   compiling with the darwin feature for Mac OS X
- *
- * - MACOS_X_DARWIN always implies MACOS_X, and not vice versa.
- * - Be careful not to confuse "MacOS" in our documents with "macOS".
+ * MACOS_X_DARWIN   integrating the darwin feature into MACOS_X
  */
 #if defined(MACOS_X_DARWIN) && !defined(MACOS_X)
 # define MACOS_X
 #endif
-#if defined(MACOS_X)
-# ifndef HAVE_CONFIG_H
-#  define UNIX
-# endif
-#endif
-#if defined(MACOS_X)
-# define MACOS
-#endif
 /* Unless made through the Makefile enforce GUI on Mac */
-#if defined(MACOS) && !defined(HAVE_CONFIG_H)
+#if defined(MACOS_X) && !defined(HAVE_CONFIG_H)
+# define UNIX
 # define FEAT_GUI_MAC
 #endif
 
@@ -162,15 +151,9 @@
 #  endif
 # endif
 #endif
-#ifdef MACOS
-# if defined(__POWERPC__) || defined(MACOS_X) || defined(__fourbyteints__) \
-						      || defined(__APPLE_CC__)
-#  define VIM_SIZEOF_INT 4
-# else
-#  define VIM_SIZEOF_INT 2
-# endif
+#if defined(MACOS_X) && !defined(HAVE_CONFIG_H)
+#  define VIM_SIZEOF_INT __SIZEOF_INT__
 #endif
-
 
 /*
  * #defines for optionals and features
@@ -295,7 +278,7 @@
 # include "os_mint.h"
 #endif
 
-#if defined(MACOS)
+#if defined(MACOS_X)
 # include "os_mac.h"
 #endif
 

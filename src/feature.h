@@ -61,7 +61,7 @@
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
 	&& !defined(FEAT_BIG) && !defined(FEAT_HUGE)
-# if defined(UNIX) || defined(WIN3264) || defined(MACOS)
+# if defined(UNIX) || defined(WIN3264) || defined(MACOS_X)
 #  define FEAT_HUGE
 # else
 #  if defined(MSWIN) || defined(VMS) || defined(AMIGA)
@@ -363,7 +363,7 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_EVAL
-# if defined(HAVE_FLOAT_FUNCS) || defined(WIN3264) || defined(MACOS)
+# if defined(HAVE_FLOAT_FUNCS) || defined(WIN3264) || defined(MACOS_X)
 #  define FEAT_FLOAT
 # endif
 # if defined(HAVE_STDINT_H) || defined(WIN3264) || (VIM_SIZEOF_LONG >= 8)

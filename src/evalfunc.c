@@ -24,7 +24,7 @@
 # include <float.h>
 #endif
 
-#ifdef MACOS
+#ifdef MACOS_X
 # include <time.h>	/* for time_t */
 #endif
 
@@ -5539,14 +5539,12 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef __BEOS__
 	"beos",
 #endif
-#ifdef MACOS
-	"mac",		/* Mac OS X (and, once, Mac OS Classic) */
-# ifdef MACOS_X
-	"osx",		/* Mac OS X */
-#  ifdef MACOS_X_DARWIN
-	"macunix",	/* Mac OS X, with the darwin feature */
-	"osxdarwin",	/* synonym for macunix */
-#  endif
+#ifdef MACOS_X
+       "mac",		/* Mac OS X (and, once, Mac OS Classic) */
+       "osx",		/* Mac OS X */
+# ifdef MACOS_X_DARWIN
+       "macunix",	/* Mac OS X, with the darwin feature */
+       "osxdarwin",	/* synonym for macunix */
 # endif
 #endif
 #ifdef __QNX__

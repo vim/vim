@@ -2611,7 +2611,7 @@ read_stdin(void)
 #if defined(HAS_SWAP_EXISTS_ACTION)
     check_swap_exists_action();
 #endif
-#if !(defined(AMIGA) || defined(MACOS))
+#if !(defined(AMIGA) || defined(MACOS_X))
     /*
      * Close stdin and dup it from stderr.  Required for GPM to work
      * properly, and for running external commands.
