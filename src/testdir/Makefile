@@ -127,17 +127,20 @@ newtestssilent: $(NEW_TESTS)
 
 
 .vim.res:
-	@echo "$(RUN_VIMTEST)" > vimcmd
+	@echo "$(VIMPROG)" > vimcmd
+	@echo "$(RUN_VIMTEST)" >> vimcmd
 	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim
 	@rm vimcmd
 
 test_gui.res: test_gui.vim
-	@echo "$(RUN_GVIMTEST)" > vimcmd
+	@echo "$(VIMPROG)" > vimcmd
+	@echo "$(RUN_GVIMTEST)" >> vimcmd
 	$(RUN_VIMTEST) -u NONE $(NO_INITS) -S runtest.vim $<
 	@rm vimcmd
 
 test_gui_init.res: test_gui_init.vim
-	@echo "$(RUN_GVIMTEST_WITH_GVIMRC)" > vimcmd
+	@echo "$(VIMPROG)" > vimcmd
+	@echo "$(RUN_GVIMTEST_WITH_GVIMRC)" >> vimcmd
 	$(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@rm vimcmd
 

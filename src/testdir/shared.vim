@@ -170,6 +170,14 @@ func s:feedkeys(timer)
   call feedkeys('x', 'nt')
 endfunc
 
+" Get $VIMPROG to run Vim executable.
+func GetVimProg()
+  if !filereadable('vimcmd')
+    return ''
+  endif
+  return readfile('vimcmd')[0]
+endfunc
+
 " Get the command to run Vim, with -u NONE and --not-a-term arguments.
 " If there is an argument use it instead of "NONE".
 " Returns an empty string on error.
@@ -182,7 +190,8 @@ func GetVimCommand(...)
   else
     let name = a:1
   endif
-  let cmd = readfile('vimcmd')[0]
+  let lines = readfile('vimcmd')
+  let cmd = get(lines, 1, lines[0])
   let cmd = substitute(cmd, '-u \f\+', '-u ' . name, '')
   if cmd !~ '-u '. name
     let cmd = cmd . ' -u ' . name
