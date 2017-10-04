@@ -856,10 +856,6 @@ mch_stackcheck(char *p)
  * completely full.
  */
 
-#if defined(HAVE_AVAILABILITYMACROS_H)
-# include <AvailabilityMacros.h>
-#endif
-
 #ifndef SIGSTKSZ
 # define SIGSTKSZ 8000    /* just a guess of how much stack is needed... */
 #endif
@@ -879,13 +875,6 @@ init_signal_stack(void)
     if (signal_stack != NULL)
     {
 # ifdef HAVE_SIGALTSTACK
-#  if defined(__APPLE__) && (!defined(MAC_OS_X_VERSION_MAX_ALLOWED) \
-		|| MAC_OS_X_VERSION_MAX_ALLOWED <= 1040)
-	/* missing prototype.  Adding it to osdef?.h.in doesn't work, because
-	 * "struct sigaltstack" needs to be declared. */
-	extern int sigaltstack(const struct sigaltstack *ss, struct sigaltstack *oss);
-#  endif
-
 #  ifdef HAVE_SS_BASE
 	sigstk.ss_base = signal_stack;
 #  else
