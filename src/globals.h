@@ -380,6 +380,9 @@ EXTERN int	cterm_normal_bg_color INIT(= 0);
 EXTERN guicolor_T cterm_normal_fg_gui_color INIT(= INVALCOLOR);
 EXTERN guicolor_T cterm_normal_bg_gui_color INIT(= INVALCOLOR);
 #endif
+#ifdef FEAT_TERMRESPONSE
+EXTERN int	is_mac_terminal INIT(= FALSE);  /* recognized Terminal.app */
+#endif
 
 #ifdef FEAT_AUTOCMD
 EXTERN int	autocmd_busy INIT(= FALSE);	/* Is apply_autocmds() busy? */

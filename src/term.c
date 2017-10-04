@@ -4557,7 +4557,10 @@ check_termcode(
 			/* Mac Terminal.app sends 1;95;0 */
 			if (version == 95
 				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
+			{
 			    is_not_xterm = TRUE;
+			    is_mac_terminal = TRUE;
+			}
 
 			/* Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
 			 * xfce4-terminal sends 1;2802;0.
