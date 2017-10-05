@@ -4074,7 +4074,7 @@ wait4pid(pid_t child, waitstatus *status)
 mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 {
     int		i;
-    char_u	*p;
+    char_u	*p, *d;
     int		inquote;
 
     /*
@@ -4092,26 +4092,34 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 	    if (i == 1)
 		(*argv)[*argc] = (char *)p;
 	    ++*argc;
+	    d = p;
 	    while (*p != NUL && (inquote || (*p != ' ' && *p != TAB)))
 	    {
 		if (p[0] == '"')
+		    /* quotes surrounding an argument and are dropped */
 		    inquote = !inquote;
-		else if (p[0] == '\\' && p[1] != NUL)
+		else
 		{
-		    /* First pass: skip over "\ " and "\"".
-		     * Second pass: Remove the backslash. */
-		    if (i == 1)
-			mch_memmove(p, p + 1, STRLEN(p));
-		    else
+		    if (p[0] == '\\' && p[1] != NUL)
+		    {
+			/* First pass: skip over "\ " and "\"".
+			 * Second pass: Remove the backslash. */
 			++p;
+		    }
+		    if (i == 1)
+			*d++ = *p;
 		}
 		++p;
 	    }
 	    if (*p == NUL)
+	    {
+		if (i == 1)
+		    *d++ = NUL;
 		break;
+	    }
 	    if (i == 1)
-		*p++ = NUL;
-	    p = skipwhite(p);
+		*d++ = NUL;
+	    p = skipwhite(p + 1);
 	}
 	if (*argv == NULL)
 	{
