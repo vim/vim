@@ -120,17 +120,17 @@ bench_re_freeze.out: bench_re_freeze.vim
 newtests: $(NEW_TESTS)
 
 .vim.res:
-	@echo "$(VIMPROG)" > vimcmd
+	@echo $(VIMPROG) > vimcmd
 	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
 	@$(DEL) vimcmd
 
 test_gui.res: test_gui.vim
-	@echo "$(VIMPROG)" > vimcmd
+	@echo $(VIMPROG) > vimcmd
 	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $<
 	@$(DEL) vimcmd
 
 test_gui_init.res: test_gui_init.vim
-	@echo "$(VIMPROG)" > vimcmd
+	@echo $(VIMPROG) > vimcmd
 	$(VIMPROG) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@$(DEL) vimcmd
 
