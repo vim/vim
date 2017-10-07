@@ -1611,6 +1611,9 @@ static struct vimoption options[] =
     {"incsearch",   "is",   P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_is, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
+    {"inchlsearch", "ihls", P_BOOL|P_VI_DEF|P_VIM,
+			    (char_u *)&p_ihls, PV_NONE,
+			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"indentexpr", "inde",  P_STRING|P_ALLOCED|P_VI_DEF|P_VIM,
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 			    (char_u *)&p_inde, PV_INDE,

@@ -586,6 +586,7 @@ EXTERN int	p_imcmdline;	/* 'imcmdline' */
 EXTERN int	p_imdisable;	/* 'imdisable' */
 #endif
 EXTERN int	p_is;		/* 'incsearch' */
+EXTERN int	p_ihls;		/* 'inchlsearch' */
 EXTERN int	p_im;		/* 'insertmode' */
 EXTERN char_u	*p_isf;		/* 'isfname' */
 EXTERN char_u	*p_isi;		/* 'isident' */

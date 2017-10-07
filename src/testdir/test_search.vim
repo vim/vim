@@ -412,3 +412,36 @@ func Test_search_regexp()
   set undolevels&
   enew!
 endfunc
+
+func Test_search_cmdline_inchlsearch()
+  if !exists('+inchlsearch')
+    return
+  endif
+  set incsearch hlsearch inchlsearch
+  " need to disable char_avail,
+  " so that expansion of commandline works
+  call test_override("char_avail", 1)
+  new
+  call setline(1, ['aaa  1 the first', '  2 the second', '  3 the third'])
+
+  1
+  call feedkeys("/second\<cr>", 'tx')
+  call assert_equal('second', @/)
+  call assert_equal('  2 the second', getline('.'))
+
+  " Canceling search won't change @/
+  1
+  let @/ = 'last pattern'
+  call feedkeys("/third\<C-c>", 'tx')
+  call assert_equal('last pattern', @/)
+  call feedkeys("/third\<Esc>", 'tx')
+  call assert_equal('last pattern', @/)
+  call feedkeys("/3\<bs>\<bs>", 'tx')
+  call assert_equal('last pattern', @/)
+  call feedkeys("/third\<c-g>\<c-t>\<Esc>", 'tx')
+  call assert_equal('last pattern', @/)
+
+  " clean up
+  set noincsearch nohlsearch noinchlsearch
+  bw!
+endfunc
