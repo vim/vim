@@ -77,7 +77,7 @@
  */
 /* When compiled under MacOS X (including CARBON version)
  * we use the Unix File path style.  Also when UNIX is defined. */
-# define USE_UNIXFILENAME
+#define USE_UNIXFILENAME
 
 
 /*
@@ -123,38 +123,38 @@
  */
 
 #ifndef SYS_VIMRC_FILE
-#  define SYS_VIMRC_FILE "$VIM/vimrc"
+# define SYS_VIMRC_FILE "$VIM/vimrc"
 #endif
 #ifndef SYS_GVIMRC_FILE
-#  define SYS_GVIMRC_FILE "$VIM/gvimrc"
+# define SYS_GVIMRC_FILE "$VIM/gvimrc"
 #endif
 #ifndef SYS_MENU_FILE
-#  define SYS_MENU_FILE	"$VIMRUNTIME/menu.vim"
+# define SYS_MENU_FILE	"$VIMRUNTIME/menu.vim"
 #endif
 #ifndef SYS_OPTWIN_FILE
-#  define SYS_OPTWIN_FILE "$VIMRUNTIME/optwin.vim"
+# define SYS_OPTWIN_FILE "$VIMRUNTIME/optwin.vim"
 #endif
 #ifndef VIM_DEFAULTS_FILE
-#  define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
+# define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
 #endif
 #ifndef EVIM_FILE
-#  define EVIM_FILE	"$VIMRUNTIME/evim.vim"
+# define EVIM_FILE	"$VIMRUNTIME/evim.vim"
 #endif
 
 #ifdef FEAT_GUI
 # ifndef USR_GVIMRC_FILE
-#   define USR_GVIMRC_FILE "~/.gvimrc"
+#  define USR_GVIMRC_FILE "~/.gvimrc"
 # endif
 # ifndef GVIMRC_FILE
 #  define GVIMRC_FILE	"_gvimrc"
 # endif
 #endif
 #ifndef USR_VIMRC_FILE
-#  define USR_VIMRC_FILE	"~/.vimrc"
+# define USR_VIMRC_FILE	"~/.vimrc"
 #endif
 
 #ifndef USR_EXRC_FILE
-#  define USR_EXRC_FILE	"~/.exrc"
+# define USR_EXRC_FILE	"~/.exrc"
 #endif
 
 #ifndef VIMRC_FILE
@@ -166,7 +166,7 @@
 #endif
 
 #ifndef DFLT_HELPFILE
-#  define DFLT_HELPFILE	"$VIMRUNTIME/doc/help.txt"
+# define DFLT_HELPFILE	"$VIMRUNTIME/doc/help.txt"
 #endif
 
 #ifndef FILETYPE_FILE
@@ -189,12 +189,12 @@
 #endif
 
 #ifndef SYNTAX_FNAME
-#  define SYNTAX_FNAME	"$VIMRUNTIME/syntax/%s.vim"
+# define SYNTAX_FNAME	"$VIMRUNTIME/syntax/%s.vim"
 #endif
 
 #ifdef FEAT_VIMINFO
 # ifndef VIMINFO_FILE
-#   define VIMINFO_FILE	"~/.viminfo"
+#  define VIMINFO_FILE	"~/.viminfo"
 # endif
 #endif /* FEAT_VIMINFO */
 
@@ -213,7 +213,7 @@
 #define DFLT_ERRORFILE		"errors.err"
 
 #ifndef DFLT_RUNTIMEPATH
-#  define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
+# define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
 #endif
 
 /*
