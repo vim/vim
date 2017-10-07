@@ -2659,11 +2659,10 @@ msg_puts_printf(char_u *str, int maxlen)
 	if (!(silent_mode && p_verbose == 0))
 	{
 	    /* NL --> CR NL translation (for Unix, not for "--version") */
-	    /* NL --> CR translation (for Mac) */
 	    p = &buf[0];
 	    if (*s == '\n' && !info_message)
 		*p++ = '\r';
-#if defined(USE_CR) && !defined(MACOS_X)
+#if defined(USE_CR)
 	    else
 #endif
 		*p++ = *s;
