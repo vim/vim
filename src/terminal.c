@@ -40,9 +40,12 @@
  * TODO:
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
+ * - Can we get the default fg/bg color of the terminal and use it for
+ *   libvterm?  Should also fix ssh-in-a-win.
+ * - double click in Window toolbar starts Visual mode (but not always?).
  * - Shift-Tab does not work.
  * - after resizing windows overlap. (Boris Staletic, #2164)
- * - double click in Window toolbar starts Visual mode.
+ * - :wall gives an error message. (Marius Gedminas, #2190)
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
  * - cursor blinks in terminal on widows with a timer. (xtal8, #2142)
@@ -2239,7 +2242,7 @@ term_update_window(win_T *wp)
     screen = vterm_obtain_screen(vterm);
     state = vterm_obtain_state(vterm);
 
-    if (wp->w_redr_type >= NOT_VALID)
+    if (wp->w_redr_type >= SOME_VALID)
     {
 	term->tl_dirty_row_start = 0;
 	term->tl_dirty_row_end = MAX_ROW;
