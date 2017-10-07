@@ -94,15 +94,10 @@
 				       quite fast. Did I forgot to update the
 				       comment */
 
-
 #define USE_FNAME_CASE		/* make ":e os_Mac.c" open the file in its
 				   original case, as "os_mac.c" */
 #define BINARY_FILE_IO
 #define EOL_DEFAULT EOL_MAC
-#ifndef MACOS_X			/* I hope that switching these two lines */
-# define USE_CR			/* does what I want -- BNF */
-# define NO_CONSOLE		/* don't include console mode */
-#endif
 #define HAVE_AVAIL_MEM
 
 #ifndef HAVE_CONFIG_H
@@ -226,11 +221,6 @@
  */
 #define CMDBUFFSIZE 1024	/* size of the command processing buffer */
 
-#if !defined(MACOS_X)
-# define MAXPATHL	256		/* Limited by the Pascal Strings */
-# define BASENAMELEN	(32-5-1)	/* length of base of filename */
-#endif
-
 #ifndef DFLT_MAXMEM
 # define DFLT_MAXMEM	512	/* use up to  512 Kbyte for buffer */
 #endif
@@ -271,33 +261,31 @@
  * of ./configure for console MacOS X.
  */
 
-#ifdef MACOS_X
-# ifndef SIGPROTOARG
-#  define SIGPROTOARG	(int)
-# endif
-# ifndef SIGDEFARG
-#  define SIGDEFARG(s)	(s) int s UNUSED;
-# endif
-# ifndef SIGDUMMYARG
-#  define SIGDUMMYARG	0
-# endif
-# undef  HAVE_AVAIL_MEM
-# ifndef HAVE_CONFIG_H
-#  define RETSIGTYPE void
-#  define SIGRETURN  return
+#ifndef SIGPROTOARG
+# define SIGPROTOARG	(int)
+#endif
+#ifndef SIGDEFARG
+# define SIGDEFARG(s)	(s) int s UNUSED;
+#endif
+#ifndef SIGDUMMYARG
+# define SIGDUMMYARG	0
+#endif
+#undef  HAVE_AVAIL_MEM
+#ifndef HAVE_CONFIG_H
+# define RETSIGTYPE void
+# define SIGRETURN  return
 /*# define USE_SYSTEM */  /* Output ship do debugger :(, but ot compile */
-#  define HAVE_SYS_WAIT_H 1 /* Attempt */
-#  define HAVE_TERMIOS_H 1
-#  define SYS_SELECT_WITH_SYS_TIME 1
-#  define HAVE_SELECT 1
-#  define HAVE_SYS_SELECT_H 1
-#  define HAVE_PUTENV
-#  define HAVE_SETENV
-#  define HAVE_RENAME
-# endif
+# define HAVE_SYS_WAIT_H 1 /* Attempt */
+# define HAVE_TERMIOS_H 1
+# define SYS_SELECT_WITH_SYS_TIME 1
+# define HAVE_SELECT 1
+# define HAVE_SYS_SELECT_H 1
+# define HAVE_PUTENV
+# define HAVE_SETENV
+# define HAVE_RENAME
 #endif
 
-#if defined(MACOS_X) && !defined(HAVE_CONFIG_H)
+#if !defined(HAVE_CONFIG_H)
 # define HAVE_PUTENV
 #endif
 
