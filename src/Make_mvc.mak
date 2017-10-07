@@ -587,7 +587,7 @@ CPUARG = /arch:AVX2
 ! endif
 !endif
 
-# Pass CPUARG to GVimExt, to avoid using version-dependent defaults
+# Pass CPUARG to GvimExt, to avoid using version-dependent defaults
 MAKEFLAGS_GVIMEXT = $(MAKEFLAGS_GVIMEXT) CPUARG="$(CPUARG)"
 
 
@@ -789,9 +789,14 @@ SUBSYSTEM = console
 CUI_INCL = iscygpty.h
 CUI_OBJ = $(OUTDIR)\iscygpty.obj
 !endif
+SUBSYSTEM_TOOLS = console
 
 !if "$(SUBSYSTEM_VER)" != ""
 SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
+SUBSYSTEM_TOOLS = $(SUBSYSTEM_TOOLS),$(SUBSYSTEM_VER)
+# Pass SUBSYSTEM_VER to GvimExt and other tools
+MAKEFLAGS_GVIMEXT = $(MAKEFLAGS_GVIMEXT) SUBSYSTEM_VER=$(SUBSYSTEM_VER)
+MAKEFLAGS_TOOLS = $(MAKEFLAGS_TOOLS) SUBSYSTEM_VER=$(SUBSYSTEM_VER)
 !endif
 
 !if "$(GUI)" == "yes" && "$(DIRECTX)" == "yes"
@@ -1186,24 +1191,26 @@ $(OUTDIR):
 
 install.exe: dosinst.c
 	$(CC) /nologo -DNDEBUG -DWIN32 dosinst.c kernel32.lib shell32.lib \
-		user32.lib ole32.lib advapi32.lib uuid.lib
+		user32.lib ole32.lib advapi32.lib uuid.lib \
+		-link -subsystem:$(SUBSYSTEM_TOOLS)
 	- if exist install.exe del install.exe
 	ren dosinst.exe install.exe
 
 uninstal.exe: uninstal.c
-	$(CC) /nologo -DNDEBUG -DWIN32 uninstal.c shell32.lib advapi32.lib
+	$(CC) /nologo -DNDEBUG -DWIN32 uninstal.c shell32.lib advapi32.lib \
+		-link -subsystem:$(SUBSYSTEM_TOOLS)
 
 vimrun.exe: vimrun.c
-	$(CC) /nologo -DNDEBUG vimrun.c
+	$(CC) /nologo -DNDEBUG vimrun.c -link -subsystem:$(SUBSYSTEM_TOOLS)
 
 xxd/xxd.exe: xxd/xxd.c
 	cd xxd
-	$(MAKE) /NOLOGO -f Make_mvc.mak
+	$(MAKE) /NOLOGO -f Make_mvc.mak $(MAKEFLAGS_TOOLS)
 	cd ..
 
 tee/tee.exe: tee/tee.c
 	cd tee
-	$(MAKE) /NOLOGO -f Make_mvc.mak
+	$(MAKE) /NOLOGO -f Make_mvc.mak $(MAKEFLAGS_TOOLS)
 	cd ..
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h

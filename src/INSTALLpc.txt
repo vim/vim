@@ -43,6 +43,11 @@ The currently preferred method is using the free Visual C++ Toolkit 2008
 1. Microsoft Visual C++
 =======================
 
+We do not provide download links, since Microsoft keeps changing them.  You
+can search for "Visual C++ 2015 build tools", for example.  You will need to
+create a Microsoft account (it's free).
+
+
 Visual Studio
 -------------
 
@@ -50,9 +55,8 @@ Building with Visual Studio (VS 98, VS .NET, VS .NET 2003, VS 2005, VS 2008,
 VS2010, VS2012, VS2013 and VS2015) is straightforward. (These instructions
 should also work for VS 4 and VS 5.)
 
-Using VS C++ 2008 Express is recommended, the binaries built with that run on
-nearly all platforms.  Binaries from later versions may not run on Windows 95
-or XP.
+Using VS C++ 2008 Express is recommended if you need the binary to run on
+Windows 95 or 97, see |msvc-2008-express| below.
 
 To build Vim from the command line with MSVC, use Make_mvc.mak.
 Visual Studio installed a batch file called vcvars32.bat, which you must
@@ -117,8 +121,8 @@ To set the environment execute the msvc2010.bat script.  You can then build
 Vim with Make_mvc.mak.
 
 
-Targeting Windows XP with new MSVC      *new-msvc-windows-xp*
-----------------------------------
+Targeting Windows XP with MSVC 2012 and later      *new-msvc-windows-xp*
+---------------------------------------------
 
 Beginning with Visual C++ 2012, Microsoft changed the behavior of LINK.EXE
 so that it targets Windows 6.0 (Vista) by default.  In order to override
@@ -127,15 +131,27 @@ follows:
     LINK ... /subsystem:console,5.01
 
 Make_mvc.mak now supports a macro SUBSYSTEM_VER to pass the Windows version.
-Use lines like follows to target Windows XP (assuming using Visual C++ 2012
-under 64-bit Windows):
+Use lines like follows to target Windows XP x86 (assuming using Visual C++
+2012 under 64-bit Windows):
     set WinSdk71=%ProgramFiles(x86)%\Microsoft SDKs\Windows\v7.1A
-    set SDK_INCLUDE_DIR=%WinSdk71%\Include
     set INCLUDE=%WinSdk71%\Include;%INCLUDE%
     set LIB=%WinSdk71%\Lib;%LIB%
-    set PATH=%WinSdk71%\Bin;%PATH%
     set CL=/D_USING_V110_SDK71_
     nmake -f Make_mvc.mak ... WINVER=0x0501 SUBSYSTEM_VER=5.01
+
+To target Windows XP x64 instead of x86, you need to change the settings of
+LIB and SUBSYSTEM_VER:
+    ...
+    set LIB=%WinSdk71%\Lib\x64;%LIB%
+    ...
+    nmake -f Make_mvc.mak ... WINVER=0x0501 SUBSYSTEM_VER=5.02
+
+If you use Visual C++ 2015 (either Express or Community Edition), executing
+msvc2015.bat will set them automatically.  For x86 builds run this without
+options:
+  msvc2015
+For x64 builds run this with the "x86_amd64" option:
+  msvc2015 x86_amd64
 
 The following Visual C++ team blog can serve as a reference page:
     http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx
@@ -482,13 +498,23 @@ You need to set the following variables:
                        E.g. C:\Program Files (x86)\Racket
     DYNAMIC_MZSCHEME:  Whether dynamic linking is used. Usually, set to yes.
     MZSCHEME_VER:      Racket DLL version which is used for the file name.
-                       E.g. 3m_9z0ds0 for Racket 6.3.
+                       See below for a list of MZSCHEME_VER.
                        The DLL can be found under the lib directory. E.g.
                        C:\Program Files (x86)\Racket\lib\libracket3m_XXXXXX.dll
     MZSCHEME_COLLECTS: (Optional) Path of the collects directory used at
                        runtime. Default: $(MZSCHEME)\collects
                        User can override this with the PLTCOLLECTS environment
                        variable.
+
+List of MZSCHEME_VER (incomplete):
+
+    Racket ver. | MZSCHEME_VER
+    ==========================
+    6.3         | 3m_9z0ds0
+    6.6         | 3m_a0solc
+    6.8         | 3m_a1zjsw
+    6.10        | 3m_a36fs8
+
 
 E.g. When using MSVC (as one line):
 
