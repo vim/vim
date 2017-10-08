@@ -757,7 +757,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 mzscheme_enabled(int verbose)
 {
     return mzscheme_runtime_link_init(
-	    DYNAMIC_MZSCH_DLL, DYNAMIC_MZGC_DLL, verbose) == OK;
+	    (char *)p_mzschemedll, (char *)p_mzschemegcdll, verbose) == OK;
 }
 
     static void
