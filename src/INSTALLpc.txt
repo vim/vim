@@ -576,7 +576,7 @@ E.g. When using MSVC (as one line):
 
 Or when using MinGW (as one line):
 
-    mingw32-make -f Make_mingw.mak
+    mingw32-make -f Make_ming.mak
         LUA=C:\projects\lua53 DYNAMIC_LUA=yes LUA_VER=53
 
 
@@ -608,7 +608,7 @@ E.g. When using MSVC (as one line):
 
 Or when using MinGW (as one line):
 
-    mingw32-make -f Make_mingw.mak
+    mingw32-make -f Make_ming.mak
         PERL=C:\Perl DYNAMIC_PERL=yes PERL_VER=522
 
 
@@ -728,7 +728,7 @@ E.g. When using MSVC (as one line):
 
 Or when using MinGW (as one line):
 
-    mingw32-make -f Make_mingw.mak
+    mingw32-make -f Make_ming.mak
         TCL=C:\Tcl86 DYNAMIC_TCL=yes TCL_VER=86 TCL_VER_LONG=8.6
 
 
@@ -745,7 +745,7 @@ E.g. When using MSVC:
 
 Or when using MinGW (as one line):
 
-    mingw32-make -f Make_mingw.mak TERMINAL=yes
+    mingw32-make -f Make_ming.mak TERMINAL=yes
 
 
 14. Windows 3.1x
