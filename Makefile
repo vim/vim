@@ -128,20 +128,15 @@ MINOR = 0
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
 # Win32 console version build:
-# - Set environment for Visual C++ 2008, e.g.:
-#   > src/msvc2008.bat
-#   Or: 
-#   > C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat
-#   Or, when using the Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the
-#   paths when necessary).
-#   For Windows 98/ME the 2003 version is required, but then the executable
-#   won't work on Windows 7 and 64 bit systems.
-# - > cd src
+# - See src/INSTALLpc.txt for installing the compiler and SDK.
+# - Set environment for Visual C++ 2015:
+#   > cd src
+#   > msvc2015.bat
+# - Build the console binary:
 #   > nmake -f Make_mvc.mak
-# - Run the tests:
+# - Run the tests and check the ouput:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
-#   - check the output.
 # - Rename (using ../tools/rename.bat):
 #           vim.exe to vimw32.exe
 #           tee/tee.exe to teew32.exe
@@ -152,19 +147,18 @@ MINOR = 0
 # Win32 GUI version build:
 # - > cd src
 #   > nmake -f Make_mvc.mak GUI=yes
-# - Run the tests:
+# - Run the tests and check the output:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak testgvim
-#   - check the output.
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
 # - Move gvim.pdb to here.
 # - Copy "GvimExt/gvimext.dll" to here.
 # - Delete vimrun.exe, install.exe and uninstal.exe.
 # Win32 GUI version with OLE, PERL, Ruby, TCL, PYTHON and dynamic IME:
 # - Install the interfaces you want, see src/INSTALLpc.txt
+#   Adjust bigvim.bat to match the version of each interface you want.
 # - Build:
 #   > cd src
-#   Adjust bigvim.bat to match the version of each interface you want.
 #   > bigvim.bat
 # - Run the tests:
 #   > nmake -f Make_mvc.mak testclean
@@ -191,7 +185,7 @@ MINOR = 0
 #   gvimext64.dll can be obtained from http://code.google.com/p/vim-win3264/
 #	It is part of vim72.zip as vim72/gvimext.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
-#   version).
+#   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
 #   > makensis gvim.nsi  (takes a few minutes).
 #      ignore warning for libwinpthread-1.dll
