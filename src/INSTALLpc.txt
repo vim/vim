@@ -3,9 +3,9 @@ INSTALLpc.txt - Installation of Vim on PC
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
 
-More information can be found here: (Very stale now.)
-
-    http://mywebpage.netscape.com/sharppeople/vim/howto/
+You can find the lastest here: https://github.com/vim/vim-win32-installer
+This page also has links to install support for interfaces such as Perl,
+Python, Lua, etc.
 
 The file "feature.h" can be edited to match your preferences. You can skip
 this, then you will get the default behavior as is documented, which should
@@ -14,6 +14,10 @@ be fine for most people.
 This document assumes that you are building Vim for Win32 or later (Windows
 XP/2003/Vista/7/8/10).  There are also instructions for pre-XP systems, but
 they might no longer work.
+
+The recommended way is to build a 32 bit Vim, also on 64 bit systems.  You can
+build a 64 bit Vim if you like, the executable will be bigger and Vim wan't be
+any faster, but you can edit files larger than 2 Gbyte.
 
 
 Contents:
@@ -24,7 +28,7 @@ Contents:
 5. Cross compiling for Win32 from a Linux machine
 6. Building with Python support
 7. Building with Python3 support
-8. Building with MzScheme/Racket support
+8. Building with Racket or MzScheme support
 9. Building with Lua support
 10. Building with Perl support
 11. Building with Ruby support
@@ -36,15 +40,17 @@ Contents:
 16. Installing after building from sources
 
 
-The currently preferred method is using the free Visual C++ Toolkit 2008
-|msvc-2008-express|, the produced binary runs on most MS-Windows systems.
+The currently recommended way (that means it has been verified to work) is
+using the "Visual Studio Community 2015" installation.  This includes the SDK
+needed to target Windows XP.  But not older Windows versions (95, 97), see
+|msvc-2008-express| below for that
 
 
 1. Microsoft Visual C++
 =======================
 
 We do not provide download links, since Microsoft keeps changing them.  You
-can search for "Visual C++ 2015 build tools", for example.  You will need to
+can search for "Visual Studio Community 2015", for example.  You will need to
 create a Microsoft account (it's free).
 
 
@@ -204,10 +210,10 @@ Now you can build Vim with Make_mvc.mak.
 
 Getting the Windows Platform SDK	    *ms-platform-sdk*
 
-You will also need a copy of the Windows Platform SDK from
-    http://www.microsoft.com/msdownload/platformsdk/sdkupdate/
-Specifically, you need the Windows Core SDK subset of the Platform SDK,
-which contains the Windows headers and libraries.
+You will also need a copy of the Windows Platform SDK.  Specifically, you need
+the Windows Core SDK subset of the Platform SDK, which contains the Windows
+headers and libraries.  You need to search for it, Microsoft keeps changing
+the URL.
 
 
 Getting the .NET Framework 1.1 Runtime      *dotnet-1.1-redist*
@@ -448,51 +454,22 @@ E.g. When using MSVC (as one line):
         PYTHON3=C:\Python34 DYNAMIC_PYTHON3=yes PYTHON3_VER=34
 
 
-8. Building with MzScheme/Racket support
+8. Building with Racket or MzScheme support
 ========================================
 
-1) Building with MzScheme support
-
-(written by Sergey Khorev <sergey.khorev@gmail.com>)
-
-Vim with MzScheme (http://www.plt-scheme.org/software/mzscheme) support can
-be built with either MSVC, or MinGW, or Cygwin. Supported versions are 205 and
-above (including 299 and 30x series).
-
-The MSVC build is quite straightforward. Simply invoke (in one line)
-nmake -fMake_mvc.mak MZSCHEME=<Path-to-MzScheme>
-    [MZSCHEME_VER=<MzScheme-version>] [DYNAMIC_MZSCHEME=<yes or no>]
-where <MzScheme-version> is the last seven characters from MzScheme dll name
-(libmzschXXXXXXX.dll).
-If DYNAMIC_MZSCHEME=yes, resulting executable will not depend on MzScheme
-DLL's, but will load them in runtime on demand.
-
-Building dynamic MzScheme support on MinGW and Cygwin is similar. Take into
-account that <Path-to-MzScheme> should contain slashes rather than backslashes
-(e.g. d:/Develop/MzScheme)
-
-"Static" MzScheme support (Vim executable will depend on MzScheme DLLs
-explicitly) on MinGW and Cygwin requires additional step.
-
-libmzschXXXXXXX.dll and libmzgcXXXXXXX.dll should be copied from
-%WINDOWS%\System32 to other location (either build directory, some temporary
-dir or even MzScheme home).
-
-Pass that path as MZSCHEME_DLLS parameter for Make. E.g.,
-make -f Make_cyg.mak MZSCHEME=d:/Develop/MzScheme MZSCHEME_VER=209_000
-    MZSCHEME_DLLS=c:/Temp DYNAMIC_MZSCHEME=no
-
-After a successful build, these dlls can be freely removed, leaving them in
-%WINDOWS%\System32 only.
-
-
-2) Building with Racket support
+1) Building with Racket support (newest)
 
 MzScheme and PLT Scheme names have been rebranded as Racket.  Vim with Racket
-(https://racket-lang.org/) support can be built with either MSVC or MinGW (or
-Cygwin).
+support can be built with either MSVC or MinGW (or Cygwin).
+Get it from https://download.racket-lang.org/
 
-You need to set the following variables:
+Copy lib/libracket{version}.dll to your Windows system directory. The system
+directory depends on your Windows bitness and Vim bitness:
+  32-bit Vim on 32-bit Windows: C:\Windows\System32
+  32-bit Vim on 64-bit Windows: C:\Windows\SysWOW64
+  64-bit Vim on 64-bit Windows: C:\Windows\System32
+
+For building you need to set the following variables:
 
     MZSCHEME:          Where Racket is installed.
                        E.g. C:\Program Files (x86)\Racket
@@ -529,6 +506,42 @@ Or when using MinGW (as one line):
         MZSCHEME_VER=3m_9z0ds0
 
     Spaces should be escaped with '\'.
+
+
+2) Building with MzScheme support (older)
+
+(written by Sergey Khorev <sergey.khorev@gmail.com>)
+
+Vim with MzScheme (http://www.plt-scheme.org/software/mzscheme) support can
+be built with either MSVC, or MinGW, or Cygwin. Supported versions are 205 and
+above (including 299 and 30x series).
+
+The MSVC build is quite straightforward. Simply invoke (in one line)
+nmake -fMake_mvc.mak MZSCHEME=<Path-to-MzScheme>
+    [MZSCHEME_VER=<MzScheme-version>] [DYNAMIC_MZSCHEME=<yes or no>]
+where <MzScheme-version> is the last seven characters from MzScheme dll name
+(libmzschXXXXXXX.dll).
+If DYNAMIC_MZSCHEME=yes, resulting executable will not depend on MzScheme
+DLL's, but will load them in runtime on demand.
+
+Building dynamic MzScheme support on MinGW and Cygwin is similar. Take into
+account that <Path-to-MzScheme> should contain slashes rather than backslashes
+(e.g. d:/Develop/MzScheme)
+
+"Static" MzScheme support (Vim executable will depend on MzScheme DLLs
+explicitly) on MinGW and Cygwin requires additional step.
+
+libmzschXXXXXXX.dll and libmzgcXXXXXXX.dll should be copied from
+%WINDOWS%\System32 to other location (either build directory, some temporary
+dir or even MzScheme home).
+
+Pass that path as MZSCHEME_DLLS parameter for Make. E.g.,
+make -f Make_cyg.mak MZSCHEME=d:/Develop/MzScheme MZSCHEME_VER=209_000
+    MZSCHEME_DLLS=c:/Temp DYNAMIC_MZSCHEME=no
+
+After a successful build, these dlls can be freely removed, leaving them in
+%WINDOWS%\System32 only.
+
 
 
 9. Building with Lua support
@@ -576,7 +589,7 @@ E.g. When using MSVC (as one line):
 
 Or when using MinGW (as one line):
 
-    mingw32-make -f Make_mingw.mak
+    mingw32-make -f Make_ming.mak
         LUA=C:\projects\lua53 DYNAMIC_LUA=yes LUA_VER=53
 
 
@@ -608,7 +621,7 @@ E.g. When using MSVC (as one line):
 
 Or when using MinGW (as one line):
 
-    mingw32-make -f Make_mingw.mak
+    mingw32-make -f Make_ming.mak
         PERL=C:\Perl DYNAMIC_PERL=yes PERL_VER=522
 
 
@@ -617,7 +630,7 @@ Or when using MinGW (as one line):
 
 Vim with Ruby support can be built with either MSVC or MinGW (or Cygwin).
 Ruby doesn't provide the official Windows binaries.  The most widely used
-Windows binaries might be RubyInstaller.
+Windows binaries might be RubyInstaller.  Currently Ruby 2.4 is recommended.
 
     http://rubyinstaller.org/
 
@@ -628,11 +641,11 @@ you need some tricks described below.
 
 When building, you need to set the following variables at least:
 
-    RUBY:              Where ruby is installed. E.g. C:\Ruby22
+    RUBY:              Where ruby is installed. E.g. C:\Ruby24
     DYNAMIC_RUBY:      Whether dynamic linking is used. Usually, set to yes.
-    RUBY_VER:          Ruby version. E.g. 22 for Ruby 2.2.X.
+    RUBY_VER:          Ruby version. E.g. 24 for Ruby 2.4.X.
     RUBY_API_VER_LONG: Ruby API version in a long format.
-                       E.g. 2.2.0 for Ruby 2.2.X.
+                       E.g. 2.4.0 for Ruby 2.4.X.
 
 Ruby version vs. Ruby API version:
 
@@ -657,33 +670,34 @@ config.h and Ruby's DLL name. Here are the steps for working around them:
   1) Download and Install RubyInstaller.
     You can install RubyInstaller with the default options and directory.
     E.g.:
-      C:\Ruby22 (32-bit) or C:\Ruby22-x64 (64-bit)
+      C:\Ruby24 (32-bit) or C:\Ruby24-x64 (64-bit)
 
-    Ruby 2.2.X is used in this example.
+    Ruby 2.4.X is used in this example.
 
-  2) Download Ruby 2.2.X's source code and generate config.h:
+  2) Download Ruby 2.4.X's source code and generate config.h:
 
       cd C:\projects
-      git clone https://github.com/ruby/ruby.git -b ruby_2_2
+      git clone https://github.com/ruby/ruby.git -b ruby_2_4
       cd ruby
       win32\configure.bat
       nmake .config.h.time
 
-    Note that ruby_2_2 is the branch name for Ruby 2.2.X's source code.
+    Note that ruby_2_4 is the branch name for Ruby 2.4.X's source code.
     There is no need to build whole Ruby, just config.h is needed.
     If you use 32-bit MSVC10, the config.h is generated in the
-    .ext\include\i386-mswin32_100 directory.
+    .ext\include\i386-mswin32_140 directory.
 
   3) Install the generated config.h.
 
-      xcopy /s .ext\include C:\Ruby22\include\ruby-2.2.0
+      xcopy /s .ext\include E:\Ruby24\include\ruby-2.4.0
 
-    Note that 2.2.0 is Ruby API version of Ruby 2.2.X.
+    Note that 2.4.0 is Ruby API version of Ruby 2.4.X.
+    You may need to close the console and reopen it to pick up the new $PATH.
 
   4) Build Vim. Note that you need to adjust some variables (as one line):
 
       nmake -f Make_mvc.mak
-          RUBY=C:\Ruby22 DYNAMIC_RUBY=yes RUBY_VER=22 RUBY_API_VER_LONG=2.2.0
+          RUBY=C:\Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
           RUBY_MSVCRT_NAME=msvcrt
           WINVER=0x501
 
@@ -714,12 +728,18 @@ You can use binaries from ActiveState (ActiveTcl).
 
     http://www.activestate.com/activetcl
 
+For MSVC 2015 use version 8.6.6 or later.
 When building, you need to set the following variables:
 
     TCL:          Where tcl is installed. E.g. C:\Tcl86
     DYNAMIC_TCL:  Whether dynamic linking is used. Usually, set to yes.
     TCL_VER:      Tcl version in a short format. E.g. 86 for Tcl 8.6.X.
     TCL_VER_LONG: Tcl version in a long format. E.g. 8.6 for Tcl 8.6.X.
+
+Sometimes the Tcl dll name changes.  E.g. ActiveTcl 8.6.4 comes with tcl86.dll,
+but ActiveTcl 8.6.6 comes with tcl86t.dll.  You can set the dll name by setting
+the TCL_DLL variable:
+    TCL_DLL=tcl86t.dll
 
 E.g. When using MSVC (as one line):
 
@@ -728,7 +748,7 @@ E.g. When using MSVC (as one line):
 
 Or when using MinGW (as one line):
 
-    mingw32-make -f Make_mingw.mak
+    mingw32-make -f Make_ming.mak
         TCL=C:\Tcl86 DYNAMIC_TCL=yes TCL_VER=86 TCL_VER_LONG=8.6
 
 
@@ -745,7 +765,7 @@ E.g. When using MSVC:
 
 Or when using MinGW (as one line):
 
-    mingw32-make -f Make_mingw.mak TERMINAL=yes
+    mingw32-make -f Make_ming.mak TERMINAL=yes
 
 
 14. Windows 3.1x

@@ -406,6 +406,7 @@ SRC_DOS =	\
 		src/msvcsetup.bat \
 		src/msvc2008.bat \
 		src/msvc2010.bat \
+		src/msvc2015.bat \
 		src/dimm.idl \
 		src/dlldata.c \
 		src/dosinst.c \
