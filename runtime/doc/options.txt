@@ -5468,6 +5468,31 @@ A jump table for the options with a short description can be found at |Q_op|.
 	time in msec between two mouse clicks for the second click to be
 	recognized as a multi click.
 
+						*'mzschemedll'*
+'mzschemedll'		string	(default depends on the build)
+			global
+			{not in Vi}
+			{only available when compiled with the |+mzscheme/dyn|
+			feature}
+	Specifies the name of the MzScheme shared library. The default is
+	DYNAMIC_MZSCH_DLL which was specified at compile time.
+	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+						*'mzschemegcdll'*
+'mzschemegcdll'		string	(default depends on the build)
+			global
+			{not in Vi}
+			{only available when compiled with the |+mzscheme/dyn|
+			feature}
+	Specifies the name of the MzScheme GC shared library. The default is
+	DYNAMIC_MZGC_DLL which was specified at compile time.
+	The value can be equal to 'mzschemedll' if it includes the GC code.
+	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
 						    *'mzquantum'* *'mzq'*
 'mzquantum' 'mzq'	number	(default 100)
 			global
