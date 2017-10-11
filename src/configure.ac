@@ -1902,9 +1902,9 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	RUBY_PRO="if_ruby.pro"
 	AC_DEFINE(FEAT_RUBY)
 	if test "$enable_rubyinterp" = "dynamic"; then
-	  libruby=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG[['LIBRUBY_SO']]"`
+	  libruby_soname=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG[['LIBRUBY_ALIASES']].split[[0]]"`
 	  AC_DEFINE(DYNAMIC_RUBY)
-	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
+	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
 	  RUBY_LIBS=
 	fi
       else
