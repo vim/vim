@@ -38,6 +38,7 @@
 #endif
 
 #define DFLT_GREPFORMAT	"%f:%l:%m,%f:%l%m,%f  %l%m"
+#define DFLT_RNFM	"%*ld "
 
 /* default values for b_p_ff 'fileformat' and p_ffs 'fileformats' */
 #define FF_DOS		"dos"
@@ -467,6 +468,7 @@ EXTERN int	p_eb;		/* 'errorbells' */
 #ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_ef;		/* 'errorfile' */
 EXTERN char_u	*p_efm;		/* 'errorformat' */
+EXTERN char_u	*p_rnfm;	/* 'relativenumerformat' */
 EXTERN char_u	*p_gefm;	/* 'grepformat' */
 EXTERN char_u	*p_gp;		/* 'grepprg' */
 #endif
@@ -981,6 +983,7 @@ enum
     , BV_BKC
     , BV_BT
 #ifdef FEAT_QUICKFIX
+    , BV_RNFM
     , BV_EFM
     , BV_GP
     , BV_MP

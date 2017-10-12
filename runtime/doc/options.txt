@@ -5571,6 +5571,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
+                                                *'relativenumberformat'* *'rnfm'*
+'relativenumberformat' 'rnfm'	string	(default "%-*ld ")
+                        global
+                        {not in Vi}
+        Format the ":relativenumber" command output.
+        This is a scanf-like string.  For example, if you want to
+        keep the relative number aligned with the ruler numbers (right align) run:
+        "set relativenumberformat=%-*ld\ ".
+
 						*'omnifunc'* *'ofu'*
 'omnifunc' 'ofu'	string	(default: empty)
 			local to buffer

@@ -2247,6 +2247,7 @@ struct file_buffer
     char_u	*b_p_gp;	/* 'grepprg' local value */
     char_u	*b_p_mp;	/* 'makeprg' local value */
     char_u	*b_p_efm;	/* 'errorformat' local value */
+    char_u	*b_p_rnfm;	/* 'relativenumberformat' local value */
 #endif
     char_u	*b_p_ep;	/* 'equalprg' local value */
     char_u	*b_p_path;	/* 'path' local value */

@@ -61,6 +61,7 @@
 #define PV_BT		OPT_BUF(BV_BT)
 #ifdef FEAT_QUICKFIX
 # define PV_EFM		OPT_BOTH(OPT_BUF(BV_EFM))
+# define PV_RNFM		OPT_BOTH(OPT_BUF(BV_RNFM))
 # define PV_GP		OPT_BOTH(OPT_BUF(BV_GP))
 # define PV_MP		OPT_BOTH(OPT_BUF(BV_MP))
 #endif
@@ -2285,6 +2286,17 @@ static struct vimoption options[] =
     {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_RNU,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
+
+    {"relativenumberformat", "rnfm",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+#ifdef FEAT_QUICKFIX
+			    (char_u *)&p_rnfm, PV_RNFM,
+			    {(char_u *)DFLT_RNFM, (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCRIPTID_INIT},
+
     {"remap",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_remap, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCRIPTID_INIT},
@@ -5682,6 +5694,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_gp);
     check_string_option(&buf->b_p_mp);
     check_string_option(&buf->b_p_efm);
+    check_string_option(&buf->b_p_rnfm);
 #endif
     check_string_option(&buf->b_p_ep);
     check_string_option(&buf->b_p_path);
@@ -10417,6 +10430,9 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_EFM:
 	    clear_string_option(&buf->b_p_efm);
 	    break;
+	case PV_RNFM:
+	    clear_string_option(&buf->b_p_rnfm);
+	    break;
 	case PV_GP:
 	    clear_string_option(&buf->b_p_gp);
 	    break;
@@ -10474,6 +10490,7 @@ get_varp_scope(struct vimoption *p, int opt_flags)
 	    case PV_FP:   return (char_u *)&(curbuf->b_p_fp);
 #ifdef FEAT_QUICKFIX
 	    case PV_EFM:  return (char_u *)&(curbuf->b_p_efm);
+	    case PV_RNFM:  return (char_u *)&(curbuf->b_p_rnfm);
 	    case PV_GP:   return (char_u *)&(curbuf->b_p_gp);
 	    case PV_MP:   return (char_u *)&(curbuf->b_p_mp);
 #endif
@@ -10560,6 +10577,8 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_QUICKFIX
 	case PV_EFM:	return *curbuf->b_p_efm != NUL
 				    ? (char_u *)&(curbuf->b_p_efm) : p->var;
+	case PV_RNFM:	return *curbuf->b_p_rnfm != NUL
+				    ? (char_u *)&(curbuf->b_p_rnfm) : p->var;
 	case PV_GP:	return *curbuf->b_p_gp != NUL
 				    ? (char_u *)&(curbuf->b_p_gp) : p->var;
 	case PV_MP:	return *curbuf->b_p_mp != NUL
@@ -11163,6 +11182,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_gp = empty_option;
 	    buf->b_p_mp = empty_option;
 	    buf->b_p_efm = empty_option;
+	    buf->b_p_rnfm = empty_option;
 #endif
 	    buf->b_p_ep = empty_option;
 	    buf->b_p_kp = empty_option;

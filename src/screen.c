@@ -3856,7 +3856,7 @@ win_line(
 			    )
 		    {
 			long num;
-			char *fmt = "%*ld ";
+			char *fmt = p_rnfm;
 
 			if (wp->w_p_nu && !wp->w_p_rnu)
 			    /* 'number' + 'norelativenumber' */
