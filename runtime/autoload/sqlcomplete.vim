@@ -860,7 +860,7 @@ function! s:SQLCGetColumns(table_name, list_type)
 
          " Start characterwise visual mode
          " Advance right one character
-         " Search foward until one of the following:
+         " Search forward until one of the following:
          "     1.  Another select/update/delete statement
          "     2.  A ; at the end of a line (the delimiter)
          "     3.  The end of the file (incase no delimiter)
