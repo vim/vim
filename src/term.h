@@ -88,6 +88,7 @@ enum SpecialKey
     KS_CGP,	/* get window position */
     KS_CWS,	/* set window size in characters */
     KS_CRV,	/* request version string */
+    KS_RFG,	/* request foreground color */
     KS_RBG,	/* request background color */
     KS_CSI,	/* start insert mode (bar cursor) */
     KS_CEI,	/* end insert mode (block cursor) */
@@ -185,6 +186,7 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_CEI	(TERM_STR(KS_CEI))	/* end insert mode */
 #define T_CSR	(TERM_STR(KS_CSR))	/* start replace mode */
 #define T_CRV	(TERM_STR(KS_CRV))	/* request version string */
+#define T_RFG	(TERM_STR(KS_RFG))	/* request foreground RGB */
 #define T_RBG	(TERM_STR(KS_RBG))	/* request background RGB */
 #define T_OP	(TERM_STR(KS_OP))	/* original color pair */
 #define T_U7	(TERM_STR(KS_U7))	/* request cursor position */
