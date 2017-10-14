@@ -7261,6 +7261,7 @@ ex_quit(exarg_T *eap)
 	 */
 	if (only_one_window() && (ONE_WINDOW || eap->addr_count == 0))
 	    getout(0);
+	not_exiting();
 #ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
 #endif
@@ -7799,6 +7800,7 @@ ex_exit(exarg_T *eap)
     {
 	if (only_one_window())	    /* quit last window, exit Vim */
 	    getout(0);
+	not_exiting();
 # ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
 # endif
