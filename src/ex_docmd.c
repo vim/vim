@@ -7797,6 +7797,7 @@ ex_exit(exarg_T *eap)
     }
     else
     {
+	not_exiting();
 	if (only_one_window())	    /* quit last window, exit Vim */
 	    getout(0);
 # ifdef FEAT_GUI
