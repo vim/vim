@@ -47,6 +47,7 @@ FEATURES=HUGE
 # Set to yes to cross-compile from unix; no=native Windows (and Cygwin).
 CROSS=no
 # Set to path to iconv.h and libiconv.a to enable using 'iconv.dll'.
+# Use "yes" when the path does not need to be define.
 #ICONV="."
 ICONV=yes
 GETTEXT=yes
@@ -74,7 +75,11 @@ else
 CHANNEL=$(GUI)
 endif
 # Set to yes to enable terminal support.
+ifeq (HUGE, $(FEATURES))
+TERMINAL=yes
+else
 TERMINAL=no
+endif
 
 ifndef CTAGS
 # this assumes ctags is Exuberant ctags

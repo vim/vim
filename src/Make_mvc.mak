@@ -37,7 +37,7 @@
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
 #
-#       Terminal support: TERMINAL=yes (default is no)
+#       Terminal support: TERMINAL=yes (default is yes)
 #
 #	Lua interface:
 #	  LUA=[Path to Lua directory]
@@ -359,6 +359,14 @@ CSCOPE = yes
 CSCOPE_INCL  = if_cscope.h
 CSCOPE_OBJ   = $(OBJDIR)/if_cscope.obj
 CSCOPE_DEFS  = -DFEAT_CSCOPE
+!endif
+
+!ifndef TERMINAL
+!if "$(FEATURES)"=="HUGE"
+TERMINAL = yes
+!else
+TERMINAL = no
+!endif
 !endif
 
 !if "$(TERMINAL)" == "yes"
