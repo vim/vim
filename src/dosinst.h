@@ -26,19 +26,10 @@
 # include "vimio.h"
 # include <ctype.h>
 
-# ifndef __CYGWIN__
-#  include <direct.h>
-# endif
+# include <direct.h>
 
-# if defined(_WIN64) || defined(WIN32)
-#  define WIN3264
-#  include <windows.h>
-#  include <shlobj.h>
-# else
-#  include <dir.h>
-#  include <bios.h>
-#  include <dos.h>
-# endif
+# include <windows.h>
+# include <shlobj.h>
 #endif
 
 #ifdef UNIX_LINT
@@ -56,7 +47,7 @@ char *searchpath(char *name);
 #if defined(UNIX_LINT)
 # define vim_mkdir(x, y) mkdir((char *)(x), y)
 #else
-# if defined(WIN3264) && !defined(__BORLANDC__)
+# ifndef __BORLANDC__
 #  define vim_mkdir(x, y) _mkdir((char *)(x))
 # else
 #  define vim_mkdir(x, y) mkdir((char *)(x))
@@ -87,6 +78,9 @@ char *searchpath(char *name);
  */
 # ifndef KEY_WOW64_64KEY
 #  define KEY_WOW64_64KEY 0x0100
+# endif
+# ifndef KEY_WOW64_32KEY
+#  define KEY_WOW64_32KEY 0x0200
 # endif
 
 #define VIM_STARTMENU "Programs\\Vim " VIM_VERSION_SHORT
@@ -134,40 +128,32 @@ myexit(int n)
     exit(n);
 }
 
-#ifdef WIN3264
-/* This symbol is not defined in older versions of the SDK or Visual C++ */
 
-#ifndef VER_PLATFORM_WIN32_WINDOWS
-# define VER_PLATFORM_WIN32_WINDOWS 1
-#endif
-
-static DWORD g_PlatformId;
-
+typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
 /*
- * Set g_PlatformId to VER_PLATFORM_WIN32_NT (NT) or
- * VER_PLATFORM_WIN32_WINDOWS (Win95).
+ * Check if this is a 64-bit OS.
  */
-    static void
-PlatformId(void)
+    static BOOL
+is_64bit_os(void)
 {
-    static int done = FALSE;
+#ifdef _WIN64
+    return TRUE;
+#else
+    BOOL bIsWow64 = FALSE;
+    LPFN_ISWOW64PROCESS pIsWow64Process;
 
-    if (!done)
-    {
-	OSVERSIONINFO ovi;
-
-	ovi.dwOSVersionInfoSize = sizeof(ovi);
-	GetVersionEx(&ovi);
-
-	g_PlatformId = ovi.dwPlatformId;
-	done = TRUE;
-    }
+    pIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(
+	    GetModuleHandle("kernel32"), "IsWow64Process");
+    if (pIsWow64Process != NULL)
+	pIsWow64Process(GetCurrentProcess(), &bIsWow64);
+    return bIsWow64;
+#endif
 }
 
-# ifdef __BORLANDC__
+#ifdef __BORLANDC__
 /* Borland defines its own searchpath() in dir.h */
-#  include <dir.h>
-# else
+# include <dir.h>
+#else
     static char *
 searchpath(char *name)
 {
@@ -176,28 +162,17 @@ searchpath(char *name)
 
     /* There appears to be a bug in FindExecutableA() on Windows NT.
      * Use FindExecutableW() instead... */
-    PlatformId();
-    if (g_PlatformId == VER_PLATFORM_WIN32_NT)
+    MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)name, -1,
+	    (LPWSTR)widename, BUFSIZE);
+    if (FindExecutableW((LPCWSTR)widename, (LPCWSTR)"",
+		(LPWSTR)location) > (HINSTANCE)32)
     {
-	MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)name, -1,
-		(LPWSTR)widename, BUFSIZE);
-	if (FindExecutableW((LPCWSTR)widename, (LPCWSTR)"",
-		    (LPWSTR)location) > (HINSTANCE)32)
-	{
-	    WideCharToMultiByte(CP_ACP, 0, (LPWSTR)location, -1,
-		    (LPSTR)widename, 2 * BUFSIZE, NULL, NULL);
-	    return widename;
-	}
-    }
-    else
-    {
-	if (FindExecutableA((LPCTSTR)name, (LPCTSTR)"",
-		    (LPTSTR)location) > (HINSTANCE)32)
-	    return location;
+	WideCharToMultiByte(CP_ACP, 0, (LPWSTR)location, -1,
+		(LPSTR)widename, 2 * BUFSIZE, NULL, NULL);
+	return widename;
     }
     return NULL;
 }
-# endif
 #endif
 
 /*
@@ -217,7 +192,6 @@ searchpath_save(char *name)
     return s;
 }
 
-#ifdef WIN3264
 
 #ifndef CSIDL_COMMON_PROGRAMS
 # define CSIDL_COMMON_PROGRAMS 0x0017
@@ -355,7 +329,6 @@ retry:
 
     return OK;
 }
-#endif
 
 /*
  * List of targets.  The first one (index zero) is used for the default path
@@ -406,10 +379,8 @@ char *(icon_link_names[ICON_COUNT]) =
 	 "gVim Easy " VIM_VERSION_SHORT ".lnk",
 	 "gVim Read only " VIM_VERSION_SHORT ".lnk"};
 
-/* This is only used for dosinst.c when WIN3264 is defined and for uninstal.c
- * when not being able to directly access registry entries. */
-#if (defined(DOSINST) && defined(WIN3264)) \
-	|| (!defined(DOSINST) && !defined(WIN3264))
+/* This is only used for dosinst.c. */
+#if defined(DOSINST)
 /*
  * Run an external command and wait for it to finish.
  */
@@ -464,24 +435,9 @@ add_pathsep(char *name)
     int
 change_drive(int drive)
 {
-#ifdef WIN3264
     char temp[3] = "-:";
     temp[0] = (char)(drive + 'A' - 1);
     return !SetCurrentDirectory(temp);
-#else
-# ifndef UNIX_LINT
-    union REGS regs;
-
-    regs.h.ah = 0x0e;
-    regs.h.dl = drive - 1;
-    intdos(&regs, &regs);   /* set default drive */
-    regs.h.ah = 0x19;
-    intdos(&regs, &regs);   /* get default drive */
-    if (regs.h.al == drive - 1)
-	return 0;
-# endif
-    return -1;
-#endif
 }
 
 /*
@@ -507,7 +463,7 @@ mch_chdir(char *path)
 /*
  * Expand the executable name into a full path name.
  */
-#if defined(__BORLANDC__) && !defined(WIN3264)
+#if defined(__BORLANDC__)
 
 /* Only Borland C++ has this. */
 # define my_fullpath(b, n, l) _fullpath(b, n, l)
@@ -516,92 +472,11 @@ mch_chdir(char *path)
     static char *
 my_fullpath(char *buf, char *fname, int len)
 {
-# ifdef WIN3264
     /* Only GetModuleFileName() will get the long file name path.
      * GetFullPathName() may still use the short (FAT) name. */
     DWORD len_read = GetModuleFileName(NULL, buf, (size_t)len);
 
     return (len_read > 0 && len_read < (DWORD)len) ? buf : NULL;
-# else
-    char	olddir[BUFSIZE];
-    char	*p, *q;
-    int		c;
-    char	*retval = buf;
-
-    if (strchr(fname, ':') != NULL)	/* already expanded */
-    {
-	strncpy(buf, fname, len);
-    }
-    else
-    {
-	*buf = NUL;
-	/*
-	 * change to the directory for a moment,
-	 * and then do the getwd() (and get back to where we were).
-	 * This will get the correct path name with "../" things.
-	 */
-	p = strrchr(fname, '/');
-	q = strrchr(fname, '\\');
-	if (q != NULL && (p == NULL || q > p))
-	    p = q;
-	q = strrchr(fname, ':');
-	if (q != NULL && (p == NULL || q > p))
-	    p = q;
-	if (p != NULL)
-	{
-	    if (getcwd(olddir, BUFSIZE) == NULL)
-	    {
-		p = NULL;		/* can't get current dir: don't chdir */
-		retval = NULL;
-	    }
-	    else
-	    {
-		if (p == fname)		/* /fname		*/
-		    q = p + 1;		/* -> /			*/
-		else if (q + 1 == p)	/* ... c:\foo		*/
-		    q = p + 1;		/* -> c:\		*/
-		else			/* but c:\foo\bar	*/
-		    q = p;		/* -> c:\foo		*/
-
-		c = *q;			/* truncate at start of fname */
-		*q = NUL;
-		if (mch_chdir(fname))	/* change to the directory */
-		    retval = NULL;
-		else
-		{
-		    fname = q;
-		    if (c == '\\')	/* if we cut the name at a */
-			fname++;	/* '\', don't add it again */
-		}
-		*q = c;
-	    }
-	}
-	if (getcwd(buf, len) == NULL)
-	{
-	    retval = NULL;
-	    *buf = NUL;
-	}
-	/*
-	 * Concatenate the file name to the path.
-	 */
-	if (strlen(buf) + strlen(fname) >= len - 1)
-	{
-	    printf("ERROR: File name too long!\n");
-	    myexit(1);
-	}
-	add_pathsep(buf);
-	strcat(buf, fname);
-	if (p)
-	    mch_chdir(olddir);
-    }
-
-    /* Replace forward slashes with backslashes, required for the path to a
-     * command. */
-    while ((p = strchr(buf, '/')) != NULL)
-	*p = '\\';
-
-    return retval;
-# endif
 }
 #endif
 
