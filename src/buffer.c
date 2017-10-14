@@ -837,6 +837,8 @@ free_buffer(buf_T *buf)
     ++buf_free_count;
     free_buffer_stuff(buf, TRUE);
 #ifdef FEAT_EVAL
+    /* b:changedtick uses an item in buf_T, remove it now */
+    dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di);
     unref_var_dict(buf->b_vars);
 #endif
 #ifdef FEAT_LUA
