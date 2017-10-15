@@ -1123,7 +1123,7 @@ GetRegProp(
  * This procedure is invoked by the various X event loops throughout Vims when
  * a property changes on the communication window.  This procedure reads the
  * property and enqueues command requests and responses. If immediate is true,
- * it runs the event immediatly instead of enqueuing it. Immediate can cause
+ * it runs the event immediately instead of enqueuing it. Immediate can cause
  * unintended behavior and should only be used for code that blocks for a
  * response.
  */
