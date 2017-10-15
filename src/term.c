@@ -3529,7 +3529,7 @@ may_req_bg_color(void)
     {
 	int didit = FALSE;
 
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 	/* Only request foreground if t_RF is set. */
 	if (rfg_status == STATUS_GET && *T_RFG != NUL)
 	{
@@ -3538,7 +3538,7 @@ may_req_bg_color(void)
 	    rfg_status = STATUS_SENT;
 	    didit = TRUE;
 	}
-#endif
+# endif
 
 	/* Only request background if t_RB is set. */
 	if (rbg_status == STATUS_GET && *T_RBG != NUL)
@@ -5833,7 +5833,7 @@ check_termcode(
  * Get the text foreground color, if known.
  */
     void
-term_get_fg_color(uint8_t *r, uint8_t *g, uint8_t *b)
+term_get_fg_color(char_u *r, char_u *g, char_u *b)
 {
     if (rfg_status == STATUS_GOT)
     {
@@ -5847,7 +5847,7 @@ term_get_fg_color(uint8_t *r, uint8_t *g, uint8_t *b)
  * Get the text background color, if known.
  */
     void
-term_get_bg_color(uint8_t *r, uint8_t *g, uint8_t *b)
+term_get_bg_color(char_u *r, char_u *g, char_u *b)
 {
     if (rbg_status == STATUS_GOT)
     {
