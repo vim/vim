@@ -351,7 +351,7 @@ Section "Add an Edit-with-Vim context menu entry"
 	  # Can't copy gvimext.dll, create it under another name and rename it
 	  # on next reboot.
 	  GetTempFileName $3 $0\GvimExt64
-	  File /oname=$3 ${VIMSRC}\GvimExt64\gvimext.dll
+	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext64.dll
 	  Rename /REBOOTOK $3 $0\GvimExt64\gvimext.dll
 !ifdef HAVE_NLS
 	  GetTempFileName $3 $0\GvimExt64
