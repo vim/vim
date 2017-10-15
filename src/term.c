@@ -125,7 +125,7 @@ static int crv_status = STATUS_GET;
 /* Request Cursor position report: */
 static int u7_status = STATUS_GET;
 
-#ifdef FEAT_TERMINAL
+#  ifdef FEAT_TERMINAL
 /* Request foreground color report: */
 static int rfg_status = STATUS_GET;
 static int fg_r = 0;
@@ -134,7 +134,7 @@ static int fg_b = 0;
 static int bg_r = 255;
 static int bg_g = 255;
 static int bg_b = 255;
-#endif
+#  endif
 
 /* Request background color report: */
 static int rbg_status = STATUS_GET;
@@ -5828,7 +5828,7 @@ check_termcode(
     return 0;			    /* no match found */
 }
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if (defined(FEAT_TERMINAL) && defined(FEAT_TERMRESPONSE)) || defined(PROTO)
 /*
  * Get the text foreground color, if known.
  */
