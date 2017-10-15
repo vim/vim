@@ -1,7 +1,6 @@
 " Test for gn command
 
 func Test_gn_command()
-  set belloff=all
   noautocmd new
   " replace a single char by itsself quoted:
   call setline('.', 'abc x def x ghi x jkl')
@@ -121,7 +120,6 @@ func Test_gn_command()
   sil! %d_
 
   set wrapscan&vim
-  set belloff&vim
 endfu
 
 " vim: shiftwidth=2 sts=2 expandtab

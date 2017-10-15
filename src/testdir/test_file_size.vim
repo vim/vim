@@ -13,7 +13,7 @@ func Test_File_Size()
   endif
 
   new
-  set belloff=all fileformat=unix undolevels=-1
+  set fileformat=unix undolevels=-1
   for i in range(1, 2000000, 100)
       call append(i, range(i, i + 99))
   endfor
@@ -26,7 +26,7 @@ func Test_File_Size()
 
   enew!
   call delete('Xtest')
-  set belloff& fileformat& undolevels&
+  set fileformat& undolevels&
 endfunc
 
 " Test for writing and reading a file of over 100 Kbyte

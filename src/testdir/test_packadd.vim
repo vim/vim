@@ -1,6 +1,5 @@
 " Tests for 'packpath' and :packadd
 
-set belloff=all
 
 func SetUp()
   let s:topdir = expand('%:h') . '/Xdir'

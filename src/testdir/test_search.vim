@@ -1,6 +1,5 @@
 " Test for the search command
 
-set belloff=all
 func Test_search_cmdline()
   if !exists('+incsearch')
     return
