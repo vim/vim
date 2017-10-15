@@ -2299,7 +2299,6 @@ term_update_window(win_T *wp)
 		if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 		    vim_memset(&cell, 0, sizeof(cell));
 
-		/* TODO: composing chars */
 		c = cell.chars[0];
 		if (c == NUL)
 		{
@@ -2311,7 +2310,18 @@ term_update_window(win_T *wp)
 		{
 		    if (enc_utf8)
 		    {
-			if (c >= 0x80)
+			int i;
+
+			/* composing chars */
+			for (i = 0; i < Screen_mco
+				      && i + 1 < VTERM_MAX_CHARS_PER_CELL; ++i)
+			{
+			    ScreenLinesC[i][off] = cell.chars[i + 1];
+			    if (cell.chars[i + 1] == 0)
+				break;
+			}
+			if (c >= 0x80 || (Screen_mco > 0
+						 && ScreenLinesC[0][off] != 0))
 			{
 			    ScreenLines[off] = ' ';
 			    ScreenLinesUC[off] = c;
@@ -3157,7 +3167,7 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
     while (*msg != NUL)
     {
 	send_keys_to_term(term, PTR2CHAR(msg), FALSE);
-	msg += MB_PTR2LEN(msg);
+	msg += MB_CPTR2LEN(msg);
     }
 }
 
