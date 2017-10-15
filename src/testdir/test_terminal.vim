@@ -676,3 +676,12 @@ func Test_terminal_tmap()
   call TerminalTmap(1)
   call TerminalTmap(0)
 endfunc
+
+func Test_terminal_wall()
+  let buf = Run_shell_in_terminal({})
+  wall
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+  unlet g:job
+endfunc
