@@ -2624,8 +2624,10 @@ create_vterm(term_T *term, int rows, int cols)
 	    fg->blue = tmp;
 # endif
 	}
+# ifdef FEAT_TERMRESPONSE
 	else
 	    term_get_fg_color(&fg->red, &fg->green, &fg->blue);
+# endif
 
 	if (cterm_normal_bg_color > 0)
 	{
@@ -2636,8 +2638,10 @@ create_vterm(term_T *term, int rows, int cols)
 	    bg->blue = tmp;
 # endif
 	}
+# ifdef FEAT_TERMRESPONSE
 	else
 	    term_get_bg_color(&bg->red, &bg->green, &bg->blue);
+# endif
     }
 
     vterm_state_set_default_colors(vterm_obtain_state(vterm), fg, bg);
