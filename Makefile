@@ -131,6 +131,7 @@ MINOR = 0
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
+#   This creates the directory vim/vim80 and puts all files in there.
 # Win32 console version build:
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:
@@ -186,8 +187,9 @@ MINOR = 0
 #	gvimext64.dll in src/GvimExt
 #	VisVim.dll in src/VisVim
 #   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
-#   gvimext64.dll can be obtained from http://code.google.com/p/vim-win3264/
-#	It is part of vim72.zip as vim72/gvimext.dll.
+#   gvimext64.dll can be obtained from:
+#   https://github.com/vim/vim-win32-installer/releases
+#	It is part of gvim_8.0.*_x64.zip as vim/vim80/GvimExt/gvimext64.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
