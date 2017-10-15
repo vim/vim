@@ -137,7 +137,7 @@ syn match fsOptionsKeywords contained /\<\%(dir\|file\|\)_umask=/ nextgroup=fsOp
 syn match fsOptionsKeywords contained /\<\%(session\|part\)=/ nextgroup=fsOptionsNumber
 
 " Options: ffs
-syn keyword fsOptionsKeyWords contained softdep
+syn keyword fsOptionsKeyWords contained noperm softdep wxallowed
 
 " Options: hpfs
 syn match fsOptionsKeywords contained /\<case=/ nextgroup=fsOptionsHpfsCase
