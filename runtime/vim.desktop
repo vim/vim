@@ -73,6 +73,7 @@ Comment[zh_TW]=編輯文字檔
 TryExec=vim
 Exec=vim %F
 Terminal=true
+NoDisplay=true
 Type=Application
 Keywords=Text;editor;
 Icon=gvim
