@@ -120,13 +120,18 @@ MINOR = 0
 #
 # MS-Windows:
 # - Run make on Unix to update the ".mo" files.
-# - Get libintl-8.dll, libiconv-2.dll and libgcc_s_sjlj-1.dll. E.g. from
+# - Get 32 bit libintl-8.dll, libiconv-2.dll and libgcc_s_sjlj-1.dll. E.g. from
 #   https://mlocati.github.io/gettext-iconv-windows/ .
 #   Use the "shared-32.zip file and extract the archive to get the files.
-#   Put them in the top directory, "make dosrt" uses them.
+#   Put them in the gettext32 directory, "make dosrt" uses them.
+# - Get 64 bit libintl-8.dll and libiconv-2.dll. E.g. from
+#   https://mlocati.github.io/gettext-iconv-windows/ .
+#   Use the "shared-64.zip file and extract the archive to get the files.
+#   Put them in the gettext64 directory, "make dosrt" uses them.
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
+#   This creates the directory vim/vim80 and puts all files in there.
 # Win32 console version build:
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:
@@ -182,8 +187,9 @@ MINOR = 0
 #	gvimext64.dll in src/GvimExt
 #	VisVim.dll in src/VisVim
 #   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
-#   gvimext64.dll can be obtained from http://code.google.com/p/vim-win3264/
-#	It is part of vim72.zip as vim72/gvimext.dll.
+#   gvimext64.dll can be obtained from:
+#   https://github.com/vim/vim-win32-installer/releases
+#	It is part of gvim_8.0.*_x64.zip as vim/vim80/GvimExt/gvimext64.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
@@ -461,9 +467,13 @@ dosrt_files: dist prepare no_title.vim
 		cp $$i dist/vim/$(VIMRTDIR)/lang/$$n/LC_MESSAGES/vim.mo; \
 	      fi \
 	    done
-	cp libintl-8.dll dist/vim/$(VIMRTDIR)/
-	cp libiconv-2.dll dist/vim/$(VIMRTDIR)/
-	cp libgcc_s_sjlj-1.dll dist/vim/$(VIMRTDIR)/
+	mkdir dist/vim/$(VIMRTDIR)/gettext32
+	cp gettext32/libintl-8.dll dist/vim/$(VIMRTDIR)/gettext32/
+	cp gettext32/libiconv-2.dll dist/vim/$(VIMRTDIR)/gettext32/
+	cp gettext32/libgcc_s_sjlj-1.dll dist/vim/$(VIMRTDIR)/gettext32/
+	mkdir dist/vim/$(VIMRTDIR)/gettext64
+	cp gettext64/libintl-8.dll dist/vim/$(VIMRTDIR)/gettext64/
+	cp gettext64/libiconv-2.dll dist/vim/$(VIMRTDIR)/gettext64/
 
 
 # Used before uploading.  Don't delete the AAPDIR/sign files!
@@ -490,7 +500,10 @@ dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
 	cp vimrun.exe dist/vim/$(VIMRTDIR)/vimrun.exe
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
 	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
-	cp gvimext.dll dist/vim/$(VIMRTDIR)/gvimext.dll
+	mkdir dist/vim/$(VIMRTDIR)/GvimExt32
+	cp gvimext.dll dist/vim/$(VIMRTDIR)/GvimExt32/gvimext.dll
+	mkdir dist/vim/$(VIMRTDIR)/GvimExt64
+	cp gvimext64.dll dist/vim/$(VIMRTDIR)/GvimExt64/gvimext.dll
 	cd dist && zip -9 -rD -z gvim$(VERSION).zip vim <$(COMMENT_GVIM)
 	cp gvim.pdb dist/gvim$(VERSION).pdb
 

@@ -1912,10 +1912,15 @@ v:termstyleresp	The escape sequence returned by the terminal for the |t_RS|
 		termcap entry.  This is used to find out what the shape of the
 		cursor is.  This is used by |term_getcursor()|.
 
-						*v:termrgbresp*
-v:termrgbresp	The escape sequence returned by the terminal for the |t_RB|
+						*v:termrbgresp*
+v:termrbgresp	The escape sequence returned by the terminal for the |t_RB|
 		termcap entry.  This is used to find out what the terminal
 		background color is, see 'background'.
+
+						*v:termrfgresp*
+v:termrfgresp	The escape sequence returned by the terminal for the |t_RF|
+		termcap entry.  This is used to find out what the terminal
+		foreground color is.
 
 						*v:termu7resp*
 v:termu7resp	The escape sequence returned by the terminal for the |t_u7|

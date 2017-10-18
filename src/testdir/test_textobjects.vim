@@ -4,7 +4,6 @@ if !has('textobjects')
   finish
 endif
 
-set belloff=all
 func CpoM(line, useM, expected)
   new
 

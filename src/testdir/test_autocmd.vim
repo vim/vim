@@ -1,6 +1,5 @@
 " Tests for autocommands
 
-set belloff=all
 
 func! s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
@@ -769,10 +768,14 @@ func Test_BufLeave_Wipe()
   bwipe!
   call assert_equal(1, line('$'))
   call assert_equal('', bufname('%'))
-  call assert_equal(1, len(getbufinfo()))
+  let g:bufinfo = getbufinfo()
+  call assert_equal(1, len(g:bufinfo))
 
   call delete('Xxx1')
   call delete('Xxx2')
   %bwipe
   au! BufLeave
+
+  " check that bufinfo doesn't contain a pointer to freed memory
+  call test_garbagecollect_now()
 endfunc

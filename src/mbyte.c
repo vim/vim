@@ -1402,6 +1402,8 @@ static struct interval ambiguous[] =
     int
 utf_uint2cells(UINT32_T c)
 {
+    if (c >= 0x100 && utf_iscomposing((int)c))
+	return 0;
     return utf_char2cells((int)c);
 }
 #endif

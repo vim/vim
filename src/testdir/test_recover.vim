@@ -21,7 +21,7 @@ endfunc
 " We need about 10000 lines of 100 characters to get two levels of pointer
 " blocks.
 func Test_swap_file()
-  set fileformat=unix undolevels=-1 belloff=all
+  set fileformat=unix undolevels=-1
   edit! Xtest
   let text = "\tabcdefghijklmnoparstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnoparstuvwxyz0123456789"
   let i = 1

@@ -20,8 +20,15 @@
   !define VIMTOOLS ..\..
 !endif
 
+# Location of gettext.
+# It must contain two directories: gettext32 and gettext64.
+# See README.txt for detail.
+!ifndef GETTEXT
+  !define GETTEXT ${VIMRT}
+!endif
+
 # Comment the next line if you don't have UPX.
-# Get it at http://upx.sourceforge.net
+# Get it at https://upx.github.io/
 !define HAVE_UPX
 
 # comment the next line if you do not want to add Native Language Support
@@ -328,24 +335,67 @@ Section "Add an Edit-with-Vim context menu entry"
 	SetOutPath $0
 	ClearErrors
 	SetOverwrite try
+
 	${If} ${RunningX64}
+	  # Install 64-bit gvimext.dll into the GvimExt64 directory.
+	  SetOutPath $0\GvimExt64
+	  ClearErrors
 	  File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext64.dll
-	${Else}
-	  File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext.dll
+!ifdef HAVE_NLS
+	  File ${GETTEXT}\gettext64\libintl-8.dll
+	  File ${GETTEXT}\gettext64\libiconv-2.dll
+!endif
+
+	  IfErrors 0 GvimExt64Done
+
+	  # Can't copy gvimext.dll, create it under another name and rename it
+	  # on next reboot.
+	  GetTempFileName $3 $0\GvimExt64
+	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext64.dll
+	  Rename /REBOOTOK $3 $0\GvimExt64\gvimext.dll
+!ifdef HAVE_NLS
+	  GetTempFileName $3 $0\GvimExt64
+	  File /oname=$3 ${GETTEXT}\gettext64\libintl-8.dll
+	  Rename /REBOOTOK $3 $0\GvimExt64\libintl-8.dll
+	  GetTempFileName $3 $0\GvimExt64
+	  File /oname=$3 ${GETTEXT}\gettext64\libiconv-2.dll
+	  Rename /REBOOTOK $3 $0\GvimExt64\libiconv-2.dll
+!endif
 	${EndIf}
-	IfErrors 0 GvimExtDone
+
+	GvimExt64Done:
+
+	# Install 32-bit gvimext.dll into the GvimExt32 directory.
+	SetOutPath $0\GvimExt32
+	ClearErrors
+
+	File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext.dll
+!ifdef HAVE_NLS
+	File ${GETTEXT}\gettext32\libintl-8.dll
+	File ${GETTEXT}\gettext32\libiconv-2.dll
+	File ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+!endif
+
+	IfErrors 0 GvimExt32Done
 
 	# Can't copy gvimext.dll, create it under another name and rename it on
 	# next reboot.
-	GetTempFileName $3 $0
-	${If} ${RunningX64}
-	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext64.dll
-	${Else}
-	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext.dll
-	${EndIf}
-	Rename /REBOOTOK $3 $0\gvimext.dll
+	GetTempFileName $3 $0\GvimExt32
+	File /oname=$3 ${VIMSRC}\GvimExt\gvimext.dll
+	Rename /REBOOTOK $3 $0\GvimExt32\gvimext.dll
+!ifdef HAVE_NLS
+	GetTempFileName $3 $0\GvimExt32
+	File /oname=$3 ${GETTEXT}\gettext32\libintl-8.dll
+	Rename /REBOOTOK $3 $0\GvimExt32\libintl-8.dll
+	GetTempFileName $3 $0\GvimExt32
+	File /oname=$3 ${GETTEXT}\gettext32\libiconv-2.dll
+	Rename /REBOOTOK $3 $0\GvimExt32\libiconv-2.dll
+	GetTempFileName $3 $0\GvimExt32
+	File /oname=$3 ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+	Rename /REBOOTOK $3 $0\GvimExt32\libgcc_s_sjlj-1.dll
+!endif
 
-	GvimExtDone:
+	GvimExt32Done:
 	SetOverwrite lastused
 
 	# We don't have a separate entry for the "Open With..." menu, assume
@@ -394,10 +444,10 @@ SectionEnd
 		File ${VIMRT}\keymap\README.txt
 		File ${VIMRT}\keymap\*.vim
 		SetOutPath $0
-		File ${VIMRT}\libintl-8.dll
-		File ${VIMRT}\libiconv-2.dll
-		File /nonfatal ${VIMRT}\libwinpthread-1.dll
-		File /nonfatal ${VIMRT}\libgcc_s_sjlj-1.dll
+		File ${GETTEXT}\gettext32\libintl-8.dll
+		File ${GETTEXT}\gettext32\libiconv-2.dll
+		#File /nonfatal ${VIMRT}\libwinpthread-1.dll
+		File /nonfatal ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
 	SectionEnd
 !endif
 
@@ -437,6 +487,11 @@ Section Uninstall
 	   $\nIt contains the Vim executables and runtime files." IDNO NoRemoveExes
 
 	Delete /REBOOTOK $0\*.dll
+	Delete /REBOOTOK $0\GvimExt32\*.dll
+	${If} ${RunningX64}
+	  Delete /REBOOTOK $0\GvimExt64\*.dll
+	${EndIf}
+
 	ClearErrors
 	# Remove everything but *.dll files.  Avoids that
 	# a lot remains when gvimext.dll cannot be deleted.

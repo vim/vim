@@ -40,12 +40,9 @@
  * TODO:
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
- * - Can we get the default fg/bg color of the terminal and use it for
- *   libvterm?  Should also fix ssh-in-a-win.
  * - double click in Window toolbar starts Visual mode (but not always?).
  * - Shift-Tab does not work.
  * - after resizing windows overlap. (Boris Staletic, #2164)
- * - :wall gives an error message. (Marius Gedminas, #2190)
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
  * - cursor blinks in terminal on widows with a timer. (xtal8, #2142)
@@ -59,7 +56,7 @@
  * - GUI: when 'confirm' is set and trying to exit Vim, dialog offers to save
  *   changes to "!shell".
  *   (justrajdeep, 2017 Aug 22)
- * - Redrawing is slow with Athena and Motif.
+ * - Redrawing is slow with Athena and Motif.  Also other GUI? (Ramel Eshed)
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
  * - if the job in the terminal does not support the mouse, we can use the
@@ -2299,7 +2296,6 @@ term_update_window(win_T *wp)
 		if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 		    vim_memset(&cell, 0, sizeof(cell));
 
-		/* TODO: composing chars */
 		c = cell.chars[0];
 		if (c == NUL)
 		{
@@ -2311,7 +2307,18 @@ term_update_window(win_T *wp)
 		{
 		    if (enc_utf8)
 		    {
-			if (c >= 0x80)
+			int i;
+
+			/* composing chars */
+			for (i = 0; i < Screen_mco
+				      && i + 1 < VTERM_MAX_CHARS_PER_CELL; ++i)
+			{
+			    ScreenLinesC[i][off] = cell.chars[i + 1];
+			    if (cell.chars[i + 1] == 0)
+				break;
+			}
+			if (c >= 0x80 || (Screen_mco > 0
+						 && ScreenLinesC[0][off] != 0))
 			{
 			    ScreenLines[off] = ' ';
 			    ScreenLinesUC[off] = c;
@@ -2608,28 +2615,41 @@ create_vterm(term_T *term, int rows, int cols)
 	if (cterm_bg >= 0)
 	    cterm_color2rgb(cterm_bg, bg);
     }
-#if defined(WIN3264) && !defined(FEAT_GUI_W32)
     else
     {
+#if defined(WIN3264) && !defined(FEAT_GUI_W32)
 	int tmp;
+#endif
 
 	/* In an MS-Windows console we know the normal colors. */
 	if (cterm_normal_fg_color > 0)
 	{
 	    cterm_color2rgb(cterm_normal_fg_color - 1, fg);
+# if defined(WIN3264) && !defined(FEAT_GUI_W32)
 	    tmp = fg->red;
 	    fg->red = fg->blue;
 	    fg->blue = tmp;
+# endif
 	}
+# ifdef FEAT_TERMRESPONSE
+	else
+	    term_get_fg_color(&fg->red, &fg->green, &fg->blue);
+# endif
+
 	if (cterm_normal_bg_color > 0)
 	{
 	    cterm_color2rgb(cterm_normal_bg_color - 1, bg);
+# if defined(WIN3264) && !defined(FEAT_GUI_W32)
 	    tmp = bg->red;
 	    bg->red = bg->blue;
 	    bg->blue = tmp;
+# endif
 	}
+# ifdef FEAT_TERMRESPONSE
+	else
+	    term_get_bg_color(&bg->red, &bg->green, &bg->blue);
+# endif
     }
-#endif
 
     vterm_state_set_default_colors(vterm_obtain_state(vterm), fg, bg);
 
@@ -3144,7 +3164,7 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
     while (*msg != NUL)
     {
 	send_keys_to_term(term, PTR2CHAR(msg), FALSE);
-	msg += MB_PTR2LEN(msg);
+	msg += MB_CPTR2LEN(msg);
     }
 }
 
