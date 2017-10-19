@@ -1714,7 +1714,7 @@ script_do_profile(scriptitem_T *si)
 }
 
 /*
- * save time when starting to invoke another script or function.
+ * Save time when starting to invoke another script or function.
  */
     void
 script_prof_save(
@@ -1805,12 +1805,14 @@ script_dump_profile(FILE *fd)
 		fprintf(fd, "Cannot open file!\n");
 	    else
 	    {
-		for (i = 0; i < si->sn_prl_ga.ga_len; ++i)
+		/* Keep going till the end of file, so that trailing
+		 * continuation lines are listed. */
+		for (i = 0; ; ++i)
 		{
 		    if (vim_fgets(IObuff, IOSIZE, sfd))
 			break;
-		    pp = &PRL_ITEM(si, i);
-		    if (pp->snp_count > 0)
+		    if (i < si->sn_prl_ga.ga_len
+				     && (pp = &PRL_ITEM(si, i))->snp_count > 0)
 		    {
 			fprintf(fd, "%5d ", pp->snp_count);
 			if (profile_equal(&pp->sn_prl_total, &pp->sn_prl_self))
@@ -4234,27 +4236,6 @@ do_source(
     save_sourcing_lnum = sourcing_lnum;
     sourcing_lnum = 0;
 
-#ifdef FEAT_MBYTE
-    cookie.conv.vc_type = CONV_NONE;		/* no conversion */
-
-    /* Read the first line so we can check for a UTF-8 BOM. */
-    firstline = getsourceline(0, (void *)&cookie, 0);
-    if (firstline != NULL && STRLEN(firstline) >= 3 && firstline[0] == 0xef
-			      && firstline[1] == 0xbb && firstline[2] == 0xbf)
-    {
-	/* Found BOM; setup conversion, skip over BOM and recode the line. */
-	convert_setup(&cookie.conv, (char_u *)"utf-8", p_enc);
-	p = string_convert(&cookie.conv, firstline + 3, NULL);
-	if (p == NULL)
-	    p = vim_strsave(firstline + 3);
-	if (p != NULL)
-	{
-	    vim_free(firstline);
-	    firstline = p;
-	}
-    }
-#endif
-
 #ifdef STARTUPTIME
     if (time_fd != NULL)
 	time_push(&tv_rel, &tv_start);
@@ -4345,6 +4326,27 @@ do_source(
 	}
     }
 # endif
+#endif
+
+#ifdef FEAT_MBYTE
+    cookie.conv.vc_type = CONV_NONE;		/* no conversion */
+
+    /* Read the first line so we can check for a UTF-8 BOM. */
+    firstline = getsourceline(0, (void *)&cookie, 0);
+    if (firstline != NULL && STRLEN(firstline) >= 3 && firstline[0] == 0xef
+			      && firstline[1] == 0xbb && firstline[2] == 0xbf)
+    {
+	/* Found BOM; setup conversion, skip over BOM and recode the line. */
+	convert_setup(&cookie.conv, (char_u *)"utf-8", p_enc);
+	p = string_convert(&cookie.conv, firstline + 3, NULL);
+	if (p == NULL)
+	    p = vim_strsave(firstline + 3);
+	if (p != NULL)
+	{
+	    vim_free(firstline);
+	    firstline = p;
+	}
+    }
 #endif
 
     /*
@@ -4829,7 +4831,8 @@ script_line_start(void)
     {
 	/* Grow the array before starting the timer, so that the time spent
 	 * here isn't counted. */
-	(void)ga_grow(&si->sn_prl_ga, (int)(sourcing_lnum - si->sn_prl_ga.ga_len));
+	(void)ga_grow(&si->sn_prl_ga,
+				  (int)(sourcing_lnum - si->sn_prl_ga.ga_len));
 	si->sn_prl_idx = sourcing_lnum - 1;
 	while (si->sn_prl_ga.ga_len <= si->sn_prl_idx
 		&& si->sn_prl_ga.ga_len < si->sn_prl_ga.ga_maxlen)
@@ -4864,7 +4867,7 @@ script_line_exec(void)
 }
 
 /*
- * Called when done with a function line.
+ * Called when done with a script line.
  */
     void
 script_line_end(void)
