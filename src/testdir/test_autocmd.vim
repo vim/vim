@@ -779,3 +779,17 @@ func Test_BufLeave_Wipe()
   " check that bufinfo doesn't contain a pointer to freed memory
   call test_garbagecollect_now()
 endfunc
+
+func Test_QuitPre()
+  edit Xfoo
+  let winid = win_getid(winnr())
+  split Xbar
+  au! QuitPre * let g:afile = expand('<afile>')
+  " Close the other window, <afile> should be correct.
+  exe win_id2win(winid) . 'q'
+  call assert_equal('Xfoo', g:afile)
+ 
+  unlet g:afile
+  bwipe Xfoo
+  bwipe Xbar
+endfunc
