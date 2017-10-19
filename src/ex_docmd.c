@@ -7245,8 +7245,8 @@ ex_quit(exarg_T *eap)
      */
     if (check_more(FALSE, eap->forceit) == OK && only_one_window())
 	exiting = TRUE;
-    if ((!buf_hide(curbuf)
-		&& check_changed(curbuf, (p_awa ? CCGD_AW : 0)
+    if ((!buf_hide(wp->w_buffer)
+		&& check_changed(wp->w_buffer, (p_awa ? CCGD_AW : 0)
 				       | (eap->forceit ? CCGD_FORCEIT : 0)
 				       | CCGD_EXCMD))
 	    || check_more(TRUE, eap->forceit) == FAIL
