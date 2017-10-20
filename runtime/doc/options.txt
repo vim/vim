@@ -4449,6 +4449,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The highlighting can be set with the 'i' flag in 'highlight'.
 	When 'hlsearch' is on, all matched strings are highlighted too while typing
 	a search command. See also: 'hlsearch'.
+	If you don't want turn 'hlsearch' on, but want to highlight all matches
+	while searching, you can turn on and off 'hlsearch' with autocmd.
+	Example: >
+		augroup vimrc-incsearch-highlight
+		  autocmd!
+		  autocmd CmdlineEnter * :if expand('<afile>') == '/' | set hlsearch | endif
+		  autocmd CmdlineLeave * :if expand('<afile>') == '/' | set nohlsearch | endif
+		augroup END
+<
 	CTRL-L can be used to add one character from after the current match
 	to the command line.  If 'ignorecase' and 'smartcase' are set and the
 	command line has no uppercase characters, the added character is
