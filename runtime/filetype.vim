@@ -299,7 +299,7 @@ au BufNewFile,BufRead named.root		setf bindzone
 au BufNewFile,BufRead *.db			call s:BindzoneCheck('')
 
 func! s:BindzoneCheck(default)
-  if getline(1).getline(2).getline(3).getline(4) =~ '^; <<>> DiG [0-9.]\+ <<>>\|$ORIGIN\|$TTL\|IN\s\+SOA'
+  if getline(1).getline(2).getline(3).getline(4) =~ '^; <<>> DiG [0-9.]\+.* <<>>\|$ORIGIN\|$TTL\|IN\s\+SOA'
     setf bindzone
   elseif a:default != ''
     exe 'setf ' . a:default
