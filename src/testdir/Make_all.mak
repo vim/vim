@@ -14,14 +14,12 @@ SCRIPTS_FIRST = \
 # Tests that run on all systems.
 SCRIPTS_ALL = \
 	test3.out \
-	test8.out \
 	test14.out \
 	test15.out \
 	test19.out \
 	test20.out \
 	test28.out \
 	test29.out \
-	test34.out \
 	test36.out \
 	test37.out \
 	test38.out \
@@ -44,7 +42,6 @@ SCRIPTS_ALL = \
 	test95.out \
 	test99.out \
 	test108.out \
-	test_autoformat_join.out \
 	test_changelist.out \
 	test_close_count.out \
 	test_erasebackword.out \
@@ -73,8 +70,7 @@ SCRIPTS_MORE2 = \
 
 
 # Tests that run on most systems, but not MingW and Cygwin.
-SCRIPTS_MORE3 = \
-	test54.out
+SCRIPTS_MORE3 = 
 
 
 # Tests that run on most systems, but not on VMS
@@ -187,6 +183,7 @@ NEW_TESTS = test_arabic.res \
 	    test_textobjects.res \
 	    test_undo.res \
 	    test_usercommands.res \
+	    test_user_func.res \
 	    test_viminfo.res \
 	    test_vimscript.res \
 	    test_visual.res \
