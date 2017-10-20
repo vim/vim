@@ -4175,7 +4175,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'highlight' option.  This uses the "Search" highlight group by
 	default.  Note that only the matching text is highlighted, any offsets
 	are not applied.
-	See also: 'incsearch', 'inchlsearch' and |:match|.
+	See also: 'incsearch' and |:match|.
 	When you get bored looking at the highlighted matches, you can turn it
 	off with |:nohlsearch|.  This does not change the option value, as
 	soon as you use a search command, the highlighting comes back.
@@ -4386,17 +4386,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	default now.  This should work fine for most people, however if you
 	have any problem with it, try using on-the-spot style.
 
-			*'inchlsearch'* *'ihls'* *'noinchlsearch'* *'noihls'*
-'inchlsearch' 'ihls'	boolean	(default off)
-			global
-			{not in Vi}
-			{not available when compiled without the
-			|+extra_search| features}
-	While typing a search command, all matched strings are highlighted.
-	It works only when both 'incsearch' and 'hlsearch' are on. The type of
-	highlighting is same as highlight of 'hlsearch' and same as highlight
-	of 'incsearch' for the current match.
-
 						*'include'* *'inc'*
 'include' 'inc'		string	(default "^\s*#\s*include")
 			global or local to buffer |global-local|
@@ -4458,7 +4447,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	match may not be found.  This is to avoid that Vim hangs while you
 	are typing the pattern.
 	The highlighting can be set with the 'i' flag in 'highlight'.
-	See also: 'hlsearch' and 'inchlsearch'.
+	When 'hlsearch' is on, all matched strings are highlighted too while typing
+	a search command. See also: 'hlsearch'.
 	CTRL-L can be used to add one character from after the current match
 	to the command line.  If 'ignorecase' and 'smartcase' are set and the
 	command line has no uppercase characters, the added character is

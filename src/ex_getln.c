@@ -1694,7 +1694,7 @@ getcmdline(
 		    }
 		    else
 			t = match_start;
-		    if (!p_ihls)
+		    if (!p_hls)
 			search_flags += SEARCH_KEEP;
 		    ++emsg_off;
 		    i = searchit(curwin, curbuf, &t,
@@ -1923,7 +1923,7 @@ cmdline_changed:
 		/* Set the time limit to half a second. */
 		profile_setlimit(500L, &tm);
 #endif
-		if (!p_ihls)
+		if (!p_hls)
 		    search_flags += SEARCH_KEEP;
 		i = do_search(NULL, firstc, ccline.cmdbuff, count,
 			search_flags,

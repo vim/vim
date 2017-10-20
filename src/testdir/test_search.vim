@@ -414,11 +414,11 @@ func Test_search_regexp()
   enew!
 endfunc
 
-func Test_search_cmdline_inchlsearch()
-  if !exists('+inchlsearch')
+func Test_search_cmdline_incsearch_highlight()
+  if !exists('+incsearch')
     return
   endif
-  set incsearch hlsearch inchlsearch
+  set incsearch hlsearch
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -443,12 +443,12 @@ func Test_search_cmdline_inchlsearch()
   call assert_equal('last pattern', @/)
 
   " clean up
-  set noincsearch nohlsearch noinchlsearch
+  set noincsearch nohlsearch
   bw!
 endfunc
 
-func Test_search_cmdline_inchlsearch_highlight()
-  if !exists('+inchlsearch') || !has('terminal') || has('gui_running')
+func Test_search_cmdline_incsearch_highlight_attr()
+  if !exists('+incsearch') || !has('terminal') || has('gui_running')
     return
   endif
   let h = winheight(0)
@@ -464,7 +464,7 @@ func Test_search_cmdline_inchlsearch_highlight()
   call assert_equal(lines[0], term_getline(g:buf, 1))
 
   " Get attr of normal(a0), incsearch(a1), hlsearch(a2) highlight
-  call term_sendkeys(g:buf, ":set incsearch hlsearch inchlsearch\<cr>")
+  call term_sendkeys(g:buf, ":set incsearch hlsearch\<cr>")
   call term_sendkeys(g:buf, '/b')
   call term_wait(g:buf, 200)
   let screen_line1 = term_scrape(g:buf, 1)

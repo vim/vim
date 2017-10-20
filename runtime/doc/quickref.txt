@@ -750,7 +750,6 @@ Short explanation of each option:		*option-list*
 'imsearch'	  'ims'     use :lmap or IM when typing a search pattern
 'imstatusfunc'    'imsf'    function to obtain X input method status
 'imstyle'	  'imst'    specifies the input style of the input method
-'inchlsearch'	  'ihls'    highlight all matches while typing search pattern
 'include'	  'inc'     pattern to be used to find an include file
 'includeexpr'	  'inex'    expression used to process an include line
 'incsearch'	  'is'	    highlight match while typing search pattern

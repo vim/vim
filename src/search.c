@@ -366,7 +366,7 @@ free_search_patterns(void)
 #ifdef FEAT_SEARCH_EXTRA
 /*
  * Save and restore the search pattern for incremental highlight search
- * feature ('inchlsearch').
+ * feature.
  *
  * It's similar but differnt from save_search_patterns() and
  * restore_search_patterns(), because the search pattern must be restored when
