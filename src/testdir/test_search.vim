@@ -498,5 +498,16 @@ func Test_search_cmdline_incsearch_highlight_attr()
   let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
   call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
   call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
+  " Test nohlsearch. a2(hlsearch highlight) should become a0(normal highlight)
+  call term_sendkeys(g:buf, ":1\<cr>")
+  call term_sendkeys(g:buf, ":set nohlsearch\<cr>")
+  call term_sendkeys(g:buf, "/vim")
+  call term_wait(g:buf, 200)
+  let attr_line1 = [a0,a0,a0,a0,a1,a1,a1,a0,a0,a0,a0,a0,a0,a0]
+  let attr_line2 = [a0,a0,a0,a0,a0,a0,a0,a0]
+  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
   bwipe!
 endfunc
