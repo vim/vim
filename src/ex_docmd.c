@@ -7224,10 +7224,14 @@ ex_quit(exarg_T *eap)
 	wp = curwin;
 
 #ifdef FEAT_AUTOCMD
-    apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
-    /* Refuse to quit when locked or when the buffer in the last window is
-     * being closed (can only happen in autocommands). */
-    if (curbuf_locked() || !win_valid(wp)
+    /* Refuse to quit when locked. */
+    if (curbuf_locked())
+	return;
+    apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, wp->w_buffer);
+    /* Bail out when autocommands closed the window.
+     * Refuse to quit when the buffer in the last window is being closed (can
+     * only happen in autocommands). */
+    if (!win_valid(wp)
 	    || (wp->w_buffer->b_nwindows == 1 && wp->w_buffer->b_locked > 0))
 	return;
 #endif
@@ -7241,8 +7245,8 @@ ex_quit(exarg_T *eap)
      */
     if (check_more(FALSE, eap->forceit) == OK && only_one_window())
 	exiting = TRUE;
-    if ((!buf_hide(curbuf)
-		&& check_changed(curbuf, (p_awa ? CCGD_AW : 0)
+    if ((!buf_hide(wp->w_buffer)
+		&& check_changed(wp->w_buffer, (p_awa ? CCGD_AW : 0)
 				       | (eap->forceit ? CCGD_FORCEIT : 0)
 				       | CCGD_EXCMD))
 	    || check_more(TRUE, eap->forceit) == FAIL

@@ -779,3 +779,39 @@ func Test_BufLeave_Wipe()
   " check that bufinfo doesn't contain a pointer to freed memory
   call test_garbagecollect_now()
 endfunc
+
+func Test_QuitPre()
+  edit Xfoo
+  let winid = win_getid(winnr())
+  split Xbar
+  au! QuitPre * let g:afile = expand('<afile>')
+  " Close the other window, <afile> should be correct.
+  exe win_id2win(winid) . 'q'
+  call assert_equal('Xfoo', g:afile)
+ 
+  unlet g:afile
+  bwipe Xfoo
+  bwipe Xbar
+endfunc
+
+func Test_Cmdline()
+  au! CmdlineEnter : let g:entered = expand('<afile>')
+  au! CmdlineLeave : let g:left = expand('<afile>')
+  let g:entered = 0
+  let g:left = 0
+  call feedkeys(":echo 'hello'\<CR>", 'xt')
+  call assert_equal(':', g:entered)
+  call assert_equal(':', g:left)
+  au! CmdlineEnter
+  au! CmdlineLeave
+
+  au! CmdlineEnter / let g:entered = expand('<afile>')
+  au! CmdlineLeave / let g:left = expand('<afile>')
+  let g:entered = 0
+  let g:left = 0
+  call feedkeys("/hello<CR>", 'xt')
+  call assert_equal('/', g:entered)
+  call assert_equal('/', g:left)
+  au! CmdlineEnter
+  au! CmdlineLeave
+endfunc
