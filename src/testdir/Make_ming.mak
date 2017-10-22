@@ -4,8 +4,6 @@
 #
 # Author: Bill McCarthy
 #
-# Note that test54 has been removed until it is fixed.
-#
 # Requires a set of Unix tools: echo, diff, etc.
 
 ifneq (sh.exe, $(SHELL))
@@ -35,7 +33,6 @@ include Make_all.mak
 # test10	'errorformat' is different
 # test12	can't unlink a swap file
 # test25	uses symbolic link
-# test54	doesn't work yet
 # test97	\{ and \$ are not escaped characters
 
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4) $(SCRIPTS_WIN32)

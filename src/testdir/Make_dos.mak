@@ -17,7 +17,7 @@ default: nongui
 # test49	fails in various ways
 # test97	\{ and \$ are not escaped characters.
 
-SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE3) $(SCRIPTS_MORE4)
+SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4)
 
 TEST_OUTFILES = $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) $(SCRIPTS_GUI)
 DOSTMP = dostmp
