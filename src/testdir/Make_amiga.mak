@@ -19,7 +19,7 @@ include Make_all.mak
 # test85	no Lua interface
 # test86, 87	no Python interface
 
-SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE3) $(SCRIPTS_MORE4)
+SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE4)
 
 # Must run test1 first to create small.vim.
 $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(SCRIPTS_FIRST)

@@ -2088,9 +2088,9 @@ run_memfile_test: $(MEMFILE_TEST_TARGET)
 run_message_test: $(MESSAGE_TEST_TARGET)
 	$(VALGRIND) ./$(MESSAGE_TEST_TARGET) || exit 1; echo $* passed;
 
-# Run individual OLD style test, assuming that Vim was already compiled.
+# Run individual OLD style test.
+# These do not depend on the executable, compile it when needed.
 test1 \
-	test_autoformat_join \
 	test_changelist \
 	test_close_count \
 	test_erasebackword \
@@ -2100,20 +2100,19 @@ test1 \
 	test_listchars \
 	test_search_mbyte \
 	test_wordcount \
-	test3 test8 \
-	test11 test12 test14 test15 test17 test19 \
+	test3 test11 test12 test14 test15 test17 test19 \
 	test20 test25 test28 test29 \
-	test30 test32 test34 test36 test37 test38 test39 \
+	test30 test32 test36 test37 test38 test39 \
 	test40 test42 test44 test45 test48 test49 \
-	test50 test52 test54 test55 test59 \
+	test50 test52 test55 test59 \
 	test64 test66 test68 test69 \
 	test70 test72 test73 test77 test79 \
 	test83 test85 test86 test87 test88 \
-	test94 test95 test99 \
-	test108:
+	test94 test95 test99 test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
-# Run individual NEW style test, assuming that Vim was already compiled.
+# Run individual NEW style test.
+# These do not depend on the executable, compile it when needed.
 test_arglist \
 	test_arabic \
 	test_assert \
