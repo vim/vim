@@ -89,3 +89,41 @@ func Test_visual_mode_reset()
 
 endfunc
 
+" Test for visual block shift and tab characters.
+func Test_block_shift_tab()
+  enew!
+  call append(0, repeat(['one two three'], 5))
+  call cursor(1,1)
+  exe "normal i\<C-G>u"
+  exe "normal fe\<C-V>4jR\<Esc>ugvr1"
+  call assert_equal('on1 two three', getline(1))
+  call assert_equal('on1 two three', getline(2))
+  call assert_equal('on1 two three', getline(5))
+
+  enew!
+  call append(0, repeat(['abcdefghijklmnopqrstuvwxyz'], 5))
+  call cursor(1,1)
+  exe "normal \<C-V>4jI    \<Esc>j<<11|D"
+  exe "normal j7|a\<Tab>\<Tab>"
+  exe "normal j7|a\<Tab>\<Tab>   "
+  exe "normal j7|a\<Tab>       \<Tab>\<Esc>4k13|\<C-V>4j<"
+  call assert_equal('    abcdefghijklmnopqrstuvwxyz', getline(1))
+  call assert_equal('abcdefghij', getline(2))
+  call assert_equal("    abc\<Tab>    defghijklmnopqrstuvwxyz", getline(3))
+  call assert_equal("    abc\<Tab>    defghijklmnopqrstuvwxyz", getline(4))
+  call assert_equal("    abc\<Tab>    defghijklmnopqrstuvwxyz", getline(5))
+
+  %s/\s\+//g
+  call cursor(1,1)
+  exe "normal \<C-V>4jI    \<Esc>j<<"
+  exe "normal j7|a\<Tab>\<Tab>"
+  exe "normal j7|a\<Tab>\<Tab>\<Tab>\<Tab>\<Tab>"
+  exe "normal j7|a\<Tab>       \<Tab>\<Tab>\<Esc>4k13|\<C-V>4j3<"
+  call assert_equal('    abcdefghijklmnopqrstuvwxyz', getline(1))
+  call assert_equal('abcdefghij', getline(2))
+  call assert_equal("    abc\<Tab>    defghijklmnopqrstuvwxyz", getline(3))
+  call assert_equal("    abc\<Tab>\<Tab>defghijklmnopqrstuvwxyz", getline(4))
+  call assert_equal("    abc\<Tab>    defghijklmnopqrstuvwxyz", getline(5))
+
+  enew!
+endfunc
