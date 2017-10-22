@@ -3567,8 +3567,29 @@ on_select_tab(
 	gpointer	data UNUSED)
 {
     if (!ignore_tabline_evt)
-    {
 	send_tabline_event(idx + 1);
+}
+
+/*
+ * Handle reordering the tabs (using D&D).
+ */
+    static void
+on_tab_reordered(
+	GtkNotebook	*notebook UNUSED,
+# if GTK_CHECK_VERSION(3,0,0)
+	gpointer	*page UNUSED,
+# else
+	GtkNotebookPage *page UNUSED,
+# endif
+	gint		idx,
+	gpointer	data UNUSED)
+{
+    if (!ignore_tabline_evt)
+    {
+	if ((tabpage_index(curtab) - 1) < idx)
+	    tabpage_move(idx + 1);
+	else
+	    tabpage_move(idx);
     }
 }
 
@@ -3658,6 +3679,9 @@ gui_mch_update_tabline(void)
 		    page,
 		    event_box,
 		    nr++);
+	    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline),
+		    page,
+		    TRUE);
 	}
 
 	event_box = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
@@ -4093,14 +4117,19 @@ gui_mch_init(void)
 # endif
 	gtk_container_add(GTK_CONTAINER(event_box), label);
 	gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, event_box);
+	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline), page, TRUE);
     }
 
 # if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect(G_OBJECT(gui.tabline), "switch-page",
 		     G_CALLBACK(on_select_tab), NULL);
+    g_signal_connect(G_OBJECT(gui.tabline), "page-reordered",
+		     G_CALLBACK(on_tab_reordered), NULL);
 # else
     gtk_signal_connect(GTK_OBJECT(gui.tabline), "switch_page",
 		       GTK_SIGNAL_FUNC(on_select_tab), NULL);
+    gtk_signal_connect(GTK_OBJECT(gui.tabline), "page-reordered",
+		       GTK_SIGNAL_FUNC(on_tab_reordered), NULL);
 # endif
 
     /* Create a popup menu for the tab line and connect it. */
