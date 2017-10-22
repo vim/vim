@@ -1702,11 +1702,8 @@ getcmdline(
 		if (p_is && !cmd_silent && (firstc == '/' || firstc == '?'))
 		{
 		    pos_T  t;
-		    int    search_flags = SEARCH_KEEP + SEARCH_NOOF
-							     + SEARCH_PEEK;
+		    int    search_flags = SEARCH_KEEP + SEARCH_NOOF;
 
-		    if (char_avail())
-			continue;
 		    cursor_off();
 		    out_flush();
 		    if (c == Ctrl_G)
