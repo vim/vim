@@ -76,7 +76,7 @@ VIMPROG = <->vim.exe
 SCRIPT = test1.out test3.out \
        test14.out test15.out \
        test19.out test20.out \
-       test28.out test29.out test30.out test32.out \
+       test28.out test29.out test30.out \
        test36.out test37.out \
        test38.out test39.out test40.out test42.out \
        test44.out test45.out \
@@ -109,10 +109,6 @@ SCRIPT = test1.out test3.out \
 # test17: ?
 #
 # test30: bug, most probably - a problem around mac format
-#
-# test32: VMS is not case sensitive and all filenames are lowercase within Vim
-# (this should be changed in order to preserve the original filename) - should
-# be fixed. VMS allows just one dot in the filename
 #
 # test59: Failed/Hangs - VMS does not support spell files (file names
 # with too many dots).

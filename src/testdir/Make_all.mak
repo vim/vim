@@ -73,7 +73,6 @@ SCRIPTS_MORE2 = \
 SCRIPTS_MORE4 = \
 	test17.out \
 	test30.out \
-	test32.out \
 	test59.out \
 	test72.out \
 	test83.out
@@ -129,6 +128,7 @@ NEW_TESTS = test_arabic.res \
 	    test_hlsearch.res \
 	    test_increment.res \
 	    test_increment_dbcs.res \
+	    test_ins_complete.res \
 	    test_job_fails.res \
 	    test_json.res \
 	    test_langmap.res \
