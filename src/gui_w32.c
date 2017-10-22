@@ -7568,6 +7568,26 @@ nCopyAnsiToWideChar(
 
 #ifdef FEAT_TEAROFF
 /*
+ * Lookup menu handle from "menu_id".
+ */
+    static HMENU
+tearoff_lookup_menuhandle(
+    vimmenu_T *menu,
+    WORD menu_id)
+{
+    for ( ; menu != NULL; menu = menu->next)
+    {
+	if (menu->modes == 0)	/* this menu has just been deleted */
+	    continue;
+	if (menu_is_separator(menu->dname))
+	    continue;
+	if ((WORD)((long_u)(menu->submenu_id) | (DWORD)0x8000) == menu_id)
+	    return menu->submenu_id;
+    }
+    return NULL;
+}
+
+/*
  * The callback function for all the modeless dialogs that make up the
  * "tearoff menus" Very simple - forward button presses (to fool Vim into
  * thinking its menus have been clicked), and go away when closed.
@@ -7580,7 +7600,10 @@ tearoff_callback(
     LPARAM lParam)
 {
     if (message == WM_INITDIALOG)
+    {
+	SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
 	return (TRUE);
+    }
 
     /* May show the mouse pointer again. */
     HandleMouseHide(message, lParam);
@@ -7594,8 +7617,11 @@ tearoff_callback(
 
 	    if (GetCursorPos(&mp) && GetWindowRect(hwnd, &rect))
 	    {
+		vimmenu_T *menu;
+
+		menu = (vimmenu_T*)GetWindowLongPtr(hwnd, DWLP_USER);
 		(void)TrackPopupMenu(
-			 (HMENU)(long_u)(LOWORD(wParam) ^ 0x8000),
+			 tearoff_lookup_menuhandle(menu, LOWORD(wParam)),
 			 TPM_LEFTALIGN | TPM_LEFTBUTTON,
 			 (int)rect.right - 8,
 			 (int)mp.y,
@@ -7707,6 +7733,7 @@ gui_mch_tearoff(
     WORD	dlgwidth;
     WORD	menuID;
     vimmenu_T	*pmenu;
+    vimmenu_T	*top_menu;
     vimmenu_T	*the_menu = menu;
     HWND	hwnd;
     HDC		hdc;
@@ -7885,6 +7912,7 @@ gui_mch_tearoff(
 	menu = menu->children->next;
     else
 	menu = menu->children;
+    top_menu = menu;
     for ( ; menu != NULL; menu = menu->next)
     {
 	if (menu->modes == 0)	/* this menu has just been deleted */
@@ -7995,11 +8023,12 @@ gui_mch_tearoff(
 
 
     /* show modelessly */
-    the_menu->tearoff_handle = CreateDialogIndirect(
+    the_menu->tearoff_handle = CreateDialogIndirectParam(
 	    s_hinst,
 	    (LPDLGTEMPLATE)pdlgtemplate,
 	    s_hwnd,
-	    (DLGPROC)tearoff_callback);
+	    (DLGPROC)tearoff_callback,
+	    (LPARAM)top_menu);
 
     LocalFree(LocalHandle(pdlgtemplate));
     SelectFont(hdc, oldFont);
