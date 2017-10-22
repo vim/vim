@@ -24,7 +24,6 @@ include Make_all.mak
 SCRIPTS = $(SCRIPTS_ALL) \
 	  $(SCRIPTS_MORE1) \
 	  $(SCRIPTS_MORE2) \
-	  $(SCRIPTS_MORE3) \
 	  $(SCRIPTS_MORE4)
 
 SCRIPTS_BENCH = bench_re_freeze.out

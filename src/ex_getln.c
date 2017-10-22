@@ -159,6 +159,20 @@ trigger_cmd_autocmd(int typechar, int evt)
 #endif
 
 /*
+ * Abandon the command line.
+ */
+    static void
+abandon_cmdline(void)
+{
+    vim_free(ccline.cmdbuff);
+    ccline.cmdbuff = NULL;
+    if (msg_scrolled == 0)
+	compute_cmdrow();
+    MSG("");
+    redraw_cmdline = TRUE;
+}
+
+/*
  * getcmdline() - accept a command line starting with firstc.
  *
  * firstc == ':'	    get ":" command line.
@@ -1702,10 +1716,8 @@ getcmdline(
 		if (p_is && !cmd_silent && (firstc == '/' || firstc == '?'))
 		{
 		    pos_T  t;
-		    int    search_flags = SEARCH_NOOF + SEARCH_PEEK;
+		    int    search_flags = SEARCH_NOOF;
 
-		    if (char_avail())
-			continue;
 		    save_last_search_pattern();
 		    cursor_off();
 		    out_flush();
@@ -2094,15 +2106,8 @@ returncmd:
 	}
 #endif
 
-	if (gotesc)	    /* abandon command line */
-	{
-	    vim_free(ccline.cmdbuff);
-	    ccline.cmdbuff = NULL;
-	    if (msg_scrolled == 0)
-		compute_cmdrow();
-	    MSG("");
-	    redraw_cmdline = TRUE;
-	}
+	if (gotesc)
+	    abandon_cmdline();
     }
 
     /*
