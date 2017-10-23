@@ -84,7 +84,7 @@ SCRIPT = test1.out test3.out \
        test55.out \
        test64.out test68.out test69.out \
        test72.out \
-       test77a.out test79.out \
+       test77a.out \
        test88.out \
        test94.out \
        test95.out test99.out \
