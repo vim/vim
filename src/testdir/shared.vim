@@ -1,5 +1,10 @@
 " Functions shared by several tests.
 
+" Only load this script once.
+if exists('*WaitFor')
+  finish
+endif
+
 " Get the name of the Python executable.
 " Also keeps it in s:python.
 func PythonProg()
@@ -165,6 +170,15 @@ func s:feedkeys(timer)
   call feedkeys('x', 'nt')
 endfunc
 
+" Get $VIMPROG to run Vim executable.
+" The Makefile writes it as the first line in the "vimcmd" file.
+func GetVimProg()
+  if !filereadable('vimcmd')
+    return ''
+  endif
+  return readfile('vimcmd')[0]
+endfunc
+
 " Get the command to run Vim, with -u NONE and --not-a-term arguments.
 " If there is an argument use it instead of "NONE".
 " Returns an empty string on error.
@@ -177,7 +191,12 @@ func GetVimCommand(...)
   else
     let name = a:1
   endif
-  let cmd = readfile('vimcmd')[0]
+  " For Unix Makefile writes the command to use in the second line of the
+  " "vimcmd" file, including environment options.
+  " Other Makefiles just write the executable in the first line, so fall back
+  " to that if there is no second line.
+  let lines = readfile('vimcmd')
+  let cmd = get(lines, 1, lines[0])
   let cmd = substitute(cmd, '-u \f\+', '-u ' . name, '')
   if cmd !~ '-u '. name
     let cmd = cmd . ' -u ' . name

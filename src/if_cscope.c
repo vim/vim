@@ -217,7 +217,6 @@ do_cscope_general(
 	return;
     }
 
-#ifdef FEAT_WINDOWS
     if (make_split)
     {
 	if (!cmdp->cansplit)
@@ -229,14 +228,11 @@ do_cscope_general(
 	postponed_split_flags = cmdmod.split;
 	postponed_split_tab = cmdmod.tab;
     }
-#endif
 
     cmdp->func(eap);
 
-#ifdef FEAT_WINDOWS
     postponed_split_flags = 0;
     postponed_split_tab = 0;
-#endif
 }
 
 /*
@@ -326,7 +322,7 @@ ex_cstag(exarg_T *eap)
     if (!ret)
     {
 	(void)EMSG(_("E257: cstag: tag not found"));
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	g_do_tagpreview = 0;
 #endif
     }
@@ -1244,7 +1240,6 @@ cs_find_common(
 	    if (qf_init(wp, tmp, (char_u *)"%f%*\\t%l%*\\t%m",
 					  *qfpos == '-', cmdline, NULL) > 0)
 	    {
-# ifdef FEAT_WINDOWS
 		if (postponed_split != 0)
 		{
 		    (void)win_split(postponed_split > 0 ? postponed_split : 0,
@@ -1252,7 +1247,6 @@ cs_find_common(
 		    RESET_BINDING(curwin);
 		    postponed_split = 0;
 		}
-# endif
 
 # ifdef FEAT_AUTOCMD
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, (char_u *)"cscope",
@@ -2001,7 +1995,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
     char	*cstag_msg = _("Cscope tag: %s");
     char	*csfmt_str = "%4d %6s  ";
 
-    assert (num_matches > 0);
+    assert(num_matches > 0);
 
     if ((tbuf = (char *)alloc((unsigned)strlen(matches[0]) + 1)) == NULL)
 	return;

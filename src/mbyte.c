@@ -1402,6 +1402,8 @@ static struct interval ambiguous[] =
     int
 utf_uint2cells(UINT32_T c)
 {
+    if (c >= 0x100 && utf_iscomposing((int)c))
+	return 0;
     return utf_char2cells((int)c);
 }
 #endif
@@ -4385,45 +4387,31 @@ enc_alias_search(char_u *name)
 
 #if defined(FEAT_MBYTE) || defined(PROTO)
 
-#ifdef HAVE_LANGINFO_H
-# include <langinfo.h>
-#endif
+# ifdef HAVE_LANGINFO_H
+#  include <langinfo.h>
+# endif
 
+# ifndef FEAT_GUI_W32
 /*
- * Get the canonicalized encoding of the current locale.
+ * Get the canonicalized encoding from the specified locale string "locale"
+ * or from the environment variables LC_ALL, LC_CTYPE and LANG.
  * Returns an allocated string when successful, NULL when not.
  */
     char_u *
-enc_locale(void)
+enc_locale_env(char *locale)
 {
-#ifndef WIN3264
-    char	*s;
+    char	*s = locale;
     char	*p;
     int		i;
-#endif
     char	buf[50];
-#ifdef WIN3264
-    long	acp = GetACP();
-
-    if (acp == 1200)
-	STRCPY(buf, "ucs-2le");
-    else if (acp == 1252)	    /* cp1252 is used as latin1 */
-	STRCPY(buf, "latin1");
-    else
-	sprintf(buf, "cp%ld", acp);
-#else
-# ifdef HAVE_NL_LANGINFO_CODESET
-    if ((s = nl_langinfo(CODESET)) == NULL || *s == NUL)
-# endif
-#  if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
-	if ((s = setlocale(LC_CTYPE, NULL)) == NULL || *s == NUL)
-#  endif
-	    if ((s = getenv("LC_ALL")) == NULL || *s == NUL)
-		if ((s = getenv("LC_CTYPE")) == NULL || *s == NUL)
-		    s = getenv("LANG");
 
     if (s == NULL || *s == NUL)
-	return FAIL;
+	if ((s = getenv("LC_ALL")) == NULL || *s == NUL)
+	    if ((s = getenv("LC_CTYPE")) == NULL || *s == NUL)
+		s = getenv("LANG");
+
+    if (s == NULL || *s == NUL)
+	return NULL;
 
     /* The most generic locale format is:
      * language[_territory][.codeset][@modifier][+special][,[sponsor][_revision]]
@@ -4458,12 +4446,46 @@ enc_locale(void)
 	    break;
     }
     buf[i] = NUL;
-#endif
 
     return enc_canonize((char_u *)buf);
 }
+# endif
 
-#if defined(WIN3264) || defined(PROTO) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+/*
+ * Get the canonicalized encoding of the current locale.
+ * Returns an allocated string when successful, NULL when not.
+ */
+    char_u *
+enc_locale(void)
+{
+# ifdef WIN3264
+    char	buf[50];
+    long	acp = GetACP();
+
+    if (acp == 1200)
+	STRCPY(buf, "ucs-2le");
+    else if (acp == 1252)	    /* cp1252 is used as latin1 */
+	STRCPY(buf, "latin1");
+    else
+	sprintf(buf, "cp%ld", acp);
+
+    return enc_canonize((char_u *)buf);
+# else
+    char	*s;
+
+#  ifdef HAVE_NL_LANGINFO_CODESET
+    if ((s = nl_langinfo(CODESET)) == NULL || *s == NUL)
+#  endif
+#  if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+	if ((s = setlocale(LC_CTYPE, NULL)) == NULL || *s == NUL)
+#  endif
+	    s = NULL;
+
+    return enc_locale_env(s);
+# endif
+}
+
+# if defined(WIN3264) || defined(PROTO) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
 /*
  * Convert an encoding name to an MS-Windows codepage.
  * Returns zero if no codepage can be figured out.
@@ -4490,7 +4512,7 @@ encname2codepage(char_u *name)
 	return cp;
     return 0;
 }
-#endif
+# endif
 
 # if defined(USE_ICONV) || defined(PROTO)
 
@@ -4871,8 +4893,7 @@ im_preedit_window_set_position(void)
     if (preedit_window == NULL)
 	return;
 
-    sw = gdk_screen_get_width(gtk_widget_get_screen(preedit_window));
-    sh = gdk_screen_get_height(gtk_widget_get_screen(preedit_window));
+    gui_gtk_get_screen_size_of_win(preedit_window, &sw, &sh);
 #if GTK_CHECK_VERSION(3,0,0)
     gdk_window_get_origin(gtk_widget_get_window(gui.drawarea), &x, &y);
 #else
@@ -4892,19 +4913,92 @@ im_preedit_window_set_position(void)
 im_preedit_window_open()
 {
     char *preedit_string;
+#if !GTK_CHECK_VERSION(3,16,0)
     char buf[8];
+#endif
     PangoAttrList *attr_list;
     PangoLayout *layout;
+#if GTK_CHECK_VERSION(3,0,0)
+# if !GTK_CHECK_VERSION(3,16,0)
+    GdkRGBA color;
+# endif
+#else
     GdkColor color;
+#endif
     gint w, h;
 
     if (preedit_window == NULL)
     {
 	preedit_window = gtk_window_new(GTK_WINDOW_POPUP);
+	gtk_window_set_transient_for(GTK_WINDOW(preedit_window),
+						     GTK_WINDOW(gui.mainwin));
 	preedit_label = gtk_label_new("");
+	gtk_widget_set_name(preedit_label, "vim-gui-preedit-area");
 	gtk_container_add(GTK_CONTAINER(preedit_window), preedit_label);
     }
 
+#if GTK_CHECK_VERSION(3,16,0)
+    {
+	GtkStyleContext * const context
+				  = gtk_widget_get_style_context(gui.drawarea);
+	GtkCssProvider * const provider = gtk_css_provider_new();
+	gchar		   *css = NULL;
+	const char * const fontname
+			   = pango_font_description_get_family(gui.norm_font);
+	gint	fontsize
+		= pango_font_description_get_size(gui.norm_font) / PANGO_SCALE;
+	gchar	*fontsize_propval = NULL;
+
+	if (!pango_font_description_get_size_is_absolute(gui.norm_font))
+	{
+	    /* fontsize was given in points.  Convert it into that in pixels
+	     * to use with CSS. */
+	    GdkScreen * const screen
+		  = gdk_window_get_screen(gtk_widget_get_window(gui.mainwin));
+	    const gdouble dpi = gdk_screen_get_resolution(screen);
+	    fontsize = dpi * fontsize / 72;
+	}
+	if (fontsize > 0)
+	    fontsize_propval = g_strdup_printf("%dpx", fontsize);
+	else
+	    fontsize_propval = g_strdup_printf("inherit");
+
+	css = g_strdup_printf(
+		"widget#vim-gui-preedit-area {\n"
+		"  font-family: %s,monospace;\n"
+		"  font-size: %s;\n"
+		"  color: #%.2lx%.2lx%.2lx;\n"
+		"  background-color: #%.2lx%.2lx%.2lx;\n"
+		"}\n",
+		fontname != NULL ? fontname : "inherit",
+		fontsize_propval,
+		(gui.norm_pixel >> 16) & 0xff,
+		(gui.norm_pixel >> 8) & 0xff,
+		gui.norm_pixel & 0xff,
+		(gui.back_pixel >> 16) & 0xff,
+		(gui.back_pixel >> 8) & 0xff,
+		gui.back_pixel & 0xff);
+
+	gtk_css_provider_load_from_data(provider, css, -1, NULL);
+	gtk_style_context_add_provider(context,
+				     GTK_STYLE_PROVIDER(provider), G_MAXUINT);
+
+	g_free(css);
+	g_free(fontsize_propval);
+	g_object_unref(provider);
+    }
+#elif GTK_CHECK_VERSION(3,0,0)
+    gtk_widget_override_font(preedit_label, gui.norm_font);
+
+    vim_snprintf(buf, sizeof(buf), "#%06X", gui.norm_pixel);
+    gdk_rgba_parse(&color, buf);
+    gtk_widget_override_color(preedit_label, GTK_STATE_FLAG_NORMAL, &color);
+
+    vim_snprintf(buf, sizeof(buf), "#%06X", gui.back_pixel);
+    gdk_rgba_parse(&color, buf);
+    gtk_widget_override_background_color(preedit_label, GTK_STATE_FLAG_NORMAL,
+								      &color);
+#else
     gtk_widget_modify_font(preedit_label, gui.norm_font);
 
     vim_snprintf(buf, sizeof(buf), "#%06X", gui.norm_pixel);
@@ -4914,6 +5008,7 @@ im_preedit_window_open()
     vim_snprintf(buf, sizeof(buf), "#%06X", gui.back_pixel);
     gdk_color_parse(buf, &color);
     gtk_widget_modify_bg(preedit_window, GTK_STATE_NORMAL, &color);
+#endif
 
     gtk_im_context_get_preedit_string(xic, &preedit_string, &attr_list, NULL);
 

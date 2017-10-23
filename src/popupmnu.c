@@ -60,210 +60,211 @@ pum_display(
     int		above_row;
     int		below_row;
     int		redo_count = 0;
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     win_T	*pvwin;
 #endif
 
-redo:
-    def_width = PUM_DEF_WIDTH;
-    max_width = 0;
-    kind_width = 0;
-    extra_width = 0;
-    above_row = 0;
-    below_row = cmdline_row;
-
-    /* Pretend the pum is already there to avoid that must_redraw is set when
-     * 'cuc' is on. */
-    pum_array = (pumitem_T *)1;
-    validate_cursor_col();
-    pum_array = NULL;
-
-    row = curwin->w_wrow + W_WINROW(curwin);
-
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
-    FOR_ALL_WINDOWS(pvwin)
-	if (pvwin->w_p_pvw)
-	    break;
-    if (pvwin != NULL)
+    do
     {
-	if (W_WINROW(pvwin) < W_WINROW(curwin))
-	    above_row = W_WINROW(pvwin) + pvwin->w_height;
-	else if (W_WINROW(pvwin) > W_WINROW(curwin) + curwin->w_height)
-	    below_row = W_WINROW(pvwin);
-    }
+	def_width = PUM_DEF_WIDTH;
+	max_width = 0;
+	kind_width = 0;
+	extra_width = 0;
+	above_row = 0;
+	below_row = cmdline_row;
+
+	/* Pretend the pum is already there to avoid that must_redraw is set
+	 * when 'cuc' is on. */
+	pum_array = (pumitem_T *)1;
+	validate_cursor_col();
+	pum_array = NULL;
+
+	row = curwin->w_wrow + W_WINROW(curwin);
+
+#if defined(FEAT_QUICKFIX)
+	FOR_ALL_WINDOWS(pvwin)
+	    if (pvwin->w_p_pvw)
+		break;
+	if (pvwin != NULL)
+	{
+	    if (W_WINROW(pvwin) < W_WINROW(curwin))
+		above_row = W_WINROW(pvwin) + pvwin->w_height;
+	    else if (W_WINROW(pvwin) > W_WINROW(curwin) + curwin->w_height)
+		below_row = W_WINROW(pvwin);
+	}
 #endif
 
-    /*
-     * Figure out the size and position of the pum.
-     */
-    if (size < PUM_DEF_HEIGHT)
-	pum_height = size;
-    else
-	pum_height = PUM_DEF_HEIGHT;
-    if (p_ph > 0 && pum_height > p_ph)
-	pum_height = p_ph;
-
-    /* Put the pum below "row" if possible.  If there are few lines decide on
-     * where there is more room. */
-    if (row + 2 >= below_row - pum_height
-			    && row - above_row > (below_row - above_row) / 2)
-    {
-	/* pum above "row" */
-
-	/* Leave two lines of context if possible */
-	if (curwin->w_wrow - curwin->w_cline_row >= 2)
-	    context_lines = 2;
-	else
-	    context_lines = curwin->w_wrow - curwin->w_cline_row;
-
-	if (row >= size + context_lines)
-	{
-	    pum_row = row - size - context_lines;
+	/*
+	 * Figure out the size and position of the pum.
+	 */
+	if (size < PUM_DEF_HEIGHT)
 	    pum_height = size;
-	}
 	else
-	{
-	    pum_row = 0;
-	    pum_height = row - context_lines;
-	}
-	if (p_ph > 0 && pum_height > p_ph)
-	{
-	    pum_row += pum_height - p_ph;
-	    pum_height = p_ph;
-	}
-    }
-    else
-    {
-	/* pum below "row" */
-
-	/* Leave two lines of context if possible */
-	if (curwin->w_cline_row + curwin->w_cline_height - curwin->w_wrow >= 3)
-	    context_lines = 3;
-	else
-	    context_lines = curwin->w_cline_row
-				+ curwin->w_cline_height - curwin->w_wrow;
-
-	pum_row = row + context_lines;
-	if (size > below_row - pum_row)
-	    pum_height = below_row - pum_row;
-	else
-	    pum_height = size;
+	    pum_height = PUM_DEF_HEIGHT;
 	if (p_ph > 0 && pum_height > p_ph)
 	    pum_height = p_ph;
-    }
 
-    /* don't display when we only have room for one line */
-    if (pum_height < 1 || (pum_height == 1 && size > 1))
-	return;
-
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
-    /* If there is a preview window at the above avoid drawing over it. */
-    if (pvwin != NULL && pum_row < above_row && pum_height > above_row)
-    {
-	pum_row += above_row;
-	pum_height -= above_row;
-    }
-#endif
-
-    /* Compute the width of the widest match and the widest extra. */
-    for (i = 0; i < size; ++i)
-    {
-	w = vim_strsize(array[i].pum_text);
-	if (max_width < w)
-	    max_width = w;
-	if (array[i].pum_kind != NULL)
+	/* Put the pum below "row" if possible.  If there are few lines decide
+	 * on where there is more room. */
+	if (row + 2 >= below_row - pum_height
+				&& row - above_row > (below_row - above_row) / 2)
 	{
-	    w = vim_strsize(array[i].pum_kind) + 1;
-	    if (kind_width < w)
-		kind_width = w;
+	    /* pum above "row" */
+
+	    /* Leave two lines of context if possible */
+	    if (curwin->w_wrow - curwin->w_cline_row >= 2)
+		context_lines = 2;
+	    else
+		context_lines = curwin->w_wrow - curwin->w_cline_row;
+
+	    if (row >= size + context_lines)
+	    {
+		pum_row = row - size - context_lines;
+		pum_height = size;
+	    }
+	    else
+	    {
+		pum_row = 0;
+		pum_height = row - context_lines;
+	    }
+	    if (p_ph > 0 && pum_height > p_ph)
+	    {
+		pum_row += pum_height - p_ph;
+		pum_height = p_ph;
+	    }
 	}
-	if (array[i].pum_extra != NULL)
+	else
 	{
-	    w = vim_strsize(array[i].pum_extra) + 1;
-	    if (extra_width < w)
-		extra_width = w;
+	    /* pum below "row" */
+
+	    /* Leave two lines of context if possible */
+	    if (curwin->w_cline_row
+				+ curwin->w_cline_height - curwin->w_wrow >= 3)
+		context_lines = 3;
+	    else
+		context_lines = curwin->w_cline_row
+				    + curwin->w_cline_height - curwin->w_wrow;
+
+	    pum_row = row + context_lines;
+	    if (size > below_row - pum_row)
+		pum_height = below_row - pum_row;
+	    else
+		pum_height = size;
+	    if (p_ph > 0 && pum_height > p_ph)
+		pum_height = p_ph;
 	}
-    }
-    pum_base_width = max_width;
-    pum_kind_width = kind_width;
 
-    /* Calculate column */
-#ifdef FEAT_RIGHTLEFT
-    if (curwin->w_p_rl)
-	col = W_WINCOL(curwin) + W_WIDTH(curwin) - curwin->w_wcol - 1;
-    else
+	/* don't display when we only have room for one line */
+	if (pum_height < 1 || (pum_height == 1 && size > 1))
+	    return;
+
+#if defined(FEAT_QUICKFIX)
+	/* If there is a preview window at the above avoid drawing over it. */
+	if (pvwin != NULL && pum_row < above_row && pum_height > above_row)
+	{
+	    pum_row += above_row;
+	    pum_height -= above_row;
+	}
 #endif
-	col = W_WINCOL(curwin) + curwin->w_wcol;
 
-    /* if there are more items than room we need a scrollbar */
-    if (pum_height < size)
-    {
-	pum_scrollbar = 1;
-	++max_width;
-    }
-    else
-	pum_scrollbar = 0;
+	/* Compute the width of the widest match and the widest extra. */
+	for (i = 0; i < size; ++i)
+	{
+	    w = vim_strsize(array[i].pum_text);
+	    if (max_width < w)
+		max_width = w;
+	    if (array[i].pum_kind != NULL)
+	    {
+		w = vim_strsize(array[i].pum_kind) + 1;
+		if (kind_width < w)
+		    kind_width = w;
+	    }
+	    if (array[i].pum_extra != NULL)
+	    {
+		w = vim_strsize(array[i].pum_extra) + 1;
+		if (extra_width < w)
+		    extra_width = w;
+	    }
+	}
+	pum_base_width = max_width;
+	pum_kind_width = kind_width;
 
-    if (def_width < max_width)
-	def_width = max_width;
-
-    if (((col < Columns - PUM_DEF_WIDTH || col < Columns - max_width)
-#ifdef FEAT_RIGHTLEFT
-		&& !curwin->w_p_rl)
-	    || (curwin->w_p_rl && (col > PUM_DEF_WIDTH || col > max_width)
-#endif
-       ))
-    {
-	/* align pum column with "col" */
-	pum_col = col;
-
+	/* Calculate column */
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl)
-	    pum_width = pum_col - pum_scrollbar + 1;
+	    col = curwin->w_wincol + curwin->w_width - curwin->w_wcol - 1;
 	else
 #endif
-	    pum_width = Columns - pum_col - pum_scrollbar;
+	    col = curwin->w_wincol + curwin->w_wcol;
 
-	if (pum_width > max_width + kind_width + extra_width + 1
-						 && pum_width > PUM_DEF_WIDTH)
+	/* if there are more items than room we need a scrollbar */
+	if (pum_height < size)
 	{
-	    pum_width = max_width + kind_width + extra_width + 1;
-	    if (pum_width < PUM_DEF_WIDTH)
-		pum_width = PUM_DEF_WIDTH;
+	    pum_scrollbar = 1;
+	    ++max_width;
 	}
-    }
-    else if (Columns < def_width)
-    {
-	/* not enough room, will use what we have */
-#ifdef FEAT_RIGHTLEFT
-	if (curwin->w_p_rl)
-	    pum_col = Columns - 1;
 	else
-#endif
-	    pum_col = 0;
-	pum_width = Columns - 1;
-    }
-    else
-    {
-	if (max_width > PUM_DEF_WIDTH)
-	    max_width = PUM_DEF_WIDTH;	/* truncate */
+	    pum_scrollbar = 0;
+
+	if (def_width < max_width)
+	    def_width = max_width;
+
+	if (((col < Columns - PUM_DEF_WIDTH || col < Columns - max_width)
 #ifdef FEAT_RIGHTLEFT
-	if (curwin->w_p_rl)
-	    pum_col = max_width - 1;
-	else
+		    && !curwin->w_p_rl)
+		|| (curwin->w_p_rl && (col > PUM_DEF_WIDTH || col > max_width)
 #endif
-	    pum_col = Columns - max_width;
-	pum_width = max_width - pum_scrollbar;
-    }
+	   ))
+	{
+	    /* align pum column with "col" */
+	    pum_col = col;
 
-    pum_array = array;
-    pum_size = size;
+#ifdef FEAT_RIGHTLEFT
+	    if (curwin->w_p_rl)
+		pum_width = pum_col - pum_scrollbar + 1;
+	    else
+#endif
+		pum_width = Columns - pum_col - pum_scrollbar;
 
-    /* Set selected item and redraw.  If the window size changed need to redo
-     * the positioning.  Limit this to two times, when there is not much
-     * room the window size will keep changing. */
-    if (pum_set_selected(selected, redo_count) && ++redo_count <= 2)
-	goto redo;
+	    if (pum_width > max_width + kind_width + extra_width + 1
+						     && pum_width > PUM_DEF_WIDTH)
+	    {
+		pum_width = max_width + kind_width + extra_width + 1;
+		if (pum_width < PUM_DEF_WIDTH)
+		    pum_width = PUM_DEF_WIDTH;
+	    }
+	}
+	else if (Columns < def_width)
+	{
+	    /* not enough room, will use what we have */
+#ifdef FEAT_RIGHTLEFT
+	    if (curwin->w_p_rl)
+		pum_col = Columns - 1;
+	    else
+#endif
+		pum_col = 0;
+	    pum_width = Columns - 1;
+	}
+	else
+	{
+	    if (max_width > PUM_DEF_WIDTH)
+		max_width = PUM_DEF_WIDTH;	/* truncate */
+#ifdef FEAT_RIGHTLEFT
+	    if (curwin->w_p_rl)
+		pum_col = max_width - 1;
+	    else
+#endif
+		pum_col = Columns - max_width;
+	    pum_width = max_width - pum_scrollbar;
+	}
+
+	pum_array = array;
+	pum_size = size;
+
+	/* Set selected item and redraw.  If the window size changed need to
+	 * redo the positioning.  Limit this to two times, when there is not
+	 * much room the window size will keep changing. */
+    } while (pum_set_selected(selected, redo_count) && ++redo_count <= 2);
 }
 
 /*
@@ -312,7 +313,7 @@ pum_redraw(void)
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl)
 	{
-	    if (pum_col < W_WINCOL(curwin) + W_WIDTH(curwin) - 1)
+	    if (pum_col < curwin->w_wincol + curwin->w_width - 1)
 		screen_putchar(' ', row, pum_col + 1, attr);
 	}
 	else
@@ -551,7 +552,7 @@ pum_set_selected(int n, int repeat)
 	    }
 	}
 
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 	/*
 	 * Show extra info in the preview window if there is something and
 	 * 'completeopt' contains "preview".
@@ -715,9 +716,7 @@ pum_undisplay(void)
 {
     pum_array = NULL;
     redraw_all_later(SOME_VALID);
-#ifdef FEAT_WINDOWS
     redraw_tabline = TRUE;
-#endif
     status_redraw_all();
 }
 

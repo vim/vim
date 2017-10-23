@@ -138,7 +138,7 @@ ch_log_active(void)
 }
 
     static void
-ch_log_lead(char *what, channel_T *ch)
+ch_log_lead(const char *what, channel_T *ch)
 {
     if (log_fd != NULL)
     {
@@ -969,7 +969,13 @@ ch_close_part(channel_T *channel, ch_part_T part)
 	    if ((part == PART_IN || channel->CH_IN_FD != *fd)
 		    && (part == PART_OUT || channel->CH_OUT_FD != *fd)
 		    && (part == PART_ERR || channel->CH_ERR_FD != *fd))
+	    {
+#ifdef WIN32
+		if (channel->ch_named_pipe)
+		    DisconnectNamedPipe((HANDLE)fd);
+#endif
 		fd_close(*fd);
+	    }
 	}
 	*fd = INVALID_FD;
 
@@ -1807,12 +1813,11 @@ channel_save(channel_T *channel, ch_part_T part, char_u *buf, int len,
 	head->rq_prev = node;
     }
 
-    if (log_fd != NULL && lead != NULL)
+    if (ch_log_active() && lead != NULL)
     {
 	ch_log_lead(lead, channel);
 	fprintf(log_fd, "'");
-	if (fwrite(buf, len, 1, log_fd) != 1)
-	    return FAIL;
+	ignored = (int)fwrite(buf, len, 1, log_fd);
 	fprintf(log_fd, "'\n");
     }
     return OK;
@@ -2924,14 +2929,27 @@ channel_close_in(channel_T *channel)
     ch_close_part(channel, PART_IN);
 }
 
+    static void
+remove_from_writeque(writeq_T *wq, writeq_T *entry)
+{
+    ga_clear(&entry->wq_ga);
+    wq->wq_next = entry->wq_next;
+    if (wq->wq_next == NULL)
+	wq->wq_prev = NULL;
+    else
+	wq->wq_next->wq_prev = NULL;
+    vim_free(entry);
+}
+
 /*
  * Clear the read buffer on "channel"/"part".
  */
     static void
 channel_clear_one(channel_T *channel, ch_part_T part)
 {
-    jsonq_T *json_head = &channel->ch_part[part].ch_json_head;
-    cbq_T   *cb_head = &channel->ch_part[part].ch_cb_head;
+    chanpart_T *ch_part = &channel->ch_part[part];
+    jsonq_T *json_head = &ch_part->ch_json_head;
+    cbq_T   *cb_head = &ch_part->ch_cb_head;
 
     while (channel_peek(channel, part) != NULL)
 	vim_free(channel_get(channel, part));
@@ -2951,10 +2969,13 @@ channel_clear_one(channel_T *channel, ch_part_T part)
 	remove_json_node(json_head, json_head->jq_next);
     }
 
-    free_callback(channel->ch_part[part].ch_callback,
-					channel->ch_part[part].ch_partial);
-    channel->ch_part[part].ch_callback = NULL;
-    channel->ch_part[part].ch_partial = NULL;
+    free_callback(ch_part->ch_callback, ch_part->ch_partial);
+    ch_part->ch_callback = NULL;
+    ch_part->ch_partial = NULL;
+
+    while (ch_part->ch_writeque.wq_next != NULL)
+	remove_from_writeque(&ch_part->ch_writeque,
+						 ch_part->ch_writeque.wq_next);
 }
 
 /*
@@ -2969,7 +2990,7 @@ channel_clear(channel_T *channel)
     channel_clear_one(channel, PART_SOCK);
     channel_clear_one(channel, PART_OUT);
     channel_clear_one(channel, PART_ERR);
-    /* there is no callback or queue for PART_IN */
+    channel_clear_one(channel, PART_IN);
     free_callback(channel->ch_callback, channel->ch_partial);
     channel->ch_callback = NULL;
     channel->ch_partial = NULL;
@@ -3086,7 +3107,20 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    if (r && nread > 0)
 		return CW_READY;
 	    if (r == 0)
-		return CW_ERROR;
+	    {
+		DWORD err = GetLastError();
+
+		if (err != ERROR_BAD_PIPE && err != ERROR_BROKEN_PIPE)
+		    return CW_ERROR;
+
+		if (channel->ch_named_pipe)
+		{
+		    DisconnectNamedPipe((HANDLE)fd);
+		    ConnectNamedPipe((HANDLE)fd, NULL);
+		}
+		else
+		    return CW_ERROR;
+	    }
 
 	    /* perhaps write some buffer lines */
 	    channel_write_any_lines();
@@ -3350,7 +3384,7 @@ channel_read_block(channel_T *channel, ch_part_T part, int timeout)
 	    channel_consume(channel, part, (int)(nl - buf) + 1);
 	}
     }
-    if (log_fd != NULL)
+    if (ch_log_active())
 	ch_log(channel, "Returning %d bytes", (int)STRLEN(msg));
     return msg;
 }
@@ -3635,7 +3669,7 @@ channel_send(
 	return FAIL;
     }
 
-    if (log_fd != NULL)
+    if (ch_log_active())
     {
 	ch_log_lead("SEND ", channel);
 	fprintf(log_fd, "'");
@@ -3670,7 +3704,17 @@ channel_send(
 	if (part == PART_SOCK)
 	    res = sock_write(fd, (char *)buf, len);
 	else
+	{
 	    res = fd_write(fd, (char *)buf, len);
+#ifdef WIN32
+	    if (channel->ch_named_pipe && res < 0)
+	    {
+		DisconnectNamedPipe((HANDLE)fd);
+		ConnectNamedPipe((HANDLE)fd, NULL);
+	    }
+#endif
+
+	}
 	if (res < 0 && (errno == EWOULDBLOCK
 #ifdef EAGAIN
 			|| errno == EAGAIN
@@ -3690,12 +3734,7 @@ channel_send(
 		if (entry != NULL)
 		{
 		    /* Remove the entry from the write queue. */
-		    ga_clear(&entry->wq_ga);
-		    wq->wq_next = entry->wq_next;
-		    if (wq->wq_next == NULL)
-			wq->wq_prev = NULL;
-		    else
-			wq->wq_next->wq_prev = NULL;
+		    remove_from_writeque(wq, entry);
 		    continue;
 		}
 		if (did_use_queue)
@@ -3921,6 +3960,8 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
     free_job_options(&opt);
 }
 
+# define KEEP_OPEN_TIME 20  /* msec */
+
 # if (defined(UNIX) && !defined(HAVE_SELECT)) || defined(PROTO)
 /*
  * Add open channels to the poll struct.
@@ -3928,7 +3969,7 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
  * The type of "fds" is hidden to avoid problems with the function proto.
  */
     int
-channel_poll_setup(int nfd_in, void *fds_in)
+channel_poll_setup(int nfd_in, void *fds_in, int *towait)
 {
     int		nfd = nfd_in;
     channel_T	*channel;
@@ -3943,10 +3984,21 @@ channel_poll_setup(int nfd_in, void *fds_in)
 
 	    if (ch_part->ch_fd != INVALID_FD)
 	    {
-		ch_part->ch_poll_idx = nfd;
-		fds[nfd].fd = ch_part->ch_fd;
-		fds[nfd].events = POLLIN;
-		nfd++;
+		if (channel->ch_keep_open)
+		{
+		    /* For unknown reason poll() returns immediately for a
+		     * keep-open channel.  Instead of adding it to the fds add
+		     * a short timeout and check, like polling. */
+		    if (*towait < 0 || *towait > KEEP_OPEN_TIME)
+			*towait = KEEP_OPEN_TIME;
+		}
+		else
+		{
+		    ch_part->ch_poll_idx = nfd;
+		    fds[nfd].fd = ch_part->ch_fd;
+		    fds[nfd].events = POLLIN;
+		    nfd++;
+		}
 	    }
 	    else
 		channel->ch_part[part].ch_poll_idx = -1;
@@ -3982,6 +4034,12 @@ channel_poll_check(int ret_in, void *fds_in)
 		channel_read(channel, part, "channel_poll_check");
 		--ret;
 	    }
+	    else if (channel->ch_part[part].ch_fd != INVALID_FD
+						      && channel->ch_keep_open)
+	    {
+		/* polling a keep-open channel */
+		channel_read(channel, part, "channel_poll_check_keep_open");
+	    }
 	}
 
 	in_part = &channel->ch_part[PART_IN];
@@ -3998,11 +4056,17 @@ channel_poll_check(int ret_in, void *fds_in)
 # endif /* UNIX && !HAVE_SELECT */
 
 # if (!defined(WIN32) && defined(HAVE_SELECT)) || defined(PROTO)
+
 /*
  * The "fd_set" type is hidden to avoid problems with the function proto.
  */
     int
-channel_select_setup(int maxfd_in, void *rfds_in, void *wfds_in)
+channel_select_setup(
+	int maxfd_in,
+	void *rfds_in,
+	void *wfds_in,
+	struct timeval *tv,
+	struct timeval **tvp)
 {
     int		maxfd = maxfd_in;
     channel_T	*channel;
@@ -4018,9 +4082,25 @@ channel_select_setup(int maxfd_in, void *rfds_in, void *wfds_in)
 
 	    if (fd != INVALID_FD)
 	    {
-		FD_SET((int)fd, rfds);
-		if (maxfd < (int)fd)
-		    maxfd = (int)fd;
+		if (channel->ch_keep_open)
+		{
+		    /* For unknown reason select() returns immediately for a
+		     * keep-open channel.  Instead of adding it to the rfds add
+		     * a short timeout and check, like polling. */
+		    if (*tvp == NULL || tv->tv_sec > 0
+					|| tv->tv_usec > KEEP_OPEN_TIME * 1000)
+		    {
+			*tvp = tv;
+			tv->tv_sec = 0;
+			tv->tv_usec = KEEP_OPEN_TIME * 1000;
+		    }
+		}
+		else
+		{
+		    FD_SET((int)fd, rfds);
+		    if (maxfd < (int)fd)
+			maxfd = (int)fd;
+		}
 	    }
 	}
     }
@@ -4052,7 +4132,13 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
 	    if (ret > 0 && fd != INVALID_FD && FD_ISSET(fd, rfds))
 	    {
 		channel_read(channel, part, "channel_select_check");
+		FD_CLR(fd, rfds);
 		--ret;
+	    }
+	    else if (fd != INVALID_FD && channel->ch_keep_open)
+	    {
+		/* polling a keep-open channel */
+		channel_read(channel, part, "channel_select_check_keep_open");
 	    }
 	}
 
@@ -4061,6 +4147,7 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
 					    && FD_ISSET(in_part->ch_fd, wfds))
 	{
 	    channel_write_input(channel);
+	    FD_CLR(in_part->ch_fd, wfds);
 	    --ret;
 	}
     }
@@ -4849,7 +4936,8 @@ job_free_contents(job_T *job)
     }
     mch_clear_job(job);
 
-    vim_free(job->jv_tty_name);
+    vim_free(job->jv_tty_in);
+    vim_free(job->jv_tty_out);
     vim_free(job->jv_stoponexit);
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
 }
@@ -5503,8 +5591,10 @@ job_info(job_T *job, dict_T *dict)
     nr = job->jv_proc_info.dwProcessId;
 #endif
     dict_add_nr_str(dict, "process", nr, NULL);
-    dict_add_nr_str(dict, "tty", 0L,
-		   job->jv_tty_name != NULL ? job->jv_tty_name : (char_u *)"");
+    dict_add_nr_str(dict, "tty_in", 0L,
+		   job->jv_tty_in != NULL ? job->jv_tty_in : (char_u *)"");
+    dict_add_nr_str(dict, "tty_out", 0L,
+		   job->jv_tty_out != NULL ? job->jv_tty_out : (char_u *)"");
 
     dict_add_nr_str(dict, "exitval", job->jv_exitval, NULL);
     dict_add_nr_str(dict, "exit_cb", 0L, job->jv_exit_cb);

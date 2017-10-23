@@ -29,9 +29,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
     char_u	*bexpr;
     buf_T	*save_curbuf;
     size_t	len;
-# ifdef FEAT_WINDOWS
     win_T	*cw;
-# endif
 #endif
     static int	recursive = FALSE;
 
@@ -53,11 +51,9 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 						    : wp->w_buffer->b_p_bexpr;
 	if (*bexpr != NUL)
 	{
-# ifdef FEAT_WINDOWS
 	    /* Convert window pointer to number. */
 	    for (cw = firstwin; cw != wp; cw = cw->w_next)
 		++winnr;
-# endif
 
 	    set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
 	    set_vim_var_nr(VV_BEVAL_WINNR, winnr);
@@ -341,12 +337,8 @@ get_beval_info(
     *textp = NULL;
     row = Y_2_ROW(beval->y);
     col = X_2_COL(beval->x);
-#ifdef FEAT_WINDOWS
     wp = mouse_find_win(&row, &col);
-#else
-    wp = firstwin;
-#endif
-    if (wp != NULL && row < wp->w_height && col < W_WIDTH(wp))
+    if (wp != NULL && row < wp->w_height && col < wp->w_width)
     {
 	/* Found a window and the cursor is in the text.  Now find the line
 	 * number. */
@@ -1177,23 +1169,15 @@ drawBalloon(BalloonEval *beval)
 	int		x_offset = EVAL_OFFSET_X;
 	int		y_offset = EVAL_OFFSET_Y;
 	PangoLayout	*layout;
-# if GTK_CHECK_VERSION(3,22,2)
-	GdkRectangle rect;
-	GdkMonitor * const mon = gdk_display_get_monitor_at_window(
-		gtk_widget_get_display(beval->balloonShell),
-		gtk_widget_get_window(beval->balloonShell));
-	gdk_monitor_get_geometry(mon, &rect);
 
-	screen_w = rect.width;
-	screen_h = rect.height;
-# else
+# if !GTK_CHECK_VERSION(3,22,2)
 	GdkScreen	*screen;
 
 	screen = gtk_widget_get_screen(beval->target);
 	gtk_window_set_screen(GTK_WINDOW(beval->balloonShell), screen);
-	screen_w = gdk_screen_get_width(screen);
-	screen_h = gdk_screen_get_height(screen);
 # endif
+	gui_gtk_get_screen_size_of_win(beval->balloonShell,
+							 &screen_w, &screen_h);
 # if !GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_ensure_style(beval->balloonShell);
 	gtk_widget_ensure_style(beval->balloonLabel);

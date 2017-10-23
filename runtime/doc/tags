@@ -4,6 +4,7 @@
 $	motion.txt	/*$*
 $HOME	options.txt	/*$HOME*
 $HOME-use	version5.txt	/*$HOME-use*
+$HOME-windows	options.txt	/*$HOME-windows*
 $MYGVIMRC	gui.txt	/*$MYGVIMRC*
 $MYVIMRC	starting.txt	/*$MYVIMRC*
 $VIM	starting.txt	/*$VIM*
@@ -366,7 +367,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'ims'	options.txt	/*'ims'*
 'imsearch'	options.txt	/*'imsearch'*
 'imsf'	options.txt	/*'imsf'*
+'imst'	options.txt	/*'imst'*
 'imstatusfunc'	options.txt	/*'imstatusfunc'*
+'imstyle'	options.txt	/*'imstyle'*
 'inc'	options.txt	/*'inc'*
 'include'	options.txt	/*'include'*
 'includeexpr'	options.txt	/*'includeexpr'*
@@ -746,6 +749,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'path'	options.txt	/*'path'*
 'pdev'	options.txt	/*'pdev'*
 'penc'	options.txt	/*'penc'*
+'perldll'	options.txt	/*'perldll'*
 'pex'	options.txt	/*'pex'*
 'pexpr'	options.txt	/*'pexpr'*
 'pfn'	options.txt	/*'pfn'*
@@ -971,6 +975,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_PE'	term.txt	/*'t_PE'*
 't_PS'	term.txt	/*'t_PS'*
 't_RB'	term.txt	/*'t_RB'*
+'t_RC'	term.txt	/*'t_RC'*
 't_RI'	term.txt	/*'t_RI'*
 't_RS'	term.txt	/*'t_RS'*
 't_RV'	term.txt	/*'t_RV'*
@@ -980,6 +985,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_SR'	term.txt	/*'t_SR'*
 't_Sb'	term.txt	/*'t_Sb'*
 't_Sf'	term.txt	/*'t_Sf'*
+'t_Te'	term.txt	/*'t_Te'*
+'t_Ts'	term.txt	/*'t_Ts'*
 't_VS'	term.txt	/*'t_VS'*
 't_WP'	term.txt	/*'t_WP'*
 't_WS'	term.txt	/*'t_WS'*
@@ -1328,6 +1335,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +timers	various.txt	/*+timers*
 +title	various.txt	/*+title*
 +toolbar	various.txt	/*+toolbar*
++unix	eval.txt	/*+unix*
 +user_commands	various.txt	/*+user_commands*
 +vertsplit	various.txt	/*+vertsplit*
 +viminfo	various.txt	/*+viminfo*
@@ -1892,6 +1900,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :<afile>	cmdline.txt	/*:<afile>*
 :<amatch>	cmdline.txt	/*:<amatch>*
 :<cWORD>	cmdline.txt	/*:<cWORD>*
+:<cexpr>	cmdline.txt	/*:<cexpr>*
 :<cfile>	cmdline.txt	/*:<cfile>*
 :<cword>	cmdline.txt	/*:<cword>*
 :<sfile>	cmdline.txt	/*:<sfile>*
@@ -1951,6 +1960,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :Sexplore	pi_netrw.txt	/*:Sexplore*
 :TOhtml	syntax.txt	/*:TOhtml*
 :TarDiff	pi_tar.txt	/*:TarDiff*
+:Termdebug	terminal.txt	/*:Termdebug*
 :Texplore	pi_netrw.txt	/*:Texplore*
 :UseVimball	pi_vimball.txt	/*:UseVimball*
 :Vexplore	pi_netrw.txt	/*:Vexplore*
@@ -3122,9 +3132,16 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tl	tagsrch.txt	/*:tl*
 :tlast	tagsrch.txt	/*:tlast*
 :tm	gui.txt	/*:tm*
+:tma	map.txt	/*:tma*
+:tmap	map.txt	/*:tmap*
+:tmap_l	map.txt	/*:tmap_l*
+:tmapc	map.txt	/*:tmapc*
+:tmapclear	map.txt	/*:tmapclear*
 :tmenu	gui.txt	/*:tmenu*
 :tn	tagsrch.txt	/*:tn*
 :tnext	tagsrch.txt	/*:tnext*
+:tno	map.txt	/*:tno*
+:tnoremap	map.txt	/*:tnoremap*
 :topleft	windows.txt	/*:topleft*
 :tp	tagsrch.txt	/*:tp*
 :tprevious	tagsrch.txt	/*:tprevious*
@@ -3134,6 +3151,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :ts	tagsrch.txt	/*:ts*
 :tselect	tagsrch.txt	/*:tselect*
 :tu	gui.txt	/*:tu*
+:tunma	map.txt	/*:tunma*
+:tunmap	map.txt	/*:tunmap*
 :tunmenu	gui.txt	/*:tunmenu*
 :u	undo.txt	/*:u*
 :un	undo.txt	/*:un*
@@ -3398,6 +3417,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <bang>	map.txt	/*<bang>*
 <buffer=N>	autocmd.txt	/*<buffer=N>*
 <buffer=abuf>	autocmd.txt	/*<buffer=abuf>*
+<cexpr>	cmdline.txt	/*<cexpr>*
 <cfile>	cmdline.txt	/*<cfile>*
 <character>	intro.txt	/*<character>*
 <count>	map.txt	/*<count>*
@@ -3428,6 +3448,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <mods>	map.txt	/*<mods>*
 <nomodeline>	autocmd.txt	/*<nomodeline>*
 <q-args>	map.txt	/*<q-args>*
+<range>	map.txt	/*<range>*
 <reg>	map.txt	/*<reg>*
 <register>	map.txt	/*<register>*
 <sfile>	cmdline.txt	/*<sfile>*
@@ -4830,6 +4851,7 @@ W22	eval.txt	/*W22*
 WORD	motion.txt	/*WORD*
 WWW	intro.txt	/*WWW*
 Win32	os_win32.txt	/*Win32*
+WinBar	gui.txt	/*WinBar*
 WinEnter	autocmd.txt	/*WinEnter*
 WinLeave	autocmd.txt	/*WinLeave*
 WinNew	autocmd.txt	/*WinNew*
@@ -7285,6 +7307,7 @@ mapmode-n	map.txt	/*mapmode-n*
 mapmode-nvo	map.txt	/*mapmode-nvo*
 mapmode-o	map.txt	/*mapmode-o*
 mapmode-s	map.txt	/*mapmode-s*
+mapmode-t	map.txt	/*mapmode-t*
 mapmode-v	map.txt	/*mapmode-v*
 mapmode-x	map.txt	/*mapmode-x*
 mapping	map.txt	/*mapping*
@@ -8021,6 +8044,7 @@ qnx-terminal	os_qnx.txt	/*qnx-terminal*
 quake.vim	syntax.txt	/*quake.vim*
 quickfix	quickfix.txt	/*quickfix*
 quickfix-6	version6.txt	/*quickfix-6*
+quickfix-ID	quickfix.txt	/*quickfix-ID*
 quickfix-directory-stack	quickfix.txt	/*quickfix-directory-stack*
 quickfix-error-lists	quickfix.txt	/*quickfix-error-lists*
 quickfix-functions	usr_41.txt	/*quickfix-functions*
@@ -8250,6 +8274,7 @@ servername-variable	eval.txt	/*servername-variable*
 session-file	starting.txt	/*session-file*
 set-option	options.txt	/*set-option*
 set-spc-auto	spell.txt	/*set-spc-auto*
+setbufline()	eval.txt	/*setbufline()*
 setbufvar()	eval.txt	/*setbufvar()*
 setcharsearch()	eval.txt	/*setcharsearch()*
 setcmdpos()	eval.txt	/*setcmdpos()*
@@ -8456,6 +8481,7 @@ star	pattern.txt	/*star*
 starstar	editing.txt	/*starstar*
 starstar-wildcard	editing.txt	/*starstar-wildcard*
 start-of-file	pattern.txt	/*start-of-file*
+start-vimdiff	diff.txt	/*start-vimdiff*
 starting	starting.txt	/*starting*
 starting-amiga	starting.txt	/*starting-amiga*
 starting.txt	starting.txt	/*starting.txt*
@@ -8476,6 +8502,7 @@ strdisplaywidth()	eval.txt	/*strdisplaywidth()*
 strftime()	eval.txt	/*strftime()*
 strgetchar()	eval.txt	/*strgetchar()*
 stridx()	eval.txt	/*stridx()*
+strikethrough	syntax.txt	/*strikethrough*
 string	eval.txt	/*string*
 string()	eval.txt	/*string()*
 string-functions	usr_41.txt	/*string-functions*
@@ -8606,6 +8633,7 @@ t_KL	term.txt	/*t_KL*
 t_PE	term.txt	/*t_PE*
 t_PS	term.txt	/*t_PS*
 t_RB	term.txt	/*t_RB*
+t_RC	term.txt	/*t_RC*
 t_RI	term.txt	/*t_RI*
 t_RS	term.txt	/*t_RS*
 t_RV	term.txt	/*t_RV*
@@ -8615,6 +8643,8 @@ t_SI	term.txt	/*t_SI*
 t_SR	term.txt	/*t_SR*
 t_Sb	term.txt	/*t_Sb*
 t_Sf	term.txt	/*t_Sf*
+t_Te	term.txt	/*t_Te*
+t_Ts	term.txt	/*t_Ts*
 t_VS	term.txt	/*t_VS*
 t_WP	term.txt	/*t_WP*
 t_WS	term.txt	/*t_WS*
@@ -8846,6 +8876,7 @@ term_gettty()	eval.txt	/*term_gettty()*
 term_list()	eval.txt	/*term_list()*
 term_scrape()	eval.txt	/*term_scrape()*
 term_sendkeys()	eval.txt	/*term_sendkeys()*
+term_setsize()	eval.txt	/*term_setsize()*
 term_start()	eval.txt	/*term_start()*
 term_wait()	eval.txt	/*term_wait()*
 termcap	term.txt	/*termcap*
@@ -8864,6 +8895,7 @@ terminal-key-codes	term.txt	/*terminal-key-codes*
 terminal-options	term.txt	/*terminal-options*
 terminal-output-codes	term.txt	/*terminal-output-codes*
 terminal-testing	terminal.txt	/*terminal-testing*
+terminal-typing	terminal.txt	/*terminal-typing*
 terminal-use	terminal.txt	/*terminal-use*
 terminal.txt	terminal.txt	/*terminal.txt*
 terminfo	term.txt	/*terminfo*
@@ -8871,6 +8903,7 @@ termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*
 test_alloc_fail()	eval.txt	/*test_alloc_fail()*
 test_autochdir()	eval.txt	/*test_autochdir()*
+test_feedinput()	eval.txt	/*test_feedinput()*
 test_garbagecollect_now()	eval.txt	/*test_garbagecollect_now()*
 test_ignore_error()	eval.txt	/*test_ignore_error()*
 test_null_channel()	eval.txt	/*test_null_channel()*
@@ -9097,7 +9130,11 @@ v:t_list	eval.txt	/*v:t_list*
 v:t_none	eval.txt	/*v:t_none*
 v:t_number	eval.txt	/*v:t_number*
 v:t_string	eval.txt	/*v:t_string*
+v:termblinkresp	eval.txt	/*v:termblinkresp*
 v:termresponse	eval.txt	/*v:termresponse*
+v:termrgbresp	eval.txt	/*v:termrgbresp*
+v:termstyleresp	eval.txt	/*v:termstyleresp*
+v:termu7resp	eval.txt	/*v:termu7resp*
 v:testing	eval.txt	/*v:testing*
 v:this_session	eval.txt	/*v:this_session*
 v:throwpoint	eval.txt	/*v:throwpoint*
@@ -9417,6 +9454,7 @@ window-resize	windows.txt	/*window-resize*
 window-size	term.txt	/*window-size*
 window-size-functions	usr_41.txt	/*window-size-functions*
 window-tag	windows.txt	/*window-tag*
+window-toolbar	gui.txt	/*window-toolbar*
 window-variable	eval.txt	/*window-variable*
 windowid	windows.txt	/*windowid*
 windowid-variable	eval.txt	/*windowid-variable*

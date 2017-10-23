@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-28 10:54+0200\n"
-"PO-Revision-Date:  2017-05-28 23:45+0200\n"
+"POT-Creation-Date: 2017-09-24 16:26+0200\n"
+"PO-Revision-Date:  2017-09-24 18:40+0200\n"
 "Last-Translator:   Antonio Colombo   <azc100@gmail.com>\n"
 "Language-Team:     Antonio Colombo   <azc100@gmail.com>\n"
 "Language: Italian\n"
@@ -96,7 +96,6 @@ msgstr "E90: Non riesco a scaricare l'ultimo buffer"
 msgid "E84: No modified buffer found"
 msgstr "E84: Nessun buffer risulta modificato"
 
-#. back where we started, didn't find anything.
 msgid "E85: There is no listed buffer"
 msgstr "E85: Non c'è alcun buffer elencato"
 
@@ -110,6 +109,18 @@ msgstr "E88: Non posso andare prima del primo buffer"
 msgid "E89: No write since last change for buffer %ld (add ! to override)"
 msgstr ""
 "E89: Buffer %ld non salvato dopo modifica (aggiungi ! per eseguire comunque)"
+
+msgid "E948: Job still running (add ! to end the job)"
+msgstr "E948: Lavoro ancora in esecuzione (aggiungi! per terminarlo)"
+
+msgid "E37: No write since last change (add ! to override)"
+msgstr "E37: Non salvato dopo modifica (aggiungi ! per eseguire comunque)"
+
+msgid "E948: Job still running"
+msgstr "E948: Lavoro ancora attivo"
+
+msgid "E37: No write since last change"
+msgstr "E37: Non salvato dopo l'ultima modifica"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Avviso: Superato limite della lista dei nomi di file"
@@ -166,7 +177,6 @@ msgstr "riga %ld di %ld --%d%%-- col "
 msgid "[No Name]"
 msgstr "[Senza nome]"
 
-#. must be a help buffer
 msgid "help"
 msgstr "aiuto"
 
@@ -191,6 +201,9 @@ msgid ""
 msgstr ""
 "\n"
 "# Lista Buffer:\n"
+
+msgid "E382: Cannot write, 'buftype' option is set"
+msgstr "E382: Non posso scrivere, l'opzione 'buftype' è impostata"
 
 msgid "[Scratch]"
 msgstr "[Volatile]"
@@ -228,6 +241,7 @@ msgstr "E904: l'ultimo argomento per espressione/chiamata dev'essere numerico"
 msgid "E904: third argument for call must be a list"
 msgstr "E904: il terzo argomento della chiamata dev'essere una Lista"
 
+#, c-format
 msgid "E905: received unknown command: %s"
 msgstr "E905: recevuto comando non conosciuto: %s"
 
@@ -235,6 +249,7 @@ msgstr "E905: recevuto comando non conosciuto: %s"
 msgid "E630: %s(): write while not connected"
 msgstr "E630: %s(): scrittura in mancanza di connessione"
 
+#, c-format
 msgid "E631: %s(): write failed"
 msgstr "E631: %s(): scrittura non riuscita"
 
@@ -299,6 +314,7 @@ msgstr "argomento di extend()"
 msgid "E737: Key already exists: %s"
 msgstr "E737: Chiave già esistente: %s"
 
+#, c-format
 msgid "E96: Cannot diff more than %ld buffers"
 msgstr "E96: Non supporto differenze fra più di %ld buffer"
 
@@ -355,7 +371,6 @@ msgstr "E791: Nessuna keymap per questo tasto"
 msgid " Keyword completion (^N^P)"
 msgstr " Completamento Keyword (^N^P)"
 
-#. ctrl_x_mode == 0, ^P/^N compl.
 msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
 msgstr " modalità ^X (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
 
@@ -433,10 +448,6 @@ msgstr "corrispondenza nel file"
 msgid " Adding"
 msgstr " Aggiungo"
 
-#. showmode might reset the internal line pointers, so it must
-#. * be called before line = ml_get(), or when this address is no
-#. * longer needed.  -- Acevedo.
-#.
 msgid "-- Searching..."
 msgstr "-- Ricerca..."
 
@@ -457,7 +468,6 @@ msgstr "corrispondenza %d di %d"
 msgid "match %d"
 msgstr "corrispondenza %d"
 
-#. maximum nesting of lists and dicts
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: Caratteri non previsti in :let"
 
@@ -518,8 +528,7 @@ msgstr "E690: Manca \"in\" dopo :for"
 msgid "E108: No such variable: \"%s\""
 msgstr "E108: Variabile inesistente: \"%s\""
 
-#. For historic reasons this error is not given for a list or dict.
-#. * E.g., the b: dict could be locked/unlocked.
+#, c-format
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: Non riesco a bloccare o sbloccare la variabile %s"
 
@@ -693,11 +702,6 @@ msgstr "argomento di add()"
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() può essere usata solo in modalità inserimento"
 
-#.
-#. * Yes this is ugly, I don't particularly like it either.  But doing it
-#. * this way has the compelling advantage that translations need not to
-#. * be touched at all.  See below what 'ok' and 'ync' are used for.
-#.
 msgid "&Ok"
 msgstr "&OK"
 
@@ -794,6 +798,7 @@ msgstr "E882: Funzione confronto in uniq non riuscita"
 msgid "(Invalid)"
 msgstr "(Non valido)"
 
+#, c-format
 msgid "E935: invalid submatch number: %d"
 msgstr "E935: nomeri di sotto-corrispondenza non valido: %d"
 
@@ -858,7 +863,6 @@ msgstr " file elaborati in precedenza"
 msgid " FAILED"
 msgstr " FALLITO"
 
-#. avoid a wait_return for this message, it's annoying
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
 msgstr "E137: File viminfo \"%s\" inaccessibile in scrittura"
@@ -879,7 +883,6 @@ msgstr "Scrivo file viminfo \"%s\""
 msgid "E886: Can't rename viminfo file to %s!"
 msgstr "E886: Non riesco a rinominare il file viminfo a %s!"
 
-#. Write the info:
 #, c-format
 msgid "# This viminfo file was generated by Vim %s.\n"
 msgstr "# Questo file viminfo è stato generato da Vim %s.\n"
@@ -999,8 +1002,8 @@ msgstr " in 1 riga"
 msgid " on %ld lines"
 msgstr " in %ld righe"
 
-msgid "E147: Cannot do :global recursive"
-msgstr "E147: :global non può essere usato ricorsivamente"
+msgid "E147: Cannot do :global recursive with a range"
+msgstr "E147: :global non può essere usato ricorsivamente con un intervallo"
 
 msgid "E148: Regular expression missing from global"
 msgstr "E148: Manca espressione regolare nel comando 'global'"
@@ -1037,6 +1040,7 @@ msgstr "E149: Spiacente, nessun aiuto per %s"
 msgid "Sorry, help file \"%s\" not found"
 msgstr "Spiacente, non trovo file di aiuto \"%s\""
 
+#, c-format
 msgid "E151: No match: %s"
 msgstr "E151: Nessuna corrispondenza: %s"
 
@@ -1148,8 +1152,8 @@ msgstr "E750: Usare prima \":profile start {fname}\""
 msgid "Save changes to \"%s\"?"
 msgstr "Salvare modifiche a \"%s\"?"
 
-msgid "Untitled"
-msgstr "Senza Nome"
+msgid "E947: Job still running in buffer \"%s\""
+msgstr "E947: Lavoro ancora in esecuzione nel buffer \"%s\""
 
 #, c-format
 msgid "E162: No write since last change for buffer \"%s\""
@@ -1186,11 +1190,13 @@ msgstr "non trovato in '%s': \"%s\""
 
 #, c-format
 msgid "W20: Required python version 2.x not supported, ignoring file: %s"
-msgstr "W20: Versione richiesta di python 2.x non supportata, ignoro il file: %s"
+msgstr ""
+"W20: Versione richiesta di python 2.x non supportata, ignoro il file: %s"
 
 #, c-format
 msgid "W21: Required python version 3.x not supported, ignoring file: %s"
-msgstr "W21: Versione richiesta di python 3.x non supportata, ignoro il file: %s"
+msgstr ""
+"W21: Versione richiesta di python 3.x non supportata, ignoro il file: %s"
 
 msgid "Source Vim script"
 msgstr "Esegui script Vim"
@@ -1459,7 +1465,6 @@ msgstr "E189: \"%s\" esiste (aggiungi ! per eseguire comunque)"
 msgid "E190: Cannot open \"%s\" for writing"
 msgstr "E190: Non riesco ad aprire \"%s\" in scrittura"
 
-#. set mark
 msgid "E191: Argument must be a letter or forward/backward quote"
 msgstr ""
 "E191: L'argomento deve essere una lettera, oppure un apice/apice retroverso"
@@ -1501,13 +1506,15 @@ msgstr "E500: Il valore è una stringa nulla"
 msgid "E195: Cannot open viminfo file for reading"
 msgstr "E195: Non posso aprire il file viminfo in lettura"
 
+msgid "Untitled"
+msgstr "Senza Nome"
+
 msgid "E196: No digraphs in this version"
 msgstr "E196: Digrammi non supportati in questa versione"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
 msgstr "E608: Impossibile lanciare eccezioni con prefisso 'Vim'"
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "Exception thrown: %s"
 msgstr "Eccezione lanciata: %s"
@@ -1524,7 +1531,6 @@ msgstr "Eccezione scartata: %s"
 msgid "%s, line %ld"
 msgstr "%s, riga %ld"
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "Exception caught: %s"
 msgstr "Eccezione intercettata: %s"
@@ -1550,7 +1556,6 @@ msgstr "Errore ed interruzione"
 msgid "Error"
 msgstr "Errore"
 
-#. if (pending & CSTP_INTERRUPT)
 msgid "Interrupt"
 msgstr "Interruzione"
 
@@ -1593,15 +1598,12 @@ msgstr "E601: nidificazione di :try troppo estesa"
 msgid "E603: :catch without :try"
 msgstr "E603: :catch senza :try"
 
-#. Give up for a ":catch" after ":finally" and ignore it.
-#. * Just parse.
 msgid "E604: :catch after :finally"
 msgstr "E604: :catch dopo :finally"
 
 msgid "E606: :finally without :try"
 msgstr "E606: :finally senza :try"
 
-#. Give up for a multiple ":finally" and ignore it.
 msgid "E607: multiple :finally"
 msgstr "E607: :finally multipli"
 
@@ -1694,7 +1696,6 @@ msgstr "Vim: Leggo da 'stdin'...\n"
 msgid "Reading from stdin..."
 msgstr "Leggo da 'stdin'..."
 
-#. Re-opening the original file failed!
 msgid "E202: Conversion made file unreadable!"
 msgstr "E202: La conversione ha reso il file illeggibile!"
 
@@ -1911,9 +1912,6 @@ msgstr "[noeol]"
 msgid "[Incomplete last line]"
 msgstr "[Manca carattere di fine riga]"
 
-#. don't overwrite messages here
-#. must give this prompt
-#. don't use emsg() here, don't want to flush the buffers
 msgid "WARNING: The file has been changed since reading it!!!"
 msgstr "AVVISO: File modificato dopo essere stato letto!!!"
 
@@ -1992,7 +1990,6 @@ msgstr "--Cancellato--"
 msgid "auto-removing autocommand: %s <buffer=%d>"
 msgstr "auto-rimozione dell'autocomando: %s <buffer=%d>"
 
-#. the group doesn't exist
 #, c-format
 msgid "E367: No such group: \"%s\""
 msgstr "E367: Gruppo inesistente: \"%s\""
@@ -2015,7 +2012,6 @@ msgstr "E216: Evento inesistente: %s"
 msgid "E216: No such group or event: %s"
 msgstr "E216: Evento o gruppo inesistente: %s"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Auto-Commands ---"
@@ -2196,18 +2192,15 @@ msgstr "Trova cosa:"
 msgid "Replace with:"
 msgstr "Sostituisci con:"
 
-#. whole word only button
 msgid "Match whole word only"
 msgstr "Cerca solo la parola intera"
 
-#. match case button
 msgid "Match case"
 msgstr "Maiuscole/minuscole"
 
 msgid "Direction"
 msgstr "Direzione"
 
-#. 'Up' and 'Down' buttons
 msgid "Up"
 msgstr "Su"
 
@@ -2286,8 +2279,6 @@ msgstr "Stringa di ricerca (usa '\\\\' per cercare  un '\\')"
 msgid "Find & Replace (use '\\\\' to find  a '\\')"
 msgstr "Sostituisci (usa '\\\\' per cercare  un '\\')"
 
-#. We fake this: Use a filter that doesn't select anything and a default
-#. * file name that won't be used.
 msgid "Not Used"
 msgstr "Non Utilizzato"
 
@@ -2361,7 +2352,6 @@ msgstr "Vim - Selettore Font"
 msgid "Name:"
 msgstr "Nome:"
 
-#. create toggle button
 msgid "Show size in Points"
 msgstr "Mostra dimensione in Punti"
 
@@ -2606,7 +2596,6 @@ msgstr "E261: connessione cscope %s non trovata"
 msgid "cscope connection %s closed"
 msgstr "connessione cscope %s chiusa"
 
-#. should not reach here
 msgid "E570: fatal error in cs_manage_matches"
 msgstr "E570: errore irreparabile in cs_manage_matches"
 
@@ -2768,7 +2757,6 @@ msgstr "numero buffer non valido"
 msgid "not implemented yet"
 msgstr "non ancora implementato"
 
-#. ???
 msgid "cannot set line(s)"
 msgstr "non posso impostare riga(he)"
 
@@ -2809,7 +2797,6 @@ msgid ""
 msgstr ""
 "non posso registrare comando callback: buffer/finestra già in cancellazione"
 
-#. This should never happen.  Famous last word?
 msgid ""
 "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
 "org"
@@ -2848,8 +2835,9 @@ msgstr "E573: Identificativo di server non valido: %s"
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: Proprietà registry relative a VIM non adeguate.  Cancellate!"
 
+#, c-format
 msgid "E938: Duplicate key in JSON: \"%s\""
-msgstr "E938: Chiave duplicata in JSON: \"%s\"" 
+msgstr "E938: Chiave duplicata in JSON: \"%s\""
 
 #, c-format
 msgid "E696: Missing comma in List: %s"
@@ -2912,7 +2900,6 @@ msgstr "Vim: Avviso: Output non diretto a un terminale\n"
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: Avviso: Input non proveniente da un terminale\n"
 
-#. just in case..
 msgid "pre-vimrc command line"
 msgstr "riga comandi prima di vimrc"
 
@@ -3171,6 +3158,9 @@ msgstr ""
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tUsa <viminfo> invece di .viminfo"
 
+msgid "--clean\t\t'nocompatible', Vim defaults, no plugins, no viminfo"
+msgstr "--clean\t\t'nocompatible', default di Vim, no plugin, no viminfo"
+
 msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h opp. --help\tStampa Aiuto (questo messaggio) ed esci"
 
@@ -3271,11 +3261,9 @@ msgstr "--windowid <HWND>\tApri Vim dentro un altro widget win32"
 msgid "No display"
 msgstr "Manca display"
 
-#. Failed to send, abort.
 msgid ": Send failed.\n"
 msgstr ": Invio fallito.\n"
 
-#. Let vim start normally.
 msgid ": Send failed. Trying to execute locally\n"
 msgstr ": Invio fallito. Tento di eseguire localmente\n"
 
@@ -3296,7 +3284,6 @@ msgstr "Nessun mark impostato"
 msgid "E283: No marks matching \"%s\""
 msgstr "E283: Nessun mark corrispondente a \"%s\""
 
-#. Highlight title
 msgid ""
 "\n"
 "mark line  col file/text"
@@ -3304,7 +3291,6 @@ msgstr ""
 "\n"
 "mark riga  col.file/testo"
 
-#. Highlight title
 msgid ""
 "\n"
 " jump line  col file/text"
@@ -3312,7 +3298,6 @@ msgstr ""
 "\n"
 " salt.riga  col.file/testo"
 
-#. Highlight title
 msgid ""
 "\n"
 "change line  col text"
@@ -3327,7 +3312,6 @@ msgstr ""
 "\n"
 "# File mark:\n"
 
-#. Write the jumplist with -'
 msgid ""
 "\n"
 "# Jumplist (newest first):\n"
@@ -3396,7 +3380,6 @@ msgstr "E298: Non riesco a leggere blocco numero 2?"
 msgid "E843: Error while updating swap file crypt"
 msgstr "E843: Errore aggiornando cifratura dello swap file"
 
-#. could not (re)open the swap file, what can we do????
 msgid "E301: Oops, lost the swap file!!!"
 msgstr "E301: Ahimè, lo swap file è perduto!!!"
 
@@ -3580,7 +3563,6 @@ msgstr ""
 msgid "Using crypt key from swap file for the text file.\n"
 msgstr "Uso la chiave di cifratura del file swap per il file di testo.\n"
 
-#. use msg() to start the scrolling properly
 msgid "Swap files found:"
 msgstr "Swap file trovati:"
 
@@ -3750,8 +3732,6 @@ msgstr "Mentre aprivo file \""
 msgid "      NEWER than swap file!\n"
 msgstr "      più RECENTE dello swap file!\n"
 
-#. Some of these messages are long to allow translation to
-#. * other languages.
 msgid ""
 "\n"
 "(1) Another program may be editing the same file.  If this is the case,\n"
@@ -3840,7 +3820,6 @@ msgstr "E328: I Menu esistono solo in un'altra modalità"
 msgid "E329: No menu \"%s\""
 msgstr "E329: Nessun Menu \"%s\""
 
-#. Only a mnemonic or accelerator is not valid.
 msgid "E792: Empty menu name"
 msgstr "E792: Nome menu non valido"
 
@@ -3854,8 +3833,6 @@ msgstr ""
 msgid "E332: Separator cannot be part of a menu path"
 msgstr "E332: Il separatore non può far parte di un percorso di Menu"
 
-#. Now we have found the matching menu, and we list the mappings
-#. Highlight title
 msgid ""
 "\n"
 "--- Menus ---"
@@ -3866,16 +3843,16 @@ msgstr ""
 msgid "Tear off this menu"
 msgstr "Togli questo Menu"
 
+#, c-format
+msgid "E335: Menu not defined for %s mode"
+msgstr "E335: Menu non definito per la modalità %s"
+
 msgid "E333: Menu path must lead to a menu item"
 msgstr "E333: Il percorso Menu deve condurre ad un elemento Menu"
 
 #, c-format
 msgid "E334: Menu not found: %s"
 msgstr "E334: Menu non trovato: %s"
-
-#, c-format
-msgid "E335: Menu not defined for %s mode"
-msgstr "E335: Menu non definito per la modalità %s"
 
 msgid "E336: Menu path must lead to a sub-menu"
 msgstr "E336: Il percorso Menu deve condurre ad un sotto-Menu"
@@ -3946,7 +3923,6 @@ msgstr "Salva File dialogo"
 msgid "Open File dialog"
 msgstr "Apri File dialogo"
 
-#. TODO: non-GUI file selector here
 msgid "E338: Sorry, no file browser in console mode"
 msgstr "E338: Spiacente, niente esplorazione file in modalità console"
 
@@ -4111,8 +4087,8 @@ msgstr "E662: All'inizio della lista modifiche"
 msgid "E663: At end of changelist"
 msgstr "E663: Alla fine della lista modifiche"
 
-msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Batti :quit<Invio>  per uscire da Vim"
+msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
+msgstr "Batti  :qa! e premi <Invio> per ignorare le modifiche e uscire da Vim"
 
 #, c-format
 msgid "1 line %sed 1 time"
@@ -4144,7 +4120,6 @@ msgstr "%ld righe rientrate "
 msgid "E748: No previously used register"
 msgstr "E748: Nessun registro usato in precedenza"
 
-#. must display the prompt
 msgid "cannot yank; delete anyway"
 msgstr "non riesco a salvare in un registro; cancello comunque"
 
@@ -4159,25 +4134,27 @@ msgstr "%ld righe cambiate"
 msgid "freeing %ld lines"
 msgstr "libero %ld righe"
 
-msgid "block of 1 line yanked"
-msgstr "blocco di 1 riga messo in registro"
-
-msgid "1 line yanked"
-msgstr "1 riga messa in registro"
-
 #, c-format
-msgid "block of %ld lines yanked"
-msgstr "blocco di %ld righe messo in registro"
+msgid " into \"%c"
+msgstr " in \"%c"
 
-#, c-format
-msgid "%ld lines yanked"
-msgstr "%ld righe messe in registro"
+#
+msgid "block of 1 line yanked%s"
+msgstr "blocco di 1 riga messo in registro%s"
+
+msgid "1 line yanked%s"
+msgstr "1 riga messa in registro%s"
+
+msgid "block of %ld lines yanked%s"
+msgstr "blocco di %ld righe messo in registro%s"
+
+msgid "%ld lines yanked%s"
+msgstr "%ld righe messe in registro%s"
 
 #, c-format
 msgid "E353: Nothing in register %s"
 msgstr "E353: Niente nel registro %s"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Registers ---"
@@ -4239,9 +4216,6 @@ msgstr ""
 #, c-format
 msgid "(+%ld for BOM)"
 msgstr "(+%ld per BOM)"
-
-msgid "%<%f%h%m%=Page %N"
-msgstr "%<%f%h%m%=Pagina %N"
 
 msgid "Thanks for flying Vim"
 msgstr "Grazie per aver volato con Vim"
@@ -4350,6 +4324,10 @@ msgstr "E541: troppi elementi"
 msgid "E542: unbalanced groups"
 msgstr "E542: gruppi sbilanciati"
 
+msgid "E946: Cannot make a terminal with running job modifiable"
+msgstr "E946: Non posso aprire un terminale mentre ci sono lavori "
+"modificabili in esecuzione"
+
 msgid "E590: A preview window already exists"
 msgstr "E590: Una finestra di pre-visualizzazione esiste già"
 
@@ -4368,9 +4346,6 @@ msgstr "E594: Servono almeno %d colonne"
 msgid "E355: Unknown option: %s"
 msgstr "E355: Opzione inesistente: %s"
 
-#. There's another character after zeros or the string
-#. * is empty.  In both cases, we are trying to set a
-#. * num option using a string.
 #, c-format
 msgid "E521: Number required: &%s = '%s'"
 msgstr "E521: Ci vuole un numero: &%s = '%s'"
@@ -4443,7 +4418,6 @@ msgstr "non posso modificare modalità console ?!\n"
 msgid "mch_get_shellsize: not a console??\n"
 msgstr "mch_get_shellsize: non una console??\n"
 
-#. if Vim opened a window: Executing a shell may cause crashes
 msgid "E360: Cannot execute shell with -f option"
 msgstr "E360: Non posso eseguire lo shell con l'opzione -f"
 
@@ -4667,7 +4641,6 @@ msgstr "E376: %%%c non valido nel prefisso della stringa di 'format'"
 msgid "E377: Invalid %%%c in format string"
 msgstr "E377: %%%c non valido nella stringa di 'format'"
 
-#. nothing found
 msgid "E378: 'errorformat' contains no pattern"
 msgstr "E378: 'errorformat' non contiene alcun modello"
 
@@ -4693,6 +4666,7 @@ msgstr "(%d di %d)%s%s: "
 msgid " (line deleted)"
 msgstr " (riga cancellata)"
 
+#, c-format
 msgid "%serror list %d of %d; %d errors "
 msgstr "%slista errori %d di %d; %d errori"
 
@@ -4704,9 +4678,6 @@ msgstr "E381: In cima allo stack di quickfix"
 
 msgid "No entries"
 msgstr "Nessun elemento"
-
-msgid "E382: Cannot write, 'buftype' option is set"
-msgstr "E382: Non posso scrivere, l'opzione 'buftype' è impostata"
 
 msgid "Error file"
 msgstr "File errori"
@@ -4731,6 +4702,12 @@ msgstr "E369: elemento non valido in %s%%[]"
 #, c-format
 msgid "E769: Missing ] after %s["
 msgstr "E769: Manca ] dopo %s["
+
+msgid "E944: Reverse range in character class"
+msgstr "E944: Intervallo invertito nella classe di caratteri"
+
+msgid "E945: Range too large in character class"
+msgstr "E945: Intervallo troppo ampio nella classe di caratteri"
 
 #, c-format
 msgid "E53: Unmatched %s%%("
@@ -4757,6 +4734,9 @@ msgstr "E69: Manca ] dopo %s%%["
 #, c-format
 msgid "E70: Empty %s%%[]"
 msgstr "E70: %s%%[] vuoto"
+
+msgid "E65: Illegal back reference"
+msgstr "E65: Riferimento all'indietro non ammesso"
 
 msgid "E339: Pattern too long"
 msgstr "E339: Espressione troppo lunga"
@@ -4793,9 +4773,6 @@ msgstr "E63: uso non valido di \\_"
 #, c-format
 msgid "E64: %s%c follows nothing"
 msgstr "E64: %s%c senza nulla prima"
-
-msgid "E65: Illegal back reference"
-msgstr "E65: Riferimento all'indietro non ammesso"
 
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Carattere non ammesso dopo \\z"
@@ -4848,7 +4825,6 @@ msgstr "E867: (NFA) Operatore sconosciuto '\\z%c'"
 msgid "E867: (NFA) Unknown operator '\\%%%c'"
 msgstr "E867: (NFA) Operatore sconosciuto '\\%%%c'"
 
-#. should never happen
 msgid "E868: Error building NFA with equivalence class!"
 msgstr "E868: Errore nel build di NFA con classe di equivalenza!"
 
@@ -4859,11 +4835,9 @@ msgstr "E869: (NFA) Operatore sconosciuto '\\@%c'"
 msgid "E870: (NFA regexp) Error reading repetition limits"
 msgstr "E870: (NFA regexp) Errore nella lettura dei limiti di ripetizione"
 
-#. Can't have a multi follow a multi.
 msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
 msgstr "E871: (NFA regexp) Non si può avere multi dopo multi !"
 
-#. Too many `('
 msgid "E872: (NFA regexp) Too many '('"
 msgstr "E872: (NFA regexp) Troppi '('"
 
@@ -4970,7 +4944,6 @@ msgstr "E386: '?' o '/' atteso dopo ';'"
 msgid " (includes previously listed match)"
 msgstr " (comprese corrispondenze elencate prima)"
 
-#. cursor at status line
 msgid "--- Included files "
 msgstr "--- File inclusi "
 
@@ -5047,8 +5020,6 @@ msgstr "Spiacente, nessun suggerimento"
 msgid "Sorry, only %ld suggestions"
 msgstr "Spiacente, solo %ld suggerimenti"
 
-#. for when 'cmdheight' > 1
-#. avoid more prompt
 #, c-format
 msgid "Change \"%.*s\" to:"
 msgstr "Cambiare \"%.*s\" in:"
@@ -5330,10 +5301,6 @@ msgstr "%d di %d nodi compressi; ne restano %d (%d%%)"
 msgid "Reading back spell file..."
 msgstr "Rilettura file ortografico..."
 
-#.
-#. * Go through the trie of good words, soundfold each word and add it to
-#. * the soundfold trie.
-#.
 msgid "Performing soundfolding..."
 msgstr "Eseguo soundfolding..."
 
@@ -5388,19 +5355,17 @@ msgstr "Parola '%.*s' aggiunta a %s"
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Caratteri di parola differenti nei file ortografici"
 
-#. This should have been checked when generating the .spl
-#. * file.
 msgid "E783: duplicate char in MAP entry"
 msgstr "E783: carattere duplicato nell'elemento MAP"
 
 msgid "No Syntax items defined for this buffer"
 msgstr "Nessun elemento sintattico definito per questo buffer"
 
-msgid "syn conceal on"
-msgstr "syn conceal attivo"
+msgid "syntax conceal on"
+msgstr "syntax conceal attivo"
 
-msgid "syn conceal off"
-msgstr "syn conceal inattivo"
+msgid "syntax conceal off"
+msgstr "syntax conceal inattivo"
 
 #, c-format
 msgid "E390: Illegal argument: %s"
@@ -5656,7 +5621,6 @@ msgstr "E428: Non posso andare oltre l'ultimo tag corrispondente"
 msgid "File \"%s\" does not exist"
 msgstr "Il file \"%s\" non esiste"
 
-#. Give an indication of the number of matching tags
 #, c-format
 msgid "tag %d of %d%s"
 msgstr "tag %d di %d%s"
@@ -5671,7 +5635,6 @@ msgstr "  Uso tag ignorando maiuscole/minuscole!"
 msgid "E429: File \"%s\" does not exist"
 msgstr "E429: Il file \"%s\" non esiste"
 
-#. Highlight title
 msgid ""
 "\n"
 "  # TO tag         FROM line  in file/text"
@@ -5702,7 +5665,6 @@ msgstr "Prima del byte %ld"
 msgid "E432: Tags file not sorted: %s"
 msgstr "E432: Tag file non ordinato alfabeticamente: %s"
 
-#. never opened any tags file
 msgid "E433: No tags file"
 msgstr "E433: Nessun tag file"
 
@@ -5738,7 +5700,6 @@ msgstr "E436: Nessuna descrizione per \"%s\" in 'termcap'"
 msgid "E437: terminal capability \"cm\" required"
 msgstr "E437: capacità \"cm\" del terminale necessaria"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Terminal keys ---"
@@ -5749,6 +5710,21 @@ msgstr ""
 msgid "Cannot open $VIMRUNTIME/rgb.txt"
 msgstr "Non riesco ad aprire $VIMRUNTIME/rgb.txt"
 
+msgid "Terminal"
+msgstr "Terminale"
+
+msgid "Terminal-finished"
+msgstr "Terminale-terminato"
+
+msgid "active"
+msgstr "attivo"
+
+msgid "running"
+msgstr "in esecuzione"
+
+msgid "finished"
+msgstr "terminato"
+
 msgid "new shell started\n"
 msgstr "fatto eseguire nuovo shell\n"
 
@@ -5758,12 +5734,9 @@ msgstr "Vim: Errore leggendo l'input, esco...\n"
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "Uso CUT_BUFFER0 invece che una scelta nulla"
 
-#. This happens when the FileChangedRO autocommand changes the
-#. * file in a way it becomes shorter.
 msgid "E881: Line count changed unexpectedly"
 msgstr "E881: Contatore righe è inaspettatamente cambiato"
 
-#. must display the prompt
 msgid "No undo possible; continue anyway"
 msgstr "'undo' non più possibile; continuo comunque"
 
@@ -5953,6 +5926,7 @@ msgstr "E699: Troppi argomenti"
 msgid "E117: Unknown function: %s"
 msgstr "E117: Funzione sconosciuta: %s"
 
+#, c-format
 msgid "E933: Function was deleted: %s"
 msgstr "E933: Funzione eliminata: %s"
 
@@ -5992,10 +5966,14 @@ msgstr "E862: Non si può usare g: qui"
 
 #, c-format
 msgid "E932: Closure function should not be at top level: %s"
-msgstr "E932: La funzione di chiusura non novrebbe essere al livello più alto: %s"
+msgstr ""
+"E932: La funzione di chiusura non novrebbe essere al livello più alto: %s"
 
 msgid "E126: Missing :endfunction"
 msgstr "E126: Manca :endfunction"
+
+msgid "W22: Text found after :endfunction: %s"
+msgstr "W22: Trovato testo dopo :endfunction: %s"
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
@@ -6336,6 +6314,7 @@ msgstr "E446: Nessun nome file sotto il cursore"
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Non riesco a trovare il file \"%s\" nel percorso"
 
+#, c-format
 msgid "E799: Invalid ID: %ld (must be greater than or equal to 1)"
 msgstr "E799: ID non valido: %ld (dev'essere maggiore o uguale a 1)"
 
@@ -6346,9 +6325,11 @@ msgstr "E801: ID già utilizzato: %ld"
 msgid "List or number required"
 msgstr "È necessaria una Lista o un numero"
 
+#, c-format
 msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"
 msgstr "E802: ID non valido: %ld (dev'essere maggiore o uguale a 1)"
 
+#, c-format
 msgid "E803: ID not found: %ld"
 msgstr "E803: ID non trovato: %ld"
 
@@ -6377,7 +6358,6 @@ msgstr "Differenza con Vim"
 msgid "Edit with &Vim"
 msgstr "Apri con &Vim"
 
-#. Now concatenate
 msgid "Edit with existing Vim - "
 msgstr "Apri con Vim esistente - "
 
@@ -6398,10 +6378,6 @@ msgstr "Percorso file troppo lungo!"
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
 
-#.
-#. * The error messages that can be shared are included here.
-#. * Excluded are errors that are only used once and debugging messages.
-#.
 msgid "E470: Command aborted"
 msgstr "E470: Comando finito male"
 
@@ -6585,12 +6561,6 @@ msgstr "E484: Non riesco ad aprire il file %s"
 #, c-format
 msgid "E485: Can't read file %s"
 msgstr "E485: Non riesco a leggere il file %s"
-
-msgid "E37: No write since last change (add ! to override)"
-msgstr "E37: Non salvato dopo modifica (aggiungi ! per eseguire comunque)"
-
-msgid "E37: No write since last change"
-msgstr "E37: Non salvato dopo l'ultima modifica"
 
 msgid "E38: Null argument"
 msgstr "E38: Argomento nullo"
@@ -6878,7 +6848,6 @@ msgstr "il costruttore di lista non accetta parole chiave come argomenti"
 msgid "list index out of range"
 msgstr "indice di lista non nell'intervallo"
 
-#. No more suitable format specifications in python-2.3
 #, c-format
 msgid "internal error: failed to get vim list item %d"
 msgstr "errore interno: non ho potuto ottenere l'elemento di vim list %d"
@@ -7044,4 +7013,5 @@ msgid ""
 msgstr ""
 "Impostazione di percorso non riuscita: sys.path non è una Lista\n"
 "Dovresti aggiungere vim.VIM_SPECIAL_PATH a sys.path"
+
 

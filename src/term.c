@@ -125,6 +125,17 @@ static int crv_status = STATUS_GET;
 /* Request Cursor position report: */
 static int u7_status = STATUS_GET;
 
+#  ifdef FEAT_TERMINAL
+/* Request foreground color report: */
+static int rfg_status = STATUS_GET;
+static int fg_r = 0;
+static int fg_g = 0;
+static int fg_b = 0;
+static int bg_r = 255;
+static int bg_g = 255;
+static int bg_b = 255;
+#  endif
+
 /* Request background color report: */
 static int rbg_status = STATUS_GET;
 
@@ -196,15 +207,11 @@ static struct builtin_term builtin_termcaps[] =
 # ifdef TERMINFO
     {(int)KS_CDL,	IF_EB("\033|%p1%dD", ESC_STR "|%p1%dD")},
     {(int)KS_CS,	IF_EB("\033|%p1%d;%p2%dR", ESC_STR "|%p1%d;%p2%dR")},
-#  ifdef FEAT_WINDOWS
     {(int)KS_CSV,	IF_EB("\033|%p1%d;%p2%dV", ESC_STR "|%p1%d;%p2%dV")},
-#  endif
 # else
     {(int)KS_CDL,	IF_EB("\033|%dD", ESC_STR "|%dD")},
     {(int)KS_CS,	IF_EB("\033|%d;%dR", ESC_STR "|%d;%dR")},
-#  ifdef FEAT_WINDOWS
     {(int)KS_CSV,	IF_EB("\033|%d;%dV", ESC_STR "|%d;%dV")},
-#  endif
 # endif
     {(int)KS_CL,	IF_EB("\033|C", ESC_STR "|C")},
 			/* attributes switched on with 'h', off with * 'H' */
@@ -886,6 +893,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CGP,	IF_EB("\033[13t", ESC_STR "[13t")},
 #  endif
     {(int)KS_CRV,	IF_EB("\033[>c", ESC_STR "[>c")},
+    {(int)KS_RFG,	IF_EB("\033]10;?\007", ESC_STR "]10;?\007")},
     {(int)KS_RBG,	IF_EB("\033]11;?\007", ESC_STR "]11;?\007")},
     {(int)KS_U7,	IF_EB("\033[6n", ESC_STR "[6n")},
 #  ifdef FEAT_TERMGUICOLORS
@@ -1121,12 +1129,10 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CS,	"[%dCS%d]"},
 #  endif
-#  ifdef FEAT_WINDOWS
-#   ifdef TERMINFO
+#  ifdef TERMINFO
     {(int)KS_CSV,	"[%p1%dCSV%p2%d]"},
-#   else
+#  else
     {(int)KS_CSV,	"[%dCSV%d]"},
-#   endif
 #  endif
 #  ifdef TERMINFO
     {(int)KS_CAB,	"[CAB%p1%d]"},
@@ -1191,6 +1197,7 @@ static struct builtin_term builtin_termcaps[] =
 #  endif
     {(int)KS_CRV,	"[CRV]"},
     {(int)KS_U7,	"[U7]"},
+    {(int)KS_RFG,	"[RFG]"},
     {(int)KS_RBG,	"[RBG]"},
     {K_UP,		"[KU]"},
     {K_DOWN,		"[KD]"},
@@ -1619,7 +1626,7 @@ set_termname(char_u *term)
 				{KS_TS, "ts"}, {KS_FS, "fs"},
 				{KS_CWP, "WP"}, {KS_CWS, "WS"},
 				{KS_CSI, "SI"}, {KS_CEI, "EI"},
-				{KS_U7, "u7"}, {KS_RBG, "RB"},
+				{KS_U7, "u7"}, {KS_RFG, "RF"}, {KS_RBG, "RB"},
 				{KS_8F, "8f"}, {KS_8B, "8b"},
 				{KS_CBE, "BE"}, {KS_CBD, "BD"},
 				{KS_CPS, "PS"}, {KS_CPE, "PE"},
@@ -3139,9 +3146,7 @@ win_new_shellsize(void)
     if (old_Columns != Columns)
     {
 	old_Columns = Columns;
-#ifdef FEAT_WINDOWS
 	shell_new_columns();	/* update window sizes */
-#endif
     }
 }
 
@@ -3284,11 +3289,10 @@ set_shellsize(int width, int height, int mustset)
 		if (pum_visible())
 		{
 		    redraw_later(NOT_VALID);
-		    ins_compl_show_pum(); /* This includes the redraw. */
+		    ins_compl_show_pum();
 		}
-		else
 #endif
-		    update_screen(NOT_VALID);
+		update_screen(NOT_VALID);
 		if (redrawing())
 		    setcursor();
 	    }
@@ -3334,6 +3338,9 @@ settmode(int tmode)
 		 * them. */
 		if (tmode != TMODE_RAW && (crv_status == STATUS_SENT
 					 || u7_status == STATUS_SENT
+#ifdef FEAT_TERMINAL
+					 || rfg_status == STATUS_SENT
+#endif
 					 || rbg_status == STATUS_SENT
 					 || rbm_status == STATUS_SENT
 					 || rcs_status == STATUS_SENT))
@@ -3405,6 +3412,9 @@ stoptermcap(void)
 	    /* May need to discard T_CRV, T_U7 or T_RBG response. */
 	    if (crv_status == STATUS_SENT
 		    || u7_status == STATUS_SENT
+# ifdef FEAT_TERMINAL
+		    || rfg_status == STATUS_SENT
+# endif
 		    || rbg_status == STATUS_SENT
 		    || rbm_status == STATUS_SENT
 		    || rcs_status == STATUS_SENT)
@@ -3522,16 +3532,30 @@ may_req_bg_color(void)
 {
     if (can_get_termresponse() && starting == 0)
     {
-	/* Only request background if t_RB is set and 'background' wasn't
-	 * changed. */
-	if (rbg_status == STATUS_GET
-		&& *T_RBG != NUL
-		&& !option_was_set((char_u *)"bg"))
+	int didit = FALSE;
+
+# ifdef FEAT_TERMINAL
+	/* Only request foreground if t_RF is set. */
+	if (rfg_status == STATUS_GET && *T_RFG != NUL)
+	{
+	    LOG_TR("Sending FG request");
+	    out_str(T_RFG);
+	    rfg_status = STATUS_SENT;
+	    didit = TRUE;
+	}
+# endif
+
+	/* Only request background if t_RB is set. */
+	if (rbg_status == STATUS_GET && *T_RBG != NUL)
 	{
 	    LOG_TR("Sending BG request");
 	    out_str(T_RBG);
 	    rbg_status = STATUS_SENT;
+	    didit = TRUE;
+	}
 
+	if (didit)
+	{
 	    /* check for the characters now, otherwise they might be eaten by
 	     * get_keystroke() */
 	    out_flush();
@@ -3828,11 +3852,9 @@ scroll_region_set(win_T *wp, int off)
 {
     OUT_STR(tgoto((char *)T_CS, W_WINROW(wp) + wp->w_height - 1,
 							 W_WINROW(wp) + off));
-#ifdef FEAT_WINDOWS
     if (*T_CSV != NUL && wp->w_width != Columns)
-	OUT_STR(tgoto((char *)T_CSV, W_WINCOL(wp) + wp->w_width - 1,
-							       W_WINCOL(wp)));
-#endif
+	OUT_STR(tgoto((char *)T_CSV, wp->w_wincol + wp->w_width - 1,
+							       wp->w_wincol));
     screen_start();		    /* don't know where cursor is now */
 }
 
@@ -3843,10 +3865,8 @@ scroll_region_set(win_T *wp, int off)
 scroll_region_reset(void)
 {
     OUT_STR(tgoto((char *)T_CS, (int)Rows - 1, 0));
-#ifdef FEAT_WINDOWS
     if (*T_CSV != NUL)
 	OUT_STR(tgoto((char *)T_CSV, (int)Columns - 1, 0));
-#endif
     screen_start();		    /* don't know where cursor is now */
 }
 
@@ -4125,7 +4145,7 @@ static linenr_T orig_topline = 0;
 static int orig_topfill = 0;
 # endif
 #endif
-#if (defined(FEAT_WINDOWS) && defined(CHECK_DOUBLE_CLICK)) || defined(PROTO)
+#if defined(CHECK_DOUBLE_CLICK) || defined(PROTO)
 /*
  * Checking for double clicks ourselves.
  * "orig_topline" is used to avoid detecting a double-click when the window
@@ -4571,12 +4591,15 @@ check_termcode(
 			/* Detect terminals that set $TERM to something like
 			 * "xterm-256colors"  but are not fully xterm
 			 * compatible. */
-#  ifdef MACOS
+
 			/* Mac Terminal.app sends 1;95;0 */
 			if (version == 95
 				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
+			{
 			    is_not_xterm = TRUE;
-#  endif
+			    is_mac_terminal = TRUE;
+			}
+
 			/* Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
 			 * xfce4-terminal sends 1;2802;0.
 			 * screen sends 83;40500;0
@@ -4597,9 +4620,12 @@ check_termcode(
 			    is_not_xterm = TRUE;
 
 			/* Only request the cursor style if t_SH and t_RS are
-			 * set. Not for Terminal.app, it can't handle t_RS, it
+			 * set. Only supported properly by xterm since version
+			 * 279 (otherwise it returns 0x18).
+			 * Not for Terminal.app, it can't handle t_RS, it
 			 * echoes the characters to the screen. */
 			if (rcs_status == STATUS_GET
+				&& version >= 279
 				&& !is_not_xterm
 				&& *T_CSH != NUL
 				&& *T_CRS != NUL)
@@ -4700,59 +4726,81 @@ check_termcode(
 		}
 	    }
 
-	    /* Check for background color response from the terminal:
+	    /* Check for fore/background color response from the terminal:
 	     *
-	     *       {lead}11;rgb:{rrrr}/{gggg}/{bbbb}{tail}
+	     *       {lead}{code};rgb:{rrrr}/{gggg}/{bbbb}{tail}
 	     *
+	     * {code} is 10 for foreground, 11 for background
 	     * {lead} can be <Esc>] or OSC
 	     * {tail} can be '\007', <Esc>\ or STERM.
 	     *
 	     * Consume any code that starts with "{lead}11;", it's also
 	     * possible that "rgba" is following.
 	     */
-	    else if (*T_RBG != NUL
+	    else if ((*T_RBG != NUL || *T_RFG != NUL)
 			&& ((tp[0] == ESC && len >= 2 && tp[1] == ']')
 			    || tp[0] == OSC))
 	    {
 		j = 1 + (tp[0] == ESC);
 		if (len >= j + 3 && (argp[0] != '1'
-					 || argp[1] != '1' || argp[2] != ';'))
+					 || (argp[1] != '1' && argp[1] != '0')
+					 || argp[2] != ';'))
 		  i = 0; /* no match */
 		else
 		  for (i = j; i < len; ++i)
 		    if (tp[i] == '\007' || (tp[0] == OSC ? tp[i] == STERM
 			: (tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')))
 		    {
+			int is_bg = argp[1] == '1';
+
 			if (i - j >= 21 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
-			    && tp[j + 11] == '/' && tp[j + 16] == '/'
-			    && !option_was_set((char_u *)"bg"))
+			    && tp[j + 11] == '/' && tp[j + 16] == '/')
 			{
-			    char *newval = (3 * '6' < tp[j+7] + tp[j+12]
+			    int rval = hexhex2nr(tp + j + 7);
+			    int gval = hexhex2nr(tp + j + 12);
+			    int bval = hexhex2nr(tp + j + 17);
+
+			    if (is_bg)
+			    {
+				char *newval = (3 * '6' < tp[j+7] + tp[j+12]
 						+ tp[j+17]) ? "light" : "dark";
 
-			    LOG_TR("Received RBG response");
-			    rbg_status = STATUS_GOT;
-			    if (STRCMP(p_bg, newval) != 0)
-			    {
-				/* value differs, apply it */
-				set_option_value((char_u *)"bg", 0L,
+				LOG_TR("Received RBG response");
+				rbg_status = STATUS_GOT;
+#ifdef FEAT_TERMINAL
+				bg_r = rval;
+				bg_g = gval;
+				bg_b = bval;
+#endif
+				if (!option_was_set((char_u *)"bg")
+						  && STRCMP(p_bg, newval) != 0)
+				{
+				    /* value differs, apply it */
+				    set_option_value((char_u *)"bg", 0L,
 							  (char_u *)newval, 0);
-				reset_option_was_set((char_u *)"bg");
-				redraw_asap(CLEAR);
+				    reset_option_was_set((char_u *)"bg");
+				    redraw_asap(CLEAR);
+				}
 			    }
+#ifdef FEAT_TERMINAL
+			    else
+			    {
+				LOG_TR("Received RFG response");
+				rfg_status = STATUS_GOT;
+				fg_r = rval;
+				fg_g = gval;
+				fg_b = bval;
+			    }
+#endif
 			}
 
 			/* got finished code: consume it */
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
-			if (rcs_status == STATUS_SENT
-					     && slen < len && tp[slen] == 0x18)
-			    /* Some older xterm send 0x18 for the T_RS request,
-			     * skip it here. */
-			    ++slen;
 # ifdef FEAT_EVAL
-			set_vim_var_string(VV_TERMRGBRESP, tp, slen);
+			set_vim_var_string(is_bg ? VV_TERMRBGRESP
+						   : VV_TERMRFGRESP, tp, slen);
 # endif
 			break;
 		    }
@@ -4799,11 +4847,6 @@ check_termcode(
 			key_name[0] = (int)KS_EXTRA;
 			key_name[1] = (int)KE_IGNORE;
 			slen = i + 1 + (tp[i] == ESC);
-			if (rcs_status == STATUS_SENT
-					     && slen < len && tp[slen] == 0x18)
-			    /* Some older xterm send 0x18 for the T_RS request,
-			     * skip it here. */
-			    ++slen;
 			break;
 		    }
 		  }
@@ -5487,19 +5530,19 @@ check_termcode(
 			/*
 			 * Avoid computing the difference between mouse_time
 			 * and orig_mouse_time for the first click, as the
-			 * difference would be huge and would cause multiplication
-			 * overflow.
+			 * difference would be huge and would cause
+			 * multiplication overflow.
 			 */
 			timediff = p_mouset;
 		    }
 		    else
 		    {
 			timediff = (mouse_time.tv_usec
-						- orig_mouse_time.tv_usec) / 1000;
+					     - orig_mouse_time.tv_usec) / 1000;
 			if (timediff < 0)
 			    --orig_mouse_time.tv_sec;
 			timediff += (mouse_time.tv_sec
-						 - orig_mouse_time.tv_sec) * 1000;
+					      - orig_mouse_time.tv_sec) * 1000;
 		    }
 		    orig_mouse_time = mouse_time;
 		    if (mouse_code == orig_mouse_code
@@ -5512,12 +5555,9 @@ check_termcode(
 				    && orig_topfill == curwin->w_topfill
 #endif
 				)
-#ifdef FEAT_WINDOWS
 				/* Double click in tab pages line also works
 				 * when window contents changes. */
-				|| (mouse_row == 0 && firstwin->w_winrow > 0)
-#endif
-			       )
+				|| (mouse_row == 0 && firstwin->w_winrow > 0))
 			    )
 			++orig_num_clicks;
 		    else
@@ -5792,6 +5832,36 @@ check_termcode(
 
     return 0;			    /* no match found */
 }
+
+#if (defined(FEAT_TERMINAL) && defined(FEAT_TERMRESPONSE)) || defined(PROTO)
+/*
+ * Get the text foreground color, if known.
+ */
+    void
+term_get_fg_color(char_u *r, char_u *g, char_u *b)
+{
+    if (rfg_status == STATUS_GOT)
+    {
+	*r = fg_r;
+	*g = fg_g;
+	*b = fg_b;
+    }
+}
+
+/*
+ * Get the text background color, if known.
+ */
+    void
+term_get_bg_color(char_u *r, char_u *g, char_u *b)
+{
+    if (rbg_status == STATUS_GOT)
+    {
+	*r = bg_r;
+	*g = bg_g;
+	*b = bg_b;
+    }
+}
+#endif
 
 /*
  * Replace any terminal code strings in from[] with the equivalent internal

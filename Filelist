@@ -136,6 +136,7 @@ SRC_ALL =	\
 		src/testdir/bench*.vim \
 		src/testdir/samples/*.txt \
 		src/testdir/if_ver*.vim \
+		src/testdir/xterm_ramp.vim \
 		src/proto.h \
 		src/proto/arabic.pro \
 		src/proto/blowfish.pro \
@@ -405,6 +406,7 @@ SRC_DOS =	\
 		src/msvcsetup.bat \
 		src/msvc2008.bat \
 		src/msvc2010.bat \
+		src/msvc2015.bat \
 		src/dimm.idl \
 		src/dlldata.c \
 		src/dosinst.c \
@@ -638,6 +640,7 @@ RT_ALL =	\
 		runtime/pack/dist/opt/matchit/doc/tags \
 		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
 		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
+		runtime/pack/dist/opt/termdebug/plugin/termdebug.vim \
 
 # runtime files for all distributions without CR-NL translation
 RT_ALL_BIN =	\

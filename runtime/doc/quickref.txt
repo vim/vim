@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.0.  Last change: 2017 Aug 19
+*quickref.txt*  For Vim version 8.0.  Last change: 2017 Sep 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -749,6 +749,7 @@ Short explanation of each option:		*option-list*
 'iminsert'	  'imi'     use :lmap or IM in Insert mode
 'imsearch'	  'ims'     use :lmap or IM when typing a search pattern
 'imstatusfunc'    'imsf'    function to obtain X input method status
+'imstyle'	  'imst'    specifies the input style of the input method
 'include'	  'inc'     pattern to be used to find an include file
 'includeexpr'	  'inex'    expression used to process an include line
 'incsearch'	  'is'	    highlight match while typing search pattern

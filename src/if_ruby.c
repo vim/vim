@@ -882,7 +882,7 @@ static int ensure_ruby_initialized(void)
 #ifdef RUBY19_OR_LATER
 	    {
 		int dummy_argc = 2;
-		char *dummy_argv[] = {"vim-ruby", "-e0"};
+		char *dummy_argv[] = {"vim-ruby", "-e_=0"};
 		ruby_options(dummy_argc, dummy_argv);
 	    }
 	    ruby_script("vim-ruby");
@@ -1424,16 +1424,12 @@ static VALUE current_line_number(void)
 
 static VALUE window_s_count(void)
 {
-#ifdef FEAT_WINDOWS
     win_T	*w;
     int n = 0;
 
     FOR_ALL_WINDOWS(w)
 	n++;
     return INT2NUM(n);
-#else
-    return INT2NUM(1);
-#endif
 }
 
 static VALUE window_s_aref(VALUE self UNUSED, VALUE num)
@@ -1441,11 +1437,7 @@ static VALUE window_s_aref(VALUE self UNUSED, VALUE num)
     win_T *w;
     int n = NUM2INT(num);
 
-#ifndef FEAT_WINDOWS
-    w = curwin;
-#else
     for (w = firstwin; w != NULL; w = w->w_next, --n)
-#endif
 	if (n == 0)
 	    return window_new(w);
     return Qnil;
@@ -1478,19 +1470,17 @@ static VALUE window_set_height(VALUE self, VALUE height)
 
 static VALUE window_width(VALUE self UNUSED)
 {
-    return INT2NUM(W_WIDTH(get_win(self)));
+    return INT2NUM(get_win(self)->w_width);
 }
 
 static VALUE window_set_width(VALUE self UNUSED, VALUE width)
 {
-#ifdef FEAT_WINDOWS
     win_T *win = get_win(self);
     win_T *savewin = curwin;
 
     curwin = win;
     win_setwidth(NUM2INT(width));
     curwin = savewin;
-#endif
     return width;
 }
 

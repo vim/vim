@@ -51,14 +51,17 @@ olelibsdll = ole32.lib uuid.lib oleaut32.lib user32.lib gdi32.lib advapi32.lib
 # include CPUARG
 cflags = $(cflags) $(CPUARG)
 
+SUBSYSTEM = console
+!if "$(SUBSYSTEM_VER)" != ""
+SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
+!endif
+
 all: gvimext.dll
 
 gvimext.dll:    gvimext.obj	\
 		gvimext.res
-# $(implib) /NOLOGO -machine:$(CPU) -def:gvimext.def $** -out:gvimext.lib
-# $(link) $(dlllflags) -base:0x1C000000 -out:$*.dll $** $(olelibsdll) shell32.lib gvimext.lib comctl32.lib gvimext.exp
-  $(link) $(lflags) -dll -def:gvimext.def -base:0x1C000000 -out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib
-  if exist $*.dll.manifest mt -nologo -manifest $*.dll.manifest -outputresource:$*.dll;2
+	$(link) $(lflags) -dll -def:gvimext.def -base:0x1C000000 -out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib -subsystem:$(SUBSYSTEM)
+	if exist $*.dll.manifest mt -nologo -manifest $*.dll.manifest -outputresource:$*.dll;2
 
 gvimext.obj: gvimext.h
 

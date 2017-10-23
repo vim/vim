@@ -1,5 +1,7 @@
 " Test for completion menu
 
+source shared.vim
+
 let g:months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 let g:setting = ''
 
@@ -624,6 +626,38 @@ func Test_complete_CTRLN_startofbuffer()
         \ 'railing.moralize(3,9);']
   call feedkeys("qai\<c-n>\<c-n>.\<esc>3wdW\<cr>q3@a", 'tx')
   call assert_equal(expected, getline(1,'$'))
+  bwipe!
+endfunc
+
+func Test_popup_and_window_resize()
+  if !has('terminal') || has('gui_running')
+    return
+  endif
+  let h = winheight(0)
+  if h < 15
+    return
+  endif
+  let g:buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': h / 3})
+  call term_sendkeys(g:buf, (h / 3 - 1)."o\<esc>")
+  call term_wait(g:buf, 200)
+  call term_sendkeys(g:buf, "Gi\<c-x>")
+  call term_sendkeys(g:buf, "\<c-v>")
+  call term_wait(g:buf, 100)
+  " popup first entry "!" must be at the top
+  call WaitFor('term_getline(g:buf, 1) =~ "^!"')
+  call assert_match('^!\s*$', term_getline(g:buf, 1))
+  exe 'resize +' . (h - 1)
+  call term_wait(g:buf, 100)
+  redraw!
+  " popup shifted down, first line is now empty
+  call WaitFor('term_getline(g:buf, 1) == ""')
+  call assert_equal('', term_getline(g:buf, 1))
+  sleep 100m
+  " popup is below cursor line and shows first match "!"
+  call WaitFor('term_getline(g:buf, term_getcursor(g:buf)[0] + 1) =~ "^!"')
+  call assert_match('^!\s*$', term_getline(g:buf, term_getcursor(g:buf)[0] + 1))
+  " cursor line also shows !
+  call assert_match('^!\s*$', term_getline(g:buf, term_getcursor(g:buf)[0]))
   bwipe!
 endfunc
 

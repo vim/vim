@@ -1590,6 +1590,22 @@ func Test_collapse_buffers()
   bwipe!
 endfunc
 
+func Test_cmd_parsing()
+  if !has('unix')
+    return
+  endif
+  call assert_false(filereadable("file with space"))
+  let job = job_start('touch "file with space"')
+  call WaitFor('filereadable("file with space")')
+  call assert_true(filereadable("file with space"))
+  call delete("file with space")
+
+  let job = job_start('touch file\ with\ space')
+  call WaitFor('filereadable("file with space")')
+  call assert_true(filereadable("file with space"))
+  call delete("file with space")
+endfunc
+
 func Test_raw_passes_nul()
   if !executable('cat') || !has('job')
     return

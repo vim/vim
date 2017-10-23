@@ -70,6 +70,10 @@ typedef int			scid_T;		/* script ID */
 typedef struct file_buffer	buf_T;  /* forward declaration */
 typedef struct terminal_S	term_T;
 
+#ifdef FEAT_MENU
+typedef struct VimMenu vimmenu_T;
+#endif
+
 /*
  * Reference to a buffer that stores the value of buf_free_count.
  * bufref_valid() only needs to check "buf" when the count differs.
@@ -205,13 +209,11 @@ typedef struct
     long	wo_nuw;
 # define w_p_nuw w_onebuf_opt.wo_nuw	/* 'numberwidth' */
 #endif
-#if defined(FEAT_WINDOWS)
     int		wo_wfh;
 # define w_p_wfh w_onebuf_opt.wo_wfh	/* 'winfixheight' */
     int		wo_wfw;
 # define w_p_wfw w_onebuf_opt.wo_wfw	/* 'winfixwidth' */
-#endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     int		wo_pvw;
 # define w_p_pvw w_onebuf_opt.wo_pvw	/* 'previewwindow' */
 #endif
@@ -570,10 +572,8 @@ typedef struct
 # ifdef FEAT_BROWSE_CMD
     int		browse;			/* TRUE to invoke file dialog */
 # endif
-# ifdef FEAT_WINDOWS
     int		split;			/* flags for win_split() */
     int		tab;			/* > 0 when ":tab" was used */
-# endif
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
     int		confirm;		/* TRUE to invoke yes/no dialog */
 # endif
@@ -728,11 +728,7 @@ typedef struct argentry
     int		ae_fnum;	/* buffer number with expanded file name */
 } aentry_T;
 
-#ifdef FEAT_WINDOWS
-# define ALIST(win) (win)->w_alist
-#else
-# define ALIST(win) (&global_alist)
-#endif
+#define ALIST(win)	(win)->w_alist
 #define GARGLIST	((aentry_T *)global_alist.al_ga.ga_data)
 #define ARGLIST		((aentry_T *)ALIST(curwin)->al_ga.ga_data)
 #define WARGLIST(wp)	((aentry_T *)ALIST(wp)->al_ga.ga_data)
@@ -1487,7 +1483,8 @@ struct jobvar_S
     PROCESS_INFORMATION	jv_proc_info;
     HANDLE		jv_job_object;
 #endif
-    char_u	*jv_tty_name;	/* controlling tty, allocated */
+    char_u	*jv_tty_in;	/* controlling tty input, allocated */
+    char_u	*jv_tty_out;	/* controlling tty output, allocated */
     jobstatus_T	jv_status;
     char_u	*jv_stoponexit; /* allocated */
     int		jv_exitval;
@@ -1652,6 +1649,9 @@ struct channel_S {
 				/* callback for Netbeans when channel is
 				 * closed */
 
+#ifdef WIN32
+    int		ch_named_pipe;	/* using named pipe instead of pty */
+#endif
     char_u	*ch_callback;	/* call when any msg is not handled */
     partial_T	*ch_partial;
     char_u	*ch_close_cb;	/* call when channel is closed */
@@ -2527,10 +2527,8 @@ typedef struct w_line
 struct frame_S
 {
     char	fr_layout;	/* FR_LEAF, FR_COL or FR_ROW */
-#ifdef FEAT_WINDOWS
     int		fr_width;
     int		fr_newwidth;	/* new width used in win_equal_rec() */
-#endif
     int		fr_height;
     int		fr_newheight;	/* new height used in win_equal_rec() */
     frame_T	*fr_parent;	/* containing frame or NULL */
@@ -2617,6 +2615,14 @@ struct matchitem
 #endif
 };
 
+#ifdef FEAT_MENU
+typedef struct {
+    int		wb_startcol;
+    int		wb_endcol;
+    vimmenu_T	*wb_menu;
+} winbar_item_T;
+#endif
+
 /*
  * Structure which contains all information that belongs to a window
  *
@@ -2633,10 +2639,8 @@ struct window_S
     synblock_T	*w_s;		    /* for :ownsyntax */
 #endif
 
-#ifdef FEAT_WINDOWS
     win_T	*w_prev;	    /* link to previous window */
     win_T	*w_next;	    /* link to next window */
-#endif
 #ifdef FEAT_AUTOCMD
     int		w_closing;	    /* window is being closed, don't let
 				       autocommands close it too. */
@@ -2692,20 +2696,13 @@ struct window_S
      * Layout of the window in the screen.
      * May need to add "msg_scrolled" to "w_winrow" in rare situations.
      */
-#ifdef FEAT_WINDOWS
     int		w_winrow;	    /* first row of window in screen */
-#endif
     int		w_height;	    /* number of rows in window, excluding
-				       status/command line(s) */
-#ifdef FEAT_WINDOWS
+				       status/command/winbar line(s) */
     int		w_status_height;    /* number of status lines (0 or 1) */
-    int		w_wincol;	    /* Leftmost column of window in screen.
-				       use W_WINCOL() */
-    int		w_width;	    /* Width of window, excluding separation.
-				       use W_WIDTH() */
-    int		w_vsep_width;	    /* Number of separator columns (0 or 1).
-				       use W_VSEP_WIDTH() */
-#endif
+    int		w_wincol;	    /* Leftmost column of window in screen. */
+    int		w_width;	    /* Width of window, excluding separation. */
+    int		w_vsep_width;	    /* Number of separator columns (0 or 1). */
 
     /*
      * === start of cached values ====
@@ -2788,9 +2785,7 @@ struct window_S
 				       w_redr_type is REDRAW_TOP */
     linenr_T	w_redraw_top;	    /* when != 0: first line needing redraw */
     linenr_T	w_redraw_bot;	    /* when != 0: last line needing redraw */
-#ifdef FEAT_WINDOWS
     int		w_redr_status;	    /* if TRUE status line must be redrawn */
-#endif
 
 #ifdef FEAT_CMDL_INFO
     /* remember what is shown in the ruler for this window (if 'ruler' set) */
@@ -2806,15 +2801,19 @@ struct window_S
 
     int		w_alt_fnum;	    /* alternate file (for # and CTRL-^) */
 
-#ifdef FEAT_WINDOWS
     alist_T	*w_alist;	    /* pointer to arglist for this window */
-#endif
     int		w_arg_idx;	    /* current index in argument list (can be
 				       out of range!) */
     int		w_arg_idx_invalid;  /* editing another file than w_arg_idx */
 
     char_u	*w_localdir;	    /* absolute path of local directory or
 				       NULL */
+#ifdef FEAT_MENU
+    vimmenu_T	*w_winbar;	    /* The root of the WinBar menu hierarchy. */
+    winbar_item_T *w_winbar_items;  /* list of items in the WinBar */
+    int		w_winbar_height;    /* 1 if there is a window toolbar */
+#endif
+
     /*
      * Options local to a window.
      * They are local because they influence the layout of the window or
@@ -3080,8 +3079,6 @@ typedef struct cursor_entry
 
 /* Start a menu name with this to not include it on the main menu bar */
 #define MNU_HIDDEN_CHAR		']'
-
-typedef struct VimMenu vimmenu_T;
 
 struct VimMenu
 {
@@ -3349,10 +3346,8 @@ typedef struct
 #ifdef FEAT_EVAL
     int		use_debug_break_level;
 #endif
-#ifdef FEAT_WINDOWS
     int		window_count;		/* number of windows to use */
     int		window_layout;		/* 0, WIN_HOR, WIN_VER or WIN_TABS */
-#endif
 
 #ifdef FEAT_CLIENTSERVER
     int		serverArg;		/* TRUE when argument for a server */
@@ -3417,3 +3412,16 @@ typedef struct lval_S
     dictitem_T	*ll_di;		/* The dictitem or NULL */
     char_u	*ll_newkey;	/* New key for Dict in alloc. mem or NULL. */
 } lval_T;
+
+/* Structure used to save the current state.  Used when executing Normal mode
+ * commands while in any other mode. */
+typedef struct {
+    int		save_msg_scroll;
+    int		save_restart_edit;
+    int		save_msg_didout;
+    int		save_State;
+    int		save_insertmode;
+    int		save_finish_op;
+    int		save_opcount;
+    tasave_T	tabuf;
+} save_state_T;

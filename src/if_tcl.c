@@ -2083,7 +2083,6 @@ tcl_buffer_free(buf_T *buf)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 tcl_window_free(win_T *win)
 {
@@ -2102,6 +2101,5 @@ tcl_window_free(win_T *win)
 	win->w_tcl_ref = NULL;
     }
 }
-#endif
 
 /* The End */

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Aug 27
+*options.txt*	For Vim version 8.0.  Last change: 2017 Sep 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -423,6 +423,16 @@ command, not when assigning a value to an option with ":let".
 							*$HOME-windows*
 On MS-Windows, if $HOME is not defined as an environment variable, then
 at runtime Vim will set it to the expansion of $HOMEDRIVE$HOMEPATH.
+If $HOMEDRIVE is not set then $USERPROFILE is used.
+
+This expanded value is not exported to the environment, this matters when
+running an external command: >
+	:echo system('set | findstr ^HOME=')
+and >
+	:echo luaeval('os.getenv("HOME")')
+should echo nothing (an empty string) despite exists('$HOME') being true.
+When setting $HOME to a non-empty string it will be exported to the
+subprocesses.
 
 
 Note the maximum length of an expanded option is limited.  How much depends on
@@ -722,7 +732,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	Vim may set this option automatically at startup time when Vim is
 	compiled with the |+termresponse| feature and if |t_u7| is set to the
-	escape sequence to request cursor position report.
+	escape sequence to request cursor position report.  The response can
+	be found in |v:termu7resp|.
 
 			*'antialias'* *'anti'* *'noantialias'* *'noanti'*
 'antialias' 'anti'	boolean (default: off)
@@ -870,11 +881,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Vim will guess the value.  In the GUI this should work correctly,
 	in other cases Vim might not be able to guess the right value.
 
-	When the t_BG option is set, Vim will use it to request the background
+	When the |t_RB| option is set, Vim will use it to request the background
 	color from the terminal.  If the returned RGB value is dark/light and
 	'background' is not dark/light, 'background' will be set and the
 	screen is redrawn.  This may have side effects, make t_BG empty in
-	your .vimrc if you suspect this problem.
+	your .vimrc if you suspect this problem.  The response to |t_RB| can
+	be found in |v:termrgbresp|.
 
 	When starting the GUI, the default value for 'background' will be
 	"light".  When the value is not set in the .gvimrc, and Vim detects
@@ -4299,7 +4311,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	may change in later releases.
 
 						*'iminsert'* *'imi'*
-'iminsert' 'imi'	number (default 0, 2 when an input method is supported)
+'iminsert' 'imi'	number (default 0)
 			local to buffer
 			{not in Vi}
 	Specifies whether :lmap or an Input Method (IM) is to be used in
@@ -4322,7 +4334,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	methods.  Use 'imdisable' to disable XIM then.
 
 						*'imsearch'* *'ims'*
-'imsearch' 'ims'	number (default 0, 2 when an input method is supported)
+'imsearch' 'ims'	number (default -1)
 			local to buffer
 			{not in Vi}
 	Specifies whether :lmap or an Input Method (IM) is to be used when
@@ -4363,13 +4375,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with |+xim| and
 			|+GUI_GTK|}
-	This option specifies the input style of Input Method.
-	Set to zero if you want to use on-the-spot style.
-	Set to one if you want to use over-the-spot style.
+	This option specifies the input style of Input Method:
+	0   use on-the-spot style
+	1   over-the-spot style
 	See: |xim-input-style|
 
-	For a long time on-the-spot sytle had been used in GTK version of vim,
-	however, it is known that it causes troubles when using mappings,
+	For a long time on-the-spot style had been used in the GTK version of
+	vim, however, it is known that it causes troubles when using mappings,
 	|single-repeat|, etc.  Therefore over-the-spot style becomes the
 	default now.  This should work fine for most people, however if you
 	have any problem with it, try using on-the-spot style.
@@ -5456,6 +5468,31 @@ A jump table for the options with a short description can be found at |Q_op|.
 	time in msec between two mouse clicks for the second click to be
 	recognized as a multi click.
 
+						*'mzschemedll'*
+'mzschemedll'		string	(default depends on the build)
+			global
+			{not in Vi}
+			{only available when compiled with the |+mzscheme/dyn|
+			feature}
+	Specifies the name of the MzScheme shared library. The default is
+	DYNAMIC_MZSCH_DLL which was specified at compile time.
+	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+						*'mzschemegcdll'*
+'mzschemegcdll'		string	(default depends on the build)
+			global
+			{not in Vi}
+			{only available when compiled with the |+mzscheme/dyn|
+			feature}
+	Specifies the name of the MzScheme GC shared library. The default is
+	DYNAMIC_MZGC_DLL which was specified at compile time.
+	The value can be equal to 'mzschemedll' if it includes the GC code.
+	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
 						    *'mzquantum'* *'mzq'*
 'mzquantum' 'mzq'	number	(default 100)
 			global
@@ -5745,6 +5782,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:let &path = &path . "," . substitute($INCL, ';', ',', 'g')
 <	Replace the ';' with a ':' or whatever separator is used.  Note that
 	this doesn't work when $INCL contains a comma or white space.
+
+						*'perldll'*
+'perldll'		string	(default depends on the build)
+			global
+			{not in Vi}
+			{only available when compiled with the |+perl/dyn|
+			feature}
+	Specifies the name of the Perl shared library. The default is
+	DYNAMIC_PERL_DLL, which was specified at compile time.
+	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 			*'preserveindent'* *'pi'* *'nopreserveindent'* *'nopi'*
 'preserveindent' 'pi'	boolean	(default off)
@@ -8241,7 +8290,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Save the whole buffer for undo when reloading it.  This applies to the
 	":e!" command and reloading for when the buffer changed outside of
 	Vim. |FileChangedShell|
-	The save only happens when this options is negative or when the number
+	The save only happens when this option is negative or when the number
 	of lines is smaller than the value of this option.
 	Set this option to zero to disable undo for a reload.
 

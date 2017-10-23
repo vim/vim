@@ -3567,8 +3567,29 @@ on_select_tab(
 	gpointer	data UNUSED)
 {
     if (!ignore_tabline_evt)
-    {
 	send_tabline_event(idx + 1);
+}
+
+/*
+ * Handle reordering the tabs (using D&D).
+ */
+    static void
+on_tab_reordered(
+	GtkNotebook	*notebook UNUSED,
+# if GTK_CHECK_VERSION(3,0,0)
+	gpointer	*page UNUSED,
+# else
+	GtkNotebookPage *page UNUSED,
+# endif
+	gint		idx,
+	gpointer	data UNUSED)
+{
+    if (!ignore_tabline_evt)
+    {
+	if ((tabpage_index(curtab) - 1) < idx)
+	    tabpage_move(idx + 1);
+	else
+	    tabpage_move(idx);
     }
 }
 
@@ -3658,6 +3679,9 @@ gui_mch_update_tabline(void)
 		    page,
 		    event_box,
 		    nr++);
+	    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline),
+		    page,
+		    TRUE);
 	}
 
 	event_box = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
@@ -4093,14 +4117,19 @@ gui_mch_init(void)
 # endif
 	gtk_container_add(GTK_CONTAINER(event_box), label);
 	gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, event_box);
+	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline), page, TRUE);
     }
 
 # if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect(G_OBJECT(gui.tabline), "switch-page",
 		     G_CALLBACK(on_select_tab), NULL);
+    g_signal_connect(G_OBJECT(gui.tabline), "page-reordered",
+		     G_CALLBACK(on_tab_reordered), NULL);
 # else
     gtk_signal_connect(GTK_OBJECT(gui.tabline), "switch_page",
 		       GTK_SIGNAL_FUNC(on_select_tab), NULL);
+    gtk_signal_connect(GTK_OBJECT(gui.tabline), "page-reordered",
+		       GTK_SIGNAL_FUNC(on_tab_reordered), NULL);
 # endif
 
     /* Create a popup menu for the tab line and connect it. */
@@ -4941,6 +4970,29 @@ gui_mch_set_shellsize(int width, int height,
     gui_mch_update();
 }
 
+    void
+gui_gtk_get_screen_size_of_win(GtkWidget *wid, int *width, int *height)
+{
+#if GTK_CHECK_VERSION(3,22,0)
+    GdkDisplay *dpy = gtk_widget_get_display(wid);
+    GdkWindow *win = gtk_widget_get_window(wid);
+    GdkMonitor *monitor = gdk_display_get_monitor_at_window(dpy, win);
+    GdkRectangle geometry;
+
+    gdk_monitor_get_geometry(monitor, &geometry);
+    *width = geometry.width;
+    *height = geometry.height;
+#else
+    GdkScreen* screen;
+
+    if (wid != NULL && gtk_widget_has_screen(wid))
+	screen = gtk_widget_get_screen(wid);
+    else
+	screen = gdk_screen_get_default();
+    *width = gdk_screen_get_width(screen);
+    *height = gdk_screen_get_height(screen);
+#endif
+}
 
 /*
  * The screen size is used to make sure the initial window doesn't get bigger
@@ -4950,30 +5002,11 @@ gui_mch_set_shellsize(int width, int height,
     void
 gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 {
-#if GTK_CHECK_VERSION(3,22,2)
-    GdkRectangle rect;
-    GdkMonitor * const mon = gdk_display_get_monitor_at_window(
-	    gtk_widget_get_display(gui.mainwin),
-	    gtk_widget_get_window(gui.mainwin));
-    gdk_monitor_get_geometry(mon, &rect);
+    gui_gtk_get_screen_size_of_win(gui.mainwin, screen_w, screen_h);
 
-    *screen_w = rect.width;
     /* Subtract 'guiheadroom' from the height to allow some room for the
      * window manager (task list and window title bar). */
-    *screen_h = rect.height - p_ghr;
-#else
-    GdkScreen* screen;
-
-    if (gui.mainwin != NULL && gtk_widget_has_screen(gui.mainwin))
-	screen = gtk_widget_get_screen(gui.mainwin);
-    else
-	screen = gdk_screen_get_default();
-
-    *screen_w = gdk_screen_get_width(screen);
-    /* Subtract 'guiheadroom' from the height to allow some room for the
-     * window manager (task list and window title bar). */
-    *screen_h = gdk_screen_get_height(screen) - p_ghr;
-#endif
+    *screen_h -= p_ghr;
 
     /*
      * FIXME: dirty trick: Because the gui_get_base_height() doesn't include

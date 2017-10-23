@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.0.  Last change: 2017 Aug 24
+*intro.txt*     For Vim version 8.0.  Last change: 2017 Sep 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -264,6 +264,10 @@ Vim would never have become what it is now, without the help of these people!
 	Juergen Weigert		Lattice version, AUX improvements, UNIX and
 				MS-DOS ports, autoconf
 	Stefan 'Sec' Zehl	Maintainer of vim.org
+	Yasuhiro Matsumoto	many MS-Windows improvements
+	Ken Takata		fixes and features
+	Kazunobu Kuriyama	GTK 3
+	Christian Brabandt	many fixes, features, user support, etc.
 
 I wish to thank all the people that sent me bug reports and suggestions.  The
 list is too long to mention them all here.  Vim would not be the same without

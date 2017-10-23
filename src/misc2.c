@@ -165,13 +165,11 @@ coladvance2(
     else
     {
 #ifdef FEAT_VIRTUALEDIT
-	int width = W_WIDTH(curwin) - win_col_off(curwin);
+	int width = curwin->w_width - win_col_off(curwin);
 
 	if (finetune
 		&& curwin->w_p_wrap
-# ifdef FEAT_WINDOWS
 		&& curwin->w_width != 0
-# endif
 		&& wcol >= (colnr_T)width)
 	{
 	    csize = linetabsize(line);
@@ -312,7 +310,7 @@ coladvance2(
 	    int b = (int)wcol - (int)col;
 
 	    /* The difference between wcol and col is used to set coladd. */
-	    if (b > 0 && b < (MAXCOL - 2 * W_WIDTH(curwin)))
+	    if (b > 0 && b < (MAXCOL - 2 * curwin->w_width))
 		pos->coladd = b;
 
 	    col += b;
@@ -664,7 +662,7 @@ leftcol_changed(void)
     int		retval = FALSE;
 
     changed_cline_bef_curs();
-    lastcol = curwin->w_leftcol + W_WIDTH(curwin) - curwin_col_off() - 1;
+    lastcol = curwin->w_leftcol + curwin->w_width - curwin_col_off() - 1;
     validate_virtcol();
 
     /*
@@ -1084,14 +1082,12 @@ free_all_mem(void)
     block_autocmds();
 # endif
 
-# ifdef FEAT_WINDOWS
     /* Close all tabs and windows.  Reset 'equalalways' to avoid redraws. */
     p_ea = FALSE;
     if (first_tabpage->tp_next != NULL)
 	do_cmdline_cmd((char_u *)"tabonly!");
     if (!ONE_WINDOW)
 	do_cmdline_cmd((char_u *)"only!");
-# endif
 
 # if defined(FEAT_SPELL)
     /* Free all spell info. */
@@ -1197,10 +1193,8 @@ free_all_mem(void)
     /* Close all script inputs. */
     close_all_scripts();
 
-#if defined(FEAT_WINDOWS)
     /* Destroy all windows.  Must come before freeing buffers. */
     win_free_all();
-#endif
 
     /* Free all buffers.  Reset 'autochdir' to avoid accessing things that
      * were freed already. */
@@ -1238,10 +1232,8 @@ free_all_mem(void)
 
     reset_last_sourcing();
 
-#ifdef FEAT_WINDOWS
     free_tabpage(first_tabpage);
     first_tabpage = NULL;
-#endif
 
 # ifdef UNIX
     /* Machine-specific free. */
@@ -3176,11 +3168,9 @@ set_fileformat(
 	set_string_option_direct((char_u *)"ff", -1, (char_u *)p,
 						     OPT_FREE | opt_flags, 0);
 
-#ifdef FEAT_WINDOWS
     /* This may cause the buffer to become (un)modified. */
     check_status(curbuf);
     redraw_tabline = TRUE;
-#endif
 #ifdef FEAT_TITLE
     need_maketitle = TRUE;	    /* set window title later */
 #endif
@@ -3353,8 +3343,7 @@ same_directory(char_u *f1, char_u *f2)
 }
 
 #if defined(FEAT_SESSION) || defined(MSWIN) || defined(FEAT_GUI_MAC) \
-	|| ((defined(FEAT_GUI_GTK)) \
-			&& ( defined(FEAT_WINDOWS) || defined(FEAT_DND)) ) \
+	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
 	|| defined(PROTO)
 /*
@@ -3728,10 +3717,8 @@ get_shape_idx(int mouse)
     }
     if (mouse && drag_status_line)
 	return SHAPE_IDX_SDRAG;
-# ifdef FEAT_WINDOWS
     if (mouse && drag_sep_line)
 	return SHAPE_IDX_VDRAG;
-# endif
 #endif
     if (!mouse && State == SHOWMATCH)
 	return SHAPE_IDX_SM;

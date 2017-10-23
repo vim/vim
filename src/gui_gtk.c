@@ -1160,7 +1160,6 @@ gui_mch_create_scrollbar(scrollbar_T *sb, int orient)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 gui_mch_destroy_scrollbar(scrollbar_T *sb)
 {
@@ -1171,7 +1170,6 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
     }
     gui_mch_update();
 }
-#endif
 
 #if defined(FEAT_BROWSE) || defined(PROTO)
 /*
@@ -1956,7 +1954,7 @@ popup_menu_position_func(GtkMenu *menu UNUSED,
 # endif
     {
 	/* Find the cursor position in the current window */
-	*x += FILL_X(W_WINCOL(curwin) + curwin->w_wcol + 1) + 1;
+	*x += FILL_X(curwin->w_wincol + curwin->w_wcol + 1) + 1;
 	*y += FILL_Y(W_WINROW(curwin) + curwin->w_wrow + 1) + 1;
     }
 }

@@ -721,9 +721,10 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #define SHOWMATCH	(0x700 + INSERT) /* show matching paren */
 #define CONFIRM		0x800	/* ":confirm" prompt */
 #define SELECTMODE	0x1000	/* Select mode, only for mappings */
+#define TERMINAL        0x2000  /* Terminal mode */
 
-#define MAP_ALL_MODES	(0x3f | SELECTMODE)	/* all mode bits used for
-						 * mapping */
+/* all mode bits used for mapping */
+#define MAP_ALL_MODES	(0x3f | SELECTMODE | TERMINAL)
 
 /* directions */
 #define FORWARD			1
@@ -863,23 +864,11 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #define FINDFILE_DIR	1	/* only directories */
 #define FINDFILE_BOTH	2	/* files and directories */
 
-#ifdef FEAT_WINDOWS
-# define W_WINCOL(wp)	(wp->w_wincol)
-# define W_WIDTH(wp)	(wp->w_width)
-# define W_ENDCOL(wp)	(wp->w_wincol + wp->w_width)
-# define W_VSEP_WIDTH(wp) (wp->w_vsep_width)
+#define W_ENDCOL(wp)	(wp->w_wincol + wp->w_width)
+#ifdef FEAT_MENU
+# define W_WINROW(wp)	(wp->w_winrow + wp->w_winbar_height)
 #else
-# define W_WINCOL(wp)	0
-# define W_WIDTH(wp)	Columns
-# define W_ENDCOL(wp)	Columns
-# define W_VSEP_WIDTH(wp) 0
-#endif
-#ifdef FEAT_WINDOWS
-# define W_STATUS_HEIGHT(wp) (wp->w_status_height)
 # define W_WINROW(wp)	(wp->w_winrow)
-#else
-# define W_STATUS_HEIGHT(wp) 0
-# define W_WINROW(wp)	0
 #endif
 
 #ifdef NO_EXPANDPATH
@@ -1311,6 +1300,8 @@ enum auto_event
     EVENT_BUFWRITEPOST,		/* after writing a buffer */
     EVENT_BUFWRITEPRE,		/* before writing a buffer */
     EVENT_BUFWRITECMD,		/* write buffer using command */
+    EVENT_CMDLINEENTER,		/* after entering the command line */
+    EVENT_CMDLINELEAVE,		/* before leaving the command line */
     EVENT_CMDWINENTER,		/* after entering the cmdline window */
     EVENT_CMDWINLEAVE,		/* before leaving the cmdline window */
     EVENT_COLORSCHEME,		/* after loading a colorscheme */
@@ -1912,6 +1903,7 @@ typedef int sock_T;
 # define CURSOR_MOVED		0x100
 # define MOUSE_FOLD_CLOSE	0x200	/* clicked on '-' in fold column */
 # define MOUSE_FOLD_OPEN	0x400	/* clicked on '+' in fold column */
+# define MOUSE_WINBAR		0x800	/* in window toolbar */
 
 /* flags for jump_to_mouse() */
 # define MOUSE_FOCUS		0x01	/* need to stay in this window */
@@ -2013,11 +2005,12 @@ typedef int sock_T;
 #define VV_TYPE_NONE	78
 #define VV_TYPE_JOB	79
 #define VV_TYPE_CHANNEL	80
-#define VV_TERMRGBRESP	81
-#define VV_TERMU7RESP	82
-#define VV_TERMSTYLERESP 83
-#define VV_TERMBLINKRESP 84
-#define VV_LEN		85	/* number of v: vars */
+#define VV_TERMRFGRESP	81
+#define VV_TERMRBGRESP	82
+#define VV_TERMU7RESP	83
+#define VV_TERMSTYLERESP 84
+#define VV_TERMBLINKRESP 85
+#define VV_LEN		86	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L

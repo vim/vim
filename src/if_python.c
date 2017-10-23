@@ -1438,7 +1438,6 @@ python_buffer_free(buf_T *buf)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 python_window_free(win_T *win)
 {
@@ -1460,7 +1459,6 @@ python_tabpage_free(tabpage_T *tab)
 	TAB_PYTHON_REF(tab) = NULL;
     }
 }
-#endif
 
     static int
 PythonMod_Init(void)

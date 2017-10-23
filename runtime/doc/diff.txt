@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 8.0.  Last change: 2017 Feb 03
+*diff.txt*      For Vim version 8.0.  Last change: 2017 Sep 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,7 +10,7 @@ eight versions of the same file.
 
 The basics are explained in section |08.7| of the user manual.
 
-1. Starting diff mode		|vimdiff|
+1. Starting diff mode		|start-vimdiff|
 2. Viewing diffs		|view-diffs|
 3. Jumping to diffs		|jumpto-diffs|
 4. Copying diffs		|copy-diffs|
@@ -19,7 +19,7 @@ The basics are explained in section |08.7| of the user manual.
 {not in Vi}
 
 ==============================================================================
-1. Starting diff mode
+1. Starting diff mode					*start-vimdiff*
 
 The easiest way to start editing in diff mode is with the "vimdiff" command.
 This starts Vim as usual, and additionally sets up for viewing the differences
@@ -226,8 +226,8 @@ The diffs are highlighted with these groups:
 				(searching from the end of the line).  The
 				text in between is highlighted.  This means
 				that parts in the middle that are still the
-				same are highlighted anyway.  Only "iwhite" of
-				'diffopt' is used here.
+				same are highlighted anyway.  The 'diffopt'
+				flags "iwhite" and "icase" are used here.
 |hl-DiffDelete|	DiffDelete	Deleted lines.  Also called filler lines,
 				because they don't really exist in this
 				buffer.
