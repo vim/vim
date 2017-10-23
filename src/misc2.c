@@ -1135,7 +1135,6 @@ free_all_mem(void)
     free_all_autocmds();
 # endif
     clear_termcodes();
-    free_all_options();
     free_all_marks();
     alist_clear(&global_alist);
     free_homedir();
@@ -1195,6 +1194,9 @@ free_all_mem(void)
 
     /* Destroy all windows.  Must come before freeing buffers. */
     win_free_all();
+
+    /* Free all option values.  Must come after closing windows. */
+    free_all_options();
 
     /* Free all buffers.  Reset 'autochdir' to avoid accessing things that
      * were freed already. */
