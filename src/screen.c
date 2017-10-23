@@ -203,7 +203,7 @@ redraw_win_later(
     win_T	*wp,
     int		type)
 {
-    if (wp->w_redr_type < type)
+    if (!exiting && wp->w_redr_type < type)
     {
 	wp->w_redr_type = type;
 	if (type >= NOT_VALID)
