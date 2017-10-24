@@ -105,7 +105,10 @@
 # include <X11/Intrinsic.h>
 #endif
 #ifdef X_LOCALE
-#include <X11/Xlocale.h>
+# include <X11/Xlocale.h>
+# if !defined(HAVE_MBLEN) && !defined(mblen)
+#  define mblen _Xmblen
+# endif
 #endif
 
 #if defined(FEAT_GUI_GTK) && defined(FEAT_XIM)
@@ -415,7 +418,7 @@ enc_alias_table[] =
     {"euccn",		IDX_EUC_CN},
     {"gb2312",		IDX_EUC_CN},
     {"euctw",		IDX_EUC_TW},
-#if defined(WIN3264) || defined(WIN32UNIX) || defined(MACOS)
+#if defined(WIN3264) || defined(WIN32UNIX) || defined(MACOS_X)
     {"japan",		IDX_CP932},
     {"korea",		IDX_CP949},
     {"prc",		IDX_CP936},
@@ -516,7 +519,7 @@ mb_init(void)
     int		n;
     int		enc_dbcs_new = 0;
 #if defined(USE_ICONV) && !defined(WIN3264) && !defined(WIN32UNIX) \
-	&& !defined(MACOS)
+	&& !defined(MACOS_CONVERT)
 # define LEN_FROM_CONV
     vimconv_T	vimconv;
     char_u	*p;
@@ -711,7 +714,8 @@ codepage_invalid:
 	     * API */
 	    n = IsDBCSLeadByteEx(enc_dbcs, (WINBYTE)i) ? 2 : 1;
 #else
-# if defined(MACOS) || defined(__amigaos4__) || defined(__ANDROID__)
+# if defined(__amigaos4__) || defined(__ANDROID__) || \
+				   !(defined(HAVE_MBLEN) || defined(X_LOCALE))
 	    /*
 	     * if mblen() is not available, character which MSB is turned on
 	     * are treated as leading byte character. (note : This assumption
@@ -720,18 +724,14 @@ codepage_invalid:
 	    n = (i & 0x80) ? 2 : 1;
 # else
 	    char buf[MB_MAXBYTES + 1];
-# ifdef X_LOCALE
-#  ifndef mblen
-#   define mblen _Xmblen
-#  endif
-# endif
+
 	    if (i == NUL)	/* just in case mblen() can't handle "" */
 		n = 1;
 	    else
 	    {
 		buf[0] = i;
 		buf[1] = 0;
-#ifdef LEN_FROM_CONV
+#  ifdef LEN_FROM_CONV
 		if (vimconv.vc_type != CONV_NONE)
 		{
 		    /*
@@ -748,7 +748,7 @@ codepage_invalid:
 			n = 2;
 		}
 		else
-#endif
+#  endif
 		{
 		    /*
 		     * mblen() should return -1 for invalid (means the leading
@@ -918,7 +918,7 @@ dbcs_class(unsigned lead, unsigned trail)
 		unsigned char tb = trail;
 
 		/* convert process code to JIS */
-# if defined(WIN3264) || defined(WIN32UNIX) || defined(MACOS)
+# if defined(WIN3264) || defined(WIN32UNIX) || defined(MACOS_X)
 		/* process code is SJIS */
 		if (lb <= 0x9f)
 		    lb = (lb - 0x81) * 2 + 0x21;
@@ -6536,7 +6536,7 @@ convert_setup_ext(
 	vcp->vc_cpto = to_is_utf8 ? 0 : encname2codepage(to);
     }
 #endif
-#ifdef MACOS_X
+#ifdef MACOS_CONVERT
     else if ((from_prop & ENC_MACROMAN) && (to_prop & ENC_LATIN1))
     {
 	vcp->vc_type = CONV_MAC_LATIN1;

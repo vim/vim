@@ -2534,7 +2534,7 @@ out_trash(void)
     void
 out_char(unsigned c)
 {
-#if defined(UNIX) || defined(VMS) || defined(AMIGA) || defined(MACOS_X_UNIX)
+#if defined(UNIX) || defined(VMS) || defined(AMIGA) || defined(MACOS_X)
     if (c == '\n')	/* turn LF into CR-LF (CRMOD doesn't seem to do this) */
 	out_char('\r');
 #endif
@@ -2554,7 +2554,7 @@ static void out_char_nf(unsigned);
     static void
 out_char_nf(unsigned c)
 {
-#if defined(UNIX) || defined(VMS) || defined(AMIGA) || defined(MACOS_X_UNIX)
+#if defined(UNIX) || defined(VMS) || defined(AMIGA) || defined(MACOS_X)
     if (c == '\n')	/* turn LF into CR-LF (CRMOD doesn't seem to do this) */
 	out_char_nf('\r');
 #endif

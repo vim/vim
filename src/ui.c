@@ -1748,7 +1748,7 @@ read_from_input_buf(char_u *buf, long maxlen)
     void
 fill_input_buf(int exit_on_error UNUSED)
 {
-#if defined(UNIX) || defined(VMS) || defined(MACOS_X_UNIX)
+#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
     int		len;
     int		try;
     static int	did_read_something = FALSE;
@@ -1772,7 +1772,7 @@ fill_input_buf(int exit_on_error UNUSED)
 	return;
     }
 #endif
-#if defined(UNIX) || defined(VMS) || defined(MACOS_X_UNIX)
+#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
     if (vim_is_input_buf_full())
 	return;
     /*

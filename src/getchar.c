@@ -5257,7 +5257,7 @@ check_map(
 }
 #endif
 
-#if defined(MSWIN) || defined(MACOS)
+#if defined(MSWIN) || defined(MACOS_X)
 
 #define VIS_SEL	(VISUAL+SELECTMODE)	/* abbreviation */
 
@@ -5308,7 +5308,7 @@ static struct initmap
 # endif
 #endif
 
-#if defined(MACOS)
+#if defined(MACOS_X)
 	/* Use the Standard MacOS binding. */
 	/* paste, copy and cut */
 	{(char_u *)"<D-v> \"*P", NORMAL},
@@ -5329,7 +5329,7 @@ static struct initmap
     void
 init_mappings(void)
 {
-#if defined(MSWIN) ||defined(MACOS)
+#if defined(MSWIN) || defined(MACOS_X)
     int		i;
 
     for (i = 0; i < (int)(sizeof(initmappings) / sizeof(struct initmap)); ++i)
@@ -5337,7 +5337,8 @@ init_mappings(void)
 #endif
 }
 
-#if defined(MSWIN) || defined(FEAT_CMDWIN) || defined(MACOS) || defined(PROTO)
+#if defined(MSWIN) || defined(FEAT_CMDWIN) || defined(MACOS_X) \
+							     || defined(PROTO)
 /*
  * Add a mapping "map" for mode "mode".
  * Need to put string in allocated memory, because do_map() will modify it.

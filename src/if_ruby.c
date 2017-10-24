@@ -127,7 +127,7 @@
 #undef _
 
 /* T_DATA defined both by Ruby and Mac header files, hack around it... */
-#if defined(MACOS_X_UNIX) || defined(macintosh)
+#if defined(MACOS_X)
 # define __OPENTRANSPORT__
 # define __OPENTRANSPORTPROTOCOL__
 # define __OPENTRANSPORTPROVIDERS__

@@ -1750,7 +1750,7 @@ write_error:
     if (!write_ok)
 	EMSG2(_("E829: write error in undo file: %s"), file_name);
 
-#if defined(MACOS_CLASSIC) || defined(WIN3264)
+#if defined(WIN3264)
     /* Copy file attributes; for systems where this can only be done after
      * closing the file. */
     if (buf->b_ffname != NULL)
