@@ -3002,6 +3002,7 @@ ex_file(exarg_T *eap)
     /* print full file name if :cd used */
     if (!shortmess(SHM_FILEINFO))
 	fileinfo(FALSE, FALSE, eap->forceit);
+    redraw_tabline = TRUE;
 }
 
 /*
