@@ -127,3 +127,32 @@ func Test_block_shift_tab()
 
   enew!
 endfunc
+
+" Tests Blockwise Visual when there are TABs before the text.
+func Test_blockwise_visual()
+  enew!
+  call append(0, ['123456',
+	      \ '234567',
+	      \ '345678',
+	      \ '',
+	      \ 'test text test tex start here',
+	      \ "\t\tsome text",
+	      \ "\t\ttest text",
+	      \ 'test text'])
+  call cursor(1,1)
+  exe "normal /start here$\<CR>"
+  exe 'normal "by$' . "\<C-V>jjlld"
+  exe "normal /456$\<CR>"
+  exe "normal \<C-V>jj" . '"bP'
+  call assert_equal(['123start here56',
+	      \ '234start here67',
+	      \ '345start here78',
+	      \ '',
+	      \ 'test text test tex rt here',
+	      \ "\t\tsomext",
+	      \ "\t\ttesext"], getline(1, 7))
+
+  enew!
+endfunc
+
+" TODO: import test38.in
