@@ -831,7 +831,7 @@ void ex_rubyfile(exarg_T *eap)
 
     if (ensure_ruby_initialized())
     {
-	rb_load_protect(rb_str_new2((char *) eap->arg), 0, &state);
+	rb_protect((VALUE (*)(VALUE))rb_load, rb_str_new2((char *) eap->arg), &state);
 	if (state) error_print(state);
     }
 }
