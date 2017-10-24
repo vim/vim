@@ -1044,7 +1044,7 @@ details.  NOTE: this is done since Vim 8.0, not in Vim 7.4. (it was added in
 patch 7.4.2111 to be exact).
 
 This should work well for new Vim users.  If you create your own .vimrc, it is
-recommended to add this line somewhere near the top: >
+recommended to add these lines somewhere near the top: >
 	unlet! skip_defaults_vim
 	source $VIMRUNTIME/defaults.vim
 Then Vim works like before you had a .vimrc. Copying $VIMRUNTIME/vimrc_example
