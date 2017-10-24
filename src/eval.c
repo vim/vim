@@ -6995,7 +6995,7 @@ free_tv(typval_T *varp)
 	{
 	    case VAR_FUNC:
 		func_unref(varp->vval.v_string);
-		/*FALLTHROUGH*/
+		/* FALLTHROUGH */
 	    case VAR_STRING:
 		vim_free(varp->vval.v_string);
 		break;
@@ -7040,7 +7040,7 @@ clear_tv(typval_T *varp)
 	{
 	    case VAR_FUNC:
 		func_unref(varp->vval.v_string);
-		/*FALLTHROUGH*/
+		/* FALLTHROUGH */
 	    case VAR_STRING:
 		vim_free(varp->vval.v_string);
 		varp->vval.v_string = NULL;

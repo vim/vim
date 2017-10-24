@@ -1563,9 +1563,8 @@ getcmdline(
 			break;
 		    goto cmdline_not_changed;
 		}
-		/* FALLTHROUGH */
-
 #ifdef FEAT_CMDHIST
+		/* FALLTHROUGH */
 	case K_UP:
 	case K_DOWN:
 	case K_S_UP:
