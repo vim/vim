@@ -1945,6 +1945,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		AppendToRedobuff((char_u *)"!\r");  /* use any last used !cmd */
 	    else
 		bangredo = TRUE;    /* do_bang() will put cmd in redo buffer */
+	    /* FALLTHROUGH */
 
 	case OP_INDENT:
 	case OP_COLON:
@@ -5150,7 +5151,7 @@ dozet:
 		    break;
 		}
 		undo = TRUE;
-		/*FALLTHROUGH*/
+		/* FALLTHROUGH */
 
     case 'g':	/* "zg": add good word to word list */
     case 'w':	/* "zw": add wrong word to word list */
@@ -8267,7 +8268,7 @@ nv_g_cmd(cmdarg_T *cap)
 	/* "g'm" and "g`m": jump to mark without setting pcmark */
     case '\'':
 	cap->arg = TRUE;
-	/*FALLTHROUGH*/
+	/* FALLTHROUGH */
     case '`':
 	nv_gomark(cap);
 	break;
@@ -8328,7 +8329,7 @@ nv_g_cmd(cmdarg_T *cap)
     case 'q':
     case 'w':
 	oap->cursor_start = curwin->w_cursor;
-	/*FALLTHROUGH*/
+	/* FALLTHROUGH */
     case '~':
     case 'u':
     case 'U':
@@ -9117,7 +9118,7 @@ nv_edit(cmdarg_T *cap)
 		 * the first column, then it inserts. */
 		if (curwin->w_cursor.col == 0)
 		    break;
-		/*FALLTHROUGH*/
+		/* FALLTHROUGH */
 
 	    case 'a':	/* "a"ppend is like "i"nsert on the next character. */
 #ifdef FEAT_VIRTUALEDIT

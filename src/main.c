@@ -2228,7 +2228,7 @@ command_line_scan(mparm_T *parmp)
 		    argv_idx = -1;
 		    break;
 		}
-		/*FALLTHROUGH*/
+		/* FALLTHROUGH */
 	    case 'S':		/* "-S {file}" execute Vim script */
 	    case 'i':		/* "-i {viminfo}" use for viminfo */
 #ifndef FEAT_DIFF
@@ -2386,7 +2386,7 @@ scripterror:
 			argv_idx = -1;
 			break;
 		    }
-		    /*FALLTHROUGH*/
+		    /* FALLTHROUGH */
 		case 'W':	/* "-W {scriptout}" overwrite script file */
 		    if (scriptout != NULL)
 			goto scripterror;

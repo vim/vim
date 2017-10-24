@@ -670,7 +670,8 @@ emsg(char_u *s)
 
 	ex_exitval = 1;
 
-	/* Reset msg_silent, an error causes messages to be switched back on. */
+	/* Reset msg_silent, an error causes messages to be switched back on.
+	 */
 	msg_silent = 0;
 	cmd_silent = FALSE;
 
@@ -2837,7 +2838,7 @@ do_more_prompt(int typed_char)
 		skip_redraw = TRUE;		/* skip redraw once */
 		need_wait_return = FALSE;	/* don't wait in main() */
 	    }
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 	case 'q':		/* quit */
 	case Ctrl_C:
 	case ESC:

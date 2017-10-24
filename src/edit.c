@@ -984,7 +984,7 @@ edit(
 	case ESC:	/* End input mode */
 	    if (echeck_abbr(ESC + ABBR_OFF))
 		break;
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 
 	case Ctrl_C:	/* End input mode */
 #ifdef FEAT_CMDWIN
@@ -5774,13 +5774,16 @@ quote_meta(char_u *dest, char_u *src, int len)
 		if (ctrl_x_mode == CTRL_X_DICTIONARY
 					   || ctrl_x_mode == CTRL_X_THESAURUS)
 		    break;
+		/* FALLTHROUGH */
 	    case '~':
 		if (!p_magic)	/* quote these only if magic is set */
 		    break;
+		/* FALLTHROUGH */
 	    case '\\':
 		if (ctrl_x_mode == CTRL_X_DICTIONARY
 					   || ctrl_x_mode == CTRL_X_THESAURUS)
 		    break;
+		/* FALLTHROUGH */
 	    case '^':		/* currently it's not needed. */
 	    case '$':
 		m++;
