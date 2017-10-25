@@ -3079,12 +3079,12 @@ jumpto_tag(
     int		save_magic;
     int		save_p_ws, save_p_scs, save_p_ic;
     linenr_T	save_lnum;
-    int		csave = 0;
+    int		len;
     char_u	*str;
     char_u	*pbuf;			/* search pattern buffer */
     char_u	*pbuf_end;
-    char_u	*tofree_fname = NULL;
     char_u	*fname;
+    char_u	*efname;
     tagptrs_T	tagp;
     int		retval = FAIL;
     int		getfile_result = GETFILE_UNUSED;
@@ -3095,7 +3095,6 @@ jumpto_tag(
 #if defined(FEAT_QUICKFIX)
     win_T	*curwin_save = NULL;
 #endif
-    char_u	*full_fname = NULL;
 #ifdef FEAT_FOLDING
     int		old_KeyTyped = KeyTyped;    /* getting the file may reset it */
 #endif
@@ -3109,10 +3108,12 @@ jumpto_tag(
 	goto erret;
     }
 
-    /* truncate the file name, so it can be used as a string */
-    csave = *tagp.fname_end;
-    *tagp.fname_end = NUL;
-    fname = tagp.fname;
+    len = tagp.fname_end - tagp.fname;
+    fname = alloc(len + 1);
+    if (fname == NULL)
+	goto erret;
+    mch_memmove(fname, tagp.fname, len);
+    fname[len] = NUL;
 
     /* copy the command to pbuf[], remove trailing CR/NL */
     str = tagp.command;
@@ -3145,10 +3146,11 @@ jumpto_tag(
      * Expand file name, when needed (for environment variables).
      * If 'tagrelative' option set, may change file name.
      */
-    fname = expand_tag_fname(fname, tagp.tag_fname, TRUE);
-    if (fname == NULL)
+    efname = expand_tag_fname(fname, tagp.tag_fname, TRUE);
+    if (efname == NULL)
 	goto erret;
-    tofree_fname = fname;	/* free() it later */
+    vim_free(fname);
+    fname = efname;
 
     /*
      * Check if the file with the tag exists before abandoning the current
@@ -3188,7 +3190,8 @@ jumpto_tag(
 	 */
 	if (!curwin->w_p_pvw)
 	{
-	    full_fname = FullName_save(fname, FALSE);
+	    char_u	*full_fname = FullName_save(fname, FALSE);
+	    vim_free(fname);
 	    fname = full_fname;
 
 	    /*
@@ -3441,11 +3444,8 @@ erret:
 #if defined(FEAT_QUICKFIX)
     g_do_tagpreview = 0; /* For next time */
 #endif
-    if (tagp.fname_end != NULL)
-	*tagp.fname_end = csave;
     vim_free(pbuf);
-    vim_free(tofree_fname);
-    vim_free(full_fname);
+    vim_free(fname);
 
     return retval;
 }
