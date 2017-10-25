@@ -16,7 +16,6 @@ SCRIPTS_ALL = \
 	test3.out \
 	test14.out \
 	test15.out \
-	test19.out \
 	test29.out \
 	test36.out \
 	test37.out \
@@ -169,6 +168,7 @@ NEW_TESTS = test_arabic.res \
 	    test_substitute.res \
 	    test_syntax.res \
 	    test_system.res \
+	    test_tab.res \
 	    test_tcl.res \
 	    test_terminal.res \
 	    test_terminal_fail.res \
