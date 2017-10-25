@@ -60,7 +60,6 @@ SCRIPTS_MORE1 = \
 # Tests that run on most systems, but not on Amiga and DOS/Windows.
 SCRIPTS_MORE2 = \
 	test12.out \
-	test25.out \
 	test49.out
 
 
