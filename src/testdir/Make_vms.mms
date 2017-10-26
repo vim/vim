@@ -75,21 +75,13 @@ VIMPROG = <->vim.exe
 
 SCRIPT = test1.out test3.out \
        test14.out test15.out \
-       test19.out test20.out \
-       test28.out test29.out test30.out test32.out \
-       test36.out test37.out \
-       test38.out test39.out test40.out test42.out \
-       test44.out test45.out \
-       test48.out test49.out \
-       test55.out \
-       test64.out \
-       test66.out test68.out test69.out \
-       test72.out \
-       test77a.out test79.out \
-       test88.out \
-       test94.out \
-       test95.out test99.out \
-       test108.out\
+       test29.out test30.out \
+       test36.out test37.out test39.out \
+       test40.out test42.out test44.out test45.out \
+       test48.out test49.out test55.out \
+       test64.out test68.out test69.out \
+       test72.out test77a.out test88.out \
+       test94.out test95.out test99.out test108.out\
        test_autocmd_option.out \
        test_breakindent.out \
        test_changelist.out \
@@ -110,10 +102,6 @@ SCRIPT = test1.out test3.out \
 #
 # test30: bug, most probably - a problem around mac format
 #
-# test32: VMS is not case sensitive and all filenames are lowercase within Vim
-# (this should be changed in order to preserve the original filename) - should
-# be fixed. VMS allows just one dot in the filename
-#
 # test59: Failed/Hangs - VMS does not support spell files (file names
 # with too many dots).
 #
@@ -131,7 +119,7 @@ GUI_OPTION = -g
 .ENDIF
 
 .IFDEF WANT_UNIX
-SCRIPT_UNIX = test10.out test12.out test17.out test25.out test27.out test49.out test73.out
+SCRIPT_UNIX = test10.out test12.out test17.out test27.out test49.out test73.out
 .ENDIF
 
 .IFDEF WANT_WIN
