@@ -13,7 +13,6 @@ default: nongui
 # test2		"\\tmp" doesn't work.
 # test10	'errorformat' is different
 # test12	can't unlink a swap file
-# test25	uses symbolic link
 # test49	fails in various ways
 # test97	\{ and \$ are not escaped characters.
 
