@@ -99,6 +99,10 @@ func RunTheTest(test)
   " Clear any overrides.
   call test_override('ALL', 0)
 
+  " Some tests wipe out buffers.  To be consistent, always wipe out all
+  " buffers.
+  %bwipe!
+
   if exists("*SetUp")
     try
       call SetUp()
@@ -133,9 +137,12 @@ func RunTheTest(test)
     endtry
   endif
 
+  " Clear any autocommands
+  au!
+
   " Close any extra tab pages and windows and make the current one not modified.
   while tabpagenr('$') > 1
-    bwipe!
+    quit!
   endwhile
 
   while 1
@@ -150,15 +157,6 @@ func RunTheTest(test)
       break
     endif
   endwhile
-
-  " Wipe out all buffers except the current one, then wipe the current one.
-  for nr in range(1, bufnr('$'))
-    if nr != bufnr('%') && bufexists(nr)
-      exe nr . 'bwipe!'
-    endif
-  endfor
-  set nomodified
-  bwipe
 endfunc
 
 func AfterTheTest()
