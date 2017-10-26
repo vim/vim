@@ -253,10 +253,7 @@ func Test_argedit()
   call assert_equal(['a', 'b', 'a'], argv())
   call assert_equal('a', expand('%:t'))
   " When file name case is ignored, an existing buffer with only case
-  " difference is re-used.  Make sure they don't exist so the case is
-  " preserved.
-  bwipe! c
-  bwipe! d
+  " difference is re-used.
   argedit C D
   call assert_equal('C', expand('%:t'))
   call assert_equal(['a', 'b', 'a', 'C', 'D'], argv())
