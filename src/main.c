@@ -4184,7 +4184,13 @@ eval_client_expr_to_string(char_u *expr)
 
     /* Evaluate the expression at the toplevel, don't use variables local to
      * the calling function. */
-    fc = clear_current_funccal();
+    if (State & CMDLINE)
+    {
+    }
+    else
+    {
+	fc = clear_current_funccal();
+    }
 
      /* Disable debugging, otherwise Vim hangs, waiting for "cont" to be
       * typed. */
@@ -4201,7 +4207,13 @@ eval_client_expr_to_string(char_u *expr)
     --emsg_silent;
     if (emsg_silent < 0)
 	emsg_silent = 0;
-    restore_current_funccal(fc);
+    if (State & CMDLINE)
+    {
+    }
+    else
+    {
+	restore_current_funccal(fc);
+    }
 
     /* A client can tell us to redraw, but not to display the cursor, so do
      * that here. */
