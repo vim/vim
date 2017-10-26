@@ -78,4 +78,5 @@ func Test_lisp_indent()
 
   enew!
   let &cpoptions=save_copt
+  set nolisp
 endfunc
