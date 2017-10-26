@@ -2313,7 +2313,8 @@ ins_char_bytes(char_u *buf, int charlen)
 
     /* Copy bytes after the changed character(s). */
     p = newp + col;
-    mch_memmove(p + newlen, oldp + col + oldlen,
+    if (linelen > col + oldlen)
+	mch_memmove(p + newlen, oldp + col + oldlen,
 					    (size_t)(linelen - col - oldlen));
 
     /* Insert or overwrite the new character. */
