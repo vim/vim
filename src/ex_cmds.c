@@ -1055,9 +1055,16 @@ do_filter(
     char_u	*cmd_buf;
     buf_T	*old_curbuf = curbuf;
     int		shell_flags = 0;
+    pos_T	orig_start = curbuf->b_op_start;
+    pos_T	orig_end = curbuf->b_op_end;
+    int		save_lockmarks = cmdmod.lockmarks;
 
     if (*cmd == NUL)	    /* no filter command */
 	return;
+
+    // Temporarily disable lockmarks since that's needed to propagate changed
+    // regions of the buffer for foldUpdate(), linecount, etc.
+    cmdmod.lockmarks = 0;
 
     cursor_save = curwin->w_cursor;
     linecount = line2 - line1 + 1;
@@ -1287,11 +1294,18 @@ error:
 
 filterend:
 
+    cmdmod.lockmarks = save_lockmarks;
     if (curbuf != old_curbuf)
     {
 	--no_wait_return;
 	emsg(_("E135: *Filter* Autocommands must not change current buffer"));
     }
+    else if (cmdmod.lockmarks)
+    {
+	curbuf->b_op_start = orig_start;
+	curbuf->b_op_end = orig_end;
+    }
+
     if (itmp != NULL)
 	mch_remove(itmp);
     if (otmp != NULL)
