@@ -155,4 +155,35 @@ func Test_blockwise_visual()
   enew!
 endfunc
 
-" TODO: import test38.in
+" Test Virtual replace mode.
+func Test_virtual_replace()
+  exe "set t_kD=\<C-V>x7f t_kb=\<C-V>x08"
+  enew!
+  exe "normal a\nabcdefghi\njk\tlmn\n    opq	rst\n\<C-D>uvwxyz"
+  call cursor(1,1)
+  set ai bs=2
+  exe "normal gR0\<C-D> 1\nA\nBCDEFGHIJ\n\tKL\nMNO\nPQR"
+  call assert_equal([' 1',
+	      \ ' A',
+	      \ ' BCDEFGHIJ',
+	      \ ' 	KL',
+	      \ '	MNO',
+	      \ '	PQR',
+	      \ ], getline(1, 6))
+  normal G
+  mark a
+  exe "normal o0\<C-D>\nabcdefghi\njk\tlmn\n    opq\trst\n\<C-D>uvwxyz\n"
+  exe "normal 'ajgR0\<C-D> 1\nA\nBCDEFGHIJ\n\tKL\nMNO\nPQR" . repeat("\<BS>", 29)
+  call assert_equal([' 1',
+	      \ 'abcdefghi',
+	      \ 'jk	lmn',
+	      \ '    opq	rst',
+	      \ 'uvwxyz'], getline(7, 11))
+  normal G
+  exe "normal iab\tcdefghi\tjkl"
+  exe "normal 0gRAB......CDEFGHI.J\<Esc>o"
+  exe "normal iabcdefghijklmnopqrst\<Esc>0gRAB\tIJKLMNO\tQR"
+  call assert_equal(['AB......CDEFGHI.Jkl',
+	      \ 'AB	IJKLMNO	QRst'], getline(12, 13))
+  enew!
+endfunc
