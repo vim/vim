@@ -922,9 +922,13 @@ EXTERN char_u		composing_hangul_buffer[5];
  * "Visual_mode"    When State is NORMAL or INSERT.
  * "finish_op"	    When State is NORMAL, after typing the operator and before
  *		    typing the motion command.
+ * "debug_mode"	    Debug mode.
  */
 EXTERN int	State INIT(= NORMAL);	/* This is the current state of the
 					 * command interpreter. */
+#ifdef FEAT_EVAL
+EXTERN int	debug_mode INIT(= FALSE);
+#endif
 
 EXTERN int	finish_op INIT(= FALSE);/* TRUE while an operator is pending */
 EXTERN long	opcount INIT(= 0);	/* count for pending operator */
