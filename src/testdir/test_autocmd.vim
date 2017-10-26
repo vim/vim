@@ -249,6 +249,15 @@ func Test_augroup_warning()
   au! VimEnter
 endfunc
 
+func Test_BufReadCmd()
+  " This used to cause access to free memory
+  au BufReadCmd * e +h
+  help
+
+  helpclose
+  au! BufReadCmd
+endfunc
+
 func Test_augroup_deleted()
   " This caused a crash before E936 was introduced
   augroup x
