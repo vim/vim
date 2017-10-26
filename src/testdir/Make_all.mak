@@ -16,13 +16,9 @@ SCRIPTS_ALL = \
 	test3.out \
 	test14.out \
 	test15.out \
-	test19.out \
-	test20.out \
-	test28.out \
 	test29.out \
 	test36.out \
 	test37.out \
-	test38.out \
 	test39.out \
 	test40.out \
 	test42.out \
@@ -31,12 +27,10 @@ SCRIPTS_ALL = \
 	test48.out \
 	test55.out \
 	test64.out \
-	test66.out \
 	test68.out \
 	test69.out \
 	test70.out \
 	test73.out \
-	test79.out \
 	test88.out \
 	test94.out \
 	test95.out \
@@ -65,7 +59,6 @@ SCRIPTS_MORE1 = \
 # Tests that run on most systems, but not on Amiga and DOS/Windows.
 SCRIPTS_MORE2 = \
 	test12.out \
-	test25.out \
 	test49.out
 
 
@@ -73,7 +66,6 @@ SCRIPTS_MORE2 = \
 SCRIPTS_MORE4 = \
 	test17.out \
 	test30.out \
-	test32.out \
 	test59.out \
 	test72.out \
 	test83.out
@@ -129,6 +121,7 @@ NEW_TESTS = test_arabic.res \
 	    test_hlsearch.res \
 	    test_increment.res \
 	    test_increment_dbcs.res \
+	    test_ins_complete.res \
 	    test_job_fails.res \
 	    test_json.res \
 	    test_langmap.res \
@@ -173,6 +166,7 @@ NEW_TESTS = test_arabic.res \
 	    test_substitute.res \
 	    test_syntax.res \
 	    test_system.res \
+	    test_tab.res \
 	    test_tcl.res \
 	    test_terminal.res \
 	    test_terminal_fail.res \
