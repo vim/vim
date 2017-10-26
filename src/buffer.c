@@ -4028,9 +4028,14 @@ build_stl_str_hl(
 		/* remove group if all items are empty and highlight group
 		 * doesn't change */
 		group_start_userhl = group_end_userhl = 0;
-		for (n = 0; n < groupitem[groupdepth]; n++)
+		for (n = groupitem[groupdepth] - 1; n >= 0; n--)
+		{
 		    if (item[n].type == Highlight)
-			group_start_userhl = item[n].minwid;
+		    {
+			group_start_userhl = group_end_userhl = item[n].minwid;
+			break;
+		    }
+		}
 		for (n = groupitem[groupdepth] + 1; n < curitem; n++)
 		{
 		    if (item[n].type == Normal)
