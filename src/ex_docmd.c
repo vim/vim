@@ -10715,9 +10715,12 @@ eval_vars(
 		if (*s == '<')		/* "#<99" uses v:oldfiles */
 		    ++s;
 		i = (int)getdigits(&s);
+		if (s == src + 2 && src[1] == '-')
+		    /* just a minus sign, don't skip over it */
+		    s--;
 		*usedlen = (int)(s - src); /* length of what we expand */
 
-		if (src[1] == '<')
+		if (src[1] == '<' && i != 0)
 		{
 		    if (*usedlen < 2)
 		    {
@@ -10740,6 +10743,8 @@ eval_vars(
 		}
 		else
 		{
+		    if (i == 0 && src[1] == '<' && *usedlen > 1)
+			*usedlen = 1;
 		    buf = buflist_findnr(i);
 		    if (buf == NULL)
 		    {
