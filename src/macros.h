@@ -209,18 +209,13 @@
 # define mch_lstat(n, p)	mch_stat((n), (p))
 #endif
 
-#ifdef MACOS_CLASSIC
-/* MacOS classic doesn't support perm but MacOS X does. */
-# define mch_open(n, m, p)	open((n), (m))
-#else
-# ifdef VMS
+#ifdef VMS
 /*
  * It is possible to force some record format with:
  * #  define mch_open(n, m, p) open(vms_fixfilename(n), (m), (p)), "rat=cr", "rfm=stmlf", "mrs=0")
  * but it is not recommended, because it can destroy indexes etc.
  */
-#  define mch_open(n, m, p)	open(vms_fixfilename(n), (m), (p))
-# endif
+# define mch_open(n, m, p)	open(vms_fixfilename(n), (m), (p))
 #endif
 
 /* mch_open_rw(): invoke mch_open() with third argument for user R/W. */
@@ -266,7 +261,7 @@
  * PTR2CHAR(): get character from pointer.
  */
 #ifdef FEAT_MBYTE
-/* Get the length of the character p points to */
+/* Get the length of the character p points to, including composing chars */
 # define MB_PTR2LEN(p)	    (has_mbyte ? (*mb_ptr2len)(p) : 1)
 /* Advance multi-byte pointer, skip over composing chars. */
 # define MB_PTR_ADV(p)	    p += has_mbyte ? (*mb_ptr2len)(p) : 1

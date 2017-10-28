@@ -479,7 +479,7 @@ enum key_extra
 #define MOD_MASK_2CLICK	    0x20	/* use MOD_MASK_MULTI_CLICK */
 #define MOD_MASK_3CLICK	    0x40	/* use MOD_MASK_MULTI_CLICK */
 #define MOD_MASK_4CLICK	    0x60	/* use MOD_MASK_MULTI_CLICK */
-#ifdef MACOS
+#ifdef MACOS_X
 # define MOD_MASK_CMD	    0x80
 #endif
 

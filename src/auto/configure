@@ -4187,6 +4187,8 @@ $as_echo_n "checking for Darwin (Mac OS X)... " >&6; }
 if test "`(uname) 2>/dev/null`" = Darwin; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+  MACOS_X=yes
+  CPPFLAGS="$CPPFLAGS -DMACOS_X"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-darwin argument" >&5
 $as_echo_n "checking --disable-darwin argument... " >&6; }
@@ -4357,10 +4359,10 @@ rm -f core conftest.err conftest.$ac_objext \
   fi
 
   if test "$enable_darwin" = "yes"; then
-    MACOSX=yes
+    MACOS_X_DARWIN=yes
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
-            CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX"
+            CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
 
                 # On IRIX 5.3, sys/types and inttypes.h are conflicting.
 for ac_header in sys/types.h sys/stat.h stdlib.h string.h memory.h strings.h \
@@ -5153,7 +5155,7 @@ rm -f core conftest.err conftest.$ac_objext \
       if test -f "${vi_cv_path_lua_pfx}/bin/cyglua-${vi_cv_version_lua}.dll"; then
 	vi_cv_dll_name_lua="cyglua-${vi_cv_version_lua}.dll"
       else
-	if test "x$MACOSX" = "xyes"; then
+	if test "x$MACOS_X" = "xyes"; then
 	  ext="dylib"
 	  indexes=""
 	else
@@ -5199,7 +5201,7 @@ $as_echo "yes" >&6; }
       LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"${vi_cv_dll_name_lua}\\\" $LUA_CFLAGS"
     fi
     if test "X$LUA_CFLAGS$LUA_LIBS" != "X" && \
-       test "x$MACOSX" = "xyes" && test "x$vi_cv_with_luajit" != "xno" && \
+       test "x$MACOS_X" = "xyes" && test "x$vi_cv_with_luajit" != "xno" && \
        test "`(uname -m) 2>/dev/null`" = "x86_64"; then
             LUA_LIBS="-pagezero_size 10000 -image_base 100000000 $LUA_LIBS"
     fi
@@ -5404,7 +5406,7 @@ $as_echo "not found" >&6; }
 
     for path in "${vi_cv_path_mzscheme_pfx}/lib" "${SCHEME_LIB}"; do
       if test "X$path" != "X"; then
-	if test "x$MACOSX" = "xyes"; then
+	if test "x$MACOS_X" = "xyes"; then
 	  MZSCHEME_LIBS="-framework Racket"
 	  MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
 	elif test -f "${path}/libmzscheme3m.a"; then
@@ -5784,7 +5786,7 @@ $as_echo ">>> too old; need Perl version 5.003_01 or later <<<" >&6; }
     fi
   fi
 
-  if test "x$MACOSX" = "xyes"; then
+  if test "x$MACOS_X" = "xyes"; then
         dir=/System/Library/Perl
     darwindir=$dir/darwin
     if test -d $darwindir; then
@@ -6002,7 +6004,7 @@ __:
 eof
 	    	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
 	    rm -f -- "${tmp_mkf}"
-	    if test "x$MACOSX" = "xyes" && test -n "${python_PYTHONFRAMEWORK}" && ${vi_cv_path_python} -c \
+	    if test "x$MACOS_X" = "xyes" && test -n "${python_PYTHONFRAMEWORK}" && ${vi_cv_path_python} -c \
 		"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"; then
 	      vi_cv_path_python_plibs="-framework Python"
 	      if test "x${vi_cv_path_python}" != "x/usr/bin/python" && test -n "${python_PYTHONFRAMEWORKPREFIX}"; then
@@ -6965,7 +6967,7 @@ $as_echo "$tclver - OK" >&6; };
 
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for location of Tcl include" >&5
 $as_echo_n "checking for location of Tcl include... " >&6; }
-      if test "x$MACOSX" != "xyes"; then
+      if test "x$MACOS_X" != "xyes"; then
 	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include /usr/local/include/tcl$tclver /usr/include /usr/include/tcl$tclver"
       else
 		tclinc="/System/Library/Frameworks/Tcl.framework/Headers"
@@ -6987,7 +6989,7 @@ $as_echo "<not found>" >&6; }
       if test -z "$SKIP_TCL"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for location of tclConfig.sh script" >&5
 $as_echo_n "checking for location of tclConfig.sh script... " >&6; }
-	if test "x$MACOSX" != "xyes"; then
+	if test "x$MACOS_X" != "xyes"; then
 	  tclcnf=`echo $tclinc | sed s/include/lib/g`
 	  tclcnf="$tclcnf `echo $tclinc | sed s/include/lib64/g`"
 	else
@@ -7567,7 +7569,7 @@ fi
 $as_echo "$enable_fontset" >&6; }
 
 test -z "$with_x" && with_x=yes
-test "${enable_gui-yes}" != no -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
+test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
 if test "$with_x" = no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: defaulting to: don't HAVE_X11" >&5
 $as_echo "defaulting to: don't HAVE_X11" >&6; }
@@ -8584,7 +8586,7 @@ $as_echo "$ac_cv_small_wchar_t" >&6; }
   fi
 fi
 
-test "x$with_x" = xno -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
+test "x$with_x" = xno -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-gui argument" >&5
 $as_echo_n "checking --enable-gui argument... " >&6; }
@@ -8626,7 +8628,7 @@ $as_echo "Sorry, $enable_gui GUI is not supported" >&6; }
 		SKIP_PHOTON=YES ;;
   esac
 
-elif test "x$MACOSX" = "xyes" -a "x$with_x" = "xno" ; then
+elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
   SKIP_CARBON=
   case "$enable_gui_canon" in
     no)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI support" >&5
@@ -8804,7 +8806,7 @@ $as_echo "$enable_carbon_check" >&6; };
 fi
 
 
-if test "x$MACOSX" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
+if test "x$MACOS_X" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Carbon GUI" >&5
 $as_echo_n "checking for Carbon GUI... " >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
@@ -10624,7 +10626,7 @@ fi
 
 done
 
-if test "x$MACOSX" = "xyes"; then
+if test "x$MACOS_X" = "xyes"; then
     $as_echo "#define NO_STRINGS_WITH_STRING_H 1" >>confdefs.h
 
 else
@@ -12076,7 +12078,7 @@ for ac_func in fchdir fchown fsync getcwd getpseudotty \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
-	usleep utime utimes
+	usleep utime utimes mblen
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -14099,27 +14101,50 @@ fi
 done
 
 
-if test "x$MACOSX" = "xyes" -a -n "$PERL"; then
+if test "x$MACOS_X" = "xyes" -a -n "$PERL"; then
     if echo $LIBS | grep -e '-ldl' >/dev/null; then
     LIBS=`echo $LIBS | sed s/-ldl//`
     PERL_LIBS="$PERL_LIBS -ldl"
   fi
 fi
 
-if test "x$MACOSX" = "xyes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we need -framework Cocoa" >&5
-$as_echo_n "checking whether we need -framework Cocoa... " >&6; }
-      if test "x$features" != "xtiny" || test "x$enable_multibyte" = "xyes"; then
-    LIBS=$"$LIBS -framework Cocoa"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+if test "$MACOS_X" = "yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we need macOS frameworks" >&5
+$as_echo_n "checking whether we need macOS frameworks... " >&6; }
+  if test "$GUITYPE" = "CARBONGUI"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need Carbon" >&5
+$as_echo "yes, we need Carbon" >&6; }
+    LIBS="$LIBS -framework Carbon"
+  elif test "$MACOS_X_DARWIN" = "yes"; then
+    if test "$features" = "tiny"; then
+            OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
+      OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
+      if test "$enable_multibyte" = "yes"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need CoreServices" >&5
+$as_echo "yes, we need CoreServices" >&6; }
+        LIBS="$LIBS -framework CoreServices"
+      else
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+        OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
+        OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
+        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_DARWIN++'`
+      fi
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need AppKit" >&5
+$as_echo "yes, we need AppKit" >&6; }
+      LIBS="$LIBS -framework AppKit"
+      if test "$features" = "small" -a "$enable_multibyte" = "no"; then
+                                { $as_echo "$as_me:${as_lineno-$LINENO}: +multi_byte will be set in favor of +clipboard" >&5
+$as_echo "$as_me: +multi_byte will be set in favor of +clipboard" >&6;}
+        enable_multibyte=yes
+        $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
+
+      fi
+    fi
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-  fi
-        if test "x$features" = "xtiny"; then
-    OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
-    OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
   fi
 fi
 if test "x$MACARCH" = "xboth" && test "x$GUITYPE" = "xCARBONGUI"; then

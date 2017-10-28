@@ -85,28 +85,15 @@
 #endif
 
 /*
- * MACOS_CLASSIC compiling for MacOS prior to MacOS X
- * MACOS_X_UNIX  compiling for MacOS X (using os_unix.c)
- * MACOS_X       compiling for MacOS X (using os_unix.c)
- * MACOS	 compiling for either one
+ * MACOS_X	    compiling for Mac OS X
+ * MACOS_X_DARWIN   integrating the darwin feature into MACOS_X
  */
-#if defined(macintosh) && !defined(MACOS_CLASSIC)
-# define MACOS_CLASSIC
-#endif
-#if defined(MACOS_X_UNIX)
+#if defined(MACOS_X_DARWIN) && !defined(MACOS_X)
 # define MACOS_X
-# ifndef HAVE_CONFIG_H
-#  define UNIX
-# endif
-#endif
-#if defined(MACOS_X) || defined(MACOS_CLASSIC)
-# define MACOS
-#endif
-#if defined(MACOS_X) && defined(MACOS_CLASSIC)
-    Error: To compile for both MACOS X and Classic use a Classic Carbon
 #endif
 /* Unless made through the Makefile enforce GUI on Mac */
-#if defined(MACOS) && !defined(HAVE_CONFIG_H)
+#if defined(MACOS_X) && !defined(HAVE_CONFIG_H)
+# define UNIX
 # define FEAT_GUI_MAC
 #endif
 
@@ -164,15 +151,9 @@
 #  endif
 # endif
 #endif
-#ifdef MACOS
-# if defined(__POWERPC__) || defined(MACOS_X) || defined(__fourbyteints__) \
-  || defined(__MRC__) || defined(__SC__) || defined(__APPLE_CC__)/* MPW Compilers */
-#  define VIM_SIZEOF_INT 4
-# else
-#  define VIM_SIZEOF_INT 2
-# endif
+#if defined(MACOS_X) && !defined(HAVE_CONFIG_H)
+#  define VIM_SIZEOF_INT __SIZEOF_INT__
 #endif
-
 
 /*
  * #defines for optionals and features
@@ -180,7 +161,7 @@
  */
 #include "feature.h"
 
-#if defined(MACOS_X_UNIX)
+#if defined(MACOS_X_DARWIN)
 # if defined(FEAT_SMALL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
 # endif
@@ -227,7 +208,7 @@
 #endif
 
 /* The Mac conversion stuff doesn't work under X11. */
-#if defined(FEAT_MBYTE) && defined(MACOS_X)
+#if defined(FEAT_MBYTE) && defined(MACOS_X_DARWIN)
 # define MACOS_CONVERT
 #endif
 
@@ -297,10 +278,7 @@
 # include "os_mint.h"
 #endif
 
-#if defined(MACOS)
-# if defined(__MRC__) || defined(__SC__) /* MPW Compilers */
-#  define HAVE_SETENV
-# endif
+#if defined(MACOS_X)
 # include "os_mac.h"
 #endif
 
@@ -2358,9 +2336,10 @@ typedef enum {
 # ifdef instr
 #  undef instr
 # endif
-  /* bool may cause trouble on MACOS but is required on a few other systems
-   * and for Perl */
-# if defined(bool) && defined(MACOS) && !defined(FEAT_PERL)
+  /* bool may cause trouble on some old versions of Mac OS X but is required
+   * on a few other systems and for Perl */
+# if (defined(MACOS_X) && !defined(MAC_OS_X_VERSION_10_6)) \
+				       && defined(bool) && !defined(FEAT_PERL)
 #  undef bool
 # endif
 
