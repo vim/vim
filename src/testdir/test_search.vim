@@ -511,6 +511,23 @@ func Test_search_cmdline_incsearch_highlight_attr()
   let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
   call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
   call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
+  " Test <C-g>
+  call term_sendkeys(g:buf, "\<C-g>\<C-g>")
+  call term_wait(g:buf, 200)
+  let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a2,a2,a2,a0,a0,a0]
+  let attr_line2 = [a1,a1,a1,a0,a0,a2,a2,a2]
+  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
+  " Test <C-t>
+  call term_sendkeys(g:buf, "\<C-t>")
+  call term_wait(g:buf, 200)
+  let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a1,a1,a1,a0,a0,a0]
+  let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
+  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
   " Type Enter and a1(incsearch highlight) should become a2(hlsearch highlight)
   call term_sendkeys(g:buf, "\<cr>")
   call term_wait(g:buf, 200)
