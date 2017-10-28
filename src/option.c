@@ -3907,7 +3907,7 @@ set_init_2(void)
      * 'scroll' defaults to half the window height. Note that this default is
      * wrong when the window height changes.
      */
-    set_number_default("scroll", (long)((long_u)Rows >> 1));
+    set_number_default("scroll", 0L);
     idx = findoption((char_u *)"scroll");
     if (idx >= 0 && !(options[idx].flags & P_WAS_SET))
 	set_option_default(idx, OPT_LOCAL, p_cp);
