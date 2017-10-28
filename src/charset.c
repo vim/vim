@@ -1907,8 +1907,7 @@ vim_str2nr(
 			pre = 0;	/* can't be octal */
 			break;
 		    }
-		    if (ptr[n] >= '0')
-			pre = '0';	/* assume octal */
+		    pre = '0';	/* assume octal */
 		    if (n == maxlen)
 			break;
 		}
