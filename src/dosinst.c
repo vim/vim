@@ -86,7 +86,7 @@ char	*remap_text = "- %s";
 enum
 {
     mouse_xterm = 1,
-    mouse_mswin,,
+    mouse_mswin,
     mouse_default
 };
 char	*(mouse_choices[]) =
