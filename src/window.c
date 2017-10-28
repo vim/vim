@@ -6364,7 +6364,7 @@ vim_FullName(
 	/* something failed; use the file name (truncate when too long) */
 	vim_strncpy(buf, fname, len - 1);
     }
-#if defined(MACOS_CLASSIC) || defined(MSWIN)
+#if defined(MSWIN)
     slash_adjust(buf);
 #endif
     return retval;

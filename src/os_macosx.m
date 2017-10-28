@@ -8,12 +8,8 @@
  */
 
 /*
- * os_macosx.m -- Mac specific things for Mac OS/X.
+ * os_macosx.m -- Mac specific things for Mac OS X.
  */
-
-#ifndef MACOS_X_UNIX
-    Error: MACOS 9 is no longer supported in Vim 7
-#endif
 
 /* Avoid a conflict for the definition of Boolean between Mac header files and
  * X11 header files. */
@@ -21,7 +17,7 @@
 #define BalloonEval int   /* used in header files */
 
 #include "vim.h"
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 
 
 /*

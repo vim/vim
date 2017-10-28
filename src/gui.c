@@ -37,7 +37,7 @@ static void gui_set_fg_color(char_u *name);
 static void gui_set_bg_color(char_u *name);
 static win_T *xy2win(int x, int y);
 
-#if defined(UNIX) && !defined(MACOS_X) && !defined(__APPLE__)
+#if defined(UNIX) && !defined(FEAT_GUI_MAC)
 # define MAY_FORK
 static void gui_do_fork(void);
 
@@ -2520,7 +2520,7 @@ gui_outstr_nowrap(
 	    /* Draw a composing char on top of the previous char. */
 	    if (comping && sep_comp)
 	    {
-#  if (defined(__APPLE_CC__) || defined(__MRC__)) && TARGET_API_MAC_CARBON
+#  if defined(__APPLE_CC__) && TARGET_API_MAC_CARBON
 		/* Carbon ATSUI autodraws composing char over previous char */
 		gui_mch_draw_string(gui.row, scol, s + i, cl,
 						    draw_flags | DRAW_TRANSP);

@@ -321,7 +321,7 @@ static digr_T digraphdefault[] =
 	};
 
 #  else
-#   if defined(MACOS) && !defined(FEAT_MBYTE)
+#   if defined(MACOS_X) && !defined(FEAT_MBYTE)
 
 	/*
 	 * Macintosh digraphs
@@ -449,7 +449,7 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-#   else	/* !MACOS */
+#   else	/* !MACOS_X */
 
 #    ifdef OLD_DIGRAPHS
 

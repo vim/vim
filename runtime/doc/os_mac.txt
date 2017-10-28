@@ -164,8 +164,9 @@ If you want to disable it, pass `--disable-darwin` to the configure script: >
 and then run `make` to build Vim.  The order of the options doesn't matter.
 
 To make sure at runtime whether or not the darwin feature is compiled in, you
-can use `has('macunix')` which returns 1 if the feature is compiled in; 0
-otherwise.
+can use `has('osxdarwin')` which returns 1 if the feature is compiled in; 0
+otherwise.  For backwards comptibility, you can still use `macunix` instead of
+`osxdarwin`.
 
 Notable use cases where `--disable-darwin` is turned out to be useful are:
 

@@ -127,7 +127,7 @@
 #undef _
 
 /* T_DATA defined both by Ruby and Mac header files, hack around it... */
-#if defined(MACOS_X_UNIX) || defined(macintosh)
+#if defined(MACOS_X)
 # define __OPENTRANSPORT__
 # define __OPENTRANSPORTPROTOCOL__
 # define __OPENTRANSPORTPROVIDERS__
@@ -251,7 +251,8 @@ static void ruby_vim_init(void);
 # endif
 # define rb_lastline_get			dll_rb_lastline_get
 # define rb_lastline_set			dll_rb_lastline_set
-# define rb_load_protect			dll_rb_load_protect
+# define rb_protect			dll_rb_protect
+# define rb_load			dll_rb_load
 # ifndef RUBY19_OR_LATER
 #  define rb_num2long			dll_rb_num2long
 # endif
@@ -376,7 +377,8 @@ static unsigned long (*dll_rb_num2uint) (VALUE);
 # endif
 static VALUE (*dll_rb_lastline_get) (void);
 static void (*dll_rb_lastline_set) (VALUE);
-static void (*dll_rb_load_protect) (VALUE, int, int*);
+static void (*dll_rb_protect) (VALUE (*)(VALUE), int, int*);
+static void (*dll_rb_load) (VALUE, int);
 static long (*dll_rb_num2long) (VALUE);
 static unsigned long (*dll_rb_num2ulong) (VALUE);
 static VALUE (*dll_rb_obj_alloc) (VALUE);
@@ -568,7 +570,8 @@ static struct
 # endif
     {"rb_lastline_get", (RUBY_PROC*)&dll_rb_lastline_get},
     {"rb_lastline_set", (RUBY_PROC*)&dll_rb_lastline_set},
-    {"rb_load_protect", (RUBY_PROC*)&dll_rb_load_protect},
+    {"rb_protect", (RUBY_PROC*)&dll_rb_protect},
+    {"rb_load", (RUBY_PROC*)&dll_rb_load},
     {"rb_num2long", (RUBY_PROC*)&dll_rb_num2long},
     {"rb_num2ulong", (RUBY_PROC*)&dll_rb_num2ulong},
     {"rb_obj_alloc", (RUBY_PROC*)&dll_rb_obj_alloc},
@@ -831,7 +834,8 @@ void ex_rubyfile(exarg_T *eap)
 
     if (ensure_ruby_initialized())
     {
-	rb_load_protect(rb_str_new2((char *) eap->arg), 0, &state);
+	rb_protect((VALUE (*)(VALUE))rb_load, rb_str_new2((char *)eap->arg),
+								       &state);
 	if (state) error_print(state);
     }
 }

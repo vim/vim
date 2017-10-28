@@ -61,10 +61,10 @@
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
 	&& !defined(FEAT_BIG) && !defined(FEAT_HUGE)
-# if defined(UNIX) || defined(WIN3264) || defined(MACOS)
+# if defined(UNIX) || defined(WIN3264) || defined(MACOS_X)
 #  define FEAT_HUGE
 # else
-#  if defined(MSWIN) || defined(VMS) || defined(MACOS) || defined(AMIGA)
+#  if defined(MSWIN) || defined(VMS) || defined(AMIGA)
 #   define FEAT_BIG
 #  else
 #   define FEAT_NORMAL
@@ -363,7 +363,7 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_EVAL
-# if defined(HAVE_FLOAT_FUNCS) || defined(WIN3264) || defined(MACOS)
+# if defined(HAVE_FLOAT_FUNCS) || defined(WIN3264) || defined(MACOS_X)
 #  define FEAT_FLOAT
 # endif
 # if defined(HAVE_STDINT_H) || defined(WIN3264) || (VIM_SIZEOF_LONG >= 8)
@@ -777,7 +777,7 @@
  * there is no terminal version, and on Windows we can't figure out how to
  * fork one off with :gui.
  */
-#if defined(FEAT_GUI_MSWIN) || (defined(FEAT_GUI_MAC) && !defined(MACOS_X_UNIX))
+#if defined(FEAT_GUI_MSWIN) || (defined(FEAT_GUI_MAC) && !defined(MACOS_X_DARWIN))
 # define ALWAYS_USE_GUI
 #endif
 

@@ -2660,11 +2660,10 @@ msg_puts_printf(char_u *str, int maxlen)
 	if (!(silent_mode && p_verbose == 0))
 	{
 	    /* NL --> CR NL translation (for Unix, not for "--version") */
-	    /* NL --> CR translation (for Mac) */
 	    p = &buf[0];
 	    if (*s == '\n' && !info_message)
 		*p++ = '\r';
-#if defined(USE_CR) && !defined(MACOS_X_UNIX)
+#if defined(USE_CR)
 	    else
 #endif
 		*p++ = *s;
@@ -3005,7 +3004,7 @@ mch_errmsg(char *str)
      * On Mac, when started from Finder, stderr is the console. */
     if (
 # ifdef UNIX
-#  ifdef MACOS_X_UNIX
+#  ifdef MACOS_X
 	    (isatty(2) && strcmp("/dev/console", ttyname(2)) != 0)
 #  else
 	    isatty(2)
@@ -3072,7 +3071,7 @@ mch_msg(char *str)
      * On Mac, when started from Finder, stderr is the console. */
     if (
 #  ifdef UNIX
-#   ifdef MACOS_X_UNIX
+#   ifdef MACOS_X
 	    (isatty(2) && strcmp("/dev/console", ttyname(2)) != 0)
 #   else
 	    isatty(2)

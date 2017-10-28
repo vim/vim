@@ -5977,7 +5977,7 @@ insert_special(
      * Only use mod_mask for special keys, to avoid things like <S-Space>,
      * unless 'allow_modmask' is TRUE.
      */
-#ifdef MACOS
+#ifdef MACOS_X
     /* Command-key never produces a normal key */
     if (mod_mask & MOD_MASK_CMD)
 	allow_modmask = TRUE;
@@ -8756,7 +8756,7 @@ ins_start_select(int c)
 	    case K_KPAGEUP:
 	    case K_PAGEDOWN:
 	    case K_KPAGEDOWN:
-# ifdef MACOS
+# ifdef MACOS_X
 	    case K_LEFT:
 	    case K_RIGHT:
 	    case K_UP:
