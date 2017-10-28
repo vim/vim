@@ -7475,7 +7475,7 @@ fi
 $as_echo_n "checking --enable-terminal argument... " >&6; }
 # Check whether --enable-terminal was given.
 if test "${enable_terminal+set}" = set; then :
-  enableval=$enable_terminal; enable_terminal="yes"
+  enableval=$enable_terminal;
 else
   enable_terminal="auto"
 fi

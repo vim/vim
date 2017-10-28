@@ -340,7 +340,7 @@ CClink = $(CC)
 # When both GTK+ 2 and GTK+ 3 are possible then GTK+ 2 will be selected.
 # To use GTK+ 3 instead use --enable-gui=gtk3 (see below).
 #CONF_OPT_GUI = --disable-gtk2-check
-#CONF_OPT_GUI = --enable-gnome2-check
+#CONF_OPT_GUI = --enable-gnome-check
 #CONF_OPT_GUI = --disable-gtk3-check
 #CONF_OPT_GUI = --disable-motif-check
 #CONF_OPT_GUI = --disable-athena-check
@@ -483,9 +483,12 @@ CClink = $(CC)
 #CONF_OPT_CHANNEL = --disable-channel
 
 # TERMINAL - Terminal emulator support, :terminal command.  Requires the
-# channel feature.
-# Uncomment this when you want terminal emulator support.
+# channel feature. The default is enable for when using "huge" features.
+# Uncomment the first line when you want terminal emulator support for
+# not-huge builds.  Uncomment the second line when you don't want terminal
+# emulator support in the huge build.
 #CONF_OPT_TERMINAL = --enable-terminal
+#CONF_OPT_TERMINAL = --disable-terminal
 
 # MULTIBYTE - To edit multi-byte characters.
 # Uncomment this when you want to edit a multibyte language.
