@@ -1852,7 +1852,7 @@ vim_isblankline(char_u *lbuf)
  * If "what" contains STR2NR_OCT recognize octal numbers
  * If "what" contains STR2NR_HEX recognize hex numbers
  * If "what" contains STR2NR_FORCE always assume bin/oct/hex.
- * If maxlen > 0, check at a maximum maxlen chars
+ * If maxlen > 0, check at a maximum maxlen chars.
  */
     void
 vim_str2nr(
@@ -1900,7 +1900,7 @@ vim_str2nr(
 	    if (what & STR2NR_OCT)
 	    {
 		/* Don't interpret "0", "08" or "0129" as octal. */
-		for (n = 1; VIM_ISDIGIT(ptr[n]); ++n)
+		for (n = 1; n != maxlen && VIM_ISDIGIT(ptr[n]); ++n)
 		{
 		    if (ptr[n] > '7')
 		    {
@@ -1908,8 +1908,6 @@ vim_str2nr(
 			break;
 		    }
 		    pre = '0';	/* assume octal */
-		    if (n == maxlen)
-			break;
 		}
 	    }
 	}
