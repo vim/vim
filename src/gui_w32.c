@@ -6295,8 +6295,8 @@ gui_mch_draw_string(
 
     if (enc_utf8 && n < len && unicodebuf != NULL)
     {
-	/* Output UTF-8 characters.  Caller has already separated
-	 * composing characters. */
+	/* Output UTF-8 characters.  Composing characters should be
+	 * handled here. */
 	int		i;
 	int		wlen;	/* string length in words */
 	int		clen;	/* string length in characters */
@@ -6320,9 +6320,16 @@ gui_mch_draw_string(
 	    {
 		unicodebuf[wlen++] = c;
 	    }
-	    cw = utf_char2cells(c);
-	    if (cw > 2)		/* don't use 4 for unprintable char */
-		cw = 1;
+
+	    if (utf_iscomposing(c))
+		cw = 0;
+	    else
+	    {
+		cw = utf_char2cells(c);
+		if (cw > 2)		/* don't use 4 for unprintable char */
+		    cw = 1;
+	    }
+
 	    if (unicodepdy != NULL)
 	    {
 		/* Use unicodepdy to make characters fit as we expect, even
@@ -6337,7 +6344,7 @@ gui_mch_draw_string(
 		    unicodepdy[wlen - 1] = cw * gui.char_width;
 	    }
 	    cells += cw;
-	    i += utfc_ptr2len_len(text + i, len - i);
+	    i += utf_ptr2len_len(text + i, len - i);
 	    ++clen;
 	}
 #if defined(FEAT_DIRECTX)
