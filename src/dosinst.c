@@ -80,21 +80,23 @@ char	*(remap_choices[]) =
     "Do not remap keys for Windows behavior",
     "Remap a few keys for Windows behavior (CTRL-V, CTRL-C, CTRL-F, etc)",
 };
-int	remap_choice = (int)remap_win;
+int	remap_choice = (int)remap_no;
 char	*remap_text = "- %s";
 
 enum
 {
     mouse_xterm = 1,
-    mouse_mswin
+    mouse_mswin,,
+    mouse_default
 };
 char	*(mouse_choices[]) =
 {
     "\nChoose the way how Vim uses the mouse:",
     "right button extends selection (the Unix way)",
-    "right button has a popup menu (the Windows way)",
+    "right button has a popup menu, left button starts select mode (the Windows way)",
+    "right button has a popup menu, left button starts visual mode",
 };
-int	mouse_choice = (int)mouse_mswin;
+int	mouse_choice = (int)mouse_default;
 char	*mouse_text = "- The mouse %s";
 
 enum
@@ -155,8 +157,7 @@ get_choice(char **table, int entries)
 	{
 	    if (idx)
 		printf("%2d  ", idx);
-	    printf(table[idx]);
-	    printf("\n");
+	    puts(table[idx]);
 	}
 	printf("Choice: ");
 	if (scanf("%d", &answer) != 1)
@@ -1175,6 +1176,8 @@ install_vimrc(int idx)
 		    break;
 	case mouse_mswin:
 		    fprintf(fd, "behave mswin\n");
+		    break;
+	case mouse_default:
 		    break;
     }
     if ((tfd = fopen("diff.exe", "r")) != NULL)
@@ -2205,6 +2208,10 @@ print_cmd_line_help(void)
     printf("    Create .bat files for Vim variants in the Windows directory.\n");
     printf("-create-vimrc\n");
     printf("    Create a default _vimrc file if one does not already exist.\n");
+    printf("-vimrc-remap [no|win]\n");
+    printf("    Remap keys when creating a default _vimrc file.\n");
+    printf("-vimrc-behave [unix|mswin|default]\n");
+    printf("    Set mouse behavior when creating a default _vimrc file.\n");
     printf("-install-popup\n");
     printf("    Install the Edit-with-Vim context menu entry\n");
     printf("-install-openwith\n");
@@ -2259,6 +2266,28 @@ command_line_setup_choices(int argc, char **argv)
 	     * it will NOT be overwritten.
 	     */
 	    init_vimrc_choices();
+	}
+	else if (strcmp(argv[i], "-vimrc-remap") == 0)
+	{
+	    if (i + 1 == argc)
+		break;
+	    i++;
+	    if (strcmp(argv[i], "no") == 0)
+		remap_choice = remap_no;
+	    else if (strcmp(argv[i], "win") == 0)
+		remap_choice = remap_win;
+	}
+	else if (strcmp(argv[i], "-vimrc-behave") == 0)
+	{
+	    if (i + 1 == argc)
+		break;
+	    i++;
+	    if (strcmp(argv[i], "unix") == 0)
+		mouse_choice = mouse_xterm;
+	    else if (strcmp(argv[i], "mswin") == 0)
+		mouse_choice = mouse_mswin;
+	    else if (strcmp(argv[i], "default") == 0)
+		mouse_choice = mouse_default;
 	}
 	else if (strcmp(argv[i], "-install-popup") == 0)
 	{
@@ -2424,8 +2453,7 @@ NULL
     printf("\n");
     for (i = 0; items[i] != NULL; ++i)
     {
-	printf(items[i]);
-	printf("\n");
+	puts(items[i]);
 	printf("Hit Enter to continue, b (back) or q (quit help): ");
 	c = getchar();
 	rewind(stdin);

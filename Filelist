@@ -451,6 +451,7 @@ SRC_DOS =	\
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \
 		nsis/gvim_version.nsh \
+		nsis/vimrc.ini \
 		nsis/README.txt \
 		uninstal.txt \
 		src/VisVim/Commands.cpp \
