@@ -2123,7 +2123,11 @@ win_update(win_T *wp)
 
 	    wp->w_lines[idx].wl_lnum = lnum;
 	    wp->w_lines[idx].wl_valid = TRUE;
-	    if (row > wp->w_height)	/* past end of screen */
+
+	    /* Past end of the window or end of the screen. Note that after
+	     * resizing wp->w_height may be end up too big. That's a problem
+	     * elsewhere, but prevent a crash here. */
+	    if (row > wp->w_height || row + wp->w_winrow >= Rows)
 	    {
 		/* we may need the size of that too long line later on */
 		if (dollar_vcol == -1)
