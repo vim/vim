@@ -1,5 +1,7 @@
 " Test for the search command
 
+source shared.vim
+
 func Test_search_cmdline()
   if !exists('+incsearch')
     return
@@ -430,4 +432,119 @@ func Test_search_regexp()
 
   set undolevels&
   enew!
+endfunc
+
+func Test_search_cmdline_incsearch_highlight()
+  if !exists('+incsearch')
+    return
+  endif
+  set incsearch hlsearch
+  " need to disable char_avail,
+  " so that expansion of commandline works
+  call test_override("char_avail", 1)
+  new
+  call setline(1, ['aaa  1 the first', '  2 the second', '  3 the third'])
+
+  1
+  call feedkeys("/second\<cr>", 'tx')
+  call assert_equal('second', @/)
+  call assert_equal('  2 the second', getline('.'))
+
+  " Canceling search won't change @/
+  1
+  let @/ = 'last pattern'
+  call feedkeys("/third\<C-c>", 'tx')
+  call assert_equal('last pattern', @/)
+  call feedkeys("/third\<Esc>", 'tx')
+  call assert_equal('last pattern', @/)
+  call feedkeys("/3\<bs>\<bs>", 'tx')
+  call assert_equal('last pattern', @/)
+  call feedkeys("/third\<c-g>\<c-t>\<Esc>", 'tx')
+  call assert_equal('last pattern', @/)
+
+  " clean up
+  set noincsearch nohlsearch
+  bw!
+endfunc
+
+func Test_search_cmdline_incsearch_highlight_attr()
+  if !exists('+incsearch') || !has('terminal') || has('gui_running')
+    return
+  endif
+  let h = winheight(0)
+  if h < 3
+    return
+  endif
+  let g:buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': 3})
+
+  " Prepare buffer text
+  let lines = ['abb vim vim vi', 'vimvivim']
+  call term_sendkeys(g:buf, 'i' . join(lines, "\n") . "\<esc>gg0")
+  call term_wait(g:buf, 200)
+  call assert_equal(lines[0], term_getline(g:buf, 1))
+
+  " Get attr of normal(a0), incsearch(a1), hlsearch(a2) highlight
+  call term_sendkeys(g:buf, ":set incsearch hlsearch\<cr>")
+  call term_sendkeys(g:buf, '/b')
+  call term_wait(g:buf, 200)
+  let screen_line1 = term_scrape(g:buf, 1)
+  call assert_true(len(screen_line1) > 2)
+  " a0: attr_normal
+  let a0 = screen_line1[0].attr
+  " a1: attr_incsearch
+  let a1 = screen_line1[1].attr
+  " a2: attr_hlsearch
+  let a2 = screen_line1[2].attr
+  call assert_notequal(a0, a1)
+  call assert_notequal(a0, a2)
+  call assert_notequal(a1, a2)
+  call term_sendkeys(g:buf, "\<cr>gg0")
+
+  " Test incremental highlight search
+  call term_sendkeys(g:buf, "/vim")
+  call term_wait(g:buf, 200)
+  " Buffer:
+  " abb vim vim vi
+  " vimvivim
+  " Search: /vim
+  let attr_line1 = [a0,a0,a0,a0,a1,a1,a1,a0,a2,a2,a2,a0,a0,a0]
+  let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
+  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
+  " Test <C-g>
+  call term_sendkeys(g:buf, "\<C-g>\<C-g>")
+  call term_wait(g:buf, 200)
+  let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a2,a2,a2,a0,a0,a0]
+  let attr_line2 = [a1,a1,a1,a0,a0,a2,a2,a2]
+  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
+  " Test <C-t>
+  call term_sendkeys(g:buf, "\<C-t>")
+  call term_wait(g:buf, 200)
+  let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a1,a1,a1,a0,a0,a0]
+  let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
+  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
+  " Type Enter and a1(incsearch highlight) should become a2(hlsearch highlight)
+  call term_sendkeys(g:buf, "\<cr>")
+  call term_wait(g:buf, 200)
+  let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a2,a2,a2,a0,a0,a0]
+  let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
+  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
+  " Test nohlsearch. a2(hlsearch highlight) should become a0(normal highlight)
+  call term_sendkeys(g:buf, ":1\<cr>")
+  call term_sendkeys(g:buf, ":set nohlsearch\<cr>")
+  call term_sendkeys(g:buf, "/vim")
+  call term_wait(g:buf, 200)
+  let attr_line1 = [a0,a0,a0,a0,a1,a1,a1,a0,a0,a0,a0,a0,a0,a0]
+  let attr_line2 = [a0,a0,a0,a0,a0,a0,a0,a0]
+  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+
+  bwipe!
 endfunc
