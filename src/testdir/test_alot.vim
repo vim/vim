@@ -41,6 +41,7 @@ source test_popup.vim
 source test_put.vim
 source test_recover.vim
 source test_reltime.vim
+source test_scroll_opt.vim
 source test_searchpos.vim
 source test_set.vim
 source test_sort.vim

@@ -2359,7 +2359,7 @@ static struct vimoption options[] =
 			    SCRIPTID_INIT},
     {"scroll",	    "scr",  P_NUM|P_NO_MKRC|P_VI_DEF,
 			    (char_u *)VAR_WIN, PV_SCROLL,
-			    {(char_u *)12L, (char_u *)0L} SCRIPTID_INIT},
+			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
     {"scrollbind",  "scb",  P_BOOL|P_VI_DEF,
 #ifdef FEAT_SCROLLBIND
 			    (char_u *)VAR_WIN, PV_SCBIND,
@@ -3904,10 +3904,9 @@ set_init_2(void)
     int		idx;
 
     /*
-     * 'scroll' defaults to half the window height. Note that this default is
-     * wrong when the window height changes.
+     * 'scroll' defaults to half the window height. The stored default is zero,
+     * which results in the actual value computed from the window height.
      */
-    set_number_default("scroll", (long)((long_u)Rows >> 1));
     idx = findoption((char_u *)"scroll");
     if (idx >= 0 && !(options[idx].flags & P_WAS_SET))
 	set_option_default(idx, OPT_LOCAL, p_cp);
