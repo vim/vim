@@ -20,7 +20,6 @@ SCRIPTS_ALL = \
 	test36.out \
 	test37.out \
 	test39.out \
-	test40.out \
 	test42.out \
 	test44.out \
 	test45.out \
