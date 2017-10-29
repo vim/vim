@@ -2103,7 +2103,7 @@ test1 \
 	test_listchars \
 	test_search_mbyte \
 	test_wordcount \
-	test3 test11 test12 test14 test15 test17 \
+	test3 test11 test14 test15 test17 \
 	test29 test30 test36 test37 test39 \
 	test40 test42 test44 test45 test48 test49 \
 	test50 test52 test55 test59 \

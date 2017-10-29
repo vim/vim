@@ -58,7 +58,6 @@ SCRIPTS_MORE1 = \
 
 # Tests that run on most systems, but not on Amiga and DOS/Windows.
 SCRIPTS_MORE2 = \
-	test12.out \
 	test49.out
 
 
@@ -164,6 +163,7 @@ NEW_TESTS = test_arabic.res \
 	    test_startup_utf8.res \
 	    test_stat.res \
 	    test_substitute.res \
+	    test_swap.res \
 	    test_syntax.res \
 	    test_system.res \
 	    test_tab.res \
