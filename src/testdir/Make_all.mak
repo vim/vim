@@ -66,7 +66,6 @@ SCRIPTS_MORE4 = \
 	test30.out \
 	test59.out \
 	test72.out \
-	test83.out
 
 
 # Tests specifically for MS-Windows.

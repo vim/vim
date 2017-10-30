@@ -107,7 +107,6 @@ SCRIPT = test1.out test3.out \
 #
 # test72: bug - Vim hangs at :rename (while rename works well otherwise)
 # test78: bug - Vim dies at :recover Xtest 
-# test83: ?
 # test85: no Lua interface
 # test89: bug - findfile() does not work on VMS (just in the current directory) 
 # test102: Just ODS-5 supports space and special chars in the filename.
@@ -146,10 +145,6 @@ SCRIPT_GZIP = test11.out
 SCRIPT_GDIFF = test47.out
 .ENDIF
 
-.IFDEF HAVE_ICONV
-SCRIPT_ICONV = test83.out
-.ENDIF
-
 .IFDEF HAVE_LUA
 SCRIPT_LUA = test85.out
 .ENDIF
@@ -179,7 +174,7 @@ SCRIPT_PYTHON = test86.out test87.out
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
 all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) $(SCRIPT_GZIP) \
-    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_ICONV) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
+    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                All done"
