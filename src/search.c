@@ -4015,7 +4015,7 @@ again:
     {
 	if (do_searchpair((char_u *)"<[^ \t>/!]\\+\\%(\\_s\\_[^>]\\{-}[^/]>\\|$\\|\\_s\\=>\\)",
 		    (char_u *)"",
-		    (char_u *)"</[^>]*>", BACKWARD, (char_u *)"", 0,
+		    (char_u *)"</[^>]*>", BACKWARD, NULL, 0,
 						  NULL, (linenr_T)0, 0L) <= 0)
 	{
 	    curwin->w_cursor = old_pos;
@@ -4049,7 +4049,7 @@ again:
     sprintf((char *)spat, "<%.*s\\>\\%%(\\s\\_[^>]\\{-}[^/]>\\|>\\)\\c", len, p);
     sprintf((char *)epat, "</%.*s>\\c", len, p);
 
-    r = do_searchpair(spat, (char_u *)"", epat, FORWARD, (char_u *)"",
+    r = do_searchpair(spat, (char_u *)"", epat, FORWARD, NULL,
 						    0, NULL, (linenr_T)0, 0L);
 
     vim_free(spat);
