@@ -11,7 +11,11 @@ let s:python = PythonProg()
 " Open a terminal with a shell, assign the job to g:job and return the buffer
 " number.
 func Run_shell_in_terminal(options)
-  let buf = term_start(&shell, a:options)
+  if has('win32')
+    let buf = term_start([&shell,'/k'], a:options)
+  else
+    let buf = term_start(&shell, a:options)
+  endif
 
   let termlist = term_list()
   call assert_equal(1, len(termlist))
@@ -430,13 +434,14 @@ func Test_terminal_cwd()
 endfunc
 
 func Test_terminal_env()
-  if !has('unix')
-    return
-  endif
   let g:buf = Run_shell_in_terminal({'env': {'TESTENV': 'correct'}})
   " Wait for the shell to display a prompt
   call WaitFor('term_getline(g:buf, 1) != ""')
-  call term_sendkeys(g:buf, "echo $TESTENV\r")
+  if has('win32')
+    call term_sendkeys(g:buf, "echo %TESTENV%\r")
+  else
+    call term_sendkeys(g:buf, "echo $TESTENV\r")
+  endif
   call term_wait(g:buf)
   call Stop_shell_in_terminal(g:buf)
   call WaitFor('getline(2) == "correct"')

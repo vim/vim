@@ -5033,8 +5033,8 @@ job_io_file_open(
  * Turn the dictionary "env" into a NUL separated list that can be used as the
  * environment argument of vim_create_process().
  */
-    static void
-make_job_env(garray_T *gap, dict_T *env)
+    void
+win32_build_env(dict_T *env, garray_T *gap)
 {
     hashitem_T	*hi;
     int		todo = (int)env->dv_hashtab.ht_used;
@@ -5133,7 +5133,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     }
 
     if (options->jo_env != NULL)
-	make_job_env(&ga, options->jo_env);
+	win32_build_env(options->jo_env, &ga);
 
     ZeroMemory(&pi, sizeof(pi));
     ZeroMemory(&si, sizeof(si));
