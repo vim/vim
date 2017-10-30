@@ -696,6 +696,70 @@ eval_to_bool(
     return (int)retval;
 }
 
+    static int
+eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
+{
+    char_u	*s;
+    int		dummy;
+    char_u	buf[NUMBUFLEN];
+
+    if (expr->v_type == VAR_FUNC)
+    {
+	s = expr->vval.v_string;
+	if (s == NULL || *s == NUL)
+	    return FAIL;
+	if (call_func(s, (int)STRLEN(s), rettv, argc, argv, NULL,
+				     0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
+	    return FAIL;
+    }
+    else if (expr->v_type == VAR_PARTIAL)
+    {
+	partial_T   *partial = expr->vval.v_partial;
+
+	s = partial_name(partial);
+	if (s == NULL || *s == NUL)
+	    return FAIL;
+	if (call_func(s, (int)STRLEN(s), rettv, argc, argv, NULL,
+				  0L, 0L, &dummy, TRUE, partial, NULL) == FAIL)
+	    return FAIL;
+    }
+    else
+    {
+	s = get_tv_string_buf_chk(expr, buf);
+	if (s == NULL)
+	    return FAIL;
+	s = skipwhite(s);
+	if (eval1(&s, rettv, TRUE) == FAIL)
+	    return FAIL;
+	if (*s != NUL)  /* check for trailing chars after expr */
+	{
+	    EMSG2(_(e_invexpr2), s);
+	    return FAIL;
+	}
+    }
+    return OK;
+}
+
+/*
+ * Like eval_to_bool() but using a typval_T instead of a string.
+ * Works for string, funcref and partial.
+ */
+    int
+eval_expr_to_bool(typval_T *expr, int *error)
+{
+    typval_T	rettv;
+    int		res;
+
+    if (eval_expr_typval(expr, NULL, 0, &rettv) == FAIL)
+    {
+	*error = TRUE;
+	return FALSE;
+    }
+    res = (get_tv_number_chk(&rettv, error) != 0);
+    clear_tv(&rettv);
+    return res;
+}
+
 /*
  * Top level evaluation function, returning a string.  If "skip" is TRUE,
  * only parsing to "nextcmd" is done, without reporting errors.  Return
@@ -9971,44 +10035,13 @@ filter_map_one(typval_T *tv, typval_T *expr, int map, int *remp)
 {
     typval_T	rettv;
     typval_T	argv[3];
-    char_u	buf[NUMBUFLEN];
-    char_u	*s;
     int		retval = FAIL;
-    int		dummy;
 
     copy_tv(tv, &vimvars[VV_VAL].vv_tv);
     argv[0] = vimvars[VV_KEY].vv_tv;
     argv[1] = vimvars[VV_VAL].vv_tv;
-    if (expr->v_type == VAR_FUNC)
-    {
-	s = expr->vval.v_string;
-	if (call_func(s, (int)STRLEN(s), &rettv, 2, argv, NULL,
-				     0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
-	    goto theend;
-    }
-    else if (expr->v_type == VAR_PARTIAL)
-    {
-	partial_T   *partial = expr->vval.v_partial;
-
-	s = partial_name(partial);
-	if (call_func(s, (int)STRLEN(s), &rettv, 2, argv, NULL,
-				  0L, 0L, &dummy, TRUE, partial, NULL) == FAIL)
-	    goto theend;
-    }
-    else
-    {
-	s = get_tv_string_buf_chk(expr, buf);
-	if (s == NULL)
-	    goto theend;
-	s = skipwhite(s);
-	if (eval1(&s, &rettv, TRUE) == FAIL)
-	    goto theend;
-	if (*s != NUL)  /* check for trailing chars after expr */
-	{
-	    EMSG2(_(e_invexpr2), s);
-	    goto theend;
-	}
-    }
+    if (eval_expr_typval(expr, argv, 2, &rettv) == FAIL)
+	goto theend;
     if (map)
     {
 	/* map(): replace the list item value */
