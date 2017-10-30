@@ -9531,13 +9531,12 @@ f_searchdecl(typval_T *argvars, typval_T *rettv)
 searchpair_cmn(typval_T *argvars, pos_T *match_pos)
 {
     char_u	*spat, *mpat, *epat;
-    char_u	*skip;
+    typval_T	*skip;
     int		save_p_ws = p_ws;
     int		dir;
     int		flags = 0;
     char_u	nbuf1[NUMBUFLEN];
     char_u	nbuf2[NUMBUFLEN];
-    char_u	nbuf3[NUMBUFLEN];
     int		retval = 0;		/* default: FAIL */
     long	lnum_stop = 0;
     long	time_limit = 0;
@@ -9571,10 +9570,16 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
     /* Optional fifth argument: skip expression */
     if (argvars[3].v_type == VAR_UNKNOWN
 	    || argvars[4].v_type == VAR_UNKNOWN)
-	skip = (char_u *)"";
+	skip = NULL;
     else
     {
-	skip = get_tv_string_buf_chk(&argvars[4], nbuf3);
+	skip = &argvars[4];
+	if (skip->v_type != VAR_FUNC && skip->v_type != VAR_PARTIAL
+	    && skip->v_type != VAR_STRING)
+	{
+	    /* Type error */
+	    goto theend;
+	}
 	if (argvars[5].v_type != VAR_UNKNOWN)
 	{
 	    lnum_stop = (long)get_tv_number_chk(&argvars[5], NULL);
@@ -9590,8 +9595,6 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
 #endif
 	}
     }
-    if (skip == NULL)
-	goto theend;	    /* type error */
 
     retval = do_searchpair(spat, mpat, epat, dir, skip, flags,
 					    match_pos, lnum_stop, time_limit);
@@ -9645,7 +9648,7 @@ do_searchpair(
     char_u	*mpat,	    /* middle pattern */
     char_u	*epat,	    /* end pattern */
     int		dir,	    /* BACKWARD or FORWARD */
-    char_u	*skip,	    /* skip expression */
+    typval_T	*skip,	    /* skip expression */
     int		flags,	    /* SP_SETPCMARK and other SP_ values */
     pos_T	*match_pos,
     linenr_T	lnum_stop,  /* stop at this line if not zero */
@@ -9662,6 +9665,7 @@ do_searchpair(
     int		n;
     int		r;
     int		nest = 1;
+    int		use_skip = FALSE;
     int		err;
     int		options = SEARCH_KEEP;
     proftime_T	tm;
@@ -9689,6 +9693,14 @@ do_searchpair(
 							    spat, epat, mpat);
     if (flags & SP_START)
 	options |= SEARCH_START;
+
+    if (skip != NULL)
+    {
+	/* Empty string means to not use the skip expression. */
+	if (skip->v_type == VAR_STRING || skip->v_type == VAR_FUNC)
+	    use_skip = skip->vval.v_string != NULL
+						&& *skip->vval.v_string != NUL;
+    }
 
     save_cursor = curwin->w_cursor;
     pos = curwin->w_cursor;
@@ -9721,11 +9733,12 @@ do_searchpair(
 	options &= ~SEARCH_START;
 
 	/* If the skip pattern matches, ignore this match. */
-	if (*skip != NUL)
+	if (use_skip)
 	{
 	    save_pos = curwin->w_cursor;
 	    curwin->w_cursor = pos;
-	    r = eval_to_bool(skip, &err, NULL, FALSE);
+	    err = FALSE;
+	    r = eval_expr_to_bool(skip, &err);
 	    curwin->w_cursor = save_pos;
 	    if (err)
 	    {
