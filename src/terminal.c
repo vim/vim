@@ -3390,6 +3390,7 @@ term_and_job_init(
 {
     WCHAR	    *cmd_wchar = NULL;
     WCHAR	    *cwd_wchar = NULL;
+    WCHAR	    *env_wchar = NULL;
     channel_T	    *channel = NULL;
     job_T	    *job = NULL;
     DWORD	    error;
@@ -3398,7 +3399,7 @@ term_and_job_init(
     HANDLE	    child_thread_handle;
     void	    *winpty_err;
     void	    *spawn_config = NULL;
-    garray_T	    ga;
+    garray_T	    ga_cmd, ga_env;
     char_u	    *cmd;
 
     if (dyn_winpty_init(TRUE) == FAIL)
@@ -3408,10 +3409,10 @@ term_and_job_init(
 	cmd = argvar->vval.v_string;
     else
     {
-	ga_init2(&ga, (int)sizeof(char*), 20);
-	if (win32_build_cmd(argvar->vval.v_list, &ga) == FAIL)
+	ga_init2(&ga_cmd, (int)sizeof(char*), 20);
+	if (win32_build_cmd(argvar->vval.v_list, &ga_cmd) == FAIL)
 	    goto failed;
-	cmd = ga.ga_data;
+	cmd = ga_cmd.ga_data;
     }
 
     cmd_wchar = enc_to_utf16(cmd, NULL);
@@ -3419,6 +3420,12 @@ term_and_job_init(
 	return FAIL;
     if (opt->jo_cwd != NULL)
 	cwd_wchar = enc_to_utf16(opt->jo_cwd, NULL);
+    if (opt->jo_env != NULL)
+    {
+	ga_init2(&ga_env, (int)sizeof(char*), 20);
+	win32_build_env(opt->jo_env, &ga_env);
+	env_wchar = ga_env.ga_data;
+    }
 
     job = job_alloc();
     if (job == NULL)
@@ -3446,7 +3453,7 @@ term_and_job_init(
 	    NULL,
 	    cmd_wchar,
 	    cwd_wchar,
-	    NULL,
+	    env_wchar,
 	    &winpty_err);
     if (spawn_config == NULL)
 	goto failed;
@@ -3519,7 +3526,9 @@ term_and_job_init(
 
 failed:
     if (argvar->v_type == VAR_LIST)
-	vim_free(ga.ga_data);
+	vim_free(ga_cmd.ga_data);
+    if (opt->jo_env != NULL)
+	vim_free(ga_env.ga_data);
     vim_free(cmd_wchar);
     vim_free(cwd_wchar);
     if (spawn_config != NULL)
