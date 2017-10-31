@@ -75,7 +75,7 @@ SCRIPTS_WIN32 = test50.out
 SCRIPTS_GUI =
 
 
-# Tests using runtest.vim.vim.
+# Tests using runtest.vim
 # Keep test_alot*.res as the last one, sort the others.
 NEW_TESTS = test_arabic.res \
 	    test_arglist.res \
