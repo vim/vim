@@ -175,6 +175,7 @@ func Test_tag_symbolic()
 endfunc
 
 " Tests for tag search with !_TAG_FILE_ENCODING.
+" Depends on the test83-tags2 and test83-tags3 files.
 func Test_tag_file_encoding()
   if has('vms')
     return
