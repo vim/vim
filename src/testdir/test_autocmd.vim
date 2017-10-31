@@ -1010,3 +1010,35 @@ func Test_change_mark_in_autocmds()
   call delete('Xtest')
   call delete('Xtest2')
 endfunc
+
+func Test_Filter_noshelltemp()
+  if executable('cat')
+    enew!
+    call setline(1, ['a', 'b', 'c', 'd'])
+
+    let shelltemp = &shelltemp
+    set shelltemp
+
+    let g:filter_au = 0
+    au FilterWritePre * let g:filter_au += 1
+    au FilterReadPre * let g:filter_au += 1
+    au FilterReadPost * let g:filter_au += 1
+    %!cat
+    call assert_equal(3, g:filter_au)
+
+    if has('filterpipe')
+      set noshelltemp
+
+      let g:filter_au = 0
+      au FilterWritePre * let g:filter_au += 1
+      au FilterReadPre * let g:filter_au += 1
+      au FilterReadPost * let g:filter_au += 1
+      %!cat
+      call assert_equal(0, g:filter_au)
+    endif
+
+    au! FilterWritePre,FilterReadPre,FilterReadPost
+    let &shelltemp = shelltemp
+    bwipe!
+  endif
+endfunc
