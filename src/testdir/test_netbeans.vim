@@ -19,6 +19,7 @@ endfunc
 
 func Nb_basic(port)
   call delete("Xnetbeans")
+  call writefile([], "Xnetbeans")
   exe 'nbstart :localhost:' . a:port . ':bunny'
   call assert_true(has("netbeans_enabled"))
 
@@ -53,6 +54,9 @@ func Test_nb_basic()
 endfunc
 
 func Nb_file_auth(port)
+  call delete("Xnetbeans")
+  call writefile([], "Xnetbeans")
+
   call assert_fails('nbstart =notexist', 'E660:')
   call writefile(['host=localhost', 'port=' . a:port, 'auth=bunny'], 'Xnbauth')
   if has('unix')
