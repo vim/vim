@@ -2189,6 +2189,7 @@ test_arglist \
 	test_hlsearch \
 	test_increment \
 	test_increment_dbcs \
+	test_ins_complete \
 	test_job_fails \
 	test_join \
 	test_json \
