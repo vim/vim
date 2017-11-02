@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.0.  Last change: 2017 Sep 10
+*quickref.txt*  For Vim version 8.0.  Last change: 2017 Oct 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -780,6 +780,8 @@ Short explanation of each option:		*option-list*
 'listchars'	  'lcs'     characters for displaying in list mode
 'loadplugins'	  'lpl'     load plugin scripts when starting up
 'luadll'		    name of the Lua dynamic library
+'mzschemedll'		    name of the MzScheme dynamic library
+'mzschemegcdll'		    name of the MzScheme dynamic library for GC
 'macatsui'		    Mac GUI: use ATSUI text drawing
 'magic'			    changes special characters in search patterns
 'makeef'	  'mef'     name of the errorfile for ":make"

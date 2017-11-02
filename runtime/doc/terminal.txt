@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 26
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Oct 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -84,7 +84,7 @@ These are defined like any mapping, but apply only when typing keys that are
 sent to the job running in the terminal.  For example, to make Escape switch
 to Terminal-Normal mode: >
    tnoremap <Esc> <C-W>N
-
+<							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
 BufWinEnter autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >
@@ -472,8 +472,11 @@ Customizing ~
 To change the name of the gdb command, set the "termdebugger" variable before
 invoking `:Termdebug`: >
 	let termdebugger = "mygdb"
+<						*gdb-version*
 Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
-interface.  This probably requires gdb version 7.12.
+interface.  This probably requires gdb version 7.12.  if you get this error:
+	Undefined command: "new-ui". Try "help".~
+Then your gdb is too old.
 
 The color of the signs can be adjusted with these highlight groups:
 - debugPC		the current position

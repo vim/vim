@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(deutsch)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-01 14:56+0200\n"
+"POT-Creation-Date: 2017-10-15 22:00+0200\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt\n"
 "Language-Team: German <de@li.org>\n"
@@ -105,6 +105,18 @@ msgstr "E88: Kann nicht vor den ersten Puffer gehen."
 msgid "E89: No write since last change for buffer %ld (add ! to override)"
 msgstr ""
 "E89: Puffer %ld seit der letzten Änderung nicht gesichert (erzwinge mit !)"
+
+msgid "E948: Job still running (add ! to end the job)"
+msgstr "E948: Job läuft noch (Beenden mit !)"
+
+msgid "E37: No write since last change (add ! to override)"
+msgstr "E37: Kein Schreibvorgang seit der letzten Änderung (erzwinge mit !)"
+
+msgid "E948: Job still running"
+msgstr "E948: Job läuft noch"
+
+msgid "E37: No write since last change"
+msgstr "E37: Nicht geschrieben seit letzter Änderung"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Achtung: Überlauf der Dateinamensliste."
@@ -1142,8 +1154,8 @@ msgstr "E750: Benutze vorher :profile start <fname>"
 msgid "Save changes to \"%s\"?"
 msgstr "Änderungen in \"%s\" speichern?"
 
-msgid "Untitled"
-msgstr "Unbenannt"
+msgid "E947: Job still running in buffer \"%s\""
+msgstr "E947: Job noch aktiv in Puffer \"%s\""
 
 #, c-format
 msgid "E162: No write since last change for buffer \"%s\""
@@ -1500,6 +1512,9 @@ msgstr "E500: Ergibt eine leere Zeichenkette"
 
 msgid "E195: Cannot open viminfo file for reading"
 msgstr "E195: viminfo kann nicht zum Lesen geöffnet werden."
+
+msgid "Untitled"
+msgstr "Unbenannt"
 
 msgid "E196: No digraphs in this version"
 msgstr "E196: Keine Digraphen in dieser Version."
@@ -3875,16 +3890,16 @@ msgstr ""
 msgid "Tear off this menu"
 msgstr "Reiße dieses Menü ab"
 
+#, c-format
+msgid "E335: Menu not defined for %s mode"
+msgstr "E335: Menü ist für Modus %s nicht definiert"
+
 msgid "E333: Menu path must lead to a menu item"
 msgstr "E333: Menü-Pfad muss zu einem Menüpunkt führen"
 
 #, c-format
 msgid "E334: Menu not found: %s"
 msgstr "E334: Menü nicht gefunden: %s"
-
-#, c-format
-msgid "E335: Menu not defined for %s mode"
-msgstr "E335: Menü ist für Modus %s nicht definiert"
 
 msgid "E336: Menu path must lead to a sub-menu"
 msgstr "E336: Menü-Pfad muss zum Untermenü führen"
@@ -4261,9 +4276,6 @@ msgstr ""
 #, c-format
 msgid "(+%ld for BOM)"
 msgstr "(+%ld für BOM)"
-
-msgid "%<%f%h%m%=Page %N"
-msgstr "%<%f%h%m%=Seite %N"
 
 msgid "Thanks for flying Vim"
 msgstr "Danke für die Benutzung von Vim"
@@ -5775,6 +5787,9 @@ msgstr "Terminal"
 msgid "Terminal-finished"
 msgstr "Terminal beendet"
 
+msgid "active"
+msgstr "aktiv"
+
 msgid "running"
 msgstr "Führe aus"
 
@@ -6636,12 +6651,6 @@ msgstr "E484: Kann die Datei %s nicht öffnen"
 #, c-format
 msgid "E485: Can't read file %s"
 msgstr "E485: Kann Datei %s nicht lesen"
-
-msgid "E37: No write since last change (add ! to override)"
-msgstr "E37: Kein Schreibvorgang seit der letzten Änderung (erzwinge mit !)"
-
-msgid "E37: No write since last change"
-msgstr "E37: Nicht geschrieben seit letzter Änderung"
 
 msgid "E38: Null argument"
 msgstr "E38: Null-Argument"

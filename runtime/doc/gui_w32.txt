@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.0.  Last change: 2014 Dec 20
+*gui_w32.txt*   For Vim version 8.0.  Last change: 2017 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -382,38 +382,8 @@ Note that a menu that starts with ']' will not be displayed.
 ==============================================================================
 7. Command line arguments				*gui-w32-cmdargs*
 
-Analysis of a command line into parameters is not standardised in MS Windows.
-Gvim has to provide logic to analyse a command line.  This logic is likely to
-be different from the default logic provided by a compilation system used to
-build vim.  The differences relate to unusual double quote (") usage.
-The arguments "C:\My Music\freude.txt" and "+/Sch\"iller" are handled in the
-same way.  The argument "+/Sch""iller" may be handled different by gvim and
-vim, depending what it was compiled with.
-
-The rules are:
-      a) A parameter is a sequence of graphic characters.
-      b) Parameters are separated by white space.
-      c) A parameter can be enclosed in double quotes to include white space.
-      d) A sequence of zero or more backslashes (\) and a double quote (")
-	is special.  The effective number of backslashes is halved, rounded
-	down.  An even number of backslashes reverses the acceptability of
-	spaces and tabs, an odd number of backslashes produces a literal
-	double quote.
-
-So:
-	"	is a special double quote
-	\"	is a literal double quote
-	\\"	is a literal backslash and a special double quote
-	\\\"	is a literal backslash and a literal double quote
-	\\\\"	is 2 literal backslashes and a special double quote
-	\\\\\"	is 2 literal backslashes and a literal double quote
-	etc.
-
-Example: >
-	gvim "C:\My Music\freude" +"set ignorecase" +/"\"foo\\" +\"bar\\\"
-
-opens "C:\My Music\freude" and executes the line mode commands: >
-	set ignorecase; /"foo\ and /bar\"
+Command line arguments behave the same way as with the console application,
+see |win32-cmdargs|.
 
 ==============================================================================
 8. Various						*gui-w32-various*

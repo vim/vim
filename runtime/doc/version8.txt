@@ -11778,7 +11778,7 @@ Files:      src/os_unix.c
 Patch 7.4.1915
 Problem:    The effect of the PopupMenu autocommand isn't directly visible.
 Solution:   Call gui_update_menus() before displaying the popup menu. (Shane
-            Harper, closs #855)
+            Harper, closes #855)
 Files:      src/menu.c
 
 Patch 7.4.1916 (after 7.4.1906)
@@ -15398,7 +15398,7 @@ Files:      src/testdir/test_undo.vim, src/undo.c
 Patch 8.0.0150
 Problem:    When the pattern of :filter does not have a separator then
             completion of the command fails.
-Solution:   Skip over the pattern. (Ozaki Kiichi, clodes #1299)
+Solution:   Skip over the pattern. (Ozaki Kiichi, closes #1299)
 Files:      src/ex_docmd.c, src/testdir/test_filter_cmd.vim
 
 Patch 8.0.0151

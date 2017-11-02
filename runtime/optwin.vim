@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Sep 10
+" Last Change:	2017 Oct 19
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -1359,6 +1359,12 @@ endif
 if exists("&tcldll")
   call append("$", "tcldll\tname of the Tcl dynamic library")
   call <SID>OptionG("tcldll", &tcldll)
+endif
+if exists("&mzschemedll")
+  call append("$", "mzschemedll\tname of the Tcl dynamic library")
+  call <SID>OptionG("mzschemedll", &mzschemedll)
+  call append("$", "mzschemegcdll\tname of the Tcl GC dynamic library")
+  call <SID>OptionG("mzschemegcdll", &mzschemegcdll)
 endif
 
 set cpo&vim

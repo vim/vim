@@ -477,6 +477,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'msm'	options.txt	/*'msm'*
 'mzq'	options.txt	/*'mzq'*
 'mzquantum'	options.txt	/*'mzquantum'*
+'mzschemedll'	options.txt	/*'mzschemedll'*
+'mzschemegcdll'	options.txt	/*'mzschemegcdll'*
 'nf'	options.txt	/*'nf'*
 'noacd'	options.txt	/*'noacd'*
 'noai'	options.txt	/*'noai'*
@@ -976,6 +978,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_PS'	term.txt	/*'t_PS'*
 't_RB'	term.txt	/*'t_RB'*
 't_RC'	term.txt	/*'t_RC'*
+'t_RF'	term.txt	/*'t_RF'*
 't_RI'	term.txt	/*'t_RI'*
 't_RS'	term.txt	/*'t_RS'*
 't_RV'	term.txt	/*'t_RV'*
@@ -3654,6 +3657,8 @@ Cmd-event	autocmd.txt	/*Cmd-event*
 CmdUndefined	autocmd.txt	/*CmdUndefined*
 Cmdline	cmdline.txt	/*Cmdline*
 Cmdline-mode	cmdline.txt	/*Cmdline-mode*
+CmdlineEnter	autocmd.txt	/*CmdlineEnter*
+CmdlineLeave	autocmd.txt	/*CmdlineLeave*
 CmdwinEnter	autocmd.txt	/*CmdwinEnter*
 CmdwinLeave	autocmd.txt	/*CmdwinLeave*
 ColorScheme	autocmd.txt	/*ColorScheme*
@@ -3756,7 +3761,6 @@ E169	message.txt	/*E169*
 E17	message.txt	/*E17*
 E170	eval.txt	/*E170*
 E171	eval.txt	/*E171*
-E172	message.txt	/*E172*
 E173	message.txt	/*E173*
 E174	map.txt	/*E174*
 E175	map.txt	/*E175*
@@ -6524,6 +6528,7 @@ ga	various.txt	/*ga*
 garbagecollect()	eval.txt	/*garbagecollect()*
 gd	pattern.txt	/*gd*
 gdb	debug.txt	/*gdb*
+gdb-version	terminal.txt	/*gdb-version*
 ge	motion.txt	/*ge*
 get()	eval.txt	/*get()*
 get-ms-debuggers	debug.txt	/*get-ms-debuggers*
@@ -7800,6 +7805,7 @@ option-summary	options.txt	/*option-summary*
 option-window	options.txt	/*option-window*
 options	options.txt	/*options*
 options-changed	version5.txt	/*options-changed*
+options-in-terminal	terminal.txt	/*options-in-terminal*
 options.txt	options.txt	/*options.txt*
 optwin	options.txt	/*optwin*
 or()	eval.txt	/*or()*
@@ -8618,6 +8624,7 @@ t_PE	term.txt	/*t_PE*
 t_PS	term.txt	/*t_PS*
 t_RB	term.txt	/*t_RB*
 t_RC	term.txt	/*t_RC*
+t_RF	term.txt	/*t_RF*
 t_RI	term.txt	/*t_RI*
 t_RS	term.txt	/*t_RS*
 t_RV	term.txt	/*t_RV*
@@ -9115,8 +9122,9 @@ v:t_none	eval.txt	/*v:t_none*
 v:t_number	eval.txt	/*v:t_number*
 v:t_string	eval.txt	/*v:t_string*
 v:termblinkresp	eval.txt	/*v:termblinkresp*
+v:termrbgresp	eval.txt	/*v:termrbgresp*
 v:termresponse	eval.txt	/*v:termresponse*
-v:termrgbresp	eval.txt	/*v:termrgbresp*
+v:termrfgresp	eval.txt	/*v:termrfgresp*
 v:termstyleresp	eval.txt	/*v:termstyleresp*
 v:termu7resp	eval.txt	/*v:termu7resp*
 v:testing	eval.txt	/*v:testing*
@@ -9401,6 +9409,8 @@ wildmenumode()	eval.txt	/*wildmenumode()*
 win32	os_win32.txt	/*win32*
 win32-!start	gui_w32.txt	/*win32-!start*
 win32-PATH	os_win32.txt	/*win32-PATH*
+win32-backslashes	os_win32.txt	/*win32-backslashes*
+win32-cmdargs	os_win32.txt	/*win32-cmdargs*
 win32-colors	gui_w32.txt	/*win32-colors*
 win32-compiling	os_win32.txt	/*win32-compiling*
 win32-curdir	os_win32.txt	/*win32-curdir*

@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 8.0.  Last change: 2017 Sep 26
+*diff.txt*      For Vim version 8.0.  Last change: 2017 Oct 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -326,7 +326,7 @@ g:diff_translations to zero: >
 
     let g:diff_translations = 0
 <
-After setting this variable, Reload the syntax script: >
+After setting this variable, reload the syntax script: >
 
     set syntax=diff
 <

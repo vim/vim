@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.0.  Last change: 2017 Jul 14
+*autocmd.txt*   For Vim version 8.0.  Last change: 2017 Oct 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -501,6 +501,10 @@ CmdlineEnter			After moving the cursor to the command line,
 				|cmdwin-char|
 							*CmdlineLeave*
 CmdlineLeave			Before leaving the command line.
+				Also when abandoning the command line, after
+				typing CTRL-C or <Esc>.
+				When the commands result in an error the
+				command line is still executed.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
