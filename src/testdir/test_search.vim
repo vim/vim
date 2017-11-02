@@ -494,13 +494,15 @@ func Test_search_cmdline_incsearch_highlight_attr()
   if h < 3
     return
   endif
-  let g:buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': 3})
 
   " Prepare buffer text
-  let lines = ['abb vim vim vi', 'vimvivim']
-  call term_sendkeys(g:buf, 'i' . join(lines, "\n") . "\<esc>gg0")
-  call term_wait(g:buf, 200)
-  call assert_equal(lines[0], term_getline(g:buf, 1))
+  let g:lines = ['abb vim vim vi', 'vimvivim']
+  call writefile(g:lines, 'Xsearch.txt')
+  let g:buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
+  call WaitFor('g:lines[0] == term_getline(g:buf, 1)')
+  call assert_equal(g:lines[0], term_getline(g:buf, 1))
+  call assert_equal(g:lines[1], term_getline(g:buf, 2))
+  unlet g:lines
 
   " Get attr of normal(a0), incsearch(a1), hlsearch(a2) highlight
   call term_sendkeys(g:buf, ":set incsearch hlsearch\<cr>")
@@ -565,6 +567,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
   call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
   call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
 
+  call delete('Xsearch.txt')
   bwipe!
 endfunc
 
