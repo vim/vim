@@ -27,7 +27,7 @@ func Nb_basic(port)
 
   " Opening README.txt will result in a setDot command
   call WaitFor('len(readfile("Xnetbeans")) > 4')
-  call WaitFor('getcurpos()[1] == 2')
+  call WaitFor('getcurpos()[1] == 3')
   let pos = getcurpos()
   call assert_equal(3, pos[1])
   call assert_equal(20, pos[2])

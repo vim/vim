@@ -705,7 +705,7 @@ func Test_terminal_composing_unicode()
 
   enew
   let buf = term_start(cmd, {'curwin': bufnr('')})
-  let job = term_getjob(buf)
+  let g:job = term_getjob(buf)
   call term_wait(buf, 50)
 
   " ascii + composing
@@ -742,8 +742,9 @@ func Test_terminal_composing_unicode()
   call assert_equal("\u00a0\u0308", l[3].chars)
 
   call term_sendkeys(buf, "exit\r")
-  call WaitFor('job_status(job) == "dead"')
-  call assert_equal('dead', job_status(job))
+  call WaitFor('job_status(g:job) == "dead"')
+  call assert_equal('dead', job_status(g:job))
   bwipe!
+  unlet g:job
   let &encoding = save_enc
 endfunc
