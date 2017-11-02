@@ -397,6 +397,117 @@ func Test_search_cmdline5()
   bw!
 endfunc
 
+func Test_search_cmdline6()
+  " Test that consecutive matches
+  " are caught by <c-g>/<c-t>
+  if !exists('+incsearch')
+    return
+  endif
+  " need to disable char_avail,
+  " so that expansion of commandline works
+  call test_override("char_avail", 1)
+  new
+  call setline(1, [' bbvimb', ''])
+  set incsearch
+  " first match
+  norm! gg0
+  call feedkeys("/b\<cr>", 'tx')
+  call assert_equal([0,1,2,0], getpos('.'))
+  " second match
+  norm! gg0
+  call feedkeys("/b\<c-g>\<cr>", 'tx')
+  call assert_equal([0,1,3,0], getpos('.'))
+  " third match
+  norm! gg0
+  call feedkeys("/b\<c-g>\<c-g>\<cr>", 'tx')
+  call assert_equal([0,1,7,0], getpos('.'))
+  " first match again
+  norm! gg0
+  call feedkeys("/b\<c-g>\<c-g>\<c-g>\<cr>", 'tx')
+  call assert_equal([0,1,2,0], getpos('.'))
+  set nowrapscan
+  " last match
+  norm! gg0
+  call feedkeys("/b\<c-g>\<c-g>\<c-g>\<cr>", 'tx')
+  call assert_equal([0,1,7,0], getpos('.'))
+  " clean up
+  set wrapscan&vim
+  set noincsearch
+  call test_override("char_avail", 0)
+  bw!
+endfunc
+
+func Test_search_cmdline7()
+  " Test that an pressing <c-g> in an empty command line
+  " does not move the cursor
+  if !exists('+incsearch')
+    return
+  endif
+  " need to disable char_avail,
+  " so that expansion of commandline works
+  call test_override("char_avail", 1)
+  new
+  let @/='b'
+  call setline(1, [' bbvimb', ''])
+  set incsearch
+  " first match
+  norm! gg0
+  " moves to next match of previous search pattern, just like /<cr>
+  call feedkeys("/\<c-g>\<cr>", 'tx')
+  call assert_equal([0,1,2,0], getpos('.'))
+  " moves to next match of previous search pattern, just like /<cr>
+  call feedkeys("/\<cr>", 'tx')
+  call assert_equal([0,1,3,0], getpos('.'))
+  " moves to next match of previous search pattern, just like /<cr>
+  call feedkeys("/\<c-t>\<cr>", 'tx')
+  call assert_equal([0,1,7,0], getpos('.'))
+  set noincsearch
+  call test_override("char_avail", 0)
+  bw!
+endfunc
+
+func Test_search_cmdline8()
+  " Highlighting is cleared in all windows
+  " since hls applies to all windows
+  if !exists('+incsearch') || !has('terminal') || has('gui_running') || winwidth(0) < 30
+    return
+  endif
+  if has("win32")
+    throw "Skipped: Bug with sending <ESC> to terminal window not fixed yet"
+  endif
+  let h = winheight(0)
+  if h < 3
+    return
+  endif
+  " Prepare buffer text
+  let lines = ['abb vim vim vi', 'vimvivim']
+  call writefile(lines, 'Xsearch.txt')
+  let g:buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
+
+  call term_wait(g:buf, 200)
+  call assert_equal(lines[0], term_getline(g:buf, 1))
+  call assert_equal(lines[1], term_getline(g:buf, 2))
+
+  call term_sendkeys(g:buf, ":set incsearch hlsearch\<cr>")
+  call term_sendkeys(g:buf, ":14vsp\<cr>")
+  call term_sendkeys(g:buf, "/vim\<cr>")
+  call term_sendkeys(g:buf, "/b\<esc>")
+  call term_sendkeys(g:buf, "gg0")
+  call term_wait(g:buf, 500)
+  let screen_line = term_scrape(g:buf, 1)
+  let [a0,a1,a2,a3] = [screen_line[3].attr, screen_line[4].attr,
+        \ screen_line[18].attr, screen_line[19].attr]
+  call assert_notequal(a0, a1)
+  call assert_notequal(a0, a3)
+  call assert_notequal(a1, a2)
+  call assert_equal(a0, a2)
+  call assert_equal(a1, a3)
+  " clean up
+  call delete('Xsearch.txt')
+
+  bwipe!
+endfunc
+
 " Tests for regexp with various magic settings
 func Test_search_regexp()
   enew!
@@ -566,6 +677,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
   let attr_line2 = [a0,a0,a0,a0,a0,a0,a0,a0]
   call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
   call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+  call delete('Xsearch.txt')
 
   call delete('Xsearch.txt')
   bwipe!
