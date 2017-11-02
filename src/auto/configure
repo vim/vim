@@ -11553,7 +11553,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking what tgetent() returns for an unknown terminal" >&5
 $as_echo_n "checking what tgetent() returns for an unknown terminal... " >&6; }
-if ${vim_cv_tgent+:} false; then :
+if ${vim_cv_tgetent+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -11579,11 +11579,11 @@ main()
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
 
-      vim_cv_tgent=zero
+      vim_cv_tgetent=zero
 
 else
 
-      vim_cv_tgent=non-zero
+      vim_cv_tgetent=non-zero
 
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
@@ -11592,10 +11592,10 @@ fi
 
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_tgent" >&5
-$as_echo "$vim_cv_tgent" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_tgetent" >&5
+$as_echo "$vim_cv_tgetent" >&6; }
 
-if test "x$vim_cv_tgent" = "xzero" ; then
+if test "x$vim_cv_tgetent" = "xzero" ; then
   $as_echo "#define TGETENT_ZERO_ERR 0" >>confdefs.h
 
 fi
