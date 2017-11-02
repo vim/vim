@@ -3385,7 +3385,7 @@ gui_mch_maximized(void)
 }
 
 /*
- * Called when the font changed while the window is maximized.  Compute the
+ * Called when the font changed while the window is maximized or GO_FIXWINSIZE is set.  Compute the
  * new Rows and Columns.  This is like resizing the window.
  */
     void
