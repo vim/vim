@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Sep 17
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Oct 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,9 +120,8 @@ To test for a non-empty string, use empty(): >
 Function arguments often behave slightly different from |TRUE|: If the
 argument is present and it evaluates to a non-zero Number, |v:true| or a
 non-empty String, then the value is considered to be TRUE.
-Note that " " and "0" are also non-empty strings, thus cause the mode to be
-cleared.  A List, Dictionary or Float is not a Number or String, thus
-evaluates to FALSE.
+Note that " " and "0" are also non-empty strings, thus considered to be TRUE.
+A List, Dictionary or Float is not a Number or String, thus evaluate to FALSE.
 
 		*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910* *E913*
 List, Dictionary, Funcref, Job and Channel types are not automatically
@@ -815,14 +814,15 @@ Examples:
 "abc" == "Abc"	  evaluates to 1 if 'ignorecase' is set, 0 otherwise
 
 							*E691* *E692*
-A |List| can only be compared with a |List| and only "equal", "not equal" and
-"is" can be used.  This compares the values of the list, recursively.
-Ignoring case means case is ignored when comparing item values.
+A |List| can only be compared with a |List| and only "equal", "not equal",
+"is" and "isnot" can be used.  This compares the values of the list,
+recursively.  Ignoring case means case is ignored when comparing item values.
 
 							*E735* *E736*
 A |Dictionary| can only be compared with a |Dictionary| and only "equal", "not
-equal" and "is" can be used.  This compares the key/values of the |Dictionary|
-recursively.  Ignoring case means case is ignored when comparing item values.
+equal", "is" and "isnot" can be used.  This compares the key/values of the
+|Dictionary| recursively.  Ignoring case means case is ignored when comparing
+item values.
 
 							*E694*
 A |Funcref| can only be compared with a |Funcref| and only "equal", "not
@@ -2321,7 +2321,7 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])
 server2client({clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
-setbufline( {expr}, {lnum}, {line})
+setbufline({expr}, {lnum}, {line})
 				Number	set line {lnum} to {line} in buffer
 					{expr}
 setbufvar({expr}, {varname}, {val})
@@ -2950,6 +2950,9 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 		correct contents.  Also does not add a newline for a channel
 		in NL mode, the caller must do that.  The NL in the response
 		is removed.
+		Note that Vim does not know when the text received on a raw
+		channel is complete, it may only return the first part and you 
+		need to use ch_readraw() to fetch the rest.
 		See |channel-use|.
 
 		{only available when compiled with the |+channel| feature}
@@ -6463,6 +6466,12 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 		{only available when compiled with the |+clientserver| feature}
 		Note: Any errors will cause a local error message to be issued
 		and the result will be the empty string.
+
+		Variables will be evaluated in the global namespace,
+		independent of a function currently being activel.  Except
+		when in debug mode, then local function variables and
+		arguments can be evaluated.
+
 		Examples: >
 			:echo remote_expr("gvim", "2+2")
 			:echo remote_expr("gvim1", "b:current_syntax")
@@ -8154,6 +8163,11 @@ term_setsize({buf}, {expr})				*term_setsize()*
 term_start({cmd}, {options})				*term_start()*
 		Open a terminal window and run {cmd} in it.
 
+		{cmd} can be a string or a List, like with |job_start()|. The
+		string "NONE" can be used to open a terminal window without
+		starting a job, the pty of the terminal can be used by a
+		command like gdb.
+
 		Returns the buffer number of the terminal window.  If {cmd}
 		cannot be executed the window does open and shows an error
 		message.
@@ -9055,13 +9069,16 @@ See |:verbose-cmd| for more information.
 
 						*E124* *E125* *E853* *E884*
 :fu[nction][!] {name}([arguments]) [range] [abort] [dict] [closure]
-			Define a new function by the name {name}.  The name
-			must be made of alphanumeric characters and '_', and
-			must start with a capital or "s:" (see above).  Note
-			that using "b:" or "g:" is not allowed. (since patch
-			7.4.260 E884 is given if the function name has a colon
-			in the name, e.g. for "foo:bar()".  Before that patch
-			no error was given).
+			Define a new function by the name {name}.  The body of
+			the function follows in the next lines, until the
+			matching |:endfunction|.
+			
+			The name must be made of alphanumeric characters and
+			'_', and must start with a capital or "s:" (see
+			above).  Note that using "b:" or "g:" is not allowed.
+			(since patch 7.4.260 E884 is given if the function
+			name has a colon in the name, e.g. for "foo:bar()".
+			Before that patch no error was given).
 
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >
@@ -9197,9 +9214,10 @@ to the number of named arguments.  When using "...", the number of arguments
 may be larger.
 
 It is also possible to define a function without any arguments.  You must
-still supply the () then.  The body of the function follows in the next lines,
-until the matching |:endfunction|.  It is allowed to define another function
-inside a function body.
+still supply the () then.
+
+It is allowed to define another function inside a function
+body.
 
 							*local-variables*
 Inside a function local variables can be used.  These will disappear when the

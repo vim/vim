@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.0.  Last change: 2016 Sep 20
+*tagsrch.txt*   For Vim version 8.0.  Last change: 2017 Oct 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -195,6 +195,7 @@ the same entry.
 			information in the tags file(s).
 			When [ident] is not given, the last tag name from the
 			tag stack is used.
+			See |tag-!| for [!].
 			With a '>' in the first column is indicated which is
 			the current position in the list (if there is one).
 			[ident] can be a regexp pattern, see |tag-regexp|.

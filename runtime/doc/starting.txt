@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2017 Jul 15
+*starting.txt*  For Vim version 8.0.  Last change: 2017 Oct 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -873,6 +873,9 @@ accordingly.  Vim proceeds in this order:
      (*) Using this file or environment variable will cause 'compatible' to be
 	 off by default.  See |compatible-default|.
 
+     Note: When using the |mzscheme| interface, it is initialzed after loading
+     the vimrc file.  Changing 'mzschemedll' later has no effect.
+
 4. Load the plugin scripts.					*load-plugins*
 	This does the same as the command: >
 		:runtime! plugin/**/*.vim
@@ -1044,7 +1047,7 @@ details.  NOTE: this is done since Vim 8.0, not in Vim 7.4. (it was added in
 patch 7.4.2111 to be exact).
 
 This should work well for new Vim users.  If you create your own .vimrc, it is
-recommended to add this line somewhere near the top: >
+recommended to add these lines somewhere near the top: >
 	unlet! skip_defaults_vim
 	source $VIMRUNTIME/defaults.vim
 Then Vim works like before you had a .vimrc. Copying $VIMRUNTIME/vimrc_example

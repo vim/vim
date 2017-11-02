@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.0.  Last change: 2017 Mar 28
+*filetype.txt*  For Vim version 8.0.  Last change: 2017 Oct 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -43,7 +43,7 @@ Detail: The ":filetype on" command will load one of these files:
 	BufNewFile and BufRead events.  If the file type is not found by the
 	name, the file $VIMRUNTIME/scripts.vim is used to detect it from the
 	contents of the file.
-	When the GUI is running or will start soon, the menu.vim script is
+	When the GUI is running or will start soon, the |menu.vim| script is
 	also sourced.  See |'go-M'| about avoiding that.
 
 To add your own file types, see |new-filetype| below.  To search for help on a
@@ -607,6 +607,7 @@ Works on:
   - Linux
   - Mac OS
   - FreeBSD
+  - OpenBSD
   - Cygwin
   - Win 10 under Bash
 
@@ -619,6 +620,10 @@ Untested:
 For bash,zsh,ksh or dash by adding to the config file (.bashrc,.zshrc, ...)
 
 	export MANPAGER="env MAN_PN=1 vim -M +MANPAGER -"
+
+On OpenBSD:
+
+        export MANPAGER="env MAN_PN=1 vim -M +MANPAGER"
 
 For (t)csh by adding to the config file
 

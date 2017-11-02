@@ -81,10 +81,45 @@ The directory of the Vim executable is appended to $PATH.  This is mostly to
 make "!xxd" work, as it is in the Tools menu.  And it also means that when
 executable() returns 1 the executable can actually be executed.
 
-Quotes in file names					*win32-quotes*
+Command line arguments					*win32-cmdargs*
 
-Quotes inside a file name (or any other command line argument) can be escaped
-with a backslash.  E.g. >
+Analysis of a command line into parameters is not standardised in MS Windows.
+Vim and gvim used to use different logic to parse it (before 7.4.432), and the
+logic was also depended on what it was compiled with.  Now Vim and gvim both
+use the CommandLineToArgvW() Win32 API, so they behave in the same way.
+
+The basic rules are:					*win32-backslashes*
+      a) A parameter is a sequence of graphic characters.
+      b) Parameters are separated by white space.
+      c) A parameter can be enclosed in double quotes to include white space.
+      d) A sequence of zero or more backslashes (\) and a double quote (")
+	is special.  The effective number of backslashes is halved, rounded
+	down.  An even number of backslashes reverses the acceptability of
+	spaces and tabs, an odd number of backslashes produces a literal
+	double quote.
+
+So:
+	"	is a special double quote
+	\"	is a literal double quote
+	\\"	is a literal backslash and a special double quote
+	\\\"	is a literal backslash and a literal double quote
+	\\\\"	is 2 literal backslashes and a special double quote
+	\\\\\"	is 2 literal backslashes and a literal double quote
+	etc.
+
+Example: >
+	vim "C:\My Music\freude" +"set ignorecase" +/"\"foo\\" +\"bar\\\"
+
+opens "C:\My Music\freude" and executes the line mode commands: >
+	set ignorecase; /"foo\ and /bar\"
+
+These rules are also described in the reference of the CommandLineToArgvW API:
+    https://msdn.microsoft.com/en-us/library/windows/desktop/bb776391.aspx
+
+							*win32-quotes*
+There are additional rules for quotes (which are not well documented).
+As described above, quotes inside a file name (or any other command line
+argument) can be escaped with a backslash.  E.g. >
 	vim -c "echo 'foo\"bar'"
 
 Alternatively use three quotes to get one: >
