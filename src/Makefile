@@ -2103,13 +2103,13 @@ test1 \
 	test_listchars \
 	test_search_mbyte \
 	test_wordcount \
-	test3 test11 test12 test14 test15 test17 \
+	test3 test11 test14 test15 test17 \
 	test29 test30 test36 test37 test39 \
-	test40 test42 test44 test45 test48 test49 \
+	test42 test44 test48 test49 \
 	test50 test52 test55 test59 \
 	test64 test68 test69 \
-	test70 test72 test73 test77 \
-	test83 test85 test86 test87 test88 \
+	test70 test72 test73 \
+	test85 test86 test87 test88 \
 	test94 test95 test99 test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
