@@ -709,7 +709,7 @@ func Run_test_pipe_to_buffer(use_name, nomod, do_msg)
     call ch_sendraw(handle, "double this\n")
     call ch_sendraw(handle, "quit\n")
     sp pipe-output
-    call WaitFor('line("$") >= 6 && g:Ch_bufClosed == "yes"')
+    call WaitFor('line("$") == ' . len(expected) . ' && g:Ch_bufClosed == "yes"')
     call assert_equal(expected, getline(1, '$'))
     if a:nomod
       call assert_equal(0, &modifiable)
@@ -804,7 +804,7 @@ func Run_test_pipe_err_to_buffer(use_name, nomod, do_msg)
     call ch_sendraw(handle, "doubleerr this\n")
     call ch_sendraw(handle, "quit\n")
     sp pipe-err
-    call WaitFor('line("$") >= 5')
+    call WaitFor('line("$") == ' . len(expected))
     call assert_equal(expected, getline(1, '$'))
     if a:nomod
       call assert_equal(0, &modifiable)
@@ -1130,12 +1130,14 @@ func Test_pipe_to_buffer_raw()
   let job = job_start([s:python, '-c', 
         \ 'import sys; [sys.stdout.write(".") and sys.stdout.flush() for _ in range(10000)]'], options)
   call assert_equal("run", job_status(job))
-  call WaitFor('len(join(getline(2,line("$")),"") >= 10000')
+  call WaitFor('len(join(getline(1, "$"), "")) >= 10000', 3000)
   try
-    for line in getline(2, '$')
-      let line = substitute(line, '^\.*', '', '')
-      call assert_equal('', line)
+    let totlen = 0
+    for line in getline(1, '$')
+      call assert_equal('', substitute(line, '^\.*', '', ''))
+      let totlen += len(line)
     endfor
+    call assert_equal(10000, totlen)
   finally
     call job_stop(job)
     bwipe!
@@ -1300,24 +1302,25 @@ func Test_close_and_exit_cb()
   endif
   call ch_log('Test_close_and_exit_cb')
 
-  let dict = {'ret': {}}
-  func dict.close_cb(ch) dict
+  let g:retdict = {'ret': {}}
+  func g:retdict.close_cb(ch) dict
     let self.ret['close_cb'] = job_status(ch_getjob(a:ch))
   endfunc
-  func dict.exit_cb(job, status) dict
+  func g:retdict.exit_cb(job, status) dict
     let self.ret['exit_cb'] = job_status(a:job)
   endfunc
 
   let g:job = job_start('echo', {
-        \ 'close_cb': dict.close_cb,
-        \ 'exit_cb': dict.exit_cb,
+        \ 'close_cb': g:retdict.close_cb,
+        \ 'exit_cb': g:retdict.exit_cb,
         \ })
   call assert_equal('run', job_status(g:job))
   unlet g:job
-  call WaitFor('len(dict.ret) >= 2')
-  call assert_equal(2, len(dict.ret))
-  call assert_match('^\%(dead\|run\)', dict.ret['close_cb'])
-  call assert_equal('dead', dict.ret['exit_cb'])
+  call WaitFor('len(g:retdict.ret) >= 2')
+  call assert_equal(2, len(g:retdict.ret))
+  call assert_match('^\%(dead\|run\)', g:retdict.ret['close_cb'])
+  call assert_equal('dead', g:retdict.ret['exit_cb'])
+  unlet g:retdict
 endfunc
 
 """"""""""
@@ -1547,13 +1550,14 @@ func Test_job_stop_immediately()
     return
   endif
 
-  let job = job_start([s:python, '-c', 'import time;time.sleep(10)'])
+  let g:job = job_start([s:python, '-c', 'import time;time.sleep(10)'])
   try
-    call job_stop(job)
-    call WaitFor('"dead" == job_status(job)')
-    call assert_equal('dead', job_status(job))
+    call job_stop(g:job)
+    call WaitFor('"dead" == job_status(g:job)')
+    call assert_equal('dead', job_status(g:job))
   finally
-    call job_stop(job, 'kill')
+    call job_stop(g:job, 'kill')
+    unlet g:job
   endtry
 endfunc
 
@@ -1585,7 +1589,7 @@ func Test_collapse_buffers()
   split testout
   1,$delete
   call job_start('cat test_channel.vim', {'out_io': 'buffer', 'out_name': 'testout'})
-  call WaitFor('line("$") > g:linecount')
+  call WaitFor('line("$") >= g:linecount')
   call assert_inrange(g:linecount, g:linecount + 1, line('$'))
   bwipe!
 endfunc
