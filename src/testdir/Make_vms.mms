@@ -75,13 +75,13 @@ VIMPROG = <->vim.exe
 
 SCRIPT = test1.out test3.out \
        test14.out test15.out \
-       test29.out test30.out \
-       test36.out test37.out test39.out \
-       test40.out test42.out test44.out test45.out \
-       test48.out test49.out test55.out \
+       test29.out \
+       test30.out test36.out test37.out test39.out \
+       test42.out test44.out test48.out test49.out \
+       test55.out \
        test64.out test68.out test69.out \
        test72.out test77a.out test88.out \
-       test94.out test95.out test99.out test108.out\
+       test94.out test95.out test99.out test108.out \
        test_autocmd_option.out \
        test_breakindent.out \
        test_changelist.out \
@@ -107,7 +107,6 @@ SCRIPT = test1.out test3.out \
 #
 # test72: bug - Vim hangs at :rename (while rename works well otherwise)
 # test78: bug - Vim dies at :recover Xtest 
-# test83: ?
 # test85: no Lua interface
 # test89: bug - findfile() does not work on VMS (just in the current directory) 
 # test102: Just ODS-5 supports space and special chars in the filename.
@@ -119,7 +118,7 @@ GUI_OPTION = -g
 .ENDIF
 
 .IFDEF WANT_UNIX
-SCRIPT_UNIX = test10.out test12.out test17.out test27.out test49.out test73.out
+SCRIPT_UNIX = test10.out test17.out test27.out test49.out test73.out
 .ENDIF
 
 .IFDEF WANT_WIN
@@ -144,10 +143,6 @@ SCRIPT_GZIP = test11.out
 
 .IFDEF HAVE_GDIFF
 SCRIPT_GDIFF = test47.out
-.ENDIF
-
-.IFDEF HAVE_ICONV
-SCRIPT_ICONV = test83.out
 .ENDIF
 
 .IFDEF HAVE_LUA
@@ -179,7 +174,7 @@ SCRIPT_PYTHON = test86.out test87.out
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
 all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) $(SCRIPT_GZIP) \
-    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_ICONV) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
+    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                All done"

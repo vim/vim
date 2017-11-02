@@ -1,6 +1,5 @@
 " Tests for autocommands
 
-
 func! s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
     if bufloaded(bnr) && bufnr('%') != bnr
@@ -916,4 +915,85 @@ func Test_buflocal_autocmd()
   call assert_equal('', g:bname)
   enew
   unlet g:bname
+endfunc
+
+" Test for "*Cmd" autocommands
+func Test_Cmd_Autocmds()
+  call writefile(['start of Xxx', "\tabc2", 'end of Xxx'], 'Xxx')
+
+  enew!
+  au BufReadCmd XtestA 0r Xxx|$del
+  edit XtestA			" will read text of Xxd instead
+  call assert_equal('start of Xxx', getline(1))
+
+  au BufWriteCmd XtestA call append(line("$"), "write")
+  write				" will append a line to the file
+  call assert_equal('write', getline('$'))
+  call assert_fails('read XtestA', 'E484')	" should not read anything
+  call assert_equal('write', getline(4))
+
+  " now we have:
+  " 1	start of Xxx
+  " 2		abc2
+  " 3	end of Xxx
+  " 4	write
+
+  au FileReadCmd XtestB '[r Xxx
+  2r XtestB			" will read Xxx below line 2 instead
+  call assert_equal('start of Xxx', getline(3))
+
+  " now we have:
+  " 1	start of Xxx
+  " 2		abc2
+  " 3	start of Xxx
+  " 4		abc2
+  " 5	end of Xxx
+  " 6	end of Xxx
+  " 7	write
+
+  au FileWriteCmd XtestC '[,']copy $
+  normal 4GA1
+  4,5w XtestC			" will copy lines 4 and 5 to the end
+  call assert_equal("\tabc21", getline(8))
+  call assert_fails('r XtestC', 'E484')	" should not read anything
+  call assert_equal("end of Xxx", getline(9))
+
+  " now we have:
+  " 1	start of Xxx
+  " 2		abc2
+  " 3	start of Xxx
+  " 4		abc21
+  " 5	end of Xxx
+  " 6	end of Xxx
+  " 7	write
+  " 8		abc21
+  " 9	end of Xxx
+
+  let g:lines = []
+  au FileAppendCmd XtestD call extend(g:lines, getline(line("'["), line("']")))
+  w >>XtestD			" will add lines to 'lines'
+  call assert_equal(9, len(g:lines))
+  call assert_fails('$r XtestD', 'E484')	" should not read anything
+  call assert_equal(9, line('$'))
+  call assert_equal('end of Xxx', getline('$'))
+
+  au BufReadCmd XtestE 0r Xxx|$del
+  sp XtestE			" split window with test.out
+  call assert_equal('end of Xxx', getline(3))
+
+  let g:lines = []
+  exe "normal 2Goasdf\<Esc>\<C-W>\<C-W>"
+  au BufWriteCmd XtestE call extend(g:lines, getline(0, '$'))
+  wall				" will write other window to 'lines'
+  call assert_equal(4, len(g:lines), g:lines)
+  call assert_equal('asdf', g:lines[2])
+
+  au! BufReadCmd
+  au! BufWriteCmd
+  au! FileReadCmd
+  au! FileWriteCmd
+  au! FileAppendCmd
+  %bwipe!
+  call delete('Xxx')
+  enew!
 endfunc

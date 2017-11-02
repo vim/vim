@@ -20,10 +20,8 @@ SCRIPTS_ALL = \
 	test36.out \
 	test37.out \
 	test39.out \
-	test40.out \
 	test42.out \
 	test44.out \
-	test45.out \
 	test48.out \
 	test55.out \
 	test64.out \
@@ -58,7 +56,6 @@ SCRIPTS_MORE1 = \
 
 # Tests that run on most systems, but not on Amiga and DOS/Windows.
 SCRIPTS_MORE2 = \
-	test12.out \
 	test49.out
 
 
@@ -68,7 +65,6 @@ SCRIPTS_MORE4 = \
 	test30.out \
 	test59.out \
 	test72.out \
-	test83.out
 
 
 # Tests specifically for MS-Windows.
@@ -79,7 +75,7 @@ SCRIPTS_WIN32 = test50.out
 SCRIPTS_GUI =
 
 
-# Tests using runtest.vim.vim.
+# Tests using runtest.vim
 # Keep test_alot*.res as the last one, sort the others.
 NEW_TESTS = test_arabic.res \
 	    test_arglist.res \
@@ -164,6 +160,7 @@ NEW_TESTS = test_arabic.res \
 	    test_startup_utf8.res \
 	    test_stat.res \
 	    test_substitute.res \
+	    test_swap.res \
 	    test_syntax.res \
 	    test_system.res \
 	    test_tab.res \
