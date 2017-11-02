@@ -2,7 +2,8 @@
 " Language:     doxygen on top of c, cpp, idl, java, php
 " Maintainer:   Michael Geddes <vimmer@frog.wheelycreek.net>
 " Author:       Michael Geddes
-" Last Change:  Jan 2009 (\tparam by Domnique Pelle, Aug 2013)
+" Last Change:  Jan 2009 (\tparam by Domnique Pelle, Aug 2013,
+"                         \throws by Candy Gumdrop, Nov 2017)
 " Version:      1.23
 "
 " Copyright 2004-2008 Michael Geddes
@@ -181,7 +182,7 @@ endif
   syn match doxygenParamDirection contained "\v\[(\s*in>((]\s*\[|\s*,\s*)out>)=|out>((]\s*\[|\s*,\s*)in>)=)\]" nextgroup=doxygenParamName skipwhite
   syn keyword doxygenParam contained param tparam nextgroup=doxygenParamName,doxygenParamDirection skipwhite
   syn match doxygenParamName contained +[A-Za-z0-9_:]\++ nextgroup=doxygenSpecialMultilineDesc skipwhite
-  syn keyword doxygenRetval contained retval throw exception nextgroup=doxygenParamName skipwhite
+  syn keyword doxygenRetval contained retval throw throws exception nextgroup=doxygenParamName skipwhite
 
   " Match one line identifiers.
   syn keyword doxygenOther contained addindex anchor
