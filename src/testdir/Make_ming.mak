@@ -31,7 +31,6 @@ include Make_all.mak
 # Omitted:
 # test2		"\\tmp" doesn't work.
 # test10	'errorformat' is different
-# test12	can't unlink a swap file
 # test97	\{ and \$ are not escaped characters
 
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4) $(SCRIPTS_WIN32)
