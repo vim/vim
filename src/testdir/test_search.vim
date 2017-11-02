@@ -567,3 +567,18 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   bwipe!
 endfunc
+
+func Test_search_undefined_behaviour()
+  if !has("terminal")
+    return
+  endif
+  let h = winheight(0)
+  if h < 3
+    return
+  endif
+  " did cause an undefined left shift
+  let g:buf = term_start([GetVimProg(), '--clean', '-e', '-s', '-c', 'call search(getline("."))', 'samples/test000'], {'term_rows': 3})
+  call assert_equal([''], getline(1, '$'))
+  call term_sendkeys(g:buf, ":qa!\<cr>")
+  bwipe!
+endfunc
