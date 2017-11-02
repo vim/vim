@@ -2437,6 +2437,9 @@ au BufNewFile,BufRead *.wbt			setf winbatch
 " WSML
 au BufNewFile,BufRead *.wsml			setf wsml
 
+" WPL
+au BufNewFile,BufRead *.wpl			setf xml
+
 " WvDial
 au BufNewFile,BufRead wvdial.conf,.wvdialrc	setf wvdial
 
