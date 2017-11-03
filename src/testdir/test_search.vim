@@ -484,9 +484,7 @@ func Test_search_cmdline8()
   call writefile(lines, 'Xsearch.txt')
   let g:buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
 
-  call term_wait(g:buf, 200)
-  call assert_equal(lines[0], term_getline(g:buf, 1))
-  call assert_equal(lines[1], term_getline(g:buf, 2))
+  call WaitFor({-> lines == [term_getline(g:buf, 1), term_getline(g:buf, 2)] })
 
   call term_sendkeys(g:buf, ":set incsearch hlsearch\<cr>")
   call term_sendkeys(g:buf, ":14vsp\<cr>")
@@ -610,9 +608,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
   let g:lines = ['abb vim vim vi', 'vimvivim']
   call writefile(g:lines, 'Xsearch.txt')
   let g:buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
-  call WaitFor('g:lines[0] == term_getline(g:buf, 1)')
-  call assert_equal(g:lines[0], term_getline(g:buf, 1))
-  call assert_equal(g:lines[1], term_getline(g:buf, 2))
+  call WaitFor({-> g:lines == [term_getline(g:buf, 1), term_getline(g:buf, 2)] })
   unlet g:lines
 
   " Get attr of normal(a0), incsearch(a1), hlsearch(a2) highlight
