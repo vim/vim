@@ -482,17 +482,17 @@ func Test_search_cmdline8()
   " Prepare buffer text
   let lines = ['abb vim vim vi', 'vimvivim']
   call writefile(lines, 'Xsearch.txt')
-  let g:buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
+  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
 
-  call WaitFor({-> lines == [term_getline(g:buf, 1), term_getline(g:buf, 2)] })
+  call WaitFor({-> lines == [term_getline(buf, 1), term_getline(buf, 2)] })
 
-  call term_sendkeys(g:buf, ":set incsearch hlsearch\<cr>")
-  call term_sendkeys(g:buf, ":14vsp\<cr>")
-  call term_sendkeys(g:buf, "/vim\<cr>")
-  call term_sendkeys(g:buf, "/b\<esc>")
-  call term_sendkeys(g:buf, "gg0")
-  call term_wait(g:buf, 500)
-  let screen_line = term_scrape(g:buf, 1)
+  call term_sendkeys(buf, ":set incsearch hlsearch\<cr>")
+  call term_sendkeys(buf, ":14vsp\<cr>")
+  call term_sendkeys(buf, "/vim\<cr>")
+  call term_sendkeys(buf, "/b\<esc>")
+  call term_sendkeys(buf, "gg0")
+  call term_wait(buf, 500)
+  let screen_line = term_scrape(buf, 1)
   let [a0,a1,a2,a3] = [screen_line[3].attr, screen_line[4].attr,
         \ screen_line[18].attr, screen_line[19].attr]
   call assert_notequal(a0, a1)
@@ -605,17 +605,16 @@ func Test_search_cmdline_incsearch_highlight_attr()
   endif
 
   " Prepare buffer text
-  let g:lines = ['abb vim vim vi', 'vimvivim']
-  call writefile(g:lines, 'Xsearch.txt')
-  let g:buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
-  call WaitFor({-> g:lines == [term_getline(g:buf, 1), term_getline(g:buf, 2)] })
-  unlet g:lines
+  let lines = ['abb vim vim vi', 'vimvivim']
+  call writefile(lines, 'Xsearch.txt')
+  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
+  call WaitFor({-> lines == [term_getline(buf, 1), term_getline(buf, 2)] })
 
   " Get attr of normal(a0), incsearch(a1), hlsearch(a2) highlight
-  call term_sendkeys(g:buf, ":set incsearch hlsearch\<cr>")
-  call term_sendkeys(g:buf, '/b')
-  call term_wait(g:buf, 200)
-  let screen_line1 = term_scrape(g:buf, 1)
+  call term_sendkeys(buf, ":set incsearch hlsearch\<cr>")
+  call term_sendkeys(buf, '/b')
+  call term_wait(buf, 200)
+  let screen_line1 = term_scrape(buf, 1)
   call assert_true(len(screen_line1) > 2)
   " a0: attr_normal
   let a0 = screen_line1[0].attr
@@ -626,53 +625,53 @@ func Test_search_cmdline_incsearch_highlight_attr()
   call assert_notequal(a0, a1)
   call assert_notequal(a0, a2)
   call assert_notequal(a1, a2)
-  call term_sendkeys(g:buf, "\<cr>gg0")
+  call term_sendkeys(buf, "\<cr>gg0")
 
   " Test incremental highlight search
-  call term_sendkeys(g:buf, "/vim")
-  call term_wait(g:buf, 200)
+  call term_sendkeys(buf, "/vim")
+  call term_wait(buf, 200)
   " Buffer:
   " abb vim vim vi
   " vimvivim
   " Search: /vim
   let attr_line1 = [a0,a0,a0,a0,a1,a1,a1,a0,a2,a2,a2,a0,a0,a0]
   let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
-  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
-  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+  call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
 
   " Test <C-g>
-  call term_sendkeys(g:buf, "\<C-g>\<C-g>")
-  call term_wait(g:buf, 200)
+  call term_sendkeys(buf, "\<C-g>\<C-g>")
+  call term_wait(buf, 200)
   let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a2,a2,a2,a0,a0,a0]
   let attr_line2 = [a1,a1,a1,a0,a0,a2,a2,a2]
-  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
-  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+  call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
 
   " Test <C-t>
-  call term_sendkeys(g:buf, "\<C-t>")
-  call term_wait(g:buf, 200)
+  call term_sendkeys(buf, "\<C-t>")
+  call term_wait(buf, 200)
   let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a1,a1,a1,a0,a0,a0]
   let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
-  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
-  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+  call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
 
   " Type Enter and a1(incsearch highlight) should become a2(hlsearch highlight)
-  call term_sendkeys(g:buf, "\<cr>")
-  call term_wait(g:buf, 200)
+  call term_sendkeys(buf, "\<cr>")
+  call term_wait(buf, 200)
   let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a2,a2,a2,a0,a0,a0]
   let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
-  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
-  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+  call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
 
   " Test nohlsearch. a2(hlsearch highlight) should become a0(normal highlight)
-  call term_sendkeys(g:buf, ":1\<cr>")
-  call term_sendkeys(g:buf, ":set nohlsearch\<cr>")
-  call term_sendkeys(g:buf, "/vim")
-  call term_wait(g:buf, 200)
+  call term_sendkeys(buf, ":1\<cr>")
+  call term_sendkeys(buf, ":set nohlsearch\<cr>")
+  call term_sendkeys(buf, "/vim")
+  call term_wait(buf, 200)
   let attr_line1 = [a0,a0,a0,a0,a1,a1,a1,a0,a0,a0,a0,a0,a0,a0]
   let attr_line2 = [a0,a0,a0,a0,a0,a0,a0,a0]
-  call assert_equal(attr_line1, map(term_scrape(g:buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
-  call assert_equal(attr_line2, map(term_scrape(g:buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
+  call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
+  call assert_equal(attr_line2, map(term_scrape(buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
   call delete('Xsearch.txt')
 
   call delete('Xsearch.txt')
