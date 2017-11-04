@@ -252,6 +252,7 @@ let s:flaky = [
       \ 'Test_reltime()',
       \ 'Test_terminal_composing_unicode()',
       \ 'Test_terminal_noblock()',
+      \ 'Test_terminal_redir_file()',
       \ 'Test_with_partial_callback()',
       \ ]
 
