@@ -113,7 +113,8 @@ func s:kill_server(cmd)
   endif
 endfunc
 
-" Wait for up to a second for "expr" to become true.
+" Wait for up to a second for "expr" (stringified expression to evaluate, or
+" 0-arg funcref) to become true.
 " Return time slept in milliseconds.  With the +reltime feature this can be
 " more than the actual waiting time.  Without +reltime it can also be less.
 func WaitFor(expr, ...)
@@ -124,8 +125,13 @@ func WaitFor(expr, ...)
   else
     let slept = 0
   endif
+  if type(a:expr) == v:t_func
+    let Test = a:expr
+  else
+    let Test = {-> eval(a:expr) }
+  endif
   for i in range(timeout / 10)
-    if eval(a:expr)
+    if Test()
       if has('reltime')
 	return float2nr(reltimefloat(reltime(start)) * 1000)
       endif
