@@ -80,7 +80,8 @@ func s:StartDebug(cmd)
   let commpty = job_info(term_getjob(s:commbuf))['tty_out']
 
   " Open a terminal window to run the debugger.
-  let cmd = [g:termdebugger, '-tty', pty, a:cmd]
+  " Add -quiet to avoid the intro message causing a hit-enter prompt.
+  let cmd = [g:termdebugger, '-quiet', '-tty', pty, a:cmd]
   echomsg 'executing "' . join(cmd) . '"'
   let gdbbuf = term_start(cmd, {
 	\ 'exit_cb': function('s:EndDebug'),
