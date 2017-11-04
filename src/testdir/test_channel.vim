@@ -274,12 +274,10 @@ func Ch_channel_handler(port)
   " Test that it works while waiting on a numbered message.
   call assert_equal('ok', ch_evalexpr(handle, 'call me'))
   call WaitFor('"we called you" == g:Ch_reply')
-  call assert_equal('we called you', g:Ch_reply)
 
   " Test that it works while not waiting on a numbered message.
   call ch_sendexpr(handle, 'call me again')
   call WaitFor('"we did call you" == g:Ch_reply')
-  call assert_equal('we did call you', g:Ch_reply)
 endfunc
 
 func Test_channel_handler()
@@ -322,7 +320,6 @@ func Ch_channel_zero(port)
   call assert_equal('sent zero', ch_evalexpr(handle, 'send zero'))
   if s:has_handler
     call WaitFor('"zero index" == g:Ch_reply')
-    call assert_equal('zero index', g:Ch_reply)
   else
     sleep 20m
     call assert_equal('', g:Ch_reply)
@@ -338,7 +335,6 @@ func Ch_channel_zero(port)
   else
     call assert_equal('', g:Ch_reply)
   endif
-  call assert_equal('sent zero', g:Ch_zero_reply)
 endfunc
 
 func Test_zero_reply()
@@ -1468,7 +1464,7 @@ func Test_exit_callback_interval()
   let g:exit_cb_val = {'start': reltime(), 'end': 0, 'process': 0}
   let job = job_start([s:python, '-c', 'import time;time.sleep(0.5)'], {'exit_cb': 'MyExitTimeCb'})
   let g:exit_cb_val.process = job_info(job).process
-  call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
+  call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0', 2000)
   let elapsed = reltimefloat(g:exit_cb_val.end)
   call assert_true(elapsed > 0.5)
   call assert_true(elapsed < 1.0)
