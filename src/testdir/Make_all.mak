@@ -33,7 +33,6 @@ SCRIPTS_ALL = \
 	test95.out \
 	test99.out \
 	test108.out \
-	test_changelist.out \
 	test_close_count.out \
 	test_erasebackword.out \
 	test_eval.out \
