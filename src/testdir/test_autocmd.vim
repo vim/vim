@@ -997,3 +997,130 @@ func Test_Cmd_Autocmds()
   call delete('Xxx')
   enew!
 endfunc
+
+func SetChangeMarks(start, end)
+  exe a:start. 'mark ['
+  exe a:end. 'mark ]'
+endfunc
+
+" Verify the effects of autocmds on '[ and ']
+func Test_change_mark_in_autocmds()
+  edit! Xtest
+  call feedkeys("ia\<CR>b\<CR>c\<CR>d\<C-g>u", 'xtn')
+
+  call SetChangeMarks(2, 3)
+  write
+  call assert_equal([1, 4], [line("'["), line("']")])
+
+  call SetChangeMarks(2, 3)
+  au BufWritePre * call assert_equal([1, 4], [line("'["), line("']")])
+  write
+  au! BufWritePre
+
+  if executable('cat')
+    write XtestFilter
+    write >> XtestFilter
+
+    call SetChangeMarks(2, 3)
+    " Marks are set to the entire range of the write
+    au FilterWritePre * call assert_equal([1, 4], [line("'["), line("']")])
+    " '[ is adjusted to just before the line that will receive the filtered
+    " data
+    au FilterReadPre * call assert_equal([4, 4], [line("'["), line("']")])
+    " The filtered data is read into the buffer, and the source lines are
+    " still present, so the range is after the source lines
+    au FilterReadPost * call assert_equal([5, 12], [line("'["), line("']")])
+    %!cat XtestFilter
+    " After the filtered data is read, the original lines are deleted
+    call assert_equal([1, 8], [line("'["), line("']")])
+    au! FilterWritePre,FilterReadPre,FilterReadPost
+    undo
+
+    call SetChangeMarks(1, 4)
+    au FilterWritePre * call assert_equal([2, 3], [line("'["), line("']")])
+    au FilterReadPre * call assert_equal([3, 3], [line("'["), line("']")])
+    au FilterReadPost * call assert_equal([4, 11], [line("'["), line("']")])
+    2,3!cat XtestFilter
+    call assert_equal([2, 9], [line("'["), line("']")])
+    au! FilterWritePre,FilterReadPre,FilterReadPost
+    undo
+
+    call delete('XtestFilter')
+  endif
+
+  call SetChangeMarks(1, 4)
+  au FileWritePre * call assert_equal([2, 3], [line("'["), line("']")])
+  2,3write Xtest2
+  au! FileWritePre
+
+  call SetChangeMarks(2, 3)
+  au FileAppendPre * call assert_equal([1, 4], [line("'["), line("']")])
+  write >> Xtest2
+  au! FileAppendPre
+
+  call SetChangeMarks(1, 4)
+  au FileAppendPre * call assert_equal([2, 3], [line("'["), line("']")])
+  2,3write >> Xtest2
+  au! FileAppendPre
+
+  call SetChangeMarks(1, 1)
+  au FileReadPre * call assert_equal([3, 1], [line("'["), line("']")])
+  au FileReadPost * call assert_equal([4, 11], [line("'["), line("']")])
+  3read Xtest2
+  au! FileReadPre,FileReadPost
+  undo
+
+  call SetChangeMarks(4, 4)
+  " When the line is 0, it's adjusted to 1
+  au FileReadPre * call assert_equal([1, 4], [line("'["), line("']")])
+  au FileReadPost * call assert_equal([1, 8], [line("'["), line("']")])
+  0read Xtest2
+  au! FileReadPre,FileReadPost
+  undo
+
+  call SetChangeMarks(4, 4)
+  " When the line is 0, it's adjusted to 1
+  au FileReadPre * call assert_equal([1, 4], [line("'["), line("']")])
+  au FileReadPost * call assert_equal([2, 9], [line("'["), line("']")])
+  1read Xtest2
+  au! FileReadPre,FileReadPost
+  undo
+
+  bwipe!
+  call delete('Xtest')
+  call delete('Xtest2')
+endfunc
+
+func Test_Filter_noshelltemp()
+  if !executable('cat')
+    return
+  endif
+
+  enew!
+  call setline(1, ['a', 'b', 'c', 'd'])
+
+  let shelltemp = &shelltemp
+  set shelltemp
+
+  let g:filter_au = 0
+  au FilterWritePre * let g:filter_au += 1
+  au FilterReadPre * let g:filter_au += 1
+  au FilterReadPost * let g:filter_au += 1
+  %!cat
+  call assert_equal(3, g:filter_au)
+
+  if has('filterpipe')
+    set noshelltemp
+
+    let g:filter_au = 0
+    au FilterWritePre * let g:filter_au += 1
+    au FilterReadPre * let g:filter_au += 1
+    au FilterReadPost * let g:filter_au += 1
+    %!cat
+    call assert_equal(0, g:filter_au)
+  endif
+
+  au! FilterWritePre,FilterReadPre,FilterReadPost
+  let &shelltemp = shelltemp
+  bwipe!
+endfunc
