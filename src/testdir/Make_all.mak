@@ -23,7 +23,6 @@ SCRIPTS_ALL = \
 	test42.out \
 	test44.out \
 	test48.out \
-	test55.out \
 	test64.out \
 	test68.out \
 	test69.out \
@@ -123,6 +122,7 @@ NEW_TESTS = test_arabic.res \
 	    test_langmap.res \
 	    test_let.res \
 	    test_lineending.res \
+	    test_listdict.res \
 	    test_listlbr.res \
 	    test_listlbr_utf8.res \
 	    test_lua.res \
