@@ -2099,7 +2099,6 @@ test1 \
 	test_erasebackword \
 	test_eval \
 	test_fixeol \
-	test_insertcount \
 	test_listchars \
 	test_search_mbyte \
 	test_wordcount \

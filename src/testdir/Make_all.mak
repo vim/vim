@@ -38,7 +38,6 @@ SCRIPTS_ALL = \
 	test_erasebackword.out \
 	test_eval.out \
 	test_fixeol.out \
-	test_insertcount.out \
 	test_listchars.out \
 	test_search_mbyte.out \
 	test_wordcount.out
