@@ -99,6 +99,13 @@ func Test_list_assign()
   call assert_fails('let [va, vb] = l[1:1]', 'E688')
 endfunc
 
+" test for range assign
+func Test_list_range_assign()
+  let l = [0]
+  let l[:] = [1, 2]
+  call assert_equal([1, 2], l)
+endfunc
+
 " Tests for Dictionary type
 
 func Test_dict()
@@ -212,6 +219,7 @@ func Test_script_local_dict_func()
   let g:dict.foo = ['-', 2, 3]
   call insert(g:dict.foo, function('strlen'))
   call assert_equal('g:dict.func-4', g:dict.func())
+  unlet g:dict
 endfunc
 
 " Nasty: remove func from Dict that's being called (works)
@@ -314,7 +322,10 @@ func Test_list_locked_var()
       call assert_equal(expected[depth][u][1], ps)
     endfor
   endfor
+endfunc
 
+" Unletting locked variables
+func Test_list_locked_var_unlet()
   let expected = [
 	      \ [['0000-000', 'ppppppp'],
 	      \  ['0000-000', 'ppppppp'],
@@ -333,7 +344,6 @@ func Test_list_locked_var()
 	      \  ['0000-000', 'ppppppp']]
 	      \ ]
 
-  " Unletting locked variables
   for depth in range(5)
     for u in range(3)
       unlet! l
@@ -562,8 +572,10 @@ func Test_listdict_compare()
   call assert_true(d == d)
   call assert_false(l != deepcopy(l))
   call assert_false(d != deepcopy(d))
+endfunc
 
   " compare complex recursively linked list and dict
+func Test_listdict_compare_complex()
   let l = []
   call add(l, l)
   let dict4 = {"l": l}
@@ -588,30 +600,4 @@ func Test_listdict_extend()
   " Pass the same Dict to extend() with "error"
   call assert_fails("call extend(d, d, 'error')", 'E737:')
   call assert_equal({'a': {'b': 'B'}}, d)
-endfunc
-
-" test for range assign
-func Test_list_range_assign()
-  let l = [0]
-  let l[:] = [1, 2]
-  call assert_equal([1, 2], l)
-endfunc
-
-" test for patch 7.3.637
-func Test_foldopen_exception()
-  let a = 'No error caught'
-  try
-    foldopen
-  catch
-    let a = matchstr(v:exception,'^[^ ]*')
-  endtry
-  call assert_equal('Vim(foldopen):E490:', a)
-
-  let a = 'No error caught'
-  try
-    foobar
-  catch
-    let a = matchstr(v:exception,'^[^ ]*')
-  endtry
-  call assert_match('E492:', a)
 endfunc
