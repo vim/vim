@@ -23,7 +23,6 @@ SCRIPTS_ALL = \
 	test42.out \
 	test44.out \
 	test48.out \
-	test55.out \
 	test64.out \
 	test68.out \
 	test69.out \
@@ -34,14 +33,11 @@ SCRIPTS_ALL = \
 	test95.out \
 	test99.out \
 	test108.out \
-	test_changelist.out \
 	test_close_count.out \
 	test_erasebackword.out \
 	test_eval.out \
 	test_fixeol.out \
-	test_insertcount.out \
 	test_listchars.out \
-	test_search_mbyte.out \
 	test_wordcount.out
 
 
@@ -123,6 +119,7 @@ NEW_TESTS = test_arabic.res \
 	    test_langmap.res \
 	    test_let.res \
 	    test_lineending.res \
+	    test_listdict.res \
 	    test_listlbr.res \
 	    test_listlbr_utf8.res \
 	    test_lua.res \
