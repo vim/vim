@@ -627,3 +627,24 @@ func Test_fold_move()
   set fdm& sw& fdl&
   enew!
 endfunc
+
+" test for patch 7.3.637
+" Cannot catch the error caused by a foldopen when there is no fold.
+func Test_foldopen_exception()
+  enew!
+  let a = 'No error caught'
+  try
+    foldopen
+  catch
+    let a = matchstr(v:exception,'^[^ ]*')
+  endtry
+  call assert_equal('Vim(foldopen):E490:', a)
+
+  let a = 'No error caught'
+  try
+    foobar
+  catch
+    let a = matchstr(v:exception,'^[^ ]*')
+  endtry
+  call assert_match('E492:', a)
+endfunc

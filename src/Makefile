@@ -2094,19 +2094,16 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
 test1 \
-	test_changelist \
 	test_close_count \
 	test_erasebackword \
 	test_eval \
 	test_fixeol \
-	test_insertcount \
 	test_listchars \
-	test_search_mbyte \
 	test_wordcount \
 	test3 test11 test14 test15 test17 \
 	test29 test30 test36 test37 test39 \
 	test42 test44 test48 test49 \
-	test50 test52 test55 test59 \
+	test50 test52 test59 \
 	test64 test68 test69 \
 	test70 test72 test73 \
 	test85 test86 test87 test88 \
