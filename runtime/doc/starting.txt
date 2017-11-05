@@ -873,7 +873,7 @@ accordingly.  Vim proceeds in this order:
      (*) Using this file or environment variable will cause 'compatible' to be
 	 off by default.  See |compatible-default|.
 
-     Note: When using the |mzscheme| interface, it is initialzed after loading
+     Note: When using the |mzscheme| interface, it is initialized after loading
      the vimrc file.  Changing 'mzschemedll' later has no effect.
 
 4. Load the plugin scripts.					*load-plugins*
