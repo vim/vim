@@ -90,7 +90,6 @@ SCRIPT = test1.out test3.out \
        test_listchars.out \
        test_listlbr.out \
        test_listlbr_utf8.out \
-       test_search_mbyte.out \
        test_utf8.out \
        test_wordcount.out
 

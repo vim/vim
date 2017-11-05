@@ -2099,7 +2099,6 @@ test1 \
 	test_eval \
 	test_fixeol \
 	test_listchars \
-	test_search_mbyte \
 	test_wordcount \
 	test3 test11 test14 test15 test17 \
 	test29 test30 test36 test37 test39 \
