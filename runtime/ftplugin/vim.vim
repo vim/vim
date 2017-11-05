@@ -36,6 +36,9 @@ endif
 " Comments start with a double quote
 setlocal commentstring=\"%s
 
+" Uses :help for keyword lookup with K
+setlocal keywordprg=:help
+
 " Move around functions.
 nnoremap <silent><buffer> [[ m':call search('^\s*fu\%[nction]\>', "bW")<CR>
 vnoremap <silent><buffer> [[ m':<C-U>exe "normal! gv"<Bar>call search('^\s*fu\%[nction]\>', "bW")<CR>
