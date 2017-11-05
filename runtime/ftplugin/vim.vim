@@ -25,6 +25,9 @@ setlocal fo-=t fo+=croql
 " keyword character.  E.g., for netrw#Nread().
 setlocal isk+=#
 
+" Use :help to lookup the keyword under the cursor with K
+setlocal keywordprg=:help
+
 " Set 'comments' to format dashed lists in comments
 setlocal com=sO:\"\ -,mO:\"\ \ ,eO:\"\",:\"
 
