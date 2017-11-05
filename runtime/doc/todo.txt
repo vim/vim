@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 02
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,9 +34,6 @@ entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Universal solution to detect if t_RS is working, using cursor position.
-Koichi Iwamoto, #2126
 
 No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
@@ -153,20 +150,13 @@ Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in nfa_regatom() (#2251)
 - undefined left shift in get_string_tv() (#2250)
 
-Patch to recognize neumutt temp files. (Teubel György, 2017 Oct 31, #2269)
-
 When starting with --clean packages under "start" are not loaded.  Make this
 work:  :packadd START {name}  similar to :runtime START name
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
 
-Patch to test autocommand effects. (James McCoy, 2017 Oct 31, #2271)
-
-After 8.0.0962 pasting leaves the cursor in another position. (Ken Takata,
-2017 Aug 23, #2015) Also (zdm, 2017 Aug 23)
-
-fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
+Fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
 
 With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
 (Marcin Szewczyk, 2017 Apr 26)
@@ -190,6 +180,9 @@ redrawn properly. (xtal8, 2017 Oct 23, #2241)
 
 Patch for manpager plugin. (Lcd, 2017 Oct 12)
 Asked maintainer.
+
+Universal solution to detect if t_RS is working, using cursor position.
+Koichi Iwamoto, #2126
 
 Default install on MS-Windows should source defaults.vim.
 Ask whether to use Windows or Vim key behavior?
@@ -222,11 +215,8 @@ Still happens (2017 Jul 9)
 When bracketed paste is used, pasting at the ":append" prompt does not get the
 line breaks. (Ken Takata, 2017 Aug 22)
 
-This example in the help does not work (Andy Wokula, 2017 Aug 20):
-    augroup mine | au! BufRead | augroup END
-
-24 bit color support in MS-Windows console, using vcon. (Nobuhiro Takasaki,
-2017 Oct 1, #2060).  Should not set 'tgc' automatically.
+Patch for 24 bit color support in MS-Windows console, using vcon. (Nobuhiro
+Takasaki, 2017 Oct 1, #2060).  Should not set 'tgc' automatically.
 
 Patch to change GUI behavior: instead of changing the window size change the
 lines/columns when menu/toolbar/etc. is added/removed. (Ychin, 2016 Mar 20,
@@ -628,9 +618,6 @@ Patch to add ":syn foldlevel" to use fold level further down the line.
 
 Completion for input() does not expand environment variables. (chdiza, 2016
 Jul 25, #948)
-
-Patch to fix wrong encoding of error message on Cygwin/MSYS terminal.
-(Ken Takata, 2016 Oct 4)
 
 Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)

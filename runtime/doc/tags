@@ -6393,10 +6393,15 @@ g:netrw_list_cmd_options	pi_netrw.txt	/*g:netrw_list_cmd_options*
 g:netrw_list_hide	pi_netrw.txt	/*g:netrw_list_hide*
 g:netrw_liststyle	pi_netrw.txt	/*g:netrw_liststyle*
 g:netrw_localcopycmd	pi_netrw.txt	/*g:netrw_localcopycmd*
+g:netrw_localcopycmdopt	pi_netrw.txt	/*g:netrw_localcopycmdopt*
 g:netrw_localcopydircmd	pi_netrw.txt	/*g:netrw_localcopydircmd*
+g:netrw_localcopydircmdopt	pi_netrw.txt	/*g:netrw_localcopydircmdopt*
 g:netrw_localmkdir	pi_netrw.txt	/*g:netrw_localmkdir*
+g:netrw_localmkdiropt	pi_netrw.txt	/*g:netrw_localmkdiropt*
 g:netrw_localmovecmd	pi_netrw.txt	/*g:netrw_localmovecmd*
+g:netrw_localmovecmdopt	pi_netrw.txt	/*g:netrw_localmovecmdopt*
 g:netrw_localrmdir	pi_netrw.txt	/*g:netrw_localrmdir*
+g:netrw_localrmdiropt	pi_netrw.txt	/*g:netrw_localrmdiropt*
 g:netrw_maxfilenamelen	pi_netrw.txt	/*g:netrw_maxfilenamelen*
 g:netrw_menu	pi_netrw.txt	/*g:netrw_menu*
 g:netrw_mkdir_cmd	pi_netrw.txt	/*g:netrw_mkdir_cmd*
@@ -6406,11 +6411,13 @@ g:netrw_nogx	pi_netrw.txt	/*g:netrw_nogx*
 g:netrw_preview	pi_netrw.txt	/*g:netrw_preview*
 g:netrw_rcp_cmd	pi_netrw.txt	/*g:netrw_rcp_cmd*
 g:netrw_remote_mkdir	pi_netrw.txt	/*g:netrw_remote_mkdir*
+g:netrw_rename_cmd	pi_netrw.txt	/*g:netrw_rename_cmd*
 g:netrw_retmap	pi_netrw.txt	/*g:netrw_retmap*
 g:netrw_rm_cmd	pi_netrw.txt	/*g:netrw_rm_cmd*
 g:netrw_rmdir_cmd	pi_netrw.txt	/*g:netrw_rmdir_cmd*
 g:netrw_rmf_cmd	pi_netrw.txt	/*g:netrw_rmf_cmd*
 g:netrw_rsync_cmd	pi_netrw.txt	/*g:netrw_rsync_cmd*
+g:netrw_rsync_sep	pi_netrw.txt	/*g:netrw_rsync_sep*
 g:netrw_scp_cmd	pi_netrw.txt	/*g:netrw_scp_cmd*
 g:netrw_scpport	pi_netrw.txt	/*g:netrw_scpport*
 g:netrw_sepchr	pi_netrw.txt	/*g:netrw_sepchr*
@@ -7485,7 +7492,11 @@ netrw-browser-var	pi_netrw.txt	/*netrw-browser-var*
 netrw-browsing	pi_netrw.txt	/*netrw-browsing*
 netrw-c	pi_netrw.txt	/*netrw-c*
 netrw-c-tab	pi_netrw.txt	/*netrw-c-tab*
+netrw-cB	pi_netrw.txt	/*netrw-cB*
 netrw-cadaver	pi_netrw.txt	/*netrw-cadaver*
+netrw-call	pi_netrw.txt	/*netrw-call*
+netrw-cb	pi_netrw.txt	/*netrw-cb*
+netrw-cd	pi_netrw.txt	/*netrw-cd*
 netrw-chgup	pi_netrw.txt	/*netrw-chgup*
 netrw-clean	pi_netrw.txt	/*netrw-clean*
 netrw-contents	pi_netrw.txt	/*netrw-contents*
@@ -7511,6 +7522,7 @@ netrw-enter	pi_netrw.txt	/*netrw-enter*
 netrw-ex	pi_netrw.txt	/*netrw-ex*
 netrw-explore	pi_netrw.txt	/*netrw-explore*
 netrw-explore-cmds	pi_netrw.txt	/*netrw-explore-cmds*
+netrw-expose	pi_netrw.txt	/*netrw-expose*
 netrw-externapp	pi_netrw.txt	/*netrw-externapp*
 netrw-file	pi_netrw.txt	/*netrw-file*
 netrw-filigree	pi_netrw.txt	/*netrw-filigree*
@@ -7560,6 +7572,7 @@ netrw-mh	pi_netrw.txt	/*netrw-mh*
 netrw-middlemouse	pi_netrw.txt	/*netrw-middlemouse*
 netrw-ml_get	pi_netrw.txt	/*netrw-ml_get*
 netrw-mm	pi_netrw.txt	/*netrw-mm*
+netrw-modify	pi_netrw.txt	/*netrw-modify*
 netrw-mouse	pi_netrw.txt	/*netrw-mouse*
 netrw-move	pi_netrw.txt	/*netrw-move*
 netrw-mp	pi_netrw.txt	/*netrw-mp*

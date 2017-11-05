@@ -162,7 +162,7 @@ window Vim is running in with these commands: >
 							*gui-IME* *iBus*
 Input methods for international characters in X that rely on the XIM
 framework, most notably iBus, have been known to produce undesirable results
-in gVim. These may include an inability to enter spaces, or long delays
+in gvim. These may include an inability to enter spaces, or long delays
 between typing a character and it being recognized by the application.
 
 One workaround that has been successful, for unknown reasons, is to prevent

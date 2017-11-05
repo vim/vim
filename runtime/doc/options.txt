@@ -4083,7 +4083,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			    set.
 	|hl-Question|	 r  |hit-enter| prompt and yes/no questions
 	|hl-StatusLine|	 s  status line of current window |status-line|
-	|hl-StatusLineNC| S  status lines of not-current windows
+	|hl-StatusLineNC|  S  status lines of not-current windows
 	|hl-Title|	 t  Titles for output from ":set all", ":autocmd" etc.
 	|hl-VertSplit|	 c  column used to separate vertically split windows
 	|hl-Visual|	 v  Visual mode
@@ -5487,7 +5487,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Specifies the name of the MzScheme shared library. The default is
 	DYNAMIC_MZSCH_DLL which was specified at compile time.
 	Environment variables are expanded |:set_env|.
-	The value must be set in the |vimrc| script or ealier.  In the
+	The value must be set in the |vimrc| script or earlier.  In the
 	startup, before the |load-plugins| step.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
