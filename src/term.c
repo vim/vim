@@ -4757,9 +4757,11 @@ check_termcode(
 			if (i - j >= 21 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
 			    && tp[j + 11] == '/' && tp[j + 16] == '/')
 			{
+#ifdef FEAT_TERMINAL
 			    int rval = hexhex2nr(tp + j + 7);
 			    int gval = hexhex2nr(tp + j + 12);
 			    int bval = hexhex2nr(tp + j + 17);
+#endif
 
 			    if (is_bg)
 			    {
