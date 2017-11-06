@@ -1535,9 +1535,6 @@ terminal_loop(int blocking)
     int		c;
     int		termkey = 0;
     int		ret;
-#ifdef UNIX
-    int		tty_fd = curbuf->b_term->tl_job->jv_channel->ch_part[get_tty_part(curbuf->b_term)].ch_fd;
-#endif
 
     /* Remember the terminal we are sending keys to.  However, the terminal
      * might be closed while waiting for a character, e.g. typing "exit" in a
@@ -1550,6 +1547,26 @@ terminal_loop(int blocking)
     position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
 
+#ifdef UNIX
+    {
+	int part = get_tty_part(curbuf->b_term);
+	int fd = curbuf->b_term->tl_job->jv_channel->ch_part[part].ch_fd;
+
+	if (isatty(fd))
+	{
+	    ttyinfo_T info;
+
+	    /* Get the current backspace and enter characters of the pty. */
+	    if (get_tty_info(fd, &info) == OK)
+	    {
+		term_backspace_char = info.backspace;
+		term_enter_char = info.enter;
+		term_nl_does_cr = info.nl_does_cr;
+	    }
+	}
+    }
+#endif
+
     while (blocking || vpeekc() != NUL)
     {
 	/* TODO: skip screen update when handling a sequence of keys. */
@@ -1558,26 +1575,6 @@ terminal_loop(int blocking)
 	    if (update_screen(0) == FAIL)
 		break;
 	update_cursor(curbuf->b_term, FALSE);
-
-#ifdef UNIX
-	/*
-	 * The shell or another program may change the tty settings.  Getting
-	 * them for every typed character is a bit of overhead, but it's needed
-	 * for the first CR typed, e.g. when Vim starts in a shell.
-	 */
-	if (isatty(tty_fd))
-	{
-	    ttyinfo_T info;
-
-	    /* Get the current backspace and enter characters of the pty. */
-	    if (get_tty_info(tty_fd, &info) == OK)
-	    {
-		term_backspace_char = info.backspace;
-		term_enter_char = info.enter;
-		term_nl_does_cr = info.nl_does_cr;
-	    }
-	}
-#endif
 
 	c = term_vgetc();
 	if (!term_use_loop())
