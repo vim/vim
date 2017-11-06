@@ -4615,12 +4615,13 @@ check_termcode(
 			}
 		    }
 		    /* Third row is xterm compatibility test */
-		    else if (row_char == '3') {
-			if (col != 1) {
-			    /* Cursor is not on a first column. Then terminal
-			     * is not xterm compatible. */
+		    else if (row_char == '3')
+		    {
+			/* Cursor is not on a first column. Then terminal
+			 * is not xterm compatible. */
+			if (col != 1)
 			    is_not_xterm = TRUE;
-			}
+
 			xcc_status = STATUS_GOT;
 		    }
 		    key_name[0] = (int)KS_EXTRA;
