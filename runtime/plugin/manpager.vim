@@ -15,7 +15,7 @@ function! s:MANPAGER()
   let pagesec_pattern = '\v(' . page_pattern . ')\((' . sec_pattern . ')\)'
 
   if $MAN_PN is '1'
-    let manpage = matchstr( getline(1), '^' . pagesec_pattern )
+    let manpage = matchstr( getline(nextnonblank(1)), '^' . pagesec_pattern )
   else
     let manpage = expand('$MAN_PN')
   endif
