@@ -186,8 +186,6 @@ static void term_free_vterm(term_T *term);
 /* The characters that we know (or assume) that the terminal expects for the
  * backspace and enter keys. */
 static int term_backspace_char = BS;
-static int term_enter_char = CAR;
-static int term_nl_does_cr = FALSE;
 
 
 /**************************************
@@ -653,30 +651,8 @@ free_terminal(buf_T *buf)
 term_write_job_output(term_T *term, char_u *msg, size_t len)
 {
     VTerm	*vterm = term->tl_vterm;
-    char_u	*p;
-    size_t	done;
-    size_t	len_now;
 
-    if (term_nl_does_cr)
-	vterm_input_write(vterm, (char *)msg, len);
-    else
-	/* need to convert NL to CR-NL */
-	for (done = 0; done < len; done += len_now)
-	{
-	    for (p = msg + done; p < msg + len; )
-	    {
-		if (*p == NL)
-		    break;
-		p += utf_ptr2len_len(p, (int)(len - (p - msg)));
-	    }
-	    len_now = p - msg - done;
-	    vterm_input_write(vterm, (char *)msg + done, len_now);
-	    if (p < msg + len && *p == NL)
-	    {
-		vterm_input_write(vterm, "\r\n", 2);
-		++len_now;
-	    }
-	}
+    vterm_input_write(vterm, (char *)msg, len);
 
     /* this invokes the damage callbacks */
     vterm_screen_flush_damage(vterm_obtain_screen(vterm));
@@ -762,7 +738,6 @@ term_convert_key(term_T *term, int c, char *buf)
 
     switch (c)
     {
-	case CAR:		c = term_enter_char; break;
 				/* don't use VTERM_KEY_BACKSPACE, it always
 				 * becomes 0x7f DEL */
 	case K_BS:		c = term_backspace_char; break;
@@ -885,6 +860,7 @@ term_convert_key(term_T *term, int c, char *buf)
 #endif
 	case K_PS:		vterm_keyboard_start_paste(vterm); return 0;
 	case K_PE:		vterm_keyboard_end_paste(vterm); return 0;
+	default:		break;
     }
 
     /*
@@ -1556,13 +1532,9 @@ terminal_loop(int blocking)
 	{
 	    ttyinfo_T info;
 
-	    /* Get the current backspace and enter characters of the pty. */
+	    /* Get the current backspace character of the pty. */
 	    if (get_tty_info(fd, &info) == OK)
-	    {
 		term_backspace_char = info.backspace;
-		term_enter_char = info.enter;
-		term_nl_does_cr = info.nl_does_cr;
-	    }
 	}
     }
 #endif
