@@ -17,7 +17,7 @@ function! s:MANPAGER()
   if $MAN_PN is '1'
     let manpage = tolower(matchstr( getline(nextnonblank(1)), '^' . pagesec_pattern ))
   else
-    let manpage = $MAN_PN
+    let manpage = expand($MAN_PN)
   endif
 
   let page_sec = matchlist(manpage, '^' . pagesec_pattern  . '$')
