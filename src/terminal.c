@@ -38,8 +38,6 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - Termdebug: issue #2154 might be avoided by adding -quiet to gdb?
- *   patch by Christian, 2017 Oct 23.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
  * - double click in Window toolbar starts Visual mode (but not always?).
@@ -1581,8 +1579,12 @@ terminal_loop(int blocking)
 
 	c = term_vgetc();
 	if (!term_use_loop())
+	{
 	    /* job finished while waiting for a character */
+	    if (c != K_IGNORE)
+		vungetc(c);
 	    break;
+	}
 	if (c == K_IGNORE)
 	    continue;
 

@@ -6300,6 +6300,8 @@ has_non_ascii(char_u *s)
     void
 parse_queued_messages(void)
 {
+    win_T *old_curwin = curwin;
+
     /* For Win32 mch_breakcheck() does not check for input, do it here. */
 # if defined(WIN32) && defined(FEAT_JOB_CHANNEL)
     channel_handle_events(FALSE);
@@ -6324,6 +6326,11 @@ parse_queued_messages(void)
     /* Check if any jobs have ended. */
     job_check_ended();
 # endif
+
+    /* If the current window changed we need to bail out of the waiting loop.
+     * E.g. when a job exit callback closes the terminal window. */
+    if (curwin != old_curwin)
+	ins_char_typebuf(K_IGNORE);
 }
 #endif
 
