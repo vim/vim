@@ -2869,7 +2869,7 @@ u_undoredo(int undo)
 	if (curhead->uh_next.ptr != NULL)
 	    curbuf->b_u_seq_cur = curhead->uh_next.ptr->uh_seq;
 	else
-	    --curbuf->b_u_seq_cur;
+	    curbuf->b_u_seq_cur = 0;
     }
 
     /* Remember where we are for ":earlier 1f" and ":later 1f". */
