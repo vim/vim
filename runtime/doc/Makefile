@@ -94,6 +94,7 @@ DOCS = \
 	russian.txt \
 	scroll.txt \
 	sign.txt \
+	solarized.txt \
 	spell.txt \
 	sponsor.txt \
 	starting.txt \
