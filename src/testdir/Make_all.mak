@@ -27,7 +27,6 @@ SCRIPTS_ALL = \
 	test68.out \
 	test69.out \
 	test70.out \
-	test73.out \
 	test88.out \
 	test94.out \
 	test95.out \
@@ -98,6 +97,7 @@ NEW_TESTS = test_arabic.res \
 	    test_exists.res \
 	    test_farsi.res \
 	    test_file_size.res \
+	    test_find_complete.res \
 	    test_fnameescape.res \
 	    test_fold.res \
 	    test_getvar.res \

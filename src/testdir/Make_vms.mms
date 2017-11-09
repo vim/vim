@@ -114,7 +114,7 @@ GUI_OPTION = -g
 .ENDIF
 
 .IFDEF WANT_UNIX
-SCRIPT_UNIX = test10.out test17.out test27.out test49.out test73.out
+SCRIPT_UNIX = test10.out test17.out test27.out test49.out
 .ENDIF
 
 .IFDEF WANT_WIN

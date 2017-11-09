@@ -2108,7 +2108,7 @@ test1 \
 	test42 test44 test48 test49 \
 	test50 test52 test59 \
 	test64 test68 test69 \
-	test70 test72 test73 \
+	test70 test72 \
 	test85 test86 test87 test88 \
 	test94 test95 test99 test108:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
