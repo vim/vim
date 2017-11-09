@@ -231,6 +231,7 @@ HTMLS = \
 	russian.html \
 	scroll.html \
 	sign.html \
+	solarized.html \
 	spell.html \
 	sponsor.html \
 	starting.html \
