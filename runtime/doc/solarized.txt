@@ -16,10 +16,11 @@ modes.
 See the homepage at http://ethanschoonover.com/solarized for screenshots and
 details.
 
-1. Solarized Menu			|solarized-menu|
-2. Options				|solarized-options|
+1. Options				|solarized-options|
+2. Solarized Menu			|solarized-menu|
 3. Toggle Background			|solarized-togglebg|
 4. Terminal Issues			|solarized-term|
+5. Changelog				|solarized-changelog|
 
 To enable solarized, place the following lines in your .vimrc:
 
@@ -34,79 +35,7 @@ or, for the light background mode of Solarized:
 	colorscheme solarized
 
 ==============================================================================
-1. Solarized Menu					*solarized-menu*
-
-Solarized makes available a menu when used in Vim GUI mode (gvim, macvim).
-This menu includes many of the options detailed below so that you can test out
-different values quickly without modifying your .vimrc file. If you wish to
-turn off this menu permanently, simply place the following line in your .vimrc
-above the "colorscheme solarized" line.
-
-	let g:solarized_menu=0
-
-==============================================================================
-2. Toggle Background					*solarized-togglebg*
-							*toggle-bg* *togglebg*
-							*toggle-background*
-
-Solarized comes with Toggle Background, a simple plugin to switch between
-light and dark background modes and reset the colorscheme. This is most useful
-for colorschemes that support both light and dark modes and in terminals or
-GUI vim windows where the background will be properly set.
-
-Toggle Background can be accessed by:
-
-    * the Solarized menu (in Vim GUI mode)
-    * the Window menu (in Vim GUI mode, even if the Solarized menu is off)
-    * the "yin/yang" toolbar button (in Vim GUI mode)
-    * the default mapping of <F5>
-    * custom key mapping you set in your .vimrc (see below)
-    * command line via ":ToggleBG" (no quotes)
-
-Toggle Background starts with a default mapping to function key <F5>. If you
-are already using this in a mapping, Toggle Background will not map itself to
-a default and you will have to map it manually in your .vimrc file, or
-remove/change your existing <F5> mapping to another value. To customize the
-keyboard mapping in your .vimrc file, use the following line, changing the
-"<F5>" value to the key or key combination you wish to use:
-
-	call togglebg#map("<F5>")
-
-Note that you'll want to use a single function key or equivalent if you want
-the plugin to work in all modes (normal, insert, visual).
-
-When using the plugin during normal, visual, or insert mode, there should be
-no interruption in workflow. However, if you activate the plugin during
-REPLACE mode, you will switch to standard insert mode (you will leave the
-overwrite replace mode).
-
-==============================================================================
-3. Solarized Terminal Issues				*solarized-term*
-
-If you are going to use Solarized in Terminal mode (i.e. not in a GUI version
-like gvim or macvim) and have not |termguicolors| set, **please please
-please** consider setting your terminal emulator's colorscheme to used the
-Solarized palette. I've included palettes for some popular terminal emulator
-as well as Xdefaults in the official Solarized download available from the
-Solarized homepage listed at the top of this help document. If you use
-Solarized *without* these colors, Solarized will need to be told to degrade
-its colorscheme to a set compatible with the limited 256 terminal palette
-(whereas by using the terminal's 16 ANSI color values, you can set the
-correct, specific values for the Solarized palette).
-
-If you do use the custom terminal colors, solarized.vim should work out of the
-box for you. If you are using a terminal emulator that supports 256 colors and
-don't want to use the custom Solarized terminal colors, you will need to use
-the degraded 256 colorscheme. To do so, simply add the following line *before*
-the `colorscheme solarized` line:
-
-    let g:solarized_termcolors=256
-
-Again, I recommend just changing your terminal colors to Solarized values
-either manually or via one of the many terminal schemes available for import.
-
-==============================================================================
-4. Solarized Options					*solarized-options*
+1. Solarized Options					*solarized-options*
 
 
 AUTOGENERATE OPTIONS
@@ -224,6 +153,89 @@ related options, including contrast and visibility. This allows for an easy
 method of testing different values quickly before settling on a final
 assignment for your .vimrc. If you wish to turn off this menu, assign
 g:solarized_menu a value of 0.
+
+==============================================================================
+2. Solarized Menu					*solarized-menu*
+
+Solarized makes available a menu when used in Vim GUI mode (gvim, macvim).
+This menu includes many of the options detailed below so that you can test out
+different values quickly without modifying your .vimrc file. If you wish to
+turn off this menu permanently, simply place the following line in your .vimrc
+above the "colorscheme solarized" line.
+
+	let g:solarized_menu=0
+
+==============================================================================
+3. Toggle Background					*solarized-togglebg*
+							*toggle-bg* *togglebg*
+							*toggle-background*
+
+Solarized comes with Toggle Background, a simple plugin to switch between
+light and dark background modes and reset the colorscheme. This is most useful
+for colorschemes that support both light and dark modes and in terminals or
+GUI vim windows where the background will be properly set.
+
+Toggle Background can be accessed by:
+
+    * the Solarized menu (in Vim GUI mode)
+    * the Window menu (in Vim GUI mode, even if the Solarized menu is off)
+    * the "yin/yang" toolbar button (in Vim GUI mode)
+    * the default mapping of <F5>
+    * custom key mapping you set in your .vimrc (see below)
+    * command line via ":ToggleBG" (no quotes)
+
+Toggle Background starts with a default mapping to function key <F5>. If you
+are already using this in a mapping, Toggle Background will not map itself to
+a default and you will have to map it manually in your .vimrc file, or
+remove/change your existing <F5> mapping to another value. To customize the
+keyboard mapping in your .vimrc file, use the following line, changing the
+"<F5>" value to the key or key combination you wish to use:
+
+	call togglebg#map("<F5>")
+
+Note that you'll want to use a single function key or equivalent if you want
+the plugin to work in all modes (normal, insert, visual).
+
+When using the plugin during normal, visual, or insert mode, there should be
+no interruption in workflow. However, if you activate the plugin during
+REPLACE mode, you will switch to standard insert mode (you will leave the
+overwrite replace mode).
+
+==============================================================================
+4. Solarized Terminal Issues				*solarized-term*
+
+If you are going to use Solarized in Terminal mode (i.e. not in a GUI version
+like gvim or macvim) and have not |termguicolors| set, **please please
+please** consider setting your terminal emulator's colorscheme to used the
+Solarized palette. I've included palettes for some popular terminal emulator
+as well as Xdefaults in the official Solarized download available from the
+Solarized homepage listed at the top of this help document. If you use
+Solarized *without* these colors, Solarized will need to be told to degrade
+its colorscheme to a set compatible with the limited 256 terminal palette
+(whereas by using the terminal's 16 ANSI color values, you can set the
+correct, specific values for the Solarized palette).
+
+If you do use the custom terminal colors, solarized.vim should work out of the
+box for you. If you are using a terminal emulator that supports 256 colors and
+don't want to use the custom Solarized terminal colors, you will need to use
+the degraded 256 colorscheme. To do so, simply add the following line *before*
+the `colorscheme solarized` line:
+
+    let g:solarized_termcolors=256
+
+Again, I recommend just changing your terminal colors to Solarized values
+either manually or via one of the many terminal schemes available for import.
+
+==============================================================================
+5. Changelog						*solarized-changelog*
+
+This version of Solarized has been modified for vim:
+
+2017-11-09 - Bastian Venthur <venthur@debian.org>
+
+  * Initial import to vim
+  * Added support for |termguicolors|
+  * Updated documentation, re-ordered sections, fixed spelling and typos
 
 
  vim:tw=78:noet:ts=8:ft=help:norl:

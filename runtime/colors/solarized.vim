@@ -8,6 +8,7 @@
 "   * 2017-11-09 - Bastian Venthur <venthur@debian.org>
 "     - Initial import to vim
 "     - Added support for termguicolors
+"     - Updated documentaion fixed, spelling and typos
 " Usage "{{{
 "
 " ---------------------------------------------------------------------
