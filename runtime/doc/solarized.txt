@@ -15,37 +15,12 @@ light and dark modes that runs in both GUI, 256 and 16 color modes.
 See the homepage at http://ethanschoonover.com/solarized for screenshots and 
 details.
 
-0. Install				|solarized-install|
 1. Solarized Menu			|solarized-menu|
 2. Options				|solarized-options|
 3. Toggle Background			|solarized-togglebg|
 4. Terminal Issues			|solarized-term|
 
-==============================================================================
-0. Install						*solarized-install*
-
-Note: I recommend using Tim Pope's pathogen plugin to install this 
-colorscheme. See https://github.com/tpope/vim-pathogen . If you've installed 
-pathogen properly you can install Solarized with the following commands, 
-followed by the .vimrc configuration below.
-
-	$ cd ~/.vim/bundle
-	$ git clone https://github.com/altercation/vim-colors-solarized.git
-
-If you aren't using pathogen, you can use the following three steps to install 
-Solarized:
-
-1.  Download the solarized distribution (available on the homepage above)
-    and unarchive the file.
-
-2.  Move `solarized.vim` to your `.vim/colors` directory.
-
-3.  Move each of the files in each subdirectories to the corresponding .vim
-    subdirectory (e.g. autoload/togglebg.vim goes into your .vim/autoload
-    directory as .vim/autoload/togglebg.vim).
-
-
-After installation, place the following lines in your .vimrc:
+To enable solarized, place the following lines in your .vimrc:
 
 	syntax enable
 	set background=dark
