@@ -3939,7 +3939,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 		removing it after the GUI has started has no effect.
 								*'go-F'*
 	  'F'	Add a footer.  Only for Motif.  See |gui-footer|.
-
+								*'go-k'*
+	  'k'	Keep the GUI window size when adding/removing a scrollbar, or
+		toolbar, tabline, etc.  Instead, the behavior is similar to
+		when the window is maximized and will adjust 'lines' and
+		'columns' to fit to the window.  Without the 'k' flag Vim will
+		try to keep 'lines' and 'columns the same when adding and
+		removing GUI components.
 
 						*'guipty'* *'noguipty'*
 'guipty'		boolean	(default on)

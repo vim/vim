@@ -2938,7 +2938,7 @@ mainwin_screen_changed_cb(GtkWidget  *widget,
     if (gui.norm_font != NULL)
     {
 	gui_mch_init_font(p_guifont, FALSE);
-	gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
+	gui_set_shellsize(TRUE, FALSE, RESIZE_BOTH);
     }
 }
 
@@ -4909,8 +4909,9 @@ gui_mch_unmaximize(void)
 }
 
 /*
- * Called when the font changed while the window is maximized.  Compute the
- * new Rows and Columns.  This is like resizing the window.
+ * Called when the font changed while the window is maximized or GO_KEEPWINSIZE
+ * is set.  Compute the new Rows and Columns.  This is like resizing the
+ * window.
  */
     void
 gui_mch_newfont(void)
