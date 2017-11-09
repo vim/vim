@@ -4,8 +4,10 @@
 "           (see this url for latest release & screenshots)
 " License:  OSI approved MIT license (see end of this file)
 " Created:  In the middle of the night
-" Modified: 2011 May 05
-"
+" Changes:
+"   * 2017-11-09 - Bastian Venthur <venthur@debian.org>
+"     - Initial import to vim
+"     - Added support for termguicolors
 " Usage "{{{
 "
 " ---------------------------------------------------------------------
