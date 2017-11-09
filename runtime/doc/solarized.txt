@@ -10,7 +10,8 @@ Solarized Colorscheme					   *solarized*
 							   *vim-colors-solarized*
 
 Solarized is a carefully designed selective contrast colorscheme with dual
-light and dark modes that runs in both GUI, 256 and 16 color modes.
+light and dark modes that runs in GUI, |termguicolors|, 256 and 16 color
+modes.
 
 See the homepage at http://ethanschoonover.com/solarized for screenshots and 
 details.
