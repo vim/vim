@@ -1996,6 +1996,7 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
 		PyObject	*todecref;
 		char_u		*key;
 		dictitem_T	*di;
+		hashitem_T	*hi;
 
 		if (!(fast = PySequence_Fast(item, "")))
 		{
@@ -2052,7 +2053,8 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
 
 		Py_DECREF(fast);
 
-		if (dict_add(dict, di) == FAIL)
+		hi = hash_find(&dict->dv_hashtab, di->di_key);
+		if (!HASHITEM_EMPTY(hi) || dict_add(dict, di) == FAIL)
 		{
 		    RAISE_KEY_ADD_FAIL(di->di_key);
 		    Py_DECREF(iterator);
