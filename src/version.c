@@ -83,6 +83,11 @@ static char *(features[]) =
 #else
 	"-autocmd",
 #endif
+#ifdef FEAT_AUTOSERVERNAME
+	"+autoservername",
+#else
+	"-autoservername",
+#endif
 #ifdef FEAT_BEVAL
 	"+balloon_eval",
 #else

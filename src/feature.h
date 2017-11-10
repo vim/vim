@@ -1168,6 +1168,14 @@
 #endif
 
 /*
+ * +autoservername	Automatically generate a servername for clientserver
+ *			when --servername is not passed on the command line.
+ */
+#if !defined (FEAT_CLIENTSERVER) && defined(FEAT_AUTOSERVERNAME)
+# undef FEAT_AUTOSERVERNAME
+#endif
+
+/*
  * +termresponse	send t_RV to obtain terminal response.  Used for xterm
  *			to check if mouse dragging can be used and if term
  *			codes can be obtained.

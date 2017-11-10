@@ -2066,6 +2066,15 @@ if test "$enable_terminal" = "yes"; then
   AC_SUBST(TERM_OBJ)
 fi
 
+AC_MSG_CHECKING(--enable-autoservername argument)
+AC_ARG_ENABLE(autoservername,
+	[  --enable-autoservername         Automatically define servername at vim startup.], ,
+	[enable_autoservername="no"])
+AC_MSG_RESULT($enable_autoservername)
+if test "$enable_autoservername" = "yes"; then
+  AC_DEFINE(FEAT_AUTOSERVERNAME)
+fi
+
 AC_MSG_CHECKING(--enable-multibyte argument)
 AC_ARG_ENABLE(multibyte,
 	[  --enable-multibyte      Include multibyte editing support.], ,
