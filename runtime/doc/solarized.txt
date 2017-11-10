@@ -17,8 +17,7 @@ See the homepage at http://ethanschoonover.com/solarized for screenshots and
 details.
 
 1. Options				|solarized-options|
-2. Terminal Issues			|solarized-term|
-3. Changelog				|solarized-changelog|
+2. Changelog				|solarized-changelog|
 
 To enable solarized, place the following lines in your .vimrc:
 
@@ -31,6 +30,9 @@ or, for the light background mode of Solarized:
 	syntax enable
 	set background=light
 	colorscheme solarized
+
+if you use solarized in a terminal please consider setting |termguicolors| for
+optimal experience.
 
 ==============================================================================
 1. Solarized Options					*solarized-options*
@@ -59,20 +61,15 @@ OPTION DETAILS
 ------------------------------------------------
 g:solarized_termcolors=   256     |   16		*'solarized_termcolors'*
 ------------------------------------------------
-The most important option if you are using vim in terminal (non GUI) mode!
-This tells Solarized to use the 256 degraded color mode if running in a 256
-color capable terminal.  Otherwise, if set to `16` it will use the terminal
-emulators colorscheme (best option as long as you've set the emulators colors
-to the Solarized palette).
+The most important option if you are using vim in terminal (non GUI) mode and
+have not the |termguicolors| option set! This tells Solarized to use the 256
+degraded color mode if running in a 256 color capable terminal.  Otherwise, if
+set to `16` it will use the terminal emulators colorscheme (best option as
+long as you've set the emulators colors to the Solarized palette).
 
 If you are going to use Solarized in Terminal mode (i.e. not in a GUI version
-like gvim or macvim), **please please please** consider setting your terminal
-emulator's colorscheme to used the Solarized palette. I've included palettes
-for some popular terminal emulator as well as Xdefaults in the official
-Solarized download available from: http://ethanschoonover.com/solarized . If
-you use Solarized without these colors, Solarized will by default use an
-approximate set of 256 colors.  It isn't bad looking and has been extensively
-tweaked, but it's still not quite the real thing.
+like gvim or macvim), please consider setting the |termguicolors| option for
+best experience.
 
 ------------------------------------------------
 g:solarized_termtrans =   0       |   1			*'solarized_termtrans'*
@@ -120,32 +117,7 @@ displayed using ":set list" can be set to one of three levels depending on
 your needs.
 
 ==============================================================================
-2. Solarized Terminal Issues				*solarized-term*
-
-If you are going to use Solarized in Terminal mode (i.e. not in a GUI version
-like gvim or macvim) and have not |termguicolors| set, **please please
-please** consider setting your terminal emulator's colorscheme to used the
-Solarized palette. I've included palettes for some popular terminal emulator
-as well as Xdefaults in the official Solarized download available from the
-Solarized homepage listed at the top of this help document. If you use
-Solarized *without* these colors, Solarized will need to be told to degrade
-its colorscheme to a set compatible with the limited 256 terminal palette
-(whereas by using the terminal's 16 ANSI color values, you can set the
-correct, specific values for the Solarized palette).
-
-If you do use the custom terminal colors, solarized.vim should work out of the
-box for you. If you are using a terminal emulator that supports 256 colors and
-don't want to use the custom Solarized terminal colors, you will need to use
-the degraded 256 colorscheme. To do so, simply add the following line *before*
-the `colorscheme solarized` line:
-
-    let g:solarized_termcolors=256
-
-Again, I recommend just changing your terminal colors to Solarized values
-either manually or via one of the many terminal schemes available for import.
-
-==============================================================================
-3. Changelog						*solarized-changelog*
+2. Changelog						*solarized-changelog*
 
 This version of Solarized has been modified for vim:
 
