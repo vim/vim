@@ -2249,6 +2249,7 @@ test_arglist \
 	test_sha256 \
 	test_signs \
 	test_smartindent \
+	test_solarized \
 	test_sort \
 	test_source_utf8 \
 	test_spell \
