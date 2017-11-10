@@ -191,6 +191,7 @@ This version of Solarized has been modified for vim:
   * Added support for |termguicolors|
   * Removed solarized menu
   * Removed hitrail option
+  * Removed GUIEnter magic
   * Updated documentation, re-ordered sections, fixed spelling and typos
 
 

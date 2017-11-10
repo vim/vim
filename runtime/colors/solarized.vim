@@ -10,6 +10,7 @@
 "     - Added support for termguicolors
 "     - Removed solarized menu
 "     - Removed hitrail option
+"     - Removed GUIEnter magic
 "     - Updated documentation fixed, spelling and typos
 " Usage "{{{
 "
@@ -935,25 +936,6 @@ exe "hi! pandocMetadataKey"              .s:fg_blue   .s:bg_none   .s:fmt_none
 exe "hi! pandocMetadata"                 .s:fg_blue   .s:bg_none   .s:fmt_bold
 hi! link pandocMetadataTitle             pandocMetadata
 
-"}}}
-" Utility autocommand "{{{
-" ---------------------------------------------------------------------
-" In cases where Solarized is initialized inside a terminal vim session and 
-" then transferred to a gui session via the command `:gui`, the gui vim process 
-" does not re-read the colorscheme (or .vimrc for that matter) so any `has_gui` 
-" related code that sets gui specific values isn't executed.
-"
-" Currently, Solarized sets only the cterm or gui values for the colorscheme 
-" depending on gui or terminal mode. It's possible that, if the following 
-" autocommand method is deemed excessively poor form, that approach will be 
-" used again and the autocommand below will be dropped.
-"
-" However it seems relatively benign in this case to include the autocommand 
-" here. It fires only in cases where vim is transferring from terminal to gui 
-" mode (detected with the script scope s:vmode variable). It also allows for 
-" other potential terminal customizations that might make gui mode suboptimal.
-"
-autocmd GUIEnter * if (s:vmode != "gui") | exe "colorscheme " . g:colors_name | endif
 "}}}
 " License "{{{
 " ---------------------------------------------------------------------
