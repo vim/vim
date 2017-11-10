@@ -7650,6 +7650,8 @@ forward_slash(char_u *fname)
  * together, to avoid having to match the pattern too often.
  * The result is an array of Autopat lists, which point to AutoCmd lists:
  *
+ * last_autopat[0]  -----------------------------+
+ *						 V
  * first_autopat[0] --> Autopat.next  -->  Autopat.next -->  NULL
  *			Autopat.cmds	   Autopat.cmds
  *			    |			 |
@@ -7662,6 +7664,8 @@ forward_slash(char_u *fname)
  *			    V
  *			   NULL
  *
+ * last_autopat[1]  --------+
+ *			    V
  * first_autopat[1] --> Autopat.next  -->  NULL
  *			Autopat.cmds
  *			    |
@@ -7689,11 +7693,12 @@ typedef struct AutoCmd
 
 typedef struct AutoPat
 {
+    struct AutoPat  *next;		/* next AutoPat in AutoPat list; MUST
+					 * be the first entry */
     char_u	    *pat;		/* pattern as typed (NULL when pattern
 					   has been removed) */
     regprog_T	    *reg_prog;		/* compiled regprog for pattern */
     AutoCmd	    *cmds;		/* list of commands to do */
-    struct AutoPat  *next;		/* next AutoPat in AutoPat list */
     int		    group;		/* group ID */
     int		    patlen;		/* strlen() of pat */
     int		    buflocal_nr;	/* !=0 for buffer-local AutoPat */
@@ -7804,6 +7809,16 @@ static struct event_name
 };
 
 static AutoPat *first_autopat[NUM_EVENTS] =
+{
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
+
+static AutoPat *last_autopat[NUM_EVENTS] =
 {
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -8011,6 +8026,15 @@ au_cleanup(void)
 	    /* remove the pattern if it has been marked for deletion */
 	    if (ap->pat == NULL)
 	    {
+		if (ap->next == NULL)
+		{
+		    if (prev_ap == &(first_autopat[(int)event]))
+			last_autopat[(int)event] = NULL;
+		    else
+			/* this depends on the "next" field being the first in
+			 * the struct */
+			last_autopat[(int)event] = (AutoPat *)prev_ap;
+		}
 		*prev_ap = ap->next;
 		vim_regfree(ap->reg_prog);
 		vim_free(ap);
@@ -8675,9 +8699,13 @@ do_autocmd_event(
 	}
 
 	/*
-	 * Find AutoPat entries with this pattern.
+	 * Find AutoPat entries with this pattern.  When adding a command it
+	 * always goes at or after the last one, so start at the end.
 	 */
-	prev_ap = &first_autopat[(int)event];
+	if (!forceit && *cmd != NUL && last_autopat[(int)event] != NULL)
+	    prev_ap = &last_autopat[(int)event];
+	else
+	    prev_ap = &first_autopat[(int)event];
 	while ((ap = *prev_ap) != NULL)
 	{
 	    if (ap->pat != NULL)
@@ -8783,6 +8811,7 @@ do_autocmd_event(
 		}
 		ap->cmds = NULL;
 		*prev_ap = ap;
+		last_autopat[(int)event] = ap;
 		ap->next = NULL;
 		if (group == AUGROUP_ALL)
 		    ap->group = current_augroup;
