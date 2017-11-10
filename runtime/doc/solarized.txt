@@ -52,7 +52,6 @@ g:solarized_underline =   1       |   0
 g:solarized_italic    =   1       |   0
 g:solarized_contrast  =   "normal"|   "high" or "low"
 g:solarized_visibility=   "normal"|   "high" or "low"
-g:solarized_hitrail   =   0       |   1
 ------------------------------------------------
 
 
@@ -120,18 +119,6 @@ g:solarized_visibility =  "normal"|   "high" or "low" *'solarized_visibility'*
 Special characters such as trailing white space, tabs, newlines, when
 displayed using ":set list" can be set to one of three levels depending on
 your needs.
-
-------------------------------------------------
-g:solarized_hitrail   =   0       |   1			*'solarized_hitrail'*
-------------------------------------------------
-Visibility can make listchar entities more visible, but if one has set
-cursorline on, these same listchar values standout somewhat less due to the
-background color of the cursorline. g:solarized_hitrail enables highlighting
-of trailing spaces (only one of the listchar types, but a particularly
-important one) while in the cursoline in a different manner in order to make
-them more visible. This may not work consistently as Solarized is using a
-pattern match than can be overridden by a more encompassing syntax-native
-match such as a comment line.
 
 ==============================================================================
 2. Toggle Background					*solarized-togglebg*
@@ -203,6 +190,7 @@ This version of Solarized has been modified for vim:
   * Initial import to vim
   * Added support for |termguicolors|
   * Removed solarized menu
+  * Removed hitrail option
   * Updated documentation, re-ordered sections, fixed spelling and typos
 
 

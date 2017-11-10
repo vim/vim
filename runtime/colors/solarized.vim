@@ -9,6 +9,7 @@
 "     - Initial import to vim
 "     - Added support for termguicolors
 "     - Removed solarized menu
+"     - Removed hitrail option
 "     - Updated documentation fixed, spelling and typos
 " Usage "{{{
 "
@@ -186,7 +187,6 @@ call s:SetOption("termcolors",16)
 call s:SetOption("contrast","normal")
 call s:SetOption("visibility","normal")
 call s:SetOption("diffmode","normal")
-call s:SetOption("hitrail",0)
 
 "}}}
 " Colorscheme initialization "{{{
@@ -954,24 +954,6 @@ hi! link pandocMetadataTitle             pandocMetadata
 " other potential terminal customizations that might make gui mode suboptimal.
 "
 autocmd GUIEnter * if (s:vmode != "gui") | exe "colorscheme " . g:colors_name | endif
-"}}}
-" Highlight Trailing Space {{{
-" Experimental: Different highlight when on cursorline
-function! s:SolarizedHiTrail()
-    if g:solarized_hitrail==0
-        hi! clear solarizedTrailingSpace
-    else
-        syn match solarizedTrailingSpace "\s*$"
-        exe "hi! solarizedTrailingSpace " .s:fmt_undr .s:fg_red .s:bg_none .s:sp_red
-    endif
-endfunction  
-augroup SolarizedHiTrail
-    autocmd!
-    if g:solarized_hitrail==1
-        autocmd! Syntax * call s:SolarizedHiTrail()
-        autocmd! ColorScheme * if g:colors_name == "solarized" | call s:SolarizedHiTrail() | else | augroup! s:SolarizedHiTrail | endif
-    endif
-augroup END
 "}}}
 " License "{{{
 " ---------------------------------------------------------------------
