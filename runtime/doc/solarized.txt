@@ -1,4 +1,4 @@
-*solarized.vim* for Vim version 7.3 or newer. Modified: 2011 May 05
+*solarized.vim* for Vim version 7.3 or newer. Modified: 2017 Nov 09
 
 
 		Solarized Vim Colorscheme by Ethan Schoonover ~
@@ -153,6 +153,7 @@ This version of Solarized has been modified for vim:
 
   * Initial import to vim
   * Added support for |termguicolors|
+  * Restored original green
   * Removed solarized menu
   * Removed toggle background
   * Removed hitrail option

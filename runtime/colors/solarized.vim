@@ -8,6 +8,7 @@
 "   * 2017-11-09 - Bastian Venthur <venthur@debian.org>
 "     - Initial import to vim
 "     - Added support for termguicolors
+"     - Restored original green
 "     - Removed solarized menu
 "     - Removed toggle background
 "     - Removed hitrail option
@@ -161,8 +162,7 @@ if ((has("gui_running") || &termguicolors) && g:solarized_degrade == 0)
     let s:violet      = "#6c71c4"
     let s:blue        = "#268bd2"
     let s:cyan        = "#2aa198"
-    "let s:green       = "#859900" "original
-    let s:green       = "#719e07" "experimental
+    let s:green       = "#859900"
 elseif ((has("gui_running") || &termguicolors) && g:solarized_degrade == 1)
     " These colors are identical to the 256 color mode. They may be viewed
     " while in gui mode via "let g:solarized_degrade=1", though this is not
