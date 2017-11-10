@@ -17,9 +17,8 @@ See the homepage at http://ethanschoonover.com/solarized for screenshots and
 details.
 
 1. Options				|solarized-options|
-2. Toggle Background			|solarized-togglebg|
-3. Terminal Issues			|solarized-term|
-4. Changelog				|solarized-changelog|
+2. Terminal Issues			|solarized-term|
+3. Changelog				|solarized-changelog|
 
 To enable solarized, place the following lines in your .vimrc:
 
@@ -121,42 +120,7 @@ displayed using ":set list" can be set to one of three levels depending on
 your needs.
 
 ==============================================================================
-2. Toggle Background					*solarized-togglebg*
-							*toggle-bg* *togglebg*
-							*toggle-background*
-
-Solarized comes with Toggle Background, a simple plugin to switch between
-light and dark background modes and reset the colorscheme. This is most useful
-for colorschemes that support both light and dark modes and in terminals or
-GUI vim windows where the background will be properly set.
-
-Toggle Background can be accessed by:
-
-    * the Window menu (in Vim GUI mode)
-    * the "yin/yang" toolbar button (in Vim GUI mode)
-    * the default mapping of <F5>
-    * custom key mapping you set in your .vimrc (see below)
-    * command line via ":ToggleBG" (no quotes)
-
-Toggle Background starts with a default mapping to function key <F5>. If you
-are already using this in a mapping, Toggle Background will not map itself to
-a default and you will have to map it manually in your .vimrc file, or
-remove/change your existing <F5> mapping to another value. To customize the
-keyboard mapping in your .vimrc file, use the following line, changing the
-"<F5>" value to the key or key combination you wish to use:
-
-	call togglebg#map("<F5>")
-
-Note that you'll want to use a single function key or equivalent if you want
-the plugin to work in all modes (normal, insert, visual).
-
-When using the plugin during normal, visual, or insert mode, there should be
-no interruption in workflow. However, if you activate the plugin during
-REPLACE mode, you will switch to standard insert mode (you will leave the
-overwrite replace mode).
-
-==============================================================================
-3. Solarized Terminal Issues				*solarized-term*
+2. Solarized Terminal Issues				*solarized-term*
 
 If you are going to use Solarized in Terminal mode (i.e. not in a GUI version
 like gvim or macvim) and have not |termguicolors| set, **please please
@@ -181,7 +145,7 @@ Again, I recommend just changing your terminal colors to Solarized values
 either manually or via one of the many terminal schemes available for import.
 
 ==============================================================================
-4. Changelog						*solarized-changelog*
+3. Changelog						*solarized-changelog*
 
 This version of Solarized has been modified for vim:
 
@@ -190,6 +154,7 @@ This version of Solarized has been modified for vim:
   * Initial import to vim
   * Added support for |termguicolors|
   * Removed solarized menu
+  * Removed toggle background
   * Removed hitrail option
   * Removed GUIEnter magic
   * Updated documentation, re-ordered sections, fixed spelling and typos

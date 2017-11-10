@@ -9,6 +9,7 @@
 "     - Initial import to vim
 "     - Added support for termguicolors
 "     - Removed solarized menu
+"     - Removed toggle background
 "     - Removed hitrail option
 "     - Removed GUIEnter magic
 "     - Updated documentation fixed, spelling and typos
@@ -26,11 +27,10 @@
 " OPTIONS:
 " ---------------------------------------------------------------------
 " See the "solarized.txt" help file included with this colorscheme (in the 
-" "doc" subdirectory) for information on options, usage, the Toggle Background 
-" function and more.
+" "doc" subdirectory) for information on options, usage, function and more.
 "
 " ---------------------------------------------------------------------
-" COLOR VALUES
+" COLOR VALUES:
 " ---------------------------------------------------------------------
 " Download palettes and files from: http://ethanschoonover.com/solarized
 "
@@ -57,7 +57,7 @@
 " green     #859900  2/2 green     64 #5f8700 60 -20  65 133 153   0  68 100  60
 "
 " ---------------------------------------------------------------------
-" COLORSCHEME HACKING
+" COLORSCHEME HACKING:
 " ---------------------------------------------------------------------
 "
 " Useful commands for testing colorschemes:
