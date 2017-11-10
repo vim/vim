@@ -17,10 +17,9 @@ See the homepage at http://ethanschoonover.com/solarized for screenshots and
 details.
 
 1. Options				|solarized-options|
-2. Solarized Menu			|solarized-menu|
-3. Toggle Background			|solarized-togglebg|
-4. Terminal Issues			|solarized-term|
-5. Changelog				|solarized-changelog|
+2. Toggle Background			|solarized-togglebg|
+3. Terminal Issues			|solarized-term|
+4. Changelog				|solarized-changelog|
 
 To enable solarized, place the following lines in your .vimrc:
 
@@ -38,16 +37,6 @@ or, for the light background mode of Solarized:
 1. Solarized Options					*solarized-options*
 
 
-AUTOGENERATE OPTIONS
-
-You can easily modify and experiment with Solarized display options using the
-Solarized menu when using Vim in GUI mode. Once you have things set to your
-liking, you can auto generate the current option list in a format ready for
-insertion into your .vimrc file using the Solarized menu "Autogenerate
-Options" command or at the command line with:
-
-    :SolarizedOptions
-
 
 OPTION LIST
 
@@ -64,7 +53,6 @@ g:solarized_italic    =   1       |   0
 g:solarized_contrast  =   "normal"|   "high" or "low"
 g:solarized_visibility=   "normal"|   "high" or "low"
 g:solarized_hitrail   =   0       |   1
-g:solarized_menu      =   1       |   0
 ------------------------------------------------
 
 
@@ -145,28 +133,8 @@ them more visible. This may not work consistently as Solarized is using a
 pattern match than can be overridden by a more encompassing syntax-native
 match such as a comment line.
 
-------------------------------------------------
-g:solarized_menu       =  1       |   0			*'solarized_menu'*
-------------------------------------------------
-Solarized includes a menu providing access to several of the above display
-related options, including contrast and visibility. This allows for an easy
-method of testing different values quickly before settling on a final
-assignment for your .vimrc. If you wish to turn off this menu, assign
-g:solarized_menu a value of 0.
-
 ==============================================================================
-2. Solarized Menu					*solarized-menu*
-
-Solarized makes available a menu when used in Vim GUI mode (gvim, macvim).
-This menu includes many of the options detailed below so that you can test out
-different values quickly without modifying your .vimrc file. If you wish to
-turn off this menu permanently, simply place the following line in your .vimrc
-above the "colorscheme solarized" line.
-
-	let g:solarized_menu=0
-
-==============================================================================
-3. Toggle Background					*solarized-togglebg*
+2. Toggle Background					*solarized-togglebg*
 							*toggle-bg* *togglebg*
 							*toggle-background*
 
@@ -177,8 +145,7 @@ GUI vim windows where the background will be properly set.
 
 Toggle Background can be accessed by:
 
-    * the Solarized menu (in Vim GUI mode)
-    * the Window menu (in Vim GUI mode, even if the Solarized menu is off)
+    * the Window menu (in Vim GUI mode)
     * the "yin/yang" toolbar button (in Vim GUI mode)
     * the default mapping of <F5>
     * custom key mapping you set in your .vimrc (see below)
@@ -202,7 +169,7 @@ REPLACE mode, you will switch to standard insert mode (you will leave the
 overwrite replace mode).
 
 ==============================================================================
-4. Solarized Terminal Issues				*solarized-term*
+3. Solarized Terminal Issues				*solarized-term*
 
 If you are going to use Solarized in Terminal mode (i.e. not in a GUI version
 like gvim or macvim) and have not |termguicolors| set, **please please
@@ -227,7 +194,7 @@ Again, I recommend just changing your terminal colors to Solarized values
 either manually or via one of the many terminal schemes available for import.
 
 ==============================================================================
-5. Changelog						*solarized-changelog*
+4. Changelog						*solarized-changelog*
 
 This version of Solarized has been modified for vim:
 
@@ -235,6 +202,7 @@ This version of Solarized has been modified for vim:
 
   * Initial import to vim
   * Added support for |termguicolors|
+  * Removed solarized menu
   * Updated documentation, re-ordered sections, fixed spelling and typos
 
 
