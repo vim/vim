@@ -715,6 +715,8 @@ To facilitate bi-directional interface, you can use |pyeval()| and |py3eval()|
 functions to evaluate Python expressions and pass their values to Vim script.
 |pyxeval()| is also available.
 
+The Python value "None" is converted to v:none.
+
 ==============================================================================
 9. Dynamic loading					*python-dynamic*
 

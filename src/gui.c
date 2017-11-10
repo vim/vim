@@ -693,7 +693,7 @@ gui_init(void)
 #ifndef FEAT_GUI_GTK
     /* Set the shell size, adjusted for the screen size.  For GTK this only
      * works after the shell has been opened, thus it is further down. */
-    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+    gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
 #endif
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     /* Need to set the size of the menubar after all the menus have been
@@ -732,7 +732,7 @@ gui_init(void)
 # endif
 
 	/* Now make sure the shell fits on the screen. */
-	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
 #endif
 	/* When 'lines' was set while starting up the topframe may have to be
 	 * resized. */
@@ -909,7 +909,7 @@ gui_init_font(char_u *font_list, int fontset UNUSED)
 # endif
 	    gui_mch_set_font(gui.norm_font);
 #endif
-	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
     }
 
     return ret;
@@ -1553,10 +1553,12 @@ gui_get_shellsize(void)
  * Set the size of the Vim shell according to Rows and Columns.
  * If "fit_to_display" is TRUE then the size may be reduced to fit the window
  * on the screen.
+ * When "mustset" is TRUE the size was set by the user. When FALSE a UI
+ * component was added or removed (e.g., a scrollbar).
  */
     void
 gui_set_shellsize(
-    int		mustset UNUSED,		/* set by the user */
+    int		mustset UNUSED,
     int		fit_to_display,
     int		direction)		/* RESIZE_HOR, RESIZE_VER */
 {
@@ -1580,7 +1582,8 @@ gui_set_shellsize(
 #if defined(MSWIN) || defined(FEAT_GUI_GTK)
     /* If not setting to a user specified size and maximized, calculate the
      * number of characters that fit in the maximized window. */
-    if (!mustset && gui_mch_maximized())
+    if (!mustset && (vim_strchr(p_go, GO_KEEPWINSIZE) != NULL
+						       || gui_mch_maximized()))
     {
 	gui_mch_newfont();
 	return;

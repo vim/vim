@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.0.  Last change: 2017 Sep 23
+*gui.txt*       For Vim version 8.0.  Last change: 2017 Nov 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -498,6 +498,17 @@ The first item in the Syntax menu can be used to show all available filetypes
 in the menu (which can take a bit of time to load).  If you want to have all
 filetypes already present at startup, add: >
 	:let do_syntax_sel_menu = 1
+
+The following menuitems show all available color schemes, keymaps and compiler
+settings:
+	Edit > Color Scheme ~
+	Edit > Keymap ~
+	Tools > Set Compiler ~
+However, they can also take a bit of time to load, because they search all
+related files from the directories in 'runtimepath'.  Therefore they are
+loaded lazily (by the |CursorHold| event), or you can also load them manually.
+If you want to have all these items already present at startup, add: >
+	:let do_no_lazyload_menus = 1
 
 Note that the menu.vim is sourced when `:syntax on` or `:filetype on` is
 executed or after your .vimrc file is sourced.  This means that the 'encoding'

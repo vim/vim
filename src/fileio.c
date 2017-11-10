@@ -9362,6 +9362,7 @@ apply_autocmds_group(
 #endif
     int		did_save_redobuff = FALSE;
     save_redo_T	save_redo;
+    int		save_KeyTyped = KeyTyped;
 
     /*
      * Quickly return if there are no autocommands for this event or
@@ -9658,6 +9659,7 @@ apply_autocmds_group(
 	prof_child_exit(&wait_time);
 # endif
 #endif
+    KeyTyped = save_KeyTyped;
     vim_free(fname);
     vim_free(sfname);
     --nesting;		/* see matching increment above */
