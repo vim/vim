@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Oct 29
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Nov 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -14,9 +14,25 @@ The terminal feature is optional, use this to check if your Vim has it: >
 If the result is "1" you have it.
 
 
-1. Basic use			|terminal-use|
-2. Remote testing		|terminal-testing|
-3. Debugging			|terminal-debug|
+1. Basic use		|terminal-use|
+      Typing			|terminal-typing|
+      Size and color		|terminal-size-color|
+      Syntax			|:terminal|
+      Resizing			|terminal-resizing|
+      Terminal Modes		|Terminal-mode|
+      Cursor style		|terminal-cursor-style|
+      Special keys		|terminal-special-keys|
+      Unix			|terminal-unix|
+      MS-Windows		|terminal-ms-windows|
+2. Remote testing	|terminal-testing|
+3. Debugging		|terminal-debug|
+      Starting			|termdebug-starting|
+      Example session		|termdebug-example|
+      Stepping through code	|termdebug-stepping|
+      Inspecting variables	|termdebug-variables|
+      Other commands		|termdebug-commands|
+      Communication		|termdebug-communication|
+      Customizing		|termdebug-customizing|
 
 {Vi does not have any of these commands}
 {only available when compiled with the |+terminal| feature}
@@ -92,7 +108,7 @@ options specifically for the window and buffer.  Example: >
 
 
 Size and color ~
-
+							*terminal-size-color*
 See option 'termsize' for controlling the size of the terminal window.
 (TODO: scrolling when the terminal is larger than the window)
 
@@ -201,7 +217,7 @@ the buffer name will still be set to the command.
 
 
 Resizing ~
-
+							*terminal-resizing*
 The size of the terminal can be in one of three modes:
 
 1. The 'termsize' option is empty: The terminal size follows the window size.
@@ -251,7 +267,7 @@ It is not possible to enter Insert mode from Terminal-Job mode.
 
 
 Cursor style ~
-
+							*terminal-cursor-style*
 By default the cursor in the terminal window uses a not blinking block.  The
 normal xterm escape sequences can be used to change the blinking state and the
 shape.  Once focus leaves the terminal window Vim will restore the original
@@ -263,8 +279,21 @@ is inverted.  Since Vim cannot detect this, the terminal window cursor
 blinking will also be inverted.
 
 
-Unix ~
+Special keys ~
+							*terminal-special-keys*
+Since the terminal emulator simulates an xterm, only escape sequences that
+both Vim and xterm recognize will be available in the terminal window.  If you
+want to pass on other escape sequences to the job running in the terminal you
+need to set up forwarding.  Example: >
+	tmap <expr> <Esc>]b SendToTerm("\<Esc>]b")
+ 	func SendToTerm(what)
+ 	  call term_sendkeys('', a:what)
+ 	  return ''
+ 	endfunc
 
+
+Unix ~
+							*terminal-unix*
 On Unix a pty is used to make it possible to run all kinds of commands.  You
 can even run Vim in the terminal!  That's used for debugging, see below.
 
@@ -287,7 +316,7 @@ This will open the file "some_file.c" and put the cursor on line 123.
 
 
 MS-Windows ~
-
+							*terminal-ms-windows*
 On MS-Windows winpty is used to make it possible to run all kind of commands.
 Obviously, they must be commands that run in a terminal, not open their own
 window.
@@ -330,7 +359,7 @@ Vim this also works remotely over an ssh connection.
 
 
 Starting ~
-
+							*termdebug-starting*
 Load the plugin with this command: >
 	packadd termdebug
 <							*:Termdebug*
@@ -360,7 +389,7 @@ opened windows are closed.
 
 
 Example session ~
-
+							*termdebug-example*
 Start in the Vim "src" directory and build Vim: >
 	% make
 Start Vim: >
@@ -416,7 +445,7 @@ a deeper level.
 
 
 Stepping through code ~
-
+							*termdebug-stepping*
 Put focus on the gdb window to type commands there.  Some common ones are:
 - CTRL-C    interrupt the program
 - next      execute the current line and stop at the next line
@@ -445,7 +474,7 @@ This way you can use the mouse to perform the most common commands.
 
 
 Inspecting variables ~
-
+							*termdebug-variables*
  :Evaluate	    evaluate the expression under the cursor
  K		    same
  :Evaluate {expr}   evaluate {expr}
@@ -455,20 +484,20 @@ This is similar to using "print" in the gdb window.
 
 
 Other commands ~
-
+							*termdebug-commands*
  :Gdb	       jump to the gdb window
  :Program      jump to the window with the running program
 
 
 Communication ~
-
+						*termdebug-communication*
 There is another, hidden, buffer, which is used for Vim to communicate with
 gdb.  The buffer name is "gdb communication".  Do not delete this buffer, it
 will break the debugger.
 
 
 Customizing ~
-
+							*termdebug-customizing*
 To change the name of the gdb command, set the "termdebugger" variable before
 invoking `:Termdebug`: >
 	let termdebugger = "mygdb"

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2017 Oct 24
+*starting.txt*  For Vim version 8.0.  Last change: 2017 Nov 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1418,7 +1418,7 @@ The output of ":mkview" contains these items:
 5. The scroll position and the cursor position in the file.  Doesn't work very
    well when there are closed folds.
 6. The local current directory, if it is different from the global current
-   directory.
+   directory and 'viewoptions' contains "curdir".
 
 Note that Views and Sessions are not perfect:
 - They don't restore everything.  For example, defined functions, autocommands
@@ -1530,7 +1530,7 @@ Notes for Unix:
   you have worked with.
 - If you want to share the viminfo file with other users (e.g. when you "su"
   to another user), you can make the file writable for the group or everybody.
-  Vim will preserve this when writing new viminfo files.  Be careful, don't
+  Vim will preserve this when replacing the viminfo file.  Be careful, don't
   allow just anybody to read and write your viminfo file!
 - Vim will not overwrite a viminfo file that is not writable by the current
   "real" user.  This helps for when you did "su" to become root, but your

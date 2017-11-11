@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 05
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,10 @@ entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Permission of viminfo tempfile can be wrong. (Simon Ruderich)
+Always use 600 ?  Also avoids groups problem.
+patch from Simon Ruderich, Nov 8
 
 No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
@@ -132,8 +136,8 @@ Regexp problems:
 Include a few color schemes, based on popularity:
 http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
 http://vimawesome.com/?q=tag:color-scheme
-Use names that indicate their appearnce (Christian Brabandt, 2017 Aug 3)
-- monokai - Xia Crusoe (2017 Aug 4)
+Use names that indicate their apperance (Christian Brabandt, 2017 Aug 3)
+- monokai - Xia Crusoe (2017 Aug 4) 
 - seoul256 - Christian Brabandt (2017 Aug 3)
 - gruvbox -  Christian Brabandt (2017 Aug 3)
 - janah - Marco Hinz (2017 Aug 4)
@@ -141,7 +145,8 @@ Use names that indicate their appearnce (Christian Brabandt, 2017 Aug 3)
 Suggested by Hiroki Kokubun:
 - [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
 - [hybrid](https://github.com/w0ng/vim-hybrid)
-Include solarized color scheme?
+Include solarized color scheme?, it does not support termguicolors.
+-> Make check for colorscheme that it's sane.
 
 Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in do_sub() (#2249)
@@ -178,9 +183,6 @@ Error in emsg with buggy script. (Dominique, 2017 Apr 30)
 When a timer is running and typing CTRL-R on the command line, it is not
 redrawn properly. (xtal8, 2017 Oct 23, #2241)
 
-Patch for manpager plugin. (Lcd, 2017 Oct 12)
-Asked maintainer.
-
 Universal solution to detect if t_RS is working, using cursor position.
 Koichi Iwamoto, #2126
 
@@ -216,15 +218,7 @@ When bracketed paste is used, pasting at the ":append" prompt does not get the
 line breaks. (Ken Takata, 2017 Aug 22)
 
 Patch for 24 bit color support in MS-Windows console, using vcon. (Nobuhiro
-Takasaki, 2017 Oct 1, #2060).  Should not set 'tgc' automatically.
-
-Patch to change GUI behavior: instead of changing the window size change the
-lines/columns when menu/toolbar/etc. is added/removed. (Ychin, 2016 Mar 20,
-#703)
-
-Patch to skip globpath() for color schemes, keymaps and compiler settings.
-So that loading menus is faster. (Ken Takata, 2017 Oct 23)
-Update to expand the menus in a CursorHold autocmd. (2017 Oct 25)
+Takasaki, 2017 Oct 1, #2060).  Ready to include now?
 
 Memory leaks in test_channel? (or is it because of fork())
 Memory leak in test_arabic.
@@ -295,6 +289,9 @@ Patch to add argument to :cquit. (Thinca, 2014 Oct 12)
 
 Python: After "import vim" error messages only show the first line of the
 stack trace. (Yggdroot, 2017 Jul 28, #1887)
+
+Patch to add "module" to quickfix entries. (Marcin Szamotulski, Coot, 2017 Jun
+8, #1757)
 
 When checking if a bufref is valid, also check the buffer number, to catch the
 case of :bwipe followed by :new.
@@ -498,8 +495,6 @@ Useful to restore it.  Is there another solution?
 Patch for wrong cursor position on wrapped line, involving breakindent.
 (Ozaki Kiichi, 2016 Nov 25)
 Does this also fix #1408 ?
-
-Patch to add "module" to quickfix entries. (Coot, 2017 Jun 8, #1757)
 
 'cursorline' and match interfere. (Ozaki Kiichi, 2017 Jun 23, #1792)
 
@@ -5206,7 +5201,7 @@ Swap (.swp) files:
 -   Add an option to create a swap file only when making the first change to
     the buffer.  (Liang)  Or only when the buffer is not read-only.
 -   Add option to set "umask" for backup files and swap files (Antwerpen).
-    'backupumask' and 'swapumask'?  Or 'umaskback' and 'umaskswap'?
+    'backupumask' and 'swapumask'?  Or 'umaskbackup' and 'umaskswap'?
 -   When editing a readonly file, don't use a swap file but read parts from the
     original file.  Also do this when the file is huge (>'maxmem').  We do
     need to load the file once to count the number of lines?  Perhaps keep a

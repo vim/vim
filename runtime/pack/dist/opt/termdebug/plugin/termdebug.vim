@@ -269,7 +269,7 @@ func s:HandleEvaluate(msg)
   let value = substitute(value, '\\"', '"', 'g')
   echomsg '"' . s:evalexpr . '": ' . value
 
-  if s:evalexpr[0] != '*' && value =~ '^0x' && value !~ '"$'
+  if s:evalexpr[0] != '*' && value =~ '^0x' && value != '0x0' && value !~ '"$'
     " Looks like a pointer, also display what it points to.
     let s:evalexpr = '*' . s:evalexpr
     call term_sendkeys(s:commbuf, '-data-evaluate-expression "' . s:evalexpr . "\"\r")

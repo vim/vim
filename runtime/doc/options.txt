@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Nov 02
+*options.txt*	For Vim version 8.0.  Last change: 2017 Nov 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5336,7 +5336,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	sysmouse and Linux console with gpm).  For using the mouse in the
 	GUI, see |gui-mouse|.
 	The mouse can be enabled for different modes:
-		n	Normal mode
+		n	Normal mode and Terminal modes
 		v	Visual mode
 		i	Insert mode
 		c	Command-line mode
