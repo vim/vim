@@ -3118,15 +3118,18 @@ button_set:
     {
 	case NORMAL_BUSY:
 	case OP_PENDING:
+# ifdef FEAT_TERMINAL
+	case TERMINAL:
+# endif
 	case NORMAL:		checkfor = MOUSE_NORMAL;	break;
 	case VISUAL:		checkfor = MOUSE_VISUAL;	break;
 	case SELECTMODE:	checkfor = MOUSE_VISUAL;	break;
 	case REPLACE:
 	case REPLACE+LANGMAP:
-#ifdef FEAT_VREPLACE
+# ifdef FEAT_VREPLACE
 	case VREPLACE:
 	case VREPLACE+LANGMAP:
-#endif
+# endif
 	case INSERT:
 	case INSERT+LANGMAP:	checkfor = MOUSE_INSERT;	break;
 	case ASKMORE:
