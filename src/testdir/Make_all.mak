@@ -33,7 +33,6 @@ SCRIPTS_ALL = \
 	test108.out \
 	test_erasebackword.out \
 	test_eval.out \
-	test_fixeol.out \
 	test_listchars.out \
 	test_wordcount.out
 
@@ -97,6 +96,7 @@ NEW_TESTS = test_arabic.res \
 	    test_farsi.res \
 	    test_file_size.res \
 	    test_find_complete.res \
+	    test_fixeol.res \
 	    test_fnameescape.res \
 	    test_fold.res \
 	    test_getvar.res \
