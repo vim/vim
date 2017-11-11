@@ -8387,7 +8387,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'viewoptions'* *'vop'*
-'viewoptions' 'vop'	string	(default: "folds,options,cursor")
+'viewoptions' 'vop'	string	(default: "folds,options,cursor,lcd")
 			global
 			{not in Vi}
 			{not available when compiled without the |+mksession|
