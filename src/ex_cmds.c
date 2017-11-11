@@ -2007,7 +2007,8 @@ write_viminfo(char_u *file, int forceit)
 
 	    /*
 	     * If we can't create in the same directory, try creating a
-	     * "normal" temp file.
+	     * "normal" temp file.  This is just an attempt, renaming the temp
+	     * file might fail as well.
 	     */
 	    if (fp_out == NULL)
 	    {
@@ -2018,11 +2019,29 @@ write_viminfo(char_u *file, int forceit)
 
 #if defined(UNIX) && defined(HAVE_FCHOWN)
 	    /*
-	     * Make sure the owner can read/write it.  This only works for
-	     * root.
+	     * Make sure the original owner can read/write the tempfile and
+	     * otherwise preserve permissions, making sure the group matches.
 	     */
 	    if (fp_out != NULL)
-		ignored = fchown(fileno(fp_out), st_old.st_uid, st_old.st_gid);
+	    {
+		stat_T	tmp_st;
+
+		if (mch_stat((char *)tempname, &tmp_st) >= 0)
+		{
+		    if (st_old.st_uid != tmp_st.st_uid)
+			/* Changing the owner might fail, in which case the
+			 * file will now owned by the current user, oh well. */
+			ignored = fchown(fileno(fp_out), st_old.st_uid, -1);
+		    if (st_old.st_gid != tmp_st.st_gid
+			    && fchown(fileno(fp_out), -1, st_old.st_gid) == -1)
+			/* can't set the group to what it should be, remove
+			 * group permissions */
+			(void)mch_setperm(tempname, 0600);
+		}
+		else
+		    /* can't stat the file, set conservative permissions */
+		    (void)mch_setperm(tempname, 0600);
+	    }
 #endif
 	}
     }
@@ -7536,7 +7555,7 @@ ex_sign(exarg_T *eap)
     int		idx;
     sign_T	*sp;
     sign_T	*sp_prev;
-    buf_T	*buf;
+    buf_T	*buf = NULL;
 
     /* Parse the subcommand. */
     p = skiptowhite(arg);
