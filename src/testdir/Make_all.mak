@@ -31,7 +31,6 @@ SCRIPTS_ALL = \
 	test95.out \
 	test99.out \
 	test108.out \
-	test_close_count.out \
 	test_erasebackword.out \
 	test_eval.out \
 	test_fixeol.out \
@@ -84,6 +83,7 @@ NEW_TESTS = test_arabic.res \
 	    test_charsearch.res \
 	    test_cindent.res \
 	    test_clientserver.res \
+	    test_close_count.res \
 	    test_cmdline.res \
 	    test_command_count.res \
 	    test_crypt.res \
