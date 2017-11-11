@@ -15,12 +15,6 @@ if &filetype == "man"
   endif
   let b:did_ftplugin = 1
 
-  " Ensure Vim is not recursively invoked (man-db does this)
-  " when doing ctrl-[ on a man page reference.
-  if exists("$MANPAGER")
-    let $MANPAGER = ""
-  endif
-
   " allow dot and dash in manual page name.
   setlocal iskeyword+=\.,-
 
@@ -176,7 +170,7 @@ func <SID>GetPage(...)
     let $MANWIDTH = winwidth(0)
     let unsetwidth = 1
   endif
-  silent exec "r !man ".s:GetCmdArg(sect, page)." | col -b"
+  silent exec "r ! env -u MANPAGER man ".s:GetCmdArg(sect, page)." | col -b"
   if unsetwidth
     let $MANWIDTH = ''
   endif
