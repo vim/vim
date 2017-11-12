@@ -384,6 +384,9 @@
 /* Define if you want to include multibyte support. */
 #undef FEAT_MBYTE
 
+/* Define if you want to always define a server name at vim startup. */
+#undef FEAT_AUTOSERVERNAME
+
 /* Define if you want to include fontset support. */
 #undef FEAT_XFONTSET
 

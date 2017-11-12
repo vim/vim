@@ -570,6 +570,9 @@ CClink = $(CC)
 # This disables the dialog that asks you if you want to save files or not.
 #CONF_OPT_XSMP = --disable-xsmp-interact
 
+# If you want to always automatically add a servername, also in the terminal.
+#CONF_OPT_AUTOSERVE = --enable-autoservername
+
 # COMPILER - Name of the compiler {{{1
 # The default from configure will mostly be fine, no need to change this, just
 # an example. If a compiler is defined here, configure will use it rather than
@@ -1866,7 +1869,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
 		LDFLAGS="$(LDFLAGS)" $(CONF_SHELL) srcdir="$(srcdir)" \
 		./configure $(CONF_OPT_GUI) $(CONF_OPT_X) $(CONF_OPT_XSMP) \
-		$(CONF_OPT_DARWIN) $(CONF_OPT_FAIL) \
+		$(CONF_OPT_AUTOSERVE) $(CONF_OPT_DARWIN) $(CONF_OPT_FAIL) \
 		$(CONF_OPT_PERL) $(CONF_OPT_PYTHON) $(CONF_OPT_PYTHON3) \
 		$(CONF_OPT_TCL) $(CONF_OPT_RUBY) $(CONF_OPT_NLS) \
 		$(CONF_OPT_CSCOPE) $(CONF_OPT_MULTIBYTE) $(CONF_OPT_INPUT) \
