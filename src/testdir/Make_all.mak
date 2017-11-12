@@ -31,7 +31,6 @@ SCRIPTS_ALL = \
 	test95.out \
 	test99.out \
 	test108.out \
-	test_erasebackword.out \
 	test_eval.out \
 	test_wordcount.out
 
@@ -91,6 +90,7 @@ NEW_TESTS = test_arabic.res \
 	    test_digraph.res \
 	    test_display.res \
 	    test_edit.res \
+	    test_erasebackword.res \
 	    test_exists.res \
 	    test_farsi.res \
 	    test_file_size.res \

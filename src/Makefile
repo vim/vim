@@ -2097,7 +2097,6 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
 test1 \
-	test_erasebackword \
 	test_eval \
 	test_wordcount \
 	test3 test11 test14 test15 test17 \

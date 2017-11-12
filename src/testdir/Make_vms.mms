@@ -83,7 +83,6 @@ SCRIPT = test1.out test3.out \
        test94.out test95.out test99.out test108.out \
        test_autocmd_option.out \
        test_breakindent.out \
-       test_erasebackword.out \
        test_eval.out \
        test_listlbr.out \
        test_listlbr_utf8.out \
