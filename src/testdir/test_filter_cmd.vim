@@ -106,12 +106,18 @@ func Test_filter_commands()
   call assert_equal(["  helplang=en"], res)
 
   " Test filtering :llist command
-  call setloclist(0, [{"filename": "/path/vim.c"}, {"filename": "/path/vim.h"}])
+  call setloclist(0, [{"filename": "/path/vim.c"}, {"filename": "/path/vim.h"}, {"module": "Main.Test"}])
   redi => redi
   filter /\.c$/ llist
   redi END
   let res = split(redi, "\n")
   call assert_equal([" 1 /path/vim.c:  "], res)
+
+  redi => redi
+  filter /\.Test$/ llist
+  redi END
+  let res = split(redi, "\n")
+  call assert_equal([" 3 Main.Test:  "], res)
 
   " Test filtering :jump command
   e file.c
