@@ -9913,6 +9913,10 @@ showoptions(
 	item_count = 0;
 	for (p = &options[0]; p->fullname != NULL; p++)
 	{
+	    /* apply :filter /pat/ */
+	    if (message_filtered((char_u *) p->fullname))
+		continue;
+
 	    varp = NULL;
 	    isterm = istermoption(p);
 	    if (opt_flags != 0)

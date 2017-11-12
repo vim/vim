@@ -2596,55 +2596,61 @@ qf_list(exarg_T *eap)
     {
 	if ((qfp->qf_valid || all) && idx1 <= i && i <= idx2)
 	{
-	    msg_putchar('\n');
-	    if (got_int)
-		break;
-
 	    fname = NULL;
-	    if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
-		vim_snprintf((char *)IObuff, IOSIZE, "%2d %s", i, (char *)qfp->qf_module);
-	    else {
-		if (qfp->qf_fnum != 0
-				&& (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
-		{
-		    fname = buf->b_fname;
-		    if (qfp->qf_type == 1)	/* :helpgrep */
-			fname = gettail(fname);
-		}
-		if (fname == NULL)
-		    sprintf((char *)IObuff, "%2d", i);
-		else
-		    vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
-								i, (char *)fname);
-	    }
-	    msg_outtrans_attr(IObuff, i == qi->qf_lists[qi->qf_curlist].qf_index
-					   ? HL_ATTR(HLF_QFL) : HL_ATTR(HLF_D));
-	    if (qfp->qf_lnum == 0)
-		IObuff[0] = NUL;
-	    else if (qfp->qf_col == 0)
-		sprintf((char *)IObuff, ":%ld", qfp->qf_lnum);
-	    else
-		sprintf((char *)IObuff, ":%ld col %d",
-						   qfp->qf_lnum, qfp->qf_col);
-	    sprintf((char *)IObuff + STRLEN(IObuff), "%s:",
-				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
-	    msg_puts_attr(IObuff, HL_ATTR(HLF_N));
-	    if (qfp->qf_pattern != NULL)
+	    if (qfp->qf_fnum != 0
+			    && (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
 	    {
-		qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);
-		STRCAT(IObuff, ":");
-		msg_puts(IObuff);
+		fname = buf->b_fname;
+		if (qfp->qf_type == 1)	/* :helpgrep */
+		    fname = gettail(fname);
 	    }
-	    msg_puts((char_u *)" ");
+	    /* apply :filter /pat/ */
+	    if (cmdmod.filter_regmatch.regprog == NULL
+		    || (fname != NULL && !message_filtered(fname))
+		    || (qfp->qf_module != NULL && !message_filtered(qfp->qf_module)))
+	    {
+		msg_putchar('\n');
+		if (got_int)
+		    break;
 
-	    /* Remove newlines and leading whitespace from the text.  For an
-	     * unrecognized line keep the indent, the compiler may mark a word
-	     * with ^^^^. */
-	    qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
-				     ? skipwhite(qfp->qf_text) : qfp->qf_text,
-							      IObuff, IOSIZE);
-	    msg_prt_line(IObuff, FALSE);
-	    out_flush();		/* show one line at a time */
+		if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
+		    vim_snprintf((char *)IObuff, IOSIZE, "%2d %s", i, (char *)qfp->qf_module);
+		else {
+		    if (fname == NULL)
+			sprintf((char *)IObuff, "%2d", i);
+		    else
+			vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
+								    i, (char *)fname);
+		}
+		msg_outtrans_attr(IObuff, i == qi->qf_lists[qi->qf_curlist].qf_index
+					    ? HL_ATTR(HLF_QFL) : HL_ATTR(HLF_D));
+		if (qfp->qf_lnum == 0)
+		    IObuff[0] = NUL;
+		else if (qfp->qf_col == 0)
+		    sprintf((char *)IObuff, ":%ld", qfp->qf_lnum);
+		else
+		    sprintf((char *)IObuff, ":%ld col %d",
+						    qfp->qf_lnum, qfp->qf_col);
+		sprintf((char *)IObuff + STRLEN(IObuff), "%s:",
+				    (char *)qf_types(qfp->qf_type, qfp->qf_nr));
+		msg_puts_attr(IObuff, HL_ATTR(HLF_N));
+		if (qfp->qf_pattern != NULL)
+		{
+			qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);
+			STRCAT(IObuff, ":");
+			msg_puts(IObuff);
+		}
+		msg_puts((char_u *)" ");
+
+		/* Remove newlines and leading whitespace from the text.  For an
+		* unrecognized line keep the indent, the compiler may mark a word
+		* with ^^^^. */
+		qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
+					? skipwhite(qfp->qf_text) : qfp->qf_text,
+								IObuff, IOSIZE);
+		msg_prt_line(IObuff, FALSE);
+		out_flush();		/* show one line at a time */
+	    }
 	}
 
 	qfp = qfp->qf_next;

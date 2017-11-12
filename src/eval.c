@@ -1421,6 +1421,7 @@ list_hashtable_vars(
     hashitem_T	*hi;
     dictitem_T	*di;
     int		todo;
+    char_u	buf[IOSIZE];
 
     todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && !got_int; ++hi)
@@ -1429,6 +1430,13 @@ list_hashtable_vars(
 	{
 	    --todo;
 	    di = HI2DI(hi);
+
+	    /* apply :filter /pat/ to variable name */
+	    vim_strncpy((char_u *) buf, prefix, IOSIZE);
+	    vim_strcat((char_u *) buf, di->di_key, IOSIZE);
+	    if (message_filtered(buf))
+		continue;
+
 	    if (empty || di->di_tv.v_type != VAR_STRING
 					   || di->di_tv.vval.v_string != NULL)
 		list_one_var(di, prefix, first);
