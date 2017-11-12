@@ -5580,6 +5580,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_AUTOCMD
 	"autocmd",
 #endif
+#ifdef FEAT_AUTOSERVERNAME
+	"autoservername",
+#endif
 #ifdef FEAT_BEVAL
 	"balloon_eval",
 # ifndef FEAT_GUI_W32 /* other GUIs always have multiline balloons */

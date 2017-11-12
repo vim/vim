@@ -817,6 +817,7 @@ enable_workshop
 enable_netbeans
 enable_channel
 enable_terminal
+enable_autoservername
 enable_multibyte
 enable_hangulinput
 enable_xim
@@ -1495,6 +1496,7 @@ Optional Features:
   --disable-netbeans      Disable NetBeans integration support.
   --disable-channel       Disable process communication support.
   --enable-terminal       Enable terminal emulation support.
+  --enable-autoservername         Automatically define servername at vim startup.
   --enable-multibyte      Include multibyte editing support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
@@ -7513,6 +7515,22 @@ if test "$enable_terminal" = "yes"; then
   TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/screen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
 
   TERM_OBJ="objects/term_encoding.o objects/term_keyboard.o objects/term_mouse.o objects/term_parser.o objects/term_pen.o objects/term_screen.o objects/term_state.o objects/term_unicode.o objects/term_vterm.o"
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-autoservername argument" >&5
+$as_echo_n "checking --enable-autoservername argument... " >&6; }
+# Check whether --enable-autoservername was given.
+if test "${enable_autoservername+set}" = set; then :
+  enableval=$enable_autoservername;
+else
+  enable_autoservername="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_autoservername" >&5
+$as_echo "$enable_autoservername" >&6; }
+if test "$enable_autoservername" = "yes"; then
+  $as_echo "#define FEAT_AUTOSERVERNAME 1" >>confdefs.h
 
 fi
 
