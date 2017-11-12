@@ -20,6 +20,6 @@ func Test_erasebackword()
   exe "normal o wwwこんにちわ世界ワールドvim \<C-W>\<C-W>\<C-W>\<C-W>\<C-W>\<C-W>"
   call assert_equal('', getline('.'))
 
-  set encoding&
   enew!
+  set encoding&
 endfunc
