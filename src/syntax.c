@@ -9192,7 +9192,11 @@ highlight_list_one(int id)
     struct hl_group	*sgp;
     int			didh = FALSE;
 
+    /* msg_puts(sgp->sg_name); */
     sgp = &HL_TABLE()[id - 1];	    /* index is ID minus one */
+
+    if (message_filtered(sgp->sg_name))
+	return;
 
     didh = highlight_list_arg(id, didh, LIST_ATTR,
 				    sgp->sg_term, NULL, "term");
