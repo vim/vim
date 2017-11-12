@@ -2280,7 +2280,7 @@ findmatchlimit(
 	    {
 		/*
 		 * A comment may contain / * or / /, it may also start or end
-		 * with / * /.	Ignore a / * after / /.
+		 * with / * /.	Ignore a / * after / / and after *.
 		 */
 		if (pos.col == 0)
 		    continue;
@@ -2306,6 +2306,7 @@ findmatchlimit(
 		}
 		else if (  linep[pos.col - 1] == '/'
 			&& linep[pos.col] == '*'
+			&& (pos.col == 1 || linep[pos.col - 2] != '*')
 			&& (int)pos.col < comment_col)
 		{
 		    count++;

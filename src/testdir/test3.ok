@@ -2094,3 +2094,9 @@ JSEND
 	4
 /* end of define */
 
+
+{
+	a = second/*bug*/*line;
+	x
+}
+
