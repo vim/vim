@@ -1,9 +1,6 @@
 " Tests for 'listchars' display with 'list' and :list
 
-func GetScreenCharsForLine(lnum)
-  return join(map(range(1, virtcol('$')),
-        \ 'nr2char(screenchar(a:lnum, v:val))'), '')
-endfunc
+source view_util.vim
 
 func Test_listchars()
   enew!
@@ -28,7 +25,7 @@ func Test_listchars()
   redraw!
   for i in range(1, 5)
     call cursor(i, 1)
-    call assert_equal(expected[i - 1], GetScreenCharsForLine(i))
+    call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
   endfor
 
   set listchars-=trail:<
@@ -42,7 +39,7 @@ func Test_listchars()
   redraw!
   for i in range(1, 5)
     call cursor(i, 1)
-    call assert_equal(expected[i - 1], GetScreenCharsForLine(i))
+    call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
   endfor
 
   set listchars+=trail:<
