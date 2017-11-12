@@ -2099,7 +2099,6 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 test1 \
 	test_erasebackword \
 	test_eval \
-	test_listchars \
 	test_wordcount \
 	test3 test11 test14 test15 test17 \
 	test29 test30 test36 test37 test39 \

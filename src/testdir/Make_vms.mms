@@ -85,7 +85,6 @@ SCRIPT = test1.out test3.out \
        test_breakindent.out \
        test_erasebackword.out \
        test_eval.out \
-       test_listchars.out \
        test_listlbr.out \
        test_listlbr_utf8.out \
        test_utf8.out \

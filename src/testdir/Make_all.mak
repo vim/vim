@@ -33,7 +33,6 @@ SCRIPTS_ALL = \
 	test108.out \
 	test_erasebackword.out \
 	test_eval.out \
-	test_listchars.out \
 	test_wordcount.out
 
 
@@ -118,6 +117,7 @@ NEW_TESTS = test_arabic.res \
 	    test_langmap.res \
 	    test_let.res \
 	    test_lineending.res \
+	    test_listchars.res \
 	    test_listdict.res \
 	    test_listlbr.res \
 	    test_listlbr_utf8.res \
