@@ -556,7 +556,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			  |:list|	- filter whole line
 			  |:llist|	- filter by file name or module name
 			  |:oldfiles|	- filter by file name
-			  |:qflist|	- filter by file name or module name
+			  |:clist|	- filter by file name or module name
 			  |:set|	- filter by variable name
 
 			Only normal messages are filtered, error messages are
