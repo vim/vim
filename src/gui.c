@@ -1118,6 +1118,8 @@ gui_update_cursor(
 	gui_mch_set_blinking(shape->blinkwait,
 			     shape->blinkon,
 			     shape->blinkoff);
+	if (shape->blinkoff == 0 || shape->blinkon == 0 || shape->blinkoff == 0)
+	    gui_mch_stop_blink();
 #ifdef FEAT_TERMINAL
 	if (shape_bg != INVALCOLOR)
 	{
