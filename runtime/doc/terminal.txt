@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Nov 09
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Nov 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -60,7 +60,7 @@ the job.  This uses a pty when possible.  You can click outside of the
 terminal window to move keyboard focus elsewhere.
 
 CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
-	CTRL-W CTRL-W 	move focus to the next window
+	CTRL-W CTRL-W	move focus to the next window
 	CTRL-W :	enter an Ex command
 See |CTRL-W| for more commands.
 
@@ -80,7 +80,7 @@ the job.  For example:
 	'termkey' :	    enter an Ex command
 	'termkey' 'termkey' send 'termkey' to the job in the terminal
 	'termkey' .	    send a CTRL-W to the job in the terminal
-	'termkey' N  	    go to terminal Normal mode, see below
+	'termkey' N	    go to terminal Normal mode, see below
 	'termkey' CTRL-N    same as CTRL-W N
 	'termkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
 							*t_CTRL-\_CTRL-N*
@@ -286,10 +286,10 @@ both Vim and xterm recognize will be available in the terminal window.  If you
 want to pass on other escape sequences to the job running in the terminal you
 need to set up forwarding.  Example: >
 	tmap <expr> <Esc>]b SendToTerm("\<Esc>]b")
- 	func SendToTerm(what)
- 	  call term_sendkeys('', a:what)
- 	  return ''
- 	endfunc
+	func SendToTerm(what)
+	  call term_sendkeys('', a:what)
+	  return ''
+	endfunc
 
 
 Unix ~
@@ -447,29 +447,35 @@ a deeper level.
 Stepping through code ~
 							*termdebug-stepping*
 Put focus on the gdb window to type commands there.  Some common ones are:
-- CTRL-C    interrupt the program
-- next      execute the current line and stop at the next line
-- step      execute the current line and stop at the next statement, entering
-	    functions
-- finish    execute until leaving the current function
-- where     show the stack
-- frame N   go to the Nth stack frame
-- continue  continue execution
+- CTRL-C	interrupt the program
+- next		execute the current line and stop at the next line
+- step		execute the current line and stop at the next statement,
+		entering functions
+- finish	execute until leaving the current function
+- where		show the stack
+- frame N	go to the Nth stack frame
+- continue	continue execution
 
-In the window showing the source code some commands can used to control gdb:
- :Break     set a breakpoint at the current line; a sign will be displayed
- :Delete    delete a breakpoint at the current line
- :Step	    execute the gdb "step" command
- :Over      execute the gdb "next" command (:Next is a Vim command)
- :Finish    execute the gdb "finish" command
- :Continue  execute the gdb "continue" command
+In the window showing the source code these commands can used to control gdb:
+ :Run [args]	    run the program with [args] or the previous arguments
+ :Arguments {args}  set arguments for the next :Run
+
+ :Break		set a breakpoint at the current line; a sign will be displayed
+ :Delete	delete a breakpoint at the current line
+
+ :Step		execute the gdb "step" command
+ :Over 		execute the gdb "next" command (:Next is a Vim command)
+ :Finish	execute the gdb "finish" command
+ :Continue	execute the gdb "continue" command
+ :Stop		interrupt the program
 
 The plugin adds a window toolbar with these entries:
-  Step	    :Step
-  Next	    :Over
-  Finish    :Finish
-  Cont	    :Continue
-  Eval	    :Evaluate
+  Step		:Step
+  Next		:Over
+  Finish	:Finish
+  Cont		:Continue
+  Stop		:Stop
+  Eval		:Evaluate
 This way you can use the mouse to perform the most common commands.
 
 

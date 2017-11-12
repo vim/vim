@@ -20,6 +20,9 @@ if exists(':Termdebug')
   finish
 endif
 
+" Uncomment this line to write logging in "debuglog".
+" call ch_logfile('debuglog', 'w')
+
 " The command that starts debugging, e.g. ":Termdebug vim".
 " To end type "quit" in the gdb window.
 command -nargs=* -complete=file Termdebug call s:StartDebug(<q-args>)
@@ -31,6 +34,7 @@ endif
 
 let s:pc_id = 12
 let s:break_id = 13
+let s:stopped = 1
 
 if &background == 'light'
   hi default debugPC term=reverse ctermbg=lightblue guibg=lightblue
@@ -83,11 +87,11 @@ func s:StartDebug(cmd)
   " Add -quiet to avoid the intro message causing a hit-enter prompt.
   let cmd = [g:termdebugger, '-quiet', '-tty', pty, a:cmd]
   echomsg 'executing "' . join(cmd) . '"'
-  let gdbbuf = term_start(cmd, {
+  let s:gdbbuf = term_start(cmd, {
 	\ 'exit_cb': function('s:EndDebug'),
 	\ 'term_finish': 'close',
 	\ })
-  if gdbbuf == 0
+  if s:gdbbuf == 0
     echoerr 'Failed to open the gdb terminal window'
     exe 'bwipe! ' . s:ptybuf
     exe 'bwipe! ' . s:commbuf
@@ -97,7 +101,12 @@ func s:StartDebug(cmd)
 
   " Connect gdb to the communication pty, using the GDB/MI interface
   " If you get an error "undefined command" your GDB is too old.
-  call term_sendkeys(gdbbuf, 'new-ui mi ' . commpty . "\r")
+  call term_sendkeys(s:gdbbuf, 'new-ui mi ' . commpty . "\r")
+
+  " Interpret commands while the target is running.  This should usualy only be
+  " exec-interrupt, since many commands don't work properly while the target is
+  " running.
+  call s:SendCommand('-gdb-set mi-async on')
 
   " Sign used to highlight the line where the program has stopped.
   " There can be only one.
@@ -170,6 +179,9 @@ func s:InstallCommands()
   command Step call s:SendCommand('-exec-step')
   command Over call s:SendCommand('-exec-next')
   command Finish call s:SendCommand('-exec-finish')
+  command -nargs=* Run call s:Run(<q-args>)
+  command -nargs=* Arguments call s:SendCommand('-exec-arguments ' . <q-args>)
+  command Stop call s:SendCommand('-exec-interrupt')
   command Continue call s:SendCommand('-exec-continue')
   command -range -nargs=* Evaluate call s:Evaluate(<range>, <q-args>)
   command Gdb call win_gotoid(s:gdbwin)
@@ -183,6 +195,7 @@ func s:InstallCommands()
     nnoremenu WinBar.Next :Over<CR>
     nnoremenu WinBar.Finish :Finish<CR>
     nnoremenu WinBar.Cont :Continue<CR>
+    nnoremenu WinBar.Stop :Stop<CR>
     nnoremenu WinBar.Eval :Evaluate<CR>
   endif
 endfunc
@@ -194,6 +207,9 @@ func s:DeleteCommands()
   delcommand Step
   delcommand Over
   delcommand Finish
+  delcommand Run
+  delcommand Arguments
+  delcommand Stop
   delcommand Continue
   delcommand Evaluate
   delcommand Gdb
@@ -206,6 +222,7 @@ func s:DeleteCommands()
     aunmenu WinBar.Next
     aunmenu WinBar.Finish
     aunmenu WinBar.Cont
+    aunmenu WinBar.Stop
     aunmenu WinBar.Eval
   endif
 
@@ -220,8 +237,19 @@ endfunc
 
 " :Break - Set a breakpoint at the cursor position.
 func s:SetBreakpoint()
-  call term_sendkeys(s:commbuf, '-break-insert --source '
-	\ . fnameescape(expand('%:p')) . ' --line ' . line('.') . "\r")
+  " Setting a breakpoint may not work while the program is running.
+  " Interrupt to make it work.
+  let do_continue = 0
+  if !s:stopped
+    let do_continue = 1
+    call s:SendCommand('-exec-interrupt')
+    sleep 10m
+  endif
+  call s:SendCommand('-break-insert --source '
+	\ . fnameescape(expand('%:p')) . ' --line ' . line('.'))
+  if do_continue
+    call s:SendCommand('-exec-continue')
+  endif
 endfunc
 
 " :Delete - Delete a breakpoint at the cursor position.
@@ -244,6 +272,13 @@ func s:SendCommand(cmd)
   call term_sendkeys(s:commbuf, a:cmd . "\r")
 endfunc
 
+func s:Run(args)
+  if a:args != ''
+    call s:SendCommand('-exec-arguments ' . a:args)
+  endif
+  call s:SendCommand('-exec-run')
+endfunc
+
 " :Evaluate - evaluate what is under the cursor
 func s:Evaluate(range, arg)
   if a:arg != ''
@@ -259,7 +294,7 @@ func s:Evaluate(range, arg)
   else
     let expr = expand('<cexpr>')
   endif
-  call term_sendkeys(s:commbuf, '-data-evaluate-expression "' . expr . "\"\r")
+  call s:SendCommand('-data-evaluate-expression "' . expr . '"')
   let s:evalexpr = expr
 endfunc
 
@@ -285,6 +320,12 @@ endfunc
 " Will update the sign that shows the current position.
 func s:HandleCursor(msg)
   let wid = win_getid(winnr())
+
+  if a:msg =~ '^\*stopped'
+    let s:stopped = 1
+  elseif a:msg =~ '^\*running'
+    let s:stopped = 0
+  endif
 
   if win_gotoid(s:startwin)
     let fname = substitute(a:msg, '.*fullname="\([^"]*\)".*', '\1', '')
