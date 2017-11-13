@@ -546,6 +546,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			the output, not necessarily the whole line. The
 			following commands support filtering:
 			  |:#|		- filter whole line
+			  |:clist|	- filter by file name or module name
 			  |:command|	- filter by command name
 			  |:files|	- filter by file name
 			  |:highlight|	- filter by highlight group
@@ -553,9 +554,12 @@ N  *+X11*		Unix only: can restore window title |X11|
 			  |:let|	- filter by variable name
 			  |:list|	- filter whole line
 			  |:llist|	- filter by file name or module name
+			  |:map|	- filter by key map or map expression
+			  |:number|	- filter whole line
 			  |:oldfiles|	- filter by file name
-			  |:clist|	- filter by file name or module name
+			  |:print|	- filter whole line
 			  |:set|	- filter by variable name
+			  |:z|		- fiter whole line
 
 			Only normal messages are filtered, error messages are
 			not.
