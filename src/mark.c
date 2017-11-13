@@ -908,7 +908,9 @@ ex_jumps(exarg_T *eap UNUSED)
 	    if (curwin->w_jumplist[i].fmark.fnum == 0)
 		fname2fnum(&curwin->w_jumplist[i]);
 	    name = fm_getname(&curwin->w_jumplist[i].fmark, 16);
-	    if (name == NULL)	    /* file name not available */
+
+	    /* apply :filter /pat/ or file name not available */
+	    if (name == NULL || message_filtered(name))
 		continue;
 
 	    msg_putchar('\n');
