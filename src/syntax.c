@@ -8474,6 +8474,24 @@ set_normal_colors(void)
 		cterm_normal_bg_gui_color = HL_TABLE()[idx].sg_gui_bg;
 		must_redraw = CLEAR;
 	    }
+	    else if (p_tgc && !gui.in_use)
+	    {
+		/* Now that "... .sg_gui_bg == INVALCOLOR" holds as well as
+		 * the conditions of the else-if statement above, it is highly
+		 * likely that ":hi Normal guibg=NONE" has been invoked by the
+		 * user running termguicolors-enabled Vim on terminal to get
+		 * the translucent background.  Honor it. */
+		if (HL_TABLE()[idx].sg_gui_bg_name)
+		{
+		    /* Update sg_gui_bg_name accordingly in case it still
+		     * holds the previous value, so that it will be consistent
+		     * with the current state of sg_gui_bg. */
+		    vim_free(HL_TABLE()[idx].sg_gui_bg_name);
+		    HL_TABLE()[idx].sg_gui_bg_name = NULL;
+		}
+		cterm_normal_bg_gui_color = INVALCOLOR;
+		must_redraw = CLEAR;
+	    }
 	}
     }
 #endif
