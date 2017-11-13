@@ -1124,3 +1124,21 @@ func Test_Filter_noshelltemp()
   let &shelltemp = shelltemp
   bwipe!
 endfunc
+
+func Test_TextYankPost()
+  enew!
+  call setline(1, ['foo'])
+
+  let g:accum = []
+  au TextYankPost * let g:accum += [v:operator, v:register]
+
+  norm "ayiw
+  norm "bdiw
+  norm "cciw
+
+  call assert_equal(['y','a','d','b','c','c'], g:accum)
+  unlet g:accum
+
+  au! TextYankPost
+  bwipe!
+endfunc

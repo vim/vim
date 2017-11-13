@@ -1645,6 +1645,21 @@ shift_delete_registers()
     y_regs[1].y_array = NULL;		/* set register one to empty */
 }
 
+    static void
+yank_do_autocmd(void)
+{
+    static int	recursive = FALSE;
+
+    if (recursive)
+	return;
+
+    recursive = TRUE;
+    textlock++;
+    apply_autocmds(EVENT_TEXTYANKPOST, NULL, NULL, FALSE, curbuf);
+    textlock--;
+    recursive = FALSE;
+}
+
 /*
  * Handle a delete operation.
  *
@@ -1798,6 +1813,11 @@ op_delete(oparg_T *oap)
 		return FAIL;
 	    }
 	}
+
+#ifdef FEAT_AUTOCMD
+	if (did_yank && has_textyankpost())
+	    yank_do_autocmd();
+#endif
     }
 
     /*
@@ -3268,6 +3288,11 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	}
     }
 # endif
+#endif
+
+#ifdef FEAT_AUTOCMD
+    if (!deleting && has_textyankpost())
+	yank_do_autocmd();
 #endif
 
     return OK;

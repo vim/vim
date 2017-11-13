@@ -1343,6 +1343,7 @@ enum auto_event
     EVENT_TEXTCHANGEDI,		/* text was modified in Insert mode*/
     EVENT_CMDUNDEFINED,		/* command undefined */
     EVENT_OPTIONSET,		/* option was set */
+    EVENT_TEXTYANKPOST,		/* after some text was yanked */
     NUM_EVENTS			/* MUST be the last one */
 };
 
