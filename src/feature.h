@@ -1172,7 +1172,13 @@
  *			when --servername is not passed on the command line.
  */
 #if defined(FEAT_CLIENTSERVER) && !defined(FEAT_AUTOSERVERNAME)
+# ifdef WIN3264
+    /* Always enabled on MS-Windows. */
+#  define FEAT_AUTOSERVERNAME
+# else
+    /* Enable here if you don't use configure. */
 /* # define FEAT_AUTOSERVERNAME */
+# endif
 #endif
 
 /*
