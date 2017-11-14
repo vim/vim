@@ -135,6 +135,7 @@ SRC_ALL =	\
 		src/testdir/bench*.in \
 		src/testdir/bench*.vim \
 		src/testdir/samples/*.txt \
+		src/testdir/samples/test000 \
 		src/testdir/if_ver*.vim \
 		src/testdir/xterm_ramp.vim \
 		src/proto.h \
