@@ -1649,9 +1649,14 @@ shift_delete_registers()
 yank_do_autocmd(void)
 {
     static int	recursive = FALSE;
+    dict_T	*v_event;
+    list_T	*list;
 
     if (recursive)
 	return;
+
+    v_event = get_vim_var_dict(VV_EVENT);
+    list = list_alloc();
 
     recursive = TRUE;
     textlock++;

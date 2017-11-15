@@ -192,6 +192,7 @@ static struct vimvar
     {VV_NAME("termu7resp",	 VAR_STRING), VV_RO},
     {VV_NAME("termstyleresp",	VAR_STRING), VV_RO},
     {VV_NAME("termblinkresp",	VAR_STRING), VV_RO},
+    {VV_NAME("event",		VAR_DICT), VV_RO},
 };
 
 /* shorthand */
@@ -321,6 +322,7 @@ eval_init(void)
     set_vim_var_nr(VV_HLSEARCH, 1L);
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc());
     set_vim_var_list(VV_ERRORS, list_alloc());
+    set_vim_var_dict(VV_EVENT, dict_alloc());
 
     set_vim_var_nr(VV_FALSE, VVAL_FALSE);
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);
@@ -6625,6 +6627,16 @@ get_vim_var_str(int idx)
 get_vim_var_list(int idx)
 {
     return vimvars[idx].vv_list;
+}
+
+/*
+ * Get Dict v: variable value.  Caller must take care of reference count when
+ * needed.
+ */
+    dict_T *
+get_vim_var_dict(int idx)
+{
+    return vimvars[idx].vv_dict;
 }
 
 /*
