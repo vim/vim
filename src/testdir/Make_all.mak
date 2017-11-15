@@ -24,20 +24,14 @@ SCRIPTS_ALL = \
 	test44.out \
 	test48.out \
 	test64.out \
-	test68.out \
 	test69.out \
 	test70.out \
-	test73.out \
 	test88.out \
 	test94.out \
 	test95.out \
 	test99.out \
 	test108.out \
-	test_close_count.out \
-	test_erasebackword.out \
 	test_eval.out \
-	test_fixeol.out \
-	test_listchars.out \
 	test_wordcount.out
 
 
@@ -86,6 +80,7 @@ NEW_TESTS = test_arabic.res \
 	    test_charsearch.res \
 	    test_cindent.res \
 	    test_clientserver.res \
+	    test_close_count.res \
 	    test_cmdline.res \
 	    test_command_count.res \
 	    test_crypt.res \
@@ -95,9 +90,12 @@ NEW_TESTS = test_arabic.res \
 	    test_digraph.res \
 	    test_display.res \
 	    test_edit.res \
+	    test_erasebackword.res \
 	    test_exists.res \
 	    test_farsi.res \
 	    test_file_size.res \
+	    test_find_complete.res \
+	    test_fixeol.res \
 	    test_fnameescape.res \
 	    test_fold.res \
 	    test_getvar.res \
@@ -119,6 +117,7 @@ NEW_TESTS = test_arabic.res \
 	    test_langmap.res \
 	    test_let.res \
 	    test_lineending.res \
+	    test_listchars.res \
 	    test_listdict.res \
 	    test_listlbr.res \
 	    test_listlbr_utf8.res \
