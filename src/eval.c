@@ -286,6 +286,7 @@ eval_init(void)
 {
     int		    i;
     struct vimvar   *p;
+    dict_T	    *d;
 
     init_var_dict(&globvardict, &globvars_var, VAR_DEF_SCOPE);
     init_var_dict(&vimvardict, &vimvars_var, VAR_SCOPE);
@@ -322,7 +323,7 @@ eval_init(void)
     set_vim_var_nr(VV_HLSEARCH, 1L);
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc());
     set_vim_var_list(VV_ERRORS, list_alloc());
-    set_vim_var_dict(VV_EVENT, dict_alloc());
+    set_vim_var_dict(VV_EVENT, dict_alloc_lock(VAR_FIXED));
 
     set_vim_var_nr(VV_FALSE, VVAL_FALSE);
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);
@@ -6713,25 +6714,13 @@ set_vim_var_list(int idx, list_T *val)
     void
 set_vim_var_dict(int idx, dict_T *val)
 {
-    int		todo;
-    hashitem_T	*hi;
-
     clear_tv(&vimvars[idx].vv_di.di_tv);
     vimvars[idx].vv_type = VAR_DICT;
     vimvars[idx].vv_dict = val;
     if (val != NULL)
     {
 	++val->dv_refcount;
-
-	/* Set readonly */
-	todo = (int)val->dv_hashtab.ht_used;
-	for (hi = val->dv_hashtab.ht_array; todo > 0 ; ++hi)
-	{
-	    if (HASHITEM_EMPTY(hi))
-		continue;
-	    --todo;
-	    HI2DI(hi)->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
-	}
+	dict_set_ro_keys(val);
     }
 }
 

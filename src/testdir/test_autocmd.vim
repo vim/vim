@@ -1129,16 +1129,37 @@ func Test_TextYankPost()
   enew!
   call setline(1, ['foo'])
 
-  let g:accum = []
-  au TextYankPost * let g:accum += [v:operator, v:register]
+  let g:event = []
+  au TextYankPost * let g:event = copy(v:event)
+
+  call assert_equal({}, v:event)
+  call assert_fails('let v:event = {}', 'E46:')
+  call assert_fails('let v:event.mykey = 0', 'E742:')
 
   norm "ayiw
+  call assert_equal(
+    \{'regcontents': ['foo'], 'regname': 'a', 'operator': 'y', 'regtype': 'v'},
+    \g:event)
+  norm y_
+  call assert_equal(
+    \{'regcontents': ['foo'], 'regname': '',  'operator': 'y', 'regtype': 'V'},
+    \g:event)
+  call feedkeys("\<C-V>y", 'x')
+  call assert_equal(
+    \{'regcontents': ['f'], 'regname': '',  'operator': 'y', 'regtype': "\x161"},
+    \g:event)
+  norm "xciwbar
+  call assert_equal(
+    \{'regcontents': ['foo'], 'regname': 'x', 'operator': 'c', 'regtype': 'v'},
+    \g:event)
   norm "bdiw
-  norm "cciw
+  call assert_equal(
+    \{'regcontents': ['bar'], 'regname': 'b', 'operator': 'd', 'regtype': 'v'},
+    \g:event)
 
-  call assert_equal(['y','a','d','b','c','c'], g:accum)
-  unlet g:accum
+  call assert_equal({}, v:event)
 
   au! TextYankPost
+  unlet g:event
   bwipe!
 endfunc
