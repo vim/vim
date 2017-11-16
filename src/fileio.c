@@ -4771,7 +4771,7 @@ restore_backup:
 	 */
 	if (p_fs && fsync(fd) != 0 && !device)
 	{
-	    errmsg = (char_u *)_("E667: Fsync failed");
+	    errmsg = (char_u *)_(e_fsync);
 	    end = 0;
 	}
 #endif

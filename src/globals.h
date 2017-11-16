@@ -1449,6 +1449,9 @@ EXTERN char_u e_isadir2[]	INIT(= N_("E17: \"%s\" is a directory"));
 #ifdef FEAT_LIBCALL
 EXTERN char_u e_libcall[]	INIT(= N_("E364: Library call failed for \"%s()\""));
 #endif
+#ifdef HAVE_FSYNC
+EXTERN char_u e_fsync[]		INIT(= N_("E667: Fsync failed"));
+#endif
 #if defined(DYNAMIC_PERL) \
 	|| defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3) \
 	|| defined(DYNAMIC_RUBY) \

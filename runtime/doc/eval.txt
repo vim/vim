@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Oct 28
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Nov 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8721,7 +8721,7 @@ winwidth({nr})						*winwidth()*
 		Examples: >
   :echo "The current window has " . winwidth(0) . " columns."
   :if winwidth(0) <= 50
-  :  exe "normal 50\<C-W>|"
+  :  50 wincmd |
   :endif
 <		For getting the terminal or screen size, see the 'columns'
 		option.
@@ -8762,8 +8762,17 @@ writefile({list}, {fname} [, {flags}])
 		appended to the file: >
 			:call writefile(["foo"], "event.log", "a")
 			:call writefile(["bar"], "event.log", "a")
+<
+		When {flags} contains "s" then fsync() is called after writing
+		the file.  This flushes the file to disk, if possible.  This
+		takes more time but avoids losing the file if the system
+		crashes.
+		When {flags} does not contain "S" or "s" then fsync is called
+		if the 'fsync' option is set.
+		When {flags} contains "S" then fsync() is not called, even
+		when 'fsync' is set.
 
-<		All NL characters are replaced with a NUL character.
+		All NL characters are replaced with a NUL character.
 		Inserting CR characters needs to be done before passing {list}
 		to writefile().
 		An existing file is overwritten, if possible.
