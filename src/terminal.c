@@ -40,7 +40,6 @@
  * TODO:
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
- * - double click in Window toolbar starts Visual mode (but not always?).
  * - Shift-Tab does not work.
  * - after resizing windows overlap. (Boris Staletic, #2164)
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
@@ -732,7 +731,7 @@ term_convert_key(term_T *term, int c, char *buf)
     VTerm	    *vterm = term->tl_vterm;
     VTermKey	    key = VTERM_KEY_NONE;
     VTermModifier   mod = VTERM_MOD_NONE;
-    int		    mouse = FALSE;
+    int		    other = FALSE;
 
     switch (c)
     {
@@ -809,22 +808,22 @@ term_convert_key(term_T *term, int c, char *buf)
 				key = VTERM_KEY_UP; break;
 	case TAB:		key = VTERM_KEY_TAB; break;
 
-	case K_MOUSEUP:		mouse = term_send_mouse(vterm, 5, 1); break;
-	case K_MOUSEDOWN:	mouse = term_send_mouse(vterm, 4, 1); break;
+	case K_MOUSEUP:		other = term_send_mouse(vterm, 5, 1); break;
+	case K_MOUSEDOWN:	other = term_send_mouse(vterm, 4, 1); break;
 	case K_MOUSELEFT:	/* TODO */ return 0;
 	case K_MOUSERIGHT:	/* TODO */ return 0;
 
 	case K_LEFTMOUSE:
-	case K_LEFTMOUSE_NM:	mouse = term_send_mouse(vterm, 1, 1); break;
-	case K_LEFTDRAG:	mouse = term_send_mouse(vterm, 1, 1); break;
+	case K_LEFTMOUSE_NM:	other = term_send_mouse(vterm, 1, 1); break;
+	case K_LEFTDRAG:	other = term_send_mouse(vterm, 1, 1); break;
 	case K_LEFTRELEASE:
-	case K_LEFTRELEASE_NM:	mouse = term_send_mouse(vterm, 1, 0); break;
-	case K_MIDDLEMOUSE:	mouse = term_send_mouse(vterm, 2, 1); break;
-	case K_MIDDLEDRAG:	mouse = term_send_mouse(vterm, 2, 1); break;
-	case K_MIDDLERELEASE:	mouse = term_send_mouse(vterm, 2, 0); break;
-	case K_RIGHTMOUSE:	mouse = term_send_mouse(vterm, 3, 1); break;
-	case K_RIGHTDRAG:	mouse = term_send_mouse(vterm, 3, 1); break;
-	case K_RIGHTRELEASE:	mouse = term_send_mouse(vterm, 3, 0); break;
+	case K_LEFTRELEASE_NM:	other = term_send_mouse(vterm, 1, 0); break;
+	case K_MIDDLEMOUSE:	other = term_send_mouse(vterm, 2, 1); break;
+	case K_MIDDLEDRAG:	other = term_send_mouse(vterm, 2, 1); break;
+	case K_MIDDLERELEASE:	other = term_send_mouse(vterm, 2, 0); break;
+	case K_RIGHTMOUSE:	other = term_send_mouse(vterm, 3, 1); break;
+	case K_RIGHTDRAG:	other = term_send_mouse(vterm, 3, 1); break;
+	case K_RIGHTRELEASE:	other = term_send_mouse(vterm, 3, 0); break;
 	case K_X1MOUSE:		/* TODO */ return 0;
 	case K_X1DRAG:		/* TODO */ return 0;
 	case K_X1RELEASE:	/* TODO */ return 0;
@@ -858,8 +857,12 @@ term_convert_key(term_T *term, int c, char *buf)
 #ifdef FEAT_AUTOCMD
 	case K_CURSORHOLD:	return 0;
 #endif
-	case K_PS:		vterm_keyboard_start_paste(vterm); return 0;
-	case K_PE:		vterm_keyboard_end_paste(vterm); return 0;
+	case K_PS:		vterm_keyboard_start_paste(vterm);
+				other = TRUE;
+				break;
+	case K_PE:		vterm_keyboard_end_paste(vterm);
+				other = TRUE;
+				break;
     }
 
     /*
@@ -871,7 +874,7 @@ term_convert_key(term_T *term, int c, char *buf)
     if (key != VTERM_KEY_NONE)
 	/* Special key, let vterm convert it. */
 	vterm_keyboard_key(vterm, key, mod);
-    else if (!mouse)
+    else if (!other)
 	/* Normal character, let vterm convert it. */
 	vterm_keyboard_unichar(vterm, c, mod);
 
