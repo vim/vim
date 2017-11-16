@@ -858,8 +858,10 @@ term_convert_key(term_T *term, int c, char *buf)
 #ifdef FEAT_AUTOCMD
 	case K_CURSORHOLD:	return 0;
 #endif
-	case K_PS:		vterm_keyboard_start_paste(vterm); return 0;
-	case K_PE:		vterm_keyboard_end_paste(vterm); return 0;
+	case K_PS:		vterm_keyboard_start_paste(vterm);
+				mouse = TRUE; break;
+	case K_PE:		vterm_keyboard_end_paste(vterm);
+				mouse = TRUE; break;
     }
 
     /*
