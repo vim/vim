@@ -103,6 +103,10 @@ func RunTheTest(test)
   " buffers.
   %bwipe!
 
+  " The test may change the current directory. Save and restore the
+  " directory after executing the test.
+  let save_cwd = getcwd()
+
   if exists("*SetUp")
     try
       call SetUp()
@@ -157,6 +161,8 @@ func RunTheTest(test)
       break
     endif
   endwhile
+
+  exe 'cd ' . save_cwd
 endfunc
 
 func AfterTheTest()
