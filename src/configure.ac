@@ -3655,13 +3655,13 @@ fi
 
 dnl Check for functions in one big call, to reduce the size of configure.
 dnl Can only be used for functions that do not require any include.
-AC_CHECK_FUNCS(fchdir fchown fsync getcwd getpseudotty \
+AC_CHECK_FUNCS(fchdir fchown fchmod fsync getcwd getpseudotty \
 	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
-	usleep utime utimes mblen)
+	usleep utime utimes mblen ftruncate)
 AC_FUNC_FSEEKO
 
 dnl define _LARGE_FILES, _FILE_OFFSET_BITS and _LARGEFILE_SOURCE when

@@ -12090,13 +12090,13 @@ if test "x$vim_cv_getcwd_broken" = "xyes" ; then
 
 fi
 
-for ac_func in fchdir fchown fsync getcwd getpseudotty \
+for ac_func in fchdir fchown fchmod fsync getcwd getpseudotty \
 	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
-	usleep utime utimes mblen
+	usleep utime utimes mblen ftruncate
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
