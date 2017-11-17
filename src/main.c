@@ -1871,6 +1871,7 @@ command_line_scan(mparm_T *parmp)
 				/* "--literal" take files literally */
 				/* "--nofork" don't fork */
 				/* "--not-a-term" don't warn for not a term */
+				/* "--read-stdin" read from stdin without a warning */
 				/* "--ttyfail" exit if not a term */
 				/* "--noplugin[s]" skip plugins */
 				/* "--cmd <cmd>" execute cmd before vimrc */
@@ -1906,6 +1907,19 @@ command_line_scan(mparm_T *parmp)
 		    p_lpl = FALSE;
 		else if (STRNICMP(argv[0] + argv_idx, "not-a-term", 10) == 0)
 		    parmp->not_a_term = TRUE;
+		else if (STRNICMP(argv[0] + argv_idx, "read-stdin", 10) == 0)
+		{
+		    set_option_value((char_u *)"silentstdin", 1L, NULL, 0);
+		    if (exmode_active)
+		      silent_mode = TRUE;
+		    else
+		    {
+			if (parmp->edit_type != EDIT_NONE)
+			    mainerr(ME_TOO_MANY_ARGS, (char_u *)argv[0]);
+	                parmp->edit_type = EDIT_STDIN;
+		        read_cmd_fd = 2;    /* read from stderr instead of stdin */
+	            }
+		}
 		else if (STRNICMP(argv[0] + argv_idx, "ttyfail", 7) == 0)
 		    parmp->tty_fail = TRUE;
 		else if (STRNICMP(argv[0] + argv_idx, "cmd", 3) == 0)

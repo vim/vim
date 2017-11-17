@@ -315,6 +315,13 @@ readfile(
     int		using_b_fname;
 #endif
 
+#ifndef ALWAYS_USE_GUI
+    long qstdin;
+#if defined(FEAT_NORMAL) || defined(FEAT_BIG) || defined(FEAT_HUGE)
+    get_option_value((char_u *)"silentstdin", &qstdin, NULL, 0);
+#endif /* FEAT_NORMAL+ */
+#endif /* ALWAYS_USE_GUI */
+
 #ifdef FEAT_AUTOCMD
     au_did_filetype = FALSE; /* reset before triggering any autocommands */
 #endif
@@ -850,7 +857,9 @@ readfile(
 	if (read_stdin)
 	{
 #ifndef ALWAYS_USE_GUI
-	    mch_msg(_("Vim: Reading from stdin...\n"));
+	    if (!qstdin) {
+	        mch_errmsg(_("Vim: Reading from stdin...\n"));
+	    }
 #endif
 #ifdef FEAT_GUI
 	    /* Also write a message in the GUI window, if there is one. */
@@ -2471,7 +2480,7 @@ failed:
 	 * the screen will have been messed up.
 	 * Switch on raw mode now and clear the screen.
 	 */
-	if (read_stdin)
+	if ((read_stdin) && (!qstdin))
 	{
 	    settmode(TMODE_RAW);	/* set to raw mode */
 	    starttermcap();
