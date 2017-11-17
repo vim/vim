@@ -4517,7 +4517,7 @@ restore_backup:
 #endif
 #ifdef HAVE_FTRUNCATE
 	    if (!append)
-		ftruncate(fd, (off_t)0);
+		ignored = ftruncate(fd, (off_t)0);
 #endif
 
 #if defined(WIN3264)
