@@ -849,17 +849,20 @@ readfile(
 	 */
 	if (read_stdin)
 	{
+	    if (!is_not_a_term())
+	    {
 #ifndef ALWAYS_USE_GUI
-	    mch_msg(_("Vim: Reading from stdin...\n"));
+		mch_msg(_("Vim: Reading from stdin...\n"));
 #endif
 #ifdef FEAT_GUI
-	    /* Also write a message in the GUI window, if there is one. */
-	    if (gui.in_use && !gui.dying && !gui.starting)
-	    {
-		p = (char_u *)_("Reading from stdin...");
-		gui_write(p, (int)STRLEN(p));
-	    }
+		/* Also write a message in the GUI window, if there is one. */
+		if (gui.in_use && !gui.dying && !gui.starting)
+		{
+		    p = (char_u *)_("Reading from stdin...");
+		    gui_write(p, (int)STRLEN(p));
+		}
 #endif
+	    }
 	}
 	else if (!read_buffer)
 	    filemess(curbuf, sfname, (char_u *)"", 0);
