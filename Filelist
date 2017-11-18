@@ -12,6 +12,8 @@ SRC_ALL =	\
 		src/arabic.c \
 		src/arabic.h \
 		src/ascii.h \
+		src/beval.c \
+		src/beval.h \
 		src/blowfish.c \
 		src/buffer.c \
 		src/channel.c \
@@ -41,7 +43,6 @@ SRC_ALL =	\
 		src/gui.c \
 		src/gui.h \
 		src/gui_beval.c \
-		src/gui_beval.h \
 		src/hardcopy.c \
 		src/hashtab.c \
 		src/json.c \

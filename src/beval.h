@@ -7,8 +7,8 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
-#if !defined(GUI_BEVAL_H) && (defined(FEAT_BEVAL) || defined(PROTO))
-#define GUI_BEVAL_H
+#if !defined(BEVAL__H) && (defined(FEAT_BEVAL) || defined(PROTO))
+#define BEVAL__H
 
 #ifdef FEAT_GUI_GTK
 # ifdef USE_GTK3
@@ -75,6 +75,9 @@ typedef struct BalloonEvalStruct
 #define EVAL_OFFSET_X 15 /* displacement of beval topleft corner from pointer */
 #define EVAL_OFFSET_Y 10
 
-#include "gui_beval.pro"
+#include "beval.pro"
+#ifdef FEAT_BEVAL_GUI
+# include "gui_beval.pro"
+#endif
 
-#endif /* GUI_BEVAL_H and FEAT_BEVAL */
+#endif /* BEVAL__H and FEAT_BEVAL_GUI */

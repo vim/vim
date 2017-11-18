@@ -3208,7 +3208,11 @@ get_fpos_of_mouse(pos_T *mpos)
 #endif
     return IN_BUFFER;
 }
+#endif
 
+#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
+	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_BEVAL) || defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
  * The first column is one.

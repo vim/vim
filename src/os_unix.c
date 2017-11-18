@@ -475,7 +475,7 @@ mch_inchar(
 	if ((wait_time < 0 || wait_time > 100L) && channel_any_readahead())
 	    wait_time = 10L;
 #endif
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	if (p_beval && wait_time > 100L)
 	    /* The 'balloonexpr' may indirectly invoke a callback while waiting
 	     * for a character, need to check often. */
@@ -3572,13 +3572,13 @@ static int	mouse_ison = FALSE;
     void
 mch_setmouse(int on)
 {
-# ifdef FEAT_BEVALTERM
+# ifdef FEAT_BEVAL_TERM
     static int	bevalterm_ison = FALSE;
 # endif
     int		xterm_mouse_vers;
 
     if (on == mouse_ison
-# ifdef FEAT_BEVALTERM
+# ifdef FEAT_BEVAL_TERM
 	    && p_bevalterm == bevalterm_ison
 # endif
 	    )
@@ -3610,7 +3610,7 @@ mch_setmouse(int on)
     }
 # endif
 
-# ifdef FEAT_BEVALTERM
+# ifdef FEAT_BEVAL_TERM
     if (bevalterm_ison != (p_bevalterm && on))
     {
 	bevalterm_ison = (p_bevalterm && on);
@@ -3627,7 +3627,7 @@ mch_setmouse(int on)
 	    out_str_nf((char_u *)
 		       (xterm_mouse_vers > 1
 			? (
-# ifdef FEAT_BEVALTERM
+# ifdef FEAT_BEVAL_TERM
 			    bevalterm_ison
 			       ? IF_EB("\033[?1003h", ESC_STR "[?1003h") :
 # endif
@@ -3735,7 +3735,7 @@ mch_setmouse(int on)
 # endif
 }
 
-#if defined(FEAT_BEVALTERM) || defined(PROTO)
+#if defined(FEAT_BEVAL_TERM) || defined(PROTO)
 /*
  * Called when 'balloonevalterm' changed.
  */

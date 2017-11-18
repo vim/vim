@@ -1469,7 +1469,7 @@ WaitForChar(long msec, int ignore_input)
 		    dwWaitTime = 10;
 	    }
 #endif
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	    if (p_beval && dwWaitTime > 100)
 		/* The 'balloonexpr' may indirectly invoke a callback while
 		 * waiting for a character, need to check often. */

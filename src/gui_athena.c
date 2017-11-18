@@ -1019,7 +1019,7 @@ gui_mch_new_menu_font(void)
 	XFreePixmap(gui.dpy, oldpuller);
 }
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
     void
 gui_mch_new_tooltip_font(void)
 {
@@ -1076,7 +1076,7 @@ gui_mch_submenu_change(
 			XtVaSetValues(mp->id, XtNbitmap, mp->image, NULL);
 		}
 
-# ifdef FEAT_BEVAL
+# ifdef FEAT_BEVAL_GUI
 		/* If we have a tooltip, then we need to change it's colors */
 		if (mp->tip != NULL)
 		{
@@ -1094,7 +1094,7 @@ gui_mch_submenu_change(
 	    else
 	    {
 		gui_athena_menu_font(mp->id);
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 		/* If we have a tooltip, then we need to change it's font */
 		/* Assume XtNinternational == True (in createBalloonEvalWindow)
 		 */
@@ -1201,7 +1201,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	    XtSetValues(menu->id, args, n);
 	gui_athena_menu_colors(menu->id);
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	gui_mch_menu_set_tip(menu);
 #endif
 
@@ -1538,7 +1538,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	XtVaGetValues(menu->id,
 		XtNheight,	&height,
 		NULL);
-#if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL)
+#if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)
 	if (parent == toolBar && menu->tip != NULL)
 	{
 	    /* We try to destroy this before the actual menu, because there are
@@ -1843,7 +1843,7 @@ gui_mch_def_colors(void)
 	gui.menu_bg_pixel = gui_get_color((char_u *)gui.rsrc_menu_bg_name);
 	gui.scroll_fg_pixel = gui_get_color((char_u *)gui.rsrc_scroll_fg_name);
 	gui.scroll_bg_pixel = gui_get_color((char_u *)gui.rsrc_scroll_bg_name);
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	gui.tooltip_fg_pixel = gui_get_color((char_u *)gui.rsrc_tooltip_fg_name);
 	gui.tooltip_bg_pixel = gui_get_color((char_u *)gui.rsrc_tooltip_bg_name);
 #endif

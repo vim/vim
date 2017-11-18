@@ -1816,6 +1816,7 @@ typedef int sock_T;
 #include "structs.h"	    /* file that defines many structures */
 
 #include "alloc.h"
+#include "beval.h"
 
 /* Values for "do_profiling". */
 #define PROF_NONE	0	/* profiling not started */

@@ -738,7 +738,7 @@ gui_init(void)
 	 * resized. */
 	win_new_shellsize();
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	/* Always create the Balloon Evaluation area, but disable it when
 	 * 'ballooneval' is off. */
 	if (balloonEval != NULL)

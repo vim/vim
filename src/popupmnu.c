@@ -760,7 +760,7 @@ pum_get_height(void)
     return pum_height;
 }
 
-# if defined(FEAT_BEVALTERM) || defined(PROTO)
+# if defined(FEAT_BEVAL_TERM) || defined(PROTO)
 static pumitem_T *balloon_array = NULL;
 static int balloon_arraysize;
 static int balloon_mouse_row = 0;

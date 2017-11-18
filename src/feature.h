@@ -1317,22 +1317,26 @@
 		&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)) \
 	    || defined(FEAT_SUN_WORKSHOP) \
 	    || defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL))
-# define FEAT_BEVAL
+# define FEAT_BEVAL_GUI
 # if !defined(FEAT_XFONTSET) && !defined(FEAT_GUI_GTK) \
 	&& !defined(FEAT_GUI_W32)
 #  define FEAT_XFONTSET
 # endif
 #endif
 
-#if defined(FEAT_BEVAL) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_BEVAL_GUI) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
 # define FEAT_BEVAL_TIP		/* balloon eval used for toolbar tooltip */
 #endif
 
 /*
  * +balloon_eval_term	Allow balloon expression evaluation in the terminal.
  */
-#if defined(FEAT_BEVAL) && defined(UNIX) && defined(FEAT_TIMERS)
-# define FEAT_BEVALTERM
+#if defined(FEAT_HUGE) && defined(UNIX) && defined(FEAT_TIMERS)
+# define FEAT_BEVAL_TERM
+#endif
+
+#if defined(FEAT_BEVAL_GUI) || defined(FEAT_BEVAL_TERM)
+# define FEAT_BEVAL
 #endif
 
 /* both Motif and Athena are X11 and share some code */

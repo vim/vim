@@ -1792,7 +1792,7 @@ vgetc(void)
      */
     may_garbage_collect = FALSE;
 #endif
-#ifdef FEAT_BEVALTERM
+#ifdef FEAT_BEVAL_TERM
     if (c != K_MOUSEMOVE && c != K_IGNORE)
     {
 	/* Don't trigger 'balloonexpr' unless only the mouse was moved. */

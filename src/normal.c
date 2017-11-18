@@ -2400,7 +2400,7 @@ do_mouse(
     if (c == K_MOUSEMOVE)
     {
 	/* Mouse moved without a button pressed. */
-#ifdef FEAT_BEVALTERM
+#ifdef FEAT_BEVAL_TERM
 	ui_may_remove_balloon();
 	if (p_bevalterm && !VIsual_active)
 	{

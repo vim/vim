@@ -376,15 +376,17 @@ EXTERN char_u	*p_bsk;		/* 'backupskip' */
 EXTERN char_u	*p_cm;		/* 'cryptmethod' */
 #endif
 #ifdef FEAT_BEVAL
-EXTERN long	p_bdlay;	/* 'balloondelay' */
+# ifdef FEAT_BEVAL_GUI
 EXTERN int	p_beval;	/* 'ballooneval' */
+# endif
+EXTERN long	p_bdlay;	/* 'balloondelay' */
 # ifdef FEAT_EVAL
 EXTERN char_u	*p_bexpr;
 # endif
-#endif
-# ifdef FEAT_BEVALTERM
+# ifdef FEAT_BEVAL_TERM
 EXTERN int	p_bevalterm;	/* 'balloonevalterm' */
 # endif
+#endif
 #ifdef FEAT_BROWSE
 EXTERN char_u	*p_bsdir;	/* 'browsedir' */
 #endif

@@ -7561,7 +7561,7 @@ do_highlight(
 	    if (gui.in_use)
 	    {
 		gui_new_scrollbar_colors();
-#  ifdef FEAT_BEVAL
+#  ifdef FEAT_BEVAL_GUI
 		gui_mch_new_tooltip_colors();
 #  endif
 #  ifdef FEAT_MENU
@@ -8015,7 +8015,7 @@ do_highlight(
 			gui.scroll_fg_pixel = i;
 			do_colors = TRUE;
 		    }
-#   ifdef FEAT_BEVAL
+#   ifdef FEAT_BEVAL_GUI
 		    if (is_tooltip_group && gui.tooltip_fg_pixel != i)
 		    {
 			gui.tooltip_fg_pixel = i;
@@ -8066,7 +8066,7 @@ do_highlight(
 			gui.scroll_bg_pixel = i;
 			do_colors = TRUE;
 		    }
-#   ifdef FEAT_BEVAL
+#   ifdef FEAT_BEVAL_GUI
 		    if (is_tooltip_group && gui.tooltip_bg_pixel != i)
 		    {
 			gui.tooltip_bg_pixel = i;
@@ -8252,7 +8252,7 @@ do_highlight(
 	    if (gui.in_use && do_colors)
 		gui_new_scrollbar_colors();
 	}
-# ifdef FEAT_BEVAL
+# ifdef FEAT_BEVAL_GUI
 	else if (is_tooltip_group)
 	{
 	    if (gui.in_use && do_colors)
@@ -8431,7 +8431,7 @@ set_normal_colors(void)
 #  endif
 	    must_redraw = CLEAR;
 	}
-#  ifdef FEAT_BEVAL
+#  ifdef FEAT_BEVAL_GUI
 	if (set_group_colors((char_u *)"Tooltip",
 			     &gui.tooltip_fg_pixel, &gui.tooltip_bg_pixel,
 			     FALSE, FALSE, TRUE))
@@ -8673,7 +8673,7 @@ hl_do_font(
 #    endif
 	    gui_mch_new_menu_font();
 	}
-#    ifdef FEAT_BEVAL
+#    ifdef FEAT_BEVAL_GUI
 	if (do_tooltip)
 	{
 	    /* The Athena widget set cannot currently handle switching between

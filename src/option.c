@@ -634,7 +634,7 @@ static struct vimoption options[] =
 #endif
 			    SCRIPTID_INIT},
     {"ballooneval", "beval",P_BOOL|P_VI_DEF|P_NO_MKRC,
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 			    (char_u *)&p_beval, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}
 #else
@@ -643,7 +643,7 @@ static struct vimoption options[] =
 #endif
 			    SCRIPTID_INIT},
     {"balloonevalterm", "bevalterm",P_BOOL|P_VI_DEF|P_NO_MKRC,
-#ifdef FEAT_BEVALTERM
+#ifdef FEAT_BEVAL_TERM
 			    (char_u *)&p_bevalterm, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}
 #else
@@ -8429,7 +8429,7 @@ set_bool_option(
 	p_wiv = (*T_XS != NUL);
     }
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     else if ((int *)varp == &p_beval)
     {
 	if (!balloonEvalForTerm)
@@ -8441,12 +8441,12 @@ set_bool_option(
 	}
     }
 #endif
-# ifdef FEAT_BEVALTERM
+#ifdef FEAT_BEVAL_TERM
     else if ((int *)varp == &p_bevalterm)
     {
 	mch_bevalterm_changed();
     }
-# endif
+#endif
 
 #ifdef FEAT_AUTOCHDIR
     else if ((int *)varp == &p_acd)

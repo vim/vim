@@ -683,10 +683,11 @@ CFLAGS = $(CFLAGS) /Zl /MTd
 
 INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
-	spell.h structs.h term.h $(NBDEBUG_INCL)
+	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
 
 OBJ = \
 	$(OUTDIR)\arabic.obj \
+	$(OUTDIR)\beval.obj \
 	$(OUTDIR)\blowfish.obj \
 	$(OUTDIR)\buffer.obj \
 	$(OUTDIR)\charset.obj \
@@ -781,8 +782,7 @@ CFLAGS = $(CFLAGS) -DFEAT_GUI_W32
 RCFLAGS = $(RCFLAGS) -DFEAT_GUI_W32
 VIM = g$(VIM)
 GUI_INCL = \
-	gui.h \
-	gui_beval.h
+	gui.h
 GUI_OBJ = \
 	$(OUTDIR)\gui.obj \
 	$(OUTDIR)\gui_beval.obj \
@@ -1296,6 +1296,8 @@ testclean:
 	$(CC) $(CFLAGS_OUTDIR) $<
 
 $(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
+
+$(OUTDIR)/beval.obj:	$(OUTDIR) beval.c  $(INCL)
 
 $(OUTDIR)/blowfish.obj:	$(OUTDIR) blowfish.c  $(INCL)
 

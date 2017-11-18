@@ -1291,7 +1291,7 @@ check_due_timer(void)
     if (did_one)
 	redraw_after_callback(need_update_screen);
 
-#ifdef FEAT_BEVALTERM
+#ifdef FEAT_BEVAL_TERM
     if (bevalexpr_due_set)
     {
 	this_due = proftime_time_left(&bevalexpr_due, &now);
