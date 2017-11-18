@@ -9,6 +9,11 @@
 #ifndef VIM__H
 # define VIM__H
 
+#ifdef PROTO
+/* cproto runs into trouble when this type is missing */
+typedef double _Float128;
+#endif
+
 /* use fastcall for Borland, when compiling for Win32 */
 #if defined(__BORLANDC__) && defined(WIN32) && !defined(DEBUG)
 #if defined(FEAT_PERL) || \
