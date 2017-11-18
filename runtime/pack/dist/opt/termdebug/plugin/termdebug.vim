@@ -69,6 +69,11 @@ func s:StartDebug(cmd)
   endif
   let pty = job_info(term_getjob(s:ptybuf))['tty_out']
   let s:ptywin = win_getid(winnr())
+  if vertical
+    " Assuming the source code window will get a signcolumn, use two more
+    " columns for that, thus one less for the terminal window.
+    exe (&columns / 2 - 1) . "wincmd |"
+  endif
 
   " Create a hidden terminal window to communicate with gdb
   let s:commbuf = term_start('NONE', {
@@ -121,6 +126,15 @@ func s:StartDebug(cmd)
   call s:InstallCommands()
   call win_gotoid(s:gdbwin)
 
+  " Enable showing a balloon with eval info
+  if has("balloon_eval")
+    set ballooneval
+    set balloonexpr=TermDebugBalloonExpr()
+    if has("balloon_eval_term")
+      set balloonevalterm
+    endif
+  endif
+
   let s:breakpoints = {}
 
   augroup TermDebug
@@ -142,6 +156,14 @@ func s:EndDebug(job, status)
   call win_gotoid(curwinid)
   if s:save_columns > 0
     let &columns = s:save_columns
+  endif
+
+  if has("balloon_eval")
+    set noballooneval
+    set balloonexpr=
+    if has("balloon_eval_term")
+      set noballoonevalterm
+    endif
   endif
 
   au! TermDebug
@@ -279,6 +301,11 @@ func s:Run(args)
   call s:SendCommand('-exec-run')
 endfunc
 
+func s:SendEval(expr)
+  call s:SendCommand('-data-evaluate-expression "' . a:expr . '"')
+  let s:evalexpr = a:expr
+endfunc
+
 " :Evaluate - evaluate what is under the cursor
 func s:Evaluate(range, arg)
   if a:arg != ''
@@ -294,25 +321,54 @@ func s:Evaluate(range, arg)
   else
     let expr = expand('<cexpr>')
   endif
-  call s:SendCommand('-data-evaluate-expression "' . expr . '"')
-  let s:evalexpr = expr
+  call s:SendEval(expr)
 endfunc
+
+let s:evalFromBalloonExpr = 0
 
 " Handle the result of data-evaluate-expression
 func s:HandleEvaluate(msg)
   let value = substitute(a:msg, '.*value="\(.*\)"', '\1', '')
   let value = substitute(value, '\\"', '"', 'g')
-  echomsg '"' . s:evalexpr . '": ' . value
+  if s:evalFromBalloonExpr
+    if s:evalFromBalloonExprResult == ''
+      let s:evalFromBalloonExprResult = s:evalexpr . ': ' . value
+    else
+      let s:evalFromBalloonExprResult .= ' = ' . value
+    endif
+    call balloon_show(s:evalFromBalloonExprResult)
+  else
+    echomsg '"' . s:evalexpr . '": ' . value
+  endif
 
   if s:evalexpr[0] != '*' && value =~ '^0x' && value != '0x0' && value !~ '"$'
     " Looks like a pointer, also display what it points to.
-    let s:evalexpr = '*' . s:evalexpr
-    call term_sendkeys(s:commbuf, '-data-evaluate-expression "' . s:evalexpr . "\"\r")
+    call s:SendEval('*' . s:evalexpr)
+  else
+    let s:evalFromBalloonExpr = 0
   endif
+endfunc
+
+" Show a balloon with information of the variable under the mouse pointer,
+" if there is any.
+func TermDebugBalloonExpr()
+  if v:beval_winid != s:startwin
+    return
+  endif
+  call s:SendEval(v:beval_text)
+  let s:evalFromBalloonExpr = 1
+  let s:evalFromBalloonExprResult = ''
+  return ''
 endfunc
 
 " Handle an error.
 func s:HandleError(msg)
+  if a:msg =~ 'No symbol .* in current context'
+	\ || a:msg =~ 'Cannot access memory at address '
+	\ || a:msg =~ 'Attempt to use a type name as an expression'
+    " Result of s:SendEval() failed, ignore.
+    return
+  endif
   echoerr substitute(a:msg, '.*msg="\(.*\)"', '\1', '')
 endfunc
 

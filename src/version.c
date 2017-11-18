@@ -93,6 +93,11 @@ static char *(features[]) =
 #else
 	"-balloon_eval",
 #endif
+#ifdef FEAT_BEVALTERM
+	"+balloon_eval_term",
+#else
+	"-balloon_eval_term",
+#endif
 #ifdef FEAT_BROWSE
 	"+browse",
 #else
@@ -766,6 +771,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1309,
 /**/
     1308,
 /**/

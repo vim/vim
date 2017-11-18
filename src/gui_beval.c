@@ -35,7 +35,11 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 
     /* Don't do anything when 'ballooneval' is off, messages scrolled the
      * windows up or we have no beval area. */
-    if (!p_beval || balloonEval == NULL || msg_scrolled > 0)
+    if (!((gui.in_use && p_beval)
+# ifdef FEAT_BEVALTERM
+		|| (!gui.in_use && p_bevalterm)
+# endif
+		) || beval == NULL || msg_scrolled > 0)
 	return;
 
     /* Don't do this recursively.  Happens when the expression evaluation
@@ -45,7 +49,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
     recursive = TRUE;
 
 #ifdef FEAT_EVAL
-    if (get_beval_info(balloonEval, TRUE, &wp, &lnum, &text, &col) == OK)
+    if (get_beval_info(beval, TRUE, &wp, &lnum, &text, &col) == OK)
     {
 	bexpr = (*wp->w_buffer->b_p_bexpr == NUL) ? p_bexpr
 						    : wp->w_buffer->b_p_bexpr;
@@ -96,7 +100,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
 	    if (result != NULL && result[0] != NUL)
 	    {
-		gui_mch_post_balloon(beval, result);
+		post_balloon(beval, result);
 		recursive = FALSE;
 		return;
 	    }
@@ -335,8 +339,18 @@ get_beval_info(
     linenr_T	lnum;
 
     *textp = NULL;
-    row = Y_2_ROW(beval->y);
-    col = X_2_COL(beval->x);
+# ifdef FEAT_BEVALTERM
+    if (!gui.in_use)
+    {
+	row = mouse_row;
+	col = mouse_col;
+    }
+    else
+# endif
+    {
+	row = Y_2_ROW(beval->y);
+	col = X_2_COL(beval->x);
+    }
     wp = mouse_find_win(&row, &col);
     if (wp != NULL && row < wp->w_height && col < wp->w_width)
     {
@@ -421,6 +435,20 @@ get_beval_info(
     return FAIL;
 }
 
+/*
+ * Show a balloon with "mesg".
+ */
+    void
+post_balloon(BalloonEval *beval, char_u *mesg)
+{
+# ifdef FEAT_BEVALTERM
+    if (!gui.in_use)
+	ui_post_balloon(mesg);
+    else
+# endif
+	gui_mch_post_balloon(beval, mesg);
+}
+
 # if !defined(FEAT_GUI_W32) || defined(PROTO)
 
 /*
@@ -451,10 +479,6 @@ gui_mch_unpost_balloon(BalloonEval *beval)
 #endif
 
 #ifdef FEAT_GUI_GTK
-/*
- * We can unconditionally use ANSI-style prototypes here since
- * GTK+ requires an ANSI C compiler anyway.
- */
     static void
 addEventHandler(GtkWidget *target, BalloonEval *beval)
 {

@@ -6,6 +6,7 @@ void gui_mch_enable_beval_area(BalloonEval *beval);
 void gui_mch_disable_beval_area(BalloonEval *beval);
 BalloonEval *gui_mch_currently_showing_beval(void);
 int get_beval_info(BalloonEval *beval, int getword, win_T **winp, linenr_T *lnump, char_u **textp, int *colp);
+void post_balloon(BalloonEval *beval, char_u *mesg);
 void gui_mch_post_balloon(BalloonEval *beval, char_u *mesg);
 void gui_mch_unpost_balloon(BalloonEval *beval);
 /* vim: set ft=c : */

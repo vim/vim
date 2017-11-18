@@ -382,6 +382,9 @@ EXTERN int	p_beval;	/* 'ballooneval' */
 EXTERN char_u	*p_bexpr;
 # endif
 #endif
+# ifdef FEAT_BEVALTERM
+EXTERN int	p_bevalterm;	/* 'balloonevalterm' */
+# endif
 #ifdef FEAT_BROWSE
 EXTERN char_u	*p_bsdir;	/* 'browsedir' */
 #endif

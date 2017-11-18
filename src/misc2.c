@@ -2453,6 +2453,7 @@ static struct key_name_entry
     {K_LEFTDRAG,	(char_u *)"LeftDrag"},
     {K_LEFTRELEASE,	(char_u *)"LeftRelease"},
     {K_LEFTRELEASE_NM,	(char_u *)"LeftReleaseNM"},
+    {K_MOUSEMOVE,	(char_u *)"MouseMove"},
     {K_MIDDLEMOUSE,	(char_u *)"MiddleMouse"},
     {K_MIDDLEDRAG,	(char_u *)"MiddleDrag"},
     {K_MIDDLERELEASE,	(char_u *)"MiddleRelease"},
@@ -2515,7 +2516,7 @@ static struct mousetable
     {(int)KE_X2DRAG,		MOUSE_X2,	FALSE,	TRUE},
     {(int)KE_X2RELEASE,		MOUSE_X2,	FALSE,	FALSE},
     /* DRAG without CLICK */
-    {(int)KE_IGNORE,		MOUSE_RELEASE,	FALSE,	TRUE},
+    {(int)KE_MOUSEMOVE,		MOUSE_RELEASE,	FALSE,	TRUE},
     /* RELEASE without CLICK */
     {(int)KE_IGNORE,		MOUSE_RELEASE,	FALSE,	FALSE},
     {0,				0,		0,	0},

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Nov 11
+*options.txt*	For Vim version 8.0.  Last change: 2017 Nov 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1127,7 +1127,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+balloon_eval|
 			feature}
-	Switch on the |balloon-eval| functionality.
+	Switch on the |balloon-eval| functionality for the GUI.
+
+		       *'balloonevalterm'* *'bevalterm'* *'noballoonevalterm'*
+		       *'nobevalterm'*
+'balloonevalterm' 'bevalterm'	boolean	(default off)
+			global
+			{not in Vi}
+			{only available when compiled with the
+			|+balloon_eval_term| feature}
+	Switch on the |balloon-eval| functionality for the terminal.
 
 						     *'balloonexpr'* *'bexpr'*
 'balloonexpr' 'bexpr'	string	(default "")
@@ -3521,6 +3530,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	systems without an fsync() implementation, this variable is always
 	off.
 	Also see 'swapsync' for controlling fsync() on swap files.
+	'fsync' also applies to |writefile()|, unless a flag is used to
+	overrule it.
 
 				   *'gdefault'* *'gd'* *'nogdefault'* *'nogd'*
 'gdefault' 'gd'		boolean	(default off)
@@ -3944,7 +3955,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		toolbar, tabline, etc.  Instead, the behavior is similar to
 		when the window is maximized and will adjust 'lines' and
 		'columns' to fit to the window.  Without the 'k' flag Vim will
-		try to keep 'lines' and 'columns the same when adding and
+		try to keep 'lines' and 'columns' the same when adding and
 		removing GUI components.
 
 						*'guipty'* *'noguipty'*
@@ -8221,7 +8232,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	number, more intelligent detection process runs.
 	The "xterm2" value will be set if the xterm version is reported to be
 	from 95 to 276.  The "sgr" value will be set if the xterm version is
-	277 or highter.
+	277 or highter and when Vim detects Mac Terminal.app or Iterm2.
 	If you do not want 'ttymouse' to be set to "xterm2" or "sgr"
 	automatically, set t_RV to an empty string: >
 		:set t_RV=

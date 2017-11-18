@@ -1328,6 +1328,13 @@
 # define FEAT_BEVAL_TIP		/* balloon eval used for toolbar tooltip */
 #endif
 
+/*
+ * +balloon_eval_term	Allow balloon expression evaluation in the terminal.
+ */
+#if defined(FEAT_BEVAL) && defined(UNIX) && defined(FEAT_TIMERS)
+# define FEAT_BEVALTERM
+#endif
+
 /* both Motif and Athena are X11 and share some code */
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
 # define FEAT_GUI_X11

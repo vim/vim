@@ -5625,6 +5625,7 @@ check_termcode(
 		    modifiers |= MOD_MASK_ALT;
 		key_name[1] = (wheel_code & 1)
 					? (int)KE_MOUSEUP : (int)KE_MOUSEDOWN;
+		held_button = MOUSE_RELEASE;
 	    }
 	    else
 		key_name[1] = get_pseudo_mouse_code(current_button,

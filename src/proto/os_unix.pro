@@ -53,6 +53,7 @@ void mch_settmode(int tmode);
 void get_stty(void);
 int get_tty_info(int fd, ttyinfo_T *info);
 void mch_setmouse(int on);
+void mch_bevalterm_changed(void);
 void check_mouse_termcode(void);
 int mch_screenmode(char_u *arg);
 int mch_get_shellsize(void);
