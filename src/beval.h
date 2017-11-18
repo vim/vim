@@ -32,7 +32,8 @@ typedef enum
 
 typedef struct BalloonEvalStruct
 {
-#ifdef FEAT_GUI_GTK
+#ifdef FEAT_BEVAL_GUI
+# ifdef FEAT_GUI_GTK
     GtkWidget		*target;	/* widget we are monitoring */
     GtkWidget		*balloonShell;
     GtkWidget		*balloonLabel;
@@ -41,8 +42,8 @@ typedef struct BalloonEvalStruct
     int			x;
     int			y;
     unsigned int	state;		/* Button/Modifier key state */
-#else
-# if !defined(FEAT_GUI_W32)
+# else
+#  if !defined(FEAT_GUI_W32)
     Widget		target;		/* widget we are monitoring */
     Widget		balloonShell;
     Widget		balloonLabel;
@@ -54,22 +55,24 @@ typedef struct BalloonEvalStruct
     Position		x_root;
     Position		y_root;
     int			state;		/* Button/Modifier key state */
-# else
+#  else
     HWND		target;
     HWND		balloon;
     int			x;
     int			y;
     BeState		showState;	/* tells us whats currently going on */
+#  endif
 # endif
-#endif
-    int			ts;		/* tabstop setting for this buffer */
-    char_u		*msg;
-    void		(*msgCB)(struct BalloonEvalStruct *, int);
-    void		*clientData;	/* For callback */
-#if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)
+# if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)
     Dimension		screen_width;	/* screen width in pixels */
     Dimension		screen_height;	/* screen height in pixels */
+# endif
+    void		(*msgCB)(struct BalloonEvalStruct *, int);
+    void		*clientData;	/* For callback */
 #endif
+
+    int			ts;		/* tabstop setting for this buffer */
+    char_u		*msg;
 } BalloonEval;
 
 #define EVAL_OFFSET_X 15 /* displacement of beval topleft corner from pointer */
