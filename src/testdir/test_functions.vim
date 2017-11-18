@@ -168,6 +168,19 @@ func Test_simplify()
   call assert_fails('call simplify(1.2)', 'E806:')
 endfunc
 
+func Test_strpart()
+  call assert_equal('de', strpart('abcdefg', 3, 2))
+  call assert_equal('ab', strpart('abcdefg', -2, 4))
+  call assert_equal('abcdefg', strpart('abcdefg', -2))
+  call assert_equal('fg', strpart('abcdefg', 5, 4))
+  call assert_equal('defg', strpart('abcdefg', 3))
+
+  if has('multi_byte')
+    call assert_equal('lép', strpart('éléphant', 2, 4))
+    call assert_equal('léphant', strpart('éléphant', 2))
+  endif
+endfunc
+
 func Test_tolower()
   call assert_equal("", tolower(""))
 
