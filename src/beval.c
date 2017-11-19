@@ -134,19 +134,20 @@ get_beval_info(
 }
 
 /*
- * Show a balloon with "mesg".
+ * Show a balloon with "mesg" or "list".
  */
     void
-post_balloon(BalloonEval *beval UNUSED, char_u *mesg)
+post_balloon(BalloonEval *beval UNUSED, char_u *mesg, list_T *list)
 {
 # ifdef FEAT_BEVAL_TERM
 #  ifdef FEAT_GUI
     if (!gui.in_use)
 #  endif
-	ui_post_balloon(mesg);
+	ui_post_balloon(mesg, list);
 # endif
 # ifdef FEAT_BEVAL_GUI
     if (gui.in_use)
+	/* GUI can't handle a list */
 	gui_mch_post_balloon(beval, mesg);
 # endif
 }
@@ -257,7 +258,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
 	    if (result != NULL && result[0] != NUL)
 	    {
-		post_balloon(beval, result);
+		post_balloon(beval, result, NULL);
 		recursive = FALSE;
 		return;
 	    }

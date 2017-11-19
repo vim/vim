@@ -2032,6 +2032,7 @@ asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 balloon_show({msg})		none	show {msg} inside the balloon
+balloon_split({msg})		List	split {msg} as used for a balloon
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -2682,8 +2683,12 @@ atan2({expr1}, {expr2})					*atan2()*
 <			2.356194
 		{only available when compiled with the |+float| feature}
 
-balloon_show({msg})					*balloon_show()*
-		Show {msg} inside the balloon.
+balloon_show({expr})					*balloon_show()*
+		Show {expr} inside the balloon.  For the GUI {expr} is used as
+		a string.  For a terminal {expr} can be a list, which contains
+		the lines of the balloon.  If {expr} is not a list it will be
+		split with |balloon_split()|.
+
 		Example: >
 			func GetBalloonContent()
 			   " initiate getting the content
@@ -2704,6 +2709,12 @@ balloon_show({msg})					*balloon_show()*
 		When showing a balloon is not possible nothing happens, no
 		error message.
 		{only available when compiled with the +balloon_eval feature}
+
+balloon_split({msg})					*balloon_split()*
+		Split {msg} into lines to be displayed in a balloon.  The
+		splits are made for the current window size and optimize to
+		show debugger output.
+		Returns a |List| with the split lines.
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})

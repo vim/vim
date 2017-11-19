@@ -61,6 +61,7 @@ static void f_atan2(typval_T *argvars, typval_T *rettv);
 #endif
 #ifdef FEAT_BEVAL
 static void f_balloon_show(typval_T *argvars, typval_T *rettv);
+static void f_balloon_split(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_browse(typval_T *argvars, typval_T *rettv);
 static void f_browsedir(typval_T *argvars, typval_T *rettv);
@@ -494,6 +495,7 @@ static struct fst
 #endif
 #ifdef FEAT_BEVAL
     {"balloon_show",	1, 1, f_balloon_show},
+    {"balloon_split",	1, 1, f_balloon_split},
 #endif
     {"browse",		4, 4, f_browse},
     {"browsedir",	2, 2, f_browsedir},
@@ -1410,7 +1412,37 @@ f_atan2(typval_T *argvars, typval_T *rettv)
 f_balloon_show(typval_T *argvars, typval_T *rettv UNUSED)
 {
     if (balloonEval != NULL)
-	post_balloon(balloonEval, get_tv_string_chk(&argvars[0]));
+    {
+	if (argvars[0].v_type == VAR_LIST
+# ifdef FEAT_GUI
+		&& !gui.in_use
+# endif
+	   )
+	    post_balloon(balloonEval, NULL, argvars[0].vval.v_list);
+	else
+	    post_balloon(balloonEval, get_tv_string_chk(&argvars[0]), NULL);
+    }
+}
+
+    static void
+f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    if (rettv_list_alloc(rettv) == OK)
+    {
+	char_u *msg = get_tv_string_chk(&argvars[0]);
+
+	if (msg != NULL)
+	{
+	    pumitem_T	*array;
+	    int		size = split_message(msg, &array);
+	    int		i;
+
+	    /* Skip the first and last item, they are always empty. */
+	    for (i = 1; i < size - 1; ++i)
+		list_append_string(rettv->vval.v_list, array[i].pum_text, -1);
+	    vim_free(array);
+	}
+    }
 }
 #endif
 

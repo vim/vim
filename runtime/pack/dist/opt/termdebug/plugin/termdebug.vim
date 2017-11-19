@@ -127,9 +127,11 @@ func s:StartDebug(cmd)
   call win_gotoid(s:gdbwin)
 
   " Enable showing a balloon with eval info
-  if has("balloon_eval")
-    set ballooneval
+  if has("balloon_eval") || has("balloon_eval_term")
     set balloonexpr=TermDebugBalloonExpr()
+    if has("balloon_eval")
+      set ballooneval
+    endif
     if has("balloon_eval_term")
       set balloonevalterm
     endif
@@ -158,9 +160,11 @@ func s:EndDebug(job, status)
     let &columns = s:save_columns
   endif
 
-  if has("balloon_eval")
-    set noballooneval
+  if has("balloon_eval") || has("balloon_eval_term")
     set balloonexpr=
+    if has("balloon_eval")
+      set noballooneval
+    endif
     if has("balloon_eval_term")
       set noballoonevalterm
     endif
@@ -366,6 +370,7 @@ func s:HandleError(msg)
   if a:msg =~ 'No symbol .* in current context'
 	\ || a:msg =~ 'Cannot access memory at address '
 	\ || a:msg =~ 'Attempt to use a type name as an expression'
+	\ || a:msg =~ 'A syntax error in expression,'
     " Result of s:SendEval() failed, ignore.
     return
   endif
