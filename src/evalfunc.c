@@ -61,7 +61,9 @@ static void f_atan2(typval_T *argvars, typval_T *rettv);
 #endif
 #ifdef FEAT_BEVAL
 static void f_balloon_show(typval_T *argvars, typval_T *rettv);
+# if defined(FEAT_BEVAL_TERM)
 static void f_balloon_split(typval_T *argvars, typval_T *rettv);
+# endif
 #endif
 static void f_browse(typval_T *argvars, typval_T *rettv);
 static void f_browsedir(typval_T *argvars, typval_T *rettv);
@@ -495,7 +497,9 @@ static struct fst
 #endif
 #ifdef FEAT_BEVAL
     {"balloon_show",	1, 1, f_balloon_show},
+# if defined(FEAT_BEVAL_TERM)
     {"balloon_split",	1, 1, f_balloon_split},
+# endif
 #endif
     {"browse",		4, 4, f_browse},
     {"browsedir",	2, 2, f_browsedir},
@@ -1424,6 +1428,7 @@ f_balloon_show(typval_T *argvars, typval_T *rettv UNUSED)
     }
 }
 
+# if defined(FEAT_BEVAL_TERM)
     static void
 f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -1444,6 +1449,7 @@ f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
 	}
     }
 }
+# endif
 #endif
 
 /*
