@@ -1809,14 +1809,15 @@ typedef int sock_T;
 
 /* Include option.h before structs.h, because the number of window-local and
  * buffer-local options is used there. */
-#include "option.h"	    /* options and default values */
+#include "option.h"	/* options and default values */
+
+#include "beval.h"	/* BalloonEval */
 
 /* Note that gui.h is included by structs.h */
 
-#include "structs.h"	    /* file that defines many structures */
+#include "structs.h"	/* defines many structures */
 
 #include "alloc.h"
-#include "beval.h"
 
 /* Values for "do_profiling". */
 #define PROF_NONE	0	/* profiling not started */

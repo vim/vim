@@ -201,7 +201,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 
 /* Ugly solution for "BalloonEval" not being defined while it's used in some
  * .pro files. */
-# ifndef FEAT_BEVAL
+# ifdef FEAT_BEVAL
+#  include "beval.pro"
+# else
 #  define BalloonEval int
 # endif
 

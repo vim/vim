@@ -78,7 +78,6 @@ typedef struct BalloonEvalStruct
 #define EVAL_OFFSET_X 15 /* displacement of beval topleft corner from pointer */
 #define EVAL_OFFSET_Y 10
 
-#include "beval.pro"
 #ifdef FEAT_BEVAL_GUI
 # include "gui_beval.pro"
 #endif
