@@ -6474,10 +6474,10 @@ im_get_status()
     void
 im_set_active(int active)
 {
+#ifdef USE_IM_CONTROL
     if (p_imdisable)
 	active = FALSE;
 
-#  ifdef FEAT_EVAL
     if (p_imaf[0] != NUL)
     {
 	char_u *argv[1];
