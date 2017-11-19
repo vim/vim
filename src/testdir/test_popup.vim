@@ -704,6 +704,9 @@ func Test_popup_and_preview_autocommand()
 endfunc
 
 func Test_balloon_split()
+  if !exists('*balloon_split')
+    return
+  endif
   call assert_equal([
         \ 'one two three four one two three four one two thre',
         \ 'e four',
