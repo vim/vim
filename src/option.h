@@ -579,14 +579,16 @@ EXTERN int	p_icon;		/* 'icon' */
 EXTERN char_u	*p_iconstring;	/* 'iconstring' */
 #endif
 EXTERN int	p_ic;		/* 'ignorecase' */
-#if defined(FEAT_EVAL) && defined(USE_IM_CONTROL)
+#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 EXTERN char_u	*p_imak;	/* 'imactivatekey' */
+#define IM_ON_THE_SPOT		0L
+#define IM_OVER_THE_SPOT	1L
+EXTERN long	p_imst;		/* 'imstyle' */
+#endif
+#if defined(FEAT_EVAL) && defined(USE_IM_CONTROL)
 EXTERN char_u	*p_imaf;	/* 'imactivatefunc' */
 EXTERN char_u	*p_imsf;	/* 'imstatusfunc' */
-# define IM_ON_THE_SPOT		0L
-# define IM_OVER_THE_SPOT	1L
 #endif
-EXTERN long	p_imst;		/* 'imstyle' */
 #ifdef USE_IM_CONTROL
 EXTERN int	p_imcmdline;	/* 'imcmdline' */
 EXTERN int	p_imdisable;	/* 'imdisable' */
