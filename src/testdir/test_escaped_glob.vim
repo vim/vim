@@ -15,6 +15,8 @@ function Test_glob()
   w! Xxx\$
   call assert_equal("Xxx{", glob('Xxx\{'))
   call assert_equal("Xxx$", glob('Xxx\$'))
+  call delete('Xxx{')
+  call delete('Xxx$')
 endfunction
 
 function Test_globpath()
