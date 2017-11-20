@@ -122,7 +122,6 @@ NEW_TESTS = test_arabic.res \
 	    test_job_fails.res \
 	    test_json.res \
 	    test_langmap.res \
-	    test_largefile.res \
 	    test_let.res \
 	    test_lineending.res \
 	    test_listchars.res \
