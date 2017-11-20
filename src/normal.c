@@ -4633,7 +4633,9 @@ nv_mousescroll(cmdarg_T *cap)
     {
 # ifdef FEAT_TERMINAL
 	if (term_use_loop())
-	    send_keys_to_term(curbuf->b_term, cap->cmdchar, TRUE);
+	    /* This window is a terminal window, send the mouse event there.
+	     * Set "typed" to FALSE to avoid an endless loop. */
+	    send_keys_to_term(curbuf->b_term, cap->cmdchar, FALSE);
 	else
 # endif
 	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
