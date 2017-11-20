@@ -788,6 +788,31 @@ property_event(GtkWidget *widget,
 }
 #endif /* defined(FEAT_CLIENTSERVER) */
 
+/*
+ * Handle changes to the "Xft/DPI" setting
+ */
+    static void
+gtk_settings_xft_dpi_changed_cb(GtkSettings *gtk_settings,
+                                GParamSpec *pspec,
+                                gpointer data)
+{
+    /*
+     * Create a new PangoContext for this screen, and initialize it
+     * with the current font if necessary.
+     */
+    if (gui.text_context != NULL)
+	g_object_unref(gui.text_context);
+
+    gui.text_context = gtk_widget_create_pango_context(gui.mainwin);
+    pango_context_set_base_dir(gui.text_context, PANGO_DIRECTION_LTR);
+
+    if (gui.norm_font != NULL)
+    {
+	gui_mch_init_font(*p_guifont == NUL ? NULL /* force default font */
+		: p_guifont, FALSE);
+	gui_set_shellsize(TRUE, FALSE, RESIZE_BOTH);
+    }
+}
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef gboolean timeout_cb_type;
@@ -4377,6 +4402,16 @@ gui_mch_init(void)
 
     /* Pretend we don't have input focus, we will get an event if we do. */
     gui.in_focus = FALSE;
+
+#if GTK_CHECK_VERSION(3,0,0)
+    /* Handle changes to the "Xft/DPI" setting. */
+    {
+	GtkSettings *gtk_settings;
+	gtk_settings = gtk_settings_get_for_screen(gdk_screen_get_default());
+	g_signal_connect(gtk_settings, "notify::gtk-xft-dpi",
+			   G_CALLBACK(gtk_settings_xft_dpi_changed_cb), NULL);
+    }
+#endif
 
     return OK;
 }
