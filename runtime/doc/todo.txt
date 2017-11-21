@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 11
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,10 +35,6 @@ entered there will not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Permission of viminfo tempfile can be wrong. (Simon Ruderich)
-Always use 600 ?  Also avoids groups problem.
-patch from Simon Ruderich, Nov 8
-
 No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
 
@@ -49,10 +45,6 @@ Terminal emulator window:
     - Implement the right-click popup menu for the terminal. Can use the
       completion popup menu code and mouse dragging.
       Use it for "set breakpoint", "remove breakpoint", etc.
-    - make showballoon() work in a terminal.  Requires getting mouse-move
-      events.
-    - send 'balloonText' events for the cursor position (using CursorHold ?)
-      in terminal mode.
   - get ideas from http://clewn.sf.net
   - Look into the idevim plugin/script.
 - Improve testing:
@@ -88,6 +80,8 @@ Terminal emulator window:
     Although user could use "xterm -e 'cmd arg'".
 
 Regexp problems:
+- When search pattern has the base character both with and without combining
+  character, search fails.  E.g. "รรีบ" in "การรีบรักใคร". (agguser, #2312)
 - [:space:] only matches ASCII spaces.  Add [:white:] for all space-like
   characters, esp. including 0xa0.  Use character class zero.
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
@@ -136,7 +130,7 @@ Regexp problems:
 Include a few color schemes, based on popularity:
 http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
 http://vimawesome.com/?q=tag:color-scheme
-Use names that indicate their apperance (Christian Brabandt, 2017 Aug 3)
+Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
 - monokai - Xia Crusoe (2017 Aug 4) 
 - seoul256 - Christian Brabandt (2017 Aug 3)
 - gruvbox -  Christian Brabandt (2017 Aug 3)
@@ -147,6 +141,7 @@ Suggested by Hiroki Kokubun:
 - [hybrid](https://github.com/w0ng/vim-hybrid)
 Include solarized color scheme?, it does not support termguicolors.
 -> Make check for colorscheme that it's sane.
+- Sanitized version of pablo (Lifepillar, 2017 Nov 21)
 
 Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in do_sub() (#2249)
@@ -154,6 +149,13 @@ Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in getdecchrs() (#2254)
 - signed integer overflow in nfa_regatom() (#2251)
 - undefined left shift in get_string_tv() (#2250)
+
+Patch to use imactivatefunc() also without +xim feature. (Yasuhiro Matsumoto,
+2017 Nov 19, #2349)
+
+'hlsearch' shows empty matches, which means highlighting everything.
+Don't do that.  For "foo\|" or "\v"
+Patch from Christian, 2017 Nov 14.  Should still display "$" matches.
 
 When starting with --clean packages under "start" are not loaded.  Make this
 work:  :packadd START {name}  similar to :runtime START name
@@ -169,6 +171,12 @@ With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
 Using 'wildignore' also applies to literally entered file name.  Also with
 :drop (remote commands).
 
+Race condition between stat() and open() in write_viminfo(). Use open() in the
+loop and try another name instead of using a temp file. (Simon Ruderich)
+The first one, when viminfo is new, should just fail if it creating with
+O_EXCL fails.
+Also use umask instead of mch_fopen() after vim_tempname().
+
 "gvim --remote" from a directory with non-word characters changes the current
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
@@ -176,9 +184,18 @@ Also see #1689.
 ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
 Lemonboy can reproduce (2017 Jun 5)
 
+Invalid range error when using BufWinLeave for closing terminal.
+(Gabriel Barta, 2017 Nov 15, #2339)
+
 ml_get errors with buggy script. (Dominique, 2017 Apr 30)
 
 Error in emsg with buggy script. (Dominique, 2017 Apr 30)
+
+Patch to avoid clearing the intro message on Win32 console.
+(Ken Takata, 2017 Nov 14)
+
+Patch to copy buffer-local options before buffer leaves the window. (Bjorn
+Linse, 2017 Nov 14, #2336)
 
 When a timer is running and typing CTRL-R on the command line, it is not
 redrawn properly. (xtal8, 2017 Oct 23, #2241)
@@ -186,8 +203,18 @@ redrawn properly. (xtal8, 2017 Oct 23, #2241)
 Universal solution to detect if t_RS is working, using cursor position.
 Koichi Iwamoto, #2126
 
+Patch to fix cmdline abbreviation after '<,'>. (Christian Brabandt, 2017 Nov
+13, on issue #2320)
+
+Patch to add TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
+May 24)  Update May 26.
+Now in patch by Lemonboy, #2333  (who is Lemonboy?)
+
 Default install on MS-Windows should source defaults.vim.
 Ask whether to use Windows or Vim key behavior?
+
+Patch for improving detecting Ruby on Mac in configure. (Ilya Mikhaltsou, 2017
+Nov 21)
 
 When using command line window, CmdlineLeave is triggered without
 CmdlineEnter.  (xtal8, 2017 Oct 30, #2263)
@@ -196,8 +223,13 @@ always nested.
 
 matchit hasn't been maintained for a long time.  #955.
 
+Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
+
 MS-Windows: buffer completetion doesn't work when using backslash (or slash)
 for a path separator. (xtal8, #2201)
+
+Patch to adjust to DPI setting for GTK. (Roel van de Kraats, 2017 Nov 20,
+#2357)
 
 Test runtime files.
 Start with filetype detection: testdir/test_filetype.vim
@@ -217,14 +249,21 @@ Still happens (2017 Jul 9)
 When bracketed paste is used, pasting at the ":append" prompt does not get the
 line breaks. (Ken Takata, 2017 Aug 22)
 
+The ":move" command does not honor closed folds. (Ryan Lue, #2351)
+
 Patch for 24 bit color support in MS-Windows console, using vcon. (Nobuhiro
-Takasaki, 2017 Oct 1, #2060).  Ready to include now?
+Takasaki, Ken Takata, 2017 Oct 1, #2060).
 
 Memory leaks in test_channel? (or is it because of fork())
 Memory leak in test_arabic.
 Using uninitialized value in test_crypt.
 
+Patch to clear background when "guibg=NONE" is used and 'termguicolors' is
+set.
+
 Patch to make gM move to middle of line. (Yasuhiro Matsumoto, Sep 8, #2070)
+
+Cannot copy modeless selection when cursor is inside it. (lkintact, #2300)
 
 Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
@@ -290,8 +329,15 @@ Patch to add argument to :cquit. (Thinca, 2014 Oct 12)
 Python: After "import vim" error messages only show the first line of the
 stack trace. (Yggdroot, 2017 Jul 28, #1887)
 
+Profile of a dict function is lost when the dict is deleted.  Would it be
+possible to collect this?  (Daniel Hahler, #2350)
+
 Patch to add "module" to quickfix entries. (Marcin Szamotulski, Coot, 2017 Jun
-8, #1757)
+8, #1757)  Now part of #2322.  Or #2327?  #1757 was re-opened, include that
+first.
+
+Add `:filter` support for various commands (Marcin Szamotulski, 2017 Nov 12
+#2322)  Now in #2327?
 
 When checking if a bufref is valid, also check the buffer number, to catch the
 case of :bwipe followed by :new.
@@ -1483,9 +1529,6 @@ Also for another example (ZyX, 2011 Jan 24)
 Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
 
 "0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
-
-Patch to add TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
-May 24)  Update May 26.
 
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
@@ -4653,7 +4696,7 @@ Command line history:
 -   Add "KeyWasTyped" flag: It's reset before each command and set when a
     character from the keyboard is consumed. Value is used to decide to put a
     command line in history or not. Put line in history if it didn't
-    completely resulted from one mapping.
+    completely result from one mapping.
 -   When using ":browse", also put the resulting edit command in the history,
     so that it can be repeated. (Demirel)
 

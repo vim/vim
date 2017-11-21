@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Nov 16
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Nov 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2748,6 +2748,8 @@ bufexists({expr})					*bufexists()*
 		The result is a Number, which is |TRUE| if a buffer called
 		{expr} exists.
 		If the {expr} argument is a number, buffer numbers are used.
+		Number zero is the alternate buffer for the current window.
+
 		If the {expr} argument is a string it must match a buffer name
 		exactly.  The name can be:
 		- Relative to the current directory.

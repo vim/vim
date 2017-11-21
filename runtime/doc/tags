@@ -74,12 +74,14 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'backupskip'	options.txt	/*'backupskip'*
 'balloondelay'	options.txt	/*'balloondelay'*
 'ballooneval'	options.txt	/*'ballooneval'*
+'balloonevalterm'	options.txt	/*'balloonevalterm'*
 'balloonexpr'	options.txt	/*'balloonexpr'*
 'bdir'	options.txt	/*'bdir'*
 'bdlay'	options.txt	/*'bdlay'*
 'beautify'	vi_diff.txt	/*'beautify'*
 'belloff'	options.txt	/*'belloff'*
 'beval'	options.txt	/*'beval'*
+'bevalterm'	options.txt	/*'bevalterm'*
 'bex'	options.txt	/*'bex'*
 'bexpr'	options.txt	/*'bexpr'*
 'bf'	vi_diff.txt	/*'bf'*
@@ -505,7 +507,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'noawa'	options.txt	/*'noawa'*
 'nobackup'	options.txt	/*'nobackup'*
 'noballooneval'	options.txt	/*'noballooneval'*
+'noballoonevalterm'	options.txt	/*'noballoonevalterm'*
 'nobeval'	options.txt	/*'nobeval'*
+'nobevalterm'	options.txt	/*'nobevalterm'*
 'nobin'	options.txt	/*'nobin'*
 'nobinary'	options.txt	/*'nobinary'*
 'nobiosk'	options.txt	/*'nobiosk'*
@@ -1223,7 +1227,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +acl	various.txt	/*+acl*
 +arabic	various.txt	/*+arabic*
 +autocmd	various.txt	/*+autocmd*
++autoservername	various.txt	/*+autoservername*
 +balloon_eval	various.txt	/*+balloon_eval*
++balloon_eval_term	various.txt	/*+balloon_eval_term*
 +browse	various.txt	/*+browse*
 +builtin_terms	various.txt	/*+builtin_terms*
 +byte_offset	various.txt	/*+byte_offset*
@@ -4569,6 +4575,7 @@ E945	pattern.txt	/*E945*
 E946	terminal.txt	/*E946*
 E947	terminal.txt	/*E947*
 E948	terminal.txt	/*E948*
+E949	editing.txt	/*E949*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
 E97	diff.txt	/*E97*
@@ -5145,6 +5152,7 @@ backup-extension	version4.txt	/*backup-extension*
 backup-table	editing.txt	/*backup-table*
 balloon-eval	debugger.txt	/*balloon-eval*
 balloon_show()	eval.txt	/*balloon_show()*
+balloon_split()	eval.txt	/*balloon_split()*
 bar	motion.txt	/*bar*
 bars	help.txt	/*bars*
 base_font_name_list	mbyte.txt	/*base_font_name_list*
