@@ -164,6 +164,7 @@ static void	ex_win_close(int forceit, win_T *win, tabpage_T *tp);
 static void	ex_only(exarg_T *eap);
 static void	ex_resize(exarg_T *eap);
 static void	ex_stag(exarg_T *eap);
+static void	ex_vtag(exarg_T *eap);
 static void	ex_tabclose(exarg_T *eap);
 static void	ex_tabonly(exarg_T *eap);
 static void	ex_tabnext(exarg_T *eap);
@@ -10470,6 +10471,20 @@ ex_stag(exarg_T *eap)
 {
     postponed_split = -1;
     postponed_split_flags = cmdmod.split;
+    postponed_split_tab = cmdmod.tab;
+    ex_tag_cmd(eap, cmdnames[eap->cmdidx].cmd_name + 1);
+    postponed_split_flags = 0;
+    postponed_split_tab = 0;
+}
+
+/*
+ * ":vtag", ":vtselect" and ":vtjump".
+ */
+    static void
+ex_vtag(exarg_T *eap)
+{
+    postponed_split = -1;
+    postponed_split_flags = cmdmod.split | WSP_VERT;
     postponed_split_tab = cmdmod.tab;
     ex_tag_cmd(eap, cmdnames[eap->cmdidx].cmd_name + 1);
     postponed_split_flags = 0;
