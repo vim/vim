@@ -27,6 +27,10 @@
 
 #include "gui_dwrite.h"
 
+#ifndef D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT
+# define D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT ( 0x00000004 )
+#endif
+
 #ifdef __MINGW32__
 # define __maybenull	SAL__maybenull
 # define __in		SAL__in
@@ -867,8 +871,22 @@ DWriteContext_DrawText(
 	int cellWidth,
 	COLORREF color)
 {
-    if (ctx != NULL)
+    if (ctx != NULL && ctx->mRT != NULL)
+    {
+#if 0
 	ctx->DrawText(hdc, text, len, x, y, w, h, cellWidth, color);
+#else
+	RECT rect = { x, y, x + w, y + h };
+	ctx->mRT->BindDC(hdc, &rect);
+	ctx->mRT->BeginDraw();
+	D2D1_SIZE_F size = ctx->mRT->GetSize();
+	ctx->mRT->DrawText(text, len, ctx->mTextFormat,
+		&D2D1::RectF(0, 0, size.width, size.height),
+		ctx->mBrush,
+		(D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+	ctx->mRT->EndDraw();
+#endif
+    }
 }
 
     void

@@ -2858,10 +2858,6 @@ _OnPaint(
 
 	out_flush();	    /* make sure all output has been processed */
 	(void)BeginPaint(hwnd, &ps);
-#if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX())
-	    DWriteContext_BeginDraw(s_dwc);
-#endif
 
 #ifdef FEAT_MBYTE
 	/* prevent multi-byte characters from misprinting on an invalid
@@ -2878,19 +2874,11 @@ _OnPaint(
 
 	if (!IsRectEmpty(&ps.rcPaint))
 	{
-#if defined(FEAT_DIRECTX)
-	    if (IS_ENABLE_DIRECTX())
-		DWriteContext_BindDC(s_dwc, s_hdc, &ps.rcPaint);
-#endif
 	    gui_redraw(ps.rcPaint.left, ps.rcPaint.top,
 		    ps.rcPaint.right - ps.rcPaint.left + 1,
 		    ps.rcPaint.bottom - ps.rcPaint.top + 1);
 	}
 
-#if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX())
-	    DWriteContext_EndDraw(s_dwc);
-#endif
 	EndPaint(hwnd, &ps);
     }
 }
