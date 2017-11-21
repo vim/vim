@@ -5034,11 +5034,14 @@ job_io_file_open(
  * environment argument of vim_create_process().
  */
     void
-win32_build_env(dict_T *env, garray_T *gap)
+win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 {
     hashitem_T	*hi;
-    int		todo = (int)env->dv_hashtab.ht_used;
+    int		todo = env != NULL ? (int)env->dv_hashtab.ht_used : 0;
     LPVOID	base = GetEnvironmentStringsW();
+# ifdef FEAT_CLIENTSERVER
+    char_u	*servername;
+# endif
 
     /* for last \0 */
     if (ga_grow(gap, 1) == FAIL)
@@ -5062,35 +5065,56 @@ win32_build_env(dict_T *env, garray_T *gap)
 	*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
     }
 
-    for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
+    if (env != NULL)
     {
-	if (!HASHITEM_EMPTY(hi))
+	for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
 	{
-	    typval_T *item = &dict_lookup(hi)->di_tv;
-	    WCHAR   *wkey = enc_to_utf16((char_u *)hi->hi_key, NULL);
-	    WCHAR   *wval = enc_to_utf16(get_tv_string(item), NULL);
-	    --todo;
-	    if (wkey != NULL && wval != NULL)
+	    if (!HASHITEM_EMPTY(hi))
 	    {
-		size_t	n;
-		size_t	lkey = wcslen(wkey);
-		size_t	lval = wcslen(wval);
+		typval_T *item = &dict_lookup(hi)->di_tv;
+		WCHAR   *wkey = enc_to_utf16((char_u *)hi->hi_key, NULL);
+		WCHAR   *wval = enc_to_utf16(get_tv_string(item), NULL);
+		--todo;
+		if (wkey != NULL && wval != NULL)
+		{
+		    size_t	n;
+		    size_t	lkey = wcslen(wkey);
+		    size_t	lval = wcslen(wval);
 
-		if (ga_grow(gap, (int)(lkey + lval + 2)) != OK)
-		    continue;
-		for (n = 0; n < lkey; n++)
-		    *((WCHAR*)gap->ga_data + gap->ga_len++) = wkey[n];
-		*((WCHAR*)gap->ga_data + gap->ga_len++) = L'=';
-		for (n = 0; n < lval; n++)
-		    *((WCHAR*)gap->ga_data + gap->ga_len++) = wval[n];
-		*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+		    if (ga_grow(gap, (int)(lkey + lval + 2)) != OK)
+			continue;
+		    for (n = 0; n < lkey; n++)
+			*((WCHAR*)gap->ga_data + gap->ga_len++) = wkey[n];
+		    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'=';
+		    for (n = 0; n < lval; n++)
+			*((WCHAR*)gap->ga_data + gap->ga_len++) = wval[n];
+		    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+		}
+		if (wkey != NULL) vim_free(wkey);
+		if (wval != NULL) vim_free(wval);
 	    }
-	    if (wkey != NULL) vim_free(wkey);
-	    if (wval != NULL) vim_free(wval);
 	}
     }
 
-    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+# ifdef FEAT_CLIENTSERVER
+    if (is_terminal)
+    {
+	size_t	lval;
+	servername = get_vim_var_str(VV_SEND_SERVER);
+	lval = STRLEN(servername);
+	if (ga_grow(gap, (int)(14 + lval + 2)) == OK)
+	{
+	    size_t	n;
+	    for (n = 0; n < 15; n++)
+		*((WCHAR*)gap->ga_data + gap->ga_len++) =
+		    (WCHAR)"VIM_SERVERNAME="[n];
+	    for (n = 0; n < lval; n++)
+		*((WCHAR*)gap->ga_data + gap->ga_len++) =
+		    (WCHAR)servername[n];
+	    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+	}
+    }
+# endif
 }
 
     void
@@ -5133,7 +5157,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     }
 
     if (options->jo_env != NULL)
-	win32_build_env(options->jo_env, &ga);
+	win32_build_env(options->jo_env, &ga, FALSE);
 
     ZeroMemory(&pi, sizeof(pi));
     ZeroMemory(&si, sizeof(si));

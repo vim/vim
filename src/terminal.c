@@ -3424,12 +3424,10 @@ term_and_job_init(
 	return FAIL;
     if (opt->jo_cwd != NULL)
 	cwd_wchar = enc_to_utf16(opt->jo_cwd, NULL);
-    if (opt->jo_env != NULL)
-    {
-	ga_init2(&ga_env, (int)sizeof(char*), 20);
-	win32_build_env(opt->jo_env, &ga_env);
-	env_wchar = ga_env.ga_data;
-    }
+
+    ga_init2(&ga_env, (int)sizeof(char*), 20);
+    win32_build_env(opt->jo_env, &ga_env, TRUE);
+    env_wchar = ga_env.ga_data;
 
     job = job_alloc();
     if (job == NULL)
@@ -3531,8 +3529,7 @@ term_and_job_init(
 failed:
     if (argvar->v_type == VAR_LIST)
 	vim_free(ga_cmd.ga_data);
-    if (opt->jo_env != NULL)
-	vim_free(ga_env.ga_data);
+    vim_free(ga_env.ga_data);
     vim_free(cmd_wchar);
     vim_free(cwd_wchar);
     if (spawn_config != NULL)
