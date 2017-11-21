@@ -235,6 +235,7 @@ autocmd BufRead,BufNewFile *.bzl,WORKSPACE 	setf bzl
 if has("fname_case")
   " There is another check for BUILD further below.
   autocmd BufRead,BufNewFile BUILD		setf bzl
+  autocmd BufRead,BufNewFile BUILD.bazel	setf bzl
 endif
 
 " C or lpc
@@ -1939,6 +1940,7 @@ au BufNewFile,BufRead bzr_log.*			setf bzr
 " Bazel build file
 if !has("fname_case")
   au BufNewFile,BufRead BUILD			setf bzl
+  au BufNewFile,BufRead BUILD.bazel		setf bzl
 endif
 
 " BIND zone
