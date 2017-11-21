@@ -352,9 +352,7 @@ func Test_terminal_curwin()
   call delete('Xtext')
 endfunc
 
-func Test_finish_open_close()
-  call assert_equal(1, winnr('$'))
-
+func s:get_sleep_cmd()
   if s:python != ''
     let cmd = s:python . " test_short_sleep.py"
     let waittime = 500
@@ -367,12 +365,18 @@ func Test_finish_open_close()
       let cmd = 'sleep 1'
     endif
   endif
+  return [cmd, waittime]
+endfunc
+
+func Test_terminal_finish_open_close()
+  call assert_equal(1, winnr('$'))
+
+  let [cmd, waittime] = s:get_sleep_cmd()
 
   exe 'terminal ++close ' . cmd
   call assert_equal(2, winnr('$'))
   wincmd p
   call WaitFor("winnr('$') == 1", waittime)
-  call assert_equal(1, winnr('$'))
 
   call term_start(cmd, {'term_finish': 'close'})
   call assert_equal(2, winnr('$'))
@@ -742,4 +746,30 @@ func Test_terminal_composing_unicode()
   bwipe!
   unlet g:job
   let &encoding = save_enc
+endfunc
+
+func Test_terminal_aucmd_on_close()
+  fun Nop()
+    let s:called = 1
+  endfun
+
+  aug repro
+      au!
+      au BufWinLeave * call Nop()
+  aug END
+
+  let [cmd, waittime] = s:get_sleep_cmd()
+
+  call assert_equal(1, winnr('$'))
+  new
+  call setline(1, ['one', 'two'])
+  exe 'term ++close ' . cmd
+  wincmd p
+  call WaitFor("winnr('$') == 2", waittime)
+  call assert_equal(1, s:called)
+  bwipe!
+
+  unlet s:called
+  au! repro
+  delfunc Nop
 endfunc

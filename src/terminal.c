@@ -51,6 +51,7 @@
  * - implement term_setsize()
  * - Termdebug does not work when Vim build with mzscheme.  gdb hangs.
  * - MS-Windows GUI: WinBar has  tearoff item
+ * - Adding WinBar to terminal window doesn't display, text isn't shifted down.
  * - MS-Windows GUI: still need to type a key after shell exits?  #1924
  * - After executing a shell command the status line isn't redraw.
  * - What to store in a session file?  Shell at the prompt would be OK to
@@ -2172,10 +2173,13 @@ term_channel_closed(channel_T *ch)
 
 		if (term->tl_finish == 'c')
 		{
+		    aco_save_T	aco;
+
 		    /* ++close or term_finish == "close" */
 		    ch_log(NULL, "terminal job finished, closing window");
-		    curbuf = term->tl_buffer;
+		    aucmd_prepbuf(&aco, term->tl_buffer);
 		    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
+		    aucmd_restbuf(&aco);
 		    break;
 		}
 		if (term->tl_finish == 'o' && term->tl_buffer->b_nwindows == 0)
