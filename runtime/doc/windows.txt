@@ -786,6 +786,11 @@ the buffer.  The result is that all buffers will use the 'encoding' encoding
 		Does ":tag[!] [tagname]" and splits the window for the found
 		tag.  See also |:tag|.
 
+							*:vta* *:vtag*
+:vta[g][!] [tagname]
+		Does ":tag[!] [tagname]" and splits the window vertically for
+		the found tag.  See also |:tag|.
+
 CTRL-W ]					*CTRL-W_]* *CTRL-W_CTRL-]*
 CTRL-W CTRL-]	Split current window in two.  Use identifier under cursor as a
 		tag and jump to it in the new upper window.

@@ -1623,6 +1623,9 @@ tag	      command	      action ~
 |:vnoremap|	:vn[oremap]	like ":noremap" but for Visual+Select mode
 |:vnoremenu|	:vnoreme[nu]	like ":noremenu" but for Visual+Select mode
 |:vsplit|	:vs[plit]	split current window vertically
+|:vtag|		:vta[g]		split window vertically and jump to a tag
+|:vtjump|	:vtj[ump]	do ":tjump" and split window vertically
+|:vtselect|	:vts[elect]	do ":tselect" and split window vertically
 |:vunmap|	:vu[nmap]	like ":unmap" but for Visual+Select mode
 |:vunmenu|	:vunme[nu]	remove menu for Visual+Select mode
 |:windo|	:windo		execute command in each window
