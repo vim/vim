@@ -792,9 +792,9 @@ property_event(GtkWidget *widget,
  * Handle changes to the "Xft/DPI" setting
  */
     static void
-gtk_settings_xft_dpi_changed_cb(GtkSettings *gtk_settings,
-                                GParamSpec *pspec,
-                                gpointer data)
+gtk_settings_xft_dpi_changed_cb(GtkSettings *gtk_settings UNUSED,
+                                GParamSpec *pspec UNUSED,
+                                gpointer data UNUSED)
 {
     /*
      * Create a new PangoContext for this screen, and initialize it
@@ -4403,7 +4403,6 @@ gui_mch_init(void)
     /* Pretend we don't have input focus, we will get an event if we do. */
     gui.in_focus = FALSE;
 
-#if GTK_CHECK_VERSION(3,0,0)
     /* Handle changes to the "Xft/DPI" setting. */
     {
 	GtkSettings *gtk_settings;
@@ -4411,7 +4410,6 @@ gui_mch_init(void)
 	g_signal_connect(gtk_settings, "notify::gtk-xft-dpi",
 			   G_CALLBACK(gtk_settings_xft_dpi_changed_cb), NULL);
     }
-#endif
 
     return OK;
 }
