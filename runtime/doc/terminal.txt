@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Nov 12
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Nov 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -105,6 +105,10 @@ After opening the terminal window and setting 'buftype' to "terminal" the
 BufWinEnter autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >
    au BufWinEnter * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
+
+Mouse events (click and drag) are passed to the terminal.  Mouse move events
+are only passed when Vim itself is receiving them.  For a terminal that is
+when 'balloonevalterm' is enabled.
 
 
 Size and color ~
@@ -334,6 +338,9 @@ Just put the files somewhere in your PATH.  You can set the 'winptydll' option
 to point to the right file, if needed.  If you have both the 32-bit and 64-bit
 version, rename to winpty32.dll and winpty64.dll to match the way Vim was
 build.
+
+Environment variables are used to pass information to the running job:
+    VIM_SERVERNAME	v:servername
 
 ==============================================================================
 2. Remote testing					*terminal-testing*

@@ -434,6 +434,27 @@ func Test_terminal_cwd()
   call delete('Xdir', 'rf')
 endfunc
 
+func Test_terminal_servername()
+  if !has('clientserver')
+    return
+  endif
+  let g:buf = Run_shell_in_terminal({})
+  " Wait for the shell to display a prompt
+  call WaitFor('term_getline(g:buf, 1) != ""')
+  if has('win32')
+    call term_sendkeys(g:buf, "echo %VIM_SERVERNAME%\r")
+  else
+    call term_sendkeys(g:buf, "echo $VIM_SERVERNAME\r")
+  endif
+  call term_wait(g:buf)
+  call Stop_shell_in_terminal(g:buf)
+  call WaitFor('getline(2) == v:servername')
+  call assert_equal(v:servername, getline(2))
+
+  exe g:buf . 'bwipe'
+  unlet g:buf
+endfunc
+
 func Test_terminal_env()
   let g:buf = Run_shell_in_terminal({'env': {'TESTENV': 'correct'}})
   " Wait for the shell to display a prompt
