@@ -422,6 +422,8 @@ struct DWriteContext {
 
     virtual ~DWriteContext();
 
+    void SetVersion(int version);
+
     HRESULT SetLOGFONT(const LOGFONTW &logFont, float fontSize);
 
     void SetFont(HFONT hFont);
@@ -430,6 +432,8 @@ struct DWriteContext {
 
     void DrawText(HDC hdc, const WCHAR* text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color);
+
+    void BindDC(HDC hdc, RECT *rect);
 
     void AssureDrawing(void);
 
@@ -532,6 +536,12 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mBrush);
     SafeRelease(&mRT);
     SafeRelease(&mD2D1Factory);
+}
+
+    void
+DWriteContext::SetVersion(int version)
+{
+    mVersion = version;
 }
 
     HRESULT
@@ -734,6 +744,14 @@ DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
 }
 
     void
+DWriteContext::BindDC(HDC hdc, RECT *rect)
+{
+    Flush();
+    mRT->BindDC(hdc, rect);
+    mRT->SetTransform(D2D1::IdentityMatrix());
+}
+
+    void
 DWriteContext::AssureDrawing(void)
 {
     if (mDrawing == false)
@@ -882,28 +900,21 @@ DWriteContext_Open(void)
 DWriteContext_SetVersion(DWriteContext *ctx, int version)
 {
     if (ctx != NULL)
-    {
-	ctx->mVersion = version;
-    }
+	ctx->SetVersion(version);
 }
 
     void
 DWriteContext_BindDC(DWriteContext *ctx, HDC hdc, RECT *rect)
 {
-    if (ctx != NULL && ctx->mRT != NULL)
-    {
-	ctx->mRT->BindDC(hdc, rect);
-	ctx->mRT->SetTransform(D2D1::IdentityMatrix());
-    }
+    if (ctx != NULL)
+	ctx->BindDC(hdc, rect);
 }
 
     void
 DWriteContext_SetFont(DWriteContext *ctx, HFONT hFont)
 {
     if (ctx != NULL)
-    {
 	ctx->SetFont(hFont);
-    }
 }
 
     void
