@@ -11,7 +11,7 @@ endif
 syn match jargonChaptTitle	/:[^:]*:/
 syn match jargonEmailAddr	/[^<@ ^I]*@[^ ^I>]*/
 syn match jargonUrl	 +\(http\|ftp\)://[^\t )"]*+
-syn match jargonMark	/{[^}]*}/
+syn region jargonMark	 start="{"  end="}"
 
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet
