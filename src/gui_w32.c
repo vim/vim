@@ -6498,6 +6498,11 @@ gui_mch_flush(void)
     BOOL  __stdcall GdiFlush(void);
 #   endif
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     GdiFlush();
 }
 

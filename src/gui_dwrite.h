@@ -68,6 +68,7 @@ void DWriteContext_DrawText(
 	int h,
 	int cellWidth,
 	COLORREF color);
+void DWriteContext_Flush(DWriteContext *ctx);
 void DWriteContext_Close(DWriteContext *ctx);
 
 void DWriteContext_SetRenderingParams(

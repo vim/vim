@@ -395,6 +395,7 @@ private:
 
 struct DWriteContext {
     int mVersion;
+    bool mDrawing;
 
     FLOAT mDpiScaleX;
     FLOAT mDpiScaleY;
@@ -433,6 +434,8 @@ struct DWriteContext {
     void DrawText1(const WCHAR* text, int len,
 	    int x, int y, int w, int h, COLORREF color);
 
+    void Flush(void);
+
     float PixelsToDipsX(int x);
 
     float PixelsToDipsY(int y);
@@ -446,6 +449,7 @@ struct DWriteContext {
 
 DWriteContext::DWriteContext() :
     mVersion(1),
+    mDrawing(false),
     mDpiScaleX(1.f),
     mDpiScaleY(1.f),
     mD2D1Factory(NULL),
@@ -731,7 +735,11 @@ DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
 DWriteContext::DrawText1(const WCHAR* text, int len,
 	int x, int y, int w, int h, COLORREF color)
 {
-    mRT->BeginDraw();
+    if (mDrawing == false)
+    {
+	mRT->BeginDraw();
+	mDrawing = true;
+    }
     mBrush->SetColor(D2D1::ColorF(UINT32(GetRValue(color)) << 16 |
 		UINT32(GetGValue(color)) << 8 | UINT32(GetBValue(color))));
     mRT->DrawText(text, len, mTextFormat,
@@ -742,7 +750,16 @@ DWriteContext::DrawText1(const WCHAR* text, int len,
 		PixelsToDipsY(y + h)),
 	    mBrush,
 	    (D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
-    mRT->EndDraw();
+}
+
+    void
+DWriteContext::Flush(void)
+{
+    if (mDrawing)
+    {
+	mRT->EndDraw();
+	mDrawing = false;
+    }
 }
 
     float
@@ -903,6 +920,13 @@ DWriteContext_DrawText(
 		break;
 	}
     }
+}
+
+    void
+DWriteContext_Flush(DWriteContext *ctx)
+{
+    if (ctx != NULL)
+	ctx->Flush();
 }
 
     void
