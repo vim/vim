@@ -1728,6 +1728,12 @@ gui_mch_draw_part_cursor(
     rc.top = FILL_Y(gui.row) + gui.char_height - h;
     rc.right = rc.left + w;
     rc.bottom = rc.top + h;
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_FillRect(s_dwc, &rc, color);
+#endif
+
     hbr = CreateSolidBrush(color);
     FillRect(s_hdc, &rc, hbr);
     DeleteBrush(hbr);
@@ -6235,6 +6241,12 @@ gui_mch_draw_string(
 	    hbr = hbr_cache[brush_lru];
 	    brush_lru = !brush_lru;
 	}
+
+#if defined(FEAT_DIRECTX)
+	if (IS_ENABLE_DIRECTX())
+	    DWriteContext_FillRect(s_dwc, &rc, gui.currBgColor);
+#endif
+
 	FillRect(s_hdc, &rc, hbr);
 
 	SetBkMode(s_hdc, TRANSPARENT);
@@ -6512,6 +6524,11 @@ gui_mch_flush(void)
 clear_rect(RECT *rcp)
 {
     HBRUSH  hbr;
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_FillRect(s_dwc, rcp, gui.back_pixel);
+#endif
 
     hbr = CreateSolidBrush(gui.back_pixel);
     FillRect(s_hdc, rcp, hbr);

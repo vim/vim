@@ -795,6 +795,8 @@ DWriteContext::DrawText1(const WCHAR* text, int len,
     void
 DWriteContext::FillRect(RECT *rc, COLORREF color)
 {
+    if (mVersion == 1)
+	return;
     AssureDrawing();
     mRT->FillRectangle(
 	    D2D1::RectF(
@@ -803,8 +805,6 @@ DWriteContext::FillRect(RECT *rc, COLORREF color)
 		PixelsToDipsX(rc->right),
 		PixelsToDipsY(rc->bottom)),
 	    SolidBrush(color));
-    if (mVersion == 2)
-	Flush();
 }
 
     void
