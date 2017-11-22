@@ -34,6 +34,7 @@ static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
+static void directx_binddc(void);
 #endif
 
 #ifdef FEAT_MENU
@@ -52,6 +53,7 @@ directx_enabled(void)
     DWrite_Init();
     s_directx_load_attempted = 1;
     s_dwc = DWriteContext_Open();
+    directx_binddc();
     return s_dwc != NULL ? 1 : 0;
 }
 #endif
@@ -298,6 +300,7 @@ typedef int UINT_PTR;
 
 static void _OnPaint( HWND hwnd);
 static void clear_rect(RECT *rcp);
+static void _OnSizeTextArea(HWND hwnd, UINT state, int cx, int cy);
 
 static WORD		s_dlgfntheight;		/* height of the dialog font */
 static WORD		s_dlgfntwidth;		/* width of the dialog font */
@@ -495,6 +498,19 @@ static LOGFONT sub_logfont;
 
 #ifdef FEAT_MBYTE_IME
 static LRESULT _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData);
+#endif
+
+#if defined(FEAT_DIRECTX)
+    static void
+directx_binddc(void)
+{
+    if (s_textArea != NULL && IS_ENABLE_DIRECTX())
+    {
+	RECT	rect;
+	GetClientRect(s_textArea, &rect);
+	DWriteContext_BindDC(s_dwc, s_hdc, &rect);
+    }
+}
 #endif
 
 #if defined(FEAT_BROWSE)
@@ -1236,6 +1252,7 @@ _TextAreaWndProc(
 	HANDLE_MSG(hwnd, WM_XBUTTONDBLCLK,_OnMouseButtonDown);
 	HANDLE_MSG(hwnd, WM_XBUTTONDOWN,_OnMouseButtonDown);
 	HANDLE_MSG(hwnd, WM_XBUTTONUP,	_OnMouseMoveOrRelease);
+	HANDLE_MSG(hwnd, WM_SIZE,	_OnSizeTextArea);
 
 #ifdef FEAT_BEVAL_GUI
 	case WM_NOTIFY: Handle_WM_Notify(hwnd, (LPNMHDR)lParam);
@@ -2881,6 +2898,18 @@ _OnPaint(
 
 	EndPaint(hwnd, &ps);
     }
+}
+
+    static void
+_OnSizeTextArea(
+    HWND hwnd UNUSED,
+    UINT state UNUSED,
+    int cx UNUSED,
+    int cy UNUSED)
+{
+#if defined(FEAT_DIRECTX)
+    directx_binddc();
+#endif
 }
 
     static void

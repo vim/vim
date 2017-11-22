@@ -396,7 +396,6 @@ private:
 struct DWriteContext {
     FLOAT mDpiScaleX;
     FLOAT mDpiScaleY;
-    bool mDrawing;
 
     ID2D1Factory *mD2D1Factory;
 
@@ -429,6 +428,9 @@ struct DWriteContext {
     void DrawText(HDC hdc, const WCHAR* text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color);
 
+    void DrawText1(const WCHAR* text, int len,
+	    int x, int y, int w, int h, COLORREF color);
+
     float PixelsToDipsX(int x);
 
     float PixelsToDipsY(int y);
@@ -443,7 +445,6 @@ struct DWriteContext {
 DWriteContext::DWriteContext() :
     mDpiScaleX(1.f),
     mDpiScaleY(1.f),
-    mDrawing(false),
     mD2D1Factory(NULL),
     mRT(NULL),
     mBrush(NULL),
@@ -723,6 +724,24 @@ DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
     SafeRelease(&bmpRT);
 }
 
+    void
+DWriteContext::DrawText1(const WCHAR* text, int len,
+	int x, int y, int w, int h, COLORREF color)
+{
+    mRT->BeginDraw();
+    mBrush->SetColor(D2D1::ColorF(UINT32(GetRValue(color)) << 16 |
+		UINT32(GetGValue(color)) << 8 | UINT32(GetBValue(color))));
+    mRT->DrawText(text, len, mTextFormat,
+	    D2D1::RectF(
+		PixelsToDipsX(x),
+		PixelsToDipsY(y),
+		PixelsToDipsX(x + w),
+		PixelsToDipsY(y + h)),
+	    mBrush,
+	    (D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+    mRT->EndDraw();
+}
+
     float
 DWriteContext::PixelsToDipsX(int x)
 {
@@ -761,6 +780,7 @@ DWriteContext::SetRenderingParams(
 	SafeRelease(&mRenderingParams);
 	mRenderingParams = renderingParams;
 	mTextAntialiasMode = textAntialiasMode;
+	mRT->SetTextAntialiasMode(mTextAntialiasMode);
     }
 }
 
@@ -829,23 +849,12 @@ DWriteContext_Open(void)
 }
 
     void
-DWriteContext_BeginDraw(DWriteContext *ctx)
-{
-    if (ctx != NULL && ctx->mRT != NULL)
-    {
-	ctx->mRT->BeginDraw();
-	ctx->mRT->SetTransform(D2D1::IdentityMatrix());
-	ctx->mDrawing = true;
-    }
-}
-
-    void
 DWriteContext_BindDC(DWriteContext *ctx, HDC hdc, RECT *rect)
 {
     if (ctx != NULL && ctx->mRT != NULL)
     {
 	ctx->mRT->BindDC(hdc, rect);
-	ctx->mRT->SetTextAntialiasMode(ctx->mTextAntialiasMode);
+	ctx->mRT->SetTransform(D2D1::IdentityMatrix());
     }
 }
 
@@ -871,31 +880,13 @@ DWriteContext_DrawText(
 	int cellWidth,
 	COLORREF color)
 {
-    if (ctx != NULL && ctx->mRT != NULL)
+    if (ctx != NULL)
     {
 #if 0
 	ctx->DrawText(hdc, text, len, x, y, w, h, cellWidth, color);
 #else
-	RECT rect = { x, y, x + w, y + h };
-	ctx->mRT->BindDC(hdc, &rect);
-	ctx->mRT->BeginDraw();
-	D2D1_SIZE_F size = ctx->mRT->GetSize();
-	ctx->mRT->DrawText(text, len, ctx->mTextFormat,
-		&D2D1::RectF(0, 0, size.width, size.height),
-		ctx->mBrush,
-		(D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
-	ctx->mRT->EndDraw();
+	ctx->DrawText1(text, len, x, y, w, h, color);
 #endif
-    }
-}
-
-    void
-DWriteContext_EndDraw(DWriteContext *ctx)
-{
-    if (ctx != NULL && ctx->mRT != NULL)
-    {
-	ctx->mRT->EndDraw();
-	ctx->mDrawing = false;
     }
 }
 

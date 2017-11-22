@@ -54,7 +54,6 @@ void DWrite_Init(void);
 void DWrite_Final(void);
 
 DWriteContext *DWriteContext_Open(void);
-void DWriteContext_BeginDraw(DWriteContext *ctx);
 void DWriteContext_BindDC(DWriteContext *ctx, HDC hdc, RECT *rect);
 void DWriteContext_SetFont(DWriteContext *ctx, HFONT hFont);
 void DWriteContext_DrawText(
@@ -68,7 +67,6 @@ void DWriteContext_DrawText(
 	int h,
 	int cellWidth,
 	COLORREF color);
-void DWriteContext_EndDraw(DWriteContext *ctx);
 void DWriteContext_Close(DWriteContext *ctx);
 
 void DWriteContext_SetRenderingParams(
