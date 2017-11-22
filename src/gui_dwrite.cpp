@@ -431,6 +431,8 @@ struct DWriteContext {
     void DrawText(HDC hdc, const WCHAR* text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color);
 
+    void AssureDrawing(void);
+
     void DrawText1(const WCHAR* text, int len,
 	    int x, int y, int w, int h, COLORREF color);
 
@@ -732,14 +734,20 @@ DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
 }
 
     void
-DWriteContext::DrawText1(const WCHAR* text, int len,
-	int x, int y, int w, int h, COLORREF color)
+DWriteContext::AssureDrawing(void)
 {
     if (mDrawing == false)
     {
 	mRT->BeginDraw();
 	mDrawing = true;
     }
+}
+
+    void
+DWriteContext::DrawText1(const WCHAR* text, int len,
+	int x, int y, int w, int h, COLORREF color)
+{
+    AssureDrawing();
     mBrush->SetColor(D2D1::ColorF(UINT32(GetRValue(color)) << 16 |
 		UINT32(GetGValue(color)) << 8 | UINT32(GetBValue(color))));
     mRT->DrawText(text, len, mTextFormat,
@@ -751,10 +759,7 @@ DWriteContext::DrawText1(const WCHAR* text, int len,
 	    mBrush,
 	    (D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
     if (mVersion == 2)
-    {
-	mRT->EndDraw();
-	mDrawing = false;
-    }
+	Flush();
 }
 
     void
