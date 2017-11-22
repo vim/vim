@@ -394,6 +394,8 @@ private:
 };
 
 struct DWriteContext {
+    int mVersion;
+
     FLOAT mDpiScaleX;
     FLOAT mDpiScaleY;
 
@@ -443,6 +445,7 @@ struct DWriteContext {
 };
 
 DWriteContext::DWriteContext() :
+    mVersion(1),
     mDpiScaleX(1.f),
     mDpiScaleY(1.f),
     mD2D1Factory(NULL),
@@ -849,6 +852,15 @@ DWriteContext_Open(void)
 }
 
     void
+DWriteContext_SetVersion(DWriteContext *ctx, int version)
+{
+    if (ctx != NULL)
+    {
+	ctx->mVersion = version;
+    }
+}
+
+    void
 DWriteContext_BindDC(DWriteContext *ctx, HDC hdc, RECT *rect)
 {
     if (ctx != NULL && ctx->mRT != NULL)
@@ -882,11 +894,14 @@ DWriteContext_DrawText(
 {
     if (ctx != NULL)
     {
-#if 0
-	ctx->DrawText(hdc, text, len, x, y, w, h, cellWidth, color);
-#else
-	ctx->DrawText1(text, len, x, y, w, h, color);
-#endif
+	switch (ctx->mVersion) {
+	    default:
+		ctx->DrawText(hdc, text, len, x, y, w, h, cellWidth, color);
+		break;
+	    case 2:
+		ctx->DrawText1(text, len, x, y, w, h, color);
+		break;
+	}
     }
 }
 

@@ -54,6 +54,7 @@ void DWrite_Init(void);
 void DWrite_Final(void);
 
 DWriteContext *DWriteContext_Open(void);
+void DWriteContext_SetVersion(DWriteContext *ctx, int version);
 void DWriteContext_BindDC(DWriteContext *ctx, HDC hdc, RECT *rect);
 void DWriteContext_SetFont(DWriteContext *ctx, HFONT hFont);
 void DWriteContext_DrawText(

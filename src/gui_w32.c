@@ -43,16 +43,20 @@ static int gui_mswin_get_menu_height(int fix_window);
 
 #if defined(FEAT_DIRECTX) || defined(PROTO)
     int
-directx_enabled(void)
+directx_enabled(int version)
 {
     if (s_dwc != NULL)
+    {
+	DWriteContext_SetVersion(s_dwc, version);
 	return 1;
+    }
     else if (s_directx_load_attempted)
 	return 0;
     /* load DirectX */
     DWrite_Init();
     s_directx_load_attempted = 1;
     s_dwc = DWriteContext_Open();
+    DWriteContext_SetVersion(s_dwc, version);
     directx_binddc();
     return s_dwc != NULL ? 1 : 0;
 }
@@ -94,6 +98,8 @@ gui_mch_set_rendering_options(char_u *s)
 	{
 	    if (STRCMP(value, "directx") == 0)
 		dx_enable = 1;
+	    else if (STRCMP(value, "directx2") == 0)
+		dx_enable = 2;
 	    else
 		return FAIL;
 	}
@@ -140,7 +146,7 @@ gui_mch_set_rendering_options(char_u *s)
     /* Enable DirectX/DirectWrite */
     if (dx_enable)
     {
-	if (!directx_enabled())
+	if (!directx_enabled(dx_enable))
 	    return FAIL;
 	DWriteContext_SetRenderingParams(s_dwc, NULL);
 	if (dx_flags)
