@@ -437,8 +437,12 @@ struct DWriteContext {
 
     void AssureDrawing(void);
 
+    ID2D1Brush* SolidBrush(COLORREF color);
+
     void DrawText1(const WCHAR* text, int len,
 	    int x, int y, int w, int h, COLORREF color);
+
+    void FillRect(RECT *rc, COLORREF color);
 
     void Flush(void);
 
@@ -761,6 +765,14 @@ DWriteContext::AssureDrawing(void)
     }
 }
 
+    ID2D1Brush*
+DWriteContext::SolidBrush(COLORREF color)
+{
+    mBrush->SetColor(D2D1::ColorF(UINT32(GetRValue(color)) << 16 |
+		UINT32(GetGValue(color)) << 8 | UINT32(GetBValue(color))));
+    return mBrush;
+}
+
     void
 DWriteContext::DrawText1(const WCHAR* text, int len,
 	int x, int y, int w, int h, COLORREF color)
@@ -774,8 +786,23 @@ DWriteContext::DrawText1(const WCHAR* text, int len,
 		PixelsToDipsY(y),
 		PixelsToDipsX(x + w),
 		PixelsToDipsY(y + h)),
-	    mBrush,
+	    SolidBrush(color),
 	    (D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+    if (mVersion == 2)
+	Flush();
+}
+
+    void
+DWriteContext::FillRect(RECT *rc, COLORREF color)
+{
+    AssureDrawing();
+    mRT->FillRectangle(
+	    D2D1::RectF(
+		PixelsToDipsX(rc->left),
+		PixelsToDipsY(rc->top),
+		PixelsToDipsX(rc->right),
+		PixelsToDipsY(rc->bottom)),
+	    SolidBrush(color));
     if (mVersion == 2)
 	Flush();
 }
@@ -942,6 +969,13 @@ DWriteContext_DrawText(
 		break;
 	}
     }
+}
+
+    void
+DWriteContext_FillRect(DWriteContext *ctx, RECT *rc, COLORREF color)
+{
+    if (ctx != NULL)
+	ctx->FillRect(rc, color);
 }
 
     void
