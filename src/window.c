@@ -1081,8 +1081,7 @@ win_split_ins(
 
     /* Set w_fraction now so that the cursor keeps the same relative
      * vertical position. */
-    if (oldwin->w_height > 0)
-	set_fraction(oldwin);
+    set_fraction(oldwin);
     wp->w_fraction = oldwin->w_fraction;
 
     if (flags & WSP_VERT)
@@ -5682,11 +5681,13 @@ win_drag_vsep_line(win_T *dragwin, int offset)
 
 /*
  * Set wp->w_fraction for the current w_wrow and w_height.
+ * Has no effect when the window is less than two lines.
  */
     void
 set_fraction(win_T *wp)
 {
-    wp->w_fraction = ((long)wp->w_wrow * FRACTION_MULT
+    if (wp->w_height > 1)
+	wp->w_fraction = ((long)wp->w_wrow * FRACTION_MULT
 				    + wp->w_height / 2) / (long)wp->w_height;
 }
 
