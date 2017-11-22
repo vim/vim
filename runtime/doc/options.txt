@@ -6163,6 +6163,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	directx2
 		Support color emoji.  Others are same with "directx".
 
+	directx3
+		High speed rendering of "directx2" with pile of bugs.
+
+
 	Other render types are currently not supported.
 
 						*'report'*

@@ -750,6 +750,11 @@ DWriteContext::DrawText1(const WCHAR* text, int len,
 		PixelsToDipsY(y + h)),
 	    mBrush,
 	    (D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+    if (mVersion == 2)
+    {
+	mRT->EndDraw();
+	mDrawing = false;
+    }
 }
 
     void
@@ -916,6 +921,7 @@ DWriteContext_DrawText(
 		ctx->DrawText(hdc, text, len, x, y, w, h, cellWidth, color);
 		break;
 	    case 2:
+	    case 3:
 		ctx->DrawText1(text, len, x, y, w, h, color);
 		break;
 	}
