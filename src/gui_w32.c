@@ -3099,6 +3099,10 @@ get_scroll_flags(void)
     static void
 intel_gpu_workaround(void)
 {
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
     GetPixel(s_hdc, FILL_X(gui.col), FILL_Y(gui.row));
 }
 
