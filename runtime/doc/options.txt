@@ -6160,16 +6160,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 		If select a raster font (Courier, Terminal or FixedSys) to
 		'guifont', it fallbacks to be drawn by GDI automatically.
 
-	directx2
-		Support color emoji.  Others are same with "directx".
-
-	directx3
-		High speed rendering of "directx2" with pile of bugs.
-
-	directx4
-		High speed, without color emoji, with some bugs.
-
-
 	Other render types are currently not supported.
 
 						*'report'*

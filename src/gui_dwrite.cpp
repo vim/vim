@@ -80,16 +80,6 @@ template <class T> inline void SafeRelease(T **ppT)
     }
 }
 
-struct GdiTextRendererContext
-{
-    // const fields.
-    COLORREF color;
-    FLOAT cellWidth;
-
-    // working fields.
-    FLOAT offsetX;
-};
-
     static DWRITE_PIXEL_GEOMETRY
 ToPixelGeometry(int value)
 {
@@ -232,10 +222,6 @@ struct DWriteContext {
 
     void Flush(void);
 
-    float PixelsToDipsX(int x);
-
-    float PixelsToDipsY(int y);
-
     void SetRenderingParams(
 	    const DWriteRenderingParams *params);
 
@@ -303,6 +289,7 @@ public:
 	cRefCount_(0),
 	pDWC_(pDWC)
     {
+	AddRef();
     }
 
     virtual ~TextRenderer()
@@ -429,7 +416,6 @@ public:
     }
 
 public:
-
     IFACEMETHOD_(unsigned long, AddRef) ()
     {
 	return InterlockedIncrement(&cRefCount_);
@@ -447,7 +433,9 @@ public:
 	return newCount;
     }
 
-    IFACEMETHOD(QueryInterface)(IID const& riid, void** ppvObject)
+    IFACEMETHOD(QueryInterface)(
+	IID const& riid,
+	void** ppvObject)
     {
 	if (__uuidof(IDWriteTextRenderer) == riid)
 	{
@@ -466,6 +454,7 @@ public:
 	    *ppvObject = NULL;
 	    return E_FAIL;
 	}
+
 	return S_OK;
     }
 
@@ -476,8 +465,6 @@ private:
 
 DWriteContext::DWriteContext() :
     mDrawing(false),
-    mDpiScaleX(1.f),
-    mDpiScaleY(1.f),
     mD2D1Factory(NULL),
     mRT(NULL),
     mBrush(NULL),
@@ -491,11 +478,6 @@ DWriteContext::DWriteContext() :
     mTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT)
 {
     HRESULT hr;
-
-    HDC screen = ::GetDC(0);
-    mDpiScaleX = ::GetDeviceCaps(screen, LOGPIXELSX) / 96.0f;
-    mDpiScaleY = ::GetDeviceCaps(screen, LOGPIXELSY) / 96.0f;
-    ::ReleaseDC(0, screen);
 
     hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
 	    __uuidof(ID2D1Factory), NULL,
@@ -770,18 +752,6 @@ DWriteContext::Flush(void)
 	mRT->EndDraw();
 	mDrawing = false;
     }
-}
-
-    float
-DWriteContext::PixelsToDipsX(int x)
-{
-    return x / mDpiScaleX;
-}
-
-    float
-DWriteContext::PixelsToDipsY(int y)
-{
-    return y / mDpiScaleY;
 }
 
     void
