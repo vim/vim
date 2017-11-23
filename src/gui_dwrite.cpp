@@ -27,9 +27,10 @@
 
 #include "gui_dwrite.h"
 
-#ifndef D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT
-# define D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT ( 0x00000004 )
-#endif
+// This is defined in newer SDK which not support old compiler.  So we defined
+// this manually.
+const D2D1_DRAW_TEXT_OPTIONS _D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT
+	= (D2D1_DRAW_TEXT_OPTIONS)(0x00000004);
 
 #ifdef __MINGW32__
 # define __maybenull	SAL__maybenull
@@ -433,13 +434,16 @@ struct DWriteContext {
     void DrawText(HDC hdc, const WCHAR* text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color);
 
+    void DrawText1(HDC hdc, const WCHAR* text, int len,
+	int x, int y, int w, int h, int cellWidth, COLORREF color);
+
     void BindDC(HDC hdc, RECT *rect);
 
     void AssureDrawing(void);
 
     ID2D1Brush* SolidBrush(COLORREF color);
 
-    void DrawText1(const WCHAR* text, int len,
+    void DrawText2(const WCHAR* text, int len,
 	    int x, int y, int w, int h, COLORREF color);
 
     void FillRect(RECT *rc, COLORREF color);
@@ -694,6 +698,21 @@ DWriteContext::SetFont(const LOGFONTW &logFont)
 DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color)
 {
+    switch (mVersion) {
+	default:
+	    DrawText1(hdc, text, len, x, y, w, h, cellWidth, color);
+	    break;
+	case 2:
+	case 3:
+	    DrawText2(text, len, x, y, w, h, color);
+	    break;
+    }
+}
+
+    void
+DWriteContext::DrawText1(HDC hdc, const WCHAR* text, int len,
+	int x, int y, int w, int h, int cellWidth, COLORREF color)
+{
     HRESULT hr = S_OK;
     IDWriteBitmapRenderTarget *bmpRT = NULL;
 
@@ -774,7 +793,7 @@ DWriteContext::SolidBrush(COLORREF color)
 }
 
     void
-DWriteContext::DrawText1(const WCHAR* text, int len,
+DWriteContext::DrawText2(const WCHAR* text, int len,
 	int x, int y, int w, int h, COLORREF color)
 {
     AssureDrawing();
@@ -783,7 +802,7 @@ DWriteContext::DrawText1(const WCHAR* text, int len,
     mRT->DrawText(text, len, mTextFormat,
 	    D2D1::RectF((FLOAT)x, (FLOAT)y, (FLOAT)x+w, (FLOAT)y+h),
 	    SolidBrush(color),
-	    (D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+	    _D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
     if (mVersion == 2)
 	Flush();
 }
@@ -951,17 +970,7 @@ DWriteContext_DrawText(
 	COLORREF color)
 {
     if (ctx != NULL)
-    {
-	switch (ctx->mVersion) {
-	    default:
-		ctx->DrawText(hdc, text, len, x, y, w, h, cellWidth, color);
-		break;
-	    case 2:
-	    case 3:
-		ctx->DrawText1(text, len, x, y, w, h, color);
-		break;
-	}
-    }
+	ctx->DrawText(hdc, text, len, x, y, w, h, cellWidth, color);
 }
 
     void

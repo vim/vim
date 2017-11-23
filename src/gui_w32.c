@@ -35,31 +35,11 @@ static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
 static void directx_binddc(void);
+static int directx_enabled(int version);
 #endif
 
 #ifdef FEAT_MENU
 static int gui_mswin_get_menu_height(int fix_window);
-#endif
-
-#if defined(FEAT_DIRECTX) || defined(PROTO)
-    int
-directx_enabled(int version)
-{
-    if (s_dwc != NULL)
-    {
-	DWriteContext_SetVersion(s_dwc, version);
-	return 1;
-    }
-    else if (s_directx_load_attempted)
-	return 0;
-    /* load DirectX */
-    DWrite_Init();
-    s_directx_load_attempted = 1;
-    s_dwc = DWriteContext_Open();
-    DWriteContext_SetVersion(s_dwc, version);
-    directx_binddc();
-    return s_dwc != NULL ? 1 : 0;
-}
 #endif
 
 #if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
@@ -308,7 +288,6 @@ typedef int UINT_PTR;
 
 static void _OnPaint( HWND hwnd);
 static void clear_rect(RECT *rcp);
-static void _OnSizeTextArea(HWND hwnd, UINT state, int cx, int cy);
 
 static WORD		s_dlgfntheight;		/* height of the dialog font */
 static WORD		s_dlgfntwidth;		/* width of the dialog font */
@@ -378,6 +357,38 @@ static int allow_scrollbar = FALSE;
 # define MyTranslateMessage(x) global_ime_TranslateMessage(x)
 #else
 # define MyTranslateMessage(x) TranslateMessage(x)
+#endif
+
+#if defined(FEAT_DIRECTX)
+    static int
+directx_enabled(int version)
+{
+    if (s_dwc != NULL)
+    {
+	DWriteContext_SetVersion(s_dwc, version);
+	return 1;
+    }
+    else if (s_directx_load_attempted)
+	return 0;
+    /* load DirectX */
+    DWrite_Init();
+    s_directx_load_attempted = 1;
+    s_dwc = DWriteContext_Open();
+    DWriteContext_SetVersion(s_dwc, version);
+    directx_binddc();
+    return s_dwc != NULL ? 1 : 0;
+}
+
+    static void
+directx_binddc(void)
+{
+    if (s_textArea != NULL && IS_ENABLE_DIRECTX())
+    {
+	RECT	rect;
+	GetClientRect(s_textArea, &rect);
+	DWriteContext_BindDC(s_dwc, s_hdc, &rect);
+    }
+}
 #endif
 
 #if defined(FEAT_MBYTE) || defined(GLOBAL_IME)
@@ -506,19 +517,6 @@ static LOGFONT sub_logfont;
 
 #ifdef FEAT_MBYTE_IME
 static LRESULT _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData);
-#endif
-
-#if defined(FEAT_DIRECTX)
-    static void
-directx_binddc(void)
-{
-    if (s_textArea != NULL && IS_ENABLE_DIRECTX())
-    {
-	RECT	rect;
-	GetClientRect(s_textArea, &rect);
-	DWriteContext_BindDC(s_dwc, s_hdc, &rect);
-    }
-}
 #endif
 
 #if defined(FEAT_BROWSE)
@@ -1024,6 +1022,18 @@ _OnMouseMoveOrRelease(
     }
 
     _OnMouseEvent(button, x, y, FALSE, keyFlags);
+}
+
+    static void
+_OnSizeTextArea(
+    HWND hwnd UNUSED,
+    UINT state UNUSED,
+    int cx UNUSED,
+    int cy UNUSED)
+{
+#if defined(FEAT_DIRECTX)
+    directx_binddc();
+#endif
 }
 
 #ifdef FEAT_MENU
@@ -2912,18 +2922,6 @@ _OnPaint(
 
 	EndPaint(hwnd, &ps);
     }
-}
-
-    static void
-_OnSizeTextArea(
-    HWND hwnd UNUSED,
-    UINT state UNUSED,
-    int cx UNUSED,
-    int cy UNUSED)
-{
-#if defined(FEAT_DIRECTX)
-    directx_binddc();
-#endif
 }
 
     static void
