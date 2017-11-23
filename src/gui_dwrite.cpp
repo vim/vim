@@ -24,6 +24,20 @@
 #include <math.h>
 #include <d2d1.h>
 #include <d2d1helper.h>
+
+// Disable these macros to compile by old VC with newer SDK (V8.1 or later).
+#if defined(_MSC_VER) && (_MSC_VER < 1700)
+# define _COM_Outptr_ __out
+# define _In_reads_(s)
+# define _In_reads_opt_(s)
+# define _Maybenull_
+# define _Out_writes_(s)
+# define _Out_writes_opt_(s)
+# define _Out_writes_to_(x, y)
+# define _Out_writes_to_opt_(x, y)
+# define _Outptr_
+#endif
+
 #include <dwrite_2.h>
 
 #include "gui_dwrite.h"
