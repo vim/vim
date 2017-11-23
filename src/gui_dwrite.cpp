@@ -28,11 +28,6 @@
 
 #include "gui_dwrite.h"
 
-// This is defined in newer SDK which not support old compiler.  So we defined
-// this manually.
-const D2D1_DRAW_TEXT_OPTIONS _D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT
-	= (D2D1_DRAW_TEXT_OPTIONS)(0x00000004);
-
 #ifdef __MINGW32__
 # define __maybenull	SAL__maybenull
 # define __in		SAL__in
@@ -191,7 +186,6 @@ ToInt(DWRITE_RENDERING_MODE value)
 }
 
 struct DWriteContext {
-    int mVersion;
     bool mDrawing;
 
     FLOAT mDpiScaleX;
@@ -219,19 +213,11 @@ struct DWriteContext {
 
     virtual ~DWriteContext();
 
-    void SetVersion(int version);
-
     HRESULT SetLOGFONT(const LOGFONTW &logFont, float fontSize);
 
     void SetFont(HFONT hFont);
 
     void SetFont(const LOGFONTW &logFont);
-
-    void DrawText(HDC hdc, const WCHAR* text, int len,
-	int x, int y, int w, int h, int cellWidth, COLORREF color);
-
-    void DrawText1(HDC hdc, const WCHAR* text, int len,
-	int x, int y, int w, int h, int cellWidth, COLORREF color);
 
     void BindDC(HDC hdc, RECT *rect);
 
@@ -239,10 +225,7 @@ struct DWriteContext {
 
     ID2D1Brush* SolidBrush(COLORREF color);
 
-    void DrawText2(const WCHAR* text, int len,
-	    int x, int y, int w, int h, COLORREF color);
-
-    void DrawText4(const WCHAR* text, int len,
+    void DrawText(const WCHAR* text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color);
 
     void FillRect(RECT *rc, COLORREF color);
@@ -491,170 +474,7 @@ private:
     DWriteContext* pDWC_;
 };
 
-class GdiTextRenderer FINAL : public IDWriteTextRenderer
-{
-public:
-    GdiTextRenderer(
-	    IDWriteBitmapRenderTarget* bitmapRenderTarget,
-	    IDWriteRenderingParams* renderingParams) :
-	cRefCount_(0),
-	pRenderTarget_(bitmapRenderTarget),
-	pRenderingParams_(renderingParams)
-    {
-	pRenderTarget_->AddRef();
-	pRenderingParams_->AddRef();
-	AddRef();
-    }
-
-    // add "virtual" to avoid a compiler warning
-    virtual ~GdiTextRenderer()
-    {
-	SafeRelease(&pRenderTarget_);
-	SafeRelease(&pRenderingParams_);
-    }
-
-    IFACEMETHOD(IsPixelSnappingDisabled)(
-	__maybenull void* clientDrawingContext,
-	__out BOOL* isDisabled)
-    {
-	*isDisabled = FALSE;
-	return S_OK;
-    }
-
-    IFACEMETHOD(GetCurrentTransform)(
-	__maybenull void* clientDrawingContext,
-	__out DWRITE_MATRIX* transform)
-    {
-	// forward the render target's transform
-	pRenderTarget_->GetCurrentTransform(transform);
-	return S_OK;
-    }
-
-    IFACEMETHOD(GetPixelsPerDip)(
-	__maybenull void* clientDrawingContext,
-	__out FLOAT* pixelsPerDip)
-    {
-	*pixelsPerDip = pRenderTarget_->GetPixelsPerDip();
-	return S_OK;
-    }
-
-    IFACEMETHOD(DrawGlyphRun)(
-	__maybenull void* clientDrawingContext,
-	FLOAT baselineOriginX,
-	FLOAT baselineOriginY,
-	DWRITE_MEASURING_MODE measuringMode,
-	__in DWRITE_GLYPH_RUN const* glyphRun,
-	__in DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
-	IUnknown* clientDrawingEffect)
-    {
-	HRESULT hr = S_OK;
-
-	GdiTextRendererContext *context =
-	    reinterpret_cast<GdiTextRendererContext*>(clientDrawingContext);
-
-	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth);
-
-	// Pass on the drawing call to the render target to do the real work.
-	RECT dirtyRect = {0};
-
-	// TODO: draw colored emoji.
-	hr = pRenderTarget_->DrawGlyphRun(
-		baselineOriginX + context->offsetX,
-		baselineOriginY,
-		measuringMode,
-		&adjustedGlyphRun,
-		pRenderingParams_,
-		context->color,
-		&dirtyRect);
-
-	context->offsetX += adjustedGlyphRun.getDelta();
-
-	return hr;
-    }
-
-    IFACEMETHOD(DrawUnderline)(
-	__maybenull void* clientDrawingContext,
-	FLOAT baselineOriginX,
-	FLOAT baselineOriginY,
-	__in DWRITE_UNDERLINE const* underline,
-	IUnknown* clientDrawingEffect)
-    {
-	return E_NOTIMPL;
-    }
-
-    IFACEMETHOD(DrawStrikethrough)(
-	__maybenull void* clientDrawingContext,
-	FLOAT baselineOriginX,
-	FLOAT baselineOriginY,
-	__in DWRITE_STRIKETHROUGH const* strikethrough,
-	IUnknown* clientDrawingEffect)
-    {
-	return E_NOTIMPL;
-    }
-
-    IFACEMETHOD(DrawInlineObject)(
-	__maybenull void* clientDrawingContext,
-	FLOAT originX,
-	FLOAT originY,
-	IDWriteInlineObject* inlineObject,
-	BOOL isSideways,
-	BOOL isRightToLeft,
-	IUnknown* clientDrawingEffect)
-    {
-	return E_NOTIMPL;
-    }
-
-public:
-    IFACEMETHOD_(unsigned long, AddRef) ()
-    {
-	return InterlockedIncrement(&cRefCount_);
-    }
-
-    IFACEMETHOD_(unsigned long, Release) ()
-    {
-	long newCount = InterlockedDecrement(&cRefCount_);
-
-	if (newCount == 0)
-	{
-	    delete this;
-	    return 0;
-	}
-	return newCount;
-    }
-
-    IFACEMETHOD(QueryInterface)(
-	IID const& riid,
-	void** ppvObject)
-    {
-	if (__uuidof(IDWriteTextRenderer) == riid)
-	{
-	    *ppvObject = this;
-	}
-	else if (__uuidof(IDWritePixelSnapping) == riid)
-	{
-	    *ppvObject = this;
-	}
-	else if (__uuidof(IUnknown) == riid)
-	{
-	    *ppvObject = this;
-	}
-	else
-	{
-	    *ppvObject = NULL;
-	    return E_FAIL;
-	}
-
-	return S_OK;
-    }
-
-private:
-    long cRefCount_;
-    IDWriteBitmapRenderTarget* pRenderTarget_;
-    IDWriteRenderingParams* pRenderingParams_;
-};
-
 DWriteContext::DWriteContext() :
-    mVersion(1),
     mDrawing(false),
     mDpiScaleX(1.f),
     mDpiScaleY(1.f),
@@ -738,12 +558,6 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mD2D1Factory);
 }
 
-    void
-DWriteContext::SetVersion(int version)
-{
-    mVersion = version;
-}
-
     HRESULT
 DWriteContext::SetLOGFONT(const LOGFONTW &logFont, float fontSize)
 {
@@ -788,11 +602,7 @@ DWriteContext::SetLOGFONT(const LOGFONTW &logFont, float fontSize)
 	// If no font size was passed in use the lfHeight of the LOGFONT.
 	if (fontSize == 0)
 	{
-	    if (mVersion == 1)
-		// Convert from pixels to DIPs.
-		fontSize = PixelsToDipsY(logFont.lfHeight);
-	    else
-		fontSize = (float)logFont.lfHeight;
+	    fontSize = (float)logFont.lfHeight;
 
 	    if (fontSize < 0)
 	    {
@@ -891,81 +701,6 @@ DWriteContext::SetFont(const LOGFONTW &logFont)
 }
 
     void
-DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
-	int x, int y, int w, int h, int cellWidth, COLORREF color)
-{
-    switch (mVersion) {
-	default:
-	    DrawText1(hdc, text, len, x, y, w, h, cellWidth, color);
-	    break;
-	case 2:
-	case 3:
-	    DrawText2(text, len, x, y, w, h, color);
-	    break;
-	case 4:
-	    DrawText4(text, len, x, y, w, h, cellWidth, color);
-	    break;
-    }
-}
-
-    void
-DWriteContext::DrawText1(HDC hdc, const WCHAR* text, int len,
-	int x, int y, int w, int h, int cellWidth, COLORREF color)
-{
-    HRESULT hr = S_OK;
-    IDWriteBitmapRenderTarget *bmpRT = NULL;
-
-    // Skip when any fonts are not set.
-    if (mTextFormat == NULL)
-	return;
-
-    // Check possibility of zero divided error.
-    if (cellWidth == 0 || mDpiScaleX == 0.0f || mDpiScaleY == 0.0f)
-	return;
-
-    if (SUCCEEDED(hr))
-	hr = mGdiInterop->CreateBitmapRenderTarget(hdc, w, h, &bmpRT);
-
-    if (SUCCEEDED(hr))
-    {
-	IDWriteTextLayout *textLayout = NULL;
-
-	HDC memdc = bmpRT->GetMemoryDC();
-	BitBlt(memdc, 0, 0, w, h, hdc, x, y, SRCCOPY);
-
-	hr = mDWriteFactory->CreateGdiCompatibleTextLayout(
-		text, len, mTextFormat, PixelsToDipsX(w),
-		PixelsToDipsY(h), mDpiScaleX, NULL, TRUE, &textLayout);
-
-	if (SUCCEEDED(hr))
-	{
-	    DWRITE_TEXT_RANGE textRange = { 0, (UINT32)len };
-	    textLayout->SetFontWeight(mFontWeight, textRange);
-	    textLayout->SetFontStyle(mFontStyle, textRange);
-	}
-
-	if (SUCCEEDED(hr))
-	{
-	    GdiTextRenderer *renderer = new GdiTextRenderer(bmpRT,
-		    mRenderingParams);
-	    GdiTextRendererContext data = {
-		color,
-		PixelsToDipsX(cellWidth),
-		0.0f
-	    };
-	    textLayout->Draw(&data, renderer, 0, 0);
-	    SafeRelease(&renderer);
-	}
-
-	BitBlt(hdc, x, y, w, h, memdc, 0, 0, SRCCOPY);
-
-	SafeRelease(&textLayout);
-    }
-
-    SafeRelease(&bmpRT);
-}
-
-    void
 DWriteContext::BindDC(HDC hdc, RECT *rect)
 {
     Flush();
@@ -992,20 +727,7 @@ DWriteContext::SolidBrush(COLORREF color)
 }
 
     void
-DWriteContext::DrawText2(const WCHAR* text, int len,
-	int x, int y, int w, int h, COLORREF color)
-{
-    AssureDrawing();
-    mRT->DrawText(text, len, mTextFormat,
-	    D2D1::RectF((FLOAT)x, (FLOAT)y, (FLOAT)x+w, (FLOAT)y+h),
-	    SolidBrush(color),
-	    _D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
-    if (mVersion == 2)
-	Flush();
-}
-
-    void
-DWriteContext::DrawText4(const WCHAR* text, int len,
+DWriteContext::DrawText(const WCHAR* text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color)
 {
     AssureDrawing();
@@ -1033,8 +755,6 @@ DWriteContext::DrawText4(const WCHAR* text, int len,
     void
 DWriteContext::FillRect(RECT *rc, COLORREF color)
 {
-    if (mVersion == 1)
-	return;
     AssureDrawing();
     mRT->FillRectangle(
 	    D2D1::RectF((FLOAT)rc->left, (FLOAT)rc->top,
@@ -1159,13 +879,6 @@ DWriteContext_Open(void)
 }
 
     void
-DWriteContext_SetVersion(DWriteContext *ctx, int version)
-{
-    if (ctx != NULL)
-	ctx->SetVersion(version);
-}
-
-    void
 DWriteContext_BindDC(DWriteContext *ctx, HDC hdc, RECT *rect)
 {
     if (ctx != NULL)
@@ -1182,7 +895,6 @@ DWriteContext_SetFont(DWriteContext *ctx, HFONT hFont)
     void
 DWriteContext_DrawText(
 	DWriteContext *ctx,
-	HDC hdc,
 	const WCHAR* text,
 	int len,
 	int x,
@@ -1193,7 +905,7 @@ DWriteContext_DrawText(
 	COLORREF color)
 {
     if (ctx != NULL)
-	ctx->DrawText(hdc, text, len, x, y, w, h, cellWidth, color);
+	ctx->DrawText(text, len, x, y, w, h, cellWidth, color);
 }
 
     void

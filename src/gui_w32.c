@@ -34,7 +34,7 @@ static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
-static int directx_enabled(int version);
+static int directx_enabled(void);
 static void directx_binddc(void);
 #endif
 
@@ -78,12 +78,6 @@ gui_mch_set_rendering_options(char_u *s)
 	{
 	    if (STRCMP(value, "directx") == 0)
 		dx_enable = 1;
-	    else if (STRCMP(value, "directx2") == 0)
-		dx_enable = 2;
-	    else if (STRCMP(value, "directx3") == 0)
-		dx_enable = 3;
-	    else if (STRCMP(value, "directx4") == 0)
-		dx_enable = 4;
 	    else
 		return FAIL;
 	}
@@ -130,7 +124,7 @@ gui_mch_set_rendering_options(char_u *s)
     /* Enable DirectX/DirectWrite */
     if (dx_enable)
     {
-	if (!directx_enabled(dx_enable))
+	if (!directx_enabled())
 	    return FAIL;
 	DWriteContext_SetRenderingParams(s_dwc, NULL);
 	if (dx_flags)
@@ -363,20 +357,16 @@ static int allow_scrollbar = FALSE;
 
 #if defined(FEAT_DIRECTX)
     static int
-directx_enabled(int version)
+directx_enabled(void)
 {
     if (s_dwc != NULL)
-    {
-	DWriteContext_SetVersion(s_dwc, version);
 	return 1;
-    }
     else if (s_directx_load_attempted)
 	return 0;
     /* load DirectX */
     DWrite_Init();
     s_directx_load_attempted = 1;
     s_dwc = DWriteContext_Open();
-    DWriteContext_SetVersion(s_dwc, version);
     directx_binddc();
     return s_dwc != NULL ? 1 : 0;
 }
@@ -6416,7 +6406,7 @@ gui_mch_draw_string(
 	if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector)
 	{
 	    /* Add one to "cells" for italics. */
-	    DWriteContext_DrawText(s_dwc, s_hdc, unicodebuf, wlen,
+	    DWriteContext_DrawText(s_dwc, unicodebuf, wlen,
 		    TEXT_X(col), TEXT_Y(row), FILL_X(cells + 1), FILL_Y(1),
 		    gui.char_width, gui.currFgColor);
 	}
