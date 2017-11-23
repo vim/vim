@@ -112,7 +112,7 @@ dict_free_contents(dict_T *d)
 	}
     }
 
-    hash_unlock(&d->dv_hashtab);
+    /* The hashtab is still locked, it has to be re-initialized anyway */
     hash_clear(&d->dv_hashtab);
 }
 
