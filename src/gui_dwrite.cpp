@@ -233,6 +233,171 @@ public:
     }
 };
 
+struct TextRendererContext {
+    FLOAT   cellWidth;
+
+    // working fields.
+    FLOAT   offsetX;
+};
+
+class TextRenderer FINAL : public IDWriteTextRenderer
+{
+public:
+    TextRenderer(
+	    ID2D1RenderTarget *renderTarget,
+	    IDWriteRenderingParams *renderingParams,
+	    ID2D1Brush *brush) :
+	cRefCount_(0),
+	pRenderTarget_(renderTarget),
+	pRenderingParams_(renderingParams),
+	pBrush_(brush)
+    {
+	pRenderTarget_->AddRef();
+	pRenderingParams_->AddRef();
+	pBrush_->AddRef();
+    }
+
+    virtual ~TextRenderer()
+    {
+	SafeRelease(&pRenderTarget_);
+	SafeRelease(&pRenderingParams_);
+	SafeRelease(&pBrush_);
+    }
+
+    IFACEMETHOD(IsPixelSnappingDisabled)(
+	__maybenull void* clientDrawingContext,
+	__out BOOL* isDisabled)
+    {
+	*isDisabled = FALSE;
+	return S_OK;
+    }
+
+    IFACEMETHOD(GetCurrentTransform)(
+	__maybenull void* clientDrawingContext,
+	__out DWRITE_MATRIX* transform)
+    {
+	// forward the render target's transform
+	pRenderTarget_->GetTransform(
+		reinterpret_cast<D2D1_MATRIX_3X2_F*>(transform));
+	return S_OK;
+    }
+
+    IFACEMETHOD(GetPixelsPerDip)(
+	__maybenull void* clientDrawingContext,
+	__out FLOAT* pixelsPerDip)
+    {
+	float unused;
+	pRenderTarget_->GetDpi(pixelsPerDip, &unused);
+	return S_OK;
+    }
+
+    IFACEMETHOD(DrawUnderline)(
+	__maybenull void* clientDrawingContext,
+	FLOAT baselineOriginX,
+	FLOAT baselineOriginY,
+	__in DWRITE_UNDERLINE const* underline,
+	IUnknown* clientDrawingEffect)
+    {
+	return E_NOTIMPL;
+    }
+
+    IFACEMETHOD(DrawStrikethrough)(
+	__maybenull void* clientDrawingContext,
+	FLOAT baselineOriginX,
+	FLOAT baselineOriginY,
+	__in DWRITE_STRIKETHROUGH const* strikethrough,
+	IUnknown* clientDrawingEffect)
+    {
+	return E_NOTIMPL;
+    }
+
+    IFACEMETHOD(DrawInlineObject)(
+	__maybenull void* clientDrawingContext,
+	FLOAT originX,
+	FLOAT originY,
+	IDWriteInlineObject* inlineObject,
+	BOOL isSideways,
+	BOOL isRightToLeft,
+	IUnknown* clientDrawingEffect)
+    {
+	return E_NOTIMPL;
+    }
+
+    IFACEMETHOD(DrawGlyphRun)(
+	__maybenull void* clientDrawingContext,
+	FLOAT baselineOriginX,
+	FLOAT baselineOriginY,
+	DWRITE_MEASURING_MODE measuringMode,
+	__in DWRITE_GLYPH_RUN const* glyphRun,
+	__in DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
+	IUnknown* clientDrawingEffect)
+    {
+	TextRendererContext *context =
+	    reinterpret_cast<TextRendererContext*>(clientDrawingContext);
+
+	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth);
+
+	pRenderTarget_->DrawGlyphRun(
+		D2D1::Point2F(
+		    baselineOriginX + context->offsetX,
+		    baselineOriginY),
+		&adjustedGlyphRun,
+		pBrush_,
+		DWRITE_MEASURING_MODE_NATURAL);
+
+	context->offsetX += adjustedGlyphRun.getDelta();
+
+	return S_OK;
+    }
+
+public:
+
+    IFACEMETHOD_(unsigned long, AddRef) ()
+    {
+	return InterlockedIncrement(&cRefCount_);
+    }
+
+    IFACEMETHOD_(unsigned long, Release) ()
+    {
+	long newCount = InterlockedDecrement(&cRefCount_);
+
+	if (newCount == 0)
+	{
+	    delete this;
+	    return 0;
+	}
+	return newCount;
+    }
+
+    IFACEMETHOD(QueryInterface)(IID const& riid, void** ppvObject)
+    {
+	if (__uuidof(IDWriteTextRenderer) == riid)
+	{
+	    *ppvObject = this;
+	}
+	else if (__uuidof(IDWritePixelSnapping) == riid)
+	{
+	    *ppvObject = this;
+	}
+	else if (__uuidof(IUnknown) == riid)
+	{
+	    *ppvObject = this;
+	}
+	else
+	{
+	    *ppvObject = NULL;
+	    return E_FAIL;
+	}
+	return S_OK;
+    }
+
+private:
+    long cRefCount_;
+    ID2D1RenderTarget* pRenderTarget_;
+    IDWriteRenderingParams* pRenderingParams_;
+    ID2D1Brush* pBrush_;
+};
+
 class GdiTextRenderer FINAL : public IDWriteTextRenderer
 {
 public:
@@ -299,6 +464,7 @@ public:
 	// Pass on the drawing call to the render target to do the real work.
 	RECT dirtyRect = {0};
 
+	// TODO: draw colored emoji.
 	hr = pRenderTarget_->DrawGlyphRun(
 		baselineOriginX + context->offsetX,
 		baselineOriginY,
@@ -445,6 +611,9 @@ struct DWriteContext {
 
     void DrawText2(const WCHAR* text, int len,
 	    int x, int y, int w, int h, COLORREF color);
+
+    void DrawText4(const WCHAR* text, int len,
+	int x, int y, int w, int h, int cellWidth, COLORREF color);
 
     void FillRect(RECT *rc, COLORREF color);
 
@@ -705,6 +874,8 @@ DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
 	case 2:
 	case 3:
 	    DrawText2(text, len, x, y, w, h, color);
+	case 4:
+	    DrawText4(text, len, x, y, w, h, cellWidth, color);
 	    break;
     }
 }
@@ -797,14 +968,40 @@ DWriteContext::DrawText2(const WCHAR* text, int len,
 	int x, int y, int w, int h, COLORREF color)
 {
     AssureDrawing();
-    mBrush->SetColor(D2D1::ColorF(UINT32(GetRValue(color)) << 16 |
-		UINT32(GetGValue(color)) << 8 | UINT32(GetBValue(color))));
     mRT->DrawText(text, len, mTextFormat,
 	    D2D1::RectF((FLOAT)x, (FLOAT)y, (FLOAT)x+w, (FLOAT)y+h),
 	    SolidBrush(color),
 	    _D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
     if (mVersion == 2)
 	Flush();
+}
+
+    void
+DWriteContext::DrawText4(const WCHAR* text, int len,
+	int x, int y, int w, int h, int cellWidth, COLORREF color)
+{
+    HRESULT hr;
+    IDWriteTextLayout *textLayout = NULL;
+
+    hr = mDWriteFactory->CreateTextLayout(text, len, mTextFormat,
+	    FLOAT(w), FLOAT(h), &textLayout);
+
+    if (SUCCEEDED(hr))
+    {
+	DWRITE_TEXT_RANGE textRange = { 0, (UINT32)len };
+	textLayout->SetFontWeight(mFontWeight, textRange);
+	textLayout->SetFontStyle(mFontStyle, textRange);
+    }
+
+    if (SUCCEEDED(hr))
+    {
+	TextRenderer renderer(mRT, mRenderingParams,
+		SolidBrush(color));
+	TextRendererContext context = { (FLOAT)cellWidth, 0.0f };
+	textLayout->Draw(&context, &renderer, (FLOAT)x, (FLOAT)y);
+    }
+
+    SafeRelease(&textLayout);
 }
 
     void

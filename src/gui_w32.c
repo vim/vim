@@ -82,6 +82,8 @@ gui_mch_set_rendering_options(char_u *s)
 		dx_enable = 2;
 	    else if (STRCMP(value, "directx3") == 0)
 		dx_enable = 3;
+	    else if (STRCMP(value, "directx4") == 0)
+		dx_enable = 4;
 	    else
 		return FAIL;
 	}
