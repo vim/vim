@@ -23,7 +23,7 @@
 #include <math.h>
 #include <d2d1.h>
 #include <d2d1helper.h>
-#include <dwrite.h>
+#include <dwrite_2.h>
 
 #include "gui_dwrite.h"
 
@@ -234,6 +234,7 @@ public:
 };
 
 struct TextRendererContext {
+    IDWriteFactory2 *factory;
     FLOAT   cellWidth;
 
     // working fields.
@@ -337,14 +338,48 @@ public:
 
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth);
 
-	pRenderTarget_->DrawGlyphRun(
-		D2D1::Point2F(
-		    baselineOriginX + context->offsetX,
-		    baselineOriginY),
-		&adjustedGlyphRun,
-		pBrush_,
-		DWRITE_MEASURING_MODE_NATURAL);
+	IDWriteColorGlyphRunEnumerator	*enumerator = NULL;
+	HRESULT hr = context->factory->TranslateColorGlyphRun(
+	    baselineOriginX + context->offsetX,
+	    baselineOriginY,
+	    glyphRun,
+	    NULL,
+	    DWRITE_MEASURING_MODE_GDI_NATURAL,
+	    NULL,
+	    0,
+	    &enumerator);
 
+	if (SUCCEEDED(hr))
+	{
+	    BOOL hasRun = TRUE;
+	    enumerator->MoveNext(&hasRun);
+	    while (hasRun)
+	    {
+		const DWRITE_COLOR_GLYPH_RUN* colorGlyphRun;
+		enumerator->GetCurrentRun(&colorGlyphRun);
+
+		ID2D1SolidColorBrush* brush;
+		pRenderTarget_->CreateSolidColorBrush(colorGlyphRun->runColor, &brush);
+		pRenderTarget_->DrawGlyphRun(
+			D2D1::Point2F(
+			    colorGlyphRun->baselineOriginX,
+			    colorGlyphRun->baselineOriginY),
+			&colorGlyphRun->glyphRun,
+			brush,
+			DWRITE_MEASURING_MODE_NATURAL);
+		enumerator->MoveNext(&hasRun);
+	    }
+	}
+	else
+	{
+	    pRenderTarget_->DrawGlyphRun(
+		    D2D1::Point2F(
+			baselineOriginX + context->offsetX,
+			baselineOriginY),
+		    &adjustedGlyphRun,
+		    pBrush_,
+		    DWRITE_MEASURING_MODE_NATURAL);
+	}
 	context->offsetX += adjustedGlyphRun.getDelta();
 
 	return S_OK;
@@ -572,7 +607,7 @@ struct DWriteContext {
     ID2D1DCRenderTarget *mRT;
     ID2D1SolidColorBrush *mBrush;
 
-    IDWriteFactory *mDWriteFactory;
+    IDWriteFactory2 *mDWriteFactory;
     IDWriteGdiInterop *mGdiInterop;
     IDWriteRenderingParams *mRenderingParams;
     IDWriteTextFormat *mTextFormat;
@@ -684,7 +719,7 @@ DWriteContext::DWriteContext() :
     {
 	hr = DWriteCreateFactory(
 		DWRITE_FACTORY_TYPE_SHARED,
-		__uuidof(IDWriteFactory),
+		__uuidof(IDWriteFactory2),
 		reinterpret_cast<IUnknown**>(&mDWriteFactory));
 	_RPT2(_CRT_WARN, "DWriteCreateFactory: hr=%p p=%p\n", hr,
 		mDWriteFactory);
@@ -1002,7 +1037,7 @@ DWriteContext::DrawText4(const WCHAR* text, int len,
     {
 	TextRenderer renderer(mRT, mRenderingParams,
 		SolidBrush(color));
-	TextRendererContext context = { (FLOAT)cellWidth, 0.0f };
+	TextRendererContext context = { mDWriteFactory, (FLOAT)cellWidth, 0.0f };
 	textLayout->Draw(&context, &renderer, (FLOAT)x, (FLOAT)y);
     }
 
