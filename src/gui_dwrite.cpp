@@ -234,7 +234,6 @@ public:
 };
 
 struct TextRendererContext {
-    IDWriteFactory2 *factory;
     FLOAT   cellWidth;
 
     // working fields.
@@ -245,14 +244,17 @@ class TextRenderer FINAL : public IDWriteTextRenderer
 {
 public:
     TextRenderer(
+	    IDWriteFactory2 *factory,
 	    ID2D1RenderTarget *renderTarget,
 	    IDWriteRenderingParams *renderingParams,
 	    ID2D1Brush *brush) :
 	cRefCount_(0),
+	pFactory_(factory),
 	pRenderTarget_(renderTarget),
 	pRenderingParams_(renderingParams),
 	pBrush_(brush)
     {
+	pFactory_->AddRef();
 	pRenderTarget_->AddRef();
 	pRenderingParams_->AddRef();
 	pBrush_->AddRef();
@@ -260,6 +262,7 @@ public:
 
     virtual ~TextRenderer()
     {
+	SafeRelease(&pFactory_);
 	SafeRelease(&pRenderTarget_);
 	SafeRelease(&pRenderingParams_);
 	SafeRelease(&pBrush_);
@@ -339,7 +342,7 @@ public:
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth);
 
 	IDWriteColorGlyphRunEnumerator	*enumerator = NULL;
-	HRESULT hr = context->factory->TranslateColorGlyphRun(
+	HRESULT hr = pFactory_->TranslateColorGlyphRun(
 	    baselineOriginX + context->offsetX,
 	    baselineOriginY,
 	    glyphRun,
@@ -428,6 +431,7 @@ public:
 
 private:
     long cRefCount_;
+    IDWriteFactory2 *pFactory_;
     ID2D1RenderTarget* pRenderTarget_;
     IDWriteRenderingParams* pRenderingParams_;
     ID2D1Brush* pBrush_;
@@ -1031,13 +1035,10 @@ DWriteContext::DrawText4(const WCHAR* text, int len,
 	DWRITE_TEXT_RANGE textRange = { 0, (UINT32)len };
 	textLayout->SetFontWeight(mFontWeight, textRange);
 	textLayout->SetFontStyle(mFontStyle, textRange);
-    }
 
-    if (SUCCEEDED(hr))
-    {
-	TextRenderer renderer(mRT, mRenderingParams,
+	TextRenderer renderer(mDWriteFactory, mRT, mRenderingParams,
 		SolidBrush(color));
-	TextRendererContext context = { mDWriteFactory, (FLOAT)cellWidth, 0.0f };
+	TextRendererContext context = { (FLOAT)cellWidth, 0.0f };
 	textLayout->Draw(&context, &renderer, (FLOAT)x, (FLOAT)y);
     }
 
