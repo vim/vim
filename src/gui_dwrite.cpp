@@ -200,7 +200,9 @@ struct DWriteContext {
     ID2D1DCRenderTarget *mRT;
     ID2D1SolidColorBrush *mBrush;
 
-    IDWriteFactory2 *mDWriteFactory;
+    IDWriteFactory1 *mDWriteFactory1;
+    IDWriteFactory2 *mDWriteFactory2;
+
     IDWriteGdiInterop *mGdiInterop;
     IDWriteRenderingParams *mRenderingParams;
     IDWriteTextFormat *mTextFormat;
@@ -383,38 +385,43 @@ public:
 
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth);
 
-	IDWriteColorGlyphRunEnumerator	*enumerator = NULL;
-	HRESULT hr = pDWC_->mDWriteFactory->TranslateColorGlyphRun(
-	    baselineOriginX + context->offsetX,
-	    baselineOriginY,
-	    glyphRun,
-	    NULL,
-	    DWRITE_MEASURING_MODE_GDI_NATURAL,
-	    NULL,
-	    0,
-	    &enumerator);
-
-	if (SUCCEEDED(hr))
+	BOOL written = FALSE;
+	if (pDWC_->mDWriteFactory2 != NULL)
 	{
-	    BOOL hasRun = TRUE;
-	    enumerator->MoveNext(&hasRun);
-	    while (hasRun)
+	    IDWriteColorGlyphRunEnumerator	*enumerator = NULL;
+	    HRESULT hr = pDWC_->mDWriteFactory2->TranslateColorGlyphRun(
+		baselineOriginX + context->offsetX,
+		baselineOriginY,
+		glyphRun,
+		NULL,
+		DWRITE_MEASURING_MODE_GDI_NATURAL,
+		NULL,
+		0,
+		&enumerator);
+	    if (SUCCEEDED(hr))
 	    {
-		const DWRITE_COLOR_GLYPH_RUN* colorGlyphRun;
-		enumerator->GetCurrentRun(&colorGlyphRun);
-
-		pDWC_->mBrush->SetColor(colorGlyphRun->runColor);
-		pDWC_->mRT->DrawGlyphRun(
-			D2D1::Point2F(
-			    colorGlyphRun->baselineOriginX,
-			    colorGlyphRun->baselineOriginY),
-			&colorGlyphRun->glyphRun,
-			pDWC_->mBrush,
-			DWRITE_MEASURING_MODE_NATURAL);
+		BOOL hasRun = TRUE;
 		enumerator->MoveNext(&hasRun);
+		while (hasRun)
+		{
+		    const DWRITE_COLOR_GLYPH_RUN* colorGlyphRun;
+		    enumerator->GetCurrentRun(&colorGlyphRun);
+
+		    pDWC_->mBrush->SetColor(colorGlyphRun->runColor);
+		    pDWC_->mRT->DrawGlyphRun(
+			    D2D1::Point2F(
+				colorGlyphRun->baselineOriginX,
+				colorGlyphRun->baselineOriginY),
+			    &colorGlyphRun->glyphRun,
+			    pDWC_->mBrush,
+			    DWRITE_MEASURING_MODE_NATURAL);
+		    enumerator->MoveNext(&hasRun);
+		}
+		written = TRUE;
 	    }
 	}
-	else
+
+	if (!written)
 	{
 	    pDWC_->mRT->DrawGlyphRun(
 		    D2D1::Point2F(
@@ -482,7 +489,8 @@ DWriteContext::DWriteContext() :
     mD2D1Factory(NULL),
     mRT(NULL),
     mBrush(NULL),
-    mDWriteFactory(NULL),
+    mDWriteFactory1(NULL),
+    mDWriteFactory2(NULL),
     mGdiInterop(NULL),
     mRenderingParams(NULL),
     mTextFormat(NULL),
@@ -523,21 +531,31 @@ DWriteContext::DWriteContext() :
     {
 	hr = DWriteCreateFactory(
 		DWRITE_FACTORY_TYPE_SHARED,
-		__uuidof(IDWriteFactory2),
-		reinterpret_cast<IUnknown**>(&mDWriteFactory));
-	_RPT2(_CRT_WARN, "DWriteCreateFactory: hr=%p p=%p\n", hr,
-		mDWriteFactory);
+		__uuidof(IDWriteFactory1),
+		reinterpret_cast<IUnknown**>(&mDWriteFactory1));
+	_RPT2(_CRT_WARN, "DWriteCreateFactory1: hr=%p p=%p\n", hr,
+		mDWriteFactory1);
     }
 
     if (SUCCEEDED(hr))
     {
-	hr = mDWriteFactory->GetGdiInterop(&mGdiInterop);
+	DWriteCreateFactory(
+		DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(IDWriteFactory2),
+		reinterpret_cast<IUnknown**>(&mDWriteFactory2));
+	_RPT2(_CRT_WARN, "DWriteCreateFactory2: hr=%p p=%p\n", hr,
+		mDWriteFactory2);
+    }
+
+    if (SUCCEEDED(hr))
+    {
+	hr = mDWriteFactory1->GetGdiInterop(&mGdiInterop);
 	_RPT2(_CRT_WARN, "GetGdiInterop: hr=%p p=%p\n", hr, mGdiInterop);
     }
 
     if (SUCCEEDED(hr))
     {
-	hr = mDWriteFactory->CreateRenderingParams(&mRenderingParams);
+	hr = mDWriteFactory1->CreateRenderingParams(&mRenderingParams);
 	_RPT2(_CRT_WARN, "CreateRenderingParams: hr=%p p=%p\n", hr,
 		mRenderingParams);
     }
@@ -548,7 +566,8 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mTextFormat);
     SafeRelease(&mRenderingParams);
     SafeRelease(&mGdiInterop);
-    SafeRelease(&mDWriteFactory);
+    SafeRelease(&mDWriteFactory1);
+    SafeRelease(&mDWriteFactory2);
     SafeRelease(&mBrush);
     SafeRelease(&mRT);
     SafeRelease(&mD2D1Factory);
@@ -638,7 +657,7 @@ DWriteContext::SetLOGFONT(const LOGFONTW &logFont, float fontSize)
     if (SUCCEEDED(hr))
     {
 	// Create the text format object.
-	hr = mDWriteFactory->CreateTextFormat(
+	hr = mDWriteFactory1->CreateTextFormat(
 		familyName,
 		NULL, // no custom font collection
 		font->GetWeight(),
@@ -731,7 +750,7 @@ DWriteContext::DrawText(const WCHAR* text, int len,
     HRESULT hr;
     IDWriteTextLayout *textLayout = NULL;
 
-    hr = mDWriteFactory->CreateTextLayout(text, len, mTextFormat,
+    hr = mDWriteFactory1->CreateTextLayout(text, len, mTextFormat,
 	    FLOAT(w), FLOAT(h), &textLayout);
 
     if (SUCCEEDED(hr))
@@ -772,7 +791,7 @@ DWriteContext::Flush(void)
 DWriteContext::SetRenderingParams(
 	const DWriteRenderingParams *params)
 {
-    if (mDWriteFactory == NULL)
+    if (mDWriteFactory1 == NULL)
 	return;
 
     IDWriteRenderingParams *renderingParams = NULL;
@@ -781,14 +800,14 @@ DWriteContext::SetRenderingParams(
     HRESULT hr;
     if (params != NULL)
     {
-	hr = mDWriteFactory->CreateCustomRenderingParams(params->gamma,
+	hr = mDWriteFactory1->CreateCustomRenderingParams(params->gamma,
 		params->enhancedContrast, params->clearTypeLevel,
 		ToPixelGeometry(params->pixelGeometry),
 		ToRenderingMode(params->renderingMode), &renderingParams);
 	textAntialiasMode = ToTextAntialiasMode(params->textAntialiasMode);
     }
     else
-	hr = mDWriteFactory->CreateRenderingParams(&renderingParams);
+	hr = mDWriteFactory1->CreateRenderingParams(&renderingParams);
     if (SUCCEEDED(hr) && renderingParams != NULL)
     {
 	SafeRelease(&mRenderingParams);
