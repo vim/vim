@@ -765,8 +765,12 @@ DWriteContext::SetLOGFONT(const LOGFONTW &logFont, float fontSize)
 	// If no font size was passed in use the lfHeight of the LOGFONT.
 	if (fontSize == 0)
 	{
-	    // Convert from pixels to DIPs.
-	    fontSize = PixelsToDipsY(logFont.lfHeight);
+	    if (mVersion == 1)
+		// Convert from pixels to DIPs.
+		fontSize = PixelsToDipsY(logFont.lfHeight);
+	    else
+		fontSize = (float)logFont.lfHeight;
+
 	    if (fontSize < 0)
 	    {
 		// Negative lfHeight represents the size of the em unit.
