@@ -6455,6 +6455,12 @@ gui_mch_draw_string(
 			 foptions, pcliprect, (char *)text, len, padding);
     }
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector &&
+	    (flags & (DRAW_UNDERL | DRAW_STRIKE | DRAW_UNDERC)))
+	DWriteContext_Flush(s_dwc);
+#endif
+
     /* Underline */
     if (flags & DRAW_UNDERL)
     {
