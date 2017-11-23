@@ -79,7 +79,6 @@ NEW_TESTS = test_arabic.res \
 	    test_cdo.res \
 	    test_channel.res \
 	    test_charsearch.res \
-	    test_charsearch_utf8.res \
 	    test_cindent.res \
 	    test_clientserver.res \
 	    test_close_count.res \
@@ -98,7 +97,6 @@ NEW_TESTS = test_arabic.res \
 	    test_exec_while_if.res \
 	    test_exists.res \
 	    test_exists_autocmd.res \
-	    test_expr_utf8.res \
 	    test_farsi.res \
 	    test_file_size.res \
 	    test_find_complete.res \
@@ -128,16 +126,13 @@ NEW_TESTS = test_arabic.res \
 	    test_listchars.res \
 	    test_listdict.res \
 	    test_listlbr.res \
-	    test_listlbr_utf8.res \
 	    test_lua.res \
 	    test_makeencoding.res \
 	    test_man.res \
 	    test_maparg.res \
 	    test_marks.res \
 	    test_matchadd_conceal.res \
-	    test_matchadd_conceal_utf8.res \
 	    test_mksession.res \
-	    test_mksession_utf8.res \
 	    test_nested_function.res \
 	    test_netbeans.res \
 	    test_normal.res \
@@ -156,8 +151,6 @@ NEW_TESTS = test_arabic.res \
 	    test_quickfix.res \
 	    test_quotestar.res \
 	    test_regex_char_classes.res \
-	    test_regexp_latin.res \
-	    test_regexp_utf8.res \
 	    test_registers.res \
 	    test_retab.res \
 	    test_ruby.res \
@@ -165,10 +158,8 @@ NEW_TESTS = test_arabic.res \
 	    test_search.res \
 	    test_signs.res \
 	    test_smartindent.res \
-	    test_source_utf8.res \
 	    test_spell.res \
 	    test_startup.res \
-	    test_startup_utf8.res \
 	    test_stat.res \
 	    test_substitute.res \
 	    test_swap.res \
@@ -183,8 +174,6 @@ NEW_TESTS = test_arabic.res \
 	    test_undo.res \
 	    test_user_func.res \
 	    test_usercommands.res \
-	    test_utf8.res \
-	    test_utf8_comparisons.res \
 	    test_viminfo.res \
 	    test_vimscript.res \
 	    test_visual.res \
