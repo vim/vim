@@ -34,8 +34,8 @@ static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
-static void directx_binddc(void);
 static int directx_enabled(int version);
+static void directx_binddc(void);
 #endif
 
 #ifdef FEAT_MENU
@@ -382,7 +382,7 @@ directx_enabled(int version)
     static void
 directx_binddc(void)
 {
-    if (s_textArea != NULL && IS_ENABLE_DIRECTX())
+    if (s_textArea != NULL)
     {
 	RECT	rect;
 	GetClientRect(s_textArea, &rect);
@@ -1032,7 +1032,8 @@ _OnSizeTextArea(
     int cy UNUSED)
 {
 #if defined(FEAT_DIRECTX)
-    directx_binddc();
+    if (IS_ENABLE_DIRECTX())
+	directx_binddc();
 #endif
 }
 
