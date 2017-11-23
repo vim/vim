@@ -615,6 +615,10 @@ _OnBlinkTimer(
 	blink_timer = (UINT) SetTimer(NULL, 0, (UINT)blink_ontime,
 						    (TIMERPROC)_OnBlinkTimer);
     }
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 }
 
     static void
@@ -1673,6 +1677,11 @@ gui_mch_invert_rectangle(
 {
     RECT    rc;
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     /*
      * Note: InvertRect() excludes right and bottom of rectangle.
      */
@@ -1700,6 +1709,11 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 {
     HBRUSH  hbr;
     RECT    rc;
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     /*
      * Note: FrameRect() excludes right and bottom of rectangle.
@@ -1744,7 +1758,10 @@ gui_mch_draw_part_cursor(
 
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
+    {
+	DWriteContext_Flush(s_dwc);
 	DWriteContext_FillRect(s_dwc, &rc, color);
+    }
 #endif
 
     hbr = CreateSolidBrush(color);
@@ -3043,6 +3060,11 @@ gui_mswin_get_valid_dimensions(
 gui_mch_flash(int msec)
 {
     RECT    rc;
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     /*
      * Note: InvertRect() excludes right and bottom of rectangle.
@@ -6457,7 +6479,7 @@ gui_mch_draw_string(
 
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector &&
-	    (flags & (DRAW_UNDERL | DRAW_STRIKE | DRAW_UNDERC)))
+	    (flags & (DRAW_UNDERL | DRAW_STRIKE | DRAW_UNDERC | DRAW_CURSOR)))
 	DWriteContext_Flush(s_dwc);
 #endif
 
@@ -6538,7 +6560,10 @@ clear_rect(RECT *rcp)
 
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
+    {
+	DWriteContext_Flush(s_dwc);
 	DWriteContext_FillRect(s_dwc, rcp, gui.back_pixel);
+    }
 #endif
 
     hbr = CreateSolidBrush(gui.back_pixel);
@@ -8446,6 +8471,11 @@ gui_mch_drawsign(int row, int col, int typenr)
     if (!gui.in_use || (sign = (signicon_t *)sign_get_image(typenr)) == NULL)
 	return;
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     x = TEXT_X(col);
     y = TEXT_Y(row);
     w = gui.char_width * 2;
@@ -8924,6 +8954,11 @@ netbeans_draw_multisign_indicator(int row)
 
     x = 0;
     y = TEXT_Y(row);
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     for (i = 0; i < gui.char_height - 3; i++)
 	SetPixel(s_hdc, x+2, y++, gui.currFgColor);
