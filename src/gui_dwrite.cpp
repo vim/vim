@@ -4,8 +4,9 @@
  *
  * Contributors:
  *  - Ken Takata
+ *  - Yasuhiro Matsumoto
  *
- * Copyright (C) 2013 MURAOKA Taro <koron.kaoriya@gmail.com>
+ * Copyright (C) 2017 MURAOKA Taro <koron.kaoriya@gmail.com>
  * THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
  */
 
