@@ -780,6 +780,9 @@ DWriteContext::SetRenderingParams(
 	SafeRelease(&mRenderingParams);
 	mRenderingParams = renderingParams;
 	mTextAntialiasMode = textAntialiasMode;
+
+	Flush();
+	mRT->SetTextRenderingParams(mRenderingParams);
 	mRT->SetTextAntialiasMode(mTextAntialiasMode);
     }
 }
