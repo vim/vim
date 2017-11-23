@@ -781,11 +781,7 @@ DWriteContext::DrawText1(const WCHAR* text, int len,
     mBrush->SetColor(D2D1::ColorF(UINT32(GetRValue(color)) << 16 |
 		UINT32(GetGValue(color)) << 8 | UINT32(GetBValue(color))));
     mRT->DrawText(text, len, mTextFormat,
-	    D2D1::RectF(
-		PixelsToDipsX(x),
-		PixelsToDipsY(y),
-		PixelsToDipsX(x + w),
-		PixelsToDipsY(y + h)),
+	    D2D1::RectF((FLOAT)x, (FLOAT)y, (FLOAT)x+w, (FLOAT)y+h),
 	    SolidBrush(color),
 	    (D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
     if (mVersion == 2)
@@ -799,11 +795,8 @@ DWriteContext::FillRect(RECT *rc, COLORREF color)
 	return;
     AssureDrawing();
     mRT->FillRectangle(
-	    D2D1::RectF(
-		PixelsToDipsX(rc->left),
-		PixelsToDipsY(rc->top),
-		PixelsToDipsX(rc->right),
-		PixelsToDipsY(rc->bottom)),
+	    D2D1::RectF((FLOAT)rc->left, (FLOAT)rc->top,
+		(FLOAT)rc->right, (FLOAT)rc->bottom),
 	    SolidBrush(color));
 }
 
