@@ -878,6 +878,7 @@ DWriteContext::DrawText(HDC hdc, const WCHAR* text, int len,
 	case 2:
 	case 3:
 	    DrawText2(text, len, x, y, w, h, color);
+	    break;
 	case 4:
 	    DrawText4(text, len, x, y, w, h, cellWidth, color);
 	    break;
