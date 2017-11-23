@@ -126,7 +126,6 @@ NEW_TESTS = test_arabic.res \
 	    test_listchars.res \
 	    test_listdict.res \
 	    test_listlbr.res \
-	    test_listlbr_utf8.res \
 	    test_lua.res \
 	    test_makeencoding.res \
 	    test_man.res \
@@ -134,7 +133,6 @@ NEW_TESTS = test_arabic.res \
 	    test_marks.res \
 	    test_matchadd_conceal.res \
 	    test_mksession.res \
-	    test_mksession_utf8.res \
 	    test_nested_function.res \
 	    test_netbeans.res \
 	    test_normal.res \
@@ -162,7 +160,6 @@ NEW_TESTS = test_arabic.res \
 	    test_smartindent.res \
 	    test_spell.res \
 	    test_startup.res \
-	    test_startup_utf8.res \
 	    test_stat.res \
 	    test_substitute.res \
 	    test_swap.res \
