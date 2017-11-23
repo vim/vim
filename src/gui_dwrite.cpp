@@ -246,17 +246,14 @@ public:
     TextRenderer(
 	    IDWriteFactory2 *factory,
 	    ID2D1RenderTarget *renderTarget,
-	    IDWriteRenderingParams *renderingParams,
 	    ID2D1Brush *brush) :
 	cRefCount_(0),
 	pFactory_(factory),
 	pRenderTarget_(renderTarget),
-	pRenderingParams_(renderingParams),
 	pBrush_(brush)
     {
 	pFactory_->AddRef();
 	pRenderTarget_->AddRef();
-	pRenderingParams_->AddRef();
 	pBrush_->AddRef();
     }
 
@@ -264,7 +261,6 @@ public:
     {
 	SafeRelease(&pFactory_);
 	SafeRelease(&pRenderTarget_);
-	SafeRelease(&pRenderingParams_);
 	SafeRelease(&pBrush_);
     }
 
@@ -433,7 +429,6 @@ private:
     long cRefCount_;
     IDWriteFactory2 *pFactory_;
     ID2D1RenderTarget* pRenderTarget_;
-    IDWriteRenderingParams* pRenderingParams_;
     ID2D1Brush* pBrush_;
 };
 
@@ -1036,8 +1031,7 @@ DWriteContext::DrawText4(const WCHAR* text, int len,
 	textLayout->SetFontWeight(mFontWeight, textRange);
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
-	TextRenderer renderer(mDWriteFactory, mRT, mRenderingParams,
-		SolidBrush(color));
+	TextRenderer renderer(mDWriteFactory, mRT, SolidBrush(color));
 	TextRendererContext context = { (FLOAT)cellWidth, 0.0f };
 	textLayout->Draw(&context, &renderer, (FLOAT)x, (FLOAT)y);
     }
