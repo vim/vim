@@ -190,6 +190,76 @@ ToInt(DWRITE_RENDERING_MODE value)
     }
 }
 
+struct DWriteContext {
+    int mVersion;
+    bool mDrawing;
+
+    FLOAT mDpiScaleX;
+    FLOAT mDpiScaleY;
+
+    ID2D1Factory *mD2D1Factory;
+
+    ID2D1DCRenderTarget *mRT;
+    ID2D1SolidColorBrush *mBrush;
+
+    IDWriteFactory2 *mDWriteFactory;
+    IDWriteGdiInterop *mGdiInterop;
+    IDWriteRenderingParams *mRenderingParams;
+    IDWriteTextFormat *mTextFormat;
+
+    HFONT mLastHFont;
+    DWRITE_FONT_WEIGHT mFontWeight;
+    DWRITE_FONT_STYLE mFontStyle;
+
+    D2D1_TEXT_ANTIALIAS_MODE mTextAntialiasMode;
+
+    // METHODS
+
+    DWriteContext();
+
+    virtual ~DWriteContext();
+
+    void SetVersion(int version);
+
+    HRESULT SetLOGFONT(const LOGFONTW &logFont, float fontSize);
+
+    void SetFont(HFONT hFont);
+
+    void SetFont(const LOGFONTW &logFont);
+
+    void DrawText(HDC hdc, const WCHAR* text, int len,
+	int x, int y, int w, int h, int cellWidth, COLORREF color);
+
+    void DrawText1(HDC hdc, const WCHAR* text, int len,
+	int x, int y, int w, int h, int cellWidth, COLORREF color);
+
+    void BindDC(HDC hdc, RECT *rect);
+
+    void AssureDrawing(void);
+
+    ID2D1Brush* SolidBrush(COLORREF color);
+
+    void DrawText2(const WCHAR* text, int len,
+	    int x, int y, int w, int h, COLORREF color);
+
+    void DrawText4(const WCHAR* text, int len,
+	int x, int y, int w, int h, int cellWidth, COLORREF color);
+
+    void FillRect(RECT *rc, COLORREF color);
+
+    void Flush(void);
+
+    float PixelsToDipsX(int x);
+
+    float PixelsToDipsY(int y);
+
+    void SetRenderingParams(
+	    const DWriteRenderingParams *params);
+
+    DWriteRenderingParams *GetRenderingParams(
+	    DWriteRenderingParams *params);
+};
+
 class AdjustedGlyphRun : public DWRITE_GLYPH_RUN
 {
 private:
@@ -236,6 +306,7 @@ public:
 
 struct TextRendererContext {
     FLOAT   cellWidth;
+    COLORREF color;
 
     // working fields.
     FLOAT   offsetX;
@@ -245,24 +316,14 @@ class TextRenderer FINAL : public IDWriteTextRenderer
 {
 public:
     TextRenderer(
-	    IDWriteFactory2 *factory,
-	    ID2D1RenderTarget *renderTarget,
-	    ID2D1Brush *brush) :
+	    DWriteContext* pDWC) :
 	cRefCount_(0),
-	pFactory_(factory),
-	pRenderTarget_(renderTarget),
-	pBrush_(brush)
+	pDWC_(pDWC)
     {
-	pFactory_->AddRef();
-	pRenderTarget_->AddRef();
-	pBrush_->AddRef();
     }
 
     virtual ~TextRenderer()
     {
-	SafeRelease(&pFactory_);
-	SafeRelease(&pRenderTarget_);
-	SafeRelease(&pBrush_);
     }
 
     IFACEMETHOD(IsPixelSnappingDisabled)(
@@ -278,7 +339,7 @@ public:
 	__out DWRITE_MATRIX* transform)
     {
 	// forward the render target's transform
-	pRenderTarget_->GetTransform(
+	pDWC_->mRT->GetTransform(
 		reinterpret_cast<D2D1_MATRIX_3X2_F*>(transform));
 	return S_OK;
     }
@@ -288,7 +349,7 @@ public:
 	__out FLOAT* pixelsPerDip)
     {
 	float unused;
-	pRenderTarget_->GetDpi(pixelsPerDip, &unused);
+	pDWC_->mRT->GetDpi(pixelsPerDip, &unused);
 	return S_OK;
     }
 
@@ -339,7 +400,7 @@ public:
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth);
 
 	IDWriteColorGlyphRunEnumerator	*enumerator = NULL;
-	HRESULT hr = pFactory_->TranslateColorGlyphRun(
+	HRESULT hr = pDWC_->mDWriteFactory->TranslateColorGlyphRun(
 	    baselineOriginX + context->offsetX,
 	    baselineOriginY,
 	    glyphRun,
@@ -358,26 +419,25 @@ public:
 		const DWRITE_COLOR_GLYPH_RUN* colorGlyphRun;
 		enumerator->GetCurrentRun(&colorGlyphRun);
 
-		ID2D1SolidColorBrush* brush;
-		pRenderTarget_->CreateSolidColorBrush(colorGlyphRun->runColor, &brush);
-		pRenderTarget_->DrawGlyphRun(
+		pDWC_->mBrush->SetColor(colorGlyphRun->runColor);
+		pDWC_->mRT->DrawGlyphRun(
 			D2D1::Point2F(
 			    colorGlyphRun->baselineOriginX,
 			    colorGlyphRun->baselineOriginY),
 			&colorGlyphRun->glyphRun,
-			brush,
+			pDWC_->mBrush,
 			DWRITE_MEASURING_MODE_NATURAL);
 		enumerator->MoveNext(&hasRun);
 	    }
 	}
 	else
 	{
-	    pRenderTarget_->DrawGlyphRun(
+	    pDWC_->mRT->DrawGlyphRun(
 		    D2D1::Point2F(
 			baselineOriginX + context->offsetX,
 			baselineOriginY),
 		    &adjustedGlyphRun,
-		    pBrush_,
+		    pDWC_->SolidBrush(context->color),
 		    DWRITE_MEASURING_MODE_NATURAL);
 	}
 	context->offsetX += adjustedGlyphRun.getDelta();
@@ -428,9 +488,7 @@ public:
 
 private:
     long cRefCount_;
-    IDWriteFactory2 *pFactory_;
-    ID2D1RenderTarget* pRenderTarget_;
-    ID2D1Brush* pBrush_;
+    DWriteContext* pDWC_;
 };
 
 class GdiTextRenderer FINAL : public IDWriteTextRenderer
@@ -593,76 +651,6 @@ private:
     long cRefCount_;
     IDWriteBitmapRenderTarget* pRenderTarget_;
     IDWriteRenderingParams* pRenderingParams_;
-};
-
-struct DWriteContext {
-    int mVersion;
-    bool mDrawing;
-
-    FLOAT mDpiScaleX;
-    FLOAT mDpiScaleY;
-
-    ID2D1Factory *mD2D1Factory;
-
-    ID2D1DCRenderTarget *mRT;
-    ID2D1SolidColorBrush *mBrush;
-
-    IDWriteFactory2 *mDWriteFactory;
-    IDWriteGdiInterop *mGdiInterop;
-    IDWriteRenderingParams *mRenderingParams;
-    IDWriteTextFormat *mTextFormat;
-
-    HFONT mLastHFont;
-    DWRITE_FONT_WEIGHT mFontWeight;
-    DWRITE_FONT_STYLE mFontStyle;
-
-    D2D1_TEXT_ANTIALIAS_MODE mTextAntialiasMode;
-
-    // METHODS
-
-    DWriteContext();
-
-    virtual ~DWriteContext();
-
-    void SetVersion(int version);
-
-    HRESULT SetLOGFONT(const LOGFONTW &logFont, float fontSize);
-
-    void SetFont(HFONT hFont);
-
-    void SetFont(const LOGFONTW &logFont);
-
-    void DrawText(HDC hdc, const WCHAR* text, int len,
-	int x, int y, int w, int h, int cellWidth, COLORREF color);
-
-    void DrawText1(HDC hdc, const WCHAR* text, int len,
-	int x, int y, int w, int h, int cellWidth, COLORREF color);
-
-    void BindDC(HDC hdc, RECT *rect);
-
-    void AssureDrawing(void);
-
-    ID2D1Brush* SolidBrush(COLORREF color);
-
-    void DrawText2(const WCHAR* text, int len,
-	    int x, int y, int w, int h, COLORREF color);
-
-    void DrawText4(const WCHAR* text, int len,
-	int x, int y, int w, int h, int cellWidth, COLORREF color);
-
-    void FillRect(RECT *rc, COLORREF color);
-
-    void Flush(void);
-
-    float PixelsToDipsX(int x);
-
-    float PixelsToDipsY(int y);
-
-    void SetRenderingParams(
-	    const DWriteRenderingParams *params);
-
-    DWriteRenderingParams *GetRenderingParams(
-	    DWriteRenderingParams *params);
 };
 
 DWriteContext::DWriteContext() :
@@ -1020,6 +1008,8 @@ DWriteContext::DrawText2(const WCHAR* text, int len,
 DWriteContext::DrawText4(const WCHAR* text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color)
 {
+    AssureDrawing();
+
     HRESULT hr;
     IDWriteTextLayout *textLayout = NULL;
 
@@ -1032,8 +1022,8 @@ DWriteContext::DrawText4(const WCHAR* text, int len,
 	textLayout->SetFontWeight(mFontWeight, textRange);
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
-	TextRenderer renderer(mDWriteFactory, mRT, SolidBrush(color));
-	TextRendererContext context = { (FLOAT)cellWidth, 0.0f };
+	TextRenderer renderer(this);
+	TextRendererContext context = { (FLOAT)cellWidth, color, 0.0f };
 	textLayout->Draw(&context, &renderer, (FLOAT)x, (FLOAT)y);
     }
 
