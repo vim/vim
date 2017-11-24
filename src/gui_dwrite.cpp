@@ -248,14 +248,17 @@ struct DWriteContext {
 class AdjustedGlyphRun : public DWRITE_GLYPH_RUN
 {
 private:
+    FLOAT &mAccum;
     FLOAT mDelta;
     FLOAT *mAdjustedAdvances;
 
 public:
     AdjustedGlyphRun(
 	    const DWRITE_GLYPH_RUN *glyphRun,
-	    FLOAT cellWidth) :
+	    FLOAT cellWidth,
+	    FLOAT &accum) :
 	DWRITE_GLYPH_RUN(*glyphRun),
+	mAccum(accum),
 	mDelta(0.0f),
 	mAdjustedAdvances(new FLOAT[glyphRun->glyphCount])
     {
@@ -272,12 +275,8 @@ public:
 
     ~AdjustedGlyphRun(void)
     {
+	mAccum += mDelta;
 	delete[] mAdjustedAdvances;
-    }
-
-    FLOAT getDelta(void) const
-    {
-	return mDelta;
     }
 
     static FLOAT adjustToCell(FLOAT value, FLOAT cellWidth)
@@ -383,16 +382,16 @@ public:
 	TextRendererContext *context =
 	    reinterpret_cast<TextRendererContext*>(clientDrawingContext);
 
-	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth);
+	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth, context->offsetX);
 
 	BOOL written = FALSE;
 	if (pDWC_->mDWriteFactory2 != NULL)
 	{
-	    IDWriteColorGlyphRunEnumerator	*enumerator = NULL;
+	    IDWriteColorGlyphRunEnumerator *enumerator = NULL;
 	    HRESULT hr = pDWC_->mDWriteFactory2->TranslateColorGlyphRun(
 		baselineOriginX + context->offsetX,
 		baselineOriginY,
-		glyphRun,
+		&adjustedGlyphRun,
 		NULL,
 		DWRITE_MEASURING_MODE_GDI_NATURAL,
 		NULL,
@@ -400,6 +399,7 @@ public:
 		&enumerator);
 	    if (SUCCEEDED(hr))
 	    {
+		// Draw by IDWriteFactory2 for color emoji
 		BOOL hasRun = TRUE;
 		enumerator->MoveNext(&hasRun);
 		while (hasRun)
@@ -417,22 +417,19 @@ public:
 			    DWRITE_MEASURING_MODE_NATURAL);
 		    enumerator->MoveNext(&hasRun);
 		}
-		written = TRUE;
+		SafeRelease(&enumerator);
+		return S_OK;
 	    }
 	}
 
-	if (!written)
-	{
-	    pDWC_->mRT->DrawGlyphRun(
-		    D2D1::Point2F(
-			baselineOriginX + context->offsetX,
-			baselineOriginY),
-		    &adjustedGlyphRun,
-		    pDWC_->SolidBrush(context->color),
-		    DWRITE_MEASURING_MODE_NATURAL);
-	}
-	context->offsetX += adjustedGlyphRun.getDelta();
-
+	// Draw by IDWriteFactory (without color emoji)
+	pDWC_->mRT->DrawGlyphRun(
+		D2D1::Point2F(
+		    baselineOriginX + context->offsetX,
+		    baselineOriginY),
+		&adjustedGlyphRun,
+		pDWC_->SolidBrush(context->color),
+		DWRITE_MEASURING_MODE_NATURAL);
 	return S_OK;
     }
 
@@ -543,6 +540,7 @@ DWriteContext::DWriteContext() :
 		DWRITE_FACTORY_TYPE_SHARED,
 		__uuidof(IDWriteFactory2),
 		reinterpret_cast<IUnknown**>(&mDWriteFactory2));
+	_RPT1(_CRT_WARN, "IDWriteFactory2: %s", SUCCEEDED(hr) ? "available" : "not available");
     }
 
     if (SUCCEEDED(hr))
