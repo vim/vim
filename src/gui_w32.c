@@ -6174,6 +6174,17 @@ RevOut( HDC s_hdc,
 }
 #endif
 
+    static int
+gui_is_outline_font_selected(HDC hdc)
+{
+    TEXTMETRIC tm;
+
+    GetTextMetrics(hdc, &tm);
+    if (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR))
+	return 1;
+    return 0;
+}
+
     void
 gui_mch_draw_string(
     int		row,
@@ -6218,6 +6229,16 @@ gui_mch_draw_string(
     HBRUSH		hbr;
     RECT		rc;
 
+    SelectFont(s_hdc, gui.currFont);
+#ifdef FEAT_DIRECTX
+    if (IS_ENABLE_DIRECTX())
+    {
+	font_is_ttf_or_vector = gui_is_outline_font_selected(s_hdc);
+	if (font_is_ttf_or_vector)
+	    DWriteContext_SetFont(s_dwc, (HFONT)gui.currFont);
+    }
+#endif
+
     if (!(flags & DRAW_TRANSP))
     {
 	/*
@@ -6260,10 +6281,9 @@ gui_mch_draw_string(
 	}
 
 #if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX())
+	if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector)
 	    DWriteContext_FillRect(s_dwc, &rc, gui.currBgColor);
 #endif
-
 	FillRect(s_hdc, &rc, hbr);
 
 	SetBkMode(s_hdc, TRANSPARENT);
@@ -6279,21 +6299,6 @@ gui_mch_draw_string(
 	}
     }
     SetTextColor(s_hdc, gui.currFgColor);
-    SelectFont(s_hdc, gui.currFont);
-
-#ifdef FEAT_DIRECTX
-    if (IS_ENABLE_DIRECTX())
-    {
-	TEXTMETRIC tm;
-
-	GetTextMetrics(s_hdc, &tm);
-	if (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR))
-	{
-	    font_is_ttf_or_vector = 1;
-	    DWriteContext_SetFont(s_dwc, (HFONT)gui.currFont);
-	}
-    }
-#endif
 
     if (pad_size != Columns || padding == NULL || padding[0] != gui.char_width)
     {
@@ -6549,7 +6554,7 @@ clear_rect(RECT *rcp)
     HBRUSH  hbr;
 
 #if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
+    if (IS_ENABLE_DIRECTX() && gui_is_outline_font_selected(s_hdc))
 	DWriteContext_FillRect(s_dwc, rcp, gui.back_pixel);
 #endif
 
