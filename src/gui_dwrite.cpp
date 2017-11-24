@@ -541,7 +541,7 @@ DWriteContext::DWriteContext() :
 		DWRITE_FACTORY_TYPE_SHARED,
 		__uuidof(IDWriteFactory2),
 		reinterpret_cast<IUnknown**>(&mDWriteFactory2));
-	_RPT1(_CRT_WARN, "IDWriteFactory2: %s", SUCCEEDED(hr) ? "available" : "not available");
+	_RPT1(_CRT_WARN, "IDWriteFactory2: %s\n", SUCCEEDED(hr) ? "available" : "not available");
     }
 
     if (SUCCEEDED(hr))
