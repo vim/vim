@@ -7849,6 +7849,7 @@ static struct event_name
     {"TermResponse",	EVENT_TERMRESPONSE},
     {"TextChanged",	EVENT_TEXTCHANGED},
     {"TextChangedI",	EVENT_TEXTCHANGEDI},
+    {"TextChangedP",	EVENT_TEXTCHANGEDP},
     {"User",		EVENT_USER},
     {"VimEnter",	EVENT_VIMENTER},
     {"VimLeave",	EVENT_VIMLEAVE},
@@ -9372,6 +9373,15 @@ has_textchanged(void)
 has_textchangedI(void)
 {
     return (first_autopat[(int)EVENT_TEXTCHANGEDI] != NULL);
+}
+
+/*
+ * Return TRUE when there is a TextChangedP autocommand defined.
+ */
+    int
+has_textchangedP(void)
+{
+    return (first_autopat[(int)EVENT_TEXTCHANGEDP] != NULL);
 }
 
 /*

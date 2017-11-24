@@ -330,6 +330,8 @@ Name			triggered by ~
 
 |TextChanged|		after a change was made to the text in Normal mode
 |TextChangedI|		after a change was made to the text in Insert mode
+|TextChangedP|		after a change was made to the text in Insert mode
+                        when popup menu visible
 |TextYankPost|		after text is yanked or deleted
 
 |ColorScheme|		after loading a color scheme
@@ -957,6 +959,10 @@ TextChangedI			After a change was made to the text in the
 				current buffer in Insert mode.
 				Not triggered when the popup menu is visible.
 				Otherwise the same as TextChanged.
+							*TextChangedP*
+TextChangedP			After a change was made to the text in the
+				current buffer in Insert mode.
+				Triggered when the popup menu is visible.
 							*TextYankPost*
 TextYankPost			After text has been yanked or deleted in the
 				current buffer.  The following values of
