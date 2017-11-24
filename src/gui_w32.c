@@ -3140,6 +3140,7 @@ gui_mch_delete_lines(
     intel_gpu_workaround();
 
 #if defined(FEAT_DIRECTX)
+    // Commit drawing queue before ScrollWindowEx.
     if (IS_ENABLE_DIRECTX())
 	DWriteContext_Flush(s_dwc);
 #endif
@@ -3176,6 +3177,12 @@ gui_mch_insert_lines(
     RECT	rc;
 
     intel_gpu_workaround();
+
+#if defined(FEAT_DIRECTX)
+    // Commit drawing queue before ScrollWindowEx.
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
