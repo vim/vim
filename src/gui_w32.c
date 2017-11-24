@@ -1762,6 +1762,7 @@ gui_mch_draw_part_cursor(
     {
 	DWriteContext_Flush(s_dwc);
 	DWriteContext_FillRect(s_dwc, &rc, color);
+	return;
     }
 #endif
 
@@ -6294,6 +6295,7 @@ gui_mch_draw_string(
 #if defined(FEAT_DIRECTX)
 	if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector)
 	    DWriteContext_FillRect(s_dwc, &rc, gui.currBgColor);
+	else
 #endif
 	FillRect(s_hdc, &rc, hbr);
 
@@ -6566,7 +6568,10 @@ clear_rect(RECT *rcp)
 
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX() && gui_is_outline_font_selected(s_hdc))
+    {
 	DWriteContext_FillRect(s_dwc, rcp, gui.back_pixel);
+	return;
+    }
 #endif
 
     hbr = CreateSolidBrush(gui.back_pixel);
