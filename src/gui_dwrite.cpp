@@ -543,8 +543,6 @@ DWriteContext::DWriteContext() :
 		DWRITE_FACTORY_TYPE_SHARED,
 		__uuidof(IDWriteFactory2),
 		reinterpret_cast<IUnknown**>(&mDWriteFactory2));
-	_RPT2(_CRT_WARN, "DWriteCreateFactory2: hr=%p p=%p\n", hr,
-		mDWriteFactory2);
     }
 
     if (SUCCEEDED(hr))
