@@ -289,11 +289,12 @@ public:
 };
 
 struct TextRendererContext {
-    FLOAT   cellWidth;
+    // const fields.
     COLORREF color;
+    FLOAT cellWidth;
 
     // working fields.
-    FLOAT   offsetX;
+    FLOAT offsetX;
 };
 
 class TextRenderer FINAL : public IDWriteTextRenderer
@@ -756,7 +757,7 @@ DWriteContext::DrawText(const WCHAR* text, int len,
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
 	TextRenderer renderer(this);
-	TextRendererContext context = { (FLOAT)cellWidth, color, 0.0f };
+	TextRendererContext context = { color, (FLOAT)cellWidth, 0.0f };
 	textLayout->Draw(&context, &renderer, (FLOAT)x, (FLOAT)y);
     }
 
