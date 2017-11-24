@@ -200,7 +200,7 @@ struct DWriteContext {
     ID2D1DCRenderTarget *mRT;
     ID2D1SolidColorBrush *mBrush;
 
-    IDWriteFactory1 *mDWriteFactory1;
+    IDWriteFactory *mDWriteFactory;
     IDWriteFactory2 *mDWriteFactory2;
 
     IDWriteGdiInterop *mGdiInterop;
@@ -489,7 +489,7 @@ DWriteContext::DWriteContext() :
     mD2D1Factory(NULL),
     mRT(NULL),
     mBrush(NULL),
-    mDWriteFactory1(NULL),
+    mDWriteFactory(NULL),
     mDWriteFactory2(NULL),
     mGdiInterop(NULL),
     mRenderingParams(NULL),
@@ -531,10 +531,10 @@ DWriteContext::DWriteContext() :
     {
 	hr = DWriteCreateFactory(
 		DWRITE_FACTORY_TYPE_SHARED,
-		__uuidof(IDWriteFactory1),
-		reinterpret_cast<IUnknown**>(&mDWriteFactory1));
-	_RPT2(_CRT_WARN, "DWriteCreateFactory1: hr=%p p=%p\n", hr,
-		mDWriteFactory1);
+		__uuidof(IDWriteFactory),
+		reinterpret_cast<IUnknown**>(&mDWriteFactory));
+	_RPT2(_CRT_WARN, "DWriteCreateFactory: hr=%p p=%p\n", hr,
+		mDWriteFactory);
     }
 
     if (SUCCEEDED(hr))
@@ -549,13 +549,13 @@ DWriteContext::DWriteContext() :
 
     if (SUCCEEDED(hr))
     {
-	hr = mDWriteFactory1->GetGdiInterop(&mGdiInterop);
+	hr = mDWriteFactory->GetGdiInterop(&mGdiInterop);
 	_RPT2(_CRT_WARN, "GetGdiInterop: hr=%p p=%p\n", hr, mGdiInterop);
     }
 
     if (SUCCEEDED(hr))
     {
-	hr = mDWriteFactory1->CreateRenderingParams(&mRenderingParams);
+	hr = mDWriteFactory->CreateRenderingParams(&mRenderingParams);
 	_RPT2(_CRT_WARN, "CreateRenderingParams: hr=%p p=%p\n", hr,
 		mRenderingParams);
     }
@@ -566,7 +566,7 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mTextFormat);
     SafeRelease(&mRenderingParams);
     SafeRelease(&mGdiInterop);
-    SafeRelease(&mDWriteFactory1);
+    SafeRelease(&mDWriteFactory);
     SafeRelease(&mDWriteFactory2);
     SafeRelease(&mBrush);
     SafeRelease(&mRT);
@@ -657,7 +657,7 @@ DWriteContext::SetLOGFONT(const LOGFONTW &logFont, float fontSize)
     if (SUCCEEDED(hr))
     {
 	// Create the text format object.
-	hr = mDWriteFactory1->CreateTextFormat(
+	hr = mDWriteFactory->CreateTextFormat(
 		familyName,
 		NULL, // no custom font collection
 		font->GetWeight(),
@@ -750,7 +750,7 @@ DWriteContext::DrawText(const WCHAR* text, int len,
     HRESULT hr;
     IDWriteTextLayout *textLayout = NULL;
 
-    hr = mDWriteFactory1->CreateTextLayout(text, len, mTextFormat,
+    hr = mDWriteFactory->CreateTextLayout(text, len, mTextFormat,
 	    FLOAT(w), FLOAT(h), &textLayout);
 
     if (SUCCEEDED(hr))
@@ -791,7 +791,7 @@ DWriteContext::Flush(void)
 DWriteContext::SetRenderingParams(
 	const DWriteRenderingParams *params)
 {
-    if (mDWriteFactory1 == NULL)
+    if (mDWriteFactory == NULL)
 	return;
 
     IDWriteRenderingParams *renderingParams = NULL;
@@ -800,14 +800,14 @@ DWriteContext::SetRenderingParams(
     HRESULT hr;
     if (params != NULL)
     {
-	hr = mDWriteFactory1->CreateCustomRenderingParams(params->gamma,
+	hr = mDWriteFactory->CreateCustomRenderingParams(params->gamma,
 		params->enhancedContrast, params->clearTypeLevel,
 		ToPixelGeometry(params->pixelGeometry),
 		ToRenderingMode(params->renderingMode), &renderingParams);
 	textAntialiasMode = ToTextAntialiasMode(params->textAntialiasMode);
     }
     else
-	hr = mDWriteFactory1->CreateRenderingParams(&renderingParams);
+	hr = mDWriteFactory->CreateRenderingParams(&renderingParams);
     if (SUCCEEDED(hr) && renderingParams != NULL)
     {
 	SafeRelease(&mRenderingParams);
