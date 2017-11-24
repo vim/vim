@@ -6550,10 +6550,7 @@ clear_rect(RECT *rcp)
 
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
-    {
-	DWriteContext_Flush(s_dwc);
 	DWriteContext_FillRect(s_dwc, rcp, gui.back_pixel);
-    }
 #endif
 
     hbr = CreateSolidBrush(gui.back_pixel);
