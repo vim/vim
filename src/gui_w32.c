@@ -1760,7 +1760,6 @@ gui_mch_draw_part_cursor(
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
     {
-	DWriteContext_Flush(s_dwc);
 	DWriteContext_FillRect(s_dwc, &rc, color);
 	return;
     }
@@ -3124,10 +3123,6 @@ get_scroll_flags(void)
     static void
 intel_gpu_workaround(void)
 {
-#if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
-	DWriteContext_Flush(s_dwc);
-#endif
     GetPixel(s_hdc, FILL_X(gui.col), FILL_Y(gui.row));
 }
 
@@ -3143,6 +3138,11 @@ gui_mch_delete_lines(
     RECT	rc;
 
     intel_gpu_workaround();
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -6295,7 +6295,6 @@ gui_mch_draw_string(
 #if defined(FEAT_DIRECTX)
 	if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector)
 	    DWriteContext_FillRect(s_dwc, &rc, gui.currBgColor);
-	else
 #endif
 	FillRect(s_hdc, &rc, hbr);
 
