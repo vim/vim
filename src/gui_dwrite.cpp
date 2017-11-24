@@ -25,7 +25,7 @@
 #include <d2d1.h>
 #include <d2d1helper.h>
 
-// Disable these macros to compile by old VC with newer SDK (V8.1 or later).
+// Disable these macros to compile with old VC and newer SDK (V8.1 or later).
 #if defined(_MSC_VER) && (_MSC_VER < 1700)
 # define _COM_Outptr_ __out
 # define _In_reads_(s)
@@ -308,6 +308,7 @@ public:
 	AddRef();
     }
 
+    // add "virtual" to avoid a compiler warning
     virtual ~TextRenderer()
     {
     }
@@ -334,8 +335,9 @@ public:
 	__maybenull void* clientDrawingContext,
 	__out FLOAT* pixelsPerDip)
     {
-	float unused;
-	pDWC_->mRT->GetDpi(pixelsPerDip, &unused);
+	float dpiX, unused;
+	pDWC_->mRT->GetDpi(&dpiX, &unused);
+	*pixelsPerDip = dpiX / 96.0f;
 	return S_OK;
     }
 
@@ -383,9 +385,9 @@ public:
 	TextRendererContext *context =
 	    reinterpret_cast<TextRendererContext*>(clientDrawingContext);
 
-	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth, context->offsetX);
+	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth,
+		context->offsetX);
 
-	BOOL written = FALSE;
 	if (pDWC_->mDWriteFactory2 != NULL)
 	{
 	    IDWriteColorGlyphRunEnumerator *enumerator = NULL;
