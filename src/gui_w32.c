@@ -123,8 +123,8 @@ gui_mch_set_rendering_options(char_u *s)
 		LOGFONTW lf;
 		if (GetObjectW((HFONT)gui.currFont, sizeof(lf), &lf))
 		{
-		    if (lf.lfQuality && ANTIALIASED_QUALITY)
-			return FALSE;
+		    if (lf.lfQuality & ANTIALIASED_QUALITY)
+			return FAIL;
 		}
 	    }
 	}
