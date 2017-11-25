@@ -13449,8 +13449,10 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	if (write_list(fd, list, binary) == FAIL)
 	    ret = -1;
 #ifdef HAVE_FSYNC
-	else if (do_fsync && fsync(fileno(fd)) != 0)
-	    EMSG(_(e_fsync));
+	else if (do_fsync)
+	    /* Ignore the error, the user wouldn't know what to do about it.
+	     * May happen for a device. */
+	    ignored = fsync(fileno(fd));
 #endif
 	fclose(fd);
     }
