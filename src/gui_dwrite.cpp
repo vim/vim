@@ -189,6 +189,33 @@ ToInt(DWRITE_RENDERING_MODE value)
     }
 }
 
+// defined in os_mswin.c
+extern "C" int get_logfont(LOGFONTA*, char*, HDC, int);
+
+    static HRESULT
+GetLOGFONTW(char* name, LOGFONTW& lfw)
+{
+    LOGFONTA lf;
+    if (!::get_logfont(&lf, name, NULL, FALSE))
+	return E_FAIL;
+    lfw.lfHeight = lf.lfHeight;
+    lfw.lfWidth = lf.lfWidth;
+    lfw.lfEscapement = lf.lfEscapement;
+    lfw.lfOrientation = lf.lfOrientation;
+    lfw.lfWeight = lf.lfWeight;
+    lfw.lfItalic = lf.lfItalic;
+    lfw.lfUnderline = lf.lfUnderline;
+    lfw.lfStrikeOut = lf.lfStrikeOut;
+    lfw.lfCharSet = lf.lfCharSet;
+    lfw.lfOutPrecision = lf.lfOutPrecision;
+    lfw.lfClipPrecision = lf.lfClipPrecision;
+    lfw.lfQuality = lf.lfQuality;
+    lfw.lfPitchAndFamily = lf.lfPitchAndFamily;
+    MultiByteToWideChar(CP_ACP, 0, lf.lfFaceName, -1, lfw.lfFaceName,
+	    sizeof(lfw.lfFaceName) / sizeof(lf.lfFaceName[0]));
+    return S_OK;
+}
+
 struct FontCache {
     int	    mLen;
     int	    mIndex;
@@ -250,6 +277,7 @@ struct DWriteContext {
 
     HFONT mLastHFont;
     FontCache mFailedFonts;
+    LOGFONTW mFallbackLF;
     IDWriteTextFormat *mTextFormat;
     DWRITE_FONT_WEIGHT mFontWeight;
     DWRITE_FONT_STYLE mFontStyle;
@@ -603,6 +631,9 @@ DWriteContext::DWriteContext() :
 	_RPT2(_CRT_WARN, "CreateRenderingParams: hr=%p p=%p\n", hr,
 		mRenderingParams);
     }
+
+    if (SUCCEEDED(hr))
+	hr = GetLOGFONTW("Courier_New:h12", mFallbackLF);
 }
 
 DWriteContext::~DWriteContext()
@@ -755,14 +786,6 @@ DWriteContext::SetFontByLOGFONT(const LOGFONTW &logFont)
     return hr;
 }
 
-static const LOGFONTW lfFallback =
-{
-    -12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-    OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-    PROOF_QUALITY, FIXED_PITCH | FF_DONTCARE,
-    L"Courier New"
-};
-
     void
 DWriteContext::SetFont(HFONT hFont)
 {
@@ -780,7 +803,7 @@ DWriteContext::SetFont(HFONT hFont)
     else
     {
 	mFailedFonts.Put(hFont);
-	SetFontByLOGFONT(lfFallback);
+	SetFontByLOGFONT(mFallbackLF);
 	_RPT1(_CRT_WARN, "SetFont use fallback font: hr=%08X\n", hr);
     }
 }
