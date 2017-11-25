@@ -13449,8 +13449,14 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	if (write_list(fd, list, binary) == FAIL)
 	    ret = -1;
 #ifdef HAVE_FSYNC
-	else if (do_fsync && fsync(fileno(fd)) != 0)
-	    EMSG(_(e_fsync));
+	else
+	{
+	    int	fno = fileno(fd);
+	    struct stat st;
+	    if (do_fsync && fstat(fno, &st) == 0 && S_ISREG(st.st_mode)
+			&& fsync(fno) != 0)
+		EMSG(_(e_fsync));
+	}
 #endif
 	fclose(fd);
     }

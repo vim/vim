@@ -100,3 +100,10 @@ func Test_writefile_sync_arg()
   call writefile(['two'], 'Xtest', 'S')
   call delete('Xtest')
 endfunc
+
+func Test_writefile_sync_dev_stdout()
+  if has('win32')
+    return
+  endif
+  call writefile(['one'], '/dev/stdout')
+endfunc
