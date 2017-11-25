@@ -189,35 +189,10 @@ ToInt(DWRITE_RENDERING_MODE value)
     }
 }
 
-// defined in os_mswin.c
-extern "C" int get_logfont(LOGFONTA*, char*, HDC, int);
-
-    static HRESULT
-GetLOGFONTW(char* name, LOGFONTW& lfw)
-{
-    LOGFONTA lf;
-    if (!::get_logfont(&lf, name, NULL, FALSE))
-	return E_FAIL;
-    lfw.lfHeight = lf.lfHeight;
-    lfw.lfWidth = lf.lfWidth;
-    lfw.lfEscapement = lf.lfEscapement;
-    lfw.lfOrientation = lf.lfOrientation;
-    lfw.lfWeight = lf.lfWeight;
-    lfw.lfItalic = lf.lfItalic;
-    lfw.lfUnderline = lf.lfUnderline;
-    lfw.lfStrikeOut = lf.lfStrikeOut;
-    lfw.lfCharSet = lf.lfCharSet;
-    lfw.lfOutPrecision = lf.lfOutPrecision;
-    lfw.lfClipPrecision = lf.lfClipPrecision;
-    lfw.lfQuality = lf.lfQuality;
-    lfw.lfPitchAndFamily = lf.lfPitchAndFamily;
-    MultiByteToWideChar(CP_ACP, 0, lf.lfFaceName, -1, lfw.lfFaceName,
-	    sizeof(lfw.lfFaceName) / sizeof(lf.lfFaceName[0]));
-    return S_OK;
-}
-
 struct DWriteContext {
+    HDC mHDC;
     bool mDrawing;
+    bool mFallbackDC;
 
     ID2D1Factory *mD2D1Factory;
 
@@ -231,7 +206,6 @@ struct DWriteContext {
     IDWriteRenderingParams *mRenderingParams;
 
     HFONT mLastHFont;
-    LOGFONTW mFallbackLF;
     IDWriteTextFormat *mTextFormat;
     DWRITE_FONT_WEIGHT mFontWeight;
     DWRITE_FONT_STYLE mFontStyle;
@@ -258,7 +232,8 @@ struct DWriteContext {
     ID2D1Brush* SolidBrush(COLORREF color);
 
     void DrawText(const WCHAR* text, int len,
-	int x, int y, int w, int h, int cellWidth, COLORREF color);
+	int x, int y, int w, int h, int cellWidth, COLORREF color,
+	UINT fuOptions, CONST RECT *lprc, CONST INT * lpDx);
 
     void FillRect(RECT *rc, COLORREF color);
 
@@ -511,7 +486,9 @@ private:
 };
 
 DWriteContext::DWriteContext() :
+    mHDC(NULL),
     mDrawing(false),
+    mFallbackDC(false),
     mD2D1Factory(NULL),
     mRT(NULL),
     mBrush(NULL),
@@ -584,9 +561,6 @@ DWriteContext::DWriteContext() :
 	_RPT2(_CRT_WARN, "CreateRenderingParams: hr=%p p=%p\n", hr,
 		mRenderingParams);
     }
-
-    if (SUCCEEDED(hr))
-	hr = GetLOGFONTW("Courier_New:h12", mFallbackLF);
 }
 
 DWriteContext::~DWriteContext()
@@ -751,14 +725,8 @@ DWriteContext::SetFont(HFONT hFont)
     if (GetObjectW(hFont, sizeof(lf), &lf))
 	hr = SetFontByLOGFONT(lf);
 
-    if (SUCCEEDED(hr))
-	mLastHFont = hFont;
-    else
-    {
-	SetFontByLOGFONT(mFallbackLF);
-	mLastHFont = hFont;
-	_RPT1(_CRT_WARN, "SetFont use fallback font: hr=%08X\n", hr);
-    }
+    mLastHFont = hFont;
+    mFallbackDC = SUCCEEDED(hr) ? false : true;
 }
 
     void
@@ -767,6 +735,7 @@ DWriteContext::BindDC(HDC hdc, RECT *rect)
     Flush();
     mRT->BindDC(hdc, rect);
     mRT->SetTransform(D2D1::IdentityMatrix());
+    mHDC = hdc;
 }
 
     void
@@ -789,8 +758,16 @@ DWriteContext::SolidBrush(COLORREF color)
 
     void
 DWriteContext::DrawText(const WCHAR* text, int len,
-	int x, int y, int w, int h, int cellWidth, COLORREF color)
+	int x, int y, int w, int h, int cellWidth, COLORREF color,
+	UINT fuOptions, CONST RECT *lprc, CONST INT * lpDx)
 {
+    if (mFallbackDC)
+    {
+	Flush();
+	ExtTextOutW(mHDC, x, y, fuOptions, lprc, text, len, lpDx);
+	return;
+    }
+
     AssureDrawing();
 
     HRESULT hr;
@@ -954,10 +931,14 @@ DWriteContext_DrawText(
 	int w,
 	int h,
 	int cellWidth,
-	COLORREF color)
+	COLORREF color,
+	UINT fuOptions,
+	CONST RECT *lprc,
+	CONST INT * lpDx)
 {
     if (ctx != NULL)
-	ctx->DrawText(text, len, x, y, w, h, cellWidth, color);
+	ctx->DrawText(text, len, x, y, w, h, cellWidth, color,
+		fuOptions, lprc, lpDx);
 }
 
     void

@@ -65,7 +65,10 @@ void DWriteContext_DrawText(
 	int w,
 	int h,
 	int cellWidth,
-	COLORREF color);
+	COLORREF color,
+	UINT fuOptions,
+	CONST RECT *lprc,
+	CONST INT * lpDx);
 void DWriteContext_FillRect(DWriteContext *ctx, RECT *rc, COLORREF color);
 void DWriteContext_Flush(DWriteContext *ctx);
 void DWriteContext_Close(DWriteContext *ctx);
