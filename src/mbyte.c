@@ -6487,7 +6487,7 @@ im_get_status()
     void
 im_set_active(int active)
 {
-#  ifdef(USE_IM_CONTROL) && defined(FEAT_EVAL)
+#  if defined(USE_IM_CONTROL) && defined(FEAT_EVAL)
     if (p_imaf[0] != NUL)
 	call_imactivatefunc(p_imdisable ? FALSE : active);
 #  endif
