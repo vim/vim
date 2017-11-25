@@ -263,14 +263,10 @@ struct DWriteContext {
 
     virtual ~DWriteContext();
 
-    HFONT GetFallbackFont();
-
-    HRESULT CreateTextFormat(const LOGFONTW &logFont,
+    HRESULT CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	    IDWriteTextFormat **ppTextFormat);
 
-    HRESULT ReplaceTextFormat(const LOGFONTW &logFont);
-
-    HRESULT SetFontRaw(HFONT hFont);
+    HRESULT SetFontByLOGFONT(const LOGFONTW &logFont);
 
     void SetFont(HFONT hFont);
 
@@ -623,14 +619,8 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mD2D1Factory);
 }
 
-    HFONT
-DWriteContext::GetFallbackFont()
-{
-    return (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
-}
-
     HRESULT
-DWriteContext::CreateTextFormat(const LOGFONTW &logFont, IDWriteTextFormat **ppTextFormat)
+DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont, IDWriteTextFormat **ppTextFormat)
 {
     // Most of this function is copy from: http://msdn.microsoft.com/en-us/library/windows/desktop/dd941783(v=vs.85).aspx
     HRESULT hr = S_OK;
@@ -745,14 +735,13 @@ DWriteContext::CreateTextFormat(const LOGFONTW &logFont, IDWriteTextFormat **ppT
     return hr;
 }
 
-// ReplaceTextFormat changes mTextFormat by LOGFONTW in atomic.
     HRESULT
-DWriteContext::ReplaceTextFormat(const LOGFONTW &logFont)
+DWriteContext::SetFontByLOGFONT(const LOGFONTW &logFont)
 {
     HRESULT hr = S_OK;
     IDWriteTextFormat *pTextFormat = NULL;
 
-    hr = CreateTextFormat(logFont, &pTextFormat);
+    hr = CreateTextFormatFromLOGFONT(logFont, &pTextFormat);
 
     if (SUCCEEDED(hr))
     {
@@ -768,28 +757,13 @@ DWriteContext::ReplaceTextFormat(const LOGFONTW &logFont)
     return hr;
 }
 
-    HRESULT
-DWriteContext::SetFontRaw(HFONT hFont)
+static const LOGFONTW lfFallback =
 {
-    HRESULT hr = E_FAIL;
-    LOGFONTW lf;
-
-    if (GetObjectW(hFont, sizeof(lf), &lf))
-    {
-	_RPT2(_CRT_WARN, "SetFontRaw: faceName=%S size=%d\n", lf.lfFaceName, lf.lfHeight);
-	hr = ReplaceTextFormat(lf);
-	if (!SUCCEEDED(hr))
-	{
-	    _RPT2(_CRT_WARN, "SetFontRaw failed: hr=%08X faceName=%S\n",
-		    hr, lf.lfFaceName);
-	}
-    }
-    else
-    {
-	_RPT0(_CRT_WARN, "SetFontRaw failed: can't get LOGFONTW\n");
-    }
-    return hr;
-}
+    -12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+    OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+    PROOF_QUALITY, FIXED_PITCH | FF_DONTCARE,
+    L"Courier New"
+};
 
     void
 DWriteContext::SetFont(HFONT hFont)
@@ -797,13 +771,19 @@ DWriteContext::SetFont(HFONT hFont)
     if (hFont == mLastHFont || mFailedFonts.Has(hFont))
 	return;
 
-    HRESULT hr = SetFontRaw(hFont);
+    HRESULT hr = E_FAIL;
+    LOGFONTW lf;
+
+    if (GetObjectW(hFont, sizeof(lf), &lf))
+	hr = SetFontByLOGFONT(lf);
+
     if (SUCCEEDED(hr))
 	mLastHFont = hFont;
     else
     {
 	mFailedFonts.Put(hFont);
-	SetFontRaw(GetFallbackFont());
+	SetFontByLOGFONT(lfFallback);
+	_RPT1(_CRT_WARN, "SetFont use fallback font: hr=%08X\n", hr);
     }
 }
 
