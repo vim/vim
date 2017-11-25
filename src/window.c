@@ -1098,21 +1098,14 @@ win_split_ins(
 	    /* set height and row of new window to full height */
 	    wp->w_winrow = tabline_height();
 	    win_new_height(wp, curfrp->fr_height - (p_ls > 0)
-#ifdef FEAT_MENU
-		    - wp->w_winbar_height
-#endif
-		    );
+							  - WINBAR_HEIGHT(wp));
 	    wp->w_status_height = (p_ls > 0);
 	}
 	else
 	{
 	    /* height and row of new window is same as current window */
 	    wp->w_winrow = oldwin->w_winrow;
-	    win_new_height(wp, oldwin->w_height
-#ifdef FEAT_MENU
-		    + oldwin->w_winbar_height
-#endif
-		    );
+	    win_new_height(wp, oldwin->w_height + WINBAR_HEIGHT(oldwin));
 	    wp->w_status_height = oldwin->w_status_height;
 	}
 	frp->fr_height = curfrp->fr_height;
@@ -1171,10 +1164,7 @@ win_split_ins(
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    int new_fr_height = curfrp->fr_height - new_size
-#ifdef FEAT_MENU
-		+ wp->w_winbar_height
-#endif
-		;
+							  + WINBAR_HEIGHT(wp) ;
 
 	    if (!((flags & WSP_BOT) && p_ls == 0))
 		new_fr_height -= STATUS_HEIGHT;
@@ -1190,7 +1180,8 @@ win_split_ins(
 	}
 	else		/* new window below current one */
 	{
-	    wp->w_winrow = oldwin->w_winrow + oldwin->w_height + STATUS_HEIGHT;
+	    wp->w_winrow = oldwin->w_winrow + oldwin->w_height
+				       + STATUS_HEIGHT + WINBAR_HEIGHT(oldwin);
 	    wp->w_status_height = oldwin->w_status_height;
 	    if (!(flags & WSP_BOT))
 		oldwin->w_status_height = STATUS_HEIGHT;
@@ -2867,10 +2858,7 @@ frame_new_height(
 	/* Simple case: just one window. */
 	win_new_height(topfrp->fr_win,
 				    height - topfrp->fr_win->w_status_height
-#ifdef FEAT_MENU
-				    - topfrp->fr_win->w_winbar_height
-#endif
-				    );
+					      - WINBAR_HEIGHT(topfrp->fr_win));
     }
     else if (topfrp->fr_layout == FR_ROW)
     {
@@ -3217,10 +3205,7 @@ frame_fix_width(win_T *wp)
 frame_fix_height(win_T *wp)
 {
     wp->w_frame->fr_height = wp->w_height + wp->w_status_height
-#ifdef FEAT_MENU
-	+ wp->w_winbar_height
-#endif
-	;
+							  + WINBAR_HEIGHT(wp) ;
 }
 
 /*
