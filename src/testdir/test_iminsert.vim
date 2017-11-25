@@ -17,6 +17,9 @@ func IM_statusfunc()
 endfunc
 
 func Test_iminsert2()
+  if has('gui_win32')
+    return
+  endif
   set imactivatefunc=IM_activatefunc
   set imstatusfunc=IM_statusfunc
   set iminsert=2
