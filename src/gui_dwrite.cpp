@@ -216,51 +216,6 @@ GetLOGFONTW(char* name, LOGFONTW& lfw)
     return S_OK;
 }
 
-struct FontCache {
-    int	    mLen;
-    int	    mIndex;
-    HFONT   *mFonts;
-
-    FontCache(int len = 2) :
-	mLen(len),
-	mIndex(0),
-	mFonts(new HFONT[len])
-    {
-	for (int i = 0; i < mLen; ++i)
-	    mFonts[i] = NULL;
-    }
-
-    ~FontCache(void)
-    {
-	delete[] mFonts;
-    }
-
-    bool Has(HFONT hFont)
-    {
-	int x = mIndex;
-	for (int i = 0; i < mLen; ++i)
-	{
-	    if (mFonts[x] == hFont)
-		return true;
-	    x = (x + 1) % mLen;
-	}
-	return false;
-    }
-
-    void Put(HFONT hFont)
-    {
-	int x = mIndex;
-	for (int i = 0; i < mLen - 1; ++i)
-	{
-	    if (mFonts[x] == hFont)
-		return;
-	    x = (x + 1) % mLen;
-	}
-	mIndex = x;
-	mFonts[x] = hFont;
-    }
-};
-
 struct DWriteContext {
     bool mDrawing;
 
@@ -276,7 +231,6 @@ struct DWriteContext {
     IDWriteRenderingParams *mRenderingParams;
 
     HFONT mLastHFont;
-    FontCache mFailedFonts;
     LOGFONTW mFallbackLF;
     IDWriteTextFormat *mTextFormat;
     DWRITE_FONT_WEIGHT mFontWeight;
@@ -566,7 +520,6 @@ DWriteContext::DWriteContext() :
     mGdiInterop(NULL),
     mRenderingParams(NULL),
     mLastHFont(NULL),
-    mFailedFonts(),
     mTextFormat(NULL),
     mFontWeight(DWRITE_FONT_WEIGHT_NORMAL),
     mFontStyle(DWRITE_FONT_STYLE_NORMAL),
@@ -789,7 +742,7 @@ DWriteContext::SetFontByLOGFONT(const LOGFONTW &logFont)
     void
 DWriteContext::SetFont(HFONT hFont)
 {
-    if (hFont == mLastHFont || mFailedFonts.Has(hFont))
+    if (hFont == mLastHFont)
 	return;
 
     HRESULT hr = E_FAIL;
@@ -802,8 +755,8 @@ DWriteContext::SetFont(HFONT hFont)
 	mLastHFont = hFont;
     else
     {
-	mFailedFonts.Put(hFont);
 	SetFontByLOGFONT(mFallbackLF);
+	mLastHFont = hFont;
 	_RPT1(_CRT_WARN, "SetFont use fallback font: hr=%08X\n", hr);
     }
 }
