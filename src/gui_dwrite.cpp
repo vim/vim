@@ -236,7 +236,6 @@ struct FontCache {
 
 struct DWriteContext {
     bool mDrawing;
-    HDC mHDC;
 
     ID2D1Factory *mD2D1Factory;
 
@@ -531,7 +530,6 @@ private:
 
 DWriteContext::DWriteContext() :
     mDrawing(false),
-    mHDC(NULL),
     mD2D1Factory(NULL),
     mRT(NULL),
     mBrush(NULL),
@@ -791,7 +789,6 @@ DWriteContext::SetFont(HFONT hFont)
 DWriteContext::BindDC(HDC hdc, RECT *rect)
 {
     Flush();
-    mHDC = hdc;
     mRT->BindDC(hdc, rect);
     mRT->SetTransform(D2D1::IdentityMatrix());
 }
