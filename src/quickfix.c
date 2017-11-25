@@ -4055,6 +4055,7 @@ ex_cfile(exarg_T *eap)
 #ifdef FEAT_AUTOCMD
     char_u	*au_name = NULL;
 #endif
+    int		res;
 
     if (eap->cmdidx == CMD_lfile || eap->cmdidx == CMD_lgetfile
 					       || eap->cmdidx == CMD_laddfile)
@@ -4102,27 +4103,17 @@ ex_cfile(exarg_T *eap)
      * :caddfile adds to an existing quickfix list. If there is no
      * quickfix list then a new list is created.
      */
-    if (qf_init(wp, p_ef, p_efm, (eap->cmdidx != CMD_caddfile
-				  && eap->cmdidx != CMD_laddfile),
-						       *eap->cmdlinep, enc) > 0
-				  && (eap->cmdidx == CMD_cfile
-					     || eap->cmdidx == CMD_lfile))
-    {
+    res = qf_init(wp, p_ef, p_efm, (eap->cmdidx != CMD_caddfile
+			&& eap->cmdidx != CMD_laddfile), *eap->cmdlinep, enc);
 #ifdef FEAT_AUTOCMD
-	if (au_name != NULL)
-	    apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name, NULL, FALSE, curbuf);
+    if (au_name != NULL)
+	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name, NULL, FALSE, curbuf);
 #endif
+    if (res > 0 && (eap->cmdidx == CMD_cfile || eap->cmdidx == CMD_lfile))
+    {
 	if (wp != NULL)
 	    qi = GET_LOC_LIST(wp);
 	qf_jump(qi, 0, 0, eap->forceit);	/* display first error */
-    }
-
-    else
-    {
-#ifdef FEAT_AUTOCMD
-	if (au_name != NULL)
-	    apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name, NULL, FALSE, curbuf);
-#endif
     }
 }
 
