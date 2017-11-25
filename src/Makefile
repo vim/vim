@@ -2190,6 +2190,7 @@ test_arglist \
 	test_highlight \
 	test_history \
 	test_hlsearch \
+	test_iminsert \
 	test_increment \
 	test_increment_dbcs \
 	test_ins_complete \
