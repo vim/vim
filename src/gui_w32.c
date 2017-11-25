@@ -1759,10 +1759,7 @@ gui_mch_draw_part_cursor(
 
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
-    {
-	DWriteContext_FillRect(s_dwc, &rc, color);
-	return;
-    }
+	DWriteContext_Flush(s_dwc);
 #endif
 
     hbr = CreateSolidBrush(color);
