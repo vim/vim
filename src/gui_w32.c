@@ -485,12 +485,10 @@ static void TrackUserActivity(UINT uMsg);
  * These LOGFONT used for IME.
  */
 #ifdef FEAT_MBYTE
-# ifdef USE_IM_CONTROL
 /* holds LOGFONT for 'guifontwide' if available, otherwise 'guifont' */
 static LOGFONT norm_logfont;
 /* holds LOGFONT for 'guifont' always. */
 static LOGFONT sub_logfont;
-# endif
 #endif
 
 #ifdef FEAT_MBYTE_IME

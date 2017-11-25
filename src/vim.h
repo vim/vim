@@ -534,13 +534,6 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 #endif
 
 /*
- * Check input method control.
- */
-#if defined(FEAT_MBYTE)
-# define USE_IM_CONTROL
-#endif
-
-/*
  * For dynamically loaded gettext library.  Currently, only for Win32.
  */
 #ifdef DYNAMIC_GETTEXT
