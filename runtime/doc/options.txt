@@ -6158,7 +6158,27 @@ A jump table for the options with a short description can be found at |Q_op|.
 		  set rop=type:directx
 <
 		If select a raster font (Courier, Terminal or FixedSys) to
-		'guifont', it fallbacks to be drawn by GDI automatically.
+		'guifont', it falls back to be drawn by GDI automatically.
+		This fall back will cause significant slow down on drawing.
+
+		NOTE: It is known that some fonts and options combination
+		causes trouble drawing glyphs.
+
+		  - 'rendmode:5' and 'renmode:6' will not work with some
+		    bitmap fonts.
+		  - 'taamode:3' will not work with some vector fonts.
+
+		NOTE: With this option, you can display colored emoji
+		(emoticon) in Windows 8.1 or later.  To display colored emoji,
+		there are some conditions which you should notice.
+
+		  - If your font includes non-colored emoji already, it will
+		    be used.
+		  - If your font doesn't have emoji, it will be fallen back
+		    to use system symbol font.  On Windows 10, "Segoe UI
+		    Emoji" will be used.
+		  - If the fallen back font didn't have fixed with glyph,
+		    emoji might be rendered over the drawing cell.
 
 	Other render types are currently not supported.
 
