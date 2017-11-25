@@ -5922,7 +5922,7 @@ im_set_active(int active_arg)
 	if (active != im_get_status())
 	{
 	    call_imactivatefunc(active);
-	    im_is_active = active;
+	    xim_has_focus = active;
 	}
 	return;
     }
