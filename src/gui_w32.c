@@ -6190,17 +6190,6 @@ RevOut( HDC s_hdc,
 }
 #endif
 
-    static int
-gui_is_outline_font_selected(HDC hdc)
-{
-    TEXTMETRIC tm;
-
-    GetTextMetrics(hdc, &tm);
-    if (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR))
-	return 1;
-    return 0;
-}
-
     void
 gui_mch_draw_string(
     int		row,
@@ -6222,9 +6211,6 @@ gui_mch_draw_string(
 #endif
     HPEN	hpen, old_pen;
     int		y;
-#ifdef FEAT_DIRECTX
-    int		font_is_ttf_or_vector = 0;
-#endif
 
     /*
      * Italic and bold text seems to have an extra row of pixels at the bottom
@@ -6244,16 +6230,6 @@ gui_mch_draw_string(
     static int		brush_lru = 0;
     HBRUSH		hbr;
     RECT		rc;
-
-    SelectFont(s_hdc, gui.currFont);
-#ifdef FEAT_DIRECTX
-    if (IS_ENABLE_DIRECTX())
-    {
-	font_is_ttf_or_vector = gui_is_outline_font_selected(s_hdc);
-	if (font_is_ttf_or_vector)
-	    DWriteContext_SetFont(s_dwc, (HFONT)gui.currFont);
-    }
-#endif
 
     if (!(flags & DRAW_TRANSP))
     {
@@ -6297,7 +6273,7 @@ gui_mch_draw_string(
 	}
 
 #if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector)
+	if (IS_ENABLE_DIRECTX())
 	    DWriteContext_FillRect(s_dwc, &rc, gui.currBgColor);
 #endif
 	FillRect(s_hdc, &rc, hbr);
@@ -6315,6 +6291,12 @@ gui_mch_draw_string(
 	}
     }
     SetTextColor(s_hdc, gui.currFgColor);
+    SelectFont(s_hdc, gui.currFont);
+
+#ifdef FEAT_DIRECTX
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_SetFont(s_dwc, (HFONT)gui.currFont);
+#endif
 
     if (pad_size != Columns || padding == NULL || padding[0] != gui.char_width)
     {
@@ -6424,7 +6406,7 @@ gui_mch_draw_string(
 	    ++clen;
 	}
 #if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector)
+	if (IS_ENABLE_DIRECTX())
 	{
 	    /* Add one to "cells" for italics. */
 	    DWriteContext_DrawText(s_dwc, unicodebuf, wlen,
@@ -6489,7 +6471,7 @@ gui_mch_draw_string(
     }
 
 #if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector &&
+    if (IS_ENABLE_DIRECTX() &&
 	    (flags & (DRAW_UNDERL | DRAW_STRIKE | DRAW_UNDERC | DRAW_CURSOR)))
 	DWriteContext_Flush(s_dwc);
 #endif
@@ -6570,7 +6552,7 @@ clear_rect(RECT *rcp)
     HBRUSH  hbr;
 
 #if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX() && gui_is_outline_font_selected(s_hdc))
+    if (IS_ENABLE_DIRECTX())
     {
 	DWriteContext_FillRect(s_dwc, rcp, gui.back_pixel);
 	return;
