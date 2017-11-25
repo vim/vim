@@ -6162,7 +6162,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		This fall back will cause significant slow down on drawing.
 
 		NOTE: It is known that some fonts and options combination
-		causes trouble drawing glyphs.
+		causes trouble on drawing glyphs.
 
 		  - 'rendmode:5' and 'renmode:6' will not work with some
 		    bitmap fonts.
