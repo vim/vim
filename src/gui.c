@@ -738,9 +738,12 @@ gui_init(void)
 	 * resized. */
 	win_new_shellsize();
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	/* Always create the Balloon Evaluation area, but disable it when
-	 * 'ballooneval' is off */
+	 * 'ballooneval' is off. */
+	if (balloonEval != NULL)
+	    vim_free(balloonEval);
+	balloonEvalForTerm = FALSE;
 # ifdef FEAT_GUI_GTK
 	balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,
 						     &general_beval_cb, NULL);
@@ -1118,6 +1121,9 @@ gui_update_cursor(
 	gui_mch_set_blinking(shape->blinkwait,
 			     shape->blinkon,
 			     shape->blinkoff);
+	if (shape->blinkwait == 0 || shape->blinkon == 0
+						       || shape->blinkoff == 0)
+	    gui_mch_stop_blink();
 #ifdef FEAT_TERMINAL
 	if (shape_bg != INVALCOLOR)
 	{
@@ -3118,15 +3124,18 @@ button_set:
     {
 	case NORMAL_BUSY:
 	case OP_PENDING:
+# ifdef FEAT_TERMINAL
+	case TERMINAL:
+# endif
 	case NORMAL:		checkfor = MOUSE_NORMAL;	break;
 	case VISUAL:		checkfor = MOUSE_VISUAL;	break;
 	case SELECTMODE:	checkfor = MOUSE_VISUAL;	break;
 	case REPLACE:
 	case REPLACE+LANGMAP:
-#ifdef FEAT_VREPLACE
+# ifdef FEAT_VREPLACE
 	case VREPLACE:
 	case VREPLACE+LANGMAP:
-#endif
+# endif
 	case INSERT:
 	case INSERT+LANGMAP:	checkfor = MOUSE_INSERT;	break;
 	case ASKMORE:

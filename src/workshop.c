@@ -33,7 +33,6 @@
 
 #include "vim.h"
 #include "version.h"
-#include "gui_beval.h"
 #include "workshop.h"
 
 void		 workshop_hotkeys(Boolean);
@@ -48,7 +47,7 @@ static char	*append_selection(int, char *, int *, int *);
 static void	 load_buffer_by_name(char *, int);
 static void	 load_window(char *, int lnum);
 static void	 warp_to_pc(int);
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 void		 workshop_beval_cb(BalloonEval *, int);
 static int	 computeIndex(int, char_u *, int);
 #endif
@@ -208,7 +207,7 @@ workshop_load_file(
 	wstrace("workshop_load_file(%s, %d)\n", filename, line);
 #endif
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     bevalServers |= BEVAL_WORKSHOP;
 #endif
 
@@ -1497,7 +1496,7 @@ fixAccelText(
 	return NULL;
 }
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     void
 workshop_beval_cb(
 	BalloonEval	*beval,

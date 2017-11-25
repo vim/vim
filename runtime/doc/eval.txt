@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Oct 28
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Nov 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2032,6 +2032,7 @@ asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 balloon_show({msg})		none	show {msg} inside the balloon
+balloon_split({msg})		List	split {msg} as used for a balloon
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -2682,8 +2683,12 @@ atan2({expr1}, {expr2})					*atan2()*
 <			2.356194
 		{only available when compiled with the |+float| feature}
 
-balloon_show({msg})					*balloon_show()*
-		Show {msg} inside the balloon.
+balloon_show({expr})					*balloon_show()*
+		Show {expr} inside the balloon.  For the GUI {expr} is used as
+		a string.  For a terminal {expr} can be a list, which contains
+		the lines of the balloon.  If {expr} is not a list it will be
+		split with |balloon_split()|.
+
 		Example: >
 			func GetBalloonContent()
 			   " initiate getting the content
@@ -2703,7 +2708,16 @@ balloon_show({msg})					*balloon_show()*
 
 		When showing a balloon is not possible nothing happens, no
 		error message.
-		{only available when compiled with the +balloon_eval feature}
+		{only available when compiled with the +balloon_eval or
+		+balloon_eval_term feature}
+
+balloon_split({msg})					*balloon_split()*
+		Split {msg} into lines to be displayed in a balloon.  The
+		splits are made for the current window size and optimize to
+		show debugger output.
+		Returns a |List| with the split lines.
+		{only available when compiled with the +balloon_eval_term
+		feature}
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
@@ -2734,6 +2748,8 @@ bufexists({expr})					*bufexists()*
 		The result is a Number, which is |TRUE| if a buffer called
 		{expr} exists.
 		If the {expr} argument is a number, buffer numbers are used.
+		Number zero is the alternate buffer for the current window.
+
 		If the {expr} argument is a string it must match a buffer name
 		exactly.  The name can be:
 		- Relative to the current directory.
@@ -8721,7 +8737,7 @@ winwidth({nr})						*winwidth()*
 		Examples: >
   :echo "The current window has " . winwidth(0) . " columns."
   :if winwidth(0) <= 50
-  :  exe "normal 50\<C-W>|"
+  :  50 wincmd |
   :endif
 <		For getting the terminal or screen size, see the 'columns'
 		option.
@@ -8762,8 +8778,17 @@ writefile({list}, {fname} [, {flags}])
 		appended to the file: >
 			:call writefile(["foo"], "event.log", "a")
 			:call writefile(["bar"], "event.log", "a")
+<
+		When {flags} contains "s" then fsync() is called after writing
+		the file.  This flushes the file to disk, if possible.  This
+		takes more time but avoids losing the file if the system
+		crashes.
+		When {flags} does not contain "S" or "s" then fsync is called
+		if the 'fsync' option is set.
+		When {flags} contains "S" then fsync() is not called, even
+		when 'fsync' is set.
 
-<		All NL characters are replaced with a NUL character.
+		All NL characters are replaced with a NUL character.
 		Inserting CR characters needs to be done before passing {list}
 		to writefile().
 		An existing file is overwritten, if possible.
@@ -8820,6 +8845,7 @@ amiga			Amiga version of Vim.
 arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
 autocmd			Compiled with autocommand support. |autocommand|
+autoservername		Automatically enable |clientserver|
 balloon_eval		Compiled with |balloon-eval| support.
 balloon_multiline	GUI supports multiline balloons.
 beos			BeOS version of Vim.

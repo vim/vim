@@ -14,7 +14,6 @@
 /* Avoid a conflict for the definition of Boolean between Mac header files and
  * X11 header files. */
 #define NO_X11_INCLUDES
-#define BalloonEval int   /* used in header files */
 
 #include "vim.h"
 #import <AppKit/AppKit.h>

@@ -2863,9 +2863,14 @@ u_undoredo(int undo)
     /* Remember where we are for "g-" and ":earlier 10s". */
     curbuf->b_u_seq_cur = curhead->uh_seq;
     if (undo)
+    {
 	/* We are below the previous undo.  However, to make ":earlier 1s"
 	 * work we compute this as being just above the just undone change. */
-	--curbuf->b_u_seq_cur;
+	if (curhead->uh_next.ptr != NULL)
+	    curbuf->b_u_seq_cur = curhead->uh_next.ptr->uh_seq;
+	else
+	    curbuf->b_u_seq_cur = 0;
+    }
 
     /* Remember where we are for ":earlier 1f" and ":later 1f". */
     if (curhead->uh_save_nr != 0)

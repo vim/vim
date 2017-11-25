@@ -3345,6 +3345,7 @@ is_mouse_key(int c)
 	|| c == K_LEFTDRAG
 	|| c == K_LEFTRELEASE
 	|| c == K_LEFTRELEASE_NM
+	|| c == K_MOUSEMOVE
 	|| c == K_MIDDLEMOUSE
 	|| c == K_MIDDLEDRAG
 	|| c == K_MIDDLERELEASE

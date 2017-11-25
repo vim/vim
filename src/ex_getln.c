@@ -220,7 +220,7 @@ getcmdline(
     pos_T       match_end;
 # ifdef FEAT_DIFF
     int		old_topfill;
-    int         init_topfill = curwin->w_topfill;
+    int		init_topfill = curwin->w_topfill;
 # endif
     linenr_T	old_botline;
     linenr_T	init_botline = curwin->w_botline;
@@ -1452,6 +1452,7 @@ getcmdline(
 	case K_X2MOUSE:
 	case K_X2DRAG:
 	case K_X2RELEASE:
+	case K_MOUSEMOVE:
 		goto cmdline_not_changed;
 
 #endif	/* FEAT_MOUSE */
@@ -1715,10 +1716,16 @@ getcmdline(
 		if (p_is && !cmd_silent && (firstc == '/' || firstc == '?'))
 		{
 		    pos_T  t;
+		    char_u *pat;
 		    int    search_flags = SEARCH_NOOF;
 
 		    if (ccline.cmdlen == 0)
 			goto cmdline_not_changed;
+
+		    if (firstc == ccline.cmdbuff[0])
+			pat = last_search_pattern();
+		    else
+			pat = ccline.cmdbuff;
 
 		    save_last_search_pattern();
 		    cursor_off();
@@ -1739,7 +1746,7 @@ getcmdline(
 		    ++emsg_off;
 		    i = searchit(curwin, curbuf, &t,
 				 c == Ctrl_G ? FORWARD : BACKWARD,
-				 ccline.cmdbuff, count, search_flags,
+				 pat, count, search_flags,
 				 RE_SEARCH, 0, NULL, NULL);
 		    --emsg_off;
 		    if (i)

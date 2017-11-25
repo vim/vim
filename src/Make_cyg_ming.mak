@@ -642,6 +642,7 @@ GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
 	$(OUTDIR)/arabic.o \
+	$(OUTDIR)/beval.o \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
@@ -920,8 +921,8 @@ endif
 ###########################################################################
 INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
-	spell.h structs.h term.h $(NBDEBUG_INCL)
-GUI_INCL = gui.h gui_beval.h
+	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
+GUI_INCL = gui.h
 CUI_INCL = iscygpty.h
 
 $(OUTDIR)/if_python.o:	if_python.c if_py_both.h $(INCL)
@@ -945,6 +946,9 @@ $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
 
 $(OUTDIR)/gui.o:	gui.c $(INCL) $(GUI_INCL)
 	$(CC) -c $(CFLAGS) gui.c -o $(OUTDIR)/gui.o
+
+$(OUTDIR)/beval.o:	beval.c $(INCL) $(GUI_INCL)
+	$(CC) -c $(CFLAGS) beval.c -o $(OUTDIR)/beval.o
 
 $(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
 	$(CC) -c $(CFLAGS) gui_beval.c -o $(OUTDIR)/gui_beval.o

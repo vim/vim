@@ -345,7 +345,7 @@ xxd.man: xxd.1
 	nroff -man xxd.1 | sed -e s/.//g > xxd.man
 
 uganda.nsis.txt: uganda.txt
-	sed -e 's/[ 	]*\*[-a-zA-Z0-9.]*\*//g' -e 's/vim:tw=78://' \
+	sed -e 's/[ 	]*\*[-a-zA-Z0-9.]*\*//g' -e 's/vim:tw=78:.*//' \
 		uganda.txt | uniq >uganda.nsis.txt
 
 # Awk version of .txt to .html conversion.

@@ -393,6 +393,12 @@ restore_last_search_pattern(void)
     last_idx = saved_last_idx;
     SET_NO_HLSEARCH(saved_no_hlsearch);
 }
+
+    char_u *
+last_search_pattern(void)
+{
+    return spats[RE_SEARCH].pat;
+}
 #endif
 
 /*
@@ -2280,7 +2286,7 @@ findmatchlimit(
 	    {
 		/*
 		 * A comment may contain / * or / /, it may also start or end
-		 * with / * /.	Ignore a / * after / /.
+		 * with / * /.	Ignore a / * after / / and after *.
 		 */
 		if (pos.col == 0)
 		    continue;
@@ -2306,6 +2312,7 @@ findmatchlimit(
 		}
 		else if (  linep[pos.col - 1] == '/'
 			&& linep[pos.col] == '*'
+			&& (pos.col == 1 || linep[pos.col - 2] != '*')
 			&& (int)pos.col < comment_col)
 		{
 		    count++;

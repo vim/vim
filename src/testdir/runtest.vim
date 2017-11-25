@@ -103,6 +103,10 @@ func RunTheTest(test)
   " buffers.
   %bwipe!
 
+  " The test may change the current directory. Save and restore the
+  " directory after executing the test.
+  let save_cwd = getcwd()
+
   if exists("*SetUp")
     try
       call SetUp()
@@ -157,6 +161,8 @@ func RunTheTest(test)
       break
     endif
   endwhile
+
+  exe 'cd ' . save_cwd
 endfunc
 
 func AfterTheTest()
@@ -279,6 +285,10 @@ for s:test in sort(s:tests)
     call extend(s:messages, v:errors)
     call add(s:messages, 'Flaky test failed, running it again')
     let first_run = v:errors
+
+    " Flakiness is often caused by the system being very busy.  Sleep a couple
+    " of seconds to have a higher chance of succeeding the second time.
+    sleep 2
 
     let v:errors = []
     call RunTheTest(s:test)

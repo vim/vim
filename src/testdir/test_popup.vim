@@ -703,4 +703,40 @@ func Test_popup_and_preview_autocommand()
   bw!
 endfunc
 
+func Test_balloon_split()
+  if !exists('*balloon_split')
+    return
+  endif
+  call assert_equal([
+        \ 'one two three four one two three four one two thre',
+        \ 'e four',
+        \ ], balloon_split(
+        \ 'one two three four one two three four one two three four'))
+
+  call assert_equal([
+        \ 'struct = {',
+        \ '  one = 1,',
+        \ '  two = 2,',
+        \ '  three = 3}',
+        \ ], balloon_split(
+        \ 'struct = {one = 1, two = 2, three = 3}'))
+
+  call assert_equal([
+        \ 'struct = {',
+        \ '  one = 1,',
+        \ '  nested = {',
+        \ '    n1 = "yes",',
+        \ '    n2 = "no"}',
+        \ '  two = 2}',
+        \ ], balloon_split(
+        \ 'struct = {one = 1, nested = {n1 = "yes", n2 = "no"} two = 2}'))
+  call assert_equal([
+        \ 'struct = 0x234 {',
+        \ '  long = 2343 "\\"some long string that will be wr',
+        \ 'apped in two\\"",',
+        \ '  next = 123}',
+        \ ], balloon_split(
+        \ 'struct = 0x234 {long = 2343 "\\"some long string that will be wrapped in two\\"", next = 123}'))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

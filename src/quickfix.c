@@ -2654,6 +2654,9 @@ qf_list(exarg_T *eap)
     int		idx2 = -1;
     char_u	*arg = eap->arg;
     int		plus = FALSE;
+    int		qfFileAttr;
+    int		qfSepAttr;
+    int		qfLineAttr;
     int		all = eap->forceit;	/* if not :cl!, only show
 						   recognised errors */
     qf_info_T	*qi = &ql_info;
@@ -2699,6 +2702,20 @@ qf_list(exarg_T *eap)
 	    idx2 = (-idx2 > i) ? 0 : idx2 + i + 1;
     }
 
+    /*
+     * Get the attributes for the different quickfix highlight items.  Note
+     * that this depends on syntax items defined in the qf.vim syntax file
+     */
+    qfFileAttr = syn_name2attr((char_u *)"qfFileName");
+    if (qfFileAttr == 0)
+	qfFileAttr = HL_ATTR(HLF_D);
+    qfSepAttr = syn_name2attr((char_u *)"qfSeparator");
+    if (qfSepAttr == 0)
+	qfSepAttr = HL_ATTR(HLF_D);
+    qfLineAttr = syn_name2attr((char_u *)"qfLineNr");
+    if (qfLineAttr == 0)
+	qfLineAttr = HL_ATTR(HLF_N);
+
     if (qi->qf_lists[qi->qf_curlist].qf_nonevalid)
 	all = TRUE;
     qfp = qi->qf_lists[qi->qf_curlist].qf_start;
@@ -2724,22 +2741,26 @@ qf_list(exarg_T *eap)
 		vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
 							    i, (char *)fname);
 	    msg_outtrans_attr(IObuff, i == qi->qf_lists[qi->qf_curlist].qf_index
-					   ? HL_ATTR(HLF_QFL) : HL_ATTR(HLF_D));
+					   ? HL_ATTR(HLF_QFL) : qfFileAttr);
+
+	    if (qfp->qf_lnum != 0)
+		msg_puts_attr((char_u *)":", qfSepAttr);
 	    if (qfp->qf_lnum == 0)
 		IObuff[0] = NUL;
 	    else if (qfp->qf_col == 0)
-		sprintf((char *)IObuff, ":%ld", qfp->qf_lnum);
+		sprintf((char *)IObuff, "%ld", qfp->qf_lnum);
 	    else
-		sprintf((char *)IObuff, ":%ld col %d",
+		sprintf((char *)IObuff, "%ld col %d",
 						   qfp->qf_lnum, qfp->qf_col);
-	    sprintf((char *)IObuff + STRLEN(IObuff), "%s:",
+	    sprintf((char *)IObuff + STRLEN(IObuff), "%s",
 				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
-	    msg_puts_attr(IObuff, HL_ATTR(HLF_N));
+	    msg_puts_attr(IObuff, qfLineAttr);
+	    msg_puts_attr((char_u *)":", qfSepAttr);
 	    if (qfp->qf_pattern != NULL)
 	    {
 		qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);
-		STRCAT(IObuff, ":");
 		msg_puts(IObuff);
+		msg_puts_attr((char_u *)":", qfSepAttr);
 	    }
 	    msg_puts((char_u *)" ");
 

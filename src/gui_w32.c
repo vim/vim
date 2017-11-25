@@ -197,7 +197,7 @@ gui_mch_set_rendering_options(char_u *s)
 #ifndef __MINGW32__
 # include <shellapi.h>
 #endif
-#if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL) || defined(FEAT_GUI_TABLINE)
+#if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL_GUI) || defined(FEAT_GUI_TABLINE)
 # include <commctrl.h>
 #endif
 #include <windowsx.h>
@@ -473,7 +473,7 @@ static UINT	s_wait_timer = 0;   /* Timer for get char from user */
 static int	s_timed_out = FALSE;
 static int	dead_key = 0;	/* 0: no dead key, 1: dead key pressed */
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 /* balloon-eval WM_NOTIFY_HANDLER */
 static void Handle_WM_Notify(HWND hwnd, LPNMHDR pnmh);
 static void TrackUserActivity(UINT uMsg);
@@ -1216,7 +1216,7 @@ _TextAreaWndProc(
     s_wParam = wParam;
     s_lParam = lParam;
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     TrackUserActivity(uMsg);
 #endif
 
@@ -1237,7 +1237,7 @@ _TextAreaWndProc(
 	HANDLE_MSG(hwnd, WM_XBUTTONDOWN,_OnMouseButtonDown);
 	HANDLE_MSG(hwnd, WM_XBUTTONUP,	_OnMouseMoveOrRelease);
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	case WM_NOTIFY: Handle_WM_Notify(hwnd, (LPNMHDR)lParam);
 	    return TRUE;
 #endif
@@ -4231,7 +4231,7 @@ done:
 #endif
 
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 # define ID_BEVAL_TOOLTIP   200
 # define BEVAL_TEXT_LEN	    MAXPATHL
 
@@ -4310,7 +4310,7 @@ typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 # define TTN_GETDISPINFO	(TTN_FIRST - 0)
 #endif
 
-#endif /* defined(FEAT_BEVAL) */
+#endif /* defined(FEAT_BEVAL_GUI) */
 
 #if defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)
 /* Older MSVC compilers don't have LPNMTTDISPINFO[AW] thus we need to define
@@ -8517,12 +8517,12 @@ gui_mch_destroy_sign(void *sign)
 }
 #endif
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
 
 /* BALLOON-EVAL IMPLEMENTATION FOR WINDOWS.
  *  Added by Sergey Khorev <sergey.khorev@gmail.com>
  *
- * The only reused thing is gui_beval.h and get_beval_info()
+ * The only reused thing is beval.h and get_beval_info()
  * from gui_beval.c (note it uses x and y of the BalloonEval struct
  * to get current mouse position).
  *
@@ -8847,7 +8847,7 @@ gui_mch_destroy_beval_area(BalloonEval *beval)
 {
     vim_free(beval);
 }
-#endif /* FEAT_BEVAL */
+#endif /* FEAT_BEVAL_GUI */
 
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 /*

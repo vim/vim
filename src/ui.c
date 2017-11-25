@@ -2653,6 +2653,21 @@ retnomove:
 	    return IN_STATUS_LINE;
 	if (on_sep_line)
 	    return IN_SEP_LINE;
+#ifdef FEAT_MENU
+	if (in_winbar)
+	{
+	    /* A quick second click may arrive as a double-click, but we use it
+	     * as a second click in the WinBar. */
+	    if ((mod_mask & MOD_MASK_MULTI_CLICK) && !(flags & MOUSE_RELEASED))
+	    {
+		wp = mouse_find_win(&row, &col);
+		if (wp == NULL)
+		    return IN_UNKNOWN;
+		winbar_click(wp, col);
+	    }
+	    return IN_OTHER_WIN | MOUSE_WINBAR;
+	}
+#endif
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
 	    end_visual_mode();
@@ -3193,7 +3208,11 @@ get_fpos_of_mouse(pos_T *mpos)
 #endif
     return IN_BUFFER;
 }
+#endif
 
+#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
+	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_BEVAL) || defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
  * The first column is one.

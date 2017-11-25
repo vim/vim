@@ -602,7 +602,7 @@ MANPAGER				      *manpager.vim*
 The :Man command allows you to turn Vim into a manpager (that syntax highlights
 manpages and follows linked manpages on hitting CTRL-]).
 
-Works on:
+Tested on:
 
   - Linux
   - Mac OS
@@ -617,25 +617,36 @@ Untested:
   - BeOS
   - OS/2
 
-For bash,zsh,ksh or dash by adding to the config file (.bashrc,.zshrc, ...)
+If man sets the $MAN_PN environment variable, like man-db, the most common
+implementation on Linux, then the "env MAN_PN=1 " part below should NOT be
+set, that is, the "env MAN_PN=1" should be omitted! Otherwise, the Vim 
+manpager does not correctly recognize manpages whose title contains a capital 
+letter. See the discussion on
+
+  https://groups.google.com/forum/#!topic/vim_dev/pWZmt_7GkxI
+
+For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)
 
 	export MANPAGER="env MAN_PN=1 vim -M +MANPAGER -"
+
+For (t)csh, add to the config file
+
+	setenv MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
+
+For fish, add to the config file
+
+	set -x MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
 
 On OpenBSD:
 
         export MANPAGER="env MAN_PN=1 vim -M +MANPAGER"
 
-For (t)csh by adding to the config file
+If you experience still issues on manpages whose titles do not contain capital
+letters, then try adding MANPATH=${MANPATH} after MAN_PN=1. If your manpages do
+not show up localized, then try adding, LANGUAGE=${LANG} after MAN_PN=1. See
 
-	setenv MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
+  https://github.com/vim/vim/issues/1002
 
-For fish by adding to the config file
-
-	set -x MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
-
-If man sets the $MAN_PN environment variable, like man-db, the most common
-implementation on Linux and Mac OS, then the "env MAN_PN=1 " part above is
-superfluous.
 
 PDF							*ft-pdf-plugin*
 

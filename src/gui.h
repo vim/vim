@@ -16,10 +16,6 @@
 # include <X11/StringDefs.h>
 #endif
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
-# include "gui_beval.h"
-#endif
-
 #ifdef FEAT_GUI_GTK
 # ifdef VMS /* undef MIN and MAX because Intrinsic.h redefines them anyway */
 #  ifdef MAX

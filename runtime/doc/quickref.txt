@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.0.  Last change: 2017 Oct 19
+*quickref.txt*  For Vim version 8.0.  Last change: 2017 Nov 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -618,7 +618,8 @@ Short explanation of each option:		*option-list*
 'backupext'	  'bex'     extension used for the backup file
 'backupskip'	  'bsk'     no backup for files that match these patterns
 'balloondelay'	  'bdlay'   delay in mS before a balloon may pop up
-'ballooneval'	  'beval'   switch on balloon evaluation
+'ballooneval'	  'beval'     switch on balloon evaluation in the GUI
+'balloonevalterm' 'bevalterm' switch on balloon evaluation in the terminal
 'balloonexpr'	  'bexpr'   expression to show in balloon
 'belloff'	  'bo'	    do not ring the bell for these reasons
 'binary'	  'bin'     read/write/edit file in binary mode

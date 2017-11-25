@@ -3673,12 +3673,18 @@ prepare_server(mparm_T *parmp)
     /*
      * Register for remote command execution with :serversend and --remote
      * unless there was a -X or a --servername '' on the command line.
-     * Only register nongui-vim's with an explicit --servername argument.
+     * Only register nongui-vim's with an explicit --servername argument,
+     * or when compiling with autoservername.
      * When running as root --servername is also required.
      */
     if (X_DISPLAY != NULL && parmp->servername != NULL && (
-#  ifdef FEAT_GUI
-		(gui.in_use
+#  if defined(FEAT_AUTOSERVERNAME) || defined(FEAT_GUI)
+		(
+#   if defined(FEAT_AUTOSERVERNAME)
+		    1
+#   else
+		    gui.in_use
+#   endif
 #   ifdef UNIX
 		 && getuid() != ROOT_UID
 #   endif

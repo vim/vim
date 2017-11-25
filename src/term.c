@@ -4546,6 +4546,9 @@ check_termcode(
 		    if (tp[1 + (tp[0] != CSI)] == '>' && semicols == 2)
 		    {
 			int need_flush = FALSE;
+# ifdef FEAT_MOUSE_SGR
+			int is_iterm2 = FALSE;
+# endif
 
 			/* if xterm version >= 141 try to get termcap codes */
 			if (version >= 141)
@@ -4573,12 +4576,29 @@ check_termcode(
 # endif
 			}
 
+			if (version == 95)
+			{
+			    /* Mac Terminal.app sends 1;95;0 */
+			    if (STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
+			    {
+				is_not_xterm = TRUE;
+				is_mac_terminal = TRUE;
+			    }
+# ifdef FEAT_MOUSE_SGR
+			    /* Iterm2 sends 0;95;0 */
+			    if (STRNCMP(tp + extra - 2, "0;95;0c", 7) == 0)
+				is_iterm2 = TRUE;
+# endif
+			}
+
 			/* Only set 'ttymouse' automatically if it was not set
 			 * by the user already. */
 			if (!option_was_set((char_u *)"ttym"))
 			{
 # ifdef FEAT_MOUSE_SGR
-			    if (version >= 277)
+			    /* Xterm version 277 supports SGR.  Also support
+			     * Terminal.app and iterm2. */
+			    if (version >= 277 || is_iterm2 || is_mac_terminal)
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
 			    else
@@ -4592,14 +4612,6 @@ check_termcode(
 			/* Detect terminals that set $TERM to something like
 			 * "xterm-256colors"  but are not fully xterm
 			 * compatible. */
-
-			/* Mac Terminal.app sends 1;95;0 */
-			if (version == 95
-				&& STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
-			{
-			    is_not_xterm = TRUE;
-			    is_mac_terminal = TRUE;
-			}
 
 			/* Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
 			 * xfce4-terminal sends 1;2802;0.
@@ -4968,6 +4980,8 @@ check_termcode(
 		 *	add 0x08 for ALT
 		 *	add 0x10 for CTRL
 		 *	add 0x20 for mouse drag (0x40 is drag with left button)
+		 *	add 0x40 for mouse move (0x80 is move, 0x81 too)
+		 *		 0x43 (drag + release) is also move
 		 *  c == column + ' ' + 1 == column + 33
 		 *  r == row + ' ' + 1 == row + 33
 		 *
@@ -5109,9 +5123,15 @@ check_termcode(
 #   endif
 			)
 		{
-		    /* Keep the mouse_code before it's changed, so that we
-		     * remember that it was a mouse wheel click. */
-		    wheel_code = mouse_code;
+#   if defined(UNIX) && defined(FEAT_MOUSE_TTY)
+		    if (use_xterm_mouse() > 1 && mouse_code >= 0x80)
+			/* mouse-move event, using MOUSE_DRAG works */
+			mouse_code = MOUSE_DRAG;
+		    else
+#   endif
+			/* Keep the mouse_code before it's changed, so that we
+			 * remember that it was a mouse wheel click. */
+			wheel_code = mouse_code;
 		}
 #   ifdef FEAT_MOUSE_XTERM
 		else if (held_button == MOUSE_RELEASE
@@ -5613,6 +5633,7 @@ check_termcode(
 		    modifiers |= MOD_MASK_ALT;
 		key_name[1] = (wheel_code & 1)
 					? (int)KE_MOUSEUP : (int)KE_MOUSEDOWN;
+		held_button = MOUSE_RELEASE;
 	    }
 	    else
 		key_name[1] = get_pseudo_mouse_code(current_button,

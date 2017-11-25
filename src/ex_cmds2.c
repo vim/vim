@@ -1093,21 +1093,21 @@ static timer_T	*first_timer = NULL;
 static long	last_timer_id = 0;
 
     static long
-timer_time_left(timer_T *timer, proftime_T *now)
+proftime_time_left(proftime_T *due, proftime_T *now)
 {
 #  ifdef WIN3264
     LARGE_INTEGER fr;
 
-    if (now->QuadPart > timer->tr_due.QuadPart)
+    if (now->QuadPart > due->QuadPart)
 	return 0;
     QueryPerformanceFrequency(&fr);
-    return (long)(((double)(timer->tr_due.QuadPart - now->QuadPart)
+    return (long)(((double)(due->QuadPart - now->QuadPart)
 		   / (double)fr.QuadPart) * 1000);
 #  else
-    if (now->tv_sec > timer->tr_due.tv_sec)
+    if (now->tv_sec > due->tv_sec)
 	return 0;
-    return (timer->tr_due.tv_sec - now->tv_sec) * 1000
-	+ (timer->tr_due.tv_usec - now->tv_usec) / 1000;
+    return (due->tv_sec - now->tv_sec) * 1000
+	+ (due->tv_usec - now->tv_usec) / 1000;
 #  endif
 }
 
@@ -1219,7 +1219,7 @@ check_due_timer(void)
 
 	if (timer->tr_id == -1 || timer->tr_firing || timer->tr_paused)
 	    continue;
-	this_due = timer_time_left(timer, &now);
+	this_due = proftime_time_left(&timer->tr_due, &now);
 	if (this_due <= 1)
 	{
 	    int save_timer_busy = timer_busy;
@@ -1271,7 +1271,7 @@ check_due_timer(void)
 		    && timer->tr_emsg_count < 3)
 	    {
 		profile_setlimit(timer->tr_interval, &timer->tr_due);
-		this_due = timer_time_left(timer, &now);
+		this_due = proftime_time_left(&timer->tr_due, &now);
 		if (this_due < 1)
 		    this_due = 1;
 		if (timer->tr_repeat > 0)
@@ -1290,6 +1290,27 @@ check_due_timer(void)
 
     if (did_one)
 	redraw_after_callback(need_update_screen);
+
+#ifdef FEAT_BEVAL_TERM
+    if (bevalexpr_due_set)
+    {
+	this_due = proftime_time_left(&bevalexpr_due, &now);
+	if (this_due <= 1)
+	{
+	    bevalexpr_due_set = FALSE;
+
+	    if (balloonEval == NULL)
+	    {
+		balloonEval = (BalloonEval *)alloc(sizeof(BalloonEval));
+		balloonEvalForTerm = TRUE;
+	    }
+	    if (balloonEval != NULL)
+		general_beval_cb(balloonEval, 0);
+	}
+	else if (this_due > 0 && (next_due == -1 || next_due > this_due))
+	    next_due = this_due;
+    }
+#endif
 
     return current_id != last_timer_id ? 1 : next_due;
 }
@@ -1358,7 +1379,7 @@ add_timer_info(typval_T *rettv, timer_T *timer)
     dict_add_nr_str(dict, "time", (long)timer->tr_interval, NULL);
 
     profile_start(&now);
-    remaining = timer_time_left(timer, &now);
+    remaining = proftime_time_left(&timer->tr_due, &now);
     dict_add_nr_str(dict, "remaining", (long)remaining, NULL);
 
     dict_add_nr_str(dict, "repeat",

@@ -817,6 +817,7 @@ enable_workshop
 enable_netbeans
 enable_channel
 enable_terminal
+enable_autoservername
 enable_multibyte
 enable_hangulinput
 enable_xim
@@ -1495,6 +1496,7 @@ Optional Features:
   --disable-netbeans      Disable NetBeans integration support.
   --disable-channel       Disable process communication support.
   --enable-terminal       Enable terminal emulation support.
+  --enable-autoservername Automatically define servername at vim startup.
   --enable-multibyte      Include multibyte editing support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
@@ -7516,6 +7518,22 @@ if test "$enable_terminal" = "yes"; then
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-autoservername argument" >&5
+$as_echo_n "checking --enable-autoservername argument... " >&6; }
+# Check whether --enable-autoservername was given.
+if test "${enable_autoservername+set}" = set; then :
+  enableval=$enable_autoservername;
+else
+  enable_autoservername="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_autoservername" >&5
+$as_echo "$enable_autoservername" >&6; }
+if test "$enable_autoservername" = "yes"; then
+  $as_echo "#define FEAT_AUTOSERVERNAME 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-multibyte argument" >&5
 $as_echo_n "checking --enable-multibyte argument... " >&6; }
 # Check whether --enable-multibyte was given.
@@ -12072,13 +12090,13 @@ if test "x$vim_cv_getcwd_broken" = "xyes" ; then
 
 fi
 
-for ac_func in fchdir fchown fsync getcwd getpseudotty \
+for ac_func in fchdir fchown fchmod fsync getcwd getpseudotty \
 	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
-	usleep utime utimes mblen
+	usleep utime utimes mblen ftruncate
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

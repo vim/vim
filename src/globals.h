@@ -1231,6 +1231,7 @@ EXTERN int	no_hlsearch INIT(= FALSE);
 
 #if defined(FEAT_BEVAL) && !defined(NO_X11_INCLUDES)
 EXTERN BalloonEval	*balloonEval INIT(= NULL);
+EXTERN int		balloonEvalForTerm INIT(= FALSE);
 # if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
 EXTERN int bevalServers INIT(= 0);
 #  define BEVAL_NETBEANS		0x01
@@ -1449,6 +1450,9 @@ EXTERN char_u e_isadir2[]	INIT(= N_("E17: \"%s\" is a directory"));
 #ifdef FEAT_LIBCALL
 EXTERN char_u e_libcall[]	INIT(= N_("E364: Library call failed for \"%s()\""));
 #endif
+#ifdef HAVE_FSYNC
+EXTERN char_u e_fsync[]		INIT(= N_("E667: Fsync failed"));
+#endif
 #if defined(DYNAMIC_PERL) \
 	|| defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3) \
 	|| defined(DYNAMIC_RUBY) \
@@ -1643,6 +1647,11 @@ EXTERN int  in_free_unref_items INIT(= FALSE);
 #ifdef FEAT_TIMERS
 EXTERN int  did_add_timer INIT(= FALSE);
 EXTERN int  timer_busy INIT(= 0);   /* when timer is inside vgetc() then > 0 */
+#endif
+
+#ifdef FEAT_BEVAL_TERM
+EXTERN int  bevalexpr_due_set INIT(= FALSE);
+EXTERN proftime_T bevalexpr_due;
 #endif
 
 #ifdef FEAT_EVAL

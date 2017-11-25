@@ -12,6 +12,8 @@ SRC_ALL =	\
 		src/arabic.c \
 		src/arabic.h \
 		src/ascii.h \
+		src/beval.c \
+		src/beval.h \
 		src/blowfish.c \
 		src/buffer.c \
 		src/channel.c \
@@ -41,7 +43,6 @@ SRC_ALL =	\
 		src/gui.c \
 		src/gui.h \
 		src/gui_beval.c \
-		src/gui_beval.h \
 		src/hardcopy.c \
 		src/hashtab.c \
 		src/json.c \
@@ -135,10 +136,12 @@ SRC_ALL =	\
 		src/testdir/bench*.in \
 		src/testdir/bench*.vim \
 		src/testdir/samples/*.txt \
+		src/testdir/samples/test000 \
 		src/testdir/if_ver*.vim \
 		src/testdir/xterm_ramp.vim \
 		src/proto.h \
 		src/proto/arabic.pro \
+		src/proto/beval.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/channel.pro \
@@ -659,6 +662,7 @@ RT_SCRIPTS =	\
 		runtime/makemenu.vim \
 		runtime/autoload/*.vim \
 		runtime/autoload/README.txt \
+		runtime/autoload/dist/*.vim \
 		runtime/autoload/xml/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \

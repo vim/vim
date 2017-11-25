@@ -1360,7 +1360,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	if (xms != NULL)
 	    XmStringFree(xms);
 
-# ifdef FEAT_BEVAL
+# ifdef FEAT_BEVAL_GUI
 	gui_mch_menu_set_tip(menu);
 # endif
 
@@ -1509,7 +1509,7 @@ gui_mch_new_menu_font(void)
     ui_new_shellsize();
 }
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
     void
 gui_mch_new_tooltip_font(void)
 {
@@ -1566,7 +1566,7 @@ submenu_change(
 		    n = add_pixmap_args(mp, args, n);
 		    XtSetValues(mp->id, args, n);
 		}
-# ifdef FEAT_BEVAL
+# ifdef FEAT_BEVAL_GUI
 		/* If we have a tooltip, then we need to change it's font */
 		if (mp->tip != NULL)
 		{
@@ -1584,7 +1584,7 @@ submenu_change(
 	    else
 	    {
 		gui_motif_menu_fontlist(mp->id);
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 		/* If we have a tooltip, then we need to change it's font */
 		if (mp->tip != NULL)
 		{
@@ -1642,7 +1642,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	Widget	    parent;
 
 	parent = XtParent(menu->id);
-#if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL)
+#if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)
 	if (parent == toolBar && menu->tip != NULL)
 	{
 	    /* We try to destroy this before the actual menu, because there are
@@ -1703,7 +1703,7 @@ gui_mch_def_colors(void)
 	gui.menu_bg_pixel = gui.menu_def_bg_pixel;
 	gui.scroll_fg_pixel = gui.scroll_def_fg_pixel;
 	gui.scroll_bg_pixel = gui.scroll_def_bg_pixel;
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	gui.tooltip_fg_pixel =
 			gui_get_color((char_u *)gui.rsrc_tooltip_fg_name);
 	gui.tooltip_bg_pixel =
