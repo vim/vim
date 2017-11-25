@@ -116,17 +116,6 @@ gui_mch_set_rendering_options(char_u *s)
 	    dx_taamode = atoi((char *)value);
 	    if (dx_taamode < 0 || dx_taamode > 3)
 		return FAIL;
-
-	    /* D2D1_TEXT_ANTIALIAS_MODE_ALIASED */
-	    if (dx_taamode == 3)
-	    {
-		LOGFONTW lf;
-		if (GetObjectW((HFONT)gui.currFont, sizeof(lf), &lf))
-		{
-		    if (lf.lfQuality & ANTIALIASED_QUALITY)
-			return FAIL;
-		}
-	    }
 	}
 	else
 	    return FAIL;
