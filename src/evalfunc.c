@@ -13453,7 +13453,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	{
 	    int	fno = fileno(fd);
 	    struct stat st;
-	    if (do_fsync && fstat(fno, &st) == 0 && S_ISREG(fno)
+	    if (do_fsync && fstat(fno, &st) == 0 && S_ISREG(st.st_mode)
 			&& fsync(fno) != 0)
 		EMSG(_(e_fsync));
 	}
