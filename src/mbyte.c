@@ -6473,7 +6473,7 @@ xim_get_status_area_height(void)
 
 #else /* !defined(FEAT_XIM) */
 
-# ifndef FEAT_GUI_W32
+# if !defined(FEAT_GUI_W32) || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))
 static int im_was_set_active = FALSE;
 
     int
@@ -6499,6 +6499,13 @@ im_set_active(int active_arg)
     }
 #  endif
 }
+
+#  ifdef FEAT_GUI
+    void
+im_set_position(int row, int col)
+{
+}
+#  endif
 # endif
 
 #endif /* FEAT_XIM */
