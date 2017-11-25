@@ -189,6 +189,80 @@ ToInt(DWRITE_RENDERING_MODE value)
     }
 }
 
+class FontCache {
+public:
+    struct Item {
+	HFONT              hFont;
+	IDWriteTextFormat* pTextFormat;
+	DWRITE_FONT_WEIGHT fontWeight;
+	DWRITE_FONT_STYLE  fontStyle;
+        Item(void) : hFont(NULL), pTextFormat(NULL) {}
+    };
+
+private:
+    int mSize;
+    Item *mItems;
+
+public:
+    FontCache(int size = 2) :
+	mSize(size),
+	mItems(new Item[size])
+    {
+    }
+
+    ~FontCache(void)
+    {
+	for (int i = 0; i < mSize; ++i)
+	    SafeRelease(&mItems[i].pTextFormat);
+	delete[] mItems;
+    }
+
+    bool get(HFONT hFont, Item &item)
+    {
+	int n = find(hFont);
+	if (n < 0)
+	    return false;
+	item = mItems[n];
+	slide(n);
+	return true;
+    }
+
+    void put(const Item& item)
+    {
+	int n = find(item.hFont);
+	if (n < 0)
+	    n = mSize - 1;
+	if (mItems[n].pTextFormat != item.pTextFormat)
+	{
+	    SafeRelease(&mItems[n].pTextFormat);
+	    item.pTextFormat->AddRef();
+	}
+	mItems[n] = item;
+	slide(n);
+    }
+
+private:
+    int find(HFONT hFont)
+    {
+	for (int i = 0; i < mSize; ++i)
+	{
+	    if (mItems[i].hFont == hFont)
+		return i;
+	}
+	return -1;
+    }
+
+    void slide(int nextTop)
+    {
+	if (nextTop == 0)
+	    return;
+	Item tmp = mItems[nextTop];
+	for (int i = nextTop - 1; i >= 0; --i)
+	    mItems[i + 1] = mItems[i];
+	mItems[0] = tmp;
+    }
+};
+
 struct DWriteContext {
     HDC mHDC;
     bool mDrawing;
@@ -205,7 +279,7 @@ struct DWriteContext {
     IDWriteGdiInterop *mGdiInterop;
     IDWriteRenderingParams *mRenderingParams;
 
-    HFONT mLastHFont;
+    FontCache mFontCache;
     IDWriteTextFormat *mTextFormat;
     DWRITE_FONT_WEIGHT mFontWeight;
     DWRITE_FONT_STYLE mFontStyle;
@@ -496,7 +570,7 @@ DWriteContext::DWriteContext() :
     mDWriteFactory2(NULL),
     mGdiInterop(NULL),
     mRenderingParams(NULL),
-    mLastHFont(NULL),
+    mFontCache(8),
     mTextFormat(NULL),
     mFontWeight(DWRITE_FONT_WEIGHT_NORMAL),
     mFontStyle(DWRITE_FONT_STYLE_NORMAL),
@@ -716,17 +790,36 @@ DWriteContext::SetFontByLOGFONT(const LOGFONTW &logFont)
     void
 DWriteContext::SetFont(HFONT hFont)
 {
-    if (hFont == mLastHFont)
+    FontCache::Item item;
+    if (mFontCache.get(hFont, item))
+    {
+	if (item.pTextFormat != NULL)
+	{
+	    item.pTextFormat->AddRef();
+	    SafeRelease(&mTextFormat);
+	    mTextFormat = item.pTextFormat;
+	    mFontWeight = item.fontWeight;
+	    mFontStyle = item.fontStyle;
+	    mFallbackDC = false;
+	}
+	else
+	    mFallbackDC = true;
 	return;
+    }
 
     HRESULT hr = E_FAIL;
     LOGFONTW lf;
-
     if (GetObjectW(hFont, sizeof(lf), &lf))
 	hr = SetFontByLOGFONT(lf);
 
-    mLastHFont = hFont;
-    mFallbackDC = SUCCEEDED(hr) ? false : true;
+    item.hFont = hFont;
+    if (SUCCEEDED(hr))
+    {
+	item.pTextFormat = mTextFormat;
+	item.fontWeight = mFontWeight;
+	item.fontStyle = mFontStyle;
+    }
+    mFontCache.put(item);
 }
 
     void
