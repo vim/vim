@@ -189,11 +189,54 @@ ToInt(DWRITE_RENDERING_MODE value)
     }
 }
 
+struct FontCache {
+    int	    mLen;
+    int	    mIndex;
+    HFONT   *mFonts;
+
+    FontCache(int len = 2) :
+	mLen(len),
+	mIndex(0),
+	mFonts(new HFONT[len])
+    {
+	for (int i = 0; i < mLen; ++i)
+	    mFonts[i] = NULL;
+    }
+
+    ~FontCache(void)
+    {
+	delete[] mFonts;
+    }
+
+    bool Has(HFONT hFont)
+    {
+	int x = mIndex;
+	for (int i = 0; i < mLen; ++i)
+	{
+	    if (mFonts[x] == hFont)
+		return true;
+	    x = (x + 1) % mLen;
+	}
+	return false;
+    }
+
+    void Put(HFONT hFont)
+    {
+	int x = mIndex;
+	for (int i = 0; i < mLen - 1; ++i)
+	{
+	    if (mFonts[x] == hFont)
+		return;
+	    x = (x + 1) % mLen;
+	}
+	mIndex = x;
+	mFonts[x] = hFont;
+    }
+};
+
 struct DWriteContext {
     bool mDrawing;
-
-    FLOAT mDpiScaleX;
-    FLOAT mDpiScaleY;
+    HDC mHDC;
 
     ID2D1Factory *mD2D1Factory;
 
@@ -205,9 +248,10 @@ struct DWriteContext {
 
     IDWriteGdiInterop *mGdiInterop;
     IDWriteRenderingParams *mRenderingParams;
-    IDWriteTextFormat *mTextFormat;
 
     HFONT mLastHFont;
+    FontCache mFailedFonts;
+    IDWriteTextFormat *mTextFormat;
     DWRITE_FONT_WEIGHT mFontWeight;
     DWRITE_FONT_STYLE mFontStyle;
 
@@ -219,11 +263,16 @@ struct DWriteContext {
 
     virtual ~DWriteContext();
 
-    HRESULT SetLOGFONT(const LOGFONTW &logFont, float fontSize);
+    HFONT GetFallbackFont();
+
+    HRESULT CreateTextFormat(const LOGFONTW &logFont,
+	    IDWriteTextFormat **ppTextFormat);
+
+    HRESULT ReplaceTextFormat(const LOGFONTW &logFont);
+
+    HRESULT SetFontRaw(HFONT hFont);
 
     void SetFont(HFONT hFont);
-
-    void SetFont(const LOGFONTW &logFont);
 
     void BindDC(HDC hdc, RECT *rect);
 
@@ -486,6 +535,7 @@ private:
 
 DWriteContext::DWriteContext() :
     mDrawing(false),
+    mHDC(NULL),
     mD2D1Factory(NULL),
     mRT(NULL),
     mBrush(NULL),
@@ -493,8 +543,9 @@ DWriteContext::DWriteContext() :
     mDWriteFactory2(NULL),
     mGdiInterop(NULL),
     mRenderingParams(NULL),
-    mTextFormat(NULL),
     mLastHFont(NULL),
+    mFailedFonts(),
+    mTextFormat(NULL),
     mFontWeight(DWRITE_FONT_WEIGHT_NORMAL),
     mFontStyle(DWRITE_FONT_STYLE_NORMAL),
     mTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_DEFAULT)
@@ -572,15 +623,23 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mD2D1Factory);
 }
 
+    HFONT
+DWriteContext::GetFallbackFont()
+{
+    return (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
+}
+
     HRESULT
-DWriteContext::SetLOGFONT(const LOGFONTW &logFont, float fontSize)
+DWriteContext::CreateTextFormat(const LOGFONTW &logFont, IDWriteTextFormat **ppTextFormat)
 {
     // Most of this function is copy from: http://msdn.microsoft.com/en-us/library/windows/desktop/dd941783(v=vs.85).aspx
     HRESULT hr = S_OK;
+    IDWriteTextFormat *pTextFormat = NULL;
 
     IDWriteFont *font = NULL;
     IDWriteFontFamily *fontFamily = NULL;
     IDWriteLocalizedStrings *localizedFamilyNames = NULL;
+    float fontSize = 0;
 
     if (SUCCEEDED(hr))
     {
@@ -613,33 +672,30 @@ DWriteContext::SetLOGFONT(const LOGFONTW &logFont, float fontSize)
 
     if (SUCCEEDED(hr))
     {
-	// If no font size was passed in use the lfHeight of the LOGFONT.
-	if (fontSize == 0)
+	// use lfHeight of the LOGFONT as font size.
+	fontSize = (float)logFont.lfHeight;
+
+	if (fontSize < 0)
 	{
-	    fontSize = (float)logFont.lfHeight;
+	    // Negative lfHeight represents the size of the em unit.
+	    fontSize = -fontSize;
+	}
+	else
+	{
+	    // Positive lfHeight represents the cell height (ascent +
+	    // descent).
+	    DWRITE_FONT_METRICS fontMetrics;
+	    font->GetMetrics(&fontMetrics);
 
-	    if (fontSize < 0)
-	    {
-		// Negative lfHeight represents the size of the em unit.
-		fontSize = -fontSize;
-	    }
-	    else
-	    {
-		// Positive lfHeight represents the cell height (ascent +
-		// descent).
-		DWRITE_FONT_METRICS fontMetrics;
-		font->GetMetrics(&fontMetrics);
+	    // Convert the cell height (ascent + descent) from design units
+	    // to ems.
+	    float cellHeight = static_cast<float>(
+		    fontMetrics.ascent + fontMetrics.descent)
+		/ fontMetrics.designUnitsPerEm;
 
-		// Convert the cell height (ascent + descent) from design units
-		// to ems.
-		float cellHeight = static_cast<float>(
-			fontMetrics.ascent + fontMetrics.descent)
-					       / fontMetrics.designUnitsPerEm;
-
-		// Divide the font size by the cell height to get the font em
-		// size.
-		fontSize /= cellHeight;
-	    }
+	    // Divide the font size by the cell height to get the font em
+	    // size.
+	    fontSize /= cellHeight;
 	}
     }
 
@@ -664,60 +720,98 @@ DWriteContext::SetLOGFONT(const LOGFONTW &logFont, float fontSize)
 		font->GetStretch(),
 		fontSize,
 		localeName,
-		&mTextFormat);
+		&pTextFormat);
     }
 
     if (SUCCEEDED(hr))
-    {
-	mFontWeight = static_cast<DWRITE_FONT_WEIGHT>(logFont.lfWeight);
-	mFontStyle = logFont.lfItalic ? DWRITE_FONT_STYLE_ITALIC
-	    : DWRITE_FONT_STYLE_NORMAL;
-    }
+	hr = pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+
+    if (SUCCEEDED(hr))
+	hr = pTextFormat->SetParagraphAlignment(
+		DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+
+    if (SUCCEEDED(hr))
+	hr = pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
     SafeRelease(&localizedFamilyNames);
     SafeRelease(&fontFamily);
     SafeRelease(&font);
 
+    if (SUCCEEDED(hr))
+	*ppTextFormat = pTextFormat;
+    else
+	SafeRelease(&pTextFormat);
+
+    return hr;
+}
+
+// ReplaceTextFormat changes mTextFormat by LOGFONTW in atomic.
+    HRESULT
+DWriteContext::ReplaceTextFormat(const LOGFONTW &logFont)
+{
+    HRESULT hr = S_OK;
+    IDWriteTextFormat *pTextFormat = NULL;
+
+    hr = CreateTextFormat(logFont, &pTextFormat);
+
+    if (SUCCEEDED(hr))
+    {
+	SafeRelease(&mTextFormat);
+	mTextFormat = pTextFormat;
+	mFontWeight = static_cast<DWRITE_FONT_WEIGHT>(logFont.lfWeight);
+	mFontStyle = logFont.lfItalic ? DWRITE_FONT_STYLE_ITALIC
+	    : DWRITE_FONT_STYLE_NORMAL;
+    }
+    else
+	SafeRelease(&pTextFormat);
+
+    return hr;
+}
+
+    HRESULT
+DWriteContext::SetFontRaw(HFONT hFont)
+{
+    HRESULT hr = E_FAIL;
+    LOGFONTW lf;
+
+    if (GetObjectW(hFont, sizeof(lf), &lf))
+    {
+	_RPT2(_CRT_WARN, "SetFontRaw: faceName=%S size=%d\n", lf.lfFaceName, lf.lfHeight);
+	hr = ReplaceTextFormat(lf);
+	if (!SUCCEEDED(hr))
+	{
+	    _RPT2(_CRT_WARN, "SetFontRaw failed: hr=%08X faceName=%S\n",
+		    hr, lf.lfFaceName);
+	}
+    }
+    else
+    {
+	_RPT0(_CRT_WARN, "SetFontRaw failed: can't get LOGFONTW\n");
+    }
     return hr;
 }
 
     void
 DWriteContext::SetFont(HFONT hFont)
 {
-    if (mLastHFont != hFont)
+    if (hFont == mLastHFont || mFailedFonts.Has(hFont))
+	return;
+
+    HRESULT hr = SetFontRaw(hFont);
+    if (SUCCEEDED(hr))
+	mLastHFont = hFont;
+    else
     {
-	LOGFONTW lf;
-	if (GetObjectW(hFont, sizeof(lf), &lf))
-	{
-	    SetFont(lf);
-	    mLastHFont = hFont;
-	}
+	mFailedFonts.Put(hFont);
+	SetFontRaw(GetFallbackFont());
     }
-}
-
-    void
-DWriteContext::SetFont(const LOGFONTW &logFont)
-{
-    SafeRelease(&mTextFormat);
-    mLastHFont = NULL;
-
-    HRESULT hr = SetLOGFONT(logFont, 0.f);
-
-    if (SUCCEEDED(hr))
-	hr = mTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-
-    if (SUCCEEDED(hr))
-	hr = mTextFormat->SetParagraphAlignment(
-		DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-
-    if (SUCCEEDED(hr))
-	hr = mTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 }
 
     void
 DWriteContext::BindDC(HDC hdc, RECT *rect)
 {
     Flush();
+    mHDC = hdc;
     mRT->BindDC(hdc, rect);
     mRT->SetTransform(D2D1::IdentityMatrix());
 }

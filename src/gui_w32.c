@@ -6196,12 +6196,16 @@ RevOut( HDC s_hdc,
     static int
 gui_is_outline_font_selected(HDC hdc)
 {
+#if 0
     TEXTMETRIC tm;
 
     GetTextMetrics(hdc, &tm);
     if (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR))
 	return 1;
     return 0;
+#else
+    return 1;
+#endif
 }
 
     void
