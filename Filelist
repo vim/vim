@@ -119,7 +119,6 @@ SRC_ALL =	\
 		src/testdir/test[0-9]*a.ok \
 		src/testdir/test_[a-z]*.ok \
 		src/testdir/test49.vim \
-		src/testdir/test60.vim \
 		src/testdir/test83-tags? \
 		src/testdir/test77a.com \
 		src/testdir/test_*.vim \
@@ -138,7 +137,7 @@ SRC_ALL =	\
 		src/testdir/samples/*.txt \
 		src/testdir/samples/test000 \
 		src/testdir/if_ver*.vim \
-		src/testdir/xterm_ramp.vim \
+		src/testdir/color_ramp.vim \
 		src/proto.h \
 		src/proto/arabic.pro \
 		src/proto/beval.pro \
