@@ -2052,8 +2052,8 @@ write_viminfo(char_u *file, int forceit)
 		/* can't stat the file, set conservative permissions */
 		(void)mch_setperm(tempname, 0600);
 	}
-    }
 #endif
+    }
 
     /*
      * Check if the new viminfo file can be written to.
