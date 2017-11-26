@@ -6154,7 +6154,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 		Example: >
 		  set encoding=utf-8
-		  set gfn=Ricty_Diminished:h12:cSHIFTJIS
+		  set gfn=Ricty_Diminished:h12
 		  set rop=type:directx
 <
 		If select a raster font (Courier, Terminal or FixedSys which
