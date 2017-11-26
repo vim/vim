@@ -4674,6 +4674,8 @@ getqflist([{what}])					*getqflist()*
 		If the optional {what} dictionary argument is supplied, then
 		returns only the items listed in {what} as a dictionary. The
 		following string items are supported in {what}:
+			changedtick	get the total number of changes made
+					to the list
 			context	get the context stored with |setqflist()|
 			efm	errorformat to use when parsing "lines". If
 				not present, then the 'errorformat' option
@@ -4707,6 +4709,8 @@ getqflist([{what}])					*getqflist()*
 		"items" with the list of entries.
 
 		The returned dictionary contains the following entries:
+			changedtick	total number of changes made to the
+					list |quickfix-changedtick|
 			context	context information stored with |setqflist()|.
 				If not present, set to "".
 			id	quickfix list ID |quickfix-ID|. If not
