@@ -196,7 +196,7 @@ public:
 	IDWriteTextFormat* pTextFormat;
 	DWRITE_FONT_WEIGHT fontWeight;
 	DWRITE_FONT_STYLE  fontStyle;
-        Item(void) : hFont(NULL), pTextFormat(NULL) {}
+	Item(void) : hFont(NULL), pTextFormat(NULL) {}
     };
 
 private:
