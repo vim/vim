@@ -4258,8 +4258,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with |+mbyte|}
 	This option specifies a function that will be called to
-	activate/inactivate Input Method.
-	Does not work in the MS-Windows GUI version.
+	activate or deactivate the Input Method.
+	It is not used in the GUI.
 
 	Example: >
 		function ImActivateFunc(active)
@@ -4375,7 +4375,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with |+mbyte|}
 	This option specifies a function that is called to obtain the status
 	of Input Method.  It must return a positive number when IME is active.
-	Does not work in the MS-Windows GUI version.
+	It is not used in the GUI.
 
 	Example: >
 		function ImStatusFunc()

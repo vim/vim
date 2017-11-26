@@ -17,9 +17,6 @@ func IM_statusfunc()
 endfunc
 
 func Test_iminsert2()
-  if has('gui_win32')
-    return
-  endif
   set imactivatefunc=IM_activatefunc
   set imstatusfunc=IM_statusfunc
   set iminsert=2
@@ -27,6 +24,8 @@ func Test_iminsert2()
   set iminsert=0
   set imactivatefunc=
   set imstatusfunc=
-  call assert_equal(1, s:imactivatefunc_called)
-  call assert_equal(1, s:imstatusfunc_called)
+
+  let expected = has('gui_running') ? 0 : 1
+  call assert_equal(expected, s:imactivatefunc_called)
+  call assert_equal(expected, s:imstatusfunc_called)
 endfunc

@@ -4782,6 +4782,14 @@ iconv_end(void)
 
 #endif /* FEAT_MBYTE */
 
+#ifdef FEAT_GUI
+# define USE_IMACTIVATEFUNC (!gui.in_use && *p_imaf != NUL)
+# define USE_IMSTATUSFUNC (!gui.in_use && *p_imsf != NUL)
+#else
+# define USE_IMACTIVATEFUNC (*p_imaf != NUL)
+# define USE_IMSTATUSFUNC (*p_imsf != NUL)
+#endif
+
 #ifdef FEAT_EVAL
     static void
 call_imactivatefunc(int active)
@@ -5689,7 +5697,7 @@ im_synthesize_keypress(unsigned int keyval, unsigned int state)
 xim_reset(void)
 {
 #ifdef FEAT_EVAL
-    if (p_imaf[0] != NUL)
+    if (USE_IMACTIVATEFUNC)
 	call_imactivatefunc(im_is_active);
     else
 #endif
@@ -5868,7 +5876,7 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
 im_get_status(void)
 {
 #  ifdef FEAT_EVAL
-    if (p_imsf[0] != NUL)
+    if (USE_IMSTATUSFUNC)
 	return call_imstatusfunc();
 #  endif
     return im_is_active;
@@ -5908,16 +5916,14 @@ im_set_active(int active_arg)
     /* If 'imdisable' is set, XIM is never active. */
     if (p_imdisable)
 	active = FALSE;
-#  if !defined(FEAT_GUI_GTK)
     else if (input_style & XIMPreeditPosition)
 	/* There is a problem in switching XIM off when preediting is used,
 	 * and it is not clear how this can be solved.  For now, keep XIM on
 	 * all the time, like it was done in Vim 5.8. */
 	active = TRUE;
-#  endif
 
 #  if defined(FEAT_EVAL)
-    if (p_imaf[0] != NUL)
+    if (USE_IMACTIVATEFUNC)
     {
 	if (active != im_get_status())
 	{
@@ -6328,7 +6334,8 @@ xim_real_init(Window x11_window, Display *x11_display)
     }
     else
     {
-	EMSG(_(e_xim));
+	if (!is_not_a_term())
+	    EMSG(_(e_xim));
 	XCloseIM(xim);
 	return FALSE;
     }
@@ -6348,7 +6355,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 im_get_status(void)
 {
 #  ifdef FEAT_EVAL
-    if (p_imsf[0] != NUL)
+    if (USE_IMSTATUSFUNC)
 	return call_imstatusfunc();
 #  endif
     return xim_has_focus;
@@ -6480,7 +6487,7 @@ static int im_was_set_active = FALSE;
 im_get_status()
 {
 #  ifdef FEAT_EVAL
-    if (p_imsf[0] != NUL)
+    if (USE_IMSTATUSFUNC)
 	return call_imstatusfunc();
 #  endif
     return im_was_set_active;
@@ -6492,7 +6499,7 @@ im_set_active(int active_arg)
 #  if defined(FEAT_MBYTE) && defined(FEAT_EVAL)
     int	    active = !p_imdisable && active_arg;
 
-    if (p_imaf[0] != NUL && active != im_get_status())
+    if (USE_IMACTIVATEFUNC && active != im_get_status())
     {
 	call_imactivatefunc(active);
 	im_was_set_active = active;
