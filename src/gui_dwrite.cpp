@@ -782,8 +782,6 @@ DWriteContext::SetFontByLOGFONT(const LOGFONTW &logFont)
 	mFontStyle = logFont.lfItalic ? DWRITE_FONT_STYLE_ITALIC
 	    : DWRITE_FONT_STYLE_NORMAL;
     }
-    else
-	SafeRelease(&pTextFormat);
 
     return hr;
 }
