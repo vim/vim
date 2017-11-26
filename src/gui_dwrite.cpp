@@ -692,7 +692,7 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont, IDWriteTextF
 
     if (SUCCEEDED(hr))
     {
-	// use lfHeight of the LOGFONT as font size.
+	// Use lfHeight of the LOGFONT as font size.
 	fontSize = float(logFont.lfHeight);
 
 	if (fontSize < 0)
