@@ -836,7 +836,7 @@ split_message(char_u *mesg, pumitem_T **array)
 	item->bytelen = p - item->start;
 	if (item->cells > max_cells)
 	    max_cells = item->cells;
-	long_item_count += item->cells / BALLOON_MIN_WIDTH;
+	long_item_count += (item->cells - 1) / BALLOON_MIN_WIDTH;
     }
 
     height = 2 + ga.ga_len;
