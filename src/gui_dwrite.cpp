@@ -196,7 +196,7 @@ public:
 	IDWriteTextFormat* pTextFormat;
 	DWRITE_FONT_WEIGHT fontWeight;
 	DWRITE_FONT_STYLE  fontStyle;
-	Item(void) : hFont(NULL), pTextFormat(NULL) {}
+	Item() : hFont(NULL), pTextFormat(NULL) {}
     };
 
 private:
@@ -210,7 +210,7 @@ public:
     {
     }
 
-    ~FontCache(void)
+    ~FontCache()
     {
 	for (int i = 0; i < mSize; ++i)
 	    SafeRelease(&mItems[i].pTextFormat);
@@ -301,7 +301,7 @@ struct DWriteContext {
 
     void BindDC(HDC hdc, RECT *rect);
 
-    void AssureDrawing(void);
+    void AssureDrawing();
 
     ID2D1Brush* SolidBrush(COLORREF color);
 
@@ -311,7 +311,7 @@ struct DWriteContext {
 
     void FillRect(RECT *rc, COLORREF color);
 
-    void Flush(void);
+    void Flush();
 
     void SetRenderingParams(
 	    const DWriteRenderingParams *params);
@@ -348,7 +348,7 @@ public:
 	glyphAdvances = mAdjustedAdvances;
     }
 
-    ~AdjustedGlyphRun(void)
+    ~AdjustedGlyphRun()
     {
 	mAccum += mDelta;
 	delete[] mAdjustedAdvances;
@@ -832,7 +832,7 @@ DWriteContext::BindDC(HDC hdc, RECT *rect)
 }
 
     void
-DWriteContext::AssureDrawing(void)
+DWriteContext::AssureDrawing()
 {
     if (mDrawing == false)
     {
@@ -894,7 +894,7 @@ DWriteContext::FillRect(RECT *rc, COLORREF color)
 }
 
     void
-DWriteContext::Flush(void)
+DWriteContext::Flush()
 {
     if (mDrawing)
     {
