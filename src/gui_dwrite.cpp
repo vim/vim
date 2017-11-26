@@ -652,7 +652,7 @@ DWriteContext::~DWriteContext()
     HRESULT
 DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont, IDWriteTextFormat **ppTextFormat)
 {
-    // Most of this function is copy from: https://github.com/Microsoft/Windows-classic-samples/blob/master/Samples/Win7Samples/multimedia/DirectWrite/RenderTest/TextHelpers.cpp
+    // Most of this function is copied from: https://github.com/Microsoft/Windows-classic-samples/blob/master/Samples/Win7Samples/multimedia/DirectWrite/RenderTest/TextHelpers.cpp
     HRESULT hr = S_OK;
     IDWriteTextFormat *pTextFormat = NULL;
 
