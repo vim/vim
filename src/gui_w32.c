@@ -34,26 +34,12 @@ static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
+static int directx_enabled(void);
+static void directx_binddc(void);
 #endif
 
 #ifdef FEAT_MENU
 static int gui_mswin_get_menu_height(int fix_window);
-#endif
-
-#if defined(FEAT_DIRECTX) || defined(PROTO)
-    int
-directx_enabled(void)
-{
-    if (s_dwc != NULL)
-	return 1;
-    else if (s_directx_load_attempted)
-	return 0;
-    /* load DirectX */
-    DWrite_Init();
-    s_directx_load_attempted = 1;
-    s_dwc = DWriteContext_Open();
-    return s_dwc != NULL ? 1 : 0;
-}
 #endif
 
 #if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
@@ -369,6 +355,34 @@ static int allow_scrollbar = FALSE;
 # define MyTranslateMessage(x) TranslateMessage(x)
 #endif
 
+#if defined(FEAT_DIRECTX)
+    static int
+directx_enabled(void)
+{
+    if (s_dwc != NULL)
+	return 1;
+    else if (s_directx_load_attempted)
+	return 0;
+    /* load DirectX */
+    DWrite_Init();
+    s_directx_load_attempted = 1;
+    s_dwc = DWriteContext_Open();
+    directx_binddc();
+    return s_dwc != NULL ? 1 : 0;
+}
+
+    static void
+directx_binddc(void)
+{
+    if (s_textArea != NULL)
+    {
+	RECT	rect;
+	GetClientRect(s_textArea, &rect);
+	DWriteContext_BindDC(s_dwc, s_hdc, &rect);
+    }
+}
+#endif
+
 #if defined(FEAT_MBYTE) || defined(GLOBAL_IME)
   /* use of WindowProc depends on wide_WindowProc */
 # define MyWindowProc vim_WindowProc
@@ -589,6 +603,10 @@ _OnBlinkTimer(
 	blink_timer = (UINT) SetTimer(NULL, 0, (UINT)blink_ontime,
 						    (TIMERPROC)_OnBlinkTimer);
     }
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 }
 
     static void
@@ -1000,6 +1018,19 @@ _OnMouseMoveOrRelease(
     _OnMouseEvent(button, x, y, FALSE, keyFlags);
 }
 
+    static void
+_OnSizeTextArea(
+    HWND hwnd UNUSED,
+    UINT state UNUSED,
+    int cx UNUSED,
+    int cy UNUSED)
+{
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	directx_binddc();
+#endif
+}
+
 #ifdef FEAT_MENU
 /*
  * Find the vimmenu_T with the given id
@@ -1234,6 +1265,7 @@ _TextAreaWndProc(
 	HANDLE_MSG(hwnd, WM_XBUTTONDBLCLK,_OnMouseButtonDown);
 	HANDLE_MSG(hwnd, WM_XBUTTONDOWN,_OnMouseButtonDown);
 	HANDLE_MSG(hwnd, WM_XBUTTONUP,	_OnMouseMoveOrRelease);
+	HANDLE_MSG(hwnd, WM_SIZE,	_OnSizeTextArea);
 
 #ifdef FEAT_BEVAL_GUI
 	case WM_NOTIFY: Handle_WM_Notify(hwnd, (LPNMHDR)lParam);
@@ -1633,6 +1665,11 @@ gui_mch_invert_rectangle(
 {
     RECT    rc;
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     /*
      * Note: InvertRect() excludes right and bottom of rectangle.
      */
@@ -1660,6 +1697,11 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 {
     HBRUSH  hbr;
     RECT    rc;
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     /*
      * Note: FrameRect() excludes right and bottom of rectangle.
@@ -1701,6 +1743,12 @@ gui_mch_draw_part_cursor(
     rc.top = FILL_Y(gui.row) + gui.char_height - h;
     rc.right = rc.left + w;
     rc.bottom = rc.top + h;
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     hbr = CreateSolidBrush(color);
     FillRect(s_hdc, &rc, hbr);
     DeleteBrush(hbr);
@@ -2856,10 +2904,6 @@ _OnPaint(
 
 	out_flush();	    /* make sure all output has been processed */
 	(void)BeginPaint(hwnd, &ps);
-#if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX())
-	    DWriteContext_BeginDraw(s_dwc);
-#endif
 
 #ifdef FEAT_MBYTE
 	/* prevent multi-byte characters from misprinting on an invalid
@@ -2876,19 +2920,11 @@ _OnPaint(
 
 	if (!IsRectEmpty(&ps.rcPaint))
 	{
-#if defined(FEAT_DIRECTX)
-	    if (IS_ENABLE_DIRECTX())
-		DWriteContext_BindDC(s_dwc, s_hdc, &ps.rcPaint);
-#endif
 	    gui_redraw(ps.rcPaint.left, ps.rcPaint.top,
 		    ps.rcPaint.right - ps.rcPaint.left + 1,
 		    ps.rcPaint.bottom - ps.rcPaint.top + 1);
 	}
 
-#if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX())
-	    DWriteContext_EndDraw(s_dwc);
-#endif
 	EndPaint(hwnd, &ps);
     }
 }
@@ -3010,6 +3046,11 @@ gui_mch_flash(int msec)
 {
     RECT    rc;
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     /*
      * Note: InvertRect() excludes right and bottom of rectangle.
      */
@@ -3082,6 +3123,12 @@ gui_mch_delete_lines(
 
     intel_gpu_workaround();
 
+#if defined(FEAT_DIRECTX)
+    // Commit drawing queue before ScrollWindowEx.
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
     rc.top = FILL_Y(row);
@@ -3114,6 +3161,12 @@ gui_mch_insert_lines(
     RECT	rc;
 
     intel_gpu_workaround();
+
+#if defined(FEAT_DIRECTX)
+    // Commit drawing queue before ScrollWindowEx.
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -6145,9 +6198,6 @@ gui_mch_draw_string(
 #endif
     HPEN	hpen, old_pen;
     int		y;
-#ifdef FEAT_DIRECTX
-    int		font_is_ttf_or_vector = 0;
-#endif
 
     /*
      * Italic and bold text seems to have an extra row of pixels at the bottom
@@ -6208,6 +6258,11 @@ gui_mch_draw_string(
 	    hbr = hbr_cache[brush_lru];
 	    brush_lru = !brush_lru;
 	}
+
+#if defined(FEAT_DIRECTX)
+	if (IS_ENABLE_DIRECTX())
+	    DWriteContext_FillRect(s_dwc, &rc, gui.currBgColor);
+#endif
 	FillRect(s_hdc, &rc, hbr);
 
 	SetBkMode(s_hdc, TRANSPARENT);
@@ -6227,16 +6282,7 @@ gui_mch_draw_string(
 
 #ifdef FEAT_DIRECTX
     if (IS_ENABLE_DIRECTX())
-    {
-	TEXTMETRIC tm;
-
-	GetTextMetrics(s_hdc, &tm);
-	if (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR))
-	{
-	    font_is_ttf_or_vector = 1;
-	    DWriteContext_SetFont(s_dwc, (HFONT)gui.currFont);
-	}
-    }
+	DWriteContext_SetFont(s_dwc, (HFONT)gui.currFont);
 #endif
 
     if (pad_size != Columns || padding == NULL || padding[0] != gui.char_width)
@@ -6347,12 +6393,13 @@ gui_mch_draw_string(
 	    ++clen;
 	}
 #if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector)
+	if (IS_ENABLE_DIRECTX())
 	{
 	    /* Add one to "cells" for italics. */
-	    DWriteContext_DrawText(s_dwc, s_hdc, unicodebuf, wlen,
+	    DWriteContext_DrawText(s_dwc, unicodebuf, wlen,
 		    TEXT_X(col), TEXT_Y(row), FILL_X(cells + 1), FILL_Y(1),
-		    gui.char_width, gui.currFgColor);
+		    gui.char_width, gui.currFgColor,
+		    foptions, pcliprect, unicodepdy);
 	}
 	else
 #endif
@@ -6410,6 +6457,12 @@ gui_mch_draw_string(
 	    ExtTextOut(s_hdc, TEXT_X(col), TEXT_Y(row),
 			 foptions, pcliprect, (char *)text, len, padding);
     }
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX() &&
+	    (flags & (DRAW_UNDERL | DRAW_STRIKE | DRAW_UNDERC | DRAW_CURSOR)))
+	DWriteContext_Flush(s_dwc);
+#endif
 
     /* Underline */
     if (flags & DRAW_UNDERL)
@@ -6473,6 +6526,11 @@ gui_mch_flush(void)
     BOOL  __stdcall GdiFlush(void);
 #   endif
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     GdiFlush();
 }
 
@@ -6480,6 +6538,14 @@ gui_mch_flush(void)
 clear_rect(RECT *rcp)
 {
     HBRUSH  hbr;
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+    {
+	DWriteContext_FillRect(s_dwc, rcp, gui.back_pixel);
+	return;
+    }
+#endif
 
     hbr = CreateSolidBrush(gui.back_pixel);
     FillRect(s_hdc, rcp, hbr);
@@ -8386,6 +8452,11 @@ gui_mch_drawsign(int row, int col, int typenr)
     if (!gui.in_use || (sign = (signicon_t *)sign_get_image(typenr)) == NULL)
 	return;
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     x = TEXT_X(col);
     y = TEXT_Y(row);
     w = gui.char_width * 2;
@@ -8864,6 +8935,11 @@ netbeans_draw_multisign_indicator(int row)
 
     x = 0;
     y = TEXT_Y(row);
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     for (i = 0; i < gui.char_height - 3; i++)
 	SetPixel(s_hdc, x+2, y++, gui.currFgColor);
