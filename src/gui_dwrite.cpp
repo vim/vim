@@ -356,7 +356,7 @@ public:
 
     static FLOAT adjustToCell(FLOAT value, FLOAT cellWidth)
     {
-	int cellCount = (int)floor(value / cellWidth + 0.5f);
+	int cellCount = int(floor(value / cellWidth + 0.5f));
 	if (cellCount < 1)
 	    cellCount = 1;
 	return cellCount * cellWidth;
@@ -693,7 +693,7 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont, IDWriteTextF
     if (SUCCEEDED(hr))
     {
 	// use lfHeight of the LOGFONT as font size.
-	fontSize = (float)logFont.lfHeight;
+	fontSize = float(logFont.lfHeight);
 
 	if (fontSize < 0)
 	{
@@ -871,13 +871,13 @@ DWriteContext::DrawText(const WCHAR* text, int len,
 
     if (SUCCEEDED(hr))
     {
-	DWRITE_TEXT_RANGE textRange = { 0, (UINT32)len };
+	DWRITE_TEXT_RANGE textRange = { 0, UINT32(len) };
 	textLayout->SetFontWeight(mFontWeight, textRange);
 	textLayout->SetFontStyle(mFontStyle, textRange);
 
 	TextRenderer renderer(this);
-	TextRendererContext context = { color, (FLOAT)cellWidth, 0.0f };
-	textLayout->Draw(&context, &renderer, (FLOAT)x, (FLOAT)y);
+	TextRendererContext context = { color, FLOAT(cellWidth), 0.0f };
+	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y));
     }
 
     SafeRelease(&textLayout);
@@ -888,8 +888,8 @@ DWriteContext::FillRect(RECT *rc, COLORREF color)
 {
     AssureDrawing();
     mRT->FillRectangle(
-	    D2D1::RectF((FLOAT)rc->left, (FLOAT)rc->top,
-		(FLOAT)rc->right, (FLOAT)rc->bottom),
+	    D2D1::RectF(FLOAT(rc->left), FLOAT(rc->top),
+		FLOAT(rc->right), FLOAT(rc->bottom)),
 	    SolidBrush(color));
 }
 
