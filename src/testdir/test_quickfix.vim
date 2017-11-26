@@ -1962,8 +1962,6 @@ func Test_Autocmd()
   autocmd QuickFixCmdPre * call QfAutoCmdHandler('pre', expand('<amatch>'))
   autocmd QuickFixCmdPost * call QfAutoCmdHandler('post', expand('<amatch>'))
 
-  call writefile(['Xtest:1:Line1'], 'Xtest')
-
   let g:acmds = []
   cexpr "F1:10:Line 10"
   caddexpr "F1:20:Line 20"
@@ -1971,6 +1969,24 @@ func Test_Autocmd()
   cexpr ""
   caddexpr ""
   cgetexpr ""
+  silent! cexpr non_existing_func()
+  silent! caddexpr non_existing_func()
+  silent! cgetexpr non_existing_func()
+  let l = ['precexpr',
+	      \ 'postcexpr',
+	      \ 'precaddexpr',
+	      \ 'postcaddexpr',
+	      \ 'precgetexpr',
+	      \ 'postcgetexpr',
+	      \ 'precexpr',
+	      \ 'precaddexpr',
+	      \ 'precgetexpr',
+	      \ 'precexpr',
+	      \ 'precaddexpr',
+	      \ 'precgetexpr']
+  call assert_equal(l, g:acmds)
+
+  let g:acmds = []
   enew! | call append(0, "F2:10:Line 10")
   cbuffer!
   enew! | call append(0, "F2:20:Line 20")
@@ -1984,12 +2000,50 @@ func Test_Autocmd()
   exe 'silent! cgetbuffer ' . bnum
   exe 'silent! caddbuffer ' . bnum
   enew!
+  let l = ['precbuffer',
+	      \ 'postcbuffer',
+	      \ 'precgetbuffer',
+	      \ 'postcgetbuffer',
+	      \ 'precaddbuffer',
+	      \ 'postcaddbuffer',
+	      \ 'precbuffer',
+	      \ 'precgetbuffer',
+	      \ 'precaddbuffer']
+  call assert_equal(l, g:acmds)
+
+  call writefile(['Xtest:1:Line1'], 'Xtest')
+  call writefile([], 'Xempty')
+  let g:acmds = []
   cfile Xtest
   caddfile Xtest
   cgetfile Xtest
+  cfile Xempty
+  caddfile Xempty
+  cgetfile Xempty
   silent! cfile do_not_exist
   silent! caddfile do_not_exist
   silent! cgetfile do_not_exist
+  let l = ['precfile',
+	      \ 'postcfile',
+	      \ 'precaddfile',
+	      \ 'postcaddfile',
+	      \ 'precgetfile',
+	      \ 'postcgetfile',
+	      \ 'precfile',
+	      \ 'postcfile',
+	      \ 'precaddfile',
+	      \ 'postcaddfile',
+	      \ 'precgetfile',
+	      \ 'postcgetfile',
+	      \ 'precfile',
+	      \ 'postcfile',
+	      \ 'precaddfile',
+	      \ 'postcaddfile',
+	      \ 'precgetfile',
+	      \ 'postcgetfile']
+  call assert_equal(l, g:acmds)
+
+  let g:acmds = []
   helpgrep quickfix
   silent! helpgrep non_existing_help_topic
   vimgrep test Xtest
@@ -1999,38 +2053,7 @@ func Test_Autocmd()
   set makeprg=
   silent! make
   set makeprg&
-
-  let l = ['precexpr',
-	      \ 'postcexpr',
-	      \ 'precaddexpr',
-	      \ 'postcaddexpr',
-	      \ 'precgetexpr',
-	      \ 'postcgetexpr',
-	      \ 'precexpr',
-	      \ 'precaddexpr',
-	      \ 'precgetexpr',
-	      \ 'precbuffer',
-	      \ 'postcbuffer',
-	      \ 'precgetbuffer',
-	      \ 'postcgetbuffer',
-	      \ 'precaddbuffer',
-	      \ 'postcaddbuffer',
-	      \ 'precbuffer',
-	      \ 'precgetbuffer',
-	      \ 'precaddbuffer',
-	      \ 'precfile',
-	      \ 'postcfile',
-	      \ 'precaddfile',
-	      \ 'postcaddfile',
-	      \ 'precgetfile',
-	      \ 'postcgetfile',
-	      \ 'precfile',
-	      \ 'postcfile',
-	      \ 'precaddfile',
-	      \ 'postcaddfile',
-	      \ 'precgetfile',
-	      \ 'postcgetfile',
-	      \ 'prehelpgrep',
+  let l = ['prehelpgrep',
 	      \ 'posthelpgrep',
 	      \ 'prehelpgrep',
 	      \ 'posthelpgrep',
@@ -2069,6 +2092,7 @@ func Test_Autocmd()
   endif
 
   call delete('Xtest')
+  call delete('Xempty')
 endfunc
 
 func Test_Autocmd_Exception()
