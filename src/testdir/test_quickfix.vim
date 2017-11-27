@@ -1979,8 +1979,11 @@ func Test_Autocmd()
 	      \ 'precgetexpr',
 	      \ 'postcgetexpr',
 	      \ 'precexpr',
+	      \ 'postcexpr',
 	      \ 'precaddexpr',
+	      \ 'postcaddexpr',
 	      \ 'precgetexpr',
+	      \ 'postcgetexpr',
 	      \ 'precexpr',
 	      \ 'precaddexpr',
 	      \ 'precgetexpr']
