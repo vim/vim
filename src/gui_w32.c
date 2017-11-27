@@ -6177,6 +6177,43 @@ RevOut( HDC s_hdc,
 }
 #endif
 
+    static void
+gui_mch_draw_line(
+    int		x1,
+    int	    	y1,
+    int	    	x2,
+    int	    	y2,
+    COLORREF	color)
+{
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_DrawLine(s_dwc, x1, y1, x2, y2, color);
+    else
+#endif
+    {
+	HPEN	hpen = CreatePen(PS_SOLID, 1, color);
+	HPEN	old_pen = SelectObject(s_hdc, hpen);
+	MoveToEx(s_hdc, x1, y1, NULL);
+	/* Note: LineTo() excludes the last pixel in the line. */
+	LineTo(s_hdc, x2, y2);
+	DeleteObject(SelectObject(s_hdc, old_pen));
+    }
+}
+
+    static void
+gui_mch_set_pixel(
+    int		x,
+    int	    	y,
+    COLORREF	color)
+{
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_SetPixel(s_dwc, x, y, color);
+    else
+#endif
+	SetPixel(s_hdc, x, y, color);
+}
+
     void
 gui_mch_draw_string(
     int		row,
@@ -6196,7 +6233,6 @@ gui_mch_draw_string(
     static int	unibuflen = 0;
     int		n = 0;
 #endif
-    HPEN	hpen, old_pen;
     int		y;
 
     /*
@@ -6458,77 +6494,24 @@ gui_mch_draw_string(
 			 foptions, pcliprect, (char *)text, len, padding);
     }
 
-#if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
-    {
-	/* Underline */
-	if (flags & DRAW_UNDERL)
-	{
-	    y = FILL_Y(row + 1) - 1;
-	    if (p_linespace > 1)
-		y -= p_linespace - 1;
-	    DWriteContext_DrawLine(s_dwc,
-		    FILL_X(col), y, FILL_X(col + len), y, gui.currFgColor);
-	}
-
-	/* Strikethrough */
-	if (flags & DRAW_STRIKE)
-	{
-	    y = FILL_Y(row + 1) - gui.char_height/2;
-	    DWriteContext_DrawLine(s_dwc,
-		    FILL_X(col), y, FILL_X(col + len), y, gui.currSpColor);
-	}
-
-	/* Undercurl */
-	if (flags & DRAW_UNDERC)
-	{
-	    int			x;
-	    int			offset;
-	    static const int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
-
-	    y = FILL_Y(row + 1) - 1;
-	    for (x = FILL_X(col); x < FILL_X(col + len); ++x)
-	    {
-		offset = val[x % 8];
-		DWriteContext_SetPixel(s_dwc, x, y - offset, gui.currSpColor);
-	    }
-	}
-
-	DWriteContext_FlushInterop(s_dwc);
-
-	if (flags & DRAW_CURSOR)
-	    DWriteContext_Flush(s_dwc);
-
-	return;
-    }
-#endif
-
     /* Underline */
     if (flags & DRAW_UNDERL)
     {
-	hpen = CreatePen(PS_SOLID, 1, gui.currFgColor);
-	old_pen = SelectObject(s_hdc, hpen);
 	/* When p_linespace is 0, overwrite the bottom row of pixels.
 	 * Otherwise put the line just below the character. */
 	y = FILL_Y(row + 1) - 1;
 	if (p_linespace > 1)
 	    y -= p_linespace - 1;
-	MoveToEx(s_hdc, FILL_X(col), y, NULL);
-	/* Note: LineTo() excludes the last pixel in the line. */
-	LineTo(s_hdc, FILL_X(col + len), y);
-	DeleteObject(SelectObject(s_hdc, old_pen));
+	gui_mch_draw_line(FILL_X(col), y, FILL_X(col + len), y,
+							    gui.currFgColor);
     }
 
     /* Strikethrough */
     if (flags & DRAW_STRIKE)
     {
-	hpen = CreatePen(PS_SOLID, 1, gui.currSpColor);
-	old_pen = SelectObject(s_hdc, hpen);
 	y = FILL_Y(row + 1) - gui.char_height/2;
-	MoveToEx(s_hdc, FILL_X(col), y, NULL);
-	/* Note: LineTo() excludes the last pixel in the line. */
-	LineTo(s_hdc, FILL_X(col + len), y);
-	DeleteObject(SelectObject(s_hdc, old_pen));
+	gui_mch_draw_line(FILL_X(col), y, FILL_X(col + len), y,
+							    gui.currSpColor);
     }
 
     /* Undercurl */
@@ -6542,9 +6525,19 @@ gui_mch_draw_string(
 	for (x = FILL_X(col); x < FILL_X(col + len); ++x)
 	{
 	    offset = val[x % 8];
-	    SetPixel(s_hdc, x, y - offset, gui.currSpColor);
+	    gui_mch_set_pixel(x, y - offset, gui.currSpColor);
 	}
     }
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+    {
+	DWriteContext_FlushInterop(s_dwc);
+
+	if (flags & DRAW_CURSOR)
+	    DWriteContext_Flush(s_dwc);
+    }
+#endif
 }
 
 
