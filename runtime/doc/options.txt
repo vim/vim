@@ -6159,8 +6159,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 <
 		If select a raster font (Courier, Terminal or FixedSys which
 		have ".fon" extension in file name) to 'guifont', it will be
-		drawn by GDI as a fallback.  This fallback will cause
-		significant slow down on drawing.
+		drawn by GDI as a fallback.  This fallback will cause slow
+		down on drawing.
 
 		NOTE: It is known that some fonts and options combination
 		causes trouble on drawing glyphs.

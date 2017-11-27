@@ -6459,9 +6459,48 @@ gui_mch_draw_string(
     }
 
 #if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX() &&
-	    (flags & (DRAW_UNDERL | DRAW_STRIKE | DRAW_UNDERC | DRAW_CURSOR)))
-	DWriteContext_Flush(s_dwc);
+    if (IS_ENABLE_DIRECTX())
+    {
+	/* Underline */
+	if (flags & DRAW_UNDERL)
+	{
+	    y = FILL_Y(row + 1) - 1;
+	    if (p_linespace > 1)
+		y -= p_linespace - 1;
+	    DWriteContext_DrawLine(s_dwc,
+		    FILL_X(col), y, FILL_X(col + len), y, gui.currFgColor);
+	}
+
+	/* Strikethrough */
+	if (flags & DRAW_STRIKE)
+	{
+	    y = FILL_Y(row + 1) - gui.char_height/2;
+	    DWriteContext_DrawLine(s_dwc,
+		    FILL_X(col), y, FILL_X(col + len), y, gui.currSpColor);
+	}
+
+	/* Undercurl */
+	if (flags & DRAW_UNDERC)
+	{
+	    int			x;
+	    int			offset;
+	    static const int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
+
+	    y = FILL_Y(row + 1) - 1;
+	    for (x = FILL_X(col); x < FILL_X(col + len); ++x)
+	    {
+		offset = val[x % 8];
+		DWriteContext_SetPixel(s_dwc, x, y - offset, gui.currSpColor);
+	    }
+	}
+
+	DWriteContext_FlushInterop(s_dwc);
+
+	if (flags & DRAW_CURSOR)
+	    DWriteContext_Flush(s_dwc);
+
+	return;
+    }
 #endif
 
     /* Underline */
