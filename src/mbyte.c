@@ -4790,7 +4790,7 @@ iconv_end(void)
 # define USE_IMSTATUSFUNC (*p_imsf != NUL)
 #endif
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) && defined(FEAT_MBYTE)
     static void
 call_imactivatefunc(int active)
 {
@@ -6486,7 +6486,7 @@ static int im_was_set_active = FALSE;
     int
 im_get_status()
 {
-#  ifdef FEAT_EVAL
+#  if defined(FEAT_MBYTE) && defined(FEAT_EVAL)
     if (USE_IMSTATUSFUNC)
 	return call_imstatusfunc();
 #  endif

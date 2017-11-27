@@ -635,7 +635,8 @@
 /* #define FEAT_MBYTE_IME */
 # endif
 
-#if defined(FEAT_MBYTE_IME) && !defined(FEAT_MBYTE)
+/* Input methods are only useful with +multi_byte. */
+#if (defined(FEAT_MBYTE_IME) || defined(FEAT_XIM)) && !defined(FEAT_MBYTE)
 # define FEAT_MBYTE
 #endif
 
