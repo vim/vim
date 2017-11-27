@@ -817,7 +817,10 @@ DWriteContext::SetFont(HFONT hFont)
 	item.pTextFormat = mTextFormat;
 	item.fontWeight = mFontWeight;
 	item.fontStyle = mFontStyle;
+	mFallbackDC = false;
     }
+    else
+	mFallbackDC = true;
     mFontCache.put(item);
 }
 
