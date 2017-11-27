@@ -894,12 +894,12 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	HRESULT hr = AssureInterop();
 	if (SUCCEEDED(hr))
 	{
-	    HGDIOBJ hFont = GetCurrentObject(mHDC, OBJ_FONT);
-	    HGDIOBJ hOldFont = SelectObject(mInteropHDC, hFont);
-	    SetTextColor(mInteropHDC, color);
-	    SetBkMode(mInteropHDC, GetBkMode(mHDC));
-	    ExtTextOutW(mInteropHDC, x, y, fuOptions, lprc, text, len, lpDx);
-	    SelectObject(mInteropHDC, hOldFont);
+	    HGDIOBJ hFont = ::GetCurrentObject(mHDC, OBJ_FONT);
+	    HGDIOBJ hOldFont = ::SelectObject(mInteropHDC, hFont);
+	    ::SetTextColor(mInteropHDC, color);
+	    ::SetBkMode(mInteropHDC, ::GetBkMode(mHDC));
+	    ::ExtTextOutW(mInteropHDC, x, y, fuOptions, lprc, text, len, lpDx);
+	    ::SelectObject(mInteropHDC, hOldFont);
 	}
 	return;
     }
@@ -943,12 +943,12 @@ DWriteContext::DrawLine(int x1, int y1, int x2, int y2, COLORREF color)
     HRESULT hr = AssureInterop();
     if (SUCCEEDED(hr))
     {
-	HPEN hpen = CreatePen(PS_SOLID, 1, color);
-	HGDIOBJ old_pen = SelectObject(mInteropHDC, HGDIOBJ(hpen));
-	MoveToEx(mInteropHDC, x1, y1, NULL);
-	LineTo(mInteropHDC, x2, y2);
-	SelectObject(mInteropHDC, old_pen);
-	DeleteObject(hpen);
+	HPEN hpen = ::CreatePen(PS_SOLID, 1, color);
+	HGDIOBJ old_pen = ::SelectObject(mInteropHDC, HGDIOBJ(hpen));
+	::MoveToEx(mInteropHDC, x1, y1, NULL);
+	::LineTo(mInteropHDC, x2, y2);
+	::SelectObject(mInteropHDC, old_pen);
+	::DeleteObject(hpen);
     }
 }
 
