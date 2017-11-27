@@ -6298,8 +6298,9 @@ gui_mch_draw_string(
 #if defined(FEAT_DIRECTX)
 	if (IS_ENABLE_DIRECTX())
 	    DWriteContext_FillRect(s_dwc, &rc, gui.currBgColor);
+	else
 #endif
-	FillRect(s_hdc, &rc, hbr);
+	    FillRect(s_hdc, &rc, hbr);
 
 	SetBkMode(s_hdc, TRANSPARENT);
 
