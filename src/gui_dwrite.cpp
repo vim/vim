@@ -263,8 +263,15 @@ private:
     }
 };
 
+enum DrawingMode {
+    DM_GDI = 0,
+    DM_DIRECTX = 1,
+    DM_INTEROP = 2,
+};
+
 struct DWriteContext {
     HDC mHDC;
+    DrawingMode mDMode;
     HDC mInteropHDC;
     bool mDrawing;
     bool mFallbackDC;
@@ -303,9 +310,7 @@ struct DWriteContext {
 
     void BindDC(HDC hdc, const RECT *rect);
 
-    void AssureDrawing();
-
-    HRESULT AssureInterop();
+    HRESULT SetDrawingMode(DrawingMode mode);
 
     ID2D1Brush* SolidBrush(COLORREF color);
 
@@ -320,8 +325,6 @@ struct DWriteContext {
     void SetPixel(int x, int y, COLORREF color);
 
     void Flush();
-
-    void FlushInterop();
 
     void SetRenderingParams(
 	    const DWriteRenderingParams *params);
@@ -571,6 +574,7 @@ private:
 
 DWriteContext::DWriteContext() :
     mHDC(NULL),
+    mDMode(DM_GDI),
     mInteropHDC(NULL),
     mDrawing(false),
     mFallbackDC(false),
@@ -854,22 +858,51 @@ DWriteContext::BindDC(HDC hdc, const RECT *rect)
     mHDC = hdc;
 }
 
-    void
-DWriteContext::AssureDrawing()
-{
-    if (mDrawing == false)
-    {
-	mRT->BeginDraw();
-	mDrawing = true;
-    }
-}
-
     HRESULT
-DWriteContext::AssureInterop()
+DWriteContext::SetDrawingMode(DrawingMode mode)
 {
     HRESULT hr = S_OK;
-    if (mInteropHDC == NULL)
-	hr = mGDIRT->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &mInteropHDC);
+
+    switch (mode)
+    {
+	default:
+	case DM_GDI:
+	    if (mInteropHDC != NULL)
+	    {
+		mGDIRT->ReleaseDC(NULL);
+		mInteropHDC = NULL;
+	    }
+	    if (mDrawing)
+	    {
+		mRT->EndDraw();
+		mDrawing = false;
+	    }
+	    break;
+
+	case DM_DIRECTX:
+	    if (mInteropHDC != NULL)
+	    {
+		mGDIRT->ReleaseDC(NULL);
+		mInteropHDC = NULL;
+	    }
+	    else if (mDrawing == false)
+	    {
+		mRT->BeginDraw();
+		mDrawing = true;
+	    }
+	    break;
+
+	case DM_INTEROP:
+	    if (mDrawing == false)
+	    {
+		mRT->BeginDraw();
+		mDrawing = true;
+	    }
+	    if (mInteropHDC == NULL)
+		hr = mGDIRT->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &mInteropHDC);
+	    break;
+    }
+    mDMode = mode;
     return hr;
 }
 
@@ -886,12 +919,10 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color,
 	UINT fuOptions, const RECT *lprc, const INT *lpDx)
 {
-    AssureDrawing();
-
     if (mFallbackDC)
     {
 	// Fall back to GDI rendering.
-	HRESULT hr = AssureInterop();
+	HRESULT hr = SetDrawingMode(DM_INTEROP);
 	if (SUCCEEDED(hr))
 	{
 	    HGDIOBJ hFont = ::GetCurrentObject(mHDC, OBJ_FONT);
@@ -907,7 +938,7 @@ DWriteContext::DrawText(const WCHAR *text, int len,
     HRESULT hr;
     IDWriteTextLayout *textLayout = NULL;
 
-    FlushInterop();
+    SetDrawingMode(DM_DIRECTX);
 
     hr = mDWriteFactory->CreateTextLayout(text, len, mTextFormat,
 	    FLOAT(w), FLOAT(h), &textLayout);
@@ -929,9 +960,7 @@ DWriteContext::DrawText(const WCHAR *text, int len,
     void
 DWriteContext::FillRect(const RECT *rc, COLORREF color)
 {
-    AssureDrawing();
-
-    if (mInteropHDC != NULL)
+    if (mDMode == DM_INTEROP)
     {
 	// GDI functions are used before this call.  Keep using GDI.
 	// (Switching to Direct2D causes terrible slowdown.)
@@ -941,6 +970,7 @@ DWriteContext::FillRect(const RECT *rc, COLORREF color)
     }
     else
     {
+	SetDrawingMode(DM_DIRECTX);
 	mRT->FillRectangle(
 		D2D1::RectF(FLOAT(rc->left), FLOAT(rc->top),
 		    FLOAT(rc->right), FLOAT(rc->bottom)),
@@ -951,9 +981,7 @@ DWriteContext::FillRect(const RECT *rc, COLORREF color)
     void
 DWriteContext::DrawLine(int x1, int y1, int x2, int y2, COLORREF color)
 {
-    AssureDrawing();
-
-    if (mInteropHDC != NULL)
+    if (mDMode == DM_INTEROP)
     {
 	// GDI functions are used before this call.  Keep using GDI.
 	// (Switching to Direct2D causes terrible slowdown.)
@@ -966,6 +994,7 @@ DWriteContext::DrawLine(int x1, int y1, int x2, int y2, COLORREF color)
     }
     else
     {
+	SetDrawingMode(DM_DIRECTX);
 	mRT->DrawLine(
 		D2D1::Point2F(FLOAT(x1), FLOAT(y1) + 0.5f),
 		D2D1::Point2F(FLOAT(x2), FLOAT(y2) + 0.5f),
@@ -976,9 +1005,7 @@ DWriteContext::DrawLine(int x1, int y1, int x2, int y2, COLORREF color)
     void
 DWriteContext::SetPixel(int x, int y, COLORREF color)
 {
-    AssureDrawing();
-
-    if (mInteropHDC != NULL)
+    if (mDMode == DM_INTEROP)
     {
 	// GDI functions are used before this call.  Keep using GDI.
 	// (Switching to Direct2D causes terrible slowdown.)
@@ -986,6 +1013,7 @@ DWriteContext::SetPixel(int x, int y, COLORREF color)
     }
     else
     {
+	SetDrawingMode(DM_DIRECTX);
 	// Direct2D doesn't have SetPixel API.  Use DrawLine instead.
 	mRT->DrawLine(
 		D2D1::Point2F(FLOAT(x), FLOAT(y) + 0.5f),
@@ -997,24 +1025,7 @@ DWriteContext::SetPixel(int x, int y, COLORREF color)
     void
 DWriteContext::Flush()
 {
-    if (mDrawing)
-    {
-	FlushInterop();
-	mRT->EndDraw();
-	mDrawing = false;
-    }
-}
-
-/* Flush GDI drawing.
- * This should be called before drawing by Direct2D APIs. */
-    void
-DWriteContext::FlushInterop()
-{
-    if (mInteropHDC != NULL)
-    {
-	mGDIRT->ReleaseDC(NULL);
-	mInteropHDC = NULL;
-    }
+    SetDrawingMode(DM_GDI);
 }
 
     void
