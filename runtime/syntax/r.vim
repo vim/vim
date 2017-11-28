@@ -65,7 +65,7 @@ if g:r_syntax_hl_roxygen
 
   " First we match all roxygen blocks as containing only a title. In case an
   " empty roxygen line ending the title or a tag is found, this will be
-  " overriden later by the definitions of rOBlock.
+  " overridden later by the definitions of rOBlock.
   syn match rOTitleBlock "\%^\(\s*#\{1,2}' .*\n\)\{1,}" contains=rOCommentKey,rOTitleTag
   syn match rOTitleBlock "^\s*\n\(\s*#\{1,2}' .*\n\)\{1,}" contains=rOCommentKey,rOTitleTag
 
