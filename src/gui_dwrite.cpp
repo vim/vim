@@ -978,10 +978,20 @@ DWriteContext::SetPixel(int x, int y, COLORREF color)
 {
     AssureDrawing();
 
-    // Use GDI to get the same display result.
-    HRESULT hr = AssureInterop();
-    if (SUCCEEDED(hr))
+    if (mInteropHDC != NULL)
+    {
+	// GDI functions are used before this call.  Keep using GDI.
+	// (Switching to Direct2D causes terrible slowdown.)
 	::SetPixel(mInteropHDC, x, y, color);
+    }
+    else
+    {
+	// Direct2D doesn't have SetPixel API.  Use DrawLine instead.
+	mRT->DrawLine(
+		D2D1::Point2F(FLOAT(x), FLOAT(y) + 0.5f),
+		D2D1::Point2F(FLOAT(x+1), FLOAT(y) + 0.5f),
+		SolidBrush(color));
+    }
 }
 
     void
