@@ -995,6 +995,8 @@ DWriteContext::Flush()
     }
 }
 
+/* Flush GDI drawing.
+ * This should be called before drawing by Direct2D APIs. */
     void
 DWriteContext::FlushInterop()
 {
