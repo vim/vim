@@ -934,7 +934,7 @@ DWriteContext::FillRect(const RECT *rc, COLORREF color)
     if (mInteropHDC != NULL)
     {
 	// GDI functions are used before this call.  Keep using GDI.
-	// (Switching to Direct2D causes terrible slow down.)
+	// (Switching to Direct2D causes terrible slowdown.)
 	HBRUSH hbr = ::CreateSolidBrush(color);
 	::FillRect(mInteropHDC, rc, hbr);
 	::DeleteObject(HGDIOBJ(hbr));
@@ -956,13 +956,13 @@ DWriteContext::DrawLine(int x1, int y1, int x2, int y2, COLORREF color)
     if (mInteropHDC != NULL)
     {
 	// GDI functions are used before this call.  Keep using GDI.
-	// (Switching to Direct2D causes terrible slow down.)
+	// (Switching to Direct2D causes terrible slowdown.)
 	HPEN hpen = ::CreatePen(PS_SOLID, 1, color);
 	HGDIOBJ old_pen = ::SelectObject(mInteropHDC, HGDIOBJ(hpen));
 	::MoveToEx(mInteropHDC, x1, y1, NULL);
 	::LineTo(mInteropHDC, x2, y2);
 	::SelectObject(mInteropHDC, old_pen);
-	::DeleteObject(hpen);
+	::DeleteObject(HGDIOBJ(hpen));
     }
     else
     {
