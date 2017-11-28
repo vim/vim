@@ -6297,10 +6297,7 @@ gui_mch_draw_string(
 
 #if defined(FEAT_DIRECTX)
 	if (IS_ENABLE_DIRECTX())
-	{
-	    DWriteContext_FlushInterop(s_dwc);
 	    DWriteContext_FillRect(s_dwc, &rc, gui.currBgColor);
-	}
 	else
 #endif
 	    FillRect(s_hdc, &rc, hbr);

@@ -907,6 +907,8 @@ DWriteContext::DrawText(const WCHAR *text, int len,
     HRESULT hr;
     IDWriteTextLayout *textLayout = NULL;
 
+    FlushInterop();
+
     hr = mDWriteFactory->CreateTextLayout(text, len, mTextFormat,
 	    FLOAT(w), FLOAT(h), &textLayout);
 
@@ -928,10 +930,22 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 DWriteContext::FillRect(const RECT *rc, COLORREF color)
 {
     AssureDrawing();
-    mRT->FillRectangle(
-	    D2D1::RectF(FLOAT(rc->left), FLOAT(rc->top),
-		FLOAT(rc->right), FLOAT(rc->bottom)),
-	    SolidBrush(color));
+
+    if (mInteropHDC != NULL)
+    {
+	// GDI functions are used before this call.  Keep using GDI.
+	// (Switching to Direct2D causes terrible slow down.)
+	HBRUSH hbr = ::CreateSolidBrush(color);
+	::FillRect(mInteropHDC, rc, hbr);
+	::DeleteObject(HGDIOBJ(hbr));
+    }
+    else
+    {
+	mRT->FillRectangle(
+		D2D1::RectF(FLOAT(rc->left), FLOAT(rc->top),
+		    FLOAT(rc->right), FLOAT(rc->bottom)),
+		SolidBrush(color));
+    }
 }
 
     void
@@ -939,16 +953,23 @@ DWriteContext::DrawLine(int x1, int y1, int x2, int y2, COLORREF color)
 {
     AssureDrawing();
 
-    // Use GDI to get the same display result.
-    HRESULT hr = AssureInterop();
-    if (SUCCEEDED(hr))
+    if (mInteropHDC != NULL)
     {
+	// GDI functions are used before this call.  Keep using GDI.
+	// (Switching to Direct2D causes terrible slow down.)
 	HPEN hpen = ::CreatePen(PS_SOLID, 1, color);
 	HGDIOBJ old_pen = ::SelectObject(mInteropHDC, HGDIOBJ(hpen));
 	::MoveToEx(mInteropHDC, x1, y1, NULL);
 	::LineTo(mInteropHDC, x2, y2);
 	::SelectObject(mInteropHDC, old_pen);
 	::DeleteObject(hpen);
+    }
+    else
+    {
+	mRT->DrawLine(
+		D2D1::Point2F(FLOAT(x1), FLOAT(y1) + 0.5f),
+		D2D1::Point2F(FLOAT(x2), FLOAT(y2) + 0.5f),
+		SolidBrush(color));
     }
 }
 
@@ -1142,13 +1163,6 @@ DWriteContext_Flush(DWriteContext *ctx)
 {
     if (ctx != NULL)
 	ctx->Flush();
-}
-
-    void
-DWriteContext_FlushInterop(DWriteContext *ctx)
-{
-    if (ctx != NULL)
-	ctx->FlushInterop();
 }
 
     void

@@ -75,7 +75,6 @@ void DWriteContext_DrawLine(DWriteContext *ctx, int x1, int y1, int x2, int y2,
 	COLORREF color);
 void DWriteContext_SetPixel(DWriteContext *ctx, int x, int y, COLORREF color);
 void DWriteContext_Flush(DWriteContext *ctx);
-void DWriteContext_FlushInterop(DWriteContext *ctx);
 void DWriteContext_Close(DWriteContext *ctx);
 
 void DWriteContext_SetRenderingParams(
