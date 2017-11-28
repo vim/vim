@@ -863,7 +863,8 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 {
     HRESULT hr = S_OK;
 
-    switch (mode) {
+    switch (mode)
+    {
 	default:
 	case DM_GDI:
 	    if (mInteropHDC != NULL)
