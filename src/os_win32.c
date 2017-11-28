@@ -1789,7 +1789,6 @@ mch_inchar(
 #endif
 	    {
 		int	n = 1;
-		int     conv = FALSE;
 
 #ifdef FEAT_MBYTE
 		if (ch2 == NUL)
@@ -1817,40 +1816,9 @@ mch_inchar(
 		    typeahead[typeaheadlen] = c;
 		if (ch2 != NUL)
 		{
-		    if (c == K_NUL)
-		    {
-			/* fAnsiKey */
-			typeahead[typeaheadlen + n] = (char_u)ch2;
-			n++;
-		    }
-		    else
-		    {
-			typeahead[typeaheadlen + n] = 3;
-			typeahead[typeaheadlen + n + 1] = (char_u)ch2;
-			n += 2;
-		    }
-		}
-
-		if (conv)
-		{
-		    char_u *p = typeahead + typeaheadlen;
-
-		    if (*p != K_NUL)
-		    {
-			char_u *e = typeahead + TYPEAHEADLEN;
-
-			while (*p && p < e)
-			{
-			    if (*p == K_NUL)
-			    {
-				++p;
-				mch_memmove(p + 1, p, ((size_t)(e - p)) - 1);
-				*p = 3;
-				++n;
-			    }
-			    ++p;
-			}
-		    }
+		    typeahead[typeaheadlen + n] = 3;
+		    typeahead[typeaheadlen + n + 1] = (char_u)ch2;
+		    n += 2;
 		}
 
 		/* Use the ALT key to set the 8th bit of the character
