@@ -1817,9 +1817,18 @@ mch_inchar(
 		    typeahead[typeaheadlen] = c;
 		if (ch2 != NUL)
 		{
-		    typeahead[typeaheadlen + n] = 3;
-		    typeahead[typeaheadlen + n + 1] = (char_u)ch2;
-		    n += 2;
+		    if (c == K_NUL)
+		    {
+			/* fAnsiKey */
+			typeahead[typeaheadlen + n] = (char_u)ch2;
+			n++;
+		    }
+		    else
+		    {
+			typeahead[typeaheadlen + n] = 3;
+			typeahead[typeaheadlen + n + 1] = (char_u)ch2;
+			n += 2;
+		    }
 		}
 
 		if (conv)
