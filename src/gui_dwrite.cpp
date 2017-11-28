@@ -934,10 +934,10 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 	return;
     }
 
-    SetDrawingMode(DM_DIRECTX);
     HRESULT hr;
     IDWriteTextLayout *textLayout = NULL;
 
+    SetDrawingMode(DM_DIRECTX);
 
     hr = mDWriteFactory->CreateTextLayout(text, len, mTextFormat,
 	    FLOAT(w), FLOAT(h), &textLayout);
