@@ -781,7 +781,7 @@ edit(
 #endif
 
 	/*
-	 * Get a character for Insert mode.  Ignore K_IGNORE.
+	 * Get a character for Insert mode.  Ignore K_IGNORE and K_NOP.
 	 */
 	if (c != K_CURSORHOLD)
 	    lastc = c;		/* remember the previous char for CTRL-D */
@@ -798,7 +798,7 @@ edit(
 	    do
 	    {
 		c = safe_vgetc();
-	    } while (c == K_IGNORE);
+	    } while (c == K_IGNORE || c == K_NOP);
 
 #ifdef FEAT_AUTOCMD
 	/* Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V. */
