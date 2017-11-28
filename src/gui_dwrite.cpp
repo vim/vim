@@ -959,7 +959,7 @@ DWriteContext::DrawText(const WCHAR *text, int len,
     void
 DWriteContext::FillRect(const RECT *rc, COLORREF color)
 {
-    if (mInteropHDC != NULL)
+    if (mDMode == DM_INTEROP)
     {
 	// GDI functions are used before this call.  Keep using GDI.
 	// (Switching to Direct2D causes terrible slowdown.)
@@ -980,7 +980,7 @@ DWriteContext::FillRect(const RECT *rc, COLORREF color)
     void
 DWriteContext::DrawLine(int x1, int y1, int x2, int y2, COLORREF color)
 {
-    if (mInteropHDC != NULL)
+    if (mDMode == DM_INTEROP)
     {
 	// GDI functions are used before this call.  Keep using GDI.
 	// (Switching to Direct2D causes terrible slowdown.)
@@ -1004,7 +1004,7 @@ DWriteContext::DrawLine(int x1, int y1, int x2, int y2, COLORREF color)
     void
 DWriteContext::SetPixel(int x, int y, COLORREF color)
 {
-    if (mInteropHDC != NULL)
+    if (mDMode == DM_INTEROP)
     {
 	// GDI functions are used before this call.  Keep using GDI.
 	// (Switching to Direct2D causes terrible slowdown.)
