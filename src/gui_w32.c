@@ -3119,21 +3119,22 @@ gui_mch_delete_lines(
 {
     RECT	rc;
 
-    intel_gpu_workaround();
-
-#if defined(FEAT_DIRECTX)
-    // Commit drawing queue before ScrollWindowEx.
-    if (IS_ENABLE_DIRECTX())
-	DWriteContext_Flush(s_dwc);
-#endif
-
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
     rc.top = FILL_Y(row);
     rc.bottom = FILL_Y(gui.scroll_region_bot + 1);
 
-    ScrollWindowEx(s_textArea, 0, -num_lines * gui.char_height,
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	/* Redrawing is faster than scrolling. */
+	RedrawWindow(s_textArea, &rc, NULL, RDW_INVALIDATE);
+    else
+#endif
+    {
+	intel_gpu_workaround();
+	ScrollWindowEx(s_textArea, 0, -num_lines * gui.char_height,
 				    &rc, &rc, NULL, NULL, get_scroll_flags());
+    }
 
     UpdateWindow(s_textArea);
     /* This seems to be required to avoid the cursor disappearing when
@@ -3158,22 +3159,24 @@ gui_mch_insert_lines(
 {
     RECT	rc;
 
-    intel_gpu_workaround();
-
-#if defined(FEAT_DIRECTX)
-    // Commit drawing queue before ScrollWindowEx.
-    if (IS_ENABLE_DIRECTX())
-	DWriteContext_Flush(s_dwc);
-#endif
-
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
     rc.top = FILL_Y(row);
     rc.bottom = FILL_Y(gui.scroll_region_bot + 1);
-    /* The SW_INVALIDATE is required when part of the window is covered or
-     * off-screen.  How do we avoid it when it's not needed? */
-    ScrollWindowEx(s_textArea, 0, num_lines * gui.char_height,
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	/* Redrawing is faster than scrolling. */
+	RedrawWindow(s_textArea, &rc, NULL, RDW_INVALIDATE);
+    else
+#endif
+    {
+	intel_gpu_workaround();
+	/* The SW_INVALIDATE is required when part of the window is covered or
+	 * off-screen.  How do we avoid it when it's not needed? */
+	ScrollWindowEx(s_textArea, 0, num_lines * gui.char_height,
 				    &rc, &rc, NULL, NULL, get_scroll_flags());
+    }
 
     UpdateWindow(s_textArea);
 
