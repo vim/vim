@@ -349,6 +349,15 @@ use this code: >
 	au QuickfixCmdPost make call QfMakeConv()
 Another option is using 'makeencoding'.
 
+Whenever a quickfix list is modified, the |QuickFixChanged| autocmd is
+invoked. A Vim plugin can use this to detect when a quickfix list is
+modified by the user or some other plugin. >
+	function QfListChanged(qfid)
+	    let qflist = getqflist({'id' : a:qfid})
+	    " Handle changes to the quickfix list
+	endfunction
+	au QuickFixChanged * call QfListChanged(str2nr(expand("<amatch>")))
+<
 							*quickfix-title*
 Every quickfix and location list has a title. By default the title is set to
 the command that created the list. The |getqflist()| and |getloclist()|
@@ -392,7 +401,7 @@ This returns a dictionary where the 'items' key contains the list of quickfix
 entries parsed from lines. The following shows how to use a custom
 'errorformat' to parse the lines without modifying the 'erroformat' option: >
 	echo getqflist({'efm' : '%f#%l#%m', 'lines' : ['F1#10#Line']})
-<
+
 
 EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
 							*:cdo*
