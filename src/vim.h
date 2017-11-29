@@ -1340,7 +1340,7 @@ enum auto_event
     EVENT_CMDUNDEFINED,		/* command undefined */
     EVENT_OPTIONSET,		/* option was set */
     EVENT_TEXTYANKPOST,		/* after some text was yanked */
-    EVENT_QFLISTCHANGED,	/* after a quickfix list is changed */
+    EVENT_QUICKFIXCHANGED,	/* after a quickfix list was changed */
     NUM_EVENTS			/* MUST be the last one */
 };
 

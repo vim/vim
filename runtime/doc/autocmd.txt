@@ -336,6 +336,7 @@ Name			triggered by ~
 
 |RemoteReply|		a reply from a server Vim was received
 
+|QuickFixChanged|	after a quickfix list is changed
 |QuickFixCmdPre|	before a quickfix command is run
 |QuickFixCmdPost|	after a quickfix command is run
 
@@ -811,6 +812,14 @@ OptionSet			After setting an option.  The pattern is
 				plugin. You can always use `:noa` to prevent
 				triggering this autocommand.
 
+							*QuickFixChanged*
+QuickFixChanged			After a quickfix list is changed. The pattern
+				is matched against the quickfix list
+				identifier. <amatch> is set to the identifier
+				of the modified quickfix list as a string.
+				Useful for a Vim plugin to detect when a
+				quickfix list is modified by the user or some
+				other plugin.
 							*QuickFixCmdPre*
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,
