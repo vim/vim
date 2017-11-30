@@ -9577,7 +9577,7 @@ apply_autocmds_group(
     {
 	sfname = vim_strsave(fname);
 	/* Don't try expanding FileType, Syntax, FuncUndefined, WindowID,
-	 * ColorScheme, QuickFixCmd* or QuickFixListChanged */
+	 * ColorScheme, QuickFixCmd* or QuickFixChanged */
 	if (event == EVENT_FILETYPE
 		|| event == EVENT_SYNTAX
 		|| event == EVENT_FUNCUNDEFINED
