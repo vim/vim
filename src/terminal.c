@@ -1833,6 +1833,23 @@ cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
 	int fg = color2index(&cellfg, TRUE, &bold);
 	int bg = color2index(&cellbg, FALSE, &bold);
 
+	/* Use the "Terminal" highlighting for the default colors. */
+	if (fg == 0 || bg == 0)
+	{
+	    int id = syn_name2id((char_u *)"Terminal");
+
+	    if (id != 0 && t_colors >= 16)
+	    {
+		int cterm_fg, cterm_bg;
+
+		syn_id2cterm_bg(id, &cterm_fg, &cterm_bg);
+		if (cterm_fg >= 0)
+		    fg = cterm_fg + 1;
+		if (cterm_bg >= 0)
+		    bg = cterm_bg + 1;
+	    }
+	}
+
 	/* with 8 colors set the bold attribute to get a bright foreground */
 	if (bold == TRUE)
 	    attr |= HL_BOLD;
