@@ -3731,7 +3731,7 @@ ex_make(exarg_T *eap)
 					   *eap->cmdlinep, enc);
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
-    if (res >= 0)
+    if (res >= 0 && qi != NULL)
 	qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
     if (au_name != NULL)
@@ -4127,7 +4127,7 @@ ex_cfile(exarg_T *eap)
 			&& eap->cmdidx != CMD_laddfile), *eap->cmdlinep, enc);
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
-    if (res >= 0)
+    if (res >= 0 && qi != NULL)
 	qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
     if (au_name != NULL)
