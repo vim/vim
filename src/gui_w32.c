@@ -33,6 +33,7 @@
 static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
+static int s_directx_scrlines = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
 static int directx_enabled(void);
 static void directx_binddc(void);
@@ -57,6 +58,7 @@ gui_mch_set_rendering_options(char_u *s)
     int	    dx_geom = 0;
     int	    dx_renmode = 0;
     int	    dx_taamode = 0;
+    int	    dx_scrlines = 0;
 
     /* parse string as rendering options. */
     for (p = s; p != NULL && *p != NUL; )
@@ -117,6 +119,10 @@ gui_mch_set_rendering_options(char_u *s)
 	    if (dx_taamode < 0 || dx_taamode > 3)
 		return FAIL;
 	}
+	else if (STRCMP(name, "scrlines") == 0)
+	{
+	    dx_scrlines = atoi((char *)value);
+	}
 	else
 	    return FAIL;
     }
@@ -147,6 +153,7 @@ gui_mch_set_rendering_options(char_u *s)
 	}
     }
     s_directx_enabled = dx_enable;
+    s_directx_scrlines = dx_scrlines;
 
     return OK;
 #else
@@ -3118,6 +3125,9 @@ gui_mch_delete_lines(
     int	    num_lines)
 {
     RECT	rc;
+#if defined(FEAT_DIRECTX)
+    int		use_redraw = 0;
+#endif
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -3126,9 +3136,16 @@ gui_mch_delete_lines(
 
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
-	/* Redrawing is faster than scrolling. */
-	RedrawWindow(s_textArea, &rc, NULL, RDW_INVALIDATE);
-    else
+    {
+	if (s_directx_scrlines > 0 && s_directx_scrlines <= num_lines)
+	{
+	    RedrawWindow(s_textArea, &rc, NULL, RDW_INVALIDATE);
+	    use_redraw = 1;
+	}
+	else
+	    DWriteContext_Flush(s_dwc);
+    }
+    if (!use_redraw)
 #endif
     {
 	intel_gpu_workaround();
@@ -3158,6 +3175,9 @@ gui_mch_insert_lines(
     int		num_lines)
 {
     RECT	rc;
+#if defined(FEAT_DIRECTX)
+    int		use_redraw = 0;
+#endif
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -3166,9 +3186,16 @@ gui_mch_insert_lines(
 
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
-	/* Redrawing is faster than scrolling. */
-	RedrawWindow(s_textArea, &rc, NULL, RDW_INVALIDATE);
-    else
+    {
+	if (s_directx_scrlines > 0 && s_directx_scrlines <= num_lines)
+	{
+	    RedrawWindow(s_textArea, &rc, NULL, RDW_INVALIDATE);
+	    use_redraw = 1;
+	}
+	else
+	    DWriteContext_Flush(s_dwc);
+    }
+    if (!use_redraw)
 #endif
     {
 	intel_gpu_workaround();

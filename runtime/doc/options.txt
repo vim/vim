@@ -6119,9 +6119,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		  geom	    pixelGeometry	int	0 - 2 (see below)
 		  renmode   renderingMode	int	0 - 6 (see below)
 		  taamode   textAntialiasMode	int	0 - 3 (see below)
+		  scrlines  Scroll Lines	int	>= 0  (see below)
 
-		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368190.aspx
+		See this URL for detail (except for scrlines):
+		  https://msdn.microsoft.com/en-us/library/dd368190.aspx
 
 		For geom: structure of a device pixel.
 		  0 - DWRITE_PIXEL_GEOMETRY_FLAT
@@ -6129,7 +6130,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		  2 - DWRITE_PIXEL_GEOMETRY_BGR
 
 		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368114.aspx
+		  https://msdn.microsoft.com/en-us/library/dd368114.aspx
 
 		For renmode: method of rendering glyphs.
 		  0 - DWRITE_RENDERING_MODE_DEFAULT
@@ -6141,7 +6142,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		  6 - DWRITE_RENDERING_MODE_OUTLINE
 
 		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368118.aspx
+		  https://msdn.microsoft.com/en-us/library/dd368118.aspx
 
 		For taamode: antialiasing mode used for drawing text.
 		  0 - D2D1_TEXT_ANTIALIAS_MODE_DEFAULT
@@ -6150,7 +6151,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 		  3 - D2D1_TEXT_ANTIALIAS_MODE_ALIASED
 
 		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368170.aspx
+		  https://msdn.microsoft.com/en-us/library/dd368170.aspx
+
+		For scrlines: set the threshold for lines to be scrolled.
+		Vim normally uses the ScrollWindowEx API to scroll lines.
+		However, redrawing is faster than scrolling in some conditions.
+		It might depend on the lines to be scrolled, your GPU and/or
+		CPU.  (Using the ScrollWindowEx API might become slower when
+		the lines to be scrolled are increased.)  You can optimize the
+		behavior by changing this value:
+
+		    0 - Always use the ScrollWindowEx API. (default)
+		    1 - Always use the RedrawWindow API.
+		  > 1 - If the lines to be scrolled is grater or equal to the
+			specified value, use the RedrawWindow API.  Otherwise
+			use the ScrollWindowEx API.
 
 		Example: >
 		  set encoding=utf-8
@@ -6164,7 +6179,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		NOTE: It is known that some fonts and options combination
 		causes trouble on drawing glyphs.
 
-		  - 'rendmode:5' and 'renmode:6' will not work with some
+		  - 'renmode:5' and 'renmode:6' will not work with some
 		    special made fonts (True-Type fonts which includes only
 		    bitmap glyphs).
 		  - 'taamode:3' will not work with some vector fonts.
