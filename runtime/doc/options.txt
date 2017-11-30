@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Nov 18
+*options.txt*	For Vim version 8.0.  Last change: 2017 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4464,8 +4464,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	match may not be found.  This is to avoid that Vim hangs while you
 	are typing the pattern.
 	The highlighting can be set with the 'i' flag in 'highlight'.
-	When 'hlsearch' is on, all matched strings are highlighted too while typing
-	a search command. See also: 'hlsearch'.
+	When 'hlsearch' is on, all matched strings are highlighted too while
+	typing a search command. See also: 'hlsearch'.
 	If you don't want turn 'hlsearch' on, but want to highlight all matches
 	while searching, you can turn on and off 'hlsearch' with autocmd.
 	Example: >
@@ -8255,7 +8255,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	number, more intelligent detection process runs.
 	The "xterm2" value will be set if the xterm version is reported to be
 	from 95 to 276.  The "sgr" value will be set if the xterm version is
-	277 or highter and when Vim detects Mac Terminal.app or Iterm2.
+	277 or higher and when Vim detects Mac Terminal.app or iTerm2.
 	If you do not want 'ttymouse' to be set to "xterm2" or "sgr"
 	automatically, set t_RV to an empty string: >
 		:set t_RV=

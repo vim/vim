@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 21
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,13 @@ entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Motif testgui:
+From test_options.vim:
+Found errors in Test_set_values():
+Caught exception in Test_set_values(): Vim(set):E596: Invalid font(s): guifont=fixedsys @ /home/mool/vim/vim80/src/testdir/opt_test.vim, line 1153
+
+WinBar: balloon shows up for next line
 
 No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
@@ -150,8 +157,17 @@ Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in nfa_regatom() (#2251)
 - undefined left shift in get_string_tv() (#2250)
 
-Patch to use imactivatefunc() also without +xim feature. (Yasuhiro Matsumoto,
-2017 Nov 19, #2349)
+patch for: fix SHIFT-Insert on Windows command prompt (Yasuhiro Matsumoto,
+#2381)
+
+Patch for profile log truncating halfway a character. (ichizok, 2017 Nov 28,
+#2385)
+
+WinBar: Maximizing window causes window size to be wrong. (Lifepillar, 2017
+Nov 29, #2356)
+
+CTRL-A does not work with empty line. (Alex, #2387)
+Patch by Hirohito Higashi, 2017 Nov 29.
 
 'hlsearch' shows empty matches, which means highlighting everything.
 Don't do that.  For "foo\|" or "\v"
@@ -171,18 +187,15 @@ With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
 Using 'wildignore' also applies to literally entered file name.  Also with
 :drop (remote commands).
 
-Race condition between stat() and open() in write_viminfo(). Use open() in the
-loop and try another name instead of using a temp file. (Simon Ruderich)
-The first one, when viminfo is new, should just fail if it creating with
-O_EXCL fails.
-Also use umask instead of mch_fopen() after vim_tempname().
-
 "gvim --remote" from a directory with non-word characters changes the current
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
 
 ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
 Lemonboy can reproduce (2017 Jun 5)
+
+Patch to fix E806. (Dominique, 2017 Nov 22, #2368)
+Kazunobu Kuriyama: caused by XtSetLanguageProc().
 
 Invalid range error when using BufWinLeave for closing terminal.
 (Gabriel Barta, 2017 Nov 15, #2339)
@@ -208,7 +221,7 @@ Patch to fix cmdline abbreviation after '<,'>. (Christian Brabandt, 2017 Nov
 
 Patch to add TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
 May 24)  Update May 26.
-Now in patch by Lemonboy, #2333  (who is Lemonboy?)
+Now in patch by Lemonboy, #2333
 
 Default install on MS-Windows should source defaults.vim.
 Ask whether to use Windows or Vim key behavior?

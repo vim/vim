@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 8.0.  Last change: 2015 Oct 16
+*if_perl.txt*   For Vim version 8.0.  Last change: 2017 Nov 24
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -112,7 +112,7 @@ possible.
 Here is an overview of the functions that are available to Perl: >
 
   :perl VIM::Msg("Text")		# displays a message
-  :perl VIM::Msg("Error", "ErrorMsg")	# displays an error message
+  :perl VIM::Msg("Wrong!", "ErrorMsg")	# displays an error message
   :perl VIM::Msg("remark", "Comment")	# displays a highlighted message
   :perl VIM::SetOption("ai")		# sets a vim option
   :perl $nbuf = VIM::Buffers()		# returns the number of buffers

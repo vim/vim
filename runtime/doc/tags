@@ -7346,6 +7346,7 @@ mbyte-encoding	mbyte.txt	/*mbyte-encoding*
 mbyte-first	mbyte.txt	/*mbyte-first*
 mbyte-fonts-MSwin	mbyte.txt	/*mbyte-fonts-MSwin*
 mbyte-fonts-X11	mbyte.txt	/*mbyte-fonts-X11*
+mbyte-func	mbyte.txt	/*mbyte-func*
 mbyte-keymap	mbyte.txt	/*mbyte-keymap*
 mbyte-locale	mbyte.txt	/*mbyte-locale*
 mbyte-options	mbyte.txt	/*mbyte-options*
