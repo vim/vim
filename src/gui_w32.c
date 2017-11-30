@@ -1752,11 +1752,6 @@ gui_mch_draw_part_cursor(
     rc.bottom = rc.top + h;
 
     fill_rect(&rc, NULL, color);
-
-#if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
-	DWriteContext_Flush(s_dwc);
-#endif
 }
 
 
@@ -6574,14 +6569,6 @@ gui_mch_draw_string(
 	    set_pixel(x, y - offset, gui.currSpColor);
 	}
     }
-
-#if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
-    {
-	if (flags & DRAW_CURSOR)
-	    DWriteContext_Flush(s_dwc);
-    }
-#endif
 }
 
 
