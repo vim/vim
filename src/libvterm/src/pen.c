@@ -213,9 +213,7 @@ void vterm_state_get_palette_color(const VTermState *state, int index, VTermColo
 void vterm_state_set_default_colors(VTermState *state, const VTermColor *default_fg, const VTermColor *default_bg)
 {
   state->default_fg = *default_fg;
-  state->default_fg.ansi_index = VTERM_ANSI_INDEX_DEFAULT;
   state->default_bg = *default_bg;
-  state->default_bg.ansi_index = VTERM_ANSI_INDEX_DEFAULT;
 }
 
 void vterm_state_set_palette_color(VTermState *state, int index, const VTermColor *col)
