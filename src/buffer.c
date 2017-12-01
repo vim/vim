@@ -593,6 +593,11 @@ aucmd_abort:
     if (buf->b_nwindows > 0)
 	--buf->b_nwindows;
 
+#ifdef FEAT_DIFF
+    if (diffopt_hiddenoff() && !unload_buf && buf->b_nwindows == 0)
+    	diff_buf_delete(buf);	/* Clear 'diff' for hidden buffer. */
+#endif
+
     /* Return when a window is displaying the buffer or when it's not
      * unloaded. */
     if (buf->b_nwindows > 0 || !unload_buf)
