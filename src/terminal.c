@@ -188,6 +188,9 @@ static void term_free_vterm(term_T *term);
  * backspace key. */
 static int term_backspace_char = BS;
 
+/* "Terminal" highlight group colors. */
+static int term_default_cterm_fg = -1;
+static int term_default_cterm_bg = -1;
 
 /**************************************
  * 1. Generic code for all systems.
@@ -1834,20 +1837,12 @@ cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
 	int bg = color2index(&cellbg, FALSE, &bold);
 
 	/* Use the "Terminal" highlighting for the default colors. */
-	if (fg == 0 || bg == 0)
+	if ((fg == 0 || bg == 0) && t_colors >= 16)
 	{
-	    int id = syn_name2id((char_u *)"Terminal");
-
-	    if (id != 0 && t_colors >= 16)
-	    {
-		int cterm_fg, cterm_bg;
-
-		syn_id2cterm_bg(id, &cterm_fg, &cterm_bg);
-		if (cterm_fg >= 0)
-		    fg = cterm_fg + 1;
-		if (cterm_bg >= 0)
-		    bg = cterm_bg + 1;
-	    }
+	    if (fg == 0 && term_default_cterm_fg >= 0)
+		fg = term_default_cterm_fg + 1;
+	    if (bg == 0 && term_default_cterm_bg >= 0)
+		bg = term_default_cterm_bg + 1;
 	}
 
 	/* with 8 colors set the bold attribute to get a bright foreground */
@@ -2470,6 +2465,7 @@ cterm_color2rgb(int nr, VTermColor *rgb)
 	rgb->blue  = cube_value[idx      % 6];
 	rgb->green = cube_value[idx / 6  % 6];
 	rgb->red   = cube_value[idx / 36 % 6];
+	rgb->ansi_index = VTERM_ANSI_INDEX_NONE;
     }
     else if (nr < 256)
     {
@@ -2478,6 +2474,7 @@ cterm_color2rgb(int nr, VTermColor *rgb)
 	rgb->blue  = grey_ramp[idx];
 	rgb->green = grey_ramp[idx];
 	rgb->red   = grey_ramp[idx];
+	rgb->ansi_index = VTERM_ANSI_INDEX_NONE;
     }
 }
 
@@ -2520,6 +2517,7 @@ create_vterm(term_T *term, int rows, int cols)
     }
     fg->red = fg->green = fg->blue = fgval;
     bg->red = bg->green = bg->blue = bgval;
+    fg->ansi_index = bg->ansi_index = VTERM_ANSI_INDEX_DEFAULT;
 
     /* The "Terminal" highlight group overrules the defaults. */
     id = syn_name2id((char_u *)"Terminal");
@@ -2582,13 +2580,10 @@ create_vterm(term_T *term, int rows, int cols)
 #endif
     if (id != 0 && t_colors >= 16)
     {
-	int cterm_fg, cterm_bg;
-
-	syn_id2cterm_bg(id, &cterm_fg, &cterm_bg);
-	if (cterm_fg >= 0)
-	    cterm_color2rgb(cterm_fg, fg);
-	if (cterm_bg >= 0)
-	    cterm_color2rgb(cterm_bg, bg);
+	if (term_default_cterm_fg >= 0)
+	    cterm_color2rgb(term_default_cterm_fg, fg);
+	if (term_default_cterm_bg >= 0)
+	    cterm_color2rgb(term_default_cterm_bg, bg);
     }
     else
     {
@@ -2702,6 +2697,16 @@ set_ref_in_term(int copyID)
 	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
 	}
     return abort;
+}
+
+/*
+ * Cache "Terminal" highlight group colors.
+ */
+    void
+set_terminal_default_colors(int cterm_fg, int cterm_bg)
+{
+    term_default_cterm_fg = cterm_fg - 1;
+    term_default_cterm_bg = cterm_bg - 1;
 }
 
 /*

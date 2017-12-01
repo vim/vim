@@ -20,6 +20,7 @@ void term_change_in_curbuf(void);
 int term_get_attr(buf_T *buf, linenr_T lnum, int col);
 char_u *term_get_status_text(term_T *term);
 int set_ref_in_term(int copyID);
+void set_terminal_default_colors(int cterm_fg, int cterm_bg);
 void f_term_getaltscreen(typval_T *argvars, typval_T *rettv);
 void f_term_getattr(typval_T *argvars, typval_T *rettv);
 void f_term_getcursor(typval_T *argvars, typval_T *rettv);
