@@ -23,6 +23,7 @@ static int	diff_busy = FALSE;	/* ex_diffgetput() is busy */
 #define DIFF_IWHITE	4	/* ignore change in white space */
 #define DIFF_HORIZONTAL	8	/* horizontal splits */
 #define DIFF_VERTICAL	16	/* vertical splits */
+#define DIFF_HIDDEN_OFF	32	/* diffoff when hidden */
 static int	diff_flags = DIFF_FILLER;
 
 #define LBUFLEN 50		/* length of line in diff file */
@@ -1924,6 +1925,11 @@ diffopt_changed(void)
 	    p += 11;
 	    diff_foldcolumn_new = getdigits(&p);
 	}
+	else if (STRNCMP(p, "hiddenoff", 9) == 0)
+	{
+	    p += 9;
+	    diff_flags_new |= DIFF_HIDDEN_OFF;
+	}
 	if (*p != ',' && *p != NUL)
 	    return FAIL;
 	if (*p == ',')
@@ -1959,6 +1965,15 @@ diffopt_changed(void)
 diffopt_horizontal(void)
 {
     return (diff_flags & DIFF_HORIZONTAL) != 0;
+}
+
+/*
+ * Return TRUE if 'diffopt' contains "hiddenoff".
+ */
+    int
+diffopt_hiddenoff(void)
+{
+    return (diff_flags & DIFF_HIDDEN_OFF) != 0;
 }
 
 /*
