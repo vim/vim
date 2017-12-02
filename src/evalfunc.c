@@ -441,6 +441,7 @@ static void f_win_getid(typval_T *argvars, typval_T *rettv);
 static void f_win_gotoid(typval_T *argvars, typval_T *rettv);
 static void f_win_id2tabwin(typval_T *argvars, typval_T *rettv);
 static void f_win_id2win(typval_T *argvars, typval_T *rettv);
+static void f_win_screenpos(typval_T *argvars, typval_T *rettv);
 static void f_winbufnr(typval_T *argvars, typval_T *rettv);
 static void f_wincol(typval_T *argvars, typval_T *rettv);
 static void f_winheight(typval_T *argvars, typval_T *rettv);
@@ -899,6 +900,7 @@ static struct fst
     {"win_gotoid",	1, 1, f_win_gotoid},
     {"win_id2tabwin",	1, 1, f_win_id2tabwin},
     {"win_id2win",	1, 1, f_win_id2win},
+    {"win_screenpos",	1, 1, f_win_screenpos},
     {"winbufnr",	1, 1, f_winbufnr},
     {"wincol",		0, 0, f_wincol},
     {"winheight",	1, 1, f_winheight},
@@ -5376,6 +5378,22 @@ f_win_id2tabwin(typval_T *argvars, typval_T *rettv)
 f_win_id2win(typval_T *argvars, typval_T *rettv)
 {
     rettv->vval.v_number = win_id2win(argvars);
+}
+
+/*
+ * "win_screenpos()" function
+ */
+    static void
+f_win_screenpos(typval_T *argvars, typval_T *rettv)
+{
+    win_T	*wp;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    wp = find_win_by_nr(&argvars[0], NULL);
+    list_append_number(rettv->vval.v_list, wp == NULL ? 0 : wp->w_winrow + 1);
+    list_append_number(rettv->vval.v_list, wp == NULL ? 0 : wp->w_wincol + 1);
 }
 
 /*
