@@ -301,6 +301,10 @@ struct DWriteContext {
 
     virtual ~DWriteContext();
 
+    HRESULT CreateDeviceResources();
+
+    void DiscardDeviceResources();
+
     HRESULT CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	    IDWriteTextFormat **ppTextFormat);
 
@@ -600,33 +604,7 @@ DWriteContext::DWriteContext() :
     _RPT2(_CRT_WARN, "D2D1CreateFactory: hr=%p p=%p\n", hr, mD2D1Factory);
 
     if (SUCCEEDED(hr))
-    {
-	D2D1_RENDER_TARGET_PROPERTIES props = {
-	    D2D1_RENDER_TARGET_TYPE_DEFAULT,
-	    { DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE },
-	    0, 0,
-	    D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE,
-	    D2D1_FEATURE_LEVEL_DEFAULT
-	};
-	hr = mD2D1Factory->CreateDCRenderTarget(&props, &mRT);
-	_RPT2(_CRT_WARN, "CreateDCRenderTarget: hr=%p p=%p\n", hr, mRT);
-    }
-
-    if (SUCCEEDED(hr))
-    {
-	// This always succeeds.
-	mRT->QueryInterface(
-		__uuidof(ID2D1GdiInteropRenderTarget),
-		reinterpret_cast<void**>(&mGDIRT));
-    }
-
-    if (SUCCEEDED(hr))
-    {
-	hr = mRT->CreateSolidColorBrush(
-		D2D1::ColorF(D2D1::ColorF::Black),
-		&mBrush);
-	_RPT2(_CRT_WARN, "CreateSolidColorBrush: hr=%p p=%p\n", hr, mBrush);
-    }
+	hr = CreateDeviceResources();
 
     if (SUCCEEDED(hr))
     {
@@ -672,6 +650,51 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mGDIRT);
     SafeRelease(&mRT);
     SafeRelease(&mD2D1Factory);
+}
+
+    HRESULT
+DWriteContext::CreateDeviceResources()
+{
+    HRESULT hr;
+
+    if (mRT != NULL)
+	return S_OK;
+
+    D2D1_RENDER_TARGET_PROPERTIES props = {
+	D2D1_RENDER_TARGET_TYPE_DEFAULT,
+	{ DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE },
+	0, 0,
+	D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE,
+	D2D1_FEATURE_LEVEL_DEFAULT
+    };
+    hr = mD2D1Factory->CreateDCRenderTarget(&props, &mRT);
+    _RPT2(_CRT_WARN, "CreateDCRenderTarget: hr=%p p=%p\n", hr, mRT);
+
+    if (SUCCEEDED(hr))
+    {
+	// This always succeeds.
+	mRT->QueryInterface(
+		__uuidof(ID2D1GdiInteropRenderTarget),
+		reinterpret_cast<void**>(&mGDIRT));
+    }
+
+    if (SUCCEEDED(hr))
+    {
+	hr = mRT->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF::Black),
+		&mBrush);
+	_RPT2(_CRT_WARN, "CreateSolidColorBrush: hr=%p p=%p\n", hr, mBrush);
+    }
+
+    return hr;
+}
+
+    void
+DWriteContext::DiscardDeviceResources()
+{
+    SafeRelease(&mBrush);
+    SafeRelease(&mGDIRT);
+    SafeRelease(&mRT);
 }
 
     HRESULT
@@ -863,6 +886,8 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 {
     HRESULT hr = S_OK;
 
+    CreateDeviceResources();
+
     switch (mode)
     {
 	default:
@@ -874,7 +899,12 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 	    }
 	    if (mDrawing)
 	    {
-		mRT->EndDraw();
+		hr = mRT->EndDraw();
+		if (hr == D2DERR_RECREATE_TARGET)
+		{
+		    hr = S_OK;
+		    DiscardDeviceResources();
+		}
 		mDrawing = false;
 	    }
 	    break;
