@@ -6153,19 +6153,23 @@ A jump table for the options with a short description can be found at |Q_op|.
 		See this URL for detail:
 		  https://msdn.microsoft.com/en-us/library/dd368170.aspx
 
-		For scrlines: set the threshold for lines to be scrolled.
-		Vim normally uses the ScrollWindowEx API to scroll lines.
-		However, redrawing is faster than scrolling in some conditions.
-		It might depend on the lines to be scrolled, your GPU and/or
-		CPU.  (Using the ScrollWindowEx API might become slower when
-		the lines to be scrolled are increased.)  You can optimize the
-		behavior by changing this value:
-
-		    0 - Always use the ScrollWindowEx API. (default)
-		    1 - Always use the RedrawWindow API.
+		For scrlines: threshold for lines to be scrolled.
+		    0 - Always use scrolling. (default)
+		    1 - Use full page redrawing.
 		  > 1 - If the lines to be scrolled is grater or equal to the
-			specified value, use the RedrawWindow API.  Otherwise
-			use the ScrollWindowEx API.
+			specified value, use redrawing.  Otherwise use
+			scrolling.
+
+		If you feel scrolling a page (CTRL-F) is too slow with DirectX
+		mode, try this "scrlines" option.
+		When set it "1", Vim uses full page redrawing instead of
+		scrolling, because of redrawing a page is faster than
+		scrolling a page in some environments.
+		After that, when you feel scrolling lines (CTRL-Y) become slow,
+		please try "2" or greater value for this option.
+		It works threshold line number to switch scrolling to
+		redrawing.  Scrolling few lines might be faster than redrawing
+		a page in some environments.
 
 		Example: >
 		  set encoding=utf-8
