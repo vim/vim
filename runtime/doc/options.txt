@@ -6168,8 +6168,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		After that, when you feel scrolling lines (CTRL-Y) become slow,
 		please try "2" or greater value for this option.
 		It works threshold line number to switch scrolling to
-		redrawing.  Scrolling few lines might be faster than redrawing
-		a page in some environments.
+		redrawing.  Scrolling a few lines might be faster than
+		redrawing a page in some environments.
 
 		Example: >
 		  set encoding=utf-8
