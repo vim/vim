@@ -1694,19 +1694,23 @@ func Test_cwd()
   let g:envstr = ''
   if has('win32')
     let expect = $TEMP
-    call job_start(['cmd', '/c', 'echo %CD%'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
+    let job = job_start(['cmd', '/c', 'echo %CD%'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
   else
     let expect = $HOME
-    call job_start(['pwd'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
+    let job = job_start(['pwd'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
   endif
-  call WaitFor('"" != g:envstr')
-  let expect = substitute(expect, '[/\\]$', '', '')
-  let g:envstr = substitute(g:envstr, '[/\\]$', '', '')
-  if $CI != '' && stridx(g:envstr, '/private/') == 0
-    let g:envstr = g:envstr[8:]
-  endif
-  call assert_equal(expect, g:envstr)
-  unlet g:envstr
+  try
+    call WaitFor('"" != g:envstr')
+    let expect = substitute(expect, '[/\\]$', '', '')
+    let g:envstr = substitute(g:envstr, '[/\\]$', '', '')
+    if $CI != '' && stridx(g:envstr, '/private/') == 0
+      let g:envstr = g:envstr[8:]
+    endif
+    call assert_equal(expect, g:envstr)
+  finally
+    call job_stop(job)
+    unlet g:envstr
+  endtry
 endfunc
 
 function Ch_test_close_lambda(port)
@@ -1731,7 +1735,7 @@ endfunc
 func s:test_list_args(cmd, out, remove_lf)
   try
     let g:out = ''
-    call job_start([s:python, '-c', a:cmd], {'callback': {ch, msg -> execute('let g:out .= msg')}, 'out_mode': 'raw'})
+    let job = job_start([s:python, '-c', a:cmd], {'callback': {ch, msg -> execute('let g:out .= msg')}, 'out_mode': 'raw'})
     call WaitFor('"" != g:out')
     if has('win32')
       let g:out = substitute(g:out, '\r', '', 'g')
@@ -1741,6 +1745,7 @@ func s:test_list_args(cmd, out, remove_lf)
     endif
     call assert_equal(a:out, g:out)
   finally
+    call job_stop(job)
     unlet g:out
   endtry
 endfunc
