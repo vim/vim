@@ -6161,12 +6161,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 			scrolling.
 
 		If you feel scrolling a page (CTRL-F) is too slow with DirectX
-		mode, try this "scrlines" option.
+		renderer, try this "scrlines" option.
 		When set it "1", Vim uses full page redrawing instead of
-		scrolling, because of redrawing a page is faster than
-		scrolling a page in some environments.
-		After that, when you feel scrolling lines (CTRL-Y) become slow,
-		please try "2" or greater value for this option.
+		scrolling.  Redrawing a page is faster than scrolling a
+		page in some environments.
+		After that, when you feel scrolling lines (CTRL-Y) becomes
+		slow, please try "2" or greater value for this option.
 		It works threshold line number to switch scrolling to
 		redrawing.  Scrolling a few lines might be faster than
 		redrawing a page in some environments.
