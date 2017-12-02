@@ -1139,7 +1139,7 @@ ml_recover(void)
     attr = HL_ATTR(HLF_E);
 
     /*
-     * If the file name ends in ".s[uvw][a-z]" we assume this is the swap file.
+     * If the file name ends in ".s[a-w][a-z]" we assume this is the swap file.
      * Otherwise a search is done to find the swap file(s).
      */
     fname = curbuf->b_fname;
@@ -1153,7 +1153,8 @@ ml_recover(void)
 	    STRNICMP(fname + len - 4, ".s", 2)
 #endif
 						== 0
-		&& vim_strchr((char_u *)"UVWuvw", fname[len - 2]) != NULL
+		&& vim_strchr((char_u *)"abcdefghijklmnopqrstuvw",
+					   TOLOWER_ASC(fname[len - 2])) != NULL
 		&& ASCII_ISALPHA(fname[len - 1]))
     {
 	directly = TRUE;
