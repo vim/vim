@@ -924,6 +924,7 @@ Short explanation of each option:		*option-list*
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
 'termguicolors'	  'tgc'     use GUI colors for the terminal
+'termguiul'	  'tgu'     use independent colors for underlines in terminal
 'termkey'	  'tk'	    key that precedes a Vim command in a terminal
 'termsize'	  'tms'	    size of a terminal window
 'terse'			    shorten some messages

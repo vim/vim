@@ -1855,6 +1855,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'tagcase'	& "followic"	'ignorecase' when searching tags file
 	'tagrelative'	& off		tag file names are not relative
 	'termguicolors'	+ off		don't use highlight-(guifg|guibg)
+	'termguiul'	+ off		don't use highlight-guisp
 	'textauto'	& off		no automatic textmode detection
 	'textwidth'	+ 0		no automatic line wrap
 	'tildeop'	+ off		tilde is not an operator
@@ -7865,6 +7866,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	compatible terminal.
 	If setting this option does not work (produces a colorless UI)
 	reading |xterm-true-color| might help.
+	Note that the "cterm" attributes are still used, not the "gui" ones.
+	NOTE: This option is reset when 'compatible' is set.
+
+						*'termguiul'* *'tgu'*
+'termguiul' 'tgu'	boolean (default off)
+			global
+			{not in Vi}
+			{not available when compiled without the
+			|+termguicolors| feature}
+	When on, uses the |highlight-guisp| attribute in the terminal to set
+	underline color independently from foreground color (either
+	|highlight-guifg| or |highlight-ctermfg|).
+	For this to work, the correct terminal escape sequence has to be set
+	with |t_8u|. Further reading at |xterm-underline-color|.
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 

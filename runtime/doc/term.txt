@@ -333,6 +333,8 @@ Added by Vim (there are no standard codes for these):
 		|xterm-true-color|
 	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
 		|xterm-true-color|
+	t_8u	set underline color (R, G, B)			*t_8u* *'t_8u'*
+		|xterm-underline-color|
 	t_BE	enable bracketed paste mode			*t_BE* *'t_BE'*
 		|xterm-bracketed-paste|
 	t_BD	disable bracketed paste mode			*t_BD* *'t_BD'*
@@ -499,6 +501,15 @@ These options contain printf strings, with |printf()| (actually, its C
 equivalent hence `l` modifier) invoked with the t_ option value and three
 unsigned long integers that may have any value between 0 and 255 (inclusive)
 representing red, green and blue colors respectively.
+
+							*xterm-underline-color*
+Vim supports setting the underline color in the terminal (taken from
+|highlight-guisp|) if the terminal supports this behavior. To enable this, the
+'termguiul' option needs to be set as well as a valid terminal code set to
+|t_8u|. This option accepts the same format used for |t_8f| and |t_8b| (see
+|xterm-true-color|).
+For example, some terminals support the following sequence:
+	`let &t_8u = "\<Esc>[58;2;%lu;%lu;%lum"`
 
 							*xterm-resize*
 Window resizing with xterm only works if the allowWindowOps resource is
