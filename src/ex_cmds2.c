@@ -1834,6 +1834,22 @@ script_dump_profile(FILE *fd)
 		{
 		    if (vim_fgets(IObuff, IOSIZE, sfd))
 			break;
+		    /* When a line has been truncated, append '\n'. */
+		    if (IObuff[IOSIZE - 2] != NUL && IObuff[IOSIZE - 2] != '\n')
+		    {
+			int n = IOSIZE - 2;
+# ifdef FEAT_MBYTE
+			if (has_mbyte)
+			{
+			    int l = 1;
+
+			    for (n = 0; l > 0 && n + l <= IOSIZE - 2; n += l)
+				l = (*mb_ptr2len)(IObuff + n);
+			}
+# endif
+			IObuff[n] = '\n';
+			IObuff[n + 1] = NUL;
+		    }
 		    if (i < si->sn_prl_ga.ga_len
 				     && (pp = &PRL_ITEM(si, i))->snp_count > 0)
 		    {
