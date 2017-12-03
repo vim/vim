@@ -8078,6 +8078,8 @@ screen_start_highlight(int attr)
 	    if (aep != NULL)
 	    {
 #ifdef FEAT_TERMGUICOLORS
+		if (p_tgu && aep->ae_u.cterm.ul_rgb != INVALCOLOR)
+			term_ul_rgb_color(aep->ae_u.cterm.ul_rgb);
 		if (p_tgc)
 		{
 		    if (aep->ae_u.cterm.fg_rgb != INVALCOLOR)
@@ -8147,6 +8149,7 @@ screen_stop_highlight(void)
 #endif
 				(aep->ae_u.cterm.fg_color || aep->ae_u.cterm.bg_color)
 #ifdef FEAT_TERMGUICOLORS
+			    || (p_tgu && aep->ae_u.cterm.ul_rgb != INVALCOLOR)
 			    )
 #endif
 			)
@@ -8213,6 +8216,8 @@ screen_stop_highlight(void)
 		out_str(T_ME);
 
 #ifdef FEAT_TERMGUICOLORS
+	    if (p_tgu && cterm_normal_ul_gui_color != INVALCOLOR)
+		    term_ul_rgb_color(cterm_normal_ul_gui_color);
 	    if (p_tgc)
 	    {
 		if (cterm_normal_fg_gui_color != INVALCOLOR)

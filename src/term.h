@@ -98,6 +98,7 @@ enum SpecialKey
     KS_U7,	/* request cursor position */
     KS_8F,	/* set foreground color (RGB) */
     KS_8B,	/* set background color (RGB) */
+    KS_8U,	/* set underline  color (RGB) */
     KS_CBE,	/* enable bracketed paste mode */
     KS_CBD,	/* disable bracketed paste mode */
     KS_CPS,	/* start of bracketed paste */
@@ -192,6 +193,7 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_U7	(TERM_STR(KS_U7))	/* request cursor position */
 #define T_8F	(TERM_STR(KS_8F))	/* set foreground color (RGB) */
 #define T_8B	(TERM_STR(KS_8B))	/* set background color (RGB) */
+#define T_8U	(TERM_STR(KS_8U))	/* set underline  color (RGB) */
 #define T_BE	(TERM_STR(KS_CBE))	/* enable bracketed paste mode */
 #define T_BD	(TERM_STR(KS_CBD))	/* disable bracketed paste mode */
 #define T_PS	(TERM_STR(KS_CPS))	/* start of bracketed paste */

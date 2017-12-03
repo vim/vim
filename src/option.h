@@ -849,6 +849,7 @@ EXTERN char_u	*p_tenc;	/* 'termencoding' */
 #endif
 #ifdef FEAT_TERMGUICOLORS
 EXTERN int	p_tgc;		/* 'termguicolors' */
+EXTERN int	p_tgu;		/* 'termguiunderline' */
 #endif
 EXTERN int	p_terse;	/* 'terse' */
 EXTERN int	p_ta;		/* 'textauto' */

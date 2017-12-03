@@ -2755,6 +2755,15 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)FALSE}
 #endif
 			    SCRIPTID_INIT},
+    {"termguiul", "tgu",    P_BOOL|P_VI_DEF|P_VIM|P_RCLR,
+#ifdef FEAT_TERMGUICOLORS
+			    (char_u *)&p_tgu, PV_NONE,
+			    {(char_u *)FALSE, (char_u *)FALSE}
+#else
+			    (char_u*)NULL, PV_NONE,
+			    {(char_u *)FALSE, (char_u *)FALSE}
+#endif
+			    SCRIPTID_INIT},
     {"termkey", "tk",	    P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
 #ifdef FEAT_TERMINAL
 			    (char_u *)VAR_WIN, PV_TK,
@@ -3187,6 +3196,7 @@ static struct vimoption options[] =
     p_term("t_ZR", T_CZR)
     p_term("t_8f", T_8F)
     p_term("t_8b", T_8B)
+    p_term("t_8u", T_8U)
 
 /* terminal key codes are not in here */
 
@@ -8652,7 +8662,7 @@ set_bool_option(
 
 #ifdef FEAT_TERMGUICOLORS
     /* 'termguicolors' */
-    else if ((int *)varp == &p_tgc)
+    else if ((int *)varp == &p_tgc || (int *)varp == &p_tgu)
     {
 # ifdef FEAT_GUI
 	if (!gui.in_use && !gui.starting)

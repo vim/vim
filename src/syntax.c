@@ -38,9 +38,9 @@ struct hl_group
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     guicolor_T	sg_gui_fg;	/* GUI foreground color handle */
     guicolor_T	sg_gui_bg;	/* GUI background color handle */
+    guicolor_T	sg_gui_sp;	/* GUI special color handle */
 #endif
 #ifdef FEAT_GUI
-    guicolor_T	sg_gui_sp;	/* GUI special color handle */
     GuiFont	sg_font;	/* GUI font handle */
 #ifdef FEAT_XFONTSET
     GuiFontset	sg_fontset;	/* GUI fontset handle */
@@ -8096,9 +8096,9 @@ do_highlight(
 		if (!init)
 		    HL_TABLE()[idx].sg_set |= SG_GUI;
 
-# ifdef FEAT_GUI
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 		i = color_name2handle(arg);
-		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !gui.in_use)
+		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
 		{
 		    HL_TABLE()[idx].sg_gui_sp = i;
 # endif
@@ -8111,7 +8111,7 @@ do_highlight(
 			    *namep = NULL;
 			did_change = TRUE;
 		    }
-# ifdef FEAT_GUI
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 		}
 # endif
 	    }
@@ -8335,6 +8335,7 @@ restore_cterm_colors(void)
 # ifdef FEAT_TERMGUICOLORS
     cterm_normal_fg_gui_color = INVALCOLOR;
     cterm_normal_bg_gui_color = INVALCOLOR;
+    cterm_normal_ul_gui_color = INVALCOLOR;
 # endif
 #endif
 }
@@ -8391,9 +8392,9 @@ highlight_clear(int idx)
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     HL_TABLE()[idx].sg_gui_fg = INVALCOLOR;
     HL_TABLE()[idx].sg_gui_bg = INVALCOLOR;
+    HL_TABLE()[idx].sg_gui_sp = INVALCOLOR;
 #endif
 #ifdef FEAT_GUI
-    HL_TABLE()[idx].sg_gui_sp = INVALCOLOR;
     gui_mch_free_font(HL_TABLE()[idx].sg_font);
     HL_TABLE()[idx].sg_font = NOFONT;
 # ifdef FEAT_XFONTSET
@@ -8484,6 +8485,11 @@ set_normal_colors(void)
 	    if (HL_TABLE()[idx].sg_gui_bg != INVALCOLOR)
 	    {
 		cterm_normal_bg_gui_color = HL_TABLE()[idx].sg_gui_bg;
+		must_redraw = CLEAR;
+	    }
+	    if (HL_TABLE()[idx].sg_gui_sp != INVALCOLOR)
+	    {
+		cterm_normal_ul_gui_color = HL_TABLE()[idx].sg_gui_sp;
 		must_redraw = CLEAR;
 	    }
 	}
@@ -8854,6 +8860,8 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 						    == taep->ae_u.cterm.fg_rgb
 			    && aep->ae_u.cterm.bg_rgb
 						    == taep->ae_u.cterm.bg_rgb
+			    && aep->ae_u.cterm.ul_rgb
+						    == taep->ae_u.cterm.ul_rgb
 #endif
 		       )))
 
@@ -8923,6 +8931,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 #ifdef FEAT_TERMGUICOLORS
 	taep->ae_u.cterm.fg_rgb = aep->ae_u.cterm.fg_rgb;
 	taep->ae_u.cterm.bg_rgb = aep->ae_u.cterm.bg_rgb;
+	taep->ae_u.cterm.ul_rgb = aep->ae_u.cterm.ul_rgb;
 #endif
     }
     ++table->ga_len;
@@ -9080,6 +9089,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 #ifdef FEAT_TERMGUICOLORS
 	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
 	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.ul_rgb = INVALCOLOR;
 #endif
 	    if (char_attr <= HL_ALL)
 		new_en.ae_attr = char_attr;
@@ -9103,6 +9113,8 @@ hl_combine_attr(int char_attr, int prim_attr)
 		    new_en.ae_u.cterm.fg_rgb = spell_aep->ae_u.cterm.fg_rgb;
 		if (spell_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
 		    new_en.ae_u.cterm.bg_rgb = spell_aep->ae_u.cterm.bg_rgb;
+		if (spell_aep->ae_u.cterm.ul_rgb != INVALCOLOR)
+		    new_en.ae_u.cterm.ul_rgb = spell_aep->ae_u.cterm.ul_rgb;
 #endif
 	    }
 	}
@@ -9387,7 +9399,10 @@ highlight_color(
 #  ifdef FEAT_GUI
 		color = HL_TABLE()[id - 1].sg_gui_sp;
 #  else
-		color = INVALCOLOR;
+		if (p_tgu)
+		    color = HL_TABLE()[id - 1].sg_gui_sp;
+		else
+		    color = INVALCOLOR;
 #  endif
 	    else
 		color = HL_TABLE()[id - 1].sg_gui_bg;
@@ -9569,6 +9584,7 @@ set_hl_attr(
 # ifdef FEAT_TERMGUICOLORS
 	    && sgp->sg_gui_fg == INVALCOLOR
 	    && sgp->sg_gui_bg == INVALCOLOR
+	    && sgp->sg_gui_sp == INVALCOLOR
 # endif
 	    )
 	sgp->sg_cterm_attr = sgp->sg_cterm;
@@ -9580,6 +9596,7 @@ set_hl_attr(
 # ifdef FEAT_TERMGUICOLORS
 	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
+	at_en.ae_u.cterm.ul_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_sp);
 # endif
 	sgp->sg_cterm_attr = get_attr_entry(&cterm_attr_table, &at_en);
     }
@@ -9748,9 +9765,7 @@ syn_add_group(char_u *name)
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     HL_TABLE()[highlight_ga.ga_len].sg_gui_bg = INVALCOLOR;
     HL_TABLE()[highlight_ga.ga_len].sg_gui_fg = INVALCOLOR;
-# ifdef FEAT_GUI
     HL_TABLE()[highlight_ga.ga_len].sg_gui_sp = INVALCOLOR;
-# endif
 #endif
     ++highlight_ga.ga_len;
 
@@ -9911,7 +9926,7 @@ gui_do_one_color(
 			    color_name2handle(HL_TABLE()[idx].sg_gui_bg_name);
 	didit = TRUE;
     }
-# ifdef FEAT_GUI
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (HL_TABLE()[idx].sg_gui_sp_name != NULL)
     {
 	HL_TABLE()[idx].sg_gui_sp =

@@ -900,6 +900,7 @@ static struct builtin_term builtin_termcaps[] =
     /* These are printf strings, not terminal codes. */
     {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
     {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
+    {(int)KS_8U,	""},
 #  endif
     {(int)KS_CBE,	IF_EB("\033[?2004h", ESC_STR "[?2004h")},
     {(int)KS_CBD,	IF_EB("\033[?2004l", ESC_STR "[?2004l")},
@@ -1622,7 +1623,7 @@ set_termname(char_u *term)
 				{KS_CWP, "WP"}, {KS_CWS, "WS"},
 				{KS_CSI, "SI"}, {KS_CEI, "EI"},
 				{KS_U7, "u7"}, {KS_RFG, "RF"}, {KS_RBG, "RB"},
-				{KS_8F, "8f"}, {KS_8B, "8b"},
+				{KS_8F, "8f"}, {KS_8B, "8b"}, {KS_8U, "8u"},
 				{KS_CBE, "BE"}, {KS_CBD, "BD"},
 				{KS_CPS, "PS"}, {KS_CPE, "PE"},
 				{(enum SpecialKey)0, NULL}
@@ -2874,6 +2875,12 @@ term_fg_rgb_color(guicolor_T rgb)
 term_bg_rgb_color(guicolor_T rgb)
 {
     term_rgb_color(T_8B, rgb);
+}
+
+    void
+term_ul_rgb_color(guicolor_T rgb)
+{
+    term_rgb_color(T_8U, rgb);
 }
 #endif
 
