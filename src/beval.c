@@ -50,7 +50,7 @@ get_beval_info(
     }
 #endif
     wp = mouse_find_win(&row, &col);
-    if (wp != NULL && row < wp->w_height && col < wp->w_width)
+    if (wp != NULL && row >= 0 && row < wp->w_height && col < wp->w_width)
     {
 	/* Found a window and the cursor is in the text.  Now find the line
 	 * number. */
