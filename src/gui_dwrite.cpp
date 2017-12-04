@@ -271,6 +271,7 @@ enum DrawingMode {
 
 struct DWriteContext {
     HDC mHDC;
+    RECT mBindRect;
     DrawingMode mDMode;
     HDC mInteropHDC;
     bool mDrawing;
@@ -578,6 +579,7 @@ private:
 
 DWriteContext::DWriteContext() :
     mHDC(NULL),
+    mBindRect(),
     mDMode(DM_GDI),
     mInteropHDC(NULL),
     mDrawing(false),
@@ -676,6 +678,7 @@ DWriteContext::CreateDeviceResources()
 	mRT->QueryInterface(
 		__uuidof(ID2D1GdiInteropRenderTarget),
 		reinterpret_cast<void**>(&mGDIRT));
+	_RPT1(_CRT_WARN, "GdiInteropRenderTarget: p=%p\n", mGDIRT);
     }
 
     if (SUCCEEDED(hr))
@@ -684,6 +687,15 @@ DWriteContext::CreateDeviceResources()
 		D2D1::ColorF(D2D1::ColorF::Black),
 		&mBrush);
 	_RPT2(_CRT_WARN, "CreateSolidColorBrush: hr=%p p=%p\n", hr, mBrush);
+    }
+
+    if (SUCCEEDED(hr))
+    {
+	if (mHDC != NULL)
+	{
+	    mRT->BindDC(mHDC, &mBindRect);
+	    mRT->SetTransform(D2D1::IdentityMatrix());
+	}
     }
 
     return hr;
@@ -879,6 +891,7 @@ DWriteContext::BindDC(HDC hdc, const RECT *rect)
     mRT->BindDC(hdc, rect);
     mRT->SetTransform(D2D1::IdentityMatrix());
     mHDC = hdc;
+    mBindRect = *rect;
 }
 
     HRESULT
