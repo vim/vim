@@ -611,10 +611,7 @@ _OnBlinkTimer(
 	blink_timer = (UINT) SetTimer(NULL, 0, (UINT)blink_ontime,
 						    (TIMERPROC)_OnBlinkTimer);
     }
-#if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
-	DWriteContext_Flush(s_dwc);
-#endif
+    gui_mch_flush();
 }
 
     static void
@@ -640,7 +637,10 @@ gui_mch_stop_blink(void)
 {
     gui_mswin_rm_blink_timer();
     if (blink_state == BLINK_OFF)
+    {
 	gui_update_cursor(TRUE, FALSE);
+	gui_mch_flush();
+    }
     blink_state = BLINK_NONE;
 }
 
@@ -660,6 +660,7 @@ gui_mch_start_blink(void)
 						    (TIMERPROC)_OnBlinkTimer);
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
+	gui_mch_flush();
     }
 }
 
@@ -5872,6 +5873,7 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 		}
 	    }
 	    gui_update_cursor(TRUE, FALSE);
+	    gui_mch_flush();
 	    lResult = 0;
 	    break;
     }
