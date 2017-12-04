@@ -8319,13 +8319,24 @@ screen_char(unsigned off, int row, int col)
 
 	/* Convert UTF-8 character to bytes and write it. */
 
-	buf[utfc_char2bytes(off, buf)] = NUL;
-
-	out_str(buf);
 	if (utf_ambiguous_width(ScreenLinesUC[off]))
+	{
+	    if (*p_ambw == 'd'
+# ifdef FEAT_GUI
+		    && !gui.in_use
+# endif
+		    )
+	    {
+		out_str((char_u *)"  ");
+		term_windgoto(row, col);
+	    }
 	    screen_cur_col = 9999;
+	}
 	else if (utf_char2cells(ScreenLinesUC[off]) > 1)
 	    ++screen_cur_col;
+
+	buf[utfc_char2bytes(off, buf)] = NUL;
+	out_str(buf);
     }
     else
 #endif
