@@ -1154,7 +1154,7 @@ win_update(win_T *wp)
     }
 
     /* Window is zero-height: nothing to draw. */
-    if (wp->w_height == 0)
+    if (wp->w_height + WINBAR_HEIGHT(wp) == 0)
     {
 	wp->w_redr_type = 0;
 	return;

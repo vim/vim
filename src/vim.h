@@ -1478,8 +1478,10 @@ typedef UINT32_TYPEDEF UINT32_T;
 #define STATUS_HEIGHT	1	/* height of a status line under a window */
 #ifdef FEAT_MENU		/* height of a status line under a window */
 # define WINBAR_HEIGHT(wp)	(wp)->w_winbar_height
+# define VISIBLE_HEIGHT(wp)	((wp)->w_height + (wp)->w_winbar_height)
 #else
 # define WINBAR_HEIGHT(wp)	0
+# define VISIBLE_HEIGHT(wp)	(wp)->w_height
 #endif
 #define QF_WINHEIGHT	10	/* default height for quickfix window */
 
