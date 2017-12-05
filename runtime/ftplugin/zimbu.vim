@@ -135,8 +135,11 @@ iabbr <buffer> <expr> until GCUpperSpace("until")
 iabbr <buffer> <expr> while GCUpperSpace("while")
 iabbr <buffer> <expr> repeat GCUpper("repeat")
 
-nnoremap <silent> <buffer> [[ m`:call ZimbuGoStartBlock()<CR>
-nnoremap <silent> <buffer> ]] m`:call ZimbuGoEndBlock()<CR>
+" Add mappings, unless the user doesn't want this.
+if !exists("no_plugin_maps") && !exists("no_zimbu_maps")
+  nnoremap <silent> <buffer> [[ m`:call ZimbuGoStartBlock()<CR>
+  nnoremap <silent> <buffer> ]] m`:call ZimbuGoEndBlock()<CR>
+endif
 
 " Using a function makes sure the search pattern is restored
 func! ZimbuGoStartBlock()
