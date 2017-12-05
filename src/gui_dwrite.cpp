@@ -899,8 +899,6 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 {
     HRESULT hr = S_OK;
 
-    CreateDeviceResources();
-
     switch (mode)
     {
 	default:
@@ -917,6 +915,7 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 		{
 		    hr = S_OK;
 		    DiscardDeviceResources();
+		    CreateDeviceResources();
 		}
 		mDrawing = false;
 	    }
@@ -930,6 +929,7 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 	    }
 	    else if (mDrawing == false)
 	    {
+		CreateDeviceResources();
 		mRT->BeginDraw();
 		mDrawing = true;
 	    }
@@ -938,6 +938,7 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 	case DM_INTEROP:
 	    if (mDrawing == false)
 	    {
+		CreateDeviceResources();
 		mRT->BeginDraw();
 		mDrawing = true;
 	    }
