@@ -7406,7 +7406,7 @@ did_set_string_option(
 
 #if defined(FEAT_RENDER_OPTIONS)
     /* 'renderoptions' */
-    else if (varp == &p_rop && gui.in_use)
+    else if (varp == &p_rop)
     {
 	if (!gui_mch_set_rendering_options(p_rop))
 	    errmsg = e_invarg;

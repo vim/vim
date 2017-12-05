@@ -127,6 +127,9 @@ gui_mch_set_rendering_options(char_u *s)
 	    return FAIL;
     }
 
+    if (!gui.in_use)
+	return OK;
+
     /* Enable DirectX/DirectWrite */
     if (dx_enable)
     {
