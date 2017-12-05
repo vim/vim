@@ -1816,9 +1816,18 @@ mch_inchar(
 		    typeahead[typeaheadlen] = c;
 		if (ch2 != NUL)
 		{
-		    typeahead[typeaheadlen + n] = 3;
-		    typeahead[typeaheadlen + n + 1] = (char_u)ch2;
-		    n += 2;
+		    if (c == K_NUL && (ch2 & 0xff00) != 0)
+		    {
+			/* fAnsiKey with modifier keys */
+			typeahead[typeaheadlen + n] = (char_u)ch2;
+			n++;
+		    }
+		    else
+		    {
+			typeahead[typeaheadlen + n] = 3;
+			typeahead[typeaheadlen + n + 1] = (char_u)ch2;
+			n += 2;
+		    }
 		}
 
 		/* Use the ALT key to set the 8th bit of the character
