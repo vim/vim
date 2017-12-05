@@ -675,7 +675,10 @@ update_cursor(term_T *term, int redraw)
 	out_flush();
 #ifdef FEAT_GUI
 	if (gui.in_use)
+	{
 	    gui_update_cursor(FALSE, FALSE);
+	    gui_mch_flush();
+	}
 #endif
     }
 }
