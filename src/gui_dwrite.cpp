@@ -263,14 +263,24 @@ private:
     }
 };
 
+enum DrawingMode {
+    DM_GDI = 0,
+    DM_DIRECTX = 1,
+    DM_INTEROP = 2,
+};
+
 struct DWriteContext {
     HDC mHDC;
+    RECT mBindRect;
+    DrawingMode mDMode;
+    HDC mInteropHDC;
     bool mDrawing;
     bool mFallbackDC;
 
     ID2D1Factory *mD2D1Factory;
 
     ID2D1DCRenderTarget *mRT;
+    ID2D1GdiInteropRenderTarget *mGDIRT;
     ID2D1SolidColorBrush *mBrush;
 
     IDWriteFactory *mDWriteFactory;
@@ -292,6 +302,10 @@ struct DWriteContext {
 
     virtual ~DWriteContext();
 
+    HRESULT CreateDeviceResources();
+
+    void DiscardDeviceResources();
+
     HRESULT CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 	    IDWriteTextFormat **ppTextFormat);
 
@@ -299,17 +313,21 @@ struct DWriteContext {
 
     void SetFont(HFONT hFont);
 
-    void BindDC(HDC hdc, RECT *rect);
+    void BindDC(HDC hdc, const RECT *rect);
 
-    void AssureDrawing();
+    HRESULT SetDrawingMode(DrawingMode mode);
 
     ID2D1Brush* SolidBrush(COLORREF color);
 
-    void DrawText(const WCHAR* text, int len,
+    void DrawText(const WCHAR *text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color,
-	UINT fuOptions, CONST RECT *lprc, CONST INT * lpDx);
+	UINT fuOptions, const RECT *lprc, const INT *lpDx);
 
-    void FillRect(RECT *rc, COLORREF color);
+    void FillRect(const RECT *rc, COLORREF color);
+
+    void DrawLine(int x1, int y1, int x2, int y2, COLORREF color);
+
+    void SetPixel(int x, int y, COLORREF color);
 
     void Flush();
 
@@ -561,10 +579,14 @@ private:
 
 DWriteContext::DWriteContext() :
     mHDC(NULL),
+    mBindRect(),
+    mDMode(DM_GDI),
+    mInteropHDC(NULL),
     mDrawing(false),
     mFallbackDC(false),
     mD2D1Factory(NULL),
     mRT(NULL),
+    mGDIRT(NULL),
     mBrush(NULL),
     mDWriteFactory(NULL),
     mDWriteFactory2(NULL),
@@ -584,25 +606,7 @@ DWriteContext::DWriteContext() :
     _RPT2(_CRT_WARN, "D2D1CreateFactory: hr=%p p=%p\n", hr, mD2D1Factory);
 
     if (SUCCEEDED(hr))
-    {
-	D2D1_RENDER_TARGET_PROPERTIES props = {
-	    D2D1_RENDER_TARGET_TYPE_DEFAULT,
-	    { DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE },
-	    0, 0,
-	    D2D1_RENDER_TARGET_USAGE_NONE,
-	    D2D1_FEATURE_LEVEL_DEFAULT
-	};
-	hr = mD2D1Factory->CreateDCRenderTarget(&props, &mRT);
-	_RPT2(_CRT_WARN, "CreateDCRenderTarget: hr=%p p=%p\n", hr, mRT);
-    }
-
-    if (SUCCEEDED(hr))
-    {
-	hr = mRT->CreateSolidColorBrush(
-		D2D1::ColorF(D2D1::ColorF::Black),
-		&mBrush);
-	_RPT2(_CRT_WARN, "CreateSolidColorBrush: hr=%p p=%p\n", hr, mBrush);
-    }
+	hr = CreateDeviceResources();
 
     if (SUCCEEDED(hr))
     {
@@ -645,8 +649,64 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mDWriteFactory);
     SafeRelease(&mDWriteFactory2);
     SafeRelease(&mBrush);
+    SafeRelease(&mGDIRT);
     SafeRelease(&mRT);
     SafeRelease(&mD2D1Factory);
+}
+
+    HRESULT
+DWriteContext::CreateDeviceResources()
+{
+    HRESULT hr;
+
+    if (mRT != NULL)
+	return S_OK;
+
+    D2D1_RENDER_TARGET_PROPERTIES props = {
+	D2D1_RENDER_TARGET_TYPE_DEFAULT,
+	{ DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE },
+	0, 0,
+	D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE,
+	D2D1_FEATURE_LEVEL_DEFAULT
+    };
+    hr = mD2D1Factory->CreateDCRenderTarget(&props, &mRT);
+    _RPT2(_CRT_WARN, "CreateDCRenderTarget: hr=%p p=%p\n", hr, mRT);
+
+    if (SUCCEEDED(hr))
+    {
+	// This always succeeds.
+	mRT->QueryInterface(
+		__uuidof(ID2D1GdiInteropRenderTarget),
+		reinterpret_cast<void**>(&mGDIRT));
+	_RPT1(_CRT_WARN, "GdiInteropRenderTarget: p=%p\n", mGDIRT);
+    }
+
+    if (SUCCEEDED(hr))
+    {
+	hr = mRT->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF::Black),
+		&mBrush);
+	_RPT2(_CRT_WARN, "CreateSolidColorBrush: hr=%p p=%p\n", hr, mBrush);
+    }
+
+    if (SUCCEEDED(hr))
+    {
+	if (mHDC != NULL)
+	{
+	    mRT->BindDC(mHDC, &mBindRect);
+	    mRT->SetTransform(D2D1::IdentityMatrix());
+	}
+    }
+
+    return hr;
+}
+
+    void
+DWriteContext::DiscardDeviceResources()
+{
+    SafeRelease(&mBrush);
+    SafeRelease(&mGDIRT);
+    SafeRelease(&mRT);
 }
 
     HRESULT
@@ -817,27 +877,77 @@ DWriteContext::SetFont(HFONT hFont)
 	item.pTextFormat = mTextFormat;
 	item.fontWeight = mFontWeight;
 	item.fontStyle = mFontStyle;
+	mFallbackDC = false;
     }
+    else
+	mFallbackDC = true;
     mFontCache.put(item);
 }
 
     void
-DWriteContext::BindDC(HDC hdc, RECT *rect)
+DWriteContext::BindDC(HDC hdc, const RECT *rect)
 {
     Flush();
     mRT->BindDC(hdc, rect);
     mRT->SetTransform(D2D1::IdentityMatrix());
     mHDC = hdc;
+    mBindRect = *rect;
 }
 
-    void
-DWriteContext::AssureDrawing()
+    HRESULT
+DWriteContext::SetDrawingMode(DrawingMode mode)
 {
-    if (mDrawing == false)
+    HRESULT hr = S_OK;
+
+    switch (mode)
     {
-	mRT->BeginDraw();
-	mDrawing = true;
+	default:
+	case DM_GDI:
+	    if (mInteropHDC != NULL)
+	    {
+		mGDIRT->ReleaseDC(NULL);
+		mInteropHDC = NULL;
+	    }
+	    if (mDrawing)
+	    {
+		hr = mRT->EndDraw();
+		if (hr == D2DERR_RECREATE_TARGET)
+		{
+		    hr = S_OK;
+		    DiscardDeviceResources();
+		    CreateDeviceResources();
+		}
+		mDrawing = false;
+	    }
+	    break;
+
+	case DM_DIRECTX:
+	    if (mInteropHDC != NULL)
+	    {
+		mGDIRT->ReleaseDC(NULL);
+		mInteropHDC = NULL;
+	    }
+	    else if (mDrawing == false)
+	    {
+		CreateDeviceResources();
+		mRT->BeginDraw();
+		mDrawing = true;
+	    }
+	    break;
+
+	case DM_INTEROP:
+	    if (mDrawing == false)
+	    {
+		CreateDeviceResources();
+		mRT->BeginDraw();
+		mDrawing = true;
+	    }
+	    if (mInteropHDC == NULL)
+		hr = mGDIRT->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &mInteropHDC);
+	    break;
     }
+    mDMode = mode;
+    return hr;
 }
 
     ID2D1Brush*
@@ -849,21 +959,30 @@ DWriteContext::SolidBrush(COLORREF color)
 }
 
     void
-DWriteContext::DrawText(const WCHAR* text, int len,
+DWriteContext::DrawText(const WCHAR *text, int len,
 	int x, int y, int w, int h, int cellWidth, COLORREF color,
-	UINT fuOptions, CONST RECT *lprc, CONST INT * lpDx)
+	UINT fuOptions, const RECT *lprc, const INT *lpDx)
 {
     if (mFallbackDC)
     {
-	Flush();
-	ExtTextOutW(mHDC, x, y, fuOptions, lprc, text, len, lpDx);
+	// Fall back to GDI rendering.
+	HRESULT hr = SetDrawingMode(DM_INTEROP);
+	if (SUCCEEDED(hr))
+	{
+	    HGDIOBJ hFont = ::GetCurrentObject(mHDC, OBJ_FONT);
+	    HGDIOBJ hOldFont = ::SelectObject(mInteropHDC, hFont);
+	    ::SetTextColor(mInteropHDC, color);
+	    ::SetBkMode(mInteropHDC, ::GetBkMode(mHDC));
+	    ::ExtTextOutW(mInteropHDC, x, y, fuOptions, lprc, text, len, lpDx);
+	    ::SelectObject(mInteropHDC, hOldFont);
+	}
 	return;
     }
 
-    AssureDrawing();
-
     HRESULT hr;
     IDWriteTextLayout *textLayout = NULL;
+
+    SetDrawingMode(DM_DIRECTX);
 
     hr = mDWriteFactory->CreateTextLayout(text, len, mTextFormat,
 	    FLOAT(w), FLOAT(h), &textLayout);
@@ -883,23 +1002,74 @@ DWriteContext::DrawText(const WCHAR* text, int len,
 }
 
     void
-DWriteContext::FillRect(RECT *rc, COLORREF color)
+DWriteContext::FillRect(const RECT *rc, COLORREF color)
 {
-    AssureDrawing();
-    mRT->FillRectangle(
-	    D2D1::RectF(FLOAT(rc->left), FLOAT(rc->top),
-		FLOAT(rc->right), FLOAT(rc->bottom)),
-	    SolidBrush(color));
+    if (mDMode == DM_INTEROP)
+    {
+	// GDI functions are used before this call.  Keep using GDI.
+	// (Switching to Direct2D causes terrible slowdown.)
+	HBRUSH hbr = ::CreateSolidBrush(color);
+	::FillRect(mInteropHDC, rc, hbr);
+	::DeleteObject(HGDIOBJ(hbr));
+    }
+    else
+    {
+	SetDrawingMode(DM_DIRECTX);
+	mRT->FillRectangle(
+		D2D1::RectF(FLOAT(rc->left), FLOAT(rc->top),
+		    FLOAT(rc->right), FLOAT(rc->bottom)),
+		SolidBrush(color));
+    }
+}
+
+    void
+DWriteContext::DrawLine(int x1, int y1, int x2, int y2, COLORREF color)
+{
+    if (mDMode == DM_INTEROP)
+    {
+	// GDI functions are used before this call.  Keep using GDI.
+	// (Switching to Direct2D causes terrible slowdown.)
+	HPEN hpen = ::CreatePen(PS_SOLID, 1, color);
+	HGDIOBJ old_pen = ::SelectObject(mInteropHDC, HGDIOBJ(hpen));
+	::MoveToEx(mInteropHDC, x1, y1, NULL);
+	::LineTo(mInteropHDC, x2, y2);
+	::SelectObject(mInteropHDC, old_pen);
+	::DeleteObject(HGDIOBJ(hpen));
+    }
+    else
+    {
+	SetDrawingMode(DM_DIRECTX);
+	mRT->DrawLine(
+		D2D1::Point2F(FLOAT(x1), FLOAT(y1) + 0.5f),
+		D2D1::Point2F(FLOAT(x2), FLOAT(y2) + 0.5f),
+		SolidBrush(color));
+    }
+}
+
+    void
+DWriteContext::SetPixel(int x, int y, COLORREF color)
+{
+    if (mDMode == DM_INTEROP)
+    {
+	// GDI functions are used before this call.  Keep using GDI.
+	// (Switching to Direct2D causes terrible slowdown.)
+	::SetPixel(mInteropHDC, x, y, color);
+    }
+    else
+    {
+	SetDrawingMode(DM_DIRECTX);
+	// Direct2D doesn't have SetPixel API.  Use DrawLine instead.
+	mRT->DrawLine(
+		D2D1::Point2F(FLOAT(x), FLOAT(y) + 0.5f),
+		D2D1::Point2F(FLOAT(x+1), FLOAT(y) + 0.5f),
+		SolidBrush(color));
+    }
 }
 
     void
 DWriteContext::Flush()
 {
-    if (mDrawing)
-    {
-	mRT->EndDraw();
-	mDrawing = false;
-    }
+    SetDrawingMode(DM_GDI);
 }
 
     void
@@ -1000,7 +1170,7 @@ DWriteContext_Open(void)
 }
 
     void
-DWriteContext_BindDC(DWriteContext *ctx, HDC hdc, RECT *rect)
+DWriteContext_BindDC(DWriteContext *ctx, HDC hdc, const RECT *rect)
 {
     if (ctx != NULL)
 	ctx->BindDC(hdc, rect);
@@ -1016,7 +1186,7 @@ DWriteContext_SetFont(DWriteContext *ctx, HFONT hFont)
     void
 DWriteContext_DrawText(
 	DWriteContext *ctx,
-	const WCHAR* text,
+	const WCHAR *text,
 	int len,
 	int x,
 	int y,
@@ -1025,8 +1195,8 @@ DWriteContext_DrawText(
 	int cellWidth,
 	COLORREF color,
 	UINT fuOptions,
-	CONST RECT *lprc,
-	CONST INT * lpDx)
+	const RECT *lprc,
+	const INT *lpDx)
 {
     if (ctx != NULL)
 	ctx->DrawText(text, len, x, y, w, h, cellWidth, color,
@@ -1034,10 +1204,25 @@ DWriteContext_DrawText(
 }
 
     void
-DWriteContext_FillRect(DWriteContext *ctx, RECT *rc, COLORREF color)
+DWriteContext_FillRect(DWriteContext *ctx, const RECT *rc, COLORREF color)
 {
     if (ctx != NULL)
 	ctx->FillRect(rc, color);
+}
+
+    void
+DWriteContext_DrawLine(DWriteContext *ctx, int x1, int y1, int x2, int y2,
+	COLORREF color)
+{
+    if (ctx != NULL)
+	ctx->DrawLine(x1, y1, x2, y2, color);
+}
+
+    void
+DWriteContext_SetPixel(DWriteContext *ctx, int x, int y, COLORREF color)
+{
+    if (ctx != NULL)
+	ctx->SetPixel(x, y, color);
 }
 
     void

@@ -6122,9 +6122,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		  geom	    pixelGeometry	int	0 - 2 (see below)
 		  renmode   renderingMode	int	0 - 6 (see below)
 		  taamode   textAntialiasMode	int	0 - 3 (see below)
+		  scrlines  Scroll Lines	int	>= 0  (see below)
 
-		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368190.aspx
+		See this URL for detail (except for scrlines):
+		  https://msdn.microsoft.com/en-us/library/dd368190.aspx
 
 		For geom: structure of a device pixel.
 		  0 - DWRITE_PIXEL_GEOMETRY_FLAT
@@ -6132,7 +6133,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		  2 - DWRITE_PIXEL_GEOMETRY_BGR
 
 		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368114.aspx
+		  https://msdn.microsoft.com/en-us/library/dd368114.aspx
 
 		For renmode: method of rendering glyphs.
 		  0 - DWRITE_RENDERING_MODE_DEFAULT
@@ -6144,7 +6145,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		  6 - DWRITE_RENDERING_MODE_OUTLINE
 
 		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368118.aspx
+		  https://msdn.microsoft.com/en-us/library/dd368118.aspx
 
 		For taamode: antialiasing mode used for drawing text.
 		  0 - D2D1_TEXT_ANTIALIAS_MODE_DEFAULT
@@ -6153,7 +6154,25 @@ A jump table for the options with a short description can be found at |Q_op|.
 		  3 - D2D1_TEXT_ANTIALIAS_MODE_ALIASED
 
 		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368170.aspx
+		  https://msdn.microsoft.com/en-us/library/dd368170.aspx
+
+		For scrlines: threshold for lines to be scrolled.
+		    0 - Always use scrolling. (default)
+		    1 - Use full page redrawing.
+		  > 1 - If the lines to be scrolled is grater or equal to the
+			specified value, use redrawing.  Otherwise use
+			scrolling.
+
+		If you feel scrolling a page (CTRL-F) is too slow with DirectX
+		renderer, try this "scrlines" option.
+		When set it "1", Vim uses full page redrawing instead of
+		scrolling.  Redrawing a page is faster than scrolling a
+		page in some environments.
+		After that, when you feel scrolling lines (CTRL-Y) becomes
+		slow, please try "2" or greater value for this option.
+		It works threshold line number to switch scrolling to
+		redrawing.  Scrolling a few lines might be faster than
+		redrawing a page in some environments.
 
 		Example: >
 		  set encoding=utf-8
@@ -6162,13 +6181,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 <
 		If select a raster font (Courier, Terminal or FixedSys which
 		have ".fon" extension in file name) to 'guifont', it will be
-		drawn by GDI as a fallback.  This fallback will cause
-		significant slow down on drawing.
+		drawn by GDI as a fallback.
 
 		NOTE: It is known that some fonts and options combination
 		causes trouble on drawing glyphs.
 
-		  - 'rendmode:5' and 'renmode:6' will not work with some
+		  - 'renmode:5' and 'renmode:6' will not work with some
 		    special made fonts (True-Type fonts which includes only
 		    bitmap glyphs).
 		  - 'taamode:3' will not work with some vector fonts.
