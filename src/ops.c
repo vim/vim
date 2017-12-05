@@ -5433,7 +5433,7 @@ op_addsub(
 	    }
 	    else /* oap->motion_type == MCHAR */
 	    {
-		if (!oap->inclusive)
+		if (pos.lnum == oap->start.lnum && !oap->inclusive)
 		    dec(&(oap->end));
 		length = (colnr_T)STRLEN(ml_get(pos.lnum));
 		pos.col = 0;
