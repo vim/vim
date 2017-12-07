@@ -4781,8 +4781,13 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_selinux_is_selinux_enabled" >&5
 $as_echo "$ac_cv_lib_selinux_is_selinux_enabled" >&6; }
 if test "x$ac_cv_lib_selinux_is_selinux_enabled" = xyes; then :
+  ac_fn_c_check_header_mongrel "$LINENO" "selinux/selinux.h" "ac_cv_header_selinux_selinux_h" "$ac_includes_default"
+if test "x$ac_cv_header_selinux_selinux_h" = xyes; then :
   LIBS="$LIBS -lselinux"
-	     $as_echo "#define HAVE_SELINUX 1" >>confdefs.h
+	    $as_echo "#define HAVE_SELINUX 1" >>confdefs.h
+
+fi
+
 
 fi
 
