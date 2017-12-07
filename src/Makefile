@@ -2120,6 +2120,7 @@ test_arglist \
 	test_assign \
 	test_autochdir \
 	test_autocmd \
+	test_autoload \
 	test_backspace_opt \
 	test_breakindent \
 	test_bufline \

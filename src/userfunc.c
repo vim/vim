@@ -1594,7 +1594,7 @@ trans_function_name(
 	start += lead;
 
     /* Note that TFN_ flags use the same values as GLV_ flags. */
-    end = get_lval(start, NULL, &lv, FALSE, skip, flags,
+    end = get_lval(start, NULL, &lv, FALSE, skip, flags | GLV_READ_ONLY,
 					      lead > 2 ? 0 : FNE_CHECK_START);
     if (end == start)
     {

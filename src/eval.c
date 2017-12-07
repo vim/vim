@@ -1956,7 +1956,10 @@ get_lval(
 
     cc = *p;
     *p = NUL;
-    v = find_var(lp->ll_name, &ht, flags & GLV_NO_AUTOLOAD);
+    /* Only pass &ht when we would write to the variable, it prevents autoload
+     * as well. */
+    v = find_var(lp->ll_name, (flags & GLV_READ_ONLY) ? NULL : &ht,
+						      flags & GLV_NO_AUTOLOAD);
     if (v == NULL && !quiet)
 	EMSG2(_(e_undefvar), lp->ll_name);
     *p = cc;
@@ -6610,6 +6613,8 @@ get_vim_var_nr(int idx)
 
 /*
  * Get string v: variable value.  Uses a static buffer, can only be used once.
+ * If the String variable has never been set, return an empty string.
+ * Never returns NULL;
  */
     char_u *
 get_vim_var_str(int idx)

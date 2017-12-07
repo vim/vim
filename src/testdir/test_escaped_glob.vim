@@ -25,8 +25,8 @@ function Test_glob()
 endfunction
 
 function Test_globpath()
-  call assert_equal("sautest/autoload/Test104.vim\nsautest/autoload/footest.vim",
-        \ globpath('sautest/autoload', '*.vim'))
-  call assert_equal(['sautest/autoload/Test104.vim', 'sautest/autoload/footest.vim'],
-        \ globpath('sautest/autoload', '*.vim', 0, 1))
+  call assert_equal("sautest/autoload/globone.vim\nsautest/autoload/globtwo.vim",
+        \ globpath('sautest/autoload', 'glob*.vim'))
+  call assert_equal(['sautest/autoload/globone.vim', 'sautest/autoload/globtwo.vim'],
+        \ globpath('sautest/autoload', 'glob*.vim', 0, 1))
 endfunction
