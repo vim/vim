@@ -4679,9 +4679,10 @@ getqflist([{what}])					*getqflist()*
 				the last quickfix list
 			size	number of entries in the quickfix list
 			title	get the list title
-			winid	get the |window-ID| (if opened)
+			winid	get the quickfix |window-ID|
 			all	all of the above quickfix properties
-		Non-string items in {what} are ignored.
+		Non-string items in {what} are ignored. To get the value of a
+		particular item, set it to one.
 		If "nr" is not present then the current quickfix list is used.
 		If both "nr" and a non-zero "id" are specified, then the list
 		specified by "id" is used.
@@ -4702,7 +4703,7 @@ getqflist([{what}])					*getqflist()*
 			nr	quickfix list number
 			size	number of entries in the quickfix list
 			title	quickfix list title text
-			winid	quickfix |window-ID| (if opened)
+			winid	quickfix |window-ID|. If not present, set to 0
 
 		Examples: >
 			:echo getqflist({'all': 1})

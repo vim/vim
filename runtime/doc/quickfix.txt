@@ -341,6 +341,50 @@ use this code: >
 	au QuickfixCmdPost make call QfMakeConv()
 Another option is using 'makeencoding'.
 
+							*quickfix-title*
+Every quickfix and location list has a title. By default the title is set to
+the command that created the list. The |getqflist()| and |getloclist()|
+functions can be used to get the title of a quickfix and a location list
+respectively. The |setqflist()| and |setloclist()| functions can be used to
+modify the title of a quickfix and location list respectively. Examples: >
+	call setqflist([], 'a', {'title' : 'Cmd output'})
+	echo getqflist({'title' : 1})
+	call setloclist(3, [], 'a', {'title' : 'Cmd output'})
+	echo getloclist(3, {'title' : 1})
+<
+							*quickfix-size*
+You can get the number of entries (size) in a quickfix and a location list
+using the |getqflist()| and |getloclist()| functions respectively. Examples: >
+	echo getqflist({'size' : 1})
+	echo getloclist(5, {'size' : 1})
+<
+							*quickfix-context*
+Any Vim type can be associated as a context with a quickfix or location list.
+The |setqflist()| and the |setloclist()| functions can be used to associate a
+context with a quickfix and a location list respectively. The |getqflist()|
+and the |getloclist()| functions can be used to retrieve the context of a
+quickifx and a location list respectively. This is useful for a Vim plugin
+dealing with multiple quickfix/location lists.
+Examples: >
+
+	let somectx = {'name' : 'Vim', 'type' : 'Editor'}
+	call setqflist([], 'a', {'context' : somectx})
+	echo getqflist({'context' : 1})
+
+	let newctx = ['red', 'green', 'blue']
+	call setloclist(2, [], 'a', {'id' : qfid, 'context' : newctx})
+	echo getloclist(2, {'id' : qfid, 'context' : 1})
+<
+							*quickfix-parse*
+You can parse a list of lines using 'erroformat' without creating or modifying
+a quickfix list using the |getqflist()| function. Examples: >
+	echo getqflist({'lines' : ["F1:10:Line10", "F2:20:Line20"]})
+	echo getqflist({'lines' : systemlist('grep -Hn quickfix *')})
+This returns a dictionary where the 'items' key contains the list of quickfix
+entries parsed from lines. The following shows how to use a custom
+'errorformat' to parse the lines without modifying the 'erroformat' option: >
+	echo getqflist({'efm' : '%f#%l#%m', 'lines' : ['F1#10#Line']})
+<
 
 EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
 							*:cdo*
@@ -542,6 +586,13 @@ In all of the above cases, if the location list for the selected window is not
 yet set, then it is set to the location list displayed in the location list
 window.
 
+							*quickfix-window-ID*
+You can use the |getqflist()| and |getloclist()| functions to obtain the
+window ID of the quickfix window and location list window respectively (if
+present).  Examples: >
+	echo getqflist({'winid' : 1}).winid
+	echo getloclist(2, {'winid' : 1}).winid
+<
 =============================================================================
 3. Using more than one list of errors			*quickfix-error-lists*
 
@@ -586,6 +637,14 @@ list, one newer list is overwritten.  This is especially useful if you are
 browsing with ":grep" |grep|.  If you want to keep the more recent error
 lists, use ":cnewer 99" first.
 
+To get the number of lists in the quickfix and location list stack, you can
+use the |getqflist()| and |getloclist()| functions respectively with the list
+number set to the special value '$'. Examples: >
+	echo getqflist({'nr' : '$'}).nr
+	echo getloclist(3, {'nr' : '$'}).nr
+To get the number of the current list in the stack: >
+	echo getqflist({'nr' : 0}).nr
+<
 =============================================================================
 4. Using :make						*:make_makeprg*
 
