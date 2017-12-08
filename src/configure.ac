@@ -432,10 +432,11 @@ if test "x$found_smack" = "x"; then
 	  , enable_selinux="yes")
   if test "$enable_selinux" = "yes"; then
     AC_MSG_RESULT(no)
-    AC_CHECK_LIB(selinux, is_selinux_enabled,
-	[AC_CHECK_HEADER(selinux/selinux.h,
-	    [LIBS="$LIBS -lselinux"
-	    AC_DEFINE(HAVE_SELINUX)])])
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS -lselinux"
+    AC_TRY_LINK([#include <selinux/selinux.h>], [is_selinux_enabled();],
+       [AC_DEFINE(HAVE_SELINUX)],
+       [LIBS="$saved_LIBS"])
   else
      AC_MSG_RESULT(yes)
   fi

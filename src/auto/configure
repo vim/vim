@@ -4744,53 +4744,27 @@ fi
   if test "$enable_selinux" = "yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for is_selinux_enabled in -lselinux" >&5
-$as_echo_n "checking for is_selinux_enabled in -lselinux... " >&6; }
-if ${ac_cv_lib_selinux_is_selinux_enabled+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lselinux  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS -lselinux"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char is_selinux_enabled ();
+#include <selinux/selinux.h>
 int
 main ()
 {
-return is_selinux_enabled ();
+is_selinux_enabled();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_selinux_is_selinux_enabled=yes
+  $as_echo "#define HAVE_SELINUX 1" >>confdefs.h
+
 else
-  ac_cv_lib_selinux_is_selinux_enabled=no
+  LIBS="$saved_LIBS"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_selinux_is_selinux_enabled" >&5
-$as_echo "$ac_cv_lib_selinux_is_selinux_enabled" >&6; }
-if test "x$ac_cv_lib_selinux_is_selinux_enabled" = xyes; then :
-  ac_fn_c_check_header_mongrel "$LINENO" "selinux/selinux.h" "ac_cv_header_selinux_selinux_h" "$ac_includes_default"
-if test "x$ac_cv_header_selinux_selinux_h" = xyes; then :
-  LIBS="$LIBS -lselinux"
-	     $as_echo "#define HAVE_SELINUX 1" >>confdefs.h
-
-fi
-
-
-fi
-
   else
      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
