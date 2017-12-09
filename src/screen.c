@@ -468,16 +468,14 @@ redraw_after_callback(int call_update_screen)
 	setcursor();
     }
     cursor_on();
-    out_flush();
 #ifdef FEAT_GUI
-    if (gui.in_use)
-    {
+    if (gui.in_use && !gui_mch_is_blink_off())
 	/* Don't update the cursor when it is blinking and off to avoid
 	 * flicker. */
-	if (!gui_mch_is_blink_off())
-	    gui_update_cursor(FALSE, FALSE);
-	gui_mch_flush();
-    }
+	out_flush_cursor(FALSE, FALSE);
+    else
+#else
+	out_flush();
 #endif
 
     --redrawing_for_callback;
@@ -800,7 +798,6 @@ update_screen(int type_arg)
      * done. */
     if (gui.in_use)
     {
-	out_flush();	/* required before updating the cursor */
 	if (did_undraw && !gui_mch_is_blink_off())
 	{
 	    /* Put the GUI position where the cursor was, gui_update_cursor()
@@ -810,10 +807,12 @@ update_screen(int type_arg)
 # ifdef FEAT_MBYTE
 	    gui.col = mb_fix_col(gui.col, gui.row);
 # endif
-	    gui_update_cursor(FALSE, FALSE);
+	    out_flush_cursor(FALSE, FALSE);
 	    screen_cur_col = gui.col;
 	    screen_cur_row = gui.row;
 	}
+	else
+	    out_flush();
 	gui_update_scrollbars(FALSE);
     }
 #endif
@@ -863,8 +862,7 @@ update_finish(void)
      * done. */
     if (gui.in_use)
     {
-	out_flush();	/* required before updating the cursor */
-	gui_update_cursor(FALSE, FALSE);
+	out_flush_cursor(FALSE, FALSE);
 	gui_update_scrollbars(FALSE);
     }
 # endif

@@ -55,6 +55,7 @@ enum {
 static void gui_attempt_start(void);
 
 static int can_update_cursor = TRUE; /* can display the cursor */
+static int cursor_updating = FALSE;
 
 /*
  * The Athena scrollbars can move the thumb to after the end of the scrollbar,
@@ -1976,7 +1977,8 @@ gui_write(
     gui.dragged_sb = SBAR_NONE;
 #endif
 
-    gui_mch_flush();		    /* In case vim decides to take a nap */
+    if (!cursor_updating)
+	gui_mch_flush();	    /* In case vim decides to take a nap */
 }
 
 /*
@@ -2002,6 +2004,24 @@ gui_can_update_cursor(void)
     can_update_cursor = TRUE;
     /* No need to update the cursor right now, there is always more output
      * after scrolling. */
+}
+
+/*
+ * Start updating the cursor.  No need to call gui_mch_flush() yet.
+ */
+    void
+gui_start_updating_cursor(void)
+{
+    cursor_updating = TRUE;
+}
+
+/*
+ * End updating the cursor.  gui_mch_flush() can be called.
+ */
+    void
+gui_end_updating_cursor(void)
+{
+    cursor_updating = FALSE;
 }
 
     static void
@@ -4107,8 +4127,7 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 	setcursor();
     }
 # endif
-    out_flush();
-    gui_update_cursor(FALSE, TRUE);
+    out_flush_cursor(FALSE, TRUE);
 #else
     add_to_input_buf(bytes, byte_count);
     add_long_to_buf((long_u)value, bytes);
@@ -4782,8 +4801,7 @@ gui_focus_change(int in_focus)
  */
 #if 1
     gui.in_focus = in_focus;
-    out_flush();		/* make sure output has been written */
-    gui_update_cursor(TRUE, FALSE);
+    out_flush_cursor(TRUE, FALSE);
 
 # ifdef FEAT_XIM
     xim_set_focus(in_focus);
@@ -5142,9 +5160,7 @@ gui_update_screen(void)
 	curwin->w_valid &= ~VALID_CROW;
     }
 # endif
-    out_flush();		/* make sure output has been written */
-    gui_update_cursor(TRUE, FALSE);
-    gui_mch_flush();
+    out_flush_cursor(TRUE, FALSE);
 }
 #endif
 
@@ -5501,9 +5517,7 @@ gui_handle_drop(
 	maketitle();
 #endif
 	setcursor();
-	out_flush();
-	gui_update_cursor(FALSE, FALSE);
-	gui_mch_flush();
+	out_flush_cursor(FALSE, FALSE);
     }
 
     entered = FALSE;

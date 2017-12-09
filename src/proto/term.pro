@@ -12,6 +12,7 @@ int term_is_gui(char_u *name);
 char_u *tltoa(unsigned long i);
 void termcapinit(char_u *name);
 void out_flush(void);
+void out_flush_cursor(int force, int clear_selection);
 void out_flush_check(void);
 void out_trash(void);
 void out_char(unsigned c);

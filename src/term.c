@@ -2501,6 +2501,29 @@ out_flush(void)
     }
 }
 
+/*
+ * out_flush_cursor(): flush the output buffer and redraw the cursor
+ */
+    void
+out_flush_cursor(
+    int		force,		/* when TRUE, update even when not moved */
+    int		clear_selection)/* clear selection under cursor */
+{
+#ifdef FEAT_GUI
+    gui_start_updating_cursor();
+#endif
+    out_flush();
+#ifdef FEAT_GUI
+    gui_end_updating_cursor();
+    if (gui.in_use)
+    {
+	gui_update_cursor(force, clear_selection);
+	gui_mch_flush();
+    }
+#endif
+}
+
+
 #if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Sometimes a byte out of a multi-byte character is written with out_char().

@@ -1283,11 +1283,18 @@ main_loop(
 			|| conceal_cursor_line(curwin)
 			|| need_cursor_line_redraw))
 	    {
+#  ifdef FEAT_GUI
+		/* Stop issuing gui_mch_flush(). */
+		gui_start_updating_cursor();
+#  endif
 		if (conceal_old_cursor_line != conceal_new_cursor_line
 			&& conceal_old_cursor_line
 						<= curbuf->b_ml.ml_line_count)
 		    update_single_line(curwin, conceal_old_cursor_line);
 		update_single_line(curwin, conceal_new_cursor_line);
+#  ifdef FEAT_GUI
+		gui_end_updating_cursor();
+#  endif
 		curwin->w_valid &= ~VALID_CROW;
 	    }
 # endif
@@ -4207,11 +4214,7 @@ eval_client_expr_to_string(char_u *expr)
     /* A client can tell us to redraw, but not to display the cursor, so do
      * that here. */
     setcursor();
-    out_flush();
-#ifdef FEAT_GUI
-    if (gui.in_use)
-	gui_update_cursor(FALSE, FALSE);
-#endif
+    out_flush_cursor(FALSE, FALSE);
 
     return res;
 }

@@ -2972,16 +2972,10 @@ inchar(
     if (wait_time == -1L || wait_time > 100L)  /* flush output before waiting */
     {
 	cursor_on();
-	out_flush();
-#ifdef FEAT_GUI
-	if (gui.in_use)
-	{
-	    gui_update_cursor(FALSE, FALSE);
-# ifdef FEAT_MOUSESHAPE
-	    if (postponed_mouseshape)
-		update_mouseshape(-1);
-# endif
-	}
+	out_flush_cursor(FALSE, FALSE);
+#if defined(FEAT_GUI) && defined(FEAT_MOUSESHAPE)
+	if (gui.in_use && postponed_mouseshape)
+	    update_mouseshape(-1);
 #endif
     }
 

@@ -3553,8 +3553,7 @@ ins_compl_new_leader(void)
 	{
 	    /* Show the cursor after the match, not after the redrawn text. */
 	    setcursor();
-	    out_flush();
-	    gui_update_cursor(FALSE, FALSE);
+	    out_flush_cursor(FALSE, FALSE);
 	}
 #endif
 	compl_restarting = TRUE;
@@ -4936,8 +4935,7 @@ ins_compl_next(
 	{
 	    /* Show the cursor after the match, not after the redrawn text. */
 	    setcursor();
-	    out_flush();
-	    gui_update_cursor(FALSE, FALSE);
+	    out_flush_cursor(FALSE, FALSE);
 	}
 #endif
 
