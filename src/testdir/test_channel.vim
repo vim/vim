@@ -515,7 +515,7 @@ func Test_nl_pipe()
     call assert_equal("AND this", ch_readraw(handle))
 
     call ch_sendraw(handle, "split this line\n")
-    call assert_equal("this linethis linethis line", ch_readraw(handle))
+    call assert_equal("this linethis linethis line", ch_read(handle))
 
     let reply = ch_evalraw(handle, "quit\n")
     call assert_equal("Goodbye!", reply)
@@ -1260,6 +1260,31 @@ func Test_read_in_close_cb()
   try
     call WaitFor('g:Ch_received != ""')
     call assert_equal('quit', g:Ch_received)
+  finally
+    call job_stop(job)
+    delfunc CloseHandler
+  endtry
+endfunc
+
+" Use channel in NL mode but received text does not end in NL.
+func Test_read_in_close_cb_incomplete()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_read_in_close_cb_incomplete()')
+
+  let g:Ch_received = ''
+  func! CloseHandler(chan)
+    while ch_status(a:chan, {'part': 'out'}) == 'buffered'
+      let g:Ch_received .= ch_read(a:chan)
+    endwhile
+  endfunc
+  let job = job_start(s:python . " test_channel_pipe.py incomplete",
+	\ {'close_cb': 'CloseHandler'})
+  call assert_equal("run", job_status(job))
+  try
+    call WaitFor('g:Ch_received != ""')
+    call assert_equal('incomplete', g:Ch_received)
   finally
     call job_stop(job)
     delfunc CloseHandler
