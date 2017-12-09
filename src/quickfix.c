@@ -4863,78 +4863,95 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
 
-    /* List is not present or is empty */
-    if (qi == NULL || qi->qf_listcount == 0)
-    {
-	/* If querying for the size of the list, return 0 */
-	if (((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
-		&& (di->di_tv.v_type == VAR_STRING)
-		&& (STRCMP(di->di_tv.vval.v_string, "$") == 0))
-	    return dict_add_nr_str(retdict, "nr", 0, NULL);
-	return FAIL;
-    }
-
-    qf_idx = qi->qf_curlist;		/* default is the current list */
-    if ((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
-    {
-	/* Use the specified quickfix/location list */
-	if (di->di_tv.v_type == VAR_NUMBER)
-	{
-	    /* for zero use the current list */
-	    if (di->di_tv.vval.v_number != 0)
-	    {
-		qf_idx = di->di_tv.vval.v_number - 1;
-		if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
-		    return FAIL;
-	    }
-	}
-	else if ((di->di_tv.v_type == VAR_STRING)
-		&& (STRCMP(di->di_tv.vval.v_string, "$") == 0))
-	    /* Get the last quickfix list number */
-	    qf_idx = qi->qf_listcount - 1;
-	else
-	    return FAIL;
-	flags |= QF_GETLIST_NR;
-    }
-
-    if ((di = dict_find(what, (char_u *)"id", -1)) != NULL)
-    {
-	/* Look for a list with the specified id */
-	if (di->di_tv.v_type == VAR_NUMBER)
-	{
-	    /* For zero, use the current list or the list specifed by 'nr' */
-	    if (di->di_tv.vval.v_number != 0)
-	    {
-		qf_idx = qf_id2nr(qi, di->di_tv.vval.v_number);
-		if (qf_idx == -1)
-		    return FAIL;	    /* List not found */
-	    }
-	    flags |= QF_GETLIST_ID;
-	}
-	else
-	    return FAIL;
-    }
-
     if (dict_find(what, (char_u *)"all", -1) != NULL)
 	flags |= QF_GETLIST_ALL;
-
     if (dict_find(what, (char_u *)"title", -1) != NULL)
 	flags |= QF_GETLIST_TITLE;
-
-    if (dict_find(what, (char_u *)"winid", -1) != NULL)
-	flags |= QF_GETLIST_WINID;
-
-    if (dict_find(what, (char_u *)"context", -1) != NULL)
-	flags |= QF_GETLIST_CONTEXT;
-
     if (dict_find(what, (char_u *)"items", -1) != NULL)
 	flags |= QF_GETLIST_ITEMS;
-
+    if (dict_find(what, (char_u *)"nr", -1) != NULL)
+	flags |= QF_GETLIST_NR;
+    if (dict_find(what, (char_u *)"winid", -1) != NULL)
+	flags |= QF_GETLIST_WINID;
+    if (dict_find(what, (char_u *)"context", -1) != NULL)
+	flags |= QF_GETLIST_CONTEXT;
+    if (dict_find(what, (char_u *)"id", -1) != NULL)
+	flags |= QF_GETLIST_ID;
     if (dict_find(what, (char_u *)"idx", -1) != NULL)
 	flags |= QF_GETLIST_IDX;
-
     if (dict_find(what, (char_u *)"size", -1) != NULL)
 	flags |= QF_GETLIST_SIZE;
+
+    if (qi != NULL && qi->qf_listcount != 0)
+    {
+	qf_idx = qi->qf_curlist;	/* default is the current list */
+	if ((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
+	{
+	    /* Use the specified quickfix/location list */
+	    if (di->di_tv.v_type == VAR_NUMBER)
+	    {
+		/* for zero use the current list */
+		if (di->di_tv.vval.v_number != 0)
+		{
+		    qf_idx = di->di_tv.vval.v_number - 1;
+		    if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
+			qf_idx = -1;
+		}
+	    }
+	    else if ((di->di_tv.v_type == VAR_STRING)
+		    && (STRCMP(di->di_tv.vval.v_string, "$") == 0))
+		/* Get the last quickfix list number */
+		qf_idx = qi->qf_listcount - 1;
+	    else
+		qf_idx = -1;
+	    flags |= QF_GETLIST_NR;
+	}
+
+	if ((di = dict_find(what, (char_u *)"id", -1)) != NULL)
+	{
+	    /* Look for a list with the specified id */
+	    if (di->di_tv.v_type == VAR_NUMBER)
+	    {
+		/*
+		 * For zero, use the current list or the list specifed by 'nr'
+		 */
+		if (di->di_tv.vval.v_number != 0)
+		    qf_idx = qf_id2nr(qi, di->di_tv.vval.v_number);
+		flags |= QF_GETLIST_ID;
+	    }
+	    else
+		qf_idx = -1;
+	}
+    }
+
+    /* List is not present or is empty */
+    if (qi == NULL || qi->qf_listcount == 0 || qf_idx == -1)
+    {
+	if (flags & QF_GETLIST_TITLE)
+	    status = dict_add_nr_str(retdict, "title", 0L, (char_u *)"");
+	if ((status == OK) && (flags & QF_GETLIST_ITEMS))
+	{
+	    list_T	*l = list_alloc();
+	    if (l != NULL)
+		status = dict_add_list(retdict, "items", l);
+	    else
+		status = FAIL;
+	}
+	if ((status == OK) && (flags & QF_GETLIST_NR))
+	    status = dict_add_nr_str(retdict, "nr", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_WINID))
+	    status = dict_add_nr_str(retdict, "winid", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_CONTEXT))
+	    status = dict_add_nr_str(retdict, "context", 0L, (char_u *)"");
+	if ((status == OK) && (flags & QF_GETLIST_ID))
+	    status = dict_add_nr_str(retdict, "id", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_IDX))
+	    status = dict_add_nr_str(retdict, "idx", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_SIZE))
+	    status = dict_add_nr_str(retdict, "size", 0L, NULL);
+
+	return status;
+    }
 
     if (flags & QF_GETLIST_TITLE)
     {
