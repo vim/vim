@@ -6934,13 +6934,10 @@ fix_help_buffer(void)
 			    && fcount > 0)
 		    {
 #ifdef FEAT_MULTI_LANG
-			int	i1;
-			int	i2;
-			char_u	*f1;
-			char_u	*f2;
-			char_u	*t1;
-			char_u	*e1;
-			char_u	*e2;
+			int	i1, i2;
+			char_u	*f1, *f2;
+			char_u	*t1, *t2;
+			char_u	*e1, *e2;
 
 			/* If foo.abx is found use it instead of foo.txt in
 			 * the same directory. */
@@ -6955,10 +6952,9 @@ fix_help_buffer(void)
 				f1 = fnames[i1];
 				f2 = fnames[i2];
 				t1 = gettail(f1);
-				if (fnamencmp(f1, f2, t1 - f1) != 0)
-				    continue;
+				t2 = gettail(f2);
 				e1 = vim_strrchr(t1, '.');
-				e2 = vim_strrchr(gettail(f2), '.');
+				e2 = vim_strrchr(t2, '.');
 				if (e1 == NULL || e2 == NULL)
 				    continue;
 				if (fnamecmp(e1, ".txt") != 0
@@ -6969,7 +6965,8 @@ fix_help_buffer(void)
 				    fnames[i1] = NULL;
 				    continue;
 				}
-				if (fnamencmp(f1, f2, e1 - f1) != 0)
+				if (e1 - f1 != e2 - f2
+					    || fnamencmp(f1, f2, e1 - f1) != 0)
 				    continue;
 				if (fnamecmp(e1, ".txt") == 0
 				    && fnamecmp(e2, fname + 4) == 0)
