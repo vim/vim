@@ -3140,7 +3140,8 @@ gui_mch_delete_lines(
     {
 	if (s_directx_scrlines > 0 && s_directx_scrlines <= num_lines)
 	{
-	    RedrawWindow(s_textArea, &rc, NULL, RDW_INVALIDATE);
+	    gui_redraw(rc.left, rc.top,
+		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
 	    use_redraw = 1;
 	}
 	else
@@ -3152,9 +3153,9 @@ gui_mch_delete_lines(
 	intel_gpu_workaround();
 	ScrollWindowEx(s_textArea, 0, -num_lines * gui.char_height,
 				    &rc, &rc, NULL, NULL, get_scroll_flags());
+	UpdateWindow(s_textArea);
     }
 
-    UpdateWindow(s_textArea);
     /* This seems to be required to avoid the cursor disappearing when
      * scrolling such that the cursor ends up in the top-left character on
      * the screen...   But why?  (Webb) */
@@ -3190,7 +3191,8 @@ gui_mch_insert_lines(
     {
 	if (s_directx_scrlines > 0 && s_directx_scrlines <= num_lines)
 	{
-	    RedrawWindow(s_textArea, &rc, NULL, RDW_INVALIDATE);
+	    gui_redraw(rc.left, rc.top,
+		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
 	    use_redraw = 1;
 	}
 	else
@@ -3204,9 +3206,8 @@ gui_mch_insert_lines(
 	 * off-screen.  How do we avoid it when it's not needed? */
 	ScrollWindowEx(s_textArea, 0, num_lines * gui.char_height,
 				    &rc, &rc, NULL, NULL, get_scroll_flags());
+	UpdateWindow(s_textArea);
     }
-
-    UpdateWindow(s_textArea);
 
     gui_clear_block(row, gui.scroll_region_left,
 				row + num_lines - 1, gui.scroll_region_right);
