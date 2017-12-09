@@ -1482,7 +1482,7 @@ do_shell(
 #endif
 		&& msg_silent == 0)
 	FOR_ALL_BUFFERS(buf)
-	    if (bufIsChanged(buf))
+	    if (bufIsChangedNotTerm(buf))
 	    {
 #ifdef FEAT_GUI_MSWIN
 		if (!winstart)

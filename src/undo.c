@@ -3523,6 +3523,8 @@ u_save_line(linenr_T lnum)
  * Check if the 'modified' flag is set, or 'ff' has changed (only need to
  * check the first character, because it can only be "dos", "unix" or "mac").
  * "nofile" and "scratch" type buffers are considered to always be unchanged.
+ * Also considers a buffer changed when a terminal window contains a running
+ * job.
  */
     int
 bufIsChanged(buf_T *buf)
@@ -3531,6 +3533,15 @@ bufIsChanged(buf_T *buf)
     if (term_job_running(buf->b_term))
 	return TRUE;
 #endif
+    return bufIsChangedNotTerm(buf);
+}
+
+/*
+ * Like bufIsChanged() but ignoring a terminal window.
+ */
+    int
+bufIsChangedNotTerm(buf_T *buf)
+{
     return !bt_dontwrite(buf)
 	&& (buf->b_changed || file_ff_differs(buf, TRUE));
 }
