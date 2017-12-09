@@ -3510,6 +3510,9 @@ may_req_ambiguous_char_width(void)
 	 out_str((char_u *)"  ");
 	 term_windgoto(0, 0);
 
+	 /* Need to reset the known cursor position. */
+	 screen_start();
+
 	 /* check for the characters now, otherwise they might be eaten by
 	  * get_keystroke() */
 	 out_flush();
@@ -4585,7 +4588,7 @@ check_termcode(
 				is_mac_terminal = TRUE;
 			    }
 # ifdef FEAT_MOUSE_SGR
-			    /* Iterm2 sends 0;95;0 */
+			    /* iTerm2 sends 0;95;0 */
 			    if (STRNCMP(tp + extra - 2, "0;95;0c", 7) == 0)
 				is_iterm2 = TRUE;
 # endif
@@ -4597,7 +4600,7 @@ check_termcode(
 			{
 # ifdef FEAT_MOUSE_SGR
 			    /* Xterm version 277 supports SGR.  Also support
-			     * Terminal.app and iterm2. */
+			     * Terminal.app and iTerm2. */
 			    if (version >= 277 || is_iterm2 || is_mac_terminal)
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
