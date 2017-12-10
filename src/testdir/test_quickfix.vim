@@ -2886,6 +2886,7 @@ endfunc
 func Xgetlist_empty_tests(cchar)
   call s:setup_commands(a:cchar)
 
+  " Empty quickfix stack
   call g:Xsetlist([], 'f')
   call assert_equal('', g:Xgetlist({'context' : 0}).context)
   call assert_equal(0, g:Xgetlist({'id' : 0}).id)
@@ -2897,6 +2898,7 @@ func Xgetlist_empty_tests(cchar)
   call assert_equal(0, g:Xgetlist({'winid' : 0}).winid)
   call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0}, g:Xgetlist({'all' : 0}))
 
+  " Empty quickfix list
   Xexpr ""
   call assert_equal('', g:Xgetlist({'context' : 0}).context)
   call assert_notequal(0, g:Xgetlist({'id' : 0}).id)
@@ -2910,6 +2912,7 @@ func Xgetlist_empty_tests(cchar)
   let qfid = g:Xgetlist({'id' : 0}).id
   call g:Xsetlist([], 'f')
 
+  " Non-existing quickfix identifier
   call assert_equal('', g:Xgetlist({'id' : qfid, 'context' : 0}).context)
   call assert_equal(0, g:Xgetlist({'id' : qfid}).id)
   call assert_equal(0, g:Xgetlist({'id' : qfid, 'idx' : 0}).idx)
@@ -2920,6 +2923,7 @@ func Xgetlist_empty_tests(cchar)
   call assert_equal(0, g:Xgetlist({'id' : qfid, 'winid' : 0}).winid)
   call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0}, g:Xgetlist({'id' : qfid, 'all' : 0}))
 
+  " Non-existing quickfix list number
   call assert_equal('', g:Xgetlist({'nr' : 5, 'context' : 0}).context)
   call assert_equal(0, g:Xgetlist({'nr' : 5}).nr)
   call assert_equal(0, g:Xgetlist({'nr' : 5, 'idx' : 0}).idx)
