@@ -452,6 +452,19 @@ E.g. When using MSVC (as one line):
         PYTHON3=C:\Python36 DYNAMIC_PYTHON3=yes PYTHON3_VER=36
 
 
+When using msys2 and link with Python3 bundled with msys2 (as one line):
+
+    mingw32-make -f Make_ming.mak PYTHON3=c:/msys64/mingw64
+        PYTHON3_HOME=c:/msys64/mingw64
+        PYTHON3INC=-Ic:/msys64/mingw64/include/python3.6m
+        DYNAMIC_PYTHON3=yes
+        PYTHON3_VER=36
+        DYNAMIC_PYTHON3_DLL=libpython3.6m.dll
+        STATIC_STDCPLUS=yes
+
+(This is for 64-bit builds.  For 32-bit builds, replace mingw64 with mingw32.)
+
+
 8. Building with Racket or MzScheme support
 ========================================
 
