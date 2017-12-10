@@ -438,18 +438,31 @@ You will end up with a Python-enabled, Win32 version. Enjoy!
 ================================
 
 For building with MSVC 2008 the "Windows Installer" from www.python.org
-works fine.  Python 3.4 is recommended.
+works fine.  Python 3.6 is recommended.
 
 When building, you need to set the following variables at least:
 
-    PYTHON3:         Where Python3 is installed. E.g. C:\Python34
+    PYTHON3:         Where Python3 is installed. E.g. C:\Python36
     DYNAMIC_PYTHON3: Whether dynamic linking is used. Usually, set to yes.
-    PYTHON3_VER:     Python3 version. E.g. 34 for Python 3.4.X.
+    PYTHON3_VER:     Python3 version. E.g. 36 for Python 3.6.X.
 
 E.g. When using MSVC (as one line):
 
     nmake -f Make_mvc.mak
-        PYTHON3=C:\Python34 DYNAMIC_PYTHON3=yes PYTHON3_VER=34
+        PYTHON3=C:\Python36 DYNAMIC_PYTHON3=yes PYTHON3_VER=36
+
+
+When using msys2 and link with Python3 bundled with msys2 (as one line):
+
+    mingw32-make -f Make_ming.mak PYTHON3=c:/msys64/mingw64
+        PYTHON3_HOME=c:/msys64/mingw64
+        PYTHON3INC=-Ic:/msys64/mingw64/include/python3.6m
+        DYNAMIC_PYTHON3=yes
+        PYTHON3_VER=36
+        DYNAMIC_PYTHON3_DLL=libpython3.6m.dll
+        STATIC_STDCPLUS=yes
+
+(This is for 64-bit builds.  For 32-bit builds, replace mingw64 with mingw32.)
 
 
 8. Building with Racket or MzScheme support
@@ -684,20 +697,32 @@ config.h and Ruby's DLL name. Here are the steps for working around them:
     There is no need to build whole Ruby, just config.h is needed.
     If you use 32-bit MSVC 2015, the config.h is generated in the
     .ext\include\i386-mswin32_140 directory.
+    If you use 64-bit MSVC 2015, the config.h is generated in the
+    .ext\include\x64-mswin64_140 directory.
 
   3) Install the generated config.h.
 
+    For 32-bit version:
+
       xcopy /s .ext\include C:\Ruby24\include\ruby-2.4.0
+
+    For 64-bit version:
+
+      xcopy /s .ext\include C:\Ruby24-x64\include\ruby-2.4.0
 
     Note that 2.4.0 is Ruby API version of Ruby 2.4.X.
     You may need to close the console and reopen it to pick up the new $PATH.
 
   4) Build Vim. Note that you need to adjust some variables (as one line):
 
+    For 32-bit version:
+
       nmake -f Make_mvc.mak
           RUBY=C:\Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
           RUBY_MSVCRT_NAME=msvcrt
           WINVER=0x501
+
+    For 64-bit version, replace RUBY=C:\Ruby24 with RUBY=C:\Ruby24-x64.
 
     If you set WINVER explicitly, it must be set to >=0x500, when building
     with Ruby 2.1 or later.  (Default is 0x501.)
@@ -713,6 +738,7 @@ After you install RubyInstaller, just type this (as one line):
         RUBY=C:/Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
         WINVER=0x501
 
+For 64-bit version, replace RUBY=C:/Ruby24 with RUBY=C:/Ruby24-x64.
 If you set WINVER explicitly, it must be set to >=0x500, when building with
 Ruby 2.1 or later.  (Default is 0x501.)
 
