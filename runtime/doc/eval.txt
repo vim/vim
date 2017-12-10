@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Nov 24
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2031,7 +2031,7 @@ assert_true({actual} [, {msg}])	none	assert {actual} is true
 asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
-balloon_show({msg})		none	show {msg} inside the balloon
+balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
@@ -3056,12 +3056,16 @@ ch_open({address} [, {options}])				*ch_open()*
 ch_read({handle} [, {options}])					*ch_read()*
 		Read from {handle} and return the received message.
 		{handle} can be a Channel or a Job that has a Channel.
+		For a NL channel this waits for a NL to arrive, except when
+		there is nothing more to read (channel was closed).
 		See |channel-more|.
 		{only available when compiled with the |+channel| feature}
 
 ch_readraw({handle} [, {options}])			*ch_readraw()*
 		Like ch_read() but for a JS and JSON channel does not decode
-		the message.  See |channel-more|.
+		the message.  For a NL channel it does not block waiting for
+		the NL to arrive, but otherwise works like ch_read().
+		See |channel-more|.
 		{only available when compiled with the |+channel| feature}
 
 ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
@@ -4679,9 +4683,10 @@ getqflist([{what}])					*getqflist()*
 				the last quickfix list
 			size	number of entries in the quickfix list
 			title	get the list title
-			winid	get the |window-ID| (if opened)
+			winid	get the quickfix |window-ID|
 			all	all of the above quickfix properties
-		Non-string items in {what} are ignored.
+		Non-string items in {what} are ignored. To get the value of a
+		particular item, set it to one.
 		If "nr" is not present then the current quickfix list is used.
 		If both "nr" and a non-zero "id" are specified, then the list
 		specified by "id" is used.
@@ -4702,7 +4707,7 @@ getqflist([{what}])					*getqflist()*
 			nr	quickfix list number
 			size	number of entries in the quickfix list
 			title	quickfix list title text
-			winid	quickfix |window-ID| (if opened)
+			winid	quickfix |window-ID|. If not present, set to 0
 
 		Examples: >
 			:echo getqflist({'all': 1})
@@ -8793,8 +8798,8 @@ writefile({list}, {fname} [, {flags}])
 		the file.  This flushes the file to disk, if possible.  This
 		takes more time but avoids losing the file if the system
 		crashes.
-		When {flags} does not contain "S" or "s" then fsync is called
-		if the 'fsync' option is set.
+		When {flags} does not contain "S" or "s" then fsync() is
+		called if the 'fsync' option is set.
 		When {flags} contains "S" then fsync() is not called, even
 		when 'fsync' is set.
 

@@ -4949,9 +4949,12 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_WINID))
     {
 	win_T	*win;
+	int	win_id = 0;
+
 	win = qf_find_win(qi);
 	if (win != NULL)
-	    status = dict_add_nr_str(retdict, "winid", win->w_id, NULL);
+	    win_id = win->w_id;
+	status = dict_add_nr_str(retdict, "winid", win_id, NULL);
     }
     if ((status == OK) && (flags & QF_GETLIST_ITEMS))
     {
