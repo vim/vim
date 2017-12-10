@@ -4137,6 +4137,7 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
     int		filtered = FALSE;
     int		sel_buflisted = FALSE;
     int		sel_bufloaded = FALSE;
+    int		sel_bufmodified = FALSE;
 
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -4159,6 +4160,10 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
 	    di = dict_find(sel_d, (char_u *)"bufloaded", -1);
 	    if (di != NULL && get_tv_number(&di->di_tv))
 		sel_bufloaded = TRUE;
+
+	    di = dict_find(sel_d, (char_u *)"bufmodified", -1);
+	    if (di != NULL && get_tv_number(&di->di_tv))
+		sel_bufmodified = TRUE;
 	}
     }
     else if (argvars[0].v_type != VAR_UNKNOWN)
@@ -4178,7 +4183,8 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
 	if (argbuf != NULL && argbuf != buf)
 	    continue;
 	if (filtered && ((sel_bufloaded && buf->b_ml.ml_mfp == NULL)
-					   || (sel_buflisted && !buf->b_p_bl)))
+					   || (sel_buflisted && !buf->b_p_bl)
+				|| (sel_bufmodified && !buf->b_changed)))
 	    continue;
 
 	d = get_buffer_info(buf);
