@@ -438,18 +438,31 @@ You will end up with a Python-enabled, Win32 version. Enjoy!
 ================================
 
 For building with MSVC 2008 the "Windows Installer" from www.python.org
-works fine.  Python 3.4 is recommended.
+works fine.  Python 3.6 is recommended.
 
 When building, you need to set the following variables at least:
 
-    PYTHON3:         Where Python3 is installed. E.g. C:\Python34
+    PYTHON3:         Where Python3 is installed. E.g. C:\Python36
     DYNAMIC_PYTHON3: Whether dynamic linking is used. Usually, set to yes.
-    PYTHON3_VER:     Python3 version. E.g. 34 for Python 3.4.X.
+    PYTHON3_VER:     Python3 version. E.g. 36 for Python 3.6.X.
 
 E.g. When using MSVC (as one line):
 
     nmake -f Make_mvc.mak
-        PYTHON3=C:\Python34 DYNAMIC_PYTHON3=yes PYTHON3_VER=34
+        PYTHON3=C:\Python36 DYNAMIC_PYTHON3=yes PYTHON3_VER=36
+
+
+When using msys2 and link with Python3 bundled with msys2 (as one line):
+
+    mingw32-make -f Make_ming.mak PYTHON3=c:/msys64/mingw64
+        PYTHON3_HOME=c:/msys64/mingw64
+        PYTHON3INC=-Ic:/msys64/mingw64/include/python3.6m
+        DYNAMIC_PYTHON3=yes
+        PYTHON3_VER=36
+        DYNAMIC_PYTHON3_DLL=libpython3.6m.dll
+        STATIC_STDCPLUS=yes
+
+(This is for 64-bit builds.  For 32-bit builds, replace mingw64 with mingw32.)
 
 
 8. Building with Racket or MzScheme support
