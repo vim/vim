@@ -4865,20 +4865,28 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 
     if (dict_find(what, (char_u *)"all", -1) != NULL)
 	flags |= QF_GETLIST_ALL;
+
     if (dict_find(what, (char_u *)"title", -1) != NULL)
 	flags |= QF_GETLIST_TITLE;
-    if (dict_find(what, (char_u *)"items", -1) != NULL)
-	flags |= QF_GETLIST_ITEMS;
+
     if (dict_find(what, (char_u *)"nr", -1) != NULL)
 	flags |= QF_GETLIST_NR;
+
     if (dict_find(what, (char_u *)"winid", -1) != NULL)
 	flags |= QF_GETLIST_WINID;
+
     if (dict_find(what, (char_u *)"context", -1) != NULL)
 	flags |= QF_GETLIST_CONTEXT;
+
     if (dict_find(what, (char_u *)"id", -1) != NULL)
 	flags |= QF_GETLIST_ID;
+
+    if (dict_find(what, (char_u *)"items", -1) != NULL)
+	flags |= QF_GETLIST_ITEMS;
+
     if (dict_find(what, (char_u *)"idx", -1) != NULL)
 	flags |= QF_GETLIST_IDX;
+
     if (dict_find(what, (char_u *)"size", -1) != NULL)
 	flags |= QF_GETLIST_SIZE;
 
