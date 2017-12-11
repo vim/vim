@@ -101,8 +101,8 @@ func Test_wordcount()
   call assert_equal({'chars': 32, 'words': 7, 'bytes': 36, 'visual_chars': 13,
 				\ 'visual_words': 3, 'visual_bytes': 16}, g:visual_stat)
 
-  enew!
   set selection& fileformat& fileformats&
   let &enc = save_enc
+  enew!
   close
 endfunc
