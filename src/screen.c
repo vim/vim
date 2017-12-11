@@ -800,6 +800,10 @@ update_screen(int type_arg)
     {
 	if (did_undraw && !gui_mch_is_blink_off())
 	{
+	    gui_start_updating_cursor();
+	    out_flush();	/* required before updating the cursor */
+	    gui_end_updating_cursor();
+
 	    /* Put the GUI position where the cursor was, gui_update_cursor()
 	     * uses that. */
 	    gui.col = gui_cursor_col;
@@ -807,7 +811,8 @@ update_screen(int type_arg)
 # ifdef FEAT_MBYTE
 	    gui.col = mb_fix_col(gui.col, gui.row);
 # endif
-	    out_flush_cursor(FALSE, FALSE);
+	    gui_update_cursor(FALSE, FALSE);
+	    gui_mch_flush();
 	    screen_cur_col = gui.col;
 	    screen_cur_row = gui.row;
 	}
