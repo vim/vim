@@ -27,6 +27,7 @@ void gui_dont_update_cursor(int undraw);
 void gui_can_update_cursor(void);
 void gui_start_updating_cursor(void);
 void gui_end_updating_cursor(void);
+int gui_is_updating_cursor(void);
 int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
 void gui_undraw_cursor(void);
 void gui_redraw(int x, int y, int w, int h);

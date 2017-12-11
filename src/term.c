@@ -2518,7 +2518,8 @@ out_flush_cursor(
     if (gui.in_use)
     {
 	gui_update_cursor(force, clear_selection);
-	gui_mch_flush();
+	if (!gui_is_updating_cursor())
+	    gui_mch_flush();
     }
 #endif
 }

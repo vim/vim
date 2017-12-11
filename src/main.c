@@ -1242,7 +1242,16 @@ main_loop(
 	    if (VIsual_active)
 		update_curbuf(INVERTED);/* update inverted part */
 	    else if (must_redraw)
+	    {
+#ifdef FEAT_GUI
+		/* Stop issuing gui_mch_flush(). */
+		gui_start_updating_cursor();
+#endif
 		update_screen(0);
+#ifdef FEAT_GUI
+		gui_end_updating_cursor();
+#endif
+	    }
 	    else if (redraw_cmdline || clear_cmdline)
 		showmode();
 	    redraw_statuslines();

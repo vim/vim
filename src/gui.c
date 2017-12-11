@@ -55,7 +55,7 @@ enum {
 static void gui_attempt_start(void);
 
 static int can_update_cursor = TRUE; /* can display the cursor */
-static int cursor_updating = FALSE;
+static int cursor_updating = 0;
 
 /*
  * The Athena scrollbars can move the thumb to after the end of the scrollbar,
@@ -1977,7 +1977,7 @@ gui_write(
     gui.dragged_sb = SBAR_NONE;
 #endif
 
-    if (!cursor_updating)
+    if (!gui_is_updating_cursor())
 	gui_mch_flush();	    /* In case vim decides to take a nap */
 }
 
@@ -2012,7 +2012,7 @@ gui_can_update_cursor(void)
     void
 gui_start_updating_cursor(void)
 {
-    cursor_updating = TRUE;
+    ++cursor_updating;
 }
 
 /*
@@ -2021,7 +2021,16 @@ gui_start_updating_cursor(void)
     void
 gui_end_updating_cursor(void)
 {
-    cursor_updating = FALSE;
+    --cursor_updating;
+}
+
+/*
+ * Return whether updating the cursor.
+ */
+    int
+gui_is_updating_cursor(void)
+{
+    return cursor_updating > 0;
 }
 
     static void
@@ -4490,7 +4499,9 @@ gui_do_scroll(void)
 	 * disappear when losing focus after a scrollbar drag. */
 	if (wp->w_redr_type < type)
 	    wp->w_redr_type = type;
+	gui_start_updating_cursor();
 	updateWindow(wp);   /* update window, status line, and cmdline */
+	gui_end_updating_cursor();
     }
 
 #ifdef FEAT_INS_EXPAND

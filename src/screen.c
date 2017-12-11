@@ -812,7 +812,8 @@ update_screen(int type_arg)
 	    gui.col = mb_fix_col(gui.col, gui.row);
 # endif
 	    gui_update_cursor(FALSE, FALSE);
-	    gui_mch_flush();
+	    if (!gui_is_updating_cursor())
+		gui_mch_flush();
 	    screen_cur_col = gui.col;
 	    screen_cur_row = gui.row;
 	}
