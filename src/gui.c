@@ -55,7 +55,7 @@ enum {
 static void gui_attempt_start(void);
 
 static int can_update_cursor = TRUE; /* can display the cursor */
-static int cursor_updating = 0;
+static int disable_flush = 0;	/* If > 0, gui_mch_flush() is disabled. */
 
 /*
  * The Athena scrollbars can move the thumb to after the end of the scrollbar,
@@ -1977,8 +1977,7 @@ gui_write(
     gui.dragged_sb = SBAR_NONE;
 #endif
 
-    if (!gui_is_updating_cursor())
-	gui_mch_flush();	    /* In case vim decides to take a nap */
+    gui_may_flush();		    /* In case vim decides to take a nap */
 }
 
 /*
@@ -2007,30 +2006,31 @@ gui_can_update_cursor(void)
 }
 
 /*
- * Start updating the cursor.  No need to call gui_mch_flush() yet.
+ * Disable issuing gui_mch_flush().
  */
     void
-gui_start_updating_cursor(void)
+gui_disable_flush(void)
 {
-    ++cursor_updating;
+    ++disable_flush;
 }
 
 /*
- * End updating the cursor.  gui_mch_flush() can be called.
+ * Enable issuing gui_mch_flush().
  */
     void
-gui_end_updating_cursor(void)
+gui_enable_flush(void)
 {
-    --cursor_updating;
+    --disable_flush;
 }
 
 /*
- * Return whether updating the cursor.
+ * Issue gui_mch_flush() if it is not disabled.
  */
-    int
-gui_is_updating_cursor(void)
+    void
+gui_may_flush(void)
 {
-    return cursor_updating > 0;
+    if (disable_flush == 0)
+	gui_mch_flush();
 }
 
     static void
@@ -3696,7 +3696,6 @@ gui_update_tabline(void)
 	/* Updating the tabline uses direct GUI commands, flush
 	 * outstanding instructions first. (esp. clear screen) */
 	out_flush();
-	gui_mch_flush();
 
 	if (!showit != !shown)
 	    gui_mch_show_tabline(showit);
@@ -4499,9 +4498,9 @@ gui_do_scroll(void)
 	 * disappear when losing focus after a scrollbar drag. */
 	if (wp->w_redr_type < type)
 	    wp->w_redr_type = type;
-	gui_start_updating_cursor();
+	gui_disable_flush();
 	updateWindow(wp);   /* update window, status line, and cmdline */
-	gui_end_updating_cursor();
+	gui_enable_flush();
     }
 
 #ifdef FEAT_INS_EXPAND

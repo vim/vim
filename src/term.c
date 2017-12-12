@@ -2510,16 +2510,15 @@ out_flush_cursor(
     int		clear_selection)/* clear selection under cursor */
 {
 #ifdef FEAT_GUI
-    gui_start_updating_cursor();
+    gui_disable_flush();
 #endif
     out_flush();
 #ifdef FEAT_GUI
-    gui_end_updating_cursor();
+    gui_enable_flush();
     if (gui.in_use)
     {
 	gui_update_cursor(force, clear_selection);
-	if (!gui_is_updating_cursor())
-	    gui_mch_flush();
+	gui_may_flush();
     }
 #endif
 }

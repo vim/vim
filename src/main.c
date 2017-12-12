@@ -1245,11 +1245,11 @@ main_loop(
 	    {
 #ifdef FEAT_GUI
 		/* Stop issuing gui_mch_flush(). */
-		gui_start_updating_cursor();
+		gui_disable_flush();
 #endif
 		update_screen(0);
 #ifdef FEAT_GUI
-		gui_end_updating_cursor();
+		gui_enable_flush();
 #endif
 	    }
 	    else if (redraw_cmdline || clear_cmdline)
@@ -1294,7 +1294,7 @@ main_loop(
 	    {
 #  ifdef FEAT_GUI
 		/* Stop issuing gui_mch_flush(). */
-		gui_start_updating_cursor();
+		gui_disable_flush();
 #  endif
 		if (conceal_old_cursor_line != conceal_new_cursor_line
 			&& conceal_old_cursor_line
@@ -1302,7 +1302,7 @@ main_loop(
 		    update_single_line(curwin, conceal_old_cursor_line);
 		update_single_line(curwin, conceal_new_cursor_line);
 #  ifdef FEAT_GUI
-		gui_end_updating_cursor();
+		gui_enable_flush();
 #  endif
 		curwin->w_valid &= ~VALID_CROW;
 	    }
