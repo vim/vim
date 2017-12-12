@@ -2101,7 +2101,7 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 # These do not depend on the executable, compile it when needed.
 test1 \
 	test_eval \
-	test3 test11 test14 test15 test17 \
+	test3 test11 test14 test17 \
 	test29 test30 test36 test37 test39 \
 	test42 test44 test48 test49 \
 	test50 test52 test59 \
