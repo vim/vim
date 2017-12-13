@@ -6414,7 +6414,13 @@ readdir({directory} [, {expr}])
 		return file names on {directory}. For each file name in
 		evaluate {expr}. If {expr} return -1, readdir stop to read.
 		If it return 0, result does not contain the file name.
-		If return 1, result contain the file name.
+		If return 1, result contain the file name. If you want to get
+		directory tree: >
+                  function! s:tree(dir)
+                      return {a:dir : map(readdir(a:dir), {_,x ->
+                      \ isdirectory(x) ? {x : s:tree(a:dir . '/' . x)} : x})}
+                  endfunction
+                  echo s:tree(".")
 
 							*readfile()*
 readfile({fname} [, {binary} [, {max}]])
