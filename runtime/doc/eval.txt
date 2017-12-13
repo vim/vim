@@ -2282,7 +2282,7 @@ py3eval({expr})			any	evaluate |python3| expression
 pyxeval({expr})			any	evaluate |python_x| expression
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
-readdir({directory} [, {max}])
+readdir({directory} [, {expr}])
 				List	file names on {dir} with evalating
 					{expr}
 readfile({fname} [, {binary} [, {max}]])
