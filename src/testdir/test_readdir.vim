@@ -5,7 +5,7 @@ func Test_readdir()
   call writefile([], 'Xdir/foo.txt')
   call mkdir('Xdir/dir')
 
-  let files = sort(readir('Xdir'))
+  let files = sort(readdir('Xdir'))
   call assert_equal(["foo.txt", "dir"], files)
 
   call delete('dir1', 'rf')
