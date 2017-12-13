@@ -6421,7 +6421,7 @@ readdir({directory} [, {expr}])
                       \ isdirectory(x) ? {x : s:tree(a:dir . '/' . x)} : x})}
                   endfunction
                   echo s:tree(".")
-
+<
 							*readfile()*
 readfile({fname} [, {binary} [, {max}]])
 		Read file {fname} and return a |List|, each line of the file
