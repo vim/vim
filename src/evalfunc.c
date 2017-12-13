@@ -300,6 +300,7 @@ static void f_pyeval(typval_T *argvars, typval_T *rettv);
 static void f_pyxeval(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_range(typval_T *argvars, typval_T *rettv);
+static void f_readdir(typval_T *argvars, typval_T *rettv);
 static void f_readfile(typval_T *argvars, typval_T *rettv);
 static void f_reltime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
@@ -742,6 +743,7 @@ static struct fst
     {"pyxeval",		1, 1, f_pyxeval},
 #endif
     {"range",		1, 3, f_range},
+    {"readdir",		1, 1, f_readdir},
     {"readfile",	1, 3, f_readfile},
     {"reltime",		0, 2, f_reltime},
 #ifdef FEAT_FLOAT
@@ -8298,6 +8300,156 @@ f_range(typval_T *argvars, typval_T *rettv)
 		if (list_append_number(rettv->vval.v_list,
 						      (varnumber_T)i) == FAIL)
 		    break;
+    }
+}
+
+/*
+ * "readdir()" function
+ */
+    static void
+f_readdir(typval_T *argvars, typval_T *rettv)
+{
+    int		failed = FALSE;
+    char_u	*path;
+    listitem_T	*li;
+#ifdef WIN3264
+    char_u		*buf, *p;
+    WIN32_FIND_DATA	fb;
+    int			ok;
+# ifdef FEAT_MBYTE
+    HANDLE		hFind = (HANDLE)0;
+    WIN32_FIND_DATAW    wfb;
+    WCHAR		*wn = NULL;	/* UCS-2 name, NULL when not used. */
+# endif
+#endif
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    path = get_tv_string(&argvars[0]);
+
+#ifdef WIN3264
+    buf = alloc((int)MAXPATHL);
+    if (buf == NULL)
+	return;
+    STRNCPY(buf, path, MAXPATHL-5);
+    p = vim_strpbrk(path, (char_u *)"\\/");
+    if (p != NULL)
+	*p = NUL;
+    STRCAT(buf, "\\*.*");
+
+# ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	/* The active codepage differs from 'encoding'.  Attempt using the
+	 * wide function.  If it fails because it is not implemented fall back
+	 * to the non-wide version (for Windows 98) */
+	wn = enc_to_utf16(buf, NULL);
+	if (wn != NULL)
+	{
+	    hFind = FindFirstFileW(wn, &wfb);
+	    if (hFind == INVALID_HANDLE_VALUE
+			      && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+	    {
+		vim_free(wn);
+		wn = NULL;
+	    }
+	}
+    }
+
+    if (wn == NULL)
+# endif
+	hFind = FindFirstFile((LPCSTR)buf, &fb);
+    ok = (hFind != INVALID_HANDLE_VALUE);
+
+    if (!ok)
+	EMSG2(_(e_notopen), path);
+    else
+    {
+	while (ok)
+	{
+	    int	dot;
+# ifdef FEAT_MBYTE
+	    if (wn != NULL)
+		p = utf16_to_enc(wfb.cFileName, NULL);   /* p is allocated here */
+	    else
+# endif
+		p = (char_u *)fb.cFileName;
+
+	    dot = p[0] == '.' &&
+		    (p[0] == NUL ||
+		     (p[0] == '.' && p[0] == NUL));
+	    if (!dot)
+	    {
+		if ((li = listitem_alloc()) == NULL)
+		{
+		    failed = TRUE;
+		    break;
+		}
+		li->li_tv.v_type = VAR_STRING;
+		li->li_tv.v_lock = 0;
+		li->li_tv.vval.v_string = vim_strsave((char_u *)p);
+		list_append(rettv->vval.v_list, li);
+	    }
+
+# ifdef FEAT_MBYTE
+	    if (wn != NULL)
+	    {
+		vim_free(p);
+		ok = FindNextFileW(hFind, &wfb);
+	    }
+	    else
+# endif
+		ok = FindNextFile(hFind, &fb);
+	}
+	FindClose(hFind);
+    }
+
+# ifdef FEAT_MBYTE
+    vim_free(buf);
+    vim_free(wn);
+# endif
+#else
+    DIR		*dirp;
+    struct dirent *dp;
+
+    dirp = opendir(path);
+    if (dirp == NULL)
+	EMSG2(_(e_notopen), path);
+    else
+    {
+	for (;;)
+	{
+	    int	dot;
+	    dp = readdir(dirp);
+	    if (dp == NULL)
+		break;
+
+	    dot = dp->d_name[0] == '.' &&
+		    (dp->d_name[0] == NUL ||
+		     (dp->d_name[0] == '.' && dp->d_name[0] == NUL));
+	    if (!dot)
+	    {
+		if ((li = listitem_alloc()) == NULL)
+		{
+		    failed = TRUE;
+		    break;
+		}
+		li->li_tv.v_type = VAR_STRING;
+		li->li_tv.v_lock = 0;
+		li->li_tv.vval.v_string = vim_strsave((char_u *)dp->d_name);
+		list_append(rettv->vval.v_list, li);
+	    }
+	}
+
+	closedir(dirp);
+    }
+#endif
+
+    if (failed)
+    {
+	list_free(rettv->vval.v_list);
+	/* readfile doc says an empty list is returned on error */
+	rettv->vval.v_list = list_alloc();
     }
 }
 
