@@ -8,5 +8,8 @@ func Test_readdir()
   let files = sort(readdir('Xdir'))
   call assert_equal(['dir', 'foo.txt'], files)
 
+  let files = sort(readdir('Xdir', {x->stridx(x,'f')==-1}))
+  call assert_equal(['foo.txt'], files)
+
   call delete('dir1', 'rf')
 endfunc

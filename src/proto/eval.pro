@@ -11,6 +11,7 @@ void eval_diff(char_u *origfile, char_u *newfile, char_u *outfile);
 void eval_patch(char_u *origfile, char_u *difffile, char_u *outfile);
 int eval_to_bool(char_u *arg, int *error, char_u **nextcmd, int skip);
 int eval_expr_to_bool(typval_T *expr, int *error);
+int eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv);
 char_u *eval_to_string_skip(char_u *arg, char_u **nextcmd, int skip);
 int skip_expr(char_u **pp);
 char_u *eval_to_string(char_u *arg, char_u **nextcmd, int convert);

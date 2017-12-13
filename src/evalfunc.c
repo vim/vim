@@ -743,7 +743,7 @@ static struct fst
     {"pyxeval",		1, 1, f_pyxeval},
 #endif
     {"range",		1, 3, f_range},
-    {"readdir",		1, 1, f_readdir},
+    {"readdir",		1, 2, f_readdir},
     {"readfile",	1, 3, f_readfile},
     {"reltime",		0, 2, f_reltime},
 #ifdef FEAT_FLOAT
@@ -8303,12 +8303,37 @@ f_range(typval_T *argvars, typval_T *rettv)
     }
 }
 
+    static int
+readdir_checkitem(typval_T *expr, char_u *name)
+{
+    typval_T	rettv;
+    typval_T	argv[3];
+    int		retval = 0;
+    int		error = FALSE;
+
+    set_vim_var_string(VV_VAL, name, -1);
+    argv[0].v_type = VAR_STRING;
+    argv[0].vval.v_string = name;
+
+    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
+	goto theend;
+
+    retval = get_tv_number_chk(&rettv, &error);
+    if (error)
+	retval = -1;
+
+theend:
+    set_vim_var_string(VV_VAL, NULL, -1);
+    return retval;
+}
+
 /*
  * "readdir()" function
  */
     static void
 f_readdir(typval_T *argvars, typval_T *rettv)
 {
+    typval_T	*expr;
     int		failed = FALSE;
     char_u	*path;
     listitem_T	*li;
@@ -8326,6 +8351,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     path = get_tv_string(&argvars[0]);
+    expr = &argvars[1];
 
 #ifdef WIN3264
     buf = alloc((int)MAXPATHL);
@@ -8367,7 +8393,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     {
 	while (ok)
 	{
-	    int	dot;
+	    int	ignore;
 # ifdef FEAT_MBYTE
 	    if (wn != NULL)
 		p = utf16_to_enc(wfb.cFileName, NULL);   /* p is allocated here */
@@ -8375,10 +8401,20 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 # endif
 		p = (char_u *)fb.cFileName;
 
-	    dot = p[0] == '.' &&
+	    ignore = p[0] == '.' &&
 		    (p[1] == NUL ||
 		     (p[1] == '.' && p[3] == NUL));
-	    if (!dot)
+
+	    if (!ignore && expr->v_type != VAR_UNKNOWN)
+	    {
+		int r = readdir_checkitem(expr, p);
+		if (r < 0)
+		    break;
+		if (r == 0)
+		    ignore = TRUE;
+	    }
+
+	    if (!ignore)
 	    {
 		if ((li = listitem_alloc()) == NULL)
 		{
@@ -8419,15 +8455,25 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     {
 	for (;;)
 	{
-	    int	dot;
+	    int	ignore;
 	    dp = readdir(dirp);
 	    if (dp == NULL)
 		break;
 
-	    dot = dp->d_name[0] == '.' &&
+	    ignore = dp->d_name[0] == '.' &&
 		    (dp->d_name[1] == NUL ||
 		     (dp->d_name[1] == '.' && dp->d_name[2] == NUL));
-	    if (!dot)
+
+	    if (!ignore && expr->v_type != VAR_UNKNOWN)
+	    {
+		int r = readdir_checkitem(p);
+		if (r < 0)
+		    break;
+		if (r == 0)
+		    ignore = TRUE;
+	    }
+
+	    if (!ignore)
 	    {
 		if ((li = listitem_alloc()) == NULL)
 		{

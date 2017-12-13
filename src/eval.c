@@ -696,7 +696,7 @@ eval_to_bool(
     return (int)retval;
 }
 
-    static int
+    int
 eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 {
     char_u	*s;
