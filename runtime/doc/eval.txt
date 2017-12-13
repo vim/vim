@@ -2282,6 +2282,9 @@ py3eval({expr})			any	evaluate |python3| expression
 pyxeval({expr})			any	evaluate |python_x| expression
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
+readdir({directory} [, {max}])
+				List	file names on {dir} with evalating
+					{expr}
 readfile({fname} [, {binary} [, {max}]])
 				List	get list of lines from file {fname}
 reltime([{start} [, {end}]])	List	get time value
@@ -6406,6 +6409,13 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			range(0)		" []
 			range(2, 0)		" error!
 <
+							*readdir()*
+readdir({directory} [, {expr}])
+		return file names on {directory}. For each file name in
+		evaluate {expr}. If {expr} return -1, readdir stop to read.
+		If it return 0, result does not contain the file name.
+		If return 1, result contain the file name.
+
 							*readfile()*
 readfile({fname} [, {binary} [, {max}]])
 		Read file {fname} and return a |List|, each line of the file
