@@ -31,7 +31,7 @@
 
 #if defined(FEAT_DIRECTX)
 # ifndef FEAT_MBYTE
-#  error "FEAT_MBYTE is required for FEAT_DIRECTX."
+#  error FEAT_MBYTE is required for FEAT_DIRECTX.
 # endif
 static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
