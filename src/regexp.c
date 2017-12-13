@@ -5587,7 +5587,7 @@ regmatch(
 		    else
 		    {
 #ifdef FEAT_MBYTE
-			if (has_mbyte)
+			if (has_mbyte && *regline)
 			    rp->rs_un.regsave.rs_u.pos.col -=
 				(*mb_head_off)(regline, regline
 				    + rp->rs_un.regsave.rs_u.pos.col - 1) + 1;
