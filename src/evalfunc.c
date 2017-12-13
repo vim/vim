@@ -8404,7 +8404,6 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 	    ignore = p[0] == '.' &&
 		    (p[1] == NUL ||
 		     (p[1] == '.' && p[3] == NUL));
-
 	    if (!ignore && expr->v_type != VAR_UNKNOWN)
 	    {
 		int r = readdir_checkitem(expr, p);
@@ -8423,7 +8422,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 		}
 		li->li_tv.v_type = VAR_STRING;
 		li->li_tv.v_lock = 0;
-		li->li_tv.vval.v_string = vim_strsave((char_u *)p);
+		li->li_tv.vval.v_string = vim_strsave(p);
 		list_append(rettv->vval.v_list, li);
 	    }
 
@@ -8447,6 +8446,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 #else
     DIR		*dirp;
     struct dirent *dp;
+    char_u	*p;
 
     dirp = opendir(path);
     if (dirp == NULL)
@@ -8459,14 +8459,14 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 	    dp = readdir(dirp);
 	    if (dp == NULL)
 		break;
+	    p = (char_u*) dp->d_name;
 
-	    ignore = dp->d_name[0] == '.' &&
-		    (dp->d_name[1] == NUL ||
-		     (dp->d_name[1] == '.' && dp->d_name[2] == NUL));
-
+	    ignore = p[0] == '.' &&
+		    (p[1] == NUL ||
+		     (p[1] == '.' && p[3] == NUL));
 	    if (!ignore && expr->v_type != VAR_UNKNOWN)
 	    {
-		int r = readdir_checkitem(p);
+		int r = readdir_checkitem(expr, p);
 		if (r < 0)
 		    break;
 		if (r == 0)
@@ -8482,7 +8482,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 		}
 		li->li_tv.v_type = VAR_STRING;
 		li->li_tv.v_lock = 0;
-		li->li_tv.vval.v_string = vim_strsave((char_u *)dp->d_name);
+		li->li_tv.vval.v_string = vim_strsave(p);
 		list_append(rettv->vval.v_list, li);
 	    }
 	}
