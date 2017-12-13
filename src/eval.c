@@ -908,7 +908,7 @@ eval_to_number(char_u *expr)
  * Save the current typeval in "save_tv".
  * When not used yet add the variable to the v: hashtable.
  */
-    static void
+    void
 prepare_vimvar(int idx, typval_T *save_tv)
 {
     *save_tv = vimvars[idx].vv_tv;
@@ -920,7 +920,7 @@ prepare_vimvar(int idx, typval_T *save_tv)
  * Restore v: variable "idx" to typeval "save_tv".
  * When no longer defined, remove the variable from the v: hashtable.
  */
-    static void
+    void
 restore_vimvar(int idx, typval_T *save_tv)
 {
     hashitem_T	*hi;

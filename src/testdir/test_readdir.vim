@@ -3,13 +3,18 @@
 func Test_readdir()
   call mkdir('Xdir')
   call writefile([], 'Xdir/foo.txt')
+  call writefile([], 'Xdir/bar.txt')
   call mkdir('Xdir/dir')
 
-  let files = sort(readdir('Xdir'))
-  call assert_equal(['dir', 'foo.txt'], files)
+  let files = readdir('Xdir')
+  call assert_equal(['bar.txt', 'dir', 'foo.txt'], files)
 
-  let files = sort(readdir('Xdir', {x->stridx(x,'f')==-1}))
+  let files = readdir('Xdir', {x->stridx(x,'f')!=-1})
   call assert_equal(['foo.txt'], files)
 
-  call delete('dir1', 'rf')
+  let l = []
+  let files = readdir('Xdir', {x->len(add(l, x)) == 2 ? -1 : 1})
+  call assert_equal(1, len(files))
+
+  call delete('Xdir', 'rf')
 endfunc

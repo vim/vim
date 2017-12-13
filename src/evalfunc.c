@@ -8306,11 +8306,13 @@ f_range(typval_T *argvars, typval_T *rettv)
     static int
 readdir_checkitem(typval_T *expr, char_u *name)
 {
+    typval_T	save_val;
     typval_T	rettv;
-    typval_T	argv[3];
+    typval_T	argv[1];
     int		retval = 0;
     int		error = FALSE;
 
+    prepare_vimvar(VV_VAL, &save_val);
     set_vim_var_string(VV_VAL, name, -1);
     argv[0].v_type = VAR_STRING;
     argv[0].vval.v_string = name;
@@ -8323,7 +8325,8 @@ readdir_checkitem(typval_T *expr, char_u *name)
 	retval = -1;
 
 theend:
-    set_vim_var_string(VV_VAL, NULL, -1);
+    clear_tv(&rettv);
+    restore_vimvar(VV_VAL, &save_val);
     return retval;
 }
 
@@ -8336,7 +8339,8 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     typval_T	*expr;
     int		failed = FALSE;
     char_u	*path;
-    listitem_T	*li;
+    garray_T	ga;
+    int		i;
 #ifdef WIN3264
     char_u		*buf, *p;
     WIN32_FIND_DATA	fb;
@@ -8352,6 +8356,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 	return;
     path = get_tv_string(&argvars[0]);
     expr = &argvars[1];
+    ga_init2(&ga, (int)sizeof(char*), 20);
 
 #ifdef WIN3264
     buf = alloc((int)MAXPATHL);
@@ -8403,7 +8408,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 
 	    ignore = p[0] == '.' &&
 		    (p[1] == NUL ||
-		     (p[1] == '.' && p[3] == NUL));
+		     (p[1] == '.' && p[2] == NUL));
 	    if (!ignore && expr->v_type != VAR_UNKNOWN)
 	    {
 		int r = readdir_checkitem(expr, p);
@@ -8415,15 +8420,13 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 
 	    if (!ignore)
 	    {
-		if ((li = listitem_alloc()) == NULL)
+		if (ga_grow(&ga, 1) == OK)
+		    ((char_u**)ga.ga_data)[ga.ga_len++] = vim_strsave(p);
+		else
 		{
 		    failed = TRUE;
 		    break;
 		}
-		li->li_tv.v_type = VAR_STRING;
-		li->li_tv.v_lock = 0;
-		li->li_tv.vval.v_string = vim_strsave(p);
-		list_append(rettv->vval.v_list, li);
 	    }
 
 # ifdef FEAT_MBYTE
@@ -8463,7 +8466,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 
 	    ignore = p[0] == '.' &&
 		    (p[1] == NUL ||
-		     (p[1] == '.' && p[3] == NUL));
+		     (p[1] == '.' && p[2] == NUL));
 	    if (!ignore && expr->v_type != VAR_UNKNOWN)
 	    {
 		int r = readdir_checkitem(expr, p);
@@ -8475,15 +8478,13 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 
 	    if (!ignore)
 	    {
-		if ((li = listitem_alloc()) == NULL)
+		if (ga_grow(&ga, 1) == OK)
+		    ((char_u**)ga.ga_data)[ga.ga_len++] = vim_strsave(p);
+		else
 		{
 		    failed = TRUE;
 		    break;
 		}
-		li->li_tv.v_type = VAR_STRING;
-		li->li_tv.v_lock = 0;
-		li->li_tv.vval.v_string = vim_strsave(p);
-		list_append(rettv->vval.v_list, li);
 	    }
 	}
 
@@ -8491,12 +8492,21 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     }
 #endif
 
-    if (failed)
+    rettv->vval.v_list = list_alloc();
+    if (!failed && rettv->vval.v_list != NULL)
     {
-	list_free(rettv->vval.v_list);
-	/* readfile doc says an empty list is returned on error */
-	rettv->vval.v_list = list_alloc();
+	++rettv->vval.v_list->lv_refcount;
+	sort_strings((char_u **)ga.ga_data, ga.ga_len);
+	for (i = 0; i < ga.ga_len; i++)
+	{
+	    p = ((char_u **)ga.ga_data)[i];
+	    list_append_string(rettv->vval.v_list, p, -1);
+	}
     }
+    for (i = 0; i < ga.ga_len; i++)
+	vim_free(((char_u **)ga.ga_data)[i]);
+
+    ga_clear(&ga);
 }
 
 /*

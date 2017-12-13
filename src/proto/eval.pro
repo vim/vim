@@ -132,4 +132,6 @@ void fill_assert_error(garray_T *gap, typval_T *opt_msg_tv, char_u *exp_str, typ
 int modify_fname(char_u *src, int *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen);
 char_u *do_string_sub(char_u *str, char_u *pat, char_u *sub, typval_T *expr, char_u *flags);
 void filter_map(typval_T *argvars, typval_T *rettv, int map);
+void prepare_vimvar(int idx, typval_T *save_tv);
+void restore_vimvar(int idx, typval_T *save_tv);
 /* vim: set ft=c : */
