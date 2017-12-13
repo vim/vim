@@ -8376,8 +8376,8 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 		p = (char_u *)fb.cFileName;
 
 	    dot = p[0] == '.' &&
-		    (p[0] == NUL ||
-		     (p[0] == '.' && p[0] == NUL));
+		    (p[1] == NUL ||
+		     (p[1] == '.' && p[3] == NUL));
 	    if (!dot)
 	    {
 		if ((li = listitem_alloc()) == NULL)
@@ -8425,8 +8425,8 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 		break;
 
 	    dot = dp->d_name[0] == '.' &&
-		    (dp->d_name[0] == NUL ||
-		     (dp->d_name[0] == '.' && dp->d_name[0] == NUL));
+		    (dp->d_name[1] == NUL ||
+		     (dp->d_name[1] == '.' && dp->d_name[2] == NUL));
 	    if (!dot)
 	    {
 		if ((li = listitem_alloc()) == NULL)
