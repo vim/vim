@@ -995,7 +995,7 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 
 	TextRenderer renderer(this);
 	TextRendererContext context = { color, FLOAT(cellWidth), 0.0f };
-	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y));
+	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y) - 0.5f);
     }
 
     SafeRelease(&textLayout);
