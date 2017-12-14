@@ -34,10 +34,11 @@ Contents:
 11. Building with Ruby support
 12. Building with Tcl support
 13. Building with Terminal support
-14. Windows 3.1
-15. MS-DOS
+14. Building with DirectX (DirectWrite) support
+15. Windows 3.1
+16. MS-DOS
 
-16. Installing after building from sources
+17. Installing after building from sources
 
 
 The currently recommended way (that means it has been verified to work) is
@@ -787,25 +788,59 @@ E.g. When using MSVC:
 
     nmake -f Make_mvc.mak TERMINAL=yes
 
-Or when using MinGW (as one line):
+Or when using MinGW:
 
     mingw32-make -f Make_ming.mak TERMINAL=yes
 
 
-14. Windows 3.1x
+14. Building with DirectX (DirectWrite) support
+===============================================
+
+Vim with DirectX (DirectWrite) support can be built with either MSVC or MinGW.
+This requires dwrite_2.h and some other header files which come with Windows
+SDK 8.1 or later (or MinGW-w64), if you want to enable color emoji support.
+This also requires MBYTE=yes which is enabled by default.
+
+A) Using MSVC
+
+If you use MSVC 2013 or later, Windows SDK 8.1 or later is used by default.
+You just need to specify DIRECTX=yes:
+
+    nmake -f Make_mvc.mak DIRECTX=yes
+
+If you use MSVC 2012 or earlier, the required header files are not available
+by default.  However, you can use the header files from newer SDKs with older
+compilers.  E.g.:
+
+    set "INCLUDE=%INCLUDE%;C:\Program Files (x86)\Windows Kits\8.1\Include\um"
+    nmake -f Make_mvc.mak DIRECTX=yes
+
+If you don't need color emoji support, only dwrite.h is required.  You can use
+older compilers (e.g. VC2010) without Windows SDK 8.1.  E.g.:
+
+    nmake -f Make_mvc.mak DIRECTX=yes COLOR_EMOJI=no
+
+B) Using MinGW-w64
+
+Just set DIRECTX to yes:
+
+    mingw32-make -f Make_ming.mak DIRECTX=yes
+
+
+15. Windows 3.1x
 ================
 
 The Windows 3.1x support was removed in patch 7.4.1364.
 
 
-15. MS-DOS
+16. MS-DOS
 ==========
 
 The MS-DOS support was removed in patch 7.4.1399.  Only very old Vim versions
 work on MS-DOS because of the limited amount of memory available.
 
 
-16. Installing after building from sources
+17. Installing after building from sources
 ==========================================
 
 [provided by Michael Soyka, updated by Ken Takata]

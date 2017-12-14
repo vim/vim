@@ -588,7 +588,7 @@ endif
 ifeq ($(DIRECTX),yes)
 # Only allow DirectWrite for a GUI build.
 ifeq (yes, $(GUI))
-DEFINES += -DFEAT_DIRECTX -DDYNAMIC_DIRECTX
+DEFINES += -DFEAT_DIRECTX -DDYNAMIC_DIRECTX -DFEAT_DIRECTX_COLOR_EMOJI
 endif
 endif
 
