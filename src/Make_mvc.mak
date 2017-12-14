@@ -25,12 +25,15 @@
 #
 #	GUI interface: GUI=yes (default is no)
 #
-#	GUI with DirectWrite(DirectX): DIRECTX=yes
-#	  (default is no, requires GUI=yes)
+#	GUI with DirectWrite (DirectX): DIRECTX=yes
+#	  (default is no, requires GUI=yes and MBYTE=yes)
+#
+#	Color emoji support: COLOR_EMOJI=yes
+#	  (default is yes if DIRECTX=yes, requires WinSDK 8.1 or later.)
 #
 #	OLE interface: OLE=yes (usually with GUI=yes)
 #
-#	Multibyte support: MBYTE=yes (default is no)
+#	Multibyte support: MBYTE=yes (default is yes for NORMAL, BIG, HUGE)
 #
 #	IME support: IME=yes	(requires GUI=yes)
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
@@ -419,9 +422,12 @@ NBDEBUG_SRC	= nbdebug.c
 NETBEANS_LIB	= WSock32.lib
 !endif
 
-# DirectWrite(DirectX)
+# DirectWrite (DirectX)
 !if "$(DIRECTX)" == "yes"
 DIRECTX_DEFS	= -DFEAT_DIRECTX -DDYNAMIC_DIRECTX
+!if "$(COLOR_EMOJI)" != "no"
+DIRECTX_DEFS	= $(DIRECTX_DEFS) -DFEAT_DIRECTX_COLOR_EMOJI
+!endif
 DIRECTX_INCL	= gui_dwrite.h
 DIRECTX_OBJ	= $(OUTDIR)\gui_dwrite.obj
 !endif

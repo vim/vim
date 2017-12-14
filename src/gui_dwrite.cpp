@@ -38,7 +38,11 @@
 # define _Outptr_
 #endif
 
-#include <dwrite_2.h>
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
+# include <dwrite_2.h>
+#else
+# include <dwrite.h>
+#endif
 
 #include "gui_dwrite.h"
 
@@ -284,7 +288,9 @@ struct DWriteContext {
     ID2D1SolidColorBrush *mBrush;
 
     IDWriteFactory *mDWriteFactory;
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
     IDWriteFactory2 *mDWriteFactory2;
+#endif
 
     IDWriteGdiInterop *mGdiInterop;
     IDWriteRenderingParams *mRenderingParams;
@@ -481,6 +487,7 @@ public:
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth,
 		context->offsetX);
 
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
 	if (pDWC_->mDWriteFactory2 != NULL)
 	{
 	    IDWriteColorGlyphRunEnumerator *enumerator = NULL;
@@ -517,6 +524,7 @@ public:
 		return S_OK;
 	    }
 	}
+#endif
 
 	// Draw by IDWriteFactory (without color emoji)
 	pDWC_->mRT->DrawGlyphRun(
@@ -589,7 +597,9 @@ DWriteContext::DWriteContext() :
     mGDIRT(NULL),
     mBrush(NULL),
     mDWriteFactory(NULL),
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
     mDWriteFactory2(NULL),
+#endif
     mGdiInterop(NULL),
     mRenderingParams(NULL),
     mFontCache(8),
@@ -618,6 +628,7 @@ DWriteContext::DWriteContext() :
 		mDWriteFactory);
     }
 
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
     if (SUCCEEDED(hr))
     {
 	DWriteCreateFactory(
@@ -626,6 +637,7 @@ DWriteContext::DWriteContext() :
 		reinterpret_cast<IUnknown**>(&mDWriteFactory2));
 	_RPT1(_CRT_WARN, "IDWriteFactory2: %s\n", SUCCEEDED(hr) ? "available" : "not available");
     }
+#endif
 
     if (SUCCEEDED(hr))
     {
@@ -647,7 +659,9 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mRenderingParams);
     SafeRelease(&mGdiInterop);
     SafeRelease(&mDWriteFactory);
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
     SafeRelease(&mDWriteFactory2);
+#endif
     SafeRelease(&mBrush);
     SafeRelease(&mGDIRT);
     SafeRelease(&mRT);
@@ -995,7 +1009,7 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 
 	TextRenderer renderer(this);
 	TextRendererContext context = { color, FLOAT(cellWidth), 0.0f };
-	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y));
+	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y) - 0.5f);
     }
 
     SafeRelease(&textLayout);
