@@ -50,7 +50,7 @@ static int gui_mswin_get_menu_height(int fix_window);
     int
 gui_mch_set_rendering_options(char_u *s)
 {
-#ifdef FEAT_DIRECTX
+# ifdef FEAT_DIRECTX
     char_u  *p, *q;
 
     int	    dx_enable = 0;
@@ -162,9 +162,9 @@ gui_mch_set_rendering_options(char_u *s)
     s_directx_scrlines = dx_scrlines;
 
     return OK;
-#else
+# else
     return FAIL;
-#endif
+# endif
 }
 #endif
 
