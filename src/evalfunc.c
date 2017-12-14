@@ -8366,7 +8366,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     p = vim_strpbrk(path, (char_u *)"\\/");
     if (p != NULL)
 	*p = NUL;
-    STRCAT(buf, "\\*.*");
+    STRCAT(buf, "\\*");
 
 # ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
