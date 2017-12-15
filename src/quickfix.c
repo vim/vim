@@ -76,6 +76,7 @@ typedef struct qf_list_S
     int			qf_multiline;
     int			qf_multiignore;
     int			qf_multiscan;
+    long		qf_changedtick;
 } qf_list_T;
 
 /*
@@ -1668,6 +1669,7 @@ copy_loclist(win_T *from, win_T *to)
 
 	/* Assign a new ID for the location list */
 	to_qfl->qf_id = ++last_qf_id;
+	to_qfl->qf_changedtick = 0L;
 
 	/* When no valid entries are present in the list, qf_ptr points to
 	 * the first item in the list */
@@ -2965,6 +2967,7 @@ qf_free(qf_info_T *qi, int idx)
     free_tv(qfl->qf_ctx);
     qfl->qf_ctx = NULL;
     qfl->qf_id = 0;
+    qfl->qf_changedtick = 0L;
 }
 
 /*
@@ -3604,6 +3607,21 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
     KeyTyped = old_KeyTyped;
 }
 
+    static void
+qf_list_changed(qf_info_T *qi, int qf_idx)
+{
+#ifdef FEAT_AUTOCMD
+    char_u	qfid_str[32];
+#endif
+
+    qi->qf_lists[qf_idx].qf_changedtick++;
+#ifdef FEAT_AUTOCMD
+    vim_snprintf((char *)qfid_str, sizeof(qfid_str), "%ld",
+					qi->qf_lists[qf_idx].qf_id);
+    apply_autocmds(EVENT_QUICKFIXCHANGED, qfid_str, NULL, FALSE, NULL);
+#endif
+}
+
 /*
  * Return TRUE when using ":vimgrep" for ":grep".
  */
@@ -3713,6 +3731,8 @@ ex_make(exarg_T *eap)
 					   *eap->cmdlinep, enc);
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
+    if (res >= 0 && qi != NULL)
+	qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
     if (au_name != NULL)
     {
@@ -4105,14 +4125,16 @@ ex_cfile(exarg_T *eap)
      */
     res = qf_init(wp, p_ef, p_efm, (eap->cmdidx != CMD_caddfile
 			&& eap->cmdidx != CMD_laddfile), *eap->cmdlinep, enc);
+    if (wp != NULL)
+	qi = GET_LOC_LIST(wp);
+    if (res >= 0 && qi != NULL)
+	qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
     if (au_name != NULL)
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name, NULL, FALSE, curbuf);
 #endif
     if (res > 0 && (eap->cmdidx == CMD_cfile || eap->cmdidx == CMD_lfile))
     {
-	if (wp != NULL)
-	    qi = GET_LOC_LIST(wp);
 	qf_jump(qi, 0, 0, eap->forceit);	/* display first error */
     }
 }
@@ -4469,6 +4491,7 @@ ex_vimgrep(exarg_T *eap)
     qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
     qi->qf_lists[qi->qf_curlist].qf_ptr = qi->qf_lists[qi->qf_curlist].qf_start;
     qi->qf_lists[qi->qf_curlist].qf_index = 1;
+    qf_list_changed(qi, qi->qf_curlist);
 
     qf_update_buffer(qi, NULL);
 
@@ -4774,7 +4797,8 @@ enum {
     QF_GETLIST_ID	= 0x20,
     QF_GETLIST_IDX	= 0x40,
     QF_GETLIST_SIZE	= 0x80,
-    QF_GETLIST_ALL	= 0xFF
+    QF_GETLIST_TICK	= 0x100,
+    QF_GETLIST_ALL	= 0x1FF
 };
 
 /*
@@ -4890,6 +4914,9 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if (dict_find(what, (char_u *)"size", -1) != NULL)
 	flags |= QF_GETLIST_SIZE;
 
+    if (dict_find(what, (char_u *)"changedtick", -1) != NULL)
+	flags |= QF_GETLIST_TICK;
+
     if (qi != NULL && qi->qf_listcount != 0)
     {
 	qf_idx = qi->qf_curlist;	/* default is the current list */
@@ -4957,6 +4984,8 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	    status = dict_add_nr_str(retdict, "idx", 0L, NULL);
 	if ((status == OK) && (flags & QF_GETLIST_SIZE))
 	    status = dict_add_nr_str(retdict, "size", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_TICK))
+	    status = dict_add_nr_str(retdict, "changedtick", 0L, NULL);
 
 	return status;
     }
@@ -5028,6 +5057,10 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_SIZE))
 	status = dict_add_nr_str(retdict, "size",
 					qi->qf_lists[qf_idx].qf_count, NULL);
+
+    if ((status == OK) && (flags & QF_GETLIST_TICK))
+	status = dict_add_nr_str(retdict, "changedtick",
+				qi->qf_lists[qf_idx].qf_changedtick, NULL);
 
     return status;
 }
@@ -5298,6 +5331,9 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	retval = OK;
     }
 
+    if (retval == OK)
+	qf_list_changed(qi, qf_idx);
+
     return retval;
 }
 
@@ -5401,7 +5437,11 @@ set_errorlist(
     else if (what != NULL)
 	retval = qf_set_properties(qi, what, action, title);
     else
+    {
 	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action);
+	if (retval == OK)
+	    qf_list_changed(qi, qi->qf_curlist);
+    }
 
     return retval;
 }
@@ -5534,6 +5574,8 @@ ex_cbuffer(exarg_T *eap)
 			     && eap->cmdidx != CMD_laddbuffer),
 						   eap->line1, eap->line2,
 						   qf_title, NULL);
+	    if (res >= 0)
+		qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
 	    if (au_name != NULL)
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
@@ -5603,6 +5645,8 @@ ex_cexpr(exarg_T *eap)
 			     && eap->cmdidx != CMD_laddexpr),
 				 (linenr_T)0, (linenr_T)0, *eap->cmdlinep,
 				 NULL);
+	    if (res >= 0)
+		qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
 	    if (au_name != NULL)
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
@@ -5823,6 +5867,7 @@ ex_helpgrep(exarg_T *eap)
 	/* Darn, some plugin changed the value. */
 	free_string_option(save_cpo);
 
+    qf_list_changed(qi, qi->qf_curlist);
     qf_update_buffer(qi, NULL);
 
 #ifdef FEAT_AUTOCMD

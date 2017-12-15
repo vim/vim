@@ -7826,6 +7826,7 @@ static struct event_name
     {"InsertCharPre",	EVENT_INSERTCHARPRE},
     {"MenuPopup",	EVENT_MENUPOPUP},
     {"OptionSet",	EVENT_OPTIONSET},
+    {"QuickFixChanged", EVENT_QUICKFIXCHANGED},
     {"QuickFixCmdPost",	EVENT_QUICKFIXCMDPOST},
     {"QuickFixCmdPre",	EVENT_QUICKFIXCMDPRE},
     {"QuitPre",		EVENT_QUITPRE},
@@ -9576,7 +9577,7 @@ apply_autocmds_group(
     {
 	sfname = vim_strsave(fname);
 	/* Don't try expanding FileType, Syntax, FuncUndefined, WindowID,
-	 * ColorScheme or QuickFixCmd* */
+	 * ColorScheme, QuickFixCmd* or QuickFixChanged */
 	if (event == EVENT_FILETYPE
 		|| event == EVENT_SYNTAX
 		|| event == EVENT_FUNCUNDEFINED
@@ -9585,7 +9586,8 @@ apply_autocmds_group(
 		|| event == EVENT_QUICKFIXCMDPRE
 		|| event == EVENT_COLORSCHEME
 		|| event == EVENT_OPTIONSET
-		|| event == EVENT_QUICKFIXCMDPOST)
+		|| event == EVENT_QUICKFIXCMDPOST
+		|| event == EVENT_QUICKFIXCHANGED)
 	    fname = vim_strsave(fname);
 	else
 	    fname = FullName_save(fname, FALSE);

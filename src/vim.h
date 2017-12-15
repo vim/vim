@@ -1339,6 +1339,7 @@ enum auto_event
     EVENT_TEXTCHANGEDI,		/* text was modified in Insert mode*/
     EVENT_CMDUNDEFINED,		/* command undefined */
     EVENT_OPTIONSET,		/* option was set */
+    EVENT_QUICKFIXCHANGED,	/* quickfix list was changed */
     NUM_EVENTS			/* MUST be the last one */
 };
 

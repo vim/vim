@@ -2132,6 +2132,8 @@ func Test_Autocmd()
 
   call delete('Xtest')
   call delete('Xempty')
+  au! QuickFixCmdPre
+  au! QuickFixCmdPost
 endfunc
 
 func Test_Autocmd_Exception()
@@ -2938,4 +2940,70 @@ endfunc
 func Test_getqflist()
   call Xgetlist_empty_tests('c')
   call Xgetlist_empty_tests('l')
+endfunc
+
+" Tests for the quickfix/location list changedtick
+func Xqftick_tests(cchar)
+  call s:setup_commands(a:cchar)
+
+  call g:Xsetlist([], 'f')
+
+  let g:qfidxs = []
+  au QuickFixChanged * call add(g:qfidxs, str2nr(expand("<amatch>")))
+
+  Xexpr "F1:10:Line10"
+  let qfid = g:Xgetlist({'id' : 0}).id
+  call assert_equal(1, g:Xgetlist({'changedtick' : 0}).changedtick)
+  Xaddexpr "F2:20:Line20\nF2:21:Line21"
+  call assert_equal(2, g:Xgetlist({'changedtick' : 0}).changedtick)
+  call g:Xsetlist([], 'a', {'lines' : ["F3:30:Line30", "F3:31:Line31"]})
+  call assert_equal(3, g:Xgetlist({'changedtick' : 0}).changedtick)
+  call g:Xsetlist([], 'r', {'lines' : ["F4:40:Line40"]})
+  call assert_equal(4, g:Xgetlist({'changedtick' : 0}).changedtick)
+  call g:Xsetlist([], 'a', {'title' : 'New Title'})
+  call assert_equal(5, g:Xgetlist({'changedtick' : 0}).changedtick)
+
+  enew!
+  call append(0, ["F5:50:L50", "F6:60:L60"])
+  Xaddbuffer
+  call assert_equal(6, g:Xgetlist({'changedtick' : 0}).changedtick)
+  enew!
+
+  call g:Xsetlist([], 'a', {'context' : {'bus' : 'pci'}})
+  call assert_equal(7, g:Xgetlist({'changedtick' : 0}).changedtick)
+  call g:Xsetlist([{'filename' : 'F7', 'lnum' : 10, 'text' : 'L7'},
+	      \ {'filename' : 'F7', 'lnum' : 11, 'text' : 'L11'}], 'a')
+  call assert_equal(8, g:Xgetlist({'changedtick' : 0}).changedtick)
+  call g:Xsetlist([{'filename' : 'F7', 'lnum' : 10, 'text' : 'L7'},
+	      \ {'filename' : 'F7', 'lnum' : 11, 'text' : 'L11'}], ' ')
+  call assert_equal(1, g:Xgetlist({'changedtick' : 0}).changedtick)
+  call g:Xsetlist([{'filename' : 'F7', 'lnum' : 10, 'text' : 'L7'},
+	      \ {'filename' : 'F7', 'lnum' : 11, 'text' : 'L11'}], 'r')
+  call assert_equal(2, g:Xgetlist({'changedtick' : 0}).changedtick)
+
+  call writefile(["F8:80:L80", "F8:81:L81"], "Xone")
+  Xfile Xone
+  call assert_equal(1, g:Xgetlist({'changedtick' : 0}).changedtick)
+  Xaddfile Xone
+  call assert_equal(2, g:Xgetlist({'changedtick' : 0}).changedtick)
+
+  " Test case for updating a non-current quickfix list
+  call g:Xsetlist([], 'f')
+  Xexpr "F1:1:L1"
+  Xexpr "F2:2:L2"
+  call g:Xsetlist([], 'a', {'nr' : 1, "lines" : ["F10:10:L10"]})
+  call assert_equal(1, g:Xgetlist({'changedtick' : 0}).changedtick)
+  call assert_equal(2, g:Xgetlist({'nr' : 1, 'changedtick' : 0}).changedtick)
+  call assert_equal([qfid, qfid, qfid, qfid, qfid,
+		\ qfid, qfid, qfid, qfid + 1,
+		\ qfid + 1, qfid + 2, qfid + 2, qfid + 3,
+		\ qfid + 4, qfid + 3], g:qfidxs)
+
+  call delete("Xone")
+  au! QuickFixChanged
+endfunc
+
+func Test_qf_tick()
+  call Xqftick_tests('c')
+  call Xqftick_tests('l')
 endfunc
