@@ -1645,6 +1645,63 @@ shift_delete_registers()
     y_regs[1].y_array = NULL;		/* set register one to empty */
 }
 
+    static void
+yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
+{
+    static int	recursive = FALSE;
+    dict_T	*v_event;
+    list_T	*list;
+    int		n;
+    char_u	buf[NUMBUFLEN + 2];
+    long	reglen = 0;
+
+    if (recursive)
+	return;
+
+    v_event = get_vim_var_dict(VV_EVENT);
+
+    list = list_alloc();
+    for (n = 0; n < reg->y_size; n++)
+	list_append_string(list, reg->y_array[n], -1);
+    list->lv_lock = VAR_FIXED;
+    dict_add_list(v_event, "regcontents", list);
+
+    buf[0] = (char_u)oap->regname;
+    buf[1] = NUL;
+    dict_add_nr_str(v_event, "regname", 0, buf);
+
+    buf[0] = get_op_char(oap->op_type);
+    buf[1] = get_extra_op_char(oap->op_type);
+    buf[2] = NUL;
+    dict_add_nr_str(v_event, "operator", 0, buf);
+
+    buf[0] = NUL;
+    buf[1] = NUL;
+    switch (get_reg_type(oap->regname, &reglen))
+    {
+	case MLINE: buf[0] = 'V'; break;
+	case MCHAR: buf[0] = 'v'; break;
+	case MBLOCK:
+		vim_snprintf((char *)buf, sizeof(buf), "%c%ld", Ctrl_V,
+			     reglen + 1);
+		break;
+    }
+    dict_add_nr_str(v_event, "regtype", 0, buf);
+
+    /* Lock the dictionary and its keys */
+    dict_set_ro_keys(v_event);
+
+    recursive = TRUE;
+    textlock++;
+    apply_autocmds(EVENT_TEXTYANKPOST, NULL, NULL, FALSE, curbuf);
+    textlock--;
+    recursive = FALSE;
+
+    /* Empty the dictionary, v:event is still valid */
+    dict_free_contents(v_event);
+    hash_init(&v_event->dv_hashtab);
+}
+
 /*
  * Handle a delete operation.
  *
@@ -1798,6 +1855,11 @@ op_delete(oparg_T *oap)
 		return FAIL;
 	    }
 	}
+
+#ifdef FEAT_AUTOCMD
+	if (did_yank && has_textyankpost())
+	    yank_do_autocmd(oap, y_current);
+#endif
     }
 
     /*
@@ -3268,6 +3330,11 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	}
     }
 # endif
+#endif
+
+#ifdef FEAT_AUTOCMD
+    if (!deleting && has_textyankpost())
+	yank_do_autocmd(oap, y_current);
 #endif
 
     return OK;
