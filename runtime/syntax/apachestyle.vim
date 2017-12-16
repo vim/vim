@@ -27,8 +27,8 @@ endif
 
 syn case ignore
 
-syn match  apComment	/^\s*#.*$/
 syn match  apOption	/^\s*[^ \t#<=]*/
+syn match  apComment	/^\s*#.*$/
 "syn match  apLastValue	/[^ \t<=#]*$/ contains=apComment	ugly
 
 " tags
