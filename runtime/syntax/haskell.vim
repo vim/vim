@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		Haskell
 " Maintainer:		Haskell Cafe mailinglist <haskell-cafe@haskell.org>
-" Last Change:		2017 Jun 04
+" Last Change:		2017 Dec 16
 " Original Author:	John Williams <jrw@pobox.com>
 "
 " Thanks to Ryan Crumley for suggestions and John Meacham for
