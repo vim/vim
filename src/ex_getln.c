@@ -1810,11 +1810,11 @@ getcmdline(
 # endif
 			old_botline = curwin->w_botline;
 			update_screen(NOT_VALID);
-			restore_last_search_pattern();
 			redrawcmdline();
 		    }
 		    else
 			vim_beep(BO_ERROR);
+		    restore_last_search_pattern();
 		    goto cmdline_not_changed;
 		}
 		break;
