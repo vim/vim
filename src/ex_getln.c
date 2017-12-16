@@ -173,6 +173,22 @@ abandon_cmdline(void)
 }
 
 /*
+ * Guess that the pattern matches everything.  Only finds specific cases, such
+ * as a trailing \|, which can happen while typing a pattern.
+ */
+    static int
+empty_pattern(char_u *p)
+{
+    int n = STRLEN(p);
+
+    /* remove trailing \v and the like */
+    while (n >= 2 && p[n - 2] == '\\'
+			  && vim_strchr((char_u *)"mMvVcCZ", p[n - 1]) != NULL)
+	n -= 2;
+    return n == 0 || (n >= 2 && p[n - 2] == '\\' && p[n - 1] == '|');
+}
+
+/*
  * getcmdline() - accept a command line starting with firstc.
  *
  * firstc == ':'	    get ":" command line.
@@ -2022,6 +2038,11 @@ cmdline_changed:
 	    }
 	    else
 		end_pos = curwin->w_cursor; /* shutup gcc 4 */
+
+	    /* Disable 'hlsearch' highlighting if the pattern matches
+	     * everything. Avoids a flash when typing "foo\|". */
+	    if (empty_pattern(ccline.cmdbuff))
+		SET_NO_HLSEARCH(TRUE);
 
 	    validate_cursor();
 	    /* May redraw the status line to show the cursor position. */
