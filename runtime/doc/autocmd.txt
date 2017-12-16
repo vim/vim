@@ -330,6 +330,7 @@ Name			triggered by ~
 
 |TextChanged|		after a change was made to the text in Normal mode
 |TextChangedI|		after a change was made to the text in Insert mode
+|TextYankPost|		after text is yanked or deleted
 
 |ColorScheme|		after loading a color scheme
 
@@ -956,6 +957,26 @@ TextChangedI			After a change was made to the text in the
 				current buffer in Insert mode.
 				Not triggered when the popup menu is visible.
 				Otherwise the same as TextChanged.
+							|TextYankPost|
+TextYankPost			After text has been yanked or deleted in the
+				current buffer.  The following values of
+				|v:event| can be used to determine the operation
+				that triggered this autocmd:
+				   operator    	The operation performed.
+				   regcontents 	Text that was stored in the
+						register, as a list of lines,
+						like with: >
+						getreg(r, 1, 1)
+<				   regname	Name of the |register| or
+						empty string for the unnamed
+						register.
+				   regtype	Type of the register, see
+						|getregtype()|.
+				Not triggered when |quote_| is used nor when
+				called recursively.
+				It is not allowed to change the buffer text,
+				see |textlock|.
+
 							*User*
 User				Never executed automatically.  To be used for
 				autocommands that are only executed with
