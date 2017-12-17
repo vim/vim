@@ -1,8 +1,10 @@
 " Vim syntax file
 " Language:	Apache-Style configuration files (proftpd.conf/apache.conf/..)
-" Maintainer:	Christian Hammers <ch@westend.com>
+" Maintainer:	Christian Hammers <ch@westend.com>, Ben RUBSON <ben.rubson@gmail.com>
 " URL:		none
 " ChangeLog:
+"	2017-12-17,ch
+"		correctly detect comments
 "	2001-05-04,ch
 "		adopted Vim 6.0 syntax style
 "	1999-10-28,ch
