@@ -45,6 +45,24 @@ func Test_packadd()
   call assert_fails("packadd", 'E471:')
 endfunc
 
+func Test_packadd_start()
+  let plugdir = s:topdir . '/pack/mine/start/other'
+  call mkdir(plugdir . '/plugin', 'p')
+  set rtp&
+  let rtp = &rtp
+  filetype on
+
+  exe 'split ' . plugdir . '/plugin/test.vim'
+  call setline(1, 'let g:plugin_works = 24')
+  wq
+
+  packadd other
+
+  call assert_equal(24, g:plugin_works)
+  call assert_true(len(&rtp) > len(rtp))
+  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/start/other\($\|,\)')
+endfunc
+
 func Test_packadd_noload()
   call mkdir(s:plugdir . '/plugin', 'p')
   call mkdir(s:plugdir . '/syntax', 'p')
