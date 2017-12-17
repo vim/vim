@@ -957,7 +957,7 @@ TextChangedI			After a change was made to the text in the
 				current buffer in Insert mode.
 				Not triggered when the popup menu is visible.
 				Otherwise the same as TextChanged.
-							|TextYankPost|
+							*TextYankPost*
 TextYankPost			After text has been yanked or deleted in the
 				current buffer.  The following values of
 				|v:event| can be used to determine the operation
@@ -976,7 +976,6 @@ TextYankPost			After text has been yanked or deleted in the
 				called recursively.
 				It is not allowed to change the buffer text,
 				see |textlock|.
-
 							*User*
 User				Never executed automatically.  To be used for
 				autocommands that are only executed with
