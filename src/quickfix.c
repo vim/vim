@@ -3610,16 +3610,7 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
     static void
 qf_list_changed(qf_info_T *qi, int qf_idx)
 {
-#ifdef FEAT_AUTOCMD
-    char_u	qfid_str[32];
-#endif
-
     qi->qf_lists[qf_idx].qf_changedtick++;
-#ifdef FEAT_AUTOCMD
-    vim_snprintf((char *)qfid_str, sizeof(qfid_str), "%ld",
-					qi->qf_lists[qf_idx].qf_id);
-    apply_autocmds(EVENT_QUICKFIXCHANGED, qfid_str, NULL, FALSE, NULL);
-#endif
 }
 
 /*

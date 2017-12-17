@@ -2952,9 +2952,6 @@ func Xqftick_tests(cchar)
 
   call g:Xsetlist([], 'f')
 
-  let g:qfidxs = []
-  au QuickFixChanged * call add(g:qfidxs, str2nr(expand("<amatch>")))
-
   Xexpr "F1:10:Line10"
   let qfid = g:Xgetlist({'id' : 0}).id
   call assert_equal(1, g:Xgetlist({'changedtick' : 0}).changedtick)
@@ -2998,13 +2995,8 @@ func Xqftick_tests(cchar)
   call g:Xsetlist([], 'a', {'nr' : 1, "lines" : ["F10:10:L10"]})
   call assert_equal(1, g:Xgetlist({'changedtick' : 0}).changedtick)
   call assert_equal(2, g:Xgetlist({'nr' : 1, 'changedtick' : 0}).changedtick)
-  call assert_equal([qfid, qfid, qfid, qfid, qfid,
-		\ qfid, qfid, qfid, qfid + 1,
-		\ qfid + 1, qfid + 2, qfid + 2, qfid + 3,
-		\ qfid + 4, qfid + 3], g:qfidxs)
 
   call delete("Xone")
-  au! QuickFixChanged
 endfunc
 
 func Test_qf_tick()
