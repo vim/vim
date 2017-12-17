@@ -2898,7 +2898,8 @@ func Xgetlist_empty_tests(cchar)
   call assert_equal(0, g:Xgetlist({'size' : 0}).size)
   call assert_equal('', g:Xgetlist({'title' : 0}).title)
   call assert_equal(0, g:Xgetlist({'winid' : 0}).winid)
-  call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0}, g:Xgetlist({'all' : 0}))
+  call assert_equal(0, g:Xgetlist({'changedtick' : 0}).changedtick)
+  call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0, 'changedtick': 0}, g:Xgetlist({'all' : 0}))
 
   " Empty quickfix list
   Xexpr ""
@@ -2910,6 +2911,7 @@ func Xgetlist_empty_tests(cchar)
   call assert_equal(0, g:Xgetlist({'size' : 0}).size)
   call assert_notequal('', g:Xgetlist({'title' : 0}).title)
   call assert_equal(0, g:Xgetlist({'winid' : 0}).winid)
+  call assert_equal(1, g:Xgetlist({'changedtick' : 0}).changedtick)
 
   let qfid = g:Xgetlist({'id' : 0}).id
   call g:Xsetlist([], 'f')
@@ -2923,7 +2925,8 @@ func Xgetlist_empty_tests(cchar)
   call assert_equal(0, g:Xgetlist({'id' : qfid, 'size' : 0}).size)
   call assert_equal('', g:Xgetlist({'id' : qfid, 'title' : 0}).title)
   call assert_equal(0, g:Xgetlist({'id' : qfid, 'winid' : 0}).winid)
-  call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0}, g:Xgetlist({'id' : qfid, 'all' : 0}))
+  call assert_equal(0, g:Xgetlist({'id' : qfid, 'changedtick' : 0}).changedtick)
+  call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0, 'changedtick' : 0}, g:Xgetlist({'id' : qfid, 'all' : 0}))
 
   " Non-existing quickfix list number
   call assert_equal('', g:Xgetlist({'nr' : 5, 'context' : 0}).context)
@@ -2934,7 +2937,8 @@ func Xgetlist_empty_tests(cchar)
   call assert_equal(0, g:Xgetlist({'nr' : 5, 'size' : 0}).size)
   call assert_equal('', g:Xgetlist({'nr' : 5, 'title' : 0}).title)
   call assert_equal(0, g:Xgetlist({'nr' : 5, 'winid' : 0}).winid)
-  call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0}, g:Xgetlist({'nr' : 5, 'all' : 0}))
+  call assert_equal(0, g:Xgetlist({'nr' : 5, 'changedtick' : 0}).changedtick)
+  call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0, 'changedtick' : 0}, g:Xgetlist({'nr' : 5, 'all' : 0}))
 endfunc
 
 func Test_getqflist()
