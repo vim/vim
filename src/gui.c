@@ -1136,7 +1136,7 @@ gui_update_cursor(
 	if (id > 0)
 	{
 	    cattr = syn_id2colors(id, &cfg, &cbg);
-#if defined(FEAT_MBYTE) || defined(FEAT_HANGULIN)
+#if defined(FEAT_XIM) || defined(FEAT_HANGULIN)
 	    {
 		static int iid;
 		guicolor_T fg, bg;
