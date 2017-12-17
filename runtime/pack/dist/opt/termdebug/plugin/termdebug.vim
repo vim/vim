@@ -216,7 +216,7 @@ func s:InstallCommands()
   " TODO: can the K mapping be restored?
   nnoremap K :Evaluate<CR>
 
-  if has('menu')
+  if has('menu') && &mouse != ''
     nnoremenu WinBar.Step :Step<CR>
     nnoremenu WinBar.Next :Over<CR>
     nnoremenu WinBar.Finish :Finish<CR>

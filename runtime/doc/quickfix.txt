@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.0.  Last change: 2017 Sep 13
+*quickfix.txt*  For Vim version 8.0.  Last change: 2017 Dec 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -363,7 +363,7 @@ Any Vim type can be associated as a context with a quickfix or location list.
 The |setqflist()| and the |setloclist()| functions can be used to associate a
 context with a quickfix and a location list respectively. The |getqflist()|
 and the |getloclist()| functions can be used to retrieve the context of a
-quickifx and a location list respectively. This is useful for a Vim plugin
+quickfix and a location list respectively. This is useful for a Vim plugin
 dealing with multiple quickfix/location lists.
 Examples: >
 
@@ -376,13 +376,13 @@ Examples: >
 	echo getloclist(2, {'id' : qfid, 'context' : 1})
 <
 							*quickfix-parse*
-You can parse a list of lines using 'erroformat' without creating or modifying
-a quickfix list using the |getqflist()| function. Examples: >
+You can parse a list of lines using 'errorformat' without creating or
+modifying a quickfix list using the |getqflist()| function. Examples: >
 	echo getqflist({'lines' : ["F1:10:Line10", "F2:20:Line20"]})
 	echo getqflist({'lines' : systemlist('grep -Hn quickfix *')})
 This returns a dictionary where the 'items' key contains the list of quickfix
 entries parsed from lines. The following shows how to use a custom
-'errorformat' to parse the lines without modifying the 'erroformat' option: >
+'errorformat' to parse the lines without modifying the 'errorformat' option: >
 	echo getqflist({'efm' : '%f#%l#%m', 'lines' : ['F1#10#Line']})
 <
 

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Dec 09
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Dec 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2276,6 +2276,8 @@ mode([expr])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF8 value {expr}
+option_restore({list})		none	restore options saved by option_save()
+option_save({list})		List	save options values
 or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr})		String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
@@ -6113,6 +6115,31 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 		nr2char(10), because NULs are represented with newline
 		characters.  nr2char(0) is a real NUL and terminates the
 		string, thus results in an empty string.
+
+option_restore({list})					*option_restore()*
+		Restore options previously saved by option_save().
+		When buffer-local options have been saved, this function must
+		be called when the same buffer is the current buffer.
+		When window-local options have been saved, this function must
+		be called when the same window is the current window.
+		When in the wrong buffer and/or window an error is given and
+		the local options won't be restored.
+		NOT IMPLEMENTED YET!
+
+option_save({list})					*option_save()*
+		Saves the options named in {list}.  The returned value can be
+		passed to option_restore().  Example: >
+			let s:saved_options = option_save([
+			    \ 'ignorecase',
+			    \ 'iskeyword',
+			    \ ])
+			 au <buffer> BufLeave *
+			    \ call option_restore(s:saved_options)
+<		The advantage over using `:let` is that global and local
+		values are handled and the script ID is restored, so that
+		`:verbose set` will show where the option was originally set,
+		not where it was restored.
+		NOT IMPLEMENTED YET!
 
 or({expr}, {expr})					*or()*
 		Bitwise OR on the two arguments.  The arguments are converted
