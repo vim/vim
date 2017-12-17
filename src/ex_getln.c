@@ -172,6 +172,7 @@ abandon_cmdline(void)
     redraw_cmdline = TRUE;
 }
 
+#ifdef FEAT_SEARCH_EXTRA
 /*
  * Guess that the pattern matches everything.  Only finds specific cases, such
  * as a trailing \|, which can happen while typing a pattern.
@@ -187,6 +188,7 @@ empty_pattern(char_u *p)
 	n -= 2;
     return n == 0 || (n >= 2 && p[n - 2] == '\\' && p[n - 1] == '|');
 }
+#endif
 
 /*
  * getcmdline() - accept a command line starting with firstc.

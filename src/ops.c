@@ -1645,6 +1645,7 @@ shift_delete_registers()
     y_regs[1].y_array = NULL;		/* set register one to empty */
 }
 
+#ifdef FEAT_AUTOCMD
     static void
 yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
 {
@@ -1701,6 +1702,7 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     dict_free_contents(v_event);
     hash_init(&v_event->dv_hashtab);
 }
+#endif
 
 /*
  * Handle a delete operation.
