@@ -1171,3 +1171,10 @@ func Test_nocatch_wipe_all_buffers()
   bwipe
   au!
 endfunc
+
+func Test_nocatch_wipe_dummy_buffer()
+  " Nasty autocommand: wipe buffer on any event.
+  au * x bwipe
+  call assert_fails('lv½ /x', 'E480')
+  au!
+endfunc
