@@ -2198,6 +2198,7 @@ test_arglist \
 	test_job_fails \
 	test_join \
 	test_json \
+	test_jumplist \
 	test_jumps \
 	test_lambda \
 	test_langmap \

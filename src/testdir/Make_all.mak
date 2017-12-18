@@ -120,6 +120,7 @@ NEW_TESTS = test_arabic.res \
 	    test_ins_complete.res \
 	    test_job_fails.res \
 	    test_json.res \
+	    test_jumplist.res \
 	    test_langmap.res \
 	    test_let.res \
 	    test_lineending.res \
