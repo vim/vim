@@ -1163,3 +1163,11 @@ func Test_TextYankPost()
   unlet g:event
   bwipe!
 endfunc
+
+func Test_nocatch_wipe_all_buffers()
+  " Real nasty autocommand: wipe all buffers on any event.
+  au * * bwipe *
+  call assert_fails('next x', 'E93')
+  bwipe
+  au!
+endfunc

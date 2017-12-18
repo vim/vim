@@ -1665,7 +1665,8 @@ set_curbuf(buf_T *buf, int action)
 #ifdef FEAT_SYN_HL
     long	old_tw = curbuf->b_p_tw;
 #endif
-    bufref_T	bufref;
+    bufref_T	newbufref;
+    bufref_T	prevbufref;
 
     setpcmark();
     if (!cmdmod.keepalt)
@@ -1675,18 +1676,22 @@ set_curbuf(buf_T *buf, int action)
     /* Don't restart Select mode after switching to another buffer. */
     VIsual_reselect = FALSE;
 
-    /* close_windows() or apply_autocmds() may change curbuf */
+    /* close_windows() or apply_autocmds() may change curbuf and wipe out "buf"
+     */
     prevbuf = curbuf;
-    set_bufref(&bufref, prevbuf);
+    set_bufref(&prevbufref, prevbuf);
+    set_bufref(&newbufref, buf);
 
 #ifdef FEAT_AUTOCMD
+    /* Autocommands may delete the curren buffer and/or the buffer we wan to go
+     * to.  In those cases don't close the buffer. */
     if (!apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf)
+	    || (bufref_valid(&prevbufref)
+		&& bufref_valid(&newbufref)
 # ifdef FEAT_EVAL
-	    || (bufref_valid(&bufref) && !aborting())
-# else
-	    || bufref_valid(&bufref)
+		&& !aborting()
 # endif
-       )
+	       ))
 #endif
     {
 #ifdef FEAT_SYN_HL
@@ -1696,9 +1701,9 @@ set_curbuf(buf_T *buf, int action)
 	if (unload)
 	    close_windows(prevbuf, FALSE);
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-	if (bufref_valid(&bufref) && !aborting())
+	if (bufref_valid(&prevbufref) && !aborting())
 #else
-	if (bufref_valid(&bufref))
+	if (bufref_valid(&prevbufref))
 #endif
 	{
 	    win_T  *previouswin = curwin;
