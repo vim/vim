@@ -2886,6 +2886,18 @@ gui_insert_lines(int row, int count)
 }
 
 /*
+ * Passed to ui_wait_for_chars_or_timer(), ignoring extra arguments.
+ */
+    static int
+gui_wait_for_chars_3(
+    long wtime,
+    int *interrupted UNUSED,
+    int ignore_input UNUSED)
+{
+    return gui_mch_wait_for_chars(wtime);
+}
+
+/*
  * Returns OK if a character was found to be available within the given time,
  * or FAIL otherwise.
  */
@@ -2893,32 +2905,7 @@ gui_insert_lines(int row, int count)
 gui_wait_for_chars_or_timer(long wtime)
 {
 #ifdef FEAT_TIMERS
-    int	    due_time;
-    long    remaining = wtime;
-    int	    tb_change_cnt = typebuf.tb_change_cnt;
-
-    /* When waiting very briefly don't trigger timers. */
-    if (wtime >= 0 && wtime < 10L)
-	return gui_mch_wait_for_chars(wtime);
-
-    while (wtime < 0 || remaining > 0)
-    {
-	/* Trigger timers and then get the time in wtime until the next one is
-	 * due.  Wait up to that time. */
-	due_time = check_due_timer();
-	if (typebuf.tb_change_cnt != tb_change_cnt)
-	{
-	    /* timer may have used feedkeys() */
-	    return FAIL;
-	}
-	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
-	    due_time = remaining;
-	if (gui_mch_wait_for_chars(due_time))
-	    return OK;
-	if (wtime > 0)
-	    remaining -= due_time;
-    }
-    return FAIL;
+    return ui_wait_for_chars_or_timer(wtime, gui_wait_for_chars_3, NULL, 0);
 #else
     return gui_mch_wait_for_chars(wtime);
 #endif
@@ -2933,10 +2920,9 @@ gui_wait_for_chars_or_timer(long wtime)
  * or FAIL otherwise.
  */
     int
-gui_wait_for_chars(long wtime)
+gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
     int	    retval;
-    int	    tb_change_cnt = typebuf.tb_change_cnt;
 
 #ifdef FEAT_MENU
     /*
@@ -2974,13 +2960,13 @@ gui_wait_for_chars(long wtime)
     retval = FAIL;
     /*
      * We may want to trigger the CursorHold event.  First wait for
-     * 'updatetime' and if nothing is typed within that time put the
-     * K_CURSORHOLD key in the input buffer.
+     * 'updatetime' and if nothing is typed within that time, and feedkeys()
+     * wasn't used, put the K_CURSORHOLD key in the input buffer.
      */
     if (gui_wait_for_chars_or_timer(p_ut) == OK)
 	retval = OK;
 #ifdef FEAT_AUTOCMD
-    else if (trigger_cursorhold())
+    else if (trigger_cursorhold() && typebuf.tb_change_cnt == tb_change_cnt)
     {
 	char_u	buf[3];
 
@@ -3003,6 +2989,22 @@ gui_wait_for_chars(long wtime)
 
     gui_mch_stop_blink();
     return retval;
+}
+
+/*
+ * Equivalent of mch_inchar() for the GUI.
+ */
+    int
+gui_inchar(
+    char_u  *buf,
+    int	    maxlen,
+    long    wtime,		/* milli seconds */
+    int	    tb_change_cnt)
+{
+    if (gui_wait_for_chars(wtime, tb_change_cnt)
+	    && !typebuf_changed(tb_change_cnt))
+	return read_from_input_buf(buf, (long)maxlen);
+    return 0;
 }
 
 /*

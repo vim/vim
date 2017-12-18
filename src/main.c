@@ -619,7 +619,7 @@ vim_main2(void)
 # ifdef FEAT_SUN_WORKSHOP
 	if (!usingSunWorkShop)
 # endif
-	    gui_wait_for_chars(50L);
+	    gui_wait_for_chars(50L, typebuf.tb_change_cnt);
 	TIME_MSG("GUI delay");
     }
 #endif

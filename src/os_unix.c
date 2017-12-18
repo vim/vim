@@ -5790,36 +5790,8 @@ mch_breakcheck(int force)
 WaitForChar(long msec, int *interrupted, int ignore_input)
 {
 #ifdef FEAT_TIMERS
-    long    due_time;
-    long    remaining = msec;
-    int	    tb_change_cnt = typebuf.tb_change_cnt;
-
-    /* When waiting very briefly don't trigger timers. */
-    if (msec >= 0 && msec < 10L)
-	return WaitForCharOrMouse(msec, NULL, ignore_input);
-
-    while (msec < 0 || remaining > 0)
-    {
-	/* Trigger timers and then get the time in msec until the next one is
-	 * due.  Wait up to that time. */
-	due_time = check_due_timer();
-	if (typebuf.tb_change_cnt != tb_change_cnt)
-	{
-	    /* timer may have used feedkeys() */
-	    return FALSE;
-	}
-	if (due_time <= 0 || (msec > 0 && due_time > remaining))
-	    due_time = remaining;
-	if (WaitForCharOrMouse(due_time, interrupted, ignore_input))
-	    return TRUE;
-	if (interrupted != NULL && *interrupted)
-	    /* Nothing available, but need to return so that side effects get
-	     * handled, such as handling a message on a channel. */
-	    return FALSE;
-	if (msec > 0)
-	    remaining -= due_time;
-    }
-    return FALSE;
+    return ui_wait_for_chars_or_timer(
+		    msec, WaitForCharOrMouse, interrupted, ignore_input) == OK;
 #else
     return WaitForCharOrMouse(msec, interrupted, ignore_input);
 #endif
