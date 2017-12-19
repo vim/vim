@@ -4930,7 +4930,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 			qf_idx = -1;
 		}
 	    }
-	    else if ((di->di_tv.v_type == VAR_STRING)
+	    else if (di->di_tv.v_type == VAR_STRING && di->di_tv.vval.v_string != NULL
 		    && (STRCMP(di->di_tv.vval.v_string, "$") == 0))
 		/* Get the last quickfix list number */
 		qf_idx = qi->qf_listcount - 1;
@@ -5225,7 +5225,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	    else if (action != ' ')
 		newlist = FALSE;	/* use the specified list */
 	}
-	else if (di->di_tv.v_type == VAR_STRING
+	else if (di->di_tv.v_type == VAR_STRING && di->di_tv.vval.v_string != NULL
 		&& STRCMP(di->di_tv.vval.v_string, "$") == 0)
 	{
 	    if (qi->qf_listcount > 0)
