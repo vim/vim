@@ -20,6 +20,9 @@ setlocal comments=b:#,fb:-
 setlocal commentstring=#\ %s
 
 setlocal omnifunc=pythoncomplete#Complete
+if has('python3')
+	setlocal omnifunc=python3complete#Complete
+endif
 
 set wildignore+=*.pyc
 
