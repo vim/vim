@@ -4068,10 +4068,6 @@ ex_cfile(exarg_T *eap)
 #endif
     int		res;
 
-    if (eap->cmdidx == CMD_lfile || eap->cmdidx == CMD_lgetfile
-					       || eap->cmdidx == CMD_laddfile)
-	wp = curwin;
-
 #ifdef FEAT_AUTOCMD
     switch (eap->cmdidx)
     {
@@ -4103,6 +4099,11 @@ ex_cfile(exarg_T *eap)
 #endif
     if (*eap->arg != NUL)
 	set_string_option_direct((char_u *)"ef", -1, eap->arg, OPT_FREE, 0);
+
+    if (eap->cmdidx == CMD_lfile
+	    || eap->cmdidx == CMD_lgetfile
+	    || eap->cmdidx == CMD_laddfile)
+	wp = curwin;
 
     /*
      * This function is used by the :cfile, :cgetfile and :caddfile

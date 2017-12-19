@@ -3031,3 +3031,10 @@ func Test_ll_window_ctx()
   enew | only
 endfunc
 
+" The following test used to crash vim
+func Test_lfile_crash()
+  sp Xtest
+  au QuickFixCmdPre * bw
+  call assert_fails('lfile', 'E40')
+  au! QuickFixCmdPre
+endfunc
