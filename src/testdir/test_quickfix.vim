@@ -2951,6 +2951,15 @@ func Test_getqflist()
   call Xgetlist_empty_tests('l')
 endfunc
 
+func Test_getqflist_invalid_nr()
+  " The following commands used to crash Vim
+  cexpr ""
+  call getqflist({'nr' : $XXX_DOES_NOT_EXIST_XXX})
+
+  " Cleanup
+  call setqflist([], 'r')
+endfunc
+
 " Tests for the quickfix/location list changedtick
 func Xqftick_tests(cchar)
   call s:setup_commands(a:cchar)
