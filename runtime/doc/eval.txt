@@ -3338,7 +3338,8 @@ count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		When {ic} is given and it's |TRUE| then case is ignored.
 
 		When {comp} is a string then the number of not overlapping
-		occurrences of {expr} is returned.
+		occurrences of {expr} is returned. 0 is returned when {expr}
+		is en empty string.
 
 
 							*cscope_connection()*
