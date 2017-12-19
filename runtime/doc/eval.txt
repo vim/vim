@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Dec 16
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3338,8 +3338,8 @@ count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		When {ic} is given and it's |TRUE| then case is ignored.
 
 		When {comp} is a string then the number of not overlapping
-		occurrences of {expr} is returned.
-
+		occurrences of {expr} is returned. Zero is returned when
+		{expr} is an empty string.
 
 							*cscope_connection()*
 cscope_connection([{num} , {dbpath} [, {prepend}]])

@@ -2382,7 +2382,7 @@ f_count(typval_T *argvars, typval_T *rettv)
 	char_u *p = argvars[0].vval.v_string;
 	char_u *next;
 
-	if (!error && expr != NULL && p != NULL)
+	if (!error && expr != NULL && *expr != NUL && p != NULL)
 	{
 	    if (ic)
 	    {
