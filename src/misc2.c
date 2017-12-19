@@ -417,8 +417,21 @@ dec(pos_T *lp)
 #ifdef FEAT_VIRTUALEDIT
     lp->coladd = 0;
 #endif
-    if (lp->col > 0)		/* still within line */
+    if (lp->col == MAXCOL)
     {
+	/* past end of line */
+	p = ml_get(lp->lnum);
+	lp->col = (colnr_T)STRLEN(p);
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    lp->col -= (*mb_head_off)(p, p + lp->col);
+#endif
+	return 0;
+    }
+
+    if (lp->col > 0)
+    {
+	/* still within line */
 	lp->col--;
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
@@ -429,8 +442,10 @@ dec(pos_T *lp)
 #endif
 	return 0;
     }
-    if (lp->lnum > 1)		/* there is a prior line */
+
+    if (lp->lnum > 1)
     {
+	/* there is a prior line */
 	lp->lnum--;
 	p = ml_get(lp->lnum);
 	lp->col = (colnr_T)STRLEN(p);
@@ -440,7 +455,9 @@ dec(pos_T *lp)
 #endif
 	return 1;
     }
-    return -1;			/* at start of file */
+
+    /* at start of file */
+    return -1;
 }
 
 /*
