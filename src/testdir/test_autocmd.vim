@@ -1178,3 +1178,10 @@ func Test_nocatch_wipe_dummy_buffer()
   call assert_fails('lv½ /x', 'E480')
   au!
 endfunc
+
+func Test_wipe_cbuffer()
+  sv x
+  au * * bw
+  lb
+  au!
+endfunc

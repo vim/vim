@@ -5520,14 +5520,6 @@ ex_cbuffer(exarg_T *eap)
 #endif
     int		res;
 
-    if (eap->cmdidx == CMD_lbuffer || eap->cmdidx == CMD_lgetbuffer
-	    || eap->cmdidx == CMD_laddbuffer)
-    {
-	qi = ll_get_or_alloc_list(curwin);
-	if (qi == NULL)
-	    return;
-    }
-
 #ifdef FEAT_AUTOCMD
     switch (eap->cmdidx)
     {
@@ -5548,6 +5540,15 @@ ex_cbuffer(exarg_T *eap)
 # endif
     }
 #endif
+
+    /* Must come after autocommands. */
+    if (eap->cmdidx == CMD_lbuffer || eap->cmdidx == CMD_lgetbuffer
+	    || eap->cmdidx == CMD_laddbuffer)
+    {
+	qi = ll_get_or_alloc_list(curwin);
+	if (qi == NULL)
+	    return;
+    }
 
     if (*eap->arg == NUL)
 	buf = curbuf;
