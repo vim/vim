@@ -404,6 +404,16 @@ func! Test_normal10_expand()
     call assert_equal(expected[i], expand('<cexpr>'), 'i == ' . i)
   endfor
 
+  if !has('win32')
+    " Test expand(`...`) i.e. backticks command expansion.
+    " Disabled on Windows as it hangs. Why?
+    call assert_match('^VIM - Vi IMproved ',
+    \                 expand('`' . v:progpath . ' --version`'))
+  endif
+
+  " Test expand(`=...`) i.e. backticks expression expansion
+  call assert_equal('5', expand('`=2+3`'))
+
   " clean up
   bw!
 endfunc
@@ -1537,12 +1547,12 @@ fun! Test_normal29_brace()
   \ 'the ''{'' flag is in ''cpoptions'' then ''{'' in the first column is used as a',
   \ 'paragraph boundary |posix|.',
   \ '{',
-  \ 'This is no paragaraph',
+  \ 'This is no paragraph',
   \ 'unless the ''{'' is set',
   \ 'in ''cpoptions''',
   \ '}',
   \ '.IP',
-  \ 'The nroff macros IP seperates a paragraph',
+  \ 'The nroff macros IP separates a paragraph',
   \ 'That means, it must be a ''.''',
   \ 'followed by IP',
   \ '.LPIt does not matter, if afterwards some',
@@ -1557,7 +1567,7 @@ fun! Test_normal29_brace()
   1
   norm! 0d2}
   call assert_equal(['.IP',
-    \  'The nroff macros IP seperates a paragraph', 'That means, it must be a ''.''', 'followed by IP',
+    \  'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''', 'followed by IP',
     \ '.LPIt does not matter, if afterwards some', 'more characters follow.', '.SHAlso section boundaries from the nroff',
     \  'macros terminate a paragraph. That means', 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
   norm! 0d}
@@ -1576,21 +1586,21 @@ fun! Test_normal29_brace()
   set cpo+={
   1
   norm! 0d2}
-  call assert_equal(['{', 'This is no paragaraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
-    \ '.IP', 'The nroff macros IP seperates a paragraph', 'That means, it must be a ''.''',
+  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
+    \ '.IP', 'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''',
     \ 'followed by IP', '.LPIt does not matter, if afterwards some', 'more characters follow.',
     \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
     \ 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
   $
   norm! d}
-  call assert_equal(['{', 'This is no paragaraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
-    \ '.IP', 'The nroff macros IP seperates a paragraph', 'That means, it must be a ''.''',
+  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
+    \ '.IP', 'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''',
     \ 'followed by IP', '.LPIt does not matter, if afterwards some', 'more characters follow.',
     \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
     \ 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
   norm! gg}
   norm! d5}
-  call assert_equal(['{', 'This is no paragaraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}', ''], getline(1,'$'))
+  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}', ''], getline(1,'$'))
 
   " clean up
   set cpo-={
