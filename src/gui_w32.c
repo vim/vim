@@ -3142,6 +3142,7 @@ gui_mch_delete_lines(
 	{
 	    gui_redraw(rc.left, rc.top,
 		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
+	    gui_undraw_cursor();
 	    use_redraw = 1;
 	}
 	else
@@ -3193,6 +3194,7 @@ gui_mch_insert_lines(
 	{
 	    gui_redraw(rc.left, rc.top,
 		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
+	    gui_undraw_cursor();
 	    use_redraw = 1;
 	}
 	else
