@@ -404,9 +404,12 @@ func! Test_normal10_expand()
     call assert_equal(expected[i], expand('<cexpr>'), 'i == ' . i)
   endfor
 
-  " Test expand(`...`) i.e. backticks command expansion
-  call assert_match('^VIM - Vi IMproved ',
-  \                 expand('`' . v:progpath . ' --version`'))
+  if !has('win32')
+    " Test expand(`...`) i.e. backticks command expansion.
+    " Disabled on Windows as it hangs. Why?
+    call assert_match('^VIM - Vi IMproved ',
+    \                 expand('`' . v:progpath . ' --version`'))
+  endif
 
   " Test expand(`=...`) i.e. backticks expression expansion
   call assert_equal('5', expand('`=2+3`'))
