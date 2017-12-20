@@ -1698,8 +1698,8 @@ mch_print_begin(prt_settings_T *psettings)
     if (wp != NULL)
     {
 	DOCINFOW	di;
-	vim_memset(&di, 0, sizeof(DOCINFO));
-	di.cbSize = sizeof(DOCINFO);
+	vim_memset(&di, 0, sizeof(DOCINFOW));
+	di.cbSize = sizeof(DOCINFOW);
 	di.lpszDocName = wp;
 	ret = StartDocW(prt_dlg.hDC, &di);
 	vim_free(wp);
