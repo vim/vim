@@ -3038,3 +3038,43 @@ func Test_lfile_crash()
   call assert_fails('lfile', 'E40')
   au! QuickFixCmdPre
 endfunc
+
+" The following test used to crash vim
+func Test_lbuffer_crash()
+  sv Xtest
+  augroup QF_Test
+    au!
+    au * * bw
+  augroup END
+  lbuffer
+  augroup QF_Test
+    au!
+  augroup END
+endfunc
+
+" The following test used to crash vim
+func Test_lexpr_crash()
+  augroup QF_Test
+    au!
+    au * * call setloclist(0, [], 'f')
+  augroup END
+  lexpr ""
+  augroup QF_Test
+    au!
+  augroup END
+  enew | only
+endfunc
+
+" The following test used to crash Vim
+func Test_lvimgrep_crash()
+  sv Xtest
+  augroup QF_Test
+    au!
+    au * * call setloclist(0, [], 'f')
+  augroup END
+  lvimgrep quickfix test_quickfix.vim
+  augroup QF_Test
+    au!
+  augroup END
+  enew | only
+endfunc
