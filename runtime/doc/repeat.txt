@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.0.  Last change: 2017 Jun 10
+*repeat.txt*    For Vim version 8.0.  Last change: 2017 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -241,6 +241,10 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			there yet.
 			If the directory pack/*/opt/{name}/after exists it is
 			added at the end of 'runtimepath'.
+
+			If loading packages from "pack/*/start" was skipped,
+			then this directory is searched first:
+				pack/*/start/{name} ~
 
 			Note that {name} is the directory name, not the name
 			of the .vim file.  All the files matching the pattern

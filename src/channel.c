@@ -3306,11 +3306,12 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 /*
  * Read from RAW or NL "channel"/"part".  Blocks until there is something to
  * read or the timeout expires.
+ * When "raw" is TRUE don't block waiting on a NL.
  * Returns what was read in allocated memory.
  * Returns NULL in case of error or timeout.
  */
-    char_u *
-channel_read_block(channel_T *channel, ch_part_T part, int timeout)
+    static char_u *
+channel_read_block(channel_T *channel, ch_part_T part, int timeout, int raw)
 {
     char_u	*buf;
     char_u	*msg;
@@ -3320,7 +3321,7 @@ channel_read_block(channel_T *channel, ch_part_T part, int timeout)
     readq_T	*node;
 
     ch_log(channel, "Blocking %s read, timeout: %d msec",
-				    mode == MODE_RAW ? "RAW" : "NL", timeout);
+				     mode == MODE_RAW ? "RAW" : "NL", timeout);
 
     while (TRUE)
     {
@@ -3333,6 +3334,10 @@ channel_read_block(channel_T *channel, ch_part_T part, int timeout)
 		break;
 	    if (channel_collapse(channel, part, mode == MODE_NL) == OK)
 		continue;
+	    /* If not blocking or nothing more is coming then return what we
+	     * have. */
+	    if (raw || fd == INVALID_FD)
+		break;
 	}
 
 	/* Wait for up to the channel timeout. */
@@ -3359,11 +3364,16 @@ channel_read_block(channel_T *channel, ch_part_T part, int timeout)
 	nl = channel_first_nl(node);
 
 	/* Convert NUL to NL, the internal representation. */
-	for (p = buf; p < nl && p < buf + node->rq_buflen; ++p)
+	for (p = buf; (nl == NULL || p < nl) && p < buf + node->rq_buflen; ++p)
 	    if (*p == NUL)
 		*p = NL;
 
-	if (nl + 1 == buf + node->rq_buflen)
+	if (nl == NULL)
+	{
+	    /* must be a closed channel with missing NL */
+	    msg = channel_get(channel, part);
+	}
+	else if (nl + 1 == buf + node->rq_buflen)
 	{
 	    /* get the whole buffer */
 	    msg = channel_get(channel, part);
@@ -3506,7 +3516,8 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw)
 	    timeout = opt.jo_timeout;
 
 	if (raw || mode == MODE_RAW || mode == MODE_NL)
-	    rettv->vval.v_string = channel_read_block(channel, part, timeout);
+	    rettv->vval.v_string = channel_read_block(channel, part,
+								 timeout, raw);
 	else
 	{
 	    if (opt.jo_set & JO_ID)
@@ -3948,7 +3959,8 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
 	    timeout = opt.jo_timeout;
 	else
 	    timeout = channel_get_timeout(channel, part_read);
-	rettv->vval.v_string = channel_read_block(channel, part_read, timeout);
+	rettv->vval.v_string = channel_read_block(channel, part_read,
+								timeout, TRUE);
     }
     free_job_options(&opt);
 }

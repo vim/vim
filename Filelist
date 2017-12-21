@@ -666,6 +666,7 @@ RT_SCRIPTS =	\
 		runtime/autoload/xml/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
+		runtime/colors/tools/*.vim \
 		runtime/compiler/*.vim \
 		runtime/compiler/README.txt \
 		runtime/indent/*.vim \

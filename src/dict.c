@@ -47,6 +47,16 @@ dict_alloc(void)
     return d;
 }
 
+    dict_T *
+dict_alloc_lock(int lock)
+{
+    dict_T *d = dict_alloc();
+
+    if (d != NULL)
+	d->dv_lock = lock;
+    return d;
+}
+
 /*
  * Allocate an empty dict for a return value.
  * Returns OK or FAIL.
@@ -54,13 +64,12 @@ dict_alloc(void)
     int
 rettv_dict_alloc(typval_T *rettv)
 {
-    dict_T	*d = dict_alloc();
+    dict_T	*d = dict_alloc_lock(0);
 
     if (d == NULL)
 	return FAIL;
 
     rettv_dict_set(rettv, d);
-    rettv->v_lock = 0;
     return OK;
 }
 
@@ -80,7 +89,7 @@ rettv_dict_set(typval_T *rettv, dict_T *d)
  * Free a Dictionary, including all non-container items it contains.
  * Ignores the reference count.
  */
-    static void
+    void
 dict_free_contents(dict_T *d)
 {
     int		todo;
@@ -102,6 +111,8 @@ dict_free_contents(dict_T *d)
 	    --todo;
 	}
     }
+
+    /* The hashtab is still locked, it has to be re-initialized anyway */
     hash_clear(&d->dv_hashtab);
 }
 
@@ -843,6 +854,25 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 		copy_tv(&di->di_tv, &li2->li_tv);
 	    }
 	}
+    }
+}
+
+/*
+ * Make each item in the dict readonly (not the value of the item).
+ */
+    void
+dict_set_items_ro(dict_T *di)
+{
+    int		todo = (int)di->dv_hashtab.ht_used;
+    hashitem_T	*hi;
+
+    /* Set readonly */
+    for (hi = di->dv_hashtab.ht_array; todo > 0 ; ++hi)
+    {
+	if (HASHITEM_EMPTY(hi))
+	    continue;
+	--todo;
+	HI2DI(hi)->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
     }
 }
 

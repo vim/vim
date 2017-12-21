@@ -30,11 +30,14 @@
 #endif
 
 #if defined(FEAT_DIRECTX)
+# ifndef FEAT_MBYTE
+#  error FEAT_MBYTE is required for FEAT_DIRECTX.
+# endif
 static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
 static int s_directx_scrlines = 0;
-# define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
+# define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL && enc_utf8)
 static int directx_enabled(void);
 static void directx_binddc(void);
 #endif
@@ -47,7 +50,7 @@ static int gui_mswin_get_menu_height(int fix_window);
     int
 gui_mch_set_rendering_options(char_u *s)
 {
-#ifdef FEAT_DIRECTX
+# ifdef FEAT_DIRECTX
     char_u  *p, *q;
 
     int	    dx_enable = 0;
@@ -159,9 +162,9 @@ gui_mch_set_rendering_options(char_u *s)
     s_directx_scrlines = dx_scrlines;
 
     return OK;
-#else
+# else
     return FAIL;
-#endif
+# endif
 }
 #endif
 
@@ -6412,13 +6415,13 @@ gui_mch_draw_string(
 	    if (text[n] >= 0x80)
 		break;
 
-#if defined(FEAT_DIRECTX)
+# if defined(FEAT_DIRECTX)
     /* Quick hack to enable DirectWrite.  To use DirectWrite (antialias), it is
      * required that unicode drawing routine, currently.  So this forces it
      * enabled. */
-    if (enc_utf8 && IS_ENABLE_DIRECTX())
+    if (IS_ENABLE_DIRECTX())
 	n = 0; /* Keep n < len, to enter block for unicode. */
-#endif
+# endif
 
     /* Check if the Unicode buffer exists and is big enough.  Create it
      * with the same length as the multi-byte string, the number of wide
@@ -6491,7 +6494,7 @@ gui_mch_draw_string(
 	    i += utf_ptr2len_len(text + i, len - i);
 	    ++clen;
 	}
-#if defined(FEAT_DIRECTX)
+# if defined(FEAT_DIRECTX)
 	if (IS_ENABLE_DIRECTX())
 	{
 	    /* Add one to "cells" for italics. */
@@ -6501,7 +6504,7 @@ gui_mch_draw_string(
 		    foptions, pcliprect, unicodepdy);
 	}
 	else
-#endif
+# endif
 	    ExtTextOutW(s_hdc, TEXT_X(col), TEXT_Y(row),
 		    foptions, pcliprect, unicodebuf, wlen, unicodepdy);
 	len = cells;	/* used for underlining */

@@ -1,7 +1,9 @@
 /* dict.c */
 dict_T *dict_alloc(void);
+dict_T *dict_alloc_lock(int lock);
 int rettv_dict_alloc(typval_T *rettv);
 void rettv_dict_set(typval_T *rettv, dict_T *d);
+void dict_free_contents(dict_T *d);
 void dict_unref(dict_T *d);
 int dict_free_nonref(int copyID);
 void dict_free_items(int copyID);
@@ -23,4 +25,5 @@ void dict_extend(dict_T *d1, dict_T *d2, char_u *action);
 dictitem_T *dict_lookup(hashitem_T *hi);
 int dict_equal(dict_T *d1, dict_T *d2, int ic, int recursive);
 void dict_list(typval_T *argvars, typval_T *rettv, int what);
+void dict_set_items_ro(dict_T *di);
 /* vim: set ft=c : */

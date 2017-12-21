@@ -76,6 +76,7 @@ typedef struct qf_list_S
     int			qf_multiline;
     int			qf_multiignore;
     int			qf_multiscan;
+    long		qf_changedtick;
 } qf_list_T;
 
 /*
@@ -1668,6 +1669,7 @@ copy_loclist(win_T *from, win_T *to)
 
 	/* Assign a new ID for the location list */
 	to_qfl->qf_id = ++last_qf_id;
+	to_qfl->qf_changedtick = 0L;
 
 	/* When no valid entries are present in the list, qf_ptr points to
 	 * the first item in the list */
@@ -2965,6 +2967,7 @@ qf_free(qf_info_T *qi, int idx)
     free_tv(qfl->qf_ctx);
     qfl->qf_ctx = NULL;
     qfl->qf_id = 0;
+    qfl->qf_changedtick = 0L;
 }
 
 /*
@@ -3604,6 +3607,12 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
     KeyTyped = old_KeyTyped;
 }
 
+    static void
+qf_list_changed(qf_info_T *qi, int qf_idx)
+{
+    qi->qf_lists[qf_idx].qf_changedtick++;
+}
+
 /*
  * Return TRUE when using ":vimgrep" for ":grep".
  */
@@ -3713,6 +3722,8 @@ ex_make(exarg_T *eap)
 					   *eap->cmdlinep, enc);
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
+    if (res >= 0 && qi != NULL)
+	qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
     if (au_name != NULL)
     {
@@ -4057,10 +4068,6 @@ ex_cfile(exarg_T *eap)
 #endif
     int		res;
 
-    if (eap->cmdidx == CMD_lfile || eap->cmdidx == CMD_lgetfile
-					       || eap->cmdidx == CMD_laddfile)
-	wp = curwin;
-
 #ifdef FEAT_AUTOCMD
     switch (eap->cmdidx)
     {
@@ -4093,6 +4100,11 @@ ex_cfile(exarg_T *eap)
     if (*eap->arg != NUL)
 	set_string_option_direct((char_u *)"ef", -1, eap->arg, OPT_FREE, 0);
 
+    if (eap->cmdidx == CMD_lfile
+	    || eap->cmdidx == CMD_lgetfile
+	    || eap->cmdidx == CMD_laddfile)
+	wp = curwin;
+
     /*
      * This function is used by the :cfile, :cgetfile and :caddfile
      * commands.
@@ -4105,14 +4117,16 @@ ex_cfile(exarg_T *eap)
      */
     res = qf_init(wp, p_ef, p_efm, (eap->cmdidx != CMD_caddfile
 			&& eap->cmdidx != CMD_laddfile), *eap->cmdlinep, enc);
+    if (wp != NULL)
+	qi = GET_LOC_LIST(wp);
+    if (res >= 0 && qi != NULL)
+	qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
     if (au_name != NULL)
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name, NULL, FALSE, curbuf);
 #endif
     if (res > 0 && (eap->cmdidx == CMD_cfile || eap->cmdidx == CMD_lfile))
     {
-	if (wp != NULL)
-	    qi = GET_LOC_LIST(wp);
 	qf_jump(qi, 0, 0, eap->forceit);	/* display first error */
     }
 }
@@ -4469,6 +4483,7 @@ ex_vimgrep(exarg_T *eap)
     qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
     qi->qf_lists[qi->qf_curlist].qf_ptr = qi->qf_lists[qi->qf_curlist].qf_start;
     qi->qf_lists[qi->qf_curlist].qf_index = 1;
+    qf_list_changed(qi, qi->qf_curlist);
 
     qf_update_buffer(qi, NULL);
 
@@ -4572,6 +4587,7 @@ load_dummy_buffer(
     bufref_T	newbuf_to_wipe;
     int		failed = TRUE;
     aco_save_T	aco;
+    int		readfile_result;
 
     /* Allocate a buffer without putting it in the buffer list. */
     newbuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
@@ -4585,6 +4601,9 @@ load_dummy_buffer(
     /* need to open the memfile before putting the buffer in a window */
     if (ml_open(newbuf) == OK)
     {
+	/* Make sure this buffer isn't wiped out by auto commands. */
+	++newbuf->b_locked;
+
 	/* set curwin/curbuf to buf and save a few things */
 	aucmd_prepbuf(&aco, newbuf);
 
@@ -4599,9 +4618,11 @@ load_dummy_buffer(
 	curbuf->b_flags &= ~BF_DUMMY;
 
 	newbuf_to_wipe.br_buf = NULL;
-	if (readfile(fname, NULL,
+	readfile_result = readfile(fname, NULL,
 		    (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM,
-		    NULL, READ_NEW | READ_DUMMY) == OK
+		    NULL, READ_NEW | READ_DUMMY);
+	--newbuf->b_locked;
+	if (readfile_result == OK
 		&& !got_int
 		&& !(curbuf->b_flags & BF_NEW))
 	{
@@ -4774,7 +4795,8 @@ enum {
     QF_GETLIST_ID	= 0x20,
     QF_GETLIST_IDX	= 0x40,
     QF_GETLIST_SIZE	= 0x80,
-    QF_GETLIST_ALL	= 0xFF
+    QF_GETLIST_TICK	= 0x100,
+    QF_GETLIST_ALL	= 0x1FF
 };
 
 /*
@@ -4863,69 +4885,23 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
 
-    /* List is not present or is empty */
-    if (qi == NULL || qi->qf_listcount == 0)
-    {
-	/* If querying for the size of the list, return 0 */
-	if (((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
-		&& (di->di_tv.v_type == VAR_STRING)
-		&& (STRCMP(di->di_tv.vval.v_string, "$") == 0))
-	    return dict_add_nr_str(retdict, "nr", 0, NULL);
-	return FAIL;
-    }
-
-    qf_idx = qi->qf_curlist;		/* default is the current list */
-    if ((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
-    {
-	/* Use the specified quickfix/location list */
-	if (di->di_tv.v_type == VAR_NUMBER)
-	{
-	    /* for zero use the current list */
-	    if (di->di_tv.vval.v_number != 0)
-	    {
-		qf_idx = di->di_tv.vval.v_number - 1;
-		if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
-		    return FAIL;
-	    }
-	}
-	else if ((di->di_tv.v_type == VAR_STRING)
-		&& (STRCMP(di->di_tv.vval.v_string, "$") == 0))
-	    /* Get the last quickfix list number */
-	    qf_idx = qi->qf_listcount - 1;
-	else
-	    return FAIL;
-	flags |= QF_GETLIST_NR;
-    }
-
-    if ((di = dict_find(what, (char_u *)"id", -1)) != NULL)
-    {
-	/* Look for a list with the specified id */
-	if (di->di_tv.v_type == VAR_NUMBER)
-	{
-	    /* For zero, use the current list or the list specifed by 'nr' */
-	    if (di->di_tv.vval.v_number != 0)
-	    {
-		qf_idx = qf_id2nr(qi, di->di_tv.vval.v_number);
-		if (qf_idx == -1)
-		    return FAIL;	    /* List not found */
-	    }
-	    flags |= QF_GETLIST_ID;
-	}
-	else
-	    return FAIL;
-    }
-
     if (dict_find(what, (char_u *)"all", -1) != NULL)
 	flags |= QF_GETLIST_ALL;
 
     if (dict_find(what, (char_u *)"title", -1) != NULL)
 	flags |= QF_GETLIST_TITLE;
 
+    if (dict_find(what, (char_u *)"nr", -1) != NULL)
+	flags |= QF_GETLIST_NR;
+
     if (dict_find(what, (char_u *)"winid", -1) != NULL)
 	flags |= QF_GETLIST_WINID;
 
     if (dict_find(what, (char_u *)"context", -1) != NULL)
 	flags |= QF_GETLIST_CONTEXT;
+
+    if (dict_find(what, (char_u *)"id", -1) != NULL)
+	flags |= QF_GETLIST_ID;
 
     if (dict_find(what, (char_u *)"items", -1) != NULL)
 	flags |= QF_GETLIST_ITEMS;
@@ -4935,6 +4911,83 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 
     if (dict_find(what, (char_u *)"size", -1) != NULL)
 	flags |= QF_GETLIST_SIZE;
+
+    if (dict_find(what, (char_u *)"changedtick", -1) != NULL)
+	flags |= QF_GETLIST_TICK;
+
+    if (qi != NULL && qi->qf_listcount != 0)
+    {
+	qf_idx = qi->qf_curlist;	/* default is the current list */
+	if ((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
+	{
+	    /* Use the specified quickfix/location list */
+	    if (di->di_tv.v_type == VAR_NUMBER)
+	    {
+		/* for zero use the current list */
+		if (di->di_tv.vval.v_number != 0)
+		{
+		    qf_idx = di->di_tv.vval.v_number - 1;
+		    if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
+			qf_idx = -1;
+		}
+	    }
+	    else if (di->di_tv.v_type == VAR_STRING
+			    && di->di_tv.vval.v_string != NULL
+			    && STRCMP(di->di_tv.vval.v_string, "$") == 0)
+		/* Get the last quickfix list number */
+		qf_idx = qi->qf_listcount - 1;
+	    else
+		qf_idx = -1;
+	    flags |= QF_GETLIST_NR;
+	}
+
+	if ((di = dict_find(what, (char_u *)"id", -1)) != NULL)
+	{
+	    /* Look for a list with the specified id */
+	    if (di->di_tv.v_type == VAR_NUMBER)
+	    {
+		/*
+		 * For zero, use the current list or the list specifed by 'nr'
+		 */
+		if (di->di_tv.vval.v_number != 0)
+		    qf_idx = qf_id2nr(qi, di->di_tv.vval.v_number);
+		flags |= QF_GETLIST_ID;
+	    }
+	    else
+		qf_idx = -1;
+	}
+    }
+
+    /* List is not present or is empty */
+    if (qi == NULL || qi->qf_listcount == 0 || qf_idx == -1)
+    {
+	if (flags & QF_GETLIST_TITLE)
+	    status = dict_add_nr_str(retdict, "title", 0L, (char_u *)"");
+	if ((status == OK) && (flags & QF_GETLIST_ITEMS))
+	{
+	    list_T	*l = list_alloc();
+	    if (l != NULL)
+		status = dict_add_list(retdict, "items", l);
+	    else
+		status = FAIL;
+	}
+	if ((status == OK) && (flags & QF_GETLIST_NR))
+	    status = dict_add_nr_str(retdict, "nr", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_WINID))
+	    status = dict_add_nr_str(retdict, "winid", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_CONTEXT))
+	    status = dict_add_nr_str(retdict, "context", 0L, (char_u *)"");
+	if ((status == OK) && (flags & QF_GETLIST_ID))
+	    status = dict_add_nr_str(retdict, "id", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_IDX))
+	    status = dict_add_nr_str(retdict, "idx", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_SIZE))
+	    status = dict_add_nr_str(retdict, "size", 0L, NULL);
+	if ((status == OK) && (flags & QF_GETLIST_TICK))
+	    status = dict_add_nr_str(retdict, "changedtick", 0L, NULL);
+
+	return status;
+    }
 
     if (flags & QF_GETLIST_TITLE)
     {
@@ -4949,9 +5002,12 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_WINID))
     {
 	win_T	*win;
+	int	win_id = 0;
+
 	win = qf_find_win(qi);
 	if (win != NULL)
-	    status = dict_add_nr_str(retdict, "winid", win->w_id, NULL);
+	    win_id = win->w_id;
+	status = dict_add_nr_str(retdict, "winid", win_id, NULL);
     }
     if ((status == OK) && (flags & QF_GETLIST_ITEMS))
     {
@@ -5000,6 +5056,10 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_SIZE))
 	status = dict_add_nr_str(retdict, "size",
 					qi->qf_lists[qf_idx].qf_count, NULL);
+
+    if ((status == OK) && (flags & QF_GETLIST_TICK))
+	status = dict_add_nr_str(retdict, "changedtick",
+				qi->qf_lists[qf_idx].qf_changedtick, NULL);
 
     return status;
 }
@@ -5168,7 +5228,8 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 		newlist = FALSE;	/* use the specified list */
 	}
 	else if (di->di_tv.v_type == VAR_STRING
-		&& STRCMP(di->di_tv.vval.v_string, "$") == 0)
+			&& di->di_tv.vval.v_string != NULL
+			&& STRCMP(di->di_tv.vval.v_string, "$") == 0)
 	{
 	    if (qi->qf_listcount > 0)
 		qf_idx = qi->qf_listcount - 1;
@@ -5269,6 +5330,9 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	qi->qf_lists[qf_idx].qf_ctx = ctx;
 	retval = OK;
     }
+
+    if (retval == OK)
+	qf_list_changed(qi, qf_idx);
 
     return retval;
 }
@@ -5373,7 +5437,11 @@ set_errorlist(
     else if (what != NULL)
 	retval = qf_set_properties(qi, what, action, title);
     else
+    {
 	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action);
+	if (retval == OK)
+	    qf_list_changed(qi, qi->qf_curlist);
+    }
 
     return retval;
 }
@@ -5419,6 +5487,16 @@ set_ref_in_quickfix(int copyID)
 	    if (abort)
 		return abort;
 	}
+	if (IS_LL_WINDOW(win) && (win->w_llist_ref->qf_refcount == 1))
+	{
+	    /* In a location list window and none of the other windows is
+	     * referring to this location list. Mark the location list
+	     * context as still in use.
+	     */
+	    abort = mark_quickfix_ctx(win->w_llist_ref, copyID);
+	    if (abort)
+		return abort;
+	}
     }
 
     return abort;
@@ -5443,14 +5521,6 @@ ex_cbuffer(exarg_T *eap)
 #endif
     int		res;
 
-    if (eap->cmdidx == CMD_lbuffer || eap->cmdidx == CMD_lgetbuffer
-	    || eap->cmdidx == CMD_laddbuffer)
-    {
-	qi = ll_get_or_alloc_list(curwin);
-	if (qi == NULL)
-	    return;
-    }
-
 #ifdef FEAT_AUTOCMD
     switch (eap->cmdidx)
     {
@@ -5471,6 +5541,15 @@ ex_cbuffer(exarg_T *eap)
 # endif
     }
 #endif
+
+    /* Must come after autocommands. */
+    if (eap->cmdidx == CMD_lbuffer || eap->cmdidx == CMD_lgetbuffer
+	    || eap->cmdidx == CMD_laddbuffer)
+    {
+	qi = ll_get_or_alloc_list(curwin);
+	if (qi == NULL)
+	    return;
+    }
 
     if (*eap->arg == NUL)
 	buf = curbuf;
@@ -5506,6 +5585,8 @@ ex_cbuffer(exarg_T *eap)
 			     && eap->cmdidx != CMD_laddbuffer),
 						   eap->line1, eap->line2,
 						   qf_title, NULL);
+	    if (res >= 0)
+		qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
 	    if (au_name != NULL)
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
@@ -5575,6 +5656,8 @@ ex_cexpr(exarg_T *eap)
 			     && eap->cmdidx != CMD_laddexpr),
 				 (linenr_T)0, (linenr_T)0, *eap->cmdlinep,
 				 NULL);
+	    if (res >= 0)
+		qf_list_changed(qi, qi->qf_curlist);
 #ifdef FEAT_AUTOCMD
 	    if (au_name != NULL)
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
@@ -5795,6 +5878,7 @@ ex_helpgrep(exarg_T *eap)
 	/* Darn, some plugin changed the value. */
 	free_string_option(save_cpo);
 
+    qf_list_changed(qi, qi->qf_curlist);
     qf_update_buffer(qi, NULL);
 
 #ifdef FEAT_AUTOCMD

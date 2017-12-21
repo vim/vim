@@ -103,6 +103,10 @@ func Test_json_encode()
   call assert_fails('echo json_encode(function("tr"))', 'E474:')
   call assert_fails('echo json_encode([function("tr")])', 'E474:')
 
+  call assert_equal('{"a":""}', json_encode({'a': test_null_string()}))
+  call assert_equal('{"a":[]}', json_encode({"a": test_null_list()}))
+  call assert_equal('{"a":{}}', json_encode({"a": test_null_dict()}))
+
   silent! let res = json_encode(function("tr"))
   call assert_equal("", res)
 endfunc

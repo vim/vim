@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 29
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Dec 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,13 +34,6 @@ entered there will not be repeated below, unless there is extra information.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Motif testgui:
-From test_options.vim:
-Found errors in Test_set_values():
-Caught exception in Test_set_values(): Vim(set):E596: Invalid font(s): guifont=fixedsys @ /home/mool/vim/vim80/src/testdir/opt_test.vim, line 1153
-
-WinBar: balloon shows up for next line
 
 No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
@@ -147,8 +140,13 @@ Suggested by Hiroki Kokubun:
 - [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
 - [hybrid](https://github.com/w0ng/vim-hybrid)
 Include solarized color scheme?, it does not support termguicolors.
--> Make check for colorscheme that it's sane.
 - Sanitized version of pablo (Lifepillar, 2017 Nov 21)
+
+heap use after free. (gy741, #2447)
+heap use after free in set_bufref (gy741, #2448)
+    reproduces with valgrind (Dominique)
+heap use after free in getout. (gy741, #2449)
+    reproduces with valgrind (Dominique)
 
 Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in do_sub() (#2249)
@@ -157,27 +155,28 @@ Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in nfa_regatom() (#2251)
 - undefined left shift in get_string_tv() (#2250)
 
-patch for: fix SHIFT-Insert on Windows command prompt (Yasuhiro Matsumoto,
-#2381)
-
-Patch for profile log truncating halfway a character. (ichizok, 2017 Nov 28,
-#2385)
-
-WinBar: Maximizing window causes window size to be wrong. (Lifepillar, 2017
-Nov 29, #2356)
-
-CTRL-A does not work with empty line. (Alex, #2387)
-Patch by Hirohito Higashi, 2017 Nov 29.
-
-'hlsearch' shows empty matches, which means highlighting everything.
-Don't do that.  For "foo\|" or "\v"
-Patch from Christian, 2017 Nov 14.  Should still display "$" matches.
+Triggering CursorHoldI happens too often in the GUI. (#2451).
+Should move code from os_unix.c mch_inchar() up into common use, it's not
+really machine specific. Also the part of WaitForChar(), it deals with timers
+and is also for all machines.
 
 When starting with --clean packages under "start" are not loaded.  Make this
 work:  :packadd START {name}  similar to :runtime START name
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
+
+Patch to add changedtick var to quickfix list. (Yegappan Lakshmanan, 2017 Nov
+18, #2391)
+
+7   Add a watchpoint in the debug mode: An expression that breaks execution
+    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
+    the value of the expression changes.  ":watchdel" deletes an item,
+    ":watchlist" lists the items. (Charles Campbell)
+Patch by Christian Brabandt, 2016 Jun 10, #859
+
+7   Make "ga" show the digraph for a character, if it exists.
+Patch from Christian Brabandt, 2011 Aug 19.
 
 Fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
 
@@ -191,11 +190,17 @@ Using 'wildignore' also applies to literally entered file name.  Also with
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
 
+Patch for 24 bit color support in MS-Windows console, using vcon. (Nobuhiro
+Takasaki, Ken Takata, 2017 Oct 1, #2060).
+
 ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
 Lemonboy can reproduce (2017 Jun 5)
 
 Patch to fix E806. (Dominique, 2017 Nov 22, #2368)
 Kazunobu Kuriyama: caused by XtSetLanguageProc().
+
+Patch to fix GUI find/replace dialog. (kiloliter, 2017 Dec 11, report in
+#2418, fix in #2435)
 
 Invalid range error when using BufWinLeave for closing terminal.
 (Gabriel Barta, 2017 Nov 15, #2339)
@@ -219,9 +224,8 @@ Koichi Iwamoto, #2126
 Patch to fix cmdline abbreviation after '<,'>. (Christian Brabandt, 2017 Nov
 13, on issue #2320)
 
-Patch to add TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
-May 24)  Update May 26.
-Now in patch by Lemonboy, #2333
+Patch for Neovim concerning restoring when closing help window. (glacambre
+neovim #7431)
 
 Default install on MS-Windows should source defaults.vim.
 Ask whether to use Windows or Vim key behavior?
@@ -238,7 +242,7 @@ matchit hasn't been maintained for a long time.  #955.
 
 Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
 
-MS-Windows: buffer completetion doesn't work when using backslash (or slash)
+MS-Windows: buffer completion doesn't work when using backslash (or slash)
 for a path separator. (xtal8, #2201)
 
 Patch to adjust to DPI setting for GTK. (Roel van de Kraats, 2017 Nov 20,
@@ -263,9 +267,6 @@ When bracketed paste is used, pasting at the ":append" prompt does not get the
 line breaks. (Ken Takata, 2017 Aug 22)
 
 The ":move" command does not honor closed folds. (Ryan Lue, #2351)
-
-Patch for 24 bit color support in MS-Windows console, using vcon. (Nobuhiro
-Takasaki, Ken Takata, 2017 Oct 1, #2060).
 
 Memory leaks in test_channel? (or is it because of fork())
 Memory leak in test_arabic.
@@ -303,6 +304,9 @@ Alternatives for ~:
     ->  list->get()  two characters, used for lambda
 
 The ++ options for the :edit command are also useful on the Vim command line.
+
+When recovering a file, put the swap file name in b:recovered_swapfile.  Then
+a command can delete it.
 
 Overlong utf-8 sequence is displayed wrong. (Harm te Hennepe, 2017 Sep 14,
 #2089)  Patch with possible solution by Björn Linse.
@@ -641,7 +645,7 @@ Probably list of keystrokes, with some annotations for mode changes.
 Could store in logfile to be able to analyse it with an external command.
 E.g. to see when's the last time a plugin command was used.
 
-execute() cannot be used with command completeion. (Daniel Hahler, 2016 Oct 1,
+execute() cannot be used with command completion. (Daniel Hahler, 2016 Oct 1,
 #1141)
 
 cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
@@ -811,12 +815,6 @@ directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 In debug mode one can inspect variables, but not the function parameters
 (starting with a:). (Luc Hermitte, 2017 Jan 4, #1352)
-
-7   Add a watchpoint in the debug mode: An expression that breaks execution
-    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
-    the value of the expression changes.  ":watchdel" deletes an item,
-    ":watchlist" lists the items. (Charles Campbell)
-Patch by Christian Brabandt, 2016 Jun 10, #859
 
 If ":bd" also closes a Tab page then the " mark is not set.  (Harm te Hennepe,
 2016 Apr 25, #780)
@@ -1248,13 +1246,6 @@ Patch to allow more types in remote_expr(). (Lech Lorens, 2014 Jan 5)
 Doesn't work for string in list.  Other way to pass all types of variables
 reliably?
 
-Using ":call foo#d.f()" doesn't autoload the "foo.vim" file.
-That is, calling a dictionary function on an autoloaded dict.
-Works OK for echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar
-17)
-Patch by Christian Brabandt, 2013 Mar 23.
-Not 100% sure this is the right solution.
-
 Patch to add {lhs} to :mapclear: clear all maps starting with {lhs}.
 (Christian Brabandt, 2013 Dec 9)
 
@@ -1522,9 +1513,6 @@ When setqflist() uses a filename that triggers a BufReadCmd autocommand Vim
 doesn't jump to the correct line with :cfirst. (ZyX,  2011 Sep 18)
 
 Behavior of i" and a" text objects isn't logical. (Ben Fritz, 2013 Nov 19)
-
-7   Make "ga" show the digraph for a character, if it exists.
-Patch from Christian Brabandt, 2011 Aug 19.
 
 maparg() does not show the <script> flag.  When temporarily changing a
 mapping, how to restore the script ID?

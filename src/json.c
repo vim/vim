@@ -92,7 +92,7 @@ write_string(garray_T *gap, char_u *str)
     char_u	numbuf[NUMBUFLEN];
 
     if (res == NULL)
-	ga_concat(gap, (char_u *)"null");
+	ga_concat(gap, (char_u *)"\"\"");
     else
     {
 #if defined(FEAT_MBYTE) && defined(USE_ICONV)
@@ -237,7 +237,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_LIST:
 	    l = val->vval.v_list;
 	    if (l == NULL)
-		ga_concat(gap, (char_u *)"null");
+		ga_concat(gap, (char_u *)"[]");
 	    else
 	    {
 		if (l->lv_copyID == copyID)
@@ -272,7 +272,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_DICT:
 	    d = val->vval.v_dict;
 	    if (d == NULL)
-		ga_concat(gap, (char_u *)"null");
+		ga_concat(gap, (char_u *)"{}");
 	    else
 	    {
 		if (d->dv_copyID == copyID)

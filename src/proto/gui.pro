@@ -32,7 +32,8 @@ int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guicolor_T b
 void gui_undraw_cursor(void);
 void gui_redraw(int x, int y, int w, int h);
 int gui_redraw_block(int row1, int col1, int row2, int col2, int flags);
-int gui_wait_for_chars(long wtime);
+int gui_wait_for_chars(long wtime, int tb_change_cnt);
+int gui_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);
 void gui_send_mouse_event(int button, int x, int y, int repeated_click, int_u modifiers);
 int gui_xy2colrow(int x, int y, int *colp);
 void gui_menu_cb(vimmenu_T *menu);
