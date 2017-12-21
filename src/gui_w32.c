@@ -3126,9 +3126,6 @@ gui_mch_delete_lines(
     int	    num_lines)
 {
     RECT	rc;
-#if defined(FEAT_DIRECTX)
-    int		use_redraw = 0;
-#endif
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -3143,12 +3140,16 @@ gui_mch_delete_lines(
 	    gui_redraw(rc.left, rc.top,
 		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
 	    gui_undraw_cursor();
-	    use_redraw = 1;
+	    DWriteContext_Flush(s_dwc);
 	}
 	else
+	{
 	    DWriteContext_Flush(s_dwc);
+	    ScrollWindowEx(s_textArea, 0, -num_lines * gui.char_height,
+				    &rc, &rc, NULL, NULL, 0);
+	}
     }
-    if (!use_redraw)
+    else
 #endif
     {
 	intel_gpu_workaround();
@@ -3178,9 +3179,6 @@ gui_mch_insert_lines(
     int		num_lines)
 {
     RECT	rc;
-#if defined(FEAT_DIRECTX)
-    int		use_redraw = 0;
-#endif
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -3195,12 +3193,16 @@ gui_mch_insert_lines(
 	    gui_redraw(rc.left, rc.top,
 		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
 	    gui_undraw_cursor();
-	    use_redraw = 1;
+	    DWriteContext_Flush(s_dwc);
 	}
 	else
+	{
 	    DWriteContext_Flush(s_dwc);
+	    ScrollWindowEx(s_textArea, 0, num_lines * gui.char_height,
+				    &rc, &rc, NULL, NULL, 0);
+	}
     }
-    if (!use_redraw)
+    else
 #endif
     {
 	intel_gpu_workaround();
@@ -4023,7 +4025,10 @@ _OnScroll(
      * position, but don't actually scroll by setting "dont_scroll". */
     dont_scroll = !allow_scrollbar;
 
+    gui_disable_flush();
     gui_drag_scrollbar(sb, val, dragging);
+    gui_enable_flush();
+    gui_may_flush();
 
     s_busy_processing = FALSE;
     dont_scroll = dont_scroll_save;
@@ -4650,6 +4655,7 @@ _OnMouseWheel(
     if (mouse_scroll_lines == 0)
 	init_mouse_wheel();
 
+    gui_disable_flush();
     if (mouse_scroll_lines > 0
 	    && mouse_scroll_lines < (size > 2 ? size - 2 : 1))
     {
@@ -4658,6 +4664,8 @@ _OnMouseWheel(
     }
     else
 	_OnScroll(hwnd, hwndCtl, zDelta >= 0 ? SB_PAGEUP : SB_PAGEDOWN, 0);
+    gui_enable_flush();
+    gui_may_flush();
 }
 
 #ifdef USE_SYSMENU_FONT
