@@ -6914,6 +6914,10 @@ static char *(highlight_init_both[]) = {
 	 "TabLineSel term=bold cterm=bold gui=bold"),
     CENT("TabLineFill term=reverse cterm=reverse",
 	 "TabLineFill term=reverse cterm=reverse gui=reverse"),
+#ifdef FEAT_TERMINAL
+    CENT("Terminal ctermfg=NONE ctermbg=NONE",
+	 "Terminal ctermfg=NONE ctermbg=NONE guifg=NONE guibg=NONE"),
+#endif
 #ifdef FEAT_GUI
     "Cursor guibg=fg guifg=bg",
     "lCursor guibg=fg guifg=bg", /* should be different, but what? */
