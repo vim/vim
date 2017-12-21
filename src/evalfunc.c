@@ -11173,7 +11173,10 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
 	/* Find the start and length of the badly spelled word. */
 	len = spell_move_to(curwin, FORWARD, TRUE, TRUE, &attr);
 	if (len != 0)
+	{
 	    word = ml_get_cursor();
+	    curwin->w_set_curswant = TRUE;
+	}
     }
     else if (curwin->w_p_spell && *curbuf->b_s.b_p_spl != NUL)
     {
