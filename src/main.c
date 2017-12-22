@@ -1243,14 +1243,9 @@ main_loop(
 		update_curbuf(INVERTED);/* update inverted part */
 	    else if (must_redraw)
 	    {
-#ifdef FEAT_GUI
-		/* Stop issuing gui_mch_flush(). */
-		gui_disable_flush();
-#endif
+		mch_disable_flush();	/* Stop issuing gui_mch_flush(). */
 		update_screen(0);
-#ifdef FEAT_GUI
-		gui_enable_flush();
-#endif
+		mch_enable_flush();
 	    }
 	    else if (redraw_cmdline || clear_cmdline)
 		showmode();
@@ -1292,18 +1287,13 @@ main_loop(
 			|| conceal_cursor_line(curwin)
 			|| need_cursor_line_redraw))
 	    {
-#  ifdef FEAT_GUI
-		/* Stop issuing gui_mch_flush(). */
-		gui_disable_flush();
-#  endif
+		mch_disable_flush();	/* Stop issuing gui_mch_flush(). */
 		if (conceal_old_cursor_line != conceal_new_cursor_line
 			&& conceal_old_cursor_line
 						<= curbuf->b_ml.ml_line_count)
 		    update_single_line(curwin, conceal_old_cursor_line);
 		update_single_line(curwin, conceal_new_cursor_line);
-#  ifdef FEAT_GUI
-		gui_enable_flush();
-#  endif
+		mch_enable_flush();
 		curwin->w_valid &= ~VALID_CROW;
 	    }
 # endif

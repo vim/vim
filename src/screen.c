@@ -800,9 +800,9 @@ update_screen(int type_arg)
     {
 	if (did_undraw && !gui_mch_is_blink_off())
 	{
-	    gui_disable_flush();
+	    mch_disable_flush();
 	    out_flush();	/* required before updating the cursor */
-	    gui_enable_flush();
+	    mch_enable_flush();
 
 	    /* Put the GUI position where the cursor was, gui_update_cursor()
 	     * uses that. */

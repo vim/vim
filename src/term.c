@@ -2506,15 +2506,13 @@ out_flush(void)
  */
     void
 out_flush_cursor(
-    int		force,		/* when TRUE, update even when not moved */
-    int		clear_selection)/* clear selection under cursor */
+    int	    force UNUSED,   /* when TRUE, update cursor even when not moved */
+    int	    clear_selection UNUSED) /* clear selection under cursor */
 {
-#ifdef FEAT_GUI
-    gui_disable_flush();
-#endif
+    mch_disable_flush();
     out_flush();
+    mch_enable_flush();
 #ifdef FEAT_GUI
-    gui_enable_flush();
     if (gui.in_use)
     {
 	gui_update_cursor(force, clear_selection);

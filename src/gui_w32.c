@@ -4028,9 +4028,9 @@ _OnScroll(
      * position, but don't actually scroll by setting "dont_scroll". */
     dont_scroll = !allow_scrollbar;
 
-    gui_disable_flush();
+    mch_disable_flush();
     gui_drag_scrollbar(sb, val, dragging);
-    gui_enable_flush();
+    mch_enable_flush();
     gui_may_flush();
 
     s_busy_processing = FALSE;
@@ -4658,7 +4658,7 @@ _OnMouseWheel(
     if (mouse_scroll_lines == 0)
 	init_mouse_wheel();
 
-    gui_disable_flush();
+    mch_disable_flush();
     if (mouse_scroll_lines > 0
 	    && mouse_scroll_lines < (size > 2 ? size - 2 : 1))
     {
@@ -4667,7 +4667,7 @@ _OnMouseWheel(
     }
     else
 	_OnScroll(hwnd, hwndCtl, zDelta >= 0 ? SB_PAGEUP : SB_PAGEDOWN, 0);
-    gui_enable_flush();
+    mch_enable_flush();
     gui_may_flush();
 }
 

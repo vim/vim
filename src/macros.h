@@ -365,6 +365,17 @@
  * HIKEY2DI() converts a hashitem key pointer to a dictitem pointer.
  * HI2DI() converts a hashitem pointer to a dictitem pointer.
  */
-# define DI2HIKEY(di) ((di)->di_key)
-# define HIKEY2DI(p)  ((dictitem_T *)(p - offsetof(dictitem_T, di_key)))
-# define HI2DI(hi)     HIKEY2DI((hi)->hi_key)
+#define DI2HIKEY(di) ((di)->di_key)
+#define HIKEY2DI(p)  ((dictitem_T *)(p - offsetof(dictitem_T, di_key)))
+#define HI2DI(hi)     HIKEY2DI((hi)->hi_key)
+
+/*
+ * Flush control functions.
+ */
+#ifdef FEAT_GUI
+# define mch_enable_flush()	gui_enable_flush()
+# define mch_disable_flush()	gui_disable_flush()
+#else
+# define mch_enable_flush()
+# define mch_disable_flush()
+#endif

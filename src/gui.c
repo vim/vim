@@ -4513,9 +4513,9 @@ gui_do_scroll(void)
 	 * disappear when losing focus after a scrollbar drag. */
 	if (wp->w_redr_type < type)
 	    wp->w_redr_type = type;
-	gui_disable_flush();
+	mch_disable_flush();
 	updateWindow(wp);   /* update window, status line, and cmdline */
-	gui_enable_flush();
+	mch_enable_flush();
     }
 
 #ifdef FEAT_INS_EXPAND
