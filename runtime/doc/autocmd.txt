@@ -939,7 +939,7 @@ TermChanged			After the value of 'term' has changed.  Useful
 				settings.  Executed for all loaded buffers.
 							*TerminalOpen*
 TerminalOpen			Just after :terminal opened. This event is
-				triggerd even if it's opended with ++hidden
+				triggered even if it's opended with ++hidden
 				option.
 							*TermResponse*
 TermResponse			After the response to |t_RV| is received from
