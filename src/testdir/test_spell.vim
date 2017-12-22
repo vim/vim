@@ -28,6 +28,37 @@ func Test_wrap_search()
   set nospell
 endfunc
 
+func Test_curswant()
+  new
+  call setline(1, ['Another plong line', 'abcdefghijklmnopq'])
+  set spell wrapscan
+  normal 0]s
+  call assert_equal('plong', expand('<cword>'))
+  normal j
+  call assert_equal(9, getcurpos()[2])
+  normal 0[s
+  call assert_equal('plong', expand('<cword>'))
+  normal j
+  call assert_equal(9, getcurpos()[2])
+
+  normal 0]S
+  call assert_equal('plong', expand('<cword>'))
+  normal j
+  call assert_equal(9, getcurpos()[2])
+  normal 0[S
+  call assert_equal('plong', expand('<cword>'))
+  normal j
+  call assert_equal(9, getcurpos()[2])
+
+  normal 1G0
+  call assert_equal('plong', spellbadword()[0])
+  normal j
+  call assert_equal(9, getcurpos()[2])
+
+  bwipe!
+  set nospell
+endfunc
+
 func Test_z_equal_on_invalid_utf8_word()
   split
   set spell
@@ -269,6 +300,15 @@ func Test_zz_sal_and_addition()
   set spl=Xtest_ca.latin1.spl
   call assert_equal("elequint", FirstSpellWord())
   call assert_equal("elekwint", SecondSpellWord())
+endfunc
+
+func Test_region_error()
+  messages clear
+  call writefile(["/regions=usgbnz", "elequint/0"], "Xtest.latin1.add")
+  mkspell! Xtest.latin1.add.spl Xtest.latin1.add
+  call assert_match('Invalid region nr in Xtest.latin1.add line 2: 0', execute('messages'))
+  call delete('Xtest.latin1.add')
+  call delete('Xtest.latin1.add.spl')
 endfunc
 
 " Check using z= in new buffer (crash fixed by patch 7.4a.028).

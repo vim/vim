@@ -31,8 +31,6 @@ include Make_all.mak
 # Omitted:
 # test2		"\\tmp" doesn't work.
 # test10	'errorformat' is different
-# test12	can't unlink a swap file
-# test25	uses symbolic link
 # test97	\{ and \$ are not escaped characters
 
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4) $(SCRIPTS_WIN32)
@@ -65,8 +63,7 @@ win32:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) newtests
 fixff:
 	-$(VIMPROG) -u dos.vim $(NO_INITS) "+argdo set ff=dos|upd" +q *.in *.ok
 	-$(VIMPROG) -u dos.vim $(NO_INITS) "+argdo set ff=unix|upd" +q \
-		dotest.in test_listchars.ok \
-		test_wordcount.ok
+		dotest.in
 
 clean:
 	-@if exist *.out $(DEL) *.out

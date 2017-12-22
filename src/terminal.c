@@ -38,17 +38,27 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
+ * - When using 'termguicolors' still use the 16 ANSI colors as-is.  Helps for
+ *   a job that uses 16 colors while Vim is using > 256.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
- * - double click in Window toolbar starts Visual mode (but not always?).
  * - Shift-Tab does not work.
  * - after resizing windows overlap. (Boris Staletic, #2164)
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
  * - cursor blinks in terminal on widows with a timer. (xtal8, #2142)
- * - implement term_setsize()
+ * - When closing gvim with an active terminal buffer, the dialog suggests
+ *   saving the buffer.  Should say something else. (Manas Thakur, #2215)
+ *   Also: #2223
+ * - Termdebug does not work when Vim build with mzscheme.  gdb hangs.
  * - MS-Windows GUI: WinBar has  tearoff item
+ * - Adding WinBar to terminal window doesn't display, text isn't shifted down.
  * - MS-Windows GUI: still need to type a key after shell exits?  #1924
+ * - After executing a shell command the status line isn't redraw.
+ * - What to store in a session file?  Shell at the prompt would be OK to
+ *   restore, but others may not.  Open the window and let the user start the
+ *   command?
+ * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
@@ -174,12 +184,13 @@ static int create_pty_only(term_T *term, jobopt_T *opt);
 static void term_report_winsize(term_T *term, int rows, int cols);
 static void term_free_vterm(term_T *term);
 
-/* The characters that we know (or assume) that the terminal expects for the
- * backspace and enter keys. */
+/* The character that we know (or assume) that the terminal expects for the
+ * backspace key. */
 static int term_backspace_char = BS;
-static int term_enter_char = CAR;
-static int term_nl_does_cr = FALSE;
 
+/* "Terminal" highlight group colors. */
+static int term_default_cterm_fg = -1;
+static int term_default_cterm_bg = -1;
 
 /**************************************
  * 1. Generic code for all systems.
@@ -644,30 +655,8 @@ free_terminal(buf_T *buf)
 term_write_job_output(term_T *term, char_u *msg, size_t len)
 {
     VTerm	*vterm = term->tl_vterm;
-    char_u	*p;
-    size_t	done;
-    size_t	len_now;
 
-    if (term_nl_does_cr)
-	vterm_input_write(vterm, (char *)msg, len);
-    else
-	/* need to convert NL to CR-NL */
-	for (done = 0; done < len; done += len_now)
-	{
-	    for (p = msg + done; p < msg + len; )
-	    {
-		if (*p == NL)
-		    break;
-		p += utf_ptr2len_len(p, (int)(len - (p - msg)));
-	    }
-	    len_now = p - msg - done;
-	    vterm_input_write(vterm, (char *)msg + done, len_now);
-	    if (p < msg + len && *p == NL)
-	    {
-		vterm_input_write(vterm, "\r\n", 2);
-		++len_now;
-	    }
-	}
+    vterm_input_write(vterm, (char *)msg, len);
 
     /* this invokes the damage callbacks */
     vterm_screen_flush_damage(vterm_obtain_screen(vterm));
@@ -686,7 +675,10 @@ update_cursor(term_T *term, int redraw)
 	out_flush();
 #ifdef FEAT_GUI
 	if (gui.in_use)
+	{
 	    gui_update_cursor(FALSE, FALSE);
+	    gui_mch_flush();
+	}
 #endif
     }
 }
@@ -735,7 +727,8 @@ term_send_mouse(VTerm *vterm, int button, int pressed)
 
     vterm_mouse_move(vterm, mouse_row - W_WINROW(curwin),
 					    mouse_col - curwin->w_wincol, mod);
-    vterm_mouse_button(vterm, button, pressed, mod);
+    if (button != 0)
+	vterm_mouse_button(vterm, button, pressed, mod);
     return TRUE;
 }
 
@@ -749,11 +742,12 @@ term_convert_key(term_T *term, int c, char *buf)
     VTerm	    *vterm = term->tl_vterm;
     VTermKey	    key = VTERM_KEY_NONE;
     VTermModifier   mod = VTERM_MOD_NONE;
-    int		    mouse = FALSE;
+    int		    other = FALSE;
 
     switch (c)
     {
-	case CAR:		c = term_enter_char; break;
+	/* don't use VTERM_KEY_ENTER, it may do an unwanted conversion */
+
 				/* don't use VTERM_KEY_BACKSPACE, it always
 				 * becomes 0x7f DEL */
 	case K_BS:		c = term_backspace_char; break;
@@ -825,22 +819,23 @@ term_convert_key(term_T *term, int c, char *buf)
 				key = VTERM_KEY_UP; break;
 	case TAB:		key = VTERM_KEY_TAB; break;
 
-	case K_MOUSEUP:		mouse = term_send_mouse(vterm, 5, 1); break;
-	case K_MOUSEDOWN:	mouse = term_send_mouse(vterm, 4, 1); break;
+	case K_MOUSEUP:		other = term_send_mouse(vterm, 5, 1); break;
+	case K_MOUSEDOWN:	other = term_send_mouse(vterm, 4, 1); break;
 	case K_MOUSELEFT:	/* TODO */ return 0;
 	case K_MOUSERIGHT:	/* TODO */ return 0;
 
 	case K_LEFTMOUSE:
-	case K_LEFTMOUSE_NM:	mouse = term_send_mouse(vterm, 1, 1); break;
-	case K_LEFTDRAG:	mouse = term_send_mouse(vterm, 1, 1); break;
+	case K_LEFTMOUSE_NM:	other = term_send_mouse(vterm, 1, 1); break;
+	case K_LEFTDRAG:	other = term_send_mouse(vterm, 1, 1); break;
 	case K_LEFTRELEASE:
-	case K_LEFTRELEASE_NM:	mouse = term_send_mouse(vterm, 1, 0); break;
-	case K_MIDDLEMOUSE:	mouse = term_send_mouse(vterm, 2, 1); break;
-	case K_MIDDLEDRAG:	mouse = term_send_mouse(vterm, 2, 1); break;
-	case K_MIDDLERELEASE:	mouse = term_send_mouse(vterm, 2, 0); break;
-	case K_RIGHTMOUSE:	mouse = term_send_mouse(vterm, 3, 1); break;
-	case K_RIGHTDRAG:	mouse = term_send_mouse(vterm, 3, 1); break;
-	case K_RIGHTRELEASE:	mouse = term_send_mouse(vterm, 3, 0); break;
+	case K_LEFTRELEASE_NM:	other = term_send_mouse(vterm, 1, 0); break;
+	case K_MOUSEMOVE:	other = term_send_mouse(vterm, 0, 0); break;
+	case K_MIDDLEMOUSE:	other = term_send_mouse(vterm, 2, 1); break;
+	case K_MIDDLEDRAG:	other = term_send_mouse(vterm, 2, 1); break;
+	case K_MIDDLERELEASE:	other = term_send_mouse(vterm, 2, 0); break;
+	case K_RIGHTMOUSE:	other = term_send_mouse(vterm, 3, 1); break;
+	case K_RIGHTDRAG:	other = term_send_mouse(vterm, 3, 1); break;
+	case K_RIGHTRELEASE:	other = term_send_mouse(vterm, 3, 0); break;
 	case K_X1MOUSE:		/* TODO */ return 0;
 	case K_X1DRAG:		/* TODO */ return 0;
 	case K_X1RELEASE:	/* TODO */ return 0;
@@ -874,8 +869,12 @@ term_convert_key(term_T *term, int c, char *buf)
 #ifdef FEAT_AUTOCMD
 	case K_CURSORHOLD:	return 0;
 #endif
-	case K_PS:		vterm_keyboard_start_paste(vterm); return 0;
-	case K_PE:		vterm_keyboard_end_paste(vterm); return 0;
+	case K_PS:		vterm_keyboard_start_paste(vterm);
+				other = TRUE;
+				break;
+	case K_PE:		vterm_keyboard_end_paste(vterm);
+				other = TRUE;
+				break;
     }
 
     /*
@@ -887,7 +886,7 @@ term_convert_key(term_T *term, int c, char *buf)
     if (key != VTERM_KEY_NONE)
 	/* Special key, let vterm convert it. */
 	vterm_keyboard_key(vterm, key, mod);
-    else if (!mouse)
+    else if (!other)
 	/* Normal character, let vterm convert it. */
 	vterm_keyboard_unichar(vterm, c, mod);
 
@@ -1297,6 +1296,7 @@ send_keys_to_term(term_T *term, int c, int typed)
 	case K_LEFTMOUSE_NM:
 	case K_LEFTRELEASE:
 	case K_LEFTRELEASE_NM:
+	case K_MOUSEMOVE:
 	case K_MIDDLEMOUSE:
 	case K_MIDDLERELEASE:
 	case K_RIGHTMOUSE:
@@ -1316,7 +1316,8 @@ send_keys_to_term(term_T *term, int c, int typed)
 		    || mouse_col >= W_ENDCOL(curwin)
 		    || dragging_outside)
 	    {
-		/* click or scroll outside the current window */
+		/* click or scroll outside the current window or on status line
+		 * or vertical separator */
 		if (typed)
 		{
 		    stuffcharReadbuff(c);
@@ -1526,6 +1527,10 @@ terminal_loop(int blocking)
     int		c;
     int		termkey = 0;
     int		ret;
+#ifdef UNIX
+    int		tty_fd = curbuf->b_term->tl_job->jv_channel
+				 ->ch_part[get_tty_part(curbuf->b_term)].ch_fd;
+#endif
 
     /* Remember the terminal we are sending keys to.  However, the terminal
      * might be closed while waiting for a character, e.g. typing "exit" in a
@@ -1538,26 +1543,6 @@ terminal_loop(int blocking)
     position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
 
-#ifdef UNIX
-    {
-	int part = get_tty_part(curbuf->b_term);
-	int fd = curbuf->b_term->tl_job->jv_channel->ch_part[part].ch_fd;
-
-	if (isatty(fd))
-	{
-	    ttyinfo_T info;
-
-	    /* Get the current backspace and enter characters of the pty. */
-	    if (get_tty_info(fd, &info) == OK)
-	    {
-		term_backspace_char = info.backspace;
-		term_enter_char = info.enter;
-		term_nl_does_cr = info.nl_does_cr;
-	    }
-	}
-    }
-#endif
-
     while (blocking || vpeekc() != NUL)
     {
 	/* TODO: skip screen update when handling a sequence of keys. */
@@ -1569,10 +1554,31 @@ terminal_loop(int blocking)
 
 	c = term_vgetc();
 	if (!term_use_loop())
-	    /* job finished while waiting for a character */
+	{
+	    /* Job finished while waiting for a character.  Push back the
+	     * received character. */
+	    if (c != K_IGNORE)
+		vungetc(c);
 	    break;
+	}
 	if (c == K_IGNORE)
 	    continue;
+
+#ifdef UNIX
+	/*
+	 * The shell or another program may change the tty settings.  Getting
+	 * them for every typed character is a bit of overhead, but it's needed
+	 * for the first character typed, e.g. when Vim starts in a shell.
+	 */
+	if (isatty(tty_fd))
+	{
+	    ttyinfo_T info;
+
+	    /* Get the current backspace character of the pty. */
+	    if (get_tty_info(tty_fd, &info) == OK)
+		term_backspace_char = info.backspace;
+	}
+#endif
 
 #ifdef WIN3264
 	/* On Windows winpty handles CTRL-C, don't send a CTRL_C_EVENT.
@@ -1710,7 +1716,7 @@ may_toggle_cursor(term_T *term)
 
 /*
  * Reverse engineer the RGB value into a cterm color index.
- * First color is 1.  Return 0 if no match found.
+ * First color is 1.  Return 0 if no match found (default color).
  */
     static int
 color2index(VTermColor *color, int fg, int *boldp)
@@ -1719,78 +1725,34 @@ color2index(VTermColor *color, int fg, int *boldp)
     int blue = color->blue;
     int green = color->green;
 
-    /* The argument for lookup_color() is for the color_names[] table. */
-    if (red == 0)
+    if (color->ansi_index != VTERM_ANSI_INDEX_NONE)
     {
-	if (green == 0)
+	/* First 16 colors and default: use the ANSI index, because these
+	 * colors can be redefined. */
+	if (t_colors >= 16)
+	    return color->ansi_index;
+	switch (color->ansi_index)
 	{
-	    if (blue == 0)
-		return lookup_color(0, fg, boldp) + 1; /* black */
-	    if (blue == 224)
-		return lookup_color(1, fg, boldp) + 1; /* dark blue */
-	}
-	else if (green == 224)
-	{
-	    if (blue == 0)
-		return lookup_color(2, fg, boldp) + 1; /* dark green */
-	    if (blue == 224)
-		return lookup_color(3, fg, boldp) + 1; /* dark cyan */
+	    case  0: return 0;
+	    case  1: return lookup_color( 0, fg, boldp) + 1;
+	    case  2: return lookup_color( 4, fg, boldp) + 1; /* dark red */
+	    case  3: return lookup_color( 2, fg, boldp) + 1; /* dark green */
+	    case  4: return lookup_color( 6, fg, boldp) + 1; /* brown */
+	    case  5: return lookup_color( 1, fg, boldp) + 1; /* dark blue*/
+	    case  6: return lookup_color( 5, fg, boldp) + 1; /* dark magenta */
+	    case  7: return lookup_color( 3, fg, boldp) + 1; /* dark cyan */
+	    case  8: return lookup_color( 8, fg, boldp) + 1; /* light grey */
+	    case  9: return lookup_color(12, fg, boldp) + 1; /* dark grey */
+	    case 10: return lookup_color(20, fg, boldp) + 1; /* red */
+	    case 11: return lookup_color(16, fg, boldp) + 1; /* green */
+	    case 12: return lookup_color(24, fg, boldp) + 1; /* yellow */
+	    case 13: return lookup_color(14, fg, boldp) + 1; /* blue */
+	    case 14: return lookup_color(22, fg, boldp) + 1; /* magenta */
+	    case 15: return lookup_color(18, fg, boldp) + 1; /* cyan */
+	    case 16: return lookup_color(26, fg, boldp) + 1; /* white */
 	}
     }
-    else if (red == 224)
-    {
-	if (green == 0)
-	{
-	    if (blue == 0)
-		return lookup_color(4, fg, boldp) + 1; /* dark red */
-	    if (blue == 224)
-		return lookup_color(5, fg, boldp) + 1; /* dark magenta */
-	}
-	else if (green == 224)
-	{
-	    if (blue == 0)
-		return lookup_color(6, fg, boldp) + 1; /* dark yellow / brown */
-	    if (blue == 224)
-		return lookup_color(8, fg, boldp) + 1; /* white / light grey */
-	}
-    }
-    else if (red == 128)
-    {
-	if (green == 128 && blue == 128)
-	    return lookup_color(12, fg, boldp) + 1; /* dark grey */
-    }
-    else if (red == 255)
-    {
-	if (green == 64)
-	{
-	    if (blue == 64)
-		return lookup_color(20, fg, boldp) + 1;  /* light red */
-	    if (blue == 255)
-		return lookup_color(22, fg, boldp) + 1;  /* light magenta */
-	}
-	else if (green == 255)
-	{
-	    if (blue == 64)
-		return lookup_color(24, fg, boldp) + 1;  /* yellow */
-	    if (blue == 255)
-		return lookup_color(26, fg, boldp) + 1;  /* white */
-	}
-    }
-    else if (red == 64)
-    {
-	if (green == 64)
-	{
-	    if (blue == 255)
-		return lookup_color(14, fg, boldp) + 1;  /* light blue */
-	}
-	else if (green == 255)
-	{
-	    if (blue == 64)
-		return lookup_color(16, fg, boldp) + 1;  /* light green */
-	    if (blue == 255)
-		return lookup_color(18, fg, boldp) + 1;  /* light cyan */
-	}
-    }
+
     if (t_colors >= 256)
     {
 	if (red == blue && red == green)
@@ -1877,6 +1839,15 @@ cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
 	int bold = MAYBE;
 	int fg = color2index(&cellfg, TRUE, &bold);
 	int bg = color2index(&cellbg, FALSE, &bold);
+
+	/* Use the "Terminal" highlighting for the default colors. */
+	if ((fg == 0 || bg == 0) && t_colors >= 16)
+	{
+	    if (fg == 0 && term_default_cterm_fg >= 0)
+		fg = term_default_cterm_fg + 1;
+	    if (bg == 0 && term_default_cterm_bg >= 0)
+		bg = term_default_cterm_bg + 1;
+	}
 
 	/* with 8 colors set the bold attribute to get a bright foreground */
 	if (bold == TRUE)
@@ -2176,10 +2147,13 @@ term_channel_closed(channel_T *ch)
 
 		if (term->tl_finish == 'c')
 		{
+		    aco_save_T	aco;
+
 		    /* ++close or term_finish == "close" */
 		    ch_log(NULL, "terminal job finished, closing window");
-		    curbuf = term->tl_buffer;
+		    aucmd_prepbuf(&aco, term->tl_buffer);
 		    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
+		    aucmd_restbuf(&aco);
 		    break;
 		}
 		if (term->tl_finish == 'o' && term->tl_buffer->b_nwindows == 0)
@@ -2447,23 +2421,23 @@ term_get_attr(buf_T *buf, linenr_T lnum, int col)
 }
 
 static VTermColor ansi_table[16] = {
-  {  0,   0,   0}, /* black */
-  {224,   0,   0}, /* dark red */
-  {  0, 224,   0}, /* dark green */
-  {224, 224,   0}, /* dark yellow / brown */
-  {  0,   0, 224}, /* dark blue */
-  {224,   0, 224}, /* dark magenta */
-  {  0, 224, 224}, /* dark cyan */
-  {224, 224, 224}, /* light grey */
+  {  0,   0,   0,  1}, /* black */
+  {224,   0,   0,  2}, /* dark red */
+  {  0, 224,   0,  3}, /* dark green */
+  {224, 224,   0,  4}, /* dark yellow / brown */
+  {  0,   0, 224,  5}, /* dark blue */
+  {224,   0, 224,  6}, /* dark magenta */
+  {  0, 224, 224,  7}, /* dark cyan */
+  {224, 224, 224,  8}, /* light grey */
 
-  {128, 128, 128}, /* dark grey */
-  {255,  64,  64}, /* light red */
-  { 64, 255,  64}, /* light green */
-  {255, 255,  64}, /* yellow */
-  { 64,  64, 255}, /* light blue */
-  {255,  64, 255}, /* light magenta */
-  { 64, 255, 255}, /* light cyan */
-  {255, 255, 255}, /* white */
+  {128, 128, 128,  9}, /* dark grey */
+  {255,  64,  64, 10}, /* light red */
+  { 64, 255,  64, 11}, /* light green */
+  {255, 255,  64, 12}, /* yellow */
+  { 64,  64, 255, 13}, /* light blue */
+  {255,  64, 255, 14}, /* light magenta */
+  { 64, 255, 255, 15}, /* light cyan */
+  {255, 255, 255, 16}, /* white */
 };
 
 static int cube_value[] = {
@@ -2495,6 +2469,7 @@ cterm_color2rgb(int nr, VTermColor *rgb)
 	rgb->blue  = cube_value[idx      % 6];
 	rgb->green = cube_value[idx / 6  % 6];
 	rgb->red   = cube_value[idx / 36 % 6];
+	rgb->ansi_index = VTERM_ANSI_INDEX_NONE;
     }
     else if (nr < 256)
     {
@@ -2503,6 +2478,7 @@ cterm_color2rgb(int nr, VTermColor *rgb)
 	rgb->blue  = grey_ramp[idx];
 	rgb->green = grey_ramp[idx];
 	rgb->red   = grey_ramp[idx];
+	rgb->ansi_index = VTERM_ANSI_INDEX_NONE;
     }
 }
 
@@ -2545,11 +2521,12 @@ create_vterm(term_T *term, int rows, int cols)
     }
     fg->red = fg->green = fg->blue = fgval;
     bg->red = bg->green = bg->blue = bgval;
+    fg->ansi_index = bg->ansi_index = VTERM_ANSI_INDEX_DEFAULT;
 
     /* The "Terminal" highlight group overrules the defaults. */
     id = syn_name2id((char_u *)"Terminal");
 
-    /* Use the actual color for the GUI and when 'guitermcolors' is set. */
+    /* Use the actual color for the GUI and when 'termguicolors' is set. */
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (0
 # ifdef FEAT_GUI
@@ -2607,13 +2584,10 @@ create_vterm(term_T *term, int rows, int cols)
 #endif
     if (id != 0 && t_colors >= 16)
     {
-	int cterm_fg, cterm_bg;
-
-	syn_id2cterm_bg(id, &cterm_fg, &cterm_bg);
-	if (cterm_fg >= 0)
-	    cterm_color2rgb(cterm_fg, fg);
-	if (cterm_bg >= 0)
-	    cterm_color2rgb(cterm_bg, bg);
+	if (term_default_cterm_fg >= 0)
+	    cterm_color2rgb(term_default_cterm_fg, fg);
+	if (term_default_cterm_bg >= 0)
+	    cterm_color2rgb(term_default_cterm_bg, bg);
     }
     else
     {
@@ -2727,6 +2701,16 @@ set_ref_in_term(int copyID)
 	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
 	}
     return abort;
+}
+
+/*
+ * Cache "Terminal" highlight group colors.
+ */
+    void
+set_terminal_default_colors(int cterm_fg, int cterm_bg)
+{
+    term_default_cterm_fg = cterm_fg - 1;
+    term_default_cterm_bg = cterm_bg - 1;
 }
 
 /*
@@ -3231,6 +3215,10 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 	    mch_check_messages();
 	    parse_queued_messages();
+	    if (!buf_valid(buf))
+		/* If the terminal is closed when the channel is closed the
+		 * buffer disappears. */
+		break;
 	    ui_delay(10L, FALSE);
 	}
 	mch_check_messages();
@@ -3390,6 +3378,7 @@ term_and_job_init(
 {
     WCHAR	    *cmd_wchar = NULL;
     WCHAR	    *cwd_wchar = NULL;
+    WCHAR	    *env_wchar = NULL;
     channel_T	    *channel = NULL;
     job_T	    *job = NULL;
     DWORD	    error;
@@ -3398,7 +3387,7 @@ term_and_job_init(
     HANDLE	    child_thread_handle;
     void	    *winpty_err;
     void	    *spawn_config = NULL;
-    garray_T	    ga;
+    garray_T	    ga_cmd, ga_env;
     char_u	    *cmd;
 
     if (dyn_winpty_init(TRUE) == FAIL)
@@ -3408,10 +3397,10 @@ term_and_job_init(
 	cmd = argvar->vval.v_string;
     else
     {
-	ga_init2(&ga, (int)sizeof(char*), 20);
-	if (win32_build_cmd(argvar->vval.v_list, &ga) == FAIL)
+	ga_init2(&ga_cmd, (int)sizeof(char*), 20);
+	if (win32_build_cmd(argvar->vval.v_list, &ga_cmd) == FAIL)
 	    goto failed;
-	cmd = ga.ga_data;
+	cmd = ga_cmd.ga_data;
     }
 
     cmd_wchar = enc_to_utf16(cmd, NULL);
@@ -3419,6 +3408,10 @@ term_and_job_init(
 	return FAIL;
     if (opt->jo_cwd != NULL)
 	cwd_wchar = enc_to_utf16(opt->jo_cwd, NULL);
+
+    ga_init2(&ga_env, (int)sizeof(char*), 20);
+    win32_build_env(opt->jo_env, &ga_env, TRUE);
+    env_wchar = ga_env.ga_data;
 
     job = job_alloc();
     if (job == NULL)
@@ -3446,7 +3439,7 @@ term_and_job_init(
 	    NULL,
 	    cmd_wchar,
 	    cwd_wchar,
-	    NULL,
+	    env_wchar,
 	    &winpty_err);
     if (spawn_config == NULL)
 	goto failed;
@@ -3519,7 +3512,8 @@ term_and_job_init(
 
 failed:
     if (argvar->v_type == VAR_LIST)
-	vim_free(ga.ga_data);
+	vim_free(ga_cmd.ga_data);
+    vim_free(ga_env.ga_data);
     vim_free(cmd_wchar);
     vim_free(cwd_wchar);
     if (spawn_config != NULL)

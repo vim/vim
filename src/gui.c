@@ -37,7 +37,7 @@ static void gui_set_fg_color(char_u *name);
 static void gui_set_bg_color(char_u *name);
 static win_T *xy2win(int x, int y);
 
-#if defined(UNIX) && !defined(MACOS_X) && !defined(__APPLE__)
+#if defined(UNIX) && !defined(FEAT_GUI_MAC)
 # define MAY_FORK
 static void gui_do_fork(void);
 
@@ -693,7 +693,7 @@ gui_init(void)
 #ifndef FEAT_GUI_GTK
     /* Set the shell size, adjusted for the screen size.  For GTK this only
      * works after the shell has been opened, thus it is further down. */
-    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+    gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
 #endif
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     /* Need to set the size of the menubar after all the menus have been
@@ -732,15 +732,18 @@ gui_init(void)
 # endif
 
 	/* Now make sure the shell fits on the screen. */
-	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
 #endif
 	/* When 'lines' was set while starting up the topframe may have to be
 	 * resized. */
 	win_new_shellsize();
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	/* Always create the Balloon Evaluation area, but disable it when
-	 * 'ballooneval' is off */
+	 * 'ballooneval' is off. */
+	if (balloonEval != NULL)
+	    vim_free(balloonEval);
+	balloonEvalForTerm = FALSE;
 # ifdef FEAT_GUI_GTK
 	balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,
 						     &general_beval_cb, NULL);
@@ -909,7 +912,7 @@ gui_init_font(char_u *font_list, int fontset UNUSED)
 # endif
 	    gui_mch_set_font(gui.norm_font);
 #endif
-	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
     }
 
     return ret;
@@ -1075,7 +1078,7 @@ gui_update_cursor(
 	gui_undraw_cursor();
 	if (gui.row < 0)
 	    return;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 	if (gui.row != gui.cursor_row || gui.col != gui.cursor_col)
 	    im_set_position(gui.row, gui.col);
 #endif
@@ -1118,6 +1121,9 @@ gui_update_cursor(
 	gui_mch_set_blinking(shape->blinkwait,
 			     shape->blinkon,
 			     shape->blinkoff);
+	if (shape->blinkwait == 0 || shape->blinkon == 0
+						       || shape->blinkoff == 0)
+	    gui_mch_stop_blink();
 #ifdef FEAT_TERMINAL
 	if (shape_bg != INVALCOLOR)
 	{
@@ -1130,7 +1136,7 @@ gui_update_cursor(
 	if (id > 0)
 	{
 	    cattr = syn_id2colors(id, &cfg, &cbg);
-#if defined(USE_IM_CONTROL) || defined(FEAT_HANGULIN)
+#if defined(FEAT_XIM) || defined(FEAT_HANGULIN)
 	    {
 		static int iid;
 		guicolor_T fg, bg;
@@ -1568,10 +1574,12 @@ gui_get_shellsize(void)
  * Set the size of the Vim shell according to Rows and Columns.
  * If "fit_to_display" is TRUE then the size may be reduced to fit the window
  * on the screen.
+ * When "mustset" is TRUE the size was set by the user. When FALSE a UI
+ * component was added or removed (e.g., a scrollbar).
  */
     void
 gui_set_shellsize(
-    int		mustset UNUSED,		/* set by the user */
+    int		mustset UNUSED,
     int		fit_to_display,
     int		direction)		/* RESIZE_HOR, RESIZE_VER */
 {
@@ -1595,7 +1603,8 @@ gui_set_shellsize(
 #if defined(MSWIN) || defined(FEAT_GUI_GTK)
     /* If not setting to a user specified size and maximized, calculate the
      * number of characters that fit in the maximized window. */
-    if (!mustset && gui_mch_maximized())
+    if (!mustset && (vim_strchr(p_go, GO_KEEPWINSIZE) != NULL
+						       || gui_mch_maximized()))
     {
 	gui_mch_newfont();
 	return;
@@ -2444,9 +2453,14 @@ gui_outstr_nowrap(
 	int	cl;		/* byte length of current char */
 	int	comping;	/* current char is composing */
 	int	scol = col;	/* screen column */
-	int	curr_wide;	/* use 'guifontwide' */
+	int	curr_wide = FALSE;  /* use 'guifontwide' */
 	int	prev_wide = FALSE;
 	int	wide_changed;
+#  ifdef WIN3264
+	int	sep_comp = FALSE;   /* Don't separate composing chars. */
+#  else
+	int	sep_comp = TRUE;    /* Separate composing chars. */
+#  endif
 
 	/* Break the string at a composing character, it has to be drawn on
 	 * top of the previous character. */
@@ -2456,17 +2470,20 @@ gui_outstr_nowrap(
 	{
 	    c = utf_ptr2char(s + i);
 	    cn = utf_char2cells(c);
-	    if (cn > 1
-#  ifdef FEAT_XFONTSET
-		    && fontset == NOFONTSET
-#  endif
-		    && wide_font != NOFONT)
-		curr_wide = TRUE;
-	    else
-		curr_wide = FALSE;
 	    comping = utf_iscomposing(c);
 	    if (!comping)	/* count cells from non-composing chars */
 		cells += cn;
+	    if (!comping || sep_comp)
+	    {
+		if (cn > 1
+#  ifdef FEAT_XFONTSET
+			&& fontset == NOFONTSET
+#  endif
+			&& wide_font != NOFONT)
+		    curr_wide = TRUE;
+		else
+		    curr_wide = FALSE;
+	    }
 	    cl = utf_ptr2len(s + i);
 	    if (cl == 0)	/* hit end of string */
 		len = i + cl;	/* len must be wrong "cannot happen" */
@@ -2475,7 +2492,8 @@ gui_outstr_nowrap(
 
 	    /* Print the string so far if it's the last character or there is
 	     * a composing character. */
-	    if (i + cl >= len || (comping && i > start) || wide_changed
+	    if (i + cl >= len || (comping && sep_comp && i > start)
+		    || wide_changed
 #  if defined(FEAT_GUI_X11)
 		    || (cn > 1
 #   ifdef FEAT_XFONTSET
@@ -2487,7 +2505,7 @@ gui_outstr_nowrap(
 #  endif
 	       )
 	    {
-		if (comping || wide_changed)
+		if ((comping && sep_comp) || wide_changed)
 		    thislen = i - start;
 		else
 		    thislen = i - start + cl;
@@ -2505,7 +2523,7 @@ gui_outstr_nowrap(
 		cells = 0;
 		/* Adjust to not draw a character which width is changed
 		 * against with last one. */
-		if (wide_changed && !comping)
+		if (wide_changed && !(comping && sep_comp))
 		{
 		    scol -= cn;
 		    cl = 0;
@@ -2524,9 +2542,9 @@ gui_outstr_nowrap(
 #  endif
 	    }
 	    /* Draw a composing char on top of the previous char. */
-	    if (comping)
+	    if (comping && sep_comp)
 	    {
-#  if (defined(__APPLE_CC__) || defined(__MRC__)) && TARGET_API_MAC_CARBON
+#  if defined(__APPLE_CC__) && TARGET_API_MAC_CARBON
 		/* Carbon ATSUI autodraws composing char over previous char */
 		gui_mch_draw_string(gui.row, scol, s + i, cl,
 						    draw_flags | DRAW_TRANSP);
@@ -2882,6 +2900,20 @@ gui_insert_lines(int row, int count)
     }
 }
 
+#ifdef FEAT_TIMERS
+/*
+ * Passed to ui_wait_for_chars_or_timer(), ignoring extra arguments.
+ */
+    static int
+gui_wait_for_chars_3(
+    long wtime,
+    int *interrupted UNUSED,
+    int ignore_input UNUSED)
+{
+    return gui_mch_wait_for_chars(wtime);
+}
+#endif
+
 /*
  * Returns OK if a character was found to be available within the given time,
  * or FAIL otherwise.
@@ -2890,32 +2922,7 @@ gui_insert_lines(int row, int count)
 gui_wait_for_chars_or_timer(long wtime)
 {
 #ifdef FEAT_TIMERS
-    int	    due_time;
-    long    remaining = wtime;
-    int	    tb_change_cnt = typebuf.tb_change_cnt;
-
-    /* When waiting very briefly don't trigger timers. */
-    if (wtime >= 0 && wtime < 10L)
-	return gui_mch_wait_for_chars(wtime);
-
-    while (wtime < 0 || remaining > 0)
-    {
-	/* Trigger timers and then get the time in wtime until the next one is
-	 * due.  Wait up to that time. */
-	due_time = check_due_timer();
-	if (typebuf.tb_change_cnt != tb_change_cnt)
-	{
-	    /* timer may have used feedkeys() */
-	    return FAIL;
-	}
-	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
-	    due_time = remaining;
-	if (gui_mch_wait_for_chars(due_time))
-	    return OK;
-	if (wtime > 0)
-	    remaining -= due_time;
-    }
-    return FAIL;
+    return ui_wait_for_chars_or_timer(wtime, gui_wait_for_chars_3, NULL, 0);
 #else
     return gui_mch_wait_for_chars(wtime);
 #endif
@@ -2930,10 +2937,12 @@ gui_wait_for_chars_or_timer(long wtime)
  * or FAIL otherwise.
  */
     int
-gui_wait_for_chars(long wtime)
+gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
     int	    retval;
-    int	    tb_change_cnt = typebuf.tb_change_cnt;
+#if defined(ELAPSED_FUNC) && defined(FEAT_AUTOCMD)
+    ELAPSED_TYPE start_tv;
+#endif
 
 #ifdef FEAT_MENU
     /*
@@ -2963,6 +2972,10 @@ gui_wait_for_chars(long wtime)
 	return retval;
     }
 
+#if defined(ELAPSED_FUNC) && defined(FEAT_AUTOCMD)
+    ELAPSED_INIT(start_tv);
+#endif
+
     /*
      * While we are waiting indefinitely for a character, blink the cursor.
      */
@@ -2971,13 +2984,17 @@ gui_wait_for_chars(long wtime)
     retval = FAIL;
     /*
      * We may want to trigger the CursorHold event.  First wait for
-     * 'updatetime' and if nothing is typed within that time put the
-     * K_CURSORHOLD key in the input buffer.
+     * 'updatetime' and if nothing is typed within that time, and feedkeys()
+     * wasn't used, put the K_CURSORHOLD key in the input buffer.
      */
     if (gui_wait_for_chars_or_timer(p_ut) == OK)
 	retval = OK;
 #ifdef FEAT_AUTOCMD
-    else if (trigger_cursorhold())
+    else if (trigger_cursorhold()
+# ifdef ELAPSED_FUNC
+	    && ELAPSED_FUNC(start_tv) >= p_ut
+# endif
+	    && typebuf.tb_change_cnt == tb_change_cnt)
     {
 	char_u	buf[3];
 
@@ -3000,6 +3017,22 @@ gui_wait_for_chars(long wtime)
 
     gui_mch_stop_blink();
     return retval;
+}
+
+/*
+ * Equivalent of mch_inchar() for the GUI.
+ */
+    int
+gui_inchar(
+    char_u  *buf,
+    int	    maxlen,
+    long    wtime,		/* milli seconds */
+    int	    tb_change_cnt)
+{
+    if (gui_wait_for_chars(wtime, tb_change_cnt)
+	    && !typebuf_changed(tb_change_cnt))
+	return read_from_input_buf(buf, (long)maxlen);
+    return 0;
 }
 
 /*
@@ -3121,15 +3154,18 @@ button_set:
     {
 	case NORMAL_BUSY:
 	case OP_PENDING:
+# ifdef FEAT_TERMINAL
+	case TERMINAL:
+# endif
 	case NORMAL:		checkfor = MOUSE_NORMAL;	break;
 	case VISUAL:		checkfor = MOUSE_VISUAL;	break;
 	case SELECTMODE:	checkfor = MOUSE_VISUAL;	break;
 	case REPLACE:
 	case REPLACE+LANGMAP:
-#ifdef FEAT_VREPLACE
+# ifdef FEAT_VREPLACE
 	case VREPLACE:
 	case VREPLACE+LANGMAP:
-#endif
+# endif
 	case INSERT:
 	case INSERT+LANGMAP:	checkfor = MOUSE_INSERT;	break;
 	case ASKMORE:

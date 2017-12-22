@@ -50,10 +50,6 @@
 # include <X11/Xmu/Editres.h>
 #endif
 
-#ifdef FEAT_BEVAL_TIP
-# include "gui_beval.h"
-#endif
-
 #define VIM_NAME	"vim"
 #define VIM_CLASS	"Vim"
 
@@ -446,7 +442,7 @@ static XtResource vim_resources[] =
 	XtRString,
 	DFLT_SCROLL_BG_COLOR
     },
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     {
 	XtNtooltipForeground,
 	XtCTooltipForeground,
@@ -484,7 +480,7 @@ static XtResource vim_resources[] =
 	XtRImmediate,
 	(XtPointer)NOFONTSET
     },
-#endif /* FEAT_BEVAL */
+#endif /* FEAT_BEVAL_GUI */
 #ifdef FEAT_XIM
     {
 	"preeditType",
@@ -1355,7 +1351,7 @@ gui_mch_init(void)
     gui.menu_bg_pixel = gui_get_color((char_u *)gui.rsrc_menu_bg_name);
     gui.scroll_fg_pixel = gui_get_color((char_u *)gui.rsrc_scroll_fg_name);
     gui.scroll_bg_pixel = gui_get_color((char_u *)gui.rsrc_scroll_bg_name);
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     gui.tooltip_fg_pixel = gui_get_color((char_u *)gui.rsrc_tooltip_fg_name);
     gui.tooltip_bg_pixel = gui_get_color((char_u *)gui.rsrc_tooltip_bg_name);
 #endif
@@ -1544,7 +1540,7 @@ gui_mch_init(void)
 	workshop_connect(app_context);
 #endif
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     gui_init_tooltip_font();
 #endif
 #ifdef FEAT_MENU
@@ -1685,7 +1681,7 @@ gui_mch_open(void)
     return OK;
 }
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
 /*
  * Convert the tooltip fontset name to an XFontSet.
  */
@@ -3411,7 +3407,7 @@ mch_set_mouse_shape(int shape)
 }
 #endif
 
-#if (defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL)) || defined(PROTO)
+#if (defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)) || defined(PROTO)
 /*
  * Set the balloon-eval used for the tooltip of a toolbar menu item.
  * The check for a non-toolbar item was added, because there is a crash when

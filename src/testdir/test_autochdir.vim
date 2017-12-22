@@ -5,6 +5,7 @@ if !exists("+autochdir")
 endif
 
 func Test_set_filename()
+  let cwd = getcwd()
   call test_autochdir()
   set acd
   new
@@ -13,5 +14,6 @@ func Test_set_filename()
   call assert_equal("samples", substitute(getcwd(), '.*/\(\k*\)', '\1', ''))
   bwipe!
   set noacd
+  exe 'cd ' . cwd
   call delete('samples/Xtest')
 endfunc

@@ -212,7 +212,7 @@ redraw_win_later(
     win_T	*wp,
     int		type)
 {
-    if (wp->w_redr_type < type)
+    if (!exiting && wp->w_redr_type < type)
     {
 	wp->w_redr_type = type;
 	if (type >= NOT_VALID)
@@ -1163,7 +1163,7 @@ win_update(win_T *wp)
     }
 
     /* Window is zero-height: nothing to draw. */
-    if (wp->w_height == 0)
+    if (wp->w_height + WINBAR_HEIGHT(wp) == 0)
     {
 	wp->w_redr_type = 0;
 	return;
@@ -2132,7 +2132,11 @@ win_update(win_T *wp)
 
 	    wp->w_lines[idx].wl_lnum = lnum;
 	    wp->w_lines[idx].wl_valid = TRUE;
-	    if (row > wp->w_height)	/* past end of screen */
+
+	    /* Past end of the window or end of the screen. Note that after
+	     * resizing wp->w_height may be end up too big. That's a problem
+	     * elsewhere, but prevent a crash here. */
+	    if (row > wp->w_height || row + wp->w_winrow >= Rows)
 	    {
 		/* we may need the size of that too long line later on */
 		if (dollar_vcol == -1)
@@ -8063,8 +8067,11 @@ screen_start_highlight(int attr)
 		out_str(T_ME);
 	    if ((attr & HL_STANDOUT) && T_SO != NULL)	/* standout */
 		out_str(T_SO);
-	    if ((attr & (HL_UNDERLINE | HL_UNDERCURL)) && T_US != NULL)
-						   /* underline or undercurl */
+	    if ((attr & HL_UNDERCURL) && T_UCS != NULL) /* undercurl */
+		out_str(T_UCS);
+	    if (((attr & HL_UNDERLINE)	    /* underline or undercurl */
+			|| ((attr & HL_UNDERCURL) && T_UCS == NULL))
+		    && T_US != NULL)
 		out_str(T_US);
 	    if ((attr & HL_ITALIC) && T_CZH != NULL)	/* italic */
 		out_str(T_CZH);
@@ -8182,7 +8189,15 @@ screen_stop_highlight(void)
 		else
 		    out_str(T_SE);
 	    }
-	    if (screen_attr & (HL_UNDERLINE | HL_UNDERCURL))
+	    if ((screen_attr & HL_UNDERCURL) && T_UCE != NULL)
+	    {
+		if (STRCMP(T_UCE, T_ME) == 0)
+		    do_ME = TRUE;
+		else
+		    out_str(T_UCE);
+	    }
+	    if ((screen_attr & HL_UNDERLINE)
+			    || ((screen_attr & HL_UNDERCURL) && T_UCE == NULL))
 	    {
 		if (STRCMP(T_UE, T_ME) == 0)
 		    do_ME = TRUE;
@@ -8311,15 +8326,29 @@ screen_char(unsigned off, int row, int col)
     {
 	char_u	    buf[MB_MAXBYTES + 1];
 
-	/* Convert UTF-8 character to bytes and write it. */
-
-	buf[utfc_char2bytes(off, buf)] = NUL;
-
-	out_str(buf);
 	if (utf_ambiguous_width(ScreenLinesUC[off]))
+	{
+	    if (*p_ambw == 'd'
+# ifdef FEAT_GUI
+		    && !gui.in_use
+# endif
+		    )
+	    {
+		/* Clear the two screen cells. If the character is actually
+		 * single width it won't change the second cell. */
+		out_str((char_u *)"  ");
+		term_windgoto(row, col);
+	    }
+	    /* not sure where the cursor is after drawing the ambiguous width
+	     * character */
 	    screen_cur_col = 9999;
+	}
 	else if (utf_char2cells(ScreenLinesUC[off]) > 1)
 	    ++screen_cur_col;
+
+	/* Convert the UTF-8 character to bytes and write it. */
+	buf[utfc_char2bytes(off, buf)] = NUL;
+	out_str(buf);
     }
     else
 #endif

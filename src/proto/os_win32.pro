@@ -67,4 +67,5 @@ void used_file_arg(char *name, int literal, int full_path, int diff_mode);
 void set_alist_count(void);
 void fix_arg_enc(void);
 int mch_setenv(char *var, char *value, int x);
+void win32_build_env(dict_T *l, garray_T *gap, int is_terminal);
 /* vim: set ft=c : */

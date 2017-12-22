@@ -2317,7 +2317,8 @@ ins_char_bytes(char_u *buf, int charlen)
 
     /* Copy bytes after the changed character(s). */
     p = newp + col;
-    mch_memmove(p + newlen, oldp + col + oldlen,
+    if (linelen > col + oldlen)
+	mch_memmove(p + newlen, oldp + col + oldlen,
 					    (size_t)(linelen - col - oldlen));
 
     /* Insert or overwrite the new character. */
@@ -2653,8 +2654,12 @@ del_lines(
     int
 gchar_pos(pos_T *pos)
 {
-    char_u	*ptr = ml_get_pos(pos);
+    char_u	*ptr;
 
+    /* When searching columns is sometimes put at the end of a line. */
+    if (pos->col == MAXCOL)
+	return NUL;
+    ptr = ml_get_pos(pos);
 #ifdef FEAT_MBYTE
     if (has_mbyte)
 	return (*mb_ptr2char)(ptr);
@@ -3348,6 +3353,7 @@ is_mouse_key(int c)
 	|| c == K_LEFTDRAG
 	|| c == K_LEFTRELEASE
 	|| c == K_LEFTRELEASE_NM
+	|| c == K_MOUSEMOVE
 	|| c == K_MIDDLEMOUSE
 	|| c == K_MIDDLEDRAG
 	|| c == K_MIDDLERELEASE
@@ -4346,12 +4352,8 @@ vim_getenv(char_u *name, int *mustfree)
 	    }
 
 	    /* remove trailing path separator */
-#ifndef MACOS_CLASSIC
-	    /* With MacOS path (with  colons) the final colon is required */
-	    /* to avoid confusion between absolute and relative path */
 	    if (pend > p && after_pathsep(p, pend))
 		--pend;
-#endif
 
 #ifdef MACOS_X
 	    if (p == exe_name || p == p_hf)
@@ -4511,9 +4513,9 @@ get_env_name(
     expand_T	*xp UNUSED,
     int		idx)
 {
-# if defined(AMIGA) || defined(__MRC__) || defined(__SC__)
+# if defined(AMIGA)
     /*
-     * No environ[] on the Amiga and on the Mac (using MPW).
+     * No environ[] on the Amiga.
      */
     return NULL;
 # else
@@ -11008,9 +11010,6 @@ gen_expand_wildcards(
 	{
 	    char_u	*t = backslash_halve_save(p);
 
-#if defined(MACOS_CLASSIC)
-	    slash_to_colon(t);
-#endif
 	    /* When EW_NOTFOUND is used, always add files and dirs.  Makes
 	     * "vim c:/" work. */
 	    if (flags & EW_NOTFOUND)

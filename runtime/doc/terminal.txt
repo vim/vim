@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Sep 26
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Dec 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -14,9 +14,25 @@ The terminal feature is optional, use this to check if your Vim has it: >
 If the result is "1" you have it.
 
 
-1. Basic use			|terminal-use|
-2. Remote testing		|terminal-testing|
-3. Debugging			|terminal-debug|
+1. Basic use		|terminal-use|
+      Typing			|terminal-typing|
+      Size and color		|terminal-size-color|
+      Syntax			|:terminal|
+      Resizing			|terminal-resizing|
+      Terminal Modes		|Terminal-mode|
+      Cursor style		|terminal-cursor-style|
+      Special keys		|terminal-special-keys|
+      Unix			|terminal-unix|
+      MS-Windows		|terminal-ms-windows|
+2. Remote testing	|terminal-testing|
+3. Debugging		|terminal-debug|
+      Starting			|termdebug-starting|
+      Example session		|termdebug-example|
+      Stepping through code	|termdebug-stepping|
+      Inspecting variables	|termdebug-variables|
+      Other commands		|termdebug-commands|
+      Communication		|termdebug-communication|
+      Customizing		|termdebug-customizing|
 
 {Vi does not have any of these commands}
 {only available when compiled with the |+terminal| feature}
@@ -44,7 +60,7 @@ the job.  This uses a pty when possible.  You can click outside of the
 terminal window to move keyboard focus elsewhere.
 
 CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
-	CTRL-W CTRL-W 	move focus to the next window
+	CTRL-W CTRL-W	move focus to the next window
 	CTRL-W :	enter an Ex command
 See |CTRL-W| for more commands.
 
@@ -64,7 +80,7 @@ the job.  For example:
 	'termkey' :	    enter an Ex command
 	'termkey' 'termkey' send 'termkey' to the job in the terminal
 	'termkey' .	    send a CTRL-W to the job in the terminal
-	'termkey' N  	    go to terminal Normal mode, see below
+	'termkey' N	    go to terminal Normal mode, see below
 	'termkey' CTRL-N    same as CTRL-W N
 	'termkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
 							*t_CTRL-\_CTRL-N*
@@ -84,15 +100,19 @@ These are defined like any mapping, but apply only when typing keys that are
 sent to the job running in the terminal.  For example, to make Escape switch
 to Terminal-Normal mode: >
    tnoremap <Esc> <C-W>N
-
+<							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
 BufWinEnter autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >
    au BufWinEnter * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
 
+Mouse events (click and drag) are passed to the terminal.  Mouse move events
+are only passed when Vim itself is receiving them.  For a terminal that is
+when 'balloonevalterm' is enabled.
+
 
 Size and color ~
-
+							*terminal-size-color*
 See option 'termsize' for controlling the size of the terminal window.
 (TODO: scrolling when the terminal is larger than the window)
 
@@ -201,7 +221,7 @@ the buffer name will still be set to the command.
 
 
 Resizing ~
-
+							*terminal-resizing*
 The size of the terminal can be in one of three modes:
 
 1. The 'termsize' option is empty: The terminal size follows the window size.
@@ -251,7 +271,7 @@ It is not possible to enter Insert mode from Terminal-Job mode.
 
 
 Cursor style ~
-
+							*terminal-cursor-style*
 By default the cursor in the terminal window uses a not blinking block.  The
 normal xterm escape sequences can be used to change the blinking state and the
 shape.  Once focus leaves the terminal window Vim will restore the original
@@ -263,8 +283,21 @@ is inverted.  Since Vim cannot detect this, the terminal window cursor
 blinking will also be inverted.
 
 
-Unix ~
+Special keys ~
+							*terminal-special-keys*
+Since the terminal emulator simulates an xterm, only escape sequences that
+both Vim and xterm recognize will be available in the terminal window.  If you
+want to pass on other escape sequences to the job running in the terminal you
+need to set up forwarding.  Example: >
+	tmap <expr> <Esc>]b SendToTerm("\<Esc>]b")
+	func SendToTerm(what)
+	  call term_sendkeys('', a:what)
+	  return ''
+	endfunc
 
+
+Unix ~
+							*terminal-unix*
 On Unix a pty is used to make it possible to run all kinds of commands.  You
 can even run Vim in the terminal!  That's used for debugging, see below.
 
@@ -287,7 +320,7 @@ This will open the file "some_file.c" and put the cursor on line 123.
 
 
 MS-Windows ~
-
+							*terminal-ms-windows*
 On MS-Windows winpty is used to make it possible to run all kind of commands.
 Obviously, they must be commands that run in a terminal, not open their own
 window.
@@ -305,6 +338,9 @@ Just put the files somewhere in your PATH.  You can set the 'winptydll' option
 to point to the right file, if needed.  If you have both the 32-bit and 64-bit
 version, rename to winpty32.dll and winpty64.dll to match the way Vim was
 build.
+
+Environment variables are used to pass information to the running job:
+    VIM_SERVERNAME	v:servername
 
 ==============================================================================
 2. Remote testing					*terminal-testing*
@@ -330,16 +366,18 @@ Vim this also works remotely over an ssh connection.
 
 
 Starting ~
-
+							*termdebug-starting*
 Load the plugin with this command: >
 	packadd termdebug
 <							*:Termdebug*
-To start debugging use `:TermDebug` folowed by the command name, for example: >
+To start debugging use `:Termdebug` followed by the command name, for example: >
 	:Termdebug vim
 
 This opens two windows:
+
 gdb window	A terminal window in which "gdb vim" is executed.  Here you
 		can directly interact with gdb.  The buffer name is "!gdb".
+
 program window	A terminal window for the executed program.  When "run" is
 		used in gdb the program I/O will happen in this window, so
 		that it does not interfere with controlling gdb.  The buffer
@@ -360,7 +398,7 @@ opened windows are closed.
 
 
 Example session ~
-
+							*termdebug-example*
 Start in the Vim "src" directory and build Vim: >
 	% make
 Start Vim: >
@@ -416,36 +454,43 @@ a deeper level.
 
 
 Stepping through code ~
-
+							*termdebug-stepping*
 Put focus on the gdb window to type commands there.  Some common ones are:
-- CTRL-C    interrupt the program
-- next      execute the current line and stop at the next line
-- step      execute the current line and stop at the next statement, entering
-	    functions
-- finish    execute until leaving the current function
-- where     show the stack
-- frame N   go to the Nth stack frame
-- continue  continue execution
+- CTRL-C	interrupt the program
+- next		execute the current line and stop at the next line
+- step		execute the current line and stop at the next statement,
+		entering functions
+- finish	execute until leaving the current function
+- where		show the stack
+- frame N	go to the Nth stack frame
+- continue	continue execution
 
-In the window showing the source code some commands can used to control gdb:
- :Break     set a breakpoint at the current line; a sign will be displayed
- :Delete    delete a breakpoint at the current line
- :Step	    execute the gdb "step" command
- :Over      execute the gdb "next" command (:Next is a Vim command)
- :Finish    execute the gdb "finish" command
- :Continue  execute the gdb "continue" command
+In the window showing the source code these commands can used to control gdb:
+ :Run [args]	    run the program with [args] or the previous arguments
+ :Arguments {args}  set arguments for the next :Run
 
-The plugin adds a window toolbar with these entries:
-  Step	    :Step
-  Next	    :Over
-  Finish    :Finish
-  Cont	    :Continue
-  Eval	    :Evaluate
-This way you can use the mouse to perform the most common commands.
+ :Break		set a breakpoint at the current line; a sign will be displayed
+ :Delete	delete a breakpoint at the current line
+
+ :Step		execute the gdb "step" command
+ :Over 		execute the gdb "next" command (:Next is a Vim command)
+ :Finish	execute the gdb "finish" command
+ :Continue	execute the gdb "continue" command
+ :Stop		interrupt the program
+
+If 'mouse' is set the plugin adds a window toolbar with these entries:
+  Step		:Step
+  Next		:Over
+  Finish	:Finish
+  Cont		:Continue
+  Stop		:Stop
+  Eval		:Evaluate
+This way you can use the mouse to perform the most common commands.  You need
+to have the 'mouse' option set to enable mouse clicks.
 
 
 Inspecting variables ~
-
+							*termdebug-variables*
  :Evaluate	    evaluate the expression under the cursor
  K		    same
  :Evaluate {expr}   evaluate {expr}
@@ -455,25 +500,28 @@ This is similar to using "print" in the gdb window.
 
 
 Other commands ~
-
+							*termdebug-commands*
  :Gdb	       jump to the gdb window
  :Program      jump to the window with the running program
 
 
 Communication ~
-
+						*termdebug-communication*
 There is another, hidden, buffer, which is used for Vim to communicate with
 gdb.  The buffer name is "gdb communication".  Do not delete this buffer, it
 will break the debugger.
 
 
 Customizing ~
-
+							*termdebug-customizing*
 To change the name of the gdb command, set the "termdebugger" variable before
 invoking `:Termdebug`: >
 	let termdebugger = "mygdb"
+<						*gdb-version*
 Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
-interface.  This probably requires gdb version 7.12.
+interface.  This probably requires gdb version 7.12.  if you get this error:
+	Undefined command: "new-ui". Try "help".~
+Then your gdb is too old.
 
 The color of the signs can be adjusted with these highlight groups:
 - debugPC		the current position

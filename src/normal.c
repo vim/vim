@@ -358,6 +358,7 @@ static const struct nv_cmd
     {K_LEFTDRAG, nv_mouse,	0,			0},
     {K_LEFTRELEASE, nv_mouse,	0,			0},
     {K_LEFTRELEASE_NM, nv_mouse, 0,			0},
+    {K_MOUSEMOVE, nv_mouse,	0,			0},
     {K_MIDDLEMOUSE, nv_mouse,	0,			0},
     {K_MIDDLEDRAG, nv_mouse,	0,			0},
     {K_MIDDLERELEASE, nv_mouse,	0,			0},
@@ -891,7 +892,7 @@ getcount:
 	int	lit = FALSE;	/* get extra character literally */
 	int	langmap_active = FALSE;    /* using :lmap mappings */
 	int	lang;		/* getting a text character */
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 	int	save_smd;	/* saved value of p_smd */
 #endif
 
@@ -956,7 +957,7 @@ getcount:
 		    State = LANGMAP;
 		langmap_active = TRUE;
 	    }
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 	    save_smd = p_smd;
 	    p_smd = FALSE;	/* Don't let the IM code show the mode here */
 	    if (lang && curbuf->b_p_iminsert == B_IMODE_IM)
@@ -972,7 +973,7 @@ getcount:
 		++allow_keys;
 		State = NORMAL_BUSY;
 	    }
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 	    if (lang)
 	    {
 		if (curbuf->b_p_iminsert != B_IMODE_LMAP)
@@ -1945,6 +1946,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		AppendToRedobuff((char_u *)"!\r");  /* use any last used !cmd */
 	    else
 		bangredo = TRUE;    /* do_bang() will put cmd in redo buffer */
+	    /* FALLTHROUGH */
 
 	case OP_INDENT:
 	case OP_COLON:
@@ -2393,6 +2395,20 @@ do_mouse(
 	    }
 	}
 	break;
+    }
+
+    if (c == K_MOUSEMOVE)
+    {
+	/* Mouse moved without a button pressed. */
+#ifdef FEAT_BEVAL_TERM
+	ui_may_remove_balloon();
+	if (p_bevalterm && !VIsual_active)
+	{
+	    profile_setlimit(p_bdlay, &bevalexpr_due);
+	    bevalexpr_due_set = TRUE;
+	}
+#endif
+	return FALSE;
     }
 
 #ifdef FEAT_MOUSESHAPE
@@ -3843,7 +3859,7 @@ add_to_showcmd(int c)
 	K_LEFTMOUSE_NM, K_LEFTRELEASE_NM,
 # endif
 	K_IGNORE, K_PS,
-	K_LEFTMOUSE, K_LEFTDRAG, K_LEFTRELEASE,
+	K_LEFTMOUSE, K_LEFTDRAG, K_LEFTRELEASE, K_MOUSEMOVE,
 	K_MIDDLEMOUSE, K_MIDDLEDRAG, K_MIDDLERELEASE,
 	K_RIGHTMOUSE, K_RIGHTDRAG, K_RIGHTRELEASE,
 	K_MOUSEDOWN, K_MOUSEUP, K_MOUSELEFT, K_MOUSERIGHT,
@@ -4618,7 +4634,9 @@ nv_mousescroll(cmdarg_T *cap)
     {
 # ifdef FEAT_TERMINAL
 	if (term_use_loop())
-	    send_keys_to_term(curbuf->b_term, cap->cmdchar, TRUE);
+	    /* This window is a terminal window, send the mouse event there.
+	     * Set "typed" to FALSE to avoid an endless loop. */
+	    send_keys_to_term(curbuf->b_term, cap->cmdchar, FALSE);
 	else
 # endif
 	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
@@ -5151,7 +5169,7 @@ dozet:
 		    break;
 		}
 		undo = TRUE;
-		/*FALLTHROUGH*/
+		/* FALLTHROUGH */
 
     case 'g':	/* "zg": add good word to word list */
     case 'w':	/* "zw": add wrong word to word list */
@@ -6797,6 +6815,8 @@ nv_brackets(cmdarg_T *cap)
 		clearopbeep(cap->oap);
 		break;
 	    }
+	    else
+		curwin->w_set_curswant = TRUE;
 # ifdef FEAT_FOLDING
 	if (cap->oap->op_type == OP_NOP && (fdo_flags & FDO_SEARCH) && KeyTyped)
 	    foldOpenCursor();
@@ -7833,8 +7853,12 @@ n_start_visual_mode(int c)
 nv_window(cmdarg_T *cap)
 {
     if (cap->nchar == ':')
+    {
 	/* "CTRL-W :" is the same as typing ":"; useful in a terminal window */
+	cap->cmdchar = ':';
+	cap->nchar = NUL;
 	nv_colon(cap);
+    }
     else if (!checkclearop(cap->oap))
 	do_window(cap->nchar, cap->count0, NUL); /* everything is in window.c */
 }
@@ -8268,7 +8292,7 @@ nv_g_cmd(cmdarg_T *cap)
 	/* "g'm" and "g`m": jump to mark without setting pcmark */
     case '\'':
 	cap->arg = TRUE;
-	/*FALLTHROUGH*/
+	/* FALLTHROUGH */
     case '`':
 	nv_gomark(cap);
 	break;
@@ -8329,7 +8353,7 @@ nv_g_cmd(cmdarg_T *cap)
     case 'q':
     case 'w':
 	oap->cursor_start = curwin->w_cursor;
-	/*FALLTHROUGH*/
+	/* FALLTHROUGH */
     case '~':
     case 'u':
     case 'U':
@@ -8358,6 +8382,7 @@ nv_g_cmd(cmdarg_T *cap)
     case K_LEFTMOUSE:
     case K_LEFTDRAG:
     case K_LEFTRELEASE:
+    case K_MOUSEMOVE:
     case K_RIGHTMOUSE:
     case K_RIGHTDRAG:
     case K_RIGHTRELEASE:
@@ -9118,7 +9143,7 @@ nv_edit(cmdarg_T *cap)
 		 * the first column, then it inserts. */
 		if (curwin->w_cursor.col == 0)
 		    break;
-		/*FALLTHROUGH*/
+		/* FALLTHROUGH */
 
 	    case 'a':	/* "a"ppend is like "i"nsert on the next character. */
 #ifdef FEAT_VIRTUALEDIT

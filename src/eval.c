@@ -192,6 +192,7 @@ static struct vimvar
     {VV_NAME("termu7resp",	 VAR_STRING), VV_RO},
     {VV_NAME("termstyleresp",	VAR_STRING), VV_RO},
     {VV_NAME("termblinkresp",	VAR_STRING), VV_RO},
+    {VV_NAME("event",		VAR_DICT), VV_RO},
 };
 
 /* shorthand */
@@ -319,8 +320,9 @@ eval_init(void)
 
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
-    set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc());
+    set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
     set_vim_var_list(VV_ERRORS, list_alloc());
+    set_vim_var_dict(VV_EVENT, dict_alloc_lock(VAR_FIXED));
 
     set_vim_var_nr(VV_FALSE, VVAL_FALSE);
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);
@@ -696,6 +698,70 @@ eval_to_bool(
     return (int)retval;
 }
 
+    static int
+eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
+{
+    char_u	*s;
+    int		dummy;
+    char_u	buf[NUMBUFLEN];
+
+    if (expr->v_type == VAR_FUNC)
+    {
+	s = expr->vval.v_string;
+	if (s == NULL || *s == NUL)
+	    return FAIL;
+	if (call_func(s, (int)STRLEN(s), rettv, argc, argv, NULL,
+				     0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
+	    return FAIL;
+    }
+    else if (expr->v_type == VAR_PARTIAL)
+    {
+	partial_T   *partial = expr->vval.v_partial;
+
+	s = partial_name(partial);
+	if (s == NULL || *s == NUL)
+	    return FAIL;
+	if (call_func(s, (int)STRLEN(s), rettv, argc, argv, NULL,
+				  0L, 0L, &dummy, TRUE, partial, NULL) == FAIL)
+	    return FAIL;
+    }
+    else
+    {
+	s = get_tv_string_buf_chk(expr, buf);
+	if (s == NULL)
+	    return FAIL;
+	s = skipwhite(s);
+	if (eval1(&s, rettv, TRUE) == FAIL)
+	    return FAIL;
+	if (*s != NUL)  /* check for trailing chars after expr */
+	{
+	    EMSG2(_(e_invexpr2), s);
+	    return FAIL;
+	}
+    }
+    return OK;
+}
+
+/*
+ * Like eval_to_bool() but using a typval_T instead of a string.
+ * Works for string, funcref and partial.
+ */
+    int
+eval_expr_to_bool(typval_T *expr, int *error)
+{
+    typval_T	rettv;
+    int		res;
+
+    if (eval_expr_typval(expr, NULL, 0, &rettv) == FAIL)
+    {
+	*error = TRUE;
+	return FALSE;
+    }
+    res = (get_tv_number_chk(&rettv, error) != 0);
+    clear_tv(&rettv);
+    return res;
+}
+
 /*
  * Top level evaluation function, returning a string.  If "skip" is TRUE,
  * only parsing to "nextcmd" is done, without reporting errors.  Return
@@ -992,8 +1058,13 @@ call_vim_function(
 	if (str_arg_only)
 	    len = 0;
 	else
-	    /* Recognize a number argument, the others must be strings. */
+	{
+	    /* Recognize a number argument, the others must be strings. A dash
+	     * is a string too. */
 	    vim_str2nr(argv[i], NULL, &len, STR2NR_ALL, &n, NULL, 0);
+	    if (len == 1 && *argv[i] == '-')
+		len = 0;
+	}
 	if (len != 0 && len == (int)STRLEN(argv[i]))
 	{
 	    argvars[i].v_type = VAR_NUMBER;
@@ -1887,7 +1958,10 @@ get_lval(
 
     cc = *p;
     *p = NUL;
-    v = find_var(lp->ll_name, &ht, flags & GLV_NO_AUTOLOAD);
+    /* Only pass &ht when we would write to the variable, it prevents autoload
+     * as well. */
+    v = find_var(lp->ll_name, (flags & GLV_READ_ONLY) ? NULL : &ht,
+						      flags & GLV_NO_AUTOLOAD);
     if (v == NULL && !quiet)
 	EMSG2(_(e_undefvar), lp->ll_name);
     *p = cc;
@@ -6541,6 +6615,8 @@ get_vim_var_nr(int idx)
 
 /*
  * Get string v: variable value.  Uses a static buffer, can only be used once.
+ * If the String variable has never been set, return an empty string.
+ * Never returns NULL;
  */
     char_u *
 get_vim_var_str(int idx)
@@ -6556,6 +6632,16 @@ get_vim_var_str(int idx)
 get_vim_var_list(int idx)
 {
     return vimvars[idx].vv_list;
+}
+
+/*
+ * Get Dict v: variable value.  Caller must take care of reference count when
+ * needed.
+ */
+    dict_T *
+get_vim_var_dict(int idx)
+{
+    return vimvars[idx].vv_dict;
 }
 
 /*
@@ -6632,25 +6718,13 @@ set_vim_var_list(int idx, list_T *val)
     void
 set_vim_var_dict(int idx, dict_T *val)
 {
-    int		todo;
-    hashitem_T	*hi;
-
     clear_tv(&vimvars[idx].vv_di.di_tv);
     vimvars[idx].vv_type = VAR_DICT;
     vimvars[idx].vv_dict = val;
     if (val != NULL)
     {
 	++val->dv_refcount;
-
-	/* Set readonly */
-	todo = (int)val->dv_hashtab.ht_used;
-	for (hi = val->dv_hashtab.ht_array; todo > 0 ; ++hi)
-	{
-	    if (HASHITEM_EMPTY(hi))
-		continue;
-	    --todo;
-	    HI2DI(hi)->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
-	}
+	dict_set_items_ro(val);
     }
 }
 
@@ -6995,7 +7069,7 @@ free_tv(typval_T *varp)
 	{
 	    case VAR_FUNC:
 		func_unref(varp->vval.v_string);
-		/*FALLTHROUGH*/
+		/* FALLTHROUGH */
 	    case VAR_STRING:
 		vim_free(varp->vval.v_string);
 		break;
@@ -7040,7 +7114,7 @@ clear_tv(typval_T *varp)
 	{
 	    case VAR_FUNC:
 		func_unref(varp->vval.v_string);
-		/*FALLTHROUGH*/
+		/* FALLTHROUGH */
 	    case VAR_STRING:
 		vim_free(varp->vval.v_string);
 		varp->vval.v_string = NULL;
@@ -9971,44 +10045,13 @@ filter_map_one(typval_T *tv, typval_T *expr, int map, int *remp)
 {
     typval_T	rettv;
     typval_T	argv[3];
-    char_u	buf[NUMBUFLEN];
-    char_u	*s;
     int		retval = FAIL;
-    int		dummy;
 
     copy_tv(tv, &vimvars[VV_VAL].vv_tv);
     argv[0] = vimvars[VV_KEY].vv_tv;
     argv[1] = vimvars[VV_VAL].vv_tv;
-    if (expr->v_type == VAR_FUNC)
-    {
-	s = expr->vval.v_string;
-	if (call_func(s, (int)STRLEN(s), &rettv, 2, argv, NULL,
-				     0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
-	    goto theend;
-    }
-    else if (expr->v_type == VAR_PARTIAL)
-    {
-	partial_T   *partial = expr->vval.v_partial;
-
-	s = partial_name(partial);
-	if (call_func(s, (int)STRLEN(s), &rettv, 2, argv, NULL,
-				  0L, 0L, &dummy, TRUE, partial, NULL) == FAIL)
-	    goto theend;
-    }
-    else
-    {
-	s = get_tv_string_buf_chk(expr, buf);
-	if (s == NULL)
-	    goto theend;
-	s = skipwhite(s);
-	if (eval1(&s, &rettv, TRUE) == FAIL)
-	    goto theend;
-	if (*s != NUL)  /* check for trailing chars after expr */
-	{
-	    EMSG2(_(e_invexpr2), s);
-	    goto theend;
-	}
-    }
+    if (eval_expr_typval(expr, argv, 2, &rettv) == FAIL)
+	goto theend;
     if (map)
     {
 	/* map(): replace the list item value */

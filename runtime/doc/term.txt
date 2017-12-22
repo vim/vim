@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.0.  Last change: 2017 Aug 28
+*term.txt*      For Vim version 8.0.  Last change: 2017 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -327,6 +327,7 @@ Added by Vim (there are no standard codes for these):
 		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
 		see |'ambiwidth'|
+	t_RF	request terminal foreground color		*t_RF* *'t_RF'*
 	t_RB	request terminal background color		*t_RB* *'t_RB'*
 	t_8f	set foreground color (R, G, B)			*t_8f* *'t_8f'*
 		|xterm-true-color|

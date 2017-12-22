@@ -404,6 +404,15 @@ func! Test_normal10_expand()
     call assert_equal(expected[i], expand('<cexpr>'), 'i == ' . i)
   endfor
 
+  if executable('echo')
+    " Test expand(`...`) i.e. backticks command expansion.
+    " MS-Windows has a trailing space.
+    call assert_match('^abcde *$', expand('`echo abcde`'))
+  endif
+
+  " Test expand(`=...`) i.e. backticks expression expansion
+  call assert_equal('5', expand('`=2+3`'))
+
   " clean up
   bw!
 endfunc
@@ -1208,6 +1217,13 @@ func! Test_normal19_z_spell()
   call assert_match("Word 'goood' added to ./Xspellfile2.add", a)
   call assert_equal('goood', cnt[0])
 
+  " Test for :spellgood!
+  let temp = execute(':spe!0/0')
+  call assert_match('Invalid region', temp)
+  let spellfile = matchstr(temp, 'Invalid region nr in \zs.*\ze line \d: 0')
+  call assert_equal(['# goood', '# goood/!', '#oood', '0/0'], readfile(spellfile))
+  call delete(spellfile)
+
   " clean up
   exe "lang" oldlang
   call delete("./Xspellfile.add")
@@ -1530,12 +1546,12 @@ fun! Test_normal29_brace()
   \ 'the ''{'' flag is in ''cpoptions'' then ''{'' in the first column is used as a',
   \ 'paragraph boundary |posix|.',
   \ '{',
-  \ 'This is no paragaraph',
+  \ 'This is no paragraph',
   \ 'unless the ''{'' is set',
   \ 'in ''cpoptions''',
   \ '}',
   \ '.IP',
-  \ 'The nroff macros IP seperates a paragraph',
+  \ 'The nroff macros IP separates a paragraph',
   \ 'That means, it must be a ''.''',
   \ 'followed by IP',
   \ '.LPIt does not matter, if afterwards some',
@@ -1550,7 +1566,7 @@ fun! Test_normal29_brace()
   1
   norm! 0d2}
   call assert_equal(['.IP',
-    \  'The nroff macros IP seperates a paragraph', 'That means, it must be a ''.''', 'followed by IP',
+    \  'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''', 'followed by IP',
     \ '.LPIt does not matter, if afterwards some', 'more characters follow.', '.SHAlso section boundaries from the nroff',
     \  'macros terminate a paragraph. That means', 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
   norm! 0d}
@@ -1569,21 +1585,21 @@ fun! Test_normal29_brace()
   set cpo+={
   1
   norm! 0d2}
-  call assert_equal(['{', 'This is no paragaraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
-    \ '.IP', 'The nroff macros IP seperates a paragraph', 'That means, it must be a ''.''',
+  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
+    \ '.IP', 'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''',
     \ 'followed by IP', '.LPIt does not matter, if afterwards some', 'more characters follow.',
     \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
     \ 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
   $
   norm! d}
-  call assert_equal(['{', 'This is no paragaraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
-    \ '.IP', 'The nroff macros IP seperates a paragraph', 'That means, it must be a ''.''',
+  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
+    \ '.IP', 'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''',
     \ 'followed by IP', '.LPIt does not matter, if afterwards some', 'more characters follow.',
     \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
     \ 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
   norm! gg}
   norm! d5}
-  call assert_equal(['{', 'This is no paragaraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}', ''], getline(1,'$'))
+  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}', ''], getline(1,'$'))
 
   " clean up
   set cpo-={
@@ -2388,4 +2404,46 @@ func Test_delete_until_paragraph()
   normal grád}
   call assert_equal('', getline(1))
   bwipe!
+endfunc
+
+" Test for the gr (virtual replace) command
+" Test for the bug fixed by 7.4.387
+func Test_gr_command()
+  enew!
+  let save_cpo = &cpo
+  call append(0, ['First line', 'Second line', 'Third line'])
+  exe "normal i\<C-G>u"
+  call cursor(2, 1)
+  set cpo-=X
+  normal 4gro
+  call assert_equal('oooond line', getline(2))
+  undo
+  set cpo+=X
+  normal 4gro
+  call assert_equal('ooooecond line', getline(2))
+  let &cpo = save_cpo
+  enew!
+endfunc
+
+" When splitting a window the changelist position is wrong.
+" Test the changelist position after splitting a window.
+" Test for the bug fixed by 7.4.386
+func Test_changelist()
+  let save_ul = &ul
+  enew!
+  call append('$', ['1', '2'])
+  exe "normal i\<C-G>u"
+  exe "normal Gkylpa\<C-G>u"
+  set ul=100
+  exe "normal Gylpa\<C-G>u"
+  set ul=100
+  normal gg
+  vsplit
+  normal g;
+  call assert_equal([3, 2], [line('.'), col('.')])
+  normal g;
+  call assert_equal([2, 2], [line('.'), col('.')])
+  call assert_fails('normal g;', 'E662:')
+  %bwipe!
+  let &ul = save_ul
 endfunc

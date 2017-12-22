@@ -1,5 +1,21 @@
 " Tests for various functions.
 
+" Must be done first, since the alternate buffer must be unset.
+func Test_00_bufexists()
+  call assert_equal(0, bufexists('does_not_exist'))
+  call assert_equal(1, bufexists(bufnr('%')))
+  call assert_equal(0, bufexists(0))
+  new Xfoo
+  let bn = bufnr('%')
+  call assert_equal(1, bufexists(bn))
+  call assert_equal(1, bufexists('Xfoo'))
+  call assert_equal(1, bufexists(getcwd() . '/Xfoo'))
+  call assert_equal(1, bufexists(0))
+  bw
+  call assert_equal(0, bufexists(bn))
+  call assert_equal(0, bufexists('Xfoo'))
+endfunc
+
 func Test_empty()
   call assert_equal(1, empty(''))
   call assert_equal(0, empty('a'))
@@ -166,6 +182,19 @@ func Test_simplify()
   call assert_fails('call simplify([])', 'E730:')
   call assert_fails('call simplify({})', 'E731:')
   call assert_fails('call simplify(1.2)', 'E806:')
+endfunc
+
+func Test_strpart()
+  call assert_equal('de', strpart('abcdefg', 3, 2))
+  call assert_equal('ab', strpart('abcdefg', -2, 4))
+  call assert_equal('abcdefg', strpart('abcdefg', -2))
+  call assert_equal('fg', strpart('abcdefg', 5, 4))
+  call assert_equal('defg', strpart('abcdefg', 3))
+
+  if has('multi_byte')
+    call assert_equal('lép', strpart('éléphant', 2, 4))
+    call assert_equal('léphant', strpart('éléphant', 2))
+  endif
 endfunc
 
 func Test_tolower()
@@ -478,21 +507,6 @@ func Test_getbufvar()
   set fileformats&
 endfunc
 
-func Test_bufexists()
-  call assert_equal(0, bufexists('does_not_exist'))
-  call assert_equal(1, bufexists(bufnr('%')))
-  call assert_equal(0, bufexists(0))
-  new Xfoo
-  let bn = bufnr('%')
-  call assert_equal(1, bufexists(bn))
-  call assert_equal(1, bufexists('Xfoo'))
-  call assert_equal(1, bufexists(getcwd() . '/Xfoo'))
-  call assert_equal(1, bufexists(0))
-  bw
-  call assert_equal(0, bufexists(bn))
-  call assert_equal(0, bufexists('Xfoo'))
-endfunc
-
 func Test_last_buffer_nr()
   call assert_equal(bufnr('$'), last_buffer_nr())
 endfunc
@@ -678,6 +692,7 @@ func Test_count()
   call assert_equal(0, count("foo", "O"))
   call assert_equal(2, count("foo", "O", 1))
   call assert_equal(2, count("fooooo", "oo"))
+  call assert_equal(0, count("foo", ""))
 endfunc
 
 func Test_changenr()

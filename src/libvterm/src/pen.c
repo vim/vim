@@ -3,25 +3,25 @@
 #include <stdio.h>
 
 static const VTermColor ansi_colors[] = {
-  /* R    G    B */
-  {   0,   0,   0 }, /* black */
-  { 224,   0,   0 }, /* red */
-  {   0, 224,   0 }, /* green */
-  { 224, 224,   0 }, /* yellow */
-  {   0,   0, 224 }, /* blue */
-  { 224,   0, 224 }, /* magenta */
-  {   0, 224, 224 }, /* cyan */
-  { 224, 224, 224 }, /* white == light grey */
+  /* R    G    B   index */
+  {   0,   0,   0,  1 }, /* black */
+  { 224,   0,   0,  2 }, /* red */
+  {   0, 224,   0,  3 }, /* green */
+  { 224, 224,   0,  4 }, /* yellow */
+  {   0,   0, 224,  5 }, /* blue */
+  { 224,   0, 224,  6 }, /* magenta */
+  {   0, 224, 224,  7 }, /* cyan */
+  { 224, 224, 224,  8 }, /* white == light grey */
 
   /* high intensity */
-  { 128, 128, 128 }, /* black */
-  { 255,  64,  64 }, /* red */
-  {  64, 255,  64 }, /* green */
-  { 255, 255,  64 }, /* yellow */
-  {  64,  64, 255 }, /* blue */
-  { 255,  64, 255 }, /* magenta */
-  {  64, 255, 255 }, /* cyan */
-  { 255, 255, 255 }, /* white for real */
+  { 128, 128, 128,  9 }, /* black */
+  { 255,  64,  64, 10 }, /* red */
+  {  64, 255,  64, 11 }, /* green */
+  { 255, 255,  64, 12 }, /* yellow */
+  {  64,  64, 255, 13 }, /* blue */
+  { 255,  64, 255, 14 }, /* magenta */
+  {  64, 255, 255, 15 }, /* cyan */
+  { 255, 255, 255, 16 }, /* white for real */
 };
 
 static int ramp6[] = {
@@ -57,6 +57,7 @@ static int lookup_colour_palette(const VTermState *state, long index, VTermColor
     col->blue  = ramp6[index     % 6];
     col->green = ramp6[index/6   % 6];
     col->red   = ramp6[index/6/6 % 6];
+    col->ansi_index = VTERM_ANSI_INDEX_NONE;
 
     return TRUE;
   }
@@ -67,6 +68,7 @@ static int lookup_colour_palette(const VTermState *state, long index, VTermColor
     col->blue  = ramp24[index];
     col->green = ramp24[index];
     col->red   = ramp24[index];
+    col->ansi_index = VTERM_ANSI_INDEX_NONE;
 
     return TRUE;
   }
@@ -84,6 +86,7 @@ static int lookup_colour(const VTermState *state, int palette, const long args[]
     col->red   = (uint8_t)CSI_ARG(args[0]);
     col->green = (uint8_t)CSI_ARG(args[1]);
     col->blue  = (uint8_t)CSI_ARG(args[2]);
+    col->ansi_index = VTERM_ANSI_INDEX_NONE;
 
     return 3;
 
@@ -152,7 +155,9 @@ INTERNAL void vterm_state_newpen(VTermState *state)
 
   /* 90% grey so that pure white is brighter */
   state->default_fg.red = state->default_fg.green = state->default_fg.blue = 240;
+  state->default_fg.ansi_index = VTERM_ANSI_INDEX_DEFAULT;
   state->default_bg.red = state->default_bg.green = state->default_bg.blue = 0;
+  state->default_bg.ansi_index = VTERM_ANSI_INDEX_DEFAULT;
 
   for(col = 0; col < 16; col++)
     state->colors[col] = ansi_colors[col];
@@ -214,7 +219,10 @@ void vterm_state_set_default_colors(VTermState *state, const VTermColor *default
 void vterm_state_set_palette_color(VTermState *state, int index, const VTermColor *col)
 {
   if(index >= 0 && index < 16)
+  {
     state->colors[index] = *col;
+    state->colors[index].ansi_index = index + VTERM_ANSI_INDEX_MIN;
+  }
 }
 
 void vterm_state_set_bold_highbright(VTermState *state, int bold_is_highbright)

@@ -969,19 +969,12 @@ typedef struct attr_entry
 # else
 #  if defined(MACOS_X)
 #   include <sys/errno.h>
-#   define EILSEQ ENOENT /* MacOS X does not have EILSEQ */
+#   ifndef EILSEQ
+#    define EILSEQ ENOENT /* Early MacOS X does not have EILSEQ */
+#   endif
 typedef struct _iconv_t *iconv_t;
 #  else
-#   if defined(MACOS_CLASSIC)
-typedef struct _iconv_t *iconv_t;
-#    define EINVAL	22
-#    define E2BIG	7
-#    define ENOENT	2
-#    define EFAULT	14
-#    define EILSEQ	123
-#   else
-#    include <errno.h>
-#   endif
+#   include <errno.h>
 #  endif
 typedef void *iconv_t;
 # endif
@@ -2098,12 +2091,8 @@ struct file_buffer
 #define B_IMODE_USE_INSERT -1	/*	Use b_p_iminsert value for search */
 #define B_IMODE_NONE 0		/*	Input via none */
 #define B_IMODE_LMAP 1		/*	Input via langmap */
-#ifndef USE_IM_CONTROL
-# define B_IMODE_LAST 1
-#else
-# define B_IMODE_IM 2		/*	Input via input method */
-# define B_IMODE_LAST 2
-#endif
+#define B_IMODE_IM 2		/*	Input via input method */
+#define B_IMODE_LAST 2
 
 #ifdef FEAT_KEYMAP
     short	b_kmap_state;	/* using "lmap" mappings */

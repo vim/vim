@@ -1,5 +1,4 @@
 /* gui_w32.c */
-int directx_enabled(void);
 int gui_mch_set_rendering_options(char_u *s);
 int gui_mch_is_blinking(void);
 int gui_mch_is_blink_off(void);

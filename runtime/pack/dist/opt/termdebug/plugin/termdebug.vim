@@ -20,6 +20,9 @@ if exists(':Termdebug')
   finish
 endif
 
+" Uncomment this line to write logging in "debuglog".
+" call ch_logfile('debuglog', 'w')
+
 " The command that starts debugging, e.g. ":Termdebug vim".
 " To end type "quit" in the gdb window.
 command -nargs=* -complete=file Termdebug call s:StartDebug(<q-args>)
@@ -31,6 +34,7 @@ endif
 
 let s:pc_id = 12
 let s:break_id = 13
+let s:stopped = 1
 
 if &background == 'light'
   hi default debugPC term=reverse ctermbg=lightblue guibg=lightblue
@@ -65,6 +69,11 @@ func s:StartDebug(cmd)
   endif
   let pty = job_info(term_getjob(s:ptybuf))['tty_out']
   let s:ptywin = win_getid(winnr())
+  if vertical
+    " Assuming the source code window will get a signcolumn, use two more
+    " columns for that, thus one less for the terminal window.
+    exe (&columns / 2 - 1) . "wincmd |"
+  endif
 
   " Create a hidden terminal window to communicate with gdb
   let s:commbuf = term_start('NONE', {
@@ -80,13 +89,14 @@ func s:StartDebug(cmd)
   let commpty = job_info(term_getjob(s:commbuf))['tty_out']
 
   " Open a terminal window to run the debugger.
-  let cmd = [g:termdebugger, '-tty', pty, a:cmd]
+  " Add -quiet to avoid the intro message causing a hit-enter prompt.
+  let cmd = [g:termdebugger, '-quiet', '-tty', pty, a:cmd]
   echomsg 'executing "' . join(cmd) . '"'
-  let gdbbuf = term_start(cmd, {
+  let s:gdbbuf = term_start(cmd, {
 	\ 'exit_cb': function('s:EndDebug'),
 	\ 'term_finish': 'close',
 	\ })
-  if gdbbuf == 0
+  if s:gdbbuf == 0
     echoerr 'Failed to open the gdb terminal window'
     exe 'bwipe! ' . s:ptybuf
     exe 'bwipe! ' . s:commbuf
@@ -95,7 +105,13 @@ func s:StartDebug(cmd)
   let s:gdbwin = win_getid(winnr())
 
   " Connect gdb to the communication pty, using the GDB/MI interface
-  call term_sendkeys(gdbbuf, 'new-ui mi ' . commpty . "\r")
+  " If you get an error "undefined command" your GDB is too old.
+  call term_sendkeys(s:gdbbuf, 'new-ui mi ' . commpty . "\r")
+
+  " Interpret commands while the target is running.  This should usualy only be
+  " exec-interrupt, since many commands don't work properly while the target is
+  " running.
+  call s:SendCommand('-gdb-set mi-async on')
 
   " Sign used to highlight the line where the program has stopped.
   " There can be only one.
@@ -109,6 +125,17 @@ func s:StartDebug(cmd)
   call win_gotoid(s:startwin)
   call s:InstallCommands()
   call win_gotoid(s:gdbwin)
+
+  " Enable showing a balloon with eval info
+  if has("balloon_eval") || has("balloon_eval_term")
+    set balloonexpr=TermDebugBalloonExpr()
+    if has("balloon_eval")
+      set ballooneval
+    endif
+    if has("balloon_eval_term")
+      set balloonevalterm
+    endif
+  endif
 
   let s:breakpoints = {}
 
@@ -131,6 +158,16 @@ func s:EndDebug(job, status)
   call win_gotoid(curwinid)
   if s:save_columns > 0
     let &columns = s:save_columns
+  endif
+
+  if has("balloon_eval") || has("balloon_eval_term")
+    set balloonexpr=
+    if has("balloon_eval")
+      set noballooneval
+    endif
+    if has("balloon_eval_term")
+      set noballoonevalterm
+    endif
   endif
 
   au! TermDebug
@@ -168,6 +205,9 @@ func s:InstallCommands()
   command Step call s:SendCommand('-exec-step')
   command Over call s:SendCommand('-exec-next')
   command Finish call s:SendCommand('-exec-finish')
+  command -nargs=* Run call s:Run(<q-args>)
+  command -nargs=* Arguments call s:SendCommand('-exec-arguments ' . <q-args>)
+  command Stop call s:SendCommand('-exec-interrupt')
   command Continue call s:SendCommand('-exec-continue')
   command -range -nargs=* Evaluate call s:Evaluate(<range>, <q-args>)
   command Gdb call win_gotoid(s:gdbwin)
@@ -176,11 +216,12 @@ func s:InstallCommands()
   " TODO: can the K mapping be restored?
   nnoremap K :Evaluate<CR>
 
-  if has('menu')
+  if has('menu') && &mouse != ''
     nnoremenu WinBar.Step :Step<CR>
     nnoremenu WinBar.Next :Over<CR>
     nnoremenu WinBar.Finish :Finish<CR>
     nnoremenu WinBar.Cont :Continue<CR>
+    nnoremenu WinBar.Stop :Stop<CR>
     nnoremenu WinBar.Eval :Evaluate<CR>
   endif
 endfunc
@@ -192,6 +233,9 @@ func s:DeleteCommands()
   delcommand Step
   delcommand Over
   delcommand Finish
+  delcommand Run
+  delcommand Arguments
+  delcommand Stop
   delcommand Continue
   delcommand Evaluate
   delcommand Gdb
@@ -204,6 +248,7 @@ func s:DeleteCommands()
     aunmenu WinBar.Next
     aunmenu WinBar.Finish
     aunmenu WinBar.Cont
+    aunmenu WinBar.Stop
     aunmenu WinBar.Eval
   endif
 
@@ -218,8 +263,19 @@ endfunc
 
 " :Break - Set a breakpoint at the cursor position.
 func s:SetBreakpoint()
-  call term_sendkeys(s:commbuf, '-break-insert --source '
-	\ . fnameescape(expand('%:p')) . ' --line ' . line('.') . "\r")
+  " Setting a breakpoint may not work while the program is running.
+  " Interrupt to make it work.
+  let do_continue = 0
+  if !s:stopped
+    let do_continue = 1
+    call s:SendCommand('-exec-interrupt')
+    sleep 10m
+  endif
+  call s:SendCommand('-break-insert --source '
+	\ . fnameescape(expand('%:p')) . ' --line ' . line('.'))
+  if do_continue
+    call s:SendCommand('-exec-continue')
+  endif
 endfunc
 
 " :Delete - Delete a breakpoint at the cursor position.
@@ -242,6 +298,18 @@ func s:SendCommand(cmd)
   call term_sendkeys(s:commbuf, a:cmd . "\r")
 endfunc
 
+func s:Run(args)
+  if a:args != ''
+    call s:SendCommand('-exec-arguments ' . a:args)
+  endif
+  call s:SendCommand('-exec-run')
+endfunc
+
+func s:SendEval(expr)
+  call s:SendCommand('-data-evaluate-expression "' . a:expr . '"')
+  let s:evalexpr = a:expr
+endfunc
+
 " :Evaluate - evaluate what is under the cursor
 func s:Evaluate(range, arg)
   if a:arg != ''
@@ -257,25 +325,55 @@ func s:Evaluate(range, arg)
   else
     let expr = expand('<cexpr>')
   endif
-  call term_sendkeys(s:commbuf, '-data-evaluate-expression "' . expr . "\"\r")
-  let s:evalexpr = expr
+  call s:SendEval(expr)
 endfunc
+
+let s:evalFromBalloonExpr = 0
 
 " Handle the result of data-evaluate-expression
 func s:HandleEvaluate(msg)
   let value = substitute(a:msg, '.*value="\(.*\)"', '\1', '')
   let value = substitute(value, '\\"', '"', 'g')
-  echomsg '"' . s:evalexpr . '": ' . value
-
-  if s:evalexpr[0] != '*' && value =~ '^0x' && value !~ '"$'
-    " Looks like a pointer, also display what it points to.
-    let s:evalexpr = '*' . s:evalexpr
-    call term_sendkeys(s:commbuf, '-data-evaluate-expression "' . s:evalexpr . "\"\r")
+  if s:evalFromBalloonExpr
+    if s:evalFromBalloonExprResult == ''
+      let s:evalFromBalloonExprResult = s:evalexpr . ': ' . value
+    else
+      let s:evalFromBalloonExprResult .= ' = ' . value
+    endif
+    call balloon_show(s:evalFromBalloonExprResult)
+  else
+    echomsg '"' . s:evalexpr . '": ' . value
   endif
+
+  if s:evalexpr[0] != '*' && value =~ '^0x' && value != '0x0' && value !~ '"$'
+    " Looks like a pointer, also display what it points to.
+    call s:SendEval('*' . s:evalexpr)
+  else
+    let s:evalFromBalloonExpr = 0
+  endif
+endfunc
+
+" Show a balloon with information of the variable under the mouse pointer,
+" if there is any.
+func TermDebugBalloonExpr()
+  if v:beval_winid != s:startwin
+    return
+  endif
+  call s:SendEval(v:beval_text)
+  let s:evalFromBalloonExpr = 1
+  let s:evalFromBalloonExprResult = ''
+  return ''
 endfunc
 
 " Handle an error.
 func s:HandleError(msg)
+  if a:msg =~ 'No symbol .* in current context'
+	\ || a:msg =~ 'Cannot access memory at address '
+	\ || a:msg =~ 'Attempt to use a type name as an expression'
+	\ || a:msg =~ 'A syntax error in expression,'
+    " Result of s:SendEval() failed, ignore.
+    return
+  endif
   echoerr substitute(a:msg, '.*msg="\(.*\)"', '\1', '')
 endfunc
 
@@ -283,6 +381,12 @@ endfunc
 " Will update the sign that shows the current position.
 func s:HandleCursor(msg)
   let wid = win_getid(winnr())
+
+  if a:msg =~ '^\*stopped'
+    let s:stopped = 1
+  elseif a:msg =~ '^\*running'
+    let s:stopped = 0
+  endif
 
   if win_gotoid(s:startwin)
     let fname = substitute(a:msg, '.*fullname="\([^"]*\)".*', '\1', '')
@@ -299,6 +403,7 @@ func s:HandleCursor(msg)
 	  endif
 	endif
 	exe lnum
+	exe 'sign unplace ' . s:pc_id
 	exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fname
 	setlocal signcolumn=yes
       endif

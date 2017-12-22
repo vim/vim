@@ -1469,7 +1469,7 @@ WaitForChar(long msec, int ignore_input)
 		    dwWaitTime = 10;
 	    }
 #endif
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	    if (p_beval && dwWaitTime > 100)
 		/* The 'balloonexpr' may indirectly invoke a callback while
 		 * waiting for a character, need to check often. */
@@ -1789,7 +1789,6 @@ mch_inchar(
 #endif
 	    {
 		int	n = 1;
-		int     conv = FALSE;
 
 #ifdef FEAT_MBYTE
 		if (ch2 == NUL)
@@ -1817,30 +1816,17 @@ mch_inchar(
 		    typeahead[typeaheadlen] = c;
 		if (ch2 != NUL)
 		{
-		    typeahead[typeaheadlen + n] = 3;
-		    typeahead[typeaheadlen + n + 1] = (char_u)ch2;
-		    n += 2;
-		}
-
-		if (conv)
-		{
-		    char_u *p = typeahead + typeaheadlen;
-
-		    if (*p != K_NUL)
+		    if (c == K_NUL && (ch2 & 0xff00) != 0)
 		    {
-			char_u *e = typeahead + TYPEAHEADLEN;
-
-			while (*p && p < e)
-			{
-			    if (*p == K_NUL)
-			    {
-				++p;
-				mch_memmove(p + 1, p, ((size_t)(e - p)) - 1);
-				*p = 3;
-				++n;
-			    }
-			    ++p;
-			}
+			/* fAnsiKey with modifier keys */
+			typeahead[typeaheadlen + n] = (char_u)ch2;
+			n++;
+		    }
+		    else
+		    {
+			typeahead[typeaheadlen + n] = 3;
+			typeahead[typeaheadlen + n + 1] = (char_u)ch2;
+			n += 2;
 		    }
 		}
 
@@ -5033,11 +5019,11 @@ job_io_file_open(
  * Turn the dictionary "env" into a NUL separated list that can be used as the
  * environment argument of vim_create_process().
  */
-    static void
-make_job_env(garray_T *gap, dict_T *env)
+    void
+win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 {
     hashitem_T	*hi;
-    int		todo = (int)env->dv_hashtab.ht_used;
+    long_u	todo = env != NULL ? env->dv_hashtab.ht_used : 0;
     LPVOID	base = GetEnvironmentStringsW();
 
     /* for last \0 */
@@ -5062,35 +5048,56 @@ make_job_env(garray_T *gap, dict_T *env)
 	*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
     }
 
-    for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
+    if (env != NULL)
     {
-	if (!HASHITEM_EMPTY(hi))
+	for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
 	{
-	    typval_T *item = &dict_lookup(hi)->di_tv;
-	    WCHAR   *wkey = enc_to_utf16((char_u *)hi->hi_key, NULL);
-	    WCHAR   *wval = enc_to_utf16(get_tv_string(item), NULL);
-	    --todo;
-	    if (wkey != NULL && wval != NULL)
+	    if (!HASHITEM_EMPTY(hi))
 	    {
-		size_t	n;
-		size_t	lkey = wcslen(wkey);
-		size_t	lval = wcslen(wval);
+		typval_T *item = &dict_lookup(hi)->di_tv;
+		WCHAR   *wkey = enc_to_utf16((char_u *)hi->hi_key, NULL);
+		WCHAR   *wval = enc_to_utf16(get_tv_string(item), NULL);
+		--todo;
+		if (wkey != NULL && wval != NULL)
+		{
+		    size_t	n;
+		    size_t	lkey = wcslen(wkey);
+		    size_t	lval = wcslen(wval);
 
-		if (ga_grow(gap, (int)(lkey + lval + 2)) != OK)
-		    continue;
-		for (n = 0; n < lkey; n++)
-		    *((WCHAR*)gap->ga_data + gap->ga_len++) = wkey[n];
-		*((WCHAR*)gap->ga_data + gap->ga_len++) = L'=';
-		for (n = 0; n < lval; n++)
-		    *((WCHAR*)gap->ga_data + gap->ga_len++) = wval[n];
-		*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+		    if (ga_grow(gap, (int)(lkey + lval + 2)) != OK)
+			continue;
+		    for (n = 0; n < lkey; n++)
+			*((WCHAR*)gap->ga_data + gap->ga_len++) = wkey[n];
+		    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'=';
+		    for (n = 0; n < lval; n++)
+			*((WCHAR*)gap->ga_data + gap->ga_len++) = wval[n];
+		    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+		}
+		if (wkey != NULL) vim_free(wkey);
+		if (wval != NULL) vim_free(wval);
 	    }
-	    if (wkey != NULL) vim_free(wkey);
-	    if (wval != NULL) vim_free(wval);
 	}
     }
 
-    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+# ifdef FEAT_CLIENTSERVER
+    if (is_terminal)
+    {
+	char_u	*servername = get_vim_var_str(VV_SEND_SERVER);
+	size_t	lval = STRLEN(servername);
+	size_t	n;
+
+	if (ga_grow(gap, (int)(14 + lval + 2)) == OK)
+	{
+	    for (n = 0; n < 15; n++)
+		*((WCHAR*)gap->ga_data + gap->ga_len++) =
+		    (WCHAR)"VIM_SERVERNAME="[n];
+	    for (n = 0; n < lval; n++)
+		*((WCHAR*)gap->ga_data + gap->ga_len++) =
+		    (WCHAR)servername[n];
+	    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+	}
+    }
+# endif
 }
 
     void
@@ -5133,7 +5140,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     }
 
     if (options->jo_env != NULL)
-	make_job_env(&ga, options->jo_env);
+	win32_build_env(options->jo_env, &ga, FALSE);
 
     ZeroMemory(&pi, sizeof(pi));
     ZeroMemory(&si, sizeof(si));

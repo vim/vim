@@ -1101,6 +1101,7 @@ perl_to_vim(SV *sv, typval_T *rettv)
 		rettv->vval.v_number = SvIV(sv);
 		break;
 	    }
+	    /* FALLTHROUGH */
 	case SVt_PV:	/* string */
 	{
 	    size_t  len		= 0;

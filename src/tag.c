@@ -1130,7 +1130,7 @@ do_tags(exarg_T *eap UNUSED)
 		continue;
 
 	    msg_putchar('\n');
-	    sprintf((char *)IObuff, "%c%2d %2d %-15s %5ld  ",
+	    vim_snprintf((char *)IObuff, IOSIZE, "%c%2d %2d %-15s %5ld  ",
 		i == tagstackidx ? '>' : ' ',
 		i + 1,
 		tagstack[i].cur_match + 1,
@@ -2950,6 +2950,25 @@ test_for_static(tagptrs_T *tagp)
 }
 
 /*
+ * Returns the length of a matching tag line.
+ */
+    static size_t
+matching_line_len(char_u *lbuf)
+{
+    char_u	*p = lbuf + 1;
+
+    /* does the same thing as parse_match() */
+    p += STRLEN(p) + 2;
+#ifdef FEAT_EMACS_TAGS
+    if (*p)
+	p += STRLEN(p);
+    else
+	++p;
+#endif
+    return (p - lbuf) + STRLEN(p);
+}
+
+/*
  * Parse a line from a matching tag.  Does not change the line itself.
  *
  * The line that we get looks like this:
@@ -3071,7 +3090,7 @@ tag_full_fname(tagptrs_T *tagp)
  */
     static int
 jumpto_tag(
-    char_u	*lbuf,		/* line from the tags file for this tag */
+    char_u	*lbuf_arg,	/* line from the tags file for this tag */
     int		forceit,	/* :ta with ! */
     int		keep_help)	/* keep help flag (FALSE for cscope) */
 {
@@ -3079,7 +3098,6 @@ jumpto_tag(
     int		save_magic;
     int		save_p_ws, save_p_scs, save_p_ic;
     linenr_T	save_lnum;
-    int		csave = 0;
     char_u	*str;
     char_u	*pbuf;			/* search pattern buffer */
     char_u	*pbuf_end;
@@ -3099,18 +3117,26 @@ jumpto_tag(
 #ifdef FEAT_FOLDING
     int		old_KeyTyped = KeyTyped;    /* getting the file may reset it */
 #endif
+    size_t	len;
+    char_u	*lbuf;
+
+    /* Make a copy of the line, it can become invalid when an autocommand calls
+     * back here recursively. */
+    len = matching_line_len(lbuf_arg) + 1;
+    lbuf = alloc((int)len);
+    if (lbuf != NULL)
+	mch_memmove(lbuf, lbuf_arg, len);
 
     pbuf = alloc(LSIZE);
 
     /* parse the match line into the tagp structure */
-    if (pbuf == NULL || parse_match(lbuf, &tagp) == FAIL)
+    if (pbuf == NULL || lbuf == NULL || parse_match(lbuf, &tagp) == FAIL)
     {
 	tagp.fname_end = NULL;
 	goto erret;
     }
 
     /* truncate the file name, so it can be used as a string */
-    csave = *tagp.fname_end;
     *tagp.fname_end = NUL;
     fname = tagp.fname;
 
@@ -3246,7 +3272,10 @@ jumpto_tag(
 #endif
 	    keep_help_flag = curbuf->b_help;
     }
+
     if (getfile_result == GETFILE_UNUSED)
+	/* Careful: getfile() may trigger autocommands and call jumpto_tag()
+	 * recursively. */
 	getfile_result = getfile(0, fname, NULL, TRUE, (linenr_T)0, forceit);
     keep_help_flag = FALSE;
 
@@ -3441,8 +3470,7 @@ erret:
 #if defined(FEAT_QUICKFIX)
     g_do_tagpreview = 0; /* For next time */
 #endif
-    if (tagp.fname_end != NULL)
-	*tagp.fname_end = csave;
+    vim_free(lbuf);
     vim_free(pbuf);
     vim_free(tofree_fname);
     vim_free(full_fname);

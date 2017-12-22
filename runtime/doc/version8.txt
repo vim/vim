@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2017 Apr 23
+*version8.txt*  For Vim version 8.0.  Last change: 2017 Nov 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -11778,7 +11778,7 @@ Files:      src/os_unix.c
 Patch 7.4.1915
 Problem:    The effect of the PopupMenu autocommand isn't directly visible.
 Solution:   Call gui_update_menus() before displaying the popup menu. (Shane
-            Harper, closs #855)
+            Harper, closes #855)
 Files:      src/menu.c
 
 Patch 7.4.1916 (after 7.4.1906)
@@ -15398,7 +15398,7 @@ Files:      src/testdir/test_undo.vim, src/undo.c
 Patch 8.0.0150
 Problem:    When the pattern of :filter does not have a separator then
             completion of the command fails.
-Solution:   Skip over the pattern. (Ozaki Kiichi, clodes #1299)
+Solution:   Skip over the pattern. (Ozaki Kiichi, closes #1299)
 Files:      src/ex_docmd.c, src/testdir/test_filter_cmd.vim
 
 Patch 8.0.0151
@@ -15582,7 +15582,7 @@ Files:      src/json.c, src/testdir/test_json.vim
 
 Patch 8.0.0181
 Problem:    When 'cursorbind' and 'cursorcolumn' are both on, the column
-            highlignt in non-current windows is wrong.
+            highlight in non-current windows is wrong.
 Solution:   Add validate_cursor(). (Masanori Misono, closes #1372)
 Files:      src/move.c
 

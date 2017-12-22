@@ -201,7 +201,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 
 /* Ugly solution for "BalloonEval" not being defined while it's used in some
  * .pro files. */
-# ifndef FEAT_BEVAL
+# ifdef FEAT_BEVAL
+#  include "beval.pro"
+# else
 #  define BalloonEval int
 # endif
 
@@ -213,7 +215,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 
 # if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
-#  if defined(UNIX) || defined(MACOS)
+#  if defined(UNIX) || defined(MACOS_X)
 #   include "pty.pro"
 #  endif
 # endif
@@ -289,7 +291,7 @@ extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*s
 #ifdef MACOS_CONVERT
 # include "os_mac_conv.pro"
 #endif
-#if defined(MACOS_X_UNIX) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
+#if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
 /* functions in os_macosx.m */
 void clip_mch_lose_selection(VimClipboard *cbd);
 int clip_mch_own_selection(VimClipboard *cbd);

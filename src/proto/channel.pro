@@ -31,7 +31,6 @@ void channel_close(channel_T *channel, int invoke_close_cb);
 void channel_close_in(channel_T *channel);
 void channel_clear(channel_T *channel);
 void channel_free_all(void);
-char_u *channel_read_block(channel_T *channel, ch_part_T part, int timeout);
 void common_channel_read(typval_T *argvars, typval_T *rettv, int raw);
 channel_T *channel_fd2channel(sock_T fd, ch_part_T *partp);
 void channel_handle_events(int only_keep_open);

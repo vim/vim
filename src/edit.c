@@ -516,7 +516,7 @@ edit(
      */
     if (curbuf->b_p_iminsert == B_IMODE_LMAP)
 	State |= LANGMAP;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
     im_set_active(curbuf->b_p_iminsert == B_IMODE_IM);
 #endif
 
@@ -781,7 +781,7 @@ edit(
 #endif
 
 	/*
-	 * Get a character for Insert mode.  Ignore K_IGNORE.
+	 * Get a character for Insert mode.  Ignore K_IGNORE and K_NOP.
 	 */
 	if (c != K_CURSORHOLD)
 	    lastc = c;		/* remember the previous char for CTRL-D */
@@ -798,7 +798,7 @@ edit(
 	    do
 	    {
 		c = safe_vgetc();
-	    } while (c == K_IGNORE);
+	    } while (c == K_IGNORE || c == K_NOP);
 
 #ifdef FEAT_AUTOCMD
 	/* Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V. */
@@ -984,7 +984,7 @@ edit(
 	case ESC:	/* End input mode */
 	    if (echeck_abbr(ESC + ABBR_OFF))
 		break;
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 
 	case Ctrl_C:	/* End input mode */
 #ifdef FEAT_CMDWIN
@@ -1177,6 +1177,7 @@ doESCkey:
 	case K_LEFTDRAG:
 	case K_LEFTRELEASE:
 	case K_LEFTRELEASE_NM:
+	case K_MOUSEMOVE:
 	case K_MIDDLEMOUSE:
 	case K_MIDDLEDRAG:
 	case K_MIDDLERELEASE:
@@ -5774,13 +5775,16 @@ quote_meta(char_u *dest, char_u *src, int len)
 		if (ctrl_x_mode == CTRL_X_DICTIONARY
 					   || ctrl_x_mode == CTRL_X_THESAURUS)
 		    break;
+		/* FALLTHROUGH */
 	    case '~':
 		if (!p_magic)	/* quote these only if magic is set */
 		    break;
+		/* FALLTHROUGH */
 	    case '\\':
 		if (ctrl_x_mode == CTRL_X_DICTIONARY
 					   || ctrl_x_mode == CTRL_X_THESAURUS)
 		    break;
+		/* FALLTHROUGH */
 	    case '^':		/* currently it's not needed. */
 	    case '$':
 		m++;
@@ -5974,7 +5978,7 @@ insert_special(
      * Only use mod_mask for special keys, to avoid things like <S-Space>,
      * unless 'allow_modmask' is TRUE.
      */
-#ifdef MACOS
+#ifdef MACOS_X
     /* Command-key never produces a normal key */
     if (mod_mask & MOD_MASK_CMD)
 	allow_modmask = TRUE;
@@ -8368,7 +8372,7 @@ ins_reg(void)
     ++no_u_sync;
     if (regname == '=')
     {
-# ifdef USE_IM_CONTROL
+# ifdef FEAT_MBYTE
 	int	im_on = im_get_status();
 # endif
 	/* Sync undo when evaluating the expression calls setline() or
@@ -8376,7 +8380,7 @@ ins_reg(void)
 	u_sync_once = 2;
 
 	regname = get_expr_register();
-# ifdef USE_IM_CONTROL
+# ifdef FEAT_MBYTE
 	/* Restore the Input Method. */
 	if (im_on)
 	    im_set_active(TRUE);
@@ -8505,12 +8509,12 @@ ins_ctrl_hat(void)
 	{
 	    curbuf->b_p_iminsert = B_IMODE_LMAP;
 	    State |= LANGMAP;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 	    im_set_active(FALSE);
 #endif
 	}
     }
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
     else
     {
 	/* There are no ":lmap" mappings, toggle IM */
@@ -8657,7 +8661,7 @@ ins_esc(
 	}
     }
 
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
     /* Disable IM to allow typing English directly for Normal mode commands.
      * When ":lmap" is enabled don't change 'iminsert' (IM can be enabled as
      * well). */
@@ -8753,7 +8757,7 @@ ins_start_select(int c)
 	    case K_KPAGEUP:
 	    case K_PAGEDOWN:
 	    case K_KPAGEDOWN:
-# ifdef MACOS
+# ifdef MACOS_X
 	    case K_LEFT:
 	    case K_RIGHT:
 	    case K_UP:

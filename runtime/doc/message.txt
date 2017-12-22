@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.0.  Last change: 2017 Mar 25
+*message.txt*   For Vim version 8.0.  Last change: 2017 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -638,6 +638,9 @@ starts.  It can be fixed in one of these ways:
 - Disable "automatically adjust clock for daylight saving changes".
 - Just write the file again the next day.  Or set your clock to the next day,
   write the file twice and set the clock back.
+
+If you get W11 all the time, you may need to disable "Acronis Active
+Protection" or register Vim as a trusted service/application.
 
 							*W12*  >
   Warning: File "{filename}" has changed and the buffer was changed in Vim as well

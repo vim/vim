@@ -4115,7 +4115,7 @@ set_one_cmd_context(
 	case CMD_bunload:
 	    while ((xp->xp_pattern = vim_strchr(arg, ' ')) != NULL)
 		arg = xp->xp_pattern + 1;
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 	case CMD_buffer:
 	case CMD_sbuffer:
 	case CMD_checktime:
@@ -4521,13 +4521,14 @@ get_address(
 		    if (lnum != MAXLNUM)
 			curwin->w_cursor.lnum = lnum;
 		    /*
-		     * Start a forward search at the end of the line.
+		     * Start a forward search at the end of the line (unless
+		     * before the first line).
 		     * Start a backward search at the start of the line.
 		     * This makes sure we never match in the current
 		     * line, and can match anywhere in the
 		     * next/previous line.
 		     */
-		    if (c == '/')
+		    if (c == '/' && curwin->w_cursor.lnum > 0)
 			curwin->w_cursor.col = MAXCOL;
 		    else
 			curwin->w_cursor.col = 0;
@@ -10716,9 +10717,12 @@ eval_vars(
 		if (*s == '<')		/* "#<99" uses v:oldfiles */
 		    ++s;
 		i = (int)getdigits(&s);
+		if (s == src + 2 && src[1] == '-')
+		    /* just a minus sign, don't skip over it */
+		    s--;
 		*usedlen = (int)(s - src); /* length of what we expand */
 
-		if (src[1] == '<')
+		if (src[1] == '<' && i != 0)
 		{
 		    if (*usedlen < 2)
 		    {
@@ -10741,6 +10745,8 @@ eval_vars(
 		}
 		else
 		{
+		    if (i == 0 && src[1] == '<' && *usedlen > 1)
+			*usedlen = 1;
 		    buf = buflist_findnr(i);
 		    if (buf == NULL)
 		    {
@@ -11691,9 +11697,11 @@ put_view(
     }
 
     /*
-     * Local directory.
+     * Local directory, if the current flag is not view options or the "curdir"
+     * option is included.
      */
-    if (wp->w_localdir != NULL)
+    if (wp->w_localdir != NULL
+			    && (flagp != &vop_flags || (*flagp & SSOP_CURDIR)))
     {
 	if (fputs("lcd ", fd) < 0
 		|| ses_put_fname(fd, wp->w_localdir, flagp) == FAIL

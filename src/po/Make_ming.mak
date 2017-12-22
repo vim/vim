@@ -11,7 +11,11 @@
 #
 
 ifndef VIMRUNTIME
+ifeq (sh.exe, $(SHELL))
 VIMRUNTIME = ..\..\runtime
+else
+VIMRUNTIME = ../../runtime
+endif
 endif
 
 LANGUAGES = \
@@ -100,14 +104,27 @@ PACKAGE = vim
 #GETTEXT_PATH = C:/gettext-0.10.35-w32/win32/Release/
 #GETTEXT_PATH = C:/cygwin/bin/
 
+ifeq (sh.exe, $(SHELL))
 MSGFMT = set OLD_PO_FILE_INPUT=yes && $(GETTEXT_PATH)msgfmt -v
 XGETTEXT = set OLD_PO_FILE_INPUT=yes && set OLD_PO_FILE_OUTPUT=yes && $(GETTEXT_PATH)xgettext
 MSGMERGE = set OLD_PO_FILE_INPUT=yes && set OLD_PO_FILE_OUTPUT=yes && $(GETTEXT_PATH)msgmerge
+else
+MSGFMT = LANG=C OLD_PO_FILE_INPUT=yes $(GETTEXT_PATH)msgfmt -v
+XGETTEXT = LANG=C OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes $(GETTEXT_PATH)xgettext
+MSGMERGE = LANG=C OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes $(GETTEXT_PATH)msgmerge
+endif
 
+ifeq (sh.exe, $(SHELL))
 MV = move
 CP = copy
 RM = del
 MKD = mkdir
+else
+MV = mv -f
+CP = cp -f
+RM = rm -f
+MKD = mkdir -p
+endif
 
 .SUFFIXES:
 .SUFFIXES: .po .mo .pot
@@ -120,11 +137,11 @@ all: $(MOFILES)
 
 first_time:
 	$(XGETTEXT) --default-domain=$(LANGUAGE) \
-		--add-comments --keyword=_ --keyword=N_ $(wildcard ../*.c) ../if_perl.xs $(wildcard ../globals.h)
+		--add-comments --keyword=_ --keyword=N_ $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h
 
 $(LANGUAGES):
 	$(XGETTEXT) --default-domain=$(PACKAGE) \
-		--add-comments --keyword=_ --keyword=N_ $(wildcard ../*.c) ../if_perl.xs $(wildcard ../globals.h)
+		--add-comments --keyword=_ --keyword=N_ $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old
@@ -136,10 +153,18 @@ install:
 	$(MKD) $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 	$(CP) $(LANGUAGE).mo $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES\$(PACKAGE).mo
 
+ifeq (sh.exe, $(SHELL))
 install-all: all
 	FOR %%l IN ($(LANGUAGES)) DO @IF NOT EXIST $(VIMRUNTIME)\lang\%%l $(MKD) $(VIMRUNTIME)\lang\%%l
 	FOR %%l IN ($(LANGUAGES)) DO @IF NOT EXIST $(VIMRUNTIME)\lang\%%l\LC_MESSAGES $(MKD) $(VIMRUNTIME)\lang\%%l\LC_MESSAGES
 	FOR %%l IN ($(LANGUAGES)) DO @$(CP) %%l.mo $(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
+else
+install-all: all
+	for TARGET in $(LANGUAGES); do \
+		$(MKD) $(VIMRUNTIME)/lang/$$TARGET/LC_MESSAGES ; \
+		$(CP) $$TARGET.mo $(VIMRUNTIME)/lang/$$TARGET/LC_MESSAGES/$(PACKAGE).mo ; \
+	done
+endif
 
 clean:
 	$(RM) *.mo
