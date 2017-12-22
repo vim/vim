@@ -1988,16 +1988,21 @@ do_one_cmd(
 
 #ifdef FEAT_EVAL
     ea.skip = did_emsg || got_int || did_throw;
-    if (!ea.skip)
-    {
-	if (ea.cmdidx == CMD_else || ea.cmdidx == CMD_elseif)
-	    ea.skip = cstack->cs_idx >= 0
+    if (ea.cmdidx == CMD_catch)
+	ea.skip = !ea.skip && (cstack->cs_idx >= 0
+			 && !(cstack->cs_flags[cstack->cs_idx] & CSF_THROWN));
+    else if (ea.cmdidx == CMD_else || ea.cmdidx == CMD_elseif)
+	ea.skip = ea.skip || (cstack->cs_idx >= 0
 			  && (cstack->cs_flags[cstack->cs_idx]
-						   & (CSF_ACTIVE | CSF_TRUE));
-	else if (ea.cmdidx != CMD_endif)
-	    ea.skip = cstack->cs_idx >= 0
-			  && !(cstack->cs_flags[cstack->cs_idx] & CSF_ACTIVE);
-    }
+						  & (CSF_ACTIVE | CSF_TRUE)));
+    else if (ea.cmdidx == CMD_finally)
+	ea.skip = FALSE;
+    else if (ea.cmdidx != CMD_endif
+	    && ea.cmdidx != CMD_endfor
+	    && ea.cmdidx != CMD_endtry
+	    && ea.cmdidx != CMD_endwhile)
+	ea.skip = ea.skip || (cstack->cs_idx >= 0
+			 && !(cstack->cs_flags[cstack->cs_idx] & CSF_ACTIVE));
 #else
     ea.skip = (if_level > 0);
 #endif
