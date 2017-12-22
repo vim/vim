@@ -1622,11 +1622,17 @@ strup_save(char_u *orig)
 		char_u	*s;
 
 		c = utf_ptr2char(p);
+		l = utf_ptr2len(p);
+		if (c == 0)
+		{
+		    /* overlong sequence, use only the first byte */
+		    c = *p;
+		    l = 1;
+		}
 		uc = utf_toupper(c);
 
 		/* Reallocate string when byte count changes.  This is rare,
 		 * thus it's OK to do another malloc()/free(). */
-		l = utf_ptr2len(p);
 		newl = utf_char2len(uc);
 		if (newl != l)
 		{
@@ -1685,11 +1691,17 @@ strlow_save(char_u *orig)
 		char_u	*s;
 
 		c = utf_ptr2char(p);
+		l = utf_ptr2len(p);
+		if (c == 0)
+		{
+		    /* overlong sequence, use only the first byte */
+		    c = *p;
+		    l = 1;
+		}
 		lc = utf_tolower(c);
 
 		/* Reallocate string when byte count changes.  This is rare,
 		 * thus it's OK to do another malloc()/free(). */
-		l = utf_ptr2len(p);
 		newl = utf_char2len(lc);
 		if (newl != l)
 		{
