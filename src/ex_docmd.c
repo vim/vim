@@ -1975,6 +1975,13 @@ do_one_cmd(
     }
     after_modifier = ea.cmd;
 
+#ifdef FEAT_EVAL
+    ea.skip = did_emsg || got_int || did_throw || (cstack->cs_idx >= 0
+			 && !(cstack->cs_flags[cstack->cs_idx] & CSF_ACTIVE));
+#else
+    ea.skip = (if_level > 0);
+#endif
+
 /*
  * 3. Skip over the range to find the command.  Let "p" point to after it.
  *
@@ -1987,35 +1994,34 @@ do_one_cmd(
     p = find_command(&ea, NULL);
 
 #ifdef FEAT_EVAL
-    ea.skip = did_emsg || got_int || did_throw;
-    if (ea.cmdidx == CMD_catch)
-	ea.skip = !ea.skip && (cstack->cs_idx >= 0
-			 && !(cstack->cs_flags[cstack->cs_idx] & CSF_THROWN));
-    else if (ea.cmdidx == CMD_else || ea.cmdidx == CMD_elseif)
-	ea.skip = ea.skip || (cstack->cs_idx >= 0
-			  && (cstack->cs_flags[cstack->cs_idx]
-						  & (CSF_ACTIVE | CSF_TRUE)));
-    else if (ea.cmdidx == CMD_finally)
-	ea.skip = FALSE;
-    else if (ea.cmdidx != CMD_endif
-	    && ea.cmdidx != CMD_endfor
-	    && ea.cmdidx != CMD_endtry
-	    && ea.cmdidx != CMD_endwhile)
-	ea.skip = ea.skip || (cstack->cs_idx >= 0
-			 && !(cstack->cs_flags[cstack->cs_idx] & CSF_ACTIVE));
-#else
-    ea.skip = (if_level > 0);
-#endif
-
-#ifdef FEAT_EVAL
 # ifdef FEAT_PROFILE
-    /* Count this line for profiling if ea.skip is FALSE. */
-    if (do_profiling == PROF_YES && !ea.skip)
+    /* Count this line for profiling if will_exec is TRUE. */
+    if (do_profiling == PROF_YES)
     {
-	if (getline_equal(fgetline, cookie, get_func_line))
-	    func_line_exec(getline_cookie(fgetline, cookie));
-	else if (getline_equal(fgetline, cookie, getsourceline))
-	    script_line_exec();
+	int will_exec = !(did_emsg || got_int || did_throw);
+
+	if (ea.cmdidx == CMD_catch)
+	    will_exec = !will_exec || (cstack->cs_idx >= 0
+			  && (cstack->cs_flags[cstack->cs_idx] & CSF_THROWN));
+	else if (ea.cmdidx == CMD_else || ea.cmdidx == CMD_elseif)
+	    will_exec = will_exec && (cstack->cs_idx >= 0
+			  && !(cstack->cs_flags[cstack->cs_idx]
+						  & (CSF_ACTIVE | CSF_TRUE)));
+	else if (ea.cmdidx == CMD_finally)
+	    will_exec = TRUE;
+	else if (ea.cmdidx != CMD_endif
+		&& ea.cmdidx != CMD_endfor
+		&& ea.cmdidx != CMD_endtry
+		&& ea.cmdidx != CMD_endwhile)
+	    will_exec = !ea.skip;
+
+	if (will_exec)
+	{
+	    if (getline_equal(fgetline, cookie, get_func_line))
+		func_line_exec(getline_cookie(fgetline, cookie));
+	    else if (getline_equal(fgetline, cookie, getsourceline))
+		script_line_exec();
+	}
     }
 #endif
 
