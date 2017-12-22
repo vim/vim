@@ -8041,7 +8041,7 @@ screen_start_highlight(int attr)
 		else
 		    attr = aep->ae_attr;
 	    }
-	    if ((attr & HL_BOLD) && T_MD != NULL)	/* bold */
+	    if ((attr & HL_BOLD) && *T_MD != NUL)	/* bold */
 		out_str(T_MD);
 	    else if (aep != NULL && cterm_normal_fg_bold &&
 #ifdef FEAT_TERMGUICOLORS
@@ -8056,19 +8056,19 @@ screen_start_highlight(int attr)
 		/* If the Normal FG color has BOLD attribute and the new HL
 		 * has a FG color defined, clear BOLD. */
 		out_str(T_ME);
-	    if ((attr & HL_STANDOUT) && T_SO != NULL)	/* standout */
+	    if ((attr & HL_STANDOUT) && *T_SO != NUL)	/* standout */
 		out_str(T_SO);
-	    if ((attr & HL_UNDERCURL) && T_UCS != NULL) /* undercurl */
+	    if ((attr & HL_UNDERCURL) && *T_UCS != NUL) /* undercurl */
 		out_str(T_UCS);
 	    if (((attr & HL_UNDERLINE)	    /* underline or undercurl */
-			|| ((attr & HL_UNDERCURL) && T_UCS == NULL))
-		    && T_US != NULL)
+			|| ((attr & HL_UNDERCURL) && *T_UCS == NUL))
+		    && *T_US != NUL)
 		out_str(T_US);
-	    if ((attr & HL_ITALIC) && T_CZH != NULL)	/* italic */
+	    if ((attr & HL_ITALIC) && *T_CZH != NUL)	/* italic */
 		out_str(T_CZH);
-	    if ((attr & HL_INVERSE) && T_MR != NULL)	/* inverse (reverse) */
+	    if ((attr & HL_INVERSE) && *T_MR != NUL)	/* inverse (reverse) */
 		out_str(T_MR);
-	    if ((attr & HL_STRIKETHROUGH) && T_STS != NULL)	/* strike */
+	    if ((attr & HL_STRIKETHROUGH) && *T_STS != NUL)	/* strike */
 		out_str(T_STS);
 
 	    /*
@@ -8180,7 +8180,7 @@ screen_stop_highlight(void)
 		else
 		    out_str(T_SE);
 	    }
-	    if ((screen_attr & HL_UNDERCURL) && T_UCE != NULL)
+	    if ((screen_attr & HL_UNDERCURL) && *T_UCE != NUL)
 	    {
 		if (STRCMP(T_UCE, T_ME) == 0)
 		    do_ME = TRUE;
@@ -8188,7 +8188,7 @@ screen_stop_highlight(void)
 		    out_str(T_UCE);
 	    }
 	    if ((screen_attr & HL_UNDERLINE)
-			    || ((screen_attr & HL_UNDERCURL) && T_UCE == NULL))
+			    || ((screen_attr & HL_UNDERCURL) && *T_UCE == NUL))
 	    {
 		if (STRCMP(T_UE, T_ME) == 0)
 		    do_ME = TRUE;
