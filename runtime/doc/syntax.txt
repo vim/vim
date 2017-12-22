@@ -5031,6 +5031,8 @@ TabLine		tab pages line, not active tab page label
 TabLineFill	tab pages line, where there are no labels
 							*hl-TabLineSel*
 TabLineSel	tab pages line, active tab page label
+							*hl-Terminal*
+Terminal	|terminal| window (see |terminal-size-color|)
 							*hl-Title*
 Title		titles for output from ":set all", ":autocmd" etc.
 							*hl-Visual*
