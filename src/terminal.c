@@ -495,6 +495,10 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 	do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
 	return NULL;
     }
+
+#ifdef FEAT_AUTOCMD
+    apply_autocmds(EVENT_TERMINALOPEN, NULL, NULL, FALSE, curbuf);
+#endif
     return newbuf;
 }
 

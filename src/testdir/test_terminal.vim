@@ -795,3 +795,21 @@ func Test_terminal_aucmd_on_close()
   au! repro
   delfunc Nop
 endfunc
+
+func Test_terminalopen()
+  augroup repro
+    au!
+    au TerminalOpen * let s:called += 1
+  augroup END
+
+  let s:called = 0
+
+  terminal
+  bwipe!
+  call term_start(&shell)
+  bwipe!
+
+  call assert_equal(2, s:called)
+  unlet s:called
+  au! repro
+endfunction
