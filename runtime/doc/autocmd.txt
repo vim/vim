@@ -938,7 +938,7 @@ TermChanged			After the value of 'term' has changed.  Useful
 				colors, fonts and other terminal-dependent
 				settings.  Executed for all loaded buffers.
 							*TerminalOpen*
-TerminalOpen			Just after :terminal opened. This event is
+TerminalOpen			Just after `:terminal` opened. This event is
 				triggered even if it's opended with ++hidden
 				option.
 							*TermResponse*
