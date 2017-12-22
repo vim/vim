@@ -129,9 +129,9 @@ func Test_profile_func_with_ifelse()
 
   let lines = readfile('Xprofile_func.log')
 
-  " - Foo1() should pass 'if' branch.
-  " - Foo2() should pass 'elseif' branch.
-  " - Foo3() should pass 'else' branch.
+  " - Foo1() should pass 'if' block.
+  " - Foo2() should pass 'elseif' block.
+  " - Foo3() should pass 'else' block.
   call assert_equal(54, len(lines))
 
   call assert_equal('FUNCTION  Foo1()',                            lines[0])
@@ -175,6 +175,118 @@ func Test_profile_func_with_ifelse()
   call assert_match('^\s*1\s\+.*\selse$',                          lines[38])
   call assert_match('^\s*1\s\+.*\s  let x = 2$',                   lines[39])
   call assert_match('^\s*1\s\+.*\sendif$',                         lines[40])
+  call assert_equal('',                                            lines[41])
+  call assert_equal('FUNCTIONS SORTED ON TOTAL TIME',              lines[42])
+  call assert_equal('count  total (s)   self (s)  function',       lines[43])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Foo.()$',              lines[44])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Foo.()$',              lines[45])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Foo.()$',              lines[46])
+  call assert_equal('',                                            lines[47])
+  call assert_equal('FUNCTIONS SORTED ON SELF TIME',               lines[48])
+  call assert_equal('count  total (s)   self (s)  function',       lines[49])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Foo.()$',              lines[50])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Foo.()$',              lines[51])
+  call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Foo.()$',              lines[52])
+  call assert_equal('',                                            lines[53])
+
+  call delete('Xprofile_func.vim')
+  call delete('Xprofile_func.log')
+endfunc
+
+func Test_profile_func_with_trycatch()
+  let lines = [
+    \ "func! Foo1()",
+    \ "  try",
+    \ "    let x = 0",
+    \ "  catch",
+    \ "    let x = 1",
+    \ "  finally",
+    \ "    let x = 2",
+    \ "  endtry",
+    \ "endfunc",
+    \ "func! Foo2()",
+    \ "  try",
+    \ "    throw 0",
+    \ "  catch",
+    \ "    let x = 1",
+    \ "  finally",
+    \ "    let x = 2",
+    \ "  endtry",
+    \ "endfunc",
+    \ "func! Foo3()",
+    \ "  try",
+    \ "    throw 0",
+    \ "  catch",
+    \ "    throw 1",
+    \ "  finally",
+    \ "    let x = 2",
+    \ "  endtry",
+    \ "endfunc",
+    \ "call Foo1()",
+    \ "call Foo2()",
+    \ "try",
+    \ "  call Foo3()",
+    \ "catch",
+    \ "endtry",
+    \ ]
+
+  call writefile(lines, 'Xprofile_func.vim')
+  call system(v:progpath
+    \ . ' -es -u NONE -U NONE -i NONE --noplugin'
+    \ . ' -c "profile start Xprofile_func.log"'
+    \ . ' -c "profile func Foo*"'
+    \ . ' -c "so Xprofile_func.vim"'
+    \ . ' -c "qall!"')
+  call assert_equal(0, v:shell_error)
+
+  let lines = readfile('Xprofile_func.log')
+
+  " - Foo1() should pass 'try' 'finally' blocks.
+  " - Foo2() should pass 'catch' 'finally' blocks.
+  " - Foo3() should not pass 'endtry'.
+  call assert_equal(54, len(lines))
+
+  call assert_equal('FUNCTION  Foo1()',                            lines[0])
+  call assert_equal('Called 1 time',                               lines[1])
+  call assert_match('^Total time:\s\+\d\+\.\d\+$',                 lines[2])
+  call assert_match('^ Self time:\s\+\d\+\.\d\+$',                 lines[3])
+  call assert_equal('',                                            lines[4])
+  call assert_equal('count  total (s)   self (s)',                 lines[5])
+  call assert_match('^\s*1\s\+.*\stry$',                           lines[6])
+  call assert_match('^\s*1\s\+.*\s  let x = 0$',                   lines[7])
+  call assert_match(        '^\s\+catch$',                         lines[8])
+  call assert_match(          '^\s\+let x = 1$',                   lines[9])
+  call assert_match('^\s*1\s\+.*\sfinally$',                       lines[10])
+  call assert_match('^\s*1\s\+.*\s  let x = 2$',                   lines[11])
+  call assert_match('^\s*1\s\+.*\sendtry$',                        lines[12])
+  call assert_equal('',                                            lines[13])
+  call assert_equal('FUNCTION  Foo2()',                            lines[14])
+  call assert_equal('Called 1 time',                               lines[15])
+  call assert_match('^Total time:\s\+\d\+\.\d\+$',                 lines[16])
+  call assert_match('^ Self time:\s\+\d\+\.\d\+$',                 lines[17])
+  call assert_equal('',                                            lines[18])
+  call assert_equal('count  total (s)   self (s)',                 lines[19])
+  call assert_match('^\s*1\s\+.*\stry$',                           lines[20])
+  call assert_match('^\s*1\s\+.*\s  throw 0$',                     lines[21])
+  call assert_match('^\s*1\s\+.*\scatch$',                         lines[22])
+  call assert_match('^\s*1\s\+.*\s  let x = 1$',                   lines[23])
+  call assert_match('^\s*1\s\+.*\sfinally$',                       lines[24])
+  call assert_match('^\s*1\s\+.*\s  let x = 2$',                   lines[25])
+  call assert_match('^\s*1\s\+.*\sendtry$',                        lines[26])
+  call assert_equal('',                                            lines[27])
+  call assert_equal('FUNCTION  Foo3()',                            lines[28])
+  call assert_equal('Called 1 time',                               lines[29])
+  call assert_match('^Total time:\s\+\d\+\.\d\+$',                 lines[30])
+  call assert_match('^ Self time:\s\+\d\+\.\d\+$',                 lines[31])
+  call assert_equal('',                                            lines[32])
+  call assert_equal('count  total (s)   self (s)',                 lines[33])
+  call assert_match('^\s*1\s\+.*\stry$',                           lines[34])
+  call assert_match('^\s*1\s\+.*\s  throw 0$',                     lines[35])
+  call assert_match('^\s*1\s\+.*\scatch$',                         lines[36])
+  call assert_match('^\s*1\s\+.*\s  throw 1$',                     lines[37])
+  call assert_match('^\s*1\s\+.*\sfinally$',                       lines[38])
+  call assert_match('^\s*1\s\+.*\s  let x = 2$',                   lines[39])
+  call assert_match(        '^\s\+endtry$',                        lines[40])
   call assert_equal('',                                            lines[41])
   call assert_equal('FUNCTIONS SORTED ON TOTAL TIME',              lines[42])
   call assert_equal('count  total (s)   self (s)  function',       lines[43])
