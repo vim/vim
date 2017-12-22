@@ -268,6 +268,10 @@ func Test_tolower()
   " Ⱥ (U+023A) and Ⱦ (U+023E) are the *only* code points to increase
   " in length (2 to 3 bytes) when lowercased. So let's test them.
   call assert_equal("ⱥ ⱦ", tolower("Ⱥ Ⱦ"))
+
+  " This call to tolower with invalid utf8 sequence used to cause access to
+  " invalid memory.
+  call tolower("\xC0\x80\xC0")
 endfunc
 
 func Test_toupper()
@@ -338,6 +342,10 @@ func Test_toupper()
   call assert_equal("ZŹŻŽƵẐẔ", toupper("ZŹŻŽƵẐẔ"))
 
   call assert_equal("Ⱥ Ⱦ", toupper("ⱥ ⱦ"))
+
+  " This call to toupper with invalid utf8 sequence used to cause access to
+  " invalid memory.
+  call toupper("\xC0\x80\xC0")
 endfunc
 
 " Tests for the mode() function
