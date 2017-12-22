@@ -1630,7 +1630,7 @@ strup_save(char_u *orig)
 		newl = utf_char2len(uc);
 		if (newl != l)
 		{
-		    s = alloc((unsigned)STRLEN(res) + 1 + newl - l);
+		    s = alloc((unsigned)STRLEN(res + 1) + 2 + newl - l);
 		    if (s == NULL)
 		    {
 			vim_free(res);
@@ -1693,7 +1693,7 @@ strlow_save(char_u *orig)
 		newl = utf_char2len(lc);
 		if (newl != l)
 		{
-		    s = alloc((unsigned)STRLEN(res) + 1 + newl - l);
+		    s = alloc((unsigned)STRLEN(res + 1) + 2 + newl - l);
 		    if (s == NULL)
 		    {
 			vim_free(res);
