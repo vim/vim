@@ -94,6 +94,7 @@ NEW_TESTS = test_arabic.res \
 	    test_edit.res \
 	    test_erasebackword.res \
 	    test_escaped_glob.res \
+	    test_eval_stuff.res \
 	    test_exec_while_if.res \
 	    test_exists.res \
 	    test_exists_autocmd.res \

@@ -2147,6 +2147,7 @@ test_arglist \
 	test_edit \
 	test_erasebackword \
 	test_escaped_glob \
+	test_eval_stuff \
 	test_ex_undo \
 	test_ex_z \
 	test_exec_while_if \
