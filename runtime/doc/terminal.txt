@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Dec 17
+*terminal.txt*	For Vim version 8.0.  Last change: 2017 Dec 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -122,7 +122,8 @@ and background colors are taken from Vim, the Normal highlight group.
 For a color terminal the 'background' option is used to decide whether the
 terminal window will start with a white or black background.
 
-To use a different color the Terminal highlight group can be used: >
+To use a different color the Terminal highlight group can be used, for
+example: >
     hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
 
 

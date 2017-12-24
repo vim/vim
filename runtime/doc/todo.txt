@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Dec 17
+*todo.txt*      For Vim version 8.0.  Last change: 2017 Dec 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -142,11 +142,19 @@ Suggested by Hiroki Kokubun:
 Include solarized color scheme?, it does not support termguicolors.
 - Sanitized version of pablo (Lifepillar, 2017 Nov 21)
 
-heap use after free. (gy741, #2447)
-heap use after free in set_bufref (gy741, #2448)
-    reproduces with valgrind (Dominique)
-heap use after free in getout. (gy741, #2449)
-    reproduces with valgrind (Dominique)
+Reproducible:
+    invalid memory access in regexp with zero-width.
+	reproduced by Dominique, 2017 Dec 23
+    heap-use-after-free in win_equal_rec (#2467)
+        au* 0 vs¡
+	ar0
+	arga
+	al
+	al
+
+Errors found with random data:
+    heap-buffer-overflow in alist_add (#2472)
+    heap-buffer-overflow in del_bytes (#2466)
 
 Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in do_sub() (#2249)
@@ -155,19 +163,12 @@ Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in nfa_regatom() (#2251)
 - undefined left shift in get_string_tv() (#2250)
 
-Triggering CursorHoldI happens too often in the GUI. (#2451).
-Should move code from os_unix.c mch_inchar() up into common use, it's not
-really machine specific. Also the part of WaitForChar(), it deals with timers
-and is also for all machines.
-
-When starting with --clean packages under "start" are not loaded.  Make this
-work:  :packadd START {name}  similar to :runtime START name
+balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
+20, #2481)
+Also see #2352, want better control over balloon, perhaps set the position.
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
-
-Patch to add changedtick var to quickfix list. (Yegappan Lakshmanan, 2017 Nov
-18, #2391)
 
 7   Add a watchpoint in the debug mode: An expression that breaks execution
     when evaluating to non-zero.  Add the "watchadd expr" command, stop when
@@ -212,6 +213,9 @@ Error in emsg with buggy script. (Dominique, 2017 Apr 30)
 Patch to avoid clearing the intro message on Win32 console.
 (Ken Takata, 2017 Nov 14)
 
+Patch to fix encoding in print document name (Yasuhiro Matsumoto, 2017 Dec 20,
+#2478)
+
 Patch to copy buffer-local options before buffer leaves the window. (Bjorn
 Linse, 2017 Nov 14, #2336)
 
@@ -232,6 +236,9 @@ Ask whether to use Windows or Vim key behavior?
 
 Patch for improving detecting Ruby on Mac in configure. (Ilya Mikhaltsou, 2017
 Nov 21)
+
+Add a ModeChanged autocommand that has an argument indicating the old and new
+mode.  Also used for switching Terminal mode.
 
 When using command line window, CmdlineLeave is triggered without
 CmdlineEnter.  (xtal8, 2017 Oct 30, #2263)
@@ -271,6 +278,7 @@ The ":move" command does not honor closed folds. (Ryan Lue, #2351)
 Memory leaks in test_channel? (or is it because of fork())
 Memory leak in test_arabic.
 Using uninitialized value in test_crypt.
+Memory leaks in test_escaped_glob
 
 Patch to clear background when "guibg=NONE" is used and 'termguicolors' is
 set.
@@ -1051,8 +1059,6 @@ Patch to open folds for 'incsearch'. (Christian Brabandt, 2015 Jan 6)
 
 Patch for building a 32bit Vim with 64bit MingW compiler.
 (Michael Soyka, 2014 Oct 15)
-
-Delete old code in os_msdos.c, mch_FullName().
 
 Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)

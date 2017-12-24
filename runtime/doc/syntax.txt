@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.0.  Last change: 2017 Sep 30
+*syntax.txt*	For Vim version 8.0.  Last change: 2017 Dec 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5031,6 +5031,8 @@ TabLine		tab pages line, not active tab page label
 TabLineFill	tab pages line, where there are no labels
 							*hl-TabLineSel*
 TabLineSel	tab pages line, active tab page label
+							*hl-Terminal*
+Terminal	|terminal| window (see |terminal-size-color|)
 							*hl-Title*
 Title		titles for output from ":set all", ":autocmd" etc.
 							*hl-Visual*
