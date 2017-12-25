@@ -6081,7 +6081,6 @@ grab_file_name(long count, linenr_T *file_lnum)
 						     count, curbuf->b_ffname);
     }
     return file_name_at_cursor(options | FNAME_HYP, count, file_lnum);
-
 }
 
 /*
@@ -6120,6 +6119,8 @@ file_name_in_line(
 {
     char_u	*ptr;
     int		len;
+    int		in_type = TRUE;
+    int		is_url = FALSE;
 
     /*
      * search forward for what could be the start of a file name
@@ -6158,8 +6159,19 @@ file_name_in_line(
      */
     len = 0;
     while (vim_isfilec(ptr[len]) || (ptr[len] == '\\' && ptr[len + 1] == ' ')
-			 || ((options & FNAME_HYP) && path_is_url(ptr + len)))
+			 || ((options & FNAME_HYP) && path_is_url(ptr + len))
+			 || (is_url && vim_strchr((char_u *)"?&=", ptr[len]) != NULL))
     {
+	/* After type:// we also include ?, & and = as valid characters, so that
+	 * http://google.com?q=this&that=ok works. */
+	if ((ptr[len] >= 'A' && ptr[len] <= 'Z') || (ptr[len] >= 'a' && ptr[len] <= 'z'))
+	{
+	    if (in_type && path_is_url(ptr + len + 1))
+		is_url = TRUE;
+	}
+	else
+	    in_type = FALSE;
+
 	if (ptr[len] == '\\')
 	    /* Skip over the "\" in "\ ". */
 	    ++len;
