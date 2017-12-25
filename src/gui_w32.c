@@ -3143,14 +3143,11 @@ gui_mch_delete_lines(
 	    gui_redraw(rc.left, rc.top,
 		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
 	    gui_undraw_cursor();
-	    DWriteContext_Flush(s_dwc);
 	}
 	else
-	{
-	    DWriteContext_Flush(s_dwc);
-	    ScrollWindowEx(s_textArea, 0, -num_lines * gui.char_height,
-				    &rc, &rc, NULL, NULL, 0);
-	}
+	    DWriteContext_Scroll(s_dwc, 0, -num_lines * gui.char_height, &rc);
+
+	DWriteContext_Flush(s_dwc);
     }
     else
 #endif
@@ -3196,14 +3193,11 @@ gui_mch_insert_lines(
 	    gui_redraw(rc.left, rc.top,
 		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
 	    gui_undraw_cursor();
-	    DWriteContext_Flush(s_dwc);
 	}
 	else
-	{
-	    DWriteContext_Flush(s_dwc);
-	    ScrollWindowEx(s_textArea, 0, num_lines * gui.char_height,
-				    &rc, &rc, NULL, NULL, 0);
-	}
+	    DWriteContext_Scroll(s_dwc, 0, num_lines * gui.char_height, &rc);
+
+	DWriteContext_Flush(s_dwc);
     }
     else
 #endif

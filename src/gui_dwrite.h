@@ -74,6 +74,7 @@ void DWriteContext_FillRect(DWriteContext *ctx, const RECT *rc, COLORREF color);
 void DWriteContext_DrawLine(DWriteContext *ctx, int x1, int y1, int x2, int y2,
 	COLORREF color);
 void DWriteContext_SetPixel(DWriteContext *ctx, int x, int y, COLORREF color);
+void DWriteContext_Scroll(DWriteContext *ctx, int x, int y, const RECT *rc);
 void DWriteContext_Flush(DWriteContext *ctx);
 void DWriteContext_Close(DWriteContext *ctx);
 
