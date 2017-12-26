@@ -36,7 +36,6 @@
 static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
-static int s_directx_scrlines = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL && enc_utf8)
 static int directx_enabled(void);
 static void directx_binddc(void);
@@ -61,7 +60,6 @@ gui_mch_set_rendering_options(char_u *s)
     int	    dx_geom = 0;
     int	    dx_renmode = 0;
     int	    dx_taamode = 0;
-    int	    dx_scrlines = 0;
 
     /* parse string as rendering options. */
     for (p = s; p != NULL && *p != NUL; )
@@ -124,7 +122,7 @@ gui_mch_set_rendering_options(char_u *s)
 	}
 	else if (STRCMP(name, "scrlines") == 0)
 	{
-	    dx_scrlines = atoi((char *)value);
+	    /* Deprecated.  Simply ignore it. */
 	}
 	else
 	    return FAIL;
@@ -159,7 +157,6 @@ gui_mch_set_rendering_options(char_u *s)
 	}
     }
     s_directx_enabled = dx_enable;
-    s_directx_scrlines = dx_scrlines;
 
     return OK;
 # else
@@ -3138,15 +3135,7 @@ gui_mch_delete_lines(
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
     {
-	if (s_directx_scrlines > 0 && s_directx_scrlines <= num_lines)
-	{
-	    gui_redraw(rc.left, rc.top,
-		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
-	    gui_undraw_cursor();
-	}
-	else
-	    DWriteContext_Scroll(s_dwc, 0, -num_lines * gui.char_height, &rc);
-
+	DWriteContext_Scroll(s_dwc, 0, -num_lines * gui.char_height, &rc);
 	DWriteContext_Flush(s_dwc);
     }
     else
@@ -3188,15 +3177,7 @@ gui_mch_insert_lines(
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
     {
-	if (s_directx_scrlines > 0 && s_directx_scrlines <= num_lines)
-	{
-	    gui_redraw(rc.left, rc.top,
-		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
-	    gui_undraw_cursor();
-	}
-	else
-	    DWriteContext_Scroll(s_dwc, 0, num_lines * gui.char_height, &rc);
-
+	DWriteContext_Scroll(s_dwc, 0, num_lines * gui.char_height, &rc);
 	DWriteContext_Flush(s_dwc);
     }
     else
