@@ -285,6 +285,7 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     buf_T	*old_curbuf = NULL;
     int		res;
     buf_T	*newbuf;
+    char_u	*cmd = NULL;
 
     if (check_restricted() || check_secure())
 	return NULL;
@@ -293,6 +294,19 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 					 == (JO_IN_IO + JO_OUT_IO + JO_ERR_IO)
 	|| (!(opt->jo_set & JO_OUT_IO) && (opt->jo_set & JO_OUT_BUF))
 	|| (!(opt->jo_set & JO_ERR_IO) && (opt->jo_set & JO_ERR_BUF)))
+    {
+	EMSG(_(e_invarg));
+	return NULL;
+    }
+
+    if (argvar->v_type == VAR_STRING)
+	cmd = argvar->vval.v_string;
+    else if (argvar->v_type == VAR_LIST
+	    && argvar->vval.v_list != NULL
+	    && argvar->vval.v_list->lv_len >= 1)
+	cmd = get_tv_string_chk(&argvar->vval.v_list->lv_first->li_tv);
+
+    if (cmd == NULL || *cmd == NUL)
     {
 	EMSG(_(e_invarg));
 	return NULL;
