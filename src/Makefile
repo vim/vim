@@ -2102,7 +2102,7 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 test1 \
 	test_eval \
 	test3 test11 test14 test17 \
-	test29 test30 test36 test37 test39 \
+	test29 test30 test37 test39 \
 	test42 test44 test48 test49 \
 	test50 test52 test59 \
 	test64 test69 \

@@ -76,7 +76,7 @@ VIMPROG = <->vim.exe
 SCRIPT = test1.out test3.out \
        test14.out \
        test29.out \
-       test30.out test36.out test37.out test39.out \
+       test30.out test37.out test39.out \
        test42.out test44.out test48.out test49.out \
        test64.out test69.out \
        test72.out test77a.out test88.out \
