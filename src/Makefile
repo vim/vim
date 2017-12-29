@@ -2104,7 +2104,7 @@ test1 \
 	test3 test11 test14 test17 \
 	test29 test30 test37 test39 \
 	test42 test44 test48 test49 \
-	test50 test52 test59 \
+	test52 test59 \
 	test64 test69 \
 	test70 test72 \
 	test85 test86 test87 test88 \

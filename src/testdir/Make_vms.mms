@@ -108,7 +108,7 @@ SCRIPT_UNIX = test10.out test17.out test27.out test49.out
 .ENDIF
 
 .IFDEF WANT_WIN
-SCRIPT_WIN = test50.out test52.out
+SCRIPT_WIN = test52.out
 .ENDIF
 
 .IFDEF WANT_SPELL

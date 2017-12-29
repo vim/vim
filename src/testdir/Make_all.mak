@@ -55,7 +55,7 @@ SCRIPTS_MORE4 = \
 
 
 # Tests specifically for MS-Windows.
-SCRIPTS_WIN32 = test50.out
+SCRIPTS_WIN32 =
 
 
 # Tests for the GUI.
@@ -156,6 +156,7 @@ NEW_TESTS = test_arabic.res \
 	    test_ruby.res \
 	    test_scrollbind.res \
 	    test_search.res \
+	    test_shortpathname.res \
 	    test_signs.res \
 	    test_smartindent.res \
 	    test_spell.res \
