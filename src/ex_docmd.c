@@ -7652,10 +7652,6 @@ tabpage_close_other(tabpage_T *tp, int forceit)
 	    break;
     }
 
-#ifdef FEAT_AUTOCMD
-    apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
-#endif
-
     redraw_tabline = TRUE;
     if (h != tabline_height())
 	shell_new_rows();

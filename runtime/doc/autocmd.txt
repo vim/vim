@@ -917,7 +917,8 @@ Syntax				When the 'syntax' option has been set.  The
 				the new value of 'syntax'.
 				See |:syn-on|.
 							*TabClosed*
-TabClosed			After closing a tab page.
+TabClosed			After closing a tab page. <afile> can be used
+				for the tab page number.
 							*TabEnter*
 TabEnter			Just after entering a tab page. |tab-page|
 				After triggering the WinEnter and before

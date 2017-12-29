@@ -2155,11 +2155,6 @@ close_windows(
 
     --RedrawingDisabled;
 
-#ifdef FEAT_AUTOCMD
-    if (count != tabpage_index(NULL))
-	apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
-#endif
-
     redraw_tabline = TRUE;
     if (h != tabline_height())
 	shell_new_rows();
@@ -2242,7 +2237,6 @@ close_last_window_tabpage(
 	/* Since goto_tabpage_tp above did not trigger *Enter autocommands, do
 	 * that now. */
 #ifdef FEAT_AUTOCMD
-	apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
 	if (old_curbuf != curbuf)
@@ -2528,6 +2522,10 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     /* When closing the last window in a tab page remove the tab page. */
     if (tp->tp_firstwin == tp->tp_lastwin)
     {
+#ifdef FEAT_AUTOCMD
+	char_u prev_idx[NUMBUFLEN];
+       vim_snprintf((char *)prev_idx, NUMBUFLEN, "%i", tabpage_index(tp));
+#endif
 	if (tp == first_tabpage)
 	    first_tabpage = tp->tp_next;
 	else
@@ -2543,6 +2541,9 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	    ptp->tp_next = tp->tp_next;
 	}
 	free_tp = TRUE;
+#ifdef FEAT_AUTOCMD
+	apply_autocmds(EVENT_TABCLOSED, prev_idx, prev_idx, FALSE, curbuf);
+#endif
     }
 
     /* Free the memory used for the window. */
