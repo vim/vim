@@ -182,11 +182,6 @@ static void delete_lines(unsigned cLines);
 static void gotoxy(unsigned x, unsigned y);
 static void normvideo(void);
 static void textattr(WORD wAttr);
-static void textattr_normal(void);
-static void textattr_reverse(void);
-static void textattr_bold(void);
-static void textattr_italic(void);
-static void textattr_underscore(void);
 static void textcolor(WORD wAttr);
 static void textbackground(WORD wAttr);
 static void standout(void);
@@ -2610,6 +2605,10 @@ mch_init(void)
 	cterm_normal_fg_color = (g_attrCurrent & 0xf) + 1;
     if (cterm_normal_bg_color == 0)
 	cterm_normal_bg_color = ((g_attrCurrent >> 4) & 0xf) + 1;
+
+    /* set termcap codes to current text attributes */
+    update_tcap(g_attrCurrent);
+    swap_tcap();
 
     GetConsoleCursorInfo(g_hConOut, &g_cci);
     GetConsoleMode(g_hConIn,  &g_cmodein);
@@ -5904,65 +5903,6 @@ textattr(WORD wAttr)
 
 
     static void
-textattr_normal(void)
-{
-    if (!USE_VTP)
-	SetConsoleTextAttribute(g_hConOut, g_attrCurrent & 0xff);
-    else
-	vtp_printf("\033[0m");	    /* default color */
-}
-
-
-    static void
-textattr_reverse(void)
-{
-    g_attrCurrent = (((g_attrCurrent & 0x0f) << 4)
-	    | ((g_attrCurrent & 0xf0) >> 4)) & 0xff;
-
-    if (!USE_VTP)
-	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
-    else
-	vtp_printf("\033[7m");	    /* reverse */
-}
-
-
-    static void
-textattr_bold(void)
-{
-    g_attrCurrent = (g_attrCurrent | 0x08) & 0xff;  /* FOREGROUND_INTENSITY */
-
-    if (!USE_VTP)
-	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
-    else
-	vtp_printf("\033[1m");	    /* bold */
-}
-
-
-    static void
-textattr_italic(void)
-{
-    g_attrCurrent = 225;	/* blue text on yellow */
-
-    if (!USE_VTP)
-	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
-    else
-	vtp_printf("\033[95m");    /* bright magenta text */
-}
-
-
-    static void
-textattr_underscore(void)
-{
-    g_attrCurrent = 67;	    /* cyan text on red */
-
-    if (!USE_VTP)
-	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
-    else
-	vtp_printf("\033[4m");	    /* underscore */
-}
-
-
-    static void
 textcolor(WORD wAttr)
 {
     g_attrCurrent = (g_attrCurrent & 0xf0) + (wAttr & 0x0f);
@@ -6009,10 +5949,7 @@ standout(void)
 {
     g_attrPreStandout = g_attrCurrent;
 
-    if (!USE_VTP)
-	textattr((WORD) (g_attrCurrent|FOREGROUND_INTENSITY|BACKGROUND_INTENSITY));
-    else
-	vtp_printf("\033[91m");	/* bright red text */
+    textattr((WORD) (g_attrCurrent|FOREGROUND_INTENSITY|BACKGROUND_INTENSITY));
 }
 
 
@@ -6022,26 +5959,38 @@ standout(void)
     static void
 standend(void)
 {
-    if (!USE_VTP)
-    {
-	if (g_attrPreStandout)
-	    textattr(g_attrPreStandout);
-    }
-    else
-	vtp_printf("\033[39m");	/* default color */
+    if (g_attrPreStandout)
+	textattr(g_attrPreStandout);
 
     g_attrPreStandout = 0;
 }
 
 
 /*
- * Set normal fg/bg color
+ * Set normal fg/bg color, based on T_ME.  Called when t_me has been set.
  */
     void
 mch_set_normal_colors(void)
 {
-    cterm_normal_fg_color = (g_attrDefault & 0x0f) + 1;
-    cterm_normal_bg_color = ((g_attrDefault >> 4) & 0x0f) + 1;
+    char_u	*p;
+    int		n;
+
+    cterm_normal_fg_color = (g_attrDefault & 0xf) + 1;
+    cterm_normal_bg_color = ((g_attrDefault >> 4) & 0xf) + 1;
+    if (
+#ifdef FEAT_TERMGUICOLORS
+	!p_tgc &&
+#endif
+	T_ME[0] == ESC && T_ME[1] == '|')
+    {
+	p = T_ME + 2;
+	n = getdigits(&p);
+	if (*p == 'm' && n > 0)
+	{
+	    cterm_normal_fg_color = (n & 0xf) + 1;
+	    cterm_normal_bg_color = ((n >> 4) & 0xf) + 1;
+	}
+    }
 #ifdef FEAT_TERMGUICOLORS
     cterm_normal_fg_gui_color = INVALCOLOR;
     cterm_normal_bg_gui_color = INVALCOLOR;
@@ -6324,7 +6273,12 @@ mch_write(
 		    if (argc == 1 && args[0] == 0)
 			normvideo();
 		    else if (argc == 1)
-			textcolor((WORD) arg1);
+		    {
+			if (USE_VTP)
+			    textcolor((WORD) arg1);
+			else
+			    textattr((WORD) arg1);
+		    }
 		    else if (USE_VTP)
 			vtp_sgr_bulks(argc, args);
 		}
@@ -6340,29 +6294,6 @@ mch_write(
 		{
 		    gotoxy(g_coord.X + 1,
 			   max(g_srScrollRegion.Top, g_coord.Y - arg1) + 1);
-		}
-		else if (argc == 1 && *p == 'B')
-		{
-		    if (args[0] == 0)
-		    {
-			textattr_normal();
-		    }
-		    else if (args[0] == 1)
-		    {
-			textattr_reverse();
-		    }
-		    else if (args[0] == 2)
-		    {
-			textattr_bold();
-		    }
-		    else if (args[0] == 3)
-		    {
-			textattr_italic();
-		    }
-		    else if (args[0] == 4)
-		    {
-			textattr_underscore();
-		    }
 		}
 		else if (argc == 1 && *p == 'b')
 		{

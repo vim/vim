@@ -8661,6 +8661,7 @@ set_bool_option(
 	    p_tgc = 0;
 	    return (char_u*)N_("E949: 24-bit colors are not supported on this environment");
 	}
+	swap_tcap();
 # endif
 # ifdef FEAT_GUI
 	if (!gui.in_use && !gui.starting)

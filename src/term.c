@@ -560,15 +560,20 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_VI,	"\033|v"},	/* cursor invisible */
     {(int)KS_VE,	"\033|V"},	/* cursor visible */
 
-    {(int)KS_ME,	"\033|0B"},	/* normal */
-    {(int)KS_MR,	"\033|1B"},	/* reverse */
-    {(int)KS_MD,	"\033|2B"},	/* bold */
-    {(int)KS_SO,	"\033|F"},	/* standout */
+    {(int)KS_ME,	"\033|0m"},	/* normal */
+    {(int)KS_MR,	"\033|112m"},	/* reverse: black on lightgray */
+    {(int)KS_MD,	"\033|15m"},	/* bold: white on black */
+#if 1
+    {(int)KS_SO,	"\033|31m"},	/* standout: white on blue */
+    {(int)KS_SE,	"\033|0m"},	/* standout end */
+#else
+    {(int)KS_SO,	"\033|F"},	/* standout: high intensity */
     {(int)KS_SE,	"\033|f"},	/* standout end */
-    {(int)KS_CZH,	"\033|3B"},	/* italic */
+#endif
+    {(int)KS_CZH,	"\033|225m"},	/* italic: blue text on yellow */
     {(int)KS_CZR,	"\033|0m"},	/* italic end */
-    {(int)KS_US,	"\033|4B"},	/* underscore */
-    {(int)KS_UE,	"\033|24m"},	/* underscore end */
+    {(int)KS_US,	"\033|67m"},	/* underscore: cyan text on red */
+    {(int)KS_UE,	"\033|0m"},	/* underscore end */
     {(int)KS_CCO,	"16"},		/* allow 16 colors */
 #  ifdef TERMINFO
     {(int)KS_CAB,	"\033|%p1%db"},	/* set background color */
@@ -6564,6 +6569,139 @@ translate_mapping(
     ga_append(&ga, NUL);
     return (char_u *)(ga.ga_data);
 }
+#endif
+
+#if (defined(WIN3264) && !defined(FEAT_GUI)) || defined(PROTO)
+static char ksme_str[20];
+static char ksmr_str[20];
+static char ksmd_str[20];
+
+/*
+ * For Win32 console: update termcap codes for existing console attributes.
+ */
+    void
+update_tcap(int attr)
+{
+    struct builtin_term *p;
+
+    p = find_builtin_term(DEFAULT_TERM);
+    sprintf(ksme_str, IF_EB("\033|%dm", ESC_STR "|%dm"), attr);
+    sprintf(ksmd_str, IF_EB("\033|%dm", ESC_STR "|%dm"),
+				     attr | 0x08);  /* FOREGROUND_INTENSITY */
+    sprintf(ksmr_str, IF_EB("\033|%dm", ESC_STR "|%dm"),
+				 ((attr & 0x0F) << 4) | ((attr & 0xF0) >> 4));
+
+    while (p->bt_string != NULL)
+    {
+      if (p->bt_entry == (int)KS_ME)
+	  p->bt_string = &ksme_str[0];
+      else if (p->bt_entry == (int)KS_MR)
+	  p->bt_string = &ksmr_str[0];
+      else if (p->bt_entry == (int)KS_MD)
+	  p->bt_string = &ksmd_str[0];
+      ++p;
+    }
+}
+
+struct ks_tbl_s
+{
+    int code;	    /* value of KS_ */
+    char *vtp;	    /* code in vtp mode */
+    char *buf;	    /* buffer in non-vtp mode */
+    char *vbuf;	    /* buffer in vtp mode */
+};
+
+static struct ks_tbl_s ks_tbl[] =
+{
+    {(int)KS_ME,  "\033|0m" },	/* normal */
+    {(int)KS_MR,  "\033|7m" },	/* reverse */
+    {(int)KS_MD,  "\033|1m" },	/* bold */
+    {(int)KS_SO,  "\033|91m"},	/* standout: bright red text */
+    {(int)KS_SE,  "\033|39m"},	/* standout end: default color */
+    {(int)KS_CZH, "\033|95m"},	/* italic: bright magenta text */
+    {(int)KS_CZR, "\033|0m",},	/* italic end */
+    {(int)KS_US,  "\033|4m",},	/* underscore */
+    {(int)KS_UE,  "\033|24m"},	/* underscore end */
+    {(int)KS_NAME, NULL}
+};
+
+    static struct builtin_term *
+find_first_tcap(
+    char_u *name,
+    int code)
+{
+    struct builtin_term *p;
+
+    p = find_builtin_term(name);
+    while (p->bt_string != NULL)
+    {
+	if (p->bt_entry == code)
+	    return p;
+	p++;
+    }
+    return NULL;
+}
+
+/*
+ * For Win32 console: replace the sequence immediately after termguicolors.
+ */
+    void
+swap_tcap(void)
+{
+# ifdef FEAT_TERMGUICOLORS
+    static int init = 0;
+    static int last_tgc;
+    struct ks_tbl_s *ks;
+    struct builtin_term *bt;
+
+    /* buffer initialization */
+    if (init == 0)
+    {
+	ks = ks_tbl;
+	while (ks->vtp != NULL)
+	{
+	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
+	    ks->buf = bt->bt_string;
+	    ks->vbuf = ks->vtp;
+	    ks++;
+	}
+	init++;
+	last_tgc = p_tgc;
+	return;
+    }
+
+    if (last_tgc != p_tgc)
+    {
+	if (p_tgc)
+	{
+	    /* switch to special character sequence */
+	    ks = ks_tbl;
+	    while (ks->vtp != NULL)
+	    {
+		bt = find_first_tcap(DEFAULT_TERM, ks->code);
+		ks->buf = bt->bt_string;
+		bt->bt_string = ks->vbuf;
+		ks++;
+	    }
+	}
+	else
+	{
+	    /* switch to index color */
+	    ks = ks_tbl;
+	    while (ks->vtp != NULL)
+	    {
+		bt = find_first_tcap(DEFAULT_TERM, ks->code);
+		ks->vbuf = bt->bt_string;
+		bt->bt_string = ks->buf;
+		ks++;
+	    }
+	}
+
+	last_tgc = p_tgc;
+    }
+# endif
+}
+
 #endif
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS) || defined(PROTO)
