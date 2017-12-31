@@ -581,13 +581,15 @@ EXTERN char_u	*p_iconstring;	/* 'iconstring' */
 EXTERN int	p_ic;		/* 'ignorecase' */
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 EXTERN char_u	*p_imak;	/* 'imactivatekey' */
+#define IM_ON_THE_SPOT		0L
+#define IM_OVER_THE_SPOT	1L
+EXTERN long	p_imst;		/* 'imstyle' */
+#endif
+#if defined(FEAT_EVAL) && defined(FEAT_MBYTE)
 EXTERN char_u	*p_imaf;	/* 'imactivatefunc' */
 EXTERN char_u	*p_imsf;	/* 'imstatusfunc' */
-EXTERN long	p_imst;		/* 'imstyle' */
-# define IM_ON_THE_SPOT		0L
-# define IM_OVER_THE_SPOT	1L
 #endif
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 EXTERN int	p_imcmdline;	/* 'imcmdline' */
 EXTERN int	p_imdisable;	/* 'imdisable' */
 #endif

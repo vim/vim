@@ -708,6 +708,10 @@ func Test_balloon_split()
     return
   endif
   call assert_equal([
+        \ 'tempname: 0x555555e380a0 "/home/mool/.viminfz.tmp"',
+        \ ], balloon_split(
+        \ 'tempname: 0x555555e380a0 "/home/mool/.viminfz.tmp"'))
+  call assert_equal([
         \ 'one two three four one two three four one two thre',
         \ 'e four',
         \ ], balloon_split(

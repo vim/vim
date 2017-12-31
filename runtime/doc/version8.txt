@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2017 Apr 23
+*version8.txt*  For Vim version 8.0.  Last change: 2017 Nov 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15582,7 +15582,7 @@ Files:      src/json.c, src/testdir/test_json.vim
 
 Patch 8.0.0181
 Problem:    When 'cursorbind' and 'cursorcolumn' are both on, the column
-            highlignt in non-current windows is wrong.
+            highlight in non-current windows is wrong.
 Solution:   Add validate_cursor(). (Masanori Misono, closes #1372)
 Files:      src/move.c
 

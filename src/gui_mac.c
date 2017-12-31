@@ -2024,15 +2024,15 @@ gui_mac_handle_window_activate(
 	switch (eventKind)
 	{
 	    case kEventWindowActivated:
-#if defined(USE_IM_CONTROL)
+# if defined(FEAT_MBYTE)
 		im_on_window_switch(TRUE);
-#endif
+# endif
 		return noErr;
 
 	    case kEventWindowDeactivated:
-#if defined(USE_IM_CONTROL)
+# if defined(FEAT_MBYTE)
 		im_on_window_switch(FALSE);
-#endif
+# endif
 		return noErr;
 	}
     }
@@ -6230,7 +6230,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 #endif
 }
 
-#if (defined(USE_IM_CONTROL) || defined(PROTO)) && defined(USE_CARBONKEYHANDLER)
+#if (defined(FEAT_MBYTE) || defined(PROTO)) && defined(USE_CARBONKEYHANDLER)
 /*
  * Input Method Control functions.
  */
@@ -6317,7 +6317,7 @@ im_set_active(int active)
     ScriptLanguageRecord *slptr = NULL;
     OSStatus err;
 
-    if (! gui.in_use)
+    if (!gui.in_use)
 	return;
 
     if (im_initialized == 0)
@@ -6379,7 +6379,7 @@ im_get_status(void)
     return im_is_active;
 }
 
-#endif /* defined(USE_IM_CONTROL) || defined(PROTO) */
+#endif /* defined(FEAT_MBYTE) || defined(PROTO) */
 
 
 

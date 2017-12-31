@@ -516,7 +516,7 @@ edit(
      */
     if (curbuf->b_p_iminsert == B_IMODE_LMAP)
 	State |= LANGMAP;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
     im_set_active(curbuf->b_p_iminsert == B_IMODE_IM);
 #endif
 
@@ -781,7 +781,7 @@ edit(
 #endif
 
 	/*
-	 * Get a character for Insert mode.  Ignore K_IGNORE.
+	 * Get a character for Insert mode.  Ignore K_IGNORE and K_NOP.
 	 */
 	if (c != K_CURSORHOLD)
 	    lastc = c;		/* remember the previous char for CTRL-D */
@@ -798,7 +798,7 @@ edit(
 	    do
 	    {
 		c = safe_vgetc();
-	    } while (c == K_IGNORE);
+	    } while (c == K_IGNORE || c == K_NOP);
 
 #ifdef FEAT_AUTOCMD
 	/* Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V. */
@@ -8372,7 +8372,7 @@ ins_reg(void)
     ++no_u_sync;
     if (regname == '=')
     {
-# ifdef USE_IM_CONTROL
+# ifdef FEAT_MBYTE
 	int	im_on = im_get_status();
 # endif
 	/* Sync undo when evaluating the expression calls setline() or
@@ -8380,7 +8380,7 @@ ins_reg(void)
 	u_sync_once = 2;
 
 	regname = get_expr_register();
-# ifdef USE_IM_CONTROL
+# ifdef FEAT_MBYTE
 	/* Restore the Input Method. */
 	if (im_on)
 	    im_set_active(TRUE);
@@ -8509,12 +8509,12 @@ ins_ctrl_hat(void)
 	{
 	    curbuf->b_p_iminsert = B_IMODE_LMAP;
 	    State |= LANGMAP;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 	    im_set_active(FALSE);
 #endif
 	}
     }
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
     else
     {
 	/* There are no ":lmap" mappings, toggle IM */
@@ -8661,7 +8661,7 @@ ins_esc(
 	}
     }
 
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
     /* Disable IM to allow typing English directly for Normal mode commands.
      * When ":lmap" is enabled don't change 'iminsert' (IM can be enabled as
      * well). */

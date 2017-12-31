@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 8.0.  Last change: 2016 Jul 21
+*mbyte.txt*     For Vim version 8.0.  Last change: 2017 Nov 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -26,8 +26,9 @@ For changing the language of messages and menus see |mlang.txt|.
 7.  Input on X11			|mbyte-XIM|
 8.  Input on MS-Windows			|mbyte-IME|
 9.  Input with a keymap			|mbyte-keymap|
-10. Using UTF-8				|mbyte-utf8|
-11. Overview of options			|mbyte-options|
+10. Input with imactivatefunc()		|mbyte-func|
+11. Using UTF-8				|mbyte-utf8|
+12. Overview of options			|mbyte-options|
 
 NOTE: This file contains UTF-8 characters.  These may show up as strange
 characters or boxes when using another encoding.
@@ -1254,7 +1255,35 @@ Combining forms:
 ﭏ    0xfb4f  Xal  alef-lamed
 
 ==============================================================================
-10. Using UTF-8				*mbyte-utf8* *UTF-8* *utf-8* *utf8*
+10.  Input with imactivatefunc()				*mbyte-func*
+
+Vim has the 'imactivatefunc' and 'imstatusfunc' options. These are useful to
+activate/deativate the input method from Vim in any way, also with an external
+command. For example, fcitx provide fcitx-remote command: >
+
+	set iminsert=2
+	set imsearch=2
+	set imcmdline
+
+	set imactivatefunc=ImActivate
+	function! ImActivate(active)
+	  if a:active
+	    call system('fcitx-remote -o')
+	  else
+	    call system('fcitx-remote -c')
+	  endif
+	endfunction
+
+	set imstatusfunc=ImStatus
+	function! ImStatus()
+	  return system('fcitx-remote')[0] is# '2'
+	endfunction
+
+Using this script, you can activate/deactivate XIM via Vim even when it is not
+compiled with |+xim|.
+
+==============================================================================
+11. Using UTF-8				*mbyte-utf8* *UTF-8* *utf-8* *utf8*
 							*Unicode* *unicode*
 The Unicode character set was designed to include all characters from other
 character sets.  Therefore it is possible to write text in any language using
@@ -1402,7 +1431,7 @@ not everybody is able to type a composing character.
 
 
 ==============================================================================
-11. Overview of options					*mbyte-options*
+12. Overview of options					*mbyte-options*
 
 These options are relevant for editing multi-byte files.  Check the help in
 options.txt for detailed information.

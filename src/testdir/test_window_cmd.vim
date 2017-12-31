@@ -362,6 +362,19 @@ func Test_equalalways_on_close()
   set equalalways&
 endfunc
 
+func Test_win_screenpos()
+  call assert_equal(1, winnr('$'))
+  split
+  vsplit
+  10wincmd _
+  30wincmd |
+  call assert_equal([1, 1], win_screenpos(1))
+  call assert_equal([1, 32], win_screenpos(2))
+  call assert_equal([12, 1], win_screenpos(3))
+  call assert_equal([0, 0], win_screenpos(4))
+  only
+endfunc
+
 func Test_window_jump_tag()
   help
   /iccf
@@ -452,6 +465,11 @@ func Test_window_contents()
 
   bwipeout!
   call test_garbagecollect_now()
+endfunc
+
+func Test_window_colon_command()
+  " This was reading invalid memory.
+  exe "norm! v\<C-W>:\<C-U>echo v:version"
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -433,8 +433,9 @@ if test "x$found_smack" = "x"; then
   if test "$enable_selinux" = "yes"; then
     AC_MSG_RESULT(no)
     AC_CHECK_LIB(selinux, is_selinux_enabled,
+	[AC_CHECK_HEADER(selinux/selinux.h,
 	    [LIBS="$LIBS -lselinux"
-	     AC_DEFINE(HAVE_SELINUX)])
+	    AC_DEFINE(HAVE_SELINUX)])])
   else
      AC_MSG_RESULT(yes)
   fi
@@ -2058,7 +2059,7 @@ else
     AC_MSG_RESULT(no)
   fi
 fi
-if test "$enable_terminal" = "yes"; then
+if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   AC_DEFINE(FEAT_TERMINAL)
   TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/screen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
   AC_SUBST(TERM_SRC)

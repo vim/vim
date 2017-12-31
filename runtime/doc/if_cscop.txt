@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 8.0.  Last change: 2017 Jun 14
+*if_cscop.txt*  For Vim version 8.0.  Last change: 2017 Nov 23
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -468,36 +468,18 @@ license or OS distribution), then you can download it for free from:
 	http://cscope.sourceforge.net/
 This is released by SCO under the BSD license.
 
-If you want a newer version of cscope, you will probably have to buy it.
-According to the (old) nvi documentation:
-
-	You can buy version 13.3 source with an unrestricted license
-	for $400 from AT&T Software Solutions by calling +1-800-462-8146.
-
-Also you can download cscope 13.x and mlcscope 14.x (multi-lingual cscope
-which supports C, C++, Java, lex, yacc, breakpoint listing, Ingres, and SDL)
-from World-Wide Exptools Open Source packages page:
-	http://www.bell-labs.com/project/wwexptools/packages.html
-
 In Solaris 2.x, if you have the C compiler license, you will also have
 cscope.  Both are usually located under /opt/SUNWspro/bin
-
-SGI developers can also get it.  Search for Cscope on this page:
-	http://freeware.sgi.com/index-by-alpha.html
-	https://toolbox.sgi.com/toolbox/utilities/cscope/
-The second one is for those who have a password for the SGI toolbox.
 
 There is source to an older version of a cscope clone (called "cs") available
 on the net.  Due to various reasons, this is not supported with Vim.
 
 The cscope interface/support for Vim was originally written by
 Andy Kahn <ackahn@netapp.com>.  The original structure (as well as a tiny
-bit of code) was adapted from the cscope interface in nvi.  Please report
-any problems, suggestions, patches, et al., you have for the usage of
-cscope within Vim to him.
+bit of code) was adapted from the cscope interface in nvi.
 							*cscope-win32*
-For a cscope version for Win32 see:
-	http://code.google.com/p/cscope-win32/
+For a cscope version for Win32 see (seems abandonded):
+	https://code.google.com/archive/p/cscope-win32/
 
 Win32 support was added by Sergey Khorev <sergey.khorev@gmail.com>.  Contact
 him if you have Win32-specific issues.

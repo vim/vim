@@ -1482,7 +1482,7 @@ do_shell(
 #endif
 		&& msg_silent == 0)
 	FOR_ALL_BUFFERS(buf)
-	    if (bufIsChanged(buf))
+	    if (bufIsChangedNotTerm(buf))
 	    {
 #ifdef FEAT_GUI_MSWIN
 		if (!winstart)
@@ -1825,7 +1825,6 @@ write_viminfo(char_u *file, int forceit)
     FILE	*fp_out = NULL;	/* output viminfo file */
     char_u	*tempname = NULL;	/* name of temp viminfo file */
     stat_T	st_new;		/* mch_stat() of potential new file */
-    char_u	*wp;
 #if defined(UNIX) || defined(VMS)
     mode_t	umask_save;
 #endif
@@ -1847,27 +1846,29 @@ write_viminfo(char_u *file, int forceit)
     fp_in = mch_fopen((char *)fname, READBIN);
     if (fp_in == NULL)
     {
+	int fd;
+
 	/* if it does exist, but we can't read it, don't try writing */
 	if (mch_stat((char *)fname, &st_new) == 0)
 	    goto end;
-#if defined(UNIX) || defined(VMS)
-	/*
-	 * For Unix we create the .viminfo non-accessible for others,
-	 * because it may contain text from non-accessible documents.
-	 */
-	umask_save = umask(077);
-#endif
-	fp_out = mch_fopen((char *)fname, WRITEBIN);
-#if defined(UNIX) || defined(VMS)
-	(void)umask(umask_save);
-#endif
+
+	/* Create the new .viminfo non-accessible for others, because it may
+	 * contain text from non-accessible documents. It is up to the user to
+	 * widen access (e.g. to a group). This may also fail if there is a
+	 * race condition, then just give up. */
+	fd = mch_open((char *)fname,
+			    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
+	if (fd < 0)
+	    goto end;
+	fp_out = fdopen(fd, WRITEBIN);
     }
     else
     {
 	/*
 	 * There is an existing viminfo file.  Create a temporary file to
 	 * write the new viminfo into, in the same directory as the
-	 * existing viminfo file, which will be renamed later.
+	 * existing viminfo file, which will be renamed once all writing is
+	 * successful.
 	 */
 #ifdef UNIX
 	/*
@@ -1901,12 +1902,18 @@ write_viminfo(char_u *file, int forceit)
 #endif
 
 	/*
-	 * Make tempname.
+	 * Make tempname, find one that does not exist yet.
+	 * Beware of a race condition: If someone logs out and all Vim
+	 * instances exit at the same time a temp file might be created between
+	 * stat() and open().  Use mch_open() with O_EXCL to avoid that.
 	 * May try twice: Once normal and once with shortname set, just in
 	 * case somebody puts his viminfo file in an 8.3 filesystem.
 	 */
 	for (;;)
 	{
+	    int		next_char = 'z';
+	    char_u	*wp;
+
 	    tempname = buf_modname(
 #ifdef UNIX
 				    shortname,
@@ -1924,126 +1931,128 @@ write_viminfo(char_u *file, int forceit)
 		break;
 
 	    /*
-	     * Check if tempfile already exists.  Never overwrite an
-	     * existing file!
+	     * Try a series of names.  Change one character, just before
+	     * the extension.  This should also work for an 8.3
+	     * file name, when after adding the extension it still is
+	     * the same file as the original.
 	     */
-	    if (mch_stat((char *)tempname, &st_new) == 0)
+	    wp = tempname + STRLEN(tempname) - 5;
+	    if (wp < gettail(tempname))	    /* empty file name? */
+		wp = gettail(tempname);
+	    for (;;)
 	    {
+		/*
+		 * Check if tempfile already exists.  Never overwrite an
+		 * existing file!
+		 */
+		if (mch_stat((char *)tempname, &st_new) == 0)
+		{
 #ifdef UNIX
-		/*
-		 * Check if tempfile is same as original file.  May happen
-		 * when modname() gave the same file back.  E.g.  silly
-		 * link, or file name-length reached.  Try again with
-		 * shortname set.
-		 */
-		if (!shortname && st_new.st_dev == st_old.st_dev
-					    && st_new.st_ino == st_old.st_ino)
-		{
-		    vim_free(tempname);
-		    tempname = NULL;
-		    shortname = TRUE;
-		    continue;
-		}
-#endif
-		/*
-		 * Try another name.  Change one character, just before
-		 * the extension.  This should also work for an 8.3
-		 * file name, when after adding the extension it still is
-		 * the same file as the original.
-		 */
-		wp = tempname + STRLEN(tempname) - 5;
-		if (wp < gettail(tempname))	    /* empty file name? */
-		    wp = gettail(tempname);
-		for (*wp = 'z'; mch_stat((char *)tempname, &st_new) == 0;
-								    --*wp)
-		{
 		    /*
-		     * They all exist?  Must be something wrong! Don't
-		     * write the viminfo file then.
+		     * Check if tempfile is same as original file.  May happen
+		     * when modname() gave the same file back.  E.g.  silly
+		     * link, or file name-length reached.  Try again with
+		     * shortname set.
 		     */
-		    if (*wp == 'a')
+		    if (!shortname && st_new.st_dev == st_old.st_dev
+						&& st_new.st_ino == st_old.st_ino)
 		    {
-			EMSG2(_("E929: Too many viminfo temp files, like %s!"),
-								    tempname);
 			vim_free(tempname);
 			tempname = NULL;
+			shortname = TRUE;
 			break;
 		    }
+#endif
 		}
+		else
+		{
+		    /* Try creating the file exclusively.  This may fail if
+		     * another Vim tries to do it at the same time. */
+#ifdef VMS
+		    /* fdopen() fails for some reason */
+		    umask_save = umask(077);
+		    fp_out = mch_fopen((char *)tempname, WRITEBIN);
+		    (void)umask(umask_save);
+#else
+		    int	fd;
+
+		    /* Use mch_open() to be able to use O_NOFOLLOW and set file
+		     * protection:
+		     * Unix: same as original file, but strip s-bit.  Reset
+		     * umask to avoid it getting in the way.
+		     * Others: r&w for user only. */
+# ifdef UNIX
+		    umask_save = umask(0);
+		    fd = mch_open((char *)tempname,
+			    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
+					(int)((st_old.st_mode & 0777) | 0600));
+		    (void)umask(umask_save);
+# else
+		    fd = mch_open((char *)tempname,
+			     O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
+# endif
+		    if (fd < 0)
+		    {
+			fp_out = NULL;
+# ifdef EEXIST
+			/* Avoid trying lots of names while the problem is lack
+			 * of premission, only retry if the file already
+			 * exists. */
+			if (errno != EEXIST)
+			    break;
+# endif
+		    }
+		    else
+			fp_out = fdopen(fd, WRITEBIN);
+#endif /* VMS */
+		    if (fp_out != NULL)
+			break;
+		}
+
+		/* Assume file exists, try again with another name. */
+		if (next_char == 'a' - 1)
+		{
+		    /* They all exist?  Must be something wrong! Don't write
+		     * the viminfo file then. */
+		    EMSG2(_("E929: Too many viminfo temp files, like %s!"),
+								     tempname);
+		    break;
+		}
+		*wp = next_char;
+		--next_char;
 	    }
-	    break;
+
+	    if (tempname != NULL)
+		break;
+	    /* continue if shortname was set */
 	}
 
-	if (tempname != NULL)
-	{
-#ifdef VMS
-	    /* fdopen() fails for some reason */
-	    umask_save = umask(077);
-	    fp_out = mch_fopen((char *)tempname, WRITEBIN);
-	    (void)umask(umask_save);
-#else
-	    int	fd;
-
-	    /* Use mch_open() to be able to use O_NOFOLLOW and set file
-	     * protection:
-	     * Unix: same as original file, but strip s-bit.  Reset umask to
-	     * avoid it getting in the way.
-	     * Others: r&w for user only. */
-# ifdef UNIX
-	    umask_save = umask(0);
-	    fd = mch_open((char *)tempname,
-		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
-				       (int)((st_old.st_mode & 0777) | 0600));
-	    (void)umask(umask_save);
-# else
-	    fd = mch_open((char *)tempname,
-			    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
-# endif
-	    if (fd < 0)
-		fp_out = NULL;
-	    else
-		fp_out = fdopen(fd, WRITEBIN);
-#endif /* VMS */
-
-	    /*
-	     * If we can't create in the same directory, try creating a
-	     * "normal" temp file.  This is just an attempt, renaming the temp
-	     * file might fail as well.
-	     */
-	    if (fp_out == NULL)
-	    {
-		vim_free(tempname);
-		if ((tempname = vim_tempname('o', TRUE)) != NULL)
-		    fp_out = mch_fopen((char *)tempname, WRITEBIN);
-	    }
-
 #if defined(UNIX) && defined(HAVE_FCHOWN)
+	if (tempname != NULL && fp_out != NULL)
+	{
+		stat_T	tmp_st;
+
 	    /*
 	     * Make sure the original owner can read/write the tempfile and
 	     * otherwise preserve permissions, making sure the group matches.
 	     */
-	    if (fp_out != NULL)
+	    if (mch_stat((char *)tempname, &tmp_st) >= 0)
 	    {
-		stat_T	tmp_st;
-
-		if (mch_stat((char *)tempname, &tmp_st) >= 0)
-		{
-		    if (st_old.st_uid != tmp_st.st_uid)
-			/* Changing the owner might fail, in which case the
-			 * file will now owned by the current user, oh well. */
-			ignored = fchown(fileno(fp_out), st_old.st_uid, -1);
-		    if (st_old.st_gid != tmp_st.st_gid
-			    && fchown(fileno(fp_out), -1, st_old.st_gid) == -1)
-			/* can't set the group to what it should be, remove
-			 * group permissions */
-			(void)mch_setperm(tempname, 0600);
-		}
-		else
-		    /* can't stat the file, set conservative permissions */
+		if (st_old.st_uid != tmp_st.st_uid)
+		    /* Changing the owner might fail, in which case the
+		     * file will now owned by the current user, oh well. */
+		    ignored = fchown(fileno(fp_out), st_old.st_uid, -1);
+		if (st_old.st_gid != tmp_st.st_gid
+			&& fchown(fileno(fp_out), -1, st_old.st_gid) == -1)
+		    /* can't set the group to what it should be, remove
+		     * group permissions */
 		    (void)mch_setperm(tempname, 0600);
 	    }
-#endif
+	    else
+		/* can't stat the file, set conservative permissions */
+		(void)mch_setperm(tempname, 0600);
 	}
+#endif
     }
 
     /*
@@ -6925,13 +6934,10 @@ fix_help_buffer(void)
 			    && fcount > 0)
 		    {
 #ifdef FEAT_MULTI_LANG
-			int	i1;
-			int	i2;
-			char_u	*f1;
-			char_u	*f2;
-			char_u	*t1;
-			char_u	*e1;
-			char_u	*e2;
+			int	i1, i2;
+			char_u	*f1, *f2;
+			char_u	*t1, *t2;
+			char_u	*e1, *e2;
 
 			/* If foo.abx is found use it instead of foo.txt in
 			 * the same directory. */
@@ -6946,10 +6952,9 @@ fix_help_buffer(void)
 				f1 = fnames[i1];
 				f2 = fnames[i2];
 				t1 = gettail(f1);
-				if (fnamencmp(f1, f2, t1 - f1) != 0)
-				    continue;
+				t2 = gettail(f2);
 				e1 = vim_strrchr(t1, '.');
-				e2 = vim_strrchr(gettail(f2), '.');
+				e2 = vim_strrchr(t2, '.');
 				if (e1 == NULL || e2 == NULL)
 				    continue;
 				if (fnamecmp(e1, ".txt") != 0
@@ -6960,7 +6965,8 @@ fix_help_buffer(void)
 				    fnames[i1] = NULL;
 				    continue;
 				}
-				if (fnamencmp(f1, f2, e1 - f1) != 0)
+				if (e1 - f1 != e2 - f2
+					    || fnamencmp(f1, f2, e1 - f1) != 0)
 				    continue;
 				if (fnamecmp(e1, ".txt") == 0
 				    && fnamecmp(e2, fname + 4) == 0)

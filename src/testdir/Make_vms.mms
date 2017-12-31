@@ -81,13 +81,7 @@ SCRIPT = test1.out test3.out \
        test64.out test69.out \
        test72.out test77a.out test88.out \
        test94.out test95.out test99.out test108.out \
-       test_autocmd_option.out \
-       test_breakindent.out \
-       test_eval.out \
-       test_listlbr.out \
-       test_listlbr_utf8.out \
-       test_utf8.out \
-       test_wordcount.out
+       test_eval.out
 
 # Known problems:
 # test17: ?

@@ -377,6 +377,10 @@ tags.ref tags.html: tags
 perlhtml: tags $(DOCS)
 	./vim2html.pl tags $(DOCS)
 
+# Check URLs in the help with "curl".
+test_urls:
+	vim -S test_urls.vim
+
 clean:
 	-rm doctags *.html tags.ref
 

@@ -673,15 +673,16 @@ func TerminalTmap(remap)
   else
     tnoremap 123 456
   endif
-  tmap 456 abcde
+  " don't use abcde, it's an existing command
+  tmap 456 abxde
   call assert_equal('456', maparg('123', 't'))
-  call assert_equal('abcde', maparg('456', 't'))
+  call assert_equal('abxde', maparg('456', 't'))
   call feedkeys("123", 'tx')
   let g:buf = buf
-  call WaitFor("term_getline(g:buf,term_getcursor(g:buf)[0]) =~ 'abcde\\|456'")
+  call WaitFor("term_getline(g:buf,term_getcursor(g:buf)[0]) =~ 'abxde\\|456'")
   let lnum = term_getcursor(buf)[0]
   if a:remap
-    call assert_match('abcde', term_getline(buf, lnum))
+    call assert_match('abxde', term_getline(buf, lnum))
   else
     call assert_match('456', term_getline(buf, lnum))
   endif

@@ -172,6 +172,24 @@ abandon_cmdline(void)
     redraw_cmdline = TRUE;
 }
 
+#ifdef FEAT_SEARCH_EXTRA
+/*
+ * Guess that the pattern matches everything.  Only finds specific cases, such
+ * as a trailing \|, which can happen while typing a pattern.
+ */
+    static int
+empty_pattern(char_u *p)
+{
+    int n = STRLEN(p);
+
+    /* remove trailing \v and the like */
+    while (n >= 2 && p[n - 2] == '\\'
+			  && vim_strchr((char_u *)"mMvVcCZ", p[n - 1]) != NULL)
+	n -= 2;
+    return n == 0 || (n >= 2 && p[n - 2] == '\\' && p[n - 1] == '|');
+}
+#endif
+
 /*
  * getcmdline() - accept a command line starting with firstc.
  *
@@ -359,11 +377,11 @@ getcmdline(
 	    b_im_ptr = &curbuf->b_p_imsearch;
 	if (*b_im_ptr == B_IMODE_LMAP)
 	    State |= LANGMAP;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 	im_set_active(*b_im_ptr == B_IMODE_IM);
 #endif
     }
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
     else if (p_imcmdline)
 	im_set_active(TRUE);
 #endif
@@ -417,12 +435,12 @@ getcmdline(
 
 	cursorcmd();		/* set the cursor on the right spot */
 
-	/* Get a character.  Ignore K_IGNORE, it should not do anything, such
-	 * as stop completion. */
+	/* Get a character.  Ignore K_IGNORE and K_NOP, they should not do
+	 * anything, such as stop completion. */
 	do
 	{
 	    c = safe_vgetc();
-	} while (c == K_IGNORE);
+	} while (c == K_IGNORE || c == K_NOP);
 
 	if (KeyTyped)
 	{
@@ -1119,7 +1137,7 @@ getcmdline(
 		{
 		    /* ":lmap" mappings exists, toggle use of mappings. */
 		    State ^= LANGMAP;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 		    im_set_active(FALSE);	/* Disable input method */
 #endif
 		    if (b_im_ptr != NULL)
@@ -1130,7 +1148,7 @@ getcmdline(
 			    *b_im_ptr = B_IMODE_NONE;
 		    }
 		}
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 		else
 		{
 		    /* There are no ":lmap" mappings, toggle IM.  When
@@ -1794,11 +1812,11 @@ getcmdline(
 # endif
 			old_botline = curwin->w_botline;
 			update_screen(NOT_VALID);
-			restore_last_search_pattern();
 			redrawcmdline();
 		    }
 		    else
 			vim_beep(BO_ERROR);
+		    restore_last_search_pattern();
 		    goto cmdline_not_changed;
 		}
 		break;
@@ -2023,6 +2041,11 @@ cmdline_changed:
 	    else
 		end_pos = curwin->w_cursor; /* shutup gcc 4 */
 
+	    /* Disable 'hlsearch' highlighting if the pattern matches
+	     * everything. Avoids a flash when typing "foo\|". */
+	    if (empty_pattern(ccline.cmdbuff))
+		SET_NO_HLSEARCH(TRUE);
+
 	    validate_cursor();
 	    /* May redraw the status line to show the cursor position. */
 	    if (p_ru && curwin->w_status_height > 0)
@@ -2143,7 +2166,7 @@ returncmd:
 #endif
 
     State = save_State;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
     if (b_im_ptr != NULL && *b_im_ptr != B_IMODE_LMAP)
 	im_save_status(b_im_ptr);
     im_set_active(FALSE);

@@ -4781,8 +4781,13 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_selinux_is_selinux_enabled" >&5
 $as_echo "$ac_cv_lib_selinux_is_selinux_enabled" >&6; }
 if test "x$ac_cv_lib_selinux_is_selinux_enabled" = xyes; then :
+  ac_fn_c_check_header_mongrel "$LINENO" "selinux/selinux.h" "ac_cv_header_selinux_selinux_h" "$ac_includes_default"
+if test "x$ac_cv_header_selinux_selinux_h" = xyes; then :
   LIBS="$LIBS -lselinux"
-	     $as_echo "#define HAVE_SELINUX 1" >>confdefs.h
+	    $as_echo "#define HAVE_SELINUX 1" >>confdefs.h
+
+fi
+
 
 fi
 
@@ -7509,7 +7514,7 @@ $as_echo "defaulting to no" >&6; }
 $as_echo "no" >&6; }
   fi
 fi
-if test "$enable_terminal" = "yes"; then
+if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   $as_echo "#define FEAT_TERMINAL 1" >>confdefs.h
 
   TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/screen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"

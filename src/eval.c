@@ -192,6 +192,7 @@ static struct vimvar
     {VV_NAME("termu7resp",	 VAR_STRING), VV_RO},
     {VV_NAME("termstyleresp",	VAR_STRING), VV_RO},
     {VV_NAME("termblinkresp",	VAR_STRING), VV_RO},
+    {VV_NAME("event",		VAR_DICT), VV_RO},
 };
 
 /* shorthand */
@@ -319,8 +320,9 @@ eval_init(void)
 
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
-    set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc());
+    set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
     set_vim_var_list(VV_ERRORS, list_alloc());
+    set_vim_var_dict(VV_EVENT, dict_alloc_lock(VAR_FIXED));
 
     set_vim_var_nr(VV_FALSE, VVAL_FALSE);
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);
@@ -1956,7 +1958,10 @@ get_lval(
 
     cc = *p;
     *p = NUL;
-    v = find_var(lp->ll_name, &ht, flags & GLV_NO_AUTOLOAD);
+    /* Only pass &ht when we would write to the variable, it prevents autoload
+     * as well. */
+    v = find_var(lp->ll_name, (flags & GLV_READ_ONLY) ? NULL : &ht,
+						      flags & GLV_NO_AUTOLOAD);
     if (v == NULL && !quiet)
 	EMSG2(_(e_undefvar), lp->ll_name);
     *p = cc;
@@ -6610,6 +6615,8 @@ get_vim_var_nr(int idx)
 
 /*
  * Get string v: variable value.  Uses a static buffer, can only be used once.
+ * If the String variable has never been set, return an empty string.
+ * Never returns NULL;
  */
     char_u *
 get_vim_var_str(int idx)
@@ -6625,6 +6632,16 @@ get_vim_var_str(int idx)
 get_vim_var_list(int idx)
 {
     return vimvars[idx].vv_list;
+}
+
+/*
+ * Get Dict v: variable value.  Caller must take care of reference count when
+ * needed.
+ */
+    dict_T *
+get_vim_var_dict(int idx)
+{
+    return vimvars[idx].vv_dict;
 }
 
 /*
@@ -6701,25 +6718,13 @@ set_vim_var_list(int idx, list_T *val)
     void
 set_vim_var_dict(int idx, dict_T *val)
 {
-    int		todo;
-    hashitem_T	*hi;
-
     clear_tv(&vimvars[idx].vv_di.di_tv);
     vimvars[idx].vv_type = VAR_DICT;
     vimvars[idx].vv_dict = val;
     if (val != NULL)
     {
 	++val->dv_refcount;
-
-	/* Set readonly */
-	todo = (int)val->dv_hashtab.ht_used;
-	for (hi = val->dv_hashtab.ht_array; todo > 0 ; ++hi)
-	{
-	    if (HASHITEM_EMPTY(hi))
-		continue;
-	    --todo;
-	    HI2DI(hi)->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
-	}
+	dict_set_items_ro(val);
     }
 }
 

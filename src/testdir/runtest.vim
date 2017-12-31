@@ -251,6 +251,8 @@ let s:flaky = [
       \ 'Test_exit_callback_interval()',
       \ 'Test_nb_basic()',
       \ 'Test_oneshot()',
+      \ 'Test_out_cb()',
+      \ 'Test_paused()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',
       \ 'Test_quoteplus()',
@@ -259,6 +261,7 @@ let s:flaky = [
       \ 'Test_terminal_composing_unicode()',
       \ 'Test_terminal_noblock()',
       \ 'Test_terminal_redir_file()',
+      \ 'Test_terminal_tmap()',
       \ 'Test_with_partial_callback()',
       \ ]
 

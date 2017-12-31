@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Nov 19
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1554,6 +1554,12 @@ v:errors	Errors found by assert functions, such as |assert_true()|.
 <		If v:errors is set to anything but a list it is made an empty
 		list by the assert function.
 
+					*v:event* *event-variable*
+v:event		Dictionary containing information about the current
+		|autocommand|.  The dictionary is emptied when the |autocommand|
+		finishes, please refer to |dict-identity| for how to get an
+		independent copy of it.
+
 					*v:exception* *exception-variable*
 v:exception	The value of the exception most recently caught and not
 		finished.  See also |v:throwpoint| and |throw-variables|.
@@ -2031,7 +2037,7 @@ assert_true({actual} [, {msg}])	none	assert {actual} is true
 asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
-balloon_show({msg})		none	show {msg} inside the balloon
+balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
@@ -2270,6 +2276,8 @@ mode([expr])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF8 value {expr}
+option_restore({list})		none	restore options saved by option_save()
+option_save({list})		List	save options values
 or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr})		String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
@@ -2452,6 +2460,7 @@ win_getid([{win} [, {tab}]])	Number	get window ID for {win} in {tab}
 win_gotoid({expr})		Number	go to window with ID {expr}
 win_id2tabwin({expr})		List	get tab and window nr from window ID
 win_id2win({expr})		Number	get window nr from window ID
+win_screenpos({nr})		List	get screen position of window {nr}
 winbufnr({nr})			Number	buffer number of window {nr}
 wincol()			Number	window column of the cursor
 winheight({nr})			Number	height of window {nr}
@@ -3055,12 +3064,16 @@ ch_open({address} [, {options}])				*ch_open()*
 ch_read({handle} [, {options}])					*ch_read()*
 		Read from {handle} and return the received message.
 		{handle} can be a Channel or a Job that has a Channel.
+		For a NL channel this waits for a NL to arrive, except when
+		there is nothing more to read (channel was closed).
 		See |channel-more|.
 		{only available when compiled with the |+channel| feature}
 
 ch_readraw({handle} [, {options}])			*ch_readraw()*
 		Like ch_read() but for a JS and JSON channel does not decode
-		the message.  See |channel-more|.
+		the message.  For a NL channel it does not block waiting for
+		the NL to arrive, but otherwise works like ch_read().
+		See |channel-more|.
 		{only available when compiled with the |+channel| feature}
 
 ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
@@ -3325,8 +3338,8 @@ count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		When {ic} is given and it's |TRUE| then case is ignored.
 
 		When {comp} is a string then the number of not overlapping
-		occurrences of {expr} is returned.
-
+		occurrences of {expr} is returned. Zero is returned when
+		{expr} is an empty string.
 
 							*cscope_connection()*
 cscope_connection([{num} , {dbpath} [, {prepend}]])
@@ -4168,6 +4181,7 @@ getbufinfo([{dict}])
 		be specified in {dict}:
 			buflisted	include only listed buffers.
 			bufloaded	include only loaded buffers.
+			bufmodified	include only modified buffers.
 
 		Otherwise, {expr} specifies a particular buffer to return
 		information for.  For the use of {expr}, see |bufname()|
@@ -4660,13 +4674,15 @@ getqflist([{what}])					*getqflist()*
 		If the optional {what} dictionary argument is supplied, then
 		returns only the items listed in {what} as a dictionary. The
 		following string items are supported in {what}:
+			changedtick	get the total number of changes made
+					to the list
 			context	get the context stored with |setqflist()|
 			efm	errorformat to use when parsing "lines". If
-				not present, then the 'erroformat' option
+				not present, then the 'errorformat' option
 				value is used.
 			id	get information for the quickfix list with
 				|quickfix-ID|; zero means the id for the
-				current list or the list specifed by "nr"
+				current list or the list specified by "nr"
 			idx	index of the current entry in the list
 			items	quickfix list entries
 			lines	use 'errorformat' to extract items from a list
@@ -4678,9 +4694,10 @@ getqflist([{what}])					*getqflist()*
 				the last quickfix list
 			size	number of entries in the quickfix list
 			title	get the list title
-			winid	get the |window-ID| (if opened)
+			winid	get the quickfix |window-ID|
 			all	all of the above quickfix properties
-		Non-string items in {what} are ignored.
+		Non-string items in {what} are ignored. To get the value of a
+		particular item, set it to zero.
 		If "nr" is not present then the current quickfix list is used.
 		If both "nr" and a non-zero "id" are specified, then the list
 		specified by "id" is used.
@@ -4690,18 +4707,24 @@ getqflist([{what}])					*getqflist()*
 		When "lines" is specified, all the other items except "efm"
 		are ignored.  The returned dictionary contains the entry
 		"items" with the list of entries.
-		In case of error processing {what}, an empty dictionary is
-		returned.
 
 		The returned dictionary contains the following entries:
-			context	context information stored with |setqflist()|
-			id	quickfix list ID |quickfix-ID|
-			idx	index of the current entry in the list
-			items	quickfix list entries
-			nr	quickfix list number
-			size	number of entries in the quickfix list
-			title	quickfix list title text
-			winid	quickfix |window-ID| (if opened)
+			changedtick	total number of changes made to the
+					list |quickfix-changedtick|
+			context	context information stored with |setqflist()|.
+				If not present, set to "".
+			id	quickfix list ID |quickfix-ID|. If not
+				present, set to 0.
+			idx	index of the current entry in the list. If not
+				present, set to 0.
+			items	quickfix list entries. If not present, set to
+				an empty list.
+			nr	quickfix list number. If not present, set to 0
+			size	number of entries in the quickfix list. If not
+				present, set to 0.
+			title	quickfix list title text. If not present, set
+				to "".
+			winid	quickfix |window-ID|. If not present, set to 0
 
 		Examples: >
 			:echo getqflist({'all': 1})
@@ -6096,6 +6119,31 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 		nr2char(10), because NULs are represented with newline
 		characters.  nr2char(0) is a real NUL and terminates the
 		string, thus results in an empty string.
+
+option_restore({list})					*option_restore()*
+		Restore options previously saved by option_save().
+		When buffer-local options have been saved, this function must
+		be called when the same buffer is the current buffer.
+		When window-local options have been saved, this function must
+		be called when the same window is the current window.
+		When in the wrong buffer and/or window an error is given and
+		the local options won't be restored.
+		NOT IMPLEMENTED YET!
+
+option_save({list})					*option_save()*
+		Saves the options named in {list}.  The returned value can be
+		passed to option_restore().  Example: >
+			let s:saved_options = option_save([
+			    \ 'ignorecase',
+			    \ 'iskeyword',
+			    \ ])
+			 au <buffer> BufLeave *
+			    \ call option_restore(s:saved_options)
+<		The advantage over using `:let` is that global and local
+		values are handled and the script ID is restored, so that
+		`:verbose set` will show where the option was originally set,
+		not where it was restored.
+		NOT IMPLEMENTED YET!
 
 or({expr}, {expr})					*or()*
 		Bitwise OR on the two arguments.  The arguments are converted
@@ -7695,8 +7743,9 @@ submatch({nr} [, {list}])			*submatch()* *E935*
 		When substitute() is used recursively only the submatches in
 		the current (deepest) call can be obtained.
 
-		Example: >
+		Examples: >
 			:s/\d\+/\=submatch(0) + 1/
+			:echo substitute(text, '\d\+', '\=submatch(0) + 1', '')
 <		This finds the first number in the line and adds one to it.
 		A line break is included as a newline character.
 
@@ -8632,6 +8681,14 @@ win_id2win({expr})					*win_id2win()*
 		Return the window number of window with ID {expr}.
 		Return 0 if the window cannot be found in the current tabpage.
 
+win_screenpos({nr})					*win_screenpos()*
+		Return the screen position of window {nr} as a list with two
+		numbers: [row, col].  The first window always has position
+		[1, 1].
+		{nr} can be the window number or the |window-ID|.
+		Return [0, 0] if the window cannot be found in the current
+		tabpage.
+
 							*winbufnr()*
 winbufnr({nr})	The result is a Number, which is the number of the buffer
 		associated with window {nr}.  {nr} can be the window number or
@@ -8783,8 +8840,8 @@ writefile({list}, {fname} [, {flags}])
 		the file.  This flushes the file to disk, if possible.  This
 		takes more time but avoids losing the file if the system
 		crashes.
-		When {flags} does not contain "S" or "s" then fsync is called
-		if the 'fsync' option is set.
+		When {flags} does not contain "S" or "s" then fsync() is
+		called if the 'fsync' option is set.
 		When {flags} contains "S" then fsync() is not called, even
 		when 'fsync' is set.
 

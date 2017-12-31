@@ -2650,8 +2650,12 @@ del_lines(
     int
 gchar_pos(pos_T *pos)
 {
-    char_u	*ptr = ml_get_pos(pos);
+    char_u	*ptr;
 
+    /* When searching columns is sometimes put at the end of a line. */
+    if (pos->col == MAXCOL)
+	return NUL;
+    ptr = ml_get_pos(pos);
 #ifdef FEAT_MBYTE
     if (has_mbyte)
 	return (*mb_ptr2char)(ptr);

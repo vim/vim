@@ -1834,6 +1834,26 @@ script_dump_profile(FILE *fd)
 		{
 		    if (vim_fgets(IObuff, IOSIZE, sfd))
 			break;
+		    /* When a line has been truncated, append NL, taking care
+		     * of multi-byte characters . */
+		    if (IObuff[IOSIZE - 2] != NUL && IObuff[IOSIZE - 2] != NL)
+		    {
+			int n = IOSIZE - 2;
+# ifdef FEAT_MBYTE
+			if (enc_utf8)
+			{
+			    /* Move to the first byte of this char.
+			     * utf_head_off() doesn't work, because it checks
+			     * for a truncated character. */
+			    while (n > 0 && (IObuff[n] & 0xc0) == 0x80)
+				--n;
+			}
+			else if (has_mbyte)
+			    n -= mb_head_off(IObuff, IObuff + n);
+# endif
+			IObuff[n] = NL;
+			IObuff[n + 1] = NUL;
+		    }
 		    if (i < si->sn_prl_ga.ga_len
 				     && (pp = &PRL_ITEM(si, i))->snp_count > 0)
 		    {
@@ -3727,18 +3747,31 @@ ex_packloadall(exarg_T *eap)
     void
 ex_packadd(exarg_T *eap)
 {
-    static char *plugpat = "pack/*/opt/%s";
+    static char *plugpat = "pack/*/%s/%s";
     int		len;
     char	*pat;
+    int		round;
+    int		res = OK;
 
-    len = (int)STRLEN(plugpat) + (int)STRLEN(eap->arg);
-    pat = (char *)alloc(len);
-    if (pat == NULL)
-	return;
-    vim_snprintf(pat, len, plugpat, eap->arg);
-    do_in_path(p_pp, (char_u *)pat, DIP_ALL + DIP_DIR + DIP_ERR,
-		    add_pack_plugin, eap->forceit ? &APP_ADD_DIR : &APP_BOTH);
-    vim_free(pat);
+    /* Round 1: use "start", round 2: use "opt". */
+    for (round = 1; round <= 2; ++round)
+    {
+	/* Only look under "start" when loading packages wasn't done yet. */
+	if (round == 1 && did_source_packages)
+	    continue;
+
+	len = (int)STRLEN(plugpat) + (int)STRLEN(eap->arg) + 5;
+	pat = (char *)alloc(len);
+	if (pat == NULL)
+	    return;
+	vim_snprintf(pat, len, plugpat, round == 1 ? "start" : "opt", eap->arg);
+	/* The first round don't give a "not found" error, in the second round
+	 * only when nothing was found in the first round. */
+	res = do_in_path(p_pp, (char_u *)pat,
+		DIP_ALL + DIP_DIR + (round == 2 && res == FAIL ? DIP_ERR : 0),
+		add_pack_plugin, eap->forceit ? &APP_ADD_DIR : &APP_BOTH);
+	vim_free(pat);
+    }
 }
 
 #if defined(FEAT_EVAL) && defined(FEAT_AUTOCMD)

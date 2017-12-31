@@ -1789,7 +1789,6 @@ mch_inchar(
 #endif
 	    {
 		int	n = 1;
-		int     conv = FALSE;
 
 #ifdef FEAT_MBYTE
 		if (ch2 == NUL)
@@ -1817,30 +1816,17 @@ mch_inchar(
 		    typeahead[typeaheadlen] = c;
 		if (ch2 != NUL)
 		{
-		    typeahead[typeaheadlen + n] = 3;
-		    typeahead[typeaheadlen + n + 1] = (char_u)ch2;
-		    n += 2;
-		}
-
-		if (conv)
-		{
-		    char_u *p = typeahead + typeaheadlen;
-
-		    if (*p != K_NUL)
+		    if (c == K_NUL && (ch2 & 0xff00) != 0)
 		    {
-			char_u *e = typeahead + TYPEAHEADLEN;
-
-			while (*p && p < e)
-			{
-			    if (*p == K_NUL)
-			    {
-				++p;
-				mch_memmove(p + 1, p, ((size_t)(e - p)) - 1);
-				*p = 3;
-				++n;
-			    }
-			    ++p;
-			}
+			/* fAnsiKey with modifier keys */
+			typeahead[typeaheadlen + n] = (char_u)ch2;
+			n++;
+		    }
+		    else
+		    {
+			typeahead[typeaheadlen + n] = 3;
+			typeahead[typeaheadlen + n + 1] = (char_u)ch2;
+			n += 2;
 		    }
 		}
 

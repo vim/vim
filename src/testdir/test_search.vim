@@ -721,3 +721,20 @@ func Test_search_multibyte()
   enew!
   let &encoding = save_enc
 endfunc
+
+" This was causing E874.  Also causes an invalid read?
+func Test_look_behind()
+  new
+  call setline(1, '0\|\&\n\@<=') 
+  call search(getline("."))
+  bwipe!
+endfunc
+
+func Test_search_sentence()
+  new
+  " this used to cause a crash
+  call assert_fails("/\\%')", 'E486')
+  call assert_fails("/", 'E486')
+  /\%'(
+  /
+endfunc

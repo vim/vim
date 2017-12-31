@@ -32,7 +32,7 @@ ui_write(char_u *s, int len)
     {
 	gui_write(s, len);
 	if (p_wd)
-	    gui_wait_for_chars(p_wd);
+	    gui_wait_for_chars(p_wd, typebuf.tb_change_cnt);
 	return;
     }
 #endif
@@ -182,18 +182,13 @@ ui_inchar(
 
 #ifdef FEAT_GUI
     if (gui.in_use)
-    {
-	if (gui_wait_for_chars(wtime) && !typebuf_changed(tb_change_cnt))
-	    retval = read_from_input_buf(buf, (long)maxlen);
-    }
+	retval = gui_inchar(buf, maxlen, wtime, tb_change_cnt);
 #endif
 #ifndef NO_CONSOLE
 # ifdef FEAT_GUI
     else
 # endif
-    {
 	retval = mch_inchar(buf, maxlen, wtime, tb_change_cnt);
-    }
 #endif
 
     if (wtime == -1 || wtime > 100L)
@@ -211,6 +206,52 @@ theend:
 #endif
     return retval;
 }
+
+#if defined(FEAT_TIMERS) || defined(PROT)
+/*
+ * Wait for a timer to fire or "wait_func" to return non-zero.
+ * Returns OK when something was read.
+ * Returns FAIL when it timed out or was interrupted.
+ */
+    int
+ui_wait_for_chars_or_timer(
+    long    wtime,
+    int	    (*wait_func)(long wtime, int *interrupted, int ignore_input),
+    int	    *interrupted,
+    int	    ignore_input)
+{
+    int	    due_time;
+    long    remaining = wtime;
+    int	    tb_change_cnt = typebuf.tb_change_cnt;
+
+    /* When waiting very briefly don't trigger timers. */
+    if (wtime >= 0 && wtime < 10L)
+	return wait_func(wtime, NULL, ignore_input);
+
+    while (wtime < 0 || remaining > 0)
+    {
+	/* Trigger timers and then get the time in wtime until the next one is
+	 * due.  Wait up to that time. */
+	due_time = check_due_timer();
+	if (typebuf.tb_change_cnt != tb_change_cnt)
+	{
+	    /* timer may have used feedkeys() */
+	    return FAIL;
+	}
+	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
+	    due_time = remaining;
+	if (wait_func(due_time, interrupted, ignore_input))
+	    return OK;
+	if (interrupted != NULL && *interrupted)
+	    /* Nothing available, but need to return so that side effects get
+	     * handled, such as handling a message on a channel. */
+	    return FALSE;
+	if (wtime > 0)
+	    remaining -= due_time;
+    }
+    return FAIL;
+}
+#endif
 
 /*
  * return non-zero if a character is available
@@ -245,7 +286,7 @@ ui_delay(long msec, int ignoreinput)
 {
 #ifdef FEAT_GUI
     if (gui.in_use && !ignoreinput)
-	gui_wait_for_chars(msec);
+	gui_wait_for_chars(msec, typebuf.tb_change_cnt);
     else
 #endif
 	mch_delay(msec, ignoreinput);
@@ -3307,7 +3348,7 @@ ui_focus_change(
 }
 #endif
 
-#if defined(USE_IM_CONTROL) || defined(PROTO)
+#if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Save current Input Method status to specified place.
  */
