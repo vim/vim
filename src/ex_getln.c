@@ -180,7 +180,7 @@ abandon_cmdline(void)
     static int
 empty_pattern(char_u *p)
 {
-    int n = STRLEN(p);
+    size_t n = STRLEN(p);
 
     /* remove trailing \v and the like */
     while (n >= 2 && p[n - 2] == '\\'
