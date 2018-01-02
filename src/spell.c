@@ -579,7 +579,7 @@ spell_check(
 		do
 		{
 		    MB_PTR_ADV(mi_end);
-		} while (*mi_end != NUL && spell_iswordp(mi_end, wp->w_buffer));
+		} while (*mi_end != NUL && spell_iswordp(mi_end, wp));
 	    }
 	}
 
