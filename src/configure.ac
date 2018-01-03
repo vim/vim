@@ -2634,7 +2634,7 @@ if test -z "$SKIP_GTK2"; then
   fi
 
   if test "X$PKG_CONFIG" = "X"; then
-    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+    AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
@@ -2686,7 +2686,7 @@ if test -z "$SKIP_GTK3"; then
   fi
 
   if test "X$PKG_CONFIG" = "X"; then
-    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+    AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
