@@ -5323,6 +5323,11 @@ getwininfo([{winid}])					*getwininfo()*
 			height		window height (excluding winbar)
 			loclist		1 if showing a location list
 					{only with the +quickfix feature}
+			neighbors	list of neighbor window IDs.  The list
+					contains the window IDs of the above,
+					right, below and left windows. If a
+					neighbor window is not found in a
+					particular direction, it is set to 0.
 			quickfix	1 if quickfix or location list window
 					{only with the +quickfix feature}
 			terminal	1 if a terminal window
