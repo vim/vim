@@ -139,3 +139,23 @@ function Test_get_win_options()
     set foldlevel=0
   endif
 endfunc
+
+" Test for window neighbors
+func Test_win_neighbors()
+  enew | only
+  call assert_equal([0, 0, 0, 0], getwininfo()[0].neighbors)
+  let w1 = win_getid()
+  botright new
+  let w2 = win_getid()
+  botright new
+  let w3 = win_getid()
+  vert topleft new
+  let w4 = win_getid()
+  vert botright new
+  let w5 = win_getid()
+  call assert_equal([0, w5, w2, w4], getwininfo(w1)[0].neighbors)
+  call assert_equal([w1, w5, w3, w4], getwininfo(w2)[0].neighbors)
+  call assert_equal([w2, w5, 0, w4], getwininfo(w3)[0].neighbors)
+  call assert_equal([0, w1, 0, 0], getwininfo(w4)[0].neighbors)
+  call assert_equal([0, 0, 0, w1], getwininfo(w5)[0].neighbors)
+endfunc

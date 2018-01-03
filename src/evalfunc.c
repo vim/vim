@@ -5749,9 +5749,10 @@ f_gettagstack(typval_T *argvars, typval_T *rettv)
  * Returns information about a window as a dictionary.
  */
     static dict_T *
-get_win_info(win_T *wp, short tpnr, short winnr)
+get_win_info(tabpage_T *tp, win_T *wp, short tpnr, short winnr)
 {
     dict_T	*dict;
+    list_T	*l;
 
     dict = dict_alloc();
     if (dict == NULL)
@@ -5777,6 +5778,13 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict_add_number(dict, "loclist",
 		      (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL));
 #endif
+    /* Add neighbor window information */
+    l = list_alloc();
+    if (l != NULL)
+    {
+	win_get_neighbors(tp, wp, l);
+	dict_add_list(dict, "neighbors", l);
+    }
 
     /* Add a reference to window variables */
     dict_add_dict(dict, "variables", wp->w_vars);
@@ -5817,7 +5825,7 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
 	    winnr++;
 	    if (wparg != NULL && wp != wparg)
 		continue;
-	    d = get_win_info(wp, tabnr, winnr);
+	    d = get_win_info(tp, wp, tabnr, winnr);
 	    if (d != NULL)
 		list_append_dict(rettv->vval.v_list, d);
 	    if (wparg != NULL)
