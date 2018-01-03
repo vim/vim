@@ -5328,6 +5328,9 @@ getwininfo([{winid}])					*getwininfo()*
 					right, below and left windows. If a
 					neighbor window is not found in a
 					particular direction, it is set to 0.
+					If multiple neighbor windows are
+					present in a direction, then the
+					ID of the first window is returned.
 			quickfix	1 if quickfix or location list window
 					{only with the +quickfix feature}
 			terminal	1 if a terminal window
