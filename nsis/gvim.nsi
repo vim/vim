@@ -89,6 +89,11 @@ Page instfiles
 UninstPage uninstConfirm
 UninstPage instfiles
 
+# Reserve files
+# Needed for showing the _vimrc setting page faster.
+ReserveFile /plugin InstallOptions.dll
+ReserveFile vimrc.ini
+
 ##########################################################
 # Functions
 
