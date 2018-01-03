@@ -4362,6 +4362,7 @@ win_goto_hor(
 	win_goto(win);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
     void
 win_get_neighbors(tabpage_T *tp, win_T *wp, list_T *neighbors)
 {
@@ -4383,6 +4384,7 @@ win_get_neighbors(tabpage_T *tp, win_T *wp, list_T *neighbors)
     win = win_horz_neighbor(tp, wp, TRUE, 1);
     list_append_number(neighbors, (win != NULL && win != wp) ? win->w_id : 0);
 }
+#endif
 
 /*
  * Make window "wp" the current window.
