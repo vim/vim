@@ -233,6 +233,9 @@ read_console_input(
     int head;
     int tail;
     int i;
+    INPUT_RECORD ir;
+    int lastCols;
+    int lastRows;
 
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
@@ -278,7 +281,47 @@ read_console_input(
 	    }
 	    s_dwMax = tail + 1;
 	}
+
+	/* For events that change to the same size, the screen will be
+	 * erased, so cancel the event. */
+	if (s_dwMax > 0)
+	{
+	    head = 0;
+	    tail = s_dwMax - 1;
+	    lastCols = Columns;
+	    lastRows = Rows;
+	    do
+	    {
+		ir = s_irCache[head];
+		if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
+		{
+		    if (ir.Event.WindowBufferSizeEvent.dwSize.X == lastCols
+			&& ir.Event.WindowBufferSizeEvent.dwSize.Y == lastRows)
+		    {
+			for (i = head; i < tail; i++)
+			    s_irCache[i] = s_irCache[i + 1];
+			--tail;
+			continue;
+		    }
+		    else
+		    {
+			lastCols = ir.Event.WindowBufferSizeEvent.dwSize.X;
+			lastRows = ir.Event.WindowBufferSizeEvent.dwSize.Y;
+		    }
+		}
+	    } while (head++ < tail);
+	    s_dwMax = tail + 1;
+	}
+
+	/* As a result of processing, if it is empty, indicate it. */
+	if (s_dwMax == 0)
+	{
+	    *lpBuffer = s_irCache[0];
+	    *lpEvents = 0;
+	    return TRUE;
+	}
     }
+
 
     *lpBuffer = s_irCache[s_dwIndex];
     if (!(nLength == -1 || nLength == -2) && ++s_dwIndex >= s_dwMax)
@@ -1221,6 +1264,9 @@ decode_mouse_event(
 			    {
 				read_console_input(g_hConIn, &ir, 1, &cRecords);
 
+				if (cRecords == 0)
+				    continue;
+
 				return decode_mouse_event(pmer2);
 			    }
 			    else if (s_xOldMouse == pmer2->dwMousePosition.X &&
@@ -1554,6 +1600,9 @@ WaitForChar(long msec, int ignore_input)
 
 	    read_console_input(g_hConIn, &ir, 1, &cRecords);
 
+	    if (cRecords == 0)
+		continue;
+
 	    if (ir.EventType == FOCUS_EVENT)
 		handle_focus_event(ir);
 	    else if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
@@ -1641,6 +1690,9 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	    create_conin();
 	    continue;
 	}
+
+	if (cRecords == 0)
+	    continue;
 
 	if (ir.EventType == KEY_EVENT)
 	{
