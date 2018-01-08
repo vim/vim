@@ -9048,11 +9048,17 @@ ex_cd(exarg_T *eap)
 	    EMSG(_(e_failed));
 	else
 	{
-	    post_chdir(eap->cmdidx == CMD_lcd || eap->cmdidx == CMD_lchdir);
+	    char_u *chdir_scope;
+	    int is_local_chdir = eap->cmdidx == CMD_lcd || eap->cmdidx == CMD_lchdir;
+	    post_chdir(is_local_chdir);
 
 	    /* Echo the new current directory if the command was typed. */
 	    if (KeyTyped || p_verbose >= 5)
 		ex_pwd(eap);
+#ifdef FEAT_AUTOCMD
+	    chdir_scope = is_local_chdir ? (char_u *)"window" : (char_u *)"global";
+	    apply_autocmds(EVENT_DIRCHANGED, chdir_scope, new_dir, FALSE, curbuf);
+#endif
 	}
 	vim_free(tofree);
     }
