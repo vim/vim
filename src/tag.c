@@ -32,6 +32,8 @@ typedef struct tag_pointers
 #endif
     char_u	*tagkind;	/* "kind:" value */
     char_u	*tagkind_end;	/* end of tagkind */
+    char_u	*tagline;	/* "line:" value */
+    char_u	*tagline_end;	/* end of tagline */
 } tagptrs_T;
 
 /*
@@ -3012,6 +3014,7 @@ parse_match(
 			tagp);
 
     tagp->tagkind = NULL;
+    tagp->tagline = NULL;
     tagp->command_end = NULL;
 
     if (retval == OK)
@@ -3025,9 +3028,16 @@ parse_match(
 	    if (*p++ == TAB)
 		while (ASCII_ISALPHA(*p))
 		{
+		    if (STRNCMP(p, "line:", 5) == 0)
+		    {
+			tagp->tagline = p + 5;
+		    }
 		    if (STRNCMP(p, "kind:", 5) == 0)
 		    {
 			tagp->tagkind = p + 5;
+		    }
+		    if (tagp->tagline != NULL && tagp->tagkind != NULL)
+		    {
 			break;
 		    }
 		    pc = vim_strchr(p, ':');
@@ -3035,7 +3045,6 @@ parse_match(
 		    if (pc == NULL || (pt != NULL && pc > pt))
 		    {
 			tagp->tagkind = p;
-			break;
 		    }
 		    if (pt == NULL)
 			break;
@@ -3048,6 +3057,13 @@ parse_match(
 			    *p && *p != '\t' && *p != '\r' && *p != '\n'; ++p)
 		;
 	    tagp->tagkind_end = p;
+	}
+	if (tagp->tagline != NULL)
+	{
+	    for (p = tagp->tagline;
+			    *p && *p != '\t' && *p != '\r' && *p != '\n'; ++p)
+		;
+	    tagp->tagline_end = p;
 	}
     }
     return retval;
@@ -3332,7 +3348,15 @@ jumpto_tag(
 #endif
 #endif
 	    save_lnum = curwin->w_cursor.lnum;
-	    curwin->w_cursor.lnum = 0;	/* start search before first line */
+	    if (tagp.tagline)
+	    {
+		int tagline_num = atoi((char *)tagp.tagline);
+		curwin->w_cursor.lnum = tagline_num - 1;	/* start search before line */
+	    }
+	    else
+	    {
+		curwin->w_cursor.lnum = 0;	/* start search before first line */
+	    }
 	    if (do_search(NULL, pbuf[0], pbuf + 1, (long)1,
 						   search_options, NULL, NULL))
 		retval = OK;
