@@ -976,7 +976,7 @@ searchit(
 			    {
 #ifdef FEAT_RELTIME
 				if (timed_out != NULL && *timed_out)
-				    match_ok = false;
+				    match_ok = FALSE;
 #endif
 				break;
 			    }
