@@ -973,7 +973,13 @@ searchit(
 					      NULL, NULL
 #endif
 					    )) == 0)
+			    {
+#ifdef FEAT_RELTIME
+				if (timed_out != NULL && *timed_out)
+				    match_ok = false;
+#endif
 				break;
+			    }
 
 			    /* Need to get the line pointer again, a
 			     * multi-line search may have made it invalid. */
