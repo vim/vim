@@ -1,0 +1,63 @@
+*gruvbox8.txt*	For Vim version 8.0	Last change: 2018 January 22
+
+
+		  VIM REFERENCE MANUAL    by Lifepillar
+
+
+			Gruvbox 8 colorscheme			*gruvbox8*
+
+Gruvbox 8 is a popular colorscheme originally designed by morhetz. The Vim
+version comes in three variants:
+
+- gruvbox8: "medium" contrast;
+- gruvbox8_hard: "hard" contrast;
+- gruvbox8_soft: "soft" contrast.
+
+Each variant supports dark and light backgrounds, so you must set 'background'
+before loading the colorscheme. For example:
+>
+	set background=dark
+	colorscheme gruvbox8
+<
+Gruvbox 8 requires at least 256 colors and supports "true color" terminals.
+
+==============================================================================
+1. Colorscheme options					*gruvbox-options*
+
+						*g:gruvbox_improved_strings*
+Set to 1 if you want strings with a lighter background.
+>
+	let g:gruvbox_improved_strings = 0
+<
+						*g:gruvbox_improved_warnings*
+When set to 0 (which is the default), wrongly capitalized words and compile
+warnings are underlined. Set to 1 if you prefer to use a different color and
+boldface rather than underlining.
+>
+	let g:gruvbox_improved_warnings = 0
+<
+							*g:gruvbox_italic*
+Set to 1 if you want to enable italics in the terminal. Note that the terminal
+must support italics.
+>
+	let g:gruvbox_italic = 0
+<
+						*g:gruvbox_italicize_strings*
+Set to 1 if you want strings in italics.
+>
+	let g:gruvbox_italicize_strings = 0
+<
+						*g:gruvbox_invert_selection*
+When set to 1, selected text in Visual mode has inverted colors. When set to
+0 (which is the default), colors are not reversed.
+>
+	let g:gruvbox_invert_selection = 0
+<
+						*g:gruvbox_transp_bg*
+Set to 1 if you want a transparent background. Takes effect only in the
+terminal.
+>
+	let g:gruvbox_transp_bg = 0
+<
+
+vim:tw=78:ts=8:ft=help:norl:
