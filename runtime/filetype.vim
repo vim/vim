@@ -239,6 +239,7 @@ endif
 
 " C or lpc
 au BufNewFile,BufRead *.c			call dist#ft#FTlpc()
+au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
 
 " Calendar
 au BufNewFile,BufRead calendar			setf calendar
@@ -1153,7 +1154,8 @@ au BufNewFile,BufRead *.pod6			setf pod6
 au BufNewFile,BufRead *.php,*.php\d,*.phtml,*.ctp	setf php
 
 " Pike
-au BufNewFile,BufRead *.pike,*.lpc,*.ulpc,*.pmod setf pike
+au BufNewFile,BufRead *.pike,*.pmod		setf pike
+au BufNewFile,BufRead *.cmod			setf cmod
 
 " Pinfo config
 au BufNewFile,BufRead */etc/pinforc,*/.pinforc	setf pinfo
