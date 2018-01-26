@@ -378,7 +378,7 @@ au BufNewFile,BufRead *.cfm,*.cfi,*.cfc		setf cf
 au BufNewFile,BufRead configure.in,configure.ac setf config
 
 " CUDA  Cumpute Unified Device Architecture
-au BufNewFile,BufRead *.cu			setf cuda
+au BufNewFile,BufRead *.cu,*.cuh		    setf cuda
 
 " Dockerfile
 au BufNewFile,BufRead Dockerfile,*.Dockerfile	setf dockerfile
