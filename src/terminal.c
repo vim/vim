@@ -3386,7 +3386,7 @@ term_and_job_init(
     HANDLE	    jo = NULL;
     HANDLE	    child_process_handle;
     HANDLE	    child_thread_handle;
-    void	    *winpty_err;
+    void	    *winpty_err = NULL;
     void	    *spawn_config = NULL;
     garray_T	    ga_cmd, ga_env;
     char_u	    *cmd = NULL;
