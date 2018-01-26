@@ -10,7 +10,7 @@
 :: When that also fails, it uses the English version.
 
 :: Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
-FOR %%d in (. %TMP% %TEMP%) DO IF EXIST %%d\nul SET TUTORCOPY=%%d\$tutor$
+FOR %%d in (. "%TMP%" "%TEMP%") DO IF EXIST %%d\nul SET TUTORCOPY=%%d\$tutor$
 
 SET xx=%1
 
