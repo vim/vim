@@ -795,3 +795,14 @@ func Test_terminal_aucmd_on_close()
   au! repro
   delfunc Nop
 endfunc
+
+func Test_terminal_term_start_empty_command()
+  let cmd = "call term_start('', {'curwin' : 1, 'term_finish' : 'close'})"
+  call assert_fails(cmd, 'E474')
+  let cmd = "call term_start('', {'curwin' : 1, 'term_finish' : 'close'})"
+  call assert_fails(cmd, 'E474')
+  let cmd = "call term_start({}, {'curwin' : 1, 'term_finish' : 'close'})"
+  call assert_fails(cmd, 'E474')
+  let cmd = "call term_start(0, {'curwin' : 1, 'term_finish' : 'close'})"
+  call assert_fails(cmd, 'E474')
+endfunc

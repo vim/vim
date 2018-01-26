@@ -42,6 +42,7 @@
  *   a job that uses 16 colors while Vim is using > 256.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
+ * - Trigger TerminalOpen event?  #2422  patch in #2484
  * - Shift-Tab does not work.
  * - after resizing windows overlap. (Boris Staletic, #2164)
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
@@ -62,6 +63,8 @@
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
+ * - if the job in the terminal does not support the mouse, we can use the
+ *   mouse in the Terminal window for copy/paste and scrolling.
  * - GUI: when using tabs, focus in terminal, click on tab does not work.
  * - GUI: when 'confirm' is set and trying to exit Vim, dialog offers to save
  *   changes to "!shell".
@@ -69,8 +72,6 @@
  * - Redrawing is slow with Athena and Motif.  Also other GUI? (Ramel Eshed)
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
- * - if the job in the terminal does not support the mouse, we can use the
- *   mouse in the Terminal window for copy/paste.
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
  * - In the GUI use a terminal emulator for :!cmd.  Make the height the same as
@@ -3388,28 +3389,36 @@ term_and_job_init(
     void	    *winpty_err;
     void	    *spawn_config = NULL;
     garray_T	    ga_cmd, ga_env;
-    char_u	    *cmd;
+    char_u	    *cmd = NULL;
 
     if (dyn_winpty_init(TRUE) == FAIL)
 	return FAIL;
+    ga_init2(&ga_cmd, (int)sizeof(char*), 20);
+    ga_init2(&ga_env, (int)sizeof(char*), 20);
 
     if (argvar->v_type == VAR_STRING)
-	cmd = argvar->vval.v_string;
-    else
     {
-	ga_init2(&ga_cmd, (int)sizeof(char*), 20);
+	cmd = argvar->vval.v_string;
+    }
+    else if (argvar->v_type == VAR_LIST)
+    {
 	if (win32_build_cmd(argvar->vval.v_list, &ga_cmd) == FAIL)
 	    goto failed;
 	cmd = ga_cmd.ga_data;
     }
+    if (cmd == NULL || *cmd == NUL)
+    {
+	EMSG(_(e_invarg));
+	goto failed;
+    }
 
     cmd_wchar = enc_to_utf16(cmd, NULL);
+    ga_clear(&ga_cmd);
     if (cmd_wchar == NULL)
-	return FAIL;
+	goto failed;
     if (opt->jo_cwd != NULL)
 	cwd_wchar = enc_to_utf16(opt->jo_cwd, NULL);
 
-    ga_init2(&ga_env, (int)sizeof(char*), 20);
     win32_build_env(opt->jo_env, &ga_env, TRUE);
     env_wchar = ga_env.ga_data;
 
@@ -3490,6 +3499,7 @@ term_and_job_init(
     winpty_spawn_config_free(spawn_config);
     vim_free(cmd_wchar);
     vim_free(cwd_wchar);
+    vim_free(env_wchar);
 
     create_vterm(term, term->tl_rows, term->tl_cols);
 
@@ -3511,9 +3521,8 @@ term_and_job_init(
     return OK;
 
 failed:
-    if (argvar->v_type == VAR_LIST)
-	vim_free(ga_cmd.ga_data);
-    vim_free(ga_env.ga_data);
+    ga_clear(&ga_cmd);
+    ga_clear(&ga_env);
     vim_free(cmd_wchar);
     vim_free(cwd_wchar);
     if (spawn_config != NULL)
