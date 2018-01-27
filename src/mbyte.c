@@ -1784,6 +1784,7 @@ dbcs_ptr2char(char_u *p)
  * Convert a UTF-8 byte sequence to a wide character.
  * If the sequence is illegal or truncated by a NUL the first byte is
  * returned.
+ * For an overlong sequence this may return zero.
  * Does not include composing characters, of course.
  */
     int
@@ -4112,7 +4113,10 @@ mb_adjustpos(buf_T *buf, pos_T *lp)
 	    )
     {
 	p = ml_get_buf(buf, lp->lnum, FALSE);
-	lp->col -= (*mb_head_off)(p, p + lp->col);
+	if (*p == NUL || (int)STRLEN(p) < lp->col)
+	    lp->col = 0;
+	else
+	    lp->col -= (*mb_head_off)(p, p + lp->col);
 #ifdef FEAT_VIRTUALEDIT
 	/* Reset "coladd" when the cursor would be on the right half of a
 	 * double-wide character. */
