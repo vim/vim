@@ -2193,6 +2193,15 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 #endif
 	}
 	gtk_window_present(GTK_WINDOW(frdp->dialog));
+
+	/* For :promptfind dialog, always give keyboard focus to 'what' entry.
+	 * For :promptrepl dialog, give it to 'with' entry if 'what' has an
+	 * non-empty entry; otherwise, to 'what' entry. */
+	gtk_widget_grab_focus(frdp->what);
+	if (do_replace && gtk_entry_get_text_length(GTK_ENTRY(frdp->what)))
+	    gtk_widget_grab_focus(frdp->with);
+
+
 	vim_free(entry_text);
 	return;
     }
