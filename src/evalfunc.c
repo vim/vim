@@ -5916,13 +5916,23 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_PERSISTENT_UNDO
 	"persistent_undo",
 #endif
-#if defined(FEAT_PYTHON) && !defined(DYNAMIC_PYTHON)
+#if defined(FEAT_PYTHON)
+	"python_compiled",
+# if defined(DYNAMIC_PYTHON)
+	"python_dynamic",
+# else
 	"python",
 	"pythonx",
+# endif
 #endif
-#if defined(FEAT_PYTHON3) && !defined(DYNAMIC_PYTHON3)
+#if defined(FEAT_PYTHON3)
+	"python3_compiled",
+# if defined(DYNAMIC_PYTHON3)
+	"python3_dynamic",
+# else
 	"python3",
 	"pythonx",
+# endif
 #endif
 #ifdef FEAT_POSTSCRIPT
 	"postscript",

@@ -9009,8 +9009,12 @@ persistent_undo		Compiled with support for persistent undo history.
 postscript		Compiled with PostScript file printing.
 printer			Compiled with |:hardcopy| support.
 profile			Compiled with |:profile| support.
-python			Compiled with Python 2.x interface. |has-python|
-python3			Compiled with Python 3.x interface. |has-python|
+python			Python 2.x interface available. |has-python|
+python_compiled		Compiled with Python 2.x interface. |has-python|
+python_dynamic		Python 2.x interface is dynamically loaded. |has-python|
+python3			Python 3.x interface available. |has-python|
+python3_compiled	Compiled with Python 3.x interface. |has-python|
+python3_dynamic		Python 3.x interface is dynamically loaded. |has-python|
 pythonx			Compiled with |python_x| interface. |has-pythonx|
 qnx			QNX version of Vim.
 quickfix		Compiled with |quickfix| support.
