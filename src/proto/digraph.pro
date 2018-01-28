@@ -6,4 +6,5 @@ void putdigraph(char_u *str);
 void listdigraphs(void);
 char_u *keymap_init(void);
 void ex_loadkeymap(exarg_T *eap);
+void keymap_clear(garray_T *kmap);
 /* vim: set ft=c : */

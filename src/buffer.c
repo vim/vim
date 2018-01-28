@@ -2212,6 +2212,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_isk);
 #ifdef FEAT_KEYMAP
     clear_string_option(&buf->b_p_keymap);
+    keymap_clear(&buf->b_kmap_ga);
     ga_clear(&buf->b_kmap_ga);
 #endif
 #ifdef FEAT_COMMENTS
