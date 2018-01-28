@@ -2634,7 +2634,7 @@ if test -z "$SKIP_GTK2"; then
   fi
 
   if test "X$PKG_CONFIG" = "X"; then
-    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+    AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
@@ -2686,7 +2686,7 @@ if test -z "$SKIP_GTK3"; then
   fi
 
   if test "X$PKG_CONFIG" = "X"; then
-    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+    AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
@@ -3797,16 +3797,16 @@ dnl when -lacl works, also try to use -lattr (required for Debian).
 dnl On Solaris, use the acl_get/set functions in libsec, if present.
 AC_MSG_CHECKING(--disable-acl argument)
 AC_ARG_ENABLE(acl,
-	[  --disable-acl           Don't check for ACL support.],
+	[  --disable-acl           No check for ACL support.],
 	, [enable_acl="yes"])
 if test "$enable_acl" = "yes"; then
-AC_MSG_RESULT(no)
-AC_CHECK_LIB(posix1e, acl_get_file, [LIBS="$LIBS -lposix1e"],
+  AC_MSG_RESULT(no)
+  AC_CHECK_LIB(posix1e, acl_get_file, [LIBS="$LIBS -lposix1e"],
 	AC_CHECK_LIB(acl, acl_get_file, [LIBS="$LIBS -lacl"
 		  AC_CHECK_LIB(attr, fgetxattr, LIBS="$LIBS -lattr",,)],,),)
 
-AC_MSG_CHECKING(for POSIX ACL support)
-AC_TRY_LINK([
+  AC_MSG_CHECKING(for POSIX ACL support)
+  AC_TRY_LINK([
 #include <sys/types.h>
 #ifdef HAVE_SYS_ACL_H
 # include <sys/acl.h>
@@ -3817,9 +3817,9 @@ acl_t acl;], [acl = acl_get_file("foo", ACL_TYPE_ACCESS);
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_POSIX_ACL),
 	AC_MSG_RESULT(no))
 
-AC_CHECK_LIB(sec, acl_get, [LIBS="$LIBS -lsec"; AC_DEFINE(HAVE_SOLARIS_ZFS_ACL)],
-AC_MSG_CHECKING(for Solaris ACL support)
-AC_TRY_LINK([
+  AC_CHECK_LIB(sec, acl_get, [LIBS="$LIBS -lsec"; AC_DEFINE(HAVE_SOLARIS_ZFS_ACL)],
+  AC_MSG_CHECKING(for Solaris ACL support)
+  AC_TRY_LINK([
 #ifdef HAVE_SYS_ACL_H
 # include <sys/acl.h>
 #endif], [acl("foo", GETACLCNT, 0, NULL);
@@ -3827,8 +3827,8 @@ AC_TRY_LINK([
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SOLARIS_ACL),
 	AC_MSG_RESULT(no)))
 
-AC_MSG_CHECKING(for AIX ACL support)
-AC_TRY_LINK([
+  AC_MSG_CHECKING(for AIX ACL support)
+  AC_TRY_LINK([
 #if STDC_HEADERS
 # include <stdlib.h>
 # include <stddef.h>
