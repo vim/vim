@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Dec 23
+*todo.txt*      For Vim version 8.0.  Last change: 2018 Jan 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -133,7 +133,8 @@ http://vimawesome.com/?q=tag:color-scheme
 Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
 - monokai - Xia Crusoe (2017 Aug 4) 
 - seoul256 - Christian Brabandt (2017 Aug 3)
-- gruvbox -  Christian Brabandt (2017 Aug 3)
+- gruvbox -  Christian Brabandt (2017 Aug 3) (simplified version from
+      Lifepillar, 2018 Jan 22, #2573)
 - janah - Marco Hinz (2017 Aug 4)
 - apprentice - Romain Lafourcade (2017 Aug 6)  remarks about help file #1964
 Suggested by Hiroki Kokubun:
@@ -151,6 +152,56 @@ Reproducible:
 	arga
 	al
 	al
+Patch to fix using freed memory. (Christian Brabandt, 2018 Jan 6, #2467)
+
+Patch for nsis runtime files. (Ken Takata, 2018 Jan 25)
+
+Patch for scheme runtime files (new version) (Evan Hanson, 2018 Jan 26)
+
+Patch to turn tests into new style. (Yegappan, 2017 Dec 29, #2509)
+
+Patch to fix crash in rubyf. (W, #2512) fixes #2511
+
+Updates for Debian runtime files. (James McCoy, 2018 Jan 7)
+
+Crash when calling term_start() with empty command on windows. (Wang Shidong,
+2018 Dec 27, #2501)
+
+Patch to improve DirectX rendering. (Ken Takata, 2018 Jan 18, #2560 fixes
+#2401)
+
+Endless loop invovlving gui_mch_stop_blink(). (zdohnal, 2018 Jan 11)
+
+Patch to add 'pythonhome' and 'pythonthreehome' options. (Kazuki Sakamoto,
+2016 Nov 21, #1266)
+
+"silent! try" doesn't restore emsg_silent when an exception is thrown.
+(Ben Reilly, 2018 Jan 5, #2531)  Possible solution by Christian Brabandt, 2018
+Jan 6.
+
+Patch to fix ex mode buffering output. (Brian M. Carlson, 2018 Jan 8, #2537)
+
+Patch for config.vim syntax file. (James McCoy, 2018 Jan 28, maintainer didn't
+respond).
+
+Patch to add support for clojure script filetype detection. (David Burgin,
+2018 Jan 20, #257)
+
+Patch to implement the DirChanged autocmd event. (Andy Massimino, 2018 Jan 9,
+replaces #888)
+
+Patch to fix not adding a slash after :find completion. (Genki Sky, 2018 Jan
+10)
+
+Patch for man.vim, fix for Mac. (SungHyun Nam, 2018 Jan 8, #2488)
+Update Jan 10.
+
+Patch to fix illegal memory access in del_bytes(). (Christian Brabandt, 2018
+Jan 2, #2466)
+
+Recursive use of alist_add() (Christian Brabandt, 2018 Jan 6, #2472)
+
+patch 1218 breaks etags. (zdohnal, 2018 Jan 5)
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
@@ -161,14 +212,58 @@ Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in get_address() (#2248)
 - signed integer overflow in getdecchrs() (#2254)
 - signed integer overflow in nfa_regatom() (#2251)
+    patch by Christian Brabandt, 2018 Jan 8
 - undefined left shift in get_string_tv() (#2250)
+
+Patch to fix CursorIM highlighting on Windows. (Ken Takata, 2018 Jan 18)
+
+Cursor in wrong screen line with WinBar. (#2362)
+Fix by Christian Brabandt (2018 Jan 2)
 
 balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
 20, #2481)
 Also see #2352, want better control over balloon, perhaps set the position.
 
+Patch to make installer faster. (Ken Takata, 2018 Jan 3, #2522)
+
+Patch to support hunspell. (Matej Cepl, Jan 2018, #2500)
+
+Cursor in status line after search. (#2530)
+
+Cursor in wrong position when line wraps. (#2540)
+
+Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
+
+Patch for minimum width of completion popup menu. (Christian Brabandt, 2018
+Jan 3, #2314)
+
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
+
+Patch to make D&D work between 32 bit app and 64 bit Vim. (Ken Takata, #2504)
+
+Patch to fix invalid return value with backwards searchpair. (Daniel Hahler,
+2018 Jan 15, #2552)
+
+Column number is wrong whsn using 'linebreak' and 'wrap'. (Keith Smiley, 2018
+Jan 15, #2555)
+
+Patch to remove redundant "if". (Dominique Pelle, 2018 Jan 14)
+
+Serbian translations. (Peseic, 2018 Jan 17)
+
+Check argument of systemlist(). (Pavlov)
+
+Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
+#2546)
+
+Patch to fix illegal memory access. (Christian Brabandt,  2018 Jan 6, #2523)
+
+When 'inchsearch' and 'hlsearch' are set /\v highlights everything.
+Also see #2337
+
+Starting job with cwd option, when the directory does not exist, gives a
+confusing error message. (Wang Shidong, 2018 Jan 2, #2519)
 
 7   Add a watchpoint in the debug mode: An expression that breaks execution
     when evaluating to non-zero.  Add the "watchadd expr" command, stop when
@@ -178,6 +273,20 @@ Patch by Christian Brabandt, 2016 Jun 10, #859
 
 7   Make "ga" show the digraph for a character, if it exists.
 Patch from Christian Brabandt, 2011 Aug 19.
+
+Patch to add "module" to quickfix entries. (Marcin Szamotulski, Coot, 2017 Jun
+8, #1757)  Now part of #2322.  Or #2327?  #1757 was re-opened, include that
+first.
+
+ch_sendraw() with long string does not try to read inbetween, which may cause
+a deadlock if the reading side is waiting for the write to finish. (Nate
+Bosch, 2018 Jan 13, #2548)
+
+Problem with mouse scroll in tmux. (fcying, #2419)  Might be caused by patch
+8.0.1309.
+
+Des setting 'cursorline' cause syntax highlighting to slow down?  Perhaps is
+mess up the cache?  (Mike Lee Williams, 2018 Jan 27, #2539)
 
 Fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
 
@@ -196,6 +305,19 @@ Takasaki, Ken Takata, 2017 Oct 1, #2060).
 
 ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
 Lemonboy can reproduce (2017 Jun 5)
+
+When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
+highlighted. (van-debugger, 2018 Jan 23, #2576)
+
+Patch to add winlayout() function. (Yegappan Lakshmanan, 2018 Jan 4)
+
+No profile information for function that executes ":quit". (Daniel Hahler,
+2017 Dec 26, #2501)
+
+Get a "No Name" buffer when 'hidden' is set and opening a new window from the
+quickfix list. (bfrg, 2018 Jan 22, #2574)
+
+A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
 
 Patch to fix E806. (Dominique, 2017 Nov 22, #2368)
 Kazunobu Kuriyama: caused by XtSetLanguageProc().
@@ -218,6 +340,9 @@ Patch to fix encoding in print document name (Yasuhiro Matsumoto, 2017 Dec 20,
 
 Patch to copy buffer-local options before buffer leaves the window. (Bjorn
 Linse, 2017 Nov 14, #2336)
+
+Join truncates xml comment. (Dmitrii Tcyganok, 2017 Dec 24, #2494)
+Requires 'formatoptions' to include "j". (Gary Johnson, 2017 Dec 24)
 
 When a timer is running and typing CTRL-R on the command line, it is not
 redrawn properly. (xtal8, 2017 Oct 23, #2241)
@@ -276,12 +401,11 @@ line breaks. (Ken Takata, 2017 Aug 22)
 The ":move" command does not honor closed folds. (Ryan Lue, #2351)
 
 Memory leaks in test_channel? (or is it because of fork())
-Memory leak in test_arabic.
 Using uninitialized value in test_crypt.
 Memory leaks in test_escaped_glob
 
 Patch to clear background when "guibg=NONE" is used and 'termguicolors' is
-set.
+set. (Nick Jensen, 2017 Nov 13, #2332, based on #981 by Kazunobu Kuriyama)
 
 Patch to make gM move to middle of line. (Yasuhiro Matsumoto, Sep 8, #2070)
 
@@ -291,6 +415,9 @@ Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
 Now on github: #1856.  Updated Oct 2017
 Got permission to include this under the Vim license.
+
+Patch to include hunspell support. (Matej Cepl, 2017 Dec 26, #845)
+Doesn't work on Windows yet.
 
 Refactored HTML indent file. (Michael Lee, #1821)
 
@@ -356,10 +483,6 @@ stack trace. (Yggdroot, 2017 Jul 28, #1887)
 
 Profile of a dict function is lost when the dict is deleted.  Would it be
 possible to collect this?  (Daniel Hahler, #2350)
-
-Patch to add "module" to quickfix entries. (Marcin Szamotulski, Coot, 2017 Jun
-8, #1757)  Now part of #2322.  Or #2327?  #1757 was re-opened, include that
-first.
 
 Add `:filter` support for various commands (Marcin Szamotulski, 2017 Nov 12
 #2322)  Now in #2327?
@@ -438,7 +561,7 @@ Perhaps simpler: actually delete the mappings.  Use maplist() to list matching
 mappings (with a lhs prefix, like maparg()), mapdelete() to delete,
 maprestore() to restore (using the output of maplist()).
 
-Add an argument to :mkvimrc (or add aother command) to skip mappings from
+Add an argument to :mkvimrc (or add another command) to skip mappings from
 plugins (source is a Vim script).  No need to put these in a .vimrc, they will
 be defined when the plugin is loaded.
 
@@ -707,9 +830,6 @@ Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 Have a way to get the call stack, in a function and from an exception.
 #1125
 
-Patch to add 'pythonhome' and 'pythonthreehome' options. (Kazuki Sakamoto,
-2016 Nov 21, #1266)
-
 Second problem in #966: ins_compl_add_tv() uses get_dict_string() multiple
 times, overwrites the one buffer. (Nikolay Pavlov, 2016 Aug 5)
 
@@ -953,7 +1073,8 @@ When using --remote-tab on MS-Windows 'encoding' hasn't been initialized yet,
 the file name ends up encoded wrong. (Raul Coronado, 2015 Dec 21)
 
 Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
-Sep 10)
+Sep 10) Update 2018 Jan 4  #2575
+Alternate change by Ken Takata.
 
 Example in editing.txt uses $HOME with the expectation that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
@@ -1915,8 +2036,6 @@ Searching for composing char works, but not when inside []. (ZyX, Benjamin R.
 Haskell, 2010 Aug 24)
 
 This does not work yet: "a\(%C\)" (get composing characters into a submatch).
-
-A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
 
 Inconsistent: starting with $LANG set to es_ES.utf-8 gives Spanish
 messages, even though locale is not supported.  But ":lang messages

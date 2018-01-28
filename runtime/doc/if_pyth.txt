@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 8.0.  Last change: 2017 Nov 09
+*if_pyth.txt*   For Vim version 8.0.  Last change: 2018 Jan 28
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -809,7 +809,8 @@ Raising SystemExit exception in python isn't endorsed way to quit vim, use: >
 You can test what Python version is available with: >
 	if has('python')
 	  echo 'there is Python 2.x'
-  	elseif has('python3')
+	endif
+  	if has('python3')
 	  echo 'there is Python 3.x'
 	endif
 
@@ -817,6 +818,24 @@ Note however, that when Python 2 and 3 are both available and loaded
 dynamically, these has() calls will try to load them.  If only one can be
 loaded at a time, just checking if Python 2 or 3 are available will prevent
 the other one from being available.
+
+To avoid loading the dynamic library, only check if Vim was compiled with
+python support: >
+	if has('python_compiled')
+	  echo 'compiled with Python 2.x support'
+	  if has('python_dynamic
+	    echo 'Python 2.x dynamically loaded
+	  endif
+	endif
+  	if has('python3_compiled')
+	  echo 'compiled with Python 3.x support'
+	  if has('python3_dynamic
+	    echo 'Python 3.x dynamically loaded
+	  endif
+	endif
+
+This also tells you whether Python is dynamically loaded, which will fail if
+the runtime library cannot be found.
 
 ==============================================================================
 11. Python X						*python_x* *pythonx*

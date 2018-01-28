@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2017 Dec 22
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Jan 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -149,11 +149,6 @@ Syntax ~
 			keys in the terminal window.  For MS-Windows see the
 			++eof argument below.
 
-			Two comma separated numbers are used as "rows,cols".
-			E.g. `:24,80gdb` opens a terminal with 24 rows and 80
-			columns.  However, if the terminal window spans the
-			Vim window with, there is no vertical split, the Vim
-			window width is used.
 						*term++close* *term++open*
 			Supported [options] are:
 			++close		The terminal window will close
@@ -168,9 +163,15 @@ Syntax ~
 			++hidden	Open the terminal in a hidden buffer,
 					no window will be used.
 			++rows={height} Use {height} for the terminal window
-					height.
+					height.  If the terminal uses the full
+					Vim height (no window above or below
+					th terminal window) the command line
+					height will be reduced as needed.
 			++cols={width}  Use {width} for the terminal window
-					width.
+					width. If the terminal uses the full
+					Vim width (no window left or right of
+					the terminal window) this value is
+					ignored.
 			++eof={text}	when using [range]: text to send after
 					the last line was written. Cannot
 					contain white space.  A CR is
@@ -524,6 +525,7 @@ interface.  This probably requires gdb version 7.12.  if you get this error:
 	Undefined command: "new-ui". Try "help".~
 Then your gdb is too old.
 
+					*hl-debugPC* *hl-debugBreakpoint*
 The color of the signs can be adjusted with these highlight groups:
 - debugPC		the current position
 - debugBreakpoint	a breakpoint

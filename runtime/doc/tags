@@ -6825,6 +6825,8 @@ hl-SpellLocal	syntax.txt	/*hl-SpellLocal*
 hl-SpellRare	syntax.txt	/*hl-SpellRare*
 hl-StatusLine	syntax.txt	/*hl-StatusLine*
 hl-StatusLineNC	syntax.txt	/*hl-StatusLineNC*
+hl-StatusLineTerm	syntax.txt	/*hl-StatusLineTerm*
+hl-StatusLineTermNC	syntax.txt	/*hl-StatusLineTermNC*
 hl-TabLine	syntax.txt	/*hl-TabLine*
 hl-TabLineFill	syntax.txt	/*hl-TabLineFill*
 hl-TabLineSel	syntax.txt	/*hl-TabLineSel*
@@ -6839,6 +6841,8 @@ hl-Visual	syntax.txt	/*hl-Visual*
 hl-VisualNOS	syntax.txt	/*hl-VisualNOS*
 hl-WarningMsg	syntax.txt	/*hl-WarningMsg*
 hl-WildMenu	syntax.txt	/*hl-WildMenu*
+hl-debugBreakpoint	terminal.txt	/*hl-debugBreakpoint*
+hl-debugPC	terminal.txt	/*hl-debugPC*
 hlID()	eval.txt	/*hlID()*
 hlexists()	eval.txt	/*hlexists()*
 hlsearch-variable	eval.txt	/*hlsearch-variable*

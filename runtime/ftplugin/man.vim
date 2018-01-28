@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2017 Nov 11
+" Last Change: 	2018 Jan 15
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -39,7 +39,7 @@ if &filetype == "man"
 endif
 
 if exists(":Man") != 2
-  com -nargs=+ Man call s:GetPage(<f-args>)
+  com -nargs=+ -complete=shellcmd Man call s:GetPage(<f-args>)
   nmap <Leader>K :call <SID>PreGetPage(0)<CR>
   nmap <Plug>ManPreGetPage :call <SID>PreGetPage(0)<CR>
 endif
@@ -173,7 +173,15 @@ func <SID>GetPage(...)
 
   " Ensure Vim is not recursively invoked (man-db does this) when doing ctrl-[
   " on a man page reference by unsetting MANPAGER.
-  silent exec "r !env -u MANPAGER man ".s:GetCmdArg(sect, page)." | col -b"
+  " Some versions of env(1) do not support the '-u' option, and in such case
+  " we set MANPAGER=cat.
+  if !exists('s:env_has_u')
+    call system('env -u x true')
+    let s:env_has_u = (v:shell_error == 0)
+  endif
+  let env_cmd = s:env_has_u ? 'env -u MANPAGER' : 'env MANPAGER=cat'
+  let man_cmd = env_cmd . ' man ' . s:GetCmdArg(sect, page) . ' | col -b'
+  silent exec "r !" . man_cmd
 
   if unsetwidth
     let $MANWIDTH = ''

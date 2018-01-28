@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 8.0.  Last change: 2017 Nov 30
+*mbyte.txt*     For Vim version 8.0.  Last change: 2018 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -1258,7 +1258,7 @@ Combining forms:
 10.  Input with imactivatefunc()				*mbyte-func*
 
 Vim has the 'imactivatefunc' and 'imstatusfunc' options. These are useful to
-activate/deativate the input method from Vim in any way, also with an external
+activate/deactivate the input method from Vim in any way, also with an external
 command. For example, fcitx provide fcitx-remote command: >
 
 	set iminsert=2

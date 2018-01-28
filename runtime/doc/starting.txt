@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2017 Nov 18
+*starting.txt*  For Vim version 8.0.  Last change: 2018 Jan 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1043,7 +1043,7 @@ giving the mapping.
 Defaults without a .vimrc file ~
 							*defaults.vim*
 If Vim is started normally and no user vimrc file is found, the
-$VIMRUTIME/defaults.vim script is loaded.  This will set 'compatible' off,
+$VIMRUNTIME/defaults.vim script is loaded.  This will set 'compatible' off,
 switch on syntax highlighting and a few more things.  See the script for
 details.  NOTE: this is done since Vim 8.0, not in Vim 7.4. (it was added in
 patch 7.4.2111 to be exact).

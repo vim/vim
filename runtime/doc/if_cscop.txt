@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 8.0.  Last change: 2017 Nov 23
+*if_cscop.txt*  For Vim version 8.0.  Last change: 2018 Jan 21
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -478,7 +478,7 @@ The cscope interface/support for Vim was originally written by
 Andy Kahn <ackahn@netapp.com>.  The original structure (as well as a tiny
 bit of code) was adapted from the cscope interface in nvi.
 							*cscope-win32*
-For a cscope version for Win32 see (seems abandonded):
+For a cscope version for Win32 see (seems abandoned):
 	https://code.google.com/archive/p/cscope-win32/
 
 Win32 support was added by Sergey Khorev <sergey.khorev@gmail.com>.  Contact
