@@ -677,7 +677,7 @@ cs_cnt_matches(int idx)
 {
     char *stok;
     char *buf;
-    int nlines;
+    int nlines=0;
 
     buf = (char *)alloc(CSREAD_BUFSIZE);
     if (buf == NULL)
@@ -703,6 +703,12 @@ cs_cnt_matches(int idx)
 	 */
 	if ((stok = strtok(buf, (const char *)" ")) == NULL)
 	    continue;
+	/*
+	 * When the search() function in cscope encounters an error or does not
+	 * not find the pattern it returns this message
+	 */
+	if (strstr((const char *)stok, "Unable to search database") == NULL)
+	    break;
 	if (strstr((const char *)stok, "cscope:") == NULL)
 	    continue;
 
