@@ -156,9 +156,11 @@
 /* Define if you the function: */
 #undef HAVE_FCHDIR
 #undef HAVE_FCHOWN
+#undef HAVE_FCHMOD
+#undef HAVE_FLOAT_FUNCS
 #undef HAVE_FSEEKO
 #undef HAVE_FSYNC
-#undef HAVE_FLOAT_FUNCS
+#undef HAVE_FTRUNCATE
 #undef HAVE_GETCWD
 #undef HAVE_GETPGID
 #undef HAVE_GETPSEUDOTTY

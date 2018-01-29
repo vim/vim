@@ -352,9 +352,7 @@ func Test_terminal_curwin()
   call delete('Xtext')
 endfunc
 
-func Test_finish_open_close()
-  call assert_equal(1, winnr('$'))
-
+func s:get_sleep_cmd()
   if s:python != ''
     let cmd = s:python . " test_short_sleep.py"
     let waittime = 500
@@ -367,12 +365,18 @@ func Test_finish_open_close()
       let cmd = 'sleep 1'
     endif
   endif
+  return [cmd, waittime]
+endfunc
+
+func Test_terminal_finish_open_close()
+  call assert_equal(1, winnr('$'))
+
+  let [cmd, waittime] = s:get_sleep_cmd()
 
   exe 'terminal ++close ' . cmd
   call assert_equal(2, winnr('$'))
   wincmd p
   call WaitFor("winnr('$') == 1", waittime)
-  call assert_equal(1, winnr('$'))
 
   call term_start(cmd, {'term_finish': 'close'})
   call assert_equal(2, winnr('$'))
@@ -428,6 +432,27 @@ func Test_terminal_cwd()
 
   exe buf . 'bwipe'
   call delete('Xdir', 'rf')
+endfunc
+
+func Test_terminal_servername()
+  if !has('clientserver')
+    return
+  endif
+  let g:buf = Run_shell_in_terminal({})
+  " Wait for the shell to display a prompt
+  call WaitFor('term_getline(g:buf, 1) != ""')
+  if has('win32')
+    call term_sendkeys(g:buf, "echo %VIM_SERVERNAME%\r")
+  else
+    call term_sendkeys(g:buf, "echo $VIM_SERVERNAME\r")
+  endif
+  call term_wait(g:buf)
+  call Stop_shell_in_terminal(g:buf)
+  call WaitFor('getline(2) == v:servername')
+  call assert_equal(v:servername, getline(2))
+
+  exe g:buf . 'bwipe'
+  unlet g:buf
 endfunc
 
 func Test_terminal_env()
@@ -648,15 +673,16 @@ func TerminalTmap(remap)
   else
     tnoremap 123 456
   endif
-  tmap 456 abcde
+  " don't use abcde, it's an existing command
+  tmap 456 abxde
   call assert_equal('456', maparg('123', 't'))
-  call assert_equal('abcde', maparg('456', 't'))
+  call assert_equal('abxde', maparg('456', 't'))
   call feedkeys("123", 'tx')
   let g:buf = buf
-  call WaitFor("term_getline(g:buf,term_getcursor(g:buf)[0]) =~ 'abcde\\|456'")
+  call WaitFor("term_getline(g:buf,term_getcursor(g:buf)[0]) =~ 'abxde\\|456'")
   let lnum = term_getcursor(buf)[0]
   if a:remap
-    call assert_match('abcde', term_getline(buf, lnum))
+    call assert_match('abxde', term_getline(buf, lnum))
   else
     call assert_match('456', term_getline(buf, lnum))
   endif
@@ -742,4 +768,41 @@ func Test_terminal_composing_unicode()
   bwipe!
   unlet g:job
   let &encoding = save_enc
+endfunc
+
+func Test_terminal_aucmd_on_close()
+  fun Nop()
+    let s:called = 1
+  endfun
+
+  aug repro
+      au!
+      au BufWinLeave * call Nop()
+  aug END
+
+  let [cmd, waittime] = s:get_sleep_cmd()
+
+  call assert_equal(1, winnr('$'))
+  new
+  call setline(1, ['one', 'two'])
+  exe 'term ++close ' . cmd
+  wincmd p
+  call WaitFor("winnr('$') == 2", waittime)
+  call assert_equal(1, s:called)
+  bwipe!
+
+  unlet s:called
+  au! repro
+  delfunc Nop
+endfunc
+
+func Test_terminal_term_start_empty_command()
+  let cmd = "call term_start('', {'curwin' : 1, 'term_finish' : 'close'})"
+  call assert_fails(cmd, 'E474')
+  let cmd = "call term_start('', {'curwin' : 1, 'term_finish' : 'close'})"
+  call assert_fails(cmd, 'E474')
+  let cmd = "call term_start({}, {'curwin' : 1, 'term_finish' : 'close'})"
+  call assert_fails(cmd, 'E474')
+  let cmd = "call term_start(0, {'curwin' : 1, 'term_finish' : 'close'})"
+  call assert_fails(cmd, 'E474')
 endfunc

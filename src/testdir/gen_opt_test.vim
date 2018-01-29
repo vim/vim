@@ -19,6 +19,9 @@ let script = [
 /#define p_term
 let end = line('.')
 
+" font name that works everywhere (hopefully)
+let fontname = has('win32') ? 'fixedsys' : 'fixed'
+
 " Two lists with values: values that work and values that fail.
 " When not listed, "othernum" or "otherstring" is used.
 let test_values = {
@@ -93,8 +96,9 @@ let test_values = {
       \ 'foldmarker': [['((,))'], ['', 'xxx']],
       \ 'formatoptions': [['', 'vt', 'v,t'], ['xxx']],
       \ 'guicursor': [['', 'n:block-Cursor'], ['xxx']],
-      \ 'guifont': [['', 'fixedsys'], []],
-      \ 'guifontwide': [['', 'fixedsys'], []],
+      \ 'guifont': [['', fontname], []],
+      \ 'guifontwide': [['', fontname], []],
+      \ 'guifontset': [['', fontname], []],
       \ 'helplang': [['', 'de', 'de,it'], ['xxx']],
       \ 'highlight': [['', 'e:Error'], ['xxx']],
       \ 'imactivatekey': [['', 'S-space'], ['xxx']],
@@ -126,6 +130,7 @@ let test_values = {
       \ 'tagcase': [['smart', 'match'], ['', 'xxx', 'smart,match']],
       \ 'term': [[], []],
       \ 'termsize': [['', '24x80', '0x80', '32x0', '0x0'], ['xxx', '80', '8ax9', '24x80b']],
+      \ 'termencoding': [has('gui_gtk') ? [] : ['', 'utf-8'], ['xxx']],
       \ 'toolbar': [['', 'icons', 'text'], ['xxx']],
       \ 'toolbariconsize': [['', 'tiny', 'huge'], ['xxx']],
       \ 'ttymouse': [['', 'xterm'], ['xxx']],
@@ -189,8 +194,11 @@ while 1
       call add(script, "endif")
     endif
 
-    call add(script, 'set ' . name . '&')
-    call add(script, 'set ' . shortname . '&')
+    " cannot change 'termencoding' in GTK
+    if name != 'termencoding' || !has('gui_gtk')
+      call add(script, 'set ' . name . '&')
+      call add(script, 'set ' . shortname . '&')
+    endif
     if name == 'verbosefile'
       call add(script, 'call delete("xxx")')
     endif

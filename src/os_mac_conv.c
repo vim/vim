@@ -14,7 +14,6 @@
  */
 
 #define NO_X11_INCLUDES
-typedef int BalloonEval;    /* used in header files */
 
 #include "vim.h"
 

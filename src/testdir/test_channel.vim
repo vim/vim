@@ -515,7 +515,7 @@ func Test_nl_pipe()
     call assert_equal("AND this", ch_readraw(handle))
 
     call ch_sendraw(handle, "split this line\n")
-    call assert_equal("this linethis linethis line", ch_readraw(handle))
+    call assert_equal("this linethis linethis line", ch_read(handle))
 
     let reply = ch_evalraw(handle, "quit\n")
     call assert_equal("Goodbye!", reply)
@@ -1266,6 +1266,31 @@ func Test_read_in_close_cb()
   endtry
 endfunc
 
+" Use channel in NL mode but received text does not end in NL.
+func Test_read_in_close_cb_incomplete()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_read_in_close_cb_incomplete()')
+
+  let g:Ch_received = ''
+  func! CloseHandler(chan)
+    while ch_status(a:chan, {'part': 'out'}) == 'buffered'
+      let g:Ch_received .= ch_read(a:chan)
+    endwhile
+  endfunc
+  let job = job_start(s:python . " test_channel_pipe.py incomplete",
+	\ {'close_cb': 'CloseHandler'})
+  call assert_equal("run", job_status(job))
+  try
+    call WaitFor('g:Ch_received != ""')
+    call assert_equal('incomplete', g:Ch_received)
+  finally
+    call job_stop(job)
+    delfunc CloseHandler
+  endtry
+endfunc
+
 func Test_out_cb_lambda()
   if !has('job')
     return
@@ -1694,19 +1719,23 @@ func Test_cwd()
   let g:envstr = ''
   if has('win32')
     let expect = $TEMP
-    call job_start(['cmd', '/c', 'echo %CD%'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
+    let job = job_start(['cmd', '/c', 'echo %CD%'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
   else
     let expect = $HOME
-    call job_start(['pwd'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
+    let job = job_start(['pwd'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
   endif
-  call WaitFor('"" != g:envstr')
-  let expect = substitute(expect, '[/\\]$', '', '')
-  let g:envstr = substitute(g:envstr, '[/\\]$', '', '')
-  if $CI != '' && stridx(g:envstr, '/private/') == 0
-    let g:envstr = g:envstr[8:]
-  endif
-  call assert_equal(expect, g:envstr)
-  unlet g:envstr
+  try
+    call WaitFor('"" != g:envstr')
+    let expect = substitute(expect, '[/\\]$', '', '')
+    let g:envstr = substitute(g:envstr, '[/\\]$', '', '')
+    if $CI != '' && stridx(g:envstr, '/private/') == 0
+      let g:envstr = g:envstr[8:]
+    endif
+    call assert_equal(expect, g:envstr)
+  finally
+    call job_stop(job)
+    unlet g:envstr
+  endtry
 endfunc
 
 function Ch_test_close_lambda(port)
@@ -1731,7 +1760,7 @@ endfunc
 func s:test_list_args(cmd, out, remove_lf)
   try
     let g:out = ''
-    call job_start([s:python, '-c', a:cmd], {'callback': {ch, msg -> execute('let g:out .= msg')}, 'out_mode': 'raw'})
+    let job = job_start([s:python, '-c', a:cmd], {'callback': {ch, msg -> execute('let g:out .= msg')}, 'out_mode': 'raw'})
     call WaitFor('"" != g:out')
     if has('win32')
       let g:out = substitute(g:out, '\r', '', 'g')
@@ -1741,6 +1770,7 @@ func s:test_list_args(cmd, out, remove_lf)
     endif
     call assert_equal(a:out, g:out)
   finally
+    call job_stop(job)
     unlet g:out
   endtry
 endfunc

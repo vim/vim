@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.0.  Last change: 2017 Sep 04
+*intro.txt*     For Vim version 8.0.  Last change: 2018 Jan 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -138,7 +138,7 @@ There are two ways to report bugs, both work:
    see the message.  If you don't want that, e.g. because it is a security
    issue, send it to <bugs@vim.org>, this only goes to the Vim maintainer
    (that's Bram).
-2. Open issue on GitHub: https://github.com/vim/vim/issues
+2. Open an issue on GitHub: https://github.com/vim/vim/issues
    The text will be forwarded to the vim-dev maillist.
 
 Please be brief; all the time that is spent on answering mail is subtracted

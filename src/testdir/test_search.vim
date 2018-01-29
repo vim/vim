@@ -461,6 +461,15 @@ func Test_search_cmdline7()
   " moves to next match of previous search pattern, just like /<cr>
   call feedkeys("/\<c-t>\<cr>", 'tx')
   call assert_equal([0,1,7,0], getpos('.'))
+
+  " using an offset uses the last search pattern
+  call cursor(1, 1)
+  call setline(1, ['1 bbvimb', ' 2 bbvimb'])
+  let @/ = 'b'
+  call feedkeys("//e\<c-g>\<cr>", 'tx')
+  call assert_equal('1 bbvimb', getline('.'))
+  call assert_equal(4, col('.'))
+
   set noincsearch
   call test_override("char_avail", 0)
   bw!
@@ -711,4 +720,21 @@ func Test_search_multibyte()
   call assert_equal(2, search('Ａ', 'bce', line('.')))
   enew!
   let &encoding = save_enc
+endfunc
+
+" This was causing E874.  Also causes an invalid read?
+func Test_look_behind()
+  new
+  call setline(1, '0\|\&\n\@<=') 
+  call search(getline("."))
+  bwipe!
+endfunc
+
+func Test_search_sentence()
+  new
+  " this used to cause a crash
+  call assert_fails("/\\%')", 'E486')
+  call assert_fails("/", 'E486')
+  /\%'(
+  /
 endfunc

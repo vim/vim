@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 8.0.  Last change: 2017 Apr 28
+*os_mac.txt*    For Vim version 8.0.  Last change: 2018 Jan 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -165,7 +165,7 @@ and then run `make` to build Vim.  The order of the options doesn't matter.
 
 To make sure at runtime whether or not the darwin feature is compiled in, you
 can use `has('osxdarwin')` which returns 1 if the feature is compiled in; 0
-otherwise.  For backwards comptibility, you can still use `macunix` instead of
+otherwise.  For backward compatibility, you can still use `macunix` instead of
 `osxdarwin`.
 
 Notable use cases where `--disable-darwin` is turned out to be useful are:

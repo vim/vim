@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Nov 11
+*todo.txt*      For Vim version 8.0.  Last change: 2018 Jan 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,10 +35,6 @@ entered there will not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Permission of viminfo tempfile can be wrong. (Simon Ruderich)
-Always use 600 ?  Also avoids groups problem.
-patch from Simon Ruderich, Nov 8
-
 No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
 
@@ -49,10 +45,6 @@ Terminal emulator window:
     - Implement the right-click popup menu for the terminal. Can use the
       completion popup menu code and mouse dragging.
       Use it for "set breakpoint", "remove breakpoint", etc.
-    - make showballoon() work in a terminal.  Requires getting mouse-move
-      events.
-    - send 'balloonText' events for the cursor position (using CursorHold ?)
-      in terminal mode.
   - get ideas from http://clewn.sf.net
   - Look into the idevim plugin/script.
 - Improve testing:
@@ -88,6 +80,8 @@ Terminal emulator window:
     Although user could use "xterm -e 'cmd arg'".
 
 Regexp problems:
+- When search pattern has the base character both with and without combining
+  character, search fails.  E.g. "รรีบ" in "การรีบรักใคร". (agguser, #2312)
 - [:space:] only matches ASCII spaces.  Add [:white:] for all space-like
   characters, esp. including 0xa0.  Use character class zero.
 - Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
@@ -136,30 +130,163 @@ Regexp problems:
 Include a few color schemes, based on popularity:
 http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
 http://vimawesome.com/?q=tag:color-scheme
-Use names that indicate their apperance (Christian Brabandt, 2017 Aug 3)
+Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
 - monokai - Xia Crusoe (2017 Aug 4) 
 - seoul256 - Christian Brabandt (2017 Aug 3)
-- gruvbox -  Christian Brabandt (2017 Aug 3)
+- gruvbox -  Christian Brabandt (2017 Aug 3) (simplified version from
+      Lifepillar, 2018 Jan 22, #2573)
 - janah - Marco Hinz (2017 Aug 4)
 - apprentice - Romain Lafourcade (2017 Aug 6)  remarks about help file #1964
 Suggested by Hiroki Kokubun:
 - [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
 - [hybrid](https://github.com/w0ng/vim-hybrid)
 Include solarized color scheme?, it does not support termguicolors.
--> Make check for colorscheme that it's sane.
+- Sanitized version of pablo (Lifepillar, 2017 Nov 21)
+
+Reproducible:
+    invalid memory access in regexp with zero-width.
+	reproduced by Dominique, 2017 Dec 23
+    heap-use-after-free in win_equal_rec (#2467)
+        au* 0 vs¡
+	ar0
+	arga
+	al
+	al
+Patch to fix using freed memory. (Christian Brabandt, 2018 Jan 6, #2467)
+
+Patch for nsis runtime files. (Ken Takata, 2018 Jan 25)
+
+Patch for scheme runtime files (new version) (Evan Hanson, 2018 Jan 26)
+
+Patch to turn tests into new style. (Yegappan, 2017 Dec 29, #2509)
+
+Patch to fix crash in rubyf. (W, #2512) fixes #2511
+
+Updates for Debian runtime files. (James McCoy, 2018 Jan 7)
+
+Crash when calling term_start() with empty command on windows. (Wang Shidong,
+2018 Dec 27, #2501)
+
+Patch to improve DirectX rendering. (Ken Takata, 2018 Jan 18, #2560 fixes
+#2401)
+
+Endless loop invovlving gui_mch_stop_blink(). (zdohnal, 2018 Jan 11)
+
+Patch to add 'pythonhome' and 'pythonthreehome' options. (Kazuki Sakamoto,
+2016 Nov 21, #1266)
+
+"silent! try" doesn't restore emsg_silent when an exception is thrown.
+(Ben Reilly, 2018 Jan 5, #2531)  Possible solution by Christian Brabandt, 2018
+Jan 6.
+
+Patch to fix ex mode buffering output. (Brian M. Carlson, 2018 Jan 8, #2537)
+
+Patch for config.vim syntax file. (James McCoy, 2018 Jan 28, maintainer didn't
+respond).
+
+Patch to add support for clojure script filetype detection. (David Burgin,
+2018 Jan 20, #257)
+
+Patch to implement the DirChanged autocmd event. (Andy Massimino, 2018 Jan 9,
+replaces #888)
+
+Patch to fix not adding a slash after :find completion. (Genki Sky, 2018 Jan
+10)
+
+Patch for man.vim, fix for Mac. (SungHyun Nam, 2018 Jan 8, #2488)
+Update Jan 10.
+
+Patch to fix illegal memory access in del_bytes(). (Christian Brabandt, 2018
+Jan 2, #2466)
+
+Recursive use of alist_add() (Christian Brabandt, 2018 Jan 6, #2472)
+
+patch 1218 breaks etags. (zdohnal, 2018 Jan 5)
+
+Errors found with random data:
+    heap-buffer-overflow in alist_add (#2472)
+    heap-buffer-overflow in del_bytes (#2466)
 
 Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in do_sub() (#2249)
 - signed integer overflow in get_address() (#2248)
 - signed integer overflow in getdecchrs() (#2254)
 - signed integer overflow in nfa_regatom() (#2251)
+    patch by Christian Brabandt, 2018 Jan 8
 - undefined left shift in get_string_tv() (#2250)
 
-When starting with --clean packages under "start" are not loaded.  Make this
-work:  :packadd START {name}  similar to :runtime START name
+Patch to fix CursorIM highlighting on Windows. (Ken Takata, 2018 Jan 18)
+
+Cursor in wrong screen line with WinBar. (#2362)
+Fix by Christian Brabandt (2018 Jan 2)
+
+balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
+20, #2481)
+Also see #2352, want better control over balloon, perhaps set the position.
+
+Patch to make installer faster. (Ken Takata, 2018 Jan 3, #2522)
+
+Patch to support hunspell. (Matej Cepl, Jan 2018, #2500)
+
+Cursor in status line after search. (#2530)
+
+Cursor in wrong position when line wraps. (#2540)
+
+Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
+
+Patch for minimum width of completion popup menu. (Christian Brabandt, 2018
+Jan 3, #2314)
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
+
+Patch to make D&D work between 32 bit app and 64 bit Vim. (Ken Takata, #2504)
+
+Patch to fix invalid return value with backwards searchpair. (Daniel Hahler,
+2018 Jan 15, #2552)
+
+Column number is wrong whsn using 'linebreak' and 'wrap'. (Keith Smiley, 2018
+Jan 15, #2555)
+
+Patch to remove redundant "if". (Dominique Pelle, 2018 Jan 14)
+
+Serbian translations. (Peseic, 2018 Jan 17)
+
+Check argument of systemlist(). (Pavlov)
+
+Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
+#2546)
+
+Patch to fix illegal memory access. (Christian Brabandt,  2018 Jan 6, #2523)
+
+When 'inchsearch' and 'hlsearch' are set /\v highlights everything.
+Also see #2337
+
+Starting job with cwd option, when the directory does not exist, gives a
+confusing error message. (Wang Shidong, 2018 Jan 2, #2519)
+
+7   Add a watchpoint in the debug mode: An expression that breaks execution
+    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
+    the value of the expression changes.  ":watchdel" deletes an item,
+    ":watchlist" lists the items. (Charles Campbell)
+Patch by Christian Brabandt, 2016 Jun 10, #859
+
+7   Make "ga" show the digraph for a character, if it exists.
+Patch from Christian Brabandt, 2011 Aug 19.
+
+Patch to add "module" to quickfix entries. (Marcin Szamotulski, Coot, 2017 Jun
+8, #1757)  Now part of #2322.  Or #2327?  #1757 was re-opened, include that
+first.
+
+ch_sendraw() with long string does not try to read inbetween, which may cause
+a deadlock if the reading side is waiting for the write to finish. (Nate
+Bosch, 2018 Jan 13, #2548)
+
+Problem with mouse scroll in tmux. (fcying, #2419)  Might be caused by patch
+8.0.1309.
+
+Des setting 'cursorline' cause syntax highlighting to slow down?  Perhaps is
+mess up the cache?  (Mike Lee Williams, 2018 Jan 27, #2539)
 
 Fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
 
@@ -173,12 +300,49 @@ Using 'wildignore' also applies to literally entered file name.  Also with
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
 
+Patch for 24 bit color support in MS-Windows console, using vcon. (Nobuhiro
+Takasaki, Ken Takata, 2017 Oct 1, #2060).
+
 ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
 Lemonboy can reproduce (2017 Jun 5)
+
+When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
+highlighted. (van-debugger, 2018 Jan 23, #2576)
+
+Patch to add winlayout() function. (Yegappan Lakshmanan, 2018 Jan 4)
+
+No profile information for function that executes ":quit". (Daniel Hahler,
+2017 Dec 26, #2501)
+
+Get a "No Name" buffer when 'hidden' is set and opening a new window from the
+quickfix list. (bfrg, 2018 Jan 22, #2574)
+
+A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
+
+Patch to fix E806. (Dominique, 2017 Nov 22, #2368)
+Kazunobu Kuriyama: caused by XtSetLanguageProc().
+
+Patch to fix GUI find/replace dialog. (kiloliter, 2017 Dec 11, report in
+#2418, fix in #2435)
+
+Invalid range error when using BufWinLeave for closing terminal.
+(Gabriel Barta, 2017 Nov 15, #2339)
 
 ml_get errors with buggy script. (Dominique, 2017 Apr 30)
 
 Error in emsg with buggy script. (Dominique, 2017 Apr 30)
+
+Patch to avoid clearing the intro message on Win32 console.
+(Ken Takata, 2017 Nov 14)
+
+Patch to fix encoding in print document name (Yasuhiro Matsumoto, 2017 Dec 20,
+#2478)
+
+Patch to copy buffer-local options before buffer leaves the window. (Bjorn
+Linse, 2017 Nov 14, #2336)
+
+Join truncates xml comment. (Dmitrii Tcyganok, 2017 Dec 24, #2494)
+Requires 'formatoptions' to include "j". (Gary Johnson, 2017 Dec 24)
 
 When a timer is running and typing CTRL-R on the command line, it is not
 redrawn properly. (xtal8, 2017 Oct 23, #2241)
@@ -186,8 +350,20 @@ redrawn properly. (xtal8, 2017 Oct 23, #2241)
 Universal solution to detect if t_RS is working, using cursor position.
 Koichi Iwamoto, #2126
 
+Patch to fix cmdline abbreviation after '<,'>. (Christian Brabandt, 2017 Nov
+13, on issue #2320)
+
+Patch for Neovim concerning restoring when closing help window. (glacambre
+neovim #7431)
+
 Default install on MS-Windows should source defaults.vim.
 Ask whether to use Windows or Vim key behavior?
+
+Patch for improving detecting Ruby on Mac in configure. (Ilya Mikhaltsou, 2017
+Nov 21)
+
+Add a ModeChanged autocommand that has an argument indicating the old and new
+mode.  Also used for switching Terminal mode.
 
 When using command line window, CmdlineLeave is triggered without
 CmdlineEnter.  (xtal8, 2017 Oct 30, #2263)
@@ -196,8 +372,13 @@ always nested.
 
 matchit hasn't been maintained for a long time.  #955.
 
-MS-Windows: buffer completetion doesn't work when using backslash (or slash)
+Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
+
+MS-Windows: buffer completion doesn't work when using backslash (or slash)
 for a path separator. (xtal8, #2201)
+
+Patch to adjust to DPI setting for GTK. (Roel van de Kraats, 2017 Nov 20,
+#2357)
 
 Test runtime files.
 Start with filetype detection: testdir/test_filetype.vim
@@ -217,19 +398,26 @@ Still happens (2017 Jul 9)
 When bracketed paste is used, pasting at the ":append" prompt does not get the
 line breaks. (Ken Takata, 2017 Aug 22)
 
-Patch for 24 bit color support in MS-Windows console, using vcon. (Nobuhiro
-Takasaki, 2017 Oct 1, #2060).  Ready to include now?
+The ":move" command does not honor closed folds. (Ryan Lue, #2351)
 
 Memory leaks in test_channel? (or is it because of fork())
-Memory leak in test_arabic.
 Using uninitialized value in test_crypt.
+Memory leaks in test_escaped_glob
+
+Patch to clear background when "guibg=NONE" is used and 'termguicolors' is
+set. (Nick Jensen, 2017 Nov 13, #2332, based on #981 by Kazunobu Kuriyama)
 
 Patch to make gM move to middle of line. (Yasuhiro Matsumoto, Sep 8, #2070)
+
+Cannot copy modeless selection when cursor is inside it. (lkintact, #2300)
 
 Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
 Now on github: #1856.  Updated Oct 2017
 Got permission to include this under the Vim license.
+
+Patch to include hunspell support. (Matej Cepl, 2017 Dec 26, #845)
+Doesn't work on Windows yet.
 
 Refactored HTML indent file. (Michael Lee, #1821)
 
@@ -251,6 +439,9 @@ Alternatives for ~:
     ->  list->get()  two characters, used for lambda
 
 The ++ options for the :edit command are also useful on the Vim command line.
+
+When recovering a file, put the swap file name in b:recovered_swapfile.  Then
+a command can delete it.
 
 Overlong utf-8 sequence is displayed wrong. (Harm te Hennepe, 2017 Sep 14,
 #2089)  Patch with possible solution by Björn Linse.
@@ -290,8 +481,11 @@ Patch to add argument to :cquit. (Thinca, 2014 Oct 12)
 Python: After "import vim" error messages only show the first line of the
 stack trace. (Yggdroot, 2017 Jul 28, #1887)
 
-Patch to add "module" to quickfix entries. (Marcin Szamotulski, Coot, 2017 Jun
-8, #1757)
+Profile of a dict function is lost when the dict is deleted.  Would it be
+possible to collect this?  (Daniel Hahler, #2350)
+
+Add `:filter` support for various commands (Marcin Szamotulski, 2017 Nov 12
+#2322)  Now in #2327?
 
 When checking if a bufref is valid, also check the buffer number, to catch the
 case of :bwipe followed by :new.
@@ -367,7 +561,7 @@ Perhaps simpler: actually delete the mappings.  Use maplist() to list matching
 mappings (with a lhs prefix, like maparg()), mapdelete() to delete,
 maprestore() to restore (using the output of maplist()).
 
-Add an argument to :mkvimrc (or add aother command) to skip mappings from
+Add an argument to :mkvimrc (or add another command) to skip mappings from
 plugins (source is a Vim script).  No need to put these in a .vimrc, they will
 be defined when the plugin is loaded.
 
@@ -582,7 +776,7 @@ Probably list of keystrokes, with some annotations for mode changes.
 Could store in logfile to be able to analyse it with an external command.
 E.g. to see when's the last time a plugin command was used.
 
-execute() cannot be used with command completeion. (Daniel Hahler, 2016 Oct 1,
+execute() cannot be used with command completion. (Daniel Hahler, 2016 Oct 1,
 #1141)
 
 cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
@@ -635,9 +829,6 @@ Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 
 Have a way to get the call stack, in a function and from an exception.
 #1125
-
-Patch to add 'pythonhome' and 'pythonthreehome' options. (Kazuki Sakamoto,
-2016 Nov 21, #1266)
 
 Second problem in #966: ins_compl_add_tv() uses get_dict_string() multiple
 times, overwrites the one buffer. (Nikolay Pavlov, 2016 Aug 5)
@@ -752,12 +943,6 @@ directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 In debug mode one can inspect variables, but not the function parameters
 (starting with a:). (Luc Hermitte, 2017 Jan 4, #1352)
-
-7   Add a watchpoint in the debug mode: An expression that breaks execution
-    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
-    the value of the expression changes.  ":watchdel" deletes an item,
-    ":watchlist" lists the items. (Charles Campbell)
-Patch by Christian Brabandt, 2016 Jun 10, #859
 
 If ":bd" also closes a Tab page then the " mark is not set.  (Harm te Hennepe,
 2016 Apr 25, #780)
@@ -888,7 +1073,8 @@ When using --remote-tab on MS-Windows 'encoding' hasn't been initialized yet,
 the file name ends up encoded wrong. (Raul Coronado, 2015 Dec 21)
 
 Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
-Sep 10)
+Sep 10) Update 2018 Jan 4  #2575
+Alternate change by Ken Takata.
 
 Example in editing.txt uses $HOME with the expectation that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
@@ -994,8 +1180,6 @@ Patch to open folds for 'incsearch'. (Christian Brabandt, 2015 Jan 6)
 
 Patch for building a 32bit Vim with 64bit MingW compiler.
 (Michael Soyka, 2014 Oct 15)
-
-Delete old code in os_msdos.c, mch_FullName().
 
 Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)
@@ -1188,13 +1372,6 @@ The CompleteDone autocommand needs some info passed to it:
 Patch to allow more types in remote_expr(). (Lech Lorens, 2014 Jan 5)
 Doesn't work for string in list.  Other way to pass all types of variables
 reliably?
-
-Using ":call foo#d.f()" doesn't autoload the "foo.vim" file.
-That is, calling a dictionary function on an autoloaded dict.
-Works OK for echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar
-17)
-Patch by Christian Brabandt, 2013 Mar 23.
-Not 100% sure this is the right solution.
 
 Patch to add {lhs} to :mapclear: clear all maps starting with {lhs}.
 (Christian Brabandt, 2013 Dec 9)
@@ -1464,9 +1641,6 @@ doesn't jump to the correct line with :cfirst. (ZyX,  2011 Sep 18)
 
 Behavior of i" and a" text objects isn't logical. (Ben Fritz, 2013 Nov 19)
 
-7   Make "ga" show the digraph for a character, if it exists.
-Patch from Christian Brabandt, 2011 Aug 19.
-
 maparg() does not show the <script> flag.  When temporarily changing a
 mapping, how to restore the script ID?
 
@@ -1483,9 +1657,6 @@ Also for another example (ZyX, 2011 Jan 24)
 Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
 
 "0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
-
-Patch to add TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
-May 24)  Update May 26.
 
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
@@ -1865,8 +2036,6 @@ Searching for composing char works, but not when inside []. (ZyX, Benjamin R.
 Haskell, 2010 Aug 24)
 
 This does not work yet: "a\(%C\)" (get composing characters into a submatch).
-
-A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
 
 Inconsistent: starting with $LANG set to es_ES.utf-8 gives Spanish
 messages, even though locale is not supported.  But ":lang messages
@@ -4653,7 +4822,7 @@ Command line history:
 -   Add "KeyWasTyped" flag: It's reset before each command and set when a
     character from the keyboard is consumed. Value is used to decide to put a
     command line in history or not. Put line in history if it didn't
-    completely resulted from one mapping.
+    completely result from one mapping.
 -   When using ":browse", also put the resulting edit command in the history,
     so that it can be repeated. (Demirel)
 

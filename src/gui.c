@@ -738,9 +738,12 @@ gui_init(void)
 	 * resized. */
 	win_new_shellsize();
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	/* Always create the Balloon Evaluation area, but disable it when
-	 * 'ballooneval' is off */
+	 * 'ballooneval' is off. */
+	if (balloonEval != NULL)
+	    vim_free(balloonEval);
+	balloonEvalForTerm = FALSE;
 # ifdef FEAT_GUI_GTK
 	balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,
 						     &general_beval_cb, NULL);
@@ -1075,7 +1078,7 @@ gui_update_cursor(
 	gui_undraw_cursor();
 	if (gui.row < 0)
 	    return;
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 	if (gui.row != gui.cursor_row || gui.col != gui.cursor_col)
 	    im_set_position(gui.row, gui.col);
 #endif
@@ -1118,7 +1121,8 @@ gui_update_cursor(
 	gui_mch_set_blinking(shape->blinkwait,
 			     shape->blinkon,
 			     shape->blinkoff);
-	if (shape->blinkoff == 0 || shape->blinkon == 0 || shape->blinkoff == 0)
+	if (shape->blinkwait == 0 || shape->blinkon == 0
+						       || shape->blinkoff == 0)
 	    gui_mch_stop_blink();
 #ifdef FEAT_TERMINAL
 	if (shape_bg != INVALCOLOR)
@@ -1132,7 +1136,7 @@ gui_update_cursor(
 	if (id > 0)
 	{
 	    cattr = syn_id2colors(id, &cfg, &cbg);
-#if defined(USE_IM_CONTROL) || defined(FEAT_HANGULIN)
+#if defined(FEAT_XIM) || defined(FEAT_HANGULIN)
 	    {
 		static int iid;
 		guicolor_T fg, bg;
@@ -2881,6 +2885,20 @@ gui_insert_lines(int row, int count)
     }
 }
 
+#ifdef FEAT_TIMERS
+/*
+ * Passed to ui_wait_for_chars_or_timer(), ignoring extra arguments.
+ */
+    static int
+gui_wait_for_chars_3(
+    long wtime,
+    int *interrupted UNUSED,
+    int ignore_input UNUSED)
+{
+    return gui_mch_wait_for_chars(wtime);
+}
+#endif
+
 /*
  * Returns OK if a character was found to be available within the given time,
  * or FAIL otherwise.
@@ -2889,32 +2907,7 @@ gui_insert_lines(int row, int count)
 gui_wait_for_chars_or_timer(long wtime)
 {
 #ifdef FEAT_TIMERS
-    int	    due_time;
-    long    remaining = wtime;
-    int	    tb_change_cnt = typebuf.tb_change_cnt;
-
-    /* When waiting very briefly don't trigger timers. */
-    if (wtime >= 0 && wtime < 10L)
-	return gui_mch_wait_for_chars(wtime);
-
-    while (wtime < 0 || remaining > 0)
-    {
-	/* Trigger timers and then get the time in wtime until the next one is
-	 * due.  Wait up to that time. */
-	due_time = check_due_timer();
-	if (typebuf.tb_change_cnt != tb_change_cnt)
-	{
-	    /* timer may have used feedkeys() */
-	    return FAIL;
-	}
-	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
-	    due_time = remaining;
-	if (gui_mch_wait_for_chars(due_time))
-	    return OK;
-	if (wtime > 0)
-	    remaining -= due_time;
-    }
-    return FAIL;
+    return ui_wait_for_chars_or_timer(wtime, gui_wait_for_chars_3, NULL, 0);
 #else
     return gui_mch_wait_for_chars(wtime);
 #endif
@@ -2929,10 +2922,12 @@ gui_wait_for_chars_or_timer(long wtime)
  * or FAIL otherwise.
  */
     int
-gui_wait_for_chars(long wtime)
+gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
     int	    retval;
-    int	    tb_change_cnt = typebuf.tb_change_cnt;
+#if defined(ELAPSED_FUNC) && defined(FEAT_AUTOCMD)
+    ELAPSED_TYPE start_tv;
+#endif
 
 #ifdef FEAT_MENU
     /*
@@ -2962,6 +2957,10 @@ gui_wait_for_chars(long wtime)
 	return retval;
     }
 
+#if defined(ELAPSED_FUNC) && defined(FEAT_AUTOCMD)
+    ELAPSED_INIT(start_tv);
+#endif
+
     /*
      * While we are waiting indefinitely for a character, blink the cursor.
      */
@@ -2970,13 +2969,17 @@ gui_wait_for_chars(long wtime)
     retval = FAIL;
     /*
      * We may want to trigger the CursorHold event.  First wait for
-     * 'updatetime' and if nothing is typed within that time put the
-     * K_CURSORHOLD key in the input buffer.
+     * 'updatetime' and if nothing is typed within that time, and feedkeys()
+     * wasn't used, put the K_CURSORHOLD key in the input buffer.
      */
     if (gui_wait_for_chars_or_timer(p_ut) == OK)
 	retval = OK;
 #ifdef FEAT_AUTOCMD
-    else if (trigger_cursorhold())
+    else if (trigger_cursorhold()
+# ifdef ELAPSED_FUNC
+	    && ELAPSED_FUNC(start_tv) >= p_ut
+# endif
+	    && typebuf.tb_change_cnt == tb_change_cnt)
     {
 	char_u	buf[3];
 
@@ -2999,6 +3002,22 @@ gui_wait_for_chars(long wtime)
 
     gui_mch_stop_blink();
     return retval;
+}
+
+/*
+ * Equivalent of mch_inchar() for the GUI.
+ */
+    int
+gui_inchar(
+    char_u  *buf,
+    int	    maxlen,
+    long    wtime,		/* milli seconds */
+    int	    tb_change_cnt)
+{
+    if (gui_wait_for_chars(wtime, tb_change_cnt)
+	    && !typebuf_changed(tb_change_cnt))
+	return read_from_input_buf(buf, (long)maxlen);
+    return 0;
 }
 
 /*

@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.0.  Last change: 2017 Sep 16
+*various.txt*   For Vim version 8.0.  Last change: 2017 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -310,9 +310,12 @@ g8			Print the hex values of the bytes used in the
 B  *+arabic*		|Arabic| language support
 N  *+autocmd*		|:autocmd|, automatic commands
 H  *+autoservername*	Automatically enable |clientserver|
-m  *+balloon_eval*	|balloon-eval| support. Included when compiling with
-			supported GUI (Motif, GTK, GUI) and either
-			Netbeans/Sun Workshop integration or |+eval| feature.
+m  *+balloon_eval*	|balloon-eval| support in the GUI. Included when
+			compiling with supported GUI (Motif, GTK, GUI) and
+			either Netbeans/Sun Workshop integration or |+eval|
+			feature.
+H  *+balloon_eval_term*	|balloon-eval| support in the terminal,
+			'balloonevalterm'
 N  *+browse*		|:browse| command
 N  *+builtin_terms*	some terminals builtin |builtin-terms|
 B  *++builtin_terms*	maximal terminals builtin |builtin-terms|

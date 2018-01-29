@@ -782,7 +782,7 @@ win_split_ins(
     /* add a status line when p_ls == 1 and splitting the first window */
     if (ONE_WINDOW && p_ls == 1 && oldwin->w_status_height == 0)
     {
-	if (oldwin->w_height <= p_wmh && new_wp == NULL)
+	if (VISIBLE_HEIGHT(oldwin) <= p_wmh && new_wp == NULL)
 	{
 	    EMSG(_(e_noroom));
 	    return FAIL;
@@ -892,7 +892,7 @@ win_split_ins(
 	 * height.
 	 */
 	/* Current window requires at least 1 space. */
-	wmh1 = (p_wmh == 0 ? 1 : p_wmh);
+	wmh1 = (p_wmh == 0 ? 1 : p_wmh) + WINBAR_HEIGHT(curwin);
 	needed = wmh1 + STATUS_HEIGHT;
 	if (flags & WSP_ROOM)
 	    needed += p_wh - wmh1;
@@ -1081,8 +1081,7 @@ win_split_ins(
 
     /* Set w_fraction now so that the cursor keeps the same relative
      * vertical position. */
-    if (oldwin->w_height > 0)
-	set_fraction(oldwin);
+    set_fraction(oldwin);
     wp->w_fraction = oldwin->w_fraction;
 
     if (flags & WSP_VERT)
@@ -1099,21 +1098,14 @@ win_split_ins(
 	    /* set height and row of new window to full height */
 	    wp->w_winrow = tabline_height();
 	    win_new_height(wp, curfrp->fr_height - (p_ls > 0)
-#ifdef FEAT_MENU
-		    - wp->w_winbar_height
-#endif
-		    );
+							  - WINBAR_HEIGHT(wp));
 	    wp->w_status_height = (p_ls > 0);
 	}
 	else
 	{
 	    /* height and row of new window is same as current window */
 	    wp->w_winrow = oldwin->w_winrow;
-	    win_new_height(wp, oldwin->w_height
-#ifdef FEAT_MENU
-		    + oldwin->w_winbar_height
-#endif
-		    );
+	    win_new_height(wp, VISIBLE_HEIGHT(oldwin));
 	    wp->w_status_height = oldwin->w_status_height;
 	}
 	frp->fr_height = curfrp->fr_height;
@@ -1172,10 +1164,7 @@ win_split_ins(
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    int new_fr_height = curfrp->fr_height - new_size
-#ifdef FEAT_MENU
-		+ wp->w_winbar_height
-#endif
-		;
+							  + WINBAR_HEIGHT(wp) ;
 
 	    if (!((flags & WSP_BOT) && p_ls == 0))
 		new_fr_height -= STATUS_HEIGHT;
@@ -1191,7 +1180,8 @@ win_split_ins(
 	}
 	else		/* new window below current one */
 	{
-	    wp->w_winrow = oldwin->w_winrow + oldwin->w_height + STATUS_HEIGHT;
+	    wp->w_winrow = oldwin->w_winrow + VISIBLE_HEIGHT(oldwin)
+							       + STATUS_HEIGHT;
 	    wp->w_status_height = oldwin->w_status_height;
 	    if (!(flags & WSP_BOT))
 		oldwin->w_status_height = STATUS_HEIGHT;
@@ -1432,7 +1422,7 @@ make_windows(
     else
     {
 	/* Each window needs at least 'winminheight' lines and a status line. */
-	maxcount = (curwin->w_height + curwin->w_status_height
+	maxcount = (VISIBLE_HEIGHT(curwin) + curwin->w_status_height
 				  - (p_wh - p_wmh)) / (p_wmh + STATUS_HEIGHT);
     }
 
@@ -2868,10 +2858,7 @@ frame_new_height(
 	/* Simple case: just one window. */
 	win_new_height(topfrp->fr_win,
 				    height - topfrp->fr_win->w_status_height
-#ifdef FEAT_MENU
-				    - topfrp->fr_win->w_winbar_height
-#endif
-				    );
+					      - WINBAR_HEIGHT(topfrp->fr_win));
     }
     else if (topfrp->fr_layout == FR_ROW)
     {
@@ -3217,11 +3204,7 @@ frame_fix_width(win_T *wp)
     static void
 frame_fix_height(win_T *wp)
 {
-    wp->w_frame->fr_height = wp->w_height + wp->w_status_height
-#ifdef FEAT_MENU
-	+ wp->w_winbar_height
-#endif
-	;
+    wp->w_frame->fr_height = VISIBLE_HEIGHT(wp) + wp->w_status_height;
 }
 
 /*
@@ -3246,9 +3229,14 @@ frame_minheight(frame_T *topfrp, win_T *next_curwin)
 	{
 	    /* window: minimal height of the window plus status line */
 	    m = p_wmh + topfrp->fr_win->w_status_height;
-	    /* Current window is minimal one line high */
-	    if (p_wmh == 0 && topfrp->fr_win == curwin && next_curwin == NULL)
-		++m;
+	    if (topfrp->fr_win == curwin && next_curwin == NULL)
+	    {
+		/* Current window is minimal one line high and WinBar is
+		 * visible. */
+		if (p_wmh == 0)
+		    ++m;
+		m += WINBAR_HEIGHT(curwin);
+	    }
 	}
     }
     else if (topfrp->fr_layout == FR_ROW)
@@ -4988,6 +4976,7 @@ frame_comp_pos(frame_T *topfrp, int *row, int *col)
     frame_T	*frp;
     int		startcol;
     int		startrow;
+    int		h;
 
     wp = topfrp->fr_win;
     if (wp != NULL)
@@ -5000,7 +4989,9 @@ frame_comp_pos(frame_T *topfrp, int *row, int *col)
 	    redraw_win_later(wp, NOT_VALID);
 	    wp->w_redr_status = TRUE;
 	}
-	*row += wp->w_height + wp->w_status_height;
+	/* WinBar will not show if the window height is zero */
+	h = VISIBLE_HEIGHT(wp) + wp->w_status_height;
+	*row += h > topfrp->fr_height ? topfrp->fr_height : h;
 	*col += wp->w_width + wp->w_vsep_width;
     }
     else
@@ -5045,6 +5036,7 @@ win_setheight_win(int height, win_T *win)
 	    height = p_wmh;
 	if (height == 0)
 	    height = 1;
+	height += WINBAR_HEIGHT(curwin);
     }
 
     frame_setheight(win->w_frame, height + win->w_status_height);
@@ -5142,7 +5134,8 @@ frame_setheight(frame_T *curfrp, int height)
 	    else
 	    {
 		room_cmdline = Rows - p_ch - (lastwin->w_winrow
-			       + lastwin->w_height + lastwin->w_status_height);
+						+ VISIBLE_HEIGHT(lastwin)
+						+ lastwin->w_status_height);
 		if (room_cmdline < 0)
 		    room_cmdline = 0;
 	    }
@@ -5431,7 +5424,7 @@ win_setminheight(void)
 	/* TODO: handle vertical splits */
 	room = -p_wh;
 	FOR_ALL_WINDOWS(wp)
-	    room += wp->w_height - p_wmh;
+	    room += VISIBLE_HEIGHT(wp) - p_wmh;
 	if (room >= 0)
 	    break;
 	--p_wmh;
@@ -5682,11 +5675,13 @@ win_drag_vsep_line(win_T *dragwin, int offset)
 
 /*
  * Set wp->w_fraction for the current w_wrow and w_height.
+ * Has no effect when the window is less than two lines.
  */
     void
 set_fraction(win_T *wp)
 {
-    wp->w_fraction = ((long)wp->w_wrow * FRACTION_MULT
+    if (wp->w_height > 1)
+	wp->w_fraction = ((long)wp->w_wrow * FRACTION_MULT
 				    + wp->w_height / 2) / (long)wp->w_height;
 }
 
@@ -6086,7 +6081,6 @@ grab_file_name(long count, linenr_T *file_lnum)
 						     count, curbuf->b_ffname);
     }
     return file_name_at_cursor(options | FNAME_HYP, count, file_lnum);
-
 }
 
 /*
@@ -6125,6 +6119,8 @@ file_name_in_line(
 {
     char_u	*ptr;
     int		len;
+    int		in_type = TRUE;
+    int		is_url = FALSE;
 
     /*
      * search forward for what could be the start of a file name
@@ -6163,8 +6159,19 @@ file_name_in_line(
      */
     len = 0;
     while (vim_isfilec(ptr[len]) || (ptr[len] == '\\' && ptr[len + 1] == ' ')
-			 || ((options & FNAME_HYP) && path_is_url(ptr + len)))
+			 || ((options & FNAME_HYP) && path_is_url(ptr + len))
+			 || (is_url && vim_strchr((char_u *)"?&=", ptr[len]) != NULL))
     {
+	/* After type:// we also include ?, & and = as valid characters, so that
+	 * http://google.com?q=this&that=ok works. */
+	if ((ptr[len] >= 'A' && ptr[len] <= 'Z') || (ptr[len] >= 'a' && ptr[len] <= 'z'))
+	{
+	    if (in_type && path_is_url(ptr + len + 1))
+		is_url = TRUE;
+	}
+	else
+	    in_type = FALSE;
+
 	if (ptr[len] == '\\')
 	    /* Skip over the "\" in "\ ". */
 	    ++len;

@@ -475,7 +475,7 @@ mch_inchar(
 	if ((wait_time < 0 || wait_time > 100L) && channel_any_readahead())
 	    wait_time = 10L;
 #endif
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	if (p_beval && wait_time > 100L)
 	    /* The 'balloonexpr' may indirectly invoke a callback while waiting
 	     * for a character, need to check often. */
@@ -2725,9 +2725,8 @@ mch_getperm(char_u *name)
 }
 
 /*
- * set file permission for 'name' to 'perm'
- *
- * return FAIL for failure, OK otherwise
+ * Set file permission for "name" to "perm".
+ * Return FAIL for failure, OK otherwise.
  */
     int
 mch_setperm(char_u *name, long perm)
@@ -2740,6 +2739,18 @@ mch_setperm(char_u *name, long perm)
 #endif
 		    (mode_t)perm) == 0 ? OK : FAIL);
 }
+
+#if defined(HAVE_FCHMOD) || defined(PROTO)
+/*
+ * Set file permission for open file "fd" to "perm".
+ * Return FAIL for failure, OK otherwise.
+ */
+    int
+mch_fsetperm(int fd, long perm)
+{
+    return (fchmod(fd, (mode_t)perm) == 0 ? OK : FAIL);
+}
+#endif
 
 #if defined(HAVE_ACL) || defined(PROTO)
 # ifdef HAVE_SYS_ACL_H
@@ -3553,16 +3564,25 @@ get_tty_info(int fd, ttyinfo_T *info)
 #endif /* VMS  */
 
 #if defined(FEAT_MOUSE_TTY) || defined(PROTO)
+static int	mouse_ison = FALSE;
+
 /*
  * Set mouse clicks on or off.
  */
     void
 mch_setmouse(int on)
 {
-    static int	ison = FALSE;
+# ifdef FEAT_BEVAL_TERM
+    static int	bevalterm_ison = FALSE;
+# endif
     int		xterm_mouse_vers;
 
-    if (on == ison)	/* return quickly if nothing to do */
+    if (on == mouse_ison
+# ifdef FEAT_BEVAL_TERM
+	    && p_bevalterm == bevalterm_ison
+# endif
+	    )
+	/* return quickly if nothing to do */
 	return;
 
     xterm_mouse_vers = use_xterm_mouse();
@@ -3574,18 +3594,30 @@ mch_setmouse(int on)
 		   (on
 		   ? IF_EB("\033[?1015h", ESC_STR "[?1015h")
 		   : IF_EB("\033[?1015l", ESC_STR "[?1015l")));
-	ison = on;
+	mouse_ison = on;
     }
 # endif
 
 # ifdef FEAT_MOUSE_SGR
     if (ttym_flags == TTYM_SGR)
     {
+	/* SGR mode supports columns above 223 */
 	out_str_nf((char_u *)
 		   (on
 		   ? IF_EB("\033[?1006h", ESC_STR "[?1006h")
 		   : IF_EB("\033[?1006l", ESC_STR "[?1006l")));
-	ison = on;
+	mouse_ison = on;
+    }
+# endif
+
+# ifdef FEAT_BEVAL_TERM
+    if (bevalterm_ison != (p_bevalterm && on))
+    {
+	bevalterm_ison = (p_bevalterm && on);
+	if (xterm_mouse_vers > 1 && !bevalterm_ison)
+	    /* disable mouse movement events, enabling is below */
+	    out_str_nf((char_u *)
+			(IF_EB("\033[?1003l", ESC_STR "[?1003l")));
     }
 # endif
 
@@ -3594,14 +3626,19 @@ mch_setmouse(int on)
 	if (on)	/* enable mouse events, use mouse tracking if available */
 	    out_str_nf((char_u *)
 		       (xterm_mouse_vers > 1
-			? IF_EB("\033[?1002h", ESC_STR "[?1002h")
+			? (
+# ifdef FEAT_BEVAL_TERM
+			    bevalterm_ison
+			       ? IF_EB("\033[?1003h", ESC_STR "[?1003h") :
+# endif
+			      IF_EB("\033[?1002h", ESC_STR "[?1002h"))
 			: IF_EB("\033[?1000h", ESC_STR "[?1000h")));
 	else	/* disable mouse events, could probably always send the same */
 	    out_str_nf((char_u *)
 		       (xterm_mouse_vers > 1
 			? IF_EB("\033[?1002l", ESC_STR "[?1002l")
 			: IF_EB("\033[?1000l", ESC_STR "[?1000l")));
-	ison = on;
+	mouse_ison = on;
     }
 
 # ifdef FEAT_MOUSE_DEC
@@ -3611,7 +3648,7 @@ mch_setmouse(int on)
 	    out_str_nf((char_u *)"\033[1;2'z\033[1;3'{");
 	else	/* disable mouse events */
 	    out_str_nf((char_u *)"\033['z");
-	ison = on;
+	mouse_ison = on;
     }
 # endif
 
@@ -3621,12 +3658,12 @@ mch_setmouse(int on)
 	if (on)
 	{
 	    if (gpm_open())
-		ison = TRUE;
+		mouse_ison = TRUE;
 	}
 	else
 	{
 	    gpm_close();
-	    ison = FALSE;
+	    mouse_ison = FALSE;
 	}
     }
 # endif
@@ -3637,12 +3674,12 @@ mch_setmouse(int on)
 	if (on)
 	{
 	    if (sysmouse_open() == OK)
-		ison = TRUE;
+		mouse_ison = TRUE;
 	}
 	else
 	{
 	    sysmouse_close();
-	    ison = FALSE;
+	    mouse_ison = FALSE;
 	}
     }
 # endif
@@ -3675,13 +3712,13 @@ mch_setmouse(int on)
 	    out_str_nf((char_u *)IF_EB("\033[0~ZwLMRK+1Q\033\\",
 					ESC_STR "[0~ZwLMRK+1Q" ESC_STR "\\"));
 #  endif
-	    ison = TRUE;
+	    mouse_ison = TRUE;
 	}
 	else
 	{
 	    out_str_nf((char_u *)IF_EB("\033[0~ZwQ\033\\",
 					      ESC_STR "[0~ZwQ" ESC_STR "\\"));
-	    ison = FALSE;
+	    mouse_ison = FALSE;
 	}
     }
 # endif
@@ -3693,10 +3730,21 @@ mch_setmouse(int on)
 	    out_str_nf("\033[>1h\033[>6h\033[>7h\033[>1h\033[>9l");
 	else
 	    out_str_nf("\033[>1l\033[>6l\033[>7l\033[>1l\033[>9h");
-	ison = on;
+	mouse_ison = on;
     }
 # endif
 }
+
+#if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+/*
+ * Called when 'balloonevalterm' changed.
+ */
+    void
+mch_bevalterm_changed(void)
+{
+    mch_setmouse(mouse_ison);
+}
+#endif
 
 /*
  * Set the mouse termcode, depending on the 'term' and 'ttymouse' options.
@@ -5742,36 +5790,8 @@ mch_breakcheck(int force)
 WaitForChar(long msec, int *interrupted, int ignore_input)
 {
 #ifdef FEAT_TIMERS
-    long    due_time;
-    long    remaining = msec;
-    int	    tb_change_cnt = typebuf.tb_change_cnt;
-
-    /* When waiting very briefly don't trigger timers. */
-    if (msec >= 0 && msec < 10L)
-	return WaitForCharOrMouse(msec, NULL, ignore_input);
-
-    while (msec < 0 || remaining > 0)
-    {
-	/* Trigger timers and then get the time in msec until the next one is
-	 * due.  Wait up to that time. */
-	due_time = check_due_timer();
-	if (typebuf.tb_change_cnt != tb_change_cnt)
-	{
-	    /* timer may have used feedkeys() */
-	    return FALSE;
-	}
-	if (due_time <= 0 || (msec > 0 && due_time > remaining))
-	    due_time = remaining;
-	if (WaitForCharOrMouse(due_time, interrupted, ignore_input))
-	    return TRUE;
-	if (interrupted != NULL && *interrupted)
-	    /* Nothing available, but need to return so that side effects get
-	     * handled, such as handling a message on a channel. */
-	    return FALSE;
-	if (msec > 0)
-	    remaining -= due_time;
-    }
-    return FALSE;
+    return ui_wait_for_chars_or_timer(
+		    msec, WaitForCharOrMouse, interrupted, ignore_input) == OK;
 #else
     return WaitForCharOrMouse(msec, interrupted, ignore_input);
 #endif

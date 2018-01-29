@@ -11,7 +11,8 @@ endfor
 for nr in range(8, 15)
   let s .= "\033[10" . (nr - 8) . "m    "
 endfor
-let s .= "\033[107m|"
+" Add | in original color pair to see white background.
+let s .= "\033[m|"
 call setline(2, s)
 
 " 6 x 6 x 6 color cube
@@ -22,7 +23,7 @@ for high in range(0, 5)
     let nr = low + high * 36
     let s .= "\033[48;5;" . (nr + 16) . "m  "
   endfor
-  let s .= "\033[107m|"
+  let s .= "\033[m|"
   call setline(high + 4, s)
 endfor
 
@@ -32,9 +33,9 @@ let s = ''
 for nr in range(0, 23)
     let s .= "\033[48;5;" . (nr + 232) . "m   "
 endfor
-let s .= "\033[107m|"
+let s .= "\033[m|"
 call setline(11, s)
 
 set binary
-write! <sfile>:h/xterm_ramp.txt
+write! <sfile>:h/color_ramp.txt
 quit

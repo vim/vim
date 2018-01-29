@@ -393,6 +393,12 @@ restore_last_search_pattern(void)
     last_idx = saved_last_idx;
     SET_NO_HLSEARCH(saved_no_hlsearch);
 }
+
+    char_u *
+last_search_pattern(void)
+{
+    return spats[RE_SEARCH].pat;
+}
 #endif
 
 /*

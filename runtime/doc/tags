@@ -74,12 +74,14 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'backupskip'	options.txt	/*'backupskip'*
 'balloondelay'	options.txt	/*'balloondelay'*
 'ballooneval'	options.txt	/*'ballooneval'*
+'balloonevalterm'	options.txt	/*'balloonevalterm'*
 'balloonexpr'	options.txt	/*'balloonexpr'*
 'bdir'	options.txt	/*'bdir'*
 'bdlay'	options.txt	/*'bdlay'*
 'beautify'	vi_diff.txt	/*'beautify'*
 'belloff'	options.txt	/*'belloff'*
 'beval'	options.txt	/*'beval'*
+'bevalterm'	options.txt	/*'bevalterm'*
 'bex'	options.txt	/*'bex'*
 'bexpr'	options.txt	/*'bexpr'*
 'bf'	vi_diff.txt	/*'bf'*
@@ -505,7 +507,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'noawa'	options.txt	/*'noawa'*
 'nobackup'	options.txt	/*'nobackup'*
 'noballooneval'	options.txt	/*'noballooneval'*
+'noballoonevalterm'	options.txt	/*'noballoonevalterm'*
 'nobeval'	options.txt	/*'nobeval'*
+'nobevalterm'	options.txt	/*'nobevalterm'*
 'nobin'	options.txt	/*'nobin'*
 'nobinary'	options.txt	/*'nobinary'*
 'nobiosk'	options.txt	/*'nobiosk'*
@@ -1223,7 +1227,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +acl	various.txt	/*+acl*
 +arabic	various.txt	/*+arabic*
 +autocmd	various.txt	/*+autocmd*
++autoservername	various.txt	/*+autoservername*
 +balloon_eval	various.txt	/*+balloon_eval*
++balloon_eval_term	various.txt	/*+balloon_eval_term*
 +browse	various.txt	/*+browse*
 +builtin_terms	various.txt	/*+builtin_terms*
 +byte_offset	various.txt	/*+byte_offset*
@@ -4569,6 +4575,7 @@ E945	pattern.txt	/*E945*
 E946	terminal.txt	/*E946*
 E947	terminal.txt	/*E947*
 E948	terminal.txt	/*E948*
+E949	editing.txt	/*E949*
 E95	message.txt	/*E95*
 E96	diff.txt	/*E96*
 E97	diff.txt	/*E97*
@@ -4813,6 +4820,7 @@ TermResponse	autocmd.txt	/*TermResponse*
 Terminal-mode	terminal.txt	/*Terminal-mode*
 TextChanged	autocmd.txt	/*TextChanged*
 TextChangedI	autocmd.txt	/*TextChangedI*
+TextYankPost	autocmd.txt	/*TextYankPost*
 Transact-SQL	ft_sql.txt	/*Transact-SQL*
 U	undo.txt	/*U*
 UTF-8	mbyte.txt	/*UTF-8*
@@ -5145,6 +5153,7 @@ backup-extension	version4.txt	/*backup-extension*
 backup-table	editing.txt	/*backup-table*
 balloon-eval	debugger.txt	/*balloon-eval*
 balloon_show()	eval.txt	/*balloon_show()*
+balloon_split()	eval.txt	/*balloon_split()*
 bar	motion.txt	/*bar*
 bars	help.txt	/*bars*
 base_font_name_list	mbyte.txt	/*base_font_name_list*
@@ -5861,6 +5870,7 @@ eval()	eval.txt	/*eval()*
 eval-examples	eval.txt	/*eval-examples*
 eval-sandbox	eval.txt	/*eval-sandbox*
 eval.txt	eval.txt	/*eval.txt*
+event-variable	eval.txt	/*event-variable*
 eventhandler()	eval.txt	/*eventhandler()*
 eview	starting.txt	/*eview*
 evim	starting.txt	/*evim*
@@ -6222,6 +6232,7 @@ ft-vb-syntax	syntax.txt	/*ft-vb-syntax*
 ft-verilog-indent	indent.txt	/*ft-verilog-indent*
 ft-vhdl-indent	indent.txt	/*ft-vhdl-indent*
 ft-vim-indent	indent.txt	/*ft-vim-indent*
+ft-vim-plugin	filetype.txt	/*ft-vim-plugin*
 ft-vim-syntax	syntax.txt	/*ft-vim-syntax*
 ft-xf86conf-syntax	syntax.txt	/*ft-xf86conf-syntax*
 ft-xhtml-omni	insert.txt	/*ft-xhtml-omni*
@@ -6229,6 +6240,7 @@ ft-xml-omni	insert.txt	/*ft-xml-omni*
 ft-xml-syntax	syntax.txt	/*ft-xml-syntax*
 ft-xpm-syntax	syntax.txt	/*ft-xpm-syntax*
 ft-yaml-syntax	syntax.txt	/*ft-yaml-syntax*
+ft-zimbu-plugin	filetype.txt	/*ft-zimbu-plugin*
 ft-zsh-syntax	syntax.txt	/*ft-zsh-syntax*
 ft_ada.txt	ft_ada.txt	/*ft_ada.txt*
 ft_rust.txt	ft_rust.txt	/*ft_rust.txt*
@@ -6813,9 +6825,12 @@ hl-SpellLocal	syntax.txt	/*hl-SpellLocal*
 hl-SpellRare	syntax.txt	/*hl-SpellRare*
 hl-StatusLine	syntax.txt	/*hl-StatusLine*
 hl-StatusLineNC	syntax.txt	/*hl-StatusLineNC*
+hl-StatusLineTerm	syntax.txt	/*hl-StatusLineTerm*
+hl-StatusLineTermNC	syntax.txt	/*hl-StatusLineTermNC*
 hl-TabLine	syntax.txt	/*hl-TabLine*
 hl-TabLineFill	syntax.txt	/*hl-TabLineFill*
 hl-TabLineSel	syntax.txt	/*hl-TabLineSel*
+hl-Terminal	syntax.txt	/*hl-Terminal*
 hl-Title	syntax.txt	/*hl-Title*
 hl-Tooltip	syntax.txt	/*hl-Tooltip*
 hl-User1	syntax.txt	/*hl-User1*
@@ -6826,6 +6841,8 @@ hl-Visual	syntax.txt	/*hl-Visual*
 hl-VisualNOS	syntax.txt	/*hl-VisualNOS*
 hl-WarningMsg	syntax.txt	/*hl-WarningMsg*
 hl-WildMenu	syntax.txt	/*hl-WildMenu*
+hl-debugBreakpoint	terminal.txt	/*hl-debugBreakpoint*
+hl-debugPC	terminal.txt	/*hl-debugPC*
 hlID()	eval.txt	/*hlID()*
 hlexists()	eval.txt	/*hlexists()*
 hlsearch-variable	eval.txt	/*hlsearch-variable*
@@ -7338,6 +7355,7 @@ mbyte-encoding	mbyte.txt	/*mbyte-encoding*
 mbyte-first	mbyte.txt	/*mbyte-first*
 mbyte-fonts-MSwin	mbyte.txt	/*mbyte-fonts-MSwin*
 mbyte-fonts-X11	mbyte.txt	/*mbyte-fonts-X11*
+mbyte-func	mbyte.txt	/*mbyte-func*
 mbyte-keymap	mbyte.txt	/*mbyte-keymap*
 mbyte-locale	mbyte.txt	/*mbyte-locale*
 mbyte-options	mbyte.txt	/*mbyte-options*
@@ -7817,6 +7835,8 @@ option-backslash	options.txt	/*option-backslash*
 option-list	quickref.txt	/*option-list*
 option-summary	options.txt	/*option-summary*
 option-window	options.txt	/*option-window*
+option_restore()	eval.txt	/*option_restore()*
+option_save()	eval.txt	/*option_save()*
 options	options.txt	/*options*
 options-changed	version5.txt	/*options-changed*
 options-in-terminal	terminal.txt	/*options-in-terminal*
@@ -8049,14 +8069,20 @@ quake.vim	syntax.txt	/*quake.vim*
 quickfix	quickfix.txt	/*quickfix*
 quickfix-6	version6.txt	/*quickfix-6*
 quickfix-ID	quickfix.txt	/*quickfix-ID*
+quickfix-changedtick	quickfix.txt	/*quickfix-changedtick*
+quickfix-context	quickfix.txt	/*quickfix-context*
 quickfix-directory-stack	quickfix.txt	/*quickfix-directory-stack*
 quickfix-error-lists	quickfix.txt	/*quickfix-error-lists*
 quickfix-functions	usr_41.txt	/*quickfix-functions*
 quickfix-gcc	quickfix.txt	/*quickfix-gcc*
 quickfix-manx	quickfix.txt	/*quickfix-manx*
+quickfix-parse	quickfix.txt	/*quickfix-parse*
 quickfix-perl	quickfix.txt	/*quickfix-perl*
+quickfix-size	quickfix.txt	/*quickfix-size*
+quickfix-title	quickfix.txt	/*quickfix-title*
 quickfix-valid	quickfix.txt	/*quickfix-valid*
 quickfix-window	quickfix.txt	/*quickfix-window*
+quickfix-window-ID	quickfix.txt	/*quickfix-window-ID*
 quickfix.txt	quickfix.txt	/*quickfix.txt*
 quickref	quickref.txt	/*quickref*
 quickref.txt	quickref.txt	/*quickref.txt*
@@ -9095,6 +9121,7 @@ v:ctype	eval.txt	/*v:ctype*
 v:dying	eval.txt	/*v:dying*
 v:errmsg	eval.txt	/*v:errmsg*
 v:errors	eval.txt	/*v:errors*
+v:event	eval.txt	/*v:event*
 v:exception	eval.txt	/*v:exception*
 v:false	eval.txt	/*v:false*
 v:fcs_choice	eval.txt	/*v:fcs_choice*
@@ -9462,6 +9489,7 @@ win_getid()	eval.txt	/*win_getid()*
 win_gotoid()	eval.txt	/*win_gotoid()*
 win_id2tabwin()	eval.txt	/*win_id2tabwin()*
 win_id2win()	eval.txt	/*win_id2win()*
+win_screenpos()	eval.txt	/*win_screenpos()*
 winbufnr()	eval.txt	/*winbufnr()*
 wincol()	eval.txt	/*wincol()*
 window	windows.txt	/*window*

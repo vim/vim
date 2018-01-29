@@ -1,4 +1,4 @@
-*debugger.txt*  For Vim version 8.0.  Last change: 2005 Mar 29
+*debugger.txt*  For Vim version 8.0.  Last change: 2017 Nov 21
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -95,10 +95,12 @@ list and colors can be set via X resources (XmNballoonEvalFontList,
 XmNballoonEvalBackground, and XmNballoonEvalForeground).
 The 'balloondelay' option sets the delay before an attempt is made to show a
 balloon.
-The 'ballooneval' option needs to be set to switch it on.
+The 'ballooneval' and/or the 'balloonevalterm' option needs to be set to
+switch it on.
 
-Balloon evaluation is only available when compiled with the |+balloon_eval|
-feature.
+Balloon evaluation is only available in the GUI when compiled with the
+|+balloon_eval| feature.  For the terminal the  |+balloon_eval_term| feature
+matters.
 
 The Balloon evaluation functions are also used to show a tooltip for the
 toolbar.  The 'ballooneval' option does not need to be set for this.  But the

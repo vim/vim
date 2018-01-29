@@ -23,6 +23,7 @@ static int pum_height;			/* nr of displayed pum items */
 static int pum_width;			/* width of displayed pum items */
 static int pum_base_width;		/* width of pum items base */
 static int pum_kind_width;		/* width of pum items kind column */
+static int pum_extra_width;		/* width of extra stuff */
 static int pum_scrollbar;		/* TRUE when scrollbar present */
 
 static int pum_row;			/* top row of pum */
@@ -34,6 +35,36 @@ static int pum_set_selected(int n, int repeat);
 
 #define PUM_DEF_HEIGHT 10
 #define PUM_DEF_WIDTH  15
+
+    static void
+pum_compute_size(void)
+{
+    int	i;
+    int	w;
+
+    /* Compute the width of the widest match and the widest extra. */
+    pum_base_width = 0;
+    pum_kind_width = 0;
+    pum_extra_width = 0;
+    for (i = 0; i < pum_size; ++i)
+    {
+	w = vim_strsize(pum_array[i].pum_text);
+	if (pum_base_width < w)
+	    pum_base_width = w;
+	if (pum_array[i].pum_kind != NULL)
+	{
+	    w = vim_strsize(pum_array[i].pum_kind) + 1;
+	    if (pum_kind_width < w)
+		pum_kind_width = w;
+	}
+	if (pum_array[i].pum_extra != NULL)
+	{
+	    w = vim_strsize(pum_array[i].pum_extra) + 1;
+	    if (pum_extra_width < w)
+		pum_extra_width = w;
+	}
+    }
+}
 
 /*
  * Show the popup menu with items "array[size]".
@@ -48,12 +79,8 @@ pum_display(
     int		selected)	/* index of initially selected item, none if
 				   out of range */
 {
-    int		w;
     int		def_width;
     int		max_width;
-    int		kind_width;
-    int		extra_width;
-    int		i;
     int		row;
     int		context_lines;
     int		col;
@@ -67,9 +94,6 @@ pum_display(
     do
     {
 	def_width = PUM_DEF_WIDTH;
-	max_width = 0;
-	kind_width = 0;
-	extra_width = 0;
 	above_row = 0;
 	below_row = cmdline_row;
 
@@ -107,7 +131,7 @@ pum_display(
 	/* Put the pum below "row" if possible.  If there are few lines decide
 	 * on where there is more room. */
 	if (row + 2 >= below_row - pum_height
-				&& row - above_row > (below_row - above_row) / 2)
+			      && row - above_row > (below_row - above_row) / 2)
 	{
 	    /* pum above "row" */
 
@@ -167,27 +191,10 @@ pum_display(
 	}
 #endif
 
-	/* Compute the width of the widest match and the widest extra. */
-	for (i = 0; i < size; ++i)
-	{
-	    w = vim_strsize(array[i].pum_text);
-	    if (max_width < w)
-		max_width = w;
-	    if (array[i].pum_kind != NULL)
-	    {
-		w = vim_strsize(array[i].pum_kind) + 1;
-		if (kind_width < w)
-		    kind_width = w;
-	    }
-	    if (array[i].pum_extra != NULL)
-	    {
-		w = vim_strsize(array[i].pum_extra) + 1;
-		if (extra_width < w)
-		    extra_width = w;
-	    }
-	}
-	pum_base_width = max_width;
-	pum_kind_width = kind_width;
+	pum_array = array;
+	pum_size = size;
+	pum_compute_size();
+	max_width = pum_base_width;
 
 	/* Calculate column */
 #ifdef FEAT_RIGHTLEFT
@@ -226,10 +233,10 @@ pum_display(
 #endif
 		pum_width = Columns - pum_col - pum_scrollbar;
 
-	    if (pum_width > max_width + kind_width + extra_width + 1
-						     && pum_width > PUM_DEF_WIDTH)
+	    if (pum_width > max_width + pum_kind_width + pum_extra_width + 1
+						  && pum_width > PUM_DEF_WIDTH)
 	    {
-		pum_width = max_width + kind_width + extra_width + 1;
+		pum_width = max_width + pum_kind_width + pum_extra_width + 1;
 		if (pum_width < PUM_DEF_WIDTH)
 		    pum_width = PUM_DEF_WIDTH;
 	    }
@@ -257,9 +264,6 @@ pum_display(
 		pum_col = Columns - max_width;
 	    pum_width = max_width - pum_scrollbar;
 	}
-
-	pum_array = array;
-	pum_size = size;
 
 	/* Set selected item and redraw.  If the window size changed need to
 	 * redo the positioning.  Limit this to two times, when there is not
@@ -756,4 +760,249 @@ pum_get_height(void)
     return pum_height;
 }
 
+# if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+static pumitem_T *balloon_array = NULL;
+static int balloon_arraysize;
+static int balloon_mouse_row = 0;
+static int balloon_mouse_col = 0;
+
+#define BALLOON_MIN_WIDTH 50
+#define BALLOON_MIN_HEIGHT 10
+
+typedef struct {
+    char_u	*start;
+    int		bytelen;
+    int		cells;
+    int		indent;
+} balpart_T;
+
+/*
+ * Split a string into parts to display in the balloon.
+ * Aimed at output from gdb.  Attempts to split at white space, preserve quoted
+ * strings and make a struct look good.
+ * Resulting array is stored in "array" and returns the size of the array.
+ */
+    int
+split_message(char_u *mesg, pumitem_T **array)
+{
+    garray_T	ga;
+    char_u	*p;
+    balpart_T	*item;
+    int		quoted = FALSE;
+    int		height;
+    int		line;
+    int		item_idx;
+    int		indent = 0;
+    int		max_cells = 0;
+    int		max_height = Rows / 2 - 2;
+    int		long_item_count = 0;
+    int		split_long_items = FALSE;
+
+    ga_init2(&ga, sizeof(balpart_T), 20);
+    p = mesg;
+
+    while (*p != NUL)
+    {
+	if (ga_grow(&ga, 1) == FAIL)
+	    goto failed;
+	item = ((balpart_T *)ga.ga_data) + ga.ga_len;
+	item->start = p;
+	item->indent = indent;
+	item->cells = indent * 2;
+	++ga.ga_len;
+	while (*p != NUL)
+	{
+	    if (*p == '"')
+		quoted = !quoted;
+	    else if (*p == '\\' && p[1] != NUL)
+		++p;
+	    else if (!quoted)
+	    {
+		if ((*p == ',' && p[1] == ' ') || *p == '{' || *p == '}')
+		{
+		    /* Looks like a good point to break. */
+		    if (*p == '{')
+			++indent;
+		    else if (*p == '}' && indent > 0)
+			--indent;
+		    ++item->cells;
+		    p = skipwhite(p + 1);
+		    break;
+		}
+	    }
+	    item->cells += ptr2cells(p);
+	    p += MB_PTR2LEN(p);
+	}
+	item->bytelen = p - item->start;
+	if (item->cells > max_cells)
+	    max_cells = item->cells;
+	long_item_count += (item->cells - 1) / BALLOON_MIN_WIDTH;
+    }
+
+    height = 2 + ga.ga_len;
+
+    /* If there are long items and the height is below the limit: split lines */
+    if (long_item_count > 0 && height + long_item_count <= max_height)
+    {
+	split_long_items = TRUE;
+	height += long_item_count;
+    }
+
+    /* Limit to half the window height, it has to fit above or below the mouse
+     * position. */
+    if (height > max_height)
+	height = max_height;
+    *array = (pumitem_T *)alloc_clear((unsigned)sizeof(pumitem_T) * height);
+    if (*array == NULL)
+	goto failed;
+
+    /* Add an empty line above and below, looks better. */
+    (*array)->pum_text = vim_strsave((char_u *)"");
+    (*array + height - 1)->pum_text = vim_strsave((char_u *)"");
+
+    for (line = 1, item_idx = 0; line < height - 1; ++item_idx)
+    {
+	int	skip;
+	int	thislen;
+	int	copylen;
+	int	ind;
+	int	cells;
+
+	item = ((balpart_T *)ga.ga_data) + item_idx;
+	for (skip = 0; skip < item->bytelen; skip += thislen)
+	{
+	    if (split_long_items && item->cells >= BALLOON_MIN_WIDTH)
+	    {
+		cells = item->indent * 2;
+		for (p = item->start + skip; p < item->start + item->bytelen;
+							    p += MB_PTR2LEN(p))
+		    if ((cells += ptr2cells(p)) > BALLOON_MIN_WIDTH)
+			break;
+		thislen = p - (item->start + skip);
+	    }
+	    else
+		thislen = item->bytelen;
+
+	    /* put indent at the start */
+	    p = alloc(thislen + item->indent * 2 + 1);
+	    for (ind = 0; ind < item->indent * 2; ++ind)
+		p[ind] = ' ';
+
+	    /* exclude spaces at the end of the string */
+	    for (copylen = thislen; copylen > 0; --copylen)
+		if (item->start[skip + copylen - 1] != ' ')
+		    break;
+
+	    vim_strncpy(p + ind, item->start + skip, copylen);
+	    (*array)[line].pum_text = p;
+	    item->indent = 0;  /* wrapped line has no indent */
+	    ++line;
+	}
+    }
+    ga_clear(&ga);
+    return height;
+
+failed:
+    ga_clear(&ga);
+    return 0;
+}
+
+    void
+ui_remove_balloon(void)
+{
+    if (balloon_array != NULL)
+    {
+	pum_undisplay();
+	while (balloon_arraysize > 0)
+	    vim_free(balloon_array[--balloon_arraysize].pum_text);
+	vim_free(balloon_array);
+	balloon_array = NULL;
+    }
+}
+
+/*
+ * Terminal version of a balloon, uses the popup menu code.
+ */
+    void
+ui_post_balloon(char_u *mesg, list_T *list)
+{
+    ui_remove_balloon();
+
+    if (mesg == NULL && list == NULL)
+	return;
+    if (list != NULL)
+    {
+	listitem_T  *li;
+	int	    idx;
+
+	balloon_arraysize = list->lv_len;
+	balloon_array = (pumitem_T *)alloc_clear(
+				   (unsigned)sizeof(pumitem_T) * list->lv_len);
+	if (balloon_array == NULL)
+	    return;
+	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
+	{
+	    char_u *text = get_tv_string_chk(&li->li_tv);
+
+	    balloon_array[idx].pum_text = vim_strsave(
+					   text == NULL ? (char_u *)"" : text);
+	}
+    }
+    else
+	balloon_arraysize = split_message(mesg, &balloon_array);
+
+    if (balloon_arraysize > 0)
+    {
+	pum_array = balloon_array;
+	pum_size = balloon_arraysize;
+	pum_compute_size();
+	pum_scrollbar = 0;
+	pum_height = balloon_arraysize;
+
+	if (Rows - mouse_row > pum_size)
+	{
+	    /* Enough space below the mouse row. */
+	    pum_row = mouse_row + 1;
+	    if (pum_height > Rows - pum_row)
+		pum_height = Rows - pum_row;
+	}
+	else
+	{
+	    /* Show above the mouse row, reduce height if it does not fit. */
+	    pum_row = mouse_row - pum_size;
+	    if (pum_row < 0)
+	    {
+		pum_height += pum_row;
+		pum_row = 0;
+	    }
+	}
+	if (Columns - mouse_col >= pum_base_width
+		|| Columns - mouse_col > BALLOON_MIN_WIDTH)
+	    /* Enough space to show at mouse column. */
+	    pum_col = mouse_col;
+	else
+	    /* Not enough space, right align with window. */
+	    pum_col = Columns - (pum_base_width > BALLOON_MIN_WIDTH
+					 ? BALLOON_MIN_WIDTH : pum_base_width);
+
+	pum_width = Columns - pum_col;
+	if (pum_width > pum_base_width + 1)
+	    pum_width = pum_base_width + 1;
+
+	pum_selected = -1;
+	pum_first = 0;
+	pum_redraw();
+    }
+}
+
+/*
+ * Called when the mouse moved, may remove any displayed balloon.
+ */
+    void
+ui_may_remove_balloon(void)
+{
+    if (mouse_row != balloon_mouse_row || mouse_col != balloon_mouse_col)
+	ui_remove_balloon();
+}
+# endif
 #endif

@@ -2452,9 +2452,8 @@ keymap_unload(void)
     {
 	vim_snprintf((char *)buf, sizeof(buf), "<buffer> %s", kp[i].from);
 	(void)do_map(1, buf, LANGMAP, FALSE);
-	vim_free(kp[i].from);
-	vim_free(kp[i].to);
     }
+    keymap_clear(&curbuf->b_kmap_ga);
 
     p_cpo = save_cpo;
 
@@ -2463,4 +2462,16 @@ keymap_unload(void)
     status_redraw_curbuf();
 }
 
+    void
+keymap_clear(garray_T *kmap)
+{
+    int	    i;
+    kmap_T  *kp = (kmap_T *)kmap->ga_data;
+
+    for (i = 0; i < kmap->ga_len; ++i)
+    {
+	vim_free(kp[i].from);
+	vim_free(kp[i].to);
+    }
+}
 #endif /* FEAT_KEYMAP */

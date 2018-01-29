@@ -10,110 +10,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
-
-/*
- * Common code, invoked when the mouse is resting for a moment.
- */
-    void
-general_beval_cb(BalloonEval *beval, int state UNUSED)
-{
-#ifdef FEAT_EVAL
-    win_T	*wp;
-    int		col;
-    int		use_sandbox;
-    linenr_T	lnum;
-    char_u	*text;
-    static char_u  *result = NULL;
-    long	winnr = 0;
-    char_u	*bexpr;
-    buf_T	*save_curbuf;
-    size_t	len;
-    win_T	*cw;
-#endif
-    static int	recursive = FALSE;
-
-    /* Don't do anything when 'ballooneval' is off, messages scrolled the
-     * windows up or we have no beval area. */
-    if (!p_beval || balloonEval == NULL || msg_scrolled > 0)
-	return;
-
-    /* Don't do this recursively.  Happens when the expression evaluation
-     * takes a long time and invokes something that checks for CTRL-C typed. */
-    if (recursive)
-	return;
-    recursive = TRUE;
-
-#ifdef FEAT_EVAL
-    if (get_beval_info(balloonEval, TRUE, &wp, &lnum, &text, &col) == OK)
-    {
-	bexpr = (*wp->w_buffer->b_p_bexpr == NUL) ? p_bexpr
-						    : wp->w_buffer->b_p_bexpr;
-	if (*bexpr != NUL)
-	{
-	    /* Convert window pointer to number. */
-	    for (cw = firstwin; cw != wp; cw = cw->w_next)
-		++winnr;
-
-	    set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
-	    set_vim_var_nr(VV_BEVAL_WINNR, winnr);
-	    set_vim_var_nr(VV_BEVAL_WINID, wp->w_id);
-	    set_vim_var_nr(VV_BEVAL_LNUM, (long)lnum);
-	    set_vim_var_nr(VV_BEVAL_COL, (long)(col + 1));
-	    set_vim_var_string(VV_BEVAL_TEXT, text, -1);
-	    vim_free(text);
-
-	    /*
-	     * Temporarily change the curbuf, so that we can determine whether
-	     * the buffer-local balloonexpr option was set insecurely.
-	     */
-	    save_curbuf = curbuf;
-	    curbuf = wp->w_buffer;
-	    use_sandbox = was_set_insecurely((char_u *)"balloonexpr",
-				 *curbuf->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
-	    curbuf = save_curbuf;
-	    if (use_sandbox)
-		++sandbox;
-	    ++textlock;
-
-	    vim_free(result);
-	    result = eval_to_string(bexpr, NULL, TRUE);
-
-	    /* Remove one trailing newline, it is added when the result was a
-	     * list and it's hardly ever useful.  If the user really wants a
-	     * trailing newline he can add two and one remains. */
-	    if (result != NULL)
-	    {
-		len = STRLEN(result);
-		if (len > 0 && result[len - 1] == NL)
-		    result[len - 1] = NUL;
-	    }
-
-	    if (use_sandbox)
-		--sandbox;
-	    --textlock;
-
-	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
-	    if (result != NULL && result[0] != NUL)
-	    {
-		gui_mch_post_balloon(beval, result);
-		recursive = FALSE;
-		return;
-	    }
-	}
-    }
-#endif
-#ifdef FEAT_NETBEANS_INTG
-    if (bevalServers & BEVAL_NETBEANS)
-	netbeans_beval_cb(beval, state);
-#endif
-#ifdef FEAT_SUN_WORKSHOP
-    if (bevalServers & BEVAL_WORKSHOP)
-	workshop_beval_cb(beval, state);
-#endif
-
-    recursive = FALSE;
-}
+#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
 
 /* on Win32 only get_beval_info() is required */
 #if !defined(FEAT_GUI_W32) || defined(PROTO)
@@ -144,8 +41,6 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 #  endif
 # endif
 #endif
-
-#include "gui_beval.h"
 
 #ifndef FEAT_GUI_GTK
 extern Widget vimShell;
@@ -187,8 +82,6 @@ static void requestBalloon(BalloonEval *);
 static void drawBalloon(BalloonEval *);
 static void undrawBalloon(BalloonEval *beval);
 static void createBalloonEvalWindow(BalloonEval *);
-
-
 
 /*
  * Create a balloon-evaluation area for a Widget.
@@ -314,113 +207,6 @@ gui_mch_currently_showing_beval(void)
 
 #if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
     || defined(FEAT_EVAL) || defined(PROTO)
-/*
- * Get the text and position to be evaluated for "beval".
- * If "getword" is true the returned text is not the whole line but the
- * relevant word in allocated memory.
- * Returns OK or FAIL.
- */
-    int
-get_beval_info(
-    BalloonEval	*beval,
-    int		getword,
-    win_T	**winp,
-    linenr_T	*lnump,
-    char_u	**textp,
-    int		*colp)
-{
-    win_T	*wp;
-    int		row, col;
-    char_u	*lbuf;
-    linenr_T	lnum;
-
-    *textp = NULL;
-    row = Y_2_ROW(beval->y);
-    col = X_2_COL(beval->x);
-    wp = mouse_find_win(&row, &col);
-    if (wp != NULL && row < wp->w_height && col < wp->w_width)
-    {
-	/* Found a window and the cursor is in the text.  Now find the line
-	 * number. */
-	if (!mouse_comp_pos(wp, &row, &col, &lnum))
-	{
-	    /* Not past end of the file. */
-	    lbuf = ml_get_buf(wp->w_buffer, lnum, FALSE);
-	    if (col <= win_linetabsize(wp, lbuf, (colnr_T)MAXCOL))
-	    {
-		/* Not past end of line. */
-		if (getword)
-		{
-		    /* For Netbeans we get the relevant part of the line
-		     * instead of the whole line. */
-		    int		len;
-		    pos_T	*spos = NULL, *epos = NULL;
-
-		    if (VIsual_active)
-		    {
-			if (LT_POS(VIsual, curwin->w_cursor))
-			{
-			    spos = &VIsual;
-			    epos = &curwin->w_cursor;
-			}
-			else
-			{
-			    spos = &curwin->w_cursor;
-			    epos = &VIsual;
-			}
-		    }
-
-		    col = vcol2col(wp, lnum, col);
-
-		    if (VIsual_active
-			    && wp->w_buffer == curwin->w_buffer
-			    && (lnum == spos->lnum
-				? col >= (int)spos->col
-				: lnum > spos->lnum)
-			    && (lnum == epos->lnum
-				? col <= (int)epos->col
-				: lnum < epos->lnum))
-		    {
-			/* Visual mode and pointing to the line with the
-			 * Visual selection: return selected text, with a
-			 * maximum of one line. */
-			if (spos->lnum != epos->lnum || spos->col == epos->col)
-			    return FAIL;
-
-			lbuf = ml_get_buf(curwin->w_buffer, VIsual.lnum, FALSE);
-			len = epos->col - spos->col;
-			if (*p_sel != 'e')
-			    len += MB_PTR2LEN(lbuf + epos->col);
-			lbuf = vim_strnsave(lbuf + spos->col, len);
-			lnum = spos->lnum;
-			col = spos->col;
-		    }
-		    else
-		    {
-			/* Find the word under the cursor. */
-			++emsg_off;
-			len = find_ident_at_pos(wp, lnum, (colnr_T)col, &lbuf,
-					FIND_IDENT + FIND_STRING + FIND_EVAL);
-			--emsg_off;
-			if (len == 0)
-			    return FAIL;
-			lbuf = vim_strnsave(lbuf, len);
-		    }
-		}
-
-		*winp = wp;
-		*lnump = lnum;
-		*textp = lbuf;
-		*colp = col;
-		beval->ts = wp->w_buffer->b_p_ts;
-		return OK;
-	    }
-	}
-    }
-
-    return FAIL;
-}
-
 # if !defined(FEAT_GUI_W32) || defined(PROTO)
 
 /*
@@ -435,7 +221,7 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
     else
 	undrawBalloon(beval);
 }
-# endif /* FEAT_GUI_W32 */
+# endif /* !FEAT_GUI_W32 */
 #endif /* FEAT_SUN_WORKSHOP || FEAT_NETBEANS_INTG || PROTO */
 
 #if !defined(FEAT_GUI_W32) || defined(PROTO)
@@ -451,10 +237,6 @@ gui_mch_unpost_balloon(BalloonEval *beval)
 #endif
 
 #ifdef FEAT_GUI_GTK
-/*
- * We can unconditionally use ANSI-style prototypes here since
- * GTK+ requires an ANSI C compiler anyway.
- */
     static void
 addEventHandler(GtkWidget *target, BalloonEval *beval)
 {
@@ -1495,4 +1277,4 @@ createBalloonEvalWindow(BalloonEval *beval)
 #endif /* !FEAT_GUI_GTK */
 #endif /* !FEAT_GUI_W32 */
 
-#endif /* FEAT_BEVAL */
+#endif /* FEAT_BEVAL_GUI */

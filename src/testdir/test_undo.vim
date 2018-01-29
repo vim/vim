@@ -350,3 +350,12 @@ func Test_cmd_in_reg_undo()
   only!
   let @a=''
 endfunc
+
+" This used to cause an illegal memory access
+func Test_undo_append()
+  new
+  call feedkeys("axx\<Esc>v", 'xt')
+  undo
+  norm o
+  quit
+endfunc

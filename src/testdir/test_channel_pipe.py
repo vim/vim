@@ -14,6 +14,10 @@ if __name__ == "__main__":
         if sys.argv[1].startswith("err"):
             print(sys.argv[1], file=sys.stderr)
             sys.stderr.flush()
+        elif sys.argv[1].startswith("incomplete"):
+            print(sys.argv[1], end='')
+            sys.stdout.flush()
+            sys.exit(0)
         else:
             print(sys.argv[1])
             sys.stdout.flush()
