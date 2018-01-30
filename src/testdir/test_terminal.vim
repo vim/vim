@@ -806,3 +806,26 @@ func Test_terminal_term_start_empty_command()
   let cmd = "call term_start(0, {'curwin' : 1, 'term_finish' : 'close'})"
   call assert_fails(cmd, 'E474')
 endfunc
+
+func Test_terminal_response_to_control_sequence()
+  if !has('unix')
+    return
+  endif
+
+  let buf = Run_shell_in_terminal({})
+  call term_wait(buf)
+
+  call term_sendkeys(buf, s:python . " -c 'import sys;sys.stdout.write(\"\\x1b[6n\")'\<cr>")
+  " wait for the response of control sequence from libvterm (and send it to tty)
+  call term_wait(buf, 100)
+  " wait for output from tty to display
+  call term_wait(buf)
+  call assert_match(';\d\+R', term_getline(buf, 2))
+
+  call term_sendkeys(buf, "\<c-c>")
+  call term_wait(buf)
+  call Stop_shell_in_terminal(buf)
+
+  exe buf . 'bwipe'
+  unlet g:job
+endfunc

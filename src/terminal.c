@@ -650,14 +650,49 @@ free_terminal(buf_T *buf)
 }
 
 /*
+ * Get the part that is connected to the tty. Normally this is PART_IN, but
+ * when writing buffer lines to the job it can be another.  This makes it
+ * possible to do "1,5term vim -".
+ */
+    static ch_part_T
+get_tty_part(term_T *term)
+{
+#ifdef UNIX
+    ch_part_T	parts[3] = {PART_IN, PART_OUT, PART_ERR};
+    int		i;
+
+    for (i = 0; i < 3; ++i)
+    {
+	int fd = term->tl_job->jv_channel->ch_part[parts[i]].ch_fd;
+
+	if (isatty(fd))
+	    return parts[i];
+    }
+#endif
+    return PART_IN;
+}
+
+/*
  * Write job output "msg[len]" to the vterm.
  */
     static void
 term_write_job_output(term_T *term, char_u *msg, size_t len)
 {
     VTerm	*vterm = term->tl_vterm;
+    size_t	prevlen = vterm_output_get_buffer_current(vterm);
 
     vterm_input_write(vterm, (char *)msg, len);
+
+    /* flush vterm buffer when vterm responded to control sequence */
+    if (prevlen != vterm_output_get_buffer_current(vterm))
+    {
+	char   buf[KEY_BUF_LEN];
+	size_t curlen = vterm_output_read(vterm, buf, KEY_BUF_LEN);
+
+	if (curlen > 0)
+	    channel_send(term->tl_job->jv_channel, get_tty_part(term),
+					     (char_u *)buf, (int)curlen, NULL);
+    }
 
     /* this invokes the damage callbacks */
     vterm_screen_flush_damage(vterm_obtain_screen(vterm));
@@ -1236,29 +1271,6 @@ term_vgetc()
     got_int = FALSE;
     State = save_State;
     return c;
-}
-
-/*
- * Get the part that is connected to the tty. Normally this is PART_IN, but
- * when writing buffer lines to the job it can be another.  This makes it
- * possible to do "1,5term vim -".
- */
-    static ch_part_T
-get_tty_part(term_T *term)
-{
-#ifdef UNIX
-    ch_part_T	parts[3] = {PART_IN, PART_OUT, PART_ERR};
-    int		i;
-
-    for (i = 0; i < 3; ++i)
-    {
-	int fd = term->tl_job->jv_channel->ch_part[parts[i]].ch_fd;
-
-	if (isatty(fd))
-	    return parts[i];
-    }
-#endif
-    return PART_IN;
 }
 
 /*
