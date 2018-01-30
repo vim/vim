@@ -37,8 +37,8 @@ func Test_packadd()
   call assert_equal(77, g:plugin_also_works)
   call assert_equal(17, g:ftdetect_works)
   call assert_true(len(&rtp) > len(rtp))
-  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
-  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/opt/mytest/after$')
+  call assert_match('/testdir/Xdir/pack/mine/opt/mytest\($\|,\)', &rtp)
+  call assert_match('/testdir/Xdir/pack/mine/opt/mytest/after$', &rtp)
 
   " Check exception
   call assert_fails("packadd directorynotfound", 'E919:')
@@ -60,7 +60,7 @@ func Test_packadd_start()
 
   call assert_equal(24, g:plugin_works)
   call assert_true(len(&rtp) > len(rtp))
-  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/start/other\($\|,\)')
+  call assert_match('/testdir/Xdir/pack/mine/start/other\($\|,\)', &rtp)
 endfunc
 
 func Test_packadd_noload()
@@ -77,7 +77,7 @@ func Test_packadd_noload()
   packadd! mytest
 
   call assert_true(len(&rtp) > len(rtp))
-  call assert_true(&rtp =~ 'testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
+  call assert_match('testdir/Xdir/pack/mine/opt/mytest\($\|,\)', &rtp)
   call assert_equal(0, g:plugin_works)
 
   " check the path is not added twice
@@ -108,7 +108,7 @@ func Test_packadd_symlink_dir()
   packadd mytest
 
   " Must have been inserted in the middle, not at the end
-  call assert_true(&rtp =~ '/pack/mine/opt/mytest,')
+  call assert_match('/pack/mine/opt/mytest,', &rtp)
   call assert_equal(44, g:plugin_works)
 
   " No change when doing it again.
@@ -196,9 +196,9 @@ func Test_helptags()
   helptags ALL
 
   let tags1 = readfile(docdir1 . '/tags') 
-  call assert_true(tags1[0] =~ 'look-here')
+  call assert_match('look-here', tags1[0])
   let tags2 = readfile(docdir2 . '/tags') 
-  call assert_true(tags2[0] =~ 'look-away')
+  call assert_match('look-away', tags2[0])
 endfunc
 
 func Test_colorscheme()
