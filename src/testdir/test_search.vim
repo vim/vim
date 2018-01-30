@@ -619,6 +619,8 @@ func Test_search_cmdline_incsearch_highlight_attr()
   let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
 
   call WaitFor({-> lines == [term_getline(buf, 1), term_getline(buf, 2)] })
+  " wait for vim to complete initialization
+  call term_wait(buf)
 
   " Get attr of normal(a0), incsearch(a1), hlsearch(a2) highlight
   call term_sendkeys(buf, ":set incsearch hlsearch\<cr>")
