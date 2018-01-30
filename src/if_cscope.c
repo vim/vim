@@ -677,7 +677,7 @@ cs_cnt_matches(int idx)
 {
     char *stok;
     char *buf;
-    int nlines;
+    int nlines = 0;
 
     buf = (char *)alloc(CSREAD_BUFSIZE);
     if (buf == NULL)
@@ -700,7 +700,10 @@ cs_cnt_matches(int idx)
 	 * cscope will output error messages before the number-of-lines output.
 	 * Display/discard any output that doesn't match what we want.
 	 * Accept "\S*cscope: X lines", also matches "mlcscope".
+	 * Bail out for the "Unable to search" error.
 	 */
+	if (strstr((const char *)stok, "Unable to search database") != NULL)
+	    break;
 	if ((stok = strtok(buf, (const char *)" ")) == NULL)
 	    continue;
 	if (strstr((const char *)stok, "cscope:") == NULL)
