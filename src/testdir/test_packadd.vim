@@ -121,6 +121,43 @@ func Test_packadd_symlink_dir()
   exec "silent !rm" top2_dir
 endfunc
 
+func Test_packadd_symlink_dir2()
+  if !has('unix')
+    return
+  endif
+  let top2_dir = s:topdir . '/Xdir2'
+  let real_dir = s:topdir . '/Xsym/pack'
+  call mkdir(top2_dir, 'p')
+  call mkdir(real_dir, 'p')
+  let &rtp = top2_dir . ',' . top2_dir . '/after'
+  let &packpath = &rtp
+
+  exec "silent !ln -s ../Xsym/pack"  top2_dir . '/pack'
+  let s:plugdir = top2_dir . '/pack/mine/opt/mytest'
+  call mkdir(s:plugdir . '/plugin', 'p')
+
+  exe 'split ' . s:plugdir . '/plugin/test.vim'
+  call setline(1, 'let g:plugin_works = 48')
+  wq
+  let g:plugin_works = 0
+
+  packadd mytest
+
+  " Must have been inserted in the middle, not at the end
+  call assert_match('/Xdir2/pack/mine/opt/mytest,', &rtp)
+  call assert_equal(48, g:plugin_works)
+
+  " No change when doing it again.
+  let rtp_before = &rtp
+  packadd mytest
+  call assert_equal(rtp_before, &rtp)
+
+  set rtp&
+  let rtp = &rtp
+  exec "silent !rm" top2_dir . '/pack'
+  exec "silent !rmdir" top2_dir
+endfunc
+
 " Check command-line completion for 'packadd'
 func Test_packadd_completion()
   let optdir1 = &packpath . '/pack/mine/opt'
