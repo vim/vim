@@ -1951,6 +1951,11 @@ cmdline_not_changed:
 #endif
 
 cmdline_changed:
+#ifdef FEAT_AUTOCMD
+	/* Trigger CmdlineChanged autocommands. */
+	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+#endif
+
 #ifdef FEAT_SEARCH_EXTRA
 	/*
 	 * 'incsearch' highlighting.
