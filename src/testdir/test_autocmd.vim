@@ -1178,3 +1178,38 @@ func Test_nocatch_wipe_dummy_buffer()
   call assert_fails('lv½ /x', 'E480')
   au!
 endfunc
+
+function s:Before_test_dirchanged()
+  augroup test_dirchanged
+    autocmd!
+  augroup END
+  let s:li=[]
+  let s:dir_this=getcwd()
+  let s:dir_other=s:dir_this . '/foo'
+endfunc
+
+function s:After_test_dirchanged()
+  exe 'cd' s:dir_this
+endfunc
+
+function Test_dirchanged_global()
+  call s:Before_test_dirchanged()
+  autocmd test_dirchanged DirChanged global call add(s:li, "cd:")
+  autocmd test_dirchanged DirChanged global call add(s:li, expand("<afile>"))
+  exe 'cd' s:dir_other
+  call assert_equal(["cd:", s:dir_other], s:li)
+  exe 'lcd' s:dir_other
+  call assert_equal(["cd:", s:dir_other], s:li)
+  call s:After_test_dirchanged()
+endfunc
+
+function Test_dirchanged_local()
+  call s:Before_test_dirchanged()
+  autocmd test_dirchanged DirChanged window call add(s:li, "lcd:")
+  autocmd test_dirchanged DirChanged window call add(s:li, expand("<afile>"))
+  exe 'cd' s:dir_other
+  call assert_equal([], s:li)
+  exe 'lcd' s:dir_other
+  call assert_equal(["lcd:", s:dir_other], s:li)
+  call s:After_test_dirchanged()
+endfunc
