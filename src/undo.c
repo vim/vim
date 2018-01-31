@@ -2364,7 +2364,10 @@ undo_time(
 
     /* When "target" is 0; Back to origin. */
     if (target == 0)
-	goto found;
+    {
+	mark = lastmark;  /* avoid that GCC complains */
+	goto target_zero;
+    }
 
     /*
      * May do this twice:
@@ -2491,7 +2494,7 @@ undo_time(
 	    above = TRUE;	/* stop above the header */
     }
 
-found:
+target_zero:
     /* If we found it: Follow the path to go to where we want to be. */
     if (uhp != NULL || target == 0)
     {
