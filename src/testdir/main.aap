@@ -6,10 +6,10 @@ VimProg ?= ../vim
 
 Scripts = test1.out test2.out test3.out test6.out
 		test11.out
-		test13.out test14.out test15.out test17.out
+		test13.out test14.out test17.out
 		test18.out test21.out
 		test27.out test29.out test30.out
-		test36.out test37.out
+		test37.out
 		test39.out test42.out
 		test44.out test46.out test47.out
 		test48.out test49.out test74.out
