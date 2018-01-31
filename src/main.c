@@ -359,6 +359,10 @@ main
      */
     check_tty(&params);
 
+    /* Ensure printing works usefully without a tty. */
+    if (silent_mode)
+	setvbuf(stdout, NULL, _IOLBF, 0);
+
     /* This message comes before term inits, but after setting "silent_mode"
      * when the input is not a tty. */
     if (GARGCOUNT > 1 && !silent_mode)
