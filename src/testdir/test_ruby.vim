@@ -49,3 +49,11 @@ func Test_rubydo()
   bwipe!
   bwipe!
 endfunc
+
+func Test_rubyfile()
+  " Check :rubyfile does not SEGV with Ruby level exception but just fails
+  let tempfile = tempname() . '.rb'
+  call writefile(['raise "vim!"'], tempfile)
+  call assert_fails('rubyfile ' . tempfile)
+  call delete(tempfile)
+endfunc

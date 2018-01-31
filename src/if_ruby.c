@@ -377,7 +377,7 @@ static unsigned long (*dll_rb_num2uint) (VALUE);
 # endif
 static VALUE (*dll_rb_lastline_get) (void);
 static void (*dll_rb_lastline_set) (VALUE);
-static void (*dll_rb_protect) (VALUE (*)(VALUE), int, int*);
+static VALUE (*dll_rb_protect) (VALUE (*)(VALUE), VALUE, int*);
 static void (*dll_rb_load) (VALUE, int);
 static long (*dll_rb_num2long) (VALUE);
 static unsigned long (*dll_rb_num2ulong) (VALUE);
@@ -828,15 +828,22 @@ void ex_rubydo(exarg_T *eap)
     }
 }
 
+VALUE rb_load_wrap(VALUE file_to_load)
+{
+    rb_load(file_to_load, 0);
+    return Qnil;
+}
+
 void ex_rubyfile(exarg_T *eap)
 {
     int state;
 
     if (ensure_ruby_initialized())
     {
-	rb_protect((VALUE (*)(VALUE))rb_load, rb_str_new2((char *)eap->arg),
-								       &state);
-	if (state) error_print(state);
+	VALUE file_to_load = rb_str_new2((const char *)eap->arg);
+	rb_protect(rb_load_wrap, file_to_load, &state);
+	if (state)
+	    error_print(state);
     }
 }
 
