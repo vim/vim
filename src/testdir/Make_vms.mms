@@ -74,9 +74,9 @@ VIMPROG = <->vim.exe
 .SUFFIXES : .out .in
 
 SCRIPT = test1.out test3.out \
-       test14.out test15.out \
+       test14.out \
        test29.out \
-       test30.out test36.out test37.out test39.out \
+       test30.out test37.out test39.out \
        test42.out test44.out test48.out test49.out \
        test64.out test69.out \
        test72.out test77a.out test88.out \
@@ -108,7 +108,7 @@ SCRIPT_UNIX = test10.out test17.out test27.out test49.out
 .ENDIF
 
 .IFDEF WANT_WIN
-SCRIPT_WIN = test50.out test52.out
+SCRIPT_WIN = test52.out
 .ENDIF
 
 .IFDEF WANT_SPELL
