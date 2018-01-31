@@ -176,6 +176,10 @@ if s:line1 =~# "^#!"
   elseif s:name =~# 'scala\>'
     set ft=scala
 
+    " Clojure
+  elseif s:name =~# 'clojure'
+    set ft=clojure
+
   endif
   unlet s:name
 
