@@ -286,6 +286,7 @@ struct DWriteContext {
     ID2D1DCRenderTarget *mRT;
     ID2D1GdiInteropRenderTarget *mGDIRT;
     ID2D1SolidColorBrush *mBrush;
+    ID2D1Bitmap *mBitmap;
 
     IDWriteFactory *mDWriteFactory;
 #ifdef FEAT_DIRECTX_COLOR_EMOJI
@@ -319,6 +320,8 @@ struct DWriteContext {
 
     void SetFont(HFONT hFont);
 
+    void Rebind();
+
     void BindDC(HDC hdc, const RECT *rect);
 
     HRESULT SetDrawingMode(DrawingMode mode);
@@ -334,6 +337,8 @@ struct DWriteContext {
     void DrawLine(int x1, int y1, int x2, int y2, COLORREF color);
 
     void SetPixel(int x, int y, COLORREF color);
+
+    void Scroll(int x, int y, const RECT *rc);
 
     void Flush();
 
@@ -596,6 +601,7 @@ DWriteContext::DWriteContext() :
     mRT(NULL),
     mGDIRT(NULL),
     mBrush(NULL),
+    mBitmap(NULL),
     mDWriteFactory(NULL),
 #ifdef FEAT_DIRECTX_COLOR_EMOJI
     mDWriteFactory2(NULL),
@@ -614,9 +620,6 @@ DWriteContext::DWriteContext() :
 	    __uuidof(ID2D1Factory), NULL,
 	    reinterpret_cast<void**>(&mD2D1Factory));
     _RPT2(_CRT_WARN, "D2D1CreateFactory: hr=%p p=%p\n", hr, mD2D1Factory);
-
-    if (SUCCEEDED(hr))
-	hr = CreateDeviceResources();
 
     if (SUCCEEDED(hr))
     {
@@ -662,6 +665,7 @@ DWriteContext::~DWriteContext()
 #ifdef FEAT_DIRECTX_COLOR_EMOJI
     SafeRelease(&mDWriteFactory2);
 #endif
+    SafeRelease(&mBitmap);
     SafeRelease(&mBrush);
     SafeRelease(&mGDIRT);
     SafeRelease(&mRT);
@@ -704,13 +708,7 @@ DWriteContext::CreateDeviceResources()
     }
 
     if (SUCCEEDED(hr))
-    {
-	if (mHDC != NULL)
-	{
-	    mRT->BindDC(mHDC, &mBindRect);
-	    mRT->SetTransform(D2D1::IdentityMatrix());
-	}
-    }
+	Rebind();
 
     return hr;
 }
@@ -718,6 +716,7 @@ DWriteContext::CreateDeviceResources()
     void
 DWriteContext::DiscardDeviceResources()
 {
+    SafeRelease(&mBitmap);
     SafeRelease(&mBrush);
     SafeRelease(&mGDIRT);
     SafeRelease(&mRT);
@@ -899,13 +898,36 @@ DWriteContext::SetFont(HFONT hFont)
 }
 
     void
+DWriteContext::Rebind()
+{
+    SafeRelease(&mBitmap);
+
+    mRT->BindDC(mHDC, &mBindRect);
+    mRT->SetTransform(D2D1::IdentityMatrix());
+
+    D2D1_BITMAP_PROPERTIES props = {
+	{DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE},
+	96.0f, 96.0f
+    };
+    mRT->CreateBitmap(
+	    D2D1::SizeU(mBindRect.right - mBindRect.left,
+		mBindRect.bottom - mBindRect.top),
+	    props, &mBitmap);
+}
+
+    void
 DWriteContext::BindDC(HDC hdc, const RECT *rect)
 {
-    Flush();
-    mRT->BindDC(hdc, rect);
-    mRT->SetTransform(D2D1::IdentityMatrix());
     mHDC = hdc;
     mBindRect = *rect;
+
+    if (mRT == NULL)
+	CreateDeviceResources();
+    else
+    {
+	Flush();
+	Rebind();
+    }
 }
 
     HRESULT
@@ -1081,6 +1103,49 @@ DWriteContext::SetPixel(int x, int y, COLORREF color)
 }
 
     void
+DWriteContext::Scroll(int x, int y, const RECT *rc)
+{
+    SetDrawingMode(DM_DIRECTX);
+    mRT->Flush();
+
+    D2D1_RECT_U srcRect;
+    D2D1_POINT_2U destPoint;
+    if (x >= 0)
+    {
+	srcRect.left = rc->left;
+	srcRect.right = rc->right - x;
+	destPoint.x = rc->left + x;
+    }
+    else
+    {
+	srcRect.left = rc->left - x;
+	srcRect.right = rc->right;
+	destPoint.x = rc->left;
+    }
+    if (y >= 0)
+    {
+	srcRect.top = rc->top;
+	srcRect.bottom = rc->bottom - y;
+	destPoint.y = rc->top + y;
+    }
+    else
+    {
+	srcRect.top = rc->top - y;
+	srcRect.bottom = rc->bottom;
+	destPoint.y = rc->top;
+    }
+    mBitmap->CopyFromRenderTarget(&destPoint, mRT, &srcRect);
+
+    D2D1_RECT_F destRect = {
+	    FLOAT(destPoint.x), FLOAT(destPoint.y),
+	    FLOAT(destPoint.x + srcRect.right - srcRect.left),
+	    FLOAT(destPoint.y + srcRect.bottom - srcRect.top)
+    };
+    mRT->DrawBitmap(mBitmap, destRect, 1.0F,
+	    D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR, destRect);
+}
+
+    void
 DWriteContext::Flush()
 {
     SetDrawingMode(DM_GDI);
@@ -1237,6 +1302,13 @@ DWriteContext_SetPixel(DWriteContext *ctx, int x, int y, COLORREF color)
 {
     if (ctx != NULL)
 	ctx->SetPixel(x, y, color);
+}
+
+    void
+DWriteContext_Scroll(DWriteContext *ctx, int x, int y, const RECT *rc)
+{
+    if (ctx != NULL)
+	ctx->Scroll(x, y, rc);
 }
 
     void

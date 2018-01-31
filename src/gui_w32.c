@@ -36,7 +36,6 @@
 static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
-static int s_directx_scrlines = 0;
 # define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL && enc_utf8)
 static int directx_enabled(void);
 static void directx_binddc(void);
@@ -61,7 +60,6 @@ gui_mch_set_rendering_options(char_u *s)
     int	    dx_geom = 0;
     int	    dx_renmode = 0;
     int	    dx_taamode = 0;
-    int	    dx_scrlines = 0;
 
     /* parse string as rendering options. */
     for (p = s; p != NULL && *p != NUL; )
@@ -124,7 +122,7 @@ gui_mch_set_rendering_options(char_u *s)
 	}
 	else if (STRCMP(name, "scrlines") == 0)
 	{
-	    dx_scrlines = atoi((char *)value);
+	    /* Deprecated.  Simply ignore it. */
 	}
 	else
 	    return FAIL;
@@ -159,7 +157,6 @@ gui_mch_set_rendering_options(char_u *s)
 	}
     }
     s_directx_enabled = dx_enable;
-    s_directx_scrlines = dx_scrlines;
 
     return OK;
 # else
@@ -3129,9 +3126,6 @@ gui_mch_delete_lines(
     int	    num_lines)
 {
     RECT	rc;
-#if defined(FEAT_DIRECTX)
-    int		use_redraw = 0;
-#endif
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -3141,16 +3135,10 @@ gui_mch_delete_lines(
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
     {
-	if (s_directx_scrlines > 0 && s_directx_scrlines <= num_lines)
-	{
-	    gui_redraw(rc.left, rc.top,
-		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
-	    use_redraw = 1;
-	}
-	else
-	    DWriteContext_Flush(s_dwc);
+	DWriteContext_Scroll(s_dwc, 0, -num_lines * gui.char_height, &rc);
+	DWriteContext_Flush(s_dwc);
     }
-    if (!use_redraw)
+    else
 #endif
     {
 	intel_gpu_workaround();
@@ -3180,9 +3168,6 @@ gui_mch_insert_lines(
     int		num_lines)
 {
     RECT	rc;
-#if defined(FEAT_DIRECTX)
-    int		use_redraw = 0;
-#endif
 
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
@@ -3192,16 +3177,10 @@ gui_mch_insert_lines(
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
     {
-	if (s_directx_scrlines > 0 && s_directx_scrlines <= num_lines)
-	{
-	    gui_redraw(rc.left, rc.top,
-		    rc.right - rc.left + 1, rc.bottom - rc.top + 1);
-	    use_redraw = 1;
-	}
-	else
-	    DWriteContext_Flush(s_dwc);
+	DWriteContext_Scroll(s_dwc, 0, num_lines * gui.char_height, &rc);
+	DWriteContext_Flush(s_dwc);
     }
-    if (!use_redraw)
+    else
 #endif
     {
 	intel_gpu_workaround();
@@ -4024,7 +4003,10 @@ _OnScroll(
      * position, but don't actually scroll by setting "dont_scroll". */
     dont_scroll = !allow_scrollbar;
 
+    mch_disable_flush();
     gui_drag_scrollbar(sb, val, dragging);
+    mch_enable_flush();
+    gui_may_flush();
 
     s_busy_processing = FALSE;
     dont_scroll = dont_scroll_save;
@@ -4651,6 +4633,7 @@ _OnMouseWheel(
     if (mouse_scroll_lines == 0)
 	init_mouse_wheel();
 
+    mch_disable_flush();
     if (mouse_scroll_lines > 0
 	    && mouse_scroll_lines < (size > 2 ? size - 2 : 1))
     {
@@ -4659,6 +4642,8 @@ _OnMouseWheel(
     }
     else
 	_OnScroll(hwnd, hwndCtl, zDelta >= 0 ? SB_PAGEUP : SB_PAGEDOWN, 0);
+    mch_enable_flush();
+    gui_may_flush();
 }
 
 #ifdef USE_SYSMENU_FONT
