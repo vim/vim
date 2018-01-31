@@ -472,4 +472,15 @@ func Test_window_colon_command()
   exe "norm! v\<C-W>:\<C-U>echo v:version"
 endfunc
 
+func Test_access_freed_mem()
+  " This was accessing freed memory
+  au * 0 vs xxx
+  arg 0
+  argadd
+  all
+  all
+  au!
+  bwipe xxx
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
