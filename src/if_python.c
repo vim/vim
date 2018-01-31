@@ -912,6 +912,8 @@ python_loaded(void)
 }
 #endif
 
+static char *py_home_buf = NULL;
+
     static int
 Python_Init(void)
 {
@@ -929,10 +931,15 @@ Python_Init(void)
 	}
 #endif
 
+	if (*p_pyhome != NUL)
+	{
+	    /* The string must not change later, make a copy in static memory. */
+	    py_home_buf = (char *)vim_strsave(p_pyhome);
+	    if (py_home_buf != NULL)
+		Py_SetPythonHome(py_home_buf);
+	}
 #ifdef PYTHON_HOME
-# ifdef DYNAMIC_PYTHON
-	if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
-# endif
+	else if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
 	    Py_SetPythonHome(PYTHON_HOME);
 #endif
 

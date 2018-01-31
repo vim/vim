@@ -1354,9 +1354,17 @@ if exists("&pythondll")
   call append("$", "pythondll\tname of the Python 2 dynamic library")
   call <SID>OptionG("pythondll", &pythondll)
 endif
+if exists("&pythonhome")
+  call append("$", "pythonhome\tname of the Python 2 home directory")
+  call <SID>OptionG("pythonhome", &pythonhome)
+endif
 if exists("&pythonthreedll")
   call append("$", "pythonthreedll\tname of the Python 3 dynamic library")
   call <SID>OptionG("pythonthreedll", &pythonthreedll)
+endif
+if exists("&pythonthreehome")
+  call append("$", "pythonthreehome\tname of the Python 3 home directory")
+  call <SID>OptionG("pythonthreehome", &pythonthreehome)
 endif
 if exists("&rubydll")
   call append("$", "rubydll\tname of the Ruby dynamic library")

@@ -842,6 +842,8 @@ python3_loaded(void)
 }
 #endif
 
+static wchar_t *py_home_buf = NULL;
+
     static int
 Python3_Init(void)
 {
@@ -857,11 +859,18 @@ Python3_Init(void)
 
 	init_structs();
 
+	if (*p_py3home != NUL)
+	{
+	    size_t len = mbstowcs(NULL, (char *)p_py3home, 0) + 1;
 
+	    /* The string must not change later, make a copy in static memory. */
+	    py_home_buf = (wchar_t *)alloc(len * sizeof(wchar_t));
+	    if (py_home_buf != NULL && mbstowcs(
+			    py_home_buf, (char *)p_py3home, len) != (size_t)-1)
+		Py_SetPythonHome(py_home_buf);
+	}
 #ifdef PYTHON3_HOME
-# ifdef DYNAMIC_PYTHON3
-	if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
-# endif
+	else if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
 	    Py_SetPythonHome(PYTHON3_HOME);
 #endif
 
