@@ -2675,14 +2675,8 @@ showmatch(
 	    showruler(FALSE);
 	    setcursor();
 	    cursor_on();		/* make sure that the cursor is shown */
-	    out_flush();
-#ifdef FEAT_GUI
-	    if (gui.in_use)
-	    {
-		gui_update_cursor(TRUE, FALSE);
-		gui_mch_flush();
-	    }
-#endif
+	    out_flush_cursor(TRUE, FALSE);
+
 	    /* Restore dollar_vcol(), because setcursor() may call curs_rows()
 	     * which resets it if the matching position is in a previous line
 	     * and has a higher column number. */

@@ -121,14 +121,7 @@ netbeans_close(void)
     update_screen(CLEAR);
     setcursor();
     cursor_on();
-    out_flush();
-#ifdef FEAT_GUI
-    if (gui.in_use)
-    {
-	gui_update_cursor(TRUE, FALSE);
-	gui_mch_flush();
-    }
-#endif
+    out_flush_cursor(TRUE, FALSE);
 }
 
 #define NB_DEF_HOST "localhost"
@@ -1848,14 +1841,8 @@ nb_do_cmd(
 	    update_screen(VALID);
 	    setcursor();
 	    cursor_on();
-	    out_flush();
-#ifdef FEAT_GUI
-	    if (gui.in_use)
-	    {
-		gui_update_cursor(TRUE, FALSE);
-		gui_mch_flush();
-	    }
-#endif
+	    out_flush_cursor(TRUE, FALSE);
+
 	    /* Quit a hit-return or more prompt. */
 	    if (State == HITRETURN || State == ASKMORE)
 	    {
@@ -2248,14 +2235,8 @@ nb_do_cmd(
 	update_screen(NOT_VALID);
 	setcursor();
 	cursor_on();
-	out_flush();
-#ifdef FEAT_GUI
-	if (gui.in_use)
-	{
-	    gui_update_cursor(TRUE, FALSE);
-	    gui_mch_flush();
-	}
-#endif
+	out_flush_cursor(TRUE, FALSE);
+
 	/* Quit a hit-return or more prompt. */
 	if (State == HITRETURN || State == ASKMORE)
 	{
@@ -2307,15 +2288,7 @@ coloncmd(char *cmd, ...)
 /*     ALT_INPUT_LOCK_OFF; */
 
     setcursor();		/* restore the cursor position */
-    out_flush();		/* make sure output has been written */
-
-#ifdef FEAT_GUI
-    if (gui.in_use)
-    {
-	gui_update_cursor(TRUE, FALSE);
-	gui_mch_flush();
-    }
-#endif
+    out_flush_cursor(TRUE, FALSE);
 }
 
 
@@ -2569,14 +2542,7 @@ netbeans_open(char *params, int doabort)
     update_screen(CLEAR);
     setcursor();
     cursor_on();
-    out_flush();
-#ifdef FEAT_GUI
-    if (gui.in_use)
-    {
-	gui_update_cursor(TRUE, FALSE);
-	gui_mch_flush();
-    }
-#endif
+    out_flush_cursor(TRUE, FALSE);
 }
 
 /*

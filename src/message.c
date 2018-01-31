@@ -2316,7 +2316,9 @@ msg_scroll_up(void)
 	gui_undraw_cursor();
 #endif
     /* scrolling up always works */
+    mch_disable_flush();
     screen_del_lines(0, 0, 1, (int)Rows, TRUE, 0, NULL);
+    mch_enable_flush();
 
     if (!can_clear((char_u *)" "))
     {
