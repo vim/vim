@@ -1124,7 +1124,7 @@ gui_update_cursor(
 			     shape->blinkoff);
 	if (shape->blinkwait == 0 || shape->blinkon == 0
 						       || shape->blinkoff == 0)
-	    gui_mch_stop_blink();
+	    gui_mch_stop_blink(FALSE);
 #ifdef FEAT_TERMINAL
 	if (shape_bg != INVALCOLOR)
 	{
@@ -2982,7 +2982,7 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
 	 * for showmatch() */
 	gui_mch_start_blink();
 	retval = gui_wait_for_chars_or_timer(wtime);
-	gui_mch_stop_blink();
+	gui_mch_stop_blink(TRUE);
 	return retval;
     }
 
@@ -3029,7 +3029,7 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
 	retval = gui_wait_for_chars_or_timer(-1L);
     }
 
-    gui_mch_stop_blink();
+    gui_mch_stop_blink(TRUE);
     return retval;
 }
 

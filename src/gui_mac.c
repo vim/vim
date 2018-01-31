@@ -5156,9 +5156,10 @@ gui_mch_set_blinking(long wait, long on, long off)
  * Stop the cursor blinking.  Show the cursor if it wasn't shown.
  */
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
-    gui_update_cursor(TRUE, FALSE);
+    if (may_call_gui_update_cursor)
+	gui_update_cursor(TRUE, FALSE);
     /* TODO: TODO: TODO: TODO: */
 /*    gui_w32_rm_blink_timer();
     if (blink_state == BLINK_OFF)

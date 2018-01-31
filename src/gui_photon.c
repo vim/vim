@@ -383,7 +383,7 @@ gui_ph_handle_window_cb(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 	    else
 	    {
 		gui_focus_change(FALSE);
-		gui_mch_stop_blink();
+		gui_mch_stop_blink(TRUE);
 	    }
 	    break;
 
@@ -2273,11 +2273,11 @@ gui_mch_start_blink(void)
 }
 
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
     PtSetResource(gui_ph_timer_cursor, Pt_ARG_TIMER_INITIAL, 0, 0);
 
-    if (blink_state == BLINK_OFF)
+    if (blink_state == BLINK_OFF && may_call_gui_update_cursor)
 	gui_update_cursor(TRUE, FALSE);
 
     blink_state = BLINK_NONE;

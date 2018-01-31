@@ -893,14 +893,14 @@ gui_mch_set_blinking(long waittime, long on, long off)
  * Stop the cursor blinking.  Show the cursor if it wasn't shown.
  */
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
     if (blink_timer)
     {
 	timeout_remove(blink_timer);
 	blink_timer = 0;
     }
-    if (blink_state == BLINK_OFF)
+    if (blink_state == BLINK_OFF && may_call_gui_update_cursor)
     {
 	gui_update_cursor(TRUE, FALSE);
 	gui_mch_flush();
@@ -975,7 +975,7 @@ leave_notify_event(GtkWidget *widget UNUSED,
 		   gpointer data UNUSED)
 {
     if (blink_state != BLINK_NONE)
-	gui_mch_stop_blink();
+	gui_mch_stop_blink(TRUE);
 
     return FALSE;
 }
@@ -1006,7 +1006,7 @@ focus_out_event(GtkWidget *widget UNUSED,
     gui_focus_change(FALSE);
 
     if (blink_state != BLINK_NONE)
-	gui_mch_stop_blink();
+	gui_mch_stop_blink(TRUE);
 
     return TRUE;
 }
@@ -1145,7 +1145,7 @@ key_press_event(GtkWidget *widget UNUSED,
 
 #if GTK_CHECK_VERSION(3,0,0)
     is_key_pressed = TRUE;
-    gui_mch_stop_blink();
+    gui_mch_stop_blink(TRUE);
 #endif
 
     gui.event_time = event->time;
@@ -6677,7 +6677,7 @@ gui_mch_wait_for_chars(long wtime)
 	    if (gui.in_focus)
 		gui_mch_start_blink();
 	    else
-		gui_mch_stop_blink();
+		gui_mch_stop_blink(TRUE);
 	    focus = gui.in_focus;
 	}
 

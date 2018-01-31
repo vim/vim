@@ -3,7 +3,7 @@ int gui_mch_set_rendering_options(char_u *s);
 int gui_mch_is_blinking(void);
 int gui_mch_is_blink_off(void);
 void gui_mch_set_blinking(long wait, long on, long off);
-void gui_mch_stop_blink(void);
+void gui_mch_stop_blink(int may_call_gui_update_cursor);
 void gui_mch_start_blink(void);
 LRESULT WINAPI vim_WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 void gui_mch_new_colors(void);
