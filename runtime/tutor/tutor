@@ -1,5 +1,5 @@
 ===============================================================================
-=    W e l c o m e   t o   t h e   V I M   T u t o r    -    Version 1.7      =
+=    W e l c o m e   t o   t h e   V I M   T u t o r    -    Version 1.8      =
 ===============================================================================
 
      Vim is a very powerful editor that has many commands, too many to
@@ -18,9 +18,9 @@
      use.  That means that you need to execute the commands to learn them
      properly.  If you only read the text, you will forget the commands!
 
-     Now, make sure that your Shift-Lock key is NOT depressed and press
-     the   j   key enough times to move the cursor so that Lesson 1.1
-     completely fills the screen.
+     Now, make sure that your Caps-Lock is NOT on (or Shift-Lock key is NOT
+     depressed) and press the   j   key enough times to move the cursor so
+     that Lesson 1.1 completely fills the screen.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lesson 1.1:  MOVING THE CURSOR
 
