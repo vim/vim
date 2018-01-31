@@ -4366,6 +4366,20 @@ if test "$GCC" = yes; then
 fi
 AC_SUBST(DEPEND_CFLAGS_FILTER)
 
+dnl On some systems AC_SYS_LARGEFILE determines that -D_FILE_OFFSET_BITS=64
+dnl isn't required, but the CFLAGS for some of the libraries we're using
+dnl include the define.  Since the define changes the size of some datatypes
+dnl (e.g. ino_t and off_t), all of Vim's modules must be compiled with a
+dnl consistent value.  It's therefore safest to force the use of the define
+dnl if it's present in any of the *_CFLAGS variables.
+AC_MSG_CHECKING(whether we need to force -D_FILE_OFFSET_BITS=64)
+if echo "$CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_GETPATH_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(_FILE_OFFSET_BITS, 64)
+else
+  AC_MSG_RESULT(no)
+fi
+
 dnl link.sh tries to avoid overlinking in a hackish way.
 dnl At least GNU ld supports --as-needed which provides the same functionality
 dnl at linker level. Let's use it.
