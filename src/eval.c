@@ -8443,7 +8443,7 @@ find_win_by_nr(
     if (nr < 0)
 	return NULL;
     if (nr == 0)
-	return (tp == NULL) ? curwin : NULL;
+	return curwin;
 
     FOR_ALL_WINDOWS_IN_TAB(tp, wp)
     {
