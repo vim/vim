@@ -8,7 +8,12 @@ func Test_getjumplist()
 
   %bwipe
   clearjumps
+  call assert_equal([[], 0], getjumplist())
+  call assert_equal([[], 0], getjumplist(1))
   call assert_equal([[], 0], getjumplist(1, 1))
+
+  call assert_equal([], getjumplist(100))
+  call assert_equal([], getjumplist(1, 100))
 
   let lines = []
   for i in range(1, 100)
@@ -28,16 +33,16 @@ func Test_getjumplist()
 	      \ {'lnum': 1, 'bufnr': bnr, 'col': 0, 'coladd': 0},
 	      \ {'lnum': 50, 'bufnr': bnr, 'col': 0, 'coladd': 0},
 	      \ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0}], 4],
-	      \ getjumplist(1, 1))
+	      \ getjumplist())
 
   " Traverse the jump list and verify the results
   5
   exe "normal \<C-O>"
-  call assert_equal(2, getjumplist(1, 1)[1])
+  call assert_equal(2, getjumplist(1)[1])
   exe "normal 2\<C-O>"
   call assert_equal(0, getjumplist(1, 1)[1])
   exe "normal 3\<C-I>"
-  call assert_equal(3, getjumplist(1, 1)[1])
+  call assert_equal(3, getjumplist()[1])
   exe "normal \<C-O>"
   normal 20%
   call assert_equal([[
@@ -46,9 +51,9 @@ func Test_getjumplist()
 	      \ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0},
 	      \ {'lnum': 5, 'bufnr': bnr, 'col': 0, 'coladd': 0},
 	      \ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0}], 5],
-	      \ getjumplist(1, 1))
+	      \ getjumplist())
 
-  let l = getjumplist(1, 1)
+  let l = getjumplist()
   call test_garbagecollect_now()
   call assert_equal(5, l[1])
   clearjumps

@@ -2167,7 +2167,8 @@ getfperm({fname})		String	file permissions of file {fname}
 getfsize({fname})		Number	size in bytes of file {fname}
 getftime({fname})		Number	last modification time of file
 getftype({fname})		String	description of type of file {fname}
-getjumplist({tabnr}, {winnr})	List	list of jump list items
+getjumplist([{winnr} [, {tabnr}]])
+				List	list of jump list items
 getline({lnum})			String	line {lnum} of current buffer
 getline({lnum}, {end})		List	lines {lnum} to {end} of current buffer
 getloclist({nr} [, {what}])	List	list of location list items
@@ -4559,16 +4560,18 @@ getftype({fname})					*getftype()*
 		directory returns "dir" instead of "link".
 
 							*getjumplist()*
-getjumplist({tabnr}, {winnr})
-		Returns a list with all the entries in the |jumplist| for
-		window {nr} in tab page {tabnr}.  {nr} can be the window
-		number or the |window-ID|.  When {nr} is zero the current
-		window is used.
+getjumplist([{winnr} [, {tabnr}]])
+		Returns the |jumplist| for window {winnr}.
+
+		Without arguments use the current window.
+		With {winnr} only use this window in the current tab page.
+		With {winnr} and {tabnr} use the window in the specified tab
+		page.
 
 		The returned list contains two entries: a list with the jump
-		locations and the last used jump position in the list.  The
-		jump location list contains a list of dictionaries with the
-		following entries:
+		locations and the last used jump position number in the list.
+		Each entry in the jump location list is a dictionary with
+		the following entries:
 			bufnr		buffer number
 			col		column number
 			coladd		column offset for 'virtualedit'

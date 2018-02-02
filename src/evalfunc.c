@@ -622,7 +622,7 @@ static struct fst
     {"getfsize",	1, 1, f_getfsize},
     {"getftime",	1, 1, f_getftime},
     {"getftype",	1, 1, f_getftype},
-    {"getjumplist",	2, 2, f_getjumplist},
+    {"getjumplist",	0, 2, f_getjumplist},
     {"getline",		1, 2, f_getline},
     {"getloclist",	1, 2, f_getloclist},
     {"getmatches",	0, 0, f_getmatches},
@@ -4836,15 +4836,12 @@ f_getftype(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "getjumplist({tabpagenr}, {winnr})" function
+ * "getjumplist()" function
  */
     static void
-f_getjumplist(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
+f_getjumplist(typval_T *argvars, typval_T *rettv)
 {
 #ifdef FEAT_JUMPLIST
-    tabpage_T	*tp;
     win_T	*wp;
     int         i;
     list_T	*l;
@@ -4855,11 +4852,7 @@ f_getjumplist(argvars, rettv)
 	return;
 
 #ifdef FEAT_JUMPLIST
-    tp = find_tabpage((int)get_tv_number_chk(&argvars[0], NULL));
-    if (tp == NULL)
-	return;
-
-    wp = find_win_by_nr(&argvars[1], tp);
+    wp = find_tabwin(&argvars[0], &argvars[1]);
     if (wp == NULL)
 	return;
 
