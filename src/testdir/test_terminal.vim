@@ -815,17 +815,25 @@ func Test_terminal_response_to_control_sequence()
   let buf = Run_shell_in_terminal({})
   call term_wait(buf)
 
-  call term_sendkeys(buf, s:python . " -c 'import sys;sys.stdout.write(\"\\x1b[6n\")'\<cr>")
+  new
+  call setline(1, "\x1b[6n")
+  write! Xescape
+  bwipe
+  call term_sendkeys(buf, "cat Xescape\<cr>")
+
   " wait for the response of control sequence from libvterm (and send it to tty)
-  call term_wait(buf, 100)
-  " wait for output from tty to display
+  sleep 200m
   call term_wait(buf)
-  call assert_match(';\d\+R', term_getline(buf, 2))
+
+  " Wait for output from tty to display, below an empty line.
+  " It should show \e3;1R, but only 1R may show up
+  call assert_match('\<\d\+R', term_getline(buf, 3))
 
   call term_sendkeys(buf, "\<c-c>")
   call term_wait(buf)
   call Stop_shell_in_terminal(buf)
 
   exe buf . 'bwipe'
+  call delete('Xescape')
   unlet g:job
 endfunc
