@@ -10761,6 +10761,7 @@ expand_in_path(
     char_u	*curdir;
     garray_T	path_ga;
     char_u	*paths = NULL;
+    int		glob_flags = 0;
 
     if ((curdir = alloc((unsigned)MAXPATHL)) == NULL)
 	return 0;
@@ -10777,7 +10778,11 @@ expand_in_path(
     if (paths == NULL)
 	return 0;
 
-    globpath(paths, pattern, gap, (flags & EW_ICASE) ? WILD_ICASE : 0);
+    if (flags & EW_ICASE)
+	glob_flags |= WILD_ICASE;
+    if (flags & EW_ADDSLASH)
+	glob_flags |= WILD_ADD_SLASH;
+    globpath(paths, pattern, gap, glob_flags);
     vim_free(paths);
 
     return gap->ga_len;
