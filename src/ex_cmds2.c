@@ -3567,6 +3567,153 @@ source_all_matches(char_u *pat)
     }
 }
 
+/*
+ * Add the package directory to 'runtimepath'.
+ */
+    static int
+add_pack_to_rtp(char_u *fname)
+{
+    char_u  *p4, *p3, *p2, *p1, *p;
+    char_u  *insp;
+    int	    c;
+    char_u  *new_rtp = NULL;
+    int	    keep;
+    size_t  oldlen;
+    size_t  addlen;
+    char_u  *afterdir = NULL;
+    size_t  afterlen = 0;
+    char_u  *ffname = NULL;
+    size_t  fname_len;
+    char_u  *buf = NULL;
+    char_u  *rtp_ffname;
+    int	    match;
+    int	    retval = FAIL;
+
+    /* directory is not yet in 'runtimepath', add it */
+    p4 = p3 = p2 = p1 = get_past_head(fname);
+    for (p = p1; *p; MB_PTR_ADV(p))
+	if (vim_ispathsep_nocolon(*p))
+	{
+	    p4 = p3; p3 = p2; p2 = p1; p1 = p;
+	}
+
+    /* now we have:
+     * rtp/pack/name/start/name
+     *    p4   p3   p2    p1
+     *
+     * find the part up to "pack" in 'runtimepath' */
+    c = *++p4; /* append pathsep in order to expand symlink */
+    *p4 = NUL;
+    ffname = fix_fname(fname);
+    *p4 = c;
+    if (ffname == NULL)
+	return FAIL;
+
+    /* Find "ffname" in "p_rtp", ignoring '/' vs '\' differences. */
+    fname_len = STRLEN(ffname);
+    insp = p_rtp;
+    buf = alloc(MAXPATHL);
+    if (buf == NULL)
+	goto theend;
+    while (*insp != NUL)
+    {
+	copy_option_part(&insp, buf, MAXPATHL, ",");
+	add_pathsep(buf);
+	rtp_ffname = fix_fname(buf);
+	if (rtp_ffname == NULL)
+	    goto theend;
+	match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
+	vim_free(rtp_ffname);
+	if (match)
+	    break;
+    }
+
+    if (*insp == NUL)
+	/* not found, append at the end */
+	insp = p_rtp + STRLEN(p_rtp);
+    else
+	/* append after the matching directory. */
+	--insp;
+
+    /* check if rtp/pack/name/start/name/after exists */
+    afterdir = concat_fnames(fname, (char_u *)"after", TRUE);
+    if (afterdir != NULL && mch_isdir(afterdir))
+	afterlen = STRLEN(afterdir) + 1; /* add one for comma */
+
+    oldlen = STRLEN(p_rtp);
+    addlen = STRLEN(fname) + 1; /* add one for comma */
+    new_rtp = alloc((int)(oldlen + addlen + afterlen + 1));
+    /* add one for NUL */
+    if (new_rtp == NULL)
+	goto theend;
+    keep = (int)(insp - p_rtp);
+    mch_memmove(new_rtp, p_rtp, keep);
+    new_rtp[keep] = ',';
+    mch_memmove(new_rtp + keep + 1, fname, addlen);
+    if (p_rtp[keep] != NUL)
+	mch_memmove(new_rtp + keep + addlen, p_rtp + keep, oldlen - keep + 1);
+    if (afterlen > 0)
+    {
+	STRCAT(new_rtp, ",");
+	STRCAT(new_rtp, afterdir);
+    }
+    set_option_value((char_u *)"rtp", 0L, new_rtp, 0);
+    vim_free(new_rtp);
+    retval = OK;
+
+theend:
+    vim_free(buf);
+    vim_free(ffname);
+    vim_free(afterdir);
+    return retval;
+}
+
+/*
+ * Load scripts in "plugin" and "ftdetect" directories of the package.
+ */
+    static int
+load_pack_plugin(char_u *fname)
+{
+    static char *plugpat = "%s/plugin/**/*.vim";
+    static char *ftpat = "%s/ftdetect/*.vim";
+    int	    len;
+    char_u  *ffname = fix_fname(fname);
+    char_u  *pat = NULL;
+    int	    retval = FAIL;
+
+    if (ffname == NULL)
+	return FAIL;
+    len = (int)STRLEN(ffname) + (int)STRLEN(ftpat);
+    pat = alloc(len);
+    if (pat == NULL)
+	goto theend;
+    vim_snprintf((char *)pat, len, plugpat, ffname);
+    source_all_matches(pat);
+
+#ifdef FEAT_AUTOCMD
+    {
+	char_u *cmd = vim_strsave((char_u *)"g:did_load_filetypes");
+
+	/* If runtime/filetype.vim wasn't loaded yet, the scripts will be
+	 * found when it loads. */
+	if (cmd != NULL && eval_to_number(cmd) > 0)
+	{
+	    do_cmdline_cmd((char_u *)"augroup filetypedetect");
+	    vim_snprintf((char *)pat, len, ftpat, ffname);
+	    source_all_matches(pat);
+	    do_cmdline_cmd((char_u *)"augroup END");
+	}
+	vim_free(cmd);
+    }
+#endif
+    vim_free(pat);
+    retval = OK;
+
+theend:
+    vim_free(ffname);
+    return retval;
+}
+
 /* used for "cookie" of add_pack_plugin() */
 static int APP_ADD_DIR;
 static int APP_LOAD;
@@ -3575,132 +3722,15 @@ static int APP_BOTH;
     static void
 add_pack_plugin(char_u *fname, void *cookie)
 {
-    char_u  *p4, *p3, *p2, *p1, *p;
-    char_u  *insp;
-    int	    c;
-    char_u  *new_rtp;
-    int	    keep;
-    size_t  oldlen;
-    size_t  addlen;
-    char_u  *afterdir;
-    size_t  afterlen = 0;
-    char_u  *ffname = fix_fname(fname);
-    size_t  fname_len;
-    char_u  *buf = NULL;
-    char_u  *rtp_ffname;
-    int	    match;
-
-    if (ffname == NULL)
+    if (fname == NULL)
 	return;
-    if (cookie != &APP_LOAD && strstr((char *)p_rtp, (char *)ffname) == NULL)
-    {
-	/* directory is not yet in 'runtimepath', add it */
-	p4 = p3 = p2 = p1 = get_past_head(ffname);
-	for (p = p1; *p; MB_PTR_ADV(p))
-	    if (vim_ispathsep_nocolon(*p))
-	    {
-		p4 = p3; p3 = p2; p2 = p1; p1 = p;
-	    }
 
-	/* now we have:
-	 * rtp/pack/name/start/name
-	 *    p4   p3   p2    p1
-	 *
-	 * find the part up to "pack" in 'runtimepath' */
-	c = *p4;
-	*p4 = NUL;
-
-	/* Find "ffname" in "p_rtp", ignoring '/' vs '\' differences. */
-	fname_len = STRLEN(ffname);
-	insp = p_rtp;
-	buf = alloc(MAXPATHL);
-	if (buf == NULL)
-	    goto theend;
-	while (*insp != NUL)
-	{
-	    copy_option_part(&insp, buf, MAXPATHL, ",");
-	    add_pathsep(buf);
-	    rtp_ffname = fix_fname(buf);
-	    if (rtp_ffname == NULL)
-		goto theend;
-	    match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
-	    vim_free(rtp_ffname);
-	    if (match)
-		break;
-	}
-
-	if (*insp == NUL)
-	    /* not found, append at the end */
-	    insp = p_rtp + STRLEN(p_rtp);
-	else
-	    /* append after the matching directory. */
-	    --insp;
-	*p4 = c;
-
-	/* check if rtp/pack/name/start/name/after exists */
-	afterdir = concat_fnames(ffname, (char_u *)"after", TRUE);
-	if (afterdir != NULL && mch_isdir(afterdir))
-	    afterlen = STRLEN(afterdir) + 1; /* add one for comma */
-
-	oldlen = STRLEN(p_rtp);
-	addlen = STRLEN(ffname) + 1; /* add one for comma */
-	new_rtp = alloc((int)(oldlen + addlen + afterlen + 1));
-							  /* add one for NUL */
-	if (new_rtp == NULL)
-	    goto theend;
-	keep = (int)(insp - p_rtp);
-	mch_memmove(new_rtp, p_rtp, keep);
-	new_rtp[keep] = ',';
-	mch_memmove(new_rtp + keep + 1, ffname, addlen);
-	if (p_rtp[keep] != NUL)
-	    mch_memmove(new_rtp + keep + addlen, p_rtp + keep,
-							   oldlen - keep + 1);
-	if (afterlen > 0)
-	{
-	    STRCAT(new_rtp, ",");
-	    STRCAT(new_rtp, afterdir);
-	}
-	set_option_value((char_u *)"rtp", 0L, new_rtp, 0);
-	vim_free(new_rtp);
-	vim_free(afterdir);
-    }
+    if (cookie != &APP_LOAD && strstr((char *)p_rtp, (char *)fname) == NULL)
+	if (add_pack_to_rtp(fname) == FAIL)
+	    return;
 
     if (cookie != &APP_ADD_DIR)
-    {
-	static char *plugpat = "%s/plugin/**/*.vim";
-	static char *ftpat = "%s/ftdetect/*.vim";
-	int	    len;
-	char_u	    *pat;
-
-	len = (int)STRLEN(ffname) + (int)STRLEN(ftpat);
-	pat = alloc(len);
-	if (pat == NULL)
-	    goto theend;
-	vim_snprintf((char *)pat, len, plugpat, ffname);
-	source_all_matches(pat);
-
-#ifdef FEAT_AUTOCMD
-	{
-	    char_u *cmd = vim_strsave((char_u *)"g:did_load_filetypes");
-
-	    /* If runtime/filetype.vim wasn't loaded yet, the scripts will be
-	     * found when it loads. */
-	    if (cmd != NULL && eval_to_number(cmd) > 0)
-	    {
-		do_cmdline_cmd((char_u *)"augroup filetypedetect");
-		vim_snprintf((char *)pat, len, ftpat, ffname);
-		source_all_matches(pat);
-		do_cmdline_cmd((char_u *)"augroup END");
-	    }
-	    vim_free(cmd);
-	}
-#endif
-	vim_free(pat);
-    }
-
-theend:
-    vim_free(buf);
-    vim_free(ffname);
+	load_pack_plugin(fname);
 }
 
 /*
