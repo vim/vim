@@ -359,6 +359,13 @@ main
      */
     check_tty(&params);
 
+#ifdef _IOLBF
+    /* Ensure output works usefully without a tty: buffer lines instead of
+     * fully buffered. */
+    if (silent_mode)
+	setvbuf(stdout, NULL, _IOLBF, 0);
+#endif
+
     /* This message comes before term inits, but after setting "silent_mode"
      * when the input is not a tty. */
     if (GARGCOUNT > 1 && !silent_mode)
@@ -2532,7 +2539,7 @@ scripterror:
 
 /*
  * Print a warning if stdout is not a terminal.
- * When starting in Ex mode and commands come from a file, set Silent mode.
+ * When starting in Ex mode and commands come from a file, set silent_mode.
  */
     static void
 check_tty(mparm_T *parmp)
