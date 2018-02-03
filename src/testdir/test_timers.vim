@@ -124,7 +124,7 @@ func Test_paused()
   if has('reltime')
     if has('mac')
       " The travis Mac machines appear to be very busy.
-      call assert_inrange(0, 40, slept)
+      call assert_inrange(0, 50, slept)
     else
       call assert_inrange(0, 30, slept)
     endif
