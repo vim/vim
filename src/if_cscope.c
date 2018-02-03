@@ -515,7 +515,13 @@ cs_add_common(
     if ((fname = (char *)alloc(MAXPATHL + 1)) == NULL)
 	goto add_err;
 
-    expand_env((char_u *)arg1, (char_u *)fname, MAXPATHL);
+    if (arg1[0] == '&')
+	/* if arg1 starts with '&', assume it is a variable, not a filename */
+	expand_env(get_var_value((char_u *)arg1 + sizeof(char_u)),
+	           (char_u *)fname, MAXPATHL);
+    else
+	expand_env((char_u *)arg1, (char_u *)fname, MAXPATHL);
+
 #ifdef FEAT_MODIFY_FNAME
     len = (int)STRLEN(fname);
     fbuf = (char_u *)fname;
