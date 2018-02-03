@@ -595,7 +595,7 @@ aucmd_abort:
 
 #ifdef FEAT_DIFF
     if (diffopt_hiddenoff() && !unload_buf && buf->b_nwindows == 0)
-    	diff_buf_delete(buf);	/* Clear 'diff' for hidden buffer. */
+	diff_buf_delete(buf);	/* Clear 'diff' for hidden buffer. */
 #endif
 
     /* Return when a window is displaying the buffer or when it's not
@@ -656,9 +656,6 @@ aucmd_abort:
     if (buf->b_nwindows > 0)
 	--buf->b_nwindows;
 #endif
-
-    /* Change directories when the 'acd' option is set. */
-    DO_AUTOCHDIR
 
     /*
      * Remove the buffer from the list.
@@ -1862,7 +1859,7 @@ do_autochdir(void)
 {
     if ((starting == 0 || test_autochdir)
 	    && curbuf->b_ffname != NULL
-	    && vim_chdirfile(curbuf->b_ffname) == OK)
+	    && vim_chdirfile(curbuf->b_ffname, "auto") == OK)
 	shorten_fnames(TRUE);
 }
 #endif

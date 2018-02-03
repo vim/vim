@@ -7193,7 +7193,7 @@ fix_arg_enc(void)
     {
 	do_cmdline_cmd((char_u *)":rewind");
 	if (GARGCOUNT == 1 && used_file_full_path)
-	    (void)vim_chdirfile(alist_name(&GARGLIST[0]));
+	    (void)vim_chdirfile(alist_name(&GARGLIST[0]), "drop");
     }
 
     set_alist_count();

@@ -82,7 +82,7 @@ int call_shell(char_u *cmd, int opt);
 int get_real_state(void);
 int after_pathsep(char_u *b, char_u *p);
 int same_directory(char_u *f1, char_u *f2);
-int vim_chdirfile(char_u *fname);
+int vim_chdirfile(char_u *fname, char *trigger_autocmd);
 int vim_stat(const char *name, stat_T *stp);
 char_u *parse_shape_opt(int what);
 int get_shape_idx(int mouse);

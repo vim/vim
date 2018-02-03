@@ -264,7 +264,7 @@ main
 	 * Hint: to avoid this when typing a command use a forward slash.
 	 * If the cd fails, it doesn't matter.
 	 */
-	(void)vim_chdirfile(params.fname);
+	(void)vim_chdirfile(params.fname, "drop");
 	if (start_dir != NULL)
 	    mch_dirname(start_dir, MAXPATHL);
     }
@@ -314,7 +314,7 @@ main
 						&& STRCMP(NameBuff, "/") == 0)
 	{
 	    if (params.fname != NULL)
-		(void)vim_chdirfile(params.fname);
+		(void)vim_chdirfile(params.fname, "drop");
 	    else
 	    {
 		expand_env((char_u *)"$HOME", NameBuff, MAXPATHL);
