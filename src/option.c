@@ -3265,6 +3265,7 @@ static char *(p_scl_values[]) = {"yes", "no", "auto", NULL};
 
 static void set_option_default(int, int opt_flags, int compatible);
 static void set_options_default(int opt_flags);
+static void set_string_default_esc(char *name, char_u *val, int escape);
 static char_u *term_bg_default(void);
 static void did_set_option(int opt_idx, int opt_flags, int new_value);
 static char_u *illegal_char(char_u *, int);
@@ -3371,7 +3372,7 @@ set_init_1(void)
 # endif
 #endif
 	    )
-	set_string_default("sh", p);
+	set_string_default_esc("sh", p, TRUE);
 
 #ifdef FEAT_WILDIGN
     /*
@@ -3859,14 +3860,18 @@ set_options_default(
 /*
  * Set the Vi-default value of a string option.
  * Used for 'sh', 'backupskip' and 'term'.
+ * When "escape" is TRUE escape spaces with a backslash.
  */
-    void
-set_string_default(char *name, char_u *val)
+    static void
+set_string_default_esc(char *name, char_u *val, int escape)
 {
     char_u	*p;
     int		opt_idx;
 
-    p = vim_strsave(val);
+    if (escape && vim_strchr(val, ' ') != NULL)
+	p = vim_strsave_escaped(val, (char_u *)" ");
+    else
+	p = vim_strsave(val);
     if (p != NULL)		/* we don't want a NULL */
     {
 	opt_idx = findoption((char_u *)name);
@@ -3878,6 +3883,12 @@ set_string_default(char *name, char_u *val)
 	    options[opt_idx].flags |= P_DEF_ALLOCED;
 	}
     }
+}
+
+    void
+set_string_default(char *name, char_u *val)
+{
+    set_string_default_esc(name, val, FALSE);
 }
 
 /*

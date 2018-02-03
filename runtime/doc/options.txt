@@ -6630,14 +6630,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 	It is allowed to give an argument to the command, e.g.  "csh -f".
 	See |option-backslash| about including spaces and backslashes.
 	Environment variables are expanded |:set_env|.
+
 	If the name of the shell contains a space, you might need to enclose
-	it in quotes.  Example: >
+	it in quotes or escape the space.  Example with quotes: >
 		:set shell=\"c:\program\ files\unix\sh.exe\"\ -f
 <	Note the backslash before each quote (to avoid starting a comment) and
 	each space (to avoid ending the option value).  Also note that the
 	"-f" is not inside the quotes, because it is not part of the command
-	name.  And Vim automagically recognizes the backslashes that are path
+	name.  Vim automagically recognizes the backslashes that are path
 	separators.
+	Example with escaped space (Vim will do this when initializing the
+	option from $SHELL): >
+		:set shell=/bin/with\\\ space/sh
+<	The resulting value of 'shell' is  "/bin/with\ space/sh", two
+	backslashes are consumed by `:set`.
+
 	Under MS-Windows, when the executable ends in ".com" it must be
 	included.  Thus setting the shell to "command.com" or "4dos.com"
 	works, but "command" and "4dos" do not work for all commands (e.g.,
