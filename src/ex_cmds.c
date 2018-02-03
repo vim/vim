@@ -4368,8 +4368,22 @@ do_ecmd(
     if (p_im)
 	need_start_insertmode = TRUE;
 
-    /* Change directories when the 'acd' option is set. */
-    DO_AUTOCHDIR
+#ifdef FEAT_AUTOCHDIR
+    /* Change directories when the 'acd' option is set and we aren't already in
+     * that directory (should already be done above). Expect getcwd() to be
+     * faster than calling shorten_fnames() unnecessarily. */
+    if (p_acd && curbuf->b_ffname != NULL)
+    {
+	char_u	curdir[MAXPATHL];
+	char_u	filedir[MAXPATHL];
+
+	vim_strncpy(filedir, curbuf->b_ffname, MAXPATHL - 1);
+	*gettail_sep(filedir) = NUL;
+	if (mch_dirname(curdir, MAXPATHL) != FAIL
+		&& vim_fnamecmp(curdir, filedir) != 0)
+	    do_autochdir();
+    }
+#endif
 
 #if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
     if (curbuf->b_ffname != NULL)
