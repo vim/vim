@@ -5528,7 +5528,7 @@ gui_handle_drop(
 		if (mch_chdir((char *)p) == 0)
 		    shorten_fnames(TRUE);
 	    }
-	    else if (vim_chdirfile(p) == OK)
+	    else if (vim_chdirfile(p, "drop") == OK)
 		shorten_fnames(TRUE);
 	    vim_free(p);
 	}
