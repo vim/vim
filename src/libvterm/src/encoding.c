@@ -49,11 +49,16 @@ static void decode_utf8(VTermEncoding *enc UNUSED, void *data_,
       if(data->bytes_remaining)
         cp[(*cpi)++] = UNICODE_INVALID;
 
+      data->bytes_remaining = 0;
+
+      // leave 'c' unprocessed when 'cp' is full
+      if(*cpi >= cplen)
+        break;
+
       cp[(*cpi)++] = c;
 #ifdef DEBUG_PRINT_UTF8
       printf(" UTF-8 char: U+%04x\n", c);
 #endif
-      data->bytes_remaining = 0;
     }
 
     else if(c == 0x7f) /* DEL */
