@@ -3389,13 +3389,20 @@ same_directory(char_u *f1, char_u *f2)
  * Return OK or FAIL.
  */
     int
-vim_chdirfile(char_u *fname)
+vim_chdirfile(char_u *fname, char *trigger_autocmd UNUSED)
 {
     char_u	dir[MAXPATHL];
+    int		res;
 
     vim_strncpy(dir, fname, MAXPATHL - 1);
     *gettail_sep(dir) = NUL;
-    return mch_chdir((char *)dir) == 0 ? OK : FAIL;
+    res = mch_chdir((char *)dir) == 0 ? OK : FAIL;
+#ifdef FEAT_AUTOCMD
+    if (res == OK && trigger_autocmd != NULL)
+	apply_autocmds(EVENT_DIRCHANGED, (char_u *)trigger_autocmd,
+							   dir, FALSE, curbuf);
+#endif
+    return res;
 }
 #endif
 
