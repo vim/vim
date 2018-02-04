@@ -2457,7 +2457,7 @@ del_chars(long count, int fixpos)
  * If "fixpos" is TRUE, don't leave the cursor on the NUL after the line.
  * Caller must have prepared for undo.
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 del_bytes(
@@ -2476,11 +2476,20 @@ del_bytes(
     oldp = ml_get(lnum);
     oldlen = (int)STRLEN(oldp);
 
-    /*
-     * Can't do anything when the cursor is on the NUL after the line.
-     */
+    /* Can't do anything when the cursor is on the NUL after the line. */
     if (col >= oldlen)
 	return FAIL;
+
+    /* If "count" is zero there is nothing to do. */
+    if (count == 0)
+	return OK;
+
+    /* If "count" is negative the caller must be doing something wrong. */
+    if (count < 1)
+    {
+	IEMSGN("E950: Invalid count for del_bytes(): %ld", count);
+	return FAIL;
+    }
 
 #ifdef FEAT_MBYTE
     /* If 'delcombine' is set and deleting (less than) one character, only

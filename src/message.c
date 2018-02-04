@@ -761,7 +761,7 @@ emsgn(char_u *s, long n)
     void
 iemsg(char_u *s)
 {
-    msg(s);
+    emsg(s);
 #ifdef ABORT_ON_INTERNAL_ERROR
     abort();
 #endif
@@ -4993,7 +4993,7 @@ vim_vsnprintf_typval(
 			    zero_padding = 0;
 			}
 			else
-                        {
+			{
 			    /* Regular float number */
 			    format[0] = '%';
 			    l = 1;
@@ -5016,7 +5016,7 @@ vim_vsnprintf_typval(
 			    format[l + 1] = NUL;
 
 			    str_arg_l = sprintf(tmp, format, f);
-                        }
+			}
 
 			if (remove_trailing_zeroes)
 			{
