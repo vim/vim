@@ -248,8 +248,9 @@ static int on_text(const char bytes[], size_t len, void *user)
 
   VTermPos oldpos = state->pos;
 
-  /* We'll have at most len codepoints */
-  codepoints = vterm_allocator_malloc(state->vt, len * sizeof(uint32_t));
+  /* We'll have at most len codepoints, plus one from a previous incomplete
+   * sequence. */
+  codepoints = vterm_allocator_malloc(state->vt, (len + 1) * sizeof(uint32_t));
 
   encoding =
     state->gsingle_set     ? &state->encoding[state->gsingle_set] :
