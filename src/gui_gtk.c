@@ -2144,6 +2144,37 @@ convert_localized_message(char_u **buffer, const char *message)
     return (const char *)*buffer;
 }
 
+/*
+ * Returns the number of characters in GtkEntry.
+ */
+    static unsigned long
+entry_get_text_length(GtkEntry *entry)
+{
+    g_return_val_if_fail(entry != NULL, 0);
+    g_return_val_if_fail(GTK_IS_ENTRY(entry) == TRUE, 0);
+
+#if GTK_CHECK_VERSION(2,18,0)
+    /* 2.18 introduced a new object GtkEntryBuffer to handle text data for
+     * GtkEntry instead of letting each instance of the latter have its own
+     * storage for that.  The code below is almost identical to the
+     * implementation of gtk_entry_get_text_length() for the versions >= 2.18.
+     */
+    return gtk_entry_buffer_get_length(gtk_entry_get_buffer(entry));
+#elif GTK_CHECK_VERSION(2,14,0)
+    /* 2.14 introduced a new function to avoid memory management bugs which can
+     * happen when gtk_entry_get_text() is used without due care and attention.
+     */
+    return gtk_entry_get_text_length(entry);
+#else
+    /* gtk_entry_get_text() returns the pointer to the storage allocated
+     * internally by the widget.  Accordingly, use the one with great care:
+     * Don't free it nor modify the contents it points to; call the function
+     * every time you need the pointer since its value may have been changed
+     * by the widget. */
+    return g_utf8_strlen(gtk_entry_get_text(entry), -1);
+#endif
+}
+
     static void
 find_replace_dialog_create(char_u *arg, int do_replace)
 {
@@ -2198,9 +2229,8 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	 * For :promptrepl dialog, give it to 'with' entry if 'what' has an
 	 * non-empty entry; otherwise, to 'what' entry. */
 	gtk_widget_grab_focus(frdp->what);
-	if (do_replace && gtk_entry_get_text_length(GTK_ENTRY(frdp->what)))
+	if (do_replace && entry_get_text_length(GTK_ENTRY(frdp->what)) > 0)
 	    gtk_widget_grab_focus(frdp->with);
-
 
 	vim_free(entry_text);
 	return;
