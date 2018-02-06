@@ -289,7 +289,7 @@ MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
 MSVCRT_VER = ($(MSVCVER) / 10 - 60)
 # Visual C++ 2017 needs special handling
 # it has an _MSC_VER of 1910->14.1, but is actually v15 with runtime v140
-!elseif $(MSVCVER) == 1910
+!elseif $(MSVCVER) >= 1910
 MSVC_MAJOR = 15
 MSVCRT_VER = 140
 !else
