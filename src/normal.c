@@ -1685,11 +1685,19 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 			    get_op_char(oap->op_type), get_extra_op_char(oap->op_type),
 			    oap->motion_force, cap->cmdchar, cap->nchar);
 		else if (cap->cmdchar != ':')
+		{
+		    int nchar = oap->op_type == OP_REPLACE ? cap->nchar : NUL;
+
+		    /* reverse what nv_replace() did */
+		    if (nchar == REPLACE_CR_NCHAR)
+			nchar = CAR;
+		    else if (nchar == REPLACE_NL_NCHAR)
+			nchar = NL;
 		    prep_redo(oap->regname, 0L, NUL, 'v',
 					get_op_char(oap->op_type),
 					get_extra_op_char(oap->op_type),
-					oap->op_type == OP_REPLACE
-							  ? cap->nchar : NUL);
+					nchar);
+		}
 		if (!redo_VIsual_busy)
 		{
 		    redo_VIsual_mode = resel_VIsual_mode;
@@ -7023,10 +7031,12 @@ nv_replace(cmdarg_T *cap)
 	    reset_VIsual();
 	if (had_ctrl_v)
 	{
-	    if (cap->nchar == '\r')
-		cap->nchar = -1;
-	    else if (cap->nchar == '\n')
-		cap->nchar = -2;
+	    /* Use a special (negative) number to make a difference between a
+	     * literal CR or NL and a line break. */
+	    if (cap->nchar == CAR)
+		cap->nchar = REPLACE_CR_NCHAR;
+	    else if (cap->nchar == NL)
+		cap->nchar = REPLACE_NL_NCHAR;
 	}
 	nv_operator(cap);
 	return;

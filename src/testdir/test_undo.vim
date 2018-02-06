@@ -403,3 +403,10 @@ func Test_undo_0()
 
   bwipe!
 endfunc
+
+func Test_redo_empty_line()
+  new
+  exe "norm\x16r\x160"
+  exe "norm."
+  bwipe!
+endfunc
