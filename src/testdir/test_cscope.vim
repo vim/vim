@@ -257,6 +257,18 @@ func Test_cscopeWithCscopeConnections()
 
 endfunc
 
+func Test_addCscopeDbFromVariable()
+    call CscopeSetupOrClean(1)
+    cscope kill -1
+
+    set cscopeverbose
+    let cscopefile='Xcscope.out'
+    let a=execute('cscope add &cscopefile')
+    call assert_match('\nAdded cscope database.*Xcscope.out', a)
+
+    call CscopeSetupOrClean(0)
+endfunc
+
 func Test_cscopequickfix()
   set cscopequickfix=s-,g-,d+,c-,t+,e-,f0,i-,a-
   call assert_equal('s-,g-,d+,c-,t+,e-,f0,i-,a-', &cscopequickfix)
