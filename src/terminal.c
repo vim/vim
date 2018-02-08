@@ -193,6 +193,16 @@ static int term_backspace_char = BS;
 static int term_default_cterm_fg = -1;
 static int term_default_cterm_bg = -1;
 
+/* Store the last set and the desired cursor properties, so that we only update
+ * them when needed.  Doing it unnecessary may result in flicker. */
+static char_u	*last_set_cursor_color = (char_u *)"";
+static char_u	*desired_cursor_color = (char_u *)"";
+static int	last_set_cursor_shape = -1;
+static int	desired_cursor_shape = -1;
+static int	last_set_cursor_blink = -1;
+static int	desired_cursor_blink = -1;
+
+
 /**************************************
  * 1. Generic code for all systems.
  */
@@ -630,7 +640,7 @@ free_terminal(buf_T *buf)
     {
 	if (term->tl_job->jv_status != JOB_ENDED
 		&& term->tl_job->jv_status != JOB_FINISHED
-	        && term->tl_job->jv_status != JOB_FAILED)
+		&& term->tl_job->jv_status != JOB_FAILED)
 	    job_stop(term->tl_job, NULL, "kill");
 	job_unref(term->tl_job);
     }
@@ -642,6 +652,8 @@ free_terminal(buf_T *buf)
     vim_free(term->tl_status_text);
     vim_free(term->tl_opencmd);
     vim_free(term->tl_eof_chars);
+    if (desired_cursor_color == term->tl_cursor_color)
+	desired_cursor_color = (char_u *)"";
     vim_free(term->tl_cursor_color);
     vim_free(term);
     buf->b_term = NULL;
@@ -1472,8 +1484,28 @@ term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg)
 }
 #endif
 
-static int did_change_cursor = FALSE;
+    static void
+may_output_cursor_props(void)
+{
+    if (STRCMP(last_set_cursor_color, desired_cursor_color) != 0
+	    || last_set_cursor_shape != desired_cursor_shape
+	    || last_set_cursor_blink != desired_cursor_blink)
+    {
+	last_set_cursor_color = desired_cursor_color;
+	last_set_cursor_shape = desired_cursor_shape;
+	last_set_cursor_blink = desired_cursor_blink;
+	term_cursor_color(desired_cursor_color);
+	if (desired_cursor_shape == -1 || desired_cursor_blink == -1)
+	    /* this will restore the initial cursor style, if possible */
+	    ui_cursor_shape_forced(TRUE);
+	else
+	    term_cursor_shape(desired_cursor_shape, desired_cursor_blink);
+    }
+}
 
+/*
+ * Set the cursor color and shape, if not last set to these.
+ */
     static void
 may_set_cursor_props(term_T *term)
 {
@@ -1485,29 +1517,30 @@ may_set_cursor_props(term_T *term)
 #endif
     if (in_terminal_loop == term)
     {
-	did_change_cursor = TRUE;
 	if (term->tl_cursor_color != NULL)
-	    term_cursor_color(term->tl_cursor_color);
+	    desired_cursor_color = term->tl_cursor_color;
 	else
-	    term_cursor_color((char_u *)"");
-	term_cursor_shape(term->tl_cursor_shape, term->tl_cursor_blink);
+	    desired_cursor_color = (char_u *)"";
+	desired_cursor_shape = term->tl_cursor_shape;
+	desired_cursor_blink = term->tl_cursor_blink;
+	may_output_cursor_props();
     }
 }
 
+/*
+ * Reset the desired cursor properties and restore them when needed.
+ */
     static void
-may_restore_cursor_props(void)
+prepare_restore_cursor_props(void)
 {
 #ifdef FEAT_GUI
     if (gui.in_use)
 	return;
 #endif
-    if (did_change_cursor)
-    {
-	did_change_cursor = FALSE;
-	term_cursor_color((char_u *)"");
-	/* this will restore the initial cursor style, if possible */
-	ui_cursor_shape_forced(TRUE);
-    }
+    desired_cursor_color = (char_u *)"";
+    desired_cursor_shape = -1;
+    desired_cursor_blink = -1;
+    may_output_cursor_props();
 }
 
 /*
@@ -1544,6 +1577,7 @@ terminal_loop(int blocking)
     int		tty_fd = curbuf->b_term->tl_job->jv_channel
 				 ->ch_part[get_tty_part(curbuf->b_term)].ch_fd;
 #endif
+    int		restore_cursor;
 
     /* Remember the terminal we are sending keys to.  However, the terminal
      * might be closed while waiting for a character, e.g. typing "exit" in a
@@ -1564,6 +1598,7 @@ terminal_loop(int blocking)
 	    if (update_screen(0) == FAIL)
 		break;
 	update_cursor(curbuf->b_term, FALSE);
+	restore_cursor = TRUE;
 
 	c = term_vgetc();
 	if (!term_use_loop())
@@ -1672,6 +1707,11 @@ terminal_loop(int blocking)
 # endif
 	if (send_keys_to_term(curbuf->b_term, c, TRUE) != OK)
 	{
+	    if (c == K_MOUSEMOVE)
+		/* We are sure to come back here, don't reset the cursor color
+		 * and shape to avoid flickering. */
+		restore_cursor = FALSE;
+
 	    ret = OK;
 	    goto theend;
 	}
@@ -1680,7 +1720,8 @@ terminal_loop(int blocking)
 
 theend:
     in_terminal_loop = NULL;
-    may_restore_cursor_props();
+    if (restore_cursor)
+	prepare_restore_cursor_props();
     return ret;
 }
 
@@ -2005,6 +2046,8 @@ handle_settermprop(
 	    break;
 
 	case VTERM_PROP_CURSORCOLOR:
+	    if (desired_cursor_color == term->tl_cursor_color)
+		desired_cursor_color = (char_u *)"";
 	    vim_free(term->tl_cursor_color);
 	    if (*value->string == NUL)
 		term->tl_cursor_color = NULL;
@@ -3292,7 +3335,7 @@ term_send_eof(channel_T *ch)
 
 #define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
 #define WINPTY_SPAWN_FLAG_EXIT_AFTER_SHUTDOWN 2ull
-#define WINPTY_MOUSE_MODE_FORCE         2
+#define WINPTY_MOUSE_MODE_FORCE		2
 
 void* (*winpty_config_new)(UINT64, void*);
 void* (*winpty_open)(void*, void*);
