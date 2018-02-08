@@ -6183,7 +6183,7 @@ nfa_regmatch(
 		{
 		    /* If \Z was present, then ignore composing characters.
 		     * When ignoring the base character this always matches. */
-		    if (len == 0 && sta->c != curc)
+		    if (sta->c != curc)
 			result = FAIL;
 		    else
 			result = OK;
