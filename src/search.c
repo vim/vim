@@ -684,11 +684,11 @@ searchit(
 		    && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
 						    && pos->col < MAXCOL - 2)
 	{
-	    ptr = ml_get_buf(buf, pos->lnum, FALSE) + pos->col;
-	    if (*ptr == NUL)
+	    ptr = ml_get_buf(buf, pos->lnum, FALSE);
+	    if ((int)STRLEN(ptr) < pos->col)
 		start_char_len = 1;
 	    else
-		start_char_len = (*mb_ptr2len)(ptr);
+		start_char_len = (*mb_ptr2len)(ptr + pos->col);
 	}
 #endif
 	else
