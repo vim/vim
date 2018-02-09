@@ -4484,10 +4484,13 @@ getcwd([{winnr} [, {tabnr}]])
 		Without arguments, for the current window.
 
 		With {winnr} return the local current directory of this window
-		in the current tab page.
+		in the current tab page.  {winnr} can be the window number or
+		the |window-ID|.
+		If {winnr} is -1 return the name of the global working
+		directory.  See also |haslocaldir()|.
+
 		With {winnr} and {tabnr} return the local current directory of
 		the window in the specified tab page.
-		{winnr} can be the window number or the |window-ID|.
 		Return an empty string if the arguments are invalid.
 
 getfsize({fname})					*getfsize()*
