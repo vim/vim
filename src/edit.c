@@ -2927,8 +2927,7 @@ ins_compl_del_pum(void)
     if (compl_match_array != NULL)
     {
 	pum_undisplay();
-	vim_free(compl_match_array);
-	compl_match_array = NULL;
+	vim_clear((void **)&compl_match_array);
     }
 }
 
@@ -3430,10 +3429,8 @@ ins_compl_free(void)
     compl_T *match;
     int	    i;
 
-    vim_free(compl_pattern);
-    compl_pattern = NULL;
-    vim_free(compl_leader);
-    compl_leader = NULL;
+    vim_clear((void **)&compl_pattern);
+    vim_clear((void **)&compl_leader);
 
     if (compl_first_match == NULL)
 	return;
@@ -3465,13 +3462,10 @@ ins_compl_clear(void)
     compl_cont_status = 0;
     compl_started = FALSE;
     compl_matches = 0;
-    vim_free(compl_pattern);
-    compl_pattern = NULL;
-    vim_free(compl_leader);
-    compl_leader = NULL;
+    vim_clear((void **)&compl_pattern);
+    vim_clear((void **)&compl_leader);
     edit_submode_extra = NULL;
-    vim_free(compl_orig_text);
-    compl_orig_text = NULL;
+    vim_clear((void **)&compl_orig_text);
     compl_enter_selects = FALSE;
     /* clear v:completed_item */
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
@@ -5574,10 +5568,8 @@ ins_complete(int c, int enable_pum)
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
 			-1, p_ic, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
 	{
-	    vim_free(compl_pattern);
-	    compl_pattern = NULL;
-	    vim_free(compl_orig_text);
-	    compl_orig_text = NULL;
+	    vim_clear((void **)&compl_pattern);
+	    vim_clear((void **)&compl_orig_text);
 	    return FAIL;
 	}
 
@@ -7206,11 +7198,9 @@ set_last_insert(int c)
     void
 free_last_insert(void)
 {
-    vim_free(last_insert);
-    last_insert = NULL;
+    vim_clear((void **)&last_insert);
 # ifdef FEAT_INS_EXPAND
-    vim_free(compl_orig_text);
-    compl_orig_text = NULL;
+    vim_clear((void **)&compl_orig_text);
 # endif
 }
 #endif
@@ -7838,8 +7828,7 @@ mb_replace_pop_ins(int cc)
     static void
 replace_flush(void)
 {
-    vim_free(replace_stack);
-    replace_stack = NULL;
+    vim_clear((void **)&replace_stack);
     replace_stack_len = 0;
     replace_stack_nr = 0;
 }
