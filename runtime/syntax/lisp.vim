@@ -353,6 +353,7 @@ syn keyword lispFunc		eq				otherwise					user
 syn keyword lispFunc		eql				output-stream-p					user-homedir-pathname
 syn keyword lispFunc		equal				package						values
 syn keyword lispFunc		equalp				package-error					values-list
+syn keyword lispFunc												variable
 syn keyword lispFunc		error				package-error-package				vector
 syn keyword lispFunc		etypecase			package-name					vector-pop
 syn keyword lispFunc		eval				package-nicknames				vector-push
