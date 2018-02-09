@@ -1454,7 +1454,8 @@ doESCkey:
 	    /* if 'complete' is empty then plain ^P is no longer special,
 	     * but it is under other ^X modes */
 	    if (*curbuf->b_p_cpt == NUL
-		    && ctrl_x_mode != 0
+		    && (ctrl_x_mode == CTRL_X_NORMAL
+			|| ctrl_x_mode == CTRL_X_WHOLE_LINE)
 		    && !(compl_cont_status & CONT_LOCAL))
 		goto normalchar;
 
@@ -1568,8 +1569,8 @@ normalchar:
 	/* If typed something may trigger CursorHoldI again. */
 	if (c != K_CURSORHOLD
 # ifdef FEAT_COMPL_FUNC
-	    /* but not in CTRL-X mode, a script can't restore the state */
-	    && ctrl_x_mode == 0
+		/* but not in CTRL-X mode, a script can't restore the state */
+		&& ctrl_x_mode == CTRL_X_NORMAL
 # endif
 	       )
 	    did_cursorhold = FALSE;
@@ -1582,7 +1583,7 @@ normalchar:
 #ifdef FEAT_CINDENT
 	if (can_cindent && cindent_on()
 # ifdef FEAT_INS_EXPAND
-		&& ctrl_x_mode == 0
+		&& ctrl_x_mode == CTRL_X_NORMAL
 # endif
 	   )
 	{
@@ -5020,12 +5021,12 @@ ins_compl_next(
 ins_compl_check_keys(int frequency, int in_compl_func)
 {
     static int	count = 0;
+    int		c;
 
-    int	    c;
-
-    /* Don't check when reading keys from a script.  That would break the test
-     * scripts */
-    if (using_script())
+    /* Don't check when reading keys from a script, :normal or feedkeys().
+     * That would break the test scripts.  But do check for keys when called
+     * from complete_check(). */
+    if (!in_compl_func && (using_script() || ex_normal_busy))
 	return;
 
     /* Only do this at regular intervals */
