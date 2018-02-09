@@ -6,6 +6,8 @@ void display_dollar(colnr_T col);
 void change_indent(int type, int amount, int round, int replaced, int call_changed_bytes);
 void truncate_spaces(char_u *line);
 void backspace_until_column(int col);
+int ctrl_x_mode_not_default(void);
+int ctrl_x_mode_not_defined_yet(void);
 int vim_is_ctrl_x_key(int c);
 int ins_compl_add_infercase(char_u *str, int len, int icase, char_u *fname, int dir, int flags);
 void completeopt_was_set(void);

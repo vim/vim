@@ -421,7 +421,7 @@ ignorecase_opt(char_u *pat, int ic_in, int scs)
 
     if (ic && !no_smartcase && scs
 #ifdef FEAT_INS_EXPAND
-				&& !(ctrl_x_mode && curbuf->b_p_inf)
+			     && !(ctrl_x_mode_not_default() && curbuf->b_p_inf)
 #endif
 								    )
 	ic = !pat_has_uppercase(pat);
