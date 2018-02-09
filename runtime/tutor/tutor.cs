@@ -17,7 +17,7 @@
      To znamená, ¾e je potøeba si pøíkazy vyzkou¹et pro jejich správné
      nauèení. Pokud si jen ète¹ text, pøíkazy zapomene¹!
 
-     Nyní se pøesvìdète, ¾e Shift-Lock NENÍ stlaèený a nìkolikrát stisknìte
+     Nyní se pøesvìdète, ¾e Caps-Lock NENÍ stlaèený a nìkolikrát stisknìte
      klávesu  j   aby se kurzor posunul natolik, ¾e lekce 1.1 zaplní celou
      obrazovku.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

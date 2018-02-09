@@ -785,7 +785,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'pvh'	options.txt	/*'pvh'*
 'pvw'	options.txt	/*'pvw'*
 'pythondll'	options.txt	/*'pythondll'*
+'pythonhome'	options.txt	/*'pythonhome'*
 'pythonthreedll'	options.txt	/*'pythonthreedll'*
+'pythonthreehome'	options.txt	/*'pythonthreehome'*
 'pyx'	options.txt	/*'pyx'*
 'pyxversion'	options.txt	/*'pyxversion'*
 'qe'	options.txt	/*'qe'*
@@ -3664,6 +3666,7 @@ Cmd-event	autocmd.txt	/*Cmd-event*
 CmdUndefined	autocmd.txt	/*CmdUndefined*
 Cmdline	cmdline.txt	/*Cmdline*
 Cmdline-mode	cmdline.txt	/*Cmdline-mode*
+CmdlineChanged	autocmd.txt	/*CmdlineChanged*
 CmdlineEnter	autocmd.txt	/*CmdlineEnter*
 CmdlineLeave	autocmd.txt	/*CmdlineLeave*
 CmdwinEnter	autocmd.txt	/*CmdwinEnter*
@@ -3688,6 +3691,7 @@ Dictionaries	eval.txt	/*Dictionaries*
 Dictionary	eval.txt	/*Dictionary*
 Dictionary-function	eval.txt	/*Dictionary-function*
 Digraphs	digraph.txt	/*Digraphs*
+DirChanged	autocmd.txt	/*DirChanged*
 E	motion.txt	/*E*
 E10	message.txt	/*E10*
 E100	diff.txt	/*E100*
@@ -4577,6 +4581,9 @@ E947	terminal.txt	/*E947*
 E948	terminal.txt	/*E948*
 E949	editing.txt	/*E949*
 E95	message.txt	/*E95*
+E950	message.txt	/*E950*
+E951	pattern.txt	/*E951*
+E952	autocmd.txt	/*E952*
 E96	diff.txt	/*E96*
 E97	diff.txt	/*E97*
 E98	diff.txt	/*E98*

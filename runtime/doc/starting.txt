@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2018 Jan 27
+*starting.txt*  For Vim version 8.0.  Last change: 2018 Feb 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1010,14 +1010,13 @@ Vi compatible default value ~
 When Vim starts, the 'compatible' option is on.  This will be used when Vim
 starts its initializations.  But as soon as:
 - a user vimrc file is found, or
-- a vimrc file in the current directory, or
+- a vimrc file in the current directoryis found, or
 - the "VIMINIT" environment variable is set, or
 - the "-N" command line argument is given, or
 - the "--clean" command line argument is given, or
-  even when no vimrc file exists.
 - the |defaults.vim| script is loaded, or
-- gvimrc file was found,
-then it will be set to 'nocompatible'.
+- a gvimrc file was found,
+then the option will be set to 'nocompatible'.
 
 Note that this does NOT happen when a system-wide vimrc file was found.
 

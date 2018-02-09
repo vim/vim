@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.0.  Last change: 2018 Jan 27
+*syntax.txt*	For Vim version 8.0.  Last change: 2018 Jan 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2779,13 +2779,10 @@ Ruby syntax will perform spellchecking of strings if you define
 
 SCHEME						*scheme.vim* *ft-scheme-syntax*
 
-By default only R5RS keywords are highlighted and properly indented.
+By default only R7RS keywords are highlighted and properly indented.
 
-MzScheme-specific stuff will be used if b:is_mzscheme or g:is_mzscheme
-variables are defined.
-
-Also scheme.vim supports keywords of the Chicken Scheme->C compiler.  Define
-b:is_chicken or g:is_chicken, if you need them.
+scheme.vim also supports extensions of the CHICKEN Scheme->C compiler.
+Define b:is_chicken or g:is_chicken, if you need them.
 
 
 SDL						*sdl.vim* *ft-sdl-syntax*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2018 Jan 28
+*todo.txt*      For Vim version 8.0.  Last change: 2018 Feb 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -54,6 +54,8 @@ Terminal emulator window:
   with the expected screenshot.  Set t_Co to 256.
 
 +channel:
+- get_job_options() isn't clear about what causes an error, often just returns
+  "invalid argument".
 - Add a separate timeout for opening a socket.  Currently it's fixed at 50
   msec, which is too small for a remote connection. (tverniquet, #2130)
 - Try out background make plugin: 
@@ -127,6 +129,8 @@ Regexp problems:
   Another one: echom matchstr(" sdfsfsf\n sfdsdfsdf",'[^\n]*')
   (2017 May 15, #1252)
 
+Use vim_clear() in more places, instead of vim_free() and assigning NULL.
+
 Include a few color schemes, based on popularity:
 http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
 http://vimawesome.com/?q=tag:color-scheme
@@ -146,76 +150,22 @@ Include solarized color scheme?, it does not support termguicolors.
 Reproducible:
     invalid memory access in regexp with zero-width.
 	reproduced by Dominique, 2017 Dec 23
-    heap-use-after-free in win_equal_rec (#2467)
-        au* 0 vs¡
-	ar0
-	arga
-	al
-	al
-Patch to fix using freed memory. (Christian Brabandt, 2018 Jan 6, #2467)
-
-Patch for nsis runtime files. (Ken Takata, 2018 Jan 25)
-
-Patch for scheme runtime files (new version) (Evan Hanson, 2018 Jan 26)
-
-Patch to turn tests into new style. (Yegappan, 2017 Dec 29, #2509)
-
-Patch to fix crash in rubyf. (W, #2512) fixes #2511
-
-Updates for Debian runtime files. (James McCoy, 2018 Jan 7)
-
-Crash when calling term_start() with empty command on windows. (Wang Shidong,
-2018 Dec 27, #2501)
-
-Patch to improve DirectX rendering. (Ken Takata, 2018 Jan 18, #2560 fixes
-#2401)
-
-Endless loop invovlving gui_mch_stop_blink(). (zdohnal, 2018 Jan 11)
-
-Patch to add 'pythonhome' and 'pythonthreehome' options. (Kazuki Sakamoto,
-2016 Nov 21, #1266)
 
 "silent! try" doesn't restore emsg_silent when an exception is thrown.
 (Ben Reilly, 2018 Jan 5, #2531)  Possible solution by Christian Brabandt, 2018
 Jan 6.
 
-Patch to fix ex mode buffering output. (Brian M. Carlson, 2018 Jan 8, #2537)
-
-Patch for config.vim syntax file. (James McCoy, 2018 Jan 28, maintainer didn't
-respond).
-
-Patch to add support for clojure script filetype detection. (David Burgin,
-2018 Jan 20, #257)
-
-Patch to implement the DirChanged autocmd event. (Andy Massimino, 2018 Jan 9,
-replaces #888)
-
-Patch to fix not adding a slash after :find completion. (Genki Sky, 2018 Jan
-10)
-
-Patch for man.vim, fix for Mac. (SungHyun Nam, 2018 Jan 8, #2488)
-Update Jan 10.
-
-Patch to fix illegal memory access in del_bytes(). (Christian Brabandt, 2018
-Jan 2, #2466)
-
-Recursive use of alist_add() (Christian Brabandt, 2018 Jan 6, #2472)
-
-patch 1218 breaks etags. (zdohnal, 2018 Jan 5)
+Mode message isn't updated on vertical split. (Alexei Averchenko, 2018 Feb 2,
+#2611)
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
-    heap-buffer-overflow in del_bytes (#2466)
 
 Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in do_sub() (#2249)
 - signed integer overflow in get_address() (#2248)
 - signed integer overflow in getdecchrs() (#2254)
-- signed integer overflow in nfa_regatom() (#2251)
-    patch by Christian Brabandt, 2018 Jan 8
 - undefined left shift in get_string_tv() (#2250)
-
-Patch to fix CursorIM highlighting on Windows. (Ken Takata, 2018 Jan 18)
 
 Cursor in wrong screen line with WinBar. (#2362)
 Fix by Christian Brabandt (2018 Jan 2)
@@ -224,9 +174,9 @@ balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
 20, #2481)
 Also see #2352, want better control over balloon, perhaps set the position.
 
-Patch to make installer faster. (Ken Takata, 2018 Jan 3, #2522)
-
 Patch to support hunspell. (Matej Cepl, Jan 2018, #2500)
+Patch to include hunspell support. (Matej Cepl, 2017 Dec 26, #845)
+Doesn't work on Windows yet.
 
 Cursor in status line after search. (#2530)
 
@@ -237,27 +187,32 @@ Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
 Patch for minimum width of completion popup menu. (Christian Brabandt, 2018
 Jan 3, #2314)
 
+Patch to redraw instead of scroll for terminal window. (Ken Takata, #2010)
+
+Patch to add "user_data" to completion items. (Ben Jackson, 2018 Feb 1, #2608,
+closes #2508)
+
+Patch to add TextChangedP, text changed while popup menu is visible. (Prabir
+Shrestha, 2018 Jan 28, test added by Christian Brabandt)
+
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
-
-Patch to make D&D work between 32 bit app and 64 bit Vim. (Ken Takata, #2504)
-
-Patch to fix invalid return value with backwards searchpair. (Daniel Hahler,
-2018 Jan 15, #2552)
 
 Column number is wrong whsn using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)
 
-Patch to remove redundant "if". (Dominique Pelle, 2018 Jan 14)
+Patch to add getjumplist(). (Yegappan Lakshmanan, 2018 Feb 2, #2609)
 
 Serbian translations. (Peseic, 2018 Jan 17)
+
+Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
+Sep 10) Update 2018 Jan 4  #2575
+Alternate change by Ken Takata.
 
 Check argument of systemlist(). (Pavlov)
 
 Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
 #2546)
-
-Patch to fix illegal memory access. (Christian Brabandt,  2018 Jan 6, #2523)
 
 When 'inchsearch' and 'hlsearch' are set /\v highlights everything.
 Also see #2337
@@ -282,10 +237,16 @@ ch_sendraw() with long string does not try to read inbetween, which may cause
 a deadlock if the reading side is waiting for the write to finish. (Nate
 Bosch, 2018 Jan 13, #2548)
 
-Problem with mouse scroll in tmux. (fcying, #2419)  Might be caused by patch
-8.0.1309.
+User dictionary ~/.vim/spell/lang.utf-8.add not used for spell checking until a
+word is re-added to it. (Matej Cepl, 2018 Feb 6)
 
-Des setting 'cursorline' cause syntax highlighting to slow down?  Perhaps is
+Problem with mouse scroll in tmux. (fcying, #2419)  Might be caused by patch
+8.0.1309.  Removing "held_button = MOUSE_RELEASE;" helps. (2018 Feb 5)
+
+Patch for 24 bit color support in MS-Windows console, using vcon. (Nobuhiro
+Takasaki, Ken Takata, 2017 Oct 1, #2060).
+
+Does setting 'cursorline' cause syntax highlighting to slow down?  Perhaps is
 mess up the cache?  (Mike Lee Williams, 2018 Jan 27, #2539)
 
 Fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
@@ -300,14 +261,11 @@ Using 'wildignore' also applies to literally entered file name.  Also with
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
 
-Patch for 24 bit color support in MS-Windows console, using vcon. (Nobuhiro
-Takasaki, Ken Takata, 2017 Oct 1, #2060).
-
 ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
 Lemonboy can reproduce (2017 Jun 5)
 
 When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
-highlighted. (van-debugger, 2018 Jan 23, #2576)
+highlighted. (van-de-bugger, 2018 Jan 23, #2576)
 
 Patch to add winlayout() function. (Yegappan Lakshmanan, 2018 Jan 4)
 
@@ -372,6 +330,9 @@ always nested.
 
 matchit hasn't been maintained for a long time.  #955.
 
+Patch to add variable name after "scope add". (Eddie Lebow, 2018 Feb 7, #2620)
+Maybe not needed?
+
 Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
 
 MS-Windows: buffer completion doesn't work when using backslash (or slash)
@@ -415,9 +376,6 @@ Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
 Now on github: #1856.  Updated Oct 2017
 Got permission to include this under the Vim license.
-
-Patch to include hunspell support. (Matej Cepl, 2017 Dec 26, #845)
-Doesn't work on Windows yet.
 
 Refactored HTML indent file. (Michael Lee, #1821)
 
@@ -1072,10 +1030,6 @@ Update Aug 14.
 When using --remote-tab on MS-Windows 'encoding' hasn't been initialized yet,
 the file name ends up encoded wrong. (Raul Coronado, 2015 Dec 21)
 
-Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
-Sep 10) Update 2018 Jan 4  #2575
-Alternate change by Ken Takata.
-
 Example in editing.txt uses $HOME with the expectation that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
 inserts a slash when needed?  pathconcat(dir, path) (Thilo Six, 2015 Aug 12)
@@ -1121,9 +1075,6 @@ Patch for man.vim. (SungHyun Nam, 2015 May 20)
 Doesn't work completely (Dominique Orban)
 
 Patch to add a "literal" argument to bufnr().  (Olaf Dabrunz, 2015 Aug 4)
-
-Cannot execute the shell when it's in a directory with a space.
-Issue #459.
 
 When a session file is created and there are "nofile" buffers, these are not
 filled.  Need to trigger BufReadCmd autocommands.  Also handle deleting the
@@ -4623,8 +4574,6 @@ Autocommands:
     Error	    - When an error happens
     NormalEnter	    - Entering Normal mode
     ReplaceEnter    - Entering Replace mode
-    CmdEnter	    - Entering Cmdline mode (with type of cmdline to allow
-			different mapping)
     VisualEnter	    - Entering Visual mode
     *Leave	    - Leaving a mode (in pair with the above *Enter)
     VimLeaveCheck    - Before Vim decides to exit, so that it can be cancelled
