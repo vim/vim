@@ -523,7 +523,7 @@ ex_terminal(exarg_T *eap)
     init_job_options(&opt);
 
     cmd = eap->arg;
-    while (*cmd && *cmd == '+' && *(cmd + 1) == '+')
+    while (*cmd == '+' && *(cmd + 1) == '+')
     {
 	char_u  *p, *ep;
 
@@ -3259,8 +3259,7 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     /* Get the job status, this will detect a job that finished. */
-    if ((buf->b_term->tl_job->jv_channel == NULL
-			     || !buf->b_term->tl_job->jv_channel->ch_keep_open)
+    if (!buf->b_term->tl_job->jv_channel->ch_keep_open
 	    && STRCMP(job_status(buf->b_term->tl_job), "dead") == 0)
     {
 	/* The job is dead, keep reading channel I/O until the channel is
