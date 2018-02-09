@@ -685,7 +685,7 @@ searchit(
 						    && pos->col < MAXCOL - 2)
 	{
 	    ptr = ml_get_buf(buf, pos->lnum, FALSE);
-	    if ((int)STRLEN(ptr) < pos->col)
+	    if ((int)STRLEN(ptr) <= pos->col)
 		start_char_len = 1;
 	    else
 		start_char_len = (*mb_ptr2len)(ptr + pos->col);
