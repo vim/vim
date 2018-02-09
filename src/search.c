@@ -973,7 +973,16 @@ searchit(
 					      NULL, NULL
 #endif
 					    )) == 0)
+			    {
+#ifdef FEAT_RELTIME
+				/* If the search timed out, we did find a match
+				 * but it might be the wrong one, so that's not
+				 * OK. */
+				if (timed_out != NULL && *timed_out)
+				    match_ok = FALSE;
+#endif
 				break;
+			    }
 
 			    /* Need to get the line pointer again, a
 			     * multi-line search may have made it invalid. */
