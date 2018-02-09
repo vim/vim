@@ -7977,7 +7977,7 @@ f_mode(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_INS_EXPAND
 	    if (ins_compl_active())
 		buf[1] = 'c';
-	    else if (ctrl_x_mode == 1)
+	    else if (ctrl_x_mode_not_defined_yet())
 		buf[1] = 'x';
 #endif
 	}
