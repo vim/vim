@@ -1012,9 +1012,7 @@ starts its initializations.  But as soon as:
 - a user vimrc file is found, or
 - a vimrc file in the current directory, or
 - the "VIMINIT" environment variable is set, or
-- the "-N" command line argument is given, even
-  when no vimrc file exists, or the "-u NONE"
-  command line argument is set, or
+- the "-N" command line argument is given, or
 - the "--clean" command line argument is given, or
 - the |defaults.vim| script is loaded, or
 - gvimrc file was found,
