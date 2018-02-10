@@ -297,10 +297,8 @@ mf_close_file(
     if (mfp->mf_fname != NULL)
     {
 	mch_remove(mfp->mf_fname);		/* delete the swap file */
-	vim_free(mfp->mf_fname);
-	vim_free(mfp->mf_ffname);
-	mfp->mf_fname = NULL;
-	mfp->mf_ffname = NULL;
+	VIM_CLEAR(mfp->mf_fname);
+	VIM_CLEAR(mfp->mf_ffname);
     }
 }
 
@@ -1288,10 +1286,8 @@ mf_do_open(
      */
     if (mfp->mf_fd < 0)
     {
-	vim_free(mfp->mf_fname);
-	vim_free(mfp->mf_ffname);
-	mfp->mf_fname = NULL;
-	mfp->mf_ffname = NULL;
+	VIM_CLEAR(mfp->mf_fname);
+	VIM_CLEAR(mfp->mf_ffname);
     }
     else
     {

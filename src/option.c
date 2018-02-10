@@ -11728,8 +11728,7 @@ ExpandOldSetting(int *num_file, char_u ***file)
 
     if (buf == NULL)
     {
-	vim_free(*file);
-	*file = NULL;
+	VIM_CLEAR(*file);
 	return FAIL;
     }
 

@@ -1189,8 +1189,7 @@ syn_stack_free_block(synblock_T *block)
     {
 	for (p = block->b_sst_first; p != NULL; p = p->sst_next)
 	    clear_syn_state(p);
-	vim_free(block->b_sst_array);
-	block->b_sst_array = NULL;
+	VIM_CLEAR(block->b_sst_array);
 	block->b_sst_len = 0;
     }
 }
@@ -3641,8 +3640,7 @@ syntax_clear(synblock_T *block)
 
     vim_regfree(block->b_syn_linecont_prog);
     block->b_syn_linecont_prog = NULL;
-    vim_free(block->b_syn_linecont_pat);
-    block->b_syn_linecont_pat = NULL;
+    VIM_CLEAR(block->b_syn_linecont_pat);
 #ifdef FEAT_FOLDING
     block->b_syn_folditems = 0;
 #endif
@@ -3690,8 +3688,7 @@ syntax_sync_clear(void)
 
     vim_regfree(curwin->w_s->b_syn_linecont_prog);
     curwin->w_s->b_syn_linecont_prog = NULL;
-    vim_free(curwin->w_s->b_syn_linecont_pat);
-    curwin->w_s->b_syn_linecont_pat = NULL;
+    VIM_CLEAR(curwin->w_s->b_syn_linecont_pat);
     clear_string_option(&curwin->w_s->b_syn_isk);
 
     syn_stack_free_all(curwin->w_s);	/* Need to recompute all syntax. */
@@ -3810,8 +3807,7 @@ syn_cmd_clear(exarg_T *eap, int syncing)
 		     */
 		    short scl_id = id - SYNID_CLUSTER;
 
-		    vim_free(SYN_CLSTR(curwin->w_s)[scl_id].scl_list);
-		    SYN_CLSTR(curwin->w_s)[scl_id].scl_list = NULL;
+		    VIM_CLEAR(SYN_CLSTR(curwin->w_s)[scl_id].scl_list);
 		}
 	    }
 	    else
@@ -5954,8 +5950,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 
 		if (curwin->w_s->b_syn_linecont_prog == NULL)
 		{
-		    vim_free(curwin->w_s->b_syn_linecont_pat);
-		    curwin->w_s->b_syn_linecont_pat = NULL;
+		    VIM_CLEAR(curwin->w_s->b_syn_linecont_pat);
 		    finished = TRUE;
 		    break;
 		}
@@ -8369,10 +8364,8 @@ highlight_clear(int idx)
     HL_TABLE()[idx].sg_cleared = TRUE;
 
     HL_TABLE()[idx].sg_term = 0;
-    vim_free(HL_TABLE()[idx].sg_start);
-    HL_TABLE()[idx].sg_start = NULL;
-    vim_free(HL_TABLE()[idx].sg_stop);
-    HL_TABLE()[idx].sg_stop = NULL;
+    VIM_CLEAR(HL_TABLE()[idx].sg_start);
+    VIM_CLEAR(HL_TABLE()[idx].sg_stop);
     HL_TABLE()[idx].sg_term_attr = 0;
     HL_TABLE()[idx].sg_cterm = 0;
     HL_TABLE()[idx].sg_cterm_bold = FALSE;
@@ -8381,12 +8374,9 @@ highlight_clear(int idx)
     HL_TABLE()[idx].sg_cterm_attr = 0;
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
     HL_TABLE()[idx].sg_gui = 0;
-    vim_free(HL_TABLE()[idx].sg_gui_fg_name);
-    HL_TABLE()[idx].sg_gui_fg_name = NULL;
-    vim_free(HL_TABLE()[idx].sg_gui_bg_name);
-    HL_TABLE()[idx].sg_gui_bg_name = NULL;
-    vim_free(HL_TABLE()[idx].sg_gui_sp_name);
-    HL_TABLE()[idx].sg_gui_sp_name = NULL;
+    VIM_CLEAR(HL_TABLE()[idx].sg_gui_fg_name);
+    VIM_CLEAR(HL_TABLE()[idx].sg_gui_bg_name);
+    VIM_CLEAR(HL_TABLE()[idx].sg_gui_sp_name);
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     HL_TABLE()[idx].sg_gui_fg = INVALCOLOR;
@@ -8400,8 +8390,7 @@ highlight_clear(int idx)
     gui_mch_free_fontset(HL_TABLE()[idx].sg_fontset);
     HL_TABLE()[idx].sg_fontset = NOFONTSET;
 # endif
-    vim_free(HL_TABLE()[idx].sg_font_name);
-    HL_TABLE()[idx].sg_font_name = NULL;
+    VIM_CLEAR(HL_TABLE()[idx].sg_font_name);
     HL_TABLE()[idx].sg_gui_attr = 0;
 #endif
 #ifdef FEAT_EVAL

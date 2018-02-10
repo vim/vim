@@ -1479,8 +1479,7 @@ cs_insert_filelist(
     {
 	if ((csinfo[i].ppath = (char *)alloc((unsigned)strlen(ppath) + 1)) == NULL)
 	{
-	    vim_free(csinfo[i].fname);
-	    csinfo[i].fname = NULL;
+	    VIM_CLEAR(csinfo[i].fname);
 	    return -1;
 	}
 	(void)strcpy(csinfo[i].ppath, (const char *)ppath);
@@ -1491,10 +1490,8 @@ cs_insert_filelist(
     {
 	if ((csinfo[i].flags = (char *)alloc((unsigned)strlen(flags) + 1)) == NULL)
 	{
-	    vim_free(csinfo[i].fname);
-	    vim_free(csinfo[i].ppath);
-	    csinfo[i].fname = NULL;
-	    csinfo[i].ppath = NULL;
+	    VIM_CLEAR(csinfo[i].fname);
+	    VIM_CLEAR(csinfo[i].ppath);
 	    return -1;
 	}
 	(void)strcpy(csinfo[i].flags, (const char *)flags);
@@ -1939,10 +1936,8 @@ parse_out:
     if (totsofar == 0)
     {
 	/* No matches, free the arrays and return NULL in "*matches_p". */
-	vim_free(matches);
-	matches = NULL;
-	vim_free(cntxts);
-	cntxts = NULL;
+	VIM_CLEAR(matches);
+	VIM_CLEAR(cntxts);
     }
     *matched = totsofar;
     *matches_p = matches;

@@ -4415,8 +4415,7 @@ win_enter_ext(
 	/* Window doesn't have a local directory and we are not in the global
 	 * directory: Change to the global directory. */
 	ignored = mch_chdir((char *)globaldir);
-	vim_free(globaldir);
-	globaldir = NULL;
+	VIM_CLEAR(globaldir);
 	shorten_fnames(TRUE);
     }
 
@@ -4847,10 +4846,7 @@ win_free_lsize(win_T *wp)
 {
     /* TODO: why would wp be NULL here? */
     if (wp != NULL)
-    {
-	vim_free(wp->w_lines);
-	wp->w_lines = NULL;
-    }
+	VIM_CLEAR(wp->w_lines);
 }
 
 /*
