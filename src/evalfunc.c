@@ -180,6 +180,7 @@ static void f_getfperm(typval_T *argvars, typval_T *rettv);
 static void f_getfsize(typval_T *argvars, typval_T *rettv);
 static void f_getftime(typval_T *argvars, typval_T *rettv);
 static void f_getftype(typval_T *argvars, typval_T *rettv);
+static void f_getjumplist(typval_T *argvars, typval_T *rettv);
 static void f_getline(typval_T *argvars, typval_T *rettv);
 static void f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED);
 static void f_getmatches(typval_T *argvars, typval_T *rettv);
@@ -621,6 +622,7 @@ static struct fst
     {"getfsize",	1, 1, f_getfsize},
     {"getftime",	1, 1, f_getftime},
     {"getftype",	1, 1, f_getftype},
+    {"getjumplist",	0, 2, f_getjumplist},
     {"getline",		1, 2, f_getline},
     {"getloclist",	1, 2, f_getloclist},
     {"getmatches",	0, 0, f_getmatches},
@@ -4841,6 +4843,56 @@ f_getftype(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "getjumplist()" function
+ */
+    static void
+f_getjumplist(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_JUMPLIST
+    win_T	*wp;
+    int		i;
+    list_T	*l;
+    dict_T	*d;
+#endif
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
+#ifdef FEAT_JUMPLIST
+    wp = find_tabwin(&argvars[0], &argvars[1]);
+    if (wp == NULL)
+	return;
+
+    l = list_alloc();
+    if (l == NULL)
+	return;
+
+    if (list_append_list(rettv->vval.v_list, l) == FAIL)
+	return;
+    list_append_number(rettv->vval.v_list, (varnumber_T)wp->w_jumplistidx);
+
+    for (i = 0; i < wp->w_jumplistlen; ++i)
+    {
+	if ((d = dict_alloc()) == NULL)
+	    return;
+	if (list_append_dict(l, d) == FAIL)
+	    return;
+	dict_add_nr_str(d, "lnum", (long)wp->w_jumplist[i].fmark.mark.lnum,
+		NULL);
+	dict_add_nr_str(d, "col", (long)wp->w_jumplist[i].fmark.mark.col,
+		NULL);
+# ifdef FEAT_VIRTUALEDIT
+	dict_add_nr_str(d, "coladd", (long)wp->w_jumplist[i].fmark.mark.coladd,
+		NULL);
+# endif
+	dict_add_nr_str(d, "bufnr", (long)wp->w_jumplist[i].fmark.fnum, NULL);
+	if (wp->w_jumplist[i].fmark.fnum == 0)
+	    dict_add_nr_str(d, "filename", 0L, wp->w_jumplist[i].fname);
+    }
+#endif
+}
+
+/*
  * "getline(lnum, [end])" function
  */
     static void
@@ -5612,11 +5664,11 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"beos",
 #endif
 #ifdef MACOS_X
-       "mac",		/* Mac OS X (and, once, Mac OS Classic) */
-       "osx",		/* Mac OS X */
+	"mac",		/* Mac OS X (and, once, Mac OS Classic) */
+	"osx",		/* Mac OS X */
 # ifdef MACOS_X_DARWIN
-       "macunix",	/* Mac OS X, with the darwin feature */
-       "osxdarwin",	/* synonym for macunix */
+	"macunix",	/* Mac OS X, with the darwin feature */
+	"osxdarwin",	/* synonym for macunix */
 # endif
 #endif
 #ifdef __QNX__
