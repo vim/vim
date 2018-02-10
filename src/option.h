@@ -424,6 +424,7 @@ EXTERN int	p_cp;		/* 'compatible' */
 #ifdef FEAT_INS_EXPAND
 EXTERN char_u	*p_cot;		/* 'completeopt' */
 EXTERN long	p_ph;		/* 'pumheight' */
+EXTERN long	p_pw;		/* 'pumwidth' */
 #endif
 EXTERN char_u	*p_cpo;		/* 'cpoptions' */
 #ifdef FEAT_CSCOPE
