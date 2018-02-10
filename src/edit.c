@@ -1693,6 +1693,20 @@ ins_redraw(
 	last_changedtick_buf = curbuf;
 	last_changedtick = CHANGEDTICK(curbuf);
     }
+
+    /* Trigger TextChangedP if b_changedtick differs. */
+    if (ready && has_textchangedP()
+	    && last_changedtick != CHANGEDTICK(curbuf)
+# ifdef FEAT_INS_EXPAND
+	    && pum_visible()
+# endif
+	    )
+    {
+	if (last_changedtick_buf == curbuf)
+	    apply_autocmds(EVENT_TEXTCHANGEDP, NULL, NULL, FALSE, curbuf);
+	last_changedtick_buf = curbuf;
+	last_changedtick = CHANGEDTICK(curbuf);
+    }
 #endif
 
     if (must_redraw)
