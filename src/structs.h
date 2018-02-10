@@ -3240,11 +3240,12 @@ typedef struct
 /*
  * Array indexes used for cptext argument of ins_compl_add().
  */
-#define CPT_ABBR    0	/* "abbr" */
-#define CPT_MENU    1	/* "menu" */
-#define CPT_KIND    2	/* "kind" */
-#define CPT_INFO    3	/* "info" */
-#define CPT_COUNT   4	/* Number of entries */
+#define CPT_ABBR	0	/* "abbr" */
+#define CPT_MENU	1	/* "menu" */
+#define CPT_KIND	2	/* "kind" */
+#define CPT_INFO	3	/* "info" */
+#define CPT_USER_DATA	4	/* "user data" */
+#define CPT_COUNT	5	/* Number of entries */
 
 typedef struct {
   UINT32_T total[2];
