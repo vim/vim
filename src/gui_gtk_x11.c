@@ -3838,7 +3838,7 @@ gui_mch_init(void)
 # endif
     }
 #endif
-    VIM_CLEAR(gui_argv);
+    vim_clear((void **)&gui_argv);
 
 #if GLIB_CHECK_VERSION(2,1,3)
     /* Set the human-readable application name */
@@ -4667,7 +4667,7 @@ gui_mch_open(void)
 		y += hh - pixel_height;
 	    gtk_window_move(GTK_WINDOW(gui.mainwin), x, y);
 	}
-	VIM_CLEAR(gui.geom);
+	vim_clear((void **)&gui.geom);
 
 	/* From now until everyone's stopped trying to set the window hints
 	 * to their correct minimum values, stop them being set as we need

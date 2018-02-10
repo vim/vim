@@ -2252,7 +2252,7 @@ SaveConsoleBuffer(
 	cb->Regions = (PSMALL_RECT)alloc(cb->NumRegions * sizeof(SMALL_RECT));
 	if (cb->Regions == NULL)
 	{
-	    VIM_CLEAR(cb->Buffer);
+	    vim_clear((void **)&cb->Buffer);
 	    return FALSE;
 	}
     }
@@ -2277,8 +2277,8 @@ SaveConsoleBuffer(
 		BufferCoord,			/* offset in our buffer */
 		&ReadRegion))			/* region to save */
 	{
-	    VIM_CLEAR(cb->Buffer);
-	    VIM_CLEAR(cb->Regions);
+	    vim_clear((void **)&cb->Buffer);
+	    vim_clear((void **)&cb->Regions);
 	    return FALSE;
 	}
 	cb->Regions[i] = ReadRegion;

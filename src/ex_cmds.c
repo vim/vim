@@ -1957,7 +1957,7 @@ write_viminfo(char_u *file, int forceit)
 		    if (!shortname && st_new.st_dev == st_old.st_dev
 						&& st_new.st_ino == st_old.st_ino)
 		    {
-			VIM_CLEAR(tempname);
+			vim_clear((void **)&tempname);
 			shortname = TRUE;
 			break;
 		    }
@@ -5224,7 +5224,7 @@ do_sub(exarg_T *eap)
 		    lnum += regmatch.startpos[0].lnum;
 		    sub_firstlnum += regmatch.startpos[0].lnum;
 		    nmatch -= regmatch.startpos[0].lnum;
-		    VIM_CLEAR(sub_firstline);
+		    vim_clear((void **)&sub_firstline);
 		}
 
 		if (sub_firstline == NULL)
@@ -5386,7 +5386,7 @@ do_sub(exarg_T *eap)
 						     sub_firstline + copycol);
 
 				    if (new_line == NULL)
-					VIM_CLEAR(orig_line);
+					vim_clear((void **)&orig_line);
 				    else
 				    {
 					/* Position the cursor relative to the
@@ -5815,7 +5815,7 @@ skip:
 	    if (did_sub)
 		++sub_nlines;
 	    vim_free(new_start);	/* for when substitute was cancelled */
-	    VIM_CLEAR(sub_firstline);	/* free the copy of the original line */
+	    vim_clear((void **)&sub_firstline);	/* free the copy of the original line */
 	}
 
 	line_breakcheck();
@@ -6969,7 +6969,7 @@ fix_help_buffer(void)
 				    && fnamecmp(e1, fname + 4) != 0)
 				{
 				    /* Not .txt and not .abx, remove it. */
-				    VIM_CLEAR(fnames[i1]);
+				    vim_clear((void **)&fnames[i1]);
 				    continue;
 				}
 				if (e1 - f1 != e2 - f2
@@ -6978,7 +6978,7 @@ fix_help_buffer(void)
 				if (fnamecmp(e1, ".txt") == 0
 				    && fnamecmp(e2, fname + 4) == 0)
 				    /* use .abx instead of .txt */
-				    VIM_CLEAR(fnames[i1]);
+				    vim_clear((void **)&fnames[i1]);
 			    }
 			}
 #endif

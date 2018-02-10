@@ -975,7 +975,7 @@ ui_remove_balloon(void)
 	pum_undisplay();
 	while (balloon_arraysize > 0)
 	    vim_free(balloon_array[--balloon_arraysize].pum_text);
-	VIM_CLEAR(balloon_array);
+	vim_clear((void **)&balloon_array);
     }
 }
 

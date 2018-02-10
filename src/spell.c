@@ -1994,13 +1994,13 @@ slang_clear(slang_T *lp)
     int		i;
     int		round;
 
-    VIM_CLEAR(lp->sl_fbyts);
-    VIM_CLEAR(lp->sl_kbyts);
-    VIM_CLEAR(lp->sl_pbyts);
+    vim_clear((void **)&lp->sl_fbyts);
+    vim_clear((void **)&lp->sl_kbyts);
+    vim_clear((void **)&lp->sl_pbyts);
 
-    VIM_CLEAR(lp->sl_fidxs);
-    VIM_CLEAR(lp->sl_kidxs);
-    VIM_CLEAR(lp->sl_pidxs);
+    vim_clear((void **)&lp->sl_fidxs);
+    vim_clear((void **)&lp->sl_kidxs);
+    vim_clear((void **)&lp->sl_pidxs);
 
     for (round = 1; round <= 2; ++round)
     {
@@ -2042,19 +2042,19 @@ slang_clear(slang_T *lp)
     for (i = 0; i < lp->sl_prefixcnt; ++i)
 	vim_regfree(lp->sl_prefprog[i]);
     lp->sl_prefixcnt = 0;
-    VIM_CLEAR(lp->sl_prefprog);
+    vim_clear((void **)&lp->sl_prefprog);
 
-    VIM_CLEAR(lp->sl_info);
+    vim_clear((void **)&lp->sl_info);
 
-    VIM_CLEAR(lp->sl_midword);
+    vim_clear((void **)&lp->sl_midword);
 
     vim_regfree(lp->sl_compprog);
     lp->sl_compprog = NULL;
-    VIM_CLEAR(lp->sl_comprules);
-    VIM_CLEAR(lp->sl_compstartflags);
-    VIM_CLEAR(lp->sl_compallflags);
+    vim_clear((void **)&lp->sl_comprules);
+    vim_clear((void **)&lp->sl_compstartflags);
+    vim_clear((void **)&lp->sl_compallflags);
 
-    VIM_CLEAR(lp->sl_syllable);
+    vim_clear((void **)&lp->sl_syllable);
     ga_clear(&lp->sl_syl_items);
 
     ga_clear_strings(&lp->sl_comppat);
@@ -2081,8 +2081,8 @@ slang_clear(slang_T *lp)
     void
 slang_clear_sug(slang_T *lp)
 {
-    VIM_CLEAR(lp->sl_sbyts);
-    VIM_CLEAR(lp->sl_sidxs);
+    vim_clear((void **)&lp->sl_sbyts);
+    vim_clear((void **)&lp->sl_sidxs);
     close_spellbuf(lp->sl_sugbuf);
     lp->sl_sugbuf = NULL;
     lp->sl_sugloaded = FALSE;
@@ -2656,7 +2656,7 @@ clear_midword(win_T *wp)
 {
     vim_memset(wp->w_s->b_spell_ismw, 0, 256);
 #ifdef FEAT_MBYTE
-    VIM_CLEAR(wp->w_s->b_spell_ismw_mb);
+    vim_clear((void **)&wp->w_s->b_spell_ismw_mb);
 #endif
 }
 
@@ -2843,7 +2843,7 @@ spell_delete_wordlist(void)
 	mch_remove(int_wordlist);
 	int_wordlist_spl(fname);
 	mch_remove(fname);
-	VIM_CLEAR(int_wordlist);
+	vim_clear((void **)&int_wordlist);
     }
 }
 
@@ -2870,8 +2870,8 @@ spell_free_all(void)
 
     spell_delete_wordlist();
 
-    VIM_CLEAR(repl_to);
-    VIM_CLEAR(repl_from);
+    vim_clear((void **)&repl_to);
+    vim_clear((void **)&repl_from);
 }
 #endif
 
@@ -3406,8 +3406,8 @@ spell_suggest(int count)
     }
     else
     {
-	VIM_CLEAR(repl_from);
-	VIM_CLEAR(repl_to);
+	vim_clear((void **)&repl_from);
+	vim_clear((void **)&repl_to);
 
 #ifdef FEAT_RIGHTLEFT
 	/* When 'rightleft' is set the list is drawn right-left. */

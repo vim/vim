@@ -415,7 +415,7 @@ static char_u   *last_sourcing_name = NULL;
     void
 reset_last_sourcing(void)
 {
-    VIM_CLEAR(last_sourcing_name);
+    vim_clear((void **)&last_sourcing_name);
     last_sourcing_lnum = 0;
 }
 
@@ -1248,7 +1248,7 @@ wait_return(int redraw)
     reset_last_sourcing();
     if (keep_msg != NULL && vim_strsize(keep_msg) >=
 				  (Rows - cmdline_row - 1) * Columns + sc_col)
-	VIM_CLEAR(keep_msg);	    /* don't redisplay message, it's too long */
+	vim_clear((void **)&keep_msg);	    /* don't redisplay message, it's too long */
 
     if (tmpState == SETWSIZE)	    /* got resize event while in vgetc() */
     {
@@ -1321,7 +1321,7 @@ msg_start(void)
     int		did_return = FALSE;
 
     if (!msg_silent)
-	VIM_CLEAR(keep_msg);
+	vim_clear((void **)&keep_msg);
 
 #ifdef FEAT_EVAL
     if (need_clr_eos)
@@ -3474,7 +3474,7 @@ give_warning(char_u *message, int hl)
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_WARNINGMSG, message, -1);
 #endif
-    VIM_CLEAR(keep_msg);
+    vim_clear((void **)&keep_msg);
     if (hl)
 	keep_msg_attr = HL_ATTR(HLF_W);
     else

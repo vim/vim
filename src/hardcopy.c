@@ -2210,7 +2210,7 @@ mch_print_cleanup(void)
 	for (i = PRT_PS_FONT_ROMAN; i <= PRT_PS_FONT_BOLDOBLIQUE; i++)
 	{
 	    if (prt_ps_mb_font.ps_fontname[i] != NULL)
-		VIM_CLEAR(prt_ps_mb_font.ps_fontname[i]);
+		vim_clear((void **)&prt_ps_mb_font.ps_fontname[i]);
 	}
     }
 
@@ -2227,7 +2227,7 @@ mch_print_cleanup(void)
 	prt_file_error = FALSE;
     }
     if (prt_ps_file_name != NULL)
-	VIM_CLEAR(prt_ps_file_name);
+	vim_clear((void **)&prt_ps_file_name);
 }
 
     static float

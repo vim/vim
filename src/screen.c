@@ -4326,7 +4326,7 @@ win_line(
 #endif
 
 	    if (p_extra_free != NULL)
-		VIM_CLEAR(p_extra_free);
+		vim_clear((void **)&p_extra_free);
 	    /*
 	     * Get a character from the line itself.
 	     */
@@ -8857,17 +8857,17 @@ give_up:
 	     * and over again. */
 	    done_outofmem_msg = TRUE;
 	}
-	VIM_CLEAR(new_ScreenLines);
+	vim_clear((void **)&new_ScreenLines);
 #ifdef FEAT_MBYTE
-	VIM_CLEAR(new_ScreenLinesUC);
+	vim_clear((void **)&new_ScreenLinesUC);
 	for (i = 0; i < p_mco; ++i)
-	    VIM_CLEAR(new_ScreenLinesC[i]);
-	VIM_CLEAR(new_ScreenLines2);
+	    vim_clear((void **)&new_ScreenLinesC[i]);
+	vim_clear((void **)&new_ScreenLines2);
 #endif
-	VIM_CLEAR(new_ScreenAttrs);
-	VIM_CLEAR(new_LineOffset);
-	VIM_CLEAR(new_LineWraps);
-	VIM_CLEAR(new_TabPageIdxs);
+	vim_clear((void **)&new_ScreenAttrs);
+	vim_clear((void **)&new_LineOffset);
+	vim_clear((void **)&new_LineWraps);
+	vim_clear((void **)&new_TabPageIdxs);
     }
     else
     {

@@ -1827,8 +1827,6 @@ copy_option_part(
  * Replacement for free() that ignores NULL pointers.
  * Also skip free() when exiting for sure, this helps when we caught a deadly
  * signal that was caused by a crash in free().
- * If you want to set NULL after calling this function, you should use
- * VIM_CLEAR() instead.
  */
     void
 vim_free(void *x)
@@ -1839,6 +1837,19 @@ vim_free(void *x)
 	mem_pre_free(&x);
 #endif
 	free(x);
+    }
+}
+
+/*
+ * Like vim_free(), and also set the pointer to NULL.
+ */
+    void
+vim_clear(void **x)
+{
+    if (*x != NULL)
+    {
+	vim_free(*x);
+	*x = NULL;
     }
 }
 

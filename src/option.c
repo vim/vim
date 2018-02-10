@@ -11735,7 +11735,7 @@ ExpandOldSetting(int *num_file, char_u ***file)
 
     if (buf == NULL)
     {
-	VIM_CLEAR(*file);
+	vim_clear((void **)file);
 	return FAIL;
     }
 

@@ -1235,7 +1235,7 @@ do_execreg(
 	    EMSG(_(e_nolastcmd));
 	    return FAIL;
 	}
-	VIM_CLEAR(new_last_cmdline); /* don't keep the cmdline containing @: */
+	vim_clear((void **)&new_last_cmdline); /* don't keep the cmdline containing @: */
 	/* Escape all control characters with a CTRL-V */
 	p = vim_strsave_escaped_ext(last_cmdline,
 		(char_u *)"\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", Ctrl_V, FALSE);
@@ -2994,7 +2994,7 @@ free_yank(long n)
 #endif
 	    vim_free(y_current->y_array[i]);
 	}
-	VIM_CLEAR(y_current->y_array);
+	vim_clear((void **)&y_current->y_array);
 #ifdef AMIGA
 	if (n >= 1000)
 	    MSG("");
@@ -6038,7 +6038,7 @@ finish_viminfo_registers(void)
 		    vim_free(y_read_regs[i].y_array[j]);
 		vim_free(y_read_regs[i].y_array);
 	    }
-	VIM_CLEAR(y_read_regs);
+	vim_clear((void **)&y_read_regs);
     }
 }
 
@@ -7143,7 +7143,7 @@ str_to_reg(
     /* Without any lines make the register empty. */
     if (y_ptr->y_size + newlines == 0)
     {
-	VIM_CLEAR(y_ptr->y_array);
+	vim_clear((void **)&y_ptr->y_array);
 	return;
     }
 

@@ -5059,7 +5059,7 @@ find_pattern_in_path(
 				prev_fname = NULL;
 			    }
 			}
-			VIM_CLEAR(new_fname);
+			vim_clear((void **)&new_fname);
 			already_searched = TRUE;
 			break;
 		    }

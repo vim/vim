@@ -1073,7 +1073,7 @@ retry:
 	if (tmpname != NULL)
 	{
 	    mch_remove(tmpname);		/* delete converted file */
-	    VIM_CLEAR(tmpname);
+	    vim_clear((void **)&tmpname);
 	}
     }
 
@@ -2601,7 +2601,7 @@ failed:
 #endif
 		msg_add_lines(c, (long)linecnt, filesize);
 
-	    VIM_CLEAR(keep_msg);
+	    vim_clear((void **)&keep_msg);
 	    msg_scrolled_ign = TRUE;
 #ifdef ALWAYS_USE_GUI
 	    /* Don't show the message when reading stdin, it would end up in a
@@ -2953,7 +2953,7 @@ readfile_charconvert(
 	if (tmpname != NULL)
 	{
 	    mch_remove(tmpname);	/* delete converted file */
-	    VIM_CLEAR(tmpname);
+	    vim_clear((void **)&tmpname);
 	}
     }
 
@@ -3942,7 +3942,7 @@ buf_write(
 			if (st_new.st_dev == st_old.st_dev
 					    && st_new.st_ino == st_old.st_ino)
 			{
-			    VIM_CLEAR(backup);	/* no backup file to delete */
+			    vim_clear((void **)&backup);	/* no backup file to delete */
 			    /*
 			     * may try again with 'shortname' set
 			     */
@@ -3976,7 +3976,7 @@ buf_write(
 				--*wp;
 			    /* They all exist??? Must be something wrong. */
 			    if (*wp == 'a')
-				VIM_CLEAR(backup);
+				vim_clear((void **)&backup);
 			}
 		    }
 		    break;
@@ -4003,7 +4003,7 @@ buf_write(
 		    (void)umask(umask_save);
 #endif
 		    if (bfd < 0)
-			VIM_CLEAR(backup);
+			vim_clear((void **)&backup);
 		    else
 		    {
 			/* Set file protection same as original file, but
@@ -4146,7 +4146,7 @@ buf_write(
 			    --*p;
 			/* They all exist??? Must be something wrong! */
 			if (*p == 'a')
-			    VIM_CLEAR(backup);
+			    vim_clear((void **)&backup);
 		    }
 		}
 		if (backup != NULL)
@@ -4164,7 +4164,7 @@ buf_write(
 		    if (vim_rename(fname, backup) == 0)
 			break;
 
-		    VIM_CLEAR(backup);   /* don't do the rename below */
+		    vim_clear((void **)&backup);   /* don't do the rename below */
 		}
 	    }
 	    if (backup == NULL && !forceit)
@@ -5065,7 +5065,7 @@ restore_backup:
 	    else if (mch_stat(org, &st) < 0)
 	    {
 		vim_rename(backup, (char_u *)org);
-		VIM_CLEAR(backup);	    /* don't delete the file */
+		vim_clear((void **)&backup);	    /* don't delete the file */
 #ifdef UNIX
 		set_file_time((char_u *)org, st_old.st_atime, st_old.st_mtime);
 #endif
@@ -6212,7 +6212,7 @@ shorten_fnames(int force)
 		    || buf->b_sfname == NULL
 		    || mch_isFullName(buf->b_sfname)))
 	{
-	    VIM_CLEAR(buf->b_sfname);
+	    vim_clear((void **)&buf->b_sfname);
 	    p = shorten_fname(buf->b_ffname, dirname);
 	    if (p != NULL)
 	    {
@@ -7411,7 +7411,7 @@ vim_deltempdir(void)
 	/* remove the trailing path separator */
 	gettail(vim_tempdir)[-1] = NUL;
 	delete_recursive(vim_tempdir);
-	VIM_CLEAR(vim_tempdir);
+	vim_clear((void **)&vim_tempdir);
     }
 }
 
@@ -8001,7 +8001,7 @@ show_autocmd(AutoPat *ap, event_T event)
     static void
 au_remove_pat(AutoPat *ap)
 {
-    VIM_CLEAR(ap->pat);
+    vim_clear((void **)&ap->pat);
     ap->buflocal_nr = -1;
     au_need_clean = TRUE;
 }
@@ -8015,7 +8015,7 @@ au_remove_cmds(AutoPat *ap)
     AutoCmd *ac;
 
     for (ac = ap->cmds; ac != NULL; ac = ac->next)
-	VIM_CLEAR(ac->cmd);
+	vim_clear((void **)&ac->cmd);
     au_need_clean = TRUE;
 }
 
@@ -9073,7 +9073,7 @@ aucmd_prepbuf(
 
 	/* Make sure w_localdir and globaldir are NULL to avoid a chdir() in
 	 * win_enter_ext(). */
-	VIM_CLEAR(aucmd_win->w_localdir);
+	vim_clear((void **)&aucmd_win->w_localdir);
 	aco->globaldir = globaldir;
 	globaldir = NULL;
 
@@ -9855,7 +9855,7 @@ auto_next_pat(
     char_u	*name;
     char	*s;
 
-    VIM_CLEAR(sourcing_name);
+    vim_clear((void **)&sourcing_name);
 
     for (ap = apc->curpat; ap != NULL && !got_int; ap = ap->next)
     {
@@ -10538,7 +10538,7 @@ file_pat_to_reg_pat(
 	    EMSG(_("E219: Missing {."));
 	else
 	    EMSG(_("E220: Missing }."));
-	VIM_CLEAR(reg_pat);
+	vim_clear((void **)&reg_pat);
     }
     return reg_pat;
 }

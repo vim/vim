@@ -164,7 +164,7 @@ trigger_cmd_autocmd(int typechar, int evt)
     static void
 abandon_cmdline(void)
 {
-    VIM_CLEAR(ccline.cmdbuff);
+    vim_clear((void **)&ccline.cmdbuff);
     if (msg_scrolled == 0)
 	compute_cmdrow();
     MSG("");
@@ -499,7 +499,7 @@ getcmdline(
 		&& c != K_KPAGEDOWN && c != K_KPAGEUP
 		&& c != K_LEFT && c != K_RIGHT
 		&& (xpc.xp_numfiles > 0 || (c != Ctrl_P && c != Ctrl_N)))
-	    VIM_CLEAR(lookfor);
+	    vim_clear((void **)&lookfor);
 #endif
 
 	/*
@@ -1092,7 +1092,7 @@ getcmdline(
 			    )
 			goto cmdline_not_changed;
 
-		    VIM_CLEAR(ccline.cmdbuff);	/* no commandline to return */
+		    vim_clear((void **)&ccline.cmdbuff);	/* no commandline to return */
 		    if (!cmd_silent)
 		    {
 #ifdef FEAT_RIGHTLEFT
@@ -3678,7 +3678,7 @@ nextwild(
 			     || ccline.cmdbuff[i + j] == '?')
 			 break;
 		if ((int)STRLEN(p2) < j)
-		    VIM_CLEAR(p2);
+		    vim_clear((void **)&p2);
 	    }
 	}
     }
@@ -3824,7 +3824,7 @@ ExpandOne(
     {
 	FreeWild(xp->xp_numfiles, xp->xp_files);
 	xp->xp_numfiles = -1;
-	VIM_CLEAR(orig_save);
+	vim_clear((void **)&orig_save);
     }
     findex = 0;
 
@@ -6728,7 +6728,7 @@ finish_viminfo_history(vir_T *virp)
 	else
 	    concat_history(type);
 
-	VIM_CLEAR(viminfo_history[type]);
+	vim_clear((void **)&viminfo_history[type]);
 	viminfo_hisidx[type] = 0;
     }
 }
@@ -6852,7 +6852,7 @@ write_viminfo_history(FILE *fp, int merge)
 	for (i = 0; i < viminfo_hisidx[type]; ++i)
 	    if (viminfo_history[type] != NULL)
 		vim_free(viminfo_history[type][i].hisstr);
-	VIM_CLEAR(viminfo_history[type]);
+	vim_clear((void **)&viminfo_history[type]);
 	viminfo_hisidx[type] = 0;
     }
 }

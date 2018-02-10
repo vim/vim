@@ -727,7 +727,7 @@ add_menu_path(
 	menup = &menu->children;
 	parent = menu;
 	name = next_name;
-	VIM_CLEAR(dname);
+	vim_clear((void **)&dname);
 	if (pri_tab[pri_idx + 1] != -1)
 	    ++pri_idx;
     }

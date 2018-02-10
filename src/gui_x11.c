@@ -1567,7 +1567,7 @@ gui_mch_uninit(void)
     XtCloseDisplay(gui.dpy);
     gui.dpy = NULL;
     vimShell = (Widget)0;
-    VIM_CLEAR(gui_argv);
+    vim_clear((void **)&gui_argv);
 }
 
 /*
@@ -1740,7 +1740,7 @@ gui_mch_exit(int rc UNUSED)
      * says that this isn't needed when exiting, so just skip it. */
     XtCloseDisplay(gui.dpy);
 #endif
-    VIM_CLEAR(gui_argv);
+    vim_clear((void **)&gui_argv);
 }
 
 /*

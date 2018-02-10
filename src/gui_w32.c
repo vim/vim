@@ -4941,7 +4941,7 @@ _WndProc(
 		    char_u		*str = NULL;
 		    static void		*tt_text = NULL;
 
-		    VIM_CLEAR(tt_text);
+		    vim_clear((void **)&tt_text);
 
 # ifdef FEAT_GUI_TABLINE
 		    if (gui_mch_showing_tabline()

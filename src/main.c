@@ -3951,7 +3951,7 @@ cmdsrv_main(
 		{
 		    /* Output error from remote */
 		    mch_errmsg((char *)res);
-		    VIM_CLEAR(res);
+		    vim_clear((void **)&res);
 		}
 		mch_errmsg(_(": Send expression failed.\n"));
 	    }

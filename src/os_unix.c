@@ -1311,7 +1311,7 @@ mch_suspend(void)
     /*
      * Set oldtitle to NULL, so the current title is obtained again.
      */
-    VIM_CLEAR(oldtitle);
+    vim_clear((void **)&oldtitle);
 # endif
     settmode(TMODE_RAW);
     need_check_timestamps = TRUE;
@@ -3260,7 +3260,7 @@ mch_free_mem(void)
 	XCloseDisplay(x11_display);
 # endif
 # if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
-    VIM_CLEAR(signal_stack);
+    vim_clear((void **)&signal_stack);
 # endif
 # ifdef FEAT_TITLE
     vim_free(oldtitle);
@@ -6763,7 +6763,7 @@ mch_expand_wildcards(
 
     if (*num_file == 0)	    /* rejected all entries */
     {
-	VIM_CLEAR(*file);
+	vim_clear((void **)file);
 	goto notfound;
     }
 

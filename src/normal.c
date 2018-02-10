@@ -1482,7 +1482,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		{
 		    AppendToRedobuffLit(repeat_cmdline, -1);
 		    AppendToRedobuff(NL_STR);
-		    VIM_CLEAR(repeat_cmdline);
+		    vim_clear((void **)&repeat_cmdline);
 		}
 	    }
 	}

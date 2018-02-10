@@ -868,7 +868,7 @@ do_cmdline(
 	{
 	    /* Each '|' separated command is stored separately in lines_ga, to
 	     * be able to jump to it.  Don't use next_cmdline now. */
-	    VIM_CLEAR(cmdline_copy);
+	    vim_clear((void **)&cmdline_copy);
 
 	    /* Check if a function has returned or, unless it has an unclosed
 	     * try conditional, aborted. */
@@ -1083,7 +1083,7 @@ do_cmdline(
 
 	if (next_cmdline == NULL)
 	{
-	    VIM_CLEAR(cmdline_copy);
+	    vim_clear((void **)&cmdline_copy);
 #ifdef FEAT_CMDHIST
 	    /*
 	     * If the command was typed, remember it for the ':' register.
@@ -5800,9 +5800,9 @@ uc_add_command(
 		goto fail;
 	    }
 
-	    VIM_CLEAR(cmd->uc_rep);
+	    vim_clear((void **)&cmd->uc_rep);
 #if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
-	    VIM_CLEAR(cmd->uc_compl_arg);
+	    vim_clear((void **)&cmd->uc_compl_arg);
 #endif
 	    break;
 	}
@@ -8948,8 +8948,8 @@ static char_u	*prev_dir = NULL;
     void
 free_cd_dir(void)
 {
-    VIM_CLEAR(prev_dir);
-    VIM_CLEAR(globaldir);
+    vim_clear((void **)&prev_dir);
+    vim_clear((void **)&globaldir);
 }
 #endif
 
@@ -8960,7 +8960,7 @@ free_cd_dir(void)
     void
 post_chdir(int local)
 {
-    VIM_CLEAR(curwin->w_localdir);
+    vim_clear((void **)&curwin->w_localdir);
     if (local)
     {
 	/* If still in global directory, need to remember current
@@ -8975,7 +8975,7 @@ post_chdir(int local)
     {
 	/* We are now in the global directory, no need to remember its
 	 * name. */
-	VIM_CLEAR(globaldir);
+	vim_clear((void **)&globaldir);
     }
 
     shorten_fnames(TRUE);

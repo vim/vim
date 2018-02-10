@@ -3745,7 +3745,7 @@ init_homedir(void)
     char_u  *var;
 
     /* In case we are called a second time (when 'encoding' changes). */
-    VIM_CLEAR(homedir);
+    vim_clear((void **)&homedir);
 
 #ifdef VMS
     var = mch_getenv((char_u *)"SYS$LOGIN");
@@ -4357,7 +4357,7 @@ vim_getenv(char_u *name, int *mustfree)
 		p = vim_strnsave(p, (int)(pend - p));
 
 	    if (p != NULL && !mch_isdir(p))
-		VIM_CLEAR(p);
+		vim_clear((void **)&p);
 	    else
 	    {
 #ifdef USE_EXE_NAME
@@ -9771,7 +9771,7 @@ expand_wildcards(
 	/* If the number of matches is now zero, we fail. */
 	if (*num_files == 0)
 	{
-	    VIM_CLEAR(*files);
+	    vim_clear((void **)files);
 	    return FAIL;
 	}
     }
@@ -10026,7 +10026,7 @@ dos_expandpath(
 	    hFind = FindFirstFileW(wn, &wfb);
 	    if (hFind == INVALID_HANDLE_VALUE
 			      && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
-		VIM_CLEAR(wn);
+		vim_clear((void **)&wn);
 	}
     }
 
@@ -10114,7 +10114,7 @@ dos_expandpath(
 # endif
 		hFind = FindFirstFile((LPCSTR)buf, &fb);
 	    ok = (hFind != INVALID_HANDLE_VALUE);
-	    VIM_CLEAR(matchname);
+	    vim_clear((void **)&matchname);
 	}
     }
 
@@ -11247,7 +11247,7 @@ get_cmd_output(
     if (i != len)
     {
 	EMSG2(_(e_notread), tempname);
-	VIM_CLEAR(buffer);
+	vim_clear((void **)&buffer);
     }
     else if (ret_len == NULL)
     {

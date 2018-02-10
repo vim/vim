@@ -3996,7 +3996,7 @@ theend:
     /* Free "reg_tofree" when it's a bit big.
      * Free regstack and backpos if they are bigger than their initial size. */
     if (reg_tofreelen > 400)
-	VIM_CLEAR(reg_tofree);
+	vim_clear((void **)&reg_tofree);
     if (regstack.ga_maxlen > REGSTACK_INITIAL)
 	ga_clear(&regstack);
     if (backpos.ga_maxlen > BACKPOS_INITIAL)
@@ -7518,7 +7518,7 @@ vim_regsub_both(
 	    {
 		STRCPY(dest, eval_result);
 		dst += STRLEN(eval_result);
-		VIM_CLEAR(eval_result);
+		vim_clear((void **)&eval_result);
 	    }
 	}
 	else

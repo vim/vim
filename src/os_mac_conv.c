@@ -480,7 +480,7 @@ mac_precompose_path(
 	    if (TECConvertText(gPathConverter, decompPath,
 			decompLen, &decompLen, result,
 			decompLen, &actualLen) != noErr)
-		VIM_CLEAR(result);
+		vim_clear((void **)&result);
 	}
     }
 
@@ -514,7 +514,7 @@ mac_utf16_to_utf8(
 	    utf8_len += inputRead;
 	}
 	else
-	    VIM_CLEAR(result);
+	    vim_clear((void **)&result);
     }
     else
     {

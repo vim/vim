@@ -535,7 +535,7 @@ ml_set_crypt_key(
 	idx = 0;		/* start with first index in block 1 */
 	error = 0;
 	buf->b_ml.ml_stack_top = 0;
-	VIM_CLEAR(buf->b_ml.ml_stack);
+	vim_clear((void **)&buf->b_ml.ml_stack);
 	buf->b_ml.ml_stack_size = 0;	/* no stack yet */
 
 	for ( ; !got_int; line_breakcheck())
@@ -851,7 +851,7 @@ ml_close(buf_T *buf, int del_file)
 	vim_free(buf->b_ml.ml_line_ptr);
     vim_free(buf->b_ml.ml_stack);
 #ifdef FEAT_BYTEOFF
-    VIM_CLEAR(buf->b_ml.ml_chunksize);
+    vim_clear((void **)&buf->b_ml.ml_chunksize);
 #endif
     buf->b_ml.ml_mfp = NULL;
 
@@ -4195,7 +4195,7 @@ findswapname(
 	    break;
 	if ((n = (int)STRLEN(fname)) == 0)	/* safety check */
 	{
-	    VIM_CLEAR(fname);
+	    vim_clear((void **)&fname);
 	    break;
 	}
 #if defined(UNIX)
@@ -4575,7 +4575,7 @@ findswapname(
 	    if (fname[n - 2] == 'a')    /* ".saa": tried enough, give up */
 	    {
 		EMSG(_("E326: Too many swap files found"));
-		VIM_CLEAR(fname);
+		vim_clear((void **)&fname);
 		break;
 	    }
 	    --fname[n - 2];		/* ".svz", ".suz", etc. */
