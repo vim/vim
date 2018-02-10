@@ -2245,7 +2245,7 @@ static struct vimoption options[] =
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
-			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
+			    {(char_u *)15L, (char_u *)15L} SCRIPTID_INIT},
     {"pythonthreedll",  NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 #if defined(DYNAMIC_PYTHON3)
 			    (char_u *)&p_py3dll, PV_NONE,
