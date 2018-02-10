@@ -3942,7 +3942,7 @@ buf_write(
 			if (st_new.st_dev == st_old.st_dev
 					    && st_new.st_ino == st_old.st_ino)
 			{
-			    VIM_CLEAR(backup);
+			    VIM_CLEAR(backup);	/* no backup file to delete */
 			    /*
 			     * may try again with 'shortname' set
 			     */
