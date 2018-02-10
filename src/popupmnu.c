@@ -67,6 +67,15 @@ pum_compute_size(void)
 }
 
 /*
+ * Return the minimum width of the popup menu.
+ */
+    static int
+pum_get_width(void)
+{
+    return p_pw == 0 ? PUM_DEF_WIDTH : p_pw;
+}
+
+/*
  * Show the popup menu with items "array[size]".
  * "array" must remain valid until pum_undisplay() is called!
  * When possible the leftmost character is aligned with screen column "col".
@@ -93,7 +102,7 @@ pum_display(
 
     do
     {
-	def_width = PUM_DEF_WIDTH;
+	def_width = pum_get_width();
 	above_row = 0;
 	below_row = cmdline_row;
 
@@ -216,16 +225,17 @@ pum_display(
 	if (def_width < max_width)
 	    def_width = max_width;
 
-	if (((col < Columns - PUM_DEF_WIDTH || col < Columns - max_width)
+	if (((col < Columns - pum_get_width() || col < Columns - max_width)
 #ifdef FEAT_RIGHTLEFT
 		    && !curwin->w_p_rl)
-		|| (curwin->w_p_rl && (col > PUM_DEF_WIDTH || col > max_width)
+	       || (curwin->w_p_rl && (col > pum_get_width() || col > max_width)
 #endif
 	   ))
 	{
 	    /* align pum column with "col" */
 	    pum_col = col;
 
+	    /* start with the maximum space available */
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 		pum_width = pum_col - pum_scrollbar + 1;
@@ -234,12 +244,71 @@ pum_display(
 		pum_width = Columns - pum_col - pum_scrollbar;
 
 	    if (pum_width > max_width + pum_kind_width + pum_extra_width + 1
-						  && pum_width > PUM_DEF_WIDTH)
+						&& pum_width > pum_get_width())
 	    {
+		/* the width is too much, make it narrower */
 		pum_width = max_width + pum_kind_width + pum_extra_width + 1;
-		if (pum_width < PUM_DEF_WIDTH)
-		    pum_width = PUM_DEF_WIDTH;
+		if (pum_width < pum_get_width())
+		    pum_width = pum_get_width();
 	    }
+	    else if (((col > pum_get_width() || col > max_width)
+#ifdef FEAT_RIGHTLEFT
+			&& !curwin->w_p_rl)
+		|| (curwin->w_p_rl && (col < Columns - pum_get_width()
+			|| col < Columns - max_width)
+#endif
+		    ))
+	    {
+		/* align right pum edge with "col" */
+#ifdef FEAT_RIGHTLEFT
+		if (curwin->w_p_rl)
+		{
+		    pum_col = col + max_width + pum_scrollbar + 1;
+		    if (pum_col >= Columns)
+			pum_col = Columns - 1;
+		}
+		else
+#endif
+		{
+		    pum_col = col - max_width - pum_scrollbar;
+		    if (pum_col < 0)
+			pum_col = 0;
+		}
+
+#ifdef FEAT_RIGHTLEFT
+		if (curwin->w_p_rl)
+		    pum_width = W_ENDCOL(curwin) - pum_col - pum_scrollbar + 1;
+		else
+#endif
+		    pum_width = pum_col - pum_scrollbar;
+
+		if (pum_width < pum_get_width())
+		{
+		    pum_width = pum_get_width();
+#ifdef FEAT_RIGHTLEFT
+		    if (curwin->w_p_rl)
+		    {
+			if (pum_width > pum_col)
+			    pum_width = pum_col;
+		    }
+		    else
+#endif
+		    {
+			if (pum_width >= Columns - pum_col)
+			    pum_width = Columns - pum_col - 1;
+		    }
+		}
+		else if (pum_width > max_width + pum_kind_width
+							  + pum_extra_width + 1
+			    && pum_width > pum_get_width())
+		{
+		    pum_width = max_width + pum_kind_width
+							 + pum_extra_width + 1;
+		    if (pum_width < pum_get_width())
+			pum_width = pum_get_width();
+		}
+	    }
+
 	}
 	else if (Columns < def_width)
 	{
@@ -254,8 +323,8 @@ pum_display(
 	}
 	else
 	{
-	    if (max_width > PUM_DEF_WIDTH)
-		max_width = PUM_DEF_WIDTH;	/* truncate */
+	    if (max_width > pum_get_width())
+		max_width = pum_get_width();	/* truncate */
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 		pum_col = max_width - 1;
@@ -1004,4 +1073,5 @@ ui_may_remove_balloon(void)
 	ui_remove_balloon();
 }
 # endif
+
 #endif

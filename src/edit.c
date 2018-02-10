@@ -4236,6 +4236,8 @@ ins_compl_add_tv(typval_T *tv, int dir)
 						     (char_u *)"kind", FALSE);
 	cptext[CPT_INFO] = get_dict_string(tv->vval.v_dict,
 						     (char_u *)"info", FALSE);
+	cptext[CPT_USER_DATA] = get_dict_string(tv->vval.v_dict,
+						 (char_u *)"user_data", FALSE);
 	if (get_dict_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL)
 	    icase = get_dict_number(tv->vval.v_dict, (char_u *)"icase");
 	if (get_dict_string(tv->vval.v_dict, (char_u *)"dup", FALSE) != NULL)
@@ -4758,6 +4760,8 @@ ins_compl_insert(int in_compl_func)
 		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_KIND]));
 	dict_add_nr_str(dict, "info", 0L,
 		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_INFO]));
+	dict_add_nr_str(dict, "user_data", 0L,
+		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_USER_DATA]));
     }
     set_vim_var_dict(VV_COMPLETED_ITEM, dict);
     if (!in_compl_func)

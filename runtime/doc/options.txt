@@ -5955,6 +5955,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
 
+						*'pumwidth'* *'pw'*
+'pumwidth' 'pw'		number	(default 0)
+			global
+			{not available when compiled without the
+			|+insert_expand| feature}
+			{not in Vi}
+	Determines the minium width to use for the popup menu for Insert mode
+	completion.  When zero the default of 15 screen cells is used.
+	|ins-completion-menu|.
+
 						*'pythondll'*
 'pythondll'		string	(default depends on the build)
 			global
