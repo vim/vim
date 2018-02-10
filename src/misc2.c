@@ -1836,6 +1836,19 @@ vim_free(void *x)
     }
 }
 
+/*
+ * Like vim_free(), and also set the pointer to NULL.
+ */
+    void
+vim_clear(void **x)
+{
+    if (*x != NULL)
+    {
+	vim_free(*x);
+	*x = NULL;
+    }
+}
+
 #ifndef HAVE_MEMSET
     void *
 vim_memset(void *ptr, int c, size_t size)
@@ -5173,8 +5186,8 @@ ff_wc_equal(char_u *s1, char_u *s2)
 	prev2 = prev1;
 	prev1 = c1;
 
-        i += MB_PTR2LEN(s1 + i);
-        j += MB_PTR2LEN(s2 + j);
+	i += MB_PTR2LEN(s1 + i);
+	j += MB_PTR2LEN(s2 + j);
     }
     return s1[i] == s2[j];
 }
@@ -5892,7 +5905,7 @@ pathcmp(const char *p, const char *q, int maxlen)
 	    if (c2 == NUL)  /* full match */
 		return 0;
 	    s = q;
-            i = j;
+	    i = j;
 	    break;
 	}
 

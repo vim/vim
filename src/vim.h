@@ -2515,4 +2515,8 @@ typedef enum {
 # endif
 #endif
 
+/* Replacement for nchar used by nv_replace(). */
+#define REPLACE_CR_NCHAR    -1
+#define REPLACE_NL_NCHAR    -2
+
 #endif /* VIM__H */

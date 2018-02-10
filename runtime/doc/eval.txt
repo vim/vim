@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Jan 28
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4484,10 +4484,13 @@ getcwd([{winnr} [, {tabnr}]])
 		Without arguments, for the current window.
 
 		With {winnr} return the local current directory of this window
-		in the current tab page.
+		in the current tab page.  {winnr} can be the window number or
+		the |window-ID|.
+		If {winnr} is -1 return the name of the global working
+		directory.  See also |haslocaldir()|.
+
 		With {winnr} and {tabnr} return the local current directory of
 		the window in the specified tab page.
-		{winnr} can be the window number or the |window-ID|.
 		Return an empty string if the arguments are invalid.
 
 getfsize({fname})					*getfsize()*
@@ -5933,8 +5936,6 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 <		Matches added by |matchaddpos()| are returned by
 		|getmatches()| with an entry "pos1", "pos2", etc., with the
 		value a list like the {pos} item.
-		These matches cannot be set via |setmatches()|, however they
-		can still be deleted by |clearmatches()|.
 
 matcharg({nr})							*matcharg()*
 		Selects the {nr} match item, as set with a |:match|,

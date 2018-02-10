@@ -474,9 +474,8 @@ redraw_after_callback(int call_update_screen)
 	 * flicker. */
 	out_flush_cursor(FALSE, FALSE);
     else
-#else
-	out_flush();
 #endif
+	out_flush();
 
     --redrawing_for_callback;
 }
@@ -2795,7 +2794,7 @@ fold_line(
 	    {
 		ScreenLinesUC[off + col] = fill_fold;
 		ScreenLinesC[0][off + col] = 0;
-                ScreenLines[off + col] = 0x80; /* avoid storing zero */
+		ScreenLines[off + col] = 0x80; /* avoid storing zero */
 	    }
 	    else
 	    {

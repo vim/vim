@@ -289,7 +289,8 @@ MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
 MSVCRT_VER = ($(MSVCVER) / 10 - 60)
 # Visual C++ 2017 needs special handling
 # it has an _MSC_VER of 1910->14.1, but is actually v15 with runtime v140
-!elseif $(MSVCVER) == 1910
+# TODO: what's the maximum value?
+!elseif $(MSVCVER) >= 1910
 MSVC_MAJOR = 15
 MSVCRT_VER = 140
 !else
@@ -1177,6 +1178,13 @@ LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib 
 LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 !endif
 !endif
+!endif
+
+!if $(MSVC_MAJOR) >= 11 && "$(CPU)" == "AMD64" && "$(GUI)" == "yes"
+# This option is required for VC2012 or later so that 64-bit gvim can
+# accept D&D from 32-bit applications.  NOTE: This disables 64-bit ASLR,
+# therefore the security level becomes as same as VC2010.
+LINKARGS1 = $(LINKARGS1) /HIGHENTROPYVA:NO
 !endif
 
 all:	$(VIM).exe \

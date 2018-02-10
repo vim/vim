@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2017 Dec 21
+*options.txt*	For Vim version 8.0.  Last change: 2018 Feb 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

@@ -236,3 +236,14 @@ function Test_CompleteDoneList()
   let s:called_completedone=0
   au! CompleteDone
 endfunc
+
+" Check that when using feedkeys() typeahead does not interrupt searching for
+" completions.
+func Test_compl_feedkeys()
+  new
+  set completeopt=menuone,noselect
+  call feedkeys("ajump ju\<C-X>\<C-N>\<C-P>\<ESC>", "tx")
+  call assert_equal("jump jump", getline(1))
+  bwipe!
+  set completeopt&
+endfunc

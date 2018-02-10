@@ -1137,13 +1137,13 @@ gui_update_cursor(
 	if (id > 0)
 	{
 	    cattr = syn_id2colors(id, &cfg, &cbg);
-#if defined(FEAT_XIM) || defined(FEAT_HANGULIN)
+#if defined(FEAT_MBYTE) || defined(FEAT_HANGULIN)
 	    {
 		static int iid;
 		guicolor_T fg, bg;
 
 		if (
-# if defined(FEAT_GUI_GTK) && !defined(FEAT_HANGULIN)
+# if defined(FEAT_GUI_GTK) && defined(FEAT_XIM) && !defined(FEAT_HANGULIN)
 			preedit_get_status()
 # else
 			im_get_status()

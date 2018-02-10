@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.0.  Last change: 2017 Dec 05
+*filetype.txt*  For Vim version 8.0.  Last change: 2018 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -602,51 +602,17 @@ MANPAGER				      *manpager.vim*
 The :Man command allows you to turn Vim into a manpager (that syntax highlights
 manpages and follows linked manpages on hitting CTRL-]).
 
-Tested on:
-
-  - Linux
-  - Mac OS
-  - FreeBSD
-  - OpenBSD
-  - Cygwin
-  - Win 10 under Bash
-
-Untested:
-
-  - Amiga OS
-  - BeOS
-  - OS/2
-
-If man sets the $MAN_PN environment variable, like man-db, the most common
-implementation on Linux, then the "env MAN_PN=1 " part below should NOT be
-set, that is, the "env MAN_PN=1" should be omitted! Otherwise, the Vim 
-manpager does not correctly recognize manpages whose title contains a capital 
-letter. See the discussion on
-
-  https://groups.google.com/forum/#!topic/vim_dev/pWZmt_7GkxI
-
 For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)
 
-	export MANPAGER="env MAN_PN=1 vim -M +MANPAGER -"
+	export MANPAGER="vim -M +MANPAGER -"
 
 For (t)csh, add to the config file
 
-	setenv MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
+	setenv MANPAGER "vim -M +MANPAGER -"
 
 For fish, add to the config file
 
-	set -x MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
-
-On OpenBSD:
-
-        export MANPAGER="env MAN_PN=1 vim -M +MANPAGER"
-
-If you experience still issues on manpages whose titles do not contain capital
-letters, then try adding MANPATH=${MANPATH} after MAN_PN=1. If your manpages do
-not show up localized, then try adding, LANGUAGE=${LANG} after MAN_PN=1. See
-
-  https://github.com/vim/vim/issues/1002
-
+	set -x MANPAGER "vim -M +MANPAGER -"
 
 PDF							*ft-pdf-plugin*
 
@@ -669,7 +635,7 @@ By default the following options are set, in accordance with PEP8: >
 	setlocal expandtab shiftwidth=4 softtabstop=4 tabstop=8
 
 To disable this behaviour, set the following variable in your vimrc: >
-	
+
 	let g:python_recommended_style = 0
 
 

@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 8.0.  Last change: 2017 Jun 05
+*pattern.txt*   For Vim version 8.0.  Last change: 2018 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -905,7 +905,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	becomes invalid.  Vim doesn't automatically update the matches.
 	Similar to moving the cursor for "\%#" |/\%#|.
 
-						*/\%l* */\%>l* */\%<l*
+						*/\%l* */\%>l* */\%<l* *E951*
 \%23l	Matches in a specific line.
 \%<23l	Matches above a specific line (lower line number).
 \%>23l	Matches below a specific line (higher line number).

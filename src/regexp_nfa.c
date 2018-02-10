@@ -1600,7 +1600,7 @@ nfa_regatom(void)
 
 		default:
 		    {
-			int	n = 0;
+			long	n = 0;
 			int	cmp = c;
 
 			if (c == '<' || c == '>')
@@ -1628,7 +1628,14 @@ nfa_regatom(void)
 				/* \%{n}v  \%{n}<v  \%{n}>v  */
 				EMIT(cmp == '<' ? NFA_VCOL_LT :
 				     cmp == '>' ? NFA_VCOL_GT : NFA_VCOL);
-			    EMIT(n);
+#if VIM_SIZEOF_INT < VIM_SIZEOF_LONG
+			    if (n > INT_MAX)
+			    {
+				EMSG(_("E951: \\% value too large"));
+				return FAIL;
+			    }
+#endif
+			    EMIT((int)n);
 			    break;
 			}
 			else if (c == '\'' && n == 0)
@@ -3970,7 +3977,7 @@ static int nfa_match;
 #ifdef FEAT_RELTIME
 static proftime_T  *nfa_time_limit;
 static int	   *nfa_timed_out;
-static int         nfa_time_count;
+static int	    nfa_time_count;
 #endif
 
 static void copy_pim(nfa_pim_T *to, nfa_pim_T *from);
@@ -4068,10 +4075,10 @@ copy_ze_off(regsub_T *to, regsub_T *from)
 	if (REG_MULTI)
 	{
 	    if (from->list.multi[0].end_lnum >= 0)
-            {
+	    {
 		to->list.multi[0].end_lnum = from->list.multi[0].end_lnum;
 		to->list.multi[0].end_col = from->list.multi[0].end_col;
-            }
+	    }
 	}
 	else
 	{
@@ -5124,9 +5131,9 @@ recursive_regmatch(
     }
 
     if (state->c == NFA_START_INVISIBLE_BEFORE
-        || state->c == NFA_START_INVISIBLE_BEFORE_FIRST
-        || state->c == NFA_START_INVISIBLE_BEFORE_NEG
-        || state->c == NFA_START_INVISIBLE_BEFORE_NEG_FIRST)
+	    || state->c == NFA_START_INVISIBLE_BEFORE_FIRST
+	    || state->c == NFA_START_INVISIBLE_BEFORE_NEG
+	    || state->c == NFA_START_INVISIBLE_BEFORE_NEG_FIRST)
     {
 	/* The recursive match must end at the current position. When "pim" is
 	 * not NULL it specifies the current position. */
@@ -6176,7 +6183,7 @@ nfa_regmatch(
 		{
 		    /* If \Z was present, then ignore composing characters.
 		     * When ignoring the base character this always matches. */
-		    if (len == 0 && sta->c != curc)
+		    if (sta->c != curc)
 			result = FAIL;
 		    else
 			result = OK;
@@ -6302,7 +6309,7 @@ nfa_regmatch(
 			}
 		    }
 		    else if (state->c < 0 ? check_char_class(state->c, curc)
-			        : (curc == state->c
+			       : (curc == state->c
 				   || (rex.reg_ic && MB_TOLOWER(curc)
 						    == MB_TOLOWER(state->c))))
 		    {
@@ -6863,7 +6870,7 @@ nfa_regmatch(
 			&& (REG_MULTI
 			    ? (reglnum < nfa_endp->se_u.pos.lnum
 			       || (reglnum == nfa_endp->se_u.pos.lnum
-			           && (int)(reginput - regline)
+				   && (int)(reginput - regline)
 						    < nfa_endp->se_u.pos.col))
 			    : reginput < nfa_endp->se_u.ptr))))
 	{

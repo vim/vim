@@ -421,7 +421,7 @@ ignorecase_opt(char_u *pat, int ic_in, int scs)
 
     if (ic && !no_smartcase && scs
 #ifdef FEAT_INS_EXPAND
-				&& !(ctrl_x_mode && curbuf->b_p_inf)
+			     && !(ctrl_x_mode_not_default() && curbuf->b_p_inf)
 #endif
 								    )
 	ic = !pat_has_uppercase(pat);
@@ -684,11 +684,11 @@ searchit(
 		    && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
 						    && pos->col < MAXCOL - 2)
 	{
-	    ptr = ml_get_buf(buf, pos->lnum, FALSE) + pos->col;
-	    if (*ptr == NUL)
+	    ptr = ml_get_buf(buf, pos->lnum, FALSE);
+	    if ((int)STRLEN(ptr) <= pos->col)
 		start_char_len = 1;
 	    else
-		start_char_len = (*mb_ptr2len)(ptr);
+		start_char_len = (*mb_ptr2len)(ptr + pos->col);
 	}
 #endif
 	else
@@ -973,7 +973,16 @@ searchit(
 					      NULL, NULL
 #endif
 					    )) == 0)
+			    {
+#ifdef FEAT_RELTIME
+				/* If the search timed out, we did find a match
+				 * but it might be the wrong one, so that's not
+				 * OK. */
+				if (timed_out != NULL && *timed_out)
+				    match_ok = FALSE;
+#endif
 				break;
+			    }
 
 			    /* Need to get the line pointer again, a
 			     * multi-line search may have made it invalid. */
