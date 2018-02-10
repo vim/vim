@@ -1091,8 +1091,7 @@ end_do_tag:
     void
 tag_freematch(void)
 {
-    vim_free(tagmatchname);
-    tagmatchname = NULL;
+    VIM_CLEAR(tagmatchname);
 }
 
     static void
@@ -2620,10 +2619,7 @@ free_tag_stuff(void)
 
 # if defined(FEAT_QUICKFIX)
     if (ptag_entry.tagname)
-    {
-	vim_free(ptag_entry.tagname);
-	ptag_entry.tagname = NULL;
-    }
+	VIM_CLEAR(ptag_entry.tagname);
 # endif
 }
 #endif

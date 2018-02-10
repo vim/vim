@@ -849,8 +849,7 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
 	if (undo_file_name != NULL && (!reading
 			       || mch_stat((char *)undo_file_name, &st) >= 0))
 	    break;
-	vim_free(undo_file_name);
-	undo_file_name = NULL;
+	VIM_CLEAR(undo_file_name);
     }
 
     vim_free(munged_name);
@@ -3454,8 +3453,7 @@ u_clearline(void)
 {
     if (curbuf->b_u_line_ptr != NULL)
     {
-	vim_free(curbuf->b_u_line_ptr);
-	curbuf->b_u_line_ptr = NULL;
+	VIM_CLEAR(curbuf->b_u_line_ptr);
 	curbuf->b_u_line_lnum = 0;
     }
 }

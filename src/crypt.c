@@ -118,6 +118,9 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	NULL, NULL,
 	crypt_blowfish_encode, crypt_blowfish_decode,
     },
+
+    /* NOTE: when adding a new method, use some random bytes for the magic key,
+     * to avoid that a text file is recognized as encrypted. */
 };
 
 #define CRYPT_MAGIC_LEN	12	/* cannot change */
@@ -349,10 +352,7 @@ crypt_create_for_writing(
 
     state = crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
     if (state == NULL)
-    {
-	vim_free(*header);
-	*header = NULL;
-    }
+	VIM_CLEAR(*header);
     return state;
 }
 

@@ -379,3 +379,14 @@
 # define mch_enable_flush()
 # define mch_disable_flush()
 #endif
+
+/*
+ * Like vim_free(), and also set the pointer to NULL.
+ */
+#define VIM_CLEAR(p) \
+    do { \
+	if ((p) != NULL) { \
+	    vim_free(p); \
+	    (p) = NULL; \
+	} \
+    } while (0)

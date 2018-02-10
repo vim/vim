@@ -4666,8 +4666,7 @@ iconv_string(
 	else if (ICONV_ERRNO != ICONV_E2BIG)
 	{
 	    /* conversion failed */
-	    vim_free(result);
-	    result = NULL;
+	    VIM_CLEAR(result);
 	    break;
 	}
 	/* Not enough room or skipping illegal sequence. */

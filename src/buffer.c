@@ -944,8 +944,7 @@ free_buffer_stuff(
     map_clear_int(buf, MAP_ALL_MODES, TRUE, TRUE);   /* clear local abbrevs */
 #endif
 #ifdef FEAT_MBYTE
-    vim_free(buf->b_start_fenc);
-    buf->b_start_fenc = NULL;
+    VIM_CLEAR(buf->b_start_fenc);
 #endif
 }
 
@@ -2037,10 +2036,8 @@ buflist_new(
     if ((ffname != NULL && (buf->b_ffname == NULL || buf->b_sfname == NULL))
 	    || buf->b_wininfo == NULL)
     {
-	vim_free(buf->b_ffname);
-	buf->b_ffname = NULL;
-	vim_free(buf->b_sfname);
-	buf->b_sfname = NULL;
+	VIM_CLEAR(buf->b_ffname);
+	VIM_CLEAR(buf->b_sfname);
 	if (buf != curbuf)
 	    free_buffer(buf);
 	return NULL;
@@ -3136,10 +3133,8 @@ setfname(
     if (ffname == NULL || *ffname == NUL)
     {
 	/* Removing the name. */
-	vim_free(buf->b_ffname);
-	vim_free(buf->b_sfname);
-	buf->b_ffname = NULL;
-	buf->b_sfname = NULL;
+	VIM_CLEAR(buf->b_ffname);
+	VIM_CLEAR(buf->b_sfname);
 #ifdef UNIX
 	st.st_dev = (dev_T)-1;
 #endif
@@ -4261,8 +4256,7 @@ build_stl_str_hl(
 		if (*skipdigits(str) == NUL)
 		{
 		    num = atoi((char *)str);
-		    vim_free(str);
-		    str = NULL;
+		    VIM_CLEAR(str);
 		    itemisflag = FALSE;
 		}
 	    }

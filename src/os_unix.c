@@ -371,7 +371,7 @@ mch_chdir(char *path)
 #endif
 
 /*
- * Write s[len] to the screen.
+ * Write s[len] to the screen (stdout).
  */
     void
 mch_write(char_u *s, int len)
@@ -1311,8 +1311,7 @@ mch_suspend(void)
     /*
      * Set oldtitle to NULL, so the current title is obtained again.
      */
-    vim_free(oldtitle);
-    oldtitle = NULL;
+    VIM_CLEAR(oldtitle);
 # endif
     settmode(TMODE_RAW);
     need_check_timestamps = TRUE;
@@ -3261,8 +3260,7 @@ mch_free_mem(void)
 	XCloseDisplay(x11_display);
 # endif
 # if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
-    vim_free(signal_stack);
-    signal_stack = NULL;
+    VIM_CLEAR(signal_stack);
 # endif
 # ifdef FEAT_TITLE
     vim_free(oldtitle);
@@ -6765,8 +6763,7 @@ mch_expand_wildcards(
 
     if (*num_file == 0)	    /* rejected all entries */
     {
-	vim_free(*file);
-	*file = NULL;
+	VIM_CLEAR(*file);
 	goto notfound;
     }
 

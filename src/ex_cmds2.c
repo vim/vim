@@ -1298,7 +1298,6 @@ check_due_timer(void)
 	if (this_due <= 1)
 	{
 	    bevalexpr_due_set = FALSE;
-
 	    if (balloonEval == NULL)
 	    {
 		balloonEval = (BalloonEval *)alloc(sizeof(BalloonEval));
@@ -5489,8 +5488,7 @@ free_locales(void)
     {
 	for (i = 0; locales[i] != NULL; i++)
 	    vim_free(locales[i]);
-	vim_free(locales);
-	locales = NULL;
+	VIM_CLEAR(locales);
     }
 }
 #  endif
