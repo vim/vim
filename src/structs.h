@@ -1983,6 +1983,15 @@ struct file_buffer
 				   incremented for each change, also for undo */
 #define CHANGEDTICK(buf) ((buf)->b_ct_di.di_tv.vval.v_number)
 
+#ifdef FEAT_AUTOCMD
+    varnumber_T	b_last_changedtick; /* b:changedtick when TextChanged or
+				       TextChangedI was last triggered. */
+# ifdef FEAT_INS_EXPAND
+    varnumber_T	b_last_changedtick_pum; /* b:changedtick when TextChangedP was
+					   last triggered. */
+# endif
+#endif
+
     int		b_saving;	/* Set to TRUE if we are in the middle of
 				   saving the buffer. */
 

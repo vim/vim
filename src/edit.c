@@ -1682,17 +1682,28 @@ ins_redraw(
 #ifdef FEAT_AUTOCMD
     /* Trigger TextChangedI if b_changedtick differs. */
     if (ready && has_textchangedI()
-	    && last_changedtick != CHANGEDTICK(curbuf)
+	    && curbuf->b_last_changedtick != CHANGEDTICK(curbuf)
 # ifdef FEAT_INS_EXPAND
 	    && !pum_visible()
 # endif
 	    )
     {
-	if (last_changedtick_buf == curbuf)
-	    apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
-	last_changedtick_buf = curbuf;
-	last_changedtick = CHANGEDTICK(curbuf);
+	apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
+	curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
     }
+
+# ifdef FEAT_INS_EXPAND
+    /* Trigger TextChangedP if b_changedtick differs. When the popupmenu closes
+     * TextChangedI will need to trigger for backwards compatibility, thus use
+     * different b_last_changedtick* variables. */
+    if (ready && has_textchangedP()
+	    && curbuf->b_last_changedtick_pum != CHANGEDTICK(curbuf)
+	    && pum_visible())
+    {
+	apply_autocmds(EVENT_TEXTCHANGEDP, NULL, NULL, FALSE, curbuf);
+	curbuf->b_last_changedtick_pum = CHANGEDTICK(curbuf);
+    }
+# endif
 #endif
 
     if (must_redraw)

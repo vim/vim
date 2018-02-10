@@ -1085,8 +1085,6 @@ EXTERN pos_T	last_cursormoved	      /* for CursorMoved event */
 			= INIT_POS_T(0, 0, 0)
 # endif
 			;
-EXTERN varnumber_T last_changedtick INIT(= 0);   /* for TextChanged event */
-EXTERN buf_T	*last_changedtick_buf INIT(= NULL);
 #endif
 
 EXTERN int	postponed_split INIT(= 0);  /* for CTRL-W CTRL-] command */

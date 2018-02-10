@@ -5037,9 +5037,8 @@ restore_backup:
 #ifdef FEAT_AUTOCMD
 	/* b:changedtick is always incremented in unchanged() but that
 	 * should not trigger a TextChanged event. */
-	if (last_changedtick + 1 == CHANGEDTICK(buf)
-					       && last_changedtick_buf == buf)
-	    last_changedtick = CHANGEDTICK(buf);
+	if (buf->b_last_changedtick + 1 == CHANGEDTICK(buf))
+	    buf->b_last_changedtick = CHANGEDTICK(buf);
 #endif
 	u_unchanged(buf);
 	u_update_save_nr(buf);
@@ -7851,6 +7850,7 @@ static struct event_name
     {"TermResponse",	EVENT_TERMRESPONSE},
     {"TextChanged",	EVENT_TEXTCHANGED},
     {"TextChangedI",	EVENT_TEXTCHANGEDI},
+    {"TextChangedP",	EVENT_TEXTCHANGEDP},
     {"User",		EVENT_USER},
     {"VimEnter",	EVENT_VIMENTER},
     {"VimLeave",	EVENT_VIMLEAVE},
@@ -9374,6 +9374,15 @@ has_textchanged(void)
 has_textchangedI(void)
 {
     return (first_autopat[(int)EVENT_TEXTCHANGEDI] != NULL);
+}
+
+/*
+ * Return TRUE when there is a TextChangedP autocommand defined.
+ */
+    int
+has_textchangedP(void)
+{
+    return (first_autopat[(int)EVENT_TEXTCHANGEDP] != NULL);
 }
 
 /*

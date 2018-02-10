@@ -1337,8 +1337,11 @@ enum auto_event
     EVENT_TABCLOSED,		/* after closing a tab page */
     EVENT_SHELLCMDPOST,		/* after ":!cmd" */
     EVENT_SHELLFILTERPOST,	/* after ":1,2!cmd", ":w !cmd", ":r !cmd". */
-    EVENT_TEXTCHANGED,		/* text was modified */
-    EVENT_TEXTCHANGEDI,		/* text was modified in Insert mode*/
+    EVENT_TEXTCHANGED,		/* text was modified not in Insert mode */
+    EVENT_TEXTCHANGEDI,         /* text was modified in Insert mode without
+				   popup menu visible */
+    EVENT_TEXTCHANGEDP,         /* text was modified in Insert mode with popup
+				   menu visible */
     EVENT_CMDUNDEFINED,		/* command undefined */
     EVENT_OPTIONSET,		/* option was set */
     EVENT_TEXTYANKPOST,		/* after some text was yanked */
