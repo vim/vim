@@ -3912,8 +3912,7 @@ clear_termcodes(void)
 {
     while (tc_len > 0)
 	vim_free(termcodes[--tc_len].code);
-    vim_free(termcodes);
-    termcodes = NULL;
+    vim_clear((void **)&termcodes);
     tc_max_len = 0;
 
 #ifdef HAVE_TGETENT

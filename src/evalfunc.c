@@ -9222,10 +9222,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	    if (*q != NUL)
 		STRMOVE(remain, q - 1);
 	    else
-	    {
-		vim_free(remain);
-		remain = NULL;
-	    }
+		vim_clear((void **)&remain);
 	}
 
 	/* If the result is a relative path name, make it explicitly relative to

@@ -4326,10 +4326,7 @@ win_line(
 #endif
 
 	    if (p_extra_free != NULL)
-	    {
-		vim_free(p_extra_free);
-		p_extra_free = NULL;
-	    }
+		vim_clear((void **)&p_extra_free);
 	    /*
 	     * Get a character from the line itself.
 	     */
@@ -8860,27 +8857,17 @@ give_up:
 	     * and over again. */
 	    done_outofmem_msg = TRUE;
 	}
-	vim_free(new_ScreenLines);
-	new_ScreenLines = NULL;
+	vim_clear((void **)&new_ScreenLines);
 #ifdef FEAT_MBYTE
-	vim_free(new_ScreenLinesUC);
-	new_ScreenLinesUC = NULL;
+	vim_clear((void **)&new_ScreenLinesUC);
 	for (i = 0; i < p_mco; ++i)
-	{
-	    vim_free(new_ScreenLinesC[i]);
-	    new_ScreenLinesC[i] = NULL;
-	}
-	vim_free(new_ScreenLines2);
-	new_ScreenLines2 = NULL;
+	    vim_clear((void **)&new_ScreenLinesC[i]);
+	vim_clear((void **)&new_ScreenLines2);
 #endif
-	vim_free(new_ScreenAttrs);
-	new_ScreenAttrs = NULL;
-	vim_free(new_LineOffset);
-	new_LineOffset = NULL;
-	vim_free(new_LineWraps);
-	new_LineWraps = NULL;
-	vim_free(new_TabPageIdxs);
-	new_TabPageIdxs = NULL;
+	vim_clear((void **)&new_ScreenAttrs);
+	vim_clear((void **)&new_LineOffset);
+	vim_clear((void **)&new_LineWraps);
+	vim_clear((void **)&new_TabPageIdxs);
     }
     else
     {

@@ -1352,8 +1352,7 @@ read_compound(FILE *fd, slang_T *slang, int len)
 	{
 	    if (c == '?' || c == '+' || c == '*')
 	    {
-		vim_free(slang->sl_comprules);
-		slang->sl_comprules = NULL;
+		vim_clear((void **)&slang->sl_comprules);
 		crp = NULL;
 	    }
 	    else

@@ -5489,8 +5489,7 @@ free_locales(void)
     {
 	for (i = 0; locales[i] != NULL; i++)
 	    vim_free(locales[i]);
-	vim_free(locales);
-	locales = NULL;
+	vim_clear((void **)&locales);
     }
 }
 #  endif

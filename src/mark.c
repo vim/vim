@@ -127,8 +127,7 @@ setmark_pos(int c, pos_T *pos, int fnum)
 	    i = c - 'A';
 	namedfm[i].fmark.mark = *pos;
 	namedfm[i].fmark.fnum = fnum;
-	vim_free(namedfm[i].fname);
-	namedfm[i].fname = NULL;
+	vim_clear((void **)&namedfm[i].fname);
 #ifdef FEAT_VIMINFO
 	namedfm[i].time_set = vim_time();
 #endif
@@ -598,8 +597,7 @@ fmarks_check_one(xfmark_T *fm, char_u *name, buf_T *buf)
 	    && fnamecmp(name, fm->fname) == 0)
     {
 	fm->fmark.fnum = buf->b_fnum;
-	vim_free(fm->fname);
-	fm->fname = NULL;
+	vim_clear((void **)&fm->fname);
     }
 }
 
@@ -862,8 +860,7 @@ ex_delmarks(exarg_T *eap)
 			else
 			    n = i - 'A';
 			namedfm[n].fmark.mark.lnum = 0;
-			vim_free(namedfm[n].fname);
-			namedfm[n].fname = NULL;
+			vim_clear((void **)&namedfm[n].fname);
 #ifdef FEAT_VIMINFO
 			namedfm[n].time_set = 0;
 #endif
@@ -1480,16 +1477,14 @@ finish_viminfo_marks(void)
     {
 	for (i = 0; i < NMARKS + EXTRA_MARKS; ++i)
 	    vim_free(vi_namedfm[i].fname);
-	vim_free(vi_namedfm);
-	vi_namedfm = NULL;
+	vim_clear((void **)&vi_namedfm);
     }
 #ifdef FEAT_JUMPLIST
     if (vi_jumplist != NULL)
     {
 	for (i = 0; i < vi_jumplist_len; ++i)
 	    vim_free(vi_jumplist[i].fname);
-	vim_free(vi_jumplist);
-	vi_jumplist = NULL;
+	vim_clear((void **)&vi_jumplist);
     }
 #endif
 }

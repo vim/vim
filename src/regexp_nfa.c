@@ -7334,14 +7334,13 @@ nfa_regcomp(char_u *expr, int re_flags)
     nfa_regengine.expr = NULL;
 
 out:
-    vim_free(post_start);
-    post_start = post_ptr = post_end = NULL;
+    vim_clear((void **)&post_start);
+    post_ptr = post_end = NULL;
     state_ptr = NULL;
     return (regprog_T *)prog;
 
 fail:
-    vim_free(prog);
-    prog = NULL;
+    vim_clear((void **)&prog);
 #ifdef ENABLE_LOG
     nfa_postfix_dump(expr, FAIL);
 #endif

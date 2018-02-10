@@ -349,10 +349,7 @@ crypt_create_for_writing(
 
     state = crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
     if (state == NULL)
-    {
-	vim_free(*header);
-	*header = NULL;
-    }
+	vim_clear((void **)header);
     return state;
 }
 

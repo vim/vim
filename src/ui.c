@@ -130,8 +130,7 @@ ui_inchar(
 	if (maxlen >= ta_len - ta_off)
 	{
 	    mch_memmove(buf, ta_str + ta_off, (size_t)ta_len);
-	    vim_free(ta_str);
-	    ta_str = NULL;
+	    vim_clear((void **)&ta_str);
 	    return ta_len;
 	}
 	mch_memmove(buf, ta_str + ta_off, (size_t)maxlen);
@@ -1840,10 +1839,7 @@ fill_input_buf(int exit_on_error UNUSED)
 	    unconverted = restlen;
 	mch_memmove(inbuf + inbufcount, rest, unconverted);
 	if (unconverted == restlen)
-	{
-	    vim_free(rest);
-	    rest = NULL;
-	}
+	    vim_clear((void **)&rest);
 	else
 	{
 	    restlen -= unconverted;

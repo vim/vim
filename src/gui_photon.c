@@ -1040,8 +1040,7 @@ gui_ph_pg_remove_buffer(char *name)
 	PtSetResource(gui.vimPanelGroup, Pt_ARG_PG_PANEL_TITLES, &empty_title,
 		1);
 
-	vim_free(panel_titles);
-	panel_titles = NULL;
+	vim_clear((void **)&panel_titles);
     }
 }
 

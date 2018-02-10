@@ -361,10 +361,7 @@ eval_clear(void)
     {
 	p = &vimvars[i];
 	if (p->vv_di.di_tv.v_type == VAR_STRING)
-	{
-	    vim_free(p->vv_str);
-	    p->vv_str = NULL;
-	}
+	    vim_clear((void **)&p->vv_str);
 	else if (p->vv_di.di_tv.v_type == VAR_LIST)
 	{
 	    list_unref(p->vv_list);
@@ -569,14 +566,11 @@ var_redir_stop(void)
 	}
 
 	/* free the collected output */
-	vim_free(redir_ga.ga_data);
-	redir_ga.ga_data = NULL;
+	vim_clear((void **)&redir_ga.ga_data);
 
-	vim_free(redir_lval);
-	redir_lval = NULL;
+	vim_clear((void **)&redir_lval);
     }
-    vim_free(redir_varname);
-    redir_varname = NULL;
+    vim_clear((void **)&redir_varname);
 }
 
 # if defined(FEAT_MBYTE) || defined(PROTO)
@@ -1009,10 +1003,7 @@ eval_expr(char_u *arg, char_u **nextcmd)
 
     tv = (typval_T *)alloc(sizeof(typval_T));
     if (tv != NULL && eval0(arg, tv, nextcmd, TRUE) == FAIL)
-    {
-	vim_free(tv);
-	tv = NULL;
-    }
+	vim_clear((void **)&tv);
 
     return tv;
 }
@@ -3213,8 +3204,7 @@ get_user_var_name(expand_T *xp, int idx)
     if (vidx < VV_LEN)
 	return cat_prefix_varname('v', (char_u *)vimvars[vidx++].vv_name);
 
-    vim_free(varnamebuf);
-    varnamebuf = NULL;
+    vim_clear((void **)&varnamebuf);
     varnamebuflen = 0;
     return NULL;
 }
@@ -6096,10 +6086,7 @@ get_env_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    /* next try expanding things like $VIM and ${HOME} */
 	    string = expand_env_save(name - 1);
 	    if (string != NULL && *string == '$')
-	    {
-		vim_free(string);
-		string = NULL;
-	    }
+		vim_clear((void **)&string);
 	}
 	name[len] = cc;
 
@@ -7116,8 +7103,7 @@ clear_tv(typval_T *varp)
 		func_unref(varp->vval.v_string);
 		/* FALLTHROUGH */
 	    case VAR_STRING:
-		vim_free(varp->vval.v_string);
-		varp->vval.v_string = NULL;
+		vim_clear((void **)&varp->vval.v_string);
 		break;
 	    case VAR_PARTIAL:
 		partial_unref(varp->vval.v_partial);

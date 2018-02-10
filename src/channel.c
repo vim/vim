@@ -2978,8 +2978,7 @@ channel_clear_one(channel_T *channel, ch_part_T part)
 channel_clear(channel_T *channel)
 {
     ch_log(channel, "Clearing channel");
-    vim_free(channel->ch_hostname);
-    channel->ch_hostname = NULL;
+    vim_clear((void **)&channel->ch_hostname);
     channel_clear_one(channel, PART_SOCK);
     channel_clear_one(channel, PART_OUT);
     channel_clear_one(channel, PART_ERR);

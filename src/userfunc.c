@@ -2122,10 +2122,7 @@ ex_function(exarg_T *eap)
 	    /* between ":append" and "." and between ":python <<EOF" and "EOF"
 	     * don't check for ":endfunc". */
 	    if (STRCMP(theline, skip_until) == 0)
-	    {
-		vim_free(skip_until);
-		skip_until = NULL;
-	    }
+		vim_clear((void **)&skip_until);
 	}
 	else
 	{
@@ -2295,8 +2292,7 @@ ex_function(exarg_T *eap)
 		/* redefine existing function */
 		ga_clear_strings(&(fp->uf_args));
 		ga_clear_strings(&(fp->uf_lines));
-		vim_free(name);
-		name = NULL;
+		vim_clear((void **)&name);
 	    }
 	}
     }
