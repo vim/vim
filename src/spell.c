@@ -412,9 +412,9 @@ ensurehunspellinit(lp)
     if (!lp->sl_hunspell)
     {
         char_u *dic = lp->sl_fname;
-        char_u *aff = vim_strnsave(dic, strlen(dic));
+        char_u *aff = vim_strnsave(dic, STRLEN(dic));
 
-	vim_strncpy(aff + strlen(aff) - 3, "aff", 3);
+	vim_strncpy(aff + STRLEN(aff) - 3, "aff", 3);
 
 	lp->sl_hunspell = Hunspell_create(aff, dic);
 
@@ -549,7 +549,7 @@ spell_check(
 	    char_u *converted = 0;
 	    char_u *thisword;
 	    char_u *mi_end = mi.mi_end;
-	    char_u *mi_final =  mi.mi_word + strlen(mi.mi_word);
+	    char_u *mi_final =  mi.mi_word + STRLEN(mi.mi_word);
 
 	    while (1)
 	    {
@@ -566,7 +566,7 @@ spell_check(
 			if (Hunspell_spell(lp->sl_hunspell, converted) != 0)
 			{
 			    mi.mi_result = SP_OK;
-			    mi.mi_end = mi.mi_cend = mi.mi_word + strlen(thisword);
+			    mi.mi_end = mi.mi_cend = mi.mi_word + STRLEN(thisword);
 			}
 			vim_free(converted);
 		    }
@@ -1994,23 +1994,23 @@ spell_load_lang(char_u *lang)
 		char *resolvedlink = final_name;
 		int j, regionpos;
 
-		if (strncmp(dp->d_name, lang, strlen(lang)) != 0)
+		if (strncmp(dp->d_name, lang, STRLEN(lang)) != 0)
 		    continue;
 
-		if ((strlen(dp->d_name) <= 4) || (dp->d_name[strlen(lang)] != '_'))
+		if ((STRLEN(dp->d_name) <= 4) || (dp->d_name[STRLEN(lang)] != '_'))
 		    continue;
 
-		if (strncmp(".dic", dp->d_name + strlen(dp->d_name) - 4, 4) != 0)
+		if (strncmp(".dic", dp->d_name + STRLEN(dp->d_name) - 4, 4) != 0)
 		    continue;
 
-		vim_strncpy(spf_name, HUNSPELLDICT, strlen(HUNSPELLDICT));
-		vim_strncpy(spf_name + strlen(HUNSPELLDICT), dp->d_name, strlen(HUNSPELLDICT));
+		vim_strncpy(spf_name, HUNSPELLDICT, STRLEN(HUNSPELLDICT));
+		vim_strncpy(spf_name + STRLEN(HUNSPELLDICT), dp->d_name, STRLEN(HUNSPELLDICT));
 
 		if (realpath(spf_name, resolvedlink) != resolvedlink)
 		    continue;
 
-		thisregion[0] = tolower(dp->d_name[strlen(lang)+1]);
-		thisregion[1] = tolower(dp->d_name[strlen(lang)+1+1]);
+		thisregion[0] = tolower(dp->d_name[STRLEN(lang)+1]);
+		thisregion[1] = tolower(dp->d_name[STRLEN(lang)+1+1]);
 
 		r = OK;
 
