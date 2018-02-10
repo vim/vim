@@ -1116,6 +1116,10 @@ free_all_mem(void)
     spell_free_all();
 # endif
 
+#if defined(FEAT_INS_EXPAND) && defined(FEAT_BEVAL_TERM)
+    ui_remove_balloon();
+# endif
+
 # if defined(FEAT_USR_CMDS)
     /* Clear user commands (before deleting buffers). */
     ex_comclear(NULL);
