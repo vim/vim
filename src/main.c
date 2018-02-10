@@ -1201,13 +1201,10 @@ main_loop(
 #ifdef FEAT_AUTOCMD
 	    /* Trigger TextChanged if b:changedtick differs. */
 	    if (!finish_op && has_textchanged()
-		    && last_changedtick != CHANGEDTICK(curbuf))
+		    && curbuf->b_last_changedtick != CHANGEDTICK(curbuf))
 	    {
-		if (last_changedtick_buf == curbuf)
-		    apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL,
-							       FALSE, curbuf);
-		last_changedtick_buf = curbuf;
-		last_changedtick = CHANGEDTICK(curbuf);
+		apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL, FALSE, curbuf);
+		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 	    }
 #endif
 

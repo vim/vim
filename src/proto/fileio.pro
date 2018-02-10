@@ -48,6 +48,7 @@ int has_cursormoved(void);
 int has_cursormovedI(void);
 int has_textchanged(void);
 int has_textchangedI(void);
+int has_textchangedP(void);
 int has_insertcharpre(void);
 int has_cmdundefined(void);
 int has_funcundefined(void);

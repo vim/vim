@@ -67,15 +67,6 @@ pum_compute_size(void)
 }
 
 /*
- * Return the minimum width of the popup menu.
- */
-    static int
-pum_get_width(void)
-{
-    return p_pw == 0 ? PUM_DEF_WIDTH : p_pw;
-}
-
-/*
  * Show the popup menu with items "array[size]".
  * "array" must remain valid until pum_undisplay() is called!
  * When possible the leftmost character is aligned with screen column "col".
@@ -102,7 +93,7 @@ pum_display(
 
     do
     {
-	def_width = pum_get_width();
+	def_width = p_pw;
 	above_row = 0;
 	below_row = cmdline_row;
 
@@ -225,10 +216,10 @@ pum_display(
 	if (def_width < max_width)
 	    def_width = max_width;
 
-	if (((col < Columns - pum_get_width() || col < Columns - max_width)
+	if (((col < Columns - p_pw || col < Columns - max_width)
 #ifdef FEAT_RIGHTLEFT
 		    && !curwin->w_p_rl)
-	       || (curwin->w_p_rl && (col > pum_get_width() || col > max_width)
+	       || (curwin->w_p_rl && (col > p_pw || col > max_width)
 #endif
 	   ))
 	{
@@ -244,17 +235,17 @@ pum_display(
 		pum_width = Columns - pum_col - pum_scrollbar;
 
 	    if (pum_width > max_width + pum_kind_width + pum_extra_width + 1
-						&& pum_width > pum_get_width())
+						&& pum_width > p_pw)
 	    {
 		/* the width is too much, make it narrower */
 		pum_width = max_width + pum_kind_width + pum_extra_width + 1;
-		if (pum_width < pum_get_width())
-		    pum_width = pum_get_width();
+		if (pum_width < p_pw)
+		    pum_width = p_pw;
 	    }
-	    else if (((col > pum_get_width() || col > max_width)
+	    else if (((col > p_pw || col > max_width)
 #ifdef FEAT_RIGHTLEFT
 			&& !curwin->w_p_rl)
-		|| (curwin->w_p_rl && (col < Columns - pum_get_width()
+		|| (curwin->w_p_rl && (col < Columns - p_pw
 			|| col < Columns - max_width)
 #endif
 		    ))
@@ -282,9 +273,9 @@ pum_display(
 #endif
 		    pum_width = pum_col - pum_scrollbar;
 
-		if (pum_width < pum_get_width())
+		if (pum_width < p_pw)
 		{
-		    pum_width = pum_get_width();
+		    pum_width = p_pw;
 #ifdef FEAT_RIGHTLEFT
 		    if (curwin->w_p_rl)
 		    {
@@ -300,12 +291,12 @@ pum_display(
 		}
 		else if (pum_width > max_width + pum_kind_width
 							  + pum_extra_width + 1
-			    && pum_width > pum_get_width())
+			    && pum_width > p_pw)
 		{
 		    pum_width = max_width + pum_kind_width
 							 + pum_extra_width + 1;
-		    if (pum_width < pum_get_width())
-			pum_width = pum_get_width();
+		    if (pum_width < p_pw)
+			pum_width = p_pw;
 		}
 	    }
 
@@ -323,8 +314,8 @@ pum_display(
 	}
 	else
 	{
-	    if (max_width > pum_get_width())
-		max_width = pum_get_width();	/* truncate */
+	    if (max_width > p_pw)
+		max_width = p_pw;	/* truncate */
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 		pum_col = max_width - 1;
