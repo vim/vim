@@ -3382,6 +3382,7 @@ mch_print_text_out(char_u *p, int len UNUSED)
 #ifdef FEAT_MBYTE
     int		in_ascii;
     int		half_width;
+    char_u	*tofree = NULL;
 #endif
 
     char_width = prt_char_width;
@@ -3507,19 +3508,15 @@ mch_print_text_out(char_u *p, int len UNUSED)
 
 #ifdef FEAT_MBYTE
     if (prt_do_conv)
-    {
 	/* Convert from multi-byte to 8-bit encoding */
-	p = string_convert(&prt_conv, p, &len);
-	if (p == NULL)
-	    p = (char_u *)"";
-    }
+	tofree = p = string_convert(&prt_conv, p, &len);
 
     if (prt_out_mbyte)
     {
 	/* Multi-byte character strings are represented more efficiently as hex
 	 * strings when outputting clean 8 bit PS.
 	 */
-	do
+	while (len-- > 0)
 	{
 	    ch = prt_hexchar[(unsigned)(*p) >> 4];
 	    ga_append(&prt_ps_buffer, ch);
@@ -3527,7 +3524,6 @@ mch_print_text_out(char_u *p, int len UNUSED)
 	    ga_append(&prt_ps_buffer, ch);
 	    p++;
 	}
-	while (--len);
     }
     else
 #endif
@@ -3574,8 +3570,7 @@ mch_print_text_out(char_u *p, int len UNUSED)
 
 #ifdef FEAT_MBYTE
     /* Need to free any translated characters */
-    if (prt_do_conv && (*p != NUL))
-	vim_free(p);
+    vim_free(tofree);
 #endif
 
     prt_text_run += char_width;
