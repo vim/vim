@@ -3153,6 +3153,8 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	    bg = cell.bg;
 	}
 	dcell = dict_alloc();
+	if (dcell == NULL)
+	    break;
 	list_append_dict(l, dcell);
 
 	dict_add_nr_str(dcell, "chars", 0, mbs);
