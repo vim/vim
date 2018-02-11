@@ -3085,6 +3085,8 @@ ex_call(exarg_T *eap)
 	    failed = TRUE;
 	    break;
 	}
+	if (has_watchexpr())
+	    dbg_check_breakpoint(eap);
 
 	/* Handle a function returning a Funcref, Dictionary or List. */
 	if (handle_subscript(&arg, &rettv, !eap->skip, TRUE) == FAIL)

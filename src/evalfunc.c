@@ -2991,9 +2991,7 @@ f_exepath(typval_T *argvars, typval_T *rettv)
 f_exists(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
-    char_u	*name;
     int		n = FALSE;
-    int		len = 0;
 
     p = get_tv_string(&argvars[0]);
     if (*p == '$')			/* environment variable */
@@ -3035,29 +3033,7 @@ f_exists(typval_T *argvars, typval_T *rettv)
     }
     else				/* internal variable */
     {
-	char_u	    *tofree;
-	typval_T    tv;
-
-	/* get_name_len() takes care of expanding curly braces */
-	name = p;
-	len = get_name_len(&p, &tofree, TRUE, FALSE);
-	if (len > 0)
-	{
-	    if (tofree != NULL)
-		name = tofree;
-	    n = (get_var_tv(name, len, &tv, NULL, FALSE, TRUE) == OK);
-	    if (n)
-	    {
-		/* handle d.key, l[idx], f(expr) */
-		n = (handle_subscript(&p, &tv, TRUE, FALSE) == OK);
-		if (n)
-		    clear_tv(&tv);
-	    }
-	}
-	if (*p != NUL)
-	    n = FALSE;
-
-	vim_free(tofree);
+	n = var_exists(p);
     }
 
     rettv->vval.v_number = n;

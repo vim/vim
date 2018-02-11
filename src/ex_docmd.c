@@ -1174,6 +1174,13 @@ do_cmdline(
 	    }
 	}
 
+	/* Check for the next breakpoint after a watchexpression */
+	if (breakpoint != NULL && has_watchexpr())
+	{
+	    *breakpoint = dbg_find_breakpoint(FALSE, fname, sourcing_lnum);
+	    *dbg_tick = debug_tick;
+	}
+
 	/*
 	 * When not inside any ":while" loop, clear remembered lines.
 	 */

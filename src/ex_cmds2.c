@@ -73,6 +73,16 @@ static void do_setdebugtracelevel(char_u *arg);
 static void do_checkbacktracelevel(void);
 static void do_showbacktrace(char_u *cmd);
 
+static char_u *debug_oldval = NULL;	/* old and newval for debug expressions */
+static char_u *debug_newval = NULL;
+static int     debug_expr   = 0;        /* use debug_expr */
+
+    int
+has_watchexpr(void)
+{
+    return debug_expr;
+}
+
 /*
  * do_debug(): Debug mode.
  * Repeatedly get Ex commands, until told to continue normal execution.
@@ -135,13 +145,24 @@ do_debug(char_u *cmd)
 
     if (!debug_did_msg)
 	MSG(_("Entering Debug mode.  Type \"cont\" to continue."));
+    if (debug_oldval != NULL)
+    {
+	smsg((char_u *)_("Oldval = \"%s\""), debug_oldval);
+	vim_free(debug_oldval);
+	debug_oldval = NULL;
+    }
+    if (debug_newval != NULL)
+    {
+	smsg((char_u *)_("Newval = \"%s\""), debug_newval);
+	vim_free(debug_newval);
+	debug_newval = NULL;
+    }
     if (sourcing_name != NULL)
 	msg(sourcing_name);
     if (sourcing_lnum != 0)
 	smsg((char_u *)_("line %ld: %s"), (long)sourcing_lnum, cmd);
     else
 	smsg((char_u *)_("cmd: %s"), cmd);
-
     /*
      * Repeat getting a command and executing it.
      */
@@ -528,11 +549,15 @@ dbg_check_skipped(exarg_T *eap)
 struct debuggy
 {
     int		dbg_nr;		/* breakpoint number */
-    int		dbg_type;	/* DBG_FUNC or DBG_FILE */
-    char_u	*dbg_name;	/* function or file name */
+    int		dbg_type;	/* DBG_FUNC, DBG_FILE or DBG_EXPR */
+    char_u	*dbg_name;	/* function, expression or file name */
     regprog_T	*dbg_prog;	/* regexp program */
     linenr_T	dbg_lnum;	/* line number in function or file */
     int		dbg_forceit;	/* ! used */
+#ifdef FEAT_EVAL
+    typval_T    *dbg_val;       /* last result of watchexpression */
+#endif
+    int		dbg_level;      /* stored nested level for expr */
 };
 
 static garray_T dbg_breakp = {0, 0, sizeof(struct debuggy), 4, NULL};
@@ -546,6 +571,7 @@ static garray_T prof_ga = {0, 0, sizeof(struct debuggy), 4, NULL};
 #endif
 #define DBG_FUNC	1
 #define DBG_FILE	2
+#define DBG_EXPR	3
 
 static int dbg_parsearg(char_u *arg, garray_T *gap);
 static linenr_T debuggy_find(int file,char_u *fname, linenr_T after, garray_T *gap, int *fp);
@@ -589,6 +615,12 @@ dbg_parsearg(
 	bp->dbg_type = DBG_FILE;
 	here = TRUE;
     }
+    else if (
+#ifdef FEAT_PROFILE
+	    gap != &prof_ga &&
+#endif
+	    STRNCMP(p, "expr", 4) == 0)
+	bp->dbg_type = DBG_EXPR;
     else
     {
 	EMSG2(_(e_invarg2), p);
@@ -624,6 +656,12 @@ dbg_parsearg(
 	bp->dbg_name = vim_strsave(p);
     else if (here)
 	bp->dbg_name = vim_strsave(curbuf->b_ffname);
+    else if (bp->dbg_type == DBG_EXPR)
+    {
+	bp->dbg_name = vim_strsave(p);
+	if (bp->dbg_name != NULL)
+	    bp->dbg_val = eval_expr(bp->dbg_name, NULL);
+    }
     else
     {
 	/* Expand the file name in the same way as do_source().  This means
@@ -671,26 +709,35 @@ ex_breakadd(exarg_T *eap)
 	bp = &DEBUGGY(gap, gap->ga_len);
 	bp->dbg_forceit = eap->forceit;
 
-	pat = file_pat_to_reg_pat(bp->dbg_name, NULL, NULL, FALSE);
-	if (pat != NULL)
+	if (bp->dbg_type != DBG_EXPR)
 	{
-	    bp->dbg_prog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
-	    vim_free(pat);
+	    pat = file_pat_to_reg_pat(bp->dbg_name, NULL, NULL, FALSE);
+	    if (pat != NULL)
+	    {
+		bp->dbg_prog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+		vim_free(pat);
+	    }
+	    if (pat == NULL || bp->dbg_prog == NULL)
+		vim_free(bp->dbg_name);
+	    else
+	    {
+		if (bp->dbg_lnum == 0)	/* default line number is 1 */
+		    bp->dbg_lnum = 1;
+#ifdef FEAT_PROFILE
+		if (eap->cmdidx != CMD_profile)
+#endif
+		{
+		    DEBUGGY(gap, gap->ga_len).dbg_nr = ++last_breakp;
+		    ++debug_tick;
+		}
+		++gap->ga_len;
+	    }
 	}
-	if (pat == NULL || bp->dbg_prog == NULL)
-	    vim_free(bp->dbg_name);
 	else
 	{
-	    if (bp->dbg_lnum == 0)	/* default line number is 1 */
-		bp->dbg_lnum = 1;
-#ifdef FEAT_PROFILE
-	    if (eap->cmdidx != CMD_profile)
-#endif
-	    {
-		DEBUGGY(gap, gap->ga_len).dbg_nr = ++last_breakp;
-		++debug_tick;
-	    }
-	    ++gap->ga_len;
+	    /* DBG_EXPR */
+	    DEBUGGY(gap, gap->ga_len++).dbg_nr = ++last_breakp;
+	    ++debug_tick;
 	}
     }
 }
@@ -750,7 +797,7 @@ ex_breakdel(exarg_T *eap)
     }
     else
     {
-	/* ":breakdel {func|file} [lnum] {name}" */
+	/* ":breakdel {func|file|expr} [lnum] {name}" */
 	if (dbg_parsearg(eap->arg, gap) == FAIL)
 	    return;
 	bp = &DEBUGGY(gap, gap->ga_len);
@@ -778,6 +825,11 @@ ex_breakdel(exarg_T *eap)
 	while (gap->ga_len > 0)
 	{
 	    vim_free(DEBUGGY(gap, todel).dbg_name);
+#ifdef FEAT_EVAL
+	    if (DEBUGGY(gap, todel).dbg_type == DBG_EXPR
+		    && DEBUGGY(gap, todel).dbg_val != NULL)
+		free_tv(DEBUGGY(gap, todel).dbg_val);
+#endif
 	    vim_regfree(DEBUGGY(gap, todel).dbg_prog);
 	    --gap->ga_len;
 	    if (todel < gap->ga_len)
@@ -814,11 +866,15 @@ ex_breaklist(exarg_T *eap UNUSED)
 	    bp = &BREAKP(i);
 	    if (bp->dbg_type == DBG_FILE)
 		home_replace(NULL, bp->dbg_name, NameBuff, MAXPATHL, TRUE);
-	    smsg((char_u *)_("%3d  %s %s  line %ld"),
+	    if (bp->dbg_type != DBG_EXPR)
+		smsg((char_u *)_("%3d  %s %s  line %ld"),
 		    bp->dbg_nr,
 		    bp->dbg_type == DBG_FUNC ? "func" : "file",
 		    bp->dbg_type == DBG_FUNC ? bp->dbg_name : NameBuff,
 		    (long)bp->dbg_lnum);
+	    else
+		smsg((char_u *)_("%3d  expr %s"),
+		    bp->dbg_nr, bp->dbg_name);
 	}
 }
 
@@ -889,7 +945,8 @@ debuggy_find(
 	/* Skip entries that are not useful or are for a line that is beyond
 	 * an already found breakpoint. */
 	bp = &DEBUGGY(gap, i);
-	if (((bp->dbg_type == DBG_FILE) == file && (
+	if (((bp->dbg_type == DBG_FILE) == file &&
+		bp->dbg_type != DBG_EXPR && (
 #ifdef FEAT_PROFILE
 		gap == &prof_ga ||
 #endif
@@ -910,6 +967,66 @@ debuggy_find(
 	    }
 	    got_int |= prev_got_int;
 	}
+#ifdef FEAT_EVAL
+	else if (bp->dbg_type == DBG_EXPR)
+	{
+	    typval_T *tv;
+	    int	      line = FALSE;
+
+	    prev_got_int = got_int;
+	    got_int = FALSE;
+
+	    tv = eval_expr(bp->dbg_name, NULL);
+	    if (tv != NULL)
+	    {
+		if (bp->dbg_val == NULL)
+		{
+		    debug_oldval = typval_tostring(NULL);
+		    bp->dbg_val = tv;
+		    debug_newval = typval_tostring(bp->dbg_val);
+		    line = TRUE;
+		}
+		else
+		{
+		    typval_T  val3;
+
+		    if (typval_copy(bp->dbg_val, &val3) == OK)
+		    {
+			if (typval_compare(tv, &val3, TYPE_EQUAL,
+						       TRUE, FALSE, TRUE) == OK
+				&& tv->vval.v_number == FALSE)
+			{
+			    typval_T *v;
+
+			    line = TRUE;
+			    debug_oldval = typval_tostring(bp->dbg_val);
+			    v = eval_expr(bp->dbg_name, NULL);
+			    debug_newval = typval_tostring(v);
+			    free_tv(bp->dbg_val);
+			    bp->dbg_val = v;
+			}
+		    }
+		    free_tv(tv);
+		}
+	    }
+	    else if (bp->dbg_val != NULL)
+	    {
+		debug_oldval = typval_tostring(bp->dbg_val);
+		debug_newval = typval_tostring(NULL);
+		free_tv(bp->dbg_val);
+		bp->dbg_val = NULL;
+		line = TRUE;
+	    }
+
+	    if (line)
+	    {
+		lnum = after > 0 ? after : 1;
+		break;
+	    }
+
+	    got_int |= prev_got_int;
+	}
+#endif
     }
     if (name != fname)
 	vim_free(name);
