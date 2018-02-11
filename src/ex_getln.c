@@ -5315,8 +5315,9 @@ ExpandUserDefined(
     char_u	*retstr;
     char_u	*s;
     char_u	*e;
-    char_u      keep;
+    int		keep;
     garray_T	ga;
+    int		skip;
 
     retstr = call_user_expand_func(call_func_retstr, xp, num_file, file);
     if (retstr == NULL)
@@ -5329,23 +5330,19 @@ ExpandUserDefined(
 	if (e == NULL)
 	    e = s + STRLEN(s);
 	keep = *e;
-	*e = 0;
+	*e = NUL;
 
-	if (xp->xp_pattern[0] && vim_regexec(regmatch, s, (colnr_T)0) == 0)
+	skip = xp->xp_pattern[0] && vim_regexec(regmatch, s, (colnr_T)0) == 0;
+	*e = keep;
+
+	if (!skip)
 	{
-	    *e = keep;
-	    if (*e != NUL)
-		++e;
-	    continue;
+	    if (ga_grow(&ga, 1) == FAIL)
+		break;
+	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, (int)(e - s));
+	    ++ga.ga_len;
 	}
 
-	if (ga_grow(&ga, 1) == FAIL)
-	    break;
-
-	((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, (int)(e - s));
-	++ga.ga_len;
-
-	*e = keep;
 	if (*e != NUL)
 	    ++e;
     }
