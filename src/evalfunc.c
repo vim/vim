@@ -4871,8 +4871,13 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 	return;
     list_append_number(rettv->vval.v_list, (varnumber_T)wp->w_jumplistidx);
 
+    cleanup_jumplist(wp);
     for (i = 0; i < wp->w_jumplistlen; ++i)
     {
+	if (wp->w_jumplist[i].fmark.mark.lnum == 0)
+	    continue;
+	if (wp->w_jumplist[i].fmark.fnum == 0)
+	    fname2fnum(&wp->w_jumplist[i]);
 	if ((d = dict_alloc()) == NULL)
 	    return;
 	if (list_append_dict(l, d) == FAIL)
@@ -4886,7 +4891,7 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 		NULL);
 # endif
 	dict_add_nr_str(d, "bufnr", (long)wp->w_jumplist[i].fmark.fnum, NULL);
-	if (wp->w_jumplist[i].fmark.fnum == 0)
+	if (wp->w_jumplist[i].fname != NULL)
 	    dict_add_nr_str(d, "filename", 0L, wp->w_jumplist[i].fname);
     }
 #endif
