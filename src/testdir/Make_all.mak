@@ -75,6 +75,7 @@ NEW_TESTS = test_arabic.res \
 	    test_breakindent.res \
 	    test_bufwintabinfo.res \
 	    test_cdo.res \
+	    test_changelist.res \
 	    test_channel.res \
 	    test_charsearch.res \
 	    test_cindent.res \
