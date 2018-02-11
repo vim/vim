@@ -1557,7 +1557,13 @@ WaitForChar(long msec, int ignore_input)
 	    if (ir.EventType == FOCUS_EVENT)
 		handle_focus_event(ir);
 	    else if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
-		shell_resized();
+	    {
+		/* Only call shell_resized() when the size actually change to
+		 * avoid the screen is cleard. */
+		if (ir.Event.WindowBufferSizeEvent.dwSize.X != Columns
+			|| ir.Event.WindowBufferSizeEvent.dwSize.Y != Rows)
+		    shell_resized();
+	    }
 #ifdef FEAT_MOUSE
 	    else if (ir.EventType == MOUSE_EVENT
 		    && decode_mouse_event(&ir.Event.MouseEvent))
