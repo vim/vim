@@ -1668,6 +1668,8 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     v_event = get_vim_var_dict(VV_EVENT);
 
     list = list_alloc();
+    if (list == NULL)
+	return;
     for (n = 0; n < reg->y_size; n++)
 	list_append_string(list, reg->y_array[n], -1);
     list->lv_lock = VAR_FIXED;
