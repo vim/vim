@@ -8335,7 +8335,6 @@ ex_smile(exarg_T *eap UNUSED)
     msg_clr_eos();
 }
 
-#if defined(FEAT_GUI) || defined(FEAT_CLIENTSERVER) || defined(PROTO)
 /*
  * ":drop"
  * Opens the first argument in a window.  When there are two or more arguments
@@ -8415,7 +8414,6 @@ ex_drop(exarg_T *eap)
 	ex_rewind(eap);
     }
 }
-#endif
 
 /*
  * Skip over the pattern argument of ":vimgrep /pat/[g][j]".

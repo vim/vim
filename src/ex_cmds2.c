@@ -2549,7 +2549,6 @@ get_arglist_exp(
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(FEAT_CLIENTSERVER) || defined(PROTO)
 /*
  * Redefine the argument list.
  */
@@ -2558,7 +2557,6 @@ set_arglist(char_u *str)
 {
     do_arglist(str, AL_SET, 0);
 }
-#endif
 
 /*
  * "what" == AL_SET: Redefine the argument list to 'str'.
