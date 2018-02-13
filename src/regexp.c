@@ -5585,9 +5585,14 @@ regmatch(
 		    {
 #ifdef FEAT_MBYTE
 			if (has_mbyte)
+			{
+			    char_u *line =
+					 reg_getline(behind_pos.rs_u.pos.lnum);
+
 			    rp->rs_un.regsave.rs_u.pos.col -=
-				(*mb_head_off)(regline, regline
+				(*mb_head_off)(line, line
 				    + rp->rs_un.regsave.rs_u.pos.col - 1) + 1;
+			}
 			else
 #endif
 			    --rp->rs_un.regsave.rs_u.pos.col;
