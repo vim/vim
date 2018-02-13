@@ -221,7 +221,7 @@ movemark(int count)
     pos_T	*pos;
     xfmark_T	*jmp;
 
-    cleanup_jumplist(curwin);
+    cleanup_jumplist(curwin, TRUE);
 
     if (curwin->w_jumplistlen == 0)	    /* nothing to jump to */
 	return (pos_T *)NULL;
@@ -891,7 +891,7 @@ ex_jumps(exarg_T *eap UNUSED)
     int		i;
     char_u	*name;
 
-    cleanup_jumplist(curwin);
+    cleanup_jumplist(curwin, TRUE);
 
     /* Highlight title */
     MSG_PUTS_TITLE(_("\n jump line  col file/text"));
@@ -899,8 +899,6 @@ ex_jumps(exarg_T *eap UNUSED)
     {
 	if (curwin->w_jumplist[i].fmark.mark.lnum != 0)
 	{
-	    if (curwin->w_jumplist[i].fmark.fnum == 0)
-		fname2fnum(&curwin->w_jumplist[i]);
 	    name = fm_getname(&curwin->w_jumplist[i].fmark, 16);
 	    if (name == NULL)	    /* file name not available */
 		continue;
@@ -1303,12 +1301,27 @@ mark_col_adjust(
 /*
  * When deleting lines, this may create duplicate marks in the
  * jumplist. They will be removed here for the specified window.
+ * When "loadfiles" is TRUE first ensure entries have the "fnum" field set
+ * (this may be a bit slow).
  */
     void
-cleanup_jumplist(win_T *wp)
+cleanup_jumplist(win_T *wp, int loadfiles)
 {
     int	    i;
     int	    from, to;
+
+    if (loadfiles)
+    {
+	/* If specified, load all the files from the jump list. This is
+	 * needed to properly clean up duplicate entries, but will take some
+	 * time. */
+	for (i = 0; i < wp->w_jumplistlen; ++i)
+	{
+	    if ((wp->w_jumplist[i].fmark.fnum == 0) &&
+		    (wp->w_jumplist[i].fmark.mark.lnum != 0))
+		fname2fnum(&wp->w_jumplist[i]);
+	}
+    }
 
     to = 0;
     for (from = 0; from < wp->w_jumplistlen; ++from)
@@ -1738,7 +1751,7 @@ write_viminfo_filemarks(FILE *fp)
     /* Write the jumplist with -' */
     fputs(_("\n# Jumplist (newest first):\n"), fp);
     setpcmark();	/* add current cursor position */
-    cleanup_jumplist(curwin);
+    cleanup_jumplist(curwin, FALSE);
     vi_idx = 0;
     idx = curwin->w_jumplistlen - 1;
     for (i = 0; i < JUMPLISTSIZE; ++i)

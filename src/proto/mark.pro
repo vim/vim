@@ -24,7 +24,7 @@ void mark_adjust_nofold(linenr_T line1, linenr_T line2, long amount, long amount
 void mark_col_adjust(linenr_T lnum, colnr_T mincol, long lnum_amount, long col_amount);
 void copy_jumplist(win_T *from, win_T *to);
 void free_jumplist(win_T *wp);
-void cleanup_jumplist(win_T *wp);
+void cleanup_jumplist(win_T *wp, int loadfiles);
 void set_last_cursor(win_T *win);
 void free_all_marks(void);
 int read_viminfo_filemark(vir_T *virp, int force);
