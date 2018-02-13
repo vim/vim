@@ -165,6 +165,7 @@ static void f_get(typval_T *argvars, typval_T *rettv);
 static void f_getbufinfo(typval_T *argvars, typval_T *rettv);
 static void f_getbufline(typval_T *argvars, typval_T *rettv);
 static void f_getbufvar(typval_T *argvars, typval_T *rettv);
+static void f_getchangelist(typval_T *argvars, typval_T *rettv);
 static void f_getchar(typval_T *argvars, typval_T *rettv);
 static void f_getcharmod(typval_T *argvars, typval_T *rettv);
 static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
@@ -607,6 +608,7 @@ static struct fst
     {"getbufinfo",	0, 1, f_getbufinfo},
     {"getbufline",	2, 3, f_getbufline},
     {"getbufvar",	2, 3, f_getbufvar},
+    {"getchangelist",	1, 1, f_getchangelist},
     {"getchar",		0, 1, f_getchar},
     {"getcharmod",	0, 0, f_getcharmod},
     {"getcharsearch",	0, 0, f_getcharsearch},
@@ -4346,6 +4348,58 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
     --emsg_off;
 }
 
+/*
+ * "getchangelist()" function
+ */
+    static void
+f_getchangelist(typval_T *argvars, typval_T *rettv)
+{
+#ifdef FEAT_JUMPLIST
+    buf_T	*buf;
+    int		i;
+    list_T	*l;
+    dict_T	*d;
+#endif
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
+#ifdef FEAT_JUMPLIST
+    buf = find_buffer(&argvars[0]);
+    if (buf == NULL)
+	return;
+
+    l = list_alloc();
+    if (l == NULL)
+	return;
+
+    if (list_append_list(rettv->vval.v_list, l) == FAIL)
+	return;
+    /*
+     * The current window change list index tracks only the position in the
+     * current buffer change list. For other buffers, use the change list
+     * length as the current index.
+     */
+    list_append_number(rettv->vval.v_list,
+	    (varnumber_T)((buf == curwin->w_buffer)
+		? curwin->w_changelistidx : buf->b_changelistlen));
+
+    for (i = 0; i < buf->b_changelistlen; ++i)
+    {
+	if (buf->b_changelist[i].lnum == 0)
+	    continue;
+	if ((d = dict_alloc()) == NULL)
+	    return;
+	if (list_append_dict(l, d) == FAIL)
+	    return;
+	dict_add_nr_str(d, "lnum", (long)buf->b_changelist[i].lnum, NULL);
+	dict_add_nr_str(d, "col", (long)buf->b_changelist[i].col, NULL);
+# ifdef FEAT_VIRTUALEDIT
+	dict_add_nr_str(d, "coladd", (long)buf->b_changelist[i].coladd, NULL);
+# endif
+    }
+#endif
+}
 /*
  * "getchar()" function
  */
