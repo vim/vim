@@ -1176,6 +1176,11 @@ win_update(win_T *wp)
      */
     if (term_update_window(wp) == OK)
     {
+# ifdef FEAT_MENU
+	/* Draw the window toolbar, if there is one. */
+	if (winbar_height(wp) > 0)
+	    redraw_win_toolbar(wp);
+# endif
 	wp->w_redr_type = 0;
 	return;
     }
