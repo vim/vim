@@ -2880,8 +2880,18 @@ do_one_cmd(
     }
 #endif
 
+    /* The :try command saves the emsg_silent flag, reset it here when
+     * ":silent! try" was used, it should only apply to :try itself. */
+    if (ea.cmdidx == CMD_try && did_esilent > 0)
+    {
+	emsg_silent -= did_esilent;
+	if (emsg_silent < 0)
+	    emsg_silent = 0;
+	did_esilent = 0;
+    }
+
 /*
- * 7. Switch on command name.
+ * 7. Execute the command.
  *
  * The "ea" structure holds the arguments that can be used.
  */
