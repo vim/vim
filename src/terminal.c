@@ -475,9 +475,12 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
 	channel_set_nonblock(term->tl_job->jv_channel, PART_IN);
 
 #ifdef FEAT_AUTOCMD
-	++curbuf->b_locked;
-	apply_autocmds(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf);
-	--curbuf->b_locked;
+	if (!opt->jo_hidden)
+	{
+	    ++curbuf->b_locked;
+	    apply_autocmds(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf);
+	    --curbuf->b_locked;
+	}
 #endif
 
 	if (old_curbuf != NULL)
