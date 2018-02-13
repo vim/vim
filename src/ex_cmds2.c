@@ -988,23 +988,20 @@ debuggy_find(
 		}
 		else
 		{
-		    typval_T  val3;
-
-		    if (typval_copy(bp->dbg_val, &val3) == OK)
+		    if (typval_compare(tv, bp->dbg_val, TYPE_EQUAL,
+							     TRUE, FALSE) == OK
+			    && tv->vval.v_number == FALSE)
 		    {
-			if (typval_compare(tv, &val3, TYPE_EQUAL,
-						       TRUE, FALSE, TRUE) == OK
-				&& tv->vval.v_number == FALSE)
-			{
-			    typval_T *v;
+			typval_T *v;
 
-			    line = TRUE;
-			    debug_oldval = typval_tostring(bp->dbg_val);
-			    v = eval_expr(bp->dbg_name, NULL);
-			    debug_newval = typval_tostring(v);
-			    free_tv(bp->dbg_val);
-			    bp->dbg_val = v;
-			}
+			line = TRUE;
+			debug_oldval = typval_tostring(bp->dbg_val);
+			/* Need to evaluate again, typval_compare() overwrites
+			 * "tv". */
+			v = eval_expr(bp->dbg_name, NULL);
+			debug_newval = typval_tostring(v);
+			free_tv(bp->dbg_val);
+			bp->dbg_val = v;
 		    }
 		    free_tv(tv);
 		}
