@@ -4365,7 +4365,10 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
 	return;
 
 #ifdef FEAT_JUMPLIST
-    buf = find_buffer(&argvars[0]);
+    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    ++emsg_off;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    --emsg_off;
     if (buf == NULL)
 	return;
 
