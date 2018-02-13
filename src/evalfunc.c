@@ -44,6 +44,7 @@ static void f_argc(typval_T *argvars, typval_T *rettv);
 static void f_argidx(typval_T *argvars, typval_T *rettv);
 static void f_arglistid(typval_T *argvars, typval_T *rettv);
 static void f_argv(typval_T *argvars, typval_T *rettv);
+static void f_assert_beeps(typval_T *argvars, typval_T *rettv);
 static void f_assert_equal(typval_T *argvars, typval_T *rettv);
 static void f_assert_exception(typval_T *argvars, typval_T *rettv);
 static void f_assert_fails(typval_T *argvars, typval_T *rettv);
@@ -483,6 +484,7 @@ static struct fst
 #ifdef FEAT_FLOAT
     {"asin",		1, 1, f_asin},	/* WJMc */
 #endif
+    {"assert_beeps",	1, 2, f_assert_beeps},
     {"assert_equal",	2, 3, f_assert_equal},
     {"assert_exception", 1, 2, f_assert_exception},
     {"assert_fails",	1, 2, f_assert_fails},
@@ -1272,6 +1274,15 @@ f_argv(typval_T *argvars, typval_T *rettv)
 	for (idx = 0; idx < ARGCOUNT; ++idx)
 	    list_append_string(rettv->vval.v_list,
 					       alist_name(&ARGLIST[idx]), -1);
+}
+
+/*
+ * "assert_beeps(cmd [, error])" function
+ */
+    static void
+f_assert_beeps(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    assert_beeps(argvars);
 }
 
 /*

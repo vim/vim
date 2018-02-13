@@ -181,6 +181,7 @@ EXTERN dict_T	globvardict;		    /* Dictionary with g: variables */
 EXTERN int	did_emsg;		    /* set by emsg() when the message
 					       is displayed or thrown */
 #ifdef FEAT_EVAL
+EXTERN int	called_vim_beep;	    /* set if vim_beep() is called */
 EXTERN int	did_uncaught_emsg;	    /* emsg() was called and did not
 					       cause an exception */
 #endif

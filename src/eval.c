@@ -8942,6 +8942,29 @@ assert_exception(typval_T *argvars)
 }
 
     void
+assert_beeps(typval_T *argvars)
+{
+    char_u	*cmd = get_tv_string_chk(&argvars[0]);
+    garray_T	ga;
+
+    called_vim_beep = FALSE;
+    suppress_errthrow = TRUE;
+    emsg_silent = FALSE;
+    do_cmdline_cmd(cmd);
+    if (!called_vim_beep)
+    {
+	prepare_assert_error(&ga);
+	ga_concat(&ga, (char_u *)"command did not beep: ");
+	ga_concat(&ga, cmd);
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
+
+    suppress_errthrow = FALSE;
+    emsg_on_display = FALSE;
+}
+
+    void
 assert_fails(typval_T *argvars)
 {
     char_u	*cmd = get_tv_string_chk(&argvars[0]);

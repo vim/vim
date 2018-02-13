@@ -127,6 +127,7 @@ void assert_inrange(typval_T *argvars);
 void assert_bool(typval_T *argvars, int isTrue);
 void assert_report(typval_T *argvars);
 void assert_exception(typval_T *argvars);
+void assert_beeps(typval_T *argvars);
 void assert_fails(typval_T *argvars);
 void fill_assert_error(garray_T *gap, typval_T *opt_msg_tv, char_u *exp_str, typval_T *exp_tv, typval_T *got_tv, assert_type_T atype);
 int typval_compare(typval_T *typ1, typval_T *typ2, exptype_T type, int type_is, int ic, int evaluate);
