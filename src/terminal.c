@@ -43,7 +43,6 @@
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
  * - Trigger TerminalOpen event?  #2422  patch in #2484
- * - Shift-Tab does not work.
  * - after resizing windows overlap. (Boris Staletic, #2164)
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
@@ -869,6 +868,8 @@ term_convert_key(term_T *term, int c, char *buf)
 	case K_S_UP:		mod = VTERM_MOD_SHIFT;
 				key = VTERM_KEY_UP; break;
 	case TAB:		key = VTERM_KEY_TAB; break;
+	case K_S_TAB:		mod = VTERM_MOD_SHIFT;
+				key = VTERM_KEY_TAB; break;
 
 	case K_MOUSEUP:		other = term_send_mouse(vterm, 5, 1); break;
 	case K_MOUSEDOWN:	other = term_send_mouse(vterm, 4, 1); break;
