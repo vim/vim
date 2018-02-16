@@ -5528,11 +5528,11 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
     if (pty_master_fd >= 0)
 	close(pty_slave_fd); /* not used in the parent */
     /* close child stdin, stdout and stderr */
-    if (!use_file_for_in && fd_in[0] >= 0)
+    if (fd_in[0] >= 0)
 	close(fd_in[0]);
-    if (!use_file_for_out && fd_out[1] >= 0)
+    if (fd_out[1] >= 0)
 	close(fd_out[1]);
-    if (!use_out_for_err && !use_file_for_err && fd_err[1] >= 0)
+    if (fd_err[1] >= 0)
 	close(fd_err[1]);
     if (channel != NULL)
     {
