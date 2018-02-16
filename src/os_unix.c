@@ -4542,6 +4542,11 @@ mch_call_shell(
 	    reset_signals();		/* handle signals normally */
 	    UNBLOCK_SIGNALS(&curset);
 
+# ifdef FEAT_JOB_CHANNEL
+	    if (ch_log_active())
+		ch_logfile((char_u *)"", (char_u *)"");
+# endif
+
 	    if (!show_shell_mess || (options & SHELL_EXPAND))
 	    {
 		int fd;
@@ -5400,6 +5405,11 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	 * children can be kill()ed.  Don't do this when using pipes,
 	 * because stdin is not a tty, we would lose /dev/tty. */
 	(void)setsid();
+# endif
+
+# ifdef FEAT_JOB_CHANNEL
+	if (ch_log_active())
+	    ch_logfile((char_u *)"", (char_u *)"");
 # endif
 
 # ifdef FEAT_TERMINAL
