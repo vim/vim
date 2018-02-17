@@ -252,26 +252,30 @@ pum_display(
 	    {
 		/* align right pum edge with "col" */
 #ifdef FEAT_RIGHTLEFT
-		if (curwin->w_p_rl)
+		if (curwin->w_p_rl
+			&& col < max_width + pum_scrollbar + 1)
 		{
 		    pum_col = col + max_width + pum_scrollbar + 1;
 		    if (pum_col >= Columns)
 			pum_col = Columns - 1;
 		}
-		else
+		else if (!curwin->w_p_rl)
 #endif
 		{
-		    pum_col = col - max_width - pum_scrollbar;
-		    if (pum_col < 0)
-			pum_col = 0;
+		    if (col > Columns - max_width - pum_scrollbar)
+		    {
+			pum_col = Columns - max_width - pum_scrollbar;
+			if (pum_col < 0)
+			    pum_col = 0;
+		    }
 		}
 
 #ifdef FEAT_RIGHTLEFT
 		if (curwin->w_p_rl)
-		    pum_width = W_ENDCOL(curwin) - pum_col - pum_scrollbar + 1;
+		    pum_width = pum_col - pum_scrollbar + 1;
 		else
 #endif
-		    pum_width = pum_col - pum_scrollbar;
+		    pum_width = Columns - pum_col - pum_scrollbar;
 
 		if (pum_width < p_pw)
 		{
