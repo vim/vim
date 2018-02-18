@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 10
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2020,6 +2020,8 @@ argv()				List	the argument list
 assert_beeps({cmd})		none	assert {cmd} causes a beep
 assert_equal({exp}, {act} [, {msg}])
 				none	assert {exp} is equal to {act}
+assert_equalfile({fname-one}, {fname-two})
+				none	assert file contents is equal
 assert_exception({error} [, {msg}])
 				none	assert {error} is in v:exception
 assert_fails({cmd} [, {error}])	none	assert {cmd} fails
@@ -2410,6 +2412,12 @@ tagfiles()			List	tags files used
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
+term_dumpdiff({filename}, {filename} [, {options}])
+				Number  display difference between two dumps
+term_dumpload({filename} [, {options}])
+				Number	displaying a screen dump
+term_dumpwrite({buf}, {filename} [, {max-height} [, {max-width}]])
+				none	dump terminal window contents
 term_getaltscreen({buf})	Number	get the alternate screen flag
 term_getattr({attr}, {what})	Number	get the value of attribute {what}
 term_getcursor({buf})		List	get the cursor position of a terminal
@@ -2589,6 +2597,14 @@ assert_equal({expected}, {actual} [, {msg}])
 	assert_equal('foo', 'bar')
 <		Will result in a string to be added to |v:errors|:
 	test.vim line 12: Expected 'foo' but got 'bar' ~
+
+							*assert_equalfile()*
+assert_equalfile({fname-one}, {fname-two})
+		When the files {fname-one} and {fname-two} do not contain
+		exactly the same text an error message is added to |v:errors|.
+		When {fname-one} or {fname-two} does not exist the error will
+		mention that.
+		Mainly useful with |terminal-diff|.
 
 assert_exception({error} [, {msg}])			*assert_exception()*
 		When v:exception does not contain the string {error} an error
@@ -4587,8 +4603,7 @@ getftype({fname})					*getftype()*
 		"file" are returned.  On MS-Windows a symbolic link to a
 		directory returns "dir" instead of "link".
 
-							*getjumplist()*
-getjumplist([{winnr} [, {tabnr}]])
+getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 		Returns the |jumplist| for the specified window.
 
 		Without arguments use the current window.
@@ -8134,6 +8149,53 @@ tempname()					*tempname()* *temp-file-name*
 <		For Unix, the file will be in a private directory |tempfile|.
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
+
+							*term_dumpdiff()*
+term_dumpdiff({filename}, {filename} [, {options}])
+		Open a new window displaying the difference between the two
+		files.  The files must have been created with
+		|term_dumpwrite()|.
+		Returns the buffer number or zero when the diff fails.
+		Also see |terminal-diff|.
+		NOTE: this does not work with double-width characters yet.
+
+		The top part of the buffer contains the contents of the first
+		file, the bottom part of the buffer contains the contents of
+		the second file.  The middle part shows the differences.
+		The parts are separated by a line of dashes.
+
+		{options} are not implemented yet.
+
+		Each character in the middle part indicates a difference. If
+		there are multiple differences only the first in this list is
+		used:
+			X	different character
+			w	different width
+			f	different foreground color
+			b	different background color
+			a	different attribute
+			+	missing position in first file
+			-	missing position in second file
+
+		Using the "s" key the top and bottom parts are swapped.  This
+		makes it easy to spot a difference.
+
+							*term_dumpload()*
+term_dumpload({filename} [, {options}])
+		Open a new window displaying the contents of {filename}
+		The file must have been created with |term_dumpwrite()|.
+		Returns the buffer number or zero when it fails.
+		Also see |terminal-diff|.
+
+		{options} are not implemented yet.
+
+							*term_dumpwrite()*
+term_dumpwrite({buf}, {filename} [, {max-height} [, {max-width}]])
+		Dump the contents of the terminal screen of {buf} in the file
+		{filename}.  This uses a format that can be used with
+		|term_dumpread()| and |term_dumpdiff()|.
+		If {filename} already exists an error is given.	*E953*
+		Also see |terminal-diff|.
 
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate

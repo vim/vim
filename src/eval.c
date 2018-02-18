@@ -8834,6 +8834,73 @@ assert_equal_common(typval_T *argvars, assert_type_T atype)
 }
 
     void
+assert_equalfile(typval_T *argvars)
+{
+    char_u	buf1[NUMBUFLEN];
+    char_u	buf2[NUMBUFLEN];
+    char_u	*fname1 = get_tv_string_buf_chk(&argvars[0], buf1);
+    char_u	*fname2 = get_tv_string_buf_chk(&argvars[1], buf2);
+    garray_T	ga;
+    FILE	*fd1;
+    FILE	*fd2;
+
+    if (fname1 == NULL || fname2 == NULL)
+	return;
+
+    IObuff[0] = NUL;
+    fd1 = mch_fopen((char *)fname1, READBIN);
+    if (fd1 == NULL)
+    {
+	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_notread, fname1);
+    }
+    else
+    {
+	fd2 = mch_fopen((char *)fname2, READBIN);
+	if (fd2 == NULL)
+	{
+	    fclose(fd1);
+	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_notread, fname2);
+	}
+	else
+	{
+	    int c1, c2;
+	    long count = 0;
+
+	    for (;;)
+	    {
+		c1 = fgetc(fd1);
+		c2 = fgetc(fd2);
+		if (c1 == EOF)
+		{
+		    if (c2 != EOF)
+			STRCPY(IObuff, "first file is shorter");
+		    break;
+		}
+		else if (c2 == EOF)
+		{
+		    STRCPY(IObuff, "second file is shorter");
+		    break;
+		}
+		else if (c1 != c2)
+		{
+		    vim_snprintf((char *)IObuff, IOSIZE,
+					      "difference at byte %ld", count);
+		    break;
+		}
+		++count;
+	    }
+	}
+    }
+    if (IObuff[0] != NUL)
+    {
+	prepare_assert_error(&ga);
+	ga_concat(&ga, IObuff);
+	assert_error(&ga);
+	ga_clear(&ga);
+    }
+}
+
+    void
 assert_match_common(typval_T *argvars, assert_type_T atype)
 {
     garray_T	ga;

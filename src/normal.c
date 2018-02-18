@@ -7474,6 +7474,11 @@ v_visop(cmdarg_T *cap)
     static void
 nv_subst(cmdarg_T *cap)
 {
+#ifdef FEAT_TERMINAL
+    /* When showing output of term_dumpdiff() swap the top and botom. */
+    if (term_swap_diff() == OK)
+	return;
+#endif
     if (VIsual_active)	/* "vs" and "vS" are the same as "vc" */
     {
 	if (cap->cmdchar == 'S')

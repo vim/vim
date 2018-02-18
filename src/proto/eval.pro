@@ -122,6 +122,7 @@ void reset_v_option_vars(void);
 void prepare_assert_error(garray_T *gap);
 void assert_error(garray_T *gap);
 void assert_equal_common(typval_T *argvars, assert_type_T atype);
+void assert_equalfile(typval_T *argvars);
 void assert_match_common(typval_T *argvars, assert_type_T atype);
 void assert_inrange(typval_T *argvars);
 void assert_bool(typval_T *argvars, int isTrue);

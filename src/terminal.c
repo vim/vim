@@ -47,6 +47,9 @@
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
  * - cursor blinks in terminal on widows with a timer. (xtal8, #2142)
+ * - What to store in a session file?  Shell at the prompt would be OK to
+ *   restore, but others may not.  Open the window and let the user start the
+ *   command?  Also see #2650.
  * - When closing gvim with an active terminal buffer, the dialog suggests
  *   saving the buffer.  Should say something else. (Manas Thakur, #2215)
  *   Also: #2223
@@ -55,9 +58,6 @@
  * - Adding WinBar to terminal window doesn't display, text isn't shifted down.
  * - MS-Windows GUI: still need to type a key after shell exits?  #1924
  * - After executing a shell command the status line isn't redraw.
- * - What to store in a session file?  Shell at the prompt would be OK to
- *   restore, but others may not.  Open the window and let the user start the
- *   command?
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -99,7 +99,8 @@
 typedef struct {
   VTermScreenCellAttrs	attrs;
   char			width;
-  VTermColor		fg, bg;
+  VTermColor		fg;
+  VTermColor		bg;
 } cellattr_T;
 
 typedef struct sb_line_S {
@@ -152,6 +153,9 @@ struct terminal_S {
     garray_T	tl_scrollback;
     int		tl_scrollback_scrolled;
     cellattr_T	tl_default_color;
+
+    linenr_T	tl_top_diff_rows;   /* rows of top diff file or zero */
+    linenr_T	tl_bot_diff_rows;   /* rows of bottom diff file */
 
     VTermPos	tl_cursor_pos;
     int		tl_cursor_visible;
@@ -283,11 +287,34 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
 }
 
 /*
+ * Close a terminal buffer (and its window).  Used when creating the terminal
+ * fails.
+ */
+    static void
+term_close_buffer(buf_T *buf, buf_T *old_curbuf)
+{
+    free_terminal(buf);
+    if (old_curbuf != NULL)
+    {
+	--curbuf->b_nwindows;
+	curbuf = old_curbuf;
+	curwin->w_buffer = curbuf;
+	++curbuf->b_nwindows;
+    }
+
+    /* Wiping out the buffer will also close the window and call
+     * free_terminal(). */
+    do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
+}
+
+/*
  * Start a terminal window and return its buffer.
+ * When "without_job" is TRUE only create the buffer, b_term and open the
+ * window.
  * Returns NULL when failed.
  */
     static buf_T *
-term_start(typval_T *argvar, jobopt_T *opt, int forceit)
+term_start(typval_T *argvar, jobopt_T *opt, int without_job, int forceit)
 {
     exarg_T	split_ea;
     win_T	*old_curwin = curwin;
@@ -454,6 +481,9 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     set_term_and_win_size(term);
     setup_job_options(opt, term->tl_rows, term->tl_cols);
 
+    if (without_job)
+	return curbuf;
+
     /* System dependent: setup the vterm and maybe start the job in it. */
     if (argvar->v_type == VAR_STRING
 	    && argvar->vval.v_string != NULL
@@ -492,20 +522,7 @@ term_start(typval_T *argvar, jobopt_T *opt, int forceit)
     }
     else
     {
-	buf_T *buf = curbuf;
-
-	free_terminal(curbuf);
-	if (old_curbuf != NULL)
-	{
-	    --curbuf->b_nwindows;
-	    curbuf = old_curbuf;
-	    curwin->w_buffer = curbuf;
-	    ++curbuf->b_nwindows;
-	}
-
-	/* Wiping out the buffer will also close the window and call
-	 * free_terminal(). */
-	do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
+	term_close_buffer(curbuf, old_curbuf);
 	return NULL;
     }
     return newbuf;
@@ -597,7 +614,7 @@ ex_terminal(exarg_T *eap)
     argvar[0].v_type = VAR_STRING;
     argvar[0].vval.v_string = cmd;
     argvar[1].v_type = VAR_UNKNOWN;
-    term_start(argvar, &opt, eap->forceit);
+    term_start(argvar, &opt, FALSE, eap->forceit);
     vim_free(tofree);
     vim_free(opt.jo_eof_chars);
 }
@@ -1035,6 +1052,36 @@ equal_celattr(cellattr_T *a, cellattr_T *b)
 	&& a->bg.blue == b->bg.blue;
 }
 
+/*
+ * Add an empty scrollback line to "term".  When "lnum" is not zero, add the
+ * line at this position.  Otherwise at the end.
+ */
+    static int
+add_empty_scrollback(term_T *term, cellattr_T *fill_attr, int lnum)
+{
+    if (ga_grow(&term->tl_scrollback, 1) == OK)
+    {
+	sb_line_T *line = (sb_line_T *)term->tl_scrollback.ga_data
+				      + term->tl_scrollback.ga_len;
+
+	if (lnum > 0)
+	{
+	    int i;
+
+	    for (i = 0; i < term->tl_scrollback.ga_len - lnum; ++i)
+	    {
+		*line = *(line - 1);
+		--line;
+	    }
+	}
+	line->sb_cols = 0;
+	line->sb_cells = NULL;
+	line->sb_fill_attr = *fill_attr;
+	++term->tl_scrollback.ga_len;
+	return OK;
+    }
+    return FALSE;
+}
 
 /*
  * Add the current lines of the terminal to scrollback and to the buffer.
@@ -1079,18 +1126,8 @@ move_terminal_to_buffer(term_T *term)
 	    {
 		/* Line was skipped, add an empty line. */
 		--lines_skipped;
-		if (ga_grow(&term->tl_scrollback, 1) == OK)
-		{
-		    sb_line_T *line = (sb_line_T *)term->tl_scrollback.ga_data
-						  + term->tl_scrollback.ga_len;
-
-		    line->sb_cols = 0;
-		    line->sb_cells = NULL;
-		    line->sb_fill_attr = fill_attr;
-		    ++term->tl_scrollback.ga_len;
-
+		if (add_empty_scrollback(term, &fill_attr, 0) == OK)
 		    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
-		}
 	    }
 
 	    if (len == 0)
@@ -1849,10 +1886,10 @@ color2index(VTermColor *color, int fg, int *boldp)
 }
 
 /*
- * Convert the attributes of a vterm cell into an attribute index.
+ * Convert Vterm attributes to highlight flags.
  */
     static int
-cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
+vtermAttr2hl(VTermScreenCellAttrs cellattrs)
 {
     int attr = 0;
 
@@ -1866,6 +1903,35 @@ cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
 	attr |= HL_STRIKETHROUGH;
     if (cellattrs.reverse)
 	attr |= HL_INVERSE;
+    return attr;
+}
+
+/*
+ * Store Vterm attributes in "cell" from highlight flags.
+ */
+    static void
+hl2vtermAttr(int attr, cellattr_T *cell)
+{
+    vim_memset(&cell->attrs, 0, sizeof(VTermScreenCellAttrs));
+    if (attr & HL_BOLD)
+	cell->attrs.bold = 1;
+    if (attr & HL_UNDERLINE)
+	cell->attrs.underline = 1;
+    if (attr & HL_ITALIC)
+	cell->attrs.italic = 1;
+    if (attr & HL_STRIKETHROUGH)
+	cell->attrs.strike = 1;
+    if (attr & HL_INVERSE)
+	cell->attrs.reverse = 1;
+}
+
+/*
+ * Convert the attributes of a vterm cell into an attribute index.
+ */
+    static int
+cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
+{
+    int attr = vtermAttr2hl(cellattrs);
 
 #ifdef FEAT_GUI
     if (gui.in_use)
@@ -2785,6 +2851,730 @@ term_get_buf(typval_T *argvars)
     return buf;
 }
 
+    static int
+same_color(VTermColor *a, VTermColor *b)
+{
+    return a->red == b->red
+	&& a->green == b->green
+	&& a->blue == b->blue
+	&& a->ansi_index == b->ansi_index;
+}
+
+    static void
+dump_term_color(FILE *fd, VTermColor *color)
+{
+    fprintf(fd, "%02x%02x%02x%d",
+	    (int)color->red, (int)color->green, (int)color->blue,
+	    (int)color->ansi_index);
+}
+
+/*
+ * "term_dumpwrite(buf, filename, max-height, max-width)" function
+ *
+ * Each screen cell in full is:
+ *    |{characters}+{attributes}#{fg-color}{color-idx}#{bg-color}{color-idx}
+ * {characters} is a space for an empty cell
+ * For a double-width character "+" is changed to "*" and the next cell is
+ * skipped.
+ * {attributes} is the decimal value of HL_BOLD + HL_UNDERLINE, etc.
+ *			  when "&" use the same as the previous cell.
+ * {fg-color} is hex RGB, when "&" use the same as the previous cell.
+ * {bg-color} is hex RGB, when "&" use the same as the previous cell.
+ * {color-idx} is a number from 0 to 255
+ *
+ * Screen cell with same width, attributes and color as the previous one:
+ *    |{characters}
+ *
+ * To use the color of the previous cell, use "&" instead of {color}-{idx}.
+ *
+ * Repeating the previous screen cell:
+ *    @{count}
+ */
+    void
+f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf = term_get_buf(argvars);
+    term_T	*term;
+    char_u	*fname;
+    int		max_height = 99999;
+    int		max_width = 99999;
+    stat_T	st;
+    FILE	*fd;
+    VTermPos	pos;
+    VTermScreen *screen;
+    VTermScreenCell prev_cell;
+
+    if (check_restricted() || check_secure())
+	return;
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+
+    fname = get_tv_string_chk(&argvars[1]);
+    if (fname == NULL)
+	return;
+    if (mch_stat((char *)fname, &st) >= 0)
+    {
+	EMSG2(_("E953: File exists: %s"), fname);
+	return;
+    }
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	max_height = get_tv_number(&argvars[2]);
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	    max_width = get_tv_number(&argvars[3]);
+    }
+
+    if (*fname == NUL || (fd = mch_fopen((char *)fname, WRITEBIN)) == NULL)
+    {
+	EMSG2(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	return;
+    }
+
+    vim_memset(&prev_cell, 0, sizeof(prev_cell));
+
+    screen = vterm_obtain_screen(term->tl_vterm);
+    for (pos.row = 0; pos.row < max_height && pos.row < term->tl_rows;
+								     ++pos.row)
+    {
+	int		repeat = 0;
+
+	for (pos.col = 0; pos.col < max_width && pos.col < term->tl_cols;
+								     ++pos.col)
+	{
+	    VTermScreenCell cell;
+	    int		    same_attr;
+	    int		    same_chars = TRUE;
+	    int		    i;
+
+	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
+		vim_memset(&cell, 0, sizeof(cell));
+
+	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
+	    {
+		if (cell.chars[i] != prev_cell.chars[i])
+		    same_chars = FALSE;
+		if (cell.chars[i] == NUL || prev_cell.chars[i] == NUL)
+		    break;
+	    }
+	    same_attr = vtermAttr2hl(cell.attrs)
+					       == vtermAttr2hl(prev_cell.attrs)
+			&& same_color(&cell.fg, &prev_cell.fg)
+			&& same_color(&cell.bg, &prev_cell.bg);
+	    if (same_chars && cell.width == prev_cell.width && same_attr)
+	    {
+		++repeat;
+	    }
+	    else
+	    {
+		if (repeat > 0)
+		{
+		    fprintf(fd, "@%d", repeat);
+		    repeat = 0;
+		}
+		fputs("|", fd);
+
+		if (cell.chars[0] == NUL)
+		    fputs(" ", fd);
+		else
+		{
+		    char_u	charbuf[10];
+		    int		len;
+
+		    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL
+						  && cell.chars[i] != NUL; ++i)
+		    {
+			len = utf_char2bytes(cell.chars[0], charbuf);
+			fwrite(charbuf, len, 1, fd);
+		    }
+		}
+
+		/* When only the characters differ we don't write anything, the
+		 * following "|", "@" or NL will indicate using the same
+		 * attributes. */
+		if (cell.width != prev_cell.width || !same_attr)
+		{
+		    if (cell.width == 2)
+		    {
+			fputs("*", fd);
+			++pos.col;
+		    }
+		    else
+			fputs("+", fd);
+
+		    if (same_attr)
+		    {
+			fputs("&", fd);
+		    }
+		    else
+		    {
+			fprintf(fd, "%d", vtermAttr2hl(cell.attrs));
+			if (same_color(&cell.fg, &prev_cell.fg))
+			    fputs("&", fd);
+			else
+			{
+			    fputs("#", fd);
+			    dump_term_color(fd, &cell.fg);
+			}
+			if (same_color(&cell.bg, &prev_cell.bg))
+			    fputs("&", fd);
+			else
+			{
+			    fputs("#", fd);
+			    dump_term_color(fd, &cell.bg);
+			}
+		    }
+		}
+
+		prev_cell = cell;
+	    }
+	}
+	if (repeat > 0)
+	    fprintf(fd, "@%d", repeat);
+	fputs("\n", fd);
+    }
+
+    fclose(fd);
+}
+
+/*
+ * Called when a dump is corrupted.  Put a breakpoint here when debugging.
+ */
+    static void
+dump_is_corrupt(garray_T *gap)
+{
+    ga_concat(gap, (char_u *)"CORRUPT");
+}
+
+    static void
+append_cell(garray_T *gap, cellattr_T *cell)
+{
+    if (ga_grow(gap, 1) == OK)
+    {
+	*(((cellattr_T *)gap->ga_data) + gap->ga_len) = *cell;
+	++gap->ga_len;
+    }
+}
+
+/*
+ * Read the dump file from "fd" and append lines to the current buffer.
+ * Return the cell width of the longest line.
+ */
+    static int
+read_dump_file(FILE *fd)
+{
+    int		    c;
+    garray_T	    ga_text;
+    garray_T	    ga_cell;
+    char_u	    *prev_char = NULL;
+    int		    attr = 0;
+    cellattr_T	    cell;
+    term_T	    *term = curbuf->b_term;
+    int		    max_cells = 0;
+
+    ga_init2(&ga_text, 1, 90);
+    ga_init2(&ga_cell, sizeof(cellattr_T), 90);
+    vim_memset(&cell, 0, sizeof(cell));
+
+    c = fgetc(fd);
+    for (;;)
+    {
+	if (c == EOF)
+	    break;
+	if (c == '\n')
+	{
+	    /* End of a line: append it to the buffer. */
+	    if (ga_text.ga_data == NULL)
+		dump_is_corrupt(&ga_text);
+	    if (ga_grow(&term->tl_scrollback, 1) == OK)
+	    {
+		sb_line_T   *line = (sb_line_T *)term->tl_scrollback.ga_data
+						  + term->tl_scrollback.ga_len;
+
+		if (max_cells < ga_cell.ga_len)
+		    max_cells = ga_cell.ga_len;
+		line->sb_cols = ga_cell.ga_len;
+		line->sb_cells = ga_cell.ga_data;
+		line->sb_fill_attr = term->tl_default_color;
+		++term->tl_scrollback.ga_len;
+		ga_init(&ga_cell);
+
+		ga_append(&ga_text, NUL);
+		ml_append(curbuf->b_ml.ml_line_count, ga_text.ga_data,
+							ga_text.ga_len, FALSE);
+	    }
+	    else
+		ga_clear(&ga_cell);
+	    ga_text.ga_len = 0;
+
+	    c = fgetc(fd);
+	}
+	else if (c == '|')
+	{
+	    int prev_len = ga_text.ga_len;
+
+	    /* normal character(s) followed by "+", "*", "|", "@" or NL */
+	    c = fgetc(fd);
+	    if (c != EOF)
+		ga_append(&ga_text, c);
+	    for (;;)
+	    {
+		c = fgetc(fd);
+		if (c == '+' || c == '*' || c == '|' || c == '@'
+						      || c == EOF || c == '\n')
+		    break;
+		ga_append(&ga_text, c);
+	    }
+
+	    /* save the character for repeating it */
+	    vim_free(prev_char);
+	    if (ga_text.ga_data != NULL)
+		prev_char = vim_strnsave(((char_u *)ga_text.ga_data) + prev_len,
+						    ga_text.ga_len - prev_len);
+
+	    if (c == '@' || c == '|' || c == '\n')
+	    {
+		/* use all attributes from previous cell */
+	    }
+	    else if (c == '+' || c == '*')
+	    {
+		int is_bg;
+
+		cell.width = c == '+' ? 1 : 2;
+
+		c = fgetc(fd);
+		if (c == '&')
+		{
+		    /* use same attr as previous cell */
+		    c = fgetc(fd);
+		}
+		else if (isdigit(c))
+		{
+		    /* get the decimal attribute */
+		    attr = 0;
+		    while (isdigit(c))
+		    {
+			attr = attr * 10 + (c - '0');
+			c = fgetc(fd);
+		    }
+		    hl2vtermAttr(attr, &cell);
+		}
+		else
+		    dump_is_corrupt(&ga_text);
+
+		/* is_bg == 0: fg, is_bg == 1: bg */
+		for (is_bg = 0; is_bg <= 1; ++is_bg)
+		{
+		    if (c == '&')
+		    {
+			/* use same color as previous cell */
+			c = fgetc(fd);
+		    }
+		    else if (c == '#')
+		    {
+			int red, green, blue, index = 0;
+
+			c = fgetc(fd);
+			red = hex2nr(c);
+			c = fgetc(fd);
+			red = (red << 4) + hex2nr(c);
+			c = fgetc(fd);
+			green = hex2nr(c);
+			c = fgetc(fd);
+			green = (green << 4) + hex2nr(c);
+			c = fgetc(fd);
+			blue = hex2nr(c);
+			c = fgetc(fd);
+			blue = (blue << 4) + hex2nr(c);
+			c = fgetc(fd);
+			if (!isdigit(c))
+			    dump_is_corrupt(&ga_text);
+			while (isdigit(c))
+			{
+			    index = index * 10 + (c - '0');
+			    c = fgetc(fd);
+			}
+
+			if (is_bg)
+			{
+			    cell.bg.red = red;
+			    cell.bg.green = green;
+			    cell.bg.blue = blue;
+			    cell.bg.ansi_index = index;
+			}
+			else
+			{
+			    cell.fg.red = red;
+			    cell.fg.green = green;
+			    cell.fg.blue = blue;
+			    cell.fg.ansi_index = index;
+			}
+		    }
+		    else
+			dump_is_corrupt(&ga_text);
+		}
+	    }
+	    else
+		dump_is_corrupt(&ga_text);
+
+	    append_cell(&ga_cell, &cell);
+	}
+	else if (c == '@')
+	{
+	    if (prev_char == NULL)
+		dump_is_corrupt(&ga_text);
+	    else
+	    {
+		int count = 0;
+
+		/* repeat previous character, get the count */
+		for (;;)
+		{
+		    c = fgetc(fd);
+		    if (!isdigit(c))
+			break;
+		    count = count * 10 + (c - '0');
+		}
+
+		while (count-- > 0)
+		{
+		    ga_concat(&ga_text, prev_char);
+		    append_cell(&ga_cell, &cell);
+		}
+	    }
+	}
+	else
+	{
+	    dump_is_corrupt(&ga_text);
+	    c = fgetc(fd);
+	}
+    }
+
+    if (ga_text.ga_len > 0)
+    {
+	/* trailing characters after last NL */
+	dump_is_corrupt(&ga_text);
+	ga_append(&ga_text, NUL);
+	ml_append(curbuf->b_ml.ml_line_count, ga_text.ga_data,
+							ga_text.ga_len, FALSE);
+    }
+
+    ga_clear(&ga_text);
+    vim_free(prev_char);
+
+    return max_cells;
+}
+
+/*
+ * Common for "term_dumpdiff()" and "term_dumpload()".
+ */
+    static void
+term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
+{
+    jobopt_T	opt;
+    buf_T	*buf;
+    char_u	buf1[NUMBUFLEN];
+    char_u	buf2[NUMBUFLEN];
+    char_u	*fname1;
+    char_u	*fname2;
+    FILE	*fd1;
+    FILE	*fd2;
+    char_u	*textline = NULL;
+
+    /* First open the files.  If this fails bail out. */
+    fname1 = get_tv_string_buf_chk(&argvars[0], buf1);
+    if (do_diff)
+	fname2 = get_tv_string_buf_chk(&argvars[1], buf2);
+    if (fname1 == NULL || (do_diff && fname2 == NULL))
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
+    fd1 = mch_fopen((char *)fname1, READBIN);
+    if (fd1 == NULL)
+    {
+	EMSG2(_(e_notread), fname1);
+	return;
+    }
+    if (do_diff)
+    {
+	fd2 = mch_fopen((char *)fname2, READBIN);
+	if (fd2 == NULL)
+	{
+	    fclose(fd1);
+	    EMSG2(_(e_notread), fname2);
+	    return;
+	}
+    }
+
+    init_job_options(&opt);
+    /* TODO: use the {options} argument */
+
+    /* TODO: use the file name arguments for the buffer name */
+    opt.jo_term_name = (char_u *)"dump diff";
+
+    buf = term_start(&argvars[0], &opt, TRUE, FALSE);
+    if (buf != NULL && buf->b_term != NULL)
+    {
+	int		i;
+	linenr_T	bot_lnum;
+	linenr_T	lnum;
+	term_T		*term = buf->b_term;
+	int		width;
+	int		width2;
+
+	rettv->vval.v_number = buf->b_fnum;
+
+	/* read the files, fill the buffer with the diff */
+	width = read_dump_file(fd1);
+
+	/* Delete the empty line that was in the empty buffer. */
+	ml_delete(1, FALSE);
+
+	/* For term_dumpload() we are done here. */
+	if (!do_diff)
+	    goto theend;
+
+	term->tl_top_diff_rows = curbuf->b_ml.ml_line_count;
+
+	textline = alloc(width + 1);
+	if (textline == NULL)
+	    goto theend;
+	for (i = 0; i < width; ++i)
+	    textline[i] = '=';
+	textline[width] = NUL;
+	if (add_empty_scrollback(term, &term->tl_default_color, 0) == OK)
+	    ml_append(curbuf->b_ml.ml_line_count, textline, 0, FALSE);
+	if (add_empty_scrollback(term, &term->tl_default_color, 0) == OK)
+	    ml_append(curbuf->b_ml.ml_line_count, textline, 0, FALSE);
+
+	bot_lnum = curbuf->b_ml.ml_line_count;
+	width2 = read_dump_file(fd2);
+	if (width2 > width)
+	{
+	    vim_free(textline);
+	    textline = alloc(width2 + 1);
+	    if (textline == NULL)
+		goto theend;
+	    width = width2;
+	    textline[width] = NUL;
+	}
+	term->tl_bot_diff_rows = curbuf->b_ml.ml_line_count - bot_lnum;
+
+	for (lnum = 1; lnum <= term->tl_top_diff_rows; ++lnum)
+	{
+	    if (lnum + bot_lnum > curbuf->b_ml.ml_line_count)
+	    {
+		/* bottom part has fewer rows, fill with "-" */
+		for (i = 0; i < width; ++i)
+		    textline[i] = '-';
+	    }
+	    else
+	    {
+		char_u *line1;
+		char_u *line2;
+		char_u *p1;
+		char_u *p2;
+		int	col;
+		sb_line_T   *sb_line = (sb_line_T *)term->tl_scrollback.ga_data;
+		cellattr_T *cellattr1 = (sb_line + lnum - 1)->sb_cells;
+		cellattr_T *cellattr2 = (sb_line + lnum + bot_lnum - 1)
+								    ->sb_cells;
+
+		/* Make a copy, getting the second line will invalidate it. */
+		line1 = vim_strsave(ml_get(lnum));
+		if (line1 == NULL)
+		    break;
+		p1 = line1;
+
+		line2 = ml_get(lnum + bot_lnum);
+		p2 = line2;
+		for (col = 0; col < width && *p1 != NUL && *p2 != NUL; ++col)
+		{
+		    int len1 = utfc_ptr2len(p1);
+		    int len2 = utfc_ptr2len(p2);
+
+		    textline[col] = ' ';
+		    if (len1 != len2 || STRNCMP(p1, p2, len1) != 0)
+			textline[col] = 'X';
+		    else if (cellattr1 != NULL && cellattr2 != NULL)
+		    {
+			if ((cellattr1 + col)->width
+						   != (cellattr2 + col)->width)
+			    textline[col] = 'w';
+			else if (!same_color(&(cellattr1 + col)->fg,
+						   &(cellattr2 + col)->fg))
+			    textline[col] = 'f';
+			else if (!same_color(&(cellattr1 + col)->bg,
+						   &(cellattr2 + col)->bg))
+			    textline[col] = 'b';
+			else if (vtermAttr2hl((cellattr1 + col)->attrs)
+				   != vtermAttr2hl(((cellattr2 + col)->attrs)))
+			    textline[col] = 'a';
+		    }
+		    p1 += len1;
+		    p2 += len2;
+		    /* TODO: handle different width */
+		}
+		vim_free(line1);
+
+		while (col < width)
+		{
+		    if (*p1 == NUL && *p2 == NUL)
+			textline[col] = '?';
+		    else if (*p1 == NUL)
+		    {
+			textline[col] = '+';
+			p2 += utfc_ptr2len(p2);
+		    }
+		    else
+		    {
+			textline[col] = '-';
+			p1 += utfc_ptr2len(p1);
+		    }
+		    ++col;
+		}
+	    }
+	    if (add_empty_scrollback(term, &term->tl_default_color,
+						 term->tl_top_diff_rows) == OK)
+		ml_append(term->tl_top_diff_rows + lnum, textline, 0, FALSE);
+	    ++bot_lnum;
+	}
+
+	while (lnum + bot_lnum <= curbuf->b_ml.ml_line_count)
+	{
+	    /* bottom part has more rows, fill with "+" */
+	    for (i = 0; i < width; ++i)
+		textline[i] = '+';
+	    if (add_empty_scrollback(term, &term->tl_default_color,
+						 term->tl_top_diff_rows) == OK)
+		ml_append(term->tl_top_diff_rows + lnum, textline, 0, FALSE);
+	    ++lnum;
+	    ++bot_lnum;
+	}
+
+	term->tl_cols = width;
+    }
+
+theend:
+    vim_free(textline);
+    fclose(fd1);
+    if (do_diff)
+	fclose(fd2);
+}
+
+/*
+ * If the current buffer shows the output of term_dumpdiff(), swap the top and
+ * bottom files.
+ * Return FAIL when this is not possible.
+ */
+    int
+term_swap_diff()
+{
+    term_T	*term = curbuf->b_term;
+    linenr_T	line_count;
+    linenr_T	top_rows;
+    linenr_T	bot_rows;
+    linenr_T	bot_start;
+    linenr_T	lnum;
+    char_u	*p;
+    sb_line_T	*sb_line;
+
+    if (term == NULL
+	    || !term_is_finished(curbuf)
+	    || term->tl_top_diff_rows == 0
+	    || term->tl_scrollback.ga_len == 0)
+	return FAIL;
+
+    line_count = curbuf->b_ml.ml_line_count;
+    top_rows = term->tl_top_diff_rows;
+    bot_rows = term->tl_bot_diff_rows;
+    bot_start = line_count - bot_rows;
+    sb_line = (sb_line_T *)term->tl_scrollback.ga_data;
+
+    /* move lines from top to above the bottom part */
+    for (lnum = 1; lnum <= top_rows; ++lnum)
+    {
+	p = vim_strsave(ml_get(1));
+	if (p == NULL)
+	    return OK;
+	ml_append(bot_start, p, 0, FALSE);
+	ml_delete(1, FALSE);
+	vim_free(p);
+    }
+
+    /* move lines from bottom to the top */
+    for (lnum = 1; lnum <= bot_rows; ++lnum)
+    {
+	p = vim_strsave(ml_get(bot_start + lnum));
+	if (p == NULL)
+	    return OK;
+	ml_delete(bot_start + lnum, FALSE);
+	ml_append(lnum - 1, p, 0, FALSE);
+	vim_free(p);
+    }
+
+    if (top_rows == bot_rows)
+    {
+	/* rows counts are equal, can swap cell properties */
+	for (lnum = 0; lnum < top_rows; ++lnum)
+	{
+	    sb_line_T	temp;
+
+	    temp = *(sb_line + lnum);
+	    *(sb_line + lnum) = *(sb_line + bot_start + lnum);
+	    *(sb_line + bot_start + lnum) = temp;
+	}
+    }
+    else
+    {
+	size_t		size = sizeof(sb_line_T) * term->tl_scrollback.ga_len;
+	sb_line_T	*temp = (sb_line_T *)alloc((int)size);
+
+	/* need to copy cell properties into temp memory */
+	if (temp != NULL)
+	{
+	    mch_memmove(temp, term->tl_scrollback.ga_data, size);
+	    mch_memmove(term->tl_scrollback.ga_data,
+		    temp + bot_start,
+		    sizeof(sb_line_T) * bot_rows);
+	    mch_memmove((sb_line_T *)term->tl_scrollback.ga_data + bot_rows,
+		    temp + top_rows,
+		    sizeof(sb_line_T) * (line_count - top_rows - bot_rows));
+	    mch_memmove((sb_line_T *)term->tl_scrollback.ga_data
+						       + line_count - top_rows,
+		    temp,
+		    sizeof(sb_line_T) * top_rows);
+	    vim_free(temp);
+	}
+    }
+
+    term->tl_top_diff_rows = bot_rows;
+    term->tl_bot_diff_rows = top_rows;
+
+    update_screen(NOT_VALID);
+    return OK;
+}
+
+/*
+ * "term_dumpdiff(filename, filename, options)" function
+ */
+    void
+f_term_dumpdiff(typval_T *argvars, typval_T *rettv)
+{
+    term_load_dump(argvars, rettv, TRUE);
+}
+
+/*
+ * "term_dumpload(filename, options)" function
+ */
+    void
+f_term_dumpload(typval_T *argvars, typval_T *rettv)
+{
+    term_load_dump(argvars, rettv, FALSE);
+}
+
 /*
  * "term_getaltscreen(buf)" function
  */
@@ -3230,7 +4020,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 
     if (opt.jo_vertical)
 	cmdmod.split = WSP_VERT;
-    buf = term_start(&argvars[0], &opt, FALSE);
+    buf = term_start(&argvars[0], &opt, FALSE, FALSE);
 
     if (buf != NULL && buf->b_term != NULL)
 	rettv->vval.v_number = buf->b_fnum;

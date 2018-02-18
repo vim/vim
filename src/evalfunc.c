@@ -46,6 +46,7 @@ static void f_arglistid(typval_T *argvars, typval_T *rettv);
 static void f_argv(typval_T *argvars, typval_T *rettv);
 static void f_assert_beeps(typval_T *argvars, typval_T *rettv);
 static void f_assert_equal(typval_T *argvars, typval_T *rettv);
+static void f_assert_equalfile(typval_T *argvars, typval_T *rettv);
 static void f_assert_exception(typval_T *argvars, typval_T *rettv);
 static void f_assert_fails(typval_T *argvars, typval_T *rettv);
 static void f_assert_false(typval_T *argvars, typval_T *rettv);
@@ -487,6 +488,7 @@ static struct fst
 #endif
     {"assert_beeps",	1, 2, f_assert_beeps},
     {"assert_equal",	2, 3, f_assert_equal},
+    {"assert_equalfile", 2, 2, f_assert_equalfile},
     {"assert_exception", 1, 2, f_assert_exception},
     {"assert_fails",	1, 2, f_assert_fails},
     {"assert_false",	1, 2, f_assert_false},
@@ -847,6 +849,9 @@ static struct fst
 #endif
     {"tempname",	0, 0, f_tempname},
 #ifdef FEAT_TERMINAL
+    {"term_dumpdiff",	2, 3, f_term_dumpdiff},
+    {"term_dumpload",	1, 2, f_term_dumpload},
+    {"term_dumpwrite",	2, 4, f_term_dumpwrite},
     {"term_getaltscreen", 1, 1, f_term_getaltscreen},
     {"term_getattr",	2, 2, f_term_getattr},
     {"term_getcursor",	1, 1, f_term_getcursor},
@@ -1294,6 +1299,15 @@ f_assert_beeps(typval_T *argvars, typval_T *rettv UNUSED)
 f_assert_equal(typval_T *argvars, typval_T *rettv UNUSED)
 {
     assert_equal_common(argvars, ASSERT_EQUAL);
+}
+
+/*
+ * "assert_equalfile(fname-one, fname-two)" function
+ */
+    static void
+f_assert_equalfile(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    assert_equalfile(argvars);
 }
 
 /*
