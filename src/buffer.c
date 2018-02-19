@@ -1875,10 +1875,10 @@ no_write_message(void)
 }
 
     void
-no_write_message_nobang(void)
+no_write_message_nobang(buf_T *buf UNUSED)
 {
 #ifdef FEAT_TERMINAL
-    if (term_job_running(curbuf->b_term))
+    if (term_job_running(buf->b_term))
 	EMSG(_("E948: Job still running"));
     else
 #endif

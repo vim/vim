@@ -2110,7 +2110,7 @@ check_changed(buf_T *buf, int flags)
 	if (flags & CCGD_EXCMD)
 	    no_write_message();
 	else
-	    no_write_message_nobang();
+	    no_write_message_nobang(curbuf);
 	return TRUE;
     }
     return FALSE;

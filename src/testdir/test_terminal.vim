@@ -712,6 +712,15 @@ func Test_terminal_wall()
   unlet g:job
 endfunc
 
+func Test_terminal_wqall()
+  let buf = Run_shell_in_terminal({})
+  call assert_fails('wqall', 'E948')
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+  unlet g:job
+endfunc
+
 func Test_terminal_composing_unicode()
   let save_enc = &encoding
   set encoding=utf-8

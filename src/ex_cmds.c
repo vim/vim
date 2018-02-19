@@ -3428,6 +3428,14 @@ do_wqall(exarg_T *eap)
 
     FOR_ALL_BUFFERS(buf)
     {
+#ifdef FEAT_TERMINAL
+	if (exiting && term_job_running(buf->b_term))
+	{
+	    no_write_message_nobang(buf);
+	    ++error;
+	}
+	else
+#endif
 	if (bufIsChanged(buf) && !bt_dontwrite(buf))
 	{
 	    /*
