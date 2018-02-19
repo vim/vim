@@ -3277,9 +3277,9 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
     char_u	*fname1;
-    char_u	*fname2;
+    char_u	*fname2 = NULL;
     FILE	*fd1;
-    FILE	*fd2;
+    FILE	*fd2 = NULL;
     char_u	*textline = NULL;
 
     /* First open the files.  If this fails bail out. */
@@ -3460,7 +3460,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 theend:
     vim_free(textline);
     fclose(fd1);
-    if (do_diff)
+    if (fd2 != NULL)
 	fclose(fd2);
 }
 
