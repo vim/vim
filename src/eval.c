@@ -8889,6 +8889,8 @@ assert_equalfile(typval_T *argvars)
 		}
 		++count;
 	    }
+	    fclose(fd1);
+	    fclose(fd2);
 	}
     }
     if (IObuff[0] != NUL)
