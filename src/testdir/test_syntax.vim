@@ -526,7 +526,8 @@ endfunc
 
 " Check highlighting for a small piece of C code with a screen dump.
 func Test_syntax_c()
-  if !has('terminal')
+  " Need to be able to run terminal Vim with 256 colors.
+  if !has('terminal') || has('win32')
     return
   endif
   call writefile([
