@@ -10291,7 +10291,6 @@ showmode(void)
 			msg_puts_attr(edit_submode_extra, sub_attr);
 		    }
 		}
-		length = 0;
 	    }
 	    else
 #endif
