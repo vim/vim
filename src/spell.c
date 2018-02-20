@@ -2404,7 +2404,6 @@ did_set_spelllang(win_T *wp)
 	    {
 		vim_strncpy(region_cp, p + 1, 2);
 		mch_memmove(p, p + 3, len - (p - lang) - 2);
-		len -= 3;
 		region = region_cp;
 	    }
 	    else
