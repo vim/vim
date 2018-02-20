@@ -410,10 +410,13 @@ term_start(typval_T *argvar, jobopt_T *opt, int without_job, int forceit)
 
     if (!opt->jo_hidden)
     {
-	/* only one size was taken care of with :new, do the other one */
-	if (opt->jo_term_rows > 0 && (cmdmod.split & WSP_VERT))
+	/* Only one size was taken care of with :new, do the other one.  With
+	 * "curwin" both need to be done. */
+	if (opt->jo_term_rows > 0 && (opt->jo_curwin
+						 || (cmdmod.split & WSP_VERT)))
 	    win_setheight(opt->jo_term_rows);
-	if (opt->jo_term_cols > 0 && !(cmdmod.split & WSP_VERT))
+	if (opt->jo_term_cols > 0 && (opt->jo_curwin
+						|| !(cmdmod.split & WSP_VERT)))
 	    win_setwidth(opt->jo_term_cols);
     }
 

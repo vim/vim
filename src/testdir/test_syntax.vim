@@ -5,6 +5,9 @@ if !has("syntax")
 endif
 
 source view_util.vim
+if has('terminal')
+  source screendump.vim
+endif
 
 func GetSyntaxItem(pat)
   let c = ''
@@ -497,7 +500,7 @@ func Test_conceal()
   bw!
 endfunc
 
-fun Test_synstack_synIDtrans()
+func Test_synstack_synIDtrans()
   new
   setfiletype c
   syntax on
@@ -520,3 +523,36 @@ fun Test_synstack_synIDtrans()
   syn clear
   bw!
 endfunc
+
+" Check highlighting for a small piece of C code with a screen dump.
+func Test_syntax_c()
+  if !has('terminal')
+    return
+  endif
+  call writefile([
+	\ '/* comment line at the top */',
+	\ '  int',
+	\ 'main(int argc, char **argv)// another comment',
+	\ '{',
+	\ '#if 0',
+	\ '   int   not_used;',
+	\ '#else',
+	\ '   int   used;',
+	\ '#endif',
+	\ '   printf("Just an example piece of C code\n");',
+	\ '   return 0x0ff;',
+	\ '}',
+	\ '   static void',
+	\ 'myFunction(const double count, struct nothing, long there) {',
+	\ '  // 123: nothing to read here',
+	\ '  for (int i = 0; i < count; ++i) {',
+	\ '    break;',
+	\ '  }',
+	\ '}',
+	\ ], 'Xtest.c')
+  let buf = RunVimInTerminal('Xtest.c', {})
+  call VerifyScreenDump(buf, 'Test_syntax_c_01')
+  call StopVimInTerminal(buf)
+
+  call delete('Xtest.c')
+endfun

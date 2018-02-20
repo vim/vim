@@ -35,6 +35,12 @@ What you can use (see test_assert.vim for an example):
 - See the start of runtest.vim for more help.
 
 
+TO ADD A SCREEN DUMP TEST:
+
+Mostly the same as writing a new style test.  Additonally, see help on
+"terminal-dumptest".  Put the reference dump in "dumps/Test_func_name.dump".
+
+
 TO ADD AN OLD STYLE TEST:
 
 1) Create test_<subject>.in and test_<subject>.ok files.

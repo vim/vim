@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Jan 28
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -14,25 +14,29 @@ The terminal feature is optional, use this to check if your Vim has it: >
 If the result is "1" you have it.
 
 
-1. Basic use		|terminal-use|
-      Typing			|terminal-typing|
-      Size and color		|terminal-size-color|
-      Syntax			|:terminal|
-      Resizing			|terminal-resizing|
-      Terminal Modes		|Terminal-mode|
-      Cursor style		|terminal-cursor-style|
-      Special keys		|terminal-special-keys|
-      Unix			|terminal-unix|
-      MS-Windows		|terminal-ms-windows|
-2. Remote testing	|terminal-testing|
-3. Debugging		|terminal-debug|
-      Starting			|termdebug-starting|
-      Example session		|termdebug-example|
-      Stepping through code	|termdebug-stepping|
-      Inspecting variables	|termdebug-variables|
-      Other commands		|termdebug-commands|
-      Communication		|termdebug-communication|
-      Customizing		|termdebug-customizing|
+1. Basic use			|terminal-use|
+      Typing				|terminal-typing|
+      Size and color			|terminal-size-color|
+      Syntax				|:terminal|
+      Resizing				|terminal-resizing|
+      Terminal Modes			|Terminal-mode|
+      Cursor style			|terminal-cursor-style|
+      Special keys			|terminal-special-keys|
+      Unix				|terminal-unix|
+      MS-Windows			|terminal-ms-windows|
+2. Remote testing		|terminal-testing|
+3. Diffing screen dumps		|terminal-diff|
+      Writing a screen dump test for Vim  |terminal-dumptest|
+      Creating a screen dump		  |terminal-screendump|
+      Comparing screen dumps		  |terminal-diffscreendump|
+4. Debugging			|terminal-debug|
+      Starting				|termdebug-starting|
+      Example session			|termdebug-example|
+      Stepping through code		|termdebug-stepping|
+      Inspecting variables		|termdebug-variables|
+      Other commands			|termdebug-commands|
+      Communication			|termdebug-communication|
+      Customizing			|termdebug-customizing|
 
 {Vi does not have any of these commands}
 {only available when compiled with the |+terminal| feature}
@@ -360,7 +364,97 @@ term_scrape()		inspect terminal screen
 
 
 ==============================================================================
-3. Debugging					*terminal-debug*
+3. Diffing screen dumps					*terminal-diff*
+
+In some cases it can be bothersome to test that Vim displays the right
+characters on the screen.  E.g. with syntax highlighting.  To make this
+simpler it is possible to take a screen dump of a terminal and compare it to
+an expected screen dump.
+
+Vim uses the window size, text, color and other attributes as displayed.  The
+Vim screen size, font and other properties do not matter.  Therefore this
+mechanism is portable across systems.  A convential screenshot would reflect
+all differences, including font size and family.
+
+
+Writing a screen dump test for Vim ~
+							*terminal-dumptest*
+For an example see the Test_syntax_c() function in
+src/testdir/test_syntax.vim.  The main parts are:
+- Write a file you want to test with. This is useful for testing syntax
+  highlighting.  You can also start Vim with en empty buffer.
+- Run Vim in a terminal with a specific size.  The default is 20 lines of 75
+  characters.  This makes sure the dump is always this size.  The function
+  RunVimInTerminal() takes care of this.  Pass it the arguments for the Vim
+  command.
+- Send any commands to Vim using term_sendkeys().  For example: >
+	call term_sendkeys(buf, ":echo &lines &columns\<CR>")
+- Check that the screen is now in the expected state, using
+  VerifyScreenDump().  This expects the reference screen dump to be in the
+  src/testdir/dumps/ directory.  Pass the name without ".dump".  It is
+  recommended to use the name of the test function and a sequence number, so
+  that we know what test is using the file.
+- Repeat sending commands and checking the state.
+- Finally stop Vim by calling StopVimInTerminal().
+
+The first time you do this you won't have a screen dump yet.  Create an empty
+file for now, e.g.: >
+	touch src/testdir/dumps/Test_function_name_01.dump
+
+The test will then fail, giving you the command to compare the reference dump
+and the failed dump, e.g.: >
+	call term_dumpdiff("Test_func.dump.failed", "dumps/Test_func.dump")
+
+Use this command in Vim, with the current directory set to src/testdir.
+Once you are satisfied with the test, move the failed dump in place of the
+reference: >
+	:!mv Test_func.dump.failed dumps/Test_func.dump
+
+
+Creating a screen dump ~
+							*terminal-screendump*
+
+To create the screen dump, run Vim (or any other program) in a terminal and
+make it show the desired state.  Then use the term_dumpwrite() function to
+create a screen dump file.  For example: >
+	:call term_dumpwrite(77, "mysyntax.dump")
+
+Here "77" is the buffer number of the terminal.  Use `:ls!` to see it.
+
+You can view the screen dump with term_dumpload(): >
+	:call term_dumpload("mysyntax.dump")
+
+To verify that Vim still shows exactly the same screen, run Vim again with
+exactly the same way to show the desired state.  Then create a screen dump
+again, using a different file name: >
+	:call term_dumpwrite(88, "test.dump")
+
+To assert that the files are exactly the same use assert_equalfile(): >
+	call assert_equalfile("mysyntax.dump", "test.dump")
+
+If there are differences then v:errors will contain the error message.
+
+
+Comparing screen dumps ~
+						*terminal-diffscreendump*
+
+assert_equalfile() does not make it easy to see what is different.
+To spot the problem use term_dumpdiff(): >
+	call term_dumpdiff("mysyntax.dump", "test.dump")
+
+This will open a window consisting of three parts:
+1.  The contents of the first dump
+2.  The difference between the first and second dump
+3.  The contents of the second dump
+
+You can usually see what differs in the second part.  Use the 'ruler' to
+relate it to the postion in the first or second dump.
+
+Alternatively, press "s" to swap the first and second dump. Do this everal
+times so that you can spot the difference in the context of the text.
+
+==============================================================================
+4. Debugging						*terminal-debug*
 
 The Terminal debugging plugin can be used to debug a program with gdb and view
 the source code in a Vim window.  Since this is completely contained inside
@@ -475,7 +569,7 @@ In the window showing the source code these commands can used to control gdb:
  :Delete	delete a breakpoint at the current line
 
  :Step		execute the gdb "step" command
- :Over 		execute the gdb "next" command (:Next is a Vim command)
+ :Over		execute the gdb "next" command (:Next is a Vim command)
  :Finish	execute the gdb "finish" command
  :Continue	execute the gdb "continue" command
  :Stop		interrupt the program
