@@ -6814,7 +6814,6 @@ syntime_report(void)
     MSG_PUTS("\n");
     for (idx = 0; idx < ga.ga_len && !got_int; ++idx)
     {
-	spp = &(SYN_ITEMS(curwin->w_s)[idx]);
 	p = ((time_entry_T *)ga.ga_data) + idx;
 
 	MSG_PUTS(profile_msg(&p->total));
