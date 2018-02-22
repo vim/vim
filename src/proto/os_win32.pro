@@ -42,6 +42,7 @@ void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 void mch_set_winsize_now(void);
 int mch_call_shell(char_u *cmd, int options);
+void win32_build_env(dict_T *env, garray_T *gap, int is_terminal);
 void mch_job_start(char *cmd, job_T *job, jobopt_T *options);
 char *mch_job_status(job_T *job);
 job_T *mch_detect_ended_job(job_T *job_list);
@@ -67,5 +68,7 @@ void used_file_arg(char *name, int literal, int full_path, int diff_mode);
 void set_alist_count(void);
 void fix_arg_enc(void);
 int mch_setenv(char *var, char *value, int x);
-void win32_build_env(dict_T *l, garray_T *gap, int is_terminal);
+void control_console_color_rgb(void);
+int has_vtp_working(void);
+int use_vtp(void);
 /* vim: set ft=c : */

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2018 Feb 03
+*options.txt*	For Vim version 8.0.  Last change: 2018 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5203,8 +5203,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Maximum amount of memory (in Kbyte) to use for one buffer.  When this
 	limit is reached allocating extra memory for a buffer will cause
-	other memory to be freed.  The maximum usable value is about 2000000.
-	Use this to work without a limit.  Also see 'maxmemtot'.
+	other memory to be freed.
+	The maximum usable value is about 2000000.  Use this to work without a
+	limit.
+	The value is ignored when 'swapfile' is off.
+	Also see 'maxmemtot'.
 
 						*'maxmempattern'* *'mmp'*
 'maxmempattern' 'mmp'	number	(default 1000)
@@ -5233,6 +5236,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	need more than 2 Gbyte for text editing?  Keep in mind that text is
 	stored in the swap file, one can edit files > 2 Gbyte anyway.  We do
 	need the memory to store undo info.
+	Buffers with 'swapfile' off still count to the total amount of memory
+	used.
 	Also see 'maxmem'.
 
 						*'menuitems'* *'mis'*
@@ -5956,14 +5961,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|ins-completion-menu|.
 
 						*'pumwidth'* *'pw'*
-'pumwidth' 'pw'		number	(default 0)
+'pumwidth' 'pw'		number	(default 15)
 			global
 			{not available when compiled without the
 			|+insert_expand| feature}
 			{not in Vi}
 	Determines the minium width to use for the popup menu for Insert mode
-	completion.  When zero the default of 15 screen cells is used.
-	|ins-completion-menu|.
+	completion.  |ins-completion-menu|.
 
 						*'pythondll'*
 'pythondll'		string	(default depends on the build)
@@ -7903,17 +7907,23 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set encoding=utf-8
 <	You need to do this when your system has no locale support for UTF-8.
 
-						*'termguicolors'* *'tgc'*
+					*'termguicolors'* *'tgc'* *E954*
 'termguicolors' 'tgc'	boolean (default off)
 			global
 			{not in Vi}
 			{not available when compiled without the
 			|+termguicolors| feature}
 	When on, uses |highlight-guifg| and |highlight-guibg| attributes in
-	the terminal (thus using 24-bit color). Requires a ISO-8613-3
-	compatible terminal.
-	If setting this option does not work (produces a colorless UI)
-	reading |xterm-true-color| might help.
+	the terminal (thus using 24-bit color).
+	
+	Requires a ISO-8613-3 compatible terminal.  If setting this option
+	does not work (produces a colorless UI) reading |xterm-true-color|
+	might help.
+
+	For Win32 console, Windows 10 version 1703 (Creators Update) or later
+	is required. Use this check to find out: >
+		if has('vcon')
+<
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 

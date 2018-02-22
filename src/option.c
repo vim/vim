@@ -8690,10 +8690,25 @@ set_bool_option(
     /* 'termguicolors' */
     else if ((int *)varp == &p_tgc)
     {
+# ifdef FEAT_VTP
+	/* Do not turn on 'tgc' when 24-bit colors are not supported. */
+	if (!has_vtp_working())
+	{
+	    p_tgc = 0;
+	    return (char_u*)N_("E954: 24-bit colors are not supported on this environment");
+	}
+	swap_tcap();
+# endif
 # ifdef FEAT_GUI
 	if (!gui.in_use && !gui.starting)
 # endif
 	    highlight_gui_started();
+# ifdef FEAT_VTP
+	control_console_color_rgb();
+	/* reset t_Co */
+	if (STRCMP(T_NAME, "win32") == 0)
+	    set_termname(T_NAME);
+# endif
     }
 #endif
 

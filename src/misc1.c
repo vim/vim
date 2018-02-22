@@ -3714,7 +3714,22 @@ vim_beep(
 			&& !(gui.in_use && gui.starting)
 #endif
 			)
+		{
 		    out_str_cf(T_VB);
+#ifdef FEAT_VTP
+		    /* No restore color information, refresh the screen. */
+		    if (has_vtp_working() != 0
+# ifdef FEAT_TERMGUICOLORS
+			    && p_tgc
+# endif
+			)
+		    {
+			redraw_later(CLEAR);
+			update_screen(0);
+			redrawcmd();
+		    }
+#endif
+		}
 		else
 		    out_char(BELL);
 #ifdef ELAPSED_FUNC

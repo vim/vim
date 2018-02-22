@@ -851,7 +851,7 @@ static struct fst
 #ifdef FEAT_TERMINAL
     {"term_dumpdiff",	2, 3, f_term_dumpdiff},
     {"term_dumpload",	1, 2, f_term_dumpload},
-    {"term_dumpwrite",	2, 4, f_term_dumpwrite},
+    {"term_dumpwrite",	2, 3, f_term_dumpwrite},
     {"term_getaltscreen", 1, 1, f_term_getaltscreen},
     {"term_getattr",	2, 2, f_term_getattr},
     {"term_getcursor",	1, 1, f_term_getcursor},
@@ -6323,9 +6323,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 	else if (STRICMP(name, "syntax_items") == 0)
 	    n = syntax_present(curwin);
 #endif
-#if defined(WIN3264)
-	else if (STRICMP(name, "win95") == 0)
-	    n = FALSE;		/* Win9x is no more supported. */
+#ifdef FEAT_VTP
+	else if (STRICMP(name, "vcon") == 0)
+	    n = has_vtp_working();
 #endif
 #ifdef FEAT_NETBEANS_INTG
 	else if (STRICMP(name, "netbeans_enabled") == 0)
