@@ -22,6 +22,7 @@ func RunVimInTerminal(arguments, options)
   " Always doo this with 256 colors and a light background.
   set t_Co=256
   hi Normal ctermfg=0 ctermbg=15
+  let $COLORFGBG = '0;15'
 
   let cmd = GetVimCommandClean()
   let cmd .= ' ' . a:arguments
