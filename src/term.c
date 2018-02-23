@@ -6624,9 +6624,10 @@ update_tcap(int attr)
     }
 }
 
+# ifdef FEAT_TERMGUICOLORS
 struct ks_tbl_s
 {
-    int code;	    /* value of KS_ */
+    int  code;	    /* value of KS_ */
     char *vtp;	    /* code in vtp mode */
     char *buf;	    /* buffer in non-vtp mode */
     char *vbuf;	    /* buffer in vtp mode */
@@ -6649,19 +6650,16 @@ static struct ks_tbl_s ks_tbl[] =
     static struct builtin_term *
 find_first_tcap(
     char_u *name,
-    int code)
+    int	    code)
 {
     struct builtin_term *p;
 
-    p = find_builtin_term(name);
-    while (p->bt_string != NULL)
-    {
+    for (p = find_builtin_term(name); p->bt_string != NULL; ++p)
 	if (p->bt_entry == code)
 	    return p;
-	p++;
-    }
     return NULL;
 }
+# endif
 
 /*
  * For Win32 console: replace the sequence immediately after termguicolors.
@@ -6670,23 +6668,24 @@ find_first_tcap(
 swap_tcap(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    static int init = 0;
-    static int last_tgc;
-    struct ks_tbl_s *ks;
+    static int		init_done = FALSE;
+    static int		last_tgc;
+    struct ks_tbl_s	*ks;
     struct builtin_term *bt;
 
     /* buffer initialization */
-    if (init == 0)
+    if (!init_done)
     {
-	ks = ks_tbl;
-	while (ks->vtp != NULL)
+	for (ks = ks_tbl; ks->vtp != NULL; ks++)
 	{
 	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
-	    ks->buf = bt->bt_string;
-	    ks->vbuf = ks->vtp;
-	    ks++;
+	    if (bt != NULL)
+	    {
+		ks->buf = bt->bt_string;
+		ks->vbuf = ks->vtp;
+	    }
 	}
-	init++;
+	init_done = TRUE;
 	last_tgc = p_tgc;
 	return;
     }
@@ -6696,25 +6695,27 @@ swap_tcap(void)
 	if (p_tgc)
 	{
 	    /* switch to special character sequence */
-	    ks = ks_tbl;
-	    while (ks->vtp != NULL)
+	    for (ks = ks_tbl; ks->vtp != NULL; ks++)
 	    {
 		bt = find_first_tcap(DEFAULT_TERM, ks->code);
-		ks->buf = bt->bt_string;
-		bt->bt_string = ks->vbuf;
-		ks++;
+		if (bt != NULL)
+		{
+		    ks->buf = bt->bt_string;
+		    bt->bt_string = ks->vbuf;
+		}
 	    }
 	}
 	else
 	{
 	    /* switch to index color */
-	    ks = ks_tbl;
-	    while (ks->vtp != NULL)
+	    for (ks = ks_tbl; ks->vtp != NULL; ks++)
 	    {
 		bt = find_first_tcap(DEFAULT_TERM, ks->code);
-		ks->vbuf = bt->bt_string;
-		bt->bt_string = ks->buf;
-		ks++;
+		if (bt != NULL)
+		{
+		    ks->vbuf = bt->bt_string;
+		    bt->bt_string = ks->buf;
+		}
 	    }
 	}
 
