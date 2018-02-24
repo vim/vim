@@ -150,25 +150,25 @@ typedef struct syn_pattern
 {
     char	 sp_type;		/* see SPTYPE_ defines below */
     char	 sp_syncing;		/* this item used for syncing */
+    short	 sp_syn_match_id;	/* highlight group ID of pattern */
+    short	 sp_off_flags;		/* see below */
+    int		 sp_offsets[SPO_COUNT];	/* offsets */
     int		 sp_flags;		/* see HL_ defines below */
 #ifdef FEAT_CONCEAL
     int		 sp_cchar;		/* conceal substitute character */
 #endif
+    int		 sp_ic;			/* ignore-case flag for sp_prog */
+    int		 sp_sync_idx;		/* sync item index (syncing only) */
+    int		 sp_line_id;		/* ID of last line where tried */
+    int		 sp_startcol;		/* next match in sp_line_id line */
+    short	*sp_cont_list;		/* cont. group IDs, if non-zero */
+    short	*sp_next_list;		/* next group IDs, if non-zero */
     struct sp_syn sp_syn;		/* struct passed to in_id_list() */
-    short	 sp_syn_match_id;	/* highlight group ID of pattern */
     char_u	*sp_pattern;		/* regexp to match, pattern */
     regprog_T	*sp_prog;		/* regexp to match, program */
 #ifdef FEAT_PROFILE
     syn_time_T	 sp_time;
 #endif
-    int		 sp_ic;			/* ignore-case flag for sp_prog */
-    short	 sp_off_flags;		/* see below */
-    int		 sp_offsets[SPO_COUNT];	/* offsets */
-    short	*sp_cont_list;		/* cont. group IDs, if non-zero */
-    short	*sp_next_list;		/* next group IDs, if non-zero */
-    int		 sp_sync_idx;		/* sync item index (syncing only) */
-    int		 sp_line_id;		/* ID of last line where tried */
-    int		 sp_startcol;		/* next match in sp_line_id line */
 } synpat_T;
 
 /* The sp_off_flags are computed like this:
