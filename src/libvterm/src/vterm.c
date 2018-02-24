@@ -56,7 +56,7 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
   vt->strbuffer_cur = 0;
   vt->strbuffer = vterm_allocator_malloc(vt, vt->strbuffer_len);
 
-  vt->outbuffer_len = 64;
+  vt->outbuffer_len = 200;
   vt->outbuffer_cur = 0;
   vt->outbuffer = vterm_allocator_malloc(vt, vt->outbuffer_len);
 

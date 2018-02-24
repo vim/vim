@@ -222,7 +222,8 @@ enum {
   C1_SS3 = 0x8f,
   C1_DCS = 0x90,
   C1_CSI = 0x9b,
-  C1_ST  = 0x9c
+  C1_ST  = 0x9c,
+  C1_OSC = 0x9d
 };
 
 void vterm_state_push_output_sprintf_CSI(VTermState *vts, const char *format, ...);
