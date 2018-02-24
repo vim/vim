@@ -827,6 +827,8 @@ main(int argc, char *argv[])
 	  for (i = 7; i >= 0; i--)
 	    l[++c] = (e & (1 << i)) ? '1' : '0';
 	}
+      if (e)
+	nonzero++;
       if (ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
@@ -837,8 +839,6 @@ main(int argc, char *argv[])
 	  (e > 31 && e < 127)
 #endif
 	  ? e : '.';
-      if (e)
-	nonzero++;
       n++;
       if (++p == cols)
 	{
