@@ -24,7 +24,8 @@ func RunVimInTerminal(arguments, options)
   hi Normal ctermfg=0 ctermbg=15
 
   let cmd = GetVimCommandClean()
-  let cmd .= ' ' . a:arguments
+  " Add -v to have gvim run in the terminal (if possible)
+  let cmd .= ' -v ' . a:arguments
   let buf = term_start(cmd, {'curwin': 1, 'term_rows': 20, 'term_cols': 75})
   call assert_equal([20, 75], term_getsize(buf))
 

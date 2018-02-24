@@ -527,6 +527,8 @@ endfunc
 " Check highlighting for a small piece of C code with a screen dump.
 func Test_syntax_c()
   " Need to be able to run terminal Vim with 256 colors.
+  " On MS-Windows the console only has 16 colors and the GUI can't run in a
+  " terminal.
   if !has('terminal') || has('win32')
     return
   endif
@@ -551,9 +553,15 @@ func Test_syntax_c()
 	\ '  }',
 	\ '}',
 	\ ], 'Xtest.c')
+ 
+  " This makes the default for 'background' use "dark", check that the
+  " response to t_RB corrects it to "light".
+  let $COLORFGBG = '15;0'
+
   let buf = RunVimInTerminal('Xtest.c', {})
   call VerifyScreenDump(buf, 'Test_syntax_c_01')
   call StopVimInTerminal(buf)
 
+  let $COLORFGBG = ''
   call delete('Xtest.c')
 endfun
