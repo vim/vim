@@ -48,7 +48,7 @@ endfunc
 " Stop a Vim running in terminal buffer "buf".
 func StopVimInTerminal(buf)
   call assert_equal("running", term_getstatus(a:buf))
-  call term_sendkeys(a:buf, ":qa!\<cr>")
+  call term_sendkeys(a:buf, "\<Esc>\<Esc>:qa!\<cr>")
   call WaitFor('term_getstatus(' . a:buf . ') == "finished"')
   only!
 endfunc
