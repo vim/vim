@@ -1829,7 +1829,7 @@ color2index(VTermColor *color, int fg, int *boldp)
 	switch (color->ansi_index)
 	{
 	    case  0: return 0;
-	    case  1: return lookup_color( 0, fg, boldp) + 1;
+	    case  1: return lookup_color( 0, fg, boldp) + 1; /* black */
 	    case  2: return lookup_color( 4, fg, boldp) + 1; /* dark red */
 	    case  3: return lookup_color( 2, fg, boldp) + 1; /* dark green */
 	    case  4: return lookup_color( 6, fg, boldp) + 1; /* brown */
@@ -2872,7 +2872,7 @@ dump_term_color(FILE *fd, VTermColor *color)
 }
 
 /*
- * "term_dumpwrite(buf, filename, max-height, max-width)" function
+ * "term_dumpwrite(buf, filename, options)" function
  *
  * Each screen cell in full is:
  *    |{characters}+{attributes}#{fg-color}{color-idx}#{bg-color}{color-idx}
@@ -2899,8 +2899,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     buf_T	*buf = term_get_buf(argvars);
     term_T	*term;
     char_u	*fname;
-    int		max_height = 99999;
-    int		max_width = 99999;
+    int		max_height = 0;
+    int		max_width = 0;
     stat_T	st;
     FILE	*fd;
     VTermPos	pos;
@@ -2913,6 +2913,23 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     term = buf->b_term;
 
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	dict_T *d;
+
+	if (argvars[2].v_type != VAR_DICT)
+	{
+	    EMSG(_(e_dictreq));
+	    return;
+	}
+	d = argvars[2].vval.v_dict;
+	if (d != NULL)
+	{
+	    max_height = get_dict_number(d, (char_u *)"rows");
+	    max_width = get_dict_number(d, (char_u *)"columns");
+	}
+    }
+
     fname = get_tv_string_chk(&argvars[1]);
     if (fname == NULL)
 	return;
@@ -2920,13 +2937,6 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	EMSG2(_("E953: File exists: %s"), fname);
 	return;
-    }
-
-    if (argvars[2].v_type != VAR_UNKNOWN)
-    {
-	max_height = get_tv_number(&argvars[2]);
-	if (argvars[3].v_type != VAR_UNKNOWN)
-	    max_width = get_tv_number(&argvars[3]);
     }
 
     if (*fname == NUL || (fd = mch_fopen((char *)fname, WRITEBIN)) == NULL)
@@ -2938,13 +2948,13 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     vim_memset(&prev_cell, 0, sizeof(prev_cell));
 
     screen = vterm_obtain_screen(term->tl_vterm);
-    for (pos.row = 0; pos.row < max_height && pos.row < term->tl_rows;
-								     ++pos.row)
+    for (pos.row = 0; (max_height == 0 || pos.row < max_height)
+					 && pos.row < term->tl_rows; ++pos.row)
     {
 	int		repeat = 0;
 
-	for (pos.col = 0; pos.col < max_width && pos.col < term->tl_cols;
-								     ++pos.col)
+	for (pos.col = 0; (max_width == 0 || pos.col < max_width)
+					 && pos.col < term->tl_cols; ++pos.col)
 	{
 	    VTermScreenCell cell;
 	    int		    same_attr;

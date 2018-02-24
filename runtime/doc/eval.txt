@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 18
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1246,8 +1246,8 @@ The arguments are optional.  Example: >
 							*closure*
 Lambda expressions can access outer scope variables and arguments.  This is
 often called a closure.  Example where "i" and "a:arg" are used in a lambda
-while they exist in the function scope.  They remain valid even after the
-function returns: >
+while they already exist in the function scope.  They remain valid even after
+the function returns: >
 	:function Foo(arg)
 	:  let i = 3
 	:  return {x -> x + i - a:arg}
@@ -1256,7 +1256,10 @@ function returns: >
 	:echo Bar(6)
 <	5
 
-See also |:func-closure|.  Lambda and closure support can be checked with: >
+Note that the variables must exist in the outer scope before the lamba is
+defined for this to work.  See also |:func-closure|.
+
+Lambda and closure support can be checked with: >
 	if has('lambda')
 
 Examples for using a lambda expression with |sort()|, |map()| and |filter()|: >
@@ -2416,7 +2419,7 @@ term_dumpdiff({filename}, {filename} [, {options}])
 				Number  display difference between two dumps
 term_dumpload({filename} [, {options}])
 				Number	displaying a screen dump
-term_dumpwrite({buf}, {filename} [, {max-height} [, {max-width}]])
+term_dumpwrite({buf}, {filename} [, {options}])
 				none	dump terminal window contents
 term_getaltscreen({buf})	Number	get the alternate screen flag
 term_getattr({attr}, {what})	Number	get the value of attribute {what}
@@ -6586,7 +6589,7 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 		between (not at the end), like with join(expr, "\n").
 		If {idvar} is present and not empty, it is taken as the name
 		of a variable and a {serverid} for later use with
-		remote_read() is stored there.
+		|remote_read()| is stored there.
 		If {timeout} is given the read times out after this many
 		seconds.  Otherwise a timeout of 600 seconds is used.
 		See also |clientserver| |RemoteReply|.
@@ -8190,12 +8193,16 @@ term_dumpload({filename} [, {options}])
 		{options} are not implemented yet.
 
 							*term_dumpwrite()*
-term_dumpwrite({buf}, {filename} [, {max-height} [, {max-width}]])
+term_dumpwrite({buf}, {filename} [, {options}])
 		Dump the contents of the terminal screen of {buf} in the file
 		{filename}.  This uses a format that can be used with
 		|term_dumpread()| and |term_dumpdiff()|.
 		If {filename} already exists an error is given.	*E953*
 		Also see |terminal-diff|.
+
+		{options} is a dictionary with these optional entries:
+			"rows"		maximum number of rows to dump
+			"columns"	maximum number of columns to dump
 
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate
@@ -9166,6 +9173,8 @@ ttyout			output is a terminal (tty)
 unix			Unix version of Vim. *+unix*
 unnamedplus		Compiled with support for "unnamedplus" in 'clipboard'
 user_commands		User-defined commands.
+vcon			Win32: Virtual console support is working, can use 256
+			and 24 bit colors.
 vertsplit		Compiled with vertically split windows |:vsplit|.
 vim_starting		True while initial source'ing takes place. |startup|
 			*vim_starting*
