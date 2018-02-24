@@ -253,7 +253,7 @@ pum_display(
 		/* align right pum edge with "col" */
 #ifdef FEAT_RIGHTLEFT
 		if (curwin->w_p_rl
-			&& col < max_width + pum_scrollbar + 1)
+			&& W_ENDCOL(curwin) < max_width + pum_scrollbar + 1)
 		{
 		    pum_col = col + max_width + pum_scrollbar + 1;
 		    if (pum_col >= Columns)
@@ -262,7 +262,7 @@ pum_display(
 		else if (!curwin->w_p_rl)
 #endif
 		{
-		    if (col > Columns - max_width - pum_scrollbar)
+		    if (curwin->w_wincol > Columns - max_width - pum_scrollbar)
 		    {
 			pum_col = Columns - max_width - pum_scrollbar;
 			if (pum_col < 0)
