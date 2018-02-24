@@ -19,9 +19,9 @@ func RunVimInTerminal(arguments, options)
   split
   vsplit
 
-  " Always doo this with 256 colors and a light background.
-  set t_Co=256
-  hi Normal ctermfg=0 ctermbg=15
+  " Always do this with 256 colors and a light background.
+  set t_Co=256 background=light
+  hi Normal ctermfg=NONE ctermbg=NONE
 
   let cmd = GetVimCommandClean()
   " Add -v to have gvim run in the terminal (if possible)

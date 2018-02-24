@@ -428,6 +428,8 @@ func Test_bg_detection()
   set bg=dark
   hi Normal ctermbg=12
   call assert_equal('dark', &bg)
+
+  hi Normal ctermbg=NONE
 endfunc
 
 func Test_syntax_hangs()
