@@ -2906,6 +2906,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     VTermPos	pos;
     VTermScreen *screen;
     VTermScreenCell prev_cell;
+    VTermState	*state;
+    VTermPos	cursor_pos;
 
     if (check_restricted() || check_secure())
 	return;
@@ -2948,6 +2950,9 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     vim_memset(&prev_cell, 0, sizeof(prev_cell));
 
     screen = vterm_obtain_screen(term->tl_vterm);
+    state = vterm_obtain_state(term->tl_vterm);
+    vterm_state_get_cursorpos(state, &cursor_pos);
+
     for (pos.row = 0; (max_height == 0 || pos.row < max_height)
 					 && pos.row < term->tl_rows; ++pos.row)
     {
@@ -2960,6 +2965,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	    int		    same_attr;
 	    int		    same_chars = TRUE;
 	    int		    i;
+	    int		    is_cursor_pos = (pos.col == cursor_pos.col
+						 && pos.row == cursor_pos.row);
 
 	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 		vim_memset(&cell, 0, sizeof(cell));
@@ -2975,7 +2982,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 					       == vtermAttr2hl(prev_cell.attrs)
 			&& same_color(&cell.fg, &prev_cell.fg)
 			&& same_color(&cell.bg, &prev_cell.bg);
-	    if (same_chars && cell.width == prev_cell.width && same_attr)
+	    if (same_chars && cell.width == prev_cell.width && same_attr
+							     && !is_cursor_pos)
 	    {
 		++repeat;
 	    }
@@ -2986,7 +2994,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		    fprintf(fd, "@%d", repeat);
 		    repeat = 0;
 		}
-		fputs("|", fd);
+		fputs(is_cursor_pos ? ">" : "|", fd);
 
 		if (cell.chars[0] == NUL)
 		    fputs(" ", fd);
@@ -3075,7 +3083,7 @@ append_cell(garray_T *gap, cellattr_T *cell)
  * Return the cell width of the longest line.
  */
     static int
-read_dump_file(FILE *fd)
+read_dump_file(FILE *fd, VTermPos *cursor_pos)
 {
     int		    c;
     garray_T	    ga_text;
@@ -3085,10 +3093,13 @@ read_dump_file(FILE *fd)
     cellattr_T	    cell;
     term_T	    *term = curbuf->b_term;
     int		    max_cells = 0;
+    int		    start_row = term->tl_scrollback.ga_len;
 
     ga_init2(&ga_text, 1, 90);
     ga_init2(&ga_cell, sizeof(cellattr_T), 90);
     vim_memset(&cell, 0, sizeof(cell));
+    cursor_pos->row = -1;
+    cursor_pos->col = -1;
 
     c = fgetc(fd);
     for (;;)
@@ -3123,9 +3134,17 @@ read_dump_file(FILE *fd)
 
 	    c = fgetc(fd);
 	}
-	else if (c == '|')
+	else if (c == '|' || c == '>')
 	{
 	    int prev_len = ga_text.ga_len;
+
+	    if (c == '>')
+	    {
+		if (cursor_pos->row != -1)
+		    dump_is_corrupt(&ga_text);	/* duplicate cursor */
+		cursor_pos->row = term->tl_scrollback.ga_len - start_row;
+		cursor_pos->col = ga_cell.ga_len;
+	    }
 
 	    /* normal character(s) followed by "+", "*", "|", "@" or NL */
 	    c = fgetc(fd);
@@ -3134,7 +3153,7 @@ read_dump_file(FILE *fd)
 	    for (;;)
 	    {
 		c = fgetc(fd);
-		if (c == '+' || c == '*' || c == '|' || c == '@'
+		if (c == '+' || c == '*' || c == '|' || c == '>' || c == '@'
 						      || c == EOF || c == '\n')
 		    break;
 		ga_append(&ga_text, c);
@@ -3146,7 +3165,7 @@ read_dump_file(FILE *fd)
 		prev_char = vim_strnsave(((char_u *)ga_text.ga_data) + prev_len,
 						    ga_text.ga_len - prev_len);
 
-	    if (c == '@' || c == '|' || c == '\n')
+	    if (c == '@' || c == '|' || c == '>' || c == '\n')
 	    {
 		/* use all attributes from previous cell */
 	    }
@@ -3336,11 +3355,20 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	term_T		*term = buf->b_term;
 	int		width;
 	int		width2;
+	VTermPos	cursor_pos1;
+	VTermPos	cursor_pos2;
 
 	rettv->vval.v_number = buf->b_fnum;
 
 	/* read the files, fill the buffer with the diff */
-	width = read_dump_file(fd1);
+	width = read_dump_file(fd1, &cursor_pos1);
+
+	/* position the cursor */
+	if (cursor_pos1.row >= 0)
+	{
+	    curwin->w_cursor.lnum = cursor_pos1.row + 1;
+	    coladvance(cursor_pos1.col);
+	}
 
 	/* Delete the empty line that was in the empty buffer. */
 	ml_delete(1, FALSE);
@@ -3363,7 +3391,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	    ml_append(curbuf->b_ml.ml_line_count, textline, 0, FALSE);
 
 	bot_lnum = curbuf->b_ml.ml_line_count;
-	width2 = read_dump_file(fd2);
+	width2 = read_dump_file(fd2, &cursor_pos2);
 	if (width2 > width)
 	{
 	    vim_free(textline);
@@ -3410,7 +3438,20 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 
 		    textline[col] = ' ';
 		    if (len1 != len2 || STRNCMP(p1, p2, len1) != 0)
+			/* text differs */
 			textline[col] = 'X';
+		    else if (lnum == cursor_pos1.row + 1
+			    && col == cursor_pos1.col
+			    && (cursor_pos1.row != cursor_pos2.row
+					|| cursor_pos1.col != cursor_pos2.col))
+			/* cursor in first but not in second */
+			textline[col] = '>';
+		    else if (lnum == cursor_pos2.row + 1
+			    && col == cursor_pos2.col
+			    && (cursor_pos1.row != cursor_pos2.row
+					|| cursor_pos1.col != cursor_pos2.col))
+			/* cursor in second but not in first */
+			textline[col] = '<';
 		    else if (cellattr1 != NULL && cellattr2 != NULL)
 		    {
 			if ((cellattr1 + col)->width
