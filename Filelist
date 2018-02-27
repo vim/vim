@@ -134,6 +134,7 @@ SRC_ALL =	\
 		src/testdir/pyxfile/*.py \
 		src/testdir/bench*.in \
 		src/testdir/bench*.vim \
+		src/testdir/dumps/*.dump \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/test000 \
 		src/testdir/if_ver*.vim \
