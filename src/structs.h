@@ -101,7 +101,10 @@ typedef struct {
 # endif
 # define guicolor_T long
 # define INVALCOLOR ((guicolor_T)0x1ffffff)
+    /* only used for cterm.bg_rgb and cterm.fg_rgb: use cterm color */
+# define CTERMCOLOR ((guicolor_T)0x1fffffe)
 #endif
+#define COLOR_INVALID(x) ((x) == INVALCOLOR || (x) == CTERMCOLOR)
 
 /*
  * marks: positions in a file

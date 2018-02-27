@@ -8952,8 +8952,18 @@ get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 
     vim_memset(&at_en, 0, sizeof(attrentry_T));
     at_en.ae_attr = attr;
-    at_en.ae_u.cterm.fg_rgb = fg;
-    at_en.ae_u.cterm.bg_rgb = bg;
+    if (fg == INVALCOLOR && bg == INVALCOLOR)
+    {
+	/* If both GUI colors are not set fall back to the cterm colors.  Helps
+	 * if the GUI only has an attribute, such as undercurl. */
+	at_en.ae_u.cterm.fg_rgb = CTERMCOLOR;
+	at_en.ae_u.cterm.bg_rgb = CTERMCOLOR;
+    }
+    else
+    {
+	at_en.ae_u.cterm.fg_rgb = fg;
+	at_en.ae_u.cterm.bg_rgb = bg;
+    }
     return get_attr_entry(&cterm_attr_table, &at_en);
 }
 #endif
@@ -9094,10 +9104,23 @@ hl_combine_attr(int char_attr, int prim_attr)
 		if (spell_aep->ae_u.cterm.bg_color > 0)
 		    new_en.ae_u.cterm.bg_color = spell_aep->ae_u.cterm.bg_color;
 #ifdef FEAT_TERMGUICOLORS
-		if (spell_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
-		    new_en.ae_u.cterm.fg_rgb = spell_aep->ae_u.cterm.fg_rgb;
-		if (spell_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
-		    new_en.ae_u.cterm.bg_rgb = spell_aep->ae_u.cterm.bg_rgb;
+		/* If both fg and bg are not set fall back to cterm colors.
+		 * Helps for SpellBad which uses undercurl in the GUI. */
+		if (COLOR_INVALID(spell_aep->ae_u.cterm.fg_rgb)
+			&& COLOR_INVALID(spell_aep->ae_u.cterm.bg_rgb))
+		{
+		    if (spell_aep->ae_u.cterm.fg_color > 0)
+			new_en.ae_u.cterm.fg_rgb = CTERMCOLOR;
+		    if (spell_aep->ae_u.cterm.bg_color > 0)
+			new_en.ae_u.cterm.bg_rgb = CTERMCOLOR;
+		}
+		else
+		{
+		    if (spell_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
+			new_en.ae_u.cterm.fg_rgb = spell_aep->ae_u.cterm.fg_rgb;
+		    if (spell_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
+			new_en.ae_u.cterm.bg_rgb = spell_aep->ae_u.cterm.bg_rgb;
+		}
 #endif
 	    }
 	}
@@ -9592,6 +9615,14 @@ set_hl_attr(
 #  endif
 	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
+	if (at_en.ae_u.cterm.fg_rgb == INVALCOLOR
+		&& at_en.ae_u.cterm.bg_rgb == INVALCOLOR)
+	{
+	    /* If both fg and bg are invalid fall back to the cterm colors.
+	     * Helps when the GUI only uses an attribute, e.g. undercurl. */
+	    at_en.ae_u.cterm.fg_rgb = CTERMCOLOR;
+	    at_en.ae_u.cterm.bg_rgb = CTERMCOLOR;
+	}
 # endif
 	sgp->sg_cterm_attr = get_attr_entry(&cterm_attr_table, &at_en);
     }

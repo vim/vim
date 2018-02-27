@@ -207,6 +207,8 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 #define INVALCOLOR (guicolor_T)-11111	/* number for invalid color; on 32 bit
 				   displays there is a tiny chance this is an
 				   actual color */
+#define CTERMCOLOR (guicolor_T)-11110	/* only used for cterm.bg_rgb and
+					   cterm.fg_rgb: use cterm color */
 
 #ifdef FEAT_GUI_GTK
   typedef PangoFontDescription	*GuiFont;       /* handle for a GUI font */

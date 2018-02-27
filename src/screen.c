@@ -8066,16 +8066,13 @@ screen_start_highlight(int attr)
 	    }
 	    if ((attr & HL_BOLD) && *T_MD != NUL)	/* bold */
 		out_str(T_MD);
-	    else if (aep != NULL && cterm_normal_fg_bold &&
+	    else if (aep != NULL && cterm_normal_fg_bold && (
 #ifdef FEAT_TERMGUICOLORS
-			(p_tgc ?
-			    (aep->ae_u.cterm.fg_rgb != INVALCOLOR):
+			p_tgc && aep->ae_u.cterm.fg_rgb != CTERMCOLOR
+			  ? aep->ae_u.cterm.fg_rgb != INVALCOLOR
+			  :
 #endif
-			    (t_colors > 1 && aep->ae_u.cterm.fg_color)
-#ifdef FEAT_TERMGUICOLORS
-			)
-#endif
-		    )
+			    t_colors > 1 && aep->ae_u.cterm.fg_color))
 		/* If the Normal FG color has BOLD attribute and the new HL
 		 * has a FG color defined, clear BOLD. */
 		out_str(T_ME);
@@ -8101,28 +8098,39 @@ screen_start_highlight(int attr)
 	    if (aep != NULL)
 	    {
 #ifdef FEAT_TERMGUICOLORS
-		if (p_tgc)
+		/* When 'termguicolors' is set but fg or bg is unset,
+		 * fall back to the cterm colors.   This helps for SpellBad,
+		 * where the GUI uses a red undercurl. */
+		if (p_tgc && aep->ae_u.cterm.fg_rgb != CTERMCOLOR)
 		{
 		    if (aep->ae_u.cterm.fg_rgb != INVALCOLOR)
 			term_fg_rgb_color(aep->ae_u.cterm.fg_rgb);
+		}
+		else
+#endif
+		if (t_colors > 1)
+		{
+		    if (aep->ae_u.cterm.fg_color)
+			term_fg_color(aep->ae_u.cterm.fg_color - 1);
+		}
+#ifdef FEAT_TERMGUICOLORS
+		if (p_tgc && aep->ae_u.cterm.bg_rgb != CTERMCOLOR)
+		{
 		    if (aep->ae_u.cterm.bg_rgb != INVALCOLOR)
 			term_bg_rgb_color(aep->ae_u.cterm.bg_rgb);
 		}
 		else
 #endif
+		if (t_colors > 1)
 		{
-		    if (t_colors > 1)
-		    {
-			if (aep->ae_u.cterm.fg_color)
-			    term_fg_color(aep->ae_u.cterm.fg_color - 1);
-			if (aep->ae_u.cterm.bg_color)
-			    term_bg_color(aep->ae_u.cterm.bg_color - 1);
-		    }
-		    else
-		    {
-			if (aep->ae_u.term.start != NULL)
-			    out_str(aep->ae_u.term.start);
-		    }
+		    if (aep->ae_u.cterm.bg_color)
+			term_bg_color(aep->ae_u.cterm.bg_color - 1);
+		}
+
+		if (t_colors <= 1)
+		{
+		    if (aep->ae_u.term.start != NULL)
+			out_str(aep->ae_u.term.start);
 		}
 	    }
 	}
@@ -8162,17 +8170,19 @@ screen_stop_highlight(void)
 		     * Assume that t_me restores the original colors!
 		     */
 		    aep = syn_cterm_attr2entry(screen_attr);
-		    if (aep != NULL &&
+		    if (aep != NULL && ((
 #ifdef FEAT_TERMGUICOLORS
-			    (p_tgc ?
-				(aep->ae_u.cterm.fg_rgb != INVALCOLOR
-				 || aep->ae_u.cterm.bg_rgb != INVALCOLOR):
+			    p_tgc && aep->ae_u.cterm.fg_rgb != CTERMCOLOR
+				? aep->ae_u.cterm.fg_rgb != INVALCOLOR
+				:
 #endif
-				(aep->ae_u.cterm.fg_color || aep->ae_u.cterm.bg_color)
+				aep->ae_u.cterm.fg_color) || (
 #ifdef FEAT_TERMGUICOLORS
-			    )
+			    p_tgc && aep->ae_u.cterm.bg_rgb != CTERMCOLOR
+				? aep->ae_u.cterm.bg_rgb != INVALCOLOR
+				:
 #endif
-			)
+				aep->ae_u.cterm.bg_color)))
 			do_ME = TRUE;
 		}
 		else
