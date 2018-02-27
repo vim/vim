@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.0.  Last change: 2017 Nov 16
+*editing.txt*   For Vim version 8.0.  Last change: 2018 Feb 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1202,7 +1202,8 @@ MULTIPLE WINDOWS AND BUFFERS				*window-exit*
 :wqa[ll]! [++opt]
 :xa[ll]!	Write all changed buffers, even the ones that are readonly,
 		and exit Vim.  If there are buffers without a file name or
-		which cannot be written for another reason, Vim will not quit.
+		which cannot be written for another reason, or there is a
+		terminal with a running job, Vim will not quit.
 		{not in Vi}
 
 ==============================================================================

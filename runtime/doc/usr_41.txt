@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.0.  Last change: 2017 Dec 02
+*usr_41.txt*	For Vim version 8.0.  Last change: 2018 Feb 13
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -924,7 +924,8 @@ Testing:				    *test-functions*
 	assert_false()		assert that an expression is false
 	assert_true()		assert that an expression is true
 	assert_exception()	assert that a command throws an exception
-	assert_fails()		assert that a function call fails
+	assert_beeps()		assert that a command beeps
+	assert_fails()		assert that a command fails
 	assert_report()		report a test failure
 	test_alloc_fail()	make memory allocation fail
 	test_autochdir()	enable 'autochdir' during startup

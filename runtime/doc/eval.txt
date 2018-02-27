@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 24
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8196,7 +8196,7 @@ term_dumpload({filename} [, {options}])
 term_dumpwrite({buf}, {filename} [, {options}])
 		Dump the contents of the terminal screen of {buf} in the file
 		{filename}.  This uses a format that can be used with
-		|term_dumpread()| and |term_dumpdiff()|.
+		|term_dumpload()| and |term_dumpdiff()|.
 		If {filename} already exists an error is given.	*E953*
 		Also see |terminal-diff|.
 
@@ -9173,8 +9173,8 @@ ttyout			output is a terminal (tty)
 unix			Unix version of Vim. *+unix*
 unnamedplus		Compiled with support for "unnamedplus" in 'clipboard'
 user_commands		User-defined commands.
-vcon			Win32: Virtual console support is working, can use 256
-			and 24 bit colors.
+vcon			Win32: Virtual console support is working, can use
+			'termguicolors'. Also see |+vtp|.
 vertsplit		Compiled with vertically split windows |:vsplit|.
 vim_starting		True while initial source'ing takes place. |startup|
 			*vim_starting*

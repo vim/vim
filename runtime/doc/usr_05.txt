@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 8.0.  Last change: 2016 Mar 28
+*usr_05.txt*	For Vim version 8.0.  Last change: 2018 Feb 20
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -47,6 +47,14 @@ For MS-DOS and MS-Windows you can use one of these:
 
 	$HOME/_vimrc ~
 	$VIM/_vimrc ~
+
+If you are creating the vimrc file for the first time, it is recommended to
+put this line at the top: >
+
+	source $VIMRUNTIME/defaults.vim
+
+This initializes Vim for new users (as opposed to traditional Vi users). See
+|defaults.vim| for the details.
 
 The vimrc file can contain all the commands that you type after a colon.  The
 most simple ones are for setting options.  For example, if you want Vim to

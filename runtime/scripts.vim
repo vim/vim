@@ -104,10 +104,6 @@ if s:line1 =~# "^#!"
   elseif s:name =~# '^pike\%(\>\|[0-9]\)'
     set ft=pike
 
-    " Pike
-  elseif s:name =~# '^pike\%(\>\|[0-9]\)'
-    set ft=pike
-
     " Lua
   elseif s:name =~# 'lua'
     set ft=lua

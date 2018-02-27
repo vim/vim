@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.0.  Last change: 2017 Nov 18
+*various.txt*   For Vim version 8.0.  Last change: 2018 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -449,6 +449,7 @@ N  *+virtualedit*	|'virtualedit'|
 S  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 N  *+visualextra*	extra Visual mode commands |blockwise-operators|
 N  *+vreplace*		|gR| and |gr|
+   *+vtp*		on MS-Windows console: support for 'termguicolors'
 N  *+wildignore*	|'wildignore'|
 N  *+wildmenu*		|'wildmenu'|
    *+windows*		more than one window; Always enabled since 8.0.1118.

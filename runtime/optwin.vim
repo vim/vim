@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Nov 21
+" Last Change:	2018 Feb 11
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -802,6 +802,8 @@ if has("insert_expand")
   call <SID>OptionG("cot", &cot)
   call append("$", "pumheight\tmaximum height of the popup menu")
   call <SID>OptionG("ph", &ph)
+  call append("$", "pumwidth\tminimum width of the popup menu")
+  call <SID>OptionG("pw", &pw)
   call append("$", "completefunc\tuser defined function for Insert mode completion")
   call append("$", "\t(local to buffer)")
   call <SID>OptionL("cfu")

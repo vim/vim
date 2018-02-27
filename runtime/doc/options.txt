@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2018 Feb 22
+*options.txt*	For Vim version 8.0.  Last change: 2018 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -50,7 +50,7 @@ achieve special effects.  These options come in three forms:
 :se[t] {option}&vi	Reset option to its Vi default value. {not in Vi}
 :se[t] {option}&vim	Reset option to its Vim default value. {not in Vi}
 
-:se[t] all&		Set all options to their default value.  The values of 
+:se[t] all&		Set all options to their default value.  The values of
 			these options are not changed:
 			  all terminal options, starting with t_
 			  'columns'
@@ -1325,7 +1325,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			    characters.  It permits dynamic French paragraph
 			    indentation (negative) or emphasizing the line
 			    continuation (positive).
-		sbr	    Display the 'showbreak' value before applying the 
+		sbr	    Display the 'showbreak' value before applying the
 			    additional indent.
 	The default value for min is 20 and shift is 0.
 
@@ -1808,7 +1808,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'copyindent'	+ off		don't copy indent structure
 	'cpoptions'	& (all flags)	Vi-compatible flags
 	'cscopepathcomp'+ 0		don't show directories in tags list
-	'cscoperelative'+ off		
+	'cscoperelative'+ off		don't use basename of path as prefix
 	'cscopetag'	+ off		don't use cscope for ":tag"
 	'cscopetagorder'+ 0		see |cscopetagorder|
 	'cscopeverbose'	+ off		see |cscopeverbose|
@@ -3468,7 +3468,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	when internal formatting is used.  Make sure the cursor is kept in the
 	same spot relative to the text then!  The |mode()| function will
 	return "i" or "R" in this situation.
-	
+
 	When the expression evaluates to non-zero Vim will fall back to using
 	the internal format mechanism.
 
@@ -5114,8 +5114,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global or local to buffer |global-local|
 			{not in Vi}
 	Program to use for the ":make" command.  See |:make_makeprg|.
-	This option may contain '%' and '#' characters (see  |:_%| and |:_#|), 
-	which are expanded to the current and alternate file name.  Use |::S| 
+	This option may contain '%' and '#' characters (see  |:_%| and |:_#|),
+	which are expanded to the current and alternate file name.  Use |::S|
 	to escape file names in case they contain special characters.
 	Environment variables are expanded |:set_env|.  See |option-backslash|
 	about including spaces and backslashes.
@@ -5966,7 +5966,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the
 			|+insert_expand| feature}
 			{not in Vi}
-	Determines the minium width to use for the popup menu for Insert mode
+	Determines the minimum width to use for the popup menu for Insert mode
 	completion.  |ins-completion-menu|.
 
 						*'pythondll'*
@@ -6122,7 +6122,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	characters are put before the number.
 	See |hl-LineNr|  and |hl-CursorLineNr| for the highlighting used for
 	the number.
-	
+
 	The number in front of the cursor line also depends on the value of
 	'number', see |number_relativenumber| for all combinations of the two
 	options.
@@ -7561,6 +7561,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Also see |swap-file| and |'swapsync'|.
 	If you want to open a new buffer without creating a swap file for it,
 	use the |:noswapfile| modifier.
+	See 'directory' for where the swap file is created.
 
 	This option is used together with 'bufhidden' and 'buftype' to
 	specify special kinds of buffers.   See |special-buffers|.
@@ -7915,7 +7916,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			|+termguicolors| feature}
 	When on, uses |highlight-guifg| and |highlight-guibg| attributes in
 	the terminal (thus using 24-bit color).
-	
+
 	Requires a ISO-8613-3 compatible terminal.  If setting this option
 	does not work (produces a colorless UI) reading |xterm-true-color|
 	might help.
@@ -7923,7 +7924,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For Win32 console, Windows 10 version 1703 (Creators Update) or later
 	is required. Use this check to find out: >
 		if has('vcon')
-<
+<	This requires Vim to be built with the |+vtp| feature.
+
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 
@@ -8010,7 +8012,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	non-keyword characters (white space is preferred).  Maximum line
 	length is 510 bytes.
 	To obtain a file to be used here, check out this ftp site:
-	[Sorry this link doesn't work anymore, do you know the right one?] 
+	[Sorry this link doesn't work anymore, do you know the right one?]
 	ftp://ftp.ox.ac.uk/pub/wordlists/  First get the README file.
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file

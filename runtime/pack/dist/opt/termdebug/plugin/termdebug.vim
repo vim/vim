@@ -325,9 +325,11 @@ func s:Evaluate(range, arg)
   else
     let expr = expand('<cexpr>')
   endif
+  let s:ignoreEvalError = 0
   call s:SendEval(expr)
 endfunc
 
+let s:ignoreEvalError = 0
 let s:evalFromBalloonExpr = 0
 
 " Handle the result of data-evaluate-expression
@@ -347,6 +349,7 @@ func s:HandleEvaluate(msg)
 
   if s:evalexpr[0] != '*' && value =~ '^0x' && value != '0x0' && value !~ '"$'
     " Looks like a pointer, also display what it points to.
+    let s:ignoreEvalError = 1
     call s:SendEval('*' . s:evalexpr)
   else
     let s:evalFromBalloonExpr = 0
@@ -359,19 +362,19 @@ func TermDebugBalloonExpr()
   if v:beval_winid != s:startwin
     return
   endif
-  call s:SendEval(v:beval_text)
   let s:evalFromBalloonExpr = 1
   let s:evalFromBalloonExprResult = ''
+  let s:ignoreEvalError = 1
+  call s:SendEval(v:beval_text)
   return ''
 endfunc
 
 " Handle an error.
 func s:HandleError(msg)
-  if a:msg =~ 'No symbol .* in current context'
-	\ || a:msg =~ 'Cannot access memory at address '
-	\ || a:msg =~ 'Attempt to use a type name as an expression'
-	\ || a:msg =~ 'A syntax error in expression,'
+  if s:ignoreEvalError
     " Result of s:SendEval() failed, ignore.
+    let s:ignoreEvalError = 0
+    let s:evalFromBalloonExpr = 0
     return
   endif
   echoerr substitute(a:msg, '.*msg="\(.*\)"', '\1', '')
