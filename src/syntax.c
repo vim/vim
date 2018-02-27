@@ -8411,10 +8411,10 @@ highlight_clear(int idx)
     void
 set_normal_colors(void)
 {
-#ifdef FEAT_GUI
-# ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_GUI
+#  ifdef FEAT_TERMGUICOLORS
     if (gui.in_use)
-# endif
+#  endif
     {
 	if (set_group_colors((char_u *)"Normal",
 				 &gui.norm_pixel, &gui.back_pixel,
@@ -8423,27 +8423,27 @@ set_normal_colors(void)
 	    gui_mch_new_colors();
 	    must_redraw = CLEAR;
 	}
-# ifdef FEAT_GUI_X11
+#  ifdef FEAT_GUI_X11
 	if (set_group_colors((char_u *)"Menu",
 			     &gui.menu_fg_pixel, &gui.menu_bg_pixel,
 			     TRUE, FALSE, FALSE))
 	{
-#  ifdef FEAT_MENU
+#   ifdef FEAT_MENU
 	    gui_mch_new_menu_colors();
-#  endif
+#   endif
 	    must_redraw = CLEAR;
 	}
-#  ifdef FEAT_BEVAL_GUI
+#   ifdef FEAT_BEVAL_GUI
 	if (set_group_colors((char_u *)"Tooltip",
 			     &gui.tooltip_fg_pixel, &gui.tooltip_bg_pixel,
 			     FALSE, FALSE, TRUE))
 	{
-#   ifdef FEAT_TOOLBAR
+#    ifdef FEAT_TOOLBAR
 	    gui_mch_new_tooltip_colors();
-#   endif
+#    endif
 	    must_redraw = CLEAR;
 	}
-#  endif
+#   endif
 	if (set_group_colors((char_u *)"Scrollbar",
 			&gui.scroll_fg_pixel, &gui.scroll_bg_pixel,
 			FALSE, FALSE, FALSE))
@@ -8451,13 +8451,13 @@ set_normal_colors(void)
 	    gui_new_scrollbar_colors();
 	    must_redraw = CLEAR;
 	}
-# endif
+#  endif
     }
-#endif
-#ifdef FEAT_TERMGUICOLORS
-# ifdef FEAT_GUI
-    else
 # endif
+# ifdef FEAT_TERMGUICOLORS
+#  ifdef FEAT_GUI
+    else
+#  endif
     {
 	int		idx;
 
@@ -8466,19 +8466,20 @@ set_normal_colors(void)
 	{
 	    gui_do_one_color(idx, FALSE, FALSE);
 
-	    if (HL_TABLE()[idx].sg_gui_fg != INVALCOLOR)
+	    /* If the normal fg or bg color changed a complete redraw is
+	     * required. */
+	    if (cterm_normal_fg_gui_color != HL_TABLE()[idx].sg_gui_fg
+		    || cterm_normal_bg_gui_color != HL_TABLE()[idx].sg_gui_bg)
 	    {
+		/* if the GUI color is INVALCOLOR then we use the default cterm
+		 * color */
 		cterm_normal_fg_gui_color = HL_TABLE()[idx].sg_gui_fg;
-		must_redraw = CLEAR;
-	    }
-	    if (HL_TABLE()[idx].sg_gui_bg != INVALCOLOR)
-	    {
 		cterm_normal_bg_gui_color = HL_TABLE()[idx].sg_gui_bg;
 		must_redraw = CLEAR;
 	    }
 	}
     }
-#endif
+# endif
 }
 #endif
 
@@ -9867,9 +9868,10 @@ syn_get_final_id(int hl_id)
     return hl_id;
 }
 
-#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS) || defined(PROTO)
 /*
  * Call this function just after the GUI has started.
+ * Also called when 'termguicolors' was set, gui.in_use will be FALSE then.
  * It finds the font and color handles for the highlighting groups.
  */
     void
@@ -9878,12 +9880,8 @@ highlight_gui_started(void)
     int	    idx;
 
     /* First get the colors from the "Normal" and "Menu" group, if set */
-# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-#  ifdef FEAT_TERMGUICOLORS
     if (USE_24BIT)
-#  endif
 	set_normal_colors();
-# endif
 
     for (idx = 0; idx < highlight_ga.ga_len; ++idx)
 	gui_do_one_color(idx, FALSE, FALSE);
