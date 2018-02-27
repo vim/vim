@@ -23,6 +23,19 @@ func s:run_server(testfunc, ...)
   call RunServer('test_channel.py', a:testfunc, a:000)
 endfunc
 
+" To make sure no leaked resources
+func s:get_resources()
+  let pid = getpid()
+
+  if has('mac')
+    return systemlist('lsof -p ' . pid . '|awk ''$4~/^[0-9]*[rwu]$/&&$5=="REG"{print$NF}''')
+  elseif isdirectory('/proc')
+    return systemlist('readlink /proc/' . pid . '/fd/*|grep -v ''^/dev/''')
+  else
+    return []
+  endif
+endfunc
+
 let g:Ch_responseMsg = ''
 func Ch_requestHandler(handle, msg)
   let g:Ch_responseHandle = a:handle
@@ -620,6 +633,7 @@ func Test_nl_write_out_file()
     call assert_equal(['line one', 'line two', 'this', 'AND this'], readfile('Xoutput'))
   finally
     call Stop_g_job()
+    call assert_equal(-1, match(s:get_resources(), '\(^\|/\)Xoutput$'))
     call delete('Xoutput')
   endtry
 endfunc
@@ -663,6 +677,7 @@ func Test_nl_write_both_file()
     call assert_equal(['line one', 'line two', 'this', 'AND this', 'that', 'AND that'], readfile('Xoutput'))
   finally
     call Stop_g_job()
+    call assert_equal(-1, match(s:get_resources(), '\(^\|/\)Xoutput$'))
     call delete('Xoutput')
   endtry
 endfunc
@@ -1662,6 +1677,7 @@ func Test_raw_passes_nul()
   call assert_equal("asdf\nasdf", getline(1))
   call assert_equal("xxx\n", getline(2))
   call assert_equal("\nyyy", getline(3))
+  call assert_equal(-1, match(s:get_resources(), '\(^\|/\)Xtestwrite$'))
 
   call delete('Xtestwrite')
   bwipe!
