@@ -18,7 +18,7 @@
 /* based on Alpha's gen64def.h; the file is absent on VAX */
 typedef struct _generic_64 {
 #   pragma __nomember_alignment
-    __union  {                          /* You can treat me as...  */
+    __union  {				/* You can treat me as...  */
 	/* long long is not available on VAXen */
 	/* unsigned __int64 gen64$q_quadword; ...a single 64-bit value, or */
 
@@ -461,8 +461,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 	result = decc$translate_vms(vms_fixfilename(buf));
 	if ( (int) result == 0 || (int) result == -1  ) {
 	    cnt = 0;
-	}
-        else {
+	} else {
 	    cnt = decc$to_vms(result, vms_wproc, 1 /*allow wild*/ , (flags & EW_DIR ? 0:1 ) /*allow directory*/) ;
 	}
 	if (cnt > 0)
@@ -519,10 +518,9 @@ mch_expandpath(garray_T *gap, char_u *path, int flags)
     /* otherwise it might create ACCVIO error in decc$to_vms      */
     result = decc$translate_vms(vms_fixfilename(path));
     if ( (int) result == 0 || (int) result == -1  ) {
-        cnt = 0;
-    }
-    else {
-        cnt = decc$to_vms(result, vms_wproc, 1 /*allow_wild*/, (flags & EW_DIR ? 0:1 ) /*allow directory*/);
+	cnt = 0;
+    } else {
+	cnt = decc$to_vms(result, vms_wproc, 1 /*allow_wild*/, (flags & EW_DIR ? 0:1 ) /*allow directory*/);
     }
     if (cnt > 0)
 	cnt = vms_match_num;
@@ -741,68 +739,66 @@ RealWaitForChar(
 	get_tty();
 
     if (sec > 0) {
-        /* time-out specified; convert it to absolute time */
+	/* time-out specified; convert it to absolute time */
 	/* sec>0 requirement of lib$cvtf_to_internal_time()*/
 
-        /* get current time (number of 100ns ticks since the VMS Epoch) */
-        status = sys$gettim(&time_curr);
-        if (status != SS$_NORMAL)
-            return 0; /* error */
-        /* construct the delta time */
+	/* get current time (number of 100ns ticks since the VMS Epoch) */
+	status = sys$gettim(&time_curr);
+	if (status != SS$_NORMAL)
+	    return 0; /* error */
+	/* construct the delta time */
 #if __G_FLOAT==0
 # ifndef VAX
 	/* IEEE is default on IA64, but can be used on Alpha too - but not on VAX */
-        status = lib$cvts_to_internal_time(
-                &convert_operation, &sec, &time_diff);
+	status = lib$cvts_to_internal_time(
+		&convert_operation, &sec, &time_diff);
 # endif
 #else   /* default on Alpha and VAX  */
-        status = lib$cvtf_to_internal_time(
+	status = lib$cvtf_to_internal_time(
 		&convert_operation, &sec, &time_diff);
 #endif
-        if (status != LIB$_NORMAL)
-            return 0; /* error */
-        /* add them up */
-        status = lib$add_times(
-                &time_curr,
-                &time_diff,
-                &time_out);
-        if (status != LIB$_NORMAL)
-            return 0; /* error */
+	if (status != LIB$_NORMAL)
+	    return 0; /* error */
+	/* add them up */
+	status = lib$add_times(
+		&time_curr,
+		&time_diff,
+		&time_out);
+	if (status != LIB$_NORMAL)
+	    return 0; /* error */
     }
 
     while (TRUE) {
-        /* select() */
-        status = sys$qiow(0, iochan, IO$_SENSEMODE | IO$M_TYPEAHDCNT, iosb,
-                0, 0, &typeahead, 8, 0, 0, 0, 0);
+	/* select() */
+	status = sys$qiow(0, iochan, IO$_SENSEMODE | IO$M_TYPEAHDCNT, iosb,
+		0, 0, &typeahead, 8, 0, 0, 0, 0);
 	if (status != SS$_NORMAL || (iosb[0] & 0xFFFF) != SS$_NORMAL)
-            return 0; /* error */
+	    return 0; /* error */
 
-        if (typeahead.numchars)
-            return 1; /* ready to read */
+	if (typeahead.numchars)
+	    return 1; /* ready to read */
 
-        /* there's nothing to read; what now? */
-        if (msec == 0) {
-            /* immediate time-out; return impatiently */
-            return 0;
-        }
-        else if (msec < 0) {
-            /* no time-out; wait on indefinitely */
-            continue;
-        }
-        else {
-            /* time-out needs to be checked */
-            status = sys$gettim(&time_curr);
-            if (status != SS$_NORMAL)
-                return 0; /* error */
+	/* there's nothing to read; what now? */
+	if (msec == 0) {
+	    /* immediate time-out; return impatiently */
+	    return 0;
+	} else if (msec < 0) {
+	    /* no time-out; wait on indefinitely */
+	    continue;
+	} else {
+	    /* time-out needs to be checked */
+	    status = sys$gettim(&time_curr);
+	    if (status != SS$_NORMAL)
+		return 0; /* error */
 
-            status = lib$sub_times(
-                    &time_out,
-                    &time_curr,
-                    &time_diff);
-            if (status != LIB$_NORMAL)
-                return 0; /* error, incl. time_diff < 0 (i.e. time-out) */
+	    status = lib$sub_times(
+		    &time_out,
+		    &time_curr,
+		    &time_diff);
+	    if (status != LIB$_NORMAL)
+		return 0; /* error, incl. time_diff < 0 (i.e. time-out) */
 
-            /* otherwise wait some more */
-        }
+	    /* otherwise wait some more */
+	}
     }
 }

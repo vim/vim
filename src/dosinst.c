@@ -1200,8 +1200,8 @@ install_vimrc(int idx)
 
 	/* If the path has a space:  When using cmd.exe (Win NT/2000/XP) put
 	 * quotes around the diff command and rely on the default value of
-         * shellxquote to solve the quoting problem for the whole command.
-         *
+	 * shellxquote to solve the quoting problem for the whole command.
+	 *
 	 * Otherwise put a double quote just before the space and at the
 	 * end of the command.  Putting quotes around the whole thing
 	 * doesn't work on Win 95/98/ME.  This is mostly guessed! */

@@ -1895,8 +1895,8 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 	trigger.window     = gtk_widget_get_window(gui.drawarea);
 	trigger.send_event = FALSE;
 	trigger.time       = gui.event_time;
-	trigger.x          = 0.0;
-	trigger.y          = 0.0;
+	trigger.x	   = 0.0;
+	trigger.y	   = 0.0;
 	trigger.axes       = NULL;
 	trigger.state      = 0;
 	trigger.button     = 3;
@@ -1983,8 +1983,8 @@ gui_make_popup(char_u *path_name, int mouse_pos)
 	trigger.window     = win;
 	trigger.send_event = FALSE;
 	trigger.time       = GDK_CURRENT_TIME;
-	trigger.x          = 0.0;
-	trigger.y          = 0.0;
+	trigger.x	   = 0.0;
+	trigger.y	   = 0.0;
 	trigger.axes       = NULL;
 	trigger.state      = 0;
 	trigger.button     = 0;

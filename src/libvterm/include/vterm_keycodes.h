@@ -8,6 +8,7 @@ typedef enum {
   VTERM_MOD_CTRL  = 0x04
 } VTermModifier;
 
+/* The order here must match keycodes[] in src/keyboard.c! */
 typedef enum {
   VTERM_KEY_NONE,
 

@@ -137,7 +137,7 @@ get_beval_info(
  * Show a balloon with "mesg" or "list".
  */
     void
-post_balloon(BalloonEval *beval UNUSED, char_u *mesg, list_T *list)
+post_balloon(BalloonEval *beval UNUSED, char_u *mesg, list_T *list UNUSED)
 {
 # ifdef FEAT_BEVAL_TERM
 #  ifdef FEAT_GUI

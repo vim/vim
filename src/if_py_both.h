@@ -5996,7 +5996,7 @@ convert_dl(PyObject *obj, typval_T *tv,
     PyObject	*capsule;
     char	hexBuf[sizeof(void *) * 2 + 3];
 
-    sprintf(hexBuf, "%p", obj);
+    sprintf(hexBuf, "%p", (void *)obj);
 
 # ifdef PY_USE_CAPSULE
     capsule = PyDict_GetItemString(lookup_dict, hexBuf);

@@ -74,7 +74,7 @@
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
 
 #define PyBytes_FromString      PyString_FromString
-#define PyBytes_Check           PyString_Check
+#define PyBytes_Check		PyString_Check
 #define PyBytes_AsStringAndSize PyString_AsStringAndSize
 
 #if !defined(FEAT_PYTHON) && defined(PROTO)
