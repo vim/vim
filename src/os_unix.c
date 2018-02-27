@@ -4601,6 +4601,12 @@ mch_call_shell(
 	    reset_signals();		/* handle signals normally */
 	    UNBLOCK_SIGNALS(&curset);
 
+# ifdef FEAT_JOB_CHANNEL
+	    if (ch_log_active())
+		/* close the log file in the child */
+		ch_logfile((char_u *)"", (char_u *)"");
+# endif
+
 	    if (!show_shell_mess || (options & SHELL_EXPAND))
 	    {
 		int fd;
@@ -5454,6 +5460,12 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	reset_signals();		/* handle signals normally */
 	UNBLOCK_SIGNALS(&curset);
 
+# ifdef FEAT_JOB_CHANNEL
+	if (ch_log_active())
+	    /* close the log file in the child */
+	    ch_logfile((char_u *)"", (char_u *)"");
+# endif
+
 # ifdef HAVE_SETSID
 	/* Create our own process group, so that the child and all its
 	 * children can be kill()ed.  Don't do this when using pipes,
@@ -5587,11 +5599,11 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
     if (pty_master_fd >= 0)
 	close(pty_slave_fd); /* not used in the parent */
     /* close child stdin, stdout and stderr */
-    if (!use_file_for_in && fd_in[0] >= 0)
+    if (fd_in[0] >= 0)
 	close(fd_in[0]);
-    if (!use_file_for_out && fd_out[1] >= 0)
+    if (fd_out[1] >= 0)
 	close(fd_out[1]);
-    if (!use_out_for_err && !use_file_for_err && fd_err[1] >= 0)
+    if (fd_err[1] >= 0)
 	close(fd_err[1]);
     if (channel != NULL)
     {
