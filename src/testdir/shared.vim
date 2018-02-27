@@ -115,6 +115,7 @@ endfunc
 
 " Wait for up to a second for "expr" to become true.  "expr" can be a
 " stringified expression to evaluate, or a funcref without arguments.
+" A second argument can be used to specify a different timeout in msec.
 "
 " Return time slept in milliseconds.  With the +reltime feature this can be
 " more than the actual waiting time.  Without +reltime it can also be less.

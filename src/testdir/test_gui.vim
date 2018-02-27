@@ -16,7 +16,7 @@ func TearDown()
 endfunc
 
 " Test for resetting "secure" flag after GUI has started.
-" Must be run first.
+" Must be run first, since it starts the GUI on Unix.
 func Test_1_set_secure()
   set exrc secure
   gui -f
