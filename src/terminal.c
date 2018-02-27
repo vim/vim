@@ -1306,10 +1306,9 @@ term_enter_job_mode()
 }
 
 /*
- * Get a key from the user without mapping.
+ * Get a key from the user with terminal mode mappings.
  * Note: while waiting a terminal may be closed and freed if the channel is
  * closed and ++close was used.
- * Uses terminal mode mappings.
  */
     static int
 term_vgetc()
@@ -1633,7 +1632,7 @@ terminal_loop(int blocking)
     position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
 
-    while (blocking || vpeekc() != NUL)
+    while (blocking || vpeekc_nomap() != NUL)
     {
 	/* TODO: skip screen update when handling a sequence of keys. */
 	/* Repeat redrawing in case a message is received while redrawing. */
