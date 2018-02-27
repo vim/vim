@@ -565,6 +565,11 @@ mch_check_messages(void)
 # if defined(HAVE_SYS_SYSINFO_H) && defined(HAVE_SYSINFO)
 #  include <sys/sysinfo.h>
 # endif
+# ifdef MACOS_X_DARWIN
+#  include <mach/mach_host.h>
+#  include <mach/mach_port.h>
+#  include <mach/vm_page_size.h>
+# endif
 
 /*
  * Return total amount of memory available in Kbyte.
@@ -576,16 +581,70 @@ mch_total_mem(int special UNUSED)
     long_u	mem = 0;
     long_u	shiftright = 10;  /* how much to shift "mem" right for Kbyte */
 
-# ifdef HAVE_SYSCTL
-    int		mib[2], physmem;
-    size_t	len;
+# ifdef MACOS_X_DARWIN
+    {
+	/* Mac (Darwin) way of getting the amount of RAM available */
+	mach_port_t		host = mach_host_self();
+	kern_return_t		kret;
+#  ifdef HOST_VM_INFO64
+	struct vm_statistics64	vm_stat;
+	natural_t		count = HOST_VM_INFO64_COUNT;
 
-    /* BSD way of getting the amount of RAM available. */
-    mib[0] = CTL_HW;
-    mib[1] = HW_USERMEM;
-    len = sizeof(physmem);
-    if (sysctl(mib, 2, &physmem, &len, NULL, 0) == 0)
-	mem = (long_u)physmem;
+	kret = host_statistics64(host, HOST_VM_INFO64,
+					     (host_info64_t)&vm_stat, &count);
+#  else
+	struct vm_statistics	vm_stat;
+	natural_t		count = HOST_VM_INFO_COUNT;
+
+	kret = host_statistics(host, HOST_VM_INFO,
+					       (host_info_t)&vm_stat, &count);
+#  endif
+	if (kret == KERN_SUCCESS)
+	    /* get the amount of user memory by summing each usage */
+	    mem = (long_u)(vm_stat.free_count + vm_stat.active_count
+					    + vm_stat.inactive_count
+#  ifdef MAC_OS_X_VERSION_10_9
+					    + vm_stat.compressor_page_count
+#  endif
+					    ) * getpagesize();
+	mach_port_deallocate(mach_task_self(), host);
+    }
+# endif
+
+# ifdef HAVE_SYSCTL
+    if (mem == 0)
+    {
+	/* BSD way of getting the amount of RAM available. */
+	int		mib[2];
+	size_t		len = sizeof(long_u);
+#  ifdef HW_USERMEM64
+	long_u		physmem;
+#  else
+	/* sysctl() may return 32 bit or 64 bit, accept both */
+	union {
+	    int_u	u32;
+	    long_u	u64;
+	} physmem;
+#  endif
+
+	mib[0] = CTL_HW;
+#  ifdef HW_USERMEM64
+	mib[1] = HW_USERMEM64;
+#  else
+	mib[1] = HW_USERMEM;
+#  endif
+	if (sysctl(mib, 2, &physmem, &len, NULL, 0) == 0)
+	{
+#  ifdef HW_USERMEM64
+	    mem = (long_u)physmem;
+#  else
+	    if (len == sizeof(physmem.u64))
+		mem = (long_u)physmem.u64;
+	    else
+		mem = (long_u)physmem.u32;
+#  endif
+	}
+    }
 # endif
 
 # if defined(HAVE_SYS_SYSINFO_H) && defined(HAVE_SYSINFO)
