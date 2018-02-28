@@ -7394,7 +7394,7 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
 	if (pe.th32ParentProcessID == job->jv_proc_info.dwProcessId)
 	{
 	    pid = pe.th32ProcessID;
-	    STRCPY(fname, pe.szExeFile);
+	    vim_strncpy(fname, pe.szExeFile, MAX_PATH - 1);
 	}
     } while (Process32Next(h, &pe));
 

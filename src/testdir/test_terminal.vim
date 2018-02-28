@@ -1894,12 +1894,14 @@ func Test_terminal_get_runcmd()
   let buf = Run_shell_in_terminal({})
 
   if has('win32')
-    let cmd = $windir . '\system32\timeout.exe'
+    let cmd = 'timeout.exe'
+    let cmdline = $windir . '\system32\' . cmd
   else
     let cmd = 'sleep'
+    let cmdline = cmd
   endif
 
-  call term_sendkeys(buf, cmd . " 1\r")
+  call term_sendkeys(buf, cmdline . " 1\r")
   call term_wait(buf, 100)
 
   let info = term_getruncmd(buf)
