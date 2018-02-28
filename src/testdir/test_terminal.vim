@@ -1900,7 +1900,7 @@ func Test_terminal_get_runcmd()
   endif
 
   call term_sendkeys(buf, cmd . " 1\r")
-  call term_wait(buf)
+  call term_wait(buf, 100)
 
   let info = term_getruncmd(buf)
   call assert_true(has_key(info, 'process'))
