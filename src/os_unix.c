@@ -4026,7 +4026,7 @@ mch_report_winsize(int fd, int rows, int cols)
     return retval == 0 ? OK : FAIL;
 }
 
-# if defined(__APPLE__)
+# if defined(MACOS_X_DARWIN)
 #  include <libproc.h>
 # elif defined(SUN_SYSTEM)
 #  define _STRUCTURED_PROC 1
@@ -4043,10 +4043,10 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
     int		retval = FAIL;
 
 # if defined(SUN_SYSTEM)
-    if (job->jv_tty_name == NULL)
+    if (job->jv_tty_out == NULL)
 	return FAIL;
 
-    fd = open(job->jv_tty_name, O_RDONLY);
+    fd = open(job->jv_tty_out, O_RDONLY);
     if (fd == INVALID_FD)
 	return FAIL;
 
@@ -4088,7 +4088,7 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
 	    fclose(fp);
 	}
     }
-# elif defined(__APPLE__)
+# elif defined(MACOS_X_DARWIN)
     {
 	struct proc_bsdinfo bi;
 
