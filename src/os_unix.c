@@ -4041,11 +4041,14 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
     pid_t	pid = -1;
     int		fd;
     int		retval = FAIL;
+# if !defined(SUN_SYSTEM)
+    channel_T	*ch = job->jv_channel;
+# endif
 
-# if defined(SUN_SYSTEM)
     if (job->jv_tty_out == NULL)
 	return FAIL;
 
+# if defined(SUN_SYSTEM)
     fd = open(job->jv_tty_out, O_RDONLY);
     if (fd == INVALID_FD)
 	return FAIL;
@@ -4055,17 +4058,16 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
 
     close(fd);
 # else
-    channel_T	*ch = job->jv_channel;
-
     if (ch == NULL)
 	return FAIL;
 
-    fd = (int)ch->CH_IN_FD;
+    fd = (int)ch->CH_OUT_FD;
     if (fd == INVALID_FD)
 	return FAIL;
 
     pid = tcgetpgrp(fd);
 # endif
+
     if (pid <= 0)
 	return FAIL;
 
