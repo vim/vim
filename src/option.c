@@ -3345,9 +3345,10 @@ static int briopt_check(win_T *wp);
  * Initialize the options, first part.
  *
  * Called only once from main(), just after creating the first buffer.
+ * If "clean_arg" is TRUE Vim was started with --clean.
  */
     void
-set_init_1(void)
+set_init_1(int clean_arg)
 {
     char_u	*p;
     int		opt_idx;
@@ -3553,6 +3554,24 @@ set_init_1(void)
      * value.  Also set the global value for local options.
      */
     set_options_default(0);
+
+#ifdef CLEAN_RUNTIMEPATH
+    if (clean_arg)
+    {
+	opt_idx = findoption((char_u *)"runtimepath");
+	if (opt_idx >= 0)
+	{
+	    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)CLEAN_RUNTIMEPATH;
+	    p_rtp = (char_u *)CLEAN_RUNTIMEPATH;
+	}
+	opt_idx = findoption((char_u *)"packpath");
+	if (opt_idx >= 0)
+	{
+	    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)CLEAN_RUNTIMEPATH;
+	    p_pp = (char_u *)CLEAN_RUNTIMEPATH;
+	}
+    }
+#endif
 
 #ifdef FEAT_GUI
     if (found_reverse_arg)

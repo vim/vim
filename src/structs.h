@@ -3333,6 +3333,7 @@ typedef struct
 
     int		evim_mode;		/* started as "evim" */
     char_u	*use_vimrc;		/* vimrc from -u argument */
+    int		clean;			/* --clean argument */
 
     int		n_commands;		     /* no. of commands from + or -c */
     char_u	*commands[MAX_ARG_CMDS];     /* commands from + or -c arg. */

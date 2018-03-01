@@ -158,18 +158,25 @@ main
 
 #ifdef STARTUPTIME
     /* Need to find "--startuptime" before actually parsing arguments. */
-    for (i = 1; i < argc; ++i)
-    {
-	if (STRICMP(argv[i], "--startuptime") == 0 && i + 1 < argc)
+    for (i = 1; i < argc - 1; ++i)
+	if (STRICMP(argv[i], "--startuptime") == 0)
 	{
 	    time_fd = mch_fopen(argv[i + 1], "a");
 	    TIME_MSG("--- VIM STARTING ---");
 	    break;
 	}
-    }
 #endif
     starttime = time(NULL);
 
+#ifdef CLEAN_RUNTIMEPATH
+    /* Need to find "--clean" before actually parsing arguments. */
+    for (i = 1; i < argc; ++i)
+	if (STRICMP(argv[i], "--clean") == 0)
+	{
+	    params.clean = TRUE;
+	    break;
+	}
+#endif
     common_init(&params);
 
 #ifdef FEAT_CLIENTSERVER
@@ -1024,7 +1031,7 @@ common_init(mparm_T *paramp)
      * First find out the home directory, needed to expand "~" in options.
      */
     init_homedir();		/* find real value of $HOME */
-    set_init_1();
+    set_init_1(paramp->clean);
     TIME_MSG("inits 1");
 
 #ifdef FEAT_EVAL
@@ -1903,6 +1910,7 @@ command_line_scan(mparm_T *parmp)
 		else if (STRNICMP(argv[0] + argv_idx, "clean", 5) == 0)
 		{
 		    parmp->use_vimrc = (char_u *)"DEFAULTS";
+		    parmp->clean = TRUE;
 		    set_option_value((char_u *)"vif", 0L, (char_u *)"NONE", 0);
 		}
 		else if (STRNICMP(argv[0] + argv_idx, "literal", 7) == 0)

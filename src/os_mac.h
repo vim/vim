@@ -215,6 +215,9 @@
 #ifndef DFLT_RUNTIMEPATH
 # define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
 #endif
+#ifndef CLEAN_RUNTIMEPATH
+# define CLEAN_RUNTIMEPATH	"$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
+#endif
 
 /*
  * Macintosh has plenty of memory, use large buffers
