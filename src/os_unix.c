@@ -4026,7 +4026,7 @@ mch_report_winsize(int fd, int rows, int cols)
     return retval == 0 ? OK : FAIL;
 }
 
-# if defined(MACOS_X_DARWIN)
+# if defined(MACOS_X_DARWIN) && defined(MAC_OS_X_VERSION_10_5)
 #  include <libproc.h>
 # elif defined(SUN_SYSTEM)
 #  define _STRUCTURED_PROC 1
@@ -4088,7 +4088,7 @@ int mch_get_runcmd(job_T *job, dict_T *dict)
 	    fclose(fp);
 	}
     }
-# elif defined(MACOS_X_DARWIN)
+# elif defined(MACOS_X_DARWIN) && defined(MAC_OS_X_VERSION_10_5)
     {
 	struct proc_bsdinfo bi;
 
