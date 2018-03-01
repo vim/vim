@@ -111,7 +111,7 @@ main
 # endif
 (int argc, char **argv)
 {
-#ifdef STARTUPTIME
+#if defined(STARTUPTIME) || defined(CLEAN_RUNTIMEPATH)
     int		i;
 #endif
 
