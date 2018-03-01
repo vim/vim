@@ -1905,13 +1905,9 @@ func Test_terminal_get_runcmd()
   call term_wait(buf, 100)
 
   let info = term_getruncmd(buf)
-  call assert_true(has_key(info, 'process'))
-  call assert_true(has_key(info, 'command'))
   call assert_notequal(-1, info.process)
   call assert_equal(cmd, info.command)
 
-  call Stop_shell_in_terminal(buf)
-  call term_wait(buf)
+  exe buf . 'bwipe!'
   unlet g:job
-  bwipe!
 endfunc
