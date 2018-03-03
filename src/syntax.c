@@ -2470,7 +2470,8 @@ syn_current_attr(
 
     /* nextgroup ends at end of line, unless "skipnl" or "skipempty" present */
     if (current_next_list != NULL
-	    && syn_getcurline()[current_col + 1] == NUL
+	    && (line = syn_getcurline())[current_col] != NUL
+	    && line[current_col + 1] == NUL
 	    && !(current_next_flags & (HL_SKIPNL | HL_SKIPEMPTY)))
 	current_next_list = NULL;
 
