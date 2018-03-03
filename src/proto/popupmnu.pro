@@ -9,4 +9,5 @@ int split_message(char_u *mesg, pumitem_T **array);
 void ui_remove_balloon(void);
 void ui_post_balloon(char_u *mesg, list_T *list);
 void ui_may_remove_balloon(void);
+void pum_show_popupmenu(vimmenu_T *menu);
 /* vim: set ft=c : */

@@ -2286,12 +2286,12 @@ op_function(oparg_T *oap UNUSED)
  * Do the appropriate action for the current mouse click in the current mode.
  * Not used for Command-line mode.
  *
- * Normal Mode:
+ * Normal and Visual Mode:
  * event	 modi-	position      visual	   change   action
  *		 fier	cursor			   window
  * left press	  -	yes	    end		    yes
  * left press	  C	yes	    end		    yes	    "^]" (2)
- * left press	  S	yes	    end		    yes	    "*" (2)
+ * left press	  S	yes	end (popup: extend) yes	    "*" (2)
  * left drag	  -	yes	start if moved	    no
  * left relse	  -	yes	start if moved	    no
  * middle press	  -	yes	 if not active	    no	    put register
@@ -2670,82 +2670,94 @@ do_mouse(
 	if (which_button == MOUSE_RIGHT
 			    && !(mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
 	{
-	    /*
-	     * NOTE: Ignore right button down and drag mouse events.
-	     * Windows only shows the popup menu on the button up event.
-	     */
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
-			  || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
-	    if (!is_click)
-		return FALSE;
-#endif
-#if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN)
-	    if (is_click || is_drag)
-		return FALSE;
-#endif
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
 	    || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	    || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_PHOTON)
+	    || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_PHOTON) \
+	    || defined(FEAT_TERM_POPUP_MENU)
+# ifdef FEAT_GUI
 	    if (gui.in_use)
 	    {
-		jump_flags = 0;
-		if (STRCMP(p_mousem, "popup_setpos") == 0)
-		{
-		    /* First set the cursor position before showing the popup
-		     * menu. */
-		    if (VIsual_active)
-		    {
-			pos_T    m_pos;
+#  if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
+			  || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
+		if (!is_click)
+		    /* Ignore right button release events, only shows the popup
+		     * menu on the button down event. */
+		    return FALSE;
+#  endif
+#  if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN)
+		if (is_click || is_drag)
+		    /* Ignore right button down and drag mouse events.  Windows
+		     * only shows the popup menu on the button up event. */
+		    return FALSE;
+#  endif
+	    }
+# endif
+# if defined(FEAT_GUI) && defined(FEAT_TERM_POPUP_MENU)
+	    else
+# endif
+# if defined(FEAT_TERM_POPUP_MENU)
+	    if (!is_click)
+		/* Ignore right button release events, only shows the popup
+		 * menu on the button down event. */
+		return FALSE;
+#endif
 
-			/*
-			 * set MOUSE_MAY_STOP_VIS if we are outside the
-			 * selection or the current window (might have false
-			 * negative here)
-			 */
-			if (mouse_row < curwin->w_winrow
-			     || mouse_row
-				      > (curwin->w_winrow + curwin->w_height))
-			    jump_flags = MOUSE_MAY_STOP_VIS;
-			else if (get_fpos_of_mouse(&m_pos) != IN_BUFFER)
-			    jump_flags = MOUSE_MAY_STOP_VIS;
-			else
+	    jump_flags = 0;
+	    if (STRCMP(p_mousem, "popup_setpos") == 0)
+	    {
+		/* First set the cursor position before showing the popup
+		 * menu. */
+		if (VIsual_active)
+		{
+		    pos_T    m_pos;
+
+		    /*
+		     * set MOUSE_MAY_STOP_VIS if we are outside the
+		     * selection or the current window (might have false
+		     * negative here)
+		     */
+		    if (mouse_row < curwin->w_winrow
+			 || mouse_row
+				  > (curwin->w_winrow + curwin->w_height))
+			jump_flags = MOUSE_MAY_STOP_VIS;
+		    else if (get_fpos_of_mouse(&m_pos) != IN_BUFFER)
+			jump_flags = MOUSE_MAY_STOP_VIS;
+		    else
+		    {
+			if ((LT_POS(curwin->w_cursor, VIsual)
+				    && (LT_POS(m_pos, curwin->w_cursor)
+					|| LT_POS(VIsual, m_pos)))
+				|| (LT_POS(VIsual, curwin->w_cursor)
+				    && (LT_POS(m_pos, VIsual)
+				      || LT_POS(curwin->w_cursor, m_pos))))
 			{
-			    if ((LT_POS(curwin->w_cursor, VIsual)
-					&& (LT_POS(m_pos, curwin->w_cursor)
-					    || LT_POS(VIsual, m_pos)))
-				    || (LT_POS(VIsual, curwin->w_cursor)
-					&& (LT_POS(m_pos, VIsual)
-					  || LT_POS(curwin->w_cursor, m_pos))))
-			    {
+			    jump_flags = MOUSE_MAY_STOP_VIS;
+			}
+			else if (VIsual_mode == Ctrl_V)
+			{
+			    getvcols(curwin, &curwin->w_cursor, &VIsual,
+						     &leftcol, &rightcol);
+			    getvcol(curwin, &m_pos, NULL, &m_pos.col, NULL);
+			    if (m_pos.col < leftcol || m_pos.col > rightcol)
 				jump_flags = MOUSE_MAY_STOP_VIS;
-			    }
-			    else if (VIsual_mode == Ctrl_V)
-			    {
-				getvcols(curwin, &curwin->w_cursor, &VIsual,
-							 &leftcol, &rightcol);
-				getvcol(curwin, &m_pos, NULL, &m_pos.col, NULL);
-				if (m_pos.col < leftcol || m_pos.col > rightcol)
-				    jump_flags = MOUSE_MAY_STOP_VIS;
-			    }
 			}
 		    }
-		    else
-			jump_flags = MOUSE_MAY_STOP_VIS;
 		}
-		if (jump_flags)
-		{
-		    jump_flags = jump_to_mouse(jump_flags, NULL, which_button);
-		    update_curbuf(VIsual_active ? INVERTED : VALID);
-		    setcursor();
-		    out_flush();    /* Update before showing popup menu */
-		}
-# ifdef FEAT_MENU
-		gui_show_popupmenu();
-# endif
-		return (jump_flags & CURSOR_MOVED) != 0;
+		else
+		    jump_flags = MOUSE_MAY_STOP_VIS;
 	    }
-	    else
-		return FALSE;
+	    if (jump_flags)
+	    {
+		jump_flags = jump_to_mouse(jump_flags, NULL, which_button);
+		update_curbuf(VIsual_active ? INVERTED : VALID);
+		setcursor();
+		out_flush();    /* Update before showing popup menu */
+	    }
+# ifdef FEAT_MENU
+	    show_popupmenu();
+	    got_click = FALSE;	/* ignore release events */
+# endif
+	    return (jump_flags & CURSOR_MOVED) != 0;
 #else
 	    return FALSE;
 #endif

@@ -726,6 +726,13 @@
 # endif
 #endif
 
+/*
+ * popup menu in a terminal
+ */
+#if defined(FEAT_MENU) && !defined(ALWAYS_USE_GUI) && defined(FEAT_INS_EXPAND)
+# define FEAT_TERM_POPUP_MENU
+#endif
+
 /* There are two ways to use XPM. */
 #if (defined(HAVE_XM_XPMP_H) && defined(FEAT_GUI_MOTIF)) \
 		|| defined(HAVE_X11_XPM_H)

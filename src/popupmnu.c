@@ -422,9 +422,11 @@ pum_redraw(void)
 			char_u	*st;
 			int	saved = *p;
 
-			*p = NUL;
+			if (saved != NUL)
+			    *p = NUL;
 			st = transstr(s);
-			*p = saved;
+			if (saved != NUL)
+			    *p = saved;
 #ifdef FEAT_RIGHTLEFT
 			if (curwin->w_p_rl)
 			{
@@ -830,6 +832,43 @@ pum_get_height(void)
     return pum_height;
 }
 
+# if defined(FEAT_BEVAL_TERM) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
+    static void
+pum_position_at_mouse(int min_width)
+{
+    if (Rows - mouse_row > pum_size)
+    {
+	/* Enough space below the mouse row. */
+	pum_row = mouse_row + 1;
+	if (pum_height > Rows - pum_row)
+	    pum_height = Rows - pum_row;
+    }
+    else
+    {
+	/* Show above the mouse row, reduce height if it does not fit. */
+	pum_row = mouse_row - pum_size;
+	if (pum_row < 0)
+	{
+	    pum_height += pum_row;
+	    pum_row = 0;
+	}
+    }
+    if (Columns - mouse_col >= pum_base_width
+	    || Columns - mouse_col > min_width)
+	/* Enough space to show at mouse column. */
+	pum_col = mouse_col;
+    else
+	/* Not enough space, right align with window. */
+	pum_col = Columns - (pum_base_width > min_width
+						 ? min_width : pum_base_width);
+
+    pum_width = Columns - pum_col;
+    if (pum_width > pum_base_width + 1)
+	pum_width = pum_base_width + 1;
+}
+
+# endif
+
 # if defined(FEAT_BEVAL_TERM) || defined(PROTO)
 static pumitem_T *balloon_array = NULL;
 static int balloon_arraysize;
@@ -1028,36 +1067,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	pum_scrollbar = 0;
 	pum_height = balloon_arraysize;
 
-	if (Rows - mouse_row > pum_size)
-	{
-	    /* Enough space below the mouse row. */
-	    pum_row = mouse_row + 1;
-	    if (pum_height > Rows - pum_row)
-		pum_height = Rows - pum_row;
-	}
-	else
-	{
-	    /* Show above the mouse row, reduce height if it does not fit. */
-	    pum_row = mouse_row - pum_size;
-	    if (pum_row < 0)
-	    {
-		pum_height += pum_row;
-		pum_row = 0;
-	    }
-	}
-	if (Columns - mouse_col >= pum_base_width
-		|| Columns - mouse_col > BALLOON_MIN_WIDTH)
-	    /* Enough space to show at mouse column. */
-	    pum_col = mouse_col;
-	else
-	    /* Not enough space, right align with window. */
-	    pum_col = Columns - (pum_base_width > BALLOON_MIN_WIDTH
-					 ? BALLOON_MIN_WIDTH : pum_base_width);
-
-	pum_width = Columns - pum_col;
-	if (pum_width > pum_base_width + 1)
-	    pum_width = pum_base_width + 1;
-
+	pum_position_at_mouse(BALLOON_MIN_WIDTH);
 	pum_selected = -1;
 	pum_first = 0;
 	pum_redraw();
@@ -1072,6 +1082,155 @@ ui_may_remove_balloon(void)
 {
     if (mouse_row != balloon_mouse_row || mouse_col != balloon_mouse_col)
 	ui_remove_balloon();
+}
+# endif
+
+# if defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
+/*
+ * Select the pum entry at the mouse position.
+ */
+    static void
+pum_select_mouse_pos(void)
+{
+    int idx = mouse_row - pum_row;
+
+    if (idx < 0 || idx >= pum_size)
+	pum_selected = -1;
+    else if (*pum_array[idx].pum_text != NUL)
+	pum_selected = idx;
+}
+
+/*
+ * Execute the currently selected popup menu item.
+ */
+    static void
+pum_execute_menu(vimmenu_T *menu)
+{
+    vimmenu_T   *mp;
+    int		idx = 0;
+    exarg_T	ea;
+
+    for (mp = menu->children; mp != NULL; mp = mp->next)
+	if (idx++ == pum_selected)
+	{
+	    vim_memset(&ea, 0, sizeof(ea));
+	    execute_menu(&ea, mp);
+	    break;
+	}
+}
+
+/*
+ * Open the terminal version of the popup menu and don't return until it is
+ * closed.
+ */
+    void
+pum_show_popupmenu(vimmenu_T *menu)
+{
+    vimmenu_T   *mp;
+    int		idx = 0;
+    pumitem_T	*array;
+#ifdef FEAT_BEVAL_TERM
+    int		save_bevalterm = p_bevalterm;
+#endif
+
+    pum_undisplay();
+    pum_size = 0;
+
+    for (mp = menu->children; mp != NULL; mp = mp->next)
+	++pum_size;
+
+    array = (pumitem_T *)alloc_clear((unsigned)sizeof(pumitem_T) * pum_size);
+    if (array == NULL)
+	return;
+
+    for (mp = menu->children; mp != NULL; mp = mp->next)
+	if (menu_is_separator(mp->dname))
+	    array[idx++].pum_text = (char_u *)"";
+	else
+	    array[idx++].pum_text = mp->dname;
+
+    pum_array = array;
+    pum_compute_size();
+    pum_scrollbar = 0;
+    pum_height = pum_size;
+    pum_position_at_mouse(20);
+
+    pum_selected = -1;
+    pum_first = 0;
+#  ifdef FEAT_BEVAL_TERM
+    p_bevalterm = TRUE;  /* track mouse movement */
+    mch_setmouse(TRUE);
+#  endif
+
+    for (;;)
+    {
+	int	c;
+
+	pum_redraw();
+	setcursor();
+	out_flush();
+
+	c = vgetc();
+	if (c == ESC)
+	    break;
+	else if (c == CAR || c == NL)
+	{
+	    /* enter: select current item, if any, and close */
+	    pum_execute_menu(menu);
+	    break;
+	}
+	else if (c == 'k' || c == K_UP || c == K_MOUSEUP)
+	{
+	    /* cursor up: select previous item */
+	    while (pum_selected > 0)
+	    {
+		--pum_selected;
+		if (*array[pum_selected].pum_text != NUL)
+		    break;
+	    }
+	}
+	else if (c == 'j' || c == K_DOWN || c == K_MOUSEDOWN)
+	{
+	    /* cursor down: select next item */
+	    while (pum_selected < pum_size - 1)
+	    {
+		++pum_selected;
+		if (*array[pum_selected].pum_text != NUL)
+		    break;
+	    }
+	}
+	else if (c == K_RIGHTMOUSE)
+	{
+	    /* Right mouse down: reposition the menu. */
+	    vungetc(c);
+	    break;
+	}
+	else if (c == K_LEFTDRAG || c == K_RIGHTDRAG || c == K_MOUSEMOVE)
+	{
+	    /* mouse moved: selec item in the mouse row */
+	    pum_select_mouse_pos();
+	}
+	else if (c == K_LEFTMOUSE || c == K_LEFTMOUSE_NM || c == K_RIGHTRELEASE)
+	{
+	    /* left mouse click: select clicked item, if any, and close;
+	     * right mouse release: select clicked item, close if any */
+	    pum_select_mouse_pos();
+	    if (pum_selected >= 0)
+	    {
+		pum_execute_menu(menu);
+		break;
+	    }
+	    if (c == K_LEFTMOUSE || c == K_LEFTMOUSE_NM)
+		break;
+	}
+    }
+
+    vim_free(array);
+    pum_undisplay();
+#  ifdef FEAT_BEVAL_TERM
+    p_bevalterm = save_bevalterm;
+    mch_setmouse(TRUE);
+#  endif
 }
 # endif
 

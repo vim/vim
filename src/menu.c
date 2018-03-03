@@ -34,10 +34,6 @@ static int menu_namecmp(char_u *name, char_u *mname);
 static int get_menu_cmd_modes(char_u *, int, int *, int *);
 static char_u *popup_mode_name(char_u *name, int idx);
 static char_u *menu_text(char_u *text, int *mnemonic, char_u **actext);
-#ifdef FEAT_GUI
-static int get_menu_mode(void);
-static void gui_update_menus_recurse(vimmenu_T *, int);
-#endif
 
 #if defined(FEAT_GUI_W32) && defined(FEAT_TEAROFF)
 static void gui_create_tearoffs_recurse(vimmenu_T *menu, const char_u *pname, int *pri_tab, int pri_idx);
@@ -1871,7 +1867,7 @@ menu_is_tearoff(char_u *name UNUSED)
 }
 #endif
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
 
     static int
 get_menu_mode(void)
@@ -1894,6 +1890,60 @@ get_menu_mode(void)
 	return MENU_INDEX_INSERT;
     return MENU_INDEX_INVALID;
 }
+
+/*
+ * Display the Special "PopUp" menu as a pop-up at the current mouse
+ * position.  The "PopUpn" menu is for Normal mode, "PopUpi" for Insert mode,
+ * etc.
+ */
+    void
+show_popupmenu(void)
+{
+    vimmenu_T	*menu;
+    int		mode;
+
+    mode = get_menu_mode();
+    if (mode == MENU_INDEX_INVALID)
+	return;
+    mode = menu_mode_chars[mode];
+
+# ifdef FEAT_AUTOCMD
+    {
+	char_u	    ename[2];
+
+	ename[0] = mode;
+	ename[1] = NUL;
+	apply_autocmds(EVENT_MENUPOPUP, ename, NULL, FALSE, curbuf);
+    }
+# endif
+
+    for (menu = root_menu; menu != NULL; menu = menu->next)
+	if (STRNCMP("PopUp", menu->name, 5) == 0 && menu->name[5] == mode)
+	    break;
+
+    /* Only show a popup when it is defined and has entries */
+    if (menu != NULL && menu->children != NULL)
+    {
+# if defined(FEAT_GUI)
+	if (gui.in_use)
+	{
+	    /* Update the menus now, in case the MenuPopup autocommand did
+	     * anything. */
+	    gui_update_menus(0);
+	    gui_mch_show_popupmenu(menu);
+	}
+# endif
+#  if defined(FEAT_GUI) && defined(FEAT_TERM_POPUP_MENU)
+	else
+#  endif
+#  if defined(FEAT_TERM_POPUP_MENU)
+	    pum_show_popupmenu(menu);
+#  endif
+    }
+}
+#endif
+
+#if defined(FEAT_GUI) || defined(PROTO)
 
 /*
  * Check that a pointer appears in the menu tree.  Used to protect from using
@@ -1955,28 +2005,28 @@ gui_update_menus_recurse(vimmenu_T *menu, int mode)
     while (menu)
     {
 	if ((menu->modes & menu->enabled & mode)
-#if defined(FEAT_GUI_W32) && defined(FEAT_TEAROFF)
+# if defined(FEAT_GUI_W32) && defined(FEAT_TEAROFF)
 		|| menu_is_tearoff(menu->dname)
-#endif
+# endif
 	   )
 	    grey = FALSE;
 	else
 	    grey = TRUE;
-#ifdef FEAT_GUI_ATHENA
+# ifdef FEAT_GUI_ATHENA
 	/* Hiding menus doesn't work for Athena, it can cause a crash. */
 	gui_mch_menu_grey(menu, grey);
-#else
+# else
 	/* Never hide a toplevel menu, it may make the menubar resize or
 	 * disappear. Same problem for ToolBar items. */
 	if (vim_strchr(p_go, GO_GREY) != NULL || menu->parent == NULL
-# ifdef FEAT_TOOLBAR
+#  ifdef FEAT_TOOLBAR
 		|| menu_is_toolbar(menu->parent->name)
-# endif
+#  endif
 		   )
 	    gui_mch_menu_grey(menu, grey);
 	else
 	    gui_mch_menu_hidden(menu, grey);
-#endif
+# endif
 	gui_update_menus_recurse(menu->children, mode);
 	menu = menu->next;
     }
@@ -2010,15 +2060,15 @@ gui_update_menus(int modes)
 	gui_mch_draw_menubar();
 	prev_mode = mode;
 	force_menu_update = FALSE;
-#ifdef FEAT_GUI_W32
+# ifdef FEAT_GUI_W32
 	/* This can leave a tearoff as active window - make sure we
 	 * have the focus <negri>*/
 	gui_mch_activate_window();
-#endif
+# endif
     }
 }
 
-#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
     || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(PROTO)
 /*
  * Check if a key is used as a mnemonic for a toplevel menu.
@@ -2037,47 +2087,7 @@ gui_is_menu_shortcut(int key)
 	    return TRUE;
     return FALSE;
 }
-#endif
-
-/*
- * Display the Special "PopUp" menu as a pop-up at the current mouse
- * position.  The "PopUpn" menu is for Normal mode, "PopUpi" for Insert mode,
- * etc.
- */
-    void
-gui_show_popupmenu(void)
-{
-    vimmenu_T	*menu;
-    int		mode;
-
-    mode = get_menu_mode();
-    if (mode == MENU_INDEX_INVALID)
-	return;
-    mode = menu_mode_chars[mode];
-
-#ifdef FEAT_AUTOCMD
-    {
-	char_u	    ename[2];
-
-	ename[0] = mode;
-	ename[1] = NUL;
-	apply_autocmds(EVENT_MENUPOPUP, ename, NULL, FALSE, curbuf);
-    }
-#endif
-
-    for (menu = root_menu; menu != NULL; menu = menu->next)
-	if (STRNCMP("PopUp", menu->name, 5) == 0 && menu->name[5] == mode)
-	    break;
-
-    /* Only show a popup when it is defined and has entries */
-    if (menu != NULL && menu->children != NULL)
-    {
-	/* Update the menus now, in case the MenuPopup autocommand did
-	 * anything. */
-	gui_update_menus(0);
-	gui_mch_show_popupmenu(menu);
-    }
-}
+# endif
 #endif /* FEAT_GUI */
 
 #if (defined(FEAT_GUI_W32) && defined(FEAT_TEAROFF)) || defined(PROTO)
@@ -2238,7 +2248,7 @@ gui_destroy_tearoffs_recurse(vimmenu_T *menu)
  * Execute "menu".  Use by ":emenu" and the window toolbar.
  * "eap" is NULL for the window toolbar.
  */
-    static void
+    void
 execute_menu(exarg_T *eap, vimmenu_T *menu)
 {
     char_u	*mode;
