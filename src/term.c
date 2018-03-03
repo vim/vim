@@ -2789,7 +2789,7 @@ static int waiting_for_winpos = FALSE;
  * Returns OK or FAIL.
  */
     int
-term_get_winpos(int *x, int *y)
+term_get_winpos(int *x, int *y, varnumber_T timeout)
 {
     int count = 0;
 
@@ -2801,8 +2801,8 @@ term_get_winpos(int *x, int *y)
     OUT_STR(T_CGP);
     out_flush();
 
-    /* Try reading the result for 100 msec. */
-    while (count++ < 10)
+    /* Try reading the result for "timeout" msec. */
+    while (count++ < timeout / 10)
     {
 	(void)vpeekc_nomap();
 	if (winpos_x >= 0 && winpos_y >= 0)
