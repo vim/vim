@@ -738,7 +738,7 @@ static struct fst
     {"pow",		2, 2, f_pow},
 #endif
     {"prevnonblank",	1, 1, f_prevnonblank},
-    {"printf",		2, 19, f_printf},
+    {"printf",		1, 19, f_printf},
     {"pumvisible",	0, 0, f_pumvisible},
 #ifdef FEAT_PYTHON3
     {"py3eval",		1, 1, f_py3eval},
