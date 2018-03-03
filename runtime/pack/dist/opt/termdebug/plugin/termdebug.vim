@@ -201,7 +201,7 @@ endfunc
 " Install commands in the current window to control the debugger.
 func s:InstallCommands()
   command Break call s:SetBreakpoint()
-  command Delete call s:DeleteBreakpoint()
+  command Clear call s:ClearBreakpoint()
   command Step call s:SendCommand('-exec-step')
   command Over call s:SendCommand('-exec-next')
   command Finish call s:SendCommand('-exec-finish')
@@ -212,24 +212,42 @@ func s:InstallCommands()
   command -range -nargs=* Evaluate call s:Evaluate(<range>, <q-args>)
   command Gdb call win_gotoid(s:gdbwin)
   command Program call win_gotoid(s:ptywin)
+  command Winbar call s:InstallWinbar()
 
   " TODO: can the K mapping be restored?
   nnoremap K :Evaluate<CR>
 
   if has('menu') && &mouse != ''
-    nnoremenu WinBar.Step :Step<CR>
-    nnoremenu WinBar.Next :Over<CR>
-    nnoremenu WinBar.Finish :Finish<CR>
-    nnoremenu WinBar.Cont :Continue<CR>
-    nnoremenu WinBar.Stop :Stop<CR>
-    nnoremenu WinBar.Eval :Evaluate<CR>
+    call s:InstallWinbar()
+
+    if !exists('g:termdebug_popup') || g:termdebug_popup != 0
+      let s:saved_mousemodel = &mousemodel
+      let &mousemodel = 'popup_setpos'
+      an 1.200 PopUp.-SEP3-	<Nop>
+      an 1.210 PopUp.Set\ breakpoint	:Break<CR>
+      an 1.220 PopUp.Clear\ breakpoint	:Clear<CR>
+      an 1.230 PopUp.Evaluate		:Evaluate<CR>
+    endif
   endif
+endfunc
+
+let s:winbar_winids = []
+
+" Install the window toolbar in the current window.
+func s:InstallWinbar()
+  nnoremenu WinBar.Step   :Step<CR>
+  nnoremenu WinBar.Next   :Over<CR>
+  nnoremenu WinBar.Finish :Finish<CR>
+  nnoremenu WinBar.Cont   :Continue<CR>
+  nnoremenu WinBar.Stop   :Stop<CR>
+  nnoremenu WinBar.Eval   :Evaluate<CR>
+  call add(s:winbar_winids, win_getid(winnr()))
 endfunc
 
 " Delete installed debugger commands in the current window.
 func s:DeleteCommands()
   delcommand Break
-  delcommand Delete
+  delcommand Clear
   delcommand Step
   delcommand Over
   delcommand Finish
@@ -240,16 +258,34 @@ func s:DeleteCommands()
   delcommand Evaluate
   delcommand Gdb
   delcommand Program
+  delcommand Winbar
 
   nunmap K
 
   if has('menu')
-    aunmenu WinBar.Step
-    aunmenu WinBar.Next
-    aunmenu WinBar.Finish
-    aunmenu WinBar.Cont
-    aunmenu WinBar.Stop
-    aunmenu WinBar.Eval
+    " Remove the WinBar entries from all windows where it was added.
+    let curwinid = win_getid(winnr())
+    for winid in s:winbar_winids
+      if win_gotoid(winid)
+	aunmenu WinBar.Step
+	aunmenu WinBar.Next
+	aunmenu WinBar.Finish
+	aunmenu WinBar.Cont
+	aunmenu WinBar.Stop
+	aunmenu WinBar.Eval
+      endif
+    endfor
+    call win_gotoid(curwinid)
+    let s:winbar_winids = []
+
+    if exists('s:saved_mousemodel')
+      let &mousemodel = s:saved_mousemodel
+      unlet s:saved_mousemodel
+      aunmenu PopUp.-SEP3-
+      aunmenu PopUp.Set\ breakpoint
+      aunmenu PopUp.Clear\ breakpoint
+      aunmenu PopUp.Evaluate
+    endif
   endif
 
   exe 'sign unplace ' . s:pc_id
@@ -278,8 +314,8 @@ func s:SetBreakpoint()
   endif
 endfunc
 
-" :Delete - Delete a breakpoint at the cursor position.
-func s:DeleteBreakpoint()
+" :Clear - Delete a breakpoint at the cursor position.
+func s:ClearBreakpoint()
   let fname = fnameescape(expand('%:p'))
   let lnum = line('.')
   for [key, val] in items(s:breakpoints)

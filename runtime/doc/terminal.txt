@@ -7,8 +7,6 @@
 Terminal window support					*terminal*
 
 
-WARNING: THIS IS ONLY PARTLY IMPLEMENTED, ANYTHING CAN STILL CHANGE
-
 The terminal feature is optional, use this to check if your Vim has it: >
 	echo has('terminal')
 If the result is "1" you have it.
@@ -40,7 +38,6 @@ If the result is "1" you have it.
 
 {Vi does not have any of these commands}
 {only available when compiled with the |+terminal| feature}
-
 The terminal feature requires the |+multi_byte|, |+job| and |+channel| features.
 
 ==============================================================================
@@ -481,7 +478,7 @@ program window	A terminal window for the executed program.  When "run" is
 
 The current window is used to show the source code.  When gdb pauses the
 source file location will be displayed, if possible.  A sign is used to
-highlight the current position (using highlight group debugPC).	 
+highlight the current position, using highlight group debugPC.	 
 
 If the buffer in the current window is modified, another window will be opened
 to display the current gdb position.
@@ -506,6 +503,7 @@ You should now have three windows:
     source  - where you started, has a window toolbar with buttons
     gdb	    - you can type gdb commands here
     program - the executed program will use this window
+
 You can use CTRL-W CTRL-W or the mouse to move focus between windows.
 Put focus on the gdb window and type: >
 	break ex_help
@@ -526,6 +524,8 @@ displayed:
 This way you can inspect the value of local variables.  You can also focus the
 gdb window and use a "print" command, e.g.: >
 	print *eap
+If mouse pointer movements are working, Vim will also show a balloon when the
+mouse rests on text that can be evaluated by gdb.
 
 Now go back to the source window and put the cursor on the first line after
 the for loop, then type: >
@@ -561,38 +561,42 @@ Put focus on the gdb window to type commands there.  Some common ones are:
 - frame N	go to the Nth stack frame
 - continue	continue execution
 
-In the window showing the source code these commands can used to control gdb:
- :Run [args]	    run the program with [args] or the previous arguments
- :Arguments {args}  set arguments for the next :Run
+In the window showing the source code these commands can be used to control gdb:
+ `:Run` [args]	    run the program with [args] or the previous arguments
+ `:Arguments` {args}  set arguments for the next `:Run`
 
- :Break		set a breakpoint at the current line; a sign will be displayed
- :Delete	delete a breakpoint at the current line
+ `:Break`	set a breakpoint at the current line; a sign will be displayed
+ `:Clear`	delete the breakpoint at the current line
 
- :Step		execute the gdb "step" command
- :Over		execute the gdb "next" command (:Next is a Vim command)
- :Finish	execute the gdb "finish" command
- :Continue	execute the gdb "continue" command
- :Stop		interrupt the program
+ `:Step`	execute the gdb "step" command
+ `:Over`	execute the gdb "next" command (`:Next` is a Vim command)
+ `:Finish`	execute the gdb "finish" command
+ `:Continue`	execute the gdb "continue" command
+ `:Stop`	interrupt the program
 
 If 'mouse' is set the plugin adds a window toolbar with these entries:
-  Step		:Step
-  Next		:Over
-  Finish	:Finish
-  Cont		:Continue
-  Stop		:Stop
-  Eval		:Evaluate
+  Step		`:Step`
+  Next		`:Over`
+  Finish	`:Finish`
+  Cont		`:Continue`
+  Stop		`:Stop`
+  Eval		`:Evaluate`
 This way you can use the mouse to perform the most common commands.  You need
 to have the 'mouse' option set to enable mouse clicks.
+
+You can add the window toolbar in other windows you open with: >
+  :Winbar
 
 
 Inspecting variables ~
 							*termdebug-variables*
- :Evaluate	    evaluate the expression under the cursor
- K		    same
- :Evaluate {expr}   evaluate {expr}
- :'<,'>Evaluate	    evaluate the Visually selected text
+ `:Evaluate`	    evaluate the expression under the cursor
+ `K`		    same
+ `:Evaluate` {expr}   evaluate {expr}
+ `:'<,'>Evaluate`     evaluate the Visually selected text
 
 This is similar to using "print" in the gdb window.
+You can usually shorten `:Evaluate` to `:Ev`.
 
 
 Other commands ~
@@ -609,17 +613,21 @@ will break the debugger.
 
 
 Customizing ~
-							*termdebug-customizing*
+
+GDB command						 *termdebug-customizing*
+
 To change the name of the gdb command, set the "termdebugger" variable before
 invoking `:Termdebug`: >
 	let termdebugger = "mygdb"
-<						*gdb-version*
+<							*gdb-version*
 Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
 interface.  This probably requires gdb version 7.12.  if you get this error:
 	Undefined command: "new-ui". Try "help".~
 Then your gdb is too old.
 
-					*hl-debugPC* *hl-debugBreakpoint*
+
+Colors						*hl-debugPC* *hl-debugBreakpoint*
+
 The color of the signs can be adjusted with these highlight groups:
 - debugPC		the current position
 - debugBreakpoint	a breakpoint
@@ -631,6 +639,20 @@ The defaults are, when 'background' is "light":
 When 'background' is "dark":
   hi debugPC term=reverse ctermbg=darkblue guibg=darkblue
   hi debugBreakpoint term=reverse ctermbg=red guibg=red
+
+
+Popup menu						*termdebug_popup*
+
+By default the Termdebug plugin sets 'mousemodel' to "popup_setpos" and adds
+these entries to the popup menu:
+	Set breakpoint		`:Break`
+	Clear breakpoint	`:Clear`
+	Evaluate		`:Evaluate`
+If you don't want this then disable it with: >
+	let g:termdebug_popup = 0
+
+
+Vim window width						*termdebug_wide*
 
 To change the width of the Vim window when debugging starts, and use a
 vertical split: >
