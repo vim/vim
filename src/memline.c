@@ -1732,13 +1732,11 @@ theend:
     }
     if (serious_error && called_from_main)
 	ml_close(curbuf, TRUE);
-#ifdef FEAT_AUTOCMD
     else
     {
 	apply_autocmds(EVENT_BUFREADPOST, NULL, curbuf->b_fname, FALSE, curbuf);
 	apply_autocmds(EVENT_BUFWINENTER, NULL, curbuf->b_fname, FALSE, curbuf);
     }
-#endif
     return;
 }
 
@@ -4071,7 +4069,7 @@ attention_message(
     --no_wait_return;
 }
 
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
 static int do_swapexists(buf_T *buf, char_u *fname);
 
 /*
@@ -4450,7 +4448,7 @@ findswapname(
 #if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 		    process_still_running = FALSE;
 #endif
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
 		    /*
 		     * If there is an SwapExists autocommand and we can handle
 		     * the response, trigger it.  It may return 0 to ask the

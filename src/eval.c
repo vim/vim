@@ -5125,11 +5125,9 @@ garbage_collect(int testing)
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
 								  NULL, NULL);
-#ifdef FEAT_AUTOCMD
     if (aucmd_win != NULL)
 	abort = abort || set_ref_in_item(&aucmd_win->w_winvar.di_tv, copyID,
 								  NULL, NULL);
-#endif
 
     /* tabpage-local variables */
     FOR_ALL_TABPAGES(tp)
@@ -6560,7 +6558,6 @@ v_throwpoint(char_u *oldval)
     return NULL;
 }
 
-#if defined(FEAT_AUTOCMD) || defined(PROTO)
 /*
  * Set v:cmdarg.
  * If "eap" != NULL, use "eap" to generate the value and return the old value.
@@ -6618,7 +6615,7 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
     if (eap->force_ff != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++ff=%s",
 						eap->cmd + eap->force_ff);
-# ifdef FEAT_MBYTE
+#ifdef FEAT_MBYTE
     if (eap->force_enc != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++enc=%s",
 					       eap->cmd + eap->force_enc);
@@ -6628,11 +6625,10 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
 	STRCPY(newval + STRLEN(newval), " ++bad=drop");
     else if (eap->bad_char != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++bad=%c", eap->bad_char);
-# endif
+#endif
     vimvars[VV_CMDARG].vv_str = newval;
     return oldval;
 }
-#endif
 
 /*
  * Get the value of internal variable "name".

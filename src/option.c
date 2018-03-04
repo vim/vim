@@ -114,9 +114,7 @@
 #define PV_FF		OPT_BUF(BV_FF)
 #define PV_FLP		OPT_BUF(BV_FLP)
 #define PV_FO		OPT_BUF(BV_FO)
-#ifdef FEAT_AUTOCMD
-# define PV_FT		OPT_BUF(BV_FT)
-#endif
+#define PV_FT		OPT_BUF(BV_FT)
 #define PV_IMI		OPT_BUF(BV_IMI)
 #define PV_IMS		OPT_BUF(BV_IMS)
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
@@ -319,9 +317,7 @@ static char_u	*p_fenc;
 static char_u	*p_ff;
 static char_u	*p_fo;
 static char_u	*p_flp;
-#ifdef FEAT_AUTOCMD
 static char_u	*p_ft;
-#endif
 static long	p_iminsert;
 static long	p_imsearch;
 #if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
@@ -1125,11 +1121,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_ek, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)TRUE} SCRIPTID_INIT},
     {"eventignore", "ei",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-#ifdef FEAT_AUTOCMD
 			    (char_u *)&p_ei, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
     {"expandtab",   "et",   P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_et, PV_ET,
@@ -1174,13 +1166,8 @@ static struct vimoption options[] =
 #endif
 					(char_u *)0L} SCRIPTID_INIT},
     {"filetype",    "ft",   P_STRING|P_ALLOCED|P_VI_DEF|P_NOGLOB|P_NFNAME,
-#ifdef FEAT_AUTOCMD
 			    (char_u *)&p_ft, PV_FT,
 			    {(char_u *)"", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCRIPTID_INIT},
     {"fillchars",   "fcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_fcs, PV_NONE,
@@ -3248,11 +3235,7 @@ static char *(p_scbopt_values[]) = {"ver", "hor", "jump", NULL};
 #endif
 static char *(p_debug_values[]) = {"msg", "throw", "beep", NULL};
 static char *(p_ead_values[]) = {"both", "ver", "hor", NULL};
-#ifdef FEAT_AUTOCMD
 static char *(p_buftype_values[]) = {"nofile", "nowrite", "quickfix", "help", "terminal", "acwrite", NULL};
-#else
-static char *(p_buftype_values[]) = {"nofile", "nowrite", "quickfix", "help", "terminal", NULL};
-#endif
 static char *(p_bufhidden_values[]) = {"hide", "unload", "delete", "wipe", NULL};
 static char *(p_bs_values[]) = {"indent", "eol", "start", NULL};
 #ifdef FEAT_FOLDING
@@ -4339,7 +4322,7 @@ set_title_defaults(void)
 }
 #endif
 
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     static void
 trigger_optionsset_string(
 	int	opt_idx,
@@ -4830,7 +4813,7 @@ do_set(
 			char_u	  *oldval = NULL; /* previous value if *varp */
 			char_u	  *newval;
 			char_u	  *origval = NULL;
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 			char_u	  *saved_origval = NULL;
 			char_u	  *saved_newval = NULL;
 #endif
@@ -5184,7 +5167,7 @@ do_set(
 			 */
 			*(char_u **)(varp) = newval;
 
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 			if (!starting
 # ifdef FEAT_CRYPT
 				&& options[opt_idx].indir != PV_KEY
@@ -5207,7 +5190,7 @@ do_set(
 			errmsg = did_set_string_option(opt_idx, (char_u **)varp,
 				new_value_alloced, oldval, errbuf, opt_flags);
 
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 			if (errmsg == NULL)
 			    trigger_optionsset_string(opt_idx, opt_flags,
 						  saved_origval, saved_newval);
@@ -5726,9 +5709,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_cino);
     parse_cino(buf);
 #endif
-#ifdef FEAT_AUTOCMD
     check_string_option(&buf->b_p_ft);
-#endif
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
     check_string_option(&buf->b_p_cinw);
 #endif
@@ -5982,7 +5963,7 @@ set_string_option(
     char_u	*s;
     char_u	**varp;
     char_u	*oldval;
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     char_u	*saved_oldval = NULL;
     char_u	*saved_newval = NULL;
 #endif
@@ -6002,7 +5983,7 @@ set_string_option(
 	oldval = *varp;
 	*varp = s;
 
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	if (!starting
 # ifdef FEAT_CRYPT
 		&& options[opt_idx].indir != PV_KEY
@@ -6017,7 +5998,7 @@ set_string_option(
 							   opt_flags)) == NULL)
 	    did_set_option(opt_idx, opt_flags, TRUE);
 
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	/* call autocommand after handling side effects */
 	if (r == NULL)
 	    trigger_optionsset_string(opt_idx, opt_flags,
@@ -6029,7 +6010,6 @@ set_string_option(
     return r;
 }
 
-#if defined(FEAT_KEYMAP) || defined(FEAT_AUTOCMD) || defined(FEAT_SYN_HL)
 /*
  * Return TRUE if "val" is a valid 'filetype' name.
  * Also used for 'syntax' and 'keymap'.
@@ -6044,7 +6024,6 @@ valid_filetype(char_u *val)
 	    return FALSE;
     return TRUE;
 }
-#endif
 
 /*
  * Handle string options that need some action to perform when changed.
@@ -6068,9 +6047,7 @@ did_set_string_option(
     /* set when changing an option that only requires a redraw in the GUI */
     int		redraw_gui_only = FALSE;
 #endif
-#ifdef FEAT_AUTOCMD
     int		ft_changed = FALSE;
-#endif
 
     /* Get the global option to compare with, otherwise we would have to check
      * two values for all local options. */
@@ -6351,14 +6328,12 @@ did_set_string_option(
     }
 #endif
 
-#ifdef FEAT_AUTOCMD
     /* 'eventignore' */
     else if (varp == &p_ei)
     {
 	if (check_ei() == FAIL)
 	    errmsg = e_invarg;
     }
-#endif
 
 #ifdef FEAT_MBYTE
     /* 'encoding', 'fileencoding', 'termencoding' and 'makeencoding' */
@@ -7468,7 +7443,6 @@ did_set_string_option(
     }
 #endif
 
-#ifdef FEAT_AUTOCMD
     else if (gvarp == &p_ft)
     {
 	if (!valid_filetype(*varp))
@@ -7476,7 +7450,6 @@ did_set_string_option(
 	else
 	    ft_changed = STRCMP(oldval, *varp) != 0;
     }
-#endif
 
 #ifdef FEAT_SYN_HL
     else if (gvarp == &p_syn)
@@ -7593,18 +7566,17 @@ did_set_string_option(
 	else if (!(opt_flags & OPT_LOCAL) && opt_flags != OPT_GLOBAL)
 	    set_string_option_global(opt_idx, varp);
 
-#ifdef FEAT_AUTOCMD
 	/*
 	 * Trigger the autocommand only after setting the flags.
 	 */
-# ifdef FEAT_SYN_HL
+#ifdef FEAT_SYN_HL
 	/* When 'syntax' is set, load the syntax of that name */
 	if (varp == &(curbuf->b_p_syn))
 	{
 	    apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn,
 					       curbuf->b_fname, TRUE, curbuf);
 	}
-# endif
+#endif
 	else if (varp == &(curbuf->b_p_ft))
 	{
 	    /* 'filetype' is set, trigger the FileType autocommand.
@@ -7620,7 +7592,6 @@ did_set_string_option(
 		    varp = NULL;
 	    }
 	}
-#endif
 #ifdef FEAT_SPELL
 	if (varp == &(curwin->w_s->b_p_spl))
 	{
@@ -8280,14 +8251,12 @@ set_bool_option(
 #endif
     }
 
-#ifdef FEAT_AUTOCMD
     /* when 'buflisted' changes, trigger autocommands */
     else if ((int *)varp == &curbuf->b_p_bl && old_value != curbuf->b_p_bl)
     {
 	apply_autocmds(curbuf->b_p_bl ? EVENT_BUFADD : EVENT_BUFDELETE,
 						    NULL, NULL, TRUE, curbuf);
     }
-#endif
 
     /* when 'swf' is set, create swapfile, when reset remove swapfile */
     else if ((int *)varp == &curbuf->b_p_swf)
@@ -8433,9 +8402,7 @@ set_bool_option(
 #ifdef FEAT_TITLE
 	redraw_titles();
 #endif
-#ifdef FEAT_AUTOCMD
 	modified_was_set = value;
-#endif
     }
 
 #ifdef BACKSLASH_IN_FILENAME
@@ -8529,7 +8496,7 @@ set_bool_option(
     }
 #endif
 
-#ifdef FEAT_MBYTE
+#ifdef HAVE_INPUT_METHOD
     /* 'imdisable' */
     else if ((int *)varp == &p_imdisable)
     {
@@ -8739,7 +8706,7 @@ set_bool_option(
 
     options[opt_idx].flags |= P_WAS_SET;
 
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     if (!starting)
     {
 	char_u buf_old[2], buf_new[2], buf_type[7];
@@ -9289,7 +9256,7 @@ set_num_option(
 
     options[opt_idx].flags |= P_WAS_SET;
 
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     if (!starting && errmsg == NULL)
     {
 	char_u buf_old[11], buf_new[11], buf_type[7];
@@ -10139,22 +10106,15 @@ makeset(FILE *fd, int opt_flags, int local_only)
 		}
 		else    /* P_STRING */
 		{
-#if defined(FEAT_SYN_HL) || defined(FEAT_AUTOCMD)
 		    int		do_endif = FALSE;
 
 		    /* Don't set 'syntax' and 'filetype' again if the value is
 		     * already right, avoids reloading the syntax file. */
 		    if (
-# if defined(FEAT_SYN_HL)
-			    p->indir == PV_SYN
-#  if defined(FEAT_AUTOCMD)
-			    ||
-#  endif
-# endif
-# if defined(FEAT_AUTOCMD)
-			    p->indir == PV_FT
-# endif
-			    )
+#if defined(FEAT_SYN_HL)
+			    p->indir == PV_SYN ||
+#endif
+			    p->indir == PV_FT)
 		    {
 			if (fprintf(fd, "if &%s != '%s'", p->fullname,
 						       *(char_u **)(varp)) < 0
@@ -10162,17 +10122,14 @@ makeset(FILE *fd, int opt_flags, int local_only)
 			    return FAIL;
 			do_endif = TRUE;
 		    }
-#endif
 		    if (put_setstring(fd, cmd, p->fullname, (char_u **)varp,
 					  (p->flags & P_EXPAND) != 0) == FAIL)
 			return FAIL;
-#if defined(FEAT_SYN_HL) || defined(FEAT_AUTOCMD)
 		    if (do_endif)
 		    {
 			if (put_line(fd, "endif") == FAIL)
 			    return FAIL;
 		    }
-#endif
 		}
 	    }
 	}
@@ -10783,9 +10740,7 @@ get_varp(struct vimoption *p)
 	case PV_FENC:	return (char_u *)&(curbuf->b_p_fenc);
 #endif
 	case PV_FF:	return (char_u *)&(curbuf->b_p_ff);
-#ifdef FEAT_AUTOCMD
 	case PV_FT:	return (char_u *)&(curbuf->b_p_ft);
-#endif
 	case PV_FO:	return (char_u *)&(curbuf->b_p_fo);
 	case PV_FLP:	return (char_u *)&(curbuf->b_p_flp);
 	case PV_IMI:	return (char_u *)&(curbuf->b_p_iminsert);
@@ -11200,10 +11155,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_cink = vim_strsave(p_cink);
 	    buf->b_p_cino = vim_strsave(p_cino);
 #endif
-#ifdef FEAT_AUTOCMD
 	    /* Don't copy 'filetype', it must be detected */
 	    buf->b_p_ft = empty_option;
-#endif
 	    buf->b_p_pi = p_pi;
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 	    buf->b_p_cinw = vim_strsave(p_cinw);

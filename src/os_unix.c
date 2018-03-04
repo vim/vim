@@ -445,7 +445,6 @@ mch_inchar(
 		{
 		    /* no character available within 'updatetime' */
 		    did_start_blocking = TRUE;
-#ifdef FEAT_AUTOCMD
 		    if (trigger_cursorhold() && maxlen >= 3
 					    && !typebuf_changed(tb_change_cnt))
 		    {
@@ -454,7 +453,6 @@ mch_inchar(
 			buf[2] = (int)KE_CURSORHOLD;
 			return 3;
 		    }
-#endif
 		    /*
 		     * If there is no character available within 'updatetime'
 		     * seconds flush all the swap files to disk.
@@ -1133,16 +1131,15 @@ deathtrap SIGDEFARG(sigarg)
     /* Remember how often we have been called. */
     ++entered;
 
-#ifdef FEAT_AUTOCMD
     /* Executing autocommands is likely to use more stack space than we have
      * available in the signal stack. */
     block_autocmds();
-#endif
 
 #ifdef FEAT_EVAL
     /* Set the v:dying variable. */
     set_vim_var_nr(VV_DYING, (long)entered);
 #endif
+    v_dying = entered;
 
 #ifdef HAVE_STACK_LIMIT
     /* Since we are now using the signal stack, need to reset the stack

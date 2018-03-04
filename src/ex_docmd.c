@@ -81,14 +81,8 @@ static void	ex_abclear(exarg_T *eap);
 # define ex_menu		ex_ni
 # define ex_menutranslate	ex_ni
 #endif
-#ifdef FEAT_AUTOCMD
 static void	ex_autocmd(exarg_T *eap);
 static void	ex_doautocmd(exarg_T *eap);
-#else
-# define ex_autocmd		ex_ni
-# define ex_doautocmd		ex_ni
-# define ex_doautoall		ex_ni
-#endif
 #ifdef FEAT_LISTCMDS
 static void	ex_bunload(exarg_T *eap);
 static void	ex_buffer(exarg_T *eap);
@@ -233,6 +227,10 @@ static void	ex_popup(exarg_T *eap);
 #ifndef FEAT_SYN_HL
 # define ex_syntax		ex_ni
 # define ex_ownsyntax		ex_ni
+#endif
+#ifndef FEAT_EVAL
+# define ex_packadd		ex_ni
+# define ex_packloadall		ex_ni
 #endif
 #if !defined(FEAT_SYN_HL) || !defined(FEAT_PROFILE)
 # define ex_syntime		ex_ni
@@ -390,13 +388,8 @@ static void	ex_viminfo(exarg_T *eap);
 # define ex_viminfo		ex_ni
 #endif
 static void	ex_behave(exarg_T *eap);
-#ifdef FEAT_AUTOCMD
 static void	ex_filetype(exarg_T *eap);
 static void	ex_setfiletype(exarg_T *eap);
-#else
-# define ex_filetype		ex_ni
-# define ex_setfiletype		ex_ni
-#endif
 #ifndef FEAT_DIFF
 # define ex_diffoff		ex_ni
 # define ex_diffpatch		ex_ni
@@ -407,7 +400,7 @@ static void	ex_setfiletype(exarg_T *eap);
 #endif
 static void	ex_digraphs(exarg_T *eap);
 static void	ex_set(exarg_T *eap);
-#if !defined(FEAT_EVAL) || !defined(FEAT_AUTOCMD)
+#if !defined(FEAT_EVAL)
 # define ex_options		ex_ni
 #endif
 #ifdef FEAT_SEARCH_EXTRA
@@ -1761,11 +1754,8 @@ do_one_cmd(
 	    /* avoid that a function call in 'statusline' does this */
 	    && !getline_equal(fgetline, cookie, get_func_line)
 #endif
-#ifdef FEAT_AUTOCMD
 	    /* avoid that an autocommand, e.g. QuitPre, does this */
-	    && !getline_equal(fgetline, cookie, getnextac)
-#endif
-	    )
+	    && !getline_equal(fgetline, cookie, getnextac))
 	--quitmore;
 
     /*
@@ -1912,7 +1902,6 @@ do_one_cmd(
 
 	    case 'n':	if (checkforcmd(&ea.cmd, "noautocmd", 3))
 			{
-#ifdef FEAT_AUTOCMD
 			    if (cmdmod.save_ei == NULL)
 			    {
 				/* Set 'eventignore' to "all". Restore the
@@ -1921,7 +1910,6 @@ do_one_cmd(
 				set_string_option_direct((char_u *)"ei", -1,
 					 (char_u *)"all", OPT_FREE, SID_NONE);
 			    }
-#endif
 			    continue;
 			}
 			if (!checkforcmd(&ea.cmd, "noswapfile", 3))
@@ -2302,7 +2290,6 @@ do_one_cmd(
 	goto doend;
     }
 
-#ifdef FEAT_AUTOCMD
     /* If this looks like an undefined user command and there are CmdUndefined
      * autocommands defined, trigger the matching autocommands. */
     if (p != NULL && ea.cmdidx == CMD_SIZE && !ea.skip
@@ -2319,9 +2306,12 @@ do_one_cmd(
 	vim_free(p);
 	/* If the autocommands did something and didn't cause an error, try
 	 * finding the command again. */
-	p = (ret && !aborting()) ? find_command(&ea, NULL) : ea.cmd;
-    }
+	p = (ret
+#ifdef FEAT_EVAL
+		&& !aborting()
 #endif
+		) ? find_command(&ea, NULL) : ea.cmd;
+    }
 
 #ifdef FEAT_USR_CMDS
     if (p == NULL)
@@ -2421,7 +2411,6 @@ do_one_cmd(
 	    errormsg = (char_u *)_(get_text_locked_msg());
 	    goto doend;
 	}
-#ifdef FEAT_AUTOCMD
 	/* Disallow editing another buffer when "curbuf_lock" is set.
 	 * Do allow ":edit" (check for argument later).
 	 * Do allow ":checktime" (it's postponed). */
@@ -2431,7 +2420,6 @@ do_one_cmd(
 		&& !IS_USER_CMDIDX(ea.cmdidx)
 		&& curbuf_locked())
 	    goto doend;
-#endif
 
 	if (!ni && !(ea.argt & RANGE) && ea.addr_count > 0)
 	{
@@ -2971,7 +2959,7 @@ doend:
 
     if (verbose_save >= 0)
 	p_verbose = verbose_save;
-#ifdef FEAT_AUTOCMD
+
     if (cmdmod.save_ei != NULL)
     {
 	/* Restore 'eventignore' to the value before ":noautocmd". */
@@ -2979,7 +2967,7 @@ doend:
 							  OPT_FREE, SID_NONE);
 	free_string_option(cmdmod.save_ei);
     }
-#endif
+
     if (cmdmod.filter_regmatch.regprog != NULL)
 	vim_regfree(cmdmod.filter_regmatch.regprog);
 
@@ -4025,14 +4013,12 @@ set_one_cmd_context(
 		}
 	    }
 	    break;
-#ifdef FEAT_AUTOCMD
+
 	case CMD_autocmd:
 	    return set_context_in_autocmd(xp, arg, FALSE);
-
 	case CMD_doautocmd:
 	case CMD_doautoall:
 	    return set_context_in_autocmd(xp, arg, TRUE);
-#endif
 	case CMD_set:
 	    set_context_in_set_cmd(xp, arg, 0);
 	    break;
@@ -5500,7 +5486,6 @@ ex_abclear(exarg_T *eap)
     map_clear(eap->cmd, eap->arg, TRUE, TRUE);
 }
 
-#if defined(FEAT_AUTOCMD) || defined(PROTO)
     static void
 ex_autocmd(exarg_T *eap)
 {
@@ -5534,7 +5519,6 @@ ex_doautocmd(exarg_T *eap)
     if (call_do_modelines && did_aucmd)
 	do_modelines(0);
 }
-#endif
 
 #ifdef FEAT_LISTCMDS
 /*
@@ -7234,7 +7218,6 @@ ex_quit(exarg_T *eap)
     else
 	wp = curwin;
 
-#ifdef FEAT_AUTOCMD
     /* Refuse to quit when locked. */
     if (curbuf_locked())
 	return;
@@ -7245,7 +7228,6 @@ ex_quit(exarg_T *eap)
     if (!win_valid(wp)
 	    || (wp->w_buffer->b_nwindows == 1 && wp->w_buffer->b_locked > 0))
 	return;
-#endif
 
 #ifdef FEAT_NETBEANS_INTG
     netbeansForcedQuit = eap->forceit;
@@ -7318,13 +7300,11 @@ ex_quit_all(exarg_T *eap)
 	text_locked_msg();
 	return;
     }
-#ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
     /* Refuse to quit when locked or when the buffer in the last window is
      * being closed (can only happen in autocommands). */
     if (curbuf_locked() || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
 	return;
-#endif
 
     exiting = TRUE;
     if (eap->forceit || !check_changed_any(FALSE, FALSE))
@@ -7345,11 +7325,7 @@ ex_close(exarg_T *eap)
 	cmdwin_result = Ctrl_C;
     else
 #endif
-	if (!text_locked()
-#ifdef FEAT_AUTOCMD
-		&& !curbuf_locked()
-#endif
-		)
+	if (!text_locked() && !curbuf_locked())
 	{
 	    if (eap->addr_count == 0)
 		ex_win_close(eap->forceit, curwin, NULL);
@@ -7565,11 +7541,7 @@ ex_tabclose(exarg_T *eap)
 		    tabpage_close_other(tp, eap->forceit);
 		    return;
 		}
-		else if (!text_locked()
-#ifdef FEAT_AUTOCMD
-			&& !curbuf_locked()
-#endif
-		)
+		else if (!text_locked() && !curbuf_locked())
 		    tabpage_close(eap->forceit);
 	    }
 	}
@@ -7662,9 +7634,7 @@ tabpage_close_other(tabpage_T *tp, int forceit)
 	    break;
     }
 
-#ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
-#endif
 
     redraw_tabline = TRUE;
     if (h != tabline_height())
@@ -7790,13 +7760,11 @@ ex_exit(exarg_T *eap)
 	text_locked_msg();
 	return;
     }
-#ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
     /* Refuse to quit when locked or when the buffer in the last window is
      * being closed (can only happen in autocommands). */
     if (curbuf_locked() || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
 	return;
-#endif
 
     /*
      * if more files or windows we won't exit
@@ -7901,10 +7869,9 @@ handle_drop(
     /* Postpone this while editing the command line. */
     if (text_locked())
 	return;
-#ifdef FEAT_AUTOCMD
     if (curbuf_locked())
 	return;
-#endif
+
     /* When the screen is being updated we should not change buffers and
      * windows structures, it may cause freed memory to be used. */
     if (updating_screen)
@@ -8072,9 +8039,7 @@ alist_set(
 
     if (recursive)
     {
-#ifdef FEAT_AUTOCMD
 	EMSG(_(e_au_recursive));
-#endif
 	return;
     }
     ++recursive;
@@ -8251,11 +8216,10 @@ ex_splitview(exarg_T *eap)
 	    && eap->cmdidx != CMD_vnew
 	    && eap->cmdidx != CMD_new)
     {
-# ifdef FEAT_AUTOCMD
 	if (
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    !gui.in_use &&
-#  endif
+# endif
 		au_has_group((char_u *)"FileExplorer"))
 	{
 	    /* No browsing supported but we do have the file explorer:
@@ -8264,7 +8228,6 @@ ex_splitview(exarg_T *eap)
 		eap->arg = (char_u *)".";
 	}
 	else
-# endif
 	{
 	    fname = do_browse(0, (char_u *)_("Edit File in new window"),
 					  eap->arg, NULL, NULL, NULL, curbuf);
@@ -8668,12 +8631,11 @@ do_exedit(
 #endif
 	    )
     {
-#ifdef FEAT_AUTOCMD
 	/* Can't edit another file when "curbuf_lock" is set.  Only ":edit"
 	 * can bring us here, others are stopped earlier. */
 	if (*eap->arg != NUL && curbuf_locked())
 	    return;
-#endif
+
 	n = readonlymode;
 	if (eap->cmdidx == CMD_view || eap->cmdidx == CMD_sview)
 	    readonlymode = TRUE;
@@ -8702,7 +8664,7 @@ do_exedit(
 		need_hide = (curbufIsChanged() && curbuf->b_nwindows <= 1);
 		if (!need_hide || buf_hide(curbuf))
 		{
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 		    cleanup_T   cs;
 
 		    /* Reset the error/interrupt/exception state here so that
@@ -8714,7 +8676,7 @@ do_exedit(
 #endif
 		    win_close(curwin, !need_hide && !buf_hide(curbuf));
 
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 		    /* Restore the error/interrupt/exception state if not
 		     * discarded by a new aborting error, interrupt, or
 		     * uncaught exception. */
@@ -8927,7 +8889,7 @@ ex_read(exarg_T *eap)
 	}
 	if (i != OK)
 	{
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	    if (!aborting())
 #endif
 		EMSG2(_(e_notopen), eap->arg);
@@ -9013,10 +8975,8 @@ ex_cd(exarg_T *eap)
     else
 #endif
     {
-#ifdef FEAT_AUTOCMD
 	if (allbuf_locked())
 	    return;
-#endif
 	if (vim_strchr(p_cpo, CPO_CHDIR) != NULL && curbufIsChanged()
 							     && !eap->forceit)
 	{
@@ -9073,11 +9033,9 @@ ex_cd(exarg_T *eap)
 	    /* Echo the new current directory if the command was typed. */
 	    if (KeyTyped || p_verbose >= 5)
 		ex_pwd(eap);
-#ifdef FEAT_AUTOCMD
 	    apply_autocmds(EVENT_DIRCHANGED,
 		    is_local_chdir ? (char_u *)"window" : (char_u *)"global",
 		    new_dir, FALSE, curbuf);
-#endif
 	}
 	vim_free(tofree);
     }
@@ -10588,21 +10546,15 @@ find_cmdline_var(char_u *src, int *usedlen)
 #define SPEC_SFILE  (SPEC_CFILE + 1)
 		    "<slnum>",		/* ":so" file line number */
 #define SPEC_SLNUM  (SPEC_SFILE + 1)
-#ifdef FEAT_AUTOCMD
 		    "<afile>",		/* autocommand file name */
-# define SPEC_AFILE (SPEC_SLNUM + 1)
+#define SPEC_AFILE (SPEC_SLNUM + 1)
 		    "<abuf>",		/* autocommand buffer number */
-# define SPEC_ABUF  (SPEC_AFILE + 1)
+#define SPEC_ABUF  (SPEC_AFILE + 1)
 		    "<amatch>",		/* autocommand match name */
-# define SPEC_AMATCH (SPEC_ABUF + 1)
-#endif
+#define SPEC_AMATCH (SPEC_ABUF + 1)
 #ifdef FEAT_CLIENTSERVER
 		    "<client>"
-# ifdef FEAT_AUTOCMD
-#  define SPEC_CLIENT (SPEC_AMATCH + 1)
-# else
-#  define SPEC_CLIENT (SPEC_SLNUM + 1)
-# endif
+# define SPEC_CLIENT (SPEC_AMATCH + 1)
 #endif
     };
 
@@ -10801,7 +10753,6 @@ eval_vars(
 		break;
 #endif
 
-#ifdef FEAT_AUTOCMD
 	case SPEC_AFILE:	/* file name for autocommand */
 		result = autocmd_fname;
 		if (result != NULL && !autocmd_fname_full)
@@ -10840,7 +10791,6 @@ eval_vars(
 		}
 		break;
 
-#endif
 	case SPEC_SFILE:	/* file name for ":so" command */
 		result = sourcing_name;
 		if (result == NULL)
@@ -10976,7 +10926,6 @@ arg_all(void)
     return retval;
 }
 
-#if defined(FEAT_AUTOCMD) || defined(PROTO)
 /*
  * Expand the <sfile> string in "arg".
  *
@@ -11038,7 +10987,6 @@ expand_sfile(char_u *arg)
 
     return result;
 }
-#endif
 
 #ifdef FEAT_SESSION
 static int ses_winsizes(FILE *fd, int restore_size,
@@ -12070,7 +12018,6 @@ get_mapclear_arg(expand_T *xp UNUSED, int idx)
     return NULL;
 }
 
-#ifdef FEAT_AUTOCMD
 static int filetype_detect = FALSE;
 static int filetype_plugin = FALSE;
 static int filetype_indent = FALSE;
@@ -12184,7 +12131,6 @@ ex_setfiletype(exarg_T *eap)
 	    did_filetype = FALSE;
     }
 }
-#endif
 
     static void
 ex_digraphs(exarg_T *eap UNUSED)
@@ -12208,7 +12154,7 @@ ex_set(exarg_T *eap)
 	flags = OPT_LOCAL;
     else if (eap->cmdidx == CMD_setglobal)
 	flags = OPT_GLOBAL;
-#if defined(FEAT_EVAL) && defined(FEAT_AUTOCMD) && defined(FEAT_BROWSE)
+#if defined(FEAT_EVAL) && defined(FEAT_BROWSE)
     if (cmdmod.browse && flags == 0)
 	ex_options(eap);
     else

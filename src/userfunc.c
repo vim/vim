@@ -1372,7 +1372,6 @@ call_func(
 	    else
 		fp = find_func(rfname);
 
-#ifdef FEAT_AUTOCMD
 	    /* Trigger FuncUndefined event, may load the function. */
 	    if (fp == NULL
 		    && apply_autocmds(EVENT_FUNCUNDEFINED,
@@ -1382,7 +1381,6 @@ call_func(
 		/* executed an autocommand, search for the function again */
 		fp = find_func(rfname);
 	    }
-#endif
 	    /* Try loading a package. */
 	    if (fp == NULL && script_autoload(rfname, TRUE) && !aborting())
 	    {

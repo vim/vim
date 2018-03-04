@@ -1651,7 +1651,7 @@ shift_delete_registers()
     y_regs[1].y_array = NULL;		/* set register one to empty */
 }
 
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
     static void
 yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
 {
@@ -1866,7 +1866,7 @@ op_delete(oparg_T *oap)
 	    }
 	}
 
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
 	if (did_yank && has_textyankpost())
 	    yank_do_autocmd(oap, y_current);
 #endif
@@ -3350,7 +3350,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 # endif
 #endif
 
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
     if (!deleting && has_textyankpost())
 	yank_do_autocmd(oap, y_current);
 #endif
@@ -3493,11 +3493,9 @@ do_put(
 	    return;
     }
 
-#ifdef FEAT_AUTOCMD
     /* Autocommands may be executed when saving lines for undo, which may make
      * y_array invalid.  Start undo now to avoid that. */
     u_save(curwin->w_cursor.lnum, curwin->w_cursor.lnum + 1);
-#endif
 
     if (insert_string != NULL)
     {

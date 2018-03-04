@@ -2163,7 +2163,6 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			   (data->dwData == COPYDATA_RESULT ? 1 :
 							      2))) == FAIL)
 		    vim_free(str);
-#ifdef FEAT_AUTOCMD
 		else if (data->dwData == COPYDATA_REPLY)
 		{
 		    char_u	winstr[30];
@@ -2172,7 +2171,6 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		    apply_autocmds(EVENT_REMOTEREPLY, winstr, str,
 								TRUE, curbuf);
 		}
-#endif
 	    }
 	    return 1;
 	}

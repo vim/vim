@@ -97,10 +97,8 @@ static char_u	lastc_bytes[MB_MAXBYTES + 1];
 static int	lastc_bytelen = 1;	/* >1 for multi-byte char */
 #endif
 
-#if defined(FEAT_AUTOCMD) || defined(FEAT_EVAL) || defined(PROTO)
 /* copy of spats[], for keeping the search patterns while executing autocmds */
 static struct spat  saved_spats[2];
-#endif
 # ifdef FEAT_SEARCH_EXTRA
 /* copy of spats[RE_SEARCH], for keeping the search patterns while incremental
  * searching */
@@ -300,7 +298,6 @@ save_re_pat(int idx, char_u *pat, int magic)
     }
 }
 
-#if defined(FEAT_AUTOCMD) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Save the search patterns, so they can be restored later.
  * Used before/after executing autocommands and user functions.
@@ -318,10 +315,10 @@ save_search_patterns(void)
 	saved_spats[1] = spats[1];
 	if (spats[1].pat != NULL)
 	    saved_spats[1].pat = vim_strsave(spats[1].pat);
+#ifdef FEAT_SEARCH_EXTRA
 	saved_last_idx = last_idx;
-# ifdef FEAT_SEARCH_EXTRA
 	saved_no_hlsearch = no_hlsearch;
-# endif
+#endif
     }
 }
 
@@ -332,18 +329,17 @@ restore_search_patterns(void)
     {
 	vim_free(spats[0].pat);
 	spats[0] = saved_spats[0];
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	set_vv_searchforward();
-# endif
+#endif
 	vim_free(spats[1].pat);
 	spats[1] = saved_spats[1];
+#ifdef FEAT_SEARCH_EXTRA
 	last_idx = saved_last_idx;
-# ifdef FEAT_SEARCH_EXTRA
 	SET_NO_HLSEARCH(saved_no_hlsearch);
-# endif
+#endif
     }
 }
-#endif
 
 #if defined(EXITFREE) || defined(PROTO)
     void

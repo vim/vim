@@ -872,13 +872,9 @@ diff_file(
 		    (diff_flags & DIFF_ICASE) ? "-i " : "",
 		    tmp_orig, tmp_new);
 	    append_redir(cmd, (int)len, p_srr, tmp_diff);
-#ifdef FEAT_AUTOCMD
 	    block_autocmds();	/* Avoid ShellCmdPost stuff */
-#endif
 	    (void)call_shell(cmd, SHELL_FILTER|SHELL_SILENT|SHELL_DOOUT);
-#ifdef FEAT_AUTOCMD
 	    unblock_autocmds();
-#endif
 	    vim_free(cmd);
 	}
     }
@@ -984,13 +980,9 @@ ex_diffpatch(exarg_T *eap)
 	 * cooked mode to allow the user to respond to prompts. */
 	vim_snprintf((char *)buf, buflen, "patch -o %s %s < %s",
 						  tmp_new, tmp_orig, esc_name);
-#ifdef FEAT_AUTOCMD
 	block_autocmds();	/* Avoid ShellCmdPost stuff */
-#endif
 	(void)call_shell(buf, SHELL_FILTER | SHELL_COOKED);
-#ifdef FEAT_AUTOCMD
 	unblock_autocmds();
-#endif
     }
 
 #ifdef UNIX
@@ -1052,11 +1044,9 @@ ex_diffpatch(exarg_T *eap)
 		    eap->arg = newname;
 		    ex_file(eap);
 
-#ifdef FEAT_AUTOCMD
 		    /* Do filetype detection with the new name. */
 		    if (au_has_group((char_u *)"filetypedetect"))
 			do_cmdline_cmd((char_u *)":doau filetypedetect BufRead");
-#endif
 		}
 	    }
 	}

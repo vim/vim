@@ -6420,11 +6420,9 @@ ex_ownsyntax(exarg_T *eap)
     if (old_value != NULL)
 	old_value = vim_strsave(old_value);
 
-#ifdef FEAT_AUTOCMD
     /* Apply the "syntax" autocommand event, this finds and loads the syntax
      * file. */
     apply_autocmds(EVENT_SYNTAX, eap->arg, curbuf->b_fname, TRUE, curbuf);
-#endif
 
     /* move value of b:current_syntax to w:current_syntax */
     new_value = get_var_value((char_u *)"b:current_syntax");
@@ -6995,10 +6993,8 @@ static char *(highlight_init_light[]) = {
     CENT("Conceal ctermbg=DarkGrey ctermfg=LightGrey",
 	 "Conceal ctermbg=DarkGrey ctermfg=LightGrey guibg=DarkGrey guifg=LightGrey"),
 #endif
-#ifdef FEAT_AUTOCMD
     CENT("MatchParen term=reverse ctermbg=Cyan",
 	 "MatchParen term=reverse ctermbg=Cyan guibg=Cyan"),
-#endif
 #ifdef FEAT_GUI
     "Normal gui=NONE",
 #endif
@@ -7089,10 +7085,8 @@ static char *(highlight_init_dark[]) = {
     CENT("ColorColumn term=reverse ctermbg=DarkRed",
 	 "ColorColumn term=reverse ctermbg=DarkRed guibg=DarkRed"),
 #endif
-#ifdef FEAT_AUTOCMD
     CENT("MatchParen term=reverse ctermbg=DarkCyan",
 	 "MatchParen term=reverse ctermbg=DarkCyan guibg=DarkCyan"),
-#endif
 #ifdef FEAT_CONCEAL
     CENT("Conceal ctermbg=DarkGrey ctermfg=LightGrey",
 	 "Conceal ctermbg=DarkGrey ctermfg=LightGrey guibg=DarkGrey guifg=LightGrey"),
@@ -7233,9 +7227,7 @@ load_colors(char_u *name)
 	sprintf((char *)buf, "colors/%s.vim", name);
 	retval = source_runtime(buf, DIP_START + DIP_OPT);
 	vim_free(buf);
-#ifdef FEAT_AUTOCMD
 	apply_autocmds(EVENT_COLORSCHEME, name, curbuf->b_fname, FALSE, curbuf);
-#endif
     }
     recursive = FALSE;
 

@@ -538,9 +538,7 @@ set_topline(win_T *wp, linenr_T lnum)
     /* Approximate the value of w_botline */
     wp->w_botline += lnum - wp->w_topline;
     wp->w_topline = lnum;
-#ifdef FEAT_AUTOCMD
     wp->w_topline_was_set = TRUE;
-#endif
 #ifdef FEAT_DIFF
     wp->w_topfill = 0;
 #endif

@@ -1907,7 +1907,6 @@ show_popupmenu(void)
 	return;
     mode = menu_mode_chars[mode];
 
-# ifdef FEAT_AUTOCMD
     {
 	char_u	    ename[2];
 
@@ -1915,7 +1914,6 @@ show_popupmenu(void)
 	ename[1] = NUL;
 	apply_autocmds(EVENT_MENUPOPUP, ename, NULL, FALSE, curbuf);
     }
-# endif
 
     for (menu = root_menu; menu != NULL; menu = menu->next)
 	if (STRNCMP("PopUp", menu->name, 5) == 0 && menu->name[5] == mode)

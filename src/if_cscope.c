@@ -1147,17 +1147,15 @@ cs_find_common(
 	    return FALSE;
 	}
 
-# ifdef FEAT_AUTOCMD
 	if (*qfpos != '0'
 		&& apply_autocmds(EVENT_QUICKFIXCMDPRE, (char_u *)"cscope",
 					       curbuf->b_fname, TRUE, curbuf))
 	{
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	    if (aborting())
 		return FALSE;
-#  endif
-	}
 # endif
+	}
     }
 #endif
 
@@ -1251,10 +1249,8 @@ cs_find_common(
 		    postponed_split = 0;
 		}
 
-# ifdef FEAT_AUTOCMD
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, (char_u *)"cscope",
 					       curbuf->b_fname, TRUE, curbuf);
-# endif
 		if (use_ll)
 		    /*
 		     * In the location list window, use the displayed location

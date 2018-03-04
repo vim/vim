@@ -273,7 +273,7 @@ static int  ins_ctrl_ey(int tc);
 static void ins_try_si(int c);
 #endif
 static colnr_T get_nolist_virtcol(void);
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
 static char_u *do_insert_char_pre(int c);
 #endif
 
@@ -388,7 +388,6 @@ edit(
     ins_compl_clear();	    /* clear stuff for CTRL-X mode */
 #endif
 
-#ifdef FEAT_AUTOCMD
     /*
      * Trigger InsertEnter autocommands.  Do not do this for "r<CR>" or "grx".
      */
@@ -396,7 +395,7 @@ edit(
     {
 	pos_T   save_cursor = curwin->w_cursor;
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	if (cmdchar == 'R')
 	    ptr = (char_u *)"r";
 	else if (cmdchar == 'V')
@@ -405,7 +404,7 @@ edit(
 	    ptr = (char_u *)"i";
 	set_vim_var_string(VV_INSERTMODE, ptr, 1);
 	set_vim_var_string(VV_CHAR, NULL, -1);  /* clear v:char */
-# endif
+#endif
 	apply_autocmds(EVENT_INSERTENTER, NULL, NULL, FALSE, curbuf);
 
 	/* Make sure the cursor didn't move.  Do call check_cursor_col() in
@@ -415,9 +414,9 @@ edit(
 	 * line number is still valid (lines may have been deleted).
 	 * Do not restore if v:char was set to a non-empty string. */
 	if (!EQUAL_POS(curwin->w_cursor, save_cursor)
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 		&& *get_vim_var_str(VV_CHAR) == NUL
-# endif
+#endif
 		&& save_cursor.lnum <= curbuf->b_ml.ml_line_count)
 	{
 	    int save_state = State;
@@ -428,7 +427,6 @@ edit(
 	    State = save_state;
 	}
     }
-#endif
 
 #ifdef FEAT_CONCEAL
     /* Check if the cursor line needs redrawing before changing State.  If
@@ -521,7 +519,7 @@ edit(
      */
     if (curbuf->b_p_iminsert == B_IMODE_LMAP)
 	State |= LANGMAP;
-#ifdef FEAT_MBYTE
+#ifdef HAVE_INPUT_METHOD
     im_set_active(curbuf->b_p_iminsert == B_IMODE_IM);
 #endif
 
@@ -805,10 +803,8 @@ edit(
 		c = safe_vgetc();
 	    } while (c == K_IGNORE || c == K_NOP);
 
-#ifdef FEAT_AUTOCMD
 	/* Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V. */
 	did_cursorhold = TRUE;
-#endif
 
 #ifdef FEAT_RIGHTLEFT
 	if (p_hkmap && KeyTyped)
@@ -856,7 +852,7 @@ edit(
 		 * completion: Add to "compl_leader". */
 		if (ins_compl_accept_char(c))
 		{
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
 		    /* Trigger InsertCharPre. */
 		    char_u *str = do_insert_char_pre(c);
 		    char_u *p;
@@ -1030,12 +1026,10 @@ doESCkey:
 
 	    if (ins_esc(&count, cmdchar, nomove))
 	    {
-#ifdef FEAT_AUTOCMD
 		if (cmdchar != 'r' && cmdchar != 'v')
 		    apply_autocmds(EVENT_INSERTLEAVE, NULL, NULL,
 							       FALSE, curbuf);
 		did_cursorhold = FALSE;
-#endif
 		return (c == Ctrl_O);
 	    }
 	    continue;
@@ -1234,12 +1228,10 @@ doESCkey:
 	case K_IGNORE:	/* Something mapped to nothing */
 	    break;
 
-#ifdef FEAT_AUTOCMD
 	case K_CURSORHOLD:	/* Didn't type something for a while. */
 	    apply_autocmds(EVENT_CURSORHOLDI, NULL, NULL, FALSE, curbuf);
 	    did_cursorhold = TRUE;
 	    break;
-#endif
 
 #ifdef FEAT_GUI_W32
 	    /* On Win32 ignore <M-F4>, we get it when closing the window was
@@ -1488,7 +1480,7 @@ normalchar:
 	    /*
 	     * Insert a normal character.
 	     */
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
 	    if (!p_paste)
 	    {
 		/* Trigger InsertCharPre. */
@@ -1565,16 +1557,14 @@ normalchar:
 	    break;
 	}   /* end of switch (c) */
 
-#ifdef FEAT_AUTOCMD
 	/* If typed something may trigger CursorHoldI again. */
 	if (c != K_CURSORHOLD
-# ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_COMPL_FUNC
 		/* but not in CTRL-X mode, a script can't restore the state */
 		&& ctrl_x_mode == CTRL_X_NORMAL
-# endif
+#endif
 	       )
 	    did_cursorhold = FALSE;
-#endif
 
 	/* If the cursor was moved we didn't just insert a space */
 	if (arrow_used)
@@ -1624,25 +1614,17 @@ ins_redraw(
     if (char_avail())
 	return;
 
-#if defined(FEAT_AUTOCMD) || defined(FEAT_CONCEAL)
+#if defined(FEAT_CONCEAL)
     /* Trigger CursorMoved if the cursor moved.  Not when the popup menu is
      * visible, the command might delete it. */
-    if (ready && (
-# ifdef FEAT_AUTOCMD
-		has_cursormovedI()
-# endif
-# if defined(FEAT_AUTOCMD) && defined(FEAT_CONCEAL)
-		||
-# endif
-# ifdef FEAT_CONCEAL
-		curwin->w_p_cole > 0
+    if (ready && (has_cursormovedI()
+# if defined(FEAT_CONCEAL)
+		|| curwin->w_p_cole > 0
 # endif
 		)
-# ifdef FEAT_AUTOCMD
-	&& !EQUAL_POS(last_cursormoved, curwin->w_cursor)
-# endif
+	    && !EQUAL_POS(last_cursormoved, curwin->w_cursor)
 # ifdef FEAT_INS_EXPAND
-	&& !pum_visible()
+	    && !pum_visible()
 # endif
        )
     {
@@ -1654,7 +1636,6 @@ ins_redraw(
 	if (syntax_present(curwin) && must_redraw)
 	    update_screen(0);
 # endif
-# ifdef FEAT_AUTOCMD
 	if (has_cursormovedI())
 	{
 	    /* Make sure curswant is correct, an autocommand may call
@@ -1662,37 +1643,31 @@ ins_redraw(
 	    update_curswant();
 	    apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
 	}
-# endif
 # ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
 	{
-#  ifdef FEAT_AUTOCMD
 	    conceal_old_cursor_line = last_cursormoved.lnum;
-#  endif
 	    conceal_new_cursor_line = curwin->w_cursor.lnum;
 	    conceal_update_lines = TRUE;
 	}
 # endif
-# ifdef FEAT_AUTOCMD
 	last_cursormoved = curwin->w_cursor;
-# endif
     }
 #endif
 
-#ifdef FEAT_AUTOCMD
     /* Trigger TextChangedI if b_changedtick differs. */
     if (ready && has_textchangedI()
 	    && curbuf->b_last_changedtick != CHANGEDTICK(curbuf)
-# ifdef FEAT_INS_EXPAND
+#ifdef FEAT_INS_EXPAND
 	    && !pum_visible()
-# endif
+#endif
 	    )
     {
 	apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
 	curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
     }
 
-# ifdef FEAT_INS_EXPAND
+#ifdef FEAT_INS_EXPAND
     /* Trigger TextChangedP if b_changedtick differs. When the popupmenu closes
      * TextChangedI will need to trigger for backwards compatibility, thus use
      * different b_last_changedtick* variables. */
@@ -1703,7 +1678,6 @@ ins_redraw(
 	apply_autocmds(EVENT_TEXTCHANGEDP, NULL, NULL, FALSE, curbuf);
 	curbuf->b_last_changedtick_pum = CHANGEDTICK(curbuf);
     }
-# endif
 #endif
 
     if (must_redraw)
@@ -4001,19 +3975,15 @@ ins_compl_prep(int c)
 	    if (want_cindent && in_cinkeys(KEY_COMPLETE, ' ', inindent(0)))
 		do_c_expr_indent();
 #endif
-#ifdef FEAT_AUTOCMD
 	    /* Trigger the CompleteDone event to give scripts a chance to act
 	     * upon the completion. */
 	    apply_autocmds(EVENT_COMPLETEDONE, NULL, NULL, FALSE, curbuf);
-#endif
 	}
     }
-#ifdef FEAT_AUTOCMD
     else if (ctrl_x_mode == CTRL_X_LOCAL_MSG)
 	/* Trigger the CompleteDone event to give scripts a chance to act
 	 * upon the (possibly failed) completion. */
 	apply_autocmds(EVENT_COMPLETEDONE, NULL, NULL, FALSE, curbuf);
-#endif
 
     /* reset continue_* if we left expansion-mode, if we stay they'll be
      * (re)set properly in ins_complete() */
@@ -6224,10 +6194,7 @@ insertchar(
 #ifdef FEAT_RIGHTLEFT
 	    && !p_ri
 #endif
-#ifdef FEAT_AUTOCMD
-	    && !has_insertcharpre()
-#endif
-	       )
+	    && !has_insertcharpre())
     {
 #define INPUT_BUFLEN 100
 	char_u		buf[INPUT_BUFLEN + 1];
@@ -8404,7 +8371,7 @@ ins_reg(void)
     ++no_u_sync;
     if (regname == '=')
     {
-# ifdef FEAT_MBYTE
+# ifdef HAVE_INPUT_METHOD
 	int	im_on = im_get_status();
 # endif
 	/* Sync undo when evaluating the expression calls setline() or
@@ -8412,7 +8379,7 @@ ins_reg(void)
 	u_sync_once = 2;
 
 	regname = get_expr_register();
-# ifdef FEAT_MBYTE
+# ifdef HAVE_INPUT_METHOD
 	/* Restore the Input Method. */
 	if (im_on)
 	    im_set_active(TRUE);
@@ -8541,12 +8508,12 @@ ins_ctrl_hat(void)
 	{
 	    curbuf->b_p_iminsert = B_IMODE_LMAP;
 	    State |= LANGMAP;
-#ifdef FEAT_MBYTE
+#ifdef HAVE_INPUT_METHOD
 	    im_set_active(FALSE);
 #endif
 	}
     }
-#ifdef FEAT_MBYTE
+#ifdef HAVE_INPUT_METHOD
     else
     {
 	/* There are no ":lmap" mappings, toggle IM */
@@ -8693,7 +8660,7 @@ ins_esc(
 	}
     }
 
-#ifdef FEAT_MBYTE
+#ifdef HAVE_INPUT_METHOD
     /* Disable IM to allow typing English directly for Normal mode commands.
      * When ":lmap" is enabled don't change 'iminsert' (IM can be enabled as
      * well). */
@@ -8843,7 +8810,6 @@ ins_insert(int replaceState)
     }
 #endif
 
-#ifdef FEAT_AUTOCMD
 # ifdef FEAT_EVAL
     set_vim_var_string(VV_INSERTMODE,
 		   (char_u *)((State & REPLACE_FLAG) ? "i" :
@@ -8853,7 +8819,6 @@ ins_insert(int replaceState)
 			    "r"), 1);
 # endif
     apply_autocmds(EVENT_INSERTCHANGE, NULL, NULL, FALSE, curbuf);
-#endif
     if (State & REPLACE_FLAG)
 	State = INSERT | (State & LANGMAP);
     else
@@ -10573,7 +10538,7 @@ get_nolist_virtcol(void)
     return curwin->w_virtcol;
 }
 
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
 /*
  * Handle the InsertCharPre autocommand.
  * "c" is the character that was typed.
@@ -10590,11 +10555,11 @@ do_insert_char_pre(int c)
     if (!has_insertcharpre())
 	return NULL;
 
-#ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
     if (has_mbyte)
 	buf[(*mb_char2bytes)(c, buf)] = NUL;
     else
-#endif
+# endif
     {
 	buf[0] = c;
 	buf[1] = NUL;

@@ -132,13 +132,11 @@ gui_start(void)
 
     vim_free(old_term);
 
-#ifdef FEAT_AUTOCMD
     /* If the GUI started successfully, trigger the GUIEnter event, otherwise
      * the GUIFailed event. */
     gui_mch_update();
     apply_autocmds(gui.in_use ? EVENT_GUIENTER : EVENT_GUIFAILED,
 						   NULL, NULL, FALSE, curbuf);
-#endif
     --recursive;
 }
 
@@ -2954,7 +2952,7 @@ gui_wait_for_chars_or_timer(long wtime)
 gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
     int	    retval;
-#if defined(ELAPSED_FUNC) && defined(FEAT_AUTOCMD)
+#if defined(ELAPSED_FUNC)
     ELAPSED_TYPE start_tv;
 #endif
 
@@ -2986,7 +2984,7 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
 	return retval;
     }
 
-#if defined(ELAPSED_FUNC) && defined(FEAT_AUTOCMD)
+#if defined(ELAPSED_FUNC)
     ELAPSED_INIT(start_tv);
 #endif
 
@@ -3003,11 +3001,10 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
      */
     if (gui_wait_for_chars_or_timer(p_ut) == OK)
 	retval = OK;
-#ifdef FEAT_AUTOCMD
     else if (trigger_cursorhold()
-# ifdef ELAPSED_FUNC
+#ifdef ELAPSED_FUNC
 	    && ELAPSED_FUNC(start_tv) >= p_ut
-# endif
+#endif
 	    && typebuf.tb_change_cnt == tb_change_cnt)
     {
 	char_u	buf[3];
@@ -3020,7 +3017,6 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
 
 	retval = OK;
     }
-#endif
 
     if (retval == FAIL && typebuf.tb_change_cnt == tb_change_cnt)
     {
@@ -5131,34 +5127,24 @@ no_console_input(void)
     void
 gui_update_screen(void)
 {
-#ifdef FEAT_CONCEAL
+# ifdef FEAT_CONCEAL
     linenr_T	conceal_old_cursor_line = 0;
     linenr_T	conceal_new_cursor_line = 0;
     int		conceal_update_lines = FALSE;
-#endif
+# endif
 
     update_topline();
     validate_cursor();
 
-#if defined(FEAT_AUTOCMD) || defined(FEAT_CONCEAL)
     /* Trigger CursorMoved if the cursor moved. */
-    if (!finish_op && (
-# ifdef FEAT_AUTOCMD
-		has_cursormoved()
-# endif
-# if defined(FEAT_AUTOCMD) && defined(FEAT_CONCEAL)
-		||
-# endif
+    if (!finish_op && (has_cursormoved()
 # ifdef FEAT_CONCEAL
-		curwin->w_p_cole > 0
+		|| curwin->w_p_cole > 0
 # endif
-		)
-		     && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
+		) && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
     {
-# ifdef FEAT_AUTOCMD
 	if (has_cursormoved())
 	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
-# endif
 # ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
 	{
@@ -5169,11 +5155,10 @@ gui_update_screen(void)
 # endif
 	last_cursormoved = curwin->w_cursor;
     }
-#endif
 
     update_screen(0);	/* may need to update the screen */
     setcursor();
-# if defined(FEAT_CONCEAL)
+# ifdef FEAT_CONCEAL
     if (conceal_update_lines
 	    && (conceal_old_cursor_line != conceal_new_cursor_line
 		|| conceal_cursor_line(curwin)

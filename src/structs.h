@@ -586,9 +586,7 @@ typedef struct
     int		lockmarks;		/* TRUE when ":lockmarks" was used */
     int		keeppatterns;		/* TRUE when ":keeppatterns" was used */
     int		noswapfile;		/* TRUE when ":noswapfile" was used */
-# ifdef FEAT_AUTOCMD
     char_u	*save_ei;		/* saved value of 'eventignore' */
-# endif
     regmatch_T	filter_regmatch;	/* set by :filter /pat/ */
     int		filter_force;		/* set for :filter! */
 } cmdmod_T;
@@ -1946,10 +1944,8 @@ struct file_buffer
     int		b_nwindows;	/* nr of windows open on this buffer */
 
     int		b_flags;	/* various BF_ flags */
-#ifdef FEAT_AUTOCMD
     int		b_locked;	/* Buffer is being closed or referenced, don't
 				   let autocommands wipe it out. */
-#endif
 
     /*
      * b_ffname has the full path of the file (NULL for no name).
@@ -1986,13 +1982,11 @@ struct file_buffer
 				   incremented for each change, also for undo */
 #define CHANGEDTICK(buf) ((buf)->b_ct_di.di_tv.vval.v_number)
 
-#ifdef FEAT_AUTOCMD
     varnumber_T	b_last_changedtick; /* b:changedtick when TextChanged or
 				       TextChangedI was last triggered. */
-# ifdef FEAT_INS_EXPAND
+#ifdef FEAT_INS_EXPAND
     varnumber_T	b_last_changedtick_pum; /* b:changedtick when TextChangedP was
 					   last triggered. */
-# endif
 #endif
 
     int		b_saving;	/* Set to TRUE if we are in the middle of
@@ -2171,9 +2165,7 @@ struct file_buffer
     char_u	*b_p_fenc;	/* 'fileencoding' */
 #endif
     char_u	*b_p_ff;	/* 'fileformat' */
-#ifdef FEAT_AUTOCMD
     char_u	*b_p_ft;	/* 'filetype' */
-#endif
     char_u	*b_p_fo;	/* 'formatoptions' */
     char_u	*b_p_flp;	/* 'formatlistpat' */
     int		b_p_inf;	/* 'infercase' */
@@ -2448,12 +2440,8 @@ struct diffblock_S
 #endif
 
 #define SNAP_HELP_IDX	0
-#ifdef FEAT_AUTOCMD
-# define SNAP_AUCMD_IDX 1
-# define SNAP_COUNT	2
-#else
-# define SNAP_COUNT	1
-#endif
+#define SNAP_AUCMD_IDX 1
+#define SNAP_COUNT	2
 
 /*
  * Tab pages point to the top frame of each tab page.
@@ -2642,10 +2630,8 @@ struct window_S
 
     win_T	*w_prev;	    /* link to previous window */
     win_T	*w_next;	    /* link to next window */
-#ifdef FEAT_AUTOCMD
     int		w_closing;	    /* window is being closed, don't let
 				       autocommands close it too. */
-#endif
 
     frame_T	*w_frame;	    /* frame containing this window */
 
@@ -2676,10 +2662,8 @@ struct window_S
      */
     linenr_T	w_topline;	    /* buffer line number of the line at the
 				       top of the window */
-#ifdef FEAT_AUTOCMD
     char	w_topline_was_set;  /* flag set to TRUE when topline is set,
 				       e.g. by winrestview() */
-#endif
 #ifdef FEAT_DIFF
     int		w_topfill;	    /* number of filler lines above w_topline */
     int		w_old_topfill;	    /* w_topfill at last redraw */
@@ -2973,10 +2957,8 @@ typedef struct oparg_S
     int		block_mode;	/* current operator is Visual block mode */
     colnr_T	start_vcol;	/* start col for block mode operator */
     colnr_T	end_vcol;	/* end col for block mode operator */
-#ifdef FEAT_AUTOCMD
     long	prev_opcount;	/* ca.opcount saved for K_CURSORHOLD */
     long	prev_count0;	/* ca.count0 saved for K_CURSORHOLD */
-#endif
 } oparg_T;
 
 /*
@@ -3160,18 +3142,16 @@ typedef int vimmenu_T;
 
 /*
  * Struct to save values in before executing autocommands for a buffer that is
- * not the current buffer.  Without FEAT_AUTOCMD only "curbuf" is remembered.
+ * not the current buffer.
  */
 typedef struct
 {
     buf_T	*save_curbuf;	/* saved curbuf */
-#ifdef FEAT_AUTOCMD
     int		use_aucmd_win;	/* using aucmd_win */
     win_T	*save_curwin;	/* saved curwin */
     win_T	*new_curwin;	/* new curwin */
     bufref_T	new_curbuf;	/* new curbuf */
     char_u	*globaldir;	/* saved value of globaldir */
-#endif
 } aco_save_T;
 
 /*

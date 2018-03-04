@@ -799,11 +799,9 @@ codepage_invalid:
 	fix_arg_enc();
 #endif
 
-#ifdef FEAT_AUTOCMD
     /* Fire an autocommand to let people do custom font setup. This must be
      * after Vim has been setup for the new encoding. */
     apply_autocmds(EVENT_ENCODINGCHANGED, NULL, (char_u *)"", FALSE, curbuf);
-#endif
 
 #ifdef FEAT_SPELL
     /* Need to reload spell dictionaries */
@@ -4792,7 +4790,8 @@ iconv_end(void)
 # define USE_IMSTATUSFUNC (*p_imsf != NUL)
 #endif
 
-#if defined(FEAT_EVAL) && defined(FEAT_MBYTE)
+#if defined(FEAT_EVAL) && defined(FEAT_MBYTE) \
+	&& (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM))
     static void
 call_imactivatefunc(int active)
 {
@@ -4811,11 +4810,7 @@ call_imstatusfunc(void)
     int is_active;
 
     /* FIXME: Don't execute user function in unsafe situation. */
-    if (exiting
-#   ifdef FEAT_AUTOCMD
-	    || is_autocmd_blocked()
-#   endif
-	    )
+    if (exiting || is_autocmd_blocked())
 	return FALSE;
     /* FIXME: :py print 'xxx' is shown duplicate result.
      * Use silent to avoid it. */
@@ -5698,11 +5693,11 @@ im_synthesize_keypress(unsigned int keyval, unsigned int state)
     void
 xim_reset(void)
 {
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     if (USE_IMACTIVATEFUNC)
 	call_imactivatefunc(im_is_active);
     else
-#endif
+# endif
     if (xic != NULL)
     {
 	gtk_im_context_reset(xic);
@@ -6482,11 +6477,11 @@ xim_get_status_area_height(void)
 
 #else /* !defined(FEAT_XIM) */
 
-# if !defined(FEAT_GUI_W32) || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))
+# ifdef IME_WITHOUT_XIM
 static int im_was_set_active = FALSE;
 
     int
-im_get_status()
+im_get_status(void)
 {
 #  if defined(FEAT_MBYTE) && defined(FEAT_EVAL)
     if (USE_IMSTATUSFUNC)

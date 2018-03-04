@@ -8767,11 +8767,9 @@ screenalloc(int doclear)
     tabpage_T	    *tp;
     static int	    entered = FALSE;		/* avoid recursiveness */
     static int	    done_outofmem_msg = FALSE;	/* did outofmem message */
-#ifdef FEAT_AUTOCMD
     int		    retry_count = 0;
 
 retry:
-#endif
     /*
      * Allocation of the screen buffers is done only when the size changes and
      * when Rows and Columns have been set and we have started doing full
@@ -8823,10 +8821,8 @@ retry:
      */
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	win_free_lsize(wp);
-#ifdef FEAT_AUTOCMD
     if (aucmd_win != NULL)
 	win_free_lsize(aucmd_win);
-#endif
 
     new_ScreenLines = (schar_T *)lalloc((long_u)(
 			      (Rows + 1) * Columns * sizeof(schar_T)), FALSE);
@@ -8859,11 +8855,9 @@ retry:
 	    goto give_up;
 	}
     }
-#ifdef FEAT_AUTOCMD
     if (aucmd_win != NULL && aucmd_win->w_lines == NULL
 					&& win_alloc_lines(aucmd_win) == FAIL)
 	outofmem = TRUE;
-#endif
 give_up:
 
 #ifdef FEAT_MBYTE
@@ -9032,7 +9026,6 @@ give_up:
     entered = FALSE;
     --RedrawingDisabled;
 
-#ifdef FEAT_AUTOCMD
     /*
      * Do not apply autocommands more than 3 times to avoid an endless loop
      * in case applying autocommands always changes Rows or Columns.
@@ -9044,7 +9037,6 @@ give_up:
 	 * jump back to check if we need to allocate the screen again. */
 	goto retry;
     }
-#endif
 }
 
     void

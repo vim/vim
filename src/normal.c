@@ -169,9 +169,7 @@ static void	nv_nbcmd(cmdarg_T *cap);
 #ifdef FEAT_DND
 static void	nv_drop(cmdarg_T *cap);
 #endif
-#ifdef FEAT_AUTOCMD
 static void	nv_cursorhold(cmdarg_T *cap);
-#endif
 static void	get_op_vcol(oparg_T *oap, colnr_T col, int initial);
 
 static char *e_noident = N_("E349: No identifier under cursor");
@@ -424,9 +422,7 @@ static const struct nv_cmd
 #ifdef FEAT_DND
     {K_DROP,	nv_drop,	NV_STS,			0},
 #endif
-#ifdef FEAT_AUTOCMD
     {K_CURSORHOLD, nv_cursorhold, NV_KEEPREG,		0},
-#endif
     {K_PS,	nv_edit,	0,			0},
 };
 
@@ -595,7 +591,6 @@ normal_cmd(
 #endif
     }
 
-#ifdef FEAT_AUTOCMD
     /* Restore counts from before receiving K_CURSORHOLD.  This means after
      * typing "3", handling K_CURSORHOLD and then typing "2" we get "32", not
      * "3 * 2". */
@@ -606,7 +601,6 @@ normal_cmd(
 	oap->prev_opcount = 0;
 	oap->prev_count0 = 0;
     }
-#endif
 
     mapped_len = typebuf_maplen();
 
@@ -737,7 +731,6 @@ getcount:
 	}
     }
 
-#ifdef FEAT_AUTOCMD
     if (c == K_CURSORHOLD)
     {
 	/* Save the count values so that ca.opcount and ca.count0 are exactly
@@ -745,9 +738,7 @@ getcount:
 	oap->prev_opcount = ca.opcount;
 	oap->prev_count0 = ca.count0;
     }
-    else
-#endif
-	if (ca.opcount != 0)
+    else if (ca.opcount != 0)
     {
 	/*
 	 * If we're in the middle of an operator (including after entering a
@@ -808,10 +799,8 @@ getcount:
 	text_locked_msg();
 	goto normal_end;
     }
-#ifdef FEAT_AUTOCMD
     if ((nv_cmds[idx].cmd_flags & NV_NCW) && curbuf_locked())
 	goto normal_end;
-#endif
 
     /*
      * In Visual/Select mode, a few keys are handled in a special way.
@@ -892,17 +881,15 @@ getcount:
 	int	lit = FALSE;	/* get extra character literally */
 	int	langmap_active = FALSE;    /* using :lmap mappings */
 	int	lang;		/* getting a text character */
-#ifdef FEAT_MBYTE
+#ifdef HAVE_INPUT_METHOD
 	int	save_smd;	/* saved value of p_smd */
 #endif
 
 	++no_mapping;
 	++allow_keys;		/* no mapping for nchar, but allow key codes */
-#ifdef FEAT_AUTOCMD
 	/* Don't generate a CursorHold event here, most commands can't handle
 	 * it, e.g., nv_replace(), nv_csearch(). */
 	did_cursorhold = TRUE;
-#endif
 	if (ca.cmdchar == 'g')
 	{
 	    /*
@@ -957,7 +944,7 @@ getcount:
 		    State = LANGMAP;
 		langmap_active = TRUE;
 	    }
-#ifdef FEAT_MBYTE
+#ifdef HAVE_INPUT_METHOD
 	    save_smd = p_smd;
 	    p_smd = FALSE;	/* Don't let the IM code show the mode here */
 	    if (lang && curbuf->b_p_iminsert == B_IMODE_IM)
@@ -973,7 +960,7 @@ getcount:
 		++allow_keys;
 		State = NORMAL_BUSY;
 	    }
-#ifdef FEAT_MBYTE
+#ifdef HAVE_INPUT_METHOD
 	    if (lang)
 	    {
 		if (curbuf->b_p_iminsert != B_IMODE_LMAP)
@@ -1102,10 +1089,8 @@ getcount:
     if (need_flushbuf)
 	out_flush();
 #endif
-#ifdef FEAT_AUTOCMD
     if (ca.cmdchar != K_IGNORE)
 	did_cursorhold = FALSE;
-#endif
 
     State = NORMAL;
 
@@ -1278,10 +1263,7 @@ normal_end:
 
 #ifdef FEAT_CMDL_INFO
     if (oap->op_type == OP_NOP && oap->regname == 0
-# ifdef FEAT_AUTOCMD
-	    && ca.cmdchar != K_CURSORHOLD
-# endif
-	    )
+	    && ca.cmdchar != K_CURSORHOLD)
 	clear_showcmd();
 #endif
 
@@ -6264,13 +6246,11 @@ nv_gotofile(cmdarg_T *cap)
 	text_locked_msg();
 	return;
     }
-#ifdef FEAT_AUTOCMD
     if (curbuf_locked())
     {
 	clearop(cap->oap);
 	return;
     }
-#endif
 
     ptr = grab_file_name(cap->count1, &lnum);
 
@@ -9597,7 +9577,6 @@ nv_drop(cmdarg_T *cap UNUSED)
 }
 #endif
 
-#ifdef FEAT_AUTOCMD
 /*
  * Trigger CursorHold event.
  * When waiting for a character for 'updatetime' K_CURSORHOLD is put in the
@@ -9610,7 +9589,6 @@ nv_cursorhold(cmdarg_T *cap)
     did_cursorhold = TRUE;
     cap->retval |= CA_COMMAND_BUSY;	/* don't call edit() now */
 }
-#endif
 
 /*
  * Calculate start/end virtual columns for operating in block mode.

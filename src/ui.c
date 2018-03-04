@@ -3299,13 +3299,11 @@ ui_focus_change(
 	last_time = time(NULL);
     }
 
-#ifdef FEAT_AUTOCMD
     /*
      * Fire the focus gained/lost autocommand.
      */
     need_redraw |= apply_autocmds(in_focus ? EVENT_FOCUSGAINED
 				: EVENT_FOCUSLOST, NULL, NULL, FALSE, curbuf);
-#endif
 
     if (need_redraw)
     {
@@ -3339,7 +3337,7 @@ ui_focus_change(
 }
 #endif
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
+#if defined(HAVE_INPUT_METHOD) || defined(PROTO)
 /*
  * Save current Input Method status to specified place.
  */

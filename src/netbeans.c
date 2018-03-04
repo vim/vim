@@ -1581,9 +1581,7 @@ nb_do_cmd(
 	    do_update = 1;
 	    buf->initDone = TRUE;
 	    nb_set_curbuf(buf->bufp);
-#if defined(FEAT_AUTOCMD)
 	    apply_autocmds(EVENT_BUFREADPOST, 0, 0, FALSE, buf->bufp);
-#endif
 
 	    /* handle any postponed key commands */
 	    handle_key_queue();
@@ -2160,17 +2158,13 @@ nb_do_cmd(
 #endif
 			)
 		{
-#ifdef FEAT_AUTOCMD
 		    bufref_T bufref;
 
 		    set_bufref(&bufref, buf->bufp);
-#endif
 		    buf_write_all(buf->bufp, FALSE);
-#ifdef FEAT_AUTOCMD
 		    /* an autocommand may have deleted the buffer */
 		    if (!bufref_valid(&bufref))
 			buf->bufp = NULL;
-#endif
 		}
 	    }
 	    else

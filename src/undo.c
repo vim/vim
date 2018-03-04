@@ -424,7 +424,6 @@ u_savecommon(
 	term_change_in_curbuf();
 #endif
 
-#ifdef FEAT_AUTOCMD
 	/*
 	 * Saving text for undo means we are going to make a change.  Give a
 	 * warning for a read-only file before making the change, so that the
@@ -439,7 +438,6 @@ u_savecommon(
 	    EMSG(_("E881: Line count changed unexpectedly"));
 	    return FAIL;
 	}
-#endif
     }
 
 #ifdef U_DEBUG
@@ -2631,11 +2629,9 @@ u_undoredo(int undo)
     int		empty_buffer;		    /* buffer became empty */
     u_header_T	*curhead = curbuf->b_u_curhead;
 
-#ifdef FEAT_AUTOCMD
     /* Don't want autocommands using the undo structures here, they are
      * invalid till the end. */
     block_autocmds();
-#endif
 
 #ifdef U_DEBUG
     u_check(FALSE);
@@ -2664,9 +2660,7 @@ u_undoredo(int undo)
 	if (top > curbuf->b_ml.ml_line_count || top >= bot
 				      || bot > curbuf->b_ml.ml_line_count + 1)
 	{
-#ifdef FEAT_AUTOCMD
 	    unblock_autocmds();
-#endif
 	    IEMSG(_("E438: u_undo: line numbers wrong"));
 	    changed();		/* don't want UNCHANGED now */
 	    return;
@@ -2891,9 +2885,7 @@ u_undoredo(int undo)
      * the undone/redone change. */
     curbuf->b_u_time_cur = curhead->uh_time;
 
-#ifdef FEAT_AUTOCMD
     unblock_autocmds();
-#endif
 #ifdef U_DEBUG
     u_check(FALSE);
 #endif

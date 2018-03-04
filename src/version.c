@@ -78,11 +78,7 @@ static char *(features[]) =
 #else
 	"-arabic",
 #endif
-#ifdef FEAT_AUTOCMD
 	"+autocmd",
-#else
-	"-autocmd",
-#endif
 #ifdef FEAT_AUTOSERVERNAME
 	"+autoservername",
 #else
@@ -778,6 +774,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1564,
 /**/
     1563,
 /**/

@@ -6232,7 +6232,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 #endif
 }
 
-#if (defined(FEAT_MBYTE) || defined(PROTO)) && defined(USE_CARBONKEYHANDLER)
+#if (defined(FEAT_MBYTE) && defined(USE_CARBONKEYHANDLER)) || defined(PROTO)
 /*
  * Input Method Control functions.
  */

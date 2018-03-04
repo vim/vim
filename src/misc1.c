@@ -3183,12 +3183,10 @@ changed_common(
     if (must_redraw < VALID)
 	must_redraw = VALID;
 
-#ifdef FEAT_AUTOCMD
     /* when the cursor line is changed always trigger CursorMoved */
     if (lnum <= curwin->w_cursor.lnum
 		 && lnume + (xtra < 0 ? -xtra : xtra) > curwin->w_cursor.lnum)
 	last_cursormoved.lnum = 0;
-#endif
 }
 
 /*
@@ -3252,18 +3250,14 @@ change_warning(
 
     if (curbuf->b_did_warn == FALSE
 	    && curbufIsChanged() == 0
-#ifdef FEAT_AUTOCMD
 	    && !autocmd_busy
-#endif
 	    && curbuf->b_p_ro)
     {
-#ifdef FEAT_AUTOCMD
 	++curbuf_lock;
 	apply_autocmds(EVENT_FILECHANGEDRO, NULL, NULL, FALSE, curbuf);
 	--curbuf_lock;
 	if (!curbuf->b_p_ro)
 	    return;
-#endif
 	/*
 	 * Do what msg() does, but with a column offset if the warning should
 	 * be after the mode message.

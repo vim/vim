@@ -1849,9 +1849,7 @@ spell_load_lang(char_u *lang)
     char_u	fname_enc[85];
     int		r;
     spelload_T	sl;
-#ifdef FEAT_AUTOCMD
     int		round;
-#endif
 
     /* Copy the language name to pass it to spell_load_cb() as a cookie.
      * It's truncated when an error is detected. */
@@ -1859,11 +1857,9 @@ spell_load_lang(char_u *lang)
     sl.sl_slang = NULL;
     sl.sl_nobreak = FALSE;
 
-#ifdef FEAT_AUTOCMD
     /* We may retry when no spell file is found for the language, an
      * autocommand may load it then. */
     for (round = 1; round <= 2; ++round)
-#endif
     {
 	/*
 	 * Find the first spell file for "lang" in 'runtimepath' and load it.
@@ -1889,17 +1885,13 @@ spell_load_lang(char_u *lang)
 									lang);
 	    r = do_in_runtimepath(fname_enc, 0, spell_load_cb, &sl);
 
-#ifdef FEAT_AUTOCMD
 	    if (r == FAIL && *sl.sl_lang != NUL && round == 1
 		    && apply_autocmds(EVENT_SPELLFILEMISSING, lang,
 					      curbuf->b_fname, FALSE, curbuf))
 		continue;
 	    break;
-#endif
 	}
-#ifdef FEAT_AUTOCMD
 	break;
-#endif
     }
 
     if (r == FAIL)
@@ -2348,11 +2340,9 @@ did_set_spelllang(win_T *wp)
     static int	recursive = FALSE;
     char_u	*ret_msg = NULL;
     char_u	*spl_copy;
-#ifdef FEAT_AUTOCMD
     bufref_T	bufref;
 
     set_bufref(&bufref, wp->w_buffer);
-#endif
 
     /* We don't want to do this recursively.  May happen when a language is
      * not available and the SpellFileMissing autocommand opens a new buffer
@@ -2449,7 +2439,6 @@ did_set_spelllang(win_T *wp)
 	    else
 	    {
 		spell_load_lang(lang);
-#ifdef FEAT_AUTOCMD
 		/* SpellFileMissing autocommands may do anything, including
 		 * destroying the buffer we are using... */
 		if (!bufref_valid(&bufref))
@@ -2457,7 +2446,6 @@ did_set_spelllang(win_T *wp)
 		    ret_msg = (char_u *)N_("E797: SpellFileMissing autocommand deleted buffer");
 		    goto theend;
 		}
-#endif
 	    }
 	}
 

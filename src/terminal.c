@@ -38,6 +38,10 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
+ * - What to store in a session file?  Shell at the prompt would be OK to
+ *   restore, but others may not.  Open the window and let the user start the
+ *   command?  Also see #2650.
+ * - Adding WinBar to terminal window doesn't display, text isn't shifted down.
  * - When using 'termguicolors' still use the 16 ANSI colors as-is.  Helps for
  *   a job that uses 16 colors while Vim is using > 256.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
@@ -46,24 +50,20 @@
  * - after resizing windows overlap. (Boris Staletic, #2164)
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
+ * - if the job in the terminal does not support the mouse, we can use the
+ *   mouse in the Terminal window for copy/paste and scrolling.
  * - cursor blinks in terminal on widows with a timer. (xtal8, #2142)
- * - What to store in a session file?  Shell at the prompt would be OK to
- *   restore, but others may not.  Open the window and let the user start the
- *   command?  Also see #2650.
  * - When closing gvim with an active terminal buffer, the dialog suggests
  *   saving the buffer.  Should say something else. (Manas Thakur, #2215)
  *   Also: #2223
  * - Termdebug does not work when Vim build with mzscheme.  gdb hangs.
  * - MS-Windows GUI: WinBar has  tearoff item
- * - Adding WinBar to terminal window doesn't display, text isn't shifted down.
  * - MS-Windows GUI: still need to type a key after shell exits?  #1924
  * - After executing a shell command the status line isn't redraw.
  * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
- * - if the job in the terminal does not support the mouse, we can use the
- *   mouse in the Terminal window for copy/paste and scrolling.
  * - GUI: when using tabs, focus in terminal, click on tab does not work.
  * - GUI: when 'confirm' is set and trying to exit Vim, dialog offers to save
  *   changes to "!shell".
@@ -506,14 +506,12 @@ term_start(typval_T *argvar, jobopt_T *opt, int without_job, int forceit)
 	 * a deadlock if the job is waiting for Vim to read. */
 	channel_set_nonblock(term->tl_job->jv_channel, PART_IN);
 
-#ifdef FEAT_AUTOCMD
 	if (!opt->jo_hidden)
 	{
 	    ++curbuf->b_locked;
 	    apply_autocmds(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf);
 	    --curbuf->b_locked;
 	}
-#endif
 
 	if (old_curbuf != NULL)
 	{
@@ -938,9 +936,7 @@ term_convert_key(term_T *term, int c, char *buf)
 #ifdef FEAT_DND
 	case K_DROP:		return 0;
 #endif
-#ifdef FEAT_AUTOCMD
 	case K_CURSORHOLD:	return 0;
-#endif
 	case K_PS:		vterm_keyboard_start_paste(vterm);
 				other = TRUE;
 				break;

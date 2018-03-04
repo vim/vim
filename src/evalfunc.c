@@ -2668,9 +2668,7 @@ f_delete(typval_T *argvars, typval_T *rettv)
     static void
 f_did_filetype(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_AUTOCMD
     rettv->vval.v_number = did_filetype;
-#endif
 }
 
 /*
@@ -3053,12 +3051,10 @@ f_exists(typval_T *argvars, typval_T *rettv)
     }
     else if (*p == '#')
     {
-#ifdef FEAT_AUTOCMD
 	if (p[1] == '#')
 	    n = autocmd_supported(p + 2);
 	else
 	    n = au_exists(p + 1);
-#endif
     }
     else				/* internal variable */
     {
@@ -5797,9 +5793,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_ARABIC
 	"arabic",
 #endif
-#ifdef FEAT_AUTOCMD
 	"autocmd",
-#endif
 #ifdef FEAT_AUTOSERVERNAME
 	"autoservername",
 #endif

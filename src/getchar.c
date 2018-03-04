@@ -516,7 +516,6 @@ CancelRedo(void)
     }
 }
 
-#if defined(FEAT_AUTOCMD) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Save redobuff and old_redobuff to save_redobuff and save_old_redobuff.
  * Used before executing autocommands and user functions.
@@ -552,7 +551,6 @@ restoreRedobuff(save_redo_T *save_redo)
     free_buff(&old_redobuff);
     old_redobuff = save_redo->sr_old_redobuff;
 }
-#endif
 
 /*
  * Append "s" to the redo buffer.
@@ -2891,7 +2889,7 @@ vgetorpeek(int advance)
 						     + typebuf.tb_len] != NUL)
 			typebuf.tb_noremap[typebuf.tb_off
 						 + typebuf.tb_len++] = RM_YES;
-#ifdef FEAT_MBYTE
+#ifdef HAVE_INPUT_METHOD
 		    /* Get IM status right after getting keys, not after the
 		     * timeout for a mapping (focus may be lost by then). */
 		    vgetc_im_active = im_get_status();
@@ -3122,10 +3120,8 @@ fix_input_buffer(char_u *buf, int len)
 	else
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL
-#ifdef FEAT_AUTOCMD
 		    /* timeout may generate K_CURSORHOLD */
 		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
-#endif
 #if defined(WIN3264) && !defined(FEAT_GUI)
 		    /* Win32 console passes modifiers */
 		    && (i < 2 || p[1] != KS_MODIFIER)

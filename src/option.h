@@ -477,9 +477,7 @@ EXTERN char_u	*p_efm;		/* 'errorformat' */
 EXTERN char_u	*p_gefm;	/* 'grepformat' */
 EXTERN char_u	*p_gp;		/* 'grepprg' */
 #endif
-#ifdef FEAT_AUTOCMD
 EXTERN char_u	*p_ei;		/* 'eventignore' */
-#endif
 EXTERN int	p_ek;		/* 'esckeys' */
 EXTERN int	p_exrc;		/* 'exrc' */
 #ifdef FEAT_MBYTE
@@ -1046,9 +1044,7 @@ enum
     , BV_FF
     , BV_FLP
     , BV_FO
-#ifdef FEAT_AUTOCMD
     , BV_FT
-#endif
     , BV_IMI
     , BV_IMS
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)

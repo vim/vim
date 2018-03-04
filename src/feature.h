@@ -440,17 +440,10 @@
 #endif
 
 /*
- * +autocmd		":autocmd" command
- */
-#ifdef FEAT_NORMAL
-# define FEAT_AUTOCMD
-#endif
-
-/*
  * +diff		Displaying diffs in a nice way.
  *			Requires +windows and +autocmd.
  */
-#if defined(FEAT_NORMAL) && defined(FEAT_AUTOCMD)
+#if defined(FEAT_NORMAL)
 # define FEAT_DIFF
 #endif
 

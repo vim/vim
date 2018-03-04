@@ -1099,10 +1099,8 @@ free_all_mem(void)
 	return;
     entered_free_all_mem = TRUE;
 
-# ifdef FEAT_AUTOCMD
     /* Don't want to trigger autocommands from here on. */
     block_autocmds();
-# endif
 
     /* Close all tabs and windows.  Reset 'equalalways' to avoid redraws. */
     p_ea = FALSE;
@@ -1157,9 +1155,7 @@ free_all_mem(void)
 # endif
 
     /* Obviously named calls. */
-# if defined(FEAT_AUTOCMD)
     free_all_autocmds();
-# endif
     clear_termcodes();
     free_all_marks();
     alist_clear(&global_alist);
@@ -3403,11 +3399,9 @@ vim_chdirfile(char_u *fname, char *trigger_autocmd UNUSED)
     vim_strncpy(dir, fname, MAXPATHL - 1);
     *gettail_sep(dir) = NUL;
     res = mch_chdir((char *)dir) == 0 ? OK : FAIL;
-#ifdef FEAT_AUTOCMD
     if (res == OK && trigger_autocmd != NULL)
 	apply_autocmds(EVENT_DIRCHANGED, (char_u *)trigger_autocmd,
 							   dir, FALSE, curbuf);
-#endif
     return res;
 }
 #endif

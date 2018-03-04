@@ -2118,6 +2118,20 @@ typedef enum {
 # define USE_MCH_ERRMSG
 #endif
 
+/* Whether IME is supported when XIM is not used. */
+# if defined(FEAT_MBYTE_IME) && \
+    (!defined(FEAT_GUI_W32) || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
+# define IME_WITHOUT_XIM
+#endif
+
+#if defined(FEAT_MBYTE) && (defined(FEAT_XIM) \
+	|| defined(IME_WITHOUT_XIM) \
+	|| defined(FEAT_GUI_W32) \
+	|| defined(MACOS_CONVERT))
+/* im_set_active() is available */
+# define HAVE_INPUT_METHOD
+#endif
+
 #ifndef FEAT_MBYTE
 # define after_pathsep(b, p)	vim_ispathsep(*((p) - 1))
 # define transchar_byte(c)	transchar(c)
