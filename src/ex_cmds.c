@@ -4318,9 +4318,7 @@ do_ecmd(
 	if (topline == 0 && command == NULL)
 	    p_so = 999;			/* force cursor halfway the window */
 	update_topline();
-#ifdef FEAT_SCROLLBIND
 	curwin->w_scbind_pos = curwin->w_topline;
-#endif
 	p_so = n;
 	redraw_curbuf_later(NOT_VALID);	/* redraw this buffer later */
     }
@@ -5270,10 +5268,8 @@ do_sub(exarg_T *eap)
 		    setmouse();		/* disable mouse in xterm */
 #endif
 		    curwin->w_cursor.col = regmatch.startpos[0].col;
-#ifdef FEAT_CURSORBIND
 		    if (curwin->w_p_crb)
 			do_check_cursorbind();
-#endif
 
 		    /* When 'cpoptions' contains "u" don't sync undo when
 		     * asking for confirmation. */

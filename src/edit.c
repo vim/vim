@@ -764,15 +764,11 @@ edit(
 	 */
 	ins_redraw(TRUE);
 
-#ifdef FEAT_SCROLLBIND
 	if (curwin->w_p_scb)
 	    do_check_scrollbind(TRUE);
-#endif
 
-#ifdef FEAT_CURSORBIND
 	if (curwin->w_p_crb)
 	    do_check_cursorbind();
-#endif
 	update_curswant();
 	old_topline = curwin->w_topline;
 #ifdef FEAT_DIFF

@@ -8263,20 +8263,18 @@ ex_splitview(exarg_T *eap)
     else if (win_split(eap->addr_count > 0 ? (int)eap->line2 : 0,
 				     *eap->cmd == 'v' ? WSP_VERT : 0) != FAIL)
     {
-# ifdef FEAT_SCROLLBIND
 	/* Reset 'scrollbind' when editing another file, but keep it when
 	 * doing ":split" without arguments. */
 	if (*eap->arg != NUL
-#  ifdef FEAT_BROWSE
+# ifdef FEAT_BROWSE
 		|| cmdmod.browse
-#  endif
+# endif
 	   )
 	{
 	    RESET_BINDING(curwin);
 	}
 	else
 	    do_check_scrollbind(FALSE);
-# endif
 	do_exedit(eap, old_curwin);
     }
 
@@ -8768,7 +8766,6 @@ ex_swapname(exarg_T *eap UNUSED)
     static void
 ex_syncbind(exarg_T *eap UNUSED)
 {
-#ifdef FEAT_SCROLLBIND
     win_T	*wp;
     win_T	*save_curwin = curwin;
     buf_T	*save_curbuf = curbuf;
@@ -8836,7 +8833,6 @@ ex_syncbind(exarg_T *eap UNUSED)
 	    ins_typebuf(ctrl_o, REMAP_NONE, 0, TRUE, FALSE);
 	}
     }
-#endif
 }
 
 

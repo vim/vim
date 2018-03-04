@@ -244,14 +244,12 @@ typedef struct
     char_u	*wo_stl;
 #define w_p_stl w_onebuf_opt.wo_stl	/* 'statusline' */
 #endif
-#ifdef FEAT_SCROLLBIND
     int		wo_scb;
-# define w_p_scb w_onebuf_opt.wo_scb	/* 'scrollbind' */
+#define w_p_scb w_onebuf_opt.wo_scb	/* 'scrollbind' */
     int		wo_diff_saved; /* options were saved for starting diff mode */
-# define w_p_diff_saved w_onebuf_opt.wo_diff_saved
+#define w_p_diff_saved w_onebuf_opt.wo_diff_saved
     int		wo_scb_save;	/* 'scrollbind' saved for diff mode*/
-# define w_p_scb_save w_onebuf_opt.wo_scb_save
-#endif
+#define w_p_scb_save w_onebuf_opt.wo_scb_save
     int		wo_wrap;
 #define w_p_wrap w_onebuf_opt.wo_wrap	/* 'wrap' */
 #ifdef FEAT_DIFF
@@ -264,12 +262,10 @@ typedef struct
     long	wo_cole;		/* 'conceallevel' */
 # define w_p_cole w_onebuf_opt.wo_cole
 #endif
-#ifdef FEAT_CURSORBIND
     int		wo_crb;
-# define w_p_crb w_onebuf_opt.wo_crb	/* 'cursorbind' */
+#define w_p_crb w_onebuf_opt.wo_crb	/* 'cursorbind' */
     int		wo_crb_save;	/* 'cursorbind' state saved for diff mode*/
-# define w_p_crb_save w_onebuf_opt.wo_crb_save
-#endif
+#define w_p_crb_save w_onebuf_opt.wo_crb_save
 #ifdef FEAT_SIGNS
     char_u	*wo_scl;
 # define w_p_scl w_onebuf_opt.wo_scl	/* 'signcolumn' */
@@ -2829,9 +2825,7 @@ struct window_S
     /* transform a pointer to a "onebuf" option into a "allbuf" option */
 #define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))
 
-#ifdef FEAT_SCROLLBIND
     long	w_scbind_pos;
-#endif
 
 #ifdef FEAT_EVAL
     dictitem_T	w_winvar;	/* variable for "w:" Dictionary */

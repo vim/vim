@@ -4498,9 +4498,7 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
 #endif
     new_wp->w_botline = 2;
     new_wp->w_cursor.lnum = 1;
-#ifdef FEAT_SCROLLBIND
     new_wp->w_scbind_pos = 1;
-#endif
 
     /* We won't calculate w_fraction until resizing the window */
     new_wp->w_fraction = 0;
@@ -5659,11 +5657,7 @@ scroll_to_fraction(win_T *wp, int prev_height)
 
     /* Don't change w_topline when height is zero.  Don't set w_topline when
      * 'scrollbind' is set and this isn't the current window. */
-    if (height > 0
-#ifdef FEAT_SCROLLBIND
-	    && (!wp->w_p_scb || wp == curwin)
-#endif
-       )
+    if (height > 0 && (!wp->w_p_scb || wp == curwin))
     {
 	/*
 	 * Find a value for w_topline that shows the cursor at the same

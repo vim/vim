@@ -3297,10 +3297,8 @@ set_shellsize(int width, int height, int mustset)
 	}
 	else
 	{
-#ifdef FEAT_SCROLLBIND
 	    if (curwin->w_p_scb)
 		do_check_scrollbind(TRUE);
-#endif
 	    if (State & CMDLINE)
 	    {
 		update_screen(NOT_VALID);

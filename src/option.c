@@ -227,9 +227,7 @@
 # define PV_RL		OPT_WIN(WV_RL)
 # define PV_RLC		OPT_WIN(WV_RLC)
 #endif
-#ifdef FEAT_SCROLLBIND
-# define PV_SCBIND	OPT_WIN(WV_SCBIND)
-#endif
+#define PV_SCBIND	OPT_WIN(WV_SCBIND)
 #define PV_SCROLL	OPT_WIN(WV_SCROLL)
 #ifdef FEAT_SPELL
 # define PV_SPELL	OPT_WIN(WV_SPELL)
@@ -246,9 +244,7 @@
 # define PV_WFH		OPT_WIN(WV_WFH)
 # define PV_WFW		OPT_WIN(WV_WFW)
 #define PV_WRAP		OPT_WIN(WV_WRAP)
-#ifdef FEAT_CURSORBIND
-# define PV_CRBIND	OPT_WIN(WV_CRBIND)
-#endif
+#define PV_CRBIND	OPT_WIN(WV_CRBIND)
 #ifdef FEAT_CONCEAL
 # define PV_COCU	OPT_WIN(WV_COCU)
 # define PV_COLE	OPT_WIN(WV_COLE)
@@ -976,11 +972,7 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
     {"cursorbind",  "crb",  P_BOOL|P_VI_DEF,
-#ifdef FEAT_CURSORBIND
 			    (char_u *)VAR_WIN, PV_CRBIND,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"cursorcolumn", "cuc", P_BOOL|P_VI_DEF|P_RWIN,
 #ifdef FEAT_SYN_HL
@@ -2382,11 +2374,7 @@ static struct vimoption options[] =
 			    (char_u *)VAR_WIN, PV_SCROLL,
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
     {"scrollbind",  "scb",  P_BOOL|P_VI_DEF,
-#ifdef FEAT_SCROLLBIND
 			    (char_u *)VAR_WIN, PV_SCBIND,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"scrolljump",  "sj",   P_NUM|P_VI_DEF|P_VIM,
 			    (char_u *)&p_sj, PV_NONE,
@@ -2395,13 +2383,8 @@ static struct vimoption options[] =
 			    (char_u *)&p_so, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
     {"scrollopt",   "sbo",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-#ifdef FEAT_SCROLLBIND
 			    (char_u *)&p_sbo, PV_NONE,
 			    {(char_u *)"ver,jump", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCRIPTID_INIT},
     {"sections",    "sect", P_STRING|P_VI_DEF,
 			    (char_u *)&p_sections, PV_NONE,
@@ -3230,9 +3213,7 @@ static char *(p_km_values[]) = {"startsel", "stopsel", NULL};
 #ifdef FEAT_BROWSE
 static char *(p_bsdir_values[]) = {"current", "last", "buffer", NULL};
 #endif
-#ifdef FEAT_SCROLLBIND
 static char *(p_scbopt_values[]) = {"ver", "hor", "jump", NULL};
-#endif
 static char *(p_debug_values[]) = {"msg", "throw", "beep", NULL};
 static char *(p_ead_values[]) = {"both", "ver", "hor", NULL};
 static char *(p_buftype_values[]) = {"nofile", "nowrite", "quickfix", "help", "terminal", "acwrite", NULL};
@@ -6240,13 +6221,11 @@ did_set_string_option(
 #endif
 
     /* 'scrollopt' */
-#ifdef FEAT_SCROLLBIND
     else if (varp == &p_sbo)
     {
 	if (check_opt_strings(p_sbo, p_scbopt_values, TRUE) != OK)
 	    errmsg = e_invarg;
     }
-#endif
 
     /* 'ambiwidth' */
 #ifdef FEAT_MBYTE
@@ -8328,7 +8307,6 @@ set_bool_option(
     }
 #endif
 
-#ifdef FEAT_SCROLLBIND
     /* when 'scrollbind' is set: snapshot the current position to avoid a jump
      * at the end of normal_cmd() */
     else if ((int *)varp == &curwin->w_p_scb)
@@ -8339,7 +8317,6 @@ set_bool_option(
 	    curwin->w_scbind_pos = curwin->w_topline;
 	}
     }
-#endif
 
 #if defined(FEAT_QUICKFIX)
     /* There can be only one window with 'previewwindow' set. */
@@ -10688,12 +10665,8 @@ get_varp(struct vimoption *p)
 	case PV_BRI:	return (char_u *)&(curwin->w_p_bri);
 	case PV_BRIOPT: return (char_u *)&(curwin->w_p_briopt);
 #endif
-#ifdef FEAT_SCROLLBIND
 	case PV_SCBIND: return (char_u *)&(curwin->w_p_scb);
-#endif
-#ifdef FEAT_CURSORBIND
 	case PV_CRBIND: return (char_u *)&(curwin->w_p_crb);
-#endif
 #ifdef FEAT_CONCEAL
 	case PV_COCU:   return (char_u *)&(curwin->w_p_cocu);
 	case PV_COLE:   return (char_u *)&(curwin->w_p_cole);
@@ -10878,14 +10851,10 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_bri = from->wo_bri;
     to->wo_briopt = vim_strsave(from->wo_briopt);
 #endif
-#ifdef FEAT_SCROLLBIND
     to->wo_scb = from->wo_scb;
     to->wo_scb_save = from->wo_scb_save;
-#endif
-#ifdef FEAT_CURSORBIND
     to->wo_crb = from->wo_crb;
     to->wo_crb_save = from->wo_crb_save;
-#endif
 #ifdef FEAT_SPELL
     to->wo_spell = from->wo_spell;
 #endif

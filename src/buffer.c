@@ -1583,8 +1583,7 @@ do_buffer(
     /* Go to the other buffer. */
     set_curbuf(buf, action);
 
-#if defined(FEAT_LISTCMDS) \
-	&& (defined(FEAT_SCROLLBIND) || defined(FEAT_CURSORBIND))
+#if defined(FEAT_LISTCMDS)
     if (action == DOBUF_SPLIT)
     {
 	RESET_BINDING(curwin);	/* reset 'scrollbind' and 'cursorbind' */

@@ -3232,11 +3232,10 @@ ex_listdo(exarg_T *eap)
 	    if (eap->cmdidx == CMD_windo)
 	    {
 		validate_cursor();	/* cursor may have moved */
-#ifdef FEAT_SCROLLBIND
+
 		/* required when 'scrollbind' has been set */
 		if (curwin->w_p_scb)
 		    do_check_scrollbind(TRUE);
-#endif
 	    }
 
 	    if (eap->cmdidx == CMD_windo || eap->cmdidx == CMD_tabdo)

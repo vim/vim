@@ -1275,21 +1275,17 @@ normal_end:
 	mb_adjust_cursor();
 #endif
 
-#ifdef FEAT_SCROLLBIND
     if (curwin->w_p_scb && toplevel)
     {
 	validate_cursor();	/* may need to update w_leftcol */
 	do_check_scrollbind(TRUE);
     }
-#endif
 
-#ifdef FEAT_CURSORBIND
     if (curwin->w_p_crb && toplevel)
     {
 	validate_cursor();	/* may need to update w_leftcol */
 	do_check_cursorbind();
     }
-#endif
 
 #ifdef FEAT_TERMINAL
     /* don't go to Insert mode if a terminal has a running job */
@@ -3980,7 +3976,6 @@ display_showcmd(void)
 }
 #endif
 
-#ifdef FEAT_SCROLLBIND
 /*
  * When "check" is FALSE, prepare for commands that scroll the window.
  * When "check" is TRUE, take care of scroll-binding after the window has
@@ -4139,7 +4134,6 @@ check_scrollbind(linenr_T topline_diff, long leftcol_diff)
     curwin = old_curwin;
     curbuf = old_curbuf;
 }
-#endif /* #ifdef FEAT_SCROLLBIND */
 
 /*
  * Command character that's ignored.

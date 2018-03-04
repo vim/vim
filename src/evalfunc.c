@@ -5852,9 +5852,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_CSCOPE
 	"cscope",
 #endif
-#ifdef FEAT_CURSORBIND
 	"cursorbind",
-#endif
 #ifdef CURSOR_SHAPE
 	"cursorshape",
 #endif
@@ -6104,9 +6102,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #if defined(FEAT_RUBY) && !defined(DYNAMIC_RUBY)
 	"ruby",
 #endif
-#ifdef FEAT_SCROLLBIND
 	"scrollbind",
-#endif
 #ifdef FEAT_CMDL_INFO
 	"showcmd",
 	"cmdline_info",

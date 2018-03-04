@@ -168,11 +168,7 @@ static char *(features[]) =
 #else
 	"-cscope",
 #endif
-#ifdef FEAT_CURSORBIND
 	"+cursorbind",
-#else
-	"-cursorbind",
-#endif
 #ifdef CURSOR_SHAPE
 	"+cursorshape",
 #else
@@ -556,11 +552,7 @@ static char *(features[]) =
 #else
 	"-ruby",
 #endif
-#ifdef FEAT_SCROLLBIND
 	"+scrollbind",
-#else
-	"-scrollbind",
-#endif
 #ifdef FEAT_SIGNS
 	"+signs",
 #else
@@ -774,6 +766,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1566,
 /**/
     1565,
 /**/

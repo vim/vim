@@ -857,7 +857,7 @@ vim_main2(void)
     }
 #endif
 
-#if defined(FEAT_DIFF) && defined(FEAT_SCROLLBIND)
+#if defined(FEAT_DIFF)
     /* When a startup script or session file setup for diff'ing and
      * scrollbind, sync the scrollbind now. */
     if (curwin->w_p_diff && curwin->w_p_scb)
@@ -1193,7 +1193,7 @@ main_loop(
 		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 	    }
 
-#if defined(FEAT_DIFF) && defined(FEAT_SCROLLBIND)
+#if defined(FEAT_DIFF)
 	    /* Scroll-binding for diff mode may have been postponed until
 	     * here.  Avoids doing it for every change. */
 	    if (diff_need_scrollbind)
