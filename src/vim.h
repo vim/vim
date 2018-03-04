@@ -2118,16 +2118,19 @@ typedef enum {
 # define USE_MCH_ERRMSG
 #endif
 
-/* Whether IME is supported when XIM is not used. */
-# if defined(FEAT_MBYTE_IME) && \
-    (!defined(FEAT_GUI_W32) || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
+# if (defined(FEAT_MBYTE_IME) \
+	&& (!defined(FEAT_GUI_W32) \
+	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))) \
+     || (defined(MACOS_CONVERT) && !defined(FEAT_GUI_MAC))
+/* Whether IME is supported when XIM is not used, im_get_status() is defined in
+ * mbyte.c. */
 # define IME_WITHOUT_XIM
 #endif
 
 #if defined(FEAT_MBYTE) && (defined(FEAT_XIM) \
 	|| defined(IME_WITHOUT_XIM) \
 	|| defined(FEAT_GUI_W32) \
-	|| defined(MACOS_CONVERT))
+	|| defined(FEAT_GUI_MAC))
 /* im_set_active() is available */
 # define HAVE_INPUT_METHOD
 #endif
