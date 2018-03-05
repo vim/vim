@@ -12,6 +12,7 @@ int menu_is_popup(char_u *name);
 int menu_is_child_of_popup(vimmenu_T *menu);
 int menu_is_toolbar(char_u *name);
 int menu_is_separator(char_u *name);
+int get_menu_mode_flag(void);
 void show_popupmenu(void);
 int check_menu_pointer(vimmenu_T *root, vimmenu_T *menu_to_check);
 void gui_create_initial_menus(vimmenu_T *menu);

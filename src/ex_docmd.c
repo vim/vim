@@ -204,7 +204,8 @@ static void	ex_tearoff(exarg_T *eap);
 #else
 # define ex_tearoff		ex_ni
 #endif
-#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
+#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_TERM_POPUP_MENU)) && defined(FEAT_MENU)
 static void	ex_popup(exarg_T *eap);
 #else
 # define ex_popup		ex_ni
@@ -8741,11 +8742,21 @@ ex_tearoff(exarg_T *eap)
 }
 #endif
 
-#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)) && defined(FEAT_MENU)
+#if (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_TERM_POPUP_MENU)) && defined(FEAT_MENU)
     static void
 ex_popup(exarg_T *eap)
 {
-    gui_make_popup(eap->arg, eap->forceit);
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
+    if (gui.in_use)
+	gui_make_popup(eap->arg, eap->forceit);
+#  ifdef FEAT_TERM_POPUP_MENU
+    else
+#  endif
+# endif
+# ifdef FEAT_TERM_POPUP_MENU
+	pum_make_popup(eap->arg, eap->forceit);
+# endif
 }
 #endif
 

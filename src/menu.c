@@ -1891,6 +1891,16 @@ get_menu_mode(void)
     return MENU_INDEX_INVALID;
 }
 
+    int
+get_menu_mode_flag(void)
+{
+    int mode = get_menu_mode();
+
+    if (mode == MENU_INDEX_INVALID)
+	return 0;
+    return 1 << mode;
+}
+
 /*
  * Display the Special "PopUp" menu as a pop-up at the current mouse
  * position.  The "PopUpn" menu is for Normal mode, "PopUpi" for Insert mode,
@@ -2044,13 +2054,7 @@ gui_update_menus(int modes)
     if (modes != 0x0)
 	mode = modes;
     else
-    {
-	mode = get_menu_mode();
-	if (mode == MENU_INDEX_INVALID)
-	    mode = 0;
-	else
-	    mode = (1 << mode);
-    }
+	mode = get_menu_mode_flag();
 
     if (force_menu_update || mode != prev_mode)
     {
