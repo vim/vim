@@ -566,7 +566,6 @@ mch_check_messages(void)
 # ifdef MACOS_X_DARWIN
 #  include <mach/mach_host.h>
 #  include <mach/mach_port.h>
-#  include <mach/vm_page_size.h>
 # endif
 
 /*
