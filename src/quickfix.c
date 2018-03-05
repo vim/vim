@@ -4099,7 +4099,7 @@ ex_cfile(exarg_T *eap)
     win_T	*wp = NULL;
     qf_info_T	*qi = &ql_info;
     char_u	*au_name = NULL;
-    int		save_qfid;
+    int		save_qfid = 0;  // init for gcc
     int		res;
 
     switch (eap->cmdidx)
