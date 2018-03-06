@@ -348,6 +348,11 @@ if argc() > 1
   let s:tests = filter(s:tests, 'v:val =~ argv(1)')
 endif
 
+" If there is 'TEST_FILTER' variable filter the function names against it.
+if $TEST_FILTER !=# ''
+  let s:tests = filter(s:tests, 'v:val =~ $TEST_FILTER')
+endif
+
 " Execute the tests in alphabetical order.
 for s:test in sort(s:tests)
   " Silence, please!
