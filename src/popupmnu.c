@@ -1104,14 +1104,14 @@ pum_select_mouse_pos(void)
  * Execute the currently selected popup menu item.
  */
     static void
-pum_execute_menu(vimmenu_T *menu)
+pum_execute_menu(vimmenu_T *menu, int mode)
 {
     vimmenu_T   *mp;
     int		idx = 0;
     exarg_T	ea;
 
     for (mp = menu->children; mp != NULL; mp = mp->next)
-	if (idx++ == pum_selected)
+	if ((mp->modes & mp->enabled & mode) && idx++ == pum_selected)
 	{
 	    vim_memset(&ea, 0, sizeof(ea));
 	    execute_menu(&ea, mp);
@@ -1171,7 +1171,7 @@ pum_show_popupmenu(vimmenu_T *menu)
 	int	c;
 
 	pum_redraw();
-	setcursor();
+	setcursor_mayforce(TRUE);
 	out_flush();
 
 	c = vgetc();
@@ -1180,7 +1180,7 @@ pum_show_popupmenu(vimmenu_T *menu)
 	else if (c == CAR || c == NL)
 	{
 	    /* enter: select current item, if any, and close */
-	    pum_execute_menu(menu);
+	    pum_execute_menu(menu, mode);
 	    break;
 	}
 	else if (c == 'k' || c == K_UP || c == K_MOUSEUP)
@@ -1221,7 +1221,7 @@ pum_show_popupmenu(vimmenu_T *menu)
 	    pum_select_mouse_pos();
 	    if (pum_selected >= 0)
 	    {
-		pum_execute_menu(menu);
+		pum_execute_menu(menu, mode);
 		break;
 	    }
 	    if (c == K_LEFTMOUSE || c == K_LEFTMOUSE_NM)

@@ -9471,7 +9471,17 @@ windgoto(int row, int col)
     void
 setcursor(void)
 {
-    if (redrawing())
+    setcursor_mayforce(FALSE);
+}
+
+/*
+ * Set cursor to its position in the current window.
+ * When "force" is TRUE also when not redrawing.
+ */
+    void
+setcursor_mayforce(int force)
+{
+    if (force || redrawing())
     {
 	validate_cursor();
 	windgoto(W_WINROW(curwin) + curwin->w_wrow,

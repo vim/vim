@@ -44,6 +44,7 @@ int can_clear(char_u *p);
 void screen_start(void);
 void windgoto(int row, int col);
 void setcursor(void);
+void setcursor_mayforce(int force);
 int win_ins_lines(win_T *wp, int row, int line_count, int invalid, int mayclear);
 int win_del_lines(win_T *wp, int row, int line_count, int invalid, int mayclear, int clear_attr);
 int screen_ins_lines(int off, int row, int line_count, int end, int clear_attr, win_T *wp);
