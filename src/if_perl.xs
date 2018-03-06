@@ -1558,7 +1558,7 @@ Buffers(...)
 
 		pat = (char_u *)SvPV(sv, len);
 		++emsg_off;
-		b = buflist_findpat(pat, pat+len, FALSE, FALSE, FALSE);
+		b = buflist_findpat(pat, pat + len, TRUE, FALSE, FALSE);
 		--emsg_off;
 	    }
 
