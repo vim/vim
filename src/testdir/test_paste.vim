@@ -1,4 +1,4 @@
-" Tests for bracketed paste.
+" Tests for bracketed paste and other forms of pasting.
 
 " Bracketed paste only works with "xterm".  Not in GUI.
 if has('gui_running')
@@ -63,6 +63,17 @@ func Test_paste_insert_mode()
   call assert_equal('c', getline(4))
 
   set ai& et& tw=0
+  bwipe!
+endfunc
+
+func Test_paste_clipboard()
+  if !has('clipboard')
+    return
+  endif
+  let @+ = "nasty\<Esc>:!ls\<CR>command"
+  new
+  exe "normal i\<C-R>+\<Esc>"
+  call assert_equal("nasty\<Esc>:!ls\<CR>command", getline(1))
   bwipe!
 endfunc
 

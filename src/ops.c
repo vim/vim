@@ -899,17 +899,21 @@ valid_yank_reg(
  *
  * If regname is 0 and writing, use register 0
  * If regname is 0 and reading, use previous register
+ *
+ * Return TRUE when the register should be inserted literally (selection or
+ * clipboard).
  */
-    void
+    int
 get_yank_register(int regname, int writing)
 {
     int	    i;
+    int	    ret = FALSE;
 
     y_append = FALSE;
     if ((regname == 0 || regname == '"') && !writing && y_previous != NULL)
     {
 	y_current = y_previous;
-	return;
+	return ret;
     }
     i = regname;
     if (VIM_ISDIGIT(i))
@@ -926,10 +930,16 @@ get_yank_register(int regname, int writing)
 #ifdef FEAT_CLIPBOARD
     /* When selection is not available, use register 0 instead of '*' */
     else if (clip_star.available && regname == '*')
+    {
 	i = STAR_REGISTER;
+	ret = TRUE;
+    }
     /* When clipboard is not available, use register 0 instead of '+' */
     else if (clip_plus.available && regname == '+')
+    {
 	i = PLUS_REGISTER;
+	ret = TRUE;
+    }
 #endif
 #ifdef FEAT_DND
     else if (!writing && regname == '~')
@@ -940,6 +950,7 @@ get_yank_register(int regname, int writing)
     y_current = &(y_regs[i]);
     if (writing)	/* remember the register we write into for do_put() */
 	y_previous = y_current;
+    return ret;
 }
 
 #if defined(FEAT_CLIPBOARD) || defined(PROTO)
@@ -1387,12 +1398,13 @@ put_in_typebuf(
     int
 insert_reg(
     int		regname,
-    int		literally)	/* insert literally, not as if typed */
+    int		literally_arg)	/* insert literally, not as if typed */
 {
     long	i;
     int		retval = OK;
     char_u	*arg;
     int		allocated;
+    int		literally = literally_arg;
 
     /*
      * It is possible to get into an endless loop by having CTRL-R a in
@@ -1423,7 +1435,8 @@ insert_reg(
     }
     else				/* name or number register */
     {
-	get_yank_register(regname, FALSE);
+	if (get_yank_register(regname, FALSE))
+	    literally = TRUE;
 	if (y_current->y_array == NULL)
 	    retval = FAIL;
 	else
@@ -1580,12 +1593,14 @@ get_spec_reg(
     int
 cmdline_paste_reg(
     int regname,
-    int literally,	/* Insert text literally instead of "as typed" */
+    int literally_arg,	/* Insert text literally instead of "as typed" */
     int remcr)		/* don't add CR characters */
 {
     long	i;
+    int		literally = literally_arg;
 
-    get_yank_register(regname, FALSE);
+    if (get_yank_register(regname, FALSE))
+	literally = TRUE;
     if (y_current->y_array == NULL)
 	return FAIL;
 
