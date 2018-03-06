@@ -1164,6 +1164,18 @@ mch_setmouse(int on)
     SetConsoleMode(g_hConIn, cmodein);
 }
 
+
+#if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+/*
+ * Called when 'balloonevalterm' changed.
+ */
+    void
+mch_bevalterm_changed(void)
+{
+    mch_setmouse(g_fMouseActive);
+}
+#endif
+
 /*
  * Decode a MOUSE_EVENT.  If it's a valid event, return MOUSE_LEFT,
  * MOUSE_MIDDLE, or MOUSE_RIGHT for a click; MOUSE_DRAG for a mouse
@@ -1243,7 +1255,7 @@ decode_mouse_event(
 
     if (pmer->dwEventFlags == MOUSE_MOVED)
     {
-	/* ignore MOUSE_MOVED events if (x, y) hasn't changed.	(We get these
+	/* Ignore MOUSE_MOVED events if (x, y) hasn't changed.	(We get these
 	 * events even when the mouse moves only within a char cell.) */
 	if (s_xOldMouse == g_xMouse && s_yOldMouse == g_yMouse)
 	    return FALSE;
@@ -1252,11 +1264,20 @@ decode_mouse_event(
     /* If no buttons are pressed... */
     if ((pmer->dwButtonState & ((1 << cButtons) - 1)) == 0)
     {
+	nButton = MOUSE_RELEASE;
+
 	/* If the last thing returned was MOUSE_RELEASE, ignore this */
 	if (s_fReleased)
-	    return FALSE;
+	{
+#ifdef FEAT_BEVAL_TERM
+	    /* do return mouse move events when we want them */
+	    if (p_bevalterm)
+		nButton = MOUSE_DRAG;
+	    else
+#endif
+		return FALSE;
+	}
 
-	nButton = MOUSE_RELEASE;
 	s_fReleased = TRUE;
     }
     else    /* one or more buttons pressed */
