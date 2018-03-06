@@ -2278,6 +2278,7 @@ add_termcap_entry(char_u *name, int force)
 	    if (termp->bt_string != NULL)	/* found it */
 	    {
 		key = TERMCAP2KEY(name[0], name[1]);
+		++termp;
 		while (termp->bt_entry != (int)KS_NAME)
 		{
 		    if ((int)termp->bt_entry == key)
