@@ -405,6 +405,36 @@ static linenr_T dump_prefixes(slang_T *slang, char_u *word, char_u *pat, int *di
 static char_u	*repl_from = NULL;
 static char_u	*repl_to = NULL;
 
+static void
+ensurehunspellinit(lp)
+    slang_T *lp;
+{
+    if (!lp->sl_hunspell)
+    {
+        char_u *dic = lp->sl_fname;
+        char_u *aff = vim_strnsave(dic, STRLEN(dic));
+
+	vim_strncpy(aff + STRLEN(aff) - 3, "aff", 3);
+
+	lp->sl_hunspell = Hunspell_create(aff, dic);
+
+	vim_free(aff);
+
+	if (convert_setup(&lp->sl_tohunconv, spell_enc(),
+	    Hunspell_get_dic_encoding(lp->sl_hunspell)) == FAIL)
+	{
+	    lp->sl_tohunconv.vc_fail = TRUE;
+	}
+
+	if (convert_setup(&lp->sl_fromhunconv,
+	    Hunspell_get_dic_encoding(lp->sl_hunspell), spell_enc()) == FAIL)
+	{
+	    lp->sl_fromhunconv.vc_fail = TRUE;
+	}
+    }
+}
+
+
 /*
  * Main spell-checking function.
  * "ptr" points to a character that could be the start of a word.
@@ -513,27 +543,70 @@ spell_check(
     {
 	mi.mi_lp = LANGP_ENTRY(wp->w_s->b_langp, lpi);
 
+	if (mi.mi_lp->lp_slang->sl_ishunspell)
+	{
+	    slang_T *lp = mi.mi_lp->lp_slang;
+	    char_u *converted = 0;
+	    char_u *thisword;
+	    char_u *mi_end = mi.mi_end;
+	    char_u *mi_final =  mi.mi_word + STRLEN(mi.mi_word);
+
+	    while (1)
+	    {
+		ensurehunspellinit(lp);
+		if ((lp->sl_tohunconv.vc_fail == TRUE) || (lp->sl_fromhunconv.vc_fail == TRUE))
+		    break;
+
+		if (mi_end != mi.mi_word)
+		{
+		    thisword = vim_strnsave(mi.mi_word, mi_end - mi.mi_word);
+		    converted = string_convert(&lp->sl_tohunconv, thisword, NULL);
+		    if (converted)
+		    {
+			if (Hunspell_spell(lp->sl_hunspell, converted) != 0)
+			{
+			    mi.mi_result = SP_OK;
+			    mi.mi_end = mi.mi_cend = mi.mi_word + STRLEN(thisword);
+			}
+			vim_free(converted);
+		    }
+		    vim_free(thisword);
+		}
+
+		if (mi_end == mi_final)
+		    break;
+
+		do
+		{
+		    MB_PTR_ADV(mi_end);
+		} while (*mi_end != NUL && spell_iswordp(mi_end, wp));
+	    }
+	}
+
 	/* If reloading fails the language is still in the list but everything
 	 * has been cleared. */
-	if (mi.mi_lp->lp_slang->sl_fidxs == NULL)
+	if (!mi.mi_lp->lp_slang->sl_ishunspell && mi.mi_lp->lp_slang->sl_fidxs == NULL)
 	    continue;
 
-	/* Check for a matching word in case-folded words. */
-	find_word(&mi, FIND_FOLDWORD);
-
-	/* Check for a matching word in keep-case words. */
-	find_word(&mi, FIND_KEEPWORD);
-
-	/* Check for matching prefixes. */
-	find_prefix(&mi, FIND_FOLDWORD);
-
-	/* For a NOBREAK language, may want to use a word without a following
-	 * word as a backup. */
-	if (mi.mi_lp->lp_slang->sl_nobreak && mi.mi_result == SP_BAD
-						   && mi.mi_result2 != SP_BAD)
+	if (!mi.mi_lp->lp_slang->sl_ishunspell)
 	{
-	    mi.mi_result = mi.mi_result2;
-	    mi.mi_end = mi.mi_end2;
+	    /* Check for a matching word in case-folded words. */
+	    find_word(&mi, FIND_FOLDWORD);
+
+	    /* Check for a matching word in keep-case words. */
+	    find_word(&mi, FIND_KEEPWORD);
+
+	    /* Check for matching prefixes. */
+	    find_prefix(&mi, FIND_FOLDWORD);
+
+	    /* For a NOBREAK language, may want to use a word without a following
+	     * word as a backup. */
+	    if (mi.mi_lp->lp_slang->sl_nobreak && mi.mi_result == SP_BAD
+						       && mi.mi_result2 != SP_BAD)
+	    {
+		mi.mi_result = mi.mi_result2;
+		mi.mi_end = mi.mi_end2;
+	    }
 	}
 
 	/* Count the word in the first language where it's found to be OK. */
@@ -1896,6 +1969,80 @@ spell_load_lang(char_u *lang)
 
     if (r == FAIL)
     {
+#	define HUNSPELLDICT "/usr/share/myspell/"
+	DIR *dirp = opendir(HUNSPELLDICT);
+	if (dirp != NULL)
+	{
+	    slang_T* thislang[MAXREGIONS] = {0};
+	    slang_T *lp = 0;
+	    struct dirent *dp;
+	    int i = 0;
+
+	    while ((dp = readdir(dirp)) != NULL)
+	    {
+		char_u final_name[MAXPATHL];
+		char_u spf_name[MAXPATHL];
+		char_u thisregion[3] = {0};
+		char *resolvedlink = final_name;
+		int j, regionpos;
+
+		if (strncmp(dp->d_name, lang, STRLEN(lang)) != 0)
+		    continue;
+
+		if ((STRLEN(dp->d_name) <= 4) || (dp->d_name[STRLEN(lang)] != '_'))
+		    continue;
+
+		if (strncmp(".dic", dp->d_name + STRLEN(dp->d_name) - 4, 4) != 0)
+		    continue;
+
+		vim_strncpy(spf_name, HUNSPELLDICT, STRLEN(HUNSPELLDICT));
+		vim_strncpy(spf_name + STRLEN(HUNSPELLDICT), dp->d_name, STRLEN(HUNSPELLDICT));
+
+		if (realpath(spf_name, resolvedlink) != resolvedlink)
+		    continue;
+
+		thisregion[0] = tolower(dp->d_name[STRLEN(lang)+1]);
+		thisregion[1] = tolower(dp->d_name[STRLEN(lang)+1+1]);
+
+		r = OK;
+
+		for (j = 0; j < MAXREGIONS; ++j)
+		{
+		    if (thislang[j] && (strcmp(thislang[j]->sl_fname, final_name) == 0))
+			break;
+		}
+
+		if (j < MAXREGIONS)
+		    lp = thislang[j];
+		else
+		{
+		    lp = slang_alloc(lang);
+		    lp->sl_ishunspell = TRUE;
+
+		    lp->sl_fname = vim_strsave(resolvedlink);
+
+		    lp->sl_next = first_lang;
+		    first_lang = lp;
+		    thislang[i] = lp;
+		}
+
+		regionpos = 0;
+		while (lp->sl_regions[regionpos] != 0) ++regionpos;
+
+		/* silently lose regions which won't fit in */
+		if (regionpos == MAXREGIONS * 2)
+		    continue;
+
+		vim_strncpy(lp->sl_regions + regionpos, thisregion, 2);
+
+		++i;
+	    }
+	    closedir(dirp);
+	}
+    }
+
+    if (r == FAIL)
+    {
 	smsg((char_u *)
 #ifdef VMS
 	_("Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""),
@@ -1968,6 +2115,9 @@ slang_alloc(char_u *lang)
     void
 slang_free(slang_T *lp)
 {
+    Hunspell_destroy(lp->sl_hunspell);
+    convert_setup(&lp->sl_tohunconv, NULL, NULL);
+    convert_setup(&lp->sl_fromhunconv, NULL, NULL);
     vim_free(lp->sl_name);
     vim_free(lp->sl_fname);
     slang_clear(lp);
@@ -2367,6 +2517,7 @@ did_set_spelllang(win_T *wp)
     /* Loop over comma separated language names. */
     for (splp = spl_copy; *splp != NUL; )
     {
+	int hunspellregionunsupported;
 	/* Get one language name. */
 	copy_option_part(&splp, lang, MAXWLEN, ",");
 	region = NULL;
@@ -2452,6 +2603,7 @@ did_set_spelllang(win_T *wp)
 	/*
 	 * Loop over the languages, there can be several files for "lang".
 	 */
+	hunspellregionunsupported = 0;
 	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
 	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE) == FPC_SAME
 			 : STRICMP(lang, slang->sl_name) == 0)
@@ -2469,6 +2621,11 @@ did_set_spelllang(win_T *wp)
 				/* This addition file is for other regions. */
 				region_mask = 0;
 			}
+			else if (slang->sl_ishunspell)
+			{
+			    region_mask = 0;
+			    hunspellregionunsupported++;
+			}
 			else
 			    /* This is probably an error.  Give a warning and
 			     * accept the words anyway. */
@@ -2477,7 +2634,10 @@ did_set_spelllang(win_T *wp)
 								      region);
 		    }
 		    else
+		    {
+			hunspellregionunsupported--;
 			region_mask = 1 << c;
+		    }
 		}
 
 		if (region_mask != 0)
@@ -2496,6 +2656,9 @@ did_set_spelllang(win_T *wp)
 			nobreak = TRUE;
 		}
 	    }
+
+	if (region && hunspellregionunsupported >= 1)
+	    smsg((char_u *) _("Warning: region %s not supported"), region);
     }
 
     /* round 0: load int_wordlist, if possible.
@@ -4262,6 +4425,36 @@ suggest_try_change(suginfo_T *su)
     for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
+
+	if (lp->lp_slang->sl_ishunspell)
+	{
+	    slang_T *slp = lp->lp_slang;
+	    char **slst;
+	    char_u *converted = 0;
+
+	    ensurehunspellinit(slp);
+
+	    converted = string_convert(&slp->sl_tohunconv, su->su_fbadword, NULL);
+	    if (converted)
+	    {
+		int suggests;
+		suggests = Hunspell_suggest(slp->sl_hunspell, &slst, converted);
+		if (suggests > 0)
+		{
+		    int i;
+		    char_u *suggest;
+		    for (i = 0; i < suggests; ++i)
+		    {
+			suggest = string_convert(&slp->sl_fromhunconv, slst[i], NULL);
+			add_suggestion(su, &su->su_ga, suggest, su->su_badlen, i, 0, FALSE,
+			    slp, FALSE);
+			vim_free(suggest);
+		    }
+		    free(slst);
+		}
+		vim_free(converted);
+	    }
+	}
 
 	/* If reloading a spell file fails it's still in the list but
 	 * everything has been cleared. */

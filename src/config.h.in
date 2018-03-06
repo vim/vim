@@ -320,6 +320,9 @@
 /* Define if you want huge features. */
 #undef FEAT_HUGE
 
+/* Define if you want to use Hunspell for spell-checking. */
+#undef FEAT_HUNSPELL
+
 /* Define if you want to include the Lua interpreter. */
 #undef FEAT_LUA
 

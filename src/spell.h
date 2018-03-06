@@ -29,12 +29,14 @@
 # define DEBUG_TRIEWALK
 #endif
 
+#include "hunspell/hunspell.h"
+
 #define MAXWLEN 254		/* Assume max. word len is this many bytes.
 				   Some places assume a word length fits in a
 				   byte, thus it can't be above 255.
 				   Must be >= PFD_NOTSPECIAL. */
 
-#define MAXREGIONS 8		/* Number of regions supported. */
+#define MAXREGIONS 20		/* Number of regions supported. */
 
 /* Type used for indexes in the word tree need to be at least 4 bytes.  If int
  * is 8 bytes we could use something smaller, but what? */
@@ -72,6 +74,10 @@ struct slang_S
     char_u	*sl_name;	/* language name "en", "en.rare", "nl", etc. */
     char_u	*sl_fname;	/* name of .spl file */
     int		sl_add;		/* TRUE if it's a .add file. */
+    int		sl_ishunspell;	/* TRUE if it's an unconverted hunspell aff/dic combination. */
+    Hunhandle	*sl_hunspell;
+    vimconv_T   sl_tohunconv;
+    vimconv_T   sl_fromhunconv;
 
     char_u	*sl_fbyts;	/* case-folded word bytes */
     idx_T	*sl_fidxs;	/* case-folded word indexes */

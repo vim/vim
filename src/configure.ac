@@ -17,6 +17,7 @@ AC_PROGRAM_EGREP	dnl required by AC_EGREP_CPP
 AC_PROG_FGREP		dnl finds working grep -F
 AC_ISC_POSIX		dnl required by AC_C_CROSS
 AC_PROG_AWK		dnl required for "make html" in ../doc
+PKG_PROG_PKG_CONFIG     dnl to setup PKG_CONFIG variable
 
 dnl Don't strip if we don't have it
 AC_CHECK_PROG(STRIP, strip, strip, :)
@@ -2431,7 +2432,7 @@ dnl
 dnl AM_PATH_GTK([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for GTK, and define GTK_CFLAGS, GTK_LIBDIR and GTK_LIBS
 dnl
-AC_DEFUN(AM_PATH_GTK,
+AC_DEFUN([AM_PATH_GTK],
 [
   if test "X$GTK_CONFIG" != "Xno" -o "X$PKG_CONFIG" != "Xno"; then
   {
@@ -3079,6 +3080,33 @@ elif test -L "/proc/curproc/file"; then
 else
   AC_MSG_RESULT(no)
 fi
+
+dnl ---------------------------------------------------------------------------
+dnl Using hunspell
+dnl ---------------------------------------------------------------------------
+AC_MSG_CHECKING(--with-hunspell argument)
+AC_ARG_WITH([hunspell],
+            AS_HELP_STRING([--without-hunspell],
+                           [ignore presence of hunspell and disable it]))
+AC_MSG_RESULT($with_hunspell)
+AS_IF([test "x$with_hunspell" != "xno"],
+      [
+       if $PKG_CONFIG --exists hunspell ; then
+         HUNSPELL_CFLAGS=`$PKG_CONFIG --cflags hunspell`
+         HUNSPELL_LIBS=`$PKG_CONFIG --libs hunspell`
+         AC_DEFINE(FEAT_HUNSPELL)
+         [have_hunspell=yes]
+       else
+         AC_MSG_ERROR([could not configure hunspell])
+         [have_hunspell=no]
+       fi
+       AC_SUBST(HUNSPELL_CFLAGS)
+       AC_SUBST(HUNSPELL_LIBS)
+      ],
+      [
+       AC_MSG_RESULT(no)
+       have_hunspell=no])
+
 
 dnl Check for Cygwin, which needs an extra source file if not using X11
 AC_MSG_CHECKING(for CYGWIN or MSYS environment)
