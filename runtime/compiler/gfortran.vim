@@ -1,9 +1,5 @@
 " Compiler: GNU Fortran Compiler
-" Maintainer: H Xu <xuhdev@gmail.com>
-" Version: 0.1.3
-" Last Change: 2012 Apr 30
-" Homepage: http://www.vim.org/scripts/script.php?script_id=3496
-"           https://bitbucket.org/xuhdev/compiler-gfortran.vim
+" Last Change: 2018 Mar 07
 " License: Same as Vim
 
 if exists('current_compiler')
@@ -18,10 +14,12 @@ if exists(":CompilerSet") != 2		" older Vim always used :setlocal
 endif
 
 CompilerSet errorformat=
+            \%A%f:%l:%c:,
             \%A%f:%l.%c:,
             \%-Z%trror:\ %m,
             \%-Z%tarning:\ %m,
-            \%-C%.%#
+            \%-C%.%#,
+            \%-G%.%#
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
