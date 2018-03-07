@@ -8190,8 +8190,8 @@ set_bool_option(
     {
 # ifdef FEAT_TERMINAL
 	/* Cannot set 'modifiable' when in Terminal mode. */
-	if (term_in_normal_mode()
-			 || (bt_terminal(curbuf) && !term_is_finished(curbuf)))
+	if (curbuf->b_p_ma && (term_in_normal_mode() || (bt_terminal(curbuf)
+		      && curbuf->b_term != NULL && !term_is_finished(curbuf))))
 	{
 	    curbuf->b_p_ma = FALSE;
 	    return (char_u *)N_("E946: Cannot make a terminal with running job modifiable");
