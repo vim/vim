@@ -1175,7 +1175,7 @@ pum_show_popupmenu(vimmenu_T *menu)
 	out_flush();
 
 	c = vgetc();
-	if (c == ESC)
+	if (c == ESC || c == Ctrl_C)
 	    break;
 	else if (c == CAR || c == NL)
 	{
@@ -1211,7 +1211,7 @@ pum_show_popupmenu(vimmenu_T *menu)
 	}
 	else if (c == K_LEFTDRAG || c == K_RIGHTDRAG || c == K_MOUSEMOVE)
 	{
-	    /* mouse moved: selec item in the mouse row */
+	    /* mouse moved: select item in the mouse row */
 	    pum_select_mouse_pos();
 	}
 	else if (c == K_LEFTMOUSE || c == K_LEFTMOUSE_NM || c == K_RIGHTRELEASE)
