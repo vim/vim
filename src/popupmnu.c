@@ -1175,7 +1175,7 @@ pum_show_popupmenu(vimmenu_T *menu)
 	out_flush();
 
 	c = vgetc();
-	if (c == ESC)
+	if (c == ESC || c == Ctrl_C)
 	    break;
 	else if (c == CAR || c == NL)
 	{
