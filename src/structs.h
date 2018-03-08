@@ -1260,21 +1260,22 @@ struct listwatch_S
 
 /*
  * Structure to hold info about a list.
+ * Order of members is optimized to reduce padding.
  */
 struct listvar_S
 {
     listitem_T	*lv_first;	/* first item, NULL if none */
     listitem_T	*lv_last;	/* last item, NULL if none */
-    int		lv_refcount;	/* reference count */
-    int		lv_len;		/* number of items */
     listwatch_T	*lv_watch;	/* first watcher, NULL if none */
-    int		lv_idx;		/* cached index of an item */
     listitem_T	*lv_idx_item;	/* when not NULL item at index "lv_idx" */
-    int		lv_copyID;	/* ID used by deepcopy() */
     list_T	*lv_copylist;	/* copied list used by deepcopy() */
-    char	lv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
     list_T	*lv_used_next;	/* next list in used lists list */
     list_T	*lv_used_prev;	/* previous list in used lists list */
+    int		lv_refcount;	/* reference count */
+    int		lv_len;		/* number of items */
+    int		lv_idx;		/* cached index of an item */
+    int		lv_copyID;	/* ID used by deepcopy() */
+    char	lv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
 };
 
 /*
