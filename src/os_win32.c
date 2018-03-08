@@ -7397,10 +7397,15 @@ fix_arg_enc(void)
 	/* Now expand wildcards in the arguments. */
 	/* Temporarily add '(' and ')' to 'isfname'.  These are valid
 	 * filename characters but are excluded from 'isfname' to make
-	 * "gf" work on a file name in parenthesis (e.g.: see vim.h). */
+	 * "gf" work on a file name in parenthesis (e.g.: see vim.h).
+	 * Also, unset wildignore to not be influenced by this option.
+	 * The arguments specified in command-line should be kept even if
+	 * encoding options were changed. */
 	do_cmdline_cmd((char_u *)":let SaVe_ISF = &isf|set isf+=(,)");
+	do_cmdline_cmd((char_u *)":let SaVe_WIG = &wig|set wig=");
 	alist_expand(fnum_list, used_alist_count);
 	do_cmdline_cmd((char_u *)":let &isf = SaVe_ISF|unlet SaVe_ISF");
+	do_cmdline_cmd((char_u *)":let &wig = SaVe_WIG|unlet SaVe_WIG");
     }
 
     /* If wildcard expansion failed, we are editing the first file of the
