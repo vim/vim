@@ -962,6 +962,16 @@ theend:
     return channel;
 }
 
+/*
+ * Set the "part" of "channel" closeable.
+ */
+    static void
+ch_unref_part(channel_T *channel, ch_part_T part)
+{
+    if (channel != NULL)
+	channel->ch_to_be_closed &= ~(1 << part);
+}
+
     static void
 ch_close_part(channel_T *channel, ch_part_T part)
 {
@@ -988,7 +998,7 @@ ch_close_part(channel_T *channel, ch_part_T part)
 	}
 	*fd = INVALID_FD;
 
-	channel->ch_to_be_closed &= ~(1 << part);
+	ch_unref_part(channel, part);
     }
 }
 
@@ -999,6 +1009,11 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
     {
 	ch_close_part(channel, PART_IN);
 	channel->CH_IN_FD = in;
+# if defined(UNIX)
+	/* Keep pty-master open until job ended. */
+	if (isatty(in))
+	    channel->ch_to_be_closed |= (1 << PART_IN);
+# endif
     }
     if (out != INVALID_FD)
     {
@@ -5208,6 +5223,10 @@ job_cleanup(job_T *job)
 
     /* Ready to cleanup the job. */
     job->jv_status = JOB_FINISHED;
+
+    /* When channel-in is kept open, close explicitly. */
+    if (job->jv_channel != NULL)
+	ch_close_part(job->jv_channel, PART_IN);
 
     if (job->jv_exit_cb != NULL)
     {
