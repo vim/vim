@@ -1,5 +1,8 @@
 /* terminal.c */
 void ex_terminal(exarg_T *eap);
+int term_write_session(FILE *fd, win_T *wp);
+int term_should_restore(buf_T *buf);
+void f_term_setrestore(typval_T *argvars, typval_T *rettv);
 void free_terminal(buf_T *buf);
 void write_to_term(buf_T *buffer, char_u *msg, channel_T *channel);
 int term_job_running(term_T *term);

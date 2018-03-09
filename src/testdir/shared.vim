@@ -270,3 +270,10 @@ func! Screenline(lnum)
   let line = join(chars, '')
   return matchstr(line, '^.\{-}\ze\s*$')
 endfunc
+
+" Stops the shell running in terminal "buf".
+func Stop_shell_in_terminal(buf)
+  call term_sendkeys(a:buf, "exit\r")
+  let job = term_getjob(a:buf)
+  call WaitFor({-> job_status(job) == "dead"})
+endfunc

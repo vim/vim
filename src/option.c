@@ -2403,7 +2403,7 @@ static struct vimoption options[] =
     {"sessionoptions", "ssop", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_SESSION
 			    (char_u *)&p_ssop, PV_NONE,
-	 {(char_u *)"blank,buffers,curdir,folds,help,options,tabpages,winsize",
+	 {(char_u *)"blank,buffers,curdir,folds,help,options,tabpages,winsize,terminal",
 							       (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,

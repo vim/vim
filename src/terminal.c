@@ -38,11 +38,10 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - What to store in a session file?  Shell at the prompt would be OK to
- *   restore, but others may not.  Open the window and let the user start the
- *   command?  Also see #2650.
- * - Adding WinBar to terminal window doesn't display, text isn't shifted down.
+ * - Add a flag to kill the job when Vim is exiting.  Useful when it's showing
+ *   a logfile.  Or send keys there to make it quit: "exit\r" for a shell.
  * - When using 'termguicolors' still use the 16 ANSI colors as-is.  Helps for
+ * - Adding WinBar to terminal window doesn't display, text isn't shifted down.
  *   a job that uses 16 colors while Vim is using > 256.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
@@ -134,6 +133,9 @@ struct terminal_S {
 #ifdef WIN3264
     void	*tl_winpty_config;
     void	*tl_winpty;
+#endif
+#if defined(FEAT_SESSION)
+    char_u	*tl_command;
 #endif
 
     /* last known vterm size */
@@ -487,6 +489,52 @@ term_start(typval_T *argvar, jobopt_T *opt, int without_job, int forceit)
     if (without_job)
 	return curbuf;
 
+#if defined(FEAT_SESSION)
+    /* Remember the command for the session file. */
+    if (opt->jo_term_norestore)
+    {
+	term->tl_command = vim_strsave((char_u *)"NONE");
+    }
+    else if (argvar->v_type == VAR_STRING)
+    {
+	char_u	*cmd = argvar->vval.v_string;
+
+	if (cmd != NULL && STRCMP(cmd, p_sh) != 0)
+	    term->tl_command = vim_strsave(cmd);
+    }
+    else if (argvar->v_type == VAR_LIST
+	    && argvar->vval.v_list != NULL
+	    && argvar->vval.v_list->lv_len > 0)
+    {
+	garray_T	ga;
+	listitem_T	*item;
+
+	ga_init2(&ga, 1, 100);
+	for (item = argvar->vval.v_list->lv_first;
+					item != NULL; item = item->li_next)
+	{
+	    char_u *s = get_tv_string_chk(&item->li_tv);
+	    char_u *p;
+
+	    if (s == NULL)
+		break;
+	    p = vim_strsave_fnameescape(s, FALSE);
+	    if (p == NULL)
+		break;
+	    ga_concat(&ga, p);
+	    vim_free(p);
+	    ga_append(&ga, ' ');
+	}
+	if (item == NULL)
+	{
+	    ga_append(&ga, NUL);
+	    term->tl_command = ga.ga_data;
+	}
+	else
+	    ga_clear(&ga);
+    }
+#endif
+
     /* System dependent: setup the vterm and maybe start the job in it. */
     if (argvar->v_type == VAR_STRING
 	    && argvar->vval.v_string != NULL
@@ -561,6 +609,8 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_curwin = 1;
 	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "hidden", 6) == 0)
 	    opt.jo_hidden = 1;
+	else if ((int)(p - cmd) == 9 && STRNICMP(cmd, "norestore", 9) == 0)
+	    opt.jo_term_norestore = 1;
 	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "rows", 4) == 0
 		&& ep != NULL && isdigit(ep[1]))
 	{
@@ -620,6 +670,42 @@ ex_terminal(exarg_T *eap)
     vim_free(opt.jo_eof_chars);
 }
 
+#if defined(FEAT_SESSION) || defined(PROTO)
+/*
+ * Write a :terminal command to the session file to restore the terminal in
+ * window "wp".
+ * Return FAIL if writing fails.
+ */
+    int
+term_write_session(FILE *fd, win_T *wp)
+{
+    term_T *term = wp->w_buffer->b_term;
+
+    /* Create the terminal and run the command.  This is not without
+     * risk, but let's assume the user only creates a session when this
+     * will be OK. */
+    if (fprintf(fd, "terminal ++curwin ++cols=%d ++rows=%d ",
+		term->tl_cols, term->tl_rows) < 0)
+	return FAIL;
+    if (term->tl_command != NULL && fputs((char *)term->tl_command, fd) < 0)
+	return FAIL;
+
+    return put_eol(fd);
+}
+
+/*
+ * Return TRUE if "buf" has a terminal that should be restored.
+ */
+    int
+term_should_restore(buf_T *buf)
+{
+    term_T	*term = buf->b_term;
+
+    return term != NULL && (term->tl_command == NULL
+				     || STRCMP(term->tl_command, "NONE") != 0);
+}
+#endif
+
 /*
  * Free the scrollback buffer for "term".
  */
@@ -669,6 +755,9 @@ free_terminal(buf_T *buf)
 
     term_free_vterm(term);
     vim_free(term->tl_title);
+#ifdef FEAT_SESSION
+    vim_free(term->tl_command);
+#endif
     vim_free(term->tl_status_text);
     vim_free(term->tl_opencmd);
     vim_free(term->tl_eof_chars);
@@ -4048,6 +4137,29 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "term_setrestore(buf, command)" function
+ */
+    void
+f_term_setrestore(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#if defined(FEAT_SESSION)
+    buf_T	*buf = term_get_buf(argvars);
+    term_T	*term;
+    char_u	*cmd;
+
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+    vim_free(term->tl_command);
+    cmd = get_tv_string_chk(&argvars[1]);
+    if (cmd != NULL)
+	term->tl_command = vim_strsave(cmd);
+    else
+	term->tl_command = NULL;
+#endif
+}
+
+/*
  * "term_start(command, options)" function
  */
     void
@@ -4064,7 +4176,8 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		    + JO_EXIT_CB + JO_CLOSE_CALLBACK + JO_OUT_IO,
 		JO2_TERM_NAME + JO2_TERM_FINISH + JO2_HIDDEN + JO2_TERM_OPENCMD
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
-		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS) == FAIL)
+		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS
+		    + JO2_NORESTORE) == FAIL)
 	return;
 
     if (opt.jo_vertical)
@@ -4566,6 +4679,7 @@ term_and_job_init(
 {
     create_vterm(term, term->tl_rows, term->tl_cols);
 
+    /* This will change a string in "argvar". */
     term->tl_job = job_start(argvar, opt);
     if (term->tl_job != NULL)
 	++term->tl_job->jv_refcount;

@@ -4777,6 +4777,13 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set |= JO2_HIDDEN;
 		opt->jo_hidden = get_tv_number(item);
 	    }
+	    else if (STRCMP(hi->hi_key, "norestore") == 0)
+	    {
+		if (!(supported2 & JO2_NORESTORE))
+		    break;
+		opt->jo_set |= JO2_NORESTORE;
+		opt->jo_term_norestore = get_tv_number(item);
+	    }
 #endif
 	    else if (STRCMP(hi->hi_key, "env") == 0)
 	    {
@@ -5470,6 +5477,7 @@ job_start(typval_T *argvars, jobopt_T *opt_arg)
 	    goto theend;
 	}
 #ifdef USE_ARGV
+	/* This will modify "cmd". */
 	if (mch_parse_cmd(cmd, FALSE, &argv, &argc) == FAIL)
 	    goto theend;
 	argv[argc] = NULL;

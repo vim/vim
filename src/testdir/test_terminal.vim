@@ -30,13 +30,6 @@ func Run_shell_in_terminal(options)
   return buf
 endfunc
 
-" Stops the shell started by Run_shell_in_terminal().
-func Stop_shell_in_terminal(buf)
-  call term_sendkeys(a:buf, "exit\r")
-  call WaitFor('job_status(g:job) == "dead"')
-  call assert_equal('dead', job_status(g:job))
-endfunc
-
 func Test_terminal_basic()
   au BufWinEnter * if &buftype == 'terminal' | let b:done = 'yes' | endif
   let buf = Run_shell_in_terminal({})
