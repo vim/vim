@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Feb 20
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -20,6 +20,7 @@ If the result is "1" you have it.
       Terminal Modes			|Terminal-mode|
       Cursor style			|terminal-cursor-style|
       Special keys			|terminal-special-keys|
+      Session				|terminal-session|
       Unix				|terminal-unix|
       MS-Windows			|terminal-ms-windows|
 2. Remote testing		|terminal-testing|
@@ -163,6 +164,8 @@ Syntax ~
 					cannot be |abandon|ed.
 			++hidden	Open the terminal in a hidden buffer,
 					no window will be used.
+			++norestore	Do not include this terminal window
+					in a session file.
 			++rows={height} Use {height} for the terminal window
 					height.  If the terminal uses the full
 					Vim height (no window above or below
@@ -284,6 +287,22 @@ An exception is when xterm is started with the "-bc" argument, or another way
 that causes the cursor to blink.  This actually means that the blinking flag
 is inverted.  Since Vim cannot detect this, the terminal window cursor
 blinking will also be inverted.
+
+
+Session ~
+							*terminal-session*
+A terminal window will be restored when using a session file, if possible and
+wanted.
+
+If "terminal" was removed from 'sessionoptions' then no terminal windows will
+be restored.
+
+If the job in the terminal was finished the window will not be restored.
+
+If the terminal can be restored, the command that was used to open it will be
+used again.  To change this use the |term_setrestore()| function.  This can
+also be used to not restore a specific terminal by setting the command to
+"NONE".
 
 
 Special keys ~

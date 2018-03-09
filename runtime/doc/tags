@@ -6606,6 +6606,7 @@ gettabinfo()	eval.txt	/*gettabinfo()*
 gettabvar()	eval.txt	/*gettabvar()*
 gettabwinvar()	eval.txt	/*gettabwinvar()*
 getwininfo()	eval.txt	/*getwininfo()*
+getwinpos()	eval.txt	/*getwinpos()*
 getwinposx()	eval.txt	/*getwinposx()*
 getwinposy()	eval.txt	/*getwinposy()*
 getwinvar()	eval.txt	/*getwinvar()*
@@ -8927,6 +8928,7 @@ term_gettty()	eval.txt	/*term_gettty()*
 term_list()	eval.txt	/*term_list()*
 term_scrape()	eval.txt	/*term_scrape()*
 term_sendkeys()	eval.txt	/*term_sendkeys()*
+term_setrestore()	eval.txt	/*term_setrestore()*
 term_setsize()	eval.txt	/*term_setsize()*
 term_start()	eval.txt	/*term_start()*
 term_wait()	eval.txt	/*term_wait()*
@@ -8944,6 +8946,8 @@ termdebug-example	terminal.txt	/*termdebug-example*
 termdebug-starting	terminal.txt	/*termdebug-starting*
 termdebug-stepping	terminal.txt	/*termdebug-stepping*
 termdebug-variables	terminal.txt	/*termdebug-variables*
+termdebug_popup	terminal.txt	/*termdebug_popup*
+termdebug_wide	terminal.txt	/*termdebug_wide*
 terminal	terminal.txt	/*terminal*
 terminal-colors	os_unix.txt	/*terminal-colors*
 terminal-cursor-style	terminal.txt	/*terminal-cursor-style*
@@ -8959,6 +8963,7 @@ terminal-options	term.txt	/*terminal-options*
 terminal-output-codes	term.txt	/*terminal-output-codes*
 terminal-resizing	terminal.txt	/*terminal-resizing*
 terminal-screendump	terminal.txt	/*terminal-screendump*
+terminal-session	terminal.txt	/*terminal-session*
 terminal-size-color	terminal.txt	/*terminal-size-color*
 terminal-special-keys	terminal.txt	/*terminal-special-keys*
 terminal-testing	terminal.txt	/*terminal-testing*

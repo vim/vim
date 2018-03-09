@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.0.  Last change: 2017 Nov 09
+*gui.txt*       For Vim version 8.0.  Last change: 2018 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -134,7 +134,7 @@ task bar with the 'guiheadroom' option.
 :winp[os]
 		Display current position of the top left corner of the GUI vim
 		window in pixels.  Does not work in all versions.
-		Also see |getwinposx()| and |getwinposy()|.
+		Also see |getwinpos()|, |getwinposx()| and |getwinposy()|.
 
 :winp[os] {X} {Y}							*E466*
 		Put the GUI vim window at the given {X} and {Y} coordinates.
@@ -992,10 +992,14 @@ it behaves in a strange way.
 :popu[p] {name}			Popup the menu {name}.  The menu named must
 				have at least one subentry, but need not
 				appear on the menu-bar (see |hidden-menus|).
-				{only available for Win32 and GTK GUI}
+				{only available for Win32 and GTK GUI or in
+				the terminal when compiled with +insert_expand}
 
 :popu[p]! {name}		Like above, but use the position of the mouse
 				pointer instead of the cursor.
+				In the terminal this is the last known
+				position, which is usually at the last click
+				or release (mouse movement is irrelevalt).
 
 Example: >
 	:popup File
@@ -1005,6 +1009,10 @@ pointer if ! was used). >
 	:amenu ]Toolbar.Make	:make<CR>
 	:popup ]Toolbar
 This creates a popup menu that doesn't exist on the main menu-bar.
+
+Note that in the GUI the :popup command will return immediately, before a
+selection has been made.  In the terminal the commands waits for the user to
+make a selection.
 
 Note that a menu that starts with ']' will not be displayed.
 

@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.0.  Last change: 2018 Feb 11
+*repeat.txt*    For Vim version 8.0.  Last change: 2018 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -265,6 +265,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			loaded during initialization, see |load-plugins|.
 
 			Also see |pack-add|.
+			{only available when compiled with +eval}
 
 						*:packl* *:packloadall*
 :packl[oadall][!]	Load all packages in the "start" directory under each
@@ -288,6 +289,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			An error only causes sourcing the script where it
 			happens to be aborted, further plugins will be loaded.
 			See |packages|.
+			{only available when compiled with +eval}
 
 :scripte[ncoding] [encoding]		*:scripte* *:scriptencoding* *E167*
 			Specify the character encoding used in the script.

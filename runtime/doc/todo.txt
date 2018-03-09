@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2018 Feb 27
+*todo.txt*      For Vim version 8.0.  Last change: 2018 Mar 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,16 +39,7 @@ No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
 
 Terminal emulator window:
-- using feedkeys() does not work?  (Charles Sheridan, 2018 Feb 17)
 - Lots of stuff to implement, see src/terminal.c
-- Improve debugger interface:
-    - Implement the right-click popup menu for the terminal. Can use the
-      completion popup menu code and mouse dragging.
-      Use it for "set breakpoint", "remove breakpoint", etc.
-  - Look into the idevim plugin/script.
-- Improve screen dump testing:
-  Add docs for how to properly use the screen dumps for testing, e.g. for
-  syntax highlighting.
 
 Mode message isn't updated on vertical split. (Alexei Averchenko, 2018 Feb 2,
 #2611)
@@ -62,17 +53,14 @@ Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in getdecchrs() (#2254)
 - undefined left shift in get_string_tv() (#2250)
 
-Patch to fix 'undolevels' in options window. (Yasuhiro Matsumoto, 2018 Feb 14,
-#2645)
-
-Patch to fix fd leak when using jobs. (ichizok, 2018 Feb 16, #2651)
-
-Popup menu is too wide, causing it not to be aligned. (Linwei, 2018 Feb 22,
-#2661)
-
 balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
 20, #2481)
 Also see #2352, want better control over balloon, perhaps set the position.
+
+Try out background make plugin: 
+  https://github.com/AndrewVos/vim-make-background
+or asyncmake: 
+  https://github.com/yegappan/asyncmake
 
 Cursor in status line after search. (#2530)
 
@@ -80,10 +68,13 @@ Cursor in wrong position when line wraps. (#2540)
 
 Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
 
+Does setting 'cursorline' cause syntax highlighting to slow down?  Perhaps is
+mess up the cache?  (Mike Lee Williams, 2018 Jan 27, #2539)
+
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
 
-Column number is wrong whsn using 'linebreak' and 'wrap'. (Keith Smiley, 2018
+Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)
 
 Check argument of systemlist(). (Pavlov)
@@ -94,12 +85,11 @@ Also see #2337
 Starting job with cwd option, when the directory does not exist, gives a
 confusing error message. (Wang Shidong, 2018 Jan 2, #2519)
 
-7   Make "ga" show the digraph for a character, if it exists.
-Patch from Christian Brabandt, 2011 Aug 19.
-
 Patch to add "module" to quickfix entries. (Marcin Szamotulski, Coot, 2017 Jun
 8, #1757)  Now part of #2322.  Or #2327?  #1757 was re-opened, include that
 first.
+
+Add the debug command line history to viminfo.
 
 ch_sendraw() with long string does not try to read inbetween, which may cause
 a deadlock if the reading side is waiting for the write to finish. (Nate
@@ -114,9 +104,6 @@ word is re-added to it. (Matej Cepl, 2018 Feb 6)
 
 Problem with mouse scroll in tmux. (fcying, #2419)  Might be caused by patch
 8.0.1309.  Removing "held_button = MOUSE_RELEASE;" helps. (2018 Feb 5)
-
-Does setting 'cursorline' cause syntax highlighting to slow down?  Perhaps is
-mess up the cache?  (Mike Lee Williams, 2018 Jan 27, #2539)
 
 Fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
 
@@ -600,8 +587,6 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 +channel:
 - Add a separate timeout for opening a socket.  Currently it's fixed at 50
   msec, which is too small for a remote connection. (tverniquet, #2130)
-- Try out background make plugin: 
-  https://github.com/AndrewVos/vim-make-background
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
 - Writing raw mode to a buffer should still handle NL characters as line
   breaks. (Dmitry Zotikov, 2017 Aug 16)

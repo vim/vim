@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 27
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2435,6 +2435,7 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_setrestore({buf}, {command}) none	set command to restore terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
@@ -4885,7 +4886,19 @@ getwinpos([{timeout}])					*getwinpos()*
 			[x-pos, y-pos]
 		{timeout} can be used to specify how long to wait in msec for
 		a response from the terminal.  When omitted 100 msec is used.
-
+		Use a longer time for a remote terminal.
+		When using a value less than 10 and no response is received
+		within that time, a previously reported position is returned,
+		if available.  This can be used to poll for the position and
+		do some work in the mean time: >
+			while 1
+			  let res = getwinpos(1)
+			  if res[0] >= 0
+			    break
+			  endif
+			  " Do some work here
+			endwhile
+<
 							*getwinposx()*
 getwinposx()	The result is a Number, which is the X coordinate in pixels of
 		the left hand side of the GUI Vim window. Also works for an
@@ -8348,6 +8361,16 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		means the character CTRL-X.
 		{only available when compiled with the |+terminal| feature}
 
+term_setrestore({buf}, {command})			*term_setrestore()*
+		Set the command to write in a session file to restore the job
+		in this terminal.  The line written in the session file is: >
+			terminal ++curwin ++cols=%d ++rows=%d {command}
+<		Make sure to escape the command properly.
+
+		Use an empty {command} to run 'shell'.
+		Use "NONE" to not restore this window.
+		{only available when compiled with the |+terminal| feature}
+
 term_setsize({buf}, {expr})				*term_setsize()*
 		Not implemented yet.
 		{only available when compiled with the |+terminal| feature}
@@ -8391,6 +8414,8 @@ term_start({cmd}, {options})				*term_start()*
 				     window; fails if the current buffer
 				     cannot be |abandon|ed
 		   "hidden"	     do not open a window
+		   "norestore"	     do not add the terminal window to a
+				     session file
 		   "term_finish"     What to do when the job is finished:
 					"close": close any windows
 					"open": open window if needed

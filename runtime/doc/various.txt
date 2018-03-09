@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.0.  Last change: 2018 Feb 27
+*various.txt*   For Vim version 8.0.  Last change: 2018 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -306,7 +306,7 @@ g8			Print the hex values of the bytes used in the
 			Here is an overview of the features.
 			The first column shows the smallest version in which
 			they are included:
-			   T	tiny
+			   T	tiny (always)
 			   S	small
 			   N	normal
 			   B	big
@@ -320,7 +320,7 @@ g8			Print the hex values of the bytes used in the
    *+acl*		|ACL| support included
    *+ARP*		Amiga only: ARP support included
 B  *+arabic*		|Arabic| language support
-N  *+autocmd*		|:autocmd|, automatic commands
+T  *+autocmd*		|:autocmd|, automatic commands
 H  *+autoservername*	Automatically enable |clientserver|
 m  *+balloon_eval*	|balloon-eval| support in the GUI. Included when
 			compiling with supported GUI (Motif, GTK, GUI) and
@@ -344,7 +344,7 @@ N  *+comments*		|'comments'| support
 B  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
 B  *+cscope*		|cscope| support
-m  *+cursorbind*	|'cursorbind'| support
+T  *+cursorbind*	|'cursorbind'| support
 m  *+cursorshape*	|termcap-cursor-shape| support
 m  *+debug*		Compiled for debugging.
 N  *+dialog_gui*	Support for |:confirm| with GUI dialog.

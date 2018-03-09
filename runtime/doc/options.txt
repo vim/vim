@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2018 Feb 25
+*options.txt*	For Vim version 8.0.  Last change: 2018 Mar 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -402,8 +402,8 @@ Setting the filetype
 			used to set the option value in, unless this is a help
 			window, in which case the window below help window is
 			used (skipping the option-window).
-			{not available when compiled without the |+eval| or
-			|+autocmd| features}
+			{not available when compiled without the |+eval|
+			feature}
 
 								*$HOME*
 Using "~" is like using "$HOME", but it is only recognized at the start of an
@@ -1385,8 +1385,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			written
 	  nowrite	buffer which will not be written
 	  acwrite	buffer which will always be written with BufWriteCmd
-			autocommands. {not available when compiled without the
-			|+autocmd| feature}
+			autocommands.
 	  quickfix	quickfix buffer, contains list of errors |:cwindow|
 			or list of locations |:lwindow|
 	  help		help buffer (you are not supposed to set this
@@ -2466,8 +2465,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'cursorbind' 'crb'	boolean  (default off)
 			local to window
 			{not in Vi}
-			{not available when compiled without the |+cursorbind|
-			feature}
 	When this option is set, as the cursor in the current
 	window moves other cursorbound windows (windows that also have
 	this option set) move their cursors to the corresponding line and
@@ -2918,8 +2915,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'eventignore' 'ei'	string	(default "")
 			global
 			{not in Vi}
-			{not available when compiled without the |+autocmd|
-			feature}
 	A list of autocommand event names, which are to be ignored.
 	When set to "all" or when "all" is one of the items, all autocommand
 	events are ignored, autocommands will not be executed.
@@ -3168,8 +3163,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'filetype' 'ft'		string (default: "")
 			local to buffer
 			{not in Vi}
-			{not available when compiled without the |+autocmd|
-			feature}
 	When this option is set, the FileType autocommand event is triggered.
 	All autocommands that match with the value of this option will be
 	executed.  Thus the value of 'filetype' is used in place of the file
@@ -5334,6 +5327,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	an explanation.
 	When 'buftype' is "nowrite" or "nofile" this option may be set, but
 	will be ignored.
+	Note that the text may actually be the same, e.g. 'modified' is set
+	when using "rA" on an "A".
 
 						*'more'* *'nomore'*
 'more'			boolean	(Vim default: on, Vi default: off)
@@ -5422,6 +5417,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	In the "popup" model the right mouse button produces a pop-up menu.
 	You need to define this first, see |popup-menu|.
+	In a terminal the popup menu works if Vim is compiled with the
+	|+insert_expand| option.
 
 	Note that you can further refine the meaning of buttons with mappings.
 	See |gui-mouse-mapping|.  But mappings are NOT used for modeless
@@ -6441,6 +6438,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to find files which replace a distributed runtime files.  You can put
 	a directory after $VIMRUNTIME to find files which add to distributed
 	runtime files.
+	When Vim is started with |--clean| the home directory entries are not
+	included.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -6459,8 +6458,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'scrollbind' 'scb'	boolean  (default off)
 			local to window
 			{not in Vi}
-			{not available when compiled without the |+scrollbind|
-			feature}
 	See also |scroll-binding|.  When this option is set, the current
 	window scrolls as other scrollbind windows (windows that also have
 	this option set) scroll.  This option is useful for viewing the
@@ -6498,8 +6495,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'scrollopt'* *'sbo'*
 'scrollopt' 'sbo'	string	(default "ver,jump")
 			global
-			{not available when compiled without the |+scrollbind|
-			feature}
 			{not in Vi}
 	This is a comma-separated list of words that specifies how
 	'scrollbind' windows should behave.  'sbo' stands for ScrollBind
@@ -6589,7 +6584,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'sessionoptions'* *'ssop'*
 'sessionoptions' 'ssop'	string	(default: "blank,buffers,curdir,folds,
-					       help,options,tabpages,winsize")
+					 help,options,tabpages,winsize,terminal")
 			global
 			{not in Vi}
 			{not available when compiled without the |+mksession|
@@ -6621,6 +6616,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   tabpages	all tab pages; without this only the current tab page
 			is restored, so that you can make a session for each
 			tab page separately
+	   terminal	include terminal windows where the command can be restored
 	   unix		with Unix end-of-line format (single <NL>), even when
 			on Windows or DOS
 	   winpos	position of the whole Vim window
@@ -7416,7 +7412,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	W F   Preview window flag, text is ",PRV".
 	y F   Type of file in the buffer, e.g., "[vim]".  See 'filetype'.
 	Y F   Type of file in the buffer, e.g., ",VIM".  See 'filetype'.
-	      {not available when compiled without |+autocmd| feature}
 	q S   "[Quickfix List]", "[Location List]" or empty.
 	k S   Value of "b:keymap_name" or 'keymap' when |:lmap| mappings are
 	      being used: "<keymap>"
