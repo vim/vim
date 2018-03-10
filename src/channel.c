@@ -138,7 +138,7 @@ ch_log_active(void)
 }
 
     static void
-ch_log_lead(const char *what, channel_T *ch)
+ch_log_lead(const char *what, channel_T *ch, ch_part_T part)
 {
     if (log_fd != NULL)
     {
@@ -150,7 +150,13 @@ ch_log_lead(const char *what, channel_T *ch)
 	fprintf(log_fd, "%s ", profile_msg(&log_now));
 #endif
 	if (ch != NULL)
-	    fprintf(log_fd, "%son %d: ", what, ch->ch_id);
+	{
+	    if (part < PART_COUNT)
+		fprintf(log_fd, "%son %d(%s): ",
+					   what, ch->ch_id, part_names[part]);
+	    else
+		fprintf(log_fd, "%son %d: ", what, ch->ch_id);
+	}
 	else
 	    fprintf(log_fd, "%s: ", what);
     }
@@ -166,7 +172,7 @@ ch_log(channel_T *ch, const char *fmt, ...)
     {
 	va_list ap;
 
-	ch_log_lead("", ch);
+	ch_log_lead("", ch, PART_COUNT);
 	va_start(ap, fmt);
 	vfprintf(log_fd, fmt, ap);
 	va_end(ap);
@@ -191,7 +197,7 @@ ch_error(channel_T *ch, const char *fmt, ...)
     {
 	va_list ap;
 
-	ch_log_lead("ERR ", ch);
+	ch_log_lead("ERR ", ch, PART_COUNT);
 	va_start(ap, fmt);
 	vfprintf(log_fd, fmt, ap);
 	va_end(ap);
@@ -1849,7 +1855,7 @@ channel_save(channel_T *channel, ch_part_T part, char_u *buf, int len,
 
     if (ch_log_active() && lead != NULL)
     {
-	ch_log_lead(lead, channel);
+	ch_log_lead(lead, channel, part);
 	fprintf(log_fd, "'");
 	ignored = (int)fwrite(buf, len, 1, log_fd);
 	fprintf(log_fd, "'\n");
@@ -3718,7 +3724,7 @@ channel_send(
 
     if (ch_log_active())
     {
-	ch_log_lead("SEND ", channel);
+	ch_log_lead("SEND ", channel, part);
 	fprintf(log_fd, "'");
 	ignored = (int)fwrite(buf_arg, len_arg, 1, log_fd);
 	fprintf(log_fd, "'\n");
