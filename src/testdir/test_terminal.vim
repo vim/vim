@@ -885,3 +885,26 @@ func Test_terminal_qall_kill_func()
   " close the terminal window where Vim was running
   quit
 endfunc
+
+" Run Vim in a terminal, then start a terminal in that Vim without a kill
+" argument, check that :confirm qall works.
+func Test_terminal_qall_prompt()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = RunVimInTerminal('', {})
+
+  " Open a terminal window and wait for the prompt to appear
+  call term_sendkeys(buf, ":term\<CR>")
+  call WaitFor({-> term_getline(buf, 10) =~ '\[running]'})
+  call WaitFor({-> term_getline(buf, 1) !~ '^\s*$'})
+
+  " make Vim exit, it will prompt to kill the shell
+  call term_sendkeys(buf, "\<C-W>:confirm qall\<CR>")
+  call WaitFor({-> term_getline(buf, 20) =~ 'ancel:'})
+  call term_sendkeys(buf, "y")
+  call WaitFor({-> term_getstatus(buf) == "finished"})
+
+  " close the terminal window where Vim was running
+  quit
+endfunc
