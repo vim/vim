@@ -2254,7 +2254,7 @@ add_bufnum(int *bufnrs, int *bufnump, int nr)
 /*
  * Return TRUE if any buffer was changed and cannot be abandoned.
  * That changed buffer becomes the current buffer.
- * When "unload" is true the current buffer is unloaded instead of making it
+ * When "unload" is TRUE the current buffer is unloaded instead of making it
  * hidden.  This is used for ":q!".
  */
     int
@@ -2272,6 +2272,7 @@ check_changed_any(
     tabpage_T   *tp;
     win_T	*wp;
 
+    /* Make a list of all buffers, with the most important ones first. */
     FOR_ALL_BUFFERS(buf)
 	++bufcount;
 
@@ -2284,17 +2285,19 @@ check_changed_any(
 
     /* curbuf */
     bufnrs[bufnum++] = curbuf->b_fnum;
-    /* buf in curtab */
+
+    /* buffers in current tab */
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer != curbuf)
 	    add_bufnum(bufnrs, &bufnum, wp->w_buffer->b_fnum);
 
-    /* buf in other tab */
+    /* buffers in other tabs */
     FOR_ALL_TABPAGES(tp)
 	if (tp != curtab)
 	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
 		add_bufnum(bufnrs, &bufnum, wp->w_buffer->b_fnum);
-    /* any other buf */
+
+    /* any other buffer */
     FOR_ALL_BUFFERS(buf)
 	add_bufnum(bufnrs, &bufnum, buf->b_fnum);
 
@@ -2308,6 +2311,14 @@ check_changed_any(
 	    bufref_T bufref;
 
 	    set_bufref(&bufref, buf);
+#ifdef FEAT_TERMINAL
+	    if (term_job_running(buf->b_term))
+	    {
+		if (term_try_stop_job(buf) == FAIL)
+		    break;
+	    }
+	    else
+#endif
 	    /* Try auto-writing the buffer.  If this fails but the buffer no
 	    * longer exists it's not changed, that's OK. */
 	    if (check_changed(buf, (p_awa ? CCGD_AW : 0)
@@ -2320,6 +2331,7 @@ check_changed_any(
     if (i >= bufnum)
 	goto theend;
 
+    /* Get here if "buf" cannot be abandoned. */
     ret = TRUE;
     exiting = FALSE;
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)

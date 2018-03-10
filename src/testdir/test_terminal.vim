@@ -5,6 +5,7 @@ if !has('terminal')
 endif
 
 source shared.vim
+source screendump.vim
 
 let s:python = PythonProg()
 
@@ -838,4 +839,49 @@ func Test_terminal_response_to_control_sequence()
   exe buf . 'bwipe'
   call delete('Xescape')
   unlet g:job
+endfunc
+
+" Run Vim in a terminal, then start a terminal in that Vim with a kill
+" argument, check that :qall works.
+func Test_terminal_qall_kill_arg()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = RunVimInTerminal('', {})
+
+  " Open a terminal window and wait for the prompt to appear
+  call term_sendkeys(buf, ":term ++kill=kill\<CR>")
+  call WaitFor({-> term_getline(buf, 10) =~ '\[running]'})
+  call WaitFor({-> term_getline(buf, 1) !~ '^\s*$'})
+
+  " make Vim exit, it will kill the shell
+  call term_sendkeys(buf, "\<C-W>:qall\<CR>")
+  call WaitFor({-> term_getstatus(buf) == "finished"})
+
+  " close the terminal window where Vim was running
+  quit
+endfunc
+
+" Run Vim in a terminal, then start a terminal in that Vim with a kill
+" argument, check that :qall works.
+func Test_terminal_qall_kill_func()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = RunVimInTerminal('', {})
+
+  " Open a terminal window and wait for the prompt to appear
+  call term_sendkeys(buf, ":term\<CR>")
+  call WaitFor({-> term_getline(buf, 10) =~ '\[running]'})
+  call WaitFor({-> term_getline(buf, 1) !~ '^\s*$'})
+
+  " set kill using term_setkill()
+  call term_sendkeys(buf, "\<C-W>:call term_setkill(bufnr('%'), 'kill')\<CR>")
+
+  " make Vim exit, it will kill the shell
+  call term_sendkeys(buf, "\<C-W>:qall\<CR>")
+  call WaitFor({-> term_getstatus(buf) == "finished"})
+
+  " close the terminal window where Vim was running
+  quit
 endfunc

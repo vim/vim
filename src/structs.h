@@ -1707,7 +1707,8 @@ struct channel_S {
 #define JO2_TERM_OPENCMD    0x0800	/* "term_opencmd" */
 #define JO2_EOF_CHARS	    0x1000	/* "eof_chars" */
 #define JO2_NORESTORE	    0x2000	/* "norestore" */
-#define JO2_ALL		    0x2FFF
+#define JO2_TERM_KILL	    0x4000	/* "term_kill" */
+#define JO2_ALL		    0x7FFF
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1775,6 +1776,7 @@ typedef struct
     char_u	*jo_term_opencmd;
     int		jo_term_finish;
     char_u	*jo_eof_chars;
+    char_u	*jo_term_kill;
 #endif
 } jobopt_T;
 

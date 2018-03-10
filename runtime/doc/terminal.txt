@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 09
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -166,6 +166,9 @@ Syntax ~
 					no window will be used.
 			++norestore	Do not include this terminal window
 					in a session file.
+			++kill={how}	When trying to close the terminal
+					window kill the job with {how}.  See
+					|term_setkill()| for the values.
 			++rows={height} Use {height} for the terminal window
 					height.  If the terminal uses the full
 					Vim height (no window above or below
@@ -189,8 +192,12 @@ Syntax ~
 			If you want to use more options use the |term_start()|
 			function.
 
-When the buffer associated with the terminal is unloaded or wiped out the job
-is killed, similar to calling `job_stop(job, "kill")`
+When the buffer associated with the terminal is forcibly unloaded or wiped out
+the job is killed, similar to calling `job_stop(job, "kill")` .
+Closing the window normally results in |E947|.  When a kill method was set
+with "++kill={how}" or |term_setkill()| then closing the window will use that
+way to kill or interrupt the job.  For example: >
+	:term ++kill=term tail -f /tmp/log
 
 So long as the job is running the window behaves like it contains a modified
 buffer.  Trying to close the window with `CTRL-W :quit` fails.  When using

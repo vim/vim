@@ -867,6 +867,7 @@ static struct fst
     {"term_list",	0, 0, f_term_list},
     {"term_scrape",	2, 2, f_term_scrape},
     {"term_sendkeys",	2, 2, f_term_sendkeys},
+    {"term_setkill",	2, 2, f_term_setkill},
     {"term_setrestore",	2, 2, f_term_setrestore},
     {"term_start",	1, 2, f_term_start},
     {"term_wait",	1, 2, f_term_wait},

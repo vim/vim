@@ -137,6 +137,7 @@ struct terminal_S {
 #if defined(FEAT_SESSION)
     char_u	*tl_command;
 #endif
+    char_u	*tl_kill;
 
     /* last known vterm size */
     int		tl_rows;
@@ -535,6 +536,13 @@ term_start(typval_T *argvar, jobopt_T *opt, int without_job, int forceit)
     }
 #endif
 
+    if (opt->jo_term_kill != NULL)
+    {
+	char_u *p = skiptowhite(opt->jo_term_kill);
+
+	term->tl_kill = vim_strnsave(opt->jo_term_kill, p - opt->jo_term_kill);
+    }
+
     /* System dependent: setup the vterm and maybe start the job in it. */
     if (argvar->v_type == VAR_STRING
 	    && argvar->vval.v_string != NULL
@@ -611,6 +619,13 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_hidden = 1;
 	else if ((int)(p - cmd) == 9 && STRNICMP(cmd, "norestore", 9) == 0)
 	    opt.jo_term_norestore = 1;
+	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "kill", 4) == 0
+		&& ep != NULL)
+	{
+	    opt.jo_set2 |= JO2_TERM_KILL;
+	    opt.jo_term_kill = ep + 1;
+	    p = skiptowhite(cmd);
+	}
 	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "rows", 4) == 0
 		&& ep != NULL && isdigit(ep[1]))
 	{
@@ -644,7 +659,7 @@ ex_terminal(exarg_T *eap)
 	    if (*p)
 		*p = NUL;
 	    EMSG2(_("E181: Invalid attribute: %s"), cmd);
-	    return;
+	    goto theend;
 	}
 	cmd = skipwhite(p);
     }
@@ -667,6 +682,8 @@ ex_terminal(exarg_T *eap)
     argvar[1].v_type = VAR_UNKNOWN;
     term_start(argvar, &opt, FALSE, eap->forceit);
     vim_free(tofree);
+
+theend:
     vim_free(opt.jo_eof_chars);
 }
 
@@ -758,6 +775,7 @@ free_terminal(buf_T *buf)
 #ifdef FEAT_SESSION
     vim_free(term->tl_command);
 #endif
+    vim_free(term->tl_kill);
     vim_free(term->tl_status_text);
     vim_free(term->tl_opencmd);
     vim_free(term->tl_eof_chars);
@@ -1078,6 +1096,56 @@ term_none_open(term_T *term)
 	&& term->tl_job != NULL
 	&& channel_is_open(term->tl_job->jv_channel)
 	&& term->tl_job->jv_channel->ch_keep_open;
+}
+
+/*
+ * Used when exiting: kill the job in "buf" if so desired.
+ * Return OK when the job finished.
+ * Return FAIL when the job is still running.
+ */
+    int
+term_try_stop_job(buf_T *buf)
+{
+    int	    count;
+    char    *how = (char *)buf->b_term->tl_kill;
+
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+    if ((how == NULL || *how == NUL) && (p_confirm || cmdmod.confirm))
+    {
+	char_u	buff[DIALOG_MSG_SIZE];
+	int	ret;
+
+	dialog_msg(buff, _("Kill job in \"%s\"?"), buf->b_fname);
+	ret = vim_dialog_yesnocancel(VIM_QUESTION, NULL, buff, 1);
+	if (ret == VIM_YES)
+	    how = "kill";
+	else if (ret == VIM_CANCEL)
+	    return FAIL;
+    }
+#endif
+    if (how == NULL || *how == NUL)
+	return FAIL;
+
+    job_stop(buf->b_term->tl_job, NULL, how);
+
+    /* wait for up to a second for the job to die */
+    for (count = 0; count < 100; ++count)
+    {
+	/* buffer, terminal and job may be cleaned up while waiting */
+	if (!buf_valid(buf)
+		|| buf->b_term == NULL
+		|| buf->b_term->tl_job == NULL)
+	    return OK;
+
+	/* call job_status() to update jv_status */
+	job_status(buf->b_term->tl_job);
+	if (buf->b_term->tl_job->jv_status >= JOB_ENDED)
+	    return OK;
+	ui_delay(10L, FALSE);
+	mch_check_messages();
+	parse_queued_messages();
+    }
+    return FAIL;
 }
 
 /*
@@ -2922,10 +2990,11 @@ set_terminal_default_colors(int cterm_fg, int cterm_bg)
 
 /*
  * Get the buffer from the first argument in "argvars".
- * Returns NULL when the buffer is not for a terminal window.
+ * Returns NULL when the buffer is not for a terminal window and logs a message
+ * with "where".
  */
     static buf_T *
-term_get_buf(typval_T *argvars)
+term_get_buf(typval_T *argvars, char *where)
 {
     buf_T *buf;
 
@@ -2934,7 +3003,10 @@ term_get_buf(typval_T *argvars)
     buf = get_buf_tv(&argvars[0], FALSE);
     --emsg_off;
     if (buf == NULL || buf->b_term == NULL)
+    {
+	ch_log(NULL, "%s: invalid buffer argument", where);
 	return NULL;
+    }
     return buf;
 }
 
@@ -2980,7 +3052,7 @@ dump_term_color(FILE *fd, VTermColor *color)
     void
 f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_dumpwrite()");
     term_T	*term;
     char_u	*fname;
     int		max_height = 0;
@@ -3719,7 +3791,7 @@ f_term_dumpload(typval_T *argvars, typval_T *rettv)
     void
 f_term_getaltscreen(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_getaltscreen()");
 
     if (buf == NULL)
 	return;
@@ -3766,7 +3838,7 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
     void
 f_term_getcursor(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_getcursor()");
     term_T	*term;
     list_T	*l;
     dict_T	*d;
@@ -3800,7 +3872,7 @@ f_term_getcursor(typval_T *argvars, typval_T *rettv)
     void
 f_term_getjob(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_getjob()");
 
     rettv->v_type = VAR_JOB;
     rettv->vval.v_job = NULL;
@@ -3828,7 +3900,7 @@ get_row_number(typval_T *tv, term_T *term)
     void
 f_term_getline(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	    *buf = term_get_buf(argvars);
+    buf_T	    *buf = term_get_buf(argvars, "term_getline()");
     term_T	    *term;
     int		    row;
 
@@ -3875,7 +3947,7 @@ f_term_getline(typval_T *argvars, typval_T *rettv)
     void
 f_term_getscrolled(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_getscrolled()");
 
     if (buf == NULL)
 	return;
@@ -3888,7 +3960,7 @@ f_term_getscrolled(typval_T *argvars, typval_T *rettv)
     void
 f_term_getsize(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_getsize()");
     list_T	*l;
 
     if (rettv_list_alloc(rettv) == FAIL)
@@ -3907,7 +3979,7 @@ f_term_getsize(typval_T *argvars, typval_T *rettv)
     void
 f_term_getstatus(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_getstatus()");
     term_T	*term;
     char_u	val[100];
 
@@ -3931,7 +4003,7 @@ f_term_getstatus(typval_T *argvars, typval_T *rettv)
     void
 f_term_gettitle(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_gettitle()");
 
     rettv->v_type = VAR_STRING;
     if (buf == NULL)
@@ -3947,7 +4019,7 @@ f_term_gettitle(typval_T *argvars, typval_T *rettv)
     void
 f_term_gettty(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_gettty()");
     char_u	*p;
     int		num = 0;
 
@@ -4005,7 +4077,7 @@ f_term_list(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_term_scrape(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	    *buf = term_get_buf(argvars);
+    buf_T	    *buf = term_get_buf(argvars, "term_scrape()");
     VTermScreen	    *screen = NULL;
     VTermPos	    pos;
     list_T	    *l;
@@ -4114,7 +4186,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     void
 f_term_sendkeys(typval_T *argvars, typval_T *rettv)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_sendkeys()");
     char_u	*msg;
     term_T	*term;
 
@@ -4143,7 +4215,7 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
 f_term_setrestore(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #if defined(FEAT_SESSION)
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_setrestore()");
     term_T	*term;
     char_u	*cmd;
 
@@ -4157,6 +4229,27 @@ f_term_setrestore(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     else
 	term->tl_command = NULL;
 #endif
+}
+
+/*
+ * "term_setkill(buf, how)" function
+ */
+    void
+f_term_setkill(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    buf_T	*buf = term_get_buf(argvars, "term_setkill()");
+    term_T	*term;
+    char_u	*how;
+
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+    vim_free(term->tl_kill);
+    how = get_tv_string_chk(&argvars[1]);
+    if (how != NULL)
+	term->tl_kill = vim_strsave(how);
+    else
+	term->tl_kill = NULL;
 }
 
 /*
@@ -4177,7 +4270,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		JO2_TERM_NAME + JO2_TERM_FINISH + JO2_HIDDEN + JO2_TERM_OPENCMD
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS
-		    + JO2_NORESTORE) == FAIL)
+		    + JO2_NORESTORE + JO2_TERM_KILL) == FAIL)
 	return;
 
     if (opt.jo_vertical)
@@ -4194,13 +4287,10 @@ f_term_start(typval_T *argvars, typval_T *rettv)
     void
 f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    buf_T	*buf = term_get_buf(argvars);
+    buf_T	*buf = term_get_buf(argvars, "term_wait()");
 
     if (buf == NULL)
-    {
-	ch_log(NULL, "term_wait(): invalid argument");
 	return;
-    }
     if (buf->b_term->tl_job == NULL)
     {
 	ch_log(NULL, "term_wait(): no job to wait for");

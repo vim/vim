@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 09
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2435,6 +2435,7 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_setkill({buf}, {how}) 	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
@@ -8276,6 +8277,8 @@ term_getline({buf}, {row})				*term_getline()*
 		The first line has {row} one.  When {row} is "." the cursor
 		line is used.  When {row} is invalid an empty string is
 		returned.
+
+		To get attributes of each character use |term_scrape()|.
 		{only available when compiled with the |+terminal| feature}
 
 term_getscrolled({buf})					*term_getscrolled()*
@@ -8361,6 +8364,18 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		means the character CTRL-X.
 		{only available when compiled with the |+terminal| feature}
 
+term_setkill({buf}, {how})				*term_setkill()*
+		When exiting Vim or trying to close the terminal window in
+		another way, {how} defines whether the job in the terminal can
+		be stopped.
+		When {how} is empty (the default), the job will not be
+		stopped, trying to exit will result in |E947|.
+		Otherwise, {how} specifies what signal to send to the job.
+		See |job_stop()| for the values.
+
+		After sending the signal Vim will wait for up to a second to
+		check that the job actually stopped.
+
 term_setrestore({buf}, {command})			*term_setrestore()*
 		Set the command to write in a session file to restore the job
 		in this terminal.  The line written in the session file is: >
@@ -8416,6 +8431,8 @@ term_start({cmd}, {options})				*term_start()*
 		   "hidden"	     do not open a window
 		   "norestore"	     do not add the terminal window to a
 				     session file
+		   "term_kill"	     what to do when trying to close the
+				     terminal window, see |term_setkill()|
 		   "term_finish"     What to do when the job is finished:
 					"close": close any windows
 					"open": open window if needed
