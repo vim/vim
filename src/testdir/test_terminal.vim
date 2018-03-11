@@ -908,3 +908,37 @@ func Test_terminal_qall_prompt()
   " close the terminal window where Vim was running
   quit
 endfunc
+
+func Test_terminalopen_autocmd()
+  augroup repro
+    au!
+    au TerminalOpen * let s:called += 1
+  augroup END
+
+  let s:called = 0
+
+  " Open a terminal window with :terminal
+  terminal
+  call assert_equal(1, s:called)
+  bwipe!
+
+  " Open a terminal window with term_start()
+  call term_start(&shell)
+  call assert_equal(2, s:called)
+  bwipe!
+
+  " Open a hidden terminal buffer with :terminal
+  terminal ++hidden
+  call assert_equal(3, s:called)
+  for buf in term_list()
+    exe buf . "bwipe!"
+  endfor
+
+  " Open a hidden terminal buffer with term_start()
+  let buf = term_start(&shell, {'hidden': 1})
+  call assert_equal(4, s:called)
+  exe buf . "bwipe!"
+
+  unlet s:called
+  au! repro
+endfunction

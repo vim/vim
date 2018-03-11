@@ -38,45 +38,36 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - Add a flag to kill the job when Vim is exiting.  Useful when it's showing
- *   a logfile.  Or send keys there to make it quit: "exit\r" for a shell.
+ * - if the job in the terminal does not support the mouse, we can use the
+ *   mouse in the Terminal window for copy/paste and scrolling.
  * - When using 'termguicolors' still use the 16 ANSI colors as-is.  Helps for
+ * - In the GUI use a terminal emulator for :!cmd.  Make the height the same as
+ *   the window and position it higher up when it gets filled, so it looks like
+ *   the text scrolls up.
+ * - implement term_setsize()
+ * - Copy text in the vterm to the Vim buffer once in a while, so that
+ *   completion works.
  * - Adding WinBar to terminal window doesn't display, text isn't shifted down.
  *   a job that uses 16 colors while Vim is using > 256.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
- * - Trigger TerminalOpen event?  #2422  patch in #2484
  * - after resizing windows overlap. (Boris Staletic, #2164)
  * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
  *   is disabled.
- * - if the job in the terminal does not support the mouse, we can use the
- *   mouse in the Terminal window for copy/paste and scrolling.
  * - cursor blinks in terminal on widows with a timer. (xtal8, #2142)
- * - When closing gvim with an active terminal buffer, the dialog suggests
- *   saving the buffer.  Should say something else. (Manas Thakur, #2215)
- *   Also: #2223
  * - Termdebug does not work when Vim build with mzscheme.  gdb hangs.
  * - MS-Windows GUI: WinBar has  tearoff item
  * - MS-Windows GUI: still need to type a key after shell exits?  #1924
  * - After executing a shell command the status line isn't redraw.
- * - implement term_setsize()
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
  * - support minimal size when 'termsize' is empty?
  * - GUI: when using tabs, focus in terminal, click on tab does not work.
- * - GUI: when 'confirm' is set and trying to exit Vim, dialog offers to save
- *   changes to "!shell".
- *   (justrajdeep, 2017 Aug 22)
  * - Redrawing is slow with Athena and Motif.  Also other GUI? (Ramel Eshed)
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
- * - In the GUI use a terminal emulator for :!cmd.  Make the height the same as
- *   the window and position it higher up when it gets filled, so it looks like
- *   the text scrolls up.
- * - Copy text in the vterm to the Vim buffer once in a while, so that
- *   completion works.
  * - add an optional limit for the scrollback size.  When reaching it remove
  *   10% at the start.
  */
@@ -582,6 +573,8 @@ term_start(typval_T *argvar, jobopt_T *opt, int without_job, int forceit)
 	term_close_buffer(curbuf, old_curbuf);
 	return NULL;
     }
+
+    apply_autocmds(EVENT_TERMINALOPEN, NULL, NULL, FALSE, curbuf);
     return newbuf;
 }
 

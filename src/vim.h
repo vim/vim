@@ -1346,6 +1346,7 @@ enum auto_event
     EVENT_CMDUNDEFINED,		/* command undefined */
     EVENT_OPTIONSET,		/* option was set */
     EVENT_TEXTYANKPOST,		/* after some text was yanked */
+    EVENT_TERMINALOPEN,		/* after a terminal buffer was created */
     NUM_EVENTS			/* MUST be the last one */
 };
 
