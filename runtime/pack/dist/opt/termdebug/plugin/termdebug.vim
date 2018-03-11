@@ -105,8 +105,38 @@ func s:StartDebug(cmd)
   let s:gdbwin = win_getid(winnr())
 
   " Connect gdb to the communication pty, using the GDB/MI interface
-  " If you get an error "undefined command" your GDB is too old.
   call term_sendkeys(s:gdbbuf, 'new-ui mi ' . commpty . "\r")
+
+  " Wait for the response to show up, users may not notice the error and wonder
+  " why the debugger doesn't work.
+  let try_count = 0
+  while 1
+    let response = ''
+    for lnum in range(1,20)
+      if term_getline(s:gdbbuf, lnum) =~ 'new-ui mi '
+	let response = term_getline(s:gdbbuf, lnum + 1)
+	if response =~ 'Undefined command'
+	  echoerr 'Your gdb does not support the Machine Interface feature'
+	  exe 'bwipe! ' . s:ptybuf
+	  exe 'bwipe! ' . s:commbuf
+	  return
+	endif
+	if response =~ 'New UI allocated'
+	  " Success!
+	  break
+	endif
+      endif
+    endfor
+    if response =~ 'New UI allocated'
+      break
+    endif
+    let try_count += 1
+    if try_count > 100
+      echoerr 'Cannot check if your gdb works, continuing anyway'
+      break
+    endif
+    sleep 10m
+  endwhile
 
   " Interpret commands while the target is running.  This should usualy only be
   " exec-interrupt, since many commands don't work properly while the target is
