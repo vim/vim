@@ -7187,8 +7187,35 @@ not_exiting(void)
     settmode(TMODE_RAW);
 }
 
+    static int
+before_quit_autocmds(win_T *wp, int quit_all, int forceit)
+{
+    apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, wp->w_buffer);
+
+    /* Bail out when autocommands closed the window.
+     * Refuse to quit when the buffer in the last window is being closed (can
+     * only happen in autocommands). */
+    if (!win_valid(wp)
+	    || curbuf_locked()
+	    || (wp->w_buffer->b_nwindows == 1 && wp->w_buffer->b_locked > 0))
+	return TRUE;
+
+    if (quit_all || (check_more(FALSE, forceit) == OK && only_one_window()))
+    {
+	apply_autocmds(EVENT_EXITPRE, NULL, NULL, FALSE, curbuf);
+	/* Refuse to quit when locked or when the buffer in the last window is
+	 * being closed (can only happen in autocommands). */
+	if (curbuf_locked()
+			  || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
+	    return TRUE;
+    }
+
+    return FALSE;
+}
+
 /*
  * ":quit": quit current window, quit Vim if the last window is closed.
+ * ":{nr}quit": quit window {nr}
  */
     static void
 ex_quit(exarg_T *eap)
@@ -7222,12 +7249,9 @@ ex_quit(exarg_T *eap)
     /* Refuse to quit when locked. */
     if (curbuf_locked())
 	return;
-    apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, wp->w_buffer);
-    /* Bail out when autocommands closed the window.
-     * Refuse to quit when the buffer in the last window is being closed (can
-     * only happen in autocommands). */
-    if (!win_valid(wp)
-	    || (wp->w_buffer->b_nwindows == 1 && wp->w_buffer->b_locked > 0))
+
+    /* Trigger QuitPre and maybe ExitPre */
+    if (before_quit_autocmds(wp, FALSE, eap->forceit))
 	return;
 
 #ifdef FEAT_NETBEANS_INTG
@@ -7301,10 +7325,8 @@ ex_quit_all(exarg_T *eap)
 	text_locked_msg();
 	return;
     }
-    apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
-    /* Refuse to quit when locked or when the buffer in the last window is
-     * being closed (can only happen in autocommands). */
-    if (curbuf_locked() || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
+
+    if (before_quit_autocmds(curwin, TRUE, eap->forceit))
 	return;
 
     exiting = TRUE;
@@ -7743,7 +7765,7 @@ ex_stop(exarg_T *eap)
 }
 
 /*
- * ":exit", ":xit" and ":wq": Write file and exit Vim.
+ * ":exit", ":xit" and ":wq": Write file and quite the current window.
  */
     static void
 ex_exit(exarg_T *eap)
@@ -7761,10 +7783,8 @@ ex_exit(exarg_T *eap)
 	text_locked_msg();
 	return;
     }
-    apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, curbuf);
-    /* Refuse to quit when locked or when the buffer in the last window is
-     * being closed (can only happen in autocommands). */
-    if (curbuf_locked() || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
+
+    if (before_quit_autocmds(curwin, FALSE, eap->forceit))
 	return;
 
     /*

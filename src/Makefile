@@ -2155,6 +2155,7 @@ test_arglist \
 	test_eval_stuff \
 	test_ex_undo \
 	test_ex_z \
+	test_exit \
 	test_exec_while_if \
 	test_execute_func \
 	test_exists \

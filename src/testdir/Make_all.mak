@@ -97,6 +97,7 @@ NEW_TESTS = test_arabic.res \
 	    test_exec_while_if.res \
 	    test_exists.res \
 	    test_exists_autocmd.res \
+	    test_exit.res \
 	    test_farsi.res \
 	    test_file_size.res \
 	    test_find_complete.res \

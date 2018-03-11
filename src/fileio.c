@@ -7724,6 +7724,7 @@ static struct event_name
     {"CursorMovedI",	EVENT_CURSORMOVEDI},
     {"DirChanged",	EVENT_DIRCHANGED},
     {"EncodingChanged",	EVENT_ENCODINGCHANGED},
+    {"ExitPre",		EVENT_EXITPRE},
     {"FileEncoding",	EVENT_ENCODINGCHANGED},
     {"FileAppendPost",	EVENT_FILEAPPENDPOST},
     {"FileAppendPre",	EVENT_FILEAPPENDPRE},
