@@ -12,6 +12,7 @@ void term_enter_job_mode(void);
 int send_keys_to_term(term_T *term, int c, int typed);
 int terminal_is_active(void);
 cursorentry_T *term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg);
+void term_win_entered(void);
 int term_use_loop(void);
 int terminal_loop(int blocking);
 void term_job_ended(job_T *job);

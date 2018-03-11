@@ -259,6 +259,19 @@ typedef struct {
   int (*setlineinfo)(int row, const VTermLineInfo *newinfo, const VTermLineInfo *oldinfo, void *user);
 } VTermStateCallbacks;
 
+typedef struct {
+  VTermPos pos;
+  int	   buttons;
+#define MOUSE_BUTTON_LEFT 0x01
+#define MOUSE_BUTTON_MIDDLE 0x02
+#define MOUSE_BUTTON_RIGHT 0x04
+  int      flags;
+#define MOUSE_WANT_CLICK 0x01
+#define MOUSE_WANT_DRAG  0x02
+#define MOUSE_WANT_MOVE  0x04
+  /* useful to add protocol? */
+} VTermMouseState;
+
 VTermState *vterm_obtain_state(VTerm *vt);
 
 void  vterm_state_set_callbacks(VTermState *state, const VTermStateCallbacks *callbacks, void *user);
@@ -272,6 +285,7 @@ void *vterm_state_get_unrecognised_fbdata(VTermState *state);
 void vterm_state_reset(VTermState *state, int hard);
 
 void vterm_state_get_cursorpos(const VTermState *state, VTermPos *cursorpos);
+void vterm_state_get_mousestate(const VTermState *state, VTermMouseState *mousestate);
 void vterm_state_get_default_colors(const VTermState *state, VTermColor *default_fg, VTermColor *default_bg);
 void vterm_state_get_palette_color(const VTermState *state, int index, VTermColor *col);
 void vterm_state_set_default_colors(VTermState *state, const VTermColor *default_fg, const VTermColor *default_bg);

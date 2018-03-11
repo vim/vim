@@ -2827,11 +2827,18 @@ retnomove:
 	 * (MOUSE_FOCUS was set above if we dragged first). */
 	if (dragwin == NULL || (flags & MOUSE_RELEASED))
 	    win_enter(wp, TRUE);		/* can make wp invalid! */
-#ifdef CHECK_DOUBLE_CLICK
-	/* set topline, to be able to check for double click ourselves */
+
 	if (curwin != old_curwin)
+	{
+#ifdef CHECK_DOUBLE_CLICK
+	    /* set topline, to be able to check for double click ourselves */
 	    set_mouse_topline(curwin);
 #endif
+#ifdef FEAT_TERMINAL
+	    /* when entering a terminal window may change state */
+	    term_win_entered();
+#endif
+	}
 	if (on_status_line)			/* In (or below) status line */
 	{
 	    /* Don't use start_arrow() if we're in the same window */

@@ -1793,6 +1793,14 @@ void vterm_state_get_cursorpos(const VTermState *state, VTermPos *cursorpos)
   *cursorpos = state->pos;
 }
 
+void vterm_state_get_mousestate(const VTermState *state, VTermMouseState *mousestate)
+{
+  mousestate->pos.col = state->mouse_col;
+  mousestate->pos.row = state->mouse_row;
+  mousestate->buttons = state->mouse_buttons;
+  mousestate->flags = state->mouse_flags;
+}
+
 void vterm_state_set_callbacks(VTermState *state, const VTermStateCallbacks *callbacks, void *user)
 {
   if(callbacks) {
