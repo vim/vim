@@ -175,7 +175,7 @@ syn keyword  ocamlType     array bool char exn float format format4
 syn keyword  ocamlType     int int32 int64 lazy_t list nativeint option
 syn keyword  ocamlType     string unit
 
-syn keyword  ocamlOperator asr lnot lor lsl lsr lxor mod not
+syn keyword  ocamlOperator asr lor lsl lsr lxor mod
 
 syn match    ocamlConstructor  "(\s*)"
 syn match    ocamlConstructor  "\[\s*\]"
