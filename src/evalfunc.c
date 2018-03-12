@@ -6189,6 +6189,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"user-commands",    /* was accidentally included in 5.4 */
 	"user_commands",
 #endif
+#ifdef FEAT_VARTABS
+	"vartabs",
+#endif
 #ifdef FEAT_VIMINFO
 	"viminfo",
 #endif

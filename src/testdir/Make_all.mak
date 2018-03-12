@@ -179,6 +179,7 @@ NEW_TESTS = test_arabic.res \
 	    test_undo.res \
 	    test_user_func.res \
 	    test_usercommands.res \
+	    test_vartabs.res \
 	    test_viminfo.res \
 	    test_vimscript.res \
 	    test_visual.res \

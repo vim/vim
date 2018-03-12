@@ -1144,6 +1144,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'updatetime'	options.txt	/*'updatetime'*
 'ur'	options.txt	/*'ur'*
 'ut'	options.txt	/*'ut'*
+'varsofttabstop'	options.txt	/*'varsofttabstop'*
+'vartabstop'	options.txt	/*'vartabstop'*
 'vb'	options.txt	/*'vb'*
 'vbs'	options.txt	/*'vbs'*
 'vdir'	options.txt	/*'vdir'*
@@ -1160,6 +1162,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'virtualedit'	options.txt	/*'virtualedit'*
 'visualbell'	options.txt	/*'visualbell'*
 'vop'	options.txt	/*'vop'*
+'vsts'	options.txt	/*'vsts'*
+'vts'	options.txt	/*'vts'*
 'w1200'	vi_diff.txt	/*'w1200'*
 'w300'	vi_diff.txt	/*'w300'*
 'w9600'	vi_diff.txt	/*'w9600'*
@@ -1354,6 +1358,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +toolbar	various.txt	/*+toolbar*
 +unix	eval.txt	/*+unix*
 +user_commands	various.txt	/*+user_commands*
++vartabs	various.txt	/*+vartabs*
 +vertsplit	various.txt	/*+vertsplit*
 +viminfo	various.txt	/*+viminfo*
 +virtualedit	various.txt	/*+virtualedit*

@@ -2155,6 +2155,19 @@ free_buf_options(
     clear_string_option(&buf->b_p_fo);
     clear_string_option(&buf->b_p_flp);
     clear_string_option(&buf->b_p_isk);
+#ifdef FEAT_VARTABS
+    clear_string_option(&buf->b_p_vsts);
+    if (buf->b_p_vsts_nopaste)
+	vim_free(buf->b_p_vsts_nopaste);
+    buf->b_p_vsts_nopaste = 0;
+    if (buf->b_p_vsts_ary)
+	vim_free(buf->b_p_vsts_ary);
+    buf->b_p_vsts_ary = 0;
+    clear_string_option(&buf->b_p_vts);
+    if (buf->b_p_vts_ary)
+	vim_free(buf->b_p_vts_ary);
+    buf->b_p_vts_ary = 0;
+#endif
 #ifdef FEAT_KEYMAP
     clear_string_option(&buf->b_p_keymap);
     keymap_clear(&buf->b_kmap_ga);
