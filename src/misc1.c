@@ -3565,6 +3565,9 @@ get_number(
 	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC)
 	    break;
     }
+#ifdef FEAT_MOUSE
+    setmouse();
+#endif
     --no_mapping;
     --allow_keys;
     return n;
