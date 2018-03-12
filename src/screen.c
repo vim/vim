@@ -8127,7 +8127,7 @@ screen_start_highlight(int attr)
 			term_bg_color(aep->ae_u.cterm.bg_color - 1);
 		}
 
-		if (t_colors <= 1)
+		if (!IS_CTERM)
 		{
 		    if (aep->ae_u.term.start != NULL)
 			out_str(aep->ae_u.term.start);
