@@ -6198,6 +6198,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_VREPLACE
 	"vreplace",
 #endif
+#ifdef FEAT_VTP
+	"vtp",
+#endif
 #ifdef FEAT_WILDIGN
 	"wildignore",
 #endif
