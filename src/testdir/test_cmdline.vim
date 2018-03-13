@@ -226,6 +226,20 @@ func Test_getcompletion()
   let l = getcompletion('not', 'mapclear')
   call assert_equal([], l)
 
+  if has('win32')
+    let root = 'C:\\'
+  else
+    let root = '/'
+  endif
+  let l = getcompletion('.', 'shellcmd')
+  let expected = map(filter(glob('.*', 0, 1),
+        \ 'isdirectory(v:val) || executable(v:val)'), 'isdirectory(v:val) ? v:val . ''/'' : v:val')
+  call assert_equal(expected, l)
+  let l = getcompletion(root, 'shellcmd')
+  let expected = map(filter(glob(root . '*', 0, 1),
+        \ 'isdirectory(v:val) || executable(v:val)'), 'isdirectory(v:val) ? v:val . ''/'' : v:val')
+  call assert_equal(expected, l)
+
   if has('cscope')
     let l = getcompletion('', 'cscope')
     let cmds = ['add', 'find', 'help', 'kill', 'reset', 'show']
