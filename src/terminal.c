@@ -2738,8 +2738,11 @@ term_update_window(win_T *wp)
 	else
 	    pos.col = 0;
 
-	screen_line(wp->w_winrow + pos.row + winbar_height(wp),
-				    wp->w_wincol, pos.col, wp->w_width, FALSE);
+	screen_line(wp->w_winrow + pos.row
+#ifdef FEAT_MENU
+				+ winbar_height(wp)
+#endif
+				, wp->w_wincol, pos.col, wp->w_width, FALSE);
     }
     term->tl_dirty_row_start = MAX_ROW;
     term->tl_dirty_row_end = 0;
