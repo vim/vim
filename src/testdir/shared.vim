@@ -260,6 +260,16 @@ func CanRunGui()
   return has('gui') && ($DISPLAY != "" || has('gui_running'))
 endfunc
 
+func WorkingClipboard()
+  if !has('clipboard')
+    return 0
+  endif
+  if has('x11')
+    return $DISPLAY != ""
+  endif
+  return 1
+endfunc
+
 " Get line "lnum" as displayed on the screen.
 " Trailing white space is trimmed.
 func! Screenline(lnum)

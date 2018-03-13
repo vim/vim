@@ -6,6 +6,8 @@ if has('gui_running')
 endif
 set term=xterm
 
+source shared.vim
+
 func Test_paste_normal_mode()
   new
   " In first column text is inserted
@@ -67,7 +69,7 @@ func Test_paste_insert_mode()
 endfunc
 
 func Test_paste_clipboard()
-  if !has('clipboard')
+  if !WorkingClipboard()
     return
   endif
   let @+ = "nasty\<Esc>:!ls\<CR>command"
