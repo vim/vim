@@ -621,7 +621,9 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 	if (top_item != NULL && top_item->jd_type == JSON_OBJECT_KEY
 		&& (options & JSON_JS)
 		&& reader->js_buf[reader->js_used] != '"'
-		&& reader->js_buf[reader->js_used] != '\'')
+		&& reader->js_buf[reader->js_used] != '\''
+		&& reader->js_buf[reader->js_used] != '['
+		&& reader->js_buf[reader->js_used] != '{')
 	{
 	    char_u *key;
 
@@ -642,6 +644,11 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 	    switch (*p)
 	    {
 		case '[': /* start of array */
+		    if (top_item && top_item->jd_type == JSON_OBJECT_KEY)
+		    {
+			retval = FAIL;
+			break;
+		    }
 		    if (ga_grow(&stack, 1) == FAIL)
 		    {
 			retval = FAIL;
@@ -668,6 +675,11 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    continue;
 
 		case '{': /* start of object */
+		    if (top_item && top_item->jd_type == JSON_OBJECT_KEY)
+		    {
+			retval = FAIL;
+			break;
+		    }
 		    if (ga_grow(&stack, 1) == FAIL)
 		    {
 			retval = FAIL;
