@@ -432,39 +432,38 @@ func Test_terminal_servername()
   if !has('clientserver')
     return
   endif
-  let g:buf = Run_shell_in_terminal({})
+  let buf = Run_shell_in_terminal({})
   " Wait for the shell to display a prompt
-  call WaitFor('term_getline(g:buf, 1) != ""')
+  call WaitFor({-> term_getline(buf, 1) != ""})
   if has('win32')
-    call term_sendkeys(g:buf, "echo %VIM_SERVERNAME%\r")
+    call term_sendkeys(buf, "echo %VIM_SERVERNAME%\r")
   else
-    call term_sendkeys(g:buf, "echo $VIM_SERVERNAME\r")
+    call term_sendkeys(buf, "echo $VIM_SERVERNAME\r")
   endif
-  call term_wait(g:buf)
-  call Stop_shell_in_terminal(g:buf)
+  call term_wait(buf)
+  call Stop_shell_in_terminal(buf)
   call WaitFor('getline(2) == v:servername')
   call assert_equal(v:servername, getline(2))
 
-  exe g:buf . 'bwipe'
-  unlet g:buf
+  exe buf . 'bwipe'
+  unlet buf
 endfunc
 
 func Test_terminal_env()
-  let g:buf = Run_shell_in_terminal({'env': {'TESTENV': 'correct'}})
+  let buf = Run_shell_in_terminal({'env': {'TESTENV': 'correct'}})
   " Wait for the shell to display a prompt
-  call WaitFor('term_getline(g:buf, 1) != ""')
+  call WaitFor({-> term_getline(buf, 1) != ""})
   if has('win32')
-    call term_sendkeys(g:buf, "echo %TESTENV%\r")
+    call term_sendkeys(buf, "echo %TESTENV%\r")
   else
-    call term_sendkeys(g:buf, "echo $TESTENV\r")
+    call term_sendkeys(buf, "echo $TESTENV\r")
   endif
-  call term_wait(g:buf)
-  call Stop_shell_in_terminal(g:buf)
+  call term_wait(buf)
+  call Stop_shell_in_terminal(buf)
   call WaitFor('getline(2) == "correct"')
   call assert_equal('correct', getline(2))
 
-  exe g:buf . 'bwipe'
-  unlet g:buf
+  exe buf . 'bwipe'
 endfunc
 
 " must be last, we can't go back from GUI to terminal
@@ -591,8 +590,7 @@ func Test_terminal_no_cmd()
   else
     call system('echo "look here" > ' . pty)
   endif
-  let g:buf = buf
-  call WaitFor('term_getline(g:buf, 1) =~ "look here"')
+  call WaitFor({-> term_getline(buf, 1) =~ "look here"})
 
   call assert_match('look here', term_getline(buf, 1))
   bwipe!
@@ -672,8 +670,7 @@ func TerminalTmap(remap)
   call assert_equal('456', maparg('123', 't'))
   call assert_equal('abxde', maparg('456', 't'))
   call feedkeys("123", 'tx')
-  let g:buf = buf
-  call WaitFor("term_getline(g:buf,term_getcursor(g:buf)[0]) =~ 'abxde\\|456'")
+  call WaitFor({-> term_getline(buf, term_getcursor(buf)[0]) =~ 'abxde\|456'})
   let lnum = term_getcursor(buf)[0]
   if a:remap
     call assert_match('abxde', term_getline(buf, lnum))
@@ -816,12 +813,9 @@ func Test_terminal_response_to_control_sequence()
   endif
 
   let buf = Run_shell_in_terminal({})
-  call term_wait(buf)
+  call WaitFor({-> term_getline(buf, 1) != ""})
 
-  new
-  call setline(1, "\x1b[6n")
-  write! Xescape
-  bwipe
+  call writefile(["\x1b[6n"], 'Xescape')
   call term_sendkeys(buf, "cat Xescape\<cr>")
 
   " wait for the response of control sequence from libvterm (and send it to tty)
@@ -909,7 +903,7 @@ func Test_terminal_qall_prompt()
   quit
 endfunc
 
-func Test_terminalopen_autocmd()
+func Test_terminal_open_autocmd()
   augroup repro
     au!
     au TerminalOpen * let s:called += 1
