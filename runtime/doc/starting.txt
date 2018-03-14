@@ -510,11 +510,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		{not in Vi}
 
 							*--clean*
---clean		Equal to "-u DEFAULTS -i NONE":
+--clean		Equal to "-u DEFAULTS -U NONE -i NONE":
 		- initializations from files and environment variables is
 		  skipped
 		- the |defaults.vim| script is loaded, which implies
 		  'nocompatible': use Vim defaults
+		- no |gvimrc| script is loaded
 		- no viminfo file is read or written
 		- the home directory is excluded from 'runtimepath'
 							*-x*

@@ -1881,6 +1881,9 @@ command_line_scan(mparm_T *parmp)
 		else if (STRNICMP(argv[0] + argv_idx, "clean", 5) == 0)
 		{
 		    parmp->use_vimrc = (char_u *)"DEFAULTS";
+#ifdef FEAT_GUI
+		    use_gvimrc = (char_u *)"NONE";
+#endif
 		    parmp->clean = TRUE;
 		    set_option_value((char_u *)"vif", 0L, (char_u *)"NONE", 0);
 		}
