@@ -122,12 +122,12 @@ files:
 first_time: files
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments --keyword=_ --keyword=N_ --files-from=.\files
+	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 --files-from=.\files
 
 $(LANGUAGES): files
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments --keyword=_ --keyword=N_ --files-from=.\files
+	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 --files-from=.\files
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old
