@@ -20,7 +20,7 @@
 #
 # "make upx" makes *compressed* versions of the 32 bit GUI and console EXEs,
 # using the excellent UPX compressor:
-#     http://upx.sourceforge.net/
+#     https://upx.github.io/
 # "make mpress" uses the MPRESS compressor for 32- and 64-bit EXEs:
 #     http://www.matcode.com/mpress.htm
 #
@@ -34,9 +34,9 @@ DEBUG=no
 OPTIMIZE=MAXSPEED
 # set to yes to make gvim, no for vim
 GUI=yes
-# set to yes if you want to use DirectWrite (DirectX)
+# set to no if you do not want to use DirectWrite (DirectX)
 # MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
-DIRECTX=no
+DIRECTX=yes
 # FEATURES=[TINY | SMALL | NORMAL | BIG | HUGE]
 # Set to TINY to make minimal version (few features).
 FEATURES=HUGE

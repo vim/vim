@@ -26,7 +26,7 @@
 #	GUI interface: GUI=yes (default is no)
 #
 #	GUI with DirectWrite (DirectX): DIRECTX=yes
-#	  (default is no, requires GUI=yes and MBYTE=yes)
+#	  (default is yes if GUI=yes, requires GUI=yes and MBYTE=yes)
 #
 #	Color emoji support: COLOR_EMOJI=yes
 #	  (default is yes if DIRECTX=yes, requires WinSDK 8.1 or later.)
@@ -179,6 +179,10 @@
 # Build on Windows NT/XP
 
 TARGETOS = WINNT
+
+!ifndef DIRECTX
+DIRECTX = $(GUI)
+!endif
 
 # Select one of eight object code directories, depends on GUI, OLE, DEBUG and
 # interfaces.
