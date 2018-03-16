@@ -2007,8 +2007,13 @@ terminal_loop(int blocking)
 	if (ctrl_break_was_pressed)
 	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 #endif
-	/* Was either CTRL-W (termkey) or CTRL-\ pressed? */
-	if (c == (termkey == 0 ? Ctrl_W : termkey) || c == Ctrl_BSL)
+	/* Was either CTRL-W (termkey) or CTRL-\ pressed?
+	 * Not in a system terminal. */
+	if ((c == (termkey == 0 ? Ctrl_W : termkey) || c == Ctrl_BSL)
+#ifdef FEAT_GUI
+		&& !curbuf->b_term->tl_system
+#endif
+		)
 	{
 	    int	    prev_c = c;
 
