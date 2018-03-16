@@ -3233,7 +3233,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     for (pos.row = 0; (max_height == 0 || pos.row < max_height)
 					 && pos.row < term->tl_rows; ++pos.row)
     {
-	int		repeat = 0;
+	int		repeat = 1;
 
 	for (pos.col = 0; (max_width == 0 || pos.col < max_width)
 					 && pos.col < term->tl_cols; ++pos.col)
@@ -3266,10 +3266,10 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	    }
 	    else
 	    {
-		if (repeat > 0)
+		if (repeat > 1)
 		{
 		    fprintf(fd, "@%d", repeat);
-		    repeat = 0;
+		    repeat = 1;
 		}
 		fputs(is_cursor_pos ? ">" : "|", fd);
 
@@ -3328,7 +3328,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		prev_cell = cell;
 	    }
 	}
-	if (repeat > 0)
+	if (repeat > 1)
 	    fprintf(fd, "@%d", repeat);
 	fputs("\n", fd);
     }
