@@ -2735,6 +2735,7 @@ term_line2screenline(VTermScreen *screen, VTermPos *pos, int max_col)
     }
 }
 
+#if defined(FEAT_GUI)
     static void
 update_system_term(term_T *term)
 {
@@ -2777,6 +2778,7 @@ update_system_term(term_T *term)
     term->tl_dirty_row_end = 0;
     update_cursor(term, TRUE);
 }
+#endif
 
 /*
  * Called to update a window that contains an active terminal.
