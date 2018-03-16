@@ -140,6 +140,13 @@ Syntax ~
 			if [command] is NONE no job is started, the pty of the
 			terminal can be used by a command like gdb.
 
+			If [command] is missing the default behavior is to
+			close the terminal when the shell exits.  This can be
+			changed with the ++noclose argument.
+			If [command] is present the default behavior is to
+			keep the terminal open in Terminal-Normal mode.  This
+			can be changed with the ++close argument.
+
 			A new buffer will be created, using [command] or
 			'shell' as the name, prefixed with a "!".  If a buffer
 			by this name already exists a number is added in
@@ -155,9 +162,14 @@ Syntax ~
 			Supported [options] are:
 			++close		The terminal window will close
 					automatically when the job terminates.
+			++noclose	The terminal window will NOT close
+					automatically when the job terminates.
 			++open		When the job terminates and no window
 					shows it, a window will be opened.
 					Note that this can be interruptive.
+				The last of ++close, ++noclose and ++open
+				matters and rules out earlier arguments.
+
 			++curwin	Open the terminal in the current
 					window, do not split the current
 					window.  Fails if the current buffer

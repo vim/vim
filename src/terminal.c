@@ -38,8 +38,6 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - Make terminal close by default when started without a command.  Add
- *   ++noclose argument.
  * - Win32: In the GUI use a terminal emulator for :!cmd.
  * - Add a way to set the 16 ANSI colors, to be used for 'termguicolors' and in
  *   the GUI.
@@ -123,7 +121,11 @@ struct terminal_S {
 
     int		tl_normal_mode; /* TRUE: Terminal-Normal mode */
     int		tl_channel_closed;
-    int		tl_finish;	/* 'c' for ++close, 'o' for ++open */
+    int		tl_finish;
+#define TL_FINISH_UNSET	    NUL
+#define TL_FINISH_CLOSE	    'c'	/* ++close or :terminal without argument */
+#define TL_FINISH_NOCLOSE   'n'	/* ++noclose */
+#define TL_FINISH_OPEN	    'o'	/* ++open */
     char_u	*tl_opencmd;
     char_u	*tl_eof_chars;
 
@@ -643,6 +645,8 @@ ex_terminal(exarg_T *eap)
 
 	if ((int)(p - cmd) == 5 && STRNICMP(cmd, "close", 5) == 0)
 	    opt.jo_term_finish = 'c';
+	else if ((int)(p - cmd) == 7 && STRNICMP(cmd, "noclose", 7) == 0)
+	    opt.jo_term_finish = 'n';
 	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "open", 4) == 0)
 	    opt.jo_term_finish = 'o';
 	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "curwin", 6) == 0)
@@ -696,8 +700,14 @@ ex_terminal(exarg_T *eap)
 	cmd = skipwhite(p);
     }
     if (*cmd == NUL)
+    {
 	/* Make a copy of 'shell', an autocommand may change the option. */
 	tofree = cmd = vim_strsave(p_sh);
+
+	/* default to close when the shell exits */
+	if (opt.jo_term_finish == NUL)
+	    opt.jo_term_finish = 'c';
+    }
 
     if (eap->addr_count > 0)
     {
@@ -1535,7 +1545,7 @@ set_terminal_mode(term_T *term, int normal_mode)
     static void
 cleanup_vterm(term_T *term)
 {
-    if (term->tl_finish != 'c')
+    if (term->tl_finish != TL_FINISH_CLOSE)
 	move_terminal_to_buffer(term);
     term_free_vterm(term);
     set_terminal_mode(term, FALSE);
@@ -2603,7 +2613,7 @@ term_channel_closed(channel_T *ch)
 
 		cleanup_vterm(term);
 
-		if (term->tl_finish == 'c')
+		if (term->tl_finish == TL_FINISH_CLOSE)
 		{
 		    aco_save_T	aco;
 
@@ -2614,7 +2624,8 @@ term_channel_closed(channel_T *ch)
 		    aucmd_restbuf(&aco);
 		    break;
 		}
-		if (term->tl_finish == 'o' && term->tl_buffer->b_nwindows == 0)
+		if (term->tl_finish == TL_FINISH_OPEN
+					   && term->tl_buffer->b_nwindows == 0)
 		{
 		    char buf[50];
 

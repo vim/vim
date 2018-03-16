@@ -367,6 +367,26 @@ func Test_terminal_finish_open_close()
 
   let [cmd, waittime] = s:get_sleep_cmd()
 
+  " shell terminal closes automatically
+  terminal
+  let buf = bufnr('%')
+  call assert_equal(2, winnr('$'))
+  " Wait for the shell to display a prompt
+  call WaitFor({-> term_getline(buf, 1) != ""})
+  call Stop_shell_in_terminal(buf)
+  call WaitFor("winnr('$') == 1", waittime)
+
+  " shell terminal that does not close automatically
+  terminal ++noclose
+  let buf = bufnr('%')
+  call assert_equal(2, winnr('$'))
+  " Wait for the shell to display a prompt
+  call WaitFor({-> term_getline(buf, 1) != ""})
+  call Stop_shell_in_terminal(buf)
+  call assert_equal(2, winnr('$'))
+  quit
+  call assert_equal(1, winnr('$'))
+
   exe 'terminal ++close ' . cmd
   call assert_equal(2, winnr('$'))
   wincmd p
