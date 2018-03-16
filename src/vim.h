@@ -2543,4 +2543,9 @@ typedef enum {
 #define REPLACE_CR_NCHAR    -1
 #define REPLACE_NL_NCHAR    -2
 
+/* flags for term_start() */
+#define TERM_START_NOJOB	1
+#define TERM_START_FORCEIT	2
+#define TERM_START_SYSTEM	4
+
 #endif /* VIM__H */

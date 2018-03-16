@@ -1,4 +1,6 @@
 /* terminal.c */
+void init_job_options(jobopt_T *opt);
+buf_T *term_start(typval_T *argvar, char **argv, jobopt_T *opt, int flags);
 void ex_terminal(exarg_T *eap);
 int term_write_session(FILE *fd, win_T *wp);
 int term_should_restore(buf_T *buf);

@@ -3845,7 +3845,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	To avoid problems with flags that are added in the future, use the
 	"+=" and "-=" feature of ":set" |add-option-flags|.
 
-	Valid letters are as follows:
+	Valid characters are as follows:
+								*'go-!'*
+	  '!'	External commands are executed in a terminal window.  Without
+		this flag the MS-Windows GUI will open a console window to
+		execute the command.  The Unix GUI will simulate a dumb
+		terminal to list the command output.
+		The terminal window will be positioned at the bottom, and grow
+		upwards as needed.
 							*guioptions_a* *'go-a'*
 	  'a'	Autoselect:  If present, then whenever VISUAL mode is started,
 		or the Visual area extended, Vim tries to become the owner of

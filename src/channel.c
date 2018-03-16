@@ -5383,11 +5383,13 @@ job_check_ended(void)
 
 /*
  * Create a job and return it.  Implements job_start().
+ * "argv_arg" is only for Unix.
+ * When "argv_arg" is NULL then "argvars" is used.
  * The returned job has a refcount of one.
  * Returns NULL when out of memory.
  */
     job_T *
-job_start(typval_T *argvars, jobopt_T *opt_arg)
+job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 {
     job_T	*job;
     char_u	*cmd = NULL;
@@ -5474,6 +5476,13 @@ job_start(typval_T *argvars, jobopt_T *opt_arg)
 
     job_set_options(job, &opt);
 
+#ifdef USE_ARGV
+    if (argv_arg != NULL)
+    {
+	argv = argv_arg;
+    }
+    else
+#endif
     if (argvars[0].v_type == VAR_STRING)
     {
 	/* Command is a string. */
@@ -5551,7 +5560,8 @@ job_start(typval_T *argvars, jobopt_T *opt_arg)
 
 theend:
 #ifdef USE_ARGV
-    vim_free(argv);
+    if (argv != argv_arg)
+	vim_free(argv);
 #else
     vim_free(ga.ga_data);
 #endif
