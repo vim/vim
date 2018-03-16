@@ -329,10 +329,6 @@ Name			triggered by ~
 |CmdlineEnter|		after the cursor moves to the command line
 |CmdlineLeave|		before the cursor leaves the command line
 
-|CmdlineChanged|	after a change was made to the command-line text
-|CmdlineEnter|		after the cursor moves to the command line
-|CmdlineLeave|		before the cursor leaves the command line
-
 |InsertEnter|		starting Insert mode
 |InsertChange|		when typing <Insert> while in Insert or Replace mode
 |InsertLeave|		when leaving Insert mode
