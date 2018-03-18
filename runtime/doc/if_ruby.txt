@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 8.0.  Last change: 2016 Sep 01
+*if_ruby.txt*   For Vim version 8.0.  Last change: 2018 Mar 15
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -220,6 +220,9 @@ for sure edit "gvim.exe" and search for "ruby\d*.dll\c".
 
 If you want to build Vim with RubyInstaller 1.9 or 2.X using MSVC, you need
 some tricks.  See the src/INSTALLpc.txt for detail.
+
+If Vim is built with RubyInstaller 2.4 or later, you may also need to add
+"C:\Ruby<version>\bin\ruby_builtin_dlls" to the PATH environment variable.
 
 
 Unix ~

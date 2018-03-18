@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 10
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -99,9 +99,14 @@ themselves (like Vim does).
 
 To change the keys you type use terminal mode mappings, see |:tmap|.
 These are defined like any mapping, but apply only when typing keys that are
-sent to the job running in the terminal.  For example, to make Escape switch
+sent to the job running in the terminal.  For example, to make F1 switch
 to Terminal-Normal mode: >
+   tnoremap <F1> <C-W>N
+You can use Esc, but you need to make sure it won't cause other keys to
+break: >
    tnoremap <Esc> <C-W>N
+   set notimeout ttimeout timeoutlen=100
+
 <							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
 BufWinEnter autocommand event is triggered.  This makes it possible to set
@@ -408,7 +413,7 @@ an expected screen dump.
 
 Vim uses the window size, text, color and other attributes as displayed.  The
 Vim screen size, font and other properties do not matter.  Therefore this
-mechanism is portable across systems.  A convential screenshot would reflect
+mechanism is portable across systems.  A conventional screenshot would reflect
 all differences, including font size and family.
 
 
@@ -483,9 +488,9 @@ This will open a window consisting of three parts:
 3.  The contents of the second dump
 
 You can usually see what differs in the second part.  Use the 'ruler' to
-relate it to the postion in the first or second dump.
+relate it to the position in the first or second dump.
 
-Alternatively, press "s" to swap the first and second dump. Do this everal
+Alternatively, press "s" to swap the first and second dump. Do this several
 times so that you can spot the difference in the context of the text.
 
 ==============================================================================
@@ -659,7 +664,8 @@ invoking `:Termdebug`: >
 	let termdebugger = "mygdb"
 <							*gdb-version*
 Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
-interface.  This probably requires gdb version 7.12.  if you get this error:
+interface.  The "new-ui" command  requires gdb version 7.12 or later.  if you
+get this error:
 	Undefined command: "new-ui". Try "help".~
 Then your gdb is too old.
 

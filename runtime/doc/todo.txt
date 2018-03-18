@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2018 Mar 09
+*todo.txt*      For Vim version 8.0.  Last change: 2018 Mar 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,11 +35,11 @@ entered there will not be repeated below, unless there is extra information.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-No maintainer for Vietnamese translations.
-No maintainer for Simplified Chinese translations.
-
 Terminal emulator window:
-- Lots of stuff to implement, see src/terminal.c
+- Still some stuff to implement and bugs to fix, see src/terminal.c
+- Crash when using popup menu while balloon is visible?
+- Test_terminal_qall_kill_func if flaky
+- Drop options argument of term_dumpdiff() / termp_dumpload() ?
 
 Mode message isn't updated on vertical split. (Alexei Averchenko, 2018 Feb 2,
 #2611)
@@ -47,11 +47,15 @@ Mode message isn't updated on vertical split. (Alexei Averchenko, 2018 Feb 2,
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
 
+Implement option_save() and option_restore().
+
 Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in do_sub() (#2249)
 - signed integer overflow in get_address() (#2248)
 - signed integer overflow in getdecchrs() (#2254)
 - undefined left shift in get_string_tv() (#2250)
+
+Mouse pointer sticks to stop shape.  Only on Windows GUI?  #2709
 
 balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
 20, #2481)
@@ -61,6 +65,9 @@ Try out background make plugin:
   https://github.com/AndrewVos/vim-make-background
 or asyncmake: 
   https://github.com/yegappan/asyncmake
+
+Add a ModeChanged autocommand that has an argument indicating the old and new
+mode.  Also used for switching Terminal mode.
 
 Cursor in status line after search. (#2530)
 
@@ -79,6 +86,9 @@ Jan 15, #2555)
 
 Check argument of systemlist(). (Pavlov)
 
+No maintainer for Vietnamese translations.
+No maintainer for Simplified Chinese translations.
+
 When 'inchsearch' and 'hlsearch' are set /\v highlights everything.
 Also see #2337
 
@@ -90,6 +100,9 @@ Patch to add "module" to quickfix entries. (Marcin Szamotulski, Coot, 2017 Jun
 first.
 
 Add the debug command line history to viminfo.
+
+Avoid that "sign unplace id" does a redraw right away, esp. when there is a
+sequence of these commands. (Andy Stewart, 2018 Mar 16)
 
 ch_sendraw() with long string does not try to read inbetween, which may cause
 a deadlock if the reading side is waiting for the write to finish. (Nate
@@ -185,9 +198,6 @@ Ask whether to use Windows or Vim key behavior?
 
 Patch for improving detecting Ruby on Mac in configure. (Ilya Mikhaltsou, 2017
 Nov 21)
-
-Add a ModeChanged autocommand that has an argument indicating the old and new
-mode.  Also used for switching Terminal mode.
 
 When using command line window, CmdlineLeave is triggered without
 CmdlineEnter.  (xtal8, 2017 Oct 30, #2263)
@@ -1087,7 +1097,7 @@ Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)
 
 Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
-Update 2016 Jun 10, # 857
+Update 2018 March 12, #2711
 
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list

@@ -294,6 +294,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'gfw'	options.txt	/*'gfw'*
 'ghr'	options.txt	/*'ghr'*
 'go'	options.txt	/*'go'*
+'go-!'	options.txt	/*'go-!'*
 'go-A'	options.txt	/*'go-A'*
 'go-F'	options.txt	/*'go-F'*
 'go-L'	options.txt	/*'go-L'*
@@ -4600,6 +4601,7 @@ EncodingChanged	autocmd.txt	/*EncodingChanged*
 Eterm	syntax.txt	/*Eterm*
 Ex	intro.txt	/*Ex*
 Ex-mode	intro.txt	/*Ex-mode*
+ExitPre	autocmd.txt	/*ExitPre*
 Exuberant_ctags	tagsrch.txt	/*Exuberant_ctags*
 F	motion.txt	/*F*
 FALSE	eval.txt	/*FALSE*
@@ -4830,6 +4832,7 @@ Tcl	if_tcl.txt	/*Tcl*
 TermChanged	autocmd.txt	/*TermChanged*
 TermResponse	autocmd.txt	/*TermResponse*
 Terminal-mode	terminal.txt	/*Terminal-mode*
+TerminalOpen	autocmd.txt	/*TerminalOpen*
 TextChanged	autocmd.txt	/*TextChanged*
 TextChangedI	autocmd.txt	/*TextChangedI*
 TextChangedP	autocmd.txt	/*TextChangedP*
@@ -8928,6 +8931,7 @@ term_gettty()	eval.txt	/*term_gettty()*
 term_list()	eval.txt	/*term_list()*
 term_scrape()	eval.txt	/*term_scrape()*
 term_sendkeys()	eval.txt	/*term_sendkeys()*
+term_setkill()	eval.txt	/*term_setkill()*
 term_setrestore()	eval.txt	/*term_setrestore()*
 term_setsize()	eval.txt	/*term_setsize()*
 term_start()	eval.txt	/*term_start()*

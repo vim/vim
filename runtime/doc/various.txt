@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.0.  Last change: 2018 Mar 04
+*various.txt*   For Vim version 8.0.  Last change: 2018 Mar 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -429,7 +429,7 @@ N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 B  *+rightleft*		Right to left typing |'rightleft'|
 m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
-N  *+scrollbind*	|'scrollbind'|
+T  *+scrollbind*	|'scrollbind'|
 B  *+signs*		|:sign|
 N  *+smartindent*	|'smartindent'|
 N  *+startuptime*	|--startuptime| argument
