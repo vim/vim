@@ -3011,24 +3011,14 @@ cterm_color2rgb(int nr, VTermColor *rgb)
 }
 
 /*
- * Create a new vterm and initialize it.
+ * Initialize term->tl_default_color from the environment.
  */
     static void
-create_vterm(term_T *term, int rows, int cols)
+init_default_colors(term_T *term)
 {
-    VTerm	    *vterm;
-    VTermScreen	    *screen;
-    VTermValue	    value;
     VTermColor	    *fg, *bg;
     int		    fgval, bgval;
     int		    id;
-
-    vterm = vterm_new(rows, cols);
-    term->tl_vterm = vterm;
-    screen = vterm_obtain_screen(vterm);
-    vterm_screen_set_callbacks(screen, &screen_callbacks, term);
-    /* TODO: depends on 'encoding'. */
-    vterm_set_utf8(vterm, 1);
 
     vim_memset(&term->tl_default_color.attrs, 0, sizeof(VTermScreenCellAttrs));
     term->tl_default_color.width = 1;
@@ -3152,8 +3142,31 @@ create_vterm(term_T *term, int rows, int cols)
 	    term_get_bg_color(&bg->red, &bg->green, &bg->blue);
 # endif
     }
+}
 
-    vterm_state_set_default_colors(vterm_obtain_state(vterm), fg, bg);
+/*
+ * Create a new vterm and initialize it.
+ */
+    static void
+create_vterm(term_T *term, int rows, int cols)
+{
+    VTerm	    *vterm;
+    VTermScreen	    *screen;
+    VTermValue	    value;
+
+    vterm = vterm_new(rows, cols);
+    term->tl_vterm = vterm;
+    screen = vterm_obtain_screen(vterm);
+    vterm_screen_set_callbacks(screen, &screen_callbacks, term);
+    /* TODO: depends on 'encoding'. */
+    vterm_set_utf8(vterm, 1);
+
+    init_default_colors(term);
+
+    vterm_state_set_default_colors(
+	    vterm_obtain_state(vterm),
+	    &term->tl_default_color.fg,
+	    &term->tl_default_color.bg);
 
     /* Required to initialize most things. */
     vterm_screen_reset(screen, 1 /* hard */);
@@ -3766,6 +3779,8 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	int		width2;
 	VTermPos	cursor_pos1;
 	VTermPos	cursor_pos2;
+
+	init_default_colors(term);
 
 	rettv->vval.v_number = buf->b_fnum;
 
