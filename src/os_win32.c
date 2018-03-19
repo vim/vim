@@ -4800,15 +4800,25 @@ mch_call_shell_terminal(
     aco_save_T	aco;
     oparg_T	oa;		/* operator arguments */
 
-    cmdlen = STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
-
+    if (cmd == NULL)
+	cmdlen = STRLEN(p_sh) + 1;
+    else
+	cmdlen = STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
     newcmd = lalloc(cmdlen, TRUE);
     if (newcmd == NULL)
 	return 255;
-    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s", p_sh, p_shcf, cmd);
+    if (cmd == NULL)
+    {
+	STRCPY(newcmd, p_sh);
+	ch_log(NULL, "starting terminal to run a shell");
+    }
+    else
+    {
+	vim_snprintf((char *)newcmd, cmdlen, "%s %s %s", p_sh, p_shcf, cmd);
+	ch_log(NULL, "starting terminal for system command '%s'", cmd);
+    }
 
     init_job_options(&opt);
-    ch_log(NULL, "starting terminal for system command '%s'", cmd);
 
     argvar[0].v_type = VAR_STRING;
     argvar[0].vval.v_string = newcmd;
