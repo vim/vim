@@ -1855,18 +1855,17 @@ fill_input_buf(int exit_on_error UNUSED)
     for (try = 0; try < 100; ++try)
     {
 #  ifdef VMS
-	len = vms_read(
+#   define vim_read_from_input(fd, buf, len)	vms_read(buf, len)
 #  else
-	len = read(read_cmd_fd,
+#   define vim_read_from_input(fd, buf, len)	read(fd, buf, len)
 #  endif
-	    (char *)inbuf + inbufcount, (size_t)((INBUFLEN - inbufcount)
+	len = vim_read_from_input(read_cmd_fd,
+		(char *)inbuf + inbufcount, (size_t)((INBUFLEN - inbufcount)
 #  ifdef FEAT_MBYTE
-		/ input_conv.vc_factor
+		    / input_conv.vc_factor
 #  endif
-		));
-#  if 0
-		)	/* avoid syntax highlight error */
-#  endif
+		    ));
+#  undef vim_read_from_input
 
 	if (len > 0 || got_int)
 	    break;
