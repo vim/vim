@@ -1398,6 +1398,15 @@ TERM_DEPS = \
 
 TERM_SRC = libvterm/src/*.c
 
+# Guard against environment variables
+XDIFF_OBJS = 
+XDIFF_OBJS += objects/xdiffi.o
+XDIFF_OBJS += objects/xemit.o
+XDIFF_OBJS += objects/xprepare.o
+XDIFF_OBJS += objects/xutils.o
+XDIFF_OBJS += objects/xhistogram.o
+XDIFF_OBJS += objects/xpatience.o
+
 ### Command to create dependencies based on #include "..."
 ### prototype headers are ignored due to -DPROTO, system
 ### headers #include <...> are ignored if we use the -MM option, as
@@ -1600,6 +1609,7 @@ BASIC_SRC = \
 SRC =	$(BASIC_SRC) \
 	$(GUI_SRC) \
 	$(TERM_SRC) \
+	$(XDIFF_OBJS) \
 	$(HANGULIN_SRC) \
 	$(LUA_SRC) \
 	$(MZSCHEME_SRC) \
@@ -1717,6 +1727,7 @@ OBJ_COMMON = \
 	$(WORKSHOP_OBJ) \
 	$(NETBEANS_OBJ) \
 	$(CHANNEL_OBJ) \
+	$(XDIFF_OBJS) \
 	$(WSDEBUG_OBJ)
 
 # The files included by tests are not in OBJ_COMMON.
@@ -2860,7 +2871,7 @@ SHADOWDIR = shadow
 
 shadow:	runtime pixmaps
 	$(MKDIR_P) $(SHADOWDIR)
-	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh .
+	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../xdiff ../libvterm ../vimtutor ../gvimtutor ../install-sh .
 	mkdir $(SHADOWDIR)/auto
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
 	$(MKDIR_P) $(SHADOWDIR)/po
@@ -3044,7 +3055,7 @@ objects/crypt_zip.o: crypt_zip.c
 objects/dict.o: dict.c
 	$(CCC) -o $@ dict.c
 
-objects/diff.o: diff.c
+objects/diff.o: diff.c $(XDIFF_OBJS)
 	$(CCC) -o $@ diff.c
 
 objects/digraph.o: digraph.c
@@ -3363,6 +3374,27 @@ objects/term_unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
 
 objects/term_vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/vterm.c
+
+CCCDIFF = $(CCC_NF) $(ALL_CFLAGS)
+
+objects/xdiffi.o:
+	$(CCCDIFF) -o $@ xdiff/xdiffi.c
+
+objects/xprepare.o:
+	$(CCCDIFF) -o $@ xdiff/xprepare.c
+
+objects/xutils.o:
+	$(CCCDIFF) -o $@ xdiff/xutils.c
+
+objects/xemit.o:
+	$(CCCDIFF) -o $@ xdiff/xemit.c
+
+objects/xhistogram.o:
+	$(CCCDIFF) -o $@ xdiff/xhistogram.c
+
+objects/xpatience.o:
+	$(CCCDIFF) -o $@ xdiff/xpatience.c
+
 
 ###############################################################################
 ### MacOS X installation
