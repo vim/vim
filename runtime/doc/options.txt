@@ -2637,11 +2637,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 		foldcolumn:{n}	Set the 'foldcolumn' option to {n} when
 				starting diff mode.  Without this 2 is used.
 
+		internal	Use the internal diff parser, very
+				experimental!
+
 	Examples: >
 
 		:set diffopt=filler,context:4
 		:set diffopt=
 		:set diffopt=filler,foldcolumn:3
+		:set diffopt+=internal  " use the internal diff parser
 <
 				     *'digraph'* *'dg'* *'nodigraph'* *'nodg'*
 'digraph' 'dg'		boolean	(default off)
