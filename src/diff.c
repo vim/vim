@@ -56,6 +56,8 @@ static void diff_copy_entry(diff_T *dprev, diff_T *dp, int idx_orig, int idx_new
 static diff_T *diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp);
 static int fn_out(void *priv, mmbuffer_t *mb, int nbuf);
 static int fill_mmfile(mmfile_t *mf, const char_u *file);
+static int parse_diff_ed(char_u linebuf[LBUFLEN], linenr_T *lnum_orig, long *count_orig, linenr_T *lnum_new, long *count_new);
+static int parse_diff_unified(char_u linebuf[LBUFLEN], linenr_T *lnum_orig, long *count_orig, linenr_T *lnum_new, long *count_new);
 
 #ifndef USE_CR
 # define tag_fgets vim_fgets
@@ -856,9 +858,16 @@ diff_file(
     else
 #endif
     {
+	/* Use xdiff for generating the diff */
 	if (diff_internal())
 	{
 	    mmfile_t old, new;
+
+	    /* Note: This basically reads the file contents into a buffer again,
+	     * it would make sense to avoid writing temp files completly and direclty feed the 
+	     * buffer contents to xdiff.
+	     * This would improve performance a bit since we could skip file writing and reading againg
+	     * However I am not sure, how to do it */
 
 	    if (fill_mmfile(&old, tmp_orig) < 0 ||
 		fill_mmfile(&new, tmp_new) < 0)
@@ -885,7 +894,7 @@ diff_file(
 		    return;
 		}
 		xpp.flags = XDF_NEED_MINIMAL;
-		xecfg.ctxlen = diff_context;
+		xecfg.ctxlen = 0; /* don't need diff_context here */
 		ecb.priv = fd;
 		ecb.outf = fn_out;
 		if (xdl_diff(&old, &new, &xpp, &xecfg, &ecb) < 0)
@@ -1337,15 +1346,17 @@ diff_read(
     diff_T	*dprev = NULL;
     diff_T	*dp = curtab->tp_first_diff;
     diff_T	*dn, *dpl;
-    long	f1, l1, f2, l2;
     char_u	linebuf[LBUFLEN];   /* only need to hold the diff line */
-    int		difftype;
-    char_u	*p;
     long	off;
     int		i;
     linenr_T	lnum_orig, lnum_new;
     long	count_orig, count_new;
     int		notset = TRUE;	    /* block "*dp" not set yet */
+    enum {
+	DIFF_ED,
+	DIFF_UNIFIED,
+	DIFF_NONE
+    } diffstyle = DIFF_NONE;
 
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
@@ -1356,58 +1367,52 @@ diff_read(
 
     for (;;)
     {
-	if (tag_fgets(linebuf, LBUFLEN, fd))
-	    break;		/* end of file */
-	if (!isdigit(*linebuf))
-	    continue;		/* not the start of a diff block */
-
-	/* This line must be one of three formats:
+	/* ed like diff looks like this:
 	 * {first}[,{last}]c{first}[,{last}]
 	 * {first}a{first}[,{last}]
 	 * {first}[,{last}]d{first}
+	 *
+	 * unified diff looks like this:
+	 * --- file1       2018-03-20 13:23:35.783153140 +0100
+	 * +++ file2       2018-03-20 13:23:41.183156066 +0100
+	 * @@ -1,3 +1,5 @@
 	 */
-	p = linebuf;
-	f1 = getdigits(&p);
-	if (*p == ',')
+	if (tag_fgets(linebuf, LBUFLEN, fd))
+	    break;		/* end of file */
+	if (diffstyle == DIFF_NONE)
 	{
-	    ++p;
-	    l1 = getdigits(&p);
+	    /* determine diff style */
+	    if (isdigit(*linebuf))
+		diffstyle = DIFF_ED;
+	    else if ((STRNCMP(linebuf, "@@ ", 3) == 0))
+	       diffstyle = DIFF_UNIFIED;
+	    else if ((STRNCMP(linebuf, "--- ", 4) == 0) &&
+			(tag_fgets(linebuf, LBUFLEN, fd) == 0) &&
+			(STRNCMP(linebuf, "+++ ", 4) == 0) &&
+			(tag_fgets(linebuf, LBUFLEN, fd) == 0) &&
+			(STRNCMP(linebuf, "@@ ", 3) == 0))
+		diffstyle = DIFF_UNIFIED;
 	}
-	else
-	    l1 = f1;
-	if (*p != 'a' && *p != 'c' && *p != 'd')
-	    continue;		/* invalid diff format */
-	difftype = *p++;
-	f2 = getdigits(&p);
-	if (*p == ',')
-	{
-	    ++p;
-	    l2 = getdigits(&p);
-	}
-	else
-	    l2 = f2;
-	if (l1 < f1 || l2 < f2)
-	    continue;		/* invalid line range */
 
-	if (difftype == 'a')
+	if (diffstyle == DIFF_ED)
 	{
-	    lnum_orig = f1 + 1;
-	    count_orig = 0;
+	    if (!isdigit(*linebuf))
+		continue;		/* not the start of a diff block */
+	    if (parse_diff_ed(linebuf, &lnum_orig, &count_orig, &lnum_new, &count_new))
+		continue;
+	}
+	else if (diffstyle == DIFF_UNIFIED)
+	{
+	    if (STRNCMP(linebuf, "@@ ", 3)  != 0)
+		continue;		/* not the start of a diff block */
+	    /* unified style diff */
+	    if (parse_diff_unified(linebuf, &lnum_orig, &count_orig, &lnum_new, &count_new))
+		continue;
 	}
 	else
 	{
-	    lnum_orig = f1;
-	    count_orig = l1 - f1 + 1;
-	}
-	if (difftype == 'd')
-	{
-	    lnum_new = f2 + 1;
-	    count_new = 0;
-	}
-	else
-	{
-	    lnum_new = f2;
-	    count_new = l2 - f2 + 1;
+	    EMSG(_("EXXX: Invalid diff format."));
+	    return;
 	}
 
 	/* Go over blocks before the change, for which orig and new are equal.
@@ -2741,6 +2746,130 @@ diff_internal(void)
     return (diff_flags & DIFF_INTERNAL) != 0;
 }
 
+    static int
+parse_diff_ed(
+	char_u linebuf[LBUFLEN],
+	linenr_T *lnum_orig,
+	long *count_orig,
+	linenr_T *lnum_new,
+	long *count_new)
+{
+    char_u *p;
+    long    f1, l1, f2, l2;
+    int	    difftype;
+    int	    retval = 1;
+
+    /* This line must be one of three formats:
+    * {first}[,{last}]c{first}[,{last}]
+    * {first}a{first}[,{last}]
+    * {first}[,{last}]d{first}
+    */
+    p = linebuf;
+    f1 = getdigits(&p);
+    if (*p == ',')
+    {
+	++p;
+	l1 = getdigits(&p);
+    }
+    else
+	l1 = f1;
+    if (*p != 'a' && *p != 'c' && *p != 'd')
+	return retval;		/* invalid diff format */
+    difftype = *p++;
+    f2 = getdigits(&p);
+    if (*p == ',')
+    {
+	++p;
+	l2 = getdigits(&p);
+    }
+    else
+	l2 = f2;
+    if (l1 < f1 || l2 < f2)
+	return retval;
+
+    if (difftype == 'a')
+    {
+	*lnum_orig = f1 + 1;
+	*count_orig = 0;
+    }
+    else
+    {
+	*lnum_orig = f1;
+	*count_orig = l1 - f1 + 1;
+    }
+    if (difftype == 'd')
+    {
+	*lnum_new = f2 + 1;
+	*count_new = 0;
+    }
+    else
+    {
+	*lnum_new = f2;
+	*count_new = l2 - f2 + 1;
+    }
+    return 0;
+}
+
+/* parses unified diff with zero(!) context lines */
+    static int
+parse_diff_unified(
+	char_u linebuf[LBUFLEN],
+	linenr_T *lnum_orig,
+	long *count_orig,
+	linenr_T *lnum_new,
+	long *count_new)
+{
+    char_u *p;
+    long    oldline, oldcount, newline, newcount;
+    int	    retval = 1;
+
+    /* parse Unified Diff Hunk Header
+     * @@ -oldline,oldcount +newline,newcount @@
+    */
+    p = linebuf;
+    /* new hunk header */
+    if (!(*p++ == '@' &&
+	*p++ == '@' &&
+	*p++ == ' ' &&
+	*p++ == '-'))
+	return retval; /* no hunk header */
+    else
+    {
+	oldline = getdigits(&p);
+	if (*p == ',')
+	{
+	    ++p;
+	    oldcount = getdigits(&p);
+	}
+	else
+	    oldcount = 1;
+	if (*p++ == ' ' && *p++ == '+')
+	{
+	    newline = getdigits(&p);
+	    if (newline == 0)
+		newline = 1;
+	    if (*p == ',')
+	    {
+		++p;
+		newcount = getdigits(&p);
+	    }
+	    else
+		newcount = 1;
+	}
+	else
+	    return retval;		/* invalid diff format */
+
+	*lnum_orig = oldline;
+	*count_orig = oldcount;
+	*lnum_new = newline;
+	*count_new = newcount;
+
+	if (newline == oldline + 1 && oldcount == 0)
+	    *lnum_orig += 1;
+
+	return 0;
+    }
+}
 
 /* xdiff interface */
 
