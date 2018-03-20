@@ -855,49 +855,61 @@ func Test_terminal_response_to_control_sequence()
   unlet g:job
 endfunc
 
-" Run Vim in a terminal, then start a terminal in that Vim with a kill
-" argument, check that :qall works.
-func Test_terminal_qall_kill_arg()
-  if !CanRunVimInTerminal()
+" Run Vim, start a terminal in that Vim with the kill argument,
+" :qall works.
+func Run_terminal_qall_kill(line1, line2)
+  " 1. Open a terminal window and wait for the prompt to appear
+  " 2. set kill using term_setkill()
+  " 3. make Vim exit, it will kill the shell
+  let after = [
+	\ a:line1,
+	\ 'let buf = bufnr("%")',
+	\ 'while term_getline(buf, 1) =~ "^\\s*$"',
+	\ '  sleep 10m',
+	\ 'endwhile',
+	\ a:line2,
+	\ 'au VimLeavePre * call writefile(["done"], "Xdone")',
+	\ 'qall',
+	\ ]
+  if !RunVim([], after, '')
     return
   endif
-  let buf = RunVimInTerminal('', {})
-
-  " Open a terminal window and wait for the prompt to appear
-  call term_sendkeys(buf, ":term ++kill=kill\<CR>")
-  call WaitFor({-> term_getline(buf, 10) =~ '\[running]'})
-  call WaitFor({-> term_getline(buf, 1) !~ '^\s*$'})
-
-  " make Vim exit, it will kill the shell
-  call term_sendkeys(buf, "\<C-W>:qall\<CR>")
-  call WaitFor({-> term_getstatus(buf) == "finished"})
-
-  " close the terminal window where Vim was running
-  quit
+  call assert_equal("done", readfile("Xdone")[0])
+  call delete("Xdone")
 endfunc
 
 " Run Vim in a terminal, then start a terminal in that Vim with a kill
 " argument, check that :qall works.
+func Test_terminal_qall_kill_arg()
+  call Run_terminal_qall_kill('term ++kill=kill', '')
+endfunc
+
+" Run Vim, start a terminal in that Vim, set the kill argument with
+" term_setkill(), check that :qall works.
 func Test_terminal_qall_kill_func()
-  if !CanRunVimInTerminal()
+  call Run_terminal_qall_kill('term', 'call term_setkill(buf, "kill")')
+endfunc
+
+" Run Vim, start a terminal in that Vim without the kill argument,
+" check that :qall does not exit, :qall! does.
+func Test_terminal_qall_exit()
+  let after = [
+	\ 'term',
+	\ 'let buf = bufnr("%")',
+	\ 'while term_getline(buf, 1) =~ "^\\s*$"',
+	\ '  sleep 10m',
+	\ 'endwhile',
+	\ 'set nomore',
+	\ 'au VimLeavePre * call writefile(["too early"], "Xdone")',
+	\ 'qall',
+	\ 'au! VimLeavePre * exe buf . "bwipe!" | call writefile(["done"], "Xdone")',
+	\ 'cquit',
+	\ ]
+  if !RunVim([], after, '')
     return
   endif
-  let buf = RunVimInTerminal('', {})
-
-  " Open a terminal window and wait for the prompt to appear
-  call term_sendkeys(buf, ":term\<CR>")
-  call WaitFor({-> term_getline(buf, 10) =~ '\[running]'})
-  call WaitFor({-> term_getline(buf, 1) !~ '^\s*$'})
-
-  " set kill using term_setkill()
-  call term_sendkeys(buf, "\<C-W>:call term_setkill(bufnr('%'), 'kill')\<CR>")
-
-  " make Vim exit, it will kill the shell
-  call term_sendkeys(buf, "\<C-W>:qall\<CR>")
-  call WaitFor({-> term_getstatus(buf) == "finished"})
-
-  " close the terminal window where Vim was running
-  quit
+  call assert_equal("done", readfile("Xdone")[0])
+  call delete("Xdone")
 endfunc
 
 " Run Vim in a terminal, then start a terminal in that Vim without a kill
