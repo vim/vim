@@ -4824,6 +4824,8 @@ mch_call_shell_terminal(
     argvar[0].vval.v_string = newcmd;
     argvar[1].v_type = VAR_UNKNOWN;
     buf = term_start(argvar, NULL, &opt, TERM_START_SYSTEM);
+    if (buf == NULL)
+	return 255;
 
     /* Find a window to make "buf" curbuf. */
     aucmd_prepbuf(&aco, buf);
