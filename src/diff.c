@@ -12,6 +12,7 @@
  */
 
 #include "vim.h"
+#include "xdiff/xdiff.h"
 
 #if defined(FEAT_DIFF) || defined(PROTO)
 
@@ -24,6 +25,7 @@ static int	diff_busy = FALSE;	/* ex_diffgetput() is busy */
 #define DIFF_HORIZONTAL	8	/* horizontal splits */
 #define DIFF_VERTICAL	16	/* vertical splits */
 #define DIFF_HIDDEN_OFF	32	/* diffoff when hidden */
+#define DIFF_INTERNAL	64	/* use internal xdiff algorithm */
 static int	diff_flags = DIFF_FILLER;
 
 #define LBUFLEN 50		/* length of line in diff file */
@@ -52,6 +54,8 @@ static void diff_fold_update(diff_T *dp, int skip_idx);
 static void diff_read(int idx_orig, int idx_new, char_u *fname);
 static void diff_copy_entry(diff_T *dprev, diff_T *dp, int idx_orig, int idx_new);
 static diff_T *diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp);
+static int fn_out(void *priv, mmbuffer_t *mb, int nbuf);
+static int fill_mmfile(mmfile_t *mf, const char_u *file);
 
 #ifndef USE_CR
 # define tag_fgets vim_fgets
@@ -702,90 +706,93 @@ ex_diffupdate(
      * there are differences.
      * May try twice, first with "-a" and then without.
      */
-    for (;;)
+    if (!diff_internal())
     {
-	ok = FALSE;
-	fd = mch_fopen((char *)tmp_orig, "w");
-	if (fd == NULL)
-	    io_error = TRUE;
-	else
+	for (;;)
 	{
-	    if (fwrite("line1\n", (size_t)6, (size_t)1, fd) != 1)
-		io_error = TRUE;
-	    fclose(fd);
-	    fd = mch_fopen((char *)tmp_new, "w");
+	    ok = FALSE;
+	    fd = mch_fopen((char *)tmp_orig, "w");
 	    if (fd == NULL)
 		io_error = TRUE;
 	    else
 	    {
-		if (fwrite("line2\n", (size_t)6, (size_t)1, fd) != 1)
+		if (fwrite("line1\n", (size_t)6, (size_t)1, fd) != 1)
 		    io_error = TRUE;
 		fclose(fd);
-		diff_file(tmp_orig, tmp_new, tmp_diff);
-		fd = mch_fopen((char *)tmp_diff, "r");
+		fd = mch_fopen((char *)tmp_new, "w");
 		if (fd == NULL)
 		    io_error = TRUE;
 		else
 		{
-		    char_u	linebuf[LBUFLEN];
-
-		    for (;;)
-		    {
-			/* There must be a line that contains "1c1". */
-			if (tag_fgets(linebuf, LBUFLEN, fd))
-			    break;
-			if (STRNCMP(linebuf, "1c1", 3) == 0)
-			    ok = TRUE;
-		    }
+		    if (fwrite("line2\n", (size_t)6, (size_t)1, fd) != 1)
+			io_error = TRUE;
 		    fclose(fd);
+		    diff_file(tmp_orig, tmp_new, tmp_diff);
+		    fd = mch_fopen((char *)tmp_diff, "r");
+		    if (fd == NULL)
+			io_error = TRUE;
+		    else
+		    {
+			char_u	linebuf[LBUFLEN];
+
+			for (;;)
+			{
+			    /* There must be a line that contains "1c1". */
+			    if (tag_fgets(linebuf, LBUFLEN, fd))
+				break;
+			    if (STRNCMP(linebuf, "1c1", 3) == 0)
+				ok = TRUE;
+			}
+			fclose(fd);
+		    }
+		    mch_remove(tmp_diff);
+		    mch_remove(tmp_new);
 		}
-		mch_remove(tmp_diff);
-		mch_remove(tmp_new);
+		mch_remove(tmp_orig);
 	    }
-	    mch_remove(tmp_orig);
-	}
 
 #ifdef FEAT_EVAL
-	/* When using 'diffexpr' break here. */
-	if (*p_dex != NUL)
-	    break;
+	    /* When using 'diffexpr' break here. */
+	    if (*p_dex != NUL)
+		break;
 #endif
 
 #if defined(MSWIN)
-	/* If the "-a" argument works, also check if "--binary" works. */
-	if (ok && diff_a_works == MAYBE && diff_bin_works == MAYBE)
-	{
-	    diff_a_works = TRUE;
-	    diff_bin_works = TRUE;
-	    continue;
-	}
-	if (!ok && diff_a_works == TRUE && diff_bin_works == TRUE)
-	{
-	    /* Tried --binary, but it failed. "-a" works though. */
-	    diff_bin_works = FALSE;
-	    ok = TRUE;
-	}
+	    /* If the "-a" argument works, also check if "--binary" works. */
+	    if (ok && diff_a_works == MAYBE && diff_bin_works == MAYBE)
+	    {
+		diff_a_works = TRUE;
+		diff_bin_works = TRUE;
+		continue;
+	    }
+	    if (!ok && diff_a_works == TRUE && diff_bin_works == TRUE)
+	    {
+		/* Tried --binary, but it failed. "-a" works though. */
+		diff_bin_works = FALSE;
+		ok = TRUE;
+	    }
 #endif
 
-	/* If we checked if "-a" works already, break here. */
-	if (diff_a_works != MAYBE)
-	    break;
-	diff_a_works = ok;
+	    /* If we checked if "-a" works already, break here. */
+	    if (diff_a_works != MAYBE)
+		break;
+	    diff_a_works = ok;
 
-	/* If "-a" works break here, otherwise retry without "-a". */
-	if (ok)
-	    break;
-    }
-    if (!ok)
-    {
-	if (io_error)
-	    EMSG(_("E810: Cannot read or write temp files"));
-	EMSG(_("E97: Cannot create diffs"));
-	diff_a_works = MAYBE;
+	    /* If "-a" works break here, otherwise retry without "-a". */
+	    if (ok)
+		break;
+	}
+	if (!ok)
+	{
+	    if (io_error)
+		EMSG(_("E810: Cannot read or write temp files"));
+	    EMSG(_("E97: Cannot create diffs"));
+	    diff_a_works = MAYBE;
 #if defined(MSWIN)
-	diff_bin_works = MAYBE;
+	    diff_bin_works = MAYBE;
 #endif
-	goto theend;
+	    goto theend;
+	}
     }
 
     /* :diffupdate! */
@@ -849,6 +856,47 @@ diff_file(
     else
 #endif
     {
+	if (diff_internal())
+	{
+	    mmfile_t old, new;
+
+	    if (fill_mmfile(&old, tmp_orig) < 0 ||
+		fill_mmfile(&new, tmp_new) < 0)
+	    {
+		EMSG(_("EXXX: Unable to read files to diff"));
+		return;
+	    }
+
+	    /* xdl interface */
+	    {
+		xpparam_t xpp;
+		xdemitconf_t xecfg;
+		xdemitcb_t ecb;
+		FILE *fd;
+
+		memset(&xpp, 0, sizeof(xpp));
+		memset(&xecfg, 0, sizeof(xecfg));
+		memset(&ecb, 0, sizeof(ecb));
+
+		fd = mch_fopen((char *)tmp_diff, "a");
+		if (fd == NULL)
+		{
+		    EMSG(_("EXXX: Unable to write diff file"));
+		    return;
+		}
+		xpp.flags = XDF_NEED_MINIMAL;
+		xecfg.ctxlen = diff_context;
+		ecb.priv = fd;
+		ecb.outf = fn_out;
+		if (xdl_diff(&old, &new, &xpp, &xecfg, &ecb) < 0)
+		    EMSG(_("EXXX: Problem creating the internal diff"));
+		fclose(fd);
+	    }
+
+	    vim_free(old.ptr);
+	    vim_free(new.ptr);
+	    return;
+	}
 	len = STRLEN(tmp_orig) + STRLEN(tmp_new)
 				      + STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
 	cmd = alloc((unsigned)len);
@@ -1904,6 +1952,11 @@ diffopt_changed(void)
 	    p += 9;
 	    diff_flags_new |= DIFF_HIDDEN_OFF;
 	}
+	else if (STRNCMP(p, "internal", 8) == 0)
+	{
+	    p += 8;
+	    diff_flags_new |= DIFF_INTERNAL;
+	}
 	if (*p != ',' && *p != NUL)
 	    return FAIL;
 	if (*p == ',')
@@ -2680,6 +2733,77 @@ diff_lnum_win(linenr_T lnum, win_T *wp)
     if (n > dp->df_lnum[i] + dp->df_count[i])
 	n = dp->df_lnum[i] + dp->df_count[i];
     return n;
+}
+
+    int
+diff_internal(void)
+{
+    return (diff_flags & DIFF_INTERNAL) != 0;
+}
+
+
+/* xdiff interface */
+
+    static int
+fill_mmfile(mmfile_t *mf, const char_u *file)
+{
+    int fd = open((char *)file, O_RDONLY);
+    struct stat st;
+    char *buf;
+    unsigned long size;
+    int retval;
+
+    mf->ptr = NULL;
+    mf->size = 0;
+    fd = open((char *)file, O_RDONLY);
+    if (fd < 0)
+	return 0;
+    if (mch_stat((char *)file, &st))
+    {
+	EMSG(_("EXXX: Cannot read diff file"));
+	return 1;
+    }
+    size = st.st_size;
+    buf = (char *)alloc(size);
+    if (buf == NULL)
+    {
+	EMSG(_("EXXX: Error allocating memory."));
+	return 1;
+    }
+
+    mf->ptr = buf;
+    mf->ptr[size-1] = NUL;
+    mf->size = size;
+    while (size) {
+	retval = read(fd, buf, size);
+	if (retval < 0) {
+	    if (errno == EINTR || errno == EAGAIN)
+		continue;
+	    break;
+	}
+	if (!retval)
+	    break;
+	buf += retval;
+	size -= retval;
+    }
+    mf->size -= size;
+    close(fd);
+    return 0;
+}
+
+/* Callback function from xdl_diff() function */
+    static int
+fn_out(void *priv, mmbuffer_t *mb, int nbuf)
+{
+    int i;
+    FILE *fd = (FILE *) priv;
+    if (fd == NULL)
+	return -1;
+
+    for (i = 0; i < nbuf; i++)
+	if (!fwrite(mb[i].ptr, mb[i].size, 1, fd))
+	    return -1;
+    return 0;
 }
 
 #endif	/* FEAT_DIFF */

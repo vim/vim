@@ -25,4 +25,5 @@ int diff_mode_buf(buf_T *buf);
 int diff_move_to(int dir, long count);
 linenr_T diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1);
 linenr_T diff_lnum_win(linenr_T lnum, win_T *wp);
+int diff_internal(void);
 /* vim: set ft=c : */
