@@ -4256,7 +4256,7 @@ ex_vimgrep(exarg_T *eap)
 	goto theend;
     }
 
-    if (s != NULL && *s == NUL)
+    if (s == NULL || *s == NUL)
     {
 	/* Pattern is empty, use last search pattern. */
 	if (last_search_pat() == NULL)
