@@ -10044,11 +10044,11 @@ highlight_changed(void)
 #ifdef USER_HIGHLIGHT
     char_u      userhl[10];
 # ifdef FEAT_STL_OPT
-    int		id_SNC = -1;
     int		id_S = -1;
+    int		id_SNC = 0;
 #  ifdef FEAT_TERMINAL
-    int		id_ST = -1;
-    int		id_STNC = -1;
+    int		id_ST = 0;
+    int		id_STNC = 0;
 #  endif
     int		hlcnt;
 # endif
