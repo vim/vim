@@ -6148,59 +6148,83 @@ filewritable(char_u *fname)
 #if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO) || defined(PROTO)
 /*
  * Read 2 bytes from "fd" and turn them into an int, MSB first.
+ * Returns -1 when encountering EOF.
  */
     int
 get2c(FILE *fd)
 {
-    int		n;
+    int		c, n;
 
     n = getc(fd);
-    n = (n << 8) + getc(fd);
-    return n;
+    if (n == EOF) return -1;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    return (n << 8) + c;
 }
 
 /*
  * Read 3 bytes from "fd" and turn them into an int, MSB first.
+ * Returns -1 when encountering EOF.
  */
     int
 get3c(FILE *fd)
 {
-    int		n;
+    int		c, n;
 
     n = getc(fd);
-    n = (n << 8) + getc(fd);
-    n = (n << 8) + getc(fd);
-    return n;
+    if (n == EOF) return -1;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (n << 8) + c;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    return (n << 8) + c;
 }
 
 /*
  * Read 4 bytes from "fd" and turn them into an int, MSB first.
+ * Returns -1 when encountering EOF.
  */
     int
 get4c(FILE *fd)
 {
+    int		c;
     /* Use unsigned rather than int otherwise result is undefined
      * when left-shift sets the MSB. */
     unsigned	n;
 
-    n = (unsigned)getc(fd);
-    n = (n << 8) + (unsigned)getc(fd);
-    n = (n << 8) + (unsigned)getc(fd);
-    n = (n << 8) + (unsigned)getc(fd);
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (unsigned)c;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (n << 8) + (unsigned)c;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (n << 8) + (unsigned)c;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (n << 8) + (unsigned)c;
     return (int)n;
 }
 
 /*
  * Read 8 bytes from "fd" and turn them into a time_T, MSB first.
+ * Returns -1 when encountering EOF.
  */
     time_T
 get8ctime(FILE *fd)
 {
+    int		c;
     time_T	n = 0;
     int		i;
 
     for (i = 0; i < 8; ++i)
-	n = (n << 8) + getc(fd);
+    {
+	c = getc(fd);
+	if (c == EOF) return -1;
+	n = (n << 8) + c;
+    }
     return n;
 }
 
