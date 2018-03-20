@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 18
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8190,7 +8190,20 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		the second file.  The middle part shows the differences.
 		The parts are separated by a line of dashes.
 
-		{options} are not implemented yet.
+		If the {options} argument is present, it must be a Dict with
+		these possible members:
+		   "term_name"	     name to use for the buffer name, instead
+				     of the first file name.
+		   "term_rows"	     vertical size to use for the terminal,
+				     instead of using 'termsize'
+		   "term_cols"	     horizontal size to use for the terminal,
+				     instead of using 'termsize'
+		   "vertical"	     split the window vertically
+		   "curwin"	     use the current window, do not split the
+				     window; fails if the current buffer
+				     cannot be |abandon|ed
+		   "norestore"	     do not add the terminal window to a
+				     session file
 
 		Each character in the middle part indicates a difference. If
 		there are multiple differences only the first in this list is
@@ -8213,7 +8226,7 @@ term_dumpload({filename} [, {options}])
 		Returns the buffer number or zero when it fails.
 		Also see |terminal-diff|.
 
-		{options} are not implemented yet.
+		For {options} see |term_dumpdiff()|.
 
 							*term_dumpwrite()*
 term_dumpwrite({buf}, {filename} [, {options}])
@@ -9237,7 +9250,7 @@ visualextra		Compiled with extra Visual mode commands.
 vms			VMS version of Vim.
 vreplace		Compiled with |gR| and |gr| commands.
 vtp			Compiled for vcon support |+vtp| (check vcon to find
-			out if it works in the current console)).
+			out if it works in the current console).
 wildignore		Compiled with 'wildignore' option.
 wildmenu		Compiled with 'wildmenu' option.
 win32			Win32 version of Vim (MS-Windows 95 and later, 32 or

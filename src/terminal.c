@@ -342,6 +342,7 @@ term_start(
     buf_T	*old_curbuf = NULL;
     int		res;
     buf_T	*newbuf;
+    int		vertical = opt->jo_vertical || (cmdmod.split & WSP_VERT);
 
     if (check_restricted() || check_secure())
 	return NULL;
@@ -411,17 +412,19 @@ term_start(
 	split_ea.cmdidx = CMD_new;
 	split_ea.cmd = (char_u *)"new";
 	split_ea.arg = (char_u *)"";
-	if (opt->jo_term_rows > 0 && !(cmdmod.split & WSP_VERT))
+	if (opt->jo_term_rows > 0 && !vertical)
 	{
 	    split_ea.line2 = opt->jo_term_rows;
 	    split_ea.addr_count = 1;
 	}
-	if (opt->jo_term_cols > 0 && (cmdmod.split & WSP_VERT))
+	if (opt->jo_term_cols > 0 && vertical)
 	{
 	    split_ea.line2 = opt->jo_term_cols;
 	    split_ea.addr_count = 1;
 	}
 
+	if (vertical)
+	    cmdmod.split |= WSP_VERT;
 	ex_splitview(&split_ea);
 	if (curwin == old_curwin)
 	{
@@ -437,11 +440,9 @@ term_start(
     {
 	/* Only one size was taken care of with :new, do the other one.  With
 	 * "curwin" both need to be done. */
-	if (opt->jo_term_rows > 0 && (opt->jo_curwin
-						 || (cmdmod.split & WSP_VERT)))
+	if (opt->jo_term_rows > 0 && (opt->jo_curwin || vertical))
 	    win_setheight(opt->jo_term_rows);
-	if (opt->jo_term_cols > 0 && (opt->jo_curwin
-						|| !(cmdmod.split & WSP_VERT)))
+	if (opt->jo_term_cols > 0 && (opt->jo_curwin || !vertical))
 	    win_setwidth(opt->jo_term_cols);
     }
 
@@ -3732,6 +3733,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
     char_u	buf2[NUMBUFLEN];
     char_u	*fname1;
     char_u	*fname2 = NULL;
+    char_u	*fname_tofree = NULL;
     FILE	*fd1;
     FILE	*fd2 = NULL;
     char_u	*textline = NULL;
@@ -3763,10 +3765,23 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
     }
 
     init_job_options(&opt);
-    /* TODO: use the {options} argument */
+    if (argvars[do_diff ? 2 : 1].v_type != VAR_UNKNOWN
+	    && get_job_options(&argvars[do_diff ? 2 : 1], &opt, 0,
+		    JO2_TERM_NAME + JO2_TERM_COLS + JO2_TERM_ROWS
+		    + JO2_VERTICAL + JO2_CURWIN + JO2_NORESTORE) == FAIL)
+	goto theend;
 
-    /* TODO: use the file name arguments for the buffer name */
-    opt.jo_term_name = (char_u *)"dump diff";
+    if (opt.jo_term_name == NULL)
+    {
+	int len = STRLEN(fname1) + 12;
+
+	fname_tofree = alloc(len);
+	if (fname_tofree != NULL)
+	{
+	    vim_snprintf((char *)fname_tofree, len, "dump diff %s", fname1);
+	    opt.jo_term_name = fname_tofree;
+	}
+    }
 
     buf = term_start(&argvars[0], NULL, &opt, TERM_START_NOJOB);
     if (buf != NULL && buf->b_term != NULL)
@@ -3937,6 +3952,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 
 theend:
     vim_free(textline);
+    vim_free(fname_tofree);
     fclose(fd1);
     if (fd2 != NULL)
 	fclose(fd2);
@@ -4541,8 +4557,6 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		    + JO2_NORESTORE + JO2_TERM_KILL) == FAIL)
 	return;
 
-    if (opt.jo_vertical)
-	cmdmod.split = WSP_VERT;
     buf = term_start(&argvars[0], NULL, &opt, 0);
 
     if (buf != NULL && buf->b_term != NULL)
