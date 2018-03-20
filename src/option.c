@@ -8456,7 +8456,7 @@ set_bool_option(
     else if ((int *)varp == &p_acd)
     {
 	/* Change directories when the 'acd' option is set now. */
-	DO_AUTOCHDIR
+	DO_AUTOCHDIR;
     }
 #endif
 

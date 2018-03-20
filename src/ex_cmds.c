@@ -2996,7 +2996,7 @@ rename_buffer(char_u *new_fname)
     apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
 
     /* Change directories when the 'acd' option is set. */
-    DO_AUTOCHDIR
+    DO_AUTOCHDIR;
     return OK;
 }
 
@@ -3254,7 +3254,7 @@ do_write(exarg_T *eap)
 	 * got changed or set. */
 	if (eap->cmdidx == CMD_saveas || name_was_missing)
 	{
-	    DO_AUTOCHDIR
+	    DO_AUTOCHDIR;
 	}
     }
 
@@ -4157,7 +4157,7 @@ do_ecmd(
 #endif
 
 	/* Change directories when the 'acd' option is set. */
-	DO_AUTOCHDIR
+	DO_AUTOCHDIR;
 
 	/*
 	 * Careful: open_buffer() and apply_autocmds() may change the current
