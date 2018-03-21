@@ -1255,3 +1255,51 @@ func Test_terminal_api_call_fails()
   call ch_logfile('', '')
   call delete('Xlog')
 endfunc
+
+func Test_terminal_ansicolors()
+  let colors = [
+	\ '#616e64', '#0d0a79',
+	\ '#6d610d', '#0a7373',
+	\ '#690d0a', '#6d696e',
+	\ '#0d0a6f', '#616e0d',
+	\ '#0a6479', '#6d0d0a',
+	\ '#617373', '#0d0a69',
+	\ '#6d690d', '#0a6e6f',
+	\ '#610d0a', '#6e6479',
+	\]
+  let g:terminal_ansi_colors = reverse(copy(colors))
+
+  let buf = Run_shell_in_terminal({})
+  call assert_equal(term_getansicolors(buf), g:terminal_ansi_colors)
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+
+  let buf = Run_shell_in_terminal({ 'ansi_colors': colors })
+  call assert_equal(term_getansicolors(buf), colors)
+
+  call reverse(colors)
+  call term_setansicolors(buf, colors)
+  call assert_equal(term_getansicolors(buf), colors)
+
+  let colors = [
+	\ 'ivory', 'AliceBlue',
+	\ 'grey67', 'dark goldenrod',
+	\ 'SteelBlue3', 'PaleVioletRed4',
+	\ 'MediumPurple2', 'yellow2',
+	\ 'RosyBrown3', 'OrangeRed2',
+	\ 'white smoke', 'navy blue',
+	\ 'grey47', 'gray97',
+	\ 'MistyRose2', 'DodgerBlue4',
+	\]
+  call term_setansicolors(buf, colors)
+
+  let colors[4] = 'Invalid'
+  call assert_fails('call term_setansicolors(buf, colors)', 'E474:')
+
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+
+  unlet g:terminal_ansi_colors
+endfunc
