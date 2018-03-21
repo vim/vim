@@ -3773,9 +3773,9 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 
     if (opt.jo_term_name == NULL)
     {
-	int len = STRLEN(fname1) + 12;
+	size_t len = STRLEN(fname1) + 12;
 
-	fname_tofree = alloc(len);
+	fname_tofree = alloc((int)len);
 	if (fname_tofree != NULL)
 	{
 	    vim_snprintf((char *)fname_tofree, len, "dump diff %s", fname1);
