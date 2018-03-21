@@ -784,6 +784,13 @@ OBJ += $(OUTDIR)/terminal.o \
 	$(OUTDIR)/term_vterm.o
 endif
 
+# Include xdiff
+OBJ +=  $(OUTDIR)/xdiffi.o \
+	$(OUTDIR)/xemit.o \
+	$(OUTDIR)/xprepare.o \
+	$(OUTDIR)/xutils.o \
+	$(OUTDIR)/xhistogram.o \
+	$(OUTDIR)/xpatience.o
 
 ifdef MZSCHEME
 MZSCHEME_SUFFIX = Z
@@ -1029,6 +1036,23 @@ $(OUTDIR)/term_unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
 $(OUTDIR)/term_vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/vterm.c -o $@
 
+$(OUTDIR)/xdiffi.o:	xdiff/xdiffi.c $(INCL)
+	$(CC) -c $(CFLAGS) xdiff/xdiffi.c -o $(OUTDIR)/xdiffi.o
+
+$(OUTDIR)/xemit.o:	xdiff/xemit.c $(INCL)
+	$(CC) -c $(CFLAGS) xdiff/xemit.c -o $(OUTDIR)/xemit.o
+
+$(OUTDIR)/xprepare.o:	xdiff/xprepare.c $(INCL)
+	$(CC) -c $(CFLAGS) xdiff/xprepare.c -o $(OUTDIR)/xprepare.o
+
+$(OUTDIR)/xutils.o:	xdiff/xutils.c $(INCL)
+	$(CC) -c $(CFLAGS) xdiff/xutils.c -o $(OUTDIR)/xutils.o
+
+$(OUTDIR)/xhistogram.o:	xdiff/xhistogram.c $(INCL)
+	$(CC) -c $(CFLAGS) xdiff/xhistogram.c -o $(OUTDIR)/xhistogram.o
+
+$(OUTDIR)/xpatience.o:	xdiff/xpatience.c $(INCL)
+	$(CC) -c $(CFLAGS) xdiff/xpatience.c -o $(OUTDIR)/xpatience.o
 
 pathdef.c: $(INCL)
 ifneq (sh.exe, $(SHELL))

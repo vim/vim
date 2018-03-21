@@ -2877,7 +2877,7 @@ parse_diff_unified(
 fill_mmfile(mmfile_t *mf, const char_u *file)
 {
     int fd = open((char *)file, O_RDONLY);
-    struct stat st;
+    stat_T st;
     char *buf;
     unsigned long size;
     int retval;

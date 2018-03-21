@@ -20,7 +20,12 @@
  *
  */
 
+#if defined(_MSC_VER)
+# define UNUSED
+# define inline __inline
+#else
 # define UNUSED __attribute__((unused))
+#endif
 
 #if !defined(XINCLUDE_H)
 #define XINCLUDE_H
@@ -28,7 +33,9 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#if !defined(_WIN32)
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <limits.h>
 
