@@ -11,7 +11,7 @@ AC_DEFINE(UNIX)
 AC_PROG_MAKE_SET
 
 dnl Checks for programs.
-AC_PROG_CC		dnl required by almost everything
+AC_PROG_CC_C89		dnl required by almost everything
 AC_PROG_CPP		dnl required by header file checks
 AC_PROGRAM_EGREP	dnl required by AC_EGREP_CPP
 AC_PROG_FGREP		dnl finds working grep -F
@@ -61,6 +61,10 @@ if test "$GCC" = yes; then
       CFLAGS="$CFLAGS -fno-strength-reduce"
     fi
   fi
+
+  dnl Declare what standards the code should comply with
+  CFLAGS="$CFLAGS -ansi"
+  CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 fi
 
 dnl clang-500.2.75 or around has abandoned -f[no-]strength-reduce and issues a
@@ -135,7 +139,7 @@ AC_MSG_CHECKING([for Darwin (Mac OS X)])
 if test "`(uname) 2>/dev/null`" = Darwin; then
   AC_MSG_RESULT(yes)
   MACOS_X=yes
-  CPPFLAGS="$CPPFLAGS -DMACOS_X"
+  CPPFLAGS="$CPPFLAGS -D_DARWIN_C_SOURCE -DMACOS_X"
 
   AC_MSG_CHECKING(--disable-darwin argument)
   AC_ARG_ENABLE(darwin,

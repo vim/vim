@@ -3452,6 +3452,97 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CC option to accept ISO C89" >&5
+$as_echo_n "checking for $CC option to accept ISO C89... " >&6; }
+if ${ac_cv_prog_cc_c89+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_cv_prog_cc_c89=no
+ac_save_CC=$CC
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdarg.h>
+#include <stdio.h>
+struct stat;
+/* Most of the following tests are stolen from RCS 5.7's src/conf.sh.  */
+struct buf { int x; };
+FILE * (*rcsopen) (struct buf *, struct stat *, int);
+static char *e (p, i)
+     char **p;
+     int i;
+{
+  return p[i];
+}
+static char *f (char * (*g) (char **, int), char **p, ...)
+{
+  char *s;
+  va_list v;
+  va_start (v,p);
+  s = g (p, va_arg (v,int));
+  va_end (v);
+  return s;
+}
+
+/* OSF 4.0 Compaq cc is some sort of almost-ANSI by default.  It has
+   function prototypes and stuff, but not '\xHH' hex character constants.
+   These don't provoke an error unfortunately, instead are silently treated
+   as 'x'.  The following induces an error, until -std is added to get
+   proper ANSI mode.  Curiously '\x00'!='x' always comes out true, for an
+   array size at least.  It's necessary to write '\x00'==0 to get something
+   that's true only with -std.  */
+int osf4_cc_array ['\x00' == 0 ? 1 : -1];
+
+/* IBM C 6 for AIX is almost-ANSI by default, but it replaces macro parameters
+   inside strings and character constants.  */
+#define FOO(x) 'x'
+int xlc6_cc_array[FOO(a) == 'x' ? 1 : -1];
+
+int test (int i, double x);
+struct s1 {int (*f) (int a);};
+struct s2 {int (*f) (double a);};
+int pairnames (int, char **, FILE *(*)(struct buf *, struct stat *, int), int, int);
+int argc;
+char **argv;
+int
+main ()
+{
+return f (e, argv, 0) != argv[0]  ||  f (e, argv, 1) != argv[1];
+  ;
+  return 0;
+}
+_ACEOF
+for ac_arg in '' -qlanglvl=extc89 -qlanglvl=ansi -std \
+	-Ae "-Aa -D_HPUX_SOURCE" "-Xc -D__EXTENSIONS__"
+do
+  CC="$ac_save_CC $ac_arg"
+  if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_prog_cc_c89=$ac_arg
+fi
+rm -f core conftest.err conftest.$ac_objext
+  test "x$ac_cv_prog_cc_c89" != "xno" && break
+done
+rm -f conftest.$ac_ext
+CC=$ac_save_CC
+
+fi
+# AC_CACHE_VAL
+case "x$ac_cv_prog_cc_c89" in
+  x)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: none needed" >&5
+$as_echo "none needed" >&6; } ;;
+  xno)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: unsupported" >&5
+$as_echo "unsupported" >&6; } ;;
+  *)
+    CC="$CC $ac_cv_prog_cc_c89"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_prog_cc_c89" >&5
+$as_echo "$ac_cv_prog_cc_c89" >&6; } ;;
+esac
+if test "x$ac_cv_prog_cc_c89" != xno; then :
+
+fi
+
 		ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -4118,6 +4209,9 @@ if test "$GCC" = yes; then
       CFLAGS="$CFLAGS -fno-strength-reduce"
     fi
   fi
+
+    CFLAGS="$CFLAGS -ansi"
+  CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clang version" >&5
@@ -4190,7 +4284,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
   MACOS_X=yes
-  CPPFLAGS="$CPPFLAGS -DMACOS_X"
+  CPPFLAGS="$CPPFLAGS -D_DARWIN_C_SOURCE -DMACOS_X"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-darwin argument" >&5
 $as_echo_n "checking --disable-darwin argument... " >&6; }
