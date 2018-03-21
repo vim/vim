@@ -45,13 +45,13 @@ syn match  issParam	"Components:\|Description:\|GroupDescription:\|Types:\|Extra
 syn match  issParam	"StatusMsg:\|RunOnceId:\|Tasks:"
 syn match  issParam	"MessagesFile:\|LicenseFile:\|InfoBeforeFile:\|InfoAfterFile:"
 
-syn match  issComment	"^\s*;.*$"
+syn match  issComment	"^\s*;.*$" contains=@Spell
 
 " folder constant
-syn match  issFolder	"{[^{]*}"
+syn match  issFolder	"{[^{]*}" contains=@NoSpell
 
 " string
-syn region issString	start=+"+ end=+"+ contains=issFolder
+syn region issString	start=+"+ end=+"+ contains=issFolder,@Spell
 
 " [Dirs]
 syn keyword issDirsFlags deleteafterinstall uninsalwaysuninstall uninsneveruninstall
