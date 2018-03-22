@@ -711,6 +711,26 @@ func Test_diff_screen()
     endif
   endfor
 
+  " Test 7: Test patience diff algorithm
+  call WriteDiffFiles(['#include <stdio.h>', '', '// Frobs foo heartily', 'int frobnitz(int foo)', '{',
+      \ '    int i;', '    for(i = 0; i < 10; i++)', '    {', '        printf("Your answer is: ");',
+      \ '        printf("%d\n", foo);', '    }', '}', '', 'int fact(int n)', '{', '    if(n > 1)', '    {',
+      \ '        return fact(n-1) * n;', '    }', '    return 1;', '}', '', 'int main(int argc, char **argv)',
+      \ '{', '    frobnitz(fact(10));', '}'],
+      \ ['#include <stdio.h>', '', 'int fib(int n)', '{', '    if(n > 2)', '    {',
+      \ '        return fib(n-1) + fib(n-2);', '    }', '    return 1;', '}', '', '// Frobs foo heartily',
+      \ 'int frobnitz(int foo)', '{', '    int i;', '    for(i = 0; i < 10; i++)', '    {',
+      \ '        printf("%d\n", foo);', '    }', '}', '',
+      \ 'int main(int argc, char **argv)', '{', '    frobnitz(fib(10));', '}'])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  call term_sendkeys(buf, ":set diffopt+=internal\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_07', {})
+  call term_sendkeys(buf, ":set diffopt+=algorithm:patience\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_08', {})
+  " histogram is similar enough to patience
+  call term_sendkeys(buf, ":set diffopt+=algorithm:histogram\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_08', {})
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('Xfile1')
