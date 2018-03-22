@@ -2640,6 +2640,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 		internal	Use the internal diff parser, very
 				experimental!
 
+                algorithm:{text} Use the specified diff algorithm with the
+				internal diff engine. Currently supported 
+				algorithms are:
+
+				myers:     the default algorithm
+				minimal:   spend extra time to generate the smallest
+					   possible diff
+				patience:  patience diff algorithm
+				histogram: histogram diff algorithm
+
 	Examples: >
 
 		:set diffopt=filler,context:4

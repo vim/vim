@@ -28,6 +28,8 @@ static int	diff_busy = FALSE;	/* ex_diffgetput() is busy */
 #define DIFF_INTERNAL	64	/* use internal xdiff algorithm */
 static int	diff_flags = DIFF_FILLER;
 
+static long diff_algorithm = 0;
+
 #define LBUFLEN 50		/* length of line in diff file */
 
 static int diff_a_works = MAYBE; /* TRUE when "diff -a" works, FALSE when it
@@ -887,13 +889,17 @@ diff_file(
 		memset(&xecfg, 0, sizeof(xecfg));
 		memset(&ecb, 0, sizeof(ecb));
 
+		xpp.flags = diff_algorithm;
+
+		if (diff_flags & DIFF_IWHITE)
+		    xpp.flags |= XDF_IGNORE_WHITESPACE;
+
 		fd = mch_fopen((char *)tmp_diff, "a");
 		if (fd == NULL)
 		{
 		    EMSG(_("EXXX: Unable to write diff file"));
 		    return;
 		}
-		xpp.flags = XDF_NEED_MINIMAL;
 		xecfg.ctxlen = 0; /* don't need diff_context here */
 		ecb.priv = fd;
 		ecb.outf = fn_out;
@@ -1912,6 +1918,7 @@ diffopt_changed(void)
     int		diff_context_new = 6;
     int		diff_flags_new = 0;
     int		diff_foldcolumn_new = 2;
+    long	diff_algorithm_new = 0;
     tabpage_T	*tp;
 
     p = p_dip;
@@ -1962,6 +1969,31 @@ diffopt_changed(void)
 	    p += 8;
 	    diff_flags_new |= DIFF_INTERNAL;
 	}
+	else if (STRNCMP(p, "algorithm:", 10) == 0)
+	{
+	    p += 10;
+	    if (STRNCMP(p, "myers", 5) == 0)
+	    {
+		p += 5;
+		diff_algorithm_new = 0;
+	    }
+	    else if (STRNCMP(p, "minimal", 7) == 0)
+	    {
+		p += 7;
+		diff_algorithm_new = XDF_NEED_MINIMAL;
+	    }
+	    else if (STRNCMP(p, "patience", 8) == 0)
+	    {
+		p += 8;
+		diff_algorithm_new = XDF_PATIENCE_DIFF;
+	    }
+	    else if (STRNCMP(p, "histogram", 9) == 0)
+	    {
+		p += 9;
+		diff_algorithm_new = XDF_HISTOGRAM_DIFF;
+	    }
+	}
+
 	if (*p != ',' && *p != NUL)
 	    return FAIL;
 	if (*p == ',')
@@ -1973,13 +2005,14 @@ diffopt_changed(void)
 	return FAIL;
 
     /* If "icase" or "iwhite" was added or removed, need to update the diff. */
-    if (diff_flags != diff_flags_new)
+    if (diff_flags != diff_flags_new || diff_algorithm != diff_algorithm_new)
 	FOR_ALL_TABPAGES(tp)
 	    tp->tp_diff_invalid = TRUE;
 
     diff_flags = diff_flags_new;
     diff_context = diff_context_new;
     diff_foldcolumn = diff_foldcolumn_new;
+    diff_algorithm = diff_algorithm_new;
 
     diff_redraw(TRUE);
 
@@ -2859,13 +2892,16 @@ parse_diff_unified(
 	else
 	    return retval;		/* invalid diff format */
 
+	if (oldcount == 0)
+	    oldline += 1;
+	if (newcount == 0)
+	    newline += 1;
+
 	*lnum_orig = oldline;
 	*count_orig = oldcount;
 	*lnum_new = newline;
 	*count_new = newcount;
 
-	if (newline == oldline + 1 && oldcount == 0)
-	    *lnum_orig += 1;
 
 	return 0;
     }
