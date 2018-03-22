@@ -603,7 +603,7 @@ mch_total_mem(int special UNUSED)
 #  ifdef MAC_OS_X_VERSION_10_9
 					    + vm_stat.compressor_page_count
 #  endif
-					    ) * getpagesize();
+					    ) * sysconf(_SC_PAGESIZE);
 	mach_port_deallocate(mach_task_self(), host);
     }
 # endif
