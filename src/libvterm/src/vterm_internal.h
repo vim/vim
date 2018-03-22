@@ -5,7 +5,7 @@
 
 #include <stdarg.h>
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__MINGW32__)
 # define INTERNAL __attribute__((visibility("internal")))
 # define UNUSED __attribute__((unused))
 #else
