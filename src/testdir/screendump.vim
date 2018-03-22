@@ -89,9 +89,10 @@ func VerifyScreenDump(buf, filename, options)
     if i == 100
       " Leave the test file around for inspection.
       call assert_report('See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")')
-      break
+      return 1
     endif
     sleep 10m
     let i += 1
   endwhile
+  return 0
 endfunc

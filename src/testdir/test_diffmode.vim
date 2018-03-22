@@ -1,4 +1,6 @@
 " Tests for diff mode
+source shared.vim
+source screendump.vim
 
 func Test_diff_fold_sync()
   enew!
@@ -629,3 +631,89 @@ func Test_diff_lastline()
   bwipe!
   bwipe!
 endfunc
+
+func WriteDiffFiles(list1, list2)
+  call writefile(a:list1, 'Xfile1')
+  call writefile(a:list2, 'Xfile2')
+endfunc
+
+func Test_diff_screen()
+  if !CanRunVimInTerminal() || !has('menu')
+    return
+  endif
+  set nocp
+
+
+  " Test 1: Add a line in beginning of file 2
+  call WriteDiffFiles([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  let buf = RunVimInTerminal('-d Xfile1 Xfile2', {})
+  " Set autoread mode, ,so that Vim won't complain once we re-write the test files
+  call term_sendkeys(buf, ":set autoread\<cr>\<c-w>n:set autoread\<c-r>\<c-w>p")
+  for i in [":set diffopt&vim\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_01', {})
+      break
+    endif
+  endfor
+
+  " Test 2: Add a line in beginning of file 1
+  call WriteDiffFiles([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  " : for leaving the cursor on the command line
+  for i in [":set diffopt&vim\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_02', {})
+      break
+    endif
+  endfor
+
+  " Test 3: Add a line at the end of file 2
+  call WriteDiffFiles([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  " : for leaving the cursor on the command line
+  for i in [":set diffopt&vim\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_03', {})
+      break
+    endif
+  endfor
+
+  " Test 4: Add a line at the end of file 1
+  call WriteDiffFiles([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  " : for leaving the cursor on the command line
+  for i in [":set diffopt&vim\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_04', {})
+      break
+    endif
+  endfor
+
+  " Test 5: Add a line in the middle of file 2, remove on at the end of file 1
+  call WriteDiffFiles([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1, 2, 3, 4, 4, 5, 6, 7, 8, 9, 10])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  " : for leaving the cursor on the command line
+  for i in [":set diffopt&vim\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_05', {})
+      break
+    endif
+  endfor
+
+  " Test 6: Add a line in the middle of file 1, remove on at the end of file 2
+  call WriteDiffFiles([1, 2, 3, 4, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  " : for leaving the cursor on the command line
+  for i in [":set diffopt&vim\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_06', {})
+      break
+    endif
+  endfor
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xfile1')
+  call delete('Xfile2')
+endfunc
+
