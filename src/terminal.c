@@ -3396,6 +3396,15 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 
 	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
 	    {
+		int c = cell.chars[i];
+		int pc = prev_cell.chars[i];
+
+		/* For the first character NUL is the same as space. */
+		if (i == 0)
+		{
+		    c = (c == NUL) ? ' ' : c;
+		    pc = (pc == NUL) ? ' ' : pc;
+		}
 		if (cell.chars[i] != prev_cell.chars[i])
 		    same_chars = FALSE;
 		if (cell.chars[i] == NUL || prev_cell.chars[i] == NUL)
