@@ -26,6 +26,10 @@ source shared.vim
 "
 " Options is a dictionary (not used yet).
 func RunVimInTerminal(arguments, options)
+  " If Vim doesn't exit a swap file remains, causing other tests to fail.
+  " Remove it here.
+  call delete(".swp")
+
   " Make a horizontal and vertical split, so that we can get exactly the right
   " size terminal window.  Works only when we currently have one window.
   call assert_equal(1, winnr('$'))
