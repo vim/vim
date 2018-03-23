@@ -9,6 +9,11 @@
 
 /*
  * diff.c: code for diff'ing two, three or four buffers.
+ *
+ * By default shells out to diff and parses the resulting diff.
+ * Experimentally also includes the interface for xdiff which
+ * allows for creating a diff without needing to shell out.
+ *
  */
 
 #include "vim.h"
@@ -2958,6 +2963,15 @@ fill_mmfile(mmfile_t *mf, const char_u *file)
     }
     mf->size -= size;
     close(fd);
+
+    /* xdiff does not support ignoreing case, so feed it lower case buffer only */
+    if (diff_flags & DIFF_ICASE)
+    {
+	char *p = mf->ptr;
+	do {
+	    *p = MB_TOLOWER(*p);
+	} while (*p++);
+    }
     return 0;
 }
 

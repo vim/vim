@@ -764,6 +764,16 @@ func Test_diff_screen()
     endif
   endfor
 
+  " Test 10: test diffopt+=icase
+  call WriteDiffFiles(['a', 'b', 'cd'], ['A', 'b', 'cDe'])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  " : for leaving the cursor on the command line
+  for i in [":set diffopt+=filler diffopt+=icase\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_13', {})
+      break
+    endif
+  endfor
 
   " clean up
   call StopVimInTerminal(buf)
