@@ -2640,6 +2640,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		internal	Use the internal diff parser, very
 				experimental!
 
+		indent-heuristic
+                                 Use the indent heuristic for the internal
+                                 library.
+
                 algorithm:{text} Use the specified diff algorithm with the
 				internal diff engine. Currently supported 
 				algorithms are:

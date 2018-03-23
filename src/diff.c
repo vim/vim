@@ -1964,6 +1964,11 @@ diffopt_changed(void)
 	    p += 9;
 	    diff_flags_new |= DIFF_HIDDEN_OFF;
 	}
+	else if (STRNCMP(p, "indent-heuristic", 16) == 0)
+	{
+	    p += 16;
+	    diff_algorithm_new |= XDF_INDENT_HEURISTIC;
+	}
 	else if (STRNCMP(p, "internal", 8) == 0)
 	{
 	    p += 8;

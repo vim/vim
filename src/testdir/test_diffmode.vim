@@ -731,6 +731,18 @@ func Test_diff_screen()
   call term_sendkeys(buf, ":set diffopt+=algorithm:histogram\<cr>")
   call VerifyScreenDump(buf, 'Test_diff_08', {})
 
+  " Test 8: indent-heuristic
+  call term_sendkeys(buf, ":set diffopt&vim\<cr>")
+  call WriteDiffFiles(['', '  def finalize(values)', '', '    values.each do |v|', '      v.finalize', '    end'],
+      \ ['', '  def finalize(values)', '', '    values.each do |v|', '      v.prepare', '    end', '',
+      \ '    values.each do |v|', '      v.finalize', '    end'])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  call term_sendkeys(buf, ":set diffopt+=internal\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_09', {})
+  call term_sendkeys(buf, ":set diffopt+=indent-heuristic\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_10', {})
+
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('Xfile1')
