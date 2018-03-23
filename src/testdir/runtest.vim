@@ -264,6 +264,7 @@ let s:flaky = [
       \ 'Test_terminal_noblock()',
       \ 'Test_terminal_redir_file()',
       \ 'Test_terminal_tmap()',
+      \ 'Test_diff_screen()',
       \ 'Test_with_partial_callback()',
       \ ]
 

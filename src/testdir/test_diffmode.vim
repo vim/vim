@@ -642,7 +642,9 @@ func Test_diff_screen()
     return
   endif
   set nocp
-
+  " clean up already existing swap files, just in case
+  call delete('.Xfile1.swp')
+  call delete('.Xfile2.swp')
 
   " Test 1: Add a line in beginning of file 2
   call WriteDiffFiles([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
