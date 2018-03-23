@@ -290,6 +290,10 @@ open_buffer(
     else if (retval == OK && !read_stdin && !read_fifo)
 	unchanged(curbuf, FALSE);
     save_file_ff(curbuf);		/* keep this fileformat */
+    curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
+#ifdef FEAT_INS_EXPAND
+    curbuf->b_last_changedtick_pum = CHANGEDTICK(curbuf);
+#endif
 
     /* require "!" to overwrite the file, because it wasn't read completely */
 #ifdef FEAT_EVAL
