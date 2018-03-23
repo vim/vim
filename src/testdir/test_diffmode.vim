@@ -742,6 +742,28 @@ func Test_diff_screen()
   call term_sendkeys(buf, ":set diffopt+=indent-heuristic\<cr>")
   call VerifyScreenDump(buf, 'Test_diff_10', {})
 
+  " Test 9: diff the same file
+  call WriteDiffFiles([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  " : for leaving the cursor on the command line
+  for i in [":set diffopt&vim\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_11', {})
+      break
+    endif
+  endfor
+
+  " Test 9: diff an empty file
+  call WriteDiffFiles([], [])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  " : for leaving the cursor on the command line
+  for i in [":set diffopt&vim\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_12', {})
+      break
+    endif
+  endfor
+
 
   " clean up
   call StopVimInTerminal(buf)
