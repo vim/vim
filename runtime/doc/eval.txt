@@ -6565,6 +6565,15 @@ readfile({fname} [, {binary} [, {max}]])
 		the result is an empty list.
 		Also see |writefile()|.
 
+register_executing()					*register_executing()*
+		Returns |TRUE| when the register contents are executing.
+		See |@|.
+
+register_recording()					*register_recording()*
+		Returns the named register character {0-9a-zA-Z"} when the
+		register contents are recording.  Otherwise, an empty string
+		is returned.  See |q|.
+
 reltime([{start} [, {end}]])				*reltime()*
 		Return an item that represents a time value.  The format of
 		the item depends on the system.  It can be passed to

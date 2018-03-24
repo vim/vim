@@ -306,6 +306,8 @@ static void f_pyxeval(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_range(typval_T *argvars, typval_T *rettv);
 static void f_readfile(typval_T *argvars, typval_T *rettv);
+static void f_register_executing(typval_T *argvars, typval_T *rettv);
+static void f_register_recording(typval_T *argvars, typval_T *rettv);
 static void f_reltime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_reltimefloat(typval_T *argvars, typval_T *rettv);
@@ -754,6 +756,8 @@ static struct fst
 #endif
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
+    {"register_executing", 0, 0, f_register_executing},
+    {"register_recording", 0, 0, f_register_recording},
     {"reltime",		0, 2, f_reltime},
 #ifdef FEAT_FLOAT
     {"reltimefloat",	1, 1, f_reltimefloat},
@@ -8676,6 +8680,27 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 
     vim_free(prev);
     fclose(fd);
+}
+
+/*
+ * "register_executing()" function
+ */
+    static void
+f_register_executing(typval_T *argvars, typval_T *rettv)
+{
+    rettv->vval.v_number = Exec_reg;
+}
+
+/*
+ * "register_recording()" function
+ */
+    static void
+f_register_recording(typval_T *argvars, typval_T *rettv)
+{
+    char_u regname[2] = {0, 0};
+    regname[0] = (char_u)Recording;
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = vim_strsave(regname);
 }
 
 #if defined(FEAT_RELTIME)
