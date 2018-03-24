@@ -900,11 +900,11 @@ func Test_trim()
   call assert_equal("x", trim(chars . "x" . chars))
 endfunc
 
-" Test for register_recording() and register_executing()
-func Test_register_executing_and_recording()
+" Test for reg_recording() and reg_executing()
+func Test_reg_executing_and_recording()
   let s:reg_stat = ''
   func s:save_reg_stat()
-    let s:reg_stat = register_recording() . ':' . register_executing()
+    let s:reg_stat = reg_recording() . ':' . reg_executing()
     return ''
   endfunc
 
