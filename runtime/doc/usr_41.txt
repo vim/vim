@@ -1016,8 +1016,8 @@ Various:					*various-functions*
 	getreg()		get contents of a register
 	getregtype()		get type of a register
 	setreg()		set contents and type of a register
-	regster_executing()	return the state of the register executing
-	regster_recording()	return the state of the register recording
+	reg_executing()		return the state of the register executing
+	reg_recording()		return the state of the register recording
 
 	shiftwidth()		effective value of 'shiftwidth'
 
