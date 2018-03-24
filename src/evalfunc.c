@@ -8078,82 +8078,75 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
     static void
 f_mode(typval_T *argvars, typval_T *rettv)
 {
-    char_u	buf[5];
-    int		i = 0;
+    char_u	buf[3];
 
-    vim_memset(buf, 0, sizeof(buf));
+    buf[1] = NUL;
+    buf[2] = NUL;
 
     if (time_for_testing == 93784)
     {
 	/* Testing the two-character code. */
-	buf[i++] = 'x';
-	buf[i++] = '!';
+	buf[0] = 'x';
+	buf[1] = '!';
     }
 #ifdef FEAT_TERMINAL
     else if (term_use_loop())
-	buf[i++] = 't';
+	buf[0] = 't';
 #endif
     else if (VIsual_active)
     {
 	if (VIsual_select)
-	    buf[i++] = VIsual_mode + 's' - 'v';
+	    buf[0] = VIsual_mode + 's' - 'v';
 	else
-	    buf[i++] = VIsual_mode;
+	    buf[0] = VIsual_mode;
     }
     else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
 		|| State == CONFIRM)
     {
-	buf[i++] = 'r';
+	buf[0] = 'r';
 	if (State == ASKMORE)
-	    buf[i++] = 'm';
+	    buf[1] = 'm';
 	else if (State == CONFIRM)
-	    buf[i++] = '?';
+	    buf[1] = '?';
     }
     else if (State == EXTERNCMD)
-	buf[i++] = '!';
+	buf[0] = '!';
     else if (State & INSERT)
     {
 #ifdef FEAT_VREPLACE
 	if (State & VREPLACE_FLAG)
 	{
-	    buf[i++] = 'R';
-	    buf[i++] = 'v';
+	    buf[0] = 'R';
+	    buf[1] = 'v';
 	}
 	else
 #endif
 	{
 	    if (State & REPLACE_FLAG)
-		buf[i++] = 'R';
+		buf[0] = 'R';
 	    else
-		buf[i++] = 'i';
+		buf[0] = 'i';
 #ifdef FEAT_INS_EXPAND
 	    if (ins_compl_active())
-		buf[i++] = 'c';
+		buf[1] = 'c';
 	    else if (ctrl_x_mode_not_defined_yet())
-		buf[i++] = 'x';
+		buf[1] = 'x';
 #endif
 	}
     }
     else if ((State & CMDLINE) || exmode_active)
     {
-	buf[i++] = 'c';
+	buf[0] = 'c';
 	if (exmode_active == EXMODE_VIM)
-	    buf[i++] = 'v';
+	    buf[1] = 'v';
 	else if (exmode_active == EXMODE_NORMAL)
-	    buf[i++] = 'e';
+	    buf[1] = 'e';
     }
     else
     {
-	buf[i++] = 'n';
+	buf[0] = 'n';
 	if (finish_op)
-	    buf[i++] = 'o';
-    }
-
-    if (Recording) {
-	buf[i++] = 'q';
-    }
-    if (Exec_reg) {
-	buf[i++] = '@';
+	    buf[1] = 'o';
     }
 
     /* Clear out the minor mode when the argument is not a non-zero number or

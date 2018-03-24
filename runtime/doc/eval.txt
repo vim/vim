@@ -6166,10 +6166,6 @@ mode([expr])	Return a string that indicates the current mode.
 			r?	A |:confirm| query of some sort
 			!	Shell or external command is executing
 			t	Terminal-Job mode: keys go to the job
-		When the full mode, the following letters may be returned in
-		addition to the above letters.
-			q	In recording into register |recording|
-			@	In executing the register |@|
 		This is useful in the 'statusline' option or when used
 		with |remote_expr()| In most other places it always returns
 		"c" or "n".
