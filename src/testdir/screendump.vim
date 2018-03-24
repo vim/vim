@@ -30,6 +30,13 @@ func RunVimInTerminal(arguments, options)
   " Remove it here.
   call delete(".swp")
 
+  if exists('$COLORFGBG')
+    " Clear $COLORFGBG to avoid 'background' being set to "dark", which will
+    " only be corrected if the response to t_RB is received, which may be too
+    " late.
+    let $COLORFGBG = ''
+  endif
+
   " Make a horizontal and vertical split, so that we can get exactly the right
   " size terminal window.  Works only when we currently have one window.
   call assert_equal(1, winnr('$'))
