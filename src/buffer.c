@@ -3018,7 +3018,9 @@ buflist_list(exarg_T *eap)
 
     for (buf = firstbuf; buf != NULL && !got_int; buf = buf->b_next)
     {
+#ifdef FEAT_TERMINAL
 	job_running = term_job_running(buf->b_term);
+#endif
 	/* skip unlisted buffers, unless ! was used */
 	if ((!buf->b_p_bl && !eap->forceit && !vim_strchr(eap->arg, 'u'))
 		|| (vim_strchr(eap->arg, 'u') && buf->b_p_bl)
