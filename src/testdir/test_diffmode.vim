@@ -775,6 +775,18 @@ func Test_diff_screen()
     endif
   endfor
 
+  " Test 11: test diffopt+=iwhite
+  call WriteDiffFiles(['int main()', '{', '   printf("Hello, World!");', '   return 0;', '}'],
+      \ ['int main()', '{', '   if (0)', '   {', '      printf("Hello, World!");', '      return 0;', '   }', '}'])
+  call term_sendkeys(buf, ":diffupdate!\<cr>")
+  " : for leaving the cursor on the command line
+  for i in [":set diffopt+=filler diffopt+=iwhite\<cr>:", ":set diffopt+=internal\<cr>:"]
+    call term_sendkeys(buf, i)
+    if VerifyScreenDump(buf, 'Test_diff_14', {})
+      break
+    endif
+  endfor
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('Xfile1')

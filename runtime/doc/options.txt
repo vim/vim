@@ -2637,12 +2637,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 		foldcolumn:{n}	Set the 'foldcolumn' option to {n} when
 				starting diff mode.  Without this 2 is used.
 
-		internal	Use the internal diff parser, very
-				experimental!
+		internal	Use the internal diff library.
 
 		indent-heuristic
                                  Use the indent heuristic for the internal
-                                 library.
+                                 diff library.
 
                 algorithm:{text} Use the specified diff algorithm with the
 				internal diff engine. Currently supported 

@@ -2968,9 +2968,10 @@ fill_mmfile(mmfile_t *mf, const char_u *file)
     if (diff_flags & DIFF_ICASE)
     {
 	char *p = mf->ptr;
+	size = mf->size;
 	do {
 	    *p = MB_TOLOWER(*p);
-	} while (*p++);
+	} while (size--);
     }
     return 0;
 }
