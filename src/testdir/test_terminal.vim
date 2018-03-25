@@ -1064,7 +1064,7 @@ func Test_terminal_api_drop_oldwin()
 	\ 'redraw',
 	\ "set t_ts=",
 	\ ], 'Xscript')
-  let buf = RunVimInTerminal('-S Xscript', {})
+  let buf = RunVimInTerminal('-S Xscript', {'rows': 10})
   call WaitFor({-> expand('%:t') =='Xtextfile'})
   call assert_equal(textfile_winid, win_getid())
 

@@ -47,11 +47,17 @@ func RunVimInTerminal(arguments, options)
   set t_Co=256 background=light
   hi Normal ctermfg=NONE ctermbg=NONE
 
+  " Make the window 20 lines high, unless told otherwise.
+  let rows = 20
+  if has_key(a:options, 'rows')
+    let rows = a:options['rows']
+  endif
+
   let cmd = GetVimCommandClean()
   " Add -v to have gvim run in the terminal (if possible)
   let cmd .= ' -v ' . a:arguments
-  let buf = term_start(cmd, {'curwin': 1, 'term_rows': 20, 'term_cols': 75})
-  call assert_equal([20, 75], term_getsize(buf))
+  let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': 75})
+  call assert_equal([rows, 75], term_getsize(buf))
 
   return buf
 endfunc
