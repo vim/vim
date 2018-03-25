@@ -1029,10 +1029,10 @@ func Test_terminal_api_drop_newwin()
     return
   endif
   call assert_equal(1, winnr('$'))
-  set title
 
   " Use the title termcap entries to output the escape sequence.
   call writefile([
+	\ 'set title',
 	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
 	\ 'let &titlestring = ''["drop","Xtextfile"]''',
 	\ 'redraw',
@@ -1046,7 +1046,6 @@ func Test_terminal_api_drop_newwin()
   call StopVimInTerminal(buf)
   call delete('Xscript')
   bwipe Xtextfile
-  set title&
 endfunc
 
 func Test_terminal_api_drop_oldwin()
@@ -1058,10 +1057,10 @@ func Test_terminal_api_drop_oldwin()
   let textfile_winid = win_getid()
   call assert_equal(2, winnr('$'))
   call win_gotoid(firstwinid)
-  set title
 
   " Use the title termcap entries to output the escape sequence.
   call writefile([
+	\ 'set title',
 	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
 	\ 'let &titlestring = ''["drop","Xtextfile"]''',
 	\ 'redraw',
@@ -1074,7 +1073,6 @@ func Test_terminal_api_drop_oldwin()
   call StopVimInTerminal(buf)
   call delete('Xscript')
   bwipe Xtextfile
-  set title&
 endfunc
 
 func TryThis(bufnum, arg)
@@ -1086,10 +1084,10 @@ func Test_terminal_api_call()
   if !CanRunVimInTerminal()
     return
   endif
-  set title
 
   " Use the title termcap entries to output the escape sequence.
   call writefile([
+	\ 'set title',
 	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
 	\ 'let &titlestring = ''["call","TryThis",["hello",123]]''',
 	\ 'redraw',
@@ -1104,5 +1102,4 @@ func Test_terminal_api_call()
   call delete('Xscript')
   unlet g:called_bufnum
   unlet g:called_arg
-  set title&
 endfunc
