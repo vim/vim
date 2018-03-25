@@ -833,25 +833,22 @@ func Test_terminal_response_to_control_sequence()
   endif
 
   let buf = Run_shell_in_terminal({})
-  call WaitFor({-> term_getline(buf, 1) != ""})
+  call WaitFor({-> term_getline(buf, 1) != ''})
 
-  call writefile(["\x1b[6n"], 'Xescape')
-  call term_sendkeys(buf, "cat Xescape\<cr>")
+  call term_sendkeys(buf, "cat\<CR>")
+  call WaitFor({-> term_getline(buf, 1) =~ 'cat'})
 
-  " wait for the response of control sequence from libvterm (and send it to tty)
-  sleep 200m
-  call term_wait(buf)
+  " Request the cursor position.
+  call term_sendkeys(buf, "\x1b[6n\<CR>")
 
   " Wait for output from tty to display, below an empty line.
-  " It should show \e3;1R, but only 1R may show up
-  call assert_match('\<\d\+R', term_getline(buf, 3))
+  call WaitFor({-> term_getline(buf, 4) =~ '3;1R'})
 
-  call term_sendkeys(buf, "\<c-c>")
-  call term_wait(buf)
+  " End "cat" gently.
+  call term_sendkeys(buf, "\<CR>\<C-D>")
+
   call Stop_shell_in_terminal(buf)
-
   exe buf . 'bwipe'
-  call delete('Xescape')
   unlet g:job
 endfunc
 
