@@ -1051,7 +1051,7 @@ list of buffers. |unlisted-buffer|
 		     #   alternate buffer
 		     R	 terminal buffers with a running job
 		     F	 terminal buffers with a finished job
-		     ?   yerminal buffers without a job: `:terminal NONE`
+		     ?   terminal buffers without a job: `:terminal NONE`
 		Combining flags means they are "and"ed together, e.g.:
 		     h+   hidden buffers which are modified
 		     a+   active buffers which are modified
