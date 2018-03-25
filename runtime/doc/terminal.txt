@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 16
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -23,12 +23,16 @@ If the result is "1" you have it.
       Session				|terminal-session|
       Unix				|terminal-unix|
       MS-Windows			|terminal-ms-windows|
-2. Remote testing		|terminal-testing|
-3. Diffing screen dumps		|terminal-diff|
+2. Terminal communication	|terminal-communication|
+      Vim to job: term_sendkeys()	|terminal-to-job|
+      Job to Vim: JSON API 		|terminal-api|
+      Using the client-server feature	|terminal-client-server|
+3. Remote testing		|terminal-testing|
+4. Diffing screen dumps		|terminal-diff|
       Writing a screen dump test for Vim  |terminal-dumptest|
       Creating a screen dump		  |terminal-screendump|
       Comparing screen dumps		  |terminal-diffscreendump|
-4. Debugging			|terminal-debug|
+5. Debugging			|terminal-debug|
       Starting				|termdebug-starting|
       Example session			|termdebug-example|
       Stepping through code		|termdebug-stepping|
@@ -355,15 +359,6 @@ Environment variables are used to pass information to the running job:
     COLORS		number of colors, 't_Co' (256*256*256 in the GUI)
     VIM_SERVERNAME	v:servername
 
-The |client-server| feature can be used to communicate with the Vim instance
-where the job was started.  This only works when v:servername is not empty.
-If needed you can set it with: >
-	call remote_startserver('vim-server')
-
-In the job you can then do something like: >
-	vim --servername $VIM_SERVERNAME --remote +123 some_file.c
-This will open the file "some_file.c" and put the cursor on line 123.
-
 
 MS-Windows ~
 							*terminal-ms-windows*
@@ -389,7 +384,91 @@ Environment variables are used to pass information to the running job:
     VIM_SERVERNAME	v:servername
 
 ==============================================================================
-2. Remote testing					*terminal-testing*
+2. Terminal communication			 *terminal-communication*
+
+There are several ways to communicate with the job running in a terminal:
+- Use |term_sendkeys()| to send text and escape sequences from Vim to the job.
+- Use the JSON API to send encoded commands from the job to Vim.
+- Use the |client-server| mechanism. This works on machines with an X server
+  and on MS-Windows.
+
+
+Vim to job: term_sendkeys() ~
+							*terminal-to-job*
+This allows for remote controlling the job running in the terminal.  It is a
+one-way mechanism.  The job can update the display to signal back to Vim.
+For example, if a shell is running in a terminal, you can do: >
+	call term_sendkeys(buf, "ls *.java\<CR>")
+
+This requires for the job to be in the right state where it will do the right
+thing when receiving the keys.  For the above example, the shell must be
+waiting for a command to be typed.
+
+For a job that was written for the purpose, you can use the JSON API escape
+sequence in the other direction.  E.g.: >
+	call term_sendkeys(buf, "\<Esc>]51;["response"]\x07")
+
+
+Job to Vim: JSON API ~
+							*terminal-api*
+The job can send JSON to Vim, using a special escape sequence.  The JSON
+encodes a command that Vim understands.  Example of such a message: >
+	<Esc>]51;["drop", "README.md"]<07>
+
+The body is always a list, making it easy to find the end: ]<07>.
+The <Esc>]51;msg<07> sequence is reserved by xterm for "Emacs shell", which is
+similar to what we are doing here.
+
+Currently supported commands:
+
+	call {funcname} {argument}
+
+		Call a user defined function with [argument].  The function is
+		called with the buffer number of the terminal and the decoded
+		argument.  The user function must sanity check the argument.
+		The function can use |term_sendkeys()| to send back a reply.
+		Example in JSON: >
+			["call", "Impression", ["play", 14]]
+<		Calls a function defined like this: >
+			function Impression(bufnum, arglist)
+			  if len(a:arglist) == 2
+			    echo "impression " . a:arglist[0]
+			    echo "count " . a:arglist[1]
+			  endif
+			endfunc
+<
+	drop {filename}
+
+		Let Vim open a file, like the `:drop` command.  If {filename}
+		is already open in a window, switch to that window.  Otherwise
+		open a new window to edit {filename}.
+		Example in JSON: >
+			["drop", "path/file.txt", {"ff": "dos"}]
+
+A trick to have Vim send this escape sequence: >
+	exe "set t_ts=\<Esc>]51; t_fs=\x07"
+	let &titlestring = '["call","TryThis",["hello",123]]'
+	redraw
+	set t_ts& t_fs&
+
+Rationale: Why not allow for any command or expression?  Because that might
+create a security problem.
+
+
+Using the client-server feature ~
+						*terminal-client-server*
+This only works when v:servername is not empty.  If needed you can set it,
+before opening the terminal, with: >
+	call remote_startserver('vim-server')
+
+$VIM_SERVERNAME is set in the terminal to pass on the server name.
+
+In the job you can then do something like: >
+	vim --servername $VIM_SERVERNAME --remote +123 some_file.c
+This will open the file "some_file.c" and put the cursor on line 123.
+
+==============================================================================
+3. Remote testing					*terminal-testing*
 
 Most Vim tests execute a script inside Vim.  For some tests this does not
 work, running the test interferes with the code being tested.  To avoid this
@@ -404,7 +483,7 @@ term_scrape()		inspect terminal screen
 
 
 ==============================================================================
-3. Diffing screen dumps					*terminal-diff*
+4. Diffing screen dumps					*terminal-diff*
 
 In some cases it can be bothersome to test that Vim displays the right
 characters on the screen.  E.g. with syntax highlighting.  To make this
@@ -494,7 +573,7 @@ Alternatively, press "s" to swap the first and second dump. Do this several
 times so that you can spot the difference in the context of the text.
 
 ==============================================================================
-4. Debugging						*terminal-debug*
+5. Debugging						*terminal-debug*
 
 The Terminal debugging plugin can be used to debug a program with gdb and view
 the source code in a Vim window.  Since this is completely contained inside

@@ -38,12 +38,11 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - Win32: In the GUI use a terminal emulator for :!cmd.
+ * - For the "drop" command accept another argument for options.
  * - Add a way to set the 16 ANSI colors, to be used for 'termguicolors' and in
  *   the GUI.
- * - Some way for the job running in the terminal to send a :drop command back
- *   to the Vim running the terminal.  Should be usable by a simple shell or
- *   python script.
+ * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
+ *   redirection.
  * - implement term_setsize()
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
@@ -3146,6 +3145,140 @@ init_default_colors(term_T *term)
 }
 
 /*
+ * Handles a "drop" command from the job in the terminal.
+ * "item" is the file name, "item->li_next" may have options.
+ */
+    static void
+handle_drop_command(listitem_T *item)
+{
+    char_u	*fname = get_tv_string(&item->li_tv);
+    int		bufnr;
+    win_T	*wp;
+    tabpage_T   *tp;
+    exarg_T	ea;
+
+    bufnr = buflist_add(fname, BLN_LISTED | BLN_NOOPT);
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+    {
+	if (wp->w_buffer->b_fnum == bufnr)
+	{
+	    /* buffer is in a window already, go there */
+	    goto_tabpage_win(tp, wp);
+	    return;
+	}
+    }
+
+    /* open in new window, like ":sbuffer N" */
+    vim_memset(&ea, 0, sizeof(ea));
+    ea.cmd = (char_u *)"sbuffer";
+    goto_buffer(&ea, DOBUF_FIRST, FORWARD, bufnr);
+}
+
+/*
+ * Handles a function call from the job running in a terminal.
+ * "item" is the function name, "item->li_next" has the arguments.
+ */
+    static void
+handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
+{
+    char_u	*func;
+    typval_T	argvars[2];
+    typval_T	rettv;
+    int		doesrange;
+
+    if (item->li_next == NULL)
+    {
+	ch_log(channel, "Missing function arguments for call");
+	return;
+    }
+    func = get_tv_string(&item->li_tv);
+
+    if (!ASCII_ISUPPER(*func))
+    {
+	ch_log(channel, "Invalid function name: %s", func);
+	return;
+    }
+
+    argvars[0].v_type = VAR_NUMBER;
+    argvars[0].vval.v_number = term->tl_buffer->b_fnum;
+    argvars[1] = item->li_next->li_tv;
+    if (call_func(func, STRLEN(func), &rettv,
+		2, argvars, /* argv_func */ NULL,
+		/* firstline */ 1, /* lastline */ 1,
+		&doesrange, /* evaluate */ TRUE,
+		/* partial */ NULL, /* selfdict */ NULL) == OK)
+    {
+	clear_tv(&rettv);
+	ch_log(channel, "Function %s called", func);
+    }
+    else
+	ch_log(channel, "Calling function %s failed", func);
+}
+
+/*
+ * Called by libvterm when it cannot recognize an OSC sequence.
+ * We recognize a terminal API command.
+ */
+    static int
+parse_osc(const char *command, size_t cmdlen, void *user)
+{
+    term_T	*term = (term_T *)user;
+    js_read_T	reader;
+    typval_T	tv;
+    channel_T	*channel = term->tl_job == NULL ? NULL
+						    : term->tl_job->jv_channel;
+
+    /* We recognize only OSC 5 1 ; {command} */
+    if (cmdlen < 3 || STRNCMP(command, "51;", 3) != 0)
+	return 0; /* not handled */
+
+    reader.js_buf = vim_strnsave((char_u *)command + 3, cmdlen - 3);
+    if (reader.js_buf == NULL)
+	return 1;
+    reader.js_fill = NULL;
+    reader.js_used = 0;
+    if (json_decode(&reader, &tv, 0) == OK
+	    && tv.v_type == VAR_LIST
+	    && tv.vval.v_list != NULL)
+    {
+	listitem_T *item = tv.vval.v_list->lv_first;
+
+	if (item == NULL)
+	    ch_log(channel, "Missing command");
+	else
+	{
+	    char_u	*cmd = get_tv_string(&item->li_tv);
+
+	    item = item->li_next;
+	    if (item == NULL)
+		ch_log(channel, "Missing argument for %s", cmd);
+	    else if (STRCMP(cmd, "drop") == 0)
+		handle_drop_command(item);
+	    else if (STRCMP(cmd, "call") == 0)
+		handle_call_command(term, channel, item);
+	    else
+		ch_log(channel, "Invalid command received: %s", cmd);
+	}
+    }
+    else
+	ch_log(channel, "Invalid JSON received");
+
+    vim_free(reader.js_buf);
+    clear_tv(&tv);
+    return 1;
+}
+
+static VTermParserCallbacks parser_fallbacks = {
+  NULL,		/* text */
+  NULL,		/* control */
+  NULL,		/* escape */
+  NULL,		/* csi */
+  parse_osc,	/* osc */
+  NULL,		/* dcs */
+  NULL		/* resize */
+};
+
+/*
  * Create a new vterm and initialize it.
  */
     static void
@@ -3153,6 +3286,7 @@ create_vterm(term_T *term, int rows, int cols)
 {
     VTerm	    *vterm;
     VTermScreen	    *screen;
+    VTermState	    *state;
     VTermValue	    value;
 
     vterm = vterm_new(rows, cols);
@@ -3186,8 +3320,9 @@ create_vterm(term_T *term, int rows, int cols)
 #else
     value.boolean = 0;
 #endif
-    vterm_state_set_termprop(vterm_obtain_state(vterm),
-					       VTERM_PROP_CURSORBLINK, &value);
+    state = vterm_obtain_state(vterm);
+    vterm_state_set_termprop(state, VTERM_PROP_CURSORBLINK, &value);
+    vterm_state_set_unrecognised_fallbacks(state, &parser_fallbacks, term);
 }
 
 /*

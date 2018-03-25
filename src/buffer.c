@@ -948,7 +948,7 @@ clear_wininfo(buf_T *buf)
     }
 }
 
-#if defined(FEAT_LISTCMDS) || defined(PROTO)
+#if defined(FEAT_LISTCMDS) || defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Go to another buffer.  Handles the result of the ATTENTION dialog.
  */

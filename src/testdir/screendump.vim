@@ -38,8 +38,8 @@ func RunVimInTerminal(arguments, options)
   endif
 
   " Make a horizontal and vertical split, so that we can get exactly the right
-  " size terminal window.  Works only when we currently have one window.
-  call assert_equal(1, winnr('$'))
+  " size terminal window.  Works only when the current window is full width.
+  call assert_equal(&columns, winwidth(0))
   split
   vsplit
 

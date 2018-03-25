@@ -1023,3 +1023,79 @@ func Test_terminal_dumpdiff_options()
 
   set laststatus&
 endfunc
+
+func Test_terminal_api_drop_newwin()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  call assert_equal(1, winnr('$'))
+
+  " Use the title termcap entries to output the escape sequence.
+  call writefile([
+	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
+	\ 'let &titlestring = ''["drop","Xtextfile"]''',
+	\ 'redraw',
+	\ "set t_ts=",
+	\ ], 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call WaitFor({-> bufnr('Xtextfile') > 0})
+  call assert_equal('Xtextfile', expand('%:t'))
+  call assert_true(winnr('$') >= 3)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_oldwin()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let firstwinid = win_getid()
+  split Xtextfile
+  let textfile_winid = win_getid()
+  call assert_equal(2, winnr('$'))
+  call win_gotoid(firstwinid)
+
+  " Use the title termcap entries to output the escape sequence.
+  call writefile([
+	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
+	\ 'let &titlestring = ''["drop","Xtextfile"]''',
+	\ 'redraw',
+	\ "set t_ts=",
+	\ ], 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call WaitFor({-> expand('%:t') =='Xtextfile'})
+  call assert_equal(textfile_winid, win_getid())
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func TryThis(bufnum, arg)
+  let g:called_bufnum = a:bufnum
+  let g:called_arg = a:arg
+endfunc
+
+func Test_terminal_api_call()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  " Use the title termcap entries to output the escape sequence.
+  call writefile([
+	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
+	\ 'let &titlestring = ''["call","TryThis",["hello",123]]''',
+	\ 'redraw',
+	\ "set t_ts=",
+	\ ], 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call WaitFor({-> exists('g:called_bufnum')})
+  call assert_equal(buf, g:called_bufnum)
+  call assert_equal(['hello', 123], g:called_arg)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  unlet g:called_bufnum
+  unlet g:called_arg
+endfunc
