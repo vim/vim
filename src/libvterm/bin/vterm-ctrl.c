@@ -53,6 +53,7 @@ static char *helptext[] = {
   "curblink [off|on|query]",
   "curshape [block|under|bar|query]",
   "mouse [off|click|clickdrag|motion]",
+  "reportfocus [off|on|query]",
   "altscreen [off|on|query]",
   "bracketpaste [off|on|query]",
   "icontitle [STR]",
@@ -81,9 +82,9 @@ static int seticanon(int icanon, int echo)
   return ret;
 }
 
-static void await_c1(int c1)
+static void await_c1(unsigned char c1)
 {
-  int c;
+  unsigned char c;
 
   /* await CSI - 8bit or 2byte 7bit form */
   int in_esc = FALSE;
@@ -339,6 +340,9 @@ int main(int argc, char *argv[])
       case 3:
         printf("\x1b[?1003h"); break;
       }
+    }
+    else if(streq(arg, "reportfocus")) {
+      do_dec_mode(1004, getboolq(&argi, argc, argv), "reportfocus");
     }
     else if(streq(arg, "altscreen")) {
       do_dec_mode(1049, getboolq(&argi, argc, argv), "altscreen");

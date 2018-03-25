@@ -507,6 +507,9 @@ int vterm_state_get_penattr(const VTermState *state, VTermAttr attr, VTermValue 
   case VTERM_ATTR_BACKGROUND:
     val->color = state->pen.bg;
     return 1;
+
+  case VTERM_N_ATTRS:
+    return 0;
   }
 
   return 0;
