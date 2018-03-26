@@ -3193,7 +3193,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     }
     func = get_tv_string(&item->li_tv);
 
-    if (!ASCII_ISUPPER(*func))
+    if (STRNCMP(func, "Tapi_", 5) != 0)
     {
 	ch_log(channel, "Invalid function name: %s", func);
 	return;

@@ -1072,9 +1072,20 @@ func Test_terminal_api_drop_oldwin()
   bwipe Xtextfile
 endfunc
 
-func TryThis(bufnum, arg)
+func Tapi_TryThis(bufnum, arg)
   let g:called_bufnum = a:bufnum
   let g:called_arg = a:arg
+endfunc
+
+func WriteApiCall(funcname)
+  " Use the title termcap entries to output the escape sequence.
+  call writefile([
+	\ 'set title',
+	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
+	\ 'let &titlestring = ''["call","' . a:funcname . '",["hello",123]]''',
+	\ 'redraw',
+	\ "set t_ts=",
+	\ ], 'Xscript')
 endfunc
 
 func Test_terminal_api_call()
@@ -1082,14 +1093,7 @@ func Test_terminal_api_call()
     return
   endif
 
-  " Use the title termcap entries to output the escape sequence.
-  call writefile([
-	\ 'set title',
-	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
-	\ 'let &titlestring = ''["call","TryThis",["hello",123]]''',
-	\ 'redraw',
-	\ "set t_ts=",
-	\ ], 'Xscript')
+  call WriteApiCall('Tapi_TryThis')
   let buf = RunVimInTerminal('-S Xscript', {})
   call WaitFor({-> exists('g:called_bufnum')})
   call assert_equal(buf, g:called_bufnum)
@@ -1099,4 +1103,20 @@ func Test_terminal_api_call()
   call delete('Xscript')
   unlet g:called_bufnum
   unlet g:called_arg
+endfunc
+
+func Test_terminal_api_call_fails()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call WriteApiCall('TryThis')
+  call ch_logfile('Xlog', 'w')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call WaitFor({-> string(readfile('Xlog')) =~ 'Invalid function name: TryThis'})
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  call ch_logfile('', '')
+  call delete('Xlog')
 endfunc
