@@ -1158,7 +1158,9 @@ LINK_PDB = /PDB:$(VIM).pdb -debug
 # CFLAGS with /Fo$(OUTDIR)/
 CFLAGS_OUTDIR=$(CFLAGS) /Fo$(OUTDIR)/
 
-conflags = /nologo /subsystem:$(SUBSYSTEM)
+# Add /opt:ref to remove unreferenced functions and data even when /DEBUG is
+# added.
+conflags = /nologo /subsystem:$(SUBSYSTEM) /opt:ref
 
 PATHDEF_SRC = $(OUTDIR)\pathdef.c
 
