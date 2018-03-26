@@ -248,6 +248,7 @@ let s:flaky = [
       \ 'Test_close_and_exit_cb()',
       \ 'Test_collapse_buffers()',
       \ 'Test_communicate()',
+      \ 'Test_cwd()',
       \ 'Test_exit_callback_interval()',
       \ 'Test_nb_basic()',
       \ 'Test_oneshot()',

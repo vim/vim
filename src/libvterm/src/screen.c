@@ -429,6 +429,9 @@ static int setpenattr(VTermAttr attr, VTermValue *val, void *user)
   case VTERM_ATTR_BACKGROUND:
     screen->pen.bg = val->color;
     return 1;
+
+  case VTERM_N_ATTRS:
+    return 0;
   }
 
   return 0;

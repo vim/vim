@@ -47,14 +47,14 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
   vt->rows = rows;
   vt->cols = cols;
 
-  vt->parser_state = NORMAL;
+  vt->parser.state = NORMAL;
 
-  vt->parser_callbacks = NULL;
-  vt->cbdata           = NULL;
+  vt->parser.callbacks = NULL;
+  vt->parser.cbdata    = NULL;
 
-  vt->strbuffer_len = 64;
-  vt->strbuffer_cur = 0;
-  vt->strbuffer = vterm_allocator_malloc(vt, vt->strbuffer_len);
+  vt->parser.strbuffer_len = 64;
+  vt->parser.strbuffer_cur = 0;
+  vt->parser.strbuffer = vterm_allocator_malloc(vt, vt->parser.strbuffer_len);
 
   vt->outbuffer_len = 200;
   vt->outbuffer_cur = 0;
@@ -71,7 +71,7 @@ void vterm_free(VTerm *vt)
   if(vt->state)
     vterm_state_free(vt->state);
 
-  vterm_allocator_free(vt, vt->strbuffer);
+  vterm_allocator_free(vt, vt->parser.strbuffer);
   vterm_allocator_free(vt, vt->outbuffer);
 
   vterm_allocator_free(vt, vt);
@@ -100,8 +100,8 @@ void vterm_set_size(VTerm *vt, int rows, int cols)
   vt->rows = rows;
   vt->cols = cols;
 
-  if(vt->parser_callbacks && vt->parser_callbacks->resize)
-    (*vt->parser_callbacks->resize)(rows, cols, vt->cbdata);
+  if(vt->parser.callbacks && vt->parser.callbacks->resize)
+    (*vt->parser.callbacks->resize)(rows, cols, vt->parser.cbdata);
 }
 
 int vterm_get_utf8(const VTerm *vt)
@@ -257,17 +257,6 @@ size_t vterm_output_read(VTerm *vt, char *buffer, size_t len)
   return len;
 }
 
-void vterm_parser_set_callbacks(VTerm *vt, const VTermParserCallbacks *callbacks, void *user)
-{
-  vt->parser_callbacks = callbacks;
-  vt->cbdata = user;
-}
-
-void *vterm_parser_get_cbdata(VTerm *vt)
-{
-  return vt->cbdata;
-}
-
 VTermValueType vterm_get_attr_type(VTermAttr attr)
 {
   switch(attr) {
@@ -280,6 +269,8 @@ VTermValueType vterm_get_attr_type(VTermAttr attr)
     case VTERM_ATTR_FONT:       return VTERM_VALUETYPE_INT;
     case VTERM_ATTR_FOREGROUND: return VTERM_VALUETYPE_COLOR;
     case VTERM_ATTR_BACKGROUND: return VTERM_VALUETYPE_COLOR;
+
+    case VTERM_N_ATTRS: return 0;
   }
   return 0; /* UNREACHABLE */
 }
@@ -296,6 +287,8 @@ VTermValueType vterm_get_prop_type(VTermProp prop)
     case VTERM_PROP_CURSORSHAPE:   return VTERM_VALUETYPE_INT;
     case VTERM_PROP_MOUSE:         return VTERM_VALUETYPE_INT;
     case VTERM_PROP_CURSORCOLOR:   return VTERM_VALUETYPE_STRING;
+
+    case VTERM_N_PROPS: return 0;
   }
   return 0; /* UNREACHABLE */
 }
