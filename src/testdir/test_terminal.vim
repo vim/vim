@@ -969,7 +969,7 @@ endfunction
 func Check_dump01(off)
   call assert_equal('one two three four five', trim(getline(a:off + 1)))
   call assert_equal('~           Select Word', trim(getline(a:off + 7)))
-  call assert_equal(':popup PopUp                                   :', trim(getline(a:off + 20)))
+  call assert_equal(':popup PopUp', trim(getline(a:off + 20)))
 endfunc
 
 " just testing basic functionality.
