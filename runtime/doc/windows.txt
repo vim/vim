@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.0.  Last change: 2017 Sep 25
+*windows.txt*   For Vim version 8.0.  Last change: 2018 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -731,8 +731,7 @@ can also get to them with the buffer list commands, like ":bnext".
 			the current window.
 			{cmd} can contain '|' to concatenate several commands.
 			{cmd} must not open or close windows or reorder them.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 			Also see |:tabdo|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
@@ -760,8 +759,7 @@ can also get to them with the buffer list commands, like ":bnext".
 			autocommand event is disabled by adding it to
 			'eventignore'.  This considerably speeds up editing
 			each buffer.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 			Also see |:tabdo|, |:argdo|, |:windo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
@@ -974,7 +972,6 @@ is no word under the cursor, and a few other things: >
 A hidden buffer is not displayed in a window, but is still loaded into memory.
 This makes it possible to jump from file to file, without the need to read or
 write the file every time you get another buffer in a window.
-{not available when compiled without the |+listcmds| feature}
 
 							*:buffer-!*
 If the option 'hidden' ('hid') is set, abandoned buffers are kept for all
@@ -1049,6 +1046,9 @@ list of buffers. |unlisted-buffer|
 		     x   buffers with a read error
 		     %   current buffer
 		     #   alternate buffer
+		     R	 terminal buffers with a running job
+		     F	 terminal buffers with a finished job
+		     ?   terminal buffers without a job: `:terminal NONE`
 		Combining flags means they are "and"ed together, e.g.:
 		     h+   hidden buffers which are modified
 		     a+   active buffers which are modified

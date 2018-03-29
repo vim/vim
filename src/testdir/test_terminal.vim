@@ -45,11 +45,17 @@ func Test_terminal_basic()
   call assert_equal('t', mode())
   call assert_equal('yes', b:done)
   call assert_match('%aR[^\n]*running]', execute('ls'))
+  call assert_match('%aR[^\n]*running]', execute('ls R'))
+  call assert_notmatch('%[^\n]*running]', execute('ls F'))
+  call assert_notmatch('%[^\n]*running]', execute('ls ?'))
 
   call Stop_shell_in_terminal(buf)
   call term_wait(buf)
   call assert_equal('n', mode())
   call assert_match('%aF[^\n]*finished]', execute('ls'))
+  call assert_match('%aF[^\n]*finished]', execute('ls F'))
+  call assert_notmatch('%[^\n]*finished]', execute('ls R'))
+  call assert_notmatch('%[^\n]*finished]', execute('ls ?'))
 
   " closing window wipes out the terminal buffer a with finished job
   close
