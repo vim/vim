@@ -83,7 +83,6 @@ static void	ex_abclear(exarg_T *eap);
 #endif
 static void	ex_autocmd(exarg_T *eap);
 static void	ex_doautocmd(exarg_T *eap);
-#ifdef FEAT_LISTCMDS
 static void	ex_bunload(exarg_T *eap);
 static void	ex_buffer(exarg_T *eap);
 static void	ex_bmodified(exarg_T *eap);
@@ -91,20 +90,6 @@ static void	ex_bnext(exarg_T *eap);
 static void	ex_bprevious(exarg_T *eap);
 static void	ex_brewind(exarg_T *eap);
 static void	ex_blast(exarg_T *eap);
-#else
-# define ex_bunload		ex_ni
-# define ex_buffer		ex_ni
-# define ex_bmodified		ex_ni
-# define ex_bnext		ex_ni
-# define ex_bprevious		ex_ni
-# define ex_brewind		ex_ni
-# define ex_blast		ex_ni
-# define buflist_list		ex_ni
-# define ex_checktime		ex_ni
-#endif
-#if !defined(FEAT_LISTCMDS)
-# define ex_buffer_all		ex_ni
-#endif
 static char_u	*getargcmd(char_u **);
 static char_u	*skip_cmd_arg(char_u *p, int rembs);
 static int	getargopt(exarg_T *eap);
@@ -184,12 +169,6 @@ static void	ex_goto(exarg_T *eap);
 static void	ex_shell(exarg_T *eap);
 static void	ex_preserve(exarg_T *eap);
 static void	ex_recover(exarg_T *eap);
-#ifndef FEAT_LISTCMDS
-# define ex_argedit		ex_ni
-# define ex_argadd		ex_ni
-# define ex_argdelete		ex_ni
-# define ex_listdo		ex_ni
-#endif
 static void	ex_mode(exarg_T *eap);
 static void	ex_wrongmodifier(exarg_T *eap);
 static void	ex_find(exarg_T *eap);
@@ -2838,7 +2817,6 @@ do_one_cmd(
 	    goto doend;
     }
 
-#ifdef FEAT_LISTCMDS
     /*
      * Accept buffer name.  Cannot be used at the same time with a buffer
      * number.  Don't do this for a user command.
@@ -2867,7 +2845,6 @@ do_one_cmd(
 	ea.addr_count = 1;
 	ea.arg = skipwhite(p);
     }
-#endif
 
     /* The :try command saves the emsg_silent flag, reset it here when
      * ":silent! try" was used, it should only apply to :try itself. */
@@ -4108,7 +4085,6 @@ set_one_cmd_context(
 	    set_context_in_sign_cmd(xp, arg);
 	    break;
 #endif
-#ifdef FEAT_LISTCMDS
 	case CMD_bdelete:
 	case CMD_bwipeout:
 	case CMD_bunload:
@@ -4121,7 +4097,6 @@ set_one_cmd_context(
 	    xp->xp_context = EXPAND_BUFFERS;
 	    xp->xp_pattern = arg;
 	    break;
-#endif
 #ifdef FEAT_USR_CMDS
 	case CMD_USER:
 	case CMD_USER_BUF:
@@ -5528,7 +5503,6 @@ ex_doautocmd(exarg_T *eap)
 	do_modelines(0);
 }
 
-#ifdef FEAT_LISTCMDS
 /*
  * :[N]bunload[!] [N] [bufname] unload buffer
  * :[N]bdelete[!] [N] [bufname] delete buffer from buffer list
@@ -5627,7 +5601,6 @@ ex_blast(exarg_T *eap)
     if (eap->do_ecmd_cmd != NULL)
 	do_cmdline_cmd(eap->do_ecmd_cmd);
 }
-#endif
 
     int
 ends_excmd(int c)
@@ -7988,7 +7961,6 @@ alist_unlink(alist_T *al)
     }
 }
 
-#if defined(FEAT_LISTCMDS) || defined(HAVE_DROP_FILE) || defined(PROTO)
 /*
  * Create a new argument list and use it for the current window.
  */
@@ -8008,7 +7980,6 @@ alist_new(void)
 	alist_init(curwin->w_alist);
     }
 }
-#endif
 
 #if !defined(UNIX) || defined(PROTO)
 /*
@@ -8680,9 +8651,7 @@ do_exedit(
 		    + (eap->forceit ? ECMD_FORCEIT : 0)
 		      /* after a split we can use an existing buffer */
 		    + (old_curwin != NULL ? ECMD_OLDBUF : 0)
-#ifdef FEAT_LISTCMDS
 		    + (eap->cmdidx == CMD_badd ? ECMD_ADDBUF : 0 )
-#endif
 		    , old_curwin == NULL ? curwin : NULL) == FAIL)
 	{
 	    /* Editing the file failed.  If the window was split, close it. */

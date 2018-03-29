@@ -2440,9 +2440,7 @@ static char_u	*do_one_arg(char_u *str);
 static int	do_arglist(char_u *str, int what, int after);
 static void	alist_check_arg_idx(void);
 static int	editing_arg_idx(win_T *win);
-#ifdef FEAT_LISTCMDS
 static int	alist_add_list(int count, char_u **files, int after);
-#endif
 #define AL_SET	1
 #define AL_ADD	2
 #define AL_DEL	3
@@ -2567,10 +2565,8 @@ do_arglist(
     int		exp_count;
     char_u	**exp_files;
     int		i;
-#ifdef FEAT_LISTCMDS
     char_u	*p;
     int		match;
-#endif
     int		arg_escaped = TRUE;
 
     /*
@@ -2590,7 +2586,6 @@ do_arglist(
     if (get_arglist(&new_ga, str, arg_escaped) == FAIL)
 	return FAIL;
 
-#ifdef FEAT_LISTCMDS
     if (what == AL_DEL)
     {
 	regmatch_T	regmatch;
@@ -2637,7 +2632,6 @@ do_arglist(
 	ga_clear(&new_ga);
     }
     else
-#endif
     {
 	i = expand_wildcards(new_ga.ga_len, (char_u **)new_ga.ga_data,
 		&exp_count, &exp_files, EW_DIR|EW_FILE|EW_ADDSLASH|EW_NOTFOUND);
@@ -2648,14 +2642,12 @@ do_arglist(
 	    return FAIL;
 	}
 
-#ifdef FEAT_LISTCMDS
 	if (what == AL_ADD)
 	{
 	    (void)alist_add_list(exp_count, exp_files, after);
 	    vim_free(exp_files);
 	}
 	else /* what == AL_SET */
-#endif
 	    alist_set(ALIST(curwin), exp_count, exp_files, FALSE, NULL, 0);
     }
 
@@ -2737,16 +2729,11 @@ ex_args(exarg_T *eap)
 
     if (eap->cmdidx != CMD_args)
     {
-#if defined(FEAT_LISTCMDS)
 	alist_unlink(ALIST(curwin));
 	if (eap->cmdidx == CMD_argglobal)
 	    ALIST(curwin) = &global_alist;
 	else /* eap->cmdidx == CMD_arglocal */
 	    alist_new();
-#else
-	ex_ni(eap);
-	return;
-#endif
     }
 
     if (!ends_excmd(*eap->arg))
@@ -2757,10 +2744,7 @@ ex_args(exarg_T *eap)
 	 */
 	ex_next(eap);
     }
-    else
-#if defined(FEAT_LISTCMDS)
-	if (eap->cmdidx == CMD_args)
-#endif
+    else if (eap->cmdidx == CMD_args)
     {
 	/*
 	 * ":args": list arguments.
@@ -2781,7 +2765,6 @@ ex_args(exarg_T *eap)
 	    }
 	}
     }
-#if defined(FEAT_LISTCMDS)
     else if (eap->cmdidx == CMD_arglocal)
     {
 	garray_T	*gap = &curwin->w_alist->al_ga;
@@ -2800,7 +2783,6 @@ ex_args(exarg_T *eap)
 		    ++gap->ga_len;
 		}
     }
-#endif
 }
 
 /*
@@ -2951,7 +2933,6 @@ ex_next(exarg_T *eap)
     }
 }
 
-#if defined(FEAT_LISTCMDS) || defined(PROTO)
 /*
  * ":argedit"
  */
@@ -3312,8 +3293,6 @@ alist_add_list(
     return -1;
 }
 
-#endif /* FEAT_LISTCMDS */
-
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
@@ -3328,6 +3307,7 @@ get_arglist_name(expand_T *xp UNUSED, int idx)
     return alist_name(&ARGLIST[idx]);
 }
 #endif
+
 
 #ifdef FEAT_EVAL
 /*
@@ -5194,7 +5174,6 @@ source_finished(
 }
 #endif
 
-#if defined(FEAT_LISTCMDS) || defined(PROTO)
 /*
  * ":checktime [buffer]"
  */
@@ -5215,7 +5194,6 @@ ex_checktime(exarg_T *eap)
     }
     no_check_timestamps = save_no_check_timestamps;
 }
-#endif
 
 #if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	&& (defined(FEAT_EVAL) || defined(FEAT_MULTI_LANG))
