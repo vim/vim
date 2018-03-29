@@ -8953,7 +8953,10 @@ termdebug-variables	terminal.txt	/*termdebug-variables*
 termdebug_popup	terminal.txt	/*termdebug_popup*
 termdebug_wide	terminal.txt	/*termdebug_wide*
 terminal	terminal.txt	/*terminal*
+terminal-api	terminal.txt	/*terminal-api*
+terminal-client-server	terminal.txt	/*terminal-client-server*
 terminal-colors	os_unix.txt	/*terminal-colors*
+terminal-communication	terminal.txt	/*terminal-communication*
 terminal-cursor-style	terminal.txt	/*terminal-cursor-style*
 terminal-debug	terminal.txt	/*terminal-debug*
 terminal-diff	terminal.txt	/*terminal-diff*
@@ -8971,6 +8974,7 @@ terminal-session	terminal.txt	/*terminal-session*
 terminal-size-color	terminal.txt	/*terminal-size-color*
 terminal-special-keys	terminal.txt	/*terminal-special-keys*
 terminal-testing	terminal.txt	/*terminal-testing*
+terminal-to-job	terminal.txt	/*terminal-to-job*
 terminal-typing	terminal.txt	/*terminal-typing*
 terminal-unix	terminal.txt	/*terminal-unix*
 terminal-use	terminal.txt	/*terminal-use*
@@ -9042,6 +9046,7 @@ tolower()	eval.txt	/*tolower()*
 toolbar-icon	gui.txt	/*toolbar-icon*
 toupper()	eval.txt	/*toupper()*
 tr()	eval.txt	/*tr()*
+trim()	eval.txt	/*trim()*
 trojan-horse	starting.txt	/*trojan-horse*
 true-variable	eval.txt	/*true-variable*
 trunc()	eval.txt	/*trunc()*

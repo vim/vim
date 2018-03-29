@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 25
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
