@@ -116,7 +116,7 @@ func s:StartDebug(cmd)
       if term_getline(s:gdbbuf, lnum) =~ 'new-ui mi '
 	let response = term_getline(s:gdbbuf, lnum + 1)
 	if response =~ 'Undefined command'
-	  echoerr 'Your gdb does not support the Machine Interface feature'
+	  echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
 	  exe 'bwipe! ' . s:ptybuf
 	  exe 'bwipe! ' . s:commbuf
 	  return
@@ -142,6 +142,10 @@ func s:StartDebug(cmd)
   " exec-interrupt, since many commands don't work properly while the target is
   " running.
   call s:SendCommand('-gdb-set mi-async on')
+
+  " Disable pagination, it causes everything to stop at the gdb
+  " "Type <return> to continue" prompt.
+  call s:SendCommand('-gdb-set pagination off')
 
   " Sign used to highlight the line where the program has stopped.
   " There can be only one.
