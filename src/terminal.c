@@ -3573,7 +3573,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL
 						  && cell.chars[i] != NUL; ++i)
 		    {
-			len = utf_char2bytes(cell.chars[0], charbuf);
+			len = utf_char2bytes(cell.chars[i], charbuf);
 			fwrite(charbuf, len, 1, fd);
 		    }
 		}

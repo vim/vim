@@ -978,6 +978,28 @@ func Check_dump01(off)
   call assert_equal(':popup PopUp                                   :', trim(getline(a:off + 20)))
 endfunc
 
+func Test_terminal_dumpwrite_composing()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let save_enc = &encoding
+  set encoding=utf-8
+  call assert_equal(1, winnr('$'))
+
+  let text = " a\u0300 e\u0302 o\u0308"
+  call writefile([text], 'Xcomposing')
+  let buf = RunVimInTerminal('Xcomposing', {})
+  call WaitFor({-> term_getline(buf, 1) =~ text})
+  call term_dumpwrite(buf, 'Xdump')
+  let dumpline = readfile('Xdump')[0]
+  call assert_match('|à| |ê| |ö', dumpline)
+
+  call StopVimInTerminal(buf)
+  call delete('Xcomposing')
+  call delete('Xdump')
+  let &encoding = save_enc
+endfunc
+
 " just testing basic functionality.
 func Test_terminal_dumpload()
   call assert_equal(1, winnr('$'))
