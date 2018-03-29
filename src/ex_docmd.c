@@ -4293,6 +4293,13 @@ set_one_cmd_context(
 	    break;
 #endif
 
+	case CMD_argdelete:
+	    while ((xp->xp_pattern = vim_strchr(arg, ' ')) != NULL)
+		arg = xp->xp_pattern + 1;
+	    xp->xp_context = EXPAND_ARGLIST;
+	    xp->xp_pattern = arg;
+	    break;
+
 #endif /* FEAT_CMDL_COMPL */
 
 	default:
@@ -5879,6 +5886,7 @@ static struct
     char    *name;
 } command_complete[] =
 {
+    {EXPAND_ARGLIST, "arglist"},
     {EXPAND_AUGROUP, "augroup"},
     {EXPAND_BEHAVE, "behave"},
     {EXPAND_BUFFERS, "buffer"},

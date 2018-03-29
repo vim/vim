@@ -3314,6 +3314,21 @@ alist_add_list(
 
 #endif /* FEAT_LISTCMDS */
 
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * argedit and argdelete commands.
+ */
+    char_u *
+get_arglist_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= ARGCOUNT)
+	return NULL;
+
+    return alist_name(&ARGLIST[idx]);
+}
+#endif
+
 #ifdef FEAT_EVAL
 /*
  * ":compiler[!] {name}"

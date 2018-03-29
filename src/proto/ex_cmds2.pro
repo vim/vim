@@ -67,6 +67,7 @@ void ex_argedit(exarg_T *eap);
 void ex_argadd(exarg_T *eap);
 void ex_argdelete(exarg_T *eap);
 void ex_listdo(exarg_T *eap);
+char_u *get_arglist_name(expand_T *xp, int idx);
 void ex_compiler(exarg_T *eap);
 void ex_runtime(exarg_T *eap);
 int do_in_path(char_u *path, char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);

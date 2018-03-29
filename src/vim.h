@@ -781,6 +781,7 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #define EXPAND_PACKADD		45
 #define EXPAND_MESSAGES		46
 #define EXPAND_MAPCLEAR		47
+#define EXPAND_ARGLIST		48
 
 /* Values for exmode_active (0 is no exmode) */
 #define EXMODE_NORMAL		1
