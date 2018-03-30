@@ -107,6 +107,9 @@ Brabandt, #2743)
 
 Cursor in wrong position when line wraps. (#2540)
 
+Add an option similar to 'lazyredraw' to skip redrawing while executing a
+script or function.
+
 Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
 
 Patch to add more flags to :ls. (Marcin Szamotulski, #2751)
