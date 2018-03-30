@@ -4796,9 +4796,14 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	    {
 		if (!(supported2 & JO2_ENV))
 		    break;
+		if (item->v_type != VAR_DICT)
+		{
+		    EMSG2(_(e_invargval), "env");
+		    return FAIL;
+		}
 		opt->jo_set2 |= JO2_ENV;
 		opt->jo_env = item->vval.v_dict;
-		++item->vval.v_dict->dv_refcount;
+		++opt->jo_env->dv_refcount;
 	    }
 	    else if (STRCMP(hi->hi_key, "cwd") == 0)
 	    {
