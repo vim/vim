@@ -1720,10 +1720,12 @@ func Test_env()
 
   let g:envstr = ''
   if has('win32')
-    call job_start(['cmd', '/c', 'echo %FOO%'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'env':{'FOO': 'bar'}})
+    let cmd = ['cmd', '/c', 'echo %FOO%']
   else
-    call job_start([&shell, &shellcmdflag, 'echo $FOO'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'env':{'FOO': 'bar'}})
+    let cmd = [&shell, &shellcmdflag, 'echo $FOO']
   endif
+  call assert_fails('call job_start(cmd, {"env": 1})', 'E475:')
+  call job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'env': {'FOO': 'bar'}})
   call WaitFor('"" != g:envstr')
   call assert_equal("bar", g:envstr)
   unlet g:envstr
@@ -1737,11 +1739,12 @@ func Test_cwd()
   let g:envstr = ''
   if has('win32')
     let expect = $TEMP
-    let job = job_start(['cmd', '/c', 'echo %CD%'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
+    let cmd = ['cmd', '/c', 'echo %CD%']
   else
     let expect = $HOME
-    let job = job_start(['pwd'], {'callback': {ch,msg->execute(":let g:envstr .= msg")}, 'cwd': expect})
+    let cmd = ['pwd']
   endif
+  let job = job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'cwd': expect})
   try
     call WaitFor('"" != g:envstr')
     let expect = substitute(expect, '[/\\]$', '', '')
