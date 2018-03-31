@@ -4803,7 +4803,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		}
 		opt->jo_set2 |= JO2_ENV;
 		opt->jo_env = item->vval.v_dict;
-		++opt->jo_env->dv_refcount;
+		if (opt->jo_env != NULL)
+		    ++opt->jo_env->dv_refcount;
 	    }
 	    else if (STRCMP(hi->hi_key, "cwd") == 0)
 	    {
