@@ -5552,6 +5552,27 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
 #endif
 
 /*
+ * "term_setapi(buf, api)" function
+ */
+    void
+f_term_setapi(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    buf_T	*buf = term_get_buf(argvars, "term_setapi()");
+    term_T	*term;
+    char_u	*api;
+
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+    vim_free(term->tl_api);
+    api = tv_get_string_chk(&argvars[1]);
+    if (api != NULL)
+	term->tl_api = vim_strsave(api);
+    else
+	term->tl_api = NULL;
+}
+
+/*
  * "term_setrestore(buf, command)" function
  */
     void
