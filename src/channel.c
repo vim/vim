@@ -4151,7 +4151,8 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
 					    && FD_ISSET(in_part->ch_fd, wfds))
 	{
 	    channel_write_input(channel);
-	    FD_CLR(in_part->ch_fd, wfds);
+	    if (in_part->ch_fd != INVALID_FD)
+		FD_CLR(in_part->ch_fd, wfds);
 	    --ret;
 	}
     }
