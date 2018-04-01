@@ -10172,7 +10172,7 @@ set_buffer_lines(buf_T *buf, linenr_T lnum, typval_T *lines, typval_T *rettv)
 	}
 
 	rettv->vval.v_number = 1;	/* FAIL */
-	if (line == NULL || lnum < 1 || lnum > curbuf->b_ml.ml_line_count + 1)
+	if (line == NULL || lnum > curbuf->b_ml.ml_line_count + 1)
 	    break;
 
 	/* When coming here from Insert mode, sync undo, so that this can be
