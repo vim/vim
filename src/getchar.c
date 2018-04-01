@@ -4119,7 +4119,7 @@ map_to_exists_mode(char_u *rhs, int mode, int abbr)
     mapblock_T	*mp;
     int		hash;
 # ifdef FEAT_LOCALMAP
-    int		expand_buffer = FALSE;
+    int		exp_buffer = FALSE;
 
     validate_maphash();
 
@@ -4134,14 +4134,14 @@ map_to_exists_mode(char_u *rhs, int mode, int abbr)
 		if (hash > 0)		/* there is only one abbr list */
 		    break;
 #ifdef FEAT_LOCALMAP
-		if (expand_buffer)
+		if (exp_buffer)
 		    mp = curbuf->b_first_abbr;
 		else
 #endif
 		    mp = first_abbr;
 	    }
 # ifdef FEAT_LOCALMAP
-	    else if (expand_buffer)
+	    else if (exp_buffer)
 		mp = curbuf->b_maphash[hash];
 # endif
 	    else
@@ -4154,9 +4154,9 @@ map_to_exists_mode(char_u *rhs, int mode, int abbr)
 	    }
 	}
 # ifdef FEAT_LOCALMAP
-	if (expand_buffer)
+	if (exp_buffer)
 	    break;
-	expand_buffer = TRUE;
+	exp_buffer = TRUE;
     }
 # endif
 
