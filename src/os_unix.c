@@ -441,7 +441,7 @@ mch_inchar(
 		    /* no character available within "wtime" */
 		    return 0;
 
-		if (wtime < 0)
+		else
 		{
 		    /* no character available within 'updatetime' */
 		    did_start_blocking = TRUE;
