@@ -1995,27 +1995,29 @@ do_one_cmd(
 
 #ifdef FEAT_EVAL
 # ifdef FEAT_PROFILE
-    /* Count this line for profiling if will_exec is TRUE. */
-    if (do_profiling == PROF_YES)
+    /* Count this line for profiling if skip is TRUE. */
+    if (do_profiling == PROF_YES
+	    && (!ea.skip || cstack->cs_idx == 0 || (cstack->cs_idx > 0
+		     && (cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE))))
     {
-	int will_exec = !(did_emsg || got_int || did_throw);
+	int skip = did_emsg || got_int || did_throw;
 
 	if (ea.cmdidx == CMD_catch)
-	    will_exec = !will_exec || (cstack->cs_idx >= 0
+	    skip = !skip && !(cstack->cs_idx >= 0
 			  && (cstack->cs_flags[cstack->cs_idx] & CSF_THROWN));
 	else if (ea.cmdidx == CMD_else || ea.cmdidx == CMD_elseif)
-	    will_exec = will_exec && (cstack->cs_idx >= 0
+	    skip = skip || !(cstack->cs_idx >= 0
 			  && !(cstack->cs_flags[cstack->cs_idx]
 						  & (CSF_ACTIVE | CSF_TRUE)));
 	else if (ea.cmdidx == CMD_finally)
-	    will_exec = TRUE;
+	    skip = FALSE;
 	else if (ea.cmdidx != CMD_endif
 		&& ea.cmdidx != CMD_endfor
 		&& ea.cmdidx != CMD_endtry
 		&& ea.cmdidx != CMD_endwhile)
-	    will_exec = !ea.skip;
+	    skip = ea.skip;
 
-	if (will_exec)
+	if (!skip)
 	{
 	    if (getline_equal(fgetline, cookie, get_func_line))
 		func_line_exec(getline_cookie(fgetline, cookie));
@@ -2023,7 +2025,7 @@ do_one_cmd(
 		script_line_exec();
 	}
     }
-#endif
+# endif
 
     /* May go to debug mode.  If this happens and the ">quit" debug command is
      * used, throw an interrupt exception and skip the next command. */
