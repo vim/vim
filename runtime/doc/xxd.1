@@ -57,7 +57,7 @@ are all equivalent.
 .PP
 .TP
 .IR \-a " | " \-autoskip
-toggle autoskip: A single '*' replaces nul-lines.  Default off.
+Toggle autoskip: A single '*' replaces nul-lines.  Default off.
 .TP
 .IR \-b " | " \-bits
 Switch to bits (binary digits) dump, rather than hexdump.
@@ -67,9 +67,12 @@ followed by an ascii (or ebcdic) representation. The command line switches
 \-r, \-p, \-i do not work with this mode.
 .TP
 .IR "\-c cols " | " \-cols cols"
-format
+Format
 .RI < cols >
 octets per line. Default 16 (\-i: 12, \-ps: 30, \-b: 6). Max 256.
+.TP
+.IR \-C " | " \-capitalize
+Capitalize variable names in C include file style, when using \-i.
 .TP
 .IR \-E " | " \-EBCDIC
 Change the character encoding in the righthand column from ASCII to EBCDIC.
@@ -87,7 +90,7 @@ The command line switches
 \-r, \-p, \-i do not work with this mode.
 .TP
 .IR "\-g bytes " | " \-groupsize bytes"
-separate the output of every
+Separate the output of every
 .RI < bytes >
 bytes (two hex characters or eight bit-digits each) by a whitespace.
 Specify
@@ -98,28 +101,28 @@ in normal mode, \fI4\fP in little-endian mode and \fI1\fP in bits mode.
 Grouping does not apply to postscript or include style.
 .TP
 .IR \-h " | " \-help
-print a summary of available commands and exit.  No hex dumping is performed.
+Print a summary of available commands and exit.  No hex dumping is performed.
 .TP
 .IR \-i " | " \-include
-output in C include file style. A complete static array definition is written
+Output in C include file style. A complete static array definition is written
 (named after the input file), unless xxd reads from stdin.
 .TP
 .IR "\-l len " | " \-len len"
-stop after writing
+Stop after writing
 .RI  < len >
 octets.
 .TP
 .I \-o offset
-add
+Add
 .RI < offset >
 to the displayed file position.
 .TP
 .IR \-p " | " \-ps " | " \-postscript " | " \-plain
-output in postscript continuous hexdump style. Also known as plain hexdump
+Output in postscript continuous hexdump style. Also known as plain hexdump
 style.
 .TP
 .IR \-r " | " \-revert
-reverse operation: convert (or patch) hexdump into binary.
+Reverse operation: convert (or patch) hexdump into binary.
 If not writing to stdout, xxd writes into its output file without truncating
 it. Use the combination
 .I \-r \-p
@@ -135,7 +138,7 @@ revert with
 added to file positions found in hexdump.
 .TP
 .I \-s [+][\-]seek
-start at
+Start at
 .RI < seek >
 bytes abs. (or rel.) infile offset.
 \fI+ \fRindicates that the seek is relative to the current stdin file position
@@ -145,10 +148,10 @@ should be that many characters from the end of the input (or if combined with
 Without \-s option, xxd starts at the current file position.
 .TP
 .I \-u
-use upper case hex letters. Default is lower case.
+Use upper case hex letters. Default is lower case.
 .TP
 .IR \-v " | " \-version
-show version string.
+Show version string.
 .SH CAVEATS
 .PP
 .I xxd \-r

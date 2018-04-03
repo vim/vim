@@ -510,6 +510,8 @@ main(int argc, char *argv[])
 	{
 	  if (pp[2] && STRNCMP("ols", pp + 2, 3))
 	    cols = (int)strtol(pp + 2, NULL, 0);
+	  else if (pp[2] && STRNCMP("apitalize", pp + 2, 9))
+	    capitalize = 1;
 	  else
 	    {
 	      if (!argv[2])
