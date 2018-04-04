@@ -508,13 +508,14 @@ func dist#ft#SetFileTypeSH(name)
       unlet b:is_sh
     endif
   elseif exists("g:bash_is_sh") || a:name =~ '\<bash\>' || a:name =~ '\<bash2\>'
-    let b:is_bash = 1
     if exists("b:is_kornshell")
       unlet b:is_kornshell
     endif
     if exists("b:is_sh")
       unlet b:is_sh
     endif
+    call dist#ft#SetFileTypeShell("bash")
+    return
   elseif a:name =~ '\<sh\>'
     let b:is_sh = 1
     if exists("b:is_kornshell")
