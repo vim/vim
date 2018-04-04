@@ -25,3 +25,13 @@ func Test_nocatch_restore_silent_emsg()
   let c5 = nr2char(screenchar(&lines, 5))
   call assert_equal('wrong', c1 . c2 . c3 . c4 . c5)
 endfunc
+
+func Test_mkdir_p_does_not_error()
+  call mkdir('Xdir')
+  try
+    call mkdir('Xdir', 'p')
+  catch /E739:/
+    call assert_report('mkdir(..., "p") failed for an existing directory')
+  endtry
+  call delete('Xdir', 'd')
+endfunc
