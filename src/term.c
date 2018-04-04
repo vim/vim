@@ -5195,10 +5195,13 @@ check_termcode(
 #    ifdef FEAT_GUI
 			&& !gui.in_use
 #    endif
-			&& (mouse_code == 0x23 || mouse_code == 0x24))
+			&& (mouse_code == 0x23 || mouse_code == 0x24
+			    || mouse_code == 0x40 || mouse_code == 0x41))
 		{
-		    /* Apparently used by rxvt scroll wheel. */
-		    wheel_code = mouse_code - 0x23 + MOUSEWHEEL_LOW;
+		    /* Apparently 0x23 and 0x24 are used by rxvt scroll wheel.
+		     * And 0x40 and 0x41 are used by some xterm emulator. */
+		    wheel_code = mouse_code - (mouse_code >= 0x40 ? 0x40 : 0x23)
+							      + MOUSEWHEEL_LOW;
 		}
 #   endif
 
