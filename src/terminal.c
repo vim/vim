@@ -3253,7 +3253,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     argvars[0].v_type = VAR_NUMBER;
     argvars[0].vval.v_number = term->tl_buffer->b_fnum;
     argvars[1] = item->li_next->li_tv;
-    if (call_func(func, STRLEN(func), &rettv,
+    if (call_func(func, (int)STRLEN(func), &rettv,
 		2, argvars, /* argv_func */ NULL,
 		/* firstline */ 1, /* lastline */ 1,
 		&doesrange, /* evaluate */ TRUE,
@@ -3283,7 +3283,7 @@ parse_osc(const char *command, size_t cmdlen, void *user)
     if (cmdlen < 3 || STRNCMP(command, "51;", 3) != 0)
 	return 0; /* not handled */
 
-    reader.js_buf = vim_strnsave((char_u *)command + 3, cmdlen - 3);
+    reader.js_buf = vim_strnsave((char_u *)command + 3, (int)(cmdlen - 3));
     if (reader.js_buf == NULL)
 	return 1;
     reader.js_fill = NULL;
