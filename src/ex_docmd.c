@@ -5308,6 +5308,18 @@ skip_cmd_arg(
     return p;
 }
 
+    int
+get_bad_opt(char_u *p, exarg_T *eap)
+{
+    if (STRICMP(p, "keep") == 0)
+	eap->bad_char = BAD_KEEP;
+    else if (STRICMP(p, "drop") == 0)
+	eap->bad_char = BAD_DROP;
+    else if (MB_BYTE2LEN(*p) == 1 && p[1] == NUL)
+	eap->bad_char = *p;
+    return FAIL;
+}
+
 /*
  * Get "++opt=arg" argument.
  * Return FAIL or OK.
@@ -5387,6 +5399,7 @@ getargopt(exarg_T *eap)
 #endif
 	if (check_ff_value(eap->cmd + eap->force_ff) == FAIL)
 	    return FAIL;
+	eap->force_ff = eap->cmd[eap->force_ff];
 #ifdef FEAT_MBYTE
     }
     else if (pp == &eap->force_enc)
@@ -5399,14 +5412,7 @@ getargopt(exarg_T *eap)
     {
 	/* Check ++bad= argument.  Must be a single-byte character, "keep" or
 	 * "drop". */
-	p = eap->cmd + bad_char_idx;
-	if (STRICMP(p, "keep") == 0)
-	    eap->bad_char = BAD_KEEP;
-	else if (STRICMP(p, "drop") == 0)
-	    eap->bad_char = BAD_DROP;
-	else if (MB_BYTE2LEN(*p) == 1 && p[1] == NUL)
-	    eap->bad_char = *p;
-	else
+	if (get_bad_opt(eap->cmd + bad_char_idx, eap) == FAIL)
 	    return FAIL;
     }
 #endif

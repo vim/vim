@@ -12,6 +12,7 @@ char_u *skip_range(char_u *cmd, int *ctx);
 void ex_ni(exarg_T *eap);
 int expand_filename(exarg_T *eap, char_u **cmdlinep, char_u **errormsgp);
 void separate_nextcmd(exarg_T *eap);
+int get_bad_opt(char_u *p, exarg_T *eap);
 int ends_excmd(int c);
 char_u *find_nextcmd(char_u *p);
 char_u *check_nextcmd(char_u *p);

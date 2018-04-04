@@ -1049,17 +1049,14 @@ func Test_terminal_dumpdiff_options()
   set laststatus&
 endfunc
 
-func Test_terminal_api_drop_newwin()
-  if !CanRunVimInTerminal()
-    return
-  endif
+func Api_drop_common(options)
   call assert_equal(1, winnr('$'))
 
   " Use the title termcap entries to output the escape sequence.
   call writefile([
 	\ 'set title',
 	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
-	\ 'let &titlestring = ''["drop","Xtextfile"]''',
+	\ 'let &titlestring = ''["drop","Xtextfile"' . a:options . ']''',
 	\ 'redraw',
 	\ "set t_ts=",
 	\ ], 'Xscript')
@@ -1067,6 +1064,116 @@ func Test_terminal_api_drop_newwin()
   call WaitFor({-> bufnr('Xtextfile') > 0})
   call assert_equal('Xtextfile', expand('%:t'))
   call assert_true(winnr('$') >= 3)
+  return buf
+endfunc
+
+func Test_terminal_api_drop_newwin()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = Api_drop_common('')
+  call assert_equal(0, &bin)
+  call assert_equal('', &fenc)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_bin()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = Api_drop_common(',{"bin":1}')
+  call assert_equal(1, &bin)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_binary()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = Api_drop_common(',{"binary":1}')
+  call assert_equal(1, &bin)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_nobin()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  set binary
+  let buf = Api_drop_common(',{"nobin":1}')
+  call assert_equal(0, &bin)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+  set nobinary
+endfunc
+
+func Test_terminal_api_drop_newwin_nobinary()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  set binary
+  let buf = Api_drop_common(',{"nobinary":1}')
+  call assert_equal(0, &bin)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+  set nobinary
+endfunc
+
+func Test_terminal_api_drop_newwin_ff()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = Api_drop_common(',{"ff":"dos"}')
+  call assert_equal("dos", &ff)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_fileformat()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = Api_drop_common(',{"fileformat":"dos"}')
+  call assert_equal("dos", &ff)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_enc()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = Api_drop_common(',{"enc":"utf-16"}')
+  call assert_equal("utf-16", &fenc)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_encoding()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let buf = Api_drop_common(',{"encoding":"utf-16"}')
+  call assert_equal("utf-16", &fenc)
 
   call StopVimInTerminal(buf)
   call delete('Xscript')

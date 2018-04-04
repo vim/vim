@@ -6590,7 +6590,7 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
 	len += 7;
 
     if (eap->force_ff != 0)
-	len += (unsigned)STRLEN(eap->cmd + eap->force_ff) + 6;
+	len += 10; /* " ++ff=unix" */
 # ifdef FEAT_MBYTE
     if (eap->force_enc != 0)
 	len += (unsigned)STRLEN(eap->cmd + eap->force_enc) + 7;
@@ -6614,7 +6614,9 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
 
     if (eap->force_ff != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++ff=%s",
-						eap->cmd + eap->force_ff);
+						eap->force_ff == 'u' ? "unix"
+						: eap->force_ff == 'd' ? "dos"
+						: "mac");
 #ifdef FEAT_MBYTE
     if (eap->force_enc != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++enc=%s",

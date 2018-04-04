@@ -38,7 +38,6 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - For the "drop" command accept another argument for options.
  * - Add a way to set the 16 ANSI colors, to be used for 'termguicolors' and in
  *   the GUI.
  * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
@@ -3152,10 +3151,12 @@ init_default_colors(term_T *term)
 handle_drop_command(listitem_T *item)
 {
     char_u	*fname = get_tv_string(&item->li_tv);
+    listitem_T	*opt_item = item->li_next;
     int		bufnr;
     win_T	*wp;
     tabpage_T   *tp;
     exarg_T	ea;
+    char_u	*tofree = NULL;
 
     bufnr = buflist_add(fname, BLN_LISTED | BLN_NOOPT);
     FOR_ALL_TAB_WINDOWS(tp, wp)
@@ -3168,10 +3169,60 @@ handle_drop_command(listitem_T *item)
 	}
     }
 
-    /* open in new window, like ":sbuffer N" */
     vim_memset(&ea, 0, sizeof(ea));
-    ea.cmd = (char_u *)"sbuffer";
-    goto_buffer(&ea, DOBUF_FIRST, FORWARD, bufnr);
+
+    if (opt_item != NULL && opt_item->li_tv.v_type == VAR_DICT
+					&& opt_item->li_tv.vval.v_dict != NULL)
+    {
+	dict_T *dict = opt_item->li_tv.vval.v_dict;
+	char_u *p;
+
+	p = get_dict_string(dict, (char_u *)"ff", FALSE);
+	if (p == NULL)
+	    p = get_dict_string(dict, (char_u *)"fileformat", FALSE);
+	if (p != NULL)
+	{
+	    if (check_ff_value(p) == FAIL)
+		ch_log(NULL, "Invalid ff argument to drop: %s", p);
+	    else
+		ea.force_ff = *p;
+	}
+	p = get_dict_string(dict, (char_u *)"enc", FALSE);
+	if (p == NULL)
+	    p = get_dict_string(dict, (char_u *)"encoding", FALSE);
+	if (p != NULL)
+	{
+	    ea.cmd = alloc((int)STRLEN(p) + 10);
+	    if (ea.cmd != NULL)
+	    {
+		sprintf((char *)ea.cmd, "sbuf ++enc=%s", p);
+		ea.force_enc = 11;
+		tofree = ea.cmd;
+	    }
+	}
+
+	p = get_dict_string(dict, (char_u *)"bad", FALSE);
+	if (p != NULL)
+	    get_bad_opt(p, &ea);
+
+	if (dict_find(dict, (char_u *)"bin", -1) != NULL)
+	    ea.force_bin = FORCE_BIN;
+	if (dict_find(dict, (char_u *)"binary", -1) != NULL)
+	    ea.force_bin = FORCE_BIN;
+	if (dict_find(dict, (char_u *)"nobin", -1) != NULL)
+	    ea.force_bin = FORCE_NOBIN;
+	if (dict_find(dict, (char_u *)"nobinary", -1) != NULL)
+	    ea.force_bin = FORCE_NOBIN;
+    }
+
+    /* open in new window, like ":split fname" */
+    if (ea.cmd == NULL)
+	ea.cmd = (char_u *)"split";
+    ea.arg = fname;
+    ea.cmdidx = CMD_split;
+    ex_splitview(&ea);
+
+    vim_free(tofree);
 }
 
 /*

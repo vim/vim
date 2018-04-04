@@ -25,7 +25,7 @@ If the result is "1" you have it.
       MS-Windows			|terminal-ms-windows|
 2. Terminal communication	|terminal-communication|
       Vim to job: term_sendkeys()	|terminal-to-job|
-      Job to Vim: JSON API 		|terminal-api|
+      Job to Vim: JSON API		|terminal-api|
       Using the client-server feature	|terminal-client-server|
 3. Remote testing		|terminal-testing|
 4. Diffing screen dumps		|terminal-diff|
@@ -352,7 +352,7 @@ On Unix a pty is used to make it possible to run all kinds of commands.  You
 can even run Vim in the terminal!  That's used for debugging, see below.
 
 Environment variables are used to pass information to the running job:
-    TERM		name of the terminal, 'term'
+    TERM		name of the terminal, from the 'term' option
     ROWS		number of rows in the terminal initially
     LINES		same as ROWS
     COLUMNS		number of columns in the terminal initially
@@ -443,11 +443,25 @@ Currently supported commands:
 <		Output from `:echo` may be erased by a redraw, use `:echomsg`
 		to be able to see it with `:messages`.
 
-	drop {filename}
+	drop {filename} [options]
 
 		Let Vim open a file, like the `:drop` command.  If {filename}
 		is already open in a window, switch to that window.  Otherwise
 		open a new window to edit {filename}.
+
+		[options] is only used when opening a new window.  If present,
+		it must be a Dict.  Similarly to |++opt|, These entries are recognized:
+		  "ff"		file format: "dos", "mac" or "unix"
+		  "fileformat"	idem
+		  "enc"		overrides 'fileencoding'
+		  "encoding"	idem
+		  "bin"		sets 'binary'
+		  "binary"	idem
+		  "nobin"	resets 'binary'
+		  "nobinary"	idem
+		  "bad"		specifies behavior for bad characters, see
+				|++bad|
+
 		Example in JSON: >
 			["drop", "path/file.txt", {"ff": "dos"}]
 

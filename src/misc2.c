@@ -3161,7 +3161,7 @@ get_fileformat_force(
     int		c;
 
     if (eap != NULL && eap->force_ff != 0)
-	c = eap->cmd[eap->force_ff];
+	c = eap->force_ff;
     else
     {
 	if ((eap != NULL && eap->force_bin != 0)
