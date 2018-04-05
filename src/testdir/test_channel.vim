@@ -1823,3 +1823,15 @@ func Test_list_args()
   call s:test_list_args('print("hello\"world\"")', 'hello"world"', 1)
   call s:test_list_args('print("hello\tworld")', "hello\tworld", 1)
 endfunc
+
+" Do this last, it stops any channel log.
+func Test_zz_ch_log()
+  call ch_logfile('Xlog', 'w')
+  call ch_log('hello there')
+  call ch_log('%s%s')
+  call ch_logfile('')
+  let text = readfile('Xlog')
+  call assert_match("hello there", text[1])
+  call assert_match("%s%s", text[2])
+  call delete('Xlog')
+endfunc
