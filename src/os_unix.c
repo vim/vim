@@ -5579,11 +5579,23 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 
 # ifdef FEAT_TERMINAL
 	if (options->jo_term_rows > 0)
+	{
+	    char *term = (char *)T_NAME;
+
+#ifdef FEAT_GUI
+	    if (term_is_gui(T_NAME))
+		/* In the GUI 'term' is not what we want, use $TERM. */
+		term = getenv("TERM");
+#endif
+	    /* Use 'term' or $TERM if it starts with "xterm", otherwise fall
+	     * back to "xterm". */
+	    if (term == NULL || *term == NUL || STRNCMP(term, "xterm", 5) != 0)
+		term = "xterm";
 	    set_child_environment(
 		    (long)options->jo_term_rows,
 		    (long)options->jo_term_cols,
-		    STRNCMP(T_NAME, "xterm", 5) == 0
-						   ? (char *)T_NAME : "xterm");
+		    term);
+	}
 	else
 # endif
 	    set_default_child_environment();

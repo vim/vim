@@ -352,7 +352,9 @@ On Unix a pty is used to make it possible to run all kinds of commands.  You
 can even run Vim in the terminal!  That's used for debugging, see below.
 
 Environment variables are used to pass information to the running job:
-    TERM		name of the terminal, from the 'term' option
+    TERM		the name of the terminal, from the 'term' option or
+			$TERM in the GUI; falls back to "xterm" if it does not
+			start with "xterm"
     ROWS		number of rows in the terminal initially
     LINES		same as ROWS
     COLUMNS		number of columns in the terminal initially
