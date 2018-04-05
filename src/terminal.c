@@ -41,7 +41,7 @@
  * - Add a way to set the 16 ANSI colors, to be used for 'termguicolors' and in
  *   the GUI.
  * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
- *   redirection.
+ *   redirection.  Probably in call to channel_set_pipes().
  * - implement term_setsize()
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
@@ -3917,6 +3917,57 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 }
 
 /*
+ * Return an allocated string with at least "text_width" "=" characters and
+ * "fname" inserted in the middle.
+ */
+    static char_u *
+get_separator(int text_width, char_u *fname)
+{
+    int	    width = MAX(text_width, curwin->w_width);
+    char_u  *textline;
+    int	    fname_size;
+    char_u  *p = fname;
+    int	    i;
+    int	    off;
+
+    textline = alloc(width + STRLEN(fname) + 1);
+    if (textline == NULL)
+	return NULL;
+
+    fname_size = vim_strsize(fname);
+    if (fname_size < width - 8)
+    {
+	/* enough room, don't use the full window width */
+	width = MAX(text_width, fname_size + 8);
+    }
+    else if (fname_size > width - 8)
+    {
+	/* full name doesn't fit, use only the tail */
+	p = gettail(fname);
+	fname_size = vim_strsize(p);
+    }
+    /* skip characters until the name fits */
+    while (fname_size > width - 8)
+    {
+	p += (*mb_ptr2len)(p);
+	fname_size = vim_strsize(p);
+    }
+
+    for (i = 0; i < (width - fname_size) / 2 - 1; ++i)
+	textline[i] = '=';
+    textline[i++] = ' ';
+
+    STRCPY(textline + i, p);
+    off = STRLEN(textline);
+    textline[off] = ' ';
+    for (i = 1; i < (width - fname_size) / 2; ++i)
+	textline[off + i] = '=';
+    textline[off + i] = NUL;
+
+    return textline;
+}
+
+/*
  * Common for "term_dumpdiff()" and "term_dumpload()".
  */
     static void
@@ -4013,16 +4064,19 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 
 	term->tl_top_diff_rows = curbuf->b_ml.ml_line_count;
 
-	textline = alloc(width + 1);
+	textline = get_separator(width, fname1);
 	if (textline == NULL)
 	    goto theend;
-	for (i = 0; i < width; ++i)
-	    textline[i] = '=';
+	if (add_empty_scrollback(term, &term->tl_default_color, 0) == OK)
+	    ml_append(curbuf->b_ml.ml_line_count, textline, 0, FALSE);
+	vim_free(textline);
+
+	textline = get_separator(width, fname2);
+	if (textline == NULL)
+	    goto theend;
+	if (add_empty_scrollback(term, &term->tl_default_color, 0) == OK)
+	    ml_append(curbuf->b_ml.ml_line_count, textline, 0, FALSE);
 	textline[width] = NUL;
-	if (add_empty_scrollback(term, &term->tl_default_color, 0) == OK)
-	    ml_append(curbuf->b_ml.ml_line_count, textline, 0, FALSE);
-	if (add_empty_scrollback(term, &term->tl_default_color, 0) == OK)
-	    ml_append(curbuf->b_ml.ml_line_count, textline, 0, FALSE);
 
 	bot_lnum = curbuf->b_ml.ml_line_count;
 	width2 = read_dump_file(fd2, &cursor_pos2);
@@ -4143,6 +4197,9 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	}
 
 	term->tl_cols = width;
+
+	/* looks better without wrapping */
+	curwin->w_p_wrap = 0;
     }
 
 theend:
