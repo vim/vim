@@ -26,12 +26,19 @@ func Test_nocatch_restore_silent_emsg()
   call assert_equal('wrong', c1 . c2 . c3 . c4 . c5)
 endfunc
 
-func Test_mkdir_p_does_not_error()
-  call mkdir('Xdir')
+func Test_mkdir_p()
+  call mkdir('Xdir/nested', 'p')
+  call assert_true(isdirectory('Xdir/nested'))
   try
+    " Trying to make existing directories doesn't error
     call mkdir('Xdir', 'p')
+    call mkdir('Xdir/nested', 'p')
   catch /E739:/
     call assert_report('mkdir(..., "p") failed for an existing directory')
   endtry
-  call delete('Xdir', 'd')
+  " 'p' doesn't suppress real errors
+  call writefile([], 'Xfile')
+  call assert_fails('call mkdir("Xfile", "p")', 'E739')
+  call delete('Xfile')
+  call delete('Xdir', 'rf')
 endfunc
