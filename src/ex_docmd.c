@@ -5308,6 +5308,7 @@ skip_cmd_arg(
     return p;
 }
 
+#if defined(FEAT_MBYTE) || defined(PROTO)
     int
 get_bad_opt(char_u *p, exarg_T *eap)
 {
@@ -5319,6 +5320,7 @@ get_bad_opt(char_u *p, exarg_T *eap)
 	eap->bad_char = *p;
     return FAIL;
 }
+#endif
 
 /*
  * Get "++opt=arg" argument.
