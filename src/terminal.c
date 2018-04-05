@@ -3192,7 +3192,7 @@ handle_drop_command(listitem_T *item)
 	    p = get_dict_string(dict, (char_u *)"encoding", FALSE);
 	if (p != NULL)
 	{
-	    ea.cmd = alloc((int)STRLEN(p) + 10);
+	    ea.cmd = alloc((int)STRLEN(p) + 12);
 	    if (ea.cmd != NULL)
 	    {
 		sprintf((char *)ea.cmd, "sbuf ++enc=%s", p);
