@@ -731,6 +731,11 @@ to have the 'mouse' option set to enable mouse clicks.
 You can add the window toolbar in other windows you open with: >
   :Winbar
 
+If gdb stops at a source line and there is no window currently showing the
+source code, a new window will be created for the source code.  This also
+happens if the buffer in the source code window has been modified and can't be
+abandoned.
+
 
 Inspecting variables ~
 							*termdebug-variables*
@@ -745,8 +750,10 @@ You can usually shorten `:Evaluate` to `:Ev`.
 
 Other commands ~
 							*termdebug-commands*
- :Gdb	       jump to the gdb window
- :Program      jump to the window with the running program
+ :Gdb	     jump to the gdb window
+ :Program    jump to the window with the running program
+ :Source     jump to the window with the source code, create it if there
+	     isn't one
 
 
 Communication ~

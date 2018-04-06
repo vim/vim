@@ -246,6 +246,7 @@ func s:InstallCommands()
   command -range -nargs=* Evaluate call s:Evaluate(<range>, <q-args>)
   command Gdb call win_gotoid(s:gdbwin)
   command Program call win_gotoid(s:ptywin)
+  command Source call s:GotoStartwinOrCreateIt()
   command Winbar call s:InstallWinbar()
 
   " TODO: can the K mapping be restored?
@@ -269,13 +270,15 @@ let s:winbar_winids = []
 
 " Install the window toolbar in the current window.
 func s:InstallWinbar()
-  nnoremenu WinBar.Step   :Step<CR>
-  nnoremenu WinBar.Next   :Over<CR>
-  nnoremenu WinBar.Finish :Finish<CR>
-  nnoremenu WinBar.Cont   :Continue<CR>
-  nnoremenu WinBar.Stop   :Stop<CR>
-  nnoremenu WinBar.Eval   :Evaluate<CR>
-  call add(s:winbar_winids, win_getid(winnr()))
+  if has('menu') && &mouse != ''
+    nnoremenu WinBar.Step   :Step<CR>
+    nnoremenu WinBar.Next   :Over<CR>
+    nnoremenu WinBar.Finish :Finish<CR>
+    nnoremenu WinBar.Cont   :Continue<CR>
+    nnoremenu WinBar.Stop   :Stop<CR>
+    nnoremenu WinBar.Eval   :Evaluate<CR>
+    call add(s:winbar_winids, win_getid(winnr()))
+  endif
 endfunc
 
 " Delete installed debugger commands in the current window.
@@ -450,6 +453,14 @@ func s:HandleError(msg)
   echoerr substitute(a:msg, '.*msg="\(.*\)"', '\1', '')
 endfunc
 
+func s:GotoStartwinOrCreateIt()
+  if !win_gotoid(s:startwin)
+    new
+    let s:startwin = win_getid(winnr())
+    call s:InstallWinbar()
+  endif
+endfunc
+
 " Handle stopping and running message from gdb.
 " Will update the sign that shows the current position.
 func s:HandleCursor(msg)
@@ -461,31 +472,32 @@ func s:HandleCursor(msg)
     let s:stopped = 0
   endif
 
-  if win_gotoid(s:startwin)
-    let fname = substitute(a:msg, '.*fullname="\([^"]*\)".*', '\1', '')
-    if a:msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
-      let lnum = substitute(a:msg, '.*line="\([^"]*\)".*', '\1', '')
-      if lnum =~ '^[0-9]*$'
-	if expand('%:p') != fnamemodify(fname, ':p')
-	  if &modified
-	    " TODO: find existing window
-	    exe 'split ' . fnameescape(fname)
-	    let s:startwin = win_getid(winnr())
-	  else
-	    exe 'edit ' . fnameescape(fname)
-	  endif
-	endif
-	exe lnum
-	exe 'sign unplace ' . s:pc_id
-	exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fname
-	setlocal signcolumn=yes
-      endif
-    else
-      exe 'sign unplace ' . s:pc_id
-    endif
+  call s:GotoStartwinOrCreateIt()
 
-    call win_gotoid(wid)
+  let fname = substitute(a:msg, '.*fullname="\([^"]*\)".*', '\1', '')
+  if a:msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
+    let lnum = substitute(a:msg, '.*line="\([^"]*\)".*', '\1', '')
+    if lnum =~ '^[0-9]*$'
+      if expand('%:p') != fnamemodify(fname, ':p')
+	if &modified
+	  " TODO: find existing window
+	  exe 'split ' . fnameescape(fname)
+	  let s:startwin = win_getid(winnr())
+	  call s:InstallWinbar()
+	else
+	  exe 'edit ' . fnameescape(fname)
+	endif
+      endif
+      exe lnum
+      exe 'sign unplace ' . s:pc_id
+      exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fname
+      setlocal signcolumn=yes
+    endif
+  else
+    exe 'sign unplace ' . s:pc_id
   endif
+
+  call win_gotoid(wid)
 endfunc
 
 " Handle setting a breakpoint
