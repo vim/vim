@@ -4160,6 +4160,21 @@ ex_cfile(exarg_T *eap)
 }
 
 /*
+ * Return the quickfix/location list number with the given identifier.
+ * Returns -1 if list is not found.
+ */
+    static int
+qf_id2nr(qf_info_T *qi, int_u qfid)
+{
+    int		qf_idx;
+
+    for (qf_idx = 0; qf_idx < qi->qf_listcount; qf_idx++)
+	if (qi->qf_lists[qf_idx].qf_id == qfid)
+	    return qf_idx;
+    return -1;
+}
+
+/*
  * Return the vimgrep autocmd name.
  */
     static char_u *
@@ -4272,40 +4287,32 @@ vgr_load_dummy_buf(
  */
     static int
 vgr_qflist_valid(
+	win_T	    *wp,
 	qf_info_T   *qi,
-	int_u	    save_qfid,
-	qfline_T    *cur_qf_start,
-	int	    loclist_cmd,
+	int_u	    qfid,
 	char_u	    *title)
 {
-    if (loclist_cmd)
+    /* Verify that the quickfix/location list was not freed by an autocmd */
+    if (!qflist_valid(wp, qfid))
     {
-	/*
-	 * Verify that the location list is still valid. An autocmd might
-	 * have freed the location list.
-	 */
-	if (!qflist_valid(curwin, save_qfid))
+	if (wp != NULL)
 	{
+	    /* An autocmd has freed the location list. */
 	    EMSG(_(e_loc_list_changed));
 	    return FALSE;
 	}
+	else
+	{
+	    /* Quickfix list is not found, create a new one. */
+	    qf_new_list(qi, title);
+	    return TRUE;
+	}
     }
-    if (cur_qf_start != qi->qf_lists[qi->qf_curlist].qf_start)
-    {
-	int idx;
 
+    if (qi->qf_lists[qi->qf_curlist].qf_id != qfid)
 	/* Autocommands changed the quickfix list.  Find the one we were
 	 * using and restore it. */
-	for (idx = 0; idx < LISTCOUNT; ++idx)
-	    if (cur_qf_start == qi->qf_lists[idx].qf_start)
-	    {
-		qi->qf_curlist = idx;
-		break;
-	    }
-	if (idx == LISTCOUNT)
-	    /* List cannot be found, create a new one. */
-	    qf_new_list(qi, title);
-    }
+	qi->qf_curlist = qf_id2nr(qi, qfid);
 
     return TRUE;
 }
@@ -4424,10 +4431,8 @@ ex_vimgrep(exarg_T *eap)
     char_u	*p;
     int		fi;
     qf_info_T	*qi = &ql_info;
-    int		loclist_cmd = FALSE;
     int_u	save_qfid;
-    qfline_T	*cur_qf_start;
-    win_T	*wp;
+    win_T	*wp = NULL;
     buf_T	*buf;
     int		duplicate_name = FALSE;
     int		using_dummy;
@@ -4461,7 +4466,7 @@ ex_vimgrep(exarg_T *eap)
 	qi = ll_get_or_alloc_list(curwin);
 	if (qi == NULL)
 	    return;
-	loclist_cmd = TRUE;
+	wp = curwin;
     }
 
     if (eap->addr_count > 0)
@@ -4518,10 +4523,9 @@ ex_vimgrep(exarg_T *eap)
      * ":lcd %:p:h" changes the meaning of short path names. */
     mch_dirname(dirname_start, MAXPATHL);
 
-     /* Remember the current values of the quickfix list and qf_start, so that
-      * we can check for autocommands changing the current quickfix list. */
+     /* Remember the current quickfix list identifier, so that we can check for
+      * autocommands changing the current quickfix list. */
     save_qfid = qi->qf_lists[qi->qf_curlist].qf_id;
-    cur_qf_start = qi->qf_lists[qi->qf_curlist].qf_start;
 
     seconds = (time_t)0;
     for (fi = 0; fi < fcount && !got_int && tomatch > 0; ++fi)
@@ -4549,11 +4553,11 @@ ex_vimgrep(exarg_T *eap)
 	    /* Use existing, loaded buffer. */
 	    using_dummy = FALSE;
 
-	/* Check whether the quickfix list is still valid */
-	if (!vgr_qflist_valid(qi, save_qfid, cur_qf_start, loclist_cmd,
-		    *eap->cmdlinep))
+	/* Check whether the quickfix list is still valid. When loading a
+	 * buffer above, autocommands might have changed the quickfix list. */
+	if (!vgr_qflist_valid(wp, qi, save_qfid, *eap->cmdlinep))
 	    goto theend;
-	cur_qf_start = qi->qf_lists[qi->qf_curlist].qf_start;
+	save_qfid = qi->qf_lists[qi->qf_curlist].qf_id;
 
 	if (buf == NULL)
 	{
@@ -4566,8 +4570,6 @@ ex_vimgrep(exarg_T *eap)
 	     * For ":1vimgrep" look for first match only. */
 	    found_match = vgr_match_buflines(qi, fname, buf, &regmatch,
 		    tomatch, duplicate_name, flags);
-
-	    cur_qf_start = qi->qf_lists[qi->qf_curlist].qf_start;
 
 	    if (using_dummy)
 	    {
@@ -4649,7 +4651,6 @@ ex_vimgrep(exarg_T *eap)
      * The QuickFixCmdPost autocmd may free the quickfix list. Check the list
      * is still valid.
      */
-    wp = loclist_cmd ? curwin : NULL;
     if (!qflist_valid(wp, save_qfid))
 	goto theend;
 
@@ -4992,21 +4993,6 @@ qf_get_list_from_lines(dict_T *what, dictitem_T *di, dict_T *retdict)
     }
 
     return status;
-}
-
-/*
- * Return the quickfix/location list number with the given identifier.
- * Returns -1 if list is not found.
- */
-    static int
-qf_id2nr(qf_info_T *qi, int_u qfid)
-{
-    int		qf_idx;
-
-    for (qf_idx = 0; qf_idx < qi->qf_listcount; qf_idx++)
-	if (qi->qf_lists[qf_idx].qf_id == qfid)
-	    return qf_idx;
-    return -1;
 }
 
 /*
