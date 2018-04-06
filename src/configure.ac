@@ -1251,9 +1251,9 @@ eof
 
 	PYTHON_LIBS="${vi_cv_path_python_plibs}"
 	if test "${vi_cv_path_python_pfx}" = "${vi_cv_path_python_epfx}"; then
-	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -DPYTHON_HOME='\"${vi_cv_path_python_pfx}\"'"
+	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version}"
 	else
-	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -I${vi_cv_path_python_epfx}/include/python${vi_cv_var_python_version} -DPYTHON_HOME='\"${vi_cv_path_python_pfx}\"'"
+	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -I${vi_cv_path_python_epfx}/include/python${vi_cv_var_python_version}"
 	fi
 	PYTHON_SRC="if_python.c"
 	PYTHON_OBJ="objects/if_python.o"
@@ -1460,9 +1460,9 @@ eof
 
         PYTHON3_LIBS="${vi_cv_path_python3_plibs}"
         if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
         else
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
         fi
         PYTHON3_SRC="if_python3.c"
         PYTHON3_OBJ="objects/if_python3.o"
