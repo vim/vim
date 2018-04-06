@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2018 Mar 29
+*todo.txt*      For Vim version 8.0.  Last change: 2018 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,7 +39,12 @@ Terminal emulator window:
 - dump diff sometimes creates a different way of repeating.
    Example: https://api.travis-ci.org/v3/job/359102504/log.txt
   unclear why this can happen.
+- Passing 'term' as $TERM doesn't work in GUI.
 - Still some stuff to implement and bugs to fix, see src/terminal.c
+- GUI: problem with split window and sourcing the current buffer into python?
+    (Blay263, 2018 Mar 31)
+- Terminal debugger: need a way to (re) open the source window, where current
+  position is displayed.
 
 Mode message isn't updated on vertical split. (Alexei Averchenko, 2018 Feb 2,
 #2611)
@@ -50,18 +55,31 @@ Problem with sudo. #2758
 
 Code refactoring, macro for message, #2729
 
+Fix for crash with non-dict argument to job options. (ichizok, #2765)
+
 Patch to enforce c89 compliance. (James McCoy, #2735)
 With fix for Mac from Kazunobu.
+
+Block insert doesn't work if the first line is auto-indented. (Christian
+Brabandt, 2018 Apr 4, #2778)
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
 
 Patch to avoid bad highlighting caused by #if. (ichizok, #2731)
 
+Patch to make mkdir() more like the shell command. (James McCoy, #2775)
+
 Implement option_save() and option_restore()?  Or remove the help.
 
+Patch for static analysis warnings. (Christian Brabandt, 2018 Apr 1, #2770)
+
+Patch to refactor ex_helpgrep. (Yegappan, #2766, 2018 Mar 30)
+Also in email, take the one with a test.
+
 Looks like an error for inserting register makes ":file other" not work.
-(Tom M, 2018 Mar 28)
+(Tom M, 2018 Mar 28)  Reset did_emsg after inserting a register.
+Or at the top of the loop? (Apr 4)
 
 Patch to fix mouse pointer after :tselect. (Hirohito Higashi, #2709)
 How to reproduce the problem?
@@ -116,6 +134,7 @@ Patch to add more flags to :ls. (Marcin Szamotulski, #2751)
 
 Does setting 'cursorline' cause syntax highlighting to slow down?  Perhaps is
 mess up the cache?  (Mike Lee Williams, 2018 Jan 27, #2539)
+Also: 'foldtext' is evaluated too often. (Daniel Hahler, #2773)
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
@@ -157,9 +176,6 @@ applying the diff, etc.
 
 User dictionary ~/.vim/spell/lang.utf-8.add not used for spell checking until a
 word is re-added to it. (Matej Cepl, 2018 Feb 6)
-
-Problem with mouse scroll in tmux. (fcying, #2419)  Might be caused by patch
-8.0.1309.  Removing "held_button = MOUSE_RELEASE;" helps. (2018 Feb 5)
 
 Fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
 
