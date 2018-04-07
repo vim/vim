@@ -1,7 +1,11 @@
 /* channel.c */
 void ch_logfile(char_u *fname, char_u *opt);
 int ch_log_active(void);
-void ch_log(channel_T *ch, const char *fmt, ...);
+void ch_log(channel_T *ch, const char *fmt, ...)
+#ifdef __GNUC__
+__attribute__((format(printf, 2, 3)))
+#endif
+;
 channel_T *add_channel(void);
 int has_any_channel(void);
 int channel_unref(channel_T *channel);

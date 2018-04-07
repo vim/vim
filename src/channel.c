@@ -177,6 +177,13 @@ ch_log(channel_T *ch, const char *fmt, ...)
 
     static void
 ch_error(channel_T *ch, const char *fmt, ...)
+#ifdef __GNUC__
+__attribute__((format(printf, 2, 3)))
+#endif
+    ;
+
+    static void
+ch_error(channel_T *ch, const char *fmt, ...)
 {
     if (log_fd != NULL)
     {
@@ -1442,7 +1449,7 @@ channel_write_in(channel_T *channel)
 	ch_close_part(channel, PART_IN);
     }
     else
-	ch_log(channel, "Still %d more lines to write",
+	ch_log(channel, "Still %ld more lines to write",
 					  buf->b_ml.ml_line_count - lnum + 1);
 }
 
@@ -1536,7 +1543,7 @@ channel_write_new_lines(buf_T *buf)
 	    else if (written > 1)
 		ch_log(channel, "written %d lines to channel", written);
 	    if (lnum < buf->b_ml.ml_line_count)
-		ch_log(channel, "Still %d more lines to write",
+		ch_log(channel, "Still %ld more lines to write",
 					      buf->b_ml.ml_line_count - lnum);
 
 	    in_part->ch_buf_bot = lnum;
@@ -2081,7 +2088,7 @@ channel_get_json(
 	{
 	    *rettv = item->jq_value;
 	    if (tv->v_type == VAR_NUMBER)
-		ch_log(channel, "Getting JSON message %d", tv->vval.v_number);
+		ch_log(channel, "Getting JSON message %ld", tv->vval.v_number);
 	    remove_json_node(head, item);
 	    return OK;
 	}
