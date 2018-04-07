@@ -288,6 +288,11 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
         done_string(vt, string_start, bytes + pos - string_start);
         ENTER_NORMAL_STATE();
       }
+      else if (pos + 1 == len) {
+	/* end of input but OSC string isn't finished yet, copy it to
+	 * vt->parser.strbuffer to continue it later */
+        more_string(vt, string_start, bytes + pos + 1 - string_start);
+      }
       break;
 
     case NORMAL:
