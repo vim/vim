@@ -2823,7 +2823,7 @@ term_get_winpos(int *x, int *y, varnumber_T timeout)
 
     winpos_x = prev_winpos_x;
     winpos_y = prev_winpos_y;
-    if (timeout < 10 && prev_winpos_y >= 0 && prev_winpos_y >= 0)
+    if (timeout < 10 && prev_winpos_y >= 0 && prev_winpos_x >= 0)
     {
 	/* Polling: return previous values if we have them. */
 	*x = winpos_x;

@@ -2610,7 +2610,7 @@ do_mouse(
 			end_visual_mode();
 		}
 	    }
-	    else if (c1 < 0)
+	    else
 	    {
 		tabpage_T	*tp;
 
