@@ -2549,4 +2549,11 @@ typedef enum {
 #define TERM_START_FORCEIT	2
 #define TERM_START_SYSTEM	4
 
+/* Not generated automatically, to add extra attribute. */
+void ch_log(channel_T *ch, const char *fmt, ...)
+#ifdef __GNUC__
+__attribute__((format(printf, 2, 3)))
+#endif
+;
+
 #endif /* VIM__H */
