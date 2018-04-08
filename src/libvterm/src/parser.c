@@ -141,7 +141,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
     break;
   }
 
-#define ENTER_STRING_STATE(st) do { vt->parser.state = STRING; string_start = bytes + pos + 1; } while(0)
+#define ENTER_STRING_STATE()   do { vt->parser.state = STRING; string_start = bytes + pos + 1; } while(0)
 #define ENTER_STATE(st)        do { vt->parser.state = st; string_start = NULL; } while(0)
 #define ENTER_NORMAL_STATE()   ENTER_STATE(NORMAL)
 
