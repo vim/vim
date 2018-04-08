@@ -844,6 +844,7 @@ qf_parse_line(
     /* Always ignore case when looking for a matching error. */
     regmatch.rm_ic = TRUE;
 
+restofline:
     /* If there was no %> item start at the first pattern */
     if (fmt_start == NULL)
 	fmt_ptr = fmt_first;
@@ -858,7 +859,6 @@ qf_parse_line(
      * match or no match.
      */
     fields->valid = TRUE;
-restofline:
     for ( ; fmt_ptr != NULL; fmt_ptr = fmt_ptr->next)
     {
 	int r;
