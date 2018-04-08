@@ -7555,7 +7555,7 @@ cursor_pos_info(dict_T *dict)
 	bom_count = bomb_size();
 	if (bom_count > 0)
 	    vim_snprintf((char *)IObuff + STRLEN(IObuff), IOSIZE,
-					      _("(+%ld for BOM)"), bom_count);
+				   _("(+%lld for BOM)"), (long long)bom_count);
 #endif
 	if (dict == NULL)
 	{
