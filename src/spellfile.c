@@ -3649,7 +3649,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	{
 	    spin->si_msg_count = 0;
 	    vim_snprintf((char *)message, sizeof(message),
-		    _("line %6d, word %6d - %s"),
+		    _("line %6d, word %6ld - %s"),
 		       lnum, spin->si_foldwcount + spin->si_keepwcount, w);
 	    msg_start();
 	    msg_puts_long_attr(message, 0);
