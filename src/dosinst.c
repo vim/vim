@@ -23,7 +23,14 @@
 #define GVIMEXT32_PATH	    "GvimExt32\\gvimext.dll"
 
 /* Macro to do an error check I was typing over and over */
-#define CHECK_REG_ERROR(code) if (code != ERROR_SUCCESS) { printf("%ld error number:  %ld\n", (long)__LINE__, (long)code); return 1; }
+#define CHECK_REG_ERROR(code) \
+    do { \
+	if (code != ERROR_SUCCESS) \
+	{ \
+	    printf("%ld error number:  %ld\n", (long)__LINE__, (long)code); \
+	    return 1; \
+	} \
+    } while (0)
 
 int	has_vim = 0;		/* installable vim.exe exists */
 int	has_gvim = 0;		/* installable gvim.exe exists */

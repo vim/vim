@@ -824,7 +824,7 @@ vim_main2(void)
     no_wait_return = FALSE;
 
     /* 'autochdir' has been postponed */
-    DO_AUTOCHDIR
+    DO_AUTOCHDIR;
 
 #ifdef FEAT_TERMRESPONSE
     /* Requesting the termresponse is postponed until here, so that a "-c q"
