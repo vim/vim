@@ -38,11 +38,11 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - Add a way to set the 16 ANSI colors, to be used for 'termguicolors' and in
- *   the GUI. #2747
  * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
  *   redirection.  Probably in call to channel_set_pipes().
  * - implement term_setsize()
+ * - add an optional limit for the scrollback size.  When reaching it remove
+ *   10% at the start.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
@@ -64,8 +64,6 @@
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
  * - when 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
- * - add an optional limit for the scrollback size.  When reaching it remove
- *   10% at the start.
  */
 
 #include "vim.h"
@@ -3141,6 +3139,75 @@ init_default_colors(term_T *term)
     }
 }
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+/*
+ * Set the 16 ANSI colors from array of RGB values
+ */
+    static void
+set_vterm_palette(VTerm *vterm, long_u *rgb)
+{
+    int		index = 0;
+    VTermState	*state = vterm_obtain_state(vterm);
+    for (; index < 16; index++)
+    {
+	VTermColor	color;
+	color.red = (unsigned)(rgb[index] >> 16);
+	color.green = (unsigned)(rgb[index] >> 8) & 255;
+	color.blue = (unsigned)rgb[index] & 255;
+	vterm_state_set_palette_color(state, index, &color);
+    }
+}
+
+/*
+ * Set the ANSI color palette from a list of colors
+ */
+    static int
+set_ansi_colors_list(VTerm *vterm, list_T *list)
+{
+    int		n = 0;
+    long_u	rgb[16];
+    listitem_T	*li = list->lv_first;
+
+    for (; li != NULL && n < 16; li = li->li_next, n++)
+    {
+	char_u		*color_name;
+	guicolor_T	guicolor;
+
+	color_name = get_tv_string_chk(&li->li_tv);
+	if (color_name == NULL)
+	    return FAIL;
+
+	guicolor = GUI_GET_COLOR(color_name);
+	if (guicolor == INVALCOLOR)
+	    return FAIL;
+
+	rgb[n] = GUI_MCH_GET_RGB(guicolor);
+    }
+
+    if (n != 16 || li != NULL)
+	return FAIL;
+
+    set_vterm_palette(vterm, rgb);
+
+    return OK;
+}
+
+/*
+ * Initialize the ANSI color palette from g:terminal_ansi_colors[0:15]
+ */
+    static void
+init_vterm_ansi_colors(VTerm *vterm)
+{
+    dictitem_T	*var = find_var((char_u *)"g:terminal_ansi_colors", NULL, TRUE);
+
+    if (var != NULL
+	    && (var->di_tv.v_type != VAR_LIST
+		|| var->di_tv.vval.v_list == NULL
+		|| set_ansi_colors_list(vterm, var->di_tv.vval.v_list) == FAIL))
+	EMSG2(_(e_invarg2), "g:terminal_ansi_colors");
+}
+#endif
+
 /*
  * Handles a "drop" command from the job in the terminal.
  * "item" is the file name, "item->li_next" may have options.
@@ -3371,6 +3438,9 @@ create_vterm(term_T *term, int rows, int cols)
 	    vterm_obtain_state(vterm),
 	    &term->tl_default_color.fg,
 	    &term->tl_default_color.bg);
+
+    if (t_colors >= 16)
+	vterm_state_set_bold_highbright(vterm_obtain_state(vterm), 1);
 
     /* Required to initialize most things. */
     vterm_screen_reset(screen, 1 /* hard */);
@@ -4762,6 +4832,68 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
     }
 }
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+/*
+ * "term_getansicolors(buf)" function
+ */
+    void
+f_term_getansicolors(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf = term_get_buf(argvars, "term_getansicolors()");
+    term_T	*term;
+    VTermState	*state;
+    VTermColor  color;
+    char_u	hexbuf[10];
+    int		index;
+    list_T	*list;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+    if (term->tl_vterm == NULL)
+	return;
+
+    list = rettv->vval.v_list;
+    state = vterm_obtain_state(term->tl_vterm);
+    for (index = 0; index < 16; index++)
+    {
+	vterm_state_get_palette_color(state, index, &color);
+	sprintf((char *)hexbuf, "#%02x%02x%02x",
+		color.red, color.green, color.blue);
+	if (list_append_string(list, hexbuf, 7) == FAIL)
+	    return;
+    }
+}
+
+/*
+ * "term_setansicolors(buf, list)" function
+ */
+    void
+f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf = term_get_buf(argvars, "term_setansicolors()");
+    term_T	*term;
+
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+    if (term->tl_vterm == NULL)
+	return;
+
+    if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
+    {
+	EMSG(_(e_listreq));
+	return;
+    }
+
+    if (set_ansi_colors_list(term->tl_vterm, argvars[1].vval.v_list) == FAIL)
+	EMSG(_(e_invarg));
+}
+#endif
+
 /*
  * "term_setrestore(buf, command)" function
  */
@@ -4824,7 +4956,8 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		JO2_TERM_NAME + JO2_TERM_FINISH + JO2_HIDDEN + JO2_TERM_OPENCMD
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS
-		    + JO2_NORESTORE + JO2_TERM_KILL) == FAIL)
+		    + JO2_NORESTORE + JO2_TERM_KILL
+		    + JO2_ANSI_COLORS) == FAIL)
 	return;
 
     buf = term_start(&argvars[0], NULL, &opt, 0);
@@ -5152,6 +5285,13 @@ term_and_job_init(
 
     create_vterm(term, term->tl_rows, term->tl_cols);
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    if (opt->jo_set2 & JO2_ANSI_COLORS)
+	set_vterm_palette(term->tl_vterm, opt->jo_ansi_colors);
+    else
+	init_vterm_ansi_colors(term->tl_vterm);
+#endif
+
     channel_set_job(channel, job, opt);
     job_set_options(job, opt);
 
@@ -5323,6 +5463,13 @@ term_and_job_init(
 	jobopt_T    *opt)
 {
     create_vterm(term, term->tl_rows, term->tl_cols);
+
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    if (opt->jo_set2 & JO2_ANSI_COLORS)
+	set_vterm_palette(term->tl_vterm, opt->jo_ansi_colors);
+    else
+	init_vterm_ansi_colors(term->tl_vterm);
+#endif
 
     /* This may change a string in "argvar". */
     term->tl_job = job_start(argvar, argv, opt);

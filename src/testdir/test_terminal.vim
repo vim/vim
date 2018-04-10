@@ -1255,3 +1255,73 @@ func Test_terminal_api_call_fails()
   call ch_logfile('', '')
   call delete('Xlog')
 endfunc
+
+func Test_terminal_ansicolors_default()
+  let colors = [
+	\ '#000000', '#e00000',
+	\ '#00e000', '#e0e000',
+	\ '#0000e0', '#e000e0',
+	\ '#00e0e0', '#e0e0e0',
+	\ '#808080', '#ff4040',
+	\ '#40ff40', '#ffff40',
+	\ '#4040ff', '#ff40ff',
+	\ '#40ffff', '#ffffff',
+	\]
+
+  let buf = Run_shell_in_terminal({})
+  call assert_equal(colors, term_getansicolors(buf))
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+
+  exe buf . 'bwipe'
+endfunc
+
+let s:test_colors = [
+	\ '#616e64', '#0d0a79',
+	\ '#6d610d', '#0a7373',
+	\ '#690d0a', '#6d696e',
+	\ '#0d0a6f', '#616e0d',
+	\ '#0a6479', '#6d0d0a',
+	\ '#617373', '#0d0a69',
+	\ '#6d690d', '#0a6e6f',
+	\ '#610d0a', '#6e6479',
+	\]
+
+func Test_terminal_ansicolors_global()
+  let g:terminal_ansi_colors = reverse(copy(s:test_colors))
+  let buf = Run_shell_in_terminal({})
+  call assert_equal(g:terminal_ansi_colors, term_getansicolors(buf))
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+
+  exe buf . 'bwipe'
+  unlet g:terminal_ansi_colors
+endfunc
+
+func Test_terminal_ansicolors_func()
+  let g:terminal_ansi_colors = reverse(copy(s:test_colors))
+  let buf = Run_shell_in_terminal({'ansi_colors': s:test_colors})
+  call assert_equal(s:test_colors, term_getansicolors(buf))
+
+  call term_setansicolors(buf, g:terminal_ansi_colors)
+  call assert_equal(g:terminal_ansi_colors, term_getansicolors(buf))
+
+  let colors = [
+	\ 'ivory', 'AliceBlue',
+	\ 'grey67', 'dark goldenrod',
+	\ 'SteelBlue3', 'PaleVioletRed4',
+	\ 'MediumPurple2', 'yellow2',
+	\ 'RosyBrown3', 'OrangeRed2',
+	\ 'white smoke', 'navy blue',
+	\ 'grey47', 'gray97',
+	\ 'MistyRose2', 'DodgerBlue4',
+	\]
+  call term_setansicolors(buf, colors)
+
+  let colors[4] = 'Invalid'
+  call assert_fails('call term_setansicolors(buf, colors)', 'E474:')
+
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+endfunc

@@ -4802,6 +4802,50 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set2 |= JO2_TERM_KILL;
 		opt->jo_term_kill = get_tv_string_chk(item);
 	    }
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	    else if (STRCMP(hi->hi_key, "ansi_colors") == 0)
+	    {
+		int 		n = 0;
+		listitem_T	*li;
+		long_u		rgb[16];
+
+		if (!(supported2 & JO2_ANSI_COLORS))
+		    break;
+
+		if (item == NULL || item->v_type != VAR_LIST
+			|| item->vval.v_list == NULL)
+		{
+		    EMSG2(_(e_invargval), "ansi_colors");
+		    return FAIL;
+		}
+
+		li = item->vval.v_list->lv_first;
+		for (; li != NULL && n < 16; li = li->li_next, n++)
+		{
+		    char_u	*color_name;
+		    guicolor_T 	guicolor;
+
+		    color_name = get_tv_string_chk(&li->li_tv);
+		    if (color_name == NULL)
+			return FAIL;
+
+		    guicolor = GUI_GET_COLOR(color_name);
+		    if (guicolor == INVALCOLOR)
+			return FAIL;
+
+		    rgb[n] = GUI_MCH_GET_RGB(guicolor);
+		}
+
+		if (n != 16 || li != NULL)
+		{
+		    EMSG2(_(e_invargval), "ansi_colors");
+		    return FAIL;
+		}
+
+		opt->jo_set2 |= JO2_ANSI_COLORS;
+		memcpy(opt->jo_ansi_colors, rgb, sizeof(rgb));
+	    }
+# endif
 #endif
 	    else if (STRCMP(hi->hi_key, "env") == 0)
 	    {
