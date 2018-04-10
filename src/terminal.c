@@ -3400,7 +3400,7 @@ static VTermParserCallbacks parser_fallbacks = {
     static void *
 vterm_malloc(size_t size, void *data UNUSED)
 {
-    return alloc_clear(size);
+    return alloc_clear((unsigned) size);
 }
 
     static void
@@ -4016,9 +4016,9 @@ get_separator(int text_width, char_u *fname)
     int	    fname_size;
     char_u  *p = fname;
     int	    i;
-    int	    off;
+    size_t  off;
 
-    textline = alloc(width + STRLEN(fname) + 1);
+    textline = alloc(width + (int)STRLEN(fname) + 1);
     if (textline == NULL)
 	return NULL;
 
