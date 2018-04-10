@@ -35,6 +35,7 @@ func Test_window_cmd_cmdwin_with_vsp()
 endfunc
 
 function Test_window_cmd_wincmd_gf()
+  set shortmess-=A
   let fname = 'test_gf.txt'
   let swp_fname = '.' . fname . '.swp'
   call writefile([], fname)

@@ -96,6 +96,9 @@ func RunTheTest(test)
   " mode message.
   set noshowmode
 
+  " Avoid SwapFile Exists Warning
+  set shortmess+=A
+
   " Clear any overrides.
   call test_override('ALL', 0)
 
