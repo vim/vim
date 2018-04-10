@@ -1255,7 +1255,7 @@ eof
 	else
 	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -I${vi_cv_path_python_epfx}/include/python${vi_cv_var_python_version}"
 	fi
-	if test "X$have_python_config_dir" = "X1"; then
+	if test "X$have_python_config_dir" = "X1" -a "$enable_pythoninterp" = "dynamic"; then
 	  dnl Define PYTHON_HOME if --with-python-config-dir was used
 	  PYTHON_CFLAGS="${PYTHON_CFLAGS} -DPYTHON_HOME='\"${vi_cv_path_python_pfx}\"'"
 
@@ -1469,7 +1469,7 @@ eof
         else
           PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
         fi
-	if test "X$have_python3_config_dir" = "X1"; then
+	if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
 	  dnl Define PYTHON3_HOME if --with-python-config-dir was used
 	  PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
 	fi
