@@ -225,8 +225,8 @@ set_term_and_win_size(term_T *term)
 	 * at the command line and scroll up as needed, using tl_toprow. */
 	term->tl_rows = Rows;
 	term->tl_cols = Columns;
+	return;
     }
-    else
 #endif
     if (*curwin->w_p_tms != NUL)
     {
