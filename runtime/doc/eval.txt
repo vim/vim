@@ -2423,6 +2423,7 @@ term_dumpload({filename} [, {options}])
 term_dumpwrite({buf}, {filename} [, {options}])
 				none	dump terminal window contents
 term_getaltscreen({buf})	Number	get the alternate screen flag
+term_getansicolors({buf})	List	get ANSI palette in GUI color mode
 term_getattr({attr}, {what})	Number	get the value of attribute {what}
 term_getcursor({buf})		List	get the cursor position of a terminal
 term_getjob({buf})		Job	get the job associated with a terminal
@@ -2435,6 +2436,8 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_setansicolors({buf}, {colors})
+				none	set ANSI palette in GUI color mode
 term_setkill({buf}, {how}) 	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
@@ -8248,6 +8251,16 @@ term_getaltscreen({buf})				*term_getaltscreen()*
 		{buf} is used as with |term_getsize()|.
 		{only available when compiled with the |+terminal| feature}
 
+term_getansicolors({buf})				*term_getansicolors()*
+		Get the ANSI color palette in use by terminal {buf}.
+		Returns a List of length 16 where each element is a String
+		representing a color in hexadecimal "#rrggbb" format.
+
+		{buf} is used as with |term_getsize()|.  If the buffer does not
+		exist or is not a terminal window, an empty list is returned.
+		{only available when compiled with the |+terminal| feature and
+		with either GUI enabled or the |+termguicolors| feature}
+
 term_getattr({attr}, {what})				*term_getattr()*
 		Given {attr}, a value returned by term_scrape() in the "attr"
 		item, return whether {what} is on.  {what} can be one of:
@@ -8379,6 +8392,17 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		means the character CTRL-X.
 		{only available when compiled with the |+terminal| feature}
 
+term_setansicolors({buf}, {colors})			*term_setansicolors()*
+		Set the ANSI color palette used by terminal {buf}.
+		{colors} must be a List of 16 valid color names or hexadecimal
+		color codes, like those accepted by |highlight-guifg|.
+
+		Note: When not using GUI colors (GUI mode or |termguicolors|),
+		the terminal window always uses the 16 ANSI colors of the
+		underlying terminal.
+		{only available when compiled with the |+terminal| feature and
+		with either GUI enabled or the |+termguicolors| feature}
+
 term_setkill({buf}, {how})				*term_setkill()*
 		When exiting Vim or trying to close the terminal window in
 		another way, {how} defines whether the job in the terminal can
@@ -8463,6 +8487,9 @@ term_start({cmd}, {options})				*term_start()*
 				     CTRL-D is used on MS-Windows. For Python
 				     use CTRL-Z or "exit()". For a shell use
 				     "exit".  A CR is always added.
+		   "ansi_colors"     a list of 16 color names or hex codes
+				     defining the ANSI palette used in GUI
+				     color modes.  See |g:terminal_ansi_colors|.
 
 		{only available when compiled with the |+terminal| feature}
 

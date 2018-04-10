@@ -1708,6 +1708,7 @@ struct channel_S {
 #define JO2_EOF_CHARS	    0x1000	/* "eof_chars" */
 #define JO2_NORESTORE	    0x2000	/* "norestore" */
 #define JO2_TERM_KILL	    0x4000	/* "term_kill" */
+#define JO2_ANSI_COLORS	    0x8000	/* "ansi_colors" */
 #define JO2_ALL		    0x7FFF
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
@@ -1777,6 +1778,9 @@ typedef struct
     int		jo_term_finish;
     char_u	*jo_eof_chars;
     char_u	*jo_term_kill;
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    long_u	jo_ansi_colors[16];
+# endif
 #endif
 } jobopt_T;
 
