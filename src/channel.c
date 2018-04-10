@@ -179,8 +179,8 @@ ch_log(channel_T *ch, const char *fmt, ...)
 
     static void
 ch_error(channel_T *ch, const char *fmt, ...)
-#ifdef __GNUC__
-__attribute__((format(printf, 2, 3)))
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
 #endif
     ;
 

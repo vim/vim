@@ -2085,6 +2085,10 @@ typedef struct _stat64 stat_T;
 typedef struct stat stat_T;
 #endif
 
+#if defined(__GNUC__) && !defined(__MINGW32__)
+# define USE_PRINTF_FORMAT_ATTRIBUTE
+#endif
+
 typedef enum
 {
     ASSERT_EQUAL,

@@ -120,7 +120,7 @@ int
 _RTLENTRYF
 #  endif
 vim_snprintf_add(char *, size_t, char *, ...)
-#ifdef __GNUC__
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 3, 4)))
 #endif
     ;
@@ -130,7 +130,7 @@ int
 _RTLENTRYF
 #  endif
 vim_snprintf(char *, size_t, char *, ...)
-#ifdef __GNUC__
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 3, 4)))
 #endif
     ;
@@ -223,7 +223,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 
 /* Not generated automatically, to add extra attribute. */
 void ch_log(channel_T *ch, const char *fmt, ...)
-#ifdef __GNUC__
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 2, 3)))
 #endif
     ;
