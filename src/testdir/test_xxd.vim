@@ -3,11 +3,10 @@ if empty($XXD) || !executable($XXD)
   finish
 endif
 
-func! PrepareBuffer(command)
-  %d
-  call append(0, a:command)
+func! PrepareBuffer(lines)
+  new
+  call append(0, a:lines)
   $d
-  w XXDfile
 endfunc
 
 func! s:Mess(counter)
@@ -15,8 +14,9 @@ func! s:Mess(counter)
 endfunc
 
 func! Test_xxd()
-  new
   call PrepareBuffer(range(1,30))
+  w XXDfile
+
   " Test 1: simple, filter the result through xxd
   let s:test = 1
   %!$XXD %
@@ -28,6 +28,7 @@ func! Test_xxd()
         \ '00000040: 350a 3236 0a32 370a 3238 0a32 390a 3330  5.26.27.28.29.30',
         \ '00000050: 0a                                       .']
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
   " Test 2: reverse the result
   let s:test += 1
   %!$XXD -r
@@ -56,12 +57,14 @@ func! Test_xxd()
       \ '20617574686f723a0a2e5c2220202020546f6e79',
       \ '204e7567656e74203c746f6e79407363746e7567']
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
   " Test 6: Print the date from xxd.1
   let s:test += 1
   %d
   0r! $XXD -s 0x36 -l 13 -c 13 ../../runtime/doc/xxd.1
   $d
   call assert_equal('00000036: 3231 7374 204d 6179 2031 3939 36  21st May 1996', getline(1), s:Mess(s:test))
+
   " Test 7: Print C include
   let s:test += 1
   call writefile(['TESTabcd09'], 'XXDfile')
@@ -72,6 +75,7 @@ func! Test_xxd()
         \ '  0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a', '};',
         \ 'unsigned int XXDfile_len = 11;']
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
   " Test 8: Print C include capitalized
   let s:test += 1
   call writefile(['TESTabcd09'], 'XXDfile')
@@ -82,9 +86,11 @@ func! Test_xxd()
         \ '  0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a', '};',
         \ 'unsigned int XXDFILE_LEN = 11;']
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
-  " Test 9: Create a  file with containing a single 'A'
+
+  " Test 9: Create a file with containing a single 'A'
   let s:test += 1
   call delete('XXDfile')
+  bwipe! XXDfile
   call system('echo "010000: 41"|'.$XXD.' -r -s -0x10000 > XXDfile')
   call PrepareBuffer(readfile('XXDfile')[0])
   call assert_equal('A', getline(1), s:Mess(s:test))
