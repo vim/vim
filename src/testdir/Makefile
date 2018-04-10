@@ -4,6 +4,7 @@
 
 # Use console or GUI.
 VIMPROG = ../vim
+XXDPROG = ../xxd/xxd
 # VIMPROG = ../gvim
 
 SCRIPTSOURCE = ../../runtime
@@ -145,3 +146,6 @@ test_gui_init.res: test_gui_init.vim
 
 opt_test.vim: ../option.c gen_opt_test.vim
 	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../option.c
+
+test_xxd.res:
+	XXD=$(XXDPROG); export XXD; $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim test_xxd.vim

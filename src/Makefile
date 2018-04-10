@@ -2308,6 +2308,7 @@ test_arglist \
 	test_windows_home \
 	test_wordcount \
 	test_writefile \
+	test_xxd \
 	test_alot_latin \
 	test_alot_utf8 \
 	test_alot:

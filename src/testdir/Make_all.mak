@@ -188,6 +188,7 @@ NEW_TESTS = test_arabic.res \
 	    test_windows_home.res \
 	    test_wordcount.res \
 	    test_writefile.res \
+	    test_xxd.res \
 	    test_alot_latin.res \
 	    test_alot_utf8.res \
 	    test_alot.res
