@@ -39,14 +39,12 @@
  *
  * TODO:
  * - Add a way to set the 16 ANSI colors, to be used for 'termguicolors' and in
- *   the GUI.
+ *   the GUI. #2747
  * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
  *   redirection.  Probably in call to channel_set_pipes().
  * - implement term_setsize()
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
- * - Adding WinBar to terminal window doesn't display, text isn't shifted down.
- *   a job that uses 16 colors while Vim is using > 256.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
  * - after resizing windows overlap. (Boris Staletic, #2164)
@@ -3330,6 +3328,26 @@ static VTermParserCallbacks parser_fallbacks = {
 };
 
 /*
+ * Use Vim's allocation functions for vterm so profiling works.
+ */
+    static void *
+vterm_malloc(size_t size, void *data UNUSED)
+{
+    return alloc_clear(size);
+}
+
+    static void
+vterm_memfree(void *ptr, void *data UNUSED)
+{
+    vim_free(ptr);
+}
+
+static VTermAllocatorFunctions vterm_allocator = {
+  &vterm_malloc,
+  &vterm_memfree
+};
+
+/*
  * Create a new vterm and initialize it.
  */
     static void
@@ -3340,7 +3358,7 @@ create_vterm(term_T *term, int rows, int cols)
     VTermState	    *state;
     VTermValue	    value;
 
-    vterm = vterm_new(rows, cols);
+    vterm = vterm_new_with_allocator(rows, cols, &vterm_allocator, NULL);
     term->tl_vterm = vterm;
     screen = vterm_obtain_screen(vterm);
     vterm_screen_set_callbacks(screen, &screen_callbacks, term);
