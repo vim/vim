@@ -230,9 +230,9 @@
 #endif
 
 #ifdef STARTUPTIME
-# define TIME_MSG(s) { if (time_fd != NULL) time_msg(s, NULL); }
+# define TIME_MSG(s) do { if (time_fd != NULL) time_msg(s, NULL); } while (0)
 #else
-# define TIME_MSG(s)
+# define TIME_MSG(s) do { /**/ } while (0)
 #endif
 
 #ifdef FEAT_VREPLACE
@@ -289,9 +289,9 @@
 #endif
 
 #ifdef FEAT_AUTOCHDIR
-# define DO_AUTOCHDIR if (p_acd) do_autochdir();
+# define DO_AUTOCHDIR do { if (p_acd) do_autochdir(); } while (0)
 #else
-# define DO_AUTOCHDIR
+# define DO_AUTOCHDIR do { /**/ } while (0)
 #endif
 
 #define RESET_BINDING(wp)  (wp)->w_p_scb = FALSE; (wp)->w_p_crb = FALSE

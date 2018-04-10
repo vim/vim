@@ -2705,15 +2705,21 @@ fold_line(
     }
 
 #ifdef FEAT_RIGHTLEFT
-# define RL_MEMSET(p, v, l)  if (wp->w_p_rl) \
-				for (ri = 0; ri < l; ++ri) \
-				   ScreenAttrs[off + (wp->w_width - (p) - (l)) + ri] = v; \
-			     else \
-				for (ri = 0; ri < l; ++ri) \
-				   ScreenAttrs[off + (p) + ri] = v
+# define RL_MEMSET(p, v, l) \
+    do { \
+	if (wp->w_p_rl) \
+	    for (ri = 0; ri < l; ++ri) \
+	       ScreenAttrs[off + (wp->w_width - (p) - (l)) + ri] = v; \
+	 else \
+	    for (ri = 0; ri < l; ++ri) \
+	       ScreenAttrs[off + (p) + ri] = v; \
+    } while (0)
 #else
-# define RL_MEMSET(p, v, l)   for (ri = 0; ri < l; ++ri) \
-				 ScreenAttrs[off + (p) + ri] = v
+# define RL_MEMSET(p, v, l) \
+    do { \
+	for (ri = 0; ri < l; ++ri) \
+	    ScreenAttrs[off + (p) + ri] = v; \
+    } while (0)
 #endif
 
     /* Set all attributes of the 'number' or 'relativenumber' column and the
