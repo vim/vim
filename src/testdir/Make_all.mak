@@ -72,6 +72,7 @@ NEW_TESTS = test_arabic.res \
 	    test_autocmd.res \
 	    test_autoload.res \
 	    test_backspace_opt.res \
+	    test_blockedit.res \
 	    test_breakindent.res \
 	    test_bufwintabinfo.res \
 	    test_cdo.res \

@@ -2127,6 +2127,7 @@ test_arglist \
 	test_autocmd \
 	test_autoload \
 	test_backspace_opt \
+	test_blockedit \
 	test_breakindent \
 	test_bufline \
 	test_bufwintabinfo \

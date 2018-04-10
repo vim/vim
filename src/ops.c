@@ -1093,7 +1093,7 @@ do_record(int c)
 
     if (Recording == FALSE)	    /* start recording */
     {
-			/* registers 0-9, a-z and " are allowed */
+	/* registers 0-9, a-z and " are allowed */
 	if (c < 0 || (!ASCII_ISALNUM(c) && c != '"'))
 	    retval = FAIL;
 	else
@@ -2702,6 +2702,7 @@ op_insert(oparg_T *oap, long count1)
     if (oap->block_mode)
     {
 	struct block_def	bd2;
+	int			did_indent = FALSE;
 
 	/* If indent kicked in, the firstline might have changed
 	 * but only do that, if the indent actually increased. */
@@ -2710,11 +2711,14 @@ op_insert(oparg_T *oap, long count1)
 	{
 	    bd.textcol += ind_post - ind_pre;
 	    bd.start_vcol += ind_post - ind_pre;
+	    did_indent = TRUE;
 	}
 
 	/* The user may have moved the cursor before inserting something, try
-	 * to adjust the block for that. */
-	if (oap->start.lnum == curbuf->b_op_start_orig.lnum && !bd.is_MAX)
+	 * to adjust the block for that.  But only do it, if the difference
+	 * does not come from indent kicking in. */
+	if (oap->start.lnum == curbuf->b_op_start_orig.lnum
+						  && !bd.is_MAX && !did_indent)
 	{
 	    if (oap->op_type == OP_INSERT
 		    && oap->start.col
