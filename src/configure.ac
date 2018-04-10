@@ -1157,7 +1157,7 @@ if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; th
 
       AC_ARG_WITH(python-config-dir,
 	[  --with-python-config-dir=PATH  Python's config directory],
-	[ vi_cv_path_python_conf="${withval}" ] )
+	[ vi_cv_path_python_conf="${withval}"; have_python_config_dir=1 ] )
 
       AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python_conf,
       [
@@ -1254,6 +1254,11 @@ eof
 	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version}"
 	else
 	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -I${vi_cv_path_python_epfx}/include/python${vi_cv_var_python_version}"
+	fi
+	if test "X$have_python_config_dir" = "X1"; then
+	  dnl Define PYTHON_HOME if --with-python-config-dir was used
+	  PYTHON_CFLAGS="${PYTHON_CFLAGS} -DPYTHON_HOME='\"${vi_cv_path_python_pfx}\"'"
+
 	fi
 	PYTHON_SRC="if_python.c"
 	PYTHON_OBJ="objects/if_python.o"
@@ -1399,7 +1404,7 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
   
       AC_ARG_WITH(python3-config-dir,
        [  --with-python3-config-dir=PATH  Python's config directory],
-       [ vi_cv_path_python3_conf="${withval}" ] )
+       [ vi_cv_path_python3_conf="${withval}"; have_python3_config_dir=1 ] )
   
       AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python3_conf,
       [
@@ -1464,6 +1469,10 @@ eof
         else
           PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
         fi
+	if test "X$have_python3_config_dir" = "X1"; then
+	  dnl Define PYTHON3_HOME if --with-python-config-dir was used
+	  PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+	fi
         PYTHON3_SRC="if_python3.c"
         PYTHON3_OBJ="objects/if_python3.o"
   

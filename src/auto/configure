@@ -5955,7 +5955,7 @@ fi
 
 # Check whether --with-python-config-dir was given.
 if test "${with_python_config_dir+set}" = set; then :
-  withval=$with_python_config_dir;  vi_cv_path_python_conf="${withval}"
+  withval=$with_python_config_dir;  vi_cv_path_python_conf="${withval}"; have_python_config_dir=1
 fi
 
 
@@ -6061,6 +6061,10 @@ $as_echo "$vi_cv_dll_name_python" >&6; }
 	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version}"
 	else
 	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -I${vi_cv_path_python_epfx}/include/python${vi_cv_var_python_version}"
+	fi
+	if test "X$have_python_config_dir" = "X1"; then
+	  	  PYTHON_CFLAGS="${PYTHON_CFLAGS} -DPYTHON_HOME='\"${vi_cv_path_python_pfx}\"'"
+
 	fi
 	PYTHON_SRC="if_python.c"
 	PYTHON_OBJ="objects/if_python.o"
@@ -6312,7 +6316,7 @@ fi
 
 # Check whether --with-python3-config-dir was given.
 if test "${with_python3_config_dir+set}" = set; then :
-  withval=$with_python3_config_dir;  vi_cv_path_python3_conf="${withval}"
+  withval=$with_python3_config_dir;  vi_cv_path_python3_conf="${withval}"; have_python3_config_dir=1
 fi
 
 
@@ -6394,6 +6398,9 @@ $as_echo "$vi_cv_dll_name_python3" >&6; }
         else
           PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
         fi
+	if test "X$have_python3_config_dir" = "X1"; then
+	  	  PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+	fi
         PYTHON3_SRC="if_python3.c"
         PYTHON3_OBJ="objects/if_python3.o"
 
