@@ -3165,12 +3165,6 @@ objects/if_perl.o: auto/if_perl.c
 objects/if_perlsfio.o: if_perlsfio.c
 	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) -o $@ if_perlsfio.c
 
-objects/py_getpath.o: $(PYTHON_CONFDIR)/getpath.c
-	$(CCC_NF) $(PYTHON_CFLAGS) $(ALL_CFLAGS) -o $@ \
-		$(PYTHON_CONFDIR)/getpath.c \
-		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN \
-		$(PYTHON_GETPATH_CFLAGS)
-
 objects/if_python.o: if_python.c if_py_both.h
 	$(CCC_NF) $(PYTHON_CFLAGS) $(PYTHON_CFLAGS_EXTRA) $(ALL_CFLAGS) -o $@ if_python.c
 
