@@ -1143,7 +1143,7 @@ func Test_pipe_to_buffer_raw()
   let job = job_start([s:python, '-c', 
         \ 'import sys; [sys.stdout.write(".") and sys.stdout.flush() for _ in range(10000)]'], options)
   call assert_equal("run", job_status(job))
-  call WaitFor('len(join(getline(1, "$"), "")) >= 10000', 3000)
+  call WaitFor('len(join(getline(1, "$"), "")) >= 10000')
   try
     let totlen = 0
     for line in getline(1, '$')
@@ -1506,7 +1506,7 @@ func Test_exit_callback_interval()
   let g:exit_cb_val = {'start': reltime(), 'end': 0, 'process': 0}
   let job = job_start([s:python, '-c', 'import time;time.sleep(0.5)'], {'exit_cb': 'MyExitTimeCb'})
   let g:exit_cb_val.process = job_info(job).process
-  call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0', 2000)
+  call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
   let elapsed = reltimefloat(g:exit_cb_val.end)
   call assert_true(elapsed > 0.5)
   call assert_true(elapsed < 1.0)

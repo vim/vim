@@ -1061,7 +1061,7 @@ func Api_drop_common(options)
 	\ "set t_ts=",
 	\ ], 'Xscript')
   let buf = RunVimInTerminal('-S Xscript', {})
-  call WaitFor({-> bufnr('Xtextfile') > 0}, 5000)
+  call WaitFor({-> bufnr('Xtextfile') > 0})
   call assert_equal('Xtextfile', expand('%:t'))
   call assert_true(winnr('$') >= 3)
   return buf
