@@ -679,14 +679,11 @@ PYTHON3_OBJ
 PYTHON3_SRC
 PYTHON3_CFLAGS
 PYTHON3_LIBS
-PYTHON3_CONFDIR
 vi_cv_path_python3
 PYTHON_OBJ
 PYTHON_SRC
 PYTHON_CFLAGS
-PYTHON_GETPATH_CFLAGS
 PYTHON_LIBS
-PYTHON_CONFDIR
 vi_cv_path_python
 PERL_LIBS
 PERL_CFLAGS
@@ -6018,11 +6015,7 @@ eof
 		  vi_cv_path_python_plibs="-F${python_PYTHONFRAMEWORKPREFIX} -framework Python"
 	      fi
 	    else
-	      if test "${vi_cv_var_python_version}" = "1.4"; then
-		  vi_cv_path_python_plibs="${PYTHON_CONFDIR}/libModules.a ${PYTHON_CONFDIR}/libPython.a ${PYTHON_CONFDIR}/libObjects.a ${PYTHON_CONFDIR}/libParser.a"
-	      else
-		  vi_cv_path_python_plibs="-L${PYTHON_CONFDIR} -lpython${vi_cv_var_python_version}"
-	      fi
+	      vi_cv_path_python_plibs="-L${PYTHON_CONFDIR} -lpython${vi_cv_var_python_version}"
 	      	      	      	      if test -n "${python_LINKFORSHARED}" && test -n "${python_PYTHONFRAMEWORKPREFIX}"; then
 	        python_link_symbol=`echo ${python_LINKFORSHARED} | sed 's/\([^ \t][^ \t]*[ \t][ \t]*[^ \t][^ \t]*\)[ \t].*/\1/'`
 		python_link_path=`echo ${python_LINKFORSHARED} |   sed 's/\([^ \t][^ \t]*[ \t][ \t]*[^ \t][^ \t]*\)[ \t][ \t]*\(.*\)/\2/'`
@@ -6068,10 +6061,6 @@ $as_echo "$vi_cv_dll_name_python" >&6; }
 	fi
 	PYTHON_SRC="if_python.c"
 	PYTHON_OBJ="objects/if_python.o"
-	if test "${vi_cv_var_python_version}" = "1.4"; then
-	   PYTHON_OBJ="$PYTHON_OBJ objects/py_getpath.o"
-	fi
-    PYTHON_GETPATH_CFLAGS="-DPYTHONPATH='\"${vi_cv_path_pythonpath}\"' -DPREFIX='\"${vi_cv_path_python_pfx}\"' -DEXEC_PREFIX='\"${vi_cv_path_python_epfx}\"'"
 
 								{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if -pthread should be used" >&5
 $as_echo_n "checking if -pthread should be used... " >&6; }
@@ -6168,8 +6157,6 @@ $as_echo "too old" >&6; }
     as_fn_error $? "could not configure python" "$LINENO" 5
   fi
 fi
-
-
 
 
 
@@ -6498,7 +6485,6 @@ $as_echo "too old" >&6; }
     as_fn_error $? "could not configure python3" "$LINENO" 5
   fi
 fi
-
 
 
 
@@ -14323,7 +14309,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we need to force -D_FILE_OFFSET_BITS=64" >&5
 $as_echo_n "checking whether we need to force -D_FILE_OFFSET_BITS=64... " >&6; }
-if echo "$CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_GETPATH_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
+if echo "$CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
   $as_echo "#define _FILE_OFFSET_BITS 64" >>confdefs.h
