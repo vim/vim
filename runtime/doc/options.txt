@@ -1087,7 +1087,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Use 'backupdir' to put the backup in a different directory.
 
 						*'backupskip'* *'bsk'*
-'backupskip' 'bsk'	string	(default: "/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*")
+'backupskip' 'bsk'	string	(default: "$TMPDIR/*,$TMP/*,$TEMP/*",
+				 Unix: "/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*",
+				 Mac OS X:
+				 "/private/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*")
 			global
 			{not in Vi}
 			{not available when compiled without the |+wildignore|
