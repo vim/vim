@@ -8699,7 +8699,8 @@ screen_fill(
 	if (row == Rows - 1)		/* overwritten the command line */
 	{
 	    redraw_cmdline = TRUE;
-	    if (c1 == ' ' && c2 == ' ')
+	    if (start_col == 0 && end_col == Columns
+		    && c1 == ' ' && c2 == ' ' && attr == 0)
 		clear_cmdline = FALSE;	/* command line has been cleared */
 	    if (start_col == 0)
 		mode_displayed = FALSE; /* mode cleared or overwritten */
