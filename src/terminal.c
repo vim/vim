@@ -2056,6 +2056,11 @@ terminal_loop(int blocking)
 		/* "CTRL-W .": send CTRL-W to the job */
 		c = Ctrl_W;
 	    }
+	    else if (termkey == 0 && c == Ctrl_BSL)
+	    {
+		/* "CTRL-W CTRL-\": send CTRL-\ to the job */
+		c = Ctrl_BSL;
+	    }
 	    else if (c == 'N')
 	    {
 		/* CTRL-W N : go to Terminal-Normal mode. */
@@ -2173,7 +2178,7 @@ color2index(VTermColor *color, int fg, int *boldp)
 	    case  2: return lookup_color( 4, fg, boldp) + 1; /* dark red */
 	    case  3: return lookup_color( 2, fg, boldp) + 1; /* dark green */
 	    case  4: return lookup_color( 6, fg, boldp) + 1; /* brown */
-	    case  5: return lookup_color( 1, fg, boldp) + 1; /* dark blue*/
+	    case  5: return lookup_color( 1, fg, boldp) + 1; /* dark blue */
 	    case  6: return lookup_color( 5, fg, boldp) + 1; /* dark magenta */
 	    case  7: return lookup_color( 3, fg, boldp) + 1; /* dark cyan */
 	    case  8: return lookup_color( 8, fg, boldp) + 1; /* light grey */

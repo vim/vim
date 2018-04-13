@@ -72,6 +72,7 @@ See |CTRL-W| for more commands.
 
 Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N* 
 	CTRL-W .	send a CTRL-W to the job in the terminal
+	CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
 	CTRL-W N	go to Terminal-Normal mode, see |Terminal-mode|
 	CTRL-\ CTRL-N   go to Terminal-Normal mode, see |Terminal-mode|
 	CTRL-W " {reg}  paste register {reg}		*CTRL-W_quote*
