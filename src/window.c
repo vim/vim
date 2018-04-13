@@ -778,6 +778,7 @@ win_split_ins(
     int		before;
     int		minheight;
     int		wmh1;
+    int		did_set_fraction = FALSE;
 
     if (flags & WSP_TOP)
 	oldwin = firstwin;
@@ -959,6 +960,11 @@ win_split_ins(
 	 * instead, if possible. */
 	if (oldwin->w_p_wfh)
 	{
+	    /* Set w_fraction now so that the cursor keeps the same relative
+	     * vertical position using the old height. */
+	    set_fraction(oldwin);
+	    did_set_fraction = TRUE;
+
 	    win_setheight_win(oldwin->w_height + new_size + STATUS_HEIGHT,
 								      oldwin);
 	    oldwin_height = oldwin->w_height;
@@ -1088,7 +1094,8 @@ win_split_ins(
 
     /* Set w_fraction now so that the cursor keeps the same relative
      * vertical position. */
-    set_fraction(oldwin);
+    if (!did_set_fraction)
+	set_fraction(oldwin);
     wp->w_fraction = oldwin->w_fraction;
 
     if (flags & WSP_VERT)
