@@ -25,3 +25,20 @@ func Test_nocatch_restore_silent_emsg()
   let c5 = nr2char(screenchar(&lines, 5))
   call assert_equal('wrong', c1 . c2 . c3 . c4 . c5)
 endfunc
+
+func Test_mkdir_p()
+  call mkdir('Xdir/nested', 'p')
+  call assert_true(isdirectory('Xdir/nested'))
+  try
+    " Trying to make existing directories doesn't error
+    call mkdir('Xdir', 'p')
+    call mkdir('Xdir/nested', 'p')
+  catch /E739:/
+    call assert_report('mkdir(..., "p") failed for an existing directory')
+  endtry
+  " 'p' doesn't suppress real errors
+  call writefile([], 'Xfile')
+  call assert_fails('call mkdir("Xfile", "p")', 'E739')
+  call delete('Xfile')
+  call delete('Xdir', 'rf')
+endfunc

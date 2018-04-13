@@ -8057,22 +8057,31 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
 
     dir = get_tv_string_buf(&argvars[0], buf);
     if (*dir == NUL)
-	rettv->vval.v_number = FAIL;
-    else
-    {
-	if (*gettail(dir) == NUL)
-	    /* remove trailing slashes */
-	    *gettail_sep(dir) = NUL;
+	return;
 
-	if (argvars[1].v_type != VAR_UNKNOWN)
+    if (*gettail(dir) == NUL)
+	/* remove trailing slashes */
+	*gettail_sep(dir) = NUL;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    if (argvars[2].v_type != VAR_UNKNOWN)
-		prot = (int)get_tv_number_chk(&argvars[2], NULL);
-	    if (prot != -1 && STRCMP(get_tv_string(&argvars[1]), "p") == 0)
-		mkdir_recurse(dir, prot);
+	    prot = (int)get_tv_number_chk(&argvars[2], NULL);
+	    if (prot == -1)
+		return;
 	}
-	rettv->vval.v_number = prot == -1 ? FAIL : vim_mkdir_emsg(dir, prot);
+	if (STRCMP(get_tv_string(&argvars[1]), "p") == 0)
+	{
+	    if (mch_isdir(dir))
+	    {
+		rettv->vval.v_number = OK;
+		return;
+	    }
+	    mkdir_recurse(dir, prot);
+	}
     }
+    rettv->vval.v_number = vim_mkdir_emsg(dir, prot);
 }
 #endif
 
