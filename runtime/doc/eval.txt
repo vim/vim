@@ -6138,6 +6138,8 @@ mkdir({name} [, {path} [, {prot}]])
 		Example: >
 			:call mkdir($HOME . "/tmp/foo/bar", "p", 0700)
 <		This function is not available in the |sandbox|.
+		There is no error if the directory already exists and the "p"
+		flag is passed (since patch 8.0.1708).
 		Not available on all systems.  To check use: >
 			:if exists("*mkdir")
 <
