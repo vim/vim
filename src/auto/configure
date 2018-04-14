@@ -14434,7 +14434,7 @@ if test "$zOSUnix" = "yes"; then
 	CFLAGS="-D_ALL_SOURCE -Wc,float\(ieee\),dll"
 fi
 
-if test "$GCC" = yes -a "$GUITYPE" != "GTK"; then
+if test "$GCC" = yes -a "$GUITYPE" != "GTK" -a "X$RUBY_CFLAGS" = "X"; then
   CFLAGS="$CFLAGS -ansi"
 fi
 

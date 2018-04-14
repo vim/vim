@@ -4403,9 +4403,10 @@ if test "$zOSUnix" = "yes"; then
 	CFLAGS="-D_ALL_SOURCE -Wc,float\(ieee\),dll"
 fi
 
-dnl Declare what standards the code should comply with.  But not when using
-dnl GTK, the header files cause all kinds of warnings.
-if test "$GCC" = yes -a "$GUITYPE" != "GTK"; then
+dnl Declare what standards the code should comply with.
+dnl But not when using GTK, the header files cause all kinds of warnings.
+dnl But not when using Ruby, it needs "inline".
+if test "$GCC" = yes -a "$GUITYPE" != "GTK" -a "X$RUBY_CFLAGS" = "X"; then
   CFLAGS="$CFLAGS -ansi"
 fi
 
