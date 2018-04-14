@@ -815,7 +815,7 @@ python3_end(void)
 #endif
     if (Py_IsInitialized())
     {
-	// acquire lock before finalizing
+	/* acquire lock before finalizing */
 	PyGILState_Ensure();
 
 	Py_Finalize();

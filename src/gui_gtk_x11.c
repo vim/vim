@@ -5607,15 +5607,17 @@ gui_mch_free_font(GuiFont font)
     guicolor_T
 gui_mch_get_color(char_u *name)
 {
+    guicolor_T color = INVALCOLOR;
+
     if (!gui.in_use)		/* can't do this when GUI not running */
-	return INVALCOLOR;
+	return color;
+
+    if (name != NULL)
+	color = gui_get_color_cmn(name);
 
 #if GTK_CHECK_VERSION(3,0,0)
-    return name != NULL ? gui_get_color_cmn(name) : INVALCOLOR;
+    return color;
 #else
-    guicolor_T color;
-
-    color = (name != NULL) ? gui_get_color_cmn(name) : INVALCOLOR;
     if (color == INVALCOLOR)
 	return INVALCOLOR;
 
