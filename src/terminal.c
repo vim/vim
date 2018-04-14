@@ -40,8 +40,6 @@
  * TODO:
  * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
  *   redirection.  Probably in call to channel_set_pipes().
- * - add an optional limit for the scrollback size.  When reaching it remove
- *   10% at the start.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
@@ -2518,7 +2516,27 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 {
     term_T	*term = (term_T *)user;
 
-    /* TODO: Limit the number of lines that are stored. */
+    /* If the number of lines that are stored goes over 'termscrollback' then
+     * delete the first 10%. */
+    if (term->tl_scrollback.ga_len > p_tlsl)
+    {
+	int	todo = p_tlsl / 10;
+	int	i;
+
+	curbuf = term->tl_buffer;
+	for (i = 0; i < todo; ++i)
+	{
+	    vim_free(((sb_line_T *)term->tl_scrollback.ga_data + i)->sb_cells);
+	    ml_delete(1, FALSE);
+	}
+	curbuf = curwin->w_buffer;
+
+	term->tl_scrollback.ga_len -= todo;
+	mch_memmove(term->tl_scrollback.ga_data,
+	    (sb_line_T *)term->tl_scrollback.ga_data + todo,
+	    sizeof(sb_line_T) * term->tl_scrollback.ga_len);
+    }
+
     if (ga_grow(&term->tl_scrollback, 1) == OK)
     {
 	cellattr_T	*p = NULL;

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2018 Mar 13
+*options.txt*	For Vim version 8.0.  Last change: 2018 Apr 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7932,6 +7932,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
+
+						*'terminalscroll'* *'tlsl'*
+'terminalscroll' 'tlsl'	number	(default 10000)
+			global
+			{not in Vi}
+			{not available when compiled without the
+			|+terminal| feature}
+	Number of scrollback lines to keep.  When going over this limit the
+	first 10% of the scrollback lines are deleted.  This is just to reduce
+	the memory usage.  See |Terminal-Normal|.
 
 						*'termkey'* *'tk'*
 'termkey' 'tk'		string	(default "")
