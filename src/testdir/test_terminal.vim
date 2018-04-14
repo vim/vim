@@ -271,6 +271,27 @@ func Test_terminal_scroll()
   call delete('Xtext')
 endfunc
 
+func Test_terminal_scrollback()
+  let buf = Run_shell_in_terminal({})
+  set terminalscroll=100
+  call writefile(range(150), 'Xtext')
+  if has('win32')
+    call term_sendkeys(buf, "type Xtext\<CR>")
+  else
+    call term_sendkeys(buf, "cat Xtext\<CR>")
+  endif
+  let rows = term_getsize(buf)[0]
+  call WaitFor({-> term_getline(buf, rows - 1) =~ '149'})
+  let lines = line('$')
+  call assert_true(lines <= 100)
+  call assert_true(lines > 90)
+
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+  set terminalscroll&
+endfunc
+
 func Test_terminal_size()
   let cmd = Get_cat_123_cmd()
 
@@ -298,6 +319,7 @@ func Test_terminal_size()
   call assert_equal([7, 30], term_getsize(''))
 
   bwipe!
+  call assert_fails("call term_setsize('', 7, 30)", "E955:")
 
   call term_start(cmd, {'term_rows': 6, 'term_cols': 36})
   let size = term_getsize('')

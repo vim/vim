@@ -4629,7 +4629,12 @@ f_term_setsize(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     term_T	*term;
     varnumber_T rows, cols;
 
-    if (buf == NULL || buf->b_term->tl_vterm == NULL)
+    if (buf == NULL)
+    {
+	EMSG(_("E955: Not a terminal buffer"));
+	return;
+    }
+    if (buf->b_term->tl_vterm == NULL)
 	return;
     term = buf->b_term;
     rows = get_tv_number(&argvars[1]);
