@@ -649,6 +649,13 @@ the same as any command running in a terminal window.
 When the debugger ends, typically by typing "quit" in the gdb window, the two
 opened windows are closed.
 
+Only one debugger can be active at a time.
+
+To attach gdb to an already running executable, or use a core file, pass extra
+arguments.  E.g.: >
+	:Termdebug vim core
+	:Termdebug vim 98343
+
 
 Example session ~
 							*termdebug-example*

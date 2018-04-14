@@ -25,7 +25,7 @@ endif
 
 " The command that starts debugging, e.g. ":Termdebug vim".
 " To end type "quit" in the gdb window.
-command -nargs=* -complete=file Termdebug call s:StartDebug(<q-args>)
+command -nargs=* -complete=file Termdebug call s:StartDebug(<f-args>)
 
 " Name of the gdb command, defaults to "gdb".
 if !exists('termdebugger')
@@ -43,7 +43,12 @@ else
 endif
 hi default debugBreakpoint term=reverse ctermbg=red guibg=red
 
-func s:StartDebug(cmd)
+func s:StartDebug(...)
+  if exists('s:gdbwin')
+    echoerr 'Terminal debugger already running'
+    return
+  endif
+
   let s:startwin = win_getid(winnr())
   let s:startsigncolumn = &signcolumn
 
@@ -90,7 +95,7 @@ func s:StartDebug(cmd)
 
   " Open a terminal window to run the debugger.
   " Add -quiet to avoid the intro message causing a hit-enter prompt.
-  let cmd = [g:termdebugger, '-quiet', '-tty', pty, a:cmd]
+  let cmd = [g:termdebugger, '-quiet', '-tty', pty] + a:000
   echomsg 'executing "' . join(cmd) . '"'
   let s:gdbbuf = term_start(cmd, {
 	\ 'exit_cb': function('s:EndDebug'),
@@ -112,7 +117,7 @@ func s:StartDebug(cmd)
   let try_count = 0
   while 1
     let response = ''
-    for lnum in range(1,20)
+    for lnum in range(1,200)
       if term_getline(s:gdbbuf, lnum) =~ 'new-ui mi '
 	let response = term_getline(s:gdbbuf, lnum + 1)
 	if response =~ 'Undefined command'
@@ -182,6 +187,7 @@ endfunc
 func s:EndDebug(job, status)
   exe 'bwipe! ' . s:ptybuf
   exe 'bwipe! ' . s:commbuf
+  unlet s:gdbwin
 
   let curwinid = win_getid(winnr())
 
@@ -295,6 +301,7 @@ func s:DeleteCommands()
   delcommand Evaluate
   delcommand Gdb
   delcommand Program
+  delcommand Source
   delcommand Winbar
 
   nunmap K
