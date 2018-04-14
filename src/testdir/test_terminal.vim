@@ -286,9 +286,18 @@ func Test_terminal_size()
 
   vsplit
   exe 'terminal ++rows=5 ++cols=33 ' . cmd
-  let size = term_getsize('')
+  call assert_equal([5, 33], term_getsize(''))
+
+  call term_setsize('', 6, 0)
+  call assert_equal([6, 33], term_getsize(''))
+
+  call term_setsize('', 0, 35)
+  call assert_equal([6, 35], term_getsize(''))
+
+  call term_setsize('', 7, 30)
+  call assert_equal([7, 30], term_getsize(''))
+
   bwipe!
-  call assert_equal([5, 33], size)
 
   call term_start(cmd, {'term_rows': 6, 'term_cols': 36})
   let size = term_getsize('')

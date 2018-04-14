@@ -8402,6 +8402,24 @@ term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		color codes, like those accepted by |highlight-guifg|.
 		Also see |term_getansicolors()| and |g:terminal_ansi_colors|.
 
+		The colors normally are:
+			0    black
+			1    dark red
+			2    dark green
+			3    brown
+			4    dark blue
+			5    dark magenta
+			6    dark cyan
+			7    light grey
+			8    dark grey
+			9    red
+			10   green
+			11   yellow
+			12   blue
+			13   magenta
+			14   cyan
+			15   white
+
 		These colors are used in the GUI and in the terminal when
 		'termguicolors' is set.  When not using GUI colors (GUI mode
 		or |termguicolors|), the terminal window always uses the 16
@@ -8431,8 +8449,15 @@ term_setrestore({buf}, {command})			*term_setrestore()*
 		Use "NONE" to not restore this window.
 		{only available when compiled with the |+terminal| feature}
 
-term_setsize({buf}, {expr})				*term_setsize()*
-		Not implemented yet.
+term_setsize({buf}, {rows}, {cols})			*term_setsize()*
+		Set the size of terminal {buf}. The size of the window
+		containing the terminal will also be adjusted, if possible.
+		If {rows} or {cols} is zero or negative, that dimension is not
+		changed.
+
+		{buf} must be the buffer number of a terminal window.  Use an
+		empty string for the current buffer.  If the buffer does not
+		exist or is not a terminal window, an error is given.
 		{only available when compiled with the |+terminal| feature}
 
 term_start({cmd}, {options})				*term_start()*

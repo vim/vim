@@ -876,6 +876,7 @@ static struct fst
 # endif
     {"term_setkill",	2, 2, f_term_setkill},
     {"term_setrestore",	2, 2, f_term_setrestore},
+    {"term_setsize",	3, 3, f_term_setsize},
     {"term_start",	1, 2, f_term_start},
     {"term_wait",	1, 2, f_term_wait},
 #endif
