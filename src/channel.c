@@ -672,9 +672,9 @@ channel_open(
     {
 	char		*p;
 
-	/* When using host->h_addr directly ubsan warns for it to not be
-	 * aligned.  First copy the pointer to aviod that. */
-	memcpy(&p, &host->h_addr, sizeof(p));
+	/* When using host->h_addr_list[0] directly ubsan warns for it to not
+	 * be aligned.  First copy the pointer to avoid that. */
+	memcpy(&p, &host->h_addr_list[0], sizeof(p));
 	memcpy((char *)&server.sin_addr, p, host->h_length);
     }
 
