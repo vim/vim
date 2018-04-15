@@ -802,8 +802,10 @@ enable_mzschemeinterp
 with_plthome
 enable_perlinterp
 enable_pythoninterp
+with_python_command
 with_python_config_dir
 enable_python3interp
+with_python3_command
 with_python3_config_dir
 enable_tclinterp
 with_tclsh
@@ -1532,8 +1534,10 @@ Optional Packages:
   --with-lua-prefix=PFX   Prefix where Lua is installed.
   --with-luajit           Link with LuaJIT instead of Lua.
   --with-plthome=PLTHOME   Use PLTHOME.
-  --with-python-config-dir=PATH  Python's config directory
-  --with-python3-config-dir=PATH  Python's config directory
+  --with-python-command=NAME  name of the Python 2 command (default: python2 or python)
+  --with-python-config-dir=PATH  Python's config directory (deprecated)
+  --with-python3-command=NAME  name of the Python 3 command (default: python3 or python)
+  --with-python3-config-dir=PATH  Python's config directory (deprecated)
   --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)
   --with-ruby-command=RUBY  name of the Ruby command (default: ruby)
   --with-x                use the X Window System
@@ -5937,6 +5941,21 @@ if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; th
     as_fn_error $? "cannot use Python with tiny or small features" "$LINENO" 5
   fi
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-python-command argument" >&5
+$as_echo_n "checking --with-python-command argument... " >&6; }
+
+
+# Check whether --with-python-command was given.
+if test "${with_python_command+set}" = set; then :
+  withval=$with_python_command; vi_cv_path_python="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_path_python" >&5
+$as_echo "$vi_cv_path_python" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  if test "X$vi_cv_path_python" = "X"; then
     for ac_prog in python2 python
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -5982,6 +6001,7 @@ fi
   test -n "$vi_cv_path_python" && break
 done
 
+  fi
   if test "X$vi_cv_path_python" != "X"; then
 
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking Python version" >&5
@@ -6271,6 +6291,21 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
     as_fn_error $? "cannot use Python with tiny or small features" "$LINENO" 5
   fi
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-python3-command argument" >&5
+$as_echo_n "checking --with-python3-command argument... " >&6; }
+
+
+# Check whether --with-python3-command was given.
+if test "${with_python3_command+set}" = set; then :
+  withval=$with_python3_command; vi_cv_path_python3="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_path_python3" >&5
+$as_echo "$vi_cv_path_python3" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  if test "X$vi_cv_path_python3" = "X"; then
     for ac_prog in python3 python
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -6316,6 +6351,7 @@ fi
   test -n "$vi_cv_path_python3" && break
 done
 
+  fi
   if test "X$vi_cv_path_python3" != "X"; then
 
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking Python version" >&5

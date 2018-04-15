@@ -1117,7 +1117,15 @@ if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; th
   fi
 
   dnl -- find the python executable
-  AC_PATH_PROGS(vi_cv_path_python, python2 python)
+  AC_MSG_CHECKING(--with-python-command argument)
+  AC_SUBST(vi_cv_path_python)
+  AC_ARG_WITH(python-command, [  --with-python-command=NAME  name of the Python 2 command (default: python2 or python)],
+	vi_cv_path_python="$withval"; AC_MSG_RESULT($vi_cv_path_python),
+	AC_MSG_RESULT(no))
+
+  if test "X$vi_cv_path_python" = "X"; then
+    AC_PATH_PROGS(vi_cv_path_python, python2 python)
+  fi
   if test "X$vi_cv_path_python" != "X"; then
 
     dnl -- get its version number
@@ -1156,7 +1164,7 @@ if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; th
       dnl -- where the Python implementation library archives are
 
       AC_ARG_WITH(python-config-dir,
-	[  --with-python-config-dir=PATH  Python's config directory],
+	[  --with-python-config-dir=PATH  Python's config directory (deprecated)],
 	[ vi_cv_path_python_conf="${withval}"; have_python_config_dir=1 ] )
 
       AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python_conf,
@@ -1343,7 +1351,15 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
   fi
 
   dnl -- find the python3 executable
-  AC_PATH_PROGS(vi_cv_path_python3, python3 python)
+  AC_MSG_CHECKING(--with-python3-command argument)
+  AC_SUBST(vi_cv_path_python3)
+  AC_ARG_WITH(python3-command, [  --with-python3-command=NAME  name of the Python 3 command (default: python3 or python)],
+	vi_cv_path_python3="$withval"; AC_MSG_RESULT($vi_cv_path_python3),
+	AC_MSG_RESULT(no))
+
+  if test "X$vi_cv_path_python3" = "X"; then
+    AC_PATH_PROGS(vi_cv_path_python3, python3 python)
+  fi
   if test "X$vi_cv_path_python3" != "X"; then
 
     dnl -- get its version number
@@ -1393,7 +1409,7 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
       dnl -- where the Python implementation library archives are
   
       AC_ARG_WITH(python3-config-dir,
-       [  --with-python3-config-dir=PATH  Python's config directory],
+       [  --with-python3-config-dir=PATH  Python's config directory (deprecated)],
        [ vi_cv_path_python3_conf="${withval}"; have_python3_config_dir=1 ] )
   
       AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python3_conf,
