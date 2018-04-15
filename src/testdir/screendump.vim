@@ -57,7 +57,12 @@ func RunVimInTerminal(arguments, options)
   " Add -v to have gvim run in the terminal (if possible)
   let cmd .= ' -v ' . a:arguments
   let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': cols})
-  call assert_equal([rows, cols], term_getsize(buf))
+  if &termsize == ''
+    call assert_equal([rows, cols], term_getsize(buf))
+  else
+    let rows = term_getsize(buf)[0]
+    let cols = term_getsize(buf)[1]
+  endif
 
   " Wait for "All" of the ruler in the status line to be shown.
   " This can be quite slow (e.g. when using valgrind).

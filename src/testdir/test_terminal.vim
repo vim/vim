@@ -1356,3 +1356,36 @@ func Test_terminal_ansicolors_func()
   call term_wait(buf)
   exe buf . 'bwipe'
 endfunc
+
+func Test_terminal_termsize_option()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  set termsize=6x40
+  let text = []
+  for n in range(10)
+    call add(text, repeat(n, 50))
+  endfor
+  call writefile(text, 'Xwinsize')
+  let buf = RunVimInTerminal('Xwinsize', {})
+  let win = bufwinid(buf)
+  call assert_equal([6, 40], term_getsize(buf))
+  call assert_equal(6, winheight(win))
+  call assert_equal(40, winwidth(win))
+
+  " resizing the window doesn't resize the terminal.
+  resize 10
+  vertical resize 60
+  call assert_equal([6, 40], term_getsize(buf))
+  call assert_equal(10, winheight(win))
+  call assert_equal(60, winwidth(win))
+
+  call StopVimInTerminal(buf)
+  call delete('Xwinsize')
+
+  call assert_fails('set termsize=40', 'E474')
+  call assert_fails('set termsize=10+40', 'E474')
+  call assert_fails('set termsize=abc', 'E474')
+
+  set termsize=
+endfunc
