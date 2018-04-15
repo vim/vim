@@ -2518,7 +2518,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 
     /* If the number of lines that are stored goes over 'termscrollback' then
      * delete the first 10%. */
-    if (term->tl_scrollback.ga_len > p_tlsl)
+    if (term->tl_scrollback.ga_len >= p_tlsl)
     {
 	int	todo = p_tlsl / 10;
 	int	i;
