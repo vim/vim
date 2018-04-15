@@ -214,7 +214,7 @@ static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
 
 # ifdef FEAT_TERMGUICOLORS
-#  define USE_VTP		(vtp_working && p_tgc)
+#  define USE_VTP		(vtp_working && (p_tgc || (!p_tgc && t_colors >= 256)))
 # else
 #  define USE_VTP		0
 # endif
@@ -2630,7 +2630,6 @@ mch_init(void)
 
     /* set termcap codes to current text attributes */
     update_tcap(g_attrCurrent);
-    swap_tcap();
 
     GetConsoleCursorInfo(g_hConOut, &g_cci);
     GetConsoleMode(g_hConIn,  &g_cmodein);
@@ -5763,7 +5762,11 @@ clear_chars(
     if (!USE_VTP)
 	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord, &dwDummy);
     else
-	FillConsoleOutputAttribute(g_hConOut, 0, n, coord, &dwDummy);
+    {
+	set_console_color_rgb();
+	gotoxy(coord.X + 1, coord.Y + 1);
+	vtp_printf("\033[%dX", n);
+    }
 }
 
 
@@ -7653,6 +7656,64 @@ vtp_sgr_bulks(
     vtp_printf((char *)buf);
 }
 
+static int ansitbl[] = {
+      0,   0,   0,
+    224,   0,   0,
+      0, 224,   0,
+    224, 224,   0,
+      0,   0, 224,
+    224,   0, 224,
+      0, 224, 224,
+    224, 224, 224,
+    128, 128, 128,
+    255,  64,  64,
+     64, 255,  64,
+    255, 255,  64,
+     64,  64, 255,
+    255,  64, 255,
+     64, 255, 255,
+    255, 255, 255
+};
+
+static int cubetbl[] = {
+    0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff
+};
+
+static int greytbl[] = {
+    0x08, 0x12, 0x1c, 0x26, 0x30, 0x3a, 0x44, 0x4e, 0x58, 0x62, 0x6c, 0x76,
+    0x80, 0x8a, 0x94, 0x9e, 0xa8, 0xb2, 0xbc, 0xc6, 0xd0, 0xda, 0xe4, 0xee
+};
+
+    static int
+ctermtoxterm(
+    int cterm)
+{
+    int i, r, g, b;
+
+    if (cterm < 16)
+    {
+	r = ansitbl[cterm * 3 + 0];
+	g = ansitbl[cterm * 3 + 1];
+	b = ansitbl[cterm * 3 + 2];
+    }
+    else if (cterm < 232)
+    {
+
+	i = cterm - 16;
+	r = cubetbl[i / 36 % 6];
+	g = cubetbl[i /  6 % 6];
+	b = cubetbl[i      % 6];
+    }
+    else if (cterm < 256)
+    {
+	i = cterm - 232;
+	r = greytbl[i];
+	g = greytbl[i];
+	b = greytbl[i];
+    }
+    return (int)((r << 16) | (g << 8) | (b));
+}
+
     static void
 set_console_color_rgb(void)
 {
@@ -7661,6 +7722,8 @@ set_console_color_rgb(void)
     int id;
     guicolor_T fg = INVALCOLOR;
     guicolor_T bg = INVALCOLOR;
+    int ctermfg;
+    int ctermbg;
 
     if (!USE_VTP)
 	return;
@@ -7669,9 +7732,19 @@ set_console_color_rgb(void)
     if (id > 0)
 	syn_id2colors(id, &fg, &bg);
     if (fg == INVALCOLOR)
-	fg = 0xc0c0c0;	    /* white text */
+    {
+	ctermfg = -1;
+	if (id > 0)
+	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
+	fg = ctermfg != -1 ? ctermtoxterm(ctermfg) : 0xc0c0c0; /* white */
+    }
     if (bg == INVALCOLOR)
-	bg = 0x000000;	    /* black background */
+    {
+	ctermbg = -1;
+	if (id > 0)
+	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
+	bg = ctermbg != -1 ? ctermtoxterm(ctermbg) : 0x000000; /* black */
+    }
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 

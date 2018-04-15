@@ -6042,6 +6042,9 @@ did_set_string_option(
     int		redraw_gui_only = FALSE;
 #endif
     int		ft_changed = FALSE;
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+    int		did_swaptcap = FALSE;
+#endif
 
     /* Get the global option to compare with, otherwise we would have to check
      * two values for all local options. */
@@ -6781,6 +6784,10 @@ did_set_string_option(
 			vim_free(T_CCO);
 		    T_CCO = empty_option;
 		}
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+		swap_tcap();
+		did_swaptcap = TRUE;
+#endif
 		/* We now have a different color setup, initialize it again. */
 		init_highlight(TRUE, FALSE);
 	    }
@@ -7632,6 +7639,16 @@ did_set_string_option(
     if (!redraw_gui_only || gui.in_use)
 #endif
 	check_redraw(options[opt_idx].flags);
+
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+    if (did_swaptcap)
+    {
+	if (t_colors < 256)
+	    p_tgc = 0;
+	set_termname("win32");
+	init_highlight(TRUE, FALSE);
+    }
+#endif
 
     return errmsg;
 }

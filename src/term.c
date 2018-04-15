@@ -2011,11 +2011,6 @@ set_termname(char_u *term)
     may_req_termresponse();
 #endif
 
-#if defined(WIN3264) && !defined(FEAT_GUI) && defined(FEAT_TERMGUICOLORS)
-    if (STRCMP(term, "win32") == 0)
-	set_color_count((p_tgc) ? 256 : 16);
-#endif
-
     return OK;
 }
 
@@ -2853,7 +2848,11 @@ term_color(char_u *s, int n)
     /* Also accept "\e[3%dm" for TERMINFO, it is sometimes used */
     /* Also accept CSI instead of <Esc>[ */
     if (n >= 8 && t_colors >= 16
-	      && ((s[0] == ESC && s[1] == '[') || (s[0] == CSI && (i = 1) == 1))
+	      && ((s[0] == ESC && s[1] == '[')
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+		  || (s[0] == ESC && s[1] == '|')
+#endif
+	          || (s[0] == CSI && (i = 1) == 1))
 	      && s[i] != NUL
 	      && (STRCMP(s + i + 1, "%p1%dm") == 0
 		  || STRCMP(s + i + 1, "%dm") == 0)
@@ -2865,7 +2864,11 @@ term_color(char_u *s, int n)
 	char *format = "%s%s%%dm";
 #endif
 	sprintf(buf, format,
-		i == 2 ? IF_EB("\033[", ESC_STR "[") : "\233",
+		i == 2 ?
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+		s[1] == '|' ? IF_EB("\033|", ESC_STR "|") :
+#endif
+		IF_EB("\033[", ESC_STR "[") : "\233",
 		s[i] == '3' ? (n >= 16 ? "38;5;" : "9")
 			    : (n >= 16 ? "48;5;" : "10"));
 	OUT_STR(tgoto(buf, 0, n >= 16 ? n : n - 8));
@@ -6652,26 +6655,38 @@ update_tcap(int attr)
 }
 
 # ifdef FEAT_TERMGUICOLORS
+#  define KSSIZE 20
 struct ks_tbl_s
 {
-    int  code;	    /* value of KS_ */
-    char *vtp;	    /* code in vtp mode */
-    char *buf;	    /* buffer in non-vtp mode */
-    char *vbuf;	    /* buffer in vtp mode */
+    int  code;		/* value of KS_ */
+    char *vtp;		/* code in vtp mode */
+    char *vtp2;		/* code in vtp2 mode */
+    char buf[KSSIZE];   /* save buffer in non-vtp mode */
+    char vbuf[KSSIZE];  /* save buffer in vtp mode */
+    char v2buf[KSSIZE]; /* save buffer in vtp2 mode */
+    char arr[KSSIZE];   /* real buffer */
 };
 
 static struct ks_tbl_s ks_tbl[] =
 {
-    {(int)KS_ME,  "\033|0m" },	/* normal */
-    {(int)KS_MR,  "\033|7m" },	/* reverse */
-    {(int)KS_MD,  "\033|1m" },	/* bold */
-    {(int)KS_SO,  "\033|91m"},	/* standout: bright red text */
-    {(int)KS_SE,  "\033|39m"},	/* standout end: default color */
-    {(int)KS_CZH, "\033|95m"},	/* italic: bright magenta text */
-    {(int)KS_CZR, "\033|0m",},	/* italic end */
-    {(int)KS_US,  "\033|4m",},	/* underscore */
-    {(int)KS_UE,  "\033|24m"},	/* underscore end */
-    {(int)KS_NAME, NULL}
+    {(int)KS_ME,  "\033|0m",  "\033|0m"},   /* normal */
+    {(int)KS_MR,  "\033|7m",  "\033|7m"},   /* reverse */
+    {(int)KS_MD,  "\033|1m",  "\033|1m"},   /* bold */
+    {(int)KS_SO,  "\033|91m", "\033|91m"},  /* standout: bright red text */
+    {(int)KS_SE,  "\033|39m", "\033|39m"},  /* standout end: default color */
+    {(int)KS_CZH, "\033|95m", "\033|95m"},  /* italic: bright magenta text */
+    {(int)KS_CZR, "\033|0m",  "\033|0m"},   /* italic end */
+    {(int)KS_US,  "\033|4m",  "\033|4m"},   /* underscore */
+    {(int)KS_UE,  "\033|24m", "\033|24m"},  /* underscore end */
+#  ifdef TERMINFO
+    {(int)KS_CAB, "\033|%p1%db", "\033|%p14%dm"}, /* set background color */
+    {(int)KS_CAF, "\033|%p1%df", "\033|%p13%dm"}, /* set foreground color */
+#  else
+    {(int)KS_CAB, "\033|%db", "\033|4%dm"}, /* set background color */
+    {(int)KS_CAF, "\033|%df", "\033|3%dm"}, /* set foreground color */
+#  endif
+    {(int)KS_CCO, "16", "256"},     /* colors */
+    {(int)KS_NAME}		    /* terminator */
 };
 
     static struct builtin_term *
@@ -6696,57 +6711,79 @@ swap_tcap(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     static int		init_done = FALSE;
-    static int		last_tgc;
+    static int		curr_mode; /* 0=index c, 1=24bit c, 2=256 c */
     struct ks_tbl_s	*ks;
     struct builtin_term *bt;
+    int			mode;
 
     /* buffer initialization */
     if (!init_done)
     {
-	for (ks = ks_tbl; ks->vtp != NULL; ks++)
+	for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
 	{
 	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
 	    if (bt != NULL)
 	    {
-		ks->buf = bt->bt_string;
-		ks->vbuf = ks->vtp;
+		STRNCPY(ks->buf, bt->bt_string, KSSIZE);
+		STRNCPY(ks->vbuf, ks->vtp, KSSIZE);
+		STRNCPY(ks->v2buf, ks->vtp2, KSSIZE);
+
+		STRNCPY(ks->arr, bt->bt_string, KSSIZE);
+		bt->bt_string = &ks->arr[0];
 	    }
 	}
 	init_done = TRUE;
-	last_tgc = p_tgc;
-	return;
+	curr_mode = 0;
     }
 
-    if (last_tgc != p_tgc)
+    if (p_tgc)
+	mode = 1;
+    else if (t_colors >= 256)
+	mode = 2;
+    else
+	mode = 0;
+
+    for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
     {
-	if (p_tgc)
+	bt = find_first_tcap(DEFAULT_TERM, ks->code);
+	if (bt != NULL)
 	{
-	    /* switch to special character sequence */
-	    for (ks = ks_tbl; ks->vtp != NULL; ks++)
+	    switch (curr_mode)
 	    {
-		bt = find_first_tcap(DEFAULT_TERM, ks->code);
-		if (bt != NULL)
-		{
-		    ks->buf = bt->bt_string;
-		    bt->bt_string = ks->vbuf;
-		}
+	    case 0: /* index */
+		STRNCPY(&ks->buf[0], bt->bt_string, KSSIZE);
+		break;
+	    case 1: /* vtp */
+		STRNCPY(&ks->vbuf[0], bt->bt_string, KSSIZE);
+		break;
+	    default: /* vtp2 */
+		STRNCPY(&ks->v2buf[0], bt->bt_string, KSSIZE);
 	    }
 	}
-	else
+    }
+
+    if (mode != curr_mode)
+    {
+	for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
 	{
-	    /* switch to index color */
-	    for (ks = ks_tbl; ks->vtp != NULL; ks++)
+	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
+	    if (bt != NULL)
 	    {
-		bt = find_first_tcap(DEFAULT_TERM, ks->code);
-		if (bt != NULL)
+		switch (mode)
 		{
-		    ks->vbuf = bt->bt_string;
-		    bt->bt_string = ks->buf;
+		case 0: /* index */
+		    STRNCPY(bt->bt_string, &ks->buf[0], KSSIZE);
+		    break;
+		case 1: /* vtp */
+		    STRNCPY(bt->bt_string, &ks->vbuf[0], KSSIZE);
+		    break;
+		default: /* vtp2 */
+		    STRNCPY(bt->bt_string, &ks->v2buf[0], KSSIZE);
 		}
 	    }
 	}
 
-	last_tgc = p_tgc;
+	curr_mode = mode;
     }
 # endif
 }
