@@ -283,8 +283,7 @@ func Test_terminal_scrollback()
   let rows = term_getsize(buf)[0]
   call WaitFor({-> term_getline(buf, rows - 1) =~ '149'})
   let lines = line('$')
-  call assert_true(lines <= 100)
-  call assert_true(lines > 90)
+  call assert_inrange(91, 100, lines)
 
   call Stop_shell_in_terminal(buf)
   call term_wait(buf)
