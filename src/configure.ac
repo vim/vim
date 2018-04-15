@@ -61,9 +61,6 @@ if test "$GCC" = yes; then
       CFLAGS="$CFLAGS -fno-strength-reduce"
     fi
   fi
-
-  dnl Declare what standards the code should comply with
-  CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 fi
 
 dnl clang-500.2.75 or around has abandoned -f[no-]strength-reduce and issues a
@@ -4401,13 +4398,6 @@ AC_SUBST(LINK_AS_NEEDED)
 # IBM z/OS reset CFLAGS for config.mk
 if test "$zOSUnix" = "yes"; then
 	CFLAGS="-D_ALL_SOURCE -Wc,float\(ieee\),dll"
-fi
-
-dnl Declare what standards the code should comply with.
-dnl But not when using GTK, the header files cause all kinds of warnings.
-dnl But not when using Ruby, it needs "inline".
-if test "$GCC" = yes -a "$GUITYPE" != "GTK" -a "X$RUBY_CFLAGS" = "X"; then
-  CFLAGS="$CFLAGS -ansi"
 fi
 
 dnl write output files

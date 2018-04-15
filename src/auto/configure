@@ -4206,8 +4206,6 @@ if test "$GCC" = yes; then
       CFLAGS="$CFLAGS -fno-strength-reduce"
     fi
   fi
-
-    CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clang version" >&5
@@ -14432,10 +14430,6 @@ fi
 # IBM z/OS reset CFLAGS for config.mk
 if test "$zOSUnix" = "yes"; then
 	CFLAGS="-D_ALL_SOURCE -Wc,float\(ieee\),dll"
-fi
-
-if test "$GCC" = yes -a "$GUITYPE" != "GTK" -a "X$RUBY_CFLAGS" = "X"; then
-  CFLAGS="$CFLAGS -ansi"
 fi
 
 ac_config_files="$ac_config_files auto/config.mk:config.mk.in"
