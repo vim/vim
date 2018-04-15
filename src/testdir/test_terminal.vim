@@ -1357,7 +1357,7 @@ func Test_terminal_ansicolors_func()
   exe buf . 'bwipe'
 endfunc
 
-func Test_terminal_termsize_option()
+func Test_terminal_termsize_option_fixed()
   if !CanRunVimInTerminal()
     return
   endif
@@ -1386,6 +1386,72 @@ func Test_terminal_termsize_option()
   call assert_fails('set termsize=40', 'E474')
   call assert_fails('set termsize=10+40', 'E474')
   call assert_fails('set termsize=abc', 'E474')
+
+  set termsize=
+endfunc
+
+func Test_terminal_termsize_option_zero()
+  set termsize=0x0
+  let buf = Run_shell_in_terminal({})
+  let win = bufwinid(buf)
+  call assert_equal([winheight(win), winwidth(win)], term_getsize(buf))
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+
+  set termsize=7x0
+  let buf = Run_shell_in_terminal({})
+  let win = bufwinid(buf)
+  call assert_equal([7, winwidth(win)], term_getsize(buf))
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+
+  set termsize=0x33
+  let buf = Run_shell_in_terminal({})
+  let win = bufwinid(buf)
+  call assert_equal([winheight(win), 33], term_getsize(buf))
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+
+  set termsize=
+endfunc
+
+func Test_terminal_termsize_mininmum()
+  set termsize=10*50
+  vsplit
+  let buf = Run_shell_in_terminal({})
+  let win = bufwinid(buf)
+  call assert_inrange(10, 1000, winheight(win))
+  call assert_inrange(50, 1000, winwidth(win))
+  call assert_equal([winheight(win), winwidth(win)], term_getsize(buf))
+
+  resize 15
+  vertical resize 60
+  redraw
+  call assert_equal([15, 60], term_getsize(buf))
+  call assert_equal(15, winheight(win))
+  call assert_equal(60, winwidth(win))
+
+  resize 7
+  vertical resize 30
+  redraw
+  call assert_equal([10, 50], term_getsize(buf))
+  call assert_equal(7, winheight(win))
+  call assert_equal(30, winwidth(win))
+
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
+
+  set termsize=0*0
+  let buf = Run_shell_in_terminal({})
+  let win = bufwinid(buf)
+  call assert_equal([winheight(win), winwidth(win)], term_getsize(buf))
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
 
   set termsize=
 endfunc
