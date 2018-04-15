@@ -40,17 +40,18 @@
  * TODO:
  * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
  *   redirection.  Probably in call to channel_set_pipes().
+ * - Win32: Redirecting output does not work, Test_terminal_redir_file()
+ *   is disabled.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
+ * - When starting terminal window with shell in terminal, then using :gui to
+ *   switch to GUI, shell stops working. Scrollback seems wrong, command
+ *   running in shell is still running.
  * - in GUI vertical split causes problems.  Cursor is flickering. (Hirohito
  *   Higashi, 2017 Sep 19)
  * - after resizing windows overlap. (Boris Staletic, #2164)
- * - Redirecting output does not work on MS-Windows, Test_terminal_redir_file()
- *   is disabled.
  * - cursor blinks in terminal on widows with a timer. (xtal8, #2142)
  * - Termdebug does not work when Vim build with mzscheme.  gdb hangs.
- * - MS-Windows GUI: WinBar has  tearoff item
- * - MS-Windows GUI: still need to type a key after shell exits?  #1924
  * - After executing a shell command the status line isn't redraw.
  * - add test for giving error for invalid 'termsize' value.
  * - support minimal size when 'termsize' is "rows*cols".
@@ -59,7 +60,7 @@
  * - Redrawing is slow with Athena and Motif.  Also other GUI? (Ramel Eshed)
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
- * - when 'encoding' is not utf-8, or the job is using another encoding, setup
+ * - When 'encoding' is not utf-8, or the job is using another encoding, setup
  *   conversions.
  */
 
@@ -1223,17 +1224,32 @@ term_convert_key(term_T *term, int c, char *buf)
 
 /*
  * Return TRUE if the job for "term" is still running.
+ * If "check_job_status" is TRUE update the job status.
+ */
+    static int
+term_job_running_check(term_T *term, int check_job_status)
+{
+    /* Also consider the job finished when the channel is closed, to avoid a
+     * race condition when updating the title. */
+    if (term != NULL
+	&& term->tl_job != NULL
+	&& channel_is_open(term->tl_job->jv_channel))
+    {
+	if (check_job_status)
+	    job_status(term->tl_job);
+	return (term->tl_job->jv_status == JOB_STARTED
+		|| term->tl_job->jv_channel->ch_keep_open);
+    }
+    return FALSE;
+}
+
+/*
+ * Return TRUE if the job for "term" is still running.
  */
     int
 term_job_running(term_T *term)
 {
-    /* Also consider the job finished when the channel is closed, to avoid a
-     * race condition when updating the title. */
-    return term != NULL
-	&& term->tl_job != NULL
-	&& channel_is_open(term->tl_job->jv_channel)
-	&& (term->tl_job->jv_status == JOB_STARTED
-		|| term->tl_job->jv_channel->ch_keep_open);
+    return term_job_running_check(term, FALSE);
 }
 
 /*
@@ -1892,6 +1908,32 @@ prepare_restore_cursor_props(void)
 }
 
 /*
+ * Returns TRUE if the current window contains a terminal and we are sending
+ * keys to the job.
+ * If "check_job_status" is TRUE update the job status.
+ */
+    static int
+term_use_loop_check(int check_job_status)
+{
+    term_T *term = curbuf->b_term;
+
+    return term != NULL
+	&& !term->tl_normal_mode
+	&& term->tl_vterm != NULL
+	&& term_job_running_check(term, check_job_status);
+}
+
+/*
+ * Returns TRUE if the current window contains a terminal and we are sending
+ * keys to the job.
+ */
+    int
+term_use_loop(void)
+{
+    return term_use_loop_check(FALSE);
+}
+
+/*
  * Called when entering a window with the mouse.  If this is a terminal window
  * we may want to change state.
  */
@@ -1902,7 +1944,7 @@ term_win_entered()
 
     if (term != NULL)
     {
-	if (term_use_loop())
+	if (term_use_loop_check(TRUE))
 	{
 	    reset_VIsual_and_resel();
 	    if (State & INSERT)
@@ -1912,21 +1954,6 @@ term_win_entered()
 	enter_mouse_col = mouse_col;
 	enter_mouse_row = mouse_row;
     }
-}
-
-/*
- * Returns TRUE if the current window contains a terminal and we are sending
- * keys to the job.
- */
-    int
-term_use_loop(void)
-{
-    term_T *term = curbuf->b_term;
-
-    return term != NULL
-	&& !term->tl_normal_mode
-	&& term->tl_vterm != NULL
-	&& term_job_running(term);
 }
 
 /*
@@ -1976,7 +2003,7 @@ terminal_loop(int blocking)
 	restore_cursor = TRUE;
 
 	c = term_vgetc();
-	if (!term_use_loop())
+	if (!term_use_loop_check(TRUE))
 	{
 	    /* Job finished while waiting for a character.  Push back the
 	     * received character. */
@@ -2027,7 +2054,7 @@ terminal_loop(int blocking)
 #ifdef FEAT_CMDL_INFO
 	    clear_showcmd();
 #endif
-	    if (!term_use_loop())
+	    if (!term_use_loop_check(TRUE))
 		/* job finished while waiting for a character */
 		break;
 
