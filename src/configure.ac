@@ -4404,10 +4404,19 @@ if test "$zOSUnix" = "yes"; then
 fi
 
 dnl Declare what standards the code should comply with.
-dnl But not when using GTK, the header files cause all kinds of warnings.
-dnl But not when using Ruby, it needs "inline".
-if test "$GCC" = yes -a "$GUITYPE" != "GTK" -a "X$RUBY_CFLAGS" = "X"; then
+if test "$GCC" = yes; then
   CFLAGS="$CFLAGS -ansi"
+
+  dnl Liberality towards different standards
+  if test "$GUITYPE" = "GTK"; then
+    dnl When using GTK, the header files cause a few kinds of warnings.
+    dnl It's too late to update GTK_CFLAGS here now.  Use GUI_INC_LOC instead.
+    GUI_INC_LOC="$GUI_INC_LOC -Wno-overlength-strings -Wno-variadic-macros -Wno-long-long"
+  fi
+  if test "X$RUBY_CFLAGS" != "X"; then
+    dnl When using Ruby, it needs "inline".
+    RUBY_CFLAGS="$RUBY_CFLAGS -Dinline=__inline"
+  fi
 fi
 
 dnl write output files
