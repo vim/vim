@@ -1056,7 +1056,6 @@ main_loop(
     int		cmdwin,	    /* TRUE when working in the command-line window */
     int		noexmode)   /* TRUE when return on entering Ex mode */
 {
-    oparg_T	oa;				/* operator arguments */
     volatile int previous_got_int = FALSE;	/* "got_int" was TRUE */
 #ifdef FEAT_CONCEAL
     /* these are static to avoid a compiler warning */
@@ -1096,6 +1095,7 @@ main_loop(
     }
 #endif
 
+    oparg_T	oa;	/* operator arguments */
     clear_oparg(&oa);
     while (!cmdwin
 #ifdef FEAT_CMDWIN
