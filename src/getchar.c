@@ -40,9 +40,9 @@
 
 #define MINIMAL_SIZE 20			/* minimal size for b_str */
 
-static buffheader_T redobuff = {{NULL, {NUL}}, NULL, 0, 0};
-static buffheader_T old_redobuff = {{NULL, {NUL}}, NULL, 0, 0};
-static buffheader_T recordbuff = {{NULL, {NUL}}, NULL, 0, 0};
+static buffheader_T redobuff = {NULL, NULL, 0, 0};
+static buffheader_T old_redobuff = {NULL, NULL, 0, 0};
+static buffheader_T recordbuff = {NULL, NULL, 0, 0};
 
 static int typeahead_char = 0;		/* typeahead char that's not flushed */
 
@@ -138,12 +138,13 @@ free_buff(buffheader_T *buf)
 {
     buffblock_T	*p, *np;
 
-    for (p = buf->bh_first.b_next; p != NULL; p = np)
+    for (p = buf->bh_first; p != NULL; p = np)
     {
 	np = p->b_next;
 	vim_free(p);
     }
-    buf->bh_first.b_next = NULL;
+    buf->bh_first = NULL;
+    buf->bh_curr = NULL;
 }
 
 /*
@@ -159,16 +160,16 @@ get_buffcont(
     char_u	    *p = NULL;
     char_u	    *p2;
     char_u	    *str;
-    buffblock_T *bp;
+    buffblock_T	    *bp;
 
     /* compute the total length of the string */
-    for (bp = buffer->bh_first.b_next; bp != NULL; bp = bp->b_next)
+    for (bp = buffer->bh_first; bp != NULL; bp = bp->b_next)
 	count += (long_u)STRLEN(bp->b_str);
 
     if ((count || dozero) && (p = lalloc(count + 1, TRUE)) != NULL)
     {
 	p2 = p;
-	for (bp = buffer->bh_first.b_next; bp != NULL; bp = bp->b_next)
+	for (bp = buffer->bh_first; bp != NULL; bp = bp->b_next)
 	    for (str = bp->b_str; *str; )
 		*p2++ = *str++;
 	*p2 = NUL;
@@ -232,17 +233,17 @@ add_buff(
     long		slen)	/* length of "s" or -1 */
 {
     buffblock_T *p;
-    long_u	    len;
+    long_u	len;
 
     if (slen < 0)
 	slen = (long)STRLEN(s);
     if (slen == 0)				/* don't add empty strings */
 	return;
 
-    if (buf->bh_first.b_next == NULL)	/* first add to list */
+    if (buf->bh_first == NULL)	/* first add to list */
     {
 	buf->bh_space = 0;
-	buf->bh_curr = &(buf->bh_first);
+	buf->bh_curr = NULL;
     }
     else if (buf->bh_curr == NULL)	/* buffer has already been read */
     {
@@ -250,9 +251,9 @@ add_buff(
 	return;
     }
     else if (buf->bh_index != 0)
-	mch_memmove(buf->bh_first.b_next->b_str,
-		    buf->bh_first.b_next->b_str + buf->bh_index,
-		    STRLEN(buf->bh_first.b_next->b_str + buf->bh_index) + 1);
+	mch_memmove(buf->bh_first->b_str,
+		    buf->bh_first->b_str + buf->bh_index,
+		    STRLEN(buf->bh_first->b_str + buf->bh_index) + 1);
     buf->bh_index = 0;
 
     if (buf->bh_space >= (int)slen)
@@ -267,16 +268,25 @@ add_buff(
 	    len = MINIMAL_SIZE;
 	else
 	    len = slen;
-	p = (buffblock_T *)lalloc((long_u)(sizeof(buffblock_T) + len),
-									TRUE);
+	p = (buffblock_T *)lalloc((long_u)(sizeof(buffblock_T) + len + 1),
+									 TRUE);
 	if (p == NULL)
 	    return; /* no space, just forget it */
 	buf->bh_space = (int)(len - slen);
 	vim_strncpy(p->b_str, s, (size_t)slen);
 
-	p->b_next = buf->bh_curr->b_next;
-	buf->bh_curr->b_next = p;
-	buf->bh_curr = p;
+	if (buf->bh_curr == NULL)
+	{
+	    p->b_next = NULL;
+	    buf->bh_first = p;
+	    buf->bh_curr = p;
+	}
+	else
+	{
+	    p->b_next = buf->bh_curr->b_next;
+	    buf->bh_curr->b_next = p;
+	    buf->bh_curr = p;
+	}
     }
     return;
 }
@@ -348,10 +358,10 @@ add_char_buff(buffheader_T *buf, int c)
 }
 
 /* First read ahead buffer. Used for translated commands. */
-static buffheader_T readbuf1 = {{NULL, {NUL}}, NULL, 0, 0};
+static buffheader_T readbuf1 = {NULL, NULL, 0, 0};
 
 /* Second read ahead buffer. Used for redo. */
-static buffheader_T readbuf2 = {{NULL, {NUL}}, NULL, 0, 0};
+static buffheader_T readbuf2 = {NULL, NULL, 0, 0};
 
 /*
  * Get one byte from the read buffers.  Use readbuf1 one first, use readbuf2
@@ -376,17 +386,17 @@ read_readbuf(buffheader_T *buf, int advance)
     char_u	c;
     buffblock_T	*curr;
 
-    if (buf->bh_first.b_next == NULL)  /* buffer is empty */
+    if (buf->bh_first == NULL)  /* buffer is empty */
 	return NUL;
 
-    curr = buf->bh_first.b_next;
+    curr = buf->bh_first;
     c = curr->b_str[buf->bh_index];
 
     if (advance)
     {
 	if (curr->b_str[++buf->bh_index] == NUL)
 	{
-	    buf->bh_first.b_next = curr->b_next;
+	    buf->bh_first = curr->b_next;
 	    vim_free(curr);
 	    buf->bh_index = 0;
 	}
@@ -400,14 +410,14 @@ read_readbuf(buffheader_T *buf, int advance)
     static void
 start_stuff(void)
 {
-    if (readbuf1.bh_first.b_next != NULL)
+    if (readbuf1.bh_first != NULL)
     {
-	readbuf1.bh_curr = &(readbuf1.bh_first);
+	readbuf1.bh_curr = readbuf1.bh_first;
 	readbuf1.bh_space = 0;
     }
-    if (readbuf2.bh_first.b_next != NULL)
+    if (readbuf2.bh_first != NULL)
     {
-	readbuf2.bh_curr = &(readbuf2.bh_first);
+	readbuf2.bh_curr = readbuf2.bh_first;
 	readbuf2.bh_space = 0;
     }
 }
@@ -418,8 +428,8 @@ start_stuff(void)
     int
 stuff_empty(void)
 {
-    return (readbuf1.bh_first.b_next == NULL
-	 && readbuf2.bh_first.b_next == NULL);
+    return (readbuf1.bh_first == NULL
+	 && readbuf2.bh_first == NULL);
 }
 
 /*
@@ -429,7 +439,7 @@ stuff_empty(void)
     int
 readbuf1_empty(void)
 {
-    return (readbuf1.bh_first.b_next == NULL);
+    return (readbuf1.bh_first == NULL);
 }
 
 /*
@@ -494,7 +504,7 @@ ResetRedobuff(void)
     {
 	free_buff(&old_redobuff);
 	old_redobuff = redobuff;
-	redobuff.bh_first.b_next = NULL;
+	redobuff.bh_first = NULL;
     }
 }
 
@@ -509,7 +519,7 @@ CancelRedo(void)
     {
 	free_buff(&redobuff);
 	redobuff = old_redobuff;
-	old_redobuff.bh_first.b_next = NULL;
+	old_redobuff.bh_first = NULL;
 	start_stuff();
 	while (read_readbuffers(TRUE) != NUL)
 	    ;
@@ -526,9 +536,9 @@ saveRedobuff(save_redo_T *save_redo)
     char_u	*s;
 
     save_redo->sr_redobuff = redobuff;
-    redobuff.bh_first.b_next = NULL;
+    redobuff.bh_first = NULL;
     save_redo->sr_old_redobuff = old_redobuff;
-    old_redobuff.bh_first.b_next = NULL;
+    old_redobuff.bh_first = NULL;
 
     /* Make a copy, so that ":normal ." in a function works. */
     s = get_buffcont(&save_redo->sr_redobuff, FALSE);
@@ -747,9 +757,9 @@ read_redo(int init, int old_redo)
     if (init)
     {
 	if (old_redo)
-	    bp = old_redobuff.bh_first.b_next;
+	    bp = old_redobuff.bh_first;
 	else
-	    bp = redobuff.bh_first.b_next;
+	    bp = redobuff.bh_first;
 	if (bp == NULL)
 	    return FAIL;
 	p = bp->b_str;
@@ -1372,9 +1382,9 @@ save_typeahead(tasave_T *tp)
     old_char = -1;
 
     tp->save_readbuf1 = readbuf1;
-    readbuf1.bh_first.b_next = NULL;
+    readbuf1.bh_first = NULL;
     tp->save_readbuf2 = readbuf2;
-    readbuf2.bh_first.b_next = NULL;
+    readbuf2.bh_first = NULL;
 # ifdef USE_INPUT_BUF
     tp->save_inputbuf = get_input_buf();
 # endif

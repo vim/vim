@@ -511,7 +511,7 @@ typedef struct buffheader buffheader_T;
 struct buffblock
 {
     buffblock_T	*b_next;	/* pointer to next buffblock */
-    char_u	b_str[1];	/* contents (actually longer) */
+    char_u	b_str[];	/* contents (flexible array) */
 };
 
 /*
@@ -519,7 +519,7 @@ struct buffblock
  */
 struct buffheader
 {
-    buffblock_T	bh_first;	/* first (dummy) block of list */
+    buffblock_T	*bh_first;	/* first block of the list */
     buffblock_T	*bh_curr;	/* buffblock for appending */
     int		bh_index;	/* index for reading */
     int		bh_space;	/* space in bh_curr for appending */
