@@ -1056,6 +1056,7 @@ main_loop(
     int		cmdwin,	    /* TRUE when working in the command-line window */
     int		noexmode)   /* TRUE when return on entering Ex mode */
 {
+    oparg_T	oa;	/* operator arguments */
     volatile int previous_got_int = FALSE;	/* "got_int" was TRUE */
 #ifdef FEAT_CONCEAL
     /* these are static to avoid a compiler warning */
@@ -1095,7 +1096,6 @@ main_loop(
     }
 #endif
 
-    oparg_T	oa;	/* operator arguments */
     clear_oparg(&oa);
     while (!cmdwin
 #ifdef FEAT_CMDWIN
@@ -1383,11 +1383,6 @@ getout_preserve_modified(int exitval)
     void
 getout(int exitval)
 {
-    tabpage_T	*tp;
-    tabpage_T	*next_tp;
-    buf_T	*buf;
-    win_T	*wp;
-
     exiting = TRUE;
 #if defined(FEAT_JOB_CHANNEL)
     ch_log(NULL, "Exiting...");
@@ -1416,6 +1411,11 @@ getout(int exitval)
 
     if (v_dying <= 1)
     {
+	tabpage_T	*tp;
+	tabpage_T	*next_tp;
+	buf_T		*buf;
+	win_T		*wp;
+
 	/* Trigger BufWinLeave for all windows, but only once per buffer. */
 	for (tp = first_tabpage; tp != NULL; tp = next_tp)
 	{
