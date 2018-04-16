@@ -623,7 +623,8 @@ Starting ~
 Load the plugin with this command: >
 	packadd termdebug
 <							*:Termdebug*
-To start debugging use `:Termdebug` followed by the command name, for example: >
+To start debugging use `:Termdebug` or `:TermdebugCommand`` followed by the
+command name, for example: >
 	:Termdebug vim
 
 This opens two windows:
@@ -641,7 +642,8 @@ source file location will be displayed, if possible.  A sign is used to
 highlight the current position, using highlight group debugPC.	 
 
 If the buffer in the current window is modified, another window will be opened
-to display the current gdb position.
+to display the current gdb position.  You can use `:Winbar` to add a window
+toolbar there.
 
 Focus the terminal of the executed program to interact with it.  This works
 the same as any command running in a terminal window.
@@ -650,11 +652,24 @@ When the debugger ends, typically by typing "quit" in the gdb window, the two
 opened windows are closed.
 
 Only one debugger can be active at a time.
+							*:TermdebugCommand*
+If you want to give specific commands to the command being debugged, you can
+use the `:TermdebugCommand` command followed by the command name and
+additional parameters. >
+	:TermdebugCommand vim --clean -c ':set nu'
 
-To attach gdb to an already running executable, or use a core file, pass extra
+Both the `:Termdebug` and `:TermdebugCommand` support an optional "!" bang
+argument to start the command right away, without pausing at the gdb window
+(and cursor will be in the debugged window).  For example: >
+	:TermdebugCommand! vim --clean
+
+To attach gdb to an already running executable or use a core file, pass extra
 arguments.  E.g.: >
 	:Termdebug vim core
 	:Termdebug vim 98343
+
+If no argument is given, you'll end up in a gdb window, in which you need to
+specify which command to run using e.g. the gdb `file` command.
 
 
 Example session ~
@@ -728,18 +743,20 @@ Put focus on the gdb window to type commands there.  Some common ones are:
 - frame N	go to the Nth stack frame
 - continue	continue execution
 
-In the window showing the source code these commands can be used to control gdb:
+						*:Run* *:Arguments*
+In the window showing the source code these commands can be used to control
+gdb:
  `:Run` [args]	    run the program with [args] or the previous arguments
  `:Arguments` {args}  set arguments for the next `:Run`
 
- `:Break`	set a breakpoint at the current line; a sign will be displayed
- `:Clear`	delete the breakpoint at the current line
+ *:Break*	set a breakpoint at the current line; a sign will be displayed
+ *:Clear*	delete the breakpoint at the current line
 
- `:Step`	execute the gdb "step" command
- `:Over`	execute the gdb "next" command (`:Next` is a Vim command)
- `:Finish`	execute the gdb "finish" command
- `:Continue`	execute the gdb "continue" command
- `:Stop`	interrupt the program
+ *:Step*	execute the gdb "step" command
+ *:Over*	execute the gdb "next" command (`:Next` is a Vim command)
+ *:Finish*	execute the gdb "finish" command
+ *:Continue*	execute the gdb "continue" command
+ *:Stop*	interrupt the program
 
 If 'mouse' is set the plugin adds a window toolbar with these entries:
   Step		`:Step`
@@ -750,7 +767,7 @@ If 'mouse' is set the plugin adds a window toolbar with these entries:
   Eval		`:Evaluate`
 This way you can use the mouse to perform the most common commands.  You need
 to have the 'mouse' option set to enable mouse clicks.
-
+								*:Winbar*
 You can add the window toolbar in other windows you open with: >
   :Winbar
 
@@ -761,7 +778,7 @@ abandoned.
 
 
 Inspecting variables ~
-							*termdebug-variables*
+					*termdebug-variables* *:Evaluate*
  `:Evaluate`	    evaluate the expression under the cursor
  `K`		    same
  `:Evaluate` {expr}   evaluate {expr}
@@ -773,9 +790,9 @@ You can usually shorten `:Evaluate` to `:Ev`.
 
 Other commands ~
 							*termdebug-commands*
- :Gdb	     jump to the gdb window
- :Program    jump to the window with the running program
- :Source     jump to the window with the source code, create it if there
+ *:Gdb*	     jump to the gdb window
+ *:Program*    jump to the window with the running program
+ *:Source*     jump to the window with the source code, create it if there
 	     isn't one
 
 
