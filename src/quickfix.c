@@ -5406,67 +5406,67 @@ qf_add_entries(
 }
 
 /*
- * Get the quickfix list index from 'nr'
+ * Get the quickfix list index from 'nr' or 'id'
  */
     static int
-qf_setprop_qfidx_from_nr(
+qf_setprop_get_qfidx(
 	qf_info_T	*qi,
-	dictitem_T	*di,
+	dict_T		*what,
 	int		action,
 	int		*newlist)
 {
-    int		qf_idx = qi->qf_curlist;
+    dictitem_T	*di;
+    int		qf_idx = qi->qf_curlist;    /* default is the current list */
 
-    /* Use the specified quickfix/location list */
-    if (di->di_tv.v_type == VAR_NUMBER)
+    if ((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
     {
-	/* for zero use the current list */
-	if (di->di_tv.vval.v_number != 0)
-	    qf_idx = di->di_tv.vval.v_number - 1;
-
-	if ((action == ' ' || action == 'a') && qf_idx == qi->qf_listcount)
+	/* Use the specified quickfix/location list */
+	if (di->di_tv.v_type == VAR_NUMBER)
 	{
-	    /*
-	     * When creating a new list, accept qf_idx pointing to the next
-	     * non-available list and add the new list at the end of the
-	     * stack.
-	     */
-	    *newlist = TRUE;
-	    qf_idx = qi->qf_listcount > 0 ? qi->qf_listcount - 1 : 0;
+	    /* for zero use the current list */
+	    if (di->di_tv.vval.v_number != 0)
+		qf_idx = di->di_tv.vval.v_number - 1;
+
+	    if ((action == ' ' || action == 'a') && qf_idx == qi->qf_listcount)
+	    {
+		/*
+		 * When creating a new list, accept qf_idx pointing to the next
+		 * non-available list and add the new list at the end of the
+		 * stack.
+		 */
+		*newlist = TRUE;
+		qf_idx = qi->qf_listcount > 0 ? qi->qf_listcount - 1 : 0;
+	    }
+	    else if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
+		return -1;
+	    else if (action != ' ')
+		*newlist = FALSE;	/* use the specified list */
 	}
-	else if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
-	    return -1;
-	else if (action != ' ')
-	    *newlist = FALSE;	/* use the specified list */
-    }
-    else if (di->di_tv.v_type == VAR_STRING
+	else if (di->di_tv.v_type == VAR_STRING
 		&& di->di_tv.vval.v_string != NULL
 		&& STRCMP(di->di_tv.vval.v_string, "$") == 0)
-    {
-	if (qi->qf_listcount > 0)
-	    qf_idx = qi->qf_listcount - 1;
-	else if (*newlist)
-	    qf_idx = 0;
+	{
+	    if (qi->qf_listcount > 0)
+		qf_idx = qi->qf_listcount - 1;
+	    else if (*newlist)
+		qf_idx = 0;
+	    else
+		return -1;
+	}
 	else
 	    return -1;
     }
-    else
-	return -1;
+
+    if (!*newlist && (di = dict_find(what, (char_u *)"id", -1)) != NULL)
+    {
+	/* Use the quickfix/location list with the specified id */
+	if (di->di_tv.v_type != VAR_NUMBER)
+	    return -1;
+
+	return qf_id2nr(qi, di->di_tv.vval.v_number);
+    }
 
     return qf_idx;
-}
-
-/*
- * Get the quickfix list index from 'id'
- */
-    static int
-qf_setprop_qfidx_from_id(qf_info_T *qi, dictitem_T *di)
-{
-    /* Use the quickfix/location list with the specified id */
-    if (di->di_tv.v_type != VAR_NUMBER)
-	return -1;
-
-    return qf_id2nr(qi, di->di_tv.vval.v_number);
 }
 
 /*
@@ -5500,7 +5500,6 @@ qf_setprop_items(qf_info_T *qi, int qf_idx, dictitem_T *di, int action)
 	return FAIL;
 
     title_save = vim_strsave(qi->qf_lists[qf_idx].qf_title);
-
     retval = qf_add_entries(qi, qf_idx, di->di_tv.vval.v_list,
 	    title_save, action == ' ' ? 'a' : action);
     if (action == 'r')
@@ -5519,10 +5518,10 @@ qf_setprop_items(qf_info_T *qi, int qf_idx, dictitem_T *di, int action)
 }
 
 /*
- * Set quickfix list items from a list of lines.
+ * Set quickfix list items/entries from a list of lines.
  */
     static int
-qf_setprop_lines(
+qf_setprop_items_from_lines(
 	qf_info_T	*qi,
 	int		qf_idx,
 	dict_T		*what,
@@ -5588,12 +5587,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
     if (action == ' ' || qi->qf_curlist == qi->qf_listcount)
 	newlist = TRUE;
 
-    qf_idx = qi->qf_curlist;		/* default is the current list */
-    if ((di = dict_find(what, (char_u *)"nr", -1)) != NULL)
-	qf_idx = qf_setprop_qfidx_from_nr(qi, di, action, &newlist);
-    if (!newlist && (di = dict_find(what, (char_u *)"id", -1)) != NULL)
-	qf_idx = qf_setprop_qfidx_from_id(qi, di);
-
+    qf_idx = qf_setprop_get_qfidx(qi, what, action, &newlist);
     if (qf_idx == -1)			/* List not found */
 	return FAIL;
 
@@ -5609,7 +5603,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
     if ((di = dict_find(what, (char_u *)"items", -1)) != NULL)
 	retval = qf_setprop_items(qi, qf_idx, di, action);
     if ((di = dict_find(what, (char_u *)"lines", -1)) != NULL)
-	retval = qf_setprop_lines(qi, qf_idx, what, di, action);
+	retval = qf_setprop_items_from_lines(qi, qf_idx, what, di, action);
     if ((di = dict_find(what, (char_u *)"context", -1)) != NULL)
 	retval = qf_setprop_context(qi, qf_idx, di);
 
