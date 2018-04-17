@@ -827,9 +827,9 @@ struct msglist
  */
 typedef enum
 {
-    ET_USER,		/* exception caused by ":throw" command */
-    ET_ERROR,		/* error exception */
-    ET_INTERRUPT	/* interrupt exception triggered by Ctrl-C */
+    ET_USER,		// exception caused by ":throw" command
+    ET_ERROR,		// error exception
+    ET_INTERRUPT,	// interrupt exception triggered by Ctrl-C
 } except_type_T;
 
 /*
@@ -1190,16 +1190,16 @@ typedef struct channel_S channel_T;
 typedef enum
 {
     VAR_UNKNOWN = 0,
-    VAR_NUMBER,	 /* "v_number" is used */
-    VAR_STRING,	 /* "v_string" is used */
-    VAR_FUNC,	 /* "v_string" is function name */
-    VAR_PARTIAL, /* "v_partial" is used */
-    VAR_LIST,	 /* "v_list" is used */
-    VAR_DICT,	 /* "v_dict" is used */
-    VAR_FLOAT,	 /* "v_float" is used */
-    VAR_SPECIAL, /* "v_number" is used */
-    VAR_JOB,	 /* "v_job" is used */
-    VAR_CHANNEL	 /* "v_channel" is used */
+    VAR_NUMBER,	 // "v_number" is used
+    VAR_STRING,	 // "v_string" is used
+    VAR_FUNC,	 // "v_string" is function name
+    VAR_PARTIAL, // "v_partial" is used
+    VAR_LIST,	 // "v_list" is used
+    VAR_DICT,	 // "v_dict" is used
+    VAR_FLOAT,	 // "v_float" is used
+    VAR_SPECIAL, // "v_number" is used
+    VAR_JOB,	 // "v_job" is used
+    VAR_CHANNEL, // "v_channel" is used
 } vartype_T;
 
 /*
@@ -1456,8 +1456,8 @@ typedef enum
 {
     JOB_FAILED,
     JOB_STARTED,
-    JOB_ENDED,	    /* detected job done */
-    JOB_FINISHED    /* job done and cleanup done */
+    JOB_ENDED,	    // detected job done
+    JOB_FINISHED,   // job done and cleanup done
 } jobstatus_T;
 
 /*
@@ -1531,11 +1531,11 @@ typedef enum
     MODE_NL = 0,
     MODE_RAW,
     MODE_JSON,
-    MODE_JS
+    MODE_JS,
 } ch_mode_T;
 
 typedef enum {
-    JIO_PIPE,	    /* default */
+    JIO_PIPE,	    // default
     JIO_NULL,
     JIO_FILE,
     JIO_BUFFER,
@@ -1557,7 +1557,7 @@ typedef enum {
     PART_IN,
 # define CH_IN_FD	CH_PART_FD(PART_IN)
 #endif
-    PART_COUNT
+    PART_COUNT,
 } ch_part_T;
 
 #define INVALID_FD	(-1)
@@ -3252,15 +3252,15 @@ typedef struct {
  */
 typedef enum
 {
-    TYPE_UNKNOWN = 0
-    , TYPE_EQUAL	/* == */
-    , TYPE_NEQUAL	/* != */
-    , TYPE_GREATER	/* >  */
-    , TYPE_GEQUAL	/* >= */
-    , TYPE_SMALLER	/* <  */
-    , TYPE_SEQUAL	/* <= */
-    , TYPE_MATCH	/* =~ */
-    , TYPE_NOMATCH	/* !~ */
+    TYPE_UNKNOWN = 0,
+    TYPE_EQUAL,		// ==
+    TYPE_NEQUAL,	// !=
+    TYPE_GREATER,	// >
+    TYPE_GEQUAL,	// >=
+    TYPE_SMALLER,	// <
+    TYPE_SEQUAL,	// <=
+    TYPE_MATCH,		// =~
+    TYPE_NOMATCH,	// !~
 } exptype_T;
 
 /*
