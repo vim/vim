@@ -46,6 +46,7 @@ struct qfline_S
  * There is a stack of error lists.
  */
 #define LISTCOUNT   10
+#define INVALID_QFIDX (-1)
 
 /*
  * Quickfix/Location list definition
@@ -5085,7 +5086,7 @@ qf_getprop_qfidx(qf_info_T *qi, dict_T *what)
 	    {
 		qf_idx = di->di_tv.vval.v_number - 1;
 		if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
-		    qf_idx = -1;
+		    qf_idx = INVALID_QFIDX;
 	    }
 	}
 	else if (di->di_tv.v_type == VAR_STRING
@@ -5094,7 +5095,7 @@ qf_getprop_qfidx(qf_info_T *qi, dict_T *what)
 	    /* Get the last quickfix list number */
 	    qf_idx = qi->qf_listcount - 1;
 	else
-	    qf_idx = -1;
+	    qf_idx = INVALID_QFIDX;
     }
 
     if ((di = dict_find(what, (char_u *)"id", -1)) != NULL)
@@ -5109,7 +5110,7 @@ qf_getprop_qfidx(qf_info_T *qi, dict_T *what)
 		qf_idx = qf_id2nr(qi, di->di_tv.vval.v_number);
 	}
 	else
-	    qf_idx = -1;
+	    qf_idx = INVALID_QFIDX;
     }
 
     return qf_idx;
@@ -5251,7 +5252,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	qf_idx = qf_getprop_qfidx(qi, what);
 
     /* List is not present or is empty */
-    if (qi == NULL || qi->qf_listcount == 0 || qf_idx == -1)
+    if (qi == NULL || qi->qf_listcount == 0 || qf_idx == INVALID_QFIDX)
 	return qf_getprop_defaults(qi, flags, retdict);
 
     if (flags & QF_GETLIST_TITLE)
@@ -5438,7 +5439,7 @@ qf_setprop_get_qfidx(
 		qf_idx = qi->qf_listcount > 0 ? qi->qf_listcount - 1 : 0;
 	    }
 	    else if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
-		return -1;
+		return INVALID_QFIDX;
 	    else if (action != ' ')
 		*newlist = FALSE;	/* use the specified list */
 	}
@@ -5451,17 +5452,17 @@ qf_setprop_get_qfidx(
 	    else if (*newlist)
 		qf_idx = 0;
 	    else
-		return -1;
+		return INVALID_QFIDX;
 	}
 	else
-	    return -1;
+	    return INVALID_QFIDX;
     }
 
     if (!*newlist && (di = dict_find(what, (char_u *)"id", -1)) != NULL)
     {
 	/* Use the quickfix/location list with the specified id */
 	if (di->di_tv.v_type != VAR_NUMBER)
-	    return -1;
+	    return INVALID_QFIDX;
 
 	return qf_id2nr(qi, di->di_tv.vval.v_number);
     }
@@ -5588,7 +5589,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	newlist = TRUE;
 
     qf_idx = qf_setprop_get_qfidx(qi, what, action, &newlist);
-    if (qf_idx == -1)			/* List not found */
+    if (qf_idx == INVALID_QFIDX)	/* List not found */
 	return FAIL;
 
     if (newlist)
