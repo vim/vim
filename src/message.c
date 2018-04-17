@@ -1703,8 +1703,6 @@ str2special(
 	{
 	    c = TO_SPECIAL(str[1], str[2]);
 	    str += 2;
-	    if (c == KS_ZERO)	/* display <Nul> as ^@ or <Nul> */
-		c = NUL;
 	}
 	if (IS_SPECIAL(c) || modifiers)	/* special key */
 	    special = TRUE;
