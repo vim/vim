@@ -40,6 +40,15 @@ func Test_packadd()
   call assert_match('/testdir/Xdir/pack/mine/opt/mytest\($\|,\)', &rtp)
   call assert_match('/testdir/Xdir/pack/mine/opt/mytest/after$', &rtp)
 
+  " NOTE: '/.../opt/myte' forwardly matches with '/.../opt/mytest'
+  call mkdir(fnamemodify(s:plugdir, ':h') . '/myte', 'p')
+  let rtp = &rtp
+  packadd myte
+
+  " Check the path of 'myte' is added
+  call assert_true(len(&rtp) > len(rtp))
+  call assert_match('/testdir/Xdir/pack/mine/opt/myte\($\|,\)', &rtp)
+
   " Check exception
   call assert_fails("packadd directorynotfound", 'E919:')
   call assert_fails("packadd", 'E471:')
