@@ -814,5 +814,14 @@ func Test_popup_command()
   call delete('Xtest')
 endfunc
 
+func Test_popup_complete_backwards()
+  new
+  call setline(1, ['Post', 'Port', 'Po'])
+  let expected=['Post', 'Port', 'Port']
+  call cursor(3,2)
+  call feedkeys("A\<C-X>". repeat("\<C-P>", 3). "rt\<cr>", 'tx')
+  call assert_equal(expected, getline(1,'$'))
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
