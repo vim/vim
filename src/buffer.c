@@ -417,6 +417,8 @@ buf_hashtab_remove(buf_T *buf)
 	hash_remove(&buf_hashtab, hi);
 }
 
+static char *e_buflocked = N_("E937: Attempt to delete a buffer that is in use");
+
 /*
  * Close the link to a buffer.
  * "action" is used when there is no longer a window for the buffer.
@@ -476,8 +478,15 @@ close_buffer(
 	if (term_job_running(buf->b_term))
 	{
 	    if (wipe_buf || unload_buf)
+	    {
+		if (buf->b_locked)
+		{
+		    EMSG(_(e_buflocked));
+		    return;
+		}
 		/* Wiping out or unloading a terminal buffer kills the job. */
 		free_terminal(buf);
+	    }
 	    else
 	    {
 		/* The job keeps running, hide the buffer. */
@@ -499,7 +508,7 @@ close_buffer(
      * halfway a command that relies on it). Unloading is allowed. */
     if (buf->b_locked > 0 && (del_buf || wipe_buf))
     {
-	EMSG(_("E937: Attempt to delete a buffer that is in use"));
+	EMSG(_(e_buflocked));
 	return;
     }
 
@@ -1355,6 +1364,12 @@ do_buffer(
     {
 	int	forward;
 	bufref_T bufref;
+
+	if (buf->b_locked)
+	{
+	    EMSG(_(e_buflocked));
+	    return FAIL;
+	}
 
 	set_bufref(&bufref, buf);
 

@@ -1287,6 +1287,30 @@ func Test_terminal_api_call_fails()
   call delete('Xlog')
 endfunc
 
+let s:caught_e937 = 0
+
+func Tapi_Delete(bufnum, arg)
+  try
+    execute 'bdelete!' a:bufnum
+  catch /E937:/
+    let s:caught_e937 = 1
+  endtry
+endfunc
+
+func Test_terminal_api_call_fail_delete()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call WriteApiCall('Tapi_Delete')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call WaitFor({-> s:caught_e937 == 1})
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  call ch_logfile('', '')
+endfunc
+
 func Test_terminal_ansicolors_default()
   let colors = [
 	\ '#000000', '#e00000',

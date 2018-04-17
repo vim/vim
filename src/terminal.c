@@ -46,6 +46,9 @@
  *   switch to GUI, shell stops working. Scrollback seems wrong, command
  *   running in shell is still running.
  * - GUI: when using tabs, focus in terminal, click on tab does not work.
+ * - handle_moverect() scrolls one line at a time.  Postpone scrolling, count
+ *   the number of lines, until a redraw happens.  Then if scrolling many lines
+ *   a redraw is faster.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
  * - Redrawing is slow with Athena and Motif.  Also other GUI? (Ramel Eshed)
@@ -3433,6 +3436,10 @@ parse_osc(const char *command, size_t cmdlen, void *user)
 	{
 	    char_u	*cmd = get_tv_string(&item->li_tv);
 
+	    /* Make sure an invoked command doesn't delete the buffer (and the
+	     * terminal) under our fingers. */
+	    ++term->tl_buffer->b_locked;
+
 	    item = item->li_next;
 	    if (item == NULL)
 		ch_log(channel, "Missing argument for %s", cmd);
@@ -3442,6 +3449,7 @@ parse_osc(const char *command, size_t cmdlen, void *user)
 		handle_call_command(term, channel, item);
 	    else
 		ch_log(channel, "Invalid command received: %s", cmd);
+	    --term->tl_buffer->b_locked;
 	}
     }
     else
