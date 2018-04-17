@@ -29,6 +29,29 @@ dnl in autoconf needs it, where it uses STDC_HEADERS.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
+dnl Check that the C99 features that Vim uses are supported:
+dnl - // commands
+dnl - comma after last enum item
+dnl - "long long int" and "long long unsigned"
+dnl - flexible array member
+AC_MSG_CHECKING(if the compiler can handle Vim code)
+AC_TRY_COMPILE([#include <stdio.h>], [
+  struct with_flexible_member {
+    int count;  // comment
+    char text[]; // another comment
+  };
+  enum {
+    one,
+    two,
+    three,
+  };
+  long long int a = 1;
+  long long unsigned b = 2;
+  printf("a %lld and a %llu", a, b);
+  ],
+AC_MSG_RESULT(yes),
+AC_MSG_ERROR([compiler does not work properly - see auto/config.log]))
+
 dnl Check for the flag that fails if stuff are missing.
 
 AC_MSG_CHECKING(--enable-fail-if-missing argument)

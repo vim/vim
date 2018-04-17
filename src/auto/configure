@@ -4179,6 +4179,40 @@ $as_echo "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if the compiler can handle Vim code" >&5
+$as_echo_n "checking if the compiler can handle Vim code... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+int
+main ()
+{
+
+  struct with_flexible_member {
+    int count;  // comment
+    char text[]; // another comment
+  };
+  enum {
+    one,
+    two,
+    three,
+  };
+  long long int a = 1;
+  long long unsigned b = 2;
+  printf("a %lld and a %llu", a, b);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  as_fn_error $? "compiler does not work properly - see auto/config.log" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-fail-if-missing argument" >&5
 $as_echo_n "checking --enable-fail-if-missing argument... " >&6; }
