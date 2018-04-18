@@ -3821,10 +3821,29 @@ static int APP_BOTH;
     static void
 add_pack_plugin(char_u *fname, void *cookie)
 {
-    if (cookie != &APP_LOAD && strstr((char *)p_rtp, (char *)fname) == NULL)
-	/* directory is not yet in 'runtimepath', add it */
-	if (add_pack_dir_to_rtp(fname) == FAIL)
-	    return;
+    if (cookie != &APP_LOAD)
+    {
+	char_u *p = p_rtp;
+	size_t l = STRLEN(fname);
+
+	while (p != NULL)
+	{
+	    p = (char_u *)strstr((char *)p, (char *)fname);
+	    if (p != NULL)
+	    {
+		if ((p == p_rtp || p[-1] == ',')
+					      && (p[l] == NUL || p[l] == ','))
+		    break;
+		p = vim_strchr(p + l, ',');
+	    }
+	}
+	if (p == NULL)
+	{
+	    /* directory is not yet in 'runtimepath', add it */
+	    if (add_pack_dir_to_rtp(fname) == FAIL)
+		return;
+	}
+    }
 
     if (cookie != &APP_ADD_DIR)
 	load_pack_plugin(fname);
