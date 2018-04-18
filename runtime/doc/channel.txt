@@ -55,7 +55,7 @@ JS	JavaScript style JSON-like encoding |js_encode()|
 Common combination are:
 - Using a job connected through pipes in NL mode.  E.g., to run a style
   checker and receive errors and warnings.
-- Using a deamon, connecting over a socket in JSON mode.  E.g. to lookup
+- Using a daemon, connecting over a socket in JSON mode.  E.g. to lookup
   cross-references in a database.
 
 ==============================================================================
