@@ -36,14 +36,10 @@ dnl - "long long int" and "long long unsigned"
 dnl - flexible array member
 AC_MSG_CHECKING(if the compiler can handle Vim code)
 AC_TRY_COMPILE([#include <stdio.h>], [
-  struct with_flexible_member {
-    int count;  // comment
-    char text[]; // another comment
-  };
   enum {
-    one,
-    two,
-    three,
+    one,   // one comment
+    two,   // two comments
+    three, // three comments
   };
   long long int a = 1;
   long long unsigned b = 2;

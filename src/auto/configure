@@ -4188,14 +4188,10 @@ int
 main ()
 {
 
-  struct with_flexible_member {
-    int count;  // comment
-    char text[]; // another comment
-  };
   enum {
-    one,
-    two,
-    three,
+    one,   // one comment
+    two,   // two comments
+    three, // three comments
   };
   long long int a = 1;
   long long unsigned b = 2;

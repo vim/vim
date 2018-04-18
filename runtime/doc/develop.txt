@@ -209,16 +209,6 @@ Types ~
 "long long" is allowed and can be expected to be 64 bits.  Use %lld in printf
 formats.  Also "long long unsigned" with %llu.
 
-Flexible array members ~
-
-This is an array without size, used as the last member of a struct.  Vim used
-to have an array of size one, which causes trouble with FORTIFY_SOURCE. Using
-an "unsized array" is the intended use, we will change all of them.
-	struct some_stuff {
-	   size_t  length;
-	   char    payload[];  // will have size "length"
-	};
-
 Not to be used ~
 
 These C99 features are not to be used, because not enough compilers support
@@ -228,6 +218,7 @@ them:
 - Variable length arrays (even in C11 this is an optional feature).
 - _Bool and _Complex types.
 - "inline" (it's hardly ever needed, let the optimizer do its work)
+- flexible array members: Not supported by HP-UX C compiler (John Marriott)
 
 
 USE OF COMMON FUNCTIONS					*style-functions*
