@@ -4265,35 +4265,193 @@ $as_echo "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if the compiler can handle Vim code" >&5
-$as_echo_n "checking if the compiler can handle Vim code... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test x"$ac_cv_prog_cc_c99" != xno; then
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for unsigned long long int" >&5
+$as_echo_n "checking for unsigned long long int... " >&6; }
+if ${ac_cv_type_unsigned_long_long_int+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_cv_type_unsigned_long_long_int=yes
+     if test "x${ac_cv_prog_cc_c99-no}" = xno; then
+       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdio.h>
+
+  /* For now, do not test the preprocessor; as of 2007 there are too many
+	 implementations with broken preprocessors.  Perhaps this can
+	 be revisited in 2012.  In the meantime, code should not expect
+	 #if to work with literals wider than 32 bits.  */
+      /* Test literals.  */
+      long long int ll = 9223372036854775807ll;
+      long long int nll = -9223372036854775807LL;
+      unsigned long long int ull = 18446744073709551615ULL;
+      /* Test constant expressions.   */
+      typedef int a[((-9223372036854775807LL < 0 && 0 < 9223372036854775807ll)
+		     ? 1 : -1)];
+      typedef int b[(18446744073709551615ULL <= (unsigned long long int) -1
+		     ? 1 : -1)];
+      int i = 63;
+int
+main ()
+{
+/* Test availability of runtime routines for shift and division.  */
+      long long int llmax = 9223372036854775807ll;
+      unsigned long long int ullmax = 18446744073709551615ull;
+      return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
+	      | (llmax / ll) | (llmax % ll)
+	      | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
+	      | (ullmax / ull) | (ullmax % ull));
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+else
+  ac_cv_type_unsigned_long_long_int=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+     fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_unsigned_long_long_int" >&5
+$as_echo "$ac_cv_type_unsigned_long_long_int" >&6; }
+  if test $ac_cv_type_unsigned_long_long_int = yes; then
+
+$as_echo "#define HAVE_UNSIGNED_LONG_LONG_INT 1" >>confdefs.h
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for long long int" >&5
+$as_echo_n "checking for long long int... " >&6; }
+if ${ac_cv_type_long_long_int+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_cv_type_long_long_int=yes
+      if test "x${ac_cv_prog_cc_c99-no}" = xno; then
+	ac_cv_type_long_long_int=$ac_cv_type_unsigned_long_long_int
+	if test $ac_cv_type_long_long_int = yes; then
+	  	  	  	  if test "$cross_compiling" = yes; then :
+  :
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <limits.h>
+		 #ifndef LLONG_MAX
+		 # define HALF \
+			  (1LL << (sizeof (long long int) * CHAR_BIT - 2))
+		 # define LLONG_MAX (HALF - 1 + HALF)
+		 #endif
+int
+main ()
+{
+long long int n = 1;
+		 int i;
+		 for (i = 0; ; i++)
+		   {
+		     long long int m = n << i;
+		     if (m >> i != n)
+		       return 1;
+		     if (LLONG_MAX / 2 < m)
+		       break;
+		   }
+		 return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+else
+  ac_cv_type_long_long_int=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+	fi
+      fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_long_long_int" >&5
+$as_echo "$ac_cv_type_long_long_int" >&6; }
+  if test $ac_cv_type_long_long_int = yes; then
+
+$as_echo "#define HAVE_LONG_LONG_INT 1" >>confdefs.h
+
+  fi
+
+  if test "$ac_cv_type_long_long_int" = no; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Compiler does not support long long int
+See \`config.log' for more details" "$LINENO" 5; }
+  fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the compiler supports trailing commas" >&5
+$as_echo_n "checking if the compiler supports trailing commas... " >&6; }
+  trailing_commas=no
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
 int
 main ()
 {
 
-  enum {
-    one,   // one comment
-    two,   // two comments
-    three, // three comments
-  };
-  long long int a = 1;
-  long long unsigned b = 2;
-  printf("a %lld and a %llu", a, b);
-
+    enum {
+      one,
+    };
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+$as_echo "yes" >&6; }; trailing_commas=yes
 else
-  as_fn_error $? "compiler does not work properly - see auto/config.log" "$LINENO" 5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  if test "$trailing_commas" = no; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Compiler does not support trailing commas
+See \`config.log' for more details" "$LINENO" 5; }
+  fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the compiler supports C++ comments" >&5
+$as_echo_n "checking if the compiler supports C++ comments... " >&6; }
+  slash_comments=no
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+// C++ comments?
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; slash_comments=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  if test "$slash_comments" = no; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Compiler does not support C++ comments
+See \`config.log' for more details" "$LINENO" 5; }
+  fi
+fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-fail-if-missing argument" >&5
