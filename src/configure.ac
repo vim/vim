@@ -11,7 +11,7 @@ AC_DEFINE(UNIX)
 AC_PROG_MAKE_SET
 
 dnl Checks for programs.
-AC_PROG_CC_C89		dnl required by almost everything
+AC_PROG_CC_C99		dnl required by almost everything
 AC_PROG_CPP		dnl required by header file checks
 AC_PROGRAM_EGREP	dnl required by AC_EGREP_CPP
 AC_PROG_FGREP		dnl finds working grep -F
