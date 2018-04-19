@@ -712,8 +712,11 @@ readfile(
 
 		if (mch_stat((char *)swap_fname, &swap_st) >= 0
 			&& st.st_gid != swap_st.st_gid
+# ifdef HAVE_FCHOWN
 			&& fchown(curbuf->b_ml.ml_mfp->mf_fd, -1, st.st_gid)
-									 == -1)
+# endif
+									  == -1
+		   )
 		    swap_mode &= 0600;
 	    }
 
