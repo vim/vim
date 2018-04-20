@@ -39,6 +39,7 @@ LANGUAGES = \
 		ru.cp1251 \
 		sk \
 		sk.cp1250 \
+		sr \
 		sv \
 		uk \
 		uk.cp1251 \
@@ -78,6 +79,7 @@ MOFILES = \
 		ru.mo \
 		sk.cp1250.mo \
 		sk.mo \
+		sr.mo \
 		sv.mo \
 		uk.cp1251.mo \
 		uk.mo \

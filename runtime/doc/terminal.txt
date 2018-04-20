@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Apr 05
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -80,16 +80,16 @@ Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N*
 			evaluating an expression.
 	CTRL-W CTRL-C	ends the job, see below |t_CTRL-W_CTRL-C|
 
-See option 'termkey' for specifying another key instead of CTRL-W that
-will work like CTRL-W.  However, typing 'termkey' twice sends 'termkey' to
-the job.  For example:
-	'termkey' CTRL-W    move focus to the next window
-	'termkey' :	    enter an Ex command
-	'termkey' 'termkey' send 'termkey' to the job in the terminal
-	'termkey' .	    send a CTRL-W to the job in the terminal
-	'termkey' N	    go to terminal Normal mode, see below
-	'termkey' CTRL-N    same as CTRL-W N
-	'termkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
+See option 'termwinkey' for specifying another key instead of CTRL-W that
+will work like CTRL-W.  However, typing 'termwinkey' twice sends 'termwinkey'
+to the job.  For example:
+	'termwinkey' CTRL-W    move focus to the next window
+	'termwinkey' :	       enter an Ex command
+	'termwinkey' 'termwinkey' send 'termwinkey' to the job in the terminal
+	'termwinkey' .	       send a CTRL-W to the job in the terminal
+	'termwinkey' N	       go to terminal Normal mode, see below
+	'termwinkey' CTRL-N    same as CTRL-W N
+	'termwinkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
 							*t_CTRL-\_CTRL-N*
 The special key combination CTRL-\ CTRL-N can be used to switch to Normal
 mode, just like this works in any other mode.
@@ -125,7 +125,7 @@ when 'balloonevalterm' is enabled.
 
 Size and color ~
 							*terminal-size-color*
-See option 'termsize' for controlling the size of the terminal window.
+See option 'termwinsize' for controlling the size of the terminal window.
 (TODO: scrolling when the terminal is larger than the window)
 
 The job running in the terminal can change the colors.  The default foreground
@@ -139,7 +139,7 @@ example: >
     hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
 <
 							*g:terminal_ansi_colors*
-In GUI mode or with |termguicolors|, the 16 ANSI colors used by default in new
+In GUI mode or with 'termguicolors', the 16 ANSI colors used by default in new
 terminal windows may be configured using the variable
 `g:terminal_ansi_colors`, which should be a list of 16 color names or
 hexadecimal color codes, similar to those accepted by |highlight-guifg|.  When
@@ -269,22 +269,22 @@ Resizing ~
 							*terminal-resizing*
 The size of the terminal can be in one of three modes:
 
-1. The 'termsize' option is empty: The terminal size follows the window size.
-   The minimal size is 2 screen lines with 10 cells.
+1. The 'termwinsize' option is empty: The terminal size follows the window
+   size.  The minimal size is 2 screen lines with 10 cells.
 
-2. The 'termsize' option is "rows*cols", where "rows" is the minimal number of
-   screen rows and "cols" is the minimal number of cells.
+2. The 'termwinsize' option is "rows*cols", where "rows" is the minimal number
+   of screen rows and "cols" is the minimal number of cells.
 
-3. The 'termsize' option is "rowsXcols" (where the x is upper or lower case).
-   The terminal size is fixed to the specified number of screen lines and
-   cells.  If the window is bigger there will be unused empty space.
+3. The 'termwinsize' option is "rowsXcols" (where the x is upper or lower
+   case).  The terminal size is fixed to the specified number of screen lines
+   and cells.  If the window is bigger there will be unused empty space.
 
 If the window is smaller than the terminal size, only part of the terminal can
 be seen (the lower-left part).
 
 The |term_getsize()| function can be used to get the current size of the
 terminal.  |term_setsize()| can be used only when in the first or second mode,
-not when 'termsize' is "rowsXcols".
+not when 'termwinsize' is "rowsXcols".
 
 
 Terminal-Job and Terminal-Normal mode ~
@@ -294,7 +294,7 @@ job.  That includes the cursor position.  Typed keys are sent to the job.
 The terminal contents can change at any time.  This is called Terminal-Job
 mode.
 
-Use CTRL-W N (or 'termkey' N) to switch to Terminal-Normal mode.  Now the
+Use CTRL-W N (or 'termwinkey' N) to switch to Terminal-Normal mode.  Now the
 contents of the terminal window is under control of Vim, the job output is
 suspended.  CTRL-\ CTRL-N does the same.
 
@@ -316,7 +316,7 @@ the job ends while in Terminal-Normal mode this changes to
 
 When the job outputs lines in the terminal, such that the contents scrolls off
 the top, those lines are remembered and can be seen in Terminal-Normal mode.
-The number of lines is limited by the 'terminalscroll' option. When going over
+The number of lines is limited by the 'termwinscroll' option. When going over
 this limit, the first 10% of the scrolled lins are deleted and are lost.
 
 

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.0.  Last change: 2018 Mar 03
+*usr_41.txt*	For Vim version 8.0.  Last change: 2018 Apr 11
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -988,6 +988,8 @@ Terminal window:				*terminal-functions*
 	term_getstatus()	get the status of a terminal
 	term_gettitle()		get the title of a terminal
 	term_gettty()		get the tty name of a terminal
+	term_setansicolors()	set 16 ANSI colors, used for GUI
+	term_getansicolors()	get 16 ANSI colors, used for GUI
 
 Timers:						*timer-functions*
 	timer_start()		create a timer

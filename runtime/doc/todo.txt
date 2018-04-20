@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2018 Apr 05
+*todo.txt*      For Vim version 8.0.  Last change: 2018 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,53 +36,34 @@ entered there will not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Terminal emulator window:
-- dump diff sometimes creates a different way of repeating.
-   Example: https://api.travis-ci.org/v3/job/359102504/log.txt
-  unclear why this can happen.
-- Passing 'term' as $TERM doesn't work in GUI.
 - Still some stuff to implement and bugs to fix, see src/terminal.c
-- GUI: problem with split window and sourcing the current buffer into python?
-    (Blay263, 2018 Mar 31)
-- Terminal debugger: need a way to (re) open the source window, where current
-  position is displayed.
-
-Mode message isn't updated on vertical split. (Alexei Averchenko, 2018 Feb 2,
-#2611)
-
-Patch to fix vimgrep adding to wrong quickfix list. (Yegappan, 2018 Mar 25)
 
 Problem with sudo. #2758
-
-Code refactoring, macro for message, #2729
-
-Fix for crash with non-dict argument to job options. (ichizok, #2765)
-
-Patch to enforce c89 compliance. (James McCoy, #2735)
-With fix for Mac from Kazunobu.
-
-Block insert doesn't work if the first line is auto-indented. (Christian
-Brabandt, 2018 Apr 4, #2778)
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
 
 Patch to avoid bad highlighting caused by #if. (ichizok, #2731)
 
-Patch to make mkdir() more like the shell command. (James McCoy, #2775)
-
-Implement option_save() and option_restore()?  Or remove the help.
+Patch to refactor qf_set_properties(). (Yegappan, Apr 17, #2812)
 
 Patch for static analysis warnings. (Christian Brabandt, 2018 Apr 1, #2770)
+Ther are more here: https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
 Patch to refactor ex_helpgrep. (Yegappan, #2766, 2018 Mar 30)
 Also in email, take the one with a test.
+
+Allow for C99 features, decide which ones are OK:
+- "inline"
+- "long long"
+- flexible array members (change code to avoid FORTIFY_SOURCE problems)
 
 Looks like an error for inserting register makes ":file other" not work.
 (Tom M, 2018 Mar 28)  Reset did_emsg after inserting a register.
 Or at the top of the loop? (Apr 4)
 
 Patch to fix mouse pointer after :tselect. (Hirohito Higashi, #2709)
-How to reproduce the problem?
+How to reproduce the problem?  Remarks by Hirohito, Apr 8.
 
 Patch to avoid job killed when I/O is disconnected. (ichizok, #2734)
 
@@ -116,6 +97,10 @@ Add a ModeChanged autocommand that has an argument indicating the old and new
 mode.  Also used for switching Terminal mode.
 
 Cursor in status line after search. (#2530)
+
+Add an option with file patterns, to be used when unloading a buffer: If there
+is a match, remove entries for the buffer from marks, jumplist, etc.  To be
+used for git temp files.
 
 Patch to fix that an empty buffer remains when using :argedit. (Christian,
 #2713)  Updated patch.
@@ -154,6 +139,10 @@ No maintainer for Simplified Chinese translations.
 When 'inchsearch' and 'hlsearch' are set /\v highlights everything.
 Also see #2337
 
+Python indenting: alternative way to indent arguments:
+http://orchistro.tistory.com/236
+Should be supported with a flag.
+
 Starting job with cwd option, when the directory does not exist, gives a
 confusing error message. (Wang Shidong, 2018 Jan 2, #2519)
 
@@ -187,6 +176,30 @@ Using 'wildignore' also applies to literally entered file name.  Also with
 
 Patch to use the xdiff library instead of external diff. (Christian Brabandt,
 2018 Mar 20, #2732)
+
+Implement option_save() and option_restore():
+option_restore({list})					*option_restore()*
+		Restore options previously saved by option_save().
+		When buffer-local options have been saved, this function must
+		be called when the same buffer is the current buffer.
+		When window-local options have been saved, this function must
+		be called when the same window is the current window.
+		When in the wrong buffer and/or window an error is given and
+		the local options won't be restored.
+
+option_save({list})					*option_save()*
+		Saves the options named in {list}.  The returned value can be
+		passed to option_restore().  Example: >
+			let s:saved_options = option_save([
+			    \ 'ignorecase',
+			    \ 'iskeyword',
+			    \ ])
+			 au <buffer> BufLeave *
+			    \ call option_restore(s:saved_options)
+<		The advantage over using `:let` is that global and local
+		values are handled and the script ID is restored, so that
+		`:verbose set` will show where the option was originally set,
+		not where it was restored.
 
 "gvim --remote" from a directory with non-word characters changes the current
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
@@ -254,6 +267,9 @@ Requires 'formatoptions' to include "j". (Gary Johnson, 2017 Dec 24)
 Patch to support hunspell. (Matej Cepl, Jan 2018, #2500) Based on older patch
 in #846)
 Doesn't work on Windows yet.  Not ready to included, hard coded paths.
+
+Win32 GUI: when running a fast timer, the cursor no longer blinks.
+Was reported: cursor blinks in terminal on widows with a timer. (xtal8, #2142)
 
 When a timer is running and typing CTRL-R on the command line, it is not
 redrawn properly. (xtal8, 2017 Oct 23, #2241)
@@ -581,9 +597,6 @@ Patch to fix escaping of job arguments. (Yasuhiro Matsumoto, 2016 Oct 5)
 Update Oct 14: https://gist.github.com/mattn/d47e7d3bfe5ade4be86062b565a4bfca
 Update Aug 2017: #1954
 
-Characters deleted on completion. (Adrià Farrés, 2017 Apr 20, #1645)
-Remarks from Christian Brabandt (Apr 21)
-
 The TermResponse event is not triggered when a plugin has set 'eventignore' to
 "all".  Netrw does this. (Gary Johnson, 2017 Jan 24)
 Postpone the event until 'eventignore' is reset.
@@ -762,6 +775,8 @@ command argument. (Romain Lafourcade, 2016 Oct 16, #1175)
 
 Patch to support CamelCase for spell checking: See a lower-to-upper case
 change as a word boundary. (btucker-MPCData, 2016 Nov 6, #1235)
+patch for 'spellcamelcase' option: spellcheck each CamelCased word.
+(Ben Tucker, 2016 Dec 2)
 
 Idea from Sven: record sequence of keys.  Useful to show others what they are
 doing (look over the shoulder), and also to see what happened.
@@ -777,9 +792,6 @@ cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
 :map X may print invalid data. (Nikolay Pavlov, 2017 Jul 3, #1816)
 
 Patch to order results from taglist(). (Duncan McDougall, 2016 Oct 25)
-
-patch for 'spellcamelcase' option: spellcheck each CamelCased word.
-(Ben Tucker, 2016 Dec 2)
 
 When using ":diffput" through a mapping, undo in the target buffer isn't
 synced.  (Ryan Carney, 2016 Sep 14)
@@ -1203,6 +1215,9 @@ Spell files use a latin single quote. Unicode also has another single quote:
 0x2019.  (Ron Aaron, 2014 Apr 4)
 New OpenOffice spell files support this with ICONV.  But they are not
 compatible with Vim spell files.  The old files can no longer be downloaded.
+
+Spell checking: Add a feature to only consider two spaces after a dot to start
+a new sentence.  Don't give the capitalization error when there is one space.
 
 xterm should be able to pass focus changes to Vim, so that Vim can check for
 buffers that changed.  Perhaps in misc.c, function selectwindow().

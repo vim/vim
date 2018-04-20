@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2018 Apr 14
+*options.txt*	For Vim version 8.0.  Last change: 2018 Apr 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7933,9 +7933,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 
-						*'terminalscroll'* *'tlsl'*
-'terminalscroll' 'tlsl'	number	(default 10000)
-			global
+						*'termwinscroll'* *'twsl'*
+'termwinscroll' 'twsl'	number	(default 10000)
+			local to buffer
 			{not in Vi}
 			{not available when compiled without the
 			|+terminal| feature}
@@ -7943,21 +7943,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 	first 10% of the scrollback lines are deleted.  This is just to reduce
 	the memory usage.  See |Terminal-Normal|.
 
-						*'termkey'* *'tk'*
-'termkey' 'tk'		string	(default "")
+						*'termwinkey'* *'twk'*
+'termwinkey' 'twk'	string	(default "")
 			local to window
 			{not in Vi}
 	The key that starts a CTRL-W command in a terminal window.  Other keys
 	are sent to the job running in the window.
 	The <> notation can be used, e.g.: >
-		:set termkey=<C-L>
+		:set termwinkey=<C-L>
 <	The string must be one key stroke but can be multiple bytes.
 	When not set CTRL-W is used, so that CTRL-W : gets you to the command
-	line.  If 'termkey' is set to CTRL-L then CTRL-L : gets you to the
+	line.  If 'termwinkey' is set to CTRL-L then CTRL-L : gets you to the
 	command line.
 
-						*'termsize'* *'tms'*
-'termsize' 'tms'	string	(default "")
+						*'termwinsize'* *'tws'*
+'termwinsize' 'tws'	string	(default "")
 			local to window
 			{not in Vi}
 	Size of the |terminal| window.  Format: {rows}x{columns} or

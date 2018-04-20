@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 23
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2438,8 +2438,10 @@ term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
 term_setansicolors({buf}, {colors})
 				none	set ANSI palette in GUI color mode
-term_setkill({buf}, {how}) 	none	set signal to stop job in terminal
+term_setkill({buf}, {how})	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
+term_setsize({buf}, {rows}, {cols})
+				none	set the size of a terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
@@ -2466,7 +2468,7 @@ tolower({expr})			String	the String {expr} switched to lowercase
 toupper({expr})			String	the String {expr} switched to uppercase
 tr({src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 					to chars in {tostr}
-trim({text}[, {mask}]) 		String	trim characters in {mask} from {text}
+trim({text}[, {mask}])		String	trim characters in {mask} from {text}
 trunc({expr})			Float	truncate Float {expr}
 type({name})			Number	type of variable {name}
 undofile({name})		String	undo file name for {name}
@@ -6216,31 +6218,6 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 		characters.  nr2char(0) is a real NUL and terminates the
 		string, thus results in an empty string.
 
-option_restore({list})					*option_restore()*
-		Restore options previously saved by option_save().
-		When buffer-local options have been saved, this function must
-		be called when the same buffer is the current buffer.
-		When window-local options have been saved, this function must
-		be called when the same window is the current window.
-		When in the wrong buffer and/or window an error is given and
-		the local options won't be restored.
-		NOT IMPLEMENTED YET!
-
-option_save({list})					*option_save()*
-		Saves the options named in {list}.  The returned value can be
-		passed to option_restore().  Example: >
-			let s:saved_options = option_save([
-			    \ 'ignorecase',
-			    \ 'iskeyword',
-			    \ ])
-			 au <buffer> BufLeave *
-			    \ call option_restore(s:saved_options)
-<		The advantage over using `:let` is that global and local
-		values are handled and the script ID is restored, so that
-		`:verbose set` will show where the option was originally set,
-		not where it was restored.
-		NOT IMPLEMENTED YET!
-
 or({expr}, {expr})					*or()*
 		Bitwise OR on the two arguments.  The arguments are converted
 		to a number.  A List, Dict or Float argument causes an error.
@@ -8202,9 +8179,9 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		   "term_name"	     name to use for the buffer name, instead
 				     of the first file name.
 		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termsize'
+				     instead of using 'termwinsize'
 		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termsize'
+				     instead of using 'termwinsize'
 		   "vertical"	     split the window vertically
 		   "curwin"	     use the current window, do not split the
 				     window; fails if the current buffer
@@ -8422,7 +8399,7 @@ term_setansicolors({buf}, {colors})			*term_setansicolors()*
 
 		These colors are used in the GUI and in the terminal when
 		'termguicolors' is set.  When not using GUI colors (GUI mode
-		or |termguicolors|), the terminal window always uses the 16
+		or 'termguicolors'), the terminal window always uses the 16
 		ANSI colors of the underlying terminal.
 		{only available when compiled with the |+terminal| feature and
 		with GUI enabled and/or the |+termguicolors| feature}
@@ -8449,7 +8426,7 @@ term_setrestore({buf}, {command})			*term_setrestore()*
 		Use "NONE" to not restore this window.
 		{only available when compiled with the |+terminal| feature}
 
-term_setsize({buf}, {rows}, {cols})			*term_setsize()*
+term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
 		Set the size of terminal {buf}. The size of the window
 		containing the terminal will also be adjusted, if possible.
 		If {rows} or {cols} is zero or negative, that dimension is not
@@ -8491,9 +8468,9 @@ term_start({cmd}, {options})				*term_start()*
 		   "term_name"	     name to use for the buffer name, instead
 				     of the command name.
 		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termsize'
+				     instead of using 'termwinsize'
 		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termsize'
+				     instead of using 'termwinsize'
 		   "vertical"	     split the window vertically
 		   "curwin"	     use the current window, do not split the
 				     window; fails if the current buffer
