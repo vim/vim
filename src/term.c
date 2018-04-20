@@ -6715,6 +6715,12 @@ swap_tcap(void)
     struct ks_tbl_s	*ks;
     struct builtin_term *bt;
     int			mode;
+    enum
+    {
+	CMODEINDEX,
+	CMODE24,
+	CMODE256
+    };
 
     /* buffer initialization */
     if (!init_done)
@@ -6733,15 +6739,15 @@ swap_tcap(void)
 	    }
 	}
 	init_done = TRUE;
-	curr_mode = 0;
+	curr_mode = CMODEINDEX;
     }
 
     if (p_tgc)
-	mode = 1;
+	mode = CMODE24;
     else if (t_colors >= 256)
-	mode = 2;
+	mode = CMODE256;
     else
-	mode = 0;
+	mode = CMODEINDEX;
 
     for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
     {
@@ -6750,13 +6756,13 @@ swap_tcap(void)
 	{
 	    switch (curr_mode)
 	    {
-	    case 0: /* index */
+	    case CMODEINDEX:
 		STRNCPY(&ks->buf[0], bt->bt_string, KSSIZE);
 		break;
-	    case 1: /* vtp */
+	    case CMODE24:
 		STRNCPY(&ks->vbuf[0], bt->bt_string, KSSIZE);
 		break;
-	    default: /* vtp2 */
+	    default:
 		STRNCPY(&ks->v2buf[0], bt->bt_string, KSSIZE);
 	    }
 	}
@@ -6771,13 +6777,13 @@ swap_tcap(void)
 	    {
 		switch (mode)
 		{
-		case 0: /* index */
+		case CMODEINDEX:
 		    STRNCPY(bt->bt_string, &ks->buf[0], KSSIZE);
 		    break;
-		case 1: /* vtp */
+		case CMODE24:
 		    STRNCPY(bt->bt_string, &ks->vbuf[0], KSSIZE);
 		    break;
-		default: /* vtp2 */
+		default:
 		    STRNCPY(bt->bt_string, &ks->v2buf[0], KSSIZE);
 		}
 	    }
