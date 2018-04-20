@@ -2751,7 +2751,7 @@ ex_args(exarg_T *eap)
 	 */
 	if (ARGCOUNT > 0)
 	{
-	    char **items = (char **)alloc(sizeof(char *) * ARGCOUNT);
+	    char_u **items = (char_u **)alloc(sizeof(char_u *) * ARGCOUNT);
 
 	    if (items != NULL)
 	    {
@@ -2760,7 +2760,7 @@ ex_args(exarg_T *eap)
 		gotocmdline(TRUE);
 
 		for (i = 0; i < ARGCOUNT; ++i)
-		    items[i] = (char *)alist_name(&ARGLIST[i]);
+		    items[i] = alist_name(&ARGLIST[i]);
 		list_in_columns(items, ARGCOUNT, curwin->w_arg_idx);
 		vim_free(items);
 	    }
