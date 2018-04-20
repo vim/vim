@@ -390,7 +390,7 @@ endif
 
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory] (Set inside Make_cyg.mak or Make_ming.mak)
-#	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
+#	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically, "no" for static)
 #	  RUBY_VER=[Ruby version, eg 19, 22] (default is 22)
 #	  RUBY_API_VER_LONG=[Ruby API version, eg 1.8, 1.9.1, 2.2.0]
 #			    (default is 2.2.0)
@@ -458,6 +458,7 @@ RUBYINC += -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG) -I $(RUBY)/include/ruby-
 endif
 ifeq (no, $(DYNAMIC_RUBY))
 RUBYLIB = -L$(RUBY)/lib -l$(RUBY_INSTALL_NAME)
+CFLAGS += -DRUBY_VERSION=$(RUBY_VER)
 endif
 
 endif # RUBY
