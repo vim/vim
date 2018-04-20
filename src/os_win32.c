@@ -7656,7 +7656,7 @@ vtp_sgr_bulks(
     vtp_printf((char *)buf);
 }
 
-static int ansitbl[] = {
+static int ansi_rgb_table[] = {
       0,   0,   0,
     224,   0,   0,
       0, 224,   0,
@@ -7675,15 +7675,6 @@ static int ansitbl[] = {
     255, 255, 255
 };
 
-static int cubetbl[] = {
-    0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff
-};
-
-static int greytbl[] = {
-    0x08, 0x12, 0x1c, 0x26, 0x30, 0x3a, 0x44, 0x4e, 0x58, 0x62, 0x6c, 0x76,
-    0x80, 0x8a, 0x94, 0x9e, 0xa8, 0xb2, 0xbc, 0xc6, 0xd0, 0xda, 0xe4, 0xee
-};
-
     static int
 ctermtoxterm(
     int cterm)
@@ -7692,24 +7683,23 @@ ctermtoxterm(
 
     if (cterm < 16)
     {
-	r = ansitbl[cterm * 3 + 0];
-	g = ansitbl[cterm * 3 + 1];
-	b = ansitbl[cterm * 3 + 2];
+	r = ansi_rgb_table[cterm * 3 + 0];
+	g = ansi_rgb_table[cterm * 3 + 1];
+	b = ansi_rgb_table[cterm * 3 + 2];
     }
     else if (cterm < 232)
     {
-
 	i = cterm - 16;
-	r = cubetbl[i / 36 % 6];
-	g = cubetbl[i /  6 % 6];
-	b = cubetbl[i      % 6];
+	r = cube_value[i / 36 % 6];
+	g = cube_value[i /  6 % 6];
+	b = cube_value[i      % 6];
     }
     else if (cterm < 256)
     {
 	i = cterm - 232;
-	r = greytbl[i];
-	g = greytbl[i];
-	b = greytbl[i];
+	r = grey_ramp[i];
+	g = grey_ramp[i];
+	b = grey_ramp[i];
     }
     return (int)((r << 16) | (g << 8) | (b));
 }
