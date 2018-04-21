@@ -42,6 +42,8 @@
  *   redirection.  Probably in call to channel_set_pipes().
  * - Win32: Redirecting output does not work, Test_terminal_redir_file()
  *   is disabled.
+ * - Add test for 'termwinkey'.
+ * - libvterm: bringg back using // comments and trailing comma in enum
  * - When starting terminal window with shell in terminal, then using :gui to
  *   switch to GUI, shell stops working. Scrollback seems wrong, command
  *   running in shell is still running.
@@ -215,17 +217,17 @@ parse_termsize(win_T *wp, int *rows, int *cols)
     *rows = 0;
     *cols = 0;
 
-    if (*wp->w_p_tms != NUL)
+    if (*wp->w_p_tws != NUL)
     {
-	char_u *p = vim_strchr(wp->w_p_tms, 'x');
+	char_u *p = vim_strchr(wp->w_p_tws, 'x');
 
 	/* Syntax of value was already checked when it's set. */
 	if (p == NULL)
 	{
 	    minsize = TRUE;
-	    p = vim_strchr(wp->w_p_tms, '*');
+	    p = vim_strchr(wp->w_p_tws, '*');
 	}
-	*rows = atoi((char *)wp->w_p_tms);
+	*rows = atoi((char *)wp->w_p_tws);
 	*cols = atoi((char *)p + 1);
     }
     return minsize;
@@ -2000,8 +2002,8 @@ terminal_loop(int blocking)
      * stored reference. */
     in_terminal_loop = curbuf->b_term;
 
-    if (*curwin->w_p_tk != NUL)
-	termkey = string_to_key(curwin->w_p_tk, TRUE);
+    if (*curwin->w_p_twk != NUL)
+	termkey = string_to_key(curwin->w_p_twk, TRUE);
     position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
 
@@ -2562,9 +2564,9 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 
     /* If the number of lines that are stored goes over 'termscrollback' then
      * delete the first 10%. */
-    if (term->tl_scrollback.ga_len >= p_tlsl)
+    if (term->tl_scrollback.ga_len >= term->tl_buffer->b_p_twsl)
     {
-	int	todo = p_tlsl / 10;
+	int	todo = term->tl_buffer->b_p_twsl / 10;
 	int	i;
 
 	curbuf = term->tl_buffer;

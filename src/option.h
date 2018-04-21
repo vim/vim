@@ -1114,6 +1114,9 @@ enum
     , BV_UDF
     , BV_UL
     , BV_WM
+#ifdef FEAT_TERMINAL
+    , BV_TWSL
+#endif
     , BV_COUNT	    /* must be the last one */
 };
 
@@ -1133,8 +1136,8 @@ enum
     , WV_COLE
 #endif
 #ifdef FEAT_TERMINAL
-    , WV_TK
-    , WV_TMS
+    , WV_TWK
+    , WV_TWS
 #endif
     , WV_CRBIND
 #ifdef FEAT_LINEBREAK
