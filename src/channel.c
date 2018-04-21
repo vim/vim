@@ -5563,6 +5563,8 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 #endif
     if (argvars[0].v_type == VAR_STRING)
     {
+	char_u	*cmd_copy;
+
 	/* Command is a string. */
 	cmd = argvars[0].vval.v_string;
 	if (cmd == NULL || *cmd == NUL)
@@ -5570,12 +5572,18 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 	    EMSG(_(e_invarg));
 	    goto theend;
 	}
-	/* This will modify "cmd". */
-	if (mch_parse_cmd(cmd, FALSE, &argv, &argc) == FAIL)
+	/* Make a copy, parsing will modify "cmd". */
+	cmd_copy = vim_strsave(cmd);
+	if (cmd_copy == NULL
+		|| mch_parse_cmd(cmd_copy, FALSE, &argv, &argc) == FAIL)
+	{
+	    vim_free(cmd_copy);
 	    goto theend;
+	}
 	for (i = 0; i < argc; i++)
 	    argv[i] = (char *)vim_strsave((char_u *)argv[i]);
 	argv[argc] = NULL;
+	vim_free(cmd_copy);
     }
     else if (argvars[0].v_type != VAR_LIST
 	    || argvars[0].vval.v_list == NULL
