@@ -110,4 +110,5 @@ int put_time(FILE *fd, time_T the_time);
 void time_to_bytes(time_T the_time, char_u *buf);
 int has_non_ascii(char_u *s);
 void parse_queued_messages(void);
+int mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc);
 /* vim: set ft=c : */

@@ -5312,14 +5312,6 @@ term_and_job_init(
     win32_build_env(opt->jo_env, &ga_env, TRUE);
     env_wchar = ga_env.ga_data;
 
-    job = job_alloc();
-    if (job == NULL)
-	goto failed;
-
-    channel = add_channel();
-    if (channel == NULL)
-	goto failed;
-
     term->tl_winpty_config = winpty_config_new(0, &winpty_err);
     if (term->tl_winpty_config == NULL)
 	goto failed;

@@ -1488,7 +1488,7 @@ struct jobvar_S
     int		jv_copyID;
 
     channel_T	*jv_channel;	/* channel for I/O, reference counted */
-    char_u	**argv;		/* command line used to start the job */
+    char_u	**jv_argv;	/* command line used to start the job */
 };
 
 /*

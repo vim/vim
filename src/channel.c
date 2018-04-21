@@ -5021,11 +5021,11 @@ job_free_contents(job_T *job)
     vim_free(job->jv_tty_out);
     vim_free(job->jv_stoponexit);
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
-    if (job->argv != NULL)
+    if (job->jv_argv != NULL)
     {
-	for (i = 0; job->argv[i] != NULL; i++)
-	    vim_free(job->argv[i]);
-	vim_free(job->argv);
+	for (i = 0; job->jv_argv[i] != NULL; i++)
+	    vim_free(job->jv_argv[i]);
+	vim_free(job->jv_argv);
     }
 }
 
@@ -5462,16 +5462,15 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 {
     job_T	*job;
     char_u	*cmd = NULL;
-#if defined(UNIX)
-# define USE_ARGV
     char	**argv = NULL;
     int		argc = 0;
+#if defined(UNIX)
+# define USE_ARGV
 #else
     garray_T	ga;
 #endif
     jobopt_T	opt;
     ch_part_T	part;
-    int		len;
     int		i;
 
     job = job_alloc();
@@ -5550,7 +5549,15 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 #ifdef USE_ARGV
     if (argv_arg != NULL)
     {
-	argv = argv_arg;
+	/* Make a copy of argv_arg for job->jv_argv. */
+	for (i = 0; argv_arg[i] != NULL; i++)
+	    argc++;
+	argv = (char **)alloc(sizeof(char_u *) * (argc + 1));
+	if (argv == NULL)
+	    goto theend;
+	for (i = 0; i < argc; i++)
+	    argv[i] = (char *)vim_strsave((char_u *)argv_arg[i]);
+	argv[argc] = NULL;
     }
     else
 #endif
@@ -5563,12 +5570,12 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 	    EMSG(_(e_invarg));
 	    goto theend;
 	}
-#ifdef USE_ARGV
 	/* This will modify "cmd". */
 	if (mch_parse_cmd(cmd, FALSE, &argv, &argc) == FAIL)
 	    goto theend;
+	for (i = 0; i < argc; i++)
+	    argv[i] = (char *)vim_strsave((char_u *)argv[i]);
 	argv[argc] = NULL;
-#endif
     }
     else if (argvars[0].v_type != VAR_LIST
 	    || argvars[0].vval.v_list == NULL
@@ -5580,7 +5587,6 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
     else
     {
 	list_T	    *l = argvars[0].vval.v_list;
-#ifdef USE_ARGV
 	listitem_T  *li;
 	char_u	    *s;
 
@@ -5592,27 +5598,24 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 	{
 	    s = get_tv_string_chk(&li->li_tv);
 	    if (s == NULL)
+	    {
+		for (i = 0; i < argc; ++i)
+		    vim_free(argv[i]);
 		goto theend;
-	    argv[argc++] = (char *)s;
+	    }
+	    argv[argc++] = (char *)vim_strsave(s);
 	}
 	argv[argc] = NULL;
-#else
+
+#ifndef USE_ARGV
 	if (win32_build_cmd(l, &ga) == FAIL)
 	    goto theend;
 	cmd = ga.ga_data;
 #endif
     }
 
-    /* Save the command used to start the job */
-    len = 0;
-    for (i = 0; argv[i] != NULL; i++)
-	len++;
-    job->argv = (char_u **)alloc(sizeof(char_u *) * (len + 1));
-    if (job->argv == NULL)
-	goto theend;
-    for (i = 0; argv[i] != NULL; i++)
-	job->argv[i] = vim_strsave((char_u *)argv[i]);
-    job->argv[i] = NULL;
+    /* Save the command used to start the job. */
+    job->jv_argv = (char_u **)argv;
 
 #ifdef USE_ARGV
     if (ch_log_active())
@@ -5640,12 +5643,11 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 	channel_write_in(job->jv_channel);
 
 theend:
-#ifdef USE_ARGV
-    if (argv != argv_arg)
-	vim_free(argv);
-#else
+#ifndef USE_ARGV
     vim_free(ga.ga_data);
 #endif
+    if ((char_u **)argv != job->jv_argv)
+	vim_free(argv);
     free_job_options(&opt);
     return job;
 }
@@ -5716,8 +5718,9 @@ job_info(job_T *job, dict_T *dict)
     if (l != NULL)
     {
 	dict_add_list(dict, "cmd", l);
-	for (i = 0; job->argv[i] != NULL; i++)
-	    list_append_string(l, job->argv[i], -1);
+	if (job->jv_argv != NULL)
+	    for (i = 0; job->jv_argv[i] != NULL; i++)
+		list_append_string(l, job->jv_argv[i], -1);
     }
 }
 
