@@ -786,6 +786,12 @@ func Test_terminal_composing_unicode()
   let g:job = term_getjob(buf)
   call term_wait(buf, 50)
 
+  if has('win32')
+    call assert_equal('cmd', job_info(g:job).cmd[0])
+  else
+    call assert_equal(&shell, job_info(g:job).cmd[0])
+  endif
+
   " ascii + composing
   let txt = "a\u0308bc"
   call term_sendkeys(buf, "echo " . txt . "\r")

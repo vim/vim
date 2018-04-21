@@ -6513,4 +6513,66 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
     }
     return OK;
 }
+
+# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+/*
+ * Build "argv[argc]" from the string "cmd".
+ * "argv[argc]" is set to NULL;
+ * Return FAIL when out of memory.
+ */
+    int
+build_argv_from_string(char_u *cmd, char ***argv, int *argc)
+{
+    char_u	*cmd_copy;
+    int		i;
+
+    /* Make a copy, parsing will modify "cmd". */
+    cmd_copy = vim_strsave(cmd);
+    if (cmd_copy == NULL
+	    || mch_parse_cmd(cmd_copy, FALSE, argv, argc) == FAIL)
+    {
+	vim_free(cmd_copy);
+	return FAIL;
+    }
+    for (i = 0; i < *argc; i++)
+	(*argv)[i] = (char *)vim_strsave((char_u *)(*argv)[i]);
+    (*argv)[*argc] = NULL;
+    vim_free(cmd_copy);
+    return OK;
+}
+
+/*
+ * Build "argv[argc]" from the list "l".
+ * "argv[argc]" is set to NULL;
+ * Return FAIL when out of memory.
+ */
+    int
+build_argv_from_list(list_T *l, char ***argv, int *argc)
+{
+    listitem_T  *li;
+    char_u	*s;
+
+    /* Pass argv[] to mch_call_shell(). */
+    *argv = (char **)alloc(sizeof(char *) * (l->lv_len + 1));
+    if (*argv == NULL)
+	return FAIL;
+    *argc = 0;
+    for (li = l->lv_first; li != NULL; li = li->li_next)
+    {
+	s = get_tv_string_chk(&li->li_tv);
+	if (s == NULL)
+	{
+	    int i;
+
+	    for (i = 0; i < *argc; ++i)
+		vim_free((*argv)[i]);
+	    return FAIL;
+	}
+	(*argv)[*argc] = (char *)vim_strsave(s);
+	*argc += 1;
+    }
+    (*argv)[*argc] = NULL;
+    return OK;
+}
+# endif
 #endif

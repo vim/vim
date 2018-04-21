@@ -5563,8 +5563,6 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 #endif
     if (argvars[0].v_type == VAR_STRING)
     {
-	char_u	*cmd_copy;
-
 	/* Command is a string. */
 	cmd = argvars[0].vval.v_string;
 	if (cmd == NULL || *cmd == NUL)
@@ -5572,18 +5570,9 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 	    EMSG(_(e_invarg));
 	    goto theend;
 	}
-	/* Make a copy, parsing will modify "cmd". */
-	cmd_copy = vim_strsave(cmd);
-	if (cmd_copy == NULL
-		|| mch_parse_cmd(cmd_copy, FALSE, &argv, &argc) == FAIL)
-	{
-	    vim_free(cmd_copy);
+
+	if (build_argv_from_string(cmd, &argv, &argc) == FAIL)
 	    goto theend;
-	}
-	for (i = 0; i < argc; i++)
-	    argv[i] = (char *)vim_strsave((char_u *)argv[i]);
-	argv[argc] = NULL;
-	vim_free(cmd_copy);
     }
     else if (argvars[0].v_type != VAR_LIST
 	    || argvars[0].vval.v_list == NULL
@@ -5594,27 +5583,10 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
     }
     else
     {
-	list_T	    *l = argvars[0].vval.v_list;
-	listitem_T  *li;
-	char_u	    *s;
+	list_T *l = argvars[0].vval.v_list;
 
-	/* Pass argv[] to mch_call_shell(). */
-	argv = (char **)alloc(sizeof(char *) * (l->lv_len + 1));
-	if (argv == NULL)
+	if (build_argv_from_list(l, &argv, &argc) == FAIL)
 	    goto theend;
-	for (li = l->lv_first; li != NULL; li = li->li_next)
-	{
-	    s = get_tv_string_chk(&li->li_tv);
-	    if (s == NULL)
-	    {
-		for (i = 0; i < argc; ++i)
-		    vim_free(argv[i]);
-		goto theend;
-	    }
-	    argv[argc++] = (char *)vim_strsave(s);
-	}
-	argv[argc] = NULL;
-
 #ifndef USE_ARGV
 	if (win32_build_cmd(l, &ga) == FAIL)
 	    goto theend;

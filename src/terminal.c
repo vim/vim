@@ -5342,6 +5342,18 @@ term_and_job_init(
     job = job_alloc();
     if (job == NULL)
 	goto failed;
+    if (argvar->v_type == VAR_STRING)
+    {
+	int argc;
+
+	build_argv_from_string(cmd, &job->jv_argv, &argc);
+    }
+    else
+    {
+	int argc;
+
+	build_argv_from_list(argvar->vval.v_list, &job->jv_argv, &argc);
+    }
 
     if (opt->jo_set & JO_IN_BUF)
 	job->jv_in_buf = buflist_findnr(opt->jo_io_buf[PART_IN]);
