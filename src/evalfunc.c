@@ -682,7 +682,7 @@ static struct fst
     {"items",		1, 1, f_items},
 #ifdef FEAT_JOB_CHANNEL
     {"job_getchannel",	1, 1, f_job_getchannel},
-    {"job_info",	1, 1, f_job_info},
+    {"job_info",	0, 1, f_job_info},
     {"job_setoptions",	2, 2, f_job_setoptions},
     {"job_start",	1, 2, f_job_start},
     {"job_status",	1, 1, f_job_status},
@@ -7007,10 +7007,15 @@ f_job_getchannel(typval_T *argvars, typval_T *rettv)
     static void
 f_job_info(typval_T *argvars, typval_T *rettv)
 {
-    job_T	*job = get_job_arg(&argvars[0]);
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	job_T	*job = get_job_arg(&argvars[0]);
 
-    if (job != NULL && rettv_dict_alloc(rettv) != FAIL)
-	job_info(job, rettv->vval.v_dict);
+	if (job != NULL && rettv_dict_alloc(rettv) != FAIL)
+	    job_info(job, rettv->vval.v_dict);
+    }
+    else if (rettv_list_alloc(rettv) == OK)
+	job_info_all(rettv->vval.v_list);
 }
 
 /*

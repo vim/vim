@@ -2234,7 +2234,7 @@ islocked({expr})		Number	|TRUE| if {expr} is locked
 isnan({expr})			Number	|TRUE| if {expr} is NaN
 items({dict})			List	key-value pairs in {dict}
 job_getchannel({job})		Channel	get the channel handle for {job}
-job_info({job})			Dict	get information about {job}
+job_info([{job}])		Dict	get information about {job}
 job_setoptions({job}, {options}) none	set options for {job}
 job_start({command} [, {options}])
 				Job	start a job

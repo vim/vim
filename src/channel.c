@@ -5002,6 +5002,8 @@ static job_T *first_job = NULL;
     static void
 job_free_contents(job_T *job)
 {
+    int		i;
+
     ch_log(job->jv_channel, "Freeing job");
     if (job->jv_channel != NULL)
     {
@@ -5019,6 +5021,12 @@ job_free_contents(job_T *job)
     vim_free(job->jv_tty_out);
     vim_free(job->jv_stoponexit);
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
+    if (job->argv != NULL)
+    {
+	for (i = 0; job->argv[i] != NULL; i++)
+	    vim_free(job->argv[i]);
+	vim_free(job->argv);
+    }
 }
 
     static void
@@ -5463,6 +5471,8 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 #endif
     jobopt_T	opt;
     ch_part_T	part;
+    int		len;
+    int		i;
 
     job = job_alloc();
     if (job == NULL)
@@ -5593,11 +5603,21 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 #endif
     }
 
+    /* Save the command used to start the job */
+    len = 0;
+    for (i = 0; argv[i] != NULL; i++)
+	len++;
+    job->argv = (char_u **)alloc(sizeof(char_u *) * (len + 1));
+    if (job->argv == NULL)
+	goto theend;
+    for (i = 0; argv[i] != NULL; i++)
+	job->argv[i] = vim_strsave((char_u *)argv[i]);
+    job->argv[i] = NULL;
+
 #ifdef USE_ARGV
     if (ch_log_active())
     {
 	garray_T    ga;
-	int	    i;
 
 	ga_init2(&ga, (int)sizeof(char), 200);
 	for (i = 0; i < argc; ++i)
@@ -5661,6 +5681,8 @@ job_info(job_T *job, dict_T *dict)
 {
     dictitem_T	*item;
     varnumber_T	nr;
+    list_T	*l;
+    int		i;
 
     dict_add_nr_str(dict, "status", 0L, (char_u *)job_status(job));
 
@@ -5689,6 +5711,33 @@ job_info(job_T *job, dict_T *dict)
     dict_add_nr_str(dict, "exitval", job->jv_exitval, NULL);
     dict_add_nr_str(dict, "exit_cb", 0L, job->jv_exit_cb);
     dict_add_nr_str(dict, "stoponexit", 0L, job->jv_stoponexit);
+
+    l = list_alloc();
+    if (l != NULL)
+    {
+	dict_add_list(dict, "cmd", l);
+	for (i = 0; job->argv[i] != NULL; i++)
+	    list_append_string(l, job->argv[i], -1);
+    }
+}
+
+/*
+ * Implementation of job_info() to return info for all jobs.
+ */
+    void
+job_info_all(list_T *l)
+{
+    job_T	*job;
+    typval_T	tv;
+
+    for (job = first_job; job != NULL; job = job->jv_next)
+    {
+	tv.v_type = VAR_JOB;
+	tv.vval.v_job = job;
+
+	if (list_append_tv(l, &tv) != OK)
+	    return;
+    }
 }
 
 /*

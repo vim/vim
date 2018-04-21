@@ -271,10 +271,10 @@ typedef struct
 # define w_p_scl w_onebuf_opt.wo_scl	/* 'signcolumn' */
 #endif
 #ifdef FEAT_TERMINAL
-    char_u	*wo_tk;
-#define w_p_tk w_onebuf_opt.wo_tk	/* 'termkey' */
-    char_u	*wo_tms;
-#define w_p_tms w_onebuf_opt.wo_tms	/* 'termsize' */
+    char_u	*wo_twk;
+# define w_p_twk w_onebuf_opt.wo_twk	/* 'termwinkey' */
+    char_u	*wo_tws;
+# define w_p_tws w_onebuf_opt.wo_tws	/* 'termwinsize' */
 #endif
 
 #ifdef FEAT_EVAL
@@ -1488,6 +1488,7 @@ struct jobvar_S
     int		jv_copyID;
 
     channel_T	*jv_channel;	/* channel for I/O, reference counted */
+    char_u	**argv;		/* command line used to start the job */
 };
 
 /*
@@ -2261,6 +2262,9 @@ struct file_buffer
 #endif
 #ifdef FEAT_LISP
     char_u	*b_p_lw;	/* 'lispwords' local value */
+#endif
+#ifdef FEAT_TERMINAL
+    long	b_p_twsl;	/* 'termwinscroll' */
 #endif
 
     /* end of buffer options */

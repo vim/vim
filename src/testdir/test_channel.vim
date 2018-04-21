@@ -508,6 +508,16 @@ func Test_raw_pipe()
   let info = job_info(job)
   call assert_equal("dead", info.status)
   call assert_equal("term", info.stoponexit)
+  call assert_equal(2, len(info.cmd))
+  call assert_equal("test_channel_pipe.py", info.cmd[1])
+
+  let found = 0
+  for j in job_info()
+    if j == job
+      let found += 1
+    endif
+  endfor
+  call assert_equal(1, found)
 endfunc
 
 func Test_nl_pipe()
