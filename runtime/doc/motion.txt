@@ -244,7 +244,7 @@ g$ or g<End>		When lines wrap ('wrap' on): To the last character of
 
 							*bar*
 |			To screen column [count] in the current line.
-			|exclusive| motion.  Ceci n'est pas une pipe.
+			|exclusive| motion.
 
 							*f*
 f{char}			To [count]'th occurrence of {char} to the right.  The
