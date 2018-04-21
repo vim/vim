@@ -95,7 +95,7 @@ static int cause_abort = FALSE;
     int
 aborting(void)
 {
-    return (did_emsg && force_abort) || got_int || did_throw;
+    return (did_emsg && force_abort) || got_int || did_throw || did_cancel;
 }
 
 /*

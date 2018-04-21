@@ -84,6 +84,7 @@ static void f_call(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
+static void f_cancelevent(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
 static void f_ch_canread(typval_T *argvars, typval_T *rettv);
 static void f_ch_close(typval_T *argvars, typval_T *rettv);
@@ -526,6 +527,7 @@ static struct fst
     {"byteidx",		2, 2, f_byteidx},
     {"byteidxcomp",	2, 2, f_byteidxcomp},
     {"call",		2, 3, f_call},
+    {"cancelevent",	0, 0, f_cancelevent},
 #ifdef FEAT_FLOAT
     {"ceil",		1, 1, f_ceil},
 #endif
@@ -1869,6 +1871,12 @@ f_call(typval_T *argvars, typval_T *rettv)
     }
 
     (void)func_call(func, &argvars[1], partial, selfdict, rettv);
+}
+
+    static void
+f_cancelevent(typval_T *argvars, typval_T *rettv)
+{
+    did_cancel = TRUE;
 }
 
 #ifdef FEAT_FLOAT
