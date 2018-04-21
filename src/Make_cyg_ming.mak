@@ -458,7 +458,6 @@ RUBYINC += -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG) -I $(RUBY)/include/ruby-
 endif
 ifeq (no, $(DYNAMIC_RUBY))
 RUBYLIB = -L$(RUBY)/lib -l$(RUBY_INSTALL_NAME)
-CFLAGS += -DRUBY_VERSION=$(RUBY_VER)
 endif
 
 endif # RUBY
@@ -537,6 +536,9 @@ CFLAGS += -DFEAT_RUBY $(RUBYINC)
 ifeq (yes, $(DYNAMIC_RUBY))
 CFLAGS += -DDYNAMIC_RUBY -DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\"
 CFLAGS += -DDYNAMIC_RUBY_VER=$(RUBY_VER)
+endif
+ifeq (no, $(DYNAMIC_RUBY))
+CFLAGS += -DRUBY_VERSION=$(RUBY_VER)
 endif
 ifneq ($(findstring w64-mingw32,$(CC)),)
 # A workaround for MinGW-w64
