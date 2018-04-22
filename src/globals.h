@@ -253,8 +253,6 @@ EXTERN except_T *current_exception;
  */
 EXTERN int did_throw INIT(= FALSE);
 
-EXTERN int did_cancel INIT(= FALSE);
-
 /*
  * need_rethrow: set to TRUE when a throw that cannot be handled in do_cmdline()
  * must be propagated to the cstack of the previously called do_cmdline().

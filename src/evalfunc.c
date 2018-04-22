@@ -84,7 +84,6 @@ static void f_call(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
-static void f_cancelevent(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
 static void f_ch_canread(typval_T *argvars, typval_T *rettv);
 static void f_ch_close(typval_T *argvars, typval_T *rettv);
@@ -226,6 +225,7 @@ static void f_inputrestore(typval_T *argvars, typval_T *rettv);
 static void f_inputsave(typval_T *argvars, typval_T *rettv);
 static void f_inputsecret(typval_T *argvars, typval_T *rettv);
 static void f_insert(typval_T *argvars, typval_T *rettv);
+static void f_interrupt(typval_T *argvars, typval_T *rettv);
 static void f_invert(typval_T *argvars, typval_T *rettv);
 static void f_isdirectory(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
@@ -527,7 +527,6 @@ static struct fst
     {"byteidx",		2, 2, f_byteidx},
     {"byteidxcomp",	2, 2, f_byteidxcomp},
     {"call",		2, 3, f_call},
-    {"cancelevent",	0, 0, f_cancelevent},
 #ifdef FEAT_FLOAT
     {"ceil",		1, 1, f_ceil},
 #endif
@@ -675,6 +674,7 @@ static struct fst
     {"inputsave",	0, 0, f_inputsave},
     {"inputsecret",	1, 2, f_inputsecret},
     {"insert",		2, 3, f_insert},
+    {"interrupt",	0, 0, f_interrupt},
     {"invert",		1, 1, f_invert},
     {"isdirectory",	1, 1, f_isdirectory},
     {"islocked",	1, 1, f_islocked},
@@ -1874,9 +1874,9 @@ f_call(typval_T *argvars, typval_T *rettv)
 }
 
     static void
-f_cancelevent(typval_T *argvars, typval_T *rettv)
+f_interrupt(typval_T *argvars, typval_T *rettv)
 {
-    did_cancel = TRUE;
+    got_int = TRUE;
 }
 
 #ifdef FEAT_FLOAT

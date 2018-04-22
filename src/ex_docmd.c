@@ -492,7 +492,6 @@ struct dbg_stuff
     int		did_emsg;
     int		got_int;
     int		did_throw;
-    int		did_cancel;
     int		need_rethrow;
     int		check_cstack;
     except_T	*current_exception;
@@ -514,7 +513,6 @@ save_dbg_stuff(struct dbg_stuff *dsp)
     dsp->did_emsg	= did_emsg;		did_emsg     = FALSE;
     dsp->got_int	= got_int;		got_int	     = FALSE;
     dsp->did_throw	= did_throw;		did_throw    = FALSE;
-    dsp->did_cancel	= did_cancel;		did_cancel   = FALSE;
     dsp->need_rethrow	= need_rethrow;		need_rethrow = FALSE;
     dsp->check_cstack	= check_cstack;		check_cstack = FALSE;
     dsp->current_exception = current_exception;	current_exception = NULL;
@@ -532,7 +530,6 @@ restore_dbg_stuff(struct dbg_stuff *dsp)
     did_emsg = dsp->did_emsg;
     got_int = dsp->got_int;
     did_throw = dsp->did_throw;
-    did_cancel = dsp->did_cancel;
     need_rethrow = dsp->need_rethrow;
     check_cstack = dsp->check_cstack;
     current_exception = dsp->current_exception;
@@ -790,8 +787,6 @@ do_cmdline(
      * "did_throw" will be set to TRUE when an exception is being thrown.
      */
     did_throw = FALSE;
-
-    did_cancel = FALSE;
 #endif
     /*
      * "did_emsg" will be set to TRUE when emsg() is used, in which case we
