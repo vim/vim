@@ -837,6 +837,8 @@ func Test_Cmdline()
   au! CmdlineEnter
   au! CmdlineLeave
 
+  let save_shellslash = &shellslash
+  set noshellslash
   au! CmdlineEnter / let g:entered = expand('<afile>')
   au! CmdlineLeave / let g:left = expand('<afile>')
   let g:entered = 0
@@ -849,6 +851,7 @@ func Test_Cmdline()
   bwipe!
   au! CmdlineEnter
   au! CmdlineLeave
+  let &shellslash = save_shellslash
 endfunc
 
 " Test for BufWritePre autocommand that deletes or unloads the buffer.
