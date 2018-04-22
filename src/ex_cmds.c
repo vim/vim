@@ -1096,8 +1096,13 @@ do_bang(
 	}
     } while (trailarg != NULL);
 
-    vim_free(prevcmd);
-    prevcmd = newcmd;
+    /*
+     * Store previous command, but only if it was typed by the user.
+     */
+    if (getline_equal(eap->getline, eap->cookie, getexline)) {
+	vim_free(prevcmd);
+	prevcmd = newcmd;
+    }
 
     if (bangredo)	    /* put cmd in redo buffer for ! command */
     {
