@@ -15,10 +15,13 @@ endfunction
 func Test_interrupt()
   new Xfile
   let n = 0
-  au BufWritePre Xfile call s:bufwritepre()
-  au BufWritePost Xfile call s:bufwritepost()
-  w!
+  try
+    au BufWritePre Xfile call s:bufwritepre()
+    au BufWritePost Xfile call s:bufwritepost()
+    w!
+  catch /^Vim:Interrupt$/
+  endtry
   call assert_equal(1, s:bufwritepre_called)
-  call assert_equal(1, s:bufwritepost_called)
+  call assert_equal(0, s:bufwritepost_called)
   call assert_equal(0, filereadable('Xfile'))
 endfunc
