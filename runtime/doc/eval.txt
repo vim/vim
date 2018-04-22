@@ -2228,6 +2228,7 @@ inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
 inputsecret({prompt} [, {text}]) String	like input() but hiding the text
 insert({list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
+interrupt()			none	interrupt executing script
 invert({expr})			Number	bitwise invert
 isdirectory({directory})	Number	|TRUE| if {directory} is a directory
 islocked({expr})		Number	|TRUE| if {expr} is locked
@@ -5347,6 +5348,17 @@ insert({list}, {item} [, {idx}])			*insert()*
 <		The last example can be done simpler with |add()|.
 		Note that when {item} is a |List| it is inserted as a single
 		item.  Use |extend()| to concatenate |Lists|.
+
+interrupt()						*interrupt()*
+		Interrupt executing script.  This is useful to stop writeing
+		file in BufWritePre.  Example: >
+		:function s:check_typoname(file)
+		:   if fnamemodify(a:file, ':t') == '['
+		:       echomsg 'Maybe typo'
+		:       call interrupt()
+		:   endif
+		:endfunction
+		:au BufWritePre * call s:check_typoname(expand('<amatch>'))
 
 invert({expr})						*invert()*
 		Bitwise invert.  The argument is converted to a number.  A
