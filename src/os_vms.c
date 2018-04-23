@@ -784,7 +784,7 @@ RealWaitForChar(
 	    return 0;
 	} else if (msec < 0) {
 	    /* no time-out; wait on indefinitely */
-	    continue;
+	    return 1; /* fakeout to force a wait in vms_read() */
 	} else {
 	    /* time-out needs to be checked */
 	    status = sys$gettim(&time_curr);
