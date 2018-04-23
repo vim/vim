@@ -5880,6 +5880,216 @@ ex_cexpr(exarg_T *eap)
 #endif
 
 /*
+ * Get the location list for ":lhelpgrep"
+ */
+    static qf_info_T *
+hgr_get_ll(int *new_ll)
+{
+    win_T	*wp;
+    qf_info_T	*qi;
+
+    /* If the current window is a help window, then use it */
+    if (bt_help(curwin->w_buffer))
+	wp = curwin;
+    else
+	/* Find an existing help window */
+	FOR_ALL_WINDOWS(wp)
+	    if (bt_help(wp->w_buffer))
+		break;
+
+    if (wp == NULL)	    /* Help window not found */
+	qi = NULL;
+    else
+	qi = wp->w_llist;
+
+    if (qi == NULL)
+    {
+	/* Allocate a new location list for help text matches */
+	if ((qi = ll_new_list()) == NULL)
+	    return NULL;
+	*new_ll = TRUE;
+    }
+
+    return qi;
+}
+
+/*
+ * Search for a pattern in a help file.
+ */
+    static void
+hgr_search_file(
+	qf_info_T *qi,
+	char_u *fname,
+#ifdef FEAT_MBYTE
+	vimconv_T *p_vc,
+#endif
+	regmatch_T *p_regmatch)
+{
+    FILE	*fd;
+    long	lnum;
+
+    fd = mch_fopen((char *)fname, "r");
+    if (fd == NULL)
+	return;
+
+    lnum = 1;
+    while (!vim_fgets(IObuff, IOSIZE, fd) && !got_int)
+    {
+	char_u    *line = IObuff;
+#ifdef FEAT_MBYTE
+	/* Convert a line if 'encoding' is not utf-8 and
+	 * the line contains a non-ASCII character. */
+	if (p_vc->vc_type != CONV_NONE
+		&& has_non_ascii(IObuff))
+	{
+	    line = string_convert(p_vc, IObuff, NULL);
+	    if (line == NULL)
+		line = IObuff;
+	}
+#endif
+
+	if (vim_regexec(p_regmatch, line, (colnr_T)0))
+	{
+	    int	l = (int)STRLEN(line);
+
+	    /* remove trailing CR, LF, spaces, etc. */
+	    while (l > 0 && line[l - 1] <= ' ')
+		line[--l] = NUL;
+
+	    if (qf_add_entry(qi,
+			qi->qf_curlist,
+			NULL,	/* dir */
+			fname,
+			0,
+			line,
+			lnum,
+			(int)(p_regmatch->startp[0] - line)
+			+ 1, /* col */
+			FALSE,	/* vis_col */
+			NULL,	/* search pattern */
+			0,		/* nr */
+			1,		/* type */
+			TRUE	/* valid */
+			) == FAIL)
+	    {
+		got_int = TRUE;
+#ifdef FEAT_MBYTE
+		if (line != IObuff)
+		    vim_free(line);
+#endif
+		break;
+	    }
+	}
+#ifdef FEAT_MBYTE
+	if (line != IObuff)
+	    vim_free(line);
+#endif
+	++lnum;
+	line_breakcheck();
+    }
+    fclose(fd);
+}
+
+/*
+ * Search for a pattern in all the help files in the doc directory under
+ * the given directory.
+ */
+    static void
+hgr_search_files_in_dir(
+	qf_info_T *qi,
+	char_u *dirname,
+	regmatch_T *p_regmatch
+#ifdef FEAT_MBYTE
+	, vimconv_T *p_vc
+#endif
+#ifdef FEAT_MULTI_LANG
+	, char_u *lang
+#endif
+	)
+{
+    int		fcount;
+    char_u	**fnames;
+    int		fi;
+
+    /* Find all "*.txt" and "*.??x" files in the "doc" directory. */
+    add_pathsep(dirname);
+    STRCAT(dirname, "doc/*.\\(txt\\|??x\\)");
+    if (gen_expand_wildcards(1, &dirname, &fcount,
+		&fnames, EW_FILE|EW_SILENT) == OK
+	    && fcount > 0)
+    {
+	for (fi = 0; fi < fcount && !got_int; ++fi)
+	{
+#ifdef FEAT_MULTI_LANG
+	    /* Skip files for a different language. */
+	    if (lang != NULL
+		    && STRNICMP(lang, fnames[fi]
+			+ STRLEN(fnames[fi]) - 3, 2) != 0
+		    && !(STRNICMP(lang, "en", 2) == 0
+			&& STRNICMP("txt", fnames[fi]
+			    + STRLEN(fnames[fi]) - 3, 3) == 0))
+		continue;
+#endif
+
+	    hgr_search_file(qi, fnames[fi],
+#ifdef FEAT_MBYTE
+		    p_vc,
+#endif
+		    p_regmatch);
+	}
+	FreeWild(fcount, fnames);
+    }
+}
+
+/*
+ * Search for a pattern in all the help files in the 'runtimepath'.
+ */
+    static void
+hgr_search_in_rtp(qf_info_T *qi, regmatch_T *p_regmatch, char_u *arg)
+{
+    char_u	*p;
+#ifdef FEAT_MULTI_LANG
+    char_u	*lang;
+#endif
+
+#ifdef FEAT_MBYTE
+    vimconv_T	vc;
+
+    /* Help files are in utf-8 or latin1, convert lines when 'encoding'
+     * differs. */
+    vc.vc_type = CONV_NONE;
+    if (!enc_utf8)
+	convert_setup(&vc, (char_u *)"utf-8", p_enc);
+#endif
+
+#ifdef FEAT_MULTI_LANG
+    /* Check for a specified language */
+    lang = check_help_lang(arg);
+#endif
+
+    /* Go through all directories in 'runtimepath' */
+    p = p_rtp;
+    while (*p != NUL && !got_int)
+    {
+	copy_option_part(&p, NameBuff, MAXPATHL, ",");
+
+	hgr_search_files_in_dir(qi, NameBuff, p_regmatch
+#ifdef FEAT_MBYTE
+		, &vc
+#endif
+#ifdef FEAT_MULTI_LANG
+		, lang
+#endif
+		);
+    }
+
+#ifdef FEAT_MBYTE
+    if (vc.vc_type != CONV_NONE)
+	convert_setup(&vc, NULL, NULL);
+#endif
+}
+
+/*
  * ":helpgrep {pattern}"
  */
     void
@@ -5887,25 +6097,10 @@ ex_helpgrep(exarg_T *eap)
 {
     regmatch_T	regmatch;
     char_u	*save_cpo;
-    char_u	*p;
-    int		fcount;
-    char_u	**fnames;
-    FILE	*fd;
-    int		fi;
-    long	lnum;
-#ifdef FEAT_MULTI_LANG
-    char_u	*lang;
-#endif
     qf_info_T	*qi = &ql_info;
     qf_info_T	*save_qi;
     int		new_qi = FALSE;
-    win_T	*wp;
     char_u	*au_name =  NULL;
-
-#ifdef FEAT_MULTI_LANG
-    /* Check for a specified language */
-    lang = check_help_lang(eap->arg);
-#endif
 
     switch (eap->cmdidx)
     {
@@ -5928,27 +6123,9 @@ ex_helpgrep(exarg_T *eap)
 
     if (eap->cmdidx == CMD_lhelpgrep)
     {
-	/* If the current window is a help window, then use it */
-	if (bt_help(curwin->w_buffer))
-	    wp = curwin;
-	else
-	    /* Find an existing help window */
-	    FOR_ALL_WINDOWS(wp)
-		if (bt_help(wp->w_buffer))
-		    break;
-
-	if (wp == NULL)	    /* Help window not found */
-	    qi = NULL;
-	else
-	    qi = wp->w_llist;
-
+	qi = hgr_get_ll(&new_qi);
 	if (qi == NULL)
-	{
-	    /* Allocate a new location list for help text matches */
-	    if ((qi = ll_new_list()) == NULL)
-		return;
-	    new_qi = TRUE;
-	}
+	    return;
     }
 
     /* Autocommands may change the list. Save it for later comparison */
@@ -5958,114 +6135,12 @@ ex_helpgrep(exarg_T *eap)
     regmatch.rm_ic = FALSE;
     if (regmatch.regprog != NULL)
     {
-#ifdef FEAT_MBYTE
-	vimconv_T vc;
-
-	/* Help files are in utf-8 or latin1, convert lines when 'encoding'
-	 * differs. */
-	vc.vc_type = CONV_NONE;
-	if (!enc_utf8)
-	    convert_setup(&vc, (char_u *)"utf-8", p_enc);
-#endif
-
 	/* create a new quickfix list */
 	qf_new_list(qi, *eap->cmdlinep);
 
-	/* Go through all directories in 'runtimepath' */
-	p = p_rtp;
-	while (*p != NUL && !got_int)
-	{
-	    copy_option_part(&p, NameBuff, MAXPATHL, ",");
-
-	    /* Find all "*.txt" and "*.??x" files in the "doc" directory. */
-	    add_pathsep(NameBuff);
-	    STRCAT(NameBuff, "doc/*.\\(txt\\|??x\\)");
-	    if (gen_expand_wildcards(1, &NameBuff, &fcount,
-					     &fnames, EW_FILE|EW_SILENT) == OK
-		    && fcount > 0)
-	    {
-		for (fi = 0; fi < fcount && !got_int; ++fi)
-		{
-#ifdef FEAT_MULTI_LANG
-		    /* Skip files for a different language. */
-		    if (lang != NULL
-			    && STRNICMP(lang, fnames[fi]
-					    + STRLEN(fnames[fi]) - 3, 2) != 0
-			    && !(STRNICMP(lang, "en", 2) == 0
-				&& STRNICMP("txt", fnames[fi]
-					   + STRLEN(fnames[fi]) - 3, 3) == 0))
-			    continue;
-#endif
-		    fd = mch_fopen((char *)fnames[fi], "r");
-		    if (fd != NULL)
-		    {
-			lnum = 1;
-			while (!vim_fgets(IObuff, IOSIZE, fd) && !got_int)
-			{
-			    char_u    *line = IObuff;
-#ifdef FEAT_MBYTE
-			    /* Convert a line if 'encoding' is not utf-8 and
-			     * the line contains a non-ASCII character. */
-			    if (vc.vc_type != CONV_NONE
-						   && has_non_ascii(IObuff))
-			    {
-				line = string_convert(&vc, IObuff, NULL);
-				if (line == NULL)
-				    line = IObuff;
-			    }
-#endif
-
-			    if (vim_regexec(&regmatch, line, (colnr_T)0))
-			    {
-				int	l = (int)STRLEN(line);
-
-				/* remove trailing CR, LF, spaces, etc. */
-				while (l > 0 && line[l - 1] <= ' ')
-				     line[--l] = NUL;
-
-				if (qf_add_entry(qi,
-					    qi->qf_curlist,
-					    NULL,	/* dir */
-					    fnames[fi],
-					    0,
-					    line,
-					    lnum,
-					    (int)(regmatch.startp[0] - line)
-								+ 1, /* col */
-					    FALSE,	/* vis_col */
-					    NULL,	/* search pattern */
-					    0,		/* nr */
-					    1,		/* type */
-					    TRUE	/* valid */
-					    ) == FAIL)
-				{
-				    got_int = TRUE;
-#ifdef FEAT_MBYTE
-				    if (line != IObuff)
-					vim_free(line);
-#endif
-				    break;
-				}
-			    }
-#ifdef FEAT_MBYTE
-			    if (line != IObuff)
-				vim_free(line);
-#endif
-			    ++lnum;
-			    line_breakcheck();
-			}
-			fclose(fd);
-		    }
-		}
-		FreeWild(fcount, fnames);
-	    }
-	}
+	hgr_search_in_rtp(qi, &regmatch, eap->arg);
 
 	vim_regfree(regmatch.regprog);
-#ifdef FEAT_MBYTE
-	if (vc.vc_type != CONV_NONE)
-	    convert_setup(&vc, NULL, NULL);
-#endif
 
 	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
 	qi->qf_lists[qi->qf_curlist].qf_ptr =
