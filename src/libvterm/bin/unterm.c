@@ -9,7 +9,7 @@
 #include "vterm.h"
 
 #define DEFINE_INLINES
-#include "../src/utf8.h" /* fill_utf8 */
+#include "../src/utf8.h" // fill_utf8
 
 #define streq(a,b) (!strcmp(a,b))
 
@@ -21,7 +21,7 @@ static int rows;
 
 static enum {
   FORMAT_PLAIN,
-  FORMAT_SGR
+  FORMAT_SGR,
 } format = FORMAT_PLAIN;
 
 static int col2index(VTermColor target)
@@ -44,8 +44,8 @@ static void dump_cell(const VTermScreenCell *cell, const VTermScreenCell *prevce
       break;
     case FORMAT_SGR:
       {
-        /* If all 7 attributes change, that means 7 SGRs max */
-        /* Each colour could consume up to 3 */
+        // If all 7 attributes change, that means 7 SGRs max
+        // Each colour could consume up to 3
         int sgr[7 + 2*3]; int sgri = 0;
 
         if(!prevcell->attrs.bold && cell->attrs.bold)

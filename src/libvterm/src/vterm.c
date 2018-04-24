@@ -27,8 +27,8 @@ static void default_free(void *ptr, void *allocdata UNUSED)
 }
 
 static VTermAllocatorFunctions default_allocator = {
-  &default_malloc, /* malloc */
-  &default_free /* free */
+  &default_malloc, // malloc
+  &default_free // free
 };
 
 VTerm *vterm_new(int rows, int cols)

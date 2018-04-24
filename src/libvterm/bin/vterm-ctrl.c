@@ -35,7 +35,7 @@ static int getchoice(int *argip, int argc, char *argv[], const char *options[])
 typedef enum {
   OFF,
   ON,
-  QUERY
+  QUERY,
 } BoolQuery;
 
 static BoolQuery getboolq(int *argip, int argc, char *argv[])
@@ -105,7 +105,7 @@ static char *read_csi()
   unsigned char csi[32];
   int i = 0;
 
-  await_c1(0x9B); /* CSI */
+  await_c1(0x9B); // CSI
 
   /* TODO: This really should be a more robust CSI parser
    */
@@ -116,7 +116,7 @@ static char *read_csi()
   }
   csi[++i] = 0;
 
-  /* TODO: returns longer than 32? */
+  // TODO: returns longer than 32?
 
   return strdup((char *)csi);
 }
@@ -131,7 +131,7 @@ static char *read_dcs()
 
   for(i = 0; i < sizeof(dcs)-1; ) {
     char c = getchar();
-    if(c == 0x9c) /* ST */
+    if(c == 0x9c) // ST
       break;
     if(in_esc && c == 0x5c)
       break;
@@ -301,12 +301,12 @@ int main(int argc, char *argv[])
       do_dec_mode(12, getboolq(&argi, argc, argv), "curblink");
     }
     else if(streq(arg, "curshape")) {
-      /* TODO: This ought to query the current value of DECSCUSR because it */
-      /*   may need blinking on or off */
+      // TODO: This ought to query the current value of DECSCUSR because it
+      //   may need blinking on or off
       const char *choices[] = {"block", "under", "bar", "query", NULL};
       int shape = getchoice(&argi, argc, argv, choices);
       switch(shape) {
-        case 3: /* query */
+        case 3: // query
           shape = query_rqss_numeric(" q");
           switch(shape) {
             case 1: case 2:
