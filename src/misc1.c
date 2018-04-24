@@ -588,7 +588,7 @@ cin_is_cinword(char_u *line)
  * "second_line_indent": indent for after ^^D in Insert mode or if flag
  *			  OPENLINE_COM_LIST
  *
- * Return TRUE for success, FALSE for failure
+ * Return OK for success, FAIL for failure
  */
     int
 open_line(
@@ -606,7 +606,7 @@ open_line(
     int		newindent = 0;		/* auto-indent of the new line */
     int		n;
     int		trunc_line = FALSE;	/* truncate current line afterwards */
-    int		retval = FALSE;		/* return value, default is FAIL */
+    int		retval = FAIL;		/* return value */
 #ifdef FEAT_COMMENTS
     int		extra_len = 0;		/* length of p_extra string */
     int		lead_len;		/* length of comment leader */
@@ -1642,7 +1642,7 @@ open_line(
     }
 #endif
 
-    retval = TRUE;		/* success! */
+    retval = OK;		/* success! */
 theend:
     curbuf->b_p_pi = saved_pi;
     vim_free(saved_line);

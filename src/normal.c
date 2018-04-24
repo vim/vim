@@ -8491,7 +8491,7 @@ n_opencmd(cmdarg_T *cap)
 #ifdef FEAT_COMMENTS
 		    has_format_option(FO_OPEN_COMS) ? OPENLINE_DO_COM :
 #endif
-		    0, 0))
+		    0, 0) == OK)
 	{
 #ifdef FEAT_CONCEAL
 	    if (curwin->w_p_cole > 0 && oldline != curwin->w_cursor.lnum)

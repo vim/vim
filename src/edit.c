@@ -1374,7 +1374,7 @@ doESCkey:
 		goto doESCkey;
 	    }
 #endif
-	    if (ins_eol(c) && !p_im)
+	    if (ins_eol(c) == FAIL && !p_im)
 		goto doESCkey;	    /* out of memory */
 	    auto_format(FALSE, FALSE);
 	    inserted_space = FALSE;
@@ -10201,7 +10201,7 @@ ins_tab(void)
 
 /*
  * Handle CR or NL in insert mode.
- * Return TRUE when out of memory or can't undo.
+ * Return FAIL when out of memory or can't undo.
  */
     static int
 ins_eol(int c)
@@ -10266,7 +10266,7 @@ ins_eol(int c)
     foldOpenCursor();
 #endif
 
-    return (!i);
+    return i;
 }
 
 #ifdef FEAT_DIGRAPHS
