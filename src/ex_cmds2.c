@@ -1420,7 +1420,7 @@ check_due_timer(void)
 	    if (balloonEval != NULL)
 		general_beval_cb(balloonEval, 0);
 	}
-	else if (this_due > 0 && (next_due == -1 || next_due > this_due))
+	else if (next_due == -1 || next_due > this_due)
 	    next_due = this_due;
     }
 #endif

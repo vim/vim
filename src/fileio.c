@@ -1392,7 +1392,7 @@ retry:
 
 			/* If the crypt layer is buffering, not producing
 			 * anything yet, need to read more. */
-			if (size > 0 && decrypted_size == 0)
+			if (decrypted_size == 0)
 			    continue;
 
 			if (linerest == 0)
