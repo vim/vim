@@ -1842,6 +1842,20 @@ no_write_message_nobang(buf_T *buf UNUSED)
 static int  top_file_num = 1;		/* highest file number */
 
 /*
+ * Return TRUE if the current buffer is empty, unnamed, unmodified and used in
+ * only one window.  That means it can be re-used.
+ */
+    int
+curbuf_reusable(void)
+{
+    return (curbuf != NULL
+	&& curbuf->b_ffname == NULL
+	&& curbuf->b_nwindows <= 1
+	&& (curbuf->b_ml.ml_mfp == NULL || BUFEMPTY())
+	&& !curbufIsChanged());
+}
+
+/*
  * Add a file name to the buffer list.  Return a pointer to the buffer.
  * If the same file name already exists return a pointer to that buffer.
  * If it does not exist, or if fname == NULL, a new entry is created.
@@ -1921,11 +1935,7 @@ buflist_new(
      * buffer.)
      */
     buf = NULL;
-    if ((flags & BLN_CURBUF)
-	    && curbuf != NULL
-	    && curbuf->b_ffname == NULL
-	    && curbuf->b_nwindows <= 1
-	    && (curbuf->b_ml.ml_mfp == NULL || BUFEMPTY()))
+    if ((flags & BLN_CURBUF) && curbuf_reusable())
     {
 	buf = curbuf;
 	/* It's like this buffer is deleted.  Watch out for autocommands that
