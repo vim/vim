@@ -5638,13 +5638,14 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	close(fd_err[1]);
     if (channel != NULL)
     {
-	channel_set_pipes(channel,
-		use_file_for_in || use_null_for_in
-			? INVALID_FD : fd_in[1] < 0 ? pty_master_fd : fd_in[1],
-		use_file_for_out || use_null_for_out
-		      ? INVALID_FD : fd_out[0] < 0 ? pty_master_fd : fd_out[0],
-		use_out_for_err || use_file_for_err || use_null_for_err
-		     ? INVALID_FD : fd_err[0] < 0 ? pty_master_fd : fd_err[0]);
+	int in_fd = use_file_for_in || use_null_for_in
+			? INVALID_FD : fd_in[1] < 0 ? pty_master_fd : fd_in[1];
+	int out_fd = use_file_for_out || use_null_for_out
+		      ? INVALID_FD : fd_out[0] < 0 ? pty_master_fd : fd_out[0];
+	int err_fd = use_out_for_err || use_file_for_err || use_null_for_err
+		      ? INVALID_FD : fd_err[0] < 0 ? pty_master_fd : fd_err[0];
+
+	channel_set_pipes(channel, in_fd, out_fd, err_fd);
 	channel_set_job(channel, job, options);
     }
     else

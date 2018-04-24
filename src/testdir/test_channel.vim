@@ -1848,3 +1848,14 @@ func Test_zz_ch_log()
   call assert_match("%s%s", text[2])
   call delete('Xlog')
 endfunc
+
+func Test_keep_pty_open()
+  if !has('unix')
+    return
+  endif
+
+  let job = job_start(s:python . ' -c "import time;time.sleep(0.2)"', {'out_io': 'null', 'err_io': 'null', 'pty': 1})
+  let elapsed = WaitFor({-> job_status(job) ==# 'dead'})
+  call assert_inrange(200, 1000, elapsed)
+  call job_stop(job)
+endfunc
