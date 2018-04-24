@@ -193,7 +193,6 @@ static struct vimvar
     {VV_NAME("termstyleresp",	VAR_STRING), VV_RO},
     {VV_NAME("termblinkresp",	VAR_STRING), VV_RO},
     {VV_NAME("event",		VAR_DICT), VV_RO},
-    {VV_NAME("prev_bang_cmd",	VAR_STRING), 0},
 };
 
 /* shorthand */

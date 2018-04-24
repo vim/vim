@@ -1166,6 +1166,7 @@ free_all_mem(void)
     free_search_patterns();
     free_old_sub();
     free_last_insert();
+    free_prev_shellcmd();
     free_regexp_stuff();
     free_tag_stuff();
     free_cd_dir();
