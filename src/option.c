@@ -3805,17 +3805,23 @@ set_option_default(
 	dvi = ((flags & P_VI_DEF) || compatible) ? VI_DEFAULT : VIM_DEFAULT;
 	if (flags & P_STRING)
 	{
-	    /* Use set_string_option_direct() for local options to handle
-	     * freeing and allocating the value. */
-	    if (options[opt_idx].indir != PV_NONE)
-		set_string_option_direct(NULL, opt_idx,
-				 options[opt_idx].def_val[dvi], opt_flags, 0);
-	    else
+	    /* skip 'termkey' and 'termsize, they are duplicates of
+	     * 'termwinkey' and 'termwinsize' */
+	    if (STRCMP(options[opt_idx].fullname, "termkey") != 0
+		    && STRCMP(options[opt_idx].fullname, "termsize") != 0)
 	    {
-		if ((opt_flags & OPT_FREE) && (flags & P_ALLOCED))
-		    free_string_option(*(char_u **)(varp));
-		*(char_u **)varp = options[opt_idx].def_val[dvi];
-		options[opt_idx].flags &= ~P_ALLOCED;
+		/* Use set_string_option_direct() for local options to handle
+		 * freeing and allocating the value. */
+		if (options[opt_idx].indir != PV_NONE)
+		    set_string_option_direct(NULL, opt_idx,
+				     options[opt_idx].def_val[dvi], opt_flags, 0);
+		else
+		{
+		    if ((opt_flags & OPT_FREE) && (flags & P_ALLOCED))
+			free_string_option(*(char_u **)(varp));
+		    *(char_u **)varp = options[opt_idx].def_val[dvi];
+		    options[opt_idx].flags &= ~P_ALLOCED;
+		}
 	    }
 	}
 	else if (flags & P_NUM)
