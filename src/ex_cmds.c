@@ -987,15 +987,8 @@ ex_copy(linenr_T line1, linenr_T line2, linenr_T n)
     msgmore((long)count);
 }
 
-static char_u	*prevcmd = NULL;	/* the previous command */
 
-#if defined(EXITFREE) || defined(PROTO)
-    void
-free_prev_shellcmd(void)
-{
-    vim_free(prevcmd);
-}
-#endif
+static int  firstcmd = TRUE;
 
 /*
  * Handle the ":!cmd" command.	Also for ":r !cmd" and ":w !cmd"
@@ -1015,12 +1008,15 @@ do_bang(
     linenr_T		line2 = eap->line2;	/* end of range */
     char_u		*newcmd = NULL;		/* the new command */
     int			free_newcmd = FALSE;    /* need to free() newcmd */
+    char_u		*prevcmd = NULL;	/* the previous command */
     int			ins_prevcmd;
     char_u		*t;
     char_u		*p;
     char_u		*trailarg;
     int			len;
     int			scroll_save = msg_scroll;
+
+    prevcmd = vim_strsave(get_vim_var_str(VV_PREV_BANG_CMD));
 
     /*
      * Disallow shell commands for "rvim".
@@ -1050,7 +1046,7 @@ do_bang(
 	    len += (int)STRLEN(newcmd);
 	if (ins_prevcmd)
 	{
-	    if (prevcmd == NULL)
+	    if (firstcmd)
 	    {
 		EMSG(_(e_noprev));
 		vim_free(newcmd);
@@ -1096,13 +1092,9 @@ do_bang(
 	}
     } while (trailarg != NULL);
 
-    /*
-     * Store previous command, but only if it was typed by the user.
-     */
-    if (getline_equal(eap->getline, eap->cookie, getexline)) {
-	vim_free(prevcmd);
-	prevcmd = newcmd;
-    }
+    vim_free(prevcmd);
+    prevcmd = newcmd;
+    firstcmd = FALSE;
 
     if (bangredo)	    /* put cmd in redo buffer for ! command */
     {
@@ -1155,6 +1147,9 @@ do_bang(
     }
     if (free_newcmd)
 	vim_free(newcmd);
+
+    set_vim_var_string(VV_PREV_BANG_CMD, prevcmd, -1);
+    vim_free(prevcmd);
 }
 
 /*
