@@ -3594,6 +3594,11 @@ prompt_for_number(int *mouse_used)
     cmdline_row = 0;
     save_State = State;
     State = ASKMORE;	/* prevents a screen update when using a timer */
+#ifdef FEAT_MOUSE
+    /* May show different mouse shape. */
+    setmouse();
+#endif
+
 
     i = get_number(TRUE, mouse_used);
     if (KeyTyped)
@@ -3608,6 +3613,10 @@ prompt_for_number(int *mouse_used)
     else
 	cmdline_row = save_cmdline_row;
     State = save_State;
+#ifdef FEAT_MOUSE
+    /* May need to restore mouse shape. */
+    setmouse();
+#endif
 
     return i;
 }
