@@ -494,9 +494,11 @@ static int	s_getting_focus = FALSE;
 static int	s_x_pending;
 static int	s_y_pending;
 static UINT	s_kFlags_pending;
-static UINT	s_wait_timer = 0;   /* Timer for get char from user */
+static UINT	s_wait_timer = 0;	  // Timer for get char from user
 static int	s_timed_out = FALSE;
-static int	dead_key = 0;	/* 0: no dead key, 1: dead key pressed */
+static int	dead_key = 0;		  // 0: no dead key, 1: dead key pressed
+static UINT	surrogate_pending_ch = 0; // 0: no surrogate pending,
+					  // else a high surrogate
 
 #ifdef FEAT_BEVAL_GUI
 /* balloon-eval WM_NOTIFY_HANDLER */
@@ -708,6 +710,12 @@ _OnDeadChar(
  * Convert Unicode character "ch" to bytes in "string[slen]".
  * When "had_alt" is TRUE the ALT key was included in "ch".
  * Return the length.
+ * Because the Windows API uses UTF-16, we have to deal with surrogate
+ * pairs; this is where we choose to deal with them: if "ch" is a high
+ * surrogate, it will be stored, and the length returned will be zero; the next
+ * char_to_string call will then include the high surrogate, decoding the pair
+ * of UTF-16 code units to a single Unicode code point, presuming it is the
+ * matching low surrogate.
  */
     static int
 char_to_string(int ch, char_u *string, int slen, int had_alt)
@@ -718,8 +726,27 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
     WCHAR	wstring[2];
     char_u	*ws = NULL;
 
-    wstring[0] = ch;
-    len = 1;
+    if (surrogate_pending_ch != 0)
+    {
+	/* We don't guarantee ch is a low surrogate to match the high surrogate
+	 * we already have; it should be, but if it isn't, tough luck. */
+	wstring[0] = surrogate_pending_ch;
+	wstring[1] = ch;
+	surrogate_pending_ch = 0;
+	len = 2;
+    }
+    else if (ch >= 0xD800 && ch <= 0xDBFF)	/* high surrogate */
+    {
+	/* We don't have the entire code point yet, only the first UTF-16 code
+	 * unit; so just remember it and use it in the next call. */
+	surrogate_pending_ch = ch;
+	return 0;
+    }
+    else
+    {
+	wstring[0] = ch;
+	len = 1;
+    }
 
     /* "ch" is a UTF-16 character.  Convert it to a string of bytes.  When
      * "enc_codepage" is non-zero use the standard Win32 function,
@@ -743,7 +770,6 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
     }
     else
     {
-	len = 1;
 	ws = utf16_to_enc(wstring, &len);
 	if (ws == NULL)
 	    len = 0;
