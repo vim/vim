@@ -1860,7 +1860,7 @@ fill_input_buf(int exit_on_error UNUSED)
 #  endif
 			    );
 #  ifdef VMS
-	len = vms_read(read_cmd_fd, (char *)inbuf + inbufcount, readlen);
+	len = vms_read((char *)inbuf + inbufcount, readlen);
 #  else
 	len = read(read_cmd_fd, (char *)inbuf + inbufcount, readlen);
 #  endif
