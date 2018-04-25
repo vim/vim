@@ -6711,7 +6711,7 @@ swap_tcap(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     static int		init_done = FALSE;
-    static int		curr_mode; /* 0=index c, 1=24bit c, 2=256 c */
+    static int		curr_mode;
     struct ks_tbl_s	*ks;
     struct builtin_term *bt;
     int			mode;

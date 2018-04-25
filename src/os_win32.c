@@ -214,7 +214,7 @@ static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
 
 # ifdef FEAT_TERMGUICOLORS
-#  define USE_VTP		(vtp_working && (p_tgc || (!p_tgc && t_colors >= 256)))
+#  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
 # else
 #  define USE_VTP		0
 # endif
@@ -7791,6 +7791,12 @@ has_vtp_working(void)
 use_vtp(void)
 {
     return USE_VTP;
+}
+
+    int
+is_term_win32(void)
+{
+    return T_NAME != NULL && STRCMP(T_NAME, "win32") == 0;
 }
 
 #endif

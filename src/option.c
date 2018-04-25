@@ -6785,8 +6785,11 @@ did_set_string_option(
 		    T_CCO = empty_option;
 		}
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
-		swap_tcap();
-		did_swaptcap = TRUE;
+		if (is_term_win32())
+		{
+		    swap_tcap();
+		    did_swaptcap = TRUE;
+		}
 #endif
 		/* We now have a different color setup, initialize it again. */
 		init_highlight(TRUE, FALSE);
@@ -8692,7 +8695,8 @@ set_bool_option(
 	    p_tgc = 0;
 	    return (char_u*)N_("E954: 24-bit colors are not supported on this environment");
 	}
-	swap_tcap();
+	if (is_term_win32())
+	    swap_tcap();
 # endif
 # ifdef FEAT_GUI
 	if (!gui.in_use && !gui.starting)
@@ -8701,7 +8705,7 @@ set_bool_option(
 # ifdef FEAT_VTP
 	control_console_color_rgb();
 	/* reset t_Co */
-	if (STRCMP(T_NAME, "win32") == 0)
+	if (is_term_win32())
 	    set_termname(T_NAME);
 # endif
     }
