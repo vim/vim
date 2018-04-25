@@ -22,7 +22,7 @@ menutrans &Help				&Aide
 
 menutrans &Overview<Tab><F1>			&Sommaire<Tab><F1>
 menutrans &User\ Manual				&Manuel\ utilisateur
-menutrans &How-to\ links			&Tâches\ courantes
+menutrans &How-to\ links			&TÃ¢ches\ courantes
 menutrans &Find\.\.\.				Rec&hercher\.\.\.
 " -sep1-
 menutrans &Credits				&Remerciements
@@ -31,15 +31,15 @@ menutrans &Sponsor/Register			Sponsor/&Enregistrement
 menutrans O&rphans				&Orphelins
 " -sep2-
 menutrans &Version				&Version
-menutrans &About				À\ &propos\ de\ Vim
+menutrans &About				Ã€\ &propos\ de\ Vim
 
-let g:menutrans_help_dialog = "Entrez une commande ou un mot à rechercher dans l'aide.\n\nAjoutez i_ pour les commandes du mode Insertion (ex: i_CTRL-X)\nAjoutez c_ pour l'édition de la ligne de commande (ex: c_<Del>)\nEntourez les options avec des apostrophes (ex: 'shiftwidth')"
+let g:menutrans_help_dialog = "Entrez une commande ou un mot Ã  rechercher dans l'aide.\n\nAjoutez i_ pour les commandes du mode Insertion (ex: i_CTRL-X)\nAjoutez c_ pour l'Ã©dition de la ligne de commande (ex: c_<Del>)\nEntourez les options avec des apostrophes (ex: 'shiftwidth')"
 
 
 menutrans &File				&Fichier
 
 menutrans &Open\.\.\.<Tab>:e			&Ouvrir\.\.\.<Tab>:e
-menutrans Sp&lit-Open\.\.\.<Tab>:sp		Ouvrir\ à\ p&art\.\.\.<Tab>:sp
+menutrans Sp&lit-Open\.\.\.<Tab>:sp		Ouvrir\ Ã \ p&art\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew		Ouvrir\ dans\ un\ onglet\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew			&Nouveau<Tab>:enew
 menutrans &Close<Tab>:close			&Fermer<Tab>:close
@@ -47,7 +47,7 @@ menutrans &Close<Tab>:close			&Fermer<Tab>:close
 menutrans &Save<Tab>:w				&Enregistrer<Tab>:w
 menutrans Save\ &As\.\.\.<Tab>:sav		Enregistrer\ &sous\.\.\.<Tab>:sav
 " -SEP2-
-menutrans Split\ &Diff\ with\.\.\.		&Difference\ avec\.\.\.
+menutrans Split\ &Diff\ with\.\.\.		&DiffÃ©rence\ avec\.\.\.
 "menutrans Split\ Patched\ &By\.\.\.		&Patcher\ avec\.\.\.
 menutrans Split\ Patched\ &By\.\.\.		&Tester\ un\ patch\.\.\.
 " -SEP3-
@@ -61,15 +61,15 @@ menutrans &Edit				&Edition
 
 menutrans &Undo<Tab>u				&Annuler<Tab>u
 menutrans &Redo<Tab>^R				Re&faire<Tab>^R
-menutrans Rep&eat<Tab>\.			R&épéter<Tab>\.
+menutrans Rep&eat<Tab>\.			R&Ã©pÃ©ter<Tab>\.
 " -SEP1-
 menutrans Cu&t<Tab>"+x				Co&uper<Tab>"+x
 menutrans &Copy<Tab>"+y				Cop&ier<Tab>"+y
 menutrans &Paste<Tab>"+gP			C&oller<Tab>"+gP
 menutrans Put\ &Before<Tab>[p			Placer\ a&vant<Tab>[p
-menutrans Put\ &After<Tab>]p			Placer\ apr&ès<Tab>]p
+menutrans Put\ &After<Tab>]p			Placer\ apr&Ã¨s<Tab>]p
 menutrans &Delete<Tab>x				Effa&cer<Tab>x
-menutrans &Select\ All<Tab>ggVG			&Sélectionner\ tout<Tab>ggVG
+menutrans &Select\ All<Tab>ggVG			&SÃ©lectionner\ tout<Tab>ggVG
 " -SEP2-
 menutrans &Find\.\.\.				Rec&hercher\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.		Re&mplacer\.\.\.
@@ -77,40 +77,40 @@ menutrans &Find<Tab>/				Rec&hercher<Tab>/
 menutrans Find\ and\ Rep&lace<Tab>:%s		Re&mplacer<Tab>:%s
 menutrans Find\ and\ Rep&lace<Tab>:s		Re&mplacer<Tab>:s
 " -SEP3-
-menutrans Settings\ &Window			Fe&nêtre\ des\ réglages
-menutrans &Global\ Settings			Réglages\ globau&x
+menutrans Settings\ &Window			Fe&nÃªtre\ des\ rÃ©glages
+menutrans &Global\ Settings			RÃ©glages\ globau&x
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Surligner\ recherche\ on/off<Tab>:set\ hls!
 menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		&Ignorer\ casse\ on/off<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Vérifier\ parenth&èses\ on/off<Tab>:set\ sm!
+menutrans Toggle\ &Showmatch<Tab>:set\ sm!		VÃ©rifier\ parenth&Ã¨ses\ on/off<Tab>:set\ sm!
 
 menutrans &Context\ lines				Lignes\ &autour\ du\ curseur
 
-menutrans &Virtual\ Edit				Édition\ &virtuelle
+menutrans &Virtual\ Edit				Ã‰dition\ &virtuelle
 menutrans Never							&Jamais
-menutrans Block\ Selection					&Sélection\ en\ bloc
+menutrans Block\ Selection					&SÃ©lection\ en\ bloc
 menutrans Insert\ mode						&Mode\ insertion
 menutrans Block\ and\ Insert					&Bloc\ et\ insertion
 menutrans Always						&Toujours
 
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		I&nsertion\ permanente\ on/off<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		&Compatibilité\ Vi\ on/off<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		&CompatibilitÃ©\ Vi\ on/off<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.				Chemin\ de\ rec&herche\ des\ fichiers\.\.\.
-menutrans Ta&g\ Files\.\.\.				Fichiers\ d'&étiquettes\.\.\.
+menutrans Ta&g\ Files\.\.\.				Fichiers\ d'&Ã©tiquettes\.\.\.
 " -SEP1-
 menutrans Toggle\ &Toolbar				Barre\ d'&outils\ on/off
 menutrans Toggle\ &Bottom\ Scrollbar			Ascenseur\ &horizontal\ on/off
-menutrans Toggle\ &Left\ Scrollbar			Ascenseur\ à\ ga&uche\ on/off
-menutrans Toggle\ &Right\ Scrollbar			Ascenseur\ à\ &droite\ on/off
+menutrans Toggle\ &Left\ Scrollbar			Ascenseur\ Ã \ ga&uche\ on/off
+menutrans Toggle\ &Right\ Scrollbar			Ascenseur\ Ã \ &droite\ on/off
 
-let g:menutrans_path_dialog = "Entrez le chemin de recherche des fichiers.\nSéparez les répertoires par des virgules."
-let g:menutrans_tags_dialog = "Entrez les noms des fichiers d'étiquettes.\nSéparez les noms par des virgules."
+let g:menutrans_path_dialog = "Entrez le chemin de recherche des fichiers.\nSÃ©parez les rÃ©pertoires par des virgules."
+let g:menutrans_tags_dialog = "Entrez les noms des fichiers d'Ã©tiquettes.\nSÃ©parez les noms par des virgules."
 
-menutrans F&ile\ Settings			Réglages\ fichie&r
+menutrans F&ile\ Settings			RÃ©glages\ fichie&r
 
-menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	&Numérotation\ on/off<Tab>:set\ nu!
+menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	&NumÃ©rotation\ on/off<Tab>:set\ nu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Mode\ &listing\ on/off<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		&Retour\ à\ la\ ligne\ on/off<Tab>:set\ wrap!
+menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		&Retour\ Ã \ la\ ligne\ on/off<Tab>:set\ wrap!
 menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Retour\ sur\ &mot\ on/off<Tab>:set\ lbr!
 menutrans Toggle\ &expand-tab<Tab>:set\ et!		&Tab\.\ en\ espaces\ on/off<Tab>:set\ et!
 menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Indentation\ &auto\.\ on/off<Tab>:set\ ai!
@@ -121,32 +121,32 @@ menutrans Soft\ &Tabstop				&Pseudo-tabulations
 menutrans Te&xt\ Width\.\.\.				Largeur\ du\ te&xte\.\.\.
 menutrans &File\ Format\.\.\.				Format\ du\ &fichier\.\.\.
 
-let g:menutrans_textwidth_dialog = "Entrez la nouvelle largeur du texte\n(0 pour désactiver le formattage)."
-let g:menutrans_fileformat_dialog = "Choisissez le format dans lequel écrire le fichier."
+let g:menutrans_textwidth_dialog = "Entrez la nouvelle largeur du texte\n(0 pour dÃ©sactiver le formatage)."
+let g:menutrans_fileformat_dialog = "Choisissez le format dans lequel Ã©crire le fichier."
 let g:menutrans_fileformat_choices = " &Unix \n &Dos \n &Mac \n &Annuler "
 
 menutrans C&olor\ Scheme			&Jeu\ de\ couleurs
 menutrans &Keymap				&Type\ de\ clavier
 menutrans None						(aucun)
-menutrans Select\ Fo&nt\.\.\.			Sélectionner\ &police\.\.\.
+menutrans Select\ Fo&nt\.\.\.			SÃ©lectionner\ &police\.\.\.
 
 
 menutrans &Tools			&Outils
 
-menutrans &Jump\ to\ this\ tag<Tab>g^]		&Atteindre\ cette\ étiquette<Tab>g^]
-menutrans Jump\ &back<Tab>^T			Repartir\ en\ arri&ère<Tab>^T
-menutrans Build\ &Tags\ File			&Générer\ fichier\ d'étiquettes
+menutrans &Jump\ to\ this\ tag<Tab>g^]		&Atteindre\ cette\ Ã©tiquette<Tab>g^]
+menutrans Jump\ &back<Tab>^T			Repartir\ en\ arri&Ã¨re<Tab>^T
+menutrans Build\ &Tags\ File			&GÃ©nÃ©rer\ fichier\ d'Ã©tiquettes
 
 " -SEP1-
 menutrans &Spelling			&Orthographe
 menutrans &Spell\ Check\ On			&Activer
-menutrans Spell\ Check\ &Off			&Désactiver
-menutrans To\ &Next\ error<Tab>]s		À\ l'erreur\ &suivante<Tab>]s
-menutrans To\ &Previous\ error<Tab>[s		À\ l'erreur\ &précédente<Tab>[s
-menutrans Suggest\ &Corrections<Tab>z=		Suggérer\ &correction<Tab>z=
+menutrans Spell\ Check\ &Off			&DÃ©sactiver
+menutrans To\ &Next\ error<Tab>]s		Ã€\ l'erreur\ &suivante<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s		Ã€\ l'erreur\ &prÃ©cÃ©dente<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=		SuggÃ©rer\ &correction<Tab>z=
 menutrans &Repeat\ correction<Tab>:spellrepall	&Reporter\ la\ correction<Tab>:spellrepall
 
-an 40.335.205 &Tools.&Spelling.Français\ (fr)	:set spl=fr spell<CR>
+an 40.335.205 &Tools.&Spelling.FranÃ§ais\ (fr)	:set spl=fr spell<CR>
 menutrans Set\ language\ to\ "en"		Anglais
 menutrans Set\ language\ to\ "en_au"		Anglais\ (en_au)
 menutrans Set\ language\ to\ "en_ca"		Anglais\ (en_ca)
@@ -161,31 +161,31 @@ menutrans &Find\ More\ Languages		&Trouver\ d'autres\ langues
 menutrans &Folding				&Replis
 
 menutrans &Enable/Disable\ folds<Tab>zi			&Replis\ on/off<Tab>zi
-menutrans &View\ Cursor\ Line<Tab>zv			D&éplier\ ligne\ curseur<Tab>zv
+menutrans &View\ Cursor\ Line<Tab>zv			D&Ã©plier\ ligne\ curseur<Tab>zv
 menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx		Tout\ plier\ &sauf\ ligne\ curseur<Tab>zMzx
 menutrans C&lose\ more\ folds<Tab>zm			Fermer\ &plus\ de\ replis<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM			F&ermer\ tous\ les\ replis<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr			Ouvrir\ pl&us\ de\ replis<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR			&Ouvrir\ tous\ les\ replis<Tab>zR
 " -SEP1-
-menutrans Fold\ Met&hod					&Méthode\ de\ repli
+menutrans Fold\ Met&hod					&MÃ©thode\ de\ repli
 
 menutrans M&anual						&Manuelle
 menutrans I&ndent						&Indentation
 menutrans E&xpression						&Expression
 menutrans S&yntax						&Syntaxe
-menutrans &Diff							&Différence
+menutrans &Diff							&DiffÃ©rence
 menutrans Ma&rker						Ma&rqueurs
 
-menutrans Create\ &Fold<Tab>zf				&Créer\ repli<Tab>zf
+menutrans Create\ &Fold<Tab>zf				&CrÃ©er\ repli<Tab>zf
 menutrans &Delete\ Fold<Tab>zd				E&ffacer\ repli<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD			Effacer\ &tous\ les\ replis<Tab>zD
 " -SEP2-
 menutrans Fold\ col&umn\ width				&Largeur\ colonne\ replis
 
-menutrans &Diff					&Différence
+menutrans &Diff					&DiffÃ©rence
 
-menutrans &Update					&Mettre\ à\ jour
+menutrans &Update					&Mettre\ Ã \ jour
 menutrans &Get\ Block					Corriger\ &ce\ tampon
 menutrans &Put\ Block					Corriger\ l'&autre\ tampon
 
@@ -194,21 +194,21 @@ menutrans &Make<Tab>:make			Lancer\ ma&ke<Tab>:make
 menutrans &List\ Errors<Tab>:cl			Lister\ &erreurs<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!		Lister\ &messages<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn			Erreur\ &suivante<Tab>:cn
-menutrans &Previous\ Error<Tab>:cp		Erreur\ pr&écédente<Tab>:cp
+menutrans &Previous\ Error<Tab>:cp		Erreur\ pr&Ã©cÃ©dente<Tab>:cp
 "menutrans &Older\ List<Tab>:cold		A&ncienne\ liste<Tab>:cold
-menutrans &Older\ List<Tab>:cold		Liste\ &précédente<Tab>:cold
+menutrans &Older\ List<Tab>:cold		Liste\ &prÃ©cÃ©dente<Tab>:cold
 "menutrans N&ewer\ List<Tab>:cnew		No&uvelle\ liste<Tab>:cnew
 menutrans N&ewer\ List<Tab>:cnew		Liste\ suivan&te<Tab>:cnew
 
-menutrans Error\ &Window			&Fenêtre\ d'erreurs
+menutrans Error\ &Window			&FenÃªtre\ d'erreurs
 
-menutrans &Update<Tab>:cwin				&Mettre\ à\ jour<Tab>:cwin
+menutrans &Update<Tab>:cwin				&Mettre\ Ã \ jour<Tab>:cwin
 menutrans &Open<Tab>:copen				&Ouvrir<Tab>:copen
 menutrans &Close<Tab>:cclose				&Fermer<Tab>:cclose
 
 " -SEP3-
 menutrans &Convert\ to\ HEX<Tab>:%!xxd		Convertir\ en\ he&xa<Tab>:%!xxd
-menutrans Conve&rt\ back<Tab>:%!xxd\ -r		Décon&vertir<Tab>:%!xxd\ -r
+menutrans Conve&rt\ back<Tab>:%!xxd\ -r		DÃ©con&vertir<Tab>:%!xxd\ -r
 
 menutrans Se&T\ Compiler			&Type\ de\ compilateur
 
@@ -216,11 +216,11 @@ menutrans Se&T\ Compiler			&Type\ de\ compilateur
 menutrans &Buffers			&Tampons
 
 menutrans Dummy					Factice
-menutrans &Refresh\ menu			&Mettre\ ce\ menu\ à\ jour
+menutrans &Refresh\ menu			&Mettre\ ce\ menu\ Ã \ jour
 menutrans &Delete				&Effacer
 menutrans &Alternate				&Alterner
 menutrans &Next					&Suivant
-menutrans &Previous				&Précédent
+menutrans &Previous				&PrÃ©cÃ©dent
 " -SEP-
 
 menutrans &others				au&tres
@@ -228,9 +228,9 @@ menutrans &u-z					&uvwxyz
 let g:menutrans_no_file = "[Aucun fichier]"
 
 
-menutrans &Window			Fe&nêtre
+menutrans &Window			Fe&nÃªtre
 
-menutrans &New<Tab>^Wn				&Nouvelle\ fenêtre<Tab>^Wn
+menutrans &New<Tab>^Wn				&Nouvelle\ fenÃªtre<Tab>^Wn
 menutrans S&plit<Tab>^Ws			&Fractionner<Tab>^Ws
 menutrans Sp&lit\ To\ #<Tab>^W^^		Fractionner\ p&our\ #<Tab>^W^^
 menutrans Split\ &Vertically<Tab>^Wv		Fractionner\ &verticalement<Tab>^Wv
@@ -239,17 +239,17 @@ menutrans Split\ File\ E&xplorer		Fractionner\ &explorateur
 menutrans &Close<Tab>^Wc			Fer&mer<Tab>^Wc
 menutrans Close\ &Other(s)<Tab>^Wo		Fermer\ les\ &autres<Tab>^Wo
 " -SEP2-
-menutrans Move\ &To				&Déplacer\ vers\ le
+menutrans Move\ &To				&DÃ©placer\ vers\ le
 
 menutrans &Top<Tab>^WK					&Haut<Tab>^WK
 menutrans &Bottom<Tab>^WJ				&Bas<Tab>^WJ
-menutrans &Left\ side<Tab>^WH				Côté\ &gauche<Tab>^WH
-menutrans &Right\ side<Tab>^WL				Côté\ &droit<Tab>^WL
+menutrans &Left\ side<Tab>^WH				CÃ´tÃ©\ &gauche<Tab>^WH
+menutrans &Right\ side<Tab>^WL				CÃ´tÃ©\ &droit<Tab>^WL
 
 menutrans Rotate\ &Up<Tab>^WR			Rotation\ vers\ le\ &haut<Tab>^WR
 menutrans Rotate\ &Down<Tab>^Wr			Rotation\ vers\ le\ &bas<Tab>^Wr
 " -SEP3-
-menutrans &Equal\ Size<Tab>^W=			Égaliser\ ta&illes<Tab>^W=
+menutrans &Equal\ Size<Tab>^W=			Ã‰galiser\ ta&illes<Tab>^W=
 menutrans &Max\ Height<Tab>^W_			Hau&teur\ maximale<Tab>^W_
 menutrans M&in\ Height<Tab>^W1_			Ha&uteur\ minimale<Tab>^W1_
 menutrans Max\ &Width<Tab>^W\|			&Largeur\ maximale<Tab>^W\|
@@ -266,11 +266,11 @@ menutrans &Paste				C&oller
 " &Buffers.&Delete overwrites this one
 menutrans &Delete				&Effacer
 " -SEP2-
-menutrans Select\ Blockwise			Sélectionner\ &bloc
-menutrans Select\ &Word				Sélectionner\ &mot
-menutrans Select\ &Line				Sélectionner\ &ligne
-menutrans Select\ &Block			Sélectionner\ &bloc
-menutrans Select\ &All				Sélectionner\ &tout
+menutrans Select\ Blockwise			SÃ©lectionner\ &bloc
+menutrans Select\ &Word				SÃ©lectionner\ &mot
+menutrans Select\ &Line				SÃ©lectionner\ &ligne
+menutrans Select\ &Block			SÃ©lectionner\ &bloc
+menutrans Select\ &All				SÃ©lectionner\ &tout
 
 
 " ToolBar
@@ -306,7 +306,7 @@ menutrans SaveSesn				EnregSess
 menutrans RunScript				LancScript
 " -sep6-
 menutrans Make					Make
-menutrans RunCtags				CréerEtiqu
+menutrans RunCtags				CrÃ©erEtiqu
 menutrans TagJump				AllerEtiqu
 " -sep7-
 menutrans Help					Aide
@@ -326,25 +326,25 @@ fun! Do_toolbar_tmenu()
   if !has("gui_athena")
     tmenu ToolBar.Find				Rechercher
     tmenu ToolBar.FindNext			Chercher suivant
-    tmenu ToolBar.FindPrev			Chercher précédent
+    tmenu ToolBar.FindPrev			Chercher prÃ©cÃ©dent
     tmenu ToolBar.Replace			Remplacer
   endif
  if 0	" disabled; These are in the Windows menu
-  tmenu ToolBar.New				Nouvelle fenêtre
-  tmenu ToolBar.WinSplit			Fractionner fenêtre
-  tmenu ToolBar.WinMax				Maximiser fenêtre
-  tmenu ToolBar.WinMin				Minimiser fenêtre
+  tmenu ToolBar.New				Nouvelle fenÃªtre
+  tmenu ToolBar.WinSplit			Fractionner fenÃªtre
+  tmenu ToolBar.WinMax				Maximiser fenÃªtre
+  tmenu ToolBar.WinMin				Minimiser fenÃªtre
   tmenu ToolBar.WinVSplit			Fractionner verticalement
-  tmenu ToolBar.WinMaxWidth			Maximiser largeur fenêtre
-  tmenu ToolBar.WinMinWidth			Minimiser largeur fenêtre
-  tmenu ToolBar.WinClose			Fermer fenêtre
+  tmenu ToolBar.WinMaxWidth			Maximiser largeur fenÃªtre
+  tmenu ToolBar.WinMinWidth			Minimiser largeur fenÃªtre
+  tmenu ToolBar.WinClose			Fermer fenÃªtre
  endif
   tmenu ToolBar.LoadSesn			Ouvrir session
-  tmenu ToolBar.SaveSesn			Enregister session courante
+  tmenu ToolBar.SaveSesn			Enregistrer session courante
   tmenu ToolBar.RunScript			Lancer un script Vim
   tmenu ToolBar.Make				Lancer make
-  tmenu ToolBar.RunCtags			Créer les étiquettes
-  tmenu ToolBar.TagJump				Atteindre cette étiquette
+  tmenu ToolBar.RunCtags			CrÃ©er les Ã©tiquettes
+  tmenu ToolBar.TagJump				Atteindre cette Ã©tiquette
   tmenu ToolBar.Help				Aide de Vim
   tmenu ToolBar.FindHelp			Rechercher dans l'aide
 endfun
@@ -352,14 +352,14 @@ endfun
 
 menutrans &Syntax			&Syntaxe
 
-menutrans &Off					Désactiver
+menutrans &Off					DÃ©sactiver
 menutrans &Manual				&Manuelle
 menutrans A&utomatic				&Automatique
 menutrans on/off\ for\ &This\ file		On/off\ pour\ &ce\ fichier
 
 " The Start Of The Syntax Menu
 menutrans ABC\ music\ notation		ABC\ (notation\ musicale)
-menutrans AceDB\ model			Modèle\ AceDB
+menutrans AceDB\ model			ModÃ¨le\ AceDB
 menutrans Apache\ config		Config\.\ Apache
 menutrans Apache-style\ config		Config\.\ style\ Apache
 menutrans ASP\ with\ VBScript		ASP\ avec\ VBScript
@@ -373,12 +373,12 @@ menutrans Cascading\ Style\ Sheets	Feuilles\ de\ style\ en\ cascade
 menutrans Cfg\ Config\ file		Fichier\ de\ config\.\ \.cfg
 menutrans Cheetah\ template		Patron\ Cheetah
 menutrans commit\ file			Fichier\ commit
-menutrans Generic\ Config\ file		Fichier\ de\ config\.\ générique
+menutrans Generic\ Config\ file		Fichier\ de\ config\.\ gÃ©nÃ©rique
 menutrans Digital\ Command\ Lang	DCL
 menutrans DNS/BIND\ zone		Zone\ BIND/DNS
 menutrans Dylan\ interface		Interface
 menutrans Dylan\ lid			LID
-menutrans Elm\ filter\ rules		Règles\ de\ filtrage\ Elm
+menutrans Elm\ filter\ rules		RÃ¨gles\ de\ filtrage\ Elm
 menutrans ERicsson\ LANGuage		Erlang\ (langage\ Ericsson)
 menutrans Essbase\ script		Script\ Essbase
 menutrans Eterm\ config			Config\.\ Eterm
@@ -389,7 +389,7 @@ menutrans Fvwm2\ configuration\ with\ M4	Config\.\ Fvwm2\ avec\ M4
 menutrans GDB\ command\ file		Fichier\ de\ commandes\ GDB
 menutrans HTML\ with\ M4		HTML\ avec\ M4
 menutrans Cheetah\ HTML\ template	Patron\ Cheetah\ pour\ HTML
-menutrans IDL\Generic\ IDL		IDL\IDL\ générique
+menutrans IDL\Generic\ IDL		IDL\IDL\ gÃ©nÃ©rique
 menutrans IDL\Microsoft\ IDL		IDL\IDL\ Microsoft
 menutrans Indent\ profile		Profil\ Indent
 menutrans Inno\ setup			Config\.\ Inno
@@ -404,7 +404,7 @@ menutrans MEL\ (for\ Maya)		MEL\ (pour\ Maya)
 menutrans 4DOS\ \.bat\ file		Fichier\ \.bat\ 4DOS
 menutrans \.bat\/\.cmd\ file		Fichier\ \.bat\ /\ \.cmd
 menutrans \.ini\ file			Fichier\ \.ini
-menutrans Module\ Definition		Définition\ de\ module
+menutrans Module\ Definition		DÃ©finition\ de\ module
 menutrans Registry			Extrait\ du\ registre
 menutrans Resource\ file		Fichier\ de\ ressources
 menutrans Novell\ NCF\ batch		Batch\ Novell\ NCF
@@ -413,7 +413,7 @@ menutrans Oracle\ config		Config\.\ Oracle
 menutrans Palm\ resource\ compiler	Compil\.\ de\ resources\ Palm
 menutrans PHP\ 3-4			PHP\ 3\ et\ 4
 menutrans Postfix\ main\ config		Config\.\ Postfix
-menutrans Povray\ scene\ descr		Scène\ Povray
+menutrans Povray\ scene\ descr		ScÃ¨ne\ Povray
 menutrans Povray\ configuration		Config\.\ Povray
 menutrans Purify\ log			Log\ Purify
 menutrans Readline\ config		Config\.\ Readline
@@ -423,29 +423,29 @@ menutrans RockLinux\ package\ desc\.	Desc\.\ pkg\.\ RockLinux
 menutrans Samba\ config			Config\.\ Samba
 menutrans SGML\ catalog			Catalogue\ SGML
 menutrans SGML\ DTD			DTD\ SGML
-menutrans SGML\ Declaration		Déclaration\ SGML
+menutrans SGML\ Declaration		DÃ©claration\ SGML
 menutrans Shell\ script			Script\ shell
 menutrans sh\ and\ ksh			sh\ et\ ksh
 menutrans Sinda\ compare		Comparaison\ Sinda
-menutrans Sinda\ input			Entrée\ Sinda
+menutrans Sinda\ input			EntrÃ©e\ Sinda
 menutrans Sinda\ output			Sortie\ Sinda
 menutrans SKILL\ for\ Diva		SKILL\ pour\ Diva
 menutrans Smarty\ Templates		Patrons\ Smarty
-menutrans SNNS\ network			Réseau\ SNNS
+menutrans SNNS\ network			RÃ©seau\ SNNS
 menutrans SNNS\ pattern			Motif\ SNNS
-menutrans SNNS\ result			Résultat\ SNNS
+menutrans SNNS\ result			RÃ©sultat\ SNNS
 menutrans Snort\ Configuration		Config\.\ Snort
 menutrans Squid\ config			Config\.\ Squid
 menutrans Subversion\ commit		Commit\ Subversion
 menutrans TAK\ compare			Comparaison\ TAK
-menutrans TAK\ input			Entrée\ TAK
+menutrans TAK\ input			EntrÃ©e\ TAK
 menutrans TAK\ output			Sortie\ TAK
 menutrans TeX\ configuration		Config\.\ TeX
 menutrans TF\ mud\ client		TF\ (client\ MUD)
 menutrans Tidy\ configuration		Config\.\ Tidy
-menutrans Trasys\ input			Entrée\ Trasys
+menutrans Trasys\ input			EntrÃ©e\ Trasys
 menutrans Command\ Line			Ligne\ de\ commande
-menutrans Geometry			Géométrie
+menutrans Geometry			GÃ©omÃ©trie
 menutrans Optics			Optiques
 menutrans Vim\ help\ file		Fichier\ d'aide\ Vim
 menutrans Vim\ script			Script\ Vim
@@ -453,7 +453,7 @@ menutrans Viminfo\ file			Fichier\ Viminfo
 menutrans Virata\ config		Config\.\ Virata
 menutrans Wget\ config			Config\.\ wget
 menutrans Whitespace\ (add)		Espaces\ et\ tabulations
-menutrans WildPackets\ EtherPeek\ Decoder	Décodeur\ WildPackets\ EtherPeek
+menutrans WildPackets\ EtherPeek\ Decoder	DÃ©codeur\ WildPackets\ EtherPeek
 menutrans X\ resources			Resources\ X
 menutrans XXD\ hex\ dump		Sortie\ hexa\.\ de\ xxd
 menutrans XFree86\ Config		Config\.\ XFree86
