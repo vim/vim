@@ -1417,7 +1417,12 @@ getvcol_nolist(pos_T *posp)
     colnr_T	vcol;
 
     curwin->w_p_list = FALSE;
-    getvcol(curwin, posp, NULL, &vcol, NULL);
+#ifdef FEAT_VIRTUALEDIT
+    if (posp->coladd)
+	getvvcol(curwin, posp, NULL, &vcol, NULL);
+    else
+#endif
+	getvcol(curwin, posp, NULL, &vcol, NULL);
     curwin->w_p_list = list_save;
     return vcol;
 }
