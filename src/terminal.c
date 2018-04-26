@@ -632,8 +632,14 @@ term_start(
 	term->tl_kill = vim_strnsave(opt->jo_term_kill, p - opt->jo_term_kill);
     }
 
-    term->tl_api = vim_strsave(opt->jo_term_api == NULL
-				      ? (char_u *)"Tapi_*" : opt->jo_term_api);
+    if (opt->jo_term_api != NULL)
+    {
+	char_u *p = skiptowhite(opt->jo_term_api);
+
+	term->tl_api = vim_strnsave(opt->jo_term_api, p - opt->jo_term_api);
+    }
+    else
+	term->tl_api = vim_strsave((char_u *)"Tapi_*");
 
     /* System dependent: setup the vterm and maybe start the job in it. */
     if (argv == NULL
@@ -705,41 +711,45 @@ ex_terminal(exarg_T *eap)
 	if (ep != NULL && ep < p)
 	    p = ep;
 
-	if ((int)(p - cmd) == 5 && STRNICMP(cmd, "close", 5) == 0)
+# define OPTARG_HAS(name) ((int)(p - cmd) == sizeof(name) - 1 \
+				 && STRNICMP(cmd, name, sizeof(name) - 1) == 0)
+	if (OPTARG_HAS("close"))
 	    opt.jo_term_finish = 'c';
-	else if ((int)(p - cmd) == 7 && STRNICMP(cmd, "noclose", 7) == 0)
+	else if (OPTARG_HAS("noclose"))
 	    opt.jo_term_finish = 'n';
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "open", 4) == 0)
+	else if (OPTARG_HAS("open"))
 	    opt.jo_term_finish = 'o';
-	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "curwin", 6) == 0)
+	else if (OPTARG_HAS("curwin"))
 	    opt.jo_curwin = 1;
-	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "hidden", 6) == 0)
+	else if (OPTARG_HAS("hidden"))
 	    opt.jo_hidden = 1;
-	else if ((int)(p - cmd) == 9 && STRNICMP(cmd, "norestore", 9) == 0)
+	else if (OPTARG_HAS("norestore"))
 	    opt.jo_term_norestore = 1;
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "kill", 4) == 0
-		&& ep != NULL)
+	else if (OPTARG_HAS("kill") && ep != NULL)
 	{
 	    opt.jo_set2 |= JO2_TERM_KILL;
 	    opt.jo_term_kill = ep + 1;
 	    p = skiptowhite(cmd);
 	}
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "rows", 4) == 0
-		&& ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("api") && ep != NULL)
+	{
+	    opt.jo_set2 |= JO2_TERM_API;
+	    opt.jo_term_api = ep + 1;
+	    p = skiptowhite(cmd);
+	}
+	else if (OPTARG_HAS("rows") && ep != NULL && isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_ROWS;
 	    opt.jo_term_rows = atoi((char *)ep + 1);
 	    p = skiptowhite(cmd);
 	}
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "cols", 4) == 0
-		&& ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("cols") && ep != NULL && isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_COLS;
 	    opt.jo_term_cols = atoi((char *)ep + 1);
 	    p = skiptowhite(cmd);
 	}
-	else if ((int)(p - cmd) == 3 && STRNICMP(cmd, "eof", 3) == 0
-								 && ep != NULL)
+	else if (OPTARG_HAS("eof") && ep != NULL)
 	{
 	    char_u *buf = NULL;
 	    char_u *keys;
@@ -779,6 +789,7 @@ ex_terminal(exarg_T *eap)
 	    semsg(_("E181: Invalid attribute: %s"), cmd);
 	    goto theend;
 	}
+# undef OPTARG_HAS
 	cmd = skipwhite(p);
     }
     if (*cmd == NUL)
