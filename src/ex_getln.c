@@ -2040,7 +2040,9 @@ cmdline_changed:
 	    /* Disable 'hlsearch' highlighting if the pattern matches
 	     * everything. Avoids a flash when typing "foo\|". */
 	    if (empty_pattern(ccline.cmdbuff))
+	    {
 		SET_NO_HLSEARCH(TRUE);
+	    }
 
 	    validate_cursor();
 	    /* May redraw the status line to show the cursor position. */
