@@ -1363,16 +1363,69 @@ func Test_terminal_api_call()
     return
   endif
 
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
   call WriteApiCall('Tapi_TryThis')
+
+  " Default
   let buf = RunVimInTerminal('-S Xscript', {})
   call WaitFor({-> exists('g:called_bufnum')})
   call assert_equal(buf, g:called_bufnum)
   call assert_equal(['hello', 123], g:called_arg)
-
   call StopVimInTerminal(buf)
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  " Enable explicitly
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 1})
+  call WaitFor({-> exists('g:called_bufnum')})
+  call assert_equal(buf, g:called_bufnum)
+  call assert_equal(['hello', 123], g:called_arg)
+  call StopVimInTerminal(buf)
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  func! ApiCall_TryThis(bufnum, arg)
+    let g:called_bufnum2 = a:bufnum
+    let g:called_arg2 = a:arg
+  endfunc
+
+  call WriteApiCall('ApiCall_TryThis')
+
+  " Use exact match
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 'ApiCall_TryThis'})
+  call WaitFor({-> exists('g:called_bufnum2')})
+  call assert_equal(buf, g:called_bufnum2)
+  call assert_equal(['hello', 123], g:called_arg2)
+  call StopVimInTerminal(buf)
+
+  unlet! g:called_bufnum2
+  unlet! g:called_arg2
+
+  " Use wildcard match
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 'ApiCall_*'})
+  call WaitFor({-> exists('g:called_bufnum2')})
+  call assert_equal(buf, g:called_bufnum2)
+  call assert_equal(['hello', 123], g:called_arg2)
+  call StopVimInTerminal(buf)
+
+  unlet! g:called_bufnum2
+  unlet! g:called_arg2
+
+  " Use regexp match
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': '/^ApiCall_'})
+  call WaitFor({-> exists('g:called_bufnum2')})
+  call assert_equal(buf, g:called_bufnum2)
+  call assert_equal(['hello', 123], g:called_arg2)
+  call StopVimInTerminal(buf)
+
   call delete('Xscript')
-  unlet g:called_bufnum
-  unlet g:called_arg
+  delfunction! ApiCall_TryThis
+  unlet! g:called_bufnum2
+  unlet! g:called_arg2
 endfunc
 
 func Test_terminal_api_call_fails()
@@ -1380,15 +1433,38 @@ func Test_terminal_api_call_fails()
     return
   endif
 
-  call WriteApiCall('TryThis')
-  call ch_logfile('Xlog', 'w')
-  let buf = RunVimInTerminal('-S Xscript', {})
-  call WaitForAssert({-> assert_match('Invalid function name: TryThis', string(readfile('Xlog')))})
+  func! TryThis(bufnum, arg)
+    let g:called_bufnum3 = a:bufnum
+    let g:called_arg3 = a:arg
+  endfunc
 
+  call WriteApiCall('TryThis')
+
+  unlet! g:called_bufnum3
+  unlet! g:called_arg3
+
+  " No permitted
+  call ch_logfile('Xlog', 'w')
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 0})
+  call WaitForAssert({-> assert_match('Unpermitted function: TryThis', string(readfile('Xlog')))})
+  call assert_false(exists('g:called_bufnum3'))
+  call assert_false(exists('g:called_arg3'))
   call StopVimInTerminal(buf)
+
+  " No match
+  call ch_logfile('Xlog', 'w')
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 'TryThat'})
+  call WaitFor({-> string(readfile('Xlog')) =~ 'Unpermitted function: TryThis'})
+  call assert_false(exists('g:called_bufnum3'))
+  call assert_false(exists('g:called_arg3'))
+  call StopVimInTerminal(buf)
+
   call delete('Xscript')
-  call ch_logfile('', '')
+  call ch_logfile('')
   call delete('Xlog')
+  delfunction! TryThis
+  unlet! g:called_bufnum3
+  unlet! g:called_arg3
 endfunc
 
 let s:caught_e937 = 0
