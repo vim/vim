@@ -10209,9 +10209,9 @@ ins_eol(int c)
     int	    i;
 
     if (echeck_abbr(c + ABBR_OFF))
-	return FALSE;
+	return OK;
     if (stop_arrow() == FAIL)
-	return TRUE;
+	return FAIL;
     undisplay_dollar();
 
     /*
