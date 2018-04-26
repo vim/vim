@@ -7679,7 +7679,7 @@ static int ansi_rgb_table[] = {
 ctermtoxterm(
     int cterm)
 {
-    int i, r, g, b;
+    int i, r = 0, g = 0, b = 0;
 
     if (cterm < 16)
     {
