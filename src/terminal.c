@@ -109,6 +109,7 @@ struct terminal_S {
 #define TL_FINISH_OPEN	    'o'	/* ++open */
     char_u	*tl_opencmd;
     char_u	*tl_eof_chars;
+    char_u	*tl_api;
 
     char_u	*tl_arg0_cmd;	// To format the status bar
 
@@ -631,6 +632,9 @@ term_start(
 	term->tl_kill = vim_strnsave(opt->jo_term_kill, p - opt->jo_term_kill);
     }
 
+    term->tl_api = vim_strsave(opt->jo_term_api == NULL
+				      ? (char_u *)"Tapi_*" : opt->jo_term_api);
+
     /* System dependent: setup the vterm and maybe start the job in it. */
     if (argv == NULL
 	    && argvar->v_type == VAR_STRING
@@ -923,6 +927,7 @@ free_unused_terminals()
 	free_scrollback(term);
 
 	term_free_vterm(term);
+	vim_free(term->tl_api);
 	vim_free(term->tl_title);
 #ifdef FEAT_SESSION
 	vim_free(term->tl_command);
@@ -3751,6 +3756,47 @@ handle_drop_command(listitem_T *item)
     vim_free(tofree);
 }
 
+    static int
+is_permitted_term_api(char_u *func, char_u *pat)
+{
+    if (pat == NULL || *pat == NUL)
+	return FALSE;
+
+    if (*pat == '/')
+    {
+	/* regexp pattern */
+	regmatch_T regmatch;
+	int match = FALSE;
+
+	regmatch.regprog = vim_regcomp(pat + 1, RE_MAGIC + RE_STRING);
+	if (regmatch.regprog != NULL)
+	{
+	    regmatch.rm_ic = p_ic;
+	    match = vim_regexec(&regmatch, func, (colnr_T)0);
+	    vim_regfree(regmatch.regprog);
+	}
+	return match;
+    }
+    else
+    {
+	/* exact match or wildcard */
+	char_u *s = func;
+	char_u *p = pat;
+
+	for (; *s != NUL && *p != NUL; ++s, ++p)
+	{
+	    /* only the trailing '*' works for wildcard */
+	    if (*p == '*' && *(p + 1) == NUL)
+		return TRUE;
+	    if (*s != *p)
+		break;
+	}
+	if (*s == NUL && *p == NUL)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
 /*
  * Handles a function call from the job running in a terminal.
  * "item" is the function name, "item->li_next" has the arguments.
@@ -3770,9 +3816,9 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     }
     func = tv_get_string(&item->li_tv);
 
-    if (STRNCMP(func, "Tapi_", 5) != 0)
+    if (!is_permitted_term_api(func, term->tl_api))
     {
-	ch_log(channel, "Invalid function name: %s", func);
+	ch_log(channel, "Unpermitted function: %s", func);
 	return;
     }
 
@@ -5568,7 +5614,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS
 		    + JO2_NORESTORE + JO2_TERM_KILL
-		    + JO2_ANSI_COLORS + JO2_TTY_TYPE) == FAIL)
+		    + JO2_ANSI_COLORS + JO2_TTY_TYPE + JO2_TERM_API) == FAIL)
 	return;
 
     buf = term_start(&argvars[0], NULL, &opt, 0);

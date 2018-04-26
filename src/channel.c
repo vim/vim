@@ -5017,6 +5017,17 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		memcpy(opt->jo_ansi_colors, rgb, sizeof(rgb));
 	    }
 # endif
+	    else if (STRCMP(hi->hi_key, "term_api") == 0)
+	    {
+		if (!(supported2 & JO2_TERM_API))
+		    break;
+		opt->jo_set2 |= JO2_TERM_API;
+		if (item->v_type == VAR_STRING)
+		    opt->jo_term_api = item->vval.v_string;
+		else
+		    opt->jo_term_api = tv_get_number(item) == 0
+							? (char_u *)"" : NULL;
+	    }
 #endif
 	    else if (STRCMP(hi->hi_key, "env") == 0)
 	    {

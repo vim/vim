@@ -1778,7 +1778,7 @@ struct channel_S {
 #define JO_BLOCK_WRITE	    0x10000000	/* "block_write" */
 #define JO_OUT_MODIFIABLE   0x20000000	/* "out_modifiable" */
 #define JO_ERR_MODIFIABLE   0x40000000	/* "err_modifiable" (JO_OUT_ << 1) */
-#define JO_ALL		    0x7fffffff
+#define JO_ALL		    0x7FFFFFFF
 
 #define JO2_OUT_MSG	    0x0001	/* "out_msg" */
 #define JO2_ERR_MSG	    0x0002	/* "err_msg" (JO_OUT_ << 1) */
@@ -1797,6 +1797,8 @@ struct channel_S {
 #define JO2_TERM_KILL	    0x4000	/* "term_kill" */
 #define JO2_ANSI_COLORS	    0x8000	/* "ansi_colors" */
 #define JO2_TTY_TYPE	    0x10000	/* "tty_type" */
+#define JO2_TERM_API	    0x20000	/* "term_api" */
+#define JO2_ALL		    0x3FFFF
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1870,6 +1872,7 @@ typedef struct
     long_u	jo_ansi_colors[16];
 # endif
     int		jo_tty_type;	    // first character of "tty_type"
+    char_u	*jo_term_api;
 #endif
 } jobopt_T;
 
