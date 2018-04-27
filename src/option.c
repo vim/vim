@@ -8359,7 +8359,7 @@ set_bool_option(
     /* when 'hlsearch' is set or reset: reset no_hlsearch */
     else if ((int *)varp == &p_hls)
     {
-	SET_NO_HLSEARCH(FALSE);
+	set_no_hlsearch(FALSE);
     }
 #endif
 

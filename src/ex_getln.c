@@ -1976,7 +1976,7 @@ cmdline_changed:
 	    if (ccline.cmdlen == 0)
 	    {
 		i = 0;
-		SET_NO_HLSEARCH(TRUE); /* turn off previous highlight */
+		set_no_hlsearch(TRUE); /* turn off previous highlight */
 		redraw_all_later(SOME_VALID);
 	    }
 	    else
@@ -2045,7 +2045,7 @@ cmdline_changed:
 	    /* Disable 'hlsearch' highlighting if the pattern matches
 	     * everything. Avoids a flash when typing "foo\|". */
 	    if (empty_pattern(ccline.cmdbuff))
-		SET_NO_HLSEARCH(TRUE);
+		set_no_hlsearch(TRUE);
 
 	    validate_cursor();
 	    /* May redraw the status line to show the cursor position. */

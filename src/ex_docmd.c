@@ -12193,14 +12193,23 @@ ex_set(exarg_T *eap)
 	(void)do_set(eap->arg, flags);
 }
 
-#ifdef FEAT_SEARCH_EXTRA
+#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+    void
+set_no_hlsearch(int flag)
+{
+    no_hlsearch = flag;
+# ifdef FEAT_EVAL
+    set_vim_var_nr(VV_HLSEARCH, !no_hlsearch && p_hls);
+# endif
+}
+
 /*
  * ":nohlsearch"
  */
     static void
 ex_nohlsearch(exarg_T *eap UNUSED)
 {
-    SET_NO_HLSEARCH(TRUE);
+    set_no_hlsearch(TRUE);
     redraw_all_later(SOME_VALID);
 }
 

@@ -2458,12 +2458,6 @@ typedef enum {
 /* Character used as separated in autoload function/variable names. */
 #define AUTOLOAD_CHAR '#'
 
-#ifdef FEAT_EVAL
-# define SET_NO_HLSEARCH(flag) no_hlsearch = (flag); set_vim_var_nr(VV_HLSEARCH, !no_hlsearch && p_hls)
-#else
-# define SET_NO_HLSEARCH(flag) no_hlsearch = (flag)
-#endif
-
 #ifdef FEAT_JOB_CHANNEL
 # define MAX_OPEN_CHANNELS 10
 #else
