@@ -237,8 +237,9 @@ getcmdline(
     int		old_topfill;
     int		init_topfill = curwin->w_topfill;
 # endif
-    linenr_T	old_botline;
+    linenr_T	old_botline, old_empty_rows;
     linenr_T	init_botline = curwin->w_botline;
+    linenr_T	init_empty_rows = curwin->w_empty_rows;
     int		did_incsearch = FALSE;
     int		incsearch_postponed = FALSE;
 #endif
@@ -291,6 +292,7 @@ getcmdline(
     old_topfill = curwin->w_topfill;
 # endif
     old_botline = curwin->w_botline;
+    old_empty_rows = curwin->w_empty_rows;
 #endif
 
     /*
@@ -1075,6 +1077,7 @@ getcmdline(
 			old_topfill = init_topfill;
 # endif
 			old_botline = init_botline;
+			old_empty_rows = init_empty_rows;
 		    }
 #endif
 		    redrawcmd();
@@ -1804,6 +1807,7 @@ getcmdline(
 			old_topfill = curwin->w_topfill;
 # endif
 			old_botline = curwin->w_botline;
+			old_empty_rows = curwin->w_empty_rows;
 			update_screen(NOT_VALID);
 			redrawcmdline();
 		    }
@@ -2020,6 +2024,7 @@ cmdline_changed:
 	    curwin->w_topfill = old_topfill;
 # endif
 	    curwin->w_botline = old_botline;
+	    curwin->w_empty_rows = old_empty_rows;
 	    changed_cline_bef_curs();
 	    update_topline();
 
@@ -2114,6 +2119,7 @@ returncmd:
 	curwin->w_topfill = old_topfill;
 # endif
 	curwin->w_botline = old_botline;
+	curwin->w_empty_rows = old_empty_rows;
 	highlight_match = FALSE;
 	validate_cursor();	/* needed for TAB */
 	redraw_all_later(SOME_VALID);
