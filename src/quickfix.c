@@ -2736,6 +2736,9 @@ qf_list(exarg_T *eap)
 	    idx2 = (-idx2 > i) ? 0 : idx2 + i + 1;
     }
 
+    /* Shorten all the file names, so that it is easy to read */
+    shorten_fnames(FALSE);
+
     /*
      * Get the attributes for the different quickfix highlight items.  Note
      * that this depends on syntax items defined in the qf.vim syntax file
@@ -3562,7 +3565,16 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 		if (qfp->qf_type == 1)	/* :helpgrep */
 		    STRCPY(IObuff, gettail(errbuf->b_fname));
 		else
+		{
+		    if (errbuf->b_sfname == NULL ||
+			    mch_isFullName(errbuf->b_sfname))
+		    {
+			char_u	dirname[MAXPATHL];
+			mch_dirname(dirname, MAXPATHL);
+			shorten_buf_fname(errbuf, dirname, FALSE);
+		    }
 		    STRCPY(IObuff, errbuf->b_fname);
+		}
 		len = (int)STRLEN(IObuff);
 	    }
 	    else
