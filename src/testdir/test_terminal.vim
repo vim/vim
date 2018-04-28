@@ -83,8 +83,7 @@ func Test_terminal_wipe_buffer()
   let buf = Run_shell_in_terminal({})
   call assert_fails(buf . 'bwipe', 'E517')
   exe buf . 'bwipe!'
-  call WaitFor('job_status(g:job) == "dead"')
-  call assert_equal('dead', job_status(g:job))
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
   call assert_equal("", bufname(buf))
 
   unlet g:job
@@ -100,7 +99,7 @@ func Test_terminal_split_quit()
   call assert_equal('run', job_status(g:job))
 
   quit!
-  call WaitFor('job_status(g:job) == "dead"')
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
   call assert_equal('dead', job_status(g:job))
 
   exe buf . 'bwipe'
