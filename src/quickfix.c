@@ -2351,7 +2351,7 @@ qf_jump_edit_buffer(
 	if (!can_abandon(curbuf, forceit))
 	{
 	    no_write_message();
-	    retval = FALSE;
+	    retval = FAIL;
 	}
 	else
 	    retval = do_ecmd(qf_ptr->qf_fnum, NULL, NULL, NULL, (linenr_T)1,
@@ -2395,7 +2395,7 @@ qf_jump_edit_buffer(
 	}
 
 	if (*abort)
-	    retval = FALSE;
+	    retval = FAIL;
     }
 
     return retval;
@@ -4172,7 +4172,7 @@ qf_id2nr(qf_info_T *qi, int_u qfid)
     for (qf_idx = 0; qf_idx < qi->qf_listcount; qf_idx++)
 	if (qi->qf_lists[qf_idx].qf_id == qfid)
 	    return qf_idx;
-    return -1;
+    return INVALID_QFIDX;
 }
 
 /*
@@ -4889,7 +4889,7 @@ get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list)
 	}
     }
 
-    if (qf_idx == -1)
+    if (qf_idx == INVALID_QFIDX)
 	qf_idx = qi->qf_curlist;
 
     if (qf_idx >= qi->qf_listcount
