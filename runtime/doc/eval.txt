@@ -4728,6 +4728,7 @@ getqflist([{what}])					*getqflist()*
 		list item is a dictionary with these entries:
 			bufnr	number of buffer that has the file name, use
 				bufname() to get the name
+			module	module name
 			lnum	line number in the buffer (first line is 1)
 			col	column number (first column is 1)
 			vcol	|TRUE|: "col" is visual column
@@ -7210,6 +7211,8 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 				buffer
 		    filename	name of a file; only used when "bufnr" is not
 				present or it is invalid.
+		    module	name of a module; if given it will be used in
+				quickfix error window instead of the filename.
 		    lnum	line number in the file
 		    pattern	search pattern used to locate the error
 		    col		column number
