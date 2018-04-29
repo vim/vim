@@ -119,7 +119,7 @@ INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 all: $(MOFILES)
 
 files:
-	$(LS) $(LSFLAGS) ..\*.c ..\if_perl.xs ..\GvimExt\gvimext.cpp ..\globals.h ..\if_py_both.h > .\files
+	$(LS) $(LSFLAGS) ..\*.c ..\if_perl.xs ..\GvimExt\gvimext.cpp ..\globals.h ..\if_py_both.h ..\vim.h > .\files
 
 first_time: files
 	set OLD_PO_FILE_INPUT=yes

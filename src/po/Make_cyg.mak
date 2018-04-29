@@ -130,11 +130,11 @@ all: $(MOFILES)
 
 first_time:
 	$(XGETTEXT) --default-domain=$(LANGUAGE) \
-		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h
+		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h ../vim.h
 
 $(LANGUAGES):
 	$(XGETTEXT) --default-domain=$(PACKAGE) \
-		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h
+		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h ../vim.h
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old

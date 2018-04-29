@@ -9619,7 +9619,8 @@ ex_redir(exarg_T *eap)
 
 		browseFile = do_browse(BROWSE_SAVE,
 			(char_u *)_("Save Redirection"),
-			fname, NULL, NULL, BROWSE_FILTER_ALL_FILES, curbuf);
+			fname, NULL, NULL,
+			(char_u *)_(BROWSE_FILTER_ALL_FILES), curbuf);
 		if (browseFile == NULL)
 		    return;		/* operation cancelled */
 		vim_free(fname);
@@ -9845,7 +9846,8 @@ ex_mkrc(
 		eap->cmdidx == CMD_mksession ? (char_u *)_("Save Session") :
 # endif
 		(char_u *)_("Save Setup"),
-		fname, (char_u *)"vim", NULL, BROWSE_FILTER_MACROS, NULL);
+		fname, (char_u *)"vim", NULL,
+		(char_u *)_(BROWSE_FILTER_MACROS), NULL);
 	if (browseFile == NULL)
 	    goto theend;
 	fname = browseFile;
