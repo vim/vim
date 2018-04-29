@@ -5040,11 +5040,11 @@ im_preedit_window_open()
 #else
     gtk_widget_modify_font(preedit_label, gui.norm_font);
 
-    vim_snprintf(buf, sizeof(buf), "#%06X", gui.norm_pixel);
+    vim_snprintf(buf, sizeof(buf), "#%06X", (unsigned)gui.norm_pixel);
     gdk_color_parse(buf, &color);
     gtk_widget_modify_fg(preedit_label, GTK_STATE_NORMAL, &color);
 
-    vim_snprintf(buf, sizeof(buf), "#%06X", gui.back_pixel);
+    vim_snprintf(buf, sizeof(buf), "#%06X", (unsigned)gui.back_pixel);
     gdk_color_parse(buf, &color);
     gtk_widget_modify_bg(preedit_window, GTK_STATE_NORMAL, &color);
 #endif

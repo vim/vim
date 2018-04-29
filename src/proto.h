@@ -119,13 +119,21 @@ int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-vim_snprintf_add(char *, size_t, char *, ...);
+vim_snprintf_add(char *, size_t, char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 3, 4)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-vim_snprintf(char *, size_t, char *, ...);
+vim_snprintf(char *, size_t, char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 3, 4)))
+#endif
+    ;
 
 int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap);
 int vim_vsnprintf_typval(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
@@ -212,6 +220,14 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # ifdef FEAT_JOB_CHANNEL
 #  include "channel.pro"
+
+/* Not generated automatically, to add extra attribute. */
+void ch_log(channel_T *ch, const char *fmt, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
+#endif
+    ;
+
 # endif
 
 # if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)

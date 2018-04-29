@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.0.  Last change: 2018 Mar 13
+*options.txt*	For Vim version 8.0.  Last change: 2018 Apr 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1087,7 +1087,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Use 'backupdir' to put the backup in a different directory.
 
 						*'backupskip'* *'bsk'*
-'backupskip' 'bsk'	string	(default: "/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*")
+'backupskip' 'bsk'	string	(default: "$TMPDIR/*,$TMP/*,$TEMP/*"
+				 Unix: "/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*"
+				 Mac: "/private/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*")
 			global
 			{not in Vi}
 			{not available when compiled without the |+wildignore|
@@ -7442,7 +7444,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	a S   Argument list status as in default title.  ({current} of {max})
 	      Empty if the argument file count is zero or one.
 	{ NF  Evaluate expression between '%{' and '}' and substitute result.
-	      Note that there is no '%' before the closing '}'.
+	      Note that there is no '%' before the closing '}'.  The
+	      expression cannot contain a '}' character, call a function to
+	      work around that.
 	( -   Start of item group.  Can be used for setting the width and
 	      alignment of a section.  Must be followed by %) somewhere.
 	) -   End of item group.  No width fields allowed.
@@ -7931,32 +7935,50 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 
-						*'termkey'* *'tk'*
-'termkey' 'tk'		string	(default "")
+						*'termwinscroll'* *'twsl'*
+'termwinscroll' 'twsl'	number	(default 10000)
+			local to buffer
+			{not in Vi}
+			{not available when compiled without the
+			|+terminal| feature}
+	Number of scrollback lines to keep.  When going over this limit the
+	first 10% of the scrollback lines are deleted.  This is just to reduce
+	the memory usage.  See |Terminal-Normal|.
+
+						*'termwinkey'* *'twk'*
+'termwinkey' 'twk'	string	(default "")
 			local to window
 			{not in Vi}
 	The key that starts a CTRL-W command in a terminal window.  Other keys
 	are sent to the job running in the window.
 	The <> notation can be used, e.g.: >
-		:set termkey=<C-L>
+		:set termwinkey=<C-L>
 <	The string must be one key stroke but can be multiple bytes.
 	When not set CTRL-W is used, so that CTRL-W : gets you to the command
-	line.  If 'termkey' is set to CTRL-L then CTRL-L : gets you to the
+	line.  If 'termwinkey' is set to CTRL-L then CTRL-L : gets you to the
 	command line.
 
-						*'termsize'* *'tms'*
-'termsize' 'tms'	string	(default "")
+						*'termwinsize'* *'tws'*
+'termwinsize' 'tws'	string	(default "")
 			local to window
 			{not in Vi}
-	Size of the |terminal| window.  Format: {rows}x{columns}.
+	Size of the |terminal| window.  Format: {rows}x{columns} or
+	{rows}*{columns}.
 	- When empty the terminal gets the size from the window.
-	- When set (e.g., "24x80") the terminal size is not adjusted to the
-	  window size.  If the window is smaller only the top-left part is
-	  displayed.
-	  When rows is zero then use the height of the window.
-	  When columns is zero then use the width of the window.
-	  For example: "30x0" uses 30 rows with the current window width.
-	  Using "0x0" is the same as empty.
+	- When set with a "x" (e.g., "24x80") the terminal size is not
+	  adjusted to the window size.  If the window is smaller only the
+	  top-left part is displayed.
+	- When set with a "*" (e.g., "10*50") the terminal size follows the
+	  window size, but will not be smaller than the specified rows and/or
+	  columns.
+	- When rows is zero then use the height of the window.
+	- When columns is zero then use the width of the window.
+	- Using "0x0" or "0*0" is the same as empty.
+
+	Examples:
+	  "30x0" uses 30 rows and the current window width.
+	  "20*0" uses at least 20 rows and the current window width.
+	  "0*40" uses the current window height and at least 40 columns.
 	Note that the command running in the terminal window may still change
 	the size of the terminal.  In that case the Vim window will be
 	adjusted to that size, if possible.

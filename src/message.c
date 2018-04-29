@@ -1703,8 +1703,6 @@ str2special(
 	{
 	    c = TO_SPECIAL(str[1], str[2]);
 	    str += 2;
-	    if (c == KS_ZERO)	/* display <Nul> as ^@ or <Nul> */
-		c = NUL;
 	}
 	if (IS_SPECIAL(c) || modifiers)	/* special key */
 	    special = TRUE;
@@ -4059,7 +4057,7 @@ do_browse(
 	}
 	else
 	    fname = gui_mch_browse(flags & BROWSE_SAVE,
-					   title, dflt, ext, initdir, filter);
+			       title, dflt, ext, initdir, (char_u *)_(filter));
 
 	/* We hang around in the dialog for a while, the user might do some
 	 * things to our files.  The Win32 dialog allows deleting or renaming

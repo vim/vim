@@ -2088,6 +2088,10 @@ benchmark:
 unittesttargets:
 	$(MAKE) -f Makefile $(UNITTEST_TARGETS)
 
+# Swap these lines to run individual tests with gvim instead of vim.
+VIMTESTTARGET = $(VIMTARGET)
+# VIMTESTTARGET = $(GVIMTARGET)
+
 # Execute the unittests one by one.
 unittest unittests: $(RUN_UNITTESTS)
 
@@ -2115,7 +2119,7 @@ test1 \
 	test70 test72 \
 	test85 test86 test87 test88 \
 	test94 test95 test99 test108:
-	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test.
 # These do not depend on the executable, compile it when needed.
@@ -2127,6 +2131,7 @@ test_arglist \
 	test_autocmd \
 	test_autoload \
 	test_backspace_opt \
+	test_blockedit \
 	test_breakindent \
 	test_bufline \
 	test_bufwintabinfo \
@@ -2307,17 +2312,18 @@ test_arglist \
 	test_windows_home \
 	test_wordcount \
 	test_writefile \
+	test_xxd \
 	test_alot_latin \
 	test_alot_utf8 \
 	test_alot:
-	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 	@if test -f testdir/test.log; then \
 		cat testdir/test.log; \
 	fi
 	cat testdir/messages
 
 newtests:
-	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile newtestssilent VIMPROG=../$(VIMTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile newtestssilent VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 	@if test -f testdir/test.log; then \
 		cat testdir/test.log; \
 	fi
@@ -3163,12 +3169,6 @@ objects/if_perl.o: auto/if_perl.c
 
 objects/if_perlsfio.o: if_perlsfio.c
 	$(CCC_NF) $(PERL_CFLAGS) $(ALL_CFLAGS) -o $@ if_perlsfio.c
-
-objects/py_getpath.o: $(PYTHON_CONFDIR)/getpath.c
-	$(CCC_NF) $(PYTHON_CFLAGS) $(ALL_CFLAGS) -o $@ \
-		$(PYTHON_CONFDIR)/getpath.c \
-		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN \
-		$(PYTHON_GETPATH_CFLAGS)
 
 objects/if_python.o: if_python.c if_py_both.h
 	$(CCC_NF) $(PYTHON_CFLAGS) $(PYTHON_CFLAGS_EXTRA) $(ALL_CFLAGS) -o $@ if_python.c

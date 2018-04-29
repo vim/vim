@@ -3161,7 +3161,7 @@ get_fileformat_force(
     int		c;
 
     if (eap != NULL && eap->force_ff != 0)
-	c = eap->cmd[eap->force_ff];
+	c = eap->force_ff;
     else
     {
 	if ((eap != NULL && eap->force_bin != 0)
@@ -6426,6 +6426,153 @@ elapsed(DWORD start_tick)
     DWORD	now = GetTickCount();
 
     return (long)now - (long)start_tick;
+}
+# endif
+#endif
+
+#if defined(FEAT_JOB_CHANNEL) \
+	|| (defined(UNIX) && (!defined(USE_SYSTEM) \
+	|| (defined(FEAT_GUI) && defined(FEAT_TERMINAL)))) \
+	|| defined(PROTO)
+/*
+ * Parse "cmd" and put the white-separated parts in "argv".
+ * "argv" is an allocated array with "argc" entries and room for 4 more.
+ * Returns FAIL when out of memory.
+ */
+    int
+mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
+{
+    int		i;
+    char_u	*p, *d;
+    int		inquote;
+
+    /*
+     * Do this loop twice:
+     * 1: find number of arguments
+     * 2: separate them and build argv[]
+     */
+    for (i = 0; i < 2; ++i)
+    {
+	p = skipwhite(cmd);
+	inquote = FALSE;
+	*argc = 0;
+	for (;;)
+	{
+	    if (i == 1)
+		(*argv)[*argc] = (char *)p;
+	    ++*argc;
+	    d = p;
+	    while (*p != NUL && (inquote || (*p != ' ' && *p != TAB)))
+	    {
+		if (p[0] == '"')
+		    /* quotes surrounding an argument and are dropped */
+		    inquote = !inquote;
+		else
+		{
+		    if (p[0] == '\\' && p[1] != NUL)
+		    {
+			/* First pass: skip over "\ " and "\"".
+			 * Second pass: Remove the backslash. */
+			++p;
+		    }
+		    if (i == 1)
+			*d++ = *p;
+		}
+		++p;
+	    }
+	    if (*p == NUL)
+	    {
+		if (i == 1)
+		    *d++ = NUL;
+		break;
+	    }
+	    if (i == 1)
+		*d++ = NUL;
+	    p = skipwhite(p + 1);
+	}
+	if (*argv == NULL)
+	{
+	    if (use_shcf)
+	    {
+		/* Account for possible multiple args in p_shcf. */
+		p = p_shcf;
+		for (;;)
+		{
+		    p = skiptowhite(p);
+		    if (*p == NUL)
+			break;
+		    ++*argc;
+		    p = skipwhite(p);
+		}
+	    }
+
+	    *argv = (char **)alloc((unsigned)((*argc + 4) * sizeof(char *)));
+	    if (*argv == NULL)	    /* out of memory */
+		return FAIL;
+	}
+    }
+    return OK;
+}
+
+# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+/*
+ * Build "argv[argc]" from the string "cmd".
+ * "argv[argc]" is set to NULL;
+ * Return FAIL when out of memory.
+ */
+    int
+build_argv_from_string(char_u *cmd, char ***argv, int *argc)
+{
+    char_u	*cmd_copy;
+    int		i;
+
+    /* Make a copy, parsing will modify "cmd". */
+    cmd_copy = vim_strsave(cmd);
+    if (cmd_copy == NULL
+	    || mch_parse_cmd(cmd_copy, FALSE, argv, argc) == FAIL)
+    {
+	vim_free(cmd_copy);
+	return FAIL;
+    }
+    for (i = 0; i < *argc; i++)
+	(*argv)[i] = (char *)vim_strsave((char_u *)(*argv)[i]);
+    (*argv)[*argc] = NULL;
+    vim_free(cmd_copy);
+    return OK;
+}
+
+/*
+ * Build "argv[argc]" from the list "l".
+ * "argv[argc]" is set to NULL;
+ * Return FAIL when out of memory.
+ */
+    int
+build_argv_from_list(list_T *l, char ***argv, int *argc)
+{
+    listitem_T  *li;
+    char_u	*s;
+
+    /* Pass argv[] to mch_call_shell(). */
+    *argv = (char **)alloc(sizeof(char *) * (l->lv_len + 1));
+    if (*argv == NULL)
+	return FAIL;
+    *argc = 0;
+    for (li = l->lv_first; li != NULL; li = li->li_next)
+    {
+	s = get_tv_string_chk(&li->li_tv);
+	if (s == NULL)
+	{
+	    int i;
+
+	    for (i = 0; i < *argc; ++i)
+		vim_free((*argv)[i]);
+	    return FAIL;
+	}
+	(*argv)[*argc] = (char *)vim_strsave(s);
+	*argc += 1;
+    }
+    (*argv)[*argc] = NULL;
+    return OK;
 }
 # endif
 #endif

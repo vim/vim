@@ -250,8 +250,9 @@
 # define PV_COLE	OPT_WIN(WV_COLE)
 #endif
 #ifdef FEAT_TERMINAL
-# define PV_TK		OPT_WIN(WV_TK)
-# define PV_TMS		OPT_WIN(WV_TMS)
+# define PV_TWK		OPT_WIN(WV_TWK)
+# define PV_TWS		OPT_WIN(WV_TWS)
+# define PV_TWSL	OPT_BUF(BV_TWSL)
 #endif
 #ifdef FEAT_SIGNS
 # define PV_SCL		OPT_WIN(WV_SCL)
@@ -372,6 +373,9 @@ static int	p_udf;
 static long	p_wm;
 #ifdef FEAT_KEYMAP
 static char_u	*p_keymap;
+#endif
+#ifdef FEAT_TERMINAL
+static long	p_twsl;
 #endif
 
 /* Saved values for when 'bin' is set. */
@@ -2750,18 +2754,57 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)FALSE}
 #endif
 			    SCRIPTID_INIT},
-    {"termkey", "tk",	    P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
+    /* TODO: remove this deprecated entry */
+    {"terminalscroll", "tlsl", P_NUM|P_VI_DEF|P_VIM|P_RBUF,
 #ifdef FEAT_TERMINAL
-			    (char_u *)VAR_WIN, PV_TK,
+			    (char_u *)&p_twsl, PV_TWSL,
+			    {(char_u *)10000L, (char_u *)10000L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCRIPTID_INIT},
+    /* TODO: remove this deprecated entry */
+    {"termkey",	    "tk",   P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
+#ifdef FEAT_TERMINAL
+			    (char_u *)VAR_WIN, PV_TWK,
 			    {(char_u *)"", (char_u *)NULL}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
+    /* TODO: remove this deprecated entry */
     {"termsize", "tms",	    P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
 #ifdef FEAT_TERMINAL
-			    (char_u *)VAR_WIN, PV_TMS,
+			    (char_u *)VAR_WIN, PV_TWS,
+			    {(char_u *)"", (char_u *)NULL}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCRIPTID_INIT},
+    {"termwinkey", "twk",   P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
+#ifdef FEAT_TERMINAL
+			    (char_u *)VAR_WIN, PV_TWK,
+			    {(char_u *)"", (char_u *)NULL}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCRIPTID_INIT},
+    {"termwinscroll", "twsl", P_NUM|P_VI_DEF|P_VIM|P_RBUF,
+#ifdef FEAT_TERMINAL
+			    (char_u *)&p_twsl, PV_TWSL,
+			    {(char_u *)10000L, (char_u *)10000L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCRIPTID_INIT},
+    {"termwinsize", "tws",  P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
+#ifdef FEAT_TERMINAL
+			    (char_u *)VAR_WIN, PV_TWS,
 			    {(char_u *)"", (char_u *)NULL}
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -3367,7 +3410,11 @@ set_init_1(int clean_arg)
 	    mustfree = FALSE;
 # ifdef UNIX
 	    if (*names[n] == NUL)
+#  ifdef MACOS_X
+		p = (char_u *)"/private/tmp";
+#  else
 		p = (char_u *)"/tmp";
+#  endif
 	    else
 # endif
 		p = vim_getenv((char_u *)names[n], &mustfree);
@@ -3758,17 +3805,23 @@ set_option_default(
 	dvi = ((flags & P_VI_DEF) || compatible) ? VI_DEFAULT : VIM_DEFAULT;
 	if (flags & P_STRING)
 	{
-	    /* Use set_string_option_direct() for local options to handle
-	     * freeing and allocating the value. */
-	    if (options[opt_idx].indir != PV_NONE)
-		set_string_option_direct(NULL, opt_idx,
-				 options[opt_idx].def_val[dvi], opt_flags, 0);
-	    else
+	    /* skip 'termkey' and 'termsize, they are duplicates of
+	     * 'termwinkey' and 'termwinsize' */
+	    if (STRCMP(options[opt_idx].fullname, "termkey") != 0
+		    && STRCMP(options[opt_idx].fullname, "termsize") != 0)
 	    {
-		if ((opt_flags & OPT_FREE) && (flags & P_ALLOCED))
-		    free_string_option(*(char_u **)(varp));
-		*(char_u **)varp = options[opt_idx].def_val[dvi];
-		options[opt_idx].flags &= ~P_ALLOCED;
+		/* Use set_string_option_direct() for local options to handle
+		 * freeing and allocating the value. */
+		if (options[opt_idx].indir != PV_NONE)
+		    set_string_option_direct(NULL, opt_idx,
+				     options[opt_idx].def_val[dvi], opt_flags, 0);
+		else
+		{
+		    if ((opt_flags & OPT_FREE) && (flags & P_ALLOCED))
+			free_string_option(*(char_u **)(varp));
+		    *(char_u **)varp = options[opt_idx].def_val[dvi];
+		    options[opt_idx].flags &= ~P_ALLOCED;
+		}
 	    }
 	}
 	else if (flags & P_NUM)
@@ -7439,19 +7492,22 @@ did_set_string_option(
 #endif
 
 #ifdef FEAT_TERMINAL
-    /* 'termkey' */
-    else if (varp == &curwin->w_p_tk)
+    /* 'termwinkey' */
+    else if (varp == &curwin->w_p_twk)
     {
-	if (*curwin->w_p_tk != NUL && string_to_key(curwin->w_p_tk, TRUE) == 0)
+	if (*curwin->w_p_twk != NUL
+				  && string_to_key(curwin->w_p_twk, TRUE) == 0)
 	    errmsg = e_invarg;
     }
-    /* 'termsize' */
-    else if (varp == &curwin->w_p_tms)
+    /* 'termwinsize' */
+    else if (varp == &curwin->w_p_tws)
     {
-	if (*curwin->w_p_tms != NUL)
+	if (*curwin->w_p_tws != NUL)
 	{
-	    p = skipdigits(curwin->w_p_tms);
-	    if (p == curwin->w_p_tms || *p != 'x' || *skipdigits(p + 1) != NUL)
+	    p = skipdigits(curwin->w_p_tws);
+	    if (p == curwin->w_p_tws
+		    || (*p != 'x' && *p != '*')
+		    || *skipdigits(p + 1) != NUL)
 		errmsg = e_invarg;
 	}
     }
@@ -8303,7 +8359,7 @@ set_bool_option(
     /* when 'hlsearch' is set or reset: reset no_hlsearch */
     else if ((int *)varp == &p_hls)
     {
-	SET_NO_HLSEARCH(FALSE);
+	set_no_hlsearch(FALSE);
     }
 #endif
 
@@ -8456,7 +8512,7 @@ set_bool_option(
     else if ((int *)varp == &p_acd)
     {
 	/* Change directories when the 'acd' option is set now. */
-	DO_AUTOCHDIR
+	DO_AUTOCHDIR;
     }
 #endif
 
@@ -10672,8 +10728,9 @@ get_varp(struct vimoption *p)
 	case PV_COLE:   return (char_u *)&(curwin->w_p_cole);
 #endif
 #ifdef FEAT_TERMINAL
-	case PV_TK:     return (char_u *)&(curwin->w_p_tk);
-	case PV_TMS:    return (char_u *)&(curwin->w_p_tms);
+	case PV_TWK:    return (char_u *)&(curwin->w_p_twk);
+	case PV_TWS:    return (char_u *)&(curwin->w_p_tws);
+	case PV_TWSL:	return (char_u *)&(curbuf->b_p_twsl);
 #endif
 
 	case PV_AI:	return (char_u *)&(curbuf->b_p_ai);
@@ -10872,8 +10929,8 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_cole = from->wo_cole;
 #endif
 #ifdef FEAT_TERMINAL
-    to->wo_tk = vim_strsave(from->wo_tk);
-    to->wo_tms = vim_strsave(from->wo_tms);
+    to->wo_twk = vim_strsave(from->wo_twk);
+    to->wo_tws = vim_strsave(from->wo_tws);
 #endif
 #ifdef FEAT_FOLDING
     to->wo_fdc = from->wo_fdc;
@@ -10942,8 +10999,8 @@ check_winopt(winopt_T *wop UNUSED)
     check_string_option(&wop->wo_cocu);
 #endif
 #ifdef FEAT_TERMINAL
-    check_string_option(&wop->wo_tk);
-    check_string_option(&wop->wo_tms);
+    check_string_option(&wop->wo_twk);
+    check_string_option(&wop->wo_tws);
 #endif
 #ifdef FEAT_LINEBREAK
     check_string_option(&wop->wo_briopt);
@@ -10985,8 +11042,8 @@ clear_winopt(winopt_T *wop UNUSED)
     clear_string_option(&wop->wo_cocu);
 #endif
 #ifdef FEAT_TERMINAL
-    clear_string_option(&wop->wo_tk);
-    clear_string_option(&wop->wo_tms);
+    clear_string_option(&wop->wo_twk);
+    clear_string_option(&wop->wo_tws);
 #endif
 }
 
@@ -11162,6 +11219,9 @@ buf_copy_options(buf_T *buf, int flags)
 #ifdef FEAT_KEYMAP
 	    buf->b_p_keymap = vim_strsave(p_keymap);
 	    buf->b_kmap_state |= KEYMAP_INIT;
+#endif
+#ifdef FEAT_TERMINAL
+	    buf->b_p_twsl = p_twsl;
 #endif
 	    /* This isn't really an option, but copying the langmap and IME
 	     * state from the current buffer is better than resetting it. */

@@ -15,6 +15,7 @@ void enter_buffer(buf_T *buf);
 void do_autochdir(void);
 void no_write_message(void);
 void no_write_message_nobang(buf_T *buf);
+int curbuf_reusable(void);
 buf_T *buflist_new(char_u *ffname, char_u *sfname, linenr_T lnum, int flags);
 void free_buf_options(buf_T *buf, int free_p_ff);
 int buflist_getfile(int n, linenr_T lnum, int options, int forceit);

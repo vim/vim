@@ -25,7 +25,8 @@ endif
 
 " The command that starts debugging, e.g. ":Termdebug vim".
 " To end type "quit" in the gdb window.
-command -nargs=* -complete=file Termdebug call s:StartDebug(<q-args>)
+command -nargs=* -complete=file -bang Termdebug call s:StartDebug(<bang>0, <f-args>)
+command -nargs=+ -complete=file -bang TermdebugCommand call s:StartDebugCommand(<bang>0, <f-args>)
 
 " Name of the gdb command, defaults to "gdb".
 if !exists('termdebugger')
@@ -43,7 +44,22 @@ else
 endif
 hi default debugBreakpoint term=reverse ctermbg=red guibg=red
 
-func s:StartDebug(cmd)
+func s:StartDebug(bang, ...)
+  " First argument is the command to debug, second core file or process ID.
+  call s:StartDebug_internal({'gdb_args': a:000, 'bang': a:bang})
+endfunc
+
+func s:StartDebugCommand(bang, ...)
+  " First argument is the command to debug, rest are run arguments.
+  call s:StartDebug_internal({'gdb_args': [a:1], 'proc_args': a:000[1:], 'bang': a:bang})
+endfunc
+
+func s:StartDebug_internal(dict)
+  if exists('s:gdbwin')
+    echoerr 'Terminal debugger already running'
+    return
+  endif
+
   let s:startwin = win_getid(winnr())
   let s:startsigncolumn = &signcolumn
 
@@ -90,7 +106,10 @@ func s:StartDebug(cmd)
 
   " Open a terminal window to run the debugger.
   " Add -quiet to avoid the intro message causing a hit-enter prompt.
-  let cmd = [g:termdebugger, '-quiet', '-tty', pty, a:cmd]
+  let gdb_args = get(a:dict, 'gdb_args', [])
+  let proc_args = get(a:dict, 'proc_args', [])
+
+  let cmd = [g:termdebugger, '-quiet', '-tty', pty] + gdb_args
   echomsg 'executing "' . join(cmd) . '"'
   let s:gdbbuf = term_start(cmd, {
 	\ 'exit_cb': function('s:EndDebug'),
@@ -104,6 +123,11 @@ func s:StartDebug(cmd)
   endif
   let s:gdbwin = win_getid(winnr())
 
+  " Set arguments to be run
+  if len(proc_args)
+    call term_sendkeys(s:gdbbuf, 'set args ' . join(proc_args) . "\r")
+  endif
+
   " Connect gdb to the communication pty, using the GDB/MI interface
   call term_sendkeys(s:gdbbuf, 'new-ui mi ' . commpty . "\r")
 
@@ -112,11 +136,11 @@ func s:StartDebug(cmd)
   let try_count = 0
   while 1
     let response = ''
-    for lnum in range(1,20)
+    for lnum in range(1,200)
       if term_getline(s:gdbbuf, lnum) =~ 'new-ui mi '
 	let response = term_getline(s:gdbbuf, lnum + 1)
 	if response =~ 'Undefined command'
-	  echoerr 'Your gdb does not support the Machine Interface feature'
+	  echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
 	  exe 'bwipe! ' . s:ptybuf
 	  exe 'bwipe! ' . s:commbuf
 	  return
@@ -142,6 +166,10 @@ func s:StartDebug(cmd)
   " exec-interrupt, since many commands don't work properly while the target is
   " running.
   call s:SendCommand('-gdb-set mi-async on')
+
+  " Disable pagination, it causes everything to stop at the gdb
+  " "Type <return> to continue" prompt.
+  call s:SendCommand('-gdb-set pagination off')
 
   " Sign used to highlight the line where the program has stopped.
   " There can be only one.
@@ -173,11 +201,20 @@ func s:StartDebug(cmd)
     au BufRead * call s:BufRead()
     au BufUnload * call s:BufUnloaded()
   augroup END
+
+  " Run the command if the bang attribute was given
+  " and got to the window
+  if get(a:dict, 'bang', 0)
+    call s:SendCommand('-exec-run')
+    call win_gotoid(s:ptywin)
+  endif
+
 endfunc
 
 func s:EndDebug(job, status)
   exe 'bwipe! ' . s:ptybuf
   exe 'bwipe! ' . s:commbuf
+  unlet s:gdbwin
 
   let curwinid = win_getid(winnr())
 
@@ -242,6 +279,7 @@ func s:InstallCommands()
   command -range -nargs=* Evaluate call s:Evaluate(<range>, <q-args>)
   command Gdb call win_gotoid(s:gdbwin)
   command Program call win_gotoid(s:ptywin)
+  command Source call s:GotoStartwinOrCreateIt()
   command Winbar call s:InstallWinbar()
 
   " TODO: can the K mapping be restored?
@@ -265,13 +303,15 @@ let s:winbar_winids = []
 
 " Install the window toolbar in the current window.
 func s:InstallWinbar()
-  nnoremenu WinBar.Step   :Step<CR>
-  nnoremenu WinBar.Next   :Over<CR>
-  nnoremenu WinBar.Finish :Finish<CR>
-  nnoremenu WinBar.Cont   :Continue<CR>
-  nnoremenu WinBar.Stop   :Stop<CR>
-  nnoremenu WinBar.Eval   :Evaluate<CR>
-  call add(s:winbar_winids, win_getid(winnr()))
+  if has('menu') && &mouse != ''
+    nnoremenu WinBar.Step   :Step<CR>
+    nnoremenu WinBar.Next   :Over<CR>
+    nnoremenu WinBar.Finish :Finish<CR>
+    nnoremenu WinBar.Cont   :Continue<CR>
+    nnoremenu WinBar.Stop   :Stop<CR>
+    nnoremenu WinBar.Eval   :Evaluate<CR>
+    call add(s:winbar_winids, win_getid(winnr()))
+  endif
 endfunc
 
 " Delete installed debugger commands in the current window.
@@ -288,6 +328,7 @@ func s:DeleteCommands()
   delcommand Evaluate
   delcommand Gdb
   delcommand Program
+  delcommand Source
   delcommand Winbar
 
   nunmap K
@@ -446,6 +487,14 @@ func s:HandleError(msg)
   echoerr substitute(a:msg, '.*msg="\(.*\)"', '\1', '')
 endfunc
 
+func s:GotoStartwinOrCreateIt()
+  if !win_gotoid(s:startwin)
+    new
+    let s:startwin = win_getid(winnr())
+    call s:InstallWinbar()
+  endif
+endfunc
+
 " Handle stopping and running message from gdb.
 " Will update the sign that shows the current position.
 func s:HandleCursor(msg)
@@ -457,31 +506,32 @@ func s:HandleCursor(msg)
     let s:stopped = 0
   endif
 
-  if win_gotoid(s:startwin)
-    let fname = substitute(a:msg, '.*fullname="\([^"]*\)".*', '\1', '')
-    if a:msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
-      let lnum = substitute(a:msg, '.*line="\([^"]*\)".*', '\1', '')
-      if lnum =~ '^[0-9]*$'
-	if expand('%:p') != fnamemodify(fname, ':p')
-	  if &modified
-	    " TODO: find existing window
-	    exe 'split ' . fnameescape(fname)
-	    let s:startwin = win_getid(winnr())
-	  else
-	    exe 'edit ' . fnameescape(fname)
-	  endif
-	endif
-	exe lnum
-	exe 'sign unplace ' . s:pc_id
-	exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fname
-	setlocal signcolumn=yes
-      endif
-    else
-      exe 'sign unplace ' . s:pc_id
-    endif
+  call s:GotoStartwinOrCreateIt()
 
-    call win_gotoid(wid)
+  let fname = substitute(a:msg, '.*fullname="\([^"]*\)".*', '\1', '')
+  if a:msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
+    let lnum = substitute(a:msg, '.*line="\([^"]*\)".*', '\1', '')
+    if lnum =~ '^[0-9]*$'
+      if expand('%:p') != fnamemodify(fname, ':p')
+	if &modified
+	  " TODO: find existing window
+	  exe 'split ' . fnameescape(fname)
+	  let s:startwin = win_getid(winnr())
+	  call s:InstallWinbar()
+	else
+	  exe 'edit ' . fnameescape(fname)
+	endif
+      endif
+      exe lnum
+      exe 'sign unplace ' . s:pc_id
+      exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fname
+      setlocal signcolumn=yes
+    endif
+  else
+    exe 'sign unplace ' . s:pc_id
   endif
+
+  call win_gotoid(wid)
 endfunc
 
 " Handle setting a breakpoint

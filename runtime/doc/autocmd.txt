@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.0.  Last change: 2018 Mar 15
+*autocmd.txt*   For Vim version 8.0.  Last change: 2018 Apr 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1030,6 +1030,10 @@ TextYankPost			After text has been yanked or deleted in the
 User				Never executed automatically.  To be used for
 				autocommands that are only executed with
 				":doautocmd".
+				Note that when `:doautocmd User MyEvent` is
+				used while there are no matching autocommands,
+				you will get an error.  If you don't want
+				that, define a dummy autocommand yourself.
 							*UserGettingBored*
 UserGettingBored		When the user presses the same key 42 times.
 				Just kidding! :-)
@@ -1074,9 +1078,10 @@ WinEnter			After entering another window.  Not done for
 				If the window is for another buffer, Vim
 				executes the BufEnter autocommands after the
 				WinEnter autocommands.
-				Note: When using ":split fname" the WinEnter
-				event is triggered after the split but before
-				the file "fname" is loaded.
+				Note: For split and tabpage commands the
+				WinEnter event is triggered after the split
+				or tab command but before the file is loaded.
+
 							*WinLeave*
 WinLeave			Before leaving a window.  If the window to be
 				entered next is for a different buffer, Vim

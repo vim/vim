@@ -1795,6 +1795,9 @@ func Xproperty_tests(cchar)
     call assert_equal(0, s)
     let d = g:Xgetlist({"title":1})
     call assert_equal('Sample', d.title)
+    " Try setting title to a non-string value
+    call assert_equal(-1, g:Xsetlist([], 'a', {'title' : ['Test']}))
+    call assert_equal('Sample', g:Xgetlist({"title":1}).title)
 
     Xopen
     call assert_equal('Sample', w:quickfix_title)
@@ -1942,6 +1945,9 @@ func Xproperty_tests(cchar)
     call g:Xsetlist([], 'f')
     call g:Xsetlist([], 'a', {'items' : [{'filename':'F1', 'lnum':10}]})
     call assert_equal(10, g:Xgetlist({'items':1}).items[0].lnum)
+
+    " Try setting the items using a string
+    call assert_equal(-1, g:Xsetlist([], ' ', {'items' : 'Test'}))
 
     " Save and restore the quickfix stack
     call g:Xsetlist([], 'f')
@@ -2296,6 +2302,12 @@ func XvimgrepTests(cchar)
   call assert_equal('Xtestfile2', bufname(''))
   call assert_equal('Editor:Emacs EmAcS', l[0].text)
 
+  " Test for unloading a buffer after vimgrep searched the buffer
+  %bwipe
+  Xvimgrep /Editor/j Xtestfile*
+  call assert_equal(0, getbufinfo('Xtestfile1')[0].loaded)
+  call assert_equal([], getbufinfo('Xtestfile2'))
+
   call delete('Xtestfile1')
   call delete('Xtestfile2')
 endfunc
@@ -2582,6 +2594,29 @@ func Xmultifilestack_tests(cchar)
   call assert_equal(3, l1.items[1].lnum)
   call assert_equal('two.txt', bufname(l2.items[1].bufnr))
   call assert_equal(5, l2.items[1].lnum)
+
+  " Test for start of a new error line in the same line where a previous
+  " error line ends with a file stack.
+  let efm_val = 'Error\ l%l\ in\ %f,'
+  let efm_val .= '%-P%>(%f%r,Error\ l%l\ in\ %m,%-Q)%r'
+  let l = g:Xgetlist({'lines' : [
+	      \ '(one.txt',
+	      \ 'Error l4 in one.txt',
+	      \ ') (two.txt',
+	      \ 'Error l6 in two.txt',
+	      \ ')',
+	      \ 'Error l8 in one.txt'
+	      \ ], 'efm' : efm_val})
+  call assert_equal(3, len(l.items))
+  call assert_equal('one.txt', bufname(l.items[0].bufnr))
+  call assert_equal(4, l.items[0].lnum)
+  call assert_equal('one.txt', l.items[0].text)
+  call assert_equal('two.txt', bufname(l.items[1].bufnr))
+  call assert_equal(6, l.items[1].lnum)
+  call assert_equal('two.txt', l.items[1].text)
+  call assert_equal('one.txt', bufname(l.items[2].bufnr))
+  call assert_equal(8, l.items[2].lnum)
+  call assert_equal('', l.items[2].text)
 endfunc
 
 func Test_multifilestack()
@@ -3110,4 +3145,59 @@ func Test_qfwin_pos()
   rightbelow copen
   call assert_equal(3, winnr())
   close
+endfunc
+
+" Tests for quickfix/location lists changed by autocommands when
+" :vimgrep/:lvimgrep commands are running.
+func Test_vimgrep_autocmd()
+  call setqflist([], 'f')
+  call writefile(['stars'], 'Xtest1.txt')
+  call writefile(['stars'], 'Xtest2.txt')
+
+  " Test 1:
+  " When searching for a pattern using :vimgrep, if the quickfix list is
+  " changed by an autocmd, the results should be added to the correct quickfix
+  " list.
+  autocmd BufRead Xtest2.txt cexpr '' | cexpr ''
+  silent vimgrep stars Xtest*.txt
+  call assert_equal(1, getqflist({'nr' : 0}).nr)
+  call assert_equal(3, getqflist({'nr' : '$'}).nr)
+  call assert_equal('Xtest2.txt', bufname(getqflist()[1].bufnr))
+  au! BufRead Xtest2.txt
+
+  " Test 2:
+  " When searching for a pattern using :vimgrep, if the quickfix list is
+  " freed, then a error should be given.
+  silent! %bwipe!
+  call setqflist([], 'f')
+  autocmd BufRead Xtest2.txt for i in range(10) | cexpr '' | endfor
+  call assert_fails('vimgrep stars Xtest*.txt', 'E925:')
+  au! BufRead Xtest2.txt
+
+  " Test 3:
+  " When searching for a pattern using :lvimgrep, if the location list is
+  " freed, then the command should error out.
+  silent! %bwipe!
+  let g:save_winid = win_getid()
+  autocmd BufRead Xtest2.txt call setloclist(g:save_winid, [], 'f')
+  call assert_fails('lvimgrep stars Xtest*.txt', 'E926:')
+  au! BufRead Xtest2.txt
+
+  call delete('Xtest1.txt')
+  call delete('Xtest2.txt')
+  call setqflist([], 'f')
+endfunc
+
+" The following test used to crash Vim
+func Test_lhelpgrep_autocmd()
+  lhelpgrep quickfix
+  autocmd QuickFixCmdPost * call setloclist(0, [], 'f')
+  lhelpgrep buffer
+  call assert_equal('help', &filetype)
+  call assert_equal(0, getloclist(0, {'nr' : '$'}).nr)
+  lhelpgrep tabpage
+  call assert_equal('help', &filetype)
+  call assert_equal(1, getloclist(0, {'nr' : '$'}).nr)
+  au! QuickFixCmdPost
+  new | only
 endfunc

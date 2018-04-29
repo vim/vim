@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 20
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Apr 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1548,10 +1548,12 @@ v:errmsg	Last given error message.  It's allowed to set this variable.
 	:  ... handle error
 <		"errmsg" also works, for backwards compatibility.
 
-					*v:errors* *errors-variable*
+				*v:errors* *errors-variable* *assert-return*
 v:errors	Errors found by assert functions, such as |assert_true()|.
 		This is a list of strings.
 		The assert functions append an item when an assert fails.
+		The return value indicates this: a one is returned if an item
+		was added to v:errors, otherwise zero is returned.
 		To remove old results make it empty: >
 	:let v:errors = []
 <		If v:errors is set to anything but a list it is made an empty
@@ -2020,26 +2022,26 @@ argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
 argv({nr})			String	{nr} entry of the argument list
 argv()				List	the argument list
-assert_beeps({cmd})		none	assert {cmd} causes a beep
+assert_beeps({cmd})		Number	assert {cmd} causes a beep
 assert_equal({exp}, {act} [, {msg}])
-				none	assert {exp} is equal to {act}
+				Number	assert {exp} is equal to {act}
 assert_equalfile({fname-one}, {fname-two})
-				none	assert file contents is equal
+				Number	assert file contents is equal
 assert_exception({error} [, {msg}])
-				none	assert {error} is in v:exception
-assert_fails({cmd} [, {error}])	none	assert {cmd} fails
+				Number	assert {error} is in v:exception
+assert_fails({cmd} [, {error}])	Number	assert {cmd} fails
 assert_false({actual} [, {msg}])
-				none	assert {actual} is false
+				Number	assert {actual} is false
 assert_inrange({lower}, {upper}, {actual} [, {msg}])
-				none	assert {actual} is inside the range
+				Number	assert {actual} is inside the range
 assert_match({pat}, {text} [, {msg}])
-				none	assert {pat} matches {text}
+				Number	assert {pat} matches {text}
 assert_notequal({exp}, {act} [, {msg}])
-				none	assert {exp} is not equal {act}
+				Number	assert {exp} is not equal {act}
 assert_notmatch({pat}, {text} [, {msg}])
-				none	assert {pat} not matches {text}
-assert_report({msg})		none	report a test failure
-assert_true({actual} [, {msg}])	none	assert {actual} is true
+				Number	assert {pat} not matches {text}
+assert_report({msg})		Number	report a test failure
+assert_true({actual} [, {msg}])	Number	assert {actual} is true
 asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
@@ -2234,7 +2236,7 @@ islocked({expr})		Number	|TRUE| if {expr} is locked
 isnan({expr})			Number	|TRUE| if {expr} is NaN
 items({dict})			List	key-value pairs in {dict}
 job_getchannel({job})		Channel	get the channel handle for {job}
-job_info({job})			Dict	get information about {job}
+job_info([{job}])		Dict	get information about {job}
 job_setoptions({job}, {options}) none	set options for {job}
 job_start({command} [, {options}])
 				Job	start a job
@@ -2425,6 +2427,7 @@ term_dumpload({filename} [, {options}])
 term_dumpwrite({buf}, {filename} [, {options}])
 				none	dump terminal window contents
 term_getaltscreen({buf})	Number	get the alternate screen flag
+term_getansicolors({buf})	List	get ANSI palette in GUI color mode
 term_getattr({attr}, {what})	Number	get the value of attribute {what}
 term_getcursor({buf})		List	get the cursor position of a terminal
 term_getjob({buf})		Job	get the job associated with a terminal
@@ -2437,8 +2440,12 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
-term_setkill({buf}, {how}) 	none	set signal to stop job in terminal
+term_setansicolors({buf}, {colors})
+				none	set ANSI palette in GUI color mode
+term_setkill({buf}, {how})	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
+term_setsize({buf}, {rows}, {cols})
+				none	set the size of a terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
@@ -2465,7 +2472,7 @@ tolower({expr})			String	the String {expr} switched to lowercase
 toupper({expr})			String	the String {expr} switched to uppercase
 tr({src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 					to chars in {tostr}
-trim({text}[, {mask}]) 		String	trim characters in {mask} from {text}
+trim({text}[, {mask}])		String	trim characters in {mask} from {text}
 trunc({expr})			Float	truncate Float {expr}
 type({name})			Number	type of variable {name}
 undofile({name})		String	undo file name for {name}
@@ -2590,12 +2597,13 @@ argv([{nr}])	The result is the {nr}th file in the argument list of the
 assert_beeps({cmd})					*assert_beeps()*
 		Run {cmd} and add an error message to |v:errors| if it does
 		NOT produce a beep or visual bell.
-		Also see |assert_fails()|.
+		Also see |assert_fails()| and |assert-return|.
 
 							*assert_equal()*
 assert_equal({expected}, {actual} [, {msg}])
 		When {expected} and {actual} are not equal an error message is
-		added to |v:errors|.
+		added to |v:errors| and 1 is returned.  Otherwise zero is
+		returned |assert-return|.
 		There is no automatic conversion, the String "4" is different
 		from the Number 4.  And the number 4 is different from the
 		Float 4.0.  The value of 'ignorecase' is not used here, case
@@ -2611,13 +2619,14 @@ assert_equal({expected}, {actual} [, {msg}])
 assert_equalfile({fname-one}, {fname-two})
 		When the files {fname-one} and {fname-two} do not contain
 		exactly the same text an error message is added to |v:errors|.
+		Also see |assert-return|.
 		When {fname-one} or {fname-two} does not exist the error will
 		mention that.
 		Mainly useful with |terminal-diff|.
 
 assert_exception({error} [, {msg}])			*assert_exception()*
 		When v:exception does not contain the string {error} an error
-		message is added to |v:errors|.
+		message is added to |v:errors|.  Also see |assert-return|.
 		This can be used to assert that a command throws an exception.
 		Using the error number, followed by a colon, avoids problems
 		with translations: >
@@ -2630,14 +2639,15 @@ assert_exception({error} [, {msg}])			*assert_exception()*
 
 assert_fails({cmd} [, {error}])					*assert_fails()*
 		Run {cmd} and add an error message to |v:errors| if it does
-		NOT produce an error.
+		NOT produce an error.  Also see |assert-return|.
 		When {error} is given it must match in |v:errmsg|.
 		Note that beeping is not considered an error, and some failing
 		commands only beep.  Use |assert_beeps()| for those.
 
 assert_false({actual} [, {msg}])				*assert_false()*
 		When {actual} is not false an error message is added to
-		|v:errors|, like with |assert_equal()|.
+		|v:errors|, like with |assert_equal()|. 
+		Also see |assert-return|.
 		A value is false when it is zero. When {actual} is not a
 		number the assert fails.
 		When {msg} is omitted an error in the form
@@ -2646,7 +2656,7 @@ assert_false({actual} [, {msg}])				*assert_false()*
 assert_inrange({lower}, {upper}, {actual} [, {msg}])	 *assert_inrange()*
 		This asserts number values.  When {actual}  is lower than
 		{lower} or higher than {upper} an error message is added to
-		|v:errors|.
+		|v:errors|.  Also see |assert-return|.
 		When {msg} is omitted an error in the form
 		"Expected range {lower} - {upper}, but got {actual}" is
 		produced.
@@ -2654,7 +2664,7 @@ assert_inrange({lower}, {upper}, {actual} [, {msg}])	 *assert_inrange()*
 								*assert_match()*
 assert_match({pattern}, {actual} [, {msg}])
 		When {pattern} does not match {actual} an error message is
-		added to |v:errors|.
+		added to |v:errors|.  Also see |assert-return|.
 
 		{pattern} is used as with |=~|: The matching is always done
 		like 'magic' was set and 'cpoptions' is empty, no matter what
@@ -2675,18 +2685,22 @@ assert_match({pattern}, {actual} [, {msg}])
 assert_notequal({expected}, {actual} [, {msg}])
 		The opposite of `assert_equal()`: add an error message to
 		|v:errors| when {expected} and {actual} are equal.
+		Also see |assert-return|.
 
 							*assert_notmatch()*
 assert_notmatch({pattern}, {actual} [, {msg}])
 		The opposite of `assert_match()`: add an error message to
 		|v:errors| when {pattern} matches {actual}.
+		Also see |assert-return|.
 
 assert_report({msg})					*assert_report()*
 		Report a test failure directly, using {msg}.
+		Always returns one.
 
 assert_true({actual} [, {msg}])				*assert_true()*
 		When {actual} is not true an error message is added to
 		|v:errors|, like with |assert_equal()|.
+		Also see |assert-return|.
 		A value is TRUE when it is a non-zero number.  When {actual}
 		is not a number the assert fails.
 		When {msg} is omitted an error in the form "Expected True but
@@ -4471,6 +4485,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		specifies what for.  The following completion types are
 		supported:
 
+		arglist		file names in argument list
 		augroup		autocmd groups
 		buffer		buffer names
 		behave		:behave suboptions
@@ -5388,16 +5403,19 @@ job_getchannel({job})					 *job_getchannel()*
 <
 		{only available when compiled with the |+job| feature}
 
-job_info({job})						*job_info()*
+job_info([{job}])					*job_info()*
 		Returns a Dictionary with information about {job}:
 		   "status"	what |job_status()| returns
 		   "channel"	what |job_getchannel()| returns
+		   "cmd"	List of command arguments used to start the job
 		   "process"	process ID
 		   "tty_in"	terminal input name, empty when none
 		   "tty_out"	terminal output name, empty when none
 		   "exitval"	only valid when "status" is "dead"
 		   "exit_cb"	function to be called on exit
 		   "stoponexit"	|job-stoponexit|
+
+		Without any arguments, returns a List with all Job objects.
 
 job_setoptions({job}, {options})			*job_setoptions()*
 		Change options for {job}.  Supported are:
@@ -6136,6 +6154,8 @@ mkdir({name} [, {path} [, {prot}]])
 		Example: >
 			:call mkdir($HOME . "/tmp/foo/bar", "p", 0700)
 <		This function is not available in the |sandbox|.
+		There is no error if the directory already exists and the "p"
+		flag is passed (since patch 8.0.1708).
 		Not available on all systems.  To check use: >
 			:if exists("*mkdir")
 <
@@ -6211,31 +6231,6 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 		nr2char(10), because NULs are represented with newline
 		characters.  nr2char(0) is a real NUL and terminates the
 		string, thus results in an empty string.
-
-option_restore({list})					*option_restore()*
-		Restore options previously saved by option_save().
-		When buffer-local options have been saved, this function must
-		be called when the same buffer is the current buffer.
-		When window-local options have been saved, this function must
-		be called when the same window is the current window.
-		When in the wrong buffer and/or window an error is given and
-		the local options won't be restored.
-		NOT IMPLEMENTED YET!
-
-option_save({list})					*option_save()*
-		Saves the options named in {list}.  The returned value can be
-		passed to option_restore().  Example: >
-			let s:saved_options = option_save([
-			    \ 'ignorecase',
-			    \ 'iskeyword',
-			    \ ])
-			 au <buffer> BufLeave *
-			    \ call option_restore(s:saved_options)
-<		The advantage over using `:let` is that global and local
-		values are handled and the script ID is restored, so that
-		`:verbose set` will show where the option was originally set,
-		not where it was restored.
-		NOT IMPLEMENTED YET!
 
 or({expr}, {expr})					*or()*
 		Bitwise OR on the two arguments.  The arguments are converted
@@ -8207,9 +8202,9 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		   "term_name"	     name to use for the buffer name, instead
 				     of the first file name.
 		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termsize'
+				     instead of using 'termwinsize'
 		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termsize'
+				     instead of using 'termwinsize'
 		   "vertical"	     split the window vertically
 		   "curwin"	     use the current window, do not split the
 				     window; fails if the current buffer
@@ -8257,6 +8252,18 @@ term_getaltscreen({buf})				*term_getaltscreen()*
 		screen.
 		{buf} is used as with |term_getsize()|.
 		{only available when compiled with the |+terminal| feature}
+
+term_getansicolors({buf})				*term_getansicolors()*
+		Get the ANSI color palette in use by terminal {buf}.
+		Returns a List of length 16 where each element is a String
+		representing a color in hexadecimal "#rrggbb" format.
+		Also see |term_setansicolors()| and |g:terminal_ansi_colors|.
+		If neither was used returns the default colors.
+
+		{buf} is used as with |term_getsize()|.  If the buffer does not
+		exist or is not a terminal window, an empty list is returned.
+		{only available when compiled with the |+terminal| feature and
+		with GUI enabled and/or the |+termguicolors| feature}
 
 term_getattr({attr}, {what})				*term_getattr()*
 		Given {attr}, a value returned by term_scrape() in the "attr"
@@ -8389,6 +8396,37 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		means the character CTRL-X.
 		{only available when compiled with the |+terminal| feature}
 
+term_setansicolors({buf}, {colors})			*term_setansicolors()*
+		Set the ANSI color palette used by terminal {buf}.
+		{colors} must be a List of 16 valid color names or hexadecimal
+		color codes, like those accepted by |highlight-guifg|.
+		Also see |term_getansicolors()| and |g:terminal_ansi_colors|.
+
+		The colors normally are:
+			0    black
+			1    dark red
+			2    dark green
+			3    brown
+			4    dark blue
+			5    dark magenta
+			6    dark cyan
+			7    light grey
+			8    dark grey
+			9    red
+			10   green
+			11   yellow
+			12   blue
+			13   magenta
+			14   cyan
+			15   white
+
+		These colors are used in the GUI and in the terminal when
+		'termguicolors' is set.  When not using GUI colors (GUI mode
+		or 'termguicolors'), the terminal window always uses the 16
+		ANSI colors of the underlying terminal.
+		{only available when compiled with the |+terminal| feature and
+		with GUI enabled and/or the |+termguicolors| feature}
+
 term_setkill({buf}, {how})				*term_setkill()*
 		When exiting Vim or trying to close the terminal window in
 		another way, {how} defines whether the job in the terminal can
@@ -8411,8 +8449,15 @@ term_setrestore({buf}, {command})			*term_setrestore()*
 		Use "NONE" to not restore this window.
 		{only available when compiled with the |+terminal| feature}
 
-term_setsize({buf}, {expr})				*term_setsize()*
-		Not implemented yet.
+term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
+		Set the size of terminal {buf}. The size of the window
+		containing the terminal will also be adjusted, if possible.
+		If {rows} or {cols} is zero or negative, that dimension is not
+		changed.
+
+		{buf} must be the buffer number of a terminal window.  Use an
+		empty string for the current buffer.  If the buffer does not
+		exist or is not a terminal window, an error is given.
 		{only available when compiled with the |+terminal| feature}
 
 term_start({cmd}, {options})				*term_start()*
@@ -8446,9 +8491,9 @@ term_start({cmd}, {options})				*term_start()*
 		   "term_name"	     name to use for the buffer name, instead
 				     of the command name.
 		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termsize'
+				     instead of using 'termwinsize'
 		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termsize'
+				     instead of using 'termwinsize'
 		   "vertical"	     split the window vertically
 		   "curwin"	     use the current window, do not split the
 				     window; fails if the current buffer
@@ -8473,6 +8518,9 @@ term_start({cmd}, {options})				*term_start()*
 				     CTRL-D is used on MS-Windows. For Python
 				     use CTRL-Z or "exit()". For a shell use
 				     "exit".  A CR is always added.
+		   "ansi_colors"     A list of 16 color names or hex codes
+				     defining the ANSI palette used in GUI
+				     color modes.  See |g:terminal_ansi_colors|.
 
 		{only available when compiled with the |+terminal| feature}
 
@@ -8680,12 +8728,12 @@ trim({text}[, {mask}])						*trim()*
 		This code deals with multibyte characters properly.
 
 		Examples: >
-			echo trim("  \r\t\t\r RESERVE \t \t\n\x0B\x0B")."_TAIL"
+			echo trim("   some text ")
+<		returns "some text" >
+			echo trim("  \r\t\t\r RESERVE \t\n\x0B\xA0") . "_TAIL"
 <		returns "RESERVE_TAIL" >
-			echo trim("needrmvRESERVEnnneeedddrrmmmmvv", "ednmrv")
-<		returns "RESERVE" >
-			echo trim("rm<blob1><blob2><any_chars>rrmm<blob1><blob2><blob2>", "rm<blob1><blob2>")
-<		returns "any_chas"
+			echo trim("rm<Xrm<>X>rrm", "rm<>")
+<		returns "Xrm<>X" (characters in the middle are not removed)
 
 trunc({expr})							*trunc()*
 		Return the largest integral value with magnitude less than or

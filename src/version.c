@@ -57,7 +57,6 @@ char	*longVersion = VIM_VERSION_LONG;
 #endif
 
 static void list_features(void);
-static void version_msg(char *s);
 
 static char *(features[]) =
 {
@@ -332,11 +331,7 @@ static char *(features[]) =
 #else
 	"-lispindent",
 #endif
-#ifdef FEAT_LISTCMDS
 	"+listcmds",
-#else
-	"-listcmds",
-#endif
 #ifdef FEAT_LOCALMAP
 	"+localmap",
 #else
@@ -766,6 +761,262 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1773,
+/**/
+    1772,
+/**/
+    1771,
+/**/
+    1770,
+/**/
+    1769,
+/**/
+    1768,
+/**/
+    1767,
+/**/
+    1766,
+/**/
+    1765,
+/**/
+    1764,
+/**/
+    1763,
+/**/
+    1762,
+/**/
+    1761,
+/**/
+    1760,
+/**/
+    1759,
+/**/
+    1758,
+/**/
+    1757,
+/**/
+    1756,
+/**/
+    1755,
+/**/
+    1754,
+/**/
+    1753,
+/**/
+    1752,
+/**/
+    1751,
+/**/
+    1750,
+/**/
+    1749,
+/**/
+    1748,
+/**/
+    1747,
+/**/
+    1746,
+/**/
+    1745,
+/**/
+    1744,
+/**/
+    1743,
+/**/
+    1742,
+/**/
+    1741,
+/**/
+    1740,
+/**/
+    1739,
+/**/
+    1738,
+/**/
+    1737,
+/**/
+    1736,
+/**/
+    1735,
+/**/
+    1734,
+/**/
+    1733,
+/**/
+    1732,
+/**/
+    1731,
+/**/
+    1730,
+/**/
+    1729,
+/**/
+    1728,
+/**/
+    1727,
+/**/
+    1726,
+/**/
+    1725,
+/**/
+    1724,
+/**/
+    1723,
+/**/
+    1722,
+/**/
+    1721,
+/**/
+    1720,
+/**/
+    1719,
+/**/
+    1718,
+/**/
+    1717,
+/**/
+    1716,
+/**/
+    1715,
+/**/
+    1714,
+/**/
+    1713,
+/**/
+    1712,
+/**/
+    1711,
+/**/
+    1710,
+/**/
+    1709,
+/**/
+    1708,
+/**/
+    1707,
+/**/
+    1706,
+/**/
+    1705,
+/**/
+    1704,
+/**/
+    1703,
+/**/
+    1702,
+/**/
+    1701,
+/**/
+    1700,
+/**/
+    1699,
+/**/
+    1698,
+/**/
+    1697,
+/**/
+    1696,
+/**/
+    1695,
+/**/
+    1694,
+/**/
+    1693,
+/**/
+    1692,
+/**/
+    1691,
+/**/
+    1690,
+/**/
+    1689,
+/**/
+    1688,
+/**/
+    1687,
+/**/
+    1686,
+/**/
+    1685,
+/**/
+    1684,
+/**/
+    1683,
+/**/
+    1682,
+/**/
+    1681,
+/**/
+    1680,
+/**/
+    1679,
+/**/
+    1678,
+/**/
+    1677,
+/**/
+    1676,
+/**/
+    1675,
+/**/
+    1674,
+/**/
+    1673,
+/**/
+    1672,
+/**/
+    1671,
+/**/
+    1670,
+/**/
+    1669,
+/**/
+    1668,
+/**/
+    1667,
+/**/
+    1666,
+/**/
+    1665,
+/**/
+    1664,
+/**/
+    1663,
+/**/
+    1662,
+/**/
+    1661,
+/**/
+    1660,
+/**/
+    1659,
+/**/
+    1658,
+/**/
+    1657,
+/**/
+    1656,
+/**/
+    1655,
+/**/
+    1654,
+/**/
+    1653,
+/**/
+    1652,
+/**/
+    1651,
+/**/
+    1650,
+/**/
+    1649,
+/**/
+    1648,
+/**/
+    1647,
+/**/
+    1646,
 /**/
     1645,
 /**/
@@ -4115,35 +4366,75 @@ ex_version(exarg_T *eap)
 }
 
 /*
+ * Output a string for the version message.  If it's going to wrap, output a
+ * newline, unless the message is too long to fit on the screen anyway.
+ * When "wrap" is TRUE wrap the string in [].
+ */
+    static void
+version_msg_wrap(char_u *s, int wrap)
+{
+    int		len = (int)vim_strsize(s) + (wrap ? 2 : 0);
+
+    if (!got_int && len < (int)Columns && msg_col + len >= (int)Columns
+								&& *s != '\n')
+	msg_putchar('\n');
+    if (!got_int)
+    {
+	if (wrap)
+	    MSG_PUTS("[");
+	MSG_PUTS(s);
+	if (wrap)
+	    MSG_PUTS("]");
+    }
+}
+
+    static void
+version_msg(char *s)
+{
+    version_msg_wrap((char_u *)s, FALSE);
+}
+
+/*
  * List all features aligned in columns, dictionary style.
  */
     static void
 list_features(void)
 {
+    list_in_columns((char_u **)features, -1, -1);
+}
+
+/*
+ * List string items nicely aligned in columns.
+ * When "size" is < 0 then the last entry is marked with NULL.
+ * The entry with index "current" is inclosed in [].
+ */
+    void
+list_in_columns(char_u **items, int size, int current)
+{
     int		i;
     int		ncol;
     int		nrow;
-    int		nfeat = 0;
+    int		item_count = 0;
     int		width = 0;
 
-    /* Find the length of the longest feature name, use that + 1 as the column
-     * width */
-    for (i = 0; features[i] != NULL; ++i)
+    /* Find the length of the longest item, use that + 1 as the column
+     * width. */
+    for (i = 0; size < 0 ? items[i] != NULL : i < size; ++i)
     {
-	int l = (int)STRLEN(features[i]);
+	int l = (int)vim_strsize(items[i]) + (i == current ? 2 : 0);
 
 	if (l > width)
 	    width = l;
-	++nfeat;
+	++item_count;
     }
     width += 1;
 
     if (Columns < width)
     {
 	/* Not enough screen columns - show one per line */
-	for (i = 0; features[i] != NULL; ++i)
+	for (i = 0; items[i] != NULL; ++i)
 	{
-	    version_msg(features[i]);
+	    version_msg_wrap(items[i], i == current);
 	    if (msg_col > 0)
 		msg_putchar('\n');
 	}
@@ -4153,18 +4444,22 @@ list_features(void)
     /* The rightmost column doesn't need a separator.
      * Sacrifice it to fit in one more column if possible. */
     ncol = (int) (Columns + 1) / width;
-    nrow = nfeat / ncol + (nfeat % ncol ? 1 : 0);
+    nrow = item_count / ncol + (item_count % ncol ? 1 : 0);
 
     /* i counts columns then rows.  idx counts rows then columns. */
     for (i = 0; !got_int && i < nrow * ncol; ++i)
     {
 	int idx = (i / ncol) + (i % ncol) * nrow;
 
-	if (idx < nfeat)
+	if (idx < item_count)
 	{
 	    int last_col = (i + 1) % ncol == 0;
 
-	    msg_puts((char_u *)features[idx]);
+	    if (idx == current)
+		msg_putchar('[');
+	    msg_puts(items[idx]);
+	    if (idx == current)
+		msg_putchar(']');
 	    if (last_col)
 	    {
 		if (msg_col > 0)
@@ -4454,22 +4749,6 @@ list_version(void)
     version_msg("\n");
     version_msg(_("  DEBUG BUILD"));
 #endif
-}
-
-/*
- * Output a string for the version message.  If it's going to wrap, output a
- * newline, unless the message is too long to fit on the screen anyway.
- */
-    static void
-version_msg(char *s)
-{
-    int		len = (int)STRLEN(s);
-
-    if (!got_int && len < (int)Columns && msg_col + len >= (int)Columns
-								&& *s != '\n')
-	msg_putchar('\n');
-    if (!got_int)
-	MSG_PUTS(s);
 }
 
 static void do_intro_line(int row, char_u *mesg, int add_version, int attr);

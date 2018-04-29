@@ -1854,18 +1854,15 @@ fill_input_buf(int exit_on_error UNUSED)
     len = 0;	/* to avoid gcc warning */
     for (try = 0; try < 100; ++try)
     {
-#  ifdef VMS
-	len = vms_read(
-#  else
-	len = read(read_cmd_fd,
-#  endif
-	    (char *)inbuf + inbufcount, (size_t)((INBUFLEN - inbufcount)
+	size_t readlen = (size_t)((INBUFLEN - inbufcount)
 #  ifdef FEAT_MBYTE
-		/ input_conv.vc_factor
+			    / input_conv.vc_factor
 #  endif
-		));
-#  if 0
-		)	/* avoid syntax highlight error */
+			    );
+#  ifdef VMS
+	len = vms_read((char *)inbuf + inbufcount, readlen);
+#  else
+	len = read(read_cmd_fd, (char *)inbuf + inbufcount, readlen);
 #  endif
 
 	if (len > 0 || got_int)

@@ -28,52 +28,71 @@
 # Updated 2014 Oct 13.
 
 #>>>>> choose options:
-# set to yes for a debug build
-DEBUG=no
-# set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
-OPTIMIZE=MAXSPEED
-# set to yes to make gvim, no for vim
-GUI=yes
-# set to no if you do not want to use DirectWrite (DirectX)
-# MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
-DIRECTX=yes
 # FEATURES=[TINY | SMALL | NORMAL | BIG | HUGE]
 # Set to TINY to make minimal version (few features).
 FEATURES=HUGE
+
+# set to yes for a debug build
+DEBUG=no
+
+# set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
+OPTIMIZE=MAXSPEED
+
+# set to yes to make gvim, no for vim
+GUI=yes
+
+# set to no if you do not want to use DirectWrite (DirectX)
+# MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
+DIRECTX=yes
+
+# Disable Color emoji support
+# (default is yes if DIRECTX=yes, requires WinSDK 8.1 or later.)
+#COLOR_EMOJI=no
+
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
 # If not set, it will be automatically detected. (Normally i686 or x86-64.)
 #ARCH=i686
 # Set to yes to cross-compile from unix; no=native Windows (and Cygwin).
 CROSS=no
+
 # Set to path to iconv.h and libiconv.a to enable using 'iconv.dll'.
 # Use "yes" when the path does not need to be define.
 #ICONV="."
 ICONV=yes
 GETTEXT=yes
+
 # Set to yes to include multibyte support.
 MBYTE=yes
+
 # Set to yes to include IME support.
 IME=yes
 DYNAMIC_IME=yes
+
 # Set to yes to enable writing a postscript file with :hardcopy.
 POSTSCRIPT=no
+
 # Set to yes to enable OLE support.
 OLE=no
+
 # Set the default $(WINVER) to make it work with WinXP.
 ifndef WINVER
 WINVER = 0x0501
 endif
+
 # Set to yes to enable Cscope support.
 CSCOPE=yes
+
 # Set to yes to enable Netbeans support (requires CHANNEL).
 NETBEANS=$(GUI)
+
 # Set to yes to enable inter process communication.
 ifeq (HUGE, $(FEATURES))
 CHANNEL=yes
 else
 CHANNEL=$(GUI)
 endif
+
 # Set to yes to enable terminal support.
 ifeq (HUGE, $(FEATURES))
 TERMINAL=yes
@@ -371,7 +390,7 @@ endif
 
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory] (Set inside Make_cyg.mak or Make_ming.mak)
-#	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
+#	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically, "no" for static)
 #	  RUBY_VER=[Ruby version, eg 19, 22] (default is 22)
 #	  RUBY_API_VER_LONG=[Ruby API version, eg 1.8, 1.9.1, 2.2.0]
 #			    (default is 2.2.0)
@@ -518,6 +537,9 @@ ifeq (yes, $(DYNAMIC_RUBY))
 CFLAGS += -DDYNAMIC_RUBY -DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\"
 CFLAGS += -DDYNAMIC_RUBY_VER=$(RUBY_VER)
 endif
+ifeq (no, $(DYNAMIC_RUBY))
+CFLAGS += -DRUBY_VERSION=$(RUBY_VER)
+endif
 ifneq ($(findstring w64-mingw32,$(CC)),)
 # A workaround for MinGW-w64
 CFLAGS += -DHAVE_STRUCT_TIMESPEC -DHAVE_STRUCT_TIMEZONE
@@ -588,7 +610,10 @@ endif
 ifeq ($(DIRECTX),yes)
 # Only allow DirectWrite for a GUI build.
 ifeq (yes, $(GUI))
-DEFINES += -DFEAT_DIRECTX -DDYNAMIC_DIRECTX -DFEAT_DIRECTX_COLOR_EMOJI
+DEFINES += -DFEAT_DIRECTX -DDYNAMIC_DIRECTX
+ifneq ($(COLOR_EMOJI),no)
+DEFINES += -DFEAT_DIRECTX_COLOR_EMOJI
+endif
 endif
 endif
 

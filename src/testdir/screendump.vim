@@ -57,7 +57,22 @@ func RunVimInTerminal(arguments, options)
   " Add -v to have gvim run in the terminal (if possible)
   let cmd .= ' -v ' . a:arguments
   let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': cols})
-  call assert_equal([rows, cols], term_getsize(buf))
+  if &termsize == ''
+    call assert_equal([rows, cols], term_getsize(buf))
+  else
+    let rows = term_getsize(buf)[0]
+    let cols = term_getsize(buf)[1]
+  endif
+
+  " Wait for "All" or "Top" of the ruler in the status line to be shown.  This
+  " can be quite slow (e.g. when using valgrind).
+  " If it fails then show the terminal contents for debugging.
+  try
+    call WaitFor({-> len(term_getline(buf, rows)) >= cols - 1})
+  catch /timed out after/
+    let lines = map(range(1, rows), {key, val -> term_getline(buf, val)})
+    call assert_report('RunVimInTerminal() failed, screen contents: ' . join(lines, "<NL>"))
+  endtry
 
   return buf
 endfunc
@@ -66,7 +81,7 @@ endfunc
 func StopVimInTerminal(buf)
   call assert_equal("running", term_getstatus(a:buf))
   call term_sendkeys(a:buf, "\<Esc>\<Esc>:qa!\<cr>")
-  call WaitFor('term_getstatus(' . a:buf . ') == "finished"')
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
   only!
 endfunc
 

@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 25
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -25,7 +25,7 @@ If the result is "1" you have it.
       MS-Windows			|terminal-ms-windows|
 2. Terminal communication	|terminal-communication|
       Vim to job: term_sendkeys()	|terminal-to-job|
-      Job to Vim: JSON API 		|terminal-api|
+      Job to Vim: JSON API		|terminal-api|
       Using the client-server feature	|terminal-client-server|
 3. Remote testing		|terminal-testing|
 4. Diffing screen dumps		|terminal-diff|
@@ -72,6 +72,7 @@ See |CTRL-W| for more commands.
 
 Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N* 
 	CTRL-W .	send a CTRL-W to the job in the terminal
+	CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
 	CTRL-W N	go to Terminal-Normal mode, see |Terminal-mode|
 	CTRL-\ CTRL-N   go to Terminal-Normal mode, see |Terminal-mode|
 	CTRL-W " {reg}  paste register {reg}		*CTRL-W_quote*
@@ -79,16 +80,16 @@ Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N*
 			evaluating an expression.
 	CTRL-W CTRL-C	ends the job, see below |t_CTRL-W_CTRL-C|
 
-See option 'termkey' for specifying another key instead of CTRL-W that
-will work like CTRL-W.  However, typing 'termkey' twice sends 'termkey' to
-the job.  For example:
-	'termkey' CTRL-W    move focus to the next window
-	'termkey' :	    enter an Ex command
-	'termkey' 'termkey' send 'termkey' to the job in the terminal
-	'termkey' .	    send a CTRL-W to the job in the terminal
-	'termkey' N	    go to terminal Normal mode, see below
-	'termkey' CTRL-N    same as CTRL-W N
-	'termkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
+See option 'termwinkey' for specifying another key instead of CTRL-W that
+will work like CTRL-W.  However, typing 'termwinkey' twice sends 'termwinkey'
+to the job.  For example:
+	'termwinkey' CTRL-W    move focus to the next window
+	'termwinkey' :	       enter an Ex command
+	'termwinkey' 'termwinkey' send 'termwinkey' to the job in the terminal
+	'termwinkey' .	       send a CTRL-W to the job in the terminal
+	'termwinkey' N	       go to terminal Normal mode, see below
+	'termwinkey' CTRL-N    same as CTRL-W N
+	'termwinkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
 							*t_CTRL-\_CTRL-N*
 The special key combination CTRL-\ CTRL-N can be used to switch to Normal
 mode, just like this works in any other mode.
@@ -124,7 +125,7 @@ when 'balloonevalterm' is enabled.
 
 Size and color ~
 							*terminal-size-color*
-See option 'termsize' for controlling the size of the terminal window.
+See option 'termwinsize' for controlling the size of the terminal window.
 (TODO: scrolling when the terminal is larger than the window)
 
 The job running in the terminal can change the colors.  The default foreground
@@ -136,6 +137,16 @@ terminal window will start with a white or black background.
 To use a different color the Terminal highlight group can be used, for
 example: >
     hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
+<
+							*g:terminal_ansi_colors*
+In GUI mode or with 'termguicolors', the 16 ANSI colors used by default in new
+terminal windows may be configured using the variable
+`g:terminal_ansi_colors`, which should be a list of 16 color names or
+hexadecimal color codes, similar to those accepted by |highlight-guifg|.  When
+not using GUI colors, the terminal window always uses the 16 ANSI colors of
+the underlying terminal.
+The |term_setansicolors()| function can be used to change the colors, and
+|term_getansicolors()| to get the currently used colors.
 
 
 Syntax ~
@@ -258,39 +269,41 @@ Resizing ~
 							*terminal-resizing*
 The size of the terminal can be in one of three modes:
 
-1. The 'termsize' option is empty: The terminal size follows the window size.
-   The minimal size is 2 screen lines with 10 cells.
+1. The 'termwinsize' option is empty: The terminal size follows the window
+   size.  The minimal size is 2 screen lines with 10 cells.
 
-2. The 'termsize' option is "rows*cols", where "rows" is the minimal number of
-   screen rows and "cols" is the minimal number of cells.
+2. The 'termwinsize' option is "rows*cols", where "rows" is the minimal number
+   of screen rows and "cols" is the minimal number of cells.
 
-3. The 'termsize' option is "rowsXcols" (where the x is upper or lower case).
-   The terminal size is fixed to the specified number of screen lines and
-   cells.  If the window is bigger there will be unused empty space.
+3. The 'termwinsize' option is "rowsXcols" (where the x is upper or lower
+   case).  The terminal size is fixed to the specified number of screen lines
+   and cells.  If the window is bigger there will be unused empty space.
 
 If the window is smaller than the terminal size, only part of the terminal can
 be seen (the lower-left part).
 
 The |term_getsize()| function can be used to get the current size of the
 terminal.  |term_setsize()| can be used only when in the first or second mode,
-not when 'termsize' is "rowsXcols".
+not when 'termwinsize' is "rowsXcols".
 
 
 Terminal-Job and Terminal-Normal mode ~
-							*Terminal-mode*
+						*Terminal-mode* *Terminal-Job*
 When the job is running the contents of the terminal is under control of the
 job.  That includes the cursor position.  Typed keys are sent to the job.
 The terminal contents can change at any time.  This is called Terminal-Job
 mode.
 
-Use CTRL-W N (or 'termkey' N) to switch to Terminal-Normal mode.  Now the
+Use CTRL-W N (or 'termwinkey' N) to switch to Terminal-Normal mode.  Now the
 contents of the terminal window is under control of Vim, the job output is
 suspended.  CTRL-\ CTRL-N does the same.
 
 Terminal-Job mode is where |:tmap| mappings are applied. Keys sent by
 |term_sendkeys()| are not subject to tmap, but keys from |feedkeys()| are.
 
-							*E946*
+It is not possible to enter Insert mode from Terminal-Job mode.
+
+						*Terminal-Normal* *E946*
 In Terminal-Normal mode you can move the cursor around with the usual Vim
 commands, Visually mark text, yank text, etc.  But you cannot change the
 contents of the buffer.  The commands that would start insert mode, such as
@@ -301,7 +314,10 @@ In Terminal-Normal mode the statusline and window title show "(Terminal)".  If
 the job ends while in Terminal-Normal mode this changes to
 "(Terminal-finished)".
 
-It is not possible to enter Insert mode from Terminal-Job mode.
+When the job outputs lines in the terminal, such that the contents scrolls off
+the top, those lines are remembered and can be seen in Terminal-Normal mode.
+The number of lines is limited by the 'termwinscroll' option. When going over
+this limit, the first 10% of the scrolled lins are deleted and are lost.
 
 
 Cursor style ~
@@ -352,7 +368,9 @@ On Unix a pty is used to make it possible to run all kinds of commands.  You
 can even run Vim in the terminal!  That's used for debugging, see below.
 
 Environment variables are used to pass information to the running job:
-    TERM		name of the terminal, 'term'
+    TERM		the name of the terminal, from the 'term' option or
+			$TERM in the GUI; falls back to "xterm" if it does not
+			start with "xterm"
     ROWS		number of rows in the terminal initially
     LINES		same as ROWS
     COLUMNS		number of columns in the terminal initially
@@ -423,31 +441,51 @@ Currently supported commands:
 
 	call {funcname} {argument}
 
-		Call a user defined function with [argument].  The function is
-		called with the buffer number of the terminal and the decoded
-		argument.  The user function must sanity check the argument.
+		Call a user defined function with {argument}.
+		The function is called with two arguments: the buffer number
+		of the terminal and {argument}, the decoded JSON argument. 
+		The function name must start with "Tapi_" to avoid
+		accidentally calling a function not meant to be used for the
+		terminal API
+		The user function should sanity check the argument.
 		The function can use |term_sendkeys()| to send back a reply.
 		Example in JSON: >
-			["call", "Impression", ["play", 14]]
+			["call", "Tapi_Impression", ["play", 14]]
 <		Calls a function defined like this: >
-			function Impression(bufnum, arglist)
+			function Tapi_Impression(bufnum, arglist)
 			  if len(a:arglist) == 2
-			    echo "impression " . a:arglist[0]
-			    echo "count " . a:arglist[1]
+			    echomsg "impression " . a:arglist[0]
+			    echomsg "count " . a:arglist[1]
 			  endif
 			endfunc
-<
-	drop {filename}
+<		Output from `:echo` may be erased by a redraw, use `:echomsg`
+		to be able to see it with `:messages`.
+
+	drop {filename} [options]
 
 		Let Vim open a file, like the `:drop` command.  If {filename}
 		is already open in a window, switch to that window.  Otherwise
 		open a new window to edit {filename}.
+
+		[options] is only used when opening a new window.  If present,
+		it must be a Dict.  Similarly to |++opt|, These entries are recognized:
+		  "ff"		file format: "dos", "mac" or "unix"
+		  "fileformat"	idem
+		  "enc"		overrides 'fileencoding'
+		  "encoding"	idem
+		  "bin"		sets 'binary'
+		  "binary"	idem
+		  "nobin"	resets 'binary'
+		  "nobinary"	idem
+		  "bad"		specifies behavior for bad characters, see
+				|++bad|
+
 		Example in JSON: >
 			["drop", "path/file.txt", {"ff": "dos"}]
 
 A trick to have Vim send this escape sequence: >
 	exe "set t_ts=\<Esc>]51; t_fs=\x07"
-	let &titlestring = '["call","TryThis",["hello",123]]'
+	let &titlestring = '["call","Tapi_TryThis",["hello",123]]'
 	redraw
 	set t_ts& t_fs&
 
@@ -585,7 +623,8 @@ Starting ~
 Load the plugin with this command: >
 	packadd termdebug
 <							*:Termdebug*
-To start debugging use `:Termdebug` followed by the command name, for example: >
+To start debugging use `:Termdebug` or `:TermdebugCommand`` followed by the
+command name, for example: >
 	:Termdebug vim
 
 This opens two windows:
@@ -603,13 +642,34 @@ source file location will be displayed, if possible.  A sign is used to
 highlight the current position, using highlight group debugPC.	 
 
 If the buffer in the current window is modified, another window will be opened
-to display the current gdb position.
+to display the current gdb position.  You can use `:Winbar` to add a window
+toolbar there.
 
 Focus the terminal of the executed program to interact with it.  This works
 the same as any command running in a terminal window.
 
 When the debugger ends, typically by typing "quit" in the gdb window, the two
 opened windows are closed.
+
+Only one debugger can be active at a time.
+							*:TermdebugCommand*
+If you want to give specific commands to the command being debugged, you can
+use the `:TermdebugCommand` command followed by the command name and
+additional parameters. >
+	:TermdebugCommand vim --clean -c ':set nu'
+
+Both the `:Termdebug` and `:TermdebugCommand` support an optional "!" bang
+argument to start the command right away, without pausing at the gdb window
+(and cursor will be in the debugged window).  For example: >
+	:TermdebugCommand! vim --clean
+
+To attach gdb to an already running executable or use a core file, pass extra
+arguments.  E.g.: >
+	:Termdebug vim core
+	:Termdebug vim 98343
+
+If no argument is given, you'll end up in a gdb window, in which you need to
+specify which command to run using e.g. the gdb `file` command.
 
 
 Example session ~
@@ -683,18 +743,20 @@ Put focus on the gdb window to type commands there.  Some common ones are:
 - frame N	go to the Nth stack frame
 - continue	continue execution
 
-In the window showing the source code these commands can be used to control gdb:
+						*:Run* *:Arguments*
+In the window showing the source code these commands can be used to control
+gdb:
  `:Run` [args]	    run the program with [args] or the previous arguments
  `:Arguments` {args}  set arguments for the next `:Run`
 
- `:Break`	set a breakpoint at the current line; a sign will be displayed
- `:Clear`	delete the breakpoint at the current line
+ *:Break*	set a breakpoint at the current line; a sign will be displayed
+ *:Clear*	delete the breakpoint at the current line
 
- `:Step`	execute the gdb "step" command
- `:Over`	execute the gdb "next" command (`:Next` is a Vim command)
- `:Finish`	execute the gdb "finish" command
- `:Continue`	execute the gdb "continue" command
- `:Stop`	interrupt the program
+ *:Step*	execute the gdb "step" command
+ *:Over*	execute the gdb "next" command (`:Next` is a Vim command)
+ *:Finish*	execute the gdb "finish" command
+ *:Continue*	execute the gdb "continue" command
+ *:Stop*	interrupt the program
 
 If 'mouse' is set the plugin adds a window toolbar with these entries:
   Step		`:Step`
@@ -705,13 +767,18 @@ If 'mouse' is set the plugin adds a window toolbar with these entries:
   Eval		`:Evaluate`
 This way you can use the mouse to perform the most common commands.  You need
 to have the 'mouse' option set to enable mouse clicks.
-
+								*:Winbar*
 You can add the window toolbar in other windows you open with: >
   :Winbar
 
+If gdb stops at a source line and there is no window currently showing the
+source code, a new window will be created for the source code.  This also
+happens if the buffer in the source code window has been modified and can't be
+abandoned.
+
 
 Inspecting variables ~
-							*termdebug-variables*
+					*termdebug-variables* *:Evaluate*
  `:Evaluate`	    evaluate the expression under the cursor
  `K`		    same
  `:Evaluate` {expr}   evaluate {expr}
@@ -723,8 +790,10 @@ You can usually shorten `:Evaluate` to `:Ev`.
 
 Other commands ~
 							*termdebug-commands*
- :Gdb	       jump to the gdb window
- :Program      jump to the window with the running program
+ *:Gdb*	     jump to the gdb window
+ *:Program*    jump to the window with the running program
+ *:Source*     jump to the window with the source code, create it if there
+	     isn't one
 
 
 Communication ~

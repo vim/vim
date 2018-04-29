@@ -2705,15 +2705,21 @@ fold_line(
     }
 
 #ifdef FEAT_RIGHTLEFT
-# define RL_MEMSET(p, v, l)  if (wp->w_p_rl) \
-				for (ri = 0; ri < l; ++ri) \
-				   ScreenAttrs[off + (wp->w_width - (p) - (l)) + ri] = v; \
-			     else \
-				for (ri = 0; ri < l; ++ri) \
-				   ScreenAttrs[off + (p) + ri] = v
+# define RL_MEMSET(p, v, l) \
+    do { \
+	if (wp->w_p_rl) \
+	    for (ri = 0; ri < l; ++ri) \
+	       ScreenAttrs[off + (wp->w_width - (p) - (l)) + ri] = v; \
+	 else \
+	    for (ri = 0; ri < l; ++ri) \
+	       ScreenAttrs[off + (p) + ri] = v; \
+    } while (0)
 #else
-# define RL_MEMSET(p, v, l)   for (ri = 0; ri < l; ++ri) \
-				 ScreenAttrs[off + (p) + ri] = v
+# define RL_MEMSET(p, v, l) \
+    do { \
+	for (ri = 0; ri < l; ++ri) \
+	    ScreenAttrs[off + (p) + ri] = v; \
+    } while (0)
 #endif
 
     /* Set all attributes of the 'number' or 'relativenumber' column and the
@@ -7939,7 +7945,7 @@ next_search_hl(
 		{
 		    /* don't free regprog in the match list, it's a copy */
 		    vim_regfree(shl->rm.regprog);
-		    SET_NO_HLSEARCH(TRUE);
+		    set_no_hlsearch(TRUE);
 		}
 		shl->rm.regprog = NULL;
 		shl->lnum = 0;
@@ -8693,7 +8699,8 @@ screen_fill(
 	if (row == Rows - 1)		/* overwritten the command line */
 	{
 	    redraw_cmdline = TRUE;
-	    if (c1 == ' ' && c2 == ' ')
+	    if (start_col == 0 && end_col == Columns
+		    && c1 == ' ' && c2 == ' ' && attr == 0)
 		clear_cmdline = FALSE;	/* command line has been cleared */
 	    if (start_col == 0)
 		mode_displayed = FALSE; /* mode cleared or overwritten */

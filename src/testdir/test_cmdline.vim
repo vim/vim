@@ -137,6 +137,11 @@ func Test_getcompletion()
   let l = getcompletion('v:notexists', 'var')
   call assert_equal([], l)
 
+  args a.c b.c
+  let l = getcompletion('', 'arglist')
+  call assert_equal(['a.c', 'b.c'], l)
+  %argdelete
+
   let l = getcompletion('', 'augroup')
   call assert_true(index(l, 'END') >= 0)
   let l = getcompletion('blahblah', 'augroup')
@@ -310,6 +315,17 @@ func Test_paste_in_cmdline()
 
   call feedkeys(":\<C-\>etoupper(getline(1))\<CR>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"ASDF.X /TMP/SOME VERYLONGWORD A;B-C*D ', @:)
+  bwipe!
+
+  " Error while typing a command used to cause that it was not executed
+  " in the end.
+  new
+  try
+    call feedkeys(":file \<C-R>%Xtestfile\<CR>", 'tx')
+  catch /^Vim\%((\a\+)\)\=:E32/
+    " ignore error E32
+  endtry
+  call assert_equal("Xtestfile", bufname("%"))
   bwipe!
 endfunc
 

@@ -684,7 +684,7 @@ static struct fst
     {"items",		1, 1, f_items},
 #ifdef FEAT_JOB_CHANNEL
     {"job_getchannel",	1, 1, f_job_getchannel},
-    {"job_info",	1, 1, f_job_info},
+    {"job_info",	0, 1, f_job_info},
     {"job_setoptions",	2, 2, f_job_setoptions},
     {"job_start",	1, 2, f_job_start},
     {"job_status",	1, 1, f_job_status},
@@ -860,6 +860,9 @@ static struct fst
     {"term_dumpload",	1, 2, f_term_dumpload},
     {"term_dumpwrite",	2, 3, f_term_dumpwrite},
     {"term_getaltscreen", 1, 1, f_term_getaltscreen},
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    {"term_getansicolors", 1, 1, f_term_getansicolors},
+# endif
     {"term_getattr",	2, 2, f_term_getattr},
     {"term_getcursor",	1, 1, f_term_getcursor},
     {"term_getjob",	1, 1, f_term_getjob},
@@ -872,8 +875,12 @@ static struct fst
     {"term_list",	0, 0, f_term_list},
     {"term_scrape",	2, 2, f_term_scrape},
     {"term_sendkeys",	2, 2, f_term_sendkeys},
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    {"term_setansicolors", 2, 2, f_term_setansicolors},
+# endif
     {"term_setkill",	2, 2, f_term_setkill},
     {"term_setrestore",	2, 2, f_term_setrestore},
+    {"term_setsize",	3, 3, f_term_setsize},
     {"term_start",	1, 2, f_term_start},
     {"term_wait",	1, 2, f_term_wait},
 #endif
@@ -1297,108 +1304,108 @@ f_argv(typval_T *argvars, typval_T *rettv)
  * "assert_beeps(cmd [, error])" function
  */
     static void
-f_assert_beeps(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_beeps(typval_T *argvars, typval_T *rettv)
 {
-    assert_beeps(argvars);
+    rettv->vval.v_number = assert_beeps(argvars);
 }
 
 /*
  * "assert_equal(expected, actual[, msg])" function
  */
     static void
-f_assert_equal(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_equal(typval_T *argvars, typval_T *rettv)
 {
-    assert_equal_common(argvars, ASSERT_EQUAL);
+    rettv->vval.v_number = assert_equal_common(argvars, ASSERT_EQUAL);
 }
 
 /*
  * "assert_equalfile(fname-one, fname-two)" function
  */
     static void
-f_assert_equalfile(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_equalfile(typval_T *argvars, typval_T *rettv)
 {
-    assert_equalfile(argvars);
+    rettv->vval.v_number = assert_equalfile(argvars);
 }
 
 /*
  * "assert_notequal(expected, actual[, msg])" function
  */
     static void
-f_assert_notequal(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_notequal(typval_T *argvars, typval_T *rettv)
 {
-    assert_equal_common(argvars, ASSERT_NOTEQUAL);
+    rettv->vval.v_number = assert_equal_common(argvars, ASSERT_NOTEQUAL);
 }
 
 /*
  * "assert_exception(string[, msg])" function
  */
     static void
-f_assert_exception(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_exception(typval_T *argvars, typval_T *rettv)
 {
-    assert_exception(argvars);
+    rettv->vval.v_number = assert_exception(argvars);
 }
 
 /*
  * "assert_fails(cmd [, error])" function
  */
     static void
-f_assert_fails(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_fails(typval_T *argvars, typval_T *rettv)
 {
-    assert_fails(argvars);
+    rettv->vval.v_number = assert_fails(argvars);
 }
 
 /*
  * "assert_false(actual[, msg])" function
  */
     static void
-f_assert_false(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_false(typval_T *argvars, typval_T *rettv)
 {
-    assert_bool(argvars, FALSE);
+    rettv->vval.v_number = assert_bool(argvars, FALSE);
 }
 
 /*
  * "assert_inrange(lower, upper[, msg])" function
  */
     static void
-f_assert_inrange(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_inrange(typval_T *argvars, typval_T *rettv)
 {
-    assert_inrange(argvars);
+    rettv->vval.v_number = assert_inrange(argvars);
 }
 
 /*
  * "assert_match(pattern, actual[, msg])" function
  */
     static void
-f_assert_match(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_match(typval_T *argvars, typval_T *rettv)
 {
-    assert_match_common(argvars, ASSERT_MATCH);
+    rettv->vval.v_number = assert_match_common(argvars, ASSERT_MATCH);
 }
 
 /*
  * "assert_notmatch(pattern, actual[, msg])" function
  */
     static void
-f_assert_notmatch(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_notmatch(typval_T *argvars, typval_T *rettv)
 {
-    assert_match_common(argvars, ASSERT_NOTMATCH);
+    rettv->vval.v_number = assert_match_common(argvars, ASSERT_NOTMATCH);
 }
 
 /*
  * "assert_report(msg)" function
  */
     static void
-f_assert_report(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_report(typval_T *argvars, typval_T *rettv)
 {
-    assert_report(argvars);
+    rettv->vval.v_number = assert_report(argvars);
 }
 
 /*
  * "assert_true(actual[, msg])" function
  */
     static void
-f_assert_true(typval_T *argvars, typval_T *rettv UNUSED)
+f_assert_true(typval_T *argvars, typval_T *rettv)
 {
-    assert_bool(argvars, TRUE);
+    rettv->vval.v_number = assert_bool(argvars, TRUE);
 }
 
 #ifdef FEAT_FLOAT
@@ -1997,7 +2004,7 @@ f_ch_log(typval_T *argvars, typval_T *rettv UNUSED)
     if (argvars[1].v_type != VAR_UNKNOWN)
 	channel = get_channel_arg(&argvars[1], FALSE, FALSE, 0);
 
-    ch_log(channel, (char *)msg);
+    ch_log(channel, "%s", msg);
 }
 
 /*
@@ -5984,9 +5991,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_LISP
 	"lispindent",
 #endif
-#ifdef FEAT_LISTCMDS
 	"listcmds",
-#endif
 #ifdef FEAT_LOCALMAP
 	"localmap",
 #endif
@@ -7006,10 +7011,15 @@ f_job_getchannel(typval_T *argvars, typval_T *rettv)
     static void
 f_job_info(typval_T *argvars, typval_T *rettv)
 {
-    job_T	*job = get_job_arg(&argvars[0]);
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	job_T	*job = get_job_arg(&argvars[0]);
 
-    if (job != NULL && rettv_dict_alloc(rettv) != FAIL)
-	job_info(job, rettv->vval.v_dict);
+	if (job != NULL && rettv_dict_alloc(rettv) != FAIL)
+	    job_info(job, rettv->vval.v_dict);
+    }
+    else if (rettv_list_alloc(rettv) == OK)
+	job_info_all(rettv->vval.v_list);
 }
 
 /*
@@ -8057,22 +8067,32 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
 
     dir = get_tv_string_buf(&argvars[0], buf);
     if (*dir == NUL)
-	rettv->vval.v_number = FAIL;
-    else
-    {
-	if (*gettail(dir) == NUL)
-	    /* remove trailing slashes */
-	    *gettail_sep(dir) = NUL;
+	return;
 
-	if (argvars[1].v_type != VAR_UNKNOWN)
+    if (*gettail(dir) == NUL)
+	/* remove trailing slashes */
+	*gettail_sep(dir) = NUL;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    if (argvars[2].v_type != VAR_UNKNOWN)
-		prot = (int)get_tv_number_chk(&argvars[2], NULL);
-	    if (prot != -1 && STRCMP(get_tv_string(&argvars[1]), "p") == 0)
-		mkdir_recurse(dir, prot);
+	    prot = (int)get_tv_number_chk(&argvars[2], NULL);
+	    if (prot == -1)
+		return;
 	}
-	rettv->vval.v_number = prot == -1 ? FAIL : vim_mkdir_emsg(dir, prot);
+	if (STRCMP(get_tv_string(&argvars[1]), "p") == 0)
+	{
+	    if (mch_isdir(dir))
+	    {
+		/* With the "p" flag it's OK if the dir already exists. */
+		rettv->vval.v_number = OK;
+		return;
+	    }
+	    mkdir_recurse(dir, prot);
+	}
     }
+    rettv->vval.v_number = vim_mkdir_emsg(dir, prot);
 }
 #endif
 
@@ -10199,7 +10219,7 @@ set_buffer_lines(buf_T *buf, linenr_T lnum, typval_T *lines, typval_T *rettv)
 	}
 
 	rettv->vval.v_number = 1;	/* FAIL */
-	if (line == NULL || lnum < 1 || lnum > curbuf->b_ml.ml_line_count + 1)
+	if (line == NULL || lnum > curbuf->b_ml.ml_line_count + 1)
 	    break;
 
 	/* When coming here from Insert mode, sync undo, so that this can be
@@ -12954,7 +12974,7 @@ get_callback(typval_T *arg, partial_T **pp)
 }
 
 /*
- * Unref/free "callback" and "partial" retured by get_callback().
+ * Unref/free "callback" and "partial" returned by get_callback().
  */
     void
 free_callback(char_u *callback, partial_T *partial)

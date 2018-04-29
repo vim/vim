@@ -3029,7 +3029,7 @@ ex_undolist(exarg_T *eap UNUSED)
 	{
 	    if (ga_grow(&ga, 1) == FAIL)
 		break;
-	    vim_snprintf((char *)IObuff, IOSIZE, "%6ld %7ld  ",
+	    vim_snprintf((char *)IObuff, IOSIZE, "%6ld %7d  ",
 							uhp->uh_seq, changes);
 	    u_add_time(IObuff + STRLEN(IObuff), IOSIZE - STRLEN(IObuff),
 								uhp->uh_time);

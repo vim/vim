@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 8.0.  Last change: 2016 Oct 20
+*tabpage.txt*   For Vim version 8.0.  Last change: 2018 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -286,8 +286,7 @@ LOOPING OVER TAB PAGES:
 		current tab page.
 		{cmd} can contain '|' to concatenate several commands.
 		{cmd} must not open or close tab pages or reorder them.
-		{not in Vi} {not available when compiled without the
-		|+listcmds| feature}
+		{not in Vi}
 		Also see |:windo|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|, |:cfdo|
 		and |:lfdo|
 

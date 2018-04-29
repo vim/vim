@@ -1,7 +1,6 @@
 /* channel.c */
 void ch_logfile(char_u *fname, char_u *opt);
 int ch_log_active(void);
-void ch_log(channel_T *ch, const char *fmt, ...);
 channel_T *add_channel(void);
 int has_any_channel(void);
 int channel_unref(channel_T *channel);
@@ -69,5 +68,6 @@ void job_check_ended(void);
 job_T *job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg);
 char *job_status(job_T *job);
 void job_info(job_T *job, dict_T *dict);
+void job_info_all(list_T *l);
 int job_stop(job_T *job, typval_T *argvars, char *type);
 /* vim: set ft=c : */

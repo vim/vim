@@ -12,6 +12,7 @@ char_u *skip_range(char_u *cmd, int *ctx);
 void ex_ni(exarg_T *eap);
 int expand_filename(exarg_T *eap, char_u **cmdlinep, char_u **errormsgp);
 void separate_nextcmd(exarg_T *eap);
+int get_bad_opt(char_u *p, exarg_T *eap);
 int ends_excmd(int c);
 char_u *find_nextcmd(char_u *p);
 char_u *check_nextcmd(char_u *p);
@@ -65,6 +66,7 @@ void dialog_msg(char_u *buff, char *format, char_u *fname);
 char_u *get_behave_arg(expand_T *xp, int idx);
 char_u *get_messages_arg(expand_T *xp, int idx);
 char_u *get_mapclear_arg(expand_T *xp, int idx);
+void set_no_hlsearch(int flag);
 int get_pressedreturn(void);
 void set_pressedreturn(int val);
 /* vim: set ft=c : */

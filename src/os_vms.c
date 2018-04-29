@@ -83,7 +83,7 @@ static void	set_tty(int row, int col);
 #define EXPL_ALLOC_INC 64
 
 #define EQN(S1,S2,LN) (strncmp(S1,S2,LN) == 0)
-#define SKIP_FOLLOWING_SLASHES(Str) while (Str[1] == '/') ++Str
+#define SKIP_FOLLOWING_SLASHES(Str) do { while (Str[1] == '/') ++Str; } while (0)
 
 
 /*
@@ -784,7 +784,7 @@ RealWaitForChar(
 	    return 0;
 	} else if (msec < 0) {
 	    /* no time-out; wait on indefinitely */
-	    continue;
+	    return 1; /* fakeout to force a wait in vms_read() */
 	} else {
 	    /* time-out needs to be checked */
 	    status = sys$gettim(&time_curr);

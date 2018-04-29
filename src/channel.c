@@ -158,6 +158,7 @@ ch_log_lead(const char *what, channel_T *ch)
 
 static int did_log_msg = TRUE;
 
+#ifndef PROTO  /* prototype is in vim.h */
     void
 ch_log(channel_T *ch, const char *fmt, ...)
 {
@@ -174,6 +175,14 @@ ch_log(channel_T *ch, const char *fmt, ...)
 	did_log_msg = TRUE;
     }
 }
+#endif
+
+    static void
+ch_error(channel_T *ch, const char *fmt, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
+#endif
+    ;
 
     static void
 ch_error(channel_T *ch, const char *fmt, ...)
@@ -333,6 +342,15 @@ channel_still_useful(channel_T *channel)
 	    || ((channel->ch_part[PART_ERR].ch_callback != NULL
 		       || channel->ch_part[PART_ERR].ch_bufref.br_buf != NULL)
 		    && has_err_msg);
+}
+
+/*
+ * Return TRUE if "channel" is closeable (i.e. all readable fds are closed).
+ */
+    static int
+channel_can_close(channel_T *channel)
+{
+    return channel->ch_to_be_closed == 0;
 }
 
 /*
@@ -663,9 +681,9 @@ channel_open(
     {
 	char		*p;
 
-	/* When using host->h_addr directly ubsan warns for it to not be
-	 * aligned.  First copy the pointer to aviod that. */
-	memcpy(&p, &host->h_addr, sizeof(p));
+	/* When using host->h_addr_list[0] directly ubsan warns for it to not
+	 * be aligned.  First copy the pointer to avoid that. */
+	memcpy(&p, &host->h_addr_list[0], sizeof(p));
 	memcpy((char *)&server.sin_addr, p, host->h_length);
     }
 
@@ -883,7 +901,7 @@ channel_open(
     channel->ch_nb_close_cb = nb_close_cb;
     channel->ch_hostname = (char *)vim_strsave((char_u *)hostname);
     channel->ch_port = port_in;
-    channel->ch_to_be_closed |= (1 << PART_SOCK);
+    channel->ch_to_be_closed |= (1U << PART_SOCK);
 
 #ifdef FEAT_GUI
     channel_gui_register_one(channel, PART_SOCK);
@@ -979,7 +997,8 @@ ch_close_part(channel_T *channel, ch_part_T part)
 	}
 	*fd = INVALID_FD;
 
-	channel->ch_to_be_closed &= ~(1 << part);
+	/* channel is closed, may want to end the job if it was the last */
+	channel->ch_to_be_closed &= ~(1U << part);
     }
 }
 
@@ -990,6 +1009,12 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
     {
 	ch_close_part(channel, PART_IN);
 	channel->CH_IN_FD = in;
+# if defined(UNIX)
+	/* Do not end the job when all output channels are closed, wait until
+	 * the job ended. */
+	if (isatty(in))
+	    channel->ch_to_be_closed |= (1U << PART_IN);
+# endif
     }
     if (out != INVALID_FD)
     {
@@ -998,7 +1023,7 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
 # endif
 	ch_close_part(channel, PART_OUT);
 	channel->CH_OUT_FD = out;
-	channel->ch_to_be_closed |= (1 << PART_OUT);
+	channel->ch_to_be_closed |= (1U << PART_OUT);
 # if defined(FEAT_GUI)
 	channel_gui_register_one(channel, PART_OUT);
 # endif
@@ -1010,7 +1035,7 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
 # endif
 	ch_close_part(channel, PART_ERR);
 	channel->CH_ERR_FD = err;
-	channel->ch_to_be_closed |= (1 << PART_ERR);
+	channel->ch_to_be_closed |= (1U << PART_ERR);
 # if defined(FEAT_GUI)
 	channel_gui_register_one(channel, PART_ERR);
 # endif
@@ -1442,8 +1467,8 @@ channel_write_in(channel_T *channel)
 	ch_close_part(channel, PART_IN);
     }
     else
-	ch_log(channel, "Still %d more lines to write",
-					  buf->b_ml.ml_line_count - lnum + 1);
+	ch_log(channel, "Still %ld more lines to write",
+				   (long)(buf->b_ml.ml_line_count - lnum + 1));
 }
 
 /*
@@ -1536,8 +1561,8 @@ channel_write_new_lines(buf_T *buf)
 	    else if (written > 1)
 		ch_log(channel, "written %d lines to channel", written);
 	    if (lnum < buf->b_ml.ml_line_count)
-		ch_log(channel, "Still %d more lines to write",
-					      buf->b_ml.ml_line_count - lnum);
+		ch_log(channel, "Still %ld more lines to write",
+				       (long)(buf->b_ml.ml_line_count - lnum));
 
 	    in_part->ch_buf_bot = lnum;
 	}
@@ -2081,7 +2106,8 @@ channel_get_json(
 	{
 	    *rettv = item->jq_value;
 	    if (tv->v_type == VAR_NUMBER)
-		ch_log(channel, "Getting JSON message %d", tv->vval.v_number);
+		ch_log(channel, "Getting JSON message %ld",
+						      (long)tv->vval.v_number);
 	    remove_json_node(head, item);
 	    return OK;
 	}
@@ -4150,8 +4176,9 @@ channel_select_check(int ret_in, void *rfds_in, void *wfds_in)
 	if (ret > 0 && in_part->ch_fd != INVALID_FD
 					    && FD_ISSET(in_part->ch_fd, wfds))
 	{
-	    channel_write_input(channel);
+	    /* Clear the flag first, ch_fd may change in channel_write_input(). */
 	    FD_CLR(in_part->ch_fd, wfds);
+	    channel_write_input(channel);
 	    --ret;
 	}
     }
@@ -4189,9 +4216,9 @@ channel_parse_messages(void)
     }
     while (channel != NULL)
     {
-	if (channel->ch_to_be_closed == 0)
+	if (channel_can_close(channel))
 	{
-	    channel->ch_to_be_closed = (1 << PART_COUNT);
+	    channel->ch_to_be_closed = (1U << PART_COUNT);
 	    channel_close_now(channel);
 	    /* channel may have been freed, start over */
 	    channel = first_channel;
@@ -4791,14 +4818,64 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set2 |= JO2_TERM_KILL;
 		opt->jo_term_kill = get_tv_string_chk(item);
 	    }
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	    else if (STRCMP(hi->hi_key, "ansi_colors") == 0)
+	    {
+		int 		n = 0;
+		listitem_T	*li;
+		long_u		rgb[16];
+
+		if (!(supported2 & JO2_ANSI_COLORS))
+		    break;
+
+		if (item == NULL || item->v_type != VAR_LIST
+			|| item->vval.v_list == NULL)
+		{
+		    EMSG2(_(e_invargval), "ansi_colors");
+		    return FAIL;
+		}
+
+		li = item->vval.v_list->lv_first;
+		for (; li != NULL && n < 16; li = li->li_next, n++)
+		{
+		    char_u	*color_name;
+		    guicolor_T 	guicolor;
+
+		    color_name = get_tv_string_chk(&li->li_tv);
+		    if (color_name == NULL)
+			return FAIL;
+
+		    guicolor = GUI_GET_COLOR(color_name);
+		    if (guicolor == INVALCOLOR)
+			return FAIL;
+
+		    rgb[n] = GUI_MCH_GET_RGB(guicolor);
+		}
+
+		if (n != 16 || li != NULL)
+		{
+		    EMSG2(_(e_invargval), "ansi_colors");
+		    return FAIL;
+		}
+
+		opt->jo_set2 |= JO2_ANSI_COLORS;
+		memcpy(opt->jo_ansi_colors, rgb, sizeof(rgb));
+	    }
+# endif
 #endif
 	    else if (STRCMP(hi->hi_key, "env") == 0)
 	    {
 		if (!(supported2 & JO2_ENV))
 		    break;
+		if (item->v_type != VAR_DICT)
+		{
+		    EMSG2(_(e_invargval), "env");
+		    return FAIL;
+		}
 		opt->jo_set2 |= JO2_ENV;
 		opt->jo_env = item->vval.v_dict;
-		++item->vval.v_dict->dv_refcount;
+		if (opt->jo_env != NULL)
+		    ++opt->jo_env->dv_refcount;
 	    }
 	    else if (STRCMP(hi->hi_key, "cwd") == 0)
 	    {
@@ -4941,6 +5018,8 @@ static job_T *first_job = NULL;
     static void
 job_free_contents(job_T *job)
 {
+    int		i;
+
     ch_log(job->jv_channel, "Freeing job");
     if (job->jv_channel != NULL)
     {
@@ -4958,6 +5037,12 @@ job_free_contents(job_T *job)
     vim_free(job->jv_tty_out);
     vim_free(job->jv_stoponexit);
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
+    if (job->jv_argv != NULL)
+    {
+	for (i = 0; job->jv_argv[i] != NULL; i++)
+	    vim_free(job->jv_argv[i]);
+	vim_free(job->jv_argv);
+    }
 }
 
     static void
@@ -5008,6 +5093,15 @@ job_need_end_check(job_T *job)
 job_channel_still_useful(job_T *job)
 {
     return job->jv_channel != NULL && channel_still_useful(job->jv_channel);
+}
+
+/*
+ * Return TRUE if the channel of "job" is closeable.
+ */
+    static int
+job_channel_can_close(job_T *job)
+{
+    return job->jv_channel != NULL && channel_can_close(job->jv_channel);
 }
 
 /*
@@ -5139,6 +5233,10 @@ job_cleanup(job_T *job)
 
     /* Ready to cleanup the job. */
     job->jv_status = JOB_FINISHED;
+
+    /* When only channel-in is kept open, close explicitly. */
+    if (job->jv_channel != NULL)
+	ch_close_part(job->jv_channel, PART_IN);
 
     if (job->jv_exit_cb != NULL)
     {
@@ -5344,8 +5442,9 @@ has_pending_job(void)
     for (job = first_job; job != NULL; job = job->jv_next)
 	/* Only should check if the channel has been closed, if the channel is
 	 * open the job won't exit. */
-	if (job->jv_status == JOB_STARTED && job->jv_exit_cb != NULL
-					    && !job_channel_still_useful(job))
+	if ((job->jv_status == JOB_STARTED && !job_channel_still_useful(job))
+		    || (job->jv_status == JOB_FINISHED
+					      && job_channel_can_close(job)))
 	    return TRUE;
     return FALSE;
 }
@@ -5393,15 +5492,16 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 {
     job_T	*job;
     char_u	*cmd = NULL;
-#if defined(UNIX)
-# define USE_ARGV
     char	**argv = NULL;
     int		argc = 0;
+#if defined(UNIX)
+# define USE_ARGV
 #else
     garray_T	ga;
 #endif
     jobopt_T	opt;
     ch_part_T	part;
+    int		i;
 
     job = job_alloc();
     if (job == NULL)
@@ -5479,7 +5579,15 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 #ifdef USE_ARGV
     if (argv_arg != NULL)
     {
-	argv = argv_arg;
+	/* Make a copy of argv_arg for job->jv_argv. */
+	for (i = 0; argv_arg[i] != NULL; i++)
+	    argc++;
+	argv = (char **)alloc(sizeof(char_u *) * (argc + 1));
+	if (argv == NULL)
+	    goto theend;
+	for (i = 0; i < argc; i++)
+	    argv[i] = (char *)vim_strsave((char_u *)argv_arg[i]);
+	argv[argc] = NULL;
     }
     else
 #endif
@@ -5492,12 +5600,9 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 	    EMSG(_(e_invarg));
 	    goto theend;
 	}
-#ifdef USE_ARGV
-	/* This will modify "cmd". */
-	if (mch_parse_cmd(cmd, FALSE, &argv, &argc) == FAIL)
+
+	if (build_argv_from_string(cmd, &argv, &argc) == FAIL)
 	    goto theend;
-	argv[argc] = NULL;
-#endif
     }
     else if (argvars[0].v_type != VAR_LIST
 	    || argvars[0].vval.v_list == NULL
@@ -5508,35 +5613,24 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
     }
     else
     {
-	list_T	    *l = argvars[0].vval.v_list;
-#ifdef USE_ARGV
-	listitem_T  *li;
-	char_u	    *s;
+	list_T *l = argvars[0].vval.v_list;
 
-	/* Pass argv[] to mch_call_shell(). */
-	argv = (char **)alloc(sizeof(char *) * (l->lv_len + 1));
-	if (argv == NULL)
+	if (build_argv_from_list(l, &argv, &argc) == FAIL)
 	    goto theend;
-	for (li = l->lv_first; li != NULL; li = li->li_next)
-	{
-	    s = get_tv_string_chk(&li->li_tv);
-	    if (s == NULL)
-		goto theend;
-	    argv[argc++] = (char *)s;
-	}
-	argv[argc] = NULL;
-#else
+#ifndef USE_ARGV
 	if (win32_build_cmd(l, &ga) == FAIL)
 	    goto theend;
 	cmd = ga.ga_data;
 #endif
     }
 
+    /* Save the command used to start the job. */
+    job->jv_argv = (char_u **)argv;
+
 #ifdef USE_ARGV
     if (ch_log_active())
     {
 	garray_T    ga;
-	int	    i;
 
 	ga_init2(&ga, (int)sizeof(char), 200);
 	for (i = 0; i < argc; ++i)
@@ -5559,12 +5653,11 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 	channel_write_in(job->jv_channel);
 
 theend:
-#ifdef USE_ARGV
-    if (argv != argv_arg)
-	vim_free(argv);
-#else
+#ifndef USE_ARGV
     vim_free(ga.ga_data);
 #endif
+    if ((char_u **)argv != job->jv_argv)
+	vim_free(argv);
     free_job_options(&opt);
     return job;
 }
@@ -5600,6 +5693,8 @@ job_info(job_T *job, dict_T *dict)
 {
     dictitem_T	*item;
     varnumber_T	nr;
+    list_T	*l;
+    int		i;
 
     dict_add_nr_str(dict, "status", 0L, (char_u *)job_status(job));
 
@@ -5628,6 +5723,34 @@ job_info(job_T *job, dict_T *dict)
     dict_add_nr_str(dict, "exitval", job->jv_exitval, NULL);
     dict_add_nr_str(dict, "exit_cb", 0L, job->jv_exit_cb);
     dict_add_nr_str(dict, "stoponexit", 0L, job->jv_stoponexit);
+
+    l = list_alloc();
+    if (l != NULL)
+    {
+	dict_add_list(dict, "cmd", l);
+	if (job->jv_argv != NULL)
+	    for (i = 0; job->jv_argv[i] != NULL; i++)
+		list_append_string(l, job->jv_argv[i], -1);
+    }
+}
+
+/*
+ * Implementation of job_info() to return info for all jobs.
+ */
+    void
+job_info_all(list_T *l)
+{
+    job_T	*job;
+    typval_T	tv;
+
+    for (job = first_job; job != NULL; job = job->jv_next)
+    {
+	tv.v_type = VAR_JOB;
+	tv.vval.v_job = job;
+
+	if (list_append_tv(l, &tv) != OK)
+	    return;
+    }
 }
 
 /*

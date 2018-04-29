@@ -1417,7 +1417,12 @@ getvcol_nolist(pos_T *posp)
     colnr_T	vcol;
 
     curwin->w_p_list = FALSE;
-    getvcol(curwin, posp, NULL, &vcol, NULL);
+#ifdef FEAT_VIRTUALEDIT
+    if (posp->coladd)
+	getvvcol(curwin, posp, NULL, &vcol, NULL);
+    else
+#endif
+	getvcol(curwin, posp, NULL, &vcol, NULL);
     curwin->w_p_list = list_save;
     return vcol;
 }
@@ -1787,7 +1792,6 @@ skiptowhite(char_u *p)
     return p;
 }
 
-#if defined(FEAT_LISTCMDS) || defined(FEAT_SIGNS) || defined(PROTO)
 /*
  * skiptowhite_esc: Like skiptowhite(), but also skip escaped chars
  */
@@ -1802,7 +1806,6 @@ skiptowhite_esc(char_u *p)
     }
     return p;
 }
-#endif
 
 /*
  * Getdigits: Get a number from a string and skip over it.

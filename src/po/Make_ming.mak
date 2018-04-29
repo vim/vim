@@ -47,6 +47,7 @@ LANGUAGES = \
 		ru.cp1251 \
 		sk \
 		sk.cp1250 \
+		sr \
 		sv \
 		uk \
 		uk.cp1251 \
@@ -86,6 +87,7 @@ MOFILES = \
 		ru.mo \
 		sk.cp1250.mo \
 		sk.mo \
+		sr.mo \
 		sv.mo \
 		uk.cp1251.mo \
 		uk.mo \
@@ -137,11 +139,11 @@ all: $(MOFILES)
 
 first_time:
 	$(XGETTEXT) --default-domain=$(LANGUAGE) \
-		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h
+		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h ../vim.h
 
 $(LANGUAGES):
 	$(XGETTEXT) --default-domain=$(PACKAGE) \
-		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h
+		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h ../vim.h
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old

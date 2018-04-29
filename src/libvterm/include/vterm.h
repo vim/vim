@@ -110,30 +110,30 @@ typedef union {
 
 typedef enum {
   /* VTERM_ATTR_NONE = 0 */
-  VTERM_ATTR_BOLD = 1,   /* bool:   1, 22 */
-  VTERM_ATTR_UNDERLINE,  /* number: 4, 21, 24 */
-  VTERM_ATTR_ITALIC,     /* bool:   3, 23 */
-  VTERM_ATTR_BLINK,      /* bool:   5, 25 */
-  VTERM_ATTR_REVERSE,    /* bool:   7, 27 */
-  VTERM_ATTR_STRIKE,     /* bool:   9, 29 */
-  VTERM_ATTR_FONT,       /* number: 10-19 */
-  VTERM_ATTR_FOREGROUND, /* color:  30-39 90-97 */
-  VTERM_ATTR_BACKGROUND, /* color:  40-49 100-107 */
+  VTERM_ATTR_BOLD = 1,   // bool:   1, 22
+  VTERM_ATTR_UNDERLINE,  // number: 4, 21, 24
+  VTERM_ATTR_ITALIC,     // bool:   3, 23
+  VTERM_ATTR_BLINK,      // bool:   5, 25
+  VTERM_ATTR_REVERSE,    // bool:   7, 27
+  VTERM_ATTR_STRIKE,     // bool:   9, 29
+  VTERM_ATTR_FONT,       // number: 10-19
+  VTERM_ATTR_FOREGROUND, // color:  30-39 90-97
+  VTERM_ATTR_BACKGROUND, // color:  40-49 100-107
 
   VTERM_N_ATTRS
 } VTermAttr;
 
 typedef enum {
   /* VTERM_PROP_NONE = 0 */
-  VTERM_PROP_CURSORVISIBLE = 1, /* bool */
-  VTERM_PROP_CURSORBLINK,       /* bool */
-  VTERM_PROP_ALTSCREEN,         /* bool */
-  VTERM_PROP_TITLE,             /* string */
-  VTERM_PROP_ICONNAME,          /* string */
-  VTERM_PROP_REVERSE,           /* bool */
-  VTERM_PROP_CURSORSHAPE,       /* number */
-  VTERM_PROP_MOUSE,             /* number */
-  VTERM_PROP_CURSORCOLOR,       /* string */
+  VTERM_PROP_CURSORVISIBLE = 1, // bool
+  VTERM_PROP_CURSORBLINK,       // bool
+  VTERM_PROP_ALTSCREEN,         // bool
+  VTERM_PROP_TITLE,             // string
+  VTERM_PROP_ICONNAME,          // string
+  VTERM_PROP_REVERSE,           // bool
+  VTERM_PROP_CURSORSHAPE,       // number
+  VTERM_PROP_MOUSE,             // number
+  VTERM_PROP_CURSORCOLOR,       // string
 
   VTERM_N_PROPS
 } VTermProp;
@@ -211,9 +211,9 @@ void vterm_mouse_move(VTerm *vt, int row, int col, VTermModifier mod);
  * Button 4 is scroll wheel down, button 5 is scroll wheel up. */
 void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod);
 
-/* ------------
- * Parser layer
- * ------------ */
+// ------------
+// Parser layer
+// ------------
 
 /* Flag to indicate non-final subparameters in a single CSI parameter.
  * Consider
@@ -249,9 +249,9 @@ typedef struct {
 void  vterm_parser_set_callbacks(VTerm *vt, const VTermParserCallbacks *callbacks, void *user);
 void *vterm_parser_get_cbdata(VTerm *vt);
 
-/* -----------
- * State layer
- * ----------- */
+// -----------
+// State layer
+// -----------
 
 typedef struct {
   int (*putglyph)(VTermGlyphInfo *info, VTermPos pos, void *user);
@@ -287,7 +287,7 @@ VTermState *vterm_obtain_state(VTerm *vt);
 void  vterm_state_set_callbacks(VTermState *state, const VTermStateCallbacks *callbacks, void *user);
 void *vterm_state_get_cbdata(VTermState *state);
 
-/* Only invokes control, csi, osc, dcs */
+// Only invokes control, csi, osc, dcs
 void  vterm_state_set_unrecognised_fallbacks(VTermState *state, const VTermParserCallbacks *fallbacks, void *user);
 void *vterm_state_get_unrecognised_fbdata(VTermState *state);
 
@@ -307,9 +307,9 @@ void vterm_state_focus_in(VTermState *state);
 void vterm_state_focus_out(VTermState *state);
 const VTermLineInfo *vterm_state_get_lineinfo(const VTermState *state, int row);
 
-/* ------------
- * Screen layer
- * ------------ */
+// ------------
+// Screen layer
+// ------------
 
 typedef struct {
     unsigned int bold      : 1;
@@ -356,7 +356,7 @@ VTermScreen *vterm_obtain_screen(VTerm *vt);
 void  vterm_screen_set_callbacks(VTermScreen *screen, const VTermScreenCallbacks *callbacks, void *user);
 void *vterm_screen_get_cbdata(VTermScreen *screen);
 
-/* Only invokes control, csi, osc, dcs */
+// Only invokes control, csi, osc, dcs
 void  vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermParserCallbacks *fallbacks, void *user);
 void *vterm_screen_get_unrecognised_fbdata(VTermScreen *screen);
 
@@ -409,9 +409,9 @@ int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCe
 
 int vterm_screen_is_eol(const VTermScreen *screen, VTermPos pos);
 
-/* ---------
- * Utilities
- * --------- */
+// ---------
+// Utilities
+// ---------
 
 VTermValueType vterm_get_attr_type(VTermAttr attr);
 VTermValueType vterm_get_prop_type(VTermProp prop);

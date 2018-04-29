@@ -101,15 +101,6 @@
  */
 
 /*
- * +listcmds		Vim commands for the buffer list and the argument
- *			list.  Without this there is no ":buffer" ":bnext",
- *			":bdel", ":argdelete", etc.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_LISTCMDS
-#endif
-
-/*
  * +cmdhist		Command line history.
  */
 #ifdef FEAT_SMALL
@@ -1252,10 +1243,9 @@
 #endif
 
 /*
- * The Netbeans feature requires +listcmds and +eval.
+ * The Netbeans feature requires +eval.
  */
-#if (!defined(FEAT_LISTCMDS) || !defined(FEAT_EVAL)) \
-	&& defined(FEAT_NETBEANS_INTG)
+#if !defined(FEAT_EVAL) && defined(FEAT_NETBEANS_INTG)
 # undef FEAT_NETBEANS_INTG
 #endif
 

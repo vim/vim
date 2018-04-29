@@ -27,8 +27,8 @@ static void default_free(void *ptr, void *allocdata UNUSED)
 }
 
 static VTermAllocatorFunctions default_allocator = {
-  &default_malloc, /* malloc */
-  &default_free /* free */
+  &default_malloc, // malloc
+  &default_free // free
 };
 
 VTerm *vterm_new(int rows, int cols)
@@ -52,7 +52,7 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
   vt->parser.callbacks = NULL;
   vt->parser.cbdata    = NULL;
 
-  vt->parser.strbuffer_len = 64;
+  vt->parser.strbuffer_len = 500; /* should be able to hold an OSC string */
   vt->parser.strbuffer_cur = 0;
   vt->parser.strbuffer = vterm_allocator_malloc(vt, vt->parser.strbuffer_len);
 

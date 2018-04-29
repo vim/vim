@@ -849,6 +849,9 @@ EXTERN char_u	*p_tcldll;	/* 'tcldll' */
 #ifdef FEAT_ARABIC
 EXTERN int	p_tbidi;	/* 'termbidi' */
 #endif
+#ifdef FEAT_TERMINAL
+EXTERN long	p_tlsl;		/* 'terminalscroll' */
+#endif
 #ifdef FEAT_MBYTE
 EXTERN char_u	*p_tenc;	/* 'termencoding' */
 #endif
@@ -1111,6 +1114,9 @@ enum
     , BV_UDF
     , BV_UL
     , BV_WM
+#ifdef FEAT_TERMINAL
+    , BV_TWSL
+#endif
     , BV_COUNT	    /* must be the last one */
 };
 
@@ -1130,8 +1136,8 @@ enum
     , WV_COLE
 #endif
 #ifdef FEAT_TERMINAL
-    , WV_TK
-    , WV_TMS
+    , WV_TWK
+    , WV_TWS
 #endif
     , WV_CRBIND
 #ifdef FEAT_LINEBREAK

@@ -271,10 +271,10 @@ typedef struct
 # define w_p_scl w_onebuf_opt.wo_scl	/* 'signcolumn' */
 #endif
 #ifdef FEAT_TERMINAL
-    char_u	*wo_tk;
-#define w_p_tk w_onebuf_opt.wo_tk	/* 'termkey' */
-    char_u	*wo_tms;
-#define w_p_tms w_onebuf_opt.wo_tms	/* 'termsize' */
+    char_u	*wo_twk;
+# define w_p_twk w_onebuf_opt.wo_twk	/* 'termwinkey' */
+    char_u	*wo_tws;
+# define w_p_tws w_onebuf_opt.wo_tws	/* 'termwinsize' */
 #endif
 
 #ifdef FEAT_EVAL
@@ -827,9 +827,9 @@ struct msglist
  */
 typedef enum
 {
-    ET_USER,		/* exception caused by ":throw" command */
-    ET_ERROR,		/* error exception */
-    ET_INTERRUPT	/* interrupt exception triggered by Ctrl-C */
+    ET_USER,		// exception caused by ":throw" command
+    ET_ERROR,		// error exception
+    ET_INTERRUPT,	// interrupt exception triggered by Ctrl-C
 } except_type_T;
 
 /*
@@ -1190,16 +1190,16 @@ typedef struct channel_S channel_T;
 typedef enum
 {
     VAR_UNKNOWN = 0,
-    VAR_NUMBER,	 /* "v_number" is used */
-    VAR_STRING,	 /* "v_string" is used */
-    VAR_FUNC,	 /* "v_string" is function name */
-    VAR_PARTIAL, /* "v_partial" is used */
-    VAR_LIST,	 /* "v_list" is used */
-    VAR_DICT,	 /* "v_dict" is used */
-    VAR_FLOAT,	 /* "v_float" is used */
-    VAR_SPECIAL, /* "v_number" is used */
-    VAR_JOB,	 /* "v_job" is used */
-    VAR_CHANNEL	 /* "v_channel" is used */
+    VAR_NUMBER,	 // "v_number" is used
+    VAR_STRING,	 // "v_string" is used
+    VAR_FUNC,	 // "v_string" is function name
+    VAR_PARTIAL, // "v_partial" is used
+    VAR_LIST,	 // "v_list" is used
+    VAR_DICT,	 // "v_dict" is used
+    VAR_FLOAT,	 // "v_float" is used
+    VAR_SPECIAL, // "v_number" is used
+    VAR_JOB,	 // "v_job" is used
+    VAR_CHANNEL, // "v_channel" is used
 } vartype_T;
 
 /*
@@ -1456,8 +1456,8 @@ typedef enum
 {
     JOB_FAILED,
     JOB_STARTED,
-    JOB_ENDED,	    /* detected job done */
-    JOB_FINISHED    /* job done and cleanup done */
+    JOB_ENDED,	    // detected job done
+    JOB_FINISHED,   // job done and cleanup done
 } jobstatus_T;
 
 /*
@@ -1488,6 +1488,7 @@ struct jobvar_S
     int		jv_copyID;
 
     channel_T	*jv_channel;	/* channel for I/O, reference counted */
+    char_u	**jv_argv;	/* command line used to start the job */
 };
 
 /*
@@ -1531,11 +1532,11 @@ typedef enum
     MODE_NL = 0,
     MODE_RAW,
     MODE_JSON,
-    MODE_JS
+    MODE_JS,
 } ch_mode_T;
 
 typedef enum {
-    JIO_PIPE,	    /* default */
+    JIO_PIPE,	    // default
     JIO_NULL,
     JIO_FILE,
     JIO_BUFFER,
@@ -1557,7 +1558,7 @@ typedef enum {
     PART_IN,
 # define CH_IN_FD	CH_PART_FD(PART_IN)
 #endif
-    PART_COUNT
+    PART_COUNT,
 } ch_part_T;
 
 #define INVALID_FD	(-1)
@@ -1708,7 +1709,7 @@ struct channel_S {
 #define JO2_EOF_CHARS	    0x1000	/* "eof_chars" */
 #define JO2_NORESTORE	    0x2000	/* "norestore" */
 #define JO2_TERM_KILL	    0x4000	/* "term_kill" */
-#define JO2_ALL		    0x7FFF
+#define JO2_ANSI_COLORS	    0x8000	/* "ansi_colors" */
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1777,6 +1778,9 @@ typedef struct
     int		jo_term_finish;
     char_u	*jo_eof_chars;
     char_u	*jo_term_kill;
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    long_u	jo_ansi_colors[16];
+# endif
 #endif
 } jobopt_T;
 
@@ -2258,6 +2262,9 @@ struct file_buffer
 #endif
 #ifdef FEAT_LISP
     char_u	*b_p_lw;	/* 'lispwords' local value */
+#endif
+#ifdef FEAT_TERMINAL
+    long	b_p_twsl;	/* 'termwinscroll' */
 #endif
 
     /* end of buffer options */
@@ -3249,15 +3256,15 @@ typedef struct {
  */
 typedef enum
 {
-    TYPE_UNKNOWN = 0
-    , TYPE_EQUAL	/* == */
-    , TYPE_NEQUAL	/* != */
-    , TYPE_GREATER	/* >  */
-    , TYPE_GEQUAL	/* >= */
-    , TYPE_SMALLER	/* <  */
-    , TYPE_SEQUAL	/* <= */
-    , TYPE_MATCH	/* =~ */
-    , TYPE_NOMATCH	/* !~ */
+    TYPE_UNKNOWN = 0,
+    TYPE_EQUAL,		// ==
+    TYPE_NEQUAL,	// !=
+    TYPE_GREATER,	// >
+    TYPE_GEQUAL,	// >=
+    TYPE_SMALLER,	// <
+    TYPE_SEQUAL,	// <=
+    TYPE_MATCH,		// =~
+    TYPE_NOMATCH,	// !~
 } exptype_T;
 
 /*

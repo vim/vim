@@ -27,13 +27,9 @@
 
 #include "vim.h"
 
-#if defined(FEAT_CMDL_COMPL) || defined(FEAT_LISTCMDS) || defined(FEAT_EVAL) || defined(FEAT_PERL)
 static char_u	*buflist_match(regmatch_T *rmp, buf_T *buf, int ignore_case);
-# define HAVE_BUFLIST_MATCH
 static char_u	*fname_match(regmatch_T *rmp, char_u *name, int ignore_case);
-#endif
 static void	buflist_setfpos(buf_T *buf, win_T *win, linenr_T lnum, colnr_T col, int copy_options);
-static wininfo_T *find_wininfo(buf_T *buf, int skip_diff_buffer);
 #ifdef UNIX
 static buf_T	*buflist_findname_stat(char_u *ffname, stat_T *st);
 static int	otherfile_buf(buf_T *buf, char_u *ffname, stat_T *stp);
@@ -421,6 +417,8 @@ buf_hashtab_remove(buf_T *buf)
 	hash_remove(&buf_hashtab, hi);
 }
 
+static char *e_buflocked = N_("E937: Attempt to delete a buffer that is in use");
+
 /*
  * Close the link to a buffer.
  * "action" is used when there is no longer a window for the buffer.
@@ -480,8 +478,15 @@ close_buffer(
 	if (term_job_running(buf->b_term))
 	{
 	    if (wipe_buf || unload_buf)
+	    {
+		if (buf->b_locked)
+		{
+		    EMSG(_(e_buflocked));
+		    return;
+		}
 		/* Wiping out or unloading a terminal buffer kills the job. */
 		free_terminal(buf);
+	    }
 	    else
 	    {
 		/* The job keeps running, hide the buffer. */
@@ -503,7 +508,7 @@ close_buffer(
      * halfway a command that relies on it). Unloading is allowed. */
     if (buf->b_locked > 0 && (del_buf || wipe_buf))
     {
-	EMSG(_("E937: Attempt to delete a buffer that is in use"));
+	EMSG(_(e_buflocked));
 	return;
     }
 
@@ -948,7 +953,6 @@ clear_wininfo(buf_T *buf)
     }
 }
 
-#if defined(FEAT_LISTCMDS) || defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Go to another buffer.  Handles the result of the ATTENTION dialog.
  */
@@ -959,42 +963,41 @@ goto_buffer(
     int		dir,
     int		count)
 {
-# if defined(HAS_SWAP_EXISTS_ACTION)
+#if defined(HAS_SWAP_EXISTS_ACTION)
     bufref_T	old_curbuf;
 
     set_bufref(&old_curbuf, curbuf);
 
     swap_exists_action = SEA_DIALOG;
-# endif
+#endif
     (void)do_buffer(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO,
 					     start, dir, count, eap->forceit);
-# if defined(HAS_SWAP_EXISTS_ACTION)
+#if defined(HAS_SWAP_EXISTS_ACTION)
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
     {
-#  if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 	cleanup_T   cs;
 
 	/* Reset the error/interrupt/exception state here so that
 	 * aborting() returns FALSE when closing a window. */
 	enter_cleanup(&cs);
-#  endif
+# endif
 
 	/* Quitting means closing the split window, nothing else. */
 	win_close(curwin, TRUE);
 	swap_exists_action = SEA_NONE;
 	swap_exists_did_quit = TRUE;
 
-#  if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 	/* Restore the error/interrupt/exception state if not discarded by a
 	 * new aborting error, interrupt, or uncaught exception. */
 	leave_cleanup(&cs);
-#  endif
+# endif
     }
     else
 	handle_swap_exists(&old_curbuf);
-# endif
-}
 #endif
+}
 
 #if defined(HAS_SWAP_EXISTS_ACTION) || defined(PROTO)
 /*
@@ -1072,7 +1075,6 @@ handle_swap_exists(bufref_T *old_curbuf)
 }
 #endif
 
-#if defined(FEAT_LISTCMDS) || defined(PROTO)
 /*
  * do_bufdel() - delete or unload buffer(s)
  *
@@ -1199,10 +1201,6 @@ do_bufdel(
 
     return errormsg;
 }
-#endif /* FEAT_LISTCMDS */
-
-#if defined(FEAT_LISTCMDS) || defined(FEAT_PYTHON) \
-	|| defined(FEAT_PYTHON3) || defined(PROTO)
 
 static int	empty_curbuf(int close_others, int forceit, int action);
 
@@ -1359,7 +1357,6 @@ do_buffer(
     need_mouse_correct = TRUE;
 #endif
 
-#ifdef FEAT_LISTCMDS
     /*
      * delete buffer buf from memory and/or the list
      */
@@ -1367,6 +1364,12 @@ do_buffer(
     {
 	int	forward;
 	bufref_T bufref;
+
+	if (buf->b_locked)
+	{
+	    EMSG(_(e_buflocked));
+	    return FAIL;
+	}
 
 	set_bufref(&bufref, buf);
 
@@ -1377,7 +1380,7 @@ do_buffer(
 
 	if (!forceit && bufIsChanged(buf))
 	{
-# if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	    if ((p_confirm || cmdmod.confirm) && p_write)
 	    {
 		dialog_changed(buf, FALSE);
@@ -1391,7 +1394,7 @@ do_buffer(
 		    return FAIL;
 	    }
 	    else
-# endif
+#endif
 	    {
 		EMSGN(_("E89: No write since last change for buffer %ld (add ! to override)"),
 								 buf->b_fnum);
@@ -1557,7 +1560,6 @@ do_buffer(
 	if (win_split(0, 0) == FAIL)
 	    return FAIL;
     }
-#endif
 
     /* go to current buffer - nothing to do */
     if (buf == curbuf)
@@ -1590,12 +1592,10 @@ do_buffer(
     /* Go to the other buffer. */
     set_curbuf(buf, action);
 
-#if defined(FEAT_LISTCMDS)
     if (action == DOBUF_SPLIT)
     {
 	RESET_BINDING(curwin);	/* reset 'scrollbind' and 'cursorbind' */
     }
-#endif
 
 #if defined(FEAT_EVAL)
     if (aborting())	    /* autocmds may abort script processing */
@@ -1604,7 +1604,6 @@ do_buffer(
 
     return OK;
 }
-#endif
 
 /*
  * Set current buffer to "buf".  Executes autocommands and closes current
@@ -1780,7 +1779,7 @@ enter_buffer(buf_T *buf)
 #endif
 
     /* Change directories when the 'acd' option is set. */
-    DO_AUTOCHDIR
+    DO_AUTOCHDIR;
 
 #ifdef FEAT_KEYMAP
     if (curbuf->b_kmap_state & KEYMAP_INIT)
@@ -1841,6 +1840,20 @@ no_write_message_nobang(buf_T *buf UNUSED)
  */
 
 static int  top_file_num = 1;		/* highest file number */
+
+/*
+ * Return TRUE if the current buffer is empty, unnamed, unmodified and used in
+ * only one window.  That means it can be re-used.
+ */
+    int
+curbuf_reusable(void)
+{
+    return (curbuf != NULL
+	&& curbuf->b_ffname == NULL
+	&& curbuf->b_nwindows <= 1
+	&& (curbuf->b_ml.ml_mfp == NULL || BUFEMPTY())
+	&& !curbufIsChanged());
+}
 
 /*
  * Add a file name to the buffer list.  Return a pointer to the buffer.
@@ -1922,11 +1935,7 @@ buflist_new(
      * buffer.)
      */
     buf = NULL;
-    if ((flags & BLN_CURBUF)
-	    && curbuf != NULL
-	    && curbuf->b_ffname == NULL
-	    && curbuf->b_nwindows <= 1
-	    && (curbuf->b_ml.ml_mfp == NULL || BUFEMPTY()))
+    if ((flags & BLN_CURBUF) && curbuf_reusable())
     {
 	buf = curbuf;
 	/* It's like this buffer is deleted.  Watch out for autocommands that
@@ -2411,8 +2420,6 @@ buflist_findname_stat(
     return NULL;
 }
 
-#if defined(FEAT_LISTCMDS) || defined(FEAT_EVAL) || defined(FEAT_PERL) \
-	|| defined(PROTO)
 /*
  * Find file in buffer list by a regexp pattern.
  * Return fnum of the found buffer.
@@ -2534,7 +2541,6 @@ buflist_findpat(
 	EMSG2(_("E94: No matching buffer for %s"), pattern);
     return match;
 }
-#endif
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
@@ -2644,7 +2650,6 @@ ExpandBufnames(
 
 #endif /* FEAT_CMDL_COMPL */
 
-#ifdef HAVE_BUFLIST_MATCH
 /*
  * Check for a match on the file name for buffer "buf" with regprog "prog".
  */
@@ -2695,7 +2700,6 @@ fname_match(
 
     return match;
 }
-#endif
 
 /*
  * Find a file in the buffer list by buffer number.
@@ -2940,7 +2944,6 @@ buflist_findlnum(buf_T *buf)
     return buflist_findfpos(buf)->lnum;
 }
 
-#if defined(FEAT_LISTCMDS) || defined(PROTO)
 /*
  * List all known file names (for :files and :buffers command).
  */
@@ -2952,18 +2955,34 @@ buflist_list(exarg_T *eap)
     int		i;
     int		ro_char;
     int		changed_char;
+#ifdef FEAT_TERMINAL
+    int		job_running;
+    int		job_none_open;
+#endif
 
     for (buf = firstbuf; buf != NULL && !got_int; buf = buf->b_next)
     {
+#ifdef FEAT_TERMINAL
+	job_running = term_job_running(buf->b_term);
+	job_none_open = job_running && term_none_open(buf->b_term);
+#endif
 	/* skip unlisted buffers, unless ! was used */
 	if ((!buf->b_p_bl && !eap->forceit && !vim_strchr(eap->arg, 'u'))
 		|| (vim_strchr(eap->arg, 'u') && buf->b_p_bl)
 		|| (vim_strchr(eap->arg, '+')
 			&& ((buf->b_flags & BF_READERR) || !bufIsChanged(buf)))
 		|| (vim_strchr(eap->arg, 'a')
-			 && (buf->b_ml.ml_mfp == NULL || buf->b_nwindows == 0))
+			&& (buf->b_ml.ml_mfp == NULL || buf->b_nwindows == 0))
 		|| (vim_strchr(eap->arg, 'h')
-			 && (buf->b_ml.ml_mfp == NULL || buf->b_nwindows != 0))
+			&& (buf->b_ml.ml_mfp == NULL || buf->b_nwindows != 0))
+#ifdef FEAT_TERMINAL
+		|| (vim_strchr(eap->arg, 'R')
+			&& (!job_running || (job_running && job_none_open)))
+		|| (vim_strchr(eap->arg, '?')
+			&& (!job_running || (job_running && !job_none_open)))
+		|| (vim_strchr(eap->arg, 'F')
+			&& (job_running || buf->b_term == NULL))
+#endif
 		|| (vim_strchr(eap->arg, '-') && buf->b_p_ma)
 		|| (vim_strchr(eap->arg, '=') && !buf->b_p_ro)
 		|| (vim_strchr(eap->arg, 'x') && !(buf->b_flags & BF_READERR))
@@ -3024,7 +3043,6 @@ buflist_list(exarg_T *eap)
 	ui_breakcheck();
     }
 }
-#endif
 
 /*
  * Get file name and line number for file 'fnum'.
@@ -5095,7 +5113,6 @@ do_arg_all(
     vim_free(opened);
 }
 
-# if defined(FEAT_LISTCMDS) || defined(PROTO)
 /*
  * Open a window for a number of buffers.
  */
@@ -5300,7 +5317,6 @@ ex_buffer_all(exarg_T *eap)
 	}
     }
 }
-# endif /* FEAT_LISTCMDS */
 
 
 static int  chk_modeline(linenr_T, int);

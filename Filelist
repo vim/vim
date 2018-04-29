@@ -4,6 +4,7 @@
 # source files for all source archives
 SRC_ALL =	\
 		.hgignore \
+		.lgtm.yml \
 		.travis.yml \
 		appveyor.yml \
 		src/appveyor.bat \

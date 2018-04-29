@@ -7,11 +7,11 @@
 #endif
 
 struct UTF8DecoderData {
-  /* number of bytes remaining in this codepoint */
+  // number of bytes remaining in this codepoint
   int bytes_remaining;
 
-  /* number of bytes total in this codepoint once it's finished
-     (for detecting overlongs) */
+  // number of bytes total in this codepoint once it's finished
+  // (for detecting overlongs)
   int bytes_total;
 
   int this_cp;
@@ -42,7 +42,7 @@ static void decode_utf8(VTermEncoding *enc UNUSED, void *data_,
     printf(" pos=%zd c=%02x rem=%d\n", *pos, c, data->bytes_remaining);
 #endif
 
-    if(c < 0x20) /* C0 */
+    if(c < 0x20) // C0
       return;
 
     else if(c >= 0x20 && c < 0x7f) {
@@ -58,7 +58,7 @@ static void decode_utf8(VTermEncoding *enc UNUSED, void *data_,
 #endif
     }
 
-    else if(c == 0x7f) /* DEL */
+    else if(c == 0x7f) // DEL
       return;
 
     else if(c >= 0x80 && c < 0xc0) {
@@ -75,7 +75,7 @@ static void decode_utf8(VTermEncoding *enc UNUSED, void *data_,
 #ifdef DEBUG_PRINT_UTF8
         printf(" UTF-8 raw char U+%04x bytelen=%d ", data->this_cp, data->bytes_total);
 #endif
-        /* Check for overlong sequences */
+        // Check for overlong sequences
         switch(data->bytes_total) {
         case 2:
           if(data->this_cp <  0x0080) data->this_cp = UNICODE_INVALID;
@@ -93,7 +93,7 @@ static void decode_utf8(VTermEncoding *enc UNUSED, void *data_,
           if(data->this_cp < 0x4000000) data->this_cp = UNICODE_INVALID;
           break;
         }
-        /* Now look for plain invalid ones */
+        // Now look for plain invalid ones
         if((data->this_cp >= 0xD800 && data->this_cp <= 0xDFFF) ||
            data->this_cp == 0xFFFE ||
            data->this_cp == 0xFFFF)

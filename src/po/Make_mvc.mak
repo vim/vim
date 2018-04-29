@@ -39,6 +39,7 @@ LANGUAGES = \
 		ru.cp1251 \
 		sk \
 		sk.cp1250 \
+		sr \
 		sv \
 		uk \
 		uk.cp1251 \
@@ -78,6 +79,7 @@ MOFILES = \
 		ru.mo \
 		sk.cp1250.mo \
 		sk.mo \
+		sr.mo \
 		sv.mo \
 		uk.cp1251.mo \
 		uk.mo \
@@ -117,7 +119,7 @@ INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 all: $(MOFILES)
 
 files:
-	$(LS) $(LSFLAGS) ..\*.c ..\if_perl.xs ..\GvimExt\gvimext.cpp ..\globals.h ..\if_py_both.h > .\files
+	$(LS) $(LSFLAGS) ..\*.c ..\if_perl.xs ..\GvimExt\gvimext.cpp ..\globals.h ..\if_py_both.h ..\vim.h > .\files
 
 first_time: files
 	set OLD_PO_FILE_INPUT=yes

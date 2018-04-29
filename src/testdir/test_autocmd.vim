@@ -119,7 +119,9 @@ func Test_autocmd_bufunload_avoiding_SEGV_01()
     exe 'autocmd BufUnload <buffer> ' . (lastbuf + 1) . 'bwipeout!'
   augroup END
 
-  call assert_fails('edit bb.txt', 'E937:')
+  " Todo: check for E937 generated first
+  " call assert_fails('edit bb.txt', 'E937:')
+  call assert_fails('edit bb.txt', 'E517:')
 
   autocmd! test_autocmd_bufunload
   augroup! test_autocmd_bufunload
@@ -316,7 +318,7 @@ func Test_three_windows()
   e Xtestje2
   sp Xtestje1
   call assert_fails('e', 'E937:')
-  call assert_equal('Xtestje2', expand('%'))
+  call assert_equal('Xtestje1', expand('%'))
 
   " Test changing buffers in a BufWipeout autocommand.  If this goes wrong
   " there are ml_line errors and/or a Crash.
@@ -338,7 +340,6 @@ func Test_three_windows()
 
   au!
   enew
-  bwipe! Xtestje1
   call delete('Xtestje1')
   call delete('Xtestje2')
   call delete('Xtestje3')
@@ -836,6 +837,8 @@ func Test_Cmdline()
   au! CmdlineEnter
   au! CmdlineLeave
 
+  let save_shellslash = &shellslash
+  set noshellslash
   au! CmdlineEnter / let g:entered = expand('<afile>')
   au! CmdlineLeave / let g:left = expand('<afile>')
   let g:entered = 0
@@ -848,6 +851,7 @@ func Test_Cmdline()
   bwipe!
   au! CmdlineEnter
   au! CmdlineLeave
+  let &shellslash = save_shellslash
 endfunc
 
 " Test for BufWritePre autocommand that deletes or unloads the buffer.
@@ -1181,7 +1185,9 @@ endfunc
 func Test_nocatch_wipe_all_buffers()
   " Real nasty autocommand: wipe all buffers on any event.
   au * * bwipe *
-  call assert_fails('next x', 'E93')
+  " Get E93 first?
+  " call assert_fails('next x', 'E93:')
+  call assert_fails('next x', 'E517:')
   bwipe
   au!
 endfunc
@@ -1315,10 +1321,12 @@ func Test_Changed_FirstTime()
   call writefile([''], 'Xchanged.txt')
   let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': 3})
   call assert_equal('running', term_getstatus(buf))
+  " Wait for the ruler (in the status line) to be shown.
+  call WaitForAssert({-> assert_match('\<All$', term_getline(buf, 3))})
   " It's only adding autocmd, so that no event occurs.
   call term_sendkeys(buf, ":au! TextChanged <buffer> call writefile(['No'], 'Xchanged.txt')\<cr>")
   call term_sendkeys(buf, "\<C-\\>\<C-N>:qa!\<cr>")
-  call WaitFor({-> term_getstatus(buf) == 'finished'})
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
   call assert_equal([''], readfile('Xchanged.txt'))
 
   " clean up

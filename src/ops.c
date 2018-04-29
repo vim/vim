@@ -1093,7 +1093,7 @@ do_record(int c)
 
     if (Recording == FALSE)	    /* start recording */
     {
-			/* registers 0-9, a-z and " are allowed */
+	/* registers 0-9, a-z and " are allowed */
 	if (c < 0 || (!ASCII_ISALNUM(c) && c != '"'))
 	    retval = FAIL;
 	else
@@ -2702,6 +2702,7 @@ op_insert(oparg_T *oap, long count1)
     if (oap->block_mode)
     {
 	struct block_def	bd2;
+	int			did_indent = FALSE;
 
 	/* If indent kicked in, the firstline might have changed
 	 * but only do that, if the indent actually increased. */
@@ -2710,11 +2711,14 @@ op_insert(oparg_T *oap, long count1)
 	{
 	    bd.textcol += ind_post - ind_pre;
 	    bd.start_vcol += ind_post - ind_pre;
+	    did_indent = TRUE;
 	}
 
 	/* The user may have moved the cursor before inserting something, try
-	 * to adjust the block for that. */
-	if (oap->start.lnum == curbuf->b_op_start_orig.lnum && !bd.is_MAX)
+	 * to adjust the block for that.  But only do it, if the difference
+	 * does not come from indent kicking in. */
+	if (oap->start.lnum == curbuf->b_op_start_orig.lnum
+						  && !bd.is_MAX && !did_indent)
 	{
 	    if (oap->op_type == OP_INSERT
 		    && oap->start.col
@@ -5976,13 +5980,17 @@ do_addsub(
 	    buf2[i] = '\0';
 	}
 	else if (pre == 0)
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llu", n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llu",
+							(long long unsigned)n);
 	else if (pre == '0')
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llo", n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llo",
+							(long long unsigned)n);
 	else if (pre && hexupper)
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llX", n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llX",
+							(long long unsigned)n);
 	else
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llx", n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llx",
+							(long long unsigned)n);
 	length -= (int)STRLEN(buf2);
 
 	/*
@@ -7501,16 +7509,21 @@ cursor_pos_info(dict_T *dict)
 			    _("Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Bytes"),
 			    buf1, line_count_selected,
 			    (long)curbuf->b_ml.ml_line_count,
-			    word_count_cursor, word_count,
-			    byte_count_cursor, byte_count);
+			    (long long)word_count_cursor,
+			    (long long)word_count,
+			    (long long)byte_count_cursor,
+			    (long long)byte_count);
 		else
 		    vim_snprintf((char *)IObuff, IOSIZE,
 			    _("Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of %lld Bytes"),
 			    buf1, line_count_selected,
 			    (long)curbuf->b_ml.ml_line_count,
-			    word_count_cursor, word_count,
-			    char_count_cursor, char_count,
-			    byte_count_cursor, byte_count);
+			    (long long)word_count_cursor,
+			    (long long)word_count,
+			    (long long)char_count_cursor,
+			    (long long)char_count,
+			    (long long)byte_count_cursor,
+			    (long long)byte_count);
 	    }
 	    else
 	    {
@@ -7528,17 +7541,17 @@ cursor_pos_info(dict_T *dict)
 			(char *)buf1, (char *)buf2,
 			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
-			word_count_cursor, word_count,
-			byte_count_cursor, byte_count);
+			(long long)word_count_cursor, (long long)word_count,
+			(long long)byte_count_cursor, (long long)byte_count);
 		else
 		    vim_snprintf((char *)IObuff, IOSIZE,
 			_("Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte %lld of %lld"),
 			(char *)buf1, (char *)buf2,
 			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
-			word_count_cursor, word_count,
-			char_count_cursor, char_count,
-			byte_count_cursor, byte_count);
+			(long long)word_count_cursor, (long long)word_count,
+			(long long)char_count_cursor, (long long)char_count,
+			(long long)byte_count_cursor, (long long)byte_count);
 	    }
 	}
 
@@ -7546,7 +7559,7 @@ cursor_pos_info(dict_T *dict)
 	bom_count = bomb_size();
 	if (bom_count > 0)
 	    vim_snprintf((char *)IObuff + STRLEN(IObuff), IOSIZE,
-					      _("(+%ld for BOM)"), bom_count);
+				   _("(+%lld for BOM)"), (long long)bom_count);
 #endif
 	if (dict == NULL)
 	{

@@ -441,7 +441,7 @@ mch_inchar(
 		    /* no character available within "wtime" */
 		    return 0;
 
-		if (wtime < 0)
+		else
 		{
 		    /* no character available within 'updatetime' */
 		    did_start_blocking = TRUE;
@@ -4154,91 +4154,6 @@ wait4pid(pid_t child, waitstatus *status)
     return wait_pid;
 }
 
-#if defined(FEAT_JOB_CHANNEL) \
-	|| !defined(USE_SYSTEM) \
-	|| (defined(FEAT_GUI) && defined(FEAT_TERMINAL)) \
-	|| defined(PROTO)
-/*
- * Parse "cmd" and put the white-separated parts in "argv".
- * "argv" is an allocated array with "argc" entries and room for 4 more.
- * Returns FAIL when out of memory.
- */
-    int
-mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
-{
-    int		i;
-    char_u	*p, *d;
-    int		inquote;
-
-    /*
-     * Do this loop twice:
-     * 1: find number of arguments
-     * 2: separate them and build argv[]
-     */
-    for (i = 0; i < 2; ++i)
-    {
-	p = skipwhite(cmd);
-	inquote = FALSE;
-	*argc = 0;
-	for (;;)
-	{
-	    if (i == 1)
-		(*argv)[*argc] = (char *)p;
-	    ++*argc;
-	    d = p;
-	    while (*p != NUL && (inquote || (*p != ' ' && *p != TAB)))
-	    {
-		if (p[0] == '"')
-		    /* quotes surrounding an argument and are dropped */
-		    inquote = !inquote;
-		else
-		{
-		    if (p[0] == '\\' && p[1] != NUL)
-		    {
-			/* First pass: skip over "\ " and "\"".
-			 * Second pass: Remove the backslash. */
-			++p;
-		    }
-		    if (i == 1)
-			*d++ = *p;
-		}
-		++p;
-	    }
-	    if (*p == NUL)
-	    {
-		if (i == 1)
-		    *d++ = NUL;
-		break;
-	    }
-	    if (i == 1)
-		*d++ = NUL;
-	    p = skipwhite(p + 1);
-	}
-	if (*argv == NULL)
-	{
-	    if (use_shcf)
-	    {
-		/* Account for possible multiple args in p_shcf. */
-		p = p_shcf;
-		for (;;)
-		{
-		    p = skiptowhite(p);
-		    if (*p == NUL)
-			break;
-		    ++*argc;
-		    p = skipwhite(p);
-		}
-	    }
-
-	    *argv = (char **)alloc((unsigned)((*argc + 4) * sizeof(char *)));
-	    if (*argv == NULL)	    /* out of memory */
-		return FAIL;
-	}
-    }
-    return OK;
-}
-#endif
-
 #if !defined(USE_SYSTEM) || defined(FEAT_JOB_CHANNEL)
 /*
  * Set the environment for a child process.
@@ -5579,11 +5494,23 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 
 # ifdef FEAT_TERMINAL
 	if (options->jo_term_rows > 0)
+	{
+	    char *term = (char *)T_NAME;
+
+#ifdef FEAT_GUI
+	    if (term_is_gui(T_NAME))
+		/* In the GUI 'term' is not what we want, use $TERM. */
+		term = getenv("TERM");
+#endif
+	    /* Use 'term' or $TERM if it starts with "xterm", otherwise fall
+	     * back to "xterm". */
+	    if (term == NULL || *term == NUL || STRNCMP(term, "xterm", 5) != 0)
+		term = "xterm";
 	    set_child_environment(
 		    (long)options->jo_term_rows,
 		    (long)options->jo_term_cols,
-		    STRNCMP(T_NAME, "xterm", 5) == 0
-						   ? (char *)T_NAME : "xterm");
+		    term);
+	}
 	else
 # endif
 	    set_default_child_environment();
@@ -5711,13 +5638,14 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	close(fd_err[1]);
     if (channel != NULL)
     {
-	channel_set_pipes(channel,
-		use_file_for_in || use_null_for_in
-			? INVALID_FD : fd_in[1] < 0 ? pty_master_fd : fd_in[1],
-		use_file_for_out || use_null_for_out
-		      ? INVALID_FD : fd_out[0] < 0 ? pty_master_fd : fd_out[0],
-		use_out_for_err || use_file_for_err || use_null_for_err
-		     ? INVALID_FD : fd_err[0] < 0 ? pty_master_fd : fd_err[0]);
+	int in_fd = use_file_for_in || use_null_for_in
+			? INVALID_FD : fd_in[1] < 0 ? pty_master_fd : fd_in[1];
+	int out_fd = use_file_for_out || use_null_for_out
+		      ? INVALID_FD : fd_out[0] < 0 ? pty_master_fd : fd_out[0];
+	int err_fd = use_out_for_err || use_file_for_err || use_null_for_err
+		      ? INVALID_FD : fd_err[0] < 0 ? pty_master_fd : fd_err[0];
+
+	channel_set_pipes(channel, in_fd, out_fd, err_fd);
 	channel_set_job(channel, job, options);
     }
     else
