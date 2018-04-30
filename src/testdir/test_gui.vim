@@ -33,13 +33,25 @@ endfunc
 
 func Test_colorscheme()
   let colorscheme_saved = exists('g:colors_name') ? g:colors_name : 'default'
+  let g:color_count = 0
+  augroup TestColors
+    au!
+    au ColorScheme * let g:color_count += 1| let g:after_colors = g:color_count
+    au ColorSchemePre * let g:color_count += 1 |let g:before_colors = g:color_count
+  augroup END
 
   colorscheme torte
   redraw!
   sleep 200m
   call assert_equal('dark', &background)
+  call assert_equal(1, g:before_colors)
+  call assert_equal(2, g:after_colors)
 
   exec 'colorscheme' colorscheme_saved
+  augroup TestColors
+    au!
+  augroup END
+  unlet g:color_count g:after_colors g:before_colors
   redraw!
 endfunc
 
