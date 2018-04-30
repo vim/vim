@@ -100,7 +100,6 @@ func Test_terminal_split_quit()
 
   quit!
   call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
-  call assert_equal('dead', job_status(g:job))
 
   exe buf . 'bwipe'
   unlet g:job
@@ -142,8 +141,8 @@ func Test_terminal_nasty_cb()
   let g:buf = term_start(cmd, {'exit_cb': function('s:Nasty_exit_cb')})
   let g:job = term_getjob(g:buf)
 
-  call WaitFor('job_status(g:job) == "dead"')
-  call WaitFor('g:buf == 0')
+  call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
+  call WaitForAssert({-> assert_equal(0, g:buf)})
   unlet g:buf
   unlet g:job
   call delete('Xtext')
@@ -190,12 +189,12 @@ func Test_terminal_scrape_123()
   call term_wait(buf)
   " On MS-Windows we first get a startup message of two lines, wait for the
   " "cls" to happen, after that we have one line with three characters.
-  call WaitFor({-> len(term_scrape(buf, 1)) == 3})
+  call WaitForAssert({-> assert_equal(3, len(term_scrape(buf, 1)))})
   call Check_123(buf)
 
   " Must still work after the job ended.
   let job = term_getjob(buf)
-  call WaitFor({-> job_status(job) == "dead"})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call term_wait(buf)
   call Check_123(buf)
 
@@ -234,7 +233,7 @@ func Test_terminal_scrape_multibyte()
   call assert_equal('s', l[6].chars)
 
   let job = term_getjob(buf)
-  call WaitFor({-> job_status(job) == "dead"})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call term_wait(buf)
 
   exe buf . 'bwipe'
@@ -251,7 +250,7 @@ func Test_terminal_scroll()
   let buf = term_start(cmd)
 
   let job = term_getjob(buf)
-  call WaitFor({-> job_status(job) == "dead"})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call term_wait(buf)
   if has('win32')
     " TODO: this should not be needed
@@ -281,7 +280,7 @@ func Test_terminal_scrollback()
   endif
   let rows = term_getsize(buf)[0]
   " On MS-Windows there is an empty line, check both last line and above it.
-  call WaitFor({-> term_getline(buf, rows - 1) . term_getline(buf, rows - 2) =~ '149'})
+  call WaitForAssert({-> assert_match( '149', term_getline(buf, rows - 1) . term_getline(buf, rows - 2))})
   let lines = line('$')
   call assert_inrange(91, 100, lines)
 
@@ -408,16 +407,16 @@ func Test_terminal_finish_open_close()
   let buf = bufnr('%')
   call assert_equal(2, winnr('$'))
   " Wait for the shell to display a prompt
-  call WaitFor({-> term_getline(buf, 1) != ""})
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
   call Stop_shell_in_terminal(buf)
-  call WaitFor("winnr('$') == 1", waittime)
+  call WaitForAssert({-> assert_equal(1, winnr('$'))}, waittime)
 
   " shell terminal that does not close automatically
   terminal ++noclose
   let buf = bufnr('%')
   call assert_equal(2, winnr('$'))
   " Wait for the shell to display a prompt
-  call WaitFor({-> term_getline(buf, 1) != ""})
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
   call Stop_shell_in_terminal(buf)
   call assert_equal(2, winnr('$'))
   quit
@@ -426,36 +425,32 @@ func Test_terminal_finish_open_close()
   exe 'terminal ++close ' . cmd
   call assert_equal(2, winnr('$'))
   wincmd p
-  call WaitFor("winnr('$') == 1", waittime)
+  call WaitForAssert({-> assert_equal(1, winnr('$'))}, waittime)
 
   call term_start(cmd, {'term_finish': 'close'})
   call assert_equal(2, winnr('$'))
   wincmd p
-  call WaitFor("winnr('$') == 1", waittime)
+  call WaitForAssert({-> assert_equal(1, winnr('$'))}, waittime)
   call assert_equal(1, winnr('$'))
 
   exe 'terminal ++open ' . cmd
   close!
-  call WaitFor("winnr('$') == 2", waittime)
-  call assert_equal(2, winnr('$'))
+  call WaitForAssert({-> assert_equal(2, winnr('$'))}, waittime)
   bwipe
 
   call term_start(cmd, {'term_finish': 'open'})
   close!
-  call WaitFor("winnr('$') == 2", waittime)
-  call assert_equal(2, winnr('$'))
+  call WaitForAssert({-> assert_equal(2, winnr('$'))}, waittime)
   bwipe
 
   exe 'terminal ++hidden ++open ' . cmd
   call assert_equal(1, winnr('$'))
-  call WaitFor("winnr('$') == 2", waittime)
-  call assert_equal(2, winnr('$'))
+  call WaitForAssert({-> assert_equal(2, winnr('$'))}, waittime)
   bwipe
 
   call term_start(cmd, {'term_finish': 'open', 'hidden': 1})
   call assert_equal(1, winnr('$'))
-  call WaitFor("winnr('$') == 2", waittime)
-  call assert_equal(2, winnr('$'))
+  call WaitForAssert({-> assert_equal(2, winnr('$'))}, waittime)
   bwipe
 
   call assert_fails("call term_start(cmd, {'term_opencmd': 'open'})", 'E475:')
@@ -465,8 +460,7 @@ func Test_terminal_finish_open_close()
 
   call term_start(cmd, {'term_finish': 'open', 'term_opencmd': '4split | buffer %d'})
   close!
-  call WaitFor("winnr('$') == 2", waittime)
-  call assert_equal(2, winnr('$'))
+  call WaitForAssert({-> assert_equal(2, winnr('$'))}, waittime)
   call assert_equal(4, winheight(0))
   bwipe
 endfunc
@@ -477,8 +471,7 @@ func Test_terminal_cwd()
   endif
   call mkdir('Xdir')
   let buf = term_start('pwd', {'cwd': 'Xdir'})
-  call WaitFor('"Xdir" == fnamemodify(getline(1), ":t")')
-  call assert_equal('Xdir', fnamemodify(getline(1), ":t"))
+  call WaitForAssert({-> assert_equal('Xdir', fnamemodify(getline(1), ":t"))})
 
   exe buf . 'bwipe'
   call delete('Xdir', 'rf')
@@ -490,7 +483,7 @@ func Test_terminal_servername()
   endif
   let buf = Run_shell_in_terminal({})
   " Wait for the shell to display a prompt
-  call WaitFor({-> term_getline(buf, 1) != ""})
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
   if has('win32')
     call term_sendkeys(buf, "echo %VIM_SERVERNAME%\r")
   else
@@ -508,7 +501,7 @@ endfunc
 func Test_terminal_env()
   let buf = Run_shell_in_terminal({'env': {'TESTENV': 'correct'}})
   " Wait for the shell to display a prompt
-  call WaitFor({-> term_getline(buf, 1) != ""})
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
   if has('win32')
     call term_sendkeys(buf, "echo %TESTENV%\r")
   else
@@ -516,8 +509,7 @@ func Test_terminal_env()
   endif
   call term_wait(buf)
   call Stop_shell_in_terminal(buf)
-  call WaitFor('getline(2) == "correct"')
-  call assert_equal('correct', getline(2))
+  call WaitForAssert({-> assert_equal('correct', getline(2))})
 
   exe buf . 'bwipe'
 endfunc
@@ -539,8 +531,7 @@ func Test_zz_terminal_in_gui()
   call term_wait(buf)
 
   " closing window wipes out the terminal buffer a with finished job
-  call WaitFor("winnr('$') == 1")
-  call assert_equal(1, winnr('$'))
+  call WaitForAssert({-> assert_equal(1, winnr('$'))})
   call assert_equal("", bufname(buf))
 
   unlet g:job
@@ -592,7 +583,7 @@ func Test_terminal_write_stdin()
   new
   call setline(1, ['one', 'two', 'three'])
   %term wc
-  call WaitFor('getline("$") =~ "3"')
+  call WaitForAssert({-> assert_match('3', getline("$"))})
   let nrs = split(getline('$'))
   call assert_equal(['3', '3', '14'], nrs)
   bwipe
@@ -600,7 +591,7 @@ func Test_terminal_write_stdin()
   new
   call setline(1, ['one', 'two', 'three', 'four'])
   2,3term wc
-  call WaitFor('getline("$") =~ "2"')
+  call WaitForAssert({-> assert_match('2', getline("$"))})
   let nrs = split(getline('$'))
   call assert_equal(['2', '2', '10'], nrs)
   bwipe
@@ -622,7 +613,7 @@ func Test_terminal_write_stdin()
       new
       call setline(1, ['print("hello")'])
       1term ++eof=<C-Z> python
-      call WaitFor('getline("$") =~ "Z"')
+      call WaitForAssert({-> assert_match('Z', getline("$"))})
       call assert_equal('hello', getline(line('$') - 1))
       bwipe
     endif
@@ -646,9 +637,8 @@ func Test_terminal_no_cmd()
   else
     call system('echo "look here" > ' . pty)
   endif
-  call WaitFor({-> term_getline(buf, 1) =~ "look here"})
+  call WaitForAssert({-> assert_match('look here', term_getline(buf, 1))})
 
-  call assert_match('look here', term_getline(buf, 1))
   bwipe!
 endfunc
 
@@ -660,8 +650,7 @@ func Test_terminal_special_chars()
   call mkdir('Xdir with spaces')
   call writefile(['x'], 'Xdir with spaces/quoted"file')
   term ls Xdir\ with\ spaces/quoted\"file
-  call WaitFor('term_getline("", 1) =~ "quoted"')
-  call assert_match('quoted"file', term_getline('', 1))
+  call WaitForAssert({-> assert_match('quoted"file', term_getline('', 1))})
   call term_wait('')
 
   call delete('Xdir with spaces', 'rf')
@@ -691,10 +680,10 @@ func Test_terminal_redir_file()
     let cmd = Get_cat_123_cmd()
     let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
     call term_wait(buf)
-    call WaitFor('len(readfile("Xfile")) > 0')
+    call WaitForAssert({-> assert_notequal(0, len(readfile("Xfile")))})
     call assert_match('123', readfile('Xfile')[0])
     let g:job = term_getjob(buf)
-    call WaitFor('job_status(g:job) == "dead"')
+    call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
     call delete('Xfile')
     bwipe
   endif
@@ -703,10 +692,9 @@ func Test_terminal_redir_file()
     call writefile(['one line'], 'Xfile')
     let buf = term_start('cat', {'in_io': 'file', 'in_name': 'Xfile'})
     call term_wait(buf)
-    call WaitFor('term_getline(' . buf . ', 1) == "one line"')
-    call assert_equal('one line', term_getline(buf, 1))
+    call WaitForAssert({-> assert_equal('one line', term_getline(buf, 1))})
     let g:job = term_getjob(buf)
-    call WaitFor('job_status(g:job) == "dead"')
+    call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
     bwipe
     call delete('Xfile')
   endif
@@ -726,7 +714,7 @@ func TerminalTmap(remap)
   call assert_equal('456', maparg('123', 't'))
   call assert_equal('abxde', maparg('456', 't'))
   call feedkeys("123", 'tx')
-  call WaitFor({-> term_getline(buf, term_getcursor(buf)[0]) =~ 'abxde\|456'})
+  call WaitForAssert({-> assert_match('abxde\|456', term_getline(buf, term_getcursor(buf)[0]))})
   let lnum = term_getcursor(buf)[0]
   if a:remap
     call assert_match('abxde', term_getline(buf, lnum))
@@ -825,8 +813,7 @@ func Test_terminal_composing_unicode()
   call assert_equal("\u00a0\u0308", l[3].chars)
 
   call term_sendkeys(buf, "exit\r")
-  call WaitFor('job_status(g:job) == "dead"')
-  call assert_equal('dead', job_status(g:job))
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
   bwipe!
   unlet g:job
   let &encoding = save_enc
@@ -849,7 +836,7 @@ func Test_terminal_aucmd_on_close()
   call setline(1, ['one', 'two'])
   exe 'term ++close ' . cmd
   wincmd p
-  call WaitFor("winnr('$') == 2", waittime)
+  call WaitForAssert({-> assert_equal(2, winnr('$'))}, waittime)
   call assert_equal(1, s:called)
   bwipe!
 
@@ -875,16 +862,16 @@ func Test_terminal_response_to_control_sequence()
   endif
 
   let buf = Run_shell_in_terminal({})
-  call WaitFor({-> term_getline(buf, 1) != ''})
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
 
   call term_sendkeys(buf, "cat\<CR>")
-  call WaitFor({-> term_getline(buf, 1) =~ 'cat'})
+  call WaitForAssert({-> assert_match('cat', term_getline(buf, 1))})
 
   " Request the cursor position.
   call term_sendkeys(buf, "\x1b[6n\<CR>")
 
   " Wait for output from tty to display, below an empty line.
-  call WaitFor({-> term_getline(buf, 4) =~ '3;1R'})
+  call WaitForAssert({-> assert_match('3;1R', term_getline(buf, 4))})
 
   " End "cat" gently.
   call term_sendkeys(buf, "\<CR>\<C-D>")
@@ -961,14 +948,14 @@ func Test_terminal_qall_prompt()
 
   " Open a terminal window and wait for the prompt to appear
   call term_sendkeys(buf, ":term\<CR>")
-  call WaitFor({-> term_getline(buf, 10) =~ '\[running]'})
-  call WaitFor({-> term_getline(buf, 1) !~ '^\s*$'})
+  call WaitForAssert({-> assert_match('\[running]', term_getline(buf, 10))})
+  call WaitForAssert({-> assert_notmatch('^\s*$', term_getline(buf, 1))})
 
   " make Vim exit, it will prompt to kill the shell
   call term_sendkeys(buf, "\<C-W>:confirm qall\<CR>")
-  call WaitFor({-> term_getline(buf, 20) =~ 'ancel:'})
+  call WaitForAssert({-> assert_match('ancel:', term_getline(buf, 20))})
   call term_sendkeys(buf, "y")
-  call WaitFor({-> term_getstatus(buf) == "finished"})
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
 
   " close the terminal window where Vim was running
   quit
@@ -1025,7 +1012,7 @@ func Test_terminal_dumpwrite_composing()
   let text = " a\u0300 e\u0302 o\u0308"
   call writefile([text], 'Xcomposing')
   let buf = RunVimInTerminal('Xcomposing', {})
-  call WaitFor({-> term_getline(buf, 1) =~ text})
+  call WaitForAssert({-> assert_match(text, term_getline(buf, 1))})
   call term_dumpwrite(buf, 'Xdump')
   let dumpline = readfile('Xdump')[0]
   call assert_match('|à| |ê| |ö', dumpline)
@@ -1235,7 +1222,7 @@ func Test_terminal_api_drop_oldwin()
 	\ "set t_ts=",
 	\ ], 'Xscript')
   let buf = RunVimInTerminal('-S Xscript', {'rows': 10})
-  call WaitFor({-> expand('%:t') =='Xtextfile'})
+  call WaitForAssert({-> assert_equal('Xtextfile', expand('%:t'))})
   call assert_equal(textfile_winid, win_getid())
 
   call StopVimInTerminal(buf)
@@ -1284,7 +1271,7 @@ func Test_terminal_api_call_fails()
   call WriteApiCall('TryThis')
   call ch_logfile('Xlog', 'w')
   let buf = RunVimInTerminal('-S Xscript', {})
-  call WaitFor({-> string(readfile('Xlog')) =~ 'Invalid function name: TryThis'})
+  call WaitForAssert({-> assert_match('Invalid function name: TryThis', string(readfile('Xlog')))})
 
   call StopVimInTerminal(buf)
   call delete('Xscript')
@@ -1309,7 +1296,7 @@ func Test_terminal_api_call_fail_delete()
 
   call WriteApiCall('Tapi_Delete')
   let buf = RunVimInTerminal('-S Xscript', {})
-  call WaitFor({-> s:caught_e937 == 1})
+  call WaitForAssert({-> assert_equal(1, s:caught_e937)})
 
   call StopVimInTerminal(buf)
   call delete('Xscript')

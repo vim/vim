@@ -143,7 +143,7 @@ endfunc
 func Test_delete_myself()
   let g:called = 0
   let t = timer_start(10, 'StopMyself', {'repeat': -1})
-  call WaitFor('g:called == 2')
+  call WaitForAssert({-> assert_equal(2, g:called)})
   call assert_equal(2, g:called)
   call assert_equal([], timer_info(t))
 endfunc
@@ -206,7 +206,7 @@ func Test_timer_errors()
   let g:call_count = 0
   let timer = timer_start(10, 'FuncWithError', {'repeat': -1})
   " Timer will be stopped after failing 3 out of 3 times.
-  call WaitFor('g:call_count == 3')
+  call WaitForAssert({-> assert_equal(3, g:call_count)})
   sleep 50m
   call assert_equal(3, g:call_count)
 endfunc
@@ -224,7 +224,7 @@ func Test_timer_catch_error()
   let g:call_count = 0
   let timer = timer_start(10, 'FuncWithCaughtError', {'repeat': 4})
   " Timer will not be stopped.
-  call WaitFor('g:call_count == 4')
+  call WaitForAssert({-> assert_equal(4, g:call_count)})
   sleep 50m
   call assert_equal(4, g:call_count)
 endfunc
