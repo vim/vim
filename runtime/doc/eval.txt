@@ -2029,7 +2029,7 @@ argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
 argv({nr} [, {winid}])		String	{nr} entry of the argument list
 argv( [-1, [{winid}]])		List	the argument list
-assert_beeps({cmd})		none	assert {cmd} causes a beep
+assert_beeps({cmd})		Number	assert {cmd} causes a beep
 assert_equal({exp}, {act} [, {msg}])
 				Number	assert {exp} is equal to {act}
 assert_equalfile({fname-one}, {fname-two})
