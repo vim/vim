@@ -2703,6 +2703,8 @@ op_insert(oparg_T *oap, long count1)
     {
 	struct block_def	bd2;
 	int			did_indent = FALSE;
+	size_t			len;
+	int			add;
 
 	/* If indent kicked in, the firstline might have changed
 	 * but only do that, if the indent actually increased. */
@@ -2781,9 +2783,15 @@ op_insert(oparg_T *oap, long count1)
 	 * Subsequent calls to ml_get() flush the firstline data - take a
 	 * copy of the required string.
 	 */
-	firstline = ml_get(oap->start.lnum) + bd.textcol;
+	firstline = ml_get(oap->start.lnum);
+	len = STRLEN(firstline);
+	add = bd.textcol;
 	if (oap->op_type == OP_APPEND)
-	    firstline += bd.textlen;
+	    add += bd.textlen;
+	if ((size_t)add > len)
+	    firstline += len;  // short line, point to the NUL
+	else
+	    firstline += add;
 	if (pre_textlen >= 0
 		     && (ins_len = (long)STRLEN(firstline) - pre_textlen) > 0)
 	{
