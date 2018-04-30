@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.0.  Last change: 2018 Apr 18
+*develop.txt*   For Vim version 8.0.  Last change: 2018 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -182,7 +182,7 @@ The basic steps to make changes to the code:
    include the diff. Or create a pull request on github.
 
 
-C COMPILER						*style-compiler*
+C COMPILER				*style-compiler* *ANSI-C* *C89* *C99*
 
 The minimal C compiler version supported is C89, also known as ANSI C.
 Later standards, such as C99, are not widely supported, or at least not 100%

@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.0.  Last change: 2018 Mar 29
+*windows.txt*   For Vim version 8.0.  Last change: 2018 Apr 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1083,10 +1083,8 @@ list of buffers. |unlisted-buffer|
 <
 
 :bdelete[!] {bufname}						*E93* *E94*
-		Like ":bdelete[!] [N]", but buffer given by name.  Note that a
-		buffer whose name is a number cannot be referenced by that
-		name; use the buffer number instead.  Insert a backslash
-		before a space in a buffer name.
+		Like ":bdelete[!] [N]", but buffer given by name, see
+		|{bufname}|.
 
 :bdelete[!] N1 N2 ...
 		Do ":bdelete[!]" for buffer N1, N2, etc.  The arguments can be
@@ -1123,10 +1121,8 @@ list of buffers. |unlisted-buffer|
 		into a loaded buffer.
 
 :bunload[!] {bufname}
-		Like ":bunload[!] [N]", but buffer given by name.  Note that a
-		buffer whose name is a number cannot be referenced by that
-		name; use the buffer number instead.  Insert a backslash
-		before a space in a buffer name.
+		Like ":bunload[!] [N]", but buffer given by name.
+		Also see |{bufname}|.
 
 :N,Mbunload[!]	Do ":bunload[!]" for all buffers in the range N to M
 		|inclusive|.
@@ -1144,10 +1140,16 @@ list of buffers. |unlisted-buffer|
 		list, without setting the 'buflisted' flag.
 		Also see |+cmd|.
 
-:[N]b[uffer][!] [+cmd] {bufname}
-		Edit buffer for {bufname} from the buffer list.  See
-		|:buffer-!| for [!].  This will also edit a buffer that is not
-		in the buffer list, without setting the 'buflisted' flag.
+:[N]b[uffer][!] [+cmd] {bufname}				*{bufname}*
+		Edit buffer for {bufname} from the buffer list.  A partial
+		name also works, so long as it is unique in the list of
+		buffers.
+		Note that a buffer whose name is a number cannot be referenced
+		by that name; use the buffer number instead.
+		Insert a backslash before a space in a buffer name.
+		See |:buffer-!| for [!].
+		This will also edit a buffer that is not in the buffer list,
+		without setting the 'buflisted' flag.
 		Also see |+cmd|.
 
 :[N]sb[uffer] [+cmd] [N]				*:sb* *:sbuffer*
@@ -1159,7 +1161,7 @@ list of buffers. |unlisted-buffer|
 		Also see |+cmd|.
 
 :[N]sb[uffer] [+cmd] {bufname}
-		Split window and edit buffer for {bufname} from the buffer
+		Split window and edit buffer for |{bufname}| from the buffer
 		list.  This will also edit a buffer that is not in the buffer
 		list, without setting the 'buflisted' flag.
 		Note: If what you want to do is split the buffer, make a copy

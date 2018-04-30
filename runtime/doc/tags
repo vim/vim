@@ -3529,6 +3529,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 @r	eval.txt	/*@r*
 A	insert.txt	/*A*
 ACL	editing.txt	/*ACL*
+ANSI-C	develop.txt	/*ANSI-C*
 ATTENTION	usr_11.txt	/*ATTENTION*
 Abbreviations	map.txt	/*Abbreviations*
 Aleph	options.txt	/*Aleph*
@@ -3565,6 +3566,8 @@ BufWritePre	autocmd.txt	/*BufWritePre*
 C	change.txt	/*C*
 C-editing	tips.txt	/*C-editing*
 C-indenting	indent.txt	/*C-indenting*
+C89	develop.txt	/*C89*
+C99	develop.txt	/*C99*
 COMSPEC	starting.txt	/*COMSPEC*
 CR-used-for-NL	pattern.txt	/*CR-used-for-NL*
 CTRL-6	editing.txt	/*CTRL-6*
@@ -3693,6 +3696,7 @@ CmdlineLeave	autocmd.txt	/*CmdlineLeave*
 CmdwinEnter	autocmd.txt	/*CmdwinEnter*
 CmdwinLeave	autocmd.txt	/*CmdwinLeave*
 ColorScheme	autocmd.txt	/*ColorScheme*
+ColorSchemePre	autocmd.txt	/*ColorSchemePre*
 Command-line	cmdline.txt	/*Command-line*
 Command-line-mode	cmdline.txt	/*Command-line-mode*
 CompleteDone	autocmd.txt	/*CompleteDone*
@@ -5116,6 +5120,7 @@ asin()	eval.txt	/*asin()*
 asm.vim	syntax.txt	/*asm.vim*
 asm68k	syntax.txt	/*asm68k*
 asmh8300.vim	syntax.txt	/*asmh8300.vim*
+assert-return	eval.txt	/*assert-return*
 assert_beeps()	eval.txt	/*assert_beeps()*
 assert_equal()	eval.txt	/*assert_equal()*
 assert_equalfile()	eval.txt	/*assert_equalfile()*
@@ -6618,6 +6623,7 @@ getmatches()	eval.txt	/*getmatches()*
 getpid()	eval.txt	/*getpid()*
 getpos()	eval.txt	/*getpos()*
 getqflist()	eval.txt	/*getqflist()*
+getqflist-examples	quickfix.txt	/*getqflist-examples*
 getreg()	eval.txt	/*getreg()*
 getregtype()	eval.txt	/*getregtype()*
 getscript	pi_getscript.txt	/*getscript*
@@ -8356,6 +8362,7 @@ setloclist()	eval.txt	/*setloclist()*
 setmatches()	eval.txt	/*setmatches()*
 setpos()	eval.txt	/*setpos()*
 setqflist()	eval.txt	/*setqflist()*
+setqflist-examples	quickfix.txt	/*setqflist-examples*
 setreg()	eval.txt	/*setreg()*
 settabvar()	eval.txt	/*settabvar()*
 settabwinvar()	eval.txt	/*settabwinvar()*
@@ -9730,6 +9737,7 @@ zz	scroll.txt	/*zz*
 {Visual}	intro.txt	/*{Visual}*
 {address}	cmdline.txt	/*{address}*
 {arglist}	editing.txt	/*{arglist}*
+{bufname}	windows.txt	/*{bufname}*
 {char1-char2}	intro.txt	/*{char1-char2}*
 {event}	autocmd.txt	/*{event}*
 {file}	editing.txt	/*{file}*

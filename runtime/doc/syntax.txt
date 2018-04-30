@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.0.  Last change: 2018 Jan 31
+*syntax.txt*	For Vim version 8.0.  Last change: 2018 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4627,7 +4627,9 @@ in their own color.
 				runtime colors/evening.vim
 				hi Statement ctermfg=Blue guifg=Blue
 
-<			After the color scheme has been loaded the
+<			Before the color scheme will be loaded the
+			|ColorSchemePre| autocommand event is triggered.
+			After the color scheme has been loaded the
 			|ColorScheme| autocommand event is triggered.
 			For info about writing a colorscheme file: >
 				:edit $VIMRUNTIME/colors/README.txt
