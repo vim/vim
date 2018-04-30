@@ -5496,12 +5496,12 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
     int		argc = 0;
 #if defined(UNIX)
 # define USE_ARGV
+    int		i;
 #else
     garray_T	ga;
 #endif
     jobopt_T	opt;
     ch_part_T	part;
-    int		i;
 
     job = job_alloc();
     if (job == NULL)
