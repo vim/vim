@@ -1011,7 +1011,7 @@ func Test_terminal_dumpwrite_composing()
 
   let text = " a\u0300 e\u0302 o\u0308"
   call writefile([text], 'Xcomposing')
-  let buf = RunVimInTerminal('Xcomposing', {})
+  let buf = RunVimInTerminal('--cmd "set encoding=utf-8" Xcomposing', {})
   call WaitForAssert({-> assert_match(text, term_getline(buf, 1))})
   call term_dumpwrite(buf, 'Xdump')
   let dumpline = readfile('Xdump')[0]
