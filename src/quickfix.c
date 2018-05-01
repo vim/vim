@@ -33,6 +33,7 @@ struct qfline_S
     int		qf_fnum;	/* file number for the line */
     int		qf_col;		/* column where the error occurred */
     int		qf_nr;		/* error number */
+    char_u	*qf_module;	/* module name for this error */
     char_u	*qf_pattern;	/* search pattern for the error */
     char_u	*qf_text;	/* description of the error */
     char_u	qf_viscol;	/* set to TRUE if qf_col is screen column */
@@ -101,7 +102,7 @@ struct qf_info_S
 static qf_info_T ql_info;	/* global quickfix list */
 static int_u last_qf_id = 0;	/* Last used quickfix list id */
 
-#define FMT_PATTERNS 10		/* maximum number of % recognized */
+#define FMT_PATTERNS 11		/* maximum number of % recognized */
 
 /*
  * Structure used to hold the info of one part of 'errorformat'
@@ -135,7 +136,8 @@ static efm_T	*fmt_start = NULL; /* cached across qf_parse_line() calls */
 
 static int	qf_init_ext(qf_info_T *qi, int qf_idx, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast, char_u *qf_title, char_u *enc);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
-static int	qf_add_entry(qf_info_T *qi, int qf_idx, char_u *dir, char_u *fname, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid);
+static int	qf_add_entry(qf_info_T *qi, int qf_idx, char_u *dir, char_u *fname, char_u *module, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid);
+static qf_info_T *ll_new_list(void);
 static void	qf_free(qf_info_T *qi, int idx);
 static char_u	*qf_types(int, int);
 static int	qf_get_fnum(qf_info_T *qi, int qf_idx, char_u *, char_u *);
@@ -221,7 +223,8 @@ static struct fmtpattern
 		    {'r', ".*"},
 		    {'p', "[- 	.]*"},
 		    {'v', "\\d\\+"},
-		    {'s', ".\\+"}
+		    {'s', ".\\+"},
+		    {'o', ".\\+"}
 		};
 
 /*
@@ -809,6 +812,7 @@ qf_get_nextline(qfstate_T *state)
 
 typedef struct {
     char_u	*namebuf;
+    char_u	*module;
     char_u	*errmsg;
     int		errmsglen;
     long	lnum;
@@ -868,6 +872,7 @@ restofline:
 	if (qfl->qf_multiscan && vim_strchr((char_u *)"OPQ", idx) == NULL)
 	    continue;
 	fields->namebuf[0] = NUL;
+	fields->module[0] = NUL;
 	fields->pattern[0] = NUL;
 	if (!qfl->qf_multiscan)
 	    fields->errmsg[0] = NUL;
@@ -1007,6 +1012,15 @@ restofline:
 		fields->pattern[len + 3] = '\\';
 		fields->pattern[len + 4] = '$';
 		fields->pattern[len + 5] = NUL;
+	    }
+	    if ((i = (int)fmt_ptr->addr[10]) > 0)		/* %o */
+	    {
+		if (regmatch.startp[i] == NULL)
+		    continue;
+		len = (int)(regmatch.endp[i] - regmatch.startp[i]);
+		if (len > CMDBUFFSIZE)
+		    len = CMDBUFFSIZE;
+		STRNCAT(fields->module, regmatch.startp[i], len);
 	    }
 	    break;
 	}
@@ -1181,11 +1195,12 @@ qf_init_ext(
 	convert_setup(&state.vc, enc, p_enc);
 #endif
     fields.namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
+    fields.module = alloc_id(CMDBUFFSIZE + 1, aid_qf_module);
     fields.errmsglen = CMDBUFFSIZE + 1;
     fields.errmsg = alloc_id(fields.errmsglen, aid_qf_errmsg);
     fields.pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
     if (fields.namebuf == NULL || fields.errmsg == NULL
-		|| fields.pattern == NULL)
+		|| fields.pattern == NULL || fields.module == NULL)
 	goto qf_init_end;
 
     if (efile != NULL && (state.fd = mch_fopen((char *)efile, "r")) == NULL)
@@ -1282,6 +1297,7 @@ qf_init_ext(
 			    ? fields.namebuf
 			    : ((qfl->qf_currfile != NULL && fields.valid)
 				? qfl->qf_currfile : (char_u *)NULL),
+			fields.module,
 			0,
 			fields.errmsg,
 			fields.lnum,
@@ -1327,6 +1343,7 @@ qf_init_end:
     if (state.fd != NULL)
 	fclose(state.fd);
     vim_free(fields.namebuf);
+    vim_free(fields.module);
     vim_free(fields.errmsg);
     vim_free(fields.pattern);
     vim_free(state.growbuf);
@@ -1444,6 +1461,7 @@ qf_add_entry(
     int		qf_idx,		/* list index */
     char_u	*dir,		/* optional directory name */
     char_u	*fname,		/* file name or NULL */
+    char_u	*module,	/* module name or NULL */
     int		bufnum,		/* buffer number or zero */
     char_u	*mesg,		/* message */
     long	lnum,		/* line number */
@@ -1483,6 +1501,15 @@ qf_add_entry(
     else if ((qfp->qf_pattern = vim_strsave(pattern)) == NULL)
     {
 	vim_free(qfp->qf_text);
+	vim_free(qfp);
+	return FAIL;
+    }
+    if (module == NULL || *module == NUL)
+	qfp->qf_module = NULL;
+    else if ((qfp->qf_module = vim_strsave(module)) == NULL)
+    {
+	vim_free(qfp->qf_text);
+	vim_free(qfp->qf_pattern);
 	vim_free(qfp);
 	return FAIL;
     }
@@ -1635,6 +1662,7 @@ copy_loclist(win_T *from, win_T *to)
 				 to->w_llist->qf_curlist,
 				 NULL,
 				 NULL,
+				 from_qfp->qf_module,
 				 0,
 				 from_qfp->qf_text,
 				 from_qfp->qf_lnum,
@@ -2765,18 +2793,22 @@ qf_list(exarg_T *eap)
 		break;
 
 	    fname = NULL;
-	    if (qfp->qf_fnum != 0
-			      && (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
-	    {
-		fname = buf->b_fname;
-		if (qfp->qf_type == 1)	/* :helpgrep */
-		    fname = gettail(fname);
+	    if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
+		vim_snprintf((char *)IObuff, IOSIZE, "%2d %s", i, (char *)qfp->qf_module);
+	    else {
+		if (qfp->qf_fnum != 0
+				&& (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
+		{
+		    fname = buf->b_fname;
+		    if (qfp->qf_type == 1)	/* :helpgrep */
+			fname = gettail(fname);
+		}
+		if (fname == NULL)
+		    sprintf((char *)IObuff, "%2d", i);
+		else
+		    vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
+								i, (char *)fname);
 	    }
-	    if (fname == NULL)
-		sprintf((char *)IObuff, "%2d", i);
-	    else
-		vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
-							    i, (char *)fname);
 	    msg_outtrans_attr(IObuff, i == qi->qf_lists[qi->qf_curlist].qf_index
 					   ? HL_ATTR(HLF_QFL) : qfFileAttr);
 
@@ -2957,9 +2989,10 @@ qf_free_items(qf_info_T *qi, int idx)
 	qfpnext = qfp->qf_next;
 	if (!stop)
 	{
+	    vim_free(qfp->qf_module);
 	    vim_free(qfp->qf_text);
-	    stop = (qfp == qfpnext);
 	    vim_free(qfp->qf_pattern);
+	    stop = (qfp == qfpnext);
 	    vim_free(qfp);
 	    if (stop)
 		/* Somehow qf_count may have an incorrect value, set it to 1
@@ -3562,7 +3595,12 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 	}
 	while (lnum < qi->qf_lists[qi->qf_curlist].qf_count)
 	{
-	    if (qfp->qf_fnum != 0
+	    if (qfp->qf_module != NULL)
+	    {
+		STRCPY(IObuff, qfp->qf_module);
+		len = (int)STRLEN(IObuff);
+	    }
+	    else if (qfp->qf_fnum != 0
 		    && (errbuf = buflist_findnr(qfp->qf_fnum)) != NULL
 		    && errbuf->b_fname != NULL)
 	    {
@@ -4367,6 +4405,7 @@ vgr_match_buflines(
 			qi->qf_curlist,
 			NULL,       /* dir */
 			fname,
+			NULL,
 			duplicate_name ? 0 : buf->b_fnum,
 			ml_get_buf(buf,
 			    regmatch->startpos[0].lnum + lnum, FALSE),
@@ -4934,6 +4973,8 @@ get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list)
 	  || dict_add_nr_str(dict, "col",   (long)qfp->qf_col, NULL) == FAIL
 	  || dict_add_nr_str(dict, "vcol",  (long)qfp->qf_viscol, NULL) == FAIL
 	  || dict_add_nr_str(dict, "nr",    (long)qfp->qf_nr, NULL) == FAIL
+	  || dict_add_nr_str(dict, "module",  0L,
+		   qfp->qf_module == NULL ? (char_u *)"" : qfp->qf_module) == FAIL
 	  || dict_add_nr_str(dict, "pattern",  0L,
 	     qfp->qf_pattern == NULL ? (char_u *)"" : qfp->qf_pattern) == FAIL
 	  || dict_add_nr_str(dict, "text",  0L,
@@ -5312,7 +5353,7 @@ qf_add_entries(
 {
     listitem_T	*li;
     dict_T	*d;
-    char_u	*filename, *pattern, *text, *type;
+    char_u	*filename, *module, *pattern, *text, *type;
     int		bufnum;
     long	lnum;
     int		col, nr;
@@ -5347,6 +5388,7 @@ qf_add_entries(
 	    continue;
 
 	filename = get_dict_string(d, (char_u *)"filename", TRUE);
+	module = get_dict_string(d, (char_u *)"module", TRUE);
 	bufnum = (int)get_dict_number(d, (char_u *)"bufnr");
 	lnum = (int)get_dict_number(d, (char_u *)"lnum");
 	col = (int)get_dict_number(d, (char_u *)"col");
@@ -5383,6 +5425,7 @@ qf_add_entries(
 			       qf_idx,
 			       NULL,	    /* dir */
 			       filename,
+			       module,
 			       bufnum,
 			       text,
 			       lnum,
@@ -5394,6 +5437,7 @@ qf_add_entries(
 			       valid);
 
 	vim_free(filename);
+	vim_free(module);
 	vim_free(pattern);
 	vim_free(text);
 	vim_free(type);
@@ -6040,6 +6084,7 @@ hgr_search_file(
 			qi->qf_curlist,
 			NULL,	/* dir */
 			fname,
+			NULL,
 			0,
 			line,
 			lnum,
@@ -6104,7 +6149,7 @@ hgr_search_files_in_dir(
 	    /* Skip files for a different language. */
 	    if (lang != NULL
 		    && STRNICMP(lang, fnames[fi]
-			+ STRLEN(fnames[fi]) - 3, 2) != 0
+				    + STRLEN(fnames[fi]) - 3, 2) != 0
 		    && !(STRNICMP(lang, "en", 2) == 0
 			&& STRNICMP("txt", fnames[fi]
 			    + STRLEN(fnames[fi]) - 3, 3) == 0))
