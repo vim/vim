@@ -1573,6 +1573,14 @@ get_spec_reg(
 	    *allocated = TRUE;
 	    return TRUE;
 
+	case Ctrl_L:		/* Line under cursor */
+	    if (!errmsg)
+		return FALSE;
+
+	    *argp = ml_get_buf(curwin->w_buffer,
+			curwin->w_cursor.lnum, FALSE);
+	    return TRUE;
+
 	case '_':		/* black hole: always empty */
 	    *argp = (char_u *)"";
 	    return TRUE;
