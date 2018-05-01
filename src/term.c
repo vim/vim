@@ -6977,6 +6977,8 @@ static int grey_ramp[] = {
 
 # ifdef FEAT_TERMINAL
 #  include "libvterm/include/vterm.h"  // for VTERM_ANSI_INDEX_NONE
+# else
+#  define VTERM_ANSI_INDEX_NONE 0
 # endif
 
 static uint8_t ansi_table[16][4] = {

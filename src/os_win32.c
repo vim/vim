@@ -7656,6 +7656,7 @@ vtp_sgr_bulks(
     vtp_printf((char *)buf);
 }
 
+# ifdef FEAT_TERMGUICOLORS
     static int
 ctermtoxterm(
     int cterm)
@@ -7665,6 +7666,7 @@ ctermtoxterm(
     cterm_color2rgb(cterm, &r, &g, &b, &idx);
     return (((int)r << 16) | ((int)g << 8) | (int)b);
 }
+# endif
 
     static void
 set_console_color_rgb(void)
