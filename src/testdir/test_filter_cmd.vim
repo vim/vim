@@ -94,17 +94,10 @@ func Test_filter_commands()
   let test_filter_c = 3
 
   " Test filtering :let command
-  let redi = ""
-  redi => redi
-  filter /^test_filter/ let
-  redi END
-  let res = split(redi, "\n")
+  let res = split(execute("filter /^test_filter/ let"), "\n))
   call assert_equal(["test_filter_a         #1"], res)
 
-  redi => redi
-  filter /^\(b:\|\)test_filter/ let
-  redi END
-  let res = split(redi, "\n")
+  let res = split(execute("filter /^\(b:\|\)test_filter/ let"), "\n")
   call assert_equal(["test_filter_a         #1", "b:test_filter_b       #2"], res)
 
   unlet g:test_filter_a
@@ -112,33 +105,21 @@ func Test_filter_commands()
   unlet test_filter_c
 
   " Test filtering :set command
-  redi => redi
-  filter /^help/ set
-  redi END
-  let res = split(redi, "\n")[1:]
+  let res = split(execute("filter /^help/ set"), "\n")[1:]
   call assert_equal(["  helplang=en"], res)
 
   " Test filtering :llist command
   call setloclist(0, [{"filename": "/path/vim.c"}, {"filename": "/path/vim.h"}, {"module": "Main.Test"}])
-  redi => redi
-  filter /\.c$/ llist
-  redi END
-  let res = split(redi, "\n")
+  let res = split(execute("filter /\.c$/ llist"), "\n")
   call assert_equal([" 1 /path/vim.c:  "], res)
 
-  redi => redi
-  filter /\.Test$/ llist
-  redi END
-  let res = split(redi, "\n")
+  let res = split(execute("filter /\.Test$/ llist"), "\n")
   call assert_equal([" 3 Main.Test:  "], res)
 
   " Test filtering :jump command
   e file.c
   e file.h
   e file.hs
-  redi => redi
-  filter /\.c$/ jumps
-  redi END
-  let res = split(redi, "\n")[1:]
+  let res = split(execute("filter /\.c$/ jumps"), "\n")[1:]
   call assert_equal(["   2     1    0 file.c", ">"], res)
 endfunc
