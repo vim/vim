@@ -43,7 +43,6 @@
  * - Win32: Redirecting output does not work, Test_terminal_redir_file()
  *   is disabled.
  * - Add test for 'termwinkey'.
- * - libvterm: bringg back using // comments and trailing comma in enum
  * - When starting terminal window with shell in terminal, then using :gui to
  *   switch to GUI, shell stops working. Scrollback seems wrong, command
  *   running in shell is still running.
@@ -3016,66 +3015,14 @@ term_get_attr(buf_T *buf, linenr_T lnum, int col)
     return cell2attr(cellattr->attrs, cellattr->fg, cellattr->bg);
 }
 
-static VTermColor ansi_table[16] = {
-  {  0,   0,   0,  1}, /* black */
-  {224,   0,   0,  2}, /* dark red */
-  {  0, 224,   0,  3}, /* dark green */
-  {224, 224,   0,  4}, /* dark yellow / brown */
-  {  0,   0, 224,  5}, /* dark blue */
-  {224,   0, 224,  6}, /* dark magenta */
-  {  0, 224, 224,  7}, /* dark cyan */
-  {224, 224, 224,  8}, /* light grey */
-
-  {128, 128, 128,  9}, /* dark grey */
-  {255,  64,  64, 10}, /* light red */
-  { 64, 255,  64, 11}, /* light green */
-  {255, 255,  64, 12}, /* yellow */
-  { 64,  64, 255, 13}, /* light blue */
-  {255,  64, 255, 14}, /* light magenta */
-  { 64, 255, 255, 15}, /* light cyan */
-  {255, 255, 255, 16}, /* white */
-};
-
-static int cube_value[] = {
-    0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF
-};
-
-static int grey_ramp[] = {
-    0x08, 0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
-    0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
-};
-
 /*
  * Convert a cterm color number 0 - 255 to RGB.
  * This is compatible with xterm.
  */
     static void
-cterm_color2rgb(int nr, VTermColor *rgb)
+cterm_color2vterm(int nr, VTermColor *rgb)
 {
-    int idx;
-
-    if (nr < 16)
-    {
-	*rgb = ansi_table[nr];
-    }
-    else if (nr < 232)
-    {
-	/* 216 color cube */
-	idx = nr - 16;
-	rgb->blue  = cube_value[idx      % 6];
-	rgb->green = cube_value[idx / 6  % 6];
-	rgb->red   = cube_value[idx / 36 % 6];
-	rgb->ansi_index = VTERM_ANSI_INDEX_NONE;
-    }
-    else if (nr < 256)
-    {
-	/* 24 grey scale ramp */
-	idx = nr - 232;
-	rgb->blue  = grey_ramp[idx];
-	rgb->green = grey_ramp[idx];
-	rgb->red   = grey_ramp[idx];
-	rgb->ansi_index = VTERM_ANSI_INDEX_NONE;
-    }
+    cterm_color2rgb(nr, &rgb->red, &rgb->green, &rgb->blue, &rgb->ansi_index);
 }
 
 /*
@@ -3120,6 +3067,10 @@ init_default_colors(term_T *term)
 # endif
 # ifdef FEAT_TERMGUICOLORS
 	    || p_tgc
+#  ifdef FEAT_VTP
+	    /* Finally get INVALCOLOR on this execution path */
+	    || (!p_tgc && t_colors >= 256)
+#  endif
 # endif
        )
     {
@@ -3171,9 +3122,9 @@ init_default_colors(term_T *term)
     if (id != 0 && t_colors >= 16)
     {
 	if (term_default_cterm_fg >= 0)
-	    cterm_color2rgb(term_default_cterm_fg, fg);
+	    cterm_color2vterm(term_default_cterm_fg, fg);
 	if (term_default_cterm_bg >= 0)
-	    cterm_color2rgb(term_default_cterm_bg, bg);
+	    cterm_color2vterm(term_default_cterm_bg, bg);
     }
     else
     {
@@ -3184,7 +3135,7 @@ init_default_colors(term_T *term)
 	/* In an MS-Windows console we know the normal colors. */
 	if (cterm_normal_fg_color > 0)
 	{
-	    cterm_color2rgb(cterm_normal_fg_color - 1, fg);
+	    cterm_color2vterm(cterm_normal_fg_color - 1, fg);
 # if defined(WIN3264) && !defined(FEAT_GUI_W32)
 	    tmp = fg->red;
 	    fg->red = fg->blue;
@@ -3198,7 +3149,7 @@ init_default_colors(term_T *term)
 
 	if (cterm_normal_bg_color > 0)
 	{
-	    cterm_color2rgb(cterm_normal_bg_color - 1, bg);
+	    cterm_color2vterm(cterm_normal_bg_color - 1, bg);
 # if defined(WIN3264) && !defined(FEAT_GUI_W32)
 	    tmp = bg->red;
 	    bg->red = bg->blue;
