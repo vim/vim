@@ -6082,6 +6082,9 @@ did_set_string_option(
     int		redraw_gui_only = FALSE;
 #endif
     int		ft_changed = FALSE;
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+    int		did_swaptcap = FALSE;
+#endif
 
     /* Get the global option to compare with, otherwise we would have to check
      * two values for all local options. */
@@ -6821,6 +6824,13 @@ did_set_string_option(
 			vim_free(T_CCO);
 		    T_CCO = empty_option;
 		}
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+		if (is_term_win32())
+		{
+		    swap_tcap();
+		    did_swaptcap = TRUE;
+		}
+#endif
 		/* We now have a different color setup, initialize it again. */
 		init_highlight(TRUE, FALSE);
 	    }
@@ -7673,6 +7683,16 @@ did_set_string_option(
     if (!redraw_gui_only || gui.in_use)
 #endif
 	check_redraw(options[opt_idx].flags);
+
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+    if (did_swaptcap)
+    {
+	if (t_colors < 256)
+	    p_tgc = 0;
+	set_termname((char_u *)"win32");
+	init_highlight(TRUE, FALSE);
+    }
+#endif
 
     return errmsg;
 }
@@ -8716,7 +8736,8 @@ set_bool_option(
 	    p_tgc = 0;
 	    return (char_u*)N_("E954: 24-bit colors are not supported on this environment");
 	}
-	swap_tcap();
+	if (is_term_win32())
+	    swap_tcap();
 # endif
 # ifdef FEAT_GUI
 	if (!gui.in_use && !gui.starting)
@@ -8725,7 +8746,7 @@ set_bool_option(
 # ifdef FEAT_VTP
 	control_console_color_rgb();
 	/* reset t_Co */
-	if (STRCMP(T_NAME, "win32") == 0)
+	if (is_term_win32())
 	    set_termname(T_NAME);
 # endif
     }

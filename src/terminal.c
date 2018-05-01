@@ -3036,15 +3036,6 @@ static VTermColor ansi_table[16] = {
   {255, 255, 255, 16}, /* white */
 };
 
-static int cube_value[] = {
-    0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF
-};
-
-static int grey_ramp[] = {
-    0x08, 0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
-    0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
-};
-
 /*
  * Convert a cterm color number 0 - 255 to RGB.
  * This is compatible with xterm.
@@ -3120,6 +3111,10 @@ init_default_colors(term_T *term)
 # endif
 # ifdef FEAT_TERMGUICOLORS
 	    || p_tgc
+#  ifdef FEAT_VTP
+	    /* Finally get INVALCOLOR on this execution path */
+	    || (!p_tgc && t_colors >= 256)
+#  endif
 # endif
        )
     {

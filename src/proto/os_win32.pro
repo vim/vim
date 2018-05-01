@@ -72,4 +72,5 @@ int mch_setenv(char *var, char *value, int x);
 void control_console_color_rgb(void);
 int has_vtp_working(void);
 int use_vtp(void);
+int is_term_win32(void);
 /* vim: set ft=c : */
