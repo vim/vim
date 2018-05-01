@@ -10340,7 +10340,21 @@ exec_normal(int was_typed)
 		    && typebuf.tb_len > 0)) && !got_int)
     {
 	update_topline_cursor();
-	normal_cmd(&oa, TRUE);	/* execute a Normal mode cmd */
+#ifdef FEAT_TERMINAL
+	if (term_use_loop()
+		&& oa.op_type == OP_NOP && oa.regname == NUL
+		&& !VIsual_active)
+	{
+	    /* If terminal_loop() returns OK we got a key that is handled
+	     * in Normal model.  With FAIL we first need to position the
+	     * cursor and the screen needs to be redrawn. */
+	    if (terminal_loop(TRUE) == OK)
+		normal_cmd(&oa, TRUE);
+	}
+	else
+#endif
+	    /* execute a Normal mode cmd */
+	    normal_cmd(&oa, TRUE);
     }
 }
 

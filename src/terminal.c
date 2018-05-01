@@ -42,7 +42,6 @@
  *   redirection.  Probably in call to channel_set_pipes().
  * - Win32: Redirecting output does not work, Test_terminal_redir_file()
  *   is disabled.
- * - Add test for 'termwinkey'.
  * - When starting terminal window with shell in terminal, then using :gui to
  *   switch to GUI, shell stops working. Scrollback seems wrong, command
  *   running in shell is still running.
@@ -1690,6 +1689,7 @@ send_keys_to_term(term_T *term, int c, int typed)
 	    return FAIL;
 
 	case K_IGNORE:
+	case K_CANCEL:  // used for :normal when running out of chars
 	    return FAIL;
 
 	case K_LEFTDRAG:
@@ -1826,9 +1826,9 @@ term_paste_register(int prev_c UNUSED)
     }
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
 /*
- * Return TRUE when the cursor of the terminal should be displayed.
+ * Return TRUE when waiting for a character in the terminal, the cursor of the
+ * terminal should be displayed.
  */
     int
 terminal_is_active()
@@ -1836,6 +1836,7 @@ terminal_is_active()
     return in_terminal_loop != NULL;
 }
 
+#if defined(FEAT_GUI) || defined(PROTO)
     cursorentry_T *
 term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg)
 {

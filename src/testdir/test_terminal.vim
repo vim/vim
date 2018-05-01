@@ -1471,3 +1471,19 @@ func Test_terminal_termwinsize_mininmum()
 
   set termwinsize=
 endfunc
+
+func Test_terminal_termwinkey()
+  call assert_equal(1, winnr('$'))
+  let thiswin = win_getid()
+
+  let buf = Run_shell_in_terminal({})
+  let termwin = bufwinid(buf)
+  set termwinkey=<C-L>
+  call feedkeys("\<C-L>w", 'tx')
+  call assert_equal(thiswin, win_getid())
+  call feedkeys("\<C-W>w", 'tx')
+
+  let job = term_getjob(buf)
+  call feedkeys("\<C-L>\<C-C>", 'tx')
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+endfunc
