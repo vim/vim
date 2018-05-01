@@ -2758,6 +2758,19 @@ ex_unletlock(
 
     do
     {
+	if (*arg == '$')
+	{
+	    char_u    *name = ++arg;
+	    if (get_env_len(&arg) == 0)
+	    {
+		EMSG2(_(e_invarg2), name - 1);
+		return;
+	    }
+	    vim_unsetenv(name);
+	    arg = skipwhite(arg);
+	    continue;
+	}
+
 	/* Parse the name and find the end. */
 	name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error, 0,
 							     FNE_CHECK_START);
