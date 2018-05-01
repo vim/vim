@@ -4484,8 +4484,10 @@ vim_unsetenv(char_u *var)
 {
 #ifndef _WIN32
     unsetenv((char *)var);
-#else
+#elif defined(HAVE_UNSETENV)
     mch_setenv((char *)var, "", 0);
+#else
+    EMSG(_("E319: Sorry, the command is not available in this version"));
 #endif
 }
 
