@@ -11,6 +11,7 @@ void msg_add_fname(buf_T *buf, char_u *fname);
 void msg_add_lines(int insert_space, long lnum, off_T nchars);
 char_u *shorten_fname1(char_u *full_path);
 char_u *shorten_fname(char_u *full_path, char_u *dir_name);
+void shorten_buf_fname(buf_T *buf, char_u *dirname, int force);
 void shorten_fnames(int force);
 void shorten_filenames(char_u **fnames, int count);
 char_u *modname(char_u *fname, char_u *ext, int prepend_dot);

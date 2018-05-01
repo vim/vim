@@ -3201,3 +3201,27 @@ func Test_lhelpgrep_autocmd()
   au! QuickFixCmdPost
   new | only
 endfunc
+
+" Test for shortening/simplifying the file name when opening the
+" quickfix window or when displaying the quickfix list
+func Test_shorten_fname()
+  if !has('unix')
+    return
+  endif
+  %bwipe
+  " Create a quickfix list with a absolute path filename
+  let fname = getcwd() . '/test_quickfix.vim'
+  call setqflist([], ' ', {'lines':[fname . ":20:Line20"], 'efm':'%f:%l:%m'})
+  call assert_equal(fname, bufname('test_quickfix.vim'))
+  " Opening the quickfix window should simplify the file path
+  cwindow
+  call assert_equal('test_quickfix.vim', bufname('test_quickfix.vim'))
+  cclose
+  %bwipe
+  " Create a quickfix list with a absolute path filename
+  call setqflist([], ' ', {'lines':[fname . ":20:Line20"], 'efm':'%f:%l:%m'})
+  call assert_equal(fname, bufname('test_quickfix.vim'))
+  " Displaying the quickfix list should simplify the file path
+  silent! clist
+  call assert_equal('test_quickfix.vim', bufname('test_quickfix.vim'))
+endfunc
