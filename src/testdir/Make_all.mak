@@ -121,6 +121,7 @@ NEW_TESTS = test_arabic.res \
 	    test_increment.res \
 	    test_increment_dbcs.res \
 	    test_ins_complete.res \
+	    test_interrupt.res \
 	    test_job_fails.res \
 	    test_json.res \
 	    test_jumplist.res \
