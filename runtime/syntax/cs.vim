@@ -1,10 +1,11 @@
 " Vim syntax file
-" Language:	C#
-" Maintainer:	Anduin Withers <awithers@anduin.com>
-" Former Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	2018 Apr 30
-" Filenames:	*.cs
-" $Id: cs.vim,v 1.4 2006/05/03 21:20:02 vimboss Exp $
+" Language:		C#
+" Maintainer:		Nick Jensen <nickspoon@gmail.com>
+" Former Maintainer:	Anduin Withers <awithers@anduin.com>
+" Last Change:		2018-05-02
+" Filenames:		*.cs
+" License:		Vim (see :h license)
+" Repository:		https://github.com/nickspoons/vim-cs
 "
 " REFERENCES:
 " [1] ECMA TC39: C# Language Specification (WD13Oct01.doc)
@@ -17,11 +18,8 @@ let s:cs_cpo_save = &cpo
 set cpo&vim
 
 
-" type
 syn keyword csType			bool byte char decimal double float int long object sbyte short string T uint ulong ushort var void dynamic
-" storage
 syn keyword csStorage			delegate enum interface namespace struct
-" repeat / condition / label
 syn keyword csRepeat			break continue do for foreach goto return while
 syn keyword csConditional		else if switch
 syn keyword csLabel			case default
@@ -29,23 +27,15 @@ syn keyword csLabel			case default
 syn match csOperatorError		display +::+
 " user labels (see [1] 8.6 Statements)
 syn match   csLabel			display +^\s*\I\i*\s*:\([^:]\)\@=+
-" modifier
 syn keyword csModifier			abstract const extern internal override private protected public readonly sealed static virtual volatile
-" constant
 syn keyword csConstant			false null true
-" exception
 syn keyword csException			try catch finally throw when
+syn keyword csLinq			ascending by descending equals from group in into join let on orderby select where
+syn keyword csAsync			async await
 
-" TODO:
 syn keyword csUnspecifiedStatement	as base checked event fixed get in is lock nameof operator out params ref set sizeof stackalloc this typeof unchecked unsafe using
-
-syn keyword csLinqKeyword               ascending by descending equals from group in into join let on orderby select where
-" TODO:
 syn keyword csUnsupportedStatement	add remove value
-" TODO:
 syn keyword csUnspecifiedKeyword	explicit implicit
-
-syn keyword csAsyncKeyword		async await
 
 " Contextual Keywords
 syn match csContextualStatement	/\<yield[[:space:]\n]\+\(return\|break\)/me=s+5
@@ -135,15 +125,15 @@ hi def link csModifier			StorageClass
 hi def link csConstant			Constant
 hi def link csException			Exception
 hi def link csUnspecifiedStatement	Statement
-hi def link csNew			Statement
-hi def link csLinqWords			Statement
 hi def link csUnsupportedStatement	Statement
 hi def link csUnspecifiedKeyword	Keyword
+hi def link csNew			Statement
+hi def link csLinq			Statement
 hi def link csIsAs 			Keyword
-hi def link csAsyncKeyword              Keyword
+hi def link csAsync			Keyword
 hi def link csContextualStatement	Statement
 hi def link csOperatorError		Error
-hi def link csInterfaceDeclaration      Include
+hi def link csInterfaceDeclaration	Include
 
 hi def link csTodo			Todo
 hi def link csComment			Comment
