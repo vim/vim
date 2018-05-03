@@ -469,6 +469,9 @@ BufWinEnter			After a buffer is displayed in a window.  This
 				existing buffer.  But it does happen for a
 				":split" with the name of the current buffer,
 				since it reloads that buffer.
+				Does not happen for a terminal window, because
+				it starts in Terminal-Job mode and Normal mode
+				commands won't work. Use |TerminalOpen| instead.
 							*BufWinLeave*
 BufWinLeave			Before a buffer is removed from a window.
 				Not when it's still visible in another window.

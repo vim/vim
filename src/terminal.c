@@ -605,13 +605,7 @@ term_start(
 	 * a deadlock if the job is waiting for Vim to read. */
 	channel_set_nonblock(term->tl_job->jv_channel, PART_IN);
 
-	if (old_curbuf == NULL)
-	{
-	    ++curbuf->b_locked;
-	    apply_autocmds(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf);
-	    --curbuf->b_locked;
-	}
-	else
+	if (old_curbuf != NULL)
 	{
 	    --curbuf->b_nwindows;
 	    curbuf = old_curbuf;

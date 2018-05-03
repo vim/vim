@@ -32,7 +32,7 @@ func Run_shell_in_terminal(options)
 endfunc
 
 func Test_terminal_basic()
-  au BufWinEnter * if &buftype == 'terminal' | let b:done = 'yes' | endif
+  au TerminalOpen * let b:done = 'yes'
   let buf = Run_shell_in_terminal({})
 
   if has("unix")
@@ -61,7 +61,7 @@ func Test_terminal_basic()
   close
   call assert_equal("", bufname(buf))
 
-  au! BufWinEnter
+  au! TerminalOpen
   unlet g:job
 endfunc
 
