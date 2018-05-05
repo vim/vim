@@ -256,7 +256,7 @@ int main( int argc, char *argv[] )
 		stay = (echogets(Line2, echo) != NULL);
 	      }
 	    prefetch = 1;
-	    snprintf( Line, Line2 );
+	    strcpy( Line, Line2 );
 	    break;
 	  case COMPILER_IRIX:
 	    Col       = 1;
@@ -291,8 +291,9 @@ int main( int argc, char *argv[] )
 			prefetch = 0;
 		      }
 		     else
-		      { strcat( Line, "\n" );
-			strcat( Line, Line2 );
+		      {
+			char	Line[2*LINELENGTH + 1];
+			char	Line2[LINELENGTH];
 		      }
 		  }
 	      }
