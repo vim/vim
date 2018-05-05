@@ -2189,6 +2189,7 @@ test_arglist \
 	test_functions \
 	test_ga \
 	test_getcwd \
+	test_getenv \
 	test_getvar \
 	test_gf \
 	test_glob2regpat \

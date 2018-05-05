@@ -106,6 +106,7 @@ NEW_TESTS = test_arabic.res \
 	    test_fnameescape.res \
 	    test_fold.res \
 	    test_getcwd.res \
+	    test_getenv.res \
 	    test_getvar.res \
 	    test_gf.res \
 	    test_gn.res \
