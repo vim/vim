@@ -256,7 +256,7 @@ int main( int argc, char *argv[] )
 		stay = (echogets(Line2, echo) != NULL);
 	      }
 	    prefetch = 1;
-	    strcpy( Line, Line2 );
+	    snprintf( Line, Line2 );
 	    break;
 	  case COMPILER_IRIX:
 	    Col       = 1;
