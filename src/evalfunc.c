@@ -178,6 +178,7 @@ static void f_getcmdpos(typval_T *argvars, typval_T *rettv);
 static void f_getcmdtype(typval_T *argvars, typval_T *rettv);
 static void f_getcmdwintype(typval_T *argvars, typval_T *rettv);
 static void f_getcwd(typval_T *argvars, typval_T *rettv);
+static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
 static void f_getfperm(typval_T *argvars, typval_T *rettv);
 static void f_getfsize(typval_T *argvars, typval_T *rettv);
@@ -625,6 +626,7 @@ static struct fst
 #endif
     {"getcurpos",	0, 0, f_getcurpos},
     {"getcwd",		0, 2, f_getcwd},
+    {"getenv",		0, 1, f_getenv},
     {"getfontname",	0, 1, f_getfontname},
     {"getfperm",	1, 1, f_getfperm},
     {"getfsize",	1, 1, f_getfsize},
@@ -4745,6 +4747,58 @@ f_getfontname(typval_T *argvars UNUSED, typval_T *rettv)
 	if (argvars[0].v_type != VAR_UNKNOWN)
 	    gui_mch_free_font(font);
     }
+#endif
+}
+
+/*
+ * "getenv([name])" function
+ */
+    static void
+f_getenv(typval_T *argvars, typval_T *rettv)
+{
+#ifndef __WIN32__
+    extern char		**environ;
+#endif
+    int		i = 0;
+    char_u	*name, *value;
+
+#if defined(AMIGA)
+    return;
+#else
+    if (argvars[0].v_type == VAR_STRING)
+    {
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = vim_strsave(mch_getenv(get_tv_string(&argvars[0])));
+	return;
+    }
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
+
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+
+    if (*environ == NULL)
+	return;
+
+    do
+    {
+	if ((name = (char_u*)environ[i]) == NULL)
+	    return;
+	if ((value = vim_strchr(name, '=')) == NULL)
+	    return;
+	if ((name = vim_strnsave(name, value - name)) == NULL)
+	    return;
+	if ((value = vim_strsave(value + 1)) == NULL)
+	{
+	    vim_free(name);
+	    return;
+	}
+	dict_add_nr_str(rettv->vval.v_dict, (char*)name, 0L, value);
+	i++;
+    } while (1);
 #endif
 }
 
