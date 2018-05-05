@@ -51,6 +51,9 @@
  *   a redraw is faster.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
+ * - When the job only outputs lines, we could handle resizing the terminal
+ *   better: store lines separated by line breaks, instead of screen lines,
+ *   then when the window is resized redraw those lines.
  * - Redrawing is slow with Athena and Motif.  Also other GUI? (Ramel Eshed)
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
@@ -202,13 +205,13 @@ static int	desired_cursor_blink = -1;
  */
 
 /*
- * Parse 'termsize' and set "rows" and "cols" for the terminal size in the
+ * Parse 'termwinsize' and set "rows" and "cols" for the terminal size in the
  * current window.
  * Sets "rows" and/or "cols" to zero when it should follow the window size.
  * Return TRUE if the size is the minimum size: "24*80".
  */
     static int
-parse_termsize(win_T *wp, int *rows, int *cols)
+parse_termwinsize(win_T *wp, int *rows, int *cols)
 {
     int	minsize = FALSE;
 
@@ -232,7 +235,7 @@ parse_termsize(win_T *wp, int *rows, int *cols)
 }
 
 /*
- * Determine the terminal size from 'termsize' and the current window.
+ * Determine the terminal size from 'termwinsize' and the current window.
  */
     static void
 set_term_and_win_size(term_T *term)
@@ -247,7 +250,7 @@ set_term_and_win_size(term_T *term)
 	return;
     }
 #endif
-    if (parse_termsize(curwin, &term->tl_rows, &term->tl_cols))
+    if (parse_termwinsize(curwin, &term->tl_rows, &term->tl_cols))
     {
 	if (term->tl_rows != 0)
 	    term->tl_rows = MAX(term->tl_rows, curwin->w_height);
@@ -1982,7 +1985,7 @@ term_win_entered()
 terminal_loop(int blocking)
 {
     int		c;
-    int		termkey = 0;
+    int		termwinkey = 0;
     int		ret;
 #ifdef UNIX
     int		tty_fd = curbuf->b_term->tl_job->jv_channel
@@ -1997,7 +2000,7 @@ terminal_loop(int blocking)
     in_terminal_loop = curbuf->b_term;
 
     if (*curwin->w_p_twk != NUL)
-	termkey = string_to_key(curwin->w_p_twk, TRUE);
+	termwinkey = string_to_key(curwin->w_p_twk, TRUE);
     position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
 
@@ -2049,9 +2052,9 @@ terminal_loop(int blocking)
 	if (ctrl_break_was_pressed)
 	    mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 #endif
-	/* Was either CTRL-W (termkey) or CTRL-\ pressed?
+	/* Was either CTRL-W (termwinkey) or CTRL-\ pressed?
 	 * Not in a system terminal. */
-	if ((c == (termkey == 0 ? Ctrl_W : termkey) || c == Ctrl_BSL)
+	if ((c == (termwinkey == 0 ? Ctrl_W : termwinkey) || c == Ctrl_BSL)
 #ifdef FEAT_GUI
 		&& !curbuf->b_term->tl_system
 #endif
@@ -2085,15 +2088,15 @@ terminal_loop(int blocking)
 	    }
 	    else if (c == Ctrl_C)
 	    {
-		/* "CTRL-W CTRL-C" or 'termkey' CTRL-C: end the job */
+		/* "CTRL-W CTRL-C" or 'termwinkey' CTRL-C: end the job */
 		mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 	    }
-	    else if (termkey == 0 && c == '.')
+	    else if (termwinkey == 0 && c == '.')
 	    {
 		/* "CTRL-W .": send CTRL-W to the job */
 		c = Ctrl_W;
 	    }
-	    else if (termkey == 0 && c == Ctrl_BSL)
+	    else if (termwinkey == 0 && c == Ctrl_BSL)
 	    {
 		/* "CTRL-W CTRL-\": send CTRL-\ to the job */
 		c = Ctrl_BSL;
@@ -2110,7 +2113,7 @@ terminal_loop(int blocking)
 		term_paste_register(prev_c);
 		continue;
 	    }
-	    else if (termkey == 0 || c != termkey)
+	    else if (termwinkey == 0 || c != termwinkey)
 	    {
 		stuffcharReadbuff(Ctrl_W);
 		stuffcharReadbuff(c);
@@ -2886,9 +2889,9 @@ term_update_window(win_T *wp)
 
     /*
      * If the window was resized a redraw will be triggered and we get here.
-     * Adjust the size of the vterm unless 'termsize' specifies a fixed size.
+     * Adjust the size of the vterm unless 'termwinsize' specifies a fixed size.
      */
-    minsize = parse_termsize(wp, &rows, &cols);
+    minsize = parse_termwinsize(wp, &rows, &cols);
 
     newrows = 99999;
     newcols = 99999;

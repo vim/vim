@@ -849,9 +849,6 @@ EXTERN char_u	*p_tcldll;	/* 'tcldll' */
 #ifdef FEAT_ARABIC
 EXTERN int	p_tbidi;	/* 'termbidi' */
 #endif
-#ifdef FEAT_TERMINAL
-EXTERN long	p_tlsl;		/* 'terminalscroll' */
-#endif
 #ifdef FEAT_MBYTE
 EXTERN char_u	*p_tenc;	/* 'termencoding' */
 #endif

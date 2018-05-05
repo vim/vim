@@ -375,7 +375,7 @@ static long	p_wm;
 static char_u	*p_keymap;
 #endif
 #ifdef FEAT_TERMINAL
-static long	p_twsl;
+static long	p_twsl;		/* 'termwinscroll' */
 #endif
 
 /* Saved values for when 'bin' is set. */
@@ -2754,36 +2754,6 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)FALSE}
 #endif
 			    SCRIPTID_INIT},
-    /* TODO: remove this deprecated entry */
-    {"terminalscroll", "tlsl", P_NUM|P_VI_DEF|P_VIM|P_RBUF,
-#ifdef FEAT_TERMINAL
-			    (char_u *)&p_twsl, PV_TWSL,
-			    {(char_u *)10000L, (char_u *)10000L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCRIPTID_INIT},
-    /* TODO: remove this deprecated entry */
-    {"termkey",	    "tk",   P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
-#ifdef FEAT_TERMINAL
-			    (char_u *)VAR_WIN, PV_TWK,
-			    {(char_u *)"", (char_u *)NULL}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCRIPTID_INIT},
-    /* TODO: remove this deprecated entry */
-    {"termsize", "tms",	    P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
-#ifdef FEAT_TERMINAL
-			    (char_u *)VAR_WIN, PV_TWS,
-			    {(char_u *)"", (char_u *)NULL}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCRIPTID_INIT},
     {"termwinkey", "twk",   P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
 #ifdef FEAT_TERMINAL
 			    (char_u *)VAR_WIN, PV_TWK,
@@ -3805,23 +3775,17 @@ set_option_default(
 	dvi = ((flags & P_VI_DEF) || compatible) ? VI_DEFAULT : VIM_DEFAULT;
 	if (flags & P_STRING)
 	{
-	    /* skip 'termkey' and 'termsize, they are duplicates of
-	     * 'termwinkey' and 'termwinsize' */
-	    if (STRCMP(options[opt_idx].fullname, "termkey") != 0
-		    && STRCMP(options[opt_idx].fullname, "termsize") != 0)
+	    /* Use set_string_option_direct() for local options to handle
+	     * freeing and allocating the value. */
+	    if (options[opt_idx].indir != PV_NONE)
+		set_string_option_direct(NULL, opt_idx,
+				 options[opt_idx].def_val[dvi], opt_flags, 0);
+	    else
 	    {
-		/* Use set_string_option_direct() for local options to handle
-		 * freeing and allocating the value. */
-		if (options[opt_idx].indir != PV_NONE)
-		    set_string_option_direct(NULL, opt_idx,
-				     options[opt_idx].def_val[dvi], opt_flags, 0);
-		else
-		{
-		    if ((opt_flags & OPT_FREE) && (flags & P_ALLOCED))
-			free_string_option(*(char_u **)(varp));
-		    *(char_u **)varp = options[opt_idx].def_val[dvi];
-		    options[opt_idx].flags &= ~P_ALLOCED;
-		}
+		if ((opt_flags & OPT_FREE) && (flags & P_ALLOCED))
+		    free_string_option(*(char_u **)(varp));
+		*(char_u **)varp = options[opt_idx].def_val[dvi];
+		options[opt_idx].flags &= ~P_ALLOCED;
 	    }
 	}
 	else if (flags & P_NUM)

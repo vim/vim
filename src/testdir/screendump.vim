@@ -57,7 +57,7 @@ func RunVimInTerminal(arguments, options)
   " Add -v to have gvim run in the terminal (if possible)
   let cmd .= ' -v ' . a:arguments
   let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': cols})
-  if &termsize == ''
+  if &termwinsize == ''
     call assert_equal([rows, cols], term_getsize(buf))
   else
     let rows = term_getsize(buf)[0]
