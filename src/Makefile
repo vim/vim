@@ -2157,6 +2157,7 @@ test_arglist \
 	test_digraph \
 	test_display \
 	test_edit \
+	test_environ \
 	test_erasebackword \
 	test_escaped_glob \
 	test_eval_stuff \
@@ -2189,7 +2190,6 @@ test_arglist \
 	test_functions \
 	test_ga \
 	test_getcwd \
-	test_getenv \
 	test_getvar \
 	test_gf \
 	test_glob2regpat \

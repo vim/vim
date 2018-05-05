@@ -2114,6 +2114,7 @@ did_filetype()			Number	|TRUE| if FileType autocmd event used
 diff_filler({lnum})		Number	diff filler lines about {lnum}
 diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 empty({expr})			Number	|TRUE| if {expr} is empty
+environ()			Dict	return environment variables
 escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
 eventhandler()			Number	|TRUE| if inside an event handler
@@ -2171,7 +2172,6 @@ getcompletion({pat}, {type} [, {filtered}])
 				List	list of cmdline completion matches
 getcurpos()			List	position of the cursor
 getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
-getenv([{name}])		String or Dict	return environment variable
 getfontname([{name}])		String	name of font being used
 getfperm({fname})		String	file permissions of file {fname}
 getfsize({fname})		Number	size in bytes of file {fname}
@@ -3535,6 +3535,13 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		The highlight ID can be used with |synIDattr()| to obtain
 		syntax information about the highlighting.
 
+environ()						*environ()*
+		Return all of environment variables as dictionary. You can
+		check if an environment variable exists like below: >
+			:echo has_key(environ(), 'HOME')
+<		Note that the variable name may be CamelCase: >
+			:echo index(keys(environ()), 'HOME', 0, 1) != -1
+
 empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
 		- A |List| or |Dictionary| is empty when it does not have any
@@ -4558,11 +4565,6 @@ getcwd([{winnr} [, {tabnr}]])
 		With {winnr} and {tabnr} return the local current directory of
 		the window in the specified tab page.
 		Return an empty string if the arguments are invalid.
-
-getenv([{name}])					*getenv()*
-		Return environment variable of {name}. See also |expr-env|.
-		If {name} is not given, return all of environment variables
-		as dictionary.
 
 getfsize({fname})					*getfsize()*
 		The result is a Number, which is the size in bytes of the
