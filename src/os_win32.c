@@ -7661,7 +7661,7 @@ vtp_sgr_bulks(
 ctermtoxterm(
     int cterm)
 {
-    uint8_t r, g, b, idx;
+    char_u r, g, b, idx;
 
     cterm_color2rgb(cterm, &r, &g, &b, &idx);
     return (((int)r << 16) | ((int)g << 8) | (int)b);

@@ -6981,7 +6981,7 @@ static int grey_ramp[] = {
 #  define VTERM_ANSI_INDEX_NONE 0
 # endif
 
-static uint8_t ansi_table[16][4] = {
+static char_u ansi_table[16][4] = {
 //   R    G    B   idx
   {  0,   0,   0,  1}, // black
   {224,   0,   0,  2}, // dark red
@@ -7003,7 +7003,7 @@ static uint8_t ansi_table[16][4] = {
 };
 
     void
-cterm_color2rgb(int nr, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *ansi_idx)
+cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 {
     int idx;
 
