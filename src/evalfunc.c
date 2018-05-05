@@ -4767,8 +4767,15 @@ f_getenv(typval_T *argvars, typval_T *rettv)
 #else
     if (argvars[0].v_type == VAR_STRING)
     {
+	value = mch_getenv(get_tv_string(&argvars[0]));
+	if (value == NULL)
+	{
+	    rettv->v_type = VAR_SPECIAL;
+	    rettv->vval.v_number = VVAL_NULL;
+	    return;
+	}
 	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = vim_strsave(mch_getenv(get_tv_string(&argvars[0])));
+	rettv->vval.v_string = vim_strsave(value);
 	return;
     }
     if (argvars[0].v_type != VAR_UNKNOWN)
