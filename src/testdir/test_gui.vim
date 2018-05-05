@@ -706,3 +706,33 @@ func Test_windowid_variable()
     call assert_equal(0, v:windowid)
   endif
 endfunc
+
+" Test "vim -g" and also the GUIEnter autocommand.
+func Test_gui_dash_g()
+  let cmd = GetVimCommand('Xscriptgui')
+  call writefile([""], "Xtestgui")
+  call writefile([
+	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
+	\ 'au GUIEnter * qall',
+	\ ], 'Xscriptgui')
+  call system(cmd . ' -g')
+  call WaitForAssert({-> assert_equal(['insertmode: 0'], readfile('Xtestgui'))})
+
+  call delete('Xscriptgui')
+  call delete('Xtestgui')
+endfunc
+
+" Test "vim -7" and also the GUIEnter autocommand.
+func Test_gui_dash_y()
+  let cmd = GetVimCommand('Xscriptgui')
+  call writefile([""], "Xtestgui")
+  call writefile([
+	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
+	\ 'au GUIEnter * qall',
+	\ ], 'Xscriptgui')
+  call system(cmd . ' -y')
+  call WaitForAssert({-> assert_equal(['insertmode: 1'], readfile('Xtestgui'))})
+
+  call delete('Xscriptgui')
+  call delete('Xtestgui')
+endfunc
