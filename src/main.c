@@ -2014,6 +2014,7 @@ command_line_scan(mparm_T *parmp)
 #endif
 		break;
 
+	    case '?':		/* "-?" give help message (for MS-Windows) */
 	    case 'h':		/* "-h" give help message */
 #ifdef FEAT_GUI_GNOME
 		/* Tell usage() to exit for "gvim". */
