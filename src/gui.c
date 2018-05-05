@@ -37,8 +37,7 @@ static void gui_set_fg_color(char_u *name);
 static void gui_set_bg_color(char_u *name);
 static win_T *xy2win(int x, int y);
 
-#if defined(UNIX) && !defined(FEAT_GUI_MAC)
-# define MAY_FORK
+#ifdef GUI_MAY_FORK
 static void gui_do_fork(void);
 
 static int gui_read_child_pipe(int fd);
@@ -49,8 +48,7 @@ enum {
     GUI_CHILD_OK,
     GUI_CHILD_FAILED
 };
-
-#endif /* MAY_FORK */
+#endif
 
 static void gui_attempt_start(void);
 
@@ -88,14 +86,20 @@ gui_start(void)
 
     ++recursive;
 
-#ifdef MAY_FORK
+#ifdef GUI_MAY_FORK
     /*
      * Quit the current process and continue in the child.
      * Makes "gvim file" disconnect from the shell it was started in.
      * Don't do this when Vim was started with "-f" or the 'f' flag is present
      * in 'guioptions'.
+     * Don't do this when there is a running job, we can only get the status
+     * of a child from the parent.
      */
-    if (gui.dofork && !vim_strchr(p_go, GO_FORG) && recursive <= 1)
+    if (gui.dofork && !vim_strchr(p_go, GO_FORG) && recursive <= 1
+# ifdef FEAT_JOB_CHANNEL
+	    && !job_any_running()
+# endif
+	    )
     {
 	gui_do_fork();
     }
@@ -183,7 +187,7 @@ gui_attempt_start(void)
     --recursive;
 }
 
-#ifdef MAY_FORK
+#ifdef GUI_MAY_FORK
 
 /* for waitpid() */
 # if defined(HAVE_SYS_WAIT_H) || defined(HAVE_UNION_WAIT)
@@ -338,7 +342,7 @@ gui_read_child_pipe(int fd)
     return GUI_CHILD_FAILED;
 }
 
-#endif /* MAY_FORK */
+#endif /* GUI_MAY_FORK */
 
 /*
  * Call this when vim starts up, whether or not the GUI is started

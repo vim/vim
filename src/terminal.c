@@ -42,9 +42,6 @@
  *   redirection.  Probably in call to channel_set_pipes().
  * - Win32: Redirecting output does not work, Test_terminal_redir_file()
  *   is disabled.
- * - When starting terminal window with shell in terminal, then using :gui to
- *   switch to GUI, shell stops working. Scrollback seems wrong, command
- *   running in shell is still running.
  * - GUI: when using tabs, focus in terminal, click on tab does not work.
  * - handle_moverect() scrolls one line at a time.  Postpone scrolling, count
  *   the number of lines, until a redraw happens.  Then if scrolling many lines

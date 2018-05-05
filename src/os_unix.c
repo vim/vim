@@ -5642,8 +5642,10 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 			? INVALID_FD : fd_in[1] < 0 ? pty_master_fd : fd_in[1];
 	int out_fd = use_file_for_out || use_null_for_out
 		      ? INVALID_FD : fd_out[0] < 0 ? pty_master_fd : fd_out[0];
+	/* When using pty_master_fd only set it for stdout, do not duplicate it
+	 * for stderr, it only needs to be read once. */
 	int err_fd = use_out_for_err || use_file_for_err || use_null_for_err
-		      ? INVALID_FD : fd_err[0] < 0 ? pty_master_fd : fd_err[0];
+		      ? INVALID_FD : fd_err[0] < 0 ? INVALID_FD : fd_err[0];
 
 	channel_set_pipes(channel, in_fd, out_fd, err_fd);
 	channel_set_job(channel, job, options);
@@ -5701,6 +5703,9 @@ mch_job_status(job_T *job)
     if (wait_pid == -1)
     {
 	/* process must have exited */
+	if (job->jv_status < JOB_ENDED)
+	    ch_log(job->jv_channel, "Job no longer exists: %s",
+							      strerror(errno));
 	goto return_dead;
     }
     if (wait_pid == 0)
@@ -5709,21 +5714,22 @@ mch_job_status(job_T *job)
     {
 	/* LINTED avoid "bitwise operation on signed value" */
 	job->jv_exitval = WEXITSTATUS(status);
+	if (job->jv_status < JOB_ENDED)
+	    ch_log(job->jv_channel, "Job exited with %d", job->jv_exitval);
 	goto return_dead;
     }
     if (WIFSIGNALED(status))
     {
 	job->jv_exitval = -1;
+	if (job->jv_status < JOB_ENDED)
+	    ch_log(job->jv_channel, "Job terminated by a signal");
 	goto return_dead;
     }
     return "run";
 
 return_dead:
     if (job->jv_status < JOB_ENDED)
-    {
-	ch_log(job->jv_channel, "Job ended");
 	job->jv_status = JOB_ENDED;
-    }
     return "dead";
 }
 
@@ -5857,7 +5863,9 @@ mch_create_pty_channel(job_T *job, jobopt_T *options)
     job->jv_channel = channel;  /* ch_refcount was set by add_channel() */
     channel->ch_keep_open = TRUE;
 
-    channel_set_pipes(channel, pty_master_fd, pty_master_fd, pty_master_fd);
+    /* Only set the pty_master_fd for stdout, do not duplicate it for stderr,
+     * it only needs to be read once. */
+    channel_set_pipes(channel, pty_master_fd, pty_master_fd, INVALID_FD);
     channel_set_job(channel, job, options);
     return OK;
 }
