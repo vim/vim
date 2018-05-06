@@ -1476,6 +1476,10 @@ qf_init_end:
     return retval;
 }
 
+/*
+ * Set the title of the specified quickfix list. Frees the previous title.
+ * Prepends ':' to the title.
+ */
     static void
 qf_store_title(qf_info_T *qi, int qf_idx, char_u *title)
 {
@@ -1551,6 +1555,9 @@ ll_free_all(qf_info_T **pqi)
     }
 }
 
+/*
+ * Free all the quickfix/location lists in the stack.
+ */
     void
 qf_free_all(win_T *wp)
 {
@@ -2994,6 +3001,10 @@ qf_fmt_text(char_u *text, char_u *buf, int bufsize)
     buf[i] = NUL;
 }
 
+/*
+ * Display information (list number, list size and the title) about a
+ * quickfix/location list.
+ */
     static void
 qf_msg(qf_info_T *qi, int which, char *lead)
 {
@@ -3073,6 +3084,9 @@ qf_age(exarg_T *eap)
     qf_update_buffer(qi, NULL);
 }
 
+/*
+ * Display the information about all the quickfix/location lists in the stack
+ */
     void
 qf_history(exarg_T *eap)
 {
@@ -3813,6 +3827,9 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
     KeyTyped = old_KeyTyped;
 }
 
+/*
+ * For every change made to the quickfix list, update the changed tick.
+ */
     static void
 qf_list_changed(qf_info_T *qi, int qf_idx)
 {
@@ -5903,6 +5920,9 @@ set_errorlist(
     return retval;
 }
 
+/*
+ * Mark the context as in use for all the lists in a quickfix stack.
+ */
     static int
 mark_quickfix_ctx(qf_info_T *qi, int copyID)
 {
