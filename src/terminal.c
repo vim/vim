@@ -2700,6 +2700,13 @@ term_channel_closed(channel_T *ch)
 
 	    VIM_CLEAR(term->tl_title);
 	    VIM_CLEAR(term->tl_status_text);
+#ifdef WIN3264
+	    if (term->tl_out_fd != NULL)
+	    {
+		fclose(term->tl_out_fd);
+		term->tl_out_fd = NULL;
+	    }
+#endif
 
 	    /* Unless in Terminal-Normal mode: clear the vterm. */
 	    if (!term->tl_normal_mode)
