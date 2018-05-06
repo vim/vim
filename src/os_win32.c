@@ -6847,7 +6847,6 @@ default_shell(void)
 mch_access(char *n, int p)
 {
     HANDLE	hFile;
-    DWORD	am;
     int		retval = -1;	    /* default: fail */
 #ifdef FEAT_MBYTE
     WCHAR	*wn = NULL;
@@ -6931,16 +6930,22 @@ mch_access(char *n, int p)
     }
     else
     {
+	// Don't consider a file read-only if another process has opened it.
+	DWORD share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+
 	/* Trying to open the file for the required access does ACL, read-only
 	 * network share, and file attribute checks.  */
-	am = ((p & W_OK) ? GENERIC_WRITE : 0)
-		| ((p & R_OK) ? GENERIC_READ : 0);
+	DWORD access_mode = ((p & W_OK) ? GENERIC_WRITE : 0)
+					     | ((p & R_OK) ? GENERIC_READ : 0);
+
 #ifdef FEAT_MBYTE
 	if (wn != NULL)
-	    hFile = CreateFileW(wn, am, 0, NULL, OPEN_EXISTING, 0, NULL);
+	    hFile = CreateFileW(wn, access_mode, share_mode,
+						 NULL, OPEN_EXISTING, 0, NULL);
 	else
 #endif
-	    hFile = CreateFile(n, am, 0, NULL, OPEN_EXISTING, 0, NULL);
+	    hFile = CreateFile(n, access_mode, share_mode,
+						 NULL, OPEN_EXISTING, 0, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 	    goto getout;
 	CloseHandle(hFile);
