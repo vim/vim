@@ -2296,14 +2296,23 @@ gui_mch_get_color(char_u *name)
     guicolor_T
 gui_mch_get_rgb_color(int r, int g, int b)
 {
-    char	spec[8]; /* space enough to hold "#RRGGBB" */
     XColor	available;
     Colormap	colormap;
 
+/* Using XParseColor() is very slow, put rgb in XColor directly.
+
+    char	spec[8]; // space enough to hold "#RRGGBB"
     vim_snprintf(spec, sizeof(spec), "#%.2x%.2x%.2x", r, g, b);
-    colormap = DefaultColormap(gui.dpy, DefaultScreen(gui.dpy));
     if (XParseColor(gui.dpy, colormap, (char *)spec, &available) != 0
 	    && XAllocColor(gui.dpy, colormap, &available) != 0)
+	return (guicolor_T)available.pixel;
+*/
+    colormap = DefaultColormap(gui.dpy, DefaultScreen(gui.dpy));
+    vim_memset(&available, 0, sizeof(XColor));
+    available.red = r << 8;
+    available.green = g << 8;
+    available.blue = b << 8;
+    if (XAllocColor(gui.dpy, colormap, &available) != 0)
 	return (guicolor_T)available.pixel;
 
     return INVALCOLOR;
