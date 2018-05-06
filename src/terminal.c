@@ -38,16 +38,17 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
- * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
- *   redirection.  Probably in call to channel_set_pipes().
- * - Win32: Redirecting output does not work, Test_terminal_redir_file()
+ * - Win32: Redirecting input does not work, half of Test_terminal_redir_file()
  *   is disabled.
+ * - Win32: Redirecting output works but includes escape sequences.
+ * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
+ *   redirection.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
  * - When the job only outputs lines, we could handle resizing the terminal
  *   better: store lines separated by line breaks, instead of screen lines,
  *   then when the window is resized redraw those lines.
- * - Redrawing is slow with Athena and Motif.  Also other GUI? (Ramel Eshed)
+ * - Redrawing is slow with Athena and Motif. (Ramel Eshed)
  * - For the GUI fill termios with default values, perhaps like pangoterm:
  *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
  * - When 'encoding' is not utf-8, or the job is using another encoding, setup
@@ -99,11 +100,6 @@ struct terminal_S {
     /* Set when setting the size of a vterm, reset after redrawing. */
     int		tl_vterm_size_changed;
 
-    /* used when tl_job is NULL and only a pty was created */
-    int		tl_tty_fd;
-    char_u	*tl_tty_in;
-    char_u	*tl_tty_out;
-
     int		tl_normal_mode; /* TRUE: Terminal-Normal mode */
     int		tl_channel_closed;
     int		tl_finish;
@@ -117,6 +113,8 @@ struct terminal_S {
 #ifdef WIN3264
     void	*tl_winpty_config;
     void	*tl_winpty;
+
+    FILE	*tl_out_fd;
 #endif
 #if defined(FEAT_SESSION)
     char_u	*tl_command;
@@ -169,7 +167,7 @@ static term_T *in_terminal_loop = NULL;
 /*
  * Functions with separate implementation for MS-Windows and Unix-like systems.
  */
-static int term_and_job_init(term_T *term, typval_T *argvar, char **argv, jobopt_T *opt);
+static int term_and_job_init(term_T *term, typval_T *argvar, char **argv, jobopt_T *opt, jobopt_T *orig_opt);
 static int create_pty_only(term_T *term, jobopt_T *opt);
 static void term_report_winsize(term_T *term, int rows, int cols);
 static void term_free_vterm(term_T *term);
@@ -283,7 +281,11 @@ init_job_options(jobopt_T *opt)
     static void
 setup_job_options(jobopt_T *opt, int rows, int cols)
 {
+#ifndef WIN3264
+    /* Win32: Redirecting the job output won't work, thus always connect stdout
+     * here. */
     if (!(opt->jo_set & JO_OUT_IO))
+#endif
     {
 	/* Connect stdout to the terminal. */
 	opt->jo_io[PART_OUT] = JIO_BUFFER;
@@ -292,7 +294,11 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
 	opt->jo_set |= JO_OUT_IO + JO_OUT_BUF + JO_OUT_MODIFIABLE;
     }
 
+#ifndef WIN3264
+    /* Win32: Redirecting the job output won't work, thus always connect stderr
+     * here. */
     if (!(opt->jo_set & JO_ERR_IO))
+#endif
     {
 	/* Connect stderr to the terminal. */
 	opt->jo_io[PART_ERR] = JIO_BUFFER;
@@ -350,6 +356,7 @@ term_start(
     int		res;
     buf_T	*newbuf;
     int		vertical = opt->jo_vertical || (cmdmod.split & WSP_VERT);
+    jobopt_T	orig_opt;  // only partly filled
 
     if (check_restricted() || check_secure())
 	return NULL;
@@ -517,6 +524,9 @@ term_start(
     curbuf->b_p_ma = FALSE;
 
     set_term_and_win_size(term);
+#ifdef WIN3264
+    mch_memmove(orig_opt.jo_io, opt->jo_io, sizeof(orig_opt.jo_io));
+#endif
     setup_job_options(opt, term->tl_rows, term->tl_cols);
 
     if (flags & TERM_START_NOJOB)
@@ -582,7 +592,7 @@ term_start(
 	    && STRCMP(argvar->vval.v_string, "NONE") == 0)
 	res = create_pty_only(term, opt);
     else
-	res = term_and_job_init(term, argvar, argv, opt);
+	res = term_and_job_init(term, argvar, argv, opt, &orig_opt);
 
     newbuf = curbuf;
     if (res == OK)
@@ -823,6 +833,10 @@ free_terminal(buf_T *buf)
     vim_free(term->tl_status_text);
     vim_free(term->tl_opencmd);
     vim_free(term->tl_eof_chars);
+#ifdef WIN3264
+    if (term->tl_out_fd != NULL)
+	fclose(term->tl_out_fd);
+#endif
     if (desired_cursor_color == term->tl_cursor_color)
 	desired_cursor_color = (char_u *)"";
     vim_free(term->tl_cursor_color);
@@ -917,6 +931,17 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 {
     size_t	len = STRLEN(msg);
     term_T	*term = buffer->b_term;
+
+#ifdef WIN3264
+    /* Win32: Cannot redirect output of the job, intercept it here and write to
+     * the file. */
+    if (term->tl_out_fd != NULL)
+    {
+	ch_log(channel, "Writing %d bytes to output file", (int)len);
+	fwrite(msg, len, 1, term->tl_out_fd);
+	return;
+    }
+#endif
 
     if (term->tl_vterm == NULL)
     {
@@ -4740,14 +4765,10 @@ f_term_gettty(typval_T *argvars, typval_T *rettv)
 	case 0:
 	    if (buf->b_term->tl_job != NULL)
 		p = buf->b_term->tl_job->jv_tty_out;
-	    else
-		p = buf->b_term->tl_tty_out;
 	    break;
 	case 1:
 	    if (buf->b_term->tl_job != NULL)
 		p = buf->b_term->tl_job->jv_tty_in;
-	    else
-		p = buf->b_term->tl_tty_in;
 	    break;
 	default:
 	    EMSG2(_(e_invarg2), get_tv_string(&argvars[1]));
@@ -5239,7 +5260,8 @@ term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
 	char	    **argv UNUSED,
-	jobopt_T    *opt)
+	jobopt_T    *opt,
+	jobopt_T    *orig_opt)
 {
     WCHAR	    *cmd_wchar = NULL;
     WCHAR	    *cwd_wchar = NULL;
@@ -5392,6 +5414,19 @@ term_and_job_init(
 	    (short_u*)winpty_conout_name(term->tl_winpty), NULL);
     ++job->jv_refcount;
     term->tl_job = job;
+
+    /* Redirecting stdout and stderr doesn't work at the job level.  Instead
+     * open the file here and handle it in.  opt->jo_io was changed in
+     * setup_job_options(), use the original flags here. */
+    if (orig_opt->jo_io[PART_OUT] == JIO_FILE)
+    {
+	char_u *fname = opt->jo_io_name[PART_OUT];
+
+	ch_log(channel, "Opening output file %s", fname);
+	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
+	if (term->tl_out_fd == NULL)
+	    EMSG2(_(e_notopen), fname);
+    }
 
     return OK;
 
@@ -5546,7 +5581,8 @@ term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
 	char	    **argv,
-	jobopt_T    *opt)
+	jobopt_T    *opt,
+	jobopt_T    *orig_opt UNUSED)
 {
     create_vterm(term, term->tl_rows, term->tl_cols);
 

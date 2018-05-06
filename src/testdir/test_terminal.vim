@@ -675,18 +675,15 @@ func Test_terminal_wrong_options()
 endfunc
 
 func Test_terminal_redir_file()
-  " TODO: this should work on MS-Window
-  if has('unix')
-    let cmd = Get_cat_123_cmd()
-    let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
-    call term_wait(buf)
-    call WaitForAssert({-> assert_notequal(0, len(readfile("Xfile")))})
-    call assert_match('123', readfile('Xfile')[0])
-    let g:job = term_getjob(buf)
-    call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
-    call delete('Xfile')
-    bwipe
-  endif
+  let cmd = Get_cat_123_cmd()
+  let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
+  call term_wait(buf)
+  call WaitForAssert({-> assert_notequal(0, len(readfile("Xfile")))})
+  call assert_match('123', readfile('Xfile')[0])
+  let g:job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
+  call delete('Xfile')
+  bwipe
 
   if has('unix')
     call writefile(['one line'], 'Xfile')
