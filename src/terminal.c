@@ -42,7 +42,6 @@
  *   redirection.  Probably in call to channel_set_pipes().
  * - Win32: Redirecting output does not work, Test_terminal_redir_file()
  *   is disabled.
- * - GUI: when using tabs, focus in terminal, click on tab does not work.
  * - handle_moverect() scrolls one line at a time.  Postpone scrolling, count
  *   the number of lines, until a redraw happens.  Then if scrolling many lines
  *   a redraw is faster.
@@ -1680,6 +1679,10 @@ send_keys_to_term(term_T *term, int c, int typed)
 	case K_ZERO:
 	    if (typed)
 		stuffcharReadbuff(c);
+	    return FAIL;
+
+	case K_TABLINE:
+	    stuffcharReadbuff(c);
 	    return FAIL;
 
 	case K_IGNORE:
