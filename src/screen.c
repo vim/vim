@@ -567,8 +567,12 @@ update_screen(int type_arg)
 	must_redraw = 0;
     }
 
-    /* Need to update w_lines[]. */
-    if (curwin->w_lines_valid == 0 && type < NOT_VALID)
+    /* May need to update w_lines[]. */
+    if (curwin->w_lines_valid == 0 && type < NOT_VALID
+#ifdef FEAT_TERMINAL
+	    && !term_do_update_window(curwin)
+#endif
+		)
 	type = NOT_VALID;
 
     /* Postpone the redrawing when it's not needed and when being called
@@ -1172,10 +1176,10 @@ win_update(win_T *wp)
     }
 
 #ifdef FEAT_TERMINAL
-    /* If this window contains a terminal, redraw works completely differently.
-     */
-    if (term_update_window(wp) == OK)
+    // If this window contains a terminal, redraw works completely differently.
+    if (term_do_update_window(wp))
     {
+	term_update_window(wp);
 # ifdef FEAT_MENU
 	/* Draw the window toolbar, if there is one. */
 	if (winbar_height(wp) > 0)

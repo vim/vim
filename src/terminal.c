@@ -42,9 +42,6 @@
  *   redirection.  Probably in call to channel_set_pipes().
  * - Win32: Redirecting output does not work, Test_terminal_redir_file()
  *   is disabled.
- * - handle_moverect() scrolls one line at a time.  Postpone scrolling, count
- *   the number of lines, until a redraw happens.  Then if scrolling many lines
- *   a redraw is faster.
  * - Copy text in the vterm to the Vim buffer once in a while, so that
  *   completion works.
  * - When the job only outputs lines, we could handle resizing the terminal
@@ -136,6 +133,8 @@ struct terminal_S {
     /* Range of screen rows to update.  Zero based. */
     int		tl_dirty_row_start; /* MAX_ROW if nothing dirty */
     int		tl_dirty_row_end;   /* row below last one to update */
+
+    int		tl_postponed_scroll;	/* to be scrolled up */
 
     garray_T	tl_scrollback;
     int		tl_scrollback_scrolled;
@@ -2373,44 +2372,55 @@ handle_damage(VTermRect rect, void *user)
 
     term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, rect.start_row);
     term->tl_dirty_row_end = MAX(term->tl_dirty_row_end, rect.end_row);
-    redraw_buf_later(term->tl_buffer, NOT_VALID);
+    redraw_buf_later(term->tl_buffer, SOME_VALID);
     return 1;
+}
+
+    static void
+term_scroll_up(term_T *term, int start_row, int count)
+{
+    win_T		 *wp;
+    VTermColor		 fg, bg;
+    VTermScreenCellAttrs attr;
+    int			 clear_attr;
+
+    /* Set the color to clear lines with. */
+    vterm_state_get_default_colors(vterm_obtain_state(term->tl_vterm),
+								     &fg, &bg);
+    vim_memset(&attr, 0, sizeof(attr));
+    clear_attr = cell2attr(attr, fg, bg);
+
+    FOR_ALL_WINDOWS(wp)
+    {
+	if (wp->w_buffer == term->tl_buffer)
+	    win_del_lines(wp, start_row, count, FALSE, FALSE, clear_attr);
+    }
 }
 
     static int
 handle_moverect(VTermRect dest, VTermRect src, void *user)
 {
     term_T	*term = (term_T *)user;
+    int		count = src.start_row - dest.start_row;
 
     /* Scrolling up is done much more efficiently by deleting lines instead of
-     * redrawing the text. */
+     * redrawing the text. But avoid doing this multiple times, postpone until
+     * the redraw happens. */
     if (dest.start_col == src.start_col
 	    && dest.end_col == src.end_col
 	    && dest.start_row < src.start_row)
     {
-	win_T	    *wp;
-	VTermColor  fg, bg;
-	VTermScreenCellAttrs attr;
-	int	    clear_attr;
-
-	/* Set the color to clear lines with. */
-	vterm_state_get_default_colors(vterm_obtain_state(term->tl_vterm),
-								     &fg, &bg);
-	vim_memset(&attr, 0, sizeof(attr));
-	clear_attr = cell2attr(attr, fg, bg);
-
-	FOR_ALL_WINDOWS(wp)
-	{
-	    if (wp->w_buffer == term->tl_buffer)
-		win_del_lines(wp, dest.start_row,
-				 src.start_row - dest.start_row, FALSE, FALSE,
-				 clear_attr);
-	}
+	if (dest.start_row == 0)
+	    term->tl_postponed_scroll += count;
+	else
+	    term_scroll_up(term, dest.start_row, count);
     }
 
     term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, dest.start_row);
     term->tl_dirty_row_end = MIN(term->tl_dirty_row_end, dest.end_row);
 
+    /* Note sure if the scrolling will work correctly, let's do a complete
+     * redraw later. */
     redraw_buf_later(term->tl_buffer, NOT_VALID);
     return 1;
 }
@@ -2857,11 +2867,22 @@ update_system_term(term_T *term)
 #endif
 
 /*
- * Called to update a window that contains an active terminal.
- * Returns FAIL when there is no terminal running in this window or in
+ * Return TRUE if window "wp" is to be redrawn with term_update_window().
+ * Returns FALSE when there is no terminal running in this window or it is in
  * Terminal-Normal mode.
  */
     int
+term_do_update_window(win_T *wp)
+{
+    term_T	*term = wp->w_buffer->b_term;
+
+    return term != NULL && term->tl_vterm != NULL && !term->tl_normal_mode;
+}
+
+/*
+ * Called to update a window that contains an active terminal.
+ */
+    void
 term_update_window(win_T *wp)
 {
     term_T	*term = wp->w_buffer->b_term;
@@ -2874,17 +2895,23 @@ term_update_window(win_T *wp)
     int		minsize;
     win_T	*twp;
 
-    if (term == NULL || term->tl_vterm == NULL || term->tl_normal_mode)
-	return FAIL;
-
     vterm = term->tl_vterm;
     screen = vterm_obtain_screen(vterm);
     state = vterm_obtain_state(vterm);
 
-    if (wp->w_redr_type >= SOME_VALID)
+    /* We use NOT_VALID on a resize or scroll, redraw everything then.  With
+     * SOME_VALID only redraw what was marked dirty. */
+    if (wp->w_redr_type > SOME_VALID)
     {
 	term->tl_dirty_row_start = 0;
 	term->tl_dirty_row_end = MAX_ROW;
+
+	if (term->tl_postponed_scroll > 0
+			      && term->tl_postponed_scroll < term->tl_rows / 3)
+	    /* Scrolling is usually faster than redrawing, when there are only
+	     * a few lines to scroll. */
+	    term_scroll_up(term, 0, term->tl_postponed_scroll);
+	term->tl_postponed_scroll = 0;
     }
 
     /*
@@ -2943,8 +2970,6 @@ term_update_window(win_T *wp)
     }
     term->tl_dirty_row_start = MAX_ROW;
     term->tl_dirty_row_end = 0;
-
-    return OK;
 }
 
 /*
