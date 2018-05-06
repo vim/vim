@@ -43,6 +43,8 @@ syn keyword 	vhdlStatement	sequence strong
 syn keyword 	vhdlStatement	then to transport type
 syn keyword 	vhdlStatement	unaffected units until use
 syn keyword 	vhdlStatement	variable
+" VHDL-2017 interface
+syn keyword 	vhdlStatement	view
 syn keyword 	vhdlStatement	vmode vprop vunit
 syn keyword 	vhdlStatement	wait when while with
 syn keyword 	vhdlStatement	note warning error failure
@@ -122,6 +124,8 @@ syn match   	vhdlAttribute	"\'succ"
 syn match   	vhdlAttribute	"\'val"
 syn match   	vhdlAttribute	"\'image"
 syn match   	vhdlAttribute	"\'value"
+" VHDL-2017 interface attribute
+syn match   	vhdlAttribute	"\'converse"
 
 syn keyword	vhdlBoolean	true false
 
