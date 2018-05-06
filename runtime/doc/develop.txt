@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.0.  Last change: 2018 Apr 23
+*develop.txt*   For Vim version 8.0.  Last change: 2018 May 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18,7 +18,8 @@ See the file README.txt in the "src" directory for an overview of the source
 code.
 
 Vim is open source software.  Everybody is encouraged to contribute to help
-improving Vim.  For sending patches a context diff "diff -c" is preferred.
+improving Vim.  For sending patches a unified diff "diff -u" is preferred.
+You can create a pull request on github, but it's not required.
 Also see http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch.
 
 ==============================================================================

@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Apr 20
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 May 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -466,6 +466,8 @@ Currently supported commands:
 		Let Vim open a file, like the `:drop` command.  If {filename}
 		is already open in a window, switch to that window.  Otherwise
 		open a new window to edit {filename}.
+		Note that both the job and Vim may change the current
+		directory, thus it's best to use the full path.
 
 		[options] is only used when opening a new window.  If present,
 		it must be a Dict.  Similarly to |++opt|, These entries are recognized:

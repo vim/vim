@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2018 Mar 14
+*starting.txt*  For Vim version 8.0.  Last change: 2018 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -127,7 +127,8 @@ argument.
 On VMS all option arguments are assumed to be lowercase, unless preceded with
 a slash.  Thus "-R" means recovery and "-/R" readonly.
 
---help							*-h* *--help*
+--help							*-h* *--help* *-?*
+-?
 -h		Give usage (help) message and exit.  {not in Vi}
 		See |info-message| about capturing the text.
 

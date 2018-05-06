@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2018 Jan 28
+" Last Change:	2018 May 04
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -427,6 +427,13 @@ au BufNewFile,BufRead */debian/control		setf debcontrol
 au BufNewFile,BufRead control
 	\  if getline(1) =~ '^Source:'
 	\|   setf debcontrol
+	\| endif
+
+" Debian Copyright
+au BufNewFile,BufRead */debian/copyright	setf debcopyright
+au BufNewFile,BufRead copyright
+	\  if getline(1) =~ '^Format:'
+	\|   setf debcopyright
 	\| endif
 
 " Debian Sources.list

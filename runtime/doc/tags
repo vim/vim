@@ -1408,6 +1408,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 --ttyfail	starting.txt	/*--ttyfail*
 --version	starting.txt	/*--version*
 --windowid	starting.txt	/*--windowid*
+-?	starting.txt	/*-?*
 -A	starting.txt	/*-A*
 -C	starting.txt	/*-C*
 -D	starting.txt	/*-D*
@@ -5285,6 +5286,7 @@ c_<C-Left>	cmdline.txt	/*c_<C-Left>*
 c_<C-R>	cmdline.txt	/*c_<C-R>*
 c_<C-R>_<C-A>	cmdline.txt	/*c_<C-R>_<C-A>*
 c_<C-R>_<C-F>	cmdline.txt	/*c_<C-R>_<C-F>*
+c_<C-R>_<C-L>	cmdline.txt	/*c_<C-R>_<C-L>*
 c_<C-R>_<C-O>	cmdline.txt	/*c_<C-R>_<C-O>*
 c_<C-R>_<C-P>	cmdline.txt	/*c_<C-R>_<C-P>*
 c_<C-R>_<C-R>	cmdline.txt	/*c_<C-R>_<C-R>*
@@ -5333,6 +5335,7 @@ c_CTRL-R	cmdline.txt	/*c_CTRL-R*
 c_CTRL-R_=	cmdline.txt	/*c_CTRL-R_=*
 c_CTRL-R_CTRL-A	cmdline.txt	/*c_CTRL-R_CTRL-A*
 c_CTRL-R_CTRL-F	cmdline.txt	/*c_CTRL-R_CTRL-F*
+c_CTRL-R_CTRL-L	cmdline.txt	/*c_CTRL-R_CTRL-L*
 c_CTRL-R_CTRL-O	cmdline.txt	/*c_CTRL-R_CTRL-O*
 c_CTRL-R_CTRL-P	cmdline.txt	/*c_CTRL-R_CTRL-P*
 c_CTRL-R_CTRL-R	cmdline.txt	/*c_CTRL-R_CTRL-R*
