@@ -4758,7 +4758,7 @@ f_term_gettitle(typval_T *argvars, typval_T *rettv)
 f_term_gettty(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf = term_get_buf(argvars, "term_gettty()");
-    char_u	*p;
+    char_u	*p = NULL;
     int		num = 0;
 
     rettv->v_type = VAR_STRING;
