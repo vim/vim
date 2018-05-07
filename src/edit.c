@@ -4449,7 +4449,7 @@ ins_compl_get_exp(pos_T *ini)
 	    if (find_tags(compl_pattern, &num_matches, &matches,
 		    TAG_REGEXP | TAG_NAMES | TAG_NOIC | TAG_INS_COMP
 		    | (ctrl_x_mode != CTRL_X_NORMAL ? TAG_VERBOSE : 0),
-		    TAG_MANY, curbuf->b_ffname) == OK && num_matches > 0)
+		    TAG_MANY, curbuf->b_ffname, '\0') == OK && num_matches > 0)
 	    {
 		ins_compl_add_matches(num_matches, matches, p_ic);
 	    }

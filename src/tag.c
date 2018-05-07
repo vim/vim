@@ -176,6 +176,12 @@ do_tag(
 	no_regexp = TRUE;
     }
 
+    if (strchr((char *) tag, ' '))
+    {
+	filter_input = *(strchr((char *) tag, ' ') - sizeof(char_u));
+	tag = (char_u *) strchr((char *) tag, ' ') + sizeof(char_u);
+    }
+
     prev_num_matches = num_matches;
     free_string_option(nofile_fname);
     nofile_fname = NULL;
@@ -530,7 +536,7 @@ do_tag(
 	    if (verbose)
 		flags |= TAG_VERBOSE;
 	    if (find_tags(name, &new_num_matches, &new_matches, flags,
-					    max_num_matches, buf_ffname) == OK
+					max_num_matches, buf_ffname, filter_input) == OK
 		    && new_num_matches < max_num_matches)
 		max_num_matches = MAXCOL; /* If less than max_num_matches
 					     found: all matches found. */
@@ -624,7 +630,7 @@ do_tag(
 		    for (i = 0; i < num_matches && !got_int; ++i)
 		    {
 			parse_match(matches[i], &tagp);
-			if (filter && *tagp.tagkind != filter)
+			if (filter && tagp.tagkind && *tagp.tagkind != filter)
 			    continue;
 
 			if (!new_tag && (
@@ -1279,7 +1285,8 @@ find_tags(
     int		flags,
     int		mincount,		/*  MAXCOL: find all matches
 					     other: minimal number of matches */
-    char_u	*buf_ffname)		/* name of buffer for priority */
+    char_u	*buf_ffname,		/* name of buffer for priority */
+    int		filter)			/* tag kind to look for */
 {
     FILE       *fp;
     char_u     *lbuf;			/* line buffer */
@@ -2588,6 +2595,12 @@ findtag_end:
 			if (*p == TAG_SEP)
 			    *p = NUL;
 		}
+
+		vim_memset(&tagp, 0, sizeof(tagp));
+		parse_match(mfp, &tagp);
+		if (tagp.tagkind && filter && *tagp.tagkind != filter)
+		    continue;
+
 		matches[match_count++] = (char_u *)mfp;
 	    }
 	}
@@ -3849,11 +3862,11 @@ expand_tags(
     if (pat[0] == '/')
 	ret = find_tags(pat + 1, num_file, file,
 		TAG_REGEXP | tagnmflag | TAG_VERBOSE,
-		TAG_MANY, curbuf->b_ffname);
+		TAG_MANY, curbuf->b_ffname, '\0');
     else
 	ret = find_tags(pat, num_file, file,
 		TAG_REGEXP | tagnmflag | TAG_VERBOSE | TAG_NOIC,
-		TAG_MANY, curbuf->b_ffname);
+		TAG_MANY, curbuf->b_ffname, '\0');
     if (ret == OK && !tagnames)
     {
 	 /* Reorganize the tags for display and matching as strings of:
@@ -3943,7 +3956,7 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
     long	is_static;
 
     ret = find_tags(pat, &num_matches, &matches,
-				TAG_REGEXP | TAG_NOIC, (int)MAXCOL, buf_fname);
+		    TAG_REGEXP | TAG_NOIC, (int)MAXCOL, buf_fname, '\0');
     if (ret == OK && num_matches > 0)
     {
 	for (i = 0; i < num_matches; ++i)
