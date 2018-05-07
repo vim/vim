@@ -526,6 +526,8 @@ typedef struct {
     static char_u *
 qf_grow_linebuf(qfstate_T *state, int newsz)
 {
+    char_u	*p;
+
     /*
      * If the line exceeds LINE_MAXLEN exclude the last
      * byte since it's not a NL character.
@@ -540,9 +542,9 @@ qf_grow_linebuf(qfstate_T *state, int newsz)
     }
     else if (state->linelen > state->growbufsiz)
     {
-	state->growbuf = vim_realloc(state->growbuf, state->linelen + 1);
-	if (state->growbuf == NULL)
+	if ((p = vim_realloc(state->growbuf, state->linelen + 1)) == NULL)
 	    return NULL;
+	state->growbuf = p;
 	state->growbufsiz = state->linelen;
     }
     return state->growbuf;
@@ -697,6 +699,8 @@ qf_get_next_file_line(qfstate_T *state)
 
 	for (;;)
 	{
+	    char_u	*p;
+
 	    if (fgets((char *)state->growbuf + growbuflen,
 			state->growbufsiz - growbuflen, state->fd) == NULL)
 		break;
@@ -712,9 +716,9 @@ qf_get_next_file_line(qfstate_T *state)
 
 	    state->growbufsiz = 2 * state->growbufsiz < LINE_MAXLEN
 		? 2 * state->growbufsiz : LINE_MAXLEN;
-	    state->growbuf = vim_realloc(state->growbuf, state->growbufsiz);
-	    if (state->growbuf == NULL)
+	    if ((p = vim_realloc(state->growbuf, state->growbufsiz)) == NULL)
 		return QF_NOMEM;
+	    state->growbuf = p;
 	}
 
 	while (discard)
@@ -842,9 +846,10 @@ qf_parse_match(
 	int		qf_multiscan,
 	char_u		**tail)
 {
-    int	idx = fmt_ptr->prefix;
-    int	i;
-    int	len;
+    char_u	*p;
+    int		idx = fmt_ptr->prefix;
+    int		i;
+    int		len;
 
     if ((idx == 'C' || idx == 'Z') && !qf_multiline)
 	return QF_FAIL;
@@ -903,9 +908,9 @@ qf_parse_match(
 	if (linelen >= fields->errmsglen)
 	{
 	    /* linelen + null terminator */
-	    if ((fields->errmsg = vim_realloc(fields->errmsg,
-			    linelen + 1)) == NULL)
+	    if ((p = vim_realloc(fields->errmsg, linelen + 1)) == NULL)
 		return QF_NOMEM;
+	    fields->errmsg = p;
 	    fields->errmsglen = linelen + 1;
 	}
 	vim_strncpy(fields->errmsg, linebuf, linelen);
@@ -918,9 +923,9 @@ qf_parse_match(
 	if (len >= fields->errmsglen)
 	{
 	    /* len + null terminator */
-	    if ((fields->errmsg = vim_realloc(fields->errmsg, len + 1))
-		    == NULL)
+	    if ((p = vim_realloc(fields->errmsg, len + 1)) == NULL)
 		return QF_NOMEM;
+	    fields->errmsg = p;
 	    fields->errmsglen = len + 1;
 	}
 	vim_strncpy(fields->errmsg, regmatch->startp[i], len);
@@ -1093,15 +1098,17 @@ qf_parse_file_pfx(
     static int
 qf_parse_line_nomatch(char_u *linebuf, int linelen, qffields_T *fields)
 {
+    char_u	*p;
+
     fields->namebuf[0] = NUL;	/* no match found, remove file name */
     fields->lnum = 0;			/* don't jump to this line */
     fields->valid = FALSE;
     if (linelen >= fields->errmsglen)
     {
 	/* linelen + null terminator */
-	if ((fields->errmsg = vim_realloc(fields->errmsg,
-			linelen + 1)) == NULL)
+	if ((p = vim_realloc(fields->errmsg, linelen + 1)) == NULL)
 	    return QF_NOMEM;
+	fields->errmsg = p;
 	fields->errmsglen = linelen + 1;
     }
     /* copy whole line to error message */
