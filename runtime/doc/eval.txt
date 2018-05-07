@@ -9939,6 +9939,11 @@ This does NOT work: >
 			variables are automatically deleted when the function
 			ends.
 
+:unl[et] ${env-name}				*:let-environment* *:let-$*
+			Rermove environment variable {env-name}.
+			With [!] no error message is given for non-existing
+			variables.
+
 :lockv[ar][!] [depth] {name} ...			*:lockvar* *:lockv*
 			Lock the internal variable {name}.  Locking means that
 			it can no longer be changed (until it is unlocked).
