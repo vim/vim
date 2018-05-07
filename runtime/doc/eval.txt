@@ -9939,7 +9939,7 @@ This does NOT work: >
 			variables are automatically deleted when the function
 			ends.
 
-:unl[et] ${env-name}
+:unl[et] ${env-name}				*:unlet-environment* *:unlet-$*
 			Remove environment variable {env-name}.
 			With [!] no error message is given for non-existing
 			variables.
