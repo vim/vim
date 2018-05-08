@@ -8708,10 +8708,12 @@ set_bool_option(
 # endif
 	    highlight_gui_started();
 # ifdef FEAT_VTP
-	control_console_color_rgb();
 	/* reset t_Co */
 	if (is_term_win32())
+	{
+	    control_console_color_rgb();
 	    set_termname(T_NAME);
+	}
 # endif
     }
 #endif
