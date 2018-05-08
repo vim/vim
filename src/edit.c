@@ -6185,6 +6185,8 @@ insertchar(
      * 'paste' is set)..
      * Don't do this when there an InsertCharPre autocommand is defined,
      * because we need to fire the event for every character.
+     * Do the check for InsertCharPre before the call to vpeekc() because the
+     * InsertCharPre autocommand could change the input buffer.
      */
 #ifdef USE_ON_FLY_SCROLL
     dont_scroll = FALSE;		/* allow scrolling here */
@@ -6194,6 +6196,7 @@ insertchar(
 #ifdef FEAT_MBYTE
 	    && (!has_mbyte || (*mb_char2len)(c) == 1)
 #endif
+	    && !has_insertcharpre()
 	    && vpeekc() != NUL
 	    && !(State & REPLACE_FLAG)
 #ifdef FEAT_CINDENT
@@ -6202,7 +6205,7 @@ insertchar(
 #ifdef FEAT_RIGHTLEFT
 	    && !p_ri
 #endif
-	    && !has_insertcharpre())
+	   )
     {
 #define INPUT_BUFLEN 100
 	char_u		buf[INPUT_BUFLEN + 1];
