@@ -10323,14 +10323,14 @@ exec_normal_cmd(char_u *cmd, int remap, int silent)
 {
     /* Stuff the argument into the typeahead buffer. */
     ins_typebuf(cmd, remap, 0, TRUE, silent);
-    exec_normal(FALSE);
+    exec_normal(FALSE, FALSE);
 }
 
 /*
  * Execute normal_cmd() until there is no typeahead left.
  */
     void
-exec_normal(int was_typed)
+exec_normal(int was_typed, int may_use_terminal_loop UNUSED)
 {
     oparg_T	oa;
 
@@ -10341,7 +10341,7 @@ exec_normal(int was_typed)
     {
 	update_topline_cursor();
 #ifdef FEAT_TERMINAL
-	if (term_use_loop()
+	if (may_use_terminal_loop && term_use_loop()
 		&& oa.op_type == OP_NOP && oa.regname == NUL
 		&& !VIsual_active)
 	{
