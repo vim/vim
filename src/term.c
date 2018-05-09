@@ -754,6 +754,16 @@ static struct builtin_term builtin_termcaps[] =
     {K_KDIVIDE,		IF_EB("\033Oo", ESC_STR "Oo")},	/* keypad / */
     {K_KMULTIPLY,	IF_EB("\033Oj", ESC_STR "Oj")},	/* keypad * */
     {K_KENTER,		IF_EB("\033OM", ESC_STR "OM")},	/* keypad Enter */
+    {K_K0,		IF_EB("\033Op", ESC_STR "Op")},	/* keypad 0 */
+    {K_K1,		IF_EB("\033Oq", ESC_STR "Oq")},	/* keypad 1 */
+    {K_K2,		IF_EB("\033Or", ESC_STR "Or")},	/* keypad 2 */
+    {K_K3,		IF_EB("\033Os", ESC_STR "Os")},	/* keypad 3 */
+    {K_K4,		IF_EB("\033Ot", ESC_STR "Ot")},	/* keypad 4 */
+    {K_K5,		IF_EB("\033Ou", ESC_STR "Ou")},	/* keypad 5 */
+    {K_K6,		IF_EB("\033Ov", ESC_STR "Ov")},	/* keypad 6 */
+    {K_K7,		IF_EB("\033Ow", ESC_STR "Ow")},	/* keypad 7 */
+    {K_K8,		IF_EB("\033Ox", ESC_STR "Ox")},	/* keypad 8 */
+    {K_K9,		IF_EB("\033Oy", ESC_STR "Oy")},	/* keypad 9 */
     {K_BS,		"\x7f"},	/* for some reason 0177 doesn't work */
 # endif
 
