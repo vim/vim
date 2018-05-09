@@ -960,6 +960,16 @@ static struct builtin_term builtin_termcaps[] =
     {K_KMULTIPLY,	IF_EB("\033O*j", ESC_STR "O*j")},     /* keypad * */
     {K_KENTER,		IF_EB("\033O*M", ESC_STR "O*M")},     /* keypad Enter */
     {K_KPOINT,		IF_EB("\033O*n", ESC_STR "O*n")},     /* keypad . */
+    {K_K0,		IF_EB("\033O*p", ESC_STR "O*p")},     /* keypad 0 */
+    {K_K1,		IF_EB("\033O*q", ESC_STR "O*q")},     /* keypad 1 */
+    {K_K2,		IF_EB("\033O*r", ESC_STR "O*r")},     /* keypad 2 */
+    {K_K3,		IF_EB("\033O*s", ESC_STR "O*s")},     /* keypad 3 */
+    {K_K4,		IF_EB("\033O*t", ESC_STR "O*t")},     /* keypad 4 */
+    {K_K5,		IF_EB("\033O*u", ESC_STR "O*u")},     /* keypad 5 */
+    {K_K6,		IF_EB("\033O*v", ESC_STR "O*v")},     /* keypad 6 */
+    {K_K7,		IF_EB("\033O*w", ESC_STR "O*w")},     /* keypad 7 */
+    {K_K8,		IF_EB("\033O*x", ESC_STR "O*x")},     /* keypad 8 */
+    {K_K9,		IF_EB("\033O*y", ESC_STR "O*y")},     /* keypad 9 */
     {K_KDEL,		IF_EB("\033[3;*~", ESC_STR "[3;*~")}, /* keypad Del */
     {K_PS,		IF_EB("\033[200~", ESC_STR "[200~")}, /* paste start */
     {K_PE,		IF_EB("\033[201~", ESC_STR "[201~")}, /* paste end */
