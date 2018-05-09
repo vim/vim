@@ -1971,7 +1971,7 @@ ui_cursor_shape_forced(int forced)
 # endif
 
 # ifdef FEAT_CONCEAL
-    conceal_check_cursur_line();
+    conceal_check_cursor_line();
 # endif
 }
 
