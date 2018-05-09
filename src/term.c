@@ -671,7 +671,6 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * VT320 is working as an ANSI terminal compatible DEC terminal.
  * (it covers VT1x0, VT2x0 and VT3x0 up to VT320 on VMS as well)
- * Note: K_F1...K_F5 are for internal use, should not be defined.
  * TODO:- rewrite ESC[ codes to CSI
  *      - keyboard languages (CSI ? 26 n)
  */
@@ -738,17 +737,17 @@ static struct builtin_term builtin_termcaps[] =
     {K_F13,		IF_EB("\033[25~", ESC_STR "[25~")},
     {K_F14,		IF_EB("\033[26~", ESC_STR "[26~")},
     {K_F15,		IF_EB("\033[28~", ESC_STR "[28~")},	/* Help */
-    {K_F16,		IF_EB("\033[29~", ESC_STR "[29~")},	/* Select */
+    {K_F16,		IF_EB("\033[29~", ESC_STR "[29~")},	/* Do */
     {K_F17,		IF_EB("\033[31~", ESC_STR "[31~")},
     {K_F18,		IF_EB("\033[32~", ESC_STR "[32~")},
     {K_F19,		IF_EB("\033[33~", ESC_STR "[33~")},
     {K_F20,		IF_EB("\033[34~", ESC_STR "[34~")},
-    {K_INS,		IF_EB("\033[2~", ESC_STR "[2~")},
-    {K_DEL,		IF_EB("\033[3~", ESC_STR "[3~")},
-    {K_HOME,		IF_EB("\033[1~", ESC_STR "[1~")},
-    {K_END,		IF_EB("\033[4~", ESC_STR "[4~")},
-    {K_PAGEUP,		IF_EB("\033[5~", ESC_STR "[5~")},
-    {K_PAGEDOWN,	IF_EB("\033[6~", ESC_STR "[6~")},
+    {K_INS,		IF_EB("\033[2~", ESC_STR "[2~")},	/* Insert Here */
+    {K_DEL,		IF_EB("\033[3~", ESC_STR "[3~")},	/* Remove */
+    {K_HOME,		IF_EB("\033[1~", ESC_STR "[1~")},	/* Find */
+    {K_END,		IF_EB("\033[4~", ESC_STR "[4~")},	/* Select */
+    {K_PAGEUP,		IF_EB("\033[5~", ESC_STR "[5~")},	/* Prev Screen */
+    {K_PAGEDOWN,	IF_EB("\033[6~", ESC_STR "[6~")},	/* Next Screen */
     {K_KPLUS,		IF_EB("\033Ok", ESC_STR "Ok")},	/* keypad plus */
     {K_KMINUS,		IF_EB("\033Om", ESC_STR "Om")},	/* keypad minus */
     {K_KDIVIDE,		IF_EB("\033Oo", ESC_STR "Oo")},	/* keypad / */
