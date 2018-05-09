@@ -722,6 +722,11 @@ static struct builtin_term builtin_termcaps[] =
     {K_DOWN,		IF_EB("\033[B", ESC_STR "[B")},
     {K_RIGHT,		IF_EB("\033[C", ESC_STR "[C")},
     {K_LEFT,		IF_EB("\033[D", ESC_STR "[D")},
+    /* cursor key sequence for application cursor mode */
+    {K_XUP,		IF_EB("\033OA", ESC_STR "OA")},
+    {K_XDOWN,		IF_EB("\033OB", ESC_STR "OB")},
+    {K_XRIGHT,		IF_EB("\033OC", ESC_STR "OC")},
+    {K_XLEFT,		IF_EB("\033OD", ESC_STR "OD")},
     {K_F1,		IF_EB("\033[11~", ESC_STR "[11~")},
     {K_F2,		IF_EB("\033[12~", ESC_STR "[12~")},
     {K_F3,		IF_EB("\033[13~", ESC_STR "[13~")},
