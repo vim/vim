@@ -2325,8 +2325,175 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
 }
 
 /*
- * Find a suitable window for opening a file (qf_fnum) and jump to it.
- * If the file is already opened in a window, jump to it.
+ * Find a non-quickfix window using the given location list.
+ * Returns NULL if a matching window is not found.
+ */
+    static win_T *
+qf_find_win_with_ll(qf_info_T *ll)
+{
+    win_T	*wp;
+
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_llist == ll && !bt_quickfix(wp->w_buffer))
+	    return wp;
+
+    return NULL;
+}
+
+/*
+ * Find a window containing a normal buffer
+ */
+    static win_T *
+qf_find_win_with_normal_buf()
+{
+    win_T	*wp;
+
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_buffer->b_p_bt[0] == NUL)
+	    return wp;
+
+    return NULL;
+}
+
+/*
+ * Go to a window in any tabpage containing the specified file.  Returns TRUE
+ * if successfully jumped to the window. Otherwise returns FALSE.
+ */
+    static int
+qf_goto_tabwin_with_file(int fnum)
+{
+    tabpage_T	*tp;
+    win_T	*wp;
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_buffer->b_fnum == fnum)
+	{
+	    goto_tabpage_win(tp, wp);
+	    return TRUE;
+	}
+
+    return FALSE;
+}
+
+/*
+ * Create a new window to show a file above the quickfix window. Called when
+ * only the quickfix window is present.
+ */
+    static int
+qf_open_new_file_win(qf_info_T *ll_ref)
+{
+    int		flags;
+
+    flags = WSP_ABOVE;
+    if (ll_ref != NULL)
+	flags |= WSP_NEWLOC;
+    if (win_split(0, flags) == FAIL)
+	return FAIL;		/* not enough room for window */
+    p_swb = empty_option;	/* don't split again */
+    swb_flags = 0;
+    RESET_BINDING(curwin);
+    if (ll_ref != NULL)
+    {
+	/* The new window should use the location list from the
+	 * location list window */
+	curwin->w_llist = ll_ref;
+	ll_ref->qf_refcount++;
+    }
+    return OK;
+}
+
+/*
+ * Go to a window that shows the right buffer. If the window is not found, go
+ * to the window just above the location list window. This is used for opening
+ * a file from a location window and not from a quickfix window. If some usable
+ * window is previously found, then it is supplied in 'use_win'.
+ */
+    static void
+qf_goto_win_with_ll_file(win_T *use_win, int qf_fnum, qf_info_T *ll_ref)
+{
+    win_T	*win = use_win;
+
+    if (win == NULL)
+    {
+	/* Find the window showing the selected file */
+	FOR_ALL_WINDOWS(win)
+	    if (win->w_buffer->b_fnum == qf_fnum)
+		break;
+	if (win == NULL)
+	{
+	    /* Find a previous usable window */
+	    win = curwin;
+	    do
+	    {
+		if (win->w_buffer->b_p_bt[0] == NUL)
+		    break;
+		if (win->w_prev == NULL)
+		    win = lastwin;	/* wrap around the top */
+		else
+		    win = win->w_prev; /* go to previous window */
+	    } while (win != curwin);
+	}
+    }
+    win_goto(win);
+
+    /* If the location list for the window is not set, then set it
+     * to the location list from the location window */
+    if (win->w_llist == NULL)
+    {
+	win->w_llist = ll_ref;
+	ll_ref->qf_refcount++;
+    }
+}
+
+/*
+ * Go to a window that shows the specified file. If a window is not found, go
+ * to the window just above the quickfix window. This is used for opening a
+ * file from a quickfix window and not from a location window.
+ */
+    static void
+qf_goto_win_with_qfl_file(int qf_fnum)
+{
+    win_T	*win;
+    win_T	*altwin;
+
+    win = curwin;
+    altwin = NULL;
+    for (;;)
+    {
+	if (win->w_buffer->b_fnum == qf_fnum)
+	    break;
+	if (win->w_prev == NULL)
+	    win = lastwin;	/* wrap around the top */
+	else
+	    win = win->w_prev;	/* go to previous window */
+
+	if (IS_QF_WINDOW(win))
+	{
+	    /* Didn't find it, go to the window before the quickfix
+	     * window. */
+	    if (altwin != NULL)
+		win = altwin;
+	    else if (curwin->w_prev != NULL)
+		win = curwin->w_prev;
+	    else
+		win = curwin->w_next;
+	    break;
+	}
+
+	/* Remember a usable window. */
+	if (altwin == NULL && !win->w_p_pvw
+		&& win->w_buffer->b_p_bt[0] == NUL)
+	    altwin = win;
+    }
+
+    win_goto(win);
+}
+
+/*
+ * Find a suitable window for opening a file (qf_fnum) from the
+ * quickfix/location list and jump to it.  If the file is already opened in a
+ * window, jump to it. Otherwise open a new window to display the file. This is
+ * called from either a quickfix or a location list window.
  */
     static int
 qf_jump_to_usable_window(int qf_fnum, int *opened_window)
@@ -2334,35 +2501,25 @@ qf_jump_to_usable_window(int qf_fnum, int *opened_window)
     win_T	*usable_win_ptr = NULL;
     int		usable_win;
     qf_info_T	*ll_ref;
-    int		flags;
     win_T	*win;
-    win_T	*altwin;
 
     usable_win = 0;
 
     ll_ref = curwin->w_llist_ref;
     if (ll_ref != NULL)
     {
-	/* Find a window using the same location list that is not a
-	 * quickfix window. */
-	FOR_ALL_WINDOWS(usable_win_ptr)
-	    if (usable_win_ptr->w_llist == ll_ref
-		    && !bt_quickfix(usable_win_ptr->w_buffer))
-	    {
-		usable_win = 1;
-		break;
-	    }
+	/* Find a non-quickfix window with this location list */
+	usable_win_ptr = qf_find_win_with_ll(ll_ref);
+	if (usable_win_ptr != NULL)
+	    usable_win = 1;
     }
 
     if (!usable_win)
     {
 	/* Locate a window showing a normal buffer */
-	FOR_ALL_WINDOWS(win)
-	    if (win->w_buffer->b_p_bt[0] == NUL)
-	    {
-		usable_win = 1;
-		break;
-	    }
+	win = qf_find_win_with_normal_buf();
+	if (win != NULL)
+	    usable_win = 1;
     }
 
     /*
@@ -2370,21 +2527,7 @@ qf_jump_to_usable_window(int qf_fnum, int *opened_window)
      * then search in other tabs.
      */
     if (!usable_win && (swb_flags & SWB_USETAB))
-    {
-	tabpage_T	*tp;
-	win_T	*wp;
-
-	FOR_ALL_TAB_WINDOWS(tp, wp)
-	{
-	    if (wp->w_buffer->b_fnum == qf_fnum)
-	    {
-		goto_tabpage_win(tp, wp);
-		usable_win = 1;
-		goto win_found;
-	    }
-	}
-    }
-win_found:
+	usable_win = qf_goto_tabwin_with_file(qf_fnum);
 
     /*
      * If there is only one window and it is the quickfix window, create a
@@ -2392,99 +2535,16 @@ win_found:
      */
     if ((ONE_WINDOW && bt_quickfix(curbuf)) || !usable_win)
     {
-	flags = WSP_ABOVE;
-	if (ll_ref != NULL)
-	    flags |= WSP_NEWLOC;
-	if (win_split(0, flags) == FAIL)
-	    return FAIL;		/* not enough room for window */
+	if (qf_open_new_file_win(ll_ref) != OK)
+	    return FAIL;
 	*opened_window = TRUE;	/* close it when fail */
-	p_swb = empty_option;	/* don't split again */
-	swb_flags = 0;
-	RESET_BINDING(curwin);
-	if (ll_ref != NULL)
-	{
-	    /* The new window should use the location list from the
-	     * location list window */
-	    curwin->w_llist = ll_ref;
-	    ll_ref->qf_refcount++;
-	}
     }
     else
     {
-	if (curwin->w_llist_ref != NULL)
-	{
-	    /* In a location window */
-	    win = usable_win_ptr;
-	    if (win == NULL)
-	    {
-		/* Find the window showing the selected file */
-		FOR_ALL_WINDOWS(win)
-		    if (win->w_buffer->b_fnum == qf_fnum)
-			break;
-		if (win == NULL)
-		{
-		    /* Find a previous usable window */
-		    win = curwin;
-		    do
-		    {
-			if (win->w_buffer->b_p_bt[0] == NUL)
-			    break;
-			if (win->w_prev == NULL)
-			    win = lastwin;	/* wrap around the top */
-			else
-			    win = win->w_prev; /* go to previous window */
-		    } while (win != curwin);
-		}
-	    }
-	    win_goto(win);
-
-	    /* If the location list for the window is not set, then set it
-	     * to the location list from the location window */
-	    if (win->w_llist == NULL)
-	    {
-		win->w_llist = ll_ref;
-		ll_ref->qf_refcount++;
-	    }
-	}
-	else
-	{
-
-	    /*
-	     * Try to find a window that shows the right buffer.
-	     * Default to the window just above the quickfix buffer.
-	     */
-	    win = curwin;
-	    altwin = NULL;
-	    for (;;)
-	    {
-		if (win->w_buffer->b_fnum == qf_fnum)
-		    break;
-		if (win->w_prev == NULL)
-		    win = lastwin;	/* wrap around the top */
-		else
-		    win = win->w_prev;	/* go to previous window */
-
-		if (IS_QF_WINDOW(win))
-		{
-		    /* Didn't find it, go to the window before the quickfix
-		     * window. */
-		    if (altwin != NULL)
-			win = altwin;
-		    else if (curwin->w_prev != NULL)
-			win = curwin->w_prev;
-		    else
-			win = curwin->w_next;
-		    break;
-		}
-
-		/* Remember a usable window. */
-		if (altwin == NULL && !win->w_p_pvw
-			&& win->w_buffer->b_p_bt[0] == NUL)
-		    altwin = win;
-	    }
-
-	    win_goto(win);
-	}
+	if (curwin->w_llist_ref != NULL)	/* In a location window */
+	    qf_goto_win_with_ll_file(usable_win_ptr, qf_fnum, ll_ref);
+	else					/* In a quickfix window */
+	    qf_goto_win_with_qfl_file(qf_fnum);
     }
 
     return OK;
@@ -2562,8 +2622,8 @@ qf_jump_edit_buffer(
 }
 
 /*
- * Goto the error line in the current file using either line/column number or a
- * search pattern.
+ * Go to the error line in the current file using either line/column number or
+ * a search pattern.
  */
     static void
 qf_jump_goto_line(
