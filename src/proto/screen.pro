@@ -12,7 +12,7 @@ void redrawWinline(linenr_T lnum, int invalid);
 void update_curbuf(int type);
 int update_screen(int type_arg);
 int conceal_cursor_line(win_T *wp);
-void conceal_check_cursur_line(void);
+void conceal_check_cursor_line(void);
 void update_single_line(win_T *wp, linenr_T lnum);
 void update_debug_sign(buf_T *buf, linenr_T lnum);
 void updateWindow(win_T *wp);
