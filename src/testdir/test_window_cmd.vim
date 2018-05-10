@@ -507,4 +507,19 @@ func Test_visual_cleared_after_window_split()
   bwipe!
 endfunc
 
+func Test_winrestcmd()
+  2split
+  3vsplit
+  let a=winrestcmd()
+  call assert_equal(2, winheight(0))
+  call assert_equal(3, winwidth(0))
+  wincmd =
+  call assert_notequal(2, winheight(0))
+  call assert_notequal(3, winwidth(0))
+  exe a
+  call assert_equal(2, winheight(0))
+  call assert_equal(3, winwidth(0))
+  only
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
