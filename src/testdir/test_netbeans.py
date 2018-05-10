@@ -1,22 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Server that will communicate with Vim through the netbeans interface.
 # Used by test_netbeans.vim.
-#
-# This requires Python 2.6 or later.
 
 from __future__ import print_function
 import socket
 import sys
 import time
 import threading
-
-try:
-    # Python 3
-    import socketserver
-except ImportError:
-    # Python 2
-    import SocketServer as socketserver
+import socketserver
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 

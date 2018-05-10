@@ -1,8 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Server that will communicate over stdin/stderr
-#
-# This requires Python 2.6 or later.
 
 from __future__ import print_function
 import sys
