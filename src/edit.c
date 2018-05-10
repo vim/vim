@@ -431,7 +431,7 @@ edit(
 #ifdef FEAT_CONCEAL
     /* Check if the cursor line needs redrawing before changing State.  If
      * 'concealcursor' is "n" it needs to be redrawn without concealing. */
-    conceal_check_cursur_line();
+    conceal_check_cursor_line();
 #endif
 
 #ifdef FEAT_MOUSE

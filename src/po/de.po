@@ -2153,7 +2153,7 @@ msgid "E254: Cannot allocate color %s"
 msgstr "E254: Kann die Farbe %s nicht zuweisen."
 
 msgid "No match at cursor, finding next"
-msgstr "Kein Treffer beim Cursur, finde den nächsten"
+msgstr "Kein Treffer beim Cursor, finde den nächsten"
 
 msgid "<cannot open> "
 msgstr "<kann nicht öffnen> "

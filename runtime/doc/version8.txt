@@ -1799,7 +1799,7 @@ Solution:   Always use the stubs. (Danek Duvall, Yukihiro Nakadaira)
 Files:	    src/if_ruby.c
 
 Patch 7.4.226 (after 7.4.219)
-Problem:    Cursurline highlighting not redrawn when scrolling. (John
+Problem:    Cursorline highlighting not redrawn when scrolling. (John
 	    Marriott)
 Solution:   Check for required redraw in two places.
 Files:	    src/move.c
