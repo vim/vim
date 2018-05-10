@@ -1544,6 +1544,7 @@ static char *(key_names[]) =
 };
 #endif
 
+#ifdef HAVE_TGETENT
     static void
 get_term_entries(int *height, int *width)
 {
@@ -1642,6 +1643,7 @@ get_term_entries(int *height, int *width)
 	PC = *p;
 # endif
 }
+#endif
 
     static void
 report_term_error(char_u *error_msg, char_u *term)
