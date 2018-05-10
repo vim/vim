@@ -43,8 +43,6 @@
  * - Win32: Redirecting output works but includes escape sequences.
  * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
  *   redirection.
- * - Copy text in the vterm to the Vim buffer once in a while, so that
- *   completion works.
  * - When the job only outputs lines, we could handle resizing the terminal
  *   better: store lines separated by line breaks, instead of screen lines,
  *   then when the window is resized redraw those lines.
@@ -131,7 +129,11 @@ struct terminal_S {
     /* Range of screen rows to update.  Zero based. */
     int		tl_dirty_row_start; /* MAX_ROW if nothing dirty */
     int		tl_dirty_row_end;   /* row below last one to update */
-
+    int		tl_dirty_snapshot;  /* text updated after making snapshot */
+#ifdef FEAT_TIMERS
+    int		tl_timer_set;
+    proftime_T	tl_timer_due;
+#endif
     int		tl_postponed_scroll;	/* to be scrolled up */
 
     garray_T	tl_scrollback;
@@ -1442,6 +1444,29 @@ add_empty_scrollback(term_T *term, cellattr_T *fill_attr, int lnum)
 }
 
 /*
+ * Remove the terminal contents from the scrollback and the buffer.
+ * Used before adding a new scrollback line or updating the buffer for lines
+ * displayed in the terminal.
+ */
+    static void
+cleanup_scrollback(term_T *term)
+{
+    sb_line_T	*line;
+    garray_T	*gap;
+
+    gap = &term->tl_scrollback;
+    while (curbuf->b_ml.ml_line_count > term->tl_scrollback_scrolled
+							    && gap->ga_len > 0)
+    {
+	ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+	line = (sb_line_T *)gap->ga_data + gap->ga_len - 1;
+	vim_free(line->sb_cells);
+	--gap->ga_len;
+    }
+    check_cursor();
+}
+
+/*
  * Add the current lines of the terminal to scrollback and to the buffer.
  * Called after the job has ended and when switching to Terminal-Normal mode.
  */
@@ -1459,9 +1484,22 @@ move_terminal_to_buffer(term_T *term)
 
     if (term->tl_vterm == NULL)
 	return;
+
+    /* Nothing to do if the buffer already has the lines and nothing was
+     * changed. */
+    if (!term->tl_dirty_snapshot
+		  && curbuf->b_ml.ml_line_count > term->tl_scrollback_scrolled)
+	return;
+
+    ch_log(term->tl_job == NULL ? NULL : term->tl_job->jv_channel,
+				  "Adding terminal window snapshot to buffer");
+
+    /* First remove the lines that were appended before, they might be
+     * outdated. */
+    cleanup_scrollback(term);
+
     screen = vterm_obtain_screen(term->tl_vterm);
     fill_attr = new_fill_attr = term->tl_default_color;
-
     for (pos.row = 0; pos.row < term->tl_rows; ++pos.row)
     {
 	len = 0;
@@ -1548,6 +1586,11 @@ move_terminal_to_buffer(term_T *term)
 	}
     }
 
+    term->tl_dirty_snapshot = FALSE;
+#ifdef FEAT_TIMERS
+    term->tl_timer_set = FALSE;
+#endif
+
     /* Obtain the current background color. */
     vterm_state_get_default_colors(vterm_obtain_state(term->tl_vterm),
 		       &term->tl_default_color.fg, &term->tl_default_color.bg);
@@ -1570,6 +1613,38 @@ move_terminal_to_buffer(term_T *term)
 	}
     }
 }
+
+#if defined(FEAT_TIMERS) || defined(PROTO)
+/*
+ * Check if any terminal timer expired.  If so, copy text from the terminal to
+ * the buffer.
+ * Return the time until the next timer will expire.
+ */
+    int
+term_check_timers(int next_due_arg, proftime_T *now)
+{
+    term_T  *term;
+    int	    next_due = next_due_arg;
+
+    for (term = first_term; term != NULL; term = term->tl_next)
+    {
+	if (term->tl_timer_set && !term->tl_normal_mode)
+	{
+	    long    this_due = proftime_time_left(&term->tl_timer_due, now);
+
+	    if (this_due <= 1)
+	    {
+		term->tl_timer_set = FALSE;
+		move_terminal_to_buffer(term);
+	    }
+	    else if (next_due == -1 || next_due > this_due)
+		next_due = this_due;
+	}
+    }
+
+    return next_due;
+}
+#endif
 
     static void
 set_terminal_mode(term_T *term, int normal_mode)
@@ -1638,20 +1713,6 @@ term_in_normal_mode(void)
 term_enter_job_mode()
 {
     term_T	*term = curbuf->b_term;
-    sb_line_T	*line;
-    garray_T	*gap;
-
-    /* Remove the terminal contents from the scrollback and the buffer. */
-    gap = &term->tl_scrollback;
-    while (curbuf->b_ml.ml_line_count > term->tl_scrollback_scrolled
-							    && gap->ga_len > 0)
-    {
-	ml_delete(curbuf->b_ml.ml_line_count, FALSE);
-	line = (sb_line_T *)gap->ga_data + gap->ga_len - 1;
-	vim_free(line->sb_cells);
-	--gap->ga_len;
-    }
-    check_cursor();
 
     set_terminal_mode(term, FALSE);
 
@@ -2174,6 +2235,12 @@ theend:
     in_terminal_loop = NULL;
     if (restore_cursor)
 	prepare_restore_cursor_props();
+
+    /* Move a snapshot of the screen contents to the buffer, so that completion
+     * works in other buffers. */
+    if (curbuf->b_term != NULL)
+	move_terminal_to_buffer(curbuf->b_term);
+
     return ret;
 }
 
@@ -2390,6 +2457,20 @@ cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
     return 0;
 }
 
+    static void
+set_dirty_snapshot(term_T *term)
+{
+    term->tl_dirty_snapshot = TRUE;
+#ifdef FEAT_TIMERS
+    if (!term->tl_normal_mode)
+    {
+	/* Update the snapshot after 100 msec of not getting updates. */
+	profile_setlimit(100L, &term->tl_timer_due);
+	term->tl_timer_set = TRUE;
+    }
+#endif
+}
+
     static int
 handle_damage(VTermRect rect, void *user)
 {
@@ -2397,6 +2478,7 @@ handle_damage(VTermRect rect, void *user)
 
     term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, rect.start_row);
     term->tl_dirty_row_end = MAX(term->tl_dirty_row_end, rect.end_row);
+    set_dirty_snapshot(term);
     redraw_buf_later(term->tl_buffer, SOME_VALID);
     return 1;
 }
@@ -2443,6 +2525,7 @@ handle_moverect(VTermRect dest, VTermRect src, void *user)
 
     term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, dest.start_row);
     term->tl_dirty_row_end = MIN(term->tl_dirty_row_end, dest.end_row);
+    set_dirty_snapshot(term);
 
     /* Note sure if the scrolling will work correctly, let's do a complete
      * redraw later. */
@@ -2593,6 +2676,10 @@ handle_resize(int rows, int cols, void *user)
 handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 {
     term_T	*term = (term_T *)user;
+
+    /* First remove the lines that were appended before, the pushed line goes
+     * above it. */
+    cleanup_scrollback(term);
 
     /* If the number of lines that are stored goes over 'termscrollback' then
      * delete the first 10%. */

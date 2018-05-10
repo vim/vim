@@ -1206,7 +1206,7 @@ profile_zero(proftime_T *tm)
 static timer_T	*first_timer = NULL;
 static long	last_timer_id = 0;
 
-    static long
+    long
 proftime_time_left(proftime_T *due, proftime_T *now)
 {
 #  ifdef WIN3264
@@ -1423,6 +1423,10 @@ check_due_timer(void)
 	else if (next_due == -1 || next_due > this_due)
 	    next_due = this_due;
     }
+#endif
+#ifdef FEAT_TERMINAL
+    /* Some terminal windows may need their buffer updated. */
+    next_due = term_check_timers(next_due, &now);
 #endif
 
     return current_id != last_timer_id ? 1 : next_due;
