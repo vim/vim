@@ -204,6 +204,7 @@ static int win32_set_archive(char_u *name);
 
 #ifndef FEAT_GUI_W32
 static int vtp_working = 0;
+static int vtp_wantfill = TRUE;
 static void vtp_init();
 static void vtp_exit();
 static int vtp_printf(char *format, ...);
@@ -7601,6 +7602,10 @@ vtp_init(void)
     save_console_fg_rgb = (guicolor_T)csbi.ColorTable[7];
 
     set_console_color_rgb();
+
+    /* Decide specific processing for cmd.exe. */
+    if (getenv("ConEmuANSI") != NULL)
+	vtp_wantfill = FALSE;
 }
 
     static void
@@ -7766,6 +7771,12 @@ use_vtp(void)
 is_term_win32(void)
 {
     return T_NAME != NULL && STRCMP(T_NAME, "win32") == 0;
+}
+
+    int
+has_vtp_wantfill(void)
+{
+    return vtp_wantfill;
 }
 
 #endif

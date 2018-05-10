@@ -2182,8 +2182,9 @@ win_update(win_T *wp)
      */
 
 #ifdef FEAT_VTP
-    /* Rewrite the character at the end of the screen line. */
-    if (use_vtp())
+    /* Rewrite the character at the end of the screen line.
+     * processing only cmd.exe. */
+    if (use_vtp() && has_vtp_wantfill())
     {
 	int i;
 
