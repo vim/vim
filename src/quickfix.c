@@ -2027,7 +2027,7 @@ qf_clean_dir_stack(struct dir_stack_T **stackptr)
  * Cleans up intermediate directory entries.
  *
  * TODO: How to solve the following problem?
- * If we have the this directory tree:
+ * If we have this directory tree:
  *     ./
  *     ./aa
  *     ./aa/bb
@@ -2079,7 +2079,7 @@ qf_guess_filepath(qf_info_T *qi, int qf_idx, char_u *filename)
 	vim_free(ds_tmp);
     }
 
-    return ds_ptr==NULL? NULL: ds_ptr->dirname;
+    return ds_ptr == NULL ? NULL : ds_ptr->dirname;
 }
 
 /*
@@ -2108,7 +2108,7 @@ qflist_valid (win_T *wp, int_u qf_id)
 /*
  * When loading a file from the quickfix, the auto commands may modify it.
  * This may invalidate the current quickfix entry.  This function checks
- * whether a entry is still present in the quickfix.
+ * whether an entry is still present in the quickfix list.
  * Similar to location list.
  */
     static int
