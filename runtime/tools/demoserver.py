@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Server that will accept connections from a Vim channel.
 # Run this server and then in Vim you can open the channel:
@@ -14,21 +14,13 @@
 # To exit cleanly type "quit<Enter>".
 #
 # See ":help channel-demo" in Vim.
-#
-# This requires Python 2.6 or later.
 
 from __future__ import print_function
 import json
 import socket
 import sys
 import threading
-
-try:
-    # Python 3
-    import socketserver
-except ImportError:
-    # Python 2
-    import SocketServer as socketserver
+import socketserver
 
 thesocket = None
 

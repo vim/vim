@@ -1,8 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Program that sleeps for 100 msec
-#
-# This requires Python 2.6 or later.
 
 import time
 

@@ -1,9 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Server that will accept connections from a Vim channel.
 # Used by test_channel.vim.
-#
-# This requires Python 2.6 or later.
 
 from __future__ import print_function
 import json
@@ -11,13 +9,7 @@ import socket
 import sys
 import time
 import threading
-
-try:
-    # Python 3
-    import socketserver
-except ImportError:
-    # Python 2
-    import SocketServer as socketserver
+import socketserver
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # Test program for :make, :grep and :cgetfile.
@@ -23,24 +23,7 @@ def set_output_encoding(enc=None):
         kw.setdefault('errors', 'backslashreplace') # use \uXXXX style
         kw.setdefault('closefd', False)
 
-        if sys.version_info[0] < 3:
-            # Work around for Python 2.x
-            # New line conversion isn't needed here. Done in somewhere else.
-            writer = io.open(fo.fileno(), mode='w', newline='', **kw)
-            write = writer.write    # save the original write() function
-            enc = locale.getpreferredencoding()
-            def convwrite(s):
-                if isinstance(s, bytes):
-                    write(s.decode(enc))    # convert to unistr
-                else:
-                    write(s)
-                try:
-                    writer.flush()  # needed on Windows
-                except IOError:
-                    pass
-            writer.write = convwrite
-        else:
-            writer = io.open(fo.fileno(), mode='w', **kw)
+        writer = io.open(fo.fileno(), mode='w', **kw)
         return writer
 
     sys.stdout = get_text_writer(sys.stdout, encoding=enc)
