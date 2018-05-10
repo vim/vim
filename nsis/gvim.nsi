@@ -267,6 +267,9 @@ Section "Vim executables and runtime files"
 	SetOutPath $0\pack\dist\opt\swapmouse\plugin
 	File ${VIMRT}\pack\dist\opt\swapmouse\plugin\*.*
 
+	SetOutPath $0\pack\dist\opt\termdebug\plugin
+	File ${VIMRT}\pack\dist\opt\termdebug\plugin\*.*
+
 	SetOutPath $0\plugin
 	File ${VIMRT}\plugin\*.*
 
