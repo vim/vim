@@ -2273,6 +2273,21 @@ get_nth_entry(
 }
 
 /*
+ * Find a window displaying a Vim help file.
+ */
+    static win_T *
+qf_find_help_win(void)
+{
+    win_T *wp;
+
+    FOR_ALL_WINDOWS(wp)
+	if (bt_help(wp->w_buffer))
+	    return wp;
+
+    return NULL;
+}
+
+/*
  * Find a help window or open one.
  */
     static int
@@ -2284,9 +2299,7 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
     if (cmdmod.tab != 0)
 	wp = NULL;
     else
-	FOR_ALL_WINDOWS(wp)
-	    if (bt_help(wp->w_buffer))
-		break;
+	wp = qf_find_help_win();
     if (wp != NULL && wp->w_buffer->b_nwindows > 0)
 	win_enter(wp, TRUE);
     else
@@ -2329,7 +2342,7 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
  * Returns NULL if a matching window is not found.
  */
     static win_T *
-qf_find_win_with_ll(qf_info_T *ll)
+qf_find_win_with_loclist(qf_info_T *ll)
 {
     win_T	*wp;
 
@@ -2344,7 +2357,7 @@ qf_find_win_with_ll(qf_info_T *ll)
  * Find a window containing a normal buffer
  */
     static win_T *
-qf_find_win_with_normal_buf()
+qf_find_win_with_normal_buf(void)
 {
     win_T	*wp;
 
@@ -2509,7 +2522,7 @@ qf_jump_to_usable_window(int qf_fnum, int *opened_window)
     if (ll_ref != NULL)
     {
 	/* Find a non-quickfix window with this location list */
-	usable_win_ptr = qf_find_win_with_ll(ll_ref);
+	usable_win_ptr = qf_find_win_with_loclist(ll_ref);
 	if (usable_win_ptr != NULL)
 	    usable_win = 1;
     }
@@ -6222,9 +6235,7 @@ hgr_get_ll(int *new_ll)
 	wp = curwin;
     else
 	/* Find an existing help window */
-	FOR_ALL_WINDOWS(wp)
-	    if (bt_help(wp->w_buffer))
-		break;
+	wp = qf_find_help_win();
 
     if (wp == NULL)	    /* Help window not found */
 	qi = NULL;
