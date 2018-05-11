@@ -38,6 +38,9 @@
  * in tl_scrollback are no longer used.
  *
  * TODO:
+ * - Win32: Termdebug doesn't work, because gdb does not support mi2.  This
+ *   plugin: https://github.com/cpiger/NeoDebug  runs gdb as a job, redirecting
+ *   input and output.  Command I/O is in gdb window.
  * - Win32: Redirecting input does not work, half of Test_terminal_redir_file()
  *   is disabled.
  * - Win32: Redirecting output works but includes escape sequences.
@@ -971,7 +974,10 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	if (buffer == curbuf)
 	{
 	    update_screen(0);
-	    update_cursor(term, TRUE);
+	    /* update_screen() can be slow, check the terminal wasn't closed
+	     * already */
+	    if (buffer == curbuf && curbuf->b_term != NULL)
+		update_cursor(curbuf->b_term, TRUE);
 	}
 	else
 	    redraw_after_callback(TRUE);
@@ -2100,6 +2106,10 @@ terminal_loop(int blocking)
 	    while (must_redraw != 0)
 		if (update_screen(0) == FAIL)
 		    break;
+	if (!term_use_loop_check(TRUE))
+	    /* job finished while redrawing */
+	    break;
+
 	update_cursor(curbuf->b_term, FALSE);
 	restore_cursor = TRUE;
 
