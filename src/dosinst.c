@@ -1200,10 +1200,13 @@ install_vimrc(int idx)
 	/* Use quotes only when needed, they may cause trouble. */
 	fprintf(fd, "  let arg1 = v:fname_in\n");
 	fprintf(fd, "  if arg1 =~ ' ' | let arg1 = '\"' . arg1 . '\"' | endif\n");
+	fprintf(fd, "  if arg1 =~ '!' | let arg1 = substitute(arg1, '!', '\\!', 'g') | endif\n");
 	fprintf(fd, "  let arg2 = v:fname_new\n");
 	fprintf(fd, "  if arg2 =~ ' ' | let arg2 = '\"' . arg2 . '\"' | endif\n");
+	fprintf(fd, "  if arg2 =~ '!' | let arg2 = substitute(arg1, '!', '\\!', 'g') | endif\n");
 	fprintf(fd, "  let arg3 = v:fname_out\n");
 	fprintf(fd, "  if arg3 =~ ' ' | let arg3 = '\"' . arg3 . '\"' | endif\n");
+	fprintf(fd, "  if arg3 =~ '!' | let arg3 = substitute(arg1, '!', '\\!', 'g') | endif\n");
 
 	/* If the path has a space:  When using cmd.exe (Win NT/2000/XP) put
 	 * quotes around the diff command and rely on the default value of
@@ -1225,6 +1228,7 @@ install_vimrc(int idx)
 	fprintf(fd, "  else\n");
 	fprintf(fd, "    let cmd = $VIMRUNTIME . '\\diff'\n");
 	fprintf(fd, "  endif\n");
+	fprintf(fd, "  if cmd =~ '!' | let cmd = substitute(cmd, '!', '\\!', 'g') | endif\n");
 	fprintf(fd, "  silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3\n");
 	fprintf(fd, "  if exists('l:shxq_sav')\n");
 	fprintf(fd, "    let &shellxquote=l:shxq_sav\n");
