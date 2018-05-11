@@ -415,7 +415,10 @@ ui_breakcheck_force(int force)
 #endif
 	mch_breakcheck(force);
 
-    updating_screen = save_us;
+    if (save_us)
+	updating_screen = save_us;
+    else
+	reset_updating_screen(FALSE);
 }
 
 /*****************************************************************************

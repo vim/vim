@@ -103,6 +103,8 @@ struct terminal_S {
 
     int		tl_normal_mode; /* TRUE: Terminal-Normal mode */
     int		tl_channel_closed;
+    int		tl_channel_recently_closed; // still need to handle tl_finish
+
     int		tl_finish;
 #define TL_FINISH_UNSET	    NUL
 #define TL_FINISH_CLOSE	    'c'	/* ++close or :terminal without argument */
@@ -2780,6 +2782,53 @@ static VTermScreenCallbacks screen_callbacks = {
 };
 
 /*
+ * Do the work after the channel of a terminal was closed.
+ * Must be called only when updating_screen is FALSE.
+ * Returns TRUE when a buffer was closed (list of terminals may have changed).
+ */
+    static int
+term_after_channel_closed(term_T *term)
+{
+    /* Unless in Terminal-Normal mode: clear the vterm. */
+    if (!term->tl_normal_mode)
+    {
+	int	fnum = term->tl_buffer->b_fnum;
+
+	cleanup_vterm(term);
+
+	if (term->tl_finish == TL_FINISH_CLOSE)
+	{
+	    aco_save_T	aco;
+
+	    /* ++close or term_finish == "close" */
+	    ch_log(NULL, "terminal job finished, closing window");
+	    aucmd_prepbuf(&aco, term->tl_buffer);
+	    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
+	    aucmd_restbuf(&aco);
+	    return TRUE;
+	}
+	if (term->tl_finish == TL_FINISH_OPEN
+				   && term->tl_buffer->b_nwindows == 0)
+	{
+	    char buf[50];
+
+	    /* TODO: use term_opencmd */
+	    ch_log(NULL, "terminal job finished, opening window");
+	    vim_snprintf(buf, sizeof(buf),
+		    term->tl_opencmd == NULL
+			    ? "botright sbuf %d"
+			    : (char *)term->tl_opencmd, fnum);
+	    do_cmdline_cmd((char_u *)buf);
+	}
+	else
+	    ch_log(NULL, "terminal job finished");
+    }
+
+    redraw_buf_and_status_later(term->tl_buffer, NOT_VALID);
+    return FALSE;
+}
+
+/*
  * Called when a channel has been closed.
  * If this was a channel for a terminal window then finish it up.
  */
@@ -2787,9 +2836,12 @@ static VTermScreenCallbacks screen_callbacks = {
 term_channel_closed(channel_T *ch)
 {
     term_T *term;
+    term_T *next_term;
     int	    did_one = FALSE;
 
-    for (term = first_term; term != NULL; term = term->tl_next)
+    for (term = first_term; term != NULL; term = next_term)
+    {
+	next_term = term->tl_next;
 	if (term->tl_job == ch->ch_job)
 	{
 	    term->tl_channel_closed = TRUE;
@@ -2805,43 +2857,19 @@ term_channel_closed(channel_T *ch)
 	    }
 #endif
 
-	    /* Unless in Terminal-Normal mode: clear the vterm. */
-	    if (!term->tl_normal_mode)
+	    if (updating_screen)
 	    {
-		int	fnum = term->tl_buffer->b_fnum;
-
-		cleanup_vterm(term);
-
-		if (term->tl_finish == TL_FINISH_CLOSE)
-		{
-		    aco_save_T	aco;
-
-		    /* ++close or term_finish == "close" */
-		    ch_log(NULL, "terminal job finished, closing window");
-		    aucmd_prepbuf(&aco, term->tl_buffer);
-		    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
-		    aucmd_restbuf(&aco);
-		    break;
-		}
-		if (term->tl_finish == TL_FINISH_OPEN
-					   && term->tl_buffer->b_nwindows == 0)
-		{
-		    char buf[50];
-
-		    /* TODO: use term_opencmd */
-		    ch_log(NULL, "terminal job finished, opening window");
-		    vim_snprintf(buf, sizeof(buf),
-			    term->tl_opencmd == NULL
-				    ? "botright sbuf %d"
-				    : (char *)term->tl_opencmd, fnum);
-		    do_cmdline_cmd((char_u *)buf);
-		}
-		else
-		    ch_log(NULL, "terminal job finished");
+		/* Cannot open or close windows now.  Can happen when
+		 * 'lazyredraw' is set. */
+		term->tl_channel_recently_closed = TRUE;
+		continue;
 	    }
 
-	    redraw_buf_and_status_later(term->tl_buffer, NOT_VALID);
+	    if (term_after_channel_closed(term))
+		next_term = first_term;
 	}
+    }
+
     if (did_one)
     {
 	redraw_statuslines();
@@ -2856,6 +2884,29 @@ term_channel_closed(channel_T *ch)
 	    if (term->tl_job == ch->ch_job)
 		maketitle();
 	    update_cursor(term, term->tl_cursor_visible);
+	}
+    }
+}
+
+/*
+ * To be called after resetting updating_screen: handle any terminal where the
+ * channel was closed.
+ */
+    void
+term_check_channel_closed_recently()
+{
+    term_T *term;
+    term_T *next_term;
+
+    for (term = first_term; term != NULL; term = next_term)
+    {
+	next_term = term->tl_next;
+	if (term->tl_channel_recently_closed)
+	{
+	    term->tl_channel_recently_closed = FALSE;
+	    if (term_after_channel_closed(term))
+		// start over, the list may have changed
+		next_term = first_term;
 	}
     }
 }

@@ -514,6 +514,19 @@ redrawWinline(
 #endif
 }
 
+    void
+reset_updating_screen(int may_resize_shell UNUSED)
+{
+    updating_screen = FALSE;
+#ifdef FEAT_GUI
+    if (may_resize_shell)
+	gui_may_resize_shell();
+#endif
+#ifdef FEAT_TERMINAL
+    term_check_channel_closed_recently();
+#endif
+}
+
 /*
  * Update all windows that are editing the current buffer.
  */
@@ -778,10 +791,7 @@ update_screen(int type_arg)
     FOR_ALL_WINDOWS(wp)
 	wp->w_buffer->b_mod_set = FALSE;
 
-    updating_screen = FALSE;
-#ifdef FEAT_GUI
-    gui_may_resize_shell();
-#endif
+    reset_updating_screen(TRUE);
 
     /* Clear or redraw the command line.  Done last, because scrolling may
      * mess up the command line. */
@@ -861,11 +871,9 @@ update_finish(void)
     end_search_hl();
 # endif
 
-    updating_screen = FALSE;
+    reset_updating_screen(TRUE);
 
 # ifdef FEAT_GUI
-    gui_may_resize_shell();
-
     /* Redraw the cursor and update the scrollbars when all screen updating is
      * done. */
     if (gui.in_use)
