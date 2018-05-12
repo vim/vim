@@ -82,3 +82,18 @@ func Test_swap_group()
     call delete('Xtest')
   endtry
 endfunc
+
+func Test_missing_dir()
+  call mkdir('Xswapdir')
+  exe 'set directory=' . getcwd() . '/Xswapdir'
+
+  call assert_equal('', glob('foo'))
+  call assert_equal('', glob('bar'))
+  edit foo/x.txt
+  " This should not give a warning for an existing swap file.
+  split bar/x.txt
+  only
+
+  set directory&
+  call delete('Xswapdir', 'rf')
+endfunc
