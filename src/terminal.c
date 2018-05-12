@@ -1462,6 +1462,7 @@ cleanup_scrollback(term_T *term)
     sb_line_T	*line;
     garray_T	*gap;
 
+    curbuf = term->tl_buffer;
     gap = &term->tl_scrollback;
     while (curbuf->b_ml.ml_line_count > term->tl_scrollback_scrolled
 							    && gap->ga_len > 0)
@@ -1471,7 +1472,9 @@ cleanup_scrollback(term_T *term)
 	vim_free(line->sb_cells);
 	--gap->ga_len;
     }
-    check_cursor();
+    curbuf = curwin->w_buffer;
+    if (curbuf == term->tl_buffer)
+	check_cursor();
 }
 
 /*
@@ -1495,8 +1498,8 @@ move_terminal_to_buffer(term_T *term)
 
     /* Nothing to do if the buffer already has the lines and nothing was
      * changed. */
-    if (!term->tl_dirty_snapshot
-		  && curbuf->b_ml.ml_line_count > term->tl_scrollback_scrolled)
+    if (!term->tl_dirty_snapshot && term->tl_buffer->b_ml.ml_line_count
+						> term->tl_scrollback_scrolled)
 	return;
 
     ch_log(term->tl_job == NULL ? NULL : term->tl_job->jv_channel,
