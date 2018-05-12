@@ -1484,3 +1484,25 @@ func Test_terminal_termwinkey()
   call feedkeys("\<C-L>\<C-C>", 'tx')
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
 endfunc
+
+func Test_terminal_out_err()
+  if !has('unix')
+    return
+  endif
+  call writefile([
+	\ '#!/bin/sh',
+	\ 'echo "this is standard error" >&2',
+	\ 'echo "this is standard out" >&1',
+	\ ], 'Xechoerrout.sh')
+  call setfperm('Xechoerrout.sh', 'rwxrwx---')
+
+  let outfile = 'Xtermstdout'
+  let buf = term_start(['./Xechoerrout.sh'], {'out_io': 'file', 'out_name': outfile})
+  call WaitForAssert({-> assert_inrange(1, 2, len(readfile(outfile)))})
+  call assert_equal("this is standard out", readfile(outfile)[0])
+  call assert_equal('this is standard error', term_getline(buf, 1))
+
+  exe buf . 'bwipe'
+  call delete('Xechoerrout.sh')
+  call delete(outfile)
+endfunc

@@ -5645,7 +5645,12 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	/* When using pty_master_fd only set it for stdout, do not duplicate it
 	 * for stderr, it only needs to be read once. */
 	int err_fd = use_out_for_err || use_file_for_err || use_null_for_err
-		      ? INVALID_FD : fd_err[0] < 0 ? INVALID_FD : fd_err[0];
+		      ? INVALID_FD
+		      : fd_err[0] >= 0
+		         ? fd_err[0]
+		         : (out_fd == pty_master_fd
+				 ? INVALID_FD
+				 : pty_master_fd);
 
 	channel_set_pipes(channel, in_fd, out_fd, err_fd);
 	channel_set_job(channel, job, options);
