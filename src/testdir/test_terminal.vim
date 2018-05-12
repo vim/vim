@@ -1502,6 +1502,7 @@ func Test_terminal_out_err()
   call assert_equal("this is standard out", readfile(outfile)[0])
   call assert_equal('this is standard error', term_getline(buf, 1))
 
+  call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
   exe buf . 'bwipe'
   call delete('Xechoerrout.sh')
   call delete(outfile)
