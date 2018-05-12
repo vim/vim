@@ -1336,6 +1336,8 @@ check_due_timer(void)
 	this_due = proftime_time_left(&timer->tr_due, &now);
 	if (this_due <= 1)
 	{
+	    /* Save and restore a lot of flags, because the timer fires while
+	     * waiting for a character, which might be halfway a command. */
 	    int save_timer_busy = timer_busy;
 	    int save_vgetc_busy = vgetc_busy;
 	    int save_did_emsg = did_emsg;
@@ -1345,6 +1347,7 @@ check_due_timer(void)
 	    int save_did_throw = did_throw;
 	    int save_ex_pressedreturn = get_pressedreturn();
 	    except_T *save_current_exception = current_exception;
+	    vimvars_save_T vvsave;
 
 	    /* Create a scope for running the timer callback, ignoring most of
 	     * the current scope, such as being inside a try/catch. */
@@ -1357,6 +1360,7 @@ check_due_timer(void)
 	    trylevel = 0;
 	    did_throw = FALSE;
 	    current_exception = NULL;
+	    save_vimvars(&vvsave);
 
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
@@ -1373,6 +1377,7 @@ check_due_timer(void)
 	    trylevel = save_trylevel;
 	    did_throw = save_did_throw;
 	    current_exception = save_current_exception;
+	    restore_vimvars(&vvsave);
 	    if (must_redraw != 0)
 		need_update_screen = TRUE;
 	    must_redraw = must_redraw > save_must_redraw

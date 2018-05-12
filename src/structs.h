@@ -3423,3 +3423,9 @@ typedef struct {
     int		save_opcount;
     tasave_T	tabuf;
 } save_state_T;
+
+typedef struct {
+    varnumber_T vv_prevcount;
+    varnumber_T vv_count;
+    varnumber_T vv_count1;
+} vimvars_save_T;
