@@ -1606,23 +1606,24 @@ move_terminal_to_buffer(term_T *term)
     vterm_state_get_default_colors(vterm_obtain_state(term->tl_vterm),
 		       &term->tl_default_color.fg, &term->tl_default_color.bg);
 
-    FOR_ALL_WINDOWS(wp)
-    {
-	if (wp->w_buffer == term->tl_buffer)
+    if (term->tl_normal_mode)
+	FOR_ALL_WINDOWS(wp)
 	{
-	    wp->w_cursor.lnum = term->tl_buffer->b_ml.ml_line_count;
-	    wp->w_cursor.col = 0;
-	    wp->w_valid = 0;
-	    if (wp->w_cursor.lnum >= wp->w_height)
+	    if (wp->w_buffer == term->tl_buffer)
 	    {
-		linenr_T min_topline = wp->w_cursor.lnum - wp->w_height + 1;
+		wp->w_cursor.lnum = term->tl_buffer->b_ml.ml_line_count;
+		wp->w_cursor.col = 0;
+		wp->w_valid = 0;
+		if (wp->w_cursor.lnum >= wp->w_height)
+		{
+		    linenr_T min_topline = wp->w_cursor.lnum - wp->w_height + 1;
 
-		if (wp->w_topline < min_topline)
-		    wp->w_topline = min_topline;
+		    if (wp->w_topline < min_topline)
+			wp->w_topline = min_topline;
+		}
+		redraw_win_later(wp, NOT_VALID);
 	    }
-	    redraw_win_later(wp, NOT_VALID);
 	}
-    }
 }
 
 #if defined(FEAT_TIMERS) || defined(PROTO)
@@ -1688,10 +1689,10 @@ term_enter_normal_mode(void)
 {
     term_T *term = curbuf->b_term;
 
+    set_terminal_mode(term, TRUE);
+
     /* Append the current terminal contents to the buffer. */
     move_terminal_to_buffer(term);
-
-    set_terminal_mode(term, TRUE);
 
     /* Move the window cursor to the position of the cursor in the
      * terminal. */
