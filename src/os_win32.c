@@ -204,7 +204,7 @@ static int win32_set_archive(char_u *name);
 
 #ifndef FEAT_GUI_W32
 static int vtp_working = 0;
-static int vtp_wantfill = TRUE;
+static int vtp_wantfill = FALSE;
 static void vtp_init();
 static void vtp_exit();
 static int vtp_printf(char *format, ...);
@@ -926,8 +926,10 @@ static const struct
 #endif
 
 #if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
+# define AChar AsciiChar
 # define UChar UnicodeChar
 #else
+# define AChar uChar.AsciiChar
 # define UChar uChar.UnicodeChar
 #endif
 
@@ -7603,9 +7605,49 @@ vtp_init(void)
 
     set_console_color_rgb();
 
+#define ISEQ_BUFSIZE 10
     /* Decide specific processing for cmd.exe. */
-    if (getenv("ConEmuANSI") != NULL)
-	vtp_wantfill = FALSE;
+    /* Whether there is a need to correct the right end of the screen. */
+    if (vtp_working)
+    {
+	static char_u oseq[] = "\033[0c";    /* Query device attributes */
+	static char_u cseq[] = "\033[?1;0c"; /* VT101 with No Options */
+	char_u iseq[ISEQ_BUFSIZE];
+	DWORD written = 0;
+	DWORD numbers = 0;
+	int ipos = 0;
+	INPUT_RECORD ir;
+
+	FlushConsoleInputBuffer(g_hConIn);
+	WriteConsole(g_hConOut, (LPCSTR)oseq, (DWORD)STRLEN(oseq), &written,
+									 NULL);
+
+	iseq[ipos] = NUL;
+
+	/* Response enters the key buffer. */
+	GetNumberOfConsoleInputEvents(g_hConIn, &numbers);
+	while (numbers > 0)
+	{
+	    ReadConsoleInput(g_hConIn, &ir, 1, &numbers);
+	    if (ir.Event.KeyEvent.bKeyDown)
+	    {
+		iseq[ipos] = ir.Event.KeyEvent.AChar;
+		if (ipos == ISEQ_BUFSIZE - 2)
+		{
+		    iseq[ISEQ_BUFSIZE - 1] = NUL;
+		    FlushConsoleInputBuffer(g_hConIn);
+		    break;
+		}
+		ipos++;
+		iseq[ipos] = NUL;
+	    }
+	    GetNumberOfConsoleInputEvents(g_hConIn, &numbers);
+	}
+
+	FlushConsoleInputBuffer(g_hConIn);
+	if (STRCMP(iseq, cseq) == 0)
+	    vtp_wantfill = TRUE;
+    }
 }
 
     static void
