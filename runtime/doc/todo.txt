@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2018 May 05
+*todo.txt*      For Vim version 8.0.  Last change: 2018 May 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,16 +38,8 @@ entered there will not be repeated below, unless there is extra information.
 Terminal emulator window:
 - Still some stuff to implement and bugs to fix, see src/terminal.c
 
-Problem with sudo. #2758
-
-Looks like an error for inserting register makes ":file other" not work.
-(Tom M, 2018 Mar 28)  Reset did_emsg after inserting a register.
-Or at the top of the loop? (Apr 4)
-
-Make assert_functions return non-zero on failure.  Make sure they add one
-entry to v:errors then.
-Use WaitForAssert() in tests: give error when failed.
-Remove asserts after WaitFor().
+On Win32 when not in the console and t_Co >= 256, allow using 'tgc'.
+(Nobuhiro Takasaki, #2833)  Also check t_Co.
 
 balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
 20, #2481)
@@ -163,6 +155,9 @@ ch_sendraw() with long string does not try to read inbetween, which may cause
 a deadlock if the reading side is waiting for the write to finish. (Nate
 Bosch, 2018 Jan 13, #2548)
 
+Patch to include a cfilter plugin to filter quickfix/location lists.
+(Yegappan Lakshmanan, 2018 May 12)
+
 Add Makefiles to the runtime/spell directory tree, since nobody uses Aap.
 Will have to explain the manual steps (downloading the .aff and .dic files,
 applying the diff, etc.
@@ -180,6 +175,8 @@ With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
 
 Using 'wildignore' also applies to literally entered file name.  Also with
 :drop (remote commands).
+
+Patch to support ":tag <tagkind> <tagname". (emmrk, 2018 May 7, #2871)
 
 Patch to use the xdiff library instead of external diff. (Christian Brabandt,
 2018 Mar 20, #2732)
@@ -295,6 +292,13 @@ Ask whether to use Windows or Vim key behavior?
 
 Patch for improving detecting Ruby on Mac in configure. (Ilya Mikhaltsou, 2017
 Nov 21)
+
+When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
+triggered.  Use the code from the end of set_num_option() in
+set_color_count().
+
+Add another autocommand like TermResponse that is fired for the other terminal
+responses, such as bg and fg.  Use "bg", "fg", "blink", etc. for the name.
 
 When using command line window, CmdlineLeave is triggered without
 CmdlineEnter.  (xtal8, 2017 Oct 30, #2263)
@@ -999,10 +1003,6 @@ Instead of separately uploading patches to the ftp site, we can get them from
 github with a URL like this:
    https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
 Diff for version.c contains more context, can't skip a patch.
-
-When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
-triggered.  Use the code from the end of set_num_option() in
-set_color_count().
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 

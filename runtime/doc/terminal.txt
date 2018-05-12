@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 May 04
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -317,7 +317,7 @@ the job ends while in Terminal-Normal mode this changes to
 When the job outputs lines in the terminal, such that the contents scrolls off
 the top, those lines are remembered and can be seen in Terminal-Normal mode.
 The number of lines is limited by the 'termwinscroll' option. When going over
-this limit, the first 10% of the scrolled lins are deleted and are lost.
+this limit, the first 10% of the scrolled lines are deleted and are lost.
 
 
 Cursor style ~

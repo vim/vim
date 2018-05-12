@@ -2103,7 +2103,7 @@ msgstr "E223: rekursives Mapping"
 
 #, c-format
 msgid "E224: global abbreviation already exists for %s"
-msgstr "E224: Globale Abkürzung für %s existiert bereits"
+msgstr "E224: Globale Kurzform für %s existiert bereits"
 
 #, c-format
 msgid "E225: global mapping already exists for %s"
@@ -2111,14 +2111,14 @@ msgstr "E225: Globales Mapping für %s existiert bereits"
 
 #, c-format
 msgid "E226: abbreviation already exists for %s"
-msgstr "E226: Abkürzung für %s existiert bereits"
+msgstr "E226: Kurzform %s existiert bereits"
 
 #, c-format
 msgid "E227: mapping already exists for %s"
 msgstr "E227: Mapping für %s existiert bereits"
 
 msgid "No abbreviation found"
-msgstr "Keine Abkürzung gefunden"
+msgstr "Keine Kurzform gefunden"
 
 msgid "No mapping found"
 msgstr "Kein Mapping gefunden"
@@ -2153,7 +2153,7 @@ msgid "E254: Cannot allocate color %s"
 msgstr "E254: Kann die Farbe %s nicht zuweisen."
 
 msgid "No match at cursor, finding next"
-msgstr "Kein Treffer beim Cursur, finde den nächsten"
+msgstr "Kein Treffer beim Cursor, finde den nächsten"
 
 msgid "<cannot open> "
 msgstr "<kann nicht öffnen> "
@@ -6612,7 +6612,7 @@ msgid "E23: No alternate file"
 msgstr "E23: Keine alternative Datei"
 
 msgid "E24: No such abbreviation"
-msgstr "E24: Keine Abkürzung gefunden"
+msgstr "E24: Diese Kurzform nicht gefunden"
 
 msgid "E477: No ! allowed"
 msgstr "E477: Kein ! erlaubt"

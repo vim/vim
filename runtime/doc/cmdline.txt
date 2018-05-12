@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.0.  Last change: 2017 Oct 19
+*cmdline.txt*   For Vim version 8.0.  Last change: 2018 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -412,14 +412,17 @@ CTRL-D		List names that match the pattern in front of the cursor.
 		match is inserted.  After the last match, the first is used
 		again (wrap around).
 		The behavior can be changed with the 'wildmode' option.
+							*c_<S-Tab>*
+<S-Tab>		Like 'wildchar' or <Tab>, but begin with the last match and
+		then go to the previous match.
+		<S-Tab> does not work everywhere.
 							*c_CTRL-N*
 CTRL-N		After using 'wildchar' which got multiple matches, go to next
 		match.  Otherwise recall more recent command-line from history.
-<S-Tab>							*c_CTRL-P* *c_<S-Tab>*
+							*c_CTRL-P*
 CTRL-P		After using 'wildchar' which got multiple matches, go to
 		previous match.  Otherwise recall older command-line from
-		history.  <S-Tab> only works with the GUI, on the Amiga and
-		with MS-DOS.
+		history.
 							*c_CTRL-A*
 CTRL-A		All names that match the pattern in front of the cursor are
 		inserted.

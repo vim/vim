@@ -6137,6 +6137,7 @@ fork	os_unix.txt	/*fork*
 form.vim	syntax.txt	/*form.vim*
 format-bullet-list	tips.txt	/*format-bullet-list*
 format-comments	change.txt	/*format-comments*
+format-formatexpr	change.txt	/*format-formatexpr*
 formatting	change.txt	/*formatting*
 formfeed	intro.txt	/*formfeed*
 fortran.vim	syntax.txt	/*fortran.vim*

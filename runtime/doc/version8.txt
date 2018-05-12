@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2017 Nov 24
+*version8.txt*  For Vim version 8.0.  Last change: 2018 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1799,7 +1799,7 @@ Solution:   Always use the stubs. (Danek Duvall, Yukihiro Nakadaira)
 Files:	    src/if_ruby.c
 
 Patch 7.4.226 (after 7.4.219)
-Problem:    Cursurline highlighting not redrawn when scrolling. (John
+Problem:    Cursorline highlighting not redrawn when scrolling. (John
 	    Marriott)
 Solution:   Check for required redraw in two places.
 Files:	    src/move.c
