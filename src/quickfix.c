@@ -1500,7 +1500,7 @@ qf_store_title(qf_info_T *qi, int qf_idx, char_u *title)
 
 	qi->qf_lists[qf_idx].qf_title = p;
 	if (p != NULL)
-	    sprintf((char *)p, "%s", (char *)title);
+	    STRCPY(p, title);
     }
 }
 
