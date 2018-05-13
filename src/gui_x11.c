@@ -1282,6 +1282,17 @@ gui_mch_init_check(void)
 		cmdline_options, XtNumber(cmdline_options),
 		CARDINAL &gui_argc, gui_argv);
 
+# if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
+    {
+	/* The call to XtOpenDisplay() may have set the locale from the
+	 * environment. Set LC_NUMERIC to "C" to make sure that strtod() uses a
+	 * decimal point, not a comma. */
+	char *p = setlocale(LC_NUMERIC, NULL);
+
+	if (p == NULL || strcmp(p, "C") != 0)
+	   setlocale(LC_NUMERIC, "C");
+    }
+# endif
     if (app_context == NULL || gui.dpy == NULL)
     {
 	gui.dying = TRUE;
