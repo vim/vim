@@ -5305,10 +5305,11 @@ gui_do_findrepl(
 	ga_concat(&ga, (char_u *)"\\c");
     if (flags & FRD_WHOLE_WORD)
 	ga_concat(&ga, (char_u *)"\\<");
-    if (type == FRD_REPLACEALL || down)
-	concat_esc(&ga, find_text, '/');	/* escape slashes */
-    else
-	concat_esc(&ga, find_text, '?');	/* escape '?' */
+    /* escape / and \ */
+    p = vim_strsave_escaped(find_text, (char_u *)"/\\");
+    if (p != NULL)
+        ga_concat(&ga, p);
+    vim_free(p);
     if (flags & FRD_WHOLE_WORD)
 	ga_concat(&ga, (char_u *)"\\>");
 
@@ -5371,8 +5372,22 @@ gui_do_findrepl(
 	if (type == FRD_REPLACE)
 	    searchflags += SEARCH_START;
 	i = msg_scroll;
-	(void)do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
-						      searchflags, NULL, NULL);
+	if (down)
+	{
+	    (void)do_search(NULL, '/', ga.ga_data, 1L,
+						searchflags, NULL, NULL);
+	}
+	else
+	{
+	    /* We need to escape '?' if and only if we are
+	     * searching in the up direction */
+	    p = vim_strsave_escaped(ga.ga_data, (char_u *)"?");
+	    if (p != NULL)
+	        (void)do_search(NULL, '?', p, 1L,
+					searchflags, NULL, NULL);
+	    vim_free(p);
+	}
+
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */
     }
 
