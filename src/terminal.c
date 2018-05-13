@@ -1709,7 +1709,8 @@ term_enter_normal_mode(void)
     curwin->w_cursor.lnum = term->tl_scrollback_scrolled
 					     + term->tl_cursor_pos.row + 1;
     check_cursor();
-    coladvance(term->tl_cursor_pos.col);
+    if (coladvance(term->tl_cursor_pos.col) == FAIL)
+	coladvance(MAXCOL);
 
     /* Display the same lines as in the terminal. */
     curwin->w_topline = term->tl_scrollback_scrolled + 1;
@@ -2264,9 +2265,8 @@ theend:
 
     /* Move a snapshot of the screen contents to the buffer, so that completion
      * works in other buffers. */
-    if (curbuf->b_term != NULL)
-	may_move_terminal_to_buffer(
-			       curbuf->b_term, curbuf->b_term->tl_normal_mode);
+    if (curbuf->b_term != NULL && !curbuf->b_term->tl_normal_mode)
+	may_move_terminal_to_buffer(curbuf->b_term, FALSE);
 
     return ret;
 }
