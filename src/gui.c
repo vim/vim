@@ -5173,8 +5173,6 @@ gui_update_screen(void)
 #endif
 
 #if defined(FIND_REPLACE_DIALOG) || defined(PROTO)
-static void concat_esc(garray_T *gap, char_u *text, int what);
-
 /*
  * Get the text to use in a find/replace dialog.  Uses the last search pattern
  * if the argument is empty.
@@ -5239,31 +5237,6 @@ get_find_dialog_text(
 }
 
 /*
- * Concatenate "text" to grow array "gap", escaping "what" with a backslash.
- */
-    static void
-concat_esc(garray_T *gap, char_u *text, int what)
-{
-    while (*text != NUL)
-    {
-#ifdef FEAT_MBYTE
-	int l = (*mb_ptr2len)(text);
-
-	if (l > 1)
-	{
-	    while (--l >= 0)
-		ga_append(gap, *text++);
-	    continue;
-	}
-#endif
-	if (*text == what)
-	    ga_append(gap, '\\');
-	ga_append(gap, *text);
-	++text;
-    }
-}
-
-/*
  * Handle the press of a button in the find-replace dialog.
  * Return TRUE when something was added to the input buffer.
  */
@@ -5305,10 +5278,11 @@ gui_do_findrepl(
 	ga_concat(&ga, (char_u *)"\\c");
     if (flags & FRD_WHOLE_WORD)
 	ga_concat(&ga, (char_u *)"\\<");
-    if (type == FRD_REPLACEALL || down)
-	concat_esc(&ga, find_text, '/');	/* escape slashes */
-    else
-	concat_esc(&ga, find_text, '?');	/* escape '?' */
+    /* escape / and \ */
+    p = vim_strsave_escaped(find_text, (char_u *)"/\\");
+    if (p != NULL)
+        ga_concat(&ga, p);
+    vim_free(p);
     if (flags & FRD_WHOLE_WORD)
 	ga_concat(&ga, (char_u *)"\\>");
 
@@ -5371,8 +5345,20 @@ gui_do_findrepl(
 	if (type == FRD_REPLACE)
 	    searchflags += SEARCH_START;
 	i = msg_scroll;
-	(void)do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
-						      searchflags, NULL, NULL);
+	if (down)
+	{
+	    (void)do_search(NULL, '/', ga.ga_data, 1L, searchflags, NULL, NULL);
+	}
+	else
+	{
+	    /* We need to escape '?' if and only if we are searching in the up
+	     * direction */
+	    p = vim_strsave_escaped(ga.ga_data, (char_u *)"?");
+	    if (p != NULL)
+	        (void)do_search(NULL, '?', p, 1L, searchflags, NULL, NULL);
+	    vim_free(p);
+	}
+
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */
     }
 
