@@ -5616,7 +5616,7 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 	/* Make a copy of argv_arg for job->jv_argv. */
 	for (i = 0; argv_arg[i] != NULL; i++)
 	    argc++;
-	argv = (char **)alloc(sizeof(char_u *) * (argc + 1));
+	argv = (char **)alloc(sizeof(char *) * (argc + 1));
 	if (argv == NULL)
 	    goto theend;
 	for (i = 0; i < argc; i++)
@@ -5659,7 +5659,7 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
     }
 
     /* Save the command used to start the job. */
-    job->jv_argv = (char_u **)argv;
+    job->jv_argv = argv;
 
 #ifdef USE_ARGV
     if (ch_log_active())
@@ -5690,7 +5690,7 @@ theend:
 #ifndef USE_ARGV
     vim_free(ga.ga_data);
 #endif
-    if ((char_u **)argv != job->jv_argv)
+    if (argv != job->jv_argv)
 	vim_free(argv);
     free_job_options(&opt);
     return job;
@@ -5764,7 +5764,7 @@ job_info(job_T *job, dict_T *dict)
 	dict_add_list(dict, "cmd", l);
 	if (job->jv_argv != NULL)
 	    for (i = 0; job->jv_argv[i] != NULL; i++)
-		list_append_string(l, job->jv_argv[i], -1);
+		list_append_string(l, (char_u *)job->jv_argv[i], -1);
     }
 }
 
