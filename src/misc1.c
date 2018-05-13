@@ -4479,6 +4479,19 @@ remove_tail(char_u *p, char_u *pend, char_u *name)
     return pend;
 }
 
+    void
+vim_unsetenv(char_u *var)
+{
+#ifdef _WIN32
+    mch_setenv((char *)var, "", 0);
+#elif defined(HAVE_UNSETENV)
+    unsetenv((char *)var);
+#else
+    EMSG(_("E319: Sorry, the command is not available in this version"));
+#endif
+}
+
+
 /*
  * Our portable version of setenv.
  */
