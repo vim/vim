@@ -5144,7 +5144,10 @@ job_any_running()
 
     for (job = first_job; job != NULL; job = job->jv_next)
 	if (job_still_useful(job))
+	{
+	    ch_log(NULL, "GUI not forking because a job is running");
 	    return TRUE;
+	}
     return FALSE;
 }
 #endif
