@@ -10473,7 +10473,7 @@ set_qf_ll_list(
 	}
 
 	if (l != NULL && action && valid_dict && set_errorlist(wp, l, action,
-	    (char_u *)(wp == NULL ? "setqflist()" : "setloclist()"), d) == OK)
+	  (char_u *)(wp == NULL ? ":setqflist()" : ":setloclist()"), d) == OK)
 	    rettv->vval.v_number = 0;
     }
 #endif
