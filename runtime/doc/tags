@@ -3201,6 +3201,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :unhide	windows.txt	/*:unhide*
 :unl	eval.txt	/*:unl*
 :unlet	eval.txt	/*:unlet*
+:unlet-$	eval.txt	/*:unlet-$*
+:unlet-environment	eval.txt	/*:unlet-environment*
 :unlo	eval.txt	/*:unlo*
 :unlockvar	eval.txt	/*:unlockvar*
 :unm	map.txt	/*:unm*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2018 May 12
+*todo.txt*      For Vim version 8.0.  Last change: 2018 May 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,10 +36,18 @@ entered there will not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Terminal emulator window:
+- Duplicated lines when making terminal only window. (Dominique, #2909)
 - Still some stuff to implement and bugs to fix, see src/terminal.c
+- Add more functionality for terminal API? (Ozaki Kiichi 2018 May 13, #2907)
+
+Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
+13, #2910)  Can't reproduce?
 
 On Win32 when not in the console and t_Co >= 256, allow using 'tgc'.
 (Nobuhiro Takasaki, #2833)  Also check t_Co.
+
+Pop-up menu overlapping terminal is not cleared completely. (Lifepillar, 2018
+May 13, #2908)
 
 balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
 20, #2481)
@@ -127,17 +135,10 @@ Jan 15, #2555)
 
 Check argument of systemlist(). (Pavlov)
 
-Can we make ":unlet $VAR" use unsetenv() to delete the env var?
-What for systems that don't have unsetenv()?  (Issue #1116)
-Patch in #2855, (Yasuhiro Matsumoto)
-
 Patch to add reg_executing() and reg_recording(). (Hirohito Higashi, #2745)
 
 No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
-
-When 'inchsearch' and 'hlsearch' are set /\v highlights everything.
-Also see #2337
 
 Python indenting: alternative way to indent arguments:
 http://orchistro.tistory.com/236
@@ -178,9 +179,6 @@ Using 'wildignore' also applies to literally entered file name.  Also with
 
 Patch to support ":tag <tagkind> <tagname". (emmrk, 2018 May 7, #2871)
 
-Patch to use the xdiff library instead of external diff. (Christian Brabandt,
-2018 Mar 20, #2732)
-
 Implement option_save() and option_restore():
 option_restore({list})					*option_restore()*
 		Restore options previously saved by option_save().
@@ -209,7 +207,7 @@ option_save({list})					*option_save()*
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
 
-ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
+ml_get error when using a Python script. (Yggdroot, 2017 Jun 1, #1737)
 Lemonboy can reproduce (2017 Jun 5)
 
 crash when removing an element while inside map(). (Nikolai Pavlov, 2018 Feb
@@ -233,12 +231,6 @@ CTRL-X on zero gets stuck on 0xfffffffffffffffe. (Hengyang Zhao, #2746)
 
 A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
 
-Patch to fix E806. (Dominique, 2017 Nov 22, #2368)
-Kazunobu Kuriyama: caused by XtSetLanguageProc().
-
-Patch to fix GUI find/replace dialog. (kiloliter, 2017 Dec 11, report in
-#2418, fix in #2435)
-
 Invalid range error when using BufWinLeave for closing terminal.
 (Gabriel Barta, 2017 Nov 15, #2339)
 
@@ -250,17 +242,11 @@ Olaf Dabrunz is working on this. (10 Jan 2016)
     found here: http://www.ioplex.com/~miallen/libmba/dl/src/diff.c
     It's complicated and badly documented.
 Alternative: use the xdiff library.  Patch from Christian Brabandt, 2018 Mar
-2018, #2732)
+20, #2732)
 
 ml_get errors with buggy script. (Dominique, 2017 Apr 30)
 
 Error in emsg with buggy script. (Dominique, 2017 Apr 30)
-
-Patch to fix encoding in print document name (Yasuhiro Matsumoto, 2017 Dec 20,
-#2478)
-
-Patch to copy buffer-local options before buffer leaves the window. (Bjorn
-Linse, 2017 Nov 14, #2336)
 
 Join truncates xml comment. (Dmitrii Tcyganok, 2017 Dec 24, #2494)
 Requires 'formatoptions' to include "j". (Gary Johnson, 2017 Dec 24)
@@ -280,9 +266,6 @@ In an optional package the "after" directory is not scanned?
 
 Universal solution to detect if t_RS is working, using cursor position.
 Koichi Iwamoto, #2126
-
-Patch to fix cmdline abbreviation after '<,'>. (Christian Brabandt, 2017 Nov
-13, on issue #2320)
 
 Patch for Neovim concerning restoring when closing help window. (glacambre
 neovim #7431)
@@ -465,8 +448,6 @@ Or is this not an actual problem?
 
 Better TeX indent file. (Christian Brabandt, 2017 May 3)
 
-Openhab syntax file (mueller, #1678)
-
 Patch to use a separate code for BS on Windows. (Linwei, #1823)
 
 Use gvimext.dll from the nightly build? (Issue #249)
@@ -645,6 +626,8 @@ Does this also fix #1408 ?
 'cursorline' and match interfere. (Ozaki Kiichi, 2017 Jun 23, #1792)
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
+
+Patch to fix profiling condition lines. (Ozaki Kiichi,, 2017 Dec 26, #2499)
 
 Patch to be able to separately map CTRL-H and BS on Windows.
 (Linwei, 2017 Jul 11, #1833)

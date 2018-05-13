@@ -11,10 +11,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim 8.0\n"
+"Project-Id-Version: vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-24 16:26+0200\n"
-"PO-Revision-Date:  2017-09-24 18:40+0200\n"
+"POT-Creation-Date: 2018-05-12 16:07+0200\n"
+"PO-Revision-Date:  2018-05-13 21:50+0200\n"
 "Last-Translator:   Antonio Colombo   <azc100@gmail.com>\n"
 "Language-Team:     Antonio Colombo   <azc100@gmail.com>\n"
 "Language: Italian\n"
@@ -23,6 +23,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "                   Vlad Sandrini     <vlad.gently@gmail.com>\n"
 "                   Luciano Montanaro <mikelima@cirulla.net>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "E831: bf_key_init() called with empty password"
 msgstr "E831: chiamata a bf_key_init() con password nulla"
@@ -538,21 +539,6 @@ msgstr "E743: variabile troppo nidificata per lock/unlock"
 msgid "E109: Missing ':' after '?'"
 msgstr "E109: Manca ':' dopo '?'"
 
-msgid "E691: Can only compare List with List"
-msgstr "E691: Posso confrontare una Lista solo con un'altra Lista"
-
-msgid "E692: Invalid operation for List"
-msgstr "E692: Operazione non valida per Liste"
-
-msgid "E735: Can only compare Dictionary with Dictionary"
-msgstr "E735: Posso confrontare un Dizionario solo con un altro Dizionario"
-
-msgid "E736: Invalid operation for Dictionary"
-msgstr "E736: Operazione non valida per Dizionari"
-
-msgid "E694: Invalid operation for Funcrefs"
-msgstr "E694: Operazione non valida per Funcref"
-
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: Non si può usare '%' con un Numero-a-virgola-mobile"
 
@@ -680,6 +666,21 @@ msgstr ""
 "\n"
 "\tImpostata l'ultima volta da "
 
+msgid "E691: Can only compare List with List"
+msgstr "E691: Posso confrontare una Lista solo con un'altra Lista"
+
+msgid "E692: Invalid operation for List"
+msgstr "E692: Operazione non valida per Liste"
+
+msgid "E735: Can only compare Dictionary with Dictionary"
+msgstr "E735: Posso confrontare un Dizionario solo con un altro Dizionario"
+
+msgid "E736: Invalid operation for Dictionary"
+msgstr "E736: Operazione non valida per Dizionari"
+
+msgid "E694: Invalid operation for Funcrefs"
+msgstr "E694: Operazione non valida per Funcref"
+
 msgid "map() argument"
 msgstr "argomento di map()"
 
@@ -704,6 +705,11 @@ msgstr "E785: complete() può essere usata solo in modalità inserimento"
 
 msgid "&Ok"
 msgstr "&OK"
+
+msgid "+-%s%3ld line: "
+msgid_plural "+-%s%3ld lines: "
+msgstr[0] "+-%s%3ld riga: "
+msgstr[1] "+-%s%3ld righe: "
 
 #, c-format
 msgid "E700: Unknown function: %s"
@@ -808,9 +814,18 @@ msgstr "E677: Errore in scrittura su file temporaneo"
 msgid "E921: Invalid callback argument"
 msgstr "E921: Argomento callback non valido"
 
+msgid "<%s>%s%s  %d,  Hex %02x,  Oct %03o, Digr %s"
+msgstr "<%s>%s%s  %d,  Esa %02x,  Ottale %03o, Digr %s"
+
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
 msgstr "<%s>%s%s  %d,  Esa %02x,  Ottale %03o"
+
+msgid "> %d, Hex %04x, Oct %o, Digr %s"
+msgstr "> %d, Esa %04x, Ottale %o, Digr %s"
+
+msgid "> %d, Hex %08x, Oct %o, Digr %s"
+msgstr "> %d, Esa %08x, Ottale %o, Digr %s"
 
 #, c-format
 msgid "> %d, Hex %04x, Octal %o"
@@ -1115,6 +1130,13 @@ msgstr "Nessun file elaborato in precedenza"
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Entro modalità Debug.  Batti \"cont\" per continuare."
 
+msgid "Oldval = \"%s\""
+msgstr "Vecchioval = \"%s\""
+
+#, c-format
+msgid "Newval = \"%s\""
+msgstr "Nuovoval = \"%s\""
+
 #, c-format
 msgid "line %ld: %s"
 msgstr "riga %ld: %s"
@@ -1145,6 +1167,10 @@ msgstr "Nessun 'breakpoint' definito"
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d  %s %s riga %ld"
 
+#, c-format
+msgid "%3d  expr %s"
+msgstr "%3d  espr %s"
+
 msgid "E750: First use \":profile start {fname}\""
 msgstr "E750: Usare prima \":profile start {fname}\""
 
@@ -1152,6 +1178,7 @@ msgstr "E750: Usare prima \":profile start {fname}\""
 msgid "Save changes to \"%s\"?"
 msgstr "Salvare modifiche a \"%s\"?"
 
+#, c-format
 msgid "E947: Job still running in buffer \"%s\""
 msgstr "E947: Lavoro ancora in esecuzione nel buffer \"%s\""
 
@@ -1300,9 +1327,6 @@ msgstr "E943: Tabella dei comandi da aggiornare, eseguire 'make cmdidxs'"
 
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Spiacente, comando non disponibile in questa versione"
-
-msgid "E172: Only one file name allowed"
-msgstr "E172: Ammesso un solo nome file"
 
 msgid "1 more file to edit.  Quit anyway?"
 msgstr "1 ulteriore file da elaborare.  Esco lo stesso?"
@@ -1790,11 +1814,6 @@ msgid "E510: Can't make backup file (add ! to override)"
 msgstr ""
 "E510: Non posso fare il file di backup (aggiungi ! per eseguire comunque)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr ""
-"E460: La 'fork' sulla risorsa verrebbe persa (aggiungi ! per eseguire "
-"comunque)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Non riesco a trovare un file 'temp' su cui scrivere"
 
@@ -1808,8 +1827,8 @@ msgstr "E166: Non posso aprire il file collegato ('linked') in scrittura"
 msgid "E212: Can't open file for writing"
 msgstr "E212: Non posso aprire il file in scrittura"
 
-msgid "E667: Fsync failed"
-msgstr "E667: Fsync fallito"
+msgid "E949: File changed while writing"
+msgstr "E949: File modificato in fase di riscrittura"
 
 msgid "E512: Close failed"
 msgstr "E512: Chiusura fallita"
@@ -2058,6 +2077,11 @@ msgstr "E350: Non posso creare piegatura con il 'foldmethod' in uso"
 
 msgid "E351: Cannot delete fold with current 'foldmethod'"
 msgstr "E351: Non posso cancellare piegatura con il 'foldmethod' in uso"
+
+msgid "+--%3ld line folded "
+msgid_plural "+--%3ld lines folded "
+msgstr[0] "+--%3ld riga piegata "
+msgstr[1] "+--%3ld righe piegate "
 
 msgid "E222: Add to read buffer"
 msgstr "E222: Aggiunto al buffer di lettura"
@@ -4139,15 +4163,19 @@ msgid " into \"%c"
 msgstr " in \"%c"
 
 #
+#, c-format
 msgid "block of 1 line yanked%s"
 msgstr "blocco di 1 riga messo in registro%s"
 
+#, c-format
 msgid "1 line yanked%s"
 msgstr "1 riga messa in registro%s"
 
+#, c-format
 msgid "block of %ld lines yanked%s"
 msgstr "blocco di %ld righe messo in registro%s"
 
+#, c-format
 msgid "%ld lines yanked%s"
 msgstr "%ld righe messe in registro%s"
 
@@ -4213,9 +4241,8 @@ msgstr ""
 "Col. %s di %s; Riga %ld di %ld; Parola %lld di %lld; Caratt. %lld di %lld; "
 "Byte %lld di %lld"
 
-#, c-format
-msgid "(+%ld for BOM)"
-msgstr "(+%ld per BOM)"
+msgid "(+%lld for BOM)"
+msgstr "(+%lld per BOM)"
 
 msgid "Thanks for flying Vim"
 msgstr "Grazie per aver volato con Vim"
@@ -4266,6 +4293,9 @@ msgstr "E835: Conflitto con il valore di 'fillchars'"
 
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Non può essere cambiato nella GUI GTK+ 2"
+
+msgid "E950: Cannot convert between %s and %s"
+msgstr "E950: Non si può convertire da %s a %s"
 
 msgid "E524: Missing colon"
 msgstr "E524: Manca ':'"
@@ -4325,14 +4355,18 @@ msgid "E542: unbalanced groups"
 msgstr "E542: gruppi sbilanciati"
 
 msgid "E946: Cannot make a terminal with running job modifiable"
-msgstr "E946: Non posso aprire un terminale mentre ci sono lavori "
-"modificabili in esecuzione"
+msgstr ""
+"E946: Non posso aprire un terminale mentre ci sono lavori modificabili in "
+"esecuzione"
 
 msgid "E590: A preview window already exists"
 msgstr "E590: Una finestra di pre-visualizzazione esiste già"
 
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
 msgstr "W17: Arabo richiede UTF-8, esegui ':set encoding=utf-8'"
+
+msgid "E954: 24-bit colors are not supported on this environment"
+msgstr "E954: colori a 24-bit non supportati in questo ambiente"
 
 #, c-format
 msgid "E593: Need at least %d lines"
@@ -4618,6 +4652,9 @@ msgstr "Avviso da Vim"
 msgid "shell returned %d"
 msgstr "shell terminato con return-code %d"
 
+msgid "E926: Current location list was changed"
+msgstr "E926: La lista delle locazioni corrente è stata cambiata"
+
 #, c-format
 msgid "E372: Too many %%%c in format string"
 msgstr "E372: Troppi %%%c nella stringa di 'format'"
@@ -4655,9 +4692,6 @@ msgstr "E924: La finestra corrente è stata chiusa"
 
 msgid "E925: Current quickfix was changed"
 msgstr "E925: Il quickfix corrente è stato cambiato"
-
-msgid "E926: Current location list was changed"
-msgstr "E926: La lista delle locazioni corrente è stata cambiata"
 
 #, c-format
 msgid "(%d of %d)%s%s: "
@@ -4820,6 +4854,9 @@ msgstr "E877: (NFA regexp) Classe di caratteri non valida: %ld"
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\z%c'"
 msgstr "E867: (NFA) Operatore sconosciuto '\\z%c'"
+
+msgid "E951: \\% value too large"
+msgstr "E951: \\% valore troppo grande"
 
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\%%%c'"
@@ -5235,9 +5272,8 @@ msgstr "Lettura file dizionario %s ..."
 msgid "E760: No word count in %s"
 msgstr "E760: Nessun contatore parole in %s"
 
-#, c-format
-msgid "line %6d, word %6d - %s"
-msgstr "riga %6d, parola %6d - %s"
+msgid "line %6d, word %6ld - %s"
+msgstr "riga %6d, parola %6ld - %s"
 
 #, c-format
 msgid "Duplicate word in %s line %d: %s"
@@ -5323,8 +5359,8 @@ msgstr "Uso stimato di memoria durante esecuzione: %d byte"
 msgid "E751: Output file name must not have region name"
 msgstr "E751: Il nome del file di output non deve avere il nome di regione"
 
-msgid "E754: Only up to 8 regions supported"
-msgstr "E754: Sono supportate fino ad 8 regioni"
+msgid "E754: Only up to %ld regions supported"
+msgstr "E754: Sono supportate al massimo %ld regioni"
 
 #, c-format
 msgid "E755: Invalid region in %s"
@@ -5710,6 +5746,10 @@ msgstr ""
 msgid "Cannot open $VIMRUNTIME/rgb.txt"
 msgstr "Non riesco ad aprire $VIMRUNTIME/rgb.txt"
 
+#, c-format
+msgid "Kill job in \"%s\"?"
+msgstr "Cancello lavoro \"%s\"?"
+
 msgid "Terminal"
 msgstr "Terminale"
 
@@ -5724,6 +5764,12 @@ msgstr "in esecuzione"
 
 msgid "finished"
 msgstr "terminato"
+
+msgid "E953: File exists: %s"
+msgstr "E953: File già esistente: %s"
+
+msgid "E955: Not a terminal buffer"
+msgstr "E955: Il buffer non è un terminale"
 
 msgid "new shell started\n"
 msgstr "fatto eseguire nuovo shell\n"
@@ -5972,6 +6018,7 @@ msgstr ""
 msgid "E126: Missing :endfunction"
 msgstr "E126: Manca :endfunction"
 
+#, c-format
 msgid "W22: Text found after :endfunction: %s"
 msgstr "W22: Trovato testo dopo :endfunction: %s"
 
@@ -6031,24 +6078,17 @@ msgstr ""
 
 msgid ""
 "\n"
-"MacOS X (unix) version"
+"macOS version"
 msgstr ""
 "\n"
-"Versione MacOS X (Unix)"
+"Versione macOS"
 
 msgid ""
 "\n"
-"MacOS X version"
+"macOS version w/o darwin feat."
 msgstr ""
 "\n"
-"Versione X MacOS"
-
-msgid ""
-"\n"
-"MacOS version"
-msgstr ""
-"\n"
-"Versione MacOS"
+"versione macOS senza funzion. darwin"
 
 msgid ""
 "\n"
@@ -6151,9 +6191,6 @@ msgstr "con GUI Carbon."
 
 msgid "with Cocoa GUI."
 msgstr "con GUI Cocoa."
-
-msgid "with (classic) GUI."
-msgstr "con GUI (classica)."
 
 msgid "  Features included (+) or not (-):\n"
 msgstr "  Funzionalità incluse (+) o escluse (-):\n"
@@ -6450,6 +6487,12 @@ msgstr "E474: Argomento non valido"
 msgid "E475: Invalid argument: %s"
 msgstr "E475: Argomento non valido: %s"
 
+msgid "E475: Invalid value for argument %s"
+msgstr "E475: Valore non valido per l'argomento %s"
+
+msgid "E475: Invalid value for argument %s: %s"
+msgstr "E475: Valore non valido per l'argomento %s: %s"
+
 #, c-format
 msgid "E15: Invalid expression: %s"
 msgstr "E15: Espressione non valida: %s"
@@ -6467,6 +6510,9 @@ msgstr "E17: \"%s\" è una directory"
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
 msgstr "E364: Chiamata a libreria fallita per \"%s()\""
+
+msgid "E667: Fsync failed"
+msgstr "E667: Fsync fallito"
 
 #, c-format
 msgid "E448: Could not load library function %s"
@@ -6738,6 +6784,9 @@ msgstr "E850: Nome registro non valido"
 #, c-format
 msgid "E919: Directory not found in '%s': \"%s\""
 msgstr "E919: Directory non trovata in '%s': \"%s\""
+
+msgid "E952: Autocommand caused recursive behavior"
+msgstr "E952: L'autocomando ha generato un comportamento ricorsivo"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "raggiunta la CIMA nella ricerca, continuo dal FONDO"
@@ -7014,4 +7063,46 @@ msgstr ""
 "Impostazione di percorso non riuscita: sys.path non è una Lista\n"
 "Dovresti aggiungere vim.VIM_SPECIAL_PATH a sys.path"
 
+msgid ""
+"Vim macro files (*.vim)\t*.vim\n"
+"All Files (*.*)\t*.*\n"
+msgstr ""
+"Vim macro file (*.vim)\t*.vim\n"
+"Tutti i file (*.*)\t*.*\n"
 
+msgid "All Files (*.*)\t*.*\n"
+msgstr "Tutti i file (*.*)\t*.*\n"
+
+msgid ""
+"All Files (*.*)\t*.*\n"
+"C source (*.c, *.h)\t*.c;*.h\n"
+"C++ source (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"VB code (*.bas, *.frm)\t*.bas;*.frm\n"
+"Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+msgstr ""
+"Tutti i file (*.*)\t*.*\n"
+"Sorgenti C (*.c, *.h)\t*.c;*.h\n"
+"Sorgenti C++ (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"Codice VB (*.bas, *.frm)\t*.bas;*.frm\n"
+"File di Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+
+msgid ""
+"Vim macro files (*.vim)\t*.vim\n"
+"All Files (*)\t*\n"
+msgstr ""
+"Vim macro file (*.vim)\t*.vim\n"
+"Tutti i file (*)\t*\n"
+
+msgid "All Files (*)\t*\n"
+msgstr "Tutti i file (*)\t*\n"
+
+msgid ""
+"All Files (*)\t*\n"
+"C source (*.c, *.h)\t*.c;*.h\n"
+"C++ source (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+msgstr ""
+"Tutti i file (*)\t*\n"
+"Sorgenti C (*.c, *.h)\t*.c;*.h\n"
+"Sorgenti C++ (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"File di Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
