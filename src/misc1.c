@@ -4479,6 +4479,17 @@ remove_tail(char_u *p, char_u *pend, char_u *name)
     return pend;
 }
 
+    void
+vim_unsetenv(char_u *var)
+{
+#ifdef HAVE_UNSETENV
+    unsetenv((char *)var);
+#else
+    mch_setenv((char *)var, "", 0);
+#endif
+}
+
+
 /*
  * Our portable version of setenv.
  */
