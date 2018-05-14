@@ -2304,6 +2304,8 @@ range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile({fname} [, {binary} [, {max}]])
 				List	get list of lines from file {fname}
+reg_executing()			Number	|TRUE| if the register executing
+reg_recording()			String	get the recording register name
 reltime([{start} [, {end}]])	List	get time value
 reltimefloat({time})		Float	turn the time value into a Float
 reltimestr({time})		String	turn time value into a String
@@ -6559,6 +6561,15 @@ readfile({fname} [, {binary} [, {max}]])
 		When the file can't be opened an error message is given and
 		the result is an empty list.
 		Also see |writefile()|.
+
+reg_executing()						*reg_executing()*
+		Returns |TRUE| when the register contents are executing.
+		See |@|.
+
+reg_recording()						*reg_recording()*
+		Returns the named register character {0-9a-zA-Z"} when the
+		register contents are recording.  Otherwise, an empty string
+		is returned.  See |q|.
 
 reltime([{start} [, {end}]])				*reltime()*
 		Return an item that represents a time value.  The format of
