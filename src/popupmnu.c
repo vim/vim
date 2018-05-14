@@ -797,7 +797,7 @@ pum_set_selected(int n, int repeat)
 pum_undisplay(void)
 {
     pum_array = NULL;
-    redraw_all_later(SOME_VALID);
+    redraw_all_later(NOT_VALID);
     redraw_tabline = TRUE;
     status_redraw_all();
 }
