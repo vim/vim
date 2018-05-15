@@ -608,6 +608,12 @@ using these functions are below:
     " get the identifier of the current quickfix list
     :let qfid = getqflist({'id' : 0}).id
 
+    " get the identifier of the fourth quickfix list in the stack
+    :let qfid = getqflist({'nr' : 4, 'id' : 0}).id
+
+    " check whether a quickfix list with a specific identifier exists
+    :if getqflist({'id' : qfid}).id == qfid
+
     " get the index of the current quickfix list in the stack
     :let qfnum = getqflist({'nr' : 0}).nr
 
@@ -653,6 +659,11 @@ The setqflist() and setloclist() functions can be used to set the various
 attributes of a quickfix and location list respectively. Some examples for
 using these functions are below:
 >
+    " create an empty quickfix list with a title and a context
+    :let t = 'Search results'
+    :let c = {'cmd' : 'grep'}
+    :call setqflist([], ' ', {'title' : t, 'context' : c})
+
     " set the title of the current quickfix list
     :call setqflist([], 'a', {'title' : 'Mytitle'})
 
@@ -670,6 +681,9 @@ using these functions are below:
     :let newItems = [{'filename' : 'a.txt', 'lnum' : 10, 'text' : "Apple"},
 		    \ {'filename' : 'b.txt', 'lnum' : 20, 'text' : "Orange"}]
     :call setqflist([], 'a', {'id' : qfid, 'items' : newItems})
+
+    " empty a quickfix list specified by an identifier
+    :call setqflist([], 'r', {'id' : qfid, 'items' : []})
 
     " free all the quickfix lists in the stack
     :call setqflist([], 'f')
