@@ -231,6 +231,7 @@ typedef PySliceObject PySliceObject_T;
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
 # define PyType_Type (*py3_PyType_Type)
+# define PyStdPrinter_Type (*py3_PyStdPrinter_Type)
 # define PySlice_Type (*py3_PySlice_Type)
 # define PyFloat_Type (*py3_PyFloat_Type)
 # define PyNumber_Check (*py3_PyNumber_Check)
@@ -388,6 +389,7 @@ static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
 static PyObject* (*py3_PyType_GenericAlloc)(PyTypeObject *type, Py_ssize_t nitems);
 static PyObject* (*py3_PyType_GenericNew)(PyTypeObject *type, PyObject *args, PyObject *kwds);
 static PyTypeObject* py3_PyType_Type;
+static PyTypeObject* py3_PyStdPrinter_Type;
 static PyTypeObject* py3_PySlice_Type;
 static PyTypeObject* py3_PyFloat_Type;
 static PyTypeObject* py3_PyBool_Type;
@@ -548,6 +550,7 @@ static struct
     {"PyType_GenericAlloc", (PYTHON_PROC*)&py3_PyType_GenericAlloc},
     {"PyType_GenericNew", (PYTHON_PROC*)&py3_PyType_GenericNew},
     {"PyType_Type", (PYTHON_PROC*)&py3_PyType_Type},
+    {"PyStdPrinter_Type", (PYTHON_PROC*)&py3_PyStdPrinter_Type},
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
     {"PyFloat_Type", (PYTHON_PROC*)&py3_PyFloat_Type},
     {"PyBool_Type", (PYTHON_PROC*)&py3_PyBool_Type},

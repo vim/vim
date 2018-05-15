@@ -247,6 +247,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PySys_GetObject dll_PySys_GetObject
 # define PySys_SetArgv dll_PySys_SetArgv
 # define PyType_Type (*dll_PyType_Type)
+# define PyFile_Type (*dll_PyFile_Type)
 # define PySlice_Type (*dll_PySlice_Type)
 # define PyType_Ready (*dll_PyType_Ready)
 # define PyType_GenericAlloc dll_PyType_GenericAlloc
@@ -395,6 +396,7 @@ static int(*dll_PySys_SetObject)(char *, PyObject *);
 static PyObject *(*dll_PySys_GetObject)(char *);
 static int(*dll_PySys_SetArgv)(int, char **);
 static PyTypeObject* dll_PyType_Type;
+static PyTypeObject* dll_PyFile_Type;
 static PyTypeObject* dll_PySlice_Type;
 static int (*dll_PyType_Ready)(PyTypeObject *type);
 static PyObject* (*dll_PyType_GenericAlloc)(PyTypeObject *type, PyInt nitems);
@@ -580,6 +582,7 @@ static struct
     {"PySys_GetObject", (PYTHON_PROC*)&dll_PySys_GetObject},
     {"PySys_SetArgv", (PYTHON_PROC*)&dll_PySys_SetArgv},
     {"PyType_Type", (PYTHON_PROC*)&dll_PyType_Type},
+    {"PyFile_Type", (PYTHON_PROC*)&dll_PyFile_Type},
     {"PySlice_Type", (PYTHON_PROC*)&dll_PySlice_Type},
     {"PyType_Ready", (PYTHON_PROC*)&dll_PyType_Ready},
     {"PyType_GenericAlloc", (PYTHON_PROC*)&dll_PyType_GenericAlloc},
