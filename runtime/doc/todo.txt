@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2018 May 13
+*todo.txt*      For Vim version 8.0.  Last change: 2018 May 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -47,7 +47,7 @@ On Win32 when not in the console and t_Co >= 256, allow using 'tgc'.
 (Nobuhiro Takasaki, #2833)  Also check t_Co.
 
 Pop-up menu overlapping terminal is not cleared completely. (Lifepillar, 2018
-May 13, #2908)
+May 13, #2908)  Hint from Christian, May 14.
 
 balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
 20, #2481)
@@ -1330,7 +1330,7 @@ When evaluating expression in backticks, autoload doesn't work.
 (Andy Wokula, 2013 Dec 14)
 
 Using <nr>ifoobar<esc> can slow down Vim.  Patch by Christian Brabandt, 2013
-Dec 13.
+Dec 13.  Only helps a bit, 10000ii<Esc> is still too slow.
 
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
@@ -4231,7 +4231,6 @@ Performance:
 -   Have a look at how pdksh does memory allocation (alloc.c). (Dalecki)
 -   Do profiling on:
     - :g/pat/normal cmd
-    - 1000ii<Esc>
     - deleting 10Mbyte worth of lines (netscape binary)
     - "[i" and "[d" (Yegappan Lakshmanan)
     - ":g/^/m0" on a 450Kbyte file.  And the "u".
@@ -4250,8 +4249,6 @@ Performance:
 -   Executing a register, e.g. "10000@@" is slow, because ins_typebuf has to
     move the previous commands forward each time.  Pass count from
     normal_cmd() down to do_execreg().
--   Repeating insert "1000i-<Esc>" displays --INSERT-- all the time, because of
-    the <Esc> at the end.  Make this work faster (disable redrawing).
 -   Avoid calls to plines() for cursor line, use w_cline_height.
 -   After ":set nowrap" remove superfluous redraw with wrong hor. offset if
     cursor is right of the screen.

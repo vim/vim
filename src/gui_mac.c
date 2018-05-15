@@ -61,13 +61,13 @@ SInt32 gMacSystemVersion;
 # define USE_CARBONKEYHANDLER
 
 static int im_is_active = FALSE;
-#if 0
+# if 0
     /* TODO: Implement me! */
 static int im_start_row = 0;
 static int im_start_col = 0;
-#endif
+# endif
 
-#define NR_ELEMS(x)	(sizeof(x) / sizeof(x[0]))
+# define NR_ELEMS(x)	(sizeof(x) / sizeof(x[0]))
 
 static TSMDocumentID gTSMDocument;
 
@@ -6243,11 +6243,11 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
     void
 im_set_position(int row, int col)
 {
-#if 0
+# if 0
     /* TODO: Implement me! */
     im_start_row = row;
     im_start_col = col;
-#endif
+# endif
 }
 
 static ScriptLanguageRecord gTSLWindow;
