@@ -1,8 +1,20 @@
 " Vim syntax file
-" Language:	Haskell Cabal Build file
-" Maintainer:	Vincent Berthoux <twinside@gmail.com>
-" File Types:	.cabal
-" Last Change:  2017 June 17
+" Language:     Haskell Cabal Build file
+" Author:	Vincent Berthoux <twinside@gmail.com>
+" Maintainer:   Marcin Szamotulski <profunctor@pm.me>
+" File Types:   .cabal
+" Last Change:  15 May 2018
+" v1.5: Incorporated changes from
+"       https://github.com/sdiehl/haskell-vim-proto/blob/master/vim/syntax/cabal.vim
+"       Use `syn keyword` instead of `syn match`.
+"       Added cabalStatementRegion to limit matches of keywords, which fixes
+"       the highlighting of description's value.
+"       Added cabalVersionRegion to limit the scope of cabalVersionOperator
+"       and cabalVersion matches.
+"       Added cabalLanguage keyword.
+"       Added calbalTitle, cabalAuthor and cabalMaintainer syntax groups.
+"       Added ! and ^>= operators (calbal 2.0)
+"       Added build-type keywords
 " v1.4: Add benchmark support, thanks to Simon Meier
 " v1.3: Updated to the last version of cabal
 "       Added more highlighting for cabal function, true/false
@@ -24,106 +36,197 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn match	cabalCategory	"\c\<executable\>"
-syn match	cabalCategory	"\c\<library\>"
-syn match	cabalCategory	"\c\<benchmark\>"
-syn match	cabalCategory	"\c\<test-suite\>"
-syn match	cabalCategory	"\c\<source-repository\>"
-syn match	cabalCategory	"\c\<flag\>"
-syn match	cabalCategory	"\c\<custom-setup\>"
+" set iskeyword for this syntax script
+syn iskeyword @,48-57,192-255,-
 
-syn keyword     cabalConditional    if else
-syn match       cabalOperator       "&&\|||\|!\|==\|>=\|<="
-syn keyword     cabalFunction       os arche impl flag
-syn match       cabalComment    /--.*$/
-syn match       cabalVersion    "\d\+\(\.\(\d\)\+\)\+\(\.\*\)\?"
+" Case sensitive matches
+syn case match
 
-syn match       cabalTruth      "\c\<true\>"
-syn match       cabalTruth      "\c\<false\>"
+syn keyword cabalConditional	if else
+syn keyword cabalFunction	os arche impl flag
+syn match cabalComment		/--.*$/
 
-syn match       cabalCompiler   "\c\<ghc\>"
-syn match       cabalCompiler   "\c\<nhc\>"
-syn match       cabalCompiler   "\c\<yhc\>"
-syn match       cabalCompiler   "\c\<hugs\>"
-syn match       cabalCompiler   "\c\<hbc\>"
-syn match       cabalCompiler   "\c\<helium\>"
-syn match       cabalCompiler   "\c\<jhc\>"
-syn match       cabalCompiler   "\c\<lhc\>"
+" Case insensitive matches
+syn case ignore
 
-syn match	cabalStatement	/^\c\s*\<default-language\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<default-extensions\s*:/me=e-1
+syn keyword cabalCategory contained
+	\ executable
+	\ library
+	\ benchmark
+	\ test-suite
+	\ source-repository
+	\ flag
+	\ custom-setup
+syn match cabalCategoryTitle contained /[^{]*\ze{\?/
+syn match cabalCategoryRegion
+	\ contains=cabalCategory,cabalCategoryTitle
+	\ nextgroup=cabalCategory skipwhite
+	\ /^\c\s*\(contained\|executable\|library\|benchmark\|test-suite\|source-repository\|flag\|custom-setup\)\+\s*\%(.*$\|$\)/
+syn keyword cabalTruth true false
 
-syn match	cabalStatement	/^\c\s*\<author\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<branch\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<bug-reports\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<build-depends\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<build-tools\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<build-type\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<buildable\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<c-sources\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<cabal-version\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<category\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<cc-options\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<copyright\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<cpp-options\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<data-dir\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<data-files\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<default\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<description\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<executable\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<exposed-modules\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<exposed\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<extensions\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<extra-doc-files\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<extra-lib-dirs\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<extra-libraries\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<extra-source-files\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<extra-tmp-files\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<for example\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<frameworks\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<ghc-options\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<ghc-prof-options\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<ghc-shared-options\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<homepage\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<hs-source-dirs\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<hugs-options\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<include-dirs\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<includes\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<install-includes\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<ld-options\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<license-file\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<license\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<location\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<main-is\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<maintainer\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<module\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<name\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<nhc98-options\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<other-extensions\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<other-modules\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<package-url\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<pkgconfig-depends\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<setup-depends\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<stability\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<subdir\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<synopsis\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<tag\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<tested-with\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<type\s*:/me=e-1
-syn match	cabalStatement	/^\c\s*\<version\s*:/me=e-1
+" cabalStatementRegion which limits the scope of cabalStatement keywords, this
+" way they are not highlighted in description.
+syn region cabalStatementRegion start=+^\s*\(--\)\@<!\k\+\s*:+ end=+:+
+syn keyword cabalStatement contained containedin=cabalStatementRegion
+	\ default-language
+	\ default-extensions
+	\ author
+	\ branch
+	\ bug-reports
+	\ build-depends
+	\ build-tools
+	\ build-type
+	\ buildable
+	\ c-sources
+	\ cabal-version
+	\ category
+	\ cc-options
+	\ copyright
+	\ cpp-options
+	\ data-dir
+	\ data-files
+	\ default
+	\ description
+	\ executable
+	\ exposed-modules
+	\ exposed
+	\ extensions
+	\ extra-tmp-files
+	\ extra-doc-files
+	\ extra-lib-dirs
+	\ extra-libraries
+	\ extra-source-files
+	\ exta-tmp-files
+	\ for example
+	\ frameworks
+	\ ghc-options
+	\ ghc-prof-options
+	\ ghc-shared-options
+	\ homepage
+	\ hs-source-dirs
+	\ hugs-options
+	\ include-dirs
+	\ includes
+	\ install-includes
+	\ ld-options
+	\ license
+	\ license-file
+	\ location
+	\ main-is
+	\ maintainer
+	\ manual
+	\ module
+	\ name
+	\ nhc98-options
+	\ other-extensions
+	\ other-modules
+	\ package-url
+	\ pkgconfig-depends
+	\ setup-depends
+	\ stability
+	\ subdir
+	\ synopsis
+	\ tag
+	\ tested-with
+	\ type
+	\ version
+	\ virtual-modules
+
+" operators and version operators
+syn match cabalOperator /&&\|||\|!/
+syn match cabalVersionOperator contained
+	\ /!\|==\|\^\?>=\|<=\|<\|>/
+" match version: `[%]\@<!` is to exclude `%20` in http addresses.
+syn match cabalVersion contained
+	\ /[%$_-]\@<!\<\d\+\%(\.\d\+\)*\%(\.\*\)\?\>/
+" cabalVersionRegion which limits the scope of cabalVersion pattern.
+syn match cabalVersionRegionA
+	\ contains=cabalVersionOperator,cabalVersion
+	\ keepend
+	\ /\%(==\|\|\^\?>=\|<=\|<\|>\)\s*\<\d\+\%(\.\d\+\)*\%(\.\*\)\?\>/
+" version inside `version: ...` 
+syn match cabalVersionRegionB
+	\ contains=cabalStatementRegion,cabalVersionOperator,cabalVersion
+	\ /^\s*\%(cabal-\)\?version\s*:.*$/
+
+syn keyword cabalLanguage Haskell98 Haskell2010
+
+" title region
+syn match cabalName contained /:\@<=.*/
+syn match cabalNameRegion
+	\ contains=cabalStatementRegion,cabalName
+	\ nextgroup=cabalStatementRegion
+	\ oneline
+	\ /^\c\s*name\s*:.*$/
+
+" author region
+syn match cabalAuthor contained /:\@<=.*/
+syn match cabalAuthorRegion
+	\ contains=cabalStatementRegion,cabalStatement,cabalAuthor
+	\ nextgroup=cabalStatementRegion
+	\ oneline
+	\ /^\c\s*author\s*:.*$/
+
+" maintainer region
+syn match cabalMaintainer contained /:\@<=.*/
+syn match cabalMaintainerRegion
+	\ contains=cabalStatementRegion,cabalStatement,cabalMaintainer
+	\ nextgroup=cabalStatementRegion
+	\ oneline
+	\ /^\c\s*maintainer\s*:.*$/
+
+" license region
+syn match cabalLicense contained /:\@<=.*/
+syn match cabalLicenseRegion
+	\ contains=cabalStatementRegion,cabalStatement,cabalLicense
+	\ nextgroup=cabalStatementRegion
+	\ oneline
+	\ /^\c\s*license\s*:.*$/
+
+" license-file region
+syn match cabalLicenseFile contained /:\@<=.*/
+syn match cabalLicenseFileRegion
+	\ contains=cabalStatementRegion,cabalStatement,cabalLicenseFile
+	\ nextgroup=cabalStatementRegion
+	\ oneline
+	\ /^\c\s*license-file\s*:.*$/
+
+" tested-with region with compilers and versions
+syn keyword cabalCompiler contained ghc nhc yhc hugs hbc helium jhc lhc
+syn match cabalTestedWithRegion
+	\ contains=cabalStatementRegion,cabalStatement,cabalCompiler,cabalVersionRegionA
+	\ nextgroup=cabalStatementRegion
+	\ oneline
+	\ /^\c\s*tested-with\s*:.*$/
+
+" build type keywords
+syn keyword cabalBuildType contained
+	\ simple custom configure
+syn match cabalBuildTypeRegion
+	\ contains=cabalStatementRegion,cabalStatement,cabalBuildType
+	\ nextgroup=cabalStatementRegion
+	\ /^\c\s*build-type\s*:.*$/
 
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet
-
-hi def link cabalVersion       Number
-hi def link cabalTruth         Boolean
-hi def link cabalComment       Comment
-hi def link cabalStatement     Statement
-hi def link cabalCategory      Type
-hi def link cabalFunction      Function
-hi def link cabalConditional   Conditional
-hi def link cabalOperator      Operator
-hi def link cabalCompiler      Constant
+hi def link cabalName	      Title
+hi def link cabalAuthor	      Normal
+hi def link cabalMaintainer   Normal
+hi def link cabalCategoryTitle Title
+hi def link cabalLicense      Normal
+hi def link cabalLicenseFile  Normal
+hi def link cabalBuildType    Keyword
+hi def link cabalVersion      Number
+hi def link cabalTruth        Boolean
+hi def link cabalComment      Comment
+hi def link cabalStatement    Statement
+hi def link cabalLanguage     Type
+hi def link cabalCategory     Type
+hi def link cabalFunction     Function
+hi def link cabalConditional  Conditional
+hi def link cabalOperator     Operator
+hi def link cabalVersionOperator Operator
+hi def link cabalCompiler     Constant
 
 let b:current_syntax = "cabal"
 
