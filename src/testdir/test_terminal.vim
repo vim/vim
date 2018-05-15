@@ -1507,3 +1507,30 @@ func Test_terminal_out_err()
   call delete('Xechoerrout.sh')
   call delete(outfile)
 endfunc
+
+func Test_terminwinscroll()
+  if !has('unix')
+    return
+  endif
+
+  " Let the terminal output more than 'termwinscroll' lines, some at the start
+  " will be dropped.
+  exe 'set termwinscroll=' . &lines
+  let buf = term_start('/bin/sh')
+  for i in range(1, &lines)
+    call feedkeys("echo " . i . "\<CR>", 'xt')
+    call WaitForAssert({-> assert_match(string(i), term_getline(buf, term_getcursor(buf)[0] - 1))})
+  endfor
+  " Go to Terminal-Normal mode to update the buffer.
+  call feedkeys("\<C-W>N", 'xt')
+  call assert_inrange(&lines, &lines * 110 / 100 + winheight(0), line('$'))
+
+  " Every "echo nr" must only appear once
+  let lines = getline(1, line('$'))
+  for i in range(&lines - len(lines) / 2 + 2, &lines)
+    let filtered = filter(copy(lines), {idx, val -> val =~ 'echo ' . i . '\>'})
+    call assert_equal(1, len(filtered), 'for "echo ' . i . '"')
+  endfor
+
+  exe buf . 'bwipe!'
+endfunc

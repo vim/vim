@@ -46,6 +46,7 @@
  * - Win32: Redirecting output works but includes escape sequences.
  * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
  *   redirection.
+ * - terminal API: Add more functionality? (Ozaki Kiichi 2018 May 13, #2907)
  * - When the job only outputs lines, we could handle resizing the terminal
  *   better: store lines separated by line breaks, instead of screen lines,
  *   then when the window is resized redraw those lines.
@@ -2727,6 +2728,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	mch_memmove(term->tl_scrollback.ga_data,
 	    (sb_line_T *)term->tl_scrollback.ga_data + todo,
 	    sizeof(sb_line_T) * term->tl_scrollback.ga_len);
+	term->tl_scrollback_scrolled -= todo;
     }
 
     if (ga_grow(&term->tl_scrollback, 1) == OK)
