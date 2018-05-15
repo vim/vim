@@ -5798,16 +5798,6 @@ qf_setprop_items(qf_info_T *qi, int qf_idx, dictitem_T *di, int action)
     title_save = vim_strsave(qi->qf_lists[qf_idx].qf_title);
     retval = qf_add_entries(qi, qf_idx, di->di_tv.vval.v_list,
 	    title_save, action == ' ' ? 'a' : action);
-    if (action == 'r')
-    {
-	/*
-	 * When replacing the quickfix list entries using
-	 * qf_add_entries(), the title is set with a ':' prefix.
-	 * Restore the title with the saved title.
-	 */
-	vim_free(qi->qf_lists[qf_idx].qf_title);
-	qi->qf_lists[qf_idx].qf_title = vim_strsave(title_save);
-    }
     vim_free(title_save);
 
     return retval;
