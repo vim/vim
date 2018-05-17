@@ -36,28 +36,6 @@
  * that buffer, attributes come from the scrollback buffer tl_scrollback.
  * When the buffer is changed it is turned into a normal buffer, the attributes
  * in tl_scrollback are no longer used.
- *
- * TODO:
- * - Win32: Termdebug doesn't work, because gdb does not support mi2.  This
- *   plugin: https://github.com/cpiger/NeoDebug  runs gdb as a job, redirecting
- *   input and output.  Command I/O is in gdb window.
- * - Win32: Redirecting input does not work, half of Test_terminal_redir_file()
- *   is disabled.
- * - Win32: Redirecting output works but includes escape sequences.
- * - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
- *   redirection.
- * - terminal API: Add more functionality? (Ozaki Kiichi 2018 May 13, #2907)
- * - When the job only outputs lines, we could handle resizing the terminal
- *   better: store lines separated by line breaks, instead of screen lines,
- *   then when the window is resized redraw those lines.
- * - Redrawing is slow with Athena and Motif. (Ramel Eshed)
- * - For the GUI fill termios with default values, perhaps like pangoterm:
- *   http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
- * - When 'encoding' is not utf-8, or the job is using another encoding, setup
- *   conversions.
- * - Termdebug does not work when Vim build with mzscheme: gdb hangs just after
- *   "run".  Everything else works, including communication channel.  Not
- *   initializing mzscheme avoid the problem, thus it's not some #ifdef.
  */
 
 #include "vim.h"
