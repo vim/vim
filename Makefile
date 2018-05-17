@@ -68,7 +68,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 8
-MINOR = 0
+MINOR = 1
 
 # CHECKLIST for creating a new version:
 #
@@ -131,7 +131,7 @@ MINOR = 0
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
-#   This creates the directory vim/vim80 and puts all files in there.
+#   This creates the directory vim/vim81 and puts all files in there.
 # Win32 console version build:
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:

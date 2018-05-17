@@ -5084,6 +5084,7 @@ added-7.1	version7.txt	/*added-7.1*
 added-7.2	version7.txt	/*added-7.2*
 added-7.3	version7.txt	/*added-7.3*
 added-7.4	version7.txt	/*added-7.4*
+added-8.1	version8.txt	/*added-8.1*
 added-BeOS	version5.txt	/*added-BeOS*
 added-Mac	version5.txt	/*added-Mac*
 added-VMS	version5.txt	/*added-VMS*
@@ -5431,6 +5432,7 @@ changed-7.1	version7.txt	/*changed-7.1*
 changed-7.2	version7.txt	/*changed-7.2*
 changed-7.3	version7.txt	/*changed-7.3*
 changed-7.4	version7.txt	/*changed-7.4*
+changed-8.1	version8.txt	/*changed-8.1*
 changelist	motion.txt	/*changelist*
 changelog.vim	syntax.txt	/*changelog.vim*
 changenr()	eval.txt	/*changenr()*
@@ -7823,6 +7825,7 @@ new-session-files	version5.txt	/*new-session-files*
 new-spell	version7.txt	/*new-spell*
 new-style-testing	eval.txt	/*new-style-testing*
 new-tab-pages	version7.txt	/*new-tab-pages*
+new-terminal-window	version8.txt	/*new-terminal-window*
 new-undo-branches	version7.txt	/*new-undo-branches*
 new-unlisted-buffers	version6.txt	/*new-unlisted-buffers*
 new-user-defined	version5.txt	/*new-user-defined*
@@ -7936,6 +7939,7 @@ papp.vim	syntax.txt	/*papp.vim*
 paragraph	motion.txt	/*paragraph*
 pascal.vim	syntax.txt	/*pascal.vim*
 patches-8	version8.txt	/*patches-8*
+patches-8.1	version8.txt	/*patches-8.1*
 pathshorten()	eval.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
 pattern-atoms	pattern.txt	/*pattern-atoms*
@@ -8995,6 +8999,7 @@ terminal-colors	os_unix.txt	/*terminal-colors*
 terminal-communication	terminal.txt	/*terminal-communication*
 terminal-cursor-style	terminal.txt	/*terminal-cursor-style*
 terminal-debug	terminal.txt	/*terminal-debug*
+terminal-debugger	terminal.txt	/*terminal-debugger*
 terminal-diff	terminal.txt	/*terminal-diff*
 terminal-diffscreendump	terminal.txt	/*terminal-diffscreendump*
 terminal-dumptest	terminal.txt	/*terminal-dumptest*
@@ -9014,6 +9019,7 @@ terminal-to-job	terminal.txt	/*terminal-to-job*
 terminal-typing	terminal.txt	/*terminal-typing*
 terminal-unix	terminal.txt	/*terminal-unix*
 terminal-use	terminal.txt	/*terminal-use*
+terminal-window	terminal.txt	/*terminal-window*
 terminal.txt	terminal.txt	/*terminal.txt*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
@@ -9406,6 +9412,7 @@ version-7.2	version7.txt	/*version-7.2*
 version-7.3	version7.txt	/*version-7.3*
 version-7.4	version7.txt	/*version-7.4*
 version-8.0	version8.txt	/*version-8.0*
+version-8.1	version8.txt	/*version-8.1*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
@@ -9417,6 +9424,7 @@ version7.3	version7.txt	/*version7.3*
 version7.4	version7.txt	/*version7.4*
 version7.txt	version7.txt	/*version7.txt*
 version8.0	version8.txt	/*version8.0*
+version8.1	version8.txt	/*version8.1*
 version8.txt	version8.txt	/*version8.txt*
 vi	intro.txt	/*vi*
 vi-differences	vi_diff.txt	/*vi-differences*
@@ -9429,6 +9437,7 @@ view-file	starting.txt	/*view-file*
 views-sessions	starting.txt	/*views-sessions*
 vim-7.4	version7.txt	/*vim-7.4*
 vim-8	version8.txt	/*vim-8*
+vim-8.1	version8.txt	/*vim-8.1*
 vim-additions	vi_diff.txt	/*vim-additions*
 vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*

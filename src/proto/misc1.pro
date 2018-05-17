@@ -1,5 +1,4 @@
 /* misc1.c */
-int get_whitespace_line_start(linenr_T lnum);
 int get_indent(void);
 int get_indent_lnum(linenr_T lnum);
 int get_indent_buf(buf_T *buf, linenr_T lnum);
@@ -59,8 +58,8 @@ char_u *expand_env_save_opt(char_u *src, int one);
 void expand_env(char_u *src, char_u *dst, int dstlen);
 void expand_env_esc(char_u *srcp, char_u *dst, int dstlen, int esc, int one, char_u *startstr);
 char_u *vim_getenv(char_u *name, int *mustfree);
+void vim_unsetenv(char_u *var);
 void vim_setenv(char_u *name, char_u *val);
-void vim_unsetenv(char_u *name);
 char_u *get_env_name(expand_T *xp, int idx);
 char_u *get_users(expand_T *xp, int idx);
 int match_user(char_u *name);

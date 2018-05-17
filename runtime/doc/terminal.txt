@@ -1,10 +1,10 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 May 11
+*terminal.txt*	For Vim version 8.1.  Last change: 2018 May 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
-Terminal window support					*terminal*
+Terminal window support				*terminal* *terminal-window*
 
 
 The terminal feature is optional, use this to check if your Vim has it: >
@@ -613,7 +613,7 @@ Alternatively, press "s" to swap the first and second dump. Do this several
 times so that you can spot the difference in the context of the text.
 
 ==============================================================================
-5. Debugging						*terminal-debug*
+5. Debugging				*terminal-debug* *terminal-debugger*
 
 The Terminal debugging plugin can be used to debug a program with gdb and view
 the source code in a Vim window.  Since this is completely contained inside

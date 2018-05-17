@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.0.  Last change: 2018 Jan 24
+*intro.txt*     For Vim version 8.1.  Last change: 2018 Jan 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

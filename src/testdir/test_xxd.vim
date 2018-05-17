@@ -52,7 +52,11 @@ func! Test_xxd()
   " Test 5: Print 120 bytes as continuous hexdump with 20 octets per line
   let s:test += 1
   %d
-  exe '0r! ' . s:xxd_cmd . ' -l 120 -ps -c 20 ../../runtime/doc/xxd.1'
+  let fname = '../../runtime/doc/xxd.1'
+  if has('win32') && !filereadable(fname)
+    let fname = '../../doc/xxd.1'
+  endif
+  exe '0r! ' . s:xxd_cmd . ' -l 120 -ps -c 20 ' . fname
   $d
   let expected = [
       \ '2e54482058584420312022417567757374203139',
@@ -66,7 +70,7 @@ func! Test_xxd()
   " Test 6: Print the date from xxd.1
   let s:test += 1
   %d
-  exe '0r! ' . s:xxd_cmd . ' -s 0x36 -l 13 -c 13 ../../runtime/doc/xxd.1'
+  exe '0r! ' . s:xxd_cmd . ' -s 0x36 -l 13 -c 13 ' . fname
   $d
   call assert_equal('00000036: 3231 7374 204d 6179 2031 3939 36  21st May 1996', getline(1), s:Mess(s:test))
 

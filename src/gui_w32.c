@@ -286,6 +286,8 @@ typedef int LPNMHDR;
 typedef int LONG;
 typedef int WNDPROC;
 typedef int UINT_PTR;
+typedef int COLORREF;
+typedef int HCURSOR;
 #endif
 
 #ifndef GET_X_LPARAM

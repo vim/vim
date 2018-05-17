@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.0.  Last change: 2016 Aug 16
+*vi_diff.txt*   For Vim version 8.1.  Last change: 2016 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

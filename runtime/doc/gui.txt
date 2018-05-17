@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.0.  Last change: 2018 Mar 06
+*gui.txt*       For Vim version 8.1.  Last change: 2018 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

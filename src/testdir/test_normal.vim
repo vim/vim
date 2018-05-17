@@ -1313,7 +1313,7 @@ func! Test_normal23_K()
   norm! 0K
   call assert_equal('version8.txt', fnamemodify(bufname('%'), ':t'))
   call assert_equal('help', &ft)
-  call assert_match('\*version8\.0\*', getline('.'))
+  call assert_match('\*version8\.\d\*', getline('.'))
   helpclose
 
   set keywordprg=:new

@@ -21,7 +21,7 @@ void ex_cc(exarg_T *eap);
 void ex_cnext(exarg_T *eap);
 void ex_cfile(exarg_T *eap);
 void ex_vimgrep(exarg_T *eap);
-int get_errorlist(qf_info_T *qi, win_T *wp, int qf_idx, list_T *list);
+int get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list);
 int qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict);
 int set_errorlist(win_T *wp, list_T *list, int action, char_u *title, dict_T *what);
 int set_ref_in_quickfix(int copyID);

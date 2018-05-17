@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.0.  Last change: 2017 Oct 27
+*gui_w32.txt*   For Vim version 8.1.  Last change: 2017 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

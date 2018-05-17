@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 8.0.  Last change: 2018 May 06
+*gui_x11.txt*   For Vim version 8.1.  Last change: 2018 May 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

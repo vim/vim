@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.0.  Last change: 2018 May 12
+*change.txt*    For Vim version 8.1.  Last change: 2018 May 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

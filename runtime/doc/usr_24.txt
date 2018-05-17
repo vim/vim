@@ -1,4 +1,4 @@
-*usr_24.txt*	For Vim version 8.0.  Last change: 2018 Mar 18
+*usr_24.txt*	For Vim version 8.1.  Last change: 2018 Mar 18
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

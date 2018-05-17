@@ -10,5 +10,5 @@ void ui_remove_balloon(void);
 void ui_post_balloon(char_u *mesg, list_T *list);
 void ui_may_remove_balloon(void);
 void pum_show_popupmenu(vimmenu_T *menu);
-void pum_make_popup(char_u *path_name, int mouse_pos);
+void pum_make_popup(char_u *path_name, int use_mouse_pos);
 /* vim: set ft=c : */

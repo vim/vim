@@ -1,4 +1,4 @@
-README.txt for version 8.0 of Vim: Vi IMproved.
+README.txt for version 8.1 of Vim: Vi IMproved.
 
 
 WHAT IS VIM?

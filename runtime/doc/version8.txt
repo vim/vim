@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2018 May 17
+*version8.txt*  For Vim version 8.1.  Last change: 2018 May 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25,6 +25,11 @@ IMPROVEMENTS				|improvements-8|
 COMPILE TIME CHANGES			|compile-changes-8|
 
 PATCHES					|patches-8|
+
+VERSION 8.1			|version-8.1|
+Changed					|changed-8.1|
+Added					|added-8.1|
+Patches					|patches-8.1|
 
 
 See |vi_diff.txt| for an overview of differences between Vi and Vim 8.0.
@@ -14514,6 +14519,104 @@ Problem:    Test runner misses a comma.
 Solution:   Add the comma.
 Files:      src/testdir/runtest.vim
 
+
+==============================================================================
+VERSION 8.1				*version-8.1* *version8.1* *vim-8.1*
+
+This section is about improvements made between version 8.0 and 8.1.
+
+This release has hundreds of bug fixes, there is a new feature and there are
+many minor improvements.
+
+
+The terminal window				*new-terminal-window*
+-------------------
+
+You can now open a window which functions as a terminal.  You can use it for:
+- Running a command, such as "make", while editing in other windows
+- Running a shell and execute several commands
+- Use the terminal debugger plugin, see |terminal-debugger|
+
+All of this is especially useful when running Vim on a remote (ssh)
+connection, when you can't easily open more terminals.
+
+For more information see |terminal-window|.
+
+
+Changed							*changed-8.1*
+-------
+
+Internal: A few C99 features are now allowed such as // comments and a
+comma after the last enum entry.  See |style-compiler|.
+
+
+Added							*added-8.1*
+-----
+
+Various syntax, indent and other plugins were added.
+
+Functions:
+	All the term_ functions.
+
+	|assert_beeps()|
+	|assert_equalfile()|
+	|assert_report()|
+	|balloon_show()|
+	|balloon_split()|
+	|ch_canread()|
+	|getchangelist()|
+	|getjumplist()|
+	|getwinpos()|
+	|pyxeval()|
+	|remote_startserver()|
+	|setbufline()|
+	|test_ignore_error()|
+	|test_override()|
+	|trim()|
+	|win_screenpos()|
+
+Autocommands:
+	|CmdlineChanged|
+	|CmdlineEnter|
+	|CmdlineLeave|
+	|ColorSchemePre|
+	|DirChanged|
+	|ExitPre|
+	|TerminalOpen|
+	|TextChangedP|
+	|TextYankPost|
+
+Commands:
+	|:pyx|
+	|:pythonx|
+	|:pyxdo|
+	|:pyxfile|
+	|:terminal|
+	|:tmapclear|
+	|:tmap|
+	|:tnoremap|
+	|:tunmap|
+
+Options:
+	'balloonevalterm'
+	'imstyle'
+	'mzschemedll'
+	'mzschemegcdll'
+	'makeencoding'
+	'pumwidth'
+	'pythonhome'
+	'pythonthreehome'
+	'pyxversion'
+	'termwinkey'
+	'termwinscroll'
+	'termwinsize'
+	'viminfofile'
+	'winptydll'
+
+
+Patches							*patches-8.1*
+-------
+
 Patch 8.0.0001
 Problem:    Intro screen still mentions version7. (Paul)
 Solution:   Change it to version8.
@@ -25657,6 +25760,11 @@ Patch 8.0.1849
 Problem:    Compiler warning for unused arguments and missing prototype.
 Solution:   Add UNUSED.  Add static.
 Files:      src/mbyte.c, src/if_ruby.c
+
+Patch 8.0.1850
+Problem:    Todo items in source code not visible for users.
+Solution:   Move the todo items to the help file.
+Files:      src/terminal.c
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.0.  Last change: 2018 May 13
+*eval.txt*	For Vim version 8.1.  Last change: 2018 May 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2288,8 +2288,6 @@ mode([expr])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF8 value {expr}
-option_restore({list})		none	restore options saved by option_save()
-option_save({list})		List	save options values
 or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr})		String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression

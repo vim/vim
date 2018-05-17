@@ -1,4 +1,4 @@
-*usr_11.txt*	For Vim version 8.0.  Last change: 2018 Apr 13
+*usr_11.txt*	For Vim version 8.1.  Last change: 2018 Apr 13
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

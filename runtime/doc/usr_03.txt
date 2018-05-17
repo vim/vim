@@ -1,4 +1,4 @@
-*usr_03.txt*	For Vim version 8.0.  Last change: 2017 Jul 21
+*usr_03.txt*	For Vim version 8.1.  Last change: 2017 Jul 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
