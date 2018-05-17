@@ -828,7 +828,7 @@ void ex_rubydo(exarg_T *eap)
     }
 }
 
-VALUE rb_load_wrap(VALUE file_to_load)
+static VALUE rb_load_wrap(VALUE file_to_load)
 {
     rb_load(file_to_load, 0);
     return Qnil;

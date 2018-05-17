@@ -6506,7 +6506,7 @@ im_set_active(int active_arg)
 
 #  ifdef FEAT_GUI
     void
-im_set_position(int row, int col)
+im_set_position(int row UNUSED, int col UNUSED)
 {
 }
 #  endif
