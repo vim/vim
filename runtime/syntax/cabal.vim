@@ -144,7 +144,7 @@ syn match cabalVersion contained
 syn match cabalVersionRegionA
 	\ contains=cabalVersionOperator,cabalVersion
 	\ keepend
-	\ /\%(==\|\|\^\?>=\|<=\|<\|>\)\s*\<\d\+\%(\.\d\+\)*\%(\.\*\)\?\>/
+	\ /\%(==\|\^\?>=\|<=\|<\|>\)\s*\d\+\%(\.\d\+\)*\%(\.\*\)\?\>/
 " version inside `version: ...` 
 syn match cabalVersionRegionB
 	\ contains=cabalStatementRegion,cabalVersionOperator,cabalVersion
