@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2018 May 15
+*todo.txt*      For Vim version 8.0.  Last change: 2018 May 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,9 +36,9 @@ entered there will not be repeated below, unless there is extra information.
 -------------------- Known bugs and current work -----------------------
 
 Terminal emulator window:
-- Duplicated lines when making terminal only window. (Dominique, #2909)
 - Still some stuff to implement and bugs to fix, see src/terminal.c
-- Add more functionality for terminal API? (Ozaki Kiichi 2018 May 13, #2907)
+
+Patch to refactor efm_to_regpat(). (Yegappan Lakshmanan, 2018 May 16, #2924)
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
@@ -103,6 +103,12 @@ CreateFile() returns ERROR_SHARING_VIOLATION (Linwei, 2018 May 5)
 
 Should add a test for every command line argument.  Check coverage for what is
 missing: --nofork, -A , -b, -h, etc.
+
+Completing a command sometimes results in duplicates, since 7.4.672.
+(Yegappan Lakshmanan, 2018 May 16)
+Duplication of completion suggestions for ":!hom".  Issue #539.
+Patch by Christian, 2016 Jan 29
+Another patch in #2733.
 
 Improve the installer for MS-Windows.  There are a few alternatives:
 - Add silent install option. (Shane Lee, #751)
@@ -306,10 +312,6 @@ Start with filetype detection: testdir/test_filetype.vim
 
 Window not closed when deleting buffer. (Harm te Hennepe, 2017 Aug 27, #2029)
 
-Duplication of completion suggestions for ":!hom".  Issue #539.
-Patch by Christian, 2016 Jan 29
-Another patch in #2733.
->
 Add options_default() / options_restore() to set several options to Vim
 defaults for a plugin. Comments from Zyx, 2017 May 10.
 Perhaps use a vimcontext / endvimcontext command block.

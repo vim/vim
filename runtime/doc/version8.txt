@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.0.  Last change: 2018 May 13
+*version8.txt*  For Vim version 8.0.  Last change: 2018 May 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25532,6 +25532,131 @@ Patch 8.0.1827
 Problem:    Compiler warning for signed/unsigned char pointers. (Cesar Romani)
 Solution:   Change the type of jv_argv.
 Files:      src/channel.c, src/structs.h
+
+Patch 8.0.1828
+Problem:    Get no clue why :gui does not fork.
+Solution:   Add a channel log message.
+Files:      src/channel.c
+
+Patch 8.0.1829
+Problem:    MS-Windows: script for vimdiff can't handle ! chars.
+Solution:   Escape the ! chars. (Hans Ginzel, closes #2896)
+Files:      src/dosinst.c
+
+Patch 8.0.1830
+Problem:    Switching to Terminal-Normal mode does not redraw. (Dominique
+            Pelle)
+Solution:   Also redraw when not updating the snapshot. (closes #2904)
+Files:      src/terminal.c
+
+Patch 8.0.1831
+Problem:    Sometimes the quickfix title is incorrectly prefixed with ':'.
+Solution:   Prepend the colon in another way. (Yegappan Lakshmanan, closes
+            #2905)
+Files:      src/evalfunc.c, src/quickfix.c, src/testdir/test_quickfix.vim
+
+Patch 8.0.1832
+Problem:    Cannot use :unlet for an environment variable.
+Solution:   Make it work.  Use unsetenv() if available. (Yasuhiro Matsumoto,
+            closes #2855)
+Files:      runtime/doc/eval.txt, src/config.h.in, src/configure.ac,
+            src/auto/configure, src/eval.c, src/misc1.c, src/proto/misc1.pro,
+            src/testdir/test_unlet.vim
+
+Patch 8.0.1833
+Problem:    X11: ":echo 3.14" gives E806.
+Solution:   set LC_NUMERIC to "C". (Dominique Pelle, closes #2368)
+Files:      src/gui_x11.c
+
+Patch 8.0.1834
+Problem:    GUI: find/replace dialog does not handle some chars properly.
+Solution:   Escape '?' when needed.  Always escape backslash. (closes #2418,
+            closes #2435)
+Files:      src/gui.c
+
+Patch 8.0.1835
+Problem:    Print document name does not support multi-byte.
+Solution:   Use StartDocW() if needed. (Yasuhiro Matsumoto, closes #2478)
+Files:      src/os_mswin.c
+
+Patch 8.0.1836
+Problem:    Buffer-local window options may not be recent if the buffer is
+            still open in another window.
+Solution:   Copy the options from the window instead of the outdated window
+            options. (Bjorn Linse, closes #2336)
+Files:      src/buffer.c, src/testdir/test_options.vim
+
+Patch 8.0.1837
+Problem:    One character cmdline abbreviation not triggered after '<,'>.
+Solution:   Skip over the special range. (Christian Brabandt, closes #2320)
+Files:      src/ex_getln.c, src/testdir/test_mapping.vim
+
+Patch 8.0.1838
+Problem:    Cursor in wrong position when switching to Terminal-Normal mode.
+            (Dominique Pelle)
+Solution:   Move to the end of the line if coladvance() fails.  Do not take a
+            snapshot a second time.
+Files:      src/terminal.c
+
+Patch 8.0.1839
+Problem:    Script to check .po file doesn't check for plural header.
+Solution:   Add a check that the plural header is present when needed.
+Files:      src/po/check.vim
+
+Patch 8.0.1840
+Problem:    getwinpos() is not tested.
+Solution:   Add a test. (Dominique Pelle, closes #2911)
+Files:      src/testdir/test_gui.vim
+
+Patch 8.0.1841
+Problem:    HP-UX does not have setenv().
+Solution:   Use vim_setenv(). (John Marriott)
+Files:      src/misc1.c
+
+Patch 8.0.1842
+Problem:    Popup menu inside terminal window isn't cleared.
+Solution:   Use NOT_VALID in pum_undisplay(). (suggested by Christian
+            Brabandt, closes #2908)
+Files:      src/popupmnu.c
+
+Patch 8.0.1843
+Problem:    Entry for 'wrap' in options window is wrong. (John Little)
+Solution:   Make the change apply locally.
+Files:      runtime/optwin.vim
+
+Patch 8.0.1844
+Problem:    Superfluous quickfix code, missing examples.
+Solution:   Remove unneeded code.  Add a few examples.  Add a bit more
+            testing. (Yegappan Lakshmanan, closes #2916)
+Files:      runtime/doc/quickfix.txt, src/quickfix.c,
+            src/testdir/test_quickfix.vim
+
+Patch 8.0.1845
+Problem:    Various comment updates needed, missing white space.
+Solution:   Update comments, add white space.
+Files:      src/getchar.c, src/testdir/test_cscope.vim, src/gui_mac.c
+
+Patch 8.0.1846
+Problem:    Python interface is incompatible with lldb.
+Solution:   For OutputType set the base to be PyFile_Type. (Boxu Zhang)
+            Partly disabled to avoid a crash.
+Files:      src/if_py_both.h, src/if_python.c, src/if_python3.c
+
+Patch 8.0.1847
+Problem:    Some build options don't have an example.
+Solution:   Add a couple more examples and compiler flags.
+Files:      src/Makefile
+
+Patch 8.0.1848
+Problem:    'termwinscroll' does not work properly. (Dominique Pelle)
+Solution:   Subtract removed scrollback from the scrollback count.  Add a test
+            for 'termwinscroll'. (closes #2909)
+Files:      src/terminal.c, src/testdir/test_terminal.vim
+
+Patch 8.0.1849
+Problem:    Compiler warning for unused arguments and missing prototype.
+Solution:   Add UNUSED.  Add static.
+Files:      src/mbyte.c, src/if_ruby.c
 
 
  vim:tw=78:ts=8:ft=help:norl:

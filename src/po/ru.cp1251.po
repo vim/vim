@@ -2213,7 +2213,7 @@ msgid "No"
 msgstr "Нет"
 
 msgid "Input _Methods"
-msgstr "_Методы Ввода"
+msgstr "_Методы ввода"
 
 msgid "VIM - Search and Replace..."
 msgstr "VIM — Поиск и замена..."

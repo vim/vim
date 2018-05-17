@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Nov 09
+" Last Change:	2018 May 17
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -946,7 +946,10 @@ if has("spell")
 	let s:suglist = spellsuggest(w, 10)
       endif
       if len(s:suglist) > 0
-	let s:changeitem = 'Change\ "' . escape(w, ' .'). '"\ to'
+	if !exists("g:menutrans_spell_change_ARG_to")
+	  let g:menutrans_spell_change_ARG_to = 'Change\ "%s"\ to'
+	endif
+	let s:changeitem = printf(g:menutrans_spell_change_ARG_to, escape(w, ' .'))
 	let s:fromword = w
 	let pri = 1
 	" set 'cpo' to include the <CR>
@@ -958,10 +961,16 @@ if has("spell")
 	  let pri += 1
 	endfor
 
-	let s:additem = 'Add\ "' . escape(w, ' .') . '"\ to\ Word\ List'
+	if !exists("g:menutrans_spell_add_ARG_to_word_list")
+	  let g:menutrans_spell_add_ARG_to_word_list = 'Add\ "%s"\ to\ Word\ List'
+	endif
+	let s:additem = printf(g:menutrans_spell_add_ARG_to_word_list, escape(w, ' .'))
 	exe 'anoremenu 1.6 PopUp.' . s:additem . ' :spellgood ' . w . '<CR>'
 
-	let s:ignoreitem = 'Ignore\ "' . escape(w, ' .') . '"'
+	if !exists("g:menutrans_spell_ignore_ARG")
+	  let g:menutrans_spell_ignore_ARG = 'Ignore\ "%s"'
+	endif
+	let s:ignoreitem = printf(g:menutrans_spell_ignore_ARG, escape(w, ' .'))
 	exe 'anoremenu 1.7 PopUp.' . s:ignoreitem . ' :spellgood! ' . w . '<CR>'
 
 	anoremenu 1.8 PopUp.-SpellSep- :
