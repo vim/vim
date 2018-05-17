@@ -2,6 +2,7 @@
 " Language:     Haskell Cabal Build file
 " Author:	Vincent Berthoux <twinside@gmail.com>
 " Maintainer:   Marcin Szamotulski <profunctor@pm.me>
+" Previous Maintainer:	Vincent Berthoux <twinside@gmail.com>
 " File Types:   .cabal
 " Last Change:  15 May 2018
 " v1.5: Incorporated changes from
