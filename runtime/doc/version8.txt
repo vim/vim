@@ -22104,7 +22104,7 @@ Files:      src/Makefile, src/option.c, src/testdir/test_alot.vim,
 Patch 8.0.1238
 Problem:    Incremental search only shows one match.
 Solution:   When 'incsearch' and 'hlsearch' are both set highlight all
-            matches. (haya14busa, itchyny closes #2198)
+            matches. (haya14busa, itchyny, closes #2198)
 Files:      runtime/doc/options.txt, src/ex_getln.c, src/proto/search.pro,
             src/search.c, src/testdir/test_search.vim
 
@@ -22595,7 +22595,7 @@ Solution:   Remove bogus typedef.
 Files:      src/os_macosx.m
 
 Patch 8.0.1316 (after 8.0.1312)
-Problem:    Build still fails on Mac. (chdiza)
+Problem:    Build still still fails on Mac. (chdiza)
 Solution:   Remove another bogus typedef.
 Files:      src/os_mac_conv.c
 

@@ -9121,22 +9121,16 @@ There are four types of features:
     Example: >
 	:if has("gui_running")
 <							*has-patch*
-3.  Included patches.  The "patch123" feature means that patch 123 has been
-    included.  Note that this form does not check the version of Vim, you need
-    to inspect |v:version| for that.
-    Example (checking version 6.2.148 or later): >
-	:if v:version > 602 || v:version == 602 && has("patch148")
-<    Note that it's possible for patch 147 to be omitted even though 148 is
-    included.
-
-4.  Beyond a certain version or at a certain version and including a specific
-    patch.  The "patch-7.4.237" feature means that the Vim version is 7.5 or
-    later, or it is version 7.4 and patch 237 was included.
-    Note that this only works for patch 7.4.237 and later, before that you
-    need to use the example above that checks v:version.  Example: >
+3.  Beyond a certain version or at a certain version and including a specific
+    patch.  The "patch-7.4.248" feature means that the Vim version is 7.5 or
+    later, or it is version 7.4 and patch 248 was included.  Example: >
 	:if has("patch-7.4.248")
-<    Note that it's possible for patch 147 to be omitted even though 148 is
-    included.
+<    Note that it's possible for patch 248 to be omitted even though 249 is
+    included.  Only happens when cherry-picking patches.
+    Note that this form only works for patch 7.4.237 and later, before that
+    you need to check for the patch and the  v:version.  Example (checking
+    version 6.2.148 or later): >
+	:if v:version > 602 || (v:version == 602 && has("patch148"))
 
 Hint: To find out if Vim supports backslashes in a file name (MS-Windows),
 use: `if exists('+shellslash')`

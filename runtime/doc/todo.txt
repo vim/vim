@@ -39,9 +39,10 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Terminal emulator window:
-- Win32: Termdebug doesn't work, because gdb does not support mi2.  This
-  plugin: https://github.com/cpiger/NeoDebug  runs gdb as a job, redirecting
-  input and output.  Command I/O is in gdb window.
+- Win32: Termdebug doesn't work, because gdb does not support mi2.
+  This plugin: https://github.com/cpiger/NeoDebug  runs gdb as a job,
+  redirecting input and output.
+  Open new console for for program with: "set new-console on"
 - Win32: Redirecting input does not work, half of Test_terminal_redir_file()
   is disabled.
 - Win32: Redirecting output works but includes escape sequences.
@@ -64,6 +65,8 @@ Patch to refactor efm_to_regpat(). (Yegappan Lakshmanan, 2018 May 16, #2924)
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
+
+Deprecate using  has("patch213")  always include the version number.
 
 On Win32 when not in the console and t_Co >= 256, allow using 'tgc'.
 (Nobuhiro Takasaki, #2833)  Also check t_Co.
