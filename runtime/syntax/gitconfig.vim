@@ -8,15 +8,13 @@ if exists("b:current_syntax")
   finish
 endif
 
-setlocal iskeyword+=-
-setlocal iskeyword-=_
 syn case ignore
 syn sync minlines=10
 
 syn match   gitconfigComment	"[#;].*"
 syn match   gitconfigSection	"\%(^\s*\)\@<=\[[a-z0-9.-]\+\]"
 syn match   gitconfigSection	'\%(^\s*\)\@<=\[[a-z0-9.-]\+ \+\"\%([^\\"]\|\\.\)*"\]'
-syn match   gitconfigVariable	 "\%(^\s*\)\@<=\a\k*\%(\s*\%([=#;]\|$\)\)\@=" nextgroup=gitconfigAssignment skipwhite
+syn match   gitconfigVariable	"\%(^\s*\)\@<=\a[a-z0-9-]*\%(\s*\%([=#;]\|$\)\)\@=" nextgroup=gitconfigAssignment skipwhite
 syn region  gitconfigAssignment  matchgroup=gitconfigNone start=+=\s*+ skip=+\\+ end=+\s*$+ contained contains=gitconfigBoolean,gitconfigNumber,gitConfigString,gitConfigEscape,gitConfigError,gitconfigComment keepend
 syn keyword gitconfigBoolean true false yes no contained
 syn match   gitconfigNumber  "\d\+" contained
