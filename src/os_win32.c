@@ -204,7 +204,7 @@ static int win32_set_archive(char_u *name);
 
 #ifndef FEAT_GUI_W32
 static int vtp_working = 0;
-static int vtp_wantfill = FALSE;
+static int vtp_cmdexe = FALSE;
 static void vtp_init();
 static void vtp_exit();
 static int vtp_printf(char *format, ...);
@@ -7646,7 +7646,7 @@ vtp_init(void)
 
 	FlushConsoleInputBuffer(g_hConIn);
 	if (STRCMP(iseq, cseq) == 0)
-	    vtp_wantfill = TRUE;
+	    vtp_cmdexe = TRUE;
     }
 }
 
@@ -7816,9 +7816,9 @@ is_term_win32(void)
 }
 
     int
-has_vtp_wantfill(void)
+is_vtp_cmdexe(void)
 {
-    return vtp_wantfill;
+    return vtp_cmdexe;
 }
 
 #endif

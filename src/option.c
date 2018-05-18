@@ -8692,6 +8692,13 @@ set_bool_option(
     else if ((int *)varp == &p_tgc)
     {
 # ifdef FEAT_VTP
+	/* Do not turn on 'tgc' when 24-bit colors are not supported.
+	 * This decides only vtp using cmd.exe on win32. Other pass. */
+	if (is_vtp_cmdexe() && is_term_win32() && !has_vtp_working())
+	{
+	    p_tgc = 0;
+	    return (char_u*)N_("E954: 24-bit colors are not supported on this environment");
+	}
 	if (is_term_win32())
 	    swap_tcap();
 # endif
