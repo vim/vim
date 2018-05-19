@@ -204,7 +204,7 @@ Syntax ~
 			++rows={height} Use {height} for the terminal window
 					height.  If the terminal uses the full
 					Vim height (no window above or below
-					th terminal window) the command line
+					the terminal window) the command line
 					height will be reduced as needed.
 			++cols={width}  Use {width} for the terminal window
 					width. If the terminal uses the full
@@ -243,7 +243,7 @@ Trying to close the window with `CTRL-W :close` also fails.   Using
 You can use `CTRL-W :hide` to close the terminal window and make the buffer
 hidden, the job keeps running.  The `:buffer` command can be used to turn the
 current window into a terminal window.  If there are unsaved changes this
-fails, use !  to force, as usual.
+fails, use ! to force, as usual.
 
 To have a background job run without a window, and open the window when it's
 done, use options like this: >
