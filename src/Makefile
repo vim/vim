@@ -2150,6 +2150,7 @@ test_arglist \
 	test_cmdline \
 	test_command_count \
 	test_comparators \
+	test_compiler \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
