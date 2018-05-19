@@ -14,7 +14,7 @@ let s:original_cpo = &cpo
 set cpo&vim
 
 let b:current_syntax = "tmux"
-setlocal iskeyword+=-
+syntax iskeyword @,48-57,_,192-255,-
 syntax case match
 
 syn keyword tmuxAction  none any current other
