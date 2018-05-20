@@ -1336,6 +1336,94 @@ restofline:
 }
 
 /*
+ * Allocate the fields used for parsing lines and populating a quickfix list.
+ */
+    static int
+qf_alloc_fields(qffields_T *pfields)
+{
+    pfields->namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
+    pfields->module = alloc_id(CMDBUFFSIZE + 1, aid_qf_module);
+    pfields->errmsglen = CMDBUFFSIZE + 1;
+    pfields->errmsg = alloc_id(pfields->errmsglen, aid_qf_errmsg);
+    pfields->pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
+    if (pfields->namebuf == NULL || pfields->errmsg == NULL
+		|| pfields->pattern == NULL || pfields->module == NULL)
+	return FAIL;
+
+    return OK;
+}
+
+/*
+ * Free the fields used for parsing lines and populating a quickfix list.
+ */
+    static void
+qf_free_fields(qffields_T *pfields)
+{
+    vim_free(pfields->namebuf);
+    vim_free(pfields->module);
+    vim_free(pfields->errmsg);
+    vim_free(pfields->pattern);
+}
+
+/*
+ * Setup the state information used for parsing lines and populating a
+ * quickfix list.
+ */
+    static int
+qf_setup_state(
+	qfstate_T	*pstate,
+	char_u		*enc,
+	char_u		*efile,
+	typval_T	*tv,
+	buf_T		*buf,
+	linenr_T	lnumfirst,
+	linenr_T	lnumlast)
+{
+#ifdef FEAT_MBYTE
+    pstate->vc.vc_type = CONV_NONE;
+    if (enc != NULL && *enc != NUL)
+	convert_setup(&pstate->vc, enc, p_enc);
+#endif
+
+    if (efile != NULL && (pstate->fd = mch_fopen((char *)efile, "r")) == NULL)
+    {
+	EMSG2(_(e_openerrf), efile);
+	return FAIL;
+    }
+
+    if (tv != NULL)
+    {
+	if (tv->v_type == VAR_STRING)
+	    pstate->p_str = tv->vval.v_string;
+	else if (tv->v_type == VAR_LIST)
+	    pstate->p_li = tv->vval.v_list->lv_first;
+	pstate->tv = tv;
+    }
+    pstate->buf = buf;
+    pstate->buflnum = lnumfirst;
+    pstate->lnumlast = lnumlast;
+
+    return OK;
+}
+
+/*
+ * Cleanup the state information used for parsing lines and populating a
+ * quickfix list.
+ */
+    static void
+qf_cleanup_state(qfstate_T *pstate)
+{
+    if (pstate->fd != NULL)
+	fclose(pstate->fd);
+
+    vim_free(pstate->growbuf);
+#ifdef FEAT_MBYTE
+    if (pstate->vc.vc_type != CONV_NONE)
+	convert_setup(&pstate->vc, NULL, NULL);
+#endif
+}
+
+/*
  * Read the errorfile "efile" into memory, line by line, building the error
  * list.
  * Alternative: when "efile" is NULL read errors from buffer "buf".
@@ -1375,25 +1463,10 @@ qf_init_ext(
 
     vim_memset(&state, 0, sizeof(state));
     vim_memset(&fields, 0, sizeof(fields));
-#ifdef FEAT_MBYTE
-    state.vc.vc_type = CONV_NONE;
-    if (enc != NULL && *enc != NUL)
-	convert_setup(&state.vc, enc, p_enc);
-#endif
-    fields.namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
-    fields.module = alloc_id(CMDBUFFSIZE + 1, aid_qf_module);
-    fields.errmsglen = CMDBUFFSIZE + 1;
-    fields.errmsg = alloc_id(fields.errmsglen, aid_qf_errmsg);
-    fields.pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
-    if (fields.namebuf == NULL || fields.errmsg == NULL
-		|| fields.pattern == NULL || fields.module == NULL)
+    if ((qf_alloc_fields(&fields) == FAIL) ||
+		(qf_setup_state(&state, enc, efile, tv, buf,
+					lnumfirst, lnumlast) == FAIL))
 	goto qf_init_end;
-
-    if (efile != NULL && (state.fd = mch_fopen((char *)efile, "r")) == NULL)
-    {
-	EMSG2(_(e_openerrf), efile);
-	goto qf_init_end;
-    }
 
     if (newlist || qf_idx == qi->qf_listcount)
     {
@@ -1441,18 +1514,6 @@ qf_init_ext(
      * ":make" command, but we still want to read the errorfile then.
      */
     got_int = FALSE;
-
-    if (tv != NULL)
-    {
-	if (tv->v_type == VAR_STRING)
-	    state.p_str = tv->vval.v_string;
-	else if (tv->v_type == VAR_LIST)
-	    state.p_li = tv->vval.v_list->lv_first;
-	state.tv = tv;
-    }
-    state.buf = buf;
-    state.buflnum = lnumfirst;
-    state.lnumlast = lnumlast;
 
     /*
      * Read the lines in the error file one by one.
@@ -1526,20 +1587,10 @@ error2:
 	    --qi->qf_curlist;
     }
 qf_init_end:
-    if (state.fd != NULL)
-	fclose(state.fd);
-    vim_free(fields.namebuf);
-    vim_free(fields.module);
-    vim_free(fields.errmsg);
-    vim_free(fields.pattern);
-    vim_free(state.growbuf);
-
     if (qf_idx == qi->qf_curlist)
 	qf_update_buffer(qi, old_last);
-#ifdef FEAT_MBYTE
-    if (state.vc.vc_type != CONV_NONE)
-	convert_setup(&state.vc, NULL, NULL);
-#endif
+    qf_cleanup_state(&state);
+    qf_free_fields(&fields);
 
     return retval;
 }

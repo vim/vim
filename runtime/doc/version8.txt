@@ -14555,6 +14555,28 @@ Added							*added-8.1*
 
 Various syntax, indent and other plugins were added.
 
+Quickfix improvements ~
+
+Added support for modifying any quickfix/location list in the quickfix stack.
+Added a unique identifier for every quickfix/location list.
+Added support for associating any Vim type as a context information to a
+quickfix/location list.
+Enhanced the getqflist(), getloclist(), setqflist() and setloclist() functions
+to get and set the various quickfix/location list attributes.
+Added the QuickFixLine highlight group to highlight the current line in the
+quickfix window.
+The quickfix buffer b:changedtick variable is incremented for every change to
+the contained quickfix list.
+Added a changedtick variable to a quickfix/location list which is incremented
+when the list is modified.
+Added support for parsing text using 'errorformat' without creating a new
+quickfix list.
+Added support for the "module" item to a quickfix entry which can be used for
+display purposes instead of a long file name.
+Added support for freeing all the lists in the quickfix/location stack.
+When opening a quickfix window using the :copen/:cwindow commands, the
+supplied split modifiers are used.
+
 Functions:
 	All the term_ functions.
 
