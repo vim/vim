@@ -183,14 +183,7 @@ static int	desired_cursor_blink = -1;
  * 1. Generic code for all systems.
  */
 
-    static void
-cursor_color_copy(char_u** to_color, char_u* from_color)
-{
-    vim_free(*to_color);
-    *to_color = (from_color == NULL) ? NULL : vim_strsave(from_color);
-}
-
-	static int
+    static int
 cursor_color_equal(char_u *lhs_color, char_u *rhs_color)
 {
     if (lhs_color != NULL && rhs_color != NULL)
@@ -198,7 +191,17 @@ cursor_color_equal(char_u *lhs_color, char_u *rhs_color)
     return lhs_color == NULL && rhs_color == NULL;
 }
 
-	static char_u *
+    static void
+cursor_color_copy(char_u **to_color, char_u *from_color)
+{
+    // Avoid a free & alloc if the value is already right.
+    if (cursor_color_equal(*to_color, from_color))
+	return;
+    vim_free(*to_color);
+    *to_color = (from_color == NULL) ? NULL : vim_strsave(from_color);
+}
+
+    static char_u *
 cursor_color_get(char_u *color)
 {
     return (color == NULL) ? (char_u *)"" : color;
@@ -2119,7 +2122,7 @@ terminal_loop(int blocking)
 	    while (must_redraw != 0)
 		if (update_screen(0) == FAIL)
 		    break;
-	if (!term_use_loop_check(TRUE))
+	if (!term_use_loop_check(TRUE) || in_terminal_loop != curbuf->b_term)
 	    /* job finished while redrawing */
 	    break;
 
@@ -2127,7 +2130,7 @@ terminal_loop(int blocking)
 	restore_cursor = TRUE;
 
 	c = term_vgetc();
-	if (!term_use_loop_check(TRUE))
+	if (!term_use_loop_check(TRUE) || in_terminal_loop != curbuf->b_term)
 	{
 	    /* Job finished while waiting for a character.  Push back the
 	     * received character. */
@@ -2178,7 +2181,8 @@ terminal_loop(int blocking)
 #ifdef FEAT_CMDL_INFO
 	    clear_showcmd();
 #endif
-	    if (!term_use_loop_check(TRUE))
+	    if (!term_use_loop_check(TRUE)
+					 || in_terminal_loop != curbuf->b_term)
 		/* job finished while waiting for a character */
 		break;
 
