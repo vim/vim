@@ -134,10 +134,8 @@ struct efm_S
 
 static efm_T	*fmt_start = NULL; /* cached across qf_parse_line() calls */
 
-static int	qf_init_ext(qf_info_T *qi, int qf_idx, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast, char_u *qf_title, char_u *enc);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static int	qf_add_entry(qf_info_T *qi, int qf_idx, char_u *dir, char_u *fname, char_u *module, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid);
-static qf_info_T *ll_new_list(void);
 static void	qf_free(qf_info_T *qi, int idx);
 static char_u	*qf_types(int, int);
 static int	qf_get_fnum(qf_info_T *qi, int qf_idx, char_u *, char_u *);
@@ -176,32 +174,6 @@ static bufref_T  qf_last_bufref = {NULL, 0, 0};
 
 static char	*e_loc_list_changed =
 				 N_("E926: Current location list was changed");
-
-/*
- * Read the errorfile "efile" into memory, line by line, building the error
- * list. Set the error list's title to qf_title.
- * Return -1 for error, number of errors for success.
- */
-    int
-qf_init(win_T	    *wp,
-	char_u	    *efile,
-	char_u	    *errorformat,
-	int	    newlist,		/* TRUE: start a new error list */
-	char_u	    *qf_title,
-	char_u	    *enc)
-{
-    qf_info_T	    *qi = &ql_info;
-
-    if (wp != NULL)
-    {
-	qi = ll_get_or_alloc_list(wp);
-	if (qi == NULL)
-	    return FAIL;
-    }
-
-    return qf_init_ext(qi, qi->qf_curlist, efile, curbuf, NULL, errorformat,
-	    newlist, (linenr_T)0, (linenr_T)0, qf_title, enc);
-}
 
 /*
  * Maximum number of bytes allowed per line while reading a errorfile.
@@ -1593,6 +1565,32 @@ qf_init_end:
     qf_free_fields(&fields);
 
     return retval;
+}
+
+/*
+ * Read the errorfile "efile" into memory, line by line, building the error
+ * list. Set the error list's title to qf_title.
+ * Return -1 for error, number of errors for success.
+ */
+    int
+qf_init(win_T	    *wp,
+	char_u	    *efile,
+	char_u	    *errorformat,
+	int	    newlist,		/* TRUE: start a new error list */
+	char_u	    *qf_title,
+	char_u	    *enc)
+{
+    qf_info_T	    *qi = &ql_info;
+
+    if (wp != NULL)
+    {
+	qi = ll_get_or_alloc_list(wp);
+	if (qi == NULL)
+	    return FAIL;
+    }
+
+    return qf_init_ext(qi, qi->qf_curlist, efile, curbuf, NULL, errorformat,
+	    newlist, (linenr_T)0, (linenr_T)0, qf_title, enc);
 }
 
 /*
