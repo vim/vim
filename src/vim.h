@@ -1319,6 +1319,7 @@ enum auto_event
     EVENT_QUITPRE,		/* before :quit */
     EVENT_REMOTEREPLY,		/* upon string reception from a remote vim */
     EVENT_SESSIONLOADPOST,	/* after loading a session file */
+    EVENT_SHELLCMDPROMPT,	/* after ":!cmd" "hit ENTER" prompt */
     EVENT_SHELLCMDPOST,		/* after ":!cmd" */
     EVENT_SHELLFILTERPOST,	/* after ":1,2!cmd", ":w !cmd", ":r !cmd". */
     EVENT_SOURCECMD,		/* sourcing a Vim script using command */

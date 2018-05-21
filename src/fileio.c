@@ -7787,6 +7787,7 @@ static struct event_name
     {"QuitPre",		EVENT_QUITPRE},
     {"RemoteReply",	EVENT_REMOTEREPLY},
     {"SessionLoadPost",	EVENT_SESSIONLOADPOST},
+    {"ShellCmdPrompt",	EVENT_SHELLCMDPROMPT},
     {"ShellCmdPost",	EVENT_SHELLCMDPOST},
     {"ShellFilterPost",	EVENT_SHELLFILTERPOST},
     {"SourcePre",	EVENT_SOURCEPRE},

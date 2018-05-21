@@ -1551,6 +1551,8 @@ do_shell(
 	    save_nwr = no_wait_return;
 	    if (swapping_screen())
 		no_wait_return = FALSE;
+
+	    apply_autocmds(EVENT_SHELLCMDPROMPT, NULL, NULL, FALSE, curbuf);
 # ifdef AMIGA
 	    wait_return(term_console ? -1 : msg_silent == 0);	/* see below */
 # else
