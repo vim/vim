@@ -5264,11 +5264,11 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 	    mch_check_messages();
 	    parse_queued_messages();
+	    ui_delay(10L, FALSE);
 	    if (!buf_valid(buf))
 		/* If the terminal is closed when the channel is closed the
 		 * buffer disappears. */
 		break;
-	    ui_delay(10L, FALSE);
 	}
 	mch_check_messages();
 	parse_queued_messages();
