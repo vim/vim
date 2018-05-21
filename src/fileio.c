@@ -714,8 +714,8 @@ readfile(
 			&& st.st_gid != swap_st.st_gid
 # ifdef HAVE_FCHOWN
 			&& fchown(curbuf->b_ml.ml_mfp->mf_fd, -1, st.st_gid)
-# endif
 									  == -1
+# endif
 		   )
 		    swap_mode &= 0600;
 	    }
