@@ -2540,7 +2540,7 @@ main(int argc, char **argv)
     /* Initialize this program. */
     do_inits(argv);
 
-    if (argc > 1 && strcmp(argv[1], "-uninstall-check") == 0)
+    if (!interactive && strcmp(argv[1], "-uninstall-check") == 0)
     {
 	/* Only check for already installed Vims.  Used by NSIS installer. */
 	i = uninstall_check(1);
