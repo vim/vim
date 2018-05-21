@@ -3884,6 +3884,80 @@ qf_set_title_var(qf_info_T *qi)
 }
 
 /*
+ * Add an error line to the quickfix buffer.
+ */
+    static int
+qf_buf_add_line(buf_T *buf, linenr_T lnum, qfline_T *qfp, char_u *dirname)
+{
+    int		len;
+    buf_T	*errbuf;
+
+    if (qfp->qf_module != NULL)
+    {
+	STRCPY(IObuff, qfp->qf_module);
+	len = (int)STRLEN(IObuff);
+    }
+    else if (qfp->qf_fnum != 0
+	    && (errbuf = buflist_findnr(qfp->qf_fnum)) != NULL
+	    && errbuf->b_fname != NULL)
+    {
+	if (qfp->qf_type == 1)	/* :helpgrep */
+	    STRCPY(IObuff, gettail(errbuf->b_fname));
+	else
+	{
+	    /* shorten the file name if not done already */
+	    if (errbuf->b_sfname == NULL
+		    || mch_isFullName(errbuf->b_sfname))
+	    {
+		if (*dirname == NUL)
+		    mch_dirname(dirname, MAXPATHL);
+		shorten_buf_fname(errbuf, dirname, FALSE);
+	    }
+	    STRCPY(IObuff, errbuf->b_fname);
+	}
+	len = (int)STRLEN(IObuff);
+    }
+    else
+	len = 0;
+    IObuff[len++] = '|';
+
+    if (qfp->qf_lnum > 0)
+    {
+	sprintf((char *)IObuff + len, "%ld", qfp->qf_lnum);
+	len += (int)STRLEN(IObuff + len);
+
+	if (qfp->qf_col > 0)
+	{
+	    sprintf((char *)IObuff + len, " col %d", qfp->qf_col);
+	    len += (int)STRLEN(IObuff + len);
+	}
+
+	sprintf((char *)IObuff + len, "%s",
+		(char *)qf_types(qfp->qf_type, qfp->qf_nr));
+	len += (int)STRLEN(IObuff + len);
+    }
+    else if (qfp->qf_pattern != NULL)
+    {
+	qf_fmt_text(qfp->qf_pattern, IObuff + len, IOSIZE - len);
+	len += (int)STRLEN(IObuff + len);
+    }
+    IObuff[len++] = '|';
+    IObuff[len++] = ' ';
+
+    /* Remove newlines and leading whitespace from the text.
+     * For an unrecognized line keep the indent, the compiler may
+     * mark a word with ^^^^. */
+    qf_fmt_text(len > 3 ? skipwhite(qfp->qf_text) : qfp->qf_text,
+	    IObuff + len, IOSIZE - len);
+
+    if (ml_append_buf(buf, lnum, IObuff,
+		(colnr_T)STRLEN(IObuff) + 1, FALSE) == FAIL)
+	return FAIL;
+
+    return OK;
+}
+
+/*
  * Fill current buffer with quickfix errors, replacing any previous contents.
  * curbuf must be the quickfix buffer!
  * If "old_last" is not NULL append the items after this one.
@@ -3895,8 +3969,6 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 {
     linenr_T	lnum;
     qfline_T	*qfp;
-    buf_T	*errbuf;
-    int		len;
     int		old_KeyTyped = KeyTyped;
 
     if (old_last == NULL)
@@ -3932,67 +4004,9 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 	}
 	while (lnum < qi->qf_lists[qi->qf_curlist].qf_count)
 	{
-	    if (qfp->qf_module != NULL)
-	    {
-		STRCPY(IObuff, qfp->qf_module);
-		len = (int)STRLEN(IObuff);
-	    }
-	    else if (qfp->qf_fnum != 0
-		    && (errbuf = buflist_findnr(qfp->qf_fnum)) != NULL
-		    && errbuf->b_fname != NULL)
-	    {
-		if (qfp->qf_type == 1)	/* :helpgrep */
-		    STRCPY(IObuff, gettail(errbuf->b_fname));
-		else
-		{
-		    /* shorten the file name if not done already */
-		    if (errbuf->b_sfname == NULL
-					   || mch_isFullName(errbuf->b_sfname))
-		    {
-			if (*dirname == NUL)
-			    mch_dirname(dirname, MAXPATHL);
-			shorten_buf_fname(errbuf, dirname, FALSE);
-		    }
-		    STRCPY(IObuff, errbuf->b_fname);
-		}
-		len = (int)STRLEN(IObuff);
-	    }
-	    else
-		len = 0;
-	    IObuff[len++] = '|';
-
-	    if (qfp->qf_lnum > 0)
-	    {
-		sprintf((char *)IObuff + len, "%ld", qfp->qf_lnum);
-		len += (int)STRLEN(IObuff + len);
-
-		if (qfp->qf_col > 0)
-		{
-		    sprintf((char *)IObuff + len, " col %d", qfp->qf_col);
-		    len += (int)STRLEN(IObuff + len);
-		}
-
-		sprintf((char *)IObuff + len, "%s",
-				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
-		len += (int)STRLEN(IObuff + len);
-	    }
-	    else if (qfp->qf_pattern != NULL)
-	    {
-		qf_fmt_text(qfp->qf_pattern, IObuff + len, IOSIZE - len);
-		len += (int)STRLEN(IObuff + len);
-	    }
-	    IObuff[len++] = '|';
-	    IObuff[len++] = ' ';
-
-	    /* Remove newlines and leading whitespace from the text.
-	     * For an unrecognized line keep the indent, the compiler may
-	     * mark a word with ^^^^. */
-	    qf_fmt_text(len > 3 ? skipwhite(qfp->qf_text) : qfp->qf_text,
-						  IObuff + len, IOSIZE - len);
-
-	    if (ml_append_buf(buf, lnum, IObuff,
-				  (colnr_T)STRLEN(IObuff) + 1, FALSE) == FAIL)
+	    if (qf_buf_add_line(buf, lnum, qfp, dirname) == FAIL)
 		break;
+
 	    ++lnum;
 	    qfp = qfp->qf_next;
 	    if (qfp == NULL)
