@@ -134,10 +134,8 @@ struct efm_S
 
 static efm_T	*fmt_start = NULL; /* cached across qf_parse_line() calls */
 
-static int	qf_init_ext(qf_info_T *qi, int qf_idx, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast, char_u *qf_title, char_u *enc);
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static int	qf_add_entry(qf_info_T *qi, int qf_idx, char_u *dir, char_u *fname, char_u *module, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid);
-static qf_info_T *ll_new_list(void);
 static void	qf_free(qf_info_T *qi, int idx);
 static char_u	*qf_types(int, int);
 static int	qf_get_fnum(qf_info_T *qi, int qf_idx, char_u *, char_u *);
@@ -176,32 +174,6 @@ static bufref_T  qf_last_bufref = {NULL, 0, 0};
 
 static char	*e_loc_list_changed =
 				 N_("E926: Current location list was changed");
-
-/*
- * Read the errorfile "efile" into memory, line by line, building the error
- * list. Set the error list's title to qf_title.
- * Return -1 for error, number of errors for success.
- */
-    int
-qf_init(win_T	    *wp,
-	char_u	    *efile,
-	char_u	    *errorformat,
-	int	    newlist,		/* TRUE: start a new error list */
-	char_u	    *qf_title,
-	char_u	    *enc)
-{
-    qf_info_T	    *qi = &ql_info;
-
-    if (wp != NULL)
-    {
-	qi = ll_get_or_alloc_list(wp);
-	if (qi == NULL)
-	    return FAIL;
-    }
-
-    return qf_init_ext(qi, qi->qf_curlist, efile, curbuf, NULL, errorformat,
-	    newlist, (linenr_T)0, (linenr_T)0, qf_title, enc);
-}
 
 /*
  * Maximum number of bytes allowed per line while reading a errorfile.
@@ -1336,6 +1308,94 @@ restofline:
 }
 
 /*
+ * Allocate the fields used for parsing lines and populating a quickfix list.
+ */
+    static int
+qf_alloc_fields(qffields_T *pfields)
+{
+    pfields->namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
+    pfields->module = alloc_id(CMDBUFFSIZE + 1, aid_qf_module);
+    pfields->errmsglen = CMDBUFFSIZE + 1;
+    pfields->errmsg = alloc_id(pfields->errmsglen, aid_qf_errmsg);
+    pfields->pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
+    if (pfields->namebuf == NULL || pfields->errmsg == NULL
+		|| pfields->pattern == NULL || pfields->module == NULL)
+	return FAIL;
+
+    return OK;
+}
+
+/*
+ * Free the fields used for parsing lines and populating a quickfix list.
+ */
+    static void
+qf_free_fields(qffields_T *pfields)
+{
+    vim_free(pfields->namebuf);
+    vim_free(pfields->module);
+    vim_free(pfields->errmsg);
+    vim_free(pfields->pattern);
+}
+
+/*
+ * Setup the state information used for parsing lines and populating a
+ * quickfix list.
+ */
+    static int
+qf_setup_state(
+	qfstate_T	*pstate,
+	char_u		*enc,
+	char_u		*efile,
+	typval_T	*tv,
+	buf_T		*buf,
+	linenr_T	lnumfirst,
+	linenr_T	lnumlast)
+{
+#ifdef FEAT_MBYTE
+    pstate->vc.vc_type = CONV_NONE;
+    if (enc != NULL && *enc != NUL)
+	convert_setup(&pstate->vc, enc, p_enc);
+#endif
+
+    if (efile != NULL && (pstate->fd = mch_fopen((char *)efile, "r")) == NULL)
+    {
+	EMSG2(_(e_openerrf), efile);
+	return FAIL;
+    }
+
+    if (tv != NULL)
+    {
+	if (tv->v_type == VAR_STRING)
+	    pstate->p_str = tv->vval.v_string;
+	else if (tv->v_type == VAR_LIST)
+	    pstate->p_li = tv->vval.v_list->lv_first;
+	pstate->tv = tv;
+    }
+    pstate->buf = buf;
+    pstate->buflnum = lnumfirst;
+    pstate->lnumlast = lnumlast;
+
+    return OK;
+}
+
+/*
+ * Cleanup the state information used for parsing lines and populating a
+ * quickfix list.
+ */
+    static void
+qf_cleanup_state(qfstate_T *pstate)
+{
+    if (pstate->fd != NULL)
+	fclose(pstate->fd);
+
+    vim_free(pstate->growbuf);
+#ifdef FEAT_MBYTE
+    if (pstate->vc.vc_type != CONV_NONE)
+	convert_setup(&pstate->vc, NULL, NULL);
+#endif
+}
+
+/*
  * Read the errorfile "efile" into memory, line by line, building the error
  * list.
  * Alternative: when "efile" is NULL read errors from buffer "buf".
@@ -1375,25 +1435,10 @@ qf_init_ext(
 
     vim_memset(&state, 0, sizeof(state));
     vim_memset(&fields, 0, sizeof(fields));
-#ifdef FEAT_MBYTE
-    state.vc.vc_type = CONV_NONE;
-    if (enc != NULL && *enc != NUL)
-	convert_setup(&state.vc, enc, p_enc);
-#endif
-    fields.namebuf = alloc_id(CMDBUFFSIZE + 1, aid_qf_namebuf);
-    fields.module = alloc_id(CMDBUFFSIZE + 1, aid_qf_module);
-    fields.errmsglen = CMDBUFFSIZE + 1;
-    fields.errmsg = alloc_id(fields.errmsglen, aid_qf_errmsg);
-    fields.pattern = alloc_id(CMDBUFFSIZE + 1, aid_qf_pattern);
-    if (fields.namebuf == NULL || fields.errmsg == NULL
-		|| fields.pattern == NULL || fields.module == NULL)
+    if ((qf_alloc_fields(&fields) == FAIL) ||
+		(qf_setup_state(&state, enc, efile, tv, buf,
+					lnumfirst, lnumlast) == FAIL))
 	goto qf_init_end;
-
-    if (efile != NULL && (state.fd = mch_fopen((char *)efile, "r")) == NULL)
-    {
-	EMSG2(_(e_openerrf), efile);
-	goto qf_init_end;
-    }
 
     if (newlist || qf_idx == qi->qf_listcount)
     {
@@ -1441,18 +1486,6 @@ qf_init_ext(
      * ":make" command, but we still want to read the errorfile then.
      */
     got_int = FALSE;
-
-    if (tv != NULL)
-    {
-	if (tv->v_type == VAR_STRING)
-	    state.p_str = tv->vval.v_string;
-	else if (tv->v_type == VAR_LIST)
-	    state.p_li = tv->vval.v_list->lv_first;
-	state.tv = tv;
-    }
-    state.buf = buf;
-    state.buflnum = lnumfirst;
-    state.lnumlast = lnumlast;
 
     /*
      * Read the lines in the error file one by one.
@@ -1526,22 +1559,38 @@ error2:
 	    --qi->qf_curlist;
     }
 qf_init_end:
-    if (state.fd != NULL)
-	fclose(state.fd);
-    vim_free(fields.namebuf);
-    vim_free(fields.module);
-    vim_free(fields.errmsg);
-    vim_free(fields.pattern);
-    vim_free(state.growbuf);
-
     if (qf_idx == qi->qf_curlist)
 	qf_update_buffer(qi, old_last);
-#ifdef FEAT_MBYTE
-    if (state.vc.vc_type != CONV_NONE)
-	convert_setup(&state.vc, NULL, NULL);
-#endif
+    qf_cleanup_state(&state);
+    qf_free_fields(&fields);
 
     return retval;
+}
+
+/*
+ * Read the errorfile "efile" into memory, line by line, building the error
+ * list. Set the error list's title to qf_title.
+ * Return -1 for error, number of errors for success.
+ */
+    int
+qf_init(win_T	    *wp,
+	char_u	    *efile,
+	char_u	    *errorformat,
+	int	    newlist,		/* TRUE: start a new error list */
+	char_u	    *qf_title,
+	char_u	    *enc)
+{
+    qf_info_T	    *qi = &ql_info;
+
+    if (wp != NULL)
+    {
+	qi = ll_get_or_alloc_list(wp);
+	if (qi == NULL)
+	    return FAIL;
+    }
+
+    return qf_init_ext(qi, qi->qf_curlist, efile, curbuf, NULL, errorformat,
+	    newlist, (linenr_T)0, (linenr_T)0, qf_title, enc);
 }
 
 /*
@@ -3835,6 +3884,80 @@ qf_set_title_var(qf_info_T *qi)
 }
 
 /*
+ * Add an error line to the quickfix buffer.
+ */
+    static int
+qf_buf_add_line(buf_T *buf, linenr_T lnum, qfline_T *qfp, char_u *dirname)
+{
+    int		len;
+    buf_T	*errbuf;
+
+    if (qfp->qf_module != NULL)
+    {
+	STRCPY(IObuff, qfp->qf_module);
+	len = (int)STRLEN(IObuff);
+    }
+    else if (qfp->qf_fnum != 0
+	    && (errbuf = buflist_findnr(qfp->qf_fnum)) != NULL
+	    && errbuf->b_fname != NULL)
+    {
+	if (qfp->qf_type == 1)	/* :helpgrep */
+	    STRCPY(IObuff, gettail(errbuf->b_fname));
+	else
+	{
+	    /* shorten the file name if not done already */
+	    if (errbuf->b_sfname == NULL
+		    || mch_isFullName(errbuf->b_sfname))
+	    {
+		if (*dirname == NUL)
+		    mch_dirname(dirname, MAXPATHL);
+		shorten_buf_fname(errbuf, dirname, FALSE);
+	    }
+	    STRCPY(IObuff, errbuf->b_fname);
+	}
+	len = (int)STRLEN(IObuff);
+    }
+    else
+	len = 0;
+    IObuff[len++] = '|';
+
+    if (qfp->qf_lnum > 0)
+    {
+	sprintf((char *)IObuff + len, "%ld", qfp->qf_lnum);
+	len += (int)STRLEN(IObuff + len);
+
+	if (qfp->qf_col > 0)
+	{
+	    sprintf((char *)IObuff + len, " col %d", qfp->qf_col);
+	    len += (int)STRLEN(IObuff + len);
+	}
+
+	sprintf((char *)IObuff + len, "%s",
+		(char *)qf_types(qfp->qf_type, qfp->qf_nr));
+	len += (int)STRLEN(IObuff + len);
+    }
+    else if (qfp->qf_pattern != NULL)
+    {
+	qf_fmt_text(qfp->qf_pattern, IObuff + len, IOSIZE - len);
+	len += (int)STRLEN(IObuff + len);
+    }
+    IObuff[len++] = '|';
+    IObuff[len++] = ' ';
+
+    /* Remove newlines and leading whitespace from the text.
+     * For an unrecognized line keep the indent, the compiler may
+     * mark a word with ^^^^. */
+    qf_fmt_text(len > 3 ? skipwhite(qfp->qf_text) : qfp->qf_text,
+	    IObuff + len, IOSIZE - len);
+
+    if (ml_append_buf(buf, lnum, IObuff,
+		(colnr_T)STRLEN(IObuff) + 1, FALSE) == FAIL)
+	return FAIL;
+
+    return OK;
+}
+
+/*
  * Fill current buffer with quickfix errors, replacing any previous contents.
  * curbuf must be the quickfix buffer!
  * If "old_last" is not NULL append the items after this one.
@@ -3846,8 +3969,6 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 {
     linenr_T	lnum;
     qfline_T	*qfp;
-    buf_T	*errbuf;
-    int		len;
     int		old_KeyTyped = KeyTyped;
 
     if (old_last == NULL)
@@ -3883,67 +4004,9 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 	}
 	while (lnum < qi->qf_lists[qi->qf_curlist].qf_count)
 	{
-	    if (qfp->qf_module != NULL)
-	    {
-		STRCPY(IObuff, qfp->qf_module);
-		len = (int)STRLEN(IObuff);
-	    }
-	    else if (qfp->qf_fnum != 0
-		    && (errbuf = buflist_findnr(qfp->qf_fnum)) != NULL
-		    && errbuf->b_fname != NULL)
-	    {
-		if (qfp->qf_type == 1)	/* :helpgrep */
-		    STRCPY(IObuff, gettail(errbuf->b_fname));
-		else
-		{
-		    /* shorten the file name if not done already */
-		    if (errbuf->b_sfname == NULL
-					   || mch_isFullName(errbuf->b_sfname))
-		    {
-			if (*dirname == NUL)
-			    mch_dirname(dirname, MAXPATHL);
-			shorten_buf_fname(errbuf, dirname, FALSE);
-		    }
-		    STRCPY(IObuff, errbuf->b_fname);
-		}
-		len = (int)STRLEN(IObuff);
-	    }
-	    else
-		len = 0;
-	    IObuff[len++] = '|';
-
-	    if (qfp->qf_lnum > 0)
-	    {
-		sprintf((char *)IObuff + len, "%ld", qfp->qf_lnum);
-		len += (int)STRLEN(IObuff + len);
-
-		if (qfp->qf_col > 0)
-		{
-		    sprintf((char *)IObuff + len, " col %d", qfp->qf_col);
-		    len += (int)STRLEN(IObuff + len);
-		}
-
-		sprintf((char *)IObuff + len, "%s",
-				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
-		len += (int)STRLEN(IObuff + len);
-	    }
-	    else if (qfp->qf_pattern != NULL)
-	    {
-		qf_fmt_text(qfp->qf_pattern, IObuff + len, IOSIZE - len);
-		len += (int)STRLEN(IObuff + len);
-	    }
-	    IObuff[len++] = '|';
-	    IObuff[len++] = ' ';
-
-	    /* Remove newlines and leading whitespace from the text.
-	     * For an unrecognized line keep the indent, the compiler may
-	     * mark a word with ^^^^. */
-	    qf_fmt_text(len > 3 ? skipwhite(qfp->qf_text) : qfp->qf_text,
-						  IObuff + len, IOSIZE - len);
-
-	    if (ml_append_buf(buf, lnum, IObuff,
-				  (colnr_T)STRLEN(IObuff) + 1, FALSE) == FAIL)
+	    if (qf_buf_add_line(buf, lnum, qfp, dirname) == FAIL)
 		break;
+
 	    ++lnum;
 	    qfp = qfp->qf_next;
 	    if (qfp == NULL)
