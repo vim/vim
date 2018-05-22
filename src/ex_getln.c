@@ -5147,7 +5147,7 @@ expand_shellcmd(
 {
     char_u	*pat;
     int		i;
-    char_u	*path;
+    char_u	*path = NULL;
     int		mustfree = FALSE;
     garray_T    ga;
     char_u	*buf = alloc(MAXPATHL);
@@ -5156,6 +5156,9 @@ expand_shellcmd(
     int		flags = flagsarg;
     int		ret;
     int		did_curdir = FALSE;
+    hashtab_T	ht;
+    hashitem_T	*hi;
+    hash_T	hash;
 
     if (buf == NULL)
 	return FAIL;
@@ -5169,15 +5172,14 @@ expand_shellcmd(
 
     flags |= EW_FILE | EW_EXEC | EW_SHELLCMD;
 
-    /* For an absolute name we don't use $PATH. */
-    if (mch_isFullName(pat))
-	path = (char_u *)" ";
-    else if ((pat[0] == '.' && (vim_ispathsep(pat[1])
-			    || (pat[1] == '.' && vim_ispathsep(pat[2])))))
+    if (pat[0] == '.' && (vim_ispathsep(pat[1])
+			       || (pat[1] == '.' && vim_ispathsep(pat[2]))))
 	path = (char_u *)".";
     else
     {
-	path = vim_getenv((char_u *)"PATH", &mustfree);
+	/* For an absolute name we don't use $PATH. */
+	if (!mch_isFullName(pat))
+	    path = vim_getenv((char_u *)"PATH", &mustfree);
 	if (path == NULL)
 	    path = (char_u *)"";
     }
@@ -5188,6 +5190,7 @@ expand_shellcmd(
      * current directory, to find "subdir/cmd".
      */
     ga_init2(&ga, (int)sizeof(char *), 10);
+    hash_init(&ht);
     for (s = path; ; s = e)
     {
 	if (*s == NUL)
@@ -5199,9 +5202,6 @@ expand_shellcmd(
 	}
 	else if (*s == '.')
 	    did_curdir = TRUE;
-
-	if (*s == ' ')
-	    ++s;	/* Skip space used for absolute path name. */
 
 #if defined(MSWIN)
 	e = vim_strchr(s, ';');
@@ -5229,15 +5229,23 @@ expand_shellcmd(
 	    {
 		for (i = 0; i < *num_file; ++i)
 		{
-		    s = (*file)[i];
-		    if (STRLEN(s) > l)
+		    char_u *name = (*file)[i];
+
+		    if (STRLEN(name) > l)
 		    {
-			/* Remove the path again. */
-			STRMOVE(s, s + l);
-			((char_u **)ga.ga_data)[ga.ga_len++] = s;
+			/* Check duplicate item. */
+			hash = hash_hash(name + l);
+			hi = hash_lookup(&ht, name + l, hash);
+			if (HASHITEM_EMPTY(hi))
+			{
+			    /* Remove the path again. */
+			    STRMOVE(name, name + l);
+			    ((char_u **)ga.ga_data)[ga.ga_len++] = name;
+			    hash_add_item(&ht, hi, name, hash);
+			    name = NULL;
+			}
 		    }
-		    else
-			vim_free(s);
+		    vim_free(name);
 		}
 		vim_free(*file);
 	    }
@@ -5252,6 +5260,7 @@ expand_shellcmd(
     vim_free(pat);
     if (mustfree)
 	vim_free(path);
+    hash_clear(&ht);
     return OK;
 }
 
