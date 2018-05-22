@@ -5329,6 +5329,12 @@ term_send_eof(channel_T *ch)
 	}
 }
 
+    job_T *
+term_getjob(term_T *term)
+{
+    return term != NULL ? term->tl_job : NULL;
+}
+
 # if defined(WIN3264) || defined(PROTO)
 
 /**************************************

@@ -4343,6 +4343,7 @@ mch_call_shell_terminal(
     char_u	*tofree2 = NULL;
     int		retval = -1;
     buf_T	*buf;
+    job_T	*job;
     aco_save_T	aco;
     oparg_T	oa;		/* operator arguments */
 
@@ -4352,6 +4353,11 @@ mch_call_shell_terminal(
     init_job_options(&opt);
     ch_log(NULL, "starting terminal for system command '%s'", cmd);
     buf = term_start(NULL, argv, &opt, TERM_START_SYSTEM);
+    if (buf == NULL)
+	goto theend;
+
+    job = term_getjob(buf->b_term);
+    ++job->jv_refcount;
 
     /* Find a window to make "buf" curbuf. */
     aucmd_prepbuf(&aco, buf);
@@ -4369,8 +4375,10 @@ mch_call_shell_terminal(
 	else
 	    normal_cmd(&oa, TRUE);
     }
-    retval = 0;
+    retval = job->jv_exitval;
     ch_log(NULL, "system command finished");
+
+    job_unref(job);
 
     /* restore curwin/curbuf and a few other things */
     aucmd_restbuf(&aco);
