@@ -2872,14 +2872,20 @@ term_color(char_u *s, int n)
 #else
 	char *format = "%s%s%%dm";
 #endif
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
 	sprintf(buf, format,
 		i == 2 ?
-#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
 		s[1] == '|' ? IF_EB("\033|", ESC_STR "|") :
-#endif
 		IF_EB("\033[", ESC_STR "[") : "\233",
 		s[i] == '3' ? (n >= 16 ? "38;5;" : "9")
 			    : (n >= 16 ? "48;5;" : "10"));
+#else
+	sprintf(buf, format,
+		i == 2 ?
+		IF_EB("\033[", ESC_STR "[") : "\233",
+		s[i] == '3' ? (n >= 16 ? "38;5;" : "9")
+			    : (n >= 16 ? "48;5;" : "10"));
+#endif
 	OUT_STR(tgoto(buf, 0, n >= 16 ? n : n - 8));
     }
     else
