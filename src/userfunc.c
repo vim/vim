@@ -1349,8 +1349,16 @@ call_func(
     }
 
 
-    /* execute the function if no errors detected and executing */
-    if (evaluate && error == ERROR_NONE)
+    /*
+     * Execute the function if executing and no errors were detected.
+     */
+    if (!evaluate)
+    {
+	// Not evaluating, which means the return value is unknown.  This
+	// matters for giving error messages.
+	rettv->v_type = VAR_UNKNOWN;
+    }
+    else if (error == ERROR_NONE)
     {
 	char_u *rfname = fname;
 
