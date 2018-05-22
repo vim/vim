@@ -999,7 +999,7 @@ it behaves in a strange way.
 				pointer instead of the cursor.
 				In the terminal this is the last known
 				position, which is usually at the last click
-				or release (mouse movement is irrelevalt).
+				or release (mouse movement is irrelevant).
 
 Example: >
 	:popup File

@@ -14549,11 +14549,36 @@ Changed							*changed-8.1*
 Internal: A few C99 features are now allowed such as // comments and a
 comma after the last enum entry.  See |style-compiler|.
 
+Since patch 8.0.0029 removed support for older MS-Windows systems, only
+MS-Windows XP and later are supported.
+
 
 Added							*added-8.1*
 -----
 
 Various syntax, indent and other plugins were added.
+
+Quickfix improvements (by Yegappan Lakshmanan):
+	Added support for modifying any quickfix/location list in the quickfix
+	stack.
+	Added a unique identifier for every quickfix/location list.
+	Added support for associating any Vim type as a context information to
+	a quickfix/location list.
+	Enhanced the getqflist(), getloclist(), setqflist() and setloclist()
+	functions to get and set the various quickfix/location list attributes.
+	Added the QuickFixLine highlight group to highlight the current line
+	in the quickfix window.
+	The quickfix buffer b:changedtick variable is incremented for every
+	change to the contained quickfix list.
+	Added a changedtick variable to a quickfix/location list which is
+	incremented when the list is modified.
+	Added support for parsing text using 'errorformat' without creating a
+	new quickfix list.
+	Added support for the "module" item to a quickfix entry which can be
+	used for display purposes instead of a long file name.
+	Added support for freeing all the lists in the quickfix/location stack.
+	When opening a quickfix window using the :copen/:cwindow commands, the
+	supplied split modifiers are used.
 
 Functions:
 	All the term_ functions.
@@ -21591,7 +21616,7 @@ Files:      src/main.c
 
 Patch 8.0.1158
 Problem:    Still old style tests.
-Solution:   Convert serveral tests to new style. (Yegappan Lakshmanan)
+Solution:   Convert several tests to new style. (Yegappan Lakshmanan)
 Files:      src/Makefile, src/testdir/Make_all.mak, src/testdir/Make_vms.mms,
             src/testdir/main.aap, src/testdir/test33.in,
             src/testdir/test33.ok, src/testdir/test41.in,

@@ -39,7 +39,7 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Terminal emulator window:
-- Win32: Termdebug doesn't work, because gdb does not support mi2.
+- Win32: Termdebug doesn't work, because gdb does not support mi2 on a tty.
   This plugin: https://github.com/cpiger/NeoDebug  runs gdb as a job,
   redirecting input and output.
   Open new console for for program with: "set new-console on"
@@ -61,12 +61,12 @@ Terminal emulator window:
   after "run".  Everything else works, including communication channel.  Not
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
 
-Patch to refactor efm_to_regpat(). (Yegappan Lakshmanan, 2018 May 16, #2924)
+Does not build with MinGW out of the box:
+- _stat64 is not defined, need to use "struct stat" in vim.h
+- WINVER conflict, should use 0x0600 by default?
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
-
-Deprecate using  has("patch213")  always include the version number.
 
 On Win32 when not in the console and t_Co >= 256, allow using 'tgc'.
 (Nobuhiro Takasaki, #2833)  Also check t_Co.
@@ -123,11 +123,8 @@ CreateFile() returns ERROR_SHARING_VIOLATION (Linwei, 2018 May 5)
 Should add a test for every command line argument.  Check coverage for what is
 missing: --nofork, -A , -b, -h, etc.
 
-Completing a command sometimes results in duplicates, since 7.4.672.
-(Yegappan Lakshmanan, 2018 May 16)
-Duplication of completion suggestions for ":!hom".  Issue #539.
-Patch by Christian, 2016 Jan 29
-Another patch in #2733.
+Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
+Update 2018 March 12, #2711
 
 Improve the installer for MS-Windows.  There are a few alternatives:
 - Add silent install option. (Shane Lee, #751)
@@ -152,6 +149,7 @@ When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
 
 Patch to support "xxd -ps". (Erik Auerswald, 2018 May 1)
+Lacks a test.
 
 Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)
@@ -159,8 +157,6 @@ Jan 15, #2555)
 ":bufdo e" disabled syntax HL in windows other than the current. (BPJ)
 
 Check argument of systemlist(). (Pavlov)
-
-Patch to add reg_executing() and reg_recording(). (Hirohito Higashi, #2745)
 
 No maintainer for Vietnamese translations.
 No maintainer for Simplified Chinese translations.
@@ -1183,9 +1179,6 @@ Patch for building a 32bit Vim with 64bit MingW compiler.
 
 Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)
-
-Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
-Update 2018 March 12, #2711
 
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list

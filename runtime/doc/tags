@@ -4749,6 +4749,7 @@ PEP8	filetype.txt	/*PEP8*
 PHP_BracesAtCodeLevel	indent.txt	/*PHP_BracesAtCodeLevel*
 PHP_autoformatcomment	indent.txt	/*PHP_autoformatcomment*
 PHP_default_indenting	indent.txt	/*PHP_default_indenting*
+PHP_noArrowMatching	indent.txt	/*PHP_noArrowMatching*
 PHP_outdentSLComments	indent.txt	/*PHP_outdentSLComments*
 PHP_outdentphpescape	indent.txt	/*PHP_outdentphpescape*
 PHP_removeCRwhenUnix	indent.txt	/*PHP_removeCRwhenUnix*
@@ -8198,6 +8199,8 @@ redo-register	undo.txt	/*redo-register*
 ref	intro.txt	/*ref*
 reference	intro.txt	/*reference*
 reference_toc	help.txt	/*reference_toc*
+reg_executing()	eval.txt	/*reg_executing()*
+reg_recording()	eval.txt	/*reg_recording()*
 regexp	pattern.txt	/*regexp*
 regexp-changes-5.4	version5.txt	/*regexp-changes-5.4*
 register	sponsor.txt	/*register*
