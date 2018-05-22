@@ -871,8 +871,8 @@ getcount:
 		|| (nv_cmds[idx].cmd_flags & NV_NCH_ALW) == NV_NCH_ALW
 		|| (ca.cmdchar == 'q'
 		    && oap->op_type == OP_NOP
-		    && !Recording
-		    && !Exec_reg)
+		    && reg_recording == 0
+		    && reg_executing == 0)
 		|| ((ca.cmdchar == 'a' || ca.cmdchar == 'i')
 		    && (oap->op_type != OP_NOP || VIsual_active))))
     {
@@ -9324,7 +9324,7 @@ nv_record(cmdarg_T *cap)
 #endif
 	    /* (stop) recording into a named register, unless executing a
 	     * register */
-	    if (!Exec_reg && do_record(cap->nchar) == FAIL)
+	    if (reg_executing == 0 && do_record(cap->nchar) == FAIL)
 		clearopbeep(cap->oap);
     }
 }

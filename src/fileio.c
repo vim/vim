@@ -9274,7 +9274,7 @@ trigger_cursorhold(void)
 
     if (!did_cursorhold
 	    && has_cursorhold()
-	    && !Recording
+	    && reg_recording == 0
 	    && typebuf.tb_len == 0
 #ifdef FEAT_INS_EXPAND
 	    && !ins_compl_active()

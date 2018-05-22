@@ -1244,7 +1244,7 @@ gotchars(char_u *chars, int len)
     int		todo = len;
 
     /* remember how many chars were last recorded */
-    if (Recording)
+    if (reg_recording != 0)
 	last_recorded_len += len;
 
     buf[1] = NUL;
@@ -1254,7 +1254,7 @@ gotchars(char_u *chars, int len)
 	c = *s++;
 	updatescript(c);
 
-	if (Recording)
+	if (reg_recording != 0)
 	{
 	    buf[0] = c;
 	    add_buff(&recordbuff, buf, 1L);
@@ -2007,7 +2007,7 @@ vgetorpeek(int advance)
     init_typebuf();
     start_stuff();
     if (advance && typebuf.tb_maplen == 0)
-	Exec_reg = FALSE;
+	reg_executing = 0;
     do
     {
 /*

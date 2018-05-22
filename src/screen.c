@@ -10255,7 +10255,7 @@ showmode(void)
 	    && ((State & INSERT)
 		|| restart_edit
 		|| VIsual_active));
-    if (do_mode || Recording)
+    if (do_mode || reg_recording != 0)
     {
 	/*
 	 * Don't show mode right now, when not redrawing or inside a mapping.
@@ -10414,7 +10414,7 @@ showmode(void)
 
 	    need_clear = TRUE;
 	}
-	if (Recording
+	if (reg_recording != 0
 #ifdef FEAT_INS_EXPAND
 		&& edit_submode == NULL	    /* otherwise it gets too long */
 #endif
@@ -10489,7 +10489,7 @@ clearmode(void)
     int save_msg_col = msg_col;
 
     msg_pos_mode();
-    if (Recording)
+    if (reg_recording != 0)
 	recording_mode(HL_ATTR(HLF_CM));
     msg_clr_eos();
 
@@ -10504,7 +10504,7 @@ recording_mode(int attr)
     if (!shortmess(SHM_RECORDING))
     {
 	char_u s[4];
-	sprintf((char *)s, " @%c", Recording);
+	sprintf((char *)s, " @%c", reg_recording);
 	MSG_PUTS_ATTR(s, attr);
     }
 }

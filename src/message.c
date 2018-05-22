@@ -1025,7 +1025,7 @@ wait_return(int redraw)
     int		oldState;
     int		tmpState;
     int		had_got_int;
-    int		save_Recording;
+    int		save_reg_recording;
     FILE	*save_scriptout;
 
     if (redraw == TRUE)
@@ -1103,16 +1103,16 @@ wait_return(int redraw)
 	    /* Temporarily disable Recording. If Recording is active, the
 	     * character will be recorded later, since it will be added to the
 	     * typebuf after the loop */
-	    save_Recording = Recording;
+	    save_reg_recording = reg_recording;
 	    save_scriptout = scriptout;
-	    Recording = FALSE;
+	    reg_recording = 0;
 	    scriptout = NULL;
 	    c = safe_vgetc();
 	    if (had_got_int && !global_busy)
 		got_int = FALSE;
 	    --no_mapping;
 	    --allow_keys;
-	    Recording = save_Recording;
+	    reg_recording = save_reg_recording;
 	    scriptout = save_scriptout;
 
 #ifdef FEAT_CLIPBOARD

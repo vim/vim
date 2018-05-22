@@ -1091,14 +1091,14 @@ do_record(int c)
     yankreg_T	    *old_y_previous, *old_y_current;
     int		    retval;
 
-    if (Recording == FALSE)	    /* start recording */
+    if (reg_recording == 0)	    /* start recording */
     {
 	/* registers 0-9, a-z and " are allowed */
 	if (c < 0 || (!ASCII_ISALNUM(c) && c != '"'))
 	    retval = FAIL;
 	else
 	{
-	    Recording = c;
+	    reg_recording = c;
 	    showmode();
 	    regname = c;
 	    retval = OK;
@@ -1111,7 +1111,7 @@ do_record(int c)
 	 * needs to be removed again to put it in a register.  exec_reg then
 	 * adds the escaping back later.
 	 */
-	Recording = FALSE;
+	reg_recording = 0;
 	MSG("");
 	p = get_recorded();
 	if (p == NULL)
@@ -1318,7 +1318,7 @@ do_execreg(
 								      == FAIL)
 		return FAIL;
 	}
-	Exec_reg = TRUE;	/* disable the 'q' command */
+	reg_executing = regname == 0 ? '"' : regname; // disable "q" command
     }
     return retval;
 }

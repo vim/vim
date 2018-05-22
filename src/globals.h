@@ -933,8 +933,8 @@ EXTERN long	opcount INIT(= 0);	/* count for pending operator */
 EXTERN int exmode_active INIT(= 0);	/* zero, EXMODE_NORMAL or EXMODE_VIM */
 EXTERN int ex_no_reprint INIT(= FALSE); /* no need to print after z or p */
 
-EXTERN int Recording INIT(= FALSE);	/* TRUE when recording into a reg. */
-EXTERN int Exec_reg INIT(= FALSE);	/* TRUE when executing a register */
+EXTERN int reg_recording INIT(= 0);	/* register for recording  or zero */
+EXTERN int reg_executing INIT(= 0);	/* register being executed or zero */
 
 EXTERN int no_mapping INIT(= FALSE);	/* currently no mapping allowed */
 EXTERN int no_zero_mapping INIT(= 0);	/* mapping zero not allowed */

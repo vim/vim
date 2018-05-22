@@ -8698,7 +8698,7 @@ ins_esc(
      * When recording or for CTRL-O, need to display the new mode.
      * Otherwise remove the mode message.
      */
-    if (Recording || restart_edit != NUL)
+    if (reg_recording != 0 || restart_edit != NUL)
 	showmode();
     else if (p_smd)
 	MSG("");
