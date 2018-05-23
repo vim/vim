@@ -844,6 +844,14 @@ start_redo(long count, int old_redo)
 	if (c >= '1' && c < '9')
 	    ++c;
 	add_char_buff(&readbuf2, c);
+
+	/* the expression register should be re-evaluated */
+	if (c == '=')
+	{
+	    add_char_buff(&readbuf2, CAR);
+	    cmd_silent = TRUE;
+	}
+
 	c = read_redo(FALSE, old_redo);
     }
 
