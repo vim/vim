@@ -861,8 +861,8 @@ typedef struct {
 } qffields_T;
 
 /*
- * Parse the match for filename ('%f') specifier in regmatch and
- * return the matched value in 'fields->namebuf'.
+ * Parse the match for filename ('%f') pattern in regmatch.
+ * Return the matched value in 'fields->namebuf'.
  */
     static int
 qf_parse_fmt_f(int idx, regmatch_T *regmatch, int i, qffields_T *fields)
@@ -878,6 +878,10 @@ qf_parse_fmt_f(int idx, regmatch_T *regmatch, int i, qffields_T *fields)
     expand_env(regmatch->startp[i], fields->namebuf, CMDBUFFSIZE);
     *regmatch->endp[i] = c;
 
+    /*
+     * For separate filename patterns (%O, %P and %Q), the specified file
+     * should exist.
+     */
     if (vim_strchr((char_u *)"OPQ", idx) != NULL
 	    && mch_getperm(fields->namebuf) == -1)
 	return QF_FAIL;
@@ -886,8 +890,8 @@ qf_parse_fmt_f(int idx, regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the match for error number ('%n') specifier in regmatch and
- * return the matched value in 'fields->enr'.
+ * Parse the match for error number ('%n') pattern in regmatch.
+ * Return the matched value in 'fields->enr'.
  */
     static int
 qf_parse_fmt_n(regmatch_T *regmatch, int i, qffields_T *fields)
@@ -899,8 +903,8 @@ qf_parse_fmt_n(regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the match for line number (%l') specifier in regmatch and
- * return the matched value in 'fields->lnum'.
+ * Parse the match for line number (%l') pattern in regmatch.
+ * Return the matched value in 'fields->lnum'.
  */
     static int
 qf_parse_fmt_l(regmatch_T *regmatch, int i, qffields_T *fields)
@@ -912,8 +916,8 @@ qf_parse_fmt_l(regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the match for column number ('%c') specifier in regmatch and
- * return the matched value in 'fields->col'.
+ * Parse the match for column number ('%c') pattern in regmatch.
+ * Return the matched value in 'fields->col'.
  */
     static int
 qf_parse_fmt_c(regmatch_T *regmatch, int i, qffields_T *fields)
@@ -925,8 +929,8 @@ qf_parse_fmt_c(regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the match for error type ('%t') specifier in regmatch and
- * return the matched value in 'fields->type'.
+ * Parse the match for error type ('%t') pattern in regmatch.
+ * Return the matched value in 'fields->type'.
  */
     static int
 qf_parse_fmt_t(regmatch_T *regmatch, int i, qffields_T *fields)
@@ -938,8 +942,8 @@ qf_parse_fmt_t(regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the match for '%+' code from linebuf and return the matched line in
- * 'fields->errmsg'.
+ * Parse the match for '%+' format pattern. The whole matching line is included
+ * in the error string.  Return the matched line in 'fields->errmsg'.
  */
     static int
 qf_parse_fmt_plus(char_u *linebuf, int linelen, qffields_T *fields)
@@ -959,8 +963,8 @@ qf_parse_fmt_plus(char_u *linebuf, int linelen, qffields_T *fields)
 }
 
 /*
- * Parse the match for error message ('%m') specifier in regmatch and
- * return the matched value in 'fields->errmsg'.
+ * Parse the match for error message ('%m') pattern in regmatch.
+ * Return the matched value in 'fields->errmsg'.
  */
     static int
 qf_parse_fmt_m(regmatch_T *regmatch, int i, qffields_T *fields)
@@ -984,8 +988,8 @@ qf_parse_fmt_m(regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the match for rest of line ('%r') specifier and return the matched
- * value in 'tail'.
+ * Parse the match for rest of a single-line file message ('%r') pattern.
+ * Return the matched value in 'tail'.
  */
     static int
 qf_parse_fmt_r(regmatch_T *regmatch, int i, char_u **tail)
@@ -997,8 +1001,8 @@ qf_parse_fmt_r(regmatch_T *regmatch, int i, char_u **tail)
 }
 
 /*
- * Parse the match for the pointer line ('%p') specifier in regmatch and
- * return the matched value in 'fields->col'.
+ * Parse the match for the pointer line ('%p') pattern in regmatch.
+ * Return the matched value in 'fields->col'.
  */
     static int
 qf_parse_fmt_p(regmatch_T *regmatch, int i, qffields_T *fields)
@@ -1024,8 +1028,8 @@ qf_parse_fmt_p(regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the match for the virtual column number ('%v') specifier in
- * regmatch and return the matched value in 'fields->col'.
+ * Parse the match for the virtual column number ('%v') pattern in regmatch.
+ * Return the matched value in 'fields->col'.
  */
     static int
 qf_parse_fmt_v(regmatch_T *regmatch, int i, qffields_T *fields)
@@ -1038,8 +1042,8 @@ qf_parse_fmt_v(regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the match for the search text ('%s') specifier in regmatch and
- * return the matched value in 'fields->pattern'.
+ * Parse the match for the search text ('%s') pattern in regmatch.
+ * Return the matched value in 'fields->pattern'.
  */
     static int
 qf_parse_fmt_s(regmatch_T *regmatch, int i, qffields_T *fields)
@@ -1060,8 +1064,8 @@ qf_parse_fmt_s(regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the match for the module ('%o') specifier in regmatch and
- * return the matched value in 'fields->module'.
+ * Parse the match for the module ('%o') pattern in regmatch.
+ * Return the matched value in 'fields->module'.
  */
     static int
 qf_parse_fmt_o(regmatch_T *regmatch, int i, qffields_T *fields)
@@ -1078,10 +1082,10 @@ qf_parse_fmt_o(regmatch_T *regmatch, int i, qffields_T *fields)
 }
 
 /*
- * Parse the error format matches in 'regmatch' and set the values in 'fields'.
- * fmt_ptr contains the 'efm' format specifiers/prefixes that have a match.
- * Returns QF_OK if all the matches are successfully parsed. On failure,
- * returns QF_FAIL or QF_NOMEM.
+ * Parse the error format pattern matches in 'regmatch' and set the values in
+ * 'fields'.  fmt_ptr contains the 'efm' format specifiers/prefixes that have a
+ * match.  Returns QF_OK if all the matches are successfully parsed. On
+ * failure, returns QF_FAIL or QF_NOMEM.
  */
     static int
 qf_parse_match(
