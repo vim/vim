@@ -861,6 +861,223 @@ typedef struct {
 } qffields_T;
 
 /*
+ * Parse the match for filename ('%f') specifier in regmatch and
+ * return the matched value in 'fields->namebuf'.
+ */
+    static int
+qf_parse_fmt_f(int idx, regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    int c;
+
+    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+	return QF_FAIL;
+
+    /* Expand ~/file and $HOME/file to full path. */
+    c = *regmatch->endp[i];
+    *regmatch->endp[i] = NUL;
+    expand_env(regmatch->startp[i], fields->namebuf, CMDBUFFSIZE);
+    *regmatch->endp[i] = c;
+
+    if (vim_strchr((char_u *)"OPQ", idx) != NULL
+	    && mch_getperm(fields->namebuf) == -1)
+	return QF_FAIL;
+
+    return QF_OK;
+}
+
+/*
+ * Parse the match for error number ('%n') specifier in regmatch and
+ * return the matched value in 'fields->enr'.
+ */
+    static int
+qf_parse_fmt_n(regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    if (regmatch->startp[i] == NULL)
+	return QF_FAIL;
+    fields->enr = (int)atol((char *)regmatch->startp[i]);
+    return QF_OK;
+}
+
+/*
+ * Parse the match for line number (%l') specifier in regmatch and
+ * return the matched value in 'fields->lnum'.
+ */
+    static int
+qf_parse_fmt_l(regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    if (regmatch->startp[i] == NULL)
+	return QF_FAIL;
+    fields->lnum = atol((char *)regmatch->startp[i]);
+    return QF_OK;
+}
+
+/*
+ * Parse the match for column number ('%c') specifier in regmatch and
+ * return the matched value in 'fields->col'.
+ */
+    static int
+qf_parse_fmt_c(regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    if (regmatch->startp[i] == NULL)
+	return QF_FAIL;
+    fields->col = (int)atol((char *)regmatch->startp[i]);
+    return QF_OK;
+}
+
+/*
+ * Parse the match for error type ('%t') specifier in regmatch and
+ * return the matched value in 'fields->type'.
+ */
+    static int
+qf_parse_fmt_t(regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    if (regmatch->startp[i] == NULL)
+	return QF_FAIL;
+    fields->type = *regmatch->startp[i];
+    return QF_OK;
+}
+
+/*
+ * Parse the match for '%+' code from linebuf and return the matched line in
+ * 'fields->errmsg'.
+ */
+    static int
+qf_parse_fmt_plus(char_u *linebuf, int linelen, qffields_T *fields)
+{
+    char_u	*p;
+
+    if (linelen >= fields->errmsglen)
+    {
+	/* linelen + null terminator */
+	if ((p = vim_realloc(fields->errmsg, linelen + 1)) == NULL)
+	    return QF_NOMEM;
+	fields->errmsg = p;
+	fields->errmsglen = linelen + 1;
+    }
+    vim_strncpy(fields->errmsg, linebuf, linelen);
+    return QF_OK;
+}
+
+/*
+ * Parse the match for error message ('%m') specifier in regmatch and
+ * return the matched value in 'fields->errmsg'.
+ */
+    static int
+qf_parse_fmt_m(regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    char_u	*p;
+    int		len;
+
+    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+	return QF_FAIL;
+    len = (int)(regmatch->endp[i] - regmatch->startp[i]);
+    if (len >= fields->errmsglen)
+    {
+	/* len + null terminator */
+	if ((p = vim_realloc(fields->errmsg, len + 1)) == NULL)
+	    return QF_NOMEM;
+	fields->errmsg = p;
+	fields->errmsglen = len + 1;
+    }
+    vim_strncpy(fields->errmsg, regmatch->startp[i], len);
+    return QF_OK;
+}
+
+/*
+ * Parse the match for rest of line ('%r') specifier and return the matched
+ * value in 'tail'.
+ */
+    static int
+qf_parse_fmt_r(regmatch_T *regmatch, int i, char_u **tail)
+{
+    if (regmatch->startp[i] == NULL)
+	return QF_FAIL;
+    *tail = regmatch->startp[i];
+    return QF_OK;
+}
+
+/*
+ * Parse the match for the pointer line ('%p') specifier in regmatch and
+ * return the matched value in 'fields->col'.
+ */
+    static int
+qf_parse_fmt_p(regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    char_u	*match_ptr;
+
+    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+	return QF_FAIL;
+    fields->col = 0;
+    for (match_ptr = regmatch->startp[i];
+	    match_ptr != regmatch->endp[i]; ++match_ptr)
+    {
+	++fields->col;
+	if (*match_ptr == TAB)
+	{
+	    fields->col += 7;
+	    fields->col -= fields->col % 8;
+	}
+    }
+    ++fields->col;
+    fields->use_viscol = TRUE;
+    return QF_OK;
+}
+
+/*
+ * Parse the match for the virtual column number ('%v') specifier in
+ * regmatch and return the matched value in 'fields->col'.
+ */
+    static int
+qf_parse_fmt_v(regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    if (regmatch->startp[i] == NULL)
+	return QF_FAIL;
+    fields->col = (int)atol((char *)regmatch->startp[i]);
+    fields->use_viscol = TRUE;
+    return QF_OK;
+}
+
+/*
+ * Parse the match for the search text ('%s') specifier in regmatch and
+ * return the matched value in 'fields->pattern'.
+ */
+    static int
+qf_parse_fmt_s(regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    int		len;
+
+    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+	return QF_FAIL;
+    len = (int)(regmatch->endp[i] - regmatch->startp[i]);
+    if (len > CMDBUFFSIZE - 5)
+	len = CMDBUFFSIZE - 5;
+    STRCPY(fields->pattern, "^\\V");
+    STRNCAT(fields->pattern, regmatch->startp[i], len);
+    fields->pattern[len + 3] = '\\';
+    fields->pattern[len + 4] = '$';
+    fields->pattern[len + 5] = NUL;
+    return QF_OK;
+}
+
+/*
+ * Parse the match for the module ('%o') specifier in regmatch and
+ * return the matched value in 'fields->module'.
+ */
+    static int
+qf_parse_fmt_o(regmatch_T *regmatch, int i, qffields_T *fields)
+{
+    int		len;
+
+    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+	return QF_FAIL;
+    len = (int)(regmatch->endp[i] - regmatch->startp[i]);
+    if (len > CMDBUFFSIZE)
+	len = CMDBUFFSIZE;
+    STRNCAT(fields->module, regmatch->startp[i], len);
+    return QF_OK;
+}
+
+/*
  * Parse the error format matches in 'regmatch' and set the values in 'fields'.
  * fmt_ptr contains the 'efm' format specifiers/prefixes that have a match.
  * Returns QF_OK if all the matches are successfully parsed. On failure,
@@ -877,10 +1094,9 @@ qf_parse_match(
 	int		qf_multiscan,
 	char_u		**tail)
 {
-    char_u	*p;
     int		idx = fmt_ptr->prefix;
     int		i;
-    int		len;
+    int		status;
 
     if ((idx == 'C' || idx == 'Z') && !qf_multiline)
 	return QF_FAIL;
@@ -894,128 +1110,47 @@ qf_parse_match(
      * the 'errorformat' may cause the wrong submatch to be used.
      */
     if ((i = (int)fmt_ptr->addr[0]) > 0)		/* %f */
-    {
-	int c;
-
-	if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+	if (qf_parse_fmt_f(idx, regmatch, i, fields) == QF_FAIL)
 	    return QF_FAIL;
-
-	/* Expand ~/file and $HOME/file to full path. */
-	c = *regmatch->endp[i];
-	*regmatch->endp[i] = NUL;
-	expand_env(regmatch->startp[i], fields->namebuf, CMDBUFFSIZE);
-	*regmatch->endp[i] = c;
-
-	if (vim_strchr((char_u *)"OPQ", idx) != NULL
-		&& mch_getperm(fields->namebuf) == -1)
-	    return QF_FAIL;
-    }
     if ((i = (int)fmt_ptr->addr[1]) > 0)		/* %n */
-    {
-	if (regmatch->startp[i] == NULL)
+	if (qf_parse_fmt_n(regmatch, i, fields) == QF_FAIL)
 	    return QF_FAIL;
-	fields->enr = (int)atol((char *)regmatch->startp[i]);
-    }
     if ((i = (int)fmt_ptr->addr[2]) > 0)		/* %l */
-    {
-	if (regmatch->startp[i] == NULL)
+	if (qf_parse_fmt_l(regmatch, i, fields) == QF_FAIL)
 	    return QF_FAIL;
-	fields->lnum = atol((char *)regmatch->startp[i]);
-    }
     if ((i = (int)fmt_ptr->addr[3]) > 0)		/* %c */
-    {
-	if (regmatch->startp[i] == NULL)
+	if (qf_parse_fmt_c(regmatch, i, fields) == QF_FAIL)
 	    return QF_FAIL;
-	fields->col = (int)atol((char *)regmatch->startp[i]);
-    }
     if ((i = (int)fmt_ptr->addr[4]) > 0)		/* %t */
-    {
-	if (regmatch->startp[i] == NULL)
+	if (qf_parse_fmt_t(regmatch, i, fields) == QF_FAIL)
 	    return QF_FAIL;
-	fields->type = *regmatch->startp[i];
-    }
     if (fmt_ptr->flags == '+' && !qf_multiscan)	/* %+ */
     {
-	if (linelen >= fields->errmsglen)
-	{
-	    /* linelen + null terminator */
-	    if ((p = vim_realloc(fields->errmsg, linelen + 1)) == NULL)
-		return QF_NOMEM;
-	    fields->errmsg = p;
-	    fields->errmsglen = linelen + 1;
-	}
-	vim_strncpy(fields->errmsg, linebuf, linelen);
+	status = qf_parse_fmt_plus(linebuf, linelen, fields);
+	if (status != QF_OK)
+	    return status;
     }
     else if ((i = (int)fmt_ptr->addr[5]) > 0)	/* %m */
     {
-	if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
-	    return QF_FAIL;
-	len = (int)(regmatch->endp[i] - regmatch->startp[i]);
-	if (len >= fields->errmsglen)
-	{
-	    /* len + null terminator */
-	    if ((p = vim_realloc(fields->errmsg, len + 1)) == NULL)
-		return QF_NOMEM;
-	    fields->errmsg = p;
-	    fields->errmsglen = len + 1;
-	}
-	vim_strncpy(fields->errmsg, regmatch->startp[i], len);
+	status = qf_parse_fmt_m(regmatch, i, fields);
+	if (status != QF_OK)
+	    return status;
     }
     if ((i = (int)fmt_ptr->addr[6]) > 0)		/* %r */
-    {
-	if (regmatch->startp[i] == NULL)
+	if (qf_parse_fmt_r(regmatch, i, tail) == QF_FAIL)
 	    return QF_FAIL;
-	*tail = regmatch->startp[i];
-    }
     if ((i = (int)fmt_ptr->addr[7]) > 0)		/* %p */
-    {
-	char_u	*match_ptr;
-
-	if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+	if (qf_parse_fmt_p(regmatch, i, fields) == QF_FAIL)
 	    return QF_FAIL;
-	fields->col = 0;
-	for (match_ptr = regmatch->startp[i];
-		match_ptr != regmatch->endp[i]; ++match_ptr)
-	{
-	    ++fields->col;
-	    if (*match_ptr == TAB)
-	    {
-		fields->col += 7;
-		fields->col -= fields->col % 8;
-	    }
-	}
-	++fields->col;
-	fields->use_viscol = TRUE;
-    }
     if ((i = (int)fmt_ptr->addr[8]) > 0)		/* %v */
-    {
-	if (regmatch->startp[i] == NULL)
+	if (qf_parse_fmt_v(regmatch, i, fields) == QF_FAIL)
 	    return QF_FAIL;
-	fields->col = (int)atol((char *)regmatch->startp[i]);
-	fields->use_viscol = TRUE;
-    }
     if ((i = (int)fmt_ptr->addr[9]) > 0)		/* %s */
-    {
-	if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+	if (qf_parse_fmt_s(regmatch, i, fields) == QF_FAIL)
 	    return QF_FAIL;
-	len = (int)(regmatch->endp[i] - regmatch->startp[i]);
-	if (len > CMDBUFFSIZE - 5)
-	    len = CMDBUFFSIZE - 5;
-	STRCPY(fields->pattern, "^\\V");
-	STRNCAT(fields->pattern, regmatch->startp[i], len);
-	fields->pattern[len + 3] = '\\';
-	fields->pattern[len + 4] = '$';
-	fields->pattern[len + 5] = NUL;
-    }
     if ((i = (int)fmt_ptr->addr[10]) > 0)		/* %o */
-    {
-	if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+	if (qf_parse_fmt_o(regmatch, i, fields) == QF_FAIL)
 	    return QF_FAIL;
-	len = (int)(regmatch->endp[i] - regmatch->startp[i]);
-	if (len > CMDBUFFSIZE)
-	    len = CMDBUFFSIZE;
-	STRNCAT(fields->module, regmatch->startp[i], len);
-    }
 
     return QF_OK;
 }
@@ -3033,24 +3168,105 @@ theend:
 }
 
 /*
+ * Highlight attributes used for displaying entries from the quickfix list.
+ */
+static int	qfFileAttr;
+static int	qfSepAttr;
+static int	qfLineAttr;
+
+/*
+ * Display information about a single entry from the quickfix/location list.
+ * Used by ":clist/:llist" commands.
+ */
+    static void
+qf_list_entry(qf_info_T *qi, qfline_T *qfp, int qf_idx)
+{
+    char_u	*fname;
+    buf_T	*buf;
+    int		filter_entry;
+
+    fname = NULL;
+    if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
+	vim_snprintf((char *)IObuff, IOSIZE, "%2d %s", qf_idx,
+						(char *)qfp->qf_module);
+    else {
+	if (qfp->qf_fnum != 0
+		&& (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
+	{
+	    fname = buf->b_fname;
+	    if (qfp->qf_type == 1)	/* :helpgrep */
+		fname = gettail(fname);
+	}
+	if (fname == NULL)
+	    sprintf((char *)IObuff, "%2d", qf_idx);
+	else
+	    vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
+		    qf_idx, (char *)fname);
+    }
+
+    // Support for filtering entries using :filter /pat/ clist
+    // Match against the module name, file name, search pattern and
+    // text of the entry.
+    filter_entry = TRUE;
+    if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
+	filter_entry &= message_filtered(qfp->qf_module);
+    if (filter_entry && fname != NULL)
+	filter_entry &= message_filtered(fname);
+    if (filter_entry && qfp->qf_pattern != NULL)
+	filter_entry &= message_filtered(qfp->qf_pattern);
+    if (filter_entry)
+	filter_entry &= message_filtered(qfp->qf_text);
+    if (filter_entry)
+	return;
+
+    msg_putchar('\n');
+    msg_outtrans_attr(IObuff, qf_idx == qi->qf_lists[qi->qf_curlist].qf_index
+	    ? HL_ATTR(HLF_QFL) : qfFileAttr);
+
+    if (qfp->qf_lnum != 0)
+	msg_puts_attr((char_u *)":", qfSepAttr);
+    if (qfp->qf_lnum == 0)
+	IObuff[0] = NUL;
+    else if (qfp->qf_col == 0)
+	sprintf((char *)IObuff, "%ld", qfp->qf_lnum);
+    else
+	sprintf((char *)IObuff, "%ld col %d",
+		qfp->qf_lnum, qfp->qf_col);
+    sprintf((char *)IObuff + STRLEN(IObuff), "%s",
+	    (char *)qf_types(qfp->qf_type, qfp->qf_nr));
+    msg_puts_attr(IObuff, qfLineAttr);
+    msg_puts_attr((char_u *)":", qfSepAttr);
+    if (qfp->qf_pattern != NULL)
+    {
+	qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);
+	msg_puts(IObuff);
+	msg_puts_attr((char_u *)":", qfSepAttr);
+    }
+    msg_puts((char_u *)" ");
+
+    /* Remove newlines and leading whitespace from the text.  For an
+     * unrecognized line keep the indent, the compiler may mark a word
+     * with ^^^^. */
+    qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
+				? skipwhite(qfp->qf_text) : qfp->qf_text,
+				IObuff, IOSIZE);
+    msg_prt_line(IObuff, FALSE);
+    out_flush();		/* show one line at a time */
+}
+
+/*
  * ":clist": list all errors
  * ":llist": list all locations
  */
     void
 qf_list(exarg_T *eap)
 {
-    buf_T	*buf;
-    char_u	*fname;
     qfline_T	*qfp;
     int		i;
     int		idx1 = 1;
     int		idx2 = -1;
     char_u	*arg = eap->arg;
     int		plus = FALSE;
-    int		qfFileAttr;
-    int		qfSepAttr;
-    int		qfLineAttr;
-    int		filter_entry;
     int		all = eap->forceit;	/* if not :cl!, only show
 						   recognised errors */
     qf_info_T	*qi = &ql_info;
@@ -3123,75 +3339,9 @@ qf_list(exarg_T *eap)
 	    if (got_int)
 		break;
 
-	    fname = NULL;
-	    if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
-		vim_snprintf((char *)IObuff, IOSIZE, "%2d %s", i, (char *)qfp->qf_module);
-	    else {
-		if (qfp->qf_fnum != 0
-				&& (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
-		{
-		    fname = buf->b_fname;
-		    if (qfp->qf_type == 1)	/* :helpgrep */
-			fname = gettail(fname);
-		}
-		if (fname == NULL)
-		    sprintf((char *)IObuff, "%2d", i);
-		else
-		    vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
-							     i, (char *)fname);
-	    }
-
-	    // Support for filtering entries using :filter /pat/ clist
-	    // Match against the module name, file name, search pattern and
-	    // text of the entry.
-	    filter_entry = TRUE;
-	    if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
-		filter_entry &= message_filtered(qfp->qf_module);
-	    if (filter_entry && fname != NULL)
-		filter_entry &= message_filtered(fname);
-	    if (filter_entry && qfp->qf_pattern != NULL)
-		filter_entry &= message_filtered(qfp->qf_pattern);
-	    if (filter_entry)
-		filter_entry &= message_filtered(qfp->qf_text);
-	    if (filter_entry)
-		goto next_entry;
-
-	    msg_putchar('\n');
-	    msg_outtrans_attr(IObuff, i == qi->qf_lists[qi->qf_curlist].qf_index
-					   ? HL_ATTR(HLF_QFL) : qfFileAttr);
-
-	    if (qfp->qf_lnum != 0)
-		msg_puts_attr((char_u *)":", qfSepAttr);
-	    if (qfp->qf_lnum == 0)
-		IObuff[0] = NUL;
-	    else if (qfp->qf_col == 0)
-		sprintf((char *)IObuff, "%ld", qfp->qf_lnum);
-	    else
-		sprintf((char *)IObuff, "%ld col %d",
-						   qfp->qf_lnum, qfp->qf_col);
-	    sprintf((char *)IObuff + STRLEN(IObuff), "%s",
-				  (char *)qf_types(qfp->qf_type, qfp->qf_nr));
-	    msg_puts_attr(IObuff, qfLineAttr);
-	    msg_puts_attr((char_u *)":", qfSepAttr);
-	    if (qfp->qf_pattern != NULL)
-	    {
-		qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);
-		msg_puts(IObuff);
-		msg_puts_attr((char_u *)":", qfSepAttr);
-	    }
-	    msg_puts((char_u *)" ");
-
-	    /* Remove newlines and leading whitespace from the text.  For an
-	     * unrecognized line keep the indent, the compiler may mark a word
-	     * with ^^^^. */
-	    qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
-				     ? skipwhite(qfp->qf_text) : qfp->qf_text,
-							      IObuff, IOSIZE);
-	    msg_prt_line(IObuff, FALSE);
-	    out_flush();		/* show one line at a time */
+	    qf_list_entry(qi, qfp, i);
 	}
 
-next_entry:
 	qfp = qfp->qf_next;
 	if (qfp == NULL)
 	    break;
