@@ -865,7 +865,7 @@ typedef struct {
  * Return the matched value in 'fields->namebuf'.
  */
     static int
-qf_parse_fmt_f(int idx, regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_f(regmatch_T *regmatch, int i, qffields_T *fields, int idx)
 {
     int c;
 
@@ -1114,7 +1114,7 @@ qf_parse_match(
      * the 'errorformat' may cause the wrong submatch to be used.
      */
     if ((i = (int)fmt_ptr->addr[0]) > 0)		/* %f */
-	if (qf_parse_fmt_f(idx, regmatch, i, fields) == QF_FAIL)
+	if (qf_parse_fmt_f(regmatch, i, fields, idx) == QF_FAIL)
 	    return QF_FAIL;
     if ((i = (int)fmt_ptr->addr[1]) > 0)		/* %n */
 	if (qf_parse_fmt_n(regmatch, i, fields) == QF_FAIL)
