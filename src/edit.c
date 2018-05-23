@@ -4201,7 +4201,7 @@ expand_by_function(
 {
     list_T      *matchlist = NULL;
     dict_T	*matchdict = NULL;
-    char_u	*args[2];
+    typval_T	args[2];
     char_u	*funcname;
     pos_T	pos;
     win_T	*curwin_save;
@@ -4213,15 +4213,17 @@ expand_by_function(
 	return;
 
     /* Call 'completefunc' to obtain the list of matches. */
-    args[0] = (char_u *)"0";
-    args[1] = base;
+    args[0].v_type = VAR_NUMBER;
+    args[0].vval.v_number = 0;
+    args[1].v_type = VAR_STRING;
+    args[1].vval.v_string = base != NULL ? base : (char_u *)"";
 
     pos = curwin->w_cursor;
     curwin_save = curwin;
     curbuf_save = curbuf;
 
     /* Call a function, which returns a list or dict. */
-    if (call_vim_function(funcname, 2, args, FALSE, FALSE, &rettv) == OK)
+    if (call_vim_function(funcname, 2, args, &rettv, FALSE) == OK)
     {
 	switch (rettv.v_type)
 	{
@@ -5528,7 +5530,7 @@ ins_complete(int c, int enable_pum)
 	     * Call user defined function 'completefunc' with "a:findstart"
 	     * set to 1 to obtain the length of text to use for completion.
 	     */
-	    char_u	*args[2];
+	    typval_T	args[2];
 	    int		col;
 	    char_u	*funcname;
 	    pos_T	pos;
@@ -5548,8 +5550,10 @@ ins_complete(int c, int enable_pum)
 		return FAIL;
 	    }
 
-	    args[0] = (char_u *)"1";
-	    args[1] = NULL;
+	    args[0].v_type = VAR_NUMBER;
+	    args[0].vval.v_number = 1;
+	    args[1].v_type = VAR_STRING;
+	    args[1].vval.v_string = (char_u *)"";
 	    pos = curwin->w_cursor;
 	    curwin_save = curwin;
 	    curbuf_save = curbuf;
