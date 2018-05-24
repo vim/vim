@@ -865,24 +865,24 @@ typedef struct {
  * Return the matched value in 'fields->namebuf'.
  */
     static int
-qf_parse_fmt_f(regmatch_T *regmatch, int i, qffields_T *fields, int idx)
+qf_parse_fmt_f(regmatch_T *rmp, int midx, qffields_T *fields, int prefix)
 {
     int c;
 
-    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+    if (rmp->startp[midx] == NULL || rmp->endp[midx] == NULL)
 	return QF_FAIL;
 
     /* Expand ~/file and $HOME/file to full path. */
-    c = *regmatch->endp[i];
-    *regmatch->endp[i] = NUL;
-    expand_env(regmatch->startp[i], fields->namebuf, CMDBUFFSIZE);
-    *regmatch->endp[i] = c;
+    c = *rmp->endp[midx];
+    *rmp->endp[midx] = NUL;
+    expand_env(rmp->startp[midx], fields->namebuf, CMDBUFFSIZE);
+    *rmp->endp[midx] = c;
 
     /*
      * For separate filename patterns (%O, %P and %Q), the specified file
      * should exist.
      */
-    if (vim_strchr((char_u *)"OPQ", idx) != NULL
+    if (vim_strchr((char_u *)"OPQ", prefix) != NULL
 	    && mch_getperm(fields->namebuf) == -1)
 	return QF_FAIL;
 
@@ -894,11 +894,11 @@ qf_parse_fmt_f(regmatch_T *regmatch, int i, qffields_T *fields, int idx)
  * Return the matched value in 'fields->enr'.
  */
     static int
-qf_parse_fmt_n(regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_n(regmatch_T *rmp, int midx, qffields_T *fields)
 {
-    if (regmatch->startp[i] == NULL)
+    if (rmp->startp[midx] == NULL)
 	return QF_FAIL;
-    fields->enr = (int)atol((char *)regmatch->startp[i]);
+    fields->enr = (int)atol((char *)rmp->startp[midx]);
     return QF_OK;
 }
 
@@ -907,11 +907,11 @@ qf_parse_fmt_n(regmatch_T *regmatch, int i, qffields_T *fields)
  * Return the matched value in 'fields->lnum'.
  */
     static int
-qf_parse_fmt_l(regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_l(regmatch_T *rmp, int midx, qffields_T *fields)
 {
-    if (regmatch->startp[i] == NULL)
+    if (rmp->startp[midx] == NULL)
 	return QF_FAIL;
-    fields->lnum = atol((char *)regmatch->startp[i]);
+    fields->lnum = atol((char *)rmp->startp[midx]);
     return QF_OK;
 }
 
@@ -920,11 +920,11 @@ qf_parse_fmt_l(regmatch_T *regmatch, int i, qffields_T *fields)
  * Return the matched value in 'fields->col'.
  */
     static int
-qf_parse_fmt_c(regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_c(regmatch_T *rmp, int midx, qffields_T *fields)
 {
-    if (regmatch->startp[i] == NULL)
+    if (rmp->startp[midx] == NULL)
 	return QF_FAIL;
-    fields->col = (int)atol((char *)regmatch->startp[i]);
+    fields->col = (int)atol((char *)rmp->startp[midx]);
     return QF_OK;
 }
 
@@ -933,11 +933,11 @@ qf_parse_fmt_c(regmatch_T *regmatch, int i, qffields_T *fields)
  * Return the matched value in 'fields->type'.
  */
     static int
-qf_parse_fmt_t(regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_t(regmatch_T *rmp, int midx, qffields_T *fields)
 {
-    if (regmatch->startp[i] == NULL)
+    if (rmp->startp[midx] == NULL)
 	return QF_FAIL;
-    fields->type = *regmatch->startp[i];
+    fields->type = *rmp->startp[midx];
     return QF_OK;
 }
 
@@ -967,14 +967,14 @@ qf_parse_fmt_plus(char_u *linebuf, int linelen, qffields_T *fields)
  * Return the matched value in 'fields->errmsg'.
  */
     static int
-qf_parse_fmt_m(regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_m(regmatch_T *rmp, int midx, qffields_T *fields)
 {
     char_u	*p;
     int		len;
 
-    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+    if (rmp->startp[midx] == NULL || rmp->endp[midx] == NULL)
 	return QF_FAIL;
-    len = (int)(regmatch->endp[i] - regmatch->startp[i]);
+    len = (int)(rmp->endp[midx] - rmp->startp[midx]);
     if (len >= fields->errmsglen)
     {
 	/* len + null terminator */
@@ -983,7 +983,7 @@ qf_parse_fmt_m(regmatch_T *regmatch, int i, qffields_T *fields)
 	fields->errmsg = p;
 	fields->errmsglen = len + 1;
     }
-    vim_strncpy(fields->errmsg, regmatch->startp[i], len);
+    vim_strncpy(fields->errmsg, rmp->startp[midx], len);
     return QF_OK;
 }
 
@@ -992,11 +992,11 @@ qf_parse_fmt_m(regmatch_T *regmatch, int i, qffields_T *fields)
  * Return the matched value in 'tail'.
  */
     static int
-qf_parse_fmt_r(regmatch_T *regmatch, int i, char_u **tail)
+qf_parse_fmt_r(regmatch_T *rmp, int midx, char_u **tail)
 {
-    if (regmatch->startp[i] == NULL)
+    if (rmp->startp[midx] == NULL)
 	return QF_FAIL;
-    *tail = regmatch->startp[i];
+    *tail = rmp->startp[midx];
     return QF_OK;
 }
 
@@ -1005,15 +1005,15 @@ qf_parse_fmt_r(regmatch_T *regmatch, int i, char_u **tail)
  * Return the matched value in 'fields->col'.
  */
     static int
-qf_parse_fmt_p(regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_p(regmatch_T *rmp, int midx, qffields_T *fields)
 {
     char_u	*match_ptr;
 
-    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+    if (rmp->startp[midx] == NULL || rmp->endp[midx] == NULL)
 	return QF_FAIL;
     fields->col = 0;
-    for (match_ptr = regmatch->startp[i];
-	    match_ptr != regmatch->endp[i]; ++match_ptr)
+    for (match_ptr = rmp->startp[midx]; match_ptr != rmp->endp[midx];
+								++match_ptr)
     {
 	++fields->col;
 	if (*match_ptr == TAB)
@@ -1032,11 +1032,11 @@ qf_parse_fmt_p(regmatch_T *regmatch, int i, qffields_T *fields)
  * Return the matched value in 'fields->col'.
  */
     static int
-qf_parse_fmt_v(regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_v(regmatch_T *rmp, int midx, qffields_T *fields)
 {
-    if (regmatch->startp[i] == NULL)
+    if (rmp->startp[midx] == NULL)
 	return QF_FAIL;
-    fields->col = (int)atol((char *)regmatch->startp[i]);
+    fields->col = (int)atol((char *)rmp->startp[midx]);
     fields->use_viscol = TRUE;
     return QF_OK;
 }
@@ -1046,17 +1046,17 @@ qf_parse_fmt_v(regmatch_T *regmatch, int i, qffields_T *fields)
  * Return the matched value in 'fields->pattern'.
  */
     static int
-qf_parse_fmt_s(regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_s(regmatch_T *rmp, int midx, qffields_T *fields)
 {
     int		len;
 
-    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+    if (rmp->startp[midx] == NULL || rmp->endp[midx] == NULL)
 	return QF_FAIL;
-    len = (int)(regmatch->endp[i] - regmatch->startp[i]);
+    len = (int)(rmp->endp[midx] - rmp->startp[midx]);
     if (len > CMDBUFFSIZE - 5)
 	len = CMDBUFFSIZE - 5;
     STRCPY(fields->pattern, "^\\V");
-    STRNCAT(fields->pattern, regmatch->startp[i], len);
+    STRNCAT(fields->pattern, rmp->startp[midx], len);
     fields->pattern[len + 3] = '\\';
     fields->pattern[len + 4] = '$';
     fields->pattern[len + 5] = NUL;
@@ -1068,18 +1068,38 @@ qf_parse_fmt_s(regmatch_T *regmatch, int i, qffields_T *fields)
  * Return the matched value in 'fields->module'.
  */
     static int
-qf_parse_fmt_o(regmatch_T *regmatch, int i, qffields_T *fields)
+qf_parse_fmt_o(regmatch_T *rmp, int midx, qffields_T *fields)
 {
     int		len;
 
-    if (regmatch->startp[i] == NULL || regmatch->endp[i] == NULL)
+    if (rmp->startp[midx] == NULL || rmp->endp[midx] == NULL)
 	return QF_FAIL;
-    len = (int)(regmatch->endp[i] - regmatch->startp[i]);
+    len = (int)(rmp->endp[midx] - rmp->startp[midx]);
     if (len > CMDBUFFSIZE)
 	len = CMDBUFFSIZE;
-    STRNCAT(fields->module, regmatch->startp[i], len);
+    STRNCAT(fields->module, rmp->startp[midx], len);
     return QF_OK;
 }
+
+/*
+ * 'errorformat' format pattern parser functions.
+ * The '%f' and '%r' formats are parsed differently from other formats.
+ * See qf_parse_match() for details.
+ */
+static int (*qf_parse_fmt[FMT_PATTERNS])(regmatch_T *, int, qffields_T *) =
+{
+    NULL,
+    qf_parse_fmt_n,
+    qf_parse_fmt_l,
+    qf_parse_fmt_c,
+    qf_parse_fmt_t,
+    qf_parse_fmt_m,
+    NULL,
+    qf_parse_fmt_p,
+    qf_parse_fmt_v,
+    qf_parse_fmt_s,
+    qf_parse_fmt_o
+};
 
 /*
  * Parse the error format pattern matches in 'regmatch' and set the values in
@@ -1100,6 +1120,7 @@ qf_parse_match(
 {
     int		idx = fmt_ptr->prefix;
     int		i;
+    int		midx;
     int		status;
 
     if ((idx == 'C' || idx == 'Z') && !qf_multiline)
@@ -1113,48 +1134,27 @@ qf_parse_match(
      * We check for an actual submatch, because "\[" and "\]" in
      * the 'errorformat' may cause the wrong submatch to be used.
      */
-    if ((i = (int)fmt_ptr->addr[0]) > 0)		/* %f */
-	if (qf_parse_fmt_f(regmatch, i, fields, idx) == QF_FAIL)
-	    return QF_FAIL;
-    if ((i = (int)fmt_ptr->addr[1]) > 0)		/* %n */
-	if (qf_parse_fmt_n(regmatch, i, fields) == QF_FAIL)
-	    return QF_FAIL;
-    if ((i = (int)fmt_ptr->addr[2]) > 0)		/* %l */
-	if (qf_parse_fmt_l(regmatch, i, fields) == QF_FAIL)
-	    return QF_FAIL;
-    if ((i = (int)fmt_ptr->addr[3]) > 0)		/* %c */
-	if (qf_parse_fmt_c(regmatch, i, fields) == QF_FAIL)
-	    return QF_FAIL;
-    if ((i = (int)fmt_ptr->addr[4]) > 0)		/* %t */
-	if (qf_parse_fmt_t(regmatch, i, fields) == QF_FAIL)
-	    return QF_FAIL;
-    if (fmt_ptr->flags == '+' && !qf_multiscan)	/* %+ */
+    for (i = 0; i < FMT_PATTERNS; i++)
     {
-	status = qf_parse_fmt_plus(linebuf, linelen, fields);
+	status = QF_OK;
+	midx = (int)fmt_ptr->addr[i];
+	if (i == 0 && midx > 0)				/* %f */
+	    status = qf_parse_fmt_f(regmatch, midx, fields, idx);
+	else if (i == 5)
+	{
+	    if (fmt_ptr->flags == '+' && !qf_multiscan)	/* %+ */
+		status = qf_parse_fmt_plus(linebuf, linelen, fields);
+	    else if (midx > 0)				/* %m */
+		status = qf_parse_fmt_m(regmatch, midx, fields);
+	}
+	else if (i == 6 && midx > 0)			/* %r */
+	    status = qf_parse_fmt_r(regmatch, midx, tail);
+	else if (midx > 0)				/* others */
+	    status = (qf_parse_fmt[i])(regmatch, midx, fields);
+
 	if (status != QF_OK)
 	    return status;
     }
-    else if ((i = (int)fmt_ptr->addr[5]) > 0)	/* %m */
-    {
-	status = qf_parse_fmt_m(regmatch, i, fields);
-	if (status != QF_OK)
-	    return status;
-    }
-    if ((i = (int)fmt_ptr->addr[6]) > 0)		/* %r */
-	if (qf_parse_fmt_r(regmatch, i, tail) == QF_FAIL)
-	    return QF_FAIL;
-    if ((i = (int)fmt_ptr->addr[7]) > 0)		/* %p */
-	if (qf_parse_fmt_p(regmatch, i, fields) == QF_FAIL)
-	    return QF_FAIL;
-    if ((i = (int)fmt_ptr->addr[8]) > 0)		/* %v */
-	if (qf_parse_fmt_v(regmatch, i, fields) == QF_FAIL)
-	    return QF_FAIL;
-    if ((i = (int)fmt_ptr->addr[9]) > 0)		/* %s */
-	if (qf_parse_fmt_s(regmatch, i, fields) == QF_FAIL)
-	    return QF_FAIL;
-    if ((i = (int)fmt_ptr->addr[10]) > 0)		/* %o */
-	if (qf_parse_fmt_o(regmatch, i, fields) == QF_FAIL)
-	    return QF_FAIL;
 
     return QF_OK;
 }
