@@ -423,9 +423,14 @@ funct Test_undofile()
   " Test undofile() with 'undodir' set to to an existing directory.
   call mkdir('Xundodir')
   set undodir=Xundodir
-  let cwd_with_percent=substitute(getcwd() . '/Xfoo', '/', '%', 'g')
+  let cwd = getcwd()
+  if has('win32')
+    " Raplace windows drive such as C:... into C%...
+    let cwd=substitute(cwd, '^\([A-Z]\):', '\1%', 'g')
+  endif
+  let cwd=substitute(cwd . '/Xfoo', '/', '%', 'g')
   if has('persistent_undo')
-    call assert_equal('Xundodir/' . cwd_with_percent, undofile('Xfoo'))
+    call assert_equal('Xundodir/' . cwd, undofile('Xfoo'))
   else
     call assert_equal('', undofile('Xfoo'))
   endif
