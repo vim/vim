@@ -85,7 +85,7 @@ endfunc
 func FillBuffer()
   for i in range(1,13)
     put=i
-    " Set 'undolevels' to split undo. 
+    " Set 'undolevels' to split undo.
     exe "setg ul=" . &g:ul
   endfor
 endfunc
@@ -193,19 +193,19 @@ func Test_undolist()
   new
   set ul=100
 
-  let a=execute('undolist')
+  let a = execute('undolist')
   call assert_equal("\nNothing to undo", a)
 
   " 1 leaf (2 changes).
   call feedkeys('achange1', 'xt')
   call feedkeys('achange2', 'xt')
-  let a=execute('undolist')
+  let a = execute('undolist')
   call assert_match("^\nnumber changes  when  *saved\n *2  *2 .*$", a)
 
   " 2 leaves.
   call feedkeys('u', 'xt')
   call feedkeys('achange3\<Esc>', 'xt')
-  let a=execute('undolist')
+  let a = execute('undolist')
   call assert_match("^\nnumber changes  when  *saved\n *2  *2  *.*\n *3  *2 .*$", a)
   close!
 endfunc
@@ -339,7 +339,7 @@ endfunc
 " Also test this in an empty buffer.
 func Test_cmd_in_reg_undo()
   enew!
-  let @a="Ox\<Esc>jAy\<Esc>kdd"
+  let @a = "Ox\<Esc>jAy\<Esc>kdd"
   edit +/^$ test_undo.vim
   normal @au
   call assert_equal(0, &modified)
@@ -348,7 +348,7 @@ func Test_cmd_in_reg_undo()
   normal @au
   call assert_equal(0, &modified)
   only!
-  let @a=''
+  let @a = ''
 endfunc
 
 " This used to cause an illegal memory access
@@ -409,4 +409,36 @@ func Test_redo_empty_line()
   exe "norm\x16r\x160"
   exe "norm."
   bwipe!
+endfunc
+
+funct Test_undofile()
+  " Test undofile() without setting 'undodir'.
+  if has('persistent_undo')
+    call assert_equal(fnamemodify('.Xundofoo.un~', ':p'), undofile('Xundofoo'))
+  else
+    call assert_equal('', undofile('Xundofoo'))
+  endif
+  call assert_equal('', undofile(''))
+
+  " Test undofile() with 'undodir' set to to an existing directory.
+  call mkdir('Xundodir')
+  set undodir=Xundodir
+  let cwd = getcwd()
+  if has('win32')
+    " Replace windows drive such as C:... into C%...
+    let cwd = substitute(cwd, '^\([A-Z]\):', '\1%', 'g')
+  endif
+  let cwd = substitute(cwd . '/Xundofoo', '/', '%', 'g')
+  if has('persistent_undo')
+    call assert_equal('Xundodir/' . cwd, undofile('Xundofoo'))
+  else
+    call assert_equal('', undofile('Xundofoo'))
+  endif
+  call assert_equal('', undofile(''))
+  call delete('Xundodir', 'd')
+
+  " Test undofile() with 'undodir' set to a non-existing directory.
+  call assert_equal('', undofile('Xundofoo'))
+
+  set undodir&
 endfunc
