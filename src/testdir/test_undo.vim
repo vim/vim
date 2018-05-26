@@ -85,7 +85,7 @@ endfunc
 func FillBuffer()
   for i in range(1,13)
     put=i
-    " Set 'undolevels' to split undo. 
+    " Set 'undolevels' to split undo.
     exe "setg ul=" . &g:ul
   endfor
 endfunc
@@ -409,4 +409,31 @@ func Test_redo_empty_line()
   exe "norm\x16r\x160"
   exe "norm."
   bwipe!
+endfunc
+
+funct Test_undofile()
+  " Test undofile() without setting 'undodir'.
+  if has('persistent_undo')
+    call assert_equal(fnamemodify('.Xfoo.un~', ':p'), undofile('Xfoo'))
+  else
+    call assert_equal('', undofile('Xfoo'))
+  endif
+  call assert_equal('', undofile(''))
+
+  " Test undofile() with 'undodir' set to to an existing directory.
+  call mkdir('Xundodir')
+  set undodir=Xundodir
+  let cwd_with_percent=substitute(getcwd() . '/Xfoo', '/', '%', 'g')
+  if has('persistent_undo')
+    call assert_equal('Xundodir/' . cwd_with_percent, undofile('Xfoo'))
+  else
+    call assert_equal('', undofile('Xfoo'))
+  endif
+  call assert_equal('', undofile(''))
+  call delete('Xundodir', 'd')
+
+  " Test undofile() with 'undodir' set to a non-existing directory.
+  call assert_equal('', undofile('Xfoo'))
+
+  set undodir&
 endfunc
