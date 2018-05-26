@@ -270,7 +270,7 @@ func Test_terminal_scroll()
 endfunc
 
 func Test_terminal_scrollback()
-  let buf = Run_shell_in_terminal({})
+  let buf = Run_shell_in_terminal({'term_rows': 15})
   set termwinscroll=100
   call writefile(range(150), 'Xtext')
   if has('win32')
