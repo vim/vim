@@ -7640,6 +7640,7 @@ ex_sign(exarg_T *eap)
 			int	len;
 
 			arg += 5;
+			p -= backslash_halve(arg); // allow spaces
 # ifdef FEAT_MBYTE
 			/* Count cells and check for non-printable chars */
 			if (has_mbyte)

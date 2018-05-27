@@ -92,7 +92,7 @@ func Test_sign()
   call setline(1, ['A', 'B', 'C', 'D'])
 
   try
-    sign define Sign3 text=y texthl=DoesNotExist linehl=DoesNotExist icon=doesnotexist.xpm
+    sign define Sign3 text=xy texthl=DoesNotExist linehl=DoesNotExist icon=doesnotexist.xpm
   catch /E255:/
     " ignore error: E255: it can happens for guis.
   endtry
@@ -103,6 +103,33 @@ func Test_sign()
   call assert_notequal(fn, expand('%:p'))
   exe 'sign jump 43 file=' . fn
   call assert_equal('B', getline('.'))
+
+  " You can't define a sign with a non-printable character as text
+  call assert_fails( "sign define Sign4 text=\e linehl=Comment", 'E239:' )
+  call assert_fails( "sign define Sign4 text=a\e linehl=Comment", 'E239:' )
+  call assert_fails( "sign define Sign4 text=\ea linehl=Comment", 'E239:' )
+
+  " Only 1 or 2 character text is allowed
+  call assert_fails( "sign define Sign4 text=abc linehl=Comment", 'E239:' )
+  call assert_fails( "sign define Sign4 text= linehl=Comment", 'E239:' )
+  call assert_fails( "sign define Sign4 text=\ ab  linehl=Comment", 'E239:' )
+
+  " You _can_ define signs with whitespace
+  sign define Sign4 text=\ X linehl=Comment
+  sign undefine Sign4
+  sign define Sign4 linehl=Comment text=\ X
+  sign undefine Sign4
+
+  " And backslashes
+  sign define Sign4 text=\\\\ linehl=Comment
+  sign undefine Sign4
+  sign define Sign4 text=\\ linehl=Comment
+  sign undefine Sign4
+
+  sign define Sign5 text=X\  linehl=Comment
+  sign undefine Sign5
+  sign define Sign5 linehl=Comment text=X\ 
+  sign undefine Sign5
 
   " After undefining the sign, we should no longer be able to place it.
   sign undefine Sign1

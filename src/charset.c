@@ -2073,13 +2073,21 @@ rem_backslash(char_u *str)
  * Halve the number of backslashes in a file name argument.
  * For MS-DOS we only do this if the character after the backslash
  * is not a normal file character.
+ * Returns the number of characters removed.
  */
-    void
+    int
 backslash_halve(char_u *p)
 {
+    int num_removed=0;
     for ( ; *p; ++p)
+    {
 	if (rem_backslash(p))
+	{
 	    STRMOVE(p, p + 1);
+	    ++num_removed;
+	}
+    }
+    return num_removed;
 }
 
 /*

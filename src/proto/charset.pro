@@ -58,7 +58,7 @@ void vim_str2nr(char_u *start, int *prep, int *len, int what, varnumber_T *nptr,
 int hex2nr(int c);
 int hexhex2nr(char_u *p);
 int rem_backslash(char_u *str);
-void backslash_halve(char_u *p);
+int backslash_halve(char_u *p);
 char_u *backslash_halve_save(char_u *p);
 void ebcdic2ascii(char_u *buffer, int len);
 /* vim: set ft=c : */
