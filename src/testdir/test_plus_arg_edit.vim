@@ -1,7 +1,7 @@
 " Tests for complicated + argument to :edit command
 function Test_edit()
-  call writefile(["foo|bar"], "Xfile1") 
-  call writefile(["foo/bar"], "Xfile2") 
+  call writefile(["foo|bar"], "Xfile1")
+  call writefile(["foo/bar"], "Xfile2")
   edit +1|s/|/PIPE/|w Xfile1| e Xfile2|1 | s/\//SLASH/|w
   call assert_equal(["fooPIPEbar"], readfile("Xfile1"))
   call assert_equal(["fooSLASHbar"], readfile("Xfile2"))
@@ -15,7 +15,7 @@ func Test_edit_bad()
   endif
 
   " Test loading a utf8 file with bad utf8 sequences.
-  call writefile(["[\xff][\xc0\x20][\xe2\x89\xf0][\xc2\xc2]"], "Xfile") 
+  call writefile(["[\xff][\xc0\x20][\xe2\x89\xf0][\xc2\xc2]"], "Xfile")
   new
 
   " Without ++bad=..., the default behavior is like ++bad=?
@@ -30,6 +30,8 @@ func Test_edit_bad()
 
   e! ++enc=utf8 ++bad=keep Xfile
   call assert_equal("[\xff][\xc0\x20][\xe2\x89\xf0][\xc2\xc2]", getline(1))
+
+  call assert_fails('e! ++enc=utf8 ++bad=foo Xfile', 'E474:')
 
   bw!
   call delete('Xfile')
