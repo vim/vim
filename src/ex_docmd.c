@@ -5318,7 +5318,9 @@ get_bad_opt(char_u *p, exarg_T *eap)
 	eap->bad_char = BAD_DROP;
     else if (MB_BYTE2LEN(*p) == 1 && p[1] == NUL)
 	eap->bad_char = *p;
-    return FAIL;
+    else
+	return FAIL;
+    return OK;
 }
 #endif
 
