@@ -6355,13 +6355,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #ifdef FEAT_VTP
 	else if (STRICMP(name, "vcon") == 0)
-	{
-	    /* Required processing if vcon and termguicolors are associated */
-	    if (is_vtp_cmdexe() && is_term_win32())
-		n = has_vtp_working(); /* Look at term=win32 of cmd.exe only */
-	    else
-		n = 1;	/* This can be used anytime elsewhere */
-	}
+	    n = is_term_win32() ? has_vtp_working() : 1;
 #endif
 #ifdef FEAT_NETBEANS_INTG
 	else if (STRICMP(name, "netbeans_enabled") == 0)
