@@ -49,8 +49,10 @@ We will use "xx.po" as an example here, replace "xx" with the name of your
 language.
 
 - Edit Makefile to add xx to LANGUAGES and xx.mo to MOFILES.
-- Copy the header of an existing file, e.g., de.po, to xx.po.  Do not copy any
-  of the translated messages, delete everything after the "msgstr".
+- If you haven't done so already, run ./configure in the top vim directory
+  (i.e. go up two directories) and then come back here afterwards.
+- run "make vim.pot" and then "msginit -l xx", it will generate a vim.pot file
+  which is used by msginit to generate a correct xx.po file.
 - The remaining work is like updating, see the next section.
 
 
@@ -78,6 +80,8 @@ language.
 	/fuzzy\|^msgstr ""\(\n"\)\@!
 
     Remove the "#, fuzzy" line after adding the translation.
+    (If you translate using a po-editor, such as poedit,
+    this is done automatically)
 
     There is one special message:
 	msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
@@ -114,6 +118,9 @@ language.
     From the command line:
 	vim -S check.vim xx.po
 	make xx.mo
+
+    From poedit:
+	Just save the file, any errors will show up at the top of the editor.
 
     Look out for syntax errors and fix them.
 
