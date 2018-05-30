@@ -14,13 +14,15 @@ func Test_cd_up_and_down()
 endfunc
 
 func Test_cd_no_arg()
-  " Test that cd without argument goes to $HOME directory.
-  let path = getcwd()
-  cd
-  call assert_equal($HOME, getcwd())
-  call assert_notequal(path, getcwd())
-  exe 'cd ' . path
-  call assert_equal(path, getcwd())
+  " Test that cd without argument goes to $HOME directory on Unix systems.
+  if has('unix')
+    let path = getcwd()
+    cd
+    call assert_equal($HOME, getcwd())
+    call assert_notequal(path, getcwd())
+    exe 'cd ' . path
+    call assert_equal(path, getcwd())
+  endif
 endfunc
 
 func Test_cd_minus()
