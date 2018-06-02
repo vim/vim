@@ -393,7 +393,7 @@ endfunc
 
 func Test_cmdline_complete_user_names()
   if has('unix') && executable('whoami')
-    " Can make this test work on Windows?
+    " TODO: can wk make this test work on Windows?
     let whoami = systemlist('whoami')[0]
     let first_letter = whoami[0]
     if len(first_letter) > 0
@@ -412,7 +412,7 @@ funct Test_cmdline_complete_languages()
   call assert_match('^"language .*\<ctype\>.*\<messages\>.*\<time\>', @:)
 
   if has('unix')
-    " These tests don't work on Windows. lang appears to be 'C'
+    " TODO: these tests don't work on Windows. lang appears to be 'C'
     " but C does not appear in the completion. Why?
     call assert_match('^"language .*\<' . lang . '\>', @:)
 
