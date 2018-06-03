@@ -384,7 +384,8 @@ endfunc
 func s:get_sleep_cmd()
   if s:python != ''
     let cmd = s:python . " test_short_sleep.py"
-    let waittime = 500
+    " 500 was not enough for Travis
+    let waittime = 900
   else
     echo 'This will take five seconds...'
     let waittime = 2000
