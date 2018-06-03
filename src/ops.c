@@ -126,43 +126,47 @@ static int	fmt_check_par(linenr_T, int *, char_u **, int do_comments);
 static int	fmt_check_par(linenr_T);
 #endif
 
+// Flags for third item in "opchars".
+#define OPF_LINES  1	// operator always works on lines
+#define OPF_CHANGE 2	// operator changes text
+
 /*
  * The names of operators.
  * IMPORTANT: Index must correspond with defines in vim.h!!!
- * The third field indicates whether the operator always works on lines.
+ * The third field holds OPF_ flags.
  */
 static char opchars[][3] =
 {
-    {NUL, NUL, FALSE},	/* OP_NOP */
-    {'d', NUL, FALSE},	/* OP_DELETE */
-    {'y', NUL, FALSE},	/* OP_YANK */
-    {'c', NUL, FALSE},	/* OP_CHANGE */
-    {'<', NUL, TRUE},	/* OP_LSHIFT */
-    {'>', NUL, TRUE},	/* OP_RSHIFT */
-    {'!', NUL, TRUE},	/* OP_FILTER */
-    {'g', '~', FALSE},	/* OP_TILDE */
-    {'=', NUL, TRUE},	/* OP_INDENT */
-    {'g', 'q', TRUE},	/* OP_FORMAT */
-    {':', NUL, TRUE},	/* OP_COLON */
-    {'g', 'U', FALSE},	/* OP_UPPER */
-    {'g', 'u', FALSE},	/* OP_LOWER */
-    {'J', NUL, TRUE},	/* DO_JOIN */
-    {'g', 'J', TRUE},	/* DO_JOIN_NS */
-    {'g', '?', FALSE},	/* OP_ROT13 */
-    {'r', NUL, FALSE},	/* OP_REPLACE */
-    {'I', NUL, FALSE},	/* OP_INSERT */
-    {'A', NUL, FALSE},	/* OP_APPEND */
-    {'z', 'f', TRUE},	/* OP_FOLD */
-    {'z', 'o', TRUE},	/* OP_FOLDOPEN */
-    {'z', 'O', TRUE},	/* OP_FOLDOPENREC */
-    {'z', 'c', TRUE},	/* OP_FOLDCLOSE */
-    {'z', 'C', TRUE},	/* OP_FOLDCLOSEREC */
-    {'z', 'd', TRUE},	/* OP_FOLDDEL */
-    {'z', 'D', TRUE},	/* OP_FOLDDELREC */
-    {'g', 'w', TRUE},	/* OP_FORMAT2 */
-    {'g', '@', FALSE},	/* OP_FUNCTION */
-    {Ctrl_A, NUL, FALSE},	/* OP_NR_ADD */
-    {Ctrl_X, NUL, FALSE},	/* OP_NR_SUB */
+    {NUL, NUL, 0},			// OP_NOP
+    {'d', NUL, OPF_CHANGE},		// OP_DELETE
+    {'y', NUL, 0},			// OP_YANK
+    {'c', NUL, OPF_CHANGE},		// OP_CHANGE
+    {'<', NUL, OPF_LINES | OPF_CHANGE},	// OP_LSHIFT
+    {'>', NUL, OPF_LINES | OPF_CHANGE},	// OP_RSHIFT
+    {'!', NUL, OPF_LINES | OPF_CHANGE},	// OP_FILTER
+    {'g', '~', OPF_CHANGE},		// OP_TILDE
+    {'=', NUL, OPF_LINES | OPF_CHANGE},	// OP_INDENT
+    {'g', 'q', OPF_LINES | OPF_CHANGE},	// OP_FORMAT
+    {':', NUL, OPF_LINES},		// OP_COLON
+    {'g', 'U', OPF_CHANGE},		// OP_UPPER
+    {'g', 'u', OPF_CHANGE},		// OP_LOWER
+    {'J', NUL, OPF_LINES | OPF_CHANGE},	// DO_JOIN
+    {'g', 'J', OPF_LINES | OPF_CHANGE},	// DO_JOIN_NS
+    {'g', '?', OPF_CHANGE},		// OP_ROT13
+    {'r', NUL, OPF_CHANGE},		// OP_REPLACE
+    {'I', NUL, OPF_CHANGE},		// OP_INSERT
+    {'A', NUL, OPF_CHANGE},		// OP_APPEND
+    {'z', 'f', OPF_LINES},		// OP_FOLD
+    {'z', 'o', OPF_LINES},		// OP_FOLDOPEN
+    {'z', 'O', OPF_LINES},		// OP_FOLDOPENREC
+    {'z', 'c', OPF_LINES},		// OP_FOLDCLOSE
+    {'z', 'C', OPF_LINES},		// OP_FOLDCLOSEREC
+    {'z', 'd', OPF_LINES},		// OP_FOLDDEL
+    {'z', 'D', OPF_LINES},		// OP_FOLDDELREC
+    {'g', 'w', OPF_LINES | OPF_CHANGE},	// OP_FORMAT2
+    {'g', '@', OPF_CHANGE},		// OP_FUNCTION
+    {Ctrl_A, NUL, OPF_CHANGE},		// OP_NR_ADD
+    {Ctrl_X, NUL, OPF_CHANGE},		// OP_NR_SUB
 };
 
 /*
@@ -201,7 +205,16 @@ get_op_type(int char1, int char2)
     int
 op_on_lines(int op)
 {
-    return opchars[op][2];
+    return opchars[op][2] & OPF_LINES;
+}
+
+/*
+ * Return TRUE if operator "op" changes text.
+ */
+    int
+op_is_change(int op)
+{
+    return opchars[op][2] & OPF_CHANGE;
 }
 
 /*

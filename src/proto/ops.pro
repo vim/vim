@@ -1,6 +1,7 @@
 /* ops.c */
 int get_op_type(int char1, int char2);
 int op_on_lines(int op);
+int op_is_change(int op);
 int get_op_char(int optype);
 int get_extra_op_char(int optype);
 void op_shift(oparg_T *oap, int curs_top, int amount);

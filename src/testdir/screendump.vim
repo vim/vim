@@ -5,18 +5,17 @@ if exists('*CanRunVimInTerminal')
   finish
 endif
 
-" Need to be able to run terminal Vim with 256 colors.  On MS-Windows the
-" console only has 16 colors and the GUI can't run in a terminal.
-if !has('terminal') || has('win32')
-  func CanRunVimInTerminal()
-    return 0
-  endfunc
+" For most tests we need to be able to run terminal Vim with 256 colors.  On
+" MS-Windows the console only has 16 colors and the GUI can't run in a
+" terminal.
+func CanRunVimInTerminal()
+  return has('terminal') && !has('win32')
+endfunc
+
+" Skip the rest if there is no terminal feature at all.
+if !has('terminal')
   finish
 endif
-
-func CanRunVimInTerminal()
-  return 1
-endfunc
 
 source shared.vim
 
@@ -54,6 +53,7 @@ func RunVimInTerminal(arguments, options)
   let cols = get(a:options, 'cols', 75)
 
   let cmd = GetVimCommandClean()
+
   " Add -v to have gvim run in the terminal (if possible)
   let cmd .= ' -v ' . a:arguments
   let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': cols})
@@ -64,11 +64,12 @@ func RunVimInTerminal(arguments, options)
     let cols = term_getsize(buf)[1]
   endif
 
-  " Wait for "All" or "Top" of the ruler in the status line to be shown.  This
-  " can be quite slow (e.g. when using valgrind).
+  " Wait for "All" or "Top" of the ruler to be shown in the last line or in
+  " the status line of the last window. This can be quite slow (e.g. when
+  " using valgrind).
   " If it fails then show the terminal contents for debugging.
   try
-    call WaitFor({-> len(term_getline(buf, rows)) >= cols - 1})
+    call WaitFor({-> len(term_getline(buf, rows)) >= cols - 1 || len(term_getline(buf, rows - 1)) >= cols - 1})
   catch /timed out after/
     let lines = map(range(1, rows), {key, val -> term_getline(buf, val)})
     call assert_report('RunVimInTerminal() failed, screen contents: ' . join(lines, "<NL>"))
@@ -80,7 +81,7 @@ endfunc
 " Stop a Vim running in terminal buffer "buf".
 func StopVimInTerminal(buf)
   call assert_equal("running", term_getstatus(a:buf))
-  call term_sendkeys(a:buf, "\<Esc>\<Esc>:qa!\<cr>")
+  call term_sendkeys(a:buf, "\<Esc>:qa!\<cr>")
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
   only!
 endfunc

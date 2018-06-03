@@ -851,6 +851,10 @@ free_buffer(buf_T *buf)
 #ifdef FEAT_TERMINAL
     free_terminal(buf);
 #endif
+#ifdef FEAT_JOB_CHANNEL
+    vim_free(buf->b_prompt_text);
+    free_callback(buf->b_prompt_callback, buf->b_prompt_partial);
+#endif
 
     buf_hashtab_remove(buf);
 
@@ -5634,6 +5638,15 @@ bt_help(buf_T *buf)
 }
 
 /*
+ * Return TRUE if "buf" is a prompt buffer.
+ */
+    int
+bt_prompt(buf_T *buf)
+{
+    return buf != NULL && buf->b_p_bt[0] == 'p';
+}
+
+/*
  * Return TRUE if "buf" is a "nofile", "acwrite" or "terminal" buffer.
  * This means the buffer name is not a file name.
  */
@@ -5642,7 +5655,8 @@ bt_nofile(buf_T *buf)
 {
     return buf != NULL && ((buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f')
 	    || buf->b_p_bt[0] == 'a'
-	    || buf->b_p_bt[0] == 't');
+	    || buf->b_p_bt[0] == 't'
+	    || buf->b_p_bt[0] == 'p');
 }
 
 /*
@@ -5651,7 +5665,9 @@ bt_nofile(buf_T *buf)
     int
 bt_dontwrite(buf_T *buf)
 {
-    return buf != NULL && (buf->b_p_bt[0] == 'n' || buf->b_p_bt[0] == 't');
+    return buf != NULL && (buf->b_p_bt[0] == 'n'
+	         || buf->b_p_bt[0] == 't'
+	         || buf->b_p_bt[0] == 'p');
 }
 
     int

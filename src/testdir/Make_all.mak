@@ -147,6 +147,7 @@ NEW_TESTS = test_arabic.res \
 	    test_perl.res \
 	    test_plus_arg_edit.res \
 	    test_preview.res \
+	    test_prompt_buffer.res \
 	    test_profile.res \
 	    test_python2.res \
 	    test_python3.res \

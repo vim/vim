@@ -2141,6 +2141,13 @@ nv_diffgetput(int put, long count)
     exarg_T	ea;
     char_u	buf[30];
 
+#ifdef FEAT_JOB_CHANNEL
+    if (bt_prompt(curbuf))
+    {
+	vim_beep(BO_OPER);
+	return;
+    }
+#endif
     if (count == 0)
 	ea.arg = (char_u *)"";
     else

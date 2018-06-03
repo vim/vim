@@ -203,6 +203,9 @@ static unsigned  quote_meta(char_u *dest, char_u *str, int len);
 
 static void ins_redraw(int ready);
 static void ins_ctrl_v(void);
+#ifdef FEAT_JOB_CHANNEL
+static void init_prompt(int cmdchar_todo);
+#endif
 static void undisplay_dollar(void);
 static void insert_special(int, int, int);
 static void internal_format(int textwidth, int second_indent, int flags, int format_only, int c);
@@ -351,6 +354,9 @@ edit(
     int		inserted_space = FALSE;     /* just inserted a space */
     int		replaceState = REPLACE;
     int		nomove = FALSE;		    /* don't move cursor on return */
+#ifdef FEAT_JOB_CHANNEL
+    int		cmdchar_todo = cmdchar;
+#endif
 
     /* Remember whether editing was restarted after CTRL-O. */
     did_restart_edit = restart_edit;
@@ -705,6 +711,14 @@ edit(
 	/* Close folds where the cursor isn't, according to 'foldclose' */
 	if (!char_avail())
 	    foldCheckClose();
+#endif
+
+#ifdef FEAT_JOB_CHANNEL
+	if (bt_prompt(curbuf))
+	{
+	    init_prompt(cmdchar_todo);
+	    cmdchar_todo = NUL;
+	}
 #endif
 
 	/*
@@ -1374,6 +1388,18 @@ doESCkey:
 		goto doESCkey;
 	    }
 #endif
+#ifdef FEAT_JOB_CHANNEL
+	    if (bt_prompt(curbuf))
+	    {
+		buf_T *buf = curbuf;
+
+		invoke_prompt_callback();
+		if (curbuf != buf)
+		    // buffer changed, get out of Insert mode
+		    goto doESCkey;
+		break;
+	    }
+#endif
 	    if (ins_eol(c) == FAIL && !p_im)
 		goto doESCkey;	    /* out of memory */
 	    auto_format(FALSE, FALSE);
@@ -1807,6 +1833,58 @@ edit_putchar(int c, int highlight)
 	screen_putchar(c, pc_row, pc_col, attr);
     }
 }
+
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+/*
+ * Return the effective prompt for the current buffer.
+ */
+    char_u *
+prompt_text(void)
+{
+    if (curbuf->b_prompt_text == NULL)
+	return (char_u *)"% ";
+    return curbuf->b_prompt_text;
+}
+
+/*
+ * Prepare for prompt mode: Make sure the last line has the prompt text.
+ * Move the cursor to this line.
+ */
+    static void
+init_prompt(int cmdchar_todo)
+{
+    char_u *prompt = prompt_text();
+    char_u *text;
+
+    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+    text = ml_get_curline();
+    if (STRNCMP(text, prompt, STRLEN(prompt)) != 0)
+    {
+	// prompt is missing, insert it or append a line with it
+	if (*text == NUL)
+	    ml_replace(curbuf->b_ml.ml_line_count, prompt, TRUE);
+	else
+	    ml_append(curbuf->b_ml.ml_line_count, prompt, 0, FALSE);
+	curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+	coladvance((colnr_T)MAXCOL);
+	changed_bytes(curbuf->b_ml.ml_line_count, 0);
+    }
+    if (cmdchar_todo == 'A')
+	coladvance((colnr_T)MAXCOL);
+    if (cmdchar_todo == 'I' || curwin->w_cursor.col <= (int)STRLEN(prompt))
+	curwin->w_cursor.col = STRLEN(prompt);
+}
+
+/*
+ * Return TRUE if the cursor is in the editable position of the prompt line.
+ */
+    int
+prompt_curpos_editable()
+{
+    return curwin->w_cursor.lnum == curbuf->b_ml.ml_line_count
+	&& curwin->w_cursor.col >= (int)STRLEN(prompt_text());
+}
+#endif
 
 /*
  * Undo the previous edit_putchar().

@@ -22,6 +22,7 @@ The Netbeans interface also uses a channel. |netbeans|
 9. Starting a job without a channel	|job-start-nochannel|
 10. Job options				|job-options|
 11. Controlling a job			|job-control|
+12. Using a prompt buffer		|prompt-buffer|
 
 {Vi does not have any of these features}
 {only when compiled with the |+channel| feature for channel stuff}
@@ -769,6 +770,44 @@ signals.  E.g. to force a job to stop, "kill it": >
 	job_stop(job, "kill")
 
 For more options see |job_stop()|.
+
+==============================================================================
+12. Using a prompt buffer				*prompt-buffer*
+
+If you want to type input for the job in a Vim window you have a few options:
+- Use a normal buffer and handle all possible commands yourself.
+  This will be complicated, since there are so many possible commands.
+- Use a terminal window.  This works well if what you type goes directly to
+  the job and the job output is directly displayed in the window.
+  See |terminal-window|.
+- Use a prompt window. This works well when entering a line for the job in Vim
+  while displaying (possibly filtered) output from the job.
+
+A prompt buffer is created by setting 'buftype' to "prompt". You would
+normally only do that in a newly created buffer.
+
+The user can edit and enter one line of text at the very last line of the
+buffer.  When pressing Enter in the prompt line the callback set with
+|prompt_setcallback()| is invoked.  It would normally send the line to a job.
+Another callback would receive the output from the job and display it in the
+buffer, below the prompt (and above the next prompt).
+
+Only the text in the last line, after the prompt, is editable. The rest of the
+buffer is not modifiable with Normal mode commands.  It can be modified by
+calling functions, such as |append()|.  Using other commands may mess up the
+buffer.
+
+After setting 'buftype' to "prompt" Vim does not automatically start Insert
+mode, use `:startinsert` if you want to enter Insert mode, so that the user
+can start typing a line.
+
+The text of the prompt can be set with the |prompt_setprompt()| function.
+
+The user can go to Normal mode and navigate through the buffer.  This can be
+useful see older output or copy text.
+
+Any command that starts Insert mode, such as "a", "i", "A" and "I", will move
+the cursor to the last line, after the prompt.
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1394,6 +1394,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			manually)
 	  terminal	buffer for a |terminal| (you are not supposed to set
 			this manually)
+	  prompt	buffer where only the last line can be edited, meant
+			to be used by a plugin, see |prompt-buffer|
+			{only when compiled with the |+channel| feature}
 
 	This option is used together with 'bufhidden' and 'swapfile' to
 	specify special kinds of buffers.   See |special-buffers|.
@@ -4264,7 +4267,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imactivatefunc' 'imaf'	string (default "")
 			global
 			{not in Vi}
-			{only available when compiled with |+mbyte|}
+			{only available when compiled with the |+multi_byte|
+			feature}
 	This option specifies a function that will be called to
 	activate or deactivate the Input Method.
 	It is not used in the GUI.
@@ -4316,7 +4320,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imcmdline' 'imc'	boolean (default off)
 			global
 			{not in Vi}
-			{only available when compiled with |+mbyte|}
+			{only available when compiled with the |+multi_byte|
+			feature}
 	When set the Input Method is always on when starting to edit a command
 	line, unless entering a search pattern (see 'imsearch' for that).
 	Setting this option is useful when your input method allows entering
@@ -4327,7 +4332,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imdisable' 'imd'	boolean (default off, on for some systems (SGI))
 			global
 			{not in Vi}
-			{only available when compiled with |+mbyte|}
+			{only available when compiled with the |+multi_byte|
+			feature}
 	When set the Input Method is never used.  This is useful to disable
 	the IM when it doesn't work properly.
 	Currently this option is on by default for SGI/IRIX machines.  This
@@ -4380,7 +4386,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imstatusfunc' 'imsf'	string (default "")
 			global
 			{not in Vi}
-			{only available when compiled with |+mbyte|}
+			{only available when compiled with the |+multi_byte|
+			feature}
 	This option specifies a function that is called to obtain the status
 	of Input Method.  It must return a positive number when IME is active.
 	It is not used in the GUI.

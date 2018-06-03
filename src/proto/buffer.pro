@@ -59,6 +59,7 @@ void write_viminfo_bufferlist(FILE *fp);
 int bt_quickfix(buf_T *buf);
 int bt_terminal(buf_T *buf);
 int bt_help(buf_T *buf);
+int bt_prompt(buf_T *buf);
 int bt_nofile(buf_T *buf);
 int bt_dontwrite(buf_T *buf);
 int bt_dontwrite_msg(buf_T *buf);

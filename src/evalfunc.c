@@ -294,6 +294,10 @@ static void f_pow(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_prevnonblank(typval_T *argvars, typval_T *rettv);
 static void f_printf(typval_T *argvars, typval_T *rettv);
+#ifdef FEAT_JOB_CHANNEL
+static void f_prompt_setcallback(typval_T *argvars, typval_T *rettv);
+static void f_prompt_setprompt(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_pumvisible(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_PYTHON3
 static void f_py3eval(typval_T *argvars, typval_T *rettv);
@@ -744,6 +748,10 @@ static struct fst
 #endif
     {"prevnonblank",	1, 1, f_prevnonblank},
     {"printf",		1, 19, f_printf},
+#ifdef FEAT_JOB_CHANNEL
+    {"prompt_setcallback", 2, 2, f_prompt_setcallback},
+    {"prompt_setprompt", 2, 2, f_prompt_setprompt},
+#endif
     {"pumvisible",	0, 0, f_pumvisible},
 #ifdef FEAT_PYTHON3
     {"py3eval",		1, 1, f_py3eval},
@@ -1240,6 +1248,11 @@ f_append(typval_T *argvars, typval_T *rettv)
 	appended_lines_mark(lnum, added);
 	if (curwin->w_cursor.lnum > lnum)
 	    curwin->w_cursor.lnum += added;
+#ifdef FEAT_JOB_CHANNEL
+	if (bt_prompt(curbuf) && (State & INSERT))
+	    // show the line with the prompt
+	    update_topline();
+#endif
     }
     else
 	rettv->vval.v_number = 1;	/* Failed */
@@ -8378,6 +8391,57 @@ f_printf(typval_T *argvars, typval_T *rettv)
     }
     did_emsg |= saved_did_emsg;
 }
+
+#ifdef FEAT_JOB_CHANNEL
+/*
+ * "prompt_setcallback({buffer}, {callback})" function
+ */
+    static void
+f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf;
+    char_u	*callback;
+    partial_T	*partial;
+
+    if (check_secure())
+	return;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    if (buf == NULL)
+	return;
+
+    callback = get_callback(&argvars[1], &partial);
+    if (callback == NULL)
+	return;
+
+    free_callback(buf->b_prompt_callback, buf->b_prompt_partial);
+    if (partial == NULL)
+	buf->b_prompt_callback = vim_strsave(callback);
+    else
+	/* pointer into the partial */
+	buf->b_prompt_callback = callback;
+    buf->b_prompt_partial = partial;
+}
+
+/*
+ * "prompt_setprompt({buffer}, {text})" function
+ */
+    static void
+f_prompt_setprompt(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf;
+    char_u	*text;
+
+    if (check_secure())
+	return;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    if (buf == NULL)
+	return;
+
+    text = get_tv_string(&argvars[1]);
+    vim_free(buf->b_prompt_text);
+    buf->b_prompt_text = vim_strsave(text);
+}
+#endif
 
 /*
  * "pumvisible()" function

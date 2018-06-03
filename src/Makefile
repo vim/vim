@@ -2252,6 +2252,7 @@ test_arglist \
 	test_popup \
 	test_preview \
 	test_profile \
+	test_prompt_buffer \
 	test_put \
 	test_python2 \
 	test_python3 \
