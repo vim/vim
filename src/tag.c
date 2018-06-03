@@ -2638,6 +2638,7 @@ get_tagfname(
 {
     char_u		*fname = NULL;
     char_u		*r_ptr;
+    int			i;
 
     if (first)
 	vim_memset(tnp, 0, sizeof(tagname_T));
@@ -2679,6 +2680,10 @@ get_tagfname(
 	    ++tnp->tn_hf_idx;
 	    STRCPY(buf, p_hf);
 	    STRCPY(gettail(buf), "tags");
+
+	    for (i = 0; i < tag_fnames.ga_len; ++i)
+		if (STRCMP(buf, ((char_u **)(tag_fnames.ga_data))[i]) == 0)
+		    return FAIL; /* Avoid duplicated tags file names */
 	}
 	else
 	    vim_strncpy(buf, ((char_u **)(tag_fnames.ga_data))[
