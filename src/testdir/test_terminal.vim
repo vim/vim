@@ -580,6 +580,10 @@ func Test_terminal_write_stdin()
   if !executable('wc')
     throw 'skipped: wc command not available'
   endif
+  if has('win32')
+    " TODO: enable once writing to stdin works on MS-Windows
+    return
+  endif
   new
   call setline(1, ['one', 'two', 'three'])
   %term wc
