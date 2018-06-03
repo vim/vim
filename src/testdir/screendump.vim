@@ -81,7 +81,11 @@ endfunc
 " Stop a Vim running in terminal buffer "buf".
 func StopVimInTerminal(buf)
   call assert_equal("running", term_getstatus(a:buf))
-  call term_sendkeys(a:buf, "\<Esc>:qa!\<cr>")
+
+  " CTRL-O : works both in Normal mode and Insert mode to start a command line.
+  " In Command-line it's inserted, the CTRL-U removes it again.
+  call term_sendkeys(a:buf, "\<C-O>\<C-U>:qa!\<cr>")
+
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
   only!
 endfunc
