@@ -2680,6 +2680,7 @@ get_tagfname(
 	    ++tnp->tn_hf_idx;
 	    STRCPY(buf, p_hf);
 	    STRCPY(gettail(buf), "tags");
+	    simplify_filename(buf);
 
 	    for (i = 0; i < tag_fnames.ga_len; ++i)
 		if (STRCMP(buf, ((char_u **)(tag_fnames.ga_data))[i]) == 0)
