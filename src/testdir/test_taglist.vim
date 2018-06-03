@@ -71,7 +71,10 @@ func Test_tagfiles()
   call assert_equal(['Xtags1', 'Xtags2'], tagfiles())
 
   help
-  call assert_equal(['../../runtime/doc/tags'], tagfiles())
+  let tf = tagfiles()
+  call assert_equal(1, len(tf))
+  call assert_equal(fnamemodify(expand('$VIMRUNTIME/doc/tags'), ':p:gs?\\?/?'),
+	\           fnamemodify(tf[0], ':p:gs?\\?/?'))
   helpclose
   call assert_equal(['Xtags1', 'Xtags2'], tagfiles())
   set tags&
