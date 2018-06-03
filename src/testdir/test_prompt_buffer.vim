@@ -11,7 +11,10 @@ func Test_prompt_basic()
   " We need to use a terminal window to be able to feed keys without leaving
   " Insert mode.
   if !has('terminal')
-    call assert_report('no terminal')
+    return
+  endif
+  if has('win32')
+    " TODO: make this work on MS-Windows
     return
   endif
   call writefile([
