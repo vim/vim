@@ -4193,11 +4193,18 @@ do_ecmd(
 	check_arg_idx(curwin);
 
 	/* If autocommands change the cursor position or topline, we should
-	 * keep it.  Also when it moves within a line. */
+	 * keep it.  Also when it moves within a line. But not when it moves
+	 * to the first non-blank. */
 	if (!EQUAL_POS(curwin->w_cursor, orig_pos))
 	{
-	    newlnum = curwin->w_cursor.lnum;
-	    newcol = curwin->w_cursor.col;
+	    char_u *text = ml_get_curline();
+
+	    if (curwin->w_cursor.lnum != orig_pos.lnum
+		    || curwin->w_cursor.col != (int)(skipwhite(text) - text))
+	    {
+		newlnum = curwin->w_cursor.lnum;
+		newcol = curwin->w_cursor.col;
+	    }
 	}
 	if (curwin->w_topline == topline)
 	    topline = 0;
