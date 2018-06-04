@@ -84,7 +84,7 @@ func StopVimInTerminal(buf)
 
   " CTRL-O : works both in Normal mode and Insert mode to start a command line.
   " In Command-line it's inserted, the CTRL-U removes it again.
-  call term_sendkeys(a:buf, "\<C-O>\<C-U>:qa!\<cr>")
+  call term_sendkeys(a:buf, "\<C-O>:\<C-U>qa!\<cr>")
 
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
   only!
