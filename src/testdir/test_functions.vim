@@ -950,17 +950,19 @@ func Test_reg_executing_and_recording()
 endfunc
 
 func Test_libcall_libcallnr()
+  " TODO:
+  " - it should be possible to test libcall()/libcallnr() on Windows.
+  " - on macOs, the test will not find /lib64/libc.so.[1-9] so the test
+  "   will be skipped. Can we test libcall()/libcallnr() on macOs?
   if !has('unix') || !has('libcall')
-    " TODO: it should be possible to test libcall()/libcallnr() on Windows.
     return
   endif
 
-  let libc = split(glob('/lib64/libc.so.[1-9]'), "\n")[-1]
-  if len(libc) == 0
-     let libc = split(glob('/lib/libc.so.[1-9]'), "\n")[-1]
-  endif
+  let libs = split(glob('/lib/libc.so.[1-9]'), "\n")
+        \  + split(glob('/lib64/libc.so.[1-9]'), "\n")
+  if len(libs) > 0
+    let libc = libs[-1]
 
-  if len(libc) > 0
     let home = libcall(libc, 'getenv', 'HOME')
     call assert_equal($HOME, home)
 
