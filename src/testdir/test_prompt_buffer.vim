@@ -7,16 +7,20 @@ endif
 source shared.vim
 source screendump.vim
 
-func Test_prompt_basic()
+func CanTestPromptBuffer()
   " We need to use a terminal window to be able to feed keys without leaving
   " Insert mode.
   if !has('terminal')
-    return
+    return 0
   endif
   if has('win32')
-    " TODO: make this work on MS-Windows
-    return
+    " TODO: make the tests work on MS-Windows
+    return 0
   endif
+  return 1
+endfunc
+
+func WriteScript(name)
   call writefile([
 	\ 'func TextEntered(text)',
 	\ '  if a:text == "exit"',
@@ -44,8 +48,17 @@ func Test_prompt_basic()
 	\ 'set buftype=prompt',
 	\ 'call prompt_setcallback(bufnr(""), function("TextEntered"))',
 	\ 'startinsert',
-	\ ], 'Xpromptscript')
-  let buf = RunVimInTerminal('-S Xpromptscript', {})
+	\ ], a:name)
+endfunc
+
+func Test_prompt_basic()
+  if !CanTestPromptBuffer()
+    return
+  endif
+  let scriptName = 'XpromptscriptBasic'
+  call WriteScript(scriptName)
+
+  let buf = RunVimInTerminal('-S ' . scriptName, {})
   call WaitForAssert({-> assert_equal('%', term_getline(buf, 1))})
 
   call term_sendkeys(buf, "hello\<CR>")
@@ -57,5 +70,34 @@ func Test_prompt_basic()
   call WaitForAssert({-> assert_equal('other buffer', term_getline(buf, 1))})
 
   call StopVimInTerminal(buf)
-  call delete('Xpromptscript')
+  call delete(scriptName)
+endfunc
+
+func Test_prompt_editing()
+  if !CanTestPromptBuffer()
+    return
+  endif
+  let scriptName = 'XpromptscriptEditing'
+  call WriteScript(scriptName)
+
+  let buf = RunVimInTerminal('-S ' . scriptName, {})
+  call WaitForAssert({-> assert_equal('%', term_getline(buf, 1))})
+
+  let bs = "\<BS>"
+  call term_sendkeys(buf, "hello" . bs . bs)
+  call WaitForAssert({-> assert_equal('% hel', term_getline(buf, 1))})
+
+  let left = "\<Left>"
+  call term_sendkeys(buf, left . left . left . bs . '-')
+  call WaitForAssert({-> assert_equal('% -hel', term_getline(buf, 1))})
+
+  let end = "\<End>"
+  call term_sendkeys(buf, end . "x")
+  call WaitForAssert({-> assert_equal('% -helx', term_getline(buf, 1))})
+
+  call term_sendkeys(buf, "\<C-U>exit\<CR>")
+  call WaitForAssert({-> assert_equal('other buffer', term_getline(buf, 1))})
+
+  call StopVimInTerminal(buf)
+  call delete(scriptName)
 endfunc

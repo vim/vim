@@ -5094,8 +5094,19 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
 
     while (*msg != NUL)
     {
-	send_keys_to_term(term, PTR2CHAR(msg), FALSE);
-	msg += MB_CPTR2LEN(msg);
+	int c;
+
+	if (*msg == K_SPECIAL && msg[1] != NUL && msg[2] != NUL)
+	{
+	    c = TO_SPECIAL(msg[1], msg[2]);
+	    msg += 3;
+	}
+	else
+	{
+	    c = PTR2CHAR(msg);
+	    msg += MB_CPTR2LEN(msg);
+	}
+	send_keys_to_term(term, c, FALSE);
     }
 }
 
