@@ -948,3 +948,29 @@ func Test_reg_executing_and_recording()
   delfunc s:save_reg_stat
   unlet s:reg_stat
 endfunc
+
+func Test_libcall_libcallnr()
+  if !has('unix') || !has('libcall')
+    " TODO: it should be possible to test libcall()/libcallnr() on Windows.
+    return
+  endif
+
+  let libc = split(glob('/lib64/libc.so.[1-9]'), "\n")[-1]
+  if len(libc) == 0
+     let libc = split(glob('/lib/libc.so.[1-9]'), "\n")[-1]
+  endif
+
+  if len(libc) > 0
+    let home = libcall(libc, 'getenv', 'HOME')
+    call assert_equal($HOME, home)
+
+    let pid = libcallnr(libc, 'getpid', '')
+    call assert_equal(getpid(), pid)
+
+    call assert_fails("call libcall(libc, 'Xdoesnotexist_', '')", 'E364:')
+    call assert_fails("call libcallnr(libc, 'Xdoesnotexist_', '')", 'E364:')
+  endif
+
+  call assert_fails("call libcall('Xdoesnotexist_', 'getenv', 'HOME')", 'E364:')
+  call assert_fails("call libcall('Xdoesnotexist_', 'getpid', '')", 'E364:')
+endfunc
