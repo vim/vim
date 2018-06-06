@@ -1411,11 +1411,10 @@ doESCkey:
 #ifdef FEAT_JOB_CHANNEL
 	    if (bt_prompt(curbuf))
 	    {
-		buf_T *buf = curbuf;
-
 		invoke_prompt_callback();
-		if (curbuf != buf)
-		    // buffer changed, get out of Insert mode
+		if (!bt_prompt(curbuf))
+		    // buffer changed to a non-prompt buffer, get out of
+		    // Insert mode
 		    goto doESCkey;
 		break;
 	    }
@@ -1906,6 +1905,8 @@ init_prompt(int cmdchar_todo)
 	coladvance((colnr_T)MAXCOL);
     if (cmdchar_todo == 'I' || curwin->w_cursor.col <= (int)STRLEN(prompt))
 	curwin->w_cursor.col = STRLEN(prompt);
+    /* Make sure the cursor is in a valid position. */
+    check_cursor();
 }
 
 /*
@@ -9467,7 +9468,7 @@ ins_bs(
 
     /* If deleted before the insertion point, adjust it */
     if (curwin->w_cursor.lnum == Insstart_orig.lnum
-				       && curwin->w_cursor.col < Insstart_orig.col)
+				  && curwin->w_cursor.col < Insstart_orig.col)
 	Insstart_orig.col = curwin->w_cursor.col;
 
     /* vi behaviour: the cursor moves backward but the character that
@@ -9517,6 +9518,11 @@ ins_mouse(int c)
 	     * previous one to stop insert there properly. */
 	    curwin = old_curwin;
 	    curbuf = curwin->w_buffer;
+#ifdef FEAT_JOB_CHANNEL
+	    if (bt_prompt(curbuf))
+		// Restart Insert mode when re-entering the prompt buffer.
+		curbuf->b_prompt_insert = 'A';
+#endif
 	}
 	start_arrow(curwin == old_curwin ? &tpos : NULL);
 	if (curwin != new_curwin && win_valid(new_curwin))

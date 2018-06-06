@@ -2115,12 +2115,21 @@ leaving_window(win_T *win)
     // When leaving the window (or closing the window) was done from a
     // callback we need to break out of the Insert mode loop.
     if (State & INSERT)
+    {
 	stop_insert_mode = TRUE;
+	if (bt_prompt(win->w_buffer) && win->w_buffer->b_prompt_insert == NUL)
+	    win->w_buffer->b_prompt_insert = 'A';
+    }
 }
 
     static void
 entering_window(win_T *win)
 {
+    // When switching to a prompt buffer that was in Insert mode, don't stop
+    // Insert mode, it may have been set in leaving_window().
+    if (bt_prompt(win->w_buffer) && win->w_buffer->b_prompt_insert != NUL)
+	stop_insert_mode = FALSE;
+
     // When entering the prompt window may restart Insert mode.
     restart_edit = win->w_buffer->b_prompt_insert;
 }
