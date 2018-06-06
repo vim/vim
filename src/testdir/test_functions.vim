@@ -950,29 +950,40 @@ func Test_reg_executing_and_recording()
 endfunc
 
 func Test_libcall_libcallnr()
-  " TODO:
-  " - it should be possible to test libcall()/libcallnr() on Windows.
-  " - on macOs, the test will not find /lib64/libc.so.[1-9] so the test
-  "   will be skipped. Can we test libcall()/libcallnr() on macOs?
-  if !has('unix') || !has('libcall')
+  if !has('libcall')
     return
   endif
 
-  let libs = split(glob('/lib/libc.so.[1-9]'), "\n")
-        \  + split(glob('/lib64/libc.so.[1-9]'), "\n")
-  if len(libs) > 0
-    let libc = libs[-1]
-
-    let home = libcall(libc, 'getenv', 'HOME')
-    call assert_equal($HOME, home)
-
-    let pid = libcallnr(libc, 'getpid', '')
-    call assert_equal(getpid(), pid)
-
-    call assert_fails("call libcall(libc, 'Xdoesnotexist_', '')", 'E364:')
-    call assert_fails("call libcallnr(libc, 'Xdoesnotexist_', '')", 'E364:')
+  if has('win32')
+    let libc = 'msvcrt.dll'
+  else
+    " TODO: on macOs, the test will not find /lib64/libc.so.[1-9] so the test
+    " will be skipped. Can we test libcall()/libcallnr() on macOs?
+    let libs = split(glob('/lib/libc.so.[1-9]'), "\n")
+          \  + split(glob('/lib64/libc.so.[1-9]'), "\n")
+    if len(libs) > 0
+      let libc = libs[-1]
+    endif
   endif
 
+  if len(libc) == 0
+    return
+  endif
+
+  let $X_TEST_ENV_VAR_ = 'foo'
+  call assert_equal('foo', libcall(libc, 'getenv', 'X_TEST_ENV_VAR_'))
+  unlet $X_TEST_ENV_VAR_
+
+  " If function returns NULL, libcall() should return an empty string.
+  call assert_equal('', libcall(libc, 'getenv', 'X_TEST_ENV_DOES_NOT_EXIT'))
+
+  " Test libcallnr() with string and integer argument.
+  call assert_equal(4, libcallnr(libc, 'strlen', 'abcd'))
+  call assert_equal(char2nr('A'), libcallnr(libc, 'toupper', char2nr('a')))
+
+  call assert_fails("call libcall(libc, 'Xdoesnotexist_', '')", 'E364:')
+  call assert_fails("call libcallnr(libc, 'Xdoesnotexist_', '')", 'E364:')
+
   call assert_fails("call libcall('Xdoesnotexist_', 'getenv', 'HOME')", 'E364:')
-  call assert_fails("call libcall('Xdoesnotexist_', 'getpid', '')", 'E364:')
+  call assert_fails("call libcallnr('Xdoesnotexist_', 'strlen', 'abcd')", 'E364:')
 endfunc
