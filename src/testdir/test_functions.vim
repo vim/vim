@@ -961,21 +961,20 @@ func Test_libcall_libcallnr()
     " will be skipped. Can we test libcall()/libcallnr() on macOs?
     let libs = split(glob('/lib/libc.so.[1-9]'), "\n")
           \  + split(glob('/lib64/libc.so.[1-9]'), "\n")
-    if len(libs) > 0
-      let libc = libs[-1]
+    if len(libs) == 0
+      return
     endif
+    let libc = libs[-1]
   endif
 
-  if !exists('libc') || len(libc) == 0
-    return
+  if has('win32')
+    call assert_equal($USERPROFILE, libcall(libc, 'getenv', 'USERPROFILE'))
+  else
+    call assert_equal($HOME, libcall(libc, 'getenv', 'HOME'))
   endif
-
-  let $X_TEST_ENV_VAR = 'foo'
-  call assert_equal('foo', libcall(libc, 'getenv', 'X_TEST_ENV_VAR'))
-  unlet $X_TEST_ENV_VAR
 
   " If function returns NULL, libcall() should return an empty string.
-  call assert_equal('', libcall(libc, 'getenv', 'X_TEST_ENV_DOES_NOT_EXIT'))
+  call assert_equal('', libcall(libc, 'getenv', 'X_ENV_DOES_NOT_EXIT'))
 
   " Test libcallnr() with string and integer argument.
   call assert_equal(4, libcallnr(libc, 'strlen', 'abcd'))
