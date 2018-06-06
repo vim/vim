@@ -2103,6 +2103,29 @@ win_equal_rec(
     }
 }
 
+#ifdef FEAT_JOB_CHANNEL
+    static void
+leaving_window(win_T *win)
+{
+    // When leaving a prompt window stop Insert mode and perhaps restart
+    // it when entering that window again.
+    win->w_buffer->b_prompt_insert = restart_edit;
+    restart_edit = NUL;
+
+    // When leaving the window (or closing the window) was done from a
+    // callback we need to break out of the Insert mode loop.
+    if (State & INSERT)
+	stop_insert_mode = TRUE;
+}
+
+    static void
+entering_window(win_T *win)
+{
+    // When entering the prompt window may restart Insert mode.
+    restart_edit = win->w_buffer->b_prompt_insert;
+}
+#endif
+
 /*
  * Close all windows for buffer "buf".
  */
@@ -2231,6 +2254,9 @@ close_last_window_tabpage(
 	    if (h != tabline_height())
 		shell_new_rows();
 	}
+#ifdef FEAT_JOB_CHANNEL
+	entering_window(curwin);
+#endif
 	/* Since goto_tabpage_tp above did not trigger *Enter autocommands, do
 	 * that now. */
 	apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
@@ -2296,6 +2322,9 @@ win_close(win_T *win, int free_buf)
 
     if (win == curwin)
     {
+#ifdef FEAT_JOB_CHANNEL
+	leaving_window(curwin);
+#endif
 	/*
 	 * Guess which window is going to be the new current window.
 	 * This may change because of the autocommands (sigh).
@@ -3649,6 +3678,9 @@ win_new_tabpage(int after)
 	 * scrollbars.  Have to update them anyway. */
 	gui_may_update_scrollbars();
 #endif
+#ifdef FEAT_JOB_CHANNEL
+	entering_window(curwin);
+#endif
 
 	redraw_all_later(CLEAR);
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
@@ -3822,6 +3854,9 @@ leave_tabpage(
 {
     tabpage_T	*tp = curtab;
 
+#ifdef FEAT_JOB_CHANNEL
+    leaving_window(curwin);
+#endif
     reset_VIsual_and_resel();	/* stop Visual mode */
     if (trigger_leave_autocmds)
     {
@@ -4318,6 +4353,11 @@ win_enter_ext(
     if (wp == curwin && !curwin_invalid)	/* nothing to do */
 	return;
 
+#ifdef FEAT_JOB_CHANNEL
+    if (!curwin_invalid)
+	leaving_window(curwin);
+#endif
+
     if (!curwin_invalid && trigger_leave_autocmds)
     {
 	/*
@@ -4389,6 +4429,9 @@ win_enter_ext(
 	shorten_fnames(TRUE);
     }
 
+#ifdef FEAT_JOB_CHANNEL
+    entering_window(curwin);
+#endif
     if (trigger_new_autocmds)
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
     if (trigger_enter_autocmds)

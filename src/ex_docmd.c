@@ -7341,7 +7341,8 @@ ex_close(exarg_T *eap)
 	{
 	    if (eap->addr_count == 0)
 		ex_win_close(eap->forceit, curwin, NULL);
-	    else {
+	    else
+	    {
 		FOR_ALL_WINDOWS(win)
 		{
 		    winnr++;

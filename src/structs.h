@@ -2360,6 +2360,8 @@ struct file_buffer
     char_u	*b_prompt_text;	     // set by prompt_setprompt()
     char_u	*b_prompt_callback;  // set by prompt_setcallback()
     partial_T	*b_prompt_partial;   // set by prompt_setcallback()
+    int		b_prompt_insert;     // value for restart_edit when entering
+				     // a prompt buffer window.
 #endif
 #ifdef FEAT_MZSCHEME
     void	*b_mzscheme_ref; /* The MzScheme reference to this buffer */
