@@ -966,13 +966,13 @@ func Test_libcall_libcallnr()
     endif
   endif
 
-  if len(libc) == 0
+  if !exists('libc') || len(libc) == 0
     return
   endif
 
-  let $X_TEST_ENV_VAR_ = 'foo'
-  call assert_equal('foo', libcall(libc, 'getenv', 'X_TEST_ENV_VAR_'))
-  unlet $X_TEST_ENV_VAR_
+  let $X_TEST_ENV_VAR = 'foo'
+  call assert_equal('foo', libcall(libc, 'getenv', 'X_TEST_ENV_VAR'))
+  unlet $X_TEST_ENV_VAR
 
   " If function returns NULL, libcall() should return an empty string.
   call assert_equal('', libcall(libc, 'getenv', 'X_TEST_ENV_DOES_NOT_EXIT'))
