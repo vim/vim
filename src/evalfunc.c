@@ -125,6 +125,7 @@ static void f_cscope_connection(typval_T *argvars, typval_T *rettv);
 static void f_cursor(typval_T *argsvars, typval_T *rettv);
 static void f_deepcopy(typval_T *argvars, typval_T *rettv);
 static void f_delete(typval_T *argvars, typval_T *rettv);
+static void f_deletebufline(typval_T *argvars, typval_T *rettv);
 static void f_did_filetype(typval_T *argvars, typval_T *rettv);
 static void f_diff_filler(typval_T *argvars, typval_T *rettv);
 static void f_diff_hlID(typval_T *argvars, typval_T *rettv);
@@ -577,6 +578,7 @@ static struct fst
     {"cursor",		1, 3, f_cursor},
     {"deepcopy",	1, 2, f_deepcopy},
     {"delete",		1, 2, f_delete},
+    {"deletebufline",	2, 3, f_deletebufline},
     {"did_filetype",	0, 0, f_did_filetype},
     {"diff_filler",	1, 1, f_diff_filler},
     {"diff_hlID",	2, 2, f_diff_hlID},
@@ -1210,6 +1212,24 @@ get_tv_lnum_buf(typval_T *argvars, buf_T *buf)
 }
 
 /*
+ * If there is a window for "curbuf", make it the current window.
+ */
+    static void
+find_win_for_curbuf(void)
+{
+    wininfo_T *wip;
+
+    for (wip = curbuf->b_wininfo; wip != NULL; wip = wip->wi_next)
+    {
+	if (wip->wi_win != NULL)
+	{
+	    curwin = wip->wi_win;
+	    break;
+	}
+    }
+}
+
+/*
  * Set line or list of lines in buffer "buf".
  */
     static void
@@ -1241,19 +1261,10 @@ set_buffer_lines(
 
     if (!is_curbuf)
     {
-	wininfo_T *wip;
-
 	curbuf_save = curbuf;
 	curwin_save = curwin;
 	curbuf = buf;
-	for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
-	{
-	    if (wip->wi_win != NULL)
-	    {
-		curwin = wip->wi_win;
-		break;
-	    }
-	}
+	find_win_for_curbuf();
     }
 
     if (append)
@@ -2805,6 +2816,93 @@ f_delete(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = delete_recursive(name);
     else
 	EMSG2(_(e_invexpr2), flags);
+}
+
+/*
+ * "deletebufline()" function
+ */
+    static void
+f_deletebufline(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    buf_T	*buf;
+    linenr_T	first, last;
+    linenr_T	lnum;
+    long	count;
+    int		is_curbuf;
+    buf_T	*curbuf_save = NULL;
+    win_T	*curwin_save = NULL;
+    tabpage_T	*tp;
+    win_T	*wp;
+
+    buf = get_buf_tv(&argvars[0], FALSE);
+    if (buf == NULL)
+    {
+	rettv->vval.v_number = 1; /* FAIL */
+	return;
+    }
+    is_curbuf = buf == curbuf;
+
+    first = get_tv_lnum_buf(&argvars[1], buf);
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	last = get_tv_lnum_buf(&argvars[2], buf);
+    else
+	last = first;
+
+    if (buf->b_ml.ml_mfp == NULL || first < 1
+			   || first > buf->b_ml.ml_line_count || last < first)
+    {
+	rettv->vval.v_number = 1;	/* FAIL */
+	return;
+    }
+
+    if (!is_curbuf)
+    {
+	curbuf_save = curbuf;
+	curwin_save = curwin;
+	curbuf = buf;
+	find_win_for_curbuf();
+    }
+    if (last > curbuf->b_ml.ml_line_count)
+	last = curbuf->b_ml.ml_line_count;
+    count = last - first + 1;
+
+    // When coming here from Insert mode, sync undo, so that this can be
+    // undone separately from what was previously inserted.
+    if (u_sync_once == 2)
+    {
+	u_sync_once = 1; // notify that u_sync() was called
+	u_sync(TRUE);
+    }
+
+    if (u_save(first - 1, last + 1) == FAIL)
+    {
+	rettv->vval.v_number = 1;	/* FAIL */
+	return;
+    }
+
+    for (lnum = first; lnum <= last; ++lnum)
+	ml_delete(first, TRUE);
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_buffer == buf)
+	{
+	    if (wp->w_cursor.lnum > last)
+		wp->w_cursor.lnum -= count;
+	    else if (wp->w_cursor.lnum> first)
+		wp->w_cursor.lnum = first;
+	    if (wp->w_cursor.lnum > wp->w_buffer->b_ml.ml_line_count)
+		wp->w_cursor.lnum = wp->w_buffer->b_ml.ml_line_count;
+	}
+    check_cursor_col();
+    deleted_lines_mark(first, count);
+
+    if (!is_curbuf)
+    {
+	curbuf = curbuf_save;
+	curwin = curwin_save;
+    }
 }
 
 /*
