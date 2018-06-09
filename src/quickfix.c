@@ -102,6 +102,8 @@ struct qf_info_S
 static qf_info_T ql_info;	/* global quickfix list */
 static int_u last_qf_id = 0;	/* Last used quickfix list id */
 
+#define FOR_ALL_QF_LISTIDXS(qi,i)	for (i = 0; i < qi->qf_listcount; ++i)
+
 #define FMT_PATTERNS 11		/* maximum number of % recognized */
 
 /*
@@ -201,106 +203,109 @@ static struct fmtpattern
 
 /*
  * Convert an errorformat pattern to a regular expression pattern.
- * See fmt_pat definition above for the list of supported patterns.
+ * See fmt_pat definition above for the list of supported patterns.  The
+ * pattern specifier is supplied in 'efmpat'.  The converted pattern is stored
+ * in 'regpat'.  Returns a pointer to the location after the pattern.
  */
     static char_u *
-fmtpat_to_regpat(
-	char_u	*efmp,
-	efm_T	*fmt_ptr,
+efmpat_to_regpat(
+	char_u	*efmpat,
+	char_u	*regpat,
+	efm_T	*efminfo,
 	int	idx,
 	int	round,
-	char_u	*ptr,
 	char_u	*errmsg)
 {
     char_u	*srcptr;
 
-    if (fmt_ptr->addr[idx])
+    if (efminfo->addr[idx])
     {
 	/* Each errorformat pattern can occur only once */
 	sprintf((char *)errmsg,
-		_("E372: Too many %%%c in format string"), *efmp);
+		_("E372: Too many %%%c in format string"), *efmpat);
 	EMSG(errmsg);
 	return NULL;
     }
     if ((idx && idx < 6
-		&& vim_strchr((char_u *)"DXOPQ", fmt_ptr->prefix) != NULL)
+		&& vim_strchr((char_u *)"DXOPQ", efminfo->prefix) != NULL)
 	    || (idx == 6
-		&& vim_strchr((char_u *)"OPQ", fmt_ptr->prefix) == NULL))
+		&& vim_strchr((char_u *)"OPQ", efminfo->prefix) == NULL))
     {
 	sprintf((char *)errmsg,
-		_("E373: Unexpected %%%c in format string"), *efmp);
+		_("E373: Unexpected %%%c in format string"), *efmpat);
 	EMSG(errmsg);
 	return NULL;
     }
-    fmt_ptr->addr[idx] = (char_u)++round;
-    *ptr++ = '\\';
-    *ptr++ = '(';
+    efminfo->addr[idx] = (char_u)++round;
+    *regpat++ = '\\';
+    *regpat++ = '(';
 #ifdef BACKSLASH_IN_FILENAME
-    if (*efmp == 'f')
+    if (*efmpat == 'f')
     {
 	/* Also match "c:" in the file name, even when
 	 * checking for a colon next: "%f:".
 	 * "\%(\a:\)\=" */
-	STRCPY(ptr, "\\%(\\a:\\)\\=");
-	ptr += 10;
+	STRCPY(regpat, "\\%(\\a:\\)\\=");
+	regpat += 10;
     }
 #endif
-    if (*efmp == 'f' && efmp[1] != NUL)
+    if (*efmpat == 'f' && efmpat[1] != NUL)
     {
-	if (efmp[1] != '\\' && efmp[1] != '%')
+	if (efmpat[1] != '\\' && efmpat[1] != '%')
 	{
 	    /* A file name may contain spaces, but this isn't
 	     * in "\f".  For "%f:%l:%m" there may be a ":" in
 	     * the file name.  Use ".\{-1,}x" instead (x is
 	     * the next character), the requirement that :999:
 	     * follows should work. */
-	    STRCPY(ptr, ".\\{-1,}");
-	    ptr += 7;
+	    STRCPY(regpat, ".\\{-1,}");
+	    regpat += 7;
 	}
 	else
 	{
 	    /* File name followed by '\\' or '%': include as
 	     * many file name chars as possible. */
-	    STRCPY(ptr, "\\f\\+");
-	    ptr += 4;
+	    STRCPY(regpat, "\\f\\+");
+	    regpat += 4;
 	}
     }
     else
     {
 	srcptr = (char_u *)fmt_pat[idx].pattern;
-	while ((*ptr = *srcptr++) != NUL)
-	    ++ptr;
+	while ((*regpat = *srcptr++) != NUL)
+	    ++regpat;
     }
-    *ptr++ = '\\';
-    *ptr++ = ')';
+    *regpat++ = '\\';
+    *regpat++ = ')';
 
-    return ptr;
+    return regpat;
 }
 
 /*
  * Convert a scanf like format in 'errorformat' to a regular expression.
+ * Returns a pointer to the location after the pattern.
  */
     static char_u *
 scanf_fmt_to_regpat(
+	char_u	**pefmp,
 	char_u	*efm,
 	int	len,
-	char_u	**pefmp,
-	char_u	*ptr,
+	char_u	*regpat,
 	char_u	*errmsg)
 {
     char_u	*efmp = *pefmp;
 
-    if (*++efmp == '[' || *efmp == '\\')
+    if (*efmp == '[' || *efmp == '\\')
     {
-	if ((*ptr++ = *efmp) == '[')	/* %*[^a-z0-9] etc. */
+	if ((*regpat++ = *efmp) == '[')	/* %*[^a-z0-9] etc. */
 	{
 	    if (efmp[1] == '^')
-		*ptr++ = *++efmp;
+		*regpat++ = *++efmp;
 	    if (efmp < efm + len)
 	    {
-		*ptr++ = *++efmp;	    /* could be ']' */
+		*regpat++ = *++efmp;	    /* could be ']' */
 		while (efmp < efm + len
-			&& (*ptr++ = *++efmp) != ']')
+			&& (*regpat++ = *++efmp) != ']')
 		    /* skip */;
 		if (efmp == efm + len)
 		{
@@ -310,9 +315,9 @@ scanf_fmt_to_regpat(
 	    }
 	}
 	else if (efmp < efm + len)	/* %*\D, %*\s etc. */
-	    *ptr++ = *++efmp;
-	*ptr++ = '\\';
-	*ptr++ = '+';
+	    *regpat++ = *++efmp;
+	*regpat++ = '\\';
+	*regpat++ = '+';
     }
     else
     {
@@ -325,36 +330,34 @@ scanf_fmt_to_regpat(
 
     *pefmp = efmp;
 
-    return ptr;
+    return regpat;
 }
 
 /*
  * Analyze/parse an errorformat prefix.
  */
-    static int
-efm_analyze_prefix(char_u **pefmp, efm_T *fmt_ptr, char_u *errmsg)
+    static char_u *
+efm_analyze_prefix(char_u *efmp, efm_T *efminfo, char_u *errmsg)
 {
-    char_u	*efmp = *pefmp;
-
     if (vim_strchr((char_u *)"+-", *efmp) != NULL)
-	fmt_ptr->flags = *efmp++;
+	efminfo->flags = *efmp++;
     if (vim_strchr((char_u *)"DXAEWICZGOPQ", *efmp) != NULL)
-	fmt_ptr->prefix = *efmp;
+	efminfo->prefix = *efmp;
     else
     {
 	sprintf((char *)errmsg,
 		_("E376: Invalid %%%c in format string prefix"), *efmp);
 	EMSG(errmsg);
-	return FAIL;
+	return NULL;
     }
 
-    *pefmp = efmp;
-
-    return OK;
+    return efmp;
 }
 
 /*
- * Converts a 'errorformat' string to regular expression pattern
+ * Converts a 'errorformat' string part in 'efm' to a regular expression
+ * pattern.  The resulting regex pattern is returned in 'regpat'. Additional
+ * information about the 'erroformat' pattern is returned in 'fmt_ptr'.
  */
     static int
 efm_to_regpat(
@@ -370,7 +373,7 @@ efm_to_regpat(
     int		idx = 0;
 
     /*
-     * Build regexp pattern from current 'errorformat' option
+     * Build a regexp pattern for a 'errorformat' option part
      */
     ptr = regpat;
     *ptr++ = '^';
@@ -385,17 +388,18 @@ efm_to_regpat(
 		    break;
 	    if (idx < FMT_PATTERNS)
 	    {
-		ptr = fmtpat_to_regpat(efmp, fmt_ptr, idx, round, ptr,
+		ptr = efmpat_to_regpat(efmp, ptr, fmt_ptr, idx, round,
 								errmsg);
 		if (ptr == NULL)
-		    return -1;
+		    return FAIL;
 		round++;
 	    }
 	    else if (*efmp == '*')
 	    {
-		ptr = scanf_fmt_to_regpat(efm, len, &efmp, ptr, errmsg);
+		++efmp;
+		ptr = scanf_fmt_to_regpat(&efmp, efm, len, ptr, errmsg);
 		if (ptr == NULL)
-		    return -1;
+		    return FAIL;
 	    }
 	    else if (vim_strchr((char_u *)"%\\.^$~[", *efmp) != NULL)
 		*ptr++ = *efmp;		/* regexp magic characters */
@@ -405,15 +409,20 @@ efm_to_regpat(
 		fmt_ptr->conthere = TRUE;
 	    else if (efmp == efm + 1)		/* analyse prefix */
 	    {
-		if (efm_analyze_prefix(&efmp, fmt_ptr, errmsg) == FAIL)
-		    return -1;
+		/*
+		 * prefix is allowed only at the beginning of the errorformat
+		 * option part
+		 */
+		efmp = efm_analyze_prefix(efmp, fmt_ptr, errmsg);
+		if (efmp == NULL)
+		    return FAIL;
 	    }
 	    else
 	    {
 		sprintf((char *)errmsg,
 			_("E377: Invalid %%%c in format string"), *efmp);
 		EMSG(errmsg);
-		return -1;
+		return FAIL;
 	    }
 	}
 	else			/* copy normal character */
@@ -429,9 +438,12 @@ efm_to_regpat(
     *ptr++ = '$';
     *ptr = NUL;
 
-    return 0;
+    return OK;
 }
 
+/*
+ * Free the 'errorformat' information list
+ */
     static void
 free_efm_list(efm_T **efm_first)
 {
@@ -446,7 +458,48 @@ free_efm_list(efm_T **efm_first)
     fmt_start = NULL;
 }
 
-/* Parse 'errorformat' option */
+/*
+ * Compute the size of the buffer used to convert a 'errorformat' pattern into
+ * a regular expression pattern.
+ */
+    static int
+efm_regpat_bufsz(char_u *efm)
+{
+    int sz;
+    int i;
+
+    sz = (FMT_PATTERNS * 3) + ((int)STRLEN(efm) << 2);
+    for (i = FMT_PATTERNS; i > 0; )
+	sz += (int)STRLEN(fmt_pat[--i].pattern);
+#ifdef BACKSLASH_IN_FILENAME
+    sz += 12; /* "%f" can become twelve chars longer (see efm_to_regpat) */
+#else
+    sz += 2; /* "%f" can become two chars longer */
+#endif
+
+    return sz;
+}
+
+/*
+ * Return the length of a 'errorformat' option part (separated by ",").
+ */
+    static int
+efm_option_part_len(char_u *efm)
+{
+    int len;
+
+    for (len = 0; efm[len] != NUL && efm[len] != ','; ++len)
+	if (efm[len] == '\\' && efm[len + 1] != NUL)
+	    ++len;
+
+    return len;
+}
+
+/*
+ * Parse the 'errorformat' option. Multiple parts in the 'errorformat' option
+ * are parsed and converted to regular expressions. Returns information about
+ * the parsed 'errorformat' option.
+ */
     static efm_T *
 parse_efm_option(char_u *efm)
 {
@@ -457,8 +510,7 @@ parse_efm_option(char_u *efm)
     efm_T	*fmt_last = NULL;
     char_u	*fmtstr = NULL;
     int		len;
-    int		i;
-    int		round;
+    int		sz;
 
     errmsglen = CMDBUFFSIZE + 1;
     errmsg = alloc_id(errmsglen, aid_qf_errmsg);
@@ -473,15 +525,8 @@ parse_efm_option(char_u *efm)
     /*
      * Get some space to modify the format string into.
      */
-    i = (FMT_PATTERNS * 3) + ((int)STRLEN(efm) << 2);
-    for (round = FMT_PATTERNS; round > 0; )
-	i += (int)STRLEN(fmt_pat[--round].pattern);
-#ifdef BACKSLASH_IN_FILENAME
-    i += 12; /* "%f" can become twelve chars longer (see efm_to_regpat) */
-#else
-    i += 2; /* "%f" can become two chars longer */
-#endif
-    if ((fmtstr = alloc(i)) == NULL)
+    sz = efm_regpat_bufsz(efm);
+    if ((fmtstr = alloc(sz)) == NULL)
 	goto parse_efm_error;
 
     while (efm[0] != NUL)
@@ -501,11 +546,9 @@ parse_efm_option(char_u *efm)
 	/*
 	 * Isolate one part in the 'errorformat' option
 	 */
-	for (len = 0; efm[len] != NUL && efm[len] != ','; ++len)
-	    if (efm[len] == '\\' && efm[len + 1] != NUL)
-		++len;
+	len = efm_option_part_len(efm);
 
-	if (efm_to_regpat(efm, len, fmt_ptr, fmtstr, errmsg) == -1)
+	if (efm_to_regpat(efm, len, fmt_ptr, fmtstr, errmsg) == FAIL)
 	    goto parse_efm_error;
 	if ((fmt_ptr->prog = vim_regcomp(fmtstr, RE_MAGIC + RE_STRING)) == NULL)
 	    goto parse_efm_error;
@@ -539,6 +582,10 @@ enum {
     QF_MULTISCAN = 5,
 };
 
+/*
+ * State information used to parse lines and add entries to a quickfix/location
+ * list.
+ */
 typedef struct {
     char_u	*linebuf;
     int		linelen;
@@ -554,6 +601,9 @@ typedef struct {
     vimconv_T	vc;
 } qfstate_T;
 
+/*
+ * Allocate more memory for the line buffer used for parsing lines.
+ */
     static char_u *
 qf_grow_linebuf(qfstate_T *state, int newsz)
 {
@@ -1447,6 +1497,18 @@ restofline:
 }
 
 /*
+ * Returns TRUE if the specified quickfix/location list is empty.
+ */
+    static int
+qf_list_empty(qf_info_T *qi, int qf_idx)
+{
+    if (qi == NULL || qf_idx < 0 || qf_idx >= LISTCOUNT)
+	return TRUE;
+    return qi->qf_lists[qf_idx].qf_count <= 0;
+}
+
+
+/*
  * Allocate the fields used for parsing lines and populating a quickfix list.
  */
     static int
@@ -1589,7 +1651,7 @@ qf_init_ext(
     {
 	/* Adding to existing list, use last entry. */
 	adding = TRUE;
-	if (qi->qf_lists[qf_idx].qf_count > 0)
+	if (!qf_list_empty(qi, qf_idx))
 	    old_last = qi->qf_lists[qf_idx].qf_last;
     }
 
@@ -1820,7 +1882,7 @@ ll_free_all(qf_info_T **pqi)
     if (qi->qf_refcount < 1)
     {
 	/* No references to this location list */
-	for (i = 0; i < qi->qf_listcount; ++i)
+	FOR_ALL_QF_LISTIDXS(qi, i)
 	    qf_free(qi, i);
 	vim_free(qi);
     }
@@ -1843,7 +1905,7 @@ qf_free_all(win_T *wp)
     }
     else
 	/* quickfix list */
-	for (i = 0; i < qi->qf_listcount; ++i)
+	FOR_ALL_QF_LISTIDXS(qi, i)
 	    qf_free(qi, i);
 }
 
@@ -1916,8 +1978,7 @@ qf_add_entry(
     qfp->qf_valid = valid;
 
     lastp = &qi->qf_lists[qf_idx].qf_last;
-    if (qi->qf_lists[qf_idx].qf_count == 0)
-				/* first element in the list */
+    if (qf_list_empty(qi, qf_idx))	/* first element in the list */
     {
 	qi->qf_lists[qf_idx].qf_start = qfp;
 	qi->qf_lists[qf_idx].qf_ptr = qfp;
@@ -2014,7 +2075,7 @@ copy_loclist(win_T *from, win_T *to)
     to->w_llist->qf_listcount = qi->qf_listcount;
 
     /* Copy the location lists one at a time */
-    for (idx = 0; idx < qi->qf_listcount; idx++)
+    FOR_ALL_QF_LISTIDXS(qi, idx)
     {
 	qf_list_T   *from_qfl;
 	qf_list_T   *to_qfl;
@@ -2362,7 +2423,7 @@ qflist_valid (win_T *wp, int_u qf_id)
 	    return FALSE;
     }
 
-    for (i = 0; i < qi->qf_listcount; ++i)
+    FOR_ALL_QF_LISTIDXS(qi, i)
 	if (qi->qf_lists[i].qf_id == qf_id)
 	    return TRUE;
 
@@ -3046,7 +3107,7 @@ qf_jump(qf_info_T	*qi,
 	qi = &ql_info;
 
     if (qi->qf_curlist >= qi->qf_listcount
-	|| qi->qf_lists[qi->qf_curlist].qf_count == 0)
+	|| qf_list_empty(qi, qi->qf_curlist))
     {
 	EMSG(_(e_quickfix));
 	return;
@@ -3286,7 +3347,7 @@ qf_list(exarg_T *eap)
     }
 
     if (qi->qf_curlist >= qi->qf_listcount
-	|| qi->qf_lists[qi->qf_curlist].qf_count == 0)
+	|| qf_list_empty(qi, qi->qf_curlist))
     {
 	EMSG(_(e_quickfix));
 	return;
@@ -3474,10 +3535,10 @@ qf_history(exarg_T *eap)
     if (eap->cmdidx == CMD_lhistory)
 	qi = GET_LOC_LIST(curwin);
     if (qi == NULL || (qi->qf_listcount == 0
-				&& qi->qf_lists[qi->qf_curlist].qf_count == 0))
+				&& qf_list_empty(qi, qi->qf_curlist)))
 	MSG(_("No entries"));
     else
-	for (i = 0; i < qi->qf_listcount; ++i)
+	FOR_ALL_QF_LISTIDXS(qi, i)
 	    qf_msg(qi, i, i == qi->qf_curlist ? "> " : "  ");
 }
 
@@ -3574,8 +3635,8 @@ qf_mark_adjust(
 	qi = wp->w_llist;
     }
 
-    for (idx = 0; idx < qi->qf_listcount; ++idx)
-	if (qi->qf_lists[idx].qf_count)
+    FOR_ALL_QF_LISTIDXS(qi, idx)
+	if (!qf_list_empty(qi, idx))
 	    for (i = 0, qfp = qi->qf_lists[idx].qf_start;
 			i < qi->qf_lists[idx].qf_count && qfp != NULL;
 			++i, qfp = qfp->qf_next)
@@ -3706,7 +3767,7 @@ ex_cwindow(exarg_T *eap)
      * it if we have errors; otherwise, leave it closed.
      */
     if (qi->qf_lists[qi->qf_curlist].qf_nonevalid
-	    || qi->qf_lists[qi->qf_curlist].qf_count == 0
+	    || qf_list_empty(qi, qi->qf_curlist)
 	    || qi->qf_curlist >= qi->qf_listcount)
     {
 	if (win != NULL)
@@ -5300,7 +5361,7 @@ ex_vimgrep(exarg_T *eap)
 	qi->qf_curlist = qf_id2nr(qi, save_qfid);
 
     /* Jump to first match. */
-    if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+    if (!qf_list_empty(qi, qi->qf_curlist))
     {
 	if ((flags & VGR_NOJUMP) == 0)
 	    vgr_jump_to_match(qi, eap->forceit, &redraw_for_dummy,
@@ -5533,8 +5594,7 @@ get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list)
     if (qf_idx == INVALID_QFIDX)
 	qf_idx = qi->qf_curlist;
 
-    if (qf_idx >= qi->qf_listcount
-	    || qi->qf_lists[qf_idx].qf_count == 0)
+    if (qf_idx >= qi->qf_listcount || qf_list_empty(qi, qf_idx))
 	return FAIL;
 
     qfp = qi->qf_lists[qf_idx].qf_start;
@@ -5855,7 +5915,7 @@ qf_getprop_ctx(qf_info_T *qi, int qf_idx, dict_T *retdict)
 qf_getprop_idx(qf_info_T *qi, int qf_idx, dict_T *retdict)
 {
     int idx = qi->qf_lists[qf_idx].qf_index;
-    if (qi->qf_lists[qf_idx].qf_count == 0)
+    if (qf_list_empty(qi, qf_idx))
 	/* For empty lists, qf_index is set to 1 */
 	idx = 0;
     return dict_add_number(retdict, "idx", idx);
@@ -5944,7 +6004,7 @@ qf_add_entries(
 	qf_new_list(qi, title);
 	qf_idx = qi->qf_curlist;
     }
-    else if (action == 'a' && qi->qf_lists[qf_idx].qf_count > 0)
+    else if (action == 'a' && !qf_list_empty(qi, qf_idx))
 	/* Adding to existing list, use last entry. */
 	old_last = qi->qf_lists[qf_idx].qf_last;
     else if (action == 'r')
@@ -6033,7 +6093,7 @@ qf_add_entries(
     {
 	qi->qf_lists[qf_idx].qf_ptr =
 	    qi->qf_lists[qf_idx].qf_start;
-	if (qi->qf_lists[qf_idx].qf_count > 0)
+	if (!qf_list_empty(qi, qf_idx))
 	    qi->qf_lists[qf_idx].qf_index = 1;
     }
 
@@ -6896,7 +6956,7 @@ ex_helpgrep(exarg_T *eap)
     }
 
     /* Jump to first match. */
-    if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+    if (!qf_list_empty(qi, qi->qf_curlist))
 	qf_jump(qi, 0, 0, FALSE);
     else
 	EMSG2(_(e_nomatch2), eap->arg);
