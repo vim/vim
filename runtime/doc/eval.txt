@@ -6198,6 +6198,7 @@ mode([expr])	Return a string that indicates the current mode.
 
 			n	Normal, Terminal-Normal
 			no	Operator-pending
+			nCTRL-Oi	Normal, triggered by |i_CTRL-O|
 			v	Visual by character
 			V	Visual by line
 			CTRL-V	Visual blockwise

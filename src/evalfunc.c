@@ -8313,10 +8313,11 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
     static void
 f_mode(typval_T *argvars, typval_T *rettv)
 {
-    char_u	buf[3];
+    char_u	buf[4];
 
     buf[1] = NUL;
     buf[2] = NUL;
+    buf[3] = NUL;
 
     if (time_for_testing == 93784)
     {
@@ -8380,14 +8381,21 @@ f_mode(typval_T *argvars, typval_T *rettv)
     else
     {
 	buf[0] = 'n';
+
 	if (finish_op)
 	    buf[1] = 'o';
+	else if (restart_edit == 'I') {
+		buf[1] = Ctrl_O;
+		buf[2] = 'i';
+	}
     }
 
     /* Clear out the minor mode when the argument is not a non-zero number or
      * non-empty string.  */
-    if (!non_zero_arg(&argvars[0]))
+    if (!non_zero_arg(&argvars[0])) {
 	buf[1] = NUL;
+	buf[2] = NUL;
+    }
 
     rettv->vval.v_string = vim_strsave(buf);
     rettv->v_type = VAR_STRING;
