@@ -35,39 +35,48 @@ syn region  javaScriptComment	       start="/\*"  end="\*/" contains=@Spell,java
 syn match   javaScriptSpecial	       "\\\d\d\d\|\\."
 syn region  javaScriptStringD	       start=+"+  skip=+\\\\\|\\"+  end=+"\|$+	contains=javaScriptSpecial,@htmlPreproc
 syn region  javaScriptStringS	       start=+'+  skip=+\\\\\|\\'+  end=+'\|$+	contains=javaScriptSpecial,@htmlPreproc
+"Template literals
+syn region  javaScriptLiterals         start="\${" end="}" contained contains=javaScriptMember,javaScriptGlobal,javaScriptBolean,javaScriptSpecial
+syn region  javaScriptTemplate	       start=+`+  skip=+\\\\\|\\`+  end=+`+	contains=javaScriptSpecial,@htmlPreproc,javaScriptLiterals
 
 syn match   javaScriptSpecialCharacter "'\\.'"
 syn match   javaScriptNumber	       "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
 syn region  javaScriptRegexpString     start=+/[^/*]+me=e-1 skip=+\\\\\|\\/+ end=+/[gimuys]\{0,2\}\s*$+ end=+/[gimuys]\{0,2\}\s*[;.,)\]}]+me=e-1 contains=@htmlPreproc oneline
 
 syn keyword javaScriptConditional	if else switch
-syn keyword javaScriptRepeat		while for do in
+syn keyword javaScriptRepeat		while for do in of
 syn keyword javaScriptBranch		break continue
 syn keyword javaScriptOperator		new delete instanceof typeof
-syn keyword javaScriptType		Array Boolean Date Function Number Object String RegExp
-syn keyword javaScriptStatement		return with
+syn keyword javaScriptType		Array Boolean Date Function Number Object String RegExp Map WeakMap Set WeakSet Promise Proxy Symbol
+syn keyword javaScriptStatement		return with yield
 syn keyword javaScriptBoolean		true false
+syn keyword javaScriptBoolean		true false contained
 syn keyword javaScriptNull		null undefined
-syn keyword javaScriptIdentifier	arguments this var let
+syn keyword javaScriptIdentifier	arguments this var let const
 syn keyword javaScriptLabel		case default
 syn keyword javaScriptException		try catch finally throw
 syn keyword javaScriptMessage		alert confirm prompt status
 syn keyword javaScriptGlobal		self window top parent
+syn keyword javaScriptGlobal		self window top parent contained
 syn keyword javaScriptMember		document event location 
+syn keyword javaScriptMember		document event location contained
 syn keyword javaScriptDeprecated	escape unescape
-syn keyword javaScriptReserved		abstract boolean byte char class const debugger double enum export extends final float goto implements import int interface long native package private protected public short static super synchronized throws transient volatile 
+syn keyword javaScriptReserved		abstract boolean byte char debugger double enum export extends final float goto implements import int interface long native package private protected public short static super synchronized throws transient volatile 
 
 if exists("javaScript_fold")
     syn match	javaScriptFunction	"\<function\>"
+    syn match	javaScriptFunction	"\<class\>"
     syn region	javaScriptFunctionFold	start="\<function\>.*[^};]$" end="^\z1}.*$" transparent fold keepend
+    syn region	javaScriptFunctionFold	start="\<class\>.*[^};]$" end="^\z1}.*$" transparent fold keepend
 
     syn sync match javaScriptSync	grouphere javaScriptFunctionFold "\<function\>"
+    syn sync match javaScriptSync	grouphere javaScriptFunctionFold "\<class\>"
     syn sync match javaScriptSync	grouphere NONE "^}"
 
     setlocal foldmethod=syntax
     setlocal foldtext=getline(v:foldstart)
 else
-    syn keyword javaScriptFunction	function
+    syn keyword javaScriptFunction	function class
     syn match	javaScriptBraces	   "[{}\[\]]"
     syn match	javaScriptParens	   "[()]"
 endif
@@ -87,6 +96,7 @@ hi def link javaScriptCommentTodo		Todo
 hi def link javaScriptSpecial		Special
 hi def link javaScriptStringS		String
 hi def link javaScriptStringD		String
+hi def link javaScriptTemplate		String
 hi def link javaScriptCharacter		Character
 hi def link javaScriptSpecialCharacter	javaScriptSpecial
 hi def link javaScriptNumber		javaScriptValue
