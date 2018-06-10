@@ -443,7 +443,7 @@ vim.current.window:Window:True
 vim.current.tabpage:TabPage:True
 current:__dir__,__members__,buffer,line,range,tabpage,window
 buffer:__dir__,__members__,append,mark,name,number,options,range,valid,vars
-window:__dir__,__members__,buffer,col,cursor,height,number,options,row,tabpage,valid,vars
+window:__dir__,__members__,buffer,col,cursor,height,number,options,row,tabpage,valid,vars,width
 tabpage:__dir__,__members__,number,valid,vars,window,windows
 range:__dir__,__members__,append,end,start
 dictionary:__dir__,__members__,get,has_key,items,keys,locked,pop,popitem,scope,update,values

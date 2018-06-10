@@ -3836,9 +3836,20 @@ get_firstwin(TabPageObject *tabObject)
     else
 	return firstwin;
 }
+
+// Use the same order as in the WindowAttr() function.
 static char *WindowAttrs[] = {
-    "buffer", "cursor", "height", "vars", "options", "number", "row", "col",
-    "tabpage", "valid",
+    "buffer",
+    "cursor",
+    "height",
+    "row",
+    "width",
+    "col",
+    "vars",
+    "options",
+    "number",
+    "tabpage",
+    "valid",
     NULL
 };
 
