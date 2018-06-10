@@ -1894,7 +1894,7 @@ init_prompt(int cmdchar_todo)
 				   || Insstart_orig.col != (int)STRLEN(prompt))
     {
 	Insstart.lnum = curwin->w_cursor.lnum;
-	Insstart.col = STRLEN(prompt);
+	Insstart.col = (int)STRLEN(prompt);
 	Insstart_orig = Insstart;
 	Insstart_textlen = Insstart.col;
 	Insstart_blank_vcol = MAXCOL;
@@ -1904,7 +1904,7 @@ init_prompt(int cmdchar_todo)
     if (cmdchar_todo == 'A')
 	coladvance((colnr_T)MAXCOL);
     if (cmdchar_todo == 'I' || curwin->w_cursor.col <= (int)STRLEN(prompt))
-	curwin->w_cursor.col = STRLEN(prompt);
+	curwin->w_cursor.col = (int)STRLEN(prompt);
     /* Make sure the cursor is in a valid position. */
     check_cursor();
 }
