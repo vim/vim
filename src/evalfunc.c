@@ -8379,7 +8379,6 @@ f_mode(typval_T *argvars, typval_T *rettv)
     else
     {
 	buf[0] = 'n';
-
 	if (finish_op)
 	    buf[1] = 'o';
 	else if (restart_edit == 'I')
@@ -8392,9 +8391,7 @@ f_mode(typval_T *argvars, typval_T *rettv)
     /* Clear out the minor mode when the argument is not a non-zero number or
      * non-empty string.  */
     if (!non_zero_arg(&argvars[0]))
-    {
 	buf[1] = NUL;
-    }
 
     rettv->vval.v_string = vim_strsave(buf);
     rettv->v_type = VAR_STRING;
