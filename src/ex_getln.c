@@ -5266,7 +5266,7 @@ expand_shellcmd(
 
 
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
-static void * call_user_expand_func(void *(*user_expand_func)(char_u *, int, char_u **, int), expand_T	*xp, int *num_file, char_u ***file);
+static void * call_user_expand_func(void *(*user_expand_func)(char_u *, int, typval_T *, int), expand_T	*xp, int *num_file, char_u ***file);
 
 /*
  * Call "user_expand_func()" to invoke a user defined Vim script function and
@@ -5274,15 +5274,15 @@ static void * call_user_expand_func(void *(*user_expand_func)(char_u *, int, cha
  */
     static void *
 call_user_expand_func(
-    void	*(*user_expand_func)(char_u *, int, char_u **, int),
+    void	*(*user_expand_func)(char_u *, int, typval_T *, int),
     expand_T	*xp,
     int		*num_file,
     char_u	***file)
 {
     int		keep = 0;
-    char_u	num[50];
-    char_u	*args[3];
+    typval_T	args[3];
     int		save_current_SID = current_SID;
+    char_u	*pat = NULL;
     void	*ret;
     struct cmdline_info	    save_ccline;
 
@@ -5297,10 +5297,14 @@ call_user_expand_func(
 	ccline.cmdbuff[ccline.cmdlen] = 0;
     }
 
-    args[0] = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
-    args[1] = xp->xp_line;
-    sprintf((char *)num, "%d", xp->xp_col);
-    args[2] = num;
+    pat = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
+
+    args[0].v_type = VAR_STRING;
+    args[0].vval.v_string = pat;
+    args[1].v_type = VAR_STRING;
+    args[1].vval.v_string = xp->xp_line;
+    args[2].v_type = VAR_NUMBER;
+    args[2].vval.v_number = xp->xp_col;
 
     /* Save the cmdline, we don't know what the function may do. */
     save_ccline = ccline;
@@ -5315,7 +5319,7 @@ call_user_expand_func(
     if (ccline.cmdbuff != NULL)
 	ccline.cmdbuff[ccline.cmdlen] = keep;
 
-    vim_free(args[0]);
+    vim_free(pat);
     return ret;
 }
 

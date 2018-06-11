@@ -4795,13 +4795,11 @@ iconv_end(void)
     static void
 call_imactivatefunc(int active)
 {
-    char_u *argv[1];
+    typval_T argv;
 
-    if (active)
-	argv[0] = (char_u *)"1";
-    else
-	argv[0] = (char_u *)"0";
-    (void)call_func_retnr(p_imaf, 1, argv, FALSE);
+    argv.v_type = VAR_NUMBER;
+    argv.vval.v_number = active ? 1 : 0;
+    (void)call_func_retnr(p_imaf, 1, &argv, FALSE);
 }
 
     static int

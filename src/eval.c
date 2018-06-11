@@ -1019,54 +1019,13 @@ eval_expr(char_u *arg, char_u **nextcmd)
 call_vim_function(
     char_u      *func,
     int		argc,
-    char_u      **argv,
-    int		safe,		/* use the sandbox */
-    int		str_arg_only,	/* all arguments are strings */
-    typval_T	*rettv)
+    typval_T	*argv,
+    typval_T	*rettv,
+    int		safe)		/* use the sandbox */
 {
-    typval_T	*argvars;
-    varnumber_T	n;
-    int		len;
-    int		i;
     int		doesrange;
     void	*save_funccalp = NULL;
     int		ret;
-
-    argvars = (typval_T *)alloc((unsigned)((argc + 1) * sizeof(typval_T)));
-    if (argvars == NULL)
-	return FAIL;
-
-    for (i = 0; i < argc; i++)
-    {
-	/* Pass a NULL or empty argument as an empty string */
-	if (argv[i] == NULL || *argv[i] == NUL)
-	{
-	    argvars[i].v_type = VAR_STRING;
-	    argvars[i].vval.v_string = (char_u *)"";
-	    continue;
-	}
-
-	if (str_arg_only)
-	    len = 0;
-	else
-	{
-	    /* Recognize a number argument, the others must be strings. A dash
-	     * is a string too. */
-	    vim_str2nr(argv[i], NULL, &len, STR2NR_ALL, &n, NULL, 0);
-	    if (len == 1 && *argv[i] == '-')
-		len = 0;
-	}
-	if (len != 0 && len == (int)STRLEN(argv[i]))
-	{
-	    argvars[i].v_type = VAR_NUMBER;
-	    argvars[i].vval.v_number = n;
-	}
-	else
-	{
-	    argvars[i].v_type = VAR_STRING;
-	    argvars[i].vval.v_string = argv[i];
-	}
-    }
 
     if (safe)
     {
@@ -1075,7 +1034,7 @@ call_vim_function(
     }
 
     rettv->v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    ret = call_func(func, (int)STRLEN(func), rettv, argc, argvars, NULL,
+    ret = call_func(func, (int)STRLEN(func), rettv, argc, argv, NULL,
 		    curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 		    &doesrange, TRUE, NULL, NULL);
     if (safe)
@@ -1083,7 +1042,6 @@ call_vim_function(
 	--sandbox;
 	restore_funccal(save_funccalp);
     }
-    vim_free(argvars);
 
     if (ret == FAIL)
 	clear_tv(rettv);
@@ -1100,14 +1058,14 @@ call_vim_function(
 call_func_retnr(
     char_u      *func,
     int		argc,
-    char_u      **argv,
+    typval_T	*argv,
     int		safe)		/* use the sandbox */
 {
     typval_T	rettv;
     varnumber_T	retval;
 
     /* All arguments are passed as strings, no conversion to number. */
-    if (call_vim_function(func, argc, argv, safe, TRUE, &rettv) == FAIL)
+    if (call_vim_function(func, argc, argv, &rettv, safe) == FAIL)
 	return -1;
 
     retval = get_tv_number_chk(&rettv, NULL);
@@ -1128,14 +1086,14 @@ call_func_retnr(
 call_func_retstr(
     char_u      *func,
     int		argc,
-    char_u      **argv,
+    typval_T	*argv,
     int		safe)		/* use the sandbox */
 {
     typval_T	rettv;
     char_u	*retval;
 
     /* All arguments are passed as strings, no conversion to number. */
-    if (call_vim_function(func, argc, argv, safe, TRUE, &rettv) == FAIL)
+    if (call_vim_function(func, argc, argv, &rettv, safe) == FAIL)
 	return NULL;
 
     retval = vim_strsave(get_tv_string(&rettv));
@@ -1153,13 +1111,13 @@ call_func_retstr(
 call_func_retlist(
     char_u      *func,
     int		argc,
-    char_u      **argv,
+    typval_T	*argv,
     int		safe)		/* use the sandbox */
 {
     typval_T	rettv;
 
     /* All arguments are passed as strings, no conversion to number. */
-    if (call_vim_function(func, argc, argv, safe, TRUE, &rettv) == FAIL)
+    if (call_vim_function(func, argc, argv, &rettv, safe) == FAIL)
 	return NULL;
 
     if (rettv.v_type != VAR_LIST)
