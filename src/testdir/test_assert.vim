@@ -198,3 +198,9 @@ func Test_user_is_happy()
   smile
   sleep 300m
 endfunc
+
+" Must be last.
+func Test_zz_quit_detected()
+  " Verify that if a test function ends Vim the test script detects this.
+  quit
+endfunc
