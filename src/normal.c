@@ -2219,7 +2219,7 @@ op_colon(oparg_T *oap)
 op_function(oparg_T *oap UNUSED)
 {
 #ifdef FEAT_EVAL
-    char_u	*(argv[1]);
+    typval_T	argv[2];
 # ifdef FEAT_VIRTUALEDIT
     int		save_virtual_op = virtual_op;
 # endif
@@ -2235,12 +2235,14 @@ op_function(oparg_T *oap UNUSED)
 	    /* Exclude the end position. */
 	    decl(&curbuf->b_op_end);
 
+	argv[0].v_type = VAR_STRING;
 	if (oap->block_mode)
-	    argv[0] = (char_u *)"block";
+	    argv[0].vval.v_string = (char_u *)"block";
 	else if (oap->motion_type == MLINE)
-	    argv[0] = (char_u *)"line";
+	    argv[0].vval.v_string = (char_u *)"line";
 	else
-	    argv[0] = (char_u *)"char";
+	    argv[0].vval.v_string = (char_u *)"char";
+	argv[1].v_type = VAR_UNKNOWN;
 
 # ifdef FEAT_VIRTUALEDIT
 	/* Reset virtual_op so that 'virtualedit' can be changed in the

@@ -117,6 +117,31 @@ func Test_omni_dash()
   set omnifunc=
 endfunc
 
+func Test_completefunc_args()
+  let s:args = []
+  func! CompleteFunc(findstart, base)
+    let s:args += [[a:findstart, empty(a:base)]]
+  endfunc
+  new
+
+  set completefunc=CompleteFunc
+  call feedkeys("i\<C-X>\<C-U>\<Esc>", 'x')
+  call assert_equal(s:args[0], [1, 1])
+  call assert_equal(s:args[1][0], 0)
+  set completefunc=
+
+  let s:args = []
+  set omnifunc=CompleteFunc
+  call feedkeys("i\<C-X>\<C-O>\<Esc>", 'x')
+  call assert_equal(s:args[0], [1, 1])
+  call assert_equal(s:args[1][0], 0)
+  set omnifunc=
+
+  bwipe!
+  unlet s:args
+  delfunc CompleteFunc
+endfunc
+
 function! s:CompleteDone_CompleteFuncDict( findstart, base )
   if a:findstart
     return 0
