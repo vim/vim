@@ -2176,6 +2176,16 @@ func QfAutoCmdHandler(loc, cmd)
 endfunc
 
 func Test_Autocmd()
+
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "one\tXfile1\t/^one/;\"\tf\tfile:\tsignature:(void)"],
+        \ 'Xtags')
+  new Xfile1
+  call setline(1, ['empty', 'one()', 'empty'])
+  write
+  bwipe!
+
   autocmd QuickFixCmdPre * call QfAutoCmdHandler('pre', expand('<amatch>'))
   autocmd QuickFixCmdPost * call QfAutoCmdHandler('post', expand('<amatch>'))
 
@@ -2189,6 +2199,7 @@ func Test_Autocmd()
   silent! cexpr non_existing_func()
   silent! caddexpr non_existing_func()
   silent! cgetexpr non_existing_func()
+  ltag one
   let l = ['precexpr',
 	      \ 'postcexpr',
 	      \ 'precaddexpr',
@@ -2203,8 +2214,14 @@ func Test_Autocmd()
 	      \ 'postcgetexpr',
 	      \ 'precexpr',
 	      \ 'precaddexpr',
-	      \ 'precgetexpr']
+	      \ 'precgetexpr',
+	      \ 'preltag',
+	      \ 'postltag']
   call assert_equal(l, g:acmds)
+
+  set tags&
+  call delete('Xtags')
+  call delete('Xfile1')
 
   let g:acmds = []
   enew! | call append(0, "F2:10:Line 10")

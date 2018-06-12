@@ -631,6 +631,16 @@ do_tag(
 	    {
 		if (add_llist_tags(tag, num_matches, matches) == FAIL)
 		    goto end_do_tag;
+		/*
+		 * Trigger QuickFixCmdPre autocommand.
+		 */
+		if (apply_autocmds(EVENT_QUICKFIXCMDPRE, (char_u *)"ltag",
+		                                    curbuf->b_fname, TRUE, curbuf))
+		{
+		    if (aborting())
+		        return FALSE;
+		}
+
 		cur_match = 0;		/* Jump to the first tag */
 	    }
 #endif
@@ -751,6 +761,15 @@ do_tag(
 	     * Jump to the desired match.
 	     */
 	    i = jumpto_tag(matches[cur_match], forceit, type != DT_CSCOPE);
+
+	    /*
+	     * Trigger QuickFixCmdPost autocommand.
+	     */
+#if defined(FEAT_QUICKFIX)
+	    if (type == DT_LTAG)
+		apply_autocmds(EVENT_QUICKFIXCMDPOST, (char_u *)"ltag",
+		                                curbuf->b_fname, TRUE, curbuf);
+#endif
 
 #if defined(FEAT_EVAL)
 	    set_vim_var_string(VV_SWAPCOMMAND, NULL, -1);
