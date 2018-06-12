@@ -5322,6 +5322,7 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 #  endif
 	}
     }
+# endif
 }
 
     void
