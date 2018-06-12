@@ -62,7 +62,7 @@ void mch_set_shellsize(void);
 void mch_new_shellsize(void);
 void may_send_sigint(int c, pid_t pid, pid_t wpid);
 int mch_call_shell(char_u *cmd, int options);
-void mch_job_start(char **argv, job_T *job, jobopt_T *options);
+void mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal);
 char *mch_job_status(job_T *job);
 job_T *mch_detect_ended_job(job_T *job_list);
 int mch_signal_job(job_T *job, char_u *how);

@@ -4159,7 +4159,11 @@ wait4pid(pid_t child, waitstatus *status)
  * Set the environment for a child process.
  */
     static void
-set_child_environment(long rows, long columns, char *term)
+set_child_environment(
+	long	rows,
+	long	columns,
+	char	*term,
+	int	is_terminal UNUSED)
 {
 # ifdef HAVE_SETENV
     char	envbuf[50];
@@ -4169,7 +4173,9 @@ set_child_environment(long rows, long columns, char *term)
     static char	envbuf_Lines[20];
     static char	envbuf_Columns[20];
     static char	envbuf_Colors[20];
+#  ifdef FEAT_TERMINAL
     static char	envbuf_Version[20];
+#  endif
 #  ifdef FEAT_CLIENTSERVER
     static char	envbuf_Servername[60];
 #  endif
@@ -4190,8 +4196,13 @@ set_child_environment(long rows, long columns, char *term)
     setenv("COLUMNS", (char *)envbuf, 1);
     sprintf((char *)envbuf, "%ld", colors);
     setenv("COLORS", (char *)envbuf, 1);
-    sprintf((char *)envbuf, "%ld",  get_vim_var_nr(VV_VERSION));
-    setenv("VIM_TERMINAL", (char *)envbuf, 1);
+#  ifdef FEAT_TERMINAL
+    if (is_terminal)
+    {
+	sprintf((char *)envbuf, "%ld",  get_vim_var_nr(VV_VERSION));
+	setenv("VIM_TERMINAL", (char *)envbuf, 1);
+    }
+#  endif
 #  ifdef FEAT_CLIENTSERVER
     setenv("VIM_SERVERNAME", serverName == NULL ? "" : (char *)serverName, 1);
 #  endif
@@ -4212,9 +4223,14 @@ set_child_environment(long rows, long columns, char *term)
     putenv(envbuf_Columns);
     vim_snprintf(envbuf_Colors, sizeof(envbuf_Colors), "COLORS=%ld", colors);
     putenv(envbuf_Colors);
-    vim_snprintf(envbuf_Version, sizeof(envbuf_Version), "VIM_TERMINAL=%ld",
-						   get_vim_var_nr(VV_VERSION));
-    putenv(envbuf_Version);
+#  ifdef FEAT_TERMINAL
+    if (is_terminal)
+    {
+	vim_snprintf(envbuf_Version, sizeof(envbuf_Version),
+			       "VIM_TERMINAL=%ld", get_vim_var_nr(VV_VERSION));
+	putenv(envbuf_Version);
+    }
+#  endif
 #  ifdef FEAT_CLIENTSERVER
     vim_snprintf(envbuf_Servername, sizeof(envbuf_Servername),
 	    "VIM_SERVERNAME=%s", serverName == NULL ? "" : (char *)serverName);
@@ -4224,9 +4240,9 @@ set_child_environment(long rows, long columns, char *term)
 }
 
     static void
-set_default_child_environment(void)
+set_default_child_environment(int is_terminal)
 {
-    set_child_environment(Rows, Columns, "dumb");
+    set_child_environment(Rows, Columns, "dumb", is_terminal);
 }
 #endif
 
@@ -4689,7 +4705,7 @@ mch_call_shell_fork(
 #  endif
 		}
 # endif
-		set_default_child_environment();
+		set_default_child_environment(FALSE);
 
 		/*
 		 * stderr is only redirected when using the GUI, so that a
@@ -5367,7 +5383,7 @@ mch_call_shell(
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
     void
-mch_job_start(char **argv, job_T *job, jobopt_T *options)
+mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 {
     pid_t	pid;
     int		fd_in[2] = {-1, -1};	/* for stdin */
@@ -5515,11 +5531,12 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options)
 	    set_child_environment(
 		    (long)options->jo_term_rows,
 		    (long)options->jo_term_cols,
-		    term);
+		    term,
+		    is_terminal);
 	}
 	else
 # endif
-	    set_default_child_environment();
+	    set_default_child_environment(is_terminal);
 
 	if (options->jo_env != NULL)
 	{

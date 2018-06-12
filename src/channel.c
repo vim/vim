@@ -5525,7 +5525,11 @@ job_check_ended(void)
  * Returns NULL when out of memory.
  */
     job_T *
-job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
+job_start(
+	typval_T    *argvars,
+	char	    **argv_arg,
+	jobopt_T    *opt_arg,
+	int	    is_terminal UNUSED)
 {
     job_T	*job;
     char_u	*cmd = NULL;
@@ -5679,7 +5683,7 @@ job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg)
 	ch_log(NULL, "Starting job: %s", (char *)ga.ga_data);
 	ga_clear(&ga);
     }
-    mch_job_start(argv, job, &opt);
+    mch_job_start(argv, job, &opt, is_terminal);
 #else
     ch_log(NULL, "Starting job: %s", (char *)cmd);
     mch_job_start((char *)cmd, job, &opt);
