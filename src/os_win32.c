@@ -5275,25 +5275,43 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 	}
     }
 
-# ifdef FEAT_CLIENTSERVER
     if (is_terminal)
     {
+# ifdef FEAT_CLIENTSERVER
 	char_u	*servername = get_vim_var_str(VV_SEND_SERVER);
-	size_t	lval = STRLEN(servername);
-	size_t	n;
+	size_t	servername_len = STRLEN(servername);
+# endif
+	char_u	*version = get_vim_var_str(VV_VERSION);
+	size_t	version_len = STRLEN(version);
+	// size of "VIM_SERVERNAME=" and value,
+	// plus "VIM_TERMINAL=" and value,
+	// plus two terminating NULs
+	size_t	n = 0
+# ifdef FEAT_CLIENTSERVER
+		    + 15 + servername_len
+# endif
+		    + 13 + version_len + 2;
 
-	if (ga_grow(gap, (int)(14 + lval + 2)) == OK)
+	if (ga_grow(gap, (int)n) == OK)
 	{
+# ifdef FEAT_CLIENTSERVER
 	    for (n = 0; n < 15; n++)
 		*((WCHAR*)gap->ga_data + gap->ga_len++) =
 		    (WCHAR)"VIM_SERVERNAME="[n];
-	    for (n = 0; n < lval; n++)
+	    for (n = 0; n < servername_len; n++)
 		*((WCHAR*)gap->ga_data + gap->ga_len++) =
 		    (WCHAR)servername[n];
 	    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
+# endif
+	    for (n = 0; n < 13; n++)
+		*((WCHAR*)gap->ga_data + gap->ga_len++) =
+		    (WCHAR)"VIM_TERMINAL="[n];
+	    for (n = 0; n < version_len; n++)
+		*((WCHAR*)gap->ga_data + gap->ga_len++) =
+		    (WCHAR)version[n];
+	    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
 	}
     }
-# endif
 }
 
     void

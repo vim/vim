@@ -376,6 +376,7 @@ Environment variables are used to pass information to the running job:
     COLUMNS		number of columns in the terminal initially
     COLORS		number of colors, 't_Co' (256*256*256 in the GUI)
     VIM_SERVERNAME	v:servername
+    VIM_TERMINAL	v:version
 
 
 MS-Windows ~

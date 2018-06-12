@@ -482,18 +482,25 @@ func Test_terminal_servername()
   if !has('clientserver')
     return
   endif
+  call s:test_environment("VIM_SERVERNAME", v:servername)
+endfunc
+
+func Test_terminal_version()
+  call s:test_environment("VIM_TERMINAL", string(v:version))
+endfunc
+
+func s:test_environment(name, value)
   let buf = Run_shell_in_terminal({})
   " Wait for the shell to display a prompt
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
   if has('win32')
-    call term_sendkeys(buf, "echo %VIM_SERVERNAME%\r")
+    call term_sendkeys(buf, "echo %" . a:name . "%\r")
   else
-    call term_sendkeys(buf, "echo $VIM_SERVERNAME\r")
+    call term_sendkeys(buf, "echo $" . a:name . "\r")
   endif
   call term_wait(buf)
   call Stop_shell_in_terminal(buf)
-  call WaitFor('getline(2) == v:servername')
-  call assert_equal(v:servername, getline(2))
+  call WaitForAssert({-> assert_equal(a:value, getline(2))})
 
   exe buf . 'bwipe'
   unlet buf
