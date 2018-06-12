@@ -393,7 +393,9 @@ endfunc
 
 func Test_cmdline_complete_user_names()
   if has('unix') && executable('whoami')
-    " TODO: can wk make this test work on Windows?
+    " TODO: user name completion is not yet implemented on Windows.
+    " See todo.txt: "Patch to support user name completion on
+    " MS-Windows. (Yasuhiro Matsumoto, 2012 Aug 16)".
     let whoami = systemlist('whoami')[0]
     let first_letter = whoami[0]
     if len(first_letter) > 0
