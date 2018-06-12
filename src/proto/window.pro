@@ -54,6 +54,7 @@ void win_setheight_win(int height, win_T *win);
 void win_setwidth(int width);
 void win_setwidth_win(int width, win_T *wp);
 void win_setminheight(void);
+void win_setminwidth(void);
 void win_drag_status_line(win_T *dragwin, int offset);
 void win_drag_vsep_line(win_T *dragwin, int offset);
 void set_fraction(win_T *wp);
