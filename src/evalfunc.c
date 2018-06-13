@@ -8381,10 +8381,10 @@ f_mode(typval_T *argvars, typval_T *rettv)
 	buf[0] = 'n';
 	if (finish_op)
 	    buf[1] = 'o';
-	else if (restart_edit == 'I')
+	else if (restart_edit == 'I' || restart_edit == 'R' || restart_edit == 'V')
 	{
-		buf[1] = 'i';
-		buf[2] = 'I';
+	    buf[1] = 'i';
+	    buf[2] = restart_edit;
 	}
     }
 

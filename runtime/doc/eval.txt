@@ -6198,7 +6198,9 @@ mode([expr])	Return a string that indicates the current mode.
 
 			n	Normal, Terminal-Normal
 			no	Operator-pending
-			nCTRL-Oi	Normal, triggered by |i_CTRL-O|
+			niI	Normal by |CTRL-O| from |Insert-mode|
+			niR	Normal by |CTRL-O| from |Replace-mode|
+			niV	Normal by |CTRL-O| from |Virtual-Replace-mode|
 			v	Visual by character
 			V	Visual by line
 			CTRL-V	Visual blockwise
