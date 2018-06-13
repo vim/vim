@@ -8383,8 +8383,8 @@ f_mode(typval_T *argvars, typval_T *rettv)
 	    buf[1] = 'o';
 	else if (restart_edit == 'I')
 	{
-		buf[1] = Ctrl_O;
-		buf[2] = 'i';
+		buf[1] = 'i';
+		buf[2] = 'I';
 	}
     }
 

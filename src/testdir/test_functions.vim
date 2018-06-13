@@ -466,7 +466,7 @@ func Test_mode()
 
   " i_CTRL-O
   exe "normal i\<C-O>:call Save_mode()\<Cr>\<Esc>"
-  call assert_equal("n-n\<C-o>i", g:current_modes)
+  call assert_equal("n-niI", g:current_modes)
 
   " How to test operator-pending mode?
 
