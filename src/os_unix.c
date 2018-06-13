@@ -4199,7 +4199,7 @@ set_child_environment(
 #  ifdef FEAT_TERMINAL
     if (is_terminal)
     {
-	sprintf((char *)envbuf, "%ld",  get_vim_var_nr(VV_VERSION));
+	sprintf((char *)envbuf, "%ld",  (long)get_vim_var_nr(VV_VERSION));
 	setenv("VIM_TERMINAL", (char *)envbuf, 1);
     }
 #  endif
@@ -4227,7 +4227,7 @@ set_child_environment(
     if (is_terminal)
     {
 	vim_snprintf(envbuf_Version, sizeof(envbuf_Version),
-			       "VIM_TERMINAL=%ld", get_vim_var_nr(VV_VERSION));
+			 "VIM_TERMINAL=%ld", (long)get_vim_var_nr(VV_VERSION));
 	putenv(envbuf_Version);
     }
 #  endif
