@@ -126,15 +126,15 @@ func Test_completefunc_args()
 
   set completefunc=CompleteFunc
   call feedkeys("i\<C-X>\<C-U>\<Esc>", 'x')
-  call assert_equal(s:args[0], [1, 1])
-  call assert_equal(s:args[1][0], 0)
+  call assert_equal([1, 1], s:args[0])
+  call assert_equal(0, s:args[1][0])
   set completefunc=
 
   let s:args = []
   set omnifunc=CompleteFunc
   call feedkeys("i\<C-X>\<C-O>\<Esc>", 'x')
-  call assert_equal(s:args[0], [1, 1])
-  call assert_equal(s:args[1][0], 0)
+  call assert_equal([1, 1], s:args[0])
+  call assert_equal(0, s:args[1][0])
   set omnifunc=
 
   bwipe!
