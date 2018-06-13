@@ -2176,15 +2176,11 @@ func QfAutoCmdHandler(loc, cmd)
 endfunc
 
 func Test_Autocmd()
-
   set tags=Xtags
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "one\tXfile1\t/^one/;\"\tf\tfile:\tsignature:(void)"],
         \ 'Xtags')
-  new Xfile1
-  call setline(1, ['empty', 'one()', 'empty'])
-  write
-  bwipe!
+  call writefile(['empty', 'one()', 'empty'], 'Xfile1')
 
   autocmd QuickFixCmdPre * call QfAutoCmdHandler('pre', expand('<amatch>'))
   autocmd QuickFixCmdPost * call QfAutoCmdHandler('post', expand('<amatch>'))
