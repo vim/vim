@@ -397,7 +397,7 @@ endif
 " Bad Math (mismatched): {{{1
 if !exists("g:tex_no_math") && !s:tex_no_error
  syn match texBadMath		"\\end\s*{\s*\(array\|[bBpvV]matrix\|split\|smallmatrix\)\s*}"
- syn match texBadMath		"\\end\s*{\s*\(displaymath\|equation\|eqnarray\|math\)\*\=\s*}"
+ syn match texBadMath		"\\end\s*{\s*\(displaymath\|equation\|eqnarray\|math\|align\)\*\=\s*}"
  syn match texBadMath		"\\[\])]"
 endif
 
@@ -440,6 +440,7 @@ if !exists("g:tex_no_math")
  call TexNewMathZone("B","eqnarray",1)
  call TexNewMathZone("C","equation",1)
  call TexNewMathZone("D","math",1)
+ call TexNewMathZone("E","align",1)
 
  " Inline Math Zones: {{{2
  if s:tex_fast =~# 'M'
