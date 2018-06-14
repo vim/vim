@@ -956,15 +956,13 @@ func Test_libcall_libcallnr()
 
   if has('win32')
     let libc = 'msvcrt.dll'
+  elseif has('mac')
+    let libc = 'libSystem.B.dylib'
   else
-    " TODO: on macOs, the test will not find /lib64/libc.so.[1-9] so the test
-    " will be skipped. Can we test libcall()/libcallnr() on macOs?
-    let libs = split(glob('/lib/libc.so.[1-9]'), "\n")
-          \  + split(glob('/lib64/libc.so.[1-9]'), "\n")
-    if len(libs) == 0
-      return
-    endif
-    let libc = libs[-1]
+    " On Unix, libc.so can be in various places.
+    " Interestingly, using an empty string for the 1st argument of libcall
+    " allows to call functions from libc which is not documented.
+    let libc = ''
   endif
 
   if has('win32')
