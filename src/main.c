@@ -3320,7 +3320,7 @@ usage(void)
     main_msg(_("-dev <device>\t\tUse <device> for I/O"));
 #endif
 #ifdef FEAT_ARABIC
-    main_msg(_("-A\t\t\tstart in Arabic mode"));
+    main_msg(_("-A\t\t\tStart in Arabic mode"));
 #endif
 #ifdef FEAT_RIGHTLEFT
     main_msg(_("-H\t\t\tStart in Hebrew mode"));
