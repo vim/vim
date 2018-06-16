@@ -6272,8 +6272,16 @@ ex_cbuffer(exarg_T *eap)
 	    if (res >= 0)
 		qf_list_changed(qi, qi->qf_curlist);
 	    if (au_name != NULL)
+	    {
+		buf_T *curbuf_old = curbuf;
+
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
 						curbuf->b_fname, TRUE, curbuf);
+		if (curbuf != curbuf_old)
+		    // Autocommands changed buffer, don't jump now, "qi" may
+		    // be invalid.
+		    res = 0;
+	    }
 	    if (res > 0 && (eap->cmdidx == CMD_cbuffer ||
 						eap->cmdidx == CMD_lbuffer))
 		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
