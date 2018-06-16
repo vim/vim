@@ -3372,8 +3372,9 @@ mch_print_start_line(int margin, int page_line)
 }
 
     int
-mch_print_text_out(char_u *p, int len UNUSED)
+mch_print_text_out(char_u *textp, int len UNUSED)
 {
+    char_u	*p = textp;
     int		need_break;
     char_u	ch;
     char_u      ch_buff[8];
@@ -3508,8 +3509,15 @@ mch_print_text_out(char_u *p, int len UNUSED)
 
 #ifdef FEAT_MBYTE
     if (prt_do_conv)
+    {
 	/* Convert from multi-byte to 8-bit encoding */
 	tofree = p = string_convert(&prt_conv, p, &len);
+	if (p == NULL)
+	{
+	    p = (char_u *)"";
+	    len = 0;
+	}
+    }
 
     if (prt_out_mbyte)
     {
