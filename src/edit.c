@@ -1704,7 +1704,12 @@ ins_redraw(
 #endif
 	    )
     {
+	aco_save_T	aco;
+
+	// save and restore curwin and curbuf, in case the autocmd changes them
+	aucmd_prepbuf(&aco, curbuf);
 	apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
+	aucmd_restbuf(&aco);
 	curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
     }
 
@@ -1716,7 +1721,12 @@ ins_redraw(
 	    && curbuf->b_last_changedtick_pum != CHANGEDTICK(curbuf)
 	    && pum_visible())
     {
+	aco_save_T	aco;
+
+	// save and restore curwin and curbuf, in case the autocmd changes them
+	aucmd_prepbuf(&aco, curbuf);
 	apply_autocmds(EVENT_TEXTCHANGEDP, NULL, NULL, FALSE, curbuf);
+	aucmd_restbuf(&aco);
 	curbuf->b_last_changedtick_pum = CHANGEDTICK(curbuf);
     }
 #endif

@@ -125,6 +125,7 @@ static int redrawing_for_callback = 0;
 static schar_T	*current_ScreenLine;
 
 static void win_update(win_T *wp);
+static void win_redr_status(win_T *wp, int ignore_pum);
 static void win_draw_end(win_T *wp, int c1, int c2, int row, int endrow, hlf_T hl);
 #ifdef FEAT_FOLDING
 static void fold_line(win_T *wp, long fold_count, foldinfo_T *foldinfo, linenr_T lnum, int row);
@@ -774,7 +775,7 @@ update_screen(int type_arg)
 	if (wp->w_redr_status)
 	{
 	    cursor_off();
-	    win_redr_status(wp);
+	    win_redr_status(wp, TRUE); // any popup menu will be redrawn below
 	}
     }
 #if defined(FEAT_SEARCH_EXTRA)
@@ -1030,7 +1031,7 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 	if (wp->w_redr_type != 0)
 	    win_update(wp);
 	if (wp->w_redr_status)
-	    win_redr_status(wp);
+	    win_redr_status(wp, FALSE);
     }
 
     update_finish();
@@ -1074,7 +1075,7 @@ updateWindow(win_T *wp)
 	    || *p_stl != NUL || *wp->w_p_stl != NUL
 # endif
 	    )
-	win_redr_status(wp);
+	win_redr_status(wp, FALSE);
 
     update_finish();
 }
@@ -6535,7 +6536,7 @@ redraw_statuslines(void)
 
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_redr_status)
-	    win_redr_status(wp);
+	    win_redr_status(wp, FALSE);
     if (redraw_tabline)
 	draw_tabline();
 }
@@ -6864,9 +6865,11 @@ win_redr_status_matches(
  * Redraw the status line of window wp.
  *
  * If inversion is possible we use it. Else '=' characters are used.
+ * If "ignore_pum" is TRUE, also redraw statusline when the popup menu is
+ * displayed.
  */
-    void
-win_redr_status(win_T *wp)
+    static void
+win_redr_status(win_T *wp, int ignore_pum)
 {
     int		row;
     char_u	*p;
@@ -6890,9 +6893,9 @@ win_redr_status(win_T *wp)
     }
     else if (!redrawing()
 #ifdef FEAT_INS_EXPAND
-	    /* don't update status line when popup menu is visible and may be
-	     * drawn over it */
-	    || pum_visible()
+	    // don't update status line when popup menu is visible and may be
+	    // drawn over it, unless it will be redrawn later
+	    || (!ignore_pum && pum_visible())
 #endif
 	    )
     {
