@@ -3256,9 +3256,6 @@ static char_u *illegal_char(char_u *, int);
 #ifdef FEAT_CMDWIN
 static char_u *check_cedit(void);
 #endif
-#ifdef FEAT_TITLE
-static void did_set_title(int icon);
-#endif
 static char_u *option_expand(int opt_idx, char_u *val);
 static void didset_options(void);
 static void didset_options2(void);
@@ -5374,27 +5371,14 @@ check_cedit(void)
  * the old value back.
  */
     static void
-did_set_title(
-    int	    icon)	    /* Did set icon instead of title */
+did_set_title(void)
 {
     if (starting != NO_SCREEN
 #ifdef FEAT_GUI
 	    && !gui.starting
 #endif
 				)
-    {
 	maketitle();
-	if (icon)
-	{
-	    if (!p_icon)
-		mch_restore_title(2);
-	}
-	else
-	{
-	    if (!p_title)
-		mch_restore_title(1);
-	}
-    }
 }
 #endif
 
@@ -6949,8 +6933,7 @@ did_set_string_option(
 	else
 	    stl_syntax &= ~flagval;
 # endif
-	did_set_title(varp == &p_iconstring);
-
+	did_set_title();
     }
 #endif
 
@@ -8401,14 +8384,9 @@ set_bool_option(
 
 #ifdef FEAT_TITLE
     /* when 'title' changed, may need to change the title; same for 'icon' */
-    else if ((int *)varp == &p_title)
+    else if ((int *)varp == &p_title || (int *)varp == &p_icon)
     {
-	did_set_title(FALSE);
-    }
-
-    else if ((int *)varp == &p_icon)
-    {
-	did_set_title(TRUE);
+	did_set_title();
     }
 #endif
 

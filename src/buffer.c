@@ -38,7 +38,7 @@ static int	buf_same_ino(buf_T *buf, stat_T *stp);
 static int	otherfile_buf(buf_T *buf, char_u *ffname);
 #endif
 #ifdef FEAT_TITLE
-static int	ti_change(char_u *str, char_u **last);
+static int	value_changed(char_u *str, char_u **last);
 #endif
 static int	append_arg_number(win_T *wp, char_u *buf, int buflen, int add_file);
 static void	free_buffer(buf_T *);
@@ -3545,20 +3545,18 @@ col_print(
 }
 
 #if defined(FEAT_TITLE) || defined(PROTO)
-/*
- * put file name in title bar of window and in icon title
- */
-
 static char_u *lasttitle = NULL;
 static char_u *lasticon = NULL;
 
+/*
+ * Put the file name in the title bar and icon of the window.
+ */
     void
 maketitle(void)
 {
     char_u	*p;
-    char_u	*t_str = NULL;
-    char_u	*i_name;
-    char_u	*i_str = NULL;
+    char_u	*title_str = NULL;
+    char_u	*icon_str = NULL;
     int		maxlen = 0;
     int		len;
     int		mustset;
@@ -3574,7 +3572,7 @@ maketitle(void)
 
     need_maketitle = FALSE;
     if (!p_title && !p_icon && lasttitle == NULL && lasticon == NULL)
-	return;
+	return;  // nothing to do
 
     if (p_title)
     {
@@ -3585,7 +3583,7 @@ maketitle(void)
 		maxlen = 10;
 	}
 
-	t_str = buf;
+	title_str = buf;
 	if (*p_titlestring != NUL)
 	{
 #ifdef FEAT_STL_OPT
@@ -3598,7 +3596,7 @@ maketitle(void)
 		use_sandbox = was_set_insecurely((char_u *)"titlestring", 0);
 # endif
 		called_emsg = FALSE;
-		build_stl_str_hl(curwin, t_str, sizeof(buf),
+		build_stl_str_hl(curwin, title_str, sizeof(buf),
 					      p_titlestring, use_sandbox,
 					      0, maxlen, NULL, NULL);
 		if (called_emsg)
@@ -3608,7 +3606,7 @@ maketitle(void)
 	    }
 	    else
 #endif
-		t_str = p_titlestring;
+		title_str = p_titlestring;
 	}
 	else
 	{
@@ -3714,11 +3712,11 @@ maketitle(void)
 	    }
 	}
     }
-    mustset = ti_change(t_str, &lasttitle);
+    mustset = value_changed(title_str, &lasttitle);
 
     if (p_icon)
     {
-	i_str = buf;
+	icon_str = buf;
 	if (*p_iconstring != NUL)
 	{
 #ifdef FEAT_STL_OPT
@@ -3731,7 +3729,7 @@ maketitle(void)
 		use_sandbox = was_set_insecurely((char_u *)"iconstring", 0);
 # endif
 		called_emsg = FALSE;
-		build_stl_str_hl(curwin, i_str, sizeof(buf),
+		build_stl_str_hl(curwin, icon_str, sizeof(buf),
 						    p_iconstring, use_sandbox,
 						    0, 0, NULL, NULL);
 		if (called_emsg)
@@ -3741,32 +3739,32 @@ maketitle(void)
 	    }
 	    else
 #endif
-		i_str = p_iconstring;
+		icon_str = p_iconstring;
 	}
 	else
 	{
 	    if (buf_spname(curbuf) != NULL)
-		i_name = buf_spname(curbuf);
+		p = buf_spname(curbuf);
 	    else		    /* use file name only in icon */
-		i_name = gettail(curbuf->b_ffname);
-	    *i_str = NUL;
+		p = gettail(curbuf->b_ffname);
+	    *icon_str = NUL;
 	    /* Truncate name at 100 bytes. */
-	    len = (int)STRLEN(i_name);
+	    len = (int)STRLEN(p);
 	    if (len > 100)
 	    {
 		len -= 100;
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
-		    len += (*mb_tail_off)(i_name, i_name + len) + 1;
+		    len += (*mb_tail_off)(p, p + len) + 1;
 #endif
-		i_name += len;
+		p += len;
 	    }
-	    STRCPY(i_str, i_name);
-	    trans_characters(i_str, IOSIZE);
+	    STRCPY(icon_str, p);
+	    trans_characters(icon_str, IOSIZE);
 	}
     }
 
-    mustset |= ti_change(i_str, &lasticon);
+    mustset |= value_changed(icon_str, &lasticon);
 
     if (mustset)
 	resettitle();
@@ -3775,20 +3773,25 @@ maketitle(void)
 /*
  * Used for title and icon: Check if "str" differs from "*last".  Set "*last"
  * from "str" if it does.
- * Return TRUE when "*last" changed.
+ * Return TRUE if resettitle() is to be called.
  */
     static int
-ti_change(char_u *str, char_u **last)
+value_changed(char_u *str, char_u **last)
 {
     if ((str == NULL) != (*last == NULL)
 	    || (str != NULL && *last != NULL && STRCMP(str, *last) != 0))
     {
 	vim_free(*last);
 	if (str == NULL)
+	{
 	    *last = NULL;
+	    mch_restore_title(last == &lasttitle ? 1 : 2);
+	}
 	else
+	{
 	    *last = vim_strsave(str);
-	return TRUE;
+	    return TRUE;
+	}
     }
     return FALSE;
 }
