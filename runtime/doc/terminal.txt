@@ -38,6 +38,7 @@ If the result is "1" you have it.
       Stepping through code		|termdebug-stepping|
       Inspecting variables		|termdebug-variables|
       Other commands			|termdebug-commands|
+      Prompt mode			|termdebug-prompt|
       Communication			|termdebug-communication|
       Customizing			|termdebug-customizing|
 
@@ -620,6 +621,10 @@ The Terminal debugging plugin can be used to debug a program with gdb and view
 the source code in a Vim window.  Since this is completely contained inside
 Vim this also works remotely over an ssh connection.
 
+When the |+terminal| feature is missing, the plugin will use the "prompt"
+buffer type, if possible.  The running program will then use a newly opened
+terminal window.  See |termdebug-prompt| below for details.
+
 
 Starting ~
 							*termdebug-starting*
@@ -799,6 +804,23 @@ Other commands ~
 	     isn't one
 
 
+Prompt mode ~
+						*termdebug-prompt*
+When the |+terminal| feature is not supported and on MS-Windows, gdb will run
+in a buffer with 'buftype' set to "prompt".  This works slightly differently:
+- The gdb window will be in Insert mode while typing commands.  Go to Normal
+  mode with <Esc>, then you can move around in the buffer, copy/paste, etc.
+  Go back to editing the gdb command with any command that starts Insert mode,
+  such as `a` or `i`.
+- The program being debugged will run in a separate window.  On MS-Windows
+  this is a new console window.  On Unix, if the |+terminal| feature is
+  available a Terminal window will be opened to run the debugged program in.
+
+						*termdebug_use_prompt*
+Prompt mode can be used even when the |+terminal| feature is present with: >
+	let g:termdebug_use_prompt = 1
+
+
 Communication ~
 						*termdebug-communication*
 There is another, hidden, buffer, which is used for Vim to communicate with
@@ -834,6 +856,14 @@ The defaults are, when 'background' is "light":
 When 'background' is "dark":
   hi debugPC term=reverse ctermbg=darkblue guibg=darkblue
   hi debugBreakpoint term=reverse ctermbg=red guibg=red
+
+
+Shorcuts						*termdebug_shortcuts*
+
+You can define your own shortcuts (mappings) to control gdb, that can work in
+any window, using the TermDebugSendCommand() function.  Example: >
+	map ,w :call TermDebugSendCommand('where')<CR>
+The argument is the gdb command.
 
 
 Popup menu						*termdebug_popup*
