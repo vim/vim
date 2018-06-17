@@ -87,7 +87,8 @@ to the job.  For example:
 	'termwinkey' CTRL-W    move focus to the next window
 	'termwinkey' :	       enter an Ex command
 	'termwinkey' 'termwinkey' send 'termwinkey' to the job in the terminal
-	'termwinkey' .	       send a CTRL-W to the job in the terminal
+	'termwinkey' .	       send 'termwinkey' to the job in the terminal
+	'termwinkey' CTRL-\    send a CTRL-\ to the job in the terminal
 	'termwinkey' N	       go to terminal Normal mode, see below
 	'termwinkey' CTRL-N    same as CTRL-W N
 	'termwinkey' CTRL-C    same as |t_CTRL-W_CTRL-C|

@@ -2107,7 +2107,11 @@ terminal_loop(int blocking)
     in_terminal_loop = curbuf->b_term;
 
     if (*curwin->w_p_twk != NUL)
+    {
 	termwinkey = string_to_key(curwin->w_p_twk, TRUE);
+	if (termwinkey == Ctrl_W)
+	    termwinkey = 0;
+    }
     position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
 
@@ -2203,12 +2207,13 @@ terminal_loop(int blocking)
 		/* "CTRL-W CTRL-C" or 'termwinkey' CTRL-C: end the job */
 		mch_signal_job(curbuf->b_term->tl_job, (char_u *)"kill");
 	    }
-	    else if (termwinkey == 0 && c == '.')
+	    else if (c == '.')
 	    {
 		/* "CTRL-W .": send CTRL-W to the job */
-		c = Ctrl_W;
+		/* "'termwinkey' .": send 'termwinkey' to the job */
+		c = termwinkey == 0 ? Ctrl_W : termwinkey;
 	    }
-	    else if (termwinkey == 0 && c == Ctrl_BSL)
+	    else if (c == Ctrl_BSL)
 	    {
 		/* "CTRL-W CTRL-\": send CTRL-\ to the job */
 		c = Ctrl_BSL;
