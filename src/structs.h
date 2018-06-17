@@ -2360,6 +2360,8 @@ struct file_buffer
     char_u	*b_prompt_text;	     // set by prompt_setprompt()
     char_u	*b_prompt_callback;  // set by prompt_setcallback()
     partial_T	*b_prompt_partial;   // set by prompt_setcallback()
+    char_u	*b_prompt_interrupt;   // set by prompt_setinterrupt()
+    partial_T	*b_prompt_int_partial; // set by prompt_setinterrupt()
     int		b_prompt_insert;     // value for restart_edit when entering
 				     // a prompt buffer window.
 #endif
