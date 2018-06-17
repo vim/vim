@@ -171,7 +171,7 @@ static void redraw_win_toolbar(win_T *wp);
 static void win_redr_custom(win_T *wp, int draw_ruler);
 #endif
 #ifdef FEAT_CMDL_INFO
-static void win_redr_ruler(win_T *wp, int always);
+static void win_redr_ruler(win_T *wp, int always, int ignore_pum);
 #endif
 
 /* Ugly global: overrule attribute used by screen_char() */
@@ -783,8 +783,7 @@ update_screen(int type_arg)
 #endif
 #ifdef FEAT_INS_EXPAND
     /* May need to redraw the popup menu. */
-    if (pum_visible())
-	pum_redraw();
+    pum_may_redraw();
 #endif
 
     /* Reset b_mod_set flags.  Going through all windows is probably faster
@@ -7002,7 +7001,7 @@ win_redr_status(win_T *wp, int ignore_pum)
 						   - 1 + wp->w_wincol), attr);
 
 #ifdef FEAT_CMDL_INFO
-	win_redr_ruler(wp, TRUE);
+	win_redr_ruler(wp, TRUE, ignore_pum);
 #endif
     }
 
@@ -10455,7 +10454,7 @@ showmode(void)
     /* If the last window has no status line, the ruler is after the mode
      * message and must be redrawn */
     if (redrawing() && lastwin->w_status_height == 0)
-	win_redr_ruler(lastwin, TRUE);
+	win_redr_ruler(lastwin, TRUE, FALSE);
 #endif
     redraw_cmdline = FALSE;
     clear_cmdline = FALSE;
@@ -10874,6 +10873,7 @@ redraw_win_toolbar(win_T *wp)
 						     (int)wp->w_width, FALSE);
 }
 #endif
+
 /*
  * Show current status info in ruler and various other places
  * If always is FALSE, only show ruler if position has changed.
@@ -10899,7 +10899,7 @@ showruler(int always)
     else
 #endif
 #ifdef FEAT_CMDL_INFO
-	win_redr_ruler(curwin, always);
+	win_redr_ruler(curwin, always, FALSE);
 #endif
 
 #ifdef FEAT_TITLE
@@ -10918,7 +10918,7 @@ showruler(int always)
 
 #ifdef FEAT_CMDL_INFO
     static void
-win_redr_ruler(win_T *wp, int always)
+win_redr_ruler(win_T *wp, int always, int ignore_pum)
 {
 #define RULER_BUF_LEN 70
     char_u	buffer[RULER_BUF_LEN];
@@ -10951,8 +10951,9 @@ win_redr_ruler(win_T *wp, int always)
     if (wp == lastwin && lastwin->w_status_height == 0)
 	if (edit_submode != NULL)
 	    return;
-    /* Don't draw the ruler when the popup menu is visible, it may overlap. */
-    if (pum_visible())
+    // Don't draw the ruler when the popup menu is visible, it may overlap.
+    // Except when the popup menu will be redrawn anyway.
+    if (!ignore_pum && pum_visible())
 	return;
 #endif
 
