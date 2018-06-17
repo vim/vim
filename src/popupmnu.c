@@ -29,6 +29,7 @@ static int pum_scrollbar;		/* TRUE when scrollbar present */
 static int pum_row;			/* top row of pum */
 static int pum_col;			/* left column of pum */
 
+static win_T *pum_window = NULL;
 static int pum_win_row;
 static int pum_win_height;
 static int pum_win_col;
@@ -110,6 +111,7 @@ pum_display(
 
 	// Remember the essential parts of the window position and size, so we
 	// can decide when to reposition the popup menu.
+	pum_window = curwin;
 	pum_win_row = curwin->w_wrow + W_WINROW(curwin);
 	pum_win_height = curwin->w_height;
 	pum_win_col = curwin->w_wincol;
@@ -846,10 +848,11 @@ pum_may_redraw(void)
     if (!pum_visible())
 	return;  // nothing to do
 
-    if (pum_win_row == curwin->w_wrow + W_WINROW(curwin)
-	    && pum_win_height == curwin->w_height
-	    && pum_win_col == curwin->w_wincol
-	    && pum_win_width == curwin->w_width)
+    if (pum_window != curwin
+	    || (pum_win_row == curwin->w_wrow + W_WINROW(curwin)
+		&& pum_win_height == curwin->w_height
+		&& pum_win_col == curwin->w_wincol
+		&& pum_win_width == curwin->w_width))
     {
 	// window position didn't change, redraw in the same position
 	pum_redraw();
@@ -912,6 +915,9 @@ pum_position_at_mouse(int min_width)
     pum_width = Columns - pum_col;
     if (pum_width > pum_base_width + 1)
 	pum_width = pum_base_width + 1;
+
+    // Do not redraw at cursor position.
+    pum_window = NULL;
 }
 
 # endif
