@@ -1179,7 +1179,7 @@ doESCkey:
 		// In a prompt window CTRL-W is used for window commands.
 		// Use Shift-CTRL-W to delete a word.
 		stuffcharReadbuff(Ctrl_W);
-		restart_edit = 'i';
+		restart_edit = 'A';
 		nomove = TRUE;
 		count = 0;
 		goto doESCkey;

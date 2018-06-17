@@ -10263,7 +10263,7 @@ showmode(void)
 
     do_mode = ((p_smd && msg_silent == 0)
 	    && ((State & INSERT)
-		|| restart_edit
+		|| restart_edit != NUL
 		|| VIsual_active));
     if (do_mode || reg_recording != 0)
     {
@@ -10370,7 +10370,7 @@ showmode(void)
 #endif
 		    MSG_PUTS_ATTR(_(" INSERT"), attr);
 		}
-		else if (restart_edit == 'I')
+		else if (restart_edit == 'I' || restart_edit == 'A')
 		    MSG_PUTS_ATTR(_(" (insert)"), attr);
 		else if (restart_edit == 'R')
 		    MSG_PUTS_ATTR(_(" (replace)"), attr);
