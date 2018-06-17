@@ -10621,6 +10621,7 @@ set_qf_ll_list(
     static char *e_invact = N_("E927: Invalid action: '%s'");
     char_u	*act;
     int		action = 0;
+    static int	recursive = 0;
 #endif
 
     rettv->vval.v_number = -1;
@@ -10628,6 +10629,8 @@ set_qf_ll_list(
 #ifdef FEAT_QUICKFIX
     if (list_arg->v_type != VAR_LIST)
 	EMSG(_(e_listreq));
+    else if (recursive != 0)
+	EMSG(_(e_au_recursive));
     else
     {
 	list_T  *l = list_arg->vval.v_list;
@@ -10662,9 +10665,12 @@ set_qf_ll_list(
 	    }
 	}
 
+	++recursive;
 	if (l != NULL && action && valid_dict && set_errorlist(wp, l, action,
-	  (char_u *)(wp == NULL ? ":setqflist()" : ":setloclist()"), d) == OK)
+		     (char_u *)(wp == NULL ? ":setqflist()" : ":setloclist()"),
+		     d) == OK)
 	    rettv->vval.v_number = 0;
+	--recursive;
     }
 #endif
 }
