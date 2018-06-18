@@ -1546,3 +1546,35 @@ func Test_terminwinscroll()
 
   exe buf . 'bwipe!'
 endfunc
+
+func Test_terminal_guioptions_bang()
+  if !has('gui_running')
+    return
+  endif
+  set guioptions+=!
+
+  let filename = 'Xtestscript'
+  if has('win32')
+    let filename .= '.bat'
+    let prefix = ''
+    let contents = ['@echo off', 'exit %1']
+  else
+    let filename .= '.sh'
+    let prefix = './'
+    let contents = ['#!/bin/sh', 'exit $1']
+  endif
+  call writefile(contents, filename)
+  call setfperm(filename, 'rwxrwx---')
+
+  " Check if v:shell_error is equal to the exit status.
+  let exitval = 0
+  execute printf(':!%s%s %d', prefix, filename, exitval)
+  call assert_equal(exitval, v:shell_error)
+
+  let exitval = 9
+  execute printf(':!%s%s %d', prefix, filename, exitval)
+  call assert_equal(exitval, v:shell_error)
+
+  set guioptions&
+  call delete(filename)
+endfunc
