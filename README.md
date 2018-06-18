@@ -1,5 +1,7 @@
 `README.md` for version 8.1 of Vim: Vi IMproved.
 
+![Vim Logo](https://github.com/vim/vim/blob/master/runtime/vimlogo.gif)
+
 [![Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
 [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master)
 [![Coverage Status](https://coveralls.io/repos/vim/vim/badge.svg?branch=master&service=github)](https://coveralls.io/github/vim/vim?branch=master)
