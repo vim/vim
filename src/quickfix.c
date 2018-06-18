@@ -6348,9 +6348,11 @@ ex_cexpr(exarg_T *eap)
 	    if (au_name != NULL)
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
 						curbuf->b_fname, TRUE, curbuf);
-	    if (res > 0 && (eap->cmdidx == CMD_cexpr ||
-						eap->cmdidx == CMD_lexpr))
-		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
+	    if (res > 0 && (eap->cmdidx == CMD_cexpr
+						   || eap->cmdidx == CMD_lexpr)
+		    && qi == ll_get_or_alloc_list(curwin))
+		// Jump to the first error if autocmds didn't free the list.
+		qf_jump(qi, 0, 0, eap->forceit);
 	}
 	else
 	    EMSG(_("E777: String or List expected"));
