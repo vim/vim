@@ -2821,7 +2821,7 @@ gui_mch_find_dialog(exarg_T *eap)
 	}
 
 	set_window_title(s_findrep_hwnd,
-			       _("Find string (use '\\\\' to find  a '\\')"));
+			       _("Find string (use '\\\\' to find a '\\')"));
 	(void)SetFocus(s_findrep_hwnd);
 
 	s_findrep_is_find = TRUE;
@@ -2856,7 +2856,7 @@ gui_mch_replace_dialog(exarg_T *eap)
 	}
 
 	set_window_title(s_findrep_hwnd,
-			    _("Find & Replace (use '\\\\' to find  a '\\')"));
+			    _("Find & Replace (use '\\\\' to find a '\\')"));
 	(void)SetFocus(s_findrep_hwnd);
 
 	s_findrep_is_find = FALSE;
