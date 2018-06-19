@@ -88,7 +88,7 @@ LINK32=link.exe
 CPP_PROJ= /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c
 # ADD CPP /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c
 
-LINK32_FLAGS= oldnames.lib kernel32.lib user32.lib gdi32.lib version.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib uuid.lib /nologo /machine:I386 /nodefaultlib
+LINK32_FLAGS= oldnames.lib kernel32.lib user32.lib gdi32.lib version.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib netapi32.lib uuid.lib /nologo /machine:I386 /nodefaultlib
 # ADD LINK32  oldnames.lib kernel32.lib user32.lib gdi32.lib version.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib uuid.lib /nologo /machine:I386 /nodefaultlib
 # SUBTRACT LINK32 /incremental:yes
 

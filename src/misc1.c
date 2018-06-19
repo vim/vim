@@ -14,6 +14,10 @@
 #include "vim.h"
 #include "version.h"
 
+#if defined(FEAT_CMDL_COMPL) && defined(WIN3264)
+# include <lm.h>
+#endif
+
 static char_u *vim_version_dir(char_u *vimdir);
 static char_u *remove_tail(char_u *p, char_u *pend, char_u *name);
 #if defined(FEAT_CMDL_COMPL)
@@ -4602,6 +4606,28 @@ init_users(void)
 		((char_u **)(ga_users.ga_data))[ga_users.ga_len++] = user;
 	    }
 	endpwent();
+    }
+# elif defined(WIN3264)
+    {
+	char_u*		user;
+	DWORD		nusers = 0, ntotal = 0, i;
+	PUSER_INFO_0	uinfo;
+
+	if (NetUserEnum(NULL, 0, 0, (LPBYTE *) &uinfo, MAX_PREFERRED_LENGTH,
+				       &nusers, &ntotal, NULL) == NERR_Success)
+	{
+	    for (i = 0; i < nusers; i++)
+	    {
+		if (ga_grow(&ga_users, 1) == FAIL)
+		    break;
+		user = utf16_to_enc(uinfo[i].usri0_name, NULL);
+		if (user == NULL)
+		    break;
+		((char_u **)(ga_users.ga_data))[ga_users.ga_len++] = user;
+	    }
+
+	    NetApiBufferFree(uinfo);
+	}
     }
 # endif
 }
