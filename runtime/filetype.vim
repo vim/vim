@@ -1763,6 +1763,9 @@ au BufNewFile,BufRead *.wrl			setf vrml
 " Vroom (vim testing and executable documentation)
 au BufNewFile,BufRead *.vroom			setf vroom
 
+" WebAssembly
+autocmd BufNewFile,BufReadPost *.wast,*.wat	setf wast
+
 " Webmacro
 au BufNewFile,BufRead *.wm			setf webmacro
 
