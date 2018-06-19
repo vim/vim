@@ -70,11 +70,16 @@ let s:pc_id = 12
 let s:break_id = 13  " breakpoint number is added to this
 let s:stopped = 1
 
-if &background == 'light'
-  hi default debugPC term=reverse ctermbg=lightblue guibg=lightblue
-else
-  hi default debugPC term=reverse ctermbg=darkblue guibg=darkblue
-endif
+func s:Highlight(init, old, new)
+  let default = a:init ? 'default ' : ''
+  if a:new ==# 'light' && a:old !=# 'light'
+    exe "hi " . default . "debugPC term=reverse ctermbg=lightblue guibg=lightblue"
+  elseif a:new ==# 'dark' && a:old !=# 'dark'
+    exe "hi " . default . "debugPC term=reverse ctermbg=darkblue guibg=darkblue"
+  endif
+endfunc
+
+call s:Highlight(1, '', &background)
 hi default debugBreakpoint term=reverse ctermbg=red guibg=red
 
 func s:StartDebug(bang, ...)
@@ -347,6 +352,7 @@ func s:StartDebugCommon(dict)
   augroup TermDebug
     au BufRead * call s:BufRead()
     au BufUnload * call s:BufUnloaded()
+    au OptionSet background call s:Highlight(0, v:option_old, v:option_new)
   augroup END
 
   " Run the command if the bang attribute was given and got to the debug
@@ -887,4 +893,3 @@ func s:BufUnloaded()
     endif
   endfor
 endfunc
-
