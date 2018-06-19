@@ -1,3 +1,7 @@
+" Vim syntax file
+" Author: @rhysd (www.github.com/rhysd)
+" Language: WebAssembly
+
 if exists("b:current_syntax")
   finish
 endif
