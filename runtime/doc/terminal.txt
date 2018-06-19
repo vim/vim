@@ -705,11 +705,11 @@ Put focus on the gdb window and type: >
 Vim will start running in the program window. Put focus there and type: >
 	:help gui
 Gdb will run into the ex_help breakpoint.  The source window now shows the 
-ex_cmds.c file.  A ">>" marker will appear where the breakpoint was set.  The
-line where the debugger stopped is highlighted.  You can now step through the
-program.  Let's use the mouse: click on the "Next" button in the window
-toolbar.  You will see the highlighting move as the debugger executes a line
-of source code.
+ex_cmds.c file.  A red "1 " marker will appear in the signcolumn where the
+breakpoint was set.  The line where the debugger stopped is highlighted.  You
+can now step through the program.  Let's use the mouse: click on the "Next"
+button in the window toolbar.  You will see the highlighting move as the
+debugger executes a line of source code.
 
 Click "Next" a few times until the for loop is highlighted.  Put the cursor on
 the end of "eap->arg", then click "Eval" in the toolbar.  You will see this
@@ -788,6 +788,13 @@ source code, a new window will be created for the source code.  This also
 happens if the buffer in the source code window has been modified and can't be
 abandoned.
 
+Gdb gives each breakpoint a number.  In Vim the number shows up in the sign
+column, with a red background.  You can use these gdb commands:
+- info break	list breakpoints
+- delete N	delete breakpoint N
+You can also use the `:Clear` command if the cursor is in the line with the
+breakpoint, or use the "Clear breakpoint" right-click menu entry.
+
 
 Inspecting variables ~
 					*termdebug-variables* *:Evaluate*
@@ -830,6 +837,13 @@ Communication ~
 There is another, hidden, buffer, which is used for Vim to communicate with
 gdb.  The buffer name is "gdb communication".  Do not delete this buffer, it
 will break the debugger.
+
+Gdb has some weird behavior, the plugin does its best to work around that.
+For example, after typing "continue" in the gdb window a CTRL-C can be used to
+interrupt the running program.  But after using the MI command
+"-exec-continue"  pressing CTRL-C does not interrupt.  Therefore you will see
+"continue" being used for the `:Continue` command, instead of using the
+communication channel.
 
 
 Customizing ~

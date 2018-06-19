@@ -67,7 +67,7 @@ if !exists('termdebugger')
 endif
 
 let s:pc_id = 12
-let s:break_id = 13
+let s:break_id = 13  " breakpoint number is added to this
 let s:stopped = 1
 
 if &background == 'light'
@@ -325,10 +325,6 @@ func s:StartDebugCommon(dict)
   " There can be only one.
   sign define debugPC linehl=debugPC
 
-  " Sign used to indicate a breakpoint.
-  " Can be used multiple times.
-  sign define debugBreakpoint text=>> texthl=debugBreakpoint
-
   " Install debugger commands in the text window.
   call win_gotoid(s:sourcewin)
   call s:InstallCommands()
@@ -345,6 +341,7 @@ func s:StartDebugCommon(dict)
     endif
   endif
 
+  " Contains breakpoints that have been placed, key is the number.
   let s:breakpoints = {}
 
   augroup TermDebug
@@ -813,6 +810,16 @@ func s:HandleCursor(msg)
   call win_gotoid(wid)
 endfunc
 
+func s:CreateBreakpoint(nr)
+  if !exists("s:BreakpointSigns")
+    let s:BreakpointSigns = []
+  endif
+  if index(s:BreakpointSigns, a:nr) == -1
+    call add(s:BreakpointSigns, a:nr)
+    exe "sign define debugBreakpoint". a:nr . " text=" . a:nr . " texthl=debugBreakpoint"
+  endif
+endfunc
+
 " Handle setting a breakpoint
 " Will update the sign that shows the breakpoint
 func s:HandleNewBreakpoint(msg)
@@ -820,6 +827,7 @@ func s:HandleNewBreakpoint(msg)
   if nr == 0
     return
   endif
+  call s:CreateBreakpoint(nr)
 
   if has_key(s:breakpoints, nr)
     let entry = s:breakpoints[nr]
@@ -839,7 +847,7 @@ func s:HandleNewBreakpoint(msg)
 endfunc
 
 func s:PlaceSign(nr, entry)
-  exe 'sign place ' . (s:break_id + a:nr) . ' line=' . a:entry['lnum'] . ' name=debugBreakpoint file=' . a:entry['fname']
+  exe 'sign place ' . (s:break_id + a:nr) . ' line=' . a:entry['lnum'] . ' name=debugBreakpoint' . a:nr . ' file=' . a:entry['fname']
   let a:entry['placed'] = 1
 endfunc
 
