@@ -371,6 +371,11 @@ EXTERN int	highlight_stltermnc[9];		/* On top of user */
 #  endif
 # endif
 #endif
+#ifdef FEAT_TERMINAL
+		// When TRUE skip calling terminal_loop() once.  Used when
+		// typing ':' at the more prompt.
+EXTERN int	skip_term_loop INIT(= FALSE);
+#endif
 #ifdef FEAT_GUI
 EXTERN char_u	*use_gvimrc INIT(= NULL);	/* "-U" cmdline argument */
 #endif
