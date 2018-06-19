@@ -3269,14 +3269,14 @@ usage(void)
 #endif
 
     mch_msg(longVersion);
-    mch_msg(_("\n\nusage:"));
+    mch_msg(_("\n\nUsage:"));
     for (i = 0; ; ++i)
     {
 	mch_msg(_(" vim [arguments] "));
 	mch_msg(_(use[i]));
 	if (i == (sizeof(use) / sizeof(char_u *)) - 1)
 	    break;
-	mch_msg(_("\n   or:"));
+	mch_msg(_("\n   Or:"));
     }
 #ifdef VMS
     mch_msg(_("\nWhere case is ignored prepend / to make flag upper case"));
