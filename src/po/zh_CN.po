@@ -2829,7 +2829,7 @@ msgstr "-f\t\t\t不使用 newcli 来打开窗口"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <device>\t\t使用 <device> 进行输入输出"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\t以 Arabic 模式启动"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4667,7 +4667,7 @@ msgid "Warning: region %s not supported"
 msgstr "警告: 区域 %s 不支持"
 
 #, c-format
-msgid "Reading affix file %s ..."
+msgid "Reading affix file %s..."
 msgstr "读取附加文件 %s ……"
 
 #, c-format
@@ -4795,7 +4795,7 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s 的值与另一个 .aff 文件中使用的值不相同"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
+msgid "Reading dictionary file %s..."
 msgstr "读取字典文件 %s ……"
 
 #, c-format
@@ -4823,7 +4823,7 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "忽略了含有非 ASCII 字符的 %d 个单词，在 %s 中"
 
 #, c-format
-msgid "Reading word file %s ..."
+msgid "Reading word file %s..."
 msgstr "读取单词文件 %s ……"
 
 #, c-format
@@ -4881,7 +4881,7 @@ msgid "Total number of words: %d"
 msgstr "单词总数: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
+msgid "Writing suggestion file %s..."
 msgstr "写入建议文件 %s ……"
 
 #, c-format
@@ -4902,7 +4902,7 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "警告: 同时指定了 compounding 和 NOBREAK"
 
 #, c-format
-msgid "Writing spell file %s ..."
+msgid "Writing spell file %s..."
 msgstr "写入拼写文件 %s ……"
 
 msgid "Done!"

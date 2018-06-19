@@ -2432,7 +2432,7 @@ msgstr "-f\t\t\t不使用 newcli 來開啟視窗"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <device>\t\t使用 <device> 做輸出入"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\t啟動為 Arabic 模式"
 
 msgid "-H\t\t\tStart in Hebrew mode"

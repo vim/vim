@@ -2920,7 +2920,7 @@ msgstr "-f\t\t\tIkke bruk newcli for å åpne vindu"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <enhet>\t\tBruk <enhet> for I/U"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tStart i arabisk modus"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4771,8 +4771,8 @@ msgid "Warning: region %s not supported"
 msgstr "Advarsel: Region %s ikke støttet"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Leser affiksfil %s ..."
+msgid "Reading affix file %s..."
+msgstr "Leser affiksfil %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -4900,8 +4900,8 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s-verdi er forskjellig fra det som er bruk i en annen .aff-fil"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Leser ordlistefil %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Leser ordlistefil %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -4928,8 +4928,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "Ignorerte %d ord med ikke-ASCII-tegn i %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Leser ordfil %s ..."
+msgid "Reading word file %s..."
+msgstr "Leser ordfil %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -4987,8 +4987,8 @@ msgid "Total number of words: %d"
 msgstr "Totalt antall ord: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "Skriver forslagsfil %s ..."
+msgid "Writing suggestion file %s..."
+msgstr "Skriver forslagsfil %s..."
 
 #, c-format
 msgid "Estimated runtime memory use: %d bytes"
@@ -5008,8 +5008,8 @@ msgstr "E755: Ugyldig region i %s"
 #~ msgstr ""
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Lagrer stavefil %s ..."
+msgid "Writing spell file %s..."
+msgstr "Lagrer stavefil %s..."
 
 msgid "Done!"
 msgstr "Ferdig!"

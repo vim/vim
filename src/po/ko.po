@@ -3016,7 +3016,7 @@ msgstr "-f\t\t\t창을 열 때 newcli 사용하지 않음"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <장치>\t\tI/O에 <장치> 사용"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tArabic 모드로 시작"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4817,7 +4817,7 @@ msgstr "E879: (NFA 정규표현식) \\z(가 너무 많습니다"
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Could not open temporary log file for writing, displaying on stderr ... "
+#~ "Could not open temporary log file for writing, displaying on stderr... "
 #~ msgstr ""
 
 #, c-format
@@ -5047,7 +5047,7 @@ msgid "E782: error while reading .sug file: %s"
 msgstr "E782: .sug 파일 읽기 에러: %s"
 
 #, c-format
-msgid "Reading affix file %s ..."
+msgid "Reading affix file %s..."
 msgstr "affix 파일 %s 읽는 중"
 
 #, c-format
@@ -5183,7 +5183,7 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s 값이 다른 .aff 파일에서 사용된 것과 다릅니다"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
+msgid "Reading dictionary file %s..."
 msgstr "사전 파일 %s 읽는 중 ..."
 
 #, c-format
@@ -5211,7 +5211,7 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "무시된 %d개의 아스키문자열이 아닌 단어가 %s에 있습니다"
 
 #, c-format
-msgid "Reading word file %s ..."
+msgid "Reading word file %s..."
 msgstr "단어 파일 %s 읽는 중 ..."
 
 #, c-format
@@ -5272,8 +5272,8 @@ msgid "Total number of words: %d"
 msgstr "총 단어 수: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "%s 제안 파일을 쓰는 중 ..."
+msgid "Writing suggestion file %s..."
+msgstr "%s 제안 파일을 쓰는 중..."
 
 #, c-format
 msgid "Estimated runtime memory use: %d bytes"
@@ -5293,8 +5293,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "경고: compound와 NOBREAK 둘 다 명시됨"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "spell 파일 %s 쓰는 중 ..."
+msgid "Writing spell file %s..."
+msgstr "spell 파일 %s 쓰는 중..."
 
 msgid "Done!"
 msgstr "끝!"

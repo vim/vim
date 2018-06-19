@@ -3962,7 +3962,7 @@ msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <dispositivo>\t\tUsar <dispositivo> para I/O"
 
 #: main.c:3104
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tIniciar en modo árabe"
 
 #: main.c:3107
@@ -6414,7 +6414,7 @@ msgstr "Advertencia: la región %s no es compatible"
 
 #: spell.c:5307
 #, c-format
-msgid "Reading affix file %s ..."
+msgid "Reading affix file %s..."
 msgstr "Leyendo el archivo de afijos \"%s\"..."
 
 #: spell.c:5355 spell.c:6699 spell.c:7278
@@ -6584,8 +6584,8 @@ msgstr "El valor %s difiere de los que se usa en otro archivo .aff"
 
 #: spell.c:6660
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Leyendo el archivo de diccionario %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Leyendo el archivo de diccionario %s..."
 
 #: spell.c:6669
 #, c-format
@@ -6619,8 +6619,8 @@ msgstr "Ignorando %d palabra(s) con caracteres no-ASCII en %s"
 
 #: spell.c:7247
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Leyendo archivo de palabras \"%s\" ..."
+msgid "Reading word file %s..."
+msgstr "Leyendo archivo de palabras \"%s\"..."
 
 #: spell.c:7297
 #, c-format
@@ -6691,8 +6691,8 @@ msgstr "Número total de palabras: %d"
 
 #: spell.c:9096
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "Escribiendo el archivo de sugerencias %s ..."
+msgid "Writing suggestion file %s..."
+msgstr "Escribiendo el archivo de sugerencias %s..."
 
 #: spell.c:9157 spell.c:9418
 #, c-format
@@ -6719,8 +6719,8 @@ msgstr "Advertencia: Se especificó \"compounding\" y NOBREAK"
 
 #: spell.c:9411
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Escribiendo archivo de ortografía \"%s\" ..."
+msgid "Writing spell file %s..."
+msgstr "Escribiendo archivo de ortografía \"%s\"..."
 
 #: spell.c:9416
 msgid "Done!"

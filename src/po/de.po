@@ -3090,7 +3090,7 @@ msgstr "-f\t\t\tVerwende nicht newcli zum Öffnen eines neuen Fensters"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <device>\t\tVerwende <device> for I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tStart im Arabischen Modus"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4958,10 +4958,10 @@ msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr "E878: (NFA) Konnte nicht Speicher allokieren um Äste zu durchlaufen!"
 
 msgid ""
-"Could not open temporary log file for writing, displaying on stderr ... "
+"Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
 "Konnte temporäre Datei zum Schreiben öffnen, zeige auf Standard "
-"Fehlerausgabe ... "
+"Fehlerausgabe... "
 
 #, c-format
 msgid "(NFA) COULD NOT OPEN %s !"
@@ -5189,8 +5189,8 @@ msgid "E782: error while reading .sug file: %s"
 msgstr "E782: Fehler beim Lesen der .sug Datei: %s"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Lese Affix-Datei %s ..."
+msgid "Reading affix file %s..."
+msgstr "Lese Affix-Datei %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -5329,8 +5329,8 @@ msgstr ""
 "verwendet wird"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Lese Wörterbuch-Datei %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Lese Wörterbuch-Datei %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -5356,8 +5356,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "%d Wort(e) mit nicht-ASCII Zeichen ignoriert in %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Lese Wort-Datei %s ..."
+msgid "Reading word file %s..."
+msgstr "Lese Wort-Datei %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -5413,8 +5413,8 @@ msgid "Total number of words: %d"
 msgstr "Gesamte Anzahl von Wörtern: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "Schreibe Datei %s für Vorschläge ..."
+msgid "Writing suggestion file %s..."
+msgstr "Schreibe Datei %s für Vorschläge..."
 
 #, c-format
 msgid "Estimated runtime memory use: %d bytes"
@@ -5434,8 +5434,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Achtung: Sowohl zusammengesetzte Wörter als auch NOBREAK angegeben"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Schreibe Rechtschreibwörterbuch %s ..."
+msgid "Writing spell file %s..."
+msgstr "Schreibe Rechtschreibwörterbuch %s..."
 
 msgid "Done!"
 msgstr "Fertig!"

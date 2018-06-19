@@ -223,9 +223,9 @@ CTRL-W ^	Does ":split #", split window in two and edit alternate file.
 		and edit buffer N.
 
 						*CTRL-W_:*
-CTRL-W :	Does the same as typing |:| : edit a command line.  Useful in a
+CTRL-W :	Does the same as typing |:| - enter a command line.  Useful in a
 		terminal window, where all Vim commands must be preceded with
-		CTRL-W or 'termkey'.
+		CTRL-W or 'termwinkey'.
 
 Note that the 'splitbelow' and 'splitright' options influence where a new
 window will appear.

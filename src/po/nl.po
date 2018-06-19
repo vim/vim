@@ -2990,7 +2990,7 @@ msgstr "-f\t\t\tGebruik geen newcli om venster te openen"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <device>\t\tGebruik <device> voor in- en uitvoer"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tIn Arabische modus starten"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4369,7 +4369,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Reading affix file %s ..."
+#~ msgid "Reading affix file %s..."
 #~ msgstr ""
 
 #, c-format
@@ -4493,7 +4493,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Reading dictionary file %s ..."
+#~ msgid "Reading dictionary file %s..."
 #~ msgstr ""
 
 #, c-format
@@ -4521,7 +4521,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Reading word file %s ..."
+#~ msgid "Reading word file %s..."
 #~ msgstr ""
 
 #, c-format
@@ -4579,7 +4579,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Writing suggestion file %s ..."
+#~ msgid "Writing suggestion file %s..."
 #~ msgstr ""
 
 #, c-format
@@ -4600,7 +4600,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Writing spell file %s ..."
+#~ msgid "Writing spell file %s..."
 #~ msgstr ""
 
 #~ msgid "Done!"

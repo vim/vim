@@ -3069,7 +3069,7 @@ msgstr "-f\t\t\tNon usare newcli per aprire finestra"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <dispositivo>\t\tUsa <dispositivo> per I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tComincia in modalità Araba"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4901,9 +4901,9 @@ msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr "E878: (NFA) Non posso allocare memoria per il zigzag di ramo!"
 
 msgid ""
-"Could not open temporary log file for writing, displaying on stderr ... "
+"Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
-"Non posso aprire il file temporaneo per la scrittura, mostro su stderr ... "
+"Non posso aprire il file temporaneo per la scrittura, mostro su stderr... "
 
 #, c-format
 msgid "(NFA) COULD NOT OPEN %s !"
@@ -5129,8 +5129,8 @@ msgid "E782: error while reading .sug file: %s"
 msgstr "E782: Errore leggendo il file .sug: %s"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Lettura file affissi %s ..."
+msgid "Reading affix file %s..."
+msgstr "Lettura file affissi %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -5265,8 +5265,8 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "Il valore di %s è diverso da quello usato in un altro file .aff"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Lettura file dizionario %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Lettura file dizionario %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -5292,8 +5292,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "%d parole con caratteri non-ASCII ignorate in %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Lettura file parole %s ..."
+msgid "Reading word file %s..."
+msgstr "Lettura file parole %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -5349,8 +5349,8 @@ msgid "Total number of words: %d"
 msgstr "Conteggio totale delle parole: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "Scrivo file di suggerimenti %s ..."
+msgid "Writing suggestion file %s..."
+msgstr "Scrivo file di suggerimenti %s..."
 
 #, c-format
 msgid "Estimated runtime memory use: %d bytes"
@@ -5370,8 +5370,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Avviso: specificati sia composizione sia NOBREAK"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Scrivo file ortografico %s ..."
+msgid "Writing spell file %s..."
+msgstr "Scrivo file ortografico %s..."
 
 msgid "Done!"
 msgstr "Fatto!"

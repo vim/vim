@@ -5488,6 +5488,20 @@ job_start({command} [, {options}])			*job_start()*
 		The returned Job object can be used to get the status with
 		|job_status()| and stop the job with |job_stop()|.
 
+		Note that the job object will be deleted if there are no
+		references to it.  This closes the stdin and stderr, which may
+		cause the job to fail with an error.  To avoid this keep a
+		reference to the job.  Thus instead of: >
+	call job_start('my-command')
+<		use: >
+	let myjob = job_start('my-command')
+<		and unlet "myjob" once the job is not needed or is past the
+		point where it would fail (e.g. when it prints a message on
+		startup).  Keep in mind that variables local to a function
+		will cease to exist if the function returns.  Use a
+		script-local variable if needed: >
+	let s:myjob = job_start('my-command')
+<
 		{options} must be a Dictionary.  It can contain many optional
 		items, see |job-options|.
 

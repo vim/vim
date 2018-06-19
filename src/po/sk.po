@@ -2718,7 +2718,7 @@ msgstr "-f\t\t\tNebude pou¾íva» newcli pre otvorenie okna"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <zariadenie>\t\tPou¾i» <zariadenie> pre I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tspusti v Arabic móde"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4539,8 +4539,8 @@ msgid "Warning: region %s not supported"
 msgstr "Varovanie: región %s nie je podporovaný"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Naèítavam súbor s príponami %s ..."
+msgid "Reading affix file %s..."
+msgstr "Naèítavam súbor s príponami %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -4653,8 +4653,8 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "Hodnota %s sa odli¹uje od hodnoty pou¾itej v inom .aff súbore"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Naèítavam slovník %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Naèítavam slovník %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -4681,8 +4681,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "Ignorovaných %d slov s nepísmennými znakmi v %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Naèítavam súbor so slovami %s ..."
+msgid "Reading word file %s..."
+msgstr "Naèítavam súbor so slovami %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -4734,8 +4734,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Varovanie: ¹pecifikované spájanie a nezalamovanie"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Ukládám slovníkový súbor %s ..."
+msgid "Writing spell file %s..."
+msgstr "Ukládám slovníkový súbor %s..."
 
 msgid "Done!"
 msgstr "Hotovo!"

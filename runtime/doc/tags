@@ -5107,6 +5107,7 @@ ant.vim	syntax.txt	/*ant.vim*
 ap	motion.txt	/*ap*
 apache.vim	syntax.txt	/*apache.vim*
 append()	eval.txt	/*append()*
+appendbufline()	eval.txt	/*appendbufline()*
 aquote	motion.txt	/*aquote*
 arabic.txt	arabic.txt	/*arabic.txt*
 arabicfonts	arabic.txt	/*arabicfonts*
@@ -5770,6 +5771,7 @@ definitions	intro.txt	/*definitions*
 delete()	eval.txt	/*delete()*
 delete-insert	change.txt	/*delete-insert*
 delete-menus	gui.txt	/*delete-menus*
+deletebufline()	eval.txt	/*deletebufline()*
 deleting	change.txt	/*deleting*
 demoserver.py	channel.txt	/*demoserver.py*
 design-assumptions	develop.txt	/*design-assumptions*
@@ -8059,6 +8061,10 @@ profiling-variable	eval.txt	/*profiling-variable*
 progname-variable	eval.txt	/*progname-variable*
 progpath-variable	eval.txt	/*progpath-variable*
 progress.vim	syntax.txt	/*progress.vim*
+prompt-buffer	channel.txt	/*prompt-buffer*
+prompt_setcallback()	eval.txt	/*prompt_setcallback()*
+prompt_setinterrupt()	eval.txt	/*prompt_setinterrupt()*
+prompt_setprompt()	eval.txt	/*prompt_setprompt()*
 pronounce	intro.txt	/*pronounce*
 psql	ft_sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
@@ -8990,10 +8996,13 @@ termdebug-commands	terminal.txt	/*termdebug-commands*
 termdebug-communication	terminal.txt	/*termdebug-communication*
 termdebug-customizing	terminal.txt	/*termdebug-customizing*
 termdebug-example	terminal.txt	/*termdebug-example*
+termdebug-prompt	terminal.txt	/*termdebug-prompt*
 termdebug-starting	terminal.txt	/*termdebug-starting*
 termdebug-stepping	terminal.txt	/*termdebug-stepping*
 termdebug-variables	terminal.txt	/*termdebug-variables*
 termdebug_popup	terminal.txt	/*termdebug_popup*
+termdebug_shortcuts	terminal.txt	/*termdebug_shortcuts*
+termdebug_use_prompt	terminal.txt	/*termdebug_use_prompt*
 termdebug_wide	terminal.txt	/*termdebug_wide*
 terminal	terminal.txt	/*terminal*
 terminal-api	terminal.txt	/*terminal-api*
@@ -9546,6 +9555,7 @@ whitespace	pattern.txt	/*whitespace*
 wildcard	editing.txt	/*wildcard*
 wildcards	editing.txt	/*wildcards*
 wildmenumode()	eval.txt	/*wildmenumode()*
+win16	os_win32.txt	/*win16*
 win32	os_win32.txt	/*win32*
 win32-!start	gui_w32.txt	/*win32-!start*
 win32-PATH	os_win32.txt	/*win32-PATH*

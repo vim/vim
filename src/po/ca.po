@@ -3021,7 +3021,7 @@ msgstr "-f\t\t\tNo obre una finestra nova amb newcli"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <dispositiu>\t\tUsa <dispositiu> per a l'E/S"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tComença en mode aràbic"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4797,8 +4797,8 @@ msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr "E878: (NFA) Memòria insuficient per a recórrer la branca!"
 
 msgid ""
-"Could not open temporary log file for writing, displaying on stderr ... "
-msgstr "No es pot obrir un fitxer temporal de logs, s'escriu a stderr ... "
+"Could not open temporary log file for writing, displaying on stderr... "
+msgstr "No es pot obrir un fitxer temporal de logs, s'escriu a stderr... "
 
 #, c-format
 msgid "(NFA) COULD NOT OPEN %s !"
@@ -5035,8 +5035,8 @@ msgid "E782: error while reading .sug file: %s"
 msgstr "E782: error en llegir el fitxer .sug: %s"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Llegint el fitxer d'afixos %s ..."
+msgid "Reading affix file %s..."
+msgstr "Llegint el fitxer d'afixos %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -5166,8 +5166,8 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "el valor %s difereix de l'usat en un altre fitxer .aff"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Llegint el fitxer de diccionari %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Llegint el fitxer de diccionari %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -5194,8 +5194,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "S'ignora/en %d paraula/es amb caràcters no-ASCII a %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Llegint el fitxer de paraules %s ..."
+msgid "Reading word file %s..."
+msgstr "Llegint el fitxer de paraules %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -5251,8 +5251,8 @@ msgid "Total number of words: %d"
 msgstr "Nombre total de paraules: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "Escrivint el fitxer de suggeriments %s ..."
+msgid "Writing suggestion file %s..."
+msgstr "Escrivint el fitxer de suggeriments %s..."
 
 #, c-format
 msgid "Estimated runtime memory use: %d bytes"
@@ -5272,8 +5272,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Atenció: s'ha especificat composició i NOBREAK alhora"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Escrivint el fitxer d'ortografia %s ..."
+msgid "Writing spell file %s..."
+msgstr "Escrivint el fitxer d'ortografia %s..."
 
 msgid "Done!"
 msgstr "Fet!"

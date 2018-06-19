@@ -2436,7 +2436,7 @@ msgstr "-f\t\t\tKhông sử dụng newcli để mở cửa sổ"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <thiết bị>\t\tSử dụng <thiết bị> cho I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tKhởi động vào chế độ Ả Rập"
 
 msgid "-H\t\t\tStart in Hebrew mode"

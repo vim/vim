@@ -19,8 +19,8 @@ If the result is "1" you have it.
       Resizing				|terminal-resizing|
       Terminal Modes			|Terminal-mode|
       Cursor style			|terminal-cursor-style|
-      Special keys			|terminal-special-keys|
       Session				|terminal-session|
+      Special keys			|terminal-special-keys|
       Unix				|terminal-unix|
       MS-Windows			|terminal-ms-windows|
 2. Terminal communication	|terminal-communication|
@@ -116,9 +116,12 @@ break: >
 
 <							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
-BufWinEnter autocommand event is triggered.  This makes it possible to set
+TerminalOpen autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >
-   au BufWinEnter * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
+   au TerminalOpen * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
+The <abuf> is set to the terminal buffer, but if there is no window (hidden
+terminal) then setting options will happen in the wrong buffer, therefore the
+check for &buftype in the example.
 
 Mouse events (click and drag) are passed to the terminal.  Mouse move events
 are only passed when Vim itself is receiving them.  For a terminal that is
@@ -449,7 +452,7 @@ Currently supported commands:
 		of the terminal and {argument}, the decoded JSON argument. 
 		The function name must start with "Tapi_" to avoid
 		accidentally calling a function not meant to be used for the
-		terminal API
+		terminal API.
 		The user function should sanity check the argument.
 		The function can use |term_sendkeys()| to send back a reply.
 		Example in JSON: >
@@ -885,7 +888,7 @@ vertical split: >
   let g:termdebug_wide = 163
 This will set &columns to 163 when :Termdebug is used.  The value is restored
 when quitting the debugger.
-If g:termdebug_wide is set and &Columns is already  larger than
+If g:termdebug_wide is set and &columns is already larger than
 g:termdebug_wide then a vertical split will be used without changing &columns.
 Set it to 1 to get a vertical split without every changing &columns (useful
 for when the terminal can't be resized by Vim).

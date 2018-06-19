@@ -3089,7 +3089,7 @@ msgstr "-f\t\t\tНе использовать newcli для открытия о�
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <устройство>\t\tИспользовать для I/O указанное <устройство>"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tЗапуск в Арабском режиме"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4941,7 +4941,7 @@ msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr "E878: (НКА) невозможно выделить память для прохода ветви!"
 
 msgid ""
-"Could not open temporary log file for writing, displaying on stderr ... "
+"Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
 "Невозможно открыть файл временного журнала для записи, вывод на stderr..."
 
@@ -5173,8 +5173,8 @@ msgid "E782: error while reading .sug file: %s"
 msgstr "E782: Ошибка при чтении файла .sug: %s"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Чтение файла аффиксов %s ..."
+msgid "Reading affix file %s..."
+msgstr "Чтение файла аффиксов %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -5310,8 +5310,8 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s имеет другое значение, чем в файле .aff"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Чтение файла словаря %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Чтение файла словаря %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -5338,8 +5338,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "Пропущено %d слов с не ASCII символами в %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Чтение файла слов %s ..."
+msgid "Reading word file %s..."
+msgstr "Чтение файла слов %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -5395,7 +5395,7 @@ msgid "Total number of words: %d"
 msgstr "Общее количество слов: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
+msgid "Writing suggestion file %s..."
 msgstr "Запись файла предложения исправлений правописания %s"
 
 #, c-format
@@ -5417,8 +5417,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Предупреждение: оба составные и указано NOBREAK"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Запись файла правописания %s ..."
+msgid "Writing spell file %s..."
+msgstr "Запись файла правописания %s..."
 
 msgid "Done!"
 msgstr "Завершено!"

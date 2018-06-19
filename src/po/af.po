@@ -2409,8 +2409,8 @@ msgstr "-f\t\t\tMoet nie 'newcli' gebruik om venster oop te maak nie"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <toestel>\t\tGebruik <toestel> vir I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
-msgstr "-A\t\t\tbegin in Arabiese modus"
+msgid "-A\t\t\tStart in Arabic mode"
+msgstr "-A\t\t\tBegin in Arabiese modus"
 
 msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\tBegin in Hebreeuse modus"
