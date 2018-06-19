@@ -1,4 +1,5 @@
-# Irish translations for vim.
+# Irish translation for Vim
+#
 # This file is distributed under the same license as the vim package.
 # Kevin Patrick Scannell <kscanne@gmail.com>, 2005, 2006, 2008, 2010.
 #

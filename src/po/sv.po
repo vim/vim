@@ -1,4 +1,5 @@
-# Swedish translation for Vim.
+# Swedish translation for Vim
+#
 # Copyright (C) 2003-2007 Free Software Foundation, Inc.
 # Johan Svedberg <johan@svedberg.com>, 2003-2007.
 msgid ""
@@ -6,9 +7,10 @@ msgstr ""
 "Project-Id-Version: Vim 7.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-05-09 14:27+0200\n"
-"PO-Revision-Date: 2007-05-09 14:52\n"
+"PO-Revision-Date: 2007-05-09 14:52+0200\n"
 "Last-Translator: Johan Svedberg <johan@svedberg.com>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"

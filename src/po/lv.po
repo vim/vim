@@ -1,4 +1,4 @@
-# Latvian Translation for Vim     vim:set foldmethod=marker:
+# Latvian translation for Vim     vim:set foldmethod=marker:
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
@@ -13,11 +13,11 @@ msgstr ""
 "POT-Creation-Date: 2017-05-03 18:03+0100\n"
 "PO-Revision-Date: 2017-05-03 18:08+0300\n"
 "Last-Translator: Valdis Vītoliņš <valdis.vitolins@odo.lv>\n"
-"Language-Team:  Bram Moolenaar <Bram@vim.org>\n"
+"Language-Team: Latvian\n"
+"Language: lv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: lv\n"
 "X-Generator: Poedit 1.8.7.1\n"
 
 #, c-format

@@ -1,4 +1,5 @@
-# Catalan messages for vim.
+# Catalan translation for Vim
+#
 # Copyright (C) 2003-2017 Ernest Adrogué <eadrogue@gmx.net>.
 # This file is distributed under the Vim License.
 #
@@ -12,7 +13,7 @@ msgstr ""
 "Language-Team: Catalan <ca@dodds.net>\n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "E831: bf_key_init() called with empty password"
