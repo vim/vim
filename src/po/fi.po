@@ -1,4 +1,5 @@
-# Finnish translation for Vim.
+# Finnish translation for Vim
+#
 # Copyright (C) 2003-2006 Free Software Foundation, Inc.
 # 2007-2018, Flammie Pirinen <flammie@iki.fi>
 #

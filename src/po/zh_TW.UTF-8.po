@@ -1,4 +1,4 @@
-# Traditional Chinese Translation for Vim	vim:set foldmethod=marker:
+# Chinese (traditional) translation for Vim	vim:set foldmethod=marker:
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
@@ -6,6 +6,8 @@
 # FIRST AUTHOR  Francis S.Lin <piaip@csie.ntu.edu.tw>, 2000
 # FIRST RELEASE Thu Jun 14 14:24:17 CST 2001
 # MAINTAINER: Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+# Hung-Te Lin <piaip@csie.ntu.edu.tw>
+# Cecil Sheng <b7506022@csie.ntu.edu.tw>
 #
 # Last update: $LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
 #
@@ -44,10 +46,10 @@ msgstr ""
 "Project-Id-Version: Vim(Traditional Chinese)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2005-01-27 19:00+0800\n"
-"PO-Revision-Date: Mon Feb 19 22:49:21 CST 2001\n"
+"PO-Revision-Date: 2001-02-19 22:49+0800\n"
 "Last-Translator: Hung-Te Lin <piaip@csie.ntu.edu.tw>\n"
-"Language-Team: Hung-Te Lin <piaip@csie.ntu.edu.tw>, Cecil Sheng "
-"<b7506022@csie.ntu.edu.tw>\n"
+"Language-Team: Chinese (traditional)\n"
+"Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"

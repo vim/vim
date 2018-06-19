@@ -1,4 +1,4 @@
-# Vim7/src/po/vim.pot translation to Spanish.
+# Spanish translation for Vim
 #
 # Translation project homepage:
 # vim-doc-es http://www.assembla.com/wiki/show/vim-doc-es
@@ -10,13 +10,14 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
-"Report-Msgid-Bugs-To: vim@bugs.org\n"
+"Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-11-25 02:05+0100\n"
 "PO-Revision-Date: 2009-12-04 18:52+0100\n"
 "Last-Translator: Omar Campagne <ocampagne@gmail.com>\n"
-"Language-Team: vim-doc-es http://www.assembla.com/wiki/show/vim-doc-es\n"
+"Language-Team: Spanish <http://www.assembla.com/wiki/show/vim-doc-es>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: octect-stream\n"
 
 #: buffer.c:102

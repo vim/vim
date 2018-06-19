@@ -1,4 +1,5 @@
-# Czech translation of vim
+# Czech translation for Vim
+#
 # Jiøí Pavlovský <jpavlovsky@mbox.vol.cz>, 2000 - 2002.
 # Some completion for vim6.0 added by Jiøí Bøezina <brz@centrum.cz>
 # Some bugfixes by Tomáš Zellerin <zellerin@volny.cz>
@@ -12,6 +13,7 @@ msgstr ""
 "PO-Revision-Date: 2002-02-06 22:29+0100\n"
 "Last-Translator: Jiøí Pavlovský <jpavlovsky@mbox.vol.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
+"Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=cp1250\n"
 "Content-Transfer-Encoding: 8bit\n"
