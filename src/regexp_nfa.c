@@ -5270,7 +5270,7 @@ recursive_regmatch(
     }
     else
     {
-	EMSG(_("Could not open temporary log file for writing, displaying on stderr ... "));
+	EMSG(_("Could not open temporary log file for writing, displaying on stderr... "));
 	log_fd = stderr;
     }
 #endif
