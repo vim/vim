@@ -2108,6 +2108,7 @@ cscope_connection([{num}, {dbpath} [, {prepend}]])
 cursor({lnum}, {col} [, {off}])
 				Number	move cursor to {lnum}, {col}, {off}
 cursor({list})			Number	move cursor to position in {list}
+debugbreak({pid})		Number  interrupt process being debugged
 deepcopy({expr} [, {noref}])	any	make a full copy of {expr}
 delete({fname} [, {flags}])	Number	delete the file or directory {fname}
 deletebufline({expr}, {first}[, {last}])
@@ -3480,6 +3481,11 @@ cursor({list})
 		position within a <Tab> or after the last character.
 		Returns 0 when the position could be set, -1 otherwise.
 
+debugbreak({pid})					*debugbreak()*
+		Specifically used to interrupt a program being debugged.  It
+		will cause process {pid} to get a SIGTRAP.  Behavior for other
+		processes is undefined. See |terminal-debugger|.
+		{only available on MS-Windows}
 
 deepcopy({expr} [, {noref}])				*deepcopy()* *E698*
 		Make a copy of {expr}.  For Numbers and Strings this isn't

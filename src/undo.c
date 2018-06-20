@@ -3539,7 +3539,9 @@ bufIsChanged(buf_T *buf)
     int
 bufIsChangedNotTerm(buf_T *buf)
 {
-    return !bt_dontwrite(buf)
+    // In a "prompt" buffer we do respect 'modified', so that we can control
+    // closing the window by setting or resetting that option.
+    return (!bt_dontwrite(buf) || bt_prompt(buf))
 	&& (buf->b_changed || file_ff_differs(buf, TRUE));
 }
 

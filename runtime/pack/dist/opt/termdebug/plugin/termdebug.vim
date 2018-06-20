@@ -98,6 +98,7 @@ func s:StartDebug_internal(dict)
     return
   endif
   let s:ptywin = 0
+  let s:pid = 0
 
   " Uncomment this line to write logging in "debuglog".
   " call ch_logfile('debuglog', 'w')
@@ -271,6 +272,8 @@ func s:StartDebug_prompt(dict)
     exe 'bwipe! ' . s:promptbuf
     return
   endif
+  " Mark the buffer modified so that it's not easy to close.
+  set modified
   let s:gdb_channel = job_getchannel(s:gdbjob)  
 
   " Interpret commands while the target is running.  This should usualy only
@@ -396,10 +399,16 @@ func s:PromptCallback(text)
   call s:SendCommand(a:text)
 endfunc
 
-" Function called when pressing CTRL-C in the prompt buffer.
+" Function called when pressing CTRL-C in the prompt buffer and when placing a
+" breakpoint.
 func s:PromptInterrupt()
-  call ch_log('Interrupting gdb')
-  call job_stop(s:gdbjob, 'int')
+  if s:pid == 0
+    echoerr 'Cannot interrupt gdb, did not find a process ID'
+  else
+    call ch_log('Interrupting gdb')
+    " Using job_stop(s:gdbjob, 'int') does not work.
+    call debugbreak(s:pid)
+  endif
 endfunc
 
 " Function called when gdb outputs text.
@@ -430,7 +439,7 @@ func s:GdbOutCallback(channel, text)
 
   " Add the output above the current prompt.
   call append(line('$') - 1, text)
-  set nomodified
+  set modified
 
   call win_gotoid(curwinid)
 endfunc
@@ -509,6 +518,7 @@ endfunc
 func s:EndPromptDebug(job, status)
   let curwinid = win_getid(winnr())
   call win_gotoid(s:gdbwin)
+  set nomodified
   close
   if curwinid != s:gdbwin
     call win_gotoid(curwinid)
@@ -535,6 +545,8 @@ func s:CommOutput(chan, msg)
 	call s:HandleNewBreakpoint(msg)
       elseif msg =~ '^=breakpoint-deleted,'
 	call s:HandleBreakpointDelete(msg)
+      elseif msg =~ '^=thread-group-started'
+	call s:HandleProgramRun(msg)
       elseif msg =~ '^\^done,value='
 	call s:HandleEvaluate(msg)
       elseif msg =~ '^\^error,msg='
@@ -655,7 +667,7 @@ func s:DeleteCommands()
   for val in s:BreakpointSigns
     exe "sign undefine debugBreakpoint" . val
   endfor
-  unlet s:BreakpointSigns
+  let s:BreakpointSigns = []
 endfunc
 
 " :Break - Set a breakpoint at the cursor position.
@@ -666,9 +678,7 @@ func s:SetBreakpoint()
   if !s:stopped
     let do_continue = 1
     if s:way == 'prompt'
-      " Need to send a signal to get the UI to listen.  Strangely this is only
-      " needed once.
-      call job_stop(s:gdbjob, 'int')
+      call s:PromptInterrupt()
     else
       call s:SendCommand('-exec-interrupt')
     endif
@@ -798,12 +808,12 @@ func s:HandleCursor(msg)
   let wid = win_getid(winnr())
 
   if a:msg =~ '^\*stopped'
+    call ch_log('program stopped')
     let s:stopped = 1
   elseif a:msg =~ '^\*running'
+    call ch_log('program running')
     let s:stopped = 0
   endif
-
-  call s:GotoSourcewinOrCreateIt()
 
   if a:msg =~ 'fullname='
     let fname = s:GetFullname(a:msg)
@@ -813,6 +823,7 @@ func s:HandleCursor(msg)
   if a:msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
     let lnum = substitute(a:msg, '.*line="\([^"]*\)".*', '\1', '')
     if lnum =~ '^[0-9]*$'
+    call s:GotoSourcewinOrCreateIt()
       if expand('%:p') != fnamemodify(fname, ':p')
 	if &modified
 	  " TODO: find existing window
@@ -828,7 +839,7 @@ func s:HandleCursor(msg)
       exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fname
       setlocal signcolumn=yes
     endif
-  else
+  elseif !s:stopped || fname != ''
     exe 'sign unplace ' . s:pc_id
   endif
 
@@ -890,6 +901,17 @@ func s:HandleBreakpointDelete(msg)
     endif
     unlet s:breakpoints[nr]
   endif
+endfunc
+
+" Handle the debugged program starting to run.
+" Will store the process ID in s:pid
+func s:HandleProgramRun(msg)
+  let nr = substitute(a:msg, '.*pid="\([0-9]*\)\".*', '\1', '') + 0
+  if nr == 0
+    return
+  endif
+  let s:pid = nr
+  call ch_log('Detected process ID: ' . s:pid)
 endfunc
 
 " Handle a BufRead autocommand event: place any signs.

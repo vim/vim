@@ -123,6 +123,9 @@ static void f_cosh(typval_T *argvars, typval_T *rettv);
 static void f_count(typval_T *argvars, typval_T *rettv);
 static void f_cscope_connection(typval_T *argvars, typval_T *rettv);
 static void f_cursor(typval_T *argsvars, typval_T *rettv);
+#ifdef WIN3264
+static void f_debugbreak(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_deepcopy(typval_T *argvars, typval_T *rettv);
 static void f_delete(typval_T *argvars, typval_T *rettv);
 static void f_deletebufline(typval_T *argvars, typval_T *rettv);
@@ -577,6 +580,9 @@ static struct fst
     {"count",		2, 4, f_count},
     {"cscope_connection",0,3, f_cscope_connection},
     {"cursor",		1, 3, f_cursor},
+#ifdef WIN3264
+    {"debugbreak",	1, 1, f_debugbreak},
+#endif
     {"deepcopy",	1, 2, f_deepcopy},
     {"delete",		1, 2, f_delete},
     {"deletebufline",	2, 3, f_deletebufline},
@@ -2760,6 +2766,33 @@ f_cursor(typval_T *argvars, typval_T *rettv)
     curwin->w_set_curswant = set_curswant;
     rettv->vval.v_number = 0;
 }
+
+#ifdef WIN3264
+/*
+ * "debugbreak()" function
+ */
+    static void
+f_debugbreak(typval_T *argvars, typval_T *rettv)
+{
+    int		pid;
+
+    rettv->vval.v_number = FAIL;
+    pid = (int)get_tv_number(&argvars[0]);
+    if (pid == 0)
+	EMSG(_(e_invarg));
+    else
+    {
+	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, pid);
+
+	if (hProcess != NULL)
+	{
+	    DebugBreakProcess(hProcess);
+	    CloseHandle(hProcess);
+	    rettv->vval.v_number = OK;
+	}
+    }
+}
+#endif
 
 /*
  * "deepcopy()" function
