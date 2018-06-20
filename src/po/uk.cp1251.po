@@ -1,5 +1,5 @@
 #
-# Ukrainian Vim translation [uk]
+# Ukrainian translation for Vim
 #
 # Generated from uk.po, DO NOT EDIT
 #
@@ -17,7 +17,7 @@ msgstr ""
 "POT-Creation-Date: 2017-07-12 12:22+0300\n"
 "PO-Revision-Date: 2010-06-18 21:53+0300\n"
 "Last-Translator: Анатолій Сахнік <sakhnik@gmail.com>\n"
-"Language-Team: Bohdan Vlasyuk <bohdan@vstu.edu.ua>\n"
+"Language-Team: Ukrainian\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=cp1251\n"
