@@ -708,8 +708,13 @@ ex_terminal(exarg_T *eap)
 	cmd += 2;
 	p = skiptowhite(cmd);
 	ep = vim_strchr(cmd, '=');
-	if (ep != NULL && ep < p)
-	    p = ep;
+	if (ep != NULL)
+	{
+	    if (ep < p)
+		p = ep;
+	    else
+		ep = NULL;
+	}
 
 # define OPTARG_HAS(name) ((int)(p - cmd) == sizeof(name) - 1 \
 				 && STRNICMP(cmd, name, sizeof(name) - 1) == 0)
@@ -731,11 +736,21 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_term_kill = ep + 1;
 	    p = skiptowhite(cmd);
 	}
-	else if (OPTARG_HAS("api") && ep != NULL)
+	else if (OPTARG_HAS("api"))
 	{
 	    opt.jo_set2 |= JO2_TERM_API;
-	    opt.jo_term_api = ep + 1;
-	    p = skiptowhite(cmd);
+	    if (ep != NULL)
+	    {
+		opt.jo_term_api = ep + 1;
+		p = skiptowhite(cmd);
+	    }
+	    else
+		opt.jo_term_api = NULL;
+	}
+	else if (OPTARG_HAS("noapi"))
+	{
+	    opt.jo_set2 |= JO2_TERM_API;
+	    opt.jo_term_api = (char_u *)"";
 	}
 	else if (OPTARG_HAS("rows") && ep != NULL && isdigit(ep[1]))
 	{
