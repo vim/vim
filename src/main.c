@@ -3269,7 +3269,7 @@ usage(void)
 #endif
 
     mch_msg(longVersion);
-    mch_msg(_("\n\nusage:"));
+    mch_msg(_("\n\nUsage:"));
     for (i = 0; ; ++i)
     {
 	mch_msg(_(" vim [arguments] "));
