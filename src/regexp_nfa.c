@@ -2989,7 +2989,7 @@ st_error(int *postfix UNUSED, int *end UNUSED, int *p UNUSED)
 	fclose(df);
     }
 #endif
-    EMSG(_("E874: (NFA) Could not pop the stack !"));
+    EMSG(_("E874: (NFA) Could not pop the stack!"));
 }
 
 /*
@@ -5593,7 +5593,7 @@ nfa_regmatch(
     debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
     if (debug == NULL)
     {
-	EMSG2(_("(NFA) COULD NOT OPEN %s !"), NFA_REGEXP_DEBUG_LOG);
+	EMSG2("(NFA) COULD NOT OPEN %s!", NFA_REGEXP_DEBUG_LOG);
 	return FALSE;
     }
 #endif
