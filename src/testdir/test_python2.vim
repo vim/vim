@@ -22,3 +22,17 @@ func Test_pydo()
   bwipe!
   bwipe!
 endfunc
+
+func Test_set_cursor()
+  " Check that setting the cursor position works.
+  py import vim
+  new
+  call setline(1, ['first line', 'second line'])
+  normal gg
+  pydo vim.current.window.cursor = (1, 5)
+  call assert_equal([1, 6], [line('.'), col('.')])
+
+  " Check that movement after setting cursor position keeps current column.
+  normal j
+  call assert_equal([2, 6], [line('.'), col('.')])
+endfunc
