@@ -5344,19 +5344,16 @@ get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list)
 
 	buf[0] = qfp->qf_type;
 	buf[1] = NUL;
-	if ( dict_add_nr_str(dict, "bufnr", (long)bufnum, NULL) == FAIL
-	  || dict_add_nr_str(dict, "lnum",  (long)qfp->qf_lnum, NULL) == FAIL
-	  || dict_add_nr_str(dict, "col",   (long)qfp->qf_col, NULL) == FAIL
-	  || dict_add_nr_str(dict, "vcol",  (long)qfp->qf_viscol, NULL) == FAIL
-	  || dict_add_nr_str(dict, "nr",    (long)qfp->qf_nr, NULL) == FAIL
-	  || dict_add_nr_str(dict, "module",  0L,
-		   qfp->qf_module == NULL ? (char_u *)"" : qfp->qf_module) == FAIL
-	  || dict_add_nr_str(dict, "pattern",  0L,
-	     qfp->qf_pattern == NULL ? (char_u *)"" : qfp->qf_pattern) == FAIL
-	  || dict_add_nr_str(dict, "text",  0L,
-		   qfp->qf_text == NULL ? (char_u *)"" : qfp->qf_text) == FAIL
-	  || dict_add_nr_str(dict, "type",  0L, buf) == FAIL
-	  || dict_add_nr_str(dict, "valid", (long)qfp->qf_valid, NULL) == FAIL)
+	if ( dict_add_number(dict, "bufnr", (long)bufnum) == FAIL
+	  || dict_add_number(dict, "lnum",  (long)qfp->qf_lnum) == FAIL
+	  || dict_add_number(dict, "col",   (long)qfp->qf_col) == FAIL
+	  || dict_add_number(dict, "vcol",  (long)qfp->qf_viscol) == FAIL
+	  || dict_add_number(dict, "nr",    (long)qfp->qf_nr) == FAIL
+	  || dict_add_string(dict, "module", qfp->qf_module) == FAIL
+	  || dict_add_string(dict, "pattern", qfp->qf_pattern) == FAIL
+	  || dict_add_string(dict, "text", qfp->qf_text) == FAIL
+	  || dict_add_string(dict, "type", buf) == FAIL
+	  || dict_add_number(dict, "valid", (long)qfp->qf_valid) == FAIL)
 	    return FAIL;
 
 	qfp = qfp->qf_next;
@@ -5560,7 +5557,7 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
     int		status = OK;
 
     if (flags & QF_GETLIST_TITLE)
-	status = dict_add_nr_str(retdict, "title", 0L, (char_u *)"");
+	status = dict_add_string(retdict, "title", (char_u *)"");
     if ((status == OK) && (flags & QF_GETLIST_ITEMS))
     {
 	list_T	*l = list_alloc();
@@ -5570,19 +5567,19 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
 	    status = FAIL;
     }
     if ((status == OK) && (flags & QF_GETLIST_NR))
-	status = dict_add_nr_str(retdict, "nr", 0L, NULL);
+	status = dict_add_number(retdict, "nr", 0);
     if ((status == OK) && (flags & QF_GETLIST_WINID))
-	status = dict_add_nr_str(retdict, "winid", qf_winid(qi), NULL);
+	status = dict_add_number(retdict, "winid", qf_winid(qi));
     if ((status == OK) && (flags & QF_GETLIST_CONTEXT))
-	status = dict_add_nr_str(retdict, "context", 0L, (char_u *)"");
+	status = dict_add_string(retdict, "context", (char_u *)"");
     if ((status == OK) && (flags & QF_GETLIST_ID))
-	status = dict_add_nr_str(retdict, "id", 0L, NULL);
+	status = dict_add_number(retdict, "id", 0);
     if ((status == OK) && (flags & QF_GETLIST_IDX))
-	status = dict_add_nr_str(retdict, "idx", 0L, NULL);
+	status = dict_add_number(retdict, "idx", 0);
     if ((status == OK) && (flags & QF_GETLIST_SIZE))
-	status = dict_add_nr_str(retdict, "size", 0L, NULL);
+	status = dict_add_number(retdict, "size", 0);
     if ((status == OK) && (flags & QF_GETLIST_TICK))
-	status = dict_add_nr_str(retdict, "changedtick", 0L, NULL);
+	status = dict_add_number(retdict, "changedtick", 0);
 
     return status;
 }
@@ -5593,12 +5590,7 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
     static int
 qf_getprop_title(qf_info_T *qi, int qf_idx, dict_T *retdict)
 {
-    char_u	*t;
-
-    t = qi->qf_lists[qf_idx].qf_title;
-    if (t == NULL)
-	t = (char_u *)"";
-    return dict_add_nr_str(retdict, "title", 0L, t);
+    return dict_add_string(retdict, "title", qi->qf_lists[qf_idx].qf_title);
 }
 
 /*
@@ -5643,7 +5635,7 @@ qf_getprop_ctx(qf_info_T *qi, int qf_idx, dict_T *retdict)
 	    status = FAIL;
     }
     else
-	status = dict_add_nr_str(retdict, "context", 0L, (char_u *)"");
+	status = dict_add_string(retdict, "context", (char_u *)"");
 
     return status;
 }
@@ -5658,7 +5650,7 @@ qf_getprop_idx(qf_info_T *qi, int qf_idx, dict_T *retdict)
     if (qi->qf_lists[qf_idx].qf_count == 0)
 	/* For empty lists, qf_index is set to 1 */
 	idx = 0;
-    return dict_add_nr_str(retdict, "idx", idx, NULL);
+    return dict_add_number(retdict, "idx", idx);
 }
 
 /*
@@ -5693,24 +5685,23 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if (flags & QF_GETLIST_TITLE)
 	status = qf_getprop_title(qi, qf_idx, retdict);
     if ((status == OK) && (flags & QF_GETLIST_NR))
-	status = dict_add_nr_str(retdict, "nr", qf_idx + 1, NULL);
+	status = dict_add_number(retdict, "nr", qf_idx + 1);
     if ((status == OK) && (flags & QF_GETLIST_WINID))
-	status = dict_add_nr_str(retdict, "winid", qf_winid(qi), NULL);
+	status = dict_add_number(retdict, "winid", qf_winid(qi));
     if ((status == OK) && (flags & QF_GETLIST_ITEMS))
 	status = qf_getprop_items(qi, qf_idx, retdict);
     if ((status == OK) && (flags & QF_GETLIST_CONTEXT))
 	status = qf_getprop_ctx(qi, qf_idx, retdict);
     if ((status == OK) && (flags & QF_GETLIST_ID))
-	status = dict_add_nr_str(retdict, "id", qi->qf_lists[qf_idx].qf_id,
-									 NULL);
+	status = dict_add_number(retdict, "id", qi->qf_lists[qf_idx].qf_id);
     if ((status == OK) && (flags & QF_GETLIST_IDX))
 	status = qf_getprop_idx(qi, qf_idx, retdict);
     if ((status == OK) && (flags & QF_GETLIST_SIZE))
-	status = dict_add_nr_str(retdict, "size",
-					qi->qf_lists[qf_idx].qf_count, NULL);
+	status = dict_add_number(retdict, "size",
+					      qi->qf_lists[qf_idx].qf_count);
     if ((status == OK) && (flags & QF_GETLIST_TICK))
-	status = dict_add_nr_str(retdict, "changedtick",
-				qi->qf_lists[qf_idx].qf_changedtick, NULL);
+	status = dict_add_number(retdict, "changedtick",
+					qi->qf_lists[qf_idx].qf_changedtick);
 
     return status;
 }
