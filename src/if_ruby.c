@@ -1514,6 +1514,7 @@ static VALUE window_set_cursor(VALUE self, VALUE pos)
     col = RARRAY_PTR(pos)[1];
     win->w_cursor.lnum = NUM2LONG(lnum);
     win->w_cursor.col = NUM2UINT(col);
+    win->w_set_curswant = TRUE;
     check_cursor();		    /* put cursor on an existing line */
     update_screen(NOT_VALID);
     return Qnil;

@@ -3945,6 +3945,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 
 	self->win->w_cursor.lnum = lnum;
 	self->win->w_cursor.col = col;
+	self->win->w_set_curswant = TRUE;
 #ifdef FEAT_VIRTUALEDIT
 	self->win->w_cursor.coladd = 0;
 #endif

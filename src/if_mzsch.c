@@ -2132,6 +2132,7 @@ set_cursor(void *data, int argc, Scheme_Object **argv)
 
     win->win->w_cursor.lnum = lnum;
     win->win->w_cursor.col = col;
+    win->win->w_set_curswant = TRUE;
     update_screen(VALID);
 
     raise_if_error();

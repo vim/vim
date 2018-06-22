@@ -1660,6 +1660,7 @@ Cursor(win, ...)
       col = (int) SvIV(ST(2));
       win->w_cursor.lnum = lnum;
       win->w_cursor.col = col;
+      win->w_set_curswant = TRUE;
       check_cursor();		    /* put cursor on an existing line */
       update_screen(NOT_VALID);
     }
