@@ -1131,12 +1131,12 @@ EXTERN char_u	tolower_tab[256];	/* table for tolower() */
 EXTERN char	breakat_flags[256];	/* which characters are in 'breakat' */
 #endif
 
-/* these are in version.c */
+/* These are in version.c, call init_longVersion() before use. */
 extern char *Version;
 #if defined(HAVE_DATE_TIME) && defined(VMS) && defined(VAXC)
 extern char longVersion[];
 #else
-extern char *longVersion;
+EXTERN char *longVersion;
 #endif
 
 /*
