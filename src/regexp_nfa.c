@@ -2232,7 +2232,7 @@ nfa_regpiece(void)
 
     if (re_multi_type(peekchr()) != NOT_MULTI)
 	/* Can't have a multi follow a multi. */
-	EMSG_RET_FAIL(_("E871: (NFA regexp) Can't have a multi follow a multi !"));
+	EMSG_RET_FAIL(_("E871: (NFA regexp) Can't have a multi follow a multi"));
 
     return OK;
 }
@@ -7029,7 +7029,7 @@ nfa_regtry(
 	fclose(f);
     }
     else
-	EMSG(_("Could not open temporary log file for writing "));
+	EMSG("Could not open temporary log file for writing");
 #endif
 
     clear_sub(&subs.norm);
