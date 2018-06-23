@@ -49,7 +49,11 @@ static void	 load_window(char *, int lnum);
 static void	 warp_to_pc(int);
 #ifdef FEAT_BEVAL_GUI
 void		 workshop_beval_cb(BalloonEval *, int);
+# ifdef FEAT_VARTABS
+static int	 computeIndex(int, char_u *, int, int *);
+# else
 static int	 computeIndex(int, char_u *, int);
+# endif
 #endif
 static char	*fixAccelText(char *);
 static void	 addMenu(char *, char *, char *);
@@ -1534,7 +1538,11 @@ workshop_beval_cb(
 	     * a column number. Compute the index from col. Also set
 	     * line to 0 because thats what dbx expects.
 	     */
+#ifdef FEAT_VARTABS
+	    idx = computeIndex(col, text, beval->ts, beval->vts);
+#else
 	    idx = computeIndex(col, text, beval->ts);
+#endif
 	    if (idx > 0)
 	    {
 		lnum = 0;
@@ -1569,7 +1577,11 @@ workshop_beval_cb(
 computeIndex(
 	int		 wantedCol,
 	char_u		*line,
-	int		 ts)
+	int		 ts
+#ifdef FEAT_VARTABS
+	int		*vts
+#else
+	)
 {
     int		 col = 0;
     int		 idx = 0;
@@ -1577,7 +1589,11 @@ computeIndex(
     while (line[idx])
     {
 	if (line[idx] == '\t')
+#ifdef FEAT_VARTABS
+	    col += tabstop_padding(col, ts, vts);
+#else
 	    col += ts - (col % ts);
+#endif
 	else
 	    col++;
 	idx++;

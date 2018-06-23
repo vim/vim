@@ -677,6 +677,11 @@ static char *(features[]) =
 #else
 	"-user_commands",
 #endif
+#ifdef FEAT_VARTABS
+	"+vartabs",
+#else
+	"-vartabs",
+#endif
 	"+vertsplit",
 #ifdef FEAT_VIRTUALEDIT
 	"+virtualedit",
@@ -999,6 +1004,10 @@ static int included_patches[] =
  */
 static char *(extra_patches[]) =
 {   /* Add your patch description below this line */
+/**/
+#ifdef FEAT_VARTABS
+    "variable tabstops",
+#endif
 /**/
     NULL
 };

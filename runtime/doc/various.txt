@@ -453,6 +453,7 @@ N  *+timers*		the |timer_start()| function
 N  *+title*		Setting the window 'title' and 'icon'
 N  *+toolbar*		|gui-toolbar|
 N  *+user_commands*	User-defined commands. |user-commands|
+B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
 N  *+viminfo*		|'viminfo'|
    *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.

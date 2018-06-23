@@ -136,6 +136,8 @@ let test_values = {
       \ 'toolbariconsize': [['', 'tiny', 'huge'], ['xxx']],
       \ 'ttymouse': [['', 'xterm'], ['xxx']],
       \ 'ttytype': [[], []],
+      \ 'varsofttabstop': [['8', '4,8,16,32'], ['xxx', '-1', '4,-1,20']],
+      \ 'vartabstop': [['8', '4,8,16,32'], ['xxx', '-1', '4,-1,20']],
       \ 'viewoptions': [['', 'cursor', 'unix,slash'], ['xxx']],
       \ 'viminfo': [['', '''50', '"30'], ['xxx']],
       \ 'virtualedit': [['', 'all', 'all,block'], ['xxx']],

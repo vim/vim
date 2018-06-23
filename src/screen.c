@@ -4848,8 +4848,13 @@ win_line(
 			vcol_adjusted = vcol - MB_CHARLEN(p_sbr);
 #endif
 		    /* tab amount depends on current column */
+#ifdef FEAT_VARTABS
+		    tab_len = tabstop_padding(vcol_adjusted, wp->w_buffer->b_p_ts,
+						    wp->w_buffer->b_p_vts_ary) - 1;
+#else
 		    tab_len = (int)wp->w_buffer->b_p_ts
 					- vcol_adjusted % (int)wp->w_buffer->b_p_ts - 1;
+#endif
 
 #ifdef FEAT_LINEBREAK
 		    if (!wp->w_p_lbr || !wp->w_p_list)
