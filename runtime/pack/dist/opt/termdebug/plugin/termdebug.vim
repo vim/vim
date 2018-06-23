@@ -863,6 +863,11 @@ endfunc
 " Handle setting a breakpoint
 " Will update the sign that shows the breakpoint
 func s:HandleNewBreakpoint(msg)
+  if a:msg !~ 'fullname='
+    " a watch does not have a file name
+    return
+  endif
+
   let nr = substitute(a:msg, '.*number="\([0-9]\)*\".*', '\1', '') + 0
   if nr == 0
     return
