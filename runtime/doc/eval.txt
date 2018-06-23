@@ -8694,6 +8694,8 @@ test_override({name}, {val})				*test_override()*
 		redraw       disable the redrawing() function
 		char_avail   disable the char_avail() function
 		starting     reset the "starting" variable, see below
+		nfa_fail     makes the NFA regexp engine fail to force a
+			     fallback to the old engine
 		ALL	     clear all overrides ({val} is not used)
 
 		"starting" is to be used when a test should behave like

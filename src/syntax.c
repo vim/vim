@@ -3327,6 +3327,12 @@ syn_regexec(
 	profile_start(&pt);
 #endif
 
+    if (rmp->regprog == NULL)
+	// This can happen if a previous call to vim_regexec_multi() tried to
+	// use the NFA engine, which resulted in NFA_TOO_EXPENSIVE, and
+	// compiling the pattern with the other engine fails.
+	return FALSE;
+
     rmp->rmm_maxcol = syn_buf->b_p_smc;
     r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col,
 #ifdef FEAT_RELTIME

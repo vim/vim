@@ -1013,6 +1013,7 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 /* values for reg_do_extmatch */
 # define REX_SET	1	/* to allow \z\(...\), */
 # define REX_USE	2	/* to allow \z\1 et al. */
+# define REX_ALL	(REX_SET | REX_USE)
 #endif
 
 /* Return values for fullpathcmp() */

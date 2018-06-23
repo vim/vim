@@ -1634,6 +1634,7 @@ EXTERN int  alloc_fail_repeat INIT(= 0);
 /* flags set by test_override() */
 EXTERN int  disable_char_avail_for_testing INIT(= 0);
 EXTERN int  disable_redraw_for_testing INIT(= 0);
+EXTERN int  nfa_fail_for_testing INIT(= 0);
 
 EXTERN int  in_free_unref_items INIT(= FALSE);
 #endif

@@ -7868,6 +7868,7 @@ next_search_hl(
     linenr_T	l;
     colnr_T	matchcol;
     long	nmatched;
+    int		save_called_emsg = called_emsg;
 
     if (shl->lnum != 0)
     {
@@ -7986,6 +7987,9 @@ next_search_hl(
 	    break;			/* useful match found */
 	}
     }
+
+    // Restore called_emsg for assert_fails().
+    called_emsg = save_called_emsg;
 }
 
 /*
