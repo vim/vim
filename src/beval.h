@@ -71,7 +71,10 @@ typedef struct BalloonEvalStruct
     void		*clientData;	/* For callback */
 #endif
 
-    int			ts;		/* tabstop setting for this buffer */
+    int			ts;		// tabstop setting for this buffer
+#ifdef FEAT_VARTABS
+    int			*vts;		// vartabstop setting for this buffer
+#endif
     char_u		*msg;
 } BalloonEval;
 

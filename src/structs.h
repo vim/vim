@@ -2236,6 +2236,13 @@ struct file_buffer
     long	b_p_wm;		/* 'wrapmargin' */
     long	b_p_wm_nobin;	/* b_p_wm saved for binary mode */
     long	b_p_wm_nopaste;	/* b_p_wm saved for paste mode */
+#ifdef FEAT_VARTABS
+    char_u	*b_p_vsts;	/* 'varsofttabstop' */
+    int		*b_p_vsts_array;   /* 'varsofttabstop' in internal format */
+    char_u	*b_p_vsts_nopaste; /* b_p_vsts saved for paste mode */
+    char_u	*b_p_vts;	/* 'vartabstop' */
+    int		*b_p_vts_array;	/* 'vartabstop' in internal format */
+#endif
 #ifdef FEAT_KEYMAP
     char_u	*b_p_keymap;	/* 'keymap' */
 #endif

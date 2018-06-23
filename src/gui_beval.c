@@ -130,6 +130,9 @@ gui_mch_create_beval_area(
 	beval->msg = mesg;
 	beval->msgCB = mesgCB;
 	beval->clientData = clientData;
+#ifdef FEAT_VARTABS
+	beval->vts = NULL;
+#endif
 
 	/*
 	 * Set up event handler which will keep its eyes on the pointer,
@@ -171,6 +174,10 @@ gui_mch_destroy_beval_area(BalloonEval *beval)
     gtk_widget_destroy(beval->balloonShell);
 # else
     XtDestroyWidget(beval->balloonShell);
+# endif
+# ifdef FEAT_VARTABS
+    if (beval->vts)
+	vim_free(beval->vts);
 # endif
     vim_free(beval);
 }

@@ -36,7 +36,12 @@ static garray_T	ga_users;
     int
 get_indent(void)
 {
+#ifdef FEAT_VARTABS
+    return get_indent_str_vtab(ml_get_curline(), (int)curbuf->b_p_ts,
+						 curbuf->b_p_vts_array, FALSE);
+#else
     return get_indent_str(ml_get_curline(), (int)curbuf->b_p_ts, FALSE);
+#endif
 }
 
 /*
@@ -45,7 +50,12 @@ get_indent(void)
     int
 get_indent_lnum(linenr_T lnum)
 {
+#ifdef FEAT_VARTABS
+    return get_indent_str_vtab(ml_get(lnum), (int)curbuf->b_p_ts,
+						 curbuf->b_p_vts_array, FALSE);
+#else
     return get_indent_str(ml_get(lnum), (int)curbuf->b_p_ts, FALSE);
+#endif
 }
 
 #if defined(FEAT_FOLDING) || defined(PROTO)
@@ -56,7 +66,12 @@ get_indent_lnum(linenr_T lnum)
     int
 get_indent_buf(buf_T *buf, linenr_T lnum)
 {
+#ifdef FEAT_VARTABS
+    return get_indent_str_vtab(ml_get_buf(buf, lnum, FALSE),
+			       (int)curbuf->b_p_ts, buf->b_p_vts_array, FALSE);
+#else
     return get_indent_str(ml_get_buf(buf, lnum, FALSE), (int)buf->b_p_ts, FALSE);
+#endif
 }
 #endif
 
@@ -91,6 +106,37 @@ get_indent_str(
     return count;
 }
 
+#ifdef FEAT_VARTABS
+/*
+ * Count the size (in window cells) of the indent in line "ptr", using
+ * variable tabstops.
+ * if "list" is TRUE, count only screen size for tabs.
+ */
+    int
+get_indent_str_vtab(char_u *ptr, int ts, int *vts, int list)
+{
+    int		count = 0;
+
+    for ( ; *ptr; ++ptr)
+    {
+	if (*ptr == TAB)    /* count a tab for what it is worth */
+	{
+	    if (!list || lcs_tab1)
+		count += tabstop_padding(count, ts, vts);
+	    else
+		/* In list mode, when tab is not set, count screen char width
+		 * for Tab, displays: ^I */
+		count += ptr2cells(ptr);
+	}
+	else if (*ptr == ' ')
+	    ++count;		/* count a space for one */
+	else
+	    break;
+    }
+    return count;
+}
+#endif
+
 /*
  * Set the indent of the current line.
  * Leaves the cursor on the first non-blank in the line.
@@ -115,6 +161,9 @@ set_indent(
     int		line_len;
     int		doit = FALSE;
     int		ind_done = 0;	    /* measured in spaces */
+#ifdef FEAT_VARTABS
+    int		ind_col = 0;
+#endif
     int		tab_pad;
     int		retval = FALSE;
     int		orig_char_len = -1; /* number of initial whitespace chars when
@@ -147,8 +196,13 @@ set_indent(
 	    {
 		if (*p == TAB)
 		{
+#ifdef FEAT_VARTABS
+		    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
+							curbuf->b_p_vts_array);
+#else
 		    tab_pad = (int)curbuf->b_p_ts
 					   - (ind_done % (int)curbuf->b_p_ts);
+#endif
 		    /* stop if this tab will overshoot the target */
 		    if (todo < tab_pad)
 			break;
@@ -165,23 +219,51 @@ set_indent(
 		++p;
 	    }
 
+#ifdef FEAT_VARTABS
+	    /* These diverge from this point. */
+	    ind_col = ind_done;
+#endif
 	    /* Set initial number of whitespace chars to copy if we are
 	     * preserving indent but expandtab is set */
 	    if (curbuf->b_p_et)
 		orig_char_len = ind_len;
 
 	    /* Fill to next tabstop with a tab, if possible */
+#ifdef FEAT_VARTABS
+	    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
+						curbuf->b_p_vts_array);
+#else
 	    tab_pad = (int)curbuf->b_p_ts - (ind_done % (int)curbuf->b_p_ts);
+#endif
 	    if (todo >= tab_pad && orig_char_len == -1)
 	    {
 		doit = TRUE;
 		todo -= tab_pad;
 		++ind_len;
 		/* ind_done += tab_pad; */
+#ifdef FEAT_VARTABS
+		ind_col += tab_pad;
+#endif
 	    }
 	}
 
 	/* count tabs required for indent */
+#ifdef FEAT_VARTABS
+	for (;;)
+	{
+	    tab_pad = tabstop_padding(ind_col, curbuf->b_p_ts,
+							curbuf->b_p_vts_array);
+	    if (todo < tab_pad)
+		break;
+	    if (*p != TAB)
+		doit = TRUE;
+	    else
+		++p;
+	    todo -= tab_pad;
+	    ++ind_len;
+	    ind_col += tab_pad;
+	}
+#else
 	while (todo >= (int)curbuf->b_p_ts)
 	{
 	    if (*p != TAB)
@@ -192,6 +274,7 @@ set_indent(
 	    ++ind_len;
 	    /* ind_done += (int)curbuf->b_p_ts; */
 	}
+#endif
     }
     /* count spaces required for indent */
     while (todo > 0)
@@ -266,8 +349,13 @@ set_indent(
 	    {
 		if (*p == TAB)
 		{
+#ifdef FEAT_VARTABS
+		    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
+							curbuf->b_p_vts_array);
+#else
 		    tab_pad = (int)curbuf->b_p_ts
 					   - (ind_done % (int)curbuf->b_p_ts);
+#endif
 		    /* stop if this tab will overshoot the target */
 		    if (todo < tab_pad)
 			break;
@@ -283,21 +371,42 @@ set_indent(
 	    }
 
 	    /* Fill to next tabstop with a tab, if possible */
+#ifdef FEAT_VARTABS
+	    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
+						curbuf->b_p_vts_array);
+#else
 	    tab_pad = (int)curbuf->b_p_ts - (ind_done % (int)curbuf->b_p_ts);
+#endif
 	    if (todo >= tab_pad)
 	    {
 		*s++ = TAB;
 		todo -= tab_pad;
+#ifdef FEAT_VARTABS
+		ind_done += tab_pad;
+#endif
 	    }
 
 	    p = skipwhite(p);
 	}
 
+#ifdef FEAT_VARTABS
+	for (;;)
+	{
+	    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
+							curbuf->b_p_vts_array);
+	    if (todo < tab_pad)
+		break;
+	    *s++ = TAB;
+	    todo -= tab_pad;
+	    ind_done += tab_pad;
+	}
+#else
 	while (todo >= (int)curbuf->b_p_ts)
 	{
 	    *s++ = TAB;
 	    todo -= (int)curbuf->b_p_ts;
 	}
+#endif
     }
     while (todo > 0)
     {
@@ -350,6 +459,9 @@ copy_indent(int size, char_u *src)
     int		tab_pad;
     int		ind_done;
     int		round;
+#ifdef FEAT_VARTABS
+    int		ind_col;
+#endif
 
     /* Round 1: compute the number of characters needed for the indent
      * Round 2: copy the characters. */
@@ -358,6 +470,9 @@ copy_indent(int size, char_u *src)
 	todo = size;
 	ind_len = 0;
 	ind_done = 0;
+#ifdef FEAT_VARTABS
+	ind_col = 0;
+#endif
 	s = src;
 
 	/* Count/copy the usable portion of the source line */
@@ -365,18 +480,29 @@ copy_indent(int size, char_u *src)
 	{
 	    if (*s == TAB)
 	    {
+#ifdef FEAT_VARTABS
+		tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
+							curbuf->b_p_vts_array);
+#else
 		tab_pad = (int)curbuf->b_p_ts
 					   - (ind_done % (int)curbuf->b_p_ts);
+#endif
 		/* Stop if this tab will overshoot the target */
 		if (todo < tab_pad)
 		    break;
 		todo -= tab_pad;
 		ind_done += tab_pad;
+#ifdef FEAT_VARTABS
+		ind_col += tab_pad;
+#endif
 	    }
 	    else
 	    {
 		--todo;
 		++ind_done;
+#ifdef FEAT_VARTABS
+		++ind_col;
+#endif
 	    }
 	    ++ind_len;
 	    if (p != NULL)
@@ -385,22 +511,48 @@ copy_indent(int size, char_u *src)
 	}
 
 	/* Fill to next tabstop with a tab, if possible */
+#ifdef FEAT_VARTABS
+	tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
+							curbuf->b_p_vts_array);
+#else
 	tab_pad = (int)curbuf->b_p_ts - (ind_done % (int)curbuf->b_p_ts);
+#endif
 	if (todo >= tab_pad && !curbuf->b_p_et)
 	{
 	    todo -= tab_pad;
 	    ++ind_len;
+#ifdef FEAT_VARTABS
+	    ind_col += tab_pad;
+#endif
 	    if (p != NULL)
 		*p++ = TAB;
 	}
 
 	/* Add tabs required for indent */
-	while (todo >= (int)curbuf->b_p_ts && !curbuf->b_p_et)
+	if (!curbuf->b_p_et)
 	{
-	    todo -= (int)curbuf->b_p_ts;
-	    ++ind_len;
-	    if (p != NULL)
-		*p++ = TAB;
+#ifdef FEAT_VARTABS
+	    for (;;)
+	    {
+		tab_pad = tabstop_padding(ind_col, curbuf->b_p_ts,
+							curbuf->b_p_vts_array);
+		if (todo < tab_pad)
+		    break;
+		todo -= tab_pad;
+		++ind_len;
+		ind_col += tab_pad;
+		if (p != NULL)
+		    *p++ = TAB;
+	    }
+#else
+	    while (todo >= (int)curbuf->b_p_ts)
+	    {
+		todo -= (int)curbuf->b_p_ts;
+		++ind_len;
+		if (p != NULL)
+		    *p++ = TAB;
+	    }
+#endif
 	}
 
 	/* Count/add spaces required for indent */
@@ -497,6 +649,9 @@ get_breakindent_win(
     static long	    prev_ts     = 0L; /* cached tabstop value */
     static char_u   *prev_line = NULL; /* cached pointer to line */
     static varnumber_T prev_tick = 0;   /* changedtick of cached value */
+#ifdef FEAT_VARTABS
+    static int      *prev_vts = NULL;    /* cached vartabs values */
+#endif
     int		    bri = 0;
     /* window width minus window margin space, i.e. what rests for text */
     const int	    eff_wwidth = wp->w_width
@@ -506,13 +661,24 @@ get_breakindent_win(
 
     /* used cached indent, unless pointer or 'tabstop' changed */
     if (prev_line != line || prev_ts != wp->w_buffer->b_p_ts
-				  || prev_tick != CHANGEDTICK(wp->w_buffer))
+	    || prev_tick != CHANGEDTICK(wp->w_buffer)
+#ifdef FEAT_VARTABS
+	    || prev_vts != wp->w_buffer->b_p_vts_array
+#endif
+	)
     {
 	prev_line = line;
 	prev_ts = wp->w_buffer->b_p_ts;
 	prev_tick = CHANGEDTICK(wp->w_buffer);
+#ifdef FEAT_VARTABS
+	prev_vts = wp->w_buffer->b_p_vts_array;
+	prev_indent = get_indent_str_vtab(line,
+				     (int)wp->w_buffer->b_p_ts,
+				    wp->w_buffer->b_p_vts_array, wp->w_p_list);
+#else
 	prev_indent = get_indent_str(line,
 				     (int)wp->w_buffer->b_p_ts, wp->w_p_list);
+#endif
     }
     bri = prev_indent + wp->w_p_brishift;
 
@@ -741,7 +907,12 @@ open_line(
 	/*
 	 * count white space on current line
 	 */
+#ifdef FEAT_VARTABS
+	newindent = get_indent_str_vtab(saved_line, curbuf->b_p_ts,
+						 curbuf->b_p_vts_array, FALSE);
+#else
 	newindent = get_indent_str(saved_line, (int)curbuf->b_p_ts, FALSE);
+#endif
 	if (newindent == 0 && !(flags & OPENLINE_COM_LIST))
 	    newindent = second_line_indent; /* for ^^D command in insert mode */
 
@@ -1264,7 +1435,13 @@ open_line(
 					|| do_si
 #endif
 							   )
-			newindent = get_indent_str(leader, (int)curbuf->b_p_ts, FALSE);
+#ifdef FEAT_VARTABS
+			newindent = get_indent_str_vtab(leader, curbuf->b_p_ts,
+						 curbuf->b_p_vts_array, FALSE);
+#else
+			newindent = get_indent_str(leader,
+						   (int)curbuf->b_p_ts, FALSE);
+#endif
 
 		    /* Add the indent offset */
 		    if (newindent + off < 0)

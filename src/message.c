@@ -1831,7 +1831,12 @@ msg_prt_line(char_u *s, int list)
 	    if (c == TAB && (!list || lcs_tab1))
 	    {
 		/* tab amount depends on current column */
+#ifdef FEAT_VARTABS
+		n_extra = tabstop_padding(col, curbuf->b_p_ts,
+						    curbuf->b_p_vts_array) - 1;
+#else
 		n_extra = curbuf->b_p_ts - col % curbuf->b_p_ts - 1;
+#endif
 		if (!list)
 		{
 		    c = ' ';

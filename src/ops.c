@@ -398,6 +398,9 @@ shift_block(oparg_T *oap, int amount)
     char_u		*newp, *oldp;
     int			oldcol = curwin->w_cursor.col;
     int			p_sw = (int)get_sw_value(curbuf);
+#ifdef FEAT_VARTABS
+    int			*p_vts = curbuf->b_p_vts_array;
+#endif
     int			p_ts = (int)curbuf->b_p_ts;
     struct block_def	bd;
     int			incr;
@@ -459,12 +462,19 @@ shift_block(oparg_T *oap, int amount)
 	}
 	/* OK, now total=all the VWS reqd, and textstart points at the 1st
 	 * non-ws char in the block. */
+#ifdef FEAT_VARTABS
+	if (!curbuf->b_p_et)
+	    tabstop_fromto(ws_vcol, ws_vcol + total, p_ts, p_vts, &i, &j);
+	else
+	    j = total;
+#else
 	if (!curbuf->b_p_et)
 	    i = ((ws_vcol % p_ts) + total) / p_ts; /* number of tabs */
 	if (i)
 	    j = ((ws_vcol % p_ts) + total) % p_ts; /* number of spp */
 	else
 	    j = total;
+#endif
 	/* if we're splitting a TAB, allow for it */
 	bd.textcol -= bd.pre_whitesp_c - (bd.startspaces != 0);
 	len = (int)STRLEN(bd.textstart) + 1;
@@ -3697,10 +3707,19 @@ do_put(
 	{
 	    /* Don't need to insert spaces when "p" on the last position of a
 	     * tab or "P" on the first position. */
+#ifdef FEAT_VARTABS
+	    int viscol = getviscol();
+	    if (dir == FORWARD
+		    ? tabstop_padding(viscol, curbuf->b_p_ts,
+						    curbuf->b_p_vts_array) != 1
+		    : curwin->w_cursor.coladd > 0)
+		coladvance_force(viscol);
+#else
 	    if (dir == FORWARD
 		    ? (int)curwin->w_cursor.coladd < curbuf->b_p_ts - 1
 						: curwin->w_cursor.coladd > 0)
 		coladvance_force(getviscol());
+#endif
 	    else
 		curwin->w_cursor.coladd = 0;
 	}

@@ -915,7 +915,12 @@ hardcopy_line(
 	if (line[col] == TAB || tab_spaces != 0)
 	{
 	    if (tab_spaces == 0)
+#ifdef FEAT_VARTABS
+		tab_spaces = tabstop_padding(print_pos, curbuf->b_p_ts,
+							curbuf->b_p_vts_array);
+#else
 		tab_spaces = (int)(curbuf->b_p_ts - (print_pos % curbuf->b_p_ts));
+#endif
 
 	    while (tab_spaces > 0)
 	    {

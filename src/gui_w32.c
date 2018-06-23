@@ -8934,6 +8934,9 @@ gui_mch_create_beval_area(
 	beval->msg = mesg;
 	beval->msgCB = mesgCB;
 	beval->clientData = clientData;
+#ifdef FEAT_VARTABS
+	beval->vts = NULL;
+#endif
 
 	InitCommonControls();
 	cur_beval = beval;
@@ -8990,6 +8993,10 @@ TrackUserActivity(UINT uMsg)
     void
 gui_mch_destroy_beval_area(BalloonEval *beval)
 {
+#ifdef FEAT_VARTABS
+    if (beval->vts)
+	vim_free(beval->vts);
+#endif
     vim_free(beval);
 }
 #endif /* FEAT_BEVAL_GUI */
