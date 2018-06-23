@@ -8376,11 +8376,15 @@ vim_regexec_multi(
 #ifdef FEAT_EVAL
 	    report_re_switch(pat);
 #endif
+#ifdef FEAT_SYN_HL
 	    // checking for \z misuse was already done when compiling for NFA,
 	    // allow all here
 	    reg_do_extmatch = REX_ALL;
+#endif
 	    rmp->regprog = vim_regcomp(pat, re_flags);
+#ifdef FEAT_SYN_HL
 	    reg_do_extmatch = 0;
+#endif
 
 	    if (rmp->regprog != NULL)
 		result = rmp->regprog->engine->regexec_multi(
