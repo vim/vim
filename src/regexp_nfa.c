@@ -5693,7 +5693,11 @@ nfa_regmatch(
 	nextlist->has_pim = FALSE;
 	++nfa_listid;
 	if (prog->re_engine == AUTOMATIC_ENGINE
-		&& (nfa_listid >= NFA_MAX_STATES || nfa_fail_for_testing))
+		&& (nfa_listid >= NFA_MAX_STATES
+# ifdef FEAT_EVAL
+		    || nfa_fail_for_testing
+# endif
+		    ))
 	{
 	    /* too many states, retry with old engine */
 	    nfa_match = NFA_TOO_EXPENSIVE;
