@@ -1,4 +1,5 @@
 # Afrikaans translation for Vim
+#
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 # Danie Roux <droux@tuks.co.za>, 2001
@@ -27,12 +28,13 @@ msgstr ""
 "Project-Id-Version: Vim 6.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2005-04-17 23:24+0200\n"
-"PO-Revision-Date: Wed Oct 31 13:41 SAST 2001\n"
+"PO-Revision-Date: 2001-10-31 13:41+0200\n"
 "Last-Translator: Danie Roux <droux@tuks.co.za>\n"
-"Language-Team: Danie Roux <droux@tuks.co.za>\n"
+"Language-Team: Afrikaans\n"
+"Language: af\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-1\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Kan nie buffer toeken nie, program sluit..."
