@@ -10152,7 +10152,8 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
     long	lnum_stop = 0;
     long	time_limit = 0;
 
-    /* Get the three pattern arguments: start, middle, end. */
+    /* Get the three pattern arguments: start, middle, end. Will result in an
+     * error if not a valid argument. */
     spat = get_tv_string_chk(&argvars[0]);
     mpat = get_tv_string_buf_chk(&argvars[1], nbuf1);
     epat = get_tv_string_buf_chk(&argvars[2], nbuf2);
@@ -10189,19 +10190,26 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
 	    && skip->v_type != VAR_STRING)
 	{
 	    /* Type error */
+	    EMSG2(_(e_invarg2), get_tv_string(&argvars[4]));
 	    goto theend;
 	}
 	if (argvars[5].v_type != VAR_UNKNOWN)
 	{
 	    lnum_stop = (long)get_tv_number_chk(&argvars[5], NULL);
 	    if (lnum_stop < 0)
+	    {
+		EMSG2(_(e_invarg2), get_tv_string(&argvars[5]));
 		goto theend;
+	    }
 #ifdef FEAT_RELTIME
 	    if (argvars[6].v_type != VAR_UNKNOWN)
 	    {
 		time_limit = (long)get_tv_number_chk(&argvars[6], NULL);
 		if (time_limit < 0)
+		{
+		    EMSG2(_(e_invarg2), get_tv_string(&argvars[6]));
 		    goto theend;
+		}
 	    }
 #endif
 	}
