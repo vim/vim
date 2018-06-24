@@ -6874,7 +6874,7 @@ win_redr_status_matches(
  * displayed.
  */
     static void
-win_redr_status(win_T *wp, int ignore_pum)
+win_redr_status(win_T *wp, int ignore_pum UNUSED)
 {
     int		row;
     char_u	*p;
