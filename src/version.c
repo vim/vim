@@ -71,6 +71,12 @@ init_longVersion(void)
 # endif
 #else
 char	*longVersion = VIM_VERSION_LONG;
+
+    void
+init_longVersion(void)
+{
+    // nothing to do
+}
 #endif
 
 static void list_features(void);
@@ -783,6 +789,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    106,
 /**/
     105,
 /**/
