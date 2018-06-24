@@ -3094,11 +3094,12 @@ ex_file(exarg_T *eap)
     {
 	if (rename_buffer(eap->arg) == FAIL)
 	    return;
+	redraw_tabline = TRUE;
     }
-    /* print full file name if :cd used */
-    if (!shortmess(SHM_FILEINFO))
+
+    // print file name if no argument or 'F' is not in 'shortmess'
+    if (*eap->arg == NUL || !shortmess(SHM_FILEINFO))
 	fileinfo(FALSE, FALSE, eap->forceit);
-    redraw_tabline = TRUE;
 }
 
 /*
