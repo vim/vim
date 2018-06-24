@@ -9692,7 +9692,7 @@ get_option_value_strict(
 	     * consider it set when 'ff' or 'fenc' changed. */
 	    if (p->indir == PV_MOD)
 	    {
-		*numval = bufIsChanged((buf_T *) from);
+		*numval = bufIsChanged((buf_T *)from);
 		varp = NULL;
 	    }
 #ifdef FEAT_CRYPT
@@ -9705,17 +9705,21 @@ get_option_value_strict(
 #endif
 	    else
 	    {
-		aco_save_T	aco;
-		aucmd_prepbuf(&aco, (buf_T *) from);
+		buf_T *save_curbuf = curbuf;
+
+		// only getting a pointer, no need to use aucmd_prepbuf()
+		curbuf = (buf_T *)from;
+		curwin->w_buffer = curbuf;
 		varp = get_varp(p);
-		aucmd_restbuf(&aco);
+		curbuf = save_curbuf;
+		curwin->w_buffer = curbuf;
 	    }
 	}
 	else if (opt_type == SREQ_WIN)
 	{
-	    win_T	*save_curwin;
-	    save_curwin = curwin;
-	    curwin = (win_T *) from;
+	    win_T	*save_curwin = curwin;
+
+	    curwin = (win_T *)from;
 	    curbuf = curwin->w_buffer;
 	    varp = get_varp(p);
 	    curwin = save_curwin;
