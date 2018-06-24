@@ -1561,7 +1561,7 @@ msgstr "E216: Geen sodanige groep of gebeurtenis nie: %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Outobevele ---"
@@ -1576,7 +1576,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: outobevele te diep genes"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s outobevele vir \"%s\""
 
 #, c-format
@@ -2303,11 +2303,11 @@ msgstr "-q [foutlêer]   bewerk lêer met eerste fout"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
-"gebruik:"
+"Gebruik:"
 
 msgid " vim [arguments] "
 msgstr " vim [parameters] "
@@ -3987,7 +3987,7 @@ msgstr "E65: Ongeldige tru-verwysing"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( nie hier toegelaat nie"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 e.a. nie hier toegelaat nie"
 
 msgid "E68: Invalid character after \\z"

@@ -2037,7 +2037,7 @@ msgstr "E216: Несуществующая группа или событие: %
 
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Автокоманды ---"
@@ -2056,7 +2056,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: слишком глубоко вложенные автокоманды"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Автокоманды для \"%s\""
 
 #, c-format
@@ -2970,7 +2970,7 @@ msgstr ""
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -4798,7 +4798,7 @@ msgstr "E55: Нет пары для %s)"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( не может быть использовано здесь"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 и т.п. не могут быть использованы здесь"
 
 #, c-format
@@ -4912,8 +4912,8 @@ msgstr "E869: (НКА) неизвестный оператор '\\@%c'"
 msgid "E870: (NFA regexp) Error reading repetition limits"
 msgstr "E870: (рег. выражение НКА) ошибка при чтении границ повторения"
 
-msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
-msgstr "E871: (рег. выражение НКА) множество не может следовать за множеством!"
+msgid "E871: (NFA regexp) Can't have a multi follow a multi"
+msgstr "E871: (рег. выражение НКА) множество не может следовать за множеством"
 
 msgid "E872: (NFA regexp) Too many '('"
 msgstr "E872: (рег. выражение НКА) слишком много '('"
@@ -4924,7 +4924,7 @@ msgstr "E879: (рег. выражение НКА) слишком много \\z(
 msgid "E873: (NFA regexp) proper termination error"
 msgstr "E873: (рег. выражение НКА) ошибка корректного завершения"
 
-msgid "E874: (NFA) Could not pop the stack !"
+msgid "E874: (NFA) Could not pop the stack!"
 msgstr "E874: (рег. выражение НКА) невозможно взять из стека!"
 
 msgid ""

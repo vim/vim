@@ -2480,7 +2480,7 @@ msgstr "E216: No existe tal grupo o evento: %s"
 #: fileio.c:8058
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Auto-órdenes ---"
@@ -2504,7 +2504,7 @@ msgstr "E218: La auto-orden se anida en exceso"
 
 #: fileio.c:9215
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Auto-órdenes para \"%s\""
 
 #: fileio.c:9225
@@ -3812,7 +3812,7 @@ msgstr "-q [fich. err.] Editar el archivo con el primer error"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -6141,8 +6141,8 @@ msgid "E66: \\z( not allowed here"
 msgstr "E66: No se permite \\z( aquí"
 
 #: regexp.c:1801
-msgid "E67: \\z1 et al. not allowed here"
-msgstr "E67: \\z1 et al. no se permiten aquí"
+msgid "E67: \\z1 - \\z9 not allowed here"
+msgstr "E67: \\z1 - \\z9 no se permiten aquí"
 
 # Es preferible traducir "invalid" por "no [es] válido" pues "inválido" no es lo suficientemente claro. Además, no es políticamente correcto :-) ALV
 #: regexp.c:1813

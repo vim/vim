@@ -1823,7 +1823,7 @@ msgstr "E216: Gruppen eller handlingen finnes ikke: %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Autokommandoer ---"
@@ -1842,7 +1842,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: Nøsting av autokommandoer for dyp"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Autokommandoer for \"%s\""
 
 #, c-format
@@ -2809,7 +2809,7 @@ msgstr "-q [feilfil]    rediger fil med første feil"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -4569,7 +4569,7 @@ msgstr "E65: Ulovlig tilbakereferanse"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( ikke tillatt her"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 med venner er ikke tillatt her"
 
 msgid "E68: Invalid character after \\z"

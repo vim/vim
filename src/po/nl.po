@@ -1882,10 +1882,10 @@ msgstr "E216: onbekende groep of 'event': %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 
 #, c-format
 msgid "E680: <buffer=%d>: invalid buffer number "
@@ -1901,8 +1901,8 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: hierarchie van aanroepen autocommands te diep"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
-msgstr "%s 'Auto commands' voor \"%s\""
+msgid "%s Autocommands for \"%s\""
+msgstr "%s 'Autocommands' voor \"%s\""
 
 #, c-format
 msgid "Executing %s"
@@ -2877,7 +2877,7 @@ msgstr "-q [foutbestand]  bewerk bestand dat eerste fout bevat"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -4161,7 +4161,7 @@ msgstr "E65: ongeldige terugverwijzing"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( hier niet toegestaan"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 en andere hier niet toegestaan"
 
 msgid "E68: Invalid character after \\z"

@@ -1672,7 +1672,7 @@ msgstr "E216: Udalos alebo skupina %s neexistuje"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Automatické príkazy ---"
@@ -1690,7 +1690,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: vnorenia automatického príkazu sú príliš hlboké"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Automatické príkazy pre \"%s\""
 
 #, c-format
@@ -2607,7 +2607,7 @@ msgstr "-q [chybovı súbor]  upravi súbor na mieste vıskytu prvej chyby"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -4348,7 +4348,7 @@ msgstr "E65: Chybná spätná referencia"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( tu nie je povolené"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 a spol. tu nie je povolené"
 
 msgid "E68: Invalid character after \\z"

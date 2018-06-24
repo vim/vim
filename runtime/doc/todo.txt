@@ -43,32 +43,19 @@ Prompt buffer:
 - delay next prompt until plugin gives OK?
 
 Terminal debugger:
-- Using terminal window: after "cont" in gdb window CTRL-C interrupts, but
-  after :Continue it does not.  Mode of UI is changed?  :Stop does work.
-- patch from Christian to handle changing 'background'
-  and a patch to show breakpoint nr in sign. (June 14)
 - Make prompt-buffer variant work better.
+- When only gdb window exists, on "quit" edit another buffer.
 - Termdebug does not work when Vim was build with mzscheme: gdb hangs just
   after "run".  Everything else works, including communication channel.  Not
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
-- Show breakpoint number in the sign? (Uri Moszkowicz, 2018 Jun 13, #3007)
-- Allow for users to create their own gdb mappings.  Perhaps by making the gdb
-  buffer global?  (Uri Moszkowicz, #3012) Or with a function to send a command
-  to gdb.
 
 Terminal emulator window:
 - With a vertical split only one window is updated. (Linwei, 2018 Jun 2,
   #2977)
-- When typing : at the more prompt, instead of entering a new Vim command, the
-  : is inserted in the terminal window.  Should skip terminal_loop here.
-  ()
 - When pasting should call vterm_keyboard_start_paste(), e.g. when using
   K_MIDDLEMOUSE, calling insert_reg().
 - Users expect parsing the :term argument like a shell does, also support
   single quotes.  E.g. with:  :term grep 'alice says "hello"'  (#1999)
-- When running a shell in a terminal to run Vim tests, CTRL-W : the command
-  line keeps getting cleard.  Doing the same in another window is OK. (Jason
-  Franklin, 2018 Jun 17)
 - How to access selection in Terminal running a shell? (damnskippy, 2018 May
   27, #29620  When terminal doesn't use the mouse, use modeless selection.
 - Win32: Redirecting input does not work, half of Test_terminal_redir_file()
@@ -102,26 +89,11 @@ Errors found with random data:
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
-Patch to make "is" and "as" work better. (Jason Franklin, 2018 May 19)
-
-Patch to add tests for user and language completion. (Dominique Pelle, 2018
-Jun 2, #2978)  typo wk -> we
-Patch to support user name completion on MS-Windows. (Yasuhiro Matsumoto, 2012
-Aug 16)
-
-Patch to add tests for libcall() and libcallnr(). (Dominique Pelle, #2982)
-
-Patch to fix that v:shell_error is always zero when using terminal for shell
-command. (Ichizok, 2018 Jun 8, #2994)
-
-Patch to make test for terminal out&error more reliable. (Ichizok, 2018 Jun 8,
-#2991)
-
 Patch to fix duplicate entry in tagfiles() and add a test. (Dominique Pelle,
 #2979)
 
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
-Related to bracketed paste.
+Related to bracketed paste.  I cannot reproduce it.
 
 Using ":file" in quickfix window during an autocommand doesn't work. 
 (Jason Franklin, 2018 May 23) Allow for using it when there is no argument.
@@ -133,6 +105,15 @@ Patch for xterm and vt320 builtin termcap. (Kouichi Iwamoto, 2018 May 31,
 
 Patch to add more testing for :cd command. (Dominique Pelle, 2018 May 30,
 #2972)
+
+Whenever the file name is "~" then expand('%:p') returns $HOME. (Aidan
+Shafran, 2018 Jun 23, #3072)
+
+Patch to set w_curswant when setting the cursor in language interfaces.
+(David Hotham, 2018 Jun 22, #3060)
+
+Patch to make CTRL-W <CR> work properly in a quickfix window. (Jason Franklin,
+2018 May 30)
 
 Patch to make mode() return something different for Normal mode when coming
 from Insert mode with CTRL-O. (#3000)
@@ -157,6 +138,13 @@ Patch for more quickfix refactoring. (Yegappan Lakshmanan, #2950)
 Tests failing for "make testgui" with GTK:
 - Test_setbufvar_options()
 - Test_exit_callback_interval()
+
+Patch to stack and pop the window title and icon. (IWAMOTO Kouichi, 2018 Jun
+22, #3059)
+8   For xterm need to open a connection to the X server to get the window
+    title, which can be slow.  Can also get the title with "<Esc>[21t", no
+    need to use X11 calls.  This returns "<Esc>]l{title}<Esc>\".
+Using title stack probably works better.
 
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)
@@ -197,9 +185,6 @@ deleting autocmds, not when adding them.
 
 Quickfix window height is not kept with a vertical split. (Lifepillar, 2018
 Jun 10, #2998)
-
-Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
-Update 2018 March 12, #2711
 
 Improve the installer for MS-Windows.  There are a few alternatives:
 - Add silent install option. (Shane Lee, #751)
@@ -320,6 +305,8 @@ highlighted. (van-de-bugger, 2018 Jan 23, #2576)
 
 Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
 #2546)  Fixes #1057.  Missing a test.
+
+":file" does not show anything when 'shortmess' contains 'F'. (#3070)
 
 Patch to add winlayout() function. (Yegappan Lakshmanan, 2018 Jan 4)
 
@@ -462,6 +449,10 @@ The ++ options for the :edit command are also useful on the Vim command line.
 
 When recovering a file, put the swap file name in b:recovered_swapfile.  Then
 a command can delete it.
+
+When a swap file exists, is not for a running process, is from the same
+machine and recovering results in the same text, we could silently delete it.
+#1237
 
 Overlong utf-8 sequence is displayed wrong. (Harm te Hennepe, 2017 Sep 14,
 #2089)  Patch with possible solution by Björn Linse.
@@ -3430,9 +3421,6 @@ Macintosh:
 7   X11: Some people prefer to use CLIPBOARD instead of PRIMARY for the normal
     selection.  Add an "xclipboard" argument to the 'clipboard' option? (Mark
     Waggoner)
-8   For xterm need to open a connection to the X server to get the window
-    title, which can be slow.  Can also get the title with "<Esc>[21t", no
-    need to use X11 calls.  This returns "<Esc>]l{title}<Esc>\".
 6   When the xterm reports the number of colors, a redraw occurs.  This is
     annoying on a slow connection.  Wait for the xterm to report the number of
     colors before drawing the screen.  With a timeout.

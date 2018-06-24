@@ -1792,7 +1792,7 @@ msgstr "E216: Ingen sådan grupp eller händelse: %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Autokommandon ---"
@@ -1811,7 +1811,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: autokommando nästlad för djupt"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Autokommandon för \"%s\""
 
 #, c-format
@@ -2784,7 +2784,7 @@ msgstr "-q [felfil]    redigera fil med första fel"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -4548,7 +4548,7 @@ msgstr "E65: Otillåten bakåtreferens"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z{ inte tillåtet här"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 m.fl. inte tillåtet här"
 
 msgid "E68: Invalid character after \\z"

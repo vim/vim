@@ -1597,10 +1597,10 @@ msgstr "E216: 無此群組或事件: %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: 無法對所有事件執行 autocommand"
@@ -1612,8 +1612,8 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: autocommand 層數過深"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
-msgstr "%s Auto commands: \"%s\""
+msgid "%s Autocommands for \"%s\""
+msgstr "%s Autocommands: \"%s\""
 
 #, c-format
 msgid "Executing %s"
@@ -2333,7 +2333,7 @@ msgstr "-q [errorfile]  編輯時載入第一個錯誤"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -4028,8 +4028,8 @@ msgstr "E65: 不正確的反向參考"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( 不能在此出現"
 
-msgid "E67: \\z1 et al. not allowed here"
-msgstr "E67: \\z1 et al. 不能在此出現"
+msgid "E67: \\z1 - \\z9 not allowed here"
+msgstr "E67: \\z1 - \\z9 不能在此出現"
 
 msgid "E68: Invalid character after \\z"
 msgstr "E68: 後面有不正確的字元: \\z"

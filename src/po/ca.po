@@ -2003,7 +2003,7 @@ msgstr "E216: No existeix tal grup o esdeveniment: %s"
 
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr "\n--- Ordres automàtiques ---"
 
 #, c-format
@@ -2023,7 +2023,7 @@ msgstr "E218: nivell d'imbricació d'ordres automàtiques massa elevat"
 # todo: substitucions
 # <event> ... <pattern>
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "Ordres automàtiques de %s per a \"%s\""
 
 #, c-format
@@ -2906,7 +2906,7 @@ msgstr "-q [ftxerrors]  edita el fitxer on hi ha el primer error"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -4658,8 +4658,8 @@ msgstr "E55: %s) desequilibrat"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( no està permès aquí"
 
-msgid "E67: \\z1 et al. not allowed here"
-msgstr "E67: \\z1 et al. no estan permesos aquí"
+msgid "E67: \\z1 - \\z9 not allowed here"
+msgstr "E67: \\z1 - \\z9 no estan permesos aquí"
 
 #, c-format
 msgid "E69: Missing ] after %s%%["
@@ -4770,8 +4770,8 @@ msgstr "E869: (NFA) Operador desconegut '\\@%c'"
 msgid "E870: (NFA regexp) Error reading repetition limits"
 msgstr "E870: (NFA) Error en llegir els límits de repetició"
 
-msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
-msgstr "E871: (NFA) Diverses especificacions de multiplicitat seguides !"
+msgid "E871: (NFA regexp) Can't have a multi follow a multi"
+msgstr "E871: (NFA) Diverses especificacions de multiplicitat seguides"
 
 msgid "E872: (NFA regexp) Too many '('"
 msgstr "E872: (NFA) Sobren '('"
@@ -4782,7 +4782,7 @@ msgstr "E879: (NFA) Sobren \\z("
 msgid "E873: (NFA regexp) proper termination error"
 msgstr "E873: (NFA) parèntesi sense tancar"
 
-msgid "E874: (NFA) Could not pop the stack !"
+msgid "E874: (NFA) Could not pop the stack!"
 msgstr "E874: (NFA) No es poden treure elements de la pila !"
 
 msgid ""
