@@ -907,6 +907,7 @@ LANG_SRC = \
 		src/po/check.vim \
 		src/po/cleanup.vim \
 		src/po/Makefile \
+		src/po/Make_all.mak \
 		src/po/Make_cyg.mak \
 		src/po/Make_ming.mak \
 		src/po/Make_mvc.mak \
