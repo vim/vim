@@ -12844,7 +12844,7 @@ tabstop_start(colnr_T col, int ts, int *vts)
     int		t;
     int         excess;
 
-    if (vts == 0 || vts[0] == 0)
+    if (vts == NULL || vts[0] == 0)
 	return (col / ts) * ts;
 
     tabcount = vts[0];
@@ -12878,10 +12878,11 @@ tabstop_fromto(
     int		tabcount;
     int		t;
 
-    if (vts == 0 || vts[0] == 0)
+    if (vts == NULL || vts[0] == 0)
     {
 	int tabs = 0;
 	int initspc = ts - (start_col % ts);
+
 	if (spaces >= initspc)
 	{
 	    spaces -= initspc;

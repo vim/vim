@@ -678,7 +678,7 @@ ex_retab(exarg_T *eap)
     char_u	*new_line = (char_u *)1;    /* init to non-NULL */
     int		did_undo;		/* called u_save for current line */
 #ifdef FEAT_VARTABS
-    int		*new_ts = 0;
+    int		*new_vts_array = NULL;
     char_u	*new_ts_str;		/* string value of tab argument */
 #else
     int		temp;
@@ -693,16 +693,17 @@ ex_retab(exarg_T *eap)
 
 #ifdef FEAT_VARTABS
     new_ts_str = eap->arg;
-    if (!tabstop_set(eap->arg, &new_ts))
+    if (!tabstop_set(eap->arg, &new_vts_array))
 	return;
     while (vim_isdigit(*(eap->arg)) || *(eap->arg) == ',')
 	++(eap->arg);
 
-    // This ensures that either new_ts and new_ts_str are freshly allocated,
-    // or new_ts points to an existing array and new_ts_str is null.
-    if (new_ts == 0)
+    // This ensures that either new_vts_array and new_ts_str are freshly
+    // allocated, or new_vts_array points to an existing array and new_ts_str
+    // is null.
+    if (new_vts_array == NULL)
     {
-	new_ts = curbuf->b_p_vts_array;
+	new_vts_array = curbuf->b_p_vts_array;
 	new_ts_str = NULL;
     }
     else
@@ -753,9 +754,7 @@ ex_retab(exarg_T *eap)
 			int t, s;
 
 			tabstop_fromto(start_vcol, vcol,
-				       tabstop_count(new_ts)? 0: curbuf->b_p_ts,
-				       new_ts,
-				       &t, &s);
+					curbuf->b_p_ts, new_vts_array, &t, &s);
 			num_tabs = t;
 			num_spaces = s;
 #else
@@ -829,11 +828,11 @@ ex_retab(exarg_T *eap)
     // If a single value was given then it can be considered equal to
     // either the value of 'tabstop' or the value of 'vartabstop'.
     if (tabstop_count(curbuf->b_p_vts_array) == 0
-	&& tabstop_count(new_ts) == 1
-	&& curbuf->b_p_ts == tabstop_first(new_ts))
+	&& tabstop_count(new_vts_array) == 1
+	&& curbuf->b_p_ts == tabstop_first(new_vts_array))
 	; /* not changed */
     else if (tabstop_count(curbuf->b_p_vts_array) > 0
-        && tabstop_eq(curbuf->b_p_vts_array, new_ts))
+        && tabstop_eq(curbuf->b_p_vts_array, new_vts_array))
 	; /* not changed */
     else
 	redraw_curbuf_later(NOT_VALID);
@@ -853,20 +852,20 @@ ex_retab(exarg_T *eap)
 	// than one tabstop then update 'vartabstop'.
 	int *old_vts_ary = curbuf->b_p_vts_array;
 
-	if (tabstop_count(old_vts_ary) > 0 || tabstop_count(new_ts) > 1)
+	if (tabstop_count(old_vts_ary) > 0 || tabstop_count(new_vts_array) > 1)
 	{
 	    set_string_option_direct((char_u *)"vts", -1, new_ts_str,
 							OPT_FREE|OPT_LOCAL, 0);
 	    vim_free(new_ts_str);
-	    curbuf->b_p_vts_array = new_ts;
+	    curbuf->b_p_vts_array = new_vts_array;
 	    vim_free(old_vts_ary);
 	}
 	else
 	{
 	    // 'vartabstop' wasn't in use and a single value was given to
 	    // retab then update 'tabstop'.
-	    curbuf->b_p_ts = tabstop_first(new_ts);
-	    vim_free(new_ts);
+	    curbuf->b_p_ts = tabstop_first(new_vts_array);
+	    vim_free(new_vts_array);
 	}
     }
 #else
