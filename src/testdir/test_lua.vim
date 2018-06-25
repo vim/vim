@@ -1,17 +1,20 @@
 " Tests for Lua.
-" TODO: move tests from test85.in here.
 
 if !has('lua')
   finish
 endif
 
-func Test_luado()
+" Test vim.command()
+func Test_command()
   new
   call setline(1, ['one', 'two', 'three'])
-  luado vim.command("%d_")
+  luado vim.command("1,2d_")
+  call assert_equal(['three'], getline(1, '$'))
   bwipe!
+endfunc
 
-  " Check switching to another buffer does not trigger ml_get error.
+" Check switching to another buffer does not trigger ml_get error.
+func Test_command_new_no_ml_get_error()
   new
   let wincount = winnr('$')
   call setline(1, ['one', 'two', 'three'])
@@ -51,6 +54,9 @@ func Test_window_line_col()
   lua vim.window().line = vim.window().line + 1
   lua vim.window().col = vim.window().col - 1
   call assert_equal([0, 3, 3, 0], getpos('.'))
+
+  call assert_fails('lua vim.window().line = 10',
+        \           '[string "vim chunk"]:1: line out of range')
   bwipe!
 endfunc
 
@@ -97,11 +103,32 @@ func Test_window_isvalid()
   lua w = vim.window()
   call assert_true(luaeval('w:isvalid()'))
 
-  " FIXME: how to test the case isvalid() returning v:false?
+  " FIXME: how to test the case when isvalid() returns v:false?
   " isvalid() gives errors when the window is deleted. Is it a bug?
 
   lua w = nil
   bwipe!
+endfunc
+
+" Test vim.buffer() with and without argument
+func Test_buffer()
+  new Xfoo1
+  let bn1 = bufnr('%')
+  new Xfoo2
+  let bn2 = bufnr('%')
+
+  " Test vim.buffer() without argument.
+  call assert_equal('Xfoo2', luaeval("vim.buffer().name"))
+
+  " Test vim.buffer() with string argument.
+  call assert_equal('Xfoo1', luaeval("vim.buffer('Xfoo1').name"))
+  call assert_equal('Xfoo2', luaeval("vim.buffer('Xfoo2').name"))
+
+  " Test vim.buffer() with integer argument.
+  call assert_equal('Xfoo1', luaeval("vim.buffer(" . bn1 . ").name"))
+  call assert_equal('Xfoo2', luaeval("vim.buffer(" . bn2 . ").name"))
+
+  %bwipe!
 endfunc
 
 " Test vim.buffer().name and vim.buffer().fname
@@ -113,6 +140,7 @@ func Test_buffer_name()
   " so this assert_equal is commented out.
   " call assert_equal('', luaeval('vim.buffer().name'))
   bwipe!
+
   new Xfoo
   call assert_equal('Xfoo', luaeval('vim.buffer().name'))
   call assert_equal(expand('%:p'), luaeval('vim.buffer().fname'))
@@ -143,6 +171,9 @@ func Test_buffer_delete()
   call setline(1, ['1', '2', '3'])
   lua vim.buffer()[2] = nil
   call assert_equal(['1', '3'], getline(1, '$'))
+
+  call assert_fails('lua vim.buffer()[3] = nil',
+        \           '[string "vim chunk"]:1: invalid line number')
   bwipe!
 endfunc
 
@@ -191,7 +222,7 @@ func Test_buffer_isvalid()
   lua b = vim.buffer()
   call assert_true(luaeval('b:isvalid()'))
 
-  " FIXME: how to test the case isvalid() returning v:false?
+  " FIXME: how to test the case when isvalid() returns v:false?
   " isvalid() gives errors when the buffer is wiped. Is it a bug?
 
   lua b = nil
@@ -221,6 +252,27 @@ func Test_list()
   lua l[4] = nil
   lua l:insert('first')
   call assert_equal(['first', 124.0, 'abc', v:true, v:false, {'a': 1, 'b': 2, 'c': 3}], l)
+
+  lua l = nil
+endfunc
+
+func Test_recursive_list()
+  lua l = vim.list():add(1):add(2)
+  lua l = l:add(l)
+
+  call assert_equal(1.0, luaeval('l[0]'))
+  call assert_equal(2.0, luaeval('l[1]'))
+
+  call assert_equal(1.0, luaeval('l[2][0]'))
+  call assert_equal(2.0, luaeval('l[2][1]'))
+
+  call assert_equal(1.0, luaeval('l[2][2][0]'))
+  call assert_equal(2.0, luaeval('l[2][2][1]'))
+
+  call assert_equal('[1.0, 2.0, [...]]', string(luaeval('l')))
+
+  call assert_equal(luaeval('l'), luaeval('l[2]'))
+  call assert_equal(luaeval('l'), luaeval('l[2][2]'))
 
   lua l = nil
 endfunc
@@ -271,17 +323,14 @@ endfunc
 
 " Test vim.open('...')
 func Test_open()
-  let a = execute('ls')
-  call assert_notmatch('XOpen', a)
+  call assert_notmatch('XOpen', execute('ls'))
 
   " Open a buffer XOpen1, but do not jump to it.
   lua b = vim.open('XOpen1')
   call assert_equal('XOpen1', luaeval('b.name'))
   call assert_equal('', bufname('%'))
 
-  let a = execute('ls')
-  call assert_match('XOpen1', a)
-
+  call assert_match('XOpen1', execute('ls'))
   call assert_notequal('XOpen2', bufname('%'))
 
   " Open a buffer XOpen2 and jump to it.
@@ -290,5 +339,59 @@ func Test_open()
   call assert_equal('XOpen2', bufname('%'))
 
   lua b = nil
-  bwipe%
+  %bwipe!
+endfunc
+
+func Test_line()
+  new
+  call setline(1, ['first line', 'second line'])
+  1
+  call assert_equal('first line', luaeval('vim.line()'))
+  2
+  call assert_equal('second line', luaeval('vim.line()'))
+  bwipe!
+endfunc
+
+func Test_beep()
+  call assert_beeps('lua vim.beep()')
+endfunc
+
+" Test errors in luaeval()
+func Test_luaeval_error()
+  " Compile error
+  call assert_fails("call luaeval('-nil')",
+  \ '[string "luaeval"]:1: attempt to perform arithmetic on a nil value')
+endfunc
+
+" Test :luafile foo.lua
+func Test_luafile()
+  call delete('Xlua_file')
+  call writefile(["str = 'hello'", "num = 123.0" ], 'Xlua_file')
+  call setfperm('Xlua_file', 'r-xr-xr-x')
+
+  luafile Xlua_file
+  call assert_equal('hello', luaeval('str'))
+  call assert_equal(123.0, luaeval('num'))
+
+  lua str = nil
+  lua num = nil
+  call delete('Xlua_file')
+endfunc
+
+" Test :luafile %
+func Test_luafile_percent()
+  new Xlua_file
+  append
+    str, num = 'foo', 321.0
+    print(string.format('str=%s, num=%d', str, num))
+.
+  w!
+  luafile %
+  let msg = split(execute('message'), "\n")[-1]
+  call assert_equal('str=foo, num=321', msg)
+
+  lua str = nil
+  lua num = nil
+  call delete('Xlua_file')
+  bwipe!
 endfunc

@@ -14,7 +14,6 @@ include Make_all.mak
 # test10	'errorformat' is different
 # test11	"cat" doesn't work properly
 # test52	only for Win32
-# test85	no Lua interface
 # test86, 87	no Python interface
 
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE4)
