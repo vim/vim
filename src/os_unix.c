@@ -5758,11 +5758,13 @@ mch_job_status(job_T *job)
 	    ch_log(job->jv_channel, "Job exited with %d", job->jv_exitval);
 	goto return_dead;
     }
-    if (WIFSIGNALED(status))
+    else if (WIFSIGNALED(status))
     {
 	job->jv_exitval = -1;
+	job->jv_termsig = WTERMSIG(status);
 	if (job->jv_status < JOB_ENDED)
-	    ch_log(job->jv_channel, "Job terminated by a signal");
+	    ch_log(job->jv_channel, "Job terminated by a signal %d",
+							      job->jv_termsig);
 	goto return_dead;
     }
     return "run";
@@ -5808,7 +5810,10 @@ mch_detect_ended_job(job_T *job_list)
 		/* LINTED avoid "bitwise operation on signed value" */
 		job->jv_exitval = WEXITSTATUS(status);
 	    else if (WIFSIGNALED(status))
+	    {
 		job->jv_exitval = -1;
+		job->jv_termsig = WTERMSIG(status);
+	    }
 	    if (job->jv_status < JOB_ENDED)
 	    {
 		ch_log(job->jv_channel, "Job ended");

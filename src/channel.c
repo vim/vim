@@ -5862,6 +5862,7 @@ job_info(job_T *job, dict_T *dict)
     dict_add_string(dict, "tty_out", job->jv_tty_out);
 
     dict_add_number(dict, "exitval", job->jv_exitval);
+    dict_add_number(dict, "termsig", job->jv_termsig);
     dict_add_string(dict, "exit_cb", job->jv_exit_cb);
     dict_add_string(dict, "stoponexit", job->jv_stoponexit);
 
