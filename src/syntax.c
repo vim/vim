@@ -7003,6 +7003,10 @@ static char *(highlight_init_light[]) = {
 	 "MatchParen term=reverse ctermbg=Cyan guibg=Cyan"),
 #ifdef FEAT_GUI
     "Normal gui=NONE",
+#else
+# ifdef FEAT_VTP
+    "Normal term=NONE cterm=NONE gui=NONE",
+# endif
 #endif
 #ifdef FEAT_TERMINAL
     CENT("StatusLineTerm term=reverse,bold cterm=bold ctermfg=White ctermbg=DarkGreen",
@@ -7099,6 +7103,10 @@ static char *(highlight_init_dark[]) = {
 #endif
 #ifdef FEAT_GUI
     "Normal gui=NONE",
+#else
+# ifdef FEAT_VTP
+    "Normal term=NONE cterm=NONE gui=NONE",
+# endif
 #endif
 #ifdef FEAT_TERMINAL
     CENT("StatusLineTerm term=reverse,bold cterm=bold ctermfg=Black ctermbg=LightGreen",
