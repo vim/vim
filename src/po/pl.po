@@ -1,5 +1,4 @@
-# translation of pl.po to Polish
-# Polish Translation for Vim
+# Polish translation for Vim
 #
 # updated 2013 for vim-7.4
 #
@@ -12,7 +11,7 @@ msgstr ""
 "POT-Creation-Date: 2013-07-06 19:33+0200\n"
 "PO-Revision-Date: 2010-08-10 18:15+0200\n"
 "Last-Translator: Mikolaj Machowski <mikmach@wp.pl>\n"
-"Language-Team: \n"
+"Language-Team: Polish\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
