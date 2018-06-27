@@ -5400,7 +5400,7 @@ chk_modeline(
     char_u	*save_sourcing_name;
     linenr_T	save_sourcing_lnum;
 #ifdef FEAT_EVAL
-    scid_T	save_SID;
+    sctx_T	save_sctx;
 #endif
 
     prev = -1;
@@ -5485,12 +5485,13 @@ chk_modeline(
 	    if (*s != NUL)		/* skip over an empty "::" */
 	    {
 #ifdef FEAT_EVAL
-		save_SID = current_SID;
+		save_sctx = current_sctx;
 		current_SID = SID_MODELINE;
+		current_SLN = 0;
 #endif
 		retval = do_set(s, OPT_MODELINE | OPT_LOCAL | flags);
 #ifdef FEAT_EVAL
-		current_SID = save_SID;
+		current_sctx = save_sctx;
 #endif
 		if (retval == FAIL)		/* stop if error found */
 		    break;
