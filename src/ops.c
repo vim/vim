@@ -3551,9 +3551,10 @@ do_put(
 	    return;
     }
 
-    /* Autocommands may be executed when saving lines for undo, which may make
-     * y_array invalid.  Start undo now to avoid that. */
-    u_save(curwin->w_cursor.lnum, curwin->w_cursor.lnum + 1);
+    /* Autocommands may be executed when saving lines for undo.  This might
+     * make "y_array" invalid, so we start undo now to avoid that. */
+    if (u_save(curwin->w_cursor.lnum, curwin->w_cursor.lnum + 1) == FAIL)
+	goto end;
 
     if (insert_string != NULL)
     {
