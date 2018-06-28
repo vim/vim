@@ -866,7 +866,6 @@ ex_retab(exarg_T *eap)
 	{
 	    set_string_option_direct((char_u *)"vts", -1, new_ts_str,
 							OPT_FREE|OPT_LOCAL, 0);
-	    vim_free(new_ts_str);
 	    curbuf->b_p_vts_array = new_vts_array;
 	    vim_free(old_vts_ary);
 	}
@@ -877,6 +876,7 @@ ex_retab(exarg_T *eap)
 	    curbuf->b_p_ts = tabstop_first(new_vts_array);
 	    vim_free(new_vts_array);
 	}
+	vim_free(new_ts_str);
     }
 #else
     curbuf->b_p_ts = new_ts;

@@ -12870,7 +12870,7 @@ tabstop_start(colnr_T col, int ts, int *vts)
 tabstop_fromto(
 	colnr_T start_col,
 	colnr_T end_col,
-	int	ts,
+	int	ts_arg,
 	int	*vts,
 	int	*ntabs,
 	int	*nspcs)
@@ -12880,12 +12880,14 @@ tabstop_fromto(
     int		padding = 0;
     int		tabcount;
     int		t;
+    int		ts = ts_arg == 0 ? curbuf->b_p_ts : ts_arg;
 
     if (vts == NULL || vts[0] == 0)
     {
 	int tabs = 0;
-	int initspc = ts - (start_col % ts);
+	int initspc = 0;
 
+	initspc = ts - (start_col % ts);
 	if (spaces >= initspc)
 	{
 	    spaces -= initspc;

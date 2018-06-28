@@ -4753,13 +4753,13 @@ win_line(
 		    n_extra = win_lbr_chartabsize(wp, line, p, (colnr_T)vcol,
 								    NULL) - 1;
 		    if (c == TAB && n_extra + col > wp->w_width)
-#ifdef FEAT_VARTABS
+# ifdef FEAT_VARTABS
 			n_extra = tabstop_padding(vcol, wp->w_buffer->b_p_ts,
-					wp->w_buffer->b_p_vts_array) - 1;
-#else
+					      wp->w_buffer->b_p_vts_array) - 1;
+# else
 			n_extra = (int)wp->w_buffer->b_p_ts
 				       - vcol % (int)wp->w_buffer->b_p_ts - 1;
- #endif
+# endif
 
 # ifdef FEAT_MBYTE
 		    c_extra = mb_off > 0 ? MB_FILLER_CHAR : ' ';
@@ -4902,6 +4902,11 @@ win_line(
 			p_extra_free = p;
 			for (i = 0; i < tab_len; i++)
 			{
+			    if (*p == NUL)
+			    {
+				tab_len = i;
+				break;
+			    }
 #ifdef FEAT_MBYTE
 			    mb_char2bytes(lcs_tab2, p);
 			    p += mb_char2len(lcs_tab2);
