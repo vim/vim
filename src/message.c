@@ -982,7 +982,11 @@ ex_messages(exarg_T *eap)
     {
 	s = mch_getenv((char_u *)"LANG");
 	if (s != NULL && *s != NUL)
+	    // The next comment is extracted by xgettext and put in po file for
+	    // translators to read.
 	    msg_attr((char_u *)
+		    // Translator: Please replace the name and email address
+		    // with the appropriate text for your translation.
 		    _("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
 		    HL_ATTR(HLF_T));
     }
