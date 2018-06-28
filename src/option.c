@@ -7767,8 +7767,6 @@ did_set_string_option(
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
     if (did_swaptcap)
     {
-	if (t_colors < 256)
-	    p_tgc = 0;
 	set_termname((char_u *)"win32");
 	init_highlight(TRUE, FALSE);
     }
@@ -8806,7 +8804,7 @@ set_bool_option(
     {
 # ifdef FEAT_VTP
 	/* Do not turn on 'tgc' when 24-bit colors are not supported. */
-	if (!has_vtp_working())
+	if (is_term_win32() && !has_vtp_working())
 	{
 	    p_tgc = 0;
 	    return (char_u*)N_("E954: 24-bit colors are not supported on this environment");
@@ -8819,10 +8817,13 @@ set_bool_option(
 # endif
 	    highlight_gui_started();
 # ifdef FEAT_VTP
-	control_console_color_rgb();
 	/* reset t_Co */
 	if (is_term_win32())
+	{
+	    control_console_color_rgb();
 	    set_termname(T_NAME);
+	    init_highlight(TRUE, FALSE);
+	}
 # endif
     }
 #endif

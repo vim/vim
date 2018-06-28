@@ -6685,7 +6685,7 @@ static struct ks_tbl_s ks_tbl[] =
     {(int)KS_CAB, "\033|%db", "\033|4%dm"}, /* set background color */
     {(int)KS_CAF, "\033|%df", "\033|3%dm"}, /* set foreground color */
 #  endif
-    {(int)KS_CCO, "16", "256"},     /* colors */
+    {(int)KS_CCO, "256", "256"},     /* colors */
     {(int)KS_NAME}		    /* terminator */
 };
 
