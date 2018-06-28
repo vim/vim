@@ -745,7 +745,12 @@ gui_init(void)
 	/* Always create the Balloon Evaluation area, but disable it when
 	 * 'ballooneval' is off. */
 	if (balloonEval != NULL)
+	{
+# ifdef FEAT_VARTABS
+	    vim_free(balloonEval->vts);
+# endif
 	    vim_free(balloonEval);
+	}
 	balloonEvalForTerm = FALSE;
 # ifdef FEAT_GUI_GTK
 	balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,

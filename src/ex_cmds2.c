@@ -1419,7 +1419,7 @@ check_due_timer(void)
 	    bevalexpr_due_set = FALSE;
 	    if (balloonEval == NULL)
 	    {
-		balloonEval = (BalloonEval *)alloc(sizeof(BalloonEval));
+		balloonEval = (BalloonEval *)alloc_clear(sizeof(BalloonEval));
 		balloonEvalForTerm = TRUE;
 	    }
 	    if (balloonEval != NULL)
