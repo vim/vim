@@ -2146,6 +2146,25 @@ mb_adjust_opend(oparg_T *oap)
 #endif
 
 #if defined(FEAT_VISUALEXTRA) || defined(PROTO)
+
+# ifdef FEAT_MBYTE
+/*
+ * Replace the character under the cursor with "c".
+ * This takes care of multi-byte characters.
+ */
+    static void
+replace_character(int c)
+{
+    int n = State;
+
+    State = REPLACE;
+    ins_char(c);
+    State = n;
+    /* Backup to the replaced character. */
+    dec_cursor();
+}
+
+# endif
 /*
  * Replace a whole area with one character.
  */
@@ -2331,12 +2350,7 @@ op_replace(oparg_T *oap, int c)
 		     * with a multi-byte and the other way around. */
 		    if (curwin->w_cursor.lnum == oap->end.lnum)
 			oap->end.col += (*mb_char2len)(c) - (*mb_char2len)(n);
-		    n = State;
-		    State = REPLACE;
-		    ins_char(c);
-		    State = n;
-		    /* Backup to the replaced character. */
-		    dec_cursor();
+		    replace_character(c);
 		}
 		else
 #endif
@@ -2358,7 +2372,7 @@ op_replace(oparg_T *oap, int c)
 			    getvpos(&oap->end, end_vcol);
 		    }
 #endif
-		    PCHAR(curwin->w_cursor, c);
+		    PBYTE(curwin->w_cursor, c);
 		}
 	    }
 #ifdef FEAT_VIRTUALEDIT
@@ -2377,9 +2391,14 @@ op_replace(oparg_T *oap, int c)
 		curwin->w_cursor.col -= (virtcols + 1);
 		for (; virtcols >= 0; virtcols--)
 		{
-		    PCHAR(curwin->w_cursor, c);
-		    if (inc(&curwin->w_cursor) == -1)
-			break;
+#ifdef FEAT_MBYTE
+                   if ((*mb_char2len)(c) > 1)
+		       replace_character(c);
+                   else
+ #endif
+			PBYTE(curwin->w_cursor, c);
+		   if (inc(&curwin->w_cursor) == -1)
+		       break;
 		}
 	    }
 #endif
@@ -2619,7 +2638,7 @@ swapchar(int op_type, pos_T *pos)
 	}
 	else
 #endif
-	    PCHAR(*pos, nc);
+	    PBYTE(*pos, nc);
 	return TRUE;
     }
     return FALSE;

@@ -14,9 +14,9 @@
  */
 
 /*
- * PCHAR(lp, c) - put character 'c' at position 'lp'
+ * PBYTE(lp, c) - put byte 'c' at position 'lp'
  */
-#define PCHAR(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
+#define PBYTE(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
 
 /*
  * Position comparisons
