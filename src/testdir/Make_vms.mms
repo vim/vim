@@ -93,7 +93,6 @@ SCRIPT = test1.out test3.out \
 #
 # test72: bug - Vim hangs at :rename (while rename works well otherwise)
 # test78: bug - Vim dies at :recover Xtest 
-# test85: no Lua interface
 # test89: bug - findfile() does not work on VMS (just in the current directory) 
 # test102: Just ODS-5 supports space and special chars in the filename.
 # On ODS-2 tests fail. 
@@ -119,9 +118,9 @@ SCRIPT_SPELL = test59.out
 SCRIPT_MZSCH = test70.out 
 .ENDIF
 
-.IFDEF HAVE_ODS5                                                                                                                                   
-SCRIPT_ODS5 = test102.out                                                                                                   
-.ENDIF  
+.IFDEF HAVE_ODS5
+SCRIPT_ODS5 = test102.out
+.ENDIF
 
 .IFDEF HAVE_GZIP
 SCRIPT_GZIP = test11.out
@@ -129,10 +128,6 @@ SCRIPT_GZIP = test11.out
 
 .IFDEF HAVE_GDIFF
 SCRIPT_GDIFF = test47.out
-.ENDIF
-
-.IFDEF HAVE_LUA
-SCRIPT_LUA = test85.out
 .ENDIF
 
 .IFDEF HAVE_PYTHON
