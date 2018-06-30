@@ -167,6 +167,11 @@ typedef PySliceObject PySliceObject_T;
 # define PySequence_Fast py3_PySequence_Fast
 # define PyTuple_Size py3_PyTuple_Size
 # define PyTuple_GetItem py3_PyTuple_GetItem
+# if PY_VERSION_HEX >= 0x030601f0
+#  define PySlice_AdjustIndices py3_PySlice_AdjustIndices
+#  define PySlice_Unpack py3_PySlice_Unpack
+# endif
+# undef PySlice_GetIndicesEx
 # define PySlice_GetIndicesEx py3_PySlice_GetIndicesEx
 # define PyImport_ImportModule py3_PyImport_ImportModule
 # define PyObject_Init py3__PyObject_Init
@@ -305,6 +310,12 @@ static Py_ssize_t (*py3_PyTuple_Size)(PyObject *);
 static PyObject* (*py3_PyTuple_GetItem)(PyObject *, Py_ssize_t);
 static int (*py3_PyMapping_Check)(PyObject *);
 static PyObject* (*py3_PyMapping_Keys)(PyObject *);
+# if PY_VERSION_HEX >= 0x030601f0
+static int (*py3_PySlice_AdjustIndices)(Py_ssize_t length,
+		     Py_ssize_t *start, Py_ssize_t *stop, Py_ssize_t step);
+static int (*py3_PySlice_Unpack)(PyObject *slice,
+		     Py_ssize_t *start, Py_ssize_t *stop, Py_ssize_t *step);
+# endif
 static int (*py3_PySlice_GetIndicesEx)(PySliceObject_T *r, Py_ssize_t length,
 		     Py_ssize_t *start, Py_ssize_t *stop, Py_ssize_t *step,
 		     Py_ssize_t *slicelen);
@@ -474,6 +485,10 @@ static struct
     {"PySequence_Fast", (PYTHON_PROC*)&py3_PySequence_Fast},
     {"PyTuple_Size", (PYTHON_PROC*)&py3_PyTuple_Size},
     {"PyTuple_GetItem", (PYTHON_PROC*)&py3_PyTuple_GetItem},
+# if PY_VERSION_HEX >= 0x030601f0
+    {"PySlice_AdjustIndices", (PYTHON_PROC*)&py3_PySlice_AdjustIndices},
+    {"PySlice_Unpack", (PYTHON_PROC*)&py3_PySlice_Unpack},
+# endif
     {"PySlice_GetIndicesEx", (PYTHON_PROC*)&py3_PySlice_GetIndicesEx},
     {"PyErr_NoMemory", (PYTHON_PROC*)&py3_PyErr_NoMemory},
     {"Py_Finalize", (PYTHON_PROC*)&py3_Py_Finalize},
