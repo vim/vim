@@ -293,10 +293,6 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    fp->uf_scoped = NULL;
 
 #ifdef FEAT_PROFILE
-	fp->uf_tml_count = NULL;
-	fp->uf_tml_total = NULL;
-	fp->uf_tml_self = NULL;
-	fp->uf_profiling = FALSE;
 	if (prof_def_func())
 	    func_do_profile(fp);
 #endif
@@ -706,6 +702,7 @@ call_user_func(
 #ifdef FEAT_PROFILE
     proftime_T	wait_start;
     proftime_T	call_start;
+    int		started_profiling = FALSE;
 #endif
 
     /* If depth of calling is getting too high, don't execute the function */
@@ -921,7 +918,10 @@ call_user_func(
     if (do_profiling == PROF_YES)
     {
 	if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
+	{
+	    started_profiling = TRUE;
 	    func_do_profile(fp);
+	}
 	if (fp->uf_profiling
 		    || (fc->caller != NULL && fc->caller->func->uf_profiling))
 	{
@@ -965,6 +965,9 @@ call_user_func(
 	    profile_add(&fc->caller->func->uf_tm_children, &call_start);
 	    profile_add(&fc->caller->func->uf_tml_children, &call_start);
 	}
+	if (started_profiling)
+	    // make a ":profdel func" stop profiling the function
+	    fp->uf_profiling = FALSE;
     }
 #endif
 
@@ -2522,23 +2525,28 @@ func_do_profile(ufunc_T *fp)
 {
     int		len = fp->uf_lines.ga_len;
 
-    if (len == 0)
-	len = 1;  /* avoid getting error for allocating zero bytes */
-    fp->uf_tm_count = 0;
-    profile_zero(&fp->uf_tm_self);
-    profile_zero(&fp->uf_tm_total);
-    if (fp->uf_tml_count == NULL)
-	fp->uf_tml_count = (int *)alloc_clear((unsigned) (sizeof(int) * len));
-    if (fp->uf_tml_total == NULL)
-	fp->uf_tml_total = (proftime_T *)alloc_clear((unsigned)
-						  (sizeof(proftime_T) * len));
-    if (fp->uf_tml_self == NULL)
-	fp->uf_tml_self = (proftime_T *)alloc_clear((unsigned)
-						  (sizeof(proftime_T) * len));
-    fp->uf_tml_idx = -1;
-    if (fp->uf_tml_count == NULL || fp->uf_tml_total == NULL
-						   || fp->uf_tml_self == NULL)
-	return;	    /* out of memory */
+    if (!fp->uf_prof_initialized)
+    {
+	if (len == 0)
+	    len = 1;  /* avoid getting error for allocating zero bytes */
+	fp->uf_tm_count = 0;
+	profile_zero(&fp->uf_tm_self);
+	profile_zero(&fp->uf_tm_total);
+	if (fp->uf_tml_count == NULL)
+	    fp->uf_tml_count = (int *)alloc_clear(
+					       (unsigned)(sizeof(int) * len));
+	if (fp->uf_tml_total == NULL)
+	    fp->uf_tml_total = (proftime_T *)alloc_clear(
+					 (unsigned)(sizeof(proftime_T) * len));
+	if (fp->uf_tml_self == NULL)
+	    fp->uf_tml_self = (proftime_T *)alloc_clear(
+					 (unsigned)(sizeof(proftime_T) * len));
+	fp->uf_tml_idx = -1;
+	if (fp->uf_tml_count == NULL || fp->uf_tml_total == NULL
+						    || fp->uf_tml_self == NULL)
+	    return;	    /* out of memory */
+	fp->uf_prof_initialized = TRUE;
+    }
 
     fp->uf_profiling = TRUE;
 }
@@ -2568,7 +2576,7 @@ func_dump_profile(FILE *fd)
 	{
 	    --todo;
 	    fp = HI2UF(hi);
-	    if (fp->uf_profiling)
+	    if (fp->uf_prof_initialized)
 	    {
 		if (sorttab != NULL)
 		    sorttab[st_len++] = fp;

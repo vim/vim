@@ -1345,6 +1345,7 @@ typedef struct
     garray_T	uf_lines;	/* function lines */
 #ifdef FEAT_PROFILE
     int		uf_profiling;	/* TRUE when func is being profiled */
+    int		uf_prof_initialized;
     /* profiling the function as a whole */
     int		uf_tm_count;	/* nr of calls */
     proftime_T	uf_tm_total;	/* time spent in function + children */
