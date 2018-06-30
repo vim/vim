@@ -22,23 +22,24 @@ any faster, but you can edit files larger than 2 Gbyte.
 
 Contents:
 1. Microsoft Visual C++
-2. Using MinGW
-3. Cygwin
-4. Borland
-5. Cross compiling for Win32 from a Linux machine
-6. Building with Python support
-7. Building with Python3 support
-8. Building with Racket or MzScheme support
-9. Building with Lua support
-10. Building with Perl support
-11. Building with Ruby support
-12. Building with Tcl support
-13. Building with Terminal support
-14. Building with DirectX (DirectWrite) support
-15. Windows 3.1
-16. MS-DOS
+2. Using MSYS2 with MinGW
+3. Using MinGW
+4. Cygwin
+5. Borland
+6. Cross compiling for Win32 from a Linux machine
+7. Building with Python support
+8. Building with Python3 support
+9. Building with Racket or MzScheme support
+10. Building with Lua support
+11. Building with Perl support
+12. Building with Ruby support
+13. Building with Tcl support
+14. Building with Terminal support
+15. Building with DirectX (DirectWrite) support
+16. Windows 3.1
+17. MS-DOS
 
-17. Installing after building from sources
+18. Installing after building from sources
 
 
 The currently recommended way (that means it has been verified to work) is
@@ -261,8 +262,87 @@ Instructions for integrating the Platform SDK into VC Express:
     http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/default.aspx
 
 
+2. MSYS2 with MinGW
+===================
 
-2. MinGW
+2.1. Setup the basic msys2 environment
+
+Go to the official page of MSYS2: https://www.msys2.org
+Download an installer:
+
+* msys2-x86_64-YYYYMMDD.exe for 64-bit Windows
+  (Even if you want to build 32-bit Vim)
+* msys2-i686-YYYYMMDD.exe for 32-bit Windows
+
+Execute the installer and follow the instructions to update basic packages.
+At the end keep the checkbox checked to run msys2 now.  If needed, you can
+open the window from the start menu, MSYS2 64 bit / MSYS2 MSYS
+
+Execute:
+    $ pacman -Syu
+    
+And restart MSYS2 window (select "MSYS2 MSYS" icon from the Start Menu).
+Then execute:
+    $ pacman -Su
+
+If pacman complains that `catgets` and `libcatgets` conflict with another
+package, select `y` to remove them.
+
+
+2.2. Install additional packages for building Vim
+
+The following package groups are required for building Vim:
+
+* base-devel
+* mingw-w64-i686-toolchain (for building 32-bit Vim)
+* mingw-w64-x86_64-toolchain (for building 64-bit Vim)
+
+Use the following command to install them:
+
+    $ pacman -S base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain
+
+Or you can use the `pacboy` command to avoid long package names:
+
+    $ pacboy -S base-devel: toolchain:m
+
+(See `pacboy help` for the help.)
+
+
+2.3. Keep the build environment up-to-date
+
+After you have installed the build environment, you may want to keep it
+up-to-date (E.g. always use the latest GCC).
+In that case, you just need to execute the command:
+    $ pacman -Syu
+
+
+# Build Vim
+
+Select one of the following icon from the Start Menu:
+
+* MSYS2 MinGW 32-bit (To build 32-bit versions of Vim)
+* MSYS2 MinGW 64-bit (To build 64-bit versions of Vim)
+
+Go to the source directory of Vim, then execute the make command.  E.g.:
+
+    make -f Make_ming.mak
+    make -f Make_ming.mak GUI=no
+    make -f Make_ming.mak GUI=no DEBUG=yes
+
+NOTE: you can't execute the vim.exe in the MSYS console, open a normal Windows
+console for that.  You need to set $PATH to be able to build there, e.g.:
+
+    set PATH=c:\msys64\mingw32\bin;c:\msys64\usr\bin;%PATH%
+
+This command is in msys32.bat.  Or or the 64 bit compiler use msys64.bat:
+
+    set PATH=c:\msys64\mingw64\bin;c:\msys64\usr\bin;%PATH%
+
+If you have msys64 in another location you will need to adjust the paths for
+that.
+
+
+3. MinGW
 ========
 
 (written by Ron Aaron: <ronaharon@yahoo.com>)
@@ -344,7 +424,7 @@ If you want National Language Support, read the file src/po/README_mingw.txt.
 You need to uncomment lines in Make_ming.mak to have NLS defined.
 
 
-3. Cygwin
+4. Cygwin
 =========
 
 Use Make_cyg.mak with Cygwin's GCC. See
@@ -356,14 +436,14 @@ running on Unix), while with Make_cyg.mak you get a Windows application (like
 with the other makefiles).
 
 
-4. Borland
+5. Borland
 ===========
 
 Use Make_bc5.mak with Borland C++ 5.x. See
     http://users.skynet.be/antoine.mechelynck/vim/compile.htm
 
 
-5. Cross compiling for Win32 from a Linux machine
+6. Cross compiling for Win32 from a Linux machine
 =================================================
 
 [Update of 1) needs to be verified]
@@ -383,7 +463,7 @@ your Linux (or other unix) box.  To do this, you need to follow a few steps:
 Now you have created the Windows binary from your Linux box!  Have fun...
 
 
-6. Building with Python support
+7. Building with Python support
 ===============================
 
 For building with MSVC 2008 the "Windows Installer" from www.python.org
@@ -435,7 +515,7 @@ And if you use msys2 to build python support (as one line):
 You will end up with a Python-enabled, Win32 version. Enjoy!
 
 
-7. Building with Python3 support
+8. Building with Python3 support
 ================================
 
 For building with MSVC 2008 the "Windows Installer" from www.python.org
@@ -466,7 +546,7 @@ When using msys2 and link with Python3 bundled with msys2 (as one line):
 (This is for 64-bit builds.  For 32-bit builds, replace mingw64 with mingw32.)
 
 
-8. Building with Racket or MzScheme support
+9. Building with Racket or MzScheme support
 ========================================
 
 1) Building with Racket support (newest)
@@ -556,7 +636,7 @@ After a successful build, these dlls can be freely removed, leaving them in
 
 
 
-9. Building with Lua support
+10. Building with Lua support
 ============================
 
 Vim with Lua support can be built with either MSVC or MinGW (or maybe Cygwin).
@@ -611,7 +691,7 @@ Or when using Cygwin (as one line) (untested):
         LUA=/cygdrive/c/projects/lua53 DYNAMIC_LUA=yes LUA_VER=53
 
 
-10. Building with Perl support
+11. Building with Perl support
 ==============================
 
 Vim with Perl support can be built with either MSVC or MinGW (or Cygwin).
@@ -637,7 +717,7 @@ Or when using MinGW (as one line):
         PERL=C:/Perl DYNAMIC_PERL=yes PERL_VER=522
 
 
-11. Building with Ruby support
+12. Building with Ruby support
 ==============================
 
 Vim with Ruby support can be built with either MSVC or MinGW (or Cygwin).
@@ -745,7 +825,7 @@ Ruby 2.1 or later.  (Default is 0x501.)
 
 
 
-12. Building with Tcl support
+13. Building with Tcl support
 =============================
 
 Vim with Tcl support can be built with either MSVC or MinGW (or Cygwin).
@@ -777,7 +857,7 @@ Or when using MinGW (as one line):
         TCL=C:/Tcl86 DYNAMIC_TCL=yes TCL_VER=86 TCL_VER_LONG=8.6
 
 
-13. Building with Terminal support
+14. Building with Terminal support
 ==================================
 
 Vim with Terminal support can be built with either MSVC, MinGW or Cygwin.
@@ -793,7 +873,7 @@ Or when using MinGW:
     mingw32-make -f Make_ming.mak TERMINAL=yes
 
 
-14. Building with DirectX (DirectWrite) support
+15. Building with DirectX (DirectWrite) support
 ===============================================
 
 Vim with DirectX (DirectWrite) support can be built with either MSVC or MinGW.
@@ -827,20 +907,20 @@ Just set DIRECTX to yes:
     mingw32-make -f Make_ming.mak DIRECTX=yes
 
 
-15. Windows 3.1x
+16. Windows 3.1x
 ================
 
 The Windows 3.1x support was removed in patch 7.4.1364.
 
 
-16. MS-DOS
+17. MS-DOS
 ==========
 
 The MS-DOS support was removed in patch 7.4.1399.  Only very old Vim versions
 work on MS-DOS because of the limited amount of memory available.
 
 
-17. Installing after building from sources
+18. Installing after building from sources
 ==========================================
 
 [provided by Michael Soyka, updated by Ken Takata]
