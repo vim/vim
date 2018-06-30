@@ -4690,6 +4690,11 @@ check_termcode(
 				&& STRNCMP(tp + extra - 2, "0;115;0c", 8) == 0)
 			    is_not_xterm = TRUE;
 
+			// Xterm first responded to this request at patch level
+			// 95, so assume anything below 95 is not xterm.
+			if (version < 95)
+			    is_not_xterm = TRUE;
+
 			/* Only request the cursor style if t_SH and t_RS are
 			 * set. Only supported properly by xterm since version
 			 * 279 (otherwise it returns 0x18).
