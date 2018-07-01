@@ -124,7 +124,7 @@ func Test_window_set_current()
   lua w2()
   call assert_equal('Xfoo2', bufname('%'))
 
-  lua w1, w2 = nil, nil
+  lua w1, w2 = nil
   %bwipe!
 endfunc
 
@@ -142,7 +142,7 @@ func Test_window_buffer()
   lua b2()
   call assert_equal('Xfoo2', bufname('%'))
 
-  lua b1, b2 = nil, nil
+  lua b1, b2, w1, w2 = nil
   %bwipe!
 endfunc
 
@@ -191,7 +191,7 @@ func Test_buffer()
   call assert_equal('Xfoo1', luaeval("vim.buffer(" . bn1 . ").name"))
   call assert_equal('Xfoo2', luaeval("vim.buffer(" . bn2 . ").name"))
 
-  lua bn1, bn2 = nil, nil
+  lua bn1, bn2 = nil
   %bwipe!
 endfunc
 
@@ -275,7 +275,7 @@ func Test_buffer_next_previous()
   call assert_equal('Xfoo1', luaeval('vim.buffer().name'))
   call assert_equal('Xfoo1', bufname('%'))
 
-  lua bn, bp = nil, nil
+  lua bn, bp = nil
   %bwipe!
 endfunc
 
@@ -295,12 +295,6 @@ endfunc
 func Test_list()
   call assert_equal([], luaeval('vim.list()'))
 
-  " Same example as in :help lua-vim.
-  " FIXME: test is disabled because it does not work.
-  " See https://github.com/vim/vim/issues/3086
-  " lua t = {math.pi, false, say = 'hi'}
-  " call assert_equal([3.141593, 0], luaeval('vim.list(t)'))
-
   let l = []
   lua l = vim.eval('l')
   lua l:add(123)
@@ -319,7 +313,24 @@ func Test_list()
   lua l:insert('xx', 3)
   call assert_equal(['first', 124.0, 'abc', 'xx', v:true, v:false, {'a': 1, 'b': 2, 'c': 3}], l)
 
+  lockvar 1 l
+  call assert_fails('lua l:add("x")', '[string "vim chunk"]:1: list is locked')
+
   lua l = nil
+endfunc
+
+func Test_list_table()
+  " See :help lua-vim
+  " Non-numeric keys should not be used to initialize the list
+  " so say = 'hi' should be ignored.
+  lua t = {3.14, 'hello', false, true, say = 'hi'}
+  call assert_equal([3.14, 'hello', v:false, v:true], luaeval('vim.list(t)'))
+  lua t = nil
+
+  call assert_fails('lua vim.list(1)', '[string "vim chunk"]:1: table expected, got number')
+  call assert_fails('lua vim.list("x")', '[string "vim chunk"]:1: table expected, got string')
+  call assert_fails('lua vim.list(print)', '[string "vim chunk"]:1: table expected, got function')
+  call assert_fails('lua vim.list(true)', '[string "vim chunk"]:1: table expected, got boolean')
 endfunc
 
 " Test l() i.e. iterator on list
@@ -329,7 +340,7 @@ func Test_list_iter()
   lua for v in l() do str = str .. v end
   call assert_equal('foobar', luaeval('str'))
 
-  lua str, v, l = nil, nil, nil
+  lua str, l = nil
 endfunc
 
 func Test_recursive_list()
@@ -359,12 +370,6 @@ endfunc
 func Test_dict()
   call assert_equal({}, luaeval('vim.dict()'))
 
-  " Same example as in :help lua-vim.
-  " FIXME: test is disabled because it does not work.
-  " See https://github.com/vim/vim/issues/3086
-  " lua t = {math.pi, false, say = 'hi'}
-  " call assert_equal({'say' : 'hi'}, luaeval('vim.dict(t)'))
-
   let d = {}
   lua d = vim.eval('d')
   lua d[0] = 123
@@ -383,7 +388,30 @@ func Test_dict()
   lua d[4] = nil
   call assert_equal({'0':124.0, '1':'abc', '2':v:true, '3':v:false, '5': {'a':1, 'b':2, 'c':3}}, d)
 
+  lockvar 1 d
+  call assert_fails('lua d[6] = 1', '[string "vim chunk"]:1: dict is locked')
+
   lua d = nil
+endfunc
+
+func Test_dict_table()
+  lua t = {key1 = 'x', key2 = 3.14, key3 = true, key4 = false}
+  call assert_equal({'key1': 'x', 'key2': 3.14, 'key3': v:true, 'key4': v:false},
+        \           luaeval('vim.dict(t)'))
+
+  " Same example as in :help lua-vim.
+  lua t = {math.pi, false, say = 'hi'}
+  " FIXME: commented out as it currently does not work as documented:
+  " Expected {'say': 'hi'}
+  " but got {'1': 3.141593, '2': v:false, 'say': 'hi'}
+  " Is the documentation or the code wrong?
+  "call assert_equal({'say' : 'hi'}, luaeval('vim.dict(t)'))
+  lua t = nil
+
+  call assert_fails('lua vim.dict(1)', '[string "vim chunk"]:1: table expected, got number')
+  call assert_fails('lua vim.dict("x")', '[string "vim chunk"]:1: table expected, got string')
+  call assert_fails('lua vim.dict(print)', '[string "vim chunk"]:1: table expected, got function')
+  call assert_fails('lua vim.dict(true)', '[string "vim chunk"]:1: table expected, got boolean')
 endfunc
 
 " Test d() i.e. iterator on dictionary
@@ -394,7 +422,7 @@ func Test_dict_iter()
   lua for k,v in d() do str = str .. k ..':' .. v .. ',' end
   call assert_equal('a:1,b:2,', luaeval('str'))
 
-  lua str, k, v, d = nil, nil, nil, nil
+  lua str, d = nil
 endfunc
 
 func Test_funcref()
@@ -418,6 +446,8 @@ func Test_funcref()
   lua d.len = vim.funcref"Mylen" -- assign d as 'self'
   lua res = (d.len() == vim.funcref"len"(vim.eval"l")) and "OK" or "FAIL"
   call assert_equal("OK", luaeval('res'))
+
+  lua i1, i2, msg, d, res = nil
 endfunc
 
 " Test vim.type()
@@ -496,7 +526,7 @@ func Test_luafile()
   call assert_equal('hello', luaeval('str'))
   call assert_equal(123.0, luaeval('num'))
 
-  lua str, num = nil, nil
+  lua str, num = nil
   call delete('Xlua_file')
 endfunc
 
@@ -512,7 +542,19 @@ func Test_luafile_percent()
   let msg = split(execute('message'), "\n")[-1]
   call assert_equal('str=foo, num=321', msg)
 
-  lua str, num = nil, nil
+  lua str, num = nil
+  call delete('Xlua_file')
+  bwipe!
+endfunc
+
+" Test :luafile with syntax error
+func Test_luafile_error()
+  new Xlua_file
+  call writefile(['nil = 0' ], 'Xlua_file')
+  call setfperm('Xlua_file', 'r-xr-xr-x')
+
+  call assert_fails('luafile Xlua_file', "Xlua_file:1: unexpected symbol near 'nil'")
+
   call delete('Xlua_file')
   bwipe!
 endfunc
