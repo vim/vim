@@ -397,6 +397,29 @@ func Test_dict_iter()
   lua str, k, v, d = nil, nil, nil, nil
 endfunc
 
+func Test_funcref()
+  function I(x)
+    return a:x
+  endfunction
+  let R = function('I')
+  lua i1 = vim.funcref"I"
+  lua i2 = vim.eval"R"
+  lua msg = "funcref|test|" .. (#i2(i1) == #i1(i2) and "OK" or "FAIL")
+  lua msg = vim.funcref"tr"(msg, "|", " ")
+  call assert_equal("funcref test OK", luaeval('msg'))
+
+  " dict funcref
+  function Mylen() dict
+    return len(self.data)
+  endfunction
+  let l = [0, 1, 2, 3]
+  let mydict = {'data': l}
+  lua d = vim.eval"mydict"
+  lua d.len = vim.funcref"Mylen" -- assign d as 'self'
+  lua res = (d.len() == vim.funcref"len"(vim.eval"l")) and "OK" or "FAIL"
+  call assert_equal("OK", luaeval('res'))
+endfunc
+
 " Test vim.type()
 func Test_type()
   " The following values are identical to Lua's type function.
@@ -414,6 +437,7 @@ func Test_type()
   call assert_equal('buffer',   luaeval('vim.type(vim.buffer())'))
   call assert_equal('list',     luaeval('vim.type(vim.list())'))
   call assert_equal('dict',     luaeval('vim.type(vim.dict())'))
+  call assert_equal('funcref',  luaeval('vim.type(vim.funcref("Test_type"))'))
 endfunc
 
 " Test vim.open()
