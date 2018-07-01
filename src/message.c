@@ -399,6 +399,20 @@ smsg_attr(int attr, char_u *s, ...)
     return msg_attr(IObuff, attr);
 }
 
+    int
+# ifdef __BORLANDC__
+_RTLENTRYF
+# endif
+smsg_attr_keep(int attr, char_u *s, ...)
+{
+    va_list arglist;
+
+    va_start(arglist, s);
+    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
+    va_end(arglist);
+    return msg_attr_keep(IObuff, attr, TRUE);
+}
+
 #endif
 
 /*

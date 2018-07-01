@@ -119,6 +119,12 @@ int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
+smsg_attr_keep(int, char_u *, ...);
+
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
 vim_snprintf_add(char *, size_t, char *, ...)
 #ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 3, 4)))
