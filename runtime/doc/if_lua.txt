@@ -127,7 +127,7 @@ Vim evaluation and command execution, and others.
 				rules. Example: >
 					:lua t = {math.pi, false, say = 'hi'}
 					:echo luaeval('vim.list(t)')
-					:" [3.141593, 0], 'say' is ignored
+					:" [3.141593, v:false], 'say' is ignored
 <
 	vim.dict([arg])		Returns an empty dictionary or, if "arg" is a
 				Lua table, returns a dict d such that d[k] =
@@ -141,8 +141,7 @@ Vim evaluation and command execution, and others.
 					:" {'say': 'hi'}, numeric keys ignored
 <
 	vim.funcref({name})	Returns a Funcref to function {name} (see
-				|Funcref|). It is equivalent to Vim's
-				"function". NOT IMPLEMENTED YET
+				|Funcref|). It is equivalent to Vim's function().
 
 	vim.buffer([arg])	If "arg" is a number, returns buffer with
 				number "arg" in the buffer list or, if "arg"
@@ -166,7 +165,7 @@ Vim evaluation and command execution, and others.
 				or window, respectively. Examples: >
 					:lua l = vim.list()
 					:lua print(type(l), vim.type(l))
-					:" userdata list
+					:" list
 <
 	vim.command({cmd})	Executes the vim (ex-mode) command {cmd}.
 				Examples: >
