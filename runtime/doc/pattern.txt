@@ -314,7 +314,7 @@ For starters, read chapter 27 of the user manual |usr_27.txt|.
 2. A branch is one or more concats, separated by "\&".  It matches the last
    concat, but only if all the preceding concats also match at the same
    position.  Examples:
-	"foobeep\&..." matches "foo" in "foobeep".
+	"foo\&..." matches "foo" in "foobeep".
 	".*Peter\&.*Bob" matches in a line containing both "Peter" and "Bob"
 
    branch ::=	    concat
