@@ -305,7 +305,7 @@ func Test_list()
   lua l:add(vim.eval("{'a':1, 'b':2, 'c':3}"))
   call assert_equal([123.0, 'abc', v:true, v:false, [1, 2, 3], {'a': 1, 'b': 2, 'c': 3}], l)
   call assert_equal(6.0, luaeval('#l'))
-  call assert_match('^list: 0x\x\+$', luaeval('tostring(l)'))
+  call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
 
   lua l[0] = 124
   lua l[4] = nil
@@ -358,7 +358,7 @@ func Test_recursive_list()
 
   call assert_equal('[1.0, 2.0, [...]]', string(luaeval('l')))
 
-  call assert_match('^list: 0x\x\+$', luaeval('tostring(l)'))
+  call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
   call assert_equal(luaeval('tostring(l)'), luaeval('tostring(l[2])'))
 
   call assert_equal(luaeval('l'), luaeval('l[2]'))
@@ -380,7 +380,7 @@ func Test_dict()
   lua d[5] = vim.eval("{'a':1, 'b':2, 'c':3}")
   call assert_equal({'0':123.0, '1':'abc', '2':v:true, '3':v:false, '4': [1, 2, 3], '5': {'a':1, 'b':2, 'c':3}}, d)
   call assert_equal(6.0, luaeval('#d'))
-  call assert_match('^dict: 0x\x\+$', luaeval('tostring(d)'))
+  call assert_match('^dict: \%(0x\)\?\x\+$', luaeval('tostring(d)'))
 
   call assert_equal('abc', luaeval('d[1]'))
 
